@@ -1,0 +1,88 @@
+name: C8D Rabat Agenz DOM Surface Diagnostics
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/carte-c8d-rabat-agenz-dom-surface-diagnostics.yml"
+      - "scripts/scrapers/c8-rabat-dom-surface-diagnostics.ts"
+      - "scripts/scrapers/__tests__/c8-rabat-dom-surface-diagnostics.test.ts"
+      - "docs/C8D_AGENZ_DOM_SURFACE_DIAGNOSTIC_GATE.md"
+  workflow_dispatch:
+    inputs:
+      locality:
+        required: true
+        default: diour-jamaa
+        type: choice
+        options: [diour-jamaa]
+      limit:
+        required: true
+        default: "9"
+        type: choice
+        options: ["9"]
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: DOM surface diagnostics contracts
+        run: npx tsx --test scripts/scrapers/__tests__/c8-rabat-dom-surface-diagnostics.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+  live-diagnostics:
+    if: github.event_name == 'workflow_dispatch'
+    needs: contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      THIRD_PARTY_DB_INGESTION_ENABLED: "true"
+      C8_RABAT_DETAIL_LOCALITY: ${{ inputs.locality }}
+      C8_RABAT_DETAIL_LIMIT: ${{ inputs.limit }}
+    steps:
+      - name: Validate bounded read-only inputs
+        run: |
+          set -euo pipefail
+          test "$C8_RABAT_DETAIL_LOCALITY" = "diour-jamaa"
+          test "$C8_RABAT_DETAIL_LIMIT" = "9"
+          test -n "$SUPABASE_URL"
+          test -n "$SUPABASE_SERVICE_ROLE_KEY"
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Execute DOM diagnostics
+        run: npx tsx scripts/scrapers/c8-rabat-dom-surface-diagnostics.ts | tee c8d-agenz-dom-surface-diagnostics.json
+      - name: Verify zero-write and no-raw-html proof
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const p = JSON.parse(fs.readFileSync('c8d-agenz-dom-surface-diagnostics.json','utf8'));
+          if (p.mode !== 'read_only_dom_surface_diagnostics') throw new Error('unexpected mode');
+          if (p.productionWriteCount !== 0) throw new Error('write invariant violated');
+          if (p.rawHtmlPersisted !== false) throw new Error('raw HTML invariant violated');
+          if (!Array.isArray(p.diagnostics)) throw new Error('missing diagnostics');
+          NODE
+      - name: Upload diagnostics proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: c8d-rabat-agenz-dom-surface-diagnostics
+          path: c8d-agenz-dom-surface-diagnostics.json
+          retention-days: 14
