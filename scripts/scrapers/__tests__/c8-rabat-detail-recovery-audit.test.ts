@@ -25,11 +25,11 @@ test("C8 detail audit infers sale/rent intent without mutating data", () => {
 
 test("C8 detail audit resolves only candidate localities from source-record text", () => {
   assert.equal(
-    matchesC8CandidateLocality({ title: "Appartement à Diour Jamaa Rabat", snippet: null, search_text: null }, "diour-jamaa"),
+    matchesC8CandidateLocality({ title: "Appartement à Youssoufia Rabat", snippet: null, search_text: null }, "youssoufia"),
     true,
   );
   assert.equal(
-    matchesC8CandidateLocality({ title: "Appartement Agdal Rabat", snippet: null, search_text: null }, "diour-jamaa"),
+    matchesC8CandidateLocality({ title: "Appartement Agdal Rabat", snippet: null, search_text: null }, "youssoufia"),
     false,
   );
 });
@@ -86,54 +86,54 @@ test("C8 detail audit keeps only Agenz recognized detail URLs, target locality a
   const rows = [
     {
       seed_id: "a",
-      canonical_url: "https://agenz.ma/fr/annonces/immo-rabat/vente-appartements/diour-jamaa/123456",
+      canonical_url: "https://agenz.ma/fr/annonces/immo-rabat/vente-appartements/youssoufia/123456",
       source_domain: C8_RABAT_DETAIL_AUDIT_SOURCE,
       normalized_intent: "sale",
       normalized_price_mad: null,
       normalized_surface_m2: null,
-      title: "Appartement à Diour Jamaa Rabat",
+      title: "Appartement à Youssoufia Rabat",
       snippet: null,
       search_text: null,
       updated_at: "2026-08-16T00:00:00Z",
     },
     {
       seed_id: "a-en",
-      canonical_url: "https://agenz.ma/en/annonces/immo-rabat/vente-appartements/diour-jamaa/123456",
+      canonical_url: "https://agenz.ma/en/annonces/immo-rabat/vente-appartements/youssoufia/123456",
       source_domain: C8_RABAT_DETAIL_AUDIT_SOURCE,
       normalized_intent: "sale",
       normalized_price_mad: null,
       normalized_surface_m2: null,
-      title: "Apartment Diour Jamaa Rabat",
+      title: "Apartment Youssoufia Rabat",
       snippet: null,
-      search_text: "Diour Jamaa Rabat",
+      search_text: "Youssoufia Rabat",
       updated_at: "2026-08-15T00:00:00Z",
     },
     {
       seed_id: "b",
-      canonical_url: "https://agenz.ma/fr/annonces/immo-rabat/vente-appartements/diour-jamaa",
+      canonical_url: "https://agenz.ma/fr/annonces/immo-rabat/vente-appartements/youssoufia",
       source_domain: C8_RABAT_DETAIL_AUDIT_SOURCE,
       normalized_intent: "sale",
       normalized_price_mad: null,
       normalized_surface_m2: null,
-      title: "Appartement à Diour Jamaa Rabat",
+      title: "Appartement à Youssoufia Rabat",
       snippet: null,
       search_text: null,
       updated_at: "2026-08-16T00:00:00Z",
     },
     {
       seed_id: "c",
-      canonical_url: "https://agenz.ma/fr/annonces/immo-rabat/vente-appartements/diour-jamaa/999999",
+      canonical_url: "https://agenz.ma/fr/annonces/immo-rabat/vente-appartements/youssoufia/999999",
       source_domain: C8_RABAT_DETAIL_AUDIT_SOURCE,
       normalized_intent: "sale",
       normalized_price_mad: 1_000_000,
       normalized_surface_m2: 90,
-      title: "Appartement à Diour Jamaa Rabat",
+      title: "Appartement à Youssoufia Rabat",
       snippet: null,
       search_text: null,
       updated_at: "2026-08-16T00:00:00Z",
     },
   ];
 
-  const selected = selectC8DetailAuditCandidates(rows, "diour-jamaa", 10);
+  const selected = selectC8DetailAuditCandidates(rows, "youssoufia", 10);
   assert.deepEqual(selected.map((row) => row.seed_id), ["a"]);
 });

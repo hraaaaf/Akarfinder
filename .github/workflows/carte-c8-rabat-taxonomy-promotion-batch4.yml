@@ -1,0 +1,49 @@
+name: C8 Rabat Taxonomy Promotion Batch 4
+
+on:
+  pull_request:
+    paths:
+      - "lib/geo/rabat-locality-registry.ts"
+      - "docs/CARTE_C8_RABAT_TAXONOMY_PROMOTION_BATCH4.md"
+      - "scripts/scrapers/__tests__/carte-c8-rabat-taxonomy-promotion-batch4.test.ts"
+      - "scripts/scrapers/__tests__/carte-c8b-rabat-locality-registry.test.ts"
+      - "scripts/scrapers/__tests__/carte-c8c-rabat-geometry-blocker-matrix.test.ts"
+      - "scripts/scrapers/__tests__/carte-c8d-rabat-authority-proposal.test.ts"
+      - ".github/workflows/carte-c8-rabat-taxonomy-promotion-batch4.yml"
+  push:
+    branches: [main]
+    paths:
+      - "lib/geo/rabat-locality-registry.ts"
+      - "docs/CARTE_C8_RABAT_TAXONOMY_PROMOTION_BATCH4.md"
+      - "scripts/scrapers/__tests__/carte-c8-rabat-taxonomy-promotion-batch4.test.ts"
+      - "scripts/scrapers/__tests__/carte-c8b-rabat-locality-registry.test.ts"
+      - "scripts/scrapers/__tests__/carte-c8c-rabat-geometry-blocker-matrix.test.ts"
+      - "scripts/scrapers/__tests__/carte-c8d-rabat-authority-proposal.test.ts"
+      - ".github/workflows/carte-c8-rabat-taxonomy-promotion-batch4.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  taxonomy-promotion:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Promotion contracts
+        run: npx tsx --test scripts/scrapers/__tests__/carte-c8-rabat-taxonomy-promotion-batch4.test.ts
+      - name: C8B registry contracts
+        run: npx tsx --test scripts/scrapers/__tests__/carte-c8b-rabat-locality-registry.test.ts
+      - name: C8C blocker contracts
+        run: npx tsx --test scripts/scrapers/__tests__/carte-c8c-rabat-geometry-blocker-matrix.test.ts
+      - name: C8D authority contracts
+        run: npx tsx --test scripts/scrapers/__tests__/carte-c8d-rabat-authority-proposal.test.ts
+      - name: C8D shadow resolver contracts
+        run: npx tsx --test scripts/scrapers/__tests__/carte-c8d-rabat-shadow-resolver.test.ts scripts/scrapers/__tests__/carte-c8d-rabat-shadow-audit-manifest.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit

@@ -95,6 +95,7 @@ test("taxonomy certification does not imply DB validation or activation", () => 
     [
       "candidate_rabat_akkari",
       "candidate_rabat_al_boustane",
+      "candidate_rabat_diour_jamaa",
       "candidate_rabat_douar_doum",
       "candidate_rabat_el_garaa",
       "candidate_rabat_el_kora",

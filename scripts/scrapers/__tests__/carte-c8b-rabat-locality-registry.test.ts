@@ -84,6 +84,7 @@ test("C8B promotes only source-backed taxonomy and keeps provisional entries fai
     [
       "candidate_rabat_akkari",
       "candidate_rabat_al_boustane",
+      "candidate_rabat_diour_jamaa",
       "candidate_rabat_douar_doum",
       "candidate_rabat_el_garaa",
       "candidate_rabat_el_kora",
