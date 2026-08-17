@@ -1,0 +1,34 @@
+{
+  "version": "c8_taxonomy_evidence_batch3_v1",
+  "scope": "Rabat C8 product-locality taxonomy evidence only",
+  "publicActivation": false,
+  "productionWriteCount": 0,
+  "decisions": [
+    {
+      "localityId": "candidate_rabat_douar_doum",
+      "decision": "ready_for_taxonomy_certification",
+      "reason": "AURS explicitly lists Douars Doum among informal or precarious quartiers formed in Rabat.",
+      "sources": [{"provider":"Agence Urbaine de Rabat-Sale","title":"Aire urbaine de Rabat","url":"https://aurs.org.ma/fr/le-territoire/aire-urbaine-de-rabat/","evidenceKind":"first_party_explicit_quartier"}]
+    },
+    {
+      "localityId": "candidate_rabat_el_kora",
+      "decision": "ready_for_taxonomy_certification",
+      "reason": "AURS explicitly lists El Kora among informal or precarious quartiers formed in Rabat.",
+      "sources": [{"provider":"Agence Urbaine de Rabat-Sale","title":"Aire urbaine de Rabat","url":"https://aurs.org.ma/fr/le-territoire/aire-urbaine-de-rabat/","evidenceKind":"first_party_explicit_quartier"}]
+    },
+    {
+      "localityId": "candidate_rabat_el_garaa",
+      "decision": "ready_for_taxonomy_certification",
+      "reason": "AURS explicitly lists El Garaa among informal or precarious quartiers formed in Rabat.",
+      "sources": [{"provider":"Agence Urbaine de Rabat-Sale","title":"Aire urbaine de Rabat","url":"https://aurs.org.ma/fr/le-territoire/aire-urbaine-de-rabat/","evidenceKind":"first_party_explicit_quartier"}]
+    }
+  ],
+  "notPromotedByThisEvidence": ["candidate_rabat_mabella","candidate_rabat_takaddoum","candidate_rabat_kbibat"],
+  "guardrails": [
+    "Only explicit first-party quartier wording qualifies a candidate in this batch.",
+    "Mass-housing programme references alone do not establish product-locality identity.",
+    "No taxonomy status is changed by this evidence manifest.",
+    "No public map eligibility is changed.",
+    "No production write is executed."
+  ]
+}
