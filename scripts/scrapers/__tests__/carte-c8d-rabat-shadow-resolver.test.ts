@@ -18,8 +18,6 @@ test("C8D shadow normalization is accent/punctuation/case deterministic", () => 
 test("C8D shadow resolves exact same-record structured candidate districts without activating them", () => {
   for (const [district, expectedId] of [
     ["Aviation", "candidate_rabat_aviation"],
-    ["Yacoub El Mansour", "candidate_rabat_yacoub_el_mansour"],
-    ["Yaacoub El Mansour", "candidate_rabat_yacoub_el_mansour"],
     ["Médina", "candidate_rabat_medina"],
     ["Hay Nahda I", "candidate_rabat_hay_nahda"],
     ["Kébibat", "candidate_rabat_kbibat"],
@@ -34,6 +32,19 @@ test("C8D shadow resolves exact same-record structured candidate districts witho
     assert.equal(result.activationStatus, "blocked");
     assert.equal(result.publicationBlocked, true);
     assert.equal(result.evidence[0]?.signal, "structured_exact");
+  }
+});
+
+test("C8D shadow resolves taxonomy-certified but unpublished Yacoub El Mansour", () => {
+  for (const district of ["Yacoub El Mansour", "Yaacoub El Mansour"]) {
+    const result = resolveRabatLocalityShadow({ district, districtProvenance: SAME_RECORD });
+    assert.equal(result.status, "matched");
+    if (result.status !== "matched") continue;
+    assert.equal(result.localityId, "candidate_rabat_yacoub_el_mansour");
+    assert.equal(result.taxonomyStatus, "certified");
+    assert.equal(result.marketMapEligible, false);
+    assert.equal(result.activationStatus, "blocked");
+    assert.equal(result.publicationBlocked, true);
   }
 });
 
