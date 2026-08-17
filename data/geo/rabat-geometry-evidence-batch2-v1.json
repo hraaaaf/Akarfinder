@@ -1,0 +1,34 @@
+{
+  "version": "c8_geometry_evidence_batch2_v1",
+  "scope": "Rabat C8 geometry evidence for Yacoub El Mansour",
+  "publicActivation": false,
+  "productionWriteCount": 0,
+  "decisions": [
+    {
+      "localityId": "candidate_rabat_yacoub_el_mansour",
+      "decision": "geometry_unresolved_semantic_mismatch",
+      "reason": "AURS certifies Yacoub El Mansour as a quartier/product locality, while OSM administrative data separately models Yacoub El Mansour as an arrondissement. The arrondissement boundary cannot be substituted automatically for the product-locality polygon.",
+      "sources": [
+        {
+          "provider": "Agence Urbaine de Rabat-Sale",
+          "title": "Secteur de projet Gare d'Agdal (55 ha) / Boulevard Hassan II Ville Rabat",
+          "url": "https://aurs.org.ma/fr/savoir-faire/grands-projets-urbains/",
+          "evidenceKind": "first_party_explicit_quartier"
+        },
+        {
+          "provider": "OpenStreetMap Wiki",
+          "title": "Administrative divisions of Morocco",
+          "url": "https://wiki.openstreetmap.org/wiki/Administrative_divisions_of_Morocco",
+          "evidenceKind": "administrative_semantics_arrondissement"
+        }
+      ]
+    }
+  ],
+  "guardrails": [
+    "Administrative and product-locality semantics remain separate.",
+    "No arrondissement boundary is promoted as a neighborhood polygon without explicit equivalence proof.",
+    "No centroid, Voronoi split or name-derived contour is created.",
+    "No production write is executed.",
+    "No public map eligibility is changed."
+  ]
+}
