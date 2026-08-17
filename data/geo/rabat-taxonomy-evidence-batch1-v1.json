@@ -1,0 +1,34 @@
+{
+  "version": "c8_taxonomy_evidence_batch1_v1",
+  "scope": "Rabat C8 product-locality taxonomy evidence only",
+  "publicActivation": false,
+  "productionWriteCount": 0,
+  "decisions": [
+    {
+      "localityId": "candidate_rabat_akkari",
+      "decision": "ready_for_taxonomy_certification",
+      "reason": "AURS explicitly identifies Akkari as a quartier of Rabat in the Akkari-Ocean urban-renovation program.",
+      "sources": [
+        {
+          "provider": "Agence Urbaine de Rabat-Sale",
+          "title": "Renovation urbaine des quartiers Ocean et Akkari - Arrondissement Hassan Ville Rabat",
+          "url": "https://aurs.org.ma/fr/savoir-faire/grands-projets-urbains/",
+          "evidenceKind": "first_party_explicit_quartier"
+        }
+      ]
+    },
+    {
+      "localityId": "candidate_rabat_al_boustane",
+      "decision": "ready_for_taxonomy_certification",
+      "reason": "AURS explicitly describes Al Boustane as a new quartier in Rabat and documents its urban-project context.",
+      "sources": [
+        {
+          "provider": "Agence Urbaine de Rabat-Sale",
+          "title": "Al Boustane : un quartier novateur de l'approche environnementale de l'urbanisme",
+          "url": "https://aurs.org.ma/fr/attributions_attributions/etudes-generales/",
+          "evidenceKind": "first_party_explicit_quartier"
+        }
+      ]
+    }
+  ]
+}
