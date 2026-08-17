@@ -1,0 +1,48 @@
+{
+  "version": "c8_geometry_evidence_batch1_v1",
+  "scope": "Rabat C8 geometry evidence only",
+  "publicActivation": false,
+  "productionWriteCount": 0,
+  "rawGeometryCreated": false,
+  "decisions": [
+    {
+      "localityId": "candidate_rabat_akkari",
+      "decision": "geometry_unresolved",
+      "reason": "AURS confirms Akkari as a Rabat quartier and documents the Ocean-Akkari urban-renovation program, but the reviewed first-party pages do not expose a directly reusable neighborhood polygon or a complete machine-defensible boundary description.",
+      "sources": [
+        {
+          "provider": "Agence Urbaine de Rabat-Sale",
+          "title": "Renovation urbaine des quartiers Ocean et Akkari - Arrondissement Hassan Ville Rabat",
+          "url": "https://aurs.org.ma/fr/savoir-faire/grands-projets-urbains/",
+          "evidenceKind": "first_party_quartier_without_reusable_polygon"
+        },
+        {
+          "provider": "Agence Urbaine de Rabat-Sale",
+          "title": "Presentation Quartiers Akkari-Ocean",
+          "url": "https://aurs.org.ma/fr/download/presentation-quartiers-akkari-ocean/",
+          "evidenceKind": "first_party_document_index_without_certified_polygon_extraction"
+        }
+      ]
+    },
+    {
+      "localityId": "candidate_rabat_al_boustane",
+      "decision": "geometry_unresolved",
+      "reason": "AURS describes Al Boustane as a 270 ha Rabat quartier bounded north by rocade urbaine no. 3, west and south by the green belt, and east by private properties. This is strong spatial context but not a complete directly reusable digital polygon; no synthetic contour is derived from the prose.",
+      "sources": [
+        {
+          "provider": "Agence Urbaine de Rabat-Sale",
+          "title": "Al Boustane : un quartier novateur de l'approche environnementale de l'urbanisme",
+          "url": "https://aurs.org.ma/fr/attributions_attributions/etudes-generales/",
+          "evidenceKind": "first_party_descriptive_boundary_without_reusable_polygon"
+        }
+      ]
+    }
+  ],
+  "guardrails": [
+    "No centroid is promoted to exact geometry.",
+    "No Voronoi or name-derived polygon is created.",
+    "No prose boundary is converted into a polygon without complete source-backed geometry.",
+    "No public map eligibility is changed.",
+    "No production write is executed."
+  ]
+}
