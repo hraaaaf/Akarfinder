@@ -489,3 +489,52 @@ Référence visuelle normative : `docs/ANNOUNCEMENT_PAGE_CANONICAL_VISUAL_TARGET
 Gate CLOSED : exact head `64b3ed6798b978b58f8386f5daa215079c487ed3`, run `32061681062` SUCCESS ; `UI All Pages Certification` run `32061680991` SUCCESS ; artefact L13 `9298022291`, digest `sha256:dbb95df120b3d1678e32d3ba80af8307d82cb47a745c91cbf2f6a67b7cee3a06`, **6/6 captures + 0 finding**. Revue humaine after : **9,4/10 mobile**, **9,6/10 desktop**, **9,5/10 global**. Runtime mergé via PR #805, squash `4b13fd56eecface6d31635fe3358e21f5ef708a5`. Détails : `docs/ANNOUNCEMENT_PAGE_L13_CLOSEOUT.md`.
 
 **Crédit officiel ANN-L13 : +6 %. Progression cumulée : 100 %. Programme `ANNOUNCEMENT-PAGE-ULTRA-PREMIUM` fermé.**
+
+## 9. Ordre du chemin critique
+
+```text
+L0
+ ↓
+L1 ─→ L2 ─→ L3 ─→ L4
+              │
+L5 ─→ L6 ─→ L7│
+ │      │      ↓
+ └──────┴────→ L8 ─→ L9
+        │
+        ├────→ L12
+L3 ─────┼────→ L10
+L1/L3 ───────→ L11
+
+L1..L12 ─────→ L13
+```
+
+Parallélisation autorisée après L0 : L1 et L5 peuvent avancer en parallèle ; L10 peut démarrer après L3 ; L11 après le shell/core.
+
+## 10. Règle de closeout de chaque LOT
+
+Chaque LOT suit :
+
+`implémentation → tests ciblés → TypeScript/build selon risque → navigateur/QA si UI → correction → exact-head CI → documentation → roadmap/% → merge → vérification post-merge`.
+
+Un run queued/in_progress ne clôt pas un LOT. Un LOT n'est `CLOSED` que sur preuve.
+
+## 11. Progression canonique
+
+| LOT | Poids | État | Crédit officiel |
+|---|---:|---|---:|
+| ANN-L0 | 4 % | ✅ CLOSED | 4 % |
+| ANN-L1 | 7 % | ✅ CLOSED | 7 % |
+| ANN-L2 | 7 % | ✅ CLOSED | 7 % |
+| ANN-L3 | 6 % | ✅ CLOSED | 6 % |
+| ANN-L4 | 9 % | ✅ CLOSED | 9 % |
+| ANN-L5 | 9 % | ✅ CLOSED | 9 % |
+| ANN-L6 | 12 % | ✅ CLOSED | 12 % |
+| ANN-L7 | 6 % | ✅ CLOSED | 6 % |
+| ANN-L8 | 10 % | ✅ CLOSED | 10 % |
+| ANN-L9 | 6 % | ✅ CLOSED | 6 % |
+| ANN-L10 | 7 % | ✅ CLOSED | 7 % |
+| ANN-L11 | 6 % | ✅ CLOSED | 6 % |
+| ANN-L12 | 5 % | ✅ CLOSED | 5 % |
+| ANN-L13 | 6 % | ✅ CLOSED | 6 % |
+
+**Progression officielle actuelle : 100 / 100 %.**
