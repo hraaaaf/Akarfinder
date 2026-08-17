@@ -6,9 +6,13 @@ on:
       - "lib/search-profile-v2/**"
       - "lib/user-continuity/**"
       - "lib/property-detail/project-fit.ts"
+      - "lib/property-detail/project-routes.ts"
+      - "lib/geo/project-routes-service.ts"
       - "components/listings/**"
+      - "components/search/**"
       - "components/companion/**"
       - "app/listings/**"
+      - "app/search/**"
       - "app/mon-projet/**"
       - "docs/ANNOUNCEMENT_PAGE_L12_*"
       - "scripts/audits/announcement-page-l12-*"
@@ -28,17 +32,19 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - name: ANN-L12 profile, destination and fit contracts
+      - name: ANN-L12 profile, destination, fit and routing contracts
         shell: bash
         run: |
           set -euo pipefail
           tests=(
             scripts/scrapers/__tests__/announcement-page-l12-profile-anchors.test.ts
             scripts/scrapers/__tests__/announcement-page-l12-project-fit.test.ts
+            scripts/scrapers/__tests__/announcement-page-l12-project-routes.test.ts
           )
           while IFS= read -r file; do
             [[ "$file" == *announcement-page-l12-profile-anchors.test.ts ]] && continue
             [[ "$file" == *announcement-page-l12-project-fit.test.ts ]] && continue
+            [[ "$file" == *announcement-page-l12-project-routes.test.ts ]] && continue
             tests+=("$file")
           done < <(find scripts/scrapers/__tests__ -maxdepth 1 -type f \( -name '*search-profile*.test.ts' -o -name '*companion*.test.ts' \) -print | sort)
           npx tsx --test "${tests[@]}"
