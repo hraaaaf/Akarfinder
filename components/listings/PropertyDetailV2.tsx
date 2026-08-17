@@ -122,7 +122,9 @@ export function PropertyDetailV2({
             <AkarInsightCard detail={detail} />
           </div>
 
-          <ProjectPersonalizationCard listing={listing} projectId={projectId} />
+          <div className="lg:hidden">
+            <ProjectPersonalizationCard listing={listing} projectId={projectId} />
+          </div>
 
           <div className="mt-4 lg:hidden">
             <ProfessionalConversionCard
@@ -209,11 +211,12 @@ export function PropertyDetailV2({
           </div>
         </div>
 
-        <aside className="hidden lg:block lg:sticky lg:top-6">
+        <aside className="hidden space-y-5 lg:sticky lg:top-6 lg:block">
           <ProfessionalConversionCard
             listing={listing}
             model={proConversion}
           />
+          <ProjectPersonalizationCard listing={listing} projectId={projectId} />
         </aside>
       </div>
 
