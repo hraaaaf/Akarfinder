@@ -53,7 +53,7 @@ export function MobileVisitRequestButton({ listingId }: { listingId: string }) {
         type="button"
         onClick={() => setOpen(true)}
         aria-label="Demander une visite"
-        className={`${ui.primaryAction} min-h-12 w-full px-3 text-[13px]`}
+        className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-[#0B63CE] px-3 py-3 text-[13px] font-extrabold text-white shadow-[0_6px_18px_rgba(11,99,206,0.2)] transition hover:bg-[#0959B8] motion-reduce:transition-none"
       >
         {sent ? "Visite demandée" : "Visite"}
       </button>
