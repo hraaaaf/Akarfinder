@@ -1,0 +1,64 @@
+name: Announcement Page L13 Compose Target
+
+on:
+  push:
+    branches:
+      - agent/announcement-page-l13-certification-10of10
+    paths:
+      - '.github/workflows/announcement-page-l13-compose-target.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  compose:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/announcement-page-l13-certification-10of10
+      - name: Patch target composition and L13 audit
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          detail_path = Path('components/listings/PropertyDetailV2.tsx')
+          detail = detail_path.read_text()
+          old_import = 'import { MarketComparablesSection } from "@/components/listings/MarketComparablesSection";\n'
+          new_import = old_import + 'import { MarketComparablesSummaryCard } from "@/components/listings/MarketComparablesSummaryCard";\n'
+          if 'MarketComparablesSummaryCard' not in detail:
+              if old_import not in detail:
+                  raise SystemExit('PropertyDetailV2 market import anchor missing')
+              detail = detail.replace(old_import, new_import, 1)
+          old_aside = '''          <ProjectPersonalizationCard listing={listing} projectId={projectId} />\n        </aside>'''
+          new_aside = '''          <ProjectPersonalizationCard listing={listing} projectId={projectId} />\n          <MarketComparablesSummaryCard model={marketComparables} />\n        </aside>'''
+          if '<MarketComparablesSummaryCard model={marketComparables} />' not in detail:
+              if old_aside not in detail:
+                  raise SystemExit('PropertyDetailV2 aside anchor missing')
+              detail = detail.replace(old_aside, new_aside, 1)
+          detail_path.write_text(detail)
+
+          audit_path = Path('scripts/audits/announcement-page-l12-visual.mjs')
+          audit = audit_path.read_text()
+          old_marker = '''        if (scenario.width >= 1024 && visibleAsideCardCount !== 1) localFindings.push(`DESKTOP_PROJECT_RAIL_COUNT_${visibleAsideCardCount}`);\n        if (scenario.width < 1024 && visibleAsideCardCount !== 0) localFindings.push(`MOBILE_PROJECT_RAIL_LEAK_${visibleAsideCardCount}`);'''
+          new_marker = '''        if (scenario.width >= 1024 && visibleAsideCardCount !== 1) localFindings.push(`DESKTOP_PROJECT_RAIL_COUNT_${visibleAsideCardCount}`);\n        if (scenario.width < 1024 && visibleAsideCardCount !== 0) localFindings.push(`MOBILE_PROJECT_RAIL_LEAK_${visibleAsideCardCount}`);\n        const visibleMarketSummaryCount = await page.locator('aside [data-market-comparables-summary="ann-l13"]:visible').count();\n        if (scenario.width >= 1024 && visibleMarketSummaryCount !== 1) localFindings.push(`DESKTOP_MARKET_SUMMARY_COUNT_${visibleMarketSummaryCount}`);\n        if (scenario.width < 1024 && visibleMarketSummaryCount !== 0) localFindings.push(`MOBILE_MARKET_SUMMARY_LEAK_${visibleMarketSummaryCount}`);\n        if (scenario.width >= 1024) {\n          const proBox = await page.locator('aside [data-pro-conversion="ann-l11"]:visible').boundingBox();\n          const projectBox = await page.locator('aside [data-project-personalization="ann-l12"]:visible').boundingBox();\n          const marketBox = await page.locator('aside [data-market-comparables-summary="ann-l13"]:visible').boundingBox();\n          if (!proBox || !projectBox || !marketBox || !(proBox.y < projectBox.y && projectBox.y < marketBox.y)) localFindings.push('DESKTOP_RAIL_ORDER_INVALID');\n        }'''
+          if 'DESKTOP_MARKET_SUMMARY_COUNT' not in audit:
+              if old_marker not in audit:
+                  raise SystemExit('L12 audit marker missing')
+              audit = audit.replace(old_marker, new_marker, 1)
+          audit = audit.replace('schemaVersion: "ANNOUNCEMENT_PAGE_L12_MON_PROJET_VISUAL_V3_RESPONSIVE_TARGET"', 'schemaVersion: "ANNOUNCEMENT_PAGE_L13_CANONICAL_CONVERGENCE_V1"')
+          audit = audit.replace('ANN-L12 capture incomplete', 'ANN-L13 capture incomplete')
+          audit = audit.replace('ANN-L12 visual certification failed', 'ANN-L13 visual certification failed')
+          audit_path.write_text(audit)
+          PY
+      - name: Commit target composition
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add components/listings/PropertyDetailV2.tsx scripts/audits/announcement-page-l12-visual.mjs
+          git diff --cached --quiet && exit 1
+          git commit -m 'feat(listing): converge ANN-L13 decision rail'
+          git push origin HEAD:agent/announcement-page-l13-certification-10of10
