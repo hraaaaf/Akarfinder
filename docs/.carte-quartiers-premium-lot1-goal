@@ -1,3 +1,0 @@
-GOAL=Lock canonical premium quartiers refonte specification before UI implementation
-SUCCESS=Spec exists and preserves existing Map/Search/Geo contracts
-PROOF=docs/CARTE_QUARTIERS_PREMIUM_REFONTE.md reviewed on branch
