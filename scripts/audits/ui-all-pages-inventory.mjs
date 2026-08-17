@@ -32,6 +32,7 @@ const staticAuditByPattern = new Map([
   ["/profil-recherche", { expectedFinalPath: "/mon-projet", expectedResourceFailures: expectedContinuity401 }],
   ["/mon-projet", { expectedResourceFailures: expectedContinuity401 }],
   ["/mon-projet/espace", { expectedResourceFailures: [...expectedContinuity401, ...expectedAuthSession401] }],
+  ["/visual-qa/announcement-page-mon-projet", { expectedResourceFailures: expectedContinuity401 }],
   ["/pro/leads", { expectedFinalPath: "/pro" }],
   ["/quartiers", { expectedFinalPath: "/immobilier" }],
   ...[
