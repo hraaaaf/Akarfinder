@@ -2,8 +2,8 @@
 
 **Programme canonique : `ANNOUNCEMENT-PAGE-ULTRA-PREMIUM`**  
 **Version : 2026-08-17**  
-**Statut : ANN-L0 ✅ CLOSED ; ANN-L1 ✅ CLOSED ; ANN-L2 ✅ CLOSED ; ANN-L3 ✅ CLOSED ; ANN-L4 ✅ CLOSED ; ANN-L5 ✅ CLOSED ; ANN-L6 ✅ CLOSED ; ANN-L7 ✅ CLOSED ; ANN-L8 ✅ CLOSED ; ANN-L9 ✅ CLOSED ; ANN-L10 ✅ CLOSED ; ANN-L11 ✅ CLOSED ; ANN-L12 NEXT**  
-**Progression stricte : 89 / 100 %.**
+**Statut : ANN-L0 ✅ CLOSED ; ANN-L1 ✅ CLOSED ; ANN-L2 ✅ CLOSED ; ANN-L3 ✅ CLOSED ; ANN-L4 ✅ CLOSED ; ANN-L5 ✅ CLOSED ; ANN-L6 ✅ CLOSED ; ANN-L7 ✅ CLOSED ; ANN-L8 ✅ CLOSED ; ANN-L9 ✅ CLOSED ; ANN-L10 ✅ CLOSED ; ANN-L11 ✅ CLOSED ; ANN-L12 ✅ CLOSED ; ANN-L13 NEXT**  
+**Progression stricte : 94 / 100 %.**
 
 > Ce document est la sous-roadmap normative du chantier de refonte de `/listings/[id]`. `docs/ROADMAP.md` reste le registre canonique global AkarFinder. Les pourcentages ci-dessous sont comptés uniquement sur les LOTS `CLOSED`, jamais sur du travail commencé ou supposé presque terminé.
 
@@ -476,13 +476,15 @@ Implémentation : identité professionnelle canonique et matrice CTA fail-closed
 
 Gate CLOSED : exact head `a8bf6b300b22e9b425da22ecaba7f1b77cc1aa2a`, run `31983200516` SUCCESS, contrats + TypeScript + production build + Chromium ciblé SUCCESS, **6/6 captures + 0 finding**, artefact `9272995434`, digest `sha256:b8a9947efc62e42cbf46b97a4786d2a0b5f8d31f4d4495a1e388e04ab1ea424c`. Tous les gates transversaux du head finissent SUCCESS après rerun de deux fetchs Google Fonts externes. Score référentiel AkarFinder strict : **9,3/10 mobile** et **9,3/10 desktop**. Détails : `docs/ANNOUNCEMENT_PAGE_L11_CLOSEOUT.md`.
 
-### ANN-L12 — Mon Projet personnalisé — 5 %
+### ANN-L12 — Mon Projet personnalisé — 5 % — ✅ CLOSED
 
-Implémentation : Property Fit réel et destinations sauvegardées. Les temps vers travail/école passent par le même `RoutingProvider` que `Vivre ici`.
+Implémentation : profil projet explicite existant réutilisé sans second profil parallèle ; destinations dans `DynamicSearchProfileV2.location.anchors` ; Property Fit déterministe avec raisons match/mismatch/inconnu ; continuité `project_id` Search → fiche interne ; lecture owner-scoped ; routage personnel via le même contrat L5/L6, uniquement depuis `ExactGeoTruth` avec preuve provider fraîche. Desktop : Mon Projet converge dans le rail droit sous Pro / conversion ; mobile/tablette : module compact dans le flux.
 
-Gate : aucun profil → aucun fit ; suppression/édition destinations ; confidentialité ; cache isolé des données personnelles.
+Gate CLOSED : exact head `ce3de79624bcb9399f4a74badcb61657a37ad239`, run `32055350357` SUCCESS, **41/41 tests PASS**, TypeScript et production build SUCCESS, artefact `9296337960`, digest `sha256:d5acf9028fd499ab83bb998d12068cb1a19cda8043d8565787bab2c7e483b015`, rapport `ANNOUNCEMENT_PAGE_L12_MON_PROJET_VISUAL_V3_RESPONSIVE_TARGET` : **6/6 captures + 0 finding**, 0 overflow, 0 erreur console/HTTP, une seule carte visible par viewport et aucune carte sans projet explicite. Revue humaine : **9,3/10 mobile**, **9,5/10 desktop**. Runtime mergé via PR #784, squash `71cbb81cfab9524adbd1720eb99713ac88545ff3`. Détails : `docs/ANNOUNCEMENT_PAGE_L12_CLOSEOUT.md`.
 
-### ANN-L13 — Certification 10/10 — 6 %
+### ANN-L13 — Certification 10/10 — 6 % — NEXT
+
+Référence visuelle normative : `docs/ANNOUNCEMENT_PAGE_CANONICAL_VISUAL_TARGET.md`. ANN-L13 certifie la convergence globale de la fiche baseline / target / après, avec score final **≥ 9,5/10**, sans régression fonctionnelle L1→L12.
 
 Certification finale :
 
@@ -547,7 +549,7 @@ Un run queued/in_progress ne clôt pas un LOT. Un LOT n'est `CLOSED` que sur pre
 | ANN-L9 | 6 % | ✅ CLOSED | 6 % |
 | ANN-L10 | 7 % | ✅ CLOSED | 7 % |
 | ANN-L11 | 6 % | ✅ CLOSED | 6 % |
-| ANN-L12 | 5 % | NEXT | 0 % |
-| ANN-L13 | 6 % | NOT_STARTED | 0 % |
+| ANN-L12 | 5 % | ✅ CLOSED | 5 % |
+| ANN-L13 | 6 % | NEXT | 0 % |
 
-**Progression officielle actuelle : 89 / 100 %.**
+**Progression officielle actuelle : 94 / 100 %.**
