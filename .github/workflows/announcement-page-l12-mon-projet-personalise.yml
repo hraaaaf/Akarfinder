@@ -5,10 +5,12 @@ on:
     paths:
       - "lib/search-profile-v2/**"
       - "lib/user-continuity/**"
-      - "components/listing/**"
+      - "lib/property-detail/project-fit.ts"
+      - "components/listings/**"
       - "components/companion/**"
       - "app/listings/**"
       - "app/mon-projet/**"
+      - "docs/ANNOUNCEMENT_PAGE_L12_*"
       - "scripts/audits/announcement-page-l12-*"
       - "scripts/scrapers/__tests__/announcement-page-l12-*"
       - ".github/workflows/announcement-page-l12-mon-projet-personalise.yml"
@@ -26,13 +28,18 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - name: ANN-L12 profile and destination contracts
+      - name: ANN-L12 profile, destination and fit contracts
         shell: bash
         run: |
           set -euo pipefail
-          tests=(scripts/scrapers/__tests__/announcement-page-l12-profile-anchors.test.ts)
+          tests=(
+            scripts/scrapers/__tests__/announcement-page-l12-profile-anchors.test.ts
+            scripts/scrapers/__tests__/announcement-page-l12-project-fit.test.ts
+          )
           while IFS= read -r file; do
-            [[ "$file" == *announcement-page-l12-profile-anchors.test.ts ]] || tests+=("$file")
+            [[ "$file" == *announcement-page-l12-profile-anchors.test.ts ]] && continue
+            [[ "$file" == *announcement-page-l12-project-fit.test.ts ]] && continue
+            tests+=("$file")
           done < <(find scripts/scrapers/__tests__ -maxdepth 1 -type f \( -name '*search-profile*.test.ts' -o -name '*companion*.test.ts' \) -print | sort)
           npx tsx --test "${tests[@]}"
       - name: TypeScript
