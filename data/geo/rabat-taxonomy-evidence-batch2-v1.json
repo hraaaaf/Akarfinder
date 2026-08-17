@@ -1,0 +1,28 @@
+{
+  "version": "c8_taxonomy_evidence_batch2_v1",
+  "scope": "Rabat C8 product-locality taxonomy evidence only",
+  "publicActivation": false,
+  "productionWriteCount": 0,
+  "decisions": [
+    {
+      "localityId": "candidate_rabat_yacoub_el_mansour",
+      "decision": "ready_for_taxonomy_certification",
+      "reason": "AURS explicitly identifies Yacoub El Mansour as a quartier of Rabat in its Gare d'Agdal project-sector description.",
+      "sources": [
+        {
+          "provider": "Agence Urbaine de Rabat-Sale",
+          "title": "Secteur de projet Gare d'Agdal (55 ha) / Boulevard Hassan II Ville Rabat",
+          "url": "https://aurs.org.ma/fr/savoir-faire/grands-projets-urbains/",
+          "evidenceKind": "first_party_explicit_quartier"
+        }
+      ]
+    }
+  ],
+  "guardrails": [
+    "Only explicit first-party product-locality wording qualifies a candidate in this batch.",
+    "Administrative arrondissement names, plan titles, addresses and mere name occurrences are insufficient by themselves.",
+    "No taxonomy status is changed by this evidence manifest.",
+    "No public map eligibility is changed.",
+    "No production write is executed."
+  ]
+}
