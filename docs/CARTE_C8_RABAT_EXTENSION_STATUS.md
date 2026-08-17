@@ -76,7 +76,7 @@ C0–C7 reste fermé à **8/8 = 100 %**. Ce pourcentage appartient uniquement au
 
 ### C8D — Agenz × Diour Jamaa recovery diagnostics ✅ CLOSED FAIL-CLOSED
 
-- audit initial PR #758 : prix récupérable **8/9**, surface **0/9**, prix + surface **0/9**, 0 write ;
+- jalon live initial : prix récupérable : **8/9** ; surface récupérable : **0/9** ; prix + surface : **0/9** ;
 - workflow borné PR #765 : run live `31960247064` SUCCESS ;
 - récupération surface durcie : run `31968348418` → **2/9 surfaces strictes**, **1/9 prix + surface**, 0 write ;
 - diagnostics génériques : run `31971442842` ;
