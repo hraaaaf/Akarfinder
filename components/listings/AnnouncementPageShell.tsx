@@ -22,6 +22,7 @@ export function AnnouncementPageShell({
   akarEstimateHistory = null,
   mapStyleUrl = process.env.NEXT_PUBLIC_AKAR_MAP_STYLE_URL ?? null,
   visualQa = false,
+  projectId = null,
 }: {
   listing: Listing;
   detail: PublicPropertyDetailV2;
@@ -31,6 +32,7 @@ export function AnnouncementPageShell({
   akarEstimateHistory?: AkarEstimateHistoryRuntime | null;
   mapStyleUrl?: string | null;
   visualQa?: boolean;
+  projectId?: string | null;
 }) {
   const proConversion = buildProConversionModel(listing);
 
@@ -50,6 +52,7 @@ export function AnnouncementPageShell({
             streetReality={streetReality}
             marketComparables={marketComparables}
             proConversion={proConversion}
+            projectId={projectId}
             mapStyleUrl={mapStyleUrl}
           />
           <div className="pb-16 lg:pr-[388px]">
