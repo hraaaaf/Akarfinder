@@ -34,12 +34,13 @@ test("promotion batch 3 preserves the remaining taxonomy candidates", () => {
   assert.deepEqual(certifiedCandidateIds, [
     "candidate_rabat_akkari",
     "candidate_rabat_al_boustane",
+    "candidate_rabat_diour_jamaa",
     "candidate_rabat_douar_doum",
     "candidate_rabat_el_garaa",
     "candidate_rabat_el_kora",
     "candidate_rabat_yacoub_el_mansour",
   ].sort());
-  assert.equal(RABAT_PRODUCT_LOCALITY_CANDIDATES.filter((entry) => entry.taxonomy_status === "candidate").length, 12);
+  assert.equal(RABAT_PRODUCT_LOCALITY_CANDIDATES.filter((entry) => entry.taxonomy_status === "candidate").length, 11);
 });
 
 test("promotion batch 3 never expands public map eligibility", () => {
