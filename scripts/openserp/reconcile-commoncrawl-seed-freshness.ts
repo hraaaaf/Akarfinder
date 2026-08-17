@@ -33,20 +33,30 @@ type SeedDbRow = SeedForMatching & {
   fresh_channels: string[] | null;
 };
 
+type SeedCursorRow = SeedDbRow & { id: string };
+type ObservationCursorRow = FreshDiscoveryObservation & { id: string };
+
 async function loadAllSeeds(): Promise<SeedDbRow[]> {
   const client = getSupabaseServerClient();
   const out: SeedDbRow[] = [];
-  for (let from = 0; ; from += PAGE_SIZE) {
+  let afterId: string | null = null;
+
+  for (;;) {
     const rows = await withSupabaseRetry(async () => {
-      const { data, error } = await client
+      let query = client
         .from("source_offer_seeds")
-        .select("canonical_url,source_domain,freshness_status,fresh_last_seen_at,fresh_channels")
-        .range(from, from + PAGE_SIZE - 1);
+        .select("id,canonical_url,source_domain,freshness_status,fresh_last_seen_at,fresh_channels")
+        .order("id", { ascending: true })
+        .limit(PAGE_SIZE);
+      if (afterId) query = query.gt("id", afterId);
+      const { data, error } = await query;
       if (error) throw error;
-      return (data ?? []) as SeedDbRow[];
-    }, `load source_offer_seeds offset=${from}`);
-    out.push(...rows);
+      return (data ?? []) as SeedCursorRow[];
+    }, `load source_offer_seeds after_id=${afterId ?? "START"}`);
+
+    out.push(...rows.map(({ id: _id, ...row }) => row));
     if (rows.length < PAGE_SIZE) break;
+    afterId = rows.at(-1)!.id;
   }
   return out;
 }
@@ -54,19 +64,25 @@ async function loadAllSeeds(): Promise<SeedDbRow[]> {
 async function loadFreshObservations(): Promise<FreshDiscoveryObservation[]> {
   const client = getSupabaseServerClient();
   const out: FreshDiscoveryObservation[] = [];
-  for (let from = 0; ; from += PAGE_SIZE) {
+  let afterId: string | null = null;
+
+  for (;;) {
     const rows = await withSupabaseRetry(async () => {
-      const { data, error } = await client
+      let query = client
         .from("discovery_candidates")
-        .select("canonical_url,source_url,discovered_at,discovery_status")
+        .select("id,canonical_url,source_url,discovered_at,discovery_status")
         .in("discovery_status", ["accepted", "promoted_to_source_offer"])
-        .order("discovered_at", { ascending: false })
-        .range(from, from + PAGE_SIZE - 1);
+        .order("id", { ascending: true })
+        .limit(PAGE_SIZE);
+      if (afterId) query = query.gt("id", afterId);
+      const { data, error } = await query;
       if (error) throw error;
-      return (data ?? []) as FreshDiscoveryObservation[];
-    }, `load discovery_candidates offset=${from}`);
-    out.push(...rows);
+      return (data ?? []) as ObservationCursorRow[];
+    }, `load discovery_candidates after_id=${afterId ?? "START"}`);
+
+    out.push(...rows.map(({ id: _id, ...row }) => row));
     if (rows.length < PAGE_SIZE) break;
+    afterId = rows.at(-1)!.id;
   }
   return out;
 }
