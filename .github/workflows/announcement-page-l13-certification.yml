@@ -1,4 +1,5 @@
 name: Announcement Page L13 Certification 10of10
+# Exact-head trigger after canonical rail convergence and temporary workflow cleanup.
 
 on:
   pull_request:
