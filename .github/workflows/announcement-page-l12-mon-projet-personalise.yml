@@ -1,0 +1,39 @@
+name: Announcement Page L12 Mon Projet Personalise
+
+on:
+  pull_request:
+    paths:
+      - "lib/search-profile-v2/**"
+      - "lib/user-continuity/**"
+      - "components/listing/**"
+      - "components/companion/**"
+      - "app/listings/**"
+      - "app/mon-projet/**"
+      - "scripts/audits/announcement-page-l12-*"
+      - "scripts/scrapers/__tests__/announcement-page-l12-*"
+      - ".github/workflows/announcement-page-l12-mon-projet-personalise.yml"
+  push:
+    branches:
+      - "agent/announcement-page-l12-mon-projet-personalise"
+
+jobs:
+  contract:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: ANN-L12 profile and destination contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          tests=(scripts/scrapers/__tests__/announcement-page-l12-profile-anchors.test.ts)
+          while IFS= read -r file; do
+            [[ "$file" == *announcement-page-l12-profile-anchors.test.ts ]] || tests+=("$file")
+          done < <(find scripts/scrapers/__tests__ -maxdepth 1 -type f \( -name '*search-profile*.test.ts' -o -name '*companion*.test.ts' \) -print | sort)
+          npx tsx --test "${tests[@]}"
+      - name: TypeScript
+        run: npx tsc --noEmit
