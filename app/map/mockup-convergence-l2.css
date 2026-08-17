@@ -32,6 +32,12 @@ aside[aria-label^="Fiche repère quartier"] button[aria-label^="Fermer"] {
   box-shadow: 0 6px 18px rgb(11 37 69 / 0.14) !important;
 }
 
+/* The map is a full-viewport product surface. The global marketing footer
+   remains available elsewhere, but must not compete with the map canvas. */
+.l2-secondary-footer {
+  display: none;
+}
+
 @media (max-width: 767px) {
   aside[aria-label^="Fiche repère quartier"] {
     inset-inline: 10px !important;
@@ -43,9 +49,5 @@ aside[aria-label^="Fiche repère quartier"] button[aria-label^="Fermer"] {
 
   aside[aria-label^="Fiche repère quartier"] > div + div {
     margin-top: 10px !important;
-  }
-
-  .l2-secondary-footer {
-    display: none;
   }
 }
