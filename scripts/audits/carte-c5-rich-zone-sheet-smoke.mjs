@@ -108,7 +108,7 @@ try {
         }
       }
 
-      if (district.slug === "agdal") {
+      if (district.slug === "agdal" && !viewport.mobile) {
         const densityApi = await page.request.get(`${baseUrl}/api/geo/rabat-market-intelligence?mode=density&transaction=sale`);
         if (!densityApi.ok()) throw new Error(`Density API returned ${densityApi.status()}`);
         const densityPayload = await densityApi.json();
