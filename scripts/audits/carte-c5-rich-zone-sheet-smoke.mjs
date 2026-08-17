@@ -109,10 +109,16 @@ try {
       }
 
       if (district.slug === "agdal") {
-        const densityPromise = waitForIntelligence(page, "density");
-        await page.getByRole("tab", { name: "Densité" }).click();
-        const densityPayload = await densityPromise;
+        const densityApi = await page.request.get(`${baseUrl}/api/geo/rabat-market-intelligence?mode=density&transaction=sale`);
+        if (!densityApi.ok()) throw new Error(`Density API returned ${densityApi.status()}`);
+        const densityPayload = await densityApi.json();
         if (densityPayload.properties?.mode !== "density") throw new Error("Density payload mismatch");
+
+        const densityTab = page.locator('[data-akarfinder-intelligence-mode="density"]');
+        await densityTab.click();
+        await densityTab.waitFor({ state: "visible", timeout: 10000 });
+        const selected = await densityTab.getAttribute("aria-selected");
+        if (selected !== "true") throw new Error(`Density tab did not become selected: ${selected}`);
         await sheet.getByText("Densité", { exact: true }).waitFor({ state: "visible", timeout: 10000 });
         if ((await context.count()) !== 1) throw new Error("Agdal context disappeared after mode switch");
       }
