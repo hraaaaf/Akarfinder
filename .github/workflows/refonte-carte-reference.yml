@@ -1,0 +1,33 @@
+name: Refonte Carte Visual Reference
+
+on:
+  pull_request:
+    paths:
+      - "docs/Refonte carte.md"
+      - "scripts/scrapers/__tests__/refonte-carte-reference.test.ts"
+      - ".github/workflows/refonte-carte-reference.yml"
+  push:
+    branches: [main]
+    paths:
+      - "docs/Refonte carte.md"
+      - "scripts/scrapers/__tests__/refonte-carte-reference.test.ts"
+      - ".github/workflows/refonte-carte-reference.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  reference-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Visual reference contract
+        run: npx tsx --test scripts/scrapers/__tests__/refonte-carte-reference.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
