@@ -81,7 +81,14 @@ test("C8B promotes only source-backed taxonomy and keeps provisional entries fai
   const promoted = RABAT_PRODUCT_LOCALITY_CANDIDATES.filter((entry) => entry.taxonomy_status === "certified");
   assert.deepEqual(
     promoted.map((entry) => entry.id).sort(),
-    ["candidate_rabat_akkari", "candidate_rabat_al_boustane", "candidate_rabat_yacoub_el_mansour"].sort(),
+    [
+      "candidate_rabat_akkari",
+      "candidate_rabat_al_boustane",
+      "candidate_rabat_douar_doum",
+      "candidate_rabat_el_garaa",
+      "candidate_rabat_el_kora",
+      "candidate_rabat_yacoub_el_mansour",
+    ].sort(),
   );
 
   for (const entry of RABAT_PRODUCT_LOCALITY_CANDIDATES) {

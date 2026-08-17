@@ -22,18 +22,26 @@ test("C8C unresolved geometry matrix accounts for all 19 remaining localities", 
   );
 });
 
-test("four taxonomy-ready localities remain geometry-blocked", () => {
+test("seven taxonomy-ready localities remain geometry-blocked", () => {
   assert.deepEqual(
     taxonomyReady.map((locality) => locality.id).sort(),
-    ["candidate_rabat_akkari", "candidate_rabat_al_boustane", "candidate_rabat_yacoub_el_mansour", "district_rabat_ocean"].sort(),
+    [
+      "candidate_rabat_akkari",
+      "candidate_rabat_al_boustane",
+      "candidate_rabat_douar_doum",
+      "candidate_rabat_el_garaa",
+      "candidate_rabat_el_kora",
+      "candidate_rabat_yacoub_el_mansour",
+      "district_rabat_ocean",
+    ].sort(),
   );
   assert.ok(taxonomyReady.every((locality) => locality.geometry_status === "unresolved"));
   assert.ok(taxonomyReady.every((locality) => locality.geometry_source === null));
   assert.ok(taxonomyReady.every((locality) => locality.fail_closed_reason === "geometry_unresolved"));
 });
 
-test("the other 15 unresolved localities remain taxonomy candidates", () => {
-  assert.equal(taxonomyBlocked.length, 15);
+test("the other 12 unresolved localities remain taxonomy candidates", () => {
+  assert.equal(taxonomyBlocked.length, 12);
   assert.ok(taxonomyBlocked.every((locality) => locality.geometry_status === "unresolved"));
   assert.ok(taxonomyBlocked.every((locality) => locality.geometry_source === null));
   assert.ok(taxonomyBlocked.every((locality) => locality.fail_closed_reason === "taxonomy_candidate"));
