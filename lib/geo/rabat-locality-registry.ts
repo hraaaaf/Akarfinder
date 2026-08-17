@@ -144,7 +144,7 @@ export const RABAT_PRODUCT_LOCALITY_CANDIDATES: readonly RabatProductLocality[] 
   candidate("candidate_rabat_el_garaa", "el-garaa", "El Garaa", "el garaa", [], null, ["aurs_rabat_first_party"], "first_party_available", "certified"),
   candidate("candidate_rabat_al_boustane", "al-boustane", "Al Boustane", "al boustane", [], null, ["aurs_rabat_first_party"], "first_party_available", "certified"),
   candidate("candidate_rabat_hay_nahda", "hay-nahda", "Hay Nahda", "hay nahda", ["Hay Nahda I"], "admin_rabat_youssoufia", ["commune_rabat_first_party"], "first_party_available"),
-  candidate("candidate_rabat_diour_jamaa", "diour-jamaa", "Diour Jamaa", "diour jamaa", ["Diour Jamaâ", "Diour Jemaa", "Habous Diour Jamaa"], null, ["commune_rabat_first_party"], "first_party_available"),
+  candidate("candidate_rabat_diour_jamaa", "diour-jamaa", "Diour Jamaa", "diour jamaa", ["Diour Jamaâ", "Diour Jemaa", "Habous Diour Jamaa"], null, ["commune_rabat_first_party"], "first_party_available", "certified"),
   candidate("candidate_rabat_oudayas", "oudayas", "Oudayas", "oudayas", ["Casbah des Oudayas", "Kasbah des Oudayas"], null, ["commune_rabat_first_party", "aurs_rabat_first_party"], "first_party_available"),
   candidate("candidate_rabat_mellah", "mellah", "Mellah", "mellah", [], null, ["aurs_rabat_first_party"], "first_party_available"),
 ] as const;
