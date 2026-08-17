@@ -431,7 +431,7 @@ export function RabatMarketIntelligenceExperience({
       {dataError ? (
         <div className="absolute left-1/2 top-[48%] z-20 w-[min(88vw,390px)] -translate-x-1/2 -translate-y-1/2 rounded-[22px] border border-white/80 bg-card/96 p-5 text-center shadow-[0_22px_60px_rgba(15,35,66,0.18)] backdrop-blur-xl" role="status">
           <p className="text-[13px] font-extrabold text-foreground">Données quartiers temporairement indisponibles</p>
-          <p className="mt-1.5 text-[10.5px] leading-4 text-muted-foreground">Aucune zone, couleur ou valeur de remplacement n’est inventée. La carte reste fail-closed.</p>
+          <p className="mt-1.5 text-[10.5px] leading-4 text-muted-foreground">Aucune couleur de remplacement n’est inventée. Aucune zone ou valeur n’est fabriquée. La carte reste fail-closed.</p>
         </div>
       ) : null}
 
