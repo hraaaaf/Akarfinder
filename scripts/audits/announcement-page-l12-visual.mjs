@@ -106,11 +106,12 @@ try {
       if (consoleErrors.length > 0) localFindings.push(`CONSOLE_ERRORS_${consoleErrors.length}`);
 
       const bodyText = await page.locator("body").innerText();
+      const normalizedBodyText = bodyText.toLocaleLowerCase("fr");
       const cardCount = await page.locator('[data-project-personalization="ann-l12"]').count();
       if (scenario.personalized) {
         if (cardCount !== 1) localFindings.push(`PROJECT_CARD_COUNT_${cardCount}`);
         for (const required of ["Mon Projet", "Projet Rabat famille", "Ce bien face à vos critères", "83/100", "Surface", "12 m² sous votre minimum", "Vos trajets", "Travail", "École", "15 min en voiture", "12 min en voiture", "Modifier Mon Projet"]) {
-          if (!bodyText.includes(required)) localFindings.push(`MISSING_${required.replace(/\s+/g, "_")}`);
+          if (!normalizedBodyText.includes(required.toLocaleLowerCase("fr"))) localFindings.push(`MISSING_${required.replace(/\s+/g, "_")}`);
         }
         const edit = page.getByRole("link", { name: "Modifier Mon Projet" });
         if (await edit.count() !== 1) localFindings.push("EDIT_PROJECT_CTA_MISSING");
@@ -120,7 +121,7 @@ try {
         }
       } else {
         if (cardCount !== 0) localFindings.push(`PROJECT_CARD_LEAK_${cardCount}`);
-        if (bodyText.includes("Ce bien face à vos critères")) localFindings.push("PROJECT_COPY_LEAK");
+        if (normalizedBodyText.includes("ce bien face à vos critères")) localFindings.push("PROJECT_COPY_LEAK");
       }
 
       const screenshot = `${scenario.name}.png`;
@@ -140,7 +141,7 @@ try {
 }
 
 const report = {
-  schemaVersion: "ANNOUNCEMENT_PAGE_L12_MON_PROJET_VISUAL_V1_AKARFINDER",
+  schemaVersion: "ANNOUNCEMENT_PAGE_L12_MON_PROJET_VISUAL_V2_CASE_SAFE",
   generatedAt: new Date().toISOString(),
   scenarioCount: scenarios.length,
   screenshotCount: results.filter((item) => item.screenshot).length,
