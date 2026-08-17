@@ -1,0 +1,54 @@
+name: Announcement Page L12 Baseline
+
+on:
+  push:
+    branches:
+      - agent/announcement-page-l12-mon-projet-personalise
+    paths:
+      - ".github/workflows/announcement-page-l12-baseline.yml"
+  pull_request:
+    paths:
+      - ".github/workflows/announcement-page-l12-baseline.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  baseline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Start current announcement fixture
+        shell: bash
+        run: |
+          npm run dev -- -p 3213 > /tmp/ann-l12-baseline.log 2>&1 &
+          for attempt in {1..90}; do
+            if curl -fsS http://127.0.0.1:3213/visual-qa/announcement-page-pro-conversion >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/ann-l12-baseline.log
+          exit 1
+      - name: Capture ANN-L12 before state
+        env:
+          BASE_URL: http://127.0.0.1:3213
+          AUDIT_OUTPUT_DIR: artifacts/announcement-page-l12-baseline
+        run: node scripts/audits/announcement-page-l11-visual.mjs
+      - name: Upload ANN-L12 baseline
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: announcement-page-l12-baseline-${{ github.run_id }}
+          path: artifacts/announcement-page-l12-baseline
+          if-no-files-found: error
+          retention-days: 14
