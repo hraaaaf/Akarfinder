@@ -42,7 +42,7 @@ C0–C7 reste fermé à **8/8 = 100 %**. Ce pourcentage appartient uniquement au
 - **0 nouvelle activation C8 éligible** ;
 - aucune mutation DB/Search/ranking/API/UI.
 
-### C8D — Resolver shadow + autorité proposée + maturité marché ✅ VERIFIED
+### C8D — Resolver shadow + autorité proposée + maturité marché + récupération Agenz ✅ LIVE DRY-RUN VERIFIED
 
 #### Rabat Resolver Shadow — PR #750 ✅ MERGED
 
