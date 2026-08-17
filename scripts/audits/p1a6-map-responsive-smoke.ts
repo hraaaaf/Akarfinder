@@ -74,10 +74,10 @@ async function main() {
 
         const documentWidth = await page.locator("html").evaluate((element) => element.scrollWidth);
         const cockpitSelector = route.experience === "intelligence"
-          ? '[aria-label="Contrôles intelligence marché"]'
+          ? '[aria-label="Contrôles intelligence marché"], [aria-label="Contrôles carte des quartiers"]'
           : '[aria-label="Contrôles de la carte immobilière"]';
         const cockpitLocator = page.locator(cockpitSelector);
-        const cockpit = (await cockpitLocator.count()) > 0 ? toRect(await cockpitLocator.boundingBox()) : null;
+        const cockpit = (await cockpitLocator.count()) > 0 ? toRect(await cockpitLocator.first().boundingBox()) : null;
         const explorerLocator = page.locator('[aria-label="Exploration territoriale"]');
         const explorer = (await explorerLocator.count()) > 0 ? toRect(await explorerLocator.boundingBox()) : null;
         const panelLocator = route.experience === "intelligence"

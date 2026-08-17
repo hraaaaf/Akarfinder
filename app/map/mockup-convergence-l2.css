@@ -32,6 +32,39 @@ aside[aria-label^="Fiche repère quartier"] button[aria-label^="Fermer"] {
   box-shadow: 0 6px 18px rgb(11 37 69 / 0.14) !important;
 }
 
+/* Keep the control cockpit visually secondary to the map itself. */
+@media (min-width: 1024px) {
+  [data-akarfinder-premium-map-toolbar] {
+    width: min(760px, calc(100vw - 450px)) !important;
+    padding: 10px 11px !important;
+    border-radius: 18px !important;
+    box-shadow: 0 14px 38px rgb(15 35 66 / 0.12) !important;
+  }
+
+  [data-akarfinder-premium-map-toolbar] > div + div {
+    margin-top: 9px !important;
+  }
+
+  [data-akarfinder-rich-zone-sheet] {
+    width: 340px !important;
+    right: 14px !important;
+    top: 14px !important;
+    border-radius: 20px !important;
+    box-shadow: 0 18px 46px rgb(15 35 66 / 0.15) !important;
+  }
+
+  [data-akarfinder-intelligence-legend] {
+    width: 260px !important;
+    padding: 10px !important;
+  }
+}
+
+/* The map is a full-viewport product surface. The global marketing footer
+   remains available elsewhere, but must not compete with the map canvas. */
+.l2-secondary-footer {
+  display: none;
+}
+
 @media (max-width: 767px) {
   aside[aria-label^="Fiche repère quartier"] {
     inset-inline: 10px !important;
@@ -43,9 +76,5 @@ aside[aria-label^="Fiche repère quartier"] button[aria-label^="Fermer"] {
 
   aside[aria-label^="Fiche repère quartier"] > div + div {
     margin-top: 10px !important;
-  }
-
-  .l2-secondary-footer {
-    display: none;
   }
 }

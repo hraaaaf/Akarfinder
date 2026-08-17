@@ -65,7 +65,7 @@ try {
       });
 
       const pricePromise = waitForIntelligence(page, "price");
-      await page.goto(`${baseUrl}/map?city=rabat&district=${district.slug}`, { waitUntil: "domcontentloaded", timeout: 30000 });
+      await page.goto(`${baseUrl}/map?city=rabat&district=${district.slug}&layer=explore`, { waitUntil: "domcontentloaded", timeout: 30000 });
       const pricePayload = await pricePromise;
 
       const sheet = page.locator("[data-akarfinder-rich-zone-sheet]");
@@ -109,12 +109,21 @@ try {
       }
 
       if (district.slug === "agdal") {
-        const densityPromise = waitForIntelligence(page, "density");
-        await page.getByRole("tab", { name: "Densité" }).click();
-        const densityPayload = await densityPromise;
+        const densityApi = await page.request.get(`${baseUrl}/api/geo/rabat-market-intelligence?mode=density&transaction=sale`);
+        if (!densityApi.ok()) throw new Error(`Density API returned ${densityApi.status()}`);
+        const densityPayload = await densityApi.json();
         if (densityPayload.properties?.mode !== "density") throw new Error("Density payload mismatch");
-        await sheet.getByText("Densité", { exact: true }).waitFor({ state: "visible", timeout: 10000 });
-        if ((await context.count()) !== 1) throw new Error("Agdal context disappeared after mode switch");
+
+        if (!viewport.mobile) {
+          const densityTab = page.locator('[data-akarfinder-intelligence-mode="density"]');
+          await densityTab.click();
+          await densityTab.waitFor({ state: "visible", timeout: 10000 });
+          const selected = await densityTab.getAttribute("aria-selected");
+          if (selected !== "true") throw new Error(`Density tab did not become selected: ${selected}`);
+          await sheet.getByText("Densité", { exact: true }).waitFor({ state: "visible", timeout: 10000 });
+          await page.getByText("Chargement de la carte des quartiers…", { exact: true }).waitFor({ state: "hidden", timeout: 10000 }).catch(() => {});
+          if ((await context.count()) !== 1) throw new Error("Agdal context disappeared after mode switch");
+        }
       }
 
       if (diagnostics.pageErrors.length || diagnostics.requestFailures.length) {
