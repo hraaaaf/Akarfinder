@@ -2,8 +2,8 @@
 
 **Programme canonique : `ANNOUNCEMENT-PAGE-ULTRA-PREMIUM`**  
 **Version : 2026-08-17**  
-**Statut : ANN-L0 ✅ CLOSED ; ANN-L1 ✅ CLOSED ; ANN-L2 ✅ CLOSED ; ANN-L3 ✅ CLOSED ; ANN-L4 ✅ CLOSED ; ANN-L5 ✅ CLOSED ; ANN-L6 ✅ CLOSED ; ANN-L7 ✅ CLOSED ; ANN-L8 ✅ CLOSED ; ANN-L9 ✅ CLOSED ; ANN-L10 ✅ CLOSED ; ANN-L11 ✅ CLOSED ; ANN-L12 ✅ CLOSED ; ANN-L13 NEXT**  
-**Progression stricte : 94 / 100 %.**
+**Statut : ANN-L0 ✅ CLOSED ; ANN-L1 ✅ CLOSED ; ANN-L2 ✅ CLOSED ; ANN-L3 ✅ CLOSED ; ANN-L4 ✅ CLOSED ; ANN-L5 ✅ CLOSED ; ANN-L6 ✅ CLOSED ; ANN-L7 ✅ CLOSED ; ANN-L8 ✅ CLOSED ; ANN-L9 ✅ CLOSED ; ANN-L10 ✅ CLOSED ; ANN-L11 ✅ CLOSED ; ANN-L12 ✅ CLOSED ; ANN-L13 ✅ CLOSED**  
+**Progression stricte : 100 / 100 %.**
 
 > Ce document est la sous-roadmap normative du chantier de refonte de `/listings/[id]`. `docs/ROADMAP.md` reste le registre canonique global AkarFinder. Les pourcentages ci-dessous sont comptés uniquement sur les LOTS `CLOSED`, jamais sur du travail commencé ou supposé presque terminé.
 
@@ -482,28 +482,13 @@ Implémentation : profil projet explicite existant réutilisé sans second profi
 
 Gate CLOSED : exact head `ce3de79624bcb9399f4a74badcb61657a37ad239`, run `32055350357` SUCCESS, **41/41 tests PASS**, TypeScript et production build SUCCESS, artefact `9296337960`, digest `sha256:d5acf9028fd499ab83bb998d12068cb1a19cda8043d8565787bab2c7e483b015`, rapport `ANNOUNCEMENT_PAGE_L12_MON_PROJET_VISUAL_V3_RESPONSIVE_TARGET` : **6/6 captures + 0 finding**, 0 overflow, 0 erreur console/HTTP, une seule carte visible par viewport et aucune carte sans projet explicite. Revue humaine : **9,3/10 mobile**, **9,5/10 desktop**. Runtime mergé via PR #784, squash `71cbb81cfab9524adbd1720eb99713ac88545ff3`. Détails : `docs/ANNOUNCEMENT_PAGE_L12_CLOSEOUT.md`.
 
-### ANN-L13 — Certification 10/10 — 6 % — NEXT
+### ANN-L13 — Certification 10/10 — 6 % — ✅ CLOSED
 
-Référence visuelle normative : `docs/ANNOUNCEMENT_PAGE_CANONICAL_VISUAL_TARGET.md`. ANN-L13 certifie la convergence globale de la fiche baseline / target / après, avec score final **≥ 9,5/10**, sans régression fonctionnelle L1→L12.
+Référence visuelle normative : `docs/ANNOUNCEMENT_PAGE_CANONICAL_VISUAL_TARGET.md`. Convergence globale certifiée baseline / target / après, avec rail desktop final `Pro / conversion → Mon Projet → Marché & comparables`, adaptation mobile cohérente et aucune donnée marché synthétique.
 
-Certification finale :
+Gate CLOSED : exact head `64b3ed6798b978b58f8386f5daa215079c487ed3`, run `32061681062` SUCCESS ; `UI All Pages Certification` run `32061680991` SUCCESS ; artefact L13 `9298022291`, digest `sha256:dbb95df120b3d1678e32d3ba80af8307d82cb47a745c91cbf2f6a67b7cee3a06`, **6/6 captures + 0 finding**. Revue humaine after : **9,4/10 mobile**, **9,6/10 desktop**, **9,5/10 global**. Runtime mergé via PR #805, squash `4b13fd56eecface6d31635fe3358e21f5ef708a5`. Détails : `docs/ANNOUNCEMENT_PAGE_L13_CLOSEOUT.md`.
 
-- 390×844 ; 430×932 ; 768×900 ; 1280×900 ;
-- iOS safe areas ;
-- Chrome/Safari raisonnables ;
-- a11y clavier/lecteur ;
-- aucune collision dock/bottom-nav ;
-- Core Web Vitals / bundle / images ;
-- galeries autorisées/interdites ;
-- geo exact/quartier/ville/inconnu ;
-- POI/routing provider success/failure ;
-- intelligence présente/absente ;
-- contact autorisé/interdit ;
-- snapshots visuels ;
-- régression `/search` + `/listings/[id]` ;
-- audit humain final.
-
-`10/10` n'est attribué qu'après preuves exact-head et navigateur, jamais sur jugement du mockup seul.
+**Crédit officiel ANN-L13 : +6 %. Progression cumulée : 100 %. Programme `ANNOUNCEMENT-PAGE-ULTRA-PREMIUM` fermé.**
 
 ## 9. Ordre du chemin critique
 
@@ -550,6 +535,6 @@ Un run queued/in_progress ne clôt pas un LOT. Un LOT n'est `CLOSED` que sur pre
 | ANN-L10 | 7 % | ✅ CLOSED | 7 % |
 | ANN-L11 | 6 % | ✅ CLOSED | 6 % |
 | ANN-L12 | 5 % | ✅ CLOSED | 5 % |
-| ANN-L13 | 6 % | NEXT | 0 % |
+| ANN-L13 | 6 % | ✅ CLOSED | 6 % |
 
-**Progression officielle actuelle : 94 / 100 %.**
+**Progression officielle actuelle : 100 / 100 %.**
