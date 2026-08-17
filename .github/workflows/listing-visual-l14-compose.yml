@@ -1,0 +1,27 @@
+name: Listing Visual L14 Compose
+
+on:
+  push:
+    branches:
+      - agent/listing-visual-l14-hero-signature
+    paths:
+      - '.github/workflows/listing-visual-l14-compose.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  compose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/listing-visual-l14-hero-signature
+      - run: python scripts/l14-visual-patch.py
+      - run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add components/listings/PropertyMediaGallery.tsx components/listings/PropertyDetailV2.tsx
+          git diff --cached --quiet && exit 1
+          git commit -m 'feat(listing): compose L14 premium hero'
+          git push origin HEAD:agent/listing-visual-l14-hero-signature
