@@ -11,12 +11,10 @@ import { FavoriteToggleButton } from "@/components/favorites/FavoriteToggleButto
 import { PropertyCore } from "@/components/listings/PropertyCore";
 import { PropertyMediaGallery } from "@/components/listings/PropertyMediaGallery";
 import { StreetRealitySection } from "@/components/listings/StreetRealitySection";
-import { VisitRequestPanel } from "@/components/listings/VisitRequestPanel";
-import { WhatsAppCTA } from "@/components/listings/WhatsAppCTA";
+import { ProfessionalConversionCard } from "@/components/listings/ProfessionalConversionCard";
 import type { LivingHereModel } from "@/lib/geo/living-here";
 import type { StreetRealityModel } from "@/lib/geo/street-reality";
-import { canShowContactActions } from "@/lib/listings/listing-boundary";
-import { buildPropertyCoreModel } from "@/lib/listings/property-core";
+import type { ProConversionModel } from "@/lib/listings/pro-conversion";
 import type { Listing } from "@/lib/listings/types";
 import type { MarketComparableSet } from "@/lib/property-detail/market-comparables";
 import type {
@@ -85,6 +83,7 @@ export function PropertyDetailV2({
   livingHere = null,
   streetReality = null,
   marketComparables = null,
+  proConversion,
   mapStyleUrl = null,
 }: {
   listing: Listing;
@@ -92,10 +91,9 @@ export function PropertyDetailV2({
   livingHere?: LivingHereModel | null;
   streetReality?: StreetRealityModel | null;
   marketComparables?: MarketComparableSet | null;
+  proConversion: ProConversionModel;
   mapStyleUrl?: string | null;
 }) {
-  const showContactActions = canShowContactActions(listing);
-  const core = buildPropertyCoreModel(listing);
   const allDetails = [
     ...detail.facts.surfaces,
     ...detail.facts.layout,
@@ -119,6 +117,14 @@ export function PropertyDetailV2({
 
           <div className="mt-6">
             <AkarInsightCard detail={detail} />
+          </div>
+
+          <div className="mt-4 lg:hidden">
+            <ProfessionalConversionCard
+              listing={listing}
+              model={proConversion}
+              mobileIdentityOnly
+            />
           </div>
 
           <div data-announcement-property-details="ann-l3" className="mt-6 border-t border-slate-200">
@@ -198,34 +204,11 @@ export function PropertyDetailV2({
           </div>
         </div>
 
-        <aside className="space-y-4 lg:sticky lg:top-6">
-          <section className="overflow-hidden rounded-[1.4rem] border border-[#eadfca] bg-white shadow-[0_14px_38px_rgba(7,27,51,0.12)]">
-            <div className="bg-[#0B63CE] px-5 py-4 text-white dark:bg-deepblue">
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-bronze-400">Actions</p>
-              <p className="mt-1 text-[1.55rem] font-extrabold">{core.priceLabel}</p>
-              <p className="mt-1 text-[13px] font-semibold text-white/75">{core.location}</p>
-            </div>
-            <div className="space-y-2.5 p-5">
-              {showContactActions && listing.whatsapp ? <WhatsAppCTA phone={listing.whatsapp} label="Contacter via WhatsApp" size="md" variant="primary" /> : null}
-              {showContactActions ? <VisitRequestPanel listing={listing} /> : null}
-              <CompareToggleButton listingId={listing.id} variant="block" />
-              <FavoriteToggleButton listingId={listing.id} variant="block" />
-              <Link href="/mon-projet" className="hidden min-h-11 w-full items-center justify-center rounded-xl border border-[#d8c8a3] px-4 py-3 text-[13px] font-extrabold text-deepblue transition hover:border-[#0B63CE]/45 hover:bg-slate-50 lg:flex">
-                Continuer dans Mon Projet
-              </Link>
-              {listing.listing_url ? (
-                <a href={listing.listing_url} target="_blank" rel="noopener noreferrer" className="flex min-h-11 w-full items-center justify-center rounded-xl border border-[#d8c8a3] px-4 py-3 text-[13px] font-extrabold text-deepblue">
-                  Voir la source d’origine
-                </a>
-              ) : null}
-            </div>
-          </section>
-
-          <section className="rounded-[1.4rem] border border-[#eadfca] bg-white p-5 shadow-[0_6px_22px_rgba(7,27,51,0.04)]">
-            <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-gray-500">Professionnel / source</p>
-            <p className="mt-1 text-[1.15rem] font-extrabold text-deepblue">{detail.professional.seller_name ?? detail.professional.source_name}</p>
-            <p className="mt-2 text-[12px] leading-5 text-gray-500">Le profil professionnel complet, l’ownership et les statuts de validation seront gérés par la couche #19B.</p>
-          </section>
+        <aside className="hidden lg:block lg:sticky lg:top-6">
+          <ProfessionalConversionCard
+            listing={listing}
+            model={proConversion}
+          />
         </aside>
       </div>
 

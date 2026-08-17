@@ -7,6 +7,7 @@ import { Container } from "@/components/ui/Container";
 import { ui } from "@/components/ui/design-system";
 import type { LivingHereModel } from "@/lib/geo/living-here";
 import type { StreetRealityModel } from "@/lib/geo/street-reality";
+import { buildProConversionModel } from "@/lib/listings/pro-conversion";
 import type { Listing } from "@/lib/listings/types";
 import type { AkarEstimateHistoryRuntime } from "@/lib/property-detail/akar-estimate-history-runtime";
 import type { MarketComparableSet } from "@/lib/property-detail/market-comparables";
@@ -31,11 +32,13 @@ export function AnnouncementPageShell({
   mapStyleUrl?: string | null;
   visualQa?: boolean;
 }) {
+  const proConversion = buildProConversionModel(listing);
+
   return (
     <div
       data-announcement-premium-shell="ann-l1"
       data-visual-qa={visualQa ? "announcement-page" : undefined}
-      className={`min-h-screen pb-24 lg:pb-0 ${ui.pageLight}`}
+      className={`min-h-screen pb-40 lg:pb-0 ${ui.pageLight}`}
     >
       <SiteHeader searchMode fluid />
       <main>
@@ -46,6 +49,7 @@ export function AnnouncementPageShell({
             livingHere={livingHere}
             streetReality={streetReality}
             marketComparables={marketComparables}
+            proConversion={proConversion}
             mapStyleUrl={mapStyleUrl}
           />
           <div className="pb-16 lg:pr-[388px]">
@@ -54,7 +58,7 @@ export function AnnouncementPageShell({
         </Container>
       </main>
       <SiteFooter />
-      <MobilePropertyDecisionBar listingId={listing.id} />
+      <MobilePropertyDecisionBar listing={listing} model={proConversion} />
     </div>
   );
 }
