@@ -65,7 +65,7 @@ try {
       });
 
       const pricePromise = waitForIntelligence(page, "price");
-      await page.goto(`${baseUrl}/map?city=rabat&district=${district.slug}`, { waitUntil: "domcontentloaded", timeout: 30000 });
+      await page.goto(`${baseUrl}/map?city=rabat&district=${district.slug}&layer=explore`, { waitUntil: "domcontentloaded", timeout: 30000 });
       const pricePayload = await pricePromise;
 
       const sheet = page.locator("[data-akarfinder-rich-zone-sheet]");
