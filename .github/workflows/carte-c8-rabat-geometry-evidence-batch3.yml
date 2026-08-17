@@ -1,0 +1,35 @@
+name: C8 Rabat Geometry Evidence Batch 3
+
+on:
+  pull_request:
+    paths:
+      - "data/geo/rabat-geometry-evidence-batch3-v1.json"
+      - "docs/CARTE_C8_RABAT_GEOMETRY_EVIDENCE_BATCH3.md"
+      - "scripts/scrapers/__tests__/carte-c8-rabat-geometry-evidence-batch3.test.ts"
+      - ".github/workflows/carte-c8-rabat-geometry-evidence-batch3.yml"
+  push:
+    branches: [main]
+    paths:
+      - "data/geo/rabat-geometry-evidence-batch3-v1.json"
+      - "docs/CARTE_C8_RABAT_GEOMETRY_EVIDENCE_BATCH3.md"
+      - "scripts/scrapers/__tests__/carte-c8-rabat-geometry-evidence-batch3.test.ts"
+      - ".github/workflows/carte-c8-rabat-geometry-evidence-batch3.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  geometry-evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Geometry evidence contracts
+        run: npx tsx --test scripts/scrapers/__tests__/carte-c8-rabat-geometry-evidence-batch3.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
