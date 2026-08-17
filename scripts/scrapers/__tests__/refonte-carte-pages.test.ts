@@ -46,9 +46,19 @@ test("route inventory is substantial and source-derived", () => {
   assert.ok(auditedRoutes.includes("/search"));
 });
 
-test("dynamic page families and visual proof are locked", () => {
-  for (const marker of ["Fiche annonce dynamique", "Fiche quartier dynamique", "Fiche promoteur / projet dynamique", "Definition of Done par page"]) {
-    assert.ok(matrix.includes(marker), `missing page-family marker: ${marker}`);
+test("visual archetypes and proof protocol are locked", () => {
+  for (const marker of [
+    "Archétypes visuels canoniques",
+    "A — Recherche / catalogue",
+    "B — Carte",
+    "C — Fiche annonce / projet / professionnel",
+    "D — Ville / quartier / marché",
+    "E — Formulaire / flow",
+    "F — Outil personnel / pro",
+    "G — Éditorial / légal / pédagogie",
+    "Definition of Done par page",
+  ]) {
+    assert.ok(matrix.includes(marker), `missing visual-reference marker: ${marker}`);
   }
   assert.ok(matrix.includes("capture avant"));
   assert.ok(matrix.includes("capture après"));
