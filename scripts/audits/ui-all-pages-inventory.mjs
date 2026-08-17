@@ -91,7 +91,11 @@ const pages = pageFiles.map((sourcePath) => {
   const auditMode = dynamic ? dynamicAudit?.auditMode ?? null : staticAudit?.auditMode ?? "render";
   const fixtureUrl = dynamic
     ? dynamicAudit?.fixtureUrl ?? null
-    : auditMode === "qa-fixture-required" ? null : routePattern;
+    : auditMode === "qa-fixture-required"
+      ? null
+      : routePattern === "/map"
+        ? "/map?city=rabat"
+        : routePattern;
   return {
     sourcePath: `app/${sourcePath}`,
     routePattern,
