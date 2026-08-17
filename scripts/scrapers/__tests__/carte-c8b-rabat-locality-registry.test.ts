@@ -76,15 +76,17 @@ test("C8B admin parents are separate authority records and all references resolv
   }
 });
 
-test("C8B candidates remain fail-closed", () => {
-  assert.ok(RABAT_PRODUCT_LOCALITY_CANDIDATES.length >= 14);
-  for (const candidate of RABAT_PRODUCT_LOCALITY_CANDIDATES) {
-    assert.equal(candidate.taxonomy_status, "candidate");
-    assert.equal(candidate.market_map_eligible, false);
-    assert.equal(candidate.geometry_status, "unresolved");
-    assert.equal(candidate.geometry_source, null);
-    assert.equal(candidate.activation_status, "blocked");
-    assert.equal(candidate.fail_closed_reason, "taxonomy_candidate");
+test("C8B promotes only the source-backed batch and keeps all provisional entries fail-closed", () => {
+  assert.equal(RABAT_PRODUCT_LOCALITY_CANDIDATES.length, 18);
+  const promoted = RABAT_PRODUCT_LOCALITY_CANDIDATES.filter((entry) => entry.taxonomy_status === "certified");
+  assert.deepEqual(promoted.map((entry) => entry.id).sort(), ["candidate_rabat_akkari", "candidate_rabat_al_boustane"].sort());
+
+  for (const entry of RABAT_PRODUCT_LOCALITY_CANDIDATES) {
+    assert.equal(entry.market_map_eligible, false);
+    assert.equal(entry.geometry_status, "unresolved");
+    assert.equal(entry.geometry_source, null);
+    assert.equal(entry.activation_status, "blocked");
+    assert.equal(entry.fail_closed_reason, entry.taxonomy_status === "certified" ? "geometry_unresolved" : "taxonomy_candidate");
   }
 });
 
