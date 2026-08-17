@@ -94,7 +94,7 @@ const pages = pageFiles.map((sourcePath) => {
     : auditMode === "qa-fixture-required"
       ? null
       : routePattern === "/map"
-        ? "/map?city=rabat"
+        ? "/map?city=rabat&layer=explore"
         : routePattern;
   return {
     sourcePath: `app/${sourcePath}`,
