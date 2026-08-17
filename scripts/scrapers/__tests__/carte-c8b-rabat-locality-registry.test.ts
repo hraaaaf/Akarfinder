@@ -76,10 +76,13 @@ test("C8B admin parents are separate authority records and all references resolv
   }
 });
 
-test("C8B promotes only the source-backed batch and keeps all provisional entries fail-closed", () => {
+test("C8B promotes only source-backed taxonomy and keeps provisional entries fail-closed", () => {
   assert.equal(RABAT_PRODUCT_LOCALITY_CANDIDATES.length, 18);
   const promoted = RABAT_PRODUCT_LOCALITY_CANDIDATES.filter((entry) => entry.taxonomy_status === "certified");
-  assert.deepEqual(promoted.map((entry) => entry.id).sort(), ["candidate_rabat_akkari", "candidate_rabat_al_boustane"].sort());
+  assert.deepEqual(
+    promoted.map((entry) => entry.id).sort(),
+    ["candidate_rabat_akkari", "candidate_rabat_al_boustane", "candidate_rabat_yacoub_el_mansour"].sort(),
+  );
 
   for (const entry of RABAT_PRODUCT_LOCALITY_CANDIDATES) {
     assert.equal(entry.market_map_eligible, false);
