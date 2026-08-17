@@ -14,6 +14,8 @@ on:
       - "app/listings/**"
       - "app/search/**"
       - "app/mon-projet/**"
+      - "app/api/me/project-routes/**"
+      - "app/visual-qa/announcement-page-mon-projet/**"
       - "docs/ANNOUNCEMENT_PAGE_L12_*"
       - "scripts/audits/announcement-page-l12-*"
       - "scripts/scrapers/__tests__/announcement-page-l12-*"
@@ -25,6 +27,7 @@ on:
 jobs:
   contract:
     runs-on: ubuntu-24.04
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -32,7 +35,7 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - name: ANN-L12 profile, destination, fit and routing contracts
+      - name: ANN-L12 profile, destination, fit, routing and continuity contracts
         shell: bash
         run: |
           set -euo pipefail
@@ -40,13 +43,42 @@ jobs:
             scripts/scrapers/__tests__/announcement-page-l12-profile-anchors.test.ts
             scripts/scrapers/__tests__/announcement-page-l12-project-fit.test.ts
             scripts/scrapers/__tests__/announcement-page-l12-project-routes.test.ts
+            scripts/scrapers/__tests__/announcement-page-l12-project-continuity.test.ts
           )
           while IFS= read -r file; do
             [[ "$file" == *announcement-page-l12-profile-anchors.test.ts ]] && continue
             [[ "$file" == *announcement-page-l12-project-fit.test.ts ]] && continue
             [[ "$file" == *announcement-page-l12-project-routes.test.ts ]] && continue
+            [[ "$file" == *announcement-page-l12-project-continuity.test.ts ]] && continue
             tests+=("$file")
           done < <(find scripts/scrapers/__tests__ -maxdepth 1 -type f \( -name '*search-profile*.test.ts' -o -name '*companion*.test.ts' \) -print | sort)
           npx tsx --test "${tests[@]}"
       - name: TypeScript
         run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Start ANN-L12 production server
+        shell: bash
+        run: |
+          npm run start -- -p 3214 > /tmp/ann-l12.log 2>&1 &
+          for attempt in {1..60}; do
+            if curl -fsS http://127.0.0.1:3214/visual-qa/announcement-page-mon-projet >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/ann-l12.log
+          exit 1
+      - name: ANN-L12 targeted visual certification
+        env:
+          BASE_URL: http://127.0.0.1:3214
+          AUDIT_OUTPUT_DIR: artifacts/announcement-page-l12-mon-projet
+        run: node scripts/audits/announcement-page-l12-visual.mjs
+      - name: Upload ANN-L12 visual proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: announcement-page-l12-mon-projet-${{ github.run_id }}
+          path: artifacts/announcement-page-l12-mon-projet
+          if-no-files-found: error
+          retention-days: 14
