@@ -22,21 +22,24 @@ test("C8C unresolved geometry matrix accounts for all 19 remaining localities", 
   );
 });
 
-test("only Ocean is taxonomy-ready among unresolved C8C localities", () => {
-  assert.deepEqual(taxonomyReady.map((locality) => locality.id), ["district_rabat_ocean"]);
-  assert.equal(taxonomyReady[0]?.geometry_status, "unresolved");
-  assert.equal(taxonomyReady[0]?.geometry_source, null);
-  assert.equal(taxonomyReady[0]?.fail_closed_reason, "geometry_unresolved");
+test("Ocean, Akkari and Al Boustane are taxonomy-ready but geometry-blocked", () => {
+  assert.deepEqual(
+    taxonomyReady.map((locality) => locality.id).sort(),
+    ["candidate_rabat_akkari", "candidate_rabat_al_boustane", "district_rabat_ocean"].sort(),
+  );
+  assert.ok(taxonomyReady.every((locality) => locality.geometry_status === "unresolved"));
+  assert.ok(taxonomyReady.every((locality) => locality.geometry_source === null));
+  assert.ok(taxonomyReady.every((locality) => locality.fail_closed_reason === "geometry_unresolved"));
 });
 
-test("the other 18 unresolved localities remain taxonomy candidates", () => {
-  assert.equal(taxonomyBlocked.length, 18);
+test("the other 16 unresolved localities remain taxonomy candidates", () => {
+  assert.equal(taxonomyBlocked.length, 16);
   assert.ok(taxonomyBlocked.every((locality) => locality.geometry_status === "unresolved"));
   assert.ok(taxonomyBlocked.every((locality) => locality.geometry_source === null));
   assert.ok(taxonomyBlocked.every((locality) => locality.fail_closed_reason === "taxonomy_candidate"));
 });
 
-test("blocker audit never changes public eligibility", () => {
+test("taxonomy promotion never changes public eligibility", () => {
   assert.equal(unresolved.filter((locality) => locality.market_map_eligible).length, 0);
   assert.equal(unresolved.filter((locality) => locality.activation_status !== "blocked").length, 0);
 });
