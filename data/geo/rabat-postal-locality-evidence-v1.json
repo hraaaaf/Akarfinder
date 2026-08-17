@@ -1,0 +1,83 @@
+{
+  "version": "c8_postal_locality_evidence_v1",
+  "authority": {
+    "provider": "Poste Maroc / Barid Al-Maghrib",
+    "source": "https://www.codepostal.ma/search_mot.aspx?keyword=rabat",
+    "serviceAttribution": "codepostal.ma identifies itself as the Poste Maroc postal-code service and exposes quartier/localite labels",
+    "evidenceClass": "postal_locality_name"
+  },
+  "scope": "Postal corroboration only; never sufficient by itself for product taxonomy, geometry or public activation",
+  "productionWriteCount": 0,
+  "publicActivation": false,
+  "bindings": [
+    {
+      "localityId": "candidate_rabat_diour_jamaa",
+      "postalLabel": "RABAT QUARTIER DIOUR JAMAA",
+      "postalCode": "10060",
+      "matchKind": "exact_quartier_label"
+    },
+    {
+      "localityId": "candidate_rabat_hay_nahda",
+      "postalLabel": "RABAT QUARTIER ENNAHDA I",
+      "postalCode": "10210",
+      "matchKind": "registered_alias_quartier_label"
+    },
+    {
+      "localityId": "candidate_rabat_kbibat",
+      "postalLabel": "RABAT QUARTIER KEBIBAT",
+      "postalCode": "10050",
+      "matchKind": "accent_normalized_quartier_label"
+    },
+    {
+      "localityId": "candidate_rabat_les_orangers",
+      "postalLabel": "RABAT QUARTIER LES ORANGERS",
+      "postalCode": "10060",
+      "matchKind": "exact_quartier_label"
+    },
+    {
+      "localityId": "candidate_rabat_mabella",
+      "postalLabel": "RABAT QUARTIER MABILLA",
+      "postalCode": "10180",
+      "matchKind": "postal_spelling_variant_needs_corroboration"
+    },
+    {
+      "localityId": "candidate_rabat_mellah",
+      "postalLabel": "RABAT QUARTIER MELLAH",
+      "postalCode": "10030",
+      "matchKind": "exact_quartier_label"
+    },
+    {
+      "localityId": "candidate_rabat_medina",
+      "postalLabel": "RABAT QUARTIER ANCIENNE MEDINA",
+      "postalCode": "10030",
+      "matchKind": "semantic_quartier_label"
+    }
+  ],
+  "unboundSignals": [
+    {
+      "candidate": "candidate_rabat_touarga",
+      "postalLabel": "RABAT QUARTIER FOUAKA TOUARGA",
+      "reason": "The postal label identifies Fouaka Touarga, not the whole Touarga product locality."
+    },
+    {
+      "candidate": "candidate_rabat_aviation",
+      "postalLabel": "RABAT CITE AVIATIONS",
+      "reason": "CITE is retained as corroboration but not promoted to an exact QUARTIER binding."
+    },
+    {
+      "candidate": "candidate_rabat_youssoufia",
+      "postalLabel": "RABAT CITE YOUSSOUFIA OUEST",
+      "reason": "The signal is a sub-area/cite label and does not prove exact equivalence with the full Youssoufia product locality."
+    },
+    {
+      "candidate": "candidate_rabat_oudayas",
+      "postalLabel": "RABAT CITE DES OUDAYAS / RABAT KASBAT OUDAYA",
+      "reason": "Multiple postal object types exist; no automatic equivalence with the product locality is asserted."
+    },
+    {
+      "candidate": "candidate_rabat_el_kora",
+      "postalLabel": "RABAT PROJET EL KOURA",
+      "reason": "A project label is not an exact quartier authority."
+    }
+  ]
+}
