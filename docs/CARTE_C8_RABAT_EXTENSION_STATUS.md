@@ -39,7 +39,6 @@ C0–C7 reste fermé à **8/8 = 100 %**. Ce pourcentage appartient uniquement au
 - exact-head : **15/15 workflows observés SUCCESS** ;
 - gate taxonomie + géométrie + métriques + contexte ;
 - 4 localités satisfont les quatre dimensions mais sont déjà couvertes par C0–C7 ;
-- **19 localités bloquées** ;
 - **0 nouvelle activation C8 éligible** ;
 - aucune mutation DB/Search/ranking/API/UI.
 
@@ -75,44 +74,65 @@ C0–C7 reste fermé à **8/8 = 100 %**. Ce pourcentage appartient uniquement au
 - **0 candidate** déclarée prête pour une métrique prix/m² publique ;
 - aucun seuil statistique inventé, aucune médiane sparse publiée, aucune mutation DB.
 
-#### Agenz Detail Recovery Audit — PR #758 ✅ MERGED
+### C8D — Agenz × Diour Jamaa recovery diagnostics ✅ CLOSED FAIL-CLOSED
 
-- exact head `6492e843989fa6d8e22b6af1da2844df7677c051` ;
-- merge `dfd227e5050b76abb14967a0d0ef98374c113009` ;
-- **8/8 workflows observés SUCCESS**, dont le gate dédié C8D Rabat Agenz Detail Recovery Audit ;
-- cible bornée initiale : Agenz × Diour Jamaa ;
-- 12 URLs Agenz Diour Jamaa canoniques, dédupliquées en 9 IDs d’annonces uniques avant fetch ;
-- source verrouillée à `agenz.ma`, localité restreinte à un slug candidat C8B, robots.txt vérifié, limites fail-closed ;
-- récupération prix via extracteur strict existant ; surface acceptée uniquement avec preuve JSON-LD high-confidence ;
-- script strictement read-only, sans mode write ;
-- **0 écriture DB** et **0 métrique marché publiée** ;
-- workflow manuel borné : PR #765, merge `871e61feef19769319d03820c38bdcc1739b7e2a` ;
-- run live `31960247064` : `contract` SUCCESS + `live-dry-run` SUCCESS ;
-- artefact `9267050182`, digest `sha256:35e9e2a94e5fedd084453a1111203616bc240a83f2343f2924786a58c0e5273b` ;
-- dry-run live : 584 lignes interrogées, 9 candidats détail, **9/9 fetch**, 0 robots skip, 0 échec ;
-- prix récupérable : **8/9** ; surface récupérable : **0/9** ; prix + surface : **0/9** ;
-- `productionWriteCount=0` vérifié ;
-- verdict : récupération prix techniquement viable sur la cohorte, mais la surface reste non certifiée ;
-- toute future écriture de prix/surface reste un gate humain séparé après validation valeur par valeur.
+- jalon live initial : prix récupérable : **8/9** ; surface récupérable : **0/9** ; prix + surface : **0/9** ;
+- workflow borné PR #765 : run live `31960247064` SUCCESS ;
+- récupération surface durcie : run `31968348418` → **2/9 surfaces strictes**, **1/9 prix + surface**, 0 write ;
+- diagnostics génériques : run `31971442842` ;
+- diagnostics target-ID structurés : run `31973332410`, aucune nouvelle surface défendable ;
+- diagnostics DOM ownership : run `31983044444`, aucun signal semantic/current-listing supplémentaire défendable ;
+- closeout PR #774, merge `76299d6878c696eab92517363aa69eb40ab4f609` ;
+- **7/9 restent fail-closed** ;
+- aucune métrique prix/m² publique, aucune écriture DB, aucune activation publique.
+
+### C8 — Taxonomy evidence + promotions ✅ 6 PROMOTIONS C8 MERGED
+
+#### Batch 1 — Akkari + Al Boustane
+
+- evidence PR #776 ;
+- promotion PR #777, merge `631fd85ddb7a10a70b860fb5ec526a8d04eb9f72` ;
+- Akkari et Al Boustane passent `taxonomy_status=certified` ;
+- géométrie unresolved, map eligibility false, activation blocked.
+
+#### Batch 2 — Yacoub El Mansour
+
+- promotion PR #782, merge `a294627049785a82fbe4dee79bbe11e31a581ee5` ;
+- Yacoub El Mansour passe `taxonomy_status=certified` ;
+- blocker géométrique certifié via PR #787, merge `41976e7ea17ad3b3a7799c059f56f6d63d5196a9` ;
+- la géométrie d’arrondissement administratif n’est pas substituée au quartier produit ;
+- géométrie unresolved, aucune activation.
+
+#### Batch 3 — Douar Doum + El Kora + El Garaa
+
+- evidence PR #788, merge `a692bebd694e2eac89bbc0276fd2848942fb9761` ;
+- promotion PR #789, exact head `4e494eb69992d7d30296f552cc4e44e4a6b1e790`, **25/25 workflows observés SUCCESS**, merge `ed4f814150a29688fa21b8a5defc551adfb009b3` ;
+- Douar Doum, El Kora et El Garaa passent `taxonomy_status=certified` ;
+- geometry evidence PR #790, exact head `ac16f806b906c405a9fff30fbe3defe13a59bd1f`, gate dédié SUCCESS, merge `d4d386f9d01419e2c28682b995d77546f70c90f5` ;
+- la source AURS prouve leur statut de quartier mais ne fournit pas de polygone directement réutilisable ;
+- les trois restent `geometry_unresolved` ;
+- aucun centroid/Voronoi/buffer/admin-boundary substitution.
 
 ## Invariants C8 actuellement vérifiés
 
 - registre actuel : **23 localités produit/candidates**, toujours qualifié de plancher et non d’inventaire exhaustif ;
+- taxonomie certifiée : **11/23** au total = 5 historiques + **6 promotions C8** ;
+- parmi les **19/23** géométries non résolues : **7 localités taxonomiquement prêtes** et **12 localités encore candidates** ;
 - géométrie défendable : **4/23 certifiées**, **19/23 non résolues** ;
 - nouvelles activations publiques C8 : **0** ;
 - mutations DB C8 : **0** ;
 - nouvelle métrique prix/m² publique issue de C8 : **0** ;
-- les propositions d’autorité, audits shadow et audits de récupération restent non publics et fail-closed.
+- propositions d’autorité, audits shadow, recovery et preuves géométriques restent non publics et fail-closed.
 
 ## Progression C8
 
-**Aucun pourcentage C8 n’est publié à ce stade.** Le dénominateur exhaustif des quartiers/localités produit de la commune de Rabat n’est pas encore prouvé. Publier un pourcentage exact créerait une fausse précision.
+**Aucun pourcentage C8 n’est publié à ce stade.** Le dénominateur exhaustif des quartiers/localités produit de la commune de Rabat n’est pas encore prouvé. Les ratios 11/23 et 4/23 décrivent uniquement le registre source-backed actuel et ne valent pas pourcentage d’exhaustivité de Rabat.
 
 ## Chemin critique
 
 1. renforcer l’inventaire jusqu’à une exhaustivité source-backed défendable ;
-2. poursuivre la certification géométrique des **19/23** localités non résolues ;
-3. améliorer la preuve de surface sur Agenz/les autres sources puis valider valeur par valeur toute donnée candidate avant écriture ;
+2. poursuivre la certification géométrique des **7 localités taxonomiquement prêtes mais geometry-unresolved**, puis des 12 candidates quand leur taxonomie est certifiée ;
+3. chercher de nouvelles sources spatiales explicites pour les quartiers sans contour, sans dériver artificiellement des frontières ;
 4. augmenter la profondeur structurée prix/surface et multi-source sans publier de statistique sparse ;
 5. ne créer une autorité DB ou écrire des champs récupérés qu’après le gate humain séparé prévu ;
 6. activer uniquement les localités satisfaisant simultanément taxonomie + géométrie + métriques + contexte ;
