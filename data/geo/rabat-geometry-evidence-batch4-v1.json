@@ -1,0 +1,37 @@
+{
+  "version": "c8_geometry_evidence_batch4_v1",
+  "scope": "Rabat C8 spatial evidence verdict only",
+  "publicActivation": false,
+  "productionWriteCount": 0,
+  "decisions": [
+    {
+      "localityId": "candidate_rabat_diour_jamaa",
+      "decision": "geometry_unresolved_rights_blocked",
+      "reason": "UNESCO World Heritage Centre identifies Quartier Habous de Diour Jamaa as component 1401-003 with coordinates and 3.78 ha property area, but UNESCO/WHC terms require permission/licensing for commercial republication or syndication of its data. No UNESCO polygon or KML is copied into AkarFinder.",
+      "evidence": [
+        {
+          "provider": "UNESCO World Heritage Centre",
+          "title": "Rabat, Modern Capital and Historic City: a Shared Heritage - Maps",
+          "url": "https://whc.unesco.org/en/list/1401/maps/",
+          "componentId": "1401-003",
+          "componentName": "Quartier Habous de Diour Jamaa",
+          "propertyAreaHa": 3.78,
+          "coordinates": "N34 0 49.00 W6 50 49.00",
+          "evidenceKind": "authoritative_component_geography"
+        },
+        {
+          "provider": "UNESCO World Heritage Centre",
+          "title": "What are the conditions of use of the data available?",
+          "url": "https://whc.unesco.org/en/faq/126",
+          "evidenceKind": "reuse_permission_required"
+        }
+      ]
+    }
+  ],
+  "guardrails": [
+    "Authoritative geographic evidence is not equivalent to a reusable commercial geometry licence.",
+    "No UNESCO KML, polygon, map trace, derived boundary, centroid buffer or Voronoi geometry is copied or generated.",
+    "The locality remains geometry_unresolved until a rights-compatible source or explicit permission is obtained.",
+    "No production write or public activation is executed."
+  ]
+}
