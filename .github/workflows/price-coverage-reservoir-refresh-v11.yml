@@ -1,0 +1,61 @@
+name: SEARCH Price Coverage v11 Reservoir Refresh
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/price-coverage-reservoir-refresh-v11.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify-read-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Typecheck
+        run: npx tsc --noEmit
+      - name: Enforce immutable audit contract
+        run: |
+          grep -F 'if (process.env.PRICE_PAGINATION_WRITE === "true") throw new Error("pagination audit is strictly read-only")' scripts/scrapers/price-coverage-pagination-audit.ts
+
+  production-read-only:
+    needs: certify-read-only
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        source: [mubawab.ma, masaken.ma]
+        page: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      THIRD_PARTY_DB_INGESTION_ENABLED: 'true'
+      PRICE_PAGINATION_WRITE: 'false'
+      PRICE_PAGINATION_PAGE_SIZE: '120'
+      PRICE_PAGINATION_PAGES: '10'
+      PRICE_PAGINATION_SOURCE: ${{ matrix.source }}
+      PRICE_PAGINATION_PAGE_INDEX: ${{ matrix.page }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Verify production read credentials
+        run: |
+          test -n "$SUPABASE_URL"
+          test -n "$SUPABASE_SERVICE_ROLE_KEY"
+      - name: Enforce read-only
+        run: test "$PRICE_PAGINATION_WRITE" = 'false'
+      - name: Refresh current price reservoir
+        run: npx tsx scripts/scrapers/price-coverage-pagination-audit.ts
