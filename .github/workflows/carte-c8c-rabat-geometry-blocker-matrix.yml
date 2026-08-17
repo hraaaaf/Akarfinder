@@ -1,0 +1,37 @@
+name: C8C Rabat Geometry Blocker Matrix
+
+on:
+  pull_request:
+    paths:
+      - "lib/geo/rabat-locality-registry.ts"
+      - "lib/geo/rabat-locality-geometry-registry.ts"
+      - "scripts/scrapers/__tests__/carte-c8c-rabat-geometry-blocker-matrix.test.ts"
+      - "docs/CARTE_C8C_RABAT_GEOMETRY_BLOCKER_MATRIX.md"
+      - ".github/workflows/carte-c8c-rabat-geometry-blocker-matrix.yml"
+  push:
+    branches: [main]
+    paths:
+      - "lib/geo/rabat-locality-registry.ts"
+      - "lib/geo/rabat-locality-geometry-registry.ts"
+      - "scripts/scrapers/__tests__/carte-c8c-rabat-geometry-blocker-matrix.test.ts"
+      - "docs/CARTE_C8C_RABAT_GEOMETRY_BLOCKER_MATRIX.md"
+      - ".github/workflows/carte-c8c-rabat-geometry-blocker-matrix.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  blocker-matrix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Geometry blocker matrix contracts
+        run: npx tsx --test scripts/scrapers/__tests__/carte-c8c-rabat-geometry-blocker-matrix.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
