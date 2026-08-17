@@ -31,6 +31,7 @@ import { getSearchViewLayout } from "@/lib/ux/search-view";
 type LightZillowSearchShellProps = {
   initialListings: Listing[];
   initialFilters?: Partial<ListingFiltersState>;
+  projectId?: string;
 };
 
 type ApiSearchResponse = {
@@ -135,7 +136,7 @@ function EmptyState({ onReset, city }: { onReset: () => void; city?: string }) {
   );
 }
 
-export function LightZillowSearchShell({ initialListings, initialFilters }: LightZillowSearchShellProps) {
+export function LightZillowSearchShell({ initialListings, initialFilters, projectId }: LightZillowSearchShellProps) {
   const [filters, setFilters] = useState<ListingFiltersState>({
     ...defaultListingFilters,
     transactionType: initialFilters?.transactionType ?? defaultListingFilters.transactionType,
@@ -459,7 +460,7 @@ export function LightZillowSearchShell({ initialListings, initialFilters }: Ligh
                   {continuousListings.length > 0 ? (
                     <div className={`grid grid-cols-1 gap-5 xl:grid-cols-2 transition-opacity duration-200 ${isLoading ? "opacity-60" : "opacity-100"}`}>
                       {continuousListings.map((listing) => (
-                        <SearchListingCardDark key={listing.id} listing={listing} />
+                        <SearchListingCardDark key={listing.id} listing={listing} projectId={projectId} />
                       ))}
                     </div>
                   ) : null}

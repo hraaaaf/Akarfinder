@@ -27,11 +27,18 @@ function isSafeHttpUrl(value: string | null | undefined): value is string {
 
 type ListingDetailPageProps = {
   params: Promise<{ id: string }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
+
+function validProjectId(value: string | string[] | undefined): string | null {
+  const raw = Array.isArray(value) ? value[0] : value;
+  return typeof raw === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(raw) ? raw : null;
+}
 
 async function renderListing(
   listing: Listing,
   detail: NonNullable<ReturnType<typeof buildPublicPropertyDetailV2>>,
+  projectId: string | null,
 ) {
   let livingHere = null;
   let streetReality = null;
@@ -69,12 +76,15 @@ async function renderListing(
       streetReality={streetReality}
       marketComparables={marketComparables}
       akarEstimateHistory={akarEstimateHistory}
+      projectId={projectId}
     />
   );
 }
 
-export default async function ListingDetailPage({ params }: ListingDetailPageProps) {
+export default async function ListingDetailPage({ params, searchParams }: ListingDetailPageProps) {
   const { id } = await params;
+  const resolvedSearchParams = searchParams ? await searchParams : {};
+  const projectId = validProjectId(resolvedSearchParams.project_id);
 
   try {
     if (id.startsWith("owner-")) {
@@ -86,7 +96,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
         created_at: new Date().toISOString(),
       });
       if (!ownerDetail) notFound();
-      return await renderListing(ownerListing, ownerDetail);
+      return await renderListing(ownerListing, ownerDetail, projectId);
     }
 
     const dbListing = await queryListingById(id);
@@ -114,7 +124,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
     });
 
     if (!detail) notFound();
-    return await renderListing(listing, detail);
+    return await renderListing(listing, detail, projectId);
   } catch (error) {
     if (error && typeof error === "object" && "digest" in error) throw error;
     console.error("[listings] unexpected error loading listing:", id, error);

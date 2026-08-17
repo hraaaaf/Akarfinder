@@ -12,6 +12,7 @@ import { PropertyCore } from "@/components/listings/PropertyCore";
 import { PropertyMediaGallery } from "@/components/listings/PropertyMediaGallery";
 import { StreetRealitySection } from "@/components/listings/StreetRealitySection";
 import { ProfessionalConversionCard } from "@/components/listings/ProfessionalConversionCard";
+import { ProjectPersonalizationCard } from "@/components/listings/ProjectPersonalizationCard";
 import type { LivingHereModel } from "@/lib/geo/living-here";
 import type { StreetRealityModel } from "@/lib/geo/street-reality";
 import type { ProConversionModel } from "@/lib/listings/pro-conversion";
@@ -84,6 +85,7 @@ export function PropertyDetailV2({
   streetReality = null,
   marketComparables = null,
   proConversion,
+  projectId = null,
   mapStyleUrl = null,
 }: {
   listing: Listing;
@@ -92,6 +94,7 @@ export function PropertyDetailV2({
   streetReality?: StreetRealityModel | null;
   marketComparables?: MarketComparableSet | null;
   proConversion: ProConversionModel;
+  projectId?: string | null;
   mapStyleUrl?: string | null;
 }) {
   const allDetails = [
@@ -117,6 +120,10 @@ export function PropertyDetailV2({
 
           <div className="mt-6">
             <AkarInsightCard detail={detail} />
+          </div>
+
+          <div className="lg:hidden">
+            <ProjectPersonalizationCard listing={listing} projectId={projectId} />
           </div>
 
           <div className="mt-4 lg:hidden">
@@ -204,11 +211,12 @@ export function PropertyDetailV2({
           </div>
         </div>
 
-        <aside className="hidden lg:block lg:sticky lg:top-6">
+        <aside className="hidden space-y-5 lg:sticky lg:top-6 lg:block">
           <ProfessionalConversionCard
             listing={listing}
             model={proConversion}
           />
+          <ProjectPersonalizationCard listing={listing} projectId={projectId} />
         </aside>
       </div>
 
