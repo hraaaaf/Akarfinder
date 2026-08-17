@@ -92,6 +92,7 @@ async function main() {
     } catch (error) {
       stats.failed += 1;
       console.warn(`[price-coverage-v12] ${SOURCE} page=${row.snapshot_page}: ${error instanceof Error ? error.message : String(error)}`);
+      if (write) throw error;
     }
     await safeDelay(300, 700);
   }
