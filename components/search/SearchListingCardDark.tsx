@@ -37,7 +37,7 @@ function truthStyle(tier: SearchTruthTier) {
   return "border-slate-400/25 bg-slate-500/10 text-slate-700 dark:text-white/65";
 }
 
-export function SearchListingCardDark({ listing }: { listing: Listing }) {
+export function SearchListingCardDark({ listing, projectId }: { listing: Listing; projectId?: string }) {
   if (listing.can_show_result === false) return null;
   if (process.env.NODE_ENV === "production" && listing.production_allowed === false) return null;
 
@@ -58,8 +58,11 @@ export function SearchListingCardDark({ listing }: { listing: Listing }) {
   const smartCard = buildSmartPropertyCardModel(listing);
   const observedExternal = isObservedExternalListing(listing);
   const publicAttribution = deriveListingPublicAttribution(listing);
+  const internalHref = projectId
+    ? `/listings/${listing.id}?project_id=${encodeURIComponent(projectId)}`
+    : `/listings/${listing.id}`;
   const resultHref =
-    observedExternal && listing.listing_url ? listing.listing_url : `/listings/${listing.id}`;
+    observedExternal && listing.listing_url ? listing.listing_url : internalHref;
   const active = isActive(listing);
   const showOriginal = Boolean(
     listing.listing_url &&
