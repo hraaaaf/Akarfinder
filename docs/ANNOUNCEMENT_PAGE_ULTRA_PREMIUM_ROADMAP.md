@@ -1,9 +1,9 @@
 # AkarFinder — Refonte Page Annonce Ultra Premium
 
 **Programme canonique : `ANNOUNCEMENT-PAGE-ULTRA-PREMIUM`**  
-**Version : 2026-08-16**  
-**Statut : ANN-L0 ✅ CLOSED ; ANN-L1 ✅ CLOSED ; ANN-L2 ✅ CLOSED ; ANN-L3 ✅ CLOSED ; ANN-L4 ✅ CLOSED ; ANN-L5 ✅ CLOSED ; ANN-L6 ✅ CLOSED ; ANN-L7 ✅ CLOSED ; ANN-L8 ✅ CLOSED ; ANN-L9 ✅ CLOSED ; ANN-L10 ✅ CLOSED ; ANN-L11 NEXT**  
-**Progression stricte : 83 / 100 %.**
+**Version : 2026-08-17**  
+**Statut : ANN-L0 ✅ CLOSED ; ANN-L1 ✅ CLOSED ; ANN-L2 ✅ CLOSED ; ANN-L3 ✅ CLOSED ; ANN-L4 ✅ CLOSED ; ANN-L5 ✅ CLOSED ; ANN-L6 ✅ CLOSED ; ANN-L7 ✅ CLOSED ; ANN-L8 ✅ CLOSED ; ANN-L9 ✅ CLOSED ; ANN-L10 ✅ CLOSED ; ANN-L11 ✅ CLOSED ; ANN-L12 NEXT**  
+**Progression stricte : 89 / 100 %.**
 
 > Ce document est la sous-roadmap normative du chantier de refonte de `/listings/[id]`. `docs/ROADMAP.md` reste le registre canonique global AkarFinder. Les pourcentages ci-dessous sont comptés uniquement sur les LOTS `CLOSED`, jamais sur du travail commencé ou supposé presque terminé.
 
@@ -126,6 +126,18 @@
 - Conséquence fail-closed : `AkarEstimate` reste masqué ; aucune reproduction de prix demandé n'est présentée comme valeur du bien.
 - Preuve détaillée : `docs/ANNOUNCEMENT_PAGE_L9_CLOSEOUT.md` et `docs/ANNOUNCEMENT_PAGE_L9_CALIBRATION_GATE.md`.
 - **Crédit officiel ANN-L9 : +6 %. Progression cumulée : 76 %. Prochain chemin critique : ANN-L10 Finance Maroc.**
+
+## 0.11 Closeout ANN-L11 — Pro & conversion ✅
+
+- **PR #769 ✅ MERGED** — merge `36bc8f086e728179b7c801f7fc54393089a7572f` ; exact head certifié `a8bf6b300b22e9b425da22ecaba7f1b77cc1aa2a`.
+- Gate dédié `Announcement Page L11 Pro Conversion`, run `31983200516` : contrats, TypeScript, production build, Chromium ciblé et artefact **SUCCESS**.
+- Artefact `9272995434`, digest `sha256:b8a9947efc62e42cbf46b97a4786d2a0b5f8d31f4d4495a1e388e04ab1ea424c` ; **6/6 captures, 0 finding**, aucun overflow, aucune erreur console/HTTP, H1=1/main=1.
+- Matrice CTA fail-closed unique : contact uniquement sur autorité/permission explicites ; source-only sans fuite WhatsApp/téléphone ; téléphone non inféré.
+- Standard AkarFinder premium verrouillé : `#0B63CE` pour Visite, deep blue, surfaces froides, bronze limité aux accents, WhatsApp vert canal.
+- Score final référentiel AkarFinder strict : **9,3/10 mobile** et **9,3/10 desktop**.
+- Deux derniers échecs transversaux étaient des fetchs Google Fonts externes ; reruns du même exact-head ensuite **SUCCESS**.
+- Preuve détaillée : `docs/ANNOUNCEMENT_PAGE_L11_CLOSEOUT.md`.
+- **Crédit officiel ANN-L11 : +6 %. Progression cumulée : 89 %. Prochain chemin critique : ANN-L12 Mon Projet personnalisé.**
 
 ## 1. Vision produit
 
@@ -458,11 +470,11 @@ Implémentation : calculateur client déterministe ; taux/apport/durée modifiab
 
 Gate CLOSED : exact head `787416614a4de1de8fa0805d0d553396b4152547`, run `31960358141` SUCCESS, **5/5 tests PASS**, TypeScript, production build et Chromium ciblé SUCCESS, **4/4 captures + 0 finding**, artefact `9267110347`, digest `sha256:8bd4180e1a4e2c1cc15fd390689c8573ce751d9cdaeed0b996fb563853f84995`. Aucun taux bancaire/frais réglementaire silencieux ; taux vide par défaut ; simulation explicitement indicative. Détails : `docs/ANNOUNCEMENT_PAGE_L10_CLOSEOUT.md`.
 
-### ANN-L11 — Pro & conversion — 6 %
+### ANN-L11 — Pro & conversion — 6 % — ✅ CLOSED
 
-Implémentation : identité professionnelle canonique, badge commercial autorisé, visite, WhatsApp, téléphone, source originale, signalement. Dock mobile : `Demander une visite` + `WhatsApp` quand autorisé, alternatives propres sinon. Favori/compare/Mon Projet restent secondaires.
+Implémentation : identité professionnelle canonique et matrice CTA fail-closed unique consommée par desktop/mobile. Badge commercial seulement sur autorité validée ; visite/WhatsApp uniquement sur permissions explicites ; téléphone non exposé sans champ public autorisé ; source-only sans fuite contact ; Favori/Comparer/Mon Projet secondaires. Référentiel visuel AkarFinder : primary `#0B63CE`, surfaces blanches/froides, bronze limité aux accents de confiance, WhatsApp vert canal.
 
-Gate : CTA matrix par `source_access_level`/`allowed_ctas`; aucune donnée de contact extraite/inférée.
+Gate CLOSED : exact head `a8bf6b300b22e9b425da22ecaba7f1b77cc1aa2a`, run `31983200516` SUCCESS, contrats + TypeScript + production build + Chromium ciblé SUCCESS, **6/6 captures + 0 finding**, artefact `9272995434`, digest `sha256:b8a9947efc62e42cbf46b97a4786d2a0b5f8d31f4d4495a1e388e04ab1ea424c`. Tous les gates transversaux du head finissent SUCCESS après rerun de deux fetchs Google Fonts externes. Score référentiel AkarFinder strict : **9,3/10 mobile** et **9,3/10 desktop**. Détails : `docs/ANNOUNCEMENT_PAGE_L11_CLOSEOUT.md`.
 
 ### ANN-L12 — Mon Projet personnalisé — 5 %
 
@@ -534,8 +546,8 @@ Un run queued/in_progress ne clôt pas un LOT. Un LOT n'est `CLOSED` que sur pre
 | ANN-L8 | 10 % | ✅ CLOSED | 10 % |
 | ANN-L9 | 6 % | ✅ CLOSED | 6 % |
 | ANN-L10 | 7 % | ✅ CLOSED | 7 % |
-| ANN-L11 | 6 % | NEXT | 0 % |
-| ANN-L12 | 5 % | NOT_STARTED | 0 % |
+| ANN-L11 | 6 % | ✅ CLOSED | 6 % |
+| ANN-L12 | 5 % | NEXT | 0 % |
 | ANN-L13 | 6 % | NOT_STARTED | 0 % |
 
-**Progression officielle actuelle : 83 / 100 %.**
+**Progression officielle actuelle : 89 / 100 %.**
