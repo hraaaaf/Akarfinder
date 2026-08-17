@@ -1,0 +1,33 @@
+{
+  "version": "c8_taxonomy_evidence_batch4_v1",
+  "scope": "Rabat C8 product-locality taxonomy evidence only",
+  "publicActivation": false,
+  "productionWriteCount": 0,
+  "decisions": [
+    {
+      "localityId": "candidate_rabat_diour_jamaa",
+      "decision": "ready_for_taxonomy_certification",
+      "reason": "The Commune de Rabat explicitly identifies Habous Diour Jamaa as a quartier of Rabat in its official UNESCO heritage anniversary communication.",
+      "sources": [
+        {
+          "provider": "Commune de Rabat",
+          "title": "Asmaa Rhlalou participe aux festivités du 10ème anniversaire de l’inscription de Rabat au patrimoine mondial de l’UNESCO",
+          "url": "https://mairiederabat.ma/fr-FR/actualites/Asmaa-Rhlalou-participe-aux-festivites-du-10eme-anniversaire-de",
+          "evidenceKind": "first_party_explicit_quartier"
+        }
+      ]
+    }
+  ],
+  "notPromotedByThisEvidence": [
+    "candidate_rabat_hay_nahda",
+    "candidate_rabat_oudayas",
+    "candidate_rabat_mellah"
+  ],
+  "guardrails": [
+    "Only explicit first-party quartier wording qualifies a candidate in this batch.",
+    "A heritage-site or address mention alone does not establish product-locality taxonomy.",
+    "No taxonomy status is changed by this evidence manifest.",
+    "No geometry or public map eligibility is changed.",
+    "No production write is executed."
+  ]
+}
