@@ -4,13 +4,17 @@ on:
   pull_request:
     paths:
       - "docs/Refonte carte.md"
+      - "docs/refonte-carte-pages.md"
       - "scripts/scrapers/__tests__/refonte-carte-reference.test.ts"
+      - "scripts/scrapers/__tests__/refonte-carte-pages.test.ts"
       - ".github/workflows/refonte-carte-reference.yml"
   push:
     branches: [main]
     paths:
       - "docs/Refonte carte.md"
+      - "docs/refonte-carte-pages.md"
       - "scripts/scrapers/__tests__/refonte-carte-reference.test.ts"
+      - "scripts/scrapers/__tests__/refonte-carte-pages.test.ts"
       - ".github/workflows/refonte-carte-reference.yml"
 
 permissions:
@@ -27,7 +31,7 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - name: Visual reference contract
-        run: npx tsx --test scripts/scrapers/__tests__/refonte-carte-reference.test.ts
+      - name: Visual reference contracts
+        run: npx tsx --test scripts/scrapers/__tests__/refonte-carte-reference.test.ts scripts/scrapers/__tests__/refonte-carte-pages.test.ts
       - name: TypeScript
         run: npx tsc --noEmit
