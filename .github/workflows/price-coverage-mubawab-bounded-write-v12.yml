@@ -1,0 +1,96 @@
+name: SEARCH Price Coverage Mubawab Bounded Write v12
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/scrapers/price-coverage-mubawab-bounded-write-v12.ts'
+      - 'scripts/scrapers/__tests__/price-coverage-mubawab-bounded-write-v12.test.ts'
+      - '.github/workflows/price-coverage-mubawab-bounded-write-v12.yml'
+  workflow_dispatch:
+    inputs:
+      write_confirmation:
+        description: 'Type WRITE_100_MUBAWAB_RELIABLE_PRICES to enable the bounded production write; anything else is read-only'
+        required: true
+        type: string
+        default: 'READ_ONLY'
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx tsx --test scripts/scrapers/__tests__/price-coverage-mubawab-bounded-write-v12.test.ts
+      - run: npx tsc --noEmit
+      - name: Enforce bounded null-only update contract
+        run: |
+          grep -F '.eq("source_domain", SOURCE)' scripts/scrapers/price-coverage-mubawab-bounded-write-v12.ts
+          grep -F '.is("normalized_price_mad", null)' scripts/scrapers/price-coverage-mubawab-bounded-write-v12.ts
+          grep -F 'if (count !== 1)' scripts/scrapers/price-coverage-mubawab-bounded-write-v12.ts
+
+  production-canary-read-only:
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    needs: certify
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      THIRD_PARTY_DB_INGESTION_ENABLED: 'true'
+      PRICE_COVERAGE_V12_WRITE: 'false'
+      PRICE_COVERAGE_V12_PAGE_SIZE: '120'
+      PRICE_COVERAGE_V12_PAGES: '5'
+      PRICE_COVERAGE_V12_MAX_WRITES: '100'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Verify production read credentials
+        run: |
+          test -n "$SUPABASE_URL"
+          test -n "$SUPABASE_SERVICE_ROLE_KEY"
+      - name: Enforce read-only canary
+        run: test "$PRICE_COVERAGE_V12_WRITE" = 'false'
+      - name: Revalidate Mubawab cohort without writes
+        run: npx tsx scripts/scrapers/price-coverage-mubawab-bounded-write-v12.ts
+
+  production-bounded-write:
+    if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.write_confirmation == 'WRITE_100_MUBAWAB_RELIABLE_PRICES' }}
+    needs: production-canary-read-only
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      THIRD_PARTY_DB_INGESTION_ENABLED: 'true'
+      PRICE_COVERAGE_V12_WRITE: 'true'
+      PRICE_COVERAGE_V12_WRITE_CONFIRMATION: ${{ github.event.inputs.write_confirmation }}
+      PRICE_COVERAGE_V12_PAGE_SIZE: '120'
+      PRICE_COVERAGE_V12_PAGES: '5'
+      PRICE_COVERAGE_V12_MAX_WRITES: '100'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Verify exact production write confirmation
+        run: test "$PRICE_COVERAGE_V12_WRITE_CONFIRMATION" = 'WRITE_100_MUBAWAB_RELIABLE_PRICES'
+      - name: Verify production write credentials
+        run: |
+          test -n "$SUPABASE_URL"
+          test -n "$SUPABASE_SERVICE_ROLE_KEY"
+      - name: Execute Mubawab bounded write
+        run: npx tsx scripts/scrapers/price-coverage-mubawab-bounded-write-v12.ts
