@@ -7,6 +7,7 @@ on:
       - "scripts/scrapers/__tests__/carte-c8b-rabat-locality-registry.test.ts"
       - "scripts/scrapers/__tests__/carte-c8c-rabat-geometry-blocker-matrix.test.ts"
       - "scripts/scrapers/__tests__/carte-c8d-rabat-authority-proposal.test.ts"
+      - "scripts/scrapers/__tests__/carte-c8d-rabat-shadow-resolver.test.ts"
       - "docs/CARTE_C8_RABAT_TAXONOMY_PROMOTION_BATCH2.md"
       - ".github/workflows/carte-c8-rabat-taxonomy-promotion-batch2.yml"
   push:
@@ -16,6 +17,7 @@ on:
       - "scripts/scrapers/__tests__/carte-c8b-rabat-locality-registry.test.ts"
       - "scripts/scrapers/__tests__/carte-c8c-rabat-geometry-blocker-matrix.test.ts"
       - "scripts/scrapers/__tests__/carte-c8d-rabat-authority-proposal.test.ts"
+      - "scripts/scrapers/__tests__/carte-c8d-rabat-shadow-resolver.test.ts"
       - "docs/CARTE_C8_RABAT_TAXONOMY_PROMOTION_BATCH2.md"
       - ".github/workflows/carte-c8-rabat-taxonomy-promotion-batch2.yml"
 
@@ -39,5 +41,7 @@ jobs:
         run: npx tsx --test scripts/scrapers/__tests__/carte-c8c-rabat-geometry-blocker-matrix.test.ts
       - name: C8D authority proposal
         run: npx tsx --test scripts/scrapers/__tests__/carte-c8d-rabat-authority-proposal.test.ts
+      - name: C8D shadow resolver non-regression
+        run: npx tsx --test scripts/scrapers/__tests__/carte-c8d-rabat-shadow-resolver.test.ts
       - name: TypeScript
         run: npx tsc --noEmit
