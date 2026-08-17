@@ -129,7 +129,7 @@ function candidate(
 }
 
 export const RABAT_PRODUCT_LOCALITY_CANDIDATES: readonly RabatProductLocality[] = [
-  candidate("candidate_rabat_yacoub_el_mansour", "yacoub-el-mansour", "Yacoub El Mansour", "yacoub el mansour", ["Yaacoub El Mansour"], "admin_rabat_yacoub_el_mansour", ["hcp_rabat_admin_statistical_nomenclature", "akarfinder_district_dictionary_v1", "aurs_rabat_first_party"], "first_party_available"),
+  candidate("candidate_rabat_yacoub_el_mansour", "yacoub-el-mansour", "Yacoub El Mansour", "yacoub el mansour", ["Yaacoub El Mansour"], "admin_rabat_yacoub_el_mansour", ["hcp_rabat_admin_statistical_nomenclature", "akarfinder_district_dictionary_v1", "aurs_rabat_first_party"], "first_party_available", "certified"),
   candidate("candidate_rabat_youssoufia", "youssoufia", "Youssoufia", "youssoufia", [], "admin_rabat_youssoufia", ["hcp_rabat_admin_statistical_nomenclature", "aurs_rabat_first_party"], "first_party_available"),
   candidate("candidate_rabat_touarga", "touarga", "Touarga", "touarga", [], "admin_rabat_touarga", ["hcp_rabat_admin_statistical_nomenclature"]),
   candidate("candidate_rabat_les_orangers", "les-orangers", "Les Orangers", "les orangers", [], null, ["akarfinder_district_dictionary_v1"]),
