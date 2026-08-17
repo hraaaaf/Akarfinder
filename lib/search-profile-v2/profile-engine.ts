@@ -1,10 +1,13 @@
 import type { DynamicSearchProfileV2, Importance, NeighborhoodPreferenceKey, PreferenceDirection, ProfileConfidence, ProfileEvidenceSource, SearchObjective, IntendedUse } from "./types";
 
+type SearchProfileAnchor = DynamicSearchProfileV2["location"]["anchors"][number];
+
 export type SearchProfileEvent =
   | { type: "objective"; value: SearchObjective }
   | { type: "uses"; values: IntendedUse[] }
   | { type: "budget"; purchase_max_mad?: number | null; rent_monthly_max_mad?: number | null; budget_flex_pct?: number }
   | { type: "cities"; values: string[] }
+  | { type: "anchors"; values: SearchProfileAnchor[] }
   | { type: "property"; property_types?: string[]; min_surface_m2?: number | null; min_bedrooms?: number | null; required_features?: string[]; works_accepted?: boolean | null }
   | { type: "preference"; key: NeighborhoodPreferenceKey; direction: PreferenceDirection; importance: Importance; target?: number | null; source?: ProfileEvidenceSource; confidence?: ProfileConfidence }
   | { type: "priorities"; values: string[] }
@@ -18,6 +21,45 @@ function nonNegative(value: number | null | undefined): number | null | undefine
   if (value == null) return value;
   if (!Number.isFinite(value) || value < 0) throw new Error("PROFILE_NUMERIC_VALUE_INVALID");
   return value;
+}
+
+function cleanAnchorText(value: string | undefined, max = 120): string | undefined {
+  if (value == null) return undefined;
+  const cleaned = value.trim();
+  if (!cleaned || cleaned.length > max) throw new Error("PROFILE_ANCHOR_TEXT_INVALID");
+  return cleaned;
+}
+
+function normalizeAnchors(values: SearchProfileAnchor[]): SearchProfileAnchor[] {
+  if (values.length > 10) throw new Error("PROFILE_ANCHOR_LIMIT_EXCEEDED");
+  const normalized = values.map((value) => {
+    const label = cleanAnchorText(value.label)!;
+    const city = cleanAnchorText(value.city, 120);
+    const hasLat = value.latitude != null;
+    const hasLng = value.longitude != null;
+    if (hasLat !== hasLng) throw new Error("PROFILE_ANCHOR_COORDINATES_INCOMPLETE");
+    if (hasLat && hasLng) {
+      if (!Number.isFinite(value.latitude) || !Number.isFinite(value.longitude) || value.latitude! < -90 || value.latitude! > 90 || value.longitude! < -180 || value.longitude! > 180) {
+        throw new Error("PROFILE_ANCHOR_COORDINATES_INVALID");
+      }
+    }
+    if (value.max_minutes != null && (!Number.isInteger(value.max_minutes) || value.max_minutes < 1 || value.max_minutes > 180)) {
+      throw new Error("PROFILE_ANCHOR_MAX_MINUTES_INVALID");
+    }
+    return {
+      label,
+      ...(city ? { city } : {}),
+      ...(hasLat && hasLng ? { latitude: value.latitude, longitude: value.longitude } : {}),
+      ...(value.max_minutes != null ? { max_minutes: value.max_minutes } : {}),
+    };
+  });
+  const seen = new Set<string>();
+  return normalized.filter((value) => {
+    const key = `${value.label.toLocaleLowerCase("fr")}|${value.latitude ?? ""}|${value.longitude ?? ""}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 function signal<T>(value: T, now: string, source: ProfileEvidenceSource = "explicit", confidence: ProfileConfidence = "high") {
@@ -39,6 +81,7 @@ export function applySearchProfileEvent(profile: DynamicSearchProfileV2, event: 
       }
       break;
     case "cities": next.location.preferred_cities = clean(event.values); break;
+    case "anchors": next.location.anchors = normalizeAnchors(event.values); break;
     case "property":
       if (event.property_types) next.property.property_types = clean(event.property_types);
       if ("min_surface_m2" in event) next.property.min_surface_m2 = nonNegative(event.min_surface_m2) ?? null;
