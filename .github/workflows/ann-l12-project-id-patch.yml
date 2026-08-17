@@ -1,0 +1,78 @@
+name: ANN-L12 Project ID Patch
+
+on:
+  push:
+    branches:
+      - agent/announcement-page-l12-mon-projet-personalise
+    paths:
+      - ".github/workflows/ann-l12-project-id-patch.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/announcement-page-l12-mon-projet-personalise
+      - name: Patch explicit project continuity
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path, old, new):
+              p = Path(path)
+              text = p.read_text()
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f"{path}: expected 1 occurrence, found {count}: {old[:80]!r}")
+              p.write_text(text.replace(old, new, 1))
+
+          replace_once(
+              "app/search/page.tsx",
+              "          initialListings={initialSearchResult.listings}\n          initialFilters={{",
+              "          initialListings={initialSearchResult.listings}\n          projectId={requestedProjectId}\n          initialFilters={{",
+          )
+
+          replace_once(
+              "components/search/LightZillowSearchShell.tsx",
+              "type LightZillowSearchShellProps = {\n  initialListings: Listing[];\n  initialFilters?: Partial<ListingFiltersState>;\n};",
+              "type LightZillowSearchShellProps = {\n  initialListings: Listing[];\n  initialFilters?: Partial<ListingFiltersState>;\n  projectId?: string;\n};",
+          )
+          replace_once(
+              "components/search/LightZillowSearchShell.tsx",
+              "export function LightZillowSearchShell({ initialListings, initialFilters }: LightZillowSearchShellProps) {",
+              "export function LightZillowSearchShell({ initialListings, initialFilters, projectId }: LightZillowSearchShellProps) {",
+          )
+          replace_once(
+              "components/search/LightZillowSearchShell.tsx",
+              "                        <SearchListingCardDark key={listing.id} listing={listing} />",
+              "                        <SearchListingCardDark key={listing.id} listing={listing} projectId={projectId} />",
+          )
+
+          replace_once(
+              "components/search/SearchListingCardDark.tsx",
+              "export function SearchListingCardDark({ listing }: { listing: Listing }) {",
+              "export function SearchListingCardDark({ listing, projectId }: { listing: Listing; projectId?: string }) {",
+          )
+          replace_once(
+              "components/search/SearchListingCardDark.tsx",
+              "  const resultHref =\n    observedExternal && listing.listing_url ? listing.listing_url : `/listings/${listing.id}`;",
+              "  const internalHref = projectId\n    ? `/listings/${listing.id}?project_id=${encodeURIComponent(projectId)}`\n    : `/listings/${listing.id}`;\n  const resultHref =\n    observedExternal && listing.listing_url ? listing.listing_url : internalHref;",
+          )
+          PY
+      - name: Commit patch and remove temporary workflow
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          rm .github/workflows/ann-l12-project-id-patch.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app/search/page.tsx components/search/LightZillowSearchShell.tsx components/search/SearchListingCardDark.tsx .github/workflows/ann-l12-project-id-patch.yml
+          git commit -m "feat(ann-l12): preserve explicit project id into listing detail"
+          git push origin HEAD:agent/announcement-page-l12-mon-projet-personalise
