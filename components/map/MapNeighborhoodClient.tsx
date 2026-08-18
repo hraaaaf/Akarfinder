@@ -90,6 +90,22 @@ export function MapNeighborhoodClient({ initialState }: MapNeighborhoodClientPro
       className="relative"
       data-akarfinder-generic-map-selected={marketIntelligenceProvider ? undefined : navigationState.district ? "true" : "false"}
     >
+      <style>{`
+        @media (max-width: 1023px) {
+          [data-akarfinder-generic-map-selected="true"] section[aria-label="Contrôles de la carte immobilière"],
+          [data-akarfinder-generic-map-selected="true"] nav[aria-label="Exploration territoriale"],
+          [data-akarfinder-generic-map-selected="true"] > aside[aria-label="Légende de la carte immobilière"] {
+            display: none !important;
+          }
+        }
+        @media (max-width: 767px) {
+          [data-akarfinder-generic-map-selected="true"] aside[aria-label^="Fiche repère quartier"] {
+            bottom: 84px !important;
+            max-height: min(58svh, 520px) !important;
+            box-shadow: 0 18px 48px rgb(15 35 66 / 0.18) !important;
+          }
+        }
+      `}</style>
       {marketIntelligenceProvider === "rabat-market-intelligence" ? (
         <>
           <h1 className="sr-only">Carte intelligence marché à Rabat</h1>
