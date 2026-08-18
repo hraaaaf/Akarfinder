@@ -1,13 +1,7 @@
 name: Carte Lot 8 Casablanca Visual Baseline
 
 on:
-  pull_request:
-    paths:
-      - "components/map/MapNeighborhoodExperience.tsx"
-      - "components/map/MapNeighborhoodClient.tsx"
-      - "app/map/**"
-      - "scripts/audits/carte-lot8-casablanca-visual-baseline.mjs"
-      - ".github/workflows/carte-lot8-casablanca-visual-baseline.yml"
+  workflow_dispatch:
 
 permissions:
   contents: read
