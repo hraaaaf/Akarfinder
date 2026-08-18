@@ -96,6 +96,15 @@ try {
         if (await legend.isVisible()) throw new Error(`${viewport.name}: legend must hide while district panel is open`);
         if (await explorer.isVisible()) throw new Error(`${viewport.name}: territorial explorer must hide while district panel is open`);
         if (await controls.isVisible()) throw new Error(`${viewport.name}: generic cockpit must hide while district panel is open`);
+      } else {
+        const citybar = page.locator("[data-akarfinder-generic-premium-citybar]");
+        await citybar.waitFor({ state: "visible", timeout: 10000 });
+        if (await citybar.getByRole("button").count() !== 6) {
+          throw new Error(`${viewport.name}: premium citybar must expose exactly six flagship cities`);
+        }
+        if (await citybar.getByRole("button", { name: "Casablanca", exact: true }).getAttribute("aria-pressed") !== "true") {
+          throw new Error(`${viewport.name}: Casablanca must be the active flagship city`);
+        }
       }
 
       if (viewport.width <= 767 && panelBox.y + panelBox.height > viewport.height - 76) {
@@ -118,6 +127,7 @@ try {
         overlaysHidden: viewport.width <= 1023,
         mapRendered: true,
         highZoomTileCount,
+        premiumCitybar: viewport.width >= 1024,
         diagnostics,
       });
     } finally {
