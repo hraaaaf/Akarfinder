@@ -16,16 +16,16 @@ const expected = [
   ["fes", "Fès", false],
 ];
 
+const rows = registry.split("\n").filter((line) => line.includes("marketIntelligence:") && line.includes("slug:"));
+assert(rows.length === 6, `expected 6 city capability rows, got ${rows.length}`);
+
 for (const [slug, displayName, marketIntelligence] of expected) {
-  assert(registry.includes(`slug: "${slug}"`), `missing premium city ${slug}`);
-  assert(registry.includes(`displayName: "${displayName}"`), `display name mismatch ${slug}`);
-  const row = registry.split("\n").find((line) => line.includes(`slug: "${slug}"`));
+  const row = rows.find((line) => line.includes(`slug: "${slug}"`));
   assert(row, `row missing ${slug}`);
+  assert(row.includes(`displayName: "${displayName}"`), `display name mismatch ${slug}`);
   assert(row.includes(`marketIntelligence: ${marketIntelligence}`), `capability mismatch ${slug}`);
 }
 
-const rows = registry.split("\n").filter((line) => line.includes("marketIntelligence:") && line.includes("slug:"));
-assert(rows.length === 6, `expected 6 city capability rows, got ${rows.length}`);
 assert(rows.filter((line) => line.includes("marketIntelligence: true")).length === 1, "only one city may be data-rich before Lot 8 providers are proven");
 assert(rows.find((line) => line.includes('slug: "rabat"'))?.includes("marketIntelligence: true"), "Rabat must remain the only certified market-intelligence city");
 
