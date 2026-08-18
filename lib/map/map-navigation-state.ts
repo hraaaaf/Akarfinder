@@ -178,7 +178,6 @@ export function withMapLocation(
     ...state,
     city: cityEntity.slug,
     district: districtEntity?.slug,
-    layer: state.layer === MAP_LAYER_EXPLORE ? MAP_LAYER_PRICE : state.layer,
   };
 }
 
