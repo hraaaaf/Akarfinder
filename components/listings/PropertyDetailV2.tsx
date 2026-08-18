@@ -1,14 +1,12 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { CompareBar } from "@/components/compare/CompareBar";
-import { CompareToggleButton } from "@/components/compare/CompareToggleButton";
 import { AkarInsightCard } from "@/components/listings/AkarInsightCard";
 import { ExpandablePropertyDescription } from "@/components/listings/ExpandablePropertyDescription";
 import { FinanceMarocSection } from "@/components/listings/FinanceMarocSection";
 import { LivingHereSection } from "@/components/listings/LivingHereSection";
 import { MarketComparablesSection } from "@/components/listings/MarketComparablesSection";
 import { MarketComparablesSummaryCard } from "@/components/listings/MarketComparablesSummaryCard";
-import { FavoriteToggleButton } from "@/components/favorites/FavoriteToggleButton";
 import { PropertyCore } from "@/components/listings/PropertyCore";
 import { PropertyMediaGallery } from "@/components/listings/PropertyMediaGallery";
 import { StreetRealitySection } from "@/components/listings/StreetRealitySection";
@@ -113,28 +111,23 @@ export function PropertyDetailV2({
 
       <div
         data-announcement-primary-visual="ann-l18"
-        className="mt-3 grid gap-5 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start xl:gap-7"
+        className="mt-3 grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start xl:gap-7"
       >
         <div className="min-w-0">
           <PropertyMediaGallery listing={listing} />
-        </div>
-        <aside className="hidden lg:sticky lg:top-5 lg:block">
-          <ProfessionalConversionCard listing={listing} model={proConversion} />
-        </aside>
-      </div>
 
-      <div className="mt-5 grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start xl:gap-7">
-        <div className="min-w-0">
-          <PropertyCore
-            listing={listing}
-            afterIdentity={
-              <ProfessionalConversionCard
-                listing={listing}
-                model={proConversion}
-                mobileIdentityOnly
-              />
-            }
-          />
+          <div className="mt-5">
+            <PropertyCore
+              listing={listing}
+              afterIdentity={
+                <ProfessionalConversionCard
+                  listing={listing}
+                  model={proConversion}
+                  mobileIdentityOnly
+                />
+              }
+            />
+          </div>
 
           <div className="mt-6">
             <AkarInsightCard detail={detail} />
@@ -222,6 +215,7 @@ export function PropertyDetailV2({
         </div>
 
         <aside className="hidden space-y-4 lg:sticky lg:top-5 lg:block">
+          <ProfessionalConversionCard listing={listing} model={proConversion} />
           <ProjectPersonalizationCard listing={listing} projectId={projectId} compactRail />
           <MarketComparablesSummaryCard model={marketComparables} />
         </aside>
