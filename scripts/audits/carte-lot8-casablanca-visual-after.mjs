@@ -69,11 +69,13 @@ try {
 
       const mapCanvas = page.locator(".maplibregl-canvas");
       await mapCanvas.waitFor({ state: "visible", timeout: 10000 });
-
-      const panel = page.getByRole("complementary", { name: /Fiche repère quartier Maârif/i });
-      await panel.waitFor({ state: "visible", timeout: 20000 });
       await highZoomTilesReady;
       await page.waitForTimeout(450);
+
+      const fullPanel = page.getByRole("complementary", { name: /Fiche repère quartier Maârif/i });
+      const compactPanel = page.locator("[data-akarfinder-mobile-compact-panel]");
+      const panel = viewport.width <= 767 ? compactPanel : fullPanel;
+      await panel.waitFor({ state: "visible", timeout: 20000 });
 
       const panelBox = await panel.boundingBox();
       if (!panelBox) throw new Error(`${viewport.name}: Maârif panel has no bounding box`);
@@ -81,7 +83,10 @@ try {
         throw new Error(`${viewport.name}: Maârif panel escapes viewport ${JSON.stringify(panelBox)}`);
       }
 
-      const searchHref = await panel.getByRole("link", { name: /Rechercher dans ce quartier/i }).getAttribute("href");
+      const searchLink = viewport.width <= 767
+        ? panel.getByRole("link", { name: /Rechercher ici/i })
+        : panel.getByRole("link", { name: /Rechercher dans ce quartier/i });
+      const searchHref = await searchLink.getAttribute("href");
       if (!searchHref) throw new Error(`${viewport.name}: Search handoff missing`);
       const searchUrl = new URL(searchHref, baseUrl);
       if (searchUrl.pathname !== "/search" || searchUrl.searchParams.get("city") !== "Casablanca" || searchUrl.searchParams.get("district") !== "Maârif") {
@@ -107,8 +112,15 @@ try {
         }
       }
 
-      if (viewport.width <= 767 && panelBox.y + panelBox.height > viewport.height - 76) {
-        throw new Error(`${viewport.name}: district panel overlaps bottom navigation ${JSON.stringify(panelBox)}`);
+      if (viewport.width <= 767) {
+        if (await fullPanel.isVisible()) throw new Error(`${viewport.name}: full district sheet must stay collapsed initially`);
+        if (panelBox.height > 230) throw new Error(`${viewport.name}: compact district preview is too tall ${JSON.stringify(panelBox)}`);
+        if (panelBox.y < viewport.height * 0.5) {
+          throw new Error(`${viewport.name}: insufficient visible map band above compact preview ${JSON.stringify(panelBox)}`);
+        }
+        if (panelBox.y + panelBox.height > viewport.height - 76) {
+          throw new Error(`${viewport.name}: compact district preview overlaps bottom navigation ${JSON.stringify(panelBox)}`);
+        }
       }
 
       if (diagnostics.pageErrors.length) {
@@ -120,11 +132,19 @@ try {
         fullPage: false,
       });
 
+      if (viewport.width <= 767) {
+        await compactPanel.getByRole("button", { name: "Afficher les détails du quartier" }).click();
+        await fullPanel.waitFor({ state: "visible", timeout: 5000 });
+        if (await compactPanel.isVisible()) throw new Error(`${viewport.name}: compact preview must disappear after details expansion`);
+      }
+
       report.cases.push({
         viewport: viewport.name,
         searchHref,
         panelBox,
         overlaysHidden: viewport.width <= 1023,
+        mobileCompactPreview: viewport.width <= 767,
+        mobileDetailsExpandable: viewport.width <= 767,
         mapRendered: true,
         highZoomTileCount,
         premiumCitybar: viewport.width >= 1024,
