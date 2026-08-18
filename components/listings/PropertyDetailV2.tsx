@@ -111,8 +111,16 @@ export function PropertyDetailV2({
         <span aria-hidden="true">←</span> Retour aux résultats
       </Link>
 
-      <div className="mt-3">
-        <PropertyMediaGallery listing={listing} />
+      <div
+        data-announcement-primary-visual="ann-l18"
+        className="mt-3 grid gap-5 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start xl:gap-7"
+      >
+        <div className="min-w-0">
+          <PropertyMediaGallery listing={listing} />
+        </div>
+        <aside className="hidden lg:sticky lg:top-5 lg:block">
+          <ProfessionalConversionCard listing={listing} model={proConversion} />
+        </aside>
       </div>
 
       <div className="mt-5 grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start xl:gap-7">
@@ -214,10 +222,6 @@ export function PropertyDetailV2({
         </div>
 
         <aside className="hidden space-y-4 lg:sticky lg:top-5 lg:block">
-          <ProfessionalConversionCard
-            listing={listing}
-            model={proConversion}
-          />
           <ProjectPersonalizationCard listing={listing} projectId={projectId} compactRail />
           <MarketComparablesSummaryCard model={marketComparables} />
         </aside>
