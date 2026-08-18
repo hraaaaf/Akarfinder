@@ -19,7 +19,6 @@ import { getMapConfidenceMeta } from "@/lib/map/map-design-system";
 import {
   buildMapHref,
   buildMapSearchHref,
-  buildNeighborhoodPageHref,
   MAP_LAYER_EXPLORE,
   MAP_LAYER_PRICE,
   mapNavigationStateFromUrlSearchParams,
@@ -80,11 +79,6 @@ export function MapNeighborhoodClient({ initialState }: MapNeighborhoodClientPro
 
   const genericSearchHref = useMemo(
     () => buildMapSearchHref(navigationState),
-    [navigationState],
-  );
-
-  const selectedGenericNeighborhoodHref = useMemo(
-    () => buildNeighborhoodPageHref(navigationState),
     [navigationState],
   );
 
@@ -376,15 +370,6 @@ export function MapNeighborhoodClient({ initialState }: MapNeighborhoodClientPro
                   <ChevronUp size={14} aria-hidden="true" />
                 </button>
               </div>
-
-              {selectedGenericNeighborhoodHref ? (
-                <Link
-                  href={selectedGenericNeighborhoodHref}
-                  className="mt-2 inline-flex min-h-10 w-full items-center justify-center rounded-xl border border-border bg-surface text-[10.5px] font-extrabold text-foreground"
-                >
-                  Voir la page quartier
-                </Link>
-              ) : null}
             </aside>
           ) : null}
 
