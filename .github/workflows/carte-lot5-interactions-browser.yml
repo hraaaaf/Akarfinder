@@ -1,0 +1,54 @@
+name: Carte Lot 5 Interactions Browser
+
+on:
+  pull_request:
+    paths:
+      - "components/map/RabatMarketIntelligenceExperience.tsx"
+      - "components/map/RabatMarketZoneSheet.tsx"
+      - "lib/map/map-navigation-state.ts"
+      - "scripts/audits/carte-lot5-interactions-browser.mjs"
+      - ".github/workflows/carte-lot5-interactions-browser.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  certify-lot5-interactions:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      BASE_URL: http://127.0.0.1:3205
+      AUDIT_OUTPUT_DIR: data/audits/carte-lot5-interactions
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Production build
+        run: npm run build
+      - name: Start production server
+        shell: bash
+        run: |
+          npm run start -- -p 3205 > /tmp/carte-lot5-interactions.log 2>&1 &
+          for attempt in {1..60}; do
+            if curl -fsS 'http://127.0.0.1:3205/map?city=rabat&district=agdal&layer=explore' >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/carte-lot5-interactions.log
+          exit 1
+      - name: Certify Rabat interactions and states
+        run: node scripts/audits/carte-lot5-interactions-browser.mjs
+      - name: Upload Lot 5 browser proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: carte-lot5-interactions-${{ github.run_id }}
+          path: data/audits/carte-lot5-interactions
+          if-no-files-found: error
+          retention-days: 30
