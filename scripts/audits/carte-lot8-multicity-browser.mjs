@@ -104,35 +104,26 @@ try {
             if (await locator.isVisible()) throw new Error(`${cityCase.slug}/${viewport.name}: secondary overlay remains visible`);
           }
         } else {
-          const citybar = page.locator("[data-akarfinder-generic-premium-citybar]");
-          await citybar.waitFor({ state: "visible", timeout: 10000 });
-          const cityButtons = citybar.getByRole("button");
-          if (await cityButtons.count() !== 6) {
-            throw new Error(`${cityCase.slug}/${viewport.name}: premium citybar must expose exactly six flagship cities`);
-          }
-          const activeCityButton = citybar.getByRole("button", { name: cityCase.city, exact: true });
-          if (await activeCityButton.getAttribute("aria-pressed") !== "true") {
-            throw new Error(`${cityCase.slug}/${viewport.name}: active flagship city is not ${cityCase.city}`);
-          }
+          const toolbar = page.locator("[data-akarfinder-generic-premium-toolbar]");
+          await toolbar.waitFor({ state: "visible", timeout: 10000 });
+          const cityNavigation = toolbar.getByRole("navigation", { name: "Sélection des villes phares" });
+          await cityNavigation.waitFor({ state: "visible", timeout: 5000 });
+          const cityButtons = cityNavigation.getByRole("button");
+          if (await cityButtons.count() !== 6) throw new Error(`${cityCase.slug}/${viewport.name}: premium toolbar must expose exactly six flagship cities`);
+          const activeCityButton = cityNavigation.getByRole("button", { name: cityCase.city, exact: true });
+          if (await activeCityButton.getAttribute("aria-pressed") !== "true") throw new Error(`${cityCase.slug}/${viewport.name}: active flagship city is not ${cityCase.city}`);
         }
 
         if (viewport.width <= 767) {
           if (await fullPanel.isVisible()) throw new Error(`${cityCase.slug}/${viewport.name}: full district sheet must stay collapsed initially`);
           if (panelBox.height > 230) throw new Error(`${cityCase.slug}/${viewport.name}: compact preview too tall ${JSON.stringify(panelBox)}`);
-          if (panelBox.y < viewport.height * 0.5) {
-            throw new Error(`${cityCase.slug}/${viewport.name}: insufficient visible map band ${JSON.stringify(panelBox)}`);
-          }
-          if (panelBox.y + panelBox.height > viewport.height - 76) {
-            throw new Error(`${cityCase.slug}/${viewport.name}: compact preview overlaps bottom navigation ${JSON.stringify(panelBox)}`);
-          }
+          if (panelBox.y < viewport.height * 0.5) throw new Error(`${cityCase.slug}/${viewport.name}: insufficient visible map band ${JSON.stringify(panelBox)}`);
+          if (panelBox.y + panelBox.height > viewport.height - 76) throw new Error(`${cityCase.slug}/${viewport.name}: compact preview overlaps bottom navigation ${JSON.stringify(panelBox)}`);
         }
 
         if (pageErrors.length) throw new Error(`${cityCase.slug}/${viewport.name}: browser page errors ${JSON.stringify(pageErrors)}`);
 
-        await page.screenshot({
-          path: `${outDir}/${cityCase.slug}-${cityCase.districtSlug}-${viewport.width}x${viewport.height}.png`,
-          fullPage: false,
-        });
+        await page.screenshot({ path: `${outDir}/${cityCase.slug}-${cityCase.districtSlug}-${viewport.width}x${viewport.height}.png`, fullPage: false });
 
         if (viewport.width <= 767) {
           await compactPanel.getByRole("button", { name: "Afficher les détails du quartier" }).click();
@@ -150,7 +141,7 @@ try {
           mobileDetailsExpandable: viewport.width <= 767,
           mapRendered: true,
           highZoomTileCount,
-          premiumCitybar: viewport.width >= 1024,
+          premiumToolbar: viewport.width >= 1024,
           tileResponses,
         });
       } finally {
