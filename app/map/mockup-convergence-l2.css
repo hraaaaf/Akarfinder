@@ -72,7 +72,6 @@ aside[aria-label^="Fiche repère quartier"] button[aria-label^="Fermer"] {
     padding: 9px 10px !important;
     border-radius: 18px !important;
     box-shadow: 0 12px 30px rgb(15 35 66 / 0.12) !important;
-    transition: opacity 160ms ease, transform 160ms ease;
   }
 
   [data-akarfinder-premium-map-toolbar] > div:first-child p:first-child {
@@ -118,9 +117,7 @@ aside[aria-label^="Fiche repère quartier"] button[aria-label^="Fermer"] {
   }
 
   [data-akarfinder-market-intelligence-map]:has([data-akarfinder-rich-zone-sheet]) [data-akarfinder-premium-map-toolbar] {
-    opacity: 0 !important;
-    pointer-events: none !important;
-    transform: translateY(-8px) !important;
+    display: none !important;
   }
 
   aside[aria-label^="Fiche repère quartier"] {
