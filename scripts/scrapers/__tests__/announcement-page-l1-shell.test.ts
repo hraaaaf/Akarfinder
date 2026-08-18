@@ -39,7 +39,7 @@ describe("ANN-L1 premium shell", () => {
     const core = read("components/listings/PropertyCore.tsx");
     const h1Count = (detail.match(/<h1\b/g) ?? []).length + (core.match(/<h1\b/g) ?? []).length;
     assert.equal(h1Count, 1);
-    assert.match(detail, /<PropertyCore listing=\{listing\} \/>/);
+    assert.match(detail, /<PropertyCore\s+listing=\{listing\}/);
     assert.match(core, /data-property-core-title/);
     assert.doesNotMatch(shell, /PropertyDecisionHeader/);
   });
