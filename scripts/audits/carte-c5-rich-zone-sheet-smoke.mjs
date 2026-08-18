@@ -101,13 +101,15 @@ try {
         throw new Error(`${district.slug}/${viewport.name}: sheet escapes viewport ${JSON.stringify(sheetBox)}`);
       }
 
-      if (viewport.mobile) {
+      if (viewport.width < 1024) {
         const toolbar = page.locator("[data-akarfinder-premium-map-toolbar]");
         if ((await toolbar.count()) !== 1) throw new Error(`${district.slug}/${viewport.name}: premium map cockpit missing`);
         if (await toolbar.isVisible()) {
           throw new Error(`${district.slug}/${viewport.name}: premium map cockpit must hide while rich zone sheet is open`);
         }
+      }
 
+      if (viewport.mobile) {
         const nav = await mobileNavRect(page);
         if (!nav) throw new Error(`${district.slug}/${viewport.name}: mobile bottom navigation missing`);
         if (sheetBox.y + sheetBox.height > nav.top + 2) {
@@ -123,11 +125,12 @@ try {
 
         if (!viewport.mobile) {
           const densityTab = page.locator('[data-akarfinder-intelligence-mode="density"]');
+          const densityResponse = waitForIntelligence(page, "density");
           await densityTab.click();
-          await densityTab.waitFor({ state: "visible", timeout: 10000 });
+          await densityResponse;
           const selected = await densityTab.getAttribute("aria-selected");
           if (selected !== "true") throw new Error(`Density tab did not become selected: ${selected}`);
-          await sheet.getByText("Densité", { exact: true }).waitFor({ state: "visible", timeout: 10000 });
+          await sheet.getByText("Vue Densité", { exact: true }).waitFor({ state: "visible", timeout: 10000 });
           await page.getByText("Chargement de la carte des quartiers…", { exact: true }).waitFor({ state: "hidden", timeout: 10000 });
           if ((await context.count()) !== 1) throw new Error("Agdal context disappeared after mode switch");
         }
