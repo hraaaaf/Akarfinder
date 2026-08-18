@@ -22,9 +22,36 @@ Certifier la refonte Rabat sur les mêmes familles de viewports, avec preuves vi
 - Lot 5 interactions : Browser run `32084635158` vert, artifact `9306319080`, Accessibility run `32084634974` vert, merge `b205f76f91457ab28114ea8da0927d1ae76ddcca`.
 
 ## Renforcement Lot 6
-Le C5 Browser ajoute le viewport 768x900 et rend strict l’attente de disparition du loading après changement vers Densité. Aucun `.catch()` ne doit transformer un état transitoire persistant en succès.
+- C5 Browser : ajout du viewport 768x900.
+- Cockpit masqué sous 1024 px lorsqu’une zone est ouverte afin d’éviter le chevauchement tablette observé sur la première preuve Lot 6.
+- Attente du loading durcie après changement vers Densité ; aucune tolérance silencieuse.
+- UI All Pages : le 503 fail-closed attendu de `/map` dans la lane sans secrets est classé explicitement sans masquer d’autres erreurs ; la lane C5 data-rich continue d’exiger HTTP 200.
+
+## Preuve Lot 6 certifiée avant closeout
+Sur le head `154b7dec73ef33bda98f3ec548b4a88c2637a87c` :
+- C5 Browser run `32122594646` : succès.
+- Artifact C5 `9319164609`, digest `sha256:f766e8862ed7b94e9ef484a50f4e206261670821a77ae0a087154228e91e87d9`.
+- `report.json` : `ok: true`, 16 cas, 4 quartiers x 4 viewports, aucun `pageError` ni `requestFailure`.
+- Accessibility run `32122594556` : succès.
+- UI All Pages Certification run `32122594655` : succès.
+- UI All Pages Baseline run `32122594524` : succès.
+- Canonical Baseline Compile `32122594608` : succès.
+- Canonical Baseline `32122594443` : succès.
+- UX Gate `32122594661` : succès.
+- Geo Productization `32122594611` : succès.
+- P0 `32122594699`, P1 Final Sweep `32122594833`, P2 `32122594464` : succès.
+- Mockup Target `32122594452` et L2 Search Map `32122594559` : succès.
+- UI Polish P3 `32122594620` et P5 `32122594704` : succès.
+
+## Inspection visuelle
+Captures C5 inspectées sur Agdal aux viewports 1280x900, 768x900, 430x932 et 390x844 :
+- desktop : cockpit et sheet séparés, carte dominante, hiérarchie conforme à la référence V2 ;
+- tablette : cockpit absent avec sheet ouverte, plus aucun chevauchement ;
+- mobile : sheet prioritaire, CTA lisible, bottom-nav dégagée, aucun débordement.
+
+Score visuel Lot 6 : **9,8/10**.
 
 ## Gate de fermeture
-Lot 6 n’est fermé qu’après : artifact exact-head téléchargé, inspection 1280/768/430/390, score explicite >= 9,8/10, CI requise verte et merge.
+Le Lot 6 est éligible au merge uniquement si le head de closeout repasse les gates requis après cette mise à jour documentaire. Le merge, et non cette note seule, ferme le lot.
 
 Aucun déploiement Vercel sans autorisation explicite.
