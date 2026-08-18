@@ -1,0 +1,72 @@
+name: Carte Lot 9 Market Modes Browser
+
+on:
+  pull_request:
+    paths:
+      - "app/api/geo/market-intelligence/**"
+      - "components/map/MapLegend.tsx"
+      - "components/map/MapNeighborhoodClient.tsx"
+      - "components/map/MapNeighborhoodExperience.tsx"
+      - "lib/geo/**"
+      - "lib/map/city-market-intelligence*.ts"
+      - "lib/map/map-navigation-state.ts"
+      - "scripts/audits/carte-lot9-market-modes-browser.mjs"
+      - ".github/workflows/carte-lot9-market-modes-browser.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  certify-lot9-browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    env:
+      BASE_URL: http://127.0.0.1:3209
+      AUDIT_OUTPUT_DIR: data/audits/carte-lot9-market-modes
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Start production server
+        shell: bash
+        run: |
+          npm run start -- -p 3209 > /tmp/carte-lot9.log 2>&1 &
+          for attempt in {1..60}; do
+            if curl -fsS 'http://127.0.0.1:3209/map?city=casablanca&layer=price' >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/carte-lot9.log
+          exit 1
+      - name: Four-viewport market modes browser certification
+        run: node scripts/audits/carte-lot9-market-modes-browser.mjs
+      - name: Enforce Lot 9 report
+        run: |
+          node - <<'NODE'
+          const r=require('./data/audits/carte-lot9-market-modes/report.json');
+          if(r.ok!==true) throw new Error('Lot 9 browser report not ok');
+          if(!Array.isArray(r.cases)||r.cases.length!==4) throw new Error('Lot 9 requires exactly four viewports');
+          for(const width of [390,430,768,1280]) {
+            const item=r.cases.find(x=>x.viewport.includes(String(width)));
+            if(!item) throw new Error(`missing viewport ${width}`);
+            if(item.highZoomTileCount<2) throw new Error(`viewport ${width} lacks real basemap proof`);
+          }
+          NODE
+      - name: Upload Lot 9 exact-head proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: carte-lot9-market-modes-${{ github.run_id }}
+          path: data/audits/carte-lot9-market-modes
+          if-no-files-found: error
+          retention-days: 30
