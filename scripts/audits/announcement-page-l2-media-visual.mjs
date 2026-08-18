@@ -102,7 +102,7 @@ try {
       if (scenario.expectTwoPhotoDesktop) {
         const side = page.getByRole("button", { name: "Ouvrir la photo 2" });
         const sideBox = await side.boundingBox();
-        if (!sideBox || sideBox.height < 490) localFindings.push(`TWO_PHOTO_SIDE_HEIGHT_${Math.round(sideBox?.height ?? 0)}`);
+        if (!sideBox || sideBox.height < 450) localFindings.push(`TWO_PHOTO_SIDE_HEIGHT_${Math.round(sideBox?.height ?? 0)}`);
         const visibleImages = await media.locator("img").evaluateAll((nodes) => nodes.filter((node) => {
           const rect = node.getBoundingClientRect();
           const style = getComputedStyle(node);
@@ -149,7 +149,7 @@ try {
 }
 
 const report = {
-  schemaVersion: "ANNOUNCEMENT_PAGE_L2_MEDIA_VISUAL_V1",
+  schemaVersion: "ANNOUNCEMENT_PAGE_L2_MEDIA_VISUAL_V2_COMPACT_HERO",
   route,
   generatedAt: new Date().toISOString(),
   scenarioCount: scenarios.length,

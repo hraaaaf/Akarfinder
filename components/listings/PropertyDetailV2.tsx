@@ -111,7 +111,7 @@ export function PropertyDetailV2({
         <span aria-hidden="true">←</span> Retour aux résultats
       </Link>
 
-      <div className="mt-3 grid gap-7 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
+      <div className="mt-3 grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start xl:gap-7">
         <div className="min-w-0">
           <PropertyMediaGallery listing={listing} />
 
@@ -212,7 +212,7 @@ export function PropertyDetailV2({
           </div>
         </div>
 
-        <aside className="hidden space-y-5 lg:sticky lg:top-6 lg:block">
+        <aside className="hidden space-y-4 lg:sticky lg:top-5 lg:block">
           <ProfessionalConversionCard
             listing={listing}
             model={proConversion}

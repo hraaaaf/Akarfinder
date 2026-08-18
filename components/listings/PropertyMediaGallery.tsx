@@ -223,11 +223,11 @@ export function PropertyMediaGallery({ listing }: { listing: Listing }) {
         type="button"
         onClick={share}
         aria-label={shareLabel}
-        className="grid h-11 min-w-11 place-items-center rounded-full bg-white/95 px-3 text-[#0B2545] shadow-lg backdrop-blur transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0B63CE]"
+        className="grid h-11 min-w-11 place-items-center rounded-full bg-white/95 px-3 text-[#0B2545] shadow-md ring-1 ring-black/5 backdrop-blur transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0B63CE]"
       >
         <Share2 size={19} strokeWidth={2} />
       </button>
-      <div className="grid h-11 min-w-11 place-items-center rounded-full bg-white/95 shadow-lg backdrop-blur">
+      <div className="grid h-11 min-w-11 place-items-center rounded-full bg-white/95 shadow-md ring-1 ring-black/5 backdrop-blur">
         <FavoriteToggleButton listingId={listing.id} variant="icon" />
       </div>
     </div>
@@ -301,9 +301,9 @@ export function PropertyMediaGallery({ listing }: { listing: Listing }) {
     return (
       <section
         data-property-media-mode="provider_preview"
-        className="relative overflow-hidden rounded-[1.6rem] border border-[#eadfca] bg-white shadow-[0_18px_54px_rgba(7,27,51,0.16)]"
+        className="relative overflow-hidden rounded-[1.55rem] border border-slate-200 bg-white shadow-[0_16px_42px_rgba(15,38,68,0.10)]"
       >
-        <div className="relative h-[280px] sm:h-[460px]">
+        <div className="relative h-[300px] sm:h-[440px]">
           <DbProviderThumbnail
             listing={listing}
             thumbnailUrl={model.items[0].url}
@@ -323,9 +323,9 @@ export function PropertyMediaGallery({ listing }: { listing: Listing }) {
     return (
       <section
         data-property-media-mode="fallback"
-        className="relative overflow-hidden rounded-[1.6rem] border border-[#eadfca] bg-white shadow-[0_18px_54px_rgba(7,27,51,0.16)]"
+        className="relative overflow-hidden rounded-[1.55rem] border border-slate-200 bg-white shadow-[0_16px_42px_rgba(15,38,68,0.10)]"
       >
-        <div className="relative h-[280px] sm:h-[460px]">
+        <div className="relative h-[300px] sm:h-[440px]">
           <ListingVisual listing={listing} className="absolute inset-0 h-full w-full" />
           {controls}
           <span className="absolute bottom-3 left-4 rounded-full bg-black/50 px-2.5 py-1 text-[10px] font-semibold text-white/80 backdrop-blur-sm">
@@ -341,9 +341,9 @@ export function PropertyMediaGallery({ listing }: { listing: Listing }) {
       <>
         <section
           data-property-media-mode="single_real"
-          className="relative overflow-hidden rounded-[1.6rem] border border-[#eadfca] bg-white shadow-[0_18px_54px_rgba(7,27,51,0.16)]"
+          className="relative overflow-hidden rounded-[1.55rem] border border-slate-200 bg-white shadow-[0_16px_42px_rgba(15,38,68,0.10)]"
         >
-          <div className="relative h-[320px] sm:h-[500px]">
+          <div className="relative h-[300px] sm:h-[440px]">
             <MediaImage
               item={active}
               eager
@@ -375,10 +375,10 @@ export function PropertyMediaGallery({ listing }: { listing: Listing }) {
     <>
       <section
         data-property-media-mode="gallery"
-        className="relative overflow-hidden rounded-[1.6rem] border border-[#eadfca] bg-white shadow-[0_18px_54px_rgba(7,27,51,0.16)]"
+        className="relative overflow-hidden rounded-[1.55rem] border border-slate-200 bg-white shadow-[0_16px_42px_rgba(15,38,68,0.10)]"
       >
         <div className="relative lg:hidden" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
-          <div className="relative h-[320px] sm:h-[500px]">
+          <div className="relative h-[300px] sm:h-[440px]">
             <MediaImage
               item={active}
               eager
@@ -401,7 +401,7 @@ export function PropertyMediaGallery({ listing }: { listing: Listing }) {
           </div>
         </div>
 
-        <div className="relative hidden h-[500px] gap-1.5 bg-slate-100 lg:grid lg:grid-cols-[1.55fr_1fr]">
+        <div className="relative hidden h-[460px] gap-2 bg-slate-50 lg:grid lg:grid-cols-[1.9fr_0.75fr]">
           <button
             type="button"
             onClick={() => openFullscreen(0)}
@@ -415,7 +415,7 @@ export function PropertyMediaGallery({ listing }: { listing: Listing }) {
               onError={() => fail(items[0].url)}
             />
           </button>
-          <div className={`grid min-w-0 gap-1.5 ${items.length === 2 ? "grid-rows-1" : "grid-rows-2"}`}>
+          <div className={`grid min-w-0 gap-2 ${items.length === 2 ? "grid-rows-1" : "grid-rows-2"}`}>
             {[items[1], items[2]].map((item, index) => item ? (
               <button
                 key={item.id}
@@ -441,7 +441,7 @@ export function PropertyMediaGallery({ listing }: { listing: Listing }) {
           <button
             type="button"
             onClick={() => openFullscreen()}
-            className="absolute bottom-4 right-4 z-20 inline-flex min-h-11 items-center gap-2 rounded-xl bg-white px-4 text-[12px] font-extrabold text-[#0B2545] shadow-lg transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0B63CE]"
+            className="absolute bottom-4 right-4 z-20 inline-flex min-h-11 items-center gap-2 rounded-full bg-black/60 px-4 text-[12px] font-extrabold text-white shadow-lg backdrop-blur transition hover:bg-black/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
           >
             <Images size={17} /> Voir les {items.length} photos
           </button>
