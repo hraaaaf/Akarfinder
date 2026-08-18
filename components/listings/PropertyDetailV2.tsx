@@ -217,7 +217,7 @@ export function PropertyDetailV2({
             listing={listing}
             model={proConversion}
           />
-          <ProjectPersonalizationCard listing={listing} projectId={projectId} />
+          <ProjectPersonalizationCard listing={listing} projectId={projectId} compactRail />
           <MarketComparablesSummaryCard model={marketComparables} />
         </aside>
       </div>
