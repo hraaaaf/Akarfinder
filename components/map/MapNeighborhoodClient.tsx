@@ -120,8 +120,11 @@ export function MapNeighborhoodClient({ initialState }: MapNeighborhoodClientPro
           [data-akarfinder-generic-map-shell="true"] section[aria-label="Contrôles de la carte immobilière"] > div:first-child {
             justify-content: flex-end !important;
           }
+          [data-akarfinder-generic-map-shell="true"] nav[aria-label="Exploration territoriale"] {
+            top: 168px !important;
+          }
           [data-akarfinder-generic-map-shell="true"] aside[aria-label^="Fiche repère quartier"] {
-            top: 156px !important;
+            top: 168px !important;
             width: 390px !important;
             border-radius: 22px !important;
             border-color: rgb(255 255 255 / 0.82) !important;
