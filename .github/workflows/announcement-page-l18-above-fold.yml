@@ -1,0 +1,40 @@
+name: Announcement Page L18 Above Fold
+
+on:
+  pull_request:
+    paths:
+      - "components/listings/PropertyCore.tsx"
+      - "components/listings/PropertyDetailV2.tsx"
+      - "docs/LISTING_VISUAL_L18_GOAL.md"
+      - "scripts/scrapers/__tests__/listing-visual-l18-above-fold.test.ts"
+      - ".github/workflows/announcement-page-l18-above-fold.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  l18-above-fold:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: L18 source contract
+        run: npx tsx --test scripts/scrapers/__tests__/listing-visual-l18-above-fold.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Production build
+        run: npm run build
