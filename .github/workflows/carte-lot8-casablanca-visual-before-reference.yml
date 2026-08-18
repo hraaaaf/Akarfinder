@@ -1,0 +1,90 @@
+name: Carte Lot 8 Casablanca Visual Before Reference
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/carte-lot8-casablanca-visual-before-reference.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  capture-casablanca-before-reference:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      BASE_URL: http://127.0.0.1:3206
+      AUDIT_OUTPUT_DIR: data/audits/carte-lot8-casablanca-before-reference
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 9b753afd9260891b82fd1ccbdb2d6d1b49b48816
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Production build
+        run: npm run build
+      - name: Start production server
+        shell: bash
+        run: |
+          npm run start -- -p 3206 > /tmp/carte-lot8-casablanca-before.log 2>&1 &
+          for attempt in {1..60}; do
+            if curl -fsS 'http://127.0.0.1:3206/map?city=casablanca&district=maarif&layer=explore' >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/carte-lot8-casablanca-before.log
+          exit 1
+      - name: Capture true pre-Lot-8 reference
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import { chromium } from "playwright";
+          import { mkdir, writeFile } from "node:fs/promises";
+
+          const baseUrl = process.env.BASE_URL;
+          const outDir = process.env.AUDIT_OUTPUT_DIR;
+          const viewports = [
+            { name: "mobile-390", width: 390, height: 844 },
+            { name: "mobile-430", width: 430, height: 932 },
+            { name: "tablet", width: 768, height: 900 },
+            { name: "desktop", width: 1280, height: 900 },
+          ];
+          await mkdir(outDir, { recursive: true });
+          const report = { ok: false, sourceHead: "9b753afd9260891b82fd1ccbdb2d6d1b49b48816", cases: [], generatedAt: new Date().toISOString() };
+          const browser = await chromium.launch({ headless: true });
+          try {
+            for (const viewport of viewports) {
+              const page = await browser.newPage({ viewport: { width: viewport.width, height: viewport.height } });
+              const pageErrors = [];
+              page.on("pageerror", (error) => pageErrors.push(String(error)));
+              await page.goto(`${baseUrl}/map?city=casablanca&district=maarif&layer=explore`, { waitUntil: "domcontentloaded", timeout: 30000 });
+              await page.locator("canvas.maplibregl-canvas").waitFor({ state: "visible", timeout: 20000 });
+              const loading = page.getByText("Chargement de la carte…", { exact: true });
+              if (await loading.count()) await loading.waitFor({ state: "hidden", timeout: 20000 });
+              const panel = page.getByRole("complementary", { name: /Fiche repère quartier Maârif/i });
+              await panel.waitFor({ state: "visible", timeout: 20000 });
+              const panelBox = await panel.boundingBox();
+              if (!panelBox) throw new Error(`${viewport.name}: panel missing bounding box`);
+              if (pageErrors.length) throw new Error(`${viewport.name}: page errors ${JSON.stringify(pageErrors)}`);
+              await page.screenshot({ path: `${outDir}/casablanca-maarif-${viewport.width}x${viewport.height}.png`, fullPage: false });
+              report.cases.push({ viewport: viewport.name, panelBox, mapRendered: true, pageErrors });
+              await page.close();
+            }
+            report.ok = true;
+          } finally {
+            await writeFile(`${outDir}/report.json`, JSON.stringify(report, null, 2));
+            await browser.close();
+          }
+          NODE
+      - name: Upload before-reference proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: carte-lot8-casablanca-before-reference-${{ github.run_id }}
+          path: data/audits/carte-lot8-casablanca-before-reference
+          if-no-files-found: error
+          retention-days: 30
