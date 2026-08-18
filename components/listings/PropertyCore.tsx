@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Bath, BedDouble, CarFront, MapPin, Maximize2 } from "lucide-react";
 import { buildPropertyCoreModel, type PropertyCoreFactKey } from "@/lib/listings/property-core";
 import type { Listing } from "@/lib/listings/types";
@@ -9,7 +10,13 @@ const factIcons = {
   garage: CarFront,
 } satisfies Record<PropertyCoreFactKey, typeof Maximize2>;
 
-export function PropertyCore({ listing }: { listing: Listing }) {
+export function PropertyCore({
+  listing,
+  afterIdentity = null,
+}: {
+  listing: Listing;
+  afterIdentity?: ReactNode;
+}) {
   const model = buildPropertyCoreModel(listing);
 
   return (
@@ -47,6 +54,8 @@ export function PropertyCore({ listing }: { listing: Listing }) {
           <span className="min-w-0 break-words">{model.location}</span>
         </p>
       </div>
+
+      {afterIdentity ? <div className="mt-4">{afterIdentity}</div> : null}
 
       {model.facts.length > 0 ? (
         <dl
