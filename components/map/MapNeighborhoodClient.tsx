@@ -80,14 +80,16 @@ export function MapNeighborhoodClient({ initialState }: MapNeighborhoodClientPro
   const handleNavigationChange = useCallback(
     (nextState: MapNavigationState) => {
       router.push(buildMapHref(nextState), { scroll: false });
-    },
-    [router],
+    }, [router],
   );
 
   const marketIntelligenceProvider = getPremiumMarketIntelligenceProvider(navigationState.city);
 
   return (
-    <div className="relative">
+    <div
+      className="relative"
+      data-akarfinder-generic-map-selected={marketIntelligenceProvider ? undefined : navigationState.district ? "true" : "false"}
+    >
       {marketIntelligenceProvider === "rabat-market-intelligence" ? (
         <>
           <h1 className="sr-only">Carte intelligence marché à Rabat</h1>
