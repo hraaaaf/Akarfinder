@@ -15,9 +15,11 @@ import {
   getBenchmarkLabel,
   getNeighborhoodBySlug,
 } from "@/lib/map/canonical-neighborhood-data";
+import { getMapConfidenceMeta } from "@/lib/map/map-design-system";
 import {
   buildMapHref,
   buildMapSearchHref,
+  buildNeighborhoodPageHref,
   MAP_LAYER_EXPLORE,
   MAP_LAYER_PRICE,
   mapNavigationStateFromUrlSearchParams,
@@ -81,6 +83,11 @@ export function MapNeighborhoodClient({ initialState }: MapNeighborhoodClientPro
     [navigationState],
   );
 
+  const selectedGenericNeighborhoodHref = useMemo(
+    () => buildNeighborhoodPageHref(navigationState),
+    [navigationState],
+  );
+
   const unmappedDistrict = useMemo(() => {
     if (navigationState.city === "all" || !navigationState.district) return null;
     const city = resolveCityEntity(navigationState.city);
@@ -100,6 +107,11 @@ export function MapNeighborhoodClient({ initialState }: MapNeighborhoodClientPro
     if (!city) return null;
     return getNeighborhoodBySlug(city.slug, navigationState.district);
   }, [navigationState.city, navigationState.district]);
+
+  const selectedGenericConfidence = useMemo(
+    () => selectedGenericPoint ? getMapConfidenceMeta(selectedGenericPoint.confidence) : null,
+    [selectedGenericPoint],
+  );
 
   useEffect(() => {
     const currentHref = queryString ? `/map?${queryString}` : "/map";
@@ -314,6 +326,38 @@ export function MapNeighborhoodClient({ initialState }: MapNeighborhoodClientPro
                 </button>
               </div>
 
+              <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+                {selectedGenericConfidence ? (
+                  <span
+                    className="inline-flex items-center gap-1.5 rounded-full border px-2 py-1 text-[9px] font-extrabold"
+                    style={{
+                      color: selectedGenericConfidence.color,
+                      borderColor: `${selectedGenericConfidence.color}40`,
+                      background: selectedGenericConfidence.soft,
+                    }}
+                  >
+                    <span className="h-1.5 w-1.5 rounded-full" style={{ background: selectedGenericConfidence.color }} aria-hidden="true" />
+                    {selectedGenericConfidence.label}
+                  </span>
+                ) : null}
+                <span className="rounded-full border border-border bg-surface-muted px-2 py-1 text-[9px] font-bold text-muted-foreground">
+                  Données {selectedGenericPoint.benchmark.period}
+                </span>
+              </div>
+
+              {selectedGenericPoint.highlights.length > 0 ? (
+                <div className="mt-2 flex gap-1.5 overflow-hidden" aria-label="Vie autour du quartier">
+                  {selectedGenericPoint.highlights.slice(0, 3).map((highlight, index) => (
+                    <span
+                      key={`${highlight.label}-${index}`}
+                      className="min-w-0 truncate rounded-full border border-border bg-surface px-2 py-1 text-[9px] font-semibold text-text-secondary"
+                    >
+                      <span aria-hidden="true">{highlight.icon}</span> {highlight.label}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
+
               <div className="mt-3 grid grid-cols-[1fr_auto] gap-2">
                 <Link
                   href={genericSearchHref}
@@ -332,6 +376,15 @@ export function MapNeighborhoodClient({ initialState }: MapNeighborhoodClientPro
                   <ChevronUp size={14} aria-hidden="true" />
                 </button>
               </div>
+
+              {selectedGenericNeighborhoodHref ? (
+                <Link
+                  href={selectedGenericNeighborhoodHref}
+                  className="mt-2 inline-flex min-h-10 w-full items-center justify-center rounded-xl border border-border bg-surface text-[10.5px] font-extrabold text-foreground"
+                >
+                  Voir la page quartier
+                </Link>
+              ) : null}
             </aside>
           ) : null}
 
