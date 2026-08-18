@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import dynamic from "next/dynamic";
+import { RotateCcw, Search } from "lucide-react";
 import { useCallback, useEffect, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { MapLegend } from "@/components/map/MapLegend";
@@ -11,7 +13,11 @@ import {
 } from "@/lib/geo/geo-entity-registry";
 import {
   buildMapHref,
+  buildMapSearchHref,
+  MAP_LAYER_EXPLORE,
+  MAP_LAYER_PRICE,
   mapNavigationStateFromUrlSearchParams,
+  withMapLayer,
   withMapLocation,
   type MapNavigationState,
 } from "@/lib/map/map-navigation-state";
@@ -65,6 +71,11 @@ export function MapNeighborhoodClient({ initialState }: MapNeighborhoodClientPro
     [navigationState],
   );
 
+  const genericSearchHref = useMemo(
+    () => buildMapSearchHref(navigationState),
+    [navigationState],
+  );
+
   const unmappedDistrict = useMemo(() => {
     if (navigationState.city === "all" || !navigationState.district) return null;
     const city = resolveCityEntity(navigationState.city);
@@ -92,6 +103,7 @@ export function MapNeighborhoodClient({ initialState }: MapNeighborhoodClientPro
   );
 
   const marketIntelligenceProvider = getPremiumMarketIntelligenceProvider(navigationState.city);
+  const genericPriceMode = navigationState.layer === MAP_LAYER_PRICE && navigationState.city !== "all";
 
   return (
     <div
@@ -100,31 +112,15 @@ export function MapNeighborhoodClient({ initialState }: MapNeighborhoodClientPro
       data-akarfinder-generic-map-selected={marketIntelligenceProvider ? undefined : navigationState.district ? "true" : "false"}
     >
       <style>{`
+        [data-akarfinder-generic-map-shell="true"] section[aria-label="Contrôles de la carte immobilière"] {
+          display: none !important;
+        }
         @media (min-width: 1024px) {
-          [data-akarfinder-generic-map-shell="true"] section[aria-label="Contrôles de la carte immobilière"] {
-            top: 94px !important;
-            left: 16px !important;
-            right: auto !important;
-            width: min(900px, calc(100vw - 430px)) !important;
-            max-width: none !important;
-            border-radius: 0 0 22px 22px !important;
-            border-color: rgb(255 255 255 / 0.82) !important;
-            background: rgb(255 255 255 / 0.94) !important;
-            box-shadow: 0 18px 50px rgb(15 35 66 / 0.14) !important;
-            padding: 10px 12px !important;
-          }
-          [data-akarfinder-generic-map-shell="true"] section[aria-label="Contrôles de la carte immobilière"] > div:first-child > div:first-child,
-          [data-akarfinder-generic-map-shell="true"] section[aria-label="Contrôles de la carte immobilière"] > div:first-child > label {
-            display: none !important;
-          }
-          [data-akarfinder-generic-map-shell="true"] section[aria-label="Contrôles de la carte immobilière"] > div:first-child {
-            justify-content: flex-end !important;
-          }
           [data-akarfinder-generic-map-shell="true"] nav[aria-label="Exploration territoriale"] {
-            top: 168px !important;
+            top: 176px !important;
           }
           [data-akarfinder-generic-map-shell="true"] aside[aria-label^="Fiche repère quartier"] {
-            top: 168px !important;
+            top: 176px !important;
             width: 390px !important;
             border-radius: 22px !important;
             border-color: rgb(255 255 255 / 0.82) !important;
@@ -132,7 +128,7 @@ export function MapNeighborhoodClient({ initialState }: MapNeighborhoodClientPro
           }
         }
         @media (max-width: 1023px) {
-          [data-akarfinder-generic-map-selected="true"] section[aria-label="Contrôles de la carte immobilière"],
+          [data-akarfinder-generic-map-selected="true"] [data-akarfinder-generic-premium-toolbar],
           [data-akarfinder-generic-map-selected="true"] nav[aria-label="Exploration territoriale"],
           [data-akarfinder-generic-map-selected="true"] > aside[aria-label="Légende de la carte immobilière"] {
             display: none !important;
@@ -177,31 +173,84 @@ export function MapNeighborhoodClient({ initialState }: MapNeighborhoodClientPro
       ) : (
         <>
           <section
-            className="absolute left-4 top-4 z-40 hidden w-[min(900px,calc(100vw-430px))] rounded-t-[22px] border border-b-0 border-white/80 bg-card/94 px-3 py-3 shadow-[0_18px_50px_rgba(15,35,66,0.14)] backdrop-blur-xl lg:block"
-            aria-label="Villes phares"
-            data-akarfinder-generic-premium-citybar
+            className="absolute inset-x-3 top-3 z-40 rounded-[22px] border border-white/80 bg-card/94 p-3 shadow-[0_18px_50px_rgba(15,35,66,0.14)] backdrop-blur-xl sm:inset-x-auto sm:left-4 sm:right-4 sm:top-4 lg:right-auto lg:w-[min(900px,calc(100vw-430px))]"
+            aria-label="Contrôles carte des quartiers multi-villes"
+            data-akarfinder-generic-premium-toolbar
           >
-            <div className="flex items-center justify-between gap-4">
-              <div className="min-w-0 shrink-0">
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
                 <p className="text-[9px] font-extrabold uppercase tracking-[0.16em] text-brand-primary">Carte des quartiers</p>
-                <p className="mt-0.5 truncate text-[14px] font-extrabold tracking-[-0.01em] text-foreground">{activeCityName} · exploration immobilière</p>
+                <p className="mt-0.5 truncate text-[13px] font-extrabold tracking-[-0.01em] text-foreground sm:text-[15px]">{activeCityName} · exploration immobilière</p>
               </div>
-              <div className="flex min-w-0 items-center justify-end gap-1.5 overflow-x-auto" role="navigation" aria-label="Sélection des villes phares">
-                {FLAGSHIP_CITIES.map((city) => {
-                  const active = city === activeCityName;
-                  return (
-                    <button
-                      key={city}
-                      type="button"
-                      aria-pressed={active}
-                      onClick={() => handleNavigationChange(withMapLocation(navigationState, city))}
-                      className={`shrink-0 rounded-full border px-3 py-1.5 text-[10px] font-extrabold transition ${active ? "border-brand-primary bg-brand-primary text-white shadow-sm" : "border-border bg-surface/90 text-text-secondary hover:border-brand-primary/25 hover:text-foreground"}`}
-                    >
-                      {city}
-                    </button>
-                  );
-                })}
+              <button
+                type="button"
+                onClick={() => handleNavigationChange(withMapLocation({ ...navigationState, layer: MAP_LAYER_EXPLORE }, "all"))}
+                className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-border bg-surface text-muted-foreground transition hover:border-brand-primary/30 hover:text-brand-primary"
+                aria-label="Revenir à la carte du Maroc"
+                title="Tout le Maroc"
+              >
+                <RotateCcw size={14} aria-hidden="true" />
+              </button>
+            </div>
+
+            <div className="mt-3 hidden gap-1.5 overflow-x-auto pb-0.5 sm:flex" role="navigation" aria-label="Sélection des villes phares">
+              {FLAGSHIP_CITIES.map((city) => {
+                const active = city === activeCityName;
+                return (
+                  <button
+                    key={city}
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() => handleNavigationChange(withMapLocation(navigationState, city))}
+                    className={`shrink-0 rounded-full border px-3 py-1.5 text-[10px] font-extrabold transition ${active ? "border-brand-primary bg-brand-primary text-white shadow-sm" : "border-border bg-surface/90 text-text-secondary hover:border-brand-primary/25 hover:text-foreground"}`}
+                  >
+                    {city}
+                  </button>
+                );
+              })}
+            </div>
+
+            <label className="mt-3 block sm:hidden">
+              <span className="sr-only">Ville</span>
+              <select
+                value={activeCityName === "Maroc" ? "Casablanca" : activeCityName}
+                onChange={(event) => handleNavigationChange(withMapLocation(navigationState, event.target.value))}
+                className="h-10 w-full rounded-xl border border-border bg-surface px-3 text-[11px] font-extrabold text-foreground outline-none"
+              >
+                {FLAGSHIP_CITIES.map((city) => <option key={city} value={city}>{city}</option>)}
+              </select>
+            </label>
+
+            <div className="mt-3 flex flex-col gap-2 border-t border-border/80 pt-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex min-w-0 flex-1 rounded-xl border border-border bg-surface-muted/80 p-1" role="tablist" aria-label="Mode carte multi-villes">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={!genericPriceMode}
+                  onClick={() => handleNavigationChange(withMapLayer(navigationState, MAP_LAYER_EXPLORE))}
+                  className={`min-w-0 flex-1 rounded-lg px-2.5 py-2 text-[10px] font-extrabold transition sm:text-[10.5px] ${!genericPriceMode ? "bg-brand-primary text-white shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                >
+                  Zones / Quartiers
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={genericPriceMode}
+                  disabled={navigationState.city === "all"}
+                  onClick={() => handleNavigationChange(withMapLayer(navigationState, MAP_LAYER_PRICE))}
+                  className={`min-w-0 flex-1 rounded-lg px-2.5 py-2 text-[10px] font-extrabold transition sm:text-[10.5px] ${genericPriceMode ? "bg-brand-primary text-white shadow-sm" : "text-muted-foreground hover:text-foreground"} disabled:cursor-not-allowed disabled:opacity-40`}
+                >
+                  Prix observés
+                </button>
               </div>
+
+              <Link
+                href={genericSearchHref}
+                className="inline-flex min-h-10 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-brand-primary px-4 text-[11px] font-extrabold text-white shadow-accent transition hover:bg-brand-primary-hover"
+              >
+                <Search size={14} aria-hidden="true" />
+                Rechercher cette zone
+              </Link>
             </div>
           </section>
           <MapNeighborhoodExperienceDynamic
