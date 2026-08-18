@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { RotateCcw, Search } from "lucide-react";
-import { useCallback, useEffect, useMemo } from "react";
+import { ChevronUp, MapPin, RotateCcw, Search, X } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { MapLegend } from "@/components/map/MapLegend";
 import { TerritorialExplorer } from "@/components/map/TerritorialExplorer";
@@ -11,6 +11,10 @@ import {
   resolveCityEntity,
   resolveNeighborhoodEntity,
 } from "@/lib/geo/geo-entity-registry";
+import {
+  getBenchmarkLabel,
+  getNeighborhoodBySlug,
+} from "@/lib/map/canonical-neighborhood-data";
 import {
   buildMapHref,
   buildMapSearchHref,
@@ -58,6 +62,7 @@ export function MapNeighborhoodClient({ initialState }: MapNeighborhoodClientPro
   const router = useRouter();
   const searchParams = useSearchParams();
   const queryString = searchParams.toString();
+  const [mobilePanelExpanded, setMobilePanelExpanded] = useState(false);
 
   const navigationState = useMemo(
     () => queryString
@@ -89,12 +94,23 @@ export function MapNeighborhoodClient({ initialState }: MapNeighborhoodClientPro
     return resolveCityEntity(navigationState.city)?.canonical_name ?? navigationState.city;
   }, [navigationState.city]);
 
+  const selectedGenericPoint = useMemo(() => {
+    if (navigationState.city === "all" || !navigationState.district) return null;
+    const city = resolveCityEntity(navigationState.city);
+    if (!city) return null;
+    return getNeighborhoodBySlug(city.slug, navigationState.district);
+  }, [navigationState.city, navigationState.district]);
+
   useEffect(() => {
     const currentHref = queryString ? `/map?${queryString}` : "/map";
     if (currentHref !== canonicalHref) {
       router.replace(canonicalHref, { scroll: false });
     }
   }, [canonicalHref, queryString, router]);
+
+  useEffect(() => {
+    setMobilePanelExpanded(false);
+  }, [navigationState.city, navigationState.district]);
 
   const handleNavigationChange = useCallback(
     (nextState: MapNavigationState) => {
@@ -110,6 +126,7 @@ export function MapNeighborhoodClient({ initialState }: MapNeighborhoodClientPro
       className="relative"
       data-akarfinder-generic-map-shell={marketIntelligenceProvider ? undefined : "true"}
       data-akarfinder-generic-map-selected={marketIntelligenceProvider ? undefined : navigationState.district ? "true" : "false"}
+      data-akarfinder-mobile-panel-expanded={marketIntelligenceProvider ? undefined : mobilePanelExpanded ? "true" : "false"}
     >
       <style>{`
         [data-akarfinder-generic-map-shell="true"] section[aria-label="Contrôles de la carte immobilière"] {
@@ -135,7 +152,10 @@ export function MapNeighborhoodClient({ initialState }: MapNeighborhoodClientPro
           }
         }
         @media (max-width: 767px) {
-          [data-akarfinder-generic-map-selected="true"] aside[aria-label^="Fiche repère quartier"] {
+          [data-akarfinder-mobile-panel-expanded="false"] aside[aria-label^="Fiche repère quartier"] {
+            display: none !important;
+          }
+          [data-akarfinder-mobile-panel-expanded="true"] aside[aria-label^="Fiche repère quartier"] {
             bottom: 84px !important;
             max-height: min(58svh, 520px) !important;
             border-radius: 22px !important;
@@ -253,6 +273,57 @@ export function MapNeighborhoodClient({ initialState }: MapNeighborhoodClientPro
               </Link>
             </div>
           </section>
+
+          {selectedGenericPoint && !mobilePanelExpanded ? (
+            <aside
+              className="absolute inset-x-3 bottom-[84px] z-50 rounded-[22px] border border-white/85 bg-card/96 p-3.5 shadow-[0_18px_48px_rgba(15,35,66,0.18)] backdrop-blur-xl md:hidden"
+              aria-label={`Aperçu quartier ${selectedGenericPoint.neighborhood}`}
+              data-akarfinder-mobile-compact-panel
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="flex items-center gap-1.5 text-[9px] font-extrabold uppercase tracking-[0.15em] text-brand-primary">
+                    <MapPin size={11} aria-hidden="true" />
+                    {selectedGenericPoint.city} · quartier sélectionné
+                  </p>
+                  <h2 className="mt-1 truncate text-[18px] font-extrabold tracking-[-0.025em] text-foreground">
+                    {selectedGenericPoint.neighborhood}
+                  </h2>
+                  <p className="mt-1 text-[11px] font-extrabold text-brand-primary">
+                    {getBenchmarkLabel(selectedGenericPoint)}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleNavigationChange(withMapLocation(navigationState, selectedGenericPoint.city))}
+                  className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-border bg-surface text-muted-foreground"
+                  aria-label="Fermer le quartier sélectionné"
+                >
+                  <X size={15} aria-hidden="true" />
+                </button>
+              </div>
+
+              <div className="mt-3 grid grid-cols-[1fr_auto] gap-2">
+                <Link
+                  href={genericSearchHref}
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-brand-primary px-3 text-[11.5px] font-extrabold text-white shadow-accent"
+                >
+                  <Search size={14} aria-hidden="true" />
+                  Rechercher ici
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setMobilePanelExpanded(true)}
+                  className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-border-strong bg-surface px-3 text-[11px] font-extrabold text-foreground"
+                  aria-label="Afficher les détails du quartier"
+                >
+                  Détails
+                  <ChevronUp size={14} aria-hidden="true" />
+                </button>
+              </div>
+            </aside>
+          ) : null}
+
           <MapNeighborhoodExperienceDynamic
             navigationState={navigationState}
             onNavigationChange={handleNavigationChange}
