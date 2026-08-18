@@ -49,103 +49,128 @@ try {
     const pageErrors = [];
     const tileResponses = [];
     let highZoomTileCount = 0;
+    let tileGateSettled = false;
+    let resolveTileGate;
+    let rejectTileGate;
+    const realTilesReady = new Promise((resolve, reject) => {
+      resolveTileGate = resolve;
+      rejectTileGate = reject;
+    });
+    const tileGateTimeout = setTimeout(() => {
+      if (tileGateSettled) return;
+      tileGateSettled = true;
+      rejectTileGate(new Error(`${viewport.name}: fewer than two successful real OpenFreeMap high-zoom tiles within 20s`));
+    }, 20000);
+
     page.on("pageerror", (error) => pageErrors.push(String(error)));
     page.on("response", (response) => {
       const zoom = basemapTileZoom(response.url());
       if (zoom == null) return;
       tileResponses.push({ url: response.url(), status: response.status(), zoom });
-      if (zoom >= 9 && response.ok()) highZoomTileCount += 1;
+      if (zoom >= 9 && response.ok()) {
+        highZoomTileCount += 1;
+        if (highZoomTileCount >= 2 && !tileGateSettled) {
+          tileGateSettled = true;
+          clearTimeout(tileGateTimeout);
+          resolveTileGate();
+        }
+      }
     });
 
-    await page.goto(`${baseUrl}/map?city=casablanca&layer=price`, {
-      waitUntil: "domcontentloaded",
-      timeout: 30000,
-    });
-    await page.getByText("Chargement de la carte…", { exact: true }).waitFor({ state: "hidden", timeout: 30000 });
-    await page.locator(".maplibregl-canvas").waitFor({ state: "visible", timeout: 10000 });
-    await page.waitForFunction(() => document.querySelectorAll('[data-akarfinder-intelligence-mode]').length === 3, null, { timeout: 10000 });
-    await page.waitForFunction(() => document.querySelector('[data-akarfinder-intelligence-legend="price"]'), null, { timeout: 10000 });
+    try {
+      await page.goto(`${baseUrl}/map?city=casablanca&layer=price`, {
+        waitUntil: "domcontentloaded",
+        timeout: 30000,
+      });
+      await page.getByText("Chargement de la carte…", { exact: true }).waitFor({ state: "hidden", timeout: 30000 });
+      await page.locator(".maplibregl-canvas").waitFor({ state: "visible", timeout: 10000 });
+      await realTilesReady;
+      await page.waitForFunction(() => document.querySelectorAll('[data-akarfinder-intelligence-mode]').length === 3, null, { timeout: 10000 });
+      await page.waitForFunction(() => document.querySelector('[data-akarfinder-intelligence-legend="price"]'), null, { timeout: 10000 });
 
-    const pricePayload = await requireApiMode(page, "price");
-    const densityPayload = await requireApiMode(page, "density");
-    const listingsPayload = await requireApiMode(page, "listings");
+      const pricePayload = await requireApiMode(page, "price");
+      const densityPayload = await requireApiMode(page, "density");
+      const listingsPayload = await requireApiMode(page, "listings");
 
-    const toolbar = page.locator("[data-akarfinder-generic-premium-toolbar]");
-    await toolbar.waitFor({ state: "visible", timeout: 10000 });
-    const tabs = toolbar.locator("[data-akarfinder-intelligence-mode]");
-    if (await tabs.count() !== 3) throw new Error(`${viewport.name}: expected exactly three market mode tabs`);
+      const toolbar = page.locator("[data-akarfinder-generic-premium-toolbar]");
+      await toolbar.waitFor({ state: "visible", timeout: 10000 });
+      const tabs = toolbar.locator("[data-akarfinder-intelligence-mode]");
+      if (await tabs.count() !== 3) throw new Error(`${viewport.name}: expected exactly three market mode tabs`);
 
-    await tabs.filter({ hasText: "Densité" }).click();
-    await page.waitForURL(/layer=density/, { timeout: 10000 });
-    await page.waitForFunction(() => document.querySelector('[data-akarfinder-intelligence-legend="density"]'), null, { timeout: 10000 });
+      await toolbar.locator('[data-akarfinder-intelligence-mode="density"]').click();
+      await page.waitForURL(/layer=density/, { timeout: 10000 });
+      await page.waitForFunction(() => document.querySelector('[data-akarfinder-intelligence-legend="density"]'), null, { timeout: 10000 });
 
-    await toolbar.locator('[data-akarfinder-intelligence-mode="listings"]').click();
-    await page.waitForURL(/layer=listings/, { timeout: 10000 });
-    await page.waitForFunction(() => document.querySelector('[data-akarfinder-intelligence-legend="listings"]'), null, { timeout: 10000 });
+      await toolbar.locator('[data-akarfinder-intelligence-mode="listings"]').click();
+      await page.waitForURL(/layer=listings/, { timeout: 10000 });
+      await page.waitForFunction(() => document.querySelector('[data-akarfinder-intelligence-legend="listings"]'), null, { timeout: 10000 });
 
-    await page.screenshot({
-      path: `${outDir}/casablanca-market-modes-${viewport.width}x${viewport.height}.png`,
-      fullPage: false,
-    });
+      await page.screenshot({
+        path: `${outDir}/casablanca-market-modes-${viewport.width}x${viewport.height}.png`,
+        fullPage: false,
+      });
 
-    await page.goto(`${baseUrl}/map?city=casablanca&district=maarif&layer=listings`, {
-      waitUntil: "domcontentloaded",
-      timeout: 30000,
-    });
-    await page.getByText("Chargement de la carte…", { exact: true }).waitFor({ state: "hidden", timeout: 30000 });
-    await page.locator(".maplibregl-canvas").waitFor({ state: "visible", timeout: 10000 });
+      await page.goto(`${baseUrl}/map?city=casablanca&district=maarif&layer=listings`, {
+        waitUntil: "domcontentloaded",
+        timeout: 30000,
+      });
+      await page.getByText("Chargement de la carte…", { exact: true }).waitFor({ state: "hidden", timeout: 30000 });
+      await page.locator(".maplibregl-canvas").waitFor({ state: "visible", timeout: 10000 });
 
-    const fullPanel = page.getByRole("complementary", { name: /Fiche repère quartier Maârif/i });
-    const compactPanel = page.locator("[data-akarfinder-mobile-compact-panel]");
-    const panel = viewport.width <= 767 ? compactPanel : fullPanel;
-    await panel.waitFor({ state: "visible", timeout: 20000 });
+      const fullPanel = page.getByRole("complementary", { name: /Fiche repère quartier Maârif/i });
+      const compactPanel = page.locator("[data-akarfinder-mobile-compact-panel]");
+      const panel = viewport.width <= 767 ? compactPanel : fullPanel;
+      await panel.waitFor({ state: "visible", timeout: 20000 });
 
-    const metric = viewport.width <= 767
-      ? page.locator("[data-akarfinder-lot9-compact-metric]")
-      : page.locator("[data-akarfinder-lot9-panel-metric]");
-    await metric.waitFor({ state: "visible", timeout: 10000 });
-    const metricText = (await metric.textContent())?.trim() ?? "";
-    if (!metricText || /Données 2024-2025/.test(metricText)) {
-      throw new Error(`${viewport.name}: selected district still exposes static benchmark instead of Lot 9 metric`);
+      const metric = viewport.width <= 767
+        ? page.locator("[data-akarfinder-lot9-compact-metric]")
+        : page.locator("[data-akarfinder-lot9-panel-metric]");
+      await metric.waitFor({ state: "visible", timeout: 10000 });
+      const metricText = (await metric.textContent())?.trim() ?? "";
+      if (!metricText || /Données 2024-2025/.test(metricText)) {
+        throw new Error(`${viewport.name}: selected district still exposes static benchmark instead of Lot 9 metric`);
+      }
+
+      const panelBox = await panel.boundingBox();
+      if (!panelBox) throw new Error(`${viewport.name}: selected district panel has no bounding box`);
+      if (panelBox.x < -1 || panelBox.x + panelBox.width > viewport.width + 1 || panelBox.y < -1 || panelBox.y + panelBox.height > viewport.height + 1) {
+        throw new Error(`${viewport.name}: selected district panel escapes viewport ${JSON.stringify(panelBox)}`);
+      }
+      if (viewport.width <= 767 && panelBox.height > 230) {
+        throw new Error(`${viewport.name}: compact district preview too tall ${JSON.stringify(panelBox)}`);
+      }
+
+      const searchLink = viewport.width <= 767
+        ? panel.getByRole("link", { name: /Rechercher ici/i })
+        : panel.getByRole("link", { name: /Rechercher dans ce quartier/i });
+      const searchHref = await searchLink.getAttribute("href");
+      const searchUrl = new URL(searchHref || "", baseUrl);
+      if (searchUrl.pathname !== "/search" || searchUrl.searchParams.get("city") !== "Casablanca" || searchUrl.searchParams.get("district") !== "Maârif") {
+        throw new Error(`${viewport.name}: Search handoff mismatch ${searchHref}`);
+      }
+
+      await page.screenshot({
+        path: `${outDir}/casablanca-maarif-listings-${viewport.width}x${viewport.height}.png`,
+        fullPage: false,
+      });
+
+      if (pageErrors.length) throw new Error(`${viewport.name}: browser page errors ${JSON.stringify(pageErrors)}`);
+
+      report.cases.push({
+        viewport: viewport.name,
+        highZoomTileCount,
+        tileResponses: tileResponses.slice(-20),
+        priceAvailable: pricePayload.legend.availableCount,
+        densityAvailable: densityPayload.legend.availableCount,
+        listingsAvailable: listingsPayload.legend.availableCount,
+        metricText,
+        panelBox,
+        searchHref,
+      });
+    } finally {
+      clearTimeout(tileGateTimeout);
+      await page.close();
     }
-
-    const panelBox = await panel.boundingBox();
-    if (!panelBox) throw new Error(`${viewport.name}: selected district panel has no bounding box`);
-    if (panelBox.x < -1 || panelBox.x + panelBox.width > viewport.width + 1 || panelBox.y < -1 || panelBox.y + panelBox.height > viewport.height + 1) {
-      throw new Error(`${viewport.name}: selected district panel escapes viewport ${JSON.stringify(panelBox)}`);
-    }
-    if (viewport.width <= 767 && panelBox.height > 230) {
-      throw new Error(`${viewport.name}: compact district preview too tall ${JSON.stringify(panelBox)}`);
-    }
-
-    const searchLink = viewport.width <= 767
-      ? panel.getByRole("link", { name: /Rechercher ici/i })
-      : panel.getByRole("link", { name: /Rechercher dans ce quartier/i });
-    const searchHref = await searchLink.getAttribute("href");
-    const searchUrl = new URL(searchHref || "", baseUrl);
-    if (searchUrl.pathname !== "/search" || searchUrl.searchParams.get("city") !== "Casablanca" || searchUrl.searchParams.get("district") !== "Maârif") {
-      throw new Error(`${viewport.name}: Search handoff mismatch ${searchHref}`);
-    }
-
-    await page.screenshot({
-      path: `${outDir}/casablanca-maarif-listings-${viewport.width}x${viewport.height}.png`,
-      fullPage: false,
-    });
-
-    if (pageErrors.length) throw new Error(`${viewport.name}: browser page errors ${JSON.stringify(pageErrors)}`);
-
-    report.cases.push({
-      viewport: viewport.name,
-      highZoomTileCount,
-      tileResponses: tileResponses.slice(-20),
-      priceAvailable: pricePayload.legend.availableCount,
-      densityAvailable: densityPayload.legend.availableCount,
-      listingsAvailable: listingsPayload.legend.availableCount,
-      metricText,
-      panelBox,
-      searchHref,
-    });
-    await page.close();
   }
 
   report.ok = true;
