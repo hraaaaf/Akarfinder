@@ -56,11 +56,26 @@ async function main() {
       findings.push(`${viewport.name}: MapLibre canvas did not become visible`);
     }
 
-    const intelligence = page.locator('[data-akarfinder-intelligence-layer="price"]');
+    const intelligence = page.locator('[data-akarfinder-intelligence-legend="price"]');
     try {
       await intelligence.waitFor({ state: "visible", timeout: 15_000 });
+      await page.waitForFunction(() => {
+        const legend = document.querySelector('[data-akarfinder-intelligence-legend="price"]');
+        const text = legend?.textContent || "";
+        return !text.includes("Calcul des annonces observées") && !text.includes("temporairement indisponibles");
+      }, null, { timeout: 15_000 });
     } catch {
-      findings.push(`${viewport.name}: price intelligence legend did not become visible`);
+      findings.push(`${viewport.name}: Lot 9 price intelligence legend did not settle`);
+    }
+
+    const api = await context.request.get(`${BASE_URL}/api/geo/market-intelligence?city=casablanca&mode=price&transaction=sale`);
+    let apiPayload: any = null;
+    if (api.status() !== 200) {
+      findings.push(`${viewport.name}: observed market API HTTP ${api.status()}`);
+    } else {
+      apiPayload = await api.json();
+      if (apiPayload?.observedMarketOnly !== true) findings.push(`${viewport.name}: observed-only truth flag missing`);
+      if (apiPayload?.mode !== "price" || apiPayload?.city?.slug !== "casablanca") findings.push(`${viewport.name}: observed price payload scope mismatch`);
     }
 
     const exactMarkers = page.locator('[data-akarfinder-market-marker="exact-price"]');
@@ -70,22 +85,29 @@ async function main() {
       scrollWidth: document.documentElement.scrollWidth,
       clientWidth: document.documentElement.clientWidth,
       canvasCount: document.querySelectorAll(".maplibregl-canvas").length,
-      priceMode: document.querySelector('[data-akarfinder-intelligence-layer="price"]') != null,
+      priceMode: document.querySelector('[data-akarfinder-intelligence-legend="price"]') != null,
       territorialActive: document.querySelector('[data-akarfinder-territorial-layer="active"]') != null,
     }));
 
-    if (markerCount !== 2) findings.push(`${viewport.name}: expected 2 exact Casablanca apartment price markers, got ${markerCount}`);
-    if (!text.includes("15 000 DH/m²") && !text.includes("15 000 DH/m²")) findings.push(`${viewport.name}: Finance City 15,000 benchmark not visible`);
-    if (!text.includes("14 000 DH/m²") && !text.includes("14 000 DH/m²")) findings.push(`${viewport.name}: Maârif 14,000 benchmark not visible`);
-    if (!text.includes("Aucune interpolation sur les zones")) findings.push(`${viewport.name}: non-interpolation disclosure missing`);
-    if (text.includes("Bouskoura") && markerCount > 2) findings.push(`${viewport.name}: non-exact Bouskoura price leaked into price layer`);
+    // Legacy exact markers may remain as map anchors, but Lot 9 owns the visible
+    // metric truth. Never require stale benchmark text to be user-visible.
+    if (markerCount > 2) findings.push(`${viewport.name}: unexpected extra exact price markers (${markerCount})`);
+    if (!text.includes("Agrégation automatique par ville + quartier")) findings.push(`${viewport.name}: automatic aggregation disclosure missing`);
+    if (!text.includes("Aucun prix ni surface n’est interpolé lorsque la preuve manque")) findings.push(`${viewport.name}: non-interpolation disclosure missing`);
     if (metrics.scrollWidth > metrics.clientWidth + 1) findings.push(`${viewport.name}: horizontal overflow ${metrics.scrollWidth} > ${metrics.clientWidth}`);
     if (metrics.canvasCount < 1) findings.push(`${viewport.name}: MapLibre canvas missing`);
-    if (!metrics.priceMode) findings.push(`${viewport.name}: price mode marker missing`);
+    if (!metrics.priceMode) findings.push(`${viewport.name}: dynamic price intelligence marker missing`);
     if (!metrics.territorialActive) findings.push(`${viewport.name}: Casablanca territorial geometry inactive`);
     if (consoleErrors.length > 0) findings.push(`${viewport.name}: console errors: ${consoleErrors.join(" | ")}`);
 
-    diagnostics.push({ viewport: viewport.name, markerCount, metrics, consoleErrors });
+    diagnostics.push({
+      viewport: viewport.name,
+      markerCount,
+      metrics,
+      consoleErrors,
+      apiStatus: api.status(),
+      priceAvailableCount: apiPayload?.legend?.availableCount ?? null,
+    });
     await page.screenshot({ path: `${OUT}/casablanca-price-${viewport.name}.png`, fullPage: false });
     await context.close();
   }
