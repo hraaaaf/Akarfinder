@@ -1,0 +1,54 @@
+name: Carte Lot 8 Multi-city Browser
+
+on:
+  pull_request:
+    paths:
+      - "components/map/MapNeighborhoodClient.tsx"
+      - "components/map/MapNeighborhoodExperience.tsx"
+      - "components/map/TerritorialExplorer.tsx"
+      - "components/map/MapLegend.tsx"
+      - "lib/map/**"
+      - "scripts/audits/carte-lot8-multicity-browser.mjs"
+      - ".github/workflows/carte-lot8-multicity-browser.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  multiville-browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    env:
+      BASE_URL: http://127.0.0.1:3205
+      AUDIT_OUTPUT_DIR: data/audits/carte-lot8-multicity
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Production build
+        run: npm run build
+      - name: Start production server
+        shell: bash
+        run: |
+          npm run start -- -p 3205 > /tmp/carte-lot8-multicity.log 2>&1 &
+          for attempt in {1..60}; do
+            if curl -fsS 'http://127.0.0.1:3205/map?city=casablanca&district=maarif&layer=explore' >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/carte-lot8-multicity.log
+          exit 1
+      - name: Certify five-city rollout
+        run: node scripts/audits/carte-lot8-multicity-browser.mjs
+      - name: Upload five-city proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: carte-lot8-multicity-${{ github.run_id }}
+          path: data/audits/carte-lot8-multicity
+          if-no-files-found: error
+          retention-days: 30

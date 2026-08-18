@@ -1,0 +1,32 @@
+name: Carte Lot 8 Rollout Readiness
+
+on:
+  pull_request:
+    paths:
+      - "lib/map/premium-map-city-registry.ts"
+      - "components/map/MapNeighborhoodClient.tsx"
+      - "app/api/geo/**"
+      - "data/geo/**"
+      - "scripts/audits/carte-lot8-rollout-readiness.mjs"
+      - "docs/CARTE_QUARTIERS_PREMIUM_LOT8_ROLLOUT.md"
+      - ".github/workflows/carte-lot8-rollout-readiness.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rollout-readiness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Lot 8 readiness contract
+        run: node scripts/audits/carte-lot8-rollout-readiness.mjs
+      - name: TypeScript
+        run: npx tsc --noEmit
