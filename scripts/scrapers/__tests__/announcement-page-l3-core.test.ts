@@ -87,7 +87,7 @@ describe("ANN-L3 production composition", () => {
     const media = readFileSync("components/listings/PropertyMediaGallery.tsx", "utf8");
 
     assert.match(detail, /<PropertyMediaGallery listing=\{listing\} \/>/);
-    assert.match(detail, /<PropertyCore listing=\{listing\} \/>/);
+    assert.match(detail, /<PropertyCore\s+listing=\{listing\}/);
     assert.match(core, /data-announcement-property-core="ann-l3"/);
     assert.equal((core.match(/<h1\b/g) ?? []).length, 1);
     assert.equal((detail.match(/<h1\b/g) ?? []).length, 0);
