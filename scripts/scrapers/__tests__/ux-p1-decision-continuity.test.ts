@@ -22,7 +22,7 @@ test("listing detail keeps one canonical decision flow through the shared announ
   assert.ok(shell.includes("proConversion={proConversion}"));
   assert.ok(shell.includes("<MobilePropertyDecisionBar listing={listing} model={proConversion} />"));
   assert.ok(!shell.includes("PropertyDecisionHeader"), "legacy pre-detail decision hero must not reintroduce a second H1");
-  assert.ok(detail.includes("<PropertyCore listing={listing} />"), "the active listing detail body must delegate identity to PropertyCore");
+  assert.ok(/<PropertyCore\s+listing=\{listing\}/.test(detail), "the active listing detail body must delegate identity to PropertyCore");
 
   const h1Count = (detail.match(/<h1\b/g) ?? []).length + (core.match(/<h1\b/g) ?? []).length;
   assert.equal(h1Count, 1, "the active listing detail composition must expose exactly one H1 source");
