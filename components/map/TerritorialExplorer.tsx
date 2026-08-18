@@ -120,7 +120,7 @@ export function TerritorialExplorer({
           <div className="min-w-0 flex-1 overflow-hidden">
             <div className="flex gap-1.5 overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {selectedCity
-                ? districts.map((point) => {
+              ? districts.map((point) => {
                     const active = selectedDistrict?.id === point.id;
                     return (
                       <button
