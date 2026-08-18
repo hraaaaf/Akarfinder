@@ -1,0 +1,29 @@
+name: Carte Lot 7 City Registry Contract
+
+on:
+  pull_request:
+    paths:
+      - "lib/map/premium-map-city-registry.ts"
+      - "components/map/MapNeighborhoodClient.tsx"
+      - "scripts/audits/carte-lot7-city-registry-contract.mjs"
+      - ".github/workflows/carte-lot7-city-registry-contract.yml"
+      - "docs/CARTE_QUARTIERS_PREMIUM_LOT7_INDUSTRIALISATION.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  city-registry-contract:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: City capability contract
+        run: node scripts/audits/carte-lot7-city-registry-contract.mjs
+      - name: TypeScript
+        run: npx tsc --noEmit
