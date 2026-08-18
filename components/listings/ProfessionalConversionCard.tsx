@@ -20,14 +20,32 @@ export function ProfessionalConversionCard({
 
   if (mobileIdentityOnly) {
     return (
-      <section data-pro-conversion-identity="ann-l11" className={`${ui.surfacePremium} p-4 lg:hidden`}>
-        <div className="flex flex-wrap items-start justify-between gap-2">
+      <section data-pro-conversion-identity="ann-l11" className={`${ui.surfacePremium} overflow-hidden lg:hidden`}>
+        <div className="flex flex-wrap items-start justify-between gap-2 border-b border-slate-100 bg-gradient-to-b from-white to-slate-50/70 p-4">
           <div className="min-w-0">
             <p className={ui.eyebrow}>Professionnel / source</p>
             <p className="mt-1 break-words text-[1rem] font-extrabold text-[#0B2545]">{model.professional.name ?? "Source non renseignée"}</p>
-            {model.professional.sourceLabel ? <p className="mt-1 text-[11.5px] text-slate-500">{model.professional.sourceLabel}</p> : null}
+            {model.professional.sourceLabel ? <p className="mt-1 text-[11.5px] leading-5 text-slate-500">{model.professional.sourceLabel}</p> : null}
           </div>
           {model.professional.badgeLabel ? <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[10px] font-extrabold text-amber-800">{model.professional.badgeLabel}</span> : null}
+        </div>
+        <div className="space-y-2.5 p-4">
+          {model.actions.visit ? <VisitRequestPanel listing={listing} compact /> : null}
+          {model.actions.whatsapp.enabled && model.actions.whatsapp.phone ? (
+            <WhatsAppCTA phone={model.actions.whatsapp.phone} label="Contacter via WhatsApp" size="md" variant="primary" />
+          ) : null}
+          {!model.actions.visit && !model.actions.whatsapp.enabled ? (
+            <p className="rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-3 text-[12px] leading-5 text-slate-600">Le contact direct n’est pas proposé par AkarFinder pour cette source.</p>
+          ) : null}
+          {model.actions.sourceOriginal.enabled && model.actions.sourceOriginal.url ? (
+            <a href={model.actions.sourceOriginal.url} target="_blank" rel="noopener noreferrer" className={`${ui.secondaryAction} w-full text-[12.5px] font-extrabold text-[#0B2545]`}>
+              Voir la source d’origine
+            </a>
+          ) : null}
+          <div className="grid grid-cols-2 gap-2 pt-1">
+            <CompareToggleButton listingId={listing.id} variant="block" />
+            <FavoriteToggleButton listingId={listing.id} variant="block" />
+          </div>
         </div>
       </section>
     );
