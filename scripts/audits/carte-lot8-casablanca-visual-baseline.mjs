@@ -12,7 +12,7 @@ const viewports = [
   { name: "desktop", width: 1280, height: 900 },
 ];
 
-const report = { ok: false, cases: [], findings: [], generatedAt: new Date().toISOString() };
+const report = { ok: false, cases: [], generatedAt: new Date().toISOString() };
 const browser = await chromium.launch({ headless: true });
 
 try {
@@ -25,7 +25,7 @@ try {
       error: request.failure()?.errorText || "unknown",
     }));
 
-    await page.goto(`${baseUrl}/map?city=casablanca&district=anfa&layer=explore`, {
+    await page.goto(`${baseUrl}/map?city=casablanca&district=maarif&layer=explore`, {
       waitUntil: "domcontentloaded",
       timeout: 30000,
     });
@@ -42,23 +42,16 @@ try {
     const searchHref = await searchLink.getAttribute("href");
     if (!searchHref) throw new Error(`${viewport.name}: Search handoff missing`);
     const searchUrl = new URL(searchHref, baseUrl);
-    const searchCity = searchUrl.searchParams.get("city");
-    const searchDistrict = searchUrl.searchParams.get("district");
-    if (searchUrl.pathname !== "/search" || searchCity !== "Casablanca" || searchDistrict !== "Anfa") {
-      report.findings.push({
-        viewport: viewport.name,
-        type: "search-handoff-baseline",
-        expected: "/search?city=Casablanca&district=Anfa",
-        actual: searchHref,
-      });
+    if (searchUrl.pathname !== "/search" || searchUrl.searchParams.get("city") !== "Casablanca" || searchUrl.searchParams.get("district") !== "Maârif") {
+      throw new Error(`${viewport.name}: Search handoff mismatch ${searchHref}`);
     }
 
-    const panel = page.getByRole("complementary", { name: /Fiche repère quartier Anfa/i });
+    const panel = page.getByRole("complementary", { name: /Fiche repère quartier Maârif/i });
     await panel.waitFor({ state: "visible", timeout: 15000 });
     const panelBox = await panel.boundingBox();
-    if (!panelBox) throw new Error(`${viewport.name}: Anfa panel has no bounding box`);
+    if (!panelBox) throw new Error(`${viewport.name}: Maârif panel has no bounding box`);
     if (panelBox.x < -1 || panelBox.x + panelBox.width > viewport.width + 1 || panelBox.y < -1 || panelBox.y + panelBox.height > viewport.height + 1) {
-      throw new Error(`${viewport.name}: Anfa panel escapes viewport ${JSON.stringify(panelBox)}`);
+      throw new Error(`${viewport.name}: Maârif panel escapes viewport ${JSON.stringify(panelBox)}`);
     }
 
     if (diagnostics.pageErrors.length) {
@@ -66,7 +59,7 @@ try {
     }
 
     await page.screenshot({
-      path: `${outDir}/casablanca-anfa-${viewport.width}x${viewport.height}.png`,
+      path: `${outDir}/casablanca-maarif-${viewport.width}x${viewport.height}.png`,
       fullPage: false,
     });
 
