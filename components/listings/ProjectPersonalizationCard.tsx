@@ -47,7 +47,15 @@ function groupedRoutes(model: ProjectRoutesModel | null, profile: DynamicSearchP
   });
 }
 
-export function ProjectPersonalizationCard({ listing, projectId }: { listing: Listing; projectId?: string | null }) {
+export function ProjectPersonalizationCard({
+  listing,
+  projectId,
+  compactRail = false,
+}: {
+  listing: Listing;
+  projectId?: string | null;
+  compactRail?: boolean;
+}) {
   const [project, setProject] = useState<ProjectView | null>(null);
   const [routes, setRoutes] = useState<ProjectRoutesModel | null>(null);
   const [loadingRoutes, setLoadingRoutes] = useState(false);
@@ -110,34 +118,38 @@ export function ProjectPersonalizationCard({ listing, projectId }: { listing: Li
   const fit = useMemo(() => project ? buildProjectFitModel(project.profile, listing) : null, [listing, project]);
   if (!project || (!fit?.available && project.profile.location.anchors.length === 0)) return null;
 
-  const visibleReasons = fit?.reasons.slice(0, 6) ?? [];
-  const routeGroups = groupedRoutes(routes, project.profile);
+  const visibleReasons = fit
+    ? compactRail
+      ? [...fit.reasons.filter((reason) => reason.status === "mismatch"), ...fit.reasons.filter((reason) => reason.status !== "mismatch")].slice(0, 3)
+      : fit.reasons.slice(0, 6)
+    : [];
+  const routeGroups = groupedRoutes(routes, project.profile).slice(0, compactRail ? 2 : undefined);
   const measuredRoutes = routes?.routes.filter((route) => route.status === "measured") ?? [];
   const attributions = [...new Set(measuredRoutes.map((route) => route.attribution).filter((value): value is string => Boolean(value)))];
 
   return (
     <section
       data-project-personalization="ann-l12"
-      className="mt-6 overflow-hidden rounded-[22px] border border-slate-200 bg-white shadow-[0_16px_44px_rgba(15,23,42,0.07)]"
+      className={`overflow-hidden rounded-[22px] border border-slate-200 bg-white shadow-[0_16px_44px_rgba(15,23,42,0.07)] ${compactRail ? "mt-0" : "mt-6"}`}
     >
-      <div className="p-5 sm:p-6">
+      <div className={compactRail ? "p-5" : "p-5 sm:p-6"}>
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
             <p className="flex items-center gap-2 text-[10.5px] font-extrabold uppercase tracking-[0.16em] text-[#0B63CE]">
               <Sparkles size={14} aria-hidden="true" /> Mon Projet · <span className="truncate">{project.name}</span>
             </p>
-            <h2 className="mt-2 text-[1.15rem] font-extrabold tracking-[-0.03em] text-[#0B2545]">Ce bien face à vos critères</h2>
+            <h2 className={`${compactRail ? "mt-1.5 text-[1.05rem]" : "mt-2 text-[1.15rem]"} font-extrabold tracking-[-0.03em] text-[#0B2545]`}>Ce bien face à vos critères</h2>
           </div>
           {fit?.score != null ? (
-            <div className="shrink-0 rounded-2xl border border-blue-100 bg-blue-50 px-3 py-2 text-center" aria-label={`Compatibilité ${fit.score} sur 100`}>
-              <span className="block text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#0B63CE]">Fit</span>
-              <span className="block text-lg font-black tracking-[-0.04em] text-[#0B2545]">{fit.score}/100</span>
+            <div className={`shrink-0 rounded-2xl border border-blue-100 bg-blue-50 text-center ${compactRail ? "px-2.5 py-1.5" : "px-3 py-2"}`} aria-label={`Compatibilité ${fit.score} sur 100`}>
+              <span className="block text-[9px] font-extrabold uppercase tracking-[0.12em] text-[#0B63CE]">Fit</span>
+              <span className={`${compactRail ? "text-base" : "text-lg"} block font-black tracking-[-0.04em] text-[#0B2545]`}>{fit.score}/100</span>
             </div>
           ) : null}
         </div>
 
         {fit ? (
-          <p className="mt-3 text-[12.5px] font-semibold text-slate-500">
+          <p className={`${compactRail ? "mt-2 text-[11.5px]" : "mt-3 text-[12.5px]"} font-semibold text-slate-500`}>
             {fit.evaluatedCount > 0
               ? `${fit.matchedCount} critère${fit.matchedCount > 1 ? "s" : ""} compatible${fit.matchedCount > 1 ? "s" : ""}${fit.mismatchCount > 0 ? ` · ${fit.mismatchCount} écart${fit.mismatchCount > 1 ? "s" : ""}` : ""}`
               : "Critères comparables insuffisants pour calculer un score global."}
@@ -145,13 +157,13 @@ export function ProjectPersonalizationCard({ listing, projectId }: { listing: Li
         ) : null}
 
         {visibleReasons.length > 0 ? (
-          <div className="mt-4 divide-y divide-slate-100 border-y border-slate-100">
+          <div className={`${compactRail ? "mt-3" : "mt-4"} divide-y divide-slate-100 border-y border-slate-100`}>
             {visibleReasons.map((item, index) => (
-              <div key={`${item.key}-${item.label}-${index}`} className="flex min-h-11 items-start gap-3 py-2.5">
+              <div key={`${item.key}-${item.label}-${index}`} className={`flex items-start gap-3 ${compactRail ? "min-h-10 py-2" : "min-h-11 py-2.5"}`}>
                 <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-slate-50"><ReasonIcon status={item.status} /></span>
                 <div className="min-w-0">
                   <p className="text-[12px] font-extrabold text-[#0B2545]">{item.label}</p>
-                  <p className="mt-0.5 text-[11.5px] leading-4 text-slate-500">{item.detail}</p>
+                  <p className="mt-0.5 text-[11px] leading-4 text-slate-500">{item.detail}</p>
                 </div>
               </div>
             ))}
@@ -159,16 +171,16 @@ export function ProjectPersonalizationCard({ listing, projectId }: { listing: Li
         ) : null}
 
         {project.profile.location.anchors.length > 0 ? (
-          <div className="mt-5">
-            <p className="flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.12em] text-slate-500">
+          <div className={compactRail ? "mt-4" : "mt-5"}>
+            <p className="flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.12em] text-slate-500">
               <Route size={14} aria-hidden="true" /> Vos trajets
             </p>
             <div className="mt-2 divide-y divide-slate-100 rounded-2xl border border-slate-100 bg-slate-50/55 px-3">
               {routeGroups.map(({ anchor, routes: anchorRoutes }) => (
-                <div key={anchor.label} className="flex min-h-12 items-center justify-between gap-3 py-2.5">
+                <div key={anchor.label} className={`flex items-center justify-between gap-3 ${compactRail ? "min-h-10 py-2" : "min-h-12 py-2.5"}`}>
                   <div className="min-w-0">
-                    <p className="truncate text-[12px] font-extrabold text-[#0B2545]">{anchor.label}</p>
-                    <p className="mt-0.5 text-[10.5px] text-slate-500">
+                    <p className="truncate text-[11.5px] font-extrabold text-[#0B2545]">{anchor.label}</p>
+                    <p className="mt-0.5 text-[10px] text-slate-500">
                       {loadingRoutes
                         ? "Calcul du trajet mesuré…"
                         : anchorRoutes.length > 0
@@ -177,19 +189,19 @@ export function ProjectPersonalizationCard({ listing, projectId }: { listing: Li
                     </p>
                   </div>
                   {anchor.max_minutes != null && anchorRoutes.some((route) => route.withinTarget != null) ? (
-                    <span className={`shrink-0 rounded-full px-2 py-1 text-[9.5px] font-extrabold ${anchorRoutes.some((route) => route.withinTarget === true) ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"}`}>
+                    <span className={`shrink-0 rounded-full px-2 py-1 text-[9px] font-extrabold ${anchorRoutes.some((route) => route.withinTarget === true) ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"}`}>
                       cible {anchor.max_minutes} min
                     </span>
                   ) : null}
                 </div>
               ))}
             </div>
-            {attributions.length > 0 ? <p className="mt-2 text-[9.5px] text-slate-400">Trajets mesurés · {attributions.join(" · ")}</p> : null}
+            {!compactRail && attributions.length > 0 ? <p className="mt-2 text-[9.5px] text-slate-400">Trajets mesurés · {attributions.join(" · ")}</p> : null}
           </div>
         ) : null}
 
-        <div className="mt-5 border-t border-slate-100 pt-4">
-          <Link href="/mon-projet/espace" className="inline-flex min-h-11 items-center rounded-xl border border-slate-200 bg-white px-4 text-[12px] font-extrabold text-[#0B63CE] transition hover:border-blue-200 hover:bg-blue-50 motion-reduce:transition-none">
+        <div className={`${compactRail ? "mt-4 pt-3" : "mt-5 pt-4"} border-t border-slate-100`}>
+          <Link href="/mon-projet/espace" className="inline-flex min-h-10 items-center rounded-xl border border-slate-200 bg-white px-3.5 text-[11.5px] font-extrabold text-[#0B63CE] transition hover:border-blue-200 hover:bg-blue-50 motion-reduce:transition-none">
             Modifier Mon Projet
           </Link>
         </div>

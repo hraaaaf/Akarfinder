@@ -34,15 +34,18 @@ export function ProfessionalConversionCard({
   }
 
   return (
-    <section data-pro-conversion="ann-l11" className={`${ui.surfacePremium} overflow-hidden`}>
-      <div className="border-b border-slate-200 px-5 py-5">
+    <section
+      data-pro-conversion="ann-l11"
+      className="overflow-hidden rounded-[22px] border border-slate-200 bg-white shadow-[0_18px_46px_rgba(15,38,68,0.09)]"
+    >
+      <div className="border-b border-slate-100 bg-gradient-to-b from-white to-slate-50/70 px-5 py-5">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className={ui.eyebrow}>Professionnel / source</p>
-            <p className="mt-1.5 break-words text-[1.08rem] font-extrabold text-[#0B2545]">{model.professional.name ?? "Source non renseignée"}</p>
+            <p className="text-[9.5px] font-black uppercase tracking-[0.16em] text-[#0B63CE]">Professionnel de confiance</p>
+            <p className="mt-1.5 break-words text-[1.12rem] font-black tracking-[-0.025em] text-[#0B2545]">{model.professional.name ?? "Source non renseignée"}</p>
             {model.professional.sourceLabel ? <p className="mt-1 text-[11.5px] leading-5 text-slate-500">{model.professional.sourceLabel}</p> : null}
           </div>
-          {model.professional.badgeLabel ? <span className="shrink-0 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[10px] font-extrabold text-amber-800">{model.professional.badgeLabel}</span> : null}
+          {model.professional.badgeLabel ? <span className="shrink-0 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[9.5px] font-extrabold text-amber-800">{model.professional.badgeLabel}</span> : null}
         </div>
       </div>
 
@@ -55,7 +58,7 @@ export function ProfessionalConversionCard({
           <p className="rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-3 text-[12px] leading-5 text-slate-600">Le contact direct n’est pas proposé par AkarFinder pour cette source.</p>
         ) : null}
         {model.actions.sourceOriginal.enabled && model.actions.sourceOriginal.url ? (
-          <a href={model.actions.sourceOriginal.url} target="_blank" rel="noopener noreferrer" className={`${ui.secondaryAction} w-full text-[13px] font-extrabold text-[#0B2545]`}>
+          <a href={model.actions.sourceOriginal.url} target="_blank" rel="noopener noreferrer" className={`${ui.secondaryAction} w-full text-[12.5px] font-extrabold text-[#0B2545]`}>
             Voir la source d’origine
           </a>
         ) : null}
@@ -64,10 +67,10 @@ export function ProfessionalConversionCard({
           <CompareToggleButton listingId={listing.id} variant="block" />
           <FavoriteToggleButton listingId={listing.id} variant="block" />
         </div>
-        <Link href="/mon-projet" className={`${ui.secondaryAction} w-full text-[13px] font-extrabold text-[#0B2545]`}>
+        <Link href="/mon-projet" className="flex min-h-10 w-full items-center justify-center rounded-xl border border-slate-200 bg-slate-50/70 px-3 text-[11.5px] font-extrabold text-[#0B63CE] transition hover:border-blue-200 hover:bg-blue-50 motion-reduce:transition-none">
           Mon Projet
         </Link>
-        <a href={reportHref} className="flex min-h-11 w-full items-center justify-center text-[12px] font-bold text-slate-500 underline underline-offset-4">Signaler cette annonce</a>
+        <a href={reportHref} className="flex min-h-10 w-full items-center justify-center text-[11px] font-bold text-slate-400 underline decoration-slate-300 underline-offset-4 hover:text-slate-600">Signaler cette annonce</a>
       </div>
     </section>
   );
