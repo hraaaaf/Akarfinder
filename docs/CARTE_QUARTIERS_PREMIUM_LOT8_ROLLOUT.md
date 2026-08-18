@@ -1,28 +1,32 @@
 # Carte des quartiers premium — Lot 8 extension aux cinq autres villes
 
-Statut : **EN COURS — CERTIFICATION EXACT-HEAD**  
+Statut : **EN COURS — CERTIFICATION VISUELLE STRICTE**  
 Date : 2026-08-18  
 Branche : `agent/carte-quartiers-premium-lot8-rollout-multivilles`
 
 ## Goal
 
-Étendre l’expérience premium validée sur Rabat à Casablanca, Marrakech, Tanger, Agadir et Fès sans inventer de géométrie, de métriques ou de provider.
+Étendre l’expérience premium validée sur Rabat à Casablanca, Marrakech, Tanger, Agadir et Fès sans inventer de géométrie, de métriques ou de provider, tout en conservant une page finale réellement fidèle au mockup V2 validé.
 
 ## Succès
 
 - les cinq villes utilisent les contrats communs du Lot 7 ;
 - chaque activation data-rich reste conditionnée à une source réellement admissible ;
 - les villes sans provider restent fail-closed sans régression de navigation `city + district` ;
+- la carte reste l’élément visuel dominant ;
+- desktop : sélecteur compact des six villes phares, surfaces blanches, bleu marine/électrique, hiérarchie d’overlay unique et fiche quartier premium ;
+- mobile/tablette : une fiche quartier ouverte devient l’overlay primaire et libère la bottom navigation ;
 - chaque changement UI suit baseline → référence V2 validée → implémentation → captures après aux mêmes viewports → score explicite ;
+- aucune capture n’est acceptée si le canvas existe mais que les vraies tuiles de fond ne sont pas rendues ;
 - build, Geo/Search/Map, responsive et a11y restent verts.
 
 ## Preuve
 
-- baseline Casablanca avant correction : run `32148290667`, artifact `9328820806`, quatre viewports 390×844, 430×932, 768×900, 1280×900 ;
-- la baseline historique est figée : son workflow ne se relance plus sur le runtime modifié, car il décrit volontairement l’état avant correction ;
-- captures après aux mêmes viewports via `Carte Lot 8 Casablanca Visual After` ;
+- baseline pré-Lot-8 reconstruite depuis le commit exact `9b753afd9260891b82fd1ccbdb2d6d1b49b48816` sur 390×844, 430×932, 768×900, 1280×900 ;
+- captures after aux mêmes viewports via `Carte Lot 8 Casablanca Visual After` ;
+- audit navigateur multi-villes : Casablanca, Marrakech, Tanger, Agadir, Fès en 390×844 et 1280×900 ;
+- chaque audit visuel exige désormais au moins deux réponses HTTP réussies de vraies tuiles OpenFreeMap à zoom >= 9 avant screenshot ;
 - audit readiness par ville ;
-- audit navigateur multi-villes ;
 - CI exact-head ;
 - aucun provider activé sans preuve de géométrie + métriques + mapping Search.
 
@@ -70,21 +74,17 @@ Branche : `agent/carte-quartiers-premium-lot8-rollout-multivilles`
 | Agadir | Oui | Non certifiée | Non | Fail-closed |
 | Fès | Oui | Non certifiée | Non | Fail-closed |
 
-## Baseline visuelle Casablanca
+## Référence visuelle et corrections
 
-Baseline exacte-head capturée avant le changement UI sur quatre viewports : 390×844, 430×932, 768×900, 1280×900.
+La référence reste le mockup V2 Rabat validé : grande carte dominante, sélecteur des six villes, surfaces blanches, bleu marine/électrique, bordures fines, ombres légères, contrôles compacts et une seule couche d’interaction primaire.
 
-Finding principal vérifié sur mobile : la légende globale recouvrait la fiche quartier sélectionnée et la bottom navigation recouvrait la partie basse de la fiche. Le correctif Lot 8 applique le même principe que Rabat : lorsqu’un quartier générique est sélectionné sur mobile/tablette, l’UI secondaire disparaît et la fiche remonte au-dessus de la bottom navigation.
+La première correction Lot 8 a supprimé l’empilement mobile/tablette : lorsqu’un quartier générique est sélectionné, cockpit secondaire, explorer territorial et légende disparaissent et la fiche remonte au-dessus de la bottom navigation.
 
-Une première capture dite « after » a ensuite été rejetée comme preuve parce qu’elle était prise pendant l’état `Chargement de la carte…`. Le harnais de certification a été durci : aucune capture after n’est désormais acceptée tant que le loading n’a pas disparu et que le canvas MapLibre n’est pas visible.
+Une première série de captures after a été rejetée parce qu’elle contenait encore `Chargement de la carte…`. Une seconde série a également été rejetée après inspection humaine : le canvas MapLibre était visible mais le fond de carte restait vide. Le score visuel associé à ces captures a été retiré.
 
-La référence visuelle reste le mockup V2 Rabat validé : carte dominante, surfaces blanches, bleu marine/électrique, contrôles compacts, bordures fines, ombres légères et hiérarchie d’overlay unique.
+Le diagnostic a montré que l’ancien gate confondait `style.load`/canvas visible avec rendu cartographique réel. Les audits Casablanca, multi-villes et before-reference exigent désormais de vraies réponses de tuiles OpenFreeMap à fort zoom avant toute capture. Une capture de toile vide ne peut donc plus passer silencieusement.
 
-## État CI connu avant fermeture
-
-Sur le HEAD `d5f51808833cfdabd2eb9ca20d45a722ef06af65`, les contrats P0, P2, Geo, Compile, UX, C4 Heatmap, C7 et Registry Lot 7 sont déjà verts. La certification visuelle after, le navigateur multi-villes et plusieurs gates UI sont encore en cours au moment de cette mise à jour.
-
-Le run `Carte Lot 8 Casablanca Visual Baseline` qui échoue sur ce HEAD n’est pas un défaut produit : il attendait l’ancien cockpit visible alors que le correctif le masque volontairement quand une fiche quartier est ouverte. Le workflow baseline a donc été figé en `workflow_dispatch`, la preuve before restant l’artifact historique `9328820806`.
+Le shell générique desktop est en outre rapproché du shell premium Rabat : en-tête `Carte des quartiers`, sélecteur des six villes phares, carte dominante, toolbar compacte et fiche quartier premium, sans inventer de données ni de nouvelles capacités métier.
 
 ## Gate Lot 8
 
@@ -93,9 +93,11 @@ Le lot peut être fermé lorsque :
 1. Rabat reste l’unique provider `rabat-market-intelligence` ;
 2. Casablanca conserve explicitement son statut shadow/canary ;
 3. Marrakech/Tanger/Agadir/Fès ne sont pas faussement activées ;
-4. la baseline before et les captures after sont disponibles aux mêmes viewports ;
-5. le finding d’overlap mobile/tablette est absent après correction ;
-6. l’audit readiness Lot 8, TypeScript et les gates Map/Search/Geo/UX passent sur le HEAD exact ;
-7. la roadmap canonique est mise à jour avec l’état réellement validé.
+4. la baseline before et les captures after réellement cartographiées sont disponibles aux mêmes viewports ;
+5. les 10 captures multi-villes montrent réellement les fonds de carte, pas uniquement les overlays ;
+6. le finding d’overlap mobile/tablette est absent ;
+7. la comparaison before / mockup V2 / after atteint au minimum 9,8/10 ;
+8. l’audit readiness Lot 8, TypeScript et les gates Map/Search/Geo/UX passent sur le HEAD exact ;
+9. la roadmap canonique est mise à jour avec l’état réellement validé.
 
 Aucun déploiement Vercel sans autorisation explicite.
