@@ -66,7 +66,6 @@ try {
 
       const loadingCard = page.getByText("Chargement de la carte…", { exact: true });
       await loadingCard.waitFor({ state: "hidden", timeout: 30000 });
-
       const mapCanvas = page.locator(".maplibregl-canvas");
       await mapCanvas.waitFor({ state: "visible", timeout: 10000 });
       await highZoomTilesReady;
@@ -95,19 +94,21 @@ try {
 
       const legend = page.getByRole("complementary", { name: "Légende de la carte immobilière" });
       const explorer = page.getByRole("navigation", { name: "Exploration territoriale" });
-      const controls = page.getByRole("region", { name: "Contrôles de la carte immobilière" });
+      const legacyControls = page.getByRole("region", { name: "Contrôles de la carte immobilière" });
 
       if (viewport.width <= 1023) {
         if (await legend.isVisible()) throw new Error(`${viewport.name}: legend must hide while district panel is open`);
         if (await explorer.isVisible()) throw new Error(`${viewport.name}: territorial explorer must hide while district panel is open`);
-        if (await controls.isVisible()) throw new Error(`${viewport.name}: generic cockpit must hide while district panel is open`);
+        if (await legacyControls.isVisible()) throw new Error(`${viewport.name}: legacy cockpit must stay hidden`);
       } else {
-        const citybar = page.locator("[data-akarfinder-generic-premium-citybar]");
-        await citybar.waitFor({ state: "visible", timeout: 10000 });
-        if (await citybar.getByRole("button").count() !== 6) {
-          throw new Error(`${viewport.name}: premium citybar must expose exactly six flagship cities`);
+        const toolbar = page.locator("[data-akarfinder-generic-premium-toolbar]");
+        await toolbar.waitFor({ state: "visible", timeout: 10000 });
+        const cityNavigation = toolbar.getByRole("navigation", { name: "Sélection des villes phares" });
+        await cityNavigation.waitFor({ state: "visible", timeout: 5000 });
+        if (await cityNavigation.getByRole("button").count() !== 6) {
+          throw new Error(`${viewport.name}: premium toolbar must expose exactly six flagship cities`);
         }
-        if (await citybar.getByRole("button", { name: "Casablanca", exact: true }).getAttribute("aria-pressed") !== "true") {
+        if (await cityNavigation.getByRole("button", { name: "Casablanca", exact: true }).getAttribute("aria-pressed") !== "true") {
           throw new Error(`${viewport.name}: Casablanca must be the active flagship city`);
         }
       }
@@ -115,22 +116,13 @@ try {
       if (viewport.width <= 767) {
         if (await fullPanel.isVisible()) throw new Error(`${viewport.name}: full district sheet must stay collapsed initially`);
         if (panelBox.height > 230) throw new Error(`${viewport.name}: compact district preview is too tall ${JSON.stringify(panelBox)}`);
-        if (panelBox.y < viewport.height * 0.5) {
-          throw new Error(`${viewport.name}: insufficient visible map band above compact preview ${JSON.stringify(panelBox)}`);
-        }
-        if (panelBox.y + panelBox.height > viewport.height - 76) {
-          throw new Error(`${viewport.name}: compact district preview overlaps bottom navigation ${JSON.stringify(panelBox)}`);
-        }
+        if (panelBox.y < viewport.height * 0.5) throw new Error(`${viewport.name}: insufficient visible map band above compact preview ${JSON.stringify(panelBox)}`);
+        if (panelBox.y + panelBox.height > viewport.height - 76) throw new Error(`${viewport.name}: compact district preview overlaps bottom navigation ${JSON.stringify(panelBox)}`);
       }
 
-      if (diagnostics.pageErrors.length) {
-        throw new Error(`${viewport.name}: browser page errors ${JSON.stringify(diagnostics.pageErrors)}`);
-      }
+      if (diagnostics.pageErrors.length) throw new Error(`${viewport.name}: browser page errors ${JSON.stringify(diagnostics.pageErrors)}`);
 
-      await page.screenshot({
-        path: `${outDir}/casablanca-maarif-${viewport.width}x${viewport.height}.png`,
-        fullPage: false,
-      });
+      await page.screenshot({ path: `${outDir}/casablanca-maarif-${viewport.width}x${viewport.height}.png`, fullPage: false });
 
       if (viewport.width <= 767) {
         await compactPanel.getByRole("button", { name: "Afficher les détails du quartier" }).click();
@@ -147,7 +139,7 @@ try {
         mobileDetailsExpandable: viewport.width <= 767,
         mapRendered: true,
         highZoomTileCount,
-        premiumCitybar: viewport.width >= 1024,
+        premiumToolbar: viewport.width >= 1024,
         diagnostics,
       });
     } finally {
