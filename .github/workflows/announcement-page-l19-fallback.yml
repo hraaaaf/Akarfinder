@@ -1,0 +1,40 @@
+name: Announcement Page L19 Premium Fallback
+
+on:
+  pull_request:
+    paths:
+      - "components/listings/PropertyMediaGallery.tsx"
+      - "components/listings/PremiumIllustrativeInterior.tsx"
+      - "docs/LISTING_VISUAL_L19_GOAL.md"
+      - "scripts/scrapers/__tests__/listing-visual-l19-fallback.test.ts"
+      - ".github/workflows/announcement-page-l19-fallback.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  l19-premium-fallback:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: L19 source contract
+        run: npx tsx --test scripts/scrapers/__tests__/listing-visual-l19-fallback.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Production build
+        run: npm run build
