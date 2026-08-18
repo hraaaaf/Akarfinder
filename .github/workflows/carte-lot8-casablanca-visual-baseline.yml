@@ -35,7 +35,7 @@ jobs:
         run: |
           npm run start -- -p 3205 > /tmp/carte-lot8-casablanca.log 2>&1 &
           for attempt in {1..60}; do
-            if curl -fsS 'http://127.0.0.1:3205/map?city=casablanca&district=anfa&layer=explore' >/dev/null; then exit 0; fi
+            if curl -fsS 'http://127.0.0.1:3205/map?city=casablanca&district=maarif&layer=explore' >/dev/null; then exit 0; fi
             sleep 1
           done
           cat /tmp/carte-lot8-casablanca.log
