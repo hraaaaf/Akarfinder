@@ -14,6 +14,7 @@ const districts = [
 const viewports = [
   { name: "mobile-390", width: 390, height: 844, mobile: true },
   { name: "mobile-430", width: 430, height: 932, mobile: true },
+  { name: "tablet", width: 768, height: 900, mobile: false },
   { name: "desktop", width: 1280, height: 900, mobile: false },
 ];
 
@@ -127,7 +128,7 @@ try {
           const selected = await densityTab.getAttribute("aria-selected");
           if (selected !== "true") throw new Error(`Density tab did not become selected: ${selected}`);
           await sheet.getByText("Densité", { exact: true }).waitFor({ state: "visible", timeout: 10000 });
-          await page.getByText("Chargement de la carte des quartiers…", { exact: true }).waitFor({ state: "hidden", timeout: 10000 }).catch(() => {});
+          await page.getByText("Chargement de la carte des quartiers…", { exact: true }).waitFor({ state: "hidden", timeout: 10000 });
           if ((await context.count()) !== 1) throw new Error("Agdal context disappeared after mode switch");
         }
       }
