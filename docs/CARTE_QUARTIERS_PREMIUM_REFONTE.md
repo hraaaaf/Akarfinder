@@ -1,9 +1,10 @@
 # Carte des quartiers premium — Refonte canonique
 
-Statut : **LOT 1 — SPEC CANONIQUE EN COURS**  
+Statut : **LOT 8 — EXTENSION MULTI-VILLES EN CERTIFICATION**  
 Date de verrouillage : 2026-08-17  
+Dernière mise à jour vérifiée : 2026-08-18  
 Repo : `hraaaaf/Akarfinder`  
-Branche de travail : `agent/carte-quartiers-premium-lot1-spec`
+Branche de travail : `agent/carte-quartiers-premium-lot8-rollout-multivilles`
 
 ## 1. Goal global
 
@@ -36,13 +37,11 @@ Villes phares initiales :
 5. Agadir
 6. Fès
 
-Rabat sert de **ville de référence UI/UX pour la première implémentation**, car le mockup canonique de la refonte a été validé sur Rabat.
-
-L’industrialisation multi-villes vient après validation de Rabat.
+Rabat reste la ville de référence UI/UX et le seul provider d’intelligence marché dédié actuellement certifié. L’industrialisation ne doit jamais transformer une simple présence dans le registre de villes en capacité data-rich.
 
 ## 3. Base existante à réutiliser — ne pas repartir de zéro
 
-La refonte doit s’appuyer sur l’existant :
+La refonte s’appuie sur :
 
 - `/map` ;
 - `MapNeighborhoodExperience` ;
@@ -51,11 +50,12 @@ La refonte doit s’appuyer sur l’existant :
 - Geo Entity Registry ;
 - contrat Search structuré `city + district` ;
 - `map-navigation-state` ;
-- design system Map déjà convergé vers l’identité bleue AkarFinder ;
-- panneau quartier flottant existant ;
+- design system Map convergé vers l’identité bleue AkarFinder ;
+- panneau quartier flottant ;
 - marqueurs quartiers / clusters villes ;
-- mode prix et metadata de confiance existants ;
-- `akarfinder-territorial-style` et couches territoriales existantes lorsqu’elles sont autoritatives.
+- mode prix et metadata de confiance ;
+- `akarfinder-territorial-style` et couches territoriales existantes lorsqu’elles sont admissibles ;
+- registre `premium-map-city-registry` issu du Lot 7.
 
 ### Interdictions
 
@@ -65,6 +65,7 @@ La refonte doit s’appuyer sur l’existant :
 - pas de frontières inventées ;
 - pas de centroïdes déguisés en polygones ;
 - pas d’interpolation présentée comme donnée exacte ;
+- pas de provider d’intelligence marché activé sans implémentation dédiée et preuves ;
 - pas de déploiement Vercel sans autorisation explicite du propriétaire du projet.
 
 ## 4. Goal visuel canonique
@@ -84,231 +85,133 @@ La refonte doit s’appuyer sur l’existant :
 - contrôles en capsules blanches ;
 - pas de surcharge décorative.
 
-### Amélioration exigée par rapport au premier mockup
+### Référence validée
 
-Le premier mockup a été évalué **9,6/10**. Les corrections retenues comme référence de refonte sont :
+Le mockup V2 Rabat reste la référence de direction : carte dominante, bruit périphérique réduit, sélecteur de villes compact, couleurs territoriales sobres, relation forte entre sélection géographique et fiche, cohérence desktop/mobile.
 
-1. rendre la carte plus dominante ;
-2. réduire le bruit périphérique d’environ 10–15 % ;
-3. alléger la sidebar verticale desktop ;
-4. alléger le sélecteur des villes ;
-5. rendre les couleurs des quartiers plus sophistiquées et moins « maquette conceptuelle » ;
-6. renforcer la relation visuelle entre quartier sélectionné et fiche de bien ;
-7. compacter les insights secondaires ;
-8. conserver une stricte cohérence desktop/mobile.
+Le score >= 9,8/10 reste une gate de certification mesurée sur l’implémentation réelle.
 
-Le mockup V2 issu de ces corrections a été **validé comme direction produit**. Le score >= 9,8 reste une **gate de certification à mesurer sur l’implémentation réelle**, pas une note inventée.
+## 5. Référence UI — desktop
 
-## 5. Référence UI — desktop Rabat
+Structure cible :
 
-### Structure générale
-
-1. Header AkarFinder existant / cohérent avec le reste du produit.
-2. Sélecteur compact des six villes, avec Rabat actif.
-3. Barre de recherche compacte.
-4. Filtres en capsules :
-   - Budget
-   - Type
-   - Surface
-   - Chambres
-   - Filtres
+1. Header AkarFinder cohérent avec le reste du produit.
+2. Sélecteur compact des six villes.
+3. Recherche compacte.
+4. Filtres essentiels.
 5. Carte occupant la majorité du viewport utile.
 6. Contrôles géographiques minimalistes.
 7. Quartier sélectionné clairement identifiable.
-8. Fiche immobilière / décision locale reliée visuellement au quartier actif.
-9. Insights secondaires compacts en dessous ou en overlay léger selon viewport.
+8. Fiche reliée visuellement au territoire ou au repère actif.
+9. Insights secondaires compacts.
 
-### Quartiers de référence visuelle Rabat
+États obligatoires : ville active, quartier disponible, quartier sélectionné, géométrie indisponible, faible couverture, aucune donnée, loading, erreur, hover, focus clavier, sélection, mode prix uniquement lorsque les données sont admissibles.
 
-Le mockup utilise notamment :
+## 6. Référence UI — mobile
 
-- Hay Riad
-- Agdal
-- Souissi
-- Hassan
-- Océan
-- Yacoub El Mansour
-- Rabat Centre
-
-**Important :** cette liste est une référence UI. L’affichage d’un polygone réel dépend d’une géométrie autoritative disponible dans les sources canoniques.
-
-### États visuels obligatoires
-
-- ville active ;
-- quartier disponible non sélectionné ;
-- quartier sélectionné ;
-- quartier sans géométrie polygonale autoritative ;
-- faible couverture data ;
-- aucune donnée ;
-- loading ;
-- erreur ;
-- hover desktop ;
-- focus clavier ;
-- sélection au clic / clavier ;
-- mode prix lorsque les données sont admissibles.
-
-## 6. Référence UI — mobile Rabat
-
-La version mobile n’est pas une réduction paresseuse du desktop.
-
-Elle doit conserver :
+La version mobile doit conserver :
 
 - header compact ;
 - recherche compacte ;
 - filtres essentiels ;
 - carte prioritaire ;
 - quartier actif clairement visible ;
-- bottom sheet / fiche bien compacte ;
+- bottom sheet / fiche compacte ;
 - bottom navigation AkarFinder ;
-- action de fermeture / retour accessible ;
+- fermeture / retour accessible ;
 - zones tactiles suffisantes ;
-- aucun panneau desktop simplement empilé hors écran.
+- une seule couche d’overlay primaire lorsqu’une fiche quartier est ouverte.
 
 ## 7. Vérité géographique — règle fail-closed
-
-La refonte visuelle ne doit jamais contourner les règles Geo existantes.
 
 ### Si une géométrie fiable existe
 
 - afficher le polygone ;
-- identifier la source/provenance si le contrat courant le prévoit ;
+- conserver sa provenance ;
 - appliquer le style territorial AkarFinder ;
 - permettre sélection et focus.
 
 ### Si aucune géométrie fiable n’existe
 
-- **ne pas inventer de frontière** ;
-- conserver un repère ponctuel / marker uniquement si sa nature est explicitement correcte ;
-- ou afficher le quartier dans la liste / recherche sans polygonisation ;
-- l’UI doit rester élégante même en mode fail-closed.
+- ne pas inventer de frontière ;
+- conserver un repère ponctuel seulement si sa nature est explicite ;
+- ou afficher le quartier sans polygonisation ;
+- conserver une UI élégante en fail-closed.
 
-### Rabat
+### État actuel multi-villes
 
-Au moment de ce verrouillage, la géométrie polygonale autoritative de plusieurs quartiers de Rabat reste un sujet ouvert dans le chantier Carte Intelligence Marché. La refonte doit donc être conçue pour fonctionner sans fabriquer ces contours.
+- Rabat : expérience data-rich dédiée certifiée lors des Lots 3 à 6 ;
+- Casablanca : géométrie OSM existante mais `shadow`/canary, non promue en vérité officielle ;
+- Marrakech : preuves insuffisantes pour plusieurs entités géographiques ciblées ;
+- Tanger, Agadir, Fès : aucune capacité d’intelligence marché dédiée équivalente à Rabat n’est actuellement activée.
 
 ## 8. Contrats fonctionnels à préserver
 
 - `city` et `district` restent des dimensions structurées ;
 - `q` ne remplace jamais `district` ;
 - navigation Map -> Search conserve `city + district` ;
-- état URL Map existant doit rester compatible ;
-- un changement purement visuel ne doit pas casser Geo Registry ;
+- état URL Map reste compatible ;
+- Geo Registry reste source de normalisation ;
 - la confiance data ne doit pas être représentée uniquement par une couleur ;
 - aucun fallback ville ne doit être présenté comme un prix exact de quartier.
 
-## 9. Composants cible
+## 9. Architecture multi-villes
 
-Réutiliser avant de créer :
+Le Lot 7 a extrait le contrat commun suivant :
 
-- Map shell existant ;
-- MapLibre instance / lifecycle ;
-- markers ;
-- district panel ;
-- Search handoff ;
-- Geo resolution ;
-- theme tokens ;
-- map visual tokens.
+- six villes phares dans `PREMIUM_MAP_CITIES` ;
+- provider explicite `marketIntelligenceProvider` ;
+- Rabat seul sur `rabat-market-intelligence` ;
+- les autres villes à `null` tant qu’un provider réel n’existe pas ;
+- `MapNeighborhoodClient` choisit le renderer via le provider, pas via une égalité de ville fragile.
 
-Créer / refactorer seulement si nécessaire :
-
-- `CitySelector` compact six villes ;
-- `MapFilterBar` premium ;
-- `NeighborhoodTerritoryLayer` ou adaptateur équivalent autour des couches existantes ;
-- `NeighborhoodSelectionCard` plus visuelle ;
-- `NeighborhoodInsightsStrip` compact ;
-- mobile bottom sheet adapté.
-
-Les noms ci-dessus sont **des rôles de composants**, pas une obligation de créer exactement ces fichiers si l’existant couvre déjà le besoin.
+Cette architecture empêche qu’une future activation de ville rende accidentellement le composant Rabat ailleurs.
 
 ## 10. Roadmap d’exécution
 
-### Lot 1 — Spec canonique Rabat
+### Lot 1 — Spec canonique Rabat ✅
+Spec verrouillée et mergée.
 
-Goal : verrouiller cette refonte et les règles d’acceptation avant code UI.  
-Succès : ce document existe, décrit la direction validée et ne contredit pas les contrats runtime existants.  
-Preuve : revue du fichier + cohérence avec `/map`, Geo Registry et Search existants.
+### Lot 2 — Audit delta runtime ✅
+Audit runtime/cible verrouillé et mergé.
 
-### Lot 2 — Audit delta runtime
+### Lot 3 — Refonte desktop Rabat ✅
+Implémentation et certification visuelle desktop mergées.
 
-Comparer écran réel `/map` vs cible validée :
+### Lot 4 — Refonte mobile Rabat ✅
+Implémentation mobile et correction des overlays mergées.
 
-- desktop ;
-- mobile ;
-- structure ;
-- composants réutilisables ;
-- éléments à retirer ;
-- éléments à ajouter ;
-- contraintes de géométrie réelles.
+### Lot 5 — Interactions et états ✅
+Navigation, Search handoff, loading/fail-closed et interactions certifiés puis mergés.
 
-### Lot 3 — Refonte desktop Rabat
+### Lot 6 — Certification Rabat ✅
+Certification finale Rabat mergée, score visuel vérifié 9,8/10.
 
-Implémenter le delta minimal sans réécrire le moteur Map.
+### Lot 7 — Industrialisation multi-villes ✅
+Registre de capacités/provider et routing commun extraits puis mergés.
 
-### Lot 4 — Refonte mobile Rabat
+### Lot 8 — Extension aux cinq autres villes ⏳
 
-Adapter l’expérience à la navigation tactile et au bottom sheet.
+Ordre : Casablanca, Marrakech, Tanger, Agadir, Fès.
 
-### Lot 5 — Interactions et états
+État vérifié :
 
-- ville ;
-- quartier ;
-- fiche ;
-- filtres ;
-- URL ;
-- Search handoff ;
-- empty / loading / fail-closed.
-
-### Lot 6 — Certification Rabat
-
-- mêmes viewports avant / après ;
-- comparaison baseline / mockup / après ;
-- responsive ;
-- a11y ;
-- tests Geo/Search/Map ;
-- build ;
-- scoring visuel explicite.
-
-Gate : **>= 9,8/10** pour fermer la partie visuelle.
-
-### Lot 7 — Industrialisation multi-villes
-
-Extraire uniquement ce qui est réellement commun après Rabat validé.
-
-### Lot 8 — Extension aux cinq autres villes
-
-Ordre recommandé :
-
-1. Casablanca
-2. Marrakech
-3. Tanger
-4. Agadir
-5. Fès
-
-Chaque ville reste soumise aux mêmes règles de géométrie autoritative et de fail-closed.
+- audit readiness en place ;
+- Casablanca reste générique avec couche territoriale shadow/canary uniquement ;
+- les cinq villes conservent `city + district` vers Search ;
+- correction UI mobile/tablette appliquée pour éviter l’empilement fiche + contrôles + explorer + légende ;
+- baseline Casablanca before archivée sur 390×844, 430×932, 768×900, 1280×900 ;
+- captures after durcies pour attendre le rendu réel MapLibre ;
+- certification exact-head encore requise avant fermeture et merge.
 
 ## 11. Grille de scoring visuel
 
-La note finale doit être justifiée, pas déclarative.
-
-Axes :
-
-- cohérence AkarFinder ;
-- hiérarchie visuelle ;
-- dominance et lisibilité de la carte ;
-- ergonomie recherche / filtres ;
-- qualité des états quartier ;
-- cohérence fiche <-> sélection géographique ;
-- desktop ;
-- mobile ;
-- densité d’information ;
-- finition premium ;
-- accessibilité visuelle ;
-- absence de bruit inutile.
+Axes : cohérence AkarFinder, hiérarchie, dominance carte, ergonomie recherche/filtres, états quartier, relation fiche/sélection, desktop, mobile, densité, finition premium, accessibilité visuelle, absence de bruit inutile.
 
 Seuil de fermeture : **9,8/10 minimum**.
 
 ## 12. Prochaine étape exacte
 
-**Lot 2 : auditer le runtime `/map` actuel et produire le diff minimal entre l’existant et cette cible canonique.**
+**Lot 8 : terminer la certification exact-head, inspecter les captures after réellement rendues, scorer le résultat, corriger toute régression, puis merger uniquement si toutes les gates pertinentes sont vertes.**
 
-Le principe directeur est simple : **réutiliser tout ce qui est déjà fiable, ne changer que ce qui rapproche réellement le produit du Goal, et ne jamais sacrifier la vérité géographique pour obtenir une jolie carte.**
+Principe directeur : **réutiliser ce qui est fiable, ne promouvoir aucune donnée non certifiée, et préférer un fail-closed propre à une carte très jolie qui raconte des bêtises.**
