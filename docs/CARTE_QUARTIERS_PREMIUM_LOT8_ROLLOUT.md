@@ -1,6 +1,6 @@
 # Carte des quartiers premium — Lot 8 extension aux cinq autres villes
 
-Statut : **EN COURS — READINESS VERROUILLÉE**  
+Statut : **EN COURS — CERTIFICATION EXACT-HEAD**  
 Date : 2026-08-18  
 Branche : `agent/carte-quartiers-premium-lot8-rollout-multivilles`
 
@@ -18,8 +18,11 @@ Branche : `agent/carte-quartiers-premium-lot8-rollout-multivilles`
 
 ## Preuve
 
-- captures avant/après aux mêmes viewports ;
-- audit de readiness par ville ;
+- baseline Casablanca avant correction : run `32148290667`, artifact `9328820806`, quatre viewports 390×844, 430×932, 768×900, 1280×900 ;
+- la baseline historique est figée : son workflow ne se relance plus sur le runtime modifié, car il décrit volontairement l’état avant correction ;
+- captures après aux mêmes viewports via `Carte Lot 8 Casablanca Visual After` ;
+- audit readiness par ville ;
+- audit navigateur multi-villes ;
 - CI exact-head ;
 - aucun provider activé sans preuve de géométrie + métriques + mapping Search.
 
@@ -73,7 +76,15 @@ Baseline exacte-head capturée avant le changement UI sur quatre viewports : 390
 
 Finding principal vérifié sur mobile : la légende globale recouvrait la fiche quartier sélectionnée et la bottom navigation recouvrait la partie basse de la fiche. Le correctif Lot 8 applique le même principe que Rabat : lorsqu’un quartier générique est sélectionné sur mobile/tablette, l’UI secondaire disparaît et la fiche remonte au-dessus de la bottom navigation.
 
+Une première capture dite « after » a ensuite été rejetée comme preuve parce qu’elle était prise pendant l’état `Chargement de la carte…`. Le harnais de certification a été durci : aucune capture after n’est désormais acceptée tant que le loading n’a pas disparu et que le canvas MapLibre n’est pas visible.
+
 La référence visuelle reste le mockup V2 Rabat validé : carte dominante, surfaces blanches, bleu marine/électrique, contrôles compacts, bordures fines, ombres légères et hiérarchie d’overlay unique.
+
+## État CI connu avant fermeture
+
+Sur le HEAD `d5f51808833cfdabd2eb9ca20d45a722ef06af65`, les contrats P0, P2, Geo, Compile, UX, C4 Heatmap, C7 et Registry Lot 7 sont déjà verts. La certification visuelle after, le navigateur multi-villes et plusieurs gates UI sont encore en cours au moment de cette mise à jour.
+
+Le run `Carte Lot 8 Casablanca Visual Baseline` qui échoue sur ce HEAD n’est pas un défaut produit : il attendait l’ancien cockpit visible alors que le correctif le masque volontairement quand une fiche quartier est ouverte. Le workflow baseline a donc été figé en `workflow_dispatch`, la preuve before restant l’artifact historique `9328820806`.
 
 ## Gate Lot 8
 
@@ -82,7 +93,7 @@ Le lot peut être fermé lorsque :
 1. Rabat reste l’unique provider `rabat-market-intelligence` ;
 2. Casablanca conserve explicitement son statut shadow/canary ;
 3. Marrakech/Tanger/Agadir/Fès ne sont pas faussement activées ;
-4. la baseline et les captures après sont disponibles aux mêmes viewports ;
+4. la baseline before et les captures after sont disponibles aux mêmes viewports ;
 5. le finding d’overlap mobile/tablette est absent après correction ;
 6. l’audit readiness Lot 8, TypeScript et les gates Map/Search/Geo/UX passent sur le HEAD exact ;
 7. la roadmap canonique est mise à jour avec l’état réellement validé.
