@@ -101,6 +101,17 @@ try {
           if (panelBox.y + panelBox.height > viewport.height - 76) {
             throw new Error(`${cityCase.slug}/${viewport.name}: panel overlaps bottom navigation ${JSON.stringify(panelBox)}`);
           }
+        } else {
+          const citybar = page.locator("[data-akarfinder-generic-premium-citybar]");
+          await citybar.waitFor({ state: "visible", timeout: 10000 });
+          const cityButtons = citybar.getByRole("button");
+          if (await cityButtons.count() !== 6) {
+            throw new Error(`${cityCase.slug}/${viewport.name}: premium citybar must expose exactly six flagship cities`);
+          }
+          const activeCityButton = citybar.getByRole("button", { name: cityCase.city, exact: true });
+          if (await activeCityButton.getAttribute("aria-pressed") !== "true") {
+            throw new Error(`${cityCase.slug}/${viewport.name}: active flagship city is not ${cityCase.city}`);
+          }
         }
 
         if (pageErrors.length) throw new Error(`${cityCase.slug}/${viewport.name}: browser page errors ${JSON.stringify(pageErrors)}`);
@@ -117,6 +128,7 @@ try {
           panelBox,
           mapRendered: true,
           highZoomTileCount,
+          premiumCitybar: viewport.width >= 1024,
           tileResponses,
         });
       } finally {
