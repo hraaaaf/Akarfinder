@@ -14,6 +14,7 @@ import {
   mapNavigationStateFromUrlSearchParams,
   type MapNavigationState,
 } from "@/lib/map/map-navigation-state";
+import { hasPremiumMarketIntelligence } from "@/lib/map/premium-map-city-registry";
 
 const loadingFallback = (
   <div className="flex h-[calc(100svh-64px)] items-center justify-center bg-[#eef3f8] dark:bg-[#06162d]">
@@ -83,11 +84,11 @@ export function MapNeighborhoodClient({ initialState }: MapNeighborhoodClientPro
     [router],
   );
 
-  const rabatIntelligenceActive = navigationState.city === "rabat";
+  const premiumMarketIntelligenceActive = hasPremiumMarketIntelligence(navigationState.city);
 
   return (
     <div className="relative">
-      {rabatIntelligenceActive ? (
+      {premiumMarketIntelligenceActive ? (
         <>
           <h1 className="sr-only">Carte intelligence marché à Rabat</h1>
           <style>{`
