@@ -1,5 +1,8 @@
 # Carte des quartiers premium — Lot 7 Industrialisation multi-villes
 
+Statut : **CERTIFIÉ — EN ATTENTE DE MERGE**  
+Date : 2026-08-18
+
 ## Goal
 Extraire uniquement les contrats réellement communs prouvés par Rabat, afin que Casablanca, Marrakech, Tanger, Agadir et Fès puissent adopter la même expérience premium sans dupliquer les contrats Map, Search, Geo ou les règles fail-closed.
 
@@ -12,10 +15,23 @@ Extraire uniquement les contrats réellement communs prouvés par Rabat, afin qu
 - tests ciblés + build + gates existantes verts.
 
 ## Preuve
-- diff limité aux abstractions communes réellement utilisées ;
-- tests de contrat multi-villes ;
-- exact-head CI ;
-- comparaison Rabat avant/après sans régression fonctionnelle ou visuelle.
+Head fonctionnel certifié : `52ed47ecda839ef8cec834fcdafdf6674309523b`.
+
+Gates exact-head validées :
+- Carte Lot 7 City Registry Contract `32137687471` ✅ ;
+- Carte C4 Rabat Heatmap Gate `32137687588` ✅ ;
+- Carte C4 Rabat Browser Smoke `32137687647` ✅ ;
+- Carte C7 Final Certification `32137687541` ✅ ;
+- Canonical Baseline Compile Validation `32137687489` ✅ ;
+- Canonical Baseline Validation `32137687481` ✅ ;
+- Phase 1 Final Design Accessibility Gate `32137687526` ✅ ;
+- P1A.6 Responsive Hardening `32137687443` ✅ ;
+- P1B.1 AkarFinder Map Visual Layer `32137687501` ✅ ;
+- P1B.2 Territorial Intelligence `32137687442` ✅ ;
+- Phase 1 P0/P1/P2 ✅ ;
+- UI Polish P3/P5 ✅ ;
+- UI All Pages Baseline + Certification ✅ ;
+- UX Gate 0 Contracts ✅.
 
 ## Audit de l’existant après Lot 6
 
@@ -82,6 +98,6 @@ Un provider ville doit être capable de fournir :
 - activer visuellement une ville avant preuve provider.
 
 ## Gate de fermeture
-Lot 7 est fermé seulement si l’abstraction provider est réellement utilisée par Rabat, que Rabat reste certifié, et qu’aucune des cinq autres villes n’est présentée comme data-rich sans provider prouvé.
+Lot 7 est fermé seulement après merge du PR sur un head dont les gates requises sont vertes. Tant que le merge n’est pas prouvé, la progression globale reste à 75 %.
 
 Aucun déploiement Vercel sans autorisation explicite.
