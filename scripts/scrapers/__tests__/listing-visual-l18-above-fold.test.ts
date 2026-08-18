@@ -19,10 +19,12 @@ describe("LISTING-VISUAL L18 above-the-fold contract", () => {
     assert.match(goal, />= 9,2\/10/);
   });
 
-  it("renders the premium media gallery before the desktop decision grid", () => {
+  it("keeps the canonical desktop 70-30 gallery plus professional rail", () => {
+    const primaryVisual = position(detail, 'data-announcement-primary-visual="ann-l18"');
     const gallery = position(detail, "<PropertyMediaGallery listing={listing} />");
-    const decisionGrid = position(detail, "lg:grid-cols-[minmax(0,1fr)_340px]");
-    assert.ok(gallery < decisionGrid, "Gallery must span the page before the desktop decision grid");
+    const pro = position(detail, "<ProfessionalConversionCard listing={listing} model={proConversion} />");
+    assert.match(detail, /data-announcement-primary-visual="ann-l18"[\s\S]*lg:grid-cols-\[minmax\(0,1fr\)_340px\]/);
+    assert.ok(primaryVisual < gallery && gallery < pro, "Gallery and professional rail must compose the primary desktop visual block");
   });
 
   it("surfaces professional identity before facts on mobile", () => {
@@ -44,9 +46,11 @@ describe("LISTING-VISUAL L18 above-the-fold contract", () => {
     assert.ok(insight < project);
   });
 
-  it("preserves the certified desktop rail components", () => {
-    assert.match(detail, /<ProfessionalConversionCard\s+listing=\{listing\}\s+model=\{proConversion\}/s);
+  it("preserves project and market support rail below the primary decision rail", () => {
     assert.match(detail, /compactRail/);
     assert.match(detail, /<MarketComparablesSummaryCard model=\{marketComparables\} \/>/);
+    const pro = position(detail, "<ProfessionalConversionCard listing={listing} model={proConversion} />");
+    const projectRail = position(detail, "compactRail");
+    assert.ok(pro < projectRail, "Professional rail must lead before project and market support cards");
   });
 });
