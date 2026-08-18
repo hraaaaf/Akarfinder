@@ -24,6 +24,12 @@ const MODE_META: Record<IntelligenceMode, { label: string; short: string }> = {
   listings: { label: "Annonces", short: "annonces" },
 };
 
+function observedModeLabel(mode: IntelligenceMode): string {
+  if (mode === "density") return "Densité observée";
+  if (mode === "listings") return "Annonces observées";
+  return "Prix observé";
+}
+
 function formatLegendValue(value: number | null, mode: IntelligenceMode): string {
   if (value == null || !Number.isFinite(value)) return "—";
   if (mode === "price") return `${Math.round(value).toLocaleString("fr-FR")} DH/m²`;
@@ -194,7 +200,7 @@ export function MapLegend() {
     <div className="mt-3 rounded-2xl border border-brand-primary/20 bg-brand-primary-soft/65 p-3.5" data-akarfinder-lot9-panel-metric>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-brand-primary">
-          {MODE_META[mode].label} observé · {transaction === "sale" ? "Vente" : "Location"}
+          {observedModeLabel(mode)} · {transaction === "sale" ? "Vente" : "Location"}
         </p>
         {selectedDistrict ? (
           <span className="rounded-full border border-border bg-surface px-2 py-1 text-[9px] font-bold text-muted-foreground">
