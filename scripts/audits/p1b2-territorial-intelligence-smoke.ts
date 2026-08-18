@@ -48,8 +48,13 @@ async function main() {
     });
     page.on("pageerror", (error) => consoleErrors.push(error.message));
 
-    const response = await page.goto(`${BASE_URL}/map?city=Casablanca&layer=price`, { waitUntil: "networkidle" });
+    const response = await page.goto(`${BASE_URL}/map?city=Casablanca&layer=price`, { waitUntil: "domcontentloaded", timeout: 30_000 });
     if (!response || response.status() >= 400) findings.push(`${viewport.name}: page HTTP ${response?.status() ?? "none"}`);
+    try {
+      await page.locator(".maplibregl-canvas").waitFor({ state: "visible", timeout: 15_000 });
+    } catch {
+      findings.push(`${viewport.name}: MapLibre canvas did not become visible`);
+    }
 
     const intelligence = page.locator('[data-akarfinder-intelligence-layer="price"]');
     try {
