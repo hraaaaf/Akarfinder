@@ -111,28 +111,29 @@ export function PropertyDetailV2({
         <span aria-hidden="true">←</span> Retour aux résultats
       </Link>
 
-      <div className="mt-3 grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start xl:gap-7">
-        <div className="min-w-0">
-          <PropertyMediaGallery listing={listing} />
+      <div className="mt-3">
+        <PropertyMediaGallery listing={listing} />
+      </div>
 
-          <div className="mt-5">
-            <PropertyCore listing={listing} />
-          </div>
+      <div className="mt-5 grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start xl:gap-7">
+        <div className="min-w-0">
+          <PropertyCore
+            listing={listing}
+            afterIdentity={
+              <ProfessionalConversionCard
+                listing={listing}
+                model={proConversion}
+                mobileIdentityOnly
+              />
+            }
+          />
 
           <div className="mt-6">
             <AkarInsightCard detail={detail} />
           </div>
 
-          <div className="lg:hidden">
-            <ProjectPersonalizationCard listing={listing} projectId={projectId} />
-          </div>
-
           <div className="mt-4 lg:hidden">
-            <ProfessionalConversionCard
-              listing={listing}
-              model={proConversion}
-              mobileIdentityOnly
-            />
+            <ProjectPersonalizationCard listing={listing} projectId={projectId} />
           </div>
 
           <div data-announcement-property-details="ann-l3" className="mt-6 border-t border-slate-200">
