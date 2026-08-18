@@ -123,7 +123,7 @@ export function MapNeighborhoodClient({ initialState }: MapNeighborhoodClientPro
 
   return (
     <div
-      className="relative"
+      className="relative min-h-[calc(100svh-64px)] bg-background"
       data-akarfinder-generic-map-shell={marketIntelligenceProvider ? undefined : "true"}
       data-akarfinder-generic-map-selected={marketIntelligenceProvider ? undefined : navigationState.district ? "true" : "false"}
       data-akarfinder-mobile-panel-expanded={marketIntelligenceProvider ? undefined : mobilePanelExpanded ? "true" : "false"}
@@ -152,8 +152,19 @@ export function MapNeighborhoodClient({ initialState }: MapNeighborhoodClientPro
           }
         }
         @media (max-width: 767px) {
+          [data-akarfinder-generic-map-selected="true"][data-akarfinder-mobile-panel-expanded="false"] > div:has(> .maplibregl-map) {
+            height: min(100vw, 430px) !important;
+            max-height: 430px !important;
+            overflow: hidden !important;
+            border-radius: 0 0 24px 24px !important;
+            box-shadow: 0 10px 28px rgb(15 35 66 / 0.12) !important;
+          }
           [data-akarfinder-mobile-panel-expanded="false"] aside[aria-label^="Fiche repère quartier"] {
             display: none !important;
+          }
+          [data-akarfinder-generic-map-selected="true"][data-akarfinder-mobile-panel-expanded="false"] [data-akarfinder-mobile-compact-panel] {
+            top: calc(min(100vw, 430px) + 10px) !important;
+            bottom: auto !important;
           }
           [data-akarfinder-mobile-panel-expanded="true"] aside[aria-label^="Fiche repère quartier"] {
             bottom: 84px !important;
