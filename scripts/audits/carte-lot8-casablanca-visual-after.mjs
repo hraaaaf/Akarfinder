@@ -30,6 +30,13 @@ try {
       timeout: 30000,
     });
 
+    const loadingCard = page.getByText("Chargement de la carte…", { exact: true });
+    await loadingCard.waitFor({ state: "hidden", timeout: 30000 });
+
+    const mapCanvas = page.locator(".maplibregl-canvas");
+    await mapCanvas.waitFor({ state: "visible", timeout: 10000 });
+    await page.waitForTimeout(750);
+
     const panel = page.getByRole("complementary", { name: /Fiche repère quartier Maârif/i });
     await panel.waitFor({ state: "visible", timeout: 20000 });
     const panelBox = await panel.boundingBox();
@@ -73,6 +80,7 @@ try {
       searchHref,
       panelBox,
       overlaysHidden: viewport.width <= 1023,
+      mapRendered: true,
       diagnostics,
     });
     await page.close();
