@@ -101,6 +101,12 @@ try {
       }
 
       if (viewport.mobile) {
+        const toolbar = page.locator("[data-akarfinder-premium-map-toolbar]");
+        if ((await toolbar.count()) !== 1) throw new Error(`${district.slug}/${viewport.name}: premium map cockpit missing`);
+        if (await toolbar.isVisible()) {
+          throw new Error(`${district.slug}/${viewport.name}: premium map cockpit must hide while rich zone sheet is open`);
+        }
+
         const nav = await mobileNavRect(page);
         if (!nav) throw new Error(`${district.slug}/${viewport.name}: mobile bottom navigation missing`);
         if (sheetBox.y + sheetBox.height > nav.top + 2) {
