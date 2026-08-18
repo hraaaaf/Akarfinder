@@ -29,6 +29,10 @@ function resourceFailureMatches(expected, actual) {
   }
 }
 
+function consoleErrorMatches(expected, actual) {
+  return actual.includes(expected);
+}
+
 await mkdir(outputDir, { recursive: true });
 const browser = await chromium.launch({ headless: true });
 const results = [];
@@ -74,6 +78,7 @@ try {
         const expectedFinalPath = pageDef.expectedFinalPath ?? requestedPath;
         const redirected = metrics.finalPathname !== requestedPath;
         const expectedResourceFailures = pageDef.expectedResourceFailures ?? [];
+        const expectedConsoleErrors = pageDef.expectedConsoleErrors ?? [];
         const matchedExpectedFailures = failedResponses.filter((actual) =>
           expectedResourceFailures.some((expected) => resourceFailureMatches(expected, actual)),
         );
@@ -86,6 +91,7 @@ try {
             genericExpectedConsoleBudget -= 1;
             return false;
           }
+          if (expectedConsoleErrors.some((expected) => consoleErrorMatches(expected, message))) return false;
           return true;
         });
 

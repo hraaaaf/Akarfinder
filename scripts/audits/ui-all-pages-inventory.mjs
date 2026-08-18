@@ -6,6 +6,8 @@ const outputDir = path.resolve(process.env.AUDIT_OUTPUT_DIR ?? "data/audits/ui-a
 
 const expectedContinuity401 = [{ path: "/api/me/continuity", status: 401 }];
 const expectedAuthSession401 = [{ path: "/api/auth/session", status: 401 }];
+const expectedMapFailClosed503 = [{ path: "/api/geo/rabat-market-intelligence", status: 503 }];
+const expectedMapFailClosedConsole = ["[AkarFinderMap:market-intelligence] Error: market intelligence HTTP 503"];
 const visualQaBlocker = "Visual-QA page requires certified /__qa image assets that are not committed or materialized by this CI lane.";
 
 const dynamicAuditByPattern = new Map([
@@ -32,6 +34,7 @@ const staticAuditByPattern = new Map([
   ["/profil-recherche", { expectedFinalPath: "/mon-projet", expectedResourceFailures: expectedContinuity401 }],
   ["/mon-projet", { expectedResourceFailures: expectedContinuity401 }],
   ["/mon-projet/espace", { expectedResourceFailures: [...expectedContinuity401, ...expectedAuthSession401] }],
+  ["/map", { expectedResourceFailures: expectedMapFailClosed503, expectedConsoleErrors: expectedMapFailClosedConsole }],
   ["/visual-qa/announcement-page-mon-projet", { expectedResourceFailures: expectedContinuity401 }],
   ["/pro/leads", { expectedFinalPath: "/pro" }],
   ["/quartiers", { expectedFinalPath: "/immobilier" }],
@@ -107,6 +110,7 @@ const pages = pageFiles.map((sourcePath) => {
     family: routeFamily(routePattern),
     expectedFinalPath: staticAudit?.expectedFinalPath ?? null,
     expectedResourceFailures: staticAudit?.expectedResourceFailures ?? [],
+    expectedConsoleErrors: staticAudit?.expectedConsoleErrors ?? [],
   };
 });
 
