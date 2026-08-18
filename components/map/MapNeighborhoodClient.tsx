@@ -12,9 +12,12 @@ import {
 import {
   buildMapHref,
   mapNavigationStateFromUrlSearchParams,
+  withMapLocation,
   type MapNavigationState,
 } from "@/lib/map/map-navigation-state";
 import { getPremiumMarketIntelligenceProvider } from "@/lib/map/premium-map-city-registry";
+
+const FLAGSHIP_CITIES = ["Casablanca", "Rabat", "Marrakech", "Tanger", "Agadir", "Fès"] as const;
 
 const loadingFallback = (
   <div className="flex h-[calc(100svh-64px)] items-center justify-center bg-[#eef3f8] dark:bg-[#06162d]">
@@ -70,6 +73,11 @@ export function MapNeighborhoodClient({ initialState }: MapNeighborhoodClientPro
     return district && !district.map_eligible ? district : null;
   }, [navigationState.city, navigationState.district]);
 
+  const activeCityName = useMemo(() => {
+    if (navigationState.city === "all") return "Maroc";
+    return resolveCityEntity(navigationState.city)?.canonical_name ?? navigationState.city;
+  }, [navigationState.city]);
+
   useEffect(() => {
     const currentHref = queryString ? `/map?${queryString}` : "/map";
     if (currentHref !== canonicalHref) {
@@ -88,9 +96,38 @@ export function MapNeighborhoodClient({ initialState }: MapNeighborhoodClientPro
   return (
     <div
       className="relative"
+      data-akarfinder-generic-map-shell={marketIntelligenceProvider ? undefined : "true"}
       data-akarfinder-generic-map-selected={marketIntelligenceProvider ? undefined : navigationState.district ? "true" : "false"}
     >
       <style>{`
+        @media (min-width: 1024px) {
+          [data-akarfinder-generic-map-shell="true"] section[aria-label="Contrôles de la carte immobilière"] {
+            top: 94px !important;
+            left: 16px !important;
+            right: auto !important;
+            width: min(900px, calc(100vw - 430px)) !important;
+            max-width: none !important;
+            border-radius: 0 0 22px 22px !important;
+            border-color: rgb(255 255 255 / 0.82) !important;
+            background: rgb(255 255 255 / 0.94) !important;
+            box-shadow: 0 18px 50px rgb(15 35 66 / 0.14) !important;
+            padding: 10px 12px !important;
+          }
+          [data-akarfinder-generic-map-shell="true"] section[aria-label="Contrôles de la carte immobilière"] > div:first-child > div:first-child,
+          [data-akarfinder-generic-map-shell="true"] section[aria-label="Contrôles de la carte immobilière"] > div:first-child > label {
+            display: none !important;
+          }
+          [data-akarfinder-generic-map-shell="true"] section[aria-label="Contrôles de la carte immobilière"] > div:first-child {
+            justify-content: flex-end !important;
+          }
+          [data-akarfinder-generic-map-shell="true"] aside[aria-label^="Fiche repère quartier"] {
+            top: 156px !important;
+            width: 390px !important;
+            border-radius: 22px !important;
+            border-color: rgb(255 255 255 / 0.82) !important;
+            box-shadow: 0 22px 60px rgb(15 35 66 / 0.17) !important;
+          }
+        }
         @media (max-width: 1023px) {
           [data-akarfinder-generic-map-selected="true"] section[aria-label="Contrôles de la carte immobilière"],
           [data-akarfinder-generic-map-selected="true"] nav[aria-label="Exploration territoriale"],
@@ -102,6 +139,7 @@ export function MapNeighborhoodClient({ initialState }: MapNeighborhoodClientPro
           [data-akarfinder-generic-map-selected="true"] aside[aria-label^="Fiche repère quartier"] {
             bottom: 84px !important;
             max-height: min(58svh, 520px) !important;
+            border-radius: 22px !important;
             box-shadow: 0 18px 48px rgb(15 35 66 / 0.18) !important;
           }
         }
@@ -135,6 +173,34 @@ export function MapNeighborhoodClient({ initialState }: MapNeighborhoodClientPro
         </>
       ) : (
         <>
+          <section
+            className="absolute left-4 top-4 z-40 hidden w-[min(900px,calc(100vw-430px))] rounded-t-[22px] border border-b-0 border-white/80 bg-card/94 px-3 py-3 shadow-[0_18px_50px_rgba(15,35,66,0.14)] backdrop-blur-xl lg:block"
+            aria-label="Villes phares"
+            data-akarfinder-generic-premium-citybar
+          >
+            <div className="flex items-center justify-between gap-4">
+              <div className="min-w-0 shrink-0">
+                <p className="text-[9px] font-extrabold uppercase tracking-[0.16em] text-brand-primary">Carte des quartiers</p>
+                <p className="mt-0.5 truncate text-[14px] font-extrabold tracking-[-0.01em] text-foreground">{activeCityName} · exploration immobilière</p>
+              </div>
+              <div className="flex min-w-0 items-center justify-end gap-1.5 overflow-x-auto" role="navigation" aria-label="Sélection des villes phares">
+                {FLAGSHIP_CITIES.map((city) => {
+                  const active = city === activeCityName;
+                  return (
+                    <button
+                      key={city}
+                      type="button"
+                      aria-pressed={active}
+                      onClick={() => handleNavigationChange(withMapLocation(navigationState, city))}
+                      className={`shrink-0 rounded-full border px-3 py-1.5 text-[10px] font-extrabold transition ${active ? "border-brand-primary bg-brand-primary text-white shadow-sm" : "border-border bg-surface/90 text-text-secondary hover:border-brand-primary/25 hover:text-foreground"}`}
+                    >
+                      {city}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
           <MapNeighborhoodExperienceDynamic
             navigationState={navigationState}
             onNavigationChange={handleNavigationChange}
