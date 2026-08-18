@@ -3,10 +3,17 @@ import {
   resolveCityEntity,
   resolveNeighborhoodEntity,
 } from "@/lib/geo/geo-entity-registry";
+import type { IntelligenceMode } from "@/lib/map/intelligence-scale";
 
 export const MAP_LAYER_EXPLORE = "explore" as const;
 export const MAP_LAYER_PRICE = "price" as const;
-export type MapLayer = typeof MAP_LAYER_EXPLORE | typeof MAP_LAYER_PRICE;
+export const MAP_LAYER_DENSITY = "density" as const;
+export const MAP_LAYER_LISTINGS = "listings" as const;
+export type MapLayer =
+  | typeof MAP_LAYER_EXPLORE
+  | typeof MAP_LAYER_PRICE
+  | typeof MAP_LAYER_DENSITY
+  | typeof MAP_LAYER_LISTINGS;
 
 export type MapNavigationContext = {
   q?: string;
@@ -61,7 +68,22 @@ function appendContext(params: URLSearchParams, state: MapNavigationContext): vo
 }
 
 function parseMapLayer(value: string | undefined): MapLayer {
-  return value === MAP_LAYER_PRICE ? MAP_LAYER_PRICE : MAP_LAYER_EXPLORE;
+  if (value === MAP_LAYER_PRICE) return MAP_LAYER_PRICE;
+  if (value === MAP_LAYER_DENSITY) return MAP_LAYER_DENSITY;
+  if (value === MAP_LAYER_LISTINGS) return MAP_LAYER_LISTINGS;
+  return MAP_LAYER_EXPLORE;
+}
+
+export function mapLayerToIntelligenceMode(layer: MapLayer): IntelligenceMode {
+  if (layer === MAP_LAYER_DENSITY) return "density";
+  if (layer === MAP_LAYER_LISTINGS) return "listings";
+  return "price";
+}
+
+export function intelligenceModeToMapLayer(mode: IntelligenceMode): MapLayer {
+  if (mode === "density") return MAP_LAYER_DENSITY;
+  if (mode === "listings") return MAP_LAYER_LISTINGS;
+  return MAP_LAYER_PRICE;
 }
 
 export function parseMapNavigationState(params: MapSearchParams): MapNavigationState {
@@ -156,10 +178,11 @@ export function withMapLocation(
     ...state,
     city: cityEntity.slug,
     district: districtEntity?.slug,
+    layer: state.layer === MAP_LAYER_EXPLORE ? MAP_LAYER_PRICE : state.layer,
   };
 }
 
 export function withMapLayer(state: MapNavigationState, layer: MapLayer): MapNavigationState {
-  if (layer === MAP_LAYER_PRICE && state.city === "all") return state;
+  if (layer !== MAP_LAYER_EXPLORE && state.city === "all") return state;
   return { ...state, layer };
 }
