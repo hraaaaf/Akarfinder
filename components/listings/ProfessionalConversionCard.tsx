@@ -67,7 +67,7 @@ export function ProfessionalConversionCard({
           <CompareToggleButton listingId={listing.id} variant="block" />
           <FavoriteToggleButton listingId={listing.id} variant="block" />
         </div>
-        <Link href="/mon-projet" className="flex min-h-10 w-full items-center justify-center rounded-xl border border-slate-200 bg-slate-50/70 px-3 text-[11.5px] font-extrabold text-[#0B63CE] transition hover:border-blue-200 hover:bg-blue-50 motion-reduce:transition-none">
+        <Link href="/mon-projet" className="flex min-h-11 w-full items-center justify-center rounded-xl border border-slate-200 bg-slate-50/70 px-3 text-[11.5px] font-extrabold text-[#0B63CE] transition hover:border-blue-200 hover:bg-blue-50 motion-reduce:transition-none">
           Mon Projet
         </Link>
         <a href={reportHref} className="flex min-h-10 w-full items-center justify-center text-[11px] font-bold text-slate-400 underline decoration-slate-300 underline-offset-4 hover:text-slate-600">Signaler cette annonce</a>
