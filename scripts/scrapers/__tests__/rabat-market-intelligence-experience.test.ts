@@ -35,10 +35,18 @@ describe("C4 Rabat market intelligence experience", () => {
     assert.ok(source.includes("Aucune couleur de remplacement n’est inventée"));
   });
 
-  it("preserves the legacy experience outside Rabat", () => {
+  it("preserves the legacy experience outside cities with a certified provider", () => {
     const source = readFileSync("components/map/MapNeighborhoodClient.tsx", "utf8");
-    assert.ok(source.includes("navigationState.city === \"rabat\""));
+    const registry = readFileSync("lib/map/premium-map-city-registry.ts", "utf8");
+    assert.ok(source.includes("getPremiumMarketIntelligenceProvider(navigationState.city)"));
+    assert.ok(source.includes('marketIntelligenceProvider === "rabat-market-intelligence"'));
     assert.ok(source.includes("RabatMarketIntelligenceExperienceDynamic"));
     assert.ok(source.includes("MapNeighborhoodExperienceDynamic"));
+    assert.ok(registry.includes('slug: "rabat"'));
+    assert.ok(registry.includes('marketIntelligenceProvider: "rabat-market-intelligence"'));
+    for (const slug of ["casablanca", "marrakech", "tanger", "agadir", "fes"]) {
+      const block = registry.slice(registry.indexOf(`slug: "${slug}"`));
+      assert.ok(block.includes("marketIntelligenceProvider: null"), `${slug} must remain on the legacy experience until its provider is certified`);
+    }
   });
 });

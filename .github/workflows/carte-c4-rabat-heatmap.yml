@@ -5,6 +5,7 @@ on:
     paths:
       - "components/map/RabatMarketIntelligenceExperience.tsx"
       - "components/map/MapNeighborhoodClient.tsx"
+      - "lib/map/premium-map-city-registry.ts"
       - "scripts/scrapers/__tests__/rabat-market-intelligence-experience.test.ts"
       - ".github/workflows/carte-c4-rabat-heatmap.yml"
 
@@ -32,6 +33,8 @@ jobs:
           grep -q 'data-akarfinder-intelligence-mode' components/map/RabatMarketIntelligenceExperience.tsx
           grep -q 'data-akarfinder-intelligence-legend' components/map/RabatMarketIntelligenceExperience.tsx
           grep -q 'fillColor' components/map/RabatMarketIntelligenceExperience.tsx
-          grep -q 'navigationState.city === "rabat"' components/map/MapNeighborhoodClient.tsx
+          grep -q 'getPremiumMarketIntelligenceProvider' components/map/MapNeighborhoodClient.tsx
+          grep -q 'marketIntelligenceProvider === "rabat-market-intelligence"' components/map/MapNeighborhoodClient.tsx
+          grep -q 'slug: "rabat".*marketIntelligenceProvider: "rabat-market-intelligence"' lib/map/premium-map-city-registry.ts
       - name: Production build
         run: npm run build
