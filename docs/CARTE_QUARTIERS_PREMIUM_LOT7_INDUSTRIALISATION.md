@@ -5,8 +5,8 @@ Extraire uniquement les contrats réellement communs prouvés par Rabat, afin qu
 
 ## Succès
 - le routage `/map` reste canonique et compatible `city + district` ;
-- un contrat unique décrit les villes premium supportées et leur niveau de capacité ;
-- aucune ville ne peut être activée en intelligence polygonale sans provider géométrique et métriques admissibles ;
+- un contrat unique décrit les six villes premium et leur provider éventuel ;
+- aucune ville ne peut être activée en intelligence polygonale sans provider explicite, géométrie et métriques admissibles ;
 - Rabat conserve exactement son comportement certifié Lot 6 ;
 - aucune duplication du Search handoff, de `map-navigation-state`, du Geo Registry ou de MapLibre lifecycle ;
 - tests ciblés + build + gates existantes verts.
@@ -40,25 +40,30 @@ Extraire uniquement les contrats réellement communs prouvés par Rabat, afin qu
 
 ## Architecture minimale retenue
 
-### A. Registre de capacités premium par ville
-Un registre commun doit exposer au minimum :
+### A. Registre premium par ville
+Le registre commun expose :
 - slug canonique ;
 - nom affiché ;
 - ordre produit ;
 - capacité `explore` ;
-- capacité `market_intelligence` ;
-- statut fail-closed si la ville ne dispose pas encore de provider admissible.
+- `marketIntelligenceProvider`, typé et nullable.
 
-Le registre ne doit contenir aucune géométrie, aucun prix et aucun fallback inventé.
+Le booléen générique `marketIntelligence: true/false` est abandonné : il permettrait d'activer une ville sans préciser quel moteur doit la servir. Le provider explicite rend ce branchement impossible par accident.
+
+État certifié Lot 7 :
+- Rabat → `rabat-market-intelligence` ;
+- Casablanca, Marrakech, Tanger, Agadir, Fès → `null`.
+
+Le registre ne contient aucune géométrie, aucun prix et aucun fallback inventé.
 
 ### B. Expérience intelligence
-La généralisation doit séparer :
+La généralisation sépare :
 - shell visuel et interactions communes ;
 - adapter/provider propre à chaque ville ;
 - mapping zone -> district propre à chaque ville ;
 - contenu contextuel propre à la ville lorsque nécessaire.
 
-Une ville sans adapter complet reste sur l’expérience canonique existante. Elle ne doit jamais être routée vers un faux clone de Rabat.
+Une ville sans provider complet reste sur l’expérience canonique existante. Elle ne doit jamais être routée vers un faux clone de Rabat.
 
 ### C. Contrat provider
 Un provider ville doit être capable de fournir :
@@ -76,15 +81,7 @@ Un provider ville doit être capable de fournir :
 - contourner Geo Registry ou Search contract ;
 - activer visuellement une ville avant preuve provider.
 
-## Ordre d’exécution Lot 7
-1. introduire le registre commun des six villes et capacités ;
-2. remplacer les listes de villes dupliquées par ce registre ;
-3. extraire le contrat d’adapter intelligence sans modifier le provider Rabat ;
-4. brancher Rabat sur l’abstraction ;
-5. certifier byte-for-behavior Rabat via les gates existantes ;
-6. documenter le contrat d’entrée pour Lot 8.
-
 ## Gate de fermeture
-Lot 7 est fermé seulement si l’abstraction est réellement utilisée par Rabat, que Rabat reste certifié, et qu’aucune des cinq autres villes n’est présentée comme data-rich sans provider prouvé.
+Lot 7 est fermé seulement si l’abstraction provider est réellement utilisée par Rabat, que Rabat reste certifié, et qu’aucune des cinq autres villes n’est présentée comme data-rich sans provider prouvé.
 
 Aucun déploiement Vercel sans autorisation explicite.
