@@ -11,7 +11,7 @@ import {
 import { ChevronLeft, ChevronRight, Images, Maximize2, Share2, X } from "lucide-react";
 import { FavoriteToggleButton } from "@/components/favorites/FavoriteToggleButton";
 import { DbProviderThumbnail } from "@/components/listings/DbProviderThumbnail";
-import { ListingVisual } from "@/components/listings/ListingVisual";
+import { PremiumIllustrativeInterior } from "@/components/listings/PremiumIllustrativeInterior";
 import { buildPropertyMediaModel, type PropertyMediaItem } from "@/lib/listings/property-media";
 import type { Listing } from "@/lib/listings/types";
 
@@ -323,10 +323,11 @@ export function PropertyMediaGallery({ listing }: { listing: Listing }) {
     return (
       <section
         data-property-media-mode="fallback"
+        data-property-media-fallback="premium-interior-illustration"
         className="relative overflow-hidden rounded-[1.55rem] border border-slate-200 bg-white shadow-[0_16px_42px_rgba(15,38,68,0.10)]"
       >
         <div className="relative h-[300px] sm:h-[440px]">
-          <ListingVisual listing={listing} className="absolute inset-0 h-full w-full" />
+          <PremiumIllustrativeInterior listing={listing} className="absolute inset-0 h-full w-full" />
           {controls}
           <span className="absolute bottom-3 left-4 rounded-full bg-black/50 px-2.5 py-1 text-[10px] font-semibold text-white/80 backdrop-blur-sm">
             Visuel illustratif
