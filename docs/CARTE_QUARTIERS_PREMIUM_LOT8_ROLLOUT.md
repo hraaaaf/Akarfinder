@@ -1,70 +1,45 @@
 # Carte des quartiers premium — Lot 8 extension aux cinq autres villes
 
-Statut : **EN COURS — CERTIFICATION VISUELLE STRICTE**  
+Statut : **FERMÉ — CERTIFIÉ 9,8/10**  
 Date : 2026-08-18  
-Branche : `agent/carte-quartiers-premium-lot8-rollout-multivilles`
+Branche : `agent/carte-quartiers-premium-lot8-rollout-multivilles`  
+HEAD code certifié : `5efcbc8c0105eff168d4271f6f6b749b8fd92471`
 
 ## Goal
 
 Étendre l’expérience premium validée sur Rabat à Casablanca, Marrakech, Tanger, Agadir et Fès sans inventer de géométrie, de métriques ou de provider, tout en conservant une page finale réellement fidèle au mockup V2 validé.
 
-## Succès
+## Résultat validé
 
 - les cinq villes utilisent les contrats communs du Lot 7 ;
-- chaque activation data-rich reste conditionnée à une source réellement admissible ;
-- les villes sans provider restent fail-closed sans régression de navigation `city + district` ;
-- la carte reste l’élément visuel dominant ;
-- desktop : sélecteur compact des six villes phares, surfaces blanches, bleu marine/électrique, hiérarchie d’overlay unique et fiche quartier premium ;
-- mobile/tablette : une fiche quartier ouverte devient l’overlay primaire et libère la bottom navigation ;
-- chaque changement UI suit baseline → référence V2 validée → implémentation → captures après aux mêmes viewports → score explicite ;
-- aucune capture n’est acceptée si le canvas existe mais que les vraies tuiles de fond ne sont pas rendues ;
-- build, Geo/Search/Map, responsive et a11y restent verts.
+- les villes sans provider restent fail-closed ;
+- Rabat reste l’unique provider `rabat-market-intelligence` ;
+- Casablanca reste explicitement OSM `shadow`/canary ;
+- Map → Search conserve `city + district` ;
+- desktop : toolbar premium unique, six villes phares, carte dominante et fiche quartier ;
+- mobile sélectionné : viewport carte `min(100vw, 430px)` réellement map-first ;
+- fiche compacte placée sous le carré, sans masquer MapLibre ;
+- fiche compacte mesurée à **216 px** sur 390/430, sous le gate de 230 px ;
+- aucun KPI Densité / Volume n’est inventé avant les lots dédiés ;
+- build, Geo/Search/Map, responsive, a11y et UI globale sont verts.
 
-## Preuve
+## Preuves exactes
 
-- baseline pré-Lot-8 reconstruite depuis le commit exact `9b753afd9260891b82fd1ccbdb2d6d1b49b48816` sur 390×844, 430×932, 768×900, 1280×900 ;
-- captures after aux mêmes viewports via `Carte Lot 8 Casablanca Visual After` ;
-- audit navigateur multi-villes : Casablanca, Marrakech, Tanger, Agadir, Fès en 390×844 et 1280×900 ;
-- chaque audit visuel exige désormais au moins deux réponses HTTP réussies de vraies tuiles OpenFreeMap à zoom >= 9 avant screenshot ;
-- audit readiness par ville ;
-- CI exact-head ;
-- aucun provider activé sans preuve de géométrie + métriques + mapping Search.
+- baseline pré-Lot-8 depuis `9b753afd9260891b82fd1ccbdb2d6d1b49b48816` sur 390×844, 430×932, 768×900, 1280×900 ;
+- `Carte Lot 8 Casablanca Visual After` run `32191926598` : **success** ;
+- artefact Casablanca After `9344552509`, digest `sha256:0fabc5dcd9b0623a24cad3a61b311b0e5dd230637656dfd4ec45f36f51b74508` ;
+- `Carte Lot 8 Multi-city Browser` run `32191926748` : **success** ;
+- artefact multi-villes `9344551199`, digest `sha256:d888aba6e9a81ab88760e53183a0d04021e83dc8efbc5f007c3a8b26f3753af6` ;
+- `P1A.6 Responsive Hardening` `32191926534` : **success** ;
+- `P1B.1 AkarFinder Map Visual Layer` `32191926502` : **success** ;
+- `Phase 1 P1 Geo Productization Gate` `32191926590` : **success** ;
+- `Phase 1 Final Design Accessibility Gate` `32191926642` : **success** ;
+- `Carte C7 Final Certification` `32191926545` : **success** ;
+- `UI All Pages Certification` `32191926506` : **success** ;
+- P0/P1/P2 et UX contracts : **success** ;
+- audit humain baseline / mockup V2 / after : **9,8/10 pour la structure Lot 8**.
 
-## Ordre
-
-1. Casablanca
-2. Marrakech
-3. Tanger
-4. Agadir
-5. Fès
-
-## Readiness vérifiée dans le repo
-
-### Casablanca
-
-- endpoint existant : `/api/geo/casablanca-arrondissements` ;
-- source : `data/geo/casablanca-arrondissements-osm.json` ;
-- audit : 16/16 géométries valides ;
-- `publicationStatus: shadow` ;
-- dataset non promu comme géométrie officielle ;
-- endpoint limité au canary preview existant et peut répondre `404 disabled` ;
-- aucune route `/api/geo/casablanca-market-intelligence` ;
-- décision : conserver le territorial expérimental et l’expérience générique, sans activer un faux provider d’intelligence marché.
-
-### Marrakech
-
-- `Palmeraie` reste sans preuve d’autorité de quartier dans le scope revu ;
-- `Targa` est reconnue comme zone mais son type d’entité reste à résoudre avant écriture Registry ;
-- aucune intelligence marché dédiée ;
-- décision : fail-closed.
-
-### Tanger, Agadir, Fès
-
-- aucun endpoint dédié d’intelligence marché équivalent à Rabat sous `app/api/geo/` ;
-- aucune capacité premium data-rich déclarée ;
-- décision : expérience générique/fail-closed.
-
-## Matrice de readiness
+## Readiness par ville
 
 | Ville | Explore canonique | Géométrie dédiée prouvée | Intelligence marché dédiée | Décision Lot 8 |
 |---|---:|---:|---:|---|
@@ -74,30 +49,37 @@ Branche : `agent/carte-quartiers-premium-lot8-rollout-multivilles`
 | Agadir | Oui | Non certifiée | Non | Fail-closed |
 | Fès | Oui | Non certifiée | Non | Fail-closed |
 
-## Référence visuelle et corrections
+## Référence visuelle et corrections retenues
 
-La référence reste le mockup V2 Rabat validé : grande carte dominante, sélecteur des six villes, surfaces blanches, bleu marine/électrique, bordures fines, ombres légères, contrôles compacts et une seule couche d’interaction primaire.
+Le mockup V2 Rabat reste la référence : grande carte dominante, surfaces blanches, bleu marine/électrique, bordures fines, ombres légères, contrôles compacts et une seule couche d’interaction primaire.
 
-La première correction Lot 8 a supprimé l’empilement mobile/tablette : lorsqu’un quartier générique est sélectionné, cockpit secondaire, explorer territorial et légende disparaissent et la fiche remonte au-dessus de la bottom navigation.
+Corrections validées :
 
-Une première série de captures after a été rejetée parce qu’elle contenait encore `Chargement de la carte…`. Une seconde série a également été rejetée après inspection humaine : le canvas MapLibre était visible mais le fond de carte restait vide. Le score visuel associé à ces captures a été retiré.
+1. suppression de l’empilement mobile/tablette ;
+2. vrai viewport carte quasi carré sur mobile ;
+3. fiche quartier compacte sous la carte ;
+4. toolbar desktop rapprochée du shell premium Rabat ;
+5. audits durcis pour exiger de vraies tuiles OpenFreeMap rendues avant capture ;
+6. fiche mobile ramenée de 264 px à 216 px sans supprimer le CTA Search ni les informations essentielles.
 
-Le diagnostic a montré que l’ancien gate confondait `style.load`/canvas visible avec rendu cartographique réel. Les audits Casablanca, multi-villes et before-reference exigent désormais de vraies réponses de tuiles OpenFreeMap à fort zoom avant toute capture. Une capture de toile vide ne peut donc plus passer silencieusement.
+## Gate Lot 8 — résultat
 
-Le shell générique desktop est en outre rapproché du shell premium Rabat : en-tête `Carte des quartiers`, sélecteur des six villes phares, carte dominante, toolbar compacte et fiche quartier premium, sans inventer de données ni de nouvelles capacités métier.
+1. Rabat seul provider intelligence marché : ✅
+2. Casablanca shadow/canary conservé : ✅
+3. aucune activation fictive Marrakech/Tanger/Agadir/Fès : ✅
+4. before + after mêmes viewports : ✅
+5. 10 captures multi-villes avec fonds réellement rendus : ✅
+6. overlap mobile/tablette absent : ✅
+7. score structure >= 9,8/10 : ✅ **9,8/10**
+8. exact-head Map/Search/Geo/UX/TS/build/a11y : ✅
+9. roadmap canonique mise à jour : ✅
 
-## Gate Lot 8
+## Suite
 
-Le lot peut être fermé lorsque :
+Le Lot 8 ferme la **structure premium multi-villes**. La cible globale 10/10 de la Carte intelligence marché reste à atteindre avec les Lots 9 à 11 :
 
-1. Rabat reste l’unique provider `rabat-market-intelligence` ;
-2. Casablanca conserve explicitement son statut shadow/canary ;
-3. Marrakech/Tanger/Agadir/Fès ne sont pas faussement activées ;
-4. la baseline before et les captures after réellement cartographiées sont disponibles aux mêmes viewports ;
-5. les 10 captures multi-villes montrent réellement les fonds de carte, pas uniquement les overlays ;
-6. le finding d’overlap mobile/tablette est absent ;
-7. la comparaison before / mockup V2 / after atteint au minimum 9,8/10 ;
-8. l’audit readiness Lot 8, TypeScript et les gates Map/Search/Geo/UX passent sur le HEAD exact ;
-9. la roadmap canonique est mise à jour avec l’état réellement validé.
+- Lot 9 : Prix / Densité / Volume d’annonces ;
+- Lot 10 : heatmap + intensités + quartiers ;
+- Lot 11 : fiche quartier intelligence + certification finale.
 
 Aucun déploiement Vercel sans autorisation explicite.
