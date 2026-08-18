@@ -18,7 +18,7 @@ export function AkarInsightCard({ detail }: { detail: PublicPropertyDetailV2 }) 
       data-akar-insight-card="ann-l4"
       data-akar-intelligence-version={model.version}
       data-akar-truth-contract-version={model.truthContractVersion}
-      className="border-y border-[#cfe0f2] bg-[#f7fbff] px-4 py-5 sm:px-5 sm:py-6"
+      className="overflow-hidden rounded-[24px] border border-[#c9def4] bg-[linear-gradient(135deg,#f7fbff_0%,#edf6ff_100%)] px-5 py-5 shadow-[0_16px_40px_rgba(11,99,206,0.08)] sm:px-6 sm:py-6"
       aria-labelledby="akar-insight-heading"
     >
       <div className="flex items-start justify-between gap-5">
@@ -31,14 +31,14 @@ export function AkarInsightCard({ detail }: { detail: PublicPropertyDetailV2 }) 
           {model.coverageLabel ? <p data-akar-coverage className="mt-1 text-[11.5px] font-semibold text-slate-500">{model.coverageLabel}</p> : null}
         </div>
         {model.score != null ? (
-          <div data-akar-score className="shrink-0 border-l border-[#b9d6f2] pl-4 text-right sm:pl-5">
+          <div data-akar-score className="shrink-0 rounded-2xl border border-white/80 bg-white/75 px-4 py-3 text-right shadow-[0_8px_20px_rgba(11,37,69,0.06)] backdrop-blur-sm">
             <p className="text-[9.5px] font-extrabold uppercase tracking-[0.12em] text-slate-500">AkarScore</p>
             <p className="mt-1 text-[1.9rem] font-black leading-none tracking-[-0.05em] text-deepblue sm:text-[2.2rem]">{model.score}<span className="text-[0.9rem] font-extrabold text-slate-400">/100</span></p>
           </div>
         ) : null}
       </div>
       {model.items.length > 0 ? (
-        <dl data-akar-insight-items className="mt-5 divide-y divide-[#dbe7f3] border-t border-[#dbe7f3]">
+        <dl data-akar-insight-items className="mt-5 divide-y divide-[#d5e6f6] border-t border-[#d5e6f6]">
           {model.items.map((item) => {
             const Icon = ICONS[item.key];
             const warning = item.key === "attention";
@@ -52,7 +52,7 @@ export function AkarInsightCard({ detail }: { detail: PublicPropertyDetailV2 }) 
           })}
         </dl>
       ) : null}
-      <p data-akar-engine-version className="mt-4 border-t border-[#dbe7f3] pt-3 text-[9.5px] font-semibold text-slate-400">
+      <p data-akar-engine-version className="mt-4 border-t border-[#d5e6f6] pt-3 text-[9.5px] font-semibold text-slate-400">
         Intelligence v{model.version} · Contrat v{model.truthContractVersion}
       </p>
     </section>

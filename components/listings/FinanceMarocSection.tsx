@@ -38,7 +38,7 @@ export function FinanceMarocSection({ propertyPriceMad }: { propertyPriceMad?: n
   if (!propertyPriceMad || propertyPriceMad <= 0) return null;
 
   return (
-    <section data-finance-maroc="ann-l10" className="border-b border-slate-200 py-6">
+    <section data-finance-maroc="ann-l10" className="my-7 overflow-hidden rounded-[24px] border border-[#163b63]/12 bg-[linear-gradient(135deg,#f7faff_0%,#eef4fb_100%)] p-5 shadow-[0_16px_44px_rgba(11,37,69,0.06)] sm:p-6">
       <p className="text-[10px] font-extrabold uppercase tracking-[0.13em] text-[#0B63CE]">Finance Maroc</p>
       <h2 className="mt-1 text-[1.15rem] font-extrabold tracking-[-0.03em] text-deepblue">Simuler votre financement</h2>
       <p className="mt-1 max-w-2xl text-[12.5px] leading-5 text-slate-500">
@@ -48,27 +48,27 @@ export function FinanceMarocSection({ propertyPriceMad }: { propertyPriceMad?: n
       <div className="mt-4 grid gap-3 sm:grid-cols-3">
         <label className="grid gap-1.5 text-[11px] font-bold text-slate-600">
           Apport (DH)
-          <input aria-label="Apport en dirhams" inputMode="decimal" value={downPayment} onChange={(event) => setDownPayment(event.target.value)} className="min-h-11 rounded-xl border border-slate-300 px-3 text-[14px] text-deepblue outline-none focus:border-[#0B63CE]" />
+          <input aria-label="Apport en dirhams" inputMode="decimal" value={downPayment} onChange={(event) => setDownPayment(event.target.value)} className="min-h-11 rounded-xl border border-slate-300 bg-white px-3 text-[14px] text-deepblue outline-none focus:border-[#0B63CE]" />
         </label>
         <label className="grid gap-1.5 text-[11px] font-bold text-slate-600">
           Taux annuel (%)
-          <input aria-label="Taux annuel en pourcentage" inputMode="decimal" placeholder="À saisir" value={annualRate} onChange={(event) => setAnnualRate(event.target.value)} className="min-h-11 rounded-xl border border-slate-300 px-3 text-[14px] text-deepblue outline-none focus:border-[#0B63CE]" />
+          <input aria-label="Taux annuel en pourcentage" inputMode="decimal" placeholder="À saisir" value={annualRate} onChange={(event) => setAnnualRate(event.target.value)} className="min-h-11 rounded-xl border border-slate-300 bg-white px-3 text-[14px] text-deepblue outline-none focus:border-[#0B63CE]" />
         </label>
         <label className="grid gap-1.5 text-[11px] font-bold text-slate-600">
           Durée (années)
-          <input aria-label="Durée en années" inputMode="numeric" value={durationYears} onChange={(event) => setDurationYears(event.target.value)} className="min-h-11 rounded-xl border border-slate-300 px-3 text-[14px] text-deepblue outline-none focus:border-[#0B63CE]" />
+          <input aria-label="Durée en années" inputMode="numeric" value={durationYears} onChange={(event) => setDurationYears(event.target.value)} className="min-h-11 rounded-xl border border-slate-300 bg-white px-3 text-[14px] text-deepblue outline-none focus:border-[#0B63CE]" />
         </label>
       </div>
 
       {result ? (
-        <dl className="mt-4 grid gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div><dt className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Montant financé</dt><dd className="mt-1 text-[15px] font-extrabold text-deepblue">{formatMad(result.financedPrincipalMad)}</dd></div>
-          <div><dt className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Mensualité</dt><dd className="mt-1 text-[15px] font-extrabold text-deepblue">{formatMad(result.monthlyPaymentMad)}</dd></div>
-          <div><dt className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Total remboursé</dt><dd className="mt-1 text-[15px] font-extrabold text-deepblue">{formatMad(result.totalPaymentsMad)}</dd></div>
-          <div><dt className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Intérêts simulés</dt><dd className="mt-1 text-[15px] font-extrabold text-deepblue">{formatMad(result.totalInterestMad)}</dd></div>
+        <dl className="mt-4 grid gap-3 rounded-2xl border border-[#153a63] bg-[#0B2545] p-4 text-white shadow-[0_14px_34px_rgba(11,37,69,0.18)] sm:grid-cols-2 lg:grid-cols-4">
+          <div><dt className="text-[10px] font-bold uppercase tracking-wide text-blue-100/75">Montant financé</dt><dd className="mt-1 text-[15px] font-extrabold text-white">{formatMad(result.financedPrincipalMad)}</dd></div>
+          <div><dt className="text-[10px] font-bold uppercase tracking-wide text-blue-100/75">Mensualité</dt><dd className="mt-1 text-[15px] font-extrabold text-white">{formatMad(result.monthlyPaymentMad)}</dd></div>
+          <div><dt className="text-[10px] font-bold uppercase tracking-wide text-blue-100/75">Total remboursé</dt><dd className="mt-1 text-[15px] font-extrabold text-white">{formatMad(result.totalPaymentsMad)}</dd></div>
+          <div><dt className="text-[10px] font-bold uppercase tracking-wide text-blue-100/75">Intérêts simulés</dt><dd className="mt-1 text-[15px] font-extrabold text-white">{formatMad(result.totalInterestMad)}</dd></div>
         </dl>
       ) : (
-        <p className="mt-4 rounded-xl border border-dashed border-slate-300 px-4 py-3 text-[12px] text-slate-500">Renseignez un taux annuel valide pour calculer la simulation.</p>
+        <p className="mt-4 rounded-xl border border-dashed border-slate-300 bg-white/70 px-4 py-3 text-[12px] text-slate-500">Renseignez un taux annuel valide pour calculer la simulation.</p>
       )}
 
       <p className="mt-3 text-[10.5px] leading-4 text-slate-400">{FINANCE_MAROC_DISCLAIMER}</p>

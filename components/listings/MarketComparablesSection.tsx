@@ -27,7 +27,7 @@ export function MarketComparablesSection({ model }: { model?: MarketComparableSe
   const observedAt = formatDate(model.observedAt);
 
   return (
-    <section data-market-comparables="ann-l8" className="border-b border-slate-200 py-6">
+    <section data-market-comparables="ann-l8" className="my-7 rounded-[24px] border border-slate-200 bg-white p-5 shadow-[0_18px_48px_rgba(15,23,42,0.07)] sm:p-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="text-[10px] font-extrabold uppercase tracking-[0.13em] text-[#0B63CE]">Marché observé</p>
@@ -45,24 +45,24 @@ export function MarketComparablesSection({ model }: { model?: MarketComparableSe
       </div>
 
       <dl className="mt-4 grid gap-2.5 sm:grid-cols-3">
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-3.5">
+        <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-3.5">
           <dt className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Médiane observée</dt>
           <dd className="mt-1 text-[17px] font-extrabold text-deepblue">{formatPricePerM2(distribution.medianPricePerM2)}</dd>
         </div>
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-3.5">
+        <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-3.5">
           <dt className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Zone centrale P25–P75</dt>
           <dd className="mt-1 text-[14px] font-extrabold text-deepblue">
             {formatPricePerM2(distribution.p25PricePerM2)} – {formatPricePerM2(distribution.p75PricePerM2)}
           </dd>
         </div>
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-3.5">
+        <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-3.5">
           <dt className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Comparables observés</dt>
           <dd className="mt-1 text-[17px] font-extrabold text-deepblue">{distribution.comparableStockCount}</dd>
         </div>
       </dl>
 
       {distribution.targetPosition && distribution.targetPricePerM2 != null ? (
-        <div data-market-position="certified" className="mt-3 rounded-xl border border-[#0B63CE]/15 bg-[#0B63CE]/5 px-4 py-3">
+        <div data-market-position="certified" className="mt-3 rounded-2xl border border-[#0B63CE]/15 bg-[#eef6ff] px-4 py-3.5">
           <p className="text-[10px] font-extrabold uppercase tracking-wider text-[#0B63CE]">Position du prix demandé</p>
           <p className="mt-1 text-[13.5px] font-extrabold text-deepblue">{positionLabel(distribution.targetPosition)}</p>
           <p className="mt-0.5 text-[11px] text-slate-500">
@@ -76,7 +76,7 @@ export function MarketComparablesSection({ model }: { model?: MarketComparableSe
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {model.comparables.map((comparable) => (
-          <article key={comparable.propertyClusterId} data-market-comparable-card className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_5px_18px_rgba(7,27,51,0.04)]">
+          <article key={comparable.propertyClusterId} data-market-comparable-card className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_8px_24px_rgba(7,27,51,0.05)]">
             <p className="text-[15px] font-extrabold text-deepblue">{formatMad(comparable.displayedPriceMad)}</p>
             <p className="mt-1 text-[12px] font-bold text-slate-600">
               {new Intl.NumberFormat("fr-MA", { maximumFractionDigits: 0 }).format(comparable.surfaceM2)} m² · {formatPricePerM2(comparable.pricePerM2)}
