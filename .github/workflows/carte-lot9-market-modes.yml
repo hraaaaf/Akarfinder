@@ -1,0 +1,32 @@
+name: Carte Lot 9 Market Modes
+
+on:
+  pull_request:
+    paths:
+      - "app/api/geo/market-intelligence/**"
+      - "components/map/MapLegend.tsx"
+      - "lib/map/city-market-intelligence*.ts"
+      - "lib/map/map-navigation-state.ts"
+      - "scripts/scrapers/__tests__/city-market-intelligence.test.ts"
+      - ".github/workflows/carte-lot9-market-modes.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  certify-market-modes:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Lot 9 unit contracts
+        run: npx tsx --test scripts/scrapers/__tests__/city-market-intelligence.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
