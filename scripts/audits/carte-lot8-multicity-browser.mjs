@@ -32,6 +32,11 @@ try {
         timeout: 30000,
       });
 
+      const mapCanvas = page.locator("canvas.maplibregl-canvas");
+      await mapCanvas.waitFor({ state: "visible", timeout: 20000 });
+      const loading = page.getByText("Chargement de la carte…", { exact: true });
+      if (await loading.count()) await loading.waitFor({ state: "hidden", timeout: 20000 });
+
       const panel = page.getByRole("complementary", { name: new RegExp(`Fiche repère quartier ${cityCase.district}`, "i") });
       await panel.waitFor({ state: "visible", timeout: 20000 });
       const panelBox = await panel.boundingBox();
@@ -66,7 +71,14 @@ try {
         path: `${outDir}/${cityCase.slug}-${cityCase.districtSlug}-${viewport.width}x${viewport.height}.png`,
         fullPage: false,
       });
-      report.cases.push({ city: cityCase.city, district: cityCase.district, viewport: viewport.name, searchHref, panelBox });
+      report.cases.push({
+        city: cityCase.city,
+        district: cityCase.district,
+        viewport: viewport.name,
+        searchHref,
+        panelBox,
+        mapRendered: true,
+      });
       await page.close();
     }
   }
