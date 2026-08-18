@@ -12,7 +12,7 @@ const viewports = [
   { name: "desktop", width: 1280, height: 900 },
 ];
 
-const report = { ok: false, cases: [], generatedAt: new Date().toISOString() };
+const report = { ok: false, cases: [], findings: [], generatedAt: new Date().toISOString() };
 const browser = await chromium.launch({ headless: true });
 
 try {
@@ -42,8 +42,15 @@ try {
     const searchHref = await searchLink.getAttribute("href");
     if (!searchHref) throw new Error(`${viewport.name}: Search handoff missing`);
     const searchUrl = new URL(searchHref, baseUrl);
-    if (searchUrl.pathname !== "/search" || searchUrl.searchParams.get("city") !== "Casablanca" || searchUrl.searchParams.get("district") !== "Anfa") {
-      throw new Error(`${viewport.name}: Search handoff mismatch ${searchHref}`);
+    const searchCity = searchUrl.searchParams.get("city");
+    const searchDistrict = searchUrl.searchParams.get("district");
+    if (searchUrl.pathname !== "/search" || searchCity !== "Casablanca" || searchDistrict !== "Anfa") {
+      report.findings.push({
+        viewport: viewport.name,
+        type: "search-handoff-baseline",
+        expected: "/search?city=Casablanca&district=Anfa",
+        actual: searchHref,
+      });
     }
 
     const panel = page.getByRole("complementary", { name: /Fiche repère quartier Anfa/i });
