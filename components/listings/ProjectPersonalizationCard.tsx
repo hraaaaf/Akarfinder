@@ -118,7 +118,11 @@ export function ProjectPersonalizationCard({
   const fit = useMemo(() => project ? buildProjectFitModel(project.profile, listing) : null, [listing, project]);
   if (!project || (!fit?.available && project.profile.location.anchors.length === 0)) return null;
 
-  const visibleReasons = fit?.reasons.slice(0, compactRail ? 3 : 6) ?? [];
+  const visibleReasons = fit
+    ? compactRail
+      ? [...fit.reasons.filter((reason) => reason.status === "mismatch"), ...fit.reasons.filter((reason) => reason.status !== "mismatch")].slice(0, 3)
+      : fit.reasons.slice(0, 6)
+    : [];
   const routeGroups = groupedRoutes(routes, project.profile).slice(0, compactRail ? 2 : undefined);
   const measuredRoutes = routes?.routes.filter((route) => route.status === "measured") ?? [];
   const attributions = [...new Set(measuredRoutes.map((route) => route.attribution).filter((value): value is string => Boolean(value)))];
