@@ -10,12 +10,14 @@ import {
 import { buildCityMarketIntelligencePayload } from "@/lib/map/city-market-intelligence-payload";
 import {
   MAP_LAYER_DENSITY,
+  MAP_LAYER_EXPLORE,
   MAP_LAYER_LISTINGS,
   MAP_LAYER_PRICE,
   buildMapHref,
   mapLayerToIntelligenceMode,
   parseMapNavigationState,
   withMapLayer,
+  withMapLocation,
 } from "@/lib/map/map-navigation-state";
 
 const targets: MarketDistrictTarget[] = [
@@ -163,4 +165,15 @@ test("Lot 9 persists price, density and listings in canonical map URLs", () => {
   assert.match(buildMapHref(listings), /layer=listings/);
   assert.equal(mapLayerToIntelligenceMode(density.layer), "density");
   assert.equal(mapLayerToIntelligenceMode(listings.layer), "listings");
+});
+
+test("Lot 9 does not silently change the legacy layer while moving between locations", () => {
+  const explore = parseMapNavigationState({ layer: "explore" });
+  assert.equal(explore.layer, MAP_LAYER_EXPLORE);
+  const casablanca = withMapLocation(explore, "Casablanca");
+  assert.equal(casablanca.city, "casablanca");
+  assert.equal(casablanca.layer, MAP_LAYER_EXPLORE);
+  const maarif = withMapLocation(casablanca, "Casablanca", "Maârif");
+  assert.equal(maarif.district, "maarif");
+  assert.equal(maarif.layer, MAP_LAYER_EXPLORE);
 });
