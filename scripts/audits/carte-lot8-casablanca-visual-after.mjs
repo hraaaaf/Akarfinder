@@ -12,78 +12,118 @@ const viewports = [
   { name: "desktop", width: 1280, height: 900 },
 ];
 
+function basemapTileZoom(url) {
+  if (!url.includes("tiles.openfreemap.org")) return null;
+  const match = url.match(/\/(\d+)\/\d+\/\d+\.(?:pbf|png)(?:\?|$)/);
+  return match ? Number(match[1]) : null;
+}
+
 const report = { ok: false, cases: [], generatedAt: new Date().toISOString() };
 const browser = await chromium.launch({ headless: true });
 
 try {
   for (const viewport of viewports) {
     const page = await browser.newPage({ viewport: { width: viewport.width, height: viewport.height } });
-    const diagnostics = { pageErrors: [], requestFailures: [] };
+    const diagnostics = { pageErrors: [], requestFailures: [], basemapTileResponses: [] };
+    let resolveHighZoomTiles;
+    let rejectHighZoomTiles;
+    let highZoomTileCount = 0;
+    let highZoomTileGateSettled = false;
+    const highZoomTilesReady = new Promise((resolve, reject) => {
+      resolveHighZoomTiles = resolve;
+      rejectHighZoomTiles = reject;
+    });
+    const tileGateTimeout = setTimeout(() => {
+      if (highZoomTileGateSettled) return;
+      highZoomTileGateSettled = true;
+      rejectHighZoomTiles(new Error(`${viewport.name}: no real high-zoom basemap tiles rendered within 20s`));
+    }, 20000);
+
     page.on("pageerror", (error) => diagnostics.pageErrors.push(String(error)));
     page.on("requestfailed", (request) => diagnostics.requestFailures.push({
       url: request.url(),
       error: request.failure()?.errorText || "unknown",
     }));
-
-    await page.goto(`${baseUrl}/map?city=casablanca&district=maarif&layer=explore`, {
-      waitUntil: "domcontentloaded",
-      timeout: 30000,
+    page.on("response", (response) => {
+      const zoom = basemapTileZoom(response.url());
+      if (zoom === null) return;
+      diagnostics.basemapTileResponses.push({ url: response.url(), status: response.status(), zoom });
+      if (zoom >= 9 && response.ok()) {
+        highZoomTileCount += 1;
+        if (highZoomTileCount >= 2 && !highZoomTileGateSettled) {
+          highZoomTileGateSettled = true;
+          clearTimeout(tileGateTimeout);
+          resolveHighZoomTiles();
+        }
+      }
     });
 
-    const loadingCard = page.getByText("Chargement de la carte…", { exact: true });
-    await loadingCard.waitFor({ state: "hidden", timeout: 30000 });
+    try {
+      await page.goto(`${baseUrl}/map?city=casablanca&district=maarif&layer=explore`, {
+        waitUntil: "domcontentloaded",
+        timeout: 30000,
+      });
 
-    const mapCanvas = page.locator(".maplibregl-canvas");
-    await mapCanvas.waitFor({ state: "visible", timeout: 10000 });
-    await page.waitForTimeout(750);
+      const loadingCard = page.getByText("Chargement de la carte…", { exact: true });
+      await loadingCard.waitFor({ state: "hidden", timeout: 30000 });
 
-    const panel = page.getByRole("complementary", { name: /Fiche repère quartier Maârif/i });
-    await panel.waitFor({ state: "visible", timeout: 20000 });
-    const panelBox = await panel.boundingBox();
-    if (!panelBox) throw new Error(`${viewport.name}: Maârif panel has no bounding box`);
-    if (panelBox.x < -1 || panelBox.x + panelBox.width > viewport.width + 1 || panelBox.y < -1 || panelBox.y + panelBox.height > viewport.height + 1) {
-      throw new Error(`${viewport.name}: Maârif panel escapes viewport ${JSON.stringify(panelBox)}`);
+      const mapCanvas = page.locator(".maplibregl-canvas");
+      await mapCanvas.waitFor({ state: "visible", timeout: 10000 });
+
+      const panel = page.getByRole("complementary", { name: /Fiche repère quartier Maârif/i });
+      await panel.waitFor({ state: "visible", timeout: 20000 });
+      await highZoomTilesReady;
+      await page.waitForTimeout(450);
+
+      const panelBox = await panel.boundingBox();
+      if (!panelBox) throw new Error(`${viewport.name}: Maârif panel has no bounding box`);
+      if (panelBox.x < -1 || panelBox.x + panelBox.width > viewport.width + 1 || panelBox.y < -1 || panelBox.y + panelBox.height > viewport.height + 1) {
+        throw new Error(`${viewport.name}: Maârif panel escapes viewport ${JSON.stringify(panelBox)}`);
+      }
+
+      const searchHref = await panel.getByRole("link", { name: /Rechercher dans ce quartier/i }).getAttribute("href");
+      if (!searchHref) throw new Error(`${viewport.name}: Search handoff missing`);
+      const searchUrl = new URL(searchHref, baseUrl);
+      if (searchUrl.pathname !== "/search" || searchUrl.searchParams.get("city") !== "Casablanca" || searchUrl.searchParams.get("district") !== "Maârif") {
+        throw new Error(`${viewport.name}: Search handoff mismatch ${searchHref}`);
+      }
+
+      const legend = page.getByRole("complementary", { name: "Légende de la carte immobilière" });
+      const explorer = page.getByRole("navigation", { name: "Exploration territoriale" });
+      const controls = page.getByRole("region", { name: "Contrôles de la carte immobilière" });
+
+      if (viewport.width <= 1023) {
+        if (await legend.isVisible()) throw new Error(`${viewport.name}: legend must hide while district panel is open`);
+        if (await explorer.isVisible()) throw new Error(`${viewport.name}: territorial explorer must hide while district panel is open`);
+        if (await controls.isVisible()) throw new Error(`${viewport.name}: generic cockpit must hide while district panel is open`);
+      }
+
+      if (viewport.width <= 767 && panelBox.y + panelBox.height > viewport.height - 76) {
+        throw new Error(`${viewport.name}: district panel overlaps bottom navigation ${JSON.stringify(panelBox)}`);
+      }
+
+      if (diagnostics.pageErrors.length) {
+        throw new Error(`${viewport.name}: browser page errors ${JSON.stringify(diagnostics.pageErrors)}`);
+      }
+
+      await page.screenshot({
+        path: `${outDir}/casablanca-maarif-${viewport.width}x${viewport.height}.png`,
+        fullPage: false,
+      });
+
+      report.cases.push({
+        viewport: viewport.name,
+        searchHref,
+        panelBox,
+        overlaysHidden: viewport.width <= 1023,
+        mapRendered: true,
+        highZoomTileCount,
+        diagnostics,
+      });
+    } finally {
+      clearTimeout(tileGateTimeout);
+      await page.close();
     }
-
-    const searchHref = await panel.getByRole("link", { name: /Rechercher dans ce quartier/i }).getAttribute("href");
-    if (!searchHref) throw new Error(`${viewport.name}: Search handoff missing`);
-    const searchUrl = new URL(searchHref, baseUrl);
-    if (searchUrl.pathname !== "/search" || searchUrl.searchParams.get("city") !== "Casablanca" || searchUrl.searchParams.get("district") !== "Maârif") {
-      throw new Error(`${viewport.name}: Search handoff mismatch ${searchHref}`);
-    }
-
-    const legend = page.getByRole("complementary", { name: "Légende de la carte immobilière" });
-    const explorer = page.getByRole("navigation", { name: "Exploration territoriale" });
-    const controls = page.getByRole("region", { name: "Contrôles de la carte immobilière" });
-
-    if (viewport.width <= 1023) {
-      if (await legend.isVisible()) throw new Error(`${viewport.name}: legend must hide while district panel is open`);
-      if (await explorer.isVisible()) throw new Error(`${viewport.name}: territorial explorer must hide while district panel is open`);
-      if (await controls.isVisible()) throw new Error(`${viewport.name}: generic cockpit must hide while district panel is open`);
-    }
-
-    if (viewport.width <= 767 && panelBox.y + panelBox.height > viewport.height - 76) {
-      throw new Error(`${viewport.name}: district panel overlaps bottom navigation ${JSON.stringify(panelBox)}`);
-    }
-
-    if (diagnostics.pageErrors.length) {
-      throw new Error(`${viewport.name}: browser page errors ${JSON.stringify(diagnostics.pageErrors)}`);
-    }
-
-    await page.screenshot({
-      path: `${outDir}/casablanca-maarif-${viewport.width}x${viewport.height}.png`,
-      fullPage: false,
-    });
-
-    report.cases.push({
-      viewport: viewport.name,
-      searchHref,
-      panelBox,
-      overlaysHidden: viewport.width <= 1023,
-      mapRendered: true,
-      diagnostics,
-    });
-    await page.close();
   }
   report.ok = true;
 } catch (error) {
