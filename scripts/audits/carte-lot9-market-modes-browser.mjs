@@ -40,6 +40,15 @@ async function requireApiMode(page, mode) {
   return payload;
 }
 
+async function waitForSettledLegend(page, mode) {
+  await page.waitForFunction((expectedMode) => {
+    const legend = document.querySelector(`[data-akarfinder-intelligence-legend="${expectedMode}"]`);
+    if (!legend) return false;
+    const text = legend.textContent || "";
+    return !text.includes("Calcul des annonces observées") && !text.includes("temporairement indisponibles");
+  }, mode, { timeout: 15000 });
+}
+
 const report = { ok: false, cases: [], generatedAt: new Date().toISOString() };
 const browser = await chromium.launch({ headless: true });
 
@@ -87,10 +96,14 @@ try {
       await realTilesReady;
       await page.waitForFunction(() => document.querySelectorAll('[data-akarfinder-intelligence-mode]').length === 3, null, { timeout: 10000 });
       await page.waitForFunction(() => document.querySelector('[data-akarfinder-intelligence-legend="price"]'), null, { timeout: 10000 });
+      await waitForSettledLegend(page, "price");
 
       const pricePayload = await requireApiMode(page, "price");
       const densityPayload = await requireApiMode(page, "density");
       const listingsPayload = await requireApiMode(page, "listings");
+      const maarifListings = listingsPayload.districts.find((row) => row.districtSlug === "maarif");
+      if (maarifListings?.metricValue == null) throw new Error("listings: Maârif must expose a factual listing count");
+      const expectedListingsCount = Math.round(maarifListings.metricValue).toLocaleString("fr-FR");
 
       const toolbar = page.locator("[data-akarfinder-generic-premium-toolbar]");
       await toolbar.waitFor({ state: "visible", timeout: 10000 });
@@ -99,11 +112,13 @@ try {
 
       await toolbar.locator('[data-akarfinder-intelligence-mode="density"]').click();
       await page.waitForURL(/layer=density/, { timeout: 10000 });
-      await page.waitForFunction(() => document.querySelector('[data-akarfinder-intelligence-legend="density"]'), null, { timeout: 10000 });
+      await page.waitForFunction(() => document.querySelector('[data-akarfinder-intelligence-mode="density"][aria-selected="true"]'), null, { timeout: 10000 });
+      await waitForSettledLegend(page, "density");
 
       await toolbar.locator('[data-akarfinder-intelligence-mode="listings"]').click();
       await page.waitForURL(/layer=listings/, { timeout: 10000 });
-      await page.waitForFunction(() => document.querySelector('[data-akarfinder-intelligence-legend="listings"]'), null, { timeout: 10000 });
+      await page.waitForFunction(() => document.querySelector('[data-akarfinder-intelligence-mode="listings"][aria-selected="true"]'), null, { timeout: 10000 });
+      await waitForSettledLegend(page, "listings");
 
       await page.screenshot({
         path: `${outDir}/casablanca-market-modes-${viewport.width}x${viewport.height}.png`,
@@ -126,9 +141,14 @@ try {
         ? page.locator("[data-akarfinder-lot9-compact-metric]")
         : page.locator("[data-akarfinder-lot9-panel-metric]");
       await metric.waitFor({ state: "visible", timeout: 10000 });
+      await page.waitForFunction(({ mobile, expectedCount }) => {
+        const selector = mobile ? "[data-akarfinder-lot9-compact-metric]" : "[data-akarfinder-lot9-panel-metric]";
+        const text = document.querySelector(selector)?.textContent || "";
+        return !text.includes("Calcul") && !text.includes("indisponible") && text.includes(expectedCount);
+      }, { mobile: viewport.width <= 767, expectedCount: expectedListingsCount }, { timeout: 15000 });
       const metricText = (await metric.textContent())?.trim() ?? "";
-      if (!metricText || /Données 2024-2025/.test(metricText)) {
-        throw new Error(`${viewport.name}: selected district still exposes static benchmark instead of Lot 9 metric`);
+      if (!metricText || /Données 2024-2025/.test(metricText) || /Calcul/.test(metricText)) {
+        throw new Error(`${viewport.name}: selected district did not settle on the Lot 9 metric: ${metricText}`);
       }
 
       const panelBox = await panel.boundingBox();
@@ -158,6 +178,8 @@ try {
 
       report.cases.push({
         viewport: viewport.name,
+        width: viewport.width,
+        height: viewport.height,
         highZoomTileCount,
         tileResponses: tileResponses.slice(-20),
         priceAvailable: pricePayload.legend.availableCount,
