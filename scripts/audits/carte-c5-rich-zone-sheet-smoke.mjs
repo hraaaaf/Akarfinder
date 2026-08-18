@@ -123,7 +123,9 @@ try {
         const densityPayload = await densityApi.json();
         if (densityPayload.properties?.mode !== "density") throw new Error("Density payload mismatch");
 
-        if (!viewport.mobile) {
+        // The tablet/mobile certification intentionally hides the cockpit while a sheet is open.
+        // Interaction switching is therefore certified only where the control is actually visible.
+        if (viewport.width >= 1024) {
           const densityTab = page.locator('[data-akarfinder-intelligence-mode="density"]');
           const densityResponse = waitForIntelligence(page, "density");
           await densityTab.click();
