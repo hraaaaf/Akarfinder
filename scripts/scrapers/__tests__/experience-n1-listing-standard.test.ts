@@ -90,6 +90,53 @@ describe("AkarFinder Experience N1 — Listing Standard", () => {
     assert.equal(detail.provenance.fact_provenance_label, "Déclaré par le propriétaire");
   });
 
+  it("recognizes agency/promoter actors without granting rights until a source id is authorized", () => {
+    const agency = listing({
+      source_name: "Agence Démo",
+      source_type: "Agence",
+      partner_type: "agency",
+      can_show_result: true,
+      can_show_contact: true,
+      can_show_gallery: true,
+      production_allowed: true,
+    });
+
+    const unauthorizedAgency = buildListingSourceContractV1(agency);
+    assert.equal(unauthorizedAgency.actor_type, "agency");
+    assert.equal(unauthorizedAgency.source_access_type, "third_party_legacy");
+    assert.equal(unauthorizedAgency.internal_detail_allowed, false);
+
+    const authorizedAgency = buildListingSourceContractV1(agency, { source_id: "partner_csv" });
+    assert.equal(authorizedAgency.actor_type, "agency");
+    assert.equal(authorizedAgency.source_access_type, "partner_authorized");
+    assert.equal(authorizedAgency.display_depth, "full_internal");
+    assert.equal(authorizedAgency.internal_detail_allowed, true);
+    assert.equal(authorizedAgency.contact_allowed, true);
+    assert.equal(authorizedAgency.gallery_allowed, true);
+
+    const agencyDetail = buildPublicPropertyDetailV2(agency, {
+      source_id: "partner_csv",
+      source_name: "Agence Démo",
+      actor_type: "agency",
+      observed_at: "2026-08-19T18:00:00.000Z",
+    });
+    assert.ok(agencyDetail);
+    assert.equal(agencyDetail.provenance.source_id, "partner_csv");
+    assert.equal(agencyDetail.provenance.actor_type, "agency");
+    assert.equal(agencyDetail.provenance.fact_provenance_label, "Déclaré par le partenaire");
+
+    const promoter = buildListingSourceContractV1(listing({
+      source_name: "Promoteur Démo",
+      source_type: "Promoteur",
+      partner_type: "promoter",
+      can_show_result: true,
+      production_allowed: true,
+    }), { source_id: "partner_csv" });
+    assert.equal(promoter.actor_type, "promoter");
+    assert.equal(promoter.source_access_type, "partner_authorized");
+    assert.equal(promoter.internal_detail_allowed, true);
+  });
+
   it("keeps external and benchmark sources out of internal detail depth", () => {
     const external = buildListingSourceContractV1(listing({
       source_name: "Mubawab",

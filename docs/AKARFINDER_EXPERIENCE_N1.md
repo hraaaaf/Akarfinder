@@ -47,6 +47,8 @@ Il projette trois contrats :
 - droits contact / galerie / détail interne ;
 - obligation éventuelle de retourner à la source originale.
 
+**Reconnaître l'acteur ne lui accorde aucun droit.** Une agence ou un promoteur peut être correctement typé `agency` / `promoter` tout en restant fail-closed tant qu'une clé source stable n'est pas explicitement classée `partner_authorized`. Le nom commercial reste un libellé public, pas une permission. Le contrat `partner_csv` sert actuellement de clé autorisée générique pour la capacité partenaire existante ; toute source réelle doit conserver un statut d'autorisation explicite avant publication.
+
 Aucun acteur n'est promu par un simple libellé inconnu.
 
 ### Géographie
@@ -86,6 +88,8 @@ Le Listing Standard v1 est une projection runtime additive destinée aux surface
 - stable owner source id ;
 - rejet du libellé `Propriétaire` seul comme permission ;
 - détail propriétaire accepté via `owner_declared` ;
+- acteur agence/promoteur reconnu sans auto-autorisation ;
+- agence autorisée uniquement via une clé `partner_authorized` ;
 - external/benchmark non promus ;
 - règles de précision géographique et pins ;
 - refus d'un pin si la source géographique n'est pas certifiée ;
