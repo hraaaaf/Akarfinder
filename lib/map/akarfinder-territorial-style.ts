@@ -1,9 +1,14 @@
-import type { Map as MapLibreMap } from "maplibre-gl";
+import type { GeoJSONSource, Map as MapLibreMap } from "maplibre-gl";
+import { decorateGeometryWithMarketIntelligence } from "@/lib/map/city-market-heatmap";
+import type { CityMarketIntelligencePayload } from "@/lib/map/city-market-intelligence-payload";
+import type { IntelligenceMode } from "@/lib/map/intelligence-scale";
 
 export const AKARFINDER_TERRITORIAL_SOURCE_ID = "akarfinder-neighborhood-geometry";
 export const AKARFINDER_TERRITORIAL_FILL_LAYER_ID = "akarfinder-neighborhood-fill";
 export const AKARFINDER_TERRITORIAL_LINE_LAYER_ID = "akarfinder-neighborhood-outline";
 export const AKARFINDER_TERRITORIAL_LABEL_LAYER_ID = "akarfinder-neighborhood-label";
+export const AKARFINDER_MARKET_MODE_EVENT = "akarfinder:market-mode";
+export const AKARFINDER_TERRITORIAL_SELECT_EVENT = "akarfinder:territorial-select";
 
 // A calm but deliberately differentiated territorial palette. Colors distinguish
 // adjacent areas only; they do not encode price, quality, demand, or confidence.
@@ -21,11 +26,24 @@ export const AKARFINDER_TERRITORIAL_PALETTE = [
 const LIGHT_BASEMAP_BACKGROUND = "#EDF3F7";
 const DARK_BASEMAP_BACKGROUND = "#071426";
 const DEFAULT_NEUTRAL_HEATMAP = "#D8E1E8";
+const MARKET_BRIDGE_CLEANUPS = new WeakMap<MapLibreMap, () => void>();
 
 type TerritorialLayerOptions = {
   marketIntelligence?: boolean;
   selectedNeighborhoodId?: string | null;
   neutralColor?: string;
+};
+
+type MarketModeEventDetail = {
+  city: string;
+  mode: IntelligenceMode;
+  transaction: "sale" | "rent";
+  district?: string | null;
+};
+
+type TerritorialSelectEventDetail = {
+  city: string;
+  district: string;
 };
 
 function mutedLayerPaint(theme: string | undefined) {
@@ -116,6 +134,26 @@ function semanticLineWidth(selectedNeighborhoodId: string | null | undefined) {
   ];
 }
 
+function geometryCitySlug(geojson: GeoJSON.FeatureCollection): string | null {
+  for (const feature of geojson.features) {
+    const city = feature.properties?.cityCanonicalId;
+    if (typeof city === "string" && city.trim()) return city.trim().toLowerCase();
+  }
+  return null;
+}
+
+function currentMarketModeFromLocation(): MarketModeEventDetail {
+  const params = new URLSearchParams(typeof window === "undefined" ? "" : window.location.search);
+  const layer = params.get("layer");
+  const mode: IntelligenceMode = layer === "density" ? "density" : layer === "listings" ? "listings" : "price";
+  return {
+    city: String(params.get("city") ?? "casablanca").toLowerCase(),
+    mode,
+    transaction: params.get("transaction_type") === "rent" ? "rent" : "sale",
+    district: params.get("district"),
+  };
+}
+
 export function updateAkarFinderTerritorialSelection(
   map: MapLibreMap,
   selectedNeighborhoodId: string | null | undefined,
@@ -142,6 +180,97 @@ export function updateAkarFinderTerritorialSelection(
   }
 }
 
+function setSemanticHeatmapPaint(
+  map: MapLibreMap,
+  selectedNeighborhoodId: string | null | undefined,
+  neutralColor: string,
+  theme?: string,
+): void {
+  if (map.getLayer(AKARFINDER_TERRITORIAL_FILL_LAYER_ID)) {
+    map.setPaintProperty(
+      AKARFINDER_TERRITORIAL_FILL_LAYER_ID,
+      "fill-color",
+      ["coalesce", ["get", "marketFillColor"], neutralColor],
+    );
+  }
+  updateAkarFinderTerritorialSelection(map, selectedNeighborhoodId, theme);
+}
+
+function installCasablancaMarketBridge(
+  map: MapLibreMap,
+  baseGeojson: GeoJSON.FeatureCollection,
+  theme?: string,
+): void {
+  MARKET_BRIDGE_CLEANUPS.get(map)?.();
+  let requestRevision = 0;
+
+  const applyMode = async (detail: MarketModeEventDetail) => {
+    if (detail.city !== "casablanca" || !map.getSource(AKARFINDER_TERRITORIAL_SOURCE_ID)) return;
+    const revision = ++requestRevision;
+    try {
+      const response = await fetch(
+        `/api/geo/market-intelligence?city=casablanca&mode=${detail.mode}&transaction=${detail.transaction}`,
+        { credentials: "same-origin", cache: "no-store" },
+      );
+      if (!response.ok || revision !== requestRevision || !map.getSource(AKARFINDER_TERRITORIAL_SOURCE_ID)) return;
+      const payload = await response.json() as CityMarketIntelligencePayload;
+      const decorated = decorateGeometryWithMarketIntelligence(baseGeojson, payload);
+      const source = map.getSource(AKARFINDER_TERRITORIAL_SOURCE_ID) as GeoJSONSource | undefined;
+      source?.setData(decorated);
+      setSemanticHeatmapPaint(map, detail.district, payload.legend.neutralColor, theme);
+    } catch (error) {
+      console.error("[AkarFinderMap:market-heatmap]", error);
+      if (!map.getLayer(AKARFINDER_TERRITORIAL_FILL_LAYER_ID)) return;
+      map.setPaintProperty(AKARFINDER_TERRITORIAL_FILL_LAYER_ID, "fill-color", DEFAULT_NEUTRAL_HEATMAP);
+      updateAkarFinderTerritorialSelection(map, detail.district, theme);
+    }
+  };
+
+  const onModeEvent = (event: Event) => {
+    const detail = (event as CustomEvent<MarketModeEventDetail>).detail;
+    if (!detail) return;
+    void applyMode(detail);
+  };
+
+  const onClick = (event: { features?: Array<{ properties?: Record<string, unknown> }> }) => {
+    const properties = event.features?.[0]?.properties;
+    if (!properties || properties.marketNeutral !== false) return;
+    const district = properties.neighborhoodCanonicalId;
+    if (typeof district !== "string" || !district.trim()) return;
+    updateAkarFinderTerritorialSelection(map, district, theme);
+    window.dispatchEvent(new CustomEvent<TerritorialSelectEventDetail>(AKARFINDER_TERRITORIAL_SELECT_EVENT, {
+      detail: { city: "casablanca", district },
+    }));
+  };
+
+  const onEnter = (event: { features?: Array<{ properties?: Record<string, unknown> }> }) => {
+    const properties = event.features?.[0]?.properties;
+    map.getCanvas().style.cursor = properties?.marketNeutral === false ? "pointer" : "";
+  };
+  const onLeave = () => { map.getCanvas().style.cursor = ""; };
+
+  window.addEventListener(AKARFINDER_MARKET_MODE_EVENT, onModeEvent);
+  map.on("click", AKARFINDER_TERRITORIAL_FILL_LAYER_ID, onClick as never);
+  map.on("mouseenter", AKARFINDER_TERRITORIAL_FILL_LAYER_ID, onEnter as never);
+  map.on("mouseleave", AKARFINDER_TERRITORIAL_FILL_LAYER_ID, onLeave);
+
+  const cleanup = () => {
+    window.removeEventListener(AKARFINDER_MARKET_MODE_EVENT, onModeEvent);
+    try {
+      map.off("click", AKARFINDER_TERRITORIAL_FILL_LAYER_ID, onClick as never);
+      map.off("mouseenter", AKARFINDER_TERRITORIAL_FILL_LAYER_ID, onEnter as never);
+      map.off("mouseleave", AKARFINDER_TERRITORIAL_FILL_LAYER_ID, onLeave);
+    } catch {
+      // Style swaps can remove the target layer before cleanup.
+    }
+  };
+  MARKET_BRIDGE_CLEANUPS.set(map, cleanup);
+
+  const initial = currentMarketModeFromLocation();
+  setSemanticHeatmapPaint(map, initial.district, DEFAULT_NEUTRAL_HEATMAP, theme);
+  void applyMode(initial);
+}
+
 export function addAkarFinderTerritorialLayers(
   map: MapLibreMap,
   geojson: GeoJSON.FeatureCollection,
@@ -153,7 +282,8 @@ export function addAkarFinderTerritorialLayers(
   if (map.getLayer(AKARFINDER_TERRITORIAL_FILL_LAYER_ID)) map.removeLayer(AKARFINDER_TERRITORIAL_FILL_LAYER_ID);
   if (map.getSource(AKARFINDER_TERRITORIAL_SOURCE_ID)) map.removeSource(AKARFINDER_TERRITORIAL_SOURCE_ID);
 
-  const semantic = options?.marketIntelligence === true;
+  const citySlug = geometryCitySlug(geojson);
+  const semantic = options?.marketIntelligence === true || citySlug === "casablanca";
   const neutralColor = options?.neutralColor ?? DEFAULT_NEUTRAL_HEATMAP;
 
   mountStage("source", () => {
@@ -236,6 +366,10 @@ export function addAkarFinderTerritorialLayers(
       },
     });
   });
+
+  if (citySlug === "casablanca" && typeof window !== "undefined") {
+    installCasablancaMarketBridge(map, geojson, theme);
+  }
 }
 
 export function territorialColorsAreSemanticScores(): false {
