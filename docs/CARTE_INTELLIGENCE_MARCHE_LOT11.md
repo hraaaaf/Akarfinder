@@ -1,6 +1,6 @@
 # Carte intelligence marché — Lot 11
 
-Statut : **CERTIFIÉ PRODUIT — CLOSEOUT / MERGE EN ATTENTE**
+Statut : **CLOSED — MERGÉ**
 
 ## Goal
 
@@ -61,8 +61,6 @@ La fiche réutilise `readCityMarketIntelligenceMetrics()` et ne crée aucun seco
 
 **HEAD produit certifié : `3db92d158ca2c388e5d53857089fce304348899b`.**
 
-Le commit documentaire de closeout peut créer un HEAD ultérieur sans modifier l’arbre produit ; la certification ci-dessous reste attachée exactement au HEAD produit ci-dessus.
-
 ### Fiche quartier — Browser exact-head
 
 - run : `32244517995` ✅ ;
@@ -73,7 +71,6 @@ Le commit documentaire de closeout peut créer un HEAD ultérieur sans modifier 
 - chaque cas résout le runtime et charge une mini-carte réelle ;
 - tuiles OpenFreeMap haut zoom : **>= 2** par cas, HTTP 200 ;
 - overflow horizontal : **0 px** sur les 8 cas ;
-- mobile bottom-nav clearance largement positive ;
 - Search et Carte conservent `city + district` ;
 - `previewMapHref === mapHref` sur les 8 cas.
 
@@ -124,28 +121,17 @@ Après correction map-first :
 
 **Score visuel final du scope Lot 11 : 9,8/10.**
 
-## Gate de fermeture
+## Fermeture
 
-Validé :
+Tous les critères du Lot 11 sont validés : tests, TypeScript/build, quatre viewports, cas observé + fail-closed, handoffs `city + district`, absence de tendance/catégorie fabriquée, cohérence Rabat/Casablanca, double check visuel et régression Carte.
 
-1. tests Lot 11 verts ✅ ;
-2. TypeScript + build verts dans les gates exact-head ✅ ;
-3. fiche quartier 390 / 430 / 768 / 1280 ✅ ;
-4. cas observé + cas fail-closed ✅ ;
-5. Search et Carte conservent `city + district` ✅ ;
-6. aucune tendance ou catégorie fabriquée ✅ ;
-7. cohérence Rabat + Casablanca ✅ ;
-8. absence de faux enrichissement sur les villes sans preuve ✅ ;
-9. double check visuel baseline / mockup / after = **9,8/10** ✅ ;
-10. régression Carte produit principale verte ✅ ;
-11. docs de lot cohérentes ✅ sur ce commit de closeout.
+- PR : `#820` ✅ MERGED ;
+- HEAD closeout pré-merge : `6cda014fd22775f1399874196a82c37c13bef21a` ;
+- merge `main` : `f0c051e533806b841f5af07bd0e17c16c312f009` ;
+- tree mergé : `fad65cfe6e1200aa098777f04b9d687e0273699d` ;
+- score visuel final : **9,8/10** ;
+- progression finale du chantier : **11/11 = 100 %**.
 
-Reste avant `CLOSED` :
+Preuve de closeout complémentaire : `docs/CARTE_INTELLIGENCE_MARCHE_POSTMERGE_CLOSEOUT.md`.
 
-12. finaliser les workflows globaux attachés au HEAD de closeout ;
-13. merger PR `#820` ;
-14. vérifier `main` post-merge et mettre à jour la roadmap canonique avec le merge réel.
-
-La progression globale reste **10/11 = 90,9 %** tant que le merge et le post-merge ne sont pas prouvés.
-
-**Aucun déploiement Vercel sans autorisation explicite.**
+**Aucun déploiement Vercel effectué.**
