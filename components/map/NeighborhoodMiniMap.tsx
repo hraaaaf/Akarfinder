@@ -44,10 +44,7 @@ export function NeighborhoodMiniMap({ lat, lng, label, city, mapHref }: Neighbor
         zoom: 13.2,
         interactive: false,
         fadeDuration: 0,
-        attributionControl: {
-          compact: true,
-          customAttribution: "© OpenStreetMap contributors",
-        },
+        attributionControl: false,
       });
       mapRef.current = map;
 
@@ -79,7 +76,7 @@ export function NeighborhoodMiniMap({ lat, lng, label, city, mapHref }: Neighbor
 
   return (
     <section
-      className="relative h-[190px] overflow-hidden rounded-2xl border border-border/25 bg-surface-muted shadow-sm sm:h-[230px] [&_.maplibregl-ctrl-bottom-right]:!bottom-auto [&_.maplibregl-ctrl-bottom-right]:!right-2 [&_.maplibregl-ctrl-bottom-right]:!top-2"
+      className="relative h-[190px] overflow-hidden rounded-2xl border border-border/25 bg-surface-muted shadow-sm sm:h-[230px]"
       aria-label={`Repère cartographique ${label}, ${city}`}
       aria-busy={!ready}
       data-akarfinder-neighborhood-map-preview
@@ -93,12 +90,36 @@ export function NeighborhoodMiniMap({ lat, lng, label, city, mapHref }: Neighbor
       {!ready ? (
         <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(219,234,254,0.55),rgba(248,250,252,0.92),rgba(226,232,240,0.55))]" aria-hidden="true" />
       ) : null}
+
       <div className="pointer-events-none absolute inset-x-3 top-3 flex items-start justify-between gap-3">
         <span className="inline-flex items-center gap-1.5 rounded-full border border-white/70 bg-white/92 px-3 py-1.5 text-[9.5px] font-extrabold uppercase tracking-[0.11em] text-brand-primary shadow-sm backdrop-blur">
           <MapPin size={12} aria-hidden="true" />
           Repère quartier
         </span>
       </div>
+
+      <div
+        className="absolute right-2 top-2 z-10 max-w-[124px] rounded-md border border-white/75 bg-white/90 px-1.5 py-1 text-right text-[7px] font-semibold leading-[1.25] text-slate-600 shadow-sm backdrop-blur"
+        data-akarfinder-map-attribution
+      >
+        <a
+          href="https://www.openstreetmap.org/copyright"
+          target="_blank"
+          rel="noreferrer"
+          className="block hover:text-brand-primary"
+        >
+          © OpenStreetMap contributors
+        </a>
+        <a
+          href="https://openfreemap.org"
+          target="_blank"
+          rel="noreferrer"
+          className="block text-[6.5px] text-slate-500 hover:text-brand-primary"
+        >
+          OpenFreeMap
+        </a>
+      </div>
+
       <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between gap-3">
         <div className="min-w-0 rounded-xl border border-white/75 bg-white/94 px-3 py-2 shadow-sm backdrop-blur">
           <p className="truncate text-[12px] font-extrabold text-foreground">{label}</p>
