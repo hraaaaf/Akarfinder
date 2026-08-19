@@ -20,8 +20,10 @@ export type SourceAccessType =
   | "benchmark_source";   // Price reference only — never becomes a listing
 
 // ─── Registry ─────────────────────────────────────────────────────────────────
-// Keys are lower-cased source_name values as stored in the DB or used in
-// Search Gateway config.  Lookup is always case-insensitive (see getSourceAccessType).
+// Keys are lower-cased stable source identifiers or source_name values used by
+// legacy paths. Lookup is always case-insensitive (see getSourceAccessType).
+// Human-facing labels should not become authorization keys when a stable source
+// identifier exists.
 
 const SOURCE_REGISTRY: Record<string, SourceAccessType> = {
   // ── First-party ──────────────────────────────────────────────────────────────
@@ -29,6 +31,9 @@ const SOURCE_REGISTRY: Record<string, SourceAccessType> = {
   internal: "first_party",
   first_party: "first_party",
   own: "first_party",
+  // Stable source id for listings explicitly declared and published by an
+  // AkarFinder owner flow. The public label remains "Propriétaire" elsewhere.
+  owner_declared: "first_party",
 
   // ── Partner-authorized ───────────────────────────────────────────────────────
   // Add source_name values here only after explicit written authorization.
