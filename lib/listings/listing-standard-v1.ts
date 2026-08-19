@@ -3,6 +3,7 @@ import {
   getSourceAccessType,
   type SourceAccessType,
 } from "../sources/source-access-registry";
+import { hasCertifiedExactCoordinates } from "../ux/certified-property-map";
 
 export const LISTING_STANDARD_VERSION = "1.0" as const;
 
@@ -185,6 +186,7 @@ export function buildListingGeoContractV1(listing: Listing): ListingGeoContractV
     district ? "neighborhood_centroid" : city ? "city_centroid" : "unknown"
   );
   const coordinates = hasValidCoordinates(listing);
+  const certifiedExact = hasCertifiedExactCoordinates(listing);
 
   const mapScope: ListingMapScopeV1 = precision === "exact"
     ? "exact"
@@ -198,9 +200,10 @@ export function buildListingGeoContractV1(listing: Listing): ListingGeoContractV
     precision,
     precision_explicit: precisionExplicit,
     has_coordinates: coordinates,
-    // An exact semantic label without usable coordinates is not enough to draw
-    // an individual pin. This avoids false cartographic precision.
-    pin_eligible: precision === "exact" && coordinates,
+    // Keep the pre-existing certified map contract authoritative. Coordinates
+    // alone do not grant a pin: exact precision, an accepted geo source and
+    // Morocco bounds are all required by hasCertifiedExactCoordinates().
+    pin_eligible: certifiedExact,
     map_scope: mapScope,
     city,
     district,
