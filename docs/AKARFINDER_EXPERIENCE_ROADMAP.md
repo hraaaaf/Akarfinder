@@ -1,9 +1,10 @@
 # AkarFinder — Carte + Search + Listing Roadmap
 
-Statut : **N0 EN COURS**
+Statut : **N0 CLOSED — N1 NEXT**
 Date : 2026-08-19
 Référentiel : `docs/AKARFINDER_EXPERIENCE_STANDARD_V1.md`
-Base : `main@49b80c4c1deffb1f1999f91412b5092151ac63c5`
+Base initiale : `main@49b80c4c1deffb1f1999f91412b5092151ac63c5`
+N0 merge : `a4913d55553243dc1cf4a5ba284f66c1f6e0572b` — PR `#823`.
 
 ## Goal global
 
@@ -23,7 +24,7 @@ Unifier Carte, Search, fiche annonce et publication autour d'un même contrat UX
 
 ## N0 — Audit + doctrine + référentiel
 
-Statut : **EN COURS**
+Statut : **CLOSED — PR #823**
 
 Goal : transformer les baselines finales existantes en contrat cible avant toute modification runtime.
 
@@ -36,15 +37,24 @@ Scope :
 - wireframes contractuels ;
 - identifier les composants réutilisables et les dettes réelles.
 
-Succès :
+Succès validé :
 - `AKARFINDER_EXPERIENCE_STANDARD_V1.md` versionné ;
 - roadmap versionnée ;
+- audit et index des baselines versionnés ;
 - aucun runtime modifié ;
-- baseline et HEAD sources documentés.
+- aucune mutation DB/source ;
+- aucun déploiement Vercel.
 
-Preuve : diff docs + comparaison aux artefacts exact-head existants.
+Preuve :
+- PR `#823` mergée ;
+- merge `main` : `a4913d55553243dc1cf4a5ba284f66c1f6e0572b` ;
+- Carte C7 run `32244517896`, artifact `9366976831` ;
+- UI global run `32267867957`, artifact `9371334718` ;
+- Listing run `32129531035`, artifact `9321690793`.
 
 ## N1 — Listing Standard + contrats source
+
+Statut : **NEXT**
 
 Goal : rendre explicite et cohérent le contrat commun des annonces propriétaires, agences, promoteurs et résultats externes admissibles.
 
@@ -185,10 +195,10 @@ Non incluses dans le dénominateur du chantier cœur :
 
 ## Progression
 
-Le dénominateur cœur est désormais **10 lots : N0 à N9**.
+Le dénominateur cœur est **10 lots : N0 à N9**.
 
-- lots CLOSED : **0/10** ;
-- progression stricte : **0 %** ;
-- N0 est actif.
+- lots CLOSED : **1/10** ;
+- progression stricte : **10 %** ;
+- N1 est le prochain lot.
 
 Le précédent programme `Carte intelligence marché` reste historiquement fermé à 11/11 et n'est pas rouvert par ce nouveau chantier.
