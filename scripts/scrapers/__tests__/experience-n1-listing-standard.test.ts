@@ -111,7 +111,7 @@ describe("AkarFinder Experience N1 — Listing Standard", () => {
     assert.equal(benchmark.search_result_allowed, false);
   });
 
-  it("never makes an individual pin from approximate or coordinate-less geography", () => {
+  it("never makes an individual pin from approximate, uncertified, or coordinate-less geography", () => {
     const districtOnly = buildListingGeoContractV1(listing({
       geo_precision: undefined,
       latitude: undefined,
@@ -139,14 +139,25 @@ describe("AkarFinder Experience N1 — Listing Standard", () => {
 
     const exactWithoutCoordinates = buildListingGeoContractV1(listing({
       geo_precision: "exact",
+      geo_source: "manual_import",
       latitude: undefined,
       longitude: undefined,
     }));
     assert.equal(exactWithoutCoordinates.precision, "exact");
     assert.equal(exactWithoutCoordinates.pin_eligible, false);
 
+    const exactWithUncertifiedSource = buildListingGeoContractV1(listing({
+      geo_precision: "exact",
+      geo_source: "city_centroid",
+      latitude: 34.0209,
+      longitude: -6.8416,
+    }));
+    assert.equal(exactWithUncertifiedSource.has_coordinates, true);
+    assert.equal(exactWithUncertifiedSource.pin_eligible, false);
+
     const exact = buildListingGeoContractV1(listing({
       geo_precision: "exact",
+      geo_source: "manual_import",
       latitude: 34.0209,
       longitude: -6.8416,
     }));
@@ -172,6 +183,7 @@ describe("AkarFinder Experience N1 — Listing Standard", () => {
     const standard = buildListingStandardV1(listing({
       source_name: "AkarFinder",
       geo_precision: "exact",
+      geo_source: "manual_import",
       latitude: 33.5731,
       longitude: -7.5898,
       data_completeness_score: 80,
