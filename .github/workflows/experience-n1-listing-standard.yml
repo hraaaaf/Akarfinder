@@ -1,0 +1,36 @@
+name: Experience N1 Listing Standard
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "app/listings/[id]/page.tsx"
+      - "lib/intelligence/public-serp-intelligence-v1.ts"
+      - "lib/listings/listing-standard-v1.ts"
+      - "lib/property-detail/public-property-detail-v2.ts"
+      - "lib/sources/source-access-registry.ts"
+      - "scripts/scrapers/__tests__/experience-n1-listing-standard.test.ts"
+      - "docs/AKARFINDER_EXPERIENCE_N1.md"
+      - ".github/workflows/experience-n1-listing-standard.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  certify-n1:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: N1 listing standard contracts
+        run: npx tsx --test scripts/scrapers/__tests__/experience-n1-listing-standard.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
