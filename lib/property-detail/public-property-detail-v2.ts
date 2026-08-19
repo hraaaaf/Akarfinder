@@ -1,5 +1,6 @@
 import type { Listing } from "../listings/types";
-import { getSourceAccessType } from "../sources/source-access-registry";
+import type { ListingActorType } from "../listings/listing-standard-v1";
+import { getSourceAccessType, type SourceAccessType } from "../sources/source-access-registry";
 import { buildPublicSerpIntelligenceForListing } from "../intelligence/public-serp-intelligence-v1";
 
 export const PUBLIC_PROPERTY_DETAIL_VERSION = "2.0" as const;
@@ -64,9 +65,11 @@ export type PublicPropertyDetailV2 = {
   };
   history: PublicDetailHistoryItem[];
   provenance: {
+    source_id: string | null;
     source_name: string;
     source_url: string | null;
     source_access_type: "first_party" | "partner_authorized";
+    actor_type: ListingActorType;
     fact_provenance_label: string;
     verified_document_count: 0;
     verified_document_label: "Aucune vérification documentaire affichable";
@@ -84,7 +87,10 @@ export type PublicPropertyDetailV2 = {
 };
 
 export type PublicPropertyDetailContextV2 = {
+  /** Stable policy identifier when different from the human-facing source label. */
+  source_id?: string | null;
   source_name: string;
+  actor_type?: ListingActorType;
   observed_at: string;
   created_at?: string | null;
   generated_at?: string;
@@ -105,22 +111,40 @@ function formatDate(value: string | null | undefined): string | null {
   }).format(date);
 }
 
-function sourceFactProvenance(sourceName: string): {
+function sourceFactProvenance(
+  sourceName: string,
+  accessType: SourceAccessType,
+  actorType: ListingActorType,
+): {
   provenance: PublicDetailProvenanceKind;
   label: string;
 } {
   const normalized = sourceName.toLowerCase().trim();
-  const accessType = getSourceAccessType(sourceName);
+
+  if (actorType === "owner") {
+    return { provenance: "declared", label: "Déclaré par le propriétaire" };
+  }
 
   if (accessType === "partner_authorized") {
     return { provenance: "declared", label: "Déclaré par le partenaire" };
   }
 
-  if (["akarfinder", "first_party", "own"].includes(normalized)) {
+  if (accessType === "first_party" || ["akarfinder", "first_party", "own"].includes(normalized)) {
     return { provenance: "declared", label: "Déclaré dans AkarFinder" };
   }
 
   return { provenance: "inferred", label: "Origine exacte à confirmer" };
+}
+
+function inferActorType(listing: Listing, accessType: SourceAccessType): ListingActorType {
+  if (listing.partner_type === "promoter" || listing.organization_type === "promoter" || listing.source_type === "Promoteur") {
+    return "promoter";
+  }
+  if (listing.partner_type === "agency" || listing.organization_type === "agency" || listing.source_type === "Agence") {
+    return "agency";
+  }
+  if (accessType === "first_party") return "akarfinder";
+  return "unknown";
 }
 
 function fact(
@@ -185,9 +209,13 @@ export function buildPublicPropertyDetailV2(
   listing: Listing,
   context: PublicPropertyDetailContextV2,
 ): PublicPropertyDetailV2 | null {
-  const accessType = getSourceAccessType(context.source_name);
+  // Policy is keyed by a stable source id when supplied. The public source_name
+  // remains a display label and is never required to double as authorization.
+  const policySourceKey = context.source_id?.trim() || context.source_name;
+  const accessType = getSourceAccessType(policySourceKey);
   if (accessType !== "first_party" && accessType !== "partner_authorized") return null;
 
+  const actorType = context.actor_type ?? inferActorType(listing, accessType);
   const publicIntelligence = buildPublicSerpIntelligenceForListing(listing, {
     source_name: context.source_name,
     observed_at: context.observed_at,
@@ -195,7 +223,7 @@ export function buildPublicPropertyDetailV2(
   });
   if (!publicIntelligence) return null;
 
-  const sourceProvenance = sourceFactProvenance(context.source_name);
+  const sourceProvenance = sourceFactProvenance(context.source_name, accessType, actorType);
   const calculated = { provenance: "calculated" as const, label: "Calculé par AkarFinder" };
   const marketLabel = getMarketSignal(publicIntelligence);
   const multiSourceLabel = getMultiSourceSignal(publicIntelligence);
@@ -314,9 +342,11 @@ export function buildPublicPropertyDetailV2(
     },
     history,
     provenance: {
+      source_id: context.source_id ?? null,
       source_name: context.source_name,
       source_url: listing.listing_url ?? null,
       source_access_type: accessType,
+      actor_type: actorType,
       fact_provenance_label: sourceProvenance.label,
       verified_document_count: 0,
       verified_document_label: "Aucune vérification documentaire affichable",
