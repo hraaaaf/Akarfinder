@@ -55,7 +55,7 @@ jobs:
             if(!item) throw new Error(`missing viewport ${width}`);
             if(item.geometryFeatures!==16) throw new Error(`viewport ${width} geometry proof mismatch`);
             if(item.highZoomTileCount<2) throw new Error(`viewport ${width} lacks real basemap proof`);
-            if(item.selectionPath!=='territorial-control') throw new Error(`viewport ${width} selection proof mismatch`);
+            if(item.selectionPath!=='visible-map-marker') throw new Error(`viewport ${width} selection proof mismatch`);
             if(!item.searchHref?.includes('city=Casablanca')||!item.searchHref?.includes('district=Ma%C3%A2rif')) {
               throw new Error(`viewport ${width} Search handoff mismatch`);
             }
