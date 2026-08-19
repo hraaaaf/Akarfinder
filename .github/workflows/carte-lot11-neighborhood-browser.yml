@@ -42,7 +42,7 @@ jobs:
       - name: Production build
         run: npm run build
       - name: Install Chromium
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install chromium
       - name: Eight-capture neighborhood intelligence certification
         run: node scripts/audits/carte-lot11-runner.mjs
       - name: Enforce Lot 11 report
