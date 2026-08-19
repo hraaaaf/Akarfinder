@@ -198,9 +198,15 @@ try {
       await listingsResponsePromise;
       await waitLegendSettled(page, "listings");
 
-      const maarifMarker = page.locator(".maplibre-neighborhood-marker", { hasText: "Maârif" }).first();
-      await maarifMarker.waitFor({ state: "visible", timeout: 15_000 });
-      await maarifMarker.click();
+      // Lot 10 is the semantic heatmap, not the legacy point marker layer. The
+      // MapLibre polygon click bridge is locked by the Lot 10 contract test.
+      // Browser selection uses the visible territorial district control so the
+      // proof remains a genuine, unforced user interaction at every viewport.
+      const districtExplorer = page.locator('[data-akarfinder-territorial-explorer="true"]');
+      await districtExplorer.waitFor({ state: "visible", timeout: 10_000 });
+      const maarifControl = districtExplorer.getByRole("button", { name: "Maârif", exact: true });
+      await maarifControl.waitFor({ state: "visible", timeout: 10_000 });
+      await maarifControl.click();
       await page.waitForURL(/district=maarif/, { timeout: 10_000 });
 
       const panel = viewport.width <= 767
@@ -252,6 +258,7 @@ try {
         marketResponses: marketResponses.slice(-12),
         tileResponses: tileResponses.slice(-20),
         selectedMetric: (await metric.textContent())?.trim() || "",
+        selectionPath: "territorial-control",
         panelBox,
         searchHref,
       });
