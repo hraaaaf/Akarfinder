@@ -8,6 +8,7 @@ import {
   getNeighborhoodsByCity,
 } from "@/lib/map/canonical-neighborhood-data";
 import {
+  MAP_LAYER_EXPLORE,
   withMapLocation,
   type MapNavigationState,
 } from "@/lib/map/map-navigation-state";
@@ -49,6 +50,11 @@ export function TerritorialExplorer({
   const explorerWidthClass = selectedDistrict
     ? "sm:w-[min(720px,calc(100vw-32px))] md:w-[calc(100vw-438px)] md:max-w-[720px]"
     : "sm:w-[min(720px,calc(100vw-32px))]";
+
+  // Once a semantic market layer is active, the map itself is the district
+  // explorer. Keeping a second floating district rail on top of polygons makes
+  // the intelligence harder to read and intercepts genuine map interactions.
+  if (navigationState.layer !== MAP_LAYER_EXPLORE) return null;
 
   return (
     <>
