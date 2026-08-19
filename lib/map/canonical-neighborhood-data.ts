@@ -32,6 +32,10 @@ export function buildNeighborhoodSearchHref(city: string, neighborhood?: string)
   return `/search?${params.toString()}`;
 }
 
+function normalizeBenchmarkPeriod(period: string): string {
+  return period.replace(/^Données\s+/i, "").trim();
+}
+
 function canonicalizePoint(point: NeighborhoodPoint): NeighborhoodPoint {
   const cityEntity = resolveCityEntity(point.city);
   const canonicalCity = cityEntity?.canonical_name ?? canonicalizeCityName(point.city);
@@ -40,6 +44,10 @@ function canonicalizePoint(point: NeighborhoodPoint): NeighborhoodPoint {
     return {
       ...point,
       city: canonicalCity,
+      benchmark: {
+        ...point.benchmark,
+        period: normalizeBenchmarkPeriod(point.benchmark.period),
+      },
       searchHref: buildNeighborhoodSearchHref(canonicalCity, point.neighborhood),
     };
   }
@@ -51,6 +59,10 @@ function canonicalizePoint(point: NeighborhoodPoint): NeighborhoodPoint {
     neighborhood: neighborhoodEntity.canonical_name,
     neighborhoodSlug: neighborhoodEntity.slug,
     slug: `${cityEntity.slug}-${neighborhoodEntity.slug}`,
+    benchmark: {
+      ...point.benchmark,
+      period: normalizeBenchmarkPeriod(point.benchmark.period),
+    },
     searchHref: buildNeighborhoodSearchHref(
       cityEntity.canonical_name,
       neighborhoodEntity.canonical_name,

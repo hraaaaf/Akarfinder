@@ -83,8 +83,13 @@ async function main() {
       });
     });
 
-    const response = await page.goto(`${BASE_URL}/map?city=Casablanca`, { waitUntil: "networkidle" });
+    const response = await page.goto(`${BASE_URL}/map?city=Casablanca`, { waitUntil: "domcontentloaded", timeout: 30_000 });
     if (!response || response.status() >= 400) findings.push(`${viewport.name}: page HTTP ${response?.status() ?? "none"}`);
+    try {
+      await page.locator(".maplibregl-canvas").waitFor({ state: "visible", timeout: 15_000 });
+    } catch {
+      findings.push(`${viewport.name}: MapLibre canvas did not become visible`);
+    }
 
     const layer = page.locator('[data-akarfinder-territorial-layer="active"]');
     try {
