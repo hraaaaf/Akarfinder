@@ -111,4 +111,17 @@ describe("Carte Lot 10 — semantic market heatmap", () => {
     assert.match(style, /market-heatmap/);
     assert.match(style, /fill-color\", DEFAULT_NEUTRAL_HEATMAP/);
   });
+
+  it("uses a visible mid-palette tone when only one semantic class exists", () => {
+    const rabatPayload = source("lib/map/intelligence-payload.ts");
+    const cityPayload = source("lib/map/city-market-intelligence-payload.ts");
+    const rule = "if (classCount === 1) return [palette[Math.min(2, palette.length - 1)]];";
+    assert.ok(rabatPayload.includes(rule));
+    assert.ok(cityPayload.includes(rule));
+  });
+
+  it("lets semantic market modes own the district exploration surface", () => {
+    const explorer = source("components/map/TerritorialExplorer.tsx");
+    assert.ok(explorer.includes("if (navigationState.layer !== MAP_LAYER_EXPLORE) return null;"));
+  });
 });
