@@ -217,6 +217,7 @@ export function buildPublicPropertyDetailV2(
 
   const actorType = context.actor_type ?? inferActorType(listing, accessType);
   const publicIntelligence = buildPublicSerpIntelligenceForListing(listing, {
+    source_id: context.source_id,
     source_name: context.source_name,
     observed_at: context.observed_at,
     generated_at: context.generated_at,
