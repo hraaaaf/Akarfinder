@@ -1,6 +1,6 @@
 # Carte intelligence marché — Lot 10
 
-Statut : **EN CERTIFICATION**
+Statut : **CERTIFIÉ — READY TO MERGE**
 
 ## Goal
 
@@ -11,10 +11,6 @@ Transformer les métriques automatiques certifiées au Lot 9 en lecture cartogra
 Lot 9 fermé et mergé :
 
 - main Lot 9 : `7ad72d31e147b00a1b0dca8e59053c3e3c66270f` ;
-- browser exact-head final : run `32199362324` ;
-- artifact : `9347013725` ;
-- digest : `sha256:56c304c69312811fbdc37937a9284518b97c9b298919677d4046f2da10a77bdf` ;
-- viewports : 390 / 430 / 768 / 1280 ;
 - score scope Lot 9 : 9,8/10.
 
 Référentiel visuel : mockup canonique **Carte intelligence marché** validé par l’utilisateur.
@@ -37,8 +33,6 @@ Référentiel visuel : mockup canonique **Carte intelligence marché** validé p
 ### Source métier
 
 Le Lot 10 ne crée aucun KPI.
-
-Il consomme le payload Lot 9 :
 
 `stock observé → résolution geo → dédoublonnage → agrégation city + district → payload marché → heatmap`
 
@@ -65,58 +59,79 @@ Rabat : provider `rabat-market-intelligence` inchangé.
 
 Autres villes phares : repères uniquement tant qu’aucune géométrie admissible n’est disponible.
 
-## État data attendu au démarrage du lot
+### Lisibilité sémantique
 
-Dernière preuve Lot 9 pour Casablanca :
+- les trois modes intelligence possèdent la surface de carte ;
+- le rail explorateur legacy est masqué dans ces modes pour éviter les collisions ;
+- si une seule classe sémantique est disponible, un ton médian lisible est utilisé au lieu du ton le plus pâle ;
+- le mode Prix reste neutre quand aucun quartier ne passe le seuil de preuve.
 
-- Prix : 0 quartier admissible ;
-- Densité : 1 quartier admissible ;
-- Annonces : 3 quartiers avec métrique observée.
+## Certification exacte
 
-Le nombre de polygones effectivement colorables peut être inférieur : seule l’intersection **métrique observée ∩ géométrie admissible** compte.
+Code certifié : `e5433d286b9bcb1e254e5441817a356d2a696c1c`
 
-Le mode Prix doit donc actuellement rester neutre si aucun quartier ne passe le seuil. C’est un comportement attendu, pas une panne.
+### CI
 
-## Implémentation en cours
+Tous les workflows attachés au HEAD exact sont verts : **21/21**.
 
-- `lib/map/city-market-heatmap.ts` : jointure pure métrique ↔ géométrie ;
-- `lib/map/akarfinder-territorial-style.ts` : style sémantique, bridge des modes, fail-closed ;
-- `components/map/MapLegend.tsx` : synchronisation du mode et remontée de sélection ;
-- `scripts/scrapers/__tests__/carte-lot10-market-heatmap.test.ts` : contrats join / neutralité / bridge ;
-- `scripts/audits/carte-lot10-heatmap-browser.mjs` : certification browser quatre viewports ;
-- `.github/workflows/carte-lot10-heatmap-browser.yml` : CI exacte avec Supabase + canary preview.
+Preuves principales :
 
-## Preuve requise avant fermeture
+- Carte Lot 10 Heatmap Browser : run `32205604089` ✅ ;
+- Carte Lot 9 Market Modes Browser : `32205604032` ✅ ;
+- P1B.1 AkarFinder Map Visual Layer : `32205604035` ✅ ;
+- P1B.2 Territorial Intelligence : `32205604185` ✅ ;
+- Carte C7 Final Certification : `32205604073` ✅ ;
+- Carte C3 Intelligence Scale Gate : `32205604227` ✅ ;
+- Phase 1 Final Design Accessibility Gate : `32205604151` ✅ ;
+- UI All Pages Baseline : `32205604094` ✅ ;
+- UI All Pages Certification : `32205604051` ✅ ;
+- UI Polish P3 / P5 : `32205604218` / `32205604124` ✅.
 
-- tests Lot 10 verts ;
-- TypeScript vert ;
-- production build vert ;
-- Lot 9 regression gates verts ;
-- P1B.1/P1B.2 verts ;
-- C7 + accessibility verts ;
-- browser Lot 10 vert sur 390/430/768/1280 ;
-- 16 géométries Casablanca prouvées via canary ;
-- au moins 2 vraies tuiles OpenFreeMap haut zoom par viewport ;
-- screenshots AFTER exact-head inspectés ;
-- sélection Maârif + handoff `/search?city=Casablanca&district=Maârif` prouvés ;
-- comparaison baseline / référentiel / after ;
-- score >= 9,8/10.
+### Artifact browser exact-head
 
-## Interdits
+- artifact : `9349059842` ;
+- digest : `sha256:bb7ac3843e9000c9cd59cdca8bd05b4402589c1f8af6432da493f9405f4c58cc` ;
+- report : `ok: true` ;
+- captures : 8 fichiers, overview + sélection Maârif sur 390 / 430 / 768 / 1280 ;
+- géométries Casablanca : 16 ;
+- vraies tuiles OpenFreeMap haut zoom : prouvées sur chaque viewport ;
+- APIs Prix / Densité / Annonces : HTTP 200 ;
+- état observé au snapshot : Prix 0 quartier admissible, Densité 1, Annonces 3 ;
+- Maârif sélectionné : `1 annonce` ;
+- handoff : `/search?city=Casablanca&district=Ma%C3%A2rif` ;
+- panel mobile : 216 px ;
+- aucun faux polygone, aucune interpolation.
+
+### Audit visuel AFTER
+
+Viewports inspectés : 390 / 430 / 768 / 1280.
+
+Résultat :
+
+- heatmap lisible et clairement distincte du fond ;
+- légende cohérente avec la palette réellement appliquée ;
+- Maârif et Casablanca Finance City identifiables ;
+- sélection Maârif cohérente mobile/tablette/desktop ;
+- pas de rail parasite en modes intelligence ;
+- Search CTA, fiche quartier et attribution cartographique lisibles ;
+- aucune collision bloquante.
+
+**Score visuel scope Lot 10 : 9,8/10.**
+
+## Interdits respectés
 
 - aucun chiffre saisi manuellement ;
 - aucune interpolation de prix ;
 - aucune densité sans surface admissible ;
 - aucun polygone inventé ;
-- aucun déploiement Vercel sans autorisation explicite.
+- aucun déploiement Vercel.
 
 ## Closeout
 
-À compléter uniquement après certification :
-
-- HEAD final ;
-- runs exacts ;
-- artifact + digest ;
-- score ;
-- merge commit ;
-- progression roadmap.
+- PR : `#819` ;
+- code certification HEAD : `e5433d286b9bcb1e254e5441817a356d2a696c1c` ;
+- browser final : `32205604089` ;
+- artifact : `9349059842` ;
+- score : `9,8/10` ;
+- merge commit : à renseigner post-merge ;
+- progression roadmap après merge : `10/11 = 90,9 %`.
