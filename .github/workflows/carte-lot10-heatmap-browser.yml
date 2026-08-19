@@ -1,0 +1,78 @@
+name: Carte Lot 10 Heatmap Browser
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "components/map/MapLegend.tsx"
+      - "lib/map/akarfinder-territorial-style.ts"
+      - "lib/map/city-market-heatmap.ts"
+      - "scripts/audits/carte-lot10-heatmap-browser.mjs"
+      - "scripts/scrapers/__tests__/carte-lot10-market-heatmap.test.ts"
+      - ".github/workflows/carte-lot10-heatmap-browser.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  certify-lot10-heatmap:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    env:
+      BASE_URL: http://127.0.0.1:3210
+      AUDIT_OUTPUT_DIR: data/audits/carte-lot10-heatmap
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      VERCEL_ENV: preview
+      NEIGHBORHOOD_GEOMETRY_CANARY_PERCENT: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Lot 10 contracts
+        run: npx tsx --test scripts/scrapers/__tests__/carte-lot10-market-heatmap.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Start preview-canary server
+        shell: bash
+        run: |
+          npm run start -- --hostname 127.0.0.1 --port 3210 > /tmp/carte-lot10.log 2>&1 &
+          for attempt in {1..60}; do
+            if curl -fsS 'http://127.0.0.1:3210/map?city=casablanca&layer=listings' >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/carte-lot10.log
+          exit 1
+      - name: Four-viewport semantic heatmap certification
+        run: node scripts/audits/carte-lot10-heatmap-browser.mjs
+      - name: Enforce Lot 10 report
+        run: |
+          node - <<'NODE'
+          const r=require('./data/audits/carte-lot10-heatmap/report.json');
+          if(r.ok!==true) throw new Error('Lot 10 browser report not ok');
+          if(!Array.isArray(r.cases)||r.cases.length!==4) throw new Error('Lot 10 requires exactly four viewports');
+          for(const width of [390,430,768,1280]) {
+            const item=r.cases.find(x=>x.viewport.includes(String(width)));
+            if(!item) throw new Error(`missing viewport ${width}`);
+            if(item.geometryFeatures!==16) throw new Error(`viewport ${width} geometry proof mismatch`);
+            if(item.highZoomTileCount<2) throw new Error(`viewport ${width} lacks real basemap proof`);
+            if(!item.searchHref?.includes('city=Casablanca')||!item.searchHref?.includes('district=Ma%C3%A2rif')) {
+              throw new Error(`viewport ${width} Search handoff mismatch`);
+            }
+          }
+          NODE
+      - name: Upload Lot 10 exact-head proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: carte-lot10-heatmap-${{ github.run_id }}
+          path: data/audits/carte-lot10-heatmap
+          if-no-files-found: error
+          retention-days: 30
