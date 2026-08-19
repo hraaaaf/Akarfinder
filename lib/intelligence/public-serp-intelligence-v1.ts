@@ -14,6 +14,8 @@ const DISCLAIMER =
 
 export interface PublicSerpIntelligenceContextV1 {
   observed_at: string;
+  /** Stable policy identifier when different from the public source label. */
+  source_id?: string | null;
   source_name: string;
   generated_at?: string;
 }
@@ -95,9 +97,10 @@ export function buildPublicSerpIntelligenceForListing(
   listing: Listing,
   context: PublicSerpIntelligenceContextV1,
 ): PublicSerpIntelligenceSummaryV1 | null {
-  if (!canPublishStructuredListing(context.source_name)) return null;
+  const policySourceKey = context.source_id?.trim() || context.source_name;
+  if (!canPublishStructuredListing(policySourceKey)) return null;
 
-  const accessType = getSourceAccessType(context.source_name);
+  const accessType = getSourceAccessType(policySourceKey);
   const acquisitionChannel = accessType === "first_party" ? "first_party_user" : "partner_feed";
   const originType = accessType === "first_party" ? "first_party_user" : "partner_feed";
   const generatedAt = context.generated_at ?? new Date().toISOString();
@@ -105,7 +108,7 @@ export function buildPublicSerpIntelligenceForListing(
   const property = adaptLegacyListing(listing, {
     property_id: `serp-property:${listing.id}`,
     offer_id: `serp-offer:${listing.id}`,
-    source_id: context.source_name.toLowerCase().trim(),
+    source_id: policySourceKey.toLowerCase().trim(),
     source_name: context.source_name,
     external_offer_id: listing.id,
     source_url: listing.listing_url ?? null,
