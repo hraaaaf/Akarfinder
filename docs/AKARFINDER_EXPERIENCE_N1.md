@@ -56,9 +56,14 @@ Aucun acteur n'est promu par un simple libellé inconnu.
 - `city_centroid` ;
 - `unknown`.
 
-Règle pin : **`exact` + latitude/longitude valides uniquement**.
+Règle pin : **le garde cartographique existant `hasCertifiedExactCoordinates()` reste autoritaire**. Un pin individuel exige simultanément :
 
-Un quartier sans coordonnées exactes reste au scope quartier. Une ville seule reste au scope ville. Une précision `exact` déclarée sans coordonnées utilisables ne suffit pas à dessiner un pin.
+- `geo_precision = exact` ;
+- une `geo_source` certifiée par le contrat courant (`scraped_coordinates` ou `manual_import`) ;
+- latitude/longitude finies ;
+- coordonnées dans les bornes Maroc définies par le garde cartographique.
+
+Un quartier sans coordonnées exactes reste au scope quartier. Une ville seule reste au scope ville. Une précision `exact` déclarée sans coordonnées utilisables, avec une source non certifiée ou hors bornes Maroc ne suffit jamais à dessiner un pin.
 
 ### Qualité
 
@@ -83,6 +88,7 @@ Le Listing Standard v1 est une projection runtime additive destinée aux surface
 - détail propriétaire accepté via `owner_declared` ;
 - external/benchmark non promus ;
 - règles de précision géographique et pins ;
+- refus d'un pin si la source géographique n'est pas certifiée ;
 - séparation complétude / confiance ;
 - projection Listing Standard agrégée.
 
