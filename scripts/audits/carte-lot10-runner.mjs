@@ -1,9 +1,9 @@
 import { spawn } from "node:child_process";
 
 const server = spawn(
-  "npm",
-  ["run", "start", "--", "--hostname", "127.0.0.1", "--port", "3210"],
-  { env: process.env, stdio: ["ignore", "pipe", "pipe"] },
+  process.execPath,
+  ["node_modules/next/dist/bin/next", "start", "--hostname", "127.0.0.1", "--port", "3210"],
+  { cwd: process.cwd(), env: process.env, stdio: ["ignore", "pipe", "pipe"] },
 );
 
 let settled = false;
@@ -41,9 +41,20 @@ const ready = new Promise((resolve, reject) => {
   });
 });
 
+async function stopServer() {
+  if (server.exitCode !== null || server.signalCode !== null) return;
+  const exited = new Promise((resolve) => server.once("exit", resolve));
+  const forceKill = setTimeout(() => {
+    if (server.exitCode === null && server.signalCode === null) server.kill("SIGKILL");
+  }, 5_000);
+  server.kill("SIGTERM");
+  await exited;
+  clearTimeout(forceKill);
+}
+
 try {
   await ready;
   await import("./carte-lot10-heatmap-browser.mjs");
 } finally {
-  server.kill("SIGTERM");
+  await stopServer();
 }
