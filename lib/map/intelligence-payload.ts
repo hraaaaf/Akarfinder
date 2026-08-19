@@ -76,7 +76,7 @@ function metricUnit(mode: IntelligenceMode): "MAD/m²" | "annonces/km²" | "anno
 function colorsForClassCount(mode: IntelligenceMode, classCount: number): string[] {
   if (classCount <= 0) return [];
   const palette = INTELLIGENCE_PALETTES[mode];
-  if (classCount === 1) return [palette[0]];
+  if (classCount === 1) return [palette[Math.min(2, palette.length - 1)]];
   return Array.from({ length: classCount }, (_, index) => {
     const paletteIndex = Math.round((index * (palette.length - 1)) / (classCount - 1));
     return palette[paletteIndex];
