@@ -8,6 +8,7 @@ import {
   getNeighborhoodsByCity,
 } from "@/lib/map/canonical-neighborhood-data";
 import {
+  MAP_LAYER_EXPLORE,
   withMapLocation,
   type MapNavigationState,
 } from "@/lib/map/map-navigation-state";
@@ -50,12 +51,20 @@ export function TerritorialExplorer({
     ? "sm:w-[min(720px,calc(100vw-32px))] md:w-[calc(100vw-438px)] md:max-w-[720px]"
     : "sm:w-[min(720px,calc(100vw-32px))]";
 
+  // Once a semantic market layer is active, the map itself is the district
+  // explorer. Keeping a second floating district rail on top of polygons makes
+  // the intelligence harder to read and intercepts genuine map interactions.
+  if (navigationState.layer !== MAP_LAYER_EXPLORE) return null;
+
   return (
     <>
       <style>{`
         @media (max-width: 639px) {
           [data-akarfinder-generic-map-shell="true"] nav[data-akarfinder-territorial-explorer] {
             top: 320px !important;
+          }
+          [data-akarfinder-generic-map-shell="true"] nav[data-akarfinder-territorial-explorer][data-akarfinder-selected-city="true"] > div:first-child {
+            display: none !important;
           }
         }
         @media (min-width: 640px) and (max-width: 1023px) {
@@ -73,6 +82,7 @@ export function TerritorialExplorer({
         className={`pointer-events-auto absolute left-3 right-3 top-[112px] z-20 overflow-hidden rounded-2xl border border-border-strong/70 bg-card/94 text-card-foreground shadow-panel backdrop-blur-xl sm:left-4 sm:right-auto sm:top-[128px] lg:top-[96px] ${explorerWidthClass}`}
         aria-label="Exploration territoriale"
         data-akarfinder-territorial-explorer
+        data-akarfinder-selected-city={selectedCity ? "true" : "false"}
       >
         <div className="flex min-w-0 items-center gap-1 border-b border-border px-2.5 py-1.5 sm:px-3.5">
           <button
