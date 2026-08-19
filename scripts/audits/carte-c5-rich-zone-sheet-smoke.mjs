@@ -73,6 +73,27 @@ try {
       await sheet.waitFor({ state: "visible", timeout: 20000 });
       await sheet.locator("[data-akarfinder-live-zone-metric]").waitFor({ state: "visible", timeout: 10000 });
 
+      let collapsedSheetHeightRatio = null;
+      let collapsedMapClearRatio = null;
+      let mobileToggle = null;
+      if (viewport.mobile) {
+        if (await sheet.getAttribute("data-akarfinder-zone-sheet-state") !== "collapsed") {
+          throw new Error(`${district.slug}/${viewport.name}: mobile sheet must open collapsed`);
+        }
+        const collapsedBox = await sheet.boundingBox();
+        if (!collapsedBox) throw new Error(`${district.slug}/${viewport.name}: collapsed sheet has no bounding box`);
+        collapsedSheetHeightRatio = collapsedBox.height / viewport.height;
+        collapsedMapClearRatio = collapsedBox.y / viewport.height;
+        if (collapsedSheetHeightRatio > 0.42) throw new Error(`${district.slug}/${viewport.name}: collapsed sheet covers too much of viewport`);
+        if (collapsedMapClearRatio < 0.45) throw new Error(`${district.slug}/${viewport.name}: map is not dominant above collapsed sheet`);
+        mobileToggle = sheet.locator("[data-akarfinder-zone-sheet-toggle]");
+        if ((await mobileToggle.count()) !== 1 || await mobileToggle.getAttribute("aria-expanded") !== "false") {
+          throw new Error(`${district.slug}/${viewport.name}: collapsed mobile toggle invalid`);
+        }
+        await mobileToggle.click();
+        await page.waitForFunction(() => document.querySelector("[data-akarfinder-rich-zone-sheet]")?.getAttribute("data-akarfinder-zone-sheet-state") === "expanded");
+      }
+
       const context = sheet.locator("[data-akarfinder-neighborhood-context]");
       const contextCount = await context.count();
       if (district.context && contextCount !== 1) throw new Error(`${district.slug}: canonical context missing`);
@@ -142,6 +163,11 @@ try {
         throw new Error(`${district.slug}/${viewport.name}: browser diagnostics ${JSON.stringify(diagnostics)}`);
       }
 
+      if (viewport.mobile && mobileToggle) {
+        await mobileToggle.click();
+        await page.waitForFunction(() => document.querySelector("[data-akarfinder-rich-zone-sheet]")?.getAttribute("data-akarfinder-zone-sheet-state") === "collapsed");
+      }
+
       await page.screenshot({
         path: `${outDir}/c5-${district.slug}-${viewport.width}x${viewport.height}.png`,
         fullPage: false,
@@ -153,6 +179,8 @@ try {
         neighborhoodHref: district.pageHref,
         searchHref,
         priceAvailableCount: pricePayload.properties?.legend?.availableCount ?? null,
+        collapsedSheetHeightRatio,
+        collapsedMapClearRatio,
         diagnostics,
       });
       await page.close();

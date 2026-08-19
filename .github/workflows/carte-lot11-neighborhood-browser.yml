@@ -1,0 +1,74 @@
+name: Carte Lot 11 Neighborhood Browser
+
+on:
+  pull_request:
+    branches:
+      - main
+      - agent/carte-intelligence-lot10-heatmap-clean
+    paths:
+      - "app/quartiers/[citySlug]/[neighborhoodSlug]/page.tsx"
+      - "components/map/NeighborhoodMiniMap.tsx"
+      - "components/map/NeighborhoodShareButton.tsx"
+      - "components/map/RabatMarketZoneSheet.tsx"
+      - "scripts/audits/carte-lot11-neighborhood-browser.mjs"
+      - "scripts/audits/carte-lot11-runner.mjs"
+      - "scripts/scrapers/__tests__/carte-lot11-neighborhood-intelligence.test.ts"
+      - "docs/CARTE_INTELLIGENCE_MARCHE_LOT11.md"
+      - ".github/workflows/carte-lot11-neighborhood-browser.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  certify-lot11-neighborhood:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    env:
+      BASE_URL: http://127.0.0.1:3211
+      AUDIT_OUTPUT_DIR: data/audits/carte-lot11-neighborhood
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Lot 11 truth contracts
+        run: npx tsx --test scripts/scrapers/__tests__/carte-lot11-neighborhood-intelligence.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install chromium
+      - name: Eight-capture neighborhood intelligence certification
+        run: node scripts/audits/carte-lot11-runner.mjs
+      - name: Enforce Lot 11 report
+        run: |
+          node - <<'NODE'
+          const r=require('./data/audits/carte-lot11-neighborhood/report.json');
+          if(r.ok!==true) throw new Error('Lot 11 browser report not ok');
+          if(!Array.isArray(r.cases)||r.cases.length!==8) throw new Error('Lot 11 requires 8 cases');
+          for(const width of [390,430,768,1280]) {
+            for(const target of ['casablanca-maarif','fes-ville-nouvelle']) {
+              const item=r.cases.find(x=>x.viewport.includes(String(width))&&x.target===target);
+              if(!item) throw new Error(`missing ${target} viewport ${width}`);
+              if(item.overflow.scrollWidth>item.overflow.clientWidth+2) throw new Error(`${target}/${width} horizontal overflow`);
+              if(!item.searchHref?.startsWith('/search')) throw new Error(`${target}/${width} Search handoff invalid`);
+              if(!item.mapHref?.includes('district=')) throw new Error(`${target}/${width} Map handoff invalid`);
+              if(item.previewMapHref!==item.mapHref||item.mapPreview!==true) throw new Error(`${target}/${width} map preview proof invalid`);
+              if(item.actionsReady!==true) throw new Error(`${target}/${width} header actions proof invalid`);
+              if((item.highZoomTileCount||0)<2) throw new Error(`${target}/${width} real basemap tile proof invalid`);
+            }
+          }
+          NODE
+      - name: Upload Lot 11 exact-head proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: carte-lot11-neighborhood-${{ github.run_id }}
+          path: data/audits/carte-lot11-neighborhood
+          if-no-files-found: error
+          retention-days: 30

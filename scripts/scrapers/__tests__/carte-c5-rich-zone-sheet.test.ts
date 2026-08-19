@@ -49,12 +49,22 @@ describe("Carte C5 — rich zone sheet runtime", () => {
     assert.equal(sheet.includes("Souissi"), false);
   });
 
-  it("preserves Search CTA, disclaimer and compact bounded mobile sheet", () => {
+  it("preserves Search CTA, disclaimer and bounded responsive sheet", () => {
     assert.ok(sheet.includes("Rechercher dans cette zone"));
     assert.ok(sheet.includes("non frontière administrative officielle"));
     assert.ok(sheet.includes("jamais interpolées"));
     assert.ok(sheet.includes("max-h-[min(68svh,540px)]"));
     assert.ok(sheet.includes("overflow-y-auto"));
+  });
+
+  it("locks the mobile map-first collapsed state and explicit expansion affordance", () => {
+    assert.ok(sheet.includes("useState(false)"));
+    assert.ok(sheet.includes('max-h-[38svh] overflow-hidden'));
+    assert.ok(sheet.includes('max-h-[min(74svh,620px)] overflow-y-auto'));
+    assert.ok(sheet.includes("data-akarfinder-zone-sheet-state"));
+    assert.ok(sheet.includes("data-akarfinder-zone-sheet-toggle"));
+    assert.ok(sheet.includes("data-akarfinder-zone-sheet-details"));
+    assert.ok(sheet.includes('aria-expanded={expanded}'));
   });
 
   it("delegates only the selected-zone presentation from the C4 map experience", () => {

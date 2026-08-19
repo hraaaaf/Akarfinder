@@ -1,6 +1,6 @@
 # Carte intelligence marché — Lot 10
 
-Statut : **CERTIFIÉ — READY TO MERGE**
+Statut : **CLOSED — MERGÉ**
 
 ## Goal
 
@@ -128,10 +128,10 @@ Résultat :
 
 ## Closeout
 
-- PR : `#819` ;
+- PR : `#819` ✅ MERGED ;
 - code certification HEAD : `e5433d286b9bcb1e254e5441817a356d2a696c1c` ;
 - browser final : `32205604089` ;
 - artifact : `9349059842` ;
 - score : `9,8/10` ;
-- merge commit : à renseigner post-merge ;
+- merge commit : `adc08232045c6b3dd37164644e7720f5af3a268f` ;
 - progression roadmap après merge : `10/11 = 90,9 %`.
