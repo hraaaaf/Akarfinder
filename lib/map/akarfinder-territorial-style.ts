@@ -20,6 +20,13 @@ export const AKARFINDER_TERRITORIAL_PALETTE = [
 
 const LIGHT_BASEMAP_BACKGROUND = "#EDF3F7";
 const DARK_BASEMAP_BACKGROUND = "#071426";
+const DEFAULT_NEUTRAL_HEATMAP = "#D8E1E8";
+
+type TerritorialLayerOptions = {
+  marketIntelligence?: boolean;
+  selectedNeighborhoodId?: string | null;
+  neutralColor?: string;
+};
 
 function mutedLayerPaint(theme: string | undefined) {
   const dark = theme === "dark";
@@ -81,15 +88,73 @@ function mountStage(name: string, action: () => void): void {
   }
 }
 
+function semanticFillOpacity(selectedNeighborhoodId: string | null | undefined, theme?: string) {
+  const selected = selectedNeighborhoodId ?? "";
+  return [
+    "case",
+    ["==", ["get", "neighborhoodCanonicalId"], selected], theme === "dark" ? 0.84 : 0.82,
+    ["boolean", ["get", "marketNeutral"], true], theme === "dark" ? 0.18 : 0.16,
+    theme === "dark" ? 0.62 : 0.58,
+  ];
+}
+
+function semanticLineColor(selectedNeighborhoodId: string | null | undefined, theme?: string) {
+  return [
+    "case",
+    ["==", ["get", "neighborhoodCanonicalId"], selectedNeighborhoodId ?? ""],
+    "#0B63CE",
+    theme === "dark" ? "#D9E8FA" : "#FFFFFF",
+  ];
+}
+
+function semanticLineWidth(selectedNeighborhoodId: string | null | undefined) {
+  return [
+    "case",
+    ["==", ["get", "neighborhoodCanonicalId"], selectedNeighborhoodId ?? ""],
+    3.4,
+    1.25,
+  ];
+}
+
+export function updateAkarFinderTerritorialSelection(
+  map: MapLibreMap,
+  selectedNeighborhoodId: string | null | undefined,
+  theme?: string,
+): void {
+  if (map.getLayer(AKARFINDER_TERRITORIAL_FILL_LAYER_ID)) {
+    map.setPaintProperty(
+      AKARFINDER_TERRITORIAL_FILL_LAYER_ID,
+      "fill-opacity",
+      semanticFillOpacity(selectedNeighborhoodId, theme),
+    );
+  }
+  if (map.getLayer(AKARFINDER_TERRITORIAL_LINE_LAYER_ID)) {
+    map.setPaintProperty(
+      AKARFINDER_TERRITORIAL_LINE_LAYER_ID,
+      "line-color",
+      semanticLineColor(selectedNeighborhoodId, theme),
+    );
+    map.setPaintProperty(
+      AKARFINDER_TERRITORIAL_LINE_LAYER_ID,
+      "line-width",
+      semanticLineWidth(selectedNeighborhoodId),
+    );
+  }
+}
+
 export function addAkarFinderTerritorialLayers(
   map: MapLibreMap,
   geojson: GeoJSON.FeatureCollection,
   theme?: string,
+  options?: TerritorialLayerOptions,
 ): void {
   if (map.getLayer(AKARFINDER_TERRITORIAL_LABEL_LAYER_ID)) map.removeLayer(AKARFINDER_TERRITORIAL_LABEL_LAYER_ID);
   if (map.getLayer(AKARFINDER_TERRITORIAL_LINE_LAYER_ID)) map.removeLayer(AKARFINDER_TERRITORIAL_LINE_LAYER_ID);
   if (map.getLayer(AKARFINDER_TERRITORIAL_FILL_LAYER_ID)) map.removeLayer(AKARFINDER_TERRITORIAL_FILL_LAYER_ID);
   if (map.getSource(AKARFINDER_TERRITORIAL_SOURCE_ID)) map.removeSource(AKARFINDER_TERRITORIAL_SOURCE_ID);
+
+  const semantic = options?.marketIntelligence === true;
+  const neutralColor = options?.neutralColor ?? DEFAULT_NEUTRAL_HEATMAP;
 
   mountStage("source", () => {
     map.addSource(AKARFINDER_TERRITORIAL_SOURCE_ID, {
@@ -104,28 +169,32 @@ export function addAkarFinderTerritorialLayers(
       type: "fill",
       source: AKARFINDER_TERRITORIAL_SOURCE_ID,
       paint: {
-        "fill-color": [
-          "match",
-          ["get", "neighborhoodCanonicalId"],
-          "anfa", AKARFINDER_TERRITORIAL_PALETTE[0],
-          "maarif", AKARFINDER_TERRITORIAL_PALETTE[1],
-          "sidi-belyout", AKARFINDER_TERRITORIAL_PALETTE[2],
-          "hay-hassani", AKARFINDER_TERRITORIAL_PALETTE[3],
-          "ain-chock", AKARFINDER_TERRITORIAL_PALETTE[4],
-          "al-fida", AKARFINDER_TERRITORIAL_PALETTE[5],
-          "mers-sultan", AKARFINDER_TERRITORIAL_PALETTE[6],
-          "ain-sebaa", AKARFINDER_TERRITORIAL_PALETTE[7],
-          "hay-mohammadi", AKARFINDER_TERRITORIAL_PALETTE[0],
-          "roches-noires", AKARFINDER_TERRITORIAL_PALETTE[1],
-          "sidi-bernoussi", AKARFINDER_TERRITORIAL_PALETTE[2],
-          "sidi-moumen", AKARFINDER_TERRITORIAL_PALETTE[3],
-          "moulay-rachid", AKARFINDER_TERRITORIAL_PALETTE[4],
-          "sidi-othmane", AKARFINDER_TERRITORIAL_PALETTE[5],
-          "ben-msick", AKARFINDER_TERRITORIAL_PALETTE[6],
-          "sbata", AKARFINDER_TERRITORIAL_PALETTE[7],
-          AKARFINDER_TERRITORIAL_PALETTE[0],
-        ],
-        "fill-opacity": theme === "dark" ? 0.42 : 0.66,
+        "fill-color": semantic
+          ? ["coalesce", ["get", "marketFillColor"], neutralColor]
+          : [
+              "match",
+              ["get", "neighborhoodCanonicalId"],
+              "anfa", AKARFINDER_TERRITORIAL_PALETTE[0],
+              "maarif", AKARFINDER_TERRITORIAL_PALETTE[1],
+              "sidi-belyout", AKARFINDER_TERRITORIAL_PALETTE[2],
+              "hay-hassani", AKARFINDER_TERRITORIAL_PALETTE[3],
+              "ain-chock", AKARFINDER_TERRITORIAL_PALETTE[4],
+              "al-fida", AKARFINDER_TERRITORIAL_PALETTE[5],
+              "mers-sultan", AKARFINDER_TERRITORIAL_PALETTE[6],
+              "ain-sebaa", AKARFINDER_TERRITORIAL_PALETTE[7],
+              "hay-mohammadi", AKARFINDER_TERRITORIAL_PALETTE[0],
+              "roches-noires", AKARFINDER_TERRITORIAL_PALETTE[1],
+              "sidi-bernoussi", AKARFINDER_TERRITORIAL_PALETTE[2],
+              "sidi-moumen", AKARFINDER_TERRITORIAL_PALETTE[3],
+              "moulay-rachid", AKARFINDER_TERRITORIAL_PALETTE[4],
+              "sidi-othmane", AKARFINDER_TERRITORIAL_PALETTE[5],
+              "ben-msick", AKARFINDER_TERRITORIAL_PALETTE[6],
+              "sbata", AKARFINDER_TERRITORIAL_PALETTE[7],
+              AKARFINDER_TERRITORIAL_PALETTE[0],
+            ],
+        "fill-opacity": semantic
+          ? semanticFillOpacity(options?.selectedNeighborhoodId, theme)
+          : theme === "dark" ? 0.42 : 0.66,
       },
     });
   });
@@ -136,9 +205,13 @@ export function addAkarFinderTerritorialLayers(
       type: "line",
       source: AKARFINDER_TERRITORIAL_SOURCE_ID,
       paint: {
-        "line-color": theme === "dark" ? "#8CC3FF" : "#0B63CE",
-        "line-width": ["interpolate", ["linear"], ["zoom"], 8, 1.35, 12, 2.45],
-        "line-opacity": 0.94,
+        "line-color": semantic
+          ? semanticLineColor(options?.selectedNeighborhoodId, theme)
+          : theme === "dark" ? "#8CC3FF" : "#0B63CE",
+        "line-width": semantic
+          ? semanticLineWidth(options?.selectedNeighborhoodId)
+          : ["interpolate", ["linear"], ["zoom"], 8, 1.35, 12, 2.45],
+        "line-opacity": 0.96,
       },
     });
   });
@@ -157,9 +230,9 @@ export function addAkarFinderTerritorialLayers(
       },
       paint: {
         "text-color": theme === "dark" ? "#E3F0FF" : "#102F55",
-        "text-opacity": 0.96,
+        "text-opacity": semantic ? 1 : 0.96,
         "text-halo-color": darkOrLightHalo(theme),
-        "text-halo-width": 1.6,
+        "text-halo-width": semantic ? 2 : 1.6,
       },
     });
   });
