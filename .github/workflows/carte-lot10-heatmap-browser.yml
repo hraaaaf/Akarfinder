@@ -5,9 +5,11 @@ on:
     branches: [main]
     paths:
       - "components/map/MapLegend.tsx"
+      - "components/map/TerritorialExplorer.tsx"
       - "lib/map/akarfinder-territorial-style.ts"
       - "lib/map/city-market-heatmap.ts"
       - "scripts/audits/carte-lot10-heatmap-browser.mjs"
+      - "scripts/audits/carte-lot10-runner.mjs"
       - "scripts/scrapers/__tests__/carte-lot10-market-heatmap.test.ts"
       - ".github/workflows/carte-lot10-heatmap-browser.yml"
 
@@ -40,18 +42,8 @@ jobs:
         run: npm run build
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
-      - name: Start preview-canary server
-        shell: bash
-        run: |
-          npm run start -- --hostname 127.0.0.1 --port 3210 > /tmp/carte-lot10.log 2>&1 &
-          for attempt in {1..60}; do
-            if curl -fsS 'http://127.0.0.1:3210/map?city=casablanca&layer=listings' >/dev/null; then exit 0; fi
-            sleep 1
-          done
-          cat /tmp/carte-lot10.log
-          exit 1
       - name: Four-viewport semantic heatmap certification
-        run: node scripts/audits/carte-lot10-heatmap-browser.mjs
+        run: node scripts/audits/carte-lot10-runner.mjs
       - name: Enforce Lot 10 report
         run: |
           node - <<'NODE'
@@ -63,6 +55,7 @@ jobs:
             if(!item) throw new Error(`missing viewport ${width}`);
             if(item.geometryFeatures!==16) throw new Error(`viewport ${width} geometry proof mismatch`);
             if(item.highZoomTileCount<2) throw new Error(`viewport ${width} lacks real basemap proof`);
+            if(item.selectionPath!=='territorial-control') throw new Error(`viewport ${width} selection proof mismatch`);
             if(!item.searchHref?.includes('city=Casablanca')||!item.searchHref?.includes('district=Ma%C3%A2rif')) {
               throw new Error(`viewport ${width} Search handoff mismatch`);
             }
