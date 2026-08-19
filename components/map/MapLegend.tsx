@@ -4,6 +4,10 @@ import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ui } from "@/components/ui/design-system";
+import {
+  AKARFINDER_MARKET_MODE_EVENT,
+  AKARFINDER_TERRITORIAL_SELECT_EVENT,
+} from "@/lib/map/akarfinder-territorial-style";
 import type {
   CityMarketIntelligenceDistrict,
   CityMarketIntelligencePayload,
@@ -16,12 +20,18 @@ import {
   mapLayerToIntelligenceMode,
   mapNavigationStateFromUrlSearchParams,
   withMapLayer,
+  withMapLocation,
 } from "@/lib/map/map-navigation-state";
 
 const MODE_META: Record<IntelligenceMode, { label: string; short: string }> = {
   price: { label: "Prix", short: "DH/m²" },
   density: { label: "Densité", short: "ann./km²" },
   listings: { label: "Annonces", short: "annonces" },
+};
+
+type TerritorialSelectDetail = {
+  city: string;
+  district: string;
 };
 
 function observedModeLabel(mode: IntelligenceMode): string {
@@ -100,6 +110,30 @@ export function MapLegend() {
       });
     return () => controller.abort();
   }, [mode, navigationState.city, transaction]);
+
+  useEffect(() => {
+    if (navigationState.city === "all") return;
+    window.dispatchEvent(new CustomEvent(AKARFINDER_MARKET_MODE_EVENT, {
+      detail: {
+        city: navigationState.city,
+        mode,
+        transaction,
+        district: navigationState.district ?? null,
+      },
+    }));
+  }, [mode, navigationState.city, navigationState.district, transaction]);
+
+  useEffect(() => {
+    const onTerritorialSelect = (event: Event) => {
+      const detail = (event as CustomEvent<TerritorialSelectDetail>).detail;
+      if (!detail || detail.city !== navigationState.city || !detail.district) return;
+      const nextState = withMapLocation(navigationState, detail.city, detail.district);
+      if (nextState.district !== detail.district) return;
+      router.push(buildMapHref(nextState), { scroll: false });
+    };
+    window.addEventListener(AKARFINDER_TERRITORIAL_SELECT_EVENT, onTerritorialSelect);
+    return () => window.removeEventListener(AKARFINDER_TERRITORIAL_SELECT_EVENT, onTerritorialSelect);
+  }, [navigationState, router]);
 
   useEffect(() => {
     const findTabTarget = () => {
