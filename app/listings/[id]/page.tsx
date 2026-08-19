@@ -91,7 +91,9 @@ export default async function ListingDetailPage({ params, searchParams }: Listin
       const ownerListing = await queryOwnerListingDetail(id.slice("owner-".length));
       if (!ownerListing) notFound();
       const ownerDetail = buildPublicPropertyDetailV2(ownerListing, {
+        source_id: "owner_declared",
         source_name: "Propriétaire",
+        actor_type: "owner",
         observed_at: new Date().toISOString(),
         created_at: new Date().toISOString(),
       });
