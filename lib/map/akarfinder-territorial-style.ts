@@ -1,4 +1,4 @@
-import type { GeoJSONSource, Map as MapLibreMap } from "maplibre-gl";
+import type { ExpressionSpecification, GeoJSONSource, Map as MapLibreMap } from "maplibre-gl";
 import { decorateGeometryWithMarketIntelligence } from "@/lib/map/city-market-heatmap";
 import type { CityMarketIntelligencePayload } from "@/lib/map/city-market-intelligence-payload";
 import type { IntelligenceMode } from "@/lib/map/intelligence-scale";
@@ -106,7 +106,10 @@ function mountStage(name: string, action: () => void): void {
   }
 }
 
-function semanticFillOpacity(selectedNeighborhoodId: string | null | undefined, theme?: string) {
+function semanticFillOpacity(
+  selectedNeighborhoodId: string | null | undefined,
+  theme?: string,
+): ExpressionSpecification {
   const selected = selectedNeighborhoodId ?? "";
   return [
     "case",
@@ -116,7 +119,10 @@ function semanticFillOpacity(selectedNeighborhoodId: string | null | undefined, 
   ];
 }
 
-function semanticLineColor(selectedNeighborhoodId: string | null | undefined, theme?: string) {
+function semanticLineColor(
+  selectedNeighborhoodId: string | null | undefined,
+  theme?: string,
+): ExpressionSpecification {
   return [
     "case",
     ["==", ["get", "neighborhoodCanonicalId"], selectedNeighborhoodId ?? ""],
@@ -125,7 +131,9 @@ function semanticLineColor(selectedNeighborhoodId: string | null | undefined, th
   ];
 }
 
-function semanticLineWidth(selectedNeighborhoodId: string | null | undefined) {
+function semanticLineWidth(
+  selectedNeighborhoodId: string | null | undefined,
+): ExpressionSpecification {
   return [
     "case",
     ["==", ["get", "neighborhoodCanonicalId"], selectedNeighborhoodId ?? ""],
