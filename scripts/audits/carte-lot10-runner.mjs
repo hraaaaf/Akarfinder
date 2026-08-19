@@ -1,0 +1,49 @@
+import { spawn } from "node:child_process";
+
+const server = spawn(
+  "npm",
+  ["run", "start", "--", "--hostname", "127.0.0.1", "--port", "3210"],
+  { env: process.env, stdio: ["ignore", "pipe", "pipe"] },
+);
+
+let settled = false;
+let buffer = "";
+
+const ready = new Promise((resolve, reject) => {
+  const timeout = setTimeout(() => {
+    if (settled) return;
+    settled = true;
+    reject(new Error(`Lot 10 Next server did not emit readiness within 30s. Output:\n${buffer}`));
+  }, 30_000);
+
+  const onData = (chunk) => {
+    const text = chunk.toString();
+    buffer += text;
+    process.stdout.write(text);
+    if (!settled && /Ready in|Local:/i.test(buffer)) {
+      settled = true;
+      clearTimeout(timeout);
+      resolve();
+    }
+  };
+
+  server.stdout.on("data", onData);
+  server.stderr.on("data", (chunk) => {
+    const text = chunk.toString();
+    buffer += text;
+    process.stderr.write(text);
+  });
+  server.once("exit", (code) => {
+    if (settled) return;
+    settled = true;
+    clearTimeout(timeout);
+    reject(new Error(`Lot 10 Next server exited before readiness with code ${code}. Output:\n${buffer}`));
+  });
+});
+
+try {
+  await ready;
+  await import("./carte-lot10-heatmap-browser.mjs");
+} finally {
+  server.kill("SIGTERM");
+}
