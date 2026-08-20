@@ -35,6 +35,8 @@ for (const route of routes) {
       const hero = document.querySelector('[data-home-hero="p1-a1"]');
       const header = document.querySelector("header");
       const logos = [...document.querySelectorAll('header img[alt="AkarFinder"]')].map((img) => img.getAttribute("src") ?? "");
+      const typeEntry = document.querySelector('[data-vendre-type-entry="p1-a1"]');
+      const paths = document.querySelector('[data-vendre-paths="p1-a1"]');
       return {
         h1: document.querySelector("h1")?.textContent?.trim() ?? "",
         bodyText: document.body.innerText,
@@ -45,6 +47,9 @@ for (const route of routes) {
         canonicalLogos: logos,
         exactWhiteHeader: header?.getAttribute("data-search-global-header") === "exact-white",
         propertyTypeCount: key === "vendre" ? document.querySelectorAll('a[href*="property_type="]').length : null,
+        vendreTypeEntry: Boolean(typeEntry),
+        vendreTypeEntryTop: typeEntry ? Math.round(typeEntry.getBoundingClientRect().top) : null,
+        vendrePathsTop: paths ? Math.round(paths.getBoundingClientRect().top) : null,
       };
     }, route.key);
 
@@ -68,9 +73,11 @@ for (const route of routes) {
     }
 
     if (route.key === "vendre") {
-      if (!metrics.bodyText.includes("Commençons par le type de bien")) findings.push({ route: route.key, viewport, code: "VENDRE_TARGET_COPY_MISSING" });
+      if (metrics.h1 !== "Commençons par le type de bien") findings.push({ route: route.key, viewport, code: "VENDRE_TYPE_H1_MISMATCH", detail: metrics.h1 });
       if (metrics.bodyText.includes("Commencez directement par son type")) findings.push({ route: route.key, viewport, code: "VENDRE_REJECTED_COPY_PRESENT" });
       if (!metrics.propertyTypeCount || metrics.propertyTypeCount < 6) findings.push({ route: route.key, viewport, code: "VENDRE_TYPE_ENTRY_MISSING", detail: metrics.propertyTypeCount });
+      if (!metrics.vendreTypeEntry) findings.push({ route: route.key, viewport, code: "VENDRE_TYPE_SECTION_MISSING" });
+      if (metrics.vendreTypeEntryTop == null || metrics.vendrePathsTop == null || metrics.vendreTypeEntryTop >= metrics.vendrePathsTop) findings.push({ route: route.key, viewport, code: "VENDRE_TYPE_NOT_FIRST", detail: { typeTop: metrics.vendreTypeEntryTop, pathsTop: metrics.vendrePathsTop } });
     }
 
     if ((route.key === "search" || route.key === "map") && !metrics.exactWhiteHeader) {
@@ -84,7 +91,7 @@ for (const route of routes) {
 
 await browser.close();
 const result = {
-  schema: "EXPERIENCE_P1_A1_RECONCILIATION_V2",
+  schema: "EXPERIENCE_P1_A1_RECONCILIATION_V3",
   routeCount: routes.length,
   viewportCount: viewports.length,
   expectedScreenshotCount: routes.length * viewports.length,
