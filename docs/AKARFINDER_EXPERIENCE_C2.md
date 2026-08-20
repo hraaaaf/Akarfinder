@@ -2,7 +2,7 @@
 
 Date : 2026-08-20
 Base : `main@d921316e53c0eca14c2646721de6e739c905b275`
-Statut : **CORRECTION MAPLIBRE IMPLEMENTED — AFTER/CI/HUMAN GATE À RE-CERTIFIER**
+Statut : **FERMÉ — VALIDÉ, CERTIFIÉ ET MERGÉ**
 
 ## Goal
 
@@ -87,3 +87,21 @@ Même si la CI est verte, C2 **ne peut pas être fermé ni mergé** avant :
 2. comparaison BEFORE / cible validée / AFTER ;
 3. score UX/UI ;
 4. validation explicite du propriétaire produit.
+
+## Closeout vérifié
+
+Le 20/08/2026, les conditions de fermeture ont été remplies :
+
+- AFTER visuel final validé explicitement par le propriétaire produit ;
+- dernier patch limité à l'accessibilité et au contrat de test, sans changement visuel ;
+- `Phase 1 P1 Search Truth Gate` run `32360674107` : **success** ;
+- `Experience C2 Zillow Shell` run `32360674123` : **success** ;
+- artifact visuel C2 : captures 390 / 430 / 768 / 1280 et métriques ;
+- score machine UX/UI de l'artifact : **10.0/10** ;
+- HEAD final de la branche : `a20e3fdfe40d16df3752b0059461cdb38f818d98` ;
+- PR `#827` mergée dans `main` ;
+- commit de merge : `ea84517988ce8fdc6568c3948c062414a9d0c4d7` ;
+- aucune mutation DB ;
+- aucun déploiement Vercel.
+
+C2 est donc fermé. Cette fermeture ne clôt pas P1 et ne modifie pas encore le compteur global des 12 lots majeurs.
