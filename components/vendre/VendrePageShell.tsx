@@ -78,8 +78,8 @@ export async function VendrePageShell() {
           <div className="grid gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
             <div>
               <p className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-primary">Votre bien</p>
-              <h2 className="mt-3 text-3xl font-extrabold tracking-[-0.04em]">Commencez directement par son type</h2>
-              <p className="mt-4 text-sm leading-6 text-muted-foreground">Le type choisi ouvre le même dossier avec la première étape déjà préparée.</p>
+              <h2 className="mt-3 text-3xl font-extrabold tracking-[-0.04em]">Commençons par le type de bien</h2>
+              <p className="mt-4 text-sm leading-6 text-muted-foreground">Choisissez le type de bien : le dossier s’adaptera ensuite, sans vous imposer de champs inutiles.</p>
               <div className="mt-5 flex items-start gap-2 rounded-xl bg-primary/8 p-4 text-xs leading-5 text-muted-foreground"><CheckCircle2 size={16} className="mt-0.5 shrink-0 text-primary" aria-hidden="true" /><p>Votre progression est sauvegardée sur cet appareil. Vous pourrez reprendre plus tard.</p></div>
             </div>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
