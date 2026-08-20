@@ -2,7 +2,7 @@
 
 Date : 2026-08-20
 Base : `main@37a7bfef1ba4124b1a785909a4f0813f32b7112f`
-Statut : **PREPARED — CI / AFTER / HUMAN GATE À CERTIFIER**
+Statut : **FERMÉ — VALIDÉ, CERTIFIÉ ET MERGÉ**
 
 ## Goal
 
@@ -25,11 +25,11 @@ Rendre Search ↔ Carte ↔ Listing réellement continu : les filtres, le tri, l
 
 ## Références externes croisées avant implémentation
 
-1. Baymard Institute — `4 Design Patterns That Violate “Back” Button UX Expectations` et `Macy's Filtering Experience` : un changement de filtre ou de tri est perçu comme une nouvelle vue et doit donc être traversable avec Back.
-2. MDN — `History.pushState()` / `popstate` : `pushState()` crée une entrée de session ; `popstate` est le mécanisme de restauration lors de Back / Forward.
-3. Zillow, Summer Launch 2026 / AI-native housing platform : la recherche immobilière est conçue comme un parcours connecté allant de la découverte à la décision.
+1. Baymard Institute — filtres / tris perçus comme de nouvelles vues doivent respecter les attentes Back / Forward.
+2. MDN — `History.pushState()` crée une entrée de session ; `popstate` permet sa restauration.
+3. Zillow 2026 — la recherche immobilière est pensée comme un parcours continu de la découverte à la décision.
 
-Implication AkarFinder : hydratation/canonicalisation = remplacement discret ; changement utilisateur = entrée d'historique coalescée ; Back / Forward = restauration de l'état sans création d'une entrée parasite.
+Implication AkarFinder : hydratation/canonicalisation = remplacement discret ; changement utilisateur = entrée d'historique coalescée ; Back / Forward = restauration sans entrée parasite.
 
 ## BEFORE
 
@@ -38,37 +38,38 @@ Implication AkarFinder : hydratation/canonicalisation = remplacement discret ; c
 - run `32411535507` — SUCCESS ;
 - artifact `9422493689` ;
 - digest `sha256:bea0f02794be36bf849877124fac214120fde6f336652e98c9b7b7ed854b8e82` ;
-- runtime équivalent au main P1 fermé ;
-- Search / Carte disponibles en 390, 430, 768 et 1280.
+- runtime équivalent au main P1 fermé.
 
-## Cible visuelle
-
-Aucun redesign. Les cibles P1-B1/P1 restent le contrat visuel. P2 doit être visuellement neutre sur Search, Carte et Listing.
-
-## Défaut confirmé
-
-`useCanonicalSearchSession` écrivait les changements Search via `history.replaceState()`. Plusieurs états utilisateur successifs écrasaient donc la même entrée d'historique et empêchaient Back / Forward de parcourir les changements de tri / filtres.
-
-## Implémentation préparée
+## Implémentation validée
 
 - décision explicite `none / replace / push` dans `lib/ux/search-history.ts` ;
 - hydratation / restauration silencieuse ;
 - changements utilisateur coalescés à 280 ms puis ajoutés via `pushState()` ;
 - `popstate` restaure les contrôles existants sans pousser une nouvelle entrée ;
-- le bridge Search → Carte / Listing reste synchronisé via l'événement canonique existant.
+- continuité Search → Carte / Listing resynchronisée via l'événement canonique existant ;
+- garde-fous C1 (`return_to`, MRE, `project_id`, open redirect) préservés.
 
-## Succès
+## Preuve finale
 
-1. deux changements de tri successifs créent deux entrées distinctes ;
-2. Back restaure le premier tri et Forward le second ;
-3. Search → Carte transporte le contexte courant ;
-4. Search → Listing contient un `return_to` exact ;
-5. aucune régression du header exact-white, du logo ou de l'overflow ;
-6. 12/12 captures AFTER : Search / Carte / Listing représentatif × 4 viewports ;
-7. 0 finding ;
-8. aucune mutation DB ;
-9. aucun Vercel.
+- PR : `#831` ;
+- HEAD certifié : `c579f68d3b716ab69a76bfc0835bf3e7f66cb5e9` ;
+- workflow P2 : run `32417603234` — SUCCESS ;
+- régression C1 : run `32417603240` — SUCCESS ;
+- artifact AFTER : `9424543505` ;
+- digest : `sha256:a30ebd76763d9a21952794c9f26a4838548a6e6025152b9d40a77b9fff48debc` ;
+- captures AFTER : `12/12` ;
+- findings : `0` ;
+- historique : `2 → 4` après deux changements utilisateur ;
+- Back : `price-asc` restauré ;
+- Forward : `price-desc` restauré ;
+- Search → Carte : ville + tri conservés ;
+- Listing → Search : `return_to` exact ;
+- score UX/UI : `9,5/10` ;
+- human gate : validé par l'utilisateur le 2026-08-20 ;
+- merge squash : `a1ba3ad002d94a9d9cbf1b71d9dddf1be16b8374` ;
+- mutation DB/source : `0` ;
+- déploiement Vercel : `0`.
 
-## Preuve requise
+## Fermeture
 
-Workflow `Experience P2 Navigation Global` : unité ciblée + TypeScript + build production + Playwright comportemental + 12 captures. Puis comparaison BEFORE / AFTER, score UX/UI et validation humaine explicite avant merge.
+P2 est fermé. La navigation Search ↔ Carte ↔ Listing est certifiée fonctionnellement, la non-régression visuelle est validée et le lot est mergé sur `main`.
