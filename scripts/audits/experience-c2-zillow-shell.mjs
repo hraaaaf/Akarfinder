@@ -13,6 +13,13 @@ const viewports = [
 
 const neighborhoods = ["Agdal", "Hay Riad", "Souissi", "Hassan", "Océan", "Aviation", "Akkari", "Yacoub El Mansour", "Agdal", "Hay Riad", "Souissi", "Hassan"];
 const propertyTypes = ["Appartement", "Villa", "Maison", "Studio", "Terrain", "Bureau", "Riad", "Appartement", "Villa", "Maison", "Studio", "Bureau"];
+const exactCoordinates = [
+  { latitude: 34.0029, longitude: -6.8445 },
+  { latitude: 33.9977, longitude: -6.8509 },
+  { latitude: 33.9864, longitude: -6.8276 },
+  { latitude: 34.0180, longitude: -6.8335 },
+];
+
 const listings = neighborhoods.map((neighborhood, index) => ({
   id: `c2-shell-${index + 1}`,
   title: index % 2 === 0 ? `Appartement lumineux à ${neighborhood}` : `Bien familial à ${neighborhood}`,
@@ -47,6 +54,10 @@ const listings = neighborhoods.map((neighborhood, index) => ({
   source_access_level: "indexed_only",
   acquisition_channel: "first_party_user",
   origin_type: "first_party_user",
+  latitude: exactCoordinates[index]?.latitude ?? null,
+  longitude: exactCoordinates[index]?.longitude ?? null,
+  geo_precision: exactCoordinates[index] ? "exact" : "unknown",
+  geo_source: exactCoordinates[index] ? "manual_import" : "unknown",
 }));
 
 await fs.mkdir(outDir, { recursive: true });
@@ -57,6 +68,7 @@ const results = [];
 for (const viewport of viewports) {
   const context = await browser.newContext({ viewport: { width: viewport.width, height: viewport.height }, deviceScaleFactor: 1 });
   const page = await context.newPage();
+
   await page.route("**/api/search?**", async (route) => route.fulfill({
     status: 200,
     contentType: "application/json",
@@ -70,9 +82,16 @@ for (const viewport of viewports) {
 
   const response = await page.goto(`${baseUrl}/search?city=Rabat&view=split`, { waitUntil: "domcontentloaded", timeout: 60_000 });
   if (!response || response.status() >= 400) failures.push(`${viewport.name}: HTTP ${response?.status() ?? "none"}`);
+
   await page.waitForFunction(() => document.querySelectorAll("article[data-mobile-compact-card]").length >= 10, null, { timeout: 30_000 });
   await page.waitForSelector('[data-search-view-layout="split"]', { timeout: 20_000 });
-  await page.waitForTimeout(300);
+  await page.waitForSelector('[data-search-map-renderer="maplibre"] .maplibregl-canvas', { timeout: 30_000 });
+  await page.waitForFunction(
+    () => document.querySelectorAll('[data-search-exact-property-marker="true"]').length >= 4,
+    null,
+    { timeout: 30_000 },
+  );
+  await page.waitForTimeout(900);
 
   const metrics = await page.evaluate(() => {
     const layout = document.querySelector('[data-search-view-layout="split"]');
@@ -80,11 +99,15 @@ for (const viewport of viewports) {
     const listPane = document.querySelector("[data-search-list-pane]");
     const firstCard = document.querySelector("article[data-mobile-compact-card]");
     const firstImage = firstCard?.querySelector("[data-card-image]");
+    const mapRenderer = document.querySelector('[data-search-map-renderer="maplibre"]');
+    const mapCanvas = mapRenderer?.querySelector(".maplibregl-canvas");
     const lr = layout?.getBoundingClientRect();
     const mr = mapPane?.getBoundingClientRect();
     const rr = listPane?.getBoundingClientRect();
     const cr = firstCard?.getBoundingClientRect();
     const ir = firstImage?.getBoundingClientRect();
+    const mapCanvasRect = mapCanvas?.getBoundingClientRect();
+
     return {
       overflow: Math.max(0, document.documentElement.scrollWidth - innerWidth),
       layoutWidth: lr?.width ?? 0,
@@ -100,6 +123,10 @@ for (const viewport of viewports) {
       imageWidth: ir?.width ?? 0,
       cardHeight: cr?.height ?? 0,
       listRadius: listPane ? getComputedStyle(listPane).borderTopLeftRadius : "",
+      mapRenderer: mapRenderer?.getAttribute("data-search-map-renderer") ?? "",
+      mapCanvasWidth: mapCanvasRect?.width ?? 0,
+      mapCanvasHeight: mapCanvasRect?.height ?? 0,
+      exactMarkerCount: document.querySelectorAll('[data-search-exact-property-marker="true"]').length,
     };
   });
 
@@ -108,6 +135,11 @@ for (const viewport of viewports) {
   if (metrics.cardWidth > 0 && (metrics.imageWidth <= 0 || metrics.imageWidth >= metrics.cardWidth * 0.48)) {
     failures.push(`${viewport.name}: split card image ratio ${metrics.imageWidth}/${metrics.cardWidth}`);
   }
+  if (metrics.mapRenderer !== "maplibre") failures.push(`${viewport.name}: MapLibre renderer missing`);
+  if (metrics.mapCanvasWidth < 250 || metrics.mapCanvasHeight < 240) {
+    failures.push(`${viewport.name}: MapLibre canvas too small ${metrics.mapCanvasWidth}x${metrics.mapCanvasHeight}`);
+  }
+  if (metrics.exactMarkerCount < 4) failures.push(`${viewport.name}: expected 4 exact MapLibre markers, got ${metrics.exactMarkerCount}`);
 
   if (viewport.width >= 1024) {
     const mapShare = metrics.mapWidth / Math.max(1, metrics.mapWidth + metrics.listWidth);
@@ -133,16 +165,24 @@ for (const viewport of viewports) {
 }
 
 await browser.close();
+
 const axes = {
   responsiveShell: failures.filter((x) => x.includes("map share") || x.includes("map is not first") || x.includes("docked")).length === 0,
   resultRail: failures.filter((x) => x.includes("result rail") || x.includes("split card")).length === 0,
   filterScroll: failures.filter((x) => x.includes("body scroll") || x.includes("filter sheet")).length === 0,
   overflow: failures.filter((x) => x.includes("horizontal overflow")).length === 0,
+  realMapRenderer: failures.filter((x) => x.includes("MapLibre")).length === 0,
 };
+
 const passed = Object.values(axes).filter(Boolean).length;
 const machineScore = (passed / Object.keys(axes).length) * 10;
 const report = { baseUrl, machineScore, axes, failures, viewports: results };
+
 await fs.writeFile(path.join(outDir, "metrics.json"), JSON.stringify(report, null, 2));
-await fs.writeFile(path.join(outDir, "report.md"), `# C2 Zillow-like Search shell\n\nMachine contract: **${machineScore.toFixed(1)}/10**\n\n${failures.length ? failures.map((x) => `- FAIL: ${x}`).join("\n") : "- PASS: C2 shell contract satisfied."}\n`);
+await fs.writeFile(
+  path.join(outDir, "report.md"),
+  `# C2 Zillow-like Search shell\n\nMachine contract: **${machineScore.toFixed(1)}/10**\n\n${failures.length ? failures.map((x) => `- FAIL: ${x}`).join("\n") : "- PASS: C2 shell + real MapLibre renderer contract satisfied."}\n`,
+);
+
 console.log(JSON.stringify(report, null, 2));
 if (failures.length || machineScore < 10) process.exit(1);

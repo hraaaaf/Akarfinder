@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - "app/search/mockup-convergence-l2.css"
+      - "components/search/SearchMapPanel.tsx"
       - "scripts/audits/experience-c2-zillow-shell.mjs"
       - "scripts/scrapers/__tests__/experience-c2-zillow-shell.test.ts"
       - "docs/AKARFINDER_EXPERIENCE_C2.md"

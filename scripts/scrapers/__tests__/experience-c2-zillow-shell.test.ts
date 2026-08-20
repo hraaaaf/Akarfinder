@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 
 const css = readFileSync("app/search/mockup-convergence-l2.css", "utf8");
+const mapPanel = readFileSync("components/search/SearchMapPanel.tsx", "utf8");
 
 test("C2 split desktop gives the map the dominant column", () => {
   assert.match(css, /grid-template-columns:\s*minmax\(350px, 0\.68fr\) minmax\(0, 1fr\)/);
@@ -23,4 +24,14 @@ test("C2 split result cards become one-column horizontal decision rows", () => {
 
 test("C2 preserves phone modal lock but releases inline filters from 640px", () => {
   assert.match(css, /@media \(min-width: 640px\)[\s\S]*body:has\(\[data-search-advanced-filters\]\.sm\\:block\)[\s\S]*overflow:\s*auto !important/);
+});
+
+test("C2 Search uses the real MapLibre renderer and removes the legacy Morocco SVG", () => {
+  assert.match(mapPanel, /data-search-map-renderer="maplibre"/);
+  assert.match(mapPanel, /import\("maplibre-gl"\)/);
+  assert.match(mapPanel, /tiles\.openfreemap\.org\/styles\/liberty/);
+  assert.match(mapPanel, /applyAkarFinderBasemapTreatment/);
+  assert.match(mapPanel, /hasCertifiedExactCoordinates/);
+  assert.match(mapPanel, /setLngLat\(\[listing\.longitude!, listing\.latitude!\]\)/);
+  assert.doesNotMatch(mapPanel, /MOROCCO_PATH|MOROCCO_VIEWBOX/);
 });
