@@ -14,6 +14,10 @@ export type SearchHistorySnapshot = {
   view: SearchViewMode;
 };
 
+export type SearchHistoryMutation = "none" | "replace" | "push";
+
+export const SEARCH_HISTORY_PUSH_DELAY_MS = 280;
+
 export function buildCanonicalSearchHref(
   pathname: string,
   filters: ListingFiltersState,
@@ -58,6 +62,15 @@ export function restoreSearchHistorySnapshot(search: string): SearchHistorySnaps
       mreOnly: (params.get("mre") ?? "").toLowerCase() === "true",
     },
   };
+}
+
+export function getSearchHistoryMutation(
+  currentHref: string,
+  nextHref: string,
+  hydrated: boolean,
+): SearchHistoryMutation {
+  if (currentHref === nextHref) return "none";
+  return hydrated ? "push" : "replace";
 }
 
 export function shouldReplaceSearchHistory(currentHref: string, nextHref: string): boolean {

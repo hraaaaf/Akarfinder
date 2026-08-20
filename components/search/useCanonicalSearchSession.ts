@@ -7,8 +7,9 @@ import type { SearchViewMode } from "@/lib/ux/contracts";
 import {
   applySearchContinuityContext,
   buildCanonicalSearchHref,
+  getSearchHistoryMutation,
   restoreSearchHistorySnapshot,
-  shouldReplaceSearchHistory,
+  SEARCH_HISTORY_PUSH_DELAY_MS,
 } from "@/lib/ux/search-history";
 
 export const CANONICAL_SEARCH_SESSION_EVENT = "akarfinder:canonical-search-session";
@@ -27,6 +28,9 @@ export function useCanonicalSearchSession({
   onRestore,
 }: UseCanonicalSearchSessionArgs): void {
   const restoringRef = useRef(false);
+  const hydratedRef = useRef(false);
+  const timerRef = useRef<number | null>(null);
+  const hydrationFrameRef = useRef<number | null>(null);
   const onRestoreRef = useRef(onRestore);
 
   useEffect(() => {
@@ -34,12 +38,26 @@ export function useCanonicalSearchSession({
   }, [onRestore]);
 
   useEffect(() => {
+    const clearPendingPush = () => {
+      if (timerRef.current != null) {
+        window.clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+
     const restoreFromLocation = () => {
+      clearPendingPush();
       restoringRef.current = true;
+      hydratedRef.current = false;
       onRestoreRef.current(restoreSearchHistorySnapshot(window.location.search));
       window.dispatchEvent(new Event(CANONICAL_SEARCH_SESSION_EVENT));
+
       queueMicrotask(() => {
         restoringRef.current = false;
+      });
+      hydrationFrameRef.current = window.requestAnimationFrame(() => {
+        hydratedRef.current = true;
+        hydrationFrameRef.current = null;
       });
     };
 
@@ -47,7 +65,14 @@ export function useCanonicalSearchSession({
 
     restoreFromLocation();
     window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
+    return () => {
+      clearPendingPush();
+      if (hydrationFrameRef.current != null) {
+        window.cancelAnimationFrame(hydrationFrameRef.current);
+        hydrationFrameRef.current = null;
+      }
+      window.removeEventListener("popstate", handlePopState);
+    };
   }, []);
 
   useEffect(() => {
@@ -65,10 +90,41 @@ export function useCanonicalSearchSession({
       filters.mreOnly,
     );
     const currentHref = `${window.location.pathname}${window.location.search}`;
+    const mutation = getSearchHistoryMutation(
+      currentHref,
+      nextHref,
+      hydratedRef.current,
+    );
 
-    if (shouldReplaceSearchHistory(currentHref, nextHref)) {
+    if (mutation === "none") return;
+
+    if (timerRef.current != null) {
+      window.clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+
+    if (mutation === "replace") {
       window.history.replaceState(window.history.state, "", nextHref);
       window.dispatchEvent(new Event(CANONICAL_SEARCH_SESSION_EVENT));
+      return;
     }
+
+    timerRef.current = window.setTimeout(() => {
+      timerRef.current = null;
+      if (restoringRef.current) return;
+
+      const liveHref = `${window.location.pathname}${window.location.search}`;
+      if (liveHref === nextHref) return;
+
+      window.history.pushState(window.history.state, "", nextHref);
+      window.dispatchEvent(new Event(CANONICAL_SEARCH_SESSION_EVENT));
+    }, SEARCH_HISTORY_PUSH_DELAY_MS);
+
+    return () => {
+      if (timerRef.current != null) {
+        window.clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+    };
   }, [filters, sortBy, view]);
 }
