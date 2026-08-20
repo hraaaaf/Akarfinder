@@ -1,8 +1,8 @@
 # AkarFinder Experience — C1 Session / navigation unifiée
 
 Date : 2026-08-20
-Base : `main@ec0a23e3d07d2815175ac7e14c1032e3a0d718d9`
-Statut : **IMPLEMENTED — PR/CI À CERTIFIER**
+Base initiale : `main@ec0a23e3d07d2815175ac7e14c1032e3a0d718d9`
+Statut : **CLOSED — CI SUCCESS + PR MERGÉE + MAIN VÉRIFIÉ**
 
 ## Goal
 
@@ -41,12 +41,17 @@ Sont rejetés notamment :
 
 ## Visuel
 
-Aucun changement visuel intentionnel dans C1. La cible visuelle Search + Carte a été validée en P0-5B ; elle sera implémentée seulement dans le lot visuel dédié suivant, avec BEFORE/AFTER et gate humain.
+Aucun changement visuel intentionnel dans C1. Aucun human gate AFTER n'était requis pour ce lot non visuel.
 
-## Preuve attendue pour fermer C1
+## Preuve de fermeture
 
-- tests `experience-c1-navigation-session.test.ts` SUCCESS ;
-- TypeScript SUCCESS ;
-- production build SUCCESS ;
-- PR mergée ;
-- `main` post-merge vérifié.
+- commit de travail : `96b3d0d2090c9bdeac822c3b01030b2e5a01a84b` ;
+- PR : `#826` ;
+- workflow `Experience C1 Navigation Session` : run `32352573743` ;
+- test C1 : SUCCESS ;
+- TypeScript : SUCCESS ;
+- production build : SUCCESS ;
+- merge : `ee0b028106fa000d14d83a612c50e0537ca970fc` ;
+- `main` post-merge vérifié exactement sur `ee0b028106fa000d14d83a612c50e0537ca970fc` avant ce closeout documentaire ;
+- mutation DB/source : 0 ;
+- Vercel : 0.
