@@ -1,0 +1,157 @@
+/*
+ * P1-A1 fidelity shell
+ * Reference: P1_A1_REFERENCE_BOARD.png, validated by the product owner on 2026-08-20.
+ * Scope is deliberately shell-only: light application chrome, compact navigation rhythm,
+ * and global surface continuity. Search C2 and the transparent Home hero remain authoritative.
+ */
+
+[data-experience-shell="p1-a1"] {
+  --af-shell-blue: #0b63ce;
+  --af-shell-navy: #0b2545;
+  --af-shell-ink: #0b1f3a;
+  --af-shell-line: rgba(203, 213, 225, 0.72);
+  --af-shell-soft: #f7faff;
+  --af-shell-shadow: 0 1px 12px rgba(11, 37, 69, 0.035);
+}
+
+/* Keep the C2 Search/Map exact-white chrome authoritative. */
+[data-experience-shell="p1-a1"] header[data-search-global-header="exact-white"] {
+  isolation: isolate;
+}
+
+/*
+ * Reconcile legacy light headers with the C2 shell geometry without touching
+ * transparent Home or dark branded surfaces.
+ */
+[data-experience-shell="p1-a1"]
+  header.sticky[class*="text-slate-900"]:not([data-search-global-header="exact-white"]) {
+  border-color: var(--af-shell-line) !important;
+  background: #fff !important;
+  box-shadow: var(--af-shell-shadow) !important;
+  backdrop-filter: none !important;
+}
+
+[data-experience-shell="p1-a1"]
+  header.sticky[class*="text-slate-900"]:not([data-search-global-header="exact-white"])
+  > div:first-of-type {
+  min-height: 67px;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+/* Compact light headers inherit the flatter Search C2 navigation rhythm. */
+[data-experience-shell="p1-a1"]
+  header[data-search-global-header="compact"].sticky[class*="text-slate-900"]
+  nav[aria-label="Navigation principale"]
+  ul {
+  min-height: 63px;
+  gap: 1.75rem !important;
+}
+
+[data-experience-shell="p1-a1"]
+  header[data-search-global-header="compact"].sticky[class*="text-slate-900"]
+  nav[aria-label="Navigation principale"]
+  a,
+[data-experience-shell="p1-a1"]
+  header[data-search-global-header="compact"].sticky[class*="text-slate-900"]
+  nav[aria-label="Navigation principale"]
+  button {
+  border-radius: 0 !important;
+  background: transparent !important;
+  padding-left: 0.125rem !important;
+  padding-right: 0.125rem !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: #334155;
+}
+
+[data-experience-shell="p1-a1"]
+  header[data-search-global-header="compact"].sticky[class*="text-slate-900"]
+  nav[aria-label="Navigation principale"]
+  a:hover,
+[data-experience-shell="p1-a1"]
+  header[data-search-global-header="compact"].sticky[class*="text-slate-900"]
+  nav[aria-label="Navigation principale"]
+  button:hover {
+  color: var(--af-shell-navy) !important;
+}
+
+[data-experience-shell="p1-a1"]
+  header[data-search-global-header="compact"].sticky[class*="text-slate-900"]
+  nav[aria-label="Navigation principale"]
+  a[aria-current="page"] {
+  color: var(--af-shell-navy) !important;
+}
+
+[data-experience-shell="p1-a1"]
+  header[data-search-global-header="compact"].sticky[class*="text-slate-900"]
+  nav[aria-label="Navigation principale"]
+  a[aria-current="page"]::after {
+  left: 0 !important;
+  right: 0 !important;
+  bottom: -0.95rem !important;
+  height: 2px !important;
+  border-radius: 0 !important;
+  background: var(--af-shell-blue) !important;
+}
+
+[data-experience-shell="p1-a1"]
+  header[data-search-global-header="compact"].sticky[class*="text-slate-900"]
+  a[aria-label="AkarFinder - accueil"]
+  img {
+  height: 31px !important;
+  width: auto !important;
+}
+
+/* Actions remain functionally identical, but share one visual grammar. */
+[data-experience-shell="p1-a1"]
+  header[data-search-global-header="compact"].sticky[class*="text-slate-900"]
+  a[href="/vendre"] {
+  border-color: rgba(11, 37, 69, 0.2) !important;
+  border-radius: 0.625rem !important;
+  background: #fff !important;
+  color: var(--af-shell-navy) !important;
+  box-shadow: none !important;
+}
+
+[data-experience-shell="p1-a1"]
+  header[data-search-global-header="compact"].sticky[class*="text-slate-900"]
+  a[href="/mon-projet"] {
+  border-color: rgba(11, 99, 206, 0.18) !important;
+  border-radius: 0.625rem !important;
+  background: rgba(11, 99, 206, 0.055) !important;
+  color: var(--af-shell-blue) !important;
+  box-shadow: none !important;
+}
+
+/* The mobile shell keeps controls roomy and stable while preserving the existing menu flow. */
+@media (max-width: 1023px) {
+  [data-experience-shell="p1-a1"]
+    header[data-search-global-header="compact"].sticky[class*="text-slate-900"]
+    > div:first-of-type {
+    min-height: 67px;
+  }
+
+  [data-experience-shell="p1-a1"]
+    header[data-search-global-header="compact"].sticky[class*="text-slate-900"]
+    a[aria-label="AkarFinder - accueil"]
+    img {
+    height: 29px !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  [data-experience-shell="p1-a1"]
+    header.sticky[class*="text-slate-900"]:not([data-search-global-header="exact-white"])
+    > div:first-of-type {
+    min-height: 63px;
+  }
+}
+
+/* Shared focus language for the shell. */
+[data-experience-shell="p1-a1"]
+  header.sticky[class*="text-slate-900"]
+  :where(a, button):focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(11, 99, 206, 0.22);
+}

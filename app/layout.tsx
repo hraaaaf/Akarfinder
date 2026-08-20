@@ -3,6 +3,7 @@ import { Plus_Jakarta_Sans } from "next/font/google";
 import { Suspense } from "react";
 import "./globals.css";
 import "./a11y.css";
+import "./experience-p1-a1.css";
 import { ThemeProvider, NO_FLASH_SCRIPT } from "@/components/theme/ThemeProvider";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
@@ -87,7 +88,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Suspense fallback={null}>
             <NavigationFeedback />
           </Suspense>
-          <div id="main-content" tabIndex={-1} className="pb-[calc(64px+env(safe-area-inset-bottom))] md:pb-0">
+          <div
+            id="main-content"
+            data-experience-shell="p1-a1"
+            tabIndex={-1}
+            className="pb-[calc(64px+env(safe-area-inset-bottom))] md:pb-0"
+          >
             {children}
           </div>
           <Suspense fallback={null}>
