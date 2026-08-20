@@ -311,7 +311,11 @@ export function SearchMapPanel({
         className="relative min-h-[480px] overflow-hidden bg-[#edf3f7] lg:min-h-[640px]"
         data-search-map-renderer="maplibre"
       >
-        <div ref={mapContainerRef} className="absolute inset-0" aria-label={`Carte interactive des résultats affichés dans cette recherche à ${displayCity}`} />
+        <div
+          ref={mapContainerRef}
+          className="absolute inset-0"
+          aria-label={`Carte interactive des résultats affichés dans cette recherche à ${displayCity}. Cette carte n'est pas une estimation du volume total du marché.`}
+        />
 
         <div className="pointer-events-none absolute left-3 top-3 z-10 max-w-[245px] rounded-xl border border-white/80 bg-white/92 px-3 py-2 shadow-sm backdrop-blur sm:left-4 sm:top-4">
           <p className="text-[10px] font-extrabold text-[#17324f]">Fond cartographique réel</p>

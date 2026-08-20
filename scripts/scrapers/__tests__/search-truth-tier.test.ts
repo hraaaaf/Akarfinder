@@ -399,6 +399,6 @@ describe("Search Truth UX source contracts", () => {
     assert.match(map, /résultats affichés dans cette recherche/i);
     assert.match(map, /n'est pas une estimation du volume total du marché/i);
     assert.doesNotMatch(map, /fiches indexées|éligibilité/i);
-    assert.ok(map.includes("aria-pressed={isActive}"));
+    assert.match(map, /element\.setAttribute\(\s*"aria-pressed",[\s\S]*selection\.interaction === "selected"/);
   });
 });
