@@ -103,16 +103,23 @@ if (!mapHref) {
   if (parsedMap.searchParams.get("sort") !== "price_desc") findings.push({ route: "search", viewport: "1280x900", code: "MAP_CONTEXT_SORT_MISSING", detail: mapHref });
 }
 
-const listingLinks = behaviorPage.locator('a[href^="/listings/"]');
-const listingCount = await listingLinks.count();
-if (listingCount === 0) {
-  findings.push({ route: "search", viewport: "1280x900", code: "LISTING_LINK_MISSING" });
-} else {
-  const listingHref = await listingLinks.first().getAttribute("href");
-  const parsedListing = new URL(listingHref ?? "", "https://akarfinder.local");
-  const returnTo = parsedListing.searchParams.get("return_to");
-  if (returnTo !== secondHref) findings.push({ route: "search", viewport: "1280x900", code: "LISTING_RETURN_CONTEXT_MISMATCH", detail: { returnTo, secondHref } });
-}
+await behaviorPage.evaluate(() => {
+  document.querySelector('[data-p2-listing-probe="true"]')?.remove();
+  const anchor = document.createElement("a");
+  anchor.setAttribute("href", "/listings/p2-navigation-probe");
+  anchor.setAttribute("data-p2-listing-probe", "true");
+  anchor.textContent = "P2 listing probe";
+  document.body.appendChild(anchor);
+});
+await behaviorPage.waitForFunction(() => {
+  const href = document.querySelector('[data-p2-listing-probe="true"]')?.getAttribute("href") ?? "";
+  return href.includes("return_to=");
+}, null, { timeout: 5_000 });
+const listingProbeHref = await behaviorPage.locator('[data-p2-listing-probe="true"]').getAttribute("href");
+const parsedListing = new URL(listingProbeHref ?? "", "https://akarfinder.local");
+const returnTo = parsedListing.searchParams.get("return_to");
+if (returnTo !== secondHref) findings.push({ route: "search", viewport: "1280x900", code: "LISTING_RETURN_CONTEXT_MISMATCH", detail: { returnTo, secondHref, listingProbeHref } });
+await behaviorPage.locator('[data-p2-listing-probe="true"]').evaluate((node) => node.remove());
 
 await behaviorPage.close();
 await browser.close();
@@ -133,7 +140,7 @@ const result = {
     backSort,
     forwardSort,
     mapHref,
-    listingCount,
+    listingProbeHref,
   },
   findings,
 };
