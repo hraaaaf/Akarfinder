@@ -1,7 +1,7 @@
 # AkarFinder — Product Experience Roadmap
 
 Date : 2026-08-20
-Statut : **CANONIQUE — P0/P1/P2 CLOSED — P3 À RÉCONCILIER — P4 SEARCH + CARTE ENSUITE**
+Statut : **CANONIQUE — P0/P1/P2/P3 CLOSED — P4 SEARCH + CARTE NEXT**
 Dénominateur strict : **12 lots, P0 à P11**.
 
 ## Goal global
@@ -42,17 +42,15 @@ Preuves : PR #831 ; run P2 `32417603234` SUCCESS ; C1 `32417603240` SUCCESS ; ar
 
 ## P3 — Accueil
 
-Statut : **À RÉCONCILIER AVEC LES PREUVES EXISTANTES**.
+Statut : **CLOSED — RÉCONCILIÉ AVEC A1**.
 
 Goal : Accueil premium, query-first, hero compact et différenciation AkarFinder visible sans effet de faux plancher.
 
-Scope : hero, moteur principal, hiérarchie initiale, preuves de valeur et responsive Accueil.
-
-Règle : ne pas refaire un travail déjà certifié. Vérifier que l'Accueil courant correspond toujours à l'AFTER A1 validé, puis fermer P3 si les preuves suffisent.
+Preuves : HEAD A1 `0b9c28f28e6e1d5edb0d7d46bd1ff0edd91d2d95` ; run `32411535248` SUCCESS ; artifact `9422367028` ; 16/16 captures ; 0 finding ; score 9,0/10 ; human gate validé ; runtime Home courant vérifié blob-for-blob identique à l'AFTER A1 sur `app/page.tsx`, `GoogleLikeHero.tsx` et `HomeValueStrip.tsx`.
 
 ## P4 — Search + Carte
 
-Statut : **APRÈS P3**.
+Statut : **NEXT / ACTIVE**.
 
 Goal : transformer Search + Carte en expérience immobilière territoriale AkarFinder, et non en simple carte générique de type Maps.
 
@@ -103,9 +101,9 @@ Goal : certifier l'expérience complète, fermer les régressions, supprimer les
 - P0 : CLOSED
 - P1 : CLOSED
 - P2 : CLOSED
-- P3 : à réconcilier
+- P3 : CLOSED
 - P4–P11 : non crédités
 
-**Lots fermés : 3/12. Progression : 25 %.**
+**Lots fermés : 4/12. Progression : 33,3 %.**
 
 Le pourcentage n'augmente qu'après preuve et fermeture canonique du lot suivant.
