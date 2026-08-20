@@ -232,3 +232,21 @@
     display: none;
   }
 }
+
+/* 390 px polish: maximize the real map instead of stacking explanatory chrome.
+ * 430 px and above intentionally keep the validated C2 composition unchanged. */
+@media (max-width: 400px) {
+  [data-search-view-layout="split"] [data-search-map-pane] > aside > div:nth-child(2) {
+    height: min(43svh, 365px) !important;
+    min-height: min(43svh, 365px) !important;
+  }
+
+  [data-search-view-layout="split"] [data-search-map-pane] > aside > div:nth-child(2) > div:nth-child(2),
+  [data-search-view-layout="split"] [data-search-map-pane] > aside > div:nth-child(2) > div:last-child {
+    display: none !important;
+  }
+
+  [data-search-view-layout="split"] [data-search-list-pane] {
+    margin-top: -14px;
+  }
+}
