@@ -1,8 +1,8 @@
 # AkarFinder Experience — P1-B1 Canonical Page Targets
 
 Date : 2026-08-20
-Base : `main@9ec284f8888e2187288af4b5a6c9adc9b51c8439`
-Statut : **TARGETS PREPARED — FINAL CI/HUMAN GATE À CERTIFIER**
+Base initiale : `main@9ec284f8888e2187288af4b5a6c9adc9b51c8439`
+Statut : **CLOSED — PR #830**
 
 ## Origine du lot
 
@@ -23,7 +23,7 @@ Verrouiller les cibles visuelles et structurelles des huit surfaces canoniques A
 7. Publier ;
 8. Professionnels.
 
-## Succès
+## Succès validé
 
 1. chaque surface possède une cible haute fidélité distincte mais cohérente ;
 2. les cibles respectent `Territoire → Marché → Vie locale → Biens → Décision` ;
@@ -32,9 +32,10 @@ Verrouiller les cibles visuelles et structurelles des huit surfaces canoniques A
 5. Publier commence par le **type de bien** et produit un dossier guidé, conformément au Listing Standard ;
 6. Mon Projet garde un wizard progressif mais réduit la concurrence visuelle ;
 7. Professionnels distingue clairement identité pro, publication structurée et intelligence marché ;
-8. le Golden Master AkarFinder reste bleu/navy/blanc, profondeur légère, sans accent bronze ;
+8. le Golden Master AkarFinder reste bleu/navy/blanc, profondeur légère ;
 9. aucun écran produit existant n'est modifié dans B1 ;
-10. aucune mutation DB/source et aucun déploiement Vercel.
+10. aucune mutation DB/source et aucun déploiement Vercel ;
+11. les mockups utilisent les assets logo production exacts, sans variante générée.
 
 ## Contrat mobile verrouillé
 
@@ -42,6 +43,15 @@ Verrouiller les cibles visuelles et structurelles des huit surfaces canoniques A
 - Carte : la surface cartographique occupe la hauteur utile du viewport mobile, sans grand vide artificiel ;
 - Mon Projet et Publier : stepper compact sur mobile, stepper complet sur desktop ;
 - Publier conserve l'entrée directe par le type de bien.
+
+## Contrat logo verrouillé
+
+Les mockups B1 utilisent les mêmes assets que le `SiteHeader` production :
+
+- `/brand/logo-v2/logo-header-light.png` ;
+- `/brand/logo-v2/logo-header-dark.png`.
+
+L'audit B1 refuse une représentation générée ou divergente. Le logo source/branding production n'a pas été modifié par B1.
 
 ## Preuve BEFORE
 
@@ -64,23 +74,26 @@ Route QA uniquement : `/demo/canonical-targets?target=<target>`.
 
 Les mockups sont statiques et n'appellent aucune donnée métier. Ils servent de contrat de design, pas de nouvelle implémentation produit.
 
-## Certification requise
+## Certification finale
 
-Workflow : `Experience P1 B1 Canonical Targets`.
+- PR : `#830` ;
+- HEAD approuvé : `5f94a477bfca401eab4c250750bfdfd3a9355ef6` ;
+- workflow : `Experience P1 B1 Canonical Targets` ;
+- run final : `32406060774` — **SUCCESS** ;
+- artifact : `9420359227` ;
+- digest : `sha256:a023717e5e0d798725fbe1a0eb39f05e4f3027ff0c274cc02349e36aa426b381` ;
+- captures : **16/16** = 8 cibles × 390×844 + 1280×900 ;
+- findings : **0** ;
+- overflow page : **0** ;
+- contrats mobile Search/Carte : validés ;
+- steppers Mon Projet/Publier mobile/desktop : validés ;
+- assets logo production : validés ;
+- score UX/UI humain : **8,8/10** ;
+- human gate : **approuvé le 20/08/2026** ;
+- merge : `260922d2e051b67b8bdd80be519b111fbbc64d3f`.
 
-- TypeScript vert ;
-- build production vert ;
-- 8 cibles × 2 viewports (390×844 et 1280×900) = 16/16 captures ;
-- H1 présent ;
-- `data-canonical-target` exact ;
-- aucun overflow horizontal ;
-- strips Search/Carte scrollables sur mobile ;
-- Carte mobile occupe la hauteur utile ;
-- steppers Mon Projet/Publier compacts sur mobile et complets sur desktop ;
-- inspection humaine de chaque cible ;
-- score UX/UI de la galerie ;
-- validation explicite du propriétaire produit avant merge.
+## État après fermeture
 
-## Contrat d'arrêt
+P1-B1 est fermé et ses huit cibles deviennent la référence canonique des futurs lots page-level.
 
-B1 ne peut être mergé ni déclaré fermé avant human gate sur les mockups. Après validation, les cibles deviennent la référence des lots page-level ultérieurs. P1-A1 reste séparément ouvert/différé et n'est ni absorbé ni crédité par B1.
+P1-A1 reste séparément ouvert/différé avec trois objections déjà consignées : contenu/hiérarchie Home, taille/crop hero desktop, formulation de Vendre. A1 n'est ni absorbé ni crédité par B1.
