@@ -5,6 +5,7 @@ import type { ListingFiltersState } from "@/lib/listings/types";
 import type { SortBy } from "@/lib/listings/utils";
 import type { SearchViewMode } from "@/lib/ux/contracts";
 import {
+  applySearchContinuityContext,
   buildCanonicalSearchHref,
   restoreSearchHistorySnapshot,
   shouldReplaceSearchHistory,
@@ -52,11 +53,16 @@ export function useCanonicalSearchSession({
   useEffect(() => {
     if (restoringRef.current) return;
 
-    const nextHref = buildCanonicalSearchHref(
+    const canonicalHref = buildCanonicalSearchHref(
       window.location.pathname,
       filters,
       sortBy,
       view,
+    );
+    const nextHref = applySearchContinuityContext(
+      canonicalHref,
+      window.location.search,
+      filters.mreOnly,
     );
     const currentHref = `${window.location.pathname}${window.location.search}`;
 

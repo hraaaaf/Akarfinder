@@ -27,9 +27,37 @@ export function buildCanonicalSearchHref(
   return query ? `${pathname}?${query}` : pathname;
 }
 
+export function applySearchContinuityContext(
+  href: string,
+  currentSearch: string,
+  mreOnly: boolean,
+): string {
+  const parsed = new URL(href, "https://akarfinder.local");
+  const currentParams = new URLSearchParams(
+    currentSearch.startsWith("?") ? currentSearch.slice(1) : currentSearch,
+  );
+
+  if (mreOnly) parsed.searchParams.set("mre", "true");
+  else parsed.searchParams.delete("mre");
+
+  const projectId = currentParams.get("project_id")?.trim();
+  if (projectId) parsed.searchParams.set("project_id", projectId);
+  else parsed.searchParams.delete("project_id");
+
+  const query = parsed.searchParams.toString();
+  return `${parsed.pathname}${query ? `?${query}` : ""}`;
+}
+
 export function restoreSearchHistorySnapshot(search: string): SearchHistorySnapshot {
   const params = new URLSearchParams(search.startsWith("?") ? search.slice(1) : search);
-  return searchSessionToListingState(searchSessionFromUrl(params));
+  const snapshot = searchSessionToListingState(searchSessionFromUrl(params));
+  return {
+    ...snapshot,
+    filters: {
+      ...snapshot.filters,
+      mreOnly: (params.get("mre") ?? "").toLowerCase() === "true",
+    },
+  };
 }
 
 export function shouldReplaceSearchHistory(currentHref: string, nextHref: string): boolean {
