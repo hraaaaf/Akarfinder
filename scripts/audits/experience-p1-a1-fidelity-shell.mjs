@@ -25,7 +25,14 @@ const viewports = [
   ["1280x900", 1280, 900],
 ];
 
-function expectedHeaderHeight(width) {
+function expectedHeaderHeight(routeKey, width) {
+  // Search C2 remains authoritative. Its certified exact-white chrome has its
+  // own responsive geometry and must not be forced into the generic shell.
+  if (routeKey === "search") {
+    if (width < 768) return 63;
+    if (width < 1024) return 68;
+    return 64;
+  }
   return width >= 1024 ? 63 : 67;
 }
 
@@ -92,7 +99,7 @@ try {
             localFindings.push("HOME_H1_DRIFT");
           }
         } else {
-          const expected = expectedHeaderHeight(width);
+          const expected = expectedHeaderHeight(route.key, width);
           if (!isNear(metrics.headerHeight, expected)) {
             localFindings.push(`HEADER_HEIGHT_${metrics.headerHeight.toFixed(1)}_EXPECTED_${expected}`);
           }

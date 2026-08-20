@@ -39,6 +39,13 @@
   padding-bottom: 0 !important;
 }
 
+/* Dark branded headers keep their palette but share the same shell geometry. */
+[data-experience-shell="p1-a1"]
+  header.sticky[class*="text-white"]:not([data-search-global-header="exact-white"])
+  > div:first-of-type {
+  min-height: 67px;
+}
+
 /* Compact light headers inherit the flatter Search C2 navigation rhythm. */
 [data-experience-shell="p1-a1"]
   header[data-search-global-header="compact"].sticky[class*="text-slate-900"]
@@ -143,6 +150,12 @@
 @media (min-width: 1024px) {
   [data-experience-shell="p1-a1"]
     header.sticky[class*="text-slate-900"]:not([data-search-global-header="exact-white"])
+    > div:first-of-type {
+    min-height: 63px;
+  }
+
+  [data-experience-shell="p1-a1"]
+    header.sticky[class*="text-white"]:not([data-search-global-header="exact-white"])
     > div:first-of-type {
     min-height: 63px;
   }
