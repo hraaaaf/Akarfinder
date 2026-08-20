@@ -28,8 +28,10 @@ const rows = [];
 for (const [routeName, route] of routes) {
   for (const [viewportName, width, height] of viewports) {
     const page = await browser.newPage({ viewport: { width, height } });
-    const response = await page.goto(`${baseURL}${route}`, { waitUntil: "networkidle", timeout: 45_000 });
+    const response = await page.goto(`${baseURL}${route}`, { waitUntil: "domcontentloaded", timeout: 45_000 });
+    await page.waitForFunction(() => document.querySelector("h1") !== null, { timeout: 15_000 });
     await page.evaluate(() => document.fonts?.ready);
+    await page.waitForTimeout(routeName === "map" ? 2_000 : 500);
     const status = response?.status() ?? 0;
     const metrics = await page.evaluate(() => ({
       title: document.title,
