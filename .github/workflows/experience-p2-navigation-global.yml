@@ -1,0 +1,66 @@
+name: Experience P2 Navigation Global
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "components/search/useCanonicalSearchSession.ts"
+      - "lib/ux/search-history.ts"
+      - "lib/ux/navigation-continuity.ts"
+      - "scripts/scrapers/__tests__/search-history-navigation.test.ts"
+      - "scripts/audits/experience-p2-navigation-global.mjs"
+      - "docs/AKARFINDER_EXPERIENCE_P2.md"
+      - ".github/workflows/experience-p2-navigation-global.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    name: P2 navigation continuity certification
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      BASE_URL: http://127.0.0.1:3200
+      AUDIT_OUTPUT_DIR: data/audits/experience-p2-navigation-global
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Navigation unit contracts
+        run: npx tsx --test scripts/scrapers/__tests__/search-history-navigation.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Production build
+        run: npm run build
+      - name: Start production server
+        shell: bash
+        run: |
+          npm run start -- -p 3200 > /tmp/p2-navigation.log 2>&1 &
+          for attempt in {1..60}; do
+            if curl -fsS http://127.0.0.1:3200/search >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/p2-navigation.log
+          exit 1
+      - name: Certify Search Map Listing continuity
+        run: node scripts/audits/experience-p2-navigation-global.mjs
+      - name: Upload P2 evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: experience-p2-navigation-global-${{ github.run_id }}
+          path: data/audits/experience-p2-navigation-global
+          if-no-files-found: error
+          retention-days: 14
