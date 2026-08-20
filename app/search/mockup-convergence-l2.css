@@ -1,4 +1,6 @@
-/* L2 — Search convergence. Presentation-only layer over existing product contracts. */
+/* L2/C2 — Search convergence toward the P0-5B target.
+ * Presentation-only: preserve ranking, source rights, geo guards and data truth.
+ */
 
 [data-search-results-section] {
   background: #f8fafc;
@@ -42,9 +44,154 @@
   gap: 12px !important;
 }
 
+/* In Mixte, results are a compact decision rail rather than a second gallery. */
+[data-search-view-layout="split"] [data-search-continuous-flow] > div.grid {
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 10px !important;
+}
+
+[data-search-view-layout="split"] [data-mobile-compact-card] {
+  display: grid !important;
+  grid-template-columns: 118px minmax(0, 1fr);
+  min-height: 132px;
+  border-radius: 16px !important;
+}
+
+[data-search-view-layout="split"] [data-mobile-compact-card] > a:first-of-type {
+  min-width: 0;
+  height: 100%;
+}
+
+[data-search-view-layout="split"] [data-mobile-compact-card] [data-card-image] {
+  height: 100% !important;
+  min-height: 132px;
+}
+
+[data-search-view-layout="split"] [data-mobile-compact-card] > div {
+  min-width: 0;
+  padding: 10px 11px !important;
+}
+
+[data-search-view-layout="split"] [data-mobile-compact-card] [data-card-primary-action] {
+  display: none !important;
+}
+
+[data-search-view-layout="split"] [data-mobile-compact-card] [data-card-provenance] {
+  margin-top: 7px !important;
+  padding-top: 7px !important;
+}
+
+/* QuickFilters opens inline from sm upward. The historical client effect locks
+ * the body for the mobile modal; neutralize that lock wherever the filter panel
+ * is inline, while preserving it for the real phone sheet. */
+@media (min-width: 640px) {
+  body:has([data-search-advanced-filters].sm\:block) {
+    overflow: auto !important;
+  }
+}
+
+/* C2 desktop: results become the compact decision rail and the map becomes
+ * the dominant exploration surface. This reverses the legacy 54/46 split. */
+@media (min-width: 1024px) {
+  [data-search-view-layout="split"] {
+    grid-template-columns: minmax(350px, 0.68fr) minmax(0, 1fr) !important;
+    gap: 12px !important;
+  }
+
+  [data-search-view-layout="split"] [data-search-list-pane] {
+    max-height: calc(100svh - 196px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-right: 4px;
+    scrollbar-gutter: stable;
+  }
+
+  [data-search-view-layout="split"] [data-search-map-pane] {
+    top: 12px !important;
+  }
+
+  [data-search-view-layout="split"] [data-search-map-pane] > aside > div:nth-child(2) {
+    height: calc(100svh - 255px) !important;
+    min-height: 540px !important;
+  }
+
+  [data-search-view-layout="split"] [data-mobile-compact-card] {
+    grid-template-columns: 132px minmax(0, 1fr);
+    min-height: 138px;
+  }
+
+  [data-search-view-layout="split"] [data-mobile-compact-card] [data-card-image] {
+    min-height: 138px;
+  }
+}
+
+/* C2 tablet/mobile: Map first. Results form a docked sheet beneath it instead
+ * of pushing the map below an initial wall of cards. */
+@media (max-width: 1023px) {
+  [data-search-view-layout="split"] {
+    display: flex !important;
+    flex-direction: column;
+    gap: 0 !important;
+  }
+
+  [data-search-view-layout="split"] [data-search-map-pane] {
+    order: 1;
+    position: relative;
+    z-index: 10;
+  }
+
+  [data-search-view-layout="split"] [data-search-list-pane] {
+    order: 2;
+    position: relative;
+    z-index: 20;
+    margin-top: -22px;
+    max-height: 42svh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border: 1px solid rgb(226 232 240 / 0.96);
+    border-bottom: 0;
+    border-radius: 24px 24px 0 0;
+    background: rgb(248 250 252 / 0.985);
+    padding: 18px 12px 84px;
+    box-shadow: 0 -16px 38px rgb(15 35 66 / 0.13);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  [data-search-view-layout="split"] [data-search-map-pane] > aside {
+    border-radius: 20px 20px 24px 24px !important;
+    box-shadow: 0 12px 34px rgb(15 35 66 / 0.11) !important;
+  }
+
+  /* The page-level Search controls already expose context. On compact screens,
+   * keep only the map layer controls inside the map card to avoid duplicate chrome. */
+  [data-search-view-layout="split"] [data-search-map-pane] > aside > div:first-child {
+    padding: 9px 12px !important;
+  }
+
+  [data-search-view-layout="split"] [data-search-map-pane] > aside > div:first-child > div:first-child {
+    display: none !important;
+  }
+
+  [data-search-view-layout="split"] [data-search-map-pane] > aside > div:first-child > div:last-child {
+    margin-top: 0 !important;
+  }
+
+  [data-search-view-layout="split"] [data-search-map-pane] > aside > div:first-child > div:last-child > p {
+    display: none !important;
+  }
+
+  [data-search-view-layout="split"] [data-search-map-pane] > aside > div:nth-child(2) {
+    height: min(46svh, 410px) !important;
+    min-height: min(46svh, 410px) !important;
+  }
+}
+
 @media (max-width: 639px) {
   [data-search-results-section] {
     padding-top: 6px !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
   }
 
   [data-search-results-toolbar] {
@@ -56,11 +203,50 @@
     margin-top: 8px !important;
   }
 
+  [data-search-view-layout="split"] [data-search-map-pane] > aside > div:nth-child(2) {
+    height: min(38svh, 330px) !important;
+    min-height: min(38svh, 330px) !important;
+  }
+
+  [data-search-view-layout="split"] [data-search-list-pane] {
+    margin-top: -20px;
+    max-height: 43svh;
+    border-radius: 22px 22px 0 0;
+    padding: 16px 8px 92px;
+  }
+
+  [data-search-view-layout="split"] [data-mobile-compact-card] {
+    grid-template-columns: 108px minmax(0, 1fr);
+    min-height: 124px;
+  }
+
+  [data-search-view-layout="split"] [data-mobile-compact-card] [data-card-image] {
+    min-height: 124px;
+  }
+
   [data-search-continuous-flow] > div:first-child {
     gap: 12px !important;
   }
 
   .l2-secondary-footer {
     display: none;
+  }
+}
+
+/* 390 px polish: maximize the real map instead of stacking explanatory chrome.
+ * 430 px and above intentionally keep the validated C2 composition unchanged. */
+@media (max-width: 400px) {
+  [data-search-view-layout="split"] [data-search-map-pane] > aside > div:nth-child(2) {
+    height: min(43svh, 365px) !important;
+    min-height: min(43svh, 365px) !important;
+  }
+
+  [data-search-view-layout="split"] [data-search-map-pane] > aside > div:nth-child(2) > div:nth-child(2),
+  [data-search-view-layout="split"] [data-search-map-pane] > aside > div:nth-child(2) > div:last-child {
+    display: none !important;
+  }
+
+  [data-search-view-layout="split"] [data-search-list-pane] {
+    margin-top: -14px;
   }
 }

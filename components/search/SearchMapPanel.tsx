@@ -1,22 +1,23 @@
 "use client";
 
-import { useId, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { LocateFixed, MapPin, X } from "lucide-react";
+import type { Map as MapLibreMap, Marker } from "maplibre-gl";
 import { MapAtlasLayerSwitcher } from "@/components/search/MapAtlasLayerSwitcher";
 import { SearchMapNeighborhoodDock } from "@/components/search/SearchMapNeighborhoodDock";
 import { usePropertySelection } from "@/components/search/PropertySelectionProvider";
-import { formatPrice } from "@/lib/listings/utils";
+import { applyAkarFinderBasemapTreatment } from "@/lib/map/akarfinder-territorial-style";
 import {
-  CITY_MARKER,
-  CITY_MARKER_ACTIVE,
-  getCityCoord,
-  normalizeCityKey,
-} from "@/lib/search/city-coords";
-import { MOROCCO_PATH, MOROCCO_VIEWBOX } from "@/lib/search/morocco-path";
+  formatShortPrice,
+  getCityFlyTarget,
+  MOROCCO_OVERVIEW,
+} from "@/lib/map/listing-map";
+import { formatPrice } from "@/lib/listings/utils";
 import {
   buildCertifiedPropertyMapPoints,
   hasCertifiedExactCoordinates,
 } from "@/lib/ux/certified-property-map";
+import { getCanonicalPropertyId } from "@/lib/ux/property-selection";
 import {
   DEFAULT_MAP_ATLAS_AVAILABILITY,
   MAP_ATLAS_LAYERS,
@@ -37,6 +38,74 @@ type SearchMapPanelProps = {
   className?: string;
 };
 
+const LIGHT_TILE_STYLE = "https://tiles.openfreemap.org/styles/liberty";
+
+function mapCityTarget(city: string) {
+  return getCityFlyTarget(city === "Fès" ? "Fes" : city);
+}
+
+function hideInternalBoundaries(map: MapLibreMap) {
+  for (const id of [
+    "boundary_3",
+    "boundary_4",
+    "boundary_3_z3z4",
+    "boundary_4_z5",
+    "admin_level_3",
+    "admin_level_4",
+  ]) {
+    if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", "none");
+  }
+}
+
+function createCityAggregateMarker(city: string, count: number, active: boolean): HTMLButtonElement {
+  const el = document.createElement("button");
+  el.type = "button";
+  el.dataset.searchCityAggregateMarker = "true";
+  el.setAttribute("aria-label", `Filtrer les ${count} résultats affichés à ${city}`);
+  el.setAttribute("aria-pressed", active ? "true" : "false");
+  el.style.cssText = [
+    "display:flex",
+    "align-items:center",
+    "gap:6px",
+    "min-height:34px",
+    "padding:5px 9px 5px 6px",
+    "border-radius:999px",
+    `border:1px solid ${active ? "#0B63CE" : "#d9e4ef"}`,
+    `background:${active ? "#0B63CE" : "rgba(255,255,255,0.96)"}`,
+    `color:${active ? "#ffffff" : "#071B33"}`,
+    "box-shadow:0 7px 20px rgba(15,35,65,0.18)",
+    "font:800 11px/1.1 var(--font-jakarta),system-ui,sans-serif",
+    "cursor:pointer",
+  ].join(";");
+  el.innerHTML = `
+    <span aria-hidden="true" style="display:grid;width:23px;height:23px;place-items:center;border-radius:999px;background:${active ? "rgba(255,255,255,.18)" : "#EAF3FF"};color:${active ? "#fff" : "#0B63CE"};font-size:9px;font-weight:900">${count}</span>
+    <span>${city}</span>
+  `;
+  return el;
+}
+
+function createExactPropertyMarker(label: string, active: boolean): HTMLButtonElement {
+  const el = document.createElement("button");
+  el.type = "button";
+  el.dataset.searchExactPropertyMarker = "true";
+  el.style.cssText = [
+    "display:grid",
+    "min-height:30px",
+    "place-items:center",
+    "padding:5px 8px",
+    "border-radius:10px",
+    `border:2px solid ${active ? "#0B63CE" : "#ffffff"}`,
+    `background:${active ? "#0B63CE" : "#0f766e"}`,
+    "color:#ffffff",
+    `box-shadow:${active ? "0 0 0 3px rgba(11,99,206,.18),0 8px 20px rgba(15,35,65,.24)" : "0 6px 18px rgba(15,35,65,.20)"}`,
+    "font:900 10px/1 var(--font-jakarta),system-ui,sans-serif",
+    "white-space:nowrap",
+    "cursor:pointer",
+  ].join(";");
+  el.textContent = label;
+  return el;
+}
+
 export function SearchMapPanel({
   cityCounts,
   otherCount,
@@ -46,8 +115,12 @@ export function SearchMapPanel({
   atlasAvailability = DEFAULT_MAP_ATLAS_AVAILABILITY,
   className = "",
 }: SearchMapPanelProps) {
-  const uid = useId().replace(/:/g, "");
   const [requestedLayer, setRequestedLayer] = useState<MapAtlasLayer>("listings");
+  const [mapLoaded, setMapLoaded] = useState(false);
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<MapLibreMap | null>(null);
+  const cityMarkersRef = useRef<Marker[]>([]);
+  const propertyMarkersRef = useRef<Marker[]>([]);
   const {
     activeListing,
     selection,
@@ -56,7 +129,6 @@ export function SearchMapPanel({
     clearHover,
     selectListing,
     clearSelection,
-    isActive,
   } = usePropertySelection();
 
   const activeLayer = resolveMapAtlasLayer(requestedLayer, atlasAvailability);
@@ -65,18 +137,149 @@ export function SearchMapPanel({
     () => buildCertifiedPropertyMapPoints(visibleListings),
     [visibleListings],
   );
-  const selectedCity = activeListing?.city?.trim() || null;
-  const visualActiveCity = selectedCity ?? activeCity;
   const displayCity = activeCity === "all" ? "Maroc" : activeCity;
-  const pins = cityCounts
-    .map((city) => ({ ...city, coord: getCityCoord(city.city) }))
-    .filter((city): city is CityCount & { coord: { x: number; y: number } } => city.coord !== null);
-  const primaryLabels = new Set(["casablanca", "marrakech", "tanger", "agadir", "fes"]);
-  const mobileLabels = new Set(["casablanca", "marrakech", "agadir"]);
-  const activeCoord = visualActiveCity !== "all" ? getCityCoord(visualActiveCity) : null;
   const activeHasCertifiedExactCoordinates = activeListing
     ? hasCertifiedExactCoordinates(activeListing)
     : false;
+
+  useEffect(() => {
+    if (!mapContainerRef.current) return;
+
+    let cancelled = false;
+    let mapInstance: MapLibreMap | null = null;
+    let resizeObserver: ResizeObserver | null = null;
+
+    void import("maplibre-gl").then(({ Map: MapClass, NavigationControl, setRTLTextPlugin }) => {
+      if (cancelled || !mapContainerRef.current) return;
+
+      void setRTLTextPlugin("/mapbox-gl-rtl-text.min.js", true).catch(() => {});
+      const target = activeCity === "all" ? MOROCCO_OVERVIEW : mapCityTarget(activeCity);
+
+      mapInstance = new MapClass({
+        container: mapContainerRef.current,
+        style: LIGHT_TILE_STYLE,
+        center: [target.lng, target.lat],
+        zoom: target.zoom,
+        minZoom: 4.6,
+        maxZoom: 17,
+        maxBounds: [[-17.8, 20.5], [1.6, 37.5]],
+      });
+      mapRef.current = mapInstance;
+      mapInstance.addControl(new NavigationControl({ showCompass: false }), "top-right");
+
+      mapInstance.once("style.load", () => {
+        if (!mapInstance || cancelled) return;
+        hideInternalBoundaries(mapInstance);
+        applyAkarFinderBasemapTreatment(mapInstance, "light");
+        setMapLoaded(true);
+      });
+
+      resizeObserver = new ResizeObserver(() => mapInstance?.resize());
+      resizeObserver.observe(mapContainerRef.current);
+    });
+
+    return () => {
+      cancelled = true;
+      resizeObserver?.disconnect();
+      for (const marker of cityMarkersRef.current) marker.remove();
+      for (const marker of propertyMarkersRef.current) marker.remove();
+      cityMarkersRef.current = [];
+      propertyMarkersRef.current = [];
+      mapRef.current = null;
+      mapInstance?.remove();
+    };
+    // Initialization is intentionally one-shot. activeCity is handled by flyTo below.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapLoaded) return;
+    const target = activeCity === "all" ? MOROCCO_OVERVIEW : mapCityTarget(activeCity);
+    map.flyTo({
+      center: [target.lng, target.lat],
+      zoom: target.zoom,
+      duration: 450,
+      essential: false,
+    });
+  }, [activeCity, mapLoaded]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapLoaded) return;
+    let cancelled = false;
+
+    void import("maplibre-gl").then(({ Marker: MarkerClass }) => {
+      if (cancelled || !mapRef.current) return;
+      for (const marker of cityMarkersRef.current) marker.remove();
+      cityMarkersRef.current = [];
+
+      if (activeCity !== "all") return;
+
+      for (const item of cityCounts) {
+        const target = mapCityTarget(item.city);
+        if (target === MOROCCO_OVERVIEW) continue;
+        const element = createCityAggregateMarker(item.city, item.count, false);
+        element.addEventListener("click", () => onSelectCity(item.city));
+        const marker = new MarkerClass({ element, anchor: "bottom" })
+          .setLngLat([target.lng, target.lat])
+          .addTo(mapRef.current!);
+        cityMarkersRef.current.push(marker);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeCity, cityCounts, mapLoaded, onSelectCity]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapLoaded) return;
+    let cancelled = false;
+
+    void import("maplibre-gl").then(({ Marker: MarkerClass }) => {
+      if (cancelled || !mapRef.current) return;
+      for (const marker of propertyMarkersRef.current) marker.remove();
+      propertyMarkersRef.current = [];
+
+      for (const point of exactPropertyPoints) {
+        const listing = point.listing;
+        if (!hasCertifiedExactCoordinates(listing)) continue;
+        const canonicalPropertyId = getCanonicalPropertyId(listing);
+        const active = selection.canonicalPropertyId === canonicalPropertyId;
+        const label = listing.price == null ? "Bien" : formatShortPrice(listing.price);
+        const element = createExactPropertyMarker(label, active);
+        element.setAttribute("aria-label", `Sélectionner ${listing.title}, position exacte`);
+        element.setAttribute(
+          "aria-pressed",
+          active && selection.interaction === "selected" ? "true" : "false",
+        );
+        element.addEventListener("mouseenter", () => hoverListing(listing, "map"));
+        element.addEventListener("mouseleave", () => clearHover());
+        element.addEventListener("focus", () => hoverListing(listing, "map"));
+        element.addEventListener("blur", () => clearHover());
+        element.addEventListener("click", () => selectListing(listing, "map"));
+
+        const marker = new MarkerClass({ element, anchor: "bottom" })
+          .setLngLat([listing.longitude!, listing.latitude!])
+          .addTo(mapRef.current!);
+        propertyMarkersRef.current.push(marker);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    clearHover,
+    exactPropertyPoints,
+    hoverListing,
+    mapLoaded,
+    selectListing,
+    selection.canonicalPropertyId,
+    selection.interaction,
+  ]);
 
   return (
     <aside className={`overflow-hidden rounded-2xl border border-[#e4e9f2] bg-white shadow-[0_18px_50px_rgba(15,35,65,0.08)] ${className}`}>
@@ -90,7 +293,7 @@ export function SearchMapPanel({
             </p>
           </div>
           <div className="flex flex-col items-end gap-1.5">
-            <span className="rounded-full border border-[#e4e9f2] bg-white px-3 py-1.5 text-[10.5px] font-bold text-slate-500">Carte indicative</span>
+            <span className="rounded-full border border-[#dbe7f3] bg-white px-3 py-1.5 text-[10.5px] font-bold text-[#315b87]">Carte interactive</span>
             {exactPropertyPoints.length > 0 ? (
               <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[9.5px] font-extrabold text-emerald-700">
                 <LocateFixed size={10} aria-hidden="true" /> {exactPropertyPoints.length} position{exactPropertyPoints.length > 1 ? "s" : ""} exacte{exactPropertyPoints.length > 1 ? "s" : ""}
@@ -104,78 +307,59 @@ export function SearchMapPanel({
         </div>
       </div>
 
-      <div className="relative min-h-[480px] overflow-hidden lg:min-h-[640px]">
-        <div className="absolute inset-0" style={{ background: "linear-gradient(160deg, #eef4ff 0%, #f7f9fc 55%, #ffffff 100%)" }} />
-        <div className="absolute inset-0" style={{ background: "radial-gradient(45% 35% at 56% 26%, rgba(37,99,235,0.10), transparent 70%)" }} />
-        <svg viewBox={MOROCCO_VIEWBOX} preserveAspectRatio="xMidYMid meet" className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" style={{ height: "90%", aspectRatio: "1 / 1" }} aria-hidden="true">
-          <defs>
-            <radialGradient id={`landr-${uid}`} cx="0.45" cy="0.32" r="0.85">
-              <stop offset="0%" stopColor="#ffffff" />
-              <stop offset="55%" stopColor="#eef4ff" />
-              <stop offset="100%" stopColor="#e2eaf7" />
-            </radialGradient>
-          </defs>
-          <path d={MOROCCO_PATH} fill={`url(#landr-${uid})`} stroke="#2563EB" strokeWidth="3" strokeOpacity="0.35" />
-          <path d={MOROCCO_PATH} fill="none" stroke="#0f2d52" strokeWidth="1" strokeOpacity="0.08" />
-        </svg>
+      <div
+        className="relative min-h-[480px] overflow-hidden bg-[#edf3f7] lg:min-h-[640px]"
+        data-search-map-renderer="maplibre"
+      >
+        <div
+          ref={mapContainerRef}
+          className="absolute inset-0"
+          aria-label={`Carte interactive des résultats affichés dans cette recherche à ${displayCity}. Cette carte n'est pas une estimation du volume total du marché.`}
+        />
 
-        {activeCoord && !activeHasCertifiedExactCoordinates ? (
-          <span className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 rounded-full blur-2xl" style={{ left: `${activeCoord.x}%`, top: `${activeCoord.y}%`, width: 120, height: 120, background: "radial-gradient(circle, rgba(37,99,235,0.25), transparent 70%)" }} />
-        ) : null}
-
-        {pins.map((pin) => {
-          const isActive = visualActiveCity !== "all" && pin.city.toLowerCase() === visualActiveCity.toLowerCase();
-          const style = isActive ? CITY_MARKER_ACTIVE : CITY_MARKER;
-          const cityKey = normalizeCityKey(pin.city);
-          const showLabelMobile = isActive || mobileLabels.has(cityKey);
-          const showLabelDesktopOnly = !showLabelMobile && primaryLabels.has(cityKey);
-          return (
-            <button key={pin.city} type="button" onClick={() => onSelectCity(pin.city)} aria-label={`Filtrer les ${pin.count} résultats affichés à ${pin.city}`} aria-pressed={isActive} className="group absolute z-10 -translate-x-1/2 -translate-y-1/2 cursor-pointer focus:outline-none" style={{ left: `${pin.coord.x}%`, top: `${pin.coord.y}%` }}>
-              <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-md transition-opacity duration-200" style={{ width: style.size * 1.8, height: style.size * 1.8, backgroundColor: style.glow, opacity: isActive ? 0.9 : 0.5 }} />
-              <span className="relative grid place-items-center rounded-full ring-2 ring-white transition-transform duration-200 group-hover:scale-110" style={{ width: style.size, height: style.size, backgroundColor: style.color, boxShadow: "0 2px 8px rgba(15,35,65,0.25)" }}>
-                <span className="text-[9px] font-extrabold text-white">{pin.count}</span>
-              </span>
-              <span className={`pointer-events-none absolute left-1/2 top-[calc(100%+5px)] -translate-x-1/2 whitespace-nowrap rounded-md bg-[#071B33] px-2 py-0.5 text-[9.5px] font-extrabold tracking-[0.02em] text-white shadow-sm transition-opacity duration-150 ${showLabelMobile ? "opacity-100" : showLabelDesktopOnly ? "opacity-0 sm:opacity-100 group-hover:opacity-100" : "opacity-0 group-hover:opacity-100"}`}>
-                {pin.city} · {pin.count}
-              </span>
-            </button>
-          );
-        })}
-
-        {exactPropertyPoints.map((point) => {
-          const active = isActive(point.listing);
-          return (
-            <button key={point.canonicalPropertyId} type="button" onMouseEnter={() => hoverListing(point.listing, "map")} onMouseLeave={clearHover} onFocus={() => hoverListing(point.listing, "map")} onBlur={clearHover} onClick={() => selectListing(point.listing, "map")} aria-label={`Sélectionner ${point.listing.title}, position exacte`} aria-pressed={active && selection.interaction === "selected"} className="group absolute z-20 -translate-x-1/2 -translate-y-1/2 focus:outline-none" style={{ left: `${5 + point.x * 0.9}%`, top: `${5 + point.y * 0.9}%` }}>
-              <span className={`absolute left-1/2 top-1/2 h-8 w-8 -translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-400/30 blur-md transition ${active ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`} />
-              <span className={`relative grid h-5 w-5 place-items-center rounded-full border-2 border-white shadow-[0_3px_10px_rgba(6,78,59,0.35)] transition group-hover:scale-125 ${active ? "scale-125 bg-bronze-500" : "bg-emerald-600"}`}><LocateFixed size={10} className="text-white" aria-hidden="true" /></span>
-              <span className={`pointer-events-none absolute left-1/2 top-[calc(100%+6px)] max-w-[190px] -translate-x-1/2 whitespace-nowrap rounded-lg bg-[#071B33] px-2.5 py-1 text-[9.5px] font-bold text-white shadow-lg transition-opacity ${active ? "opacity-100" : "opacity-0 group-hover:opacity-100 group-focus:opacity-100"}`}>
-                {point.listing.neighborhood ? `${point.listing.city}, ${point.listing.neighborhood}` : point.listing.city}
-              </span>
-            </button>
-          );
-        })}
-
-        <div className="absolute left-3 top-3 z-10 rounded-xl border border-[#e4e9f2] bg-white/90 p-2 backdrop-blur sm:left-4 sm:top-4 sm:p-2.5">
-          <p className="max-w-[230px] text-[10.5px] leading-4 text-slate-600">Les nombres correspondent aux résultats affichés dans cette recherche. Les petits marqueurs verts indiquent uniquement les biens pour lesquels une position exacte est disponible. Cette carte n'est pas une estimation du volume total du marché.</p>
-          {otherCount > 0 ? <p className="mt-1.5 text-[10px] font-semibold text-slate-500">{otherCount} résultat{otherCount > 1 ? "s" : ""} sans repère ville sur la carte.</p> : null}
+        <div className="pointer-events-none absolute left-3 top-3 z-10 max-w-[245px] rounded-xl border border-white/80 bg-white/92 px-3 py-2 shadow-sm backdrop-blur sm:left-4 sm:top-4">
+          <p className="text-[10px] font-extrabold text-[#17324f]">Fond cartographique réel</p>
+          <p className="mt-0.5 text-[9.5px] leading-4 text-slate-600">
+            Seuls les biens dotés de coordonnées exactes certifiées reçoivent un pin individuel.
+          </p>
+          {otherCount > 0 ? (
+            <p className="mt-1 text-[9px] font-semibold text-slate-500">
+              {otherCount} résultat{otherCount > 1 ? "s" : ""} sans repère ville exploitable.
+            </p>
+          ) : null}
         </div>
 
         {activeListing ? (
-          <div className="absolute bottom-16 left-3 right-3 z-30 rounded-2xl border border-blue-200 bg-white/95 p-4 shadow-[0_18px_40px_rgba(15,35,65,0.18)] backdrop-blur sm:left-4 sm:right-4">
+          <div className="absolute bottom-14 left-3 right-3 z-30 rounded-2xl border border-blue-200 bg-white/95 p-4 shadow-[0_18px_40px_rgba(15,35,65,0.18)] backdrop-blur sm:left-4 sm:right-4">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-[0.12em] text-blue-600">{activeHasCertifiedExactCoordinates ? <LocateFixed size={12} aria-hidden="true" /> : <MapPin size={12} aria-hidden="true" />}{selection.interaction === "selected" ? "Bien sélectionné" : "Bien survolé"}</p>
+                <p className="flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-[0.12em] text-blue-600">
+                  {activeHasCertifiedExactCoordinates ? <LocateFixed size={12} aria-hidden="true" /> : <MapPin size={12} aria-hidden="true" />}
+                  {selection.interaction === "selected" ? "Bien sélectionné" : "Bien survolé"}
+                </p>
                 <p className="mt-1 line-clamp-1 text-[13px] font-extrabold text-[#071B33]">{activeListing.title}</p>
-                <p className="mt-1 text-[11px] font-semibold text-slate-500">{activeListing.neighborhood ? `${activeListing.city}, ${activeListing.neighborhood}` : activeListing.city} · {formatPrice(activeListing.price, activeListing.currency)}</p>
+                <p className="mt-1 text-[11px] font-semibold text-slate-500">
+                  {activeListing.neighborhood ? `${activeListing.city}, ${activeListing.neighborhood}` : activeListing.city} · {formatPrice(activeListing.price, activeListing.currency)}
+                </p>
               </div>
-              {selection.interaction === "selected" ? <button type="button" onClick={clearSelection} aria-label="Retirer le bien sélectionné" className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-800"><X size={14} aria-hidden="true" /></button> : null}
+              {selection.interaction === "selected" ? (
+                <button type="button" onClick={clearSelection} aria-label="Retirer le bien sélectionné" className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-800">
+                  <X size={14} aria-hidden="true" />
+                </button>
+              ) : null}
             </div>
-            <p className="mt-2 text-[10px] leading-4 text-slate-500">{activeHasCertifiedExactCoordinates ? "Position exacte disponible pour ce bien. La vue d’ensemble de la carte reste indicative." : "Repère au niveau de la ville uniquement. AkarFinder n’affiche pas de position exacte sans coordonnées disponibles."}</p>
+            <p className="mt-2 text-[10px] leading-4 text-slate-500">
+              {activeHasCertifiedExactCoordinates
+                ? "Position exacte certifiée pour ce bien."
+                : "AkarFinder ne place pas ce bien précisément sans coordonnées exactes certifiées."}
+            </p>
           </div>
         ) : null}
 
-        <div className="absolute bottom-3 left-3 right-3 z-10 rounded-xl border border-[#e4e9f2] bg-white/95 px-4 py-2.5 backdrop-blur sm:bottom-4 sm:left-4 sm:right-4 sm:rounded-2xl sm:px-5 sm:py-3">
-          <p className="text-[11px] leading-4 text-slate-500">Cliquez un bien pour l’aperçu, ou une ville pour filtrer · la carte ne change pas l’ordre des résultats.</p>
+        <div className="pointer-events-none absolute bottom-3 left-3 right-3 z-10 rounded-xl border border-white/80 bg-white/92 px-4 py-2.5 shadow-sm backdrop-blur sm:bottom-4 sm:left-4 sm:right-4 sm:rounded-2xl">
+          <p className="text-[10.5px] leading-4 text-slate-600">
+            Zoomez et déplacez la carte · les pins individuels représentent uniquement des positions exactes certifiées.
+          </p>
         </div>
       </div>
 

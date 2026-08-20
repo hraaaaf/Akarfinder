@@ -1,0 +1,59 @@
+name: Experience C2 Zillow Shell
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "app/search/mockup-convergence-l2.css"
+      - "components/search/SearchMapPanel.tsx"
+      - "scripts/audits/experience-c2-zillow-shell.mjs"
+      - "scripts/scrapers/__tests__/experience-c2-zillow-shell.test.ts"
+      - "docs/AKARFINDER_EXPERIENCE_C2.md"
+      - ".github/workflows/experience-c2-zillow-shell.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  certify-c2:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: C2 static shell contract
+        run: npx tsx --test scripts/scrapers/__tests__/experience-c2-zillow-shell.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Production build
+        run: npm run build
+      - name: Start production server
+        shell: bash
+        run: |
+          npm run start -- -p 3142 > /tmp/c2-zillow-shell.log 2>&1 &
+          for i in {1..40}; do
+            if curl -fsS http://127.0.0.1:3142/search >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/c2-zillow-shell.log
+          exit 1
+      - name: C2 responsive visual proof
+        env:
+          BASE_URL: http://127.0.0.1:3142
+        run: node scripts/audits/experience-c2-zillow-shell.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: experience-c2-zillow-shell-after
+          path: data/audits/experience-c2-zillow-shell
+          if-no-files-found: warn
+          retention-days: 14

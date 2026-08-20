@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 
 const read = (path: string) => readFileSync(path, "utf8");
+const stripCssComments = (source: string) => source.replace(/\/\*[\s\S]*?\*\//g, "");
 const searchPage = read("app/search/page.tsx");
 const searchCss = read("app/search/mockup-convergence-l2.css");
 const mapPage = read("app/map/page.tsx");
@@ -18,14 +19,14 @@ describe("Mockup convergence L2 Search + Map contracts", () => {
     assert.match(searchCss, /data-search-results-section/);
     assert.match(searchCss, /data-search-results-toolbar/);
     assert.match(searchCss, /data-search-continuous-flow/);
-    assert.doesNotMatch(searchCss, /ranking|registry|entitlement|supabase|fetch\(/i);
+    assert.doesNotMatch(stripCssComments(searchCss), /ranking|registry|entitlement|supabase|fetch\(/i);
   });
 
   it("keeps Map convergence scoped to presentation and canonical selected-state hooks", () => {
     assert.match(mapCss, /Fiche repère quartier/);
     assert.match(mapCss, /maplibre-neighborhood-marker/);
     assert.match(mapCss, /maplibre-cluster-marker/);
-    assert.doesNotMatch(mapCss, /latitude|longitude|benchmark|registry|fetch\(/i);
+    assert.doesNotMatch(stripCssComments(mapCss), /latitude|longitude|benchmark|registry|fetch\(/i);
   });
 
   it("retains accessible compact controls and mobile selected sheet", () => {
