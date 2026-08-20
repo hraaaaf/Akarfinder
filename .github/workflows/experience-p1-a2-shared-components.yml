@@ -1,0 +1,62 @@
+name: Experience P1 A2 Shared Components
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "components/ui/design-system.ts"
+      - "app/demo/ui-primitives/page.tsx"
+      - "scripts/audits/experience-p1-a2-shared-components.mjs"
+      - "docs/AKARFINDER_EXPERIENCE_P1_A2.md"
+      - ".github/workflows/experience-p1-a2-shared-components.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    name: P1-A2 shared primitives certification
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      BASE_URL: http://127.0.0.1:3200
+      AUDIT_OUTPUT_DIR: data/audits/experience-p1-a2-shared-components
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Production build
+        run: npm run build
+      - name: Start production server
+        shell: bash
+        run: |
+          npm run start -- -p 3200 > /tmp/p1-a2.log 2>&1 &
+          for attempt in {1..60}; do
+            if curl -fsS http://127.0.0.1:3200/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/p1-a2.log
+          exit 1
+      - name: Certify shared primitives on 6 routes x 4 viewports
+        run: node scripts/audits/experience-p1-a2-shared-components.mjs
+      - name: Upload P1-A2 AFTER evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: experience-p1-a2-shared-components-after-${{ github.run_id }}
+          path: data/audits/experience-p1-a2-shared-components
+          if-no-files-found: error
+          retention-days: 14
