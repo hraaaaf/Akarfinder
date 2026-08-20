@@ -1,6 +1,6 @@
-# AkarFinder Experience — décisions N0
+# AkarFinder Experience — décisions canoniques
 
-Statut : **LOCKED FOR N1/N2**
+Statut : **LOCKED**
 
 ## Décisions
 
@@ -16,3 +16,5 @@ Statut : **LOCKED FOR N1/N2**
 10. L'onboarding User / Agence / Promoteur doit produire un dossier conforme au Listing Standard.
 11. Les droits source restent indépendants du schéma de données.
 12. Aucun déploiement Vercel sans autorisation explicite.
+13. Toute étape UX/UI significative doit être croisée **avant implémentation** avec 2 à 3 références externes sérieuses. Quand pertinent, le panier doit inclure au moins une autorité UX/accessibilité et une référence produit immobilier réelle. Le lot documente les sources, leur date/contexte et l'implication concrète retenue. Le benchmark externe ne remplace jamais les contrats de vérité, les preuves machine ni le human gate.
+14. Le logo/branding est hors scope par défaut. Une variante visuelle du logo compte comme une modification de branding et exige une autorisation explicite.
