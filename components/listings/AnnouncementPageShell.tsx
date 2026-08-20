@@ -1,6 +1,7 @@
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { AkarEstimateHistorySection } from "@/components/listings/AkarEstimateHistorySection";
+import { ListingReturnNavigationBridge } from "@/components/listings/ListingReturnNavigationBridge";
 import { MobilePropertyDecisionBar } from "@/components/listings/MobilePropertyDecisionBar";
 import { PropertyDetailV2 } from "@/components/listings/PropertyDetailV2";
 import { Container } from "@/components/ui/Container";
@@ -23,6 +24,7 @@ export function AnnouncementPageShell({
   mapStyleUrl = process.env.NEXT_PUBLIC_AKAR_MAP_STYLE_URL ?? null,
   visualQa = false,
   projectId = null,
+  returnHref = null,
 }: {
   listing: Listing;
   detail: PublicPropertyDetailV2;
@@ -33,6 +35,7 @@ export function AnnouncementPageShell({
   mapStyleUrl?: string | null;
   visualQa?: boolean;
   projectId?: string | null;
+  returnHref?: string | null;
 }) {
   const proConversion = buildProConversionModel(listing);
 
@@ -43,6 +46,7 @@ export function AnnouncementPageShell({
       className={`min-h-screen pb-40 lg:pb-0 ${ui.pageLight}`}
     >
       <SiteHeader searchMode fluid />
+      <ListingReturnNavigationBridge returnHref={returnHref} />
       <main>
         <Container fluid className="max-w-[1500px] lg:px-8">
           <PropertyDetailV2

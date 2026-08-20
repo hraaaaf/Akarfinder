@@ -10,6 +10,7 @@ import { buildMarketComparablesRuntime } from "@/lib/property-detail/market-comp
 import { buildPublicPropertyDetailV2 } from "@/lib/property-detail/public-property-detail-v2";
 import { queryOwnerListingDetail } from "@/lib/seller/owner-listing-detail";
 import { canShowInternalListingDetail } from "@/lib/sources/source-access-registry";
+import { sanitizeReturnHref } from "@/lib/ux/navigation-continuity";
 
 // Owner media uses short-lived signed Storage URLs. Never freeze a listing detail
 // response into a static artifact that could outlive those credentials.
@@ -30,8 +31,12 @@ type ListingDetailPageProps = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
+function firstValue(value: string | string[] | undefined): string | undefined {
+  return Array.isArray(value) ? value[0] : value;
+}
+
 function validProjectId(value: string | string[] | undefined): string | null {
-  const raw = Array.isArray(value) ? value[0] : value;
+  const raw = firstValue(value);
   return typeof raw === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(raw) ? raw : null;
 }
 
@@ -39,6 +44,7 @@ async function renderListing(
   listing: Listing,
   detail: NonNullable<ReturnType<typeof buildPublicPropertyDetailV2>>,
   projectId: string | null,
+  returnHref: string | null,
 ) {
   let livingHere = null;
   let streetReality = null;
@@ -77,6 +83,7 @@ async function renderListing(
       marketComparables={marketComparables}
       akarEstimateHistory={akarEstimateHistory}
       projectId={projectId}
+      returnHref={returnHref}
     />
   );
 }
@@ -85,6 +92,7 @@ export default async function ListingDetailPage({ params, searchParams }: Listin
   const { id } = await params;
   const resolvedSearchParams = searchParams ? await searchParams : {};
   const projectId = validProjectId(resolvedSearchParams.project_id);
+  const returnHref = sanitizeReturnHref(firstValue(resolvedSearchParams.return_to));
 
   try {
     if (id.startsWith("owner-")) {
@@ -98,7 +106,7 @@ export default async function ListingDetailPage({ params, searchParams }: Listin
         created_at: new Date().toISOString(),
       });
       if (!ownerDetail) notFound();
-      return await renderListing(ownerListing, ownerDetail, projectId);
+      return await renderListing(ownerListing, ownerDetail, projectId, returnHref);
     }
 
     const dbListing = await queryListingById(id);
@@ -126,7 +134,7 @@ export default async function ListingDetailPage({ params, searchParams }: Listin
     });
 
     if (!detail) notFound();
-    return await renderListing(listing, detail, projectId);
+    return await renderListing(listing, detail, projectId, returnHref);
   } catch (error) {
     if (error && typeof error === "object" && "digest" in error) throw error;
     console.error("[listings] unexpected error loading listing:", id, error);
