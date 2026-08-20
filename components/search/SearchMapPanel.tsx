@@ -163,7 +163,6 @@ export function SearchMapPanel({
         minZoom: 4.6,
         maxZoom: 17,
         maxBounds: [[-17.8, 20.5], [1.6, 37.5]],
-        attributionControl: true,
       });
       mapRef.current = mapInstance;
       mapInstance.addControl(new NavigationControl({ showCompass: false }), "top-right");
