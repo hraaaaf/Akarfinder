@@ -1,0 +1,72 @@
+/*
+ * P1-A1 Home preservation guard.
+ * Visual inspection of pass #2 proved that the generic Vendre :has() selector
+ * also matched Home because Home contains a seller journey link below the hero.
+ * #recherche is the canonical Home hero contract; restore its authoritative
+ * geometry and palette after the reconciliation stylesheet.
+ */
+[data-experience-shell="p1-a1"] main:has(> section#recherche) > section#recherche {
+  border-bottom: 0 !important;
+  background: #061027 !important;
+  padding: 0 !important;
+}
+
+[data-experience-shell="p1-a1"]
+  main:has(> section#recherche)
+  > section#recherche
+  > div.relative.z-10 {
+  overflow: visible !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding-top: calc(env(safe-area-inset-top) + 6rem) !important;
+  padding-bottom: 3.5rem !important;
+}
+
+[data-experience-shell="p1-a1"]
+  main:has(> section#recherche)
+  > section#recherche
+  > div.relative.z-10::before,
+[data-experience-shell="p1-a1"]
+  main:has(> section#recherche)
+  > section#recherche
+  > div.relative.z-10::after {
+  content: none !important;
+}
+
+[data-experience-shell="p1-a1"] main:has(> section#recherche) > section#recherche h1 {
+  max-width: 820px !important;
+  color: #fff !important;
+  font-size: 2.15rem !important;
+  line-height: 1.02 !important;
+  text-wrap: wrap !important;
+}
+
+@media (min-width: 640px) {
+  [data-experience-shell="p1-a1"]
+    main:has(> section#recherche)
+    > section#recherche
+    > div.relative.z-10 {
+    padding-top: 8rem !important;
+    padding-bottom: 5rem !important;
+  }
+
+  [data-experience-shell="p1-a1"] main:has(> section#recherche) > section#recherche h1 {
+    font-size: 4rem !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  [data-experience-shell="p1-a1"]
+    main:has(> section#recherche)
+    > section#recherche
+    > div.relative.z-10 {
+    padding-top: 9rem !important;
+    padding-bottom: 6rem !important;
+  }
+
+  [data-experience-shell="p1-a1"] main:has(> section#recherche) > section#recherche h1 {
+    font-size: 5rem !important;
+  }
+}

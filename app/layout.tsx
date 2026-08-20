@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import "./globals.css";
 import "./a11y.css";
 import "./experience-p1-a1.css";
+import "./experience-p1-a1-home-guard.css";
 import { ThemeProvider, NO_FLASH_SCRIPT } from "@/components/theme/ThemeProvider";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
