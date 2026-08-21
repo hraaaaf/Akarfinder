@@ -44,7 +44,10 @@ for (const route of routes) {
     }
 
     await page.waitForSelector(".maplibregl-map", { timeout: 20_000 }).catch(() => null);
-    await page.waitForTimeout(route.key === "map" ? 1_500 : 900);
+    // MapLibre can exist before its remote style/tiles have visually settled, especially at 390 px.
+    // Wait for network quiescence, then one short paint window so AFTER evidence is deterministic.
+    await page.waitForLoadState("networkidle", { timeout: 15_000 }).catch(() => null);
+    await page.waitForTimeout(750);
 
     const metrics = await page.evaluate(({ routeKey, viewportWidth }) => {
       const rect = (selector) => {
