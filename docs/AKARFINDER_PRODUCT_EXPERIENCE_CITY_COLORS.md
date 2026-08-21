@@ -53,7 +53,7 @@ Le repo ne contient pas de géométrie administrative nationale certifiée pour 
 5. contrat `identity-only` exposé au runtime ;
 6. aucune source GeoJSON, aucun polygon/fill ajouté par ce lot ;
 7. les couleurs disparaissent en entrant dans une ville ;
-8. la couche territoriale Casablanca reste active ;
+8. l’exploration quartiers Casablanca reste active, avec le contexte ville et ses contrôles territoriaux, sans fuite des couleurs nationales ;
 9. MapLibre réel, exact-white, logo canonique et absence d'overflow préservés ;
 10. 8/8 captures AFTER, 0 finding ;
 11. P4 territorial et P2 navigation restent verts ;
