@@ -2,7 +2,7 @@
 
 Date : 2026-08-21
 Base produit : `main@c6e3591fd7cd854a3638e6e5effa76d5796edc95`
-Statut : **PREPARED — RUN / AFTER / HUMAN GATE À CERTIFIER**
+Statut : **CERTIFIED — MERGED**
 
 ## Goal
 
@@ -58,7 +58,7 @@ Référence P1-B1 certifiée :
 
 La référence impose la composition et la hiérarchie, pas la suppression de fonctions métier déjà utiles.
 
-## Implémentation préparée
+## Implémentation certifiée
 
 - rail desktop 220 px avec 8 étapes et étape active ;
 - progression mobile/tablette compacte ;
@@ -69,15 +69,29 @@ La référence impose la composition et la hiérarchie, pas la suppression de fo
 - lien `Mes projets enregistrés` réintégré dans le panneau, sans bloc de page séparé ;
 - aucun changement DB, ranking, source, search semantics ou Vercel.
 
-## Certification finale requise
+## Certification finale
 
-Workflow `Product Experience P7 Mon Projet` :
-- contrats P7 ;
-- `node --check` audit ;
-- TypeScript ;
-- build production ;
-- Chromium réel ;
-- 4 captures AFTER ;
-- 0 finding.
+PR : `#841`
+Exact HEAD certifié : `07c76b279d8ebe50d2433d4ece538d60df48a3d5`
+Run : `32499657147` — **SUCCESS**
+Artifact : `9453049204`
+Digest : `sha256:d34ceca949f2e7f539bb144a72df30a35717fd40748c738cd24a667066785d5f`
+Résultat : **4/4 captures AFTER, 0 finding, 0 overflow**.
+Contrats P7 : **PASS**.
+Audit syntaxique `node --check` : **PASS**.
+TypeScript : **PASS**.
+Build production : **PASS**.
+Chromium / runtime `/mon-projet` : **PASS**.
+Inspection humaine 390 / 430 / 768 / 1280 : **PASS**.
+Score UX/UI : **9,4/10**.
+Human gate : **PASS**.
 
-Après run vert : inspection 390 / 430 / 768 / 1280 → comparaison BEFORE / P1-B1 / AFTER → score UX/UI P7 → human gate explicite avant merge.
+## Merge
+
+PR `#841` squash-merged le 2026-08-21.
+Merge main : `368f8d7baad53914e4bd093e410bef1330dbeef8`.
+Aucun déploiement Vercel.
+
+## Suite canonique
+
+P7 est fermé. Prochain lot Product Experience : **P8 — Publication**.
