@@ -6,6 +6,10 @@ import {
   type SellerPublicationAction,
   type SellerPublicationStatus,
 } from "@/lib/seller/publication";
+import {
+  sellerPublicationGate,
+  type SellerDraftFacts,
+} from "@/lib/seller/listing-score";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -25,6 +29,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   return NextResponse.json({
     ok: true,
     review_status: auth.draft.review_status,
+    dossier_score: Number(auth.draft.weighted_completeness ?? 0),
+    photo_count: Number(auth.draft.photo_count ?? 0),
     publication: data ?? { status: "unpublished" },
   });
 }
@@ -40,8 +46,23 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     return NextResponse.json({ ok: false, error: "Confirmez cette action sur votre annonce." }, { status: 400 });
   }
 
-  if (body.action === "publish" && auth.draft.review_status !== "approved") {
-    return NextResponse.json({ ok: false, error: "Le dossier doit être validé avant sa mise en ligne." }, { status: 409 });
+  if (body.action === "publish" || body.action === "resume") {
+    if (auth.draft.review_status !== "approved") {
+      return NextResponse.json({ ok: false, error: "Le dossier doit être validé avant sa mise en ligne." }, { status: 409 });
+    }
+
+    const gate = sellerPublicationGate({
+      facts: (auth.draft.declared_facts ?? {}) as SellerDraftFacts,
+      score: Number(auth.draft.weighted_completeness ?? 0),
+      photoCount: Number(auth.draft.photo_count ?? 0),
+    });
+    if (!gate.eligible) {
+      return NextResponse.json({
+        ok: false,
+        error: `Le dossier n’est plus publiable : ${gate.missing.join(", ")}.`,
+        gate_missing: gate.missing,
+      }, { status: 409 });
+    }
   }
 
   const { data: existing } = await auth.supabase
