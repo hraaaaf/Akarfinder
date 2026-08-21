@@ -2,7 +2,7 @@
 
 Date : 2026-08-21
 Base : `main@9a1f4f696a2c5673978df556fae75c8a8afa7045`
-Statut : **PREPARED — RUN / AFTER / HUMAN GATE FINAL À CERTIFIER**
+Statut : **CERTIFIED — MERGED**
 
 ## Goal
 
@@ -70,7 +70,7 @@ Principes :
 
 Human gate du mockup : **APPROUVÉ par l'utilisateur le 2026-08-21**.
 
-## Implémentation préparée
+## Implémentation certifiée
 
 - `SearchMapPanel` : canvas territorial plus calme, en-tête et intelligence compacte ;
 - Search split : map-first sous 1024 px, rail résultats avec chevauchement de sheet ; 60/40 au desktop ;
@@ -80,31 +80,36 @@ Human gate du mockup : **APPROUVÉ par l'utilisateur le 2026-08-21**.
 - rich zone sheet conserve la priorité lorsque l'utilisateur sélectionne une zone ;
 - aucune mutation de donnée, ranking ou navigation métier.
 
-## Succès
-
-1. Search / Carte affichent un renderer MapLibre réel sur les quatre viewports ;
-2. le contrat `territorial-muted` est présent sur Search et Carte ;
-3. desktop 1280 : carte ≈ 60 % / contenu ≈ 40 % ;
-4. 390 / 430 : carte dominante + sheet ≤ 224 px ;
-5. 768 : carte dominante + sheet ≤ 310 px ;
-6. Search mobile/tablette affiche la carte avant les résultats ;
-7. carte Rabat utilise `applyAkarFinderBasemapTreatment` ;
-8. aucun panneau fail-closed massif au centre du canvas P4 ;
-9. header exact-white et logo canonique préservés ;
-10. 8/8 captures AFTER, 0 finding ;
-11. test de non-régression navigation P2 vert ;
-12. aucun Vercel.
-
-## Preuve requise
+## Certification finale
 
 Workflow `Product Experience P4 Search Map` :
 
-- test navigation P2 ;
-- TypeScript ;
-- build production ;
-- renderer Chromium ;
-- mesures géométriques des quatre viewports ;
-- 8 captures exactes Search / Carte ;
-- 0 finding.
+- run final : `32466458488` — **SUCCESS** ;
+- artifact AFTER : `9440932346` ;
+- HEAD certifié avant merge : `33ef34355ae2222e192d87dc491c8c6cca033950` ;
+- 8/8 captures exactes Search / Carte ;
+- 0 finding ;
+- test territorial P4 vert ;
+- régression navigation P2 verte ;
+- TypeScript vert ;
+- build production vert ;
+- MapLibre réel sur les quatre viewports ;
+- desktop Search et Carte ≈ 60/40 ;
+- sheets Carte : 208 / 220 / 304 px ;
+- aucun overflow horizontal ;
+- header exact-white et logo canonique préservés ;
+- inspection BEFORE → mockup → AFTER effectuée ;
+- score UX/UI final : **9,4/10** ;
+- human gate final : **APPROUVÉ par l'utilisateur le 2026-08-21** ;
+- aucun déploiement Vercel.
 
-Après run vert : inspection visuelle 8/8 → BEFORE / mockup / AFTER → score UX/UI P4 → human gate final explicite avant merge.
+## Merge
+
+- PR : `#833` — **MERGED** ;
+- méthode : squash ;
+- commit `main` : `df014a47ec04ec811eb60146ccf475dadc41cba5` ;
+- `main` vérifié sur ce commit après merge.
+
+## Succès final
+
+Les 12 critères P4 sont prouvés. Le lot P4 est fermé. Le prochain chantier cartographique peut utiliser l'AFTER P4 comme BEFORE canonique.
