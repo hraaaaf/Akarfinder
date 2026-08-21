@@ -2,7 +2,7 @@
 
 Date : 2026-08-21
 Base : `main@842238669d08ea5efe190071b6a6b5af20e03b00`
-Statut : **PREPARED — RUN / AFTER / HUMAN GATE FINAL À CERTIFIER**
+Statut : **CERTIFIED — MERGED**
 
 ## Goal
 
@@ -41,19 +41,19 @@ Résultat : 4/4 captures, aucun overflow, header exact-white et logo canonique p
 
 ### Écart observé
 
-Le runtime actuel est fonctionnel et riche, mais la lecture utile est repoussée par un bloc `AkarFinder Intelligence` très dominant puis par le dossier détaillé. Sur mobile, Marché et Vie locale arrivent tard dans le parcours.
+Le runtime initial était fonctionnel et riche, mais la lecture utile était repoussée par un bloc `AkarFinder Intelligence` très dominant puis par le dossier détaillé. Sur mobile, Marché et Vie locale arrivaient tard dans le parcours.
 
 ## Référence visuelle P1-B1
 
 Run cible canonique : `32456454178`
 Artifact : `9420359227`
-Références Listing disponibles :
+Références Listing :
 - `listing-390x844.png` ;
 - `listing-1280x900.png`.
 
 La référence impose la hiérarchie, pas une copie pixel-perfect ni la suppression des modules premium existants.
 
-## Implémentation préparée
+## Implémentation certifiée
 
 - nouveau résumé truth-safe `ListingExperienceSummary` ;
 - trois cartes compactes : Confiance / Marché / Vie locale ;
@@ -64,20 +64,29 @@ La référence impose la hiérarchie, pas une copie pixel-perfect ni la suppress
 - personnalisation, Intelligence et dossier détaillé conservés ;
 - aucun changement de données, ranking, source, DB ou navigation métier.
 
-## Preuve finale requise
+## Preuve finale
 
-Workflow `Product Experience P5 Listings` :
+PR : `#837` — **MERGED**
+Exact head certifié : `99d995d844dfc1d11c3a76f5f92ce78a23b1fd75`
+Run dédié : `32477827862` — **SUCCESS**
+Artifact AFTER : `9444998204`
+Digest : `sha256:062cedbb8236c345f3627d24587e373b659dcb4e4d571ab81444c869d589279f`
+Merge squash dans `main` : `7853237c2435ab6e003346cb7175b27618f5c9c9`
 
+Gates verts :
 - contrats P5 et vérité Listing ;
 - régressions core / conversion / Mon Projet / décision mobile ;
 - TypeScript ;
 - build production ;
 - Chromium ;
-- 4 captures AFTER exactes ;
-- ordre DOM et géométrique du parcours essentiel ;
-- 0 finding.
+- audit responsive 390 / 430 / 768 / 1280 ;
+- 4/4 captures AFTER ;
+- 0 finding ;
+- smoke UI/accessibilité additionnel : 12 routes × 4 viewports = 48 captures, 0 finding.
 
-Après run vert : inspection visuelle 4/4 → comparaison BEFORE / cible P1-B1 / AFTER → score UX/UI P5 → human gate final explicite avant merge.
+Inspection visuelle : **8,8/10**. La hiérarchie canonique est nettement plus lisible ; la densité mobile reste supérieure à la maquette P1-B1 car les fonctions de conversion certifiées sont volontairement conservées.
+
+Human gate : **PASS** le 2026-08-21.
 
 ## Hors scope / backlog
 
