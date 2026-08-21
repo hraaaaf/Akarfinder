@@ -1,0 +1,157 @@
+/* P4 — Search + Carte
+   Approved visual contract: 60/40 desktop, map-first + persistent sheet below 1024px. */
+
+[data-p4-map-layout] {
+  position: relative;
+  min-height: calc(100svh - 64px);
+  height: calc(100svh - 64px);
+  overflow: hidden;
+  background: #f5f7fb;
+}
+
+[data-p4-map-canvas] {
+  position: relative;
+  height: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+[data-p4-map-canvas] > [data-akarfinder-generic-map-shell],
+[data-p4-map-canvas] > div {
+  height: 100%;
+}
+
+/* Make the real map read as an AkarFinder territorial canvas rather than a raw basemap. */
+[data-p4-map-canvas] .maplibregl-canvas {
+  filter: saturate(.72) contrast(.94) brightness(1.035);
+}
+
+[data-p4-map-canvas] [data-akarfinder-premium-map-toolbar],
+[data-p4-map-canvas] [data-akarfinder-generic-premium-toolbar] {
+  inset-inline: 12px !important;
+  top: 12px !important;
+  width: auto !important;
+  max-width: none !important;
+  border-radius: 18px !important;
+  padding: 10px !important;
+  box-shadow: 0 14px 34px rgb(15 35 66 / 0.12) !important;
+}
+
+/* Remove the tall city-pill rail from the map canvas. City switching lives in the decision rail. */
+[data-p4-map-canvas] [data-akarfinder-premium-map-toolbar] [aria-label="Villes phares"],
+[data-p4-map-canvas] [data-akarfinder-generic-premium-toolbar] [aria-label="Sélection des villes phares"] {
+  display: none !important;
+}
+
+/* Fail-closed stays visible in the product rail, not as a modal-looking card in the center of the map. */
+[data-p4-map-canvas] [data-akarfinder-market-intelligence-map] > [role="status"] {
+  display: none !important;
+}
+
+[data-p4-map-canvas] [data-akarfinder-intelligence-legend] {
+  bottom: 18px !important;
+  left: 16px !important;
+  width: min(260px, 54%) !important;
+  border-radius: 16px !important;
+  padding: 10px !important;
+}
+
+.p4-map-decision-rail {
+  position: absolute;
+  inset-inline: 8px;
+  bottom: 84px;
+  z-index: 45;
+  max-height: 208px;
+  overflow: hidden;
+  border: 1px solid rgb(220 228 239 / .95);
+  border-radius: 24px 24px 18px 18px;
+  background: rgb(255 255 255 / .97);
+  padding: 16px 14px 14px;
+  box-shadow: 0 -12px 36px rgb(15 35 66 / .14);
+  backdrop-filter: blur(18px);
+}
+
+.p4-sheet-handle {
+  width: 46px;
+  height: 4px;
+  margin: -4px auto 10px;
+  border-radius: 999px;
+  background: #c8d2df;
+}
+
+@media (min-width: 430px) and (max-width: 767px) {
+  .p4-map-decision-rail {
+    max-height: 220px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .p4-map-decision-rail {
+    inset-inline: 16px;
+    bottom: 16px;
+    max-height: 304px;
+    border-radius: 26px;
+    padding: 18px;
+  }
+
+  [data-p4-map-canvas] [data-akarfinder-intelligence-legend] {
+    display: none !important;
+  }
+}
+
+@media (max-width: 1023px) {
+  [data-p4-map-layout]:has([data-akarfinder-rich-zone-sheet]) [data-p4-map-decision-rail] {
+    display: none;
+  }
+
+  [data-p4-map-canvas] [data-akarfinder-rich-zone-sheet] {
+    inset-inline: 8px !important;
+    top: auto !important;
+    right: 8px !important;
+    bottom: 84px !important;
+    width: auto !important;
+    max-height: min(58svh, 520px) !important;
+    border-radius: 24px !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  [data-p4-map-layout] {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(360px, 2fr);
+  }
+
+  [data-p4-map-canvas] {
+    grid-column: 1;
+  }
+
+  .p4-map-decision-rail {
+    position: static;
+    grid-column: 2;
+    z-index: 1;
+    max-height: none;
+    height: 100%;
+    overflow-y: auto;
+    border: 0;
+    border-left: 1px solid #dce4ef;
+    border-radius: 0;
+    background: #f7f9fc;
+    padding: 24px;
+    box-shadow: none;
+    backdrop-filter: none;
+  }
+
+  .p4-sheet-handle {
+    display: none;
+  }
+
+  [data-p4-map-canvas] [data-akarfinder-intelligence-legend] {
+    display: block;
+  }
+
+  [data-p4-map-canvas] [data-akarfinder-rich-zone-sheet] {
+    right: 16px !important;
+    top: 112px !important;
+    width: min(360px, calc(100% - 32px)) !important;
+  }
+}

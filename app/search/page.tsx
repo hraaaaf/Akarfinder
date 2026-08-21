@@ -29,6 +29,7 @@ import "./search-premium-card-content.css";
 import "./search-premium-grid.css";
 import "./search-premium-card-density.css";
 import "./mockup-convergence-l2.css";
+import "./p4-map-shell.css";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;

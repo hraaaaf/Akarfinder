@@ -282,34 +282,40 @@ export function SearchMapPanel({
   ]);
 
   return (
-    <aside className={`overflow-hidden rounded-2xl border border-[#e4e9f2] bg-white shadow-[0_18px_50px_rgba(15,35,65,0.08)] ${className}`}>
-      <div className="border-b border-[#eef2f8] bg-[#f8fafc] px-5 py-4">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="text-[10.5px] font-extrabold uppercase tracking-[0.16em] text-[#2563EB]">Zones des résultats</p>
-            <h2 className="mt-1 text-[1.3rem] font-extrabold tracking-[-0.03em] text-[#071B33]">{displayCity}</h2>
-            <p className="mt-0.5 text-[12.5px] font-semibold text-slate-500">
-              {stats.total} résultat{stats.total !== 1 ? "s" : ""} · {stats.citiesCovered} ville{stats.citiesCovered !== 1 ? "s" : ""}
-            </p>
+    <aside
+      className={`overflow-hidden rounded-[24px] border border-[#dfe7f1] bg-white shadow-[0_20px_58px_rgba(15,35,65,0.10)] ${className}`}
+      data-p4-search-map-panel
+      data-p4-basemap="territorial-muted"
+    >
+      <div className="border-b border-[#eef2f8] bg-white px-4 py-3 sm:px-5">
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-[9.5px] font-extrabold uppercase tracking-[0.15em] text-[#0B63CE]">Vue marché AkarFinder</p>
+            <div className="mt-0.5 flex min-w-0 items-baseline gap-2">
+              <h2 className="truncate text-[1.1rem] font-extrabold tracking-[-0.025em] text-[#071B33]">{displayCity}</h2>
+              <p className="shrink-0 text-[10.5px] font-semibold text-slate-500">
+                {stats.total} résultat{stats.total !== 1 ? "s" : ""}
+              </p>
+            </div>
           </div>
-          <div className="flex flex-col items-end gap-1.5">
-            <span className="rounded-full border border-[#dbe7f3] bg-white px-3 py-1.5 text-[10.5px] font-bold text-[#315b87]">Carte interactive</span>
-            {exactPropertyPoints.length > 0 ? (
-              <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[9.5px] font-extrabold text-emerald-700">
-                <LocateFixed size={10} aria-hidden="true" /> {exactPropertyPoints.length} position{exactPropertyPoints.length > 1 ? "s" : ""} exacte{exactPropertyPoints.length > 1 ? "s" : ""}
-              </span>
-            ) : null}
-          </div>
+          {exactPropertyPoints.length > 0 ? (
+            <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[9px] font-extrabold text-emerald-700">
+              <LocateFixed size={10} aria-hidden="true" /> {exactPropertyPoints.length} exact{exactPropertyPoints.length > 1 ? "es" : "e"}
+            </span>
+          ) : (
+            <span className="shrink-0 rounded-full border border-[#dbe7f3] bg-[#f7faff] px-2.5 py-1 text-[9px] font-bold text-[#315b87]">territorial</span>
+          )}
         </div>
-        <div className="mt-3">
+        <div className="mt-2.5">
           <MapAtlasLayerSwitcher value={activeLayer} availability={atlasAvailability} onChange={setRequestedLayer} />
-          <p className="mt-2 text-[10.5px] leading-4 text-slate-500">{activeLayerDefinition?.description}</p>
+          <p className="mt-1.5 line-clamp-1 text-[9.5px] leading-4 text-slate-500">{activeLayerDefinition?.description}</p>
         </div>
       </div>
 
       <div
-        className="relative min-h-[480px] overflow-hidden bg-[#edf3f7] lg:min-h-[640px]"
+        className="relative h-[52svh] min-h-[420px] overflow-hidden bg-[#edf3f7] sm:min-h-[470px] md:h-[56svh] md:min-h-[500px] lg:h-[calc(100svh-236px)] lg:min-h-[610px] lg:max-h-[760px]"
         data-search-map-renderer="maplibre"
+        data-p4-search-map-canvas
       >
         <div
           ref={mapContainerRef}
@@ -317,16 +323,8 @@ export function SearchMapPanel({
           aria-label={`Carte interactive des résultats affichés dans cette recherche à ${displayCity}. Cette carte n'est pas une estimation du volume total du marché.`}
         />
 
-        <div className="pointer-events-none absolute left-3 top-3 z-10 max-w-[245px] rounded-xl border border-white/80 bg-white/92 px-3 py-2 shadow-sm backdrop-blur sm:left-4 sm:top-4">
-          <p className="text-[10px] font-extrabold text-[#17324f]">Fond cartographique réel</p>
-          <p className="mt-0.5 text-[9.5px] leading-4 text-slate-600">
-            Seuls les biens dotés de coordonnées exactes certifiées reçoivent un pin individuel.
-          </p>
-          {otherCount > 0 ? (
-            <p className="mt-1 text-[9px] font-semibold text-slate-500">
-              {otherCount} résultat{otherCount > 1 ? "s" : ""} sans repère ville exploitable.
-            </p>
-          ) : null}
+        <div className="pointer-events-none absolute left-3 top-3 z-10 max-w-[210px] rounded-full border border-white/85 bg-white/92 px-3 py-1.5 shadow-sm backdrop-blur sm:left-4 sm:top-4">
+          <p className="text-[9px] font-extrabold text-[#17324f]">Prix · précision · fraîcheur · contexte local</p>
         </div>
 
         {activeListing ? (
@@ -356,9 +354,10 @@ export function SearchMapPanel({
           </div>
         ) : null}
 
-        <div className="pointer-events-none absolute bottom-3 left-3 right-3 z-10 rounded-xl border border-white/80 bg-white/92 px-4 py-2.5 shadow-sm backdrop-blur sm:bottom-4 sm:left-4 sm:right-4 sm:rounded-2xl">
-          <p className="text-[10.5px] leading-4 text-slate-600">
-            Zoomez et déplacez la carte · les pins individuels représentent uniquement des positions exactes certifiées.
+        <div className="pointer-events-none absolute bottom-3 left-3 z-10 max-w-[260px] rounded-[14px] border border-white/85 bg-white/92 px-3 py-2 shadow-sm backdrop-blur sm:bottom-4 sm:left-4">
+          <p className="text-[9px] font-extrabold uppercase tracking-[0.1em] text-[#0B63CE]">Intelligence territoriale</p>
+          <p className="mt-0.5 text-[9.5px] leading-4 text-slate-600">
+            Pins individuels uniquement pour les positions exactes certifiées.{otherCount > 0 ? ` ${otherCount} résultat${otherCount > 1 ? "s" : ""} sans repère ville exploitable.` : ""}
           </p>
         </div>
       </div>
