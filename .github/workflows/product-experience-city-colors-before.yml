@@ -4,10 +4,15 @@ on:
   push:
     branches:
       - agent/product-experience-city-colors-before
+  pull_request:
+    branches: [main]
+    paths:
+      - "scripts/audits/product-experience-city-colors-before.mjs"
+      - ".github/workflows/product-experience-city-colors-before.yml"
   workflow_dispatch:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: product-experience-city-colors-before
   cancel-in-progress: true
 
 permissions:
