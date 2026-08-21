@@ -2,7 +2,7 @@
 
 Date : 2026-08-21
 Base : `main@842238669d08ea5efe190071b6a6b5af20e03b00`
-Statut : **PREPARED — SURFACES ADMINISTRATIVES EN COURS DE CERTIFICATION**
+Statut : **IMPLEMENTED — RUN FINAL / AFTER / HUMAN GATE À CERTIFIER**
 
 ## Goal
 
@@ -23,11 +23,13 @@ Capture dédiée du code non modifié :
 - 8 marqueurs ville existants : Casablanca, Rabat, Marrakech, Tanger, Agadir, Fès, Kénitra, Mohammedia ;
 - aucune identité couleur ville active dans le BEFORE.
 
-## Mockup initial
+## Mockup
 
-Référence visuelle préparée avant la première implémentation sur les quatre viewports exacts.
+Le premier mockup, limité aux halos et chips, a été refusé au human review : la couleur devait être visible directement sur la carte.
 
-Contrat initial :
+Le mockup surfaces a donc été construit **avant l’implémentation runtime** sur les mêmes 390×844 / 430×932 / 768×900 / 1280×900 avec les géométries validées ci-dessous.
+
+Contrat visuel :
 
 - Casablanca : bleu `#2563EB` ;
 - Rabat : teal `#0F766E` ;
@@ -35,24 +37,47 @@ Contrat initial :
 - Tanger : violet `#7C3AED` ;
 - Agadir : vert `#15803D` ;
 - Fès : framboise `#BE123C` ;
-- halos doux autour des marqueurs ville ;
-- mêmes couleurs sur les chips de navigation ville ;
+- remplissage translucide sur la vraie emprise communale ;
+- contour + glow léger sans agrandir la géométrie ;
+- marqueurs et chips gardent la même identité couleur comme renfort de lecture ;
 - Kénitra et Mohammedia restent neutres ;
-- couleur = identité de repérage uniquement, jamais prix, qualité, demande ou frontière.
+- couleur = identité de repérage uniquement, jamais prix, qualité, demande ou frontière inventée.
 
-## Extension surfaces administratives
+## Preuve géodata
 
-Le human review du mockup initial a conclu que les couleurs devaient être visibles directement sur les surfaces cartographiques des villes. Le lot reste donc ouvert.
+Préparation reproductible : `scripts/data/fetch-morocco-city-boundaries.mjs`.
 
-Nouvelle règle :
+Source : OpenStreetMap contributors via Nominatim, relations administratives `admin_level=8`, géométries Polygon/MultiPolygon, centre ville inclus et bbox plausible.
 
-- utiliser uniquement de vraies limites administratives de commune urbaine ;
-- source géométrique reproductible : OpenStreetMap contributors via Nominatim ;
-- niveau attendu : `admin_level=8`, correspondant aux communes urbaines marocaines ;
-- ne conserver que Casablanca, Rabat, Marrakech, Tanger, Agadir et Fès ;
-- simplifier uniquement pour le rendu web, sans inventer ni extrapoler de limite ;
-- conserver le contrat `identity-only` ;
-- aucune couleur ne signifie prix, qualité, demande ou attractivité.
+Run de preuve :
+
+- run GitHub Actions : `32473880317` ;
+- artifact : `9443583546` ;
+- digest : `sha256:09923e8957df092217806167e9fc62d087cbacd2b7a0621e45e0747477c2094d` ;
+- 6/6 géométries validées.
+
+Relations retenues :
+
+- Casablanca : OSM relation `4072985` ;
+- Rabat : OSM relation `2799215` ;
+- Marrakech : OSM relation `2799538` ;
+- Tanger : OSM relation `2758781` ;
+- Agadir : OSM relation `2529624` ;
+- Fès : OSM relation `2799557`.
+
+Snapshot runtime : `public/data/map/morocco-flagship-city-admin-boundaries.geojson`.
+
+Le snapshot est local au produit pour rendre le runtime et la certification déterministes. Il conserve la provenance OSM, les IDs de relations, `admin_level=8`, `identity-only` et la licence ODbL. La simplification web est topologique et n’ajoute aucune limite.
+
+## Implémentation
+
+- source GeoJSON MapLibre locale ;
+- fill par propriété `color` ;
+- contour + glow sur la même géométrie ;
+- `maxzoom: 8` : surfaces nationales non affichées au niveau ville ;
+- suppression explicite des couches lorsque la navigation quitte la vue Maroc ;
+- contrat runtime exposé uniquement après montage réel des 6 couches/surfaces ;
+- aucun appel OSM/Nominatim au runtime.
 
 ## Succès
 
@@ -69,9 +94,19 @@ Nouvelle règle :
 11. P4 territorial et P2 navigation restent verts ;
 12. aucun Vercel.
 
-## Preuve requise
+## Gate final requis
 
-1. préparation géodata reproductible : 6 relations administratives `admin_level=8`, géométries Polygon/MultiPolygon valides, centre de ville inclus, bbox plausible ;
-2. nouveau mockup 390/430/768/1280 construit avec les vraies surfaces avant implémentation runtime ;
-3. workflow `Product Experience City Colors` : contrat truth-safe, régressions P4/P2, TypeScript, build production, Chromium, 4 viewports nationaux + 4 viewports Casablanca, 8 captures, 0 finding ;
-4. inspection BEFORE → mockup surfaces → AFTER, score UX/UI, puis human gate final explicite avant merge.
+Workflow `Product Experience City Colors` :
+
+- contrat palette + 6 relations administratives ;
+- régressions P4/P2 ;
+- TypeScript ;
+- build production ;
+- Chromium ;
+- 4 viewports nationaux + 4 viewports Casablanca ;
+- surfaces nationales actives = 6 et `identity-only` ;
+- surfaces nationales absentes dans Casablanca ;
+- 8 captures ;
+- 0 finding.
+
+Après run vert : inspection BEFORE → mockup surfaces → AFTER, score UX/UI, puis human gate final explicite avant merge.
