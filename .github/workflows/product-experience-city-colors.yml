@@ -6,6 +6,7 @@ on:
     paths:
       - "components/map/TerritorialExplorer.tsx"
       - "lib/map/city-territorial-colors.ts"
+      - "scripts/data/fetch-morocco-city-boundaries.mjs"
       - "scripts/scrapers/__tests__/city-color-overview-contract.test.ts"
       - "scripts/audits/product-experience-city-colors.mjs"
       - "docs/AKARFINDER_PRODUCT_EXPERIENCE_CITY_COLORS.md"
@@ -35,6 +36,15 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
+      - name: Prepare verified city commune boundaries
+        run: node scripts/data/fetch-morocco-city-boundaries.mjs
+      - name: Upload verified boundary evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: city-boundary-prep-${{ github.run_id }}
+          path: data/audits/city-boundary-prep
+          if-no-files-found: error
+          retention-days: 14
       - name: City color truth contract
         run: npx tsx --test scripts/scrapers/__tests__/city-color-overview-contract.test.ts
       - name: P4 territorial regression
