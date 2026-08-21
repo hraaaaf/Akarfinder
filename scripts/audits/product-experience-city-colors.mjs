@@ -44,10 +44,10 @@ for (const route of routes) {
         { timeout: 20_000 },
       );
     } else {
-      await page.waitForFunction(() =>
-        document.querySelector('[data-akarfinder-territorial-layer="active"]'),
+      await page.waitForSelector(
+        '[data-akarfinder-territorial-explorer][data-akarfinder-selected-city="true"]',
         { timeout: 20_000 },
-      ).catch(() => null);
+      );
     }
 
     await page.waitForLoadState("networkidle", { timeout: 15_000 }).catch(() => null);
@@ -60,6 +60,7 @@ for (const route of routes) {
       const canvas = document.querySelector("[data-p4-map-canvas]");
       const header = document.querySelector("header");
       const logos = [...document.querySelectorAll('header img[alt="AkarFinder"]')].map((img) => img.getAttribute("src") ?? "");
+      const cityExplorer = document.querySelector('[data-akarfinder-territorial-explorer][data-akarfinder-selected-city="true"]');
       return {
         scrollWidth: document.documentElement.scrollWidth,
         clientWidth: document.documentElement.clientWidth,
@@ -71,7 +72,9 @@ for (const route of routes) {
         coloredChipSlugs: unique(coloredChips.map((node) => node.getAttribute("data-akarfinder-city-color-chip"))),
         identityOnlyMarkerCount: coloredMarkers.filter((node) => node.getAttribute("data-akarfinder-city-color-meaning") === "identity-only").length,
         nationalLegendPresent: Boolean(document.querySelector('[data-akarfinder-city-color-legend="identity-only"]')),
-        territorialLayerActive: Boolean(document.querySelector('[data-akarfinder-territorial-layer="active"]')),
+        selectedCityExplorer: Boolean(cityExplorer),
+        cityExplorerText: cityExplorer?.textContent ?? "",
+        districtControlCount: cityExplorer?.querySelectorAll("button").length ?? 0,
         clusterMarkerCount: document.querySelectorAll(".maplibre-cluster-marker").length,
       };
     });
@@ -99,7 +102,9 @@ for (const route of routes) {
     } else {
       if (metrics.cityOverviewActive) addFinding(route.key, viewport, "CITY_OVERVIEW_LEAKS_INTO_CITY");
       if (metrics.coloredMarkerSlugs.length) addFinding(route.key, viewport, "COLORED_CITY_MARKERS_LEAK_INTO_CITY", metrics.coloredMarkerSlugs);
-      if (!metrics.territorialLayerActive) addFinding(route.key, viewport, "CASABLANCA_TERRITORIAL_LAYER_REGRESSION");
+      if (!metrics.selectedCityExplorer) addFinding(route.key, viewport, "CASABLANCA_CITY_EXPLORER_REGRESSION");
+      if (!metrics.cityExplorerText.includes("Casablanca")) addFinding(route.key, viewport, "CASABLANCA_CITY_CONTEXT_REGRESSION");
+      if (metrics.districtControlCount < 2) addFinding(route.key, viewport, "CASABLANCA_DISTRICT_CONTROLS_REGRESSION", metrics.districtControlCount);
     }
 
     const screenshot = `${route.key}-${viewport}.png`;
