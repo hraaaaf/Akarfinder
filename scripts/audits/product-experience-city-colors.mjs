@@ -39,10 +39,13 @@ for (const route of routes) {
     await page.waitForSelector(".maplibregl-map", { timeout: 20_000 });
 
     if (route.key === "national") {
-      await page.waitForFunction(() =>
-        document.querySelectorAll('[data-akarfinder-city-color-overview="true"]').length >= 6,
-        { timeout: 20_000 },
-      );
+      await page.waitForFunction(() => {
+        const canvas = document.querySelector("[data-p4-map-canvas]");
+        return document.querySelectorAll('[data-akarfinder-city-color-overview="true"]').length >= 6
+          && canvas?.getAttribute("data-akarfinder-city-admin-surfaces") === "active"
+          && canvas?.getAttribute("data-akarfinder-city-admin-feature-count") === "6"
+          && canvas?.getAttribute("data-akarfinder-city-admin-meaning") === "identity-only";
+      }, { timeout: 20_000 });
     } else {
       await page.waitForSelector(
         '[data-akarfinder-territorial-explorer][data-akarfinder-selected-city="true"]',
@@ -68,6 +71,9 @@ for (const route of routes) {
         exactWhiteHeader: header?.getAttribute("data-search-global-header") === "exact-white",
         canonicalLogos: logos,
         cityOverviewActive: canvas?.getAttribute("data-akarfinder-city-color-overview-active") === "true",
+        cityAdminSurfacesActive: canvas?.getAttribute("data-akarfinder-city-admin-surfaces") === "active",
+        cityAdminFeatureCount: Number(canvas?.getAttribute("data-akarfinder-city-admin-feature-count") ?? 0),
+        cityAdminMeaning: canvas?.getAttribute("data-akarfinder-city-admin-meaning") ?? null,
         coloredMarkerSlugs: unique(coloredMarkers.map((node) => node.getAttribute("data-akarfinder-city-color"))),
         coloredChipSlugs: unique(coloredChips.map((node) => node.getAttribute("data-akarfinder-city-color-chip"))),
         identityOnlyMarkerCount: coloredMarkers.filter((node) => node.getAttribute("data-akarfinder-city-color-meaning") === "identity-only").length,
@@ -90,6 +96,9 @@ for (const route of routes) {
 
     if (route.key === "national") {
       if (!metrics.cityOverviewActive) addFinding(route.key, viewport, "CITY_OVERVIEW_NOT_ACTIVE");
+      if (!metrics.cityAdminSurfacesActive) addFinding(route.key, viewport, "CITY_ADMIN_SURFACES_NOT_ACTIVE");
+      if (metrics.cityAdminFeatureCount !== 6) addFinding(route.key, viewport, "CITY_ADMIN_SURFACE_COUNT", metrics.cityAdminFeatureCount);
+      if (metrics.cityAdminMeaning !== "identity-only") addFinding(route.key, viewport, "CITY_ADMIN_SURFACE_MEANING", metrics.cityAdminMeaning);
       if (JSON.stringify(metrics.coloredMarkerSlugs) !== JSON.stringify(expectedCityColors)) {
         addFinding(route.key, viewport, "CITY_MARKER_PALETTE_MISMATCH", metrics.coloredMarkerSlugs);
       }
@@ -101,6 +110,9 @@ for (const route of routes) {
       if (metrics.clusterMarkerCount < 8) addFinding(route.key, viewport, "BASE_CITY_MARKERS_REGRESSED", metrics.clusterMarkerCount);
     } else {
       if (metrics.cityOverviewActive) addFinding(route.key, viewport, "CITY_OVERVIEW_LEAKS_INTO_CITY");
+      if (metrics.cityAdminSurfacesActive || metrics.cityAdminFeatureCount !== 0) {
+        addFinding(route.key, viewport, "CITY_ADMIN_SURFACES_LEAK_INTO_CITY", metrics.cityAdminFeatureCount);
+      }
       if (metrics.coloredMarkerSlugs.length) addFinding(route.key, viewport, "COLORED_CITY_MARKERS_LEAK_INTO_CITY", metrics.coloredMarkerSlugs);
       if (!metrics.selectedCityExplorer) addFinding(route.key, viewport, "CASABLANCA_CITY_EXPLORER_REGRESSION");
       if (!metrics.cityExplorerText.includes("Casablanca")) addFinding(route.key, viewport, "CASABLANCA_CITY_CONTEXT_REGRESSION");
@@ -117,7 +129,7 @@ for (const route of routes) {
 await browser.close();
 
 const result = {
-  schema: "AKARFINDER_PRODUCT_EXPERIENCE_CITY_COLORS_V1",
+  schema: "AKARFINDER_PRODUCT_EXPERIENCE_CITY_COLORS_V2",
   routeCount: routes.length,
   viewportCount: viewports.length,
   expectedScreenshotCount: routes.length * viewports.length,
