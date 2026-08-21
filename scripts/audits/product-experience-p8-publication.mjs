@@ -37,6 +37,7 @@ try {
           return style.display !== "none" && style.visibility !== "hidden" && rect.width > 0 && rect.height > 0;
         };
         const header = document.querySelector("header");
+        const bodyText = document.body.innerText.toLowerCase();
         return {
           clientWidth: document.documentElement.clientWidth,
           scrollWidth: document.documentElement.scrollWidth,
@@ -47,12 +48,12 @@ try {
           p8Present: Boolean(document.querySelector("[data-p8-publication-v4]")),
           previewVisible: visible("[data-p8-akar-preview]"),
           propertyTypeButtons: document.querySelectorAll('[role="group"][aria-label="Type du bien"] button').length,
-          scoreCopy: document.body.innerText.includes("Qualité des données"),
-          v4Copy: document.body.innerText.includes("Annonce AkarFinder · V4"),
-          territoryCopy: document.body.innerText.includes("Territoire AkarFinder"),
-          trustCopy: document.body.innerText.includes("Confiance AkarFinder"),
-          marketCopy: document.body.innerText.includes("Marché"),
-          sourceCopy: document.body.innerText.includes("Source"),
+          scoreCopy: bodyText.includes("qualité des données"),
+          v4Copy: bodyText.includes("annonce akarfinder · v4"),
+          territoryCopy: bodyText.includes("territoire akarfinder"),
+          trustCopy: bodyText.includes("confiance akarfinder"),
+          marketCopy: bodyText.includes("marché"),
+          sourceCopy: bodyText.includes("source"),
           bronzeClassCount: Array.from(document.querySelectorAll("[data-p8-publication-v4] [class]"))
             .filter((node) => node.getAttribute("class")?.includes("bronze")).length,
         };
