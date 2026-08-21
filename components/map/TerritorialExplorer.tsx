@@ -67,7 +67,7 @@ export function TerritorialExplorer({
     const mapCanvas = document.querySelector<HTMLElement>("[data-p4-map-canvas]");
     mapCanvas?.setAttribute("data-akarfinder-city-color-overview-active", "true");
 
-    const originals = new Map<HTMLElement, OriginalVisualState>();
+    const originals = new globalThis.Map<HTMLElement, OriginalVisualState>();
     const remember = (node: HTMLElement) => {
       if (originals.has(node)) return;
       originals.set(node, {
