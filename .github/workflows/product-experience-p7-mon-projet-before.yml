@@ -1,0 +1,70 @@
+name: Product Experience P7 Mon Projet BEFORE
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/product-experience-p7-mon-projet-before.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  baseline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Start exact main runtime
+        shell: bash
+        run: |
+          npm run dev -- -p 3218 > /tmp/p7-before.log 2>&1 &
+          for attempt in {1..90}; do
+            if curl -fsS http://127.0.0.1:3218/mon-projet >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/p7-before.log
+          exit 1
+      - name: Capture P7 BEFORE
+        env:
+          BASE_URL: http://127.0.0.1:3218
+        run: |
+          node - <<'NODE'
+          const { chromium } = require('playwright');
+          const fs = require('fs');
+          (async () => {
+            const out='artifacts/product-experience-p7-before'; fs.mkdirSync(out,{recursive:true});
+            const browser=await chromium.launch({headless:true});
+            const vps=[[390,844],[430,932],[768,900],[1280,900]];
+            const metrics=[]; const findings=[];
+            for (const [width,height] of vps) {
+              const page=await browser.newPage({viewport:{width,height},colorScheme:'light',reducedMotion:'reduce'});
+              const res=await page.goto(process.env.BASE_URL+'/mon-projet',{waitUntil:'networkidle',timeout:60000});
+              const m=await page.evaluate(()=>({clientWidth:document.documentElement.clientWidth,scrollWidth:document.documentElement.scrollWidth,h1Count:document.querySelectorAll('h1').length,mainCount:document.querySelectorAll('main').length,logoCount:document.querySelectorAll('img[src="/brand/logo-v2/logo-header-light.png"]').length,progressText:document.body.innerText.includes('Étape 1 sur 8'),questionText:document.body.innerText.includes('Que cherchez-vous à accomplir ?')}));
+              const local=[]; if((res?.status()??0)!==200)local.push('HTTP'); if(m.scrollWidth>m.clientWidth+1)local.push('OVERFLOW'); if(m.h1Count!==1)local.push('H1'); if(m.mainCount!==1)local.push('MAIN'); if(!m.progressText)local.push('P7_PROGRESS'); if(!m.questionText)local.push('P7_QUESTION');
+              const file=`mon-projet-${width}x${height}.png`; await page.screenshot({path:`${out}/${file}`,fullPage:true});
+              metrics.push({width,height,file,...m,findings:local}); findings.push(...local.map(f=>({width,height,finding:f}))); await page.close();
+            }
+            await browser.close(); fs.writeFileSync(`${out}/metrics.json`,JSON.stringify({schemaVersion:'AKARFINDER_PRODUCT_EXPERIENCE_P7_BEFORE_V1',screenshotCount:metrics.length,findingCount:findings.length,findings,metrics},null,2)); if(metrics.length!==4||findings.length)process.exit(1);
+          })();
+          NODE
+      - name: Upload P7 BEFORE
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: product-experience-p7-before-${{ github.run_id }}
+          path: artifacts/product-experience-p7-before
+          if-no-files-found: error
+          retention-days: 14
