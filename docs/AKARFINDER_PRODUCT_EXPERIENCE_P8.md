@@ -1,6 +1,6 @@
 # AkarFinder — Product Experience P8 Publication
 
-Statut : **IMPLEMENTED — AWAITING CERTIFICATION**
+Statut : **CERTIFIED — MERGED**
 
 ## Goal
 
@@ -8,9 +8,9 @@ Transformer `/vendre/dossier` en fabrique d’une annonce signature AkarFinder a
 
 `Bien → Confiance → Territoire → Marché → Vie locale → Décision → Source`
 
-Le formulaire doit collecter des faits réels, produire un score explicable et conserver la publication fail-closed.
+Le formulaire collecte des faits réels, produit un score explicable et conserve une publication fail-closed.
 
-## Success
+## Success validé
 
 - assistant guidé en 6 étapes : Type → Localisation → Caractéristiques → Prix & confiance → Médias → Vérification ;
 - champs dynamiques selon le type de bien ;
@@ -33,27 +33,46 @@ Le formulaire doit collecter des faits réels, produire un score explicable et c
 - Digest : `sha256:e6d7f848370711ad480dfc16f2b80f90723c248a19c2d4c255daf17769c5af01`
 - 4 viewports exacts.
 
-## Référence visuelle
+## AFTER certifié
 
-La V4 validée dans le chantier est la cible finale. Aucun nouveau mockup n’est requis.
+- Head certifié : `10460c45028575dbd939cbaea53374512c840036`
+- Run dédié : `32518229299` — SUCCESS
+- Artifact : `9459637165`
+- Digest : `sha256:b7601871caca2b3b10816a2cda8da44a4ad41c75dd364baa5eecc5350488bb25`
+- 4/4 captures AFTER : 390×844 / 430×932 / 768×900 / 1280×900
+- `findingCount = 0`
+- P8 contracts : SUCCESS
+- audit syntax : SUCCESS
+- TypeScript : SUCCESS
+- production build : SUCCESS
+- responsive visual certification : SUCCESS
+- Seller Entry Quality Standard : SUCCESS
+- Seller Secure Publish Flow : SUCCESS
+- Seller Structured Draft Gate : SUCCESS
+- Lead API Hardening : SUCCESS
+- Controlled Publication Management : SUCCESS
+- Moderation Correction Flow : SUCCESS
 
-Principes visuels V4 :
-- galerie immobilière forte avant l’intelligence ;
-- décision claire ;
-- confiance lisible et humaine ;
-- territoire central ;
-- modules Marché / Vie locale / Source ;
-- score de qualité secondaire, jamais KPI dominant ;
-- bleu / navy / blanc AkarFinder.
+## Validation visuelle
 
-## Preuve finale attendue
+- comparaison BEFORE → V4 → AFTER inspectée sur les 4 viewports ;
+- score visuel : **9,1/10** ;
+- réserve mineure : le bottom-nav mobile occupe une partie de la zone verticale sur 390 px ; le flow conserve `pb-20`, reste scrollable et aucun overflow n’est détecté ;
+- human visual gate : **APPROVED — 2026-08-21**.
 
-- tests ciblés P8 verts ;
-- `node --check` de l’audit ;
-- TypeScript vert ;
-- build production vert ;
-- 4/4 captures AFTER ;
-- `findingCount = 0` ;
-- inspection manuelle BEFORE → V4 → AFTER ;
-- score visuel ;
-- human gate avant merge.
+## Merge
+
+- PR : `#843`
+- merge method : squash
+- merge commit : `bb14bedc5fa4cde8013dd31a83479c09dd610502`
+- `main` vérifié sur ce commit après merge.
+
+## Invariants
+
+- score = qualité/complétude de la fiche, jamais valeur du bien ;
+- aucun champ inventé ;
+- données non applicables exclues du score ;
+- enrichissements marché AkarFinder hors score vendeur ;
+- publication fail-closed : hard gates + review humaine + confirmation explicite ;
+- aucune migration DB dans P8 ;
+- aucun déploiement Vercel.
