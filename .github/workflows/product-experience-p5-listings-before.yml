@@ -1,0 +1,52 @@
+name: Product Experience P5 Listings BEFORE
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/product-experience-p5-listings-before.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  baseline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Start current Listing fixture
+        shell: bash
+        run: |
+          npm run dev -- -p 3211 > /tmp/p5-listings-before.log 2>&1 &
+          for attempt in {1..90}; do
+            if curl -fsS http://127.0.0.1:3211/visual-qa/announcement-page-pro-conversion >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/p5-listings-before.log
+          exit 1
+      - name: Capture P5 Listings BEFORE
+        env:
+          BASE_URL: http://127.0.0.1:3211
+          AUDIT_OUTPUT_DIR: artifacts/product-experience-p5-listings-before
+        run: node scripts/audits/announcement-page-l11-baseline.mjs
+      - name: Upload P5 Listings BEFORE
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: product-experience-p5-listings-before-${{ github.run_id }}
+          path: artifacts/product-experience-p5-listings-before
+          if-no-files-found: error
+          retention-days: 14
