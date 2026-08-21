@@ -1,6 +1,6 @@
 # AkarFinder — Product Experience P9 Professionnels
 
-Statut : **IMPLEMENTED — AWAITING CERTIFICATION**
+Statut : **CERTIFIED — MERGED**
 
 ## Goal
 
@@ -10,7 +10,7 @@ Réconcilier `/pro` avec la cible canonique P1-B1 :
 
 Le hub doit ressembler à un produit professionnel premium sans présenter de KPI, partenaire, badge ou résultat comme réel tant que les données correspondantes n’existent pas.
 
-## Success
+## Success validé
 
 - hero canonique : `Vos annonces, votre identité, notre intelligence territoriale.` ;
 - aperçu dashboard visible mais explicitement non chiffré tant qu’aucun compte actif ne fournit de métriques ;
@@ -21,9 +21,6 @@ Le hub doit ressembler à un produit professionnel premium sans présenter de KP
 - règles trust et sponsoring conservées ;
 - aucune modification DB, permissions, ranking, source ou API d’activation ;
 - responsive 390 / 430 / 768 / 1280 sans overflow ;
-- 4/4 captures AFTER ;
-- `findingCount = 0` ;
-- human visual gate avant merge ;
 - aucun Vercel.
 
 ## BEFORE exact-main
@@ -39,7 +36,7 @@ Le hub doit ressembler à un produit professionnel premium sans présenter de KP
 - HTTP 200 sur les 4 viewports
 - 1 H1, 1 main, logo canonique, aucun overflow horizontal
 
-Le run BEFORE est rouge uniquement parce que son audit exigeait à tort un header exact-white. Le baseline observé est `rgba(7, 27, 51, 0.97)` sur les quatre viewports. Ce point est documenté comme état BEFORE et n’invalide pas les captures.
+Le run BEFORE était rouge uniquement parce que son audit exigeait à tort un header exact-white. Le baseline observé était `rgba(7, 27, 51, 0.97)` sur les quatre viewports. Ce point est conservé comme état BEFORE.
 
 ## Référence visuelle
 
@@ -56,26 +53,40 @@ Principes retenus :
 
 La maquette canonique utilise `42 annonces / 18 leads / 91% complétude`. Ces chiffres ne sont pas repris dans `/pro` produit : l’aperçu reste non chiffré tant qu’aucune donnée réelle ne l’alimente.
 
-## Implémentation
+## AFTER certifié
 
-- `SiteHeader variant="transparent"` sur la hero sombre ;
-- proposition de valeur canonique ;
-- aperçu dashboard non chiffré ;
-- trois piliers canoniques ;
-- routes `/pro/agences` et `/promoteurs` préservées ;
-- contrat data-for-value et règles de confiance conservés ;
-- `ProActivationForm` conservé fonctionnellement, harmonisé bleu/navy ;
-- aucun changement de `app/api/leads`, DB, migrations, permissions ou business logic.
+- Head certifié : `d3346506f3e4e86ab2f177e01bfbae117419d424`
+- Run dédié : `32522040260` — SUCCESS
+- Artifact : `9460942556`
+- Digest : `sha256:09029c06c04a8ca26be61533ee2bf039de2feef41a34e9074743a4cba602cdb9`
+- 4/4 captures AFTER : 390×844 / 430×932 / 768×900 / 1280×900
+- `findingCount = 0`
+- P9 contracts : SUCCESS
+- Phase 1 P1 B2B Productization Gate : SUCCESS
+- Lead API Hardening Gate : SUCCESS
+- Phase 1 Final Design Accessibility Gate : SUCCESS
+- UI All Pages Certification : SUCCESS
+- Canonical Baseline Compile Validation : SUCCESS
 
-## Certification attendue
+Les échecs `UX Gate 0 Contracts` et `Canonical Baseline Validation` observés sur le même commit étaient hors périmètre P9 ; la certification P9 dédiée et les gates métier/pro/accessibilité pertinentes sont vertes.
 
-- P9 contracts + contrat B2B historique verts ;
-- audit syntax vert ;
-- TypeScript vert ;
-- build production vert ;
-- 4/4 AFTER ;
-- `findingCount = 0` ;
-- inspection BEFORE → P1-B1 → AFTER ;
-- score visuel ;
-- human gate ;
-- squash merge seulement après preuve suffisante.
+## Validation visuelle
+
+- comparaison BEFORE → cible P1-B1 → AFTER inspectée sur 390 / 430 / 768 / 1280 ;
+- score visuel : **9,3/10** ;
+- réserve mineure : page mobile volontairement informationnelle et longue, sans défaut de navigation ou overflow ;
+- human visual gate : **APPROVED — 2026-08-21**.
+
+## Merge
+
+- PR : `#845`
+- merge method : squash
+- merge commit : `1a38b9cafab26d090f0b995c220d172202650673`
+- `main` vérifié sur ce commit après merge.
+
+## Invariants
+
+- aucun KPI fictif présenté comme réel ;
+- activation professionnelle reste fail-closed et séparée d’une organisation active ;
+- aucune modification DB, migrations, permissions, ranking, sources ou API d’activation ;
+- aucun déploiement Vercel.
