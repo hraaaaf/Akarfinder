@@ -6,7 +6,7 @@ export async function authorizeSellerDraftUpload(draftId: string, token: string)
   const supabase = getSupabaseServerClient();
   const { data, error } = await supabase
     .from("seller_property_drafts")
-    .select("id, upload_token_hash, review_status")
+    .select("id, upload_token_hash, review_status, declared_facts, weighted_completeness, photo_count")
     .eq("id", draftId)
     .single();
 

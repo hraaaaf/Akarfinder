@@ -8,9 +8,40 @@ import {
   SELLER_PHOTO_MAX_BYTES,
   SELLER_PHOTO_MAX_COUNT,
 } from "@/lib/seller/photo-upload";
+import {
+  calculateAkarFinderSellerScore,
+  sellerPublicationGate,
+  sellerScoreInputFromDeclaredFacts,
+  type SellerDraftFacts,
+} from "@/lib/seller/listing-score";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+async function refreshDraftQuality(
+  auth: NonNullable<Awaited<ReturnType<typeof authorizeSellerDraftUpload>>>,
+  draftId: string,
+  photoCount: number,
+) {
+  const facts = (auth.draft.declared_facts ?? {}) as SellerDraftFacts;
+  const score = calculateAkarFinderSellerScore(
+    sellerScoreInputFromDeclaredFacts(facts, photoCount, 0),
+  );
+  const gate = sellerPublicationGate({ facts, score: score.score, photoCount });
+  const reviewStatus = photoCount === 0 ? "draft" : gate.eligible ? "ready_for_review" : "uploading";
+
+  await auth.supabase
+    .from("seller_property_drafts")
+    .update({
+      photo_count: photoCount,
+      weighted_completeness: score.score,
+      review_status: reviewStatus,
+      publication_eligible: false,
+    })
+    .eq("id", draftId);
+
+  return { score: score.score, reviewStatus, gate };
+}
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ draftId: string }> }) {
   const { draftId } = await params;
@@ -67,12 +98,16 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     return NextResponse.json({ ok: false, error: "La photo n’a pas pu être rattachée au brouillon." }, { status: 500 });
   }
 
-  await auth.supabase
-    .from("seller_property_drafts")
-    .update({ photo_count: position + 1, review_status: "ready_for_review", publication_eligible: false })
-    .eq("id", draftId);
+  const quality = await refreshDraftQuality(auth, draftId, position + 1);
 
-  return NextResponse.json({ ok: true, photo_id: photo.id, position: photo.position, status: "ready_for_review" });
+  return NextResponse.json({
+    ok: true,
+    photo_id: photo.id,
+    position: photo.position,
+    status: quality.reviewStatus,
+    score: quality.score,
+    gate_missing: quality.gate.missing,
+  });
 }
 
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ draftId: string }> }) {
@@ -94,12 +129,19 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
 
   await auth.supabase.storage.from(SELLER_PHOTO_BUCKET).remove([photo.storage_path]);
   await auth.supabase.from("seller_property_draft_photos").delete().eq("id", photo.id);
-  const { count } = await auth.supabase.from("seller_property_draft_photos").select("id", { count: "exact", head: true }).eq("draft_id", draftId);
-  await auth.supabase.from("seller_property_drafts").update({
-    photo_count: count ?? 0,
-    review_status: (count ?? 0) > 0 ? "ready_for_review" : "draft",
-    publication_eligible: false,
-  }).eq("id", draftId);
+  const { count } = await auth.supabase
+    .from("seller_property_draft_photos")
+    .select("id", { count: "exact", head: true })
+    .eq("draft_id", draftId);
 
-  return NextResponse.json({ ok: true, photo_count: count ?? 0 });
+  const photoCount = count ?? 0;
+  const quality = await refreshDraftQuality(auth, draftId, photoCount);
+
+  return NextResponse.json({
+    ok: true,
+    photo_count: photoCount,
+    status: quality.reviewStatus,
+    score: quality.score,
+    gate_missing: quality.gate.missing,
+  });
 }

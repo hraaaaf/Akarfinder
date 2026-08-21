@@ -9,7 +9,10 @@ import {
 import { computeLeadTemperature } from "@/lib/onboarding/lead-temperature";
 import { prepareProfessionalActivationRequest } from "@/lib/professional/professional-activation-request";
 import { createSellerUploadToken } from "@/lib/seller/photo-upload";
-import { prepareSellerPropertyDraft } from "@/lib/seller/seller-property-draft";
+import {
+  normalizeSellerPropertyDraftInput,
+  prepareSellerPropertyDraft,
+} from "@/lib/seller/seller-property-draft";
 import { logConversionEvent } from "@/lib/tracking/log-event";
 import type { BuyerProfile } from "@/lib/onboarding/types";
 
@@ -41,21 +44,25 @@ export async function POST(request: NextRequest) {
     ? body as Record<string, unknown>
     : {};
 
+  const sellerPropertyInput = normalizeSellerPropertyDraftInput(rawBody.seller_property);
   const sellerDraft = source_channel === "seller"
     ? prepareSellerPropertyDraft({
-        city: profile.city,
-        neighborhood: profile.neighborhood,
-        propertyType: profile.propertyType,
-        surface: profile.surface,
-        price: profile.budgetTotal,
-        bedrooms: profile.bedrooms,
-        condition: profile.condition,
+        ...sellerPropertyInput,
+        city: sellerPropertyInput.city ?? profile.city,
+        neighborhood: sellerPropertyInput.neighborhood ?? profile.neighborhood,
+        propertyType: sellerPropertyInput.propertyType ?? profile.propertyType,
+        surface: sellerPropertyInput.surface ?? profile.surface,
+        price: sellerPropertyInput.price ?? profile.budgetTotal,
+        bedrooms: sellerPropertyInput.bedrooms ?? profile.bedrooms,
+        condition: sellerPropertyInput.condition ?? profile.condition,
+        transactionType: sellerPropertyInput.transactionType ?? "sale",
+        contactComplete: Boolean(profile.name?.trim() && normalizedPhone),
       })
     : null;
 
   if (sellerDraft && !sellerDraft.structurally_useful) {
     return NextResponse.json(
-      { ok: false, error: "Ville, type de bien et surface sont requis pour créer le brouillon structuré du bien." },
+      { ok: false, error: "Type, ville, surface, prix et contact sont requis pour créer le brouillon structuré du bien." },
       { status: 400 },
     );
   }

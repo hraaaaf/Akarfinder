@@ -32,13 +32,21 @@ describe("AF-AUDIT-P1-049 — seller property draft contract", () => {
     assert.equal(Object.keys(facts).some((key) => key.startsWith("intelligence.")), false);
   });
 
-  it("refuses to call a seller draft structurally useful without city, type, and surface", () => {
+  it("requires the stronger V4 structural minimum before calling a seller draft useful", () => {
     const incomplete = prepareSellerPropertyDraft({ city: "Rabat" });
     assert.equal(incomplete.structurally_useful, false);
     assert.ok(incomplete.required_missing.includes("classification.property_type"));
     assert.ok(incomplete.required_missing.includes("surfaces.surface_total_m2"));
+    assert.ok(incomplete.required_missing.includes("offer.price_amount"));
+    assert.ok(incomplete.required_missing.includes("seller.contact_complete"));
 
-    const complete = prepareSellerPropertyDraft({ city: "Rabat", propertyType: "Villa", surface: 300 });
+    const complete = prepareSellerPropertyDraft({
+      city: "Rabat",
+      propertyType: "Villa",
+      surface: 300,
+      price: 4_500_000,
+      contactComplete: true,
+    });
     assert.equal(complete.structurally_useful, true);
     assert.equal(complete.required_missing.length, 0);
   });
@@ -67,9 +75,9 @@ describe("AF-AUDIT-P1-049 — lead and property dataset remain separate", () => 
     assert.ok(migration.includes("to service_role"));
   });
 
-  it("uses the secure structured draft UI and explains declared-vs-verified truth", () => {
+  it("uses the secure V4 draft UI and keeps declared facts separate from verified facts", () => {
     assert.ok(page.includes("SellerSecurePublishForm"));
-    assert.ok(form.includes("faits déclarés"));
+    assert.ok(form.includes("AkarFinder sépare toujours ce qui est déclaré de ce qui a réellement été vérifié"));
     assert.ok(form.includes("Rien n’est publié automatiquement"));
     assert.ok(form.includes("city.trim()"));
     assert.ok(form.includes("propertyType"));

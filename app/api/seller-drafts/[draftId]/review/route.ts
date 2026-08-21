@@ -7,6 +7,10 @@ import {
   type SellerReviewStatus,
 } from "@/lib/seller/moderation";
 import { getSupabaseServerClient } from "@/lib/db/supabase-client";
+import {
+  sellerPublicationGate,
+  type SellerDraftFacts,
+} from "@/lib/seller/listing-score";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -19,7 +23,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
   const { data, error } = await auth.supabase
     .from("seller_property_drafts")
-    .select("id, review_status, review_reasons, reviewer_note, seller_correction_note, reviewed_at, resubmitted_at, publication_eligible")
+    .select("id, review_status, review_reasons, reviewer_note, seller_correction_note, reviewed_at, resubmitted_at, publication_eligible, weighted_completeness, photo_count")
     .eq("id", draftId)
     .single();
 
@@ -80,7 +84,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const supabase = getSupabaseServerClient();
   const { data: draft } = await supabase
     .from("seller_property_drafts")
-    .select("id, review_status")
+    .select("id, review_status, declared_facts, weighted_completeness, photo_count")
     .eq("id", draftId)
     .single();
   if (!draft || !canReviewerDecide(draft.review_status as SellerReviewStatus)) {
@@ -91,6 +95,21 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const note = body.note?.trim().slice(0, 1200) || null;
   if (body.decision === "request_changes" && reasons.length === 0) {
     return NextResponse.json({ ok: false, error: "Choisissez au moins une correction simple." }, { status: 400 });
+  }
+
+  if (body.decision === "approve") {
+    const gate = sellerPublicationGate({
+      facts: (draft.declared_facts ?? {}) as SellerDraftFacts,
+      score: Number(draft.weighted_completeness ?? 0),
+      photoCount: Number(draft.photo_count ?? 0),
+    });
+    if (!gate.eligible) {
+      return NextResponse.json({
+        ok: false,
+        error: `Le dossier ne peut pas être approuvé : ${gate.missing.join(", ")}.`,
+        gate_missing: gate.missing,
+      }, { status: 409 });
+    }
   }
 
   const approved = body.decision === "approve";

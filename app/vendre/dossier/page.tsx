@@ -9,9 +9,9 @@ import type { SellerIntent } from "@/lib/seller/readiness";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Décrire mon bien | AkarFinder",
+  title: "Créer mon annonce AkarFinder | AkarFinder",
   description:
-    "Préparez un dossier clair et complet pour publier, estimer ou confier votre bien à un professionnel.",
+    "Construisez une annonce immobilière riche, structurée et vérifiable avant toute mise en ligne.",
 };
 
 const SELLER_INTENTS: SellerIntent[] = ["publish", "estimate", "professional"];
@@ -30,16 +30,14 @@ export default async function VendreDossierPage({
     : "publish";
 
   return (
-    <main className="min-h-screen bg-background text-foreground">
+    <main className="min-h-screen bg-[#F6FAFD] text-foreground">
       <SiteHeader compact />
-      <section className="pb-20 pt-8 sm:pt-12">
-        <Container>
-          <div className="min-w-0 [&>div]:min-w-0 [&>div>section]:min-w-0">
-            <SellerSecurePublishForm
-              initialPropertyType={initialPropertyType}
-              initialIntent={initialIntent}
-            />
-          </div>
+      <section className="pb-20 pt-5 sm:pt-8">
+        <Container fluid>
+          <SellerSecurePublishForm
+            initialPropertyType={initialPropertyType}
+            initialIntent={initialIntent}
+          />
         </Container>
       </section>
       <SiteFooter />

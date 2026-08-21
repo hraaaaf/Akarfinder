@@ -8,6 +8,7 @@ const migration = readFileSync("supabase/migrations/20260805153000_seller_secure
 const route = readFileSync("app/api/seller-drafts/[draftId]/photos/route.ts", "utf8");
 const leadRoute = readFileSync("app/api/leads/route.ts", "utf8");
 const form = readFileSync("components/vendre/SellerSecurePublishForm.tsx", "utf8");
+const preview = readFileSync("components/vendre/SellerAkarFinderPreview.tsx", "utf8");
 const page = readFileSync("app/vendre/dossier/page.tsx", "utf8");
 
 test("private storage and publication firewall stay explicit", () => {
@@ -39,16 +40,17 @@ test("binary signatures are checked instead of trusting mime alone", () => {
   assert.equal(hasExpectedImageSignature(new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]), "image/png"), true);
 });
 
-test("UI exposes preview, ordering, deletion, progress and truthful review status", () => {
+test("UI exposes V4 preview, ordering, deletion, progress and truthful review status", () => {
   assert.match(page, /SellerSecurePublishForm/);
-  assert.match(form, /Aperçu final/);
-  assert.match(form, /Aperçu et ordre des photos/);
+  assert.match(form, /SellerAkarFinderPreview/);
+  assert.match(preview, /data-p8-akar-preview/);
+  assert.match(form, /Galerie signature AkarFinder/);
   assert.match(form, /ArrowUp/);
   assert.match(form, /ArrowDown/);
   assert.match(form, /Retirer/);
-  assert.match(form, /Envoi privé/);
-  assert.match(form, /Prête à vérifier/);
+  assert.match(form, /envoi privé/i);
   assert.match(form, /Rien n’est publié automatiquement/);
+  assert.match(form, /SellerReviewStatusPanel/);
   assert.match(form, /role="alert"/);
 });
 
