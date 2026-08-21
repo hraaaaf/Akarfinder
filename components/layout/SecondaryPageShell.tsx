@@ -22,7 +22,11 @@ export function SecondaryPageShell({
   maxWidth = "2xl",
 }: SecondaryPageShellProps) {
   return (
-    <main className={`min-h-screen ${ui.pageLight}`} data-p4-secondary-shell>
+    <main
+      className={`min-h-screen ${ui.pageLight}`}
+      data-p4-secondary-shell
+      data-secondary-page-shell="akarfinder-v1"
+    >
       <SiteHeader searchMode fluid />
       <section className="pb-28 pt-7 sm:pb-16 sm:pt-10 md:pb-16 lg:pt-12">
         <Container className={maxWidth === "3xl" ? "max-w-3xl" : "max-w-2xl"}>

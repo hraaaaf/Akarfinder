@@ -1,0 +1,65 @@
+name: Product Experience P10 Secondary
+
+on:
+  pull_request:
+    paths:
+      - "components/layout/SecondaryPageShell.tsx"
+      - "app/politique-confidentialite/page.tsx"
+      - "scripts/audits/product-experience-p10-secondary.mjs"
+      - "scripts/scrapers/__tests__/product-experience-p10-secondary.test.ts"
+      - ".github/workflows/product-experience-p10-secondary.yml"
+      - "docs/AKARFINDER_PRODUCT_EXPERIENCE_P10.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: product-experience-p10-secondary-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  secondary-certification:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: P10 secondary contracts
+        run: npx tsx --test scripts/scrapers/__tests__/product-experience-p10-secondary.test.ts
+      - name: Validate P10 audit syntax
+        run: node --check scripts/audits/product-experience-p10-secondary.mjs
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Start P10 production server
+        shell: bash
+        run: |
+          npm run start -- -p 3223 > /tmp/product-experience-p10.log 2>&1 &
+          for attempt in {1..60}; do
+            if curl -fsS http://127.0.0.1:3223/faq >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/product-experience-p10.log
+          exit 1
+      - name: P10 responsive visual certification
+        env:
+          BASE_URL: http://127.0.0.1:3223
+          OUTPUT_DIR: artifacts/product-experience-p10-secondary
+        run: node scripts/audits/product-experience-p10-secondary.mjs
+      - name: Upload P10 AFTER proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: product-experience-p10-secondary-${{ github.run_id }}
+          path: artifacts/product-experience-p10-secondary
+          if-no-files-found: error
+          retention-days: 14
