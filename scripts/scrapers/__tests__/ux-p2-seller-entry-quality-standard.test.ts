@@ -14,19 +14,20 @@ test("seller entry exposes three plain-language intentions", () => {
   assert.match(shell, /intent=\$\{intent\}/);
 });
 
-test("all intentions share one secure dossier and human review states", () => {
+test("all intentions share one V4 secure dossier and declared-vs-verified truth", () => {
   assert.match(dossier, /SellerSecurePublishForm/);
+  assert.match(form, /data-p8-publication-v4/);
   assert.match(form, /Brouillon/);
-  assert.match(form, /Prête à vérifier/);
-  assert.match(form, /faits déclarés/);
-  assert.doesNotMatch(form, /pipeline|score technique|complétude des données/i);
+  assert.match(form, /AkarFinder sépare toujours ce qui est déclaré de ce qui a réellement été vérifié/);
+  assert.doesNotMatch(form, /pipeline|score technique/i);
 });
 
-test("draft excludes automatic publication and keeps consent explicit", () => {
+test("draft remains fail-closed with explicit consent and publication gates", () => {
   assert.match(form, /consent/);
   assert.match(form, /Rien n’est publié automatiquement/);
-  assert.match(form, /publication n’est possible depuis ce formulaire/);
-  assert.match(form, /Enregistrer le brouillon/);
+  assert.match(form, /AKARFINDER_SELLER_MIN_PHOTOS/);
+  assert.match(form, /AKARFINDER_SELLER_SCORE_MIN_PUBLISH/);
+  assert.match(form, /if \(!complete\) return/);
 });
 
 test("photo checks are local, bounded and understandable", () => {
@@ -35,7 +36,8 @@ test("photo checks are local, bounded and understandable", () => {
   assert.match(form, /naturalWidth >= 1200/);
   assert.match(form, /naturalHeight >= 800/);
   assert.match(form, /slice\(0, 12\)/);
-  assert.match(form, /Aperçu et ordre des photos/);
+  assert.match(form, /Galerie signature AkarFinder/);
+  assert.match(form, /Ajouter jusqu’à 12 photos/);
   assert.doesNotMatch(form, /dans ce LOT/i);
 });
 
@@ -60,10 +62,11 @@ test("readiness rewards useful information without inventing value", () => {
   assert.equal(useful.essentialsComplete, true);
 });
 
-test("mobile and accessibility contracts remain explicit", () => {
+test("mobile, accessibility and submit guards remain explicit", () => {
   assert.match(form, /ariaLabel="Type du bien"/);
   assert.match(form, /aria-label="Monter"/);
   assert.match(form, /aria-label="Descendre"/);
   assert.match(form, /role="alert"/);
-  assert.match(form, /disabled={!complete}/);
+  assert.match(form, /disabled={!canAdvance \|\| busy}/);
+  assert.match(form, /if \(!complete\) return/);
 });

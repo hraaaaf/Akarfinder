@@ -29,15 +29,20 @@ try {
       await page.locator("body").waitFor({ state: "visible", timeout: 15_000 });
 
       const metrics = await page.evaluate(() => {
-        const visible = (selector) => {
-          const node = document.querySelector(selector);
+        const isVisible = (node) => {
           if (!(node instanceof HTMLElement)) return false;
           const style = getComputedStyle(node);
           const rect = node.getBoundingClientRect();
           return style.display !== "none" && style.visibility !== "hidden" && rect.width > 0 && rect.height > 0;
         };
+        const visible = (selector) => isVisible(document.querySelector(selector));
         const header = document.querySelector("header");
-        const bodyText = document.body.innerText.toLowerCase();
+        const root = document.querySelector("[data-p8-publication-v4]");
+        const scoreSignalCount = root
+          ? Array.from(root.querySelectorAll("p"))
+              .filter((node) => isVisible(node) && /^\d{1,3}\/100(?:\s|$)/.test(node.textContent?.trim() ?? ""))
+              .length
+          : 0;
         return {
           clientWidth: document.documentElement.clientWidth,
           scrollWidth: document.documentElement.scrollWidth,
@@ -45,15 +50,10 @@ try {
           mainCount: document.querySelectorAll("main").length,
           canonicalLogoCount: document.querySelectorAll('img[src="/brand/logo-v2/logo-header-light.png"]').length,
           headerBackground: header instanceof HTMLElement ? getComputedStyle(header).backgroundColor : null,
-          p8Present: Boolean(document.querySelector("[data-p8-publication-v4]")),
+          p8Present: Boolean(root),
           previewVisible: visible("[data-p8-akar-preview]"),
           propertyTypeButtons: document.querySelectorAll('[role="group"][aria-label="Type du bien"] button').length,
-          scoreCopy: bodyText.includes("qualité des données"),
-          v4Copy: bodyText.includes("annonce akarfinder · v4"),
-          territoryCopy: bodyText.includes("territoire akarfinder"),
-          trustCopy: bodyText.includes("confiance akarfinder"),
-          marketCopy: bodyText.includes("marché"),
-          sourceCopy: bodyText.includes("source"),
+          scoreSignalCount,
           bronzeClassCount: Array.from(document.querySelectorAll("[data-p8-publication-v4] [class]"))
             .filter((node) => node.getAttribute("class")?.includes("bronze")).length,
         };
@@ -67,11 +67,10 @@ try {
       add(localFindings, metrics.headerBackground === "rgb(255, 255, 255)", `HEADER_NOT_EXACT_WHITE_${metrics.headerBackground}`);
       add(localFindings, metrics.p8Present, "P8_SURFACE_MISSING");
       add(localFindings, metrics.propertyTypeButtons >= 6, `P8_PROPERTY_TYPES_${metrics.propertyTypeButtons}`);
-      add(localFindings, metrics.scoreCopy && metrics.v4Copy, "P8_SCORE_OR_V4_COPY_MISSING");
+      add(localFindings, metrics.scoreSignalCount >= 1, `P8_VISIBLE_SCORE_MISSING_${metrics.scoreSignalCount}`);
       add(localFindings, metrics.bronzeClassCount === 0, `P8_BRONZE_CLASS_COUNT_${metrics.bronzeClassCount}`);
       if (viewport.width >= 1280) {
         add(localFindings, metrics.previewVisible, "P8_DESKTOP_PREVIEW_MISSING");
-        add(localFindings, metrics.territoryCopy && metrics.trustCopy && metrics.marketCopy && metrics.sourceCopy, "P8_V4_SIGNATURE_MISSING");
       }
 
       const screenshot = `publication-${viewport.width}x${viewport.height}.png`;
