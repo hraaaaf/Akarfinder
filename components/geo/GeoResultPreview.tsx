@@ -8,19 +8,23 @@ type Props = {
   listings: Listing[];
   searchHref: string;
   contextLabel: string;
+  accent?: "default" | "brand";
 };
 
-export function GeoResultPreview({ listings, searchHref, contextLabel }: Props) {
+export function GeoResultPreview({ listings, searchHref, contextLabel, accent = "default" }: Props) {
+  const accentClass = accent === "brand" ? "text-brand-primary" : "text-bronze-500";
+  const eyebrow = accent === "brand" ? "Biens accessibles" : "Aperçu du moteur";
+
   return (
     <section className="border-t border-border/12 py-12 dark:border-white/8 lg:py-16">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="text-[10.5px] font-extrabold uppercase tracking-[0.2em] text-bronze-500">Aperçu du moteur</p>
+            <p className={`text-[10.5px] font-extrabold uppercase tracking-[0.2em] ${accentClass}`}>{eyebrow}</p>
             <h2 className="mt-2 text-[1.65rem] font-extrabold tracking-[-0.04em] text-foreground">Résultats actuellement accessibles · {contextLabel}</h2>
             <p className="mt-2 max-w-2xl text-[12.5px] leading-5 text-muted-foreground">Cet aperçu reflète uniquement les résultats actuellement chargés et publiables. Il ne mesure pas le volume total du marché local.</p>
           </div>
-          <Link href={searchHref} className="inline-flex items-center gap-2 text-[13px] font-extrabold text-bronze-500">Voir dans le moteur <ArrowRight size={13} aria-hidden="true" /></Link>
+          <Link href={searchHref} className={`inline-flex items-center gap-2 text-[13px] font-extrabold ${accentClass}`}>Voir dans le moteur <ArrowRight size={13} aria-hidden="true" /></Link>
         </div>
 
         {listings.length ? (
@@ -36,13 +40,13 @@ export function GeoResultPreview({ listings, searchHref, contextLabel }: Props) 
                     <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground"><MapPin size={11} aria-hidden="true" />{listing.city}</span>
                   </div>
                   <h3 className="mt-4 line-clamp-2 text-[14px] font-extrabold leading-5 text-foreground">{listing.title}</h3>
-                  <p className="mt-2 text-xl font-extrabold tracking-[-0.03em] text-bronze-500">{formatPrice(listing.price, listing.currency)}</p>
+                  <p className={`mt-2 text-xl font-extrabold tracking-[-0.03em] ${accentClass}`}>{formatPrice(listing.price, listing.currency)}</p>
                   <div className="mt-3 flex flex-wrap gap-3 text-[11.5px] font-semibold text-muted-foreground">
                     {listing.neighborhood ? <span>{listing.neighborhood}</span> : null}
                     {listing.surface_m2 > 0 ? <span>{formatSurface(listing.surface_m2)}</span> : null}
                     {listing.property_type ? <span>{listing.property_type}</span> : null}
                   </div>
-                  <Link href={href} target={observed ? "_blank" : undefined} rel={observed ? "noopener noreferrer" : undefined} className="mt-5 inline-flex items-center gap-2 text-[12.5px] font-extrabold text-bronze-500">{observed ? "Voir la source originale" : "Voir la fiche"}<ArrowRight size={13} aria-hidden="true" /></Link>
+                  <Link href={href} target={observed ? "_blank" : undefined} rel={observed ? "noopener noreferrer" : undefined} className={`mt-5 inline-flex items-center gap-2 text-[12.5px] font-extrabold ${accentClass}`}>{observed ? "Voir la source originale" : "Voir la fiche"}<ArrowRight size={13} aria-hidden="true" /></Link>
                 </article>
               );
             })}
