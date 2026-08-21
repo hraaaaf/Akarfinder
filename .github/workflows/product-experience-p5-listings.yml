@@ -1,0 +1,70 @@
+name: Product Experience P5 Listings
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "components/listings/ListingExperienceSummary.tsx"
+      - "components/listings/PropertyDetailV2.tsx"
+      - "lib/property-detail/listing-experience-summary.ts"
+      - "scripts/scrapers/__tests__/product-experience-p5-listings.test.ts"
+      - "scripts/audits/product-experience-p5-listings.mjs"
+      - "docs/AKARFINDER_PRODUCT_EXPERIENCE_P5.md"
+      - ".github/workflows/product-experience-p5-listings.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  listing-hierarchy-certification:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: P5 hierarchy and truth contracts
+        run: >-
+          npx tsx --test
+          scripts/scrapers/__tests__/product-experience-p5-listings.test.ts
+          scripts/scrapers/__tests__/announcement-page-l3-core.test.ts
+          scripts/scrapers/__tests__/announcement-page-l11-pro-conversion.test.ts
+          scripts/scrapers/__tests__/announcement-page-l12-project-continuity.test.ts
+          scripts/scrapers/__tests__/listing-detail-boundary.test.ts
+          scripts/scrapers/__tests__/ux-p1-decision-continuity.test.ts
+          scripts/scrapers/__tests__/ux-p1-mobile-decision-ergonomics.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Start P5 production server
+        shell: bash
+        run: |
+          npm run start -- -p 3215 > /tmp/product-experience-p5.log 2>&1 &
+          for attempt in {1..60}; do
+            if curl -fsS http://127.0.0.1:3215/visual-qa/announcement-page-pro-conversion >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/product-experience-p5.log
+          exit 1
+      - name: P5 responsive visual certification
+        env:
+          BASE_URL: http://127.0.0.1:3215
+          AUDIT_OUTPUT_DIR: artifacts/product-experience-p5-listings
+        run: node scripts/audits/product-experience-p5-listings.mjs
+      - name: Upload P5 AFTER proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: product-experience-p5-listings-${{ github.run_id }}
+          path: artifacts/product-experience-p5-listings
+          if-no-files-found: error
+          retention-days: 14

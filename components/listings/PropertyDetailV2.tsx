@@ -5,6 +5,7 @@ import { CompareToggleButton } from "@/components/compare/CompareToggleButton";
 import { AkarInsightCard } from "@/components/listings/AkarInsightCard";
 import { ExpandablePropertyDescription } from "@/components/listings/ExpandablePropertyDescription";
 import { FinanceMarocSection } from "@/components/listings/FinanceMarocSection";
+import { ListingExperienceSummary, ListingSourceNote } from "@/components/listings/ListingExperienceSummary";
 import { LivingHereSection } from "@/components/listings/LivingHereSection";
 import { MarketComparablesSection } from "@/components/listings/MarketComparablesSection";
 import { MarketComparablesSummaryCard } from "@/components/listings/MarketComparablesSummaryCard";
@@ -119,20 +120,29 @@ export function PropertyDetailV2({
             <PropertyCore listing={listing} />
           </div>
 
-          <div className="mt-6">
-            <AkarInsightCard detail={detail} />
-          </div>
+          <ListingExperienceSummary
+            detail={detail}
+            marketComparables={marketComparables}
+            livingHere={livingHere}
+          />
 
-          <div className="lg:hidden">
-            <ProjectPersonalizationCard listing={listing} projectId={projectId} />
-          </div>
-
-          <div className="mt-4 lg:hidden">
+          <div data-p5-listing-decision="mobile" className="mt-4 lg:hidden">
             <ProfessionalConversionCard
               listing={listing}
               model={proConversion}
-              mobileIdentityOnly
             />
+          </div>
+
+          <div data-p5-listing-source="mobile" className="mt-3 lg:hidden">
+            <ListingSourceNote detail={detail} />
+          </div>
+
+          <div className="mt-4 lg:hidden">
+            <ProjectPersonalizationCard listing={listing} projectId={projectId} />
+          </div>
+
+          <div data-p5-listing-intelligence="detail" className="mt-6">
+            <AkarInsightCard detail={detail} />
           </div>
 
           <div data-announcement-property-details="ann-l3" className="mt-6 border-t border-slate-200">
@@ -213,10 +223,15 @@ export function PropertyDetailV2({
         </div>
 
         <aside className="hidden space-y-4 lg:sticky lg:top-5 lg:block">
-          <ProfessionalConversionCard
-            listing={listing}
-            model={proConversion}
-          />
+          <div data-p5-listing-decision="desktop">
+            <ProfessionalConversionCard
+              listing={listing}
+              model={proConversion}
+            />
+          </div>
+          <div data-p5-listing-source="desktop">
+            <ListingSourceNote detail={detail} />
+          </div>
           <ProjectPersonalizationCard listing={listing} projectId={projectId} compactRail />
           <MarketComparablesSummaryCard model={marketComparables} />
         </aside>
