@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -36,21 +37,23 @@ const TOTAL_STEPS = 8;
 const STEP_LABELS = [
   "Votre projet",
   "Zone et budget",
-  "Le bien recherché",
+  "Le bien",
   "Votre quotidien",
-  "Vos priorités",
-  "Vos compromis",
+  "Priorités",
+  "Compromis",
   "Récapitulatif",
-  "Lancer la recherche",
+  "Recherche",
 ] as const;
 
 const OBJECTIVES: Array<{ value: SearchObjective; label: string; detail: string; icon: typeof Home }> = [
   { value: "buy", label: "Acheter", detail: "Pour y vivre ou préparer un projet patrimonial", icon: Home },
   { value: "rent", label: "Louer", detail: "Trouver un logement adapté à votre quotidien", icon: Building2 },
   { value: "invest", label: "Investir", detail: "Structurer vos critères sans rendement promis", icon: WalletCards },
-  { value: "new_build", label: "Acheter dans le neuf", detail: "Explorer les programmes et biens neufs", icon: Sparkles },
+  { value: "new_build", label: "Neuf", detail: "Explorer les programmes neufs", icon: Sparkles },
   { value: "explore", label: "Je précise encore mon projet", detail: "Commencer sans décision définitive", icon: Search },
 ];
+
+const PRIMARY_OBJECTIVES = OBJECTIVES.filter((item) => item.value !== "explore");
 
 const USES: Array<{ value: IntendedUse; label: string; objectives: SearchObjective[] }> = [
   { value: "primary_residence", label: "Résidence principale", objectives: ["buy", "new_build", "explore"] },
@@ -105,6 +108,7 @@ function ChoiceButton({ active, children, onClick }: { active: boolean; children
 export function MonProjetWizardP1A() {
   const router = useRouter();
   const [step, setStep] = useState(1);
+  const [projectQuestion, setProjectQuestion] = useState<"objective" | "usage">("objective");
   const [session, setSession] = useState<CompanionSession>(() => createCompanionSession());
   const [objective, setObjective] = useState<SearchObjective | null>(null);
   const [uses, setUses] = useState<IntendedUse[]>([]);
@@ -184,8 +188,20 @@ export function MonProjetWizardP1A() {
     return events;
   }
 
+  function chooseObjective(value: SearchObjective) {
+    setObjective(value);
+    setUses([]);
+    setProjectQuestion("usage");
+  }
+
   async function goBack() {
-    if (step === 1 || pending) return;
+    if (pending) return;
+    if (step === 1 && projectQuestion === "usage") {
+      setProjectQuestion("objective");
+      setUses([]);
+      return;
+    }
+    if (step === 1) return;
     const targetStep = step - 1;
     setPending(true);
     setError(null);
@@ -227,82 +243,116 @@ export function MonProjetWizardP1A() {
 
   const selectedBudget = session.profile.objective?.value === "rent" ? session.profile.budget.rent_monthly_max_mad : session.profile.budget.purchase_max_mad;
   const summary = `${objectiveLabel(session.profile.objective?.value ?? null)}${session.profile.location.preferred_cities[0] ? ` à ${session.profile.location.preferred_cities[0]}` : ""}${session.profile.property.property_types.length ? `, pour ${session.profile.property.property_types.join(" ou ").toLowerCase()}` : ""}${selectedBudget ? `, jusqu’à ${selectedBudget.toLocaleString("fr-FR")} DH${session.profile.objective?.value === "rent" ? "/mois" : ""}` : ", budget encore à préciser"}.`;
+  const canGoBack = step > 1 || projectQuestion === "usage";
 
   return (
-    <div className="mx-auto max-w-5xl">
-      <div className="sticky top-0 z-20 -mx-4 border-b border-slate-200 bg-white/95 px-4 py-3 backdrop-blur sm:static sm:mx-0 sm:rounded-2xl sm:border sm:px-5">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#0B63CE]">Mon Projet · environ 2 minutes</p>
-            <p className="mt-1 text-sm font-extrabold text-[#071B33]">Étape {step} sur {TOTAL_STEPS} · {STEP_LABELS[step - 1]}</p>
+    <div className="mx-auto max-w-6xl" data-p7-mon-projet>
+      <div className="grid gap-5 lg:grid-cols-[220px_minmax(0,1fr)] lg:items-start">
+        <aside className="hidden lg:block" data-p7-progress-rail>
+          <div className="rounded-[28px] border border-[#DCE8F5] bg-white p-5 shadow-[0_16px_45px_rgba(11,31,58,0.06)]">
+            <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#0B63CE]">Mon Projet</p>
+            <p className="mt-2 text-sm font-extrabold text-[#071B33]">Étape {step} sur {TOTAL_STEPS}</p>
+            <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-[#0B63CE] transition-all" style={{ width: `${(step / TOTAL_STEPS) * 100}%` }} /></div>
+            <div className="mt-5 space-y-2.5 text-[11px] font-bold text-slate-500">
+              {STEP_LABELS.map((label, index) => (
+                <p key={label} className={index + 1 === step ? "text-[#0B63CE]" : ""} aria-current={index + 1 === step ? "step" : undefined} data-p7-step-label>
+                  {index + 1}. {label}
+                </p>
+              ))}
+            </div>
           </div>
-          {step > 1 ? <button type="button" onClick={goBack} className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 px-3 py-2 text-xs font-extrabold text-slate-600"><ArrowLeft size={14} />Retour</button> : null}
+        </aside>
+
+        <div className="min-w-0">
+          <div className="rounded-[28px] border border-[#DCE8F5] bg-white p-5 shadow-[0_16px_45px_rgba(11,31,58,0.05)] lg:hidden" data-p7-progress-mobile>
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#0B63CE]">Mon Projet</p>
+                <p className="mt-2 text-sm font-extrabold text-[#071B33]">Étape {step} sur {TOTAL_STEPS}</p>
+              </div>
+              {canGoBack ? <button type="button" onClick={goBack} className="inline-flex min-h-10 items-center gap-1.5 rounded-xl border border-slate-200 px-3 text-xs font-extrabold text-slate-600"><ArrowLeft size={14} />Retour</button> : null}
+            </div>
+            <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-[#0B63CE] transition-all" style={{ width: `${(step / TOTAL_STEPS) * 100}%` }} /></div>
+          </div>
+
+          <section className="mt-5 rounded-[28px] border border-[#DCE8F5] bg-white p-5 shadow-[0_24px_70px_rgba(15,23,42,0.08)] sm:p-8 lg:mt-0" data-p7-question-panel>
+            <div className="mb-5 flex min-h-10 items-center justify-between gap-3">
+              <div className="hidden lg:block">{canGoBack ? <button type="button" onClick={goBack} className="inline-flex min-h-10 items-center gap-1.5 rounded-xl border border-slate-200 px-3 text-xs font-extrabold text-slate-600"><ArrowLeft size={14} />Retour</button> : null}</div>
+              <Link href="/mon-projet/espace" className="ml-auto inline-flex min-h-10 items-center rounded-xl border border-[#DCE8F5] px-3 text-[11px] font-extrabold text-[#36506F] hover:border-[#93C5FD] hover:text-[#0B63CE]">Mes projets enregistrés</Link>
+            </div>
+
+            {step === 1 && projectQuestion === "objective" ? <>
+              <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#0B63CE]">Votre projet</p>
+              <h1 className="mt-3 text-3xl font-extrabold tracking-[-0.04em] text-[#071B33] sm:text-5xl">Que cherchez-vous à accomplir ?</h1>
+              <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-500">Une question à la fois. Vos réponses deviennent directement des critères de recherche.</p>
+              <div className="mt-7 grid gap-3 sm:grid-cols-2">
+                {PRIMARY_OBJECTIVES.map(({ value, label, detail, icon: Icon }) => <button key={value} type="button" data-p7-primary-objective onClick={() => chooseObjective(value)} className="rounded-[20px] border border-[#DCE8F5] bg-white p-5 text-left transition hover:border-[#0B63CE] hover:bg-[#F8FBFF]"><Icon size={20} className="text-[#0B63CE]" /><span className="mt-4 block text-base font-extrabold text-[#071B33]">{label}</span><span className="mt-1 block text-xs leading-5 text-slate-500">{detail}</span></button>)}
+              </div>
+              <button type="button" data-p7-explore-secondary onClick={() => chooseObjective("explore")} className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-xl px-1 text-sm font-extrabold text-[#0B63CE]"><Search size={16} />Je précise encore mon projet</button>
+            </> : null}
+
+            {step === 1 && projectQuestion === "usage" ? <>
+              <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#0B63CE]">Votre projet</p>
+              <h1 className="mt-3 text-3xl font-extrabold tracking-[-0.04em] text-[#071B33] sm:text-5xl">Quel usage correspond le mieux ?</h1>
+              <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-500">Vous pouvez en sélectionner plusieurs si votre projet couvre plusieurs usages.</p>
+              <div className="mt-7 grid gap-3 sm:grid-cols-2">{allowedUses.map((item) => <ChoiceButton key={item.value} active={uses.includes(item.value)} onClick={() => setUses((current) => toggle(current, item.value))}>{item.label}</ChoiceButton>)}</div>
+              <button type="button" disabled={!objective || !uses.length || pending} onClick={() => applyEvents([{ type: "start" }, { type: "answer_objective", objective: objective! }, { type: "answer_usage", intended_uses: uses }])} className="mt-7 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#0B63CE] px-5 text-sm font-extrabold text-white disabled:opacity-40 sm:w-auto">Continuer <ArrowRight size={16} /></button>
+            </> : null}
+
+            {step === 2 ? <>
+              <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#0B63CE]">Zone et budget</p>
+              <h2 className="mt-3 text-3xl font-extrabold tracking-[-0.04em] text-[#071B33]">Où cherchez-vous, et avec quel budget ?</h2>
+              <div className="mt-7 grid gap-5 sm:grid-cols-2"><label className="text-sm font-extrabold text-slate-700"><span className="inline-flex items-center gap-2"><MapPin size={16} />Ville ou zone principale</span><input value={city} onChange={(event) => setCity(event.target.value)} placeholder="Rabat, Casablanca, Hay Riad…" className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 font-medium outline-none focus:border-[#60A5FA]" /></label><label className="text-sm font-extrabold text-slate-700"><span className="inline-flex items-center gap-2"><WalletCards size={16} />{objective === "rent" ? "Budget mensuel maximum" : "Budget d’achat maximum"}</span><input disabled={budgetUnknown} inputMode="numeric" value={budget} onChange={(event) => setBudget(event.target.value.replace(/[^0-9]/g, ""))} placeholder={objective === "rent" ? "12 000 DH" : "1 800 000 DH"} className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 font-medium outline-none disabled:bg-slate-50 disabled:text-slate-400" /></label></div>
+              <label className="mt-4 flex cursor-pointer items-center gap-3 rounded-xl bg-slate-50 px-4 py-3 text-sm font-bold text-slate-600"><input type="checkbox" checked={budgetUnknown} onChange={(event) => { setBudgetUnknown(event.target.checked); if (event.target.checked) setBudget(""); }} />Je ne sais pas encore</label>
+              <button type="button" disabled={!city.trim() || (!budgetUnknown && !Number(budget)) || pending} onClick={() => applyEvents([{ type: "answer_location", cities: [city.trim()] }, objective === "rent" ? { type: "answer_budget", rent_monthly_max_mad: budgetUnknown ? null : Number(budget) } : { type: "answer_budget", purchase_max_mad: budgetUnknown ? null : Number(budget) }])} className="mt-7 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#0B63CE] px-5 text-sm font-extrabold text-white disabled:opacity-40 sm:w-auto">Continuer <ArrowRight size={16} /></button>
+            </> : null}
+
+            {step === 3 ? <>
+              <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#0B63CE]">Le bien</p><h2 className="mt-3 text-3xl font-extrabold tracking-[-0.04em] text-[#071B33]">Quels biens et contraintes sont vraiment importants ?</h2>
+              <div className="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-3">{allowedPropertyTypes.map((item) => <button type="button" key={item.value} onClick={() => setPropertyTypes((current) => toggle(current, item.value))} className={`overflow-hidden rounded-2xl border p-2.5 text-left ${propertyTypes.includes(item.value) ? "border-[#0B63CE] bg-[#EAF3FF]" : "border-slate-200"}`}><div className="aspect-[16/10] overflow-hidden rounded-xl bg-slate-50"><PropertyTypeArtwork kind={item.value} className="h-full w-full" decorative /></div><span className="mt-2 block px-1 text-xs font-extrabold">{item.pluralLabel}</span></button>)}</div>
+              <div className="mt-6 grid gap-4 sm:grid-cols-2"><label className="text-sm font-bold text-slate-700">Surface minimale (m²)<input inputMode="numeric" value={minSurface} onChange={(event) => setMinSurface(event.target.value.replace(/[^0-9]/g, ""))} className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3" /></label><label className="text-sm font-bold text-slate-700">Chambres minimum<input inputMode="numeric" value={minBedrooms} onChange={(event) => setMinBedrooms(event.target.value.replace(/[^0-9]/g, ""))} className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3" /></label></div>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">{[{ value: "parking", label: "Parking indispensable" }, { value: "elevator", label: "Ascenseur indispensable" }].map((item) => <ChoiceButton key={item.value} active={requiredFeatures.includes(item.value)} onClick={() => setRequiredFeatures((current) => toggle(current, item.value))}>{item.label}</ChoiceButton>)}</div>
+              <button type="button" disabled={!propertyTypes.length || pending} onClick={() => applyEvents([{ type: "answer_type", property_types: propertyTypes }, { type: "answer_constraints", min_surface_m2: minSurface ? Number(minSurface) : null, min_bedrooms: minBedrooms ? Number(minBedrooms) : null, required_features: requiredFeatures }])} className="mt-7 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#0B63CE] px-5 text-sm font-extrabold text-white disabled:opacity-40 sm:w-auto">Continuer <ArrowRight size={16} /></button>
+            </> : null}
+
+            {step === 4 ? <>
+              <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#0B63CE]">Votre quotidien</p><h2 className="mt-3 text-3xl font-extrabold tracking-[-0.04em] text-[#071B33]">Qu’est-ce qui compte autour du bien ?</h2><p className="mt-3 text-sm leading-6 text-slate-500">Ces préférences seront utilisées uniquement lorsque les données de quartier sont disponibles. Elles ne masqueront pas automatiquement les autres résultats.</p>
+              <div className="mt-7 grid gap-3 sm:grid-cols-2">{visiblePreferences.map((item) => <ChoiceButton key={item.key} active={preferences.includes(item.key)} onClick={() => setPreferences((current) => toggle(current, item.key))}>{item.label}</ChoiceButton>)}</div>
+              <button type="button" onClick={() => setShowMorePreferences((value) => !value)} className="mt-4 inline-flex items-center gap-2 text-sm font-extrabold text-[#0B63CE]">{showMorePreferences ? "Réduire" : "Voir plus"}<ChevronDown size={15} className={showMorePreferences ? "rotate-180" : ""} /></button>
+              <button type="button" disabled={pending} onClick={() => { const answers: CompanionPreferenceAnswer[] = preferences.map((key) => { const definition = PREFERENCES.find((item) => item.key === key)!; return { key, direction: definition.direction, importance: "high" }; }); void applyEvents([{ type: "answer_preferences", preferences: answers }]); }} className="mt-7 flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#0B63CE] px-5 text-sm font-extrabold text-white disabled:opacity-40 sm:w-auto">Continuer <ArrowRight size={16} /></button>
+            </> : null}
+
+            {step === 5 ? <>
+              <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#0B63CE]">Priorités</p><h2 className="mt-3 text-3xl font-extrabold tracking-[-0.04em] text-[#071B33]">Choisissez jusqu’à trois priorités majeures.</h2><p className="mt-3 text-sm leading-6 text-slate-500">Elles guideront le classement lorsque les informations comparables existent.</p>
+              <div className="mt-7 grid gap-3 sm:grid-cols-2">{preferences.map((key) => { const item = PREFERENCES.find((entry) => entry.key === key)!; return <ChoiceButton key={key} active={priorities.includes(key)} onClick={() => setPriorities((current) => current.includes(key) ? current.filter((value) => value !== key) : current.length < 3 ? [...current, key] : current)}>{priorities.includes(key) ? `${priorities.indexOf(key) + 1}. ` : ""}{item.label}</ChoiceButton>; })}</div>
+              {!preferences.length ? <p className="mt-6 rounded-xl bg-slate-50 p-4 text-sm text-slate-500">Vous n’avez sélectionné aucune préférence. Vous pouvez continuer sans priorité.</p> : null}
+              <button type="button" disabled={pending || (preferences.length > 0 && priorities.length === 0)} onClick={() => applyEvents([{ type: "answer_priorities", priorities }])} className="mt-7 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#0B63CE] px-5 text-sm font-extrabold text-white disabled:opacity-40 sm:w-auto">Continuer <ArrowRight size={16} /></button>
+            </> : null}
+
+            {step === 6 ? <>
+              <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#0B63CE]">Compromis</p><h2 className="mt-3 text-3xl font-extrabold tracking-[-0.04em] text-[#071B33]">Où êtes-vous prêt à faire un compromis ?</h2>
+              <div className="mt-7 space-y-6"><div><p className="mb-3 text-sm font-extrabold">Centralité ou calme</p><div className="grid gap-3 sm:grid-cols-3">{[{ value: "calm", label: "Priorité au calme" }, { value: "balanced", label: "Équilibre" }, { value: "central", label: "Priorité à la centralité" }].map((item) => <ChoiceButton key={item.value} active={centralityCalm === item.value} onClick={() => setCentralityCalm(item.value as typeof centralityCalm)}>{item.label}</ChoiceButton>)}</div></div><div><p className="mb-3 text-sm font-extrabold">Surface ou localisation</p><div className="grid gap-3 sm:grid-cols-3">{[{ value: "surface", label: "Plus de surface" }, { value: "balanced", label: "Équilibre" }, { value: "location", label: "Meilleure localisation" }].map((item) => <ChoiceButton key={item.value} active={surfaceLocation === item.value} onClick={() => setSurfaceLocation(item.value as typeof surfaceLocation)}>{item.label}</ChoiceButton>)}</div></div></div>
+              <p className="mt-5 rounded-xl bg-slate-50 p-4 text-xs leading-5 text-slate-500">Ces choix restent des indications explicites. Ils ne produisent aucune prédiction et n’éliminent aucun bien silencieusement.</p>
+              <button type="button" disabled={pending} onClick={() => applyEvents([{ type: "answer_compromise", tourism_intensity_max: centralityCalm === "calm" ? 2 : centralityCalm === "balanced" ? 4 : 6 }])} className="mt-7 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#0B63CE] px-5 text-sm font-extrabold text-white disabled:opacity-40 sm:w-auto">Continuer <ArrowRight size={16} /></button>
+            </> : null}
+
+            {step === 7 ? <>
+              <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#0B63CE]">Récapitulatif</p><h2 className="mt-3 text-3xl font-extrabold tracking-[-0.04em] text-[#071B33]">Voici le projet que vous avez structuré.</h2><p className="mt-5 rounded-2xl bg-[#EAF3FF] p-5 text-base font-bold leading-7 text-[#084FA8]">{summary}</p>
+              <div className="mt-6 grid gap-3 rounded-2xl bg-slate-50 p-5 text-sm text-slate-700 sm:grid-cols-2"><div><strong>Usage :</strong> {session.profile.intended_uses?.value?.length ? session.profile.intended_uses.value.length : 0} sélectionné(s)</div><div><strong>Types :</strong> {session.profile.property.property_types.join(", ") || "—"}</div><div><strong>Surface min. :</strong> {session.profile.property.min_surface_m2 ? `${session.profile.property.min_surface_m2} m²` : "Non précisée"}</div><div><strong>Chambres :</strong> {session.profile.property.min_bedrooms ?? "Non précisées"}</div><div><strong>Préférences :</strong> {session.profile.neighborhood_preferences.length}</div><div><strong>Priorités :</strong> {session.profile.priorities.length}</div></div>
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row"><button type="button" onClick={() => { setStep(1); setProjectQuestion("objective"); }} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 text-sm font-extrabold text-slate-700"><ArrowLeft size={16} />Modifier mes critères</button><button type="button" disabled={pending} onClick={() => applyEvents([{ type: "confirm_profile" }])} className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-[#0B63CE] px-5 text-sm font-extrabold text-white disabled:opacity-40">Confirmer Mon Projet <Check size={16} /></button></div>
+            </> : null}
+
+            {step === 8 ? <>
+              <div className="grid h-14 w-14 place-items-center rounded-2xl bg-emerald-100 text-emerald-700"><ShieldCheck size={26} /></div><p className="mt-6 text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#0B63CE]">Votre projet est prêt</p><h2 className="mt-3 text-3xl font-extrabold tracking-[-0.04em] text-[#071B33]">Lancez une recherche structurée, sans promesse fabriquée.</h2>
+              <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-500">Le Fit personnalisé sera calculé uniquement lorsque les données comparables sont disponibles. Sinon, il sera indiqué comme non calculé.</p>
+              <div className={`mt-6 rounded-2xl border p-5 text-sm leading-6 ${authenticated ? "border-emerald-200 bg-emerald-50 text-emerald-800" : "border-amber-200 bg-amber-50 text-amber-900"}`}>{authenticated ? "Votre projet sera enregistré dans votre espace et accompagnera cette recherche." : "Votre projet accompagne cette recherche sur cet appareil. Connectez-vous pour le retrouver plus tard."}</div>
+              <button type="button" disabled={pending} onClick={launchSearch} className="mt-7 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#0B63CE] px-6 text-sm font-extrabold text-white disabled:opacity-50 sm:w-auto">{pending ? <Loader2 className="animate-spin" size={16} /> : <Search size={16} />}{pending ? "Préparation de la recherche…" : "Lancer ma recherche"}</button>
+            </> : null}
+
+            {error ? <p className="mt-5 rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">Une étape n’a pas pu être validée. Réessayez sans perdre vos réponses.</p> : null}
+          </section>
         </div>
-        <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-[#0B63CE] transition-all" style={{ width: `${(step / TOTAL_STEPS) * 100}%` }} /></div>
       </div>
-
-      <section className="mt-6 rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_24px_70px_rgba(15,23,42,0.09)] sm:p-8">
-        {step === 1 ? <>
-          <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#0B63CE]">Votre projet</p>
-          <h1 className="mt-3 text-3xl font-extrabold tracking-[-0.04em] text-[#071B33] sm:text-5xl">Que cherchez-vous à accomplir ?</h1>
-          <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-500">Choisissez votre objectif principal. Vous pourrez modifier chaque critère avant de lancer la recherche.</p>
-          <div className="mt-7 grid gap-3 sm:grid-cols-2">{OBJECTIVES.map(({ value, label, detail, icon: Icon }) => <button key={value} type="button" onClick={() => { setObjective(value); setUses([]); }} className={`rounded-2xl border p-5 text-left transition ${objective === value ? "border-[#0B63CE] bg-[#EAF3FF]" : "border-slate-200 hover:border-[#93C5FD]"}`}><Icon size={20} className="text-[#0B63CE]" /><span className="mt-4 block text-base font-extrabold text-[#071B33]">{label}</span><span className="mt-1 block text-xs leading-5 text-slate-500">{detail}</span></button>)}</div>
-          {objective ? <div className="mt-7"><p className="mb-3 text-sm font-extrabold text-[#071B33]">Quel usage correspond le mieux ?</p><div className="grid gap-3 sm:grid-cols-2">{allowedUses.map((item) => <ChoiceButton key={item.value} active={uses.includes(item.value)} onClick={() => setUses((current) => toggle(current, item.value))}>{item.label}</ChoiceButton>)}</div></div> : null}
-          <button type="button" disabled={!objective || !uses.length || pending} onClick={() => applyEvents([{ type: "start" }, { type: "answer_objective", objective: objective! }, { type: "answer_usage", intended_uses: uses }])} className="mt-7 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#0B63CE] px-5 text-sm font-extrabold text-white disabled:opacity-40 sm:w-auto">Continuer <ArrowRight size={16} /></button>
-        </> : null}
-
-        {step === 2 ? <>
-          <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#0B63CE]">Zone et budget</p>
-          <h2 className="mt-3 text-3xl font-extrabold tracking-[-0.04em] text-[#071B33]">Où cherchez-vous, et avec quel budget ?</h2>
-          <div className="mt-7 grid gap-5 sm:grid-cols-2"><label className="text-sm font-extrabold text-slate-700"><span className="inline-flex items-center gap-2"><MapPin size={16} />Ville ou zone principale</span><input value={city} onChange={(event) => setCity(event.target.value)} placeholder="Rabat, Casablanca, Hay Riad…" className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 font-medium outline-none focus:border-[#60A5FA]" /></label><label className="text-sm font-extrabold text-slate-700"><span className="inline-flex items-center gap-2"><WalletCards size={16} />{objective === "rent" ? "Budget mensuel maximum" : "Budget d’achat maximum"}</span><input disabled={budgetUnknown} inputMode="numeric" value={budget} onChange={(event) => setBudget(event.target.value.replace(/[^0-9]/g, ""))} placeholder={objective === "rent" ? "12 000 DH" : "1 800 000 DH"} className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 font-medium outline-none disabled:bg-slate-50 disabled:text-slate-400" /></label></div>
-          <label className="mt-4 flex cursor-pointer items-center gap-3 rounded-xl bg-slate-50 px-4 py-3 text-sm font-bold text-slate-600"><input type="checkbox" checked={budgetUnknown} onChange={(event) => { setBudgetUnknown(event.target.checked); if (event.target.checked) setBudget(""); }} />Je ne sais pas encore</label>
-          <button type="button" disabled={!city.trim() || (!budgetUnknown && !Number(budget)) || pending} onClick={() => applyEvents([{ type: "answer_location", cities: [city.trim()] }, objective === "rent" ? { type: "answer_budget", rent_monthly_max_mad: budgetUnknown ? null : Number(budget) } : { type: "answer_budget", purchase_max_mad: budgetUnknown ? null : Number(budget) }])} className="mt-7 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#0B63CE] px-5 text-sm font-extrabold text-white disabled:opacity-40 sm:w-auto">Continuer <ArrowRight size={16} /></button>
-        </> : null}
-
-        {step === 3 ? <>
-          <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#0B63CE]">Le bien recherché</p><h2 className="mt-3 text-3xl font-extrabold tracking-[-0.04em] text-[#071B33]">Quels biens et contraintes sont vraiment importants ?</h2>
-          <div className="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-3">{allowedPropertyTypes.map((item) => <button type="button" key={item.value} onClick={() => setPropertyTypes((current) => toggle(current, item.value))} className={`overflow-hidden rounded-2xl border p-2.5 text-left ${propertyTypes.includes(item.value) ? "border-[#0B63CE] bg-[#EAF3FF]" : "border-slate-200"}`}><div className="aspect-[16/10] overflow-hidden rounded-xl bg-slate-50"><PropertyTypeArtwork kind={item.value} className="h-full w-full" decorative /></div><span className="mt-2 block px-1 text-xs font-extrabold">{item.pluralLabel}</span></button>)}</div>
-          <div className="mt-6 grid gap-4 sm:grid-cols-2"><label className="text-sm font-bold text-slate-700">Surface minimale (m²)<input inputMode="numeric" value={minSurface} onChange={(event) => setMinSurface(event.target.value.replace(/[^0-9]/g, ""))} className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3" /></label><label className="text-sm font-bold text-slate-700">Chambres minimum<input inputMode="numeric" value={minBedrooms} onChange={(event) => setMinBedrooms(event.target.value.replace(/[^0-9]/g, ""))} className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3" /></label></div>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">{[{ value: "parking", label: "Parking indispensable" }, { value: "elevator", label: "Ascenseur indispensable" }].map((item) => <ChoiceButton key={item.value} active={requiredFeatures.includes(item.value)} onClick={() => setRequiredFeatures((current) => toggle(current, item.value))}>{item.label}</ChoiceButton>)}</div>
-          <button type="button" disabled={!propertyTypes.length || pending} onClick={() => applyEvents([{ type: "answer_type", property_types: propertyTypes }, { type: "answer_constraints", min_surface_m2: minSurface ? Number(minSurface) : null, min_bedrooms: minBedrooms ? Number(minBedrooms) : null, required_features: requiredFeatures }])} className="mt-7 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#0B63CE] px-5 text-sm font-extrabold text-white disabled:opacity-40 sm:w-auto">Continuer <ArrowRight size={16} /></button>
-        </> : null}
-
-        {step === 4 ? <>
-          <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#0B63CE]">Votre quotidien</p><h2 className="mt-3 text-3xl font-extrabold tracking-[-0.04em] text-[#071B33]">Qu’est-ce qui compte autour du bien ?</h2><p className="mt-3 text-sm leading-6 text-slate-500">Ces préférences seront utilisées uniquement lorsque les données de quartier sont disponibles. Elles ne masqueront pas automatiquement les autres résultats.</p>
-          <div className="mt-7 grid gap-3 sm:grid-cols-2">{visiblePreferences.map((item) => <ChoiceButton key={item.key} active={preferences.includes(item.key)} onClick={() => setPreferences((current) => toggle(current, item.key))}>{item.label}</ChoiceButton>)}</div>
-          <button type="button" onClick={() => setShowMorePreferences((value) => !value)} className="mt-4 inline-flex items-center gap-2 text-sm font-extrabold text-[#0B63CE]">{showMorePreferences ? "Réduire" : "Voir plus"}<ChevronDown size={15} className={showMorePreferences ? "rotate-180" : ""} /></button>
-          <button type="button" disabled={pending} onClick={() => { const answers: CompanionPreferenceAnswer[] = preferences.map((key) => { const definition = PREFERENCES.find((item) => item.key === key)!; return { key, direction: definition.direction, importance: "high" }; }); void applyEvents([{ type: "answer_preferences", preferences: answers }]); }} className="mt-7 flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#0B63CE] px-5 text-sm font-extrabold text-white disabled:opacity-40 sm:w-auto">Continuer <ArrowRight size={16} /></button>
-        </> : null}
-
-        {step === 5 ? <>
-          <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#0B63CE]">Vos priorités</p><h2 className="mt-3 text-3xl font-extrabold tracking-[-0.04em] text-[#071B33]">Choisissez jusqu’à trois priorités majeures.</h2><p className="mt-3 text-sm leading-6 text-slate-500">Elles guideront le classement lorsque les informations comparables existent.</p>
-          <div className="mt-7 grid gap-3 sm:grid-cols-2">{preferences.map((key) => { const item = PREFERENCES.find((entry) => entry.key === key)!; return <ChoiceButton key={key} active={priorities.includes(key)} onClick={() => setPriorities((current) => current.includes(key) ? current.filter((value) => value !== key) : current.length < 3 ? [...current, key] : current)}>{priorities.includes(key) ? `${priorities.indexOf(key) + 1}. ` : ""}{item.label}</ChoiceButton>; })}</div>
-          {!preferences.length ? <p className="mt-6 rounded-xl bg-slate-50 p-4 text-sm text-slate-500">Vous n’avez sélectionné aucune préférence. Vous pouvez continuer sans priorité.</p> : null}
-          <button type="button" disabled={pending || (preferences.length > 0 && priorities.length === 0)} onClick={() => applyEvents([{ type: "answer_priorities", priorities }])} className="mt-7 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#0B63CE] px-5 text-sm font-extrabold text-white disabled:opacity-40 sm:w-auto">Continuer <ArrowRight size={16} /></button>
-        </> : null}
-
-        {step === 6 ? <>
-          <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#0B63CE]">Vos compromis</p><h2 className="mt-3 text-3xl font-extrabold tracking-[-0.04em] text-[#071B33]">Où êtes-vous prêt à faire un compromis ?</h2>
-          <div className="mt-7 space-y-6"><div><p className="mb-3 text-sm font-extrabold">Centralité ou calme</p><div className="grid gap-3 sm:grid-cols-3">{[{ value: "calm", label: "Priorité au calme" }, { value: "balanced", label: "Équilibre" }, { value: "central", label: "Priorité à la centralité" }].map((item) => <ChoiceButton key={item.value} active={centralityCalm === item.value} onClick={() => setCentralityCalm(item.value as typeof centralityCalm)}>{item.label}</ChoiceButton>)}</div></div><div><p className="mb-3 text-sm font-extrabold">Surface ou localisation</p><div className="grid gap-3 sm:grid-cols-3">{[{ value: "surface", label: "Plus de surface" }, { value: "balanced", label: "Équilibre" }, { value: "location", label: "Meilleure localisation" }].map((item) => <ChoiceButton key={item.value} active={surfaceLocation === item.value} onClick={() => setSurfaceLocation(item.value as typeof surfaceLocation)}>{item.label}</ChoiceButton>)}</div></div></div>
-          <p className="mt-5 rounded-xl bg-slate-50 p-4 text-xs leading-5 text-slate-500">Ces choix restent des indications explicites. Ils ne produisent aucune prédiction et n’éliminent aucun bien silencieusement.</p>
-          <button type="button" disabled={pending} onClick={() => applyEvents([{ type: "answer_compromise", tourism_intensity_max: centralityCalm === "calm" ? 2 : centralityCalm === "balanced" ? 4 : 6 }])} className="mt-7 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#0B63CE] px-5 text-sm font-extrabold text-white disabled:opacity-40 sm:w-auto">Continuer <ArrowRight size={16} /></button>
-        </> : null}
-
-        {step === 7 ? <>
-          <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#0B63CE]">Récapitulatif</p><h2 className="mt-3 text-3xl font-extrabold tracking-[-0.04em] text-[#071B33]">Voici le projet que vous avez structuré.</h2><p className="mt-5 rounded-2xl bg-[#EAF3FF] p-5 text-base font-bold leading-7 text-[#084FA8]">{summary}</p>
-          <div className="mt-6 grid gap-3 rounded-2xl bg-slate-50 p-5 text-sm text-slate-700 sm:grid-cols-2"><div><strong>Usage :</strong> {session.profile.intended_uses?.value?.length ? session.profile.intended_uses.value.length : 0} sélectionné(s)</div><div><strong>Types :</strong> {session.profile.property.property_types.join(", ") || "—"}</div><div><strong>Surface min. :</strong> {session.profile.property.min_surface_m2 ? `${session.profile.property.min_surface_m2} m²` : "Non précisée"}</div><div><strong>Chambres :</strong> {session.profile.property.min_bedrooms ?? "Non précisées"}</div><div><strong>Préférences :</strong> {session.profile.neighborhood_preferences.length}</div><div><strong>Priorités :</strong> {session.profile.priorities.length}</div></div>
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row"><button type="button" onClick={() => setStep(1)} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 text-sm font-extrabold text-slate-700"><ArrowLeft size={16} />Modifier mes critères</button><button type="button" disabled={pending} onClick={() => applyEvents([{ type: "confirm_profile" }])} className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-[#0B63CE] px-5 text-sm font-extrabold text-white disabled:opacity-40">Confirmer Mon Projet <Check size={16} /></button></div>
-        </> : null}
-
-        {step === 8 ? <>
-          <div className="grid h-14 w-14 place-items-center rounded-2xl bg-emerald-100 text-emerald-700"><ShieldCheck size={26} /></div><p className="mt-6 text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#0B63CE]">Votre projet est prêt</p><h2 className="mt-3 text-3xl font-extrabold tracking-[-0.04em] text-[#071B33]">Lancez une recherche structurée, sans promesse fabriquée.</h2>
-          <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-500">Le Fit personnalisé sera calculé uniquement lorsque les données comparables sont disponibles. Sinon, il sera indiqué comme non calculé.</p>
-          <div className={`mt-6 rounded-2xl border p-5 text-sm leading-6 ${authenticated ? "border-emerald-200 bg-emerald-50 text-emerald-800" : "border-amber-200 bg-amber-50 text-amber-900"}`}>{authenticated ? "Votre projet sera enregistré dans votre espace et accompagnera cette recherche." : "Votre projet accompagne cette recherche sur cet appareil. Connectez-vous pour le retrouver plus tard."}</div>
-          <button type="button" disabled={pending} onClick={launchSearch} className="mt-7 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#0B63CE] px-6 text-sm font-extrabold text-white disabled:opacity-50 sm:w-auto">{pending ? <Loader2 className="animate-spin" size={16} /> : <Search size={16} />}{pending ? "Préparation de la recherche…" : "Lancer ma recherche"}</button>
-        </> : null}
-
-        {error ? <p className="mt-5 rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">Une étape n’a pas pu être validée. Réessayez sans perdre vos réponses.</p> : null}
-      </section>
     </div>
   );
 }

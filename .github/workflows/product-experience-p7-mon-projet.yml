@@ -1,0 +1,63 @@
+name: Product Experience P7 Mon Projet
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "app/mon-projet/page.tsx"
+      - "components/companion/MonProjetWizardP1A.tsx"
+      - "scripts/scrapers/__tests__/product-experience-p7-mon-projet.test.ts"
+      - "scripts/audits/product-experience-p7-mon-projet.mjs"
+      - "docs/AKARFINDER_PRODUCT_EXPERIENCE_P7.md"
+      - ".github/workflows/product-experience-p7-mon-projet.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mon-projet-certification:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: P7 Mon Projet contracts
+        run: npx tsx --test scripts/scrapers/__tests__/product-experience-p7-mon-projet.test.ts
+      - name: Validate P7 audit syntax
+        run: node --check scripts/audits/product-experience-p7-mon-projet.mjs
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Start P7 production server
+        shell: bash
+        run: |
+          npm run start -- -p 3218 > /tmp/product-experience-p7.log 2>&1 &
+          for attempt in {1..60}; do
+            if curl -fsS http://127.0.0.1:3218/mon-projet >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/product-experience-p7.log
+          exit 1
+      - name: P7 responsive visual certification
+        env:
+          BASE_URL: http://127.0.0.1:3218
+          AUDIT_OUTPUT_DIR: artifacts/product-experience-p7-mon-projet
+        run: node scripts/audits/product-experience-p7-mon-projet.mjs
+      - name: Upload P7 AFTER proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: product-experience-p7-mon-projet-${{ github.run_id }}
+          path: artifacts/product-experience-p7-mon-projet
+          if-no-files-found: error
+          retention-days: 14
