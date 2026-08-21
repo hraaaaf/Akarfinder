@@ -32,6 +32,8 @@ jobs:
         run: npm ci
       - name: P6 hierarchy and truth contracts
         run: npx tsx --test scripts/scrapers/__tests__/product-experience-p6-quartier-ville.test.ts
+      - name: Validate P6 audit syntax
+        run: node --check scripts/audits/product-experience-p6-quartier-ville.mjs
       - name: TypeScript
         run: npx tsc --noEmit
       - name: Production build

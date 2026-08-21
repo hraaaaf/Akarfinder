@@ -87,7 +87,7 @@ try {
         localFindings.push(`AUDIT_ERROR_${message}`);
         results.push({ ...routeCase, ...viewport, findings: localFindings, error: message });
       } finally {
-        findings.push(...localFindings.map((finding) => ({ kind: routeCase.kind, width: viewport.width, height: viewport.height, finding }));
+        findings.push(...localFindings.map((finding) => ({ kind: routeCase.kind, width: viewport.width, height: viewport.height, finding })));
         await page.close();
       }
     }
