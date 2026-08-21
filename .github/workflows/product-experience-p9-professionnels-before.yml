@@ -1,0 +1,119 @@
+name: Product Experience P9 Professionnels BEFORE
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/product-experience-p9-professionnels-before.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: product-experience-p9-before-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  professionnels-before:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Start production server
+        shell: bash
+        run: |
+          npm run start -- -p 3220 > /tmp/product-experience-p9-before.log 2>&1 &
+          for attempt in {1..60}; do
+            if curl -fsS http://127.0.0.1:3220/pro >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/product-experience-p9-before.log
+          exit 1
+      - name: Capture P9 BEFORE exact-main proof
+        env:
+          BASE_URL: http://127.0.0.1:3220
+          OUTPUT_DIR: artifacts/product-experience-p9-before
+        run: |
+          node --input-type=module <<'NODE'
+          import { chromium } from 'playwright';
+          import { mkdir, writeFile } from 'node:fs/promises';
+          import path from 'node:path';
+
+          const baseUrl = process.env.BASE_URL;
+          const outputDir = process.env.OUTPUT_DIR;
+          const viewports = [
+            { width: 390, height: 844 },
+            { width: 430, height: 932 },
+            { width: 768, height: 900 },
+            { width: 1280, height: 900 },
+          ];
+          await mkdir(outputDir, { recursive: true });
+          const browser = await chromium.launch({ headless: true });
+          const rows = [];
+          const findings = [];
+          try {
+            for (const viewport of viewports) {
+              const page = await browser.newPage({ viewport });
+              const response = await page.goto(`${baseUrl}/pro`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+              await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
+              await page.waitForTimeout(500);
+              const metrics = await page.evaluate(() => {
+                const root = document.documentElement;
+                const header = document.querySelector('header');
+                return {
+                  clientWidth: root.clientWidth,
+                  scrollWidth: root.scrollWidth,
+                  h1Count: document.querySelectorAll('h1').length,
+                  mainCount: document.querySelectorAll('main').length,
+                  logoCount: document.querySelectorAll('img[alt="AkarFinder"]').length,
+                  headerColor: header ? getComputedStyle(header).backgroundColor : null,
+                  title: document.querySelector('h1')?.textContent?.trim() ?? null,
+                };
+              });
+              const status = response?.status() ?? null;
+              const name = `professionnels-${viewport.width}x${viewport.height}.png`;
+              await page.screenshot({ path: path.join(outputDir, name), fullPage: true });
+              const row = { ...viewport, status, ...metrics, screenshot: name };
+              rows.push(row);
+              if (status !== 200) findings.push({ ...viewport, finding: `HTTP_${status}` });
+              if (metrics.scrollWidth > metrics.clientWidth) findings.push({ ...viewport, finding: 'HORIZONTAL_OVERFLOW' });
+              if (metrics.h1Count !== 1) findings.push({ ...viewport, finding: `H1_COUNT_${metrics.h1Count}` });
+              if (metrics.mainCount !== 1) findings.push({ ...viewport, finding: `MAIN_COUNT_${metrics.mainCount}` });
+              if (metrics.logoCount < 1) findings.push({ ...viewport, finding: 'CANONICAL_LOGO_MISSING' });
+              if (metrics.headerColor !== 'rgb(255, 255, 255)') findings.push({ ...viewport, finding: `HEADER_NOT_EXACT_WHITE_${metrics.headerColor}` });
+              await page.close();
+            }
+          } finally {
+            await browser.close();
+          }
+          const report = {
+            schema: 'AKARFINDER_PRODUCT_EXPERIENCE_P9_BEFORE_V1',
+            route: '/pro',
+            screenshotCount: rows.length,
+            findingCount: findings.length,
+            findings,
+            viewports: rows,
+          };
+          await writeFile(path.join(outputDir, 'metrics.json'), JSON.stringify(report, null, 2));
+          console.log(JSON.stringify(report, null, 2));
+          if (rows.length !== 4 || findings.length) throw new Error(`P9 BEFORE proof failed with ${findings.length} finding(s)`);
+          NODE
+      - name: Upload P9 BEFORE proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: product-experience-p9-before-${{ github.run_id }}
+          path: artifacts/product-experience-p9-before
+          if-no-files-found: error
+          retention-days: 14
