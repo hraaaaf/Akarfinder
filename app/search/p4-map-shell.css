@@ -8,10 +8,6 @@
   box-shadow: 0 8px 24px rgb(15 35 66 / 0.04);
 }
 
-[data-search-view-layout="split"] {
-  align-items: start;
-}
-
 [data-search-view-layout="split"] [data-search-map-pane] {
   order: 1;
 }
@@ -31,6 +27,24 @@
   grid-template-columns: minmax(0, 1fr) !important;
 }
 
+@media (max-width: 1023px) {
+  [data-search-view-layout="split"] {
+    align-items: stretch;
+  }
+
+  [data-search-view-layout="split"] [data-search-map-pane],
+  [data-search-view-layout="split"] [data-search-map-pane] > aside {
+    width: 100%;
+  }
+
+  /* P4 owns the mobile map-first contract. Override the older C2 caps that
+     limited compact canvases to 330/365 px and made the decision area too short. */
+  [data-search-view-layout="split"] [data-search-map-pane] > aside > div:nth-child(2) {
+    height: min(46svh, 420px) !important;
+    min-height: min(46svh, 420px) !important;
+  }
+}
+
 @media (min-width: 768px) and (max-width: 1023px) {
   [data-search-view-layout="split"] [data-search-list-pane] {
     margin-top: -28px;
@@ -41,6 +55,7 @@
 
 @media (min-width: 1024px) {
   [data-search-view-layout="split"] {
+    align-items: start;
     grid-template-columns: minmax(0, 3fr) minmax(360px, 2fr) !important;
     gap: 18px !important;
   }
