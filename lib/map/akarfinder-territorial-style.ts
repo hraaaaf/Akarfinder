@@ -9,6 +9,10 @@ export const AKARFINDER_TERRITORIAL_LINE_LAYER_ID = "akarfinder-neighborhood-out
 export const AKARFINDER_TERRITORIAL_LABEL_LAYER_ID = "akarfinder-neighborhood-label";
 export const AKARFINDER_MARKET_MODE_EVENT = "akarfinder:market-mode";
 export const AKARFINDER_TERRITORIAL_SELECT_EVENT = "akarfinder:territorial-select";
+export const AKARFINDER_CITY_ADMIN_SOURCE_ID = "akarfinder-city-admin-boundaries";
+export const AKARFINDER_CITY_ADMIN_FILL_LAYER_ID = "akarfinder-city-admin-fill";
+export const AKARFINDER_CITY_ADMIN_GLOW_LAYER_ID = "akarfinder-city-admin-glow";
+export const AKARFINDER_CITY_ADMIN_LINE_LAYER_ID = "akarfinder-city-admin-outline";
 
 // A calm but deliberately differentiated territorial palette. Colors distinguish
 // adjacent areas only; they do not encode price, quality, demand, or confidence.
@@ -26,7 +30,9 @@ export const AKARFINDER_TERRITORIAL_PALETTE = [
 const LIGHT_BASEMAP_BACKGROUND = "#EDF3F7";
 const DARK_BASEMAP_BACKGROUND = "#071426";
 const DEFAULT_NEUTRAL_HEATMAP = "#D8E1E8";
+const CITY_ADMIN_BOUNDARY_URL = "/data/map/morocco-flagship-city-admin-boundaries.geojson";
 const MARKET_BRIDGE_CLEANUPS = new WeakMap<MapLibreMap, () => void>();
+const CITY_ADMIN_LAYER_REVISIONS = new WeakMap<MapLibreMap, number>();
 
 type TerritorialLayerOptions = {
   marketIntelligence?: boolean;
@@ -56,6 +62,111 @@ function mutedLayerPaint(theme: string | undefined) {
     roadMajor: dark ? "#2D455F" : "#C9D3DC",
     label: dark ? "#8FA3B8" : "#7A8795",
   };
+}
+
+function removeAkarFinderCityAdminSurfaces(map: MapLibreMap): void {
+  if (map.getLayer(AKARFINDER_CITY_ADMIN_LINE_LAYER_ID)) map.removeLayer(AKARFINDER_CITY_ADMIN_LINE_LAYER_ID);
+  if (map.getLayer(AKARFINDER_CITY_ADMIN_GLOW_LAYER_ID)) map.removeLayer(AKARFINDER_CITY_ADMIN_GLOW_LAYER_ID);
+  if (map.getLayer(AKARFINDER_CITY_ADMIN_FILL_LAYER_ID)) map.removeLayer(AKARFINDER_CITY_ADMIN_FILL_LAYER_ID);
+  if (map.getSource(AKARFINDER_CITY_ADMIN_SOURCE_ID)) map.removeSource(AKARFINDER_CITY_ADMIN_SOURCE_ID);
+}
+
+function cityAdminSurfaceContractElement(): HTMLElement | null {
+  return typeof document === "undefined"
+    ? null
+    : document.querySelector<HTMLElement>("[data-p4-map-canvas]");
+}
+
+function clearCityAdminSurfaceContract(): void {
+  const canvas = cityAdminSurfaceContractElement();
+  canvas?.removeAttribute("data-akarfinder-city-admin-surfaces");
+  canvas?.removeAttribute("data-akarfinder-city-admin-feature-count");
+  canvas?.removeAttribute("data-akarfinder-city-admin-meaning");
+}
+
+function shouldShowCityAdminSurfaces(): boolean {
+  if (typeof window === "undefined" || window.location.pathname !== "/map") return false;
+  const params = new URLSearchParams(window.location.search);
+  const city = params.get("city");
+  const layer = params.get("layer") ?? "explore";
+  return (!city || city === "all") && layer === "explore";
+}
+
+async function syncAkarFinderCityAdminSurfaces(map: MapLibreMap, theme?: string): Promise<void> {
+  const revision = (CITY_ADMIN_LAYER_REVISIONS.get(map) ?? 0) + 1;
+  CITY_ADMIN_LAYER_REVISIONS.set(map, revision);
+  removeAkarFinderCityAdminSurfaces(map);
+  clearCityAdminSurfaceContract();
+
+  if (!shouldShowCityAdminSurfaces()) return;
+
+  try {
+    const response = await fetch(CITY_ADMIN_BOUNDARY_URL, {
+      credentials: "same-origin",
+      cache: "force-cache",
+    });
+    if (!response.ok || CITY_ADMIN_LAYER_REVISIONS.get(map) !== revision) return;
+    const geojson = await response.json() as GeoJSON.FeatureCollection;
+    if (CITY_ADMIN_LAYER_REVISIONS.get(map) !== revision) return;
+
+    const validFeatures = geojson.features.filter((feature) => {
+      const properties = feature.properties ?? {};
+      return properties.meaning === "identity-only"
+        && properties.admin_level === 8
+        && properties.osm_type === "relation"
+        && (feature.geometry?.type === "Polygon" || feature.geometry?.type === "MultiPolygon");
+    });
+    if (validFeatures.length !== 6) {
+      throw new Error(`expected 6 verified city admin surfaces, got ${validFeatures.length}`);
+    }
+
+    map.addSource(AKARFINDER_CITY_ADMIN_SOURCE_ID, {
+      type: "geojson",
+      data: geojson,
+    });
+    map.addLayer({
+      id: AKARFINDER_CITY_ADMIN_FILL_LAYER_ID,
+      type: "fill",
+      source: AKARFINDER_CITY_ADMIN_SOURCE_ID,
+      maxzoom: 8,
+      paint: {
+        "fill-color": ["get", "color"],
+        "fill-opacity": theme === "dark" ? 0.34 : 0.30,
+      },
+    });
+    map.addLayer({
+      id: AKARFINDER_CITY_ADMIN_GLOW_LAYER_ID,
+      type: "line",
+      source: AKARFINDER_CITY_ADMIN_SOURCE_ID,
+      maxzoom: 8,
+      paint: {
+        "line-color": ["get", "color"],
+        "line-width": ["interpolate", ["linear"], ["zoom"], 4.6, 5.5, 8, 9],
+        "line-opacity": theme === "dark" ? 0.28 : 0.20,
+        "line-blur": 2.6,
+      },
+    });
+    map.addLayer({
+      id: AKARFINDER_CITY_ADMIN_LINE_LAYER_ID,
+      type: "line",
+      source: AKARFINDER_CITY_ADMIN_SOURCE_ID,
+      maxzoom: 8,
+      paint: {
+        "line-color": ["get", "color"],
+        "line-width": ["interpolate", ["linear"], ["zoom"], 4.6, 1.4, 8, 2.5],
+        "line-opacity": 0.96,
+      },
+    });
+
+    const canvas = cityAdminSurfaceContractElement();
+    canvas?.setAttribute("data-akarfinder-city-admin-surfaces", "active");
+    canvas?.setAttribute("data-akarfinder-city-admin-feature-count", "6");
+    canvas?.setAttribute("data-akarfinder-city-admin-meaning", "identity-only");
+  } catch (error) {
+    console.error("[AkarFinderMap:city-admin-surfaces]", error);
+    removeAkarFinderCityAdminSurfaces(map);
+    clearCityAdminSurfaceContract();
+  }
 }
 
 export function applyAkarFinderBasemapTreatment(map: MapLibreMap, theme?: string): void {
@@ -91,6 +202,7 @@ export function applyAkarFinderBasemapTreatment(map: MapLibreMap, theme?: string
       // Third-party styles do not expose identical paint properties on every layer.
     }
   }
+  void syncAkarFinderCityAdminSurfaces(map, theme);
 }
 
 function darkOrLightHalo(theme?: string) {
