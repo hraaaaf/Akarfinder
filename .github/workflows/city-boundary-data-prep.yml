@@ -1,0 +1,31 @@
+name: City Boundary Data Prep
+
+on:
+  push:
+    branches:
+      - agent/product-experience-city-colors
+    paths:
+      - scripts/data/fetch-morocco-city-boundaries.mjs
+      - .github/workflows/city-boundary-data-prep.yml
+
+permissions:
+  contents: read
+
+jobs:
+  prepare-boundaries:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Fetch and validate six urban commune boundaries
+        run: node scripts/data/fetch-morocco-city-boundaries.mjs
+      - name: Upload verified city boundary evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: city-boundary-prep-${{ github.run_id }}
+          path: data/audits/city-boundary-prep
+          if-no-files-found: error
+          retention-days: 14
