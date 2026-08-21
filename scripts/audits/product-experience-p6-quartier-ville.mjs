@@ -41,7 +41,7 @@ try {
             const rect = node.getBoundingClientRect();
             return rect.top + window.scrollY;
           };
-          const header = document.querySelector('[data-search-global-header="exact-white"]');
+          const header = document.querySelector("header");
           const headerBackground = header instanceof HTMLElement ? getComputedStyle(header).backgroundColor : null;
           const experience = document.querySelector(`[data-p6-experience="${expectedExperience}"]`);
           const surface = document.querySelector('[data-p6-surface="active"]');
@@ -87,7 +87,7 @@ try {
         localFindings.push(`AUDIT_ERROR_${message}`);
         results.push({ ...routeCase, ...viewport, findings: localFindings, error: message });
       } finally {
-        findings.push(...localFindings.map((finding) => ({ kind: routeCase.kind, width: viewport.width, height: viewport.height, finding })));
+        findings.push(...localFindings.map((finding) => ({ kind: routeCase.kind, width: viewport.width, height: viewport.height, finding }));
         await page.close();
       }
     }
