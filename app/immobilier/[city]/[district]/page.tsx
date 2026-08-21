@@ -1,17 +1,15 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { ArrowRight, Info, MapPin, Search } from "lucide-react";
+import { ArrowRight, MapPin } from "lucide-react";
 import { GeoResultPreview } from "@/components/geo/GeoResultPreview";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
+import { TerritoryMiniMap } from "@/components/map/TerritoryMiniMap";
 import { Container } from "@/components/ui/Container";
 import { isSeoEligibleGeoPair } from "@/lib/geo/geo-entity-registry";
-import {
-  buildMapHref,
-  buildMapSearchHref,
-  parseMapNavigationState,
-} from "@/lib/map/map-navigation-state";
+import { getNeighborhoodBySlug as getCanonicalNeighborhoodBySlug } from "@/lib/map/canonical-neighborhood-data";
+import { buildMapHref, buildMapSearchHref, parseMapNavigationState } from "@/lib/map/map-navigation-state";
 import { searchListings } from "@/lib/search";
 import { getAllNeighborhoods, getNeighborhoodBySlug } from "@/lib/seo-neighborhood-pages/neighborhood-seo-data";
 import { generateNeighborhoodSeoMetadata } from "@/lib/seo-neighborhood-pages/seo-metadata";
@@ -28,6 +26,13 @@ function withSearchParam(href: string, key: string, value: string): string {
   const params = new URLSearchParams(query);
   params.set(key, value);
   return `${pathname}?${params.toString()}`;
+}
+
+function confidenceLabel(value: "high" | "medium" | "low" | undefined) {
+  if (value === "high") return "Élevée";
+  if (value === "medium") return "Moyenne";
+  if (value === "low") return "Faible";
+  return "Non publiée";
 }
 
 export async function generateStaticParams() {
@@ -61,14 +66,12 @@ export default async function DistrictPage({ params, searchParams }: PageProps) 
 
   const seo = generateNeighborhoodSeoMetadata(n);
   const continuityParams = searchParams ? await searchParams : {};
-  const navigationState = parseMapNavigationState({
-    ...continuityParams,
-    city: n.citySlug,
-    district: n.slug,
-  });
+  const navigationState = parseMapNavigationState({ ...continuityParams, city: n.citySlug, district: n.slug });
   const searchHref = buildMapSearchHref(navigationState);
   const mapHref = buildMapHref(navigationState);
   const result = await searchListings({ city: n.cityDisplayName, district: n.displayName, limit: 6 }).catch(() => ({ listings: [] }));
+  const mapPoint = getCanonicalNeighborhoodBySlug(n.cityDisplayName, n.displayName);
+  const proximityCount = n.intelligence?.proximityHighlights?.length ?? 0;
 
   const breadcrumbJsonLd = {
     "@context": "https://schema.org",
@@ -81,58 +84,93 @@ export default async function DistrictPage({ params, searchParams }: PageProps) 
   };
 
   return (
-    <main className="min-h-screen bg-background text-foreground">
+    <main data-p6-experience="quartier" className="min-h-screen bg-white text-[#0B2545]">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
       <SiteHeader compact />
+      <div data-p6-surface="active">
+        <section data-p6-stage="territoire" className="border-b border-slate-200 bg-white py-9 sm:py-12 lg:py-14">
+          <Container>
+            <div className="text-[11.5px] font-bold text-slate-500"><Link href="/immobilier">Immobilier</Link><span className="mx-2">/</span><Link href={`/immobilier/${n.citySlug}`}>{n.cityDisplayName}</Link><span className="mx-2">/</span><span>{n.displayName}</span></div>
 
-      <section className="border-b border-border/12 bg-surface py-10 dark:border-white/8 dark:bg-deepblue sm:py-14">
-        <Container>
-          <div className="text-[12px] font-bold text-muted-foreground"><Link href="/immobilier">Immobilier</Link> <span className="mx-2">/</span><Link href={`/immobilier/${n.citySlug}`}>{n.cityDisplayName}</Link> <span className="mx-2">/</span><span>{n.displayName}</span></div>
-          <div className="mt-6 max-w-3xl">
-            <p className="text-[11px] font-extrabold uppercase tracking-[0.22em] text-bronze-500">Quartier · {n.cityDisplayName}</p>
-            <h1 className="mt-3 text-[2.35rem] font-extrabold leading-[1.04] tracking-[-0.05em] sm:text-[3.5rem]">Immobilier à {n.displayName}</h1>
-            <p className="mt-4 max-w-2xl text-[14px] leading-7 text-muted-foreground">{n.description}</p>
-          </div>
-          <div className="mt-7 flex flex-wrap gap-2">
-            <Link href={withSearchParam(searchHref, "transaction_type", "buy")} className="rounded-xl bg-gradient-to-br from-bronze-500 to-bronze-700 px-5 py-3 text-[13px] font-extrabold text-white">Acheter dans ce quartier</Link>
-            <Link href={withSearchParam(searchHref, "transaction_type", "rent")} className="rounded-xl border border-border/20 px-5 py-3 text-[13px] font-extrabold">Louer</Link>
-            <Link href={mapHref} className="inline-flex items-center gap-2 rounded-xl border border-border/20 px-5 py-3 text-[13px] font-extrabold"><MapPin size={14} />Voir ce quartier sur la carte</Link>
-          </div>
-        </Container>
-      </section>
+            <div className="mt-6 grid gap-7 lg:grid-cols-[minmax(0,0.86fr)_minmax(420px,1.14fr)] lg:items-center">
+              <div className="min-w-0">
+                <p className="text-[10.5px] font-black uppercase tracking-[0.18em] text-brand-primary">{n.cityDisplayName} · quartier</p>
+                <h1 className="mt-2 text-[2.25rem] font-black leading-[1.02] tracking-[-0.05em] text-[#0B2545] sm:text-[3.35rem]">{n.displayName}, en données utiles</h1>
+                <p className="mt-3 max-w-xl text-[13.5px] font-medium leading-6 text-slate-500">Repère marché, vie locale et biens accessibles réunis avant d’ouvrir Search.</p>
 
-      <section className="py-12 lg:py-16">
-        <Container>
-          <div className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
-            <article className="rounded-3xl border border-border/15 bg-card p-6 dark:border-white/10 dark:bg-white/[0.04]">
-              <p className="text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-bronze-500">Repères quartier</p>
-              <h2 className="mt-3 text-xl font-extrabold">Ce qui est documenté — et ce qui ne l’est pas</h2>
-              {n.intelligence ? (
-                <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                  {n.intelligence.priceLabel ? <div className="rounded-xl bg-surface p-4"><p className="text-[10px] font-extrabold uppercase text-muted-foreground">Repère prix indicatif</p><p className="mt-1 font-extrabold">{n.intelligence.priceLabel}</p><p className="mt-1 text-[11px] text-muted-foreground">{n.intelligence.pricePeriod ?? "Période non précisée"}</p></div> : null}
-                  {n.intelligence.confidence ? <div className="rounded-xl bg-surface p-4"><p className="text-[10px] font-extrabold uppercase text-muted-foreground">Confiance du repère</p><p className="mt-1 font-extrabold capitalize">{n.intelligence.confidence}</p><p className="mt-1 text-[11px] text-muted-foreground">Concerne le repère, pas une garantie sur un bien.</p></div> : null}
+                <div className="mt-5 grid grid-cols-3 gap-2.5">
+                  <article data-p6-summary="market" className="min-w-0 rounded-2xl border border-blue-100 bg-blue-50/55 p-3.5">
+                    <p className="text-[9px] font-black uppercase tracking-[0.12em] text-slate-500">Marché</p>
+                    <p className="mt-1.5 break-words text-[14px] font-black text-[#0B2545]">{n.intelligence?.priceLabel ?? "Repère non publié"}</p>
+                    <p className="mt-1 text-[9.5px] font-semibold leading-4 text-slate-500">{n.intelligence?.pricePeriod ?? "Aucune estimation implicite"}</p>
+                  </article>
+                  <article data-p6-summary="living" className="min-w-0 rounded-2xl border border-cyan-100 bg-cyan-50/50 p-3.5">
+                    <p className="text-[9px] font-black uppercase tracking-[0.12em] text-slate-500">Vie locale</p>
+                    <p className="mt-1.5 text-[14px] font-black text-[#0B2545]">{proximityCount > 0 ? `${proximityCount} repères` : "Non publiée"}</p>
+                    <p className="mt-1 text-[9.5px] font-semibold leading-4 text-slate-500">{proximityCount > 0 ? "documentés localement" : "aucune proximité inventée"}</p>
+                  </article>
+                  <article data-p6-summary="confidence" className="min-w-0 rounded-2xl border border-slate-200 bg-slate-50 p-3.5">
+                    <p className="text-[9px] font-black uppercase tracking-[0.12em] text-slate-500">Confiance</p>
+                    <p className="mt-1.5 text-[14px] font-black text-[#0B2545]">{confidenceLabel(n.intelligence?.confidence)}</p>
+                    <p className="mt-1 text-[9.5px] font-semibold leading-4 text-slate-500">concerne les repères publiés</p>
+                  </article>
                 </div>
-              ) : <p className="mt-4 text-[13px] leading-6 text-muted-foreground">Aucun repère quartier spécifique n’est publié pour cette page. AkarFinder ne remplit pas les informations manquantes par estimation implicite.</p>}
-              {n.intelligence?.lifestyleTags?.length ? <div className="mt-5 flex flex-wrap gap-2">{n.intelligence.lifestyleTags.slice(0, 5).map((tag) => <span key={tag} className="rounded-full border border-border/15 px-3 py-1.5 text-[11px] font-semibold">{tag}</span>)}</div> : null}
-              <p className="mt-5 flex items-start gap-2 text-[11.5px] leading-5 text-muted-foreground"><Info size={14} className="mt-0.5 shrink-0 text-bronze-500" />Ces éléments proviennent du référentiel local disponible. Ils ne constituent ni une mesure live du marché, ni une recommandation d’achat.</p>
-            </article>
 
-            <article className="rounded-3xl border border-border/15 bg-card p-6 dark:border-white/10 dark:bg-white/[0.04]">
-              <Search size={18} className="text-bronze-500" />
-              <h2 className="mt-4 text-xl font-extrabold">Chercher dans {n.displayName}</h2>
-              <p className="mt-2 text-[12.5px] leading-6 text-muted-foreground">Le quartier reste un contexte de recherche. Les résultats sont ensuite classés par pertinence et niveau d’information dans Search.</p>
-              <div className="mt-5 flex flex-wrap gap-2">
-                {n.propertyTypes.slice(0, 4).map((type) => <Link key={type} href={withSearchParam(searchHref, "property_type", type)} className="rounded-full border border-border/15 px-3 py-2 text-[11.5px] font-bold capitalize">{type}</Link>)}
+                {n.propertyTypes.length > 0 ? (
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {n.propertyTypes.slice(0, 4).map((type) => (
+                      <Link key={type} href={withSearchParam(searchHref, "property_type", type)} className="rounded-full border border-slate-200 bg-white px-3 py-2 text-[10.5px] font-extrabold capitalize text-[#0B2545] hover:border-blue-200">{type}</Link>
+                    ))}
+                  </div>
+                ) : null}
               </div>
-              <Link href={searchHref} className="mt-5 inline-flex items-center gap-2 text-[13px] font-extrabold text-bronze-500">Voir tous les résultats <ArrowRight size={13} /></Link>
-            </article>
-          </div>
-        </Container>
-      </section>
 
-      <GeoResultPreview listings={result.listings} searchHref={searchHref} contextLabel={`${n.displayName}, ${n.cityDisplayName}`} />
+              {mapPoint ? (
+                <TerritoryMiniMap lat={mapPoint.lat} lng={mapPoint.lng} label={n.displayName} contextLabel={n.cityDisplayName} mapHref={mapHref} badge="Repère quartier" zoom={13.2} />
+              ) : (
+                <div data-p6-territory-map className="grid h-[250px] place-items-center rounded-[22px] border border-dashed border-slate-200 bg-slate-50 p-6 text-center sm:h-[300px] lg:h-[340px]">
+                  <div><MapPin className="mx-auto text-brand-primary" /><p className="mt-3 text-sm font-extrabold">Repère cartographique non disponible</p><p className="mt-1 text-[11px] text-slate-500">Aucune position n’est inventée pour ce quartier.</p></div>
+                </div>
+              )}
+            </div>
 
-      <section className="border-t border-border/12 bg-surface py-10 dark:border-white/8"><Container><p className="max-w-3xl text-[12.5px] leading-6 text-muted-foreground"><strong className="text-foreground">Page locale utile, pas fiche de vérité absolue.</strong> Les prix, disponibilités, caractéristiques et coordonnées doivent être confirmés sur la source originale ou auprès du professionnel concerné.</p></Container></section>
+            {(n.intelligence?.lifestyleTags?.length || n.intelligence?.proximityHighlights?.length) ? (
+              <div data-p6-stage="vie-locale-detail" className="mt-6 rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-[9.5px] font-black uppercase tracking-[0.13em] text-brand-primary">Vie locale</span>
+                  {n.intelligence?.lifestyleTags?.slice(0, 5).map((tag) => <span key={tag} className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-bold text-slate-600">{tag}</span>)}
+                </div>
+                {n.intelligence?.proximityHighlights?.length ? <p className="mt-2 text-[10.5px] font-semibold leading-5 text-slate-500">{n.intelligence.proximityHighlights.slice(0, 4).join(" · ")}</p> : null}
+              </div>
+            ) : null}
+          </Container>
+        </section>
+
+        <div data-p6-stage="biens">
+          <GeoResultPreview listings={result.listings} searchHref={searchHref} contextLabel={`${n.displayName}, ${n.cityDisplayName}`} accent="brand" />
+        </div>
+
+        <section data-p6-stage="decision" className="border-t border-slate-200 bg-slate-50/70 py-9 sm:py-11">
+          <Container>
+            <div className="rounded-[22px] border border-slate-200 bg-white p-5 sm:flex sm:items-center sm:justify-between sm:gap-6 sm:p-6">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-brand-primary">Décision</p>
+                <h2 className="mt-1.5 text-xl font-black tracking-[-0.03em] text-[#0B2545]">Explorer {n.displayName}</h2>
+                <p className="mt-1.5 text-[12px] leading-5 text-slate-500">Le quartier reste un contexte de recherche. Les détails d’un bien doivent être confirmés sur leur source.</p>
+              </div>
+              <div className="mt-4 flex flex-wrap gap-2 sm:mt-0 sm:justify-end">
+                <Link href={withSearchParam(searchHref, "transaction_type", "buy")} className="rounded-xl bg-brand-primary px-4 py-3 text-[12px] font-extrabold text-white">Acheter</Link>
+                <Link href={withSearchParam(searchHref, "transaction_type", "rent")} className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-[12px] font-extrabold">Louer</Link>
+                <Link href={mapHref} className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-[12px] font-extrabold"><MapPin size={13} />Carte</Link>
+              </div>
+            </div>
+          </Container>
+        </section>
+
+        <section className="border-t border-slate-200 bg-slate-50 py-8">
+          <Container><p className="max-w-3xl text-[11.5px] leading-5 text-slate-500"><strong className="text-[#0B2545]">Page locale utile, pas fiche de vérité absolue.</strong> Prix, disponibilités, caractéristiques et coordonnées doivent être confirmés sur la source originale ou auprès du professionnel concerné.</p></Container>
+        </section>
+      </div>
       <SiteFooter />
     </main>
   );
