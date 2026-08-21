@@ -1,8 +1,13 @@
 "use client";
 
 import { ChevronRight, Map, MapPin } from "lucide-react";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { resolveCityEntity } from "@/lib/geo/geo-entity-registry";
+import {
+  CITY_TERRITORIAL_COLOR_MEANING,
+  findCityTerritorialColorInText,
+  getCityTerritorialColor,
+} from "@/lib/map/city-territorial-colors";
 import {
   getNeighborhoodCities,
   getNeighborhoodsByCity,
@@ -21,6 +26,11 @@ type TerritorialExplorerProps = {
 type CityEntry = {
   city: string;
   count: number;
+};
+
+type OriginalVisualState = {
+  style: string;
+  childStyles: string[];
 };
 
 export function TerritorialExplorer({
@@ -50,6 +60,75 @@ export function TerritorialExplorer({
   const explorerWidthClass = selectedDistrict
     ? "sm:w-[min(720px,calc(100vw-32px))] md:w-[calc(100vw-438px)] md:max-w-[720px]"
     : "sm:w-[min(720px,calc(100vw-32px))]";
+
+  useEffect(() => {
+    if (navigationState.layer !== MAP_LAYER_EXPLORE || selectedCity) return;
+
+    const mapCanvas = document.querySelector<HTMLElement>("[data-p4-map-canvas]");
+    mapCanvas?.setAttribute("data-akarfinder-city-color-overview-active", "true");
+
+    const originals = new Map<HTMLElement, OriginalVisualState>();
+    const remember = (node: HTMLElement) => {
+      if (originals.has(node)) return;
+      originals.set(node, {
+        style: node.style.cssText,
+        childStyles: [...node.children].map((child) => child instanceof HTMLElement ? child.style.cssText : ""),
+      });
+    };
+
+    const applyColor = (node: HTMLElement) => {
+      const meta = findCityTerritorialColorInText(node.textContent ?? "");
+      if (!meta) return;
+      remember(node);
+
+      if (node.matches(".maplibre-cluster-marker")) {
+        node.dataset.akarfinderCityColorOverview = "true";
+        node.dataset.akarfinderCityColor = meta.slug;
+        node.dataset.akarfinderCityColorMeaning = CITY_TERRITORIAL_COLOR_MEANING;
+        node.style.borderColor = meta.color;
+        node.style.backgroundColor = "#ffffff";
+        node.style.boxShadow = `0 0 0 12px ${meta.color}24, 0 0 0 26px ${meta.color}0F, 0 6px 20px rgba(7,27,51,0.18)`;
+        const badge = node.querySelector<HTMLElement>("span:first-child");
+        if (badge) {
+          badge.style.background = meta.color;
+          badge.style.color = "#ffffff";
+        }
+        return;
+      }
+
+      node.dataset.akarfinderCityColorChip = meta.slug;
+      node.dataset.akarfinderCityColorMeaning = CITY_TERRITORIAL_COLOR_MEANING;
+      node.style.borderColor = `${meta.color}70`;
+      node.style.backgroundColor = meta.soft;
+      node.style.boxShadow = `inset 0 0 0 1px ${meta.color}18`;
+    };
+
+    const scan = () => {
+      document.querySelectorAll<HTMLElement>(
+        ".maplibre-cluster-marker, [data-p4-map-decision-rail] a",
+      ).forEach(applyColor);
+    };
+
+    scan();
+    const observer = new MutationObserver(scan);
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    return () => {
+      observer.disconnect();
+      for (const [node, original] of originals) {
+        if (!node.isConnected) continue;
+        node.style.cssText = original.style;
+        [...node.children].forEach((child, index) => {
+          if (child instanceof HTMLElement) child.style.cssText = original.childStyles[index] ?? "";
+        });
+        delete node.dataset.akarfinderCityColorOverview;
+        delete node.dataset.akarfinderCityColor;
+        delete node.dataset.akarfinderCityColorChip;
+        delete node.dataset.akarfinderCityColorMeaning;
+      }
+      mapCanvas?.removeAttribute("data-akarfinder-city-color-overview-active");
+    };
+  }, [navigationState.layer, selectedCity]);
 
   // Once a semantic market layer is active, the map itself is the district
   // explorer. Keeping a second floating district rail on top of polygons makes
@@ -83,6 +162,7 @@ export function TerritorialExplorer({
         aria-label="Exploration territoriale"
         data-akarfinder-territorial-explorer
         data-akarfinder-selected-city={selectedCity ? "true" : "false"}
+        data-akarfinder-city-color-legend={!selectedCity ? CITY_TERRITORIAL_COLOR_MEANING : undefined}
       >
         <div className="flex min-w-0 items-center gap-1 border-b border-border px-2.5 py-1.5 sm:px-3.5">
           <button
@@ -126,6 +206,9 @@ export function TerritorialExplorer({
           <p className="inline-flex shrink-0 items-center gap-1 text-[9px] font-extrabold uppercase tracking-[0.08em] text-muted-foreground sm:text-[9.5px] sm:tracking-[0.1em]">
             {selectedCity ? <MapPin size={11} aria-hidden="true" /> : null}
             {selectedCity ? "Quartiers" : "Villes"}
+            {!selectedCity ? (
+              <span className="hidden normal-case tracking-normal text-muted-foreground/80 sm:inline">· couleur = repère</span>
+            ) : null}
           </p>
           <div className="min-w-0 flex-1 overflow-hidden">
             <div className="flex gap-1.5 overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -146,17 +229,27 @@ export function TerritorialExplorer({
                       </button>
                     );
                   })
-                : cityEntries.map(({ city, count }) => (
-                    <button
-                      key={city}
-                      type="button"
-                      onClick={() => onNavigationChange(withMapLocation(navigationState, city))}
-                      className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-full border border-border bg-surface px-3 text-[10.5px] font-extrabold text-foreground transition hover:border-brand-primary/35 hover:bg-brand-primary-soft/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/35 sm:h-9"
-                    >
-                      <span>{city}</span>
-                      <span className="text-muted-foreground">{count}</span>
-                    </button>
-                  ))}
+                : cityEntries.map(({ city, count }) => {
+                    const colorMeta = getCityTerritorialColor(city);
+                    return (
+                      <button
+                        key={city}
+                        type="button"
+                        onClick={() => onNavigationChange(withMapLocation(navigationState, city))}
+                        className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-full border border-border bg-surface px-3 text-[10.5px] font-extrabold text-foreground transition hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/35 sm:h-9"
+                        style={colorMeta ? {
+                          borderColor: `${colorMeta.color}70`,
+                          backgroundColor: colorMeta.soft,
+                          boxShadow: `inset 0 0 0 1px ${colorMeta.color}18`,
+                        } : undefined}
+                        data-akarfinder-city-color-chip={colorMeta?.slug}
+                        data-akarfinder-city-color-meaning={colorMeta ? CITY_TERRITORIAL_COLOR_MEANING : undefined}
+                      >
+                        <span>{city}</span>
+                        <span className="text-muted-foreground">{count}</span>
+                      </button>
+                    );
+                  })}
             </div>
           </div>
         </div>
