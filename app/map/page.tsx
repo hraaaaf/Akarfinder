@@ -1,8 +1,10 @@
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { MapNeighborhoodClient } from "@/components/map/MapNeighborhoodClient";
+import { P4MapDecisionRail } from "@/components/map/P4MapDecisionRail";
 import { parseMapNavigationState } from "@/lib/map/map-navigation-state";
 import "./mockup-convergence-l2.css";
+import "./p4-map-shell.css";
 
 export const dynamic = "force-dynamic";
 
@@ -23,8 +25,11 @@ export default async function MapPage({ searchParams }: MapPageProps) {
   return (
     <main className="flex min-h-[100svh] flex-col bg-[#F8FAFC] text-[#0B1F3A]">
       <SiteHeader searchMode fluid />
-      <div className="flex-1">
-        <MapNeighborhoodClient initialState={initialState} />
+      <div className="flex-1" data-p4-map-layout>
+        <div data-p4-map-canvas>
+          <MapNeighborhoodClient initialState={initialState} />
+        </div>
+        <P4MapDecisionRail />
       </div>
       <div className="l2-secondary-footer">
         <SiteFooter />

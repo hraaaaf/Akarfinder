@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { Map as MapLibreMap } from "maplibre-gl";
 import { RabatMarketZoneSheet } from "@/components/map/RabatMarketZoneSheet";
 import { useTheme } from "@/components/theme/ThemeProvider";
+import { applyAkarFinderBasemapTreatment } from "@/lib/map/akarfinder-territorial-style";
 import type { RabatIntelligenceGeoJson } from "@/lib/map/intelligence-payload";
 import type { IntelligenceMode } from "@/lib/map/intelligence-scale";
 import {
@@ -157,6 +158,7 @@ export function RabatMarketIntelligenceExperience({
       mapInstance.once("style.load", () => {
         if (!mapInstance) return;
         hideInternalBoundaries(mapInstance);
+        applyAkarFinderBasemapTreatment(mapInstance, initialTheme);
         setMapLoaded(true);
         setStyleRevision((value) => value + 1);
       });
@@ -179,6 +181,7 @@ export function RabatMarketIntelligenceExperience({
     map.setStyle(styleForTheme(theme));
     map.once("style.load", () => {
       hideInternalBoundaries(map);
+      applyAkarFinderBasemapTreatment(map, theme);
       setStyleRevision((value) => value + 1);
     });
   }, [mapLoaded, theme]);
@@ -330,6 +333,7 @@ export function RabatMarketIntelligenceExperience({
       className="relative min-w-0 overflow-hidden bg-background"
       style={{ height: "calc(100svh - 64px)" }}
       data-akarfinder-market-intelligence-map
+      data-p4-basemap="territorial-muted"
     >
       <div ref={mapContainerRef} className="absolute inset-0 bg-[#eaf1f7] dark:bg-[#071426]" />
 
