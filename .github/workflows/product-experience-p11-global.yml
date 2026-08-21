@@ -1,0 +1,92 @@
+name: Product Experience P11 Global QA
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "scripts/audits/product-experience-p11-global.mjs"
+      - "scripts/scrapers/__tests__/product-experience-p11-global.test.ts"
+      - ".github/workflows/product-experience-p11-global.yml"
+      - "docs/AKARFINDER_PRODUCT_EXPERIENCE_P11.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: product-experience-p11-global-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  certify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      BASE_URL: http://127.0.0.1:3231
+      OUTPUT_DIR: artifacts/product-experience-p11-global
+      AUDIT_OUTPUT_DIR: data/audits/ui-all-pages-baseline
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Product Experience cross-lot contracts
+        shell: bash
+        run: |
+          files=$(find scripts/scrapers/__tests__ -maxdepth 1 -type f -name 'product-experience-p*.test.ts' | sort)
+          test -n "$files"
+          npx tsx --test $files
+      - name: P11 governance contract
+        run: npx tsx --test scripts/scrapers/__tests__/product-experience-p11-global.test.ts scripts/scrapers/__tests__/phase1-final-design-a11y.test.ts
+      - name: Audit syntax
+        run: |
+          node --check scripts/audits/product-experience-p11-global.mjs
+          node --check scripts/audits/ui-all-pages-inventory.mjs
+          node --check scripts/audits/ui-all-pages-baseline.mjs
+          node --check scripts/audits/ui-all-pages-certify.mjs
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+      - name: Exhaustive page inventory
+        env:
+          AUDIT_OUTPUT_DIR: data/audits/ui-all-pages-inventory
+        run: node scripts/audits/ui-all-pages-inventory.mjs
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Start production server
+        shell: bash
+        run: |
+          npm run start -- -p 3231 > /tmp/product-experience-p11.log 2>&1 &
+          for attempt in {1..60}; do
+            if curl -fsS http://127.0.0.1:3231/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/product-experience-p11.log
+          exit 1
+      - name: Exhaustive all-pages baseline
+        env:
+          INVENTORY_PATH: data/audits/ui-all-pages-inventory/inventory.json
+          AUDIT_OUTPUT_DIR: data/audits/ui-all-pages-baseline
+        run: node scripts/audits/ui-all-pages-baseline.mjs
+      - name: Enforce exhaustive all-pages zero findings
+        env:
+          METRICS_PATH: data/audits/ui-all-pages-baseline/metrics.json
+        run: node scripts/audits/ui-all-pages-certify.mjs
+      - name: Product Experience P3-P10 representative certification
+        run: node scripts/audits/product-experience-p11-global.mjs
+      - name: Upload P11 proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: product-experience-p11-global-${{ github.run_id }}
+          path: |
+            artifacts/product-experience-p11-global
+            data/audits/ui-all-pages-inventory/inventory.json
+            data/audits/ui-all-pages-baseline/metrics.json
+            data/audits/ui-all-pages-baseline/*.png
+          if-no-files-found: error
+          retention-days: 14
