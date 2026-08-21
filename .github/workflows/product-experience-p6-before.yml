@@ -1,0 +1,70 @@
+name: Product Experience P6 BEFORE
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/product-experience-p6-before.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  baseline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Start exact main runtime
+        shell: bash
+        run: |
+          npm run dev -- -p 3216 > /tmp/p6-before.log 2>&1 &
+          for attempt in {1..90}; do
+            if curl -fsS http://127.0.0.1:3216/immobilier/rabat/agdal >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/p6-before.log
+          exit 1
+      - name: Capture P6 BEFORE
+        env:
+          BASE_URL: http://127.0.0.1:3216
+        run: |
+          node - <<'NODE'
+          const { chromium } = require('playwright');
+          const fs = require('fs');
+          (async () => {
+            const out='artifacts/product-experience-p6-before'; fs.mkdirSync(out,{recursive:true});
+            const browser=await chromium.launch({headless:true});
+            const routes=[['ville','/immobilier/rabat'],['quartier','/immobilier/rabat/agdal']];
+            const vps=[[390,844],[430,932],[768,900],[1280,900]];
+            const metrics=[]; let findings=[];
+            for (const [kind,route] of routes) for (const [width,height] of vps) {
+              const page=await browser.newPage({viewport:{width,height},colorScheme:'light',reducedMotion:'reduce'});
+              const res=await page.goto(process.env.BASE_URL+route,{waitUntil:'networkidle',timeout:60000});
+              const m=await page.evaluate(()=>({clientWidth:document.documentElement.clientWidth,scrollWidth:document.documentElement.scrollWidth,h1Count:document.querySelectorAll('h1').length,mainCount:document.querySelectorAll('main').length,logoCount:document.querySelectorAll('img[src="/brand/logo-v2/logo-header-light.png"]').length,bodyText:document.body.innerText.slice(0,5000)}));
+              const local=[]; if((res?.status()??0)!==200)local.push('HTTP'); if(m.scrollWidth>m.clientWidth+1)local.push('OVERFLOW'); if(m.h1Count!==1)local.push('H1'); if(m.mainCount!==1)local.push('MAIN');
+              const file=`${kind}-${width}x${height}.png`; await page.screenshot({path:`${out}/${file}`,fullPage:true}); metrics.push({kind,route,width,height,file,...m,findings:local}); findings.push(...local.map(f=>({kind,width,height,finding:f}))); await page.close();
+            }
+            await browser.close(); fs.writeFileSync(`${out}/metrics.json`,JSON.stringify({schemaVersion:'AKARFINDER_PRODUCT_EXPERIENCE_P6_BEFORE_V1',screenshotCount:metrics.length,findingCount:findings.length,findings,metrics},null,2)); if(metrics.length!==8||findings.length)process.exit(1);
+          })();
+          NODE
+      - name: Upload P6 BEFORE
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: product-experience-p6-before-${{ github.run_id }}
+          path: artifacts/product-experience-p6-before
+          if-no-files-found: error
+          retention-days: 14
