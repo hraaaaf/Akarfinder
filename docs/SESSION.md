@@ -6,7 +6,7 @@ Ce fichier est le handover opérationnel court. `README.md` porte l’identité/
 
 ## Product Experience Reconciliation — état courant
 
-Progression validée : **9/12 lots CLOSED = 75 %**.
+Progression validée : **10/12 lots CLOSED = 83,3 %**.
 
 - P0–P2 ✅ CLOSED
 - P3 Accueil ✅ CLOSED
@@ -15,25 +15,25 @@ Progression validée : **9/12 lots CLOSED = 75 %**.
 - P6 Quartier / Ville ✅ CLOSED
 - P7 Mon Projet ✅ CLOSED
 - P8 Publication ✅ CLOSED
-- P9 Professionnels ⏭ NEXT
-- P10 Pages secondaires ⏳
+- P9 Professionnels ✅ CLOSED
+- P10 Pages secondaires ⏭ NEXT
 - P11 QA global / responsive / accessibilité / performance / nettoyage ⏳
 
-## P8 Publication — closeout
+## P9 Professionnels — closeout
 
-- PR `#843` ✅ MERGED
-- head certifié `10460c45028575dbd939cbaea53374512c840036`
-- run dédié `32518229299` — SUCCESS
-- artifact `9459637165`
-- digest `sha256:b7601871caca2b3b10816a2cda8da44a4ad41c75dd364baa5eecc5350488bb25`
+- PR `#845` ✅ MERGED
+- head certifié `d3346506f3e4e86ab2f177e01bfbae117419d424`
+- run dédié `32522040260` — SUCCESS
+- artifact `9460942556`
+- digest `sha256:09029c06c04a8ca26be61533ee2bf039de2feef41a34e9074743a4cba602cdb9`
 - 4/4 captures AFTER : 390×844 / 430×932 / 768×900 / 1280×900
 - `findingCount = 0`
-- score visuel humain : **9,1/10**
+- score visuel humain : **9,3/10**
 - human visual gate : APPROVED le 2026-08-21
-- squash merge `bb14bedc5fa4cde8013dd31a83479c09dd610502`
+- squash merge `1a38b9cafab26d090f0b995c220d172202650673`
 - `main` post-merge vérifié sur ce commit
-- aucune migration DB ; aucun Vercel
-- preuve canonique : `docs/AKARFINDER_PRODUCT_EXPERIENCE_P8.md`
+- aucun KPI fictif ; aucune migration DB ; aucun Vercel
+- preuve canonique : `docs/AKARFINDER_PRODUCT_EXPERIENCE_P9.md`
 
 ## Invariants Product Experience
 
@@ -45,6 +45,6 @@ Progression validée : **9/12 lots CLOSED = 75 %**.
 
 ## Reprise exacte
 
-**P9 — Professionnels.** Commencer sur `main` après le closeout P8 : identifier les routes professionnelles cibles, capturer le BEFORE aux viewports 390 / 430 / 768 / 1280, verrouiller Goal + critères, récupérer la référence visuelle canonique avant toute implémentation, puis exécuter un seul lot P9 cohérent jusqu’au human gate.
+**P10 — Pages secondaires.** Partir de `main` après le closeout P9, inventorier les routes secondaires réellement publiques, distinguer celles qui ont déjà un shell canonique de celles qui divergent, capturer le BEFORE sur les surfaces concernées aux viewports 390 / 430 / 768 / 1280, verrouiller une référence visuelle commune, puis exécuter un lot P10 cohérent jusqu’au human gate.
 
 Les autres lanes DATA / Search / Carte restent gouvernées par `docs/ROADMAP.md` et ne sont pas implicitement modifiées par ce handover Product Experience.
