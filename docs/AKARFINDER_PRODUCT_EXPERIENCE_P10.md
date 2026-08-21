@@ -1,6 +1,6 @@
 # AkarFinder — Product Experience P10 Pages secondaires
 
-Statut : **IMPLEMENTED — AWAITING CERTIFICATION**
+Statut : **CERTIFIED — MERGED**
 
 ## Goal
 
@@ -15,7 +15,7 @@ Périmètre :
 - `/conditions-utilisation`
 - `/politique-confidentialite`
 
-## Success
+## Success validé
 
 - 7/7 routes utilisent `SecondaryPageShell` ;
 - header exact-white et logo canonique ;
@@ -25,8 +25,7 @@ Périmètre :
 - `findingCount = 0` ;
 - aucun overflow horizontal ;
 - aucun changement backend, DB, ranking, sources ou permissions ;
-- aucun Vercel ;
-- human visual gate avant merge.
+- aucun Vercel.
 
 ## BEFORE exact-main
 
@@ -39,42 +38,54 @@ Périmètre :
 - Digest : `sha256:44545a5277656e0122ac1d9c4816c984eaa431aa602351c69b8ad74d5024c9a0`
 - 28/28 captures ; HTTP 200 ; 1 H1 ; 1 main ; logo canonique ; exact-white header ; 0 overflow.
 
-Observation vérifiée : 6/7 routes utilisent déjà `SecondaryPageShell`. `/politique-confidentialite` est l’unique outlier structurel sur les 4 viewports.
+Observation vérifiée : 6/7 routes utilisaient déjà `SecondaryPageShell`. `/politique-confidentialite` était l’unique outlier structurel sur les 4 viewports.
 
 ## Référence visuelle
 
-Référence commune : `SecondaryPageShell` actuel, `/faq` comme surface témoin, complété par le wireframe P10 validé dans le chantier.
+Référence commune : `SecondaryPageShell`, `/faq` comme surface témoin, complétée par la référence P10 du chantier.
 
-Principes :
-- fond clair AkarFinder ;
-- header exact-white ;
-- eyebrow bleu ;
-- titre navy ;
-- introduction courte ;
-- une surface premium principale ;
-- footer sombre ;
-- bottom-nav mobile canonique ;
-- pas de dashboard, KPI ou décor artificiel sur les pages légales.
+Principes : fond clair AkarFinder, header exact-white, eyebrow bleu, titre navy, introduction courte, une surface premium principale, footer sombre, bottom-nav mobile canonique et aucun décor artificiel sur les pages légales.
 
 ## Implémentation
 
 - migration de `/politique-confidentialite` vers `SecondaryPageShell` ;
 - contenu légal conservé ;
 - `maxWidth="3xl"` pour la lecture longue ;
-- ajout d’un hook générique `data-secondary-page-shell="akarfinder-v1"` tout en conservant le hook historique ;
+- hook générique `data-secondary-page-shell="akarfinder-v1"` tout en conservant le hook historique ;
 - audit dédié 7 routes × 4 viewports ;
 - test de convergence + conservation du contenu légal ;
-- aucun autre redesign des 6 pages déjà conformes.
+- aucun redesign gratuit des 6 pages déjà conformes.
 
-## Certification attendue
+## AFTER certifié
 
-- contrat P10 vert ;
-- audit syntax vert ;
-- TypeScript vert ;
-- build production vert ;
-- 28/28 AFTER ;
-- `findingCount = 0` ;
-- inspection BEFORE → référence → AFTER ;
-- score visuel ;
-- human gate ;
-- squash merge seulement après preuve suffisante.
+- Head certifié : `6024c47e3c81bafb45bc8d8161c448d45810ef00`
+- Run dédié : `32534826797` — SUCCESS
+- Artifact : `9465109006`
+- Digest : `sha256:66de7a5ffe25e302eff86d359c1bde4ef705825125829870a93dbf2b3b5721ea`
+- 28/28 captures AFTER
+- `findingCount = 0`
+- 7/7 shell commun
+- headers exact-white 28/28
+- logo canonique, footer et bottom-nav détectés
+- aucun overflow horizontal
+- compile / accessibility / Secondary Certification / P0 / P1 / P2 : SUCCESS
+
+## Validation visuelle
+
+- inspection BEFORE → référence → AFTER : validée
+- score visuel : **9,4/10**
+- human visual gate : **APPROVED — 2026-08-22**
+- réserve mineure : les pages légales restent naturellement plus denses que FAQ/Contact ; aucune régression de lisibilité observée.
+
+## Merge
+
+- PR : `#847`
+- méthode : squash
+- merge commit : `81cf54b5f86b839de8336acfa399321e378c602f`
+- `main` vérifié sur ce commit après merge.
+
+## Invariants
+
+- aucun backend, DB, permissions, ranking, sources ou API modifié ;
+- contenu légal conservé ;
+- aucun déploiement Vercel.
