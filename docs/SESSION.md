@@ -8,7 +8,7 @@ Ce fichier est un **handover opérationnel court**. `docs/ROADMAP.md` reste l’
 
 Issue canonique : `#849` — **HVR-1→HVR-6**.
 
-Progression stricte : **3/6 lots CLOSED = 50,0 %**.
+Progression stricte : **4/6 lots CLOSED = 66,7 %**.
 
 ### HVR-1 — CLOSED
 
@@ -30,32 +30,35 @@ Progression stricte : **3/6 lots CLOSED = 50,0 %**.
 - merge `414a50cc0d8753e4f7b37f5953783a574f164f71`
 - HEAD certifié `3549d5258b900b5c9cd6cb1b0b09c48c99a06bb5`
 - run `32578052976` SUCCESS ; artifact `9477075713`
-- digest `sha256:54f83da468ee468078de32c3c86177c5fec4e56a8d40e284cadaf572ca1a8846`
-- 4/4 viewports ; contrats + TypeScript + build + responsive proof verts
 - score **9,1/10** ; human gate APPROVED
-- runtime via read-model public canonique ; aucun faux signal de récence/recommandation
 
-### HVR-4 — ACTIVE
+### HVR-4 — CLOSED
 
-Goal : remplacer la grosse section passive `Un bien ne se résume pas à ses mètres carrés` par un module court **Comprendre le quartier avant de visiter** où chaque quartier mène directement à sa page.
+- PR `#859` ✅ MERGED
+- merge `993f3bc6d7107d3b9d08ce7efea1f1267c4e87cd`
+- HEAD certifié `cd5385984712b2aaabdf07d9ff4ab760fe44959c`
+- run `32579508071` SUCCESS ; artifact `9477494308`
+- digest `sha256:f3f1c32d3d7a7a4d9f9f5558ec7594938fc21a894d988ebafb0e2bff4d42c1f9`
+- 3/3 destinations quartier ; 4/4 viewports ; findingCount 0 ; 0 overflow ; 0 console error
+- score **9,3/10** ; human gate APPROVED
+- grosse section passive supprimée au profit de `Comprendre le quartier avant de visiter`
 
-- branche : `agent/homepage-visual-reconciliation-hvr4`
-- BEFORE : HVR-3 AFTER, run `32578052976`, artifact `9477075713`
-- Goal + wireframe : `docs/HVR_4_NEIGHBORHOOD_ACTION.md`
-- quartiers canoniques : Agdal / Maârif / Guéliz
-- chaque carte = lien direct, aucun état sélectionné intermédiaire
-- densité plafonnée : 2 repères + 3 tags + 1 signal prix
-- suppression du wording passif, carte stylisée, étoiles futures et `bientôt disponible`
-- benchmark frais complet réservé à HVR-6
+### HVR-5 — ACTIVE
 
-### Lots suivants
+Goal : simplifier la deuxième moitié de la homepage selon le principe **peu de blocs, chacun actionnable**, tout en conservant les accès utiles pour recherche, projet, vendeur/publication et professionnels.
 
-- HVR-5 : simplification homepage complète + responsive polish type Rightmove.
-- HVR-6 : benchmark final frais Zillow / Redfin / Realtor.com / Rightmove, score final visé ≥ 9/10.
+Candidats principaux déjà audités :
+- `HowItWorks` / `Votre recherche, simplement` : trop explicatif, aucune action directe principale ;
+- `MreTrustSection` : trop volumineux et contient des valeurs d’exemple qui ne doivent pas ressembler à des données réelles ;
+- `HomeFinalCTA` : utile mais peut absorber davantage de conversion vendeur/Pros.
+
+BEFORE HVR-5 = HVR-4 AFTER certifié : run `32579508071`, artifact `9477494308`, viewports 390 / 430 / 768 / 1280.
+
+HVR-6 reste le seul benchmark final frais contre Zillow / Redfin / Realtor.com / Rightmove.
 
 ## Next exact
 
-HVR-4 : source contracts → TypeScript/build → audit 390/430/768/1280 → AFTER → comparaison BEFORE/mockup/AFTER → score → human gate → merge/closeout.
+HVR-5 : créer branche current-main → Goal + wireframe → implémentation simplification globale → contrats/TypeScript/build → AFTER 390/430/768/1280 → comparaison → score → human gate → merge/closeout.
 
 ## Invariants
 
