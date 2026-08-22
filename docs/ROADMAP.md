@@ -65,6 +65,16 @@ P11 Product Experience :
 
 ## 2. Chantiers fermés — références stables
 
+### GitHub Hygiene & Single Source of Truth ✅ CLOSED
+
+- PR #851 ✅ MERGED ;
+- merge squash `9359034d8587ee12e0bd2fce72bf791582b90a5c` ;
+- scope final : `.github/PULL_REQUEST_TEMPLATE.md`, `docs/ROADMAP.md`, `docs/SESSION.md` uniquement ;
+- branche de travail 0 derrière `main` avant merge ;
+- ancien ledger roadmap préservé par SHA Git immuable ;
+- **26 PR historiques / doublons / superseded fermées** pendant le ménage initial ;
+- aucune DB, migration, Registry, DATA, ranking, runtime ou Vercel.
+
 ### Product Experience Reconciliation ✅ CLOSED
 
 **12/12 lots CLOSED = 100 %.**
@@ -128,7 +138,6 @@ Règle : **seules les PR explicitement marquées ACTIVE ci-dessous sont sur le c
 ### ACTIVE
 
 - **#850 — HVR-1** : ACTIVE / DRAFT, chantier #849.
-- **#851 — GitHub Hygiene & Single Source of Truth** : GOVERNANCE / DRAFT jusqu’au merge de cette compaction.
 
 ### REVALIDATE AVANT REPRISE — UI / produit
 
@@ -197,7 +206,7 @@ Ancienne base. Réutiliser uniquement les capacités réellement absentes de cur
 
 ## 5. PR hygiene — état vérifié 2026-08-22
 
-**26 PR historiques / doublons / superseded ont été fermées** pendant le ménage initial.
+**26 PR historiques / doublons / superseded ont été fermées** pendant le ménage initial. La PR de gouvernance #851 est ensuite **MERGED**.
 
 Catégories retirées :
 - ancienne chaîne SERP V2 preview LOT 1→6 ;
