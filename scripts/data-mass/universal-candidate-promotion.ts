@@ -36,6 +36,7 @@ export interface UniversalCandidatePromotionSummary {
   canonicalUrls: number;
   acceptedCanonicalUrls: number;
   rejectedCanonicalUrls: number;
+  invalidUrlRows: number;
   duplicateRowsCollapsed: number;
   acceptedByDomain: Record<string, number>;
   rejectedByReason: Record<ExternalIndexRejectionReason, number>;
@@ -197,8 +198,10 @@ export function summarizeUniversalCandidatePromotion(
   };
 
   let rawRows = 0;
-  let acceptedCanonicalUrls = 0;
   let canonicalUrls = 0;
+  let acceptedCanonicalUrls = 0;
+  let rejectedCanonicalUrls = 0;
+  let invalidUrlRows = 0;
 
   for (const row of rows) {
     rawRows += row.rawRows;
@@ -210,8 +213,10 @@ export function summarizeUniversalCandidatePromotion(
       for (const provider of row.providers) {
         acceptedByProvider[provider] = (acceptedByProvider[provider] ?? 0) + 1;
       }
-    } else if (row.rejectionReason) {
-      rejectedByReason[row.rejectionReason] += 1;
+    } else {
+      if (row.canonicalUrl) rejectedCanonicalUrls += 1;
+      else invalidUrlRows += row.rawRows;
+      if (row.rejectionReason) rejectedByReason[row.rejectionReason] += 1;
     }
   }
 
@@ -219,7 +224,8 @@ export function summarizeUniversalCandidatePromotion(
     rawRows,
     canonicalUrls,
     acceptedCanonicalUrls,
-    rejectedCanonicalUrls: rows.length - acceptedCanonicalUrls,
+    rejectedCanonicalUrls,
+    invalidUrlRows,
     duplicateRowsCollapsed: rawRows - rows.length,
     acceptedByDomain: Object.fromEntries(Object.entries(acceptedByDomain).sort(([a], [b]) => a.localeCompare(b))),
     rejectedByReason,
