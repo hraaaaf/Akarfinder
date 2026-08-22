@@ -29,6 +29,7 @@ Progression stricte : **0/6 lots CLOSED = 0 %** jusqu’au merge effectif de HVR
 - Validations croisées : Fidelity `32563274188` SUCCESS ; Hero `32563274191` SUCCESS ; Home Proof `32563274147` SUCCESS ; UI All Pages `32563274125` SUCCESS.
 - Score visuel : **9,0/10**.
 - Human visual gate : **APPROVED 2026-08-22**.
+- Commits post-certification : documentation uniquement (`docs/ROADMAP.md`, `docs/SESSION.md`) ; aucun runtime modifié depuis le HEAD certifié.
 - Next exact : merge #850 → closeout HVR-1 → démarrer HVR-2.
 
 ### Lots suivants verrouillés
