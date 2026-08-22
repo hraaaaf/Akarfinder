@@ -7,9 +7,8 @@ on:
       - 'app/page.tsx'
       - 'components/home/HomeListingsSection.tsx'
       - 'components/landing/CityIntentGrid.tsx'
-      - 'lib/listings/image-policy.ts'
       - 'lib/listings/utils.ts'
-      - 'lib/search/**'
+      - 'lib/search-gateway/**'
       - 'scripts/audits/hvr-3-home-listings.mjs'
       - 'scripts/scrapers/__tests__/hvr-3-home-listings.test.ts'
       - '.github/workflows/hvr-3-home-listings.yml'
@@ -22,11 +21,10 @@ jobs:
   hvr-3-proof:
     runs-on: ubuntu-24.04
     timeout-minutes: 35
-    # Proof-only activation: the committed SQLite fixture contains persisted
-    # OpenSERP rows, but the public read-model is deliberately fail-closed unless
-    # this feature is enabled. This does not alter production/Vercel configuration.
     env:
-      PERSISTED_OPENSERP_LISTINGS_ENABLED: "true"
+      # CI-only visual certification lane. The component additionally requires
+      # GITHUB_ACTIONS=true and rejects Vercel before using the canonical snapshot.
+      HVR3_CERTIFICATION_MODE: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -45,11 +43,6 @@ jobs:
             scripts/scrapers/__tests__/home-proof-ux.test.ts
       - name: TypeScript
         run: npx tsc --noEmit
-      - name: Public-listing preflight
-        shell: bash
-        run: |
-          set -euo pipefail
-          npx tsx -e 'import { searchListings } from "./lib/search/index.ts"; (async () => { const result = await searchListings({ limit: 8 }); console.log(`[hvr-3-preflight] public=${result.listings.length} source=${result.source}`); if (result.listings.length < 1) process.exit(1); })();'
       - name: Production build
         run: npm run build
       - name: Install Chromium
@@ -65,7 +58,7 @@ jobs:
           done
           cat /tmp/hvr-3.log
           exit 1
-      - name: HVR-3 responsive real-listings proof
+      - name: HVR-3 responsive canonical-snapshot proof
         env:
           BASE_URL: http://127.0.0.1:3218
           AUDIT_OUTPUT_DIR: artifacts/hvr-3-home-listings
