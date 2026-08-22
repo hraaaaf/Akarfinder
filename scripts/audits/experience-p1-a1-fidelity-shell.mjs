@@ -66,7 +66,7 @@ for (const route of routes) {
     if (route.key === "home") {
       if (metrics.h1 !== "1er moteur de recherche immobilier au Maroc") findings.push({ route: route.key, viewport, code: "HOME_PHRASE" });
       if (!metrics.bodyText.includes("Cherchez un bien, puis comprenez son quartier, son marché et la fiabilité de l’annonce avant de décider.")) findings.push({ route: route.key, viewport, code: "HOME_DECISION_COPY" });
-      if (!metrics.homeValueStrip) findings.push({ route: route.key, viewport, code: "HOME_VALUE_STRIP_MISSING" });
+      if (metrics.homeValueStrip) findings.push({ route: route.key, viewport, code: "HOME_VALUE_STRIP_REINTRODUCED" });
       if (!metrics.homeHeroHeight || metrics.homeHeroHeight > height * 0.9) findings.push({ route: route.key, viewport, code: "HOME_HERO_TOO_TALL", detail: metrics.homeHeroHeight });
       if (metrics.bodyText.includes("Pourquoi rechercher avec AkarFinder ?")) findings.push({ route: route.key, viewport, code: "HOME_OLD_WHY_SECTION" });
       if (metrics.bodyText.includes("Comparez sans perdre l’essentiel")) findings.push({ route: route.key, viewport, code: "HOME_OLD_MARKET_SECTION" });
@@ -91,7 +91,7 @@ for (const route of routes) {
 
 await browser.close();
 const result = {
-  schema: "EXPERIENCE_P1_A1_RECONCILIATION_V3",
+  schema: "EXPERIENCE_P1_A1_RECONCILIATION_V4",
   routeCount: routes.length,
   viewportCount: viewports.length,
   expectedScreenshotCount: routes.length * viewports.length,

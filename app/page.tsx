@@ -1,7 +1,6 @@
 import { GoogleLikeHero } from "@/components/home/GoogleLikeHero";
 import { HomeActionGrid } from "@/components/home/HomeActionGrid";
 import { HomeListingsSection } from "@/components/home/HomeListingsSection";
-import { HomeValueStrip } from "@/components/home/HomeValueStrip";
 import { CityIntentGrid } from "@/components/landing/CityIntentGrid";
 import { SignatureMapSection } from "@/components/landing/SignatureMapSection";
 import { SiteFooter } from "@/components/landing/SiteFooter";
@@ -12,7 +11,6 @@ export default async function HomePage() {
     <main className="min-h-screen bg-background text-foreground">
       <SiteHeader variant="light" compact />
       <GoogleLikeHero />
-      <HomeValueStrip />
       <CityIntentGrid />
       <HomeListingsSection />
       <SignatureMapSection />
