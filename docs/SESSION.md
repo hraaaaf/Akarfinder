@@ -2,9 +2,33 @@
 
 **Mise à jour : 2026-08-22**
 
-Ce fichier est le handover opérationnel court. `README.md` porte l’identité/doctrine et `docs/ROADMAP.md` reste l’unique roadmap canonique.
+Ce fichier est un **handover opérationnel court**. Il ne crée ni priorité, ni pourcentage, ni statut global autonome.
 
-## Product Experience Reconciliation — état courant
+## Autorité canonique
+
+- `docs/ROADMAP.md` = **unique vérité canonique** pour l’état global, l’ordre des chantiers et leur progression.
+- une issue GitHub = contrat de scope d’un chantier ; elle ne remplace pas la roadmap.
+- une PR = implémentation + preuves d’un lot ; une PR ouverte n’est pas, à elle seule, un chantier actif.
+- `docs/SESSION.md` = miroir de reprise uniquement ; en cas d’écart, la roadmap prévaut et SESSION doit être corrigé.
+- toute PR doublon, superseded ou issue d’une ancienne architecture doit être fermée ou explicitement revalidée avant reprise.
+
+## Chantier courant — Homepage Visual Reconciliation
+
+Issue canonique de scope : `#849` — **Homepage Visual Reconciliation — HVR-1→HVR-5**.
+
+Progression stricte : **0/5 lots CLOSED = 0 %**.
+
+### HVR-1 — Header + HERO + Search + Intelligence
+
+- PR : `#850` — **OPEN / DRAFT**
+- HEAD observé : `010a067360b7e275cee66a76cc4b3b309afe1253`
+- Goal : rapprocher la zone above-the-fold de la référence validée, sans métrique fictive ni changement backend/DB/ranking/source.
+- BEFORE : P11 run `32559337861` — SUCCESS ; artifact `9472405507` ; digest `sha256:4dc2ca941ba81aac4f8d72f3a633989f6aff4f24f6bec9fd9d8beadd181351b2`.
+- Viewports : 390 / 430 / 768 / 1280.
+- État : implémentation HVR-1 présente sur la PR ; certification AFTER, score visuel et human gate restent requis avant fermeture.
+- Next exact : vérifier le run HVR-1 exact-head, récupérer les AFTER, comparer BEFORE → référence → AFTER, corriger si nécessaire, scorer, human gate, puis seulement merge/closeout.
+
+## Product Experience Reconciliation — fermé
 
 Progression validée : **12/12 lots CLOSED = 100 %**.
 
@@ -19,37 +43,29 @@ Progression validée : **12/12 lots CLOSED = 100 %**.
 - P10 Pages secondaires ✅ CLOSED
 - P11 QA global / responsive / accessibilité / performance / nettoyage ✅ CLOSED
 
-## P11 QA global — closeout final
+### Preuve P11 finale
 
 - PR `#848` ✅ MERGED
 - head certifié `bca9681d3f0d77b0f00ee7bcc3aba7591ba952e4`
-- run final P11 `32559337861` — SUCCESS
+- run `32559337861` — SUCCESS
 - artifact `9472405507`
 - digest `sha256:4dc2ca941ba81aac4f8d72f3a633989f6aff4f24f6bec9fd9d8beadd181351b2`
-- Search Full Page `32559337881` — SUCCESS
-- 79 pages App Router inventoriées
-- 67 pages rendables + 12 blockers de fixture explicitement fail-closed
-- 268/268 captures all-pages
-- 64/64 captures Product Experience P3→P10
-- total **332/332 captures**, `findingCount = 0`
-- TypeScript / production build / accessibilité / Canonical Baseline / UX Gate 0 / Bottom Nav : SUCCESS
+- 332/332 captures ; `findingCount = 0`
 - score visuel final : **9,2/10**
-- human visual gate final : APPROVED le 2026-08-22
-- squash merge `669d040162eb39f25e904da065c1b197c09dc039`
-- aucun code produit modifié par P11 ; uniquement QA/docs et réalignement de contrats historiques
-- aucun Vercel ; aucune migration DB
-- preuve canonique : `docs/AKARFINDER_PRODUCT_EXPERIENCE_P11.md`
+- human visual gate : APPROVED le 2026-08-22
+- merge `669d040162eb39f25e904da065c1b197c09dc039`
+- aucun Vercel ; aucune migration DB.
 
-## Invariants Product Experience
+## PR hygiene — 2026-08-22
 
-- UI/UX : BEFORE exact → Goal écrit → référence/mockup → implémentation → AFTER mêmes viewports → comparaison → score → human gate avant merge ;
-- aucune donnée, géographie, source, partenariat ou signal inventé ;
-- exact-head + preuve dédiée avant certification ;
-- CI en cours n’interrompt pas le travail indépendant ;
+- **26 PR historiques / doublons / superseded fermées** pendant le ménage GitHub.
+- catégories retirées : ancienne chaîne SERP V2 preview, anciens micro-polish Search, audits remplacés par P4/P5/P11, anciennes réécritures de roadmap et doublon géométrie #794.
+- les PR avec mutation Production déjà appliquée, dette Registry/DATA, sécurité ou réconciliation non prouvée restent ouvertes jusqu’à audit current-main ; elles ne sont pas considérées actives par simple présence dans l’onglet PR.
+
+## Invariants
+
+- UI/UX : BEFORE exact → Goal écrit → référence/mockup → implémentation → AFTER mêmes viewports → comparaison → score → human gate avant merge.
+- aucune donnée, géographie, source, partenariat ou signal inventé.
+- exact-head + preuve dédiée avant certification.
+- CI en cours n’interrompt pas le travail indépendant.
 - aucun déploiement Vercel sans autorisation explicite.
-
-## État final du chantier
-
-**Product Experience Reconciliation est fermé : 12/12 lots, 100 % validé.**
-
-Aucun nouveau lot Product Experience n’est implicitement ouvert par ce closeout. Les lanes DATA / Search / Carte et les autres travaux du repo restent gouvernés par `docs/ROADMAP.md`.
