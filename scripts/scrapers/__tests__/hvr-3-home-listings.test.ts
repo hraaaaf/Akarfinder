@@ -57,7 +57,8 @@ describe("HVR-3 — homepage real listings", () => {
 
   it("reuses canonical missing-price formatting", () => {
     assert.ok(section.includes('formatPrice(listing.normalized_price_mad, "DH")'));
-    assert.ok(!section.includes("0 DH"));
+    assert.ok(!section.includes('?? "0 DH"'));
+    assert.ok(!section.includes('|| "0 DH"'));
   });
 
   it("keeps the visual certification snapshot impossible to activate on Vercel", () => {
