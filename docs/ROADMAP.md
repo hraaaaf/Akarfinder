@@ -1,20 +1,17 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
-**Version : 2026-08-22**
+**Version : 2026-08-22**  
 **Statut : ACTIVE — Homepage Visual Reconciliation**
 
-Ce fichier est **l’unique vérité canonique globale** pour l’ordre des chantiers, leur état et leur progression.
+Ce fichier est l’unique vérité canonique globale pour l’ordre des chantiers, leur état et leur progression.
 
 - `README.md` = identité / doctrine durable.
 - `docs/ROADMAP.md` = état global + priorités + progression.
-- une **issue GitHub** = contrat de scope d’un chantier.
-- une **PR** = implémentation et preuves d’un lot ; une PR ouverte n’est pas automatiquement un chantier actif.
-- `docs/SESSION.md` = handover court ; il doit refléter cette roadmap et ne peut pas la contredire.
+- une issue GitHub = contrat de scope d’un chantier.
+- une PR = implémentation et preuves d’un lot.
+- `docs/SESSION.md` = handover court, aligné sur cette roadmap.
 
-L’ancien ledger détaillé reste conservé immuablement dans Git :
-`main@05f74e8892b8d8958d86bbf2b2247e69b98d276f:docs/ROADMAP.md`.
-
-Aucune information historique n’est déclarée perdue par cette compaction : le SHA ci-dessus est la référence d’archive exacte.
+L’ancien ledger détaillé reste archivé immuablement dans Git : `main@05f74e8892b8d8958d86bbf2b2247e69b98d276f:docs/ROADMAP.md`.
 
 ---
 
@@ -24,309 +21,124 @@ Aucune information historique n’est déclarée perdue par cette compaction : l
 
 ### Goal
 
-Réconcilier la homepage `/` avec la référence visuelle validée et les meilleures pratiques des sites immobiliers de référence, sans copier de métriques fictives ni casser les flux existants.
+Réconcilier la homepage `/` avec la référence visuelle validée et les meilleures pratiques des sites immobiliers de référence, sans données inventées ni régression des flux existants.
 
 ### Direction UX verrouillée
 
-- Rightmove = référence principale de simplicité et d’architecture ;
-- Zillow / Redfin / Realtor.com = références complémentaires pour intelligence et profondeur fonctionnelle ;
-- AkarFinder conserve sa différenciation Maroc + compréhension du marché/quartier ;
-- chaque section importante doit mener à une action réelle.
+- Rightmove = référence principale de simplicité et d’architecture.
+- Zillow / Redfin / Realtor.com = références complémentaires pour intelligence et profondeur fonctionnelle.
+- AkarFinder conserve sa différenciation Maroc + compréhension du marché/quartier.
+- Chaque section importante doit mener à une action réelle.
 
 ### Succès global
 
-- direction visuelle validée reprise sans données inventées ;
-- chaque section importante conduit à une action utile ;
-- villes = accès direct aux résultats, sans étape de sélection intermédiaire inutile ;
-- vrais biens affichés très tôt avec wording compatible avec le tri réel ;
+- homepage search-first, simple et actionnable ;
+- villes = accès direct ;
+- vrais biens visibles tôt avec wording truth-safe ;
+- intelligence quartier compacte et utile ;
 - 390 / 430 / 768 / 1280 sans overflow ;
-- BEFORE → référence → AFTER sur les mêmes viewports ;
-- tests proportionnels + exact-head ;
-- benchmark final frais contre Zillow / Redfin / Realtor.com / Rightmove ;
+- BEFORE → référence/mockup → AFTER ;
+- exact-head tests ;
+- benchmark final frais Zillow / Redfin / Realtor.com / Rightmove ;
 - score final visé ≥ 9/10 ;
-- human visual gate avant chaque merge UI ;
+- human visual gate avant merge UI ;
 - aucun changement backend/DB/ranking/source non justifié ;
 - aucun déploiement Vercel sans autorisation explicite.
 
 ### Progression stricte
 
-**4/6 lots CLOSED = 66,7 %.**
+**5/6 lots CLOSED = 83,3 %.**
 
-| Lot | Scope | État canonique | Preuve / Next |
+| Lot | Scope | État canonique | Preuve |
 |---|---|---|---|
-| HVR-1 | Header + HERO + Search + Intelligence | ✅ CLOSED | PR #850 MERGED ; merge `d6ef5fe970c3e9c71586a2686b0190a800c0e7f1` ; run `32563274184` SUCCESS ; score 9,0/10 ; human gate APPROVED |
-| HVR-2 | Explorer le Maroc — villes en accès direct | ✅ CLOSED | PR #853 MERGED ; merge `a44ed88db1cc6c0b556fa7af9cda6f43fc1faf30` ; run `32568589072` SUCCESS ; 4/4 captures ; score 9,2/10 ; human gate APPROVED |
-| HVR-3 | Biens à découvrir — vraies annonces | ✅ CLOSED | PR #855 MERGED ; merge `414a50cc0d8753e4f7b37f5953783a574f164f71` ; run `32578052976` SUCCESS ; 4/4 captures ; score 9,1/10 ; human gate APPROVED |
-| HVR-4 | Intelligence quartier actionnable | ✅ CLOSED | PR #859 MERGED ; merge `993f3bc6d7107d3b9d08ce7efea1f1267c4e87cd` ; run `32579508071` SUCCESS ; 4/4 captures ; score 9,3/10 ; human gate APPROVED |
-| HVR-5 | Homepage complète + responsive polish | 🟡 ACTIVE | simplification type Rightmove : retirer les blocs explicatifs/redondants, garder des actions utiles, CTA acheteur/vendeur/Pros, densité, responsive |
-| HVR-6 | Benchmark final références | ⏸️ À VENIR | re-check frais Zillow/Redfin/Realtor.com/Rightmove + matrice fonctionnelle/visuelle + corrections + score ≥ 9/10 |
+| HVR-1 | Header + HERO + Search + Intelligence | ✅ CLOSED | PR #850 ; merge `d6ef5fe970c3e9c71586a2686b0190a800c0e7f1` ; run `32563274184` SUCCESS ; score 9,0/10 ; human gate APPROVED |
+| HVR-2 | Explorer le Maroc — villes en accès direct | ✅ CLOSED | PR #853 ; merge `a44ed88db1cc6c0b556fa7af9cda6f43fc1faf30` ; run `32568589072` SUCCESS ; score 9,2/10 ; human gate APPROVED |
+| HVR-3 | Biens à découvrir — vraies annonces | ✅ CLOSED | PR #855 ; merge `414a50cc0d8753e4f7b37f5953783a574f164f71` ; run `32578052976` SUCCESS ; score 9,1/10 ; human gate APPROVED |
+| HVR-4 | Intelligence quartier actionnable | ✅ CLOSED | PR #859 ; merge `993f3bc6d7107d3b9d08ce7efea1f1267c4e87cd` ; run `32579508071` SUCCESS ; score 9,3/10 ; human gate APPROVED |
+| HVR-5 | Homepage complète + responsive polish | ✅ CLOSED | PR #860 ; merge `a85f2d04b34fe3d9383e8e26d17a2c756a60041d` ; HEAD certifié `6c1d95bfe49d93aa514114dcd03267f2dbeccba5` ; run `32583217515` SUCCESS ; artifact `9478356032` ; score 9,3/10 ; human gate APPROVED |
+| HVR-6 | Benchmark final références | 🟡 ACTIVE | re-check frais Zillow / Redfin / Realtor.com / Rightmove → matrice → corrections réellement justifiées → exact-head → score final → human gate |
 
-### BEFORE canonique
+### HVR-5 — closeout verrouillé
 
-P11 Product Experience :
-- run `32559337861` — SUCCESS ;
-- artifact `9472405507` ;
-- digest `sha256:4dc2ca941ba81aac4f8d72f3a633989f6aff4f24f6bec9fd9d8beadd181351b2` ;
-- captures homepage 390 / 430 / 768 / 1280.
-
-### HVR-1 — closeout verrouillé
-
-- PR #850 MERGED ; merge `d6ef5fe970c3e9c71586a2686b0190a800c0e7f1` ;
-- runtime HEAD certifié `49877cf7924e3e757cc9f52902050b9c7572157f` ;
-- run `32563274184` SUCCESS ; artifact `9473438871` ;
-- 4/4 captures ; findingCount 0 ; 0 overflow ; 0 console error ;
-- score visuel 9,0/10 ; human gate APPROVED 2026-08-22.
-
-### HVR-2 — closeout verrouillé
-
-- PR #853 MERGED ; merge `a44ed88db1cc6c0b556fa7af9cda6f43fc1faf30` ;
-- HEAD certifié `3485a95fd27b8bb8c3c1b1d062373686d0c37e0d` ;
-- run `32568589072` SUCCESS ; artifact `9474791842` ;
-- 6/6 destinations villes ; 4/4 captures ; 0 finding ; 0 overflow ; 0 console error ;
-- score visuel 9,2/10 ; human gate APPROVED 2026-08-22.
-
-### HVR-3 — closeout verrouillé
-
-- PR #855 MERGED ; merge `414a50cc0d8753e4f7b37f5953783a574f164f71` ;
-- HEAD certifié `3549d5258b900b5c9cd6cb1b0b09c48c99a06bb5` ;
-- run `32578052976` SUCCESS ; artifact `9477075713` ;
-- digest `sha256:54f83da468ee468078de32c3c86177c5fec4e56a8d40e284cadaf572ca1a8846` ;
-- contrats + TypeScript + build + responsive proof verts ; 4/4 captures ;
-- score visuel 9,1/10 ; human gate APPROVED 2026-08-22 ;
-- runtime via read-model public canonique ; aucun faux signal de récence/recommandation.
-
-### HVR-4 — closeout verrouillé
-
-- PR #859 MERGED ; merge `993f3bc6d7107d3b9d08ce7efea1f1267c4e87cd` ;
-- HEAD certifié `cd5385984712b2aaabdf07d9ff4ab760fe44959c` ;
-- run `32579508071` SUCCESS ; artifact `9477494308` ;
-- digest `sha256:f3f1c32d3d7a7a4d9f9f5558ec7594938fc21a894d988ebafb0e2bff4d42c1f9` ;
-- contrats + TypeScript + build + Chromium + responsive proof verts ;
-- 3/3 destinations quartier ; 4/4 captures ; findingCount 0 ; 0 overflow ; 0 console error ;
+- PR #860 MERGED ; merge `a85f2d04b34fe3d9383e8e26d17a2c756a60041d` ;
+- HEAD certifié `6c1d95bfe49d93aa514114dcd03267f2dbeccba5` ;
+- run `32583217515` SUCCESS ; artifact `9478356032` ;
+- digest `sha256:af95257d826691a2a2028eca600c49c250f65493a2abd6b4322a8dcca163bad3` ;
+- contrats HVR-1→HVR-5 + TypeScript + build + responsive proof verts ;
+- 4/4 destinations `/search`, `/compagnon`, `/vendre`, `/pro` ; 4/4 captures ; 0 overflow ; 0 console error ;
+- `HowItWorks`, `MreTrustSection` et `HomeFinalCTA` retirés de la composition homepage et remplacés par `HomeActionGrid` compact ;
+- aucune valeur de démonstration budget/favoris/compteur dans le nouveau funnel ;
 - score visuel 9,3/10 ; human gate APPROVED 2026-08-22 ;
-- grosse section passive remplacée par `Comprendre le quartier avant de visiter`, sans nouvelle donnée.
+- aucun Vercel.
 
-### HVR-5 — Goal verrouillé
+### HVR-6 — Goal verrouillé
 
-- simplifier la deuxième moitié de la homepage selon le principe Rightmove : peu de blocs, chacun actionnable ;
-- supprimer ou condenser `Votre recherche, simplement` si le bloc ne produit aucune action directe ;
-- remplacer le gros bloc MRE à valeurs d’exemple par des cartes/services courts et truth-safe ;
-- conserver des accès clairs vers recherche, accompagnement projet, publication/vendeur et professionnels ;
-- aucune valeur exemple présentée comme donnée utilisateur/réelle ;
-- responsive 390 / 430 / 768 / 1280, 0 overflow ;
-- HVR-6 reste le seul benchmark final frais contre les références externes.
+Benchmark final frais de la homepage current-main contre les quatre références retenues, puis correction uniquement des écarts réellement utiles à AkarFinder.
+
+**Succès :**
+- quatre références re-checkées à frais ;
+- matrice clarté / recherche / densité / listings / contexte local / actions secondaires / mobile / confiance ;
+- aucun copier-coller décoratif ni métrique fictive ;
+- BEFORE HVR-5 certifié ;
+- si correction visuelle : mockup/référence avant code, AFTER mêmes viewports ;
+- exact-head final + 390/430/768/1280 ;
+- score final ≥ 9/10 justifié par preuves ;
+- human gate final avant merge/closeout.
 
 ### Next exact
 
-**HVR-5** : BEFORE HVR-4 → Goal + wireframe → implémentation simplification globale → contrats/TypeScript/build → AFTER 390/430/768/1280 → comparaison → score → human gate → merge/closeout.
+**HVR-6** : fresh benchmark → matrice → décisions/corrections → exact-head → AFTER 390/430/768/1280 → score final → human gate → merge/closeout issue #849.
 
 ---
 
 ## 2. Chantiers fermés — références stables
 
 ### GitHub Hygiene & Single Source of Truth ✅ CLOSED
-
-- PR #851 ✅ MERGED ;
-- merge squash `9359034d8587ee12e0bd2fce72bf791582b90a5c` ;
-- scope final : `.github/PULL_REQUEST_TEMPLATE.md`, `docs/ROADMAP.md`, `docs/SESSION.md` uniquement ;
-- branche de travail 0 derrière `main` avant merge ;
-- ancien ledger roadmap préservé par SHA Git immuable ;
-- **26 PR historiques / doublons / superseded fermées** pendant le ménage initial ;
-- aucune DB, migration, Registry, DATA, ranking, runtime ou Vercel.
+PR #851, merge squash `9359034d8587ee12e0bd2fce72bf791582b90a5c`. Ancien ledger roadmap conservé par SHA. Aucun DB/ranking/Vercel.
 
 ### Product Experience Reconciliation ✅ CLOSED
-
-**12/12 lots CLOSED = 100 %.**
-
-- P0–P2 ✅
-- P3 Accueil ✅
-- P4 Search + Carte ✅
-- P5 Listings ✅
-- P6 Quartier / Ville ✅
-- P7 Mon Projet ✅
-- P8 Publication ✅
-- P9 Professionnels ✅
-- P10 Pages secondaires ✅
-- P11 QA global ✅
-
-Preuve finale P11 :
-- PR #848 MERGED ;
-- head certifié `bca9681d3f0d77b0f00ee7bcc3aba7591ba952e4` ;
-- run `32559337861` SUCCESS ;
-- artifact `9472405507` ;
-- **332/332 captures**, `findingCount=0` ;
-- score visuel final **9,2/10** ;
-- human gate APPROVED 2026-08-22 ;
-- merge `669d040162eb39f25e904da065c1b197c09dc039` ;
-- aucun Vercel, aucune migration DB dans P11.
+12/12 lots CLOSED. Preuve finale P11 : PR #848 ; run `32559337861` SUCCESS ; artifact `9472405507` ; 332/332 captures ; findingCount 0 ; score 9,2/10 ; human gate APPROVED ; merge `669d040162eb39f25e904da065c1b197c09dc039`.
 
 ### DATA MASS ✅ CLOSED
-
-Le programme DATA MASS / MASS-X5 est fermé dans l’historique canonique. Toute nouvelle activation, ingestion ou mutation production constitue un **nouveau chantier séparé** et ne réouvre pas DATA MASS implicitement.
-
-Référence de closeout MASS-X5 : PR #609, merge `3f1724faf03fd3c93fdafc2f522d61465d377e5b`, run `31762998799` SUCCESS.
+MASS-X5 : PR #609 ; merge `3f1724faf03fd3c93fdafc2f522d61465d377e5b` ; run `31762998799` SUCCESS. Toute nouvelle ingestion/mutation production est un chantier séparé.
 
 ### Audit Toutes Pages v1 ✅ CLOSED
-
-A1→A5 fermés ; closeout #635. Les anciens audits non mergés ne sont pas des chantiers actifs.
+A1→A5 fermés ; closeout #635.
 
 ### Bibliothèque visuelle quartiers Rabat P0→P2 ✅ CLOSED
-
-P0 Souissi → P2 Visual Resolver intégration fermés ; P2 PR #605, merge `997d60dad5fdcd2ad6b081b299834daa9a59bed2`, human gate 9,2/10.
+P2 : PR #605 ; merge `997d60dad5fdcd2ad6b081b299834daa9a59bed2` ; human gate 9,2/10.
 
 ---
 
 ## 3. État produit / infra important mais non actif
 
-### Search Ranking v2 — code + DB acquis, déploiement applicatif non certifié
+### Search Ranking v2
+PR #629 MERGED ; migration production appliquée ; déploiement applicatif non certifié historiquement. **BLOCKED / HUMAN GATE** pour tout déploiement. Aucun Vercel sans autorisation explicite.
 
-- PR #629 MERGED ;
-- migration production `search_ranking_v2` appliquée ;
-- le déploiement applicatif correspondant n’était pas certifié dans l’ancien ledger faute de canal Vercel authentifié.
+### PR historiques / réconciliation
+Les anciennes PR UI, GEO, DATA, Source Policy, Search et sécurité restent `REVALIDATE`, `RECONCILIATION`, `BLOCKED`, `SECURITY BACKLOG` ou `HISTORICAL` jusqu’à preuve current-main. Ne jamais merger une branche historique aveuglément, surtout si une migration ou mutation production a déjà été appliquée.
 
-**État canonique : BLOCKED / HUMAN GATE.**
-
-Aucun déploiement Vercel n’est autorisé par cette roadmap. Toute reprise exige une autorisation explicite de l’utilisateur puis une vérification production dédiée.
+Repères à préserver : #822, #797, #671, #653, #645, #644, #628, #796, #785, #752, #487, #622, #474, #478, #454, #319, #289, #255, #133, #113, #54, #126, #125, #124, #121, #118, #115, #110, #310, #383.
 
 ---
 
-## 4. PR ouvertes — classification canonique
-
-Règle : **seules les PR explicitement marquées ACTIVE ci-dessous sont sur le chemin critique.** Toutes les autres PR ouvertes sont `REVALIDATE`, `RECONCILIATION`, `BLOCKED`, `SECURITY BACKLOG` ou `HISTORICAL` jusqu’à preuve current-main.
-
-### ACTIVE
-
-- HVR-5 : ACTIVE, PR à ouvrir sur current-main.
-
-### REVALIDATE AVANT REPRISE — UI / produit
-
-Ces PR ne doivent pas être mergées depuis leur branche historique sans comparaison contre `main` actuel :
-
-- #822 — Map + Listing Standard N0 ;
-- #797 — ancienne référence `Refonte carte` ;
-- #671 — Favoris convergence ;
-- #653 — promoter canonical truth fix ;
-- #645 / #644 — anciens lots B2B partner pages ;
-- #628 — Casablanca / Maârif neighborhood visuals.
-
-Motif : Product Experience P0→P11 a depuis modifié/certifié de larges surfaces UI. Toute valeur résiduelle doit être reconstruite sur current-main ou fermée comme superseded.
-
-### RECONCILIATION — GEO / données avec preuve potentiellement unique
-
-À conserver ouverts jusqu’à audit current-main ; aucune activation implicite :
-
-- #796 — Diour Jamaa geometry evidence, rights-blocked ;
-- #785 — Rabat Poste Maroc locality evidence ;
-- #752 — C8D Rabat DB authority proposal, proposal-only ;
-- #487 — Rabat neighborhood visual library foundation, migration production déjà appliquée.
-
-### RECONCILIATION / BLOCKED — DATA / Source Policy / Search
-
-À ne pas fermer ni merger aveuglément, car certaines PR mentionnent des migrations ou mutations production déjà appliquées :
-
-- #622 — REAL-LISTINGS-ONLY, migration production appliquée ;
-- #474 — MASS-FIRST, `BLOCKED_BY_SOURCE_POLICY_READINESS` dans sa propre preuve historique ;
-- #478 — repair DATA-4.4B empilé sur #474 ;
-- #454 — DATA-4.9C, mutation restrictive Registry Agadir déjà appliquée ;
-- #319 — DATA-COVERAGE-2 ;
-- #289 — A5.4 recovery ;
-- #255 — Honest Listing Depth baseline ;
-- #133 — ODM-10C4 public-index delta ;
-- #113 — ODM-09 Search Gateway activation gate ;
-- #54 — Bulk Seed Confirmation v1.
-
-Avant toute reprise : comparer au current-main + état production réel, préserver les mutations réellement appliquées, isoler le résidu utile, reconstruire une PR current-main si nécessaire.
-
-### RECONCILIATION — anciennes fondations DATA avec état Supabase déclaré
-
-- #126 — Transactional Recrawl Activation ;
-- #125 — Authorized Source Adapter ;
-- #124 — Recrawl Scheduler ;
-- #121 — Freshness & Lifecycle ;
-- #118 — Observation Ledger ;
-- #115 — Property Intelligence Backfill ;
-- #110 — Property Intelligence Foundation.
-
-Ces PR ne sont **pas** considérées actives. Elles contiennent des déclarations de migrations / écritures historiques et doivent être auditées contre Supabase + current-main avant fermeture ou reconstruction.
-
-### SECURITY BACKLOG
-
-- #310 — Professional auth/session/RLS hardening.
-
-Ne jamais merger la branche historique directement. Re-audit current-main + tenant isolation + RLS/RPC ; reconstruire si le finding existe encore.
-
-### GOVERNANCE LEGACY
-
-- #383 — Permanent agent governance.
-
-Ancienne base. Réutiliser uniquement les capacités réellement absentes de current-main ; sinon fermer comme superseded après comparaison.
-
----
-
-## 5. PR hygiene — état vérifié 2026-08-22
-
-**26 PR historiques / doublons / superseded ont été fermées** pendant le ménage initial. La PR de gouvernance #851 est ensuite **MERGED**.
-
-Catégories retirées :
-- ancienne chaîne SERP V2 preview LOT 1→6 ;
-- anciens micro-polish Search ;
-- anciens audits remplacés par P4/P5/P11 ;
-- anciennes réécritures concurrentes de roadmap ;
-- doublon géométrie #794.
-
-Aucune PR comportant une mutation Production déjà appliquée, une dette Registry/DATA ou un risque sécurité n’a été fermée uniquement pour faire baisser le compteur.
-
----
-
-## 6. Règles d’exécution permanentes
+## 4. Règles d’exécution permanentes
 
 ### Vérité unique
-
-1. Toute nouvelle initiative significative est d’abord inscrite ici ou rattachée à une entrée existante.
-2. Une issue porte le scope détaillé, jamais un état global concurrent.
-3. Une seule PR d’implémentation active par **lot exact**.
-4. Une reconstruction/rebase qui remplace une PR ferme explicitement la PR superseded.
-5. `docs/SESSION.md` reflète uniquement le chantier actif + repères de reprise.
-6. Les pourcentages viennent uniquement de lots réellement CLOSED avec preuve.
-
-### Goal / Succès / Preuve
-
-Pour chaque lot significatif :
-- Goal exact ;
-- Succès observable ;
-- Preuve vérifiable.
-
-Ne jamais déclarer CLOSED/CERTIFIED/production-ready sans preuve.
+1. Toute initiative significative se rattache à cette roadmap.
+2. Une issue porte le scope ; une PR porte l’implémentation et les preuves.
+3. Une seule PR d’implémentation active par lot exact.
+4. `docs/SESSION.md` reflète uniquement le chantier actif.
+5. Les pourcentages viennent uniquement de lots réellement CLOSED.
 
 ### UI / UX
-
-Obligatoire :
 `BEFORE exact → Goal → référence/mockup → implémentation → AFTER mêmes viewports → comparaison → tests → score → human gate → merge`.
 
 ### DATA / DB / sécurité
-
-- Source Registry et permissions restent fail-closed ;
-- aucune autorisation déduite d’un sitemap, robots, volume ou capacité technique ;
-- migration/write production : preuve + rollback + validation proportionnée ;
-- sécurité : revalidation current-main et preuve réelle avant conclusion.
+Fail-closed ; migration/write production = preuve + rollback + validation proportionnée ; sécurité = revalidation current-main.
 
 ### CI
-
-Une CI queued/pending/in_progress n’arrête pas le travail indépendant. Pas de polling, pas de sleep, pas d’attente active.
+Une CI queued/pending/in_progress n’arrête pas le travail indépendant. Pas de polling ni d’attente active.
 
 ### Vercel
-
 **Aucun déploiement Vercel sans autorisation explicite de l’utilisateur.**
-
----
-
-## 7. Prochaine action exacte
-
-1. Créer HVR-5 sur current-main après closeout HVR-4.
-2. Verrouiller BEFORE HVR-4 + Goal + wireframe HVR-5.
-3. Simplifier les blocs explicatifs/redondants et conserver seulement les actions utiles.
-4. Tester contrats + TypeScript/build.
-5. Produire AFTER 390/430/768/1280 et score HVR-5.
-6. Human gate, merge/closeout, puis HVR-6 benchmark final frais.
-
-Les PR `REVALIDATE/RECONCILIATION/BLOCKED` ne deviennent prioritaires qu’après décision explicite inscrite dans cette roadmap.
