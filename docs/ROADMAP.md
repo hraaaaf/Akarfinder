@@ -36,7 +36,7 @@ Réconcilier la homepage `/` avec la référence visuelle validée et les meille
 - BEFORE → référence → AFTER sur les mêmes viewports ;
 - tests proportionnels + exact-head ;
 - benchmark final frais contre Zillow / Redfin / Realtor.com / Rightmove ;
-- score visuel final visé ≥ 9/10 ;
+- score final visé ≥ 9/10 ;
 - human visual gate avant merge final ;
 - aucun changement backend/DB/ranking/source non justifié ;
 - aucun déploiement Vercel sans autorisation explicite.
@@ -76,7 +76,8 @@ P11 Product Experience :
 - Phase 1 P1 Home Proof `32563274147` SUCCESS ;
 - UI All Pages Certification `32563274125` SUCCESS ;
 - score visuel HVR-1 : 9,0/10 ;
-- human visual gate APPROVED 2026-08-22.
+- human visual gate APPROVED 2026-08-22 ;
+- commits après certification runtime : documentation uniquement (`docs/ROADMAP.md`, `docs/SESSION.md`).
 
 ### Next exact
 
