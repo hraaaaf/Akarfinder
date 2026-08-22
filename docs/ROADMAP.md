@@ -26,6 +26,13 @@ Aucune information historique n’est déclarée perdue par cette compaction : l
 
 Réconcilier la homepage `/` avec la référence visuelle validée et les meilleures pratiques des sites immobiliers de référence, sans copier de métriques fictives ni casser les flux existants.
 
+### Direction UX verrouillée
+
+- Rightmove = référence principale de simplicité et d’architecture ;
+- Zillow / Redfin / Realtor.com = références complémentaires pour intelligence et profondeur fonctionnelle ;
+- AkarFinder conserve sa différenciation Maroc + compréhension du marché/quartier ;
+- chaque section importante doit mener à une action réelle.
+
 ### Succès global
 
 - direction visuelle validée reprise sans données inventées ;
@@ -37,22 +44,22 @@ Réconcilier la homepage `/` avec la référence visuelle validée et les meille
 - tests proportionnels + exact-head ;
 - benchmark final frais contre Zillow / Redfin / Realtor.com / Rightmove ;
 - score final visé ≥ 9/10 ;
-- human visual gate avant merge final ;
+- human visual gate avant chaque merge UI ;
 - aucun changement backend/DB/ranking/source non justifié ;
 - aucun déploiement Vercel sans autorisation explicite.
 
 ### Progression stricte
 
-**1/6 lots CLOSED = 16,7 %.**
+**2/6 lots CLOSED = 33,3 %.**
 
 | Lot | Scope | État canonique | Preuve / Next |
 |---|---|---|---|
-| HVR-1 | Header + HERO + Search + Intelligence | ✅ CLOSED | PR #850 MERGED ; merge squash `d6ef5fe970c3e9c71586a2686b0190a800c0e7f1` ; runtime HEAD certifié `49877cf7924e3e757cc9f52902050b9c7572157f` ; run `32563274184` SUCCESS ; score 9,0/10 ; human gate APPROVED |
-| HVR-2 | Explorer le Maroc — villes en accès direct | 🟡 NEXT | baseline = HVR-1 AFTER 390/430/768/1280 ; clic ville → résultats directement ; supprimer l’étape ville→intention intermédiaire |
-| HVR-3 | Biens à découvrir — vraies annonces | ⏸️ À VENIR | cartes réelles, images/fallback propres, wording truth-safe selon ordre DB réel |
-| HVR-4 | Intelligence actionnable | ⏸️ À VENIR | remplacer/supprimer les blocs passifs ; chaque module mène à quartier/carte/comparaison/recherche |
-| HVR-5 | Homepage complète + responsive polish | ⏸️ À VENIR | CTA acheteur/vendeur, Pros, bénéfices, densité, 390/430/768/1280 |
-| HVR-6 | Benchmark final références | ⏸️ À VENIR | re-check frais Zillow/Redfin/Realtor.com/Rightmove + matrice fonctionnelle/visuelle + score ≥ 9/10 |
+| HVR-1 | Header + HERO + Search + Intelligence | ✅ CLOSED | PR #850 MERGED ; merge `d6ef5fe970c3e9c71586a2686b0190a800c0e7f1` ; run `32563274184` SUCCESS ; score 9,0/10 ; human gate APPROVED |
+| HVR-2 | Explorer le Maroc — villes en accès direct | ✅ CLOSED | PR #853 MERGED ; merge `a44ed88db1cc6c0b556fa7af9cda6f43fc1faf30` ; run `32568589072` SUCCESS ; 4/4 captures ; score 9,2/10 ; human gate APPROVED |
+| HVR-3 | Biens à découvrir — vraies annonces | 🟡 ACTIVE — PR #855 | vrais biens via moteur public ; max 4 cartes ; wording truth-safe ; images autorisées/fallback |
+| HVR-4 | Intelligence actionnable | ⏸️ À VENIR | reconstruire la grosse section quartier en mini-outil actionnable ; supprimer les blocs passifs |
+| HVR-5 | Homepage complète + responsive polish | ⏸️ À VENIR | simplification type Rightmove, CTA acheteur/vendeur, Pros, bénéfices, densité, 390/430/768/1280 |
+| HVR-6 | Benchmark final références | ⏸️ À VENIR | re-check frais Zillow/Redfin/Realtor.com/Rightmove + matrice fonctionnelle/visuelle + corrections + score ≥ 9/10 |
 
 ### BEFORE canonique
 
@@ -65,24 +72,41 @@ P11 Product Experience :
 ### HVR-1 — closeout verrouillé
 
 - PR #850 MERGED ;
-- merge squash `d6ef5fe970c3e9c71586a2686b0190a800c0e7f1` ;
+- merge `d6ef5fe970c3e9c71586a2686b0190a800c0e7f1` ;
 - runtime HEAD certifié `49877cf7924e3e757cc9f52902050b9c7572157f` ;
 - HVR-1 Homepage Visual Proof `32563274184` SUCCESS ;
 - artifact `9473438871` ;
 - digest `sha256:75b23d0b5848830bc922c13a473ef9857bee422a2f95a409765e6a238b0929cc` ;
-- 4/4 captures 390 / 430 / 768 / 1280 ;
-- findingCount 0 ; 0 overflow ; 0 console error ;
-- Experience P1 A1 Fidelity Shell `32563274188` SUCCESS ;
-- Home P1 Approved Hero `32563274191` SUCCESS ;
-- Phase 1 P1 Home Proof `32563274147` SUCCESS ;
-- UI All Pages Certification `32563274125` SUCCESS ;
-- score visuel HVR-1 : 9,0/10 ;
-- human visual gate APPROVED 2026-08-22 ;
+- 4/4 captures ; findingCount 0 ; 0 overflow ; 0 console error ;
+- score visuel 9,0/10 ; human gate APPROVED 2026-08-22 ;
 - aucun backend/DB/ranking/source/Vercel.
+
+### HVR-2 — closeout verrouillé
+
+- PR #853 MERGED ;
+- merge `a44ed88db1cc6c0b556fa7af9cda6f43fc1faf30` ;
+- HEAD certifié `3485a95fd27b8bb8c3c1b1d062373686d0c37e0d` ;
+- HVR-2 Direct City Navigation Proof `32568589072` SUCCESS ;
+- artifact `9474791842` ;
+- digest `sha256:8b7ee6df252175209bdc40a72cb729b46bdbcd3054a07e944102b9625c14fab7` ;
+- 6/6 destinations vérifiées ; navigation Casablanca réellement observée ;
+- 4/4 captures ; 0 finding ; 0 overflow ; 0 console error ;
+- score visuel 9,2/10 ; human gate APPROVED 2026-08-22 ;
+- aucun backend/DB/ranking/source/Vercel.
+
+### HVR-3 — Goal verrouillé
+
+- branche `agent/homepage-visual-reconciliation-hvr3` ;
+- PR #855 DRAFT ;
+- wireframe `docs/HVR_3_DISCOVER_LISTINGS.md` ;
+- baseline = HVR-2 AFTER ;
+- wording `Biens à découvrir`, jamais `Biens récents` ;
+- données runtime via moteur public existant, aucun mock ;
+- max 4 cartes ; images seulement selon politique existante, fallback propre sinon.
 
 ### Next exact
 
-**HVR-2** : utiliser l’AFTER HVR-1 comme BEFORE exact → verrouiller Goal + référence/mockup → transformer les cartes villes en destinations directes → tests navigation + responsive → AFTER → score → human gate.
+**HVR-3** : implémentation → source contracts → TypeScript/build → audit Playwright 390/430/768/1280 → AFTER → inspection → score → human gate → merge/closeout.
 
 ---
 
@@ -160,7 +184,7 @@ Règle : **seules les PR explicitement marquées ACTIVE ci-dessous sont sur le c
 
 ### ACTIVE
 
-- aucune PR produit active au moment exact du closeout HVR-1 ; HVR-2 est le prochain lot à ouvrir sur current-main.
+- **#855 — HVR-3** : ACTIVE / DRAFT, chantier #849.
 
 ### REVALIDATE AVANT REPRISE — UI / produit
 
@@ -286,10 +310,11 @@ Une CI queued/pending/in_progress n’arrête pas le travail indépendant. Pas d
 
 ## 7. Prochaine action exacte
 
-1. Ouvrir HVR-2 sur current-main.
-2. Verrouiller BEFORE HVR-1 AFTER + Goal + référence/mockup.
-3. Transformer les villes en accès directs et supprimer la sélection intermédiaire.
-4. Tester navigation + responsive, produire AFTER, score et human gate.
-5. Réserver HVR-6 au benchmark final frais contre les sites de référence.
+1. Implémenter HVR-3 sur PR #855 à partir du wireframe verrouillé.
+2. Tester vraies données, politique image, destinations, TypeScript/build.
+3. Produire AFTER 390/430/768/1280 et comparer au BEFORE HVR-2.
+4. Score HVR-3 + human visual gate.
+5. Merge/closeout HVR-3 puis HVR-4.
+6. Réserver HVR-6 au benchmark final frais contre les sites de référence.
 
 Les PR `REVALIDATE/RECONCILIATION/BLOCKED` ne deviennent prioritaires qu’après décision explicite inscrite dans cette roadmap.
