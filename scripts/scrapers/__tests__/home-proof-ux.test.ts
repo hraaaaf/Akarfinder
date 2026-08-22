@@ -32,7 +32,7 @@ describe("Homepage proof UX", () => {
     assert.ok(!intelligence.includes("14 580 MAD"));
   });
 
-  it("explains the product with approved user-facing benefits", () => {
+  it("keeps approved user-facing benefits available without requiring a homepage explainer", () => {
     const why = source("components/landing/WhySection.tsx");
     assert.ok(why.includes("Pourquoi rechercher avec AkarFinder ?"));
     assert.ok(why.includes("Rechercher plus intelligemment"));
@@ -52,15 +52,16 @@ describe("Homepage proof UX", () => {
     assert.ok(!proof.includes("Index actuel"));
   });
 
-  it("uses canonical neighborhood data for the approved Vivre ici experience", () => {
+  it("uses canonical neighborhood data for the approved HVR-4 action experience", () => {
     const map = source("components/landing/SignatureMapSection.tsx");
     assert.ok(map.includes("@/lib/map/canonical-neighborhood-data"));
     assert.ok(map.includes("Vivre ici"));
-    assert.ok(map.includes("Un bien ne se résume pas à ses mètres carrés."));
-    assert.ok(map.includes("selected.benchmark.period"));
-    assert.ok(map.includes("selected.confidence"));
-    assert.ok(map.includes("Profil détaillé bientôt disponible"));
-    assert.ok(!map.includes("MAP_CITIES"));
+    assert.ok(map.includes("Comprendre le quartier avant de visiter"));
+    assert.ok(map.includes("data-home-neighborhood-card"));
+    assert.ok(map.includes("point.priceSignal.label"));
+    assert.ok(!map.includes("Un bien ne se résume pas à ses mètres carrés."));
+    assert.ok(!map.includes("Profil détaillé bientôt disponible"));
+    assert.ok(!map.includes("selected.confidence"));
   });
 
   it("has no dead newsletter or redundant project block in the shared footer", () => {
@@ -72,13 +73,16 @@ describe("Homepage proof UX", () => {
     assert.ok(footer.includes("Les sources et le niveau d&apos;information restent visibles pour chaque résultat."));
   });
 
-  it("final CTA uses Search and Companion, not legacy buyer onboarding", () => {
-    const cta = source("components/landing/HomeFinalCTA.tsx");
-    assert.ok(cta.includes('href="/search"'));
-    assert.ok(cta.includes('href="/compagnon"'));
-    assert.ok(!cta.includes('href="/onboarding"'));
-    assert.ok(cta.includes("Découvrir AkarFinder Pro"));
-    assert.ok(cta.includes("Rechercher un bien"));
-    assert.ok(cta.includes("Me laisser guider"));
+  it("uses the HVR-5 action grid instead of a duplicated final CTA", () => {
+    const page = source("app/page.tsx");
+    const actions = source("components/home/HomeActionGrid.tsx");
+    assert.ok(page.includes("<HomeActionGrid />"));
+    assert.ok(!page.includes("<HomeFinalCTA />"));
+    for (const href of ["/search", "/compagnon", "/vendre", "/pro"]) {
+      assert.ok(actions.includes(`href: "${href}"`));
+    }
+    assert.ok(actions.includes("Que voulez-vous faire maintenant ?"));
+    assert.ok(!actions.includes("4 000 000 DH"));
+    assert.ok(!actions.includes("Biens enregistrés"));
   });
 });
