@@ -11,6 +11,7 @@ Ce fichier est un **handover opérationnel court**. Il ne crée ni priorité, ni
 - une PR = implémentation + preuves d’un lot ; une PR ouverte n’est pas, à elle seule, un chantier actif.
 - `docs/SESSION.md` = miroir de reprise uniquement ; en cas d’écart, la roadmap prévaut et SESSION doit être corrigé.
 - toute PR doublon, superseded ou issue d’une ancienne architecture doit être fermée ou explicitement revalidée avant reprise.
+- ancien ledger roadmap détaillé : `main@05f74e8892b8d8958d86bbf2b2247e69b98d276f:docs/ROADMAP.md`.
 
 ## Chantier courant — Homepage Visual Reconciliation
 
@@ -21,12 +22,12 @@ Progression stricte : **0/5 lots CLOSED = 0 %**.
 ### HVR-1 — Header + HERO + Search + Intelligence
 
 - PR : `#850` — **OPEN / DRAFT**
-- HEAD observé : `010a067360b7e275cee66a76cc4b3b309afe1253`
+- HEAD observé : `82499728bab79851811f5199884bafe24d08bd25`
 - Goal : rapprocher la zone above-the-fold de la référence validée, sans métrique fictive ni changement backend/DB/ranking/source.
 - BEFORE : P11 run `32559337861` — SUCCESS ; artifact `9472405507` ; digest `sha256:4dc2ca941ba81aac4f8d72f3a633989f6aff4f24f6bec9fd9d8beadd181351b2`.
 - Viewports : 390 / 430 / 768 / 1280.
-- État : implémentation HVR-1 présente sur la PR ; certification AFTER, score visuel et human gate restent requis avant fermeture.
-- Next exact : vérifier le run HVR-1 exact-head, récupérer les AFTER, comparer BEFORE → référence → AFTER, corriger si nécessaire, scorer, human gate, puis seulement merge/closeout.
+- État vérifié dans la PR : implémentation présente ; build + TypeScript verts dans le run `32562658088`, mais la certification HVR-1 n’est pas encore acquise. Des assertions historiques ont aussi signalé du drift hors scope ; elles ne sont pas converties en faux succès.
+- Next exact : obtenir la preuve HVR-1 exact-head utile, récupérer les AFTER, comparer BEFORE → référence → AFTER, corriger si nécessaire, scorer, human gate, puis seulement merge/closeout.
 
 ## Product Experience Reconciliation — fermé
 
@@ -59,7 +60,8 @@ Progression validée : **12/12 lots CLOSED = 100 %**.
 ## PR hygiene — 2026-08-22
 
 - **26 PR historiques / doublons / superseded fermées** pendant le ménage GitHub.
-- catégories retirées : ancienne chaîne SERP V2 preview, anciens micro-polish Search, audits remplacés par P4/P5/P11, anciennes réécritures de roadmap et doublon géométrie #794.
+- roadmap vivante compactée ; historique détaillé préservé par SHA Git.
+- catégories retirées : ancienne chaîne SERP V2 preview, anciens micro-polish Search, audits remplacés par P4/P5/P11, anciennes réécritures concurrentes de roadmap et doublon géométrie #794.
 - les PR avec mutation Production déjà appliquée, dette Registry/DATA, sécurité ou réconciliation non prouvée restent ouvertes jusqu’à audit current-main ; elles ne sont pas considérées actives par simple présence dans l’onglet PR.
 
 ## Invariants
