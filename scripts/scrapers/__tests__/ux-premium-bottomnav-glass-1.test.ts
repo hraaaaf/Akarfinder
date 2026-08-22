@@ -12,7 +12,8 @@ test("UX-PREMIUM-BOTTOMNAV-GLASS-1 canonical mockup contract", () => {
   assert.match(designSystem, /surfaceGlass:/);
   assert.match(designSystem, /backdrop-blur-\[20px\]/);
   assert.match(designSystem, /rounded-\[24px\]/);
-  assert.match(designSystem, /bg-white\/80/);
+  assert.match(designSystem, /bg-white\/82/);
+  assert.match(designSystem, /supports-\[backdrop-filter\]:bg-white\/76/);
   assert.match(nav, /h-\[66px\]/);
 
   for (const [href, label] of [
