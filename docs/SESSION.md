@@ -15,19 +15,29 @@ Ce fichier est un **handover opérationnel court**. Il ne crée ni priorité, ni
 
 ## Chantier courant — Homepage Visual Reconciliation
 
-Issue canonique de scope : `#849` — **Homepage Visual Reconciliation — HVR-1→HVR-5**.
+Issue canonique de scope : `#849` — **Homepage Visual Reconciliation — HVR-1→HVR-6**.
 
-Progression stricte : **0/5 lots CLOSED = 0 %**.
+Progression stricte : **0/6 lots CLOSED = 0 %** jusqu’au merge effectif de HVR-1.
 
 ### HVR-1 — Header + HERO + Search + Intelligence
 
-- PR : `#850` — **OPEN / DRAFT**
-- HEAD observé : `82499728bab79851811f5199884bafe24d08bd25`
+- PR : `#850` — READY TO MERGE après human gate.
+- HEAD runtime certifié : `49877cf7924e3e757cc9f52902050b9c7572157f`.
 - Goal : rapprocher la zone above-the-fold de la référence validée, sans métrique fictive ni changement backend/DB/ranking/source.
 - BEFORE : P11 run `32559337861` — SUCCESS ; artifact `9472405507` ; digest `sha256:4dc2ca941ba81aac4f8d72f3a633989f6aff4f24f6bec9fd9d8beadd181351b2`.
-- Viewports : 390 / 430 / 768 / 1280.
-- État vérifié dans la PR : implémentation présente ; build + TypeScript verts dans le run `32562658088`, mais la certification HVR-1 n’est pas encore acquise. Des assertions historiques ont aussi signalé du drift hors scope ; elles ne sont pas converties en faux succès.
-- Next exact : obtenir la preuve HVR-1 exact-head utile, récupérer les AFTER, comparer BEFORE → référence → AFTER, corriger si nécessaire, scorer, human gate, puis seulement merge/closeout.
+- AFTER exact-head runtime : HVR-1 run `32563274184` — SUCCESS ; artifact `9473438871` ; digest `sha256:75b23d0b5848830bc922c13a473ef9857bee422a2f95a409765e6a238b0929cc` ; 4/4 viewports ; findingCount 0 ; 0 overflow ; 0 console error.
+- Validations croisées : Fidelity `32563274188` SUCCESS ; Hero `32563274191` SUCCESS ; Home Proof `32563274147` SUCCESS ; UI All Pages `32563274125` SUCCESS.
+- Score visuel : **9,0/10**.
+- Human visual gate : **APPROVED 2026-08-22**.
+- Next exact : merge #850 → closeout HVR-1 → démarrer HVR-2.
+
+### Lots suivants verrouillés
+
+- HVR-2 : Explorer le Maroc — villes en accès direct vers les résultats.
+- HVR-3 : Biens à découvrir — vraies annonces, wording truth-safe.
+- HVR-4 : Intelligence actionnable — supprimer/remplacer les blocs passifs.
+- HVR-5 : Homepage complète + responsive polish.
+- HVR-6 : benchmark final frais Zillow / Redfin / Realtor.com / Rightmove, score final visé ≥ 9/10.
 
 ## GitHub Hygiene & Single Source of Truth — fermé
 
