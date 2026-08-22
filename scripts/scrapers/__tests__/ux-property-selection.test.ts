@@ -63,14 +63,17 @@ test("search page provides one shared selection context to cards and map", () =>
   assert.match(card, /data-property-active=/);
   assert.doesNotMatch(card, /Repérer sur la carte/);
   assert.match(map, /usePropertySelection\(\)/);
-  assert.match(map, /Repère au niveau de la ville uniquement/);
+  assert.match(map, /Pins individuels uniquement pour les positions exactes certifiées/);
 });
 
 test("map bridge never claims exact coordinates without certified data", () => {
   const map = readFileSync(resolve(process.cwd(), "components/search/SearchMapPanel.tsx"), "utf8");
   assert.match(map, /hasCertifiedExactCoordinates\(activeListing\)/);
-  assert.match(map, /activeCoord && !activeHasCertifiedExactCoordinates/);
+  assert.match(map, /activeHasCertifiedExactCoordinates\s*\?\s*"Position exacte certifiée pour ce bien\."/);
+  assert.match(map, /AkarFinder ne place pas ce bien précisément sans coordonnées exactes certifiées/);
   assert.match(map, /buildCertifiedPropertyMapPoints\(visibleListings\)/);
+  assert.match(map, /for \(const point of exactPropertyPoints\)/);
+  assert.match(map, /hasCertifiedExactCoordinates\(listing\)/);
   assert.ok(!map.includes("Math.random"));
   assert.ok(!map.includes("latitude ??"));
   assert.ok(!map.includes("longitude ??"));

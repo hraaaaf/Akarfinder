@@ -25,9 +25,10 @@ test("UX-BOTTOM-NAV uses the canonical floating AkarFinder glass language", () =
   assert.match(nav, /data-theme="light"/);
   assert.match(nav, /ui\.surfaceGlass/);
   assert.match(designSystem, /surfaceGlass:/);
-  assert.match(designSystem, /bg-white\/80/);
+  assert.match(designSystem, /bg-white\/82/);
+  assert.match(designSystem, /supports-\[backdrop-filter\]:bg-white\/76/);
   assert.match(designSystem, /backdrop-blur-\[20px\]/);
-  assert.match(designSystem, /rounded-\[24px\]/);
+  assert.match(designSystem, /rounded-\[28px\]/);
   assert.match(designSystem, /#0B2545/);
   assert.match(nav, /#0B63CE/);
   assert.match(nav, /#0B2545/);

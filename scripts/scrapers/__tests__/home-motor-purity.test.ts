@@ -1,10 +1,10 @@
 // HOME-MOTOR-PURITY-WORDING-1
 // Invariant tests for the home page motor-purity alignment:
 //   - Forbidden wording absent from all home-touched modules
-//   - MarketPulse ticker only returns authorized-source listings
+//   - MarketPulse helpers only return authorized-source listings when used
 //   - getMarketPulseHref only produces /listings/ paths (safe for authorized-only data)
-//   - DataProofBlock stat labels are doctrine-clean
-//   - Hero wording updated
+//   - Home P3 composition stays on the certified hero + value strip
+//   - Hero wording stays aligned with the certified Product Experience copy
 //   - HomeResultPreview removed from page imports
 
 import { describe, it } from "node:test";
@@ -169,7 +169,7 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-describe("home-motor-purity — HomeResultPreview supprimé de la page d'accueil", () => {
+describe("home-motor-purity — composition Home P3 certifiée", () => {
   const pageSource = readFileSync(
     resolve(__dirname, "../../../app/page.tsx"),
     "utf-8"
@@ -182,8 +182,9 @@ describe("home-motor-purity — HomeResultPreview supprimé de la page d'accueil
     );
   });
 
-  it("app/page.tsx contient MarketPulse", () => {
-    assert.ok(pageSource.includes("MarketPulse"), "MarketPulse must still be present");
+  it("app/page.tsx conserve le hero et le HomeValueStrip certifiés", () => {
+    assert.ok(pageSource.includes("GoogleLikeHero"), "GoogleLikeHero must still be present");
+    assert.ok(pageSource.includes("HomeValueStrip"), "HomeValueStrip must still be present");
   });
 });
 
@@ -209,12 +210,12 @@ describe("home-motor-purity — hero wording aligné avec la doctrine", () => {
     );
   });
 
-  it("hero conserve le sous-titre approuvé", () => {
+  it("hero conserve le sous-titre certifié Product Experience", () => {
     assert.ok(
       heroSource.includes(
-        "Une recherche plus claire, plus structurée et plus fiable pour l’immobilier au Maroc."
+        "Cherchez un bien, puis comprenez son quartier, son marché et la fiabilité de l’annonce avant de décider."
       ),
-      "Hero must preserve the approved subtitle"
+      "Hero must preserve the certified Product Experience subtitle"
     );
   });
 

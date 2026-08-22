@@ -76,7 +76,8 @@ test("Atlas renders exact markers only through the certified contract", () => {
   const map = readFileSync(resolve(process.cwd(), "components/search/SearchMapPanel.tsx"), "utf8");
   assert.match(map, /buildCertifiedPropertyMapPoints\(visibleListings\)/);
   assert.match(map, /hasCertifiedExactCoordinates\(activeListing\)/);
-  assert.match(map, /exactPropertyPoints\.map/);
+  assert.match(map, /for \(const point of exactPropertyPoints\)/);
+  assert.match(map, /hasCertifiedExactCoordinates\(listing\)/);
   assert.ok(!map.includes("Math.random"));
   assert.ok(!map.includes("latitude ??"));
   assert.ok(!map.includes("longitude ??"));
