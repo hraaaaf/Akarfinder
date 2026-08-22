@@ -1,4 +1,5 @@
 import { GoogleLikeHero } from "@/components/home/GoogleLikeHero";
+import { HomeListingsSection } from "@/components/home/HomeListingsSection";
 import { HomeValueStrip } from "@/components/home/HomeValueStrip";
 import { CityIntentGrid } from "@/components/landing/CityIntentGrid";
 import { SignatureMapSection } from "@/components/landing/SignatureMapSection";
@@ -15,6 +16,7 @@ export default async function HomePage() {
       <GoogleLikeHero />
       <HomeValueStrip />
       <CityIntentGrid />
+      <HomeListingsSection />
       <SignatureMapSection />
       <HowItWorks />
       <MreTrustSection />
