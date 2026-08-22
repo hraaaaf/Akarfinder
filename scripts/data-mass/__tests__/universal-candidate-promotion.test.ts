@@ -101,6 +101,7 @@ test("M1 rejects invalid URLs explicitly", () => {
   ]);
   assert.equal(rows[0]?.canonicalUrl, null);
   assert.equal(rows[0]?.rejectionReason, "INVALID_URL");
+  assert.equal(summarizeUniversalCandidatePromotion(rows).invalidUrlRows, 1);
 });
 
 test("M1 output and accounting are deterministic regardless of input order", () => {
@@ -128,6 +129,7 @@ test("M1 output and accounting are deterministic regardless of input order", () 
     canonicalUrls: 2,
     acceptedCanonicalUrls: 1,
     rejectedCanonicalUrls: 1,
+    invalidUrlRows: 0,
     duplicateRowsCollapsed: 1,
     acceptedByDomain: { "agenz.ma": 1 },
     rejectedByReason: {
