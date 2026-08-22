@@ -19,7 +19,17 @@ describe("Homepage proof UX", () => {
     assert.equal(orchestrator.split('href="/compagnon"').length - 1, 1);
     assert.equal((orchestrator.match(/<HomeSearchBar/g) ?? []).length, 1);
     assert.equal(orchestrator.split('href="/mon-projet"').length - 1, 0);
-    assert.ok(orchestrator.includes("Pas encore sûr de vos critères ? Construisez votre projet"));
+    assert.ok(orchestrator.includes("Construire mon projet"));
+  });
+
+  it("keeps HVR-1 Intelligence qualitative instead of publishing synthetic counters", () => {
+    const intelligence = source("components/home/HomeIntelligencePanel.tsx");
+    assert.ok(intelligence.includes("AkarFinder Intelligence"));
+    assert.ok(intelligence.includes("Prix et offres visibles dans les résultats"));
+    assert.ok(intelligence.includes("Source et fraîcheur affichées quand disponibles"));
+    assert.ok(!intelligence.includes("1M+"));
+    assert.ok(!intelligence.includes("1 024 587"));
+    assert.ok(!intelligence.includes("14 580 MAD"));
   });
 
   it("explains the product with approved user-facing benefits", () => {
