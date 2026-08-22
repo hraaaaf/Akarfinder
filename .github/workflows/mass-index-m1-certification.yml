@@ -1,4 +1,4 @@
-name: MASS-INDEX M1 Certification
+name: MASS-INDEX M1-M2 Certification
 
 on:
   push:
@@ -7,7 +7,11 @@ on:
     paths:
       - scripts/data-mass/universal-candidate-promotion.ts
       - scripts/data-mass/universal-candidate-promotion-live.ts
+      - scripts/data-mass/external-index-seed.ts
       - scripts/data-mass/__tests__/universal-candidate-promotion.test.ts
+      - scripts/data-mass/__tests__/external-index-seed.test.ts
+      - scripts/data-mass/__tests__/mass-index-m2-native-provider-contract.test.ts
+      - supabase/migrations/20260822145000_mass_index_m2_native_discovery_providers.sql
       - .github/workflows/mass-index-m1-certification.yml
   workflow_dispatch: {}
 
@@ -15,7 +19,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: mass-index-m1-certification
+  group: mass-index-m1-m2-certification
   cancel-in-progress: false
 
 jobs:
@@ -26,7 +30,7 @@ jobs:
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
     steps:
-      - name: Checkout M1 head
+      - name: Checkout MASS-INDEX head
         uses: actions/checkout@v4
 
       - name: Set up Node.js
@@ -38,8 +42,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run targeted M1 unit tests
-        run: npx tsx --test scripts/data-mass/__tests__/universal-candidate-promotion.test.ts
+      - name: Run targeted M1-M2 unit and contract tests
+        run: >-
+          npx tsx --test
+          scripts/data-mass/__tests__/universal-candidate-promotion.test.ts
+          scripts/data-mass/__tests__/external-index-seed.test.ts
+          scripts/data-mass/__tests__/mass-index-m2-native-provider-contract.test.ts
 
       - name: Assert read-only Supabase credentials are available
         shell: bash
