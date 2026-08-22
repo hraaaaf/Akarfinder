@@ -1,0 +1,54 @@
+name: HVR-1 Homepage Visual Proof
+
+on:
+  push:
+    branches:
+      - 'agent/homepage-visual-reconciliation-hvr1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  hvr-1-proof:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Homepage truth contracts
+        run: npx tsx --test scripts/scrapers/__tests__/hvr-1-homepage.test.ts scripts/scrapers/__tests__/home-motor-purity.test.ts scripts/scrapers/__tests__/natural-query-parser.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Start production server
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run start -- -p 3216 > /tmp/hvr-1.log 2>&1 &
+          for attempt in {1..60}; do
+            if curl -fsS http://127.0.0.1:3216/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/hvr-1.log
+          exit 1
+      - name: HVR-1 responsive visual proof
+        env:
+          BASE_URL: http://127.0.0.1:3216
+          AUDIT_OUTPUT_DIR: artifacts/hvr-1-homepage
+        run: node scripts/audits/hvr-1-homepage-visual.mjs
+      - name: Upload HVR-1 proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hvr-1-homepage-${{ github.run_id }}
+          path: artifacts/hvr-1-homepage
+          if-no-files-found: error
+          retention-days: 14
