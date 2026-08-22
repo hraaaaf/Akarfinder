@@ -1,0 +1,70 @@
+name: HVR-5 Homepage Simplification Proof
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'app/page.tsx'
+      - 'components/home/HomeActionGrid.tsx'
+      - 'scripts/audits/hvr-5-home-simplification.mjs'
+      - 'scripts/scrapers/__tests__/hvr-5-home-simplification.test.ts'
+      - 'scripts/scrapers/__tests__/home-proof-ux.test.ts'
+      - '.github/workflows/hvr-5-home-simplification.yml'
+      - 'docs/HVR_5_HOMEPAGE_SIMPLIFICATION.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  hvr-5-proof:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: HVR-5 source contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx tsx --test \
+            scripts/scrapers/__tests__/hvr-5-home-simplification.test.ts \
+            scripts/scrapers/__tests__/home-proof-ux.test.ts \
+            scripts/scrapers/__tests__/hvr-4-neighborhood-action.test.ts \
+            scripts/scrapers/__tests__/hvr-3-home-listings.test.ts \
+            scripts/scrapers/__tests__/hvr-2-city-direct-nav.test.ts \
+            scripts/scrapers/__tests__/hvr-1-homepage.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Start production server
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run start -- -p 3220 > /tmp/hvr-5.log 2>&1 &
+          for attempt in {1..60}; do
+            if curl -fsS http://127.0.0.1:3220/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/hvr-5.log
+          exit 1
+      - name: HVR-5 responsive proof
+        env:
+          BASE_URL: http://127.0.0.1:3220
+          AUDIT_OUTPUT_DIR: artifacts/hvr-5-home-simplification
+        run: node scripts/audits/hvr-5-home-simplification.mjs
+      - name: Upload HVR-5 proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hvr-5-home-simplification-${{ github.run_id }}
+          path: artifacts/hvr-5-home-simplification
+          if-no-files-found: error
+          retention-days: 14
