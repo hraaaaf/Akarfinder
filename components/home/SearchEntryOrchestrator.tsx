@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Compass } from "lucide-react";
+import { Compass, MapPinned, SearchCheck, ShieldCheck } from "lucide-react";
 import { HomeSearchBar } from "@/components/home/HomeSearchBar";
 
 export function SearchEntryOrchestrator() {
@@ -7,13 +7,25 @@ export function SearchEntryOrchestrator() {
     <div className="w-full">
       <HomeSearchBar />
 
-      <div className="mt-4 flex justify-center sm:mt-5">
+      <div className="mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[10.5px] font-bold text-white/78 sm:text-[11px] lg:justify-start">
+        <span className="inline-flex items-center gap-1.5">
+          <SearchCheck size={14} strokeWidth={2.1} aria-hidden="true" />
+          Recherche multi-critères
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <MapPinned size={14} strokeWidth={2.1} aria-hidden="true" />
+          Carte du marché
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <ShieldCheck size={14} strokeWidth={2.1} aria-hidden="true" />
+          Sources affichées quand disponibles
+        </span>
         <Link
           href="/compagnon"
-          className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/34 bg-black/18 px-4 py-2.5 text-[12px] font-bold text-white/95 shadow-[0_8px_24px_rgba(0,0,0,0.16)] backdrop-blur-sm transition-colors hover:border-white/55 hover:bg-black/26 hover:text-white sm:px-5 sm:text-[13px]"
+          className="inline-flex min-h-8 items-center gap-1.5 rounded-full border border-white/20 bg-white/[0.07] px-3 py-1.5 text-white/92 transition hover:bg-white/[0.12] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300/60"
         >
-          <Compass size={15} strokeWidth={2.2} aria-hidden="true" />
-          Pas encore sûr de vos critères ? Construisez votre projet
+          <Compass size={13} strokeWidth={2.1} aria-hidden="true" />
+          Construire mon projet
         </Link>
       </div>
     </div>

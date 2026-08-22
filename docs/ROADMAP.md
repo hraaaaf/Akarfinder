@@ -20,34 +20,39 @@ Aucune information historique n’est déclarée perdue par cette compaction : l
 
 ## 1. Chantier actif P0 — Homepage Visual Reconciliation
 
-**Issue canonique : #849 — Homepage Visual Reconciliation — HVR-1→HVR-5**
+**Issue canonique : #849 — Homepage Visual Reconciliation — HVR-1→HVR-6**
 
 ### Goal
 
-Réconcilier la homepage `/` avec la référence visuelle validée : densité, hiérarchie et ordre des modules, sans copier de métriques fictives ni casser les flux existants.
+Réconcilier la homepage `/` avec la référence visuelle validée et les meilleures pratiques des sites immobiliers de référence, sans copier de métriques fictives ni casser les flux existants.
 
 ### Succès global
 
 - direction visuelle validée reprise sans données inventées ;
+- chaque section importante conduit à une action utile ;
+- villes = accès direct aux résultats, sans étape de sélection intermédiaire inutile ;
+- vrais biens affichés très tôt avec wording compatible avec le tri réel ;
 - 390 / 430 / 768 / 1280 sans overflow ;
 - BEFORE → référence → AFTER sur les mêmes viewports ;
 - tests proportionnels + exact-head ;
-- score visuel final visé ≥ 9/10 ;
+- benchmark final frais contre Zillow / Redfin / Realtor.com / Rightmove ;
+- score final visé ≥ 9/10 ;
 - human visual gate avant merge final ;
 - aucun changement backend/DB/ranking/source non justifié ;
 - aucun déploiement Vercel sans autorisation explicite.
 
 ### Progression stricte
 
-**0/5 lots CLOSED = 0 %.**
+**0/6 lots CLOSED = 0 %.**
 
 | Lot | Scope | État canonique | Preuve / Next |
 |---|---|---|---|
-| HVR-1 | Header + HERO + Search + Intelligence | 🟡 EN COURS — PR #850 DRAFT | HEAD observé `82499728bab79851811f5199884bafe24d08bd25`; AFTER + inspection + score + human gate requis |
-| HVR-2 | Explorer le Maroc + Biens récents | ⏸️ À VENIR | démarre après closeout HVR-1 |
-| HVR-3 | Comprendre + CTA acheteur/vendeur + Professionnels | ⏸️ À VENIR | dépend de HVR-2 |
-| HVR-4 | Iconographie + design system + bandeau bénéfices | ⏸️ À VENIR | dépend de HVR-3 |
-| HVR-5 | Responsive + polish + certification finale | ⏸️ À VENIR | 390/430/768/1280 + comparaison + score + human gate |
+| HVR-1 | Header + HERO + Search + Intelligence | 🟡 READY TO MERGE — PR #850 | HEAD runtime certifié `49877cf7924e3e757cc9f52902050b9c7572157f`; run `32563274184` SUCCESS; human gate APPROVED 2026-08-22 |
+| HVR-2 | Explorer le Maroc — villes en accès direct | ⏸️ À VENIR | clic ville → résultats directement ; raccourcis Acheter/Louer/Neuf secondaires seulement si utiles |
+| HVR-3 | Biens à découvrir — vraies annonces | ⏸️ À VENIR | cartes réelles, images/fallback propres, wording truth-safe selon ordre DB réel |
+| HVR-4 | Intelligence actionnable | ⏸️ À VENIR | remplacer/supprimer les blocs passifs ; chaque module mène à quartier/carte/comparaison/recherche |
+| HVR-5 | Homepage complète + responsive polish | ⏸️ À VENIR | CTA acheteur/vendeur, Pros, bénéfices, densité, 390/430/768/1280 |
+| HVR-6 | Benchmark final références | ⏸️ À VENIR | re-check frais Zillow/Redfin/Realtor.com/Rightmove + matrice fonctionnelle/visuelle + score ≥ 9/10 |
 
 ### BEFORE canonique
 
@@ -57,9 +62,26 @@ P11 Product Experience :
 - digest `sha256:4dc2ca941ba81aac4f8d72f3a633989f6aff4f24f6bec9fd9d8beadd181351b2` ;
 - captures homepage 390 / 430 / 768 / 1280.
 
+### HVR-1 — preuve verrouillée
+
+- PR #850 ;
+- HEAD runtime certifié `49877cf7924e3e757cc9f52902050b9c7572157f` ;
+- HVR-1 Homepage Visual Proof `32563274184` SUCCESS ;
+- artifact `9473438871` ;
+- digest `sha256:75b23d0b5848830bc922c13a473ef9857bee422a2f95a409765e6a238b0929cc` ;
+- 4/4 captures 390 / 430 / 768 / 1280 ;
+- findingCount 0 ; 0 overflow ; 0 console error ;
+- Experience P1 A1 Fidelity Shell `32563274188` SUCCESS ;
+- Home P1 Approved Hero `32563274191` SUCCESS ;
+- Phase 1 P1 Home Proof `32563274147` SUCCESS ;
+- UI All Pages Certification `32563274125` SUCCESS ;
+- score visuel HVR-1 : 9,0/10 ;
+- human visual gate APPROVED 2026-08-22 ;
+- commits après certification runtime : documentation uniquement (`docs/ROADMAP.md`, `docs/SESSION.md`).
+
 ### Next exact
 
-**HVR-1 uniquement** : obtenir la preuve exact-head utile, récupérer les AFTER, comparer BEFORE → référence → AFTER, corriger les écarts HVR-1, scorer, human gate, puis merge/closeout. Ne pas ouvrir HVR-2 comme vérité concurrente avant le closeout HVR-1.
+**Merger HVR-1**, closeout post-merge, puis démarrer HVR-2 sur current-main avec capture BEFORE + Goal + mockup avant implémentation.
 
 ---
 
@@ -137,7 +159,7 @@ Règle : **seules les PR explicitement marquées ACTIVE ci-dessous sont sur le c
 
 ### ACTIVE
 
-- **#850 — HVR-1** : ACTIVE / DRAFT, chantier #849.
+- **#850 — HVR-1** : ACTIVE / READY TO MERGE, chantier #849.
 
 ### REVALIDATE AVANT REPRISE — UI / produit
 
@@ -263,9 +285,9 @@ Une CI queued/pending/in_progress n’arrête pas le travail indépendant. Pas d
 
 ## 7. Prochaine action exacte
 
-1. Finaliser **HVR-1 #850** selon son gate visuel et exact-head.
-2. Fermer/merger HVR-1 seulement après score + human gate.
-3. Mettre à jour cette roadmap au closeout HVR-1.
-4. Ouvrir HVR-2 seulement comme lot suivant du même chantier.
+1. Merger **HVR-1 #850** après human gate approuvé.
+2. Closeout HVR-1 sur `main` et créditer 1/6 lots.
+3. Démarrer HVR-2 depuis current-main : BEFORE → Goal → mockup → implémentation.
+4. Réserver HVR-6 au benchmark final frais contre les sites de référence.
 
 Les PR `REVALIDATE/RECONCILIATION/BLOCKED` ne deviennent prioritaires qu’après décision explicite inscrite dans cette roadmap.

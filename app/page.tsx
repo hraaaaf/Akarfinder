@@ -11,7 +11,7 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 export default async function HomePage() {
   return (
     <main className="min-h-screen bg-background text-foreground">
-      <SiteHeader variant="transparent" compact />
+      <SiteHeader variant="light" compact />
       <GoogleLikeHero />
       <HomeValueStrip />
       <CityIntentGrid />

@@ -1,4 +1,5 @@
 import { Container } from "@/components/ui/Container";
+import { HomeIntelligencePanel } from "@/components/home/HomeIntelligencePanel";
 import { SearchEntryOrchestrator } from "@/components/home/SearchEntryOrchestrator";
 
 const HERO_DESKTOP = "/images/hero/akar-residence-sunset-desktop.webp";
@@ -9,64 +10,61 @@ export function GoogleLikeHero() {
     <section
       id="recherche"
       aria-labelledby="home-hero-title"
-      data-home-hero="p1-a1"
-      className="relative flex min-h-[78dvh] items-center justify-center overflow-hidden bg-[#061027] sm:min-h-[78vh] lg:min-h-[700px]"
+      className="overflow-hidden bg-[#F4F8FC] lg:bg-[#061027]"
     >
-      <picture>
-        <source media="(max-width: 639px)" srcSet={HERO_MOBILE} />
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={HERO_DESKTOP}
-          alt=""
-          aria-hidden="true"
-          fetchPriority="high"
-          decoding="async"
-          className="absolute inset-0 h-full w-full object-cover object-center"
-        />
-      </picture>
-
-      <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-        <div className="absolute inset-0 bg-gradient-to-b from-[rgba(3,16,31,0.65)] via-[rgba(3,16,31,0.43)] to-[rgba(6,27,51,0.28)] sm:hidden" />
-        <div className="absolute inset-x-0 top-0 h-[42%] bg-gradient-to-b from-[rgba(3,16,31,0.68)] via-[rgba(3,16,31,0.36)] to-transparent sm:hidden" />
-        <div className="absolute inset-x-0 bottom-0 h-[32%] bg-gradient-to-t from-[rgba(6,27,51,0.5)] to-transparent sm:hidden" />
-        <div className="absolute inset-x-0 top-0 hidden h-[50%] bg-gradient-to-b from-[rgba(3,16,31,0.7)] via-[rgba(3,16,31,0.46)] to-transparent sm:block" />
-        <div className="absolute inset-x-0 bottom-0 hidden h-[44%] bg-gradient-to-t from-[rgba(3,16,31,0.58)] to-transparent sm:block" />
+      <Container className="w-full px-5">
         <div
-          className="absolute inset-0 hidden sm:block"
-          style={{
-            background:
-              "radial-gradient(ellipse 66% 54% at 50% 43%, rgba(3,16,31,0.64) 0%, rgba(3,16,31,0.3) 56%, transparent 75%)",
-          }}
-        />
-        <div
-          className="absolute inset-0 sm:hidden"
-          style={{
-            background:
-              "radial-gradient(ellipse 92% 58% at 50% 39%, rgba(3,16,31,0.32) 0%, rgba(3,16,31,0.1) 58%, transparent 77%)",
-          }}
-        />
-        <div className="absolute inset-0 bg-[#061027]/15 sm:bg-[#061027]/20" />
-      </div>
-
-      <Container className="relative z-10 w-full px-5 pb-12 pt-[calc(env(safe-area-inset-top)+5.5rem)] sm:pb-16 sm:pt-28 lg:pb-20 lg:pt-28">
-        <div className="mx-auto flex max-w-[940px] flex-col items-center text-center">
-          <p className="text-[10px] font-extrabold uppercase tracking-[0.24em] text-blue-100 sm:text-[11px]">
-            Immobilier · Maroc
-          </p>
-
-          <h1
-            id="home-hero-title"
-            className="mt-4 max-w-[860px] text-[2.4rem] font-extrabold leading-[1.02] tracking-[-0.05em] text-white drop-shadow-[0_4px_20px_rgba(0,0,0,0.42)] sm:text-[4rem] lg:text-[5rem]"
+          data-home-hero-layout="hvr-1"
+          className="mx-auto grid max-w-[1320px] gap-0 lg:grid-cols-[minmax(0,1.34fr)_minmax(330px,0.66fr)] lg:gap-8 xl:gap-10"
+        >
+          <div
+            data-home-hero="p1-a1"
+            className="relative min-w-0 py-8 text-center sm:py-9 lg:py-12 lg:text-left xl:py-14"
           >
-            1er moteur de recherche immobilier au Maroc
-          </h1>
+            <div
+              className="pointer-events-none absolute inset-y-0 left-1/2 z-0 w-screen -translate-x-1/2 overflow-hidden"
+              aria-hidden="true"
+            >
+              <picture>
+                <source media="(max-width: 639px)" srcSet={HERO_MOBILE} />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={HERO_DESKTOP}
+                  alt=""
+                  fetchPriority="high"
+                  decoding="async"
+                  className="absolute inset-0 h-full w-full object-cover object-center"
+                />
+              </picture>
+              <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(3,16,31,0.78)_0%,rgba(3,16,31,0.56)_48%,rgba(3,16,31,0.34)_100%)]" />
+              <div className="absolute inset-0 bg-gradient-to-b from-[rgba(3,16,31,0.30)] via-transparent to-[rgba(3,16,31,0.43)]" />
+              <div className="absolute inset-0 bg-[#061027]/10" />
+            </div>
 
-          <p className="mt-4 max-w-[720px] text-[14px] font-medium leading-6 text-white/90 drop-shadow-[0_2px_12px_rgba(0,0,0,0.36)] sm:mt-5 sm:text-[17px] sm:leading-7">
-            Cherchez un bien, puis comprenez son quartier, son marché et la fiabilité de l’annonce avant de décider.
-          </p>
+            <div className="relative z-10">
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.24em] text-blue-100 sm:text-[11px]">
+                Immobilier · Maroc
+              </p>
 
-          <div className="mt-7 w-full sm:mt-8">
-            <SearchEntryOrchestrator />
+              <h1
+                id="home-hero-title"
+                className="mx-auto mt-3 max-w-[900px] text-[2.35rem] font-extrabold leading-[1.02] tracking-[-0.05em] text-white drop-shadow-[0_4px_20px_rgba(0,0,0,0.38)] sm:text-[3.25rem] lg:mx-0 lg:mt-4 lg:text-[3.55rem] xl:text-[3.9rem]"
+              >
+                1er moteur de recherche immobilier au Maroc
+              </h1>
+
+              <p className="mx-auto mt-4 max-w-[760px] text-[14px] font-medium leading-6 text-white/90 drop-shadow-[0_2px_12px_rgba(0,0,0,0.32)] sm:text-[16px] sm:leading-7 lg:mx-0">
+                Cherchez un bien, puis comprenez son quartier, son marché et la fiabilité de l’annonce avant de décider.
+              </p>
+
+              <div className="mt-6 w-full sm:mt-7">
+                <SearchEntryOrchestrator />
+              </div>
+            </div>
+          </div>
+
+          <div className="relative z-10 py-5 lg:flex lg:items-center lg:py-12 xl:py-14">
+            <HomeIntelligencePanel />
           </div>
         </div>
       </Container>
