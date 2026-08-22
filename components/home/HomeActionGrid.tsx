@@ -40,7 +40,7 @@ const actions = [
 
 export function HomeActionGrid() {
   return (
-    <section data-hvr5-action-grid="compact" className="bg-[#F7FAFD] py-11 sm:py-16 lg:py-18">
+    <section data-hvr5-action-grid="compact" className="bg-[#F7FAFD] py-11 sm:py-16 lg:py-16">
       <Container>
         <div className="mx-auto max-w-[1240px]">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between sm:gap-6">
@@ -50,7 +50,7 @@ export function HomeActionGrid() {
                 Que voulez-vous faire maintenant ?
               </h2>
             </div>
-            <p className="max-w-[420px] text-[12.5px] leading-5.5 text-slate-500 sm:text-right sm:text-[13px]">
+            <p className="max-w-[420px] text-[12.5px] leading-5 text-slate-500 sm:text-right sm:text-[13px]">
               Quatre chemins directs. Pas de détour, pas de chiffres d’exemple présentés comme des données.
             </p>
           </div>
@@ -63,7 +63,7 @@ export function HomeActionGrid() {
                   key={action.key}
                   href={action.href}
                   data-hvr5-action={action.key}
-                  className="group flex min-h-[176px] flex-col rounded-[1.25rem] border border-[#DCE8F5] bg-white p-4.5 shadow-[0_10px_28px_rgba(11,31,58,0.055)] transition duration-200 hover:-translate-y-0.5 hover:border-[#93C5FD] hover:shadow-[0_18px_42px_rgba(11,99,206,0.10)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0B63CE] focus-visible:ring-offset-2 motion-reduce:transform-none sm:min-h-[190px] sm:p-5"
+                  className="group flex min-h-[176px] flex-col rounded-[1.25rem] border border-[#DCE8F5] bg-white p-4 shadow-[0_10px_28px_rgba(11,31,58,0.055)] transition duration-200 hover:-translate-y-0.5 hover:border-[#93C5FD] hover:shadow-[0_18px_42px_rgba(11,99,206,0.10)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0B63CE] focus-visible:ring-offset-2 motion-reduce:transform-none sm:min-h-[190px] sm:p-5"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#EAF4FF] text-[#0B63CE]">
