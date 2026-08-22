@@ -33,7 +33,7 @@ function locationLabel(listing: Listing) {
 }
 
 function detailsLabel(listing: Listing) {
-  const details = [listing.property_type];
+  const details: string[] = [listing.property_type];
   if (listing.surface_m2 > 0) details.push(`${listing.surface_m2} m²`);
   if (listing.bedrooms > 0) details.push(`${listing.bedrooms} ch.`);
   return details.join(" · ");
