@@ -16,7 +16,7 @@ function accepted(overrides: Partial<UniversalCandidatePromotionRow> = {}): Univ
     firstSeenAt: "2026-08-01T00:00:00.000Z",
     lastSeenAt: "2026-08-22T00:00:00.000Z",
     title: "Villa à louer — WhatsApp +212 661 590 451",
-    snippet: `Maison à louer. Contact test@example.com. Instagram @achraf.immobilier. ${"Description factuelle ".repeat(40)}`,
+    snippet: `Maison à louer. Contact test@example.com. Instagram @achraf.immobilier. Autre contact 00212669601525. ${"Description factuelle ".repeat(40)}`,
     discoveryQuery: "villa rabat @contact",
     classification: {
       sourceDomain: "expat.com",
@@ -35,13 +35,14 @@ function accepted(overrides: Partial<UniversalCandidatePromotionRow> = {}): Univ
   };
 }
 
-test("external index seed strips contact data and bounds copied text", () => {
+test("external index seed strips contact data including 00212 and bounds copied text", () => {
   const seed = projectExternalIndexSeed(accepted());
   const text = [
     seed.metadata.external_index.title,
     seed.metadata.external_index.snippet,
     seed.metadata.external_index.query,
   ].filter(Boolean).join(" ");
+  assert.doesNotMatch(text, /(?:\+|00)?212[\s.-]?[5-7](?:[\s.-]?\d){8}/i);
   assert.doesNotMatch(text, /(?:\+?212|0)[\s.-]?[5-7](?:[\s.-]?\d){8}/i);
   assert.doesNotMatch(text, /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i);
   assert.doesNotMatch(text, /\b(?:whatsapp|instagram|insta|facebook|tiktok|telegram)\b/i);
@@ -50,12 +51,16 @@ test("external index seed strips contact data and bounds copied text", () => {
 });
 
 test("external index rejects contact identifiers embedded in canonical URL", () => {
-  const unsafe = "https://sakane.ma/maisons-et-villas/maison/asilah/8287/+212661590451";
-  assert.equal(isExternalIndexSafeCanonicalUrl(unsafe), false);
-  assert.throws(
-    () => projectExternalIndexSeed(accepted({ canonicalUrl: unsafe, sourceDomain: "sakane.ma", classification: { ...accepted().classification!, sourceDomain: "sakane.ma" } })),
-    /MASS_INDEX_M2_SENSITIVE_CANONICAL_URL/,
-  );
+  for (const unsafe of [
+    "https://sakane.ma/maisons-et-villas/maison/asilah/8287/+212661590451",
+    "https://sakane.ma/maisons-et-villas/maison/asilah/8287/00212661590451",
+  ]) {
+    assert.equal(isExternalIndexSafeCanonicalUrl(unsafe), false);
+    assert.throws(
+      () => projectExternalIndexSeed(accepted({ canonicalUrl: unsafe, sourceDomain: "sakane.ma", classification: { ...accepted().classification!, sourceDomain: "sakane.ma" } })),
+      /MASS_INDEX_M2_SENSITIVE_CANONICAL_URL/,
+    );
+  }
 });
 
 test("external index drops text carrying secret markers rather than storing it", () => {

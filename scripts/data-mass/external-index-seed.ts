@@ -42,6 +42,8 @@ const PROVIDER_PRIORITY: NativeExternalIndexSeedProvider[] = [
   "openserp",
 ];
 
+const INTERNATIONAL_PHONE_RE = /(?:\+|00)?212[\s.-]?[5-7](?:[\s.-]?\d){8}/g;
+const INTERNATIONAL_PHONE_TEST_RE = /(?:\+|00)?212[\s.-]?[5-7](?:[\s.-]?\d){8}/;
 const SOCIAL_CONTACT_RE = /\b(?:instagram|insta|facebook|tiktok|telegram)\b\s*[:@]?\s*@?[A-Za-z0-9._-]+/gi;
 const SOCIAL_CONTACT_TEST_RE = /\b(?:instagram|insta|facebook|tiktok|telegram)\b\s*[:@]?\s*@?[A-Za-z0-9._-]+/i;
 const HANDLE_RE = /(^|[\s(])@[A-Za-z0-9._-]{2,}/g;
@@ -62,6 +64,7 @@ export function sanitizeExternalIndexText(
   const redacted = redactSensitiveText(value);
   if (redacted.secret_hits > 0) return null;
   const cleaned = (redacted.value ?? "")
+    .replace(INTERNATIONAL_PHONE_RE, " ")
     .replace(SOCIAL_CONTACT_RE, " ")
     .replace(HANDLE_RE, "$1")
     .replace(/\s*[-:|,;]+\s*/g, " ")
@@ -83,7 +86,8 @@ export function isExternalIndexSafeCanonicalUrl(value: string): boolean {
     redacted.phone_hits > 0 ||
     redacted.whatsapp_hits > 0 ||
     redacted.personal_email_hits > 0 ||
-    redacted.secret_hits > 0
+    redacted.secret_hits > 0 ||
+    INTERNATIONAL_PHONE_TEST_RE.test(decoded)
   ) {
     return false;
   }
