@@ -6,11 +6,12 @@
 - `docs/ROADMAP.md` = vérité canonique globale.
 - issue `#854` = scope DATA MASS-INDEX.
 - `docs/MASS_INDEX.md` = plan M0→M7.
+- `docs/MASS_INDEX_M0_AUDIT.md` = preuve baseline M0.
 - aucun déploiement Vercel sans autorisation explicite.
 
 ## Chantier courant — DATA MASS-INDEX
 
-**Progression : 0/8 lots CLOSED = 0 %.**
+**Progression : 1/8 lots CLOSED = 12,5 %.**
 
 ### Goal
 Construire l’index le plus large possible de l’immobilier marocain dans AkarFinder.
@@ -20,28 +21,33 @@ Construire l’index le plus large possible de l’immobilier marocain dans Akar
 
 Les anciennes PR/Source Policy ne bloquent plus toute discovery/index externe minimale. Aucun contournement de login, CAPTCHA, paywall, anti-bot ou autre contrôle technique ; aucun contenu riche externe copié par défaut.
 
-### Baseline historique à revalider
-- 209 109 discovery rows ;
-- 104 584 URL representations distinctes ;
-- 90 190 net-new vs Thin Index ;
-- 52 591 probablement immobilier Maroc ;
-- 24 505 probablement pages détail ;
-- unité = URL representation, pas propriété unique ;
-- baseline publique historique : 7 483 LISTING.
+### M0 — CLOSED
+Preuve : `docs/MASS_INDEX_M0_AUDIT.md`.
 
-### M0 — ACTIVE
-Goal : mesurer l’état réel current-main + Supabase avant mutation.
+Baseline live :
+- 272 437 discovery rows ;
+- 135 754 canonical URLs distinctes ;
+- 56 861 Thin Index docs ;
+- 15 546 LISTING immobilières ;
+- 15 425 représentations réellement recherchables ;
+- 5 700 property listings ;
+- 5 561 property clusters.
 
-Succès : baseline fraîche par source/canal/ville/fraîcheur + inventaire pipeline + delta exact vs MASS-6.
+Diagnostic : le goulot est la promotion/classification/display eligibility, pas la découverte.
 
-Preuve : rapport read-only + tests ciblés + commit exact.
+### M1 — ACTIVE
+Goal : produire une promotion universelle déterministe du réservoir discovery vers l’index externe minimal.
+
+Succès : manifest exact candidate/accepted/rejected par raison+domaine, canonicalisation/dédup, classification, aucune exigence de richesse, idempotence prouvée avant write.
+
+Preuve attendue : tests + dry-run manifest + accounting exact ; micro-write borné ensuite seulement si safe.
 
 ### Next exact
-1. audit `main@f0293bb446e2e5779fb67181cd504d71dd1d0138` ;
-2. inventorier discovery/classifier/writers/read-model/dedup/freshness ;
-3. Supabase read-only ;
-4. recalculer baseline ;
-5. M1 Universal candidate promotion.
+1. réutiliser les classifieurs/normaliseurs existants ;
+2. réécrire la décision de `candidate-promotion.ts` pour distinguer index externe minimal et contenu riche ;
+3. tests de non-régression ;
+4. construire le runner read-only M1 ;
+5. produire le manifest live.
 
 ## Chantier suspendu
 Homepage Visual Reconciliation #849 : HVR-1 et HVR-2 CLOSED ; progression conservée 2/6 = 33,3 % ; HVR-3 suspendu par pivot produit.
@@ -50,4 +56,6 @@ Homepage Visual Reconciliation #849 : HVR-1 et HVR-2 CLOSED ; progression conser
 - repo : `hraaaaf/Akarfinder`
 - issue : `#854`
 - branche : `data/mass-index-m0-current`
-- base : `f0293bb446e2e5779fb67181cd504d71dd1d0138`
+- PR : `#857` draft
+- base initiale : `f0293bb446e2e5779fb67181cd504d71dd1d0138`
+- M0 audit commit : `f9f0540b8a6b20b9734474de13e4873dad43747e`
