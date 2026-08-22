@@ -43,16 +43,11 @@ export function HomeActionGrid() {
     <section data-hvr5-action-grid="compact" className="bg-[#F7FAFD] py-11 sm:py-16 lg:py-16">
       <Container>
         <div className="mx-auto max-w-[1240px]">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between sm:gap-6">
-            <div>
-              <p className="text-[10.5px] font-extrabold uppercase tracking-[0.19em] text-[#0B63CE]">Pour aller plus loin</p>
-              <h2 className="mt-2 max-w-[760px] text-[1.85rem] font-extrabold leading-[1.06] tracking-[-0.04em] text-[#0B1F3A] sm:text-[2.55rem]">
-                Que voulez-vous faire maintenant ?
-              </h2>
-            </div>
-            <p className="max-w-[420px] text-[12.5px] leading-5 text-slate-500 sm:text-right sm:text-[13px]">
-              Quatre chemins directs. Pas de détour, pas de chiffres d’exemple présentés comme des données.
-            </p>
+          <div>
+            <p className="text-[10.5px] font-extrabold uppercase tracking-[0.19em] text-[#0B63CE]">Pour aller plus loin</p>
+            <h2 className="mt-2 max-w-[760px] text-[1.85rem] font-extrabold leading-[1.06] tracking-[-0.04em] text-[#0B1F3A] sm:text-[2.55rem]">
+              Que voulez-vous faire maintenant ?
+            </h2>
           </div>
 
           <div className="mt-6 grid gap-3 sm:mt-8 sm:grid-cols-2 lg:grid-cols-4 lg:gap-4">

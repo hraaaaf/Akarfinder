@@ -41,7 +41,6 @@ describe("HVR-5 — homepage simplification", () => {
 
   it("keeps the replacement truth-safe and action-oriented", () => {
     assert.ok(grid.includes("Que voulez-vous faire maintenant ?"));
-    assert.ok(grid.includes("Pas de détour"));
     assert.ok(grid.includes("Rechercher un bien"));
     assert.ok(grid.includes("Préparer mon projet"));
     assert.ok(grid.includes("Préparer ma vente"));

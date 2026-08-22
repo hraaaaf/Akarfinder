@@ -3,7 +3,7 @@
 //   - Forbidden wording absent from all home-touched modules
 //   - MarketPulse helpers only return authorized-source listings when used
 //   - getMarketPulseHref only produces /listings/ paths (safe for authorized-only data)
-//   - Home P3 composition stays on the certified hero + value strip
+//   - Current homepage composition keeps the certified hero without reintroducing the removed value strip
 //   - Hero wording stays aligned with the certified Product Experience copy
 //   - HomeResultPreview removed from page imports
 
@@ -169,7 +169,7 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-describe("home-motor-purity — composition Home P3 certifiée", () => {
+describe("home-motor-purity — composition Home current-main certifiée", () => {
   const pageSource = readFileSync(
     resolve(__dirname, "../../../app/page.tsx"),
     "utf-8"
@@ -182,9 +182,9 @@ describe("home-motor-purity — composition Home P3 certifiée", () => {
     );
   });
 
-  it("app/page.tsx conserve le hero et le HomeValueStrip certifiés", () => {
+  it("app/page.tsx conserve le hero et ne remonte pas le HomeValueStrip retiré par HVR-6", () => {
     assert.ok(pageSource.includes("GoogleLikeHero"), "GoogleLikeHero must still be present");
-    assert.ok(pageSource.includes("HomeValueStrip"), "HomeValueStrip must still be present");
+    assert.ok(!pageSource.includes("HomeValueStrip"), "HomeValueStrip must stay removed from app/page.tsx");
   });
 });
 

@@ -1,0 +1,77 @@
+name: HVR-6 Final Homepage Benchmark Proof
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'app/page.tsx'
+      - 'components/home/HomeActionGrid.tsx'
+      - 'docs/HVR_6_FINAL_BENCHMARK.md'
+      - 'scripts/audits/hvr-6-final-benchmark.mjs'
+      - 'scripts/audits/experience-p1-a1-fidelity-shell.mjs'
+      - 'scripts/scrapers/__tests__/hvr-6-final-benchmark.test.ts'
+      - 'scripts/scrapers/__tests__/home-motor-purity.test.ts'
+      - 'scripts/scrapers/__tests__/ui-polish-mon-projet.test.ts'
+      - '.github/workflows/hvr-6-final-benchmark.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  hvr-6-proof:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    env:
+      HVR3_CERTIFICATION_MODE: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: HVR-6 source contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx tsx --test \
+            scripts/scrapers/__tests__/hvr-6-final-benchmark.test.ts \
+            scripts/scrapers/__tests__/hvr-5-home-simplification.test.ts \
+            scripts/scrapers/__tests__/hvr-4-neighborhood-action.test.ts \
+            scripts/scrapers/__tests__/hvr-3-home-listings.test.ts \
+            scripts/scrapers/__tests__/hvr-2-city-direct-nav.test.ts \
+            scripts/scrapers/__tests__/hvr-1-homepage.test.ts \
+            scripts/scrapers/__tests__/home-proof-ux.test.ts \
+            scripts/scrapers/__tests__/home-motor-purity.test.ts \
+            scripts/scrapers/__tests__/ui-polish-mon-projet.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Start production server
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run start -- -p 3221 > /tmp/hvr-6.log 2>&1 &
+          for attempt in {1..60}; do
+            if curl -fsS http://127.0.0.1:3221/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/hvr-6.log
+          exit 1
+      - name: HVR-6 responsive final proof
+        env:
+          BASE_URL: http://127.0.0.1:3221
+          AUDIT_OUTPUT_DIR: artifacts/hvr-6-final-benchmark
+        run: node scripts/audits/hvr-6-final-benchmark.mjs
+      - name: Upload HVR-6 proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hvr-6-final-benchmark-${{ github.run_id }}
+          path: artifacts/hvr-6-final-benchmark
+          if-no-files-found: error
+          retention-days: 14
