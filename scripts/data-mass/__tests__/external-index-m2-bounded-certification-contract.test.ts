@@ -10,6 +10,7 @@ test("M2 final certification uses bounded accepted cohorts instead of rescanning
   const workflow = await readFile(workflowPath, "utf8");
   assert.ok(runner.includes('.eq("discovery_status", "accepted")'));
   assert.ok(runner.includes("PER_PROVIDER_LIMIT = 500"));
+  assert.ok(runner.includes("COLLISION_QUERY_CHUNK = 40"));
   assert.ok(runner.includes("CANARY_MAX_ROWS = 10"));
   assert.ok(runner.includes('NATIVE_PROVIDERS = ["openserp", "serper_mass_harvest"]'));
   assert.ok(runner.includes("buildUniversalCandidatePromotionManifest"));

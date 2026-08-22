@@ -6,6 +6,7 @@ import { buildExternalIndexSeedWritePlan, summarizeExternalIndexSeedWritePlan, t
 
 const OUTPUT = "artifacts/mass-index/m2-bounded-canary-plan.json";
 const PER_PROVIDER_LIMIT = 500;
+const COLLISION_QUERY_CHUNK = 40;
 const CANARY_MAX_ROWS = 10;
 const NATIVE_PROVIDERS = ["openserp", "serper_mass_harvest"] as const;
 
@@ -60,11 +61,11 @@ async function main() {
 
   const urls = accepted.map((row) => row.canonicalUrl).filter((value): value is string => Boolean(value));
   const existing: ExistingSourceOfferSeedIdentity[] = [];
-  for (let i = 0; i < urls.length; i += 200) {
+  for (let i = 0; i < urls.length; i += COLLISION_QUERY_CHUNK) {
     const { data, error } = await db
       .from("source_offer_seeds")
       .select("canonical_url,source_domain,seed_provider")
-      .in("canonical_url", urls.slice(i, i + 200));
+      .in("canonical_url", urls.slice(i, i + COLLISION_QUERY_CHUNK));
     if (error) throw error;
     existing.push(...((data ?? []) as ExistingSourceOfferSeedIdentity[]));
   }
@@ -84,7 +85,7 @@ async function main() {
   const result = {
     schemaVersion: "MASS_INDEX_M2_BOUNDED_CANARY_PLAN_V1",
     mode: "read_only",
-    cohort: { discoveryStatus: "accepted", providers: NATIVE_PROVIDERS, perProviderLimit: PER_PROVIDER_LIMIT, fetchedByProvider, classifier: "M1_UNIVERSAL_PROMOTION_V1" },
+    cohort: { discoveryStatus: "accepted", providers: NATIVE_PROVIDERS, perProviderLimit: PER_PROVIDER_LIMIT, fetchedByProvider, classifier: "M1_UNIVERSAL_PROMOTION_V1", collisionQueryChunk: COLLISION_QUERY_CHUNK },
     summary,
     canary,
     canaryByProvider,
