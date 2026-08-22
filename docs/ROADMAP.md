@@ -16,7 +16,8 @@ Ancien ledger détaillé :
 ## 1. Chantier actif P0 — DATA MASS-INDEX
 
 **Issue : #854 — DATA MASS-INDEX — Couverture immobilière Maroc maximale**  
-**Plan : `docs/MASS_INDEX.md`**
+**Plan : `docs/MASS_INDEX.md`**  
+**M0 audit : `docs/MASS_INDEX_M0_AUDIT.md`**
 
 ### Goal
 Construire l’index le plus large possible de l’immobilier marocain dans AkarFinder.
@@ -26,28 +27,38 @@ Construire l’index le plus large possible de l’immobilier marocain dans Akar
 
 L’absence d’autorisation de contenu riche ne bloque plus toute discovery/indexation externe minimale. Aucun contournement de login, CAPTCHA, paywall, anti-bot ou autre contrôle technique.
 
-### Baseline historique à revalider en M0
-- 209 109 discovery rows ;
-- 104 584 URL representations distinctes ;
-- 90 190 net-new vs Thin Index ;
-- 52 591 probablement immobilier Maroc ;
-- 24 505 probablement pages détail ;
-- unité = URL representation, pas propriété unique ;
-- 7 483 LISTING publiques dans la baseline historique.
+### Baseline M0 certifiée
+- 272 437 discovery rows ;
+- 135 754 canonical URLs distinctes ;
+- 56 861 Thin Index docs ;
+- 15 546 `LISTING + real_estate_likely` ;
+- 15 425 représentations recherchables via `search_public_representations_v2` ;
+- 5 700 `property_listings` ;
+- 5 561 `property_clusters` ;
+- 3 158 Thin Index docs avec prix ;
+- 2 549 avec surface ;
+- 880 avec prix + surface.
+
+Delta vs MASS-6 : +63 328 discovery rows (+30,28 %) et +31 170 canonical URLs (+29,80 %).
 
 ### Progression
-**0/8 lots CLOSED = 0 %.**
+**1/8 lots CLOSED = 12,5 %.**
 
 | Lot | Scope | État |
 |---|---|---|
-| M0 | Current-main audit + baseline fraîche | 🟡 ACTIVE |
-| M1 | Universal candidate promotion | ⏸️ NEXT |
-| M2 | External Index model | ⏸️ |
+| M0 | Current-main audit + baseline fraîche | ✅ CLOSED |
+| M1 | Universal candidate promotion | 🟡 ACTIVE |
+| M2 | External Index model | ⏸️ NEXT |
 | M3 | Source Factory adapters | ⏸️ |
 | M4 | National MASS ingest | ⏸️ |
 | M5 | Dedup + freshness | ⏸️ |
 | M6 | Search activation + SEO | ⏸️ |
 | M7 | Conversion partenaires | ⏸️ |
+
+### Diagnostic M0
+Le goulot principal est `discovery candidate -> classification/promotion -> display eligibility`, pas la découverte. Le Search live lit déjà `thin_index_search_documents` via `search_public_representations_v2`.
+
+Le POC `public_property_index` existe dans le repo, mais sa table Supabase live n’existe pas. Il n’est pas le read-model courant.
 
 ### Sources prioritaires
 Historiques : `agenz.ma`, `mubawab.ma`, `mouldar.com`, `masaken.ma`, `avito.ma`.
@@ -57,7 +68,7 @@ Réservoir MASS : `marocannonces.com`, `yakeey.com`, `domio.ma`, `2p.ma`, `sakan
 Extension ensuite aux 107 domaines Source Factory.
 
 ### Next exact
-M0 sur `data/mass-index-m0-current` : audit current-main + Supabase read-only, inventaire pipeline, baseline fraîche, delta vs MASS-6, puis M1.
+M1 : construire un manifest déterministe read-only depuis `discovery_candidates`, canonicaliser/dédupliquer, classifier LISTING/real-estate, compter accept/reject par raison et domaine, puis micro-write borné seulement après preuve d’idempotence.
 
 ---
 
@@ -116,8 +127,8 @@ Une CI queued/pending/in_progress n’arrête pas le travail indépendant. Pas d
 
 ## 6. Prochaine action exacte
 
-1. M0 audit current-main/Supabase read-only.
-2. Baseline source/canal/ville/fraîcheur.
-3. Inventaire discovery/classifier/writers/read-model/dedup/freshness.
-4. Delta exact vs MASS-6.
-5. M1 Universal candidate promotion.
+1. M1 manifest read-only depuis le stock discovery live.
+2. Réutiliser les classifieurs/normaliseurs existants plutôt que créer une deuxième logique.
+3. Séparer `INDEXED_EXTERNAL` de `PARTNER_FULL` dans la décision de promotion.
+4. Tests déterministes + accounting exact.
+5. Canary write borné et idempotent seulement lorsque le dry-run est prouvé.
