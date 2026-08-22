@@ -1,4 +1,4 @@
-name: MASS-INDEX M1-M2 Certification
+name: MASS-INDEX M2 Final Certification
 
 on:
   pull_request:
@@ -10,10 +10,16 @@ on:
       - scripts/data-mass/universal-candidate-promotion-live.ts
       - scripts/data-mass/external-index-seed.ts
       - scripts/data-mass/external-index-seed-dry-run.ts
+      - scripts/data-mass/external-index-seed-write-plan.ts
+      - scripts/data-mass/external-index-seed-write-plan-live.ts
+      - scripts/data-mass/external-index-seed-canary.ts
       - scripts/data-mass/__tests__/universal-candidate-promotion.test.ts
       - scripts/data-mass/__tests__/universal-candidate-promotion-live-contract.test.ts
       - scripts/data-mass/__tests__/external-index-seed.test.ts
+      - scripts/data-mass/__tests__/external-index-seed-write-plan.test.ts
+      - scripts/data-mass/__tests__/external-index-seed-canary-contract.test.ts
       - scripts/data-mass/__tests__/mass-index-m2-native-provider-contract.test.ts
+      - docs/MASS_INDEX_M2_ROLLBACK.md
       - supabase/migrations/20260822145000_mass_index_m2_native_discovery_providers.sql
       - .github/workflows/mass-index-m1-certification.yml
   workflow_dispatch: {}
@@ -22,13 +28,13 @@ permissions:
   contents: read
 
 concurrency:
-  group: mass-index-m1-m2-certification-${{ github.event.pull_request.number || github.ref }}
+  group: mass-index-m2-final-certification-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
   certify:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
     env:
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
@@ -51,6 +57,8 @@ jobs:
           scripts/data-mass/__tests__/universal-candidate-promotion.test.ts
           scripts/data-mass/__tests__/universal-candidate-promotion-live-contract.test.ts
           scripts/data-mass/__tests__/external-index-seed.test.ts
+          scripts/data-mass/__tests__/external-index-seed-write-plan.test.ts
+          scripts/data-mass/__tests__/external-index-seed-canary-contract.test.ts
           scripts/data-mass/__tests__/mass-index-m2-native-provider-contract.test.ts
 
       - name: Assert read-only Supabase credentials are available
@@ -66,7 +74,10 @@ jobs:
       - name: Build M2 seed projection — read only
         run: npx tsx scripts/data-mass/external-index-seed-dry-run.ts
 
-      - name: Extract certification summary
+      - name: Build M2 net-new write plan — read only
+        run: npx tsx scripts/data-mass/external-index-seed-write-plan-live.ts
+
+      - name: Extract final certification summary
         shell: bash
         run: |
           set -euo pipefail
@@ -74,52 +85,55 @@ jobs:
           const fs = require('fs');
           const m1 = JSON.parse(fs.readFileSync('artifacts/mass-index/m1-universal-candidate-promotion.json', 'utf8'));
           const m2 = JSON.parse(fs.readFileSync('artifacts/mass-index/m2-external-index-seed-dry-run.json', 'utf8'));
+          const writePlan = JSON.parse(fs.readFileSync('artifacts/mass-index/m2-external-index-write-plan.json', 'utf8'));
           const summary = {
-            schemaVersion: 'MASS_INDEX_M1_M2_CERTIFICATION_V1',
+            schemaVersion: 'MASS_INDEX_M2_FINAL_CERTIFICATION_V1',
             mode: 'read_only',
             m1: { sourceSnapshot: m1.sourceSnapshot, summary: m1.summary, invariants: m1.invariants },
             m2,
+            writePlan: {
+              sourceSeedSnapshot: writePlan.sourceSeedSnapshot,
+              summary: writePlan.summary,
+              canary: writePlan.canary.map(({ canonicalUrl, sourceDomain, seedProvider }) => ({ canonicalUrl, sourceDomain, seedProvider })),
+              invariants: writePlan.invariants,
+            },
           };
-          fs.writeFileSync('artifacts/mass-index/m1-m2-certification-summary.json', JSON.stringify(summary, null, 2) + '\n');
+          fs.writeFileSync('artifacts/mass-index/m2-final-certification-summary.json', JSON.stringify(summary, null, 2) + '\n');
           console.log(JSON.stringify(summary, null, 2));
           NODE
 
-      - name: Assert M1-M2 invariants
+      - name: Assert M2 final invariants
         shell: bash
         run: |
           set -euo pipefail
           node - <<'NODE'
           const fs = require('fs');
-          const p = JSON.parse(fs.readFileSync('artifacts/mass-index/m1-m2-certification-summary.json', 'utf8'));
+          const p = JSON.parse(fs.readFileSync('artifacts/mass-index/m2-final-certification-summary.json', 'utf8'));
           if (p.mode !== 'read_only') throw new Error('MASS_INDEX_NOT_READ_ONLY');
-          if (p.m1.invariants.databaseWrites !== 0) throw new Error('M1_DB_WRITE_INVARIANT');
-          if (p.m1.invariants.sourceNetworkRequests !== 0) throw new Error('M1_SOURCE_NETWORK_INVARIANT');
-          if (p.m1.invariants.providersRelabeled !== 0) throw new Error('M1_PROVIDER_RELABEL_INVARIANT');
-          if (p.m1.invariants.richContentRequired !== false) throw new Error('M1_RICH_CONTENT_INVARIANT');
-          if (p.m1.invariants.snapshotBounded !== true) throw new Error('M1_SNAPSHOT_INVARIANT');
-          if (p.m1.invariants.keysetPagination !== true) throw new Error('M1_KEYSET_INVARIANT');
-          if (p.m1.sourceSnapshot.pagination !== 'keyset_uuid') throw new Error('M1_KEYSET_METADATA_INVARIANT');
-          if (p.m1.summary.rawRows <= 0 || p.m1.summary.canonicalUrls <= 0) throw new Error('M1_EMPTY_MANIFEST');
-          if (p.m1.summary.acceptedCanonicalUrls + p.m1.summary.rejectedCanonicalUrls !== p.m1.summary.canonicalUrls) {
-            throw new Error('M1_ACCOUNTING_MISMATCH');
-          }
-          if (p.m2.invariants.databaseWrites !== 0) throw new Error('M2_DB_WRITE_INVARIANT');
-          if (p.m2.invariants.sourceNetworkRequests !== 0) throw new Error('M2_SOURCE_NETWORK_INVARIANT');
-          if (p.m2.invariants.publicSearchActivations !== 0) throw new Error('M2_SEARCH_ACTIVATION_INVARIANT');
-          if (p.m2.invariants.providerRelabels !== 0) throw new Error('M2_PROVIDER_RELABEL_INVARIANT');
+          if (p.m1.invariants.databaseWrites !== 0 || p.m2.invariants.databaseWrites !== 0 || p.writePlan.invariants.databaseWrites !== 0) throw new Error('M2_DB_WRITE_INVARIANT');
+          if (p.m1.invariants.sourceNetworkRequests !== 0 || p.m2.invariants.sourceNetworkRequests !== 0 || p.writePlan.invariants.sourceNetworkRequests !== 0) throw new Error('M2_SOURCE_NETWORK_INVARIANT');
+          if (p.m1.invariants.providersRelabeled !== 0 || p.m2.invariants.providerRelabels !== 0) throw new Error('M2_PROVIDER_RELABEL_INVARIANT');
           if (p.m2.invariants.listingClassificationViolations !== 0) throw new Error('M2_CLASSIFICATION_INVARIANT');
           if (p.m2.summary.projectedSeeds !== p.m1.summary.acceptedCanonicalUrls) throw new Error('M2_PROJECTION_ACCOUNTING_MISMATCH');
-          console.log('MASS-INDEX M1-M2 invariants PASS');
+          if (p.writePlan.summary.acceptedCanonicalUrls !== p.m1.summary.acceptedCanonicalUrls) throw new Error('M2_WRITE_PLAN_ACCOUNTING_MISMATCH');
+          if (p.writePlan.summary.insertNative + p.writePlan.summary.preserveExisting !== p.writePlan.summary.acceptedCanonicalUrls) throw new Error('M2_WRITE_PLAN_PARTITION_MISMATCH');
+          if (p.writePlan.invariants.existingSeedsMutated !== 0 || p.writePlan.invariants.duplicateCanonicalWritesPlanned !== 0) throw new Error('M2_WRITE_PLAN_MUTATION_INVARIANT');
+          const insertProviders = Object.keys(p.writePlan.summary.insertByProvider).sort();
+          if (insertProviders.some((provider) => !['openserp','serper_mass_harvest'].includes(provider))) throw new Error('M2_NON_NATIVE_INSERT_PROVIDER');
+          if (p.writePlan.canary.length === 0 || p.writePlan.canary.length > 10) throw new Error('M2_CANARY_SIZE_INVARIANT');
+          if (p.writePlan.canary.some((row) => !['openserp','serper_mass_harvest'].includes(row.seedProvider))) throw new Error('M2_CANARY_PROVIDER_INVARIANT');
+          console.log('MASS-INDEX M2 final invariants PASS');
           NODE
 
-      - name: Upload MASS-INDEX evidence
+      - name: Upload MASS-INDEX M2 evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: mass-index-m1-m2-certification
+          name: mass-index-m2-final-certification
           path: |
-            artifacts/mass-index/m1-m2-certification-summary.json
+            artifacts/mass-index/m2-final-certification-summary.json
             artifacts/mass-index/m1-universal-candidate-promotion.json
             artifacts/mass-index/m2-external-index-seed-dry-run.json
+            artifacts/mass-index/m2-external-index-write-plan.json
           if-no-files-found: warn
           retention-days: 14

@@ -75,3 +75,11 @@ test("M2 write plan rejects duplicate canonical rows before any write can be pla
     /DUPLICATE_CANONICAL_IN_MANIFEST/,
   );
 });
+
+test("M2 refuses a net-new non-native provider instead of stealing the historical pipeline", () => {
+  const row = accepted("https://example.ma/property/appartement-casablanca-999999", "public_sitemap");
+  assert.throws(
+    () => buildExternalIndexSeedWritePlan([row], []),
+    /NON_NATIVE_INSERT_PROVIDER:public_sitemap/,
+  );
+});

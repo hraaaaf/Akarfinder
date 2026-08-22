@@ -29,6 +29,8 @@ export type ExternalIndexSeedWritePlanSummary = {
   preservedByExistingProvider: Record<string, number>;
 };
 
+const M2_NATIVE_INSERT_PROVIDERS = new Set(["openserp", "serper_mass_harvest"]);
+
 export function buildExternalIndexSeedWritePlan(
   manifestRows: UniversalCandidatePromotionRow[],
   existingSeeds: ExistingSourceOfferSeedIdentity[],
@@ -54,10 +56,15 @@ export function buildExternalIndexSeedWritePlan(
       continue;
     }
 
+    const projected = projectExternalIndexSeed(row);
+    if (!M2_NATIVE_INSERT_PROVIDERS.has(projected.seed_provider)) {
+      throw new Error(`MASS_INDEX_M2_NON_NATIVE_INSERT_PROVIDER:${projected.seed_provider}`);
+    }
+
     plan.push({
       action: "INSERT_NATIVE",
       canonicalUrl: row.canonicalUrl,
-      seed: projectExternalIndexSeed(row),
+      seed: projected,
       existingSeed: null,
     });
   }
