@@ -36,7 +36,7 @@ Réconcilier la homepage `/` avec la référence visuelle validée et les meille
 - BEFORE → référence → AFTER sur les mêmes viewports ;
 - tests proportionnels + exact-head ;
 - benchmark final frais contre Zillow / Redfin / Realtor.com / Rightmove ;
-- score final visé ≥ 9/10 ;
+- score visuel final visé ≥ 9/10 ;
 - human visual gate avant merge final ;
 - aucun changement backend/DB/ranking/source non justifié ;
 - aucun déploiement Vercel sans autorisation explicite.
@@ -47,7 +47,7 @@ Réconcilier la homepage `/` avec la référence visuelle validée et les meille
 
 | Lot | Scope | État canonique | Preuve / Next |
 |---|---|---|---|
-| HVR-1 | Header + HERO + Search + Intelligence | 🟡 READY TO MERGE — PR #850 | HEAD certifié `49877cf7924e3e757cc9f52902050b9c7572157f`; run `32563274184` SUCCESS; human gate APPROVED 2026-08-22 |
+| HVR-1 | Header + HERO + Search + Intelligence | 🟡 READY TO MERGE — PR #850 | HEAD runtime certifié `49877cf7924e3e757cc9f52902050b9c7572157f`; run `32563274184` SUCCESS; human gate APPROVED 2026-08-22 |
 | HVR-2 | Explorer le Maroc — villes en accès direct | ⏸️ À VENIR | clic ville → résultats directement ; raccourcis Acheter/Louer/Neuf secondaires seulement si utiles |
 | HVR-3 | Biens à découvrir — vraies annonces | ⏸️ À VENIR | cartes réelles, images/fallback propres, wording truth-safe selon ordre DB réel |
 | HVR-4 | Intelligence actionnable | ⏸️ À VENIR | remplacer/supprimer les blocs passifs ; chaque module mène à quartier/carte/comparaison/recherche |
@@ -65,7 +65,7 @@ P11 Product Experience :
 ### HVR-1 — preuve verrouillée
 
 - PR #850 ;
-- HEAD certifié `49877cf7924e3e757cc9f52902050b9c7572157f` ;
+- HEAD runtime certifié `49877cf7924e3e757cc9f52902050b9c7572157f` ;
 - HVR-1 Homepage Visual Proof `32563274184` SUCCESS ;
 - artifact `9473438871` ;
 - digest `sha256:75b23d0b5848830bc922c13a473ef9857bee422a2f95a409765e6a238b0929cc` ;
@@ -85,6 +85,16 @@ P11 Product Experience :
 ---
 
 ## 2. Chantiers fermés — références stables
+
+### GitHub Hygiene & Single Source of Truth ✅ CLOSED
+
+- PR #851 ✅ MERGED ;
+- merge squash `9359034d8587ee12e0bd2fce72bf791582b90a5c` ;
+- scope final : `.github/PULL_REQUEST_TEMPLATE.md`, `docs/ROADMAP.md`, `docs/SESSION.md` uniquement ;
+- branche de travail 0 derrière `main` avant merge ;
+- ancien ledger roadmap préservé par SHA Git immuable ;
+- **26 PR historiques / doublons / superseded fermées** pendant le ménage initial ;
+- aucune DB, migration, Registry, DATA, ranking, runtime ou Vercel.
 
 ### Product Experience Reconciliation ✅ CLOSED
 
@@ -217,7 +227,7 @@ Ancienne base. Réutiliser uniquement les capacités réellement absentes de cur
 
 ## 5. PR hygiene — état vérifié 2026-08-22
 
-**26 PR historiques / doublons / superseded ont été fermées** pendant le ménage initial.
+**26 PR historiques / doublons / superseded ont été fermées** pendant le ménage initial. La PR de gouvernance #851 est ensuite **MERGED**.
 
 Catégories retirées :
 - ancienne chaîne SERP V2 preview LOT 1→6 ;
