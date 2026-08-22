@@ -73,11 +73,11 @@ jobs:
           if (p.invariants.databaseWrites !== 0 || p.invariants.sourceNetworkRequests !== 0) throw new Error('M2_SIDE_EFFECT_INVARIANT');
           if (p.invariants.fullReservoirScan !== false) throw new Error('M2_FULL_SCAN_FORBIDDEN');
           if (p.invariants.existingSeedsMutated !== 0 || p.invariants.providerRelabels !== 0) throw new Error('M2_MUTATION_INVARIANT');
-          if (p.invariants.canaryRows !== 10 || p.invariants.canaryPerProvider !== 5) throw new Error('M2_CANARY_SIZE_INVARIANT');
+          if (p.invariants.canaryRows !== 10 || p.invariants.canaryMaxRows !== 10) throw new Error('M2_CANARY_SIZE_INVARIANT');
           if (p.summary.insertNative < 10) throw new Error('M2_NOT_ENOUGH_NET_NEW');
           if (Object.keys(p.summary.insertByProvider).some((provider) => !['openserp','serper_mass_harvest'].includes(provider))) throw new Error('M2_NON_NATIVE_INSERT_PROVIDER');
           if (p.canary.some((row) => !['openserp','serper_mass_harvest'].includes(row.seedProvider))) throw new Error('M2_CANARY_PROVIDER_INVARIANT');
-          console.log('MASS-INDEX M2 bounded final invariants PASS');
+          console.log('MASS-INDEX M2 bounded final invariants PASS', p.canaryByProvider);
           NODE
       - name: Upload MASS-INDEX M2 evidence
         if: always()

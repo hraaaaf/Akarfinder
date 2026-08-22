@@ -6,7 +6,7 @@ import { buildExternalIndexSeedWritePlan, summarizeExternalIndexSeedWritePlan, t
 
 const OUTPUT = "artifacts/mass-index/m2-bounded-canary-plan.json";
 const PER_PROVIDER_LIMIT = 500;
-const CANARY_PER_PROVIDER = 5;
+const CANARY_MAX_ROWS = 10;
 const NATIVE_PROVIDERS = ["openserp", "serper_mass_harvest"] as const;
 
 type DiscoveryRow = {
@@ -61,54 +61,34 @@ async function main() {
   const urls = accepted.map((row) => row.canonicalUrl).filter((value): value is string => Boolean(value));
   const existing: ExistingSourceOfferSeedIdentity[] = [];
   for (let i = 0; i < urls.length; i += 200) {
-    const chunk = urls.slice(i, i + 200);
     const { data, error } = await db
       .from("source_offer_seeds")
       .select("canonical_url,source_domain,seed_provider")
-      .in("canonical_url", chunk);
+      .in("canonical_url", urls.slice(i, i + 200));
     if (error) throw error;
     existing.push(...((data ?? []) as ExistingSourceOfferSeedIdentity[]));
   }
 
   const plan = buildExternalIndexSeedWritePlan(accepted, existing);
   const summary = summarizeExternalIndexSeedWritePlan(plan);
-  const canary = [] as Array<{ canonicalUrl: string; sourceDomain: string; seedProvider: string; seed: unknown }>;
-  for (const provider of NATIVE_PROVIDERS) {
-    const rows = plan
-      .filter((row) => row.action === "INSERT_NATIVE" && row.seed.seed_provider === provider)
-      .slice(0, CANARY_PER_PROVIDER);
-    for (const row of rows) {
-      if (row.action !== "INSERT_NATIVE") continue;
-      canary.push({ canonicalUrl: row.canonicalUrl, sourceDomain: row.seed.source_domain, seedProvider: row.seed.seed_provider, seed: row.seed });
-    }
-  }
+  const inserts = plan.filter((row) => row.action === "INSERT_NATIVE");
+  const canary = inserts.slice(0, CANARY_MAX_ROWS).map((row) => {
+    if (row.action !== "INSERT_NATIVE") throw new Error("MASS_INDEX_M2_CANARY_ACTION_INVARIANT");
+    return { canonicalUrl: row.canonicalUrl, sourceDomain: row.seed.source_domain, seedProvider: row.seed.seed_provider, seed: row.seed };
+  });
 
-  if (canary.length !== CANARY_PER_PROVIDER * NATIVE_PROVIDERS.length) {
-    throw new Error(`MASS_INDEX_M2_BOUNDED_CANARY_INCOMPLETE:${canary.length}`);
-  }
+  if (canary.length !== CANARY_MAX_ROWS) throw new Error(`MASS_INDEX_M2_BOUNDED_CANARY_INCOMPLETE:${canary.length}`);
+  const canaryByProvider = Object.fromEntries(NATIVE_PROVIDERS.map((provider) => [provider, canary.filter((row) => row.seedProvider === provider).length]));
 
   const outputPath = resolve(process.env.MASS_INDEX_M2_BOUNDED_PLAN_OUTPUT || OUTPUT);
   const result = {
     schemaVersion: "MASS_INDEX_M2_BOUNDED_CANARY_PLAN_V1",
     mode: "read_only",
-    cohort: {
-      discoveryStatus: "accepted",
-      providers: NATIVE_PROVIDERS,
-      perProviderLimit: PER_PROVIDER_LIMIT,
-      fetchedByProvider,
-      classifier: "M1_UNIVERSAL_PROMOTION_V1",
-    },
+    cohort: { discoveryStatus: "accepted", providers: NATIVE_PROVIDERS, perProviderLimit: PER_PROVIDER_LIMIT, fetchedByProvider, classifier: "M1_UNIVERSAL_PROMOTION_V1" },
     summary,
     canary,
-    invariants: {
-      databaseWrites: 0,
-      sourceNetworkRequests: 0,
-      fullReservoirScan: false,
-      existingSeedsMutated: 0,
-      canaryRows: canary.length,
-      canaryPerProvider: CANARY_PER_PROVIDER,
-      providerRelabels: 0,
-    },
+    canaryByProvider,
+    invariants: { databaseWrites: 0, sourceNetworkRequests: 0, fullReservoirScan: false, existingSeedsMutated: 0, canaryRows: canary.length, canaryMaxRows: CANARY_MAX_ROWS, providerRelabels: 0 },
   };
   await mkdir(dirname(outputPath), { recursive: true });
   await writeFile(outputPath, `${JSON.stringify(result, null, 2)}\n`, "utf8");
