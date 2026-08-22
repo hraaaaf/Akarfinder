@@ -1,9 +1,21 @@
 name: HVR-1 Homepage Visual Proof
 
 on:
-  push:
-    branches:
-      - 'agent/homepage-visual-reconciliation-hvr1'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'app/page.tsx'
+      - 'components/home/GoogleLikeHero.tsx'
+      - 'components/home/HomeIntelligencePanel.tsx'
+      - 'components/home/HomeSearchBar.tsx'
+      - 'components/home/SearchEntryOrchestrator.tsx'
+      - 'scripts/audits/hvr-1-homepage-visual.mjs'
+      - 'scripts/scrapers/__tests__/hvr-1-homepage.test.ts'
+      - 'scripts/__tests__/home-p1-approved-hero-v1.test.mjs'
+      - 'scripts/scrapers/__tests__/home-proof-ux.test.ts'
+      - 'scripts/scrapers/__tests__/home-search-entry-orchestration-v1.test.ts'
+      - 'scripts/__tests__/home-p1-market-pulse-v1.test.mjs'
+      - '.github/workflows/hvr-1-homepage-visual-proof.yml'
   workflow_dispatch:
 
 permissions:
@@ -21,7 +33,17 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Homepage truth contracts
-        run: npx tsx --test scripts/scrapers/__tests__/hvr-1-homepage.test.ts scripts/scrapers/__tests__/home-motor-purity.test.ts scripts/scrapers/__tests__/natural-query-parser.test.ts
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx tsx --test \
+            scripts/scrapers/__tests__/hvr-1-homepage.test.ts \
+            scripts/scrapers/__tests__/home-motor-purity.test.ts \
+            scripts/scrapers/__tests__/natural-query-parser.test.ts \
+            scripts/__tests__/home-p1-approved-hero-v1.test.mjs \
+            scripts/scrapers/__tests__/home-proof-ux.test.ts \
+            scripts/scrapers/__tests__/home-search-entry-orchestration-v1.test.ts \
+            scripts/__tests__/home-p1-market-pulse-v1.test.mjs
       - name: TypeScript
         run: npx tsc --noEmit
       - name: Production build

@@ -6,8 +6,9 @@ const page = readFileSync("app/page.tsx", "utf8");
 const pulse = readFileSync("components/landing/MarketPulse.tsx", "utf8");
 const data = readFileSync("lib/market-pulse/get-market-pulse-listings.ts", "utf8");
 
-test("market pulse follows WhySection on the homepage", () => {
-  assert.ok(page.indexOf("<WhySection") < page.indexOf("<MarketPulse"));
+test("legacy MarketPulse remains available without leaking into the current homepage composition", () => {
+  assert.equal(page.includes("<MarketPulse"), false);
+  assert.equal(page.includes("<WhySection"), false);
 });
 
 test("approved market pulse copy and four-card layout remain present", () => {

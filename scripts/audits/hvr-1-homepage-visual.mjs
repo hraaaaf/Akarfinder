@@ -34,8 +34,10 @@ try {
 
     try {
       const response = await page.goto(baseUrl, { waitUntil: "domcontentloaded", timeout: 60_000 });
-      await page.locator('[data-home-hero="p1-a1"]').waitFor({ state: "visible", timeout: 20_000 });
-      await page.locator('[data-home-intelligence="hvr-1"]').waitFor({ state: "visible", timeout: 20_000 });
+      const hero = page.locator('[data-home-hero="p1-a1"]');
+      const panel = page.locator('[data-home-intelligence="hvr-1"]:visible');
+      await hero.waitFor({ state: "visible", timeout: 20_000 });
+      await panel.waitFor({ state: "visible", timeout: 20_000 });
 
       const metrics = await page.evaluate(() => ({
         clientWidth: document.documentElement.clientWidth,
@@ -52,10 +54,11 @@ try {
       const h1Text = (await page.locator("h1").innerText()).trim();
       if (h1Text !== approvedTitle) localFindings.push("H1_COPY_CHANGED");
 
-      const heroText = await page.locator('[data-home-hero="p1-a1"]').innerText();
+      const heroText = await hero.innerText();
+      const bodyText = await page.locator("body").innerText();
       if (!heroText.includes(approvedSubtitle)) localFindings.push("SUBTITLE_COPY_CHANGED");
       for (const token of forbiddenMockupClaims) {
-        if (heroText.includes(token)) localFindings.push(`FAKE_CLAIM_${token.replace(/\s+/g, "_")}`);
+        if (bodyText.includes(token)) localFindings.push(`FAKE_CLAIM_${token.replace(/\s+/g, "_")}`);
       }
 
       const intentLabels = await page.locator('[data-home-search-intents="hvr-1"] button').allInnerTexts();
@@ -63,19 +66,24 @@ try {
 
       const heroLayout = page.locator('[data-home-hero-layout="hvr-1"]');
       const form = page.locator('[data-home-search="hvr-1"]');
-      const panel = page.locator('[data-home-intelligence="hvr-1"]');
       const layoutBox = await heroLayout.boundingBox();
       const formBox = await form.boundingBox();
       const panelBox = await panel.boundingBox();
       const h1Box = await page.locator("h1").boundingBox();
+      const heroBox = await hero.boundingBox();
 
-      if (!layoutBox || !formBox || !panelBox || !h1Box) {
+      if (!layoutBox || !formBox || !panelBox || !h1Box || !heroBox) {
         localFindings.push("MISSING_LAYOUT_BOX");
-      } else if (scenario.width >= 1024) {
-        if (!(panelBox.x > formBox.x + formBox.width * 0.7)) localFindings.push("DESKTOP_NOT_TWO_COLUMNS");
-        if (Math.abs(panelBox.y - h1Box.y) > 150) localFindings.push("DESKTOP_PANEL_VERTICAL_DRIFT");
       } else {
-        if (!(panelBox.y > formBox.y + formBox.height)) localFindings.push("MOBILE_INTELLIGENCE_ORDER");
+        if (heroBox.height > scenario.height * 0.9) {
+          localFindings.push(`HERO_TOO_TALL_${Math.round(heroBox.height)}_${scenario.height}`);
+        }
+        if (scenario.width >= 1024) {
+          if (!(panelBox.x > formBox.x + formBox.width * 0.7)) localFindings.push("DESKTOP_NOT_TWO_COLUMNS");
+          if (Math.abs(panelBox.y - h1Box.y) > 150) localFindings.push("DESKTOP_PANEL_VERTICAL_DRIFT");
+        } else if (!(panelBox.y > formBox.y + formBox.height)) {
+          localFindings.push("MOBILE_INTELLIGENCE_ORDER");
+        }
       }
 
       const screenshot = `${scenario.name}.png`;
@@ -86,6 +94,7 @@ try {
         findings: localFindings,
         consoleErrors,
         ...metrics,
+        heroHeight: heroBox ? Math.round(heroBox.height) : null,
         h1Text,
         intentLabels,
       });
@@ -103,7 +112,7 @@ try {
 }
 
 const report = {
-  schemaVersion: "HVR_1_HOMEPAGE_VISUAL_PROOF_V1",
+  schemaVersion: "HVR_1_HOMEPAGE_VISUAL_PROOF_V2",
   generatedAt: new Date().toISOString(),
   scenarioCount: scenarios.length,
   screenshotCount: results.filter((item) => item.screenshot).length,
