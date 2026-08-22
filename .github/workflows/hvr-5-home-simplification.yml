@@ -8,6 +8,7 @@ on:
       - 'components/home/HomeActionGrid.tsx'
       - 'scripts/audits/hvr-5-home-simplification.mjs'
       - 'scripts/scrapers/__tests__/hvr-5-home-simplification.test.ts'
+      - 'scripts/scrapers/__tests__/home-proof-ux.test.ts'
       - '.github/workflows/hvr-5-home-simplification.yml'
       - 'docs/HVR_5_HOMEPAGE_SIMPLIFICATION.md'
   workflow_dispatch:
@@ -32,6 +33,7 @@ jobs:
           set -euo pipefail
           npx tsx --test \
             scripts/scrapers/__tests__/hvr-5-home-simplification.test.ts \
+            scripts/scrapers/__tests__/home-proof-ux.test.ts \
             scripts/scrapers/__tests__/hvr-4-neighborhood-action.test.ts \
             scripts/scrapers/__tests__/hvr-3-home-listings.test.ts \
             scripts/scrapers/__tests__/hvr-2-city-direct-nav.test.ts \
