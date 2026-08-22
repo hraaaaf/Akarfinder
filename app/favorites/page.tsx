@@ -13,7 +13,9 @@ export default function FavoritesPage() {
       <Container>
         <FavoritesPageShell />
       </Container>
-      <SiteFooter />
+      <div className="hidden sm:block" data-favorites-secondary-footer>
+        <SiteFooter />
+      </div>
     </main>
   );
 }
