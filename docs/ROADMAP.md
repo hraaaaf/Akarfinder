@@ -50,15 +50,15 @@ Réconcilier la homepage `/` avec la référence visuelle validée et les meille
 
 ### Progression stricte
 
-**3/6 lots CLOSED = 50,0 %.**
+**4/6 lots CLOSED = 66,7 %.**
 
 | Lot | Scope | État canonique | Preuve / Next |
 |---|---|---|---|
 | HVR-1 | Header + HERO + Search + Intelligence | ✅ CLOSED | PR #850 MERGED ; merge `d6ef5fe970c3e9c71586a2686b0190a800c0e7f1` ; run `32563274184` SUCCESS ; score 9,0/10 ; human gate APPROVED |
 | HVR-2 | Explorer le Maroc — villes en accès direct | ✅ CLOSED | PR #853 MERGED ; merge `a44ed88db1cc6c0b556fa7af9cda6f43fc1faf30` ; run `32568589072` SUCCESS ; 4/4 captures ; score 9,2/10 ; human gate APPROVED |
 | HVR-3 | Biens à découvrir — vraies annonces | ✅ CLOSED | PR #855 MERGED ; merge `414a50cc0d8753e4f7b37f5953783a574f164f71` ; run `32578052976` SUCCESS ; 4/4 captures ; score 9,1/10 ; human gate APPROVED |
-| HVR-4 | Intelligence actionnable | 🟡 ACTIVE — PR #859 | remplacer la grosse section passive par `Comprendre le quartier avant de visiter` ; cartes quartier directement cliquables |
-| HVR-5 | Homepage complète + responsive polish | ⏸️ À VENIR | simplification type Rightmove, CTA acheteur/vendeur, Pros, bénéfices, densité, 390/430/768/1280 |
+| HVR-4 | Intelligence quartier actionnable | ✅ CLOSED | PR #859 MERGED ; merge `993f3bc6d7107d3b9d08ce7efea1f1267c4e87cd` ; run `32579508071` SUCCESS ; 4/4 captures ; score 9,3/10 ; human gate APPROVED |
+| HVR-5 | Homepage complète + responsive polish | 🟡 ACTIVE | simplification type Rightmove : retirer les blocs explicatifs/redondants, garder des actions utiles, CTA acheteur/vendeur/Pros, densité, responsive |
 | HVR-6 | Benchmark final références | ⏸️ À VENIR | re-check frais Zillow/Redfin/Realtor.com/Rightmove + matrice fonctionnelle/visuelle + corrections + score ≥ 9/10 |
 
 ### BEFORE canonique
@@ -95,20 +95,30 @@ P11 Product Experience :
 - score visuel 9,1/10 ; human gate APPROVED 2026-08-22 ;
 - runtime via read-model public canonique ; aucun faux signal de récence/recommandation.
 
-### HVR-4 — Goal verrouillé
+### HVR-4 — closeout verrouillé
 
-- branche `agent/homepage-visual-reconciliation-hvr4` ;
-- PR #859 DRAFT ;
-- BEFORE = HVR-3 AFTER certifié ;
-- Goal + wireframe : `docs/HVR_4_NEIGHBORHOOD_ACTION.md` ;
-- Agdal / Maârif / Guéliz issus des données canoniques ;
-- chaque carte = lien direct ; aucun tab/état sélectionné intermédiaire ;
-- densité plafonnée à 2 repères + 3 tags + 1 signal prix ;
-- suppression carte stylisée massive, étoiles futures et wording passif.
+- PR #859 MERGED ; merge `993f3bc6d7107d3b9d08ce7efea1f1267c4e87cd` ;
+- HEAD certifié `cd5385984712b2aaabdf07d9ff4ab760fe44959c` ;
+- run `32579508071` SUCCESS ; artifact `9477494308` ;
+- digest `sha256:f3f1c32d3d7a7a4d9f9f5558ec7594938fc21a894d988ebafb0e2bff4d42c1f9` ;
+- contrats + TypeScript + build + Chromium + responsive proof verts ;
+- 3/3 destinations quartier ; 4/4 captures ; findingCount 0 ; 0 overflow ; 0 console error ;
+- score visuel 9,3/10 ; human gate APPROVED 2026-08-22 ;
+- grosse section passive remplacée par `Comprendre le quartier avant de visiter`, sans nouvelle donnée.
+
+### HVR-5 — Goal verrouillé
+
+- simplifier la deuxième moitié de la homepage selon le principe Rightmove : peu de blocs, chacun actionnable ;
+- supprimer ou condenser `Votre recherche, simplement` si le bloc ne produit aucune action directe ;
+- remplacer le gros bloc MRE à valeurs d’exemple par des cartes/services courts et truth-safe ;
+- conserver des accès clairs vers recherche, accompagnement projet, publication/vendeur et professionnels ;
+- aucune valeur exemple présentée comme donnée utilisateur/réelle ;
+- responsive 390 / 430 / 768 / 1280, 0 overflow ;
+- HVR-6 reste le seul benchmark final frais contre les références externes.
 
 ### Next exact
 
-**HVR-4** : exact-head CI → AFTER 390/430/768/1280 → comparaison BEFORE/wireframe/AFTER → score → human gate → merge/closeout.
+**HVR-5** : BEFORE HVR-4 → Goal + wireframe → implémentation simplification globale → contrats/TypeScript/build → AFTER 390/430/768/1280 → comparaison → score → human gate → merge/closeout.
 
 ---
 
@@ -186,7 +196,7 @@ Règle : **seules les PR explicitement marquées ACTIVE ci-dessous sont sur le c
 
 ### ACTIVE
 
-- **#859 — HVR-4** : ACTIVE / DRAFT, chantier #849.
+- HVR-5 : ACTIVE, PR à ouvrir sur current-main.
 
 ### REVALIDATE AVANT REPRISE — UI / produit
 
@@ -312,11 +322,11 @@ Une CI queued/pending/in_progress n’arrête pas le travail indépendant. Pas d
 
 ## 7. Prochaine action exacte
 
-1. Laisser HVR-4 terminer son exact-head CI dédié.
-2. Produire AFTER 390/430/768/1280.
-3. Comparer HVR-3 BEFORE → wireframe HVR-4 → AFTER.
-4. Score HVR-4 + human visual gate.
-5. Merge/closeout HVR-4 puis HVR-5.
-6. Réserver HVR-6 au benchmark final frais contre les sites de référence.
+1. Créer HVR-5 sur current-main après closeout HVR-4.
+2. Verrouiller BEFORE HVR-4 + Goal + wireframe HVR-5.
+3. Simplifier les blocs explicatifs/redondants et conserver seulement les actions utiles.
+4. Tester contrats + TypeScript/build.
+5. Produire AFTER 390/430/768/1280 et score HVR-5.
+6. Human gate, merge/closeout, puis HVR-6 benchmark final frais.
 
 Les PR `REVALIDATE/RECONCILIATION/BLOCKED` ne deviennent prioritaires qu’après décision explicite inscrite dans cette roadmap.
