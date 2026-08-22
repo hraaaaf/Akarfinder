@@ -2,68 +2,58 @@
 
 **Issue : #854**  
 **Lot : M3**  
-**Statut : implementation candidate — certification requise avant closeout**
+**Statut : ✅ CLOSED — certification finale quality-hardened**
 
 ## Goal
 Industrialiser les sources prioritaires par configuration/adaptateur sans réinterpréter les droits de réutilisation et sans introduire de fetch direct pendant la certification M3.
 
-## Succès
-- 10 domaines prioritaires du contrat #854 couverts par une config déterministe ;
-- seulement les providers natifs M2 `openserp` et `serper_mass_harvest` ;
-- budget de lecture borné à 40 candidats par domaine ;
-- canary bornée à 10 listings valides par domaine ;
-- budget d'erreurs + circuit breaker explicites ;
-- rendement `candidate canonical URL -> valid listing` mesuré séparément par domaine ;
-- aucune activation publique, aucun relabel provider, aucun fetch direct, aucun write DB ;
-- compatibilité avec la Source Factory policy-first historique et le classifieur M1 prouvée par tests.
+## Succès atteint
+- 10 domaines prioritaires mesurés ;
+- providers natifs M2 uniquement : `openserp` / `serper_mass_harvest` ;
+- 40 candidates max/domain ; 10 canary listings max/domain ;
+- M1 + garde structurel spécifique à la source ;
+- rendement candidate -> vraie fiche mesuré par domaine ;
+- 0 write DB, 0 source-network request, 0 direct fetch, 0 activation publique, 0 provider relabel, 0 policy mutation ;
+- 0 breaker ouvert.
 
-## Architecture
+## Preuve finale
+- PR #863 ;
+- HEAD certifié `1822be22e94d94d7cb37219b7405ed58a729db91` ;
+- run `32594176513` SUCCESS ;
+- artifact `9481117150` ;
+- digest `sha256:8a8c8d9947e35940571e8a359cb0bbfa7bb9aa87f3d7ec18a76167cecd74b388` ;
+- merge `fe6740ff40872e57789f67d12b02a5b43ea412d6`.
 
-`discovery_candidates (read-only) -> M3 domain config -> M1 universal promotion -> per-domain yield/canary -> M2 external-index candidate`
+## Pourquoi un second gate était nécessaire
+La première passe M3, bien que techniquement verte, classait certaines pages catalogue comme détails. Exemples détectés avant closeout : pages `2p.ma` de catégorie, catalogues `housing.place`, landing pages `portail-immobilier.ma` et route technique `sakane.ma/annonce/mark/spam/...`.
 
-M3 ne remplace pas `source-factory.ts`, `source-factory-decision.ts` ni `source-factory-policy-matrix.ts`. Ces briques restent la couche de gouvernance et de preuve. Le nouvel adaptateur M3 ne transforme jamais une décision `HOLD`/`PERMISSION_REQUIRED` en permission et ne rend rien publiquement activable.
+M3 a donc été durci : un candidat n'est valide que s'il passe à la fois le classifieur M1 et une structure URL source-specific prouvée par le réservoir existant.
 
-## Cohorte initiale
-- marocannonces.com
-- yakeey.com
-- domio.ma
-- 2p.ma
-- sakane.ma
-- 1000-annonces.com
-- housing.place
-- expat.com
-- milkiya.ma
-- portail-immobilier.ma
+## Résultat final
+- canonical candidates : 350 ;
+- fiches détail valides : 77 ;
+- rendement agrégé : 22 % ;
+- sources à rendement positif : 7/10.
 
-## Budgets initiaux de certification
-Par domaine :
-- `candidateReadBudget = 40` ;
-- `validListingCanaryBudget = 10` ;
-- `maxErrorCount = 2` ;
-- `maxErrorRate = 0.20` ;
-- `sourceNetworkRequestBudget = 0` ;
-- `directFetchAllowed = false` ;
-- `publicActivationAllowed = false`.
-
-Ces valeurs bornent le benchmark M3 ; elles ne constituent pas encore des budgets d'ingestion M4.
-
-## Circuit breaker
-Le breaker ouvre si le nombre d'erreurs dépasse `maxErrorCount` ou si le taux d'erreur dépasse `maxErrorRate`. La certification échoue si un breaker est ouvert.
-
-## Preuve attendue
-Workflow `MASS-INDEX M3 Source Factory Certification` :
-1. contrats M3 ;
-2. régression Source Factory / decision / policy matrix ;
-3. régression M1 + contrat provider M2 ;
-4. TypeScript ;
-5. requêtes Supabase bornées read-only sur les 10 domaines ;
-6. artifact `m3-source-factory-canary-report.json` avec rendement par domaine ;
-7. assertions : 10/10 domaines mesurés, 0 write DB, 0 source-network request, 0 direct fetch, 0 activation publique, 0 relabel, 0 mutation policy, 0 breaker ouvert.
+| Source | Candidates | Valid listings | Yield |
+|---|---:|---:|---:|
+| milkiya.ma | 36 | 31 | 86,1 % |
+| sakane.ma | 39 | 16 | 41,0 % |
+| 1000-annonces.com | 32 | 10 | 31,3 % |
+| expat.com | 32 | 10 | 31,3 % |
+| marocannonces.com | 38 | 6 | 15,8 % |
+| housing.place | 38 | 3 | 7,9 % |
+| domio.ma | 32 | 1 | 3,1 % |
+| yakeey.com | 37 | 0 | 0 % |
+| 2p.ma | 38 | 0 | 0 % |
+| portail-immobilier.ma | 28 | 0 | 0 % |
 
 ## Gate M4
-M4 ne pourra sélectionner que les domaines dont M3 fournit un échantillon mesuré et un rendement réellement positif. Un domaine sans échantillon ou à rendement nul reste hors ingestion nationale jusqu'à nouvelle preuve.
+Wave 1 M4 : `marocannonces.com`, `domio.ma`, `sakane.ma`, `1000-annonces.com`, `housing.place`, `expat.com`, `milkiya.ma`.
 
-## Interdits
+`yakeey.com`, `2p.ma` et `portail-immobilier.ma` restent hors wave 1, sans exclusion définitive. Le réservoir complet contient notamment des URLs Yakeey structurellement detail-like ; une requalification ciblée ultérieure peut les rendre admissibles.
+
+## Invariants permanents
 - aucun contournement de login/CAPTCHA/anti-bot/paywall ;
 - aucun spoofing ou mécanisme furtif ;
 - aucun contenu riche réutilisé implicitement ;

@@ -1,9 +1,7 @@
 # AkarFinder — DATA MASS-INDEX
 
 **Issue canonique : #854**  
-**Statut : M0→M2 RECONCILIÉS — M2 CERTIFIÉ, M3 NEXT**  
-**Branche : `data/mass-index-m2-current-main`**  
-**Base de réconciliation : `main@71dfced305b6a7d7fc14241927537e996950bdb4`**
+**Statut : M0→M3 CLOSED — M4 ACTIVE**
 
 ## Goal
 Construire l'index le plus large possible de l'immobilier marocain dans AkarFinder, en séparant découverte, index externe minimal, enrichissement factuel et contenu partenaire complet.
@@ -14,55 +12,66 @@ Construire l'index le plus large possible de l'immobilier marocain dans AkarFind
 Aucun contournement de login, CAPTCHA, paywall, anti-bot ou autre contrôle technique. Aucun texte long/photo source copié par défaut.
 
 ## Pipeline
-`DISCOVERY -> canonicalization -> LISTING classification -> adapter/fetch admissible -> factual extraction -> normalization -> geo resolution -> dedup/cluster -> freshness -> external index -> Search`
+`DISCOVERY -> canonicalization -> LISTING classification -> source-specific detail guard -> M2 seed projection -> Thin Index -> dedup/freshness -> Search (M6)`
 
 ## Lots
-- M0 — current-main audit + baseline fraîche : ✅ CLOSED sur preuve read-only `docs/MASS_INDEX_M0_AUDIT.md`.
-- M1 — Universal candidate promotion : ✅ RECONCILIÉ ; implémentation + contrats repris bit-for-bit du HEAD MASS certifié et couverts par la certification M2.
-- M2 — External Index model : ✅ CERTIFIÉ sur le HEAD de réconciliation ; workflow `MASS-INDEX M2 Final Certification` vert avant closeout final.
-- M3 — Source Factory adapters : 🟡 NEXT — revalider la Source Factory déjà présente sur current-main contre le modèle M2 natif, puis adapter uniquement les écarts prouvés.
-- M4 — National MASS ingest : ⏳ PENDING.
+- M0 — current-main audit + baseline fraîche : ✅ CLOSED.
+- M1 — Universal candidate promotion : ✅ CLOSED.
+- M2 — External Index model : ✅ CLOSED.
+- M3 — Source Factory adapters : ✅ CLOSED ; PR #863 ; merge `fe6740ff40872e57789f67d12b02a5b43ea412d6` ; run `32594176513` SUCCESS ; artifact `9481117150`.
+- M4 — National MASS ingest : 🟡 ACTIVE.
 - M5 — Dedup + freshness hardening : ⏳ PENDING.
 - M6 — Search activation + SEO : ⏳ PENDING.
 - M7 — Conversion partenaires : ⏳ PENDING.
 
-## Baseline M0 vérifiée le 2026-08-22
-Source : `docs/MASS_INDEX_M0_AUDIT.md`, requêtes Supabase read-only.
+**Progression : 4/8 = 50 %.**
 
+## Baseline M0
 - `discovery_candidates` : 272 437 rows ;
 - canonical URLs distinctes : 135 754 ;
 - `thin_index_search_documents` : 56 861 ;
 - `LISTING + real_estate_likely` : 15 546 ;
-- `property_listings` : 5 700 ;
-- delta vs MASS-6 : +63 328 discovery rows (+30,28 %) et +31 170 canonical URLs (+29,80 %).
+- `property_listings` : 5 700.
 
-Ces valeurs décrivent des lignes/URL representations selon le champ concerné, pas un nombre de propriétés uniques.
+Ces valeurs sont des lignes/URL representations selon le champ, pas un nombre de propriétés uniques.
 
-## M2 — invariants
-La certification M2 impose notamment :
-- plan borné read-only ;
-- 0 write DB pendant le plan ;
-- 0 requête réseau source ;
-- aucun full reservoir scan ;
-- 10 canary rows maximum ;
-- aucune mutation/relabel des seeds existants ;
-- nouveaux providers d'insert limités à `openserp` et `serper_mass_harvest` ;
-- rollback documenté dans `docs/MASS_INDEX_M2_ROLLBACK.md`.
+## M3 — certification finale
+La première certification générique a montré des faux positifs de pages catégorie. M3 a donc ajouté un second gate source-specific après M1.
 
-## Source Factory déjà présente sur current-main
-Le repo possède déjà les briques Source Factory historiques (`source-factory.ts`, cohortes high/mid/long-tail, policy matrix, decisions et final certification) ainsi que leurs tests. M3 n'est donc pas une reconstruction : c'est une revalidation current-main + M2, suivie uniquement des adaptations nécessaires.
+Résultat final :
+- 10 domaines mesurés ;
+- 350 canonical candidates ;
+- 77 fiches détail valides ; rendement 22 % ;
+- 7 sources positives : `marocannonces.com`, `domio.ma`, `sakane.ma`, `1000-annonces.com`, `housing.place`, `expat.com`, `milkiya.ma` ;
+- `yakeey.com`, `2p.ma`, `portail-immobilier.ma` restent hors wave M4 initiale faute de rendement positif certifié, sans exclusion définitive ;
+- 0 write DB ; 0 source-network request ; 0 activation publique ; 0 provider relabel ; 0 policy mutation ; 0 breaker ouvert.
 
-## KPI
-- unique listing URLs indexed ;
-- unique property clusters searchable ;
-- couverture villes/quartiers ;
-- fraîcheur <= 7/30 jours ;
-- rendement par source ;
-- taux doublons ;
-- taux prix/surface/localisation.
+## M4 — contrat
+Goal : matérialiser nationalement les fiches validées des 7 sources positives via le writer M2 existant.
+
+Invariants :
+- manifest M1 + garde M3 ;
+- `INSERT_NATIVE` uniquement sur canonical URLs net-new ;
+- seeds existants préservés ;
+- providers uniquement `openserp` / `serper_mass_harvest` ;
+- canary borné et rollback par IDs ;
+- batches bornés ;
+- Search reste OFF jusqu’à M6 ;
+- before/after DB obligatoire.
+
+## Potentiel structurel wave 1
+- marocannonces.com : 473 URL detail-like ;
+- sakane.ma : 193 ;
+- milkiya.ma : 131 ;
+- expat.com : 104 ;
+- 1000-annonces.com : 76 ;
+- housing.place : 22 ;
+- domio.ma : 5.
+
+Ce sont des plafonds structurels, pas encore des listings M4 validés ni des propriétés uniques.
 
 ## Next exact
-M3 : auditer la Source Factory existante sur le HEAD post-M2 → vérifier compatibilité avec les providers natifs M2 et les invariants de policy/permissions → tests ciblés → correction minimale si nécessaire → certification M3.
+M4 dry-run national -> write-plan net-new/preserve -> canary -> Thin Index/Search verification -> batches -> before/after DB -> closeout M4.
 
 ## Interdits permanents
 - aucun déploiement Vercel sans autorisation explicite ;

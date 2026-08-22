@@ -4,41 +4,56 @@
 
 `docs/ROADMAP.md` reste l’unique vérité canonique globale.
 
-## Chantier courant — Homepage Visual Reconciliation
+## Chantier courant — DATA MASS-INDEX
 
-Issue canonique : `#849` — **HVR-1→HVR-6**.
+Issue : `#854`.
 
-Progression stricte : **5/6 lots CLOSED = 83,3 %**.
+Progression stricte : **4/8 lots CLOSED = 50 %**.
 
 ### CLOSED
+- M0 : baseline current-main/Supabase certifiée dans `docs/MASS_INDEX_M0_AUDIT.md`.
+- M1 : Universal candidate promotion ; run `32577296107` SUCCESS ; 33 872 candidates acceptées ; 0 write.
+- M2 : External Index natif OpenSERP/Serper MASS ; run `32580352867` SUCCESS ; canary réel 10/10 ; Search inchangé.
+- M3 : PR #863 ; merge `fe6740ff40872e57789f67d12b02a5b43ea412d6` ; run final qualité `32594176513` SUCCESS ; artifact `9481117150` ; digest `sha256:8a8c8d9947e35940571e8a359cb0bbfa7bb9aa87f3d7ec18a76167cecd74b388`.
 
-- HVR-1 : PR #850 ; merge `d6ef5fe970c3e9c71586a2686b0190a800c0e7f1` ; run `32563274184` SUCCESS ; score 9,0/10.
-- HVR-2 : PR #853 ; merge `a44ed88db1cc6c0b556fa7af9cda6f43fc1faf30` ; run `32568589072` SUCCESS ; score 9,2/10.
-- HVR-3 : PR #855 ; merge `414a50cc0d8753e4f7b37f5953783a574f164f71` ; run `32578052976` SUCCESS ; score 9,1/10.
-- HVR-4 : PR #859 ; merge `993f3bc6d7107d3b9d08ce7efea1f1267c4e87cd` ; run `32579508071` SUCCESS ; score 9,3/10.
-- HVR-5 : PR #860 ; merge `a85f2d04b34fe3d9383e8e26d17a2c756a60041d` ; HEAD certifié `6c1d95bfe49d93aa514114dcd03267f2dbeccba5` ; run `32583217515` SUCCESS ; artifact `9478356032` ; digest `sha256:af95257d826691a2a2028eca600c49c250f65493a2abd6b4322a8dcca163bad3` ; score 9,3/10 ; human gate APPROVED.
+### M3 — résultat final
+- 10 domaines mesurés ;
+- 350 canonical candidates ;
+- 77 fiches détail valides ; rendement agrégé 22 % ;
+- 7 sources positives : `marocannonces.com`, `domio.ma`, `sakane.ma`, `1000-annonces.com`, `housing.place`, `expat.com`, `milkiya.ma` ;
+- 3 sources hors wave 1 : `yakeey.com`, `2p.ma`, `portail-immobilier.ma` ;
+- 0 write DB, 0 source fetch, 0 activation Search, 0 provider relabel, 0 mutation policy.
 
-### HVR-6 — ACTIVE
+## M4 — ACTIVE
 
-Goal : benchmark final frais de la homepage current-main contre Rightmove / Zillow / Redfin / Realtor.com, puis corrections uniquement si elles améliorent réellement clarté, actionnabilité, densité ou confiance sans inventer de données.
+Goal : matérialiser nationalement les fiches validées des 7 sources positives via le writer M2 existant, en net-new seulement, avec canary/rollback et Search toujours OFF.
 
-Succès :
-- quatre références re-checkées à frais ;
-- matrice comparative documentée ;
-- BEFORE = HVR-5 certifié ;
-- corrections visuelles précédées d’une référence/mockup ;
-- AFTER 390/430/768/1280 ;
-- exact-head final ;
-- score final ≥ 9/10 justifié ;
-- human gate final avant merge/closeout.
+Succès : manifest national exact -> write-plan -> canary -> batches bornés -> before/after DB -> aucune activation publique accidentelle.
+
+### Potentiel structurel observé avant M4
+- marocannonces.com : 473 detail-like ; 403 vues <=30j ;
+- sakane.ma : 193 ; 97 <=30j ;
+- milkiya.ma : 131 ; 129 <=30j ;
+- expat.com : 104 ; 100 <=30j ;
+- 1000-annonces.com : 76 ; 76 <=30j ;
+- housing.place : 22 ; 22 <=30j ;
+- domio.ma : 5 ; 1 <=30j.
+
+Ces nombres sont des plafonds structurels d’URLs, pas encore des listings M4 validés ni des propriétés uniques.
+
+## Chantier suspendu
+Homepage Visual Reconciliation #849 : HVR-1→HVR-5 CLOSED, HVR-6 SUSPENDED ; progression conservée 5/6 = 83,3 %.
 
 ## Next exact
-
-Fresh benchmark → matrice → corrections justifiées → exact-head → AFTER → score final → human gate → merge/closeout issue #849.
+1. construire le manifest M4 national read-only M1 + garde M3 sur les 7 sources ;
+2. calculer `INSERT_NATIVE` / `PRESERVE_EXISTING` ;
+3. canary borné ;
+4. vérifier Thin Index + Search inchangé ;
+5. batches M4 + accounting before/after ;
+6. closeout M4 puis M5.
 
 ## Invariants
-
-- aucune donnée, métrique ou recommandation inventée ;
-- benchmark externe final uniquement HVR-6 ;
-- CI en cours n’interrompt pas le travail indépendant ;
-- aucun déploiement Vercel sans autorisation explicite.
+- aucun Vercel sans autorisation explicite ;
+- aucun bypass technique ;
+- aucune métrique propriété unique avant dédup ;
+- provenance réelle et rollback obligatoires.
