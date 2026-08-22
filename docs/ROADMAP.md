@@ -50,14 +50,14 @@ Réconcilier la homepage `/` avec la référence visuelle validée et les meille
 
 ### Progression stricte
 
-**2/6 lots CLOSED = 33,3 %.**
+**3/6 lots CLOSED = 50,0 %.**
 
 | Lot | Scope | État canonique | Preuve / Next |
 |---|---|---|---|
 | HVR-1 | Header + HERO + Search + Intelligence | ✅ CLOSED | PR #850 MERGED ; merge `d6ef5fe970c3e9c71586a2686b0190a800c0e7f1` ; run `32563274184` SUCCESS ; score 9,0/10 ; human gate APPROVED |
 | HVR-2 | Explorer le Maroc — villes en accès direct | ✅ CLOSED | PR #853 MERGED ; merge `a44ed88db1cc6c0b556fa7af9cda6f43fc1faf30` ; run `32568589072` SUCCESS ; 4/4 captures ; score 9,2/10 ; human gate APPROVED |
-| HVR-3 | Biens à découvrir — vraies annonces | 🟡 ACTIVE — PR #855 | vrais biens via moteur public ; max 4 cartes ; wording truth-safe ; images autorisées/fallback |
-| HVR-4 | Intelligence actionnable | ⏸️ À VENIR | reconstruire la grosse section quartier en mini-outil actionnable ; supprimer les blocs passifs |
+| HVR-3 | Biens à découvrir — vraies annonces | ✅ CLOSED | PR #855 MERGED ; merge `414a50cc0d8753e4f7b37f5953783a574f164f71` ; run `32578052976` SUCCESS ; 4/4 captures ; score 9,1/10 ; human gate APPROVED |
+| HVR-4 | Intelligence actionnable | 🟡 ACTIVE — PR #859 | remplacer la grosse section passive par `Comprendre le quartier avant de visiter` ; cartes quartier directement cliquables |
 | HVR-5 | Homepage complète + responsive polish | ⏸️ À VENIR | simplification type Rightmove, CTA acheteur/vendeur, Pros, bénéfices, densité, 390/430/768/1280 |
 | HVR-6 | Benchmark final références | ⏸️ À VENIR | re-check frais Zillow/Redfin/Realtor.com/Rightmove + matrice fonctionnelle/visuelle + corrections + score ≥ 9/10 |
 
@@ -71,42 +71,44 @@ P11 Product Experience :
 
 ### HVR-1 — closeout verrouillé
 
-- PR #850 MERGED ;
-- merge `d6ef5fe970c3e9c71586a2686b0190a800c0e7f1` ;
+- PR #850 MERGED ; merge `d6ef5fe970c3e9c71586a2686b0190a800c0e7f1` ;
 - runtime HEAD certifié `49877cf7924e3e757cc9f52902050b9c7572157f` ;
-- HVR-1 Homepage Visual Proof `32563274184` SUCCESS ;
-- artifact `9473438871` ;
-- digest `sha256:75b23d0b5848830bc922c13a473ef9857bee422a2f95a409765e6a238b0929cc` ;
+- run `32563274184` SUCCESS ; artifact `9473438871` ;
 - 4/4 captures ; findingCount 0 ; 0 overflow ; 0 console error ;
-- score visuel 9,0/10 ; human gate APPROVED 2026-08-22 ;
-- aucun backend/DB/ranking/source/Vercel.
+- score visuel 9,0/10 ; human gate APPROVED 2026-08-22.
 
 ### HVR-2 — closeout verrouillé
 
-- PR #853 MERGED ;
-- merge `a44ed88db1cc6c0b556fa7af9cda6f43fc1faf30` ;
+- PR #853 MERGED ; merge `a44ed88db1cc6c0b556fa7af9cda6f43fc1faf30` ;
 - HEAD certifié `3485a95fd27b8bb8c3c1b1d062373686d0c37e0d` ;
-- HVR-2 Direct City Navigation Proof `32568589072` SUCCESS ;
-- artifact `9474791842` ;
-- digest `sha256:8b7ee6df252175209bdc40a72cb729b46bdbcd3054a07e944102b9625c14fab7` ;
-- 6/6 destinations vérifiées ; navigation Casablanca réellement observée ;
-- 4/4 captures ; 0 finding ; 0 overflow ; 0 console error ;
-- score visuel 9,2/10 ; human gate APPROVED 2026-08-22 ;
-- aucun backend/DB/ranking/source/Vercel.
+- run `32568589072` SUCCESS ; artifact `9474791842` ;
+- 6/6 destinations villes ; 4/4 captures ; 0 finding ; 0 overflow ; 0 console error ;
+- score visuel 9,2/10 ; human gate APPROVED 2026-08-22.
 
-### HVR-3 — Goal verrouillé
+### HVR-3 — closeout verrouillé
 
-- branche `agent/homepage-visual-reconciliation-hvr3` ;
-- PR #855 DRAFT ;
-- wireframe `docs/HVR_3_DISCOVER_LISTINGS.md` ;
-- baseline = HVR-2 AFTER ;
-- wording `Biens à découvrir`, jamais `Biens récents` ;
-- données runtime via moteur public existant, aucun mock ;
-- max 4 cartes ; images seulement selon politique existante, fallback propre sinon.
+- PR #855 MERGED ; merge `414a50cc0d8753e4f7b37f5953783a574f164f71` ;
+- HEAD certifié `3549d5258b900b5c9cd6cb1b0b09c48c99a06bb5` ;
+- run `32578052976` SUCCESS ; artifact `9477075713` ;
+- digest `sha256:54f83da468ee468078de32c3c86177c5fec4e56a8d40e284cadaf572ca1a8846` ;
+- contrats + TypeScript + build + responsive proof verts ; 4/4 captures ;
+- score visuel 9,1/10 ; human gate APPROVED 2026-08-22 ;
+- runtime via read-model public canonique ; aucun faux signal de récence/recommandation.
+
+### HVR-4 — Goal verrouillé
+
+- branche `agent/homepage-visual-reconciliation-hvr4` ;
+- PR #859 DRAFT ;
+- BEFORE = HVR-3 AFTER certifié ;
+- Goal + wireframe : `docs/HVR_4_NEIGHBORHOOD_ACTION.md` ;
+- Agdal / Maârif / Guéliz issus des données canoniques ;
+- chaque carte = lien direct ; aucun tab/état sélectionné intermédiaire ;
+- densité plafonnée à 2 repères + 3 tags + 1 signal prix ;
+- suppression carte stylisée massive, étoiles futures et wording passif.
 
 ### Next exact
 
-**HVR-3** : implémentation → source contracts → TypeScript/build → audit Playwright 390/430/768/1280 → AFTER → inspection → score → human gate → merge/closeout.
+**HVR-4** : exact-head CI → AFTER 390/430/768/1280 → comparaison BEFORE/wireframe/AFTER → score → human gate → merge/closeout.
 
 ---
 
@@ -184,7 +186,7 @@ Règle : **seules les PR explicitement marquées ACTIVE ci-dessous sont sur le c
 
 ### ACTIVE
 
-- **#855 — HVR-3** : ACTIVE / DRAFT, chantier #849.
+- **#859 — HVR-4** : ACTIVE / DRAFT, chantier #849.
 
 ### REVALIDATE AVANT REPRISE — UI / produit
 
@@ -310,11 +312,11 @@ Une CI queued/pending/in_progress n’arrête pas le travail indépendant. Pas d
 
 ## 7. Prochaine action exacte
 
-1. Implémenter HVR-3 sur PR #855 à partir du wireframe verrouillé.
-2. Tester vraies données, politique image, destinations, TypeScript/build.
-3. Produire AFTER 390/430/768/1280 et comparer au BEFORE HVR-2.
-4. Score HVR-3 + human visual gate.
-5. Merge/closeout HVR-3 puis HVR-4.
+1. Laisser HVR-4 terminer son exact-head CI dédié.
+2. Produire AFTER 390/430/768/1280.
+3. Comparer HVR-3 BEFORE → wireframe HVR-4 → AFTER.
+4. Score HVR-4 + human visual gate.
+5. Merge/closeout HVR-4 puis HVR-5.
 6. Réserver HVR-6 au benchmark final frais contre les sites de référence.
 
 Les PR `REVALIDATE/RECONCILIATION/BLOCKED` ne deviennent prioritaires qu’après décision explicite inscrite dans cette roadmap.

@@ -1,0 +1,59 @@
+name: HVR-4 Neighborhood Action Proof
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'components/landing/SignatureMapSection.tsx'
+      - 'scripts/audits/hvr-4-neighborhood-action.mjs'
+      - 'scripts/scrapers/__tests__/hvr-4-neighborhood-action.test.ts'
+      - '.github/workflows/hvr-4-neighborhood-action.yml'
+      - 'docs/HVR_4_NEIGHBORHOOD_ACTION.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  hvr-4-proof:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: HVR-4 source contracts
+        run: npx tsx --test scripts/scrapers/__tests__/hvr-4-neighborhood-action.test.ts scripts/scrapers/__tests__/hvr-3-home-listings.test.ts scripts/scrapers/__tests__/hvr-2-city-direct-nav.test.ts scripts/scrapers/__tests__/hvr-1-homepage.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Start production server
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run start -- -p 3219 > /tmp/hvr-4.log 2>&1 &
+          for attempt in {1..60}; do
+            if curl -fsS http://127.0.0.1:3219/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/hvr-4.log
+          exit 1
+      - name: HVR-4 responsive proof
+        env:
+          BASE_URL: http://127.0.0.1:3219
+          AUDIT_OUTPUT_DIR: artifacts/hvr-4-neighborhood-action
+        run: node scripts/audits/hvr-4-neighborhood-action.mjs
+      - name: Upload HVR-4 proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hvr-4-neighborhood-action-${{ github.run_id }}
+          path: artifacts/hvr-4-neighborhood-action
+          if-no-files-found: error
+          retention-days: 14
