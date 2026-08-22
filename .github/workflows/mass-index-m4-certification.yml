@@ -1,0 +1,99 @@
+name: MASS-INDEX M4 National Ingest Certification
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "scripts/data-mass/national-mass-m4-plan.ts"
+      - "scripts/data-mass/national-mass-m4-plan-live.ts"
+      - "scripts/data-mass/__tests__/national-mass-m4-plan.test.ts"
+      - "scripts/data-mass/__tests__/national-mass-m4-live-contract.test.ts"
+      - "scripts/data-mass/__tests__/external-index-seed-safety.test.ts"
+      - "scripts/data-mass/source-factory-m3-adapter.ts"
+      - "scripts/data-mass/universal-candidate-promotion.ts"
+      - "scripts/data-mass/external-index-seed.ts"
+      - "scripts/data-mass/external-index-seed-write-plan.ts"
+      - ".github/workflows/mass-index-m4-certification.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify-m4:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Targeted M1-M4 contracts
+        run: |
+          npx tsx --test \
+            scripts/data-mass/__tests__/universal-candidate-promotion.test.ts \
+            scripts/data-mass/__tests__/source-factory-m3-adapter.test.ts \
+            scripts/data-mass/__tests__/external-index-seed.test.ts \
+            scripts/data-mass/__tests__/external-index-seed-safety.test.ts \
+            scripts/data-mass/__tests__/external-index-seed-write-plan.test.ts \
+            scripts/data-mass/__tests__/national-mass-m4-plan.test.ts \
+            scripts/data-mass/__tests__/national-mass-m4-live-contract.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Build read-only M4 national plan
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npx tsx scripts/data-mass/national-mass-m4-plan-live.ts
+
+      - name: Assert artifact contract and external-index safety
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const p = JSON.parse(fs.readFileSync('artifacts/mass-index/m4-national-ingest-plan.json','utf8'));
+          if (p.schemaVersion !== 'MASS_INDEX_M4_NATIONAL_PLAN_V1') throw new Error('schema drift');
+          if (p.mode !== 'read_only') throw new Error('mode drift');
+          if (p.cohort.domains.length !== 7) throw new Error('domain drift');
+          if (p.summary.sourceSpecificValid !== p.summary.insertNative + p.summary.preserveExisting) throw new Error('accounting drift');
+          if (!Number.isInteger(p.summary.safetyRejected) || p.summary.safetyRejected < 0) throw new Error('safety accounting drift');
+          if (!Array.isArray(p.inserts) || p.inserts.length !== p.summary.insertNative) throw new Error('insert payload drift');
+          if (!Array.isArray(p.canary) || p.canary.length < 1 || p.canary.length > 10) throw new Error('canary drift');
+          for (const k of ['databaseWrites','sourceNetworkRequests','directFetches','existingSeedsMutated','providerRelabels','publicActivations']) {
+            if (p.invariants[k] !== 0) throw new Error(`${k} drift`);
+          }
+          if (!p.invariants.onlyM3PositiveSources) throw new Error('source gate drift');
+
+          const phone = /(?:\+?212|0)[\s.\-]?[5-7](?:[\s.\-]?\d){8}/i;
+          const email = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i;
+          const social = /\b(?:whatsapp|instagram|insta|facebook|tiktok|telegram)\b|(^|[\s(])@[A-Za-z0-9._-]{2,}/i;
+          const secret = /\b(?:bearer|token|apikey|api_key|authorization|cookie)\b/i;
+          for (const row of p.inserts) {
+            const seed = row.seed;
+            const external = seed.metadata?.external_index ?? {};
+            const canonical = (() => { try { return decodeURIComponent(seed.canonical_url); } catch { return seed.canonical_url; } })();
+            const values = [canonical, external.title, external.snippet, external.query].filter(Boolean);
+            for (const value of values) {
+              if (phone.test(value) || email.test(value) || social.test(value) || secret.test(value)) {
+                throw new Error(`external-index safety drift: ${seed.canonical_url}`);
+              }
+            }
+            if ((external.snippet?.length ?? 0) > 320) throw new Error(`snippet too long: ${seed.canonical_url}`);
+          }
+
+          console.log(JSON.stringify({summary:p.summary, before:p.before, canary:p.canary.map(x=>({canonicalUrl:x.canonicalUrl,sourceDomain:x.sourceDomain,seedProvider:x.seedProvider}))}, null, 2));
+          NODE
+
+      - name: Upload M4 plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: mass-index-m4-national-plan
+          path: artifacts/mass-index/m4-national-ingest-plan.json
+          if-no-files-found: error
+          retention-days: 14
