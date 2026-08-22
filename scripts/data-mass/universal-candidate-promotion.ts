@@ -26,6 +26,9 @@ export interface UniversalCandidatePromotionRow {
   rawRows: number;
   firstSeenAt: string | null;
   lastSeenAt: string | null;
+  title: string | null;
+  snippet: string | null;
+  discoveryQuery: string | null;
   classification: CandidateClassification | null;
   promotionStatus: ExternalIndexPromotionStatus;
   rejectionReason: ExternalIndexRejectionReason | null;
@@ -138,6 +141,9 @@ export function buildUniversalCandidatePromotionManifest(
         rawRows: 1,
         firstSeenAt: candidate.firstSeenAt ?? null,
         lastSeenAt: candidate.lastSeenAt ?? null,
+        title: mergeText([candidate.title]),
+        snippet: mergeText([candidate.snippet]),
+        discoveryQuery: mergeText([candidate.discoveryQuery]),
         classification: null,
         promotionStatus: "REJECTED",
         rejectionReason: "INVALID_URL",
@@ -152,12 +158,15 @@ export function buildUniversalCandidatePromotionManifest(
   const canonicalRows: UniversalCandidatePromotionRow[] = [...grouped.entries()].map(([canonicalUrl, candidates]) => {
     const parsed = new URL(canonicalUrl);
     const sourceDomain = normalizeDomain(parsed.hostname);
+    const title = mergeText(candidates.map((candidate) => candidate.title));
+    const snippet = mergeText(candidates.map((candidate) => candidate.snippet));
+    const discoveryQuery = mergeText(candidates.map((candidate) => candidate.discoveryQuery));
     const merged: ReservoirCandidate = {
       sourceDomain,
       url: canonicalUrl,
-      title: mergeText(candidates.map((candidate) => candidate.title)),
-      snippet: mergeText(candidates.map((candidate) => candidate.snippet)),
-      discoveryQuery: mergeText(candidates.map((candidate) => candidate.discoveryQuery)),
+      title,
+      snippet,
+      discoveryQuery,
       contentFingerprint: null,
     };
     const classification = classifyReservoirCandidate(merged);
@@ -170,6 +179,9 @@ export function buildUniversalCandidatePromotionManifest(
       rawRows: candidates.length,
       firstSeenAt: minIso(candidates.map((candidate) => candidate.firstSeenAt)),
       lastSeenAt: maxIso(candidates.map((candidate) => candidate.lastSeenAt)),
+      title,
+      snippet,
+      discoveryQuery,
       classification,
       promotionStatus: rejected ? "REJECTED" : "EXTERNAL_INDEX_CANDIDATE",
       rejectionReason: rejected,

@@ -1,6 +1,6 @@
 -- DATA MASS-INDEX M2 — native discovery providers in the external Thin Index.
--- Structural migration only. It does not backfill discovery_candidates and does not
--- relabel legacy rows that were historically bridged as serper_search.
+-- Structural migration only. It does not backfill discovery_candidates, activate
+-- public Search, or relabel legacy rows historically bridged as serper_search.
 
 create or replace function public.odm06_display_eligibility(
   p_canonical_url text,
@@ -76,6 +76,13 @@ begin
     return new;
   end if;
 
+  if coalesce(new.metadata #>> '{external_index,promotion_version}', '') <> 'MASS_INDEX_M2_V1'
+     or coalesce(new.metadata #>> '{external_index,page_kind}', '') <> 'LIKELY_LISTING_DETAIL'
+     or coalesce(new.metadata #>> '{external_index,geography_scope}', '') <> 'MOROCCO_LIKELY' then
+    delete from public.thin_index_search_documents where seed_id = new.id;
+    return new;
+  end if;
+
   evidence_text := concat_ws(' ',
     new.metadata #>> '{external_index,title}',
     new.metadata #>> '{external_index,snippet}',
@@ -101,7 +108,9 @@ begin
     normalized_city, normalized_property_type, normalized_intent,
     normalized_price_mad, normalized_surface_m2, price_per_m2_mad,
     normalized_price_m2, normalization_status, normalization_version,
-    normalization_evidence
+    normalization_evidence,
+    vertical_classification, vertical_classification_reason, vertical_classification_version,
+    document_kind, document_kind_confidence, document_kind_reason, document_kind_version
   ) values (
     new.id,new.canonical_url,new.source_domain,new.seed_provider,new.freshness_status,
     nullif(new.metadata #>> '{external_index,title}',''),
@@ -138,7 +147,9 @@ begin
       'price',case when canonical_price is not null then 'bounded_mad_v2' end,
       'surface',case when canonical_surface is not null then 'bounded_m2_v2' end,
       'price_per_m2',case when canonical_price_m2 is not null then 'derived_from_normalized_price_surface_v2' end
-    ))
+    )),
+    'real_estate_likely','mass_index_m1_universal_candidate_promotion','mass-index-m2-v1',
+    'LISTING',null,'mass_index_m1_likely_listing_detail','mass-index-m2-v1'
   )
   on conflict (seed_id) do update set
     canonical_url=excluded.canonical_url,
@@ -166,7 +177,14 @@ begin
     normalized_price_m2=excluded.normalized_price_m2,
     normalization_status=excluded.normalization_status,
     normalization_version=excluded.normalization_version,
-    normalization_evidence=excluded.normalization_evidence;
+    normalization_evidence=excluded.normalization_evidence,
+    vertical_classification=excluded.vertical_classification,
+    vertical_classification_reason=excluded.vertical_classification_reason,
+    vertical_classification_version=excluded.vertical_classification_version,
+    document_kind=excluded.document_kind,
+    document_kind_confidence=excluded.document_kind_confidence,
+    document_kind_reason=excluded.document_kind_reason,
+    document_kind_version=excluded.document_kind_version;
 
   return new;
 end;

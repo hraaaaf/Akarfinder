@@ -2,12 +2,6 @@ import type { UniversalCandidatePromotionRow } from "./universal-candidate-promo
 
 export type NativeExternalIndexSeedProvider = "public_sitemap" | "serper_mass_harvest" | "openserp";
 
-export type ExternalIndexSeedEvidence = {
-  title?: string | null;
-  snippet?: string | null;
-  query?: string | null;
-};
-
 export type ExternalIndexSeedRow = {
   canonical_url: string;
   source_domain: string;
@@ -24,6 +18,9 @@ export type ExternalIndexSeedRow = {
       title: string | null;
       snippet: string | null;
       query: string | null;
+      city: string | null;
+      property_type: null;
+      intent: "sale" | "rent" | null;
       discovery_providers: string[];
       page_kind: string;
       geography_scope: string;
@@ -45,6 +42,12 @@ function clean(value: string | null | undefined): string | null {
   return normalized ? normalized : null;
 }
 
+function canonicalIntent(signal: string): "sale" | "rent" | null {
+  if (signal === "SALE") return "sale";
+  if (signal === "RENT") return "rent";
+  return null;
+}
+
 export function chooseNativeExternalIndexSeedProvider(providers: string[]): NativeExternalIndexSeedProvider {
   const observed = new Set(providers.map((provider) => provider.trim().toLowerCase()).filter(Boolean));
   const selected = PROVIDER_PRIORITY.find((provider) => observed.has(provider));
@@ -52,10 +55,7 @@ export function chooseNativeExternalIndexSeedProvider(providers: string[]): Nati
   return selected;
 }
 
-export function projectExternalIndexSeed(
-  row: UniversalCandidatePromotionRow,
-  evidence: ExternalIndexSeedEvidence = {},
-): ExternalIndexSeedRow {
+export function projectExternalIndexSeed(row: UniversalCandidatePromotionRow): ExternalIndexSeedRow {
   if (row.promotionStatus !== "EXTERNAL_INDEX_CANDIDATE") {
     throw new Error("MASS_INDEX_M2_ACCEPTED_CANDIDATE_REQUIRED");
   }
@@ -64,6 +64,9 @@ export function projectExternalIndexSeed(
   }
   if (!row.firstSeenAt || !row.lastSeenAt) {
     throw new Error("MASS_INDEX_M2_OBSERVATION_WINDOW_REQUIRED");
+  }
+  if (row.classification.pageKind !== "LIKELY_LISTING_DETAIL" || row.classification.geographyScope !== "MOROCCO_LIKELY" || !row.classification.likelyRealEstate) {
+    throw new Error("MASS_INDEX_M2_CLASSIFICATION_GATE_FAILED");
   }
 
   const seedProvider = chooseNativeExternalIndexSeedProvider(row.providers);
@@ -84,9 +87,12 @@ export function projectExternalIndexSeed(
     metadata: {
       external_index: {
         promotion_version: "MASS_INDEX_M2_V1",
-        title: clean(evidence.title),
-        snippet: clean(evidence.snippet),
-        query: clean(evidence.query),
+        title: clean(row.title),
+        snippet: clean(row.snippet),
+        query: clean(row.discoveryQuery),
+        city: row.classification.detectedCities[0] ?? null,
+        property_type: null,
+        intent: canonicalIntent(row.classification.transactionSignal),
         discovery_providers: [...new Set(row.providers.map((provider) => provider.trim().toLowerCase()).filter(Boolean))].sort(),
         page_kind: row.classification.pageKind,
         geography_scope: row.classification.geographyScope,

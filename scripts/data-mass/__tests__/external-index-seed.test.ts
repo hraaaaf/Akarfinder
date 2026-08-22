@@ -14,6 +14,9 @@ function acceptedRow(overrides: Partial<UniversalCandidatePromotionRow> = {}): U
     rawRows: 2,
     firstSeenAt: "2026-08-01T00:00:00Z",
     lastSeenAt: "2026-08-22T00:00:00Z",
+    title: "Appartement à vendre Casablanca",
+    snippet: "85 m² - 1 200 000 DH",
+    discoveryQuery: "appartement casablanca vente",
     classification: {
       sourceDomain: "sakane.ma",
       domainRole: "DIRECT_PORTAL",
@@ -31,16 +34,16 @@ function acceptedRow(overrides: Partial<UniversalCandidatePromotionRow> = {}): U
   };
 }
 
-test("M2 preserves OpenSERP as a native seed provider", () => {
-  const projected = projectExternalIndexSeed(acceptedRow(), {
-    title: " Appartement à vendre Casablanca ",
-    snippet: "85 m² - 1 200 000 DH",
-    query: "appartement casablanca vente",
-  });
+test("M2 preserves OpenSERP as a native seed provider and carries minimal evidence", () => {
+  const projected = projectExternalIndexSeed(acceptedRow());
 
   assert.equal(projected.seed_provider, "openserp");
   assert.deepEqual(projected.metadata.external_index.discovery_providers, ["openserp"]);
   assert.equal(projected.metadata.external_index.title, "Appartement à vendre Casablanca");
+  assert.equal(projected.metadata.external_index.city, "Casablanca");
+  assert.equal(projected.metadata.external_index.intent, "sale");
+  assert.equal(projected.metadata.external_index.page_kind, "LIKELY_LISTING_DETAIL");
+  assert.equal(projected.metadata.external_index.geography_scope, "MOROCCO_LIKELY");
   assert.equal(projected.freshness_status, "seed_only");
   assert.equal(projected.fresh_last_seen_at, null);
   assert.deepEqual(projected.fresh_channels, []);
@@ -66,7 +69,7 @@ test("M2 supports the live discovery provider vocabulary without relabeling", ()
   assert.throws(() => chooseNativeExternalIndexSeedProvider(["serper_search"]), /UNSUPPORTED_PROVIDER/);
 });
 
-test("M2 refuses rejected candidates and incomplete observation windows", () => {
+test("M2 refuses rejected, incomplete or classification-invalid candidates", () => {
   assert.throws(
     () => projectExternalIndexSeed(acceptedRow({ promotionStatus: "REJECTED", rejectionReason: "NON_LISTING_PAGE" })),
     /ACCEPTED_CANDIDATE_REQUIRED/,
@@ -74,5 +77,9 @@ test("M2 refuses rejected candidates and incomplete observation windows", () => 
   assert.throws(
     () => projectExternalIndexSeed(acceptedRow({ firstSeenAt: null })),
     /OBSERVATION_WINDOW_REQUIRED/,
+  );
+  assert.throws(
+    () => projectExternalIndexSeed(acceptedRow({ classification: { ...acceptedRow().classification!, pageKind: "LIKELY_CATEGORY_OR_SEARCH" } })),
+    /CLASSIFICATION_GATE_FAILED/,
   );
 });

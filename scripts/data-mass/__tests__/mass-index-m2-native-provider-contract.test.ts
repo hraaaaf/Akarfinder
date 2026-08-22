@@ -14,6 +14,15 @@ test("M2 migration admits native OpenSERP and Serper MASS providers into display
   assert.ok(sql.includes("new.seed_provider not in ('openserp','serper_mass_harvest')"));
 });
 
+test("M2 materialization requires the exact M1 listing and Morocco gates", async () => {
+  const sql = await readFile(migrationPath, "utf8");
+  assert.ok(sql.includes("{external_index,promotion_version}"));
+  assert.ok(sql.includes("LIKELY_LISTING_DETAIL"));
+  assert.ok(sql.includes("MOROCCO_LIKELY"));
+  assert.ok(sql.includes("'real_estate_likely','mass_index_m1_universal_candidate_promotion'"));
+  assert.ok(sql.includes("'LISTING',null,'mass_index_m1_likely_listing_detail'"));
+});
+
 test("M2 migration reads generic external_index evidence instead of forging serper provenance", async () => {
   const sql = await readFile(migrationPath, "utf8");
   assert.ok(sql.includes("{external_index,title}"));
