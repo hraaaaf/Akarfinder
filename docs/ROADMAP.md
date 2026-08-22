@@ -70,16 +70,23 @@ M4 dry-run national sur les 7 sources positives -> write-plan net-new/preserve -
 
 ---
 
-## 2. Homepage Visual Reconciliation — SUSPENDU PAR PRIORITÉ PRODUIT
+## 2. Homepage Visual Reconciliation ✅ CLOSED
 
-**Issue #849. Progression conservée : 5/6 CLOSED = 83,3 %.**
+**Issue #849. Progression finale : 6/6 CLOSED = 100 %.**
 
 - HVR-1 : PR #850 ; merge `d6ef5fe970c3e9c71586a2686b0190a800c0e7f1` ; run `32563274184` SUCCESS ; score 9,0/10 ; human gate APPROVED.
 - HVR-2 : PR #853 ; merge `a44ed88db1cc6c0b556fa7af9cda6f43fc1faf30` ; run `32568589072` SUCCESS ; score 9,2/10 ; human gate APPROVED.
 - HVR-3 : PR #855 ; merge `414a50cc0d8753e4f7b37f5953783a574f164f71` ; run `32578052976` SUCCESS ; score 9,1/10 ; human gate APPROVED.
 - HVR-4 : PR #859 ; merge `993f3bc6d7107d3b9d08ce7efea1f1267c4e87cd` ; run `32579508071` SUCCESS ; score 9,3/10 ; human gate APPROVED.
 - HVR-5 : PR #860 ; merge `a85f2d04b34fe3d9383e8e26d17a2c756a60041d` ; HEAD `6c1d95bfe49d93aa514114dcd03267f2dbeccba5` ; run `32583217515` SUCCESS ; artifact `9478356032` ; score 9,3/10 ; human gate APPROVED.
-- HVR-6 : ⏸️ SUSPENDED, pas fermé. Reprise ultérieure au benchmark final.
+- HVR-6 : PR #861 ; merge `78079f179ffbbf6285e23bf86ba18c609563f661` ; HEAD certifié `c3d9a1e4309bf37bebe6a32b41ff89afe6ccfa2f` ; run `32595444588` SUCCESS ; artifact `9481435261` ; digest `sha256:314f5e91e3cca1fb1d6c6935831ba1d48be35e67b5a17a7e1def348acd3c72ca` ; score final 9,4/10 ; human gate APPROVED.
+
+### Résultat final HVR
+`Header -> Hero/Search + Intelligence -> Explorer le Maroc -> Biens à découvrir -> Comprendre le quartier -> 4 actions -> Footer`
+
+Certification finale : 390 / 430 / 768 / 1280 ; 4/4 captures ; `findingCount=0` ; 0 overflow ; 0 console error ; 6 villes ; 4 listings ; 3 quartiers ; 4 actions ; benchmark final frais Rightmove / Zillow / Redfin / Realtor.com documenté dans `docs/HVR_6_FINAL_BENCHMARK.md`.
+
+Aucun changement backend/DB/ranking/ingestion. Aucun déploiement Vercel.
 
 ---
 
