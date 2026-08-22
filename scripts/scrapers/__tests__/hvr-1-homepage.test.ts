@@ -49,6 +49,12 @@ describe("HVR-1 — homepage composition", () => {
     }
   });
 
+  it("keeps Intelligence on a solid navy surface for mobile contrast", () => {
+    assert.ok(intelligenceSource.includes('bg-[#071F3D]'));
+    assert.ok(intelligenceSource.includes('bg-[#0A2B52]'));
+    assert.ok(!intelligenceSource.includes('bg-[#071F3D]/92'));
+  });
+
   it("uses only Lucide icons in the new Intelligence component", () => {
     assert.ok(intelligenceSource.includes('from "lucide-react"'));
     assert.ok(!intelligenceSource.includes("<svg"));

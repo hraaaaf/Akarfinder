@@ -39,17 +39,25 @@ try {
       await hero.waitFor({ state: "visible", timeout: 20_000 });
       await panel.waitFor({ state: "visible", timeout: 20_000 });
 
-      const metrics = await page.evaluate(() => ({
-        clientWidth: document.documentElement.clientWidth,
-        scrollWidth: document.documentElement.scrollWidth,
-        h1Count: document.querySelectorAll("h1").length,
-        headerBackground: getComputedStyle(document.querySelector("header") ?? document.body).backgroundColor,
-      }));
+      const metrics = await page.evaluate(() => {
+        const intelligence = document.querySelector('[data-home-intelligence="hvr-1"]');
+        const intelligenceTitle = intelligence?.querySelector("h2");
+        return {
+          clientWidth: document.documentElement.clientWidth,
+          scrollWidth: document.documentElement.scrollWidth,
+          h1Count: document.querySelectorAll("h1").length,
+          headerBackground: getComputedStyle(document.querySelector("header") ?? document.body).backgroundColor,
+          intelligenceBackground: intelligence ? getComputedStyle(intelligence).backgroundColor : "missing",
+          intelligenceTitleColor: intelligenceTitle ? getComputedStyle(intelligenceTitle).color : "missing",
+        };
+      });
 
       if ((response?.status() ?? 0) !== 200) localFindings.push(`HTTP_${response?.status() ?? 0}`);
       if (metrics.scrollWidth > metrics.clientWidth + 1) localFindings.push(`OVERFLOW_${metrics.scrollWidth}_${metrics.clientWidth}`);
       if (metrics.h1Count !== 1) localFindings.push(`H1_COUNT_${metrics.h1Count}`);
       if (metrics.headerBackground !== "rgb(255, 255, 255)") localFindings.push(`HEADER_NOT_WHITE_${metrics.headerBackground}`);
+      if (metrics.intelligenceBackground !== "rgb(7, 31, 61)") localFindings.push(`INTELLIGENCE_BG_${metrics.intelligenceBackground}`);
+      if (metrics.intelligenceTitleColor !== "rgb(255, 255, 255)") localFindings.push(`INTELLIGENCE_TITLE_COLOR_${metrics.intelligenceTitleColor}`);
 
       const h1Text = (await page.locator("h1").innerText()).trim();
       if (h1Text !== approvedTitle) localFindings.push("H1_COPY_CHANGED");
@@ -112,7 +120,7 @@ try {
 }
 
 const report = {
-  schemaVersion: "HVR_1_HOMEPAGE_VISUAL_PROOF_V2",
+  schemaVersion: "HVR_1_HOMEPAGE_VISUAL_PROOF_V3",
   generatedAt: new Date().toISOString(),
   scenarioCount: scenarios.length,
   screenshotCount: results.filter((item) => item.screenshot).length,

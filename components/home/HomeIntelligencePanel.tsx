@@ -24,14 +24,14 @@ export function HomeIntelligencePanel() {
     <aside
       data-home-intelligence="hvr-1"
       aria-label="AkarFinder Intelligence"
-      className="overflow-hidden rounded-[24px] border border-white/16 bg-[#071F3D]/92 text-white shadow-[0_22px_70px_rgba(1,10,25,0.34)] backdrop-blur-md"
+      className="overflow-hidden rounded-[24px] border border-white/16 bg-[#071F3D] text-white shadow-[0_22px_70px_rgba(1,10,25,0.34)]"
     >
       <div className="flex items-center gap-3 border-b border-white/10 px-5 py-4 sm:px-6">
         <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#0B63CE]/24 text-blue-200">
           <BarChart3 size={19} strokeWidth={2.2} aria-hidden="true" />
         </div>
         <div>
-          <h2 className="text-[15px] font-extrabold tracking-[-0.02em] sm:text-[16px]">
+          <h2 className="text-[15px] font-extrabold tracking-[-0.02em] text-white sm:text-[16px]">
             AkarFinder Intelligence
           </h2>
           <p className="mt-0.5 text-[11px] font-medium text-blue-100/72">
@@ -54,7 +54,7 @@ export function HomeIntelligencePanel() {
         ))}
       </div>
 
-      <div className="relative overflow-hidden border-t border-white/10 bg-[#0A2B52]/76 px-5 py-4 sm:px-6">
+      <div className="relative overflow-hidden border-t border-white/10 bg-[#0A2B52] px-5 py-4 sm:px-6">
         <div
           className="pointer-events-none absolute inset-0 opacity-35"
           aria-hidden="true"
