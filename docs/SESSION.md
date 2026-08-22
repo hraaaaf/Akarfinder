@@ -29,6 +29,14 @@ Progression stricte : **0/5 lots CLOSED = 0 %**.
 - État vérifié dans la PR : implémentation présente ; build + TypeScript verts dans le run `32562658088`, mais la certification HVR-1 n’est pas encore acquise. Des assertions historiques ont aussi signalé du drift hors scope ; elles ne sont pas converties en faux succès.
 - Next exact : obtenir la preuve HVR-1 exact-head utile, récupérer les AFTER, comparer BEFORE → référence → AFTER, corriger si nécessaire, scorer, human gate, puis seulement merge/closeout.
 
+## GitHub Hygiene & Single Source of Truth — fermé
+
+- PR `#851` ✅ MERGED
+- merge squash : `9359034d8587ee12e0bd2fce72bf791582b90a5c`
+- scope : PR template + roadmap compacte + SESSION ; aucun runtime/DB/Registry/DATA/ranking/Vercel.
+- **26 PR historiques / doublons / superseded fermées** pendant le ménage initial.
+- toute PR restante non explicitement ACTIVE dans `docs/ROADMAP.md` est revalidation/reconciliation/backlog par défaut.
+
 ## Product Experience Reconciliation — fermé
 
 Progression validée : **12/12 lots CLOSED = 100 %**.
@@ -56,13 +64,6 @@ Progression validée : **12/12 lots CLOSED = 100 %**.
 - human visual gate : APPROVED le 2026-08-22
 - merge `669d040162eb39f25e904da065c1b197c09dc039`
 - aucun Vercel ; aucune migration DB.
-
-## PR hygiene — 2026-08-22
-
-- **26 PR historiques / doublons / superseded fermées** pendant le ménage GitHub.
-- roadmap vivante compactée ; historique détaillé préservé par SHA Git.
-- catégories retirées : ancienne chaîne SERP V2 preview, anciens micro-polish Search, audits remplacés par P4/P5/P11, anciennes réécritures concurrentes de roadmap et doublon géométrie #794.
-- les PR avec mutation Production déjà appliquée, dette Registry/DATA, sécurité ou réconciliation non prouvée restent ouvertes jusqu’à audit current-main ; elles ne sont pas considérées actives par simple présence dans l’onglet PR.
 
 ## Invariants
 
