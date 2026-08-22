@@ -11,6 +11,7 @@ on:
       - scripts/data-mass/external-index-seed.ts
       - scripts/data-mass/external-index-seed-dry-run.ts
       - scripts/data-mass/__tests__/universal-candidate-promotion.test.ts
+      - scripts/data-mass/__tests__/universal-candidate-promotion-live-contract.test.ts
       - scripts/data-mass/__tests__/external-index-seed.test.ts
       - scripts/data-mass/__tests__/mass-index-m2-native-provider-contract.test.ts
       - supabase/migrations/20260822145000_mass_index_m2_native_discovery_providers.sql
@@ -48,6 +49,7 @@ jobs:
         run: >-
           npx tsx --test
           scripts/data-mass/__tests__/universal-candidate-promotion.test.ts
+          scripts/data-mass/__tests__/universal-candidate-promotion-live-contract.test.ts
           scripts/data-mass/__tests__/external-index-seed.test.ts
           scripts/data-mass/__tests__/mass-index-m2-native-provider-contract.test.ts
 
@@ -75,7 +77,7 @@ jobs:
           const summary = {
             schemaVersion: 'MASS_INDEX_M1_M2_CERTIFICATION_V1',
             mode: 'read_only',
-            m1: { summary: m1.summary, invariants: m1.invariants },
+            m1: { sourceSnapshot: m1.sourceSnapshot, summary: m1.summary, invariants: m1.invariants },
             m2,
           };
           fs.writeFileSync('artifacts/mass-index/m1-m2-certification-summary.json', JSON.stringify(summary, null, 2) + '\n');
@@ -94,6 +96,9 @@ jobs:
           if (p.m1.invariants.sourceNetworkRequests !== 0) throw new Error('M1_SOURCE_NETWORK_INVARIANT');
           if (p.m1.invariants.providersRelabeled !== 0) throw new Error('M1_PROVIDER_RELABEL_INVARIANT');
           if (p.m1.invariants.richContentRequired !== false) throw new Error('M1_RICH_CONTENT_INVARIANT');
+          if (p.m1.invariants.snapshotBounded !== true) throw new Error('M1_SNAPSHOT_INVARIANT');
+          if (p.m1.invariants.keysetPagination !== true) throw new Error('M1_KEYSET_INVARIANT');
+          if (p.m1.sourceSnapshot.pagination !== 'keyset_uuid') throw new Error('M1_KEYSET_METADATA_INVARIANT');
           if (p.m1.summary.rawRows <= 0 || p.m1.summary.canonicalUrls <= 0) throw new Error('M1_EMPTY_MANIFEST');
           if (p.m1.summary.acceptedCanonicalUrls + p.m1.summary.rejectedCanonicalUrls !== p.m1.summary.canonicalUrls) {
             throw new Error('M1_ACCOUNTING_MISMATCH');

@@ -21,23 +21,43 @@ type DiscoveryCandidateRow = {
   content_fingerprint: string | null;
 };
 
+type DiscoverySnapshot = {
+  rows: DiscoveryCandidateRow[];
+  snapshotCutoff: string;
+  pages: number;
+};
+
 const BATCH_SIZE = 1000;
 const DEFAULT_OUTPUT = "artifacts/mass-index/m1-universal-candidate-promotion.json";
 
-async function fetchDiscoveryCandidates(db: ReturnType<typeof createClient>): Promise<DiscoveryCandidateRow[]> {
+async function fetchDiscoveryCandidates(db: ReturnType<typeof createClient>): Promise<DiscoverySnapshot> {
   const rows: DiscoveryCandidateRow[] = [];
-  for (let from = 0; ; from += BATCH_SIZE) {
-    const { data, error } = await db
+  const snapshotCutoff = new Date().toISOString();
+  let cursor: string | null = null;
+  let pages = 0;
+
+  for (;;) {
+    const baseQuery = db
       .from("discovery_candidates")
       .select("id,provider,discovery_query,source_domain,source_url,canonical_url,title,snippet,discovered_at,last_seen_at,content_fingerprint")
+      .lte("created_at", snapshotCutoff)
       .order("id", { ascending: true })
-      .range(from, from + BATCH_SIZE - 1);
+      .limit(BATCH_SIZE);
+    const query = cursor ? baseQuery.gt("id", cursor) : baseQuery;
+    const { data, error } = await query;
     if (error) throw error;
+
     const page = (data ?? []) as DiscoveryCandidateRow[];
     rows.push(...page);
+    pages += 1;
     if (page.length < BATCH_SIZE) break;
+
+    const nextCursor = page.at(-1)?.id;
+    if (!nextCursor || nextCursor === cursor) throw new Error("MASS_INDEX_M1_KEYSET_CURSOR_STALLED");
+    cursor = nextCursor;
   }
-  return rows;
+
+  return { rows, snapshotCutoff, pages };
 }
 
 function toCandidate(row: DiscoveryCandidateRow): UniversalDiscoveryCandidate {
@@ -69,14 +89,20 @@ async function main() {
   const outputPath = resolve(process.env.MASS_INDEX_M1_OUTPUT || DEFAULT_OUTPUT);
   const db = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
 
-  const sourceRows = await fetchDiscoveryCandidates(db);
-  const manifest = buildUniversalCandidatePromotionManifest(sourceRows.map(toCandidate));
+  const snapshot = await fetchDiscoveryCandidates(db);
+  const manifest = buildUniversalCandidatePromotionManifest(snapshot.rows.map(toCandidate));
   const summary = summarizeUniversalCandidatePromotion(manifest);
 
   const payload = {
     schemaVersion: "MASS_INDEX_M1_UNIVERSAL_PROMOTION_V1",
     mode: "read_only",
     sourceTable: "discovery_candidates",
+    sourceSnapshot: {
+      cutoffCreatedAt: snapshot.snapshotCutoff,
+      pages: snapshot.pages,
+      pagination: "keyset_uuid",
+      batchSize: BATCH_SIZE,
+    },
     summary,
     manifest,
     invariants: {
@@ -85,6 +111,8 @@ async function main() {
       providersRelabeled: 0,
       richContentRequired: false,
       exactCanonicalDedupBeforeClassification: true,
+      snapshotBounded: true,
+      keysetPagination: true,
     },
   };
 
@@ -95,6 +123,7 @@ async function main() {
     schemaVersion: payload.schemaVersion,
     mode: payload.mode,
     outputPath,
+    sourceSnapshot: payload.sourceSnapshot,
     summary: {
       ...summary,
       topAcceptedDomains: topEntries(summary.acceptedByDomain),
