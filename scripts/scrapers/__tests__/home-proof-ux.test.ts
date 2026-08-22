@@ -10,7 +10,7 @@ describe("Homepage proof UX", () => {
   it("uses the approved search-first hero claim and subtitle", () => {
     const hero = source("components/home/GoogleLikeHero.tsx");
     assert.ok(hero.includes("1er moteur de recherche immobilier au Maroc"));
-    assert.ok(hero.includes("Une recherche plus claire, plus structurée et plus fiable pour l’immobilier au Maroc."));
+    assert.ok(hero.includes("Cherchez un bien, puis comprenez son quartier, son marché et la fiabilité de l’annonce avant de décider."));
     assert.ok(!hero.includes("analysez les biens"));
   });
 
