@@ -1,64 +1,82 @@
 # AkarFinder — Product Experience P11 Global QA
 
-Statut : **PREPARED — AWAITING CERTIFICATION**
+Statut : **CLOSED — CERTIFIED — MERGED**
 
 ## Goal
 
 Certifier transversalement le chantier Product Experience après fermeture de P3→P10, sans redesign supplémentaire sauf défaut réellement prouvé.
 
-## Base exacte
+## Résultat
 
-- `main@16336328a6bbe2054e95ee9457294eea17280be1`
-- P0→P10 : 11/12 lots CLOSED = 91,7 %.
+Goal atteint et prouvé.
 
-## Success
+- head certifié : `bca9681d3f0d77b0f00ee7bcc3aba7591ba952e4`
+- PR : `#848`
+- run final P11 : `32559337861` — **SUCCESS**
+- artifact : `9472405507`
+- digest : `sha256:4dc2ca941ba81aac4f8d72f3a633989f6aff4f24f6bec9fd9d8beadd181351b2`
+- Search Full Page : `32559337881` — **SUCCESS**
+- Canonical Baseline Validation : **SUCCESS**
+- Canonical Baseline Compile Validation : **SUCCESS**
+- Phase 1 Final Design Accessibility Gate : **SUCCESS**
+- UX Gate 0 Contracts : **SUCCESS**
+- Bottom Nav 10/10 + Premium Bottom Nav : **SUCCESS**
 
-- contrats Product Experience existants P3→P10 verts ;
-- contrat accessibilité structurelle vert ;
-- TypeScript vert ;
-- build production vert ;
-- inventaire App Router exhaustif ;
-- all-pages certification : toutes les pages rendables × 390×844 / 430×932 / 768×900 / 1280×900, `findingCount = 0` ;
-- certification représentative Product Experience : 16 surfaces P3→P10 × 4 viewports = 64 captures, `findingCount = 0` ;
-- HTTP, H1, main, overflow horizontal, logo canonique, erreurs réseau/console inattendues et comportement bottom-nav vérifiés ;
-- blocages de fixtures conservés explicitement fail-closed ;
-- inspection visuelle finale multi-lots ;
-- score visuel final ;
-- human visual gate final avant merge/closeout ;
-- aucun Vercel.
+## Certification exhaustive
 
-## Inventaire de référence vérifié
-
-Dernière certification all-pages verte avant P11 : run `32534826644`, artifact `9465173733`, digest `sha256:7126681f22c2e05da6bbdbde19524a0865f525e064eea3bc3186e8c464eb48f6`.
-
-Inventaire observé :
-- 79 pages App Router ;
+- 79 pages App Router inventoriées ;
 - 67 pages rendables ;
 - 12 pages bloquées explicitement par fixture ;
-- 268/268 captures ;
-- 0 finding.
+- all-pages : 67 × 4 viewports = **268/268 captures** ;
+- Product Experience P3→P10 : 16 surfaces × 4 viewports = **64/64 captures** ;
+- total : **332/332 captures** ;
+- `findingCount = 0` ;
+- HTTP, H1, main, overflow horizontal, logo canonique, erreurs réseau/console inattendues et comportement bottom-nav vérifiés ;
+- TypeScript : **SUCCESS** ;
+- production build : **SUCCESS** ;
+- accessibilité structurelle : **SUCCESS**.
 
-Les blockers ne sont pas masqués : `/listings/[id]` et `/professionnels/[slug]` nécessitent des fixtures DB déterministes ; dix routes visual-QA quartier exigent des assets certifiés non matérialisés dans cette lane.
+Les blockers de fixture restent explicitement fail-closed : `/listings/[id]` et `/professionnels/[slug]` nécessitent des fixtures DB déterministes ; dix routes visual-QA quartier exigent des assets certifiés non matérialisés dans cette lane.
 
 ## Surfaces Product Experience représentatives
 
 - P3 Accueil : `/`
 - P4 Search + Carte : `/search`, `/map?city=rabat&layer=explore`
-- P5 Listing : `/visual-qa/announcement-page-pro-conversion` (fixture Listing certifiée ; la route dynamique réelle reste data-fixture-required)
+- P5 Listing : `/visual-qa/announcement-page-pro-conversion`
 - P6 Ville / Quartier : `/immobilier/rabat`, `/immobilier/rabat/agdal`
 - P7 Mon Projet : `/mon-projet`
 - P8 Publication : `/vendre/dossier`
 - P9 Professionnels : `/pro`
 - P10 Pages secondaires : `/a-propos`, `/comment-ca-marche`, `/faq`, `/contact`, `/demande-retrait`, `/conditions-utilisation`, `/politique-confidentialite`
 
-Total : 16 surfaces × 4 viewports = 64 captures.
+## Inspection visuelle
+
+- inspection finale multi-lots : **VALIDÉE** ;
+- score visuel final : **9,2/10** ;
+- human visual gate final : **APPROVED le 2026-08-22**.
+
+## Corrections de gouvernance QA
+
+Les derniers échecs transverses provenaient d'assertions statiques devenues obsolètes après les lots certifiés P3/P4. Les contrats ont été réalignés sur le comportement canonique courant sans modification du produit :
+
+- source map certifiée : boucle explicite + revalidation `hasCertifiedExactCoordinates` ;
+- Home : composition P3 certifiée et sous-titre courant ;
+- Bottom Nav glass : `bg-white/82` avec fallback `bg-white/76`.
+
+Le delta final après la dernière preuve visuelle ne modifiait qu'un fichier de test (`+2/-1`), aucun composant produit.
 
 ## Performance
 
-Le repo ne possède actuellement **aucun budget Lighthouse ou bundle-size canonique** retrouvé. P11 ne fabrique donc pas un seuil arbitraire. La preuve performance disponible dans ce lot est limitée au build production réussi et à l’absence d’erreurs runtime réseau/console inattendues sur la matrice certifiée. Toute future certification chiffrée nécessitera d’abord un budget canonique explicite.
+Aucun budget Lighthouse ou bundle-size canonique n'existe actuellement dans le repo. Aucun seuil arbitraire n'a été inventé. La preuve disponible est limitée au build production réussi et à l'absence d'erreurs runtime réseau/console inattendues sur la matrice certifiée.
 
-## Stratégie
+## Merge
 
-Réutiliser les audits exhaustifs existants `ui-all-pages-inventory`, `ui-all-pages-baseline` et `ui-all-pages-certify`, puis ajouter uniquement une couche P11 représentant les surfaces Product Experience et les contrats cross-lot.
+- squash merge : `669d040162eb39f25e904da065c1b197c09dc039`
+- `main` post-merge vérifié sur ce SHA avant closeout ;
+- aucun Vercel ;
+- aucune migration DB ;
+- aucun changement UI/API/DB/ranking/source dans P11.
 
-Aucun code UI/DB/API/ranking/source n’est modifié par la préparation P11.
+## Closeout chantier
+
+Product Experience Reconciliation : **12/12 lots CLOSED = 100 %**.

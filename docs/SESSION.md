@@ -6,7 +6,7 @@ Ce fichier est le handover opérationnel court. `README.md` porte l’identité/
 
 ## Product Experience Reconciliation — état courant
 
-Progression validée : **11/12 lots CLOSED = 91,7 %**.
+Progression validée : **12/12 lots CLOSED = 100 %**.
 
 - P0–P2 ✅ CLOSED
 - P3 Accueil ✅ CLOSED
@@ -17,24 +17,28 @@ Progression validée : **11/12 lots CLOSED = 91,7 %**.
 - P8 Publication ✅ CLOSED
 - P9 Professionnels ✅ CLOSED
 - P10 Pages secondaires ✅ CLOSED
-- P11 QA global / responsive / accessibilité / performance / nettoyage ⏭ NEXT
+- P11 QA global / responsive / accessibilité / performance / nettoyage ✅ CLOSED
 
-## P10 Pages secondaires — closeout
+## P11 QA global — closeout final
 
-- PR `#847` ✅ MERGED
-- head certifié `6024c47e3c81bafb45bc8d8161c448d45810ef00`
-- run dédié `32534826797` — SUCCESS
-- artifact `9465109006`
-- digest `sha256:66de7a5ffe25e302eff86d359c1bde4ef705825125829870a93dbf2b3b5721ea`
-- 28/28 captures AFTER : 7 routes × 390×844 / 430×932 / 768×900 / 1280×900
-- `findingCount = 0`
-- 7/7 `SecondaryPageShell`
-- score visuel humain : **9,4/10**
-- human visual gate : APPROVED le 2026-08-22
-- squash merge `81cf54b5f86b839de8336acfa399321e378c602f`
-- `main` post-merge vérifié sur ce commit
-- aucun backend/DB/ranking/source modifié ; aucun Vercel
-- preuve canonique : `docs/AKARFINDER_PRODUCT_EXPERIENCE_P10.md`
+- PR `#848` ✅ MERGED
+- head certifié `bca9681d3f0d77b0f00ee7bcc3aba7591ba952e4`
+- run final P11 `32559337861` — SUCCESS
+- artifact `9472405507`
+- digest `sha256:4dc2ca941ba81aac4f8d72f3a633989f6aff4f24f6bec9fd9d8beadd181351b2`
+- Search Full Page `32559337881` — SUCCESS
+- 79 pages App Router inventoriées
+- 67 pages rendables + 12 blockers de fixture explicitement fail-closed
+- 268/268 captures all-pages
+- 64/64 captures Product Experience P3→P10
+- total **332/332 captures**, `findingCount = 0`
+- TypeScript / production build / accessibilité / Canonical Baseline / UX Gate 0 / Bottom Nav : SUCCESS
+- score visuel final : **9,2/10**
+- human visual gate final : APPROVED le 2026-08-22
+- squash merge `669d040162eb39f25e904da065c1b197c09dc039`
+- aucun code produit modifié par P11 ; uniquement QA/docs et réalignement de contrats historiques
+- aucun Vercel ; aucune migration DB
+- preuve canonique : `docs/AKARFINDER_PRODUCT_EXPERIENCE_P11.md`
 
 ## Invariants Product Experience
 
@@ -44,8 +48,8 @@ Progression validée : **11/12 lots CLOSED = 91,7 %**.
 - CI en cours n’interrompt pas le travail indépendant ;
 - aucun déploiement Vercel sans autorisation explicite.
 
-## Reprise exacte
+## État final du chantier
 
-**P11 — QA global / responsive / accessibilité / performance / nettoyage.** Partir de `main` après le closeout P10. Inventorier les surfaces publiques réellement couvertes par Product Experience, exécuter une certification finale globale sur les viewports canoniques, vérifier responsive, overflow, header/logo/footer/bottom-nav, accessibilité, build/TypeScript, régressions cross-lot et nettoyage documentaire. Ne corriger que les écarts prouvés. Un human visual gate final est requis avant de déclarer le chantier 12/12 CLOSED.
+**Product Experience Reconciliation est fermé : 12/12 lots, 100 % validé.**
 
-Les autres lanes DATA / Search / Carte restent gouvernées par `docs/ROADMAP.md` et ne sont pas implicitement modifiées par ce handover Product Experience.
+Aucun nouveau lot Product Experience n’est implicitement ouvert par ce closeout. Les lanes DATA / Search / Carte et les autres travaux du repo restent gouvernés par `docs/ROADMAP.md`.
