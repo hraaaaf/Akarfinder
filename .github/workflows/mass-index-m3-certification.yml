@@ -1,0 +1,85 @@
+name: MASS-INDEX M3 Source Factory Certification
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+    paths:
+      - scripts/data-mass/source-factory-m3-adapter.ts
+      - scripts/data-mass/source-factory-m3-canary-live.ts
+      - scripts/data-mass/__tests__/source-factory-m3-adapter.test.ts
+      - scripts/data-mass/source-factory.ts
+      - scripts/data-mass/source-factory-decision.ts
+      - scripts/data-mass/source-factory-policy-matrix.ts
+      - scripts/data-mass/universal-candidate-promotion.ts
+      - .github/workflows/mass-index-m3-certification.yml
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mass-index-m3-source-factory-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - name: Checkout MASS-INDEX M3 head
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Run M3 and compatibility contracts
+        run: >-
+          npx tsx --test
+          scripts/data-mass/__tests__/source-factory-m3-adapter.test.ts
+          scripts/data-mass/__tests__/source-factory.test.ts
+          scripts/data-mass/__tests__/source-factory-decision.test.ts
+          scripts/data-mass/__tests__/source-factory-policy-matrix.test.ts
+          scripts/data-mass/__tests__/universal-candidate-promotion.test.ts
+          scripts/data-mass/__tests__/mass-index-m2-native-provider-contract.test.ts
+      - name: TypeScript check
+        run: npx tsc --noEmit
+      - name: Assert Supabase read credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$SUPABASE_URL"
+          test -n "$SUPABASE_SERVICE_ROLE_KEY"
+      - name: Build bounded per-source M3 canary report
+        run: npx tsx scripts/data-mass/source-factory-m3-canary-live.ts
+      - name: Assert M3 certification invariants
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs = require('fs');
+          const p = JSON.parse(fs.readFileSync('artifacts/mass-index/m3-source-factory-canary-report.json', 'utf8'));
+          if (p.schemaVersion !== 'MASS_INDEX_M3_SOURCE_FACTORY_CERTIFICATION_V1') throw new Error('M3_SCHEMA');
+          if (p.mode !== 'read_only') throw new Error('M3_NOT_READ_ONLY');
+          if (p.summary.domains !== 10 || p.summary.domainsWithMeasuredYield !== 10) throw new Error('M3_DOMAIN_MEASUREMENT');
+          if (p.reports.length !== 10) throw new Error('M3_REPORT_COUNT');
+          if (p.reports.some((r) => r.candidateCanonicalUrls > 40 || r.canaryCanonicalUrls.length > 10)) throw new Error('M3_BUDGET');
+          if (p.reports.some((r) => r.circuitBreaker !== 'CLOSED')) throw new Error('M3_BREAKER');
+          if (p.invariants.databaseWrites !== 0 || p.invariants.sourceNetworkRequests !== 0 || p.invariants.directFetches !== 0) throw new Error('M3_SIDE_EFFECT');
+          if (p.invariants.fullReservoirScan !== false || p.invariants.publicActivations !== 0 || p.invariants.providerRelabels !== 0 || p.invariants.policyLayerMutations !== 0) throw new Error('M3_SAFETY');
+          console.log('MASS-INDEX M3 certification PASS', p.summary);
+          NODE
+      - name: Upload M3 source factory evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mass-index-m3-source-factory-certification
+          path: artifacts/mass-index/m3-source-factory-canary-report.json
+          if-no-files-found: error
+          retention-days: 14
