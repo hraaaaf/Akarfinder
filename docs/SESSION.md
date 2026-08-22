@@ -41,8 +41,10 @@ Succès : manifest national exact -> write-plan -> canary -> batches bornés -> 
 
 Ces nombres sont des plafonds structurels d’URLs, pas encore des listings M4 validés ni des propriétés uniques.
 
-## Chantier suspendu
-Homepage Visual Reconciliation #849 : HVR-1→HVR-5 CLOSED, HVR-6 SUSPENDED ; progression conservée 5/6 = 83,3 %.
+## Chantier fermé
+Homepage Visual Reconciliation #849 : **HVR-1→HVR-6 CLOSED, 6/6 = 100 %**.
+
+Preuve finale : PR #861 ; merge `78079f179ffbbf6285e23bf86ba18c609563f661` ; HEAD certifié `c3d9a1e4309bf37bebe6a32b41ff89afe6ccfa2f` ; run `32595444588` SUCCESS ; artifact `9481435261` ; score final 9,4/10 ; human gate APPROVED ; 4/4 captures 390/430/768/1280 ; 0 overflow ; 0 console error ; aucun Vercel.
 
 ## Next exact
 1. construire le manifest M4 national read-only M1 + garde M3 sur les 7 sources ;
