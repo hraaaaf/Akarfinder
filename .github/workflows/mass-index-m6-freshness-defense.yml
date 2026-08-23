@@ -1,0 +1,38 @@
+name: MASS-INDEX M6 Freshness Defense
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "lib/search-gateway/odm-07-serving-policy.ts"
+      - "scripts/data-mass/__tests__/mass-index-m6-freshness-defense.test.ts"
+      - ".github/workflows/mass-index-m6-freshness-defense.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify-m6-freshness-defense:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: M6-C freshness defense tests
+        run: npx tsx --test scripts/data-mass/__tests__/mass-index-m6-freshness-defense.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Prove no activation or deployment work in this lot
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const policy = fs.readFileSync('lib/search-gateway/odm-07-serving-policy.ts', 'utf8');
+          if (policy.includes('"seed_only"')) throw new Error('seed_only remains allowed in Node serving policy');
+          if (!policy.includes('"fresh_confirmed"')) throw new Error('fresh_confirmed missing');
+          console.log(JSON.stringify({ databaseWrites: 0, environmentChanges: 0, vercelDeployments: 0, searchActivationChanges: 0, nodeFreshness: 'fresh_confirmed_only' }, null, 2));
+          NODE

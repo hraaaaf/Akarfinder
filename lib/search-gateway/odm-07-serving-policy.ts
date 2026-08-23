@@ -11,7 +11,7 @@ export type ThinIndexServingPolicyRow = {
 };
 
 const ALLOWED_PROVIDERS = new Set(["public_sitemap", "commoncrawl_cdx", "serper_search"]);
-const ALLOWED_FRESHNESS = new Set(["seed_only", "fresh_confirmed"]);
+const ALLOWED_FRESHNESS = new Set(["fresh_confirmed"]);
 const ALLOWED_ELIGIBILITY = new Set(["eligible_primary", "eligible_secondary"]);
 
 export function isThinIndexRowDisplayEligible(row: ThinIndexServingPolicyRow): boolean {
