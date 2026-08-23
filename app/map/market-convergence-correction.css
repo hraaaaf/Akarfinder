@@ -41,6 +41,12 @@
   [data-p4-map-layout]:has([data-akarfinder-rich-zone-sheet]) [data-akarfinder-intelligence-legend] {
     display: none !important;
   }
+
+  /* National territorial navigation owns the lower mobile/tablet surface.
+     Its first-tap city preview must never compete with the generic P4 rail. */
+  [data-p4-map-layout]:has([data-akarfinder-national-map]) .p4-map-decision-rail {
+    display: none !important;
+  }
 }
 
 @media (min-width: 1024px) {
