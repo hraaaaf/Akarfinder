@@ -9,6 +9,7 @@
 // DATA-4.3I: this writer owns only `openserp_yandex_discovery`. It must never
 // downgrade or erase freshness evidence owned by another channel.
 
+import { fileURLToPath } from "node:url";
 import { getSupabaseServerClient } from "@/lib/db/supabase-client";
 import { isOpenSerpIngestionCronAuthorized } from "@/lib/openserp-ingestion/openserp-ingestion-feature-flags";
 import { computeChannelOwnedFreshnessUpdateBatch, type ExistingSeedFreshnessState } from "@/lib/seed-freshness/job";
@@ -27,48 +28,81 @@ const PAGE_SIZE = 1000;
 // are idempotent and correctness is more important than burst throughput.
 const UPDATE_CONCURRENCY = 5;
 
+type CursorRow = { id: string };
+
 type SeedDbRow = SeedForMatching & {
   freshness_status: FreshnessStatus;
   fresh_last_seen_at: string | null;
   fresh_channels: string[] | null;
 };
 
+type SeedCursorRow = SeedDbRow & CursorRow;
+type FreshObservationCursorRow = FreshDiscoveryObservation & CursorRow;
+
+export async function loadAllByIdCursor<T extends CursorRow>(
+  fetchPage: (afterId: string | null, limit: number) => Promise<T[]>,
+  pageSize = PAGE_SIZE,
+): Promise<T[]> {
+  if (!Number.isInteger(pageSize) || pageSize <= 0) {
+    throw new Error(`invalid keyset page size: ${pageSize}`);
+  }
+
+  const out: T[] = [];
+  let afterId: string | null = null;
+
+  for (;;) {
+    const rows = await fetchPage(afterId, pageSize);
+    if (rows.length === 0) break;
+
+    out.push(...rows);
+    const nextAfterId = rows[rows.length - 1]?.id;
+    if (!nextAfterId || nextAfterId === afterId) {
+      throw new Error("seed-freshness keyset cursor did not advance");
+    }
+    if (rows.length < pageSize) break;
+    afterId = nextAfterId;
+  }
+
+  return out;
+}
+
 async function loadAllSeeds(): Promise<SeedDbRow[]> {
   const client = getSupabaseServerClient();
-  const out: SeedDbRow[] = [];
-  for (let from = 0; ; from += PAGE_SIZE) {
-    const rows = await withSupabaseRetry(async () => {
-      const { data, error } = await client
+  const rows = await loadAllByIdCursor<SeedCursorRow>(
+    async (afterId, limit) => withSupabaseRetry(async () => {
+      const query = client
         .from("source_offer_seeds")
-        .select("canonical_url,source_domain,freshness_status,fresh_last_seen_at,fresh_channels")
-        .range(from, from + PAGE_SIZE - 1);
+        .select("id,canonical_url,source_domain,freshness_status,fresh_last_seen_at,fresh_channels");
+      const filteredQuery = afterId ? query.gt("id", afterId) : query;
+      const { data, error } = await filteredQuery
+        .order("id", { ascending: true })
+        .limit(limit);
       if (error) throw error;
-      return (data ?? []) as SeedDbRow[];
-    }, `load source_offer_seeds offset=${from}`);
-    out.push(...rows);
-    if (rows.length < PAGE_SIZE) break;
-  }
-  return out;
+      return (data ?? []) as SeedCursorRow[];
+    }, `load source_offer_seeds after_id=${afterId ?? "START"}`),
+  );
+
+  return rows.map(({ id: _id, ...row }) => row);
 }
 
 async function loadFreshObservations(): Promise<FreshDiscoveryObservation[]> {
   const client = getSupabaseServerClient();
-  const out: FreshDiscoveryObservation[] = [];
-  for (let from = 0; ; from += PAGE_SIZE) {
-    const rows = await withSupabaseRetry(async () => {
-      const { data, error } = await client
+  const rows = await loadAllByIdCursor<FreshObservationCursorRow>(
+    async (afterId, limit) => withSupabaseRetry(async () => {
+      const query = client
         .from("discovery_candidates")
-        .select("canonical_url,source_url,discovered_at,discovery_status")
-        .in("discovery_status", ["accepted", "promoted_to_source_offer"])
-        .order("discovered_at", { ascending: false })
-        .range(from, from + PAGE_SIZE - 1);
+        .select("id,canonical_url,source_url,discovered_at,discovery_status")
+        .in("discovery_status", ["accepted", "promoted_to_source_offer"]);
+      const filteredQuery = afterId ? query.gt("id", afterId) : query;
+      const { data, error } = await filteredQuery
+        .order("id", { ascending: true })
+        .limit(limit);
       if (error) throw error;
-      return (data ?? []) as FreshDiscoveryObservation[];
-    }, `load discovery_candidates offset=${from}`);
-    out.push(...rows);
-    if (rows.length < PAGE_SIZE) break;
-  }
-  return out;
+      return (data ?? []) as FreshObservationCursorRow[];
+    }, `load discovery_candidates after_id=${afterId ?? "START"}`),
+  );
+
+  return rows.map(({ id: _id, ...row }) => row);
 }
 
 async function applyUpdates(updates: ReturnType<typeof computeChannelOwnedFreshnessUpdateBatch>): Promise<void> {
@@ -136,7 +170,9 @@ async function main() {
   }, null, 2));
 }
 
-void main().catch((error) => {
-  console.error(`[seed-freshness] fatal: ${formatSupabaseError(error)}`);
-  process.exit(1);
-});
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+  void main().catch((error) => {
+    console.error(`[seed-freshness] fatal: ${formatSupabaseError(error)}`);
+    process.exit(1);
+  });
+}
