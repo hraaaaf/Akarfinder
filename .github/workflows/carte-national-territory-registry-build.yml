@@ -1,0 +1,51 @@
+name: Carte National Territory Registry Build
+
+on:
+  pull_request:
+    paths:
+      - "scripts/map/build-morocco-territory-registry.py"
+      - ".github/workflows/carte-national-territory-registry-build.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build-territory-registry:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build HCP + Barid + OSM candidate registry
+        run: python scripts/map/build-morocco-territory-registry.py
+      - name: Validate candidate registry contract
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          base = Path('data/audits/morocco-territory-registry')
+          report = json.loads((base / 'report.json').read_text())
+          geo = json.loads((base / 'postal-city-boundaries.geojson').read_text())
+          assert report['ok'] is True
+          assert report['sources']['hcp']['year'] == 2024
+          assert report['sources']['barid']['uniqueCityDistrictPairs'] > 9000
+          assert report['matching']['baridCitiesToHcpExact'] >= 20
+          assert report['matching']['baridCitiesWithAssembledGeometry'] >= 10
+          assert len(geo['features']) == report['matching']['baridCitiesWithAssembledGeometry']
+          for feature in geo['features']:
+              props = feature['properties']
+              assert props['officialBoundaryClaim'] is False
+              assert props['licenseId'] == 'ODbL-1.0'
+              assert props['osmRelationId']
+              assert feature['geometry']['type'] in ('Polygon', 'MultiPolygon')
+          print(json.dumps(report, ensure_ascii=False, indent=2))
+          PY
+      - name: Upload national territorial registry candidate
+        uses: actions/upload-artifact@v4
+        with:
+          name: carte-national-territory-registry-${{ github.run_id }}
+          path: data/audits/morocco-territory-registry
+          if-no-files-found: error
+          retention-days: 30
