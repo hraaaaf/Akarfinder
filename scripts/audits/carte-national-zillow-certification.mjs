@@ -143,7 +143,7 @@ try {
       const casaResponse = await fetch(`${baseUrl}/api/geo/national-territories?city=casablanca`);
       const casaPayload = await casaResponse.json();
       if (!casaResponse.ok || casaPayload.meta?.neighborhoodCount < 1500) throw new Error(`Casablanca neighborhood inventory ${casaPayload.meta?.neighborhoodCount}`);
-      await page.getByRole("heading", { name: "Casablanca" }).waitFor({ state: "visible", timeout: 10000 });
+      await page.getByRole("heading", { name: "Casablanca", exact: true }).waitFor({ state: "visible", timeout: 10000 });
       await page.getByRole("button", { name: "Revenir à la carte du Maroc" }).waitFor({ state: "visible", timeout: 10000 });
       await page.waitForTimeout(600);
       await page.screenshot({ path: `${outDir}/casablanca-${viewport.name}-after.png`, fullPage: false });
