@@ -1,0 +1,86 @@
+name: MASS-INDEX M6 Search Cutover Contract
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "lib/odm/odm-public-routing.ts"
+      - "lib/odm/odm-public-canary.ts"
+      - "scripts/data-mass/__tests__/mass-index-m6-search-cutover-contract.test.ts"
+      - "scripts/data-mass/mass-index-m6-search-seo-audit.ts"
+      - "docs/MASS_INDEX_M6.md"
+      - ".github/workflows/mass-index-m6-search-cutover-contract.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify-m6-search-cutover-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: M6-B routing contract tests
+        run: npx tsx --test scripts/data-mass/__tests__/mass-index-m6-search-cutover-contract.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Re-verify live Search freshness read-only
+        run: npx tsx scripts/data-mass/mass-index-m6-search-seo-audit.ts
+
+      - name: Build and assert M6-B evidence
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const baseline = JSON.parse(fs.readFileSync('artifacts/mass-index/m6-search-seo-baseline.json', 'utf8'));
+          if (baseline.mode !== 'read_only_baseline') throw new Error('baseline mode');
+          if (baseline.invariants.databaseWrites !== 0 || baseline.invariants.searchActivationChanges !== 0 || baseline.invariants.vercelDeployments !== 0) throw new Error('mutation invariant');
+          if (baseline.liveDatabase.publicRpcFirstStatus && baseline.liveDatabase.publicRpcFirstStatus !== 'fresh_confirmed') throw new Error('canonical freshness');
+          if (baseline.liveDatabase.fallbackStatuses.some((status) => status !== 'fresh_confirmed')) throw new Error('fallback freshness');
+          if (baseline.liveDatabase.publicSeedOnlyEligible <= 0) throw new Error('seed-only reservoir missing');
+
+          const evidence = {
+            schemaVersion: 'MASS_INDEX_M6_SEARCH_CUTOVER_CONTRACT_V1',
+            mode: 'contract_only_no_activation',
+            cutoverContract: {
+              odmCompatibleAtApproved100Percent: 'odm',
+              approvalMissing: 'legacy_primary',
+              emergencyStop: 'legacy_primary',
+              odmFailure: 'legacy_fallback',
+              districtWithoutAuthoritativeOdmField: 'legacy_primary',
+            },
+            liveDatabase: baseline.liveDatabase,
+            invariants: {
+              databaseWrites: 0,
+              searchActivationChanges: 0,
+              seoIndexabilityChanges: 0,
+              vercelDeployments: 0,
+              productionEnvironmentChanges: 0,
+              seedOnlyPubliclyServed: false,
+              humanGateRequiredForProductionCutover: true,
+            },
+          };
+          fs.writeFileSync('artifacts/mass-index/m6-search-cutover-contract.json', JSON.stringify(evidence, null, 2));
+          console.log(JSON.stringify(evidence, null, 2));
+          NODE
+
+      - name: Upload M6-B cutover evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: mass-index-m6-search-cutover-contract
+          path: artifacts/mass-index/m6-search-cutover-contract.json
+          if-no-files-found: error
+          retention-days: 14
