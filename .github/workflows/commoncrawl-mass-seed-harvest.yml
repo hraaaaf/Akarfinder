@@ -22,9 +22,11 @@ on:
       - "scripts/openserp/ingest-commoncrawl-mass-seeds.ts"
       - "scripts/openserp/p0-1-audit-commoncrawl-registry.ts"
       - "scripts/scrapers/__tests__/openserp-commoncrawl-policy-gate.test.ts"
+      - "scripts/scrapers/__tests__/p0-1-minimal-external-index-policy-review.test.ts"
       - "scripts/data-mass/source-factory-m3-access-policy.ts"
       - "lib/acquisition-scale-v1/mass-index-source-policy.ts"
       - "lib/acquisition-scale-v1/mass-index-source-policy-db.ts"
+      - "supabase/migrations/20260823213600_p0_1_commoncrawl_minimal_index_policy_review.sql"
   schedule:
     - cron: "17 2 * * *"
   push:
@@ -35,9 +37,11 @@ on:
       - "scripts/openserp/ingest-commoncrawl-mass-seeds.ts"
       - "scripts/openserp/p0-1-audit-commoncrawl-registry.ts"
       - "scripts/scrapers/__tests__/openserp-commoncrawl-policy-gate.test.ts"
+      - "scripts/scrapers/__tests__/p0-1-minimal-external-index-policy-review.test.ts"
       - "scripts/data-mass/source-factory-m3-access-policy.ts"
       - "lib/acquisition-scale-v1/mass-index-source-policy.ts"
       - "lib/acquisition-scale-v1/mass-index-source-policy-db.ts"
+      - "supabase/migrations/20260823213600_p0_1_commoncrawl_minimal_index_policy_review.sql"
   workflow_dispatch:
     inputs:
       mode:
@@ -77,6 +81,7 @@ jobs:
         run: >-
           npx tsx --test
           scripts/scrapers/__tests__/openserp-commoncrawl-policy-gate.test.ts
+          scripts/scrapers/__tests__/p0-1-minimal-external-index-policy-review.test.ts
           scripts/data-mass/__tests__/source-factory-m3-access-policy.test.ts
 
       - name: Read-only live Source Registry projection on PR
