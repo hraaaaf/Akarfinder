@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-08-23**  
-**Statut : ACTIVE — DATA MASS-INDEX / M5 Dedup + freshness hardening**
+**Statut : ACTIVE — DATA MASS-INDEX / M6 Search activation + SEO**
 
 Ce fichier est l’unique vérité canonique globale pour l’ordre des chantiers, leur état et leur progression.
 
@@ -20,7 +20,7 @@ Aucun contournement login/CAPTCHA/paywall/anti-bot. Aucun contenu riche externe 
 
 ### Progression stricte
 
-**5/8 lots CLOSED = 62,5 %.**
+**6/8 lots CLOSED = 75 %.**
 
 | Lot | Scope | État | Preuve principale |
 |---|---|---|---|
@@ -29,8 +29,8 @@ Aucun contournement login/CAPTCHA/paywall/anti-bot. Aucun contenu riche externe 
 | M2 | External Index model | ✅ CLOSED | run `32580352867` SUCCESS |
 | M3 | Source Factory adapters | ✅ CLOSED | PR #863 ; run `32594176513` SUCCESS |
 | M4 | National MASS ingest | ✅ CLOSED | PR #871 ; run final `32610621902` SUCCESS ; 965/965 preserved |
-| M5 | Dedup + freshness hardening | 🟡 ACTIVE | audit courant à produire |
-| M6 | Search activation + SEO | ⏳ PENDING | — |
+| M5 | Dedup + freshness hardening | ✅ CLOSED | PR #874 + #876 ; runs `32611464377` + `32631787333` SUCCESS ; prod freshness gate vérifié |
+| M6 | Search activation + SEO | 🟡 ACTIVE | audit current-main à produire |
 | M7 | Conversion partenaires | ⏳ PENDING | — |
 
 ### M4 — closeout certifié
@@ -50,18 +50,37 @@ Preuves :
 
 Le Thin Index `+0` est **attendu** pour M4 : les seeds minimaux `metadata:null` restent hors projection Thin Index/Search jusqu’aux étapes autorisées suivantes. L’ancien critère “augmentation Thin Index” est donc remplacé par “absence vérifiée de fuite Thin Index/Search”.
 
-### M5 — Goal
-Durcir la déduplication et la fraîcheur avant toute activation Search.
+### M5 — closeout certifié
 
-### M5 — Succès
-- baseline read-only exacte des doublons et états de fraîcheur ;
-- règles déterministes de clustering sans prétendre compter des propriétés uniques avant validation ;
-- stratégie de fraîcheur/expiration vérifiable ;
-- aucune activation Search ;
-- preuves avant/après et rollback pour toute écriture ultérieure.
+M5 ferme le risque de doublons non prouvés et le risque de servir publiquement des lignes non fraîchement confirmées.
+
+Preuves :
+- M5-A shadow dedup : PR #874 ; merge `e1a6328b12dada4a21672f68c824f3f4368e65a9` ; run `32611464377` SUCCESS ;
+- artifact M5-A `9485645948` ; digest `sha256:4e98e033682c2bb13315f7a1798dbf37e24315b0cc15a79ae4c5107d4e60fa20` ;
+- baseline M5-A : 15 551 LISTING `real_estate_likely`, 818 lignes avec 5 dimensions exactes, 8 groupes de collision / 16 représentations, dont 1 groupe cross-source / 2 représentations ;
+- doctrine M5-A : une collision exacte est un **candidat**, jamais une preuve de doublon ; aucune métrique de propriétés uniques n’est revendiquée ;
+- M5-B freshness : PR #876 ; merge `25397654f9200bbee9a9736c96b1b93af49e44f7` ; run `32631787333` SUCCESS ;
+- artifact M5-B `9491244621` ; digest `sha256:f5204395fdc18892e393988fb385859528b3a8b1f70e07fd67ddbc61c2ae2c6a` ;
+- audit live avant migration : **12 263** LISTING `seed_only` display-eligible et **3 054** `fresh_confirmed` ;
+- migration prod `mass_index_m5_public_freshness_gate` appliquée avec succès ;
+- postcondition DB : les deux RPC publics `search_public_representations_v2` et `search_thin_index_v3` contiennent uniquement `freshness_status = 'fresh_confirmed'` ;
+- preuve comportementale live : sur 500 résultats par RPC, statuts retournés = `fresh_confirmed` uniquement ; **0 ligne non fraîche** ;
+- réservoir préservé : comptes `seed_only` / `fresh_confirmed` inchangés après migration ;
+- aucun Vercel.
+
+### M6 — Goal
+Activer Search + SEO uniquement à partir des représentations autorisées et fraîchement confirmées, avec comportement public prouvé et sans régression des invariants M0–M5.
+
+### M6 — Succès
+- audit exact des chemins Search/SEO actuels ;
+- activation contrôlée uniquement des représentations admissibles ;
+- pagination/ranking/SEO canonique vérifiés ;
+- absence de fuite `seed_only`, contenu riche non autorisé ou doublons non prouvés ;
+- tests + preuve live proportionnels au risque ;
+- aucun Vercel sans autorisation explicite.
 
 ### Next exact
-M5 audit current-main + schémas/tables existants -> mesurer doublons/fraîcheur read-only -> définir contrat M5 et critères -> implémentation/test ciblés.
+M6 audit current-main des routes Search, RPC, sitemap/SEO et read models -> figer baseline publique -> définir contrat d’activation -> implémentation/test ciblés.
 
 ---
 
