@@ -1,0 +1,37 @@
+/* CARTE MARKET CONVERGENCE — P4 contract correction 2026-08-23
+   Preserve the validated visual polish while restoring the certified P4 shell geometry. */
+
+@media (max-width: 767px) {
+  [data-p4-map-layout]:has([data-akarfinder-market-intelligence-map]) .p4-map-decision-rail {
+    display: block !important;
+    max-height: 148px;
+    padding: 10px 12px 10px;
+    border-radius: 20px 20px 16px 16px;
+  }
+
+  [data-p4-map-layout]:has([data-akarfinder-market-intelligence-map]) .p4-sheet-handle {
+    margin-bottom: 6px;
+  }
+
+  [data-p4-map-layout]:has([data-akarfinder-market-intelligence-map]) [data-akarfinder-intelligence-legend] {
+    bottom: 238px !important;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  [data-p4-map-layout]:has([data-akarfinder-market-intelligence-map]) .p4-map-decision-rail {
+    display: block !important;
+    max-height: 190px;
+    padding: 14px;
+  }
+
+  [data-p4-map-layout]:has([data-akarfinder-market-intelligence-map]) [data-akarfinder-intelligence-legend] {
+    display: none !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  [data-p4-map-layout]:has([data-akarfinder-market-intelligence-map]) {
+    grid-template-columns: minmax(0, 3fr) minmax(360px, 2fr);
+  }
+}
