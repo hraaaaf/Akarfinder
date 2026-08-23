@@ -3,6 +3,7 @@ name: Carte C7 Final Certification
 on:
   pull_request:
     paths:
+      - "app/map/**"
       - "scripts/audits/carte-c7-final-certification.mjs"
       - ".github/workflows/carte-c7-final-certification.yml"
       - "docs/CARTE_INTELLIGENCE_MARCHE_TARGET.md"

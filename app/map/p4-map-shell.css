@@ -155,3 +155,228 @@
     width: min(360px, calc(100% - 32px)) !important;
   }
 }
+
+/* CARTE MARKET CONVERGENCE — human-gate target 2026-08-23
+   Goal: preserve the certified market engine and move only presentation toward
+   the locked mobile-first reference: compact chrome, dominant map, contextual
+   legend, restrained zone sheet, global bottom-nav left untouched. */
+
+[data-p4-map-canvas] [data-akarfinder-market-intelligence-map] {
+  background: #eef4fa;
+}
+
+[data-p4-map-canvas] [data-akarfinder-market-intelligence-map] .maplibregl-canvas {
+  filter: saturate(.8) contrast(.96) brightness(1.045);
+}
+
+[data-p4-map-canvas] [data-akarfinder-premium-map-toolbar] {
+  border-color: rgb(218 228 240 / .92) !important;
+  background: rgb(255 255 255 / .965) !important;
+  box-shadow: 0 10px 28px rgb(15 35 66 / .11) !important;
+  backdrop-filter: blur(16px) saturate(1.08) !important;
+}
+
+[data-p4-map-canvas] [data-akarfinder-intelligence-legend] {
+  border-color: rgb(218 228 240 / .94) !important;
+  background: rgb(255 255 255 / .97) !important;
+  box-shadow: 0 10px 28px rgb(15 35 66 / .12) !important;
+}
+
+[data-p4-map-canvas] [data-akarfinder-rich-zone-sheet] {
+  border-color: rgb(214 225 238 / .96) !important;
+  background: rgb(255 255 255 / .975) !important;
+  box-shadow: 0 18px 48px rgb(15 35 66 / .16) !important;
+}
+
+@media (max-width: 767px) {
+  [data-p4-map-canvas] [data-akarfinder-premium-map-toolbar] {
+    inset-inline: 8px !important;
+    top: 8px !important;
+    border-radius: 16px !important;
+    padding: 8px !important;
+  }
+
+  [data-p4-map-canvas] [data-akarfinder-premium-map-toolbar] > div:first-child p:first-child {
+    display: none !important;
+  }
+
+  [data-p4-map-canvas] [data-akarfinder-premium-map-toolbar] > div:first-child p:last-child {
+    font-size: 12px !important;
+    line-height: 16px !important;
+  }
+
+  [data-p4-map-canvas] [data-akarfinder-premium-map-toolbar] label {
+    margin-top: 7px !important;
+  }
+
+  [data-p4-map-canvas] [data-akarfinder-premium-map-toolbar] select {
+    height: 36px !important;
+    border-radius: 11px !important;
+    font-size: 10.5px !important;
+  }
+
+  [data-p4-map-canvas] [data-akarfinder-premium-map-toolbar] > div:last-child {
+    margin-top: 7px !important;
+    gap: 6px !important;
+    padding-top: 7px !important;
+  }
+
+  [data-p4-map-canvas] [data-akarfinder-premium-map-toolbar] [role="tablist"] {
+    border-radius: 11px !important;
+    padding: 3px !important;
+  }
+
+  [data-p4-map-canvas] [data-akarfinder-premium-map-toolbar] [role="tab"] {
+    min-height: 32px !important;
+    padding-block: 6px !important;
+    border-radius: 8px !important;
+    font-size: 10px !important;
+  }
+
+  [data-p4-map-canvas] [data-akarfinder-premium-map-toolbar] [aria-label="Transaction"] {
+    padding: 3px !important;
+    border-radius: 10px !important;
+  }
+
+  [data-p4-map-canvas] [data-akarfinder-premium-map-toolbar] [aria-label="Transaction"] button {
+    min-height: 28px !important;
+    padding: 4px 10px !important;
+    font-size: 9px !important;
+  }
+
+  [data-p4-map-canvas] [data-akarfinder-premium-map-toolbar] [aria-label="Transaction"] + span {
+    display: none !important;
+  }
+
+  /* Reference-like compact floating legend: label + one continuous visual scale. */
+  [data-p4-map-canvas] [data-akarfinder-intelligence-legend] {
+    left: 10px !important;
+    right: 10px !important;
+    bottom: 86px !important;
+    width: auto !important;
+    max-width: none !important;
+    border-radius: 15px !important;
+    padding: 9px 11px 10px !important;
+  }
+
+  [data-p4-map-canvas] [data-akarfinder-intelligence-legend] > div:first-child {
+    align-items: center !important;
+  }
+
+  [data-p4-map-canvas] [data-akarfinder-intelligence-legend] > div:first-child span:last-child {
+    padding: 3px 7px !important;
+    font-size: 8px !important;
+  }
+
+  [data-p4-map-canvas] [data-akarfinder-intelligence-legend] > div:nth-child(2) {
+    display: flex !important;
+    height: 8px !important;
+    overflow: hidden !important;
+    gap: 0 !important;
+    margin-top: 7px !important;
+    border-radius: 999px !important;
+    background: #e8eef6 !important;
+  }
+
+  [data-p4-map-canvas] [data-akarfinder-intelligence-legend] > div:nth-child(2) > div {
+    flex: 1 1 0 !important;
+    gap: 0 !important;
+    min-width: 0 !important;
+  }
+
+  [data-p4-map-canvas] [data-akarfinder-intelligence-legend] > div:nth-child(2) > div > span:first-child {
+    width: 100% !important;
+    height: 8px !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+  }
+
+  [data-p4-map-canvas] [data-akarfinder-intelligence-legend] > div:nth-child(2) > div > span:last-child,
+  [data-p4-map-canvas] [data-akarfinder-intelligence-legend] > div:last-child {
+    display: none !important;
+  }
+
+  /* Keep the selected-zone card compact first; details remain reachable by its existing toggle. */
+  [data-p4-map-canvas] [data-akarfinder-rich-zone-sheet] {
+    inset-inline: 8px !important;
+    bottom: 82px !important;
+    padding: 12px !important;
+    border-radius: 20px !important;
+  }
+
+  [data-p4-map-canvas] [data-akarfinder-rich-zone-sheet][data-akarfinder-zone-sheet-state="collapsed"] {
+    max-height: min(34svh, 300px) !important;
+  }
+
+  [data-p4-map-canvas] [data-akarfinder-rich-zone-sheet][data-akarfinder-zone-sheet-state="expanded"] {
+    max-height: min(64svh, 560px) !important;
+  }
+
+  [data-p4-map-canvas] [data-akarfinder-zone-kpi-grid] {
+    gap: 6px !important;
+  }
+
+  [data-p4-map-canvas] [data-akarfinder-zone-kpi-grid] > div {
+    padding: 7px !important;
+    border-radius: 10px !important;
+  }
+
+  [data-p4-map-canvas] [data-akarfinder-live-zone-metric] {
+    margin-top: 7px !important;
+  }
+
+  /* The generic P4 rail must not compete with the market-intelligence cockpit on mobile. */
+  [data-p4-map-layout]:has([data-akarfinder-market-intelligence-map]) .p4-map-decision-rail {
+    display: none !important;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  [data-p4-map-layout]:has([data-akarfinder-market-intelligence-map]) .p4-map-decision-rail {
+    display: none !important;
+  }
+
+  [data-p4-map-canvas] [data-akarfinder-premium-map-toolbar] {
+    max-width: 760px !important;
+    margin-inline: auto !important;
+  }
+
+  [data-p4-map-canvas] [data-akarfinder-rich-zone-sheet] {
+    inset-inline: auto 16px !important;
+    width: min(360px, 46vw) !important;
+    bottom: 18px !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  /* Keep the proven 60/40 shell while making the map side visually match the premium reference. */
+  [data-p4-map-layout]:has([data-akarfinder-market-intelligence-map]) {
+    grid-template-columns: minmax(0, 5fr) minmax(340px, 2fr);
+    background: #f7f9fc;
+  }
+
+  [data-p4-map-layout]:has([data-akarfinder-market-intelligence-map]) .p4-map-decision-rail {
+    padding: 20px;
+    border-left-color: #e1e8f2;
+    background: #fbfcfe;
+  }
+
+  [data-p4-map-canvas] [data-akarfinder-premium-map-toolbar] {
+    left: 18px !important;
+    right: 18px !important;
+    top: 16px !important;
+    border-radius: 18px !important;
+  }
+
+  [data-p4-map-canvas] [data-akarfinder-intelligence-legend] {
+    left: 18px !important;
+    bottom: 18px !important;
+    width: 280px !important;
+  }
+
+  [data-p4-map-canvas] [data-akarfinder-rich-zone-sheet] {
+    right: 18px !important;
+    top: 122px !important;
+    width: min(340px, calc(100% - 36px)) !important;
+  }
+}
