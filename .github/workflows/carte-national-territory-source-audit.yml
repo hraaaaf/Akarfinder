@@ -1,0 +1,47 @@
+name: Carte National Territory Source Audit
+
+on:
+  pull_request:
+    paths:
+      - "scripts/map/morocco-territory-source-audit.py"
+      - "docs/CARTE_NATIONAL_ZILLOW_TARGET.md"
+      - ".github/workflows/carte-national-territory-source-audit.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  audit-national-territory-sources:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Fetch official/open territorial sources
+        run: python scripts/map/morocco-territory-source-audit.py
+      - name: Validate source report
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          report = json.loads(Path('data/audits/morocco-territory-source-audit/report.json').read_text())
+          assert report['ok'] is True, report
+          assert report['sources']['barid']['rowCount'] > 0, report
+          assert report['sources']['barid']['cityCount'] > 0, report
+          assert any(v.get('available') for v in report['sources']['geoBoundaries'].values()), report
+          print(json.dumps({
+            'baridCities': report['sources']['barid']['cityCount'],
+            'baridDistrictPairs': report['sources']['barid']['districtPairCount'],
+            'geoBoundaries': {k: v.get('featureCount') for k, v in report['sources']['geoBoundaries'].items() if v.get('available')},
+            'errors': report['errors'],
+          }, ensure_ascii=False, indent=2))
+          PY
+      - name: Upload territorial source evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: carte-national-territory-source-audit-${{ github.run_id }}
+          path: data/audits/morocco-territory-source-audit
+          if-no-files-found: error
+          retention-days: 30
