@@ -271,22 +271,22 @@ export function NationalTerritoryExperience({ selectedCitySlug, onSelectCity, on
     };
 
     const renderedSlug = (event: MapMouseEvent) => {
-      const pointFeatures = map.queryRenderedFeatures(event.point, { layers: [CITY_HITS] });
-      let nearestSlug: string | null = null;
-      let nearestDistance = Infinity;
-      for (const feature of pointFeatures) {
-        const slug = feature.properties?.slug;
-        if (typeof slug !== "string" || feature.geometry.type !== "Point") continue;
-        const [lng, lat] = feature.geometry.coordinates;
-        if (typeof lng !== "number" || typeof lat !== "number") continue;
-        const projected = map.project([lng, lat]);
-        const distance = Math.hypot(projected.x - event.point.x, projected.y - event.point.y);
-        if (distance < nearestDistance) {
-          nearestDistance = distance;
-          nearestSlug = slug;
+      if (payload.view === "morocco") {
+        let nearestSlug: string | null = null;
+        let nearestDistance = Infinity;
+        for (const place of payload.places) {
+          if (!place.center) continue;
+          const projected = map.project([place.center.lng, place.center.lat]);
+          const distance = Math.hypot(projected.x - event.point.x, projected.y - event.point.y);
+          if (distance < nearestDistance) {
+            nearestDistance = distance;
+            nearestSlug = place.slug;
+          }
         }
+        const touchLike = navigator.maxTouchPoints > 0 || window.matchMedia("(pointer: coarse)").matches;
+        const maxCenterDistance = touchLike ? 24 : 18;
+        if (nearestSlug && nearestDistance <= maxCenterDistance) return nearestSlug;
       }
-      if (nearestSlug) return nearestSlug;
       const boundaryFeature = map.queryRenderedFeatures(event.point, { layers: [BOUNDARY_FILL] })[0];
       const boundarySlug = boundaryFeature?.properties?.slug;
       return typeof boundarySlug === "string" ? boundarySlug : null;
