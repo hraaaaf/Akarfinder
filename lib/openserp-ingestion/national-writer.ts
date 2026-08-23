@@ -7,21 +7,20 @@
 //   - exactly one property_clusters + one property_cluster_members row per
 //     NEW listing_sources row, cluster_origin = "deterministic_same_source_identifier".
 //
-// Idempotence: every insert here goes through Supabase upsert() targeting the
-// table's own pre-existing unique constraint (discovery_candidates:
-// (provider, query_hash, canonical_url); listing_sources: (listing_url);
-// property_clusters: (legacy_property_listing_id); property_cluster_members:
-// (property_cluster_id, source_offer_id)). A rerun with the same candidates
-// therefore produces zero new rows anywhere — proven by the same mechanism
-// already validated for property_listings/listing_sources by
-// runPostWriteIdempotenceCheck in pipeline.ts, extended here to the two new
-// tables. IDs are DB-generated (gen_random_uuid()); this deliberately departs
-// from the ODM's own illustrative UUIDv5 pseudocode (section 16) in favor of
-// the pattern already used everywhere else in this codebase for these exact
-// tables (every InMemory*Repository in market-index-repository.ts creates
-// rows via DB-generated id + a separate idempotency key, never a client
-// UUIDv5) — the guarantee (same input never produces two rows) is identical;
-// only the mechanism differs. See docs/OPENSERP_AUTOMATED_INGESTION_ARCHITECTURE.md.
+// Idempotence: discovery_candidates uses the service-role PostgreSQL RPC
+// upsert_discovery_candidates_batch so the partial idempotency index predicate
+// is expressed by PostgreSQL itself, atomically. The remaining writes use
+// Supabase upsert() targeting each table's pre-existing unique constraint
+// (listing_sources: (listing_url); property_clusters:
+// (legacy_property_listing_id); property_cluster_members:
+// (property_cluster_id, source_offer_id)). IDs are DB-generated
+// (gen_random_uuid()); this deliberately departs from the ODM's own
+// illustrative UUIDv5 pseudocode (section 16) in favor of the pattern already
+// used everywhere else in this codebase for these exact tables (every
+// InMemory*Repository in market-index-repository.ts creates rows via
+// DB-generated id + a separate idempotency key, never a client UUIDv5) — the
+// guarantee (same input never produces two rows) is identical; only the
+// mechanism differs. See docs/OPENSERP_AUTOMATED_INGESTION_ARCHITECTURE.md.
 
 import { createHash } from "node:crypto";
 import { getSupabaseServerClient } from "@/lib/db/supabase-client";
@@ -163,81 +162,32 @@ export async function writeNationalDiscoveryCandidates(input: NationalWriteInput
     else unclassified += 1;
   }
 
-  // discovery_candidates_idempotency_idx is a PARTIAL unique index
-  // (`where canonical_url is not null`) -- confirmed via Gate B (real
-  // PostgreSQL 18.2) that a plain upsert(onConflict:...) fails against it
-  // ("no unique or exclusion constraint matching the ON CONFLICT
-  // specification"): Postgres requires the INSERT's own ON CONFLICT clause
-  // to declare the same predicate to use a partial index for conflict
-  // inference, which the Supabase/PostgREST upsert API has no way to
-  // express. Every row here always has a non-null canonical_url in
-  // practice (classifyOpenSerpResult already drops any result whose URL
-  // fails to canonicalize before it becomes a candidate at all), so a
-  // manual select-then-split-insert/update achieves the identical
-  // idempotency guarantee without relying on that partial index as an
-  // ON CONFLICT target.
+  // P0 incident fix: do not enumerate existing rows through PostgREST. One
+  // canonical URL can legitimately have hundreds of provider/query keys, so
+  // even a 25-URL lookup can exceed PostgREST's 1,000-row response cap and
+  // misclassify existing keys as missing. The RPC performs INSERT ... ON
+  // CONFLICT with the exact partial-index predicate inside PostgreSQL, which
+  // is both atomic under concurrent writers and independent of result limits.
+  // Keep the existing 25-row request chunk to bound payload/transaction size.
   const dbCtx = input.dbCtx ?? {};
   for (const batch of chunk(rows, 25)) {
-    const keys = batch.map((row) => `${row.provider}::${row.query_hash}::${row.canonical_url}`);
-    const existingRows = await withDbTimeout({
-      callName: "writer_discovery_candidates_lookup",
+    await withDbTimeout({
+      callName: "writer_discovery_candidates_atomic_upsert",
       timeBudget: dbCtx.timeBudget,
       now: dbCtx.now,
-      countRows: (r: Array<{ id: string }>) => r.length,
+      countRows: () => batch.length,
       run: async (signal) => {
-        const existingResult = await supabase
-          .from("discovery_candidates")
-          .select("id, provider, query_hash, canonical_url")
-          .in("canonical_url", batch.map((row) => row.canonical_url))
+        const result = await supabase
+          .rpc("upsert_discovery_candidates_batch", { p_rows: batch })
           .abortSignal(signal);
-        if (existingResult.error) throw new Error(`discovery_candidates lookup failed: ${existingResult.error.message}`);
-        return existingResult.data as Array<{ id: string; provider: string; query_hash: string; canonical_url: string }>;
+        if (result.error) throw new Error(`discovery_candidates atomic upsert failed: ${result.error.message}`);
+        const affected = Number(result.data);
+        if (!Number.isFinite(affected) || affected !== batch.length) {
+          throw new Error(`discovery_candidates atomic upsert count mismatch: expected=${batch.length} actual=${String(result.data)}`);
+        }
+        return batch;
       },
     });
-    const existingByKey = new Map(existingRows.map((row) => [`${row.provider}::${row.query_hash}::${row.canonical_url}`, row.id]));
-
-    const toInsert = batch.filter((row, i) => !existingByKey.has(keys[i]));
-    const toUpdate = batch
-      .map((row, i) => ({ row, id: existingByKey.get(keys[i]) }))
-      .filter((entry): entry is { row: (typeof batch)[number]; id: string } => entry.id !== undefined);
-
-    if (toInsert.length > 0) {
-      await withDbTimeout({
-        callName: "writer_discovery_candidates_insert",
-        timeBudget: dbCtx.timeBudget,
-        now: dbCtx.now,
-        countRows: () => toInsert.length,
-        run: async (signal) => {
-          const insertResult = await supabase.from("discovery_candidates").insert(toInsert).abortSignal(signal);
-          if (insertResult.error) throw new Error(`discovery_candidates insert failed: ${insertResult.error.message}`);
-          return toInsert;
-        },
-      });
-    }
-    for (const { row, id } of toUpdate) {
-      await withDbTimeout({
-        callName: "writer_discovery_candidates_update",
-        timeBudget: dbCtx.timeBudget,
-        now: dbCtx.now,
-        countRows: () => 1,
-        run: async (signal) => {
-          const updateResult = await supabase
-            .from("discovery_candidates")
-            .update({
-              last_seen_at: row.last_seen_at,
-              discovery_status: row.discovery_status,
-              result_rank: row.result_rank,
-              title: row.title,
-              snippet: row.snippet,
-              metadata: row.metadata,
-            })
-            .eq("id", id)
-            .abortSignal(signal);
-          if (updateResult.error) throw new Error(`discovery_candidates update failed: ${updateResult.error.message}`);
-          return row;
-        },
-      });
-    }
   }
 
   return { written: rows.length, accepted, rejected, unclassified };
