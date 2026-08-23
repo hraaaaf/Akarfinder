@@ -1,0 +1,96 @@
+name: MASS-INDEX M4 Batch Certification
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "scripts/data-mass/national-mass-m4-batches.ts"
+      - "scripts/data-mass/national-mass-m4-plan.ts"
+      - "scripts/data-mass/national-mass-m4-plan-live.ts"
+      - "scripts/data-mass/__tests__/national-mass-m4-batches-contract.test.ts"
+      - "docs/MASS_INDEX_M4.md"
+      - ".github/workflows/mass-index-m4-batches.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify-m4-batches:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Batch contract tests
+        run: >-
+          npx tsx --test
+          scripts/data-mass/__tests__/national-mass-m4-plan.test.ts
+          scripts/data-mass/__tests__/national-mass-m4-live-contract.test.ts
+          scripts/data-mass/__tests__/national-mass-m4-canary-contract.test.ts
+          scripts/data-mass/__tests__/national-mass-m4-batches-contract.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Rebuild fresh read-only M4 plan
+        run: npx tsx scripts/data-mass/national-mass-m4-plan-live.ts
+
+      - name: Assert certified cohort before write
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const p = JSON.parse(fs.readFileSync('artifacts/mass-index/m4-national-ingest-plan.json','utf8'));
+          if (p.schemaVersion !== 'MASS_INDEX_M4_NATIONAL_PLAN_V2' || p.mode !== 'read_only') throw new Error('plan schema');
+          if (p.summary.sourceSpecificValid !== 965) throw new Error('certified cohort drift');
+          if (p.summary.insertNative + p.summary.preserveExisting !== 965) throw new Error('cohort accounting');
+          if (p.summary.preserveExisting < 10) throw new Error('canary baseline missing');
+          if (!Array.isArray(p.inserts) || p.inserts.length !== p.summary.insertNative) throw new Error('insert plan');
+          if (p.inserts.some(x => x.seed.metadata !== null || x.seed.freshness_status !== 'seed_only')) throw new Error('minimal seed drift');
+          console.log(JSON.stringify({before:p.before, summary:p.summary}, null, 2));
+          NODE
+
+      - name: Execute bounded M4 batches
+        env:
+          MASS_INDEX_M4_BATCH_WRITE: "1"
+          MASS_INDEX_M4_BATCH_SIZE: "100"
+        run: npx tsx scripts/data-mass/national-mass-m4-batches.ts
+
+      - name: Assert batch receipt
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const r = JSON.parse(fs.readFileSync('artifacts/mass-index/m4-batch-receipt.json','utf8'));
+          if (r.schemaVersion !== 'MASS_INDEX_M4_BATCH_RECEIPT_V1') throw new Error('receipt schema');
+          if (r.status !== 'verified' || r.rolledBack !== false) throw new Error('batch not verified');
+          if (r.certifiedCohort !== 965) throw new Error('cohort');
+          if (r.insertedCount + r.preservedExisting !== 965) throw new Error('final accounting');
+          if (r.after.sourceOfferSeeds - r.before.sourceOfferSeeds !== r.insertedCount) throw new Error('seed delta');
+          if (r.after.thinIndexDocuments - r.before.thinIndexDocuments !== 0) throw new Error('thin delta');
+          if (!r.invariants.metadataNull || !r.invariants.thinIndexExcluded ||
+              r.invariants.existingSeedsMutated !== 0 || r.invariants.providerRelabels !== 0 ||
+              r.invariants.publicSearchActivationChanges !== 0 ||
+              !r.invariants.fullRunCompensatingRollbackOnFailure) throw new Error('invariant drift');
+          console.log(JSON.stringify(r, null, 2));
+          NODE
+
+      - name: Upload M4 batch evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mass-index-m4-batch-evidence
+          path: |
+            artifacts/mass-index/m4-national-ingest-plan.json
+            artifacts/mass-index/m4-batch-receipt.json
+          if-no-files-found: error
+          retention-days: 14
