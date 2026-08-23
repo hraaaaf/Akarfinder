@@ -1,0 +1,61 @@
+name: MASS-INDEX M5 Shadow Dedup Certification
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "scripts/data-mass/mass-index-m5-shadow-dedup.ts"
+      - "scripts/data-mass/__tests__/mass-index-m5-shadow-dedup.test.ts"
+      - ".github/workflows/mass-index-m5-shadow-dedup.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify-m5-shadow-dedup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: M5 shadow contract tests
+        run: npx tsx --test scripts/data-mass/__tests__/mass-index-m5-shadow-dedup.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Build read-only M5 shadow candidate groups
+        run: npx tsx scripts/data-mass/mass-index-m5-shadow-dedup.ts
+
+      - name: Assert M5 shadow evidence
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const r = JSON.parse(fs.readFileSync('artifacts/mass-index/m5-shadow-dedup.json','utf8'));
+          if (r.schemaVersion !== 'MASS_INDEX_M5_SHADOW_DEDUP_V1') throw new Error('schema');
+          if (r.mode !== 'read_only_shadow') throw new Error('mode');
+          if (r.invariants.databaseWrites !== 0 || r.invariants.sourceNetworkRequests !== 0 || r.invariants.publicActivations !== 0 || r.invariants.propertyClustersMutated !== 0) throw new Error('mutation invariant');
+          if (r.invariants.uniquePropertyMetricClaimed !== false || r.invariants.collisionIsDuplicateProof !== false) throw new Error('claim invariant');
+          if (r.summary.fullDimensionListings > r.summary.totalRealEstateListings) throw new Error('count invariant');
+          if (r.candidateGroups.some(g => g.memberCount < 2 || g.classification !== 'EXACT_FULL_DIMENSION_COLLISION_NOT_DUPLICATE_PROOF')) throw new Error('group invariant');
+          console.log(JSON.stringify(r.summary, null, 2));
+          NODE
+
+      - name: Upload M5 shadow evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: mass-index-m5-shadow-dedup
+          path: artifacts/mass-index/m5-shadow-dedup.json
+          if-no-files-found: error
+          retention-days: 14
