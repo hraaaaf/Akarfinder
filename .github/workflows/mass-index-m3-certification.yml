@@ -7,7 +7,9 @@ on:
     paths:
       - scripts/data-mass/source-factory-m3-adapter.ts
       - scripts/data-mass/source-factory-m3-canary-live.ts
+      - scripts/data-mass/source-factory-m3-access-policy.ts
       - scripts/data-mass/__tests__/source-factory-m3-adapter.test.ts
+      - scripts/data-mass/__tests__/source-factory-m3-access-policy.test.ts
       - scripts/data-mass/source-factory.ts
       - scripts/data-mass/source-factory-decision.ts
       - scripts/data-mass/source-factory-policy-matrix.ts
@@ -43,6 +45,7 @@ jobs:
         run: >-
           npx tsx --test
           scripts/data-mass/__tests__/source-factory-m3-adapter.test.ts
+          scripts/data-mass/__tests__/source-factory-m3-access-policy.test.ts
           scripts/data-mass/__tests__/source-factory.test.ts
           scripts/data-mass/__tests__/source-factory-decision.test.ts
           scripts/data-mass/__tests__/source-factory-policy-matrix.test.ts

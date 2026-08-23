@@ -48,6 +48,14 @@ M3 a donc été durci : un candidat n'est valide que s'il passe à la fois le cl
 | 2p.ma | 38 | 0 | 0 % |
 | portail-immobilier.ma | 28 | 0 | 0 % |
 
+## Delta de séparation des droits
+Le correctif M3 distingue désormais deux plans indépendants :
+
+1. `externalIndex` : représentation externe minimale d'une URL déjà découverte, limitée à `CANONICAL_URL`, `SOURCE_DOMAIN` et `PROVENANCE`. Ce plan n'autorise ni requête réseau vers la source ni réutilisation de son contenu.
+2. `ingestionAndReuse` : ingestion/réutilisation du contenu source. Ce plan reste fermé par défaut et ne peut être ouvert qu'avec une autorisation explicite, une référence de preuve non vide et un canal d'acquisition de contenu admis.
+
+Une décision historique `CANONICAL_LINK_ONLY`, `INTERNAL_ONLY` ou tout autre état de la Source Factory ne peut donc plus être utilisée comme substitut implicite à une autorisation de réutilisation.
+
 ## Gate M4
 Wave 1 M4 : `marocannonces.com`, `domio.ma`, `sakane.ma`, `1000-annonces.com`, `housing.place`, `expat.com`, `milkiya.ma`.
 
