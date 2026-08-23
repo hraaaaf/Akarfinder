@@ -27,7 +27,8 @@ test("harvester enforces live Source Registry policy before any CDX loop", () =>
   assert.ok(policyIndex >= 0, "harvester must read canonical policy");
   assert.ok(domainLoopIndex > policyIndex, "policy read/evaluation must happen before domain CDX requests");
   assert.match(harvester, /MASS_INDEX_COMMONCRAWL_CHANNEL/);
-  assert.match(harvester, /evaluateMassIndexDomains/);
+  assert.match(harvester, /evaluateMassIndexExternalIndexDomains/);
+  assert.match(harvester, /prepareCommonCrawlPolicyGate/);
   assert.match(harvester, /zero policy-authorized domains/);
 });
 

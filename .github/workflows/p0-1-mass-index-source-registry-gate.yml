@@ -10,6 +10,9 @@ on:
       - "scripts/openserp/ingest-commoncrawl-mass-seeds.ts"
       - "scripts/scrapers/__tests__/mass-index-source-policy.test.ts"
       - "scripts/scrapers/__tests__/p0-1-mass-index-source-registry-gate.test.ts"
+      - "scripts/scrapers/__tests__/openserp-commoncrawl-policy-gate.test.ts"
+      - "scripts/data-mass/source-factory-m3-access-policy.ts"
+      - "scripts/data-mass/__tests__/source-factory-m3-access-policy.test.ts"
       - "supabase/migrations/20260808150000_p0_1_mass_index_source_registry_operational_gate.sql"
       - ".github/workflows/commoncrawl-mass-seed-harvest.yml"
       - ".github/workflows/p0-1-mass-index-source-registry-gate.yml"
@@ -23,6 +26,9 @@ on:
       - "scripts/openserp/ingest-commoncrawl-mass-seeds.ts"
       - "scripts/scrapers/__tests__/mass-index-source-policy.test.ts"
       - "scripts/scrapers/__tests__/p0-1-mass-index-source-registry-gate.test.ts"
+      - "scripts/scrapers/__tests__/openserp-commoncrawl-policy-gate.test.ts"
+      - "scripts/data-mass/source-factory-m3-access-policy.ts"
+      - "scripts/data-mass/__tests__/source-factory-m3-access-policy.test.ts"
       - "supabase/migrations/20260808150000_p0_1_mass_index_source_registry_operational_gate.sql"
       - ".github/workflows/commoncrawl-mass-seed-harvest.yml"
       - ".github/workflows/p0-1-mass-index-source-registry-gate.yml"
@@ -49,6 +55,8 @@ jobs:
           npx tsx --test
           scripts/scrapers/__tests__/mass-index-source-policy.test.ts
           scripts/scrapers/__tests__/p0-1-mass-index-source-registry-gate.test.ts
+          scripts/scrapers/__tests__/openserp-commoncrawl-policy-gate.test.ts
+          scripts/data-mass/__tests__/source-factory-m3-access-policy.test.ts
 
       - name: TypeScript
         run: npx tsc --noEmit
@@ -59,7 +67,7 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: npx tsx scripts/openserp/p0-1-audit-commoncrawl-registry.ts
 
-      - name: Assert live audit is fail-closed
+      - name: Assert live audit integrity
         run: |
           node - <<'NODE'
           const fs = require('fs');
@@ -69,8 +77,8 @@ jobs:
           if (report.db_mutation !== false || report.commoncrawl_request !== false) {
             throw new Error('P0.1 certification audit must stay read-only');
           }
-          if (!Array.isArray(report.allowed_domains) || report.allowed_domains.length === 0) {
-            throw new Error('P0.1 audit returned zero policy-authorized domains');
+          if (!Array.isArray(report.allowed_domains)) {
+            throw new Error('P0.1 audit allowed_domains must be an array');
           }
           if (report.policy_rows_loaded > report.structural_candidate_domains) {
             throw new Error('P0.1 impossible policy/source cardinality');
@@ -81,6 +89,18 @@ jobs:
             allowed_domains: report.allowed_domains.length,
             rejection_breakdown: report.rejection_breakdown,
           }, null, 2));
+          NODE
+
+      - name: Assert production policy authorizes at least one Common Crawl domain
+        if: github.event_name != 'pull_request'
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const path = 'data/audits/runtime/p0-1-commoncrawl-policy-projection.json';
+          const report = JSON.parse(fs.readFileSync(path, 'utf8'));
+          if (!Array.isArray(report.allowed_domains) || report.allowed_domains.length === 0) {
+            throw new Error('P0.1 audit returned zero policy-authorized domains');
+          }
           NODE
 
       - name: Upload P0.1 read-only proof

@@ -11,7 +11,7 @@
 
 import { createHash } from "node:crypto";
 import { mkdirSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { loadSourceDomainRegistry, getListingUrlPatterns } from "@/lib/openserp-ingestion/domain-registry";
 import { canonicalizeSourceUrl, extractDomain } from "@/lib/openserp-ingestion/utils";
 import {
@@ -20,9 +20,11 @@ import {
 } from "@/lib/acquisition-scale-v1/commoncrawl-mass-seeds";
 import {
   MASS_INDEX_COMMONCRAWL_CHANNEL,
-  evaluateMassIndexDomains,
+  evaluateMassIndexExternalIndexDomains,
+  type MassIndexSourcePolicy,
 } from "@/lib/acquisition-scale-v1/mass-index-source-policy";
 import { loadMassIndexSourcePolicies } from "@/lib/acquisition-scale-v1/mass-index-source-policy-db";
+import { buildM3SeparatedAccessPolicy } from "../data-mass/source-factory-m3-access-policy";
 
 export const MASS_CDX_INDEXES = ["CC-MAIN-2026-25", "CC-MAIN-2026-21", "CC-MAIN-2026-17"] as const;
 export const MASS_CANARY_DOMAINS = ["soukimmobilier.com", "masaken.ma", "atlasimmobilier.com", "daragadir.com"] as const;
@@ -31,6 +33,7 @@ const REQUEST_PACING_MS = 1_000;
 const MAX_ATTEMPTS = 5;
 const RETRYABLE = new Set([429, 500, 502, 503, 504]);
 const COMMON_CRAWL_USER_AGENT = "AkarFinder-CommonCrawl-Harvester/1.0 (+https://github.com/hraaaaf/Akarfinder)";
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 export type MassCdxRecord = {
   url: string;
@@ -57,8 +60,145 @@ export type HarvestIndexFailure = {
   error: string;
 };
 
+export type PolicyReviewAlertLabel = "J-7" | "J-3" | "J-1";
+
+export type PolicyReviewAlert = {
+  source_domain: string;
+  next_review_at: string;
+  days_until_policy_review_due: number;
+  policy_review_alert: PolicyReviewAlertLabel;
+};
+
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function normalizeDomain(value: string): string {
+  return value.trim().toLowerCase();
+}
+
+export function getPolicyReviewAlert(
+  nextReviewAt: string | null,
+  now: Date = new Date(),
+): { days_until_policy_review_due: number; policy_review_alert: PolicyReviewAlertLabel } | null {
+  if (!nextReviewAt) return null;
+  const deadline = new Date(nextReviewAt);
+  if (!Number.isFinite(deadline.getTime())) return null;
+
+  const remainingMs = deadline.getTime() - now.getTime();
+  if (remainingMs <= 0) return null;
+
+  const days = Math.ceil(remainingMs / DAY_MS);
+  if (days <= 1) return { days_until_policy_review_due: days, policy_review_alert: "J-1" };
+  if (days <= 3) return { days_until_policy_review_due: days, policy_review_alert: "J-3" };
+  if (days <= 7) return { days_until_policy_review_due: days, policy_review_alert: "J-7" };
+  return null;
+}
+
+function workflowCommandValue(value: string): string {
+  return value.replace(/%/g, "%25").replace(/\r/g, "%0D").replace(/\n/g, "%0A");
+}
+
+export function buildCommonCrawlPolicyProjection(
+  structuralDomains: string[],
+  policies: MassIndexSourcePolicy[],
+  now: Date = new Date(),
+) {
+  const policyEvaluation = evaluateMassIndexExternalIndexDomains(
+    structuralDomains,
+    MASS_INDEX_COMMONCRAWL_CHANNEL,
+    policies,
+    now,
+  );
+
+  const rejectionBreakdown = policyEvaluation.decisions
+    .filter((decision) => !decision.allowed)
+    .reduce<Record<string, number>>((acc, decision) => {
+      acc[decision.reason] = (acc[decision.reason] ?? 0) + 1;
+      return acc;
+    }, {});
+
+  const m3AccessPlans = policyEvaluation.decisions.map((decision) => ({
+    decision,
+    access_plan: buildM3SeparatedAccessPolicy(decision.source_domain, decision.allowed),
+  }));
+
+  const m3AccessPlanesSeparated = m3AccessPlans.every(({ decision, access_plan: plan }) =>
+    plan.externalIndex.eligible === decision.allowed
+    && plan.externalIndex.sourceNetworkRequestsAllowed === false
+    && plan.externalIndex.sourceContentReuseAllowed === false
+    && plan.ingestionAndReuse.authorized === false
+    && plan.ingestionAndReuse.evidenceReference === null
+    && plan.ingestionAndReuse.allowedChannels.length === 0,
+  );
+
+  const alerts: PolicyReviewAlert[] = policies
+    .filter((policy) => ["current", "due_soon"].includes(policy.review_status ?? ""))
+    .map((policy) => {
+      const alert = getPolicyReviewAlert(policy.next_review_at, now);
+      if (!alert || !policy.next_review_at) return null;
+      return {
+        source_domain: normalizeDomain(policy.source_domain),
+        next_review_at: policy.next_review_at,
+        ...alert,
+      };
+    })
+    .filter((alert): alert is PolicyReviewAlert => alert !== null)
+    .sort((a, b) => a.days_until_policy_review_due - b.days_until_policy_review_due
+      || a.source_domain.localeCompare(b.source_domain));
+
+  const policyReport = {
+    gate_version: "p0_1_commoncrawl_minimal_external_index_v2",
+    generated_at: now.toISOString(),
+    discovery_channel: MASS_INDEX_COMMONCRAWL_CHANNEL,
+    access_plane: "MINIMAL_EXTERNAL_INDEX",
+    structural_candidate_domains: structuralDomains.length,
+    policy_rows_loaded: policies.length,
+    allowed_domains: policyEvaluation.allowedDomains,
+    rejected_domains: policyEvaluation.decisions.filter((decision) => !decision.allowed),
+    rejection_breakdown: rejectionBreakdown,
+    review_alerts: alerts,
+    m3_access_plans: m3AccessPlans,
+    m3_access_planes_separated: m3AccessPlanesSeparated,
+    fail_closed: policyEvaluation.decisions.every(
+      (decision) => decision.allowed === (decision.reason === "allowed"),
+    ),
+    authority: "public.source_policy_registry",
+  };
+
+  return { policyEvaluation, policyReport };
+}
+
+export function prepareCommonCrawlPolicyGate(
+  structuralDomains: string[],
+  policies: MassIndexSourcePolicy[],
+  policyReportPath: string,
+  now: Date = new Date(),
+) {
+  const prepared = buildCommonCrawlPolicyProjection(structuralDomains, policies, now);
+
+  mkdirSync(dirname(policyReportPath), { recursive: true });
+  writeFileSync(policyReportPath, `${JSON.stringify(prepared.policyReport, null, 2)}\n`, "utf8");
+
+  for (const alert of prepared.policyReport.review_alerts) {
+    const title = workflowCommandValue(`P0.1 policy review ${alert.policy_review_alert}`);
+    const message = workflowCommandValue(
+      `${alert.source_domain} review due ${alert.next_review_at} (${alert.days_until_policy_review_due}d)`,
+    );
+    console.warn(`::warning title=${title}::${message}`);
+  }
+
+  if (!prepared.policyReport.fail_closed) {
+    throw new Error("P0.1 Source Registry evaluation integrity failed");
+  }
+  if (!prepared.policyReport.m3_access_planes_separated) {
+    throw new Error("P0.1 M3 access-plane separation integrity failed");
+  }
+  if (structuralDomains.length > 0 && prepared.policyEvaluation.allowedDomains.length === 0) {
+    throw new Error("P0.1 blocked Common Crawl harvest: zero policy-authorized domains");
+  }
+
+  return prepared.policyEvaluation;
 }
 
 export function buildCdxIndexUrl(domain: string, index: string): string {
@@ -200,46 +340,18 @@ async function main() {
   const registry = loadSourceDomainRegistry();
   const structuralDomains = selectRegistryMassHarvestDomains(registry);
   const policies = await loadMassIndexSourcePolicies(structuralDomains);
-  const policyEvaluation = evaluateMassIndexDomains(
+  const policyReportPath = join(process.cwd(), "data/audits/runtime/p0-1-commoncrawl-policy-projection.json");
+  const policyEvaluation = prepareCommonCrawlPolicyGate(
     structuralDomains,
-    MASS_INDEX_COMMONCRAWL_CHANNEL,
     policies,
+    policyReportPath,
   );
-  if (structuralDomains.length > 0 && policyEvaluation.allowedDomains.length === 0) {
-    throw new Error("P0.1 blocked Common Crawl harvest: zero policy-authorized domains");
-  }
 
   const mode = process.env.COMMONCRAWL_MASS_MODE ?? "all";
   const domains = selectMassHarvestDomains(policyEvaluation.allowedDomains, mode);
   const outputDirectory = join(process.cwd(), "data/audits/raw-results");
   const outputPath = join(outputDirectory, "commoncrawl-registry-mass-seeds.jsonl");
-  const policyReportPath = join(process.cwd(), "data/audits/runtime/p0-1-commoncrawl-policy-projection.json");
   mkdirSync(outputDirectory, { recursive: true });
-  mkdirSync(join(process.cwd(), "data/audits/runtime"), { recursive: true });
-
-  const rejectionBreakdown = policyEvaluation.decisions
-    .filter((decision) => !decision.allowed)
-    .reduce<Record<string, number>>((acc, decision) => {
-      acc[decision.reason] = (acc[decision.reason] ?? 0) + 1;
-      return acc;
-    }, {});
-  const policyReport = {
-    gate_version: "p0_1_mass_index_source_registry_v1",
-    discovery_channel: MASS_INDEX_COMMONCRAWL_CHANNEL,
-    structural_candidate_domains: structuralDomains.length,
-    policy_rows_loaded: policies.length,
-    allowed_domains: policyEvaluation.allowedDomains,
-    rejected_domains: policyEvaluation.decisions.filter((decision) => !decision.allowed),
-    rejection_breakdown: rejectionBreakdown,
-    fail_closed: policyEvaluation.decisions.every(
-      (decision) => decision.allowed === (decision.reason === "allowed"),
-    ),
-    authority: "public.source_policy_registry",
-  };
-  if (!policyReport.fail_closed) {
-    throw new Error("P0.1 Source Registry evaluation integrity failed");
-  }
-  writeFileSync(policyReportPath, `${JSON.stringify(policyReport, null, 2)}\n`, "utf8");
 
   const allSeeds: CommonCrawlMassSeed[] = [];
   const counters: MassDomainCounters[] = [];

@@ -51,12 +51,12 @@ function policyReviewIsCurrent(policy: MassIndexSourcePolicy, now: Date): boolea
   return Number.isFinite(nextReviewAt.getTime()) && nextReviewAt.getTime() > now.getTime();
 }
 
-export function evaluateMassIndexSourcePolicy(
+function evaluateMassIndexPolicyPrerequisites(
   sourceDomain: string,
   discoveryChannel: string,
   policy: MassIndexSourcePolicy | null | undefined,
-  now: Date = new Date(),
-): MassIndexPolicyDecision {
+  now: Date,
+): MassIndexPolicyDecision | null {
   const domain = normalizeDomain(sourceDomain || "");
   const channel = discoveryChannel.trim().toLowerCase();
   const base = {
@@ -75,23 +75,104 @@ export function evaluateMassIndexSourcePolicy(
   if (!policy.policy_hash?.trim()) {
     return { ...base, allowed: false, reason: "missing_policy_hash" };
   }
-  if (!policyReviewIsCurrent(policy, now)) {
-    return { ...base, allowed: false, reason: "policy_review_not_current" };
-  }
   if (!(policy.allowed_discovery_channels ?? []).map((item) => item.toLowerCase()).includes(channel)) {
     return { ...base, allowed: false, reason: "channel_not_allowed" };
   }
-  if (policy.acquisition_mode === "blocked") {
-    return { ...base, allowed: false, reason: "acquisition_blocked" };
+  if (!policyReviewIsCurrent(policy, now)) {
+    return { ...base, allowed: false, reason: "policy_review_not_current" };
   }
   if (!policy.machine_gate || policy.machine_gate.startsWith("blocked")) {
     return { ...base, allowed: false, reason: "machine_gate_blocked" };
   }
-  if (!policy.ingestion_gate || policy.ingestion_gate.startsWith("blocked")) {
+
+  return null;
+}
+
+export function evaluateMassIndexSourcePolicy(
+  sourceDomain: string,
+  discoveryChannel: string,
+  policy: MassIndexSourcePolicy | null | undefined,
+  now: Date = new Date(),
+): MassIndexPolicyDecision {
+  const prerequisiteDecision = evaluateMassIndexPolicyPrerequisites(
+    sourceDomain,
+    discoveryChannel,
+    policy,
+    now,
+  );
+  if (prerequisiteDecision) return prerequisiteDecision;
+
+  const base = {
+    source_domain: normalizeDomain(sourceDomain),
+    discovery_channel: discoveryChannel.trim().toLowerCase(),
+    policy_hash: policy?.policy_hash ?? null,
+  };
+
+  if (policy!.acquisition_mode === "blocked") {
+    return { ...base, allowed: false, reason: "acquisition_blocked" };
+  }
+  if (!policy!.ingestion_gate || policy!.ingestion_gate.startsWith("blocked")) {
     return { ...base, allowed: false, reason: "ingestion_gate_blocked" };
   }
 
   return { ...base, allowed: true, reason: "allowed" };
+}
+
+/**
+ * Minimal external-index policy plane for URL metadata such as Common Crawl CDX.
+ *
+ * This deliberately preserves the canonical registry, current-review,
+ * explicit-channel, no-bypass and machine gates while NOT interpreting source
+ * acquisition or ingestion/reuse gates as permission to query an external URL
+ * index. Content/network/reuse permissions remain a separate M3 access plane.
+ */
+export function evaluateMassIndexExternalIndexPolicy(
+  sourceDomain: string,
+  discoveryChannel: string,
+  policy: MassIndexSourcePolicy | null | undefined,
+  now: Date = new Date(),
+): MassIndexPolicyDecision {
+  const prerequisiteDecision = evaluateMassIndexPolicyPrerequisites(
+    sourceDomain,
+    discoveryChannel,
+    policy,
+    now,
+  );
+  if (prerequisiteDecision) return prerequisiteDecision;
+
+  return {
+    source_domain: normalizeDomain(sourceDomain),
+    discovery_channel: discoveryChannel.trim().toLowerCase(),
+    policy_hash: policy?.policy_hash ?? null,
+    allowed: true,
+    reason: "allowed",
+  };
+}
+
+function evaluateMassIndexDomainSet(
+  sourceDomains: string[],
+  discoveryChannel: string,
+  policies: MassIndexSourcePolicy[],
+  evaluator: (
+    sourceDomain: string,
+    discoveryChannel: string,
+    policy: MassIndexSourcePolicy | null | undefined,
+    now: Date,
+  ) => MassIndexPolicyDecision,
+  now: Date,
+): { allowedDomains: string[]; decisions: MassIndexPolicyDecision[] } {
+  const policyByDomain = new Map(
+    policies.map((policy) => [normalizeDomain(policy.source_domain), policy] as const),
+  );
+  const domains = [...new Set(sourceDomains.map(normalizeDomain).filter(Boolean))].sort();
+  const decisions = domains.map((domain) =>
+    evaluator(domain, discoveryChannel, policyByDomain.get(domain), now),
+  );
+
+  return {
+    allowedDomains: decisions.filter((decision) => decision.allowed).map((decision) => decision.source_domain),
+    decisions,
+  };
 }
 
 export function evaluateMassIndexDomains(
@@ -100,16 +181,26 @@ export function evaluateMassIndexDomains(
   policies: MassIndexSourcePolicy[],
   now: Date = new Date(),
 ): { allowedDomains: string[]; decisions: MassIndexPolicyDecision[] } {
-  const policyByDomain = new Map(
-    policies.map((policy) => [normalizeDomain(policy.source_domain), policy] as const),
+  return evaluateMassIndexDomainSet(
+    sourceDomains,
+    discoveryChannel,
+    policies,
+    evaluateMassIndexSourcePolicy,
+    now,
   );
-  const domains = [...new Set(sourceDomains.map(normalizeDomain).filter(Boolean))].sort();
-  const decisions = domains.map((domain) =>
-    evaluateMassIndexSourcePolicy(domain, discoveryChannel, policyByDomain.get(domain), now),
-  );
+}
 
-  return {
-    allowedDomains: decisions.filter((decision) => decision.allowed).map((decision) => decision.source_domain),
-    decisions,
-  };
+export function evaluateMassIndexExternalIndexDomains(
+  sourceDomains: string[],
+  discoveryChannel: string,
+  policies: MassIndexSourcePolicy[],
+  now: Date = new Date(),
+): { allowedDomains: string[]; decisions: MassIndexPolicyDecision[] } {
+  return evaluateMassIndexDomainSet(
+    sourceDomains,
+    discoveryChannel,
+    policies,
+    evaluateMassIndexExternalIndexPolicy,
+    now,
+  );
 }
