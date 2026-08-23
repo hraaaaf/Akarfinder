@@ -1,0 +1,58 @@
+name: Carte National Market BEFORE Audit
+
+on:
+  pull_request:
+    paths:
+      - "components/map/**"
+      - "lib/map/**"
+      - "lib/geo/**"
+      - "app/api/geo/market-intelligence/**"
+      - "app/map/**"
+      - "scripts/audits/carte-national-market-audit.mjs"
+      - ".github/workflows/carte-national-market-audit.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  audit-national-market-before:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    env:
+      BASE_URL: http://127.0.0.1:3211
+      AUDIT_OUTPUT_DIR: data/audits/carte-national-market-before
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Production build
+        run: npm run build
+      - name: Start production server
+        shell: bash
+        run: |
+          npm run start -- -p 3211 > /tmp/carte-national-market-before.log 2>&1 &
+          for attempt in {1..60}; do
+            if curl -fsS 'http://127.0.0.1:3211/map?city=casablanca&district=maarif&layer=explore' >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/carte-national-market-before.log
+          exit 1
+      - name: Audit live national data + capture BEFORE
+        run: node scripts/audits/carte-national-market-audit.mjs
+      - name: Upload national BEFORE evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: carte-national-market-before-${{ github.run_id }}
+          path: data/audits/carte-national-market-before
+          if-no-files-found: error
+          retention-days: 30
