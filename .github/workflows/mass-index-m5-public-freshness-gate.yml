@@ -1,0 +1,65 @@
+name: MASS-INDEX M5 Public Freshness Gate Certification
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "supabase/migrations/20260823103000_mass_index_m5_public_freshness_gate.sql"
+      - "scripts/data-mass/mass-index-m5-public-freshness-audit.ts"
+      - "scripts/data-mass/__tests__/mass-index-m5-public-freshness-gate.test.ts"
+      - ".github/workflows/mass-index-m5-public-freshness-gate.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify-m5-public-freshness-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: M5-B contract tests
+        run: npx tsx --test scripts/data-mass/__tests__/mass-index-m5-public-freshness-gate.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Audit live display-eligible freshness split
+        run: npx tsx scripts/data-mass/mass-index-m5-public-freshness-audit.ts
+
+      - name: Assert M5-B preparation evidence
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const r = JSON.parse(fs.readFileSync('artifacts/mass-index/m5-public-freshness-audit.json','utf8'));
+          if (r.schemaVersion !== 'MASS_INDEX_M5_PUBLIC_FRESHNESS_AUDIT_V1') throw new Error('schema');
+          if (r.mode !== 'read_only_preparation') throw new Error('mode');
+          if (r.target.publicServingFreshnessStatus !== 'fresh_confirmed') throw new Error('target freshness');
+          if (r.target.seedOnlyReservoirPreserved !== true) throw new Error('reservoir');
+          if (r.target.rpcFunctions.length !== 2) throw new Error('rpc coverage');
+          if (r.invariants.databaseWrites !== 0 || r.invariants.seedRowsDeleted !== 0 || r.invariants.thinIndexRowsDeleted !== 0) throw new Error('mutation');
+          if (r.invariants.sourceNetworkRequests !== 0 || r.invariants.providerRelabels !== 0 || r.invariants.productionMigrationApplied !== false || r.invariants.vercelDeployments !== 0) throw new Error('safety');
+          if (r.summary.seedOnlyEligibleListings <= 0) throw new Error('expected live seed_only evidence');
+          if (r.summary.freshConfirmedEligibleListings <= 0) throw new Error('expected live fresh_confirmed evidence');
+          console.log(JSON.stringify(r.summary, null, 2));
+          NODE
+
+      - name: Upload M5-B evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: mass-index-m5-public-freshness-audit
+          path: artifacts/mass-index/m5-public-freshness-audit.json
+          if-no-files-found: error
+          retention-days: 14
