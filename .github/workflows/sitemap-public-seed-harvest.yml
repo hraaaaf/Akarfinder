@@ -2,6 +2,7 @@ name: Public Sitemap Seed Harvest
 
 # MASS-ACQUISITION-FREE-ACCELERATION-1
 # DATA-40K-GATE-IMMEDIATE-SITEMAP-RUN-2026-07-24-R2
+# P0-SITEMAP-KEYSET-PAGINATION
 # Free acquisition lane: robots.txt -> explicitly declared sitemap files ->
 # strict listing URL patterns -> source_offer_seeds only. No listing page fetch,
 # no paid API, no public listing write. Scheduled/push runs require the same
@@ -10,10 +11,20 @@ name: Public Sitemap Seed Harvest
 on:
   schedule:
     - cron: "23 */6 * * *"
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/sitemap-public-seed-harvest.yml"
+      - "scripts/openserp/reconcile-commoncrawl-seed-freshness.ts"
+      - "lib/seed-freshness/keyset-pagination.ts"
+      - "scripts/scrapers/__tests__/seed-freshness-keyset-pagination.test.ts"
   push:
     branches: [main]
     paths:
       - ".github/workflows/sitemap-public-seed-harvest.yml"
+      - "scripts/openserp/reconcile-commoncrawl-seed-freshness.ts"
+      - "lib/seed-freshness/keyset-pagination.ts"
+      - "scripts/scrapers/__tests__/seed-freshness-keyset-pagination.test.ts"
   workflow_dispatch:
     inputs:
       mode:
@@ -49,7 +60,21 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Verify seed freshness keyset pagination
+        run: npx tsx --test scripts/scrapers/__tests__/seed-freshness-keyset-pagination.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Exact-head live keyset dry run
+        if: github.event_name == 'pull_request'
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npx tsx scripts/openserp/reconcile-commoncrawl-seed-freshness.ts
+
       - name: Harvest robots-declared public sitemaps
+        if: github.event_name != 'pull_request'
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
