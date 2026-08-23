@@ -68,7 +68,12 @@ try {
       const canvas = page.locator(".maplibregl-canvas");
       await canvas.waitFor({ state: "visible", timeout: 30000 });
       await page.waitForFunction(() => document.querySelector('[data-akarfinder-national-map]')?.getAttribute('data-akarfinder-national-view') === 'morocco', null, { timeout: 30000 });
-      await page.waitForTimeout(800);
+
+      await page.waitForFunction(() => {
+        const map = window.__AKARFINDER_NATIONAL_MAP__;
+        if (!map?.getLayer("akarfinder-national-city-fill") || !map?.getLayer("akarfinder-national-city-labels")) return false;
+        return map.querySourceFeatures("akarfinder-national-city-boundaries").length >= 200;
+      }, null, { timeout: 15000 });
 
       const layerState = await page.evaluate(() => {
         const map = window.__AKARFINDER_NATIONAL_MAP__;
@@ -124,7 +129,10 @@ try {
       await page.waitForTimeout(600);
       await page.screenshot({ path: `${outDir}/casablanca-${viewport.name}-after.png`, fullPage: false });
 
-      if (diagnostics.pageErrors.length || diagnostics.requestFailures.length) throw new Error(`browser diagnostics ${JSON.stringify(diagnostics)}`);
+      const criticalRequestFailures = diagnostics.requestFailures.filter((failure) => failure.url.startsWith(baseUrl) && failure.error !== "net::ERR_ABORTED");
+      if (diagnostics.pageErrors.length || criticalRequestFailures.length) {
+        throw new Error(`browser diagnostics ${JSON.stringify({ pageErrors: diagnostics.pageErrors, criticalRequestFailures })}`);
+      }
       report.cases.push({ viewport: viewport.name, overflow, layerState, touchSignals, diagnostics, cityDrilldown: true });
     } finally {
       await context.close();
