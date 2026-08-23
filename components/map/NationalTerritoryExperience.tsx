@@ -288,8 +288,8 @@ export function NationalTerritoryExperience({ selectedCitySlug, onSelectCity, on
       if (payload.view !== "morocco") return;
       const slug = renderedSlug(event);
       if (!slug) return;
-      const coarse = window.matchMedia("(pointer: coarse)").matches;
-      if (coarse && previewSlugRef.current !== slug) {
+      const touchLike = navigator.maxTouchPoints > 0 || window.matchMedia("(pointer: coarse)").matches;
+      if (touchLike && previewSlugRef.current !== slug) {
         previewSlugRef.current = slug;
         setPreviewSlug(slug);
         setActive(slug);
