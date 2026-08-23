@@ -270,11 +270,26 @@ export function NationalTerritoryExperience({ selectedCitySlug, onSelectCity, on
       if (map.getLayer(ACTIVE_POINT)) map.setFilter(ACTIVE_POINT, filter as never);
     };
 
-    const interactiveLayers = [CITY_HITS, BOUNDARY_FILL];
     const renderedSlug = (event: MapMouseEvent) => {
-      const feature = map.queryRenderedFeatures(event.point, { layers: interactiveLayers })[0];
-      const slug = feature?.properties?.slug;
-      return typeof slug === "string" ? slug : null;
+      const pointFeatures = map.queryRenderedFeatures(event.point, { layers: [CITY_HITS] });
+      let nearestSlug: string | null = null;
+      let nearestDistance = Infinity;
+      for (const feature of pointFeatures) {
+        const slug = feature.properties?.slug;
+        if (typeof slug !== "string" || feature.geometry.type !== "Point") continue;
+        const [lng, lat] = feature.geometry.coordinates;
+        if (typeof lng !== "number" || typeof lat !== "number") continue;
+        const projected = map.project([lng, lat]);
+        const distance = Math.hypot(projected.x - event.point.x, projected.y - event.point.y);
+        if (distance < nearestDistance) {
+          nearestDistance = distance;
+          nearestSlug = slug;
+        }
+      }
+      if (nearestSlug) return nearestSlug;
+      const boundaryFeature = map.queryRenderedFeatures(event.point, { layers: [BOUNDARY_FILL] })[0];
+      const boundarySlug = boundaryFeature?.properties?.slug;
+      return typeof boundarySlug === "string" ? boundarySlug : null;
     };
 
     const handleMove = (event: MapMouseEvent) => {
