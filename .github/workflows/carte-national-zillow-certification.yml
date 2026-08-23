@@ -1,0 +1,57 @@
+name: Carte National Zillow UI Certification
+
+on:
+  pull_request:
+    paths:
+      - "app/api/geo/national-territories/**"
+      - "app/map/**"
+      - "components/map/NationalMapRouter.tsx"
+      - "components/map/NationalTerritoryExperience.tsx"
+      - "lib/map/national-territory-runtime.server.ts"
+      - "lib/map/national-territory-data/**"
+      - "scripts/audits/carte-national-zillow-certification.mjs"
+      - ".github/workflows/carte-national-zillow-certification.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  certify-national-zillow-map:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      BASE_URL: http://127.0.0.1:3212
+      AUDIT_OUTPUT_DIR: data/audits/carte-national-zillow-after
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Start production server
+        shell: bash
+        run: |
+          npm run start -- -p 3212 > /tmp/carte-national-zillow.log 2>&1 &
+          for attempt in {1..60}; do
+            if curl -fsS 'http://127.0.0.1:3212/api/geo/national-territories' >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/carte-national-zillow.log
+          exit 1
+      - name: Four viewport national city interaction certification
+        run: node scripts/audits/carte-national-zillow-certification.mjs
+      - name: Upload AFTER evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: carte-national-zillow-after-${{ github.run_id }}
+          path: data/audits/carte-national-zillow-after
+          if-no-files-found: error
+          retention-days: 30

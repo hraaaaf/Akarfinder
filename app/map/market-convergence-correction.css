@@ -1,6 +1,15 @@
 /* CARTE MARKET CONVERGENCE — P4 contract correction 2026-08-23
    Preserve the validated visual polish while restoring the certified P4 shell geometry. */
 
+/* National territorial navigation must own a real viewport-height canvas.
+   Do not inherit a percentage height through intermediate wrappers: that can
+   collapse to zero in headless and create a dead band in browsers. */
+[data-p4-map-layout]:has([data-akarfinder-national-map]) [data-akarfinder-national-map] {
+  height: calc(100vh - 64px) !important;
+  height: calc(100dvh - 64px) !important;
+  min-height: 520px !important;
+}
+
 @media (max-width: 767px) {
   [data-p4-map-layout]:has([data-akarfinder-market-intelligence-map]) .p4-map-decision-rail {
     display: block !important;
@@ -39,6 +48,12 @@
 @media (max-width: 1023px) {
   [data-p4-map-layout]:has([data-akarfinder-rich-zone-sheet]) .p4-map-decision-rail,
   [data-p4-map-layout]:has([data-akarfinder-rich-zone-sheet]) [data-akarfinder-intelligence-legend] {
+    display: none !important;
+  }
+
+  /* National territorial navigation owns the lower mobile/tablet surface.
+     Its first-tap city preview must never compete with the generic P4 rail. */
+  [data-p4-map-layout]:has([data-akarfinder-national-map]) .p4-map-decision-rail {
     display: none !important;
   }
 }
