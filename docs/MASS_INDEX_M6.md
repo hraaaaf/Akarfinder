@@ -1,82 +1,66 @@
 # MASS-INDEX M6 — Search activation + SEO
 
 **Date : 2026-08-23**  
-**Statut : ACTIVE — M6-B Search cutover contract**  
+**Statut : ACTIVE — production runtime gate**  
 **Issue canonique : #854**
 
 ## Goal
 Activer Search + SEO uniquement à partir de représentations admissibles, avec fraîcheur et provenance vérifiées, sans régresser les invariants M0–M5.
 
 ## M6-A — CLOSED — baseline read-only
-
-Goal : figer l’état exact de current-main, de la DB live et de la production réellement déployée avant toute activation Search/SEO supplémentaire.
-
-Preuves certifiées :
-- PR `#879` mergée ;
-- merge `bd514a8f8797a77096bf11d52875dec431342367` ;
-- CI dédiée `32636262489` SUCCESS ;
-- artifact `9492399522` ;
-- digest `sha256:3a19cec4b90f050dc1a5251ca535787a829121269cdddeaa0f867cbf5731d07b` ;
+- PR #879 ; merge `bd514a8f8797a77096bf11d52875dec431342367` ;
+- run `32636262489` SUCCESS ;
+- artifact `9492399522` ; digest `sha256:3a19cec4b90f050dc1a5251ca535787a829121269cdddeaa0f867cbf5731d07b` ;
 - 0 write DB, 0 activation Search/SEO, 0 Vercel.
 
-### Baseline DB live M6-A
-- Thin Index LISTING `real_estate_likely` : **15 551** ;
-- `fresh_confirmed` : **3 054** ;
-- `seed_only` : **12 371** ;
-- LISTING display-eligible `fresh_confirmed` : **3 054** ;
-- LISTING display-eligible `seed_only` : **12 263**, conservés comme réservoir mais exclus des RPC publics par M5-B ;
-- `search_public_representations_v2` : **3 049** résultats admissibles observés ;
-- l’écart **3 054 → 3 049** est exactement constitué de **5 lignes `openserp`** exclues par la whitelist provider du RPC ;
-- 0 exclusion pour URL vide ;
-- 0 exclusion par exact-URL dedup ;
-- aucune métrique de propriété unique n’est déduite de ces nombres.
+Baseline : 3 054 LISTING display-eligible `fresh_confirmed`, 3 049 admissibles au RPC public ; les 5 exclues sont toutes `openserp` hors whitelist provider.
 
-### Production réellement déployée au baseline
-Au contrôle M6-A, le dernier déploiement production READY était :
-- deployment `dpl_CNKvqYuRXVrHRkAo1hrWei12sjah` ;
-- commit GitHub déployé `10420b4c0e0622122aa86608e7f257080e6b3c44`.
+## M6-B — CLOSED — Search cutover contract
+- PR #881 ; merge `4fa80e5e1e512666fe81c973de268f13e207cd43` ;
+- run `32647288760` SUCCESS ;
+- artifact `9495238964` ; digest `sha256:afe8914b543a92f81e8e0915e679902100909ffa3a9e632fab5608ea74d9f68b`.
 
-La certification current-main n’est donc pas une certification du runtime Vercel actuel. Aucun déploiement n’a été effectué.
-
-## M6-B — Search cutover contract
-
-### Goal
-Verrouiller le contrat qui permet à l’ODM de devenir la voie Search canonique pour toutes les requêtes qu’il sait traiter, sans modifier le trafic de production.
-
-### Succès
-Avec la configuration de cutover contrôlée :
+Contrat certifié :
 - `ODM_PUBLIC_CANARY_ENABLED=true` ;
 - `ODM_PUBLIC_CANARY_APPROVED=true` ;
 - `ODM_PUBLIC_CANARY_PERCENT=100` ;
 - `ODM_PUBLIC_CANARY_STOP=false` ;
+- requête ODM-compatible -> lane `odm` ;
+- approbation absente ou emergency stop -> `legacy_primary` ;
+- erreur ODM -> `legacy_fallback` ;
+- district -> legacy tant que l’ODM n’a pas de district autoritatif.
 
-alors toute requête ODM-compatible doit servir la lane `odm`.
+## M6-C — CLOSED — freshness defense
+- PR #882 ; merge `c49c31fa90f27bf6d48ac15146b9191464ecbd14` ;
+- run `32647718215` SUCCESS ;
+- serving policy Node : `fresh_confirmed` uniquement ;
+- `seed_only` rejeté en défense secondaire ;
+- provider non approuvé rejeté ;
+- 0 DB write, 0 env prod, 0 Search activation, 0 Vercel.
 
-Les sécurités doivent rester vraies :
-1. sans approbation explicite → `legacy_primary` ;
-2. emergency stop → `legacy_primary` ;
-3. erreur ODM → `legacy_fallback` ;
-4. requête district → `legacy_primary` tant que le read model ODM n’a pas de champ district autoritatif ;
-5. les RPC publics ne servent que `fresh_confirmed` ;
-6. le réservoir `seed_only` reste hors Search public ;
-7. aucun changement d’environnement production et aucun Vercel dans M6-B.
+## Legacy/SEO guard vérifié
+- Search legacy structuré : first-party / partner-authorized par défaut ;
+- exception OpenSERP persistée désactivée par défaut et encadrée par feature flag + metadata + source allowlist + URL sûre + absence de PII ;
+- `/search` reste `noindex, follow` et absent du sitemap ;
+- pages city/district indexables utilisent encore le moteur legacy gardé.
 
-### Décision d’architecture
-Aucune nouvelle variable de cutover n’est ajoutée : le routeur existant supporte déjà le cutover à 100 %, l’approbation explicite, l’arrêt d’urgence et le fallback. Ajouter un second système de bascule dupliquerait le contrôle sans augmenter la sûreté.
+## Runtime gate restant
+Dernier déploiement production READY vérifié :
+- `dpl_CNKvqYuRXVrHRkAo1hrWei12sjah` ;
+- commit `10420b4c0e0622122aa86608e7f257080e6b3c44`.
 
-### Human gate
-Le passage des variables de production à 100 % reste une décision explicite séparée. La CI M6-B certifie le **contrat**, pas l’activation réelle.
+Ce runtime est antérieur aux merges M6. M6 reste donc ACTIVE malgré les certifications current-main/DB.
 
-## Reste M6 après M6-B
-- certifier la voie legacy utilisée par les previews SEO indexables city/district ;
-- figer la stratégie du fallback `search_thin_index_v3` ;
-- préparer le cutover production sans l’exécuter sans autorisation ;
-- fermer M6 avec preuves et closeout canonique.
+## Succès restant pour fermer M6
+1. déployer un HEAD contenant M6 avec autorisation explicite ;
+2. configurer le cutover production contrôlé ;
+3. vérifier que les requêtes compatibles passent bien par ODM et restent `fresh_confirmed` ;
+4. vérifier emergency stop / fallback ;
+5. certifier le comportement SEO/runtime sur le déploiement cible ;
+6. aucun leak `seed_only`, contenu riche non autorisé ou métrique de doublon non prouvée.
 
-## Invariants
-- aucun bypass ;
-- aucune métrique propriété unique non certifiée ;
-- `seed_only` hors Search public ;
-- provenance + URL source obligatoires ;
-- `/search` reste `noindex` tant qu’une stratégie différente n’est pas explicitement approuvée ;
-- aucun Vercel sans autorisation explicite.
+## Human gate
+**Aucun Vercel sans autorisation explicite.**
+
+## Next exact
+Autorisation Vercel -> deploy M6 -> cutover -> runtime/log verification -> rollback proof -> M6 CLOSED -> M7.
