@@ -39,8 +39,6 @@ type ThinRow = {
   seed_id: string;
   canonical_url: string;
   seed_provider: string;
-  vertical_classification: string | null;
-  document_kind: string | null;
   display_eligibility: string | null;
 };
 
@@ -117,19 +115,11 @@ async function main() {
     const seedIds = inserted.map((row) => row.id);
     const { data: thinData, error: thinError } = await db
       .from("thin_index_search_documents")
-      .select("seed_id,canonical_url,seed_provider,vertical_classification,document_kind,display_eligibility")
+      .select("seed_id,canonical_url,seed_provider,display_eligibility")
       .in("seed_id", seedIds);
     if (thinError) throw thinError;
     const thinRows = (thinData ?? []) as ThinRow[];
-    if (thinRows.length !== inserted.length) throw new Error("M4_CANARY_THIN_COUNT_MISMATCH");
-
-    for (const row of thinRows) {
-      if (row.vertical_classification !== "real_estate_likely") throw new Error(`M4_CANARY_VERTICAL_DRIFT:${row.canonical_url}`);
-      if (row.document_kind !== "LISTING") throw new Error(`M4_CANARY_DOCUMENT_KIND_DRIFT:${row.canonical_url}`);
-      if (row.display_eligibility === "public" || row.display_eligibility === "public_search") {
-        throw new Error(`M4_CANARY_PUBLIC_ACTIVATION:${row.canonical_url}`);
-      }
-    }
+    if (thinRows.length !== 0) throw new Error("M4_CANARY_THIN_INDEX_LEAK");
 
     const { count: afterSeedCount, error: afterSeedError } = await db
       .from("source_offer_seeds")
@@ -141,7 +131,7 @@ async function main() {
     if (afterThinError) throw afterThinError;
 
     if ((afterSeedCount ?? 0) - (beforeSeedCount ?? 0) !== inserted.length) throw new Error("M4_CANARY_SEED_COUNT_DRIFT");
-    if ((afterThinCount ?? 0) - (beforeThinCount ?? 0) !== inserted.length) throw new Error("M4_CANARY_THIN_DELTA_DRIFT");
+    if ((afterThinCount ?? 0) - (beforeThinCount ?? 0) !== 0) throw new Error("M4_CANARY_THIN_DELTA_DRIFT");
 
     await writeReceipt(receiptPath, {
       schemaVersion: "MASS_INDEX_M4_CANARY_RECEIPT_V1",
@@ -153,6 +143,7 @@ async function main() {
       rolledBack: false,
       invariants: {
         metadataNull: true,
+        thinIndexExcluded: true,
         existingSeedsMutated: 0,
         providerRelabels: 0,
         publicSearchActivationChanges: 0,
