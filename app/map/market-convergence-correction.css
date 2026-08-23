@@ -33,6 +33,16 @@
   }
 }
 
+/* A selected market zone owns the lower-sheet surface on mobile/tablet.
+   Keep the P4 rail in exploration, then remove the competing chrome once the
+   richer zone sheet is open. The legend is redundant in that selected state. */
+@media (max-width: 1023px) {
+  [data-p4-map-layout]:has([data-akarfinder-rich-zone-sheet]) .p4-map-decision-rail,
+  [data-p4-map-layout]:has([data-akarfinder-rich-zone-sheet]) [data-akarfinder-intelligence-legend] {
+    display: none !important;
+  }
+}
+
 @media (min-width: 1024px) {
   [data-p4-map-layout]:has([data-akarfinder-market-intelligence-map]) {
     grid-template-columns: minmax(0, 3fr) minmax(360px, 2fr);
