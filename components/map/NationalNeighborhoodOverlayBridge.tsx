@@ -54,13 +54,12 @@ export function NationalNeighborhoodOverlayBridge({ citySlug }: Props) {
     let cancelled = false;
     let frame = 0;
     let current: MapLibreMap | null = null;
-    const syncReady = () => {
-      if (!cancelled && current) setMapReady(Boolean(current.isStyleLoaded()));
+    const markStyleReady = () => {
+      if (!cancelled) setMapReady(true);
     };
     const detach = () => {
       if (!current) return;
-      current.off("styledata", syncReady);
-      current.off("style.load", syncReady);
+      current.off("style.load", markStyleReady);
     };
     const findMap = () => {
       if (cancelled) return;
@@ -70,9 +69,8 @@ export function NationalNeighborhoodOverlayBridge({ citySlug }: Props) {
         return;
       }
       setMap(current);
-      syncReady();
-      current.on("styledata", syncReady);
-      current.on("style.load", syncReady);
+      if (Boolean(current.isStyleLoaded())) setMapReady(true);
+      current.on("style.load", markStyleReady);
     };
     findMap();
     return () => {
