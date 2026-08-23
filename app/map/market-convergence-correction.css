@@ -1,12 +1,13 @@
 /* CARTE MARKET CONVERGENCE — P4 contract correction 2026-08-23
    Preserve the validated visual polish while restoring the certified P4 shell geometry. */
 
-/* National territorial navigation must fill the certified P4 canvas. Using the
-   parent height avoids mobile small-viewport-unit differences creating a dead
-   band below the map. */
+/* National territorial navigation must own a real viewport-height canvas.
+   Do not inherit a percentage height through intermediate wrappers: that can
+   collapse to zero in headless and create a dead band in browsers. */
 [data-p4-map-layout]:has([data-akarfinder-national-map]) [data-akarfinder-national-map] {
-  height: 100% !important;
-  min-height: 0 !important;
+  height: calc(100vh - 64px) !important;
+  height: calc(100dvh - 64px) !important;
+  min-height: 520px !important;
 }
 
 @media (max-width: 767px) {
