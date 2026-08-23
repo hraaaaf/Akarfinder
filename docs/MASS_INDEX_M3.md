@@ -56,6 +56,16 @@ Le correctif M3 distingue désormais deux plans indépendants :
 
 Une décision historique `CANONICAL_LINK_ONLY`, `INTERNAL_ONLY` ou tout autre état de la Source Factory ne peut donc plus être utilisée comme substitut implicite à une autorisation de réutilisation.
 
+### Preuve du delta droits
+- PR #866 ;
+- HEAD certifié `c53ad1999ae89bccdb866cbb36674be78a2ee996` ;
+- run `32608268234` SUCCESS ;
+- artifact `9484758284` ;
+- digest `sha256:fadb2997a7da878d73956264ecfec2e79dac7b74def6ae56e02019637b6ca8c3` ;
+- merge `8090d50c45fb20f5fe43d0ad8835aad02bba601c` ;
+- contracts + TypeScript + canary read-only + invariants : SUCCESS ;
+- 0 DB write, 0 source fetch, 0 activation Search, 0 Vercel.
+
 ## Gate M4
 Wave 1 M4 : `marocannonces.com`, `domio.ma`, `sakane.ma`, `1000-annonces.com`, `housing.place`, `expat.com`, `milkiya.ma`.
 
