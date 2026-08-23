@@ -55,7 +55,7 @@ export function NationalNeighborhoodOverlayBridge({ citySlug }: Props) {
     let frame = 0;
     let current: MapLibreMap | null = null;
     const syncReady = () => {
-      if (!cancelled && current) setMapReady(current.isStyleLoaded());
+      if (!cancelled && current) setMapReady(Boolean(current.isStyleLoaded()));
     };
     const detach = () => {
       if (!current) return;
