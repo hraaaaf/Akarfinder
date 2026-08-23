@@ -6,6 +6,7 @@ on:
       - "scripts/map/build-morocco-territory-registry.py"
       - "scripts/map/build-morocco-territory-registry-v2.py"
       - "scripts/map/build-morocco-territory-registry-v3.py"
+      - "scripts/map/build-morocco-territory-registry-v3-fixed.py"
       - ".github/workflows/carte-national-territory-registry-build.yml"
 
 permissions:
@@ -21,7 +22,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Build HCP + Barid + OSM national catalog V3
-        run: python scripts/map/build-morocco-territory-registry-v3.py
+        run: python scripts/map/build-morocco-territory-registry-v3-fixed.py
       - name: Validate national catalog contract
         run: |
           python - <<'PY'
