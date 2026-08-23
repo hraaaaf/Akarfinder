@@ -165,7 +165,9 @@ async function main() {
   if (summary.sourceSpecificValid !== summary.insertNative + summary.preserveExisting) {
     throw new Error("M4_WRITE_PLAN_ACCOUNTING_DRIFT");
   }
-  if (canary.length === 0 || canary.length > 10) throw new Error("M4_CANARY_SIZE_INVALID");
+  if ((inserts.length > 0 && canary.length === 0) || canary.length > 10) {
+    throw new Error("M4_CANARY_SIZE_INVALID");
+  }
   if (summary.byDomain.some((row) => row.canonicalCandidates === 0)) throw new Error("M4_EMPTY_SOURCE_RESERVOIR");
   if (inserts.some((row) => !["openserp", "serper_mass_harvest"].includes(row.seed.seed_provider))) {
     throw new Error("M4_PROVIDER_DRIFT");
