@@ -8,6 +8,10 @@
 //
 // DATA-4.3I: this writer owns only `openserp_yandex_discovery`. It must never
 // downgrade or erase freshness evidence owned by another channel.
+//
+// P0.2: fresh discovery observations use deterministic cursor pagination through
+// a service-role RPC. Deep PostgREST OFFSET pagination timed out in production
+// around offset=8000; the cursor is (discovered_at DESC, id DESC).
 
 import { getSupabaseServerClient } from "@/lib/db/supabase-client";
 import { isOpenSerpIngestionCronAuthorized } from "@/lib/openserp-ingestion/openserp-ingestion-feature-flags";
@@ -33,6 +37,10 @@ type SeedDbRow = SeedForMatching & {
   fresh_channels: string[] | null;
 };
 
+type FreshDiscoveryDbRow = FreshDiscoveryObservation & {
+  id: string;
+};
+
 async function loadAllSeeds(): Promise<SeedDbRow[]> {
   const client = getSupabaseServerClient();
   const out: SeedDbRow[] = [];
@@ -51,23 +59,31 @@ async function loadAllSeeds(): Promise<SeedDbRow[]> {
   return out;
 }
 
-async function loadFreshObservations(): Promise<FreshDiscoveryObservation[]> {
+export async function loadFreshObservations(): Promise<FreshDiscoveryObservation[]> {
   const client = getSupabaseServerClient();
   const out: FreshDiscoveryObservation[] = [];
-  for (let from = 0; ; from += PAGE_SIZE) {
+  let beforeDiscoveredAt: string | null = null;
+  let beforeId: string | null = null;
+
+  for (;;) {
     const rows = await withSupabaseRetry(async () => {
-      const { data, error } = await client
-        .from("discovery_candidates")
-        .select("canonical_url,source_url,discovered_at,discovery_status")
-        .in("discovery_status", ["accepted", "promoted_to_source_offer"])
-        .order("discovered_at", { ascending: false })
-        .range(from, from + PAGE_SIZE - 1);
+      const { data, error } = await client.rpc("load_fresh_discovery_observations_page", {
+        p_before_discovered_at: beforeDiscoveredAt,
+        p_before_id: beforeId,
+        p_limit: PAGE_SIZE,
+      });
       if (error) throw error;
-      return (data ?? []) as FreshDiscoveryObservation[];
-    }, `load discovery_candidates offset=${from}`);
-    out.push(...rows);
+      return (data ?? []) as FreshDiscoveryDbRow[];
+    }, `load discovery_candidates cursor=${beforeDiscoveredAt ?? "start"}/${beforeId ?? "start"}`);
+
+    for (const { id: _id, ...observation } of rows) out.push(observation);
     if (rows.length < PAGE_SIZE) break;
+
+    const last = rows[rows.length - 1]!;
+    beforeDiscoveredAt = last.discovered_at;
+    beforeId = last.id;
   }
+
   return out;
 }
 

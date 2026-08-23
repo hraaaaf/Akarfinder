@@ -2,18 +2,31 @@ name: Public Sitemap Seed Harvest
 
 # MASS-ACQUISITION-FREE-ACCELERATION-1
 # DATA-40K-GATE-IMMEDIATE-SITEMAP-RUN-2026-07-24-R2
+# P0.2-DISCOVERY-FRESHNESS-KEYSET-PAGINATION
 # Free acquisition lane: robots.txt -> explicitly declared sitemap files ->
 # strict listing URL patterns -> source_offer_seeds only. No listing page fetch,
 # no paid API, no public listing write. Scheduled/push runs require the same
-# three production write gates; manual dispatch defaults to dry-run.
+# three production write gates; PR/manual runs are dry-run unless manual
+# dispatch explicitly requests apply.
 
 on:
   schedule:
     - cron: "23 */6 * * *"
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/sitemap-public-seed-harvest.yml"
+      - "scripts/openserp/sitemap-registry-mass-harvest.ts"
+      - "scripts/openserp/reconcile-commoncrawl-seed-freshness.ts"
+      - "scripts/scrapers/__tests__/public-sitemap-freshness-keyset.test.ts"
+      - "supabase/migrations/20260823134500_discovery_freshness_keyset_pagination.sql"
   push:
     branches: [main]
     paths:
       - ".github/workflows/sitemap-public-seed-harvest.yml"
+      - "scripts/openserp/reconcile-commoncrawl-seed-freshness.ts"
+      - "scripts/scrapers/__tests__/public-sitemap-freshness-keyset.test.ts"
+      - "supabase/migrations/20260823134500_discovery_freshness_keyset_pagination.sql"
   workflow_dispatch:
     inputs:
       mode:
@@ -49,6 +62,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Verify P0.2 freshness cursor pagination
+        run: npx tsx --test scripts/scrapers/__tests__/public-sitemap-freshness-keyset.test.ts
+
       - name: Harvest robots-declared public sitemaps
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -60,8 +76,10 @@ jobs:
           set -e
           if [ "${{ github.event_name }}" = "schedule" ] || [ "${{ github.event_name }}" = "push" ]; then
             MODE="apply"
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.mode }}" = "apply" ]; then
+            MODE="apply"
           else
-            MODE="${{ inputs.mode }}"
+            MODE="dry-run"
           fi
           if [ "$MODE" = "apply" ]; then
             npx tsx scripts/openserp/sitemap-registry-mass-harvest.ts --apply
