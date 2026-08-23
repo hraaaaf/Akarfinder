@@ -7,6 +7,7 @@ on:
       - "scripts/map/build-morocco-territory-registry-v2.py"
       - "scripts/map/build-morocco-territory-registry-v3.py"
       - "scripts/map/build-morocco-territory-registry-v3-fixed.py"
+      - "scripts/map/build-morocco-territory-registry-v4.py"
       - ".github/workflows/carte-national-territory-registry-build.yml"
 
 permissions:
@@ -21,28 +22,56 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Build HCP + Barid + OSM national catalog V3
-        run: python scripts/map/build-morocco-territory-registry-v3-fixed.py
+
+      - name: Install Osmium
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends osmium-tool
+          osmium --version
+
+      - name: Download verified Geofabrik Morocco extract
+        shell: bash
+        run: |
+          cd /tmp
+          curl -fL --retry 4 --retry-delay 3 -o morocco-latest.osm.pbf https://download.geofabrik.de/africa/morocco-latest.osm.pbf
+          curl -fL --retry 4 --retry-delay 3 -o morocco-latest.osm.pbf.md5 https://download.geofabrik.de/africa/morocco-latest.osm.pbf.md5
+          md5sum -c morocco-latest.osm.pbf.md5
+
+      - name: Build local OSM territorial extracts
+        shell: bash
+        run: |
+          osmium tags-filter -O -o /tmp/osm-places.osm.pbf /tmp/morocco-latest.osm.pbf nwr/place=city,town
+          osmium export -O -a type,id /tmp/osm-places.osm.pbf -o /tmp/osm-places.geojson
+
+          osmium tags-filter -O -o /tmp/osm-neighborhoods.osm.pbf /tmp/morocco-latest.osm.pbf nwr/place=neighbourhood,suburb,quarter,borough
+          osmium export -O -a type,id /tmp/osm-neighborhoods.osm.pbf -o /tmp/osm-neighborhoods.geojson
+
+          osmium tags-filter -O -o /tmp/osm-admin.osm.pbf /tmp/morocco-latest.osm.pbf r/boundary=administrative
+          osmium tags-filter -O -o /tmp/osm-admin89.osm.pbf /tmp/osm-admin.osm.pbf r/admin_level=8,9
+          osmium export -O -a type,id --geometry-types=polygon /tmp/osm-admin89.osm.pbf -o /tmp/osm-boundaries.geojson
+
+      - name: Build HCP + Barid + Geofabrik national catalog V4
+        run: python scripts/map/build-morocco-territory-registry-v4.py
+
       - name: Validate national catalog contract
         run: |
           python - <<'PY'
           import json
           from pathlib import Path
-          base = Path('data/audits/morocco-territory-registry-v3')
+          base = Path('data/audits/morocco-territory-registry-v4')
           report = json.loads((base / 'report.json').read_text())
-          geo = json.loads((base / 'city-boundary-candidates.geojson').read_text())
           places = json.loads((base / 'places.json').read_text())
-          neighborhoods = json.loads((base / 'neighborhood-candidates.json').read_text())
+          neighborhoods = json.loads((base / 'neighborhoods.json').read_text())
+          geo = json.loads((base / 'city-boundaries.geojson').read_text())
           assert report['ok'] is True
           assert report['sources']['hcp']['year'] == 2024
           assert report['sources']['hcp']['urbanMunicipalityCount'] >= 100
-          assert report['sources']['hcp']['urbanCenterCount'] >= 20
-          assert report['sources']['baridNeighborhoods']['uniqueCityDistrictPairs'] >= 9000
-          assert report['sources']['baridLocalities']['rowCount'] > 0
-          assert report['sources']['osm']['placeCityTownCount'] >= 100
+          assert report['sources']['osm']['cityTownFeatureCount'] >= 100
           assert report['catalog']['placeCandidateCount'] == len(places)
-          assert report['catalog']['postalNeighborhoodCandidateCount'] == len(neighborhoods)
-          assert report['catalog']['placeWithAssembledBoundaryCount'] == len(geo['features'])
+          assert report['catalog']['neighborhoodCandidateCount'] == len(neighborhoods)
+          assert report['catalog']['placeWithBoundaryCount'] == len(geo['features'])
+          assert len(neighborhoods) >= 9000
+          assert len(geo['features']) >= 25
           for feature in geo['features']:
               props = feature['properties']
               assert props['officialBoundaryClaim'] is False
@@ -51,11 +80,12 @@ jobs:
               assert feature['geometry']['type'] in ('Polygon', 'MultiPolygon')
           print(json.dumps(report, ensure_ascii=False, indent=2))
           PY
+
       - name: Upload national territorial catalog
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: carte-national-territory-registry-v3-${{ github.run_id }}
-          path: data/audits/morocco-territory-registry-v3
+          name: carte-national-territory-registry-v4-${{ github.run_id }}
+          path: data/audits/morocco-territory-registry-v4
           if-no-files-found: error
           retention-days: 30
