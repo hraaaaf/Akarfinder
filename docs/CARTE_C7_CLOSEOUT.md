@@ -84,3 +84,72 @@ Constat :
 ## Conclusion
 
 **Carte intelligence marché : CLOSED — 8/8 = 100 %.**
+
+---
+
+## Addendum — convergence visuelle 2026-08-23
+
+Statut : **CLOSED**.
+
+PR : #870 `fix(map): converge market intelligence presentation`.
+
+Head exact certifié avant merge : `a7b44e8db2043b83499edbd652607ea7181dd74a`.
+
+Merge squash sur `main` : `fd0f9ef299f092ae7d9d9707ec847ea8994ae479`.
+
+### Goal
+
+Converger la présentation de la Carte intelligence marché vers le référentiel canonique validé sans modifier le moteur data, les contrats métier ni les règles fail-closed.
+
+### Résultat vérifié
+
+- toolbar mobile compactée ;
+- trois modes Prix / Densité / Annonces conservés ;
+- polygones de quartiers réellement rendus et interactifs ;
+- légende compacte et visible sur les viewports certifiés ;
+- rail P4 conservé en exploration puis masqué sur mobile/tablette lorsque la fiche quartier est ouverte afin d'éviter deux sheets concurrentes ;
+- fiche quartier bornée et CTA Search conservé ;
+- ratio desktop 60/40 conservé ;
+- aucun changement data/API ;
+- aucun KPI inventé ;
+- aucun déploiement Vercel.
+
+### Certification exact-head
+
+`Carte C7 Final Certification` run `32611364362` — **SUCCESS**.
+
+Le run certifie sur 390×844 / 430×932 / 768×900 / 1280×900 :
+- contrats C0→C6 : PASS ;
+- TypeScript : PASS ;
+- production build : PASS ;
+- API market-intelligence : PASS ;
+- trois modes : PASS ;
+- polygone interactif : PASS ;
+- fiche quartier + KPI + CTA Search : PASS ;
+- diagnostics navigateur/API : 0 erreur ;
+- report : `ok: true`.
+
+Artefact C7 exact-head : `9485636526`.
+Digest : `sha256:8ee2298dafcf2fea32b8a6c0e35214fa44c64386a4d20a5e5a8609ead0fef498`.
+
+`Product Experience P4 Search Map` run `32611364370` — **SUCCESS**.
+
+### Inspection visuelle
+
+Les captures exact-head ont été inspectées manuellement sur les quatre viewports. La dernière correction supprime la superposition mobile entre rail P4 et fiche quartier.
+
+Score d'audit visuel final : **9,1/10**.
+
+Barème utilisé :
+- structure / flow : 2,0 / 2,0 ;
+- carte et modes sémantiques : 1,8 / 2,0 ;
+- hiérarchie fiche quartier : 1,85 / 2,0 ;
+- polish visuel : 1,4 / 1,5 ;
+- responsive : 1,0 / 1,0 ;
+- convergence au référentiel : 1,05 / 1,5.
+
+Le rendu n'est pas déclaré pixel-perfect ; le seuil visuel fixé pour ce chantier était ≥ 9/10 et il est atteint sur les preuves exact-head inspectées.
+
+### Conclusion addendum
+
+**Convergence visuelle Carte intelligence marché : CLOSED.**
