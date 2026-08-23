@@ -1,0 +1,77 @@
+name: MASS-INDEX M4 Canary Certification
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "scripts/data-mass/national-mass-m4-canary.ts"
+      - "scripts/data-mass/national-mass-m4-plan.ts"
+      - "scripts/data-mass/national-mass-m4-plan-live.ts"
+      - "scripts/data-mass/__tests__/national-mass-m4-canary-contract.test.ts"
+      - ".github/workflows/mass-index-m4-canary.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify-m4-canary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Canary contract tests
+        run: >-
+          npx tsx --test
+          scripts/data-mass/__tests__/national-mass-m4-plan.test.ts
+          scripts/data-mass/__tests__/national-mass-m4-live-contract.test.ts
+          scripts/data-mass/__tests__/national-mass-m4-canary-contract.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Rebuild fresh read-only M4 plan
+        run: npx tsx scripts/data-mass/national-mass-m4-plan-live.ts
+
+      - name: Execute bounded M4 canary
+        env:
+          MASS_INDEX_M4_CANARY_WRITE: "1"
+        run: npx tsx scripts/data-mass/national-mass-m4-canary.ts
+
+      - name: Assert canary receipt
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const r = JSON.parse(fs.readFileSync('artifacts/mass-index/m4-canary-receipt.json','utf8'));
+          if (r.schemaVersion !== 'MASS_INDEX_M4_CANARY_RECEIPT_V1') throw new Error('receipt schema');
+          if (r.status !== 'verified' || r.rolledBack !== false) throw new Error('canary not verified');
+          if (!Array.isArray(r.inserted) || r.inserted.length < 1 || r.inserted.length > 10) throw new Error('insert count');
+          if (!Array.isArray(r.thinRows) || r.thinRows.length !== r.inserted.length) throw new Error('thin count');
+          if (r.after.sourceOfferSeeds - r.before.sourceOfferSeeds !== r.inserted.length) throw new Error('seed delta');
+          if (r.after.thinIndexDocuments - r.before.thinIndexDocuments !== r.inserted.length) throw new Error('thin delta');
+          if (!r.invariants.metadataNull || r.invariants.existingSeedsMutated !== 0 || r.invariants.providerRelabels !== 0 || r.invariants.publicSearchActivationChanges !== 0) throw new Error('invariant drift');
+          if (r.inserted.some(x => x.metadata !== null || x.freshness_status !== 'seed_only')) throw new Error('minimal seed drift');
+          console.log(JSON.stringify({before:r.before,after:r.after,inserted:r.inserted.map(x=>({url:x.canonical_url,domain:x.source_domain,provider:x.seed_provider})),thin:r.thinRows}, null, 2));
+          NODE
+
+      - name: Upload M4 canary evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mass-index-m4-canary-evidence
+          path: |
+            artifacts/mass-index/m4-national-ingest-plan.json
+            artifacts/mass-index/m4-canary-receipt.json
+          if-no-files-found: error
+          retention-days: 14
