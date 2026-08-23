@@ -1,0 +1,85 @@
+name: MASS-INDEX M4 Minimal Plan Certification
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "scripts/data-mass/national-mass-m4-plan.ts"
+      - "scripts/data-mass/national-mass-m4-plan-live.ts"
+      - "scripts/data-mass/__tests__/national-mass-m4-plan.test.ts"
+      - "scripts/data-mass/__tests__/national-mass-m4-live-contract.test.ts"
+      - "scripts/data-mass/source-factory-m3-adapter.ts"
+      - "scripts/data-mass/source-factory-m3-access-policy.ts"
+      - "scripts/data-mass/universal-candidate-promotion.ts"
+      - "scripts/data-mass/external-index-seed.ts"
+      - ".github/workflows/mass-index-m4-certification.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify-m4-plan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Targeted M1-M4 contracts
+        run: |
+          npx tsx --test \
+            scripts/data-mass/__tests__/universal-candidate-promotion.test.ts \
+            scripts/data-mass/__tests__/source-factory-m3-adapter.test.ts \
+            scripts/data-mass/__tests__/source-factory-m3-access-policy.test.ts \
+            scripts/data-mass/__tests__/external-index-seed.test.ts \
+            scripts/data-mass/__tests__/external-index-seed-write-plan.test.ts \
+            scripts/data-mass/__tests__/national-mass-m4-plan.test.ts \
+            scripts/data-mass/__tests__/national-mass-m4-live-contract.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Build read-only M4 national plan
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npx tsx scripts/data-mass/national-mass-m4-plan-live.ts
+
+      - name: Assert M4 minimal external-index contract
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const p = JSON.parse(fs.readFileSync('artifacts/mass-index/m4-national-ingest-plan.json','utf8'));
+          if (p.schemaVersion !== 'MASS_INDEX_M4_NATIONAL_PLAN_V2') throw new Error('schema drift');
+          if (p.mode !== 'read_only') throw new Error('mode drift');
+          if (p.cohort.domains.length !== 7) throw new Error('domain drift');
+          if (p.summary.sourceSpecificValid !== p.summary.insertNative + p.summary.preserveExisting) throw new Error('accounting drift');
+          if (!Array.isArray(p.inserts) || p.inserts.length !== p.summary.insertNative) throw new Error('insert payload drift');
+          if (!Array.isArray(p.canary) || p.canary.length < 1 || p.canary.length > 10) throw new Error('canary drift');
+          for (const k of ['databaseWrites','sourceNetworkRequests','directFetches','existingSeedsMutated','providerRelabels','publicActivations']) {
+            if (p.invariants[k] !== 0) throw new Error(`${k} drift`);
+          }
+          if (!p.invariants.onlyM3PositiveSources) throw new Error('source gate drift');
+          if (!p.invariants.persistedMetadataIsNull) throw new Error('metadata scope drift');
+          if (p.invariants.persistedExternalIndexScope !== 'CANONICAL_URL_SOURCE_DOMAIN_PROVENANCE_ONLY') throw new Error('external index scope drift');
+          for (const row of p.inserts) {
+            if (row.seed.metadata !== null) throw new Error(`non-minimal metadata: ${row.canonicalUrl}`);
+            if (!['openserp','serper_mass_harvest'].includes(row.seed.seed_provider)) throw new Error(`provider drift: ${row.canonicalUrl}`);
+          }
+          console.log(JSON.stringify({summary:p.summary,before:p.before,canary:p.canary.map(x=>({canonicalUrl:x.canonicalUrl,sourceDomain:x.sourceDomain,seedProvider:x.seedProvider}))}, null, 2));
+          NODE
+
+      - name: Upload M4 plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: mass-index-m4-minimal-national-plan
+          path: artifacts/mass-index/m4-national-ingest-plan.json
+          if-no-files-found: error
+          retention-days: 14
