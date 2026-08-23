@@ -1,6 +1,6 @@
 # AkarFinder — Session courante
 
-**Mise à jour : 2026-08-22**
+**Mise à jour : 2026-08-23**
 
 `docs/ROADMAP.md` reste l’unique vérité canonique globale.
 
@@ -8,54 +8,45 @@
 
 Issue : `#854`.
 
-Progression stricte : **4/8 lots CLOSED = 50 %**.
+Progression stricte : **5/8 lots CLOSED = 62,5 %**.
 
 ### CLOSED
-- M0 : baseline current-main/Supabase certifiée dans `docs/MASS_INDEX_M0_AUDIT.md`.
-- M1 : Universal candidate promotion ; run `32577296107` SUCCESS ; 33 872 candidates acceptées ; 0 write.
-- M2 : External Index natif OpenSERP/Serper MASS ; run `32580352867` SUCCESS ; canary réel 10/10 ; Search inchangé.
-- M3 : PR #863 ; merge `fe6740ff40872e57789f67d12b02a5b43ea412d6` ; run final qualité `32594176513` SUCCESS ; artifact `9481117150` ; digest `sha256:8a8c8d9947e35940571e8a359cb0bbfa7bb9aa87f3d7ec18a76167cecd74b388`.
+- M0 : baseline current-main/Supabase certifiée.
+- M1 : Universal candidate promotion ; run `32577296107` SUCCESS.
+- M2 : External Index natif OpenSERP/Serper MASS ; run `32580352867` SUCCESS.
+- M3 : Source Factory ; PR #863 ; run `32594176513` SUCCESS.
+- M4 : National MASS ingest ; PR #871 ; merge `206672c8a24b7aa95271f2f7d32dbc733dba08b5`.
 
-### M3 — résultat final
-- 10 domaines mesurés ;
-- 350 canonical candidates ;
-- 77 fiches détail valides ; rendement agrégé 22 % ;
-- 7 sources positives : `marocannonces.com`, `domio.ma`, `sakane.ma`, `1000-annonces.com`, `housing.place`, `expat.com`, `milkiya.ma` ;
-- 3 sources hors wave 1 : `yakeey.com`, `2p.ma`, `portail-immobilier.ma` ;
-- 0 write DB, 0 source fetch, 0 activation Search, 0 provider relabel, 0 mutation policy.
+## M4 — résultat final vérifié
+- cohorte : **965 URLs** ;
+- M4-B canary : 10 inserts, Thin Index `+0`, Search OFF ;
+- M4-C write run `32610430027` SUCCESS : **955 inserts + 10 préservés** ;
+- `source_offer_seeds` : **56 881 -> 57 836** ;
+- `thin_index_search_documents` : **56 866 -> 56 866** ;
+- certification idempotente finale `32610621902` SUCCESS : **0 insert + 965 préservés** ;
+- artifact `9485403997` ; digest `sha256:e64364b4ada0bb2545e4aa722834e72c575affc56b689d31f4beffff70f3f7af` ;
+- `metadata:null`, `seed_only`, aucun provider relabel, aucune activation Search ;
+- aucun Vercel.
 
-## M4 — ACTIVE
+## M5 — ACTIVE
 
-Goal : matérialiser nationalement les fiches validées des 7 sources positives via le writer M2 existant, en net-new seulement, avec canary/rollback et Search toujours OFF.
+Goal : durcir déduplication + fraîcheur avant M6 Search.
 
-Succès : manifest national exact -> write-plan -> canary -> batches bornés -> before/after DB -> aucune activation publique accidentelle.
-
-### Potentiel structurel observé avant M4
-- marocannonces.com : 473 detail-like ; 403 vues <=30j ;
-- sakane.ma : 193 ; 97 <=30j ;
-- milkiya.ma : 131 ; 129 <=30j ;
-- expat.com : 104 ; 100 <=30j ;
-- 1000-annonces.com : 76 ; 76 <=30j ;
-- housing.place : 22 ; 22 <=30j ;
-- domio.ma : 5 ; 1 <=30j.
-
-Ces nombres sont des plafonds structurels d’URLs, pas encore des listings M4 validés ni des propriétés uniques.
-
-## Chantier fermé
-Homepage Visual Reconciliation #849 : **HVR-1→HVR-6 CLOSED, 6/6 = 100 %**.
-
-Preuve finale : PR #861 ; merge `78079f179ffbbf6285e23bf86ba18c609563f661` ; HEAD certifié `c3d9a1e4309bf37bebe6a32b41ff89afe6ccfa2f` ; run `32595444588` SUCCESS ; artifact `9481435261` ; score final 9,4/10 ; human gate APPROVED ; 4/4 captures 390/430/768/1280 ; 0 overflow ; 0 console error ; aucun Vercel.
+Succès :
+1. baseline read-only exacte des doublons/clusters potentiels et états de fraîcheur ;
+2. contrat déterministe de dédup sans métrique “propriété unique” prématurée ;
+3. règles de fraîcheur/expiration vérifiables ;
+4. aucune activation Search ;
+5. tests + preuves proportionnels au risque.
 
 ## Next exact
-1. construire le manifest M4 national read-only M1 + garde M3 sur les 7 sources ;
-2. calculer `INSERT_NATIVE` / `PRESERVE_EXISTING` ;
-3. canary borné ;
-4. vérifier Thin Index + Search inchangé ;
-5. batches M4 + accounting before/after ;
-6. closeout M4 puis M5.
+1. auditer current-main pour schémas, vues, triggers et scripts dedup/freshness existants ;
+2. mesurer read-only la distribution doublons/fraîcheur ;
+3. écrire le contrat M5 + critères ;
+4. implémenter uniquement après baseline prouvée.
 
 ## Invariants
 - aucun Vercel sans autorisation explicite ;
 - aucun bypass technique ;
-- aucune métrique propriété unique avant dédup ;
+- aucune métrique propriété unique avant dédup certifiée ;
 - provenance réelle et rollback obligatoires.
