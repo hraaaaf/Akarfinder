@@ -1,0 +1,62 @@
+name: MASS-INDEX M6 Search SEO Baseline
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "scripts/data-mass/mass-index-m6-search-seo-audit.ts"
+      - "scripts/data-mass/__tests__/mass-index-m6-search-seo-audit.test.ts"
+      - "docs/MASS_INDEX_M6.md"
+      - ".github/workflows/mass-index-m6-search-seo-baseline.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify-m6-search-seo-baseline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: M6 topology contract tests
+        run: npx tsx --test scripts/data-mass/__tests__/mass-index-m6-search-seo-audit.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Build read-only M6 Search SEO baseline
+        run: npx tsx scripts/data-mass/mass-index-m6-search-seo-audit.ts
+
+      - name: Assert M6 evidence
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const r = JSON.parse(fs.readFileSync('artifacts/mass-index/m6-search-seo-baseline.json', 'utf8'));
+          if (r.schemaVersion !== 'MASS_INDEX_M6_SEARCH_SEO_BASELINE_V1') throw new Error('schema');
+          if (r.mode !== 'read_only_baseline') throw new Error('mode');
+          if (r.invariants.databaseWrites !== 0 || r.invariants.searchActivationChanges !== 0 || r.invariants.seoIndexabilityChanges !== 0 || r.invariants.sourceNetworkRequests !== 0 || r.invariants.providerRelabels !== 0 || r.invariants.vercelDeployments !== 0) throw new Error('mutation invariant');
+          if (r.invariants.uniquePropertyMetricClaimed !== false) throw new Error('unique property claim');
+          if (r.liveDatabase.publicRpcFirstStatus && r.liveDatabase.publicRpcFirstStatus !== 'fresh_confirmed') throw new Error('canonical freshness');
+          if (r.liveDatabase.fallbackStatuses.some((status) => status !== 'fresh_confirmed')) throw new Error('fallback freshness');
+          console.log(JSON.stringify(r, null, 2));
+          NODE
+
+      - name: Upload M6 baseline evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: mass-index-m6-search-seo-baseline
+          path: artifacts/mass-index/m6-search-seo-baseline.json
+          if-no-files-found: error
+          retention-days: 14
