@@ -48,7 +48,20 @@ try {
       await shell.waitFor({ state: "visible", timeout: 30000 });
       await page.locator(".maplibregl-canvas").waitFor({ state: "visible", timeout: 30000 });
       await page.waitForFunction(() => document.querySelector('[data-akarfinder-national-map]')?.getAttribute('data-akarfinder-national-view') === 'morocco', null, { timeout: 30000 });
-      await page.waitForTimeout(800);
+
+      const casa = api.places.find((place) => place.slug === "casablanca");
+      if (!casa?.center) throw new Error("Casablanca center missing");
+
+      // Wait until MapLibre has actually rendered the city hit target. This is
+      // stronger than checking only that the source/layer objects exist.
+      await page.waitForFunction(({ lng, lat }) => {
+        const map = window.__AKARFINDER_NATIONAL_MAP__;
+        if (!map?.getLayer("akarfinder-national-city-hits")) return false;
+        const p = map.project([lng, lat]);
+        return map.queryRenderedFeatures(p, { layers: ["akarfinder-national-city-hits"] })
+          .some((feature) => feature.properties?.slug === "casablanca");
+      }, casa.center, { timeout: 15000 });
+      await page.waitForTimeout(500);
 
       const layerState = await page.evaluate(() => {
         const map = window.__AKARFINDER_NATIONAL_MAP__;
@@ -65,21 +78,25 @@ try {
       if (overflow > 1) throw new Error(`horizontal overflow ${overflow}`);
       await page.screenshot({ path: `${outDir}/morocco-${viewport.name}-after.png`, fullPage: false });
 
-      // Genuine MapLibre click at Casablanca's projected center.
-      const casa = api.places.find((place) => place.slug === "casablanca");
+      // Map#project returns canvas-local coordinates. Playwright mouse/touch uses
+      // page coordinates, so add the canvas bounding-box origin before input.
       const projected = await page.evaluate(({ lng, lat }) => {
         const map = window.__AKARFINDER_NATIONAL_MAP__;
         const p = map.project([lng, lat]);
-        return { x: p.x, y: p.y };
+        const rect = map.getCanvas().getBoundingClientRect();
+        const hit = map.queryRenderedFeatures(p, { layers: ["akarfinder-national-city-hits"] })
+          .some((feature) => feature.properties?.slug === "casablanca");
+        return { x: rect.left + p.x, y: rect.top + p.y, hit };
       }, casa.center);
+      if (!projected.hit) throw new Error(`Casablanca hit target not rendered at projected center ${JSON.stringify(projected)}`);
+
       if (mobile) {
         await page.touchscreen.tap(projected.x, projected.y);
+        await page.locator('[data-akarfinder-city-preview="casablanca"]').waitFor({ state: "visible", timeout: 5000 });
+        await page.screenshot({ path: `${outDir}/casablanca-preview-${viewport.name}-after.png`, fullPage: false });
+        await page.getByRole("button", { name: "Explorer Casablanca" }).click();
       } else {
         await page.mouse.click(projected.x, projected.y);
-      }
-      if (mobile) {
-        await page.locator('[data-akarfinder-city-preview="casablanca"]').waitFor({ state: "visible", timeout: 5000 });
-        await page.getByRole("button", { name: "Explorer Casablanca" }).click();
       }
       await page.waitForURL(/city=casablanca/, { timeout: 10000 });
       await page.waitForFunction(() => document.querySelector('[data-akarfinder-national-map]')?.getAttribute('data-akarfinder-national-view') === 'city', null, { timeout: 30000 });
