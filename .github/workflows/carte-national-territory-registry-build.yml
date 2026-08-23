@@ -5,6 +5,7 @@ on:
     paths:
       - "scripts/map/build-morocco-territory-registry.py"
       - "scripts/map/build-morocco-territory-registry-v2.py"
+      - "scripts/map/build-morocco-territory-registry-v3.py"
       - ".github/workflows/carte-national-territory-registry-build.yml"
 
 permissions:
@@ -13,43 +14,47 @@ permissions:
 jobs:
   build-territory-registry:
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Build HCP + Barid + OSM candidate registry V2
-        run: python scripts/map/build-morocco-territory-registry-v2.py
-      - name: Validate candidate registry contract
+      - name: Build HCP + Barid + OSM national catalog V3
+        run: python scripts/map/build-morocco-territory-registry-v3.py
+      - name: Validate national catalog contract
         run: |
           python - <<'PY'
           import json
           from pathlib import Path
-          base = Path('data/audits/morocco-territory-registry')
+          base = Path('data/audits/morocco-territory-registry-v3')
           report = json.loads((base / 'report.json').read_text())
-          geo = json.loads((base / 'postal-city-boundaries.geojson').read_text())
+          geo = json.loads((base / 'city-boundary-candidates.geojson').read_text())
+          places = json.loads((base / 'places.json').read_text())
+          neighborhoods = json.loads((base / 'neighborhood-candidates.json').read_text())
           assert report['ok'] is True
           assert report['sources']['hcp']['year'] == 2024
           assert report['sources']['hcp']['urbanMunicipalityCount'] >= 100
-          assert report['sources']['barid']['uniqueCityDistrictPairs'] > 9000
-          assert report['sources']['osm']['admin8RelationCount'] >= 1000
-          assert report['matching']['baridCitiesToOsmMatched'] >= 30
-          assert report['matching']['baridCitiesWithAssembledGeometry'] >= 25
-          assert len(geo['features']) == report['matching']['baridCitiesWithAssembledGeometry']
+          assert report['sources']['hcp']['urbanCenterCount'] >= 20
+          assert report['sources']['baridNeighborhoods']['uniqueCityDistrictPairs'] >= 9000
+          assert report['sources']['baridLocalities']['rowCount'] > 0
+          assert report['sources']['osm']['placeCityTownCount'] >= 100
+          assert report['catalog']['placeCandidateCount'] == len(places)
+          assert report['catalog']['postalNeighborhoodCandidateCount'] == len(neighborhoods)
+          assert report['catalog']['placeWithAssembledBoundaryCount'] == len(geo['features'])
           for feature in geo['features']:
               props = feature['properties']
               assert props['officialBoundaryClaim'] is False
               assert props['licenseId'] == 'ODbL-1.0'
-              assert props['osmRelationId']
+              assert props['relationId']
               assert feature['geometry']['type'] in ('Polygon', 'MultiPolygon')
           print(json.dumps(report, ensure_ascii=False, indent=2))
           PY
-      - name: Upload national territorial registry candidate
+      - name: Upload national territorial catalog
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: carte-national-territory-registry-${{ github.run_id }}
-          path: data/audits/morocco-territory-registry
+          name: carte-national-territory-registry-v3-${{ github.run_id }}
+          path: data/audits/morocco-territory-registry-v3
           if-no-files-found: error
           retention-days: 30
