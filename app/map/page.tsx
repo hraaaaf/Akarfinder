@@ -1,6 +1,6 @@
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
-import { MapNeighborhoodClient } from "@/components/map/MapNeighborhoodClient";
+import { NationalMapRouter } from "@/components/map/NationalMapRouter";
 import { P4MapDecisionRail } from "@/components/map/P4MapDecisionRail";
 import { parseMapNavigationState } from "@/lib/map/map-navigation-state";
 import "./mockup-convergence-l2.css";
@@ -10,9 +10,9 @@ import "./market-convergence-correction.css";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Carte immobilière du Maroc — Repères quartier | AkarFinder",
+  title: "Carte immobilière du Maroc — Villes et quartiers | AkarFinder",
   description:
-    "Explorez les quartiers immobiliers marocains : repères prix indicatifs, commodités et proximité par zone. Données indicatives 2024–2025.",
+    "Explorez le Maroc par ville puis quartier. Les contours publiés sont des repères AkarFinder sourcés, sans prétention de frontière administrative officielle.",
 };
 
 type MapPageProps = {
@@ -28,7 +28,7 @@ export default async function MapPage({ searchParams }: MapPageProps) {
       <SiteHeader searchMode fluid />
       <div className="flex-1" data-p4-map-layout>
         <div data-p4-map-canvas>
-          <MapNeighborhoodClient initialState={initialState} />
+          <NationalMapRouter initialState={initialState} />
         </div>
         <P4MapDecisionRail />
       </div>
