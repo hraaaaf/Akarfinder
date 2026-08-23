@@ -86,6 +86,22 @@ try {
       if (!layerState.hasBoundary || !layerState.hasLabels || layerState.boundaryFeatures < 200) {
         throw new Error(`map layers incomplete ${JSON.stringify(layerState)}`);
       }
+
+      const geometryState = await page.evaluate(() => {
+        const shell = document.querySelector('[data-akarfinder-national-map]');
+        const parent = document.querySelector('[data-p4-map-canvas]');
+        const shellRect = shell?.getBoundingClientRect();
+        const parentRect = parent?.getBoundingClientRect();
+        return {
+          shellHeight: shellRect?.height ?? 0,
+          parentHeight: parentRect?.height ?? 0,
+          heightDelta: (parentRect?.height ?? 0) - (shellRect?.height ?? 0),
+        };
+      });
+      if (geometryState.parentHeight < 500 || geometryState.shellHeight < geometryState.parentHeight - 2) {
+        throw new Error(`national map does not fill P4 canvas ${JSON.stringify(geometryState)}`);
+      }
+
       const touchSignals = await page.evaluate(() => ({
         maxTouchPoints: navigator.maxTouchPoints,
         coarse: window.matchMedia("(pointer: coarse)").matches,
@@ -98,28 +114,31 @@ try {
       await page.screenshot({ path: `${outDir}/morocco-${viewport.name}-after.png`, fullPage: false });
 
       const casa = api.places.find((place) => place.slug === "casablanca");
+      if (!casa?.center) throw new Error("Casablanca center missing");
       const projected = await page.evaluate(({ lng, lat }) => {
         const map = window.__AKARFINDER_NATIONAL_MAP__;
         const p = map.project([lng, lat]);
         const rect = map.getCanvas().getBoundingClientRect();
-        return { x: rect.left + p.x, y: rect.top + p.y };
+        return { pageX: rect.left + p.x, pageY: rect.top + p.y, localX: p.x, localY: p.y };
       }, casa.center);
-      await page.waitForFunction(({ x, y }) => {
+      await page.waitForFunction(({ localX, localY }) => {
         const map = window.__AKARFINDER_NATIONAL_MAP__;
-        const rect = map.getCanvas().getBoundingClientRect();
-        const local = { x: x - rect.left, y: y - rect.top };
-        return map.queryRenderedFeatures(local, { layers: ["akarfinder-national-city-hits", "akarfinder-national-city-fill"] })
+        return map.queryRenderedFeatures({ x: localX, y: localY }, { layers: ["akarfinder-national-city-hits", "akarfinder-national-city-fill"] })
           .some((feature) => feature.properties?.slug === "casablanca");
       }, projected, { timeout: 10000 });
 
       if (mobile) {
-        await page.touchscreen.tap(projected.x, projected.y);
+        await page.touchscreen.tap(projected.pageX, projected.pageY);
         await page.locator('[data-akarfinder-city-preview="casablanca"]').waitFor({ state: "visible", timeout: 5000 });
+        await page.screenshot({ path: `${outDir}/active-casablanca-${viewport.name}-after.png`, fullPage: false });
         await page.getByRole("button", { name: "Explorer Casablanca" }).click();
       } else {
-        await page.mouse.click(projected.x, projected.y);
+        await canvas.hover({ position: { x: projected.localX, y: projected.localY } });
+        await page.locator('[data-akarfinder-city-preview="casablanca"]').waitFor({ state: "visible", timeout: 5000 });
+        await page.screenshot({ path: `${outDir}/active-casablanca-${viewport.name}-after.png`, fullPage: false });
+        await canvas.click({ position: { x: projected.localX, y: projected.localY } });
       }
-      await page.waitForURL(/city=casablanca/, { timeout: 10000 });
+      await page.waitForURL(/city=casablanca/, { timeout: 10000, waitUntil: "commit" });
       await page.waitForFunction(() => document.querySelector('[data-akarfinder-national-map]')?.getAttribute('data-akarfinder-national-view') === 'city', null, { timeout: 30000 });
       const casaResponse = await fetch(`${baseUrl}/api/geo/national-territories?city=casablanca`);
       const casaPayload = await casaResponse.json();
@@ -133,7 +152,7 @@ try {
       if (diagnostics.pageErrors.length || criticalRequestFailures.length) {
         throw new Error(`browser diagnostics ${JSON.stringify({ pageErrors: diagnostics.pageErrors, criticalRequestFailures })}`);
       }
-      report.cases.push({ viewport: viewport.name, overflow, layerState, touchSignals, diagnostics, cityDrilldown: true });
+      report.cases.push({ viewport: viewport.name, overflow, layerState, geometryState, touchSignals, diagnostics, activeSelection: true, cityDrilldown: true });
     } finally {
       await context.close();
     }
