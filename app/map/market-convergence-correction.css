@@ -26,7 +26,10 @@
   }
 
   [data-p4-map-layout]:has([data-akarfinder-market-intelligence-map]) [data-akarfinder-intelligence-legend] {
-    display: none !important;
+    display: block !important;
+    left: 16px !important;
+    bottom: 222px !important;
+    width: min(260px, 36vw) !important;
   }
 }
 
