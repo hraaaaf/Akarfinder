@@ -54,6 +54,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: P0 atomic discovery upsert regression
+        run: npx tsx --test scripts/scrapers/__tests__/openserp-discovery-atomic-upsert.test.ts
+
       - name: Prepare SearXNG settings (yandex only, fresh ephemeral secret key)
         run: |
           set -e

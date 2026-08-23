@@ -1,0 +1,42 @@
+name: OpenSERP P0 Atomic Upsert Gate
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/openserp-github-native-ingestion.yml"
+      - ".github/workflows/openserp-p0-atomic-upsert-gate.yml"
+      - "lib/openserp-ingestion/national-writer.ts"
+      - "scripts/scrapers/__tests__/openserp-discovery-atomic-upsert.test.ts"
+      - "supabase/migrations/20260823120000_openserp_discovery_candidates_atomic_upsert.sql"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/openserp-github-native-ingestion.yml"
+      - ".github/workflows/openserp-p0-atomic-upsert-gate.yml"
+      - "lib/openserp-ingestion/national-writer.ts"
+      - "scripts/scrapers/__tests__/openserp-discovery-atomic-upsert.test.ts"
+      - "supabase/migrations/20260823120000_openserp_discovery_candidates_atomic_upsert.sql"
+
+permissions:
+  contents: read
+
+jobs:
+  atomic-upsert-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: P0 atomic discovery upsert regression
+        run: npx tsx --test scripts/scrapers/__tests__/openserp-discovery-atomic-upsert.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
