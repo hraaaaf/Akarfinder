@@ -9,11 +9,21 @@ name: Common Crawl Mass Seed Harvest
 # Historical URL-index metadata -> source_offer_seeds only -> exact freshness
 # reconciliation. No WARC/page fetch, no direct source-site request, no public
 # listing write. Scheduled/push activation runs apply only when the existing
-# three production write gates are enabled; manual runs default to dry-run.
+# three production write gates are enabled; manual/PR runs default to dry-run.
 # P0.1 makes both the harvester and importer re-read the canonical production
 # Source Registry and fail closed on the exact `commoncrawl` channel.
 
 on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/commoncrawl-mass-seed-harvest.yml"
+      - "scripts/openserp/commoncrawl-registry-mass-harvest.ts"
+      - "scripts/openserp/ingest-commoncrawl-mass-seeds.ts"
+      - "scripts/scrapers/__tests__/openserp-commoncrawl-policy-gate.test.ts"
+      - "scripts/data-mass/source-factory-m3-access-policy.ts"
+      - "lib/acquisition-scale-v1/mass-index-source-policy.ts"
+      - "lib/acquisition-scale-v1/mass-index-source-policy-db.ts"
   schedule:
     - cron: "17 2 * * *"
   push:
@@ -22,6 +32,8 @@ on:
       - ".github/workflows/commoncrawl-mass-seed-harvest.yml"
       - "scripts/openserp/commoncrawl-registry-mass-harvest.ts"
       - "scripts/openserp/ingest-commoncrawl-mass-seeds.ts"
+      - "scripts/scrapers/__tests__/openserp-commoncrawl-policy-gate.test.ts"
+      - "scripts/data-mass/source-factory-m3-access-policy.ts"
       - "lib/acquisition-scale-v1/mass-index-source-policy.ts"
       - "lib/acquisition-scale-v1/mass-index-source-policy-db.ts"
   workflow_dispatch:
@@ -58,6 +70,12 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Verify P0.1 Common Crawl external-index policy gate
+        run: >-
+          npx tsx --test
+          scripts/scrapers/__tests__/openserp-commoncrawl-policy-gate.test.ts
+          scripts/data-mass/__tests__/source-factory-m3-access-policy.test.ts
 
       - name: Resolve write mode
         shell: bash

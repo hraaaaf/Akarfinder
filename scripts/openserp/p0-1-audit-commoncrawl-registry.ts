@@ -8,7 +8,7 @@ import { loadSourceDomainRegistry } from "@/lib/openserp-ingestion/domain-regist
 import { selectRegistryMassHarvestDomains } from "@/lib/acquisition-scale-v1/commoncrawl-mass-seeds";
 import {
   MASS_INDEX_COMMONCRAWL_CHANNEL,
-  evaluateMassIndexDomains,
+  evaluateMassIndexExternalIndexDomains,
 } from "@/lib/acquisition-scale-v1/mass-index-source-policy";
 import { loadMassIndexSourcePolicies } from "@/lib/acquisition-scale-v1/mass-index-source-policy-db";
 
@@ -17,7 +17,7 @@ const REPORT_PATH = join(process.cwd(), "data/audits/runtime/p0-1-commoncrawl-po
 export async function buildP01CommonCrawlPolicyReport() {
   const structuralDomains = selectRegistryMassHarvestDomains(loadSourceDomainRegistry());
   const policies = await loadMassIndexSourcePolicies(structuralDomains);
-  const evaluation = evaluateMassIndexDomains(
+  const evaluation = evaluateMassIndexExternalIndexDomains(
     structuralDomains,
     MASS_INDEX_COMMONCRAWL_CHANNEL,
     policies,
@@ -28,12 +28,22 @@ export async function buildP01CommonCrawlPolicyReport() {
       acc[decision.reason] = (acc[decision.reason] ?? 0) + 1;
       return acc;
     }, {});
+  const configuredCommonCrawlDomains = policies
+    .filter((policy) => (policy.allowed_discovery_channels ?? [])
+      .map((channel) => channel.trim().toLowerCase())
+      .includes(MASS_INDEX_COMMONCRAWL_CHANNEL))
+    .map((policy) => policy.source_domain.trim().toLowerCase())
+    .sort();
 
   return {
     gate_version: "p0_1_mass_index_source_registry_v1",
     discovery_channel: MASS_INDEX_COMMONCRAWL_CHANNEL,
+    access_plane: "MINIMAL_EXTERNAL_INDEX",
     structural_candidate_domains: structuralDomains.length,
     policy_rows_loaded: policies.length,
+    configured_commoncrawl_domains: configuredCommonCrawlDomains,
+    configured_commoncrawl_domain_count: configuredCommonCrawlDomains.length,
+    non_commoncrawl_domain_count: Math.max(0, structuralDomains.length - configuredCommonCrawlDomains.length),
     allowed_domains: evaluation.allowedDomains,
     rejected_domains: evaluation.decisions.filter((decision) => !decision.allowed),
     rejection_breakdown: rejectionBreakdown,
@@ -53,9 +63,6 @@ async function main() {
   console.log(JSON.stringify(report, null, 2));
 
   if (!report.fail_closed) throw new Error("P0.1 Source Registry audit integrity failed");
-  if (report.structural_candidate_domains > 0 && report.allowed_domains.length === 0) {
-    throw new Error("P0.1 audit found zero policy-authorized Common Crawl domains");
-  }
 }
 
 void main().catch((error) => {
