@@ -1,7 +1,7 @@
 # AkarFinder — Neighborhood Context Intelligence — CANONICAL
 
 Date : 2026-08-24
-Statut : **ACTIVE**
+Statut : **ACTIVE — Lot 1 CLOSED, Lot 2 ACTIVE**
 Autorité : ce fichier est le document maître du chantier. Les anciens CONTRACT / ROADMAP / HANDOVER restent des preuves historiques et de reprise, mais toute décision nouvelle doit être réconciliée ici.
 
 ---
@@ -149,48 +149,45 @@ Projection produit, pas nouvelle vérité :
 
 La phase documentaire de réconciliation est terminée. Les **lots opérationnels commencent ici**.
 
-## Lot 1 — National POI Source + Registry Foundation — ACTIVE
+## Lot 1 — National POI Source + Registry Foundation — CLOSED ✅
 
 ### Goal
 Créer la source de vérité POI nationale AkarFinder, reproductible et hors render path.
 
-### Pilote
-- Rabat / Agdal
-- Casablanca / Maârif
-- Marrakech / Guéliz
-- Tanger / Malabata
-- Agadir / Founty
-- Fès / Ville Nouvelle
-
-### À construire
-- `NeighborhoodPoiV1` + validator ;
-- adaptateur source → canonique ;
-- IDs stables / idempotence ;
-- provenance, attribution, licence, fraîcheur ;
-- normalisation vers `LivingHereCategory` ;
+### Résultat vérifié
+- `NeighborhoodPoiV1` + validation stricte ;
+- identité OSM stable `osm:{node|way|relation}:{id}` ;
+- provenance, attribution ODbL, URL source et fraîcheur 30 jours ;
+- normalisation Unicode FR/AR ;
+- taxonomie ANN-L6 réutilisée ;
 - déduplication ;
-- snapshot/registry read-only ;
-- aucun fetch externe dans le render path ;
-- acquisition live prioritaire avec continuité par seed ANN-L5 certifié uniquement pour les pilotes disposant de cette preuve ;
-- rapport de couverture pilote distinguant `live`, `certified_seed` et indisponible.
+- snapshot read-only sans réseau ;
+- 6 pilotes : Agdal, Maârif, Guéliz, Malabata, Founty, Ville Nouvelle Fès ;
+- live prioritaire avec continuité `certified_seed` ANN-L5 uniquement quand prouvée et encore fraîche ;
+- Agadir/Fès restent non remplis artificiellement lorsque le live est indisponible ;
+- aucune appartenance territoriale `dans le quartier` affirmée au Lot 1.
 
-### Succès
-- pipeline déterministe sur les 6 pilotes ;
-- au moins 4/6 pilotes disposent d'un registre candidat valide via live ou seed certifié encore frais ;
-- les quartiers sans preuve restent explicitement insuffisants/dégradés ;
-- POI invalides rejetés ;
-- provenance/licence/date présentes sur chaque POI publié ;
-- aucune donnée `certified_seed` présentée comme live ;
-- 0 dépendance réseau côté rendu ;
-- tests idempotence / malformed / droits / fraîcheur / seed continuity ;
-- TypeScript + build verts.
-
-### Human gate obligatoire
-Le lot reste **ACTIVE** après certification technique jusqu’à présentation d’une **capture de preuve** et validation explicite de l’utilisateur.
+### Preuve
+- PR **#904** ;
+- HEAD exact certifié : `44e33c74d9a625be07cf46d4d2020ee742353549` ;
+- run **`32758616578`** SUCCESS ;
+- job `97531870201` SUCCESS ;
+- artifact **`9531912146`** ;
+- digest `sha256:377cf1d992a39044e32cbe2b7592edd5f51586f301eeac0158ef053f0f2cd988` ;
+- 24/24 tests L1 + ANN-L6 ;
+- TypeScript SUCCESS ;
+- production build SUCCESS ;
+- truth + availability gate SUCCESS ;
+- 4/6 pilotes disponibles, 13 POI canoniques, 0 finding vérité ;
+- capture `l1-pilot-registry-proof.png` inspectée ;
+- score capture : **9,2/10** ;
+- validation humaine explicite reçue le 2026-08-24 ;
+- merge exact-head : `b2a899eaf11f945e980a3c39f4e195c51270b859` ;
+- aucun Vercel.
 
 ---
 
-## Lot 2 — Neighborhood Assignment + Anchor Selection
+## Lot 2 — Neighborhood Assignment + Anchor Selection — ACTIVE
 
 ### Goal
 Relier les POI au bon quartier et produire la sélection 5–8 anchors décisionnels.
@@ -302,14 +299,14 @@ Si la CI est verte mais la capture n’est pas encore validée : statut `TECH CE
 
 Les anciens lots historiques sont des fondations et ne sont pas recomptés.
 
-- Lot 1 : ACTIVE
-- Lot 2 : OPEN
+- Lot 1 : CLOSED ✅
+- Lot 2 : ACTIVE
 - Lot 3 : OPEN
 - Lot 4 : OPEN
 - Lot 5 : OPEN
 - Lot 6 : OPEN
 
-**Avancement global vérifié : 0/6 = 0 %.**
+**Avancement global vérifié : 1/6 = 16,7 %.**
 
 Le pourcentage monte uniquement après human gate + fermeture réelle du lot.
 
@@ -326,22 +323,21 @@ Fichier maître :
 - `docs/NEIGHBORHOOD_CONTEXT_INTELLIGENCE_CANONICAL.md`
 
 PR historique de verrouillage : #902.
-
-Lot 1 doit être implémenté sur une branche dédiée et ne touche pas l’UI produit.
+Lot 1 : PR #904, merge `b2a899eaf11f945e980a3c39f4e195c51270b859`.
 
 ---
 
 # 10. Next exact
 
-**Lot 1 — National POI Source + Registry Foundation**
+**Lot 2 — Neighborhood Assignment + Anchor Selection**
 
-1. implémenter contrat + registry ;
-2. produire les 6 pilotes ;
-3. live prioritaire, seed ANN-L5 certifié comme continuité explicitement marquée ;
-4. tests + TypeScript + build ;
-5. générer rapport/capture ;
-6. présenter la capture à l’utilisateur ;
-7. seulement après validation : closeout + merge ;
-8. passer au Lot 2.
-
-Aucun Vercel.
+1. créer `NeighborhoodPoiRelationV1` ;
+2. classifier chaque candidat `inside_certified_boundary | authority_linked | near_certified_reference | unresolved` ;
+3. ne jamais promouvoir un rayon/centroïde en preuve de frontière ;
+4. produire un ranking déterministe des anchors ;
+5. max 2 anchors/catégorie ;
+6. viser 5–8 anchors lorsque la donnée le permet, sinon `insufficient_context` ;
+7. tests + TypeScript + build ;
+8. générer rapport + capture de sélection des 6 pilotes ;
+9. soumettre la capture à validation utilisateur avant merge/closeout ;
+10. aucun Vercel.
