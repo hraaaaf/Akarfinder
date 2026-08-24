@@ -1,0 +1,25 @@
+name: M7 Saved Alerts RLS Security
+
+on:
+  pull_request:
+    paths:
+      - "db/supabase-p18a-alerts-migration.sql"
+      - "supabase/migrations/20260824083500_harden_saved_alerts_access.sql"
+      - "scripts/security/saved-alerts-rls.test.mjs"
+      - ".github/workflows/m7-saved-alerts-rls-security.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  saved-alerts-rls-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Verify saved_alerts stays server-only
+        run: node --test scripts/security/saved-alerts-rls.test.mjs
