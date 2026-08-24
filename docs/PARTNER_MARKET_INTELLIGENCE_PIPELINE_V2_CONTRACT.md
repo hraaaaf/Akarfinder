@@ -1,7 +1,7 @@
 # AkarFinder — Partner → Neighborhood → Market Intelligence Pipeline V2
 
 Date : 2026-08-24  
-Statut : **P1 CONTRACT — CANDIDATE À CERTIFICATION**
+Statut : **P1 CLOSED — 1/5 lots certifiés = 20 %**
 
 ## Chantier
 
@@ -42,7 +42,7 @@ Le chantier est réussi lorsqu'une annonce partenaire conforme peut :
 
 ---
 
-# P1 — Contract V2
+# P1 — Contract V2 ✅ CLOSED
 
 ## Goal
 
@@ -221,7 +221,7 @@ Pour la densité, il ne devient dénominateur que si, pour le territoire concern
 - provenance/version ;
 - `area_km2 > 0` recomputable ou autrement certifiée.
 
-**État P1 : l'existence de la partie prix est connue par le projet/utilisateur, mais la présence d'une surface nationale neighborhood-grade dans ce référentiel n'est pas prouvée par les fichiers inspectés pendant P1.** En conséquence, P1 l'enregistre comme `candidate_area_authority`, pas comme aire certifiée implicite.
+**État P1 : l'existence de la partie prix est connue du projet, mais la présence d'une surface nationale neighborhood-grade dans ce référentiel n'est pas prouvée par les fichiers inspectés pendant P1.** Il est donc enregistré comme `candidate_area_authority`, pas comme aire certifiée implicite.
 
 Si cette preuve existe plus tard, elle peut alimenter directement P4 sans modifier le contrat. Sinon, Prix/Volume fonctionnent et Densité reste `NULL` pour le territoire concerné.
 
@@ -284,30 +284,40 @@ P1 n'introduit :
 - aucun nouveau chiffre marché public ;
 - aucun déploiement Vercel.
 
-## 10. Gates P1
+## 10. Certification P1
 
-P1 peut être CLOSED lorsque les preuves suivantes sont réunies :
+Preuves fermées :
 
 - Annonce modèle V1 couverte ;
 - Partner Listing Standard couvert ;
-- schéma canonique actuel réutilisé ;
+- `CanonicalPropertyV1` / `CanonicalOfferV1` réutilisés ;
 - identité stable + lifecycle définis ;
 - contrat Geo Resolver fail-closed défini ;
-- contrat métriques défini avec Densité protégée par `certified_area_km2` ;
-- référentiel national des prix traité explicitement sans lui attribuer une géométrie non prouvée ;
+- contrat métriques compatible avec `docs/CARTE_INTELLIGENCE_METRICS_CONTRACT.md` ;
+- Densité protégée par `certified_area_km2` ;
+- référentiel national des prix traité sans lui attribuer une géométrie non prouvée ;
 - interfaces P2–P5 définies ;
-- fichier relu depuis le HEAD de branche après commit.
+- relecture effectuée sur la branche après le commit initial.
+
+Preuves repo :
+
+- `lib/property-schema/core.ts` expose déjà provenance, visibilité, adresses privée/publique, lat/lng, lifecycle offre, médias et intelligence ;
+- `docs/CARTE_INTELLIGENCE_METRICS_CONTRACT.md` impose déjà `listing_count / area_km2` et interdit bounding box/rayon ;
+- `docs/CARTE_C2_CLOSEOUT.md` confirme le contrat réel Prix / Volume / Densité ;
+- `scripts/import-partner-csv.ts` confirme que le CSV Light actuel est plus pauvre et utilise encore le fingerprint comme identité d'upsert.
+
+**Verdict : P1 CLOSED.**
 
 ---
 
 # Roadmap V2
 
-1. **P1 — Contract V2** : contrat unique et interfaces.
-2. **P2 — Partner Ingestion V2** : CSV/XLSX/API/feed, validations, médias/droits, stable IDs, lifecycle, idempotence.
+1. **P1 — Contract V2 ✅ CLOSED**
+2. **P2 — Partner Ingestion V2 🔵 ACTIVE** : CSV/XLSX/API/feed, validations, médias/droits, stable IDs, lifecycle, idempotence.
 3. **P3 — National Geo Resolver** : ville/quartier/adresse/coordonnées → Neighborhood ID, précision et confidentialité.
 4. **P4 — National Market Aggregator** : Prix/m², Volume, Densité lorsque l'aire est certifiée, catégories, historique, fraîcheur, confiance.
 5. **P5 — Map Intelligence Wiring + Certification** : Search/Map/fiche quartier sur la même vérité, navigateur 390/430/768/1280 et closeout.
 
 ## Avancement
 
-À la création de ce contrat : **0/5 lot certifié**. P1 ne passe à CLOSED qu'après relecture et preuve du HEAD de branche.
+**1/5 lots certifiés = 20 %.**
