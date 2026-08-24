@@ -11,6 +11,7 @@ import {
 } from "../../../lib/acquisition-scale-v1/mass-index-source-policy";
 import {
   buildCommonCrawlPolicyProjection,
+  fetchCdxRecords,
   getPolicyReviewAlert,
   prepareCommonCrawlPolicyGate,
 } from "../../openserp/commoncrawl-registry-mass-harvest";
@@ -130,6 +131,60 @@ test("review alerts classify J-7, J-3 and J-1 without alerting expired or >J-7 r
   );
   assert.equal(getPolicyReviewAlert("2026-08-31T12:00:00.000Z", NOW), null);
   assert.equal(getPolicyReviewAlert("2026-08-22T12:00:00.000Z", NOW), null);
+});
+
+test("CDX transport retries network exceptions and preserves the eventual response", async () => {
+  let calls = 0;
+  const sleeps: number[] = [];
+  const fakeFetch = (async () => {
+    calls += 1;
+    if (calls < 3) throw new TypeError("fetch failed");
+    return new Response(
+      `${JSON.stringify({
+        url: "https://example.ma/listing-123",
+        timestamp: "20260824090000",
+        status: "200",
+        mime: "text/html",
+      })}\n`,
+      { status: 200 },
+    );
+  }) as typeof fetch;
+
+  const records = await fetchCdxRecords("example.ma", "CC-MAIN-2026-25", {
+    fetchImpl: fakeFetch,
+    sleepImpl: async (ms) => { sleeps.push(ms); },
+    maxAttempts: 3,
+    retryBaseMs: 10,
+    retryMaxMs: 20,
+  });
+
+  assert.equal(calls, 3);
+  assert.deepEqual(sleeps, [10, 20]);
+  assert.equal(records.length, 1);
+  assert.equal(records[0].url, "https://example.ma/listing-123");
+});
+
+test("CDX transport network retries are bounded and fail with attempt evidence", async () => {
+  let calls = 0;
+  const sleeps: number[] = [];
+  const fakeFetch = (async () => {
+    calls += 1;
+    throw new TypeError("fetch failed");
+  }) as typeof fetch;
+
+  await assert.rejects(
+    fetchCdxRecords("example.ma", "CC-MAIN-2026-25", {
+      fetchImpl: fakeFetch,
+      sleepImpl: async (ms) => { sleeps.push(ms); },
+      maxAttempts: 3,
+      retryBaseMs: 5,
+      retryMaxMs: 10,
+    }),
+    /transport failed.*after 3 attempts: fetch failed/,
+  );
+
+  assert.equal(calls, 3);
+  assert.deepEqual(sleeps, [5, 10]);
 });
 
 test("zero-authorized gate writes the diagnostic artifact before failing closed", () => {
