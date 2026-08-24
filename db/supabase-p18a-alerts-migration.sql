@@ -36,10 +36,10 @@ CREATE INDEX IF NOT EXISTS saved_alerts_type_idx ON saved_alerts (transaction_ty
 
 ALTER TABLE saved_alerts ENABLE ROW LEVEL SECURITY;
 
+-- Server-only table. service_role bypasses RLS, so no permissive row policy is needed.
 DROP POLICY IF EXISTS "service_role_all" ON saved_alerts;
+REVOKE ALL PRIVILEGES ON TABLE saved_alerts FROM PUBLIC, anon, authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE saved_alerts TO service_role;
 
-CREATE POLICY "service_role_all" ON saved_alerts
-  FOR ALL USING (true);
-
--- No anon access. Inserts via /api/alerts server route (service role key only).
+-- Inserts via /api/alerts server route (service role key only).
 -- Reads via /pro/alerts server page (service role key only).
