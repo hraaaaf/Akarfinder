@@ -1,8 +1,6 @@
 "use client";
 
 import { ExternalIndexedResultCard } from "./ExternalIndexedResultCard";
-import { buildPublicResultSimilaritySummaries } from "@/lib/public-result-similarity/group-public-results";
-import { assertPublicResultSimilaritySafety } from "@/lib/public-result-similarity/public-safety";
 import type { SearchGatewayNormalizedResult } from "@/lib/search-gateway/search-gateway-types";
 
 type ExternalIndexedResultsSectionProps = {
@@ -11,6 +9,19 @@ type ExternalIndexedResultsSectionProps = {
   showHeader?: boolean;
 };
 
+function SerpSkeletonRow() {
+  return (
+    <div className="flex animate-pulse gap-3 px-3.5 py-4 sm:gap-3.5 sm:px-4">
+      <div className="h-9 w-9 shrink-0 rounded-xl bg-surface dark:bg-white/10 sm:h-10 sm:w-10" />
+      <div className="min-w-0 flex-1 space-y-2">
+        <div className="h-3 w-28 rounded-full bg-surface dark:bg-white/10" />
+        <div className="h-4 w-3/5 rounded-full bg-surface dark:bg-white/10" />
+        <div className="h-3 w-2/5 rounded-full bg-surface dark:bg-white/10" />
+      </div>
+    </div>
+  );
+}
+
 export function ExternalIndexedResultsSection({
   results,
   isLoading = false,
@@ -18,56 +29,32 @@ export function ExternalIndexedResultsSection({
 }: ExternalIndexedResultsSectionProps) {
   if (!isLoading && results.length === 0) return null;
 
-  const similaritySummaries = buildPublicResultSimilaritySummaries(
-    results.map((result) => ({
-      id: result.id,
-      title: result.title,
-      snippet: result.snippet,
-      original_url: result.original_url,
-      display_url: result.display_url,
-      source_name: result.source_name,
-      source_host: result.domain,
-    })),
-  );
-
-  for (const summary of Object.values(similaritySummaries)) {
-    assertPublicResultSimilaritySafety(summary);
-  }
-
   return (
-    <div className="space-y-4 sm:space-y-5">
+    <section className="space-y-3" data-search-external-serp-section>
       {showHeader ? (
-        <div className="border-t border-border/15 pt-6 dark:border-white/10 sm:pt-8">
-          <h2 className="mb-1 text-[16px] font-bold text-foreground dark:text-white/90 sm:text-[18px]">
-            Autres annonces
-          </h2>
-          <p className="text-[12px] text-muted-foreground dark:text-white/50 sm:text-[13px]">
-            {results.length > 0 ? `${results.length} résultat${results.length > 1 ? "s" : ""} · ` : ""}
-            Vérifiez le prix, la disponibilité et les détails sur le site d’origine.
-          </p>
+        <div className="flex flex-wrap items-end justify-between gap-2 border-t border-border/15 pt-5 dark:border-white/10 sm:pt-6">
+          <div>
+            <h2 className="text-[15px] font-extrabold text-foreground dark:text-white sm:text-[16px]">
+              Résultats indexés externes
+            </h2>
+            <p className="mt-0.5 text-[11px] text-muted-foreground dark:text-white/50 sm:text-[12px]">
+              {results.length > 0 ? `${results.length.toLocaleString("fr-FR")} affiché${results.length > 1 ? "s" : ""} · ` : ""}
+              ouvrez la source originale pour les détails.
+            </p>
+          </div>
+          <span className="text-[10px] font-bold uppercase tracking-[0.09em] text-muted-foreground/75 dark:text-white/40">
+            Mode SERP
+          </span>
         </div>
       ) : null}
 
-      {isLoading ? (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
-          {[...Array(3)].map((_, i) => (
-            <div
-              key={i}
-              className="h-64 animate-pulse overflow-hidden rounded-[20px] border border-border/10 bg-card dark:border-white/10 dark:bg-white/[0.04] sm:h-40 sm:rounded-2xl"
-            />
-          ))}
-        </div>
-      ) : results.length > 0 ? (
-        <div className="grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3" data-search-external-mobile-grid>
-          {results.map((result) => (
-            <ExternalIndexedResultCard
-              key={result.id}
-              result={result}
-              similarResults={similaritySummaries[result.id]}
-            />
-          ))}
-        </div>
-      ) : null}
-    </div>
+      <div className="overflow-hidden rounded-2xl border border-border/15 bg-card shadow-[0_8px_28px_rgba(15,23,42,0.05)] divide-y divide-border/12 dark:border-white/10 dark:bg-white/[0.025] dark:divide-white/8" data-search-external-serp-list>
+        {isLoading
+          ? [...Array(5)].map((_, index) => <SerpSkeletonRow key={index} />)
+          : results.map((result) => (
+              <ExternalIndexedResultCard key={result.id} result={result} />
+            ))}
+      </div>
+    </section>
   );
 }
