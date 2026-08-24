@@ -1,7 +1,7 @@
 # MASS-INDEX M7-B — External claim model
 
 **Date : 2026-08-24**  
-**Statut : MERGED IN REPO — live DB non appliquée**
+**Statut : CLOSED — live DB vérifiée**
 
 ## Goal
 Créer un modèle minimal permettant à un propriétaire, une agence ou une plateforme de revendiquer une URL canonique externe indexée, sans transformer cette revendication en droit de réutilisation du contenu.
@@ -67,16 +67,29 @@ Test : `scripts/scrapers/__tests__/market-index-migration-safety.test.ts`.
 PR #891 : mergée le 2026-08-24.
 - head exact : `a3720963a6e62521e46f4d0e31e1ff304aa9f784` ;
 - merge commit : `474115adccb949be28167370eec648b3f61609d6` ;
-- 7/7 workflows associés au head : success ;
-- `main` vérifié sur le merge commit ci-dessus après merge.
+- 7/7 workflows associés au head : success.
 
-## Gate production restant
-La migration `external_source_claims_v1` n'est pas encore appliquée sur la base Supabase live.
+## Preuve live
+Migration Supabase enregistrée sous `external_source_claims_v1`.
 
-Avant fermeture M7-B :
-1. gate explicite production ;
-2. appliquer la migration canonique sans modification ;
-3. vérifier la présence du schéma live ;
-4. vérifier `anon/authenticated` sans accès direct ;
-5. vérifier `service_role` fonctionnel ;
-6. confirmer qu'aucune transition automatique vers `PARTNER_FULL` n'existe.
+État live après application :
+- RLS : active ;
+- lignes : 0 ;
+- `anon SELECT` : false ;
+- `authenticated SELECT` : false ;
+- `service_role SELECT` : true.
+
+Tests réels par rôle :
+- `SET LOCAL ROLE anon` + `SELECT` → refus PostgreSQL `42501` ;
+- `SET LOCAL ROLE authenticated` + `SELECT` → refus PostgreSQL `42501` ;
+- `SET LOCAL ROLE service_role` + `SELECT count(*)` → succès, 0 ligne.
+
+Contraintes live vérifiées :
+- `claim_scope = 'external_index_only'` ;
+- `content_enrichment_authorized = false` ;
+- rôle limité à `owner | agency | platform` ;
+- statut limité à `pending | verified | rejected | revoked` ;
+- état `verified` exige review + email vérifié.
+
+## Conclusion
+M7-B est fermé. Un claim vérifié prouve le contrôle revendiqué ; il ne vaut jamais autorisation de réutiliser du contenu et ne déclenche pas `PARTNER_FULL`.
