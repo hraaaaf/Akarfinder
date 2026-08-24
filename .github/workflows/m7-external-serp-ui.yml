@@ -6,11 +6,15 @@ on:
       - "components/search/ExternalIndexedResultCard.tsx"
       - "components/search/ExternalIndexedResultsSection.tsx"
       - "components/search/M7ExternalSerpVisualQAFixture.tsx"
+      - "components/search/LightZillowSearchShell.tsx"
       - "lib/search/external-serp-groups.ts"
+      - "lib/search/external-result-presentation.ts"
       - "app/visual-qa/m7-external-serp/**"
       - "scripts/scrapers/__tests__/m7-external-serp-ui.test.ts"
+      - "scripts/scrapers/__tests__/m7f-external-serp-ui.test.ts"
       - "docs/EXTERNAL_SERP_B_TARGET.*"
       - ".github/workflows/m7-external-serp-ui.yml"
+      - ".github/workflows/m7f-external-serp-ui.yml"
   workflow_dispatch:
 
 jobs:
@@ -28,8 +32,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Contract test
-        run: npx tsx --test scripts/scrapers/__tests__/m7-external-serp-ui.test.ts
+      - name: Contract tests
+        run: >-
+          npx tsx --test
+          scripts/scrapers/__tests__/m7-external-serp-ui.test.ts
+          scripts/scrapers/__tests__/m7f-external-serp-ui.test.ts
 
       - name: TypeScript check
         run: npx tsc --noEmit
