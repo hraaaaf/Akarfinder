@@ -8,6 +8,7 @@ name: Common Crawl Mass Seed Harvest
 # P0.1-MASS-INDEX-SOURCE-REGISTRY-OPERATIONAL-GATE
 # P0.1-MINIMAL-EXTERNAL-INDEX-ACTIVATION-2026-08-23
 # COMMONCRAWL-ZERO-DOMAIN-PATTERN-REHARVEST-2026-08-24
+# COMMONCRAWL-SEED-PROVENANCE-V1
 # Historical URL-index metadata -> source_offer_seeds only -> exact freshness
 # reconciliation. No WARC/page fetch, no direct source-site request, no public
 # listing write. Scheduled/push activation runs apply only when the existing
@@ -23,11 +24,14 @@ on:
       - "data/openserp/source-domain-registry.json"
       - "scripts/openserp/commoncrawl-registry-mass-harvest.ts"
       - "scripts/openserp/ingest-commoncrawl-mass-seeds.ts"
+      - "scripts/openserp/report-commoncrawl-seed-provenance.ts"
       - "scripts/openserp/p0-1-audit-commoncrawl-registry.ts"
+      - "scripts/scrapers/__tests__/commoncrawl-seed-provenance.test.ts"
       - "scripts/scrapers/__tests__/commoncrawl-zero-domain-patterns.test.ts"
       - "scripts/scrapers/__tests__/openserp-commoncrawl-policy-gate.test.ts"
       - "scripts/scrapers/__tests__/p0-1-minimal-external-index-policy-review.test.ts"
       - "scripts/data-mass/source-factory-m3-access-policy.ts"
+      - "lib/acquisition-scale-v1/commoncrawl-mass-seeds.ts"
       - "lib/acquisition-scale-v1/mass-index-source-policy.ts"
       - "lib/acquisition-scale-v1/mass-index-source-policy-db.ts"
       - "supabase/migrations/20260823213600_p0_1_commoncrawl_minimal_index_policy_review.sql"
@@ -40,11 +44,14 @@ on:
       - "data/openserp/source-domain-registry.json"
       - "scripts/openserp/commoncrawl-registry-mass-harvest.ts"
       - "scripts/openserp/ingest-commoncrawl-mass-seeds.ts"
+      - "scripts/openserp/report-commoncrawl-seed-provenance.ts"
       - "scripts/openserp/p0-1-audit-commoncrawl-registry.ts"
+      - "scripts/scrapers/__tests__/commoncrawl-seed-provenance.test.ts"
       - "scripts/scrapers/__tests__/commoncrawl-zero-domain-patterns.test.ts"
       - "scripts/scrapers/__tests__/openserp-commoncrawl-policy-gate.test.ts"
       - "scripts/scrapers/__tests__/p0-1-minimal-external-index-policy-review.test.ts"
       - "scripts/data-mass/source-factory-m3-access-policy.ts"
+      - "lib/acquisition-scale-v1/commoncrawl-mass-seeds.ts"
       - "lib/acquisition-scale-v1/mass-index-source-policy.ts"
       - "lib/acquisition-scale-v1/mass-index-source-policy-db.ts"
       - "supabase/migrations/20260823213600_p0_1_commoncrawl_minimal_index_policy_review.sql"
@@ -86,6 +93,7 @@ jobs:
       - name: Verify P0.1 Common Crawl external-index policy gate
         run: >-
           npx tsx --test
+          scripts/scrapers/__tests__/commoncrawl-seed-provenance.test.ts
           scripts/scrapers/__tests__/commoncrawl-zero-domain-patterns.test.ts
           scripts/scrapers/__tests__/openserp-commoncrawl-policy-gate.test.ts
           scripts/scrapers/__tests__/p0-1-minimal-external-index-policy-review.test.ts
@@ -163,6 +171,13 @@ jobs:
             npx tsx scripts/openserp/ingest-commoncrawl-mass-seeds.ts
             npx tsx scripts/openserp/reconcile-commoncrawl-seed-freshness.ts
           fi
+
+      - name: Report exact Common Crawl seed provenance
+        if: github.event_name != 'pull_request'
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npx tsx scripts/openserp/report-commoncrawl-seed-provenance.ts
 
       - name: Upload final harvest and P0.1 policy proof artifacts
         if: always()

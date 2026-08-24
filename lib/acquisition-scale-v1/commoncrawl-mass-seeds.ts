@@ -1,4 +1,5 @@
 // CASABLANCA-MASS-ACQUISITION-V1 — Common Crawl mass seed foundation.
+// COMMONCRAWL-SEED-PROVENANCE-V1
 //
 // Historical CDX URLs are ONLY seeds. This module never creates a listing,
 // never marks a seed fresh, never publishes anything, and never fetches a
@@ -131,6 +132,9 @@ export function validateAndMapMassSeed(
       },
       freshness_status: "seed_only",
       fresh_last_seen_at: null,
+      // `fresh_channels` is reserved for current re-observation evidence.
+      // Common Crawl is historical URL-index provenance, so its durable marker
+      // is seed_provider + metadata.source, never a freshness channel.
       fresh_channels: [],
       created_at: nowIso,
       updated_at: nowIso,
