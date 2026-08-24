@@ -66,16 +66,14 @@ try {
         await canvas.waitFor({ state: "visible", timeout: 20000 });
         await page.waitForTimeout(1200);
         const marketPremium = await page.locator("[data-akarfinder-market-intelligence-map]").count();
+        const nationalMap = await page.locator("[data-akarfinder-national-map]").count();
         const genericShell = await page.locator("[data-akarfinder-generic-map-shell=\"true\"]").count();
         const bodyOverflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
         if (diagnostics.pageErrors.length > 0) throw new Error(`${city.slug}/${viewport.name}: browser page error`);
         if (bodyOverflow > 1) throw new Error(`${city.slug}/${viewport.name}: horizontal overflow ${bodyOverflow}px`);
-        if (marketPremium + genericShell < 1) throw new Error(`${city.slug}/${viewport.name}: no recognized map shell`);
-        await page.screenshot({
-          path: `${outDir}/${city.slug}-${viewport.name}-after.png`,
-          fullPage: false,
-        });
-        report.visual.push({ city: city.slug, viewport: viewport.name, marketPremium, genericShell, bodyOverflow, diagnostics });
+        if (marketPremium + nationalMap + genericShell < 1) throw new Error(`${city.slug}/${viewport.name}: no recognized map shell`);
+        await page.screenshot({ path: `${outDir}/${city.slug}-${viewport.name}-after.png`, fullPage: false });
+        report.visual.push({ city: city.slug, viewport: viewport.name, marketPremium, nationalMap, genericShell, bodyOverflow, diagnostics });
       } finally {
         await page.close();
       }
