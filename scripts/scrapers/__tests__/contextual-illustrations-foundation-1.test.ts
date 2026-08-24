@@ -210,20 +210,16 @@ describe("CONTEXTUAL-ILLUSTRATIONS-FOUNDATION-1", () => {
     assert.match(resolver, /normalizedPropertyType/);
   });
 
-  it("keeps authorized thumbnails authoritative and seeds fallback from original_url", () => {
+  it("keeps external minimal SERP media-free and source-linked", () => {
     const card = source("components/search/ExternalIndexedResultCard.tsx");
-    const thumbnail = card.indexOf("showThumbnail && !thumbError");
-    const contextual = card.indexOf("<ContextualListingArtwork");
 
-    assert.match(card, /THUMBNAILS_ENABLED && result\.can_show_thumbnail && !!result\.thumbnail_url/);
-    assert.ok(thumbnail >= 0 && contextual > thumbnail, "authorized thumbnail must remain first visual branch");
-    assert.match(card, /stableRepresentationKey=\{result\.original_url\}/);
-    assert.match(card, /city=\{result\.normalized_city\}/);
-    assert.match(card, /propertyType=\{safeFallbackPropertyType\}/);
+    assert.match(card, /href=\{result\.original_url\}/);
+    assert.match(card, /data-external-serp-row/);
+    assert.doesNotMatch(card, /THUMBNAILS_ENABLED|thumbnail_url|ContextualListingArtwork|PropertyTypeArtwork/);
     assert.doesNotMatch(card, /result\.(district|quartier|neighborhood)/);
   });
 
-  it("preserves property-type and neutral fallbacks", () => {
+  it("preserves property-type and neutral fallbacks for surfaces that still use contextual artwork", () => {
     const artwork = source("components/search/ContextualListingArtwork.tsx");
     assert.match(artwork, /if \(propertyType\)/);
     assert.match(artwork, /<PropertyTypeArtwork/);
@@ -231,10 +227,11 @@ describe("CONTEXTUAL-ILLUSTRATIONS-FOUNDATION-1", () => {
     assert.match(artwork, /Annonce indexée/);
   });
 
-  it("keeps the illustration disclosure explicit and compact", () => {
+  it("keeps the external minimal disclosure explicit and compact", () => {
     const card = source("components/search/ExternalIndexedResultCard.tsx");
-    assert.match(card, /data-contextual-illustration-label/);
-    assert.match(card, />\s*Illustration\s*</);
+    assert.match(card, /data-external-minimal-disclaimer/);
+    assert.match(card, /Prix, photos et détails à vérifier sur la source\./);
+    assert.doesNotMatch(card, /data-contextual-illustration-label/);
   });
 
   it("does not touch ranking, commercial priority, eligibility, acquisition, dedupe or map logic", () => {

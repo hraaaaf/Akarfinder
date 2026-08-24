@@ -64,10 +64,9 @@ test("intent floors reject implausible totals", () => {
   }), null);
 });
 
-test("external card keeps trusted price first and labels indicative fallback", () => {
+test("external minimal SERP does not render inferred price fallbacks", () => {
   const card = readFileSync("components/search/ExternalIndexedResultCard.tsx", "utf8");
-  assert.match(card, /const indicativePrice = hasTrustedPrice\s*\? null/);
-  assert.match(card, /const displayedPrice = hasTrustedPrice \? result\.normalized_price_mad : indicativePrice/);
-  assert.match(card, /Prix indicatif · à vérifier sur la source/);
-  assert.match(card, /data-price-confidence=/);
+  assert.match(card, /const richFacts = presentation\.isMinimal\s*\? \[\]/);
+  assert.match(card, /Prix, photos et détails à vérifier sur la source\./);
+  assert.doesNotMatch(card, /deriveIndicativePriceMad|Prix indicatif|data-price-confidence/);
 });
