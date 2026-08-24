@@ -1,0 +1,29 @@
+name: M7-F External SERP UI
+
+on:
+  pull_request:
+    paths:
+      - "components/search/ExternalIndexedResultCard.tsx"
+      - "components/search/ExternalIndexedResultsSection.tsx"
+      - "lib/search/external-result-presentation.ts"
+      - "scripts/scrapers/__tests__/m7f-external-serp-ui.test.ts"
+      - "docs/M7_F_EXTERNAL_SERP_UI.md"
+      - ".github/workflows/m7f-external-serp-ui.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  external-serp-ui:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx tsx --test scripts/scrapers/__tests__/m7f-external-serp-ui.test.ts
+      - run: npx tsc --noEmit
