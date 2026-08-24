@@ -1,0 +1,30 @@
+name: M7 UX External SERP
+
+on:
+  pull_request:
+    paths:
+      - "components/search/ExternalIndexedResultCard.tsx"
+      - "components/search/ExternalIndexedResultsSection.tsx"
+      - "scripts/scrapers/__tests__/external-indexed-serp-density.test.ts"
+      - "docs/M7_UX_EXTERNAL_SERP_VISUAL_GOAL.md"
+      - ".github/workflows/m7-ux-external-serp.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  external-serp-density:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Targeted external SERP regression
+        run: npx tsx --test scripts/scrapers/__tests__/external-indexed-serp-density.test.ts
+      - name: Production build
+        run: npm run build
