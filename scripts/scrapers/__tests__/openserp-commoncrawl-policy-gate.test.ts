@@ -13,7 +13,10 @@ import {
   buildCommonCrawlPolicyProjection,
   fetchCdxRecords,
   getPolicyReviewAlert,
+  MASS_CDX_FALLBACK_INDEXES,
   prepareCommonCrawlPolicyGate,
+  resolveMassCdxIndexes,
+  selectLatestCdxIndexes,
 } from "../../openserp/commoncrawl-registry-mass-harvest";
 
 const NOW = new Date("2026-08-23T12:00:00.000Z");
@@ -131,6 +134,42 @@ test("review alerts classify J-7, J-3 and J-1 without alerting expired or >J-7 r
   );
   assert.equal(getPolicyReviewAlert("2026-08-31T12:00:00.000Z", NOW), null);
   assert.equal(getPolicyReviewAlert("2026-08-22T12:00:00.000Z", NOW), null);
+});
+
+test("latest Common Crawl indexes are selected dynamically, deduped and sorted", () => {
+  assert.deepEqual(
+    selectLatestCdxIndexes([
+      { id: "CC-MAIN-2026-25" },
+      { id: "CC-MAIN-2026-34" },
+      { id: "not-a-crawl" },
+      { id: "CC-MAIN-2026-30" },
+      { id: "CC-MAIN-2026-34" },
+      { id: "CC-MAIN-2026-21" },
+    ]),
+    ["CC-MAIN-2026-34", "CC-MAIN-2026-30", "CC-MAIN-2026-25"],
+  );
+});
+
+test("dynamic Common Crawl index resolution uses official collinfo metadata", async () => {
+  const fakeFetch = (async () => new Response(JSON.stringify([
+    { id: "CC-MAIN-2026-30" },
+    { id: "CC-MAIN-2026-34" },
+    { id: "CC-MAIN-2026-25" },
+    { id: "CC-MAIN-2026-21" },
+  ]), { status: 200 })) as typeof fetch;
+
+  assert.deepEqual(
+    await resolveMassCdxIndexes(fakeFetch),
+    ["CC-MAIN-2026-34", "CC-MAIN-2026-30", "CC-MAIN-2026-25"],
+  );
+});
+
+test("dynamic Common Crawl index resolution falls back safely when collinfo is unavailable", async () => {
+  const fakeFetch = (async () => {
+    throw new TypeError("fetch failed");
+  }) as typeof fetch;
+
+  assert.deepEqual(await resolveMassCdxIndexes(fakeFetch), [...MASS_CDX_FALLBACK_INDEXES]);
 });
 
 test("CDX transport retries network exceptions and preserves the eventual response", async () => {
