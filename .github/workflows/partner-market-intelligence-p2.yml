@@ -8,11 +8,13 @@ on:
       - "lib/geo/national-partner-geo-resolver.ts"
       - "lib/market/partner-market-aggregator-v2.ts"
       - "lib/market/partner-market-downstream-v2.ts"
+      - "scripts/import-partner-csv.ts"
       - "scripts/scrapers/__tests__/partner-listing-v2.test.ts"
       - "scripts/scrapers/__tests__/partner-feed-v2-bridge.test.ts"
       - "scripts/scrapers/__tests__/national-partner-geo-resolver.test.ts"
       - "scripts/scrapers/__tests__/partner-market-aggregator-v2.test.ts"
       - "scripts/scrapers/__tests__/partner-market-downstream-v2.test.ts"
+      - "scripts/scrapers/__tests__/partner-csv-write-boundary-p5.test.ts"
       - "scripts/audits/partner-market-p5-after-audit.mjs"
       - ".github/workflows/partner-market-intelligence-p2.yml"
   workflow_dispatch:
@@ -46,7 +48,7 @@ jobs:
       - name: Install
         run: npm ci
 
-      - name: Partner pipeline P2-P5 regression
+      - name: Partner pipeline P2-P5 regression + legacy write boundary
         run: >-
           npx tsx --test
           scripts/scrapers/__tests__/partner-listing-v2.test.ts
@@ -54,6 +56,7 @@ jobs:
           scripts/scrapers/__tests__/national-partner-geo-resolver.test.ts
           scripts/scrapers/__tests__/partner-market-aggregator-v2.test.ts
           scripts/scrapers/__tests__/partner-market-downstream-v2.test.ts
+          scripts/scrapers/__tests__/partner-csv-write-boundary-p5.test.ts
 
       - name: TypeScript
         run: npx tsc --noEmit
