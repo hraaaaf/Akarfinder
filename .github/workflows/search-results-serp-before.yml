@@ -1,0 +1,34 @@
+name: Search Results SERP BEFORE Proof
+
+on:
+  pull_request:
+    paths:
+      - "scripts/visual/capture-search-results-before.mjs"
+      - ".github/workflows/search-results-serp-before.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  capture-before:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Capture production BEFORE
+        env:
+          TARGET_URL: https://akarfinder.vercel.app/search?city=Casablanca
+        run: node scripts/visual/capture-search-results-before.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: search-results-serp-before
+          path: artifacts/search-results-before/*.png
+          if-no-files-found: error
+          retention-days: 7
