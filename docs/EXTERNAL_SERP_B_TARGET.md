@@ -5,7 +5,7 @@
 CLOSED / MERGED on `main` via PR #909.
 
 Merge commit: `91a5d70c348f012f1698237077f8c56dbd040727`.
-Closeout commit: `575ee3016ae8c1f9c55091152592a1a07db01cf6`.
+Closeout recorded on `main` after merge.
 
 Certified head before merge: `7d142de953b694d32475b06462c8dca88791ed01`.
 
