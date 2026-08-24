@@ -1,0 +1,28 @@
+name: Search Results SERP UI Gate
+
+on:
+  pull_request:
+    paths:
+      - "components/search/ExternalIndexedResultCard.tsx"
+      - "components/search/ExternalIndexedResultsSection.tsx"
+      - "components/search/LightZillowSearchShell.tsx"
+      - "scripts/scrapers/__tests__/search-results-serp-presentation.test.ts"
+      - ".github/workflows/search-results-serp-ui.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  serp-ui-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx tsx --test scripts/scrapers/__tests__/search-results-serp-presentation.test.ts
+      - run: npx tsc --noEmit

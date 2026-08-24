@@ -35,30 +35,33 @@ export function ExternalIndexedResultsSection({
   }
 
   return (
-    <div className="space-y-4 sm:space-y-5">
+    <div className="space-y-2.5 sm:space-y-3" data-search-external-serp-list>
       {showHeader ? (
-        <div className="border-t border-border/15 pt-6 dark:border-white/10 sm:pt-8">
-          <h2 className="mb-1 text-[16px] font-bold text-foreground dark:text-white/90 sm:text-[18px]">
-            Autres annonces
-          </h2>
-          <p className="text-[12px] text-muted-foreground dark:text-white/50 sm:text-[13px]">
-            {results.length > 0 ? `${results.length} résultat${results.length > 1 ? "s" : ""} · ` : ""}
-            Vérifiez le prix, la disponibilité et les détails sur le site d’origine.
-          </p>
+        <div className="border-t border-border/15 pt-5 dark:border-white/10 sm:pt-6">
+          <div className="flex items-end justify-between gap-3">
+            <div>
+              <h2 className="text-[16px] font-extrabold text-foreground dark:text-white/90 sm:text-[18px]">
+                Résultats indexés sur le web
+              </h2>
+              <p className="mt-1 text-[12px] text-muted-foreground dark:text-white/50 sm:text-[13px]">
+                {results.length} affiché{results.length > 1 ? "s" : ""} · ouvrez la source pour vérifier les détails.
+              </p>
+            </div>
+          </div>
         </div>
       ) : null}
 
       {isLoading ? (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
-          {[...Array(3)].map((_, i) => (
+        <div className="space-y-2.5 sm:space-y-3">
+          {[...Array(4)].map((_, i) => (
             <div
               key={i}
-              className="h-64 animate-pulse overflow-hidden rounded-[20px] border border-border/10 bg-card dark:border-white/10 dark:bg-white/[0.04] sm:h-40 sm:rounded-2xl"
+              className="h-[112px] animate-pulse rounded-2xl border border-border/10 bg-card dark:border-white/10 dark:bg-white/[0.04] sm:h-[118px]"
             />
           ))}
         </div>
       ) : results.length > 0 ? (
-        <div className="grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3" data-search-external-mobile-grid>
+        <div className="space-y-2.5 sm:space-y-3" data-search-external-results-list>
           {results.map((result) => (
             <ExternalIndexedResultCard
               key={result.id}
