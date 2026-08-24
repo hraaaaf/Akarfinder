@@ -1,7 +1,7 @@
 # MASS-INDEX M7-B — External claim model
 
 **Date : 2026-08-24**  
-**Statut : IMPLEMENTED IN REPO — live DB non appliquée**
+**Statut : CLOSED — live DB vérifiée**
 
 ## Goal
 Créer un modèle minimal permettant à un propriétaire, une agence ou une plateforme de revendiquer une URL canonique externe indexée, sans transformer cette revendication en droit de réutilisation du contenu.
@@ -17,11 +17,11 @@ Créer un modèle minimal permettant à un propriétaire, une agence ou une plat
 
 ## Décision d'architecture
 Le modèle existant est réutilisé plutôt que dupliqué :
-- `professional_listing_ownership` reste le claim d'une annonce **interne** ;
+- `professional_listing_ownership` reste le claim d'une annonce interne ;
 - `professional_organizations` et `professional_memberships` restent les primitives organisationnelles ;
 - `partner_feed_sources` reste la source d'un feed partenaire autorisé ;
 - `source_policy_registry` reste la vérité sur la politique/droits d'une source ;
-- `external_source_claims` couvre uniquement la revendication d'une URL canonique **externe**.
+- `external_source_claims` couvre uniquement la revendication d'une URL canonique externe.
 
 Cette séparation évite de confondre :
 1. contrôle d'une URL/d'un domaine ;
@@ -57,18 +57,39 @@ Champs structurants :
 - aucune publication ;
 - aucun enrichissement de contenu ;
 - aucune autorisation implicite ;
-- aucun `PARTNER_FULL` ;
-- aucune migration live appliquée dans ce lot repo.
+- aucun `PARTNER_FULL`.
 
-## Preuve
-- migration : `supabase/migrations/20260824084500_external_source_claims_v1.sql` ;
-- test : `scripts/scrapers/__tests__/market-index-migration-safety.test.ts` ;
-- le test fait partie de `npm run test:scrapers` déjà canonique.
+## Preuve repo
+Migration : `supabase/migrations/20260824084500_external_source_claims_v1.sql`.
 
-## Next exact
-1. CI exact-head ;
-2. merge si vert ;
-3. gate DB production ;
-4. appliquer migrations M7-A sécurité puis M7-B ;
-5. vérifier schéma live + isolation des rôles ;
-6. M7-C : modèle explicite de droits avant toute transition vers `PARTNER_FULL`.
+Test : `scripts/scrapers/__tests__/market-index-migration-safety.test.ts`.
+
+PR #891 : mergée le 2026-08-24.
+- head exact : `a3720963a6e62521e46f4d0e31e1ff304aa9f784` ;
+- merge commit : `474115adccb949be28167370eec648b3f61609d6` ;
+- 7/7 workflows associés au head : success.
+
+## Preuve live
+Migration Supabase enregistrée sous `external_source_claims_v1`.
+
+État live après application :
+- RLS : active ;
+- lignes : 0 ;
+- `anon SELECT` : false ;
+- `authenticated SELECT` : false ;
+- `service_role SELECT` : true.
+
+Tests réels par rôle :
+- `SET LOCAL ROLE anon` + `SELECT` → refus PostgreSQL `42501` ;
+- `SET LOCAL ROLE authenticated` + `SELECT` → refus PostgreSQL `42501` ;
+- `SET LOCAL ROLE service_role` + `SELECT count(*)` → succès, 0 ligne.
+
+Contraintes live vérifiées :
+- `claim_scope = 'external_index_only'` ;
+- `content_enrichment_authorized = false` ;
+- rôle limité à `owner | agency | platform` ;
+- statut limité à `pending | verified | rejected | revoked` ;
+- état `verified` exige review + email vérifié.
+
+## Conclusion
+M7-B est fermé. Un claim vérifié prouve le contrôle revendiqué ; il ne vaut jamais autorisation de réutiliser du contenu et ne déclenche pas `PARTNER_FULL`.

@@ -1,64 +1,86 @@
 # AkarFinder — Session courante
 
-**Mise à jour : 2026-08-23**
+**Mise à jour : 2026-08-24**
 
 `docs/ROADMAP.md` reste l’unique vérité canonique globale.
 
-## Chantier courant — DATA MASS-INDEX
+## Chantier — DATA MASS-INDEX ✅ CLOSED
 Issue : `#854`.
 
-Progression stricte : **7/8 lots CLOSED = 87,5 %**.
+Progression stricte : **8/8 lots CLOSED = 100 %**.
 
-### CLOSED
+### Lots fermés
 - M0 baseline ;
 - M1 Universal candidate promotion ; run `32577296107` SUCCESS ;
 - M2 External Index ; run `32580352867` SUCCESS ;
 - M3 Source Factory ; PR #863 ; run `32594176513` SUCCESS ;
-- M4 National MASS ingest ; PR #871 ; merge `206672c8a24b7aa95271f2f7d32dbc733dba08b5` ;
+- M4 National MASS ingest ; PR #871 ; run `32610621902` SUCCESS ;
 - M5 Dedup + freshness ; PR #874 + #876 ;
-- M6 Search activation + SEO ; PR #879 + #881 + #882 ; runtime production certifié.
+- M6 Search activation + SEO ; production runtime certifiée ;
+- M7 Conversion partenaires + droits ; certification finale live validée.
 
-## M6 — CLOSED — production runtime certified
+## M6 — production runtime certified
+- deployment : `dpl_GHqzoTyvJpsTo1R5D8yELfbrbtq6` ;
+- alias : `akarfinder.vercel.app` ;
+- SHA runtime certifié : `6ade8c35dcaad013cef28422137dbad83ea1dbdf` ;
+- ODM 100 % sur requêtes compatibles, fallback legacy contrôlé ;
+- `fresh_confirmed` uniquement, `seed_only` non public ;
+- `/search` : `noindex, follow`, canonical `/search`, absent du sitemap ;
+- aucun nouveau Vercel effectué pendant M7.
 
-### Code/CI
-- M6-A : PR #879 ; run `32636262489` SUCCESS ; artifact `9492399522` ;
-- M6-B : PR #881 ; run `32647288760` SUCCESS ; artifact `9495238964` ;
-- M6-C : PR #882 ; run `32647718215` SUCCESS ;
-- SQL + Node exigent `fresh_confirmed` ; `seed_only` rejeté ; ODM 100 % certifié sur les requêtes compatibles avec emergency stop et fallback legacy.
+## M7 — CLOSED — partner conversion / provenance
 
-### Production
-- déploiement : `dpl_GHqzoTyvJpsTo1R5D8yELfbrbtq6` ;
-- target : `production` ; état : `READY` ; alias primaire : `akarfinder.vercel.app` ;
-- SHA déployé et imprimé au build : `6ade8c35dcaad013cef28422137dbad83ea1dbdf` ; compilation Next SUCCESS ;
-- Rabat compatible -> ODM (`source=database_fallback`) ;
-- Rabat + Agdal -> legacy contrôlé (`source=database`) ;
-- `/search` -> HTTP 200 + `noindex, follow` ;
-- `/search` absent de `/sitemap.xml` ;
-- runtime errors `/api/search,/search` : aucun sur la fenêtre de certification ;
-- logs du deployment : 72 réponses 200 observées, aucun 5xx ;
-- rollback disponible : `dpl_CNKvqYuRXVrHRkAo1hrWei12sjah` READY, commit `10420b4c0e0622122aa86608e7f257080e6b3c44`.
+### M7-A
+`saved_alerts` hardening appliqué live. `anon` et `authenticated` refusés ; `service_role` fonctionnel. PR #890, run `32702512105` SUCCESS.
 
-### Anomalie non bloquante consignée
-Le build bootstrap a signalé `npm audit` avec 5 vulnérabilités high severity. Aucun lien d’exploitabilité production n’a été établi dans ce lot ; à traiter dans un chantier sécurité/dépendances dédié, sans réécrire la preuve M6.
+### M7-B
+`external_source_claims_v1` appliqué live. RLS active ; direct client access refusé ; `content_enrichment_authorized=false` verrouillé. Un claim prouve un contrôle, jamais un droit de réutilisation de contenu.
 
-### Cohérence Git/runtime
-`main` a avancé après le runtime M6 jusqu’à `b7262ce940785be0b663caace6a4b8ccb464fc34` avec un correctif seed-freshness indépendant. Aucun redéploiement implicite de ce HEAD n’a été effectué.
+### M7-C/D
+`PARTNER_FULL` reste réservé aux droits explicites. Snapshot de certification : 0 organisation partenaire active, 0 source `authorized_partner`, 0 batch partenaire, 0 contact envoyé, 0 autorisation écrite, 0 activation partenaire.
 
-## M7 — ACTIVE — conversion partenaires
+### M7-E
+Défaut découvert : la RPC publique pouvait retourner des champs riches de sources externes non autorisées.
 
-### Goal initial
-Transformer les représentations/source leads admissibles en opportunités partenaires traçables, sans enrichissement inventé ni exposition de données personnelles non autorisées.
+Correctif sécurité :
+- PR #893 ; HEAD `6b94100e871ebb4a994655b86f767c8c9a47d11b` ;
+- run `32705238465` SUCCESS ;
+- migration `m7_public_search_policy_guard` appliquée live.
 
-### Next exact
-1. audit read-only du code, DB et modèles de contact/partenariat existants ;
-2. baseline vérifiée des surfaces disponibles et de leurs droits ;
-3. définir funnel + métriques de conversion sans métrique inventée ;
-4. implémentation bornée ;
-5. certification et closeout final MASS-INDEX.
+Régression ensuite détectée : le garde était trop strict et faisait tomber Rabat à 0 résultat.
+
+Récupération canonical-link-only :
+- PR #895 ; HEAD `abc5e2e8e5d04c934599c893114851ce89c091be` ;
+- run `32706329238` SUCCESS ;
+- merge `baf8baf8fe61ee9b6de975ebeaf04bb3c344c20d` ;
+- migration `m7_public_search_link_only_recovery` appliquée live.
+
+### Preuve finale live
+Rabat via `search_public_representations_v2` :
+- 101 résultats ;
+- 101 `fresh_confirmed` ;
+- 0 `seed_only` ;
+- 101 `external_minimal_index` ;
+- 4 domaines ;
+- 0 snippet ;
+- 0 prix ;
+- 0 surface ;
+- 0 price/m² ;
+- 0 source `authorization_status=prohibited` ;
+- 0 source `content_reuse_policy=prohibited` ;
+- `anon EXECUTE=false` ;
+- `authenticated EXECUTE=false` ;
+- `service_role EXECUTE=true`.
+
+## Vérité quantitative
+Snapshot M7-E : `source_offer_seeds` = 57 843 URL canoniques distinctes. Ce chiffre ne représente pas 57 843 biens immobiliers uniques.
+
+## Next exact
+Closeout Git canonique M7, puis aucun travail MASS-INDEX restant dans ce chantier.
 
 ## Invariants
 - aucun Vercel sans autorisation explicite ;
 - aucun bypass technique ;
 - aucune donnée de contact inventée ;
 - provenance et droits obligatoires ;
-- pas de métrique unique/property sans preuve de dédup.
+- pas de métrique “biens uniques” sans preuve dédiée.

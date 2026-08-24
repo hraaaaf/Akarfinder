@@ -1,11 +1,11 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
-**Version : 2026-08-23**  
-**Statut : ACTIVE — DATA MASS-INDEX / M7 conversion partenaires**
+**Version : 2026-08-24**  
+**Statut : DATA MASS-INDEX CLOSED**
 
 Ce fichier est l’unique vérité canonique globale pour l’ordre des chantiers, leur état et leur progression.
 
-## 1. Chantier actif P0 — DATA MASS-INDEX
+## 1. Chantier P0 — DATA MASS-INDEX ✅ CLOSED
 
 **Issue canonique : #854**  
 **Plan : `docs/MASS_INDEX.md`**
@@ -20,7 +20,7 @@ Aucun contournement login/CAPTCHA/paywall/anti-bot. Aucun contenu riche externe 
 
 ### Progression stricte
 
-**7/8 lots CLOSED = 87,5 %.**
+**8/8 lots CLOSED = 100 %.**
 
 | Lot | Scope | État | Preuve principale |
 |---|---|---|---|
@@ -28,52 +28,38 @@ Aucun contournement login/CAPTCHA/paywall/anti-bot. Aucun contenu riche externe 
 | M1 | Universal candidate promotion | ✅ CLOSED | run `32577296107` SUCCESS |
 | M2 | External Index model | ✅ CLOSED | run `32580352867` SUCCESS |
 | M3 | Source Factory adapters | ✅ CLOSED | PR #863 ; run `32594176513` SUCCESS |
-| M4 | National MASS ingest | ✅ CLOSED | PR #871 ; run `32610621902` SUCCESS ; 965/965 preserved |
+| M4 | National MASS ingest | ✅ CLOSED | PR #871 ; run `32610621902` SUCCESS |
 | M5 | Dedup + freshness hardening | ✅ CLOSED | PR #874 + #876 ; runs `32611464377` + `32631787333` SUCCESS |
-| M6 | Search activation + SEO | ✅ CLOSED | PR #879 + #881 + #882 ; prod `dpl_GHqzoTyvJpsTo1R5D8yELfbrbtq6` READY |
-| M7 | Conversion partenaires | 🟡 ACTIVE | audit initial à exécuter |
-
-### M4 — closeout certifié
-- 965 URLs Wave 1 sur 7 sources ;
-- M4-B : run `32609756948` SUCCESS ; 10 inserts ; Thin Index `+0` ;
-- M4-C : run `32610430027` SUCCESS ; 955 inserts + 10 préservés ;
-- certification idempotente : run `32610621902` SUCCESS ; 0 insert + 965 préservés ;
-- `metadata:null`, `seed_only`, Search OFF.
-
-### M5 — closeout certifié
-- M5-A shadow dedup : PR #874 ; run `32611464377` SUCCESS ; collision = candidat uniquement ; 0 auto-merge ;
-- M5-B freshness : PR #876 ; run `32631787333` SUCCESS ; migration `mass_index_m5_public_freshness_gate` appliquée ;
-- les RPC `search_public_representations_v2` et `search_thin_index_v3` servent `fresh_confirmed` uniquement ;
-- réservoir `seed_only` conservé.
+| M6 | Search activation + SEO | ✅ CLOSED | production `dpl_GHqzoTyvJpsTo1R5D8yELfbrbtq6` certifiée |
+| M7 | Conversion partenaires + droits | ✅ CLOSED | PR #890/#891/#893/#895 ; M7-E live certified |
 
 ### M6 — closeout certifié
-M6-A baseline :
-- PR #879 ; merge `bd514a8f8797a77096bf11d52875dec431342367` ;
-- run `32636262489` SUCCESS ; artifact `9492399522` ; digest `sha256:3a19cec4b90f050dc1a5251ca535787a829121269cdddeaa0f867cbf5731d07b`.
+- production : `dpl_GHqzoTyvJpsTo1R5D8yELfbrbtq6`, alias `akarfinder.vercel.app`, SHA `6ade8c35dcaad013cef28422137dbad83ea1dbdf` ;
+- ODM 100 % sur requêtes compatibles ; fallback legacy contrôlé ;
+- SQL + Node servent `fresh_confirmed` uniquement ; `seed_only` rejeté ;
+- `/search` : `noindex, follow`, canonical `/search` ; absent du sitemap ;
+- aucun 5xx Search observé pendant la fenêtre de certification ;
+- rollback disponible sans rollback DB destructif.
 
-M6-B cutover contract :
-- PR #881 ; merge `4fa80e5e1e512666fe81c973de268f13e207cd43` ;
-- run `32647288760` SUCCESS ; artifact `9495238964` ; digest `sha256:afe8914b543a92f81e8e0915e679902100909ffa3a9e632fab5608ea74d9f68b` ;
-- contrat certifié : ODM 100 % sur requêtes compatibles avec approbation explicite, emergency stop et fallback legacy.
+### M7 — closeout certifié
+- M7-A : hardening `saved_alerts` live ; `anon/authenticated` refusés, `service_role` conservé ; PR #890 ; run `32702512105` SUCCESS ;
+- M7-B : `external_source_claims_v1` live, RLS active, direct client access refusé, `content_enrichment_authorized=false` verrouillé ; PR #891 ;
+- M7-C : `PARTNER_FULL` reste fail-closed ; aucun partenaire actif sans droits explicites ;
+- M7-D : funnel d’autorisation dormant ; 0 contact envoyé, 0 autorisation écrite, 0 activation partenaire ;
+- M7-E : fuite de projection publique riche détectée puis corrigée ; PR #893, run `32705238465` SUCCESS ;
+- récupération lien-only : PR #895, run `32706329238` SUCCESS, merge `baf8baf8fe61ee9b6de975ebeaf04bb3c344c20d` ;
+- migration live `m7_public_search_link_only_recovery` appliquée ;
+- validation live Rabat : 101 résultats, 101 `fresh_confirmed`, 0 `seed_only`, 101 lane `external_minimal_index`, 4 domaines ;
+- lane externe minimale : 0 snippet, 0 prix, 0 surface, 0 price/m² ;
+- sources `authorization_status=prohibited` : 0 résultat public ;
+- RPC publique privilégiée : `anon/authenticated EXECUTE=false`, `service_role=true`.
 
-M6-C freshness defense :
-- PR #882 ; merge `c49c31fa90f27bf6d48ac15146b9191464ecbd14` ;
-- run `32647718215` SUCCESS ;
-- serving policy Node alignée sur SQL : `fresh_confirmed` uniquement ; `seed_only` rejeté.
-
-Runtime production :
-- déploiement `dpl_GHqzoTyvJpsTo1R5D8yELfbrbtq6` ; target `production` ; état `READY` ; alias primaire `akarfinder.vercel.app` ; `aliasError=null` ;
-- build verrouillé sur `AKARFINDER_DEPLOY_SHA=6ade8c35dcaad013cef28422137dbad83ea1dbdf` ; compilation Next SUCCESS ;
-- `/api/search?city=Rabat` sert la voie ODM (`source=database_fallback`) ;
-- `/api/search?city=Rabat&district=Agdal` conserve la voie legacy contrôlée (`source=database`) ;
-- `/search` répond 200 avec `noindex, follow` ; `/search` est absent de `sitemap.xml` ;
-- aucune erreur runtime trouvée sur `/api/search,/search` sur la fenêtre de certification ; aucun log 5xx sur le déploiement ;
-- ancien déploiement `dpl_CNKvqYuRXVrHRkAo1hrWei12sjah`, commit `10420b4c0e0622122aa86608e7f257080e6b3c44`, toujours READY comme rollback disponible.
-
-**Note de cohérence :** `main` a avancé après le déploiement M6 jusqu’à `b7262ce940785be0b663caace6a4b8ccb464fc34` avec un correctif seed-freshness indépendant. La certification M6 porte explicitement sur le runtime `6ade8c35dcaad013cef28422137dbad83ea1dbdf`; aucun redéploiement du nouveau HEAD n’est implicite.
+### Vérité quantitative
+- `source_offer_seeds` certifié : 57 843 lignes et 57 843 URL canoniques distinctes au snapshot M7-E ;
+- ce chiffre mesure des URL canoniques d’index, **pas des biens immobiliers uniques**.
 
 ### Next exact
-M7 read-only audit -> cartographier contacts/propriétaires/partenaires et droits disponibles -> définir funnel de conversion mesurable -> implémentation bornée -> certification -> closeout MASS-INDEX.
+MASS-INDEX est fermé. Les travaux futurs de croissance corpus, partenariats ou enrichissement doivent être ouverts comme nouveaux chantiers avec leurs propres gates.
 
 ---
 
