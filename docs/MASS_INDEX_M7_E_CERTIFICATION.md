@@ -1,12 +1,12 @@
 # MASS-INDEX M7-E — Final certification
 
 **Date : 2026-08-24**  
-**Statut : ACTIVE — sécurité live fermée, disponibilité Rabat à restaurer**
+**Statut : CLOSED — live certified**
 
 ## Goal
 Certifier de bout en bout : discovery, external index, source factory, national ingest, dedup, freshness, search, SEO, partner conversion, provenance/droits et publication publique sans contenu protégé ni `seed_only`, tout en conservant une recherche minimale utile.
 
-## Gates déjà vérifiés
+## Gates certifiés
 
 ### Discovery — PASS
 `discovery_candidates` : 280 962 lignes.
@@ -28,7 +28,7 @@ Cette preuve certifie l'idempotence canonique de l'index seed ; elle ne doit pas
 - `fresh_confirmed` : 3 945 ;
 - `seed_only` : 53 649.
 
-### SEO — PASS repo
+### SEO — PASS
 `/search` : `robots.index=false`, `follow=true`, canonical `/search`.
 
 `sitemap.ts` exclut `/search` et ne génère que les routes produit/géographiques stables ; aucune URL individuelle d'index externe n'y est injectée.
@@ -43,76 +43,66 @@ Snapshot : 0 organisation professionnelle, 0 source partenaire, 0 batch partenai
 
 Le funnel d'autorisation externe reste dormant : 0 contact envoyé, 0 autorisation écrite, 0 activation partenaire.
 
-## M7-E sécurité publique
-
-### Défaut initial
-La RPC publique exposait encore des champs riches issus de sources externes `canonical_link_only`, y compris une source marquée `authorization_status=prohibited` / `content_reuse_policy=prohibited`.
+## Défaut M7-E découvert et corrigé
+La première certification a prouvé que l'ancienne RPC pouvait retourner des champs riches de sources externes `canonical_link_only`, y compris une source `authorization_status=prohibited` / `content_reuse_policy=prohibited`.
 
 Aucune valeur de titre, snippet, prix ou surface n'a été affichée pendant l'audit ; seules des agrégations ont servi de preuve.
 
-### Correctif repo #893 — MERGED
-PR #893 : `M7-E: fail-close public external search projection`.
+### Correctif sécurité #893
+- HEAD `6b94100e871ebb4a994655b86f767c8c9a47d11b` ;
+- run `32705238465` SUCCESS ;
+- merge `f5550f155845eb387c62ef0165e30a9f623fef26` ;
+- migration `m7_public_search_policy_guard` appliquée live ;
+- `anon/authenticated EXECUTE=false`, `service_role=true` ;
+- protected-content leakage fermé.
 
-- HEAD : `6b94100e871ebb4a994655b86f767c8c9a47d11b` ;
-- workflow dédié run `32705238465` : success ;
-- merge commit : `f5550f155845eb387c62ef0165e30a9f623fef26`.
+### Régression du garde strict
+Le premier garde exigeait un statut externe-tail trop restrictif même pour afficher un simple lien canonique. Résultat live : Rabat = 0.
 
-### Migration live — APPLIQUÉE
-Migration : `20260824091000_m7_public_search_policy_guard.sql`.
-
-Preuves live :
-- `anon EXECUTE` : false ;
-- `authenticated EXECUTE` : false ;
-- `service_role EXECUTE` : true ;
-- test réel `anon` : PostgreSQL `42501` ;
-- test réel `authenticated` : PostgreSQL `42501` ;
-- appel global service_role : 101/101 `fresh_confirmed`, 101 lane `external_minimal_index`, 0 champ riche, 0 source interdite.
-
-Le protected-content leakage est donc fermé.
-
-## Régression découverte post-migration
-
-### Fait live
-Après le garde strict, `search_public_representations_v2(city='Rabat')` retourne 0 ligne.
-
-Le routeur applicatif ne bascule sur `legacy_fallback` qu'en cas d'exception ODM, pas en cas de résultat vide. À cutover ODM 100 %, Rabat serait donc vide tant que ce point n'est pas corrigé.
-
-### Cause
-Le garde #893 exigeait `source_external_tail_policy_v1.review_status='approved_existing_link_policy'` pour afficher même un lien minimal. Cette exigence mélangeait deux questions :
+Cette exigence mélangeait :
 1. droit d'afficher un index minimal / lien canonique ;
 2. droit de réutiliser le contenu source.
 
-### Simulation de récupération — PASS read-only
-En utilisant uniquement les gates canoniques `source_policy_registry` pour le lane minimal :
+### Recovery #895
+Le lane minimal est désormais piloté par les gates canoniques de `source_policy_registry` :
 - `authorization_status <> 'prohibited'` ;
 - `display_policy='canonical_link_only'` ;
 - `machine_gate='canonical_link_only'` ;
 - `ingestion_gate='canonical_link_only'` ;
 - `display_gate='external_tail_link_only'` ;
 - review `current|due_soon` ;
-- `no_bypass_required=true` ;
+- `no_bypass_required=true`.
 
-Rabat retrouve 263 URL canoniques distinctes sur 4 domaines, sans autoriser aucun contenu source riche.
+Le contenu riche reste réservé à un partenaire explicitement autorisé.
 
-## Correctif de récupération — PR #895
-PR #895 : `M7-E: recover canonical-link-only public search`.
+Preuves repo :
+- PR #895 ;
+- HEAD `abc5e2e8e5d04c934599c893114851ce89c091be` ;
+- run `32706329238` SUCCESS ;
+- merge `baf8baf8fe61ee9b6de975ebeaf04bb3c344c20d`.
 
-HEAD exact : `abc5e2e8e5d04c934599c893114851ce89c091be`.
+Migration live : `m7_public_search_link_only_recovery`.
 
-Contrat :
-- rich content uniquement pour partenaire explicitement autorisé ;
-- index externe minimal piloté par `source_policy_registry` ;
-- source `authorization_status=prohibited` exclue ;
-- titre généré uniquement ;
-- snippet/prix/surface/price_m2 toujours nuls sur lane minimal ;
-- aucune inférence prix/surface via filtres ;
-- RPC toujours server-only.
+## Validation live finale — PASS
+Rabat via `search_public_representations_v2` :
+- 101 résultats ;
+- 101 `fresh_confirmed` ;
+- 0 `seed_only` ;
+- 101 `external_minimal_index` ;
+- 4 domaines ;
+- 0 snippet non nul ;
+- 0 prix non nul ;
+- 0 surface non nulle ;
+- 0 price/m² non nul ;
+- 0 résultat `authorization_status=prohibited` ;
+- 0 résultat `content_reuse_policy=prohibited` ;
+- `anon EXECUTE=false` ;
+- `authenticated EXECUTE=false` ;
+- `service_role EXECUTE=true`.
 
-## Gate restant
-1. CI exact-head #895 ;
-2. merge si vert ;
-3. gate explicite production pour `20260824092200_m7_public_search_link_only_recovery.sql` ;
-4. validation live : Rabat > 0, `seed_only=0`, prohibited=0, rich fields=0, anon/authenticated denied ;
-5. closeout M7 + merge #892.
+## Verdict
+M7-E est certifié. MASS-INDEX atteint **8/8 lots CLOSED = 100 %**.
 
-Aucun déploiement Vercel n'est requis ni autorisé pour ce correctif DB.
+La doctrine finale est respectée : index externe minimal et lien canonique possibles quand la policy l'autorise ; aucun contenu source riche sans droits explicites ; aucun `seed_only` public ; aucun faux chiffre de biens uniques.
+
+Aucun déploiement Vercel n'a été effectué pour M7.
