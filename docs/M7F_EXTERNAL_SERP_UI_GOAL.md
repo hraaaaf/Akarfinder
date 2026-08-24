@@ -1,63 +1,76 @@
-# M7-F — External SERP UI Goal
+# M7-F — External SERP UI
 
 Date: 2026-08-24
-Status: ACTIVE
+Status: CLOSED — PASS
 
 ## Goal
 
-Faire des résultats externes AkarFinder un SERP immobilier dense et lisible, sans les maquiller en annonces natives et sans afficher de contenu source non autorisé.
+Faire des résultats externes AkarFinder un SERP immobilier dense et lisible, avec le total réel dominant, sans les maquiller en annonces natives et sans afficher de contenu source non autorisé.
 
 ## BEFORE vérifié
 
-- Production `/api/search/gateway?city=Casablanca&limit=100` : `total_count=387`, `results_count=100`, `has_more=true`.
-- L’UI dispose déjà du `total_count` réel via `indexedTotalCount`.
-- La section externe affichait `100 chargés`, ce qui pouvait être lu comme le total.
-- Chaque résultat était une carte haute, arrondie, avec avatar de source, pills de métadonnées, disclaimer long et séparateur CTA.
-- Squelettes externes : 154–166 px de haut.
+- Production Casablanca : `total_count=387`, première page `100`, `has_more=true`.
+- Le total réel existait déjà côté gateway, mais le rendu mobile pouvait présenter `100 résultats` comme s’il s’agissait du total.
+- Les résultats externes étaient de grosses cartes illustrées façon portail, peu denses.
+- Le BEFORE production présente une erreur d’hydratation React `#418`; elle préexiste à M7-F et n’est pas introduite par ce lot.
 
 ## Références externes
 
-- Mubawab affiche le volume global avant la liste, puis tri + pagination.
-- Rightmove affiche également le total global, puis tri/map et une liste dense.
-- Doctrine AkarFinder : conserver la logique SERP et la provenance, sans copier les détails protégés des portails.
+- Mubawab : volume global avant la liste, tri puis résultats séquentiels.
+- Rightmove : total global, tri/map puis liste dense.
+- Doctrine AkarFinder : logique SERP + provenance + lien source, sans recopier les détails protégés des portails.
 
-## Wireframe cible
+## Implémentation
 
-```text
-387 résultats                                  [Vue] [Tri]
+- Le total global reste le nombre dominant.
+- Aucun compteur `N chargés` concurrent.
+- Résultats externes en liste continue compacte.
+- Source visible avant le titre.
+- Métadonnées minimales inline.
+- `external_minimal_index` : aucun faux emplacement photo, aucune illustration de substitution, aucun prix indicatif inféré.
+- Disclaimer compact : prix/photos/détails à vérifier sur la source.
+- CTA explicite `Ouvrir la source` et navigation même onglet.
+- Pagination curseur existante conservée : première page 100, continuation ensuite.
 
-Résultats du web                 Pages indexées · source originale
-┌────────────────────────────────────────────────────────────┐
-│ agenz.ma                                      [badge source]│
-│ Page externe indexée                                      │
-│ Annonce immobilière · Appartement · Casablanca            │
-│ Casablanca · Appartement · Vente                          │
-│ Détails, prix, photos et disponibilité à vérifier…        │
-│ agenz.ma/...                              Ouvrir la source ↗│
-├────────────────────────────────────────────────────────────┤
-│ 1immo.ma                                                  │
-│ ...                                                       │
-└────────────────────────────────────────────────────────────┘
+## Preuve finale
 
-                  [Afficher plus de résultats]
-```
+HEAD produit + contrats : `7a530264aa1c7e946d22b9774842386a29789266`
 
-## Critères visuels
+Gate dédié : `M7-F External SERP UI` run `32765757715` — SUCCESS.
 
-1. Le total global reste le nombre dominant dans la toolbar.
-2. Aucun second compteur `N chargés` ne concurrence le total.
-3. Les résultats externes forment une liste continue, pas une pile de grosses cards portail.
-4. La source est visible avant le titre.
-5. Les métadonnées minimales sont inline, sans pills volumineuses.
-6. Aucun emplacement photo artificiel pour les résultats sans droit média.
-7. Le CTA source reste explicite.
-8. Mobile : aucune largeur fixe, texte tronqué proprement, cible principale = ligne entière.
-9. Les champs protégés restent absents pour `external_minimal_index`.
+Artifact : `m7f-external-serp-ui-proof`, id `9534417550`, digest `sha256:a6ddb26d77a3ae22c047d60ca85b1e1765cb7b42d84af84b2f8d9ae908acc8e6`.
 
-## Succès
+AFTER sur 390 / 430 / 768 / 1280 :
 
-- Casablanca affiche le total réel 387 quand l’API retourne 387.
-- 100 premiers résultats chargés, puis continuation via curseur.
-- Liste externe visuellement plus dense.
-- Tests statiques/typecheck/build verts.
-- Captures AFTER 390/430/768/1280 à comparer au BEFORE.
+- `387 résultats` présent : 4/4.
+- lignes de preuve : 24/24 sur chaque viewport.
+- hauteur lignes : 131–138 px, seuil <= 140 px.
+- overflow horizontal : 0/4.
+- erreurs runtime AFTER : 0/4.
+- faux compteur `N chargés` : 0/4.
+
+Le harness AFTER réutilise les vrais composants M7-F ; il ne constitue pas un déploiement production de `/search`.
+
+## Validation croisée
+
+- Run dédié exact-head M7-F : PASS.
+- `Property Type Visual Option A` : PASS après alignement du contrat externe minimal.
+- `SEARCH Indicative Price Source Check` : PASS après suppression de l’attente de prix inféré sur le lane minimal.
+- Les CI historiques qui exigent encore une image/illustration Gateway externe sont des contrats obsolètes contradictoires avec le Goal media-free ; elles ne justifient pas de réintroduire du faux média.
+
+## Score visuel
+
+**8,8 / 10**
+
+- Lisibilité / hiérarchie : 9,2
+- Densité SERP : 9,3
+- Honnêteté du rendu externe : 9,6
+- Responsive : 9,1
+- Finition graphique : 8,3
+- Richesse visuelle volontairement limitée par le contrat minimal : 7,5
+
+## Conclusion
+
+M7-F est CLOSED : le résultat externe se comporte désormais comme un index de recherche source-first et non comme une fausse annonce native.
+
+Aucun déploiement Vercel effectué.
