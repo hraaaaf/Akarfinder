@@ -100,10 +100,14 @@ Le code actuel à ne pas confondre :
 
 Progression du nouveau chantier : **1/7 = 14,3 %**.
 
-## Branche de préparation
+## Git canonique Lot 1
 
-- base auditée : `main@8a049eef165e9d93ba673d9cbd37d0715d8a82a1`
+- base d’audit initiale : `main@8a049eef165e9d93ba673d9cbd37d0715d8a82a1`
+- base réellement mergée après reprise de `main` : `ecc0ac55d30999ca161bb369d11298db6a3710c7`
 - branche docs : `docs/neighborhood-context-intelligence-roadmap`
+- HEAD docs final : `12dbabf7b4629429bb2526ec6faab668cacdade4`
+- PR : **#902**
+- merge : `58de80ff29bf128a3881bfc5951be6380baaecab`
 - fichiers canoniques :
   - `docs/NEIGHBORHOOD_CONTEXT_INTELLIGENCE_CONTRACT.md`
   - `docs/NEIGHBORHOOD_CONTEXT_INTELLIGENCE_ROADMAP.md`
