@@ -1,0 +1,73 @@
+name: Neighborhood Context L1 POI Registry
+
+on:
+  pull_request:
+    paths:
+      - "lib/neighborhood-context/**"
+      - "scripts/neighborhood-context/**"
+      - "scripts/scrapers/__tests__/neighborhood-context-l1-poi-registry.test.ts"
+      - "docs/NEIGHBORHOOD_CONTEXT_INTELLIGENCE_CANONICAL.md"
+      - ".github/workflows/neighborhood-context-l1-poi-registry.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: neighborhood-context-l1-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  certify-l1-poi-registry:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NCI_L1_OUTPUT_DIR: artifacts/neighborhood-context-l1
+      AKAR_NCI_OVERPASS_ENDPOINTS: https://overpass-api.de/api/interpreter;https://overpass.private.coffee/api/interpreter
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: L1 registry contracts + ANN-L6 regression
+        run: >-
+          npx tsx --test
+          scripts/scrapers/__tests__/neighborhood-context-l1-poi-registry.test.ts
+          scripts/scrapers/__tests__/announcement-page-l6-living-here.test.ts
+          scripts/scrapers/__tests__/announcement-page-l6-provider-adapters.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Production build
+        run: npm run build
+
+      - name: Generate six-neighborhood pilot snapshot
+        run: npx tsx scripts/neighborhood-context/l1-generate-pilot.ts
+
+      - name: Install Chromium for proof capture
+        run: npx playwright install --with-deps chromium
+
+      - name: Capture L1 proof
+        run: node scripts/neighborhood-context/l1-capture-report.mjs
+
+      - name: Upload L1 proof artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: neighborhood-context-l1-poi-registry-${{ github.run_id }}
+          path: artifacts/neighborhood-context-l1/
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Final L1 truth + availability gate
+        run: node scripts/neighborhood-context/l1-validate-report.mjs
