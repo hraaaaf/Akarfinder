@@ -7,6 +7,7 @@ name: Common Crawl Mass Seed Harvest
 # DATA-40K-GATE-REHARVEST-2026-07-24-R2
 # P0.1-MASS-INDEX-SOURCE-REGISTRY-OPERATIONAL-GATE
 # P0.1-MINIMAL-EXTERNAL-INDEX-ACTIVATION-2026-08-23
+# COMMONCRAWL-ZERO-DOMAIN-PATTERN-REHARVEST-2026-08-24
 # Historical URL-index metadata -> source_offer_seeds only -> exact freshness
 # reconciliation. No WARC/page fetch, no direct source-site request, no public
 # listing write. Scheduled/push activation runs apply only when the existing
