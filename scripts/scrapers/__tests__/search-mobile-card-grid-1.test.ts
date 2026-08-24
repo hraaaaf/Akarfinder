@@ -34,26 +34,30 @@ describe("SEARCH-MOBILE-CARD-GRID-1", () => {
     assert.ok(card.includes("data-secondary-source-link"));
   });
 
-  it("aligns gateway cards to the same two-column mobile rhythm", () => {
+  it("renders gateway Option B as a compact stacked SERP instead of forcing the internal card grid", () => {
     const section = source("components/search/ExternalIndexedResultsSection.tsx");
     const card = source("components/search/ExternalIndexedResultCard.tsx");
 
-    assert.ok(section.includes("grid grid-cols-2 gap-x-3 gap-y-6"));
-    assert.ok(section.includes("data-search-external-mobile-grid"));
-    assert.ok(card.includes("data-mobile-compact-external-card"));
-    assert.ok(card.includes("h-[164px]"));
-    assert.ok(card.includes('className="hidden sm:block"'));
+    assert.ok(section.includes("data-search-external-serp-list"));
+    assert.ok(section.includes("space-y-2.5"));
+    assert.ok(card.includes("data-external-serp-group"));
+    assert.ok(card.includes("rounded-2xl"));
+    assert.ok(card.includes("line-clamp-2"));
+    assert.doesNotMatch(section, /data-search-external-mobile-grid|grid grid-cols-2 gap-x-3 gap-y-6/);
+    assert.doesNotMatch(card, /data-mobile-compact-external-card|h-\[164px\]/);
   });
 
-  it("keeps mobile trust cues instead of hiding provenance", () => {
+  it("keeps mobile trust cues and original-source provenance visible in Option B", () => {
     const card = source("components/search/SearchListingCardDark.tsx");
     const external = source("components/search/ExternalIndexedResultCard.tsx");
 
     assert.ok(card.includes("publicAttribution.combinedLabel"));
     assert.doesNotMatch(card, /listing\.source_name\s*\|\|\s*truth\.informationLabel/);
-    assert.ok(external.includes("publicAttribution.typeLabel"));
-    assert.ok(external.includes("publicAttribution.sourceLabel"));
+    assert.ok(external.includes("getSourceDomain"));
+    assert.ok(external.includes("sourcePages"));
+    assert.ok(external.includes("result.original_url"));
+    assert.ok(external.includes("AkarFinder indexe la page et vous renvoie vers la source originale."));
+    assert.ok(external.includes("Ouvrir la source"));
     assert.doesNotMatch(external, /\{result\.source_name\}|\{result\.result_attribution_label\}/);
-    assert.ok(external.includes("Résultats proches"));
   });
 });
