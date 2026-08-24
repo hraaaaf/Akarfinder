@@ -54,23 +54,23 @@
     {
       "domain": "1immo.ma",
       "status": "approved_discovery",
-      "listing_url_patterns": [{ "pattern": "/[a-z0-9-]+-\\d+$", "case_insensitive": true }],
+      "listing_url_patterns": ["^/[^/]+-\\d+$"],
       "blocked_url_patterns": [],
       "source_type": "agency_portal",
       "external_web_result": true,
-      "compliance_note": "Already live in Production via first-write pilot.",
-      "reviewed_at": "2026-07-17",
+      "compliance_note": "Already live in Production via first-write pilot. 2026-08-24 route refresh keeps the strong terminal numeric listing id while allowing percent-encoded Arabic and tilde-prefixed detail slugs; multi-segment /s/... collection/search routes remain structurally excluded.",
+      "reviewed_at": "2026-08-24",
       "coverage_cities": null
     },
     {
       "domain": "barnes-marrakech.com",
       "status": "approved_discovery",
-      "listing_url_patterns": ["/vente/.+/\\d+$"],
+      "listing_url_patterns": ["^/(?:fr/(?:vente|location)|en/sale)/[^/]+/\\d+$"],
       "blocked_url_patterns": [],
       "source_type": "agency_site",
       "external_web_result": true,
-      "compliance_note": "Already live in Production via first-write pilot.",
-      "reviewed_at": "2026-07-17",
+      "compliance_note": "Already live in Production via first-write pilot. 2026-08-24 route refresh covers verified FR sale/location and EN sale numeric-id detail routes while excluding .html category/search pages. Public display remains governed separately by source_policy_registry.",
+      "reviewed_at": "2026-08-24",
       "coverage_cities": ["Marrakech"]
     },
     {
@@ -109,12 +109,12 @@
     {
       "domain": "marrakechrealty.com",
       "status": "approved_discovery",
-      "listing_url_patterns": ["/property/"],
+      "listing_url_patterns": ["^/(?:vente|location)/[^/]+$", "^/en/(?:sale|rentals)/[^/]+$"],
       "blocked_url_patterns": [],
       "source_type": "agency_site",
       "external_web_result": true,
-      "compliance_note": "Already live in Production via first-write pilot.",
-      "reviewed_at": "2026-07-17",
+      "compliance_note": "Already live in Production via first-write pilot. 2026-08-24 route refresh replaces the obsolete /property/ shape with verified FR /vente|location/<slug> and EN /sale|rentals/<slug> detail namespaces; one-segment category routes such as /vente-villa and /location-villa remain excluded.",
+      "reviewed_at": "2026-08-24",
       "coverage_cities": ["Marrakech", "Casablanca"]
     },
     {
