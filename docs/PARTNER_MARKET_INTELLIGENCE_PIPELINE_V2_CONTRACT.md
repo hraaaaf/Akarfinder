@@ -13,7 +13,7 @@ Faire d'une annonce partenaire riche une vérité canonique unique capable d'ali
 
 `Partenaire → Canonical Property/Offer → Geo Resolver → Neighborhood ID → Search + Carte + fiche quartier + métriques admissibles`
 
-Le pipeline doit préserver les doctrines existantes AkarFinder : provenance explicite, géographie fail-closed, confidentialité de l'adresse, séparation vente/location, absence d'imputation, distinction inventaire observé / représentativité marché et aucune frontière territoriale inventée.
+Le pipeline préserve les doctrines existantes AkarFinder : provenance explicite, géographie fail-closed, confidentialité de l'adresse, séparation vente/location, absence d'imputation, distinction inventaire observé / représentativité marché et aucune frontière territoriale inventée.
 
 ## Succès global
 
@@ -67,15 +67,13 @@ Chaque offre partenaire doit porter :
 - `property_id` canonique AkarFinder ;
 - `offer_id` canonique AkarFinder.
 
-Clé d'idempotence prioritaire :
-
-`partner_id + partner_listing_id`
+Clé d'idempotence prioritaire : `partner_id + partner_listing_id`.
 
 Le fingerprint heuristique existant reste un signal de rapprochement/déduplication, jamais l'identité primaire d'une offre partenaire lorsque l'identifiant partenaire existe.
 
 ## 2. Lifecycle canonique
 
-Les états partenaire doivent être projetés vers le contrat existant :
+Les états partenaire sont projetés vers le contrat existant :
 
 - `available` ;
 - `upcoming` ;
@@ -85,14 +83,9 @@ Les états partenaire doivent être projetés vers le contrat existant :
 - `withdrawn` ;
 - `unknown`.
 
-Champs temporels minimaux :
+Champs temporels minimaux : `published_at_source`, `first_observed_at`, `last_observed_at`, `updated_at_source / last_partner_update_at`.
 
-- `published_at_source` ;
-- `first_observed_at` ;
-- `last_observed_at` ;
-- `updated_at_source` / `last_partner_update_at`.
-
-Une modification de prix, de disponibilité, de média ou de description met à jour l'offre existante ; elle ne crée pas une nouvelle propriété par défaut.
+Une modification de prix, disponibilité, média ou description met à jour l'offre existante ; elle ne crée pas une nouvelle propriété par défaut.
 
 ## 3. Mapping Annonce modèle → canonique
 
@@ -129,30 +122,21 @@ Les champs surface, agencement, bâtiment, équipements, état, terrain et jurid
 
 ### Médias
 
-Photo, vidéo, plan et document utilisent `MediaAssetV1` et ses droits :
-
-- `rights_status` ;
-- `publication_permission` ;
-- cache/download permissions ;
-- attribution/provenance.
+Photo, vidéo, plan et document utilisent `MediaAssetV1` et ses droits : `rights_status`, `publication_permission`, cache/download permissions et attribution/provenance.
 
 Aucun média partenaire n'est rendu public si l'autorisation ne le permet pas.
 
 ## 4. Provenance et droits partenaire
 
-Une offre partenaire doit utiliser un canal canonique compatible :
-
-- `partner_api` ;
-- `partner_feed` ;
-- `manual_partner` lorsque saisie/import opérateur.
+Une offre partenaire utilise un canal canonique compatible : `partner_api`, `partner_feed`, ou `manual_partner` pour une saisie/import opérateur.
 
 Le statut commercial ne suffit jamais à prouver les droits. L'exposition publique `partner` reste soumise aux règles C6 existantes : organisation validée, active et autorisation source confirmée.
 
-Les faits conservent séparément : valeur, provenance, confiance, date d'observation, source, statut de vérification et visibilité.
+Les faits conservent séparément valeur, provenance, confiance, date d'observation, source, statut de vérification et visibilité.
 
 ## 5. Geo Resolver V2 — contrat de sortie
 
-Le resolver doit produire, sans jamais forcer un quartier :
+Le resolver produit, sans jamais forcer un quartier :
 
 - `city_raw` + ville canonique ;
 - `neighborhood_raw` ;
@@ -179,11 +163,7 @@ L'adresse exacte privée peut augmenter la précision interne sans jamais deveni
 
 ### Prix/m² annonce
 
-Calcul uniquement si :
-
-- prix exact MAD positif et valide ;
-- surface canonique pertinente positive ;
-- même offre/propriété sans ambiguïté critique.
+Calcul uniquement si prix exact MAD positif/valide + surface canonique pertinente positive + offre/propriété sans ambiguïté critique.
 
 Formule : `price_amount / surface_m2`.
 
@@ -197,33 +177,33 @@ Le wording reste **annonces observées / inventaire partenaire AkarFinder** tant
 
 ### Densité/km²
 
-Contrat inchangé :
+Contrat : `listing_density_km2 = eligible_listing_count / certified_area_km2`.
 
-`listing_density_km2 = eligible_listing_count / certified_area_km2`
+Le dénominateur appartient au même territoire canonique et provient d'une géométrie Polygon/MultiPolygon ou d'une autorité territoriale fournissant une surface équivalente vérifiable.
 
-Le dénominateur doit appartenir au **même territoire canonique** et provenir d'une géométrie Polygon/MultiPolygon ou d'une autorité territoriale qui fournit une surface équivalente vérifiable.
+Interdictions : aire de bounding box, rayon autour d'un point/centroïde, surface déduite du nombre de quartiers, ou surface inventée depuis les valeurs de prix.
 
-Interdictions :
+### Référentiel national des prix AkarFinder — Yakeey
 
-- aire d'une bounding box ;
-- rayon autour d'un point/centroïde ;
-- surface déduite d'un nombre de quartiers ;
-- surface inventée depuis les valeurs de prix.
+Le référentiel déjà présent dans le repo est `lib/market/yakeey-price-reference.ts` avec audit `docs/YAKEEY_PRICE_REFERENCE_AUDIT.md`.
 
-### Référentiel national des prix AkarFinder
+Preuve actuelle :
 
-Le référentiel national des prix peut être branché comme **source de référence marché** et comme candidat d'autorité territoriale.
+- source explicitement classée `benchmark_source` ;
+- `can_compute_market_benchmark=true` et `can_compute_price_gap=true` ;
+- **58 villes** trouvées dans l'audit ;
+- **458 quartiers** trouvés sur les 4 pages ville auditées ;
+- prix appartement/villa disponibles selon les zones ;
+- recommandation existante : `integrate_as_benchmark_source` ;
+- le modèle `YakeeyReferenceRow / YakeeyDistrictReferenceRow` ne contient **ni Polygon/MultiPolygon, ni surface, ni `area_km2`**.
 
-Pour la densité, il ne devient dénominateur que si, pour le territoire concerné, il fournit ou référence de manière vérifiable :
+Conséquence :
 
-- le même identifiant territorial canonique ;
-- une géométrie/surface territoriale exploitable ;
-- provenance/version ;
-- `area_km2 > 0` recomputable ou autrement certifiée.
+- **Prix / benchmark / price-gap : Yakeey est une base exploitable selon sa policy et son attribution.**
+- **Rapprochement territorial : ses noms ville/quartier peuvent servir de signal/challenger, jamais d'autorité canonique par simple égalité de texte.**
+- **Densité/km² : Yakeey ne fournit pas le dénominateur territorial.** La densité reste liée à une aire certifiée séparée.
 
-**État P1 : l'existence de la partie prix est connue du projet, mais la présence d'une surface nationale neighborhood-grade dans ce référentiel n'est pas prouvée par les fichiers inspectés pendant P1.** Il est donc enregistré comme `candidate_area_authority`, pas comme aire certifiée implicite.
-
-Si cette preuve existe plus tard, elle peut alimenter directement P4 sans modifier le contrat. Sinon, Prix/Volume fonctionnent et Densité reste `NULL` pour le territoire concerné.
+Cette séparation est volontaire : un référentiel de prix ne devient pas une géométrie par enthousiasme architectural.
 
 ### Métriques marché agrégées
 
@@ -235,54 +215,25 @@ Si cette preuve existe plus tard, elle peut alimenter directement P4 sans modifi
 
 ## 7. Sorties aval
 
-Une même offre canonique pourra alimenter :
+Une même offre canonique peut alimenter :
 
-### Search
-
-- filtres ville/quartier/type/transaction/prix/surface/etc. ;
-- ranking séparé des droits/provenance ;
-- page annonce enrichie.
-
-### Carte
-
-- pin/cluster si position publiable/exploitable ;
-- rattachement quartier si `canonical_neighborhood_id` résolu ;
-- volume observé ;
-- CTA vers Search avec même ville/quartier.
-
-### Fiche quartier
-
-Lorsque les données sont admissibles :
-
-- volume ;
-- médiane prix/m² ;
-- densité si aire certifiée ;
-- catégories ;
-- fraîcheur ;
-- taille d'échantillon ;
-- provenance/confiance ;
-- inventaire partenaire distinct du marché total.
+- **Search** : ville/quartier/type/transaction/prix/surface, page annonce enrichie, ranking séparé des droits/provenance ;
+- **Carte** : pin/cluster si position exploitable/publiable, rattachement Neighborhood ID, volume observé, CTA Search cohérent ;
+- **Fiche quartier** : volume, médiane prix/m², densité si aire certifiée, catégories, fraîcheur, échantillon, provenance/confiance, inventaire partenaire distinct du marché total.
 
 ## 8. Adaptateurs P2
 
-Tous les canaux futurs doivent produire le même contrat :
+Tous les canaux futurs produisent le même contrat :
 
-`CSV/XLSX | Partner API | feed → Adapter → PartnerListingV2 → CanonicalPropertyV1/CanonicalOfferV1`
+`CSV/XLSX | Partner API | feed → Adapter → PartnerListingV2 → CanonicalPropertyV1/CanonicalOfferV1`.
 
-Aucun adaptateur ne doit écrire directement une logique métier spécifique dans Search ou Map.
+Aucun adaptateur n'écrit directement une logique métier spécifique dans Search ou Map.
 
 Le vieux CSV Light reste une entrée de compatibilité à migrer ; il ne devient pas un second modèle métier.
 
 ## 9. Non-goals P1
 
-P1 n'introduit :
-
-- aucune migration DB ;
-- aucun write production ;
-- aucun changement Search/Ranking ;
-- aucune activation Map ;
-- aucun nouveau chiffre marché public ;
-- aucun déploiement Vercel.
+P1 n'introduit aucune migration DB, aucun write production, aucun changement Search/Ranking, aucune activation Map, aucun nouveau chiffre marché public et aucun déploiement Vercel.
 
 ## 10. Certification P1
 
@@ -295,15 +246,17 @@ Preuves fermées :
 - contrat Geo Resolver fail-closed défini ;
 - contrat métriques compatible avec `docs/CARTE_INTELLIGENCE_METRICS_CONTRACT.md` ;
 - Densité protégée par `certified_area_km2` ;
-- référentiel national des prix traité sans lui attribuer une géométrie non prouvée ;
+- Yakeey identifié exactement comme benchmark prix sans géométrie/aire ;
 - interfaces P2–P5 définies ;
-- relecture effectuée sur la branche après le commit initial.
+- relecture effectuée sur la branche après commit.
 
 Preuves repo :
 
-- `lib/property-schema/core.ts` expose déjà provenance, visibilité, adresses privée/publique, lat/lng, lifecycle offre, médias et intelligence ;
-- `docs/CARTE_INTELLIGENCE_METRICS_CONTRACT.md` impose déjà `listing_count / area_km2` et interdit bounding box/rayon ;
+- `lib/property-schema/core.ts` expose provenance, visibilité, adresses privée/publique, lat/lng, lifecycle offre, médias et intelligence ;
+- `docs/CARTE_INTELLIGENCE_METRICS_CONTRACT.md` impose `listing_count / area_km2` et interdit bounding box/rayon ;
 - `docs/CARTE_C2_CLOSEOUT.md` confirme le contrat réel Prix / Volume / Densité ;
+- `lib/market/yakeey-price-reference.ts` prouve le scope benchmark prix et l'absence d'aire ;
+- `docs/YAKEEY_PRICE_REFERENCE_AUDIT.md` prouve la couverture auditée ;
 - `scripts/import-partner-csv.ts` confirme que le CSV Light actuel est plus pauvre et utilise encore le fingerprint comme identité d'upsert.
 
 **Verdict : P1 CLOSED.**
