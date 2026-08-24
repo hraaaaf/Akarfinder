@@ -11,7 +11,7 @@ const viewports = [
 ];
 
 const baseResult = {
-  snippet: "Fixture contextuelle déterministe.",
+  snippet: "Fixture contextuelle déterministe à ne pas afficher.",
   source_id: "fixture-source",
   source_name: "Source Démo",
   domain: "example.com",
@@ -35,52 +35,66 @@ const baseResult = {
 };
 
 const externalResults = [
-  {
-    ...baseResult,
-    id: "context-rabat",
-    title: "Appartement à Rabat",
-    original_url: "https://example.com/rabat",
-    display_url: "example.com/rabat",
-    normalized_city: "Rabat",
-    normalized_property_type: "Appartement",
-    normalized_price_mad: 1850000,
-    normalized_surface_m2: 112,
-  },
-  {
-    ...baseResult,
-    id: "context-marrakech",
-    title: "Terrain à Marrakech",
-    original_url: "https://example.com/marrakech",
-    display_url: "example.com/marrakech",
-    normalized_city: "Marrakech",
-    normalized_property_type: "Terrain",
-    normalized_price_mad: 920000,
-    normalized_surface_m2: 250,
-  },
-  {
-    ...baseResult,
-    id: "type-only",
-    title: "Villa hors ville allowlist",
-    original_url: "https://example.com/type-only",
-    display_url: "example.com/type-only",
-    normalized_city: "Oujda",
-    normalized_property_type: "Villa",
-    normalized_price_mad: 2400000,
-    normalized_surface_m2: 280,
-  },
-  {
-    ...baseResult,
-    id: "neutral",
-    title: "Bien à confirmer",
-    original_url: "https://example.com/neutral",
-    display_url: "example.com/neutral",
-  },
+  { ...baseResult, id: "context-rabat", title: "Titre source Rabat à ne pas afficher", original_url: "https://example.com/rabat", display_url: "example.com/rabat", normalized_city: "Rabat", normalized_property_type: "Appartement", normalized_price_mad: 1850000, normalized_surface_m2: 112 },
+  { ...baseResult, id: "context-marrakech", title: "Titre source Marrakech à ne pas afficher", original_url: "https://example.com/marrakech", display_url: "example.com/marrakech", normalized_city: "Marrakech", normalized_property_type: "Terrain", normalized_price_mad: 920000, normalized_surface_m2: 250 },
+  { ...baseResult, id: "type-only", title: "Titre source Oujda à ne pas afficher", original_url: "https://example.com/type-only", display_url: "example.com/type-only", normalized_city: "Oujda", normalized_property_type: "Villa", normalized_price_mad: 2400000, normalized_surface_m2: 280 },
+  { ...baseResult, id: "neutral", title: "Titre source neutral à ne pas afficher", original_url: "https://example.com/neutral", display_url: "example.com/neutral" },
 ];
 
 await mkdir(outputDir, { recursive: true });
 const browser = await chromium.launch({ headless: true });
 const results = [];
 let failure = null;
+
+async function readMetrics(page) {
+  return page.evaluate(() => {
+    const list = document.querySelector('[data-search-external-serp-list]');
+    const cards = [...document.querySelectorAll('[data-search-external-serp-list] [data-external-serp-group]')];
+    const text = (node) => (node?.innerText ?? node?.textContent ?? "").replace(/\s+/g, " ").trim();
+    const fullText = text(list);
+    const sourceLinkCount = cards.reduce((count, card) => count + card.querySelectorAll('a[target="_blank"][rel="noopener noreferrer"]').length, 0);
+    const mediaCount = cards.reduce((count, card) => count + card.querySelectorAll('img, picture, video, [data-card-image], [data-contextual-asset-id], [data-contextual-neutral], [data-contextual-illustration-label]').length, 0);
+    const sourceDomains = cards.map((card) => text(card).includes("example.com"));
+    const generatedTitles = cards.map((card) => text(card.querySelector("h3")));
+    const disclaimerCount = cards.filter((card) => text(card).includes("AkarFinder indexe la page et vous renvoie vers la source originale.")).length;
+    return {
+      cardCount: cards.length,
+      fullText,
+      sourceLinkCount,
+      mediaCount,
+      sourceDomains,
+      generatedTitles,
+      disclaimerCount,
+      clientWidth: document.documentElement.clientWidth,
+      scrollWidth: document.documentElement.scrollWidth,
+    };
+  });
+}
+
+function assertTruthSafe(viewportName, metrics) {
+  if (metrics.cardCount !== 4) throw new Error(`${viewportName}: expected 4 Option B groups, got ${metrics.cardCount}`);
+  if (metrics.scrollWidth > metrics.clientWidth) throw new Error(`${viewportName}: horizontal overflow ${metrics.scrollWidth}/${metrics.clientWidth}`);
+  if (metrics.mediaCount !== 0) throw new Error(`${viewportName}: external Option B must remain free of contextual or source media, got ${metrics.mediaCount}`);
+  if (metrics.sourceLinkCount < 4) throw new Error(`${viewportName}: expected at least one original-source link per group, got ${metrics.sourceLinkCount}`);
+  if (metrics.disclaimerCount !== 4) throw new Error(`${viewportName}: expected source disclaimer on all groups, got ${metrics.disclaimerCount}`);
+  if (metrics.sourceDomains.some((visible) => !visible)) throw new Error(`${viewportName}: source domain missing from one or more groups`);
+
+  for (const forbidden of [
+    "1850000",
+    "920000",
+    "2400000",
+    "112",
+    "250",
+    "280",
+    "Titre source Rabat à ne pas afficher",
+    "Titre source Marrakech à ne pas afficher",
+    "Titre source Oujda à ne pas afficher",
+    "Titre source neutral à ne pas afficher",
+    "Fixture contextuelle déterministe à ne pas afficher.",
+  ]) {
+    if (metrics.fullText.includes(forbidden)) throw new Error(`${viewportName}: forbidden source field leaked into Option B: ${forbidden}`);
+  }
+}
 
 try {
   for (const viewport of viewports) {
@@ -103,68 +117,27 @@ try {
     try {
       const response = await page.goto(`${baseUrl}/search?q=immobilier`, { waitUntil: "domcontentloaded", timeout: 45_000 });
       if (!response || response.status() >= 400) throw new Error(`${viewport.name}: search returned ${response?.status() ?? "no response"}`);
-      await page.waitForSelector('[data-search-external-mobile-grid] [data-unified-listing-card]', { timeout: 20_000 });
+      await page.waitForSelector('[data-search-external-serp-list] [data-external-serp-group]', { timeout: 20_000 });
 
-      const metrics = await page.evaluate(() => {
-        const cards = [...document.querySelectorAll('[data-search-external-mobile-grid] [data-unified-listing-card]')];
-        const rects = cards.map((card) => card.getBoundingClientRect());
-        const text = (node) => (node?.innerText ?? node?.textContent ?? "").replace(/\s+/g, " ").trim();
-        const visualState = cards.map((card) => ({
-          contextualCity: card.querySelector('[data-contextual-city]')?.getAttribute('data-contextual-city') ?? null,
-          neutral: Boolean(card.querySelector('[data-contextual-neutral]')),
-          illustrationLabel: text(card.querySelector('[data-contextual-illustration-label]')),
-          fullText: text(card),
-        }));
-        const clippedLabels = cards
-          .map((card) => card.querySelector('[data-contextual-illustration-label]'))
-          .filter((node) => node && node.scrollWidth > node.clientWidth + 1).length;
-        const clippedPrices = cards
-          .map((card) => card.querySelector('[data-mobile-price]'))
-          .filter((node) => node && node.scrollWidth > node.clientWidth + 1).length;
+      const metrics = await readMetrics(page);
+      assertTruthSafe(viewport.name, metrics);
+      const stableTitles = metrics.generatedTitles;
 
-        return {
-          cardCount: cards.length,
-          visualState,
-          secondSameRow: Boolean(rects[0] && rects[1] && Math.abs(rects[0].top - rects[1].top) <= 2),
-          thirdNextRow: Boolean(rects[0] && rects[2] && rects[2].top > rects[0].top + 40),
-          clippedLabels,
-          clippedPrices,
-          clientWidth: document.documentElement.clientWidth,
-          scrollWidth: document.documentElement.scrollWidth,
-        };
-      });
-
-      if (metrics.cardCount !== 4) throw new Error(`${viewport.name}: expected 4 cards, got ${metrics.cardCount}`);
-      if (metrics.scrollWidth > metrics.clientWidth) throw new Error(`${viewport.name}: horizontal overflow ${metrics.scrollWidth}/${metrics.clientWidth}`);
-      if (metrics.visualState[0]?.contextualCity !== "Rabat") throw new Error(`${viewport.name}: Rabat contextual visual missing`);
-      if (metrics.visualState[1]?.contextualCity !== "Marrakech") throw new Error(`${viewport.name}: Marrakech contextual visual missing`);
-
-      const expectedIllustrationLabel = "Illustration";
-      if (metrics.visualState[0]?.illustrationLabel !== expectedIllustrationLabel) throw new Error(`${viewport.name}: Rabat illustration disclosure missing`);
-      if (metrics.visualState[1]?.illustrationLabel !== expectedIllustrationLabel) throw new Error(`${viewport.name}: Marrakech illustration disclosure missing`);
-      if (metrics.visualState[2]?.contextualCity !== null || metrics.visualState[2]?.neutral) throw new Error(`${viewport.name}: unknown city should fall back to property artwork`);
-      if (metrics.visualState[2]?.illustrationLabel !== expectedIllustrationLabel) throw new Error(`${viewport.name}: type-only disclosure drift`);
-      if (!metrics.visualState[3]?.neutral) throw new Error(`${viewport.name}: no-context row must use neutral fallback`);
-      if (metrics.visualState[3]?.illustrationLabel !== expectedIllustrationLabel) throw new Error(`${viewport.name}: neutral disclosure drift`);
-      if (!metrics.visualState[3]?.fullText.includes("Localisation non précisée")) throw new Error(`${viewport.name}: no-context location truth missing`);
-      if (metrics.clippedLabels !== 0) throw new Error(`${viewport.name}: ${metrics.clippedLabels} illustration labels clipped`);
-      if (metrics.clippedPrices !== 0) throw new Error(`${viewport.name}: ${metrics.clippedPrices} prices clipped`);
-
-      const mobile = viewport.width < 640;
-      if (mobile && (!metrics.secondSameRow || !metrics.thirdNextRow)) {
-        throw new Error(`${viewport.name}: two-column card rhythm regressed`);
-      }
+      await page.reload({ waitUntil: "domcontentloaded", timeout: 45_000 });
+      await page.waitForSelector('[data-search-external-serp-list] [data-external-serp-group]', { timeout: 20_000 });
+      const reloadMetrics = await readMetrics(page);
+      assertTruthSafe(`${viewport.name} reload`, reloadMetrics);
+      if (JSON.stringify(reloadMetrics.generatedTitles) !== JSON.stringify(stableTitles)) throw new Error(`${viewport.name}: generated titles changed after reload`);
 
       await page.screenshot({ path: `${outputDir}/${viewport.name}.png`, fullPage: true });
       results.push({
         name: viewport.name,
-        rabat_context: metrics.visualState[0]?.contextualCity,
-        marrakech_context: metrics.visualState[1]?.contextualCity,
-        type_only_context: metrics.visualState[2]?.contextualCity,
-        neutral_fallback: metrics.visualState[3]?.neutral,
-        contextual_disclosure: metrics.visualState[0]?.illustrationLabel,
-        clipped_labels: metrics.clippedLabels,
-        clipped_prices: metrics.clippedPrices,
+        group_count: metrics.cardCount,
+        stable_after_reload: true,
+        media_count: metrics.mediaCount,
+        source_link_count: metrics.sourceLinkCount,
+        disclaimer_count: metrics.disclaimerCount,
+        source_domains_visible: metrics.sourceDomains.every(Boolean),
         horizontal_overflow: false,
       });
     } catch (error) {
