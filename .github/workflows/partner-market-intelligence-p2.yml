@@ -1,0 +1,45 @@
+name: Partner Market Intelligence P2
+
+on:
+  pull_request:
+    paths:
+      - "lib/partners/partner-listing-v2.ts"
+      - "lib/feeds/partner-v2-bridge.ts"
+      - "scripts/scrapers/__tests__/partner-listing-v2.test.ts"
+      - "scripts/scrapers/__tests__/partner-feed-v2-bridge.test.ts"
+      - "docs/PARTNER_MARKET_INTELLIGENCE_PIPELINE_V2_CONTRACT.md"
+      - ".github/workflows/partner-market-intelligence-p2.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: partner-market-intelligence-p2-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  certify-p2-core:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Partner Listing V2 tests
+        run: npx tsx --test scripts/scrapers/__tests__/partner-listing-v2.test.ts scripts/scrapers/__tests__/partner-feed-v2-bridge.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Production build
+        run: npm run build
