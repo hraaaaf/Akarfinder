@@ -22,13 +22,15 @@ test("UX-SEARCH-4 keeps the truth-safe visual precedence explicit on internal ca
   assert.doesNotMatch(source, /Math\.random/);
 });
 
-test("UX-SEARCH-4 exposes one common visual-inventory marker contract to Gateway fallbacks", async () => {
+test("UX-SEARCH-4 keeps Gateway Option B text-only and outside the fabricated visual inventory", async () => {
   const contextual = await readFile("components/search/ContextualListingArtwork.tsx", "utf8");
   const external = await readFile("components/search/ExternalIndexedResultCard.tsx", "utf8");
   assert.match(contextual, /data-visual-inventory-class="contextual_illustration"/);
   assert.match(contextual, /data-visual-inventory-class="generic_illustration"/);
   assert.match(contextual, /data-visual-inventory-class="neutral"/);
-  assert.match(external, /data-visual-inventory-class="authorized_or_listing_image"/);
+  assert.match(external, /data-external-serp-group/);
+  assert.doesNotMatch(external, /data-visual-inventory-class|ContextualListingArtwork|PropertyTypeArtwork|data-card-image/);
+  assert.doesNotMatch(external, /<img|<Image/);
 });
 
 test("UX-SEARCH-4 contextual pools are deterministic and materially diverse for all six certified cities", () => {

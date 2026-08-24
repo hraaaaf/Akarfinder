@@ -377,12 +377,13 @@ describe("Search Truth UX source contracts", () => {
 
   it("external cards expose source and limits in plain language", () => {
     const card = source("components/search/ExternalIndexedResultCard.tsx");
-    assert.ok(card.includes("publicAttribution.typeLabel"));
-    assert.ok(card.includes("publicAttribution.sourceLabel"));
-    assert.doesNotMatch(card, /result\.result_attribution_label|result\.source_name/);
-    assert.ok(card.includes("Informations limitées"));
+    assert.ok(card.includes("getSourceDomain"));
+    assert.ok(card.includes("sourcePages"));
+    assert.ok(card.includes("result.original_url"));
+    assert.doesNotMatch(card, /\{result\.result_attribution_label\}|\{result\.source_name\}/);
+    assert.ok(card.includes("AkarFinder indexe la page et vous renvoie vers la source originale."));
+    assert.ok(card.includes("Ouvrir la source"));
     assert.doesNotMatch(card, /Offre observée|Aperçu limité/i);
-    assert.match(card, /Comparez les sources/i);
   });
 
   it("structured cards use one truth hierarchy and do not conflate low information with duplicates", () => {
@@ -395,7 +396,7 @@ describe("Search Truth UX source contracts", () => {
 
   it("Search map describes the displayed result set without architecture jargon", () => {
     const map = source("components/search/SearchMapPanel.tsx");
-    assert.ok(map.includes("Zones des résultats"));
+    assert.ok(map.includes("Vue marché AkarFinder"));
     assert.match(map, /résultats affichés dans cette recherche/i);
     assert.match(map, /n'est pas une estimation du volume total du marché/i);
     assert.doesNotMatch(map, /fiches indexées|éligibilité/i);

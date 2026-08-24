@@ -56,10 +56,12 @@ test("listing fallbacks use Option A without replacing authorized real images", 
 });
 
 test("external minimal SERP intentionally avoids fabricated property artwork", () => {
-  assert.match(externalCard, /data-external-serp-row/);
-  assert.match(externalCard, /data-external-result-metadata/);
+  assert.match(externalCard, /data-external-serp-group/);
+  assert.match(externalCard, /sourcePages/);
+  assert.match(externalCard, /result\.normalized_property_type/);
   assert.doesNotMatch(externalCard, /PropertyTypeArtwork|ContextualListingArtwork|data-card-image/);
   assert.doesNotMatch(externalCard, /safeFallbackPropertyType|isListingPropertyType/);
+  assert.doesNotMatch(externalCard, /<img|<Image/);
 });
 
 test("seller journey reuses the same approved visual taxonomy", () => {
