@@ -1,0 +1,137 @@
+name: M7 External SERP UI
+
+on:
+  pull_request:
+    paths:
+      - "components/search/ExternalIndexedResultCard.tsx"
+      - "components/search/ExternalIndexedResultsSection.tsx"
+      - "components/search/M7ExternalSerpVisualQAFixture.tsx"
+      - "lib/search/external-serp-groups.ts"
+      - "app/visual-qa/m7-external-serp/**"
+      - "scripts/scrapers/__tests__/m7-external-serp-ui.test.ts"
+      - "docs/EXTERNAL_SERP_B_TARGET.*"
+      - ".github/workflows/m7-external-serp-ui.yml"
+  workflow_dispatch:
+
+jobs:
+  contract-and-visual:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Contract test
+        run: npx tsx --test scripts/scrapers/__tests__/m7-external-serp-ui.test.ts
+
+      - name: TypeScript check
+        run: npx tsc --noEmit
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Start visual QA fixture
+        env:
+          NEXT_TELEMETRY_DISABLED: "1"
+        run: |
+          npm run dev -- --hostname 127.0.0.1 --port 3000 > /tmp/m7f-next.log 2>&1 &
+          echo $! > /tmp/m7f-next.pid
+          for i in {1..45}; do
+            if curl -fsS http://127.0.0.1:3000/visual-qa/m7-external-serp >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/m7f-next.log
+          exit 1
+
+      - name: Capture BEFORE and AFTER at certified viewports
+        run: |
+          mkdir -p artifacts/m7-external-serp/before artifacts/m7-external-serp/after
+          node <<'NODE'
+          const { chromium } = require('playwright');
+
+          const viewports = [
+            { width: 390, height: 844 },
+            { width: 430, height: 932 },
+            { width: 768, height: 1024 },
+            { width: 1280, height: 900 },
+          ];
+
+          (async () => {
+            const browser = await chromium.launch({ headless: true });
+            for (const viewport of viewports) {
+              const context = await browser.newContext({ viewport });
+              const page = await context.newPage();
+              const pageErrors = [];
+              const consoleErrors = [];
+              page.on('pageerror', (error) => pageErrors.push(String(error)));
+              page.on('console', (message) => {
+                if (message.type() === 'error') consoleErrors.push(message.text());
+              });
+
+              await page.goto('https://akarfinder.vercel.app/search?city=Casablanca', {
+                waitUntil: 'domcontentloaded',
+                timeout: 45000,
+              });
+              await page.waitForTimeout(8000);
+              await page.screenshot({
+                path: `artifacts/m7-external-serp/before/search-casablanca-${viewport.width}.png`,
+                fullPage: true,
+              });
+
+              await page.goto('http://127.0.0.1:3000/visual-qa/m7-external-serp', {
+                waitUntil: 'networkidle',
+                timeout: 30000,
+              });
+
+              const initialGroups = await page.locator('[data-external-serp-group]').count();
+              if (initialGroups !== 15) throw new Error(`expected 15 initial groups, got ${initialGroups}`);
+
+              const firstGroupToggle = page.locator('[data-external-serp-group] button[aria-expanded]').first();
+              if (await firstGroupToggle.count()) {
+                await firstGroupToggle.click();
+                const expandedSources = await page.locator('[data-external-source-list] a').count();
+                if (expandedSources < 2) throw new Error(`expected grouped source links, got ${expandedSources}`);
+                await firstGroupToggle.click();
+              }
+
+              const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+              if (overflow > 1) throw new Error(`horizontal overflow ${overflow}px at ${viewport.width}`);
+
+              await page.screenshot({
+                path: `artifacts/m7-external-serp/after/search-casablanca-${viewport.width}.png`,
+                fullPage: true,
+              });
+
+              const nextButton = page.getByRole('button', { name: 'Afficher 15 suivants' });
+              if (await nextButton.count()) {
+                await nextButton.click();
+                const afterNextGroups = await page.locator('[data-external-serp-group]').count();
+                if (afterNextGroups !== 30) throw new Error(`expected 30 groups after pagination, got ${afterNextGroups}`);
+              }
+
+              if (pageErrors.length > 0) throw new Error(`page errors: ${pageErrors.join(' | ')}`);
+              if (consoleErrors.length > 0) throw new Error(`console errors: ${consoleErrors.join(' | ')}`);
+              await context.close();
+            }
+            await browser.close();
+          })().catch((error) => {
+            console.error(error);
+            process.exit(1);
+          });
+          NODE
+
+      - name: Upload visual proof
+        uses: actions/upload-artifact@v4
+        with:
+          name: m7-external-serp-option-b-before-after
+          path: artifacts/m7-external-serp
+          if-no-files-found: error
