@@ -108,7 +108,10 @@ test("external SERP distinguishes global indexed total from the visible local ba
   const section = readFileSync("components/search/ExternalIndexedResultsSection.tsx", "utf8");
   assert.doesNotMatch(section, /\$\{results\.length\} charg/);
   assert.match(section, /Résultats du web/);
-  assert.match(section, /pages sources chargées/);
+  assert.match(section, /loadedPageCount/);
+  assert.match(section, /page\$\{loadedPageCount > 1/);
+  assert.match(section, /source\$\{loadedPageCount > 1/);
+  assert.match(section, /chargée\$\{loadedPageCount > 1/);
   assert.match(section, /GROUP_PAGE_SIZE = 15/);
   assert.match(section, /Afficher 15 suivants/);
 });
