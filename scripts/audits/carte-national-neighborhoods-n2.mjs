@@ -11,7 +11,50 @@ const viewports = [
   { name: "768", width: 768, height: 900 },
   { name: "1280", width: 1280, height: 900 },
 ];
-const report = { ok: false, api: null, cases: [] };
+const report = { ok: false, api: null, cases: [], failure: null };
+
+function isValidCenter(center) {
+  return Boolean(center) &&
+    Number.isFinite(center.lng) &&
+    Number.isFinite(center.lat) &&
+    center.lng >= -180 && center.lng <= 180 &&
+    center.lat >= -90 && center.lat <= 90;
+}
+
+async function readNeighborhoodMapState(page) {
+  return page.evaluate(() => {
+    const map = window.__AKARFINDER_NATIONAL_MAP__;
+    const sourceId = "akarfinder-national-neighborhood-points";
+    const dotsId = "akarfinder-national-neighborhood-dots";
+    let visibleSourceFeatures = 0;
+    let renderedNeighborhoodFeatureCount = 0;
+    try {
+      if (map?.getSource(sourceId)) visibleSourceFeatures = map.querySourceFeatures(sourceId).length;
+    } catch {
+      visibleSourceFeatures = -1;
+    }
+    try {
+      if (map?.getLayer(dotsId)) {
+        renderedNeighborhoodFeatureCount = map.queryRenderedFeatures().filter((feature) => feature.layer.id === dotsId).length;
+      }
+    } catch {
+      renderedNeighborhoodFeatureCount = -1;
+    }
+    return {
+      overlayDom: Boolean(document.querySelector('[data-akarfinder-national-neighborhood-overlay][data-city="casablanca"]')),
+      mapPresent: Boolean(map),
+      styleLoaded: Boolean(map?.isStyleLoaded()),
+      moving: Boolean(map?.isMoving()),
+      zoom: map?.getZoom() ?? null,
+      sourceExists: Boolean(map?.getSource(sourceId)),
+      sourceLoaded: Boolean(map?.getSource(sourceId) && map?.isSourceLoaded(sourceId)),
+      labels: Boolean(map?.getLayer("akarfinder-national-neighborhood-labels")),
+      dots: Boolean(map?.getLayer(dotsId)),
+      visibleSourceFeatures,
+      renderedNeighborhoodFeatureCount,
+    };
+  });
+}
 
 const apiResponse = await fetch(`${baseUrl}/api/geo/national-territories?city=casablanca`);
 const api = await apiResponse.json();
@@ -19,15 +62,18 @@ if (!apiResponse.ok) throw new Error(`city API ${apiResponse.status}`);
 if (api.view !== "city" || api.place?.slug !== "casablanca") throw new Error("Casablanca city payload missing");
 if (api.meta?.neighborhoodCount < 1500) throw new Error(`neighborhoodCount ${api.meta?.neighborhoodCount}`);
 if (api.meta?.centeredNeighborhoodCount < 100) throw new Error(`centeredNeighborhoodCount ${api.meta?.centeredNeighborhoodCount}`);
+const validCenteredNeighborhoodCount = api.neighborhoods.filter((item) => isValidCenter(item.center)).length;
+if (validCenteredNeighborhoodCount < 100) throw new Error(`validCenteredNeighborhoodCount ${validCenteredNeighborhoodCount}`);
 if (api.meta?.certifiedNeighborhoodBoundaryCount !== 0) throw new Error(`unexpected published neighborhood geometry ${api.meta?.certifiedNeighborhoodBoundaryCount}`);
 if (api.certifiedNeighborhoodBoundaries?.features?.length !== 0) throw new Error("N2 must not publish uncertified neighborhood polygons");
 const maarif = api.neighborhoods.find((item) => item.slug === "maarif");
 const postalMaarif = api.neighborhoods.find((item) => item.slug === "quartier-maarif");
-if (!maarif?.center || !maarif.sourceKinds?.includes("osm_neighborhood_label")) throw new Error("Maârif mapped OSM label missing");
+if (!isValidCenter(maarif?.center) || !maarif.sourceKinds?.includes("osm_neighborhood_label")) throw new Error("Maârif mapped OSM label missing");
 if (postalMaarif?.center || !postalMaarif?.sourceKinds?.includes("barid_postal_neighborhood")) throw new Error("Barid no-center fallback missing");
 report.api = {
   neighborhoodCount: api.meta.neighborhoodCount,
   centeredNeighborhoodCount: api.meta.centeredNeighborhoodCount,
+  validCenteredNeighborhoodCount,
   certifiedNeighborhoodBoundaryCount: api.meta.certifiedNeighborhoodBoundaryCount,
 };
 
@@ -61,7 +107,7 @@ try {
       });
     }
     const page = await context.newPage();
-    const diagnostics = { pageErrors: [], requestFailures: [] };
+    const diagnostics = { pageErrors: [], requestFailures: [], mapState: null };
     page.on("pageerror", (error) => diagnostics.pageErrors.push(String(error)));
     page.on("requestfailed", (request) => diagnostics.requestFailures.push({ url: request.url(), error: request.failure()?.errorText || "unknown" }));
 
@@ -72,16 +118,38 @@ try {
       await page.waitForFunction(() => document.querySelector('[data-akarfinder-national-map]')?.getAttribute('data-akarfinder-national-view') === 'city', null, { timeout: 30000 });
       const canvas = page.locator('.maplibregl-canvas');
       await canvas.waitFor({ state: "visible", timeout: 30000 });
-      await page.waitForFunction(() => {
-        const map = window.__AKARFINDER_NATIONAL_MAP__;
-        const sourceId = "akarfinder-national-neighborhood-points";
-        return Boolean(map?.getLayer("akarfinder-national-neighborhood-labels")) && Boolean(map?.getSource(sourceId)) && Boolean(map?.isSourceLoaded(sourceId));
-      }, null, { timeout: 20000 });
+      await page.locator('[data-akarfinder-national-neighborhood-overlay][data-city="casablanca"]').waitFor({ state: "attached", timeout: 20000 });
+
+      try {
+        await page.waitForFunction(() => {
+          const map = window.__AKARFINDER_NATIONAL_MAP__;
+          const sourceId = "akarfinder-national-neighborhood-points";
+          return Boolean(map?.isStyleLoaded()) &&
+            Boolean(map?.getSource(sourceId)) &&
+            Boolean(map?.getLayer("akarfinder-national-neighborhood-labels")) &&
+            Boolean(map?.getLayer("akarfinder-national-neighborhood-dots"));
+        }, null, { timeout: 20000 });
+      } catch (error) {
+        diagnostics.mapState = await readNeighborhoodMapState(page);
+        throw new Error(`neighborhood overlay readiness timeout ${JSON.stringify(diagnostics.mapState)} | ${String(error)}`);
+      }
 
       await page.waitForFunction(() => {
         const map = window.__AKARFINDER_NATIONAL_MAP__;
         return Boolean(map) && !map.isMoving() && map.isStyleLoaded();
       }, null, { timeout: 10000 });
+
+      try {
+        await page.waitForFunction(() => {
+          const map = window.__AKARFINDER_NATIONAL_MAP__;
+          const dotsId = "akarfinder-national-neighborhood-dots";
+          if (!map?.getLayer(dotsId)) return false;
+          return map.queryRenderedFeatures().some((feature) => feature.layer.id === dotsId);
+        }, null, { timeout: 15000 });
+      } catch (error) {
+        diagnostics.mapState = await readNeighborhoodMapState(page);
+        throw new Error(`neighborhood dots not rendered ${JSON.stringify(diagnostics.mapState)} | ${String(error)}`);
+      }
 
       // N2 is an overlay on the real MapLibre/OpenFreeMap basemap, never a marker-only canvas.
       // Require rendered third-party cartographic features so roads/place context is visibly present
@@ -97,13 +165,18 @@ try {
       const layerState = await page.evaluate(() => {
         const map = window.__AKARFINDER_NATIONAL_MAP__;
         const sourceId = "akarfinder-national-neighborhood-points";
+        const dotsId = "akarfinder-national-neighborhood-dots";
         const baseLayers = (map?.getStyle().layers ?? []).filter((layer) => !layer.id.startsWith("akarfinder-"));
-        const renderedBaseFeatures = map?.queryRenderedFeatures().filter((feature) => !feature.layer.id.startsWith("akarfinder-")).length ?? 0;
+        const renderedFeatures = map?.queryRenderedFeatures() ?? [];
+        const renderedBaseFeatures = renderedFeatures.filter((feature) => !feature.layer.id.startsWith("akarfinder-")).length;
+        const renderedNeighborhoodFeatureCount = renderedFeatures.filter((feature) => feature.layer.id === dotsId).length;
         return {
           visibleSourceFeatures: map?.querySourceFeatures(sourceId).length ?? 0,
+          sourceExists: Boolean(map?.getSource(sourceId)),
           sourceLoaded: Boolean(map?.isSourceLoaded(sourceId)),
           labels: Boolean(map?.getLayer("akarfinder-national-neighborhood-labels")),
-          dots: Boolean(map?.getLayer("akarfinder-national-neighborhood-dots")),
+          dots: Boolean(map?.getLayer(dotsId)),
+          renderedNeighborhoodFeatureCount,
           fakeFill: Boolean(map?.getLayer("akarfinder-national-neighborhood-fill")),
           basemapLayerCount: baseLayers.length,
           renderedBasemapFeatureCount: renderedBaseFeatures,
@@ -111,7 +184,7 @@ try {
           basemapHasSymbol: baseLayers.some((layer) => layer.type === "symbol"),
         };
       });
-      if (!layerState.sourceLoaded || !layerState.labels || !layerState.dots || layerState.fakeFill) {
+      if (!layerState.sourceExists || !layerState.labels || !layerState.dots || layerState.renderedNeighborhoodFeatureCount < 1 || layerState.fakeFill) {
         throw new Error(`neighborhood map layers invalid ${JSON.stringify(layerState)}`);
       }
       if (layerState.basemapLayerCount < 20 || layerState.renderedBasemapFeatureCount < 20 || !layerState.basemapHasLine || !layerState.basemapHasSymbol) {
@@ -158,7 +231,18 @@ try {
       if (diagnostics.pageErrors.length || criticalRequestFailures.length) {
         throw new Error(`browser diagnostics ${JSON.stringify({ pageErrors: diagnostics.pageErrors, criticalRequestFailures })}`);
       }
+      diagnostics.mapState = await readNeighborhoodMapState(page);
       report.cases.push({ viewport: viewport.name, overflow, layerState, diagnostics, mappedSelection: true, noCenterFallback: true, searchHandoff: true });
+    } catch (error) {
+      if (!diagnostics.mapState) {
+        try {
+          diagnostics.mapState = await readNeighborhoodMapState(page);
+        } catch {
+          diagnostics.mapState = { unavailable: true };
+        }
+      }
+      report.failure = { viewport: viewport.name, error: String(error), diagnostics };
+      throw error;
     } finally {
       await context.close();
     }

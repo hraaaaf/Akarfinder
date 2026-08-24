@@ -52,30 +52,41 @@ export function NationalNeighborhoodOverlayBridge({ citySlug }: Props) {
     if (!citySlug) return;
 
     let cancelled = false;
-    let frame = 0;
+    let findFrame = 0;
+    let readyFrame = 0;
     let current: MapLibreMap | null = null;
-    const markStyleReady = () => {
-      if (!cancelled) setMapReady(true);
+
+    // setStyle() removes custom sources/layers. A style.load event therefore
+    // needs an observable false -> true transition so the overlay effect
+    // cleans up stale handlers and mounts its source/layers onto the new style.
+    const pulseStyleReady = () => {
+      if (cancelled) return;
+      setMapReady(false);
+      window.cancelAnimationFrame(readyFrame);
+      readyFrame = window.requestAnimationFrame(() => {
+        if (!cancelled && current && Boolean(current.isStyleLoaded())) setMapReady(true);
+      });
     };
     const detach = () => {
       if (!current) return;
-      current.off("style.load", markStyleReady);
+      current.off("style.load", pulseStyleReady);
     };
     const findMap = () => {
       if (cancelled) return;
       current = (window as NationalMapWindow).__AKARFINDER_NATIONAL_MAP__ ?? null;
       if (!current) {
-        frame = window.requestAnimationFrame(findMap);
+        findFrame = window.requestAnimationFrame(findMap);
         return;
       }
       setMap(current);
+      current.on("style.load", pulseStyleReady);
       if (Boolean(current.isStyleLoaded())) setMapReady(true);
-      current.on("style.load", markStyleReady);
     };
     findMap();
     return () => {
       cancelled = true;
-      window.cancelAnimationFrame(frame);
+      window.cancelAnimationFrame(findFrame);
+      window.cancelAnimationFrame(readyFrame);
       detach();
     };
   }, [citySlug]);
