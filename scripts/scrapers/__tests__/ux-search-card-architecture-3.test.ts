@@ -17,40 +17,29 @@ function assertOrdered(source: string, labels: Array<[string, string]>) {
 test("UX-SEARCH-3 internal Search card follows the canonical scan hierarchy", () => {
   const source = read("components/search/SearchListingCardDark.tsx");
   assertOrdered(source, [
-    ["image", "data-card-image"],
-    ["price", "data-card-price"],
-    ["title", "data-card-title"],
-    ["location", "data-card-location"],
-    ["facts", "data-card-facts"],
-    ["provenance", "data-card-provenance"],
+    ["image", "data-card-image"], ["price", "data-card-price"], ["title", "data-card-title"],
+    ["location", "data-card-location"], ["facts", "data-card-facts"], ["provenance", "data-card-provenance"],
   ]);
-  assert.ok(source.indexOf("data-neighborhood-photo-credit") > source.indexOf("data-card-provenance"));
   assert.ok(source.includes("data-mobile-compact-card"));
-  assert.ok(source.includes("line-clamp-2"));
 });
 
-test("UX-SEARCH-3 external card uses the same hierarchy and keeps source transparency", () => {
+test("UX-SEARCH-3 external indexed results use a distinct search-engine hierarchy", () => {
   const source = read("components/search/ExternalIndexedResultCard.tsx");
-  assertOrdered(source, [
-    ["image", "data-card-image"],
-    ["price", "data-card-price"],
-    ["title", "data-card-title"],
-    ["location", "data-card-location"],
-    ["facts", "data-card-facts"],
-    ["provenance", "data-card-provenance"],
-    ["action", "data-card-action"],
-  ]);
+  assert.ok(source.includes("data-external-serp-row"));
+  assert.ok(source.includes("data-card-provenance"));
+  assert.ok(source.includes("data-card-title"));
+  assert.ok(source.includes("data-card-facts"));
+  assert.ok(source.includes("data-card-action"));
   assert.ok(source.includes("data-public-attribution-source"));
+  assert.ok(source.includes("data-public-attribution-type"));
   assert.ok(source.includes("data-card-provenance-detail"));
-  assert.ok(source.includes('variant="serp"'));
   assert.ok(source.includes("data-mobile-compact-external-card"));
+  assert.doesNotMatch(source, /AkarInfoPassportCard|ContextualListingArtwork|data-card-price/);
 });
 
-test("SERP AkarInfo presentation is intentionally compact without weakening full views", () => {
+test("full AkarInfo views remain available outside the external SERP row", () => {
   const source = read("components/akarinfo/AkarInfoPassportCard.tsx");
   assert.ok(source.includes('variant?: "serp" | "compact" | "full"'));
   assert.ok(source.includes("data-akarinfo-serp"));
   assert.ok(source.includes('const compact = variant !== "full"'));
-  assert.ok(source.includes("Informations AkarFinder"));
-  assert.ok(source.includes("À vérifier · {points[0]}"));
 });

@@ -80,10 +80,12 @@ export function ExternalIndexedResultCard({ result, similarResults }: ExternalIn
         ) : null}
 
         <div className="min-w-0 flex-1">
-          <div className="flex min-w-0 items-center gap-1.5 text-[10.5px] font-bold text-muted-foreground sm:text-[11.5px]">
+          <div data-card-provenance className="flex min-w-0 items-center gap-1.5 text-[10.5px] font-bold text-muted-foreground sm:text-[11.5px]">
             <span data-public-attribution-source className="truncate text-bronze-700 dark:text-bronze-300">
               {publicAttribution.sourceLabel || result.domain}
             </span>
+            <span aria-hidden="true">·</span>
+            <span data-public-attribution-type className="shrink-0">{publicAttribution.typeLabel}</span>
             <span aria-hidden="true">·</span>
             <span className="shrink-0">{getIntentLabel(result.normalized_intent)}</span>
           </div>
@@ -115,15 +117,15 @@ export function ExternalIndexedResultCard({ result, similarResults }: ExternalIn
           ) : null}
         </div>
 
-        <div data-card-action className="hidden shrink-0 self-center items-center gap-1.5 text-[11px] font-extrabold text-bronze-700 dark:text-bronze-300 sm:flex">
+        <div data-card-action data-public-attribution-cta className="hidden shrink-0 self-center items-center gap-1.5 text-[11px] font-extrabold text-bronze-700 dark:text-bronze-300 sm:flex">
           <span>{publicAttribution.primaryCtaLabel ?? "Voir la source"}</span>
           <ExternalLink size={13} aria-hidden="true" />
         </div>
       </div>
 
       <div className="mt-2 flex items-center justify-between gap-3 sm:hidden">
-        <span className="truncate text-[9.5px] font-semibold text-muted-foreground">{result.domain}</span>
-        <span className="inline-flex shrink-0 items-center gap-1 text-[10.5px] font-extrabold text-bronze-700 dark:text-bronze-300">
+        <span data-card-provenance-detail className="truncate text-[9.5px] font-semibold text-muted-foreground">{result.domain}</span>
+        <span data-public-attribution-cta className="inline-flex shrink-0 items-center gap-1 text-[10.5px] font-extrabold text-bronze-700 dark:text-bronze-300">
           {publicAttribution.primaryCtaLabel ?? "Voir la source"}
           <ExternalLink size={12} aria-hidden="true" />
         </span>

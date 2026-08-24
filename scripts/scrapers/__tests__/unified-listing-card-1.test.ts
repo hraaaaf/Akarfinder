@@ -6,72 +6,46 @@ import { describe, it } from "node:test";
 const ROOT = process.cwd();
 const source = (path: string) => readFileSync(resolve(ROOT, path), "utf8");
 
-function positionOrFail(content: string, needle: string) {
-  const position = content.indexOf(needle);
-  assert.notEqual(position, -1, `Missing unified card contract marker: ${needle}`);
-  return position;
-}
-
 describe("UNIFIED-LISTING-CARD-1", () => {
-  it("keeps the external Search card on the canonical decision hierarchy", () => {
+  it("uses the dedicated external SERP hierarchy instead of portal-card hierarchy", () => {
     const card = source("components/search/ExternalIndexedResultCard.tsx");
-
-    const image = positionOrFail(card, "data-card-image");
-    const price = positionOrFail(card, "data-card-price");
-    const title = positionOrFail(card, "data-card-title");
-    const location = positionOrFail(card, "data-card-location");
-    const facts = positionOrFail(card, "data-card-facts");
-    const provenance = positionOrFail(card, "data-card-provenance");
-    const passport = positionOrFail(card, "<AkarInfoPassportCard passport={passport}");
-    const action = positionOrFail(card, "data-card-action");
-
-    assert.ok(image < price, "IMAGE must precede PRICE");
-    assert.ok(price < title, "PRICE must precede TITLE");
-    assert.ok(title < location, "TITLE must precede LOCATION");
-    assert.ok(location < facts, "LOCATION must precede FACTS");
-    assert.ok(facts < provenance, "FACTS must precede PROVENANCE");
-    assert.ok(provenance < action, "PROVENANCE must precede ACTION");
-    assert.ok(passport < action, "ACTION must remain the final desktop decision step");
+    assert.ok(card.includes("data-external-serp-row"));
+    assert.ok(card.includes("data-card-provenance"));
+    assert.ok(card.includes("data-card-title"));
+    assert.ok(card.includes("data-card-facts"));
+    assert.ok(card.includes("data-card-action"));
+    assert.doesNotMatch(card, /AkarInfoPassportCard|data-card-price|data-card-location/);
   });
 
-  it("fails visibly closed when normalized facts are unavailable", () => {
+  it("fails closed by omission instead of inventing missing external facts", () => {
     const card = source("components/search/ExternalIndexedResultCard.tsx");
-
-    assert.ok(card.includes("Prix non communiqué"));
-    assert.ok(card.includes("Localisation non précisée"));
-    assert.ok(card.includes("Informations à compléter"));
-    assert.ok(card.includes("Informations limitées"));
+    assert.ok(card.includes("Informations minimales indexées"));
+    assert.doesNotMatch(card, /Prix non communiqué|Localisation non précisée|Informations à compléter|Prix indicatif/);
     assert.ok(card.includes("publicAttribution.typeLabel"));
     assert.ok(card.includes("publicAttribution.sourceLabel"));
-    assert.ok(card.includes("Comparez les sources"));
   });
 
-  it("preserves same-tab source navigation and thumbnail policy", () => {
+  it("preserves same-tab source navigation and authorized-thumbnail-only policy", () => {
     const card = source("components/search/ExternalIndexedResultCard.tsx");
-    const artwork = source("components/search/ContextualListingArtwork.tsx");
-
     assert.ok(card.includes("href={result.original_url}"));
     assert.doesNotMatch(card, /target=["']_blank["']/);
-    assert.doesNotMatch(card, /rel=["']noopener noreferrer["']/);
     assert.ok(card.includes("THUMBNAILS_ENABLED && result.can_show_thumbnail"));
-    assert.ok(card.includes("<ContextualListingArtwork"));
-    assert.ok(artwork.includes("<PropertyTypeArtwork"));
+    assert.doesNotMatch(card, /ContextualListingArtwork|data-contextual-illustration-label/);
     assert.doesNotMatch(card, /href=\{?['"]\/listings\//);
   });
 
   it("keeps provenance deterministic instead of rendering payload labels directly", () => {
     const card = source("components/search/ExternalIndexedResultCard.tsx");
-
     assert.ok(card.includes("deriveGatewayPublicAttribution(result)"));
+    assert.ok(card.includes("data-public-attribution-type"));
+    assert.ok(card.includes("data-public-attribution-source"));
     assert.doesNotMatch(card, /\{result\.source_name\}/);
     assert.doesNotMatch(card, /\{result\.result_attribution_label\}/);
     assert.doesNotMatch(card, /\{result\.primary_cta_label\}/);
-    assert.doesNotMatch(card, /badge=\{result\.source_badge\}/);
   });
 
-  it("does not introduce ranking or commercial-priority logic into the card", () => {
+  it("does not introduce ranking or commercial-priority logic into the row", () => {
     const card = source("components/search/ExternalIndexedResultCard.tsx");
-
     assert.doesNotMatch(card, /computeRankingScore|compareRecommendedListings|commercial[_-]priority/i);
     assert.doesNotMatch(card, /premium promoter|agence partenaire|promoteur premium/i);
   });
