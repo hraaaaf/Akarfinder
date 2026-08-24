@@ -57,20 +57,33 @@ export function NationalNeighborhoodOverlayBridge({ citySlug }: Props) {
 
     let cancelled = false;
     let findFrame = 0;
+    let readyFrame = 0;
     let current: MapLibreMap | null = null;
 
-    const syncLoadedStyle = () => {
-      if (cancelled || !current || !current.isStyleLoaded()) return;
+    const markReady = () => {
+      if (cancelled || !current || !current.isStyleLoaded()) return false;
       setMap(current);
       setMapReady(true);
-      // setStyle() drops custom sources/layers. Only force a fresh overlay mount
-      // when the loaded style genuinely no longer owns the N2 source. This avoids
-      // turning ordinary style/source lifecycle events into a teardown/remount loop.
+      return true;
+    };
+
+    const handleStyleLoad = () => {
+      if (!markReady() || !current) return;
+      // setStyle() removes custom sources/layers. A genuinely replaced style
+      // therefore needs a fresh overlay mount, but ordinary readiness does not.
       if (!current.getSource(NEIGHBORHOOD_SOURCE)) setStyleEpoch((value) => value + 1);
     };
-    const detach = () => {
-      if (current) current.off("style.load", syncLoadedStyle);
+
+    const waitForStyleReady = () => {
+      if (cancelled || !current) return;
+      if (markReady()) return;
+      readyFrame = window.requestAnimationFrame(waitForStyleReady);
     };
+
+    const detach = () => {
+      if (current) current.off("style.load", handleStyleLoad);
+    };
+
     const findMap = () => {
       if (cancelled) return;
       current = (window as NationalMapWindow).__AKARFINDER_NATIONAL_MAP__ ?? null;
@@ -78,13 +91,19 @@ export function NationalNeighborhoodOverlayBridge({ citySlug }: Props) {
         findFrame = window.requestAnimationFrame(findMap);
         return;
       }
-      current.on("style.load", syncLoadedStyle);
-      syncLoadedStyle();
+      current.on("style.load", handleStyleLoad);
+      // The map is published from NationalTerritoryExperience during style.load.
+      // If this bridge discovers it just after that event, the listener above
+      // cannot observe the already-fired event. Poll readiness until the style
+      // settles instead of leaving mapReady=false forever.
+      waitForStyleReady();
     };
+
     findMap();
     return () => {
       cancelled = true;
       window.cancelAnimationFrame(findFrame);
+      window.cancelAnimationFrame(readyFrame);
       detach();
     };
   }, [citySlug]);
