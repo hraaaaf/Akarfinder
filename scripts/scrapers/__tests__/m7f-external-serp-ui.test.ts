@@ -104,28 +104,41 @@ test("search toolbar keeps the indexed total as the dominant result count", () =
   assert.match(shell, /setIndexedTotalCount\(payload\.total_count\)/);
 });
 
-test("external SERP does not present the loaded page size as the total", () => {
+test("external SERP distinguishes global indexed total from the visible local batch", () => {
   const section = readFileSync("components/search/ExternalIndexedResultsSection.tsx", "utf8");
   assert.doesNotMatch(section, /\$\{results\.length\} charg/);
   assert.match(section, /Résultats du web/);
-  assert.match(section, /Pages indexées · source originale/);
+  assert.match(section, /loadedPageCount/);
+  assert.match(section, /page\$\{loadedPageCount > 1/);
+  assert.match(section, /source\$\{loadedPageCount > 1/);
+  assert.match(section, /chargée\$\{loadedPageCount > 1/);
+  assert.match(section, /GROUP_PAGE_SIZE = 15/);
+  assert.match(section, /Afficher 15 suivants/);
 });
 
-test("external results render as a dense continuous list", () => {
+test("external results render as compact multi-source logical cards", () => {
   const section = readFileSync("components/search/ExternalIndexedResultsSection.tsx", "utf8");
   const card = readFileSync("components/search/ExternalIndexedResultCard.tsx", "utf8");
-  assert.match(section, /divide-y/);
-  assert.match(section, /h-\[112px\]/);
-  assert.doesNotMatch(card, /h-8 w-8/);
-  assert.doesNotMatch(card, /rounded-full border border-border\/15 bg-surface/);
-  assert.doesNotMatch(card, /Page externe indexée/);
-  assert.match(card, /line-clamp-1/);
+  assert.match(section, /data-search-external-serp-list/);
+  assert.match(section, /space-y-2\.5/);
+  assert.match(card, /data-external-serp-group/);
+  assert.match(card, /rounded-2xl/);
+  assert.match(card, /line-clamp-2/);
+  assert.match(card, /Voir les \{sourcePages\.length\} pages/);
   assert.match(card, /Ouvrir la source/);
 });
 
-test("minimal rows stay source-first and rich-field safe", () => {
+test("minimal logical cards stay source-first and rich-field safe", () => {
   const card = readFileSync("components/search/ExternalIndexedResultCard.tsx", "utf8");
-  assert.match(card, /const richFacts = presentation\.isMinimal\s*\? \[\]/);
-  assert.match(card, /Prix, photos et détails à vérifier sur la source\./);
-  assert.match(card, /data-external-result-mode=\{presentation\.isMinimal \? "minimal" : "rich"\}/);
+  assert.match(card, /result\.original_url/);
+  assert.match(card, /result\.domain/);
+  assert.match(card, /result\.normalized_city/);
+  assert.match(card, /result\.normalized_property_type/);
+  assert.match(card, /result\.normalized_intent/);
+  assert.doesNotMatch(card, /result\.title/);
+  assert.doesNotMatch(card, /result\.snippet/);
+  assert.doesNotMatch(card, /normalized_price_mad/);
+  assert.doesNotMatch(card, /normalized_surface_m2/);
+  assert.doesNotMatch(card, /thumbnail_url/);
+  assert.match(card, /AkarFinder indexe la page et vous renvoie vers la source originale/);
 });

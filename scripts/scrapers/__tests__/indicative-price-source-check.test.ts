@@ -64,9 +64,13 @@ test("intent floors reject implausible totals", () => {
   }), null);
 });
 
-test("external minimal SERP does not render inferred price fallbacks", () => {
+test("external minimal SERP keeps inferred prices hidden and only links to original sources", () => {
   const card = readFileSync("components/search/ExternalIndexedResultCard.tsx", "utf8");
-  assert.match(card, /const richFacts = presentation\.isMinimal\s*\? \[\]/);
-  assert.match(card, /Prix, photos et détails à vérifier sur la source\./);
+  assert.match(card, /result\.original_url/);
+  assert.match(card, /sourcePages\[0\]\.url/);
+  assert.match(card, /Ouvrir la source/);
+  assert.match(card, /Voir les \{sourcePages\.length\} pages/);
   assert.doesNotMatch(card, /deriveIndicativePriceMad|Prix indicatif|data-price-confidence/);
+  assert.doesNotMatch(card, /normalized_price_mad|presentation\.priceMad|formatPrice/);
+  assert.doesNotMatch(card, /result\.title|result\.snippet/);
 });

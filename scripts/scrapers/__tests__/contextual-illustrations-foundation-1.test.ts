@@ -213,10 +213,13 @@ describe("CONTEXTUAL-ILLUSTRATIONS-FOUNDATION-1", () => {
   it("keeps external minimal SERP media-free and source-linked", () => {
     const card = source("components/search/ExternalIndexedResultCard.tsx");
 
-    assert.match(card, /href=\{result\.original_url\}/);
-    assert.match(card, /data-external-serp-row/);
-    assert.doesNotMatch(card, /THUMBNAILS_ENABLED|thumbnail_url|ContextualListingArtwork|PropertyTypeArtwork/);
-    assert.doesNotMatch(card, /result\.(district|quartier|neighborhood)/);
+    assert.match(card, /data-external-serp-group/);
+    assert.match(card, /result\.original_url/);
+    assert.match(card, /href=\{sourcePages\[0\]\.url\}/);
+    assert.match(card, /href=\{source\.url\}/);
+    assert.doesNotMatch(card, /THUMBNAILS_ENABLED|thumbnail_url|ContextualListingArtwork|PropertyTypeArtwork|data-card-image/);
+    assert.doesNotMatch(card, /result\.(district|quartier|neighborhood|title|snippet)/);
+    assert.doesNotMatch(card, /normalized_price_mad|normalized_surface_m2/);
   });
 
   it("preserves property-type and neutral fallbacks for surfaces that still use contextual artwork", () => {
@@ -229,8 +232,9 @@ describe("CONTEXTUAL-ILLUSTRATIONS-FOUNDATION-1", () => {
 
   it("keeps the external minimal disclosure explicit and compact", () => {
     const card = source("components/search/ExternalIndexedResultCard.tsx");
-    assert.match(card, /data-external-minimal-disclaimer/);
-    assert.match(card, /Prix, photos et détails à vérifier sur la source\./);
+    assert.match(card, /AkarFinder indexe la page et vous renvoie vers la source originale\./);
+    assert.match(card, /Ouvrir la source/);
+    assert.match(card, /Voir les \{sourcePages\.length\} pages/);
     assert.doesNotMatch(card, /data-contextual-illustration-label/);
   });
 
@@ -243,16 +247,17 @@ describe("CONTEXTUAL-ILLUSTRATIONS-FOUNDATION-1", () => {
     assert.doesNotMatch(combined, /ranking|lane_weight|commercial|priority|eligibility|dedupe|source_policy|search gateway|insert\s*\(|update\s*\(|upsert\s*\(|map_eligible/i);
   });
 
-  it("visual certification covers required viewports, overflow, price, label and reload stability", () => {
+  it("visual certification covers required viewports, overflow, media safety and reload stability", () => {
     const audit = source("scripts/audits/contextual-illustrations-foundation-1-visual.mjs");
     for (const marker of ["360x800", "390x844", "768x900", "1280x900", "1440x900"]) {
       assert.ok(audit.includes(marker), `missing viewport ${marker}`);
     }
     assert.match(audit, /scrollWidth > metrics\.clientWidth/);
-    assert.match(audit, /clippedPrices/);
-    assert.match(audit, /clippedLabels/);
+    assert.match(audit, /mediaCount/);
+    assert.match(audit, /sourceLinkCount/);
     assert.match(audit, /page\.reload/);
-    assert.match(audit, /data-contextual-asset-id/);
+    assert.match(audit, /data-external-serp-group/);
+    assert.match(audit, /data-search-external-serp-list/);
   });
 
   it("workflow keeps Search predecessor contracts in the gate", () => {

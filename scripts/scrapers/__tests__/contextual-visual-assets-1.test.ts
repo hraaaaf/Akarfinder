@@ -32,26 +32,30 @@ describe("CONTEXTUAL-VISUAL-ASSETS-1", () => {
     const card = source("components/search/ExternalIndexedResultCard.tsx");
 
     assert.doesNotMatch(`${catalog}\n${resolver}`, /title|snippet|description/i);
-    assert.ok(card.includes("href={result.original_url}"));
-    assert.ok(card.includes("data-external-result-metadata"));
+    assert.ok(card.includes("result.original_url"));
+    assert.ok(card.includes("href={sourcePages[0].url}"));
+    assert.ok(card.includes("href={source.url}"));
+    assert.ok(card.includes("data-external-serp-group"));
     assert.doesNotMatch(card, /ContextualListingArtwork|safeFallbackPropertyType|stableRepresentationKey=/);
-    assert.doesNotMatch(card, /result\.(district|quartier|neighborhood)/);
+    assert.doesNotMatch(card, /result\.(district|quartier|neighborhood|title|snippet)/);
   });
 
   it("keeps the external minimal SERP media-free", () => {
     const card = source("components/search/ExternalIndexedResultCard.tsx");
 
-    assert.ok(card.includes("data-external-serp-row"));
+    assert.ok(card.includes("data-external-serp-group"));
     assert.doesNotMatch(card, /THUMBNAILS_ENABLED|thumbnail_url|showThumbnail|data-card-image/);
-    assert.doesNotMatch(card, /ContextualListingArtwork|PropertyTypeArtwork/);
+    assert.doesNotMatch(card, /ContextualListingArtwork|PropertyTypeArtwork|<img|<Image/);
+    assert.doesNotMatch(card, /normalized_price_mad|normalized_surface_m2/);
   });
 
-  it("keeps contextual fallbacks available to surfaces that still use them", () => {
+  it("keeps contextual fallbacks available only to surfaces that still use them", () => {
     const artwork = source("components/search/ContextualListingArtwork.tsx");
     const card = source("components/search/ExternalIndexedResultCard.tsx");
 
-    assert.ok(card.includes("data-external-minimal-disclaimer"));
-    assert.ok(card.includes("Prix, photos et détails à vérifier sur la source."));
+    assert.ok(card.includes("AkarFinder indexe la page et vous renvoie vers la source originale."));
+    assert.ok(card.includes("Ouvrir la source"));
+    assert.ok(card.includes("Voir les {sourcePages.length} pages"));
     assert.ok(artwork.includes("data-contextual-neutral"));
     assert.ok(artwork.includes("Annonce indexée"));
     assert.ok(artwork.includes("if (propertyType)"));

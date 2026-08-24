@@ -29,20 +29,26 @@ test("UX-SEARCH-3 internal Search card follows the canonical scan hierarchy", ()
   assert.ok(source.includes("line-clamp-2"));
 });
 
-test("UX-SEARCH-3 external minimal card is a source-first text SERP without fabricated media", () => {
+test("UX-SEARCH-3 external minimal card follows the Option B logical multi-source hierarchy without fabricated media", () => {
   const source = read("components/search/ExternalIndexedResultCard.tsx");
-  assertOrdered(source, [
-    ["source", "data-external-source-host"],
-    ["title", "data-external-result-title"],
-    ["metadata", "data-external-result-metadata"],
-    ["minimal disclaimer", "data-external-minimal-disclaimer"],
-  ]);
-  assert.ok(source.includes("data-external-serp-row"));
-  assert.ok(source.includes('data-external-result-mode={presentation.isMinimal ? "minimal" : "rich"}'));
+  assert.ok(source.includes("data-external-serp-group"));
+  assert.ok(source.includes("getSourceDomain"));
+  assert.ok(source.includes("sourcePages"));
+  assert.ok(source.includes("result.original_url"));
+  assert.ok(source.includes("result.normalized_city"));
+  assert.ok(source.includes("result.normalized_property_type"));
+  assert.ok(source.includes("result.normalized_intent"));
+  assert.ok(source.includes("pages semblent concerner le même bien"));
+  assert.ok(source.includes("Voir les {sourcePages.length} pages"));
   assert.ok(source.includes("Ouvrir la source"));
-  assert.ok(source.includes("presentation.displayUrl || publicAttribution.sourceLabel"));
   assert.ok(!source.includes("data-card-image"));
   assert.ok(!source.includes("<img"));
+  assert.ok(!source.includes("<Image"));
+  assert.ok(!source.includes("ContextualListingArtwork"));
+  assert.ok(!source.includes("result.title"));
+  assert.ok(!source.includes("result.snippet"));
+  assert.ok(!source.includes("normalized_price_mad"));
+  assert.ok(!source.includes("normalized_surface_m2"));
 });
 
 test("SERP AkarInfo presentation is intentionally compact without weakening full views", () => {
