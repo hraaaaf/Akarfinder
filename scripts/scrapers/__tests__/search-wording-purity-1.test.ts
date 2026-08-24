@@ -57,14 +57,16 @@ describe("SEARCH-WORDING-PURITY-1", () => {
     const truth = source("lib/search/search-truth-tier.ts");
 
     assert.ok(shell.includes("data-search-continuous-flow"));
-    assert.ok(externalCard.includes("publicAttribution.typeLabel"));
-    assert.ok(externalCard.includes("publicAttribution.sourceLabel"));
-    assert.doesNotMatch(externalCard, /result\.result_attribution_label|result\.source_name/);
-    assert.ok(externalCard.includes("Informations limitées"));
+    assert.ok(externalCard.includes("getSourceDomain"));
+    assert.ok(externalCard.includes("sourcePages"));
+    assert.ok(externalCard.includes("result.original_url"));
+    assert.doesNotMatch(externalCard, /\{result\.result_attribution_label\}|\{result\.source_name\}/);
+    assert.ok(externalCard.includes("AkarFinder indexe la page et vous renvoie vers la source originale."));
+    assert.ok(externalCard.includes("Ouvrir la source"));
     assert.ok(truth.includes('tier: "observed"'));
     assert.ok(truth.includes('tier: "analyzed"'));
     assert.ok(truth.includes('tier: "partial"'));
-    assert.match(externalCard, /site d’origine|source/i);
+    assert.match(externalCard, /source/i);
   });
 
   it("keeps useful neighborhood and price context in plain language", () => {
