@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "supabase/migrations/20260824091000_m7_public_search_policy_guard.sql"
+      - "supabase/migrations/20260824092200_m7_public_search_link_only_recovery.sql"
       - "scripts/scrapers/__tests__/m7-public-search-policy-guard.test.ts"
       - ".github/workflows/m7-public-search-policy-guard.yml"
   workflow_dispatch:
