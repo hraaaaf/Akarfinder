@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { useCallback, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { MapNeighborhoodClient } from "@/components/map/MapNeighborhoodClient";
+import { NationalNeighborhoodOverlayBridge } from "@/components/map/NationalNeighborhoodOverlayBridge";
 import { getPremiumMarketIntelligenceProvider } from "@/lib/map/premium-map-city-registry";
 import { MAP_LAYER_EXPLORE, type MapNavigationState } from "@/lib/map/map-navigation-state";
 
@@ -48,10 +49,13 @@ export function NationalMapRouter({ initialState }: Props) {
   if (!useNationalExplore) return <MapNeighborhoodClient initialState={initialState} />;
 
   return (
-    <NationalTerritoryExperienceDynamic
-      selectedCitySlug={selectedCitySlug}
-      onSelectCity={selectCity}
-      onBackToMorocco={backToMorocco}
-    />
+    <div className="relative h-[calc(100svh-64px)] min-h-[520px] overflow-hidden">
+      <NationalTerritoryExperienceDynamic
+        selectedCitySlug={selectedCitySlug}
+        onSelectCity={selectCity}
+        onBackToMorocco={backToMorocco}
+      />
+      <NationalNeighborhoodOverlayBridge citySlug={selectedCitySlug} />
+    </div>
   );
 }

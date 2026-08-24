@@ -1,0 +1,64 @@
+name: Carte National Neighborhoods N2 Certification
+
+on:
+  pull_request:
+    paths:
+      - "app/api/geo/national-territories/**"
+      - "app/map/**"
+      - "components/map/NationalMapRouter.tsx"
+      - "components/map/NationalTerritoryExperience.tsx"
+      - "components/map/NationalNeighborhoodOverlay.tsx"
+      - "components/map/NationalNeighborhoodOverlayBridge.tsx"
+      - "lib/map/national-territory-runtime.server.ts"
+      - "lib/map/national-territory-data/neighborhoods-n2-*.ts"
+      - "scripts/audits/carte-national-neighborhoods-n2.mjs"
+      - ".github/workflows/carte-national-neighborhoods-n2.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: carte-national-neighborhoods-n2-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  certify-national-neighborhoods-n2:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      BASE_URL: http://127.0.0.1:3213
+      AUDIT_OUTPUT_DIR: data/audits/carte-national-neighborhoods-n2-after
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Start production server
+        shell: bash
+        run: |
+          npm run start -- -p 3213 > /tmp/carte-national-n2.log 2>&1 &
+          for attempt in {1..60}; do
+            if curl -fsS 'http://127.0.0.1:3213/api/geo/national-territories?city=casablanca' >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/carte-national-n2.log
+          exit 1
+      - name: Four viewport city neighborhood certification
+        run: node scripts/audits/carte-national-neighborhoods-n2.mjs
+      - name: Upload N2 AFTER evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: carte-national-neighborhoods-n2-after-${{ github.run_id }}
+          path: data/audits/carte-national-neighborhoods-n2-after
+          if-no-files-found: error
+          retention-days: 30

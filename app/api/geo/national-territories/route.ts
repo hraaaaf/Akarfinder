@@ -1,52 +1,65 @@
+import { NextRequest, NextResponse } from "next/server";
 import {
   NATIONAL_TERRITORY_BOUNDARIES,
   NATIONAL_TERRITORY_META,
   NATIONAL_TERRITORY_PLACES,
+  getNationalNeighborhoodsForPlace,
   getNationalTerritoryPlace,
 } from "@/lib/map/national-territory-runtime.server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-function safeSlug(value: string | null): string | null {
-  if (!value) return null;
-  const slug = value.toLowerCase().replace(/[^a-z0-9-]+/g, "").replace(/^-+|-+$/g, "");
-  return slug && slug.length <= 90 ? slug : null;
+function territoryHeaders() {
+  return {
+    "Cache-Control": "public, max-age=300, stale-while-revalidate=1800",
+    "X-AkarFinder-Data-Source": "HCP-Barid-OSM",
+    "X-AkarFinder-Geometry-Source": "OpenStreetMap",
+    "X-AkarFinder-Geometry-Status": "candidate-nonofficial",
+    "X-AkarFinder-License": "ODbL-1.0",
+    "X-AkarFinder-Neighborhood-Geometry-Publication": "none-n2",
+  };
 }
 
-export async function GET(request: Request) {
-  const url = new URL(request.url);
-  const city = safeSlug(url.searchParams.get("city"));
-  const headers = {
-    "Cache-Control": "public, max-age=300, stale-while-revalidate=86400",
-    "X-AkarFinder-Territory-Source": "HCP-RGPH-2024+OpenStreetMap-ODbL+Barid-ODbL",
-    "X-AkarFinder-Boundary-Claim": "candidate-not-official",
+function cityBoundary(slug: string): GeoJSON.FeatureCollection {
+  return {
+    type: "FeatureCollection",
+    features: NATIONAL_TERRITORY_BOUNDARIES.features.filter((feature) => feature.properties?.slug === slug),
   };
+}
 
+export async function GET(request: NextRequest) {
+  const city = request.nextUrl.searchParams.get("city")?.trim().toLowerCase() ?? null;
   if (!city) {
-    return Response.json({
+    return NextResponse.json({
       status: "ok",
       view: "morocco",
       places: NATIONAL_TERRITORY_PLACES,
       boundaries: NATIONAL_TERRITORY_BOUNDARIES,
       meta: NATIONAL_TERRITORY_META,
-    }, { headers });
+    }, { headers: territoryHeaders() });
   }
 
   const place = getNationalTerritoryPlace(city);
-  if (!place) return Response.json({ status: "not_found", city }, { status: 404, headers });
+  if (!place) {
+    return NextResponse.json({ status: "not_found", city }, { status: 404, headers: territoryHeaders() });
+  }
 
-  return Response.json({
+  const neighborhoods = getNationalNeighborhoodsForPlace(place);
+  const centeredNeighborhoodCount = neighborhoods.filter((item) => item.center).length;
+
+  return NextResponse.json({
     status: "ok",
     view: "city",
     place,
-    boundary: {
-      type: "FeatureCollection",
-      features: NATIONAL_TERRITORY_BOUNDARIES.features.filter((feature) => feature.properties?.slug === city),
-    },
+    boundary: cityBoundary(place.slug),
+    neighborhoods,
+    certifiedNeighborhoodBoundaries: { type: "FeatureCollection", features: [] },
     meta: {
-      neighborhoodCount: place.neighborhoodCount,
-      sourceArtifact: NATIONAL_TERRITORY_META.sourceArtifact,
+      neighborhoodCount: neighborhoods.length,
+      centeredNeighborhoodCount,
+      certifiedNeighborhoodBoundaryCount: 0,
+      sourceCatalogNeighborhoodCount: place.neighborhoodCount,
     },
-  }, { headers });
+  }, { headers: territoryHeaders() });
 }
