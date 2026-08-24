@@ -3,6 +3,7 @@
 // COMMONCRAWL-CDX-MIME-FIX-1
 // COMMONCRAWL-FAILSOFT-CANARY-V1
 // P0.1-MASS-INDEX-SOURCE-REGISTRY-OPERATIONAL-GATE
+// COMMONCRAWL-CDX-TRANSPORT-RETRY-V1
 //
 // This is URL-index metadata only. It never downloads WARC/page content and
 // never requests a source website. Structural listing URL patterns narrow the
@@ -30,7 +31,9 @@ export const MASS_CDX_INDEXES = ["CC-MAIN-2026-25", "CC-MAIN-2026-21", "CC-MAIN-
 export const MASS_CANARY_DOMAINS = ["soukimmobilier.com", "masaken.ma", "atlasimmobilier.com", "daragadir.com"] as const;
 const CDX_FETCH_LIMIT = 20_000;
 const REQUEST_PACING_MS = 1_000;
-const MAX_ATTEMPTS = 5;
+const MAX_ATTEMPTS = 4;
+const RETRY_BASE_MS = 1_500;
+const RETRY_MAX_MS = 6_000;
 const RETRYABLE = new Set([429, 500, 502, 503, 504]);
 const COMMON_CRAWL_USER_AGENT = "AkarFinder-CommonCrawl-Harvester/1.0 (+https://github.com/hraaaaf/Akarfinder)";
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -67,6 +70,14 @@ export type PolicyReviewAlert = {
   next_review_at: string;
   days_until_policy_review_due: number;
   policy_review_alert: PolicyReviewAlertLabel;
+};
+
+export type CdxFetchOptions = {
+  fetchImpl?: typeof fetch;
+  sleepImpl?: (ms: number) => Promise<void>;
+  maxAttempts?: number;
+  retryBaseMs?: number;
+  retryMaxMs?: number;
 };
 
 function sleep(ms: number) {
@@ -230,26 +241,67 @@ export function parseMassCdxJsonLine(line: string, index: string): MassCdxRecord
   }
 }
 
-async function fetchCdxRecords(domain: string, index: string, fetchImpl: typeof fetch = fetch): Promise<MassCdxRecord[]> {
+function retryDelayMs(attempt: number, baseMs: number, maxMs: number): number {
+  return Math.min(maxMs, baseMs * 2 ** Math.max(0, attempt - 1));
+}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
+export async function fetchCdxRecords(
+  domain: string,
+  index: string,
+  options: CdxFetchOptions = {},
+): Promise<MassCdxRecord[]> {
   const url = buildCdxIndexUrl(domain, index);
+  const fetchImpl = options.fetchImpl ?? fetch;
+  const sleepImpl = options.sleepImpl ?? sleep;
+  const maxAttempts = Math.max(1, Math.floor(options.maxAttempts ?? MAX_ATTEMPTS));
+  const retryBaseMs = Math.max(0, options.retryBaseMs ?? RETRY_BASE_MS);
+  const retryMaxMs = Math.max(retryBaseMs, options.retryMaxMs ?? RETRY_MAX_MS);
   let response: Response | null = null;
 
-  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
-    response = await fetchImpl(url, {
-      headers: {
-        "User-Agent": COMMON_CRAWL_USER_AGENT,
-        Accept: "application/json,text/plain;q=0.9,*/*;q=0.1",
-      },
-    });
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      response = await fetchImpl(url, {
+        headers: {
+          "User-Agent": COMMON_CRAWL_USER_AGENT,
+          Accept: "application/json,text/plain;q=0.9,*/*;q=0.1",
+        },
+      });
+    } catch (error) {
+      const message = errorMessage(error);
+      if (attempt === maxAttempts) {
+        throw new Error(
+          `Common Crawl CDX transport failed for ${domain}/${index} after ${attempt} attempts: ${message}`,
+        );
+      }
+      const delay = retryDelayMs(attempt, retryBaseMs, retryMaxMs);
+      console.warn(
+        `[commoncrawl-mass] retry transport ${domain}/${index} attempt ${attempt}/${maxAttempts} in ${delay}ms: ${message}`,
+      );
+      await sleepImpl(delay);
+      continue;
+    }
+
     if (response.status === 404) return [];
     if (response.ok) break;
-    if (!RETRYABLE.has(response.status) || attempt === MAX_ATTEMPTS) {
+    if (!RETRYABLE.has(response.status) || attempt === maxAttempts) {
       throw new Error(`Common Crawl CDX failed for ${domain}/${index}: HTTP ${response.status}`);
     }
-    await sleep(1000 * 2 ** (attempt - 1));
+    const delay = retryDelayMs(attempt, retryBaseMs, retryMaxMs);
+    console.warn(
+      `[commoncrawl-mass] retry HTTP ${response.status} ${domain}/${index} attempt ${attempt}/${maxAttempts} in ${delay}ms`,
+    );
+    await sleepImpl(delay);
   }
 
-  const text = await response!.text();
+  if (!response?.ok) {
+    throw new Error(`Common Crawl CDX failed for ${domain}/${index}: no successful response`);
+  }
+
+  const text = await response.text();
   const records: MassCdxRecord[] = [];
   for (const line of text.split("\n")) {
     const record = parseMassCdxJsonLine(line, index);
