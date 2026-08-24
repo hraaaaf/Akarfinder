@@ -19,9 +19,11 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/commoncrawl-mass-seed-harvest.yml"
+      - "data/openserp/source-domain-registry.json"
       - "scripts/openserp/commoncrawl-registry-mass-harvest.ts"
       - "scripts/openserp/ingest-commoncrawl-mass-seeds.ts"
       - "scripts/openserp/p0-1-audit-commoncrawl-registry.ts"
+      - "scripts/scrapers/__tests__/commoncrawl-zero-domain-patterns.test.ts"
       - "scripts/scrapers/__tests__/openserp-commoncrawl-policy-gate.test.ts"
       - "scripts/scrapers/__tests__/p0-1-minimal-external-index-policy-review.test.ts"
       - "scripts/data-mass/source-factory-m3-access-policy.ts"
@@ -34,9 +36,11 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/commoncrawl-mass-seed-harvest.yml"
+      - "data/openserp/source-domain-registry.json"
       - "scripts/openserp/commoncrawl-registry-mass-harvest.ts"
       - "scripts/openserp/ingest-commoncrawl-mass-seeds.ts"
       - "scripts/openserp/p0-1-audit-commoncrawl-registry.ts"
+      - "scripts/scrapers/__tests__/commoncrawl-zero-domain-patterns.test.ts"
       - "scripts/scrapers/__tests__/openserp-commoncrawl-policy-gate.test.ts"
       - "scripts/scrapers/__tests__/p0-1-minimal-external-index-policy-review.test.ts"
       - "scripts/data-mass/source-factory-m3-access-policy.ts"
@@ -81,6 +85,7 @@ jobs:
       - name: Verify P0.1 Common Crawl external-index policy gate
         run: >-
           npx tsx --test
+          scripts/scrapers/__tests__/commoncrawl-zero-domain-patterns.test.ts
           scripts/scrapers/__tests__/openserp-commoncrawl-policy-gate.test.ts
           scripts/scrapers/__tests__/p0-1-minimal-external-index-policy-review.test.ts
           scripts/data-mass/__tests__/source-factory-m3-access-policy.test.ts
