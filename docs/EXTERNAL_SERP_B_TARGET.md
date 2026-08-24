@@ -1,4 +1,12 @@
-# External SERP UX — Option B target
+# External SERP UX — Option B
+
+## Status
+
+CLOSED / MERGED on `main` via PR #909.
+
+Merge commit: `91a5d70c348f012f1698237077f8c56dbd040727`.
+
+Certified head before merge: `7d142de953b694d32475b06462c8dca88791ed01`.
 
 ## Goal
 
@@ -32,3 +40,19 @@ Hierarchy:
 ## Safety
 
 AkarFinder reste un index et renvoie vers l'URL originale. Le regroupement est une aide de lecture, pas une affirmation de doublon confirmé.
+
+## Proof
+
+- M7 External SERP UI — run `32781961995` ✅
+- CONTEXTUAL-VISUAL-ASSETS-1 — run `32781962095` ✅
+- CONTEXTUAL-ILLUSTRATIONS-FOUNDATION-1 — run `32781962054` ✅
+- TypeScript ✅
+- production build rehearsal ✅
+- Chromium visual certification ✅
+- BEFORE / AFTER 390 / 430 / 768 / 1280 ✅
+- zero horizontal overflow ✅
+- zero source title/snippet/price/photo exposed by the minimal external SERP ✅
+
+Final visual score: **9.2/10**.
+
+No Vercel deployment.
