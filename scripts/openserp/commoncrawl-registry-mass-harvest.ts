@@ -4,6 +4,7 @@
 // COMMONCRAWL-FAILSOFT-CANARY-V1
 // P0.1-MASS-INDEX-SOURCE-REGISTRY-OPERATIONAL-GATE
 // COMMONCRAWL-CDX-TRANSPORT-RETRY-V1
+// COMMONCRAWL-DYNAMIC-INDEX-DISCOVERY-V1
 //
 // This is URL-index metadata only. It never downloads WARC/page content and
 // never requests a source website. Structural listing URL patterns narrow the
@@ -27,8 +28,10 @@ import {
 import { loadMassIndexSourcePolicies } from "@/lib/acquisition-scale-v1/mass-index-source-policy-db";
 import { buildM3SeparatedAccessPolicy } from "../data-mass/source-factory-m3-access-policy";
 
-export const MASS_CDX_INDEXES = ["CC-MAIN-2026-25", "CC-MAIN-2026-21", "CC-MAIN-2026-17"] as const;
+export const MASS_CDX_FALLBACK_INDEXES = ["CC-MAIN-2026-34", "CC-MAIN-2026-30", "CC-MAIN-2026-25"] as const;
 export const MASS_CANARY_DOMAINS = ["soukimmobilier.com", "masaken.ma", "atlasimmobilier.com", "daragadir.com"] as const;
+const COMMON_CRAWL_COLLINFO_URL = "https://index.commoncrawl.org/collinfo.json";
+const MASS_CDX_INDEX_COUNT = 3;
 const CDX_FETCH_LIMIT = 20_000;
 const REQUEST_PACING_MS = 1_000;
 const MAX_ATTEMPTS = 4;
@@ -210,6 +213,50 @@ export function prepareCommonCrawlPolicyGate(
   }
 
   return prepared.policyEvaluation;
+}
+
+function cdxIndexSortKey(index: string): number {
+  const match = /^CC-MAIN-(\d{4})-(\d{2})$/.exec(index);
+  if (!match) return -1;
+  return Number(match[1]) * 100 + Number(match[2]);
+}
+
+export function selectLatestCdxIndexes(payload: unknown, limit = MASS_CDX_INDEX_COUNT): string[] {
+  if (!Array.isArray(payload)) return [];
+  const normalizedLimit = Math.max(1, Math.floor(limit));
+  const ids = payload
+    .map((item) => item && typeof item === "object" && "id" in item ? String((item as { id?: unknown }).id ?? "") : "")
+    .filter((id) => /^CC-MAIN-\d{4}-\d{2}$/.test(id));
+
+  return [...new Set(ids)]
+    .sort((a, b) => cdxIndexSortKey(b) - cdxIndexSortKey(a))
+    .slice(0, normalizedLimit);
+}
+
+export async function resolveMassCdxIndexes(fetchImpl: typeof fetch = fetch): Promise<string[]> {
+  try {
+    const response = await fetchImpl(COMMON_CRAWL_COLLINFO_URL, {
+      headers: {
+        "User-Agent": COMMON_CRAWL_USER_AGENT,
+        Accept: "application/json",
+      },
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    const indexes = selectLatestCdxIndexes(await response.json());
+    if (indexes.length === 0) {
+      throw new Error("no valid CC-MAIN indexes returned");
+    }
+    console.log(`[commoncrawl-mass] dynamic indexes: ${indexes.join(", ")}`);
+    return indexes;
+  } catch (error) {
+    const fallback = [...MASS_CDX_FALLBACK_INDEXES];
+    console.warn(
+      `[commoncrawl-mass] collinfo unavailable; fallback indexes ${fallback.join(", ")}: ${errorMessage(error)}`,
+    );
+    return fallback;
+  }
 }
 
 export function buildCdxIndexUrl(domain: string, index: string): string {
@@ -401,6 +448,7 @@ async function main() {
 
   const mode = process.env.COMMONCRAWL_MASS_MODE ?? "all";
   const domains = selectMassHarvestDomains(policyEvaluation.allowedDomains, mode);
+  const cdxIndexes = await resolveMassCdxIndexes();
   const outputDirectory = join(process.cwd(), "data/audits/raw-results");
   const outputPath = join(outputDirectory, "commoncrawl-registry-mass-seeds.jsonl");
   mkdirSync(outputDirectory, { recursive: true });
@@ -412,7 +460,7 @@ async function main() {
 
   for (const domain of domains) {
     const records: MassCdxRecord[] = [];
-    for (const index of MASS_CDX_INDEXES) {
+    for (const index of cdxIndexes) {
       console.log(`[commoncrawl-mass] ${domain} <- ${index}`);
       try {
         records.push(...await fetchCdxRecords(domain, index));
@@ -440,7 +488,7 @@ async function main() {
     mode,
     domains,
     domain_count: domains.length,
-    cdx_indexes: MASS_CDX_INDEXES,
+    cdx_indexes: cdxIndexes,
     successful_index_requests: successfulIndexRequests,
     failed_index_requests: failures.length,
     failures,
