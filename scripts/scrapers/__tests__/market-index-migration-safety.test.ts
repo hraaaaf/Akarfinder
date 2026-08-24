@@ -107,3 +107,48 @@ describe("Migration safety — no secrets in migration files", () => {
     }
   });
 });
+
+describe("MASS-INDEX M7-B — external claim contract", () => {
+  const filename = "20260824084500_external_source_claims_v1.sql";
+  const content = loadMigration(filename);
+
+  it("creates an additive server-only claim ledger", () => {
+    assert.match(content, /create\s+table\s+if\s+not\s+exists\s+public\.external_source_claims/i);
+    assert.match(content, /enable\s+row\s+level\s+security/i);
+    assert.match(content, /revoke\s+all\s+privileges\s+on\s+table\s+public\.external_source_claims\s+from\s+PUBLIC\s*,\s*anon\s*,\s*authenticated/i);
+    assert.match(content, /grant\s+select\s*,\s*insert\s*,\s*update\s*,\s*delete\s+on\s+table\s+public\.external_source_claims\s+to\s+service_role/i);
+    assert.doesNotMatch(content, /grant[^;]+to\s+(anon|authenticated)/i);
+  });
+
+  it("models the required claimant roles and claim states", () => {
+    assert.match(content, /claimant_role\s+text[\s\S]+owner[\s\S]+agency[\s\S]+platform/i);
+    assert.match(content, /status\s+text[\s\S]+pending[\s\S]+verified[\s\S]+rejected[\s\S]+revoked/i);
+    assert.match(content, /verified_email\s+text/i);
+    assert.match(content, /control_proof_kind\s+text/i);
+    assert.match(content, /control_proof_ref\s+text/i);
+  });
+
+  it("hard-locks M7-B to external-index claims and forbids automatic enrichment", () => {
+    assert.match(content, /claim_scope\s+text\s+not\s+null\s+default\s+'external_index_only'/i);
+    assert.match(content, /check\s*\(claim_scope\s*=\s*'external_index_only'\)/i);
+    assert.match(content, /content_enrichment_authorized\s+boolean\s+not\s+null\s+default\s+false/i);
+    assert.match(content, /check\s*\(content_enrichment_authorized\s*=\s*false\)/i);
+  });
+
+  it("requires review + verified email evidence before verified status", () => {
+    assert.match(content, /external_source_claims_verified_state_check/i);
+    assert.match(content, /reviewed_by\s+is\s+not\s+null/i);
+    assert.match(content, /reviewed_at\s+is\s+not\s+null/i);
+    assert.match(content, /verified_at\s+is\s+not\s+null/i);
+    assert.match(content, /verified_email\s+is\s+not\s+null/i);
+    assert.match(content, /email_verified_at\s+is\s+not\s+null/i);
+  });
+
+  it("contains no active destructive write against existing index tables", () => {
+    const activeSql = content.split(/--\s*ROLLBACK/i)[0];
+    assert.doesNotMatch(activeSql, /\btruncate\b/i);
+    assert.doesNotMatch(activeSql, /\bdelete\s+from\b/i);
+    assert.doesNotMatch(activeSql, /\bupdate\s+(source_offer_seeds|property_listings|discovery_candidates)\b/i);
+    assert.doesNotMatch(activeSql, /\balter\s+table\s+(source_offer_seeds|property_listings|discovery_candidates)\b/i);
+  });
+});

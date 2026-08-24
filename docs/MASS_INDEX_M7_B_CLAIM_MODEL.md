@@ -1,0 +1,74 @@
+# MASS-INDEX M7-B — External claim model
+
+**Date : 2026-08-24**  
+**Statut : IMPLEMENTED IN REPO — live DB non appliquée**
+
+## Goal
+Créer un modèle minimal permettant à un propriétaire, une agence ou une plateforme de revendiquer une URL canonique externe indexée, sans transformer cette revendication en droit de réutilisation du contenu.
+
+## Succès
+- URL canonique + domaine persistés ;
+- claimant identifié par `auth.users` ;
+- rôle borné à `owner | agency | platform` ;
+- email vérifié et preuve de contrôle exigés avant `verified` ;
+- états `pending | verified | rejected | revoked` ;
+- table server-only ;
+- aucune conversion automatique vers contenu riche / `PARTNER_FULL`.
+
+## Décision d'architecture
+Le modèle existant est réutilisé plutôt que dupliqué :
+- `professional_listing_ownership` reste le claim d'une annonce **interne** ;
+- `professional_organizations` et `professional_memberships` restent les primitives organisationnelles ;
+- `partner_feed_sources` reste la source d'un feed partenaire autorisé ;
+- `source_policy_registry` reste la vérité sur la politique/droits d'une source ;
+- `external_source_claims` couvre uniquement la revendication d'une URL canonique **externe**.
+
+Cette séparation évite de confondre :
+1. contrôle d'une URL/d'un domaine ;
+2. propriété/mandat commercial ;
+3. droit de réutiliser des textes, images, prix ou autres contenus protégés.
+
+## Contrat M7-B
+Table : `public.external_source_claims`.
+
+Champs structurants :
+- `seed_id` optionnel vers l'index existant ;
+- `canonical_url` ;
+- `source_domain` ;
+- `claimant_user_id` ;
+- `organization_id` optionnel ;
+- `claimant_role` ;
+- `verified_email` + `email_verified_at` ;
+- `control_proof_kind` + `control_proof_ref` ;
+- `status` ;
+- timestamps de review/verification/rejet/révocation.
+
+## Garde-fous
+- RLS activée ;
+- aucun grant direct `PUBLIC`, `anon`, `authenticated` ;
+- opérations applicatives via `service_role` après authentification serveur ;
+- `claim_scope = 'external_index_only'` verrouillé par CHECK ;
+- `content_enrichment_authorized = false` verrouillé par CHECK ;
+- `verified` nécessite reviewer, review timestamp, verified timestamp, email vérifié ;
+- une même personne ne peut avoir qu'un claim ouvert (`pending|verified`) par URL canonique.
+
+## Ce que M7-B ne fait pas
+- aucun contact sortant ;
+- aucune publication ;
+- aucun enrichissement de contenu ;
+- aucune autorisation implicite ;
+- aucun `PARTNER_FULL` ;
+- aucune migration live appliquée dans ce lot repo.
+
+## Preuve
+- migration : `supabase/migrations/20260824084500_external_source_claims_v1.sql` ;
+- test : `scripts/scrapers/__tests__/market-index-migration-safety.test.ts` ;
+- le test fait partie de `npm run test:scrapers` déjà canonique.
+
+## Next exact
+1. CI exact-head ;
+2. merge si vert ;
+3. gate DB production ;
+4. appliquer migrations M7-A sécurité puis M7-B ;
+5. vérifier schéma live + isolation des rôles ;
+6. M7-C : modèle explicite de droits avant toute transition vers `PARTNER_FULL`.
