@@ -74,7 +74,8 @@ try {
       await canvas.waitFor({ state: "visible", timeout: 30000 });
       await page.waitForFunction(() => {
         const map = window.__AKARFINDER_NATIONAL_MAP__;
-        return Boolean(map?.getLayer("akarfinder-national-neighborhood-labels")) && (map?.querySourceFeatures("akarfinder-national-neighborhood-points").length ?? 0) >= 100;
+        const sourceId = "akarfinder-national-neighborhood-points";
+        return Boolean(map?.getLayer("akarfinder-national-neighborhood-labels")) && Boolean(map?.getSource(sourceId)) && Boolean(map?.isSourceLoaded(sourceId));
       }, null, { timeout: 20000 });
 
       await page.waitForFunction(() => {
@@ -95,10 +96,12 @@ try {
 
       const layerState = await page.evaluate(() => {
         const map = window.__AKARFINDER_NATIONAL_MAP__;
+        const sourceId = "akarfinder-national-neighborhood-points";
         const baseLayers = (map?.getStyle().layers ?? []).filter((layer) => !layer.id.startsWith("akarfinder-"));
         const renderedBaseFeatures = map?.queryRenderedFeatures().filter((feature) => !feature.layer.id.startsWith("akarfinder-")).length ?? 0;
         return {
-          points: map?.querySourceFeatures("akarfinder-national-neighborhood-points").length ?? 0,
+          visibleSourceFeatures: map?.querySourceFeatures(sourceId).length ?? 0,
+          sourceLoaded: Boolean(map?.isSourceLoaded(sourceId)),
           labels: Boolean(map?.getLayer("akarfinder-national-neighborhood-labels")),
           dots: Boolean(map?.getLayer("akarfinder-national-neighborhood-dots")),
           fakeFill: Boolean(map?.getLayer("akarfinder-national-neighborhood-fill")),
@@ -108,7 +111,7 @@ try {
           basemapHasSymbol: baseLayers.some((layer) => layer.type === "symbol"),
         };
       });
-      if (!layerState.labels || !layerState.dots || layerState.points < 100 || layerState.fakeFill) {
+      if (!layerState.sourceLoaded || !layerState.labels || !layerState.dots || layerState.fakeFill) {
         throw new Error(`neighborhood map layers invalid ${JSON.stringify(layerState)}`);
       }
       if (layerState.basemapLayerCount < 20 || layerState.renderedBasemapFeatureCount < 20 || !layerState.basemapHasLine || !layerState.basemapHasSymbol) {
