@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 import {
   buildExternalResultPresentation,
@@ -93,4 +94,38 @@ test("visible labels scrub direct contact transport markers", () => {
 
   assert.equal(presentation.title.includes("whatsapp"), false);
   assert.equal(presentation.displayUrl?.includes("tel:"), false);
+});
+
+test("search toolbar keeps the indexed total as the dominant result count", () => {
+  const shell = readFileSync("components/search/LightZillowSearchShell.tsx", "utf8");
+  assert.match(shell, /indexedTotalCount/);
+  assert.match(shell, /const totalResultCount = indexedTotalCount == null/);
+  assert.match(shell, /totalResultCount\.toLocaleString\("fr-FR"\)/);
+  assert.match(shell, /setIndexedTotalCount\(payload\.total_count\)/);
+});
+
+test("external SERP does not present the loaded page size as the total", () => {
+  const section = readFileSync("components/search/ExternalIndexedResultsSection.tsx", "utf8");
+  assert.doesNotMatch(section, /\$\{results\.length\} charg/);
+  assert.match(section, /Résultats du web/);
+  assert.match(section, /Pages indexées · source originale/);
+});
+
+test("external results render as a dense continuous list", () => {
+  const section = readFileSync("components/search/ExternalIndexedResultsSection.tsx", "utf8");
+  const card = readFileSync("components/search/ExternalIndexedResultCard.tsx", "utf8");
+  assert.match(section, /divide-y/);
+  assert.match(section, /h-\[112px\]/);
+  assert.doesNotMatch(card, /h-8 w-8/);
+  assert.doesNotMatch(card, /rounded-full border border-border\/15 bg-surface/);
+  assert.doesNotMatch(card, /Page externe indexée/);
+  assert.match(card, /line-clamp-1/);
+  assert.match(card, /Ouvrir la source/);
+});
+
+test("minimal rows stay source-first and rich-field safe", () => {
+  const card = readFileSync("components/search/ExternalIndexedResultCard.tsx", "utf8");
+  assert.match(card, /const richFacts = presentation\.isMinimal\s*\? \[\]/);
+  assert.match(card, /Prix, photos et détails à vérifier sur la source\./);
+  assert.match(card, /data-external-result-mode=\{presentation\.isMinimal \? "minimal" : "rich"\}/);
 });

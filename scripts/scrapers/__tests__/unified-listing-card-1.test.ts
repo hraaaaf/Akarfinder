@@ -8,54 +8,44 @@ const source = (path: string) => readFileSync(resolve(ROOT, path), "utf8");
 
 function positionOrFail(content: string, needle: string) {
   const position = content.indexOf(needle);
-  assert.notEqual(position, -1, `Missing unified card contract marker: ${needle}`);
+  assert.notEqual(position, -1, `Missing external SERP contract marker: ${needle}`);
   return position;
 }
 
 describe("UNIFIED-LISTING-CARD-1", () => {
-  it("keeps the external Search card on the canonical decision hierarchy", () => {
+  it("keeps external indexed results on the source-first SERP hierarchy", () => {
     const card = source("components/search/ExternalIndexedResultCard.tsx");
 
-    const image = positionOrFail(card, "data-card-image");
-    const price = positionOrFail(card, "data-card-price");
-    const title = positionOrFail(card, "data-card-title");
-    const location = positionOrFail(card, "data-card-location");
-    const facts = positionOrFail(card, "data-card-facts");
-    const provenance = positionOrFail(card, "data-card-provenance");
-    const passport = positionOrFail(card, "<AkarInfoPassportCard passport={passport}");
-    const action = positionOrFail(card, "data-card-action");
+    const sourceHost = positionOrFail(card, "data-external-source-host");
+    const title = positionOrFail(card, "data-external-result-title");
+    const metadata = positionOrFail(card, "data-external-result-metadata");
+    const disclaimer = positionOrFail(card, "data-external-minimal-disclaimer");
+    const action = positionOrFail(card, "Ouvrir la source");
 
-    assert.ok(image < price, "IMAGE must precede PRICE");
-    assert.ok(price < title, "PRICE must precede TITLE");
-    assert.ok(title < location, "TITLE must precede LOCATION");
-    assert.ok(location < facts, "LOCATION must precede FACTS");
-    assert.ok(facts < provenance, "FACTS must precede PROVENANCE");
-    assert.ok(provenance < action, "PROVENANCE must precede ACTION");
-    assert.ok(passport < action, "ACTION must remain the final desktop decision step");
+    assert.ok(sourceHost < title, "SOURCE must precede TITLE");
+    assert.ok(title < metadata, "TITLE must precede METADATA");
+    assert.ok(metadata < disclaimer, "METADATA must precede the minimal disclaimer");
+    assert.ok(disclaimer < action, "ACTION must remain the final scan step");
   });
 
-  it("fails visibly closed when normalized facts are unavailable", () => {
+  it("fails visibly closed for external minimal results", () => {
     const card = source("components/search/ExternalIndexedResultCard.tsx");
 
-    assert.ok(card.includes("Prix non communiqué"));
-    assert.ok(card.includes("Localisation non précisée"));
-    assert.ok(card.includes("Informations à compléter"));
-    assert.ok(card.includes("Informations limitées"));
-    assert.ok(card.includes("publicAttribution.typeLabel"));
-    assert.ok(card.includes("publicAttribution.sourceLabel"));
-    assert.ok(card.includes("Comparez les sources"));
+    assert.ok(card.includes("const richFacts = presentation.isMinimal"));
+    assert.ok(card.includes("? []"));
+    assert.ok(card.includes("Prix, photos et détails à vérifier sur la source."));
+    assert.ok(card.includes("presentation.displayUrl || publicAttribution.sourceLabel"));
+    assert.ok(card.includes('data-external-result-mode={presentation.isMinimal ? "minimal" : "rich"}'));
   });
 
-  it("preserves same-tab source navigation and thumbnail policy", () => {
+  it("preserves same-tab source navigation without fabricated external media", () => {
     const card = source("components/search/ExternalIndexedResultCard.tsx");
-    const artwork = source("components/search/ContextualListingArtwork.tsx");
 
     assert.ok(card.includes("href={result.original_url}"));
     assert.doesNotMatch(card, /target=["']_blank["']/);
     assert.doesNotMatch(card, /rel=["']noopener noreferrer["']/);
-    assert.ok(card.includes("THUMBNAILS_ENABLED && result.can_show_thumbnail"));
-    assert.ok(card.includes("<ContextualListingArtwork"));
-    assert.ok(artwork.includes("<PropertyTypeArtwork"));
+    assert.doesNotMatch(card, /data-card-image/);
+    assert.doesNotMatch(card, /ContextualListingArtwork|PropertyTypeArtwork|THUMBNAILS_ENABLED/);
     assert.doesNotMatch(card, /href=\{?['"]\/listings\//);
   });
 

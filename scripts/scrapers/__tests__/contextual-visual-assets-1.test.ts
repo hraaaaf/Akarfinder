@@ -26,34 +26,32 @@ describe("CONTEXTUAL-VISUAL-ASSETS-1", () => {
     assert.ok(artwork.includes("resolveContextualIllustration"));
   });
 
-  it("never infers context from title, snippet or arbitrary text", () => {
+  it("never infers contextual media from external result text", () => {
     const catalog = source("lib/contextual-illustrations/catalog.ts");
     const resolver = source("lib/contextual-illustrations/resolver.ts");
     const card = source("components/search/ExternalIndexedResultCard.tsx");
 
     assert.doesNotMatch(`${catalog}\n${resolver}`, /title|snippet|description/i);
-    assert.ok(card.includes("stableRepresentationKey={result.original_url}"));
-    assert.ok(card.includes("city={result.normalized_city}"));
-    assert.ok(card.includes("propertyType={safeFallbackPropertyType}"));
+    assert.ok(card.includes("href={result.original_url}"));
+    assert.ok(card.includes("data-external-result-metadata"));
+    assert.doesNotMatch(card, /ContextualListingArtwork|safeFallbackPropertyType|stableRepresentationKey=/);
     assert.doesNotMatch(card, /result\.(district|quartier|neighborhood)/);
   });
 
-  it("keeps provider thumbnail policy authoritative before contextual fallback", () => {
+  it("keeps the external minimal SERP media-free", () => {
     const card = source("components/search/ExternalIndexedResultCard.tsx");
-    const thumbnail = card.indexOf("showThumbnail && !thumbError");
-    const contextual = card.indexOf("<ContextualListingArtwork");
 
-    assert.ok(card.includes("THUMBNAILS_ENABLED && result.can_show_thumbnail && !!result.thumbnail_url"));
-    assert.ok(thumbnail >= 0 && contextual > thumbnail, "authorized thumbnail must remain first visual branch");
-    assert.ok(card.includes("showFallback = !showThumbnail || thumbError"));
+    assert.ok(card.includes("data-external-serp-row"));
+    assert.doesNotMatch(card, /THUMBNAILS_ENABLED|thumbnail_url|showThumbnail|data-card-image/);
+    assert.doesNotMatch(card, /ContextualListingArtwork|PropertyTypeArtwork/);
   });
 
-  it("labels every fallback as illustrative and keeps type then neutral fail-closed states", () => {
+  it("keeps contextual fallbacks available to surfaces that still use them", () => {
     const artwork = source("components/search/ContextualListingArtwork.tsx");
     const card = source("components/search/ExternalIndexedResultCard.tsx");
 
-    assert.ok(card.includes("data-contextual-illustration-label"));
-    assert.ok(card.includes("Illustration"));
+    assert.ok(card.includes("data-external-minimal-disclaimer"));
+    assert.ok(card.includes("Prix, photos et détails à vérifier sur la source."));
     assert.ok(artwork.includes("data-contextual-neutral"));
     assert.ok(artwork.includes("Annonce indexée"));
     assert.ok(artwork.includes("if (propertyType)"));

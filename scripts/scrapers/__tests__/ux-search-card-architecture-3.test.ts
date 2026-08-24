@@ -29,21 +29,20 @@ test("UX-SEARCH-3 internal Search card follows the canonical scan hierarchy", ()
   assert.ok(source.includes("line-clamp-2"));
 });
 
-test("UX-SEARCH-3 external card uses the same hierarchy and keeps source transparency", () => {
+test("UX-SEARCH-3 external minimal card is a source-first text SERP without fabricated media", () => {
   const source = read("components/search/ExternalIndexedResultCard.tsx");
   assertOrdered(source, [
-    ["image", "data-card-image"],
-    ["price", "data-card-price"],
-    ["title", "data-card-title"],
-    ["location", "data-card-location"],
-    ["facts", "data-card-facts"],
-    ["provenance", "data-card-provenance"],
-    ["action", "data-card-action"],
+    ["source", "data-external-source-host"],
+    ["title", "data-external-result-title"],
+    ["metadata", "data-external-result-metadata"],
+    ["minimal disclaimer", "data-external-minimal-disclaimer"],
   ]);
-  assert.ok(source.includes("data-public-attribution-source"));
-  assert.ok(source.includes("data-card-provenance-detail"));
-  assert.ok(source.includes('variant="serp"'));
-  assert.ok(source.includes("data-mobile-compact-external-card"));
+  assert.ok(source.includes("data-external-serp-row"));
+  assert.ok(source.includes('data-external-result-mode={presentation.isMinimal ? "minimal" : "rich"}'));
+  assert.ok(source.includes("Ouvrir la source"));
+  assert.ok(source.includes("presentation.displayUrl || publicAttribution.sourceLabel"));
+  assert.ok(!source.includes("data-card-image"));
+  assert.ok(!source.includes("<img"));
 });
 
 test("SERP AkarInfo presentation is intentionally compact without weakening full views", () => {
