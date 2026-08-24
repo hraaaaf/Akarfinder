@@ -200,8 +200,26 @@ Relier les POI au bon quartier et produire la sélection 5–8 anchors décision
 - état `insufficient_context` si couverture insuffisante ;
 - revue humaine des 6 quartiers pilotes.
 
-### Human gate
-Capture de la sélection par quartier + validation utilisateur obligatoire avant fermeture.
+### Preuve technique + human gate
+- HEAD technique initial certifié : `83cecc6930f0e2a533f38f882219d94873f6a871` ;
+- run `32765709736` SUCCESS ;
+- 20/20 tests L2 + L1 ;
+- TypeScript SUCCESS ;
+- production build SUCCESS ;
+- 6 pilotes ;
+- 12 anchors ;
+- 1 ready / 1 partial / 4 insufficient ;
+- 0 faux `inside_certified_boundary` ;
+- 0 unresolved publié ;
+- 0 truth finding ;
+- artifact `9534420232` ;
+- capture `l2-anchor-selection-proof.png` ;
+- score capture : **9,4/10** ;
+- **validation humaine explicite reçue le 2026-08-24**.
+
+`main` ayant avancé indépendamment, le lot a été réaligné sans changement fonctionnel sur `main@677c10efe170a5093ffc5ab80c7d9e097570b1fc`. Nouveau HEAD candidat : `110592b92ef96e4f0cdfff0e9ba339073806e4a2` avant ce commit documentaire.
+
+L2 ne ferme qu’après re-certification exact-head post-réalignement, merge et closeout.
 
 ---
 
@@ -300,7 +318,7 @@ Si la CI est verte mais la capture n’est pas encore validée : statut `TECH CE
 Les anciens lots historiques sont des fondations et ne sont pas recomptés.
 
 - Lot 1 : CLOSED ✅
-- Lot 2 : ACTIVE
+- Lot 2 : ACTIVE — capture validée, re-certification post-réalignement en attente
 - Lot 3 : OPEN
 - Lot 4 : OPEN
 - Lot 5 : OPEN
@@ -324,20 +342,14 @@ Fichier maître :
 
 PR historique de verrouillage : #902.
 Lot 1 : PR #904, merge `b2a899eaf11f945e980a3c39f4e195c51270b859`.
+Lot 2 : PR #906.
 
 ---
 
 # 10. Next exact
 
-**Lot 2 — Neighborhood Assignment + Anchor Selection**
-
-1. créer `NeighborhoodPoiRelationV1` ;
-2. classifier chaque candidat `inside_certified_boundary | authority_linked | near_certified_reference | unresolved` ;
-3. ne jamais promouvoir un rayon/centroïde en preuve de frontière ;
-4. produire un ranking déterministe des anchors ;
-5. max 2 anchors/catégorie ;
-6. viser 5–8 anchors lorsque la donnée le permet, sinon `insufficient_context` ;
-7. tests + TypeScript + build ;
-8. générer rapport + capture de sélection des 6 pilotes ;
-9. soumettre la capture à validation utilisateur avant merge/closeout ;
-10. aucun Vercel.
+1. re-certifier le HEAD final L2 post-réalignement ;
+2. si vert : merge #906 ;
+3. closeout canonique L2 ;
+4. passer automatiquement à **Lot 3 — Neighborhood Context Read Model + API** ;
+5. aucun Vercel.
