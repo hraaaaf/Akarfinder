@@ -75,23 +75,26 @@ jobs:
           (async () => {
             const browser = await chromium.launch({ headless: true });
             for (const viewport of viewports) {
-              const context = await browser.newContext({ viewport });
-              const page = await context.newPage();
+              const beforeContext = await browser.newContext({ viewport });
+              const beforePage = await beforeContext.newPage();
+              await beforePage.goto('https://akarfinder.vercel.app/search?city=Casablanca', {
+                waitUntil: 'domcontentloaded',
+                timeout: 45000,
+              });
+              await beforePage.waitForTimeout(8000);
+              await beforePage.screenshot({
+                path: `artifacts/m7-external-serp/before/search-casablanca-${viewport.width}.png`,
+                fullPage: true,
+              });
+              await beforeContext.close();
+
+              const afterContext = await browser.newContext({ viewport });
+              const page = await afterContext.newPage();
               const pageErrors = [];
               const consoleErrors = [];
               page.on('pageerror', (error) => pageErrors.push(String(error)));
               page.on('console', (message) => {
                 if (message.type() === 'error') consoleErrors.push(message.text());
-              });
-
-              await page.goto('https://akarfinder.vercel.app/search?city=Casablanca', {
-                waitUntil: 'domcontentloaded',
-                timeout: 45000,
-              });
-              await page.waitForTimeout(8000);
-              await page.screenshot({
-                path: `artifacts/m7-external-serp/before/search-casablanca-${viewport.width}.png`,
-                fullPage: true,
               });
 
               await page.goto('http://127.0.0.1:3000/visual-qa/m7-external-serp', {
@@ -127,7 +130,7 @@ jobs:
 
               if (pageErrors.length > 0) throw new Error(`page errors: ${pageErrors.join(' | ')}`);
               if (consoleErrors.length > 0) throw new Error(`console errors: ${consoleErrors.join(' | ')}`);
-              await context.close();
+              await afterContext.close();
             }
             await browser.close();
           })().catch((error) => {

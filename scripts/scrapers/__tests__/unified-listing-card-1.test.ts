@@ -13,46 +13,49 @@ function positionOrFail(content: string, needle: string) {
 }
 
 describe("UNIFIED-LISTING-CARD-1", () => {
-  it("keeps external indexed results on the source-first SERP hierarchy", () => {
+  it("keeps external indexed results on the Option B source-safe scan hierarchy", () => {
     const card = source("components/search/ExternalIndexedResultCard.tsx");
 
-    const sourceHost = positionOrFail(card, "data-external-source-host");
-    const title = positionOrFail(card, "data-external-result-title");
-    const metadata = positionOrFail(card, "data-external-result-metadata");
-    const disclaimer = positionOrFail(card, "data-external-minimal-disclaimer");
+    const generatedTitle = positionOrFail(card, "{title}");
+    const metadata = positionOrFail(card, "{intent ? <span>{intent}</span>");
+    const sourceDomains = positionOrFail(card, "visibleDomains.map");
+    const disclaimer = positionOrFail(card, "AkarFinder indexe la page et vous renvoie vers la source originale.");
     const action = positionOrFail(card, "Ouvrir la source");
 
-    assert.ok(sourceHost < title, "SOURCE must precede TITLE");
-    assert.ok(title < metadata, "TITLE must precede METADATA");
-    assert.ok(metadata < disclaimer, "METADATA must precede the minimal disclaimer");
-    assert.ok(disclaimer < action, "ACTION must remain the final scan step");
+    assert.ok(generatedTitle < metadata, "generated title must precede normalized metadata");
+    assert.ok(metadata < sourceDomains, "normalized metadata must precede source domains");
+    assert.ok(sourceDomains < disclaimer, "source domains must precede the index-only disclaimer");
+    assert.ok(disclaimer < action, "source action must remain after the disclaimer");
   });
 
   it("fails visibly closed for external minimal results", () => {
     const card = source("components/search/ExternalIndexedResultCard.tsx");
 
-    assert.ok(card.includes("const richFacts = presentation.isMinimal"));
-    assert.ok(card.includes("? []"));
-    assert.ok(card.includes("Prix, photos et détails à vérifier sur la source."));
-    assert.ok(card.includes("presentation.displayUrl || publicAttribution.sourceLabel"));
-    assert.ok(card.includes('data-external-result-mode={presentation.isMinimal ? "minimal" : "rich"}'));
+    assert.ok(card.includes("buildGeneratedTitle(representative)"));
+    assert.ok(card.includes("result.normalized_city"));
+    assert.ok(card.includes("result.normalized_property_type"));
+    assert.ok(card.includes("result.normalized_intent"));
+    assert.doesNotMatch(card, /result\.title|result\.snippet|normalized_price_mad|normalized_surface_m2/);
+    assert.doesNotMatch(card, /thumbnail_url|data-card-image|ContextualListingArtwork|PropertyTypeArtwork/);
+    assert.ok(card.includes("AkarFinder indexe la page et vous renvoie vers la source originale."));
   });
 
-  it("preserves same-tab source navigation without fabricated external media", () => {
+  it("preserves secure original-source navigation without fabricated external media", () => {
     const card = source("components/search/ExternalIndexedResultCard.tsx");
 
-    assert.ok(card.includes("href={result.original_url}"));
-    assert.doesNotMatch(card, /target=["']_blank["']/);
-    assert.doesNotMatch(card, /rel=["']noopener noreferrer["']/);
-    assert.doesNotMatch(card, /data-card-image/);
-    assert.doesNotMatch(card, /ContextualListingArtwork|PropertyTypeArtwork|THUMBNAILS_ENABLED/);
+    assert.ok(card.includes("href={sourcePages[0].url}"));
+    assert.ok(card.includes("href={source.url}"));
+    assert.ok(card.includes('target="_blank"'));
+    assert.ok(card.includes('rel="noopener noreferrer"'));
+    assert.doesNotMatch(card, /data-card-image|ContextualListingArtwork|PropertyTypeArtwork|THUMBNAILS_ENABLED/);
     assert.doesNotMatch(card, /href=\{?['"]\/listings\//);
   });
 
   it("keeps provenance deterministic instead of rendering payload labels directly", () => {
     const card = source("components/search/ExternalIndexedResultCard.tsx");
 
-    assert.ok(card.includes("deriveGatewayPublicAttribution(result)"));
+    assert.ok(card.includes("getSourceDomain(result)"));
+    assert.ok(card.includes("result.original_url"));
     assert.doesNotMatch(card, /\{result\.source_name\}/);
     assert.doesNotMatch(card, /\{result\.result_attribution_label\}/);
     assert.doesNotMatch(card, /\{result\.primary_cta_label\}/);
