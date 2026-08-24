@@ -42,7 +42,8 @@ La vue quartier par défaut doit rester courte, lisible et décisionnelle : **5 
 9. **Acquisition hors render path** : aucun appel implicite à un service communautaire au chargement d’une page produit.
 10. **Provenance obligatoire** : source, attribution, droits/licence, date d’observation, fraîcheur et confiance sont conservées.
 11. **Fail-closed** : donnée invalide, stale ou ambiguë = masquée ou état `insufficient`, jamais reconstruite.
-12. **Aucun déploiement Vercel sans autorisation explicite.**
+12. **Continuité certifiée** : l'acquisition live est prioritaire. En cas d'indisponibilité externe, un snapshot antérieurement certifié peut servir de seed temporaire uniquement s'il reste frais selon la policy, conserve sa provenance exacte et est explicitement marqué `certified_seed`. Il n'est jamais présenté comme live ni comme preuve d'appartenance territoriale.
+13. **Aucun déploiement Vercel sans autorisation explicite.**
 
 ---
 
@@ -170,14 +171,18 @@ Créer la source de vérité POI nationale AkarFinder, reproductible et hors ren
 - déduplication ;
 - snapshot/registry read-only ;
 - aucun fetch externe dans le render path ;
-- rapport de couverture pilote.
+- acquisition live prioritaire avec continuité par seed ANN-L5 certifié uniquement pour les pilotes disposant de cette preuve ;
+- rapport de couverture pilote distinguant `live`, `certified_seed` et indisponible.
 
 ### Succès
 - pipeline déterministe sur les 6 pilotes ;
+- au moins 4/6 pilotes disposent d'un registre candidat valide via live ou seed certifié encore frais ;
+- les quartiers sans preuve restent explicitement insuffisants/dégradés ;
 - POI invalides rejetés ;
 - provenance/licence/date présentes sur chaque POI publié ;
+- aucune donnée `certified_seed` présentée comme live ;
 - 0 dépendance réseau côté rendu ;
-- tests idempotence / malformed / droits / fraîcheur ;
+- tests idempotence / malformed / droits / fraîcheur / seed continuity ;
 - TypeScript + build verts.
 
 ### Human gate obligatoire
@@ -258,71 +263,85 @@ Supprimer les POI hardcodés parallèles et réutiliser le read-model national s
 - plus de `proximityHighlights` comme source produit principale pour les quartiers couverts.
 
 ### Human gate
-BEFORE / mockup / AFTER + capture finale + validation utilisateur.
+BEFORE / target / AFTER + score >= 9,3 + validation utilisateur.
 
 ---
 
-## Lot 6 — National Scale + Quality / Freshness Certification
+## Lot 6 — National Scale + Quality/Freshness Certification
 
 ### Goal
 Passer du pilote à une couverture nationale mesurée et maintenable.
 
 ### Succès
-Chaque quartier canonique éligible reçoit un statut :
-- `covered`
-- `partial`
-- `insufficient`
-- `unavailable`
-
-Aucun quartier manquant silencieusement, aucun anchor sans provenance, aucune donnée stale au-delà de sa policy.
-
-Le seuil numérique de `covered` sera fixé après mesure réelle, jamais inventé avant baseline.
+- chaque quartier éligible expose `covered | partial | insufficient | unavailable` ;
+- aucun quartier manquant silencieusement ;
+- aucun anchor sans provenance ;
+- stale non publié ;
+- refresh reproductible ;
+- canaries et métriques de couverture ;
+- certification finale API/build/UI/humaine.
 
 ### Human gate final
-Capture du dashboard/rapport national + validation utilisateur, puis closeout canonique et roadmap.
+Capture nationale de couverture + captures produit + score + validation utilisateur avant closeout global.
 
 ---
 
-# 7. Règle de fermeture de chaque lot
+# 7. Règle de fermeture des lots
 
-Un lot ne passe CLOSED qu’après :
+Un lot suit :
 
-1. Goal atteint ;
-2. critères de succès prouvés ;
-3. tests proportionnels au risque ;
-4. documentation/handover mis à jour ;
-5. **capture de preuve produite** ;
-6. **validation explicite de l’utilisateur sur cette capture** ;
-7. merge et post-merge si prévus ;
-8. progression recalculée.
+`implémentation → tests → preuve → capture → validation utilisateur → merge/closeout → lot suivant`
 
-Pour les lots UI, la capture doit être une vraie preuve produit aux viewports convenus. Pour les lots DATA/backend, la capture peut être un rapport visuel de certification du lot, généré depuis les résultats réels, sans inventer de données.
+**Aucun lot n’est CLOSED avant validation explicite de sa capture par l’utilisateur.**
+
+Si la CI est verte mais la capture n’est pas encore validée : statut `TECH CERTIFIED — HUMAN GATE PENDING`.
 
 ---
 
-# 8. Progression
+# 8. Avancement
 
-- Préparation / réconciliation documentaire : CLOSED, hors lots opérationnels.
+Les anciens lots historiques sont des fondations et ne sont pas recomptés.
+
 - Lot 1 : ACTIVE
-- Lots 2–6 : OPEN
+- Lot 2 : OPEN
+- Lot 3 : OPEN
+- Lot 4 : OPEN
+- Lot 5 : OPEN
+- Lot 6 : OPEN
 
-**Progression opérationnelle certifiée : 0/6 = 0 %.**
+**Avancement global vérifié : 0/6 = 0 %.**
 
-Lot 1 ne sera crédité qu’après preuve technique + capture + validation utilisateur.
+Le pourcentage monte uniquement après human gate + fermeture réelle du lot.
 
 ---
 
-# 9. Next exact
+# 9. Git / gouvernance
+
+Fichiers historiques utiles :
+- `docs/NEIGHBORHOOD_CONTEXT_INTELLIGENCE_CONTRACT.md`
+- `docs/NEIGHBORHOOD_CONTEXT_INTELLIGENCE_ROADMAP.md`
+- `docs/NEIGHBORHOOD_CONTEXT_INTELLIGENCE_HANDOVER.md`
+
+Fichier maître :
+- `docs/NEIGHBORHOOD_CONTEXT_INTELLIGENCE_CANONICAL.md`
+
+PR historique de verrouillage : #902.
+
+Lot 1 doit être implémenté sur une branche dédiée et ne touche pas l’UI produit.
+
+---
+
+# 10. Next exact
 
 **Lot 1 — National POI Source + Registry Foundation**
 
-1. créer branche dédiée depuis `main` courant ;
-2. implémenter contrat + validator ;
-3. adapter les résultats Nearby/OSM existants vers le registre ;
-4. produire snapshot pilote 6 quartiers ;
-5. tests + TypeScript + build ;
-6. générer rapport/capture de preuve ;
-7. présenter la capture à l’utilisateur ;
-8. uniquement après validation : fermer/merge Lot 1 puis avancer Lot 2.
+1. implémenter contrat + registry ;
+2. produire les 6 pilotes ;
+3. live prioritaire, seed ANN-L5 certifié comme continuité explicitement marquée ;
+4. tests + TypeScript + build ;
+5. générer rapport/capture ;
+6. présenter la capture à l’utilisateur ;
+7. seulement après validation : closeout + merge ;
+8. passer au Lot 2.
 
-Aucun Vercel sans autorisation explicite.
+Aucun Vercel.
