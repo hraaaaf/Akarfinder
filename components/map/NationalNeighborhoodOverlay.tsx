@@ -155,6 +155,21 @@ export function NationalNeighborhoodOverlay({
       if (map.getLayer(ACTIVE)) map.setFilter(ACTIVE, (slug ? ["==", ["get", "slug"], slug] : emptyFilter()) as never);
     };
     const renderedSlug = (event: MapMouseEvent) => {
+      let nearestSlug: string | null = null;
+      let nearestDistance = Infinity;
+      for (const item of neighborhoods) {
+        if (!item.center) continue;
+        const projected = map.project([item.center.lng, item.center.lat]);
+        const distance = Math.hypot(projected.x - event.point.x, projected.y - event.point.y);
+        if (distance < nearestDistance) {
+          nearestDistance = distance;
+          nearestSlug = item.slug;
+        }
+      }
+      const touchLike = navigator.maxTouchPoints > 0 || window.matchMedia("(pointer: coarse)").matches;
+      const maxCenterDistance = touchLike ? 24 : 18;
+      if (nearestSlug && nearestDistance <= maxCenterDistance) return nearestSlug;
+
       const feature = map.queryRenderedFeatures(event.point, { layers: [HITS] })[0];
       return typeof feature?.properties?.slug === "string" ? feature.properties.slug : null;
     };
