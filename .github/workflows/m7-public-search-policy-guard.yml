@@ -1,0 +1,25 @@
+name: M7 Public Search Policy Guard
+
+on:
+  pull_request:
+    paths:
+      - "supabase/migrations/20260824091000_m7_public_search_policy_guard.sql"
+      - "scripts/scrapers/__tests__/m7-public-search-policy-guard.test.ts"
+      - ".github/workflows/m7-public-search-policy-guard.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  policy-guard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx tsx --test scripts/scrapers/__tests__/m7-public-search-policy-guard.test.ts
