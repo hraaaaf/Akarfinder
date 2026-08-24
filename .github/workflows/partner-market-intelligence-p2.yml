@@ -1,4 +1,4 @@
-name: Partner Market Intelligence P3
+name: Partner Market Intelligence P4
 
 on:
   pull_request:
@@ -6,9 +6,11 @@ on:
       - "lib/partners/partner-listing-v2.ts"
       - "lib/feeds/partner-v2-bridge.ts"
       - "lib/geo/national-partner-geo-resolver.ts"
+      - "lib/market/partner-market-aggregator-v2.ts"
       - "scripts/scrapers/__tests__/partner-listing-v2.test.ts"
       - "scripts/scrapers/__tests__/partner-feed-v2-bridge.test.ts"
       - "scripts/scrapers/__tests__/national-partner-geo-resolver.test.ts"
+      - "scripts/scrapers/__tests__/partner-market-aggregator-v2.test.ts"
       - ".github/workflows/partner-market-intelligence-p2.yml"
   workflow_dispatch:
 
@@ -16,11 +18,11 @@ permissions:
   contents: read
 
 concurrency:
-  group: partner-market-intelligence-p3-${{ github.ref }}
+  group: partner-market-intelligence-p4-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  certify-p3-core:
+  certify-p4-core:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -36,12 +38,13 @@ jobs:
       - name: Install
         run: npm ci
 
-      - name: Partner ingestion regression + National Geo Resolver V2 tests
+      - name: Partner pipeline regression + National Market Aggregator V2 tests
         run: >-
           npx tsx --test
           scripts/scrapers/__tests__/partner-listing-v2.test.ts
           scripts/scrapers/__tests__/partner-feed-v2-bridge.test.ts
           scripts/scrapers/__tests__/national-partner-geo-resolver.test.ts
+          scripts/scrapers/__tests__/partner-market-aggregator-v2.test.ts
 
       - name: TypeScript
         run: npx tsc --noEmit
