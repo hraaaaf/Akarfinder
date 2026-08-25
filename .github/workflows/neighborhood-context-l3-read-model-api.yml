@@ -1,0 +1,72 @@
+name: Neighborhood Context L3 Read Model API
+
+on:
+  pull_request:
+    paths:
+      - "lib/neighborhood-context/**"
+      - "app/api/geo/neighborhood-context/**"
+      - "scripts/neighborhood-context/**"
+      - "scripts/scrapers/__tests__/neighborhood-context-l3-read-model.test.ts"
+      - ".github/workflows/neighborhood-context-l3-read-model-api.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: neighborhood-context-l3-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  certify-l3-read-model:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NCI_L3_OUTPUT_DIR: artifacts/neighborhood-context-l3
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: L3 read-model + L2/L1 regression
+        run: >-
+          npx tsx --test
+          scripts/scrapers/__tests__/neighborhood-context-l3-read-model.test.ts
+          scripts/scrapers/__tests__/neighborhood-context-l2-anchor-selection.test.ts
+          scripts/scrapers/__tests__/neighborhood-context-l1-poi-registry.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Production build
+        run: npm run build
+
+      - name: Generate L3 read-model report
+        run: npx tsx scripts/neighborhood-context/l3-generate-report.ts
+
+      - name: Install Chromium for proof capture
+        run: npx playwright install --with-deps chromium
+
+      - name: Capture L3 proof
+        run: node scripts/neighborhood-context/l3-capture-report.mjs
+
+      - name: Upload L3 proof artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: neighborhood-context-l3-read-model-${{ github.run_id }}
+          path: artifacts/neighborhood-context-l3/
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Final L3 truth gate
+        run: node scripts/neighborhood-context/l3-validate-report.mjs
