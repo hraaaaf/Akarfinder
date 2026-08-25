@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1700" height="920" viewBox="0 0 1700 920">
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="10" stdDeviation="16" flood-color="#0f2342" flood-opacity="0.12"/></filter>
+    <style>
+      .t{font-family:Arial,sans-serif;fill:#0B1F3A}.small{font:600 14px Arial,sans-serif;fill:#66778d}.tiny{font:700 11px Arial,sans-serif;fill:#6b7b91}.label{font:700 13px Arial,sans-serif;fill:#0B1F3A}.title{font:800 28px Arial,sans-serif;fill:#0B1F3A}.pin{fill:#fff;stroke:#0B63CE;stroke-width:3}.chip{fill:#fff;stroke:#dbe5f1;stroke-width:1}.chipOn{fill:#0B63CE}.map{fill:#e9f0f6}.road{stroke:#fff;stroke-width:5;fill:none;opacity:.9}.minor{stroke:#d4dee9;stroke-width:2;fill:none}.park{fill:#dcebdd}.water{fill:#dbeaf7}.card{fill:#fff;stroke:#dbe5f1;stroke-width:1}.accent{fill:#0B63CE}.muted{fill:#7a8798}
+    </style>
+  </defs>
+  <rect width="1700" height="920" fill="#f4f7fb"/>
+  <text x="52" y="48" class="tiny" fill="#0B63CE">AKARFINDER · NEIGHBORHOOD CONTEXT INTELLIGENCE · L4 TARGET</text>
+  <text x="52" y="84" class="title">Carte Repères · overlay contextuel, pas quatrième mode marché</text>
+
+  <!-- Desktop -->
+  <g transform="translate(52 120)" filter="url(#shadow)">
+    <rect width="1120" height="720" rx="24" class="card"/>
+    <rect x="0" y="0" width="850" height="720" rx="24" class="map"/>
+    <path d="M-20 150 C180 100 220 260 410 200 S690 80 900 140" class="road"/>
+    <path d="M40 440 C220 330 420 470 610 360 S760 280 900 330" class="road"/>
+    <path d="M140 0 L280 720 M520 0 L440 720 M710 0 L680 720" class="minor"/>
+    <rect x="555" y="400" width="180" height="130" rx="50" class="park"/>
+    <rect x="40" y="35" width="760" height="62" rx="18" fill="#ffffff" fill-opacity=".94" stroke="#dbe5f1"/>
+    <text x="62" y="60" class="tiny" fill="#0B63CE">RABAT · AGDAL</text>
+    <text x="62" y="82" class="label">Carte intelligence marché</text>
+    <g transform="translate(350 48)"><rect width="62" height="34" rx="17" class="chip"/><text x="17" y="22" class="tiny">Prix</text></g>
+    <g transform="translate(418 48)"><rect width="78" height="34" rx="17" class="chip"/><text x="13" y="22" class="tiny">Densité</text></g>
+    <g transform="translate(502 48)"><rect width="86" height="34" rx="17" class="chip"/><text x="12" y="22" class="tiny">Annonces</text></g>
+    <g transform="translate(608 45)"><rect width="122" height="40" rx="20" fill="#eaf3ff" stroke="#0B63CE"/><circle cx="22" cy="20" r="7" fill="#0B63CE"/><text x="38" y="25" class="label" fill="#0B63CE">Repères · 5</text></g>
+
+    <g transform="translate(40 112)">
+      <rect width="720" height="46" rx="18" fill="#ffffff" fill-opacity=".95" stroke="#dbe5f1"/>
+      <g transform="translate(10 7)"><rect width="54" height="32" rx="16" class="chipOn"/><text x="16" y="21" font-family="Arial" font-size="11" font-weight="700" fill="#fff">Tous</text></g>
+      <text x="84" y="29" class="tiny">Transport</text><text x="170" y="29" class="tiny">Éducation</text><text x="258" y="29" class="tiny">Santé</text><text x="317" y="29" class="tiny">Courses</text><text x="383" y="29" class="tiny">Parcs &amp; sport</text><text x="484" y="29" class="tiny">Services</text>
+    </g>
+
+    <!-- pins -->
+    <g transform="translate(235 250)"><circle r="18" class="pin"/><path d="M-5 -2 h10 M0 -7 v10" stroke="#0B63CE" stroke-width="2"/><circle cy="25" r="4" fill="#0B63CE" opacity=".22"/></g>
+    <g transform="translate(505 255)"><circle r="21" fill="#0B63CE" stroke="#fff" stroke-width="4"/><path d="M-7 0 h14 M-4 -6 h8" stroke="#fff" stroke-width="2"/><circle cy="29" r="5" fill="#0B63CE" opacity=".22"/></g>
+    <g transform="translate(620 475)"><circle r="18" class="pin"/><path d="M0 -7 C-7 -2 -7 6 0 9 C7 6 7 -2 0 -7" fill="none" stroke="#0B63CE" stroke-width="2"/></g>
+    <g transform="translate(350 535)"><circle r="18" class="pin"/><rect x="-6" y="-6" width="12" height="12" rx="2" fill="none" stroke="#0B63CE" stroke-width="2"/></g>
+    <g transform="translate(715 310)"><circle r="18" class="pin"/><path d="M-7 6 L0 -7 L7 6 Z" fill="none" stroke="#0B63CE" stroke-width="2"/></g>
+
+    <!-- selected card -->
+    <g transform="translate(332 315)">
+      <rect width="310" height="132" rx="18" class="card" filter="url(#shadow)"/>
+      <text x="18" y="27" class="tiny" fill="#0B63CE">TRANSPORT</text>
+      <text x="18" y="52" class="label">Gare Rabat Agdal</text>
+      <text x="18" y="76" class="small">Autour du repère quartier · 650 m</text>
+      <line x1="18" y1="92" x2="292" y2="92" stroke="#edf1f6"/>
+      <text x="18" y="114" class="tiny">Source cartographique vérifiée · fraîche</text>
+    </g>
+
+    <!-- decision rail -->
+    <rect x="850" y="0" width="270" height="720" fill="#fbfcfe"/>
+    <text x="878" y="54" class="tiny" fill="#0B63CE">DÉCISION QUARTIER</text>
+    <text x="878" y="84" font-family="Arial" font-size="22" font-weight="800" fill="#0B1F3A">Agdal</text>
+    <rect x="878" y="112" width="214" height="88" rx="16" class="card"/>
+    <text x="894" y="140" class="tiny">Prix médian observé</text><text x="894" y="172" font-family="Arial" font-size="24" font-weight="800" fill="#0B1F3A">16 176 DH/m²</text>
+    <rect x="878" y="216" width="214" height="72" rx="16" class="card"/>
+    <text x="894" y="244" class="tiny">Repères utiles</text><text x="894" y="268" class="label">5 disponibles</text>
+    <text x="878" y="680" class="tiny">Rail existant conservé</text>
+  </g>
+
+  <!-- Mobile -->
+  <g transform="translate(1225 120)" filter="url(#shadow)">
+    <rect width="390" height="720" rx="34" class="card"/>
+    <rect width="390" height="540" rx="34" class="map"/>
+    <path d="M-40 130 C80 100 150 220 260 170 S360 120 430 160" class="road"/>
+    <path d="M20 390 C130 310 210 420 350 340" class="road"/>
+    <path d="M95 0 L160 540 M285 0 L250 540" class="minor"/>
+    <rect x="14" y="16" width="362" height="100" rx="22" fill="#fff" fill-opacity=".95" stroke="#dbe5f1"/>
+    <text x="32" y="42" class="tiny" fill="#0B63CE">RABAT · AGDAL</text>
+    <text x="32" y="66" class="label">Carte du quartier</text>
+    <g transform="translate(238 30)"><rect width="118" height="42" rx="21" fill="#eaf3ff" stroke="#0B63CE"/><circle cx="20" cy="21" r="7" fill="#0B63CE"/><text x="36" y="26" class="label" fill="#0B63CE">Repères · 5</text></g>
+    <g transform="translate(18 128)">
+      <rect width="354" height="44" rx="18" fill="#fff" fill-opacity=".95" stroke="#dbe5f1"/>
+      <g transform="translate(8 6)"><rect width="50" height="32" rx="16" class="chipOn"/><text x="15" y="21" font-family="Arial" font-size="11" font-weight="700" fill="#fff">Tous</text></g>
+      <text x="72" y="28" class="tiny">Transport</text><text x="158" y="28" class="tiny">Éducation</text><text x="248" y="28" class="tiny">Santé</text>
+    </g>
+    <g transform="translate(105 260)"><circle r="17" class="pin"/></g>
+    <g transform="translate(225 245)"><circle r="20" fill="#0B63CE" stroke="#fff" stroke-width="4"/></g>
+    <g transform="translate(290 380)"><circle r="17" class="pin"/></g>
+    <g transform="translate(155 425)"><circle r="17" class="pin"/></g>
+    <rect x="14" y="550" width="362" height="152" rx="24" class="card"/>
+    <text x="34" y="582" class="tiny" fill="#0B63CE">TRANSPORT</text>
+    <text x="34" y="610" font-family="Arial" font-size="18" font-weight="800" fill="#0B1F3A">Gare Rabat Agdal</text>
+    <text x="34" y="637" class="small">Autour du repère quartier · 650 m</text>
+    <text x="34" y="675" class="tiny">Source vérifiée · aucune durée inventée</text>
+  </g>
+</svg>
