@@ -93,9 +93,11 @@ try {
       }));
       try {
         await page.goto(`${baseUrl}${state.href}`, { waitUntil: "domcontentloaded", timeout: 30000 });
-        await page.getByText("Chargement de la carte…", { exact: true }).waitFor({ state: "hidden", timeout: 30000 }).catch(() => {});
         await page.locator(".maplibregl-canvas").waitFor({ state: "visible", timeout: 20000 });
-        await page.waitForTimeout(900);
+        const loader = page.getByText(/Chargement de la carte/i).first();
+        await loader.waitFor({ state: "hidden", timeout: 30000 }).catch(() => {});
+        await page.waitForTimeout(1200);
+        const loaderStillVisible = await loader.isVisible().catch(() => false);
         const metrics = await page.evaluate(() => ({
           horizontalOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
           nationalShell: document.querySelectorAll("[data-akarfinder-national-map]").length,
@@ -105,12 +107,13 @@ try {
           l4PoiToggle: document.querySelectorAll("[data-neighborhood-context-poi-toggle]").length,
         }));
         if (diagnostics.pageErrors.length) report.findings.push(`${state.name}/${viewport.name}:page_error`);
+        if (loaderStillVisible) report.findings.push(`${state.name}/${viewport.name}:map_loader_visible`);
         if (metrics.horizontalOverflow > 1) report.findings.push(`${state.name}/${viewport.name}:overflow:${metrics.horizontalOverflow}`);
         if (metrics.nationalShell + metrics.marketShell + metrics.genericShell < 1) report.findings.push(`${state.name}/${viewport.name}:unknown_map_shell`);
         if (metrics.l4PoiMarkers !== 0 || metrics.l4PoiToggle !== 0) report.findings.push(`${state.name}/${viewport.name}:l4_ui_present_before_implementation`);
         const file = `${state.name}-${viewport.name}-before.png`;
         await page.screenshot({ path: `${outDir}/${file}`, fullPage: false });
-        report.captures.push({ state: state.name, viewport: viewport.name, file, ...metrics, diagnostics });
+        report.captures.push({ state: state.name, viewport: viewport.name, file, loaderStillVisible, ...metrics, diagnostics });
       } finally {
         await page.close();
       }
