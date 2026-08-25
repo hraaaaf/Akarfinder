@@ -7,7 +7,9 @@ on:
       - ".github/workflows/openserp-github-native-ingestion.yml"
       - ".github/workflows/openserp-p0-atomic-upsert-gate.yml"
       - "lib/openserp-ingestion/national-writer.ts"
+      - "lib/openserp-ingestion/national-writer-dedupe.ts"
       - "scripts/scrapers/__tests__/openserp-discovery-atomic-upsert.test.ts"
+      - "scripts/scrapers/__tests__/openserp-property-listings-batch-dedupe.test.ts"
       - "supabase/migrations/20260823120000_openserp_discovery_candidates_atomic_upsert.sql"
   push:
     branches: [main]
@@ -15,7 +17,9 @@ on:
       - ".github/workflows/openserp-github-native-ingestion.yml"
       - ".github/workflows/openserp-p0-atomic-upsert-gate.yml"
       - "lib/openserp-ingestion/national-writer.ts"
+      - "lib/openserp-ingestion/national-writer-dedupe.ts"
       - "scripts/scrapers/__tests__/openserp-discovery-atomic-upsert.test.ts"
+      - "scripts/scrapers/__tests__/openserp-property-listings-batch-dedupe.test.ts"
       - "supabase/migrations/20260823120000_openserp_discovery_candidates_atomic_upsert.sql"
 
 permissions:
@@ -37,6 +41,9 @@ jobs:
 
       - name: P0 atomic discovery upsert regression
         run: npx tsx --test scripts/scrapers/__tests__/openserp-discovery-atomic-upsert.test.ts
+
+      - name: P0 property listing batch dedupe regression
+        run: npx tsx --test scripts/scrapers/__tests__/openserp-property-listings-batch-dedupe.test.ts
 
       - name: TypeScript
         run: npx tsc --noEmit
