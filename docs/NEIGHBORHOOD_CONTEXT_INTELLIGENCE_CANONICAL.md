@@ -1,7 +1,7 @@
 # AkarFinder — Neighborhood Context Intelligence — CANONICAL
 
-Date : 2026-08-24
-Statut : **ACTIVE — Lots 1–2 CLOSED, Lot 3 ACTIVE**
+Date : 2026-08-25
+Statut : **ACTIVE — Lots 1–3 CLOSED, Lot 4 ACTIVE**
 Autorité : ce fichier est le document maître du chantier. Les anciens CONTRACT / ROADMAP / HANDOVER restent des preuves historiques et de reprise, mais toute décision nouvelle doit être réconciliée ici.
 
 ---
@@ -16,8 +16,6 @@ La couche Neighborhood Context Intelligence transforme chaque quartier canonique
 
 Le produit ne cherche pas à reproduire Google Maps. Il sélectionne les **repères qui structurent réellement la vie et la décision immobilière**.
 
-Exemples : transports structurants, écoles/universités, santé, courses/marchés, parcs/sport, centres commerciaux/services et landmarks structurants.
-
 La vue quartier par défaut reste courte, lisible et décisionnelle : **5 à 8 anchors maximum lorsque la donnée le permet**, puis catégories détaillées à la demande.
 
 ---
@@ -28,14 +26,14 @@ La vue quartier par défaut reste courte, lisible et décisionnelle : **5 à 8 a
 2. **Même identité partout** : un POI garde le même `poi_id` et le même `canonical_neighborhood_id` sur Carte, quartier, homepage et annonce.
 3. **Pas de fausse frontière** : un POI proche d’un centroïde n’est jamais présenté comme « dans le quartier » sans preuve territoriale.
 4. **Wording sûr** : sans frontière certifiée, utiliser `autour du repère quartier` ou équivalent.
-5. **Pas de faux temps** : aucune durée de trajet depuis un centroïde quartier. Les minutes restent réservées à une origine exacte + route réellement mesurée.
+5. **Pas de faux temps** : aucune durée de trajet depuis un centroïde quartier.
 6. **Semantic zoom** : national = silence POI ; ville = anchors structurants ; quartier = anchors utiles ; bien exact = proximité + routing/isochrones si autorisés.
 7. **Sélection, pas annuaire** : maximum 2 anchors d’une même catégorie dans la sélection par défaut.
 8. **Pas de score subjectif** de sécurité, prestige, qualité de vie, rentabilité ou attractivité sans chantier séparé et preuve défendable.
 9. **Acquisition hors render path** : aucun appel implicite à un service communautaire au chargement d’une page produit.
 10. **Provenance obligatoire** : source, attribution, droits/licence, date d’observation, fraîcheur et confiance sont conservées.
 11. **Fail-closed** : donnée invalide, stale ou ambiguë = masquée ou état `insufficient`, jamais reconstruite.
-12. **Continuité certifiée** : live prioritaire. Un snapshot certifié peut servir de seed temporaire s’il reste frais, conserve sa provenance et est explicitement marqué `certified_seed`. Il n’est jamais présenté comme live ni comme preuve d’appartenance territoriale.
+12. **Continuité certifiée** : live prioritaire. Un snapshot certifié peut servir de seed temporaire s’il reste frais, conserve sa provenance et est explicitement marqué `certified_seed`.
 13. **Aucun déploiement Vercel sans autorisation explicite.**
 
 ---
@@ -49,142 +47,109 @@ La vue quartier par défaut reste courte, lisible et décisionnelle : **5 à 8 a
 - Carte nationale N2 — PR #888, run `32704717514`.
 - Partner → Neighborhood → Market Intelligence V2 — PR #896, merge `cbfd80af575c0eafc58ae0dc4a2273565a2e46d6`.
 
-Le chantier ne reconstruit aucune de ces briques.
-
 ---
 
 # 4. Contrats cibles
 
 ## NeighborhoodPoiV1
-
-Identité stable, source, source entity ID, nom normalisé, catégorie `LivingHereCategory`, coordonnées, URL source, attribution/licence, `observed_at`, fraîcheur, confiance et statut `active | stale | rejected`.
+Identité stable, source, source entity ID, nom normalisé, catégorie `LivingHereCategory`, coordonnées, URL source, attribution/licence, `observed_at`, fraîcheur, confiance et statut.
 
 ## NeighborhoodPoiRelationV1
-
 `canonical_neighborhood_id + poi_id + relation + distance + méthode/preuve + confiance`.
-
 Relations : `inside_certified_boundary | authority_linked | near_certified_reference | unresolved`.
 
-`near_certified_reference` n’est jamais promu automatiquement en `inside_certified_boundary`.
-
 ## NeighborhoodAnchorV1
+Projection produit déterministe : quartier, POI, rang, catégorie, rôle, raison de sélection et wording territorial truth-safe.
 
-Projection produit déterministe : quartier, POI, rang, catégorie, rôle `structural | daily | contextual`, raison de sélection et wording territorial truth-safe.
+## NeighborhoodContextReadModelV1
+Projection aval unique pour Carte, page quartier, homepage et listing : identité canonique, anchors, catégories disponibles, `coverage_status`, provenance, fraîcheur et snapshot/version.
 
 ---
 
 # 5. Roadmap opérationnelle
 
 ## Lot 1 — National POI Source + Registry Foundation — CLOSED ✅
-
-### Goal
-Créer la source de vérité POI nationale AkarFinder, reproductible et hors render path.
-
-### Preuve
 - PR #904
 - HEAD certifié `44e33c74d9a625be07cf46d4d2020ee742353549`
 - run `32758616578` SUCCESS
 - artifact `9531912146`
-- 24/24 tests + ANN-L6, TypeScript et build SUCCESS
-- 4/6 pilotes disponibles, 13 POI canoniques, 0 finding vérité
-- capture `l1-pilot-registry-proof.png`, score 9,2/10
-- validation humaine reçue le 2026-08-24
+- capture score 9,2/10, validation humaine reçue
 - merge `b2a899eaf11f945e980a3c39f4e195c51270b859`
-- aucun Vercel
-
----
 
 ## Lot 2 — Neighborhood Assignment + Anchor Selection — CLOSED ✅
+- PR #906
+- HEAD certifié `ee1356a7442112b4fba0d2f93894222fdcc52dea`
+- run `32772338668` SUCCESS
+- artifact `9536743646`
+- 12 anchors, 0 faux inside, 0 truth finding
+- capture score 9,4/10, validation humaine reçue
+- merge `fb177022594f5cbc7a628e3edad3c4ffd5ec0ae5`
 
-### Goal
-Relier les POI au bon quartier et produire une sélection 5–8 anchors décisionnels sans transformer la proximité en fausse frontière.
+## Lot 3 — Neighborhood Context Read Model + API — CLOSED ✅
+
+### Goal atteint
+Créer une projection unique, bornée et fail-closed pour Carte, page quartier, homepage et listing.
 
 ### Résultat vérifié
-- `NeighborhoodPoiRelationV1` implémenté ;
-- `inside_certified_boundary` uniquement avec géométrie `published + reviewed` valide et matching le même quartier canonique ;
-- géométrie Casablanca shadow explicitement non certifiante ;
-- Polygon/MultiPolygon point-in-polygon ;
-- ranking déterministe ;
-- max 2 anchors/catégorie ;
-- max 8 anchors ;
-- états `ready | partial_context | insufficient_context` ;
-- wording `Dans le quartier | Rattaché au quartier | Autour du repère quartier` truth-safe ;
-- 6 pilotes ;
-- 12 anchors ;
-- Agdal ready, Malabata partial, Maârif/Guéliz/Founty/Fès insufficient selon données disponibles ;
-- 0 faux `inside_certified_boundary` ;
-- 0 relation unresolved publiée ;
+- `NeighborhoodContextReadModelV1` ;
+- runtime source versionnée `ann-l5-certified-seed` ;
+- aucun provider réseau dans le render path ;
+- freshness fail-closed ;
+- `coverage_status = covered | partial | insufficient | unavailable` ;
+- mêmes `poi_id` / `canonical_neighborhood_id` ;
+- provenance/licence/observed_at conservés ;
+- endpoint `GET /api/geo/neighborhood-context?city=&district=` ;
+- cache borné ;
+- 6 read-models pilotes, 12 anchors uniques ;
+- Agdal covered, Malabata partial, Maârif/Guéliz insufficient, Founty/Fès unavailable ;
 - 0 truth finding.
 
-### Preuve finale exact-head
-- PR **#906** ;
-- HEAD final certifié : `ee1356a7442112b4fba0d2f93894222fdcc52dea` ;
-- run **`32772338668`** SUCCESS ;
-- job `97575431372` SUCCESS ;
-- tests L2 + L1 SUCCESS ;
-- TypeScript SUCCESS ;
-- production build SUCCESS ;
-- génération snapshot L1 SUCCESS ;
-- assignment + anchor report SUCCESS ;
-- capture SUCCESS ;
-- final truth gate SUCCESS ;
-- artifact **`9536743646`** ;
-- digest `sha256:35075c61dfd06c99f759829d000777166505d336a575fbd6001042aee5878901` ;
-- capture `l2-anchor-selection-proof.png`, score **9,4/10** ;
-- validation humaine explicite reçue le 2026-08-24 ;
-- merge squash exact-head : **`fb177022594f5cbc7a628e3edad3c4ffd5ec0ae5`** ;
-- le rouge transverse Canonical Baseline observé sur ce HEAD provenait de 3 tests OpenSERP registry + 2 anciens tests CSV partenaire hors des 7 fichiers L2 ; le gate L2 dédié exact-head est entièrement vert ;
+### Preuve finale
+- PR **#907** ;
+- HEAD exact certifié `a5660ba016d1525ea1fb6b8b3d1880af631fc963` ;
+- run **`32896269829`** SUCCESS ;
+- 27/27 tests + TypeScript + production build SUCCESS ;
+- rapport + capture + final truth gate SUCCESS ;
+- artifact **`9581394884`** ;
+- digest `sha256:68e988877ff0123e24989d209b1196d85642c159b73ba208cc0f4297c5c1ef68` ;
+- capture `l3-read-model-proof.png`, score **9,5/10** ;
+- validation humaine explicite reçue le 2026-08-25 ;
+- merge squash **`c304e4bd0ae0b23334fe3a6c510459ecedf7c77f`** ;
 - aucun Vercel.
 
 ---
 
-## Lot 3 — Neighborhood Context Read Model + API — ACTIVE
+## Lot 4 — Carte Repères + Semantic Zoom — ACTIVE
 
-### Goal
-Créer une projection unique, bornée et fail-closed pour Carte, page quartier, homepage et listing.
+### Goal visuel
+Ajouter une couche `Repères` utile sans dégrader la carte dominante déjà certifiée.
 
-### Contrat de réalisation
-- même `poi_id` / `canonical_neighborhood_id` partout ;
-- projection unique à partir des snapshots L1/L2, sans seconde taxonomie ni DB marché parallèle ;
-- `coverage_status` explicite ;
-- aucun POI stale/rejected publié ;
-- provenance/fraîcheur conservées ;
-- API Node fail-closed ;
-- paramètres canoniques explicites ;
-- cache borné ;
-- headers de scope AkarFinder ;
-- aucun appel provider réseau dans le render path ;
-- persistance/read source explicite et reproductible, jamais inventée.
+### UX cible
+- national : aucun bruit POI ;
+- ville : anchors structurants seulement lorsque pertinent ;
+- quartier : 5–8 anchors sélectionnés ;
+- filtres contextuels Transport / Éducation / Santé / Courses / Parcs & sport / Services ;
+- sélection POI = fiche compacte ;
+- wording territorial sûr ;
+- aucune durée inventée.
 
-### Succès
-- read-model déterministe pour les 6 pilotes ;
-- API retourne le même read-model que le moteur interne ;
-- invalid request → 400 ; snapshot/read-model indisponible → 503 ;
-- `coverage_status` cohérent avec L2 ;
-- aucune identité divergente ;
-- tests + TypeScript + build + benchmark read-only ;
-- rapport + capture de preuve.
-
-### Human gate
-Capture du rapport/read-model pilote + validation utilisateur obligatoire avant fermeture.
-
----
-
-## Lot 4 — Carte Repères + Semantic Zoom — OPEN
-
-UI gate obligatoire : BEFORE 390/430/768/1280 → Goal → mockup → implémentation → AFTER mêmes viewports → comparaison → score cible ≥9,3/10 → validation utilisateur.
+### Process obligatoire
+1. captures BEFORE 390/430/768/1280 ;
+2. Goal écrit + critères ;
+3. mockup/wireframe avant implémentation ;
+4. implémentation ;
+5. AFTER mêmes viewports ;
+6. comparaison BEFORE / target / AFTER ;
+7. score cible ≥9,3/10 ;
+8. validation humaine explicite avant fermeture.
 
 ---
 
 ## Lot 5 — Convergence Page quartier + Vivre ici + Homepage — OPEN
-
-Même vérité POI/read-model sur les surfaces, suppression progressive des `proximityHighlights` parallèles pour les quartiers couverts. Human gate visuel obligatoire.
-
----
+Même vérité POI/read-model sur les surfaces, suppression progressive des `proximityHighlights` parallèles. Human gate visuel obligatoire.
 
 ## Lot 6 — National Scale + Quality/Freshness Certification — OPEN
-
-Couverture `covered | partial | insufficient | unavailable`, refresh reproductible, stale masqué, provenance complète, canaries et certification finale. Human gate final obligatoire.
+Couverture nationale mesurée, refresh reproductible, stale masqué, provenance complète, canaries et certification finale. Human gate final obligatoire.
 
 ---
 
@@ -194,20 +159,18 @@ Couverture `covered | partial | insufficient | unavailable`, refresh reproductib
 
 **Aucun lot n’est CLOSED avant validation explicite de sa capture par l’utilisateur.**
 
-Si la CI est verte mais la capture n’est pas validée : `TECH CERTIFIED — HUMAN GATE PENDING`.
-
 ---
 
 # 7. Avancement
 
 - Lot 1 : CLOSED ✅
 - Lot 2 : CLOSED ✅
-- Lot 3 : ACTIVE
-- Lot 4 : OPEN
+- Lot 3 : CLOSED ✅
+- Lot 4 : ACTIVE
 - Lot 5 : OPEN
 - Lot 6 : OPEN
 
-**Avancement global vérifié : 2/6 = 33,3 %.**
+**Avancement global vérifié : 3/6 = 50 %.**
 
 ---
 
@@ -215,26 +178,17 @@ Si la CI est verte mais la capture n’est pas validée : `TECH CERTIFIED — HU
 
 Fichier maître : `docs/NEIGHBORHOOD_CONTEXT_INTELLIGENCE_CANONICAL.md`.
 
-Historique utile :
-- `docs/NEIGHBORHOOD_CONTEXT_INTELLIGENCE_CONTRACT.md`
-- `docs/NEIGHBORHOOD_CONTEXT_INTELLIGENCE_ROADMAP.md`
-- `docs/NEIGHBORHOOD_CONTEXT_INTELLIGENCE_HANDOVER.md`
-
-PR roadmap : #902. Lot 1 : #904. Lot 2 : #906.
+PR roadmap : #902. Lot 1 : #904. Lot 2 : #906. Lot 3 : #907.
 
 ---
 
 # 9. Next exact
 
-**Lot 3 — Neighborhood Context Read Model + API**
+**Lot 4 — Carte Repères + Semantic Zoom**
 
-1. auditer le pattern de snapshots/read-models versionnés déjà présent dans le repo ;
-2. figer `NeighborhoodContextReadModelV1` ;
-3. connecter L1 POI + L2 relations/anchors sans réseau dans le render path ;
-4. produire `coverage_status` + provenance + fraîcheur ;
-5. exposer `app/api/geo/neighborhood-context/route.ts` fail-closed avec cache borné ;
-6. tests identité/coverage/stale/invalid/unavailable ;
-7. TypeScript + build + benchmark read-only ;
-8. générer rapport + capture des 6 pilotes ;
-9. soumettre la capture à validation utilisateur ;
-10. aucun Vercel.
+1. capturer BEFORE sur les mêmes viewports 390/430/768/1280 et quartiers pilotes pertinents ;
+2. auditer la Carte actuelle et ses contrôles/layers ;
+3. figer Goal visuel + critères de densité/semantic zoom ;
+4. produire un mockup/wireframe cible avant code ;
+5. seulement après cette preuve visuelle, implémenter la couche `Repères` branchée sur `NeighborhoodContextReadModelV1` ;
+6. aucun Vercel.
