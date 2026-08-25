@@ -1,6 +1,7 @@
 #!/usr/bin/env tsx
 // CASABLANCA-MASS-ACQUISITION-V1 — guarded Common Crawl seed importer.
 // P0.1-MASS-INDEX-SOURCE-REGISTRY-OPERATIONAL-GATE
+// COMMONCRAWL-IMPORT-TIMEOUT-HARDENING-V1
 //
 // Default mode is DRY RUN. --apply requires the exact same 3 Production
 // ingestion flags as the scheduled OpenSERP writer. Writes ONLY to
@@ -23,9 +24,12 @@ import {
   evaluateMassIndexDomains,
 } from "@/lib/acquisition-scale-v1/mass-index-source-policy";
 import { loadMassIndexSourcePolicies } from "@/lib/acquisition-scale-v1/mass-index-source-policy-db";
+import { formatSupabaseError, withSupabaseRetry } from "@/lib/seed-freshness/supabase-retry";
 
 const DEFAULT_INPUT = join(process.cwd(), "data/audits/raw-results/commoncrawl-registry-mass-seeds.jsonl");
-const UPSERT_CHUNK = 500;
+// Production remainder imports reached PostgreSQL statement_timeout with 500-row
+// upserts. Keep statements smaller and retry only transient/timeout failures.
+export const UPSERT_CHUNK = 100;
 
 function parseArgs(argv: string[]): { apply: boolean; input: string } {
   let input = DEFAULT_INPUT;
@@ -62,12 +66,14 @@ async function countSeeds(): Promise<number> {
   return count ?? 0;
 }
 
-async function insertChunk(rows: SourceOfferSeedInsert[]): Promise<void> {
+async function insertChunk(rows: SourceOfferSeedInsert[], offset: number): Promise<void> {
   const client = getSupabaseServerClient();
-  const { error } = await client
-    .from("source_offer_seeds")
-    .upsert(rows, { onConflict: "canonical_url", ignoreDuplicates: true });
-  if (error) throw error;
+  await withSupabaseRetry(async () => {
+    const { error } = await client
+      .from("source_offer_seeds")
+      .upsert(rows, { onConflict: "canonical_url", ignoreDuplicates: true });
+    if (error) throw error;
+  }, `Common Crawl seed upsert offset=${offset} rows=${rows.length}`, { attempts: 4, baseDelayMs: 500 });
 }
 
 async function main() {
@@ -105,6 +111,7 @@ async function main() {
       return acc;
     }, {}),
     apply: args.apply,
+    upsert_chunk_size: UPSERT_CHUNK,
   };
 
   if (rawSeeds.length > 0 && policyAuthorizedSeeds.length === 0) {
@@ -123,7 +130,7 @@ async function main() {
 
   const before = await countSeeds();
   for (let offset = 0; offset < batch.rows.length; offset += UPSERT_CHUNK) {
-    await insertChunk(batch.rows.slice(offset, offset + UPSERT_CHUNK));
+    await insertChunk(batch.rows.slice(offset, offset + UPSERT_CHUNK), offset);
   }
   const after = await countSeeds();
 
@@ -138,6 +145,6 @@ async function main() {
 }
 
 void main().catch((error) => {
-  console.error(error instanceof Error ? error.stack : String(error));
+  console.error(`[commoncrawl-import] fatal: ${formatSupabaseError(error)}`);
   process.exit(1);
 });
