@@ -3,7 +3,6 @@ import { dirname, resolve } from "node:path";
 import { createClient } from "@supabase/supabase-js";
 import { extractExplicitDistrict, extractPriceMad, hasExplicitCitySignal } from "../../lib/openserp-ingestion/national-admission";
 import { resolveNationalGeography } from "../../lib/openserp-ingestion/national-geography";
-import { safeHttpUrl } from "../../lib/openserp-ingestion/utils";
 
 type SeedRow = {
   id: string;
@@ -20,6 +19,15 @@ type ListingRow = { id: number; city: string | null; district: string | null; pr
 
 const BATCH_SIZE = 1000;
 const OUTPUT = "artifacts/seed-listing-conversion/exhaustive-audit.json";
+
+function isSafeHttpUrl(value: string): boolean {
+  try {
+    const parsed = new URL(value);
+    return (parsed.protocol === "http:" || parsed.protocol === "https:") && Boolean(parsed.hostname);
+  } catch {
+    return false;
+  }
+}
 
 function textAt(metadata: Record<string, unknown> | null, path: string[]): string | null {
   let current: unknown = metadata;
@@ -107,8 +115,7 @@ async function main() {
   const samples: Array<{ canonicalUrl: string; sourceDomain: string; city: string; district: string; priceMad: number; freshnessStatus: string }> = [];
 
   for (const seed of snapshot.rows) {
-    const parsed = safeHttpUrl(seed.canonical_url);
-    if (!parsed) continue;
+    if (!isSafeHttpUrl(seed.canonical_url)) continue;
     counts.validHttpUrl += 1;
     const e = evidence(seed);
     const title = e.title ?? "";
