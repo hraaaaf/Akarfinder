@@ -1,0 +1,53 @@
+name: Seed City District Price Exhaustive Audit
+
+on:
+  workflow_dispatch: {}
+  pull_request:
+    branches: [main]
+    paths:
+      - scripts/data-mass/seed-city-district-price-exhaustive-audit.ts
+      - .github/workflows/seed-city-district-price-exhaustive-audit.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: seed-city-district-price-exhaustive-audit-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Typecheck audit
+        run: npx tsc --noEmit
+      - name: Exhaustive 61k seed audit — read only
+        run: npx tsx scripts/data-mass/seed-city-district-price-exhaustive-audit.ts
+      - name: Assert no-side-effect contract
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const p = JSON.parse(fs.readFileSync('artifacts/seed-listing-conversion/exhaustive-audit.json', 'utf8'));
+          if (p.mode !== 'read_only') throw new Error('AUDIT_NOT_READ_ONLY');
+          if (p.invariants.databaseWrites !== 0 || p.invariants.sourceNetworkRequests !== 0 || p.invariants.fabricatedFields !== 0) throw new Error('SIDE_EFFECT_INVARIANT');
+          if (!p.invariants.cityMustBeExplicit || !p.invariants.districtMustBeExplicit || !p.invariants.priceMustBeExplicit) throw new Error('MINIMUM_FIELD_INVARIANT');
+          if (p.counts.seeds < 60000) throw new Error(`SEED_RESERVOIR_TOO_SMALL:${p.counts.seeds}`);
+          console.log('EXHAUSTIVE_SEED_AUDIT_PASS', p.counts);
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: seed-city-district-price-exhaustive-audit
+          path: artifacts/seed-listing-conversion/exhaustive-audit.json
+          if-no-files-found: error
+          retention-days: 14
