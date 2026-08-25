@@ -11,9 +11,10 @@ export type MinimalListingRegistryRow = {
 export type MinimalListingInput = {
   canonicalUrl: string | null;
   sourceDomain: string | null;
-  titleOrStructuralSignal: string | null;
-  geography?: string | null;
-  price?: number | null;
+  titleOrStructuralSignal?: string | null;
+  city: string | null;
+  district: string | null;
+  price: number | null;
   surface?: number | null;
   photoUrl?: string | null;
   description?: string | null;
@@ -47,13 +48,17 @@ export function buildMinimalListing(input: MinimalListingInput, row: MinimalList
   if (!isPolicyAdmissible(row, now)) throw new Error("SOURCE_POLICY_NOT_ADMISSIBLE");
   if (!input.canonicalUrl || !/^https?:\/\//i.test(input.canonicalUrl)) throw new Error("CANONICAL_URL_REQUIRED");
   if (!input.sourceDomain || input.sourceDomain !== row.source_domain) throw new Error("SOURCE_PROVENANCE_REQUIRED");
-  if (!input.titleOrStructuralSignal?.trim()) throw new Error("TITLE_OR_STRUCTURAL_SIGNAL_REQUIRED");
+  if (!input.city?.trim()) throw new Error("CITY_REQUIRED");
+  if (!input.district?.trim()) throw new Error("DISTRICT_REQUIRED");
+  if (input.price === null || !Number.isFinite(input.price) || input.price <= 0) throw new Error("PRICE_REQUIRED");
+
   return {
     canonicalUrl: input.canonicalUrl,
     sourceDomain: input.sourceDomain,
-    titleOrStructuralSignal: input.titleOrStructuralSignal.trim(),
-    geography: input.geography ?? null,
-    price: input.price ?? null,
+    titleOrStructuralSignal: input.titleOrStructuralSignal?.trim() || null,
+    city: input.city.trim(),
+    district: input.district.trim(),
+    price: input.price,
     surface: input.surface ?? null,
     photoUrl: input.photoUrl ?? null,
     description: input.description ?? null,

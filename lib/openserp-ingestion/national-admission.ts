@@ -6,8 +6,8 @@
 //     in the registry (section 12) — unclassified/blocked domains never admit;
 //   - safe http(s) URL, no javascript:/data: scheme;
 //   - no PII surviving redaction (phone/WhatsApp/email/secret-token hits);
-//   - admission confidence HIGH (strong per-domain URL pattern matched) or
-//     MEDIUM (textual detail signals) — anything weaker stays unclassified.
+//   - admission confidence HIGH/MEDIUM, OR explicit ville+quartier+prix facts
+//     on a quarantined real-estate candidate.
 // Never fetches a URL, never invents a field: every value here already
 // existed on the SERP result (title/snippet/url) or is null.
 
@@ -17,6 +17,7 @@ import { classifyOpenSerpResult } from "./classify";
 import { extractCityNational, extractDistrictNational } from "./national-utils";
 import { redactSensitiveText, toTransactionType } from "./utils";
 import { getDomainStatus, isDomainAdmissible, isDomainExternalWebResult } from "./domain-registry";
+import { hasMinimumListingFacts } from "./minimum-listing-facts";
 
 export type AdmissionConfidence = "high" | "medium" | "low";
 
@@ -28,6 +29,8 @@ export type AdmissionDecision = {
   domain_status: ReturnType<typeof getDomainStatus>;
   external_web_result: boolean;
 };
+
+const MINIMUM_FACTS_OVERRIDE_REASON = "minimum_city_district_price_override";
 
 function isSafeExternalUrl(value: string): boolean {
   try {
@@ -70,13 +73,7 @@ function looksLikeNonListingPage(canonicalUrl: string, sourceDomain: string): bo
   // ("maisons-a-vendre", "villas-a-louer", "appartements-a-vendre", ...)
   // with no numeric ID anywhere in the path is a search/category hub for
   // that category, not one specific unit -- regardless of how many path
-  // segments precede it. Found necessary during this mission's own Wave 3
-  // apply: mubawab.ma/fr/st/el-jadida/maisons-a-vendre was admitted because
-  // its indexed snippet happened to preview one listing's details (strong
-  // textual signals), even though the URL itself is a category page; this
-  // domain's own DOMAIN_RULES.forceDiscovery patterns (classify.ts) do not
-  // cover the "/st/" segment or "maisons-a-vendre" specifically, so a
-  // second, URL-shape-only check here catches it independent of content.
+  // segments precede it.
   const lastSegment = segments[segments.length - 1];
   const hasNumericId = segments.some((segment) => /\d/.test(segment));
   if (!hasNumericId && /^(appartements?|villas?|terrains?|bureaux|maisons?|studios?)-a-(vendre|louer)$/.test(lastSegment)) {
@@ -119,19 +116,11 @@ export function decideAdmission(input: {
   const domainStatus = getDomainStatus(classified.source_domain);
   const domainAdmissible = isDomainAdmissible(classified.source_domain);
   const reasons: string[] = [...classified.classification_reasons];
+  const minimumListingFacts = hasMinimumListingFacts(classified);
 
-  // Defense-in-depth consistency check, added after this mission's own
-  // Wave 1 apply found an admitted candidate whose stored transaction_type
-  // ("sale") contradicted its own title's plain-language content ("a
-  // Louer"/rent) -- the exact mechanism was not conclusively reproduced
-  // via static analysis of classify.ts's fallback formula, so rather than
-  // changing shared, pilot-critical logic on a guess, this independently
-  // re-derives the transaction type from the TITLE ALONE (the single most
-  // reliable, human-facing signal -- unlike classify.ts's own combined
-  // title+snippet+URL derivation, a snippet or URL slug disagreeing with
-  // the title cannot silently override it here) and refuses to admit if it
-  // contradicts the stored value. Never silently "fixes" the value -- an
-  // inconsistent candidate is excluded, not corrected.
+  // Defense-in-depth consistency check: independently re-derive transaction
+  // type from the title alone and reject contradictions rather than "fixing"
+  // them from weaker snippet/URL/query evidence.
   const independentTransactionCheck = toTransactionType(classified.title);
   if (
     independentTransactionCheck !== null &&
@@ -161,7 +150,13 @@ export function decideAdmission(input: {
     };
   }
 
-  if (classified.classification_lane !== "individual_listing") {
+  // Normal path remains `individual_listing`. The only widened lane is
+  // `quarantine`, and only when ville + quartier + trusted price are explicit
+  // facts in the indexed result. Discovery/category/out-of-scope lanes remain
+  // blocked even if their snippet happens to preview a listing.
+  const minimumFactsLaneOverride =
+    classified.classification_lane === "quarantine" && minimumListingFacts;
+  if (classified.classification_lane !== "individual_listing" && !minimumFactsLaneOverride) {
     reasons.push(`classification_lane_${classified.classification_lane}`);
     return {
       admitted: false,
@@ -172,6 +167,7 @@ export function decideAdmission(input: {
       external_web_result: isDomainExternalWebResult(classified.source_domain),
     };
   }
+  if (minimumFactsLaneOverride) reasons.push(MINIMUM_FACTS_OVERRIDE_REASON);
 
   if (!isSafeExternalUrl(classified.canonical_source_url) || !isSafeExternalUrl(classified.original_url)) {
     reasons.push("unsafe_external_url");
@@ -219,7 +215,7 @@ export function decideAdmission(input: {
       ? "medium"
       : "low";
 
-  if (confidence === "low") {
+  if (confidence === "low" && !minimumListingFacts) {
     reasons.push("insufficient_admission_confidence");
     return {
       admitted: false,
@@ -229,6 +225,10 @@ export function decideAdmission(input: {
       domain_status: domainStatus,
       external_web_result: isDomainExternalWebResult(classified.source_domain),
     };
+  }
+
+  if (confidence === "low" && minimumListingFacts && !reasons.includes(MINIMUM_FACTS_OVERRIDE_REASON)) {
+    reasons.push(MINIMUM_FACTS_OVERRIDE_REASON);
   }
 
   return {

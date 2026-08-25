@@ -1,0 +1,36 @@
+name: Seed City District Price Admission
+
+on:
+  pull_request:
+    paths:
+      - "lib/openserp-ingestion/minimum-listing-facts.ts"
+      - "lib/openserp-ingestion/national-admission.ts"
+      - "scripts/scrapers/__tests__/openserp-minimum-listing-facts.test.ts"
+      - "scripts/data-mass/minimal-listing-index-policy.ts"
+      - "scripts/data-mass/__tests__/minimal-listing-index-policy.test.ts"
+      - ".github/workflows/seed-city-district-price-admission.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Runtime minimum-facts admission
+        run: npx tsx --test scripts/scrapers/__tests__/openserp-minimum-listing-facts.test.ts
+      - name: MASS-3A minimum listing contract
+        run: node --test --import tsx scripts/data-mass/__tests__/minimal-listing-index-policy.test.ts
+      - name: Existing OpenSERP admission regression
+        run: npx tsx --test scripts/scrapers/__tests__/openserp-automated-ingestion.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build

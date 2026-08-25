@@ -16,22 +16,39 @@ test("MASS-3A accepts only explicit positive, non-expired Registry paths",()=>{
   assert.equal(isPolicyAdmissible({...limited,policy_expires_at:"2026-08-10T00:00:00Z"},now),false);
 });
 
-test("minimal existence needs canonical URL, source and reliable signal only",()=>{
-  const listing=buildMinimalListing({canonicalUrl:"https://example.ma/a/1",sourceDomain:"example.ma",titleOrStructuralSignal:"Appartement Agdal"},limited,new Date("2026-08-13T00:00:00Z"));
-  assert.equal(listing.price,null);
+test("minimal listing content contract is ville + quartier + prix; title and richer fields are optional",()=>{
+  const listing=buildMinimalListing({
+    canonicalUrl:"https://example.ma/a/1",
+    sourceDomain:"example.ma",
+    city:"Rabat",
+    district:"Agdal",
+    price:1250000,
+  },limited,new Date("2026-08-13T00:00:00Z"));
+
+  assert.equal(listing.city,"Rabat");
+  assert.equal(listing.district,"Agdal");
+  assert.equal(listing.price,1250000);
+  assert.equal(listing.titleOrStructuralSignal,null);
   assert.equal(listing.surface,null);
   assert.equal(listing.photoUrl,null);
   assert.equal(listing.description,null);
-  assert.equal(listing.geography,null);
 });
 
-test("optional fields are preserved but never invented",()=>{
-  const listing=buildMinimalListing({canonicalUrl:"https://example.ma/a/2",sourceDomain:"example.ma",titleOrStructuralSignal:"Villa",geography:"Rabat",price:4200000},limited,new Date("2026-08-13T00:00:00Z"));
-  assert.equal(listing.geography,"Rabat");
-  assert.equal(listing.price,4200000);
-  assert.equal(listing.surface,null);
+test("missing any one of ville, quartier or prix blocks minimal construction",()=>{
+  const base={canonicalUrl:"https://example.ma/a/2",sourceDomain:"example.ma",city:"Rabat",district:"Agdal",price:1250000};
+  const now=new Date("2026-08-13T00:00:00Z");
+  assert.throws(()=>buildMinimalListing({...base,city:""},limited,now),/CITY_REQUIRED/);
+  assert.throws(()=>buildMinimalListing({...base,district:""},limited,now),/DISTRICT_REQUIRED/);
+  assert.throws(()=>buildMinimalListing({...base,price:null},limited,now),/PRICE_REQUIRED/);
+  assert.throws(()=>buildMinimalListing({...base,price:0},limited,now),/PRICE_REQUIRED/);
 });
 
-test("policy failure blocks construction",()=>{
-  assert.throws(()=>buildMinimalListing({canonicalUrl:"https://example.ma/a/3",sourceDomain:"example.ma",titleOrStructuralSignal:"X"},{...limited,authorization_status:"unverified"}),/SOURCE_POLICY_NOT_ADMISSIBLE/);
+test("policy failure still blocks construction even with complete minimum facts",()=>{
+  assert.throws(()=>buildMinimalListing({
+    canonicalUrl:"https://example.ma/a/3",
+    sourceDomain:"example.ma",
+    city:"Rabat",
+    district:"Agdal",
+    price:1250000,
+  },{...limited,authorization_status:"unverified"}),/SOURCE_POLICY_NOT_ADMISSIBLE/);
 });
