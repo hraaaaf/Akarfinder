@@ -22,12 +22,19 @@ const viewports = [
 
 function startServer() {
   return new Promise((resolve, reject) => {
-    const child = spawn("npm", ["run", "start", "--", "-p", String(port)], {
-      env: process.env,
-      stdio: ["ignore", "pipe", "pipe"],
-    });
+    const child = spawn(
+      process.execPath,
+      ["node_modules/next/dist/bin/next", "start", "-p", String(port)],
+      {
+        env: process.env,
+        stdio: ["ignore", "pipe", "pipe"],
+      },
+    );
     let output = "";
+    let settled = false;
     const timeout = setTimeout(() => {
+      if (settled) return;
+      settled = true;
       child.kill("SIGTERM");
       reject(new Error(`Next server readiness timeout. Output:\n${output}`));
     }, 25000);
@@ -35,7 +42,8 @@ function startServer() {
       const text = String(chunk);
       output += text;
       process.stdout.write(text);
-      if (/Ready in|Local:\s+http/i.test(output)) {
+      if (!settled && /Ready in|Local:\s+http/i.test(output)) {
+        settled = true;
         clearTimeout(timeout);
         resolve(child);
       }
@@ -44,9 +52,22 @@ function startServer() {
     child.stderr.on("data", onData);
     child.once("exit", (code) => {
       clearTimeout(timeout);
-      if (code && !/Ready in|Local:\s+http/i.test(output)) reject(new Error(`Next server exited ${code}. Output:\n${output}`));
+      if (!settled) {
+        settled = true;
+        reject(new Error(`Next server exited ${code}. Output:\n${output}`));
+      }
     });
   });
+}
+
+async function stopServer(child) {
+  if (child.exitCode != null || child.signalCode != null) return;
+  const exited = new Promise((resolve) => child.once("exit", resolve));
+  child.kill("SIGTERM");
+  await Promise.race([
+    exited,
+    new Promise((resolve) => setTimeout(resolve, 3000)),
+  ]);
 }
 
 const report = {
@@ -86,6 +107,7 @@ try {
         if (diagnostics.pageErrors.length) report.findings.push(`${state.name}/${viewport.name}:page_error`);
         if (metrics.horizontalOverflow > 1) report.findings.push(`${state.name}/${viewport.name}:overflow:${metrics.horizontalOverflow}`);
         if (metrics.nationalShell + metrics.marketShell + metrics.genericShell < 1) report.findings.push(`${state.name}/${viewport.name}:unknown_map_shell`);
+        if (metrics.l4PoiMarkers !== 0 || metrics.l4PoiToggle !== 0) report.findings.push(`${state.name}/${viewport.name}:l4_ui_present_before_implementation`);
         const file = `${state.name}-${viewport.name}-before.png`;
         await page.screenshot({ path: `${outDir}/${file}`, fullPage: false });
         report.captures.push({ state: state.name, viewport: viewport.name, file, ...metrics, diagnostics });
@@ -96,7 +118,7 @@ try {
   }
 } finally {
   await browser.close();
-  server.kill("SIGTERM");
+  await stopServer(server);
 }
 
 report.ok = report.captures.length === report.expected_capture_count && report.findings.length === 0;
