@@ -30,6 +30,7 @@ import { classifyPrice } from "@/lib/market-index/market-index-price";
 import { computeContentFingerprint, computeQueryHash } from "@/lib/market-index/market-index-identifiers";
 import { assertOpenSerpOriginIsNeverPartnerFacing } from "@/lib/market-index/market-index-provenance";
 import type { AdmissionDecision } from "./national-admission";
+import { dedupeByCanonicalFingerprint } from "./national-writer-dedupe";
 // OPENSERP-SERVERLESS-DB-CALL-TIMEOUT-SAFETY-1 — Phase 8: every writer DB
 // call is bounded through withDbTimeout (real .abortSignal() cancellation,
 // budget-aware refusal when the caller supplies its TimeBudget via
@@ -215,7 +216,7 @@ export async function writeNationalAdmittedListings(input: NationalWriteInput): 
   }
 
   const now = new Date().toISOString();
-  const candidates: OpenSerpListingCandidate[] = admitted.map((decision) => {
+  const rawCandidates: OpenSerpListingCandidate[] = admitted.map((decision) => {
     const classified = decision.classified!;
     const fingerprint = sha256(`openserp:${classified.canonical_source_url}`);
     return {
@@ -227,6 +228,11 @@ export async function writeNationalAdmittedListings(input: NationalWriteInput): 
       extracted: { ...classified.extracted, price_mad: sanitizePriceMad(classified.extracted.price_mad) },
     };
   });
+  // PostgreSQL rejects one INSERT .. ON CONFLICT DO UPDATE statement when
+  // two input rows target the same UNIQUE canonical_fingerprint. The same
+  // canonical URL may be admitted through multiple queries/engines in one
+  // run, so collapse those duplicates before the 25-row property upserts.
+  const candidates = dedupeByCanonicalFingerprint(rawCandidates);
 
   const fingerprints = [...new Set(candidates.map((c) => c.canonical_fingerprint))];
   const urls = [...new Set(candidates.map((c) => c.canonical_source_url))];
