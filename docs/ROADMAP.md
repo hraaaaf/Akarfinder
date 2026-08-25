@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
-**Version : 2026-08-24**  
-**Statut : DATA MASS-INDEX CLOSED**
+**Version : 2026-08-25**  
+**Statut : DATA MASS-INDEX CLOSED / INGESTION INCIDENTS CLOSED**
 
 Ce fichier est l’unique vérité canonique globale pour l’ordre des chantiers, leur état et leur progression.
 
@@ -58,8 +58,19 @@ Aucun contournement login/CAPTCHA/paywall/anti-bot. Aucun contenu riche externe 
 - `source_offer_seeds` certifié : 57 843 lignes et 57 843 URL canoniques distinctes au snapshot M7-E ;
 - ce chiffre mesure des URL canoniques d’index, **pas des biens immobiliers uniques**.
 
+### Maintenance ingestion — 2026-08-25 ✅ CLOSED
+
+| Incident | Résolution | Preuve runtime |
+|---|---|---|
+| OpenSERP `discovery_candidates` collision / lookup PostgREST >1 000 | PR #878, atomic PostgreSQL RPC | run `32766339030` ; `docs/OPENSERP_ATOMIC_UPSERT_CLOSEOUT.md` |
+| Common Crawl remainder import timeout `57014` | PR #910, chunks 100 + retry borné | run `32829365500` ; `docs/COMMONCRAWL_IMPORT_TIMEOUT_CLOSEOUT.md` |
+| Public Sitemap deep offset ~8000 timeout | UUID keyset pagination on `main`; PR #884 supersédée | run `32766268682` ; `docs/PUBLIC_SITEMAP_OFFSET_TIMEOUT_CLOSEOUT.md` |
+| OpenSERP `property_listings` duplicate conflict key | PR #911, dedupe par `canonical_fingerprint` | run DB `openserp-github-cron-2026-08-25T20-02-23-835Z` ; 12 property rows + 12 source rows touchées ; `docs/OPENSERP_PROPERTY_LISTINGS_BATCH_DEDUPE_CLOSEOUT.md` |
+
+Les quatre incidents sont fermés par preuve. Les erreurs PostgreSQL `ON CONFLICT DO UPDATE command cannot affect row a second time` observées avant le correctif ne réapparaissent pas dans la fenêtre du run certifiant de 20:02Z à 20:07Z.
+
 ### Next exact
-MASS-INDEX est fermé. Les travaux futurs de croissance corpus, partenariats ou enrichissement doivent être ouverts comme nouveaux chantiers avec leurs propres gates.
+MASS-INDEX et ce chantier d’incidents ingestion sont fermés. Tout nouveau défaut ou travail de croissance corpus doit être ouvert comme un nouveau lot avec ses propres gates.
 
 ---
 
