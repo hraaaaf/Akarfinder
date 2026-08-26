@@ -47,6 +47,41 @@ test("admits a price-to-verify listing while preserving lower confidence", () =>
   assert.equal(row.data_completeness_score, 45);
 });
 
+test("allows AMBIGUOUS document kind only on an approved strong detail URL", () => {
+  const admitted = evaluateTrustedSeedListing(base({ documentKind: "AMBIGUOUS" }));
+  assert.equal(admitted.admitted, true);
+  const rejected = evaluateTrustedSeedListing(base({
+    documentKind: "AMBIGUOUS",
+    canonicalUrl: "https://agenz.ma/fr/annonces/immo-agadir/vente-appartements",
+  }));
+  assert.equal(rejected.admitted, false);
+  assert.ok(rejected.reasons.includes("registry_detail_url_not_admissible"));
+});
+
+test("uses discovery evidence only as fallback for missing geography", () => {
+  const decision = evaluateTrustedSeedListing(base({
+    canonicalUrl: "https://agenz.ma/fr/annonces/immo-agadir/vente-appartements/autre/795607",
+    title: "Appartement à vendre à Agadir",
+    snippet: null,
+    discoveryTitle: "Appartement à vendre à Riad Salam Agadir",
+    discoverySnippet: null,
+  }));
+  assert.equal(decision.admitted, true);
+  assert.equal(decision.district, "Riad Salam");
+});
+
+test("prefers URL and title geography over a conflicting snippet", () => {
+  const decision = evaluateTrustedSeedListing(base({
+    canonicalUrl: "https://1immo.ma/bureau-en-location-sur-agdal-8069",
+    sourceDomain: "1immo.ma",
+    city: "Rabat",
+    title: "Bureau en location sur Agdal - Immobilier Rabat",
+    snippet: "Agence située à Hay Riad Rabat",
+  }));
+  assert.equal(decision.admitted, true);
+  assert.equal(decision.district, "Agdal");
+});
+
 test("rejects category pages even when city and price exist", () => {
   const decision = evaluateTrustedSeedListing(base({ canonicalUrl: "https://agenz.ma/fr/annonces/immo-agadir/vente-appartements" }));
   assert.equal(decision.admitted, false);
