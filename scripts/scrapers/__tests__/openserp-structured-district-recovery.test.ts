@@ -39,6 +39,25 @@ test("recovers DarAgadir district phrases from individual detail slugs", () => {
   );
 });
 
+test("recovers second-circle explicit DarAgadir districts with canonical names", () => {
+  assert.deepEqual(
+    extractDistrictNational("https://daragadir.com/annonces/annonces-immobilieres/location/appartements-a-louer-a-agadir/a-louer-a-agadir-appartement-3-pieces-138-m%C2%B2-cite-adrar-4-700-dh.html"),
+    { city: "Agadir", district: "Cite Adrar" },
+  );
+  assert.deepEqual(
+    extractDistrictNational("https://daragadir.com/annonces/annonces-immobilieres/vente/villas-et-riads-a-vendre-a-agadir/villa-a-vendre-quartier-iligh-5-chambres-4-000-000-dh.html"),
+    { city: "Agadir", district: "Iligh" },
+  );
+  assert.deepEqual(
+    extractDistrictNational("https://daragadir.com/annonces/annonces-immobilieres/location/bureaux-a-louer-a-agadir/bureau-a-louer-quartier-industriel-dagadir-8-000-dh.html"),
+    { city: "Agadir", district: "Zone Industrielle Agadir" },
+  );
+  assert.deepEqual(
+    extractDistrictNational("https://daragadir.com/annonces/annonces-immobilieres/location/bureaux-a-louer-a-agadir/bureaux-a-louer-a-agadir-hay-el-mohammadi-agadir-7-000-dh.html"),
+    { city: "Agadir", district: "Hay Mohammadi" },
+  );
+});
+
 test("rejects DarAgadir detail slugs with multiple explicit district matches", () => {
   assert.equal(
     extractDistrictNational("https://daragadir.com/annonces/annonces-immobilieres/location/magasins-et-commerces-a-louer-a-agadir/local-commercial-a-louer-a-agadir-amsernate-580-m%C2%B2-en-plein-centre-ville-pour-25-000-dh.html"),

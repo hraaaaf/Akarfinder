@@ -75,6 +75,13 @@ const DARAGADIR_STRUCTURED_DISTRICTS: ReadonlyArray<{ district: string; aliases:
   { district: "Agadir Bay", aliases: ["agadir bay"] },
   { district: "Hay Salam", aliases: ["hay salam"] },
   { district: "Aghroud", aliases: ["aghroud"] },
+  { district: "Cite Adrar", aliases: ["adrar"] },
+  { district: "Iligh", aliases: ["iligh"] },
+  { district: "Lekhiam", aliases: ["lekhiam"] },
+  { district: "Zone Industrielle Agadir", aliases: ["quartier industriel"] },
+  { district: "Irak Bouargane", aliases: ["irak bouargane"] },
+  { district: "Hay L'Irak", aliases: ["hay lirak"] },
+  { district: "Hay Mohammadi", aliases: ["hay el mohammadi", "hay mohammadi"] },
 ];
 
 const NATIONAL_DISTRICT_ALIASES: ReadonlyArray<{ city: string; district: string; aliases: string[] }> = [
