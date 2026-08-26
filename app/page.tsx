@@ -6,6 +6,8 @@ import { SignatureMapSection } from "@/components/landing/SignatureMapSection";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 
+export const revalidate = 300;
+
 export default async function HomePage() {
   return (
     <main className="min-h-screen bg-background text-foreground">

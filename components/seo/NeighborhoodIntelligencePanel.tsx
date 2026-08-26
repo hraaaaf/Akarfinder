@@ -1,3 +1,5 @@
+import { NeighborhoodContextPanel } from "@/components/neighborhood-context/NeighborhoodContextPanel";
+import { getNeighborhoodContextReadModelBySlugs } from "@/lib/neighborhood-context/read-model";
 import type { NeighborhoodMetadata } from "@/lib/seo-neighborhood-pages/types";
 
 const CONFIDENCE_LABEL: Record<"high" | "medium" | "low", string> = {
@@ -8,7 +10,8 @@ const CONFIDENCE_LABEL: Record<"high" | "medium" | "low", string> = {
 
 export function NeighborhoodIntelligencePanel({ neighborhood }: { neighborhood: NeighborhoodMetadata }) {
   const intelligence = neighborhood.intelligence;
-  if (!intelligence) return null;
+  const contextModel = getNeighborhoodContextReadModelBySlugs(neighborhood.citySlug, neighborhood.slug);
+  if (!intelligence && !contextModel) return null;
 
   return (
     <section className="border-y border-slate-200 bg-slate-50 px-4 py-10" aria-labelledby="quartier-intelligence-title">
@@ -19,12 +22,12 @@ export function NeighborhoodIntelligencePanel({ neighborhood }: { neighborhood: 
             {neighborhood.displayName} en quelques repères
           </h2>
           <p className="mt-2 text-sm leading-6 text-slate-600">
-            Données indicatives issues du référentiel quartier AkarFinder. Une information absente n’est jamais inventée.
+            Données indicatives issues des référentiels vérifiés AkarFinder. Une information absente n’est jamais inventée.
           </p>
         </div>
 
         <div className="mt-6 grid gap-4 md:grid-cols-3">
-          {intelligence.priceLabel ? (
+          {intelligence?.priceLabel ? (
             <article className="rounded-2xl border border-slate-200 bg-white p-5">
               <p className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-slate-400">Repère prix</p>
               <p className="mt-2 text-xl font-extrabold text-[#0B1F3A]">{intelligence.priceLabel}</p>
@@ -33,26 +36,15 @@ export function NeighborhoodIntelligencePanel({ neighborhood }: { neighborhood: 
             </article>
           ) : null}
 
-          {intelligence.lifestyleTags?.length ? (
-            <article className="rounded-2xl border border-slate-200 bg-white p-5">
-              <p className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-slate-400">Profil du quartier</p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {intelligence.lifestyleTags.map((tag) => (
-                  <span key={tag} className="rounded-full bg-blue-50 px-3 py-1.5 text-xs font-bold text-[#084FA8]">{tag}</span>
-                ))}
-              </div>
-            </article>
-          ) : null}
-
-          {intelligence.proximityHighlights?.length ? (
-            <article className="rounded-2xl border border-slate-200 bg-white p-5">
-              <p className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-slate-400">À proximité — repères</p>
-              <ul className="mt-3 space-y-2 text-sm text-slate-600">
-                {intelligence.proximityHighlights.slice(0, 4).map((item) => <li key={item}>• {item}</li>)}
-              </ul>
-              <p className="mt-3 text-[11px] leading-5 text-slate-400">Proximité indicative à confirmer selon l’adresse exacte du bien.</p>
-            </article>
-          ) : null}
+          <div className="md:col-span-2">
+            <NeighborhoodContextPanel
+              model={contextModel}
+              city={neighborhood.cityDisplayName}
+              neighborhood={neighborhood.displayName}
+              variant="compact"
+              className="h-full"
+            />
+          </div>
         </div>
       </div>
     </section>

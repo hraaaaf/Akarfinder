@@ -1,3 +1,4 @@
+import { hasLivingHereNeighborhoodContext } from "@/lib/geo/living-here-context";
 import type { LivingHereModel } from "@/lib/geo/living-here";
 import type { MarketComparableSet } from "@/lib/property-detail/market-comparables";
 import type { PublicPropertyDetailV2 } from "@/lib/property-detail/public-property-detail-v2";
@@ -48,14 +49,24 @@ export function buildListingExperienceSummary(input: {
       };
 
   const livingVisible = livingHere && livingHere.visibility !== "hidden" && livingHere.pois.length > 0;
+  const livingContext = livingHere && hasLivingHereNeighborhoodContext(livingHere) ? livingHere : null;
+  const hasExactMeasurements = Boolean(
+    livingContext?.exactPropertyMeasurements?.origin.exact &&
+    livingContext.exactPropertyMeasurements.canShowPreciseRouteTimes &&
+    livingContext.exactPropertyMeasurements.pois.some((poi) => poi.routes.length > 0),
+  );
   const living: P5ListingSummaryCard = livingVisible
     ? {
         key: "living",
         title: "Vie locale",
-        primary: `${livingHere.pois.length} repère${livingHere.pois.length > 1 ? "s" : ""} de proximité`,
-        secondary: livingHere.canShowPreciseRouteTimes
-          ? "POI fournisseur vérifiés · temps de trajet disponibles"
-          : "POI fournisseur vérifiés · contexte sans temps de trajet précis",
+        primary: `${livingHere.pois.length} repère${livingHere.pois.length > 1 ? "s" : ""} ${livingContext ? "de quartier" : "de proximité"}`,
+        secondary: livingContext
+          ? hasExactMeasurements
+            ? "Repères quartier NCI · mesures depuis le bien disponibles séparément"
+            : "Repères quartier NCI · aucun temps produit depuis le contexte"
+          : livingHere.canShowPreciseRouteTimes
+            ? "POI fournisseur vérifiés · temps de trajet disponibles"
+            : "POI fournisseur vérifiés · contexte sans temps de trajet précis",
       }
     : {
         key: "living",

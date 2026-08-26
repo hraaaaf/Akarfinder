@@ -15,8 +15,6 @@ export interface NeighborhoodIntelligenceSummary {
   priceLabel?: string;
   pricePeriod?: string;
   confidence?: "high" | "medium" | "low";
-  lifestyleTags?: string[];
-  proximityHighlights?: string[];
 }
 
 export interface NeighborhoodMetadata {

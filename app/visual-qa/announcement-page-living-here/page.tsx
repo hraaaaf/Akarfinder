@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { AnnouncementPageShell } from "@/components/listings/AnnouncementPageShell";
+import { buildConvergedLivingHereForListing } from "@/lib/geo/living-here-converged-service";
 import type { LivingHereModel } from "@/lib/geo/living-here";
 import type { Listing } from "@/lib/listings/types";
 import { buildPublicPropertyDetailV2 } from "@/lib/property-detail/public-property-detail-v2";
@@ -10,6 +11,8 @@ export const metadata: Metadata = {
 };
 
 type QaState = "exact" | "context" | "no-route" | "hidden";
+
+const L5_QA_NOW = new Date("2026-08-26T12:00:00.000Z");
 
 function normalizeState(value: string | string[] | undefined): QaState {
   const first = Array.isArray(value) ? value[0] : value;
@@ -194,11 +197,19 @@ export default async function AnnouncementPageLivingHereVisualQa({
     generated_at: "2026-08-16T12:00:00.000Z",
   });
   if (!detail) throw new Error("ANN-L6 QA fixture must remain publishable.");
+  const livingHere = state === "context"
+    ? await buildConvergedLivingHereForListing(currentListing, { now: L5_QA_NOW })
+    : state === "exact"
+      ? await buildConvergedLivingHereForListing(currentListing, {
+          now: L5_QA_NOW,
+          exactMeasurementsOverride: model("exact"),
+        })
+      : model(state);
   return (
     <AnnouncementPageShell
       listing={currentListing}
       detail={detail}
-      livingHere={model(state)}
+      livingHere={livingHere}
       mapStyleUrl="/visual-qa/announcement-page-living-here/map-style"
       visualQa
     />

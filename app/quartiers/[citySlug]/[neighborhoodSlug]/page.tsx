@@ -6,9 +6,11 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { NeighborhoodMiniMap } from "@/components/map/NeighborhoodMiniMap";
 import { NeighborhoodShareButton } from "@/components/map/NeighborhoodShareButton";
+import { NeighborhoodContextPanel } from "@/components/neighborhood-context/NeighborhoodContextPanel";
 import { readCityMarketIntelligenceMetrics } from "@/lib/map/city-market-intelligence-live";
 import type { CityMarketMetricRow } from "@/lib/map/city-market-intelligence";
 import { getNeighborhoodBySlug, getNeighborhoods } from "@/lib/map/neighborhood-data";
+import { getNeighborhoodContextReadModelBySlugs } from "@/lib/neighborhood-context/read-model";
 
 export const dynamic = "force-dynamic";
 
@@ -85,6 +87,7 @@ export default async function NeighborhoodPage({ params }: PageProps) {
   if (!point) notFound();
 
   const saleMetric = await readSaleMetric(point.citySlug, point.neighborhoodSlug);
+  const contextModel = getNeighborhoodContextReadModelBySlugs(point.citySlug, point.neighborhoodSlug);
   const marketResolved = Boolean(saleMetric?.runtimeResolved);
   const areaLabel = saleMetric?.areaKm2 != null
     ? `${saleMetric.areaKm2.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} km²`
@@ -117,7 +120,7 @@ export default async function NeighborhoodPage({ params }: PageProps) {
                 <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-brand-primary">Intelligence quartier · {point.city}</p>
                 <h1 className="mt-2 text-3xl font-extrabold tracking-[-0.045em] sm:text-5xl">{point.neighborhood}</h1>
                 <p className="mt-3 max-w-2xl text-[14px] leading-6 text-muted-foreground sm:text-[15px]">
-                  Lecture immobilière observée à partir du stock AkarFinder résolu sur ce quartier. Aucune valeur n’est interpolée lorsque la preuve manque.
+                  Lecture immobilière observée à partir du stock AkarFinder et repères quartier certifiés. Aucune valeur n’est interpolée lorsque la preuve manque.
                 </p>
               </div>
               <div className="rounded-full border border-border/25 bg-white/80 px-3 py-2 text-[10px] font-extrabold text-muted-foreground shadow-sm">
@@ -184,28 +187,9 @@ export default async function NeighborhoodPage({ params }: PageProps) {
               <p className="mt-1 text-[10.5px] leading-5 text-muted-foreground">La répartition appartement / villa / terrain sera affichée uniquement lorsqu’un échantillon structuré suffisant existe.</p>
             </section>
 
-            {(point.proximityHighlights.length > 0 || point.lifestyleTags.length > 0) ? (
-              <section className="mt-4 rounded-2xl border border-border/20 bg-white p-4" aria-label="Contexte quartier">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-[10px] font-extrabold uppercase tracking-[0.13em] text-brand-primary">Vivre dans le quartier</p>
-                  <span className="rounded-full bg-surface-muted px-2.5 py-1 text-[9px] font-bold text-muted-foreground">référentiel AkarFinder</span>
-                </div>
-                {point.proximityHighlights.length > 0 ? (
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {point.proximityHighlights.map((item) => (
-                      <span key={item} className="rounded-full border border-border/20 px-3 py-1.5 text-[11px] font-semibold">{item}</span>
-                    ))}
-                  </div>
-                ) : null}
-                {point.lifestyleTags.length > 0 ? (
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {point.lifestyleTags.map((tag) => (
-                      <span key={tag} className="rounded-full bg-surface-muted px-3 py-1.5 text-[11px] font-semibold">{tag}</span>
-                    ))}
-                  </div>
-                ) : null}
-              </section>
-            ) : null}
+            <div className="mt-4">
+              <NeighborhoodContextPanel model={contextModel} city={point.city} neighborhood={point.neighborhood} />
+            </div>
 
             <div className="mt-5 grid gap-2 sm:grid-cols-[1fr_auto_auto]">
               <Link href={point.searchHref} className="inline-flex min-h-12 items-center justify-center rounded-xl bg-brand-primary px-5 py-3 text-[13px] font-extrabold text-white shadow-accent hover:bg-brand-primary-hover">
@@ -222,7 +206,7 @@ export default async function NeighborhoodPage({ params }: PageProps) {
             <div className="mt-5 rounded-2xl border border-dashed border-border/25 bg-white/60 p-4">
               <p className="text-[10px] font-extrabold uppercase tracking-[0.13em] text-brand-primary">Méthode / transparence</p>
               <p className="mt-2 text-[11px] leading-5 text-muted-foreground">
-                Prix, volume et densité proviennent du même agrégateur observé que la Carte intelligence marché : résolution géographique validée, dédoublonnage, contrôles de fraîcheur et fail-closed lorsque le quartier ou sa surface ne sont pas suffisamment prouvés.
+                Prix, volume et densité proviennent de l’agrégateur marché. Les repères `Vivre ici` proviennent exclusivement du read-model NCI avec identité, provenance et fraîcheur conservées. Chaque couche reste fail-closed lorsque sa preuve manque.
               </p>
             </div>
           </div>
