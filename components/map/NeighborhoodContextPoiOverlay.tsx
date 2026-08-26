@@ -238,6 +238,7 @@ export function NeighborhoodContextPoiOverlay({
   return (
     <>
       <style>{`
+        .akarfinder-neighborhood-context-popup { z-index: 60 !important; }
         .akarfinder-neighborhood-context-popup .maplibregl-popup-content { background: transparent; border-radius: 18px; box-shadow: none; padding: 0; }
         .akarfinder-neighborhood-context-popup .maplibregl-popup-tip { border-top-color: rgba(255,255,255,.96); }
       `}</style>
