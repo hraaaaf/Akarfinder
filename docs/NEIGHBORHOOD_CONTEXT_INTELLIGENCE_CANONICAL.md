@@ -1,7 +1,7 @@
 # AkarFinder — Neighborhood Context Intelligence — CANONICAL
 
-Date : 2026-08-25
-Statut : **ACTIVE — Lots 1–3 CLOSED, Lot 4 ACTIVE**
+Date : 2026-08-26
+Statut : **ACTIVE — Lots 1–4 CLOSED, Lot 5 ACTIVE**
 Autorité : ce fichier est le document maître du chantier. Les anciens CONTRACT / ROADMAP / HANDOVER restent des preuves historiques et de reprise, mais toute décision nouvelle doit être réconciliée ici.
 
 ---
@@ -86,67 +86,78 @@ Projection aval unique pour Carte, page quartier, homepage et listing : identit�
 - merge `fb177022594f5cbc7a628e3edad3c4ffd5ec0ae5`
 
 ## Lot 3 — Neighborhood Context Read Model + API — CLOSED ✅
+- PR #907
+- HEAD certifié `a5660ba016d1525ea1fb6b8b3d1880af631fc963`
+- run `32896269829` SUCCESS
+- 27/27 tests + TypeScript + production build SUCCESS
+- artifact `9581394884`
+- digest `sha256:68e988877ff0123e24989d209b1196d85642c159b73ba208cc0f4297c5c1ef68`
+- 6 read-models pilotes, 12 anchors uniques, 0 truth finding
+- capture score 9,5/10, validation humaine reçue
+- merge `c304e4bd0ae0b23334fe3a6c510459ecedf7c77f`
+
+## Lot 4 — Carte Repères + Semantic Zoom — CLOSED ✅
 
 ### Goal atteint
-Créer une projection unique, bornée et fail-closed pour Carte, page quartier, homepage et listing.
+Ajouter une couche `Repères` truth-safe sans dégrader la carte dominante.
 
 ### Résultat vérifié
-- `NeighborhoodContextReadModelV1` ;
-- runtime source versionnée `ann-l5-certified-seed` ;
-- aucun provider réseau dans le render path ;
-- freshness fail-closed ;
-- `coverage_status = covered | partial | insufficient | unavailable` ;
-- mêmes `poi_id` / `canonical_neighborhood_id` ;
-- provenance/licence/observed_at conservés ;
-- endpoint `GET /api/geo/neighborhood-context?city=&district=` ;
-- cache borné ;
-- 6 read-models pilotes, 12 anchors uniques ;
-- Agdal covered, Malabata partial, Maârif/Guéliz insufficient, Founty/Fès unavailable ;
-- 0 truth finding.
+- overlay `Repères` indépendant des modes Prix / Densité / Annonces ;
+- national et ville sans quartier : 0 bruit POI ;
+- quartier : anchors bornés du read-model L3 ;
+- filtres contextuels déterministes ;
+- popup POI compacte avec provenance, distance au repère et wording territorial ;
+- aucune durée inventée ;
+- aucun faux `Dans le quartier` ;
+- hit targets ≥44 px ;
+- raccords Rabat Market Intelligence, National Explore et carte générique ;
+- sheet mobile Agdal compact pour préserver la carte ;
+- popup mobile corrigée pour rester au-dessus des contrôles.
 
 ### Preuve finale
-- PR **#907** ;
-- HEAD exact certifié `a5660ba016d1525ea1fb6b8b3d1880af631fc963` ;
-- run **`32896269829`** SUCCESS ;
-- 27/27 tests + TypeScript + production build SUCCESS ;
-- rapport + capture + final truth gate SUCCESS ;
-- artifact **`9581394884`** ;
-- digest `sha256:68e988877ff0123e24989d209b1196d85642c159b73ba208cc0f4297c5c1ef68` ;
-- capture `l3-read-model-proof.png`, score **9,5/10** ;
-- validation humaine explicite reçue le 2026-08-25 ;
-- merge squash **`c304e4bd0ae0b23334fe3a6c510459ecedf7c77f`** ;
+- PR **#913** ;
+- HEAD exact certifié `3cf3ef6f3b2ce7ba6ac79870696485dc67507a67` ;
+- run **`32947835434`** SUCCESS ;
+- contrat présentation + TypeScript + production build + Chromium + AFTER gate SUCCESS ;
+- 16/16 captures AFTER et preuves popup mobile/desktop ;
+- artifact **`9599100679`** ;
+- digest `sha256:e2a75f303ca1a90395231a9462eb5d3fd850df7be35e6faf5de4b463db1c91dd` ;
+- score visuel **9,4/10** ;
+- validation humaine explicite reçue le 2026-08-26 ;
+- merge squash **`ff7ab0e9ba5acd59dd143084dc8cbb593eb62923`** ;
 - aucun Vercel.
 
+### Anomalie transverse consignée
+Le smoke historique C5 attend encore une métrique visible dans le sheet mobile replié. L4 masque volontairement cette métrique jusqu'à `Détails` pour préserver la carte. Ce harnais devra être réaligné ; il ne constitue pas une preuve de régression produit L4.
+
 ---
 
-## Lot 4 — Carte Repères + Semantic Zoom — ACTIVE
+## Lot 5 — Convergence Page quartier + Vivre ici + Homepage — ACTIVE
 
 ### Goal visuel
-Ajouter une couche `Repères` utile sans dégrader la carte dominante déjà certifiée.
+Faire converger page quartier, module `Vivre ici`, homepage et contexte listing vers **le même `NeighborhoodContextReadModelV1`**, sans source POI parallèle ni wording divergent.
 
-### UX cible
-- national : aucun bruit POI ;
-- ville : anchors structurants seulement lorsque pertinent ;
-- quartier : 5–8 anchors sélectionnés ;
-- filtres contextuels Transport / Éducation / Santé / Courses / Parcs & sport / Services ;
-- sélection POI = fiche compacte ;
-- wording territorial sûr ;
-- aucune durée inventée.
+### Succès
+- mêmes `poi_id` / `canonical_neighborhood_id` sur les surfaces convergées ;
+- suppression ou neutralisation progressive des `proximityHighlights` parallèles lorsqu'ils dupliquent Neighborhood Context ;
+- états `covered / partial / insufficient / unavailable` visibles sans embellissement ;
+- aucune donnée stale/rejected publiée ;
+- mêmes règles de provenance et territorial wording que L3/L4 ;
+- responsive 390/430/768/1280 ;
+- score visuel cible ≥9,3/10 ;
+- human gate explicite avant fermeture.
 
 ### Process obligatoire
-1. captures BEFORE 390/430/768/1280 ;
-2. Goal écrit + critères ;
-3. mockup/wireframe avant implémentation ;
-4. implémentation ;
-5. AFTER mêmes viewports ;
-6. comparaison BEFORE / target / AFTER ;
-7. score cible ≥9,3/10 ;
-8. validation humaine explicite avant fermeture.
+1. auditer les surfaces et sources actuelles ;
+2. captures BEFORE 390/430/768/1280 des surfaces touchées ;
+3. Goal écrit + critères ;
+4. mockup/wireframe avant implémentation ;
+5. implémentation ;
+6. AFTER mêmes viewports ;
+7. comparaison BEFORE / target / AFTER + tests ;
+8. score + validation humaine.
 
 ---
-
-## Lot 5 — Convergence Page quartier + Vivre ici + Homepage — OPEN
-Même vérité POI/read-model sur les surfaces, suppression progressive des `proximityHighlights` parallèles. Human gate visuel obligatoire.
 
 ## Lot 6 — National Scale + Quality/Freshness Certification — OPEN
 Couverture nationale mesurée, refresh reproductible, stale masqué, provenance complète, canaries et certification finale. Human gate final obligatoire.
@@ -166,11 +177,11 @@ Couverture nationale mesurée, refresh reproductible, stale masqué, provenance 
 - Lot 1 : CLOSED ✅
 - Lot 2 : CLOSED ✅
 - Lot 3 : CLOSED ✅
-- Lot 4 : ACTIVE
-- Lot 5 : OPEN
+- Lot 4 : CLOSED ✅
+- Lot 5 : ACTIVE
 - Lot 6 : OPEN
 
-**Avancement global vérifié : 3/6 = 50 %.**
+**Avancement global vérifié : 4/6 = 66,7 %.**
 
 ---
 
@@ -178,17 +189,17 @@ Couverture nationale mesurée, refresh reproductible, stale masqué, provenance 
 
 Fichier maître : `docs/NEIGHBORHOOD_CONTEXT_INTELLIGENCE_CANONICAL.md`.
 
-PR roadmap : #902. Lot 1 : #904. Lot 2 : #906. Lot 3 : #907.
+PR roadmap : #902. Lots : #904, #906, #907, #913.
 
 ---
 
 # 9. Next exact
 
-**Lot 4 — Carte Repères + Semantic Zoom**
+**Lot 5 — Convergence Page quartier + Vivre ici + Homepage**
 
-1. capturer BEFORE sur les mêmes viewports 390/430/768/1280 et quartiers pilotes pertinents ;
-2. auditer la Carte actuelle et ses contrôles/layers ;
-3. figer Goal visuel + critères de densité/semantic zoom ;
-4. produire un mockup/wireframe cible avant code ;
-5. seulement après cette preuve visuelle, implémenter la couche `Repères` branchée sur `NeighborhoodContextReadModelV1` ;
+1. inventorier les surfaces et leurs sources POI/contextuelles actuelles ;
+2. identifier les `proximityHighlights` ou autres vérités parallèles ;
+3. capturer les BEFORE sur 390/430/768/1280 ;
+4. figer un mockup cible de convergence ;
+5. seulement ensuite implémenter la convergence sur `NeighborhoodContextReadModelV1` ;
 6. aucun Vercel.
