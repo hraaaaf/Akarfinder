@@ -30,6 +30,7 @@ type Props = {
   centeredNeighborhoodCount: number;
   certifiedNeighborhoodBoundaryCount: number;
   theme?: string;
+  onSelectDistrict?: (slug: string) => void;
 };
 
 function pointCollection(neighborhoods: NationalNeighborhood[]): GeoJSON.FeatureCollection {
@@ -74,6 +75,7 @@ export function NationalNeighborhoodOverlay({
   centeredNeighborhoodCount,
   certifiedNeighborhoodBoundaryCount,
   theme,
+  onSelectDistrict,
 }: Props) {
   const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
   const [hoverSlug, setHoverSlug] = useState<string | null>(null);
@@ -185,6 +187,7 @@ export function NationalNeighborhoodOverlay({
       selectedRef.current = slug;
       setSelectedSlug(slug);
       setActive(slug);
+      onSelectDistrict?.(slug);
     };
     const onLeave = () => {
       setHoverSlug(null);
@@ -201,7 +204,7 @@ export function NationalNeighborhoodOverlay({
       map.getCanvas().removeEventListener("mouseleave", onLeave);
       if (map.getStyle()) removeLayers(map);
     };
-  }, [map, mapReady, neighborhoods, theme]);
+  }, [map, mapReady, neighborhoods, onSelectDistrict, theme]);
 
   useEffect(() => {
     if (!map || !mapReady || !map.getLayer(ACTIVE)) return;
@@ -213,6 +216,7 @@ export function NationalNeighborhoodOverlay({
     setSelectedSlug(item.slug);
     selectedRef.current = item.slug;
     setQuery(item.name);
+    onSelectDistrict?.(item.slug);
     if (item.center && map) {
       map.easeTo({ center: [item.center.lng, item.center.lat], zoom: Math.max(map.getZoom(), 12.2), duration: 550 });
     }

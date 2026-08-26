@@ -74,8 +74,11 @@ export function RabatMarketZoneSheet({
     : `${metrics.listingDensityKm2.toLocaleString("fr-FR", { maximumFractionDigits: 1 })}/km²`;
   const mobileSheetClass = expanded
     ? "max-h-[min(74svh,620px)] overflow-y-auto"
-    : "max-h-[38svh] overflow-hidden";
+    : "max-h-[150px] overflow-hidden";
   const mobileDetailsClass = expanded ? "block" : "hidden sm:block";
+  const mobilePrimaryGridClass = expanded ? "grid" : "hidden sm:grid";
+  const mobilePrimaryFlexClass = expanded ? "flex" : "hidden sm:flex";
+  const mobilePrimaryLinkClass = expanded ? "inline-flex" : "hidden sm:inline-flex";
 
   return (
     <aside
@@ -111,7 +114,7 @@ export function RabatMarketZoneSheet({
         </button>
       </div>
 
-      <div className="mt-3 grid grid-cols-3 gap-2" data-akarfinder-zone-kpi-grid>
+      <div className={`mt-3 grid-cols-3 gap-2 ${mobilePrimaryGridClass}`} data-akarfinder-zone-kpi-grid>
         <div className={`rounded-xl border p-2 ${mode === "price" ? "border-brand-primary/45 bg-brand-primary-soft/55" : "border-border bg-surface/85"}`}>
           <p className="text-[8px] font-extrabold uppercase tracking-[0.08em] text-muted-foreground">Prix médian / m²</p>
           <p className="mt-1 break-words text-[11px] font-extrabold leading-4 text-foreground">{priceLabel}</p>
@@ -126,7 +129,7 @@ export function RabatMarketZoneSheet({
         </div>
       </div>
 
-      <div className="mt-2 flex items-center justify-between gap-2 rounded-lg bg-surface-muted/70 px-2.5 py-2 text-[9px]" data-akarfinder-live-zone-metric>
+      <div className={`mt-2 items-center justify-between gap-2 rounded-lg bg-surface-muted/70 px-2.5 py-2 text-[9px] ${mobilePrimaryFlexClass}`} data-akarfinder-live-zone-metric>
         <span className="font-extrabold text-brand-primary">Vue {modeLabel}</span>
         <span className="truncate font-bold text-foreground">{metricLabel}</span>
         <span className="shrink-0 font-semibold text-muted-foreground">n={feature.properties.sampleCount}</span>
@@ -134,7 +137,7 @@ export function RabatMarketZoneSheet({
 
       <Link
         href={searchHref}
-        className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-brand-primary px-4 py-2.5 text-[12px] font-extrabold text-white shadow-accent hover:bg-brand-primary-hover"
+        className={`mt-3 min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-brand-primary px-4 py-2.5 text-[12px] font-extrabold text-white shadow-accent hover:bg-brand-primary-hover ${mobilePrimaryLinkClass}`}
       >
         <Search size={14} aria-hidden="true" />
         Rechercher dans cette zone

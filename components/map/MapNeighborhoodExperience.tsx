@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Info, MapPin, RotateCcw, Search, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Map as MapLibreMap, Marker } from "maplibre-gl";
+import { NeighborhoodContextPoiOverlay } from "@/components/map/NeighborhoodContextPoiOverlay";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { resolveCityEntity } from "@/lib/geo/geo-entity-registry";
 import {
@@ -535,6 +536,14 @@ export function MapNeighborhoodExperience({
   return (
     <div className="relative min-w-0 overflow-hidden bg-background" style={{ height: "calc(100svh - 64px)" }}>
       <div ref={mapContainerRef} className="absolute inset-0 bg-[#eaf1f7] dark:bg-[#071426]" />
+
+      <NeighborhoodContextPoiOverlay
+        map={mapRef.current}
+        mapReady={mapLoaded}
+        citySlug={cityEntity?.slug ?? null}
+        districtSlug={navigationState.district ?? null}
+        placement="generic"
+      />
 
       <section
         className="absolute inset-x-3 top-3 z-20 rounded-2xl border border-border-strong/70 bg-card/95 p-2.5 text-card-foreground shadow-panel backdrop-blur-xl sm:inset-x-auto sm:left-4 sm:right-4 sm:top-4 sm:p-3 lg:right-auto lg:w-auto lg:max-w-[820px]"
