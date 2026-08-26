@@ -40,15 +40,36 @@ const NATIONAL_CITY_ALIASES: ReadonlyArray<{ city: string; aliases: string[] }> 
   return { city, aliases: [...aliases].filter(Boolean) };
 });
 
-const NATIONAL_DISTRICT_ALIASES: ReadonlyArray<{ city: string; district: string; aliases: string[] }> = Object.entries(
-  TIER_3_DISTRICTS,
-).flatMap(([city, districts]) =>
-  districts.map((district) => ({
-    city,
-    district,
-    aliases: [normalizeText(district)],
+const EVIDENCE_BACKED_DISTRICT_ALIASES: ReadonlyArray<{ city: string; district: string; aliases: readonly string[] }> = [
+  { city: "Agadir", district: "Marina", aliases: ["marina agadir", "agadir marina"] },
+  { city: "Agadir", district: "Amicales", aliases: ["amicales agadir", "agadir amicales"] },
+  { city: "Agadir", district: "Riad Salam", aliases: ["riad salam agadir", "agadir riad salam"] },
+  { city: "Agadir", district: "Anza", aliases: ["anza agadir", "agadir anza"] },
+  { city: "Agadir", district: "Secteur Touristique", aliases: ["secteur touristique agadir", "agadir secteur touristique"] },
+  { city: "Agadir", district: "Hay Najah", aliases: ["hay najah agadir", "agadir hay najah"] },
+  { city: "Agadir", district: "Tagadirt", aliases: ["tagadirt agadir", "agadir tagadirt"] },
+  { city: "Agadir", district: "Cité Adrar", aliases: ["cite adrar agadir", "agadir cite adrar"] },
+  { city: "Agadir", district: "Aghroud", aliases: ["aghroud agadir", "agadir aghroud"] },
+  { city: "Agadir", district: "Hay Salam", aliases: ["hay salam agadir", "agadir hay salam"] },
+  { city: "Agadir", district: "Al Wifaq", aliases: ["al wifaq agadir", "agadir al wifaq"] },
+  { city: "Agadir", district: "Taddart", aliases: ["taddart agadir", "agadir taddart", "taddart anza agadir"] },
+  { city: "Agadir", district: "Bensergao", aliases: ["ben serguaou agadir", "ben sergaou agadir", "ben sergua agadir", "agadir ben serguaou"] },
+];
+
+const NATIONAL_DISTRICT_ALIASES: ReadonlyArray<{ city: string; district: string; aliases: string[] }> = [
+  ...Object.entries(TIER_3_DISTRICTS).flatMap(([city, districts]) =>
+    districts.map((district) => ({
+      city,
+      district,
+      aliases: [normalizeText(district)],
+    })),
+  ),
+  ...EVIDENCE_BACKED_DISTRICT_ALIASES.map((entry) => ({
+    city: entry.city,
+    district: entry.district,
+    aliases: entry.aliases.map(normalizeText),
   })),
-);
+];
 
 function humanizeDistrictSlug(value: string): string | null {
   const decoded = (() => {
