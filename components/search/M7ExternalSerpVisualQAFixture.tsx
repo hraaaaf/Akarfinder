@@ -8,6 +8,8 @@ function fixtureResult(
   propertyType: string,
   intent: string,
   title: string,
+  priceMad?: number,
+  priceToVerify = false,
 ): SearchGatewayNormalizedResult {
   return {
     id,
@@ -34,9 +36,13 @@ function fixtureResult(
     normalized_city: city,
     normalized_property_type: propertyType,
     normalized_intent: intent,
+    normalized_price_mad: priceMad,
+    quality_score: priceToVerify ? 25 : 35,
     quality_tier: "Q0_link_only",
     display_eligibility: "eligible_secondary",
-    display_eligibility_reason: "external_minimal_index",
+    display_eligibility_reason: priceToVerify
+      ? "external_minimal_index|price_to_verify"
+      : "external_minimal_index",
   };
 }
 
@@ -48,6 +54,8 @@ const PRIMARY_GROUP = [
     "Appartement",
     "buy",
     "Appartement à vendre Maarif Casablanca 120 m2 1800000 DH",
+    1_250_000,
+    true,
   ),
   fixtureResult(
     "00000000-0000-4000-8000-000000000002",
@@ -56,6 +64,7 @@ const PRIMARY_GROUP = [
     "Appartement",
     "buy",
     "Appartement vente Maarif Casablanca 118 m2 1820000 DH",
+    1_820_000,
   ),
   fixtureResult(
     "00000000-0000-4000-8000-000000000003",

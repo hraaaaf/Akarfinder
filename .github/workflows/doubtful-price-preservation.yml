@@ -1,0 +1,38 @@
+name: Doubtful Price Preservation Gate
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - components/search/ExternalIndexedResultCard.tsx
+      - components/search/M7ExternalSerpVisualQAFixture.tsx
+      - lib/search-gateway/price-verification.ts
+      - scripts/search/__tests__/price-verification.test.ts
+      - supabase/migrations/20260826014000_preserve_doubtful_prices.sql
+      - .github/workflows/doubtful-price-preservation.yml
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: doubtful-price-preservation-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  focused:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Price verification policy tests
+        run: npx tsx --test scripts/search/__tests__/price-verification.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
