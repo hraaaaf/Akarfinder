@@ -40,15 +40,86 @@ const NATIONAL_CITY_ALIASES: ReadonlyArray<{ city: string; aliases: string[] }> 
   return { city, aliases: [...aliases].filter(Boolean) };
 });
 
-const NATIONAL_DISTRICT_ALIASES: ReadonlyArray<{ city: string; district: string; aliases: string[] }> = Object.entries(
-  TIER_3_DISTRICTS,
-).flatMap(([city, districts]) =>
-  districts.map((district) => ({
-    city,
-    district,
-    aliases: [normalizeText(district)],
+const EVIDENCE_BACKED_DISTRICT_ALIASES: ReadonlyArray<{ city: string; district: string; aliases: readonly string[] }> = [
+  { city: "Agadir", district: "Marina", aliases: ["marina agadir", "agadir marina"] },
+  { city: "Agadir", district: "Amicales", aliases: ["amicales agadir", "agadir amicales"] },
+  { city: "Agadir", district: "Riad Salam", aliases: ["riad salam agadir", "agadir riad salam"] },
+  { city: "Agadir", district: "Anza", aliases: ["anza agadir", "agadir anza"] },
+  { city: "Agadir", district: "Secteur Touristique", aliases: ["secteur touristique agadir", "agadir secteur touristique"] },
+  { city: "Agadir", district: "Hay Najah", aliases: ["hay najah agadir", "agadir hay najah"] },
+  { city: "Agadir", district: "Tagadirt", aliases: ["tagadirt agadir", "agadir tagadirt"] },
+  { city: "Agadir", district: "Cité Adrar", aliases: ["cite adrar agadir", "agadir cite adrar"] },
+  { city: "Agadir", district: "Aghroud", aliases: ["aghroud agadir", "agadir aghroud", "aghroud ben serguaou agadir", "aghroud ben sergaou agadir", "aghroud bensergao agadir"] },
+  { city: "Agadir", district: "Hay Salam", aliases: ["hay salam agadir", "agadir hay salam"] },
+  { city: "Agadir", district: "Al Wifaq", aliases: ["al wifaq agadir", "agadir al wifaq"] },
+  { city: "Agadir", district: "Taddart", aliases: ["taddart agadir", "agadir taddart", "taddart anza agadir"] },
+  { city: "Agadir", district: "Bensergao", aliases: ["ben serguaou agadir", "ben sergaou agadir", "ben sergua agadir", "agadir ben serguaou"] },
+];
+
+const NATIONAL_DISTRICT_ALIASES: ReadonlyArray<{ city: string; district: string; aliases: string[] }> = [
+  ...EVIDENCE_BACKED_DISTRICT_ALIASES.map((entry) => ({
+    city: entry.city,
+    district: entry.district,
+    aliases: entry.aliases.map(normalizeText),
   })),
-);
+  ...Object.entries(TIER_3_DISTRICTS).flatMap(([city, districts]) =>
+    districts.map((district) => ({
+      city,
+      district,
+      aliases: [normalizeText(district)],
+    })),
+  ),
+];
+
+function humanizeDistrictSlug(value: string): string | null {
+  const decoded = (() => {
+    try {
+      return decodeURIComponent(value);
+    } catch {
+      return value;
+    }
+  })();
+  const cleaned = decoded
+    .replace(/[?#].*$/, "")
+    .replace(/[-_]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!cleaned || cleaned.length < 2 || cleaned.length > 80) return null;
+  if (/^(autre|other|maroc|morocco|vente|location|achat|rent|buy)$/i.test(cleaned)) return null;
+  return cleaned
+    .split(" ")
+    .map((part) => part.length <= 2 ? part.toUpperCase() : `${part[0]?.toUpperCase() ?? ""}${part.slice(1).toLowerCase()}`)
+    .join(" ");
+}
+
+function extractStructuredPortalDistrict(value: string): { city: string; district: string } | null {
+  const urls = value.match(/https?:\/\/[^\s]+/gi) ?? [];
+  for (const rawUrl of urls) {
+    let url: URL;
+    try {
+      url = new URL(rawUrl.replace(/[),.;]+$/, ""));
+    } catch {
+      continue;
+    }
+    const host = url.hostname.toLowerCase().replace(/^www\./, "");
+    const pathname = url.pathname;
+    let districtSlug: string | null = null;
+
+    if (host === "agenz.ma") {
+      const match = pathname.match(/^\/(?:fr|en)\/annonces\/immo-[^/]+\/(?:vente|location)-[^/]+\/([^/]+)\/\d+\/?$/i);
+      districtSlug = match?.[1] ?? null;
+    } else if (host === "mouldar.com") {
+      const match = pathname.match(/^\/(?:fr|en)\/(?:achat|location|rent|buy)\/[^/]+\/[^/]+\/([^/]+)\/[^/]+\/?$/i);
+      districtSlug = match?.[1] ?? null;
+    }
+
+    if (!districtSlug) continue;
+    const city = extractCityNational(rawUrl);
+    const district = humanizeDistrictSlug(districtSlug);
+    if (city && district) return { city, district };
+  }
+  return null;
+}
 
 export function extractCityNational(value: string): string | null {
   const normalized = normalizeText(value);
@@ -61,6 +132,9 @@ export function extractCityNational(value: string): string | null {
 }
 
 export function extractDistrictNational(value: string): { city: string; district: string } | null {
+  const structured = extractStructuredPortalDistrict(value);
+  if (structured) return structured;
+
   const normalized = normalizeText(value);
   for (const entry of NATIONAL_DISTRICT_ALIASES) {
     if (entry.aliases.some((alias) => normalized.includes(alias))) {
