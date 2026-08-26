@@ -30,6 +30,7 @@ type ThinRow = {
   vertical_classification: string | null;
 };
 type SeedRow = { id: string; first_observed_at: string; last_observed_at: string };
+type DiscoveryEvidenceRow = { canonical_url: string; title: string | null; snippet: string | null; updated_at: string };
 type Mode = "dry-run" | "apply";
 
 function parseMode(): Mode {
@@ -87,6 +88,23 @@ async function loadSeeds(seedIds: string[]): Promise<Map<string, SeedRow>> {
   return new Map(rows.map((row) => [row.id, row]));
 }
 
+async function loadDiscoveryEvidence(canonicalUrls: string[]): Promise<Map<string, DiscoveryEvidenceRow>> {
+  const db = getSupabaseServerClient();
+  const evidence = new Map<string, DiscoveryEvidenceRow>();
+  for (const urls of chunk([...new Set(canonicalUrls)], LOOKUP_CHUNK)) {
+    const response = await db
+      .from("discovery_candidates")
+      .select("canonical_url,title,snippet,updated_at")
+      .in("canonical_url", urls)
+      .order("updated_at", { ascending: false });
+    if (response.error) throw new Error(response.error.message);
+    for (const row of (response.data ?? []) as DiscoveryEvidenceRow[]) {
+      if (!evidence.has(row.canonical_url)) evidence.set(row.canonical_url, row);
+    }
+  }
+  return evidence;
+}
+
 async function loadExistingUrls(): Promise<Set<string>> {
   const db = getSupabaseServerClient();
   const out = new Set<string>();
@@ -137,12 +155,14 @@ async function main() {
   const limit = parseLimit();
   const thinRows = await loadEligibleThinRows();
   const seeds = await loadSeeds(thinRows.map((row) => row.seed_id));
+  const discoveryEvidence = await loadDiscoveryEvidence(thinRows.map((row) => row.canonical_url));
   const existingUrls = await loadExistingUrls();
 
   const inputs: TrustedSeedListingInput[] = thinRows.flatMap((row) => {
     const seed = seeds.get(row.seed_id);
     const confidence = priceConfidence(row.recovery_confidence);
     if (!seed || !confidence) return [];
+    const discovery = discoveryEvidence.get(row.canonical_url);
     return [{
       seedId: row.seed_id,
       canonicalUrl: row.canonical_url,
@@ -153,6 +173,8 @@ async function main() {
       lastObservedAt: seed.last_observed_at,
       title: row.title,
       snippet: row.snippet,
+      discoveryTitle: discovery?.title ?? null,
+      discoverySnippet: discovery?.snippet ?? null,
       city: row.normalized_city ?? row.city ?? row.recovered_city,
       priceMad: row.normalized_price_mad == null ? null : Number(row.normalized_price_mad),
       priceConfidence: confidence,
@@ -175,6 +197,7 @@ async function main() {
     mode,
     limit,
     thinRowsLoaded: thinRows.length,
+    discoveryEvidenceRows: discoveryEvidence.size,
     plan,
     boundedWriteCount: bounded.length,
     invariants: {
@@ -184,6 +207,8 @@ async function main() {
       explicitCityRequired: true,
       explicitDistrictRequired: true,
       currentRegistryDetailUrlRequired: true,
+      ambiguousDocumentKindRequiresStrongRegistryDetailUrl: true,
+      discoveryEvidenceIsClassificationOnly: true,
       doubtfulPriceStatus: "ambiguous",
       dryRunDatabaseWrites: mode === "dry-run" ? 0 : null,
     },

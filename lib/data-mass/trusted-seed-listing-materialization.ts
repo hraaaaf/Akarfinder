@@ -24,6 +24,8 @@ export type TrustedSeedListingInput = {
   lastObservedAt: string;
   title: string | null;
   snippet: string | null;
+  discoveryTitle?: string | null;
+  discoverySnippet?: string | null;
   city: string | null;
   priceMad: number | null;
   priceConfidence: SeedPriceConfidence;
@@ -87,17 +89,22 @@ function canonicalIntent(value: string | null): "sale" | "rent" | null {
 
 export function evaluateTrustedSeedListing(input: TrustedSeedListingInput): TrustedSeedListingDecision {
   const reasons: string[] = [];
-  if (input.documentKind !== "LISTING") reasons.push("document_kind_not_listing");
+  const detailUrlAdmissible = matchesCurrentRegistryDetailUrl(input.sourceDomain, input.canonicalUrl);
+  const documentKindAdmissible = input.documentKind === "LISTING" || (input.documentKind === "AMBIGUOUS" && detailUrlAdmissible);
+  if (!documentKindAdmissible) reasons.push("document_kind_not_listing_or_strong_detail");
   if (input.verticalClassification !== "real_estate_likely") reasons.push("vertical_not_real_estate_likely");
-  if (!matchesCurrentRegistryDetailUrl(input.sourceDomain, input.canonicalUrl)) reasons.push("registry_detail_url_not_admissible");
+  if (!detailUrlAdmissible) reasons.push("registry_detail_url_not_admissible");
   if (urlHasSensitiveMaterial(input.canonicalUrl)) reasons.push("sensitive_material_in_url");
 
   const price = input.priceMad;
   if (price === null || !Number.isFinite(price) || price <= 0 || price > MAX_PRICE_MAD) reasons.push("price_invalid");
 
-  const evidence = `${input.canonicalUrl} ${input.title ?? ""} ${input.snippet ?? ""}`;
-  const explicitCity = extractCityNational(evidence);
-  const explicitDistrict = extractDistrictNational(evidence);
+  // Prefer the page URL + page title for geography. Snippets can contain related
+  // listings or agency-office locations, so they are fallback evidence only.
+  const primaryEvidence = `${input.canonicalUrl} ${input.title ?? ""} ${input.discoveryTitle ?? ""}`;
+  const fallbackEvidence = `${primaryEvidence} ${input.snippet ?? ""} ${input.discoverySnippet ?? ""}`;
+  const explicitCity = extractCityNational(primaryEvidence) ?? extractCityNational(fallbackEvidence);
+  const explicitDistrict = extractDistrictNational(primaryEvidence) ?? extractDistrictNational(fallbackEvidence);
   const city = input.city?.trim() || null;
   if (!city || !explicitCity || normalize(city) !== normalize(explicitCity)) reasons.push("explicit_city_missing_or_mismatch");
   if (!explicitDistrict || !city || normalize(explicitDistrict.city) !== normalize(city)) reasons.push("explicit_district_missing_or_mismatch");
@@ -150,6 +157,7 @@ export function buildLinkOnlyPropertyRow(decision: TrustedSeedListingDecision, n
       price: decision.priceConfidence === "trusted" ? "trusted_economic_ledger" : "price_to_verify",
       city: "explicit_index_evidence",
       district: "explicit_index_evidence",
+      document_kind: decision.input.documentKind === "AMBIGUOUS" ? "strong_registry_detail_override" : "listing_classifier",
       freshness_status: decision.input.freshnessStatus,
     },
     updated_at: now,
@@ -194,9 +202,10 @@ export async function materializeTrustedSeedListings(input: {
   for (const batch of chunk(selected)) {
     try {
       const propertyPayload = batch.map((decision) => buildLinkOnlyPropertyRow(decision, now));
-      const propertyResponse = await db.from("property_listings").upsert(propertyPayload, { onConflict: "canonical_fingerprint" }).select("id,canonical_fingerprint");
-      if (propertyResponse.error) throw new Error(propertyResponse.error.message);
-      const propertyRows = propertyResponse.data as Array<{ id: number; canonical_fingerprint: string }>;
+      const propertyResponse = db.from("property_listings").upsert(propertyPayload, { onConflict: "canonical_fingerprint" }).select("id,canonical_fingerprint");
+      const resolvedPropertyResponse = await propertyResponse;
+      if (resolvedPropertyResponse.error) throw new Error(resolvedPropertyResponse.error.message);
+      const propertyRows = resolvedPropertyResponse.data as Array<{ id: number; canonical_fingerprint: string }>;
       const propertyByFingerprint = new Map(propertyRows.map((row) => [row.canonical_fingerprint, row.id]));
       newPropertyListings += propertyRows.length;
 
