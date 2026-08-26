@@ -92,6 +92,11 @@ const NATIONAL_DISTRICT_ALIASES: ReadonlyArray<{ city: string; district: string;
   ),
 ];
 
+type StructuredDistrictResult =
+  | { kind: "match"; city: string; district: string }
+  | { kind: "ambiguous" }
+  | null;
+
 function humanizeDistrictSlug(value: string): string | null {
   const decoded = (() => {
     try {
@@ -127,7 +132,7 @@ function phraseInNormalizedPath(pathname: string, alias: string): boolean {
   return normalizedAlias.length > 0 && normalizedPath.includes(` ${normalizedAlias} `);
 }
 
-function extractStructuredPortalDistrict(value: string): { city: string; district: string } | null {
+function extractStructuredPortalDistrict(value: string): StructuredDistrictResult {
   const urls = value.match(/https?:\/\/[^\s]+/gi) ?? [];
   for (const rawUrl of urls) {
     let url: URL;
@@ -149,18 +154,20 @@ function extractStructuredPortalDistrict(value: string): { city: string; distric
     } else if (host === "daragadir.com") {
       const isDetail = /^\/annonces\/annonces-immobilieres\/(?:vente|location|location-de-vacances)\/[^/]+\/[^/]+\.html$/i.test(pathname);
       if (!isDetail || extractCityNational(rawUrl) !== "Agadir") continue;
-      for (const entry of DARAGADIR_STRUCTURED_DISTRICTS) {
-        if (entry.aliases.some((alias) => phraseInNormalizedPath(pathname, alias))) {
-          return { city: "Agadir", district: entry.district };
-        }
-      }
+      const districts = [...new Set(
+        DARAGADIR_STRUCTURED_DISTRICTS
+          .filter((entry) => entry.aliases.some((alias) => phraseInNormalizedPath(pathname, alias)))
+          .map((entry) => entry.district),
+      )];
+      if (districts.length === 1) return { kind: "match", city: "Agadir", district: districts[0]! };
+      if (districts.length > 1) return { kind: "ambiguous" };
       continue;
     }
 
     if (!districtSlug) continue;
     const city = extractCityNational(rawUrl);
     const district = humanizeDistrictSlug(districtSlug);
-    if (city && district) return { city, district };
+    if (city && district) return { kind: "match", city, district };
   }
   return null;
 }
@@ -177,7 +184,8 @@ export function extractCityNational(value: string): string | null {
 
 export function extractDistrictNational(value: string): { city: string; district: string } | null {
   const structured = extractStructuredPortalDistrict(value);
-  if (structured) return structured;
+  if (structured?.kind === "match") return { city: structured.city, district: structured.district };
+  if (structured?.kind === "ambiguous") return null;
 
   const normalized = normalizeText(value);
   for (const entry of NATIONAL_DISTRICT_ALIASES) {

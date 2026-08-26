@@ -39,6 +39,17 @@ test("recovers DarAgadir district phrases from individual detail slugs", () => {
   );
 });
 
+test("rejects DarAgadir detail slugs with multiple explicit district matches", () => {
+  assert.equal(
+    extractDistrictNational("https://daragadir.com/annonces/annonces-immobilieres/location/magasins-et-commerces-a-louer-a-agadir/local-commercial-a-louer-a-agadir-amsernate-580-m%C2%B2-en-plein-centre-ville-pour-25-000-dh.html"),
+    null,
+  );
+  assert.equal(
+    extractDistrictNational("https://daragadir.com/annonces/annonces-immobilieres/vente/appartements-a-vendre-a-agadir/appartements-a-vendre-a-agadir-el-houda-superficie-de-82-a-92-m%C2%B2-a-tassila-3-chambres-prix-en-hausse-a-935-000-dh.html"),
+    null,
+  );
+});
+
 test("DarAgadir standalone aliases stay scoped to individual detail URLs", () => {
   assert.equal(
     extractDistrictNational("https://daragadir.com/annonces/annonces-immobilieres/location/appartements-a-louer-a-agadir/"),
