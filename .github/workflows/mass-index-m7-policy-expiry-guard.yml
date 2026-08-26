@@ -1,0 +1,31 @@
+name: MASS-INDEX M7 Policy Expiry Guard
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "supabase/migrations/20260826200000_mass_index_m7_policy_expiry_guard.sql"
+      - "scripts/data-mass/__tests__/mass-index-m7-policy-expiry-guard.test.ts"
+      - ".github/workflows/mass-index-m7-policy-expiry-guard.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify-policy-expiry-guard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: M7 policy-expiry regression tests
+        run: npx tsx --test scripts/data-mass/__tests__/mass-index-m7-policy-expiry-guard.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
