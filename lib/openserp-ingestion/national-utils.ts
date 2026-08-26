@@ -49,16 +49,13 @@ const EVIDENCE_BACKED_DISTRICT_ALIASES: ReadonlyArray<{ city: string; district: 
   { city: "Agadir", district: "Hay Najah", aliases: ["hay najah agadir", "agadir hay najah"] },
   { city: "Agadir", district: "Tagadirt", aliases: ["tagadirt agadir", "agadir tagadirt"] },
   { city: "Agadir", district: "Cité Adrar", aliases: ["cite adrar agadir", "agadir cite adrar"] },
-  { city: "Agadir", district: "Aghroud", aliases: ["aghroud agadir", "agadir aghroud"] },
+  { city: "Agadir", district: "Aghroud", aliases: ["aghroud agadir", "agadir aghroud", "aghroud ben serguaou agadir", "aghroud ben sergaou agadir", "aghroud bensergao agadir"] },
   { city: "Agadir", district: "Hay Salam", aliases: ["hay salam agadir", "agadir hay salam"] },
   { city: "Agadir", district: "Al Wifaq", aliases: ["al wifaq agadir", "agadir al wifaq"] },
   { city: "Agadir", district: "Taddart", aliases: ["taddart agadir", "agadir taddart", "taddart anza agadir"] },
   { city: "Agadir", district: "Bensergao", aliases: ["ben serguaou agadir", "ben sergaou agadir", "ben sergua agadir", "agadir ben serguaou"] },
 ];
 
-// Evidence-backed compound/locality aliases are more specific than the broad
-// vetted district dictionary (for example `Aghroud Ben Serguaou`). Prefer the
-// explicit, city-bound phrase first; fall back to the historical dictionary.
 const NATIONAL_DISTRICT_ALIASES: ReadonlyArray<{ city: string; district: string; aliases: string[] }> = [
   ...EVIDENCE_BACKED_DISTRICT_ALIASES.map((entry) => ({
     city: entry.city,
