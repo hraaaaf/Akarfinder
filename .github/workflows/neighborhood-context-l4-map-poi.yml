@@ -6,6 +6,7 @@ on:
       - "components/map/**"
       - "app/map/**"
       - "lib/neighborhood-context/**"
+      - "scripts/scrapers/__tests__/neighborhood-context-map-poi-l4.test.ts"
       - "scripts/audits/neighborhood-context-l4-**"
       - "docs/NEIGHBORHOOD_CONTEXT_L4_VISUAL_TARGET.md"
       - "docs/visual-targets/neighborhood-context-l4-map-reperes.svg"
@@ -59,5 +60,50 @@ jobs:
         with:
           name: neighborhood-context-l4-before-${{ github.run_id }}
           path: data/audits/neighborhood-context-l4-before
+          if-no-files-found: error
+          retention-days: 30
+
+  after-gate:
+    if: ${{ contains(github.event.pull_request.title || '', '[L4 AFTER]') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    env:
+      AUDIT_OUTPUT_DIR: data/audits/neighborhood-context-l4-after
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: L4 presentation contract
+        run: npx tsx --test scripts/scrapers/__tests__/neighborhood-context-map-poi-l4.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Production build
+        run: npm run build
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Capture and certify L4 AFTER
+        run: node scripts/audits/neighborhood-context-l4-after-audit.mjs
+
+      - name: Upload L4 AFTER evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: neighborhood-context-l4-after-${{ github.run_id }}
+          path: data/audits/neighborhood-context-l4-after
           if-no-files-found: error
           retention-days: 30

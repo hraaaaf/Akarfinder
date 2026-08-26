@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import type { Map as MapLibreMap } from "maplibre-gl";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { NationalNeighborhoodOverlay, type NationalNeighborhood } from "@/components/map/NationalNeighborhoodOverlay";
+import { NeighborhoodContextPoiOverlay } from "@/components/map/NeighborhoodContextPoiOverlay";
 
 const NEIGHBORHOOD_SOURCE = "akarfinder-national-neighborhood-points";
 
@@ -18,10 +19,14 @@ type CityNeighborhoodPayload = {
   };
 };
 
-type Props = { citySlug: string | null };
+type Props = {
+  citySlug: string | null;
+  districtSlug: string | null;
+  onSelectDistrict: (slug: string) => void;
+};
 type NationalMapWindow = Window & { __AKARFINDER_NATIONAL_MAP__?: MapLibreMap };
 
-export function NationalNeighborhoodOverlayBridge({ citySlug }: Props) {
+export function NationalNeighborhoodOverlayBridge({ citySlug, districtSlug, onSelectDistrict }: Props) {
   const [payload, setPayload] = useState<CityNeighborhoodPayload | null>(null);
   const [map, setMap] = useState<MapLibreMap | null>(null);
   const [mapReady, setMapReady] = useState(false);
@@ -69,8 +74,6 @@ export function NationalNeighborhoodOverlayBridge({ citySlug }: Props) {
 
     const handleStyleLoad = () => {
       if (!markReady() || !current) return;
-      // setStyle() removes custom sources/layers. A genuinely replaced style
-      // therefore needs a fresh overlay mount, but ordinary readiness does not.
       if (!current.getSource(NEIGHBORHOOD_SOURCE)) setStyleEpoch((value) => value + 1);
     };
 
@@ -92,10 +95,6 @@ export function NationalNeighborhoodOverlayBridge({ citySlug }: Props) {
         return;
       }
       current.on("style.load", handleStyleLoad);
-      // The map is published from NationalTerritoryExperience during style.load.
-      // If this bridge discovers it just after that event, the listener above
-      // cannot observe the already-fired event. Poll readiness until the style
-      // settles instead of leaving mapReady=false forever.
       waitForStyleReady();
     };
 
@@ -111,16 +110,26 @@ export function NationalNeighborhoodOverlayBridge({ citySlug }: Props) {
   if (!citySlug || !payload) return null;
 
   return (
-    <NationalNeighborhoodOverlay
-      key={`${payload.place.slug}:${styleEpoch}`}
-      map={map}
-      mapReady={mapReady}
-      citySlug={payload.place.slug}
-      cityName={payload.place.name}
-      neighborhoods={payload.neighborhoods}
-      centeredNeighborhoodCount={payload.meta.centeredNeighborhoodCount}
-      certifiedNeighborhoodBoundaryCount={payload.meta.certifiedNeighborhoodBoundaryCount}
-      theme={theme}
-    />
+    <>
+      <NationalNeighborhoodOverlay
+        key={`${payload.place.slug}:${styleEpoch}`}
+        map={map}
+        mapReady={mapReady}
+        citySlug={payload.place.slug}
+        cityName={payload.place.name}
+        neighborhoods={payload.neighborhoods}
+        centeredNeighborhoodCount={payload.meta.centeredNeighborhoodCount}
+        certifiedNeighborhoodBoundaryCount={payload.meta.certifiedNeighborhoodBoundaryCount}
+        theme={theme}
+        onSelectDistrict={onSelectDistrict}
+      />
+      <NeighborhoodContextPoiOverlay
+        map={map}
+        mapReady={mapReady}
+        citySlug={payload.place.slug}
+        districtSlug={districtSlug}
+        placement="national"
+      />
+    </>
   );
 }

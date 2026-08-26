@@ -27,6 +27,7 @@ export function NationalMapRouter({ initialState }: Props) {
   const rawCity = params.get("city");
   const rawLayer = params.get("layer") ?? MAP_LAYER_EXPLORE;
   const selectedCitySlug = useMemo(() => safeSlug(rawCity), [rawCity]);
+  const selectedDistrictSlug = useMemo(() => safeSlug(params.get("district")), [params]);
   const premiumProvider = getPremiumMarketIntelligenceProvider(selectedCitySlug ?? "all");
   const useNationalExplore = rawLayer === MAP_LAYER_EXPLORE && premiumProvider !== "rabat-market-intelligence";
 
@@ -37,6 +38,15 @@ export function NationalMapRouter({ initialState }: Props) {
     next.set("layer", MAP_LAYER_EXPLORE);
     router.push(`/map?${next.toString()}`, { scroll: false });
   }, [params, router]);
+
+  const selectDistrict = useCallback((slug: string) => {
+    if (!selectedCitySlug) return;
+    const next = new URLSearchParams(params.toString());
+    next.set("city", selectedCitySlug);
+    next.set("district", slug);
+    next.set("layer", MAP_LAYER_EXPLORE);
+    router.push(`/map?${next.toString()}`, { scroll: false });
+  }, [params, router, selectedCitySlug]);
 
   const backToMorocco = useCallback(() => {
     const next = new URLSearchParams(params.toString());
@@ -55,7 +65,11 @@ export function NationalMapRouter({ initialState }: Props) {
         onSelectCity={selectCity}
         onBackToMorocco={backToMorocco}
       />
-      <NationalNeighborhoodOverlayBridge citySlug={selectedCitySlug} />
+      <NationalNeighborhoodOverlayBridge
+        citySlug={selectedCitySlug}
+        districtSlug={selectedDistrictSlug}
+        onSelectDistrict={selectDistrict}
+      />
     </div>
   );
 }

@@ -3,6 +3,7 @@
 import { RotateCcw } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Map as MapLibreMap } from "maplibre-gl";
+import { NeighborhoodContextPoiOverlay } from "@/components/map/NeighborhoodContextPoiOverlay";
 import { RabatMarketZoneSheet } from "@/components/map/RabatMarketZoneSheet";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { applyAkarFinderBasemapTreatment } from "@/lib/map/akarfinder-territorial-style";
@@ -336,6 +337,14 @@ export function RabatMarketIntelligenceExperience({
       data-p4-basemap="territorial-muted"
     >
       <div ref={mapContainerRef} className="absolute inset-0 bg-[#eaf1f7] dark:bg-[#071426]" />
+
+      <NeighborhoodContextPoiOverlay
+        map={mapRef.current}
+        mapReady={mapLoaded}
+        citySlug="rabat"
+        districtSlug={navigationState.district ?? null}
+        placement="market"
+      />
 
       <section
         className="absolute inset-x-3 top-3 z-20 rounded-[22px] border border-white/80 bg-card/94 p-3 shadow-[0_18px_50px_rgba(15,35,66,0.14)] backdrop-blur-xl sm:inset-x-auto sm:left-4 sm:right-4 sm:top-4 lg:right-auto lg:w-[min(900px,calc(100vw-430px))]"
