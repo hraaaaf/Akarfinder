@@ -1,0 +1,36 @@
+name: Seed Conversion Recovery Gate
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - lib/openserp-ingestion/national-utils.ts
+      - scripts/scrapers/__tests__/openserp-structured-district-recovery.test.ts
+      - supabase/migrations/20260826002000_fix_price_mad_thousands_and_low_rents.sql
+      - .github/workflows/seed-conversion-recovery.yml
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: seed-conversion-recovery-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  focused:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Structured district recovery tests
+        run: npx tsx --test scripts/scrapers/__tests__/openserp-structured-district-recovery.test.ts
+      - name: Existing minimum-facts regression
+        run: npx tsx --test scripts/scrapers/__tests__/openserp-minimum-listing-facts.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
