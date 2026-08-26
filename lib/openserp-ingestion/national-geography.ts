@@ -190,7 +190,7 @@ export const PROPERTY_TYPE_ARABIC_NAMES: Readonly<Record<string, string>> = {
   "magasin": "متجر",
   "ferme": "مزرعة",
   "immeuble": "عمارة",
-  "duplex": "دوبلكs",
+  "duplex": "دوبلكس",
 };
 
 export function getDistrictsForCity(city: string): readonly string[] {
