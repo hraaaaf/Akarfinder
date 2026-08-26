@@ -33,8 +33,6 @@ function findMapIntelligence(city: string, neighborhood: string) {
     priceLabel: point.priceSignal.label,
     pricePeriod: point.benchmark.period,
     confidence: point.confidence,
-    lifestyleTags: [...point.lifestyleTags],
-    proximityHighlights: [...point.proximityHighlights],
   };
 }
 

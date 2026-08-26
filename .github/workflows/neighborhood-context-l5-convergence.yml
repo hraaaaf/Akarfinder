@@ -1,0 +1,94 @@
+name: Neighborhood Context L5 Convergence
+
+on:
+  pull_request:
+    paths:
+      - "app/page.tsx"
+      - "app/immobilier/**"
+      - "app/quartiers/**"
+      - "app/listings/**"
+      - "app/visual-qa/announcement-page-living-here/**"
+      - "components/landing/SignatureMapSection.tsx"
+      - "components/listings/LivingHere**"
+      - "components/neighborhood-context/**"
+      - "lib/neighborhood-context/**"
+      - "lib/geo/living-here-service.ts"
+      - "lib/geo/living-here-converged-service.ts"
+      - "lib/geo/living-here-context.ts"
+      - "lib/seo-neighborhood-pages/**"
+      - "scripts/audits/neighborhood-context-l5-**"
+      - "scripts/scrapers/__tests__/neighborhood-context-l5-convergence.test.ts"
+      - "docs/NEIGHBORHOOD_CONTEXT_L5_VISUAL_TARGET.md"
+      - "docs/visual-targets/neighborhood-context-l5-convergence.svg"
+      - ".github/workflows/neighborhood-context-l5-convergence.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: neighborhood-context-l5-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  before-gate:
+    if: ${{ !contains(github.event.pull_request.title || '', '[L5 AFTER]') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    env:
+      AUDIT_OUTPUT_DIR: data/audits/neighborhood-context-l5-before
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: npm }
+      - run: npm ci
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Capture L5 BEFORE
+        run: node scripts/audits/neighborhood-context-l5-before-audit.mjs
+      - name: Upload L5 BEFORE evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: neighborhood-context-l5-before-${{ github.run_id }}
+          path: data/audits/neighborhood-context-l5-before
+          if-no-files-found: error
+          retention-days: 30
+
+  after-gate:
+    if: ${{ contains(github.event.pull_request.title || '', '[L5 AFTER]') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      AUDIT_OUTPUT_DIR: data/audits/neighborhood-context-l5-after
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: npm }
+      - run: npm ci
+      - name: L5 convergence contract
+        run: npx tsx --test scripts/scrapers/__tests__/neighborhood-context-l5-convergence.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Capture and certify L5 AFTER
+        run: node scripts/audits/neighborhood-context-l5-after-audit.mjs
+      - name: Upload L5 AFTER evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: neighborhood-context-l5-after-${{ github.run_id }}
+          path: data/audits/neighborhood-context-l5-after
+          if-no-files-found: error
+          retention-days: 30

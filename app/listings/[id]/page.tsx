@@ -1,7 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { AnnouncementPageShell } from "@/components/listings/AnnouncementPageShell";
 import { queryListingById } from "@/lib/db/index";
-import { buildLivingHereForListing } from "@/lib/geo/living-here-service";
+import { buildConvergedLivingHereForListing } from "@/lib/geo/living-here-converged-service";
 import { buildStreetRealityForListing } from "@/lib/geo/street-reality-service";
 import type { Listing } from "@/lib/listings/types";
 import { mapDbRowToListing } from "@/lib/listings/map-db-listing";
@@ -51,9 +51,9 @@ async function renderListing(
   let marketComparables = null;
   let akarEstimateHistory = null;
   try {
-    livingHere = await buildLivingHereForListing(listing);
+    livingHere = await buildConvergedLivingHereForListing(listing);
   } catch (error) {
-    console.error("[listings] ANN-L6 living-here failed closed for id:", listing.id, error);
+    console.error("[listings] NCI/ANN-L6 living-here failed closed for id:", listing.id, error);
   }
   try {
     streetReality = await buildStreetRealityForListing(listing);

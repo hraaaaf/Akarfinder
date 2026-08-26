@@ -1,20 +1,25 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { ArrowRight, MapPin } from "lucide-react";
+import { MapPin } from "lucide-react";
 import { GeoResultPreview } from "@/components/geo/GeoResultPreview";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { TerritoryMiniMap } from "@/components/map/TerritoryMiniMap";
+import { NeighborhoodContextPanel } from "@/components/neighborhood-context/NeighborhoodContextPanel";
 import { Container } from "@/components/ui/Container";
 import { isSeoEligibleGeoPair } from "@/lib/geo/geo-entity-registry";
 import { getNeighborhoodBySlug as getCanonicalNeighborhoodBySlug } from "@/lib/map/canonical-neighborhood-data";
 import { buildMapHref, buildMapSearchHref, parseMapNavigationState } from "@/lib/map/map-navigation-state";
+import { neighborhoodCoverageLabel } from "@/lib/neighborhood-context/presentation";
+import { getNeighborhoodContextReadModelBySlugs } from "@/lib/neighborhood-context/read-model";
 import { searchListings } from "@/lib/search";
 import { getAllNeighborhoods, getNeighborhoodBySlug } from "@/lib/seo-neighborhood-pages/neighborhood-seo-data";
 import { generateNeighborhoodSeoMetadata } from "@/lib/seo-neighborhood-pages/seo-metadata";
 import { isValidDistrictSlug } from "@/lib/seo-neighborhood-pages/types";
 import { isValidCitySlug } from "@/lib/seo-city-pages/types";
+
+export const revalidate = 300;
 
 type PageProps = {
   params: Promise<{ city: string; district: string }>;
@@ -26,13 +31,6 @@ function withSearchParam(href: string, key: string, value: string): string {
   const params = new URLSearchParams(query);
   params.set(key, value);
   return `${pathname}?${params.toString()}`;
-}
-
-function confidenceLabel(value: "high" | "medium" | "low" | undefined) {
-  if (value === "high") return "Élevée";
-  if (value === "medium") return "Moyenne";
-  if (value === "low") return "Faible";
-  return "Non publiée";
 }
 
 export async function generateStaticParams() {
@@ -71,7 +69,9 @@ export default async function DistrictPage({ params, searchParams }: PageProps) 
   const mapHref = buildMapHref(navigationState);
   const result = await searchListings({ city: n.cityDisplayName, district: n.displayName, limit: 6 }).catch(() => ({ listings: [] }));
   const mapPoint = getCanonicalNeighborhoodBySlug(n.cityDisplayName, n.displayName);
-  const proximityCount = n.intelligence?.proximityHighlights?.length ?? 0;
+  const contextModel = getNeighborhoodContextReadModelBySlugs(n.citySlug, n.slug);
+  const anchorCount = contextModel?.anchor_count ?? 0;
+  const coverageStatus = contextModel?.coverage_status ?? "unavailable";
 
   const breadcrumbJsonLd = {
     "@context": "https://schema.org",
@@ -96,7 +96,7 @@ export default async function DistrictPage({ params, searchParams }: PageProps) 
               <div className="min-w-0">
                 <p className="text-[10.5px] font-black uppercase tracking-[0.18em] text-brand-primary">{n.cityDisplayName} · quartier</p>
                 <h1 className="mt-2 text-[2.25rem] font-black leading-[1.02] tracking-[-0.05em] text-[#0B2545] sm:text-[3.35rem]">{n.displayName}, en données utiles</h1>
-                <p className="mt-3 max-w-xl text-[13.5px] font-medium leading-6 text-slate-500">Repère marché, vie locale et biens accessibles réunis avant d’ouvrir Search.</p>
+                <p className="mt-3 max-w-xl text-[13.5px] font-medium leading-6 text-slate-500">Repère marché, vie locale vérifiée et biens accessibles réunis avant d’ouvrir Search.</p>
 
                 <div className="mt-5 grid grid-cols-3 gap-2.5">
                   <article data-p6-summary="market" className="min-w-0 rounded-2xl border border-blue-100 bg-blue-50/55 p-3.5">
@@ -106,13 +106,13 @@ export default async function DistrictPage({ params, searchParams }: PageProps) 
                   </article>
                   <article data-p6-summary="living" className="min-w-0 rounded-2xl border border-cyan-100 bg-cyan-50/50 p-3.5">
                     <p className="text-[9px] font-black uppercase tracking-[0.12em] text-slate-500">Vie locale</p>
-                    <p className="mt-1.5 text-[14px] font-black text-[#0B2545]">{proximityCount > 0 ? `${proximityCount} repères` : "Non publiée"}</p>
-                    <p className="mt-1 text-[9.5px] font-semibold leading-4 text-slate-500">{proximityCount > 0 ? "documentés localement" : "aucune proximité inventée"}</p>
+                    <p className="mt-1.5 text-[14px] font-black text-[#0B2545]">{anchorCount} repère{anchorCount > 1 ? "s" : ""}</p>
+                    <p className="mt-1 text-[9.5px] font-semibold leading-4 text-slate-500">issus du read-model NCI</p>
                   </article>
                   <article data-p6-summary="confidence" className="min-w-0 rounded-2xl border border-slate-200 bg-slate-50 p-3.5">
-                    <p className="text-[9px] font-black uppercase tracking-[0.12em] text-slate-500">Confiance</p>
-                    <p className="mt-1.5 text-[14px] font-black text-[#0B2545]">{confidenceLabel(n.intelligence?.confidence)}</p>
-                    <p className="mt-1 text-[9.5px] font-semibold leading-4 text-slate-500">concerne les repères publiés</p>
+                    <p className="text-[9px] font-black uppercase tracking-[0.12em] text-slate-500">Couverture</p>
+                    <p className="mt-1.5 text-[14px] font-black text-[#0B2545]">{neighborhoodCoverageLabel(coverageStatus)}</p>
+                    <p className="mt-1 text-[9.5px] font-semibold leading-4 text-slate-500">aucun complément inventé</p>
                   </article>
                 </div>
 
@@ -134,15 +134,9 @@ export default async function DistrictPage({ params, searchParams }: PageProps) 
               )}
             </div>
 
-            {(n.intelligence?.lifestyleTags?.length || n.intelligence?.proximityHighlights?.length) ? (
-              <div data-p6-stage="vie-locale-detail" className="mt-6 rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-[9.5px] font-black uppercase tracking-[0.13em] text-brand-primary">Vie locale</span>
-                  {n.intelligence?.lifestyleTags?.slice(0, 5).map((tag) => <span key={tag} className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-bold text-slate-600">{tag}</span>)}
-                </div>
-                {n.intelligence?.proximityHighlights?.length ? <p className="mt-2 text-[10.5px] font-semibold leading-5 text-slate-500">{n.intelligence.proximityHighlights.slice(0, 4).join(" · ")}</p> : null}
-              </div>
-            ) : null}
+            <div data-p6-stage="vie-locale-detail" className="mt-6">
+              <NeighborhoodContextPanel model={contextModel} city={n.cityDisplayName} neighborhood={n.displayName} />
+            </div>
           </Container>
         </section>
 

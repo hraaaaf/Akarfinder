@@ -8,6 +8,7 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { TerritoryMiniMap } from "@/components/map/TerritoryMiniMap";
 import { Container } from "@/components/ui/Container";
 import { getNeighborhoodBySlug as getCanonicalNeighborhoodBySlug } from "@/lib/map/canonical-neighborhood-data";
+import { getNeighborhoodContextReadModelBySlugs } from "@/lib/neighborhood-context/read-model";
 import { getCityBySlug, getAllCities } from "@/lib/seo-city-pages/city-seo-data";
 import { generateCitySeoMetadata } from "@/lib/seo-city-pages/seo-metadata";
 import { getNeighborhoodsByCity } from "@/lib/seo-neighborhood-pages/neighborhood-seo-data";
@@ -52,7 +53,10 @@ export default async function CityPage({ params }: CityPageProps) {
     .map((neighborhood) => getCanonicalNeighborhoodBySlug(cityData.displayName, neighborhood.slug))
     .filter((point) => point !== null);
   const marketNeighborhoodCount = neighborhoods.filter((neighborhood) => Boolean(neighborhood.intelligence?.priceLabel)).length;
-  const lifestyleSignals = new Set(neighborhoods.flatMap((neighborhood) => neighborhood.intelligence?.lifestyleTags ?? []));
+  const livingAnchorCount = neighborhoods.reduce(
+    (sum, neighborhood) => sum + (getNeighborhoodContextReadModelBySlugs(neighborhood.citySlug, neighborhood.slug)?.anchor_count ?? 0),
+    0,
+  );
   const cityCenter = mapPoints.length > 0
     ? {
         lat: mapPoints.reduce((sum, point) => sum + point.lat, 0) / mapPoints.length,
@@ -81,8 +85,8 @@ export default async function CityPage({ params }: CityPageProps) {
                   </article>
                   <article data-p6-summary="living" className="min-w-0 rounded-2xl border border-cyan-100 bg-cyan-50/50 p-3.5">
                     <p className="text-[9px] font-black uppercase tracking-[0.12em] text-slate-500">Vie locale</p>
-                    <p className="mt-1.5 text-[15px] font-black text-[#0B2545]">{lifestyleSignals.size > 0 ? plural(lifestyleSignals.size, "signal", "signaux") : "Non publiée"}</p>
-                    <p className="mt-1 text-[9.5px] font-semibold leading-4 text-slate-500">issus des quartiers documentés</p>
+                    <p className="mt-1.5 text-[15px] font-black text-[#0B2545]">{livingAnchorCount > 0 ? plural(livingAnchorCount, "repère", "repères") : "Non publiée"}</p>
+                    <p className="mt-1 text-[9.5px] font-semibold leading-4 text-slate-500">issus du read-model NCI</p>
                   </article>
                   <article data-p6-summary="territory" className="min-w-0 rounded-2xl border border-slate-200 bg-slate-50 p-3.5">
                     <p className="text-[9px] font-black uppercase tracking-[0.12em] text-slate-500">Territoire</p>
