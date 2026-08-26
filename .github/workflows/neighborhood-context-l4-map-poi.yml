@@ -12,6 +12,15 @@ on:
       - "docs/visual-targets/neighborhood-context-l4-map-reperes.svg"
       - ".github/workflows/neighborhood-context-l4-map-poi.yml"
   workflow_dispatch:
+    inputs:
+      phase:
+        description: "Visual certification phase"
+        required: true
+        default: after
+        type: choice
+        options:
+          - before
+          - after
 
 permissions:
   contents: read
@@ -22,7 +31,7 @@ concurrency:
 
 jobs:
   before-gate:
-    if: ${{ !contains(github.event.pull_request.title || '', '[L4 AFTER]') }}
+    if: ${{ (github.event_name == 'pull_request' && contains(github.event.pull_request.title || '', '[L4 BEFORE]')) || (github.event_name == 'workflow_dispatch' && inputs.phase == 'before') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 35
     env:
@@ -64,7 +73,7 @@ jobs:
           retention-days: 30
 
   after-gate:
-    if: ${{ contains(github.event.pull_request.title || '', '[L4 AFTER]') }}
+    if: ${{ (github.event_name == 'pull_request' && contains(github.event.pull_request.title || '', '[L4 AFTER]')) || (github.event_name == 'workflow_dispatch' && inputs.phase == 'after') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     env:

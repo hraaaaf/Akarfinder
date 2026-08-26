@@ -17,7 +17,10 @@ export type NeighborhoodContextNationalAnchorBaselineV1 = {
   poi_id: string;
   category: LivingHereCategory;
   source_id: string;
+  source_url: string | null;
   attribution: string;
+  license_policy: string;
+  license_url: string | null;
   observed_at: string;
   freshness_status: "fresh";
 };
@@ -107,7 +110,10 @@ export function buildNeighborhoodContextNationalBaseline(now = new Date()): Neig
         poi_id: anchor.poi_id,
         category: anchor.category,
         source_id: anchor.source_id,
+        source_url: anchor.source_url,
         attribution: anchor.attribution,
+        license_policy: anchor.license_policy,
+        license_url: anchor.license_url,
         observed_at: anchor.observed_at,
         freshness_status: anchor.freshness_status,
       })) ?? [];
@@ -218,7 +224,9 @@ export function validateNeighborhoodContextNationalBaseline(
     if (new Set(poiIds).size !== poiIds.length) findings.push(`duplicate_poi:${row.canonical_neighborhood_id}`);
     for (const anchor of row.anchors) {
       if (anchor.freshness_status !== "fresh") findings.push(`stale_anchor:${anchor.poi_id}`);
-      if (!anchor.source_id || !anchor.attribution || !anchor.observed_at) findings.push(`provenance:${anchor.poi_id}`);
+      if (!anchor.source_id || !anchor.source_url || !anchor.attribution || !anchor.license_policy || !anchor.license_url || !anchor.observed_at) {
+        findings.push(`provenance:${anchor.poi_id}`);
+      }
     }
   }
 

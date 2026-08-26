@@ -1,0 +1,76 @@
+name: Neighborhood Context L7 Refresh Quality
+
+on:
+  pull_request:
+    paths:
+      - "lib/geo/geo-entity-registry.ts"
+      - "lib/map/canonical-neighborhood-data.ts"
+      - "lib/map/neighborhood-data.ts"
+      - "lib/neighborhood-context/**"
+      - "scripts/neighborhood-context/l7-*"
+      - "scripts/scrapers/__tests__/neighborhood-context-l7-*.test.ts"
+      - ".github/workflows/neighborhood-context-l7-refresh-quality.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: neighborhood-context-l7-refresh-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  refresh-quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NCI_L7_OUTPUT_DIR: artifacts/neighborhood-context-l7-refresh-quality
+      NCI_L7_REFRESH_MODE: plan
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: L7-B refresh quality + L7-A/L5/L4/L3/L2/L1 regression
+        run: >-
+          npx tsx --test
+          scripts/scrapers/__tests__/neighborhood-context-l7-refresh-quality.test.ts
+          scripts/scrapers/__tests__/neighborhood-context-l7-national-baseline.test.ts
+          scripts/scrapers/__tests__/neighborhood-context-l5-convergence.test.ts
+          scripts/scrapers/__tests__/neighborhood-context-map-poi-l4.test.ts
+          scripts/scrapers/__tests__/neighborhood-context-l3-read-model.test.ts
+          scripts/scrapers/__tests__/neighborhood-context-l2-anchor-selection.test.ts
+          scripts/scrapers/__tests__/neighborhood-context-l1-poi-registry.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Production build
+        run: npm run build
+
+      - name: Generate zero-network refresh plan
+        run: npx tsx scripts/neighborhood-context/l7-refresh-national.ts
+
+      - name: Generate quality and freshness report
+        run: npx tsx scripts/neighborhood-context/l7-generate-quality-report.ts
+
+      - name: Validate L7-B quality report
+        run: node scripts/neighborhood-context/l7-validate-quality-report.mjs
+
+      - name: Upload L7-B artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: neighborhood-context-l7-refresh-quality-${{ github.run_id }}
+          path: artifacts/neighborhood-context-l7-refresh-quality/
+          if-no-files-found: error
+          retention-days: 30
