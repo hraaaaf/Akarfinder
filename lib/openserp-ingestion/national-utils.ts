@@ -56,7 +56,15 @@ const EVIDENCE_BACKED_DISTRICT_ALIASES: ReadonlyArray<{ city: string; district: 
   { city: "Agadir", district: "Bensergao", aliases: ["ben serguaou agadir", "ben sergaou agadir", "ben sergua agadir", "agadir ben serguaou"] },
 ];
 
+// Evidence-backed compound/locality aliases are more specific than the broad
+// vetted district dictionary (for example `Aghroud Ben Serguaou`). Prefer the
+// explicit, city-bound phrase first; fall back to the historical dictionary.
 const NATIONAL_DISTRICT_ALIASES: ReadonlyArray<{ city: string; district: string; aliases: string[] }> = [
+  ...EVIDENCE_BACKED_DISTRICT_ALIASES.map((entry) => ({
+    city: entry.city,
+    district: entry.district,
+    aliases: entry.aliases.map(normalizeText),
+  })),
   ...Object.entries(TIER_3_DISTRICTS).flatMap(([city, districts]) =>
     districts.map((district) => ({
       city,
@@ -64,11 +72,6 @@ const NATIONAL_DISTRICT_ALIASES: ReadonlyArray<{ city: string; district: string;
       aliases: [normalizeText(district)],
     })),
   ),
-  ...EVIDENCE_BACKED_DISTRICT_ALIASES.map((entry) => ({
-    city: entry.city,
-    district: entry.district,
-    aliases: entry.aliases.map(normalizeText),
-  })),
 ];
 
 function humanizeDistrictSlug(value: string): string | null {
