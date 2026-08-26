@@ -1,144 +1,113 @@
 # HANDOVER — AkarFinder / Neighborhood Context Intelligence
 
-Date : 2026-08-24
-
-## Titre cible
-
-**AkarFinder — Neighborhood Context Intelligence**
+Date : 2026-08-26
+Titre cible : **AkarFinder — Neighborhood Context Intelligence**
+Statut vérifié : **ACTIVE — 6/7 lots fermés = 85,7 %**
+Base vérifiée : `main@dcf690de81abf1d8b14fff0fbe9f89201ff13e6d`
 
 ## Goal
 
-Nationaliser et unifier les repères utiles de quartier déjà partiellement présents dans AkarFinder afin que Carte, page quartier, homepage et `Vivre ici` utilisent une même vérité POI, avec provenance, fraîcheur et précision territoriale explicites.
+Nationaliser et unifier les repères utiles de quartier afin que Carte, page quartier, homepage et `Vivre ici` utilisent une même vérité POI, avec provenance, fraîcheur et précision territoriale explicites.
 
 ## État vérifié
 
-### Fondations mergées à conserver
+### Fondations antérieures conservées
+- ANN-L5 Geo Foundation — PR #739 — merge `b44bd5d04299a18e778f7e42251cdcb07b364a77` ;
+- ANN-L6 Vivre ici — PR #743 — merge `2c1cb0650189397c3c350d6bad30b8f8e1d3cecd` ;
+- P6 Ville / Quartier — PR #839 — merge `e7f7ac753b1fbb41303cd19f0cb0377bff070512` ;
+- HVR-4 homepage quartier — PR #859 — merge `993f3bc6d7107d3b9d08ce7efea1f1267c4e87cd` ;
+- Carte nationale N2 — PR #888 — run `32704717514` SUCCESS ;
+- Partner → Neighborhood → Market Intelligence V2 — PR #896 — merge `cbfd80af575c0eafc58ae0dc4a2273565a2e46d6`.
 
-1. **ANN-L5 Geo Foundation**
-   - PR #739
-   - merge `b44bd5d04299a18e778f7e42251cdcb07b364a77`
-   - run statique `31943466077` SUCCESS
-   - run live `31943502557` SUCCESS
-   - 32/32 POI réels sur Rabat/Casablanca/Marrakech/Tanger
-   - 8 catégories/ville, 224/224 routes benchmark
+### Lots NCI fermés
 
-2. **ANN-L6 Vivre ici**
-   - PR #743
-   - merge `2c1cb0650189397c3c350d6bad30b8f8e1d3cecd`
-   - run `31947615421` SUCCESS
-   - `LivingHereModel`, Nearby, routing, isochrones 5/10/15, MapLibre, fail-closed exact/context/hidden
+1. **Réconciliation + contrat** ✅
+   - PR #902
+   - merge `58de80ff29bf128a3881bfc5951be6380baaecab`
 
-3. **P6 Ville / Quartier**
-   - PR #839
-   - merge `e7f7ac753b1fbb41303cd19f0cb0377bff070512`
-   - run `32496690996` SUCCESS
-   - parcours `Territoire → Marché → Vie locale → Biens → Décision`
+2. **National POI Source + Registry Foundation** ✅
+   - PR #904, nommé `L1` pendant l’exécution
+   - merge `b2a899eaf11f945e980a3c39f4e195c51270b859`
+   - `NeighborhoodPoiV1`, identité OSM stable, provenance/licence/fraîcheur, snapshot read-only, aucun réseau dans le render path
 
-4. **HVR-4 Intelligence quartier actionnable**
-   - PR #859
-   - merge `993f3bc6d7107d3b9d08ce7efea1f1267c4e87cd`
-   - run `32579508071` SUCCESS
-   - homepage : Agdal / Maârif / Guéliz, max 2 repères + tags + repère prix
+3. **Neighborhood Assignment + Anchor Selection** ✅
+   - PR #906, nommé `L2` pendant l’exécution
+   - merge `fb177022594f5cbc7a628e3edad3c4ffd5ec0ae5`
+   - relations territoriales explicites, ranking déterministe/diversifié, max 8 anchors, 0 truth finding sur la certification publiée
 
-5. **Carte nationale N2**
-   - PR #888
-   - run `32704717514` SUCCESS
-   - Casablanca 1 617 labels, 134 repères valides, 0 faux contour, Search `city + district`
+4. **Neighborhood Context Read Model + API** ✅
+   - PR #907, nommé `L3` pendant l’exécution
+   - merge `c304e4bd0ae0b23334fe3a6c510459ecedf7c77f`
+   - `NeighborhoodContextReadModelV1`, freshness fail-closed, `coverage_status`, API read-only, aucun provider dans le render path
 
-6. **Partner → Neighborhood → Market Intelligence V2**
-   - PR #896
-   - merge `cbfd80af575c0eafc58ae0dc4a2273565a2e46d6`
-   - même Neighborhood ID aval Search / Carte / fiche quartier
+5. **Carte Repères + Semantic Zoom** ✅
+   - PR #913, nommé `L4` pendant l’exécution
+   - merge `ff7ab0e9ba5acd59dd143084dc8cbb593eb62923`
+   - overlay map-first, semantic zoom, filtres canoniques, provenance visible, aucune durée inventée
+   - BEFORE run `32911680354`, artifact `9586788602`
+   - recouvrement mobile détecté humainement puis corrigé avant merge
 
-## Problème restant exact
+6. **Convergence page quartier + Vivre ici** ✅
+   - PR #918, nommé `L5` pendant l’exécution
+   - human gate utilisateur : validé
+   - merge `dcf690de81abf1d8b14fff0fbe9f89201ff13e6d`
+   - exact-head candidat `cac01d9b542641adf0bea955dbe85376a84512ee`
+   - run `32965282547` SUCCESS
+   - artifact `9605551739`
+   - digest `sha256:6691947ae925c72946f9c13dc24c8b724d3a114181a56945bf350c6520ae696a`
+   - contrat 5/5, TypeScript, build, Chromium : PASS
+   - 16/16 captures 390 / 430 / 768 / 1280
+   - `report.json ok=true`, 0 finding, 0 overflow, 0 page error
+   - même `district_rabat_agdal` et même signature de 5 `poi_id` sur homepage / SEO quartier / page quartier / listing
+   - listing exact : contexte NCI sans minute + section séparée `Depuis ce bien exact`
+   - centroid quartier : 0 provider réseau, 0 minute
+   - score visuel : **9,5/10**
 
-Le moteur POI existe côté annonce et le quartier possède quelques repères statiques, mais il manque encore :
+## Numérotation à ne plus confondre
 
-- un **registre POI national canonique** ;
-- une relation explicite POI ↔ quartier ;
-- une sélection 5–8 anchors décisionnels ;
-- une couverture/fraîcheur nationale mesurée ;
-- un read-model commun Carte / page quartier / homepage / listing ;
-- une couche `Repères` avec semantic zoom ;
-- la suppression des `proximityHighlights` hardcodés comme source produit principale.
-
-Le code actuel à ne pas confondre :
-
-- `lib/map/neighborhood-data.ts` = petit dataset curaté / strings statiques ;
-- `lib/map/canonical-neighborhood-data.ts` = canonicalisation de ce dataset ;
-- `lib/geo/living-here.ts` = modèle POI listing-aware déjà robuste ;
-- `lib/geo/living-here-service.ts` = orchestration providers ;
-- `app/immobilier/[city]/[district]/page.tsx` = page quartier actuelle, lit encore `proximityHighlights` ;
-- `components/landing/SignatureMapSection.tsx` = homepage HVR-4, lit encore ces repères statiques.
+La roadmap canonique compte la réconciliation comme Lot 1. Les PR d’exécution #904/#906/#907/#913/#918 ont été nommées L1–L5. Le chantier est donc désormais **6/7**, et non 5/6.
 
 ## Décisions verrouillées
 
 - ne pas refaire ANN-L5/L6 ;
-- ne pas créer une seconde taxonomie POI ;
-- 5–8 anchors par défaut quand la donnée le permet ;
-- max 2 par catégorie par défaut ;
-- priorité aux repères structurants + quotidien ;
-- pas de score subjectif « bon quartier » ;
-- pas de temps depuis centroïde quartier ;
-- pas de `dans le quartier` sans relation territoriale prouvée ;
-- sans boundary certifiée : `autour du repère quartier` ;
-- providers communautaires actuels = benchmark-only tant qu’aucun provider production n’est explicitement configuré/certifié ;
-- acquisition POI découplée du render path ;
+- une seule taxonomie POI ;
 - même `poi_id` / `canonical_neighborhood_id` sur toutes les surfaces ;
-- semantic zoom plutôt qu’afficher tous les POI ;
+- 5–8 anchors quand la donnée le permet, max 2 par catégorie par défaut ;
+- aucune appartenance `dans le quartier` sans preuve territoriale ;
+- aucune minute depuis un centroïde quartier ;
+- mesures de route uniquement depuis un bien exact avec preuve fraîche ;
+- acquisition POI hors render path ;
+- fail-closed stale/rejected/indisponible ;
+- semantic zoom plutôt que surcharge de pins ;
 - aucun Vercel sans autorisation explicite.
 
-## Roadmap
+## Lot 7 — National Scale + Quality / Freshness Certification ← NEXT
 
-1. **Lot 1 — Réconciliation + contrat** ✅ CLOSED
-2. **Lot 2 — National POI Source + Registry Foundation** ← NEXT
-3. **Lot 3 — Neighborhood Assignment + Anchor Selection**
-4. **Lot 4 — Neighborhood Context Read Model + API**
-5. **Lot 5 — Carte Repères + Semantic Zoom**
-6. **Lot 6 — Convergence page quartier + Vivre ici**
-7. **Lot 7 — National Scale + Quality/Freshness Certification**
+### Goal
 
-Progression du nouveau chantier : **1/7 = 14,3 %**.
+Passer du pilote à une couverture nationale réellement mesurable, fraîche et maintenable, puis fermer le chantier sur preuves.
 
-## Git canonique Lot 1
+### Next exact
 
-- base d’audit initiale : `main@8a049eef165e9d93ba673d9cbd37d0715d8a82a1`
-- base réellement mergée après reprise de `main` : `ecc0ac55d30999ca161bb369d11298db6a3710c7`
-- branche docs : `docs/neighborhood-context-intelligence-roadmap`
-- HEAD docs final : `12dbabf7b4629429bb2526ec6faab668cacdade4`
-- PR : **#902**
-- merge : `58de80ff29bf128a3881bfc5951be6380baaecab`
-- fichiers canoniques :
-  - `docs/NEIGHBORHOOD_CONTEXT_INTELLIGENCE_CONTRACT.md`
-  - `docs/NEIGHBORHOOD_CONTEXT_INTELLIGENCE_ROADMAP.md`
-  - `docs/NEIGHBORHOOD_CONTEXT_INTELLIGENCE_HANDOVER.md`
-
-## Next exact
-
-Lot 2, sans UI :
-
-1. créer `NeighborhoodPoiV1` + validator ;
-2. créer l’adapter source/snapshot réutilisant la taxonomie `LivingHereCategory` ;
-3. établir ID stable + provenance/licence/fraîcheur ;
-4. produire un pilote reproductible sur Agdal, Maârif, Guéliz, Malabata, Founty, Ville Nouvelle Fès ;
-5. aucun appel réseau externe dans le render path ;
-6. tests idempotence / invalid POI / provenance / droits ;
-7. TypeScript + build + rapport couverture ;
-8. closeout Lot 2 seulement sur preuves.
-
-## UI plus tard
-
-Lot 5 et Lot 6 sont des lots UI. Obligatoire avant implémentation :
-- BEFORE 390/430/768/1280 ;
-- Goal écrit ;
-- mockup/wireframe ;
-- AFTER mêmes viewports ;
-- comparaison + score cible >=9,3/10.
+1. inventorier tous les quartiers canoniques éligibles au produit ;
+2. calculer leur `coverage_status` actuel depuis le read-model existant ;
+3. produire un baseline read-only par ville / quartier / catégorie / fraîcheur ;
+4. ne figer aucun seuil `covered` avant cette mesure ;
+5. concevoir ensuite le job de refresh reproductible ;
+6. auditer stale/rejected/provenance/licence ;
+7. ajouter canaries et métriques coût/latence/read-model ;
+8. certifier régression NCI L1–L6 + API/build + surfaces représentatives ;
+9. human gate final ;
+10. closeout docs / roadmap → 7/7 uniquement si toutes les preuves sont suffisantes.
 
 ## Blocage réel
 
-Aucun pour démarrer Lot 2.
+Aucun blocage connu pour démarrer le baseline L7.
+
+## Vercel
+
+Aucun déploiement Vercel autorisé ou requis pour ce closeout.
 
 ## Prompt de reprise
 
-« Reprends AkarFinder — Neighborhood Context Intelligence depuis `docs/NEIGHBORHOOD_CONTEXT_INTELLIGENCE_HANDOVER.md`. Vérifie d’abord le HEAD `main` courant, conserve ANN-L5/L6, N2 et Partner Market Intelligence, puis exécute Lot 2 National POI Source + Registry Foundation. Aucun changement UI en Lot 2 et aucun Vercel. »
+« Reprends AkarFinder — Neighborhood Context Intelligence depuis `docs/NEIGHBORHOOD_CONTEXT_INTELLIGENCE_HANDOVER.md`. Vérifie `main`, considère Lots 1–6 CLOSED à 85,7 %, puis démarre Lot 7 par le baseline national read-only des quartiers canoniques et de leur `coverage_status`. N’invente aucun seuil de couverture avant mesure réelle. Aucun Vercel. »
