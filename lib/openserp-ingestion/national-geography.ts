@@ -41,6 +41,8 @@ export const ACQUISITION_EXPANSION_CITIES: readonly string[] = [
   "Khouribga",
   "Settat",
   "Berrechid",
+  "Dar Bouazza",
+  "Inezgane",
   "El Kelaa des Sraghna",
   "Youssoufia",
   "Ben Guerir",
