@@ -56,6 +56,27 @@ const EVIDENCE_BACKED_DISTRICT_ALIASES: ReadonlyArray<{ city: string; district: 
   { city: "Agadir", district: "Bensergao", aliases: ["ben serguaou agadir", "ben sergaou agadir", "ben sergua agadir", "agadir ben serguaou"] },
 ];
 
+const DARAGADIR_STRUCTURED_DISTRICTS: ReadonlyArray<{ district: string; aliases: readonly string[] }> = [
+  { district: "El Houda", aliases: ["el houda"] },
+  { district: "Centre-ville", aliases: ["centre ville"] },
+  { district: "Hay Najah", aliases: ["hay najah"] },
+  { district: "Tassila", aliases: ["tassila"] },
+  { district: "Hay Al Farah", aliases: ["hay al farah"] },
+  { district: "Assaka", aliases: ["assaka"] },
+  { district: "Marina", aliases: ["marina dagadir", "marina agadir"] },
+  { district: "Hay Zaytoun", aliases: ["hay zaytoun"] },
+  { district: "Hay Al Wafa", aliases: ["hay al wafa", "hay al wafaa"] },
+  { district: "Dararka", aliases: ["dararka", "darraka"] },
+  { district: "Ihchach", aliases: ["ihchach"] },
+  { district: "Amsernate", aliases: ["amsernate"] },
+  { district: "Lagouira", aliases: ["lagouira", "legouira"] },
+  { district: "Hay Hassani", aliases: ["hay hassani"] },
+  { district: "Hay Qods", aliases: ["hay qods"] },
+  { district: "Agadir Bay", aliases: ["agadir bay"] },
+  { district: "Hay Salam", aliases: ["hay salam"] },
+  { district: "Aghroud", aliases: ["aghroud"] },
+];
+
 const NATIONAL_DISTRICT_ALIASES: ReadonlyArray<{ city: string; district: string; aliases: string[] }> = [
   ...EVIDENCE_BACKED_DISTRICT_ALIASES.map((entry) => ({
     city: entry.city,
@@ -92,6 +113,20 @@ function humanizeDistrictSlug(value: string): string | null {
     .join(" ");
 }
 
+function decodedPathname(pathname: string): string {
+  try {
+    return decodeURIComponent(pathname);
+  } catch {
+    return pathname;
+  }
+}
+
+function phraseInNormalizedPath(pathname: string, alias: string): boolean {
+  const normalizedPath = ` ${normalizeText(decodedPathname(pathname)).replace(/[\/_-]+/g, " ").replace(/\s+/g, " ").trim()} `;
+  const normalizedAlias = normalizeText(alias).replace(/[\/_-]+/g, " ").replace(/\s+/g, " ").trim();
+  return normalizedAlias.length > 0 && normalizedPath.includes(` ${normalizedAlias} `);
+}
+
 function extractStructuredPortalDistrict(value: string): { city: string; district: string } | null {
   const urls = value.match(/https?:\/\/[^\s]+/gi) ?? [];
   for (const rawUrl of urls) {
@@ -111,6 +146,15 @@ function extractStructuredPortalDistrict(value: string): { city: string; distric
     } else if (host === "mouldar.com") {
       const match = pathname.match(/^\/(?:fr|en)\/(?:achat|location|rent|buy)\/[^/]+\/[^/]+\/([^/]+)\/[^/]+\/?$/i);
       districtSlug = match?.[1] ?? null;
+    } else if (host === "daragadir.com") {
+      const isDetail = /^\/annonces\/annonces-immobilieres\/(?:vente|location|location-de-vacances)\/[^/]+\/[^/]+\.html$/i.test(pathname);
+      if (!isDetail || extractCityNational(rawUrl) !== "Agadir") continue;
+      for (const entry of DARAGADIR_STRUCTURED_DISTRICTS) {
+        if (entry.aliases.some((alias) => phraseInNormalizedPath(pathname, alias))) {
+          return { city: "Agadir", district: entry.district };
+        }
+      }
+      continue;
     }
 
     if (!districtSlug) continue;

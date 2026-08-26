@@ -20,6 +20,36 @@ test("recovers Mouldar district slug as explicit geography", () => {
   );
 });
 
+test("recovers DarAgadir district phrases from individual detail slugs", () => {
+  assert.deepEqual(
+    extractDistrictNational("https://daragadir.com/annonces/annonces-immobilieres/location/appartements-a-louer-a-agadir/appartements-a-louer-a-agadir-el-houda-2-pieces-60-m%C2%B2-pour-2-500-dh.html"),
+    { city: "Agadir", district: "El Houda" },
+  );
+  assert.deepEqual(
+    extractDistrictNational("https://daragadir.com/annonces/annonces-immobilieres/location/magasins-et-commerces-a-louer-a-agadir/grand-local-commercial-a-louer-de-92-m%C2%B2-a-agadir-hay-al-farah-15-000-dh.html"),
+    { city: "Agadir", district: "Hay Al Farah" },
+  );
+  assert.deepEqual(
+    extractDistrictNational("https://daragadir.com/annonces/annonces-immobilieres/location/bureaux-a-louer-a-agadir/bureaux-a-louer-a-agadir-centre-ville-85-m%C2%B2-pour-5-200-dh.html"),
+    { city: "Agadir", district: "Centre-ville" },
+  );
+  assert.deepEqual(
+    extractDistrictNational("https://daragadir.com/annonces/annonces-immobilieres/vente/appartements-a-vendre-a-agadir/appartement-a-vendre-a-agadir-hay-najah-2-chambres-850-000-dh.html"),
+    { city: "Agadir", district: "Hay Najah" },
+  );
+});
+
+test("DarAgadir standalone aliases stay scoped to individual detail URLs", () => {
+  assert.equal(
+    extractDistrictNational("https://daragadir.com/annonces/annonces-immobilieres/location/appartements-a-louer-a-agadir/"),
+    null,
+  );
+  assert.equal(
+    extractDistrictNational("https://example.com/listing/hay-al-farah-agadir"),
+    null,
+  );
+});
+
 test("recovers evidence-backed Agadir districts only when city context is present", () => {
   assert.deepEqual(
     extractDistrictNational("Magasin à louer à Agadir Marina 35 000 DH"),
