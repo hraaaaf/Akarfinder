@@ -9,14 +9,15 @@ Materialize indexed real-estate offers when AkarFinder has the three minimum fac
 - `vertical_classification = real_estate_likely` remains mandatory;
 - price must be positive and remain <= 30,000,000 MAD;
 - `recovery_confidence = trusted_economic_v2` is persisted as trusted (`field_confidence.price = trusted_economic_ledger`, `listing_sources.price_status = valid`);
-- `recovery_confidence = economic_v2_price_to_verify` is preserved rather than deleted (`field_confidence.price = price_to_verify`, `listing_sources.price_status = ambiguous`) and receives the lower-confidence scoring policy;
-- city and district must both be explicit in indexed evidence and agree with normalized geography;
+- doubtful or explicit-but-not-ledger-trusted prices are preserved rather than deleted (`field_confidence.price = price_to_verify`, `listing_sources.price_status = ambiguous`) and receive the lower-confidence scoring policy;
+- city and district must both be explicit in indexed evidence;
+- structured portal URLs use their dedicated city and district segments rather than whole-URL city substring matching;
 - geography evidence priority is URL + page title first, then snippets;
 - the latest matching `discovery_candidates` title/snippet may be used as classification-only fallback when thin-index text is insufficient;
 - source/discovery text is never copied to `property_listings`;
 - persisted listing content is link-only: canonical URL, city, district, price and optional normalized type/intent;
 - `listing_sources.origin_type = external_index_seed` preserves provenance;
-- exact URL and deterministic fingerprint make the path idempotent;
+- exact URL and deterministic fingerprint (`sha256("external_index_seed:" + canonical_url)`) make the path idempotent;
 - no source network request is made during materialization.
 
 ## Execution
@@ -31,28 +32,67 @@ Baseline before the price-confidence conversion pass:
 - 596 rows with trusted economic price;
 - 6,240 `property_listings`.
 
-PR #919 extended the writer to materialize trusted and `price_to_verify` prices without conflating confidence. Dedicated run `32955337167` passed and PR #919 merged as `1b0a2c896440864b5ba7a71040c7c5e9247e6e3e`.
+Key code changes and certification:
+- PR #919 extended the writer to preserve both trusted and `price_to_verify` prices. Dedicated run `32955337167` passed.
+- PR #921 added classification-only fallback evidence from `discovery_candidates` and strong-detail override for `AMBIGUOUS` documents. Dedicated run `32958057366` passed.
+- PR #923 added source-specific explicit DarAgadir district recovery. Seed Conversion Recovery run `32959371779` passed.
+- PR #924 made multiple explicit DarAgadir district matches terminally ambiguous rather than allowing generic fallback. Corrected Seed Conversion Recovery run `32959986611` passed.
+- PR #925 added a second conservative DarAgadir district tier. Seed Conversion Recovery run `32960606019` passed.
+- PR #926 fixed structured Agenz/Mouldar geography so the city comes from the dedicated city URL segment instead of names embedded in districts such as `route-de-fes` or `route-de-casablanca`. Seed Conversion Recovery run `32962538421` passed; PR #926 merged as `7e62d49d71366a0456220893f31079e6dc96dc60`.
 
-PR #921 added classification-only fallback evidence from `discovery_candidates`, prioritised URL/title over snippets, and allowed `document_kind = AMBIGUOUS` only when the current approved registry independently proves a strong individual-detail URL. Dedicated run `32958057366` and canonical compile passed on exact head `07664c0fe7a678260fc27ce7fa8ee52f906d07fb`; PR #921 merged as `2837c765962adcaa6b9f12fedc24a9e3d4db1c74`.
+Production materialization used bounded canaries and domain-specific explicit-geography gates. Failed batches were atomic rollbacks before retry. Exact URL deduplication now checks `source_url = canonical_url OR listing_url = canonical_url`; using `coalesce(source_url, listing_url)` was proven insufficient when both columns are populated differently.
 
-Production materialization used bounded canaries and domain-specific explicit-geography gates. One Agenz SQL batch with duplicate fingerprints rolled back atomically and was retried after deduplication. A later manual SQL adaptation created 10 Agenz property rows before sources because PostgreSQL data-modifying CTEs share a statement snapshot; those rows were repaired immediately with sequential source, cluster and membership writes. Final verification reports no orphaned external-index rows.
-
-Final verified production state:
-- **7,561 `property_listings` total**, up **1,321** from the 6,240 baseline;
-- **1,847 `external_index_seed` source rows**;
-- **1,284** external-index rows with `price_status = ambiguous` / `price_to_verify`;
-- **563** external-index rows with `price_status = valid`;
-- **0** external-index properties without source;
+Final verified production state after the latest safe batches:
+- **7,807 `property_listings` total**, up **1,567** from the 6,240 baseline;
+- **2,093 `external_index_seed` source rows**;
+- **0** external-index sources referencing a missing property;
 - **0** external-index sources without cluster membership.
 
-The final discovery-evidence canary and residual batch added five `price_to_verify` listings (Aykana Souissi, Aykana Agdal, Agenz Haut Anza, Agenz Sidi Belyout and Agenz Gauthier), all 5/5 link-only, minimum-fact complete, provenance-consistent, price-consistent and membership-complete.
+The latest safe materializations include:
+- structured Agenz/Mouldar rows after city-segment correction: **21/21** link-only, minimum-fact complete and membership-complete across canary + bulk;
+- Avito Gauthier / Casablanca at 16,000 MAD as `price_to_verify`, canonical-link-only, with no copied source content;
+- previous conservative DarAgadir, Mubawab, 1immo and Masaken cohorts retained their link-only provenance and price-confidence state.
 
 ## Residual audit
-1,061 priced thin-index URLs remain unmaterialized. Only seven still match a known district in current indexed evidence, and none is safe to admit under the contract:
-- two 1immo rows expose an explicit **DH/m²** amount rather than a total listing price;
-- two Agenz rows have city evidence contradicting their URL geography;
-- one Mouldar row uses `toute-la-ville` and a snippet containing neighbouring-result locations;
-- one Mubawab row is falsely normalized to Fès because the title contains `Route de Fès`, while `Riad` is descriptive text rather than a reliable district;
-- one 1immo listing contains both `Sonaba` and `Founty`, so the district is not unambiguous.
+After correct URL deduplication, **878 priced thin-index URLs remain unmaterialized**:
+- `daragadir.com`: **337**;
+- `masaken.ma`: **300**;
+- `mubawab.ma`: **119**;
+- `1immo.ma`: **69**;
+- `agenz.ma`: **47**;
+- `avito.ma`: **2**;
+- `aykana.ma`: **2**;
+- `mouldar.com`: **2**.
 
-No remaining candidate is force-materialized by guessing geography or promoting a price-per-m² to total price. No Vercel deployment was performed.
+These are not 878 safe listings. Current verified blockers are:
+
+### DarAgadir
+Source policy is `canonical_link_only`, but the recorded policy expired on **2026-08-10**. Live policy revalidation could not be completed from the current environment, so no further DarAgadir rows were written. Seven residual rows would otherwise satisfy the current minimum-facts gate (two Abattoirs, Hay Salam, Lekhiam, two Marina, Tassila); a Sonaba row at 31,000,000 MAD remains above the 30,000,000 MAD ceiling. Two other district matches are ambiguous and remain rejected.
+
+### Aykana
+The recorded canonical-link-only policy also expired on **2026-08-10**. A Témara / Guich Oudaya row has explicit city, district and price but remains blocked pending source-policy revalidation. The Tiflet row has no distinct district.
+
+### Agenz
+The 47 priced residuals are currently explained by:
+- **19** generic districts such as `autre`;
+- **14** prices above 30,000,000 MAD;
+- **14** non-standard geographic URL segments requiring explicit taxonomy treatment rather than silently mapping provinces/communes to larger cities.
+
+Examples include Al Haouz / Oulad Mtaa, Chichaoua / Lamzoudia, Dar Bouazza / Tamaris, Inezgane / Dechira, Khemisset / Tiflet and Taroudannt / Agadir Melloul. These must retain their actual geography; they must not be collapsed into Marrakech, Casablanca, Rabat or Agadir merely to increase counts.
+
+### Mouldar
+Two priced rows remain, both using `toute-la-ville`; one Casablanca snippet contains multiple neighbouring-result districts. Neither has an unambiguous district and neither is materialized.
+
+### Avito
+One laptop row is non-real-estate. One Racine office URL lacks sufficient retained city/text evidence. The safe Gauthier row was already materialized under the current Avito canonical-link-only policy, which expires on **2026-09-06**.
+
+### 1immo / Masaken / Mubawab
+The remaining rows are dominated by missing district evidence, conflicting city evidence, result-list snippets, or thin rows without retained title/snippet. They remain outside `property_listings` unless a source-specific explicit-evidence gate can prove city + district + price without copying source content.
+
+## Data-quality debt discovered
+Existing historical materialization predating the tightened gates includes at least one Mouldar source with district `Toute La Ville`, and some optional property-type inferences are questionable. This is logged as remediation debt; it is not silently rewritten as part of this conversion closeout.
+
+## Closeout status
+The **safe conversion pass under currently valid policies and current explicit-evidence rules is closed**. It is not equivalent to complete seed coverage. Remaining expansion requires either source-policy refresh, evidence enrichment, or explicit geography-taxonomy expansion.
+
+No Vercel deployment was performed.
