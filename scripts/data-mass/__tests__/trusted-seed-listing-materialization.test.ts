@@ -19,8 +19,8 @@ function base(overrides: Partial<TrustedSeedListingInput> = {}): TrustedSeedList
     title: "Appartement à vendre 950 000 DH - Riad Salam Agadir",
     snippet: "Appartement à Agadir, Riad Salam.",
     city: "Agadir",
-    trustedPriceMad: 950000,
-    economicStatus: "trusted",
+    priceMad: 950000,
+    priceConfidence: "trusted",
     propertyType: "apartment",
     intent: "sale",
     documentKind: "LISTING",
@@ -35,12 +35,20 @@ test("admits a trusted listing with explicit city, district and current registry
   assert.equal(decision.city, "Agadir");
   assert.equal(decision.district, "Riad Salam");
   assert.equal(decision.priceMad, 950000);
+  assert.equal(decision.priceConfidence, "trusted");
+});
+
+test("admits a price-to-verify listing while preserving lower confidence", () => {
+  const decision = evaluateTrustedSeedListing(base({ priceConfidence: "to_verify", priceMad: 875000 }));
+  assert.equal(decision.admitted, true);
+  const row = buildLinkOnlyPropertyRow(decision, "2026-08-26T00:00:00Z");
+  assert.equal(row.price_mad, 875000);
+  assert.equal(row.field_confidence.price, "price_to_verify");
+  assert.equal(row.data_completeness_score, 45);
 });
 
 test("rejects category pages even when city and price exist", () => {
-  const decision = evaluateTrustedSeedListing(base({
-    canonicalUrl: "https://agenz.ma/fr/annonces/immo-agadir/vente-appartements",
-  }));
+  const decision = evaluateTrustedSeedListing(base({ canonicalUrl: "https://agenz.ma/fr/annonces/immo-agadir/vente-appartements" }));
   assert.equal(decision.admitted, false);
   assert.ok(decision.reasons.includes("registry_detail_url_not_admissible"));
 });
@@ -52,10 +60,9 @@ test("rejects inferred or inconsistent city instead of fabricating geography", (
   assert.ok(decision.reasons.includes("explicit_district_missing_or_mismatch"));
 });
 
-test("rejects non-trusted economic observations", () => {
-  const decision = evaluateTrustedSeedListing(base({ economicStatus: "ambiguous" }));
-  assert.equal(decision.admitted, false);
-  assert.ok(decision.reasons.includes("economic_status_not_trusted"));
+test("rejects invalid or implausible prices regardless of confidence", () => {
+  assert.equal(evaluateTrustedSeedListing(base({ priceMad: null })).admitted, false);
+  assert.equal(evaluateTrustedSeedListing(base({ priceMad: 31_000_000, priceConfidence: "to_verify" })).admitted, false);
 });
 
 test("link-only projection copies no source title or description", () => {

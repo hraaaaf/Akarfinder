@@ -9,8 +9,10 @@ import {
 import { extractCityNational, extractDistrictNational } from "@/lib/openserp-ingestion/national-utils";
 import { redactSensitiveText } from "@/lib/openserp-ingestion/utils";
 
-const MAX_TRUSTED_PRICE_MAD = 30_000_000;
+const MAX_PRICE_MAD = 30_000_000;
 const WRITE_CHUNK = 25;
+
+export type SeedPriceConfidence = "trusted" | "to_verify";
 
 export type TrustedSeedListingInput = {
   seedId: string;
@@ -23,8 +25,8 @@ export type TrustedSeedListingInput = {
   title: string | null;
   snippet: string | null;
   city: string | null;
-  trustedPriceMad: number | null;
-  economicStatus: string | null;
+  priceMad: number | null;
+  priceConfidence: SeedPriceConfidence;
   propertyType: string | null;
   intent: string | null;
   documentKind: string | null;
@@ -38,6 +40,7 @@ export type TrustedSeedListingDecision = {
   city: string | null;
   district: string | null;
   priceMad: number | null;
+  priceConfidence: SeedPriceConfidence;
   propertyType: string | null;
   intent: "sale" | "rent" | null;
 };
@@ -84,16 +87,13 @@ function canonicalIntent(value: string | null): "sale" | "rent" | null {
 
 export function evaluateTrustedSeedListing(input: TrustedSeedListingInput): TrustedSeedListingDecision {
   const reasons: string[] = [];
-  if (input.economicStatus !== "trusted") reasons.push("economic_status_not_trusted");
   if (input.documentKind !== "LISTING") reasons.push("document_kind_not_listing");
   if (input.verticalClassification !== "real_estate_likely") reasons.push("vertical_not_real_estate_likely");
   if (!matchesCurrentRegistryDetailUrl(input.sourceDomain, input.canonicalUrl)) reasons.push("registry_detail_url_not_admissible");
   if (urlHasSensitiveMaterial(input.canonicalUrl)) reasons.push("sensitive_material_in_url");
 
-  const price = input.trustedPriceMad;
-  if (price === null || !Number.isFinite(price) || price <= 0 || price > MAX_TRUSTED_PRICE_MAD) {
-    reasons.push("trusted_price_invalid");
-  }
+  const price = input.priceMad;
+  if (price === null || !Number.isFinite(price) || price <= 0 || price > MAX_PRICE_MAD) reasons.push("price_invalid");
 
   const evidence = `${input.canonicalUrl} ${input.title ?? ""} ${input.snippet ?? ""}`;
   const explicitCity = extractCityNational(evidence);
@@ -108,7 +108,8 @@ export function evaluateTrustedSeedListing(input: TrustedSeedListingInput): Trus
     input,
     city: reasons.includes("explicit_city_missing_or_mismatch") ? null : explicitCity,
     district: reasons.includes("explicit_district_missing_or_mismatch") ? null : explicitDistrict?.district ?? null,
-    priceMad: reasons.includes("trusted_price_invalid") ? null : price,
+    priceMad: reasons.includes("price_invalid") ? null : price,
+    priceConfidence: input.priceConfidence,
     propertyType: input.propertyType,
     intent: canonicalIntent(input.intent),
   };
@@ -120,9 +121,10 @@ export function trustedSeedFingerprint(canonicalUrl: string): string {
 
 export function buildLinkOnlyPropertyRow(decision: TrustedSeedListingDecision, now: string) {
   if (!decision.admitted || !decision.city || !decision.district || decision.priceMad === null) {
-    throw new Error("TRUSTED_SEED_ADMITTED_DECISION_REQUIRED");
+    throw new Error("SEED_ADMITTED_DECISION_REQUIRED");
   }
-  const completeness = 35 + (decision.propertyType ? 10 : 0) + (decision.intent ? 10 : 0);
+  const baseCompleteness = 35 + (decision.propertyType ? 10 : 0) + (decision.intent ? 10 : 0);
+  const completeness = Math.max(0, baseCompleteness - (decision.priceConfidence === "to_verify" ? 10 : 0));
   return {
     canonical_fingerprint: trustedSeedFingerprint(decision.input.canonicalUrl),
     title: null,
@@ -145,7 +147,7 @@ export function buildLinkOnlyPropertyRow(decision: TrustedSeedListingDecision, n
       origin_type: "external_index_seed",
       source_seed_id: decision.input.seedId,
       copied_source_content: false,
-      price: "trusted_economic_ledger",
+      price: decision.priceConfidence === "trusted" ? "trusted_economic_ledger" : "price_to_verify",
       city: "explicit_index_evidence",
       district: "explicit_index_evidence",
       freshness_status: decision.input.freshnessStatus,
@@ -192,10 +194,7 @@ export async function materializeTrustedSeedListings(input: {
   for (const batch of chunk(selected)) {
     try {
       const propertyPayload = batch.map((decision) => buildLinkOnlyPropertyRow(decision, now));
-      const propertyResponse = await db
-        .from("property_listings")
-        .upsert(propertyPayload, { onConflict: "canonical_fingerprint" })
-        .select("id,canonical_fingerprint");
+      const propertyResponse = await db.from("property_listings").upsert(propertyPayload, { onConflict: "canonical_fingerprint" }).select("id,canonical_fingerprint");
       if (propertyResponse.error) throw new Error(propertyResponse.error.message);
       const propertyRows = propertyResponse.data as Array<{ id: number; canonical_fingerprint: string }>;
       const propertyByFingerprint = new Map(propertyRows.map((row) => [row.canonical_fingerprint, row.id]));
@@ -220,13 +219,10 @@ export async function materializeTrustedSeedListings(input: {
           displayed_price: Math.round(decision.priceMad),
           price_currency: "MAD",
           price_period: null,
-          price_status: "valid",
+          price_status: decision.priceConfidence === "trusted" ? "valid" : "ambiguous",
         }];
       });
-      const sourceResponse = await db
-        .from("listing_sources")
-        .upsert(sourcePayload, { onConflict: "listing_url" })
-        .select("id,listing_url,property_listing_id");
+      const sourceResponse = await db.from("listing_sources").upsert(sourcePayload, { onConflict: "listing_url" }).select("id,listing_url,property_listing_id");
       if (sourceResponse.error) throw new Error(sourceResponse.error.message);
       const sourceRows = sourceResponse.data as Array<{ id: number; listing_url: string; property_listing_id: number }>;
       newListingSources += sourceRows.length;
@@ -236,10 +232,7 @@ export async function materializeTrustedSeedListings(input: {
         legacy_property_listing_id: source.property_listing_id,
         created_by: `external-index-seed:${input.runId}`,
       }));
-      const clusterResponse = await db
-        .from("property_clusters")
-        .upsert(clusterPayload, { onConflict: "legacy_property_listing_id" })
-        .select("id,legacy_property_listing_id");
+      const clusterResponse = await db.from("property_clusters").upsert(clusterPayload, { onConflict: "legacy_property_listing_id" }).select("id,legacy_property_listing_id");
       if (clusterResponse.error) throw new Error(clusterResponse.error.message);
       const clusterRows = clusterResponse.data as Array<{ id: string; legacy_property_listing_id: number }>;
       newClusters += clusterRows.length;
@@ -248,17 +241,10 @@ export async function materializeTrustedSeedListings(input: {
       const memberPayload = sourceRows.flatMap((source) => {
         const clusterId = clusterByListing.get(source.property_listing_id);
         if (!clusterId) return [];
-        return [{
-          property_cluster_id: clusterId,
-          source_offer_id: source.id,
-          origin_type: "deterministic_same_source_identifier",
-          added_by: `external-index-seed:${input.runId}`,
-        }];
+        return [{ property_cluster_id: clusterId, source_offer_id: source.id, origin_type: "deterministic_same_source_identifier", added_by: `external-index-seed:${input.runId}` }];
       });
       if (memberPayload.length > 0) {
-        const memberResponse = await db
-          .from("property_cluster_members")
-          .upsert(memberPayload, { onConflict: "property_cluster_id,source_offer_id", ignoreDuplicates: true });
+        const memberResponse = await db.from("property_cluster_members").upsert(memberPayload, { onConflict: "property_cluster_id,source_offer_id", ignoreDuplicates: true });
         if (memberResponse.error) throw new Error(memberResponse.error.message);
         newMemberships += memberPayload.length;
       }
@@ -268,13 +254,5 @@ export async function materializeTrustedSeedListings(input: {
     }
   }
 
-  return {
-    selected: selected.length,
-    newPropertyListings,
-    newListingSources,
-    newClusters,
-    newMemberships,
-    skippedExistingUrls: admitted.length - selected.length,
-    errors,
-  };
+  return { selected: selected.length, newPropertyListings, newListingSources, newClusters, newMemberships, skippedExistingUrls: admitted.length - selected.length, errors };
 }
