@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ArrowUpRight, Building2, ChevronDown, ChevronUp, MapPin } from "lucide-react";
 import type { SearchGatewayNormalizedResult } from "@/lib/search-gateway/search-gateway-types";
+import { formatPriceMad, isPriceToVerify } from "@/lib/search-gateway/price-verification";
 
 type ExternalIndexedResultCardProps = {
   results: SearchGatewayNormalizedResult[];
@@ -64,6 +65,8 @@ export function ExternalIndexedResultCard({
   const city = cleanToken(representative.normalized_city);
   const propertyType = cleanToken(representative.normalized_property_type);
   const intent = getIntentLabel(representative.normalized_intent);
+  const priceLabel = formatPriceMad(representative.normalized_price_mad);
+  const priceToVerify = isPriceToVerify(representative);
   const sourcePages = [
     ...new Map(
       visibleResults.map((result) => [
@@ -82,12 +85,26 @@ export function ExternalIndexedResultCard({
     <article
       data-external-serp-group
       data-external-group-size={sourcePages.length}
+      data-price-verification={priceToVerify ? "to_verify" : priceLabel ? "trusted" : "missing"}
       className="min-w-0 rounded-2xl border border-border/15 bg-card px-3.5 py-3.5 shadow-[0_5px_18px_rgba(15,23,42,0.035)] dark:border-white/10 dark:bg-white/[0.03] sm:px-4 sm:py-4"
     >
       <div className="min-w-0">
         <h3 className="line-clamp-2 text-[14px] font-extrabold leading-[1.3] tracking-[-0.015em] text-foreground dark:text-white sm:text-[15px]">
           {title}
         </h3>
+
+        {priceLabel ? (
+          <div className="mt-1.5 flex min-w-0 flex-wrap items-center gap-1.5">
+            <span className="text-[15px] font-black tracking-[-0.02em] text-foreground dark:text-white sm:text-[16px]">
+              {priceLabel}
+            </span>
+            {priceToVerify ? (
+              <span className="rounded-full border border-amber-500/20 bg-amber-500/[0.08] px-2 py-0.5 text-[9.5px] font-extrabold text-amber-800 dark:border-amber-300/20 dark:bg-amber-300/[0.08] dark:text-amber-200 sm:text-[10px]">
+                Prix à vérifier
+              </span>
+            ) : null}
+          </div>
+        ) : null}
 
         {(intent || propertyType || city) ? (
           <div className="mt-1.5 flex min-w-0 flex-wrap items-center gap-x-2.5 gap-y-1 text-[10.5px] font-semibold text-muted-foreground sm:text-[11.5px]">
