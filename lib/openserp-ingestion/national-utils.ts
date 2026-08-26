@@ -50,6 +50,56 @@ const NATIONAL_DISTRICT_ALIASES: ReadonlyArray<{ city: string; district: string;
   })),
 );
 
+function humanizeDistrictSlug(value: string): string | null {
+  const decoded = (() => {
+    try {
+      return decodeURIComponent(value);
+    } catch {
+      return value;
+    }
+  })();
+  const cleaned = decoded
+    .replace(/[?#].*$/, "")
+    .replace(/[-_]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!cleaned || cleaned.length < 2 || cleaned.length > 80) return null;
+  if (/^(autre|other|maroc|morocco|vente|location|achat|rent|buy)$/i.test(cleaned)) return null;
+  return cleaned
+    .split(" ")
+    .map((part) => part.length <= 2 ? part.toUpperCase() : `${part[0]?.toUpperCase() ?? ""}${part.slice(1).toLowerCase()}`)
+    .join(" ");
+}
+
+function extractStructuredPortalDistrict(value: string): { city: string; district: string } | null {
+  const urls = value.match(/https?:\/\/[^\s]+/gi) ?? [];
+  for (const rawUrl of urls) {
+    let url: URL;
+    try {
+      url = new URL(rawUrl.replace(/[),.;]+$/, ""));
+    } catch {
+      continue;
+    }
+    const host = url.hostname.toLowerCase().replace(/^www\./, "");
+    const pathname = url.pathname;
+    let districtSlug: string | null = null;
+
+    if (host === "agenz.ma") {
+      const match = pathname.match(/^\/(?:fr|en)\/annonces\/immo-[^/]+\/(?:vente|location)-[^/]+\/([^/]+)\/\d+\/?$/i);
+      districtSlug = match?.[1] ?? null;
+    } else if (host === "mouldar.com") {
+      const match = pathname.match(/^\/(?:fr|en)\/(?:achat|location|rent|buy)\/[^/]+\/[^/]+\/([^/]+)\/[^/]+\/?$/i);
+      districtSlug = match?.[1] ?? null;
+    }
+
+    if (!districtSlug) continue;
+    const city = extractCityNational(rawUrl);
+    const district = humanizeDistrictSlug(districtSlug);
+    if (city && district) return { city, district };
+  }
+  return null;
+}
+
 export function extractCityNational(value: string): string | null {
   const normalized = normalizeText(value);
   for (const entry of NATIONAL_CITY_ALIASES) {
@@ -61,6 +111,9 @@ export function extractCityNational(value: string): string | null {
 }
 
 export function extractDistrictNational(value: string): { city: string; district: string } | null {
+  const structured = extractStructuredPortalDistrict(value);
+  if (structured) return structured;
+
   const normalized = normalizeText(value);
   for (const entry of NATIONAL_DISTRICT_ALIASES) {
     if (entry.aliases.some((alias) => normalized.includes(alias))) {
