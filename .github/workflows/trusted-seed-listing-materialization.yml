@@ -1,0 +1,36 @@
+name: Trusted Seed Listing Materialization
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - lib/data-mass/trusted-seed-listing-materialization.ts
+      - scripts/data-mass/materialize-trusted-seed-listings.ts
+      - scripts/data-mass/__tests__/trusted-seed-listing-materialization.test.ts
+      - supabase/migrations/20260826003000_allow_external_index_seed_origin.sql
+      - .github/workflows/trusted-seed-listing-materialization.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: trusted-seed-listing-materialization-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Trusted seed materialization unit tests
+        run: npx tsx --test scripts/data-mass/__tests__/trusted-seed-listing-materialization.test.ts
+      - name: Structured geography regression
+        run: npx tsx --test scripts/scrapers/__tests__/openserp-structured-district-recovery.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
