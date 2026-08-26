@@ -118,11 +118,19 @@ function humanizeDistrictSlug(value: string): string | null {
     .replace(/\s+/g, " ")
     .trim();
   if (!cleaned || cleaned.length < 2 || cleaned.length > 80) return null;
-  if (/^(autre|other|maroc|morocco|vente|location|achat|rent|buy)$/i.test(cleaned)) return null;
+  if (/^(autre|other|toute la ville|whole city|maroc|morocco|vente|location|achat|rent|buy)$/i.test(cleaned)) return null;
   return cleaned
     .split(" ")
     .map((part) => part.length <= 2 ? part.toUpperCase() : `${part[0]?.toUpperCase() ?? ""}${part.slice(1).toLowerCase()}`)
     .join(" ");
+}
+
+function structuredCityFromSlug(value: string): string | null {
+  const normalized = normalizeText(value).replace(/[-_]+/g, " ").replace(/\s+/g, " ").trim();
+  for (const entry of NATIONAL_CITY_ALIASES) {
+    if (entry.aliases.some((alias) => alias === normalized)) return entry.city;
+  }
+  return null;
 }
 
 function decodedPathname(pathname: string): string {
@@ -150,14 +158,17 @@ function extractStructuredPortalDistrict(value: string): StructuredDistrictResul
     }
     const host = url.hostname.toLowerCase().replace(/^www\./, "");
     const pathname = url.pathname;
+    let citySlug: string | null = null;
     let districtSlug: string | null = null;
 
     if (host === "agenz.ma") {
-      const match = pathname.match(/^\/(?:fr|en)\/annonces\/immo-[^/]+\/(?:vente|location)-[^/]+\/([^/]+)\/\d+\/?$/i);
-      districtSlug = match?.[1] ?? null;
+      const match = pathname.match(/^\/(?:fr|en)\/annonces\/immo-([^/]+)\/(?:vente|location)-[^/]+\/([^/]+)\/\d+\/?$/i);
+      citySlug = match?.[1] ?? null;
+      districtSlug = match?.[2] ?? null;
     } else if (host === "mouldar.com") {
-      const match = pathname.match(/^\/(?:fr|en)\/(?:achat|location|rent|buy)\/[^/]+\/[^/]+\/([^/]+)\/[^/]+\/?$/i);
-      districtSlug = match?.[1] ?? null;
+      const match = pathname.match(/^\/(?:fr|en)\/(?:achat|location|rent|buy)\/[^/]+\/([^/]+)\/([^/]+)\/[^/]+\/?$/i);
+      citySlug = match?.[1] ?? null;
+      districtSlug = match?.[2] ?? null;
     } else if (host === "daragadir.com") {
       const isDetail = /^\/annonces\/annonces-immobilieres\/(?:vente|location|location-de-vacances)\/[^/]+\/[^/]+\.html$/i.test(pathname);
       if (!isDetail || extractCityNational(rawUrl) !== "Agadir") continue;
@@ -171,8 +182,8 @@ function extractStructuredPortalDistrict(value: string): StructuredDistrictResul
       continue;
     }
 
-    if (!districtSlug) continue;
-    const city = extractCityNational(rawUrl);
+    if (!citySlug || !districtSlug) continue;
+    const city = structuredCityFromSlug(citySlug);
     const district = humanizeDistrictSlug(districtSlug);
     if (city && district) return { kind: "match", city, district };
   }
