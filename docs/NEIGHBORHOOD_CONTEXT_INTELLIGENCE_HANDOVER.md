@@ -2,8 +2,8 @@
 
 Date : 2026-08-26
 Titre cible : **AkarFinder — Neighborhood Context Intelligence**
-Statut vérifié : **ACTIVE — 6/7 lots fermés = 85,7 %**
-Base vérifiée : `main@dcf690de81abf1d8b14fff0fbe9f89201ff13e6d`
+Statut vérifié : **READY FOR HUMAN GATE — 6/7 lots fermés = 85,7 %**
+Base produit vérifiée : `main@89b033e40ecb74521fdd3c22f5669857f7ad1e4b`
 
 ## Goal
 
@@ -11,103 +11,95 @@ Nationaliser et unifier les repères utiles de quartier afin que Carte, page qua
 
 ## État vérifié
 
-### Fondations antérieures conservées
-- ANN-L5 Geo Foundation — PR #739 — merge `b44bd5d04299a18e778f7e42251cdcb07b364a77` ;
-- ANN-L6 Vivre ici — PR #743 — merge `2c1cb0650189397c3c350d6bad30b8f8e1d3cecd` ;
-- P6 Ville / Quartier — PR #839 — merge `e7f7ac753b1fbb41303cd19f0cb0377bff070512` ;
-- HVR-4 homepage quartier — PR #859 — merge `993f3bc6d7107d3b9d08ce7efea1f1267c4e87cd` ;
-- Carte nationale N2 — PR #888 — run `32704717514` SUCCESS ;
-- Partner → Neighborhood → Market Intelligence V2 — PR #896 — merge `cbfd80af575c0eafc58ae0dc4a2273565a2e46d6`.
+### Lots 1–6 CLOSED
 
-### Lots NCI fermés
+1. Réconciliation + contrat — PR #902 — merge `58de80ff29bf128a3881bfc5951be6380baaecab` ✅
+2. National POI Source + Registry — PR #904 — merge `b2a899eaf11f945e980a3c39f4e195c51270b859` ✅
+3. Assignment + Anchor Selection — PR #906 — merge `fb177022594f5cbc7a628e3edad3c4ffd5ec0ae5` ✅
+4. Read Model + API — PR #907 — merge `c304e4bd0ae0b23334fe3a6c510459ecedf7c77f` ✅
+5. Carte Repères + Semantic Zoom — PR #913 — merge `ff7ab0e9ba5acd59dd143084dc8cbb593eb62923` ✅
+6. Surface Convergence — PR #918 — human gate validé — merge `dcf690de81abf1d8b14fff0fbe9f89201ff13e6d` ✅
 
-1. **Réconciliation + contrat** ✅
-   - PR #902
-   - merge `58de80ff29bf128a3881bfc5951be6380baaecab`
+L6 certification visuelle : run `32965282547`, artifact `9605551739`, 16/16 captures 390/430/768/1280, `report.json ok=true`, 0 finding/overflow/page error, score **9,5/10**.
 
-2. **National POI Source + Registry Foundation** ✅
-   - PR #904, nommé `L1` pendant l’exécution
-   - merge `b2a899eaf11f945e980a3c39f4e195c51270b859`
-   - `NeighborhoodPoiV1`, identité OSM stable, provenance/licence/fraîcheur, snapshot read-only, aucun réseau dans le render path
+## Lot 7 — National Scale + Quality / Freshness
 
-3. **Neighborhood Assignment + Anchor Selection** ✅
-   - PR #906, nommé `L2` pendant l’exécution
-   - merge `fb177022594f5cbc7a628e3edad3c4ffd5ec0ae5`
-   - relations territoriales explicites, ranking déterministe/diversifié, max 8 anchors, 0 truth finding sur la certification publiée
+Statut : **READY FOR HUMAN GATE**.
 
-4. **Neighborhood Context Read Model + API** ✅
-   - PR #907, nommé `L3` pendant l’exécution
-   - merge `c304e4bd0ae0b23334fe3a6c510459ecedf7c77f`
-   - `NeighborhoodContextReadModelV1`, freshness fail-closed, `coverage_status`, API read-only, aucun provider dans le render path
+### Produit livré et mergé
 
-5. **Carte Repères + Semantic Zoom** ✅
-   - PR #913, nommé `L4` pendant l’exécution
-   - merge `ff7ab0e9ba5acd59dd143084dc8cbb593eb62923`
-   - overlay map-first, semantic zoom, filtres canoniques, provenance visible, aucune durée inventée
-   - BEFORE run `32911680354`, artifact `9586788602`
-   - recouvrement mobile détecté humainement puis corrigé avant merge
+- PR #931
+- exact HEAD `13e9483fc32df8af6bd49426b57b29eefe593728`
+- merge `89b033e40ecb74521fdd3c22f5669857f7ad1e4b`
+- aucun Vercel
 
-6. **Convergence page quartier + Vivre ici** ✅
-   - PR #918, nommé `L5` pendant l’exécution
-   - human gate utilisateur : validé
-   - merge `dcf690de81abf1d8b14fff0fbe9f89201ff13e6d`
-   - exact-head candidat `cac01d9b542641adf0bea955dbe85376a84512ee`
-   - run `32965282547` SUCCESS
-   - artifact `9605551739`
-   - digest `sha256:6691947ae925c72946f9c13dc24c8b724d3a114181a56945bf350c6520ae696a`
-   - contrat 5/5, TypeScript, build, Chromium : PASS
-   - 16/16 captures 390 / 430 / 768 / 1280
-   - `report.json ok=true`, 0 finding, 0 overflow, 0 page error
-   - même `district_rabat_agdal` et même signature de 5 `poi_id` sur homepage / SEO quartier / page quartier / listing
-   - listing exact : contexte NCI sans minute + section séparée `Depuis ce bien exact`
-   - centroid quartier : 0 provider réseau, 0 minute
-   - score visuel : **9,5/10**
+### Preuves finales
 
-## Numérotation à ne plus confondre
+- run exact-head `32983514419` — SUCCESS
+- artifact `9612476675`
+- digest `sha256:f7a624ce468f496a1f342eee4bdbddafda68ea5650af75a0461ac2b41b746640`
+- `quality-report.json` : `ok=true`, 0 finding
+- régressions L1/L2/L3/L4/L5 + L7-A/L7-B : PASS
+- TypeScript : PASS
+- production build : PASS
+- baseline : 21 quartiers / 8 villes
+- couverture : 1 covered / 1 partial / 2 insufficient / 17 unavailable
+- covered rate : 4,76 %
+- runtime models : 6 ; missing runtime models : 15
+- anchors : 12 ; provenance manquante : 0
+- freshness policy : 30 jours
+- 17 cibles queryables
+- 4 cibles bloquées sans repère fiable : Racine, Aïn Diab, Bourgogne, Souissi
+- mode par défaut `plan` : 0 réseau
+- live : uniquement avec endpoints explicitement configurés
+- read-model runtime : 10 915 octets / 10,659 KiB
+- baseline sérialisé : 15 550 octets / 15,186 KiB
+- latence : médiane 0,398 ms / p95 0,903 ms / max 1,079 ms
+- aucun seuil latence arbitraire
+- coût monétaire provider non certifiable sans provider payant configuré : `null`
 
-La roadmap canonique compte la réconciliation comme Lot 1. Les PR d’exécution #904/#906/#907/#913/#918 ont été nommées L1–L5. Le chantier est donc désormais **6/7**, et non 5/6.
+### Provenance renforcée
+
+Le validator final a détecté une vraie perte de provenance dans la projection L7-A : `source_url`, `license_policy` et `license_url` existaient dans L3 mais disparaissaient du baseline. La projection a été corrigée pour préserver ces champs. Le validator est resté strict.
+
+### CI NCI corrigée
+
+Les workflows visuels L4/L5 ne rejouent plus leurs audits BEFORE sur une PR L7. Leurs tests déterministes restent inclus dans le gate L7 final.
+
+### UI
+
+L7-B ne modifie aucun fichier UI produit. La dernière certification visuelle NCI reste celle de L6 : **9,5/10**. Un smoke transversal sur la PR L7 a également publié des runs aboutis à **48 captures / 0 finding**.
 
 ## Décisions verrouillées
 
-- ne pas refaire ANN-L5/L6 ;
 - une seule taxonomie POI ;
-- même `poi_id` / `canonical_neighborhood_id` sur toutes les surfaces ;
-- 5–8 anchors quand la donnée le permet, max 2 par catégorie par défaut ;
-- aucune appartenance `dans le quartier` sans preuve territoriale ;
+- mêmes `poi_id` / `canonical_neighborhood_id` sur toutes les surfaces ;
+- aucune appartenance « dans le quartier » sans preuve territoriale ;
 - aucune minute depuis un centroïde quartier ;
-- mesures de route uniquement depuis un bien exact avec preuve fraîche ;
+- mesures de route uniquement depuis un bien exact ;
 - acquisition POI hors render path ;
 - fail-closed stale/rejected/indisponible ;
-- semantic zoom plutôt que surcharge de pins ;
+- aucun seuil national inventé ;
+- aucun coût provider inventé ;
 - aucun Vercel sans autorisation explicite.
-
-## Lot 7 — National Scale + Quality / Freshness Certification ← NEXT
-
-### Goal
-
-Passer du pilote à une couverture nationale réellement mesurable, fraîche et maintenable, puis fermer le chantier sur preuves.
-
-### Next exact
-
-1. inventorier tous les quartiers canoniques éligibles au produit ;
-2. calculer leur `coverage_status` actuel depuis le read-model existant ;
-3. produire un baseline read-only par ville / quartier / catégorie / fraîcheur ;
-4. ne figer aucun seuil `covered` avant cette mesure ;
-5. concevoir ensuite le job de refresh reproductible ;
-6. auditer stale/rejected/provenance/licence ;
-7. ajouter canaries et métriques coût/latence/read-model ;
-8. certifier régression NCI L1–L6 + API/build + surfaces représentatives ;
-9. human gate final ;
-10. closeout docs / roadmap → 7/7 uniquement si toutes les preuves sont suffisantes.
 
 ## Blocage réel
 
-Aucun blocage connu pour démarrer le baseline L7.
+Un seul gate reste ouvert : **certification humaine finale du chantier NCI**.
 
-## Vercel
+Tant que cette validation explicite n’existe pas :
+- Lot 7 n’est pas CLOSED ;
+- le chantier reste **6/7 = 85,7 %** ;
+- aucun statut 100 % n’est autorisé.
 
-Aucun déploiement Vercel autorisé ou requis pour ce closeout.
+## Next exact
+
+1. publier et merger ce closeout documentaire `READY FOR HUMAN GATE` ;
+2. présenter les preuves finales à l’utilisateur ;
+3. obtenir le human gate explicite ;
+4. seulement après validation : passer Lot 7 à CLOSED, roadmap/handover à `7/7 = 100 %` et effectuer le dernier closeout documentaire ;
+5. aucun déploiement Vercel sans autorisation explicite.
 
 ## Prompt de reprise
 
-« Reprends AkarFinder — Neighborhood Context Intelligence depuis `docs/NEIGHBORHOOD_CONTEXT_INTELLIGENCE_HANDOVER.md`. Vérifie `main`, considère Lots 1–6 CLOSED à 85,7 %, puis démarre Lot 7 par le baseline national read-only des quartiers canoniques et de leur `coverage_status`. N’invente aucun seuil de couverture avant mesure réelle. Aucun Vercel. »
+« Reprends AkarFinder — Neighborhood Context Intelligence depuis `docs/NEIGHBORHOOD_CONTEXT_INTELLIGENCE_HANDOVER.md`. Le produit L7 est mergé sur `main@89b033e40ecb74521fdd3c22f5669857f7ad1e4b` et le run final `32983514419` est SUCCESS avec artifact `9612476675`. Le chantier est READY FOR HUMAN GATE, 6/7 = 85,7 %. Ne le passe à 100 % qu’après validation humaine explicite. Aucun Vercel. »
