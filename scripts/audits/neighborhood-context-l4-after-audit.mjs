@@ -163,6 +163,22 @@ try {
 
           if (state.name === "rabat-agdal" && ["390", "1280"].includes(viewport.name) && expectedMarkers > 0) {
             const first = expectedContext.anchors.slice().sort((a, b) => a.rank - b.rank)[0];
+            const firstGroup = groupForCategory(first.category);
+            const firstGroupFilter = page.locator(`[data-neighborhood-context-poi-filter="${firstGroup}"]`);
+            const expectedGroupCount = expectedContext.anchors
+              .filter((anchor) => groupForCategory(anchor.category) === firstGroup)
+              .slice(0, 8).length;
+            if (await firstGroupFilter.count() !== 1) {
+              report.findings.push(`${state.name}/${viewport.name}:missing_popup_filter:${firstGroup}`);
+            } else {
+              await firstGroupFilter.click();
+              await page.waitForFunction(
+                (count) => document.querySelectorAll("[data-neighborhood-context-poi]").length === count,
+                expectedGroupCount,
+                { timeout: 5000 },
+              );
+            }
+
             await page.locator(`[data-neighborhood-context-poi="${first.poi_id}"]`).click();
             const popup = page.locator(`[data-neighborhood-context-poi-popup="${first.poi_id}"]`);
             await popup.waitFor({ state: "visible", timeout: 5000 });
@@ -181,6 +197,16 @@ try {
             report.interactions.push({ state: state.name, viewport: viewport.name, file: interactionFile, poi_id: first.poi_id, popupText });
 
             if (viewport.name === "1280") {
+              const allFilter = page.locator('[data-neighborhood-context-poi-filter="all"]');
+              if (await allFilter.count() === 1) {
+                await allFilter.click();
+                await page.waitForFunction(
+                  (count) => document.querySelectorAll("[data-neighborhood-context-poi]").length === count,
+                  expectedMarkers,
+                  { timeout: 5000 },
+                );
+              }
+
               const filterButtons = page.locator("[data-neighborhood-context-poi-filter]");
               const filterCount = await filterButtons.count();
               if (filterCount > 1) {
