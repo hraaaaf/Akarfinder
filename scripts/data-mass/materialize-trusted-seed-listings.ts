@@ -3,6 +3,7 @@ import { getSupabaseServerClient } from "@/lib/db/supabase-client";
 import {
   evaluateTrustedSeedListing,
   materializeTrustedSeedListings,
+  type SeedPriceConfidence,
   type TrustedSeedListingDecision,
   type TrustedSeedListingInput,
 } from "@/lib/data-mass/trusted-seed-listing-materialization";
@@ -10,7 +11,6 @@ import {
 const PAGE_SIZE = 1000;
 const LOOKUP_CHUNK = 40;
 
-type ShadowRow = { seed_id: string; economic_status: string; principal_value_mad: number | null };
 type ThinRow = {
   seed_id: string;
   canonical_url: string;
@@ -24,11 +24,12 @@ type ThinRow = {
   normalized_city: string | null;
   normalized_property_type: string | null;
   normalized_intent: string | null;
+  normalized_price_mad: number | null;
+  recovery_confidence: string | null;
   document_kind: string | null;
   vertical_classification: string | null;
 };
 type SeedRow = { id: string; first_observed_at: string; last_observed_at: string };
-
 type Mode = "dry-run" | "apply";
 
 function parseMode(): Mode {
@@ -49,37 +50,28 @@ function chunk<T>(values: T[], size: number): T[][] {
   return out;
 }
 
-async function loadTrustedShadow(): Promise<ShadowRow[]> {
+function priceConfidence(value: string | null): SeedPriceConfidence | null {
+  if (value === "trusted_economic_v2") return "trusted";
+  if (value === "economic_v2_price_to_verify") return "to_verify";
+  return null;
+}
+
+async function loadEligibleThinRows(): Promise<ThinRow[]> {
   const db = getSupabaseServerClient();
-  const rows: ShadowRow[] = [];
+  const rows: ThinRow[] = [];
   let from = 0;
   for (;;) {
     const response = await db
-      .from("odm_economic_observation_state_shadow_v1")
-      .select("seed_id,economic_status,principal_value_mad")
-      .eq("parser_version", "odm_economic_parser_v2")
-      .eq("economic_status", "trusted")
-      .not("principal_value_mad", "is", null)
+      .from("thin_index_search_documents")
+      .select("seed_id,canonical_url,source_domain,seed_provider,freshness_status,title,snippet,city,recovered_city,normalized_city,normalized_property_type,normalized_intent,normalized_price_mad,recovery_confidence,document_kind,vertical_classification")
+      .not("normalized_price_mad", "is", null)
+      .in("recovery_confidence", ["trusted_economic_v2", "economic_v2_price_to_verify"])
       .range(from, from + PAGE_SIZE - 1);
     if (response.error) throw new Error(response.error.message);
-    const page = (response.data ?? []) as ShadowRow[];
+    const page = (response.data ?? []) as ThinRow[];
     rows.push(...page);
     if (page.length < PAGE_SIZE) break;
     from += PAGE_SIZE;
-  }
-  return rows;
-}
-
-async function loadThinRows(seedIds: string[]): Promise<ThinRow[]> {
-  const db = getSupabaseServerClient();
-  const rows: ThinRow[] = [];
-  for (const ids of chunk(seedIds, LOOKUP_CHUNK)) {
-    const response = await db
-      .from("thin_index_search_documents")
-      .select("seed_id,canonical_url,source_domain,seed_provider,freshness_status,title,snippet,city,recovered_city,normalized_city,normalized_property_type,normalized_intent,document_kind,vertical_classification")
-      .in("seed_id", ids);
-    if (response.error) throw new Error(response.error.message);
-    rows.push(...((response.data ?? []) as ThinRow[]));
   }
   return rows;
 }
@@ -113,6 +105,7 @@ async function loadExistingUrls(): Promise<Set<string>> {
 function summarize(decisions: TrustedSeedListingDecision[], existingUrls: Set<string>) {
   const rejectedByReason: Record<string, number> = {};
   const selectedByDomain: Record<string, number> = {};
+  const selectedByConfidence: Record<string, number> = { trusted: 0, to_verify: 0 };
   let admitted = 0;
   let alreadyMaterialized = 0;
   for (const decision of decisions) {
@@ -126,12 +119,14 @@ function summarize(decisions: TrustedSeedListingDecision[], existingUrls: Set<st
       continue;
     }
     selectedByDomain[decision.input.sourceDomain] = (selectedByDomain[decision.input.sourceDomain] ?? 0) + 1;
+    selectedByConfidence[decision.priceConfidence] = (selectedByConfidence[decision.priceConfidence] ?? 0) + 1;
   }
   return {
     evaluated: decisions.length,
     admitted,
     alreadyMaterialized,
     netNew: admitted - alreadyMaterialized,
+    selectedByConfidence,
     selectedByDomain: Object.fromEntries(Object.entries(selectedByDomain).sort((a, b) => b[1] - a[1])),
     rejectedByReason: Object.fromEntries(Object.entries(rejectedByReason).sort((a, b) => b[1] - a[1])),
   };
@@ -140,16 +135,14 @@ function summarize(decisions: TrustedSeedListingDecision[], existingUrls: Set<st
 async function main() {
   const mode = parseMode();
   const limit = parseLimit();
-  const shadowRows = await loadTrustedShadow();
-  const trustedBySeed = new Map(shadowRows.map((row) => [row.seed_id, row]));
-  const thinRows = await loadThinRows([...trustedBySeed.keys()]);
+  const thinRows = await loadEligibleThinRows();
   const seeds = await loadSeeds(thinRows.map((row) => row.seed_id));
   const existingUrls = await loadExistingUrls();
 
   const inputs: TrustedSeedListingInput[] = thinRows.flatMap((row) => {
-    const shadow = trustedBySeed.get(row.seed_id);
     const seed = seeds.get(row.seed_id);
-    if (!shadow || !seed) return [];
+    const confidence = priceConfidence(row.recovery_confidence);
+    if (!seed || !confidence) return [];
     return [{
       seedId: row.seed_id,
       canonicalUrl: row.canonical_url,
@@ -161,8 +154,8 @@ async function main() {
       title: row.title,
       snippet: row.snippet,
       city: row.normalized_city ?? row.city ?? row.recovered_city,
-      trustedPriceMad: shadow.principal_value_mad == null ? null : Number(shadow.principal_value_mad),
-      economicStatus: shadow.economic_status,
+      priceMad: row.normalized_price_mad == null ? null : Number(row.normalized_price_mad),
+      priceConfidence: confidence,
       propertyType: row.normalized_property_type,
       intent: row.normalized_intent,
       documentKind: row.document_kind,
@@ -178,20 +171,20 @@ async function main() {
   const bounded = limit === null ? selected : selected.slice(0, limit);
 
   console.log(JSON.stringify({
-    event: "TRUSTED_SEED_LISTING_MATERIALIZATION_PLAN",
+    event: "SEED_LISTING_MATERIALIZATION_PLAN",
     mode,
     limit,
-    trustedLedgerRows: shadowRows.length,
     thinRowsLoaded: thinRows.length,
     plan,
     boundedWriteCount: bounded.length,
     invariants: {
       sourceNetworkRequests: 0,
       copiedSourceContent: false,
-      trustedPriceRequired: true,
+      trustedOrPriceToVerifyRequired: true,
       explicitCityRequired: true,
       explicitDistrictRequired: true,
       currentRegistryDetailUrlRequired: true,
+      doubtfulPriceStatus: "ambiguous",
       dryRunDatabaseWrites: mode === "dry-run" ? 0 : null,
     },
   }, null, 2));
@@ -200,9 +193,9 @@ async function main() {
   if (process.env.SEED_LISTING_MATERIALIZE_WRITE !== "1") throw new Error("SEED_LISTING_MATERIALIZE_WRITE_FLAG_REQUIRED");
   if (bounded.length === 0) return;
 
-  const runId = `trusted-seed-materialization-${new Date().toISOString().replace(/[:.]/g, "-")}`;
+  const runId = `seed-materialization-${new Date().toISOString().replace(/[:.]/g, "-")}`;
   const result = await materializeTrustedSeedListings({ runId, decisions: bounded });
-  console.log(JSON.stringify({ event: "TRUSTED_SEED_LISTING_MATERIALIZATION_APPLY", runId, result }, null, 2));
+  console.log(JSON.stringify({ event: "SEED_LISTING_MATERIALIZATION_APPLY", runId, result }, null, 2));
   if (result.errors.length > 0) process.exitCode = 1;
 }
 
