@@ -51,6 +51,57 @@ function matchDistrict(
   return { district: null, confidence: "low" };
 }
 
+function explicitDistrictFromSourceUrl(city: string, sourceUrl: string): string | null {
+  const possibleDistricts = getDistrictsForCity(city);
+  if (possibleDistricts.length === 0) return null;
+
+  let pathname = sourceUrl;
+  try {
+    pathname = new URL(sourceUrl).pathname;
+  } catch {
+    // Relative/legacy source URLs are still safe to inspect segment-by-segment.
+  }
+
+  const segments = pathname
+    .split("/")
+    .filter(Boolean)
+    .map((segment) => {
+      let decoded = segment;
+      try {
+        decoded = decodeURIComponent(segment);
+      } catch {
+        // Invalid percent-encoding is treated literally and cannot create a match.
+      }
+      return normalize(decoded).replace(/\s+/g, "-");
+    });
+
+  for (const district of possibleDistricts) {
+    const districtSlug = normalize(district).replace(/\s+/g, "-");
+    if (segments.includes(districtSlug)) return district;
+  }
+
+  return null;
+}
+
+export function hasExplicitSourceUrlDistrictConflict(
+  city: string | null,
+  requestedDistrict: string | null,
+  sourceUrl: string | null,
+): boolean {
+  if (!city || !requestedDistrict || !sourceUrl) return false;
+
+  const possibleDistricts = getDistrictsForCity(city);
+  if (possibleDistricts.length === 0) return false;
+
+  const requestedMatch = matchDistrict(requestedDistrict, possibleDistricts);
+  if (!requestedMatch.district || requestedMatch.confidence !== "high") return false;
+
+  const sourceDistrict = explicitDistrictFromSourceUrl(city, sourceUrl);
+  if (!sourceDistrict) return false;
+
+  return normalize(sourceDistrict) !== normalize(requestedMatch.district);
+}
+
 export function findDistrict(
   city: string | null,
   title: string | null,

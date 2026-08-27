@@ -19,6 +19,25 @@ import type { NeighborhoodPoiPilotSnapshotV1 } from "@/lib/neighborhood-context/
 export const NEIGHBORHOOD_CONTEXT_READ_MODEL_VERSION = "NeighborhoodContextReadModelV1" as const;
 export const NEIGHBORHOOD_CONTEXT_RUNTIME_SOURCE = "ann-l5-certified-seed" as const;
 
+const NON_PUBLISHABLE_POI_NAMES = new Set([
+  "crastelf 2",
+  "n/a",
+  "null",
+  "sans nom",
+  "undefined",
+  "unknown",
+  "unnamed",
+]);
+
+export function isPublishableNeighborhoodPoiName(name: string): boolean {
+  const normalized = name
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "");
+  return normalized.length > 0 && !NON_PUBLISHABLE_POI_NAMES.has(normalized);
+}
+
 export type NeighborhoodContextCoverageStatus = "covered" | "partial" | "insufficient" | "unavailable";
 
 export type NeighborhoodContextAnchorReadV1 = {
@@ -127,7 +146,11 @@ function anchorRead(anchor: NeighborhoodAnchorV1, poi: NeighborhoodPoiV1): Neigh
 export function buildNeighborhoodContextRuntimeCatalog(now = new Date()): NeighborhoodContextReadModelV1[] {
   return getNeighborhoodContextL1Pilots().map((pilot) => {
     const pois = getAnnL5CertifiedSeedPois(pilot.canonical_neighborhood_id, now)
-      .filter((poi) => poi.status === "active" && poi.freshness_status === "fresh");
+      .filter((poi) =>
+        poi.status === "active" &&
+        poi.freshness_status === "fresh" &&
+        isPublishableNeighborhoodPoiName(poi.name)
+      );
     const snapshot = pilotSnapshot(pilot, pois);
     const selection = selectNeighborhoodAnchors(snapshot, { geometry: geometryFor(pilot.city, pilot.neighborhood) });
     const selectionErrors = validateNeighborhoodAnchorSelection(selection);

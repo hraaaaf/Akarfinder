@@ -1,0 +1,37 @@
+name: Data Trust Neighborhood + POI Guard
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "lib/geo/district-matcher.ts"
+      - "lib/search/database-search.ts"
+      - "lib/neighborhood-context/read-model.ts"
+      - "lib/neighborhood-context/certified-seed.ts"
+      - "scripts/scrapers/__tests__/data-trust-neighborhood-poi.test.ts"
+      - ".github/workflows/data-trust-neighborhood-poi.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  certify-data-trust:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout candidate ref
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Data Trust targeted regression
+        run: npx tsx --test scripts/scrapers/__tests__/data-trust-neighborhood-poi.test.ts
+      - name: TypeScript check
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build

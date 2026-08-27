@@ -10,6 +10,7 @@ import {
   canonicalizeGeoPair,
   getCitySearchVariants,
 } from "@/lib/geo/geo-entity-registry";
+import { hasExplicitSourceUrlDistrictConflict } from "@/lib/geo/district-matcher";
 import type { SearchQuery, SearchResult } from "./types";
 import { compareRecommendedListings } from "./ranking";
 import { enrichSearchQueryWithTextIntent } from "./query-intent";
@@ -87,6 +88,15 @@ function matchesFilters(listing: Listing, query: SearchQuery) {
       !queryGeo.neighborhood ||
       !listingGeo.neighborhood ||
       normalize(listingGeo.neighborhood) !== normalize(queryGeo.neighborhood)
+    ) {
+      return false;
+    }
+    if (
+      hasExplicitSourceUrlDistrictConflict(
+        listing.city,
+        query.district,
+        listing.listing_url ?? null,
+      )
     ) {
       return false;
     }
