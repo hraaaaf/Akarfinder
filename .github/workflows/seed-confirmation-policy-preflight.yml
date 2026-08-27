@@ -1,0 +1,32 @@
+name: Seed Confirmation Policy Preflight
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "lib/acquisition-scale-v1/seed-confirmation-policy.ts"
+      - "scripts/openserp/confirm-seed-listing-candidates.ts"
+      - "scripts/scrapers/__tests__/seed-confirmation-policy-preflight.test.ts"
+      - ".github/workflows/seed-confirmation-policy-preflight.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Policy preflight regression
+        run: npx tsx --test scripts/scrapers/__tests__/seed-confirmation-policy-preflight.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
