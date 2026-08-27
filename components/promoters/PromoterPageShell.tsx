@@ -2,10 +2,10 @@ import Link from "next/link";
 import {
   ArrowLeft,
   ArrowRight,
-  BarChart2,
   Building2,
   FileText,
   Globe,
+  Mail,
   MapPin,
   MessageCircle,
 } from "lucide-react";
@@ -103,7 +103,6 @@ export function PromoterPageShell({ promoter, projects, isDemo }: PromoterPageSh
       ) : null}
       <SiteHeader />
 
-      {/* Hero */}
       <section className="bg-[#78350f] px-4 py-14 text-white sm:py-18">
         <div className="mx-auto max-w-3xl">
           <Link
@@ -128,7 +127,7 @@ export function PromoterPageShell({ promoter, projects, isDemo }: PromoterPageSh
             )}
             <div className="min-w-0">
               <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-700/60 px-2.5 py-1 text-[10.5px] font-extrabold uppercase tracking-[0.1em] text-amber-200">
-                Projet partenaire
+                Promoteur partenaire
               </span>
               <h1 className="mt-2 text-[2rem] font-extrabold leading-tight tracking-[-0.04em] sm:text-[2.6rem]">
                 {promoter.name}
@@ -143,11 +142,9 @@ export function PromoterPageShell({ promoter, projects, isDemo }: PromoterPageSh
       </section>
 
       <Container className="space-y-10 py-10 lg:py-14">
-
-        {/* Présentation */}
         <section className="rounded-[1.5rem] border border-[#eadfca] bg-white p-6 shadow-[0_6px_22px_rgba(7,27,51,0.04)]">
           <p className="mb-3 text-[10.5px] font-extrabold uppercase tracking-[0.16em] text-amber-700">
-            Données fournies par le promoteur
+            {promoter.source_note}
           </p>
           <p className="text-[14.5px] leading-7 text-gray-700">{promoter.description}</p>
           {promoter.website_url ? (
@@ -164,7 +161,6 @@ export function PromoterPageShell({ promoter, projects, isDemo }: PromoterPageSh
           ) : null}
         </section>
 
-        {/* Projets actifs */}
         <section>
           <div className="mb-5 flex items-center justify-between gap-3">
             <h2 className="text-[1.2rem] font-extrabold tracking-[-0.03em] text-deepblue">
@@ -189,7 +185,6 @@ export function PromoterPageShell({ promoter, projects, isDemo }: PromoterPageSh
           )}
         </section>
 
-        {/* Villes / quartiers */}
         {cities.length > 0 ? (
           <section>
             <h2 className="mb-4 text-[1.1rem] font-extrabold tracking-[-0.02em] text-deepblue">
@@ -210,7 +205,6 @@ export function PromoterPageShell({ promoter, projects, isDemo }: PromoterPageSh
           </section>
         ) : null}
 
-        {/* CTA contact */}
         {isDemo ? (
           <section className="rounded-[1.7rem] border border-amber-300 bg-amber-50 p-6 sm:p-8">
             <h2 className="mb-1 text-[1.2rem] font-extrabold tracking-[-0.03em] text-deepblue">
@@ -250,6 +244,15 @@ export function PromoterPageShell({ promoter, projects, isDemo }: PromoterPageSh
                   Contacter par WhatsApp
                 </a>
               ) : null}
+              {promoter.contact_email ? (
+                <a
+                  href={`mailto:${promoter.contact_email}`}
+                  className="inline-flex items-center gap-2 rounded-xl border border-[#d8c8a3] bg-white px-5 py-3 text-[13.5px] font-extrabold text-deepblue transition hover:bg-[#f7f3ea]"
+                >
+                  <Mail size={15} strokeWidth={2} aria-hidden="true" />
+                  Envoyer un e-mail
+                </a>
+              ) : null}
               <Link
                 href="/onboarding"
                 className="inline-flex items-center gap-2 rounded-xl border border-[#d8c8a3] bg-white px-5 py-3 text-[13.5px] font-extrabold text-deepblue transition hover:bg-[#f7f3ea]"
@@ -266,34 +269,11 @@ export function PromoterPageShell({ promoter, projects, isDemo }: PromoterPageSh
           </section>
         )}
 
-        {/* Reporting futur */}
-        <section className="rounded-[1.4rem] border border-[#eadfca] bg-white p-5 shadow-[0_4px_16px_rgba(7,27,51,0.04)]">
-          <div className="flex items-center gap-3">
-            <span className="grid h-10 w-10 place-items-center rounded-2xl bg-[#1a4a8a] text-white">
-              <BarChart2 size={18} strokeWidth={2} aria-hidden="true" />
-            </span>
-            <div>
-              <h3 className="text-[0.95rem] font-extrabold tracking-[-0.02em] text-deepblue">
-                Reporting projet
-              </h3>
-              <span className="ml-0 mt-0.5 inline-block rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.1em] text-gray-400">
-                À venir
-              </span>
-            </div>
-          </div>
-          <p className="mt-3 text-[13px] leading-6 text-gray-500">
-            Suivi des vues, demandes de brochure et contacts générés par vos programmes.
-            Disponible dans les prochaines versions de l'espace promoteur.
-          </p>
-        </section>
-
-        {/* Disclaimer */}
         <p className="rounded-xl border border-[#eadfca] bg-[#fffdf8] px-4 py-3 text-[12px] leading-5 text-gray-500">
           Données fournies par le promoteur partenaire. Informations à confirmer
           directement auprès du promoteur avant tout engagement. AkarFinder n'est pas
           partie à la transaction et ne garantit aucun résultat commercial.
         </p>
-
       </Container>
 
       <SiteFooter />
