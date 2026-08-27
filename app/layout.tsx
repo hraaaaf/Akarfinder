@@ -31,9 +31,9 @@ export const metadata: Metadata = {
   description: siteConfig.defaultDescription,
   applicationName: siteConfig.siteName,
   manifest: "/manifest.webmanifest",
-  alternates: {
-    canonical: "/",
-  },
+  // Canonical et métadonnées sociales sont volontairement définies au niveau
+  // des pages/routes publiques. Les définir ici ferait hériter `/` ou le
+  // contenu Home à toutes les pages qui n'ont pas d'override explicite.
   robots: {
     index: true,
     follow: true,
@@ -46,27 +46,6 @@ export const metadata: Metadata = {
       { url: "/brand/favicon-512.png", type: "image/png", sizes: "512x512" },
     ],
     apple: [{ url: "/brand/apple-touch-icon.png", sizes: "180x180" }],
-  },
-  openGraph: {
-    type: "website",
-    locale: siteConfig.locale,
-    siteName: siteConfig.siteName,
-    title: siteConfig.defaultTitle,
-    description: siteConfig.defaultDescription,
-    images: [
-      {
-        url: siteConfig.defaultOgImage,
-        width: 1200,
-        height: 630,
-        alt: siteConfig.defaultTitle,
-      },
-    ],
-  },
-  twitter: {
-    card: siteConfig.twitterCard,
-    title: siteConfig.defaultTitle,
-    description: siteConfig.defaultDescription,
-    images: [siteConfig.defaultOgImage],
   },
 };
 
