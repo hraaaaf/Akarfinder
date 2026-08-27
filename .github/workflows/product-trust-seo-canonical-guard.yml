@@ -1,0 +1,33 @@
+name: Product Trust SEO Canonical Guard
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "app/layout.tsx"
+      - "app/page.tsx"
+      - "app/search/page.tsx"
+      - "scripts/__tests__/seo-canonical-guard.test.ts"
+      - ".github/workflows/product-trust-seo-canonical-guard.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify-canonical-boundary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Canonical metadata regression
+        run: npx tsx --test scripts/__tests__/seo-canonical-guard.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build

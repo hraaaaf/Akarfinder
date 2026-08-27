@@ -31,9 +31,9 @@ export const metadata: Metadata = {
   description: siteConfig.defaultDescription,
   applicationName: siteConfig.siteName,
   manifest: "/manifest.webmanifest",
-  alternates: {
-    canonical: "/",
-  },
+  // Ne jamais définir de canonical global ici : les metadata Next.js sont
+  // héritées et cela ferait pointer chaque route sans override vers `/`.
+  // Les pages indexables portent leur canonical au niveau de leur segment.
   robots: {
     index: true,
     follow: true,
