@@ -36,15 +36,16 @@ Mockup utilisateur approuvé dans la conversation du 2026-08-28 : concept premiu
 - badge transaction coloré visible ;
 - libellé `Annonce indexée` lisible dans le visuel.
 
-## État repo
+## État repo certifié avant merge
 - Repo : `hraaaaf/Akarfinder`
 - Base : `main`
-- Base SHA : `b571a6b6c0f4ebeb59df279c0942d0b334e3b15d`
 - Branche : `feat/search-indexed-visual-polish-p1`
-- PR : `#945` draft
-- HEAD actuel : `738ef25a18fe8db514d91cee67f6cc007108df92`
+- PR : `#945`
+- HEAD certifié : `2e4be82af6328852c9f62c7fd605aaeb4ca207bc`
+- PR mergeable : oui au contrôle du 2026-08-28
+- Diff : 4 fichiers, 174 additions, 65 suppressions
 - DB : aucune modification
-- Vercel : aucun déploiement sans autorisation explicite
+- Vercel : aucun déploiement demandé ou autorisé
 
 ## Implémentation
 - palette éclaircie et rapprochée du TARGET ;
@@ -55,38 +56,63 @@ Mockup utilisateur approuvé dans la conversation du 2026-08-28 : concept premiu
 - contrat de mapping couleurs mis à jour ;
 - labels premium centralisés dans l'artwork pour rester visibles dans `SearchListingCardDark` et `ExternalIndexedResultCard`.
 
-## Première certification visuelle — HEAD `3affe7e...`
-Run Chromium baseline `33194701137` ✅
-Artifact `9695432269` ✅
-Digest `sha256:2c17ce69144956dbce658f9b20c6689f308d5d864e1a40e4d34024ee5960ede5`
+## Certification finale exact-HEAD
+HEAD : `2e4be82af6328852c9f62c7fd605aaeb4ca207bc`
 
-Captures inspectées :
+### CI Chromium
+- `UI All Pages Baseline` run `33196086643` ✅
+  - artifact `9695997913`
+  - digest `sha256:ae0da525d0fd361d0e4f8fd6679d7b2a091e0b14bef85581ef5cfbd389ef0d65`
+- `UI All Pages Certification` run `33196086594` ✅
+  - artifact `9695997166`
+  - digest `sha256:a3c9f8fe66ebbad4078ef26a10abfc3488bd81c5addc94f79ea9ad90e2d83f30`
+
+### Exhaustivité
+- pages inventoriées : 81
+- pages rendables : 70
+- pages bloquées attendues : 11
+- viewports : 4
+- captures attendues : 280
+- captures obtenues : 280
+- findings : 0
+- routes avec finding : 0
+
+### AFTER inspecté
+`visual-qa/search-indexed-cards` :
 - 390×844 ✅
 - 430×932 ✅
 - 768×900 ✅
 - 1280×900 ✅
 
-Constats :
-- line-art, palette et hiérarchie nettement rapprochés du TARGET ✅ ;
-- Achat / Location / Neuf distincts ✅ ;
-- aucune photo tierce ✅ ;
-- défaut détecté : badge transaction sur `SearchListingCardDark` trop peu visible car le composant parent désactivait les labels internes ⚠️.
+Constats visuels :
+- Achat : maison + pin + clé immédiatement identifiables ✅
+- Location : porte ouverte + clé, narration distincte ✅
+- Neuf : grue + structure, narration distincte ✅
+- palette claire et line-art fin conformes au TARGET ✅
+- badges transaction colorés visibles ✅
+- `Annonce indexée` visible ✅
+- aucune photo tierce ✅
+- aucune régression critique observée sur les quatre viewports ✅
 
-Correction appliquée : commit `738ef25a18fe8db514d91cee67f6cc007108df92`.
-Les labels premium sont désormais forcés pour les transactions reconnues afin de conserver le badge coloré et `Annonce indexée` même lorsque le parent désactive historiquement ces overlays.
+Score visuel du composant illustré : **9.2/10**.
+Le score porte sur l'illustration transactionnelle et sa hiérarchie visuelle, pas sur une refonte globale du layout de la page QA.
 
 ## CI globale hors diff
-Le gate Phase 1 P0 rouge observé sur la PR échoue sur d'anciens contrats `/compagnon` / onboarding, sans rapport avec les fichiers du polish. Il est documenté, pas masqué.
+Plusieurs gates historiques restent rouges sur des contrats Search/`/compagnon` et autres validations globales. Ils ne touchent pas les 4 fichiers du polish. Les deux certifications Chromium exact-HEAD du lot sont vertes et exhaustives ; les échecs hors diff restent documentés, pas masqués.
+
+## Closeout
+- Goal visuel : atteint avec preuve exact-HEAD ✅
+- certification Chromium exhaustive : ✅
+- AFTER inspecté 390/430/768/1280 : ✅
+- findings certification : 0 ✅
+- DB : inchangée ✅
+- Vercel : aucun déploiement ✅
 
 ## NEXT EXACT
-1. Récupérer la nouvelle CI Chromium sur HEAD `738ef25...`.
-2. Inspecter AFTER 390/430/768/1280.
-3. Comparer TARGET / première passe / AFTER corrigé.
-4. Si aucune régression critique : documenter score visuel final.
-5. Closeout canonique.
-6. PR ready puis squash merge si HEAD inchangé et mergeable.
-7. Vérifier `main` post-merge.
-8. Aucun déploiement Vercel sans human gate explicite.
+1. Passer la PR #945 de draft à ready.
+2. Squash merge avec protection par HEAD attendu.
+3. Vérifier `main` post-merge.
+4. Aucun déploiement Vercel sans human gate explicite.
 
 ## Avancement
-**P1 actif — correction visuelle appliquée, recertification requise.**
+**P1 certifié — prêt au merge.**
