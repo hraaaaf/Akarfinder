@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { ArrowRight, ExternalLink, MapPin } from "lucide-react";
 import { FavoriteToggleButton } from "@/components/favorites/FavoriteToggleButton";
 import { PropertyTypeArtwork } from "@/components/property-types/PropertyTypeArtwork";
+import { IndexedTransactionArtwork } from "@/components/search/IndexedTransactionArtwork";
 import { usePropertySelection } from "@/components/search/PropertySelectionProvider";
 import { resolveRabatRealPhoto } from "@/lib/contextual-illustrations/rabat-real-photo-library";
 import { resolveContextualIllustration } from "@/lib/contextual-illustrations/resolver";
@@ -18,6 +19,7 @@ import {
   type SearchTruthTier,
 } from "@/lib/search/search-truth-tier";
 import { track } from "@/lib/tracking/track";
+import { shouldUseIndexedTransactionArtwork } from "@/lib/ux/indexed-listing-visual-policy";
 import { buildSmartPropertyCardModel } from "@/lib/ux/smart-property-card";
 import { deriveListingPublicAttribution } from "@/lib/search/public-attribution";
 
@@ -47,6 +49,7 @@ export function SearchListingCardDark({ listing, projectId }: { listing: Listing
 
   useEffect(() => registerListing(listing), [listing, registerListing]);
 
+  const useIndexedArtwork = shouldUseIndexedTransactionArtwork(listing);
   const rawImageMode = getListingImageMode(listing);
   const policyBlocked = listing.display_images?.policy === "no_listing_image";
   const imageMode =
@@ -71,7 +74,7 @@ export function SearchListingCardDark({ listing, projectId }: { listing: Listing
         listing.allowed_ctas.includes("view_source")),
   );
   const neighborhoodPhoto =
-    imageMode === "fallback_visual" && !neighborhoodPhotoError
+    !useIndexedArtwork && imageMode === "fallback_visual" && !neighborhoodPhotoError
       ? resolveRabatRealPhoto({
           stableKey: listing.listing_url ?? listing.id,
           city: listing.city,
@@ -80,7 +83,7 @@ export function SearchListingCardDark({ listing, projectId }: { listing: Listing
       : null;
   const showNeighborhoodPhoto = neighborhoodPhoto !== null;
   const contextualFallback =
-    imageMode === "fallback_visual" && !showNeighborhoodPhoto
+    !useIndexedArtwork && imageMode === "fallback_visual" && !showNeighborhoodPhoto
       ? resolveContextualIllustration({
           stableRepresentationKey: listing.listing_url ?? "",
           normalizedCity: listing.city,
@@ -101,6 +104,7 @@ export function SearchListingCardDark({ listing, projectId }: { listing: Listing
         data-property-active={active ? "true" : "false"}
         data-mobile-compact-card
         data-search-listing-card
+        data-indexed-artwork-card={useIndexedArtwork ? "true" : undefined}
         className={`group relative flex min-w-0 flex-col overflow-hidden rounded-[20px] border bg-white transition duration-300 sm:rounded-2xl sm:hover:-translate-y-0.5 ${
           active
             ? "border-[#8fb1dc] shadow-[0_12px_30px_rgba(47,99,164,0.16)] ring-1 ring-[#2f63a4]/10 sm:shadow-[0_20px_46px_rgba(47,99,164,0.18)] sm:ring-2"
@@ -114,7 +118,13 @@ export function SearchListingCardDark({ listing, projectId }: { listing: Listing
         >
           <div data-card-image className="relative h-[164px] overflow-hidden bg-slate-100 sm:h-[196px]">
             <div className="absolute inset-0 transition duration-500 group-hover:scale-[1.025]">
-              {imageMode === "db_provider_thumbnail" ? (
+              {useIndexedArtwork ? (
+                <IndexedTransactionArtwork
+                  transaction={listing.transaction_type}
+                  showTransactionLabel={false}
+                  showIndexedDisclosure={false}
+                />
+              ) : imageMode === "db_provider_thumbnail" ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={listing.thumbnail_url!}
@@ -179,7 +189,9 @@ export function SearchListingCardDark({ listing, projectId }: { listing: Listing
                 </div>
               )}
             </div>
-            <div className="absolute inset-0 bg-gradient-to-t from-[#03101f]/58 via-transparent to-transparent sm:from-[#03101f]/78" />
+            {!useIndexedArtwork ? (
+              <div className="absolute inset-0 bg-gradient-to-t from-[#03101f]/58 via-transparent to-transparent sm:from-[#03101f]/78" />
+            ) : null}
 
             <div className="absolute left-2 top-2 flex flex-wrap gap-1.5 sm:left-3 sm:top-3 sm:gap-2">
               <span className="rounded-full bg-deepblue/88 px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-[0.05em] text-white ring-1 ring-white/15 backdrop-blur sm:px-2.5 sm:py-1 sm:text-[10.5px] sm:tracking-[0.06em]">
@@ -202,7 +214,14 @@ export function SearchListingCardDark({ listing, projectId }: { listing: Listing
             <span className="absolute bottom-2 left-2 rounded-full bg-white/92 px-2 py-0.5 text-[9px] font-extrabold text-deepblue shadow-sm backdrop-blur sm:bottom-3 sm:left-3 sm:px-2.5 sm:py-1 sm:text-[10px]">
               {listing.property_type}
             </span>
-            {imageMode === "fallback_visual" ? (
+            {useIndexedArtwork ? (
+              <span
+                data-indexed-artwork-disclosure
+                className="absolute bottom-2 right-2 rounded-full bg-white/82 px-1.5 py-0.5 text-[8px] font-extrabold text-deepblue shadow-sm backdrop-blur-sm sm:bottom-3 sm:right-3 sm:px-2 sm:py-1 sm:text-[9px]"
+              >
+                Annonce indexée
+              </span>
+            ) : imageMode === "fallback_visual" ? (
               showNeighborhoodPhoto ? (
                 <span
                   data-neighborhood-photo-disclosure
