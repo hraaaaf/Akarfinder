@@ -28,7 +28,8 @@ Sur `/search`, une annonce `public_indexed` est identifiable immédiatement par 
 - PR : **#943**
 - Base : `main`
 - Base SHA avant closeout : `9aa30aad4a7113a429216fbc8072b2916158675a`
-- HEAD certifié avant cette mise à jour documentaire : `b182a8b89982897e8114c28b785069a6a7912b70`
+- HEAD certifié fonctionnel : `b182a8b89982897e8114c28b785069a6a7912b70`
+- HEAD documentaire final : `b3751e813a7ddc111769e078797cbfce3f376435`
 - DB : aucune modification
 - Vercel : aucun déploiement production demandé ou exécuté
 
@@ -87,7 +88,7 @@ Preuve ciblée L1-L3 : run `33184540457` ✅
 Le workflow temporaire `.github/workflows/search-indexed-visual-l1.yml` a été supprimé avant merge.
 
 ## L4 — Certification UI + closeout
-**CLOSED — preuves exact-head acquises.**
+**CLOSED — preuves exact-head acquises sur le HEAD fonctionnel.**
 
 ### CI exacte sur `b182a8b89982897e8114c28b785069a6a7912b70`
 - UI All Pages Certification **#628** / run `33186984945` ✅
@@ -97,6 +98,8 @@ Le workflow temporaire `.github/workflows/search-indexed-visual-l1.yml` a été 
 - UI All Pages Inventory **#442** / run `33186984903` ✅
 - UX Gate 0 **#2984** / run `33186984857` ✅
 - Phase 1 P2 **#3092** / run `33186984883` ✅
+
+Le commit suivant `b3751e813a7ddc111769e078797cbfce3f376435` est uniquement documentaire.
 
 ### Artefact Chromium
 Certification artifact : `9692354610`
