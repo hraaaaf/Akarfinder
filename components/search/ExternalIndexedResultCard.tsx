@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ArrowUpRight, Building2, ChevronDown, ChevronUp, MapPin } from "lucide-react";
+import { IndexedTransactionArtwork } from "@/components/search/IndexedTransactionArtwork";
 import type { SearchGatewayNormalizedResult } from "@/lib/search-gateway/search-gateway-types";
 import { formatPriceMad, isPriceToVerify } from "@/lib/search-gateway/price-verification";
 
@@ -39,6 +40,14 @@ function getIntentLabel(intent?: string | null): string | null {
   return null;
 }
 
+function getIntentVisualKey(intent?: string | null): "buy" | "rent" | "new" | undefined {
+  const value = intent?.toLowerCase();
+  if (value === "rent" || value === "location") return "rent";
+  if (value === "new" || value === "neuf") return "new";
+  if (value === "buy" || value === "sale" || value === "achat") return "buy";
+  return undefined;
+}
+
 function buildGeneratedTitle(result: SearchGatewayNormalizedResult): string {
   const propertyType = cleanToken(result.normalized_property_type);
   const city = cleanToken(result.normalized_city);
@@ -65,6 +74,7 @@ export function ExternalIndexedResultCard({
   const city = cleanToken(representative.normalized_city);
   const propertyType = cleanToken(representative.normalized_property_type);
   const intent = getIntentLabel(representative.normalized_intent);
+  const visualTransaction = getIntentVisualKey(representative.normalized_intent);
   const priceLabel = formatPriceMad(representative.normalized_price_mad);
   const priceToVerify = isPriceToVerify(representative);
   const sourcePages = [
@@ -86,9 +96,14 @@ export function ExternalIndexedResultCard({
       data-external-serp-group
       data-external-group-size={sourcePages.length}
       data-price-verification={priceToVerify ? "to_verify" : priceLabel ? "trusted" : "missing"}
-      className="min-w-0 rounded-2xl border border-border/15 bg-card px-3.5 py-3.5 shadow-[0_5px_18px_rgba(15,23,42,0.035)] dark:border-white/10 dark:bg-white/[0.03] sm:px-4 sm:py-4"
+      data-indexed-artwork-card="true"
+      className="min-w-0 overflow-hidden rounded-2xl border border-border/15 bg-card shadow-[0_5px_18px_rgba(15,23,42,0.035)] dark:border-white/10 dark:bg-white/[0.03]"
     >
-      <div className="min-w-0">
+      <div className="h-[112px] w-full overflow-hidden sm:h-[128px]">
+        <IndexedTransactionArtwork transaction={visualTransaction} />
+      </div>
+
+      <div className="min-w-0 px-3.5 py-3.5 sm:px-4 sm:py-4">
         <h3 className="line-clamp-2 text-[14px] font-extrabold leading-[1.3] tracking-[-0.015em] text-foreground dark:text-white sm:text-[15px]">
           {title}
         </h3>
