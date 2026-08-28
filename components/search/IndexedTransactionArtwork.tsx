@@ -3,9 +3,13 @@ import { getIndexedTransactionVisual } from "@/lib/ux/indexed-transaction-visual
 export function IndexedTransactionArtwork({
   transaction,
   className = "",
+  showTransactionLabel = true,
+  showIndexedDisclosure = true,
 }: {
   transaction: string | null | undefined;
   className?: string;
+  showTransactionLabel?: boolean;
+  showIndexedDisclosure?: boolean;
 }) {
   const visual = getIndexedTransactionVisual(transaction);
 
@@ -68,12 +72,16 @@ export function IndexedTransactionArtwork({
         )}
       </svg>
 
-      <div className="absolute left-3 top-3 rounded-full bg-white/82 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.08em] shadow-sm backdrop-blur-sm sm:left-4 sm:top-4 sm:text-[11px]">
-        {visual.label}
-      </div>
-      <div className="absolute bottom-3 left-3 text-[9px] font-bold uppercase tracking-[0.12em] opacity-65 sm:bottom-4 sm:left-4 sm:text-[10px]">
-        AkarFinder · annonce indexée
-      </div>
+      {showTransactionLabel ? (
+        <div className="absolute left-3 top-3 rounded-full bg-white/82 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.08em] shadow-sm backdrop-blur-sm sm:left-4 sm:top-4 sm:text-[11px]">
+          {visual.label}
+        </div>
+      ) : null}
+      {showIndexedDisclosure ? (
+        <div className="absolute bottom-3 left-3 text-[9px] font-bold uppercase tracking-[0.12em] opacity-65 sm:bottom-4 sm:left-4 sm:text-[10px]">
+          AkarFinder · annonce indexée
+        </div>
+      ) : null}
     </div>
   );
 }
