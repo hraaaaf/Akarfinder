@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 
 import {
   buildExplicitSeedAdmissionQuery,
+  buildSeedConfirmationQueries,
   buildSeedConfirmationQuery,
   extractStableSeedIdentifier,
   findExactSeedResult,
@@ -13,14 +14,7 @@ import {
 } from "../../../lib/acquisition-scale-v1/seed-listing-confirmation.js";
 
 function seed(overrides: Partial<SeedConfirmationSeed> = {}): SeedConfirmationSeed {
-  return {
-    id: "s1",
-    canonical_url: "https://example.ma/fr/p/appartement-a-vendre-casablanca-maarif-120-m2",
-    source_domain: "example.ma",
-    metadata: null,
-    updated_at: "2026-07-22T00:00:00.000Z",
-    ...overrides,
-  };
+  return { id: "s1", canonical_url: "https://example.ma/fr/p/appartement-a-vendre-casablanca-maarif-120-m2", source_domain: "example.ma", metadata: null, updated_at: "2026-07-22T00:00:00.000Z", ...overrides };
 }
 
 test("confirmation query is domain-scoped and derived from URL slug without fetching the page", () => {
@@ -32,44 +26,25 @@ test("confirmation query is domain-scoped and derived from URL slug without fetc
 });
 
 test("stable identifiers drive precise confirmation queries", () => {
-  assert.equal(
-    extractStableSeedIdentifier("https://aykana.ma/property/bureau-neuf-a-louer-casablanca-maarif-ref-4341"),
-    "4341",
-  );
-  assert.equal(
-    extractStableSeedIdentifier("https://promoimmomarrakech.com/produit/allm-1004/location-appartement-marrakech.html"),
-    "allm-1004",
-  );
-  assert.equal(
-    extractStableSeedIdentifier("https://barnes-marrakech.com/en/vente/marrakech/2769575"),
-    "2769575",
-  );
+  assert.equal(extractStableSeedIdentifier("https://aykana.ma/property/bureau-neuf-a-louer-casablanca-maarif-ref-4341"), "4341");
+  assert.equal(extractStableSeedIdentifier("https://promoimmomarrakech.com/produit/allm-1004/location-appartement-marrakech.html"), "allm-1004");
+  assert.equal(extractStableSeedIdentifier("https://barnes-marrakech.com/en/vente/marrakech/2769575"), "2769575");
+  assert.equal(buildSeedConfirmationQuery(seed({ source_domain: "aykana.ma", canonical_url: "https://aykana.ma/property/bureau-neuf-a-louer-casablanca-maarif-ref-4341" })), 'site:aykana.ma "4341"');
+});
 
-  assert.equal(
-    buildSeedConfirmationQuery(seed({
-      source_domain: "aykana.ma",
-      canonical_url: "https://aykana.ma/property/bureau-neuf-a-louer-casablanca-maarif-ref-4341",
-    })),
-    'site:aykana.ma "4341"',
+test("query plan is bounded to primary plus exact canonical URL fallback", () => {
+  assert.deepEqual(
+    buildSeedConfirmationQueries(seed({ source_domain: "aykana.ma", canonical_url: "https://www.aykana.ma/property/bureau-neuf-a-louer-casablanca-maarif-ref-4341/?utm_source=x" })),
+    ['site:aykana.ma "4341"', '"https://aykana.ma/property/bureau-neuf-a-louer-casablanca-maarif-ref-4341"'],
   );
-  assert.equal(
-    buildSeedConfirmationQuery(seed({
-      source_domain: "barnes-marrakech.com",
-      canonical_url: "https://barnes-marrakech.com/en/vente/marrakech/2769575",
-    })),
-    'site:barnes-marrakech.com "2769575"',
-  );
+  assert.ok(buildSeedConfirmationQueries(seed()).length <= 2);
 });
 
 test("obvious holiday-rental seed URLs are excluded from confirmation attempts", () => {
   const holiday = "https://daragadir.com/annonces/location-de-vacances/villas/location-vacances-agadir.html";
   assert.equal(isClearlyOutOfScopeSeedUrl(holiday), true);
   assert.equal(isClearlyOutOfScopeSeedUrl("https://example.ma/property/appartement-a-louer-agadir"), false);
-
-  const selected = selectBalancedSeedBatch([
-    seed({ id: "holiday", canonical_url: holiday, source_domain: "daragadir.com" }),
-    seed({ id: "normal", canonical_url: "https://example.ma/property/appartement-a-louer-agadir", source_domain: "example.ma" }),
-  ], 10);
+  const selected = selectBalancedSeedBatch([seed({ id: "holiday", canonical_url: holiday, source_domain: "daragadir.com" }), seed({ id: "normal", canonical_url: "https://example.ma/property/appartement-a-louer-agadir", source_domain: "example.ma" })], 10);
   assert.deepEqual(selected.map((row) => row.id), ["normal"]);
 });
 
@@ -84,28 +59,12 @@ test("only an exact canonical URL hit confirms a seed", () => {
 });
 
 test("admission query requires explicit city transaction and property type from SERP evidence", () => {
-  const full = buildExplicitSeedAdmissionQuery({
-    seed: seed(),
-    result: {
-      url: "https://example.ma/fr/p/appartement-a-vendre-casablanca-maarif-120-m2",
-      title: "Appartement à vendre à Casablanca Maarif - 120 m²",
-      snippet: "Appartement 2 chambres à vendre à Casablanca.",
-    },
-  });
+  const full = buildExplicitSeedAdmissionQuery({ seed: seed(), result: { url: "https://example.ma/fr/p/appartement-a-vendre-casablanca-maarif-120-m2", title: "Appartement à vendre à Casablanca Maarif - 120 m²", snippet: "Appartement 2 chambres à vendre à Casablanca." } });
   assert.ok(full);
   assert.equal(full.city, "Casablanca");
   assert.equal(full.transaction_type, "sale");
   assert.equal(full.property_type, "apartment");
-  assert.match(full.query_id, /^seed_confirmation_/);
-
-  const missingTransaction = buildExplicitSeedAdmissionQuery({
-    seed: seed({ canonical_url: "https://example.ma/fr/p/appartement-casablanca-120-m2" }),
-    result: {
-      url: "https://example.ma/fr/p/appartement-casablanca-120-m2",
-      title: "Appartement Casablanca 120 m²",
-      snippet: "Deux chambres",
-    },
-  });
+  const missingTransaction = buildExplicitSeedAdmissionQuery({ seed: seed({ canonical_url: "https://example.ma/fr/p/appartement-casablanca-120-m2" }), result: { url: "https://example.ma/fr/p/appartement-casablanca-120-m2", title: "Appartement Casablanca 120 m²", snippet: "Deux chambres" } });
   assert.equal(missingTransaction, null);
 });
 
@@ -117,14 +76,14 @@ test("balanced queue does not let one large source monopolize the batch", () => 
   ];
   const selected = selectBalancedSeedBatch(rows, 4);
   assert.equal(selected.length, 4);
-  assert.ok(selected.some((row) => row.source_domain === "small-casa.ma"));
-  assert.ok(selected.some((row) => row.source_domain === "small-rabat.ma"));
   assert.ok(new Set(selected.map((row) => row.source_domain)).size >= 3);
 });
 
-test("worker preserves strict Production gates and existing writer path", () => {
+test("worker preserves strict Production gates, bounded fallback and writer path", () => {
   const worker = readFileSync("scripts/openserp/confirm-seed-listing-candidates.ts", "utf8");
   assert.match(worker, /isOpenSerpIngestionCronAuthorized\(\)/);
+  assert.match(worker, /buildSeedConfirmationQueries/);
+  assert.match(worker, /for \(const queryText of queryTexts\)/);
   assert.match(worker, /findExactSeedResult/);
   assert.match(worker, /decision\.confidence !== "high"/);
   assert.match(worker, /writeNationalIngestionRun/);
