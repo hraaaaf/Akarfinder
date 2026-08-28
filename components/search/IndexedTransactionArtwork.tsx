@@ -182,7 +182,7 @@ export function IndexedTransactionArtwork({
           font-weight: 800;
         }
         [data-indexed-artwork-card="true"] [data-card-primary-action] { display: none !important; }
-        [data-indexed-artwork-card="true"] a.sm\\:hidden { display: none !important; }
+        [data-indexed-artwork-card="true"] [data-card-provenance] ~ a { display: none !important; }
         @media (min-width: 640px) {
           [data-indexed-artwork-card="true"] > div.flex.flex-1 { padding: 1rem 1rem 0.9rem !important; }
         }
