@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
-  title: "Créer mon projet de recherche — AkarFinder",
+  title: "Mon Projet — AkarFinder",
   description:
-    "Construisez votre projet immobilier avec le Compagnon AkarFinder : objectif, budget, zones, critères et priorités.",
+    "Construisez Mon Projet AkarFinder : objectif, budget, zones, critères et priorités.",
   alternates: {
-    canonical: "/compagnon",
+    canonical: "/mon-projet",
   },
   robots: {
     index: false,
@@ -15,10 +15,9 @@ export const metadata: Metadata = {
 };
 
 /**
- * Legacy 8-step search-profile surface retired in favor of the Companion.
- * Keep the route as a compatibility redirect so old links/bookmarks do not
- * create a second, diverging buyer-profile journey.
+ * Legacy search-profile surface kept only for compatibility with old links and
+ * bookmarks. Mon Projet is the single canonical destination and product name.
  */
 export default function SearchProfilePage() {
-  redirect("/compagnon");
+  redirect("/mon-projet");
 }

@@ -7,7 +7,7 @@ import { ui } from "@/components/ui/design-system";
 
 export const metadata = {
   title: "Alertes immobilières — AkarFinder",
-  description: "Configurez votre profil de recherche avant l’activation des alertes automatiques AkarFinder.",
+  description: "Configurez Mon Projet avant l’activation des alertes automatiques AkarFinder.",
 };
 
 export default function AlertsPage() {
@@ -28,7 +28,7 @@ export default function AlertsPage() {
                     Préparez vos critères maintenant
                   </h1>
                   <p className="mt-2 max-w-xl text-[14px] leading-6 text-slate-500">
-                    Les notifications automatiques ne sont pas encore activées. Votre profil de recherche peut déjà être préparé sans laisser croire qu’une alerte sera envoyée.
+                    Les notifications automatiques ne sont pas encore activées. Mon Projet peut déjà être préparé sans laisser croire qu’une alerte sera envoyée.
                   </p>
                 </div>
               </div>
@@ -53,8 +53,8 @@ export default function AlertsPage() {
             </div>
 
             <div className="flex flex-col gap-2 border-t border-slate-200 px-5 py-5 sm:flex-row sm:px-8">
-              <Link href="/profil-recherche" className={ui.primaryActionPill}>
-                Configurer mon profil
+              <Link href="/mon-projet" className={ui.primaryActionPill}>
+                Configurer Mon Projet
               </Link>
               <Link href="/search" className={`${ui.secondaryActionPill} gap-2`}>
                 <Search aria-hidden="true" size={16} />

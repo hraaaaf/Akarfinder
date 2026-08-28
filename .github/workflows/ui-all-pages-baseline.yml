@@ -7,6 +7,7 @@ on:
       - "app/**"
       - "components/**"
       - "scripts/audits/ui-all-pages-*.mjs"
+      - "scripts/__tests__/mon-projet-naming-convergence.test.ts"
       - ".github/workflows/ui-all-pages-*.yml"
   workflow_dispatch:
 
@@ -37,6 +38,8 @@ jobs:
         env:
           AUDIT_OUTPUT_DIR: data/audits/ui-all-pages-inventory
         run: node scripts/audits/ui-all-pages-inventory.mjs
+      - name: Mon Projet naming regression
+        run: npx tsx --test scripts/__tests__/mon-projet-naming-convergence.test.ts
       - name: TypeScript
         run: npx tsc --noEmit
       - name: Install Chromium

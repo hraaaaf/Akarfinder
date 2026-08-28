@@ -80,7 +80,7 @@ function summarizeProject(project: SearchProject) {
 }
 
 function projectSearchHref(project: SearchProject) {
-  if (!isDynamicSearchProfileV2(project.profile)) return "/compagnon";
+  if (!isDynamicSearchProfileV2(project.profile)) return "/mon-projet";
   const params = companionProfileToSearchParams(project.profile);
   params.set("project_id", project.id);
   return `/search?${params.toString()}`;
@@ -190,7 +190,7 @@ export function UserContinuityWorkspace() {
           <p className="mt-1 text-sm text-slate-500">{state?.user.email}</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Link href="/compagnon" className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#0B63CE] px-4 py-2.5 text-sm font-extrabold text-white"><Compass size={15} />Nouveau projet</Link>
+          <Link href="/mon-projet" className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#0B63CE] px-4 py-2.5 text-sm font-extrabold text-white"><Compass size={15} />Nouveau projet</Link>
           <button type="button" onClick={logout} className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-50"><LogOut size={15} />Se déconnecter</button>
         </div>
       </div>
@@ -226,15 +226,15 @@ export function UserContinuityWorkspace() {
                   </dl>
                   <Link href={projectSearchHref(project)} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#0B63CE] px-4 py-2.5 text-xs font-extrabold text-white">
                     {summary.structured ? <Search size={14} /> : <Compass size={14} />}
-                    {summary.structured ? "Reprendre la recherche" : "Structurer avec le Compagnon"}
+                    {summary.structured ? "Reprendre la recherche" : "Compléter Mon Projet"}
                   </Link>
                 </article>
               );
             }) : (
               <div className="md:col-span-2 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-5 py-8 text-center">
                 <p className="font-extrabold text-[#071B33]">Aucun projet structuré pour l'instant.</p>
-                <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-slate-500">Le Compagnon construit Mon Projet avec vos critères explicites avant de lancer la recherche.</p>
-                <Link href="/compagnon" className="mt-4 inline-flex items-center gap-2 rounded-xl bg-[#0B63CE] px-4 py-3 text-sm font-extrabold text-white"><Compass size={15} />Construire Mon Projet</Link>
+                <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-slate-500">Mon Projet structure vos critères explicites avant de lancer la recherche.</p>
+                <Link href="/mon-projet" className="mt-4 inline-flex items-center gap-2 rounded-xl bg-[#0B63CE] px-4 py-3 text-sm font-extrabold text-white"><Compass size={15} />Construire Mon Projet</Link>
               </div>
             )}
           </div>
@@ -243,7 +243,7 @@ export function UserContinuityWorkspace() {
         <section className="rounded-3xl border border-slate-200 bg-white p-5 sm:p-6">
           <h2 className="text-xl font-extrabold text-[#071B33]">Continuer</h2>
           <div className="mt-4 space-y-3">
-            <Link href="/compagnon" className="flex items-center justify-between rounded-xl border border-blue-100 bg-blue-50 px-4 py-4 text-sm font-extrabold text-[#084FA8]">Nouveau projet avec le Compagnon<span>→</span></Link>
+            <Link href="/mon-projet" className="flex items-center justify-between rounded-xl border border-blue-100 bg-blue-50 px-4 py-4 text-sm font-extrabold text-[#084FA8]">Construire Mon Projet<span>→</span></Link>
             <Link href="/search" className="flex items-center justify-between rounded-xl border border-slate-200 px-4 py-4 text-sm font-extrabold text-slate-700">Recherche directe<span>→</span></Link>
             <div className="flex items-center gap-3 rounded-xl bg-slate-50 px-4 py-4 text-sm text-slate-500"><History size={17} />{state?.history.length ?? 0} recherches récentes conservées</div>
           </div>
