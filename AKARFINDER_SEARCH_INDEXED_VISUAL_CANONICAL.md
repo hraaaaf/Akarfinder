@@ -22,13 +22,12 @@ Une annonce `public_indexed` est identifiable immédiatement par sa transaction,
 
 # ÉTAT FINAL VÉRIFIÉ
 
-## Repository
+## Repository — livraison initiale
 - Repo : `hraaaaf/Akarfinder`
 - PR : **#943** — merged par squash ✅
-- Commit merge sur `main` : `320f9823f77e7c7285ee6a6481e00d9b0e943ef4` ✅
+- Commit merge initial sur `main` : `320f9823f77e7c7285ee6a6481e00d9b0e943ef4` ✅
 - Base avant merge : `9aa30aad4a7113a429216fbc8072b2916158675a`
-- HEAD fonctionnel certifié avant closeout documentaire : `b182a8b89982897e8114c28b785069a6a7912b70`
-- Vérification post-merge : `main` pointe bien sur le commit merge et le diff contient uniquement les 9 fichiers attendus du chantier ✅
+- HEAD fonctionnel certifié initial : `b182a8b89982897e8114c28b785069a6a7912b70`
 - DB : aucune modification
 - Vercel : aucun déploiement production demandé ou exécuté
 
@@ -69,11 +68,12 @@ La fixture **Location** injecte volontairement un `thumbnail_url` tiers avec `ca
 - L1 — Fondation visuelle transactionnelle : **CLOSED** ✅
 - L2 — Intégration structurée `public_indexed` : **CLOSED** ✅
 - L3 — Convergence Gateway indexée : **CLOSED** ✅
-- L4 — Certification UI + closeout : **CLOSED** ✅
+- L4 — Certification UI + closeout initial : **CLOSED** ✅
+- L5 — Polish visuel transactionnel : **CLOSED / MERGED** ✅
 
 ---
 
-# PREUVES
+# PREUVES INITIALES
 
 ## Fonctionnel / contrats
 - L1 run `33181997686` ✅
@@ -83,17 +83,8 @@ La fixture **Location** injecte volontairement un `thumbnail_url` tiers avec `ca
   - TypeScript ✅
 - workflow temporaire `.github/workflows/search-indexed-visual-l1.yml` supprimé avant merge ✅
 
-## Chromium exact-head
+## Chromium initial
 Run `33186984893` — **UI All Pages Baseline** ✅
-- npm ci ✅
-- inventaire ✅
-- naming regression ✅
-- TypeScript ✅
-- Chromium ✅
-- build production ✅
-- serveur production local ✅
-- captures ✅
-- upload artifact ✅
 
 Artifact inspecté : `9692437320`
 Digest : `sha256:d558d399acdbe0176823a0fc7c8b62a40bb759d0337900688b2020736eaed503`
@@ -104,6 +95,56 @@ Captures inspectées :
 - `visual-qa__search-indexed-cards-768x900.png` ✅
 - `visual-qa__search-indexed-cards-1280x900.png` ✅
 
+Pour les 4 viewports : HTTP 200, overflow 0, erreurs console 0, erreurs ressources inattendues 0, findings 0.
+
+Score visuel initial documenté après inspection réelle : **9.2/10**.
+
+---
+
+# L5 — POLISH VISUEL TRANSACTIONNEL
+
+## Goal
+Renforcer la signature visuelle des cartes indexées sans modifier leur logique, leur palette, leur hiérarchie, leur politique média ni leur ranking.
+
+## Implémentation
+PR **#944** — `style(search): polish indexed transaction visuals`.
+
+Diff applicatif strict :
+- `components/search/IndexedTransactionArtwork.tsx` uniquement ;
+- +48 / -37 ;
+- Achat : silhouette maison + clé plus architecturale ;
+- Location : porte ouverte + mouvement + clé, nettement plus distinctive ;
+- Neuf : structure + grue plus lisibles ;
+- cercles/vagues décoratifs génériques supprimés au profit d'un langage architectural.
+
+Aucun changement de mapping, CTA, données, ranking, pipeline image partenaire/direct user ou DB.
+
+## Repository — polish
+- PR : **#944** ✅
+- HEAD exact certifié avant merge : `afa19107b4f8b4c57e2ea29bac5d9f2483500d9e`
+- Base `main` avant merge : `b571a6b6c0f4ebeb59df279c0942d0b334e3b15d`
+- Merge : squash ✅
+- Commit merge sur `main` : `002e0c7bdbafd8ba9123cb32fd1d2f5074eafa6f` ✅
+- Vérification post-merge : `main` pointe exactement sur `002e0c7bdbafd8ba9123cb32fd1d2f5074eafa6f` et le commit GitHub est vérifié/signé ✅
+- DB : aucune modification
+- Vercel : aucun déploiement production exécuté
+
+## Preuves exact-head — polish
+- Canonical Baseline Compile #3213 / run `33193892625` ✅
+- Phase 1 Final Design Accessibility #3096 / run `33193892531` ✅
+- UI All Pages Certification #633 / run `33193892562` ✅
+- UI All Pages Baseline #643 / run `33193892593` ✅
+
+Artifact Chromium #633 :
+- id `9695102336`
+- digest `sha256:b1e567f05636df440ae91be9f5fface63710b2d1d59ad0b13c6080545f2efade`
+
+AFTER inspecté réellement :
+- 390×844 ✅
+- 430×932 ✅
+- 768×900 ✅
+- 1280×900 ✅
+
 Pour les 4 viewports :
 - HTTP 200 ✅
 - overflow horizontal : 0 ✅
@@ -111,24 +152,29 @@ Pour les 4 viewports :
 - erreurs ressources inattendues : 0 ✅
 - findings : 0 ✅
 
-## Validation visuelle
-Comparaison BEFORE / TARGET / AFTER :
-- Achat orange : conforme ✅
-- Location cobalt : conforme ✅
-- Neuf émeraude : conforme ✅
-- dessins propriétaires non photoréalistes : conforme ✅
-- aucune photo tierce visible : conforme ✅
-- hiérarchie prix / titre / localisation / facts / source conservée : conforme ✅
+## Comparaison BEFORE / AFTER
+- Achat : signature plus architecturale, lecture conservée ✅
+- Location : distinction fortement améliorée ✅
+- Neuf : structure/grue plus lisibles et propriétaires ✅
+- hiérarchie prix / titre / localisation / facts / source inchangée ✅
+- aucune photo tierce visible ✅
+- densité mobile 2 colonnes conservée volontairement ✅
 
-Score visuel documenté après inspection réelle : **9.2/10**.
-Compromis restant : densité mobile 2 colonnes conservée volontairement par la doctrine Search existante.
+Score visuel après inspection réelle : **9.5/10**.
+
+## Gates rouges inspectés
+Le gate `UX-SEARCH-7` reste rouge sur deux assertions hors diff :
+1. `ExternalIndexedResultCard` contient `normalized_price_mad` ;
+2. le header ne contient plus l'item legacy `Mon projet` attendu par le test.
+
+Ces zones ne sont pas modifiées par #944. Les gates ciblés du polish, TypeScript/build, accessibilité et Chromium sont verts.
 
 ---
 
 # GARDE-FOUS CONFIRMÉS
 
 - aucun photoréalisme pour `public_indexed` ;
-- aucun asset photo/URL tiers dans le nouveau composant ;
+- aucun asset photo/URL tiers dans le composant ;
 - aucun changement du ranking commercial ;
 - neutralisation média strictement limitée à `public_indexed` ;
 - partenaires / direct user gardent leur pipeline image ;
@@ -139,7 +185,9 @@ Compromis restant : densité mobile 2 colonnes conservée volontairement par la 
 
 # CLOSEOUT
 
-**CHANTIER CLOSED / MERGED.**
+**CHANTIER INDEXED VISUAL + POLISH CLOSED / MERGED.**
+
+Dernière preuve : PR #944 squash-merged, `main` vérifié sur `002e0c7bdbafd8ba9123cb32fd1d2f5074eafa6f`, Chromium #633 et Baseline #643 verts, score visuel réel **9.5/10**.
 
 Blocage réel restant : **human gate Vercel uniquement** si un déploiement production de ce commit est souhaité.
 
