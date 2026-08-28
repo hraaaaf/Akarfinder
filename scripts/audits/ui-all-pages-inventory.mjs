@@ -22,9 +22,8 @@ const dynamicAuditByPattern = new Map([
   ["/projets/[slug]", { fixtureUrl: "/projets/residence-demo-akarfinder?preview=demo", auditMode: "render-demo" }],
   ["/promoteurs/[slug]", { fixtureUrl: "/promoteurs/promoteur-demo-akarfinder?preview=demo", auditMode: "render-demo" }],
   ["/professionnels/[slug]", {
-    fixtureUrl: null,
-    auditMode: "data-fixture-required",
-    blocker: "No deterministic local public professional exists: the page requires a validated + public professional_organizations row.",
+    fixtureUrl: "/professionnels/agence-demo-akarfinder?preview=demo",
+    auditMode: "render-demo",
   }],
 ]);
 
