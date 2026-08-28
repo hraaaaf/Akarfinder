@@ -85,9 +85,9 @@ export function IndexedTransactionArtwork({
             <circle cx="158" cy="122" r="1.9" fill="#fff" stroke="none" />
             <path d="M153 122H159M156 119V125" stroke="#fff" strokeWidth="0.72" />
 
-            {/* Small reference key, restored at the right scale and position. */}
-            <circle cx="214" cy="129" r="4.6" strokeWidth="0.82" />
-            <path d="M219 129H236M228 129V134M234 129V132" strokeWidth="0.82" />
+            {/* Small vertical key at the right of the door, matching the approved reference. */}
+            <circle cx="214" cy="116" r="5" strokeWidth="0.82" />
+            <path d="M214 121V139M214 130H220M214 135H218" strokeWidth="0.82" />
 
             {/* Entrance path kept subtle beneath the door. */}
             <path d="M143 151L137 165" strokeWidth="0.86" />
