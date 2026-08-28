@@ -17,8 +17,8 @@ function normalize(text: string): string {
   return text
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "") // Supprimer accents
-    .replace(/[-_\s]+/g, " ") // Normaliser tirets/underscores/espaces
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[-_\s]+/g, " ")
     .trim();
 }
 
@@ -33,19 +33,40 @@ function matchDistrict(
 
   for (const district of possibleDistricts) {
     const districtNorm = normalize(district);
+    if (normalized.includes(districtNorm)) return { district, confidence: "high" };
 
-    // Exact match
-    if (normalized.includes(districtNorm)) {
-      return { district, confidence: "high" };
-    }
-
-    // Partial word match (au moins 3 caractères)
     const districtWords = districtNorm.split(/\s+/);
     for (const dw of districtWords) {
       if (dw.length >= 3 && words.some((w) => w.includes(dw))) {
         return { district, confidence: "medium" };
       }
     }
+  }
+
+  return { district: null, confidence: "low" };
+}
+
+function matchSourceUrlDistrict(
+  sourceUrl: string | null,
+  possibleDistricts: string[]
+): { district: string | null; confidence: MatchConfidence } {
+  if (!sourceUrl) return { district: null, confidence: "low" };
+
+  try {
+    const url = new URL(sourceUrl);
+    const segments = url.pathname
+      .split("/")
+      .filter(Boolean)
+      .map((segment) => normalize(decodeURIComponent(segment)));
+
+    for (const district of possibleDistricts) {
+      const districtNorm = normalize(district);
+      if (segments.some((segment) => segment === districtNorm)) {
+        return { district, confidence: "high" };
+      }
+    }
+  } catch {
+    return { district: null, confidence: "low" };
   }
 
   return { district: null, confidence: "low" };
@@ -58,13 +79,7 @@ export function findDistrict(
   sourceUrl: string | null
 ): DistrictMatch {
   if (!city) {
-    return {
-      district: null,
-      confidence: "low",
-      source: "none",
-      reason: "City unknown",
-      applyEligible: false,
-    };
+    return { district: null, confidence: "low", source: "none", reason: "City unknown", applyEligible: false };
   }
 
   const possibleDistricts = getDistrictsForCity(city);
@@ -78,8 +93,34 @@ export function findDistrict(
     };
   }
 
-  // Priority 1 : Title (most informative)
+  const sourceUrlMatch = matchSourceUrlDistrict(sourceUrl, possibleDistricts);
   const titleMatch = matchDistrict(title, possibleDistricts);
+
+  if (
+    sourceUrlMatch.district &&
+    titleMatch.district &&
+    titleMatch.confidence === "high" &&
+    sourceUrlMatch.district !== titleMatch.district
+  ) {
+    return {
+      district: null,
+      confidence: "low",
+      source: "none",
+      reason: `Conflicting explicit districts: source_url=${sourceUrlMatch.district}, title=${titleMatch.district}`,
+      applyEligible: false,
+    };
+  }
+
+  if (sourceUrlMatch.district) {
+    return {
+      district: sourceUrlMatch.district,
+      confidence: "high",
+      source: "source_url",
+      reason: "Matched exact district path segment in source_url",
+      applyEligible: true,
+    };
+  }
+
   if (titleMatch.district) {
     return {
       district: titleMatch.district,
@@ -90,7 +131,6 @@ export function findDistrict(
     };
   }
 
-  // Priority 2 : Description (only high confidence eligible)
   const descMatch = matchDistrict(description, possibleDistricts);
   if (descMatch.district) {
     return {
@@ -102,23 +142,5 @@ export function findDistrict(
     };
   }
 
-  // Priority 3 : Source URL (slug-based matching, high confidence only)
-  const sourceUrlMatch = matchDistrict(sourceUrl, possibleDistricts);
-  if (sourceUrlMatch.district && sourceUrlMatch.confidence === "high") {
-    return {
-      district: sourceUrlMatch.district,
-      confidence: "high",
-      source: "source_url",
-      reason: `Matched in source_url with high confidence`,
-      applyEligible: true,
-    };
-  }
-
-  return {
-    district: null,
-    confidence: "low",
-    source: "none",
-    reason: "No match found",
-    applyEligible: false,
-  };
+  return { district: null, confidence: "low", source: "none", reason: "No match found", applyEligible: false };
 }
