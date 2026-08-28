@@ -29,7 +29,7 @@ Sur `/search`, une annonce `public_indexed` est identifiable immédiatement par 
 - Base : `main`
 - Base SHA avant closeout : `9aa30aad4a7113a429216fbc8072b2916158675a`
 - HEAD certifié fonctionnel : `b182a8b89982897e8114c28b785069a6a7912b70`
-- HEAD documentaire final : `b3751e813a7ddc111769e078797cbfce3f376435`
+- HEAD documentaire final : `15b31374285bc6996faf9c3375624da6651978dc`
 - DB : aucune modification
 - Vercel : aucun déploiement production demandé ou exécuté
 
@@ -99,7 +99,7 @@ Le workflow temporaire `.github/workflows/search-indexed-visual-l1.yml` a été 
 - UX Gate 0 **#2984** / run `33186984857` ✅
 - Phase 1 P2 **#3092** / run `33186984883` ✅
 
-Le commit suivant `b3751e813a7ddc111769e078797cbfce3f376435` est uniquement documentaire.
+Les commits suivants sont uniquement documentaires et ne modifient aucun comportement runtime.
 
 ### Artefact Chromium
 Certification artifact : `9692354610`
