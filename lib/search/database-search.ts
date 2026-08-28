@@ -13,6 +13,7 @@ import {
 import type { SearchQuery, SearchResult } from "./types";
 import { compareRecommendedListings } from "./ranking";
 import { enrichSearchQueryWithTextIntent } from "./query-intent";
+import { queryStructuredDistrictTotal } from "./structured-district-total";
 
 function normalize(value: string) {
   return value
@@ -176,6 +177,13 @@ const MAX_DB_ROWS_SCANNED_PER_REQUEST = 10_000;
 export async function searchDatabase(query: SearchQuery = {}): Promise<SearchResult> {
   query = enrichSearchQueryWithTextIntent(query);
 
+  // District is a post-mapping filter in the legacy search path, so base.total
+  // otherwise reports the city-wide count. Ask Supabase for the exact structured
+  // district count in parallel; if unavailable, preserve the historical fallback.
+  const structuredDistrictTotalPromise: Promise<number | null> = query.district
+    ? queryStructuredDistrictTotal(query)
+    : Promise.resolve(null);
+
   const limit = Math.min(Math.max(query.limit ?? 50, 1), 100);
   const legacyOffset = Math.max(query.offset ?? 0, 0);
   const usingCursor = query.cursor != null;
@@ -240,6 +248,7 @@ export async function searchDatabase(query: SearchQuery = {}): Promise<SearchRes
     ? sorted.slice(0, limit)
     : sorted.slice(legacyOffset, legacyOffset + limit);
   const hasMore = scanCursor < rawTotal;
+  const structuredDistrictTotal = await structuredDistrictTotalPromise;
 
   if (process.env.NODE_ENV !== "production") {
     console.log(
@@ -250,10 +259,10 @@ export async function searchDatabase(query: SearchQuery = {}): Promise<SearchRes
 
   return {
     listings,
-    // Exact structured DB total. Public/text filtering can reduce this number;
-    // clients should use has_more/next_cursor for deep navigation rather than
-    // assuming `total` equals the number of publishable text matches.
-    total: rawTotal,
+    // Structured DB total after city/property/transaction/budget filters. For
+    // district queries Supabase now counts that district explicitly; public,
+    // reliability and free-text filtering may still reduce the visible rows.
+    total: structuredDistrictTotal ?? rawTotal,
     limit,
     offset: usingCursor ? 0 : legacyOffset,
     next_cursor: hasMore ? scanCursor : null,

@@ -6,7 +6,10 @@ on:
     paths:
       - "lib/geo/district-matcher.ts"
       - "lib/neighborhood-context/certified-seed.ts"
+      - "lib/search/database-search.ts"
+      - "lib/search/structured-district-total.ts"
       - "scripts/__tests__/product-trust-data-quality.test.ts"
+      - "scripts/__tests__/structured-district-total.test.ts"
       - ".github/workflows/product-trust-data-quality-guard.yml"
   workflow_dispatch:
 
@@ -25,7 +28,7 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Product trust data-quality regression
-        run: npx tsx --test scripts/__tests__/product-trust-data-quality.test.ts
+        run: npx tsx --test scripts/__tests__/product-trust-data-quality.test.ts scripts/__tests__/structured-district-total.test.ts
       - name: TypeScript
         run: npx tsc --noEmit
       - name: Production build
