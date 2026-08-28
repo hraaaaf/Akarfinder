@@ -16,7 +16,7 @@ Remplacer uniquement pour la couche `public_indexed` les photos/fallbacks par un
 Les couches `promoter_premium`, `agency_partner` et `direct_user` conservent leur pipeline image autorisé.
 
 ## Succès observable
-Sur `/search`, une annonce `public_indexed` est identifiable immédiatement par sa transaction, ne peut pas afficher une photo/thumbnail tiers, garde prix/localisation/caractéristiques/provenance/CTA source, et ne modifie pas l'ordre commercial.
+Une annonce `public_indexed` est identifiable immédiatement par sa transaction, ne peut pas afficher une photo/thumbnail tiers, garde prix/localisation/caractéristiques/provenance/CTA source, et ne modifie pas l'ordre commercial.
 
 ---
 
@@ -24,11 +24,11 @@ Sur `/search`, une annonce `public_indexed` est identifiable immédiatement par 
 
 ## Repository
 - Repo : `hraaaaf/Akarfinder`
-- Branche chantier : `feat/search-indexed-visual-l1`
-- PR : **#943**
-- Base : `main`
-- Base SHA avant closeout : `9aa30aad4a7113a429216fbc8072b2916158675a`
-- HEAD certifié fonctionnel : `b182a8b89982897e8114c28b785069a6a7912b70`
+- PR : **#943** — merged par squash ✅
+- Commit merge sur `main` : `320f9823f77e7c7285ee6a6481e00d9b0e943ef4` ✅
+- Base avant merge : `9aa30aad4a7113a429216fbc8072b2916158675a`
+- HEAD fonctionnel certifié avant closeout documentaire : `b182a8b89982897e8114c28b785069a6a7912b70`
+- Vérification post-merge : `main` pointe bien sur le commit merge et le diff contient uniquement les 9 fichiers attendus du chantier ✅
 - DB : aucune modification
 - Vercel : aucun déploiement production demandé ou exécuté
 
@@ -65,46 +65,40 @@ La fixture **Location** injecte volontairement un `thumbnail_url` tiers avec `ca
 
 # LOTS
 
-## L0 — Audit + canonique
-**CLOSED.**
+- L0 — Audit + canonique : **CLOSED** ✅
+- L1 — Fondation visuelle transactionnelle : **CLOSED** ✅
+- L2 — Intégration structurée `public_indexed` : **CLOSED** ✅
+- L3 — Convergence Gateway indexée : **CLOSED** ✅
+- L4 — Certification UI + closeout : **CLOSED** ✅
 
-## L1 — Fondation visuelle transactionnelle
-**CLOSED.**
+---
 
-Preuve : run `33181997686` ✅
+# PREUVES
 
-## L2 — Intégration structurée `public_indexed`
-**CLOSED.**
+## Fonctionnel / contrats
+- L1 run `33181997686` ✅
+- L1-L3 run `33184540457` ✅
+  - mapping transaction ✅
+  - frontière `public_indexed` / partenaires / utilisateurs ✅
+  - TypeScript ✅
+- workflow temporaire `.github/workflows/search-indexed-visual-l1.yml` supprimé avant merge ✅
 
-## L3 — Convergence Gateway indexée
-**CLOSED.**
-
-Preuve ciblée L1-L3 : run `33184540457` ✅
-- mapping transaction ✅
-- frontière `public_indexed` / partenaires / utilisateurs ✅
+## Chromium exact-head
+Run `33186984893` — **UI All Pages Baseline** ✅
+- npm ci ✅
+- inventaire ✅
+- naming regression ✅
 - TypeScript ✅
+- Chromium ✅
+- build production ✅
+- serveur production local ✅
+- captures ✅
+- upload artifact ✅
 
-Le workflow temporaire `.github/workflows/search-indexed-visual-l1.yml` a été supprimé avant merge.
+Artifact inspecté : `9692437320`
+Digest : `sha256:d558d399acdbe0176823a0fc7c8b62a40bb759d0337900688b2020736eaed503`
 
-## L4 — Certification UI + closeout
-**CLOSED — preuves exact-head acquises sur le HEAD fonctionnel.**
-
-### CI exacte sur `b182a8b89982897e8114c28b785069a6a7912b70`
-- UI All Pages Certification **#628** / run `33186984945` ✅
-- UI All Pages Baseline **#638** / run `33186984893` ✅
-- Canonical Baseline Compile **#3208** / run `33186984904` ✅
-- Phase 1 Final Design Accessibility **#3091** / run `33186984949` ✅
-- UI All Pages Inventory **#442** / run `33186984903` ✅
-- UX Gate 0 **#2984** / run `33186984857` ✅
-- Phase 1 P2 **#3092** / run `33186984883` ✅
-
-Les commits de closeout suivants sont uniquement documentaires et ne modifient aucun comportement runtime.
-
-### Artefact Chromium
-Certification artifact : `9692354610`
-Digest : `sha256:39423c85adc7c85661e8a01160f966fe973d172f7724bc878563a4cac8e1b7ee`
-
-Captures fixture :
+Captures inspectées :
 - `visual-qa__search-indexed-cards-390x844.png` ✅
 - `visual-qa__search-indexed-cards-430x932.png` ✅
 - `visual-qa__search-indexed-cards-768x900.png` ✅
@@ -117,8 +111,8 @@ Pour les 4 viewports :
 - erreurs ressources inattendues : 0 ✅
 - findings : 0 ✅
 
-### Validation visuelle
-Comparaison avec le Goal/TARGET documenté :
+## Validation visuelle
+Comparaison BEFORE / TARGET / AFTER :
 - Achat orange : conforme ✅
 - Location cobalt : conforme ✅
 - Neuf émeraude : conforme ✅
@@ -126,22 +120,8 @@ Comparaison avec le Goal/TARGET documenté :
 - aucune photo tierce visible : conforme ✅
 - hiérarchie prix / titre / localisation / facts / source conservée : conforme ✅
 
-Score visuel après inspection réelle des captures : **9.2/10**.
-- desktop : ~9.4/10 ;
-- mobile : ~9.0/10 ;
-- compromis restant : densité de la grille mobile 2 colonnes, doctrine antérieure conservée volontairement.
-
----
-
-# GATES ROUGES GLOBAUX DIAGNOSTIQUÉS
-
-Ils ne remettent pas en cause le Goal de ce lot :
-
-- plusieurs anciens contrats Search/BottomNav attendent encore `Compte` ou `/profil-recherche`, alors que #941 a convergé ces flows vers `Mon Projet` ;
-- certains predecessor contracts interdisent `normalized_price_mad` dans `ExternalIndexedResultCard`, alors que ce champ était déjà consommé sur `main` avant #943 ;
-- UX-CARDS-10OF10 échoue sur l'ancien contrat de navigation `Mon projet`, pas sur les cartes de #943.
-
-Ces rouges sont documentés comme dette de contrats historiques et ne sont pas masqués.
+Score visuel documenté après inspection réelle : **9.2/10**.
+Compromis restant : densité mobile 2 colonnes conservée volontairement par la doctrine Search existante.
 
 ---
 
@@ -157,12 +137,10 @@ Ces rouges sont documentés comme dette de contrats historiques et ne sont pas m
 
 ---
 
-# ÉTAT DE REPRISE
-- L0 : CLOSED
-- L1 : CLOSED
-- L2 : CLOSED
-- L3 : CLOSED
-- L4 : CLOSED
-- preuve visuelle : ACQUISE
-- blocage réel : aucun pour le merge Git
-- deployment production : NON AUTORISÉ
+# CLOSEOUT
+
+**CHANTIER CLOSED / MERGED.**
+
+Blocage réel restant : **human gate Vercel uniquement** si un déploiement production de ce commit est souhaité.
+
+Next exact : ne rien déployer tant qu'une autorisation explicite Vercel n'est pas donnée.
