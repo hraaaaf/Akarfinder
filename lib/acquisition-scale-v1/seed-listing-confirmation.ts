@@ -1,5 +1,5 @@
 // SEED-LISTING-MASS-CONVERSION-V1
-// SEED-CONFIRMATION-QUERY-V2
+// SEED-CONFIRMATION-QUERY-V3
 // Pure helpers for turning sitemap/Common-Crawl URL seeds into targeted search
 // confirmation queries. A seed is never trusted by itself: only an exact
 // canonical-URL search-engine hit with explicit city + transaction + property
@@ -44,25 +44,15 @@ function safeDecodedPath(url: string): string {
 
 export function extractStableSeedIdentifier(url: string): string | null {
   const path = safeDecodedPath(url).toLowerCase();
-
-  // Explicit reference numbers are the strongest signal on agency URLs such as
-  // /property/...-ref-4341. Query the stable identifier rather than diluting it
-  // with a long generic slug.
   const explicitRef = path.match(/(?:^|[^a-z0-9])(?:ref|reference)[-_ ]?(\d{3,})(?:[^a-z0-9]|$)/i);
   if (explicitRef?.[1]) return explicitRef[1];
-
-  // Product/reference codes such as ALLM-1004 or ALC-223 are often unique and
-  // indexed verbatim by search engines.
   const alphaNumericCode = path.match(/(?:^|\/)([a-z]{2,10}-\d{3,})(?:\/|$)/i);
   if (alphaNumericCode?.[1]) return alphaNumericCode[1];
-
-  // Numeric terminal IDs are common on portals such as /vente/marrakech/2769575.
   const segments = path.split("/").filter(Boolean);
   for (let i = segments.length - 1; i >= 0; i -= 1) {
     const clean = segments[i].replace(/\.(?:html?|php)$/i, "");
     if (/^\d{5,}$/.test(clean)) return clean;
   }
-
   return null;
 }
 
@@ -76,9 +66,7 @@ export function isClearlyOutOfScopeSeedUrl(url: string): boolean {
 
 export function buildSeedConfirmationQuery(seed: Pick<SeedConfirmationSeed, "canonical_url" | "source_domain">): string {
   const stableIdentifier = extractStableSeedIdentifier(seed.canonical_url);
-  if (stableIdentifier) {
-    return `site:${seed.source_domain} "${stableIdentifier}"`;
-  }
+  if (stableIdentifier) return `site:${seed.source_domain} "${stableIdentifier}"`;
 
   const tokens = safeDecodedPath(seed.canonical_url)
     .toLowerCase()
@@ -87,12 +75,18 @@ export function buildSeedConfirmationQuery(seed: Pick<SeedConfirmationSeed, "can
     .map((token) => token.trim())
     .filter((token) => token.length >= 3 && !URL_STOP_WORDS.has(token))
     .slice(-6);
-
-  // Keep the domain explicit inside q because the native OpenSERP HTTP client
-  // does not expose a separate site= parameter. Search engines may ignore the
-  // operator, but exact canonical matching below remains authoritative.
   const terms = tokens.length >= 2 ? tokens.join(" ") : `"${seed.canonical_url}"`;
   return `site:${seed.source_domain} ${terms}`;
+}
+
+export function buildSeedConfirmationQueries(
+  seed: Pick<SeedConfirmationSeed, "canonical_url" | "source_domain">,
+): string[] {
+  const primary = buildSeedConfirmationQuery(seed);
+  const canonical = canonicalizeSourceUrl(seed.canonical_url);
+  if (!canonical) return [primary];
+  const exactUrl = `"${canonical}"`;
+  return primary === exactUrl ? [primary] : [primary, exactUrl];
 }
 
 export function findExactSeedResult(
@@ -119,10 +113,6 @@ export function buildExplicitSeedAdmissionQuery(input: {
   const district = extractDistrictNational(combined);
   const transaction = toTransactionType(combined);
   const propertyType = toPropertyType(combined);
-
-  // No query-context fallback is allowed in this lane. These three values must
-  // be explicit in the engine result/URL itself, otherwise the seed remains
-  // seed_only and is retried later rather than promoted on inference.
   if (!city || !transaction || !propertyType) return null;
   if (district && district.city !== city) return null;
 
@@ -137,8 +127,6 @@ export function buildExplicitSeedAdmissionQuery(input: {
     query_text: buildSeedConfirmationQuery(input.seed),
     priority: "high",
     target_domain: input.seed.source_domain,
-    // Existing query-family contract remains unchanged. Seed confirmation is
-    // identified by the query_id prefix and run_id, not by widening the union.
     query_family: "general",
   };
 }

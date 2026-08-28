@@ -5,8 +5,10 @@ on:
     branches: [main]
     paths:
       - "lib/acquisition-scale-v1/seed-confirmation-policy.ts"
+      - "lib/acquisition-scale-v1/seed-listing-confirmation.ts"
       - "scripts/openserp/confirm-seed-listing-candidates.ts"
       - "scripts/scrapers/__tests__/seed-confirmation-policy-preflight.test.ts"
+      - "scripts/scrapers/__tests__/seed-listing-mass-conversion-v1.test.ts"
       - ".github/workflows/seed-confirmation-policy-preflight.yml"
   workflow_dispatch:
 
@@ -24,8 +26,8 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - name: Policy preflight regression
-        run: npx tsx --test scripts/scrapers/__tests__/seed-confirmation-policy-preflight.test.ts
+      - name: Seed confirmation regressions
+        run: npx tsx --test scripts/scrapers/__tests__/seed-confirmation-policy-preflight.test.ts scripts/scrapers/__tests__/seed-listing-mass-conversion-v1.test.ts
       - name: TypeScript
         run: npx tsc --noEmit
       - name: Production build
