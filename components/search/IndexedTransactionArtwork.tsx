@@ -12,9 +12,6 @@ export function IndexedTransactionArtwork({
   showIndexedDisclosure?: boolean;
 }) {
   const visual = getIndexedTransactionVisual(transaction);
-  const forcePremiumLabels = visual.key !== "unknown";
-  const renderTransactionLabel = showTransactionLabel || forcePremiumLabels;
-  const renderIndexedDisclosure = showIndexedDisclosure || forcePremiumLabels;
 
   return (
     <div
@@ -29,87 +26,182 @@ export function IndexedTransactionArtwork({
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
-        <circle cx="274" cy="30" r="62" fill={visual.accent} opacity="0.035" />
-        <circle cx="40" cy="166" r="46" fill={visual.foreground} opacity="0.025" />
-
         <g
           stroke={visual.foreground}
           strokeLinecap="round"
           strokeLinejoin="round"
           vectorEffect="non-scaling-stroke"
         >
-          <path d="M12 150C62 140 95 141 128 149C173 160 211 159 308 145" strokeOpacity="0.16" strokeWidth="1.25" />
-          <path d="M24 161H297" strokeOpacity="0.10" strokeWidth="1" />
-          <path d="M28 67H48M34 60C38 53 45 53 49 60M47 60C51 56 57 57 60 62" strokeOpacity="0.17" strokeWidth="1.1" />
-          <path d="M258 57H280M264 51C268 44 276 45 279 52M278 52C283 48 289 50 291 55" strokeOpacity="0.14" strokeWidth="1.1" />
+          <path d="M18 151C64 146 99 146 129 151C174 158 218 157 302 149" strokeOpacity="0.16" strokeWidth="0.9" />
+          <path d="M28 159H294" strokeOpacity="0.08" strokeWidth="0.8" />
+          <path d="M30 63H48M34 58C38 52 44 52 48 58M48 58C52 55 57 56 60 60" strokeOpacity="0.16" strokeWidth="0.8" />
+          <path d="M260 57H278M264 52C268 46 274 46 278 52M278 52C282 49 287 50 290 54" strokeOpacity="0.13" strokeWidth="0.8" />
         </g>
 
         {visual.key === "buy" ? (
-          <>
-            <g stroke={visual.foreground} strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke">
-              <path d="M22 139V102H50V139M36 102V85H64V139M270 139V105H296V139M282 105V91H304V139" strokeOpacity="0.16" strokeWidth="1.15" />
-              <path d="M72 139V81L151 38L230 81V139" strokeWidth="2.2" />
-              <path d="M92 69L151 31L211 65" strokeOpacity="0.72" strokeWidth="1.4" />
-              <path d="M93 139V91H209V139" strokeOpacity="0.45" strokeWidth="1.25" />
-              <path d="M151 59C138 59 128 69 128 82C128 101 151 119 151 119C151 119 174 101 174 82C174 69 164 59 151 59Z" fill={visual.accent} fillOpacity="0.055" strokeWidth="2" />
-              <circle cx="151" cy="82" r="7" strokeWidth="1.7" />
-              <circle cx="116" cy="135" r="7" strokeWidth="1.7" />
-              <path d="M123 135H154M142 135V142M151 135V140" strokeWidth="1.7" />
-              <path d="M62 145C88 136 106 137 129 143M171 144C194 137 219 138 247 145" strokeOpacity="0.25" strokeWidth="1.2" />
-            </g>
-          </>
+          <g stroke={visual.foreground} strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke">
+            <path d="M35 139V111H58V139M46 111V95H69V139M251 139V108H274V139M263 108V94H286V139" strokeOpacity="0.15" strokeWidth="0.85" />
+            <path d="M82 138V89L158 47L234 89V138" strokeWidth="1.35" />
+            <path d="M101 76L158 41L216 74" strokeOpacity="0.72" strokeWidth="0.95" />
+            <path d="M101 138V96H216V138" strokeOpacity="0.38" strokeWidth="0.85" />
+            <path d="M158 66C146 66 137 75 137 87C137 104 158 121 158 121C158 121 179 104 179 87C179 75 170 66 158 66Z" fill={visual.accent} fillOpacity="0.035" strokeWidth="1.2" />
+            <circle cx="158" cy="87" r="6" strokeWidth="1" />
+            <circle cx="125" cy="136" r="6" strokeWidth="1" />
+            <path d="M131 136H160M149 136V142M157 136V140" strokeWidth="1" />
+            <path d="M70 146C96 139 116 140 137 144M179 145C202 139 225 140 248 146" strokeOpacity="0.20" strokeWidth="0.85" />
+          </g>
         ) : visual.key === "rent" ? (
-          <>
-            <g stroke={visual.foreground} strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke">
-              <path d="M28 139V99H51V139M39 99V84H61V139M255 139V91H278V139M269 91V76H294V139" strokeOpacity="0.14" strokeWidth="1.1" />
-              <path d="M96 139V72C96 49 113 34 136 34H184C207 34 224 49 224 72V139" strokeOpacity="0.28" strokeWidth="1.4" />
-              <path d="M115 139V61H179V139" strokeWidth="2.15" />
-              <path d="M128 72L169 62V132L128 139V72Z" fill={visual.accent} fillOpacity="0.075" strokeWidth="1.7" />
-              <path d="M179 61H198V139" strokeOpacity="0.55" strokeWidth="1.3" />
-              <circle cx="158" cy="101" r="2.8" fill={visual.foreground} stroke="none" />
-              <circle cx="225" cy="92" r="9" strokeWidth="1.8" />
-              <path d="M234 92H259M248 92V101M256 92V98" strokeWidth="1.8" />
-              <path d="M102 145C120 136 141 133 163 134C188 135 209 141 230 148" strokeOpacity="0.23" strokeWidth="1.3" />
-              <path d="M57 137C57 128 63 121 72 121C81 121 87 128 87 137M71 121V105" strokeOpacity="0.18" strokeWidth="1.1" />
-            </g>
-          </>
+          <g stroke={visual.foreground} strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke">
+            <path d="M39 139V106H60V139M49 106V91H70V139M247 139V101H270V139M259 101V86H282V139" strokeOpacity="0.14" strokeWidth="0.8" />
+            <path d="M98 139V77C98 56 114 42 135 42H182C203 42 219 56 219 77V139" strokeOpacity="0.24" strokeWidth="0.9" />
+            <path d="M117 139V68H178V139" strokeWidth="1.35" />
+            <path d="M129 77L168 68V132L129 139V77Z" fill={visual.accent} fillOpacity="0.045" strokeWidth="1" />
+            <path d="M178 68H196V139" strokeOpacity="0.48" strokeWidth="0.9" />
+            <circle cx="158" cy="101" r="2.2" fill={visual.foreground} stroke="none" />
+            <circle cx="223" cy="96" r="7.5" strokeWidth="1" />
+            <path d="M231 96H255M244 96V103M252 96V101" strokeWidth="1" />
+            <path d="M102 145C121 139 141 136 160 137C184 138 204 142 226 148" strokeOpacity="0.18" strokeWidth="0.85" />
+            <path d="M76 139V124M70 139H82M76 124C70 124 67 118 70 113C73 108 79 108 82 113C85 118 82 124 76 124Z" strokeOpacity="0.15" strokeWidth="0.8" />
+          </g>
         ) : visual.key === "new" ? (
-          <>
-            <g stroke={visual.foreground} strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke">
-              <path d="M62 142V52M55 142H70M55 52H185M62 65L110 52L151 65M110 52V142" strokeWidth="1.9" />
-              <path d="M110 52H189M174 52V39H189V52M183 52V106" strokeWidth="1.35" />
-              <path d="M181 106C181 112 176 116 170 116C164 116 159 112 159 106" strokeOpacity="0.65" strokeWidth="1.25" />
-              <path d="M129 142V89H267V142M129 103H267M129 118H267M129 132H267M154 89V142M181 89V142M208 89V142M236 89V142" strokeOpacity="0.72" strokeWidth="1.25" />
-              <path d="M129 142H279" strokeWidth="1.8" />
-              <path d="M38 143V124M30 143H46M38 124C30 124 27 116 31 110C34 104 42 104 45 110C49 116 46 124 38 124Z" strokeOpacity="0.20" strokeWidth="1.1" />
-              <path d="M291 143V120M283 143H299M291 120C283 120 280 112 284 106C287 100 295 100 298 106C302 112 299 120 291 120Z" strokeOpacity="0.18" strokeWidth="1.1" />
-            </g>
-          </>
+          <g stroke={visual.foreground} strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke">
+            <path d="M72 142V57M65 142H79M65 57H184M72 69L112 57L150 69M112 57V142" strokeWidth="1.15" />
+            <path d="M112 57H193M178 57V44H193V57M186 57V104" strokeWidth="0.9" />
+            <path d="M186 104C186 109 182 113 177 113C172 113 168 109 168 104" strokeOpacity="0.58" strokeWidth="0.85" />
+            <path d="M133 142V92H269V142M133 105H269M133 118H269M133 131H269M157 92V142M182 92V142M207 92V142M232 92V142M257 92V142" strokeOpacity="0.64" strokeWidth="0.85" />
+            <path d="M133 142H280" strokeWidth="1.1" />
+            <path d="M43 143V126M37 143H49M43 126C37 126 34 120 37 115C40 110 46 110 49 115C52 120 49 126 43 126Z" strokeOpacity="0.18" strokeWidth="0.8" />
+            <path d="M293 143V122M286 143H300M293 122C286 122 283 115 286 110C289 105 296 105 299 110C302 115 300 122 293 122Z" strokeOpacity="0.15" strokeWidth="0.8" />
+          </g>
         ) : (
           <g stroke={visual.foreground} strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke">
-            <path d="M84 139L160 61L236 139" strokeWidth="2" />
-            <path d="M105 118V143H215V118M145 143V108H176V143" strokeOpacity="0.75" strokeWidth="1.6" />
-            <path d="M44 150C82 137 111 139 139 147M181 147C214 138 247 139 280 149" strokeOpacity="0.20" strokeWidth="1.2" />
+            <path d="M88 139L160 67L232 139" strokeWidth="1.15" />
+            <path d="M108 119V143H212V119M145 143V111H176V143" strokeOpacity="0.68" strokeWidth="0.9" />
           </g>
         )}
       </svg>
 
-      {renderTransactionLabel ? (
+      {showTransactionLabel ? (
         <div
-          className="absolute left-3 top-3 rounded-md px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.08em] text-white shadow-sm sm:left-4 sm:top-4 sm:text-[11px]"
+          className="absolute left-3 top-3 rounded-md px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.06em] text-white shadow-[0_2px_8px_rgba(15,23,42,0.08)] sm:left-4 sm:top-4 sm:text-[10px]"
           style={{ backgroundColor: visual.accent }}
         >
           {visual.label}
         </div>
       ) : null}
-      {renderIndexedDisclosure ? (
+
+      {showIndexedDisclosure ? (
         <div
-          className="absolute right-3 top-3 text-[9px] font-black uppercase tracking-[0.08em] sm:right-4 sm:top-4 sm:text-[10px]"
+          className="absolute left-1/2 top-4 -translate-x-1/2 whitespace-nowrap text-[8px] font-black uppercase tracking-[0.08em] sm:top-[18px] sm:text-[9px]"
           style={{ color: visual.foreground }}
         >
           Annonce indexée
         </div>
       ) : null}
+
+      <style jsx global>{`
+        [data-indexed-artwork-card="true"] {
+          border-radius: 14px !important;
+          border-color: #e5e7eb !important;
+          box-shadow: 0 10px 26px rgba(15, 23, 42, 0.07) !important;
+        }
+
+        [data-indexed-artwork-card="true"] [data-card-image] {
+          background: #ffffff !important;
+          border-bottom: 1px solid #f1f5f9;
+        }
+
+        [data-indexed-artwork-card="true"] [data-card-image] > .left-2.top-2,
+        [data-indexed-artwork-card="true"] [data-card-image] > .left-3.top-3,
+        [data-indexed-artwork-card="true"] [data-indexed-artwork-disclosure],
+        [data-indexed-artwork-card="true"] [data-card-image] > span.bottom-2.left-2,
+        [data-indexed-artwork-card="true"] [data-card-image] > span.bottom-3.left-3 {
+          display: none !important;
+        }
+
+        [data-indexed-artwork-card="true"] [data-card-price] {
+          font-weight: 800 !important;
+          letter-spacing: -0.035em !important;
+        }
+
+        [data-indexed-artwork-card="true"]:has([data-indexed-transaction-artwork="buy"]) [data-card-price],
+        [data-indexed-artwork-card="true"]:has([data-indexed-transaction-artwork="buy"]) [data-card-provenance] {
+          color: #ea6a00 !important;
+        }
+
+        [data-indexed-artwork-card="true"]:has([data-indexed-transaction-artwork="rent"]) [data-card-price],
+        [data-indexed-artwork-card="true"]:has([data-indexed-transaction-artwork="rent"]) [data-card-provenance] {
+          color: #1457d9 !important;
+        }
+
+        [data-indexed-artwork-card="true"]:has([data-indexed-transaction-artwork="new"]) [data-card-price],
+        [data-indexed-artwork-card="true"]:has([data-indexed-transaction-artwork="new"]) [data-card-provenance] {
+          color: #16813a !important;
+        }
+
+        [data-indexed-artwork-card="true"] [data-card-title] {
+          color: #0f172a !important;
+          font-weight: 800 !important;
+        }
+
+        [data-indexed-artwork-card="true"] [data-card-location] {
+          color: #64748b !important;
+          font-weight: 600 !important;
+        }
+
+        [data-indexed-artwork-card="true"] [data-card-facts] {
+          gap: 0.45rem !important;
+          color: #475569 !important;
+          overflow: visible !important;
+        }
+
+        [data-indexed-artwork-card="true"] [data-card-facts] > span {
+          border: 0 !important;
+          background: transparent !important;
+          border-radius: 0 !important;
+          padding: 0 !important;
+          box-shadow: none !important;
+        }
+
+        [data-indexed-artwork-card="true"] [data-card-facts] > span:not(:last-child)::after {
+          content: "·";
+          margin-left: 0.45rem;
+          color: #cbd5e1;
+        }
+
+        [data-indexed-artwork-card="true"] [data-card-provenance] {
+          border-top-color: #eef2f7 !important;
+          font-weight: 700 !important;
+        }
+
+        [data-indexed-artwork-card="true"] [data-card-provenance] > span:first-child {
+          font-size: 0 !important;
+        }
+
+        [data-indexed-artwork-card="true"] [data-card-provenance] > span:first-child::after {
+          content: "Annonce indexée";
+          font-size: 11px;
+          font-weight: 800;
+        }
+
+        [data-indexed-artwork-card="true"] [data-card-primary-action] {
+          display: none !important;
+        }
+
+        @media (max-width: 639px) {
+          [data-indexed-artwork-card="true"] {
+            border-radius: 13px !important;
+          }
+
+          [data-indexed-artwork-card="true"] [data-card-image] {
+            height: 152px !important;
+          }
+
+          [data-indexed-artwork-card="true"] [data-card-provenance] > span:first-child::after {
+            font-size: 9px;
+          }
+        }
+      `}</style>
     </div>
   );
 }
