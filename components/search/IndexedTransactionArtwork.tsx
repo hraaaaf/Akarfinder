@@ -145,7 +145,7 @@ export function IndexedTransactionArtwork({
 
       {renderIndexedDisclosure ? (
         <div
-          className="absolute right-3 top-[14px] whitespace-nowrap text-[6.5px] font-black uppercase tracking-[0.035em] sm:left-1/2 sm:right-auto sm:top-[18px] sm:-translate-x-1/2 sm:text-[9px] sm:tracking-[0.08em]"
+          className="absolute left-1/2 top-[14px] -translate-x-1/2 whitespace-nowrap text-[6px] font-black uppercase tracking-[0.025em] sm:top-[18px] sm:text-[9px] sm:tracking-[0.08em]"
           style={{ color: visual.foreground }}
         >
           Annonce indexée
