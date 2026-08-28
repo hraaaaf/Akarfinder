@@ -6,20 +6,18 @@ AkarFinder — Search Indexed Visual — 10/10 pass
 Dernière mise à jour : 2026-08-28
 
 ## Goal
-Faire converger les cartes `public_indexed` vers le mockup premium approuvé : illustration propriétaire fine et aérée, badge transaction coloré, `Annonce indexée` lisible, prix et accents cohérents avec Achat / Location / Neuf, corps de carte plus éditorial et moins "UI générique".
+Faire converger les cartes `public_indexed` vers le mockup premium approuvé, avec reproduction vectorielle dans l’application des trois compositions visuelles de référence.
 
 ## Succès observable
 - BEFORE : certification Chromium du lot P1, run `33196086594`, artifact `9695997166`.
-- TARGET : mockup utilisateur "Concept premium — Système visuel par type de transaction" fourni dans la conversation.
+- TARGET : mockup utilisateur `Concept premium — Système visuel par type de transaction` fourni dans la conversation.
 - AFTER requis : 390×844 / 430×932 / 768×900 / 1280×900 sur le vrai composant `SearchListingCardDark`.
-- Achat orange / Location cobalt / Neuf émeraude immédiatement identifiables.
-- Line-art fin et aéré au niveau du TARGET.
+- Achat : maison + pin + clé + skyline légère.
+- Location : porte arquée ouverte + clé + ville légère.
+- Neuf : grue détaillée + structure de chantier.
+- même échelle, respiration et finesse de trait que le TARGET.
 - aucune collision badge / disclosure sur mobile.
 - footer complet et lisible sur mobile et desktop.
-- Suppression des overlays/pills redondants dans la zone illustration.
-- Prix et provenance reprennent la couleur transactionnelle.
-- Facts visuellement allégés.
-- Gros CTA desktop supprimé pour les cartes indexées afin de retrouver le footer léger du TARGET.
 - aucune photo tierce ; aucune modification ranking/data/DB.
 - findings Chromium = 0.
 - ne jamais déclarer 10/10 si un écart visuel manifeste subsiste.
@@ -29,49 +27,47 @@ Faire converger les cartes `public_indexed` vers le mockup premium approuvé : i
 - Base de départ : `main@b36111644ea5d50e3205e8313c8c6bc6b8885a47`
 - Branche : `feat/search-indexed-visual-10of10`
 - PR : `#947` draft
-- HEAD fonctionnel courant avant ce commit documentaire : `d511b6c0e1be9063dc739f160fcd72abcffc43b0`
+- HEAD fonctionnel de la passe SVG exacte : `6787399e4a09d7537c5625eea49f6d9835a26e75`
 - Vercel : aucun déploiement sans autorisation explicite.
 
 ## Implémentation
-- `IndexedTransactionArtwork.tsx` : line-art affiné, compositions rapprochées du mockup.
+- `IndexedTransactionArtwork.tsx` : trois tracés SVG reconstruits à partir du mockup.
+- Achat : maison centrée, pin intérieur, clé sous la maison, skyline et courbes de sol légères.
+- Location : arche, porte ouverte, clé à droite, ville et végétation légères.
+- Neuf : grue détaillée avec treillis, flèche, crochet, structure de chantier quadrillée et arbres.
+- aucune image raster ni URL externe utilisée pour ces illustrations.
 - labels premium intégrés dans l'artwork.
-- CSS scoped aux cartes `data-indexed-artwork-card=true` pour rapprocher le vrai composant du TARGET sans toucher les cartes partenaires/utilisateurs.
+- CSS scoped aux cartes `data-indexed-artwork-card=true`.
 - overlays redondants masqués pour `public_indexed`.
 - prix/provenance colorés par transaction.
-- facts débarrassés des pills.
-- CTA primaire desktop masqué pour les cartes indexées.
-- footer réécrit visuellement vers `Annonce indexée / Voir sur la source ↗`.
+- CTA primaire et lien mobile redondant masqués pour les cartes indexées.
 
-## Passe rejetée — HEAD `687b866ce51cb6dd098b39a384d26135e2942297`
-CI :
-- UI All Pages Baseline `33202660902` ✅
-- UI All Pages Certification `33202660789` ✅
-- artifact certification `9698539870` ✅
+## Passe précédente certifiée — HEAD `b2690f320ed1d67f4eee9a05fedea1987a5ccb58`
+- UI All Pages Baseline `33206268727` ✅
+- UI All Pages Certification `33206268836` ✅
+- artifact baseline `9699951155` ✅
 
 Inspection réelle :
-- desktop 1280 : convergence nette avec le TARGET, mais pas suffisante pour déclarer 10/10 ;
-- mobile 390 : **échec visuel** — collision du badge transaction et de `Annonce indexée`, footer tronqué, lien mobile supplémentaire absent du TARGET.
+- structure de carte nettement rapprochée du TARGET ;
+- mobile nettoyé ;
+- dessins encore trop interprétés, surtout `Neuf`, donc **refusé comme 10/10**.
 
-Conclusion : cette passe est explicitement **REFUSÉE comme 10/10** malgré la CI Chromium verte.
+## Passe actuelle — SVG reconstruits
+HEAD fonctionnel : `6787399e4a09d7537c5625eea49f6d9835a26e75`.
 
-## Correction suivante — HEAD `d511b6c0e1be9063dc739f160fcd72abcffc43b0`
-- badge transaction réduit sur mobile ;
-- `Annonce indexée` repositionné à droite sur mobile, centré seulement à partir de `sm` ;
-- footer mobile compacté pour conserver les deux libellés complets ;
-- lien mobile redondant `Voir l’annonce` masqué sur les cartes indexées ;
-- desktop inchangé dans son principe.
+Goal de cette passe : ne plus seulement s'inspirer des dessins, mais reproduire leurs compositions dans le vrai composant.
 
 ## CI globale hors diff
-Le workflow `UX-SEARCH-FINAL-10OF10-1` sur la passe précédente échoue avant ses screenshots sur deux contrats Bottom Nav historiques (`Compte` et `/profil-recherche`). Ce défaut est hors des 2 fichiers du présent lot. Les certifications Chromium exhaustives du composant restent les preuves visuelles pertinentes ; aucun échec hors diff n’est maquillé en succès.
+Plusieurs workflows historiques Search/Bottom Nav restent susceptibles d'échouer hors diff du présent lot. Les certifications Chromium exact-HEAD du composant constituent la preuve visuelle requise ; aucun échec hors diff ne sera maquillé en succès.
 
 ## NEXT EXACT
-1. Obtenir la CI Chromium exact-HEAD de la passe `d511b6c0...`.
+1. Obtenir la CI Chromium exact-HEAD de la passe SVG reconstruite.
 2. Récupérer AFTER 390/430/768/1280.
-3. Comparer au TARGET.
-4. Si une collision, troncature ou divergence notable subsiste : corriger et recertifier.
-5. Déclarer 10/10 seulement si la comparaison visuelle le justifie réellement.
+3. Comparer directement au TARGET.
+4. Si une divergence visuelle notable subsiste : corriger et recertifier.
+5. Déclarer 10/10 uniquement si la comparaison le justifie réellement.
 6. Closeout canonique → ready → merge uniquement après preuve 10/10.
 7. Aucun déploiement Vercel sans human gate explicite.
 
 ## Avancement
-**Actif — dernière passe visuelle rejetée ; correction mobile poussée ; recertification requise.**
+**Actif — tracés SVG du mockup intégrés dans l’application ; certification visuelle requise.**
