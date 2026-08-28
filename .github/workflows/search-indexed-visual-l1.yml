@@ -1,4 +1,4 @@
-name: Search Indexed Visual L1-L2
+name: Search Indexed Visual L1-L3
 
 on:
   push:
@@ -7,6 +7,7 @@ on:
     paths:
       - "components/search/IndexedTransactionArtwork.tsx"
       - "components/search/SearchListingCardDark.tsx"
+      - "components/search/ExternalIndexedResultCard.tsx"
       - "lib/ux/indexed-transaction-visual.ts"
       - "lib/ux/indexed-listing-visual-policy.ts"
       - "scripts/scrapers/__tests__/indexed-transaction-visual.test.ts"
