@@ -6,6 +6,7 @@
 // Safety invariants:
 // - never fetches a source listing page;
 // - dry-run by default; --apply requires the existing 3 Production write flags;
+// - Source Policy Registry preflight happens before any external search call;
 // - exact canonical URL equality is mandatory;
 // - city + transaction + property type must all be explicit in SERP evidence;
 // - existing decideAdmission() must admit with HIGH confidence;
@@ -20,6 +21,12 @@ import {
   selectBalancedSeedBatch,
   type SeedConfirmationSeed,
 } from "@/lib/acquisition-scale-v1/seed-listing-confirmation";
+import {
+  buildSeedConfirmationPolicyMap,
+  evaluateSeedConfirmationPolicy,
+  normalizePolicyDomain,
+  type SeedConfirmationPolicy,
+} from "@/lib/acquisition-scale-v1/seed-confirmation-policy";
 import { decideAdmission, type AdmissionDecision } from "@/lib/openserp-ingestion/national-admission";
 import { isOpenSerpIngestionCronAuthorized } from "@/lib/openserp-ingestion/openserp-ingestion-feature-flags";
 import {
@@ -79,6 +86,17 @@ async function loadSeedOnlyRows(): Promise<SeedConfirmationSeed[]> {
     if (rows.length < READ_PAGE_SIZE) break;
   }
   return out;
+}
+
+async function loadSeedConfirmationPolicies(): Promise<SeedConfirmationPolicy[]> {
+  const supabase = getSupabaseServerClient();
+  const response = await supabase
+    .from("source_policy_registry")
+    .select(
+      "source_domain,authorization_status,acquisition_mode,allowed_discovery_channels,review_status,policy_effective_at,policy_expires_at,machine_gate,ingestion_gate,display_gate",
+    );
+  if (response.error) throw new Error(`source policy registry read failed: ${response.error.message}`);
+  return (response.data ?? []) as SeedConfirmationPolicy[];
 }
 
 async function loadExistingListingUrls(): Promise<Set<string>> {
@@ -156,15 +174,35 @@ async function main() {
     return;
   }
 
-  const [seedRows, existingListingUrls] = await Promise.all([loadSeedOnlyRows(), loadExistingListingUrls()]);
+  const [seedRows, existingListingUrls, policies] = await Promise.all([
+    loadSeedOnlyRows(),
+    loadExistingListingUrls(),
+    loadSeedConfirmationPolicies(),
+  ]);
+  const policyByDomain = buildSeedConfirmationPolicyMap(policies);
+  const policyNow = new Date();
+  let policyBlockedSeedRows = 0;
   const eligibleSeeds = seedRows.filter((seed) => {
     const canonical = canonicalizeSourceUrl(seed.canonical_url);
-    return canonical !== null && !existingListingUrls.has(canonical);
+    if (canonical === null || existingListingUrls.has(canonical)) return false;
+    const policy = policyByDomain.get(normalizePolicyDomain(seed.source_domain));
+    const policyDecision = evaluateSeedConfirmationPolicy(policy, policyNow);
+    if (!policyDecision.eligible) {
+      policyBlockedSeedRows += 1;
+      return false;
+    }
+    return true;
   });
   const selected = selectBalancedSeedBatch(eligibleSeeds, batchSize);
 
   if (selected.length === 0) {
-    console.log(JSON.stringify({ ok: true, status: "NOOP_NO_SEED_ONLY_GAPS", mode, seed_only: seedRows.length }));
+    console.log(JSON.stringify({
+      ok: true,
+      status: "NOOP_NO_POLICY_ELIGIBLE_SEED_ONLY_GAPS",
+      mode,
+      seed_only: seedRows.length,
+      policy_blocked_seed_rows: policyBlockedSeedRows,
+    }));
     return;
   }
 
@@ -210,7 +248,8 @@ async function main() {
   const plan = {
     mode,
     seed_only_rows: seedRows.length,
-    eligible_unlinked_seed_rows: eligibleSeeds.length,
+    policy_blocked_seed_rows: policyBlockedSeedRows,
+    policy_eligible_unlinked_seed_rows: eligibleSeeds.length,
     selected: selected.length,
     exact_high_confidence: confirmed.length,
     no_exact_match: attempts.filter((item) => item.outcome === "no_exact_match").length,
@@ -239,7 +278,8 @@ async function main() {
   }
 
   // Move every attempted seed to the back of the queue, without changing its
-  // freshness status here. The canonical freshness reconciler upgrades only
+  // freshness status here. Policy-blocked seeds were never attempted and are
+  // deliberately untouched. The canonical freshness reconciler upgrades only
   // exact accepted discovery matches after this worker completes.
   await updateAttemptMetadata(attempts, attemptedAt);
 
