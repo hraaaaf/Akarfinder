@@ -13,7 +13,7 @@ export function ProfessionalProfileShell({ profile }: { profile: Profile }) {
   const isPromoter = profile.organization_type === "promoter";
   const typeLabel = isPromoter ? "Promoteur" : "Agence immobilière";
   const primaryCount = isPromoter ? profile.portfolio.published_projects : profile.portfolio.verified_listings;
-  const primaryLabel = isPromoter ? "projets publics" : "biens avec ownership confirmé";
+  const primaryLabel = isPromoter ? "projets publics" : "biens rattachés et vérifiés";
   const citySearchHref = profile.city
     ? `/search?city=${encodeURIComponent(profile.city)}&transaction_type=buy`
     : "/search";
@@ -102,7 +102,7 @@ export function ProfessionalProfileShell({ profile }: { profile: Profile }) {
               <div className="mt-6 grid gap-3 sm:grid-cols-2">
                 <div className="rounded-2xl border border-[#efe3cd] bg-[#fffdf8] p-5">
                   <p className="text-[2rem] font-extrabold tracking-[-0.05em] text-deepblue">{profile.portfolio.verified_listings}</p>
-                  <p className="mt-1 text-[12px] font-semibold leading-5 text-gray-500">Biens avec ownership confirmé</p>
+                  <p className="mt-1 text-[12px] font-semibold leading-5 text-gray-500">Biens rattachés et vérifiés</p>
                 </div>
                 <div className="rounded-2xl border border-[#efe3cd] bg-[#fffdf8] p-5">
                   <p className="text-[2rem] font-extrabold tracking-[-0.05em] text-deepblue">{profile.portfolio.published_projects}</p>
@@ -139,7 +139,7 @@ export function ProfessionalProfileShell({ profile }: { profile: Profile }) {
                 <h2 className="text-[13px] font-extrabold">Profil professionnel public</h2>
               </div>
               <p className="mt-3 text-[12px] leading-5 text-gray-500">
-                Ce profil est publié dans l’annuaire professionnel AkarFinder. Les compteurs de portefeuille reposent sur les relations d’ownership et projets enregistrées sur la plateforme.
+                Ce profil est publié dans l’annuaire professionnel AkarFinder. Les compteurs du portefeuille reposent sur les rattachements de biens vérifiés et les projets enregistrés sur la plateforme.
               </p>
             </section>
 
