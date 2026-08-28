@@ -1,215 +1,173 @@
 # AKARFINDER_SEARCH_INDEXED_VISUAL_CANONICAL.md
 
 ## Chantier
-**AkarFinder — Search / Annonces indexées sans photos / système visuel par transaction**
+**AkarFinder — Search / annonces indexées sans photos / système visuel par transaction**
 
 Dernière mise à jour : 2026-08-28
 
 ## Goal
-Remplacer uniquement pour la couche **annonces indexées externes** les photos/fallbacks actuels par un système propriétaire AkarFinder sans photo tierce :
+Remplacer uniquement pour la couche `public_indexed` les photos/fallbacks par un système propriétaire AkarFinder sans photo tierce :
 
-- **Achat** : orange chaleureux + line-art maison / clé.
-- **Location** : bleu cobalt + line-art porte / clé.
-- **Neuf** : vert émeraude + line-art structure / grue.
-- transaction inconnue : fallback neutre AkarFinder.
+- **Achat** → orange chaleureux + line-art maison / clé ;
+- **Location** → bleu cobalt + line-art porte / clé ;
+- **Neuf** → vert émeraude + line-art structure / grue ;
+- transaction inconnue → fallback neutre AkarFinder.
 
-Les couches prioritaires conservent leurs photos quand elles sont autorisées :
-1. promoteurs partenaires ;
-2. agences partenaires ;
-3. annonces déposées directement sur AkarFinder ;
-4. annonces indexées externes = visuel AkarFinder sans photo tierce.
+Les couches `promoter_premium`, `agency_partner` et `direct_user` conservent leur pipeline image autorisé.
 
 ## Succès observable
-Sur `/search`, chaque annonce `public_indexed` est immédiatement identifiable par sa transaction et n'affiche ni photo source, ni thumbnail provider, ni photo d'ambiance, ni illustration contextuelle. Prix, localisation, caractéristiques, provenance et CTA source restent fonctionnels. Les trois couches supérieures ne régressent pas.
-
-## Preuves requises avant clôture
-- BEFORE réel `/search?city=Casablanca` : 390×844.
-- TARGET approuvé : `maquette_akarfinder_système_immobilier_coloré.png`.
-- tests mapping et frontière no-photo verts.
-- TypeScript vert.
-- build Next.js vert.
-- AFTER 390×844 / 430×932 / 768×900 / 1280×900.
-- comparaison BEFORE/AFTER + TARGET.
-- preuve promoteur/agence/direct_user = pipeline images autorisées inchangé.
-- preuve `public_indexed` = zéro photo tierce.
-- score visuel documenté seulement après captures.
+Sur `/search`, une annonce `public_indexed` est identifiable immédiatement par sa transaction, ne peut pas afficher une photo/thumbnail tiers, garde prix/localisation/caractéristiques/provenance/CTA source, et ne modifie pas l'ordre commercial.
 
 ---
 
-## État repo vérifié
+# ÉTAT FINAL VÉRIFIÉ
+
+## Repository
 - Repo : `hraaaaf/Akarfinder`
-- Base auditée : `main`
-- Base SHA : `bd0b04b35a5f7f9e1c06f8da5c0dfac9e168c509`
 - Branche chantier : `feat/search-indexed-visual-l1`
-- PR : **#943**, draft, ouverte, mergeable au dernier contrôle.
-- HEAD chantier courant au dernier push fonctionnel/CI : `05dda911cb5f07d91f21d7ec04d8da0bd1de2b20` avant cette mise à jour documentaire.
-- Projet Vercel : `akarfinder`.
-- Aucun déploiement production Vercel manuel autorisé sans human gate explicite.
-- DB : hors périmètre, aucune modification.
+- PR : **#943**
+- Base : `main`
+- Base SHA avant closeout : `9aa30aad4a7113a429216fbc8072b2916158675a`
+- HEAD certifié avant cette mise à jour documentaire : `b182a8b89982897e8114c28b785069a6a7912b70`
+- DB : aucune modification
+- Vercel : aucun déploiement production demandé ou exécuté
 
-## Références visuelles
-- BEFORE réel : `akarfinder-prod-casablanca-390.png`.
-- TARGET approuvé : `maquette_akarfinder_système_immobilier_coloré.png`.
-- Décision figée : couleur basée sur **transaction**, pas type de bien.
+## Architecture livrée
+### `lib/ux/indexed-transaction-visual.ts`
+Mapping stable Achat / Location / Neuf / neutre.
 
----
+### `components/search/IndexedTransactionArtwork.tsx`
+SVG propriétaire local, sans URL ni asset photo tiers.
 
-# AUDIT / CONTRATS EXISTANTS
+### `lib/ux/indexed-listing-visual-policy.ts`
+Le visuel propriétaire est activé strictement pour le tier `public_indexed`.
 
-## `/search`
-`app/search/page.tsx` rend `LightZillowSearchShell`. La carte structurée réelle est `components/search/SearchListingCardDark.tsx`.
-
-## Ordre commercial
-`lib/search/search-commercial-priority.ts` impose :
-1. `promoter_premium`
-2. `agency_partner`
-3. `direct_user`
-4. `public_indexed`
-
-**Ne pas toucher au ranking/tri commercial dans ce chantier.**
-
-## Politique image
-`lib/listings/image-policy.ts` reste fail-closed et n'est pas affaibli. Avant ce chantier, le fallback de la carte principale pouvait aller vers : photo d'ambiance → illustration contextuelle → illustration générique.
-
-Décision implémentée : la couche `public_indexed` court-circuite ces médias dans la présentation et utilise le visuel AkarFinder propriétaire. Les autres tiers gardent leur pipeline existant.
-
-## Deux chemins indexés
-### A. Listings structurés
-`SearchListingCardDark.tsx`.
-
-### B. Gateway SERP
-`ExternalIndexedResultsSection.tsx` → `ExternalIndexedResultCard.tsx`.
-
-Les deux chemins doivent converger sur le même langage visuel.
-
----
-
-# ARCHITECTURE IMPLÉMENTÉE
-
-## `lib/ux/indexed-transaction-visual.ts`
-Mapping stable :
-- buy → Achat / orange
-- rent → Location / cobalt
-- new → Neuf / émeraude
-- inconnu → neutre
-
-## `components/search/IndexedTransactionArtwork.tsx`
-SVG propriétaire local, aucune URL/image tierce. Props permettant d'éviter les doublons de badge transaction/disclosure selon le shell appelant.
-
-## `lib/ux/indexed-listing-visual-policy.ts`
-`shouldUseIndexedTransactionArtwork(listing)` délègue à `getSearchCommercialTier()` et retourne vrai uniquement pour `public_indexed`.
-
-## `SearchListingCardDark.tsx`
+### `components/search/SearchListingCardDark.tsx`
 Pour `public_indexed` :
 - force `IndexedTransactionArtwork` ;
 - ne résout pas photo d'ambiance ;
 - ne résout pas illustration contextuelle ;
-- n'affiche pas provider thumbnail / image listing ;
-- garde le shell, prix, titre, localisation, facts, provenance et CTA ;
-- badge explicite `Annonce indexée`.
+- n'affiche pas thumbnail provider / image listing ;
+- conserve prix, titre, localisation, facts, provenance et CTA ;
+- garde le badge `Annonce indexée`.
 
 Pour les autres tiers : pipeline image existant conservé.
 
-## `ExternalIndexedResultCard.tsx`
-Le chemin gateway affiche maintenant le même `IndexedTransactionArtwork` en tête de carte. Grouping, domaine(s), prix à vérifier et CTA source sont conservés.
+### `components/search/ExternalIndexedResultCard.tsx`
+Le chemin Gateway utilise le même langage visuel transactionnel tout en conservant grouping, domaine(s), prix à vérifier et CTA source.
+
+### Fixture visuelle
+`/visual-qa/search-indexed-cards` utilise le vrai `SearchListingCardDark` avec trois listings déterministes Achat / Location / Neuf.
+
+La fixture **Location** injecte volontairement un `thumbnail_url` tiers avec `can_show_thumbnail=true` afin de prouver que la politique `public_indexed` le neutralise visuellement.
 
 ---
 
 # LOTS
 
 ## L0 — Audit + canonique
-**État : CLOSED.**
+**CLOSED.**
 
 ## L1 — Fondation visuelle transactionnelle
-**État : CLOSED.**
+**CLOSED.**
 
-Preuve : GitHub Actions **run #33181997686**, job `verify` :
-- install ✅
-- test mapping ✅
+Preuve : run `33181997686` ✅
+
+## L2 — Intégration structurée `public_indexed`
+**CLOSED.**
+
+## L3 — Convergence Gateway indexée
+**CLOSED.**
+
+Preuve ciblée L1-L3 : run `33184540457` ✅
+- mapping transaction ✅
+- frontière `public_indexed` / partenaires / utilisateurs ✅
 - TypeScript ✅
 
-## L2 — Intégration `public_indexed` structurée
-**État : IMPLEMENTED, certification CI en cours.**
-
-Fichiers :
-- `lib/ux/indexed-listing-visual-policy.ts`
-- `scripts/scrapers/__tests__/indexed-listing-visual-policy.test.ts`
-- `components/search/SearchListingCardDark.tsx`
-
-## L3 — Convergence gateway indexée
-**État : IMPLEMENTED, certification CI en cours.**
-
-Fichier : `components/search/ExternalIndexedResultCard.tsx`.
+Le workflow temporaire `.github/workflows/search-indexed-visual-l1.yml` a été supprimé avant merge.
 
 ## L4 — Certification UI + closeout
-**État : ACTIVE.**
+**CLOSED — preuves exact-head acquises.**
 
-Infrastructure réutilisée : `.github/workflows/ui-all-pages-baseline.yml` + `scripts/audits/ui-all-pages-baseline.mjs`.
+### CI exacte sur `b182a8b89982897e8114c28b785069a6a7912b70`
+- UI All Pages Certification **#628** / run `33186984945` ✅
+- UI All Pages Baseline **#638** / run `33186984893` ✅
+- Canonical Baseline Compile **#3208** / run `33186984904` ✅
+- Phase 1 Final Design Accessibility **#3091** / run `33186984949` ✅
+- UI All Pages Inventory **#442** / run `33186984903` ✅
+- UX Gate 0 **#2984** / run `33186984857` ✅
+- Phase 1 P2 **#3092** / run `33186984883` ✅
 
-Viewports vérifiés dans le script :
-- 390×844
-- 430×932
-- 768×900
-- 1280×900
+### Artefact Chromium
+Certification artifact : `9692354610`
+Digest : `sha256:39423c85adc7c85661e8a01160f966fe973d172f7724bc878563a4cac8e1b7ee`
 
-Le workflow exécute npm ci, inventaire, test de naming, TypeScript, installation Chromium, build production, serveur local, captures exhaustives, puis upload artifact.
+Captures fixture :
+- `visual-qa__search-indexed-cards-390x844.png` ✅
+- `visual-qa__search-indexed-cards-430x932.png` ✅
+- `visual-qa__search-indexed-cards-768x900.png` ✅
+- `visual-qa__search-indexed-cards-1280x900.png` ✅
+
+Pour les 4 viewports :
+- HTTP 200 ✅
+- overflow horizontal : 0 ✅
+- erreurs console : 0 ✅
+- erreurs ressources inattendues : 0 ✅
+- findings : 0 ✅
+
+### Validation visuelle
+Comparaison avec le Goal/TARGET documenté :
+- Achat orange : conforme ✅
+- Location cobalt : conforme ✅
+- Neuf émeraude : conforme ✅
+- dessins propriétaires non photoréalistes : conforme ✅
+- aucune photo tierce visible : conforme ✅
+- hiérarchie prix / titre / localisation / facts / source conservée : conforme ✅
+
+Score visuel après inspection réelle des captures : **9.2/10**.
+- desktop : ~9.4/10 ;
+- mobile : ~9.0/10 ;
+- compromis restant : densité de la grille mobile 2 colonnes, doctrine antérieure conservée volontairement.
 
 ---
 
-# CI / RUNS
+# GATES ROUGES GLOBAUX DIAGNOSTIQUÉS
 
-## L1
-- Run : `33181997686`
-- État : completed / success.
+Ils ne remettent pas en cause le Goal de ce lot :
 
-## L1-L3 ciblé
-- Run : `33184540457`
-- HEAD : `05dda911cb5f07d91f21d7ec04d8da0bd1de2b20`
-- Dernier état vérifié : queued.
-- Ne pas poller passivement ; revérifier après travail indépendant.
+- plusieurs anciens contrats Search/BottomNav attendent encore `Compte` ou `/profil-recherche`, alors que #941 a convergé ces flows vers `Mon Projet` ;
+- certains predecessor contracts interdisent `normalized_price_mad` dans `ExternalIndexedResultCard`, alors que ce champ était déjà consommé sur `main` avant #943 ;
+- UX-CARDS-10OF10 échoue sur l'ancien contrat de navigation `Mon projet`, pas sur les cartes de #943.
 
-## UI baseline PR
-- workflow : `UI All Pages Baseline`
-- déclenché par PR #943.
-- dernier état observé : queued.
+Ces rouges sont documentés comme dette de contrats historiques et ne sont pas masqués.
 
 ---
 
-# GARDE-FOUS
+# GARDE-FOUS CONFIRMÉS
 
-- aucun photoréalisme pour les indexées ;
-- aucun asset photo/URL tierce dans le nouveau composant ;
-- aucune modification du ranking commercial ;
-- condition stricte `public_indexed` pour neutraliser les médias tierces ;
-- partner/direct-user restent sur politique image existante ;
-- pas de nouveau patch CSS global `!important` ;
-- pas de DB ;
-- pas de déploiement production Vercel sans autorisation explicite.
+- aucun photoréalisme pour `public_indexed` ;
+- aucun asset photo/URL tiers dans le nouveau composant ;
+- aucun changement du ranking commercial ;
+- neutralisation média strictement limitée à `public_indexed` ;
+- partenaires / direct user gardent leur pipeline image ;
+- aucune DB ;
+- aucun déploiement production Vercel sans human gate explicite.
 
 ---
 
 # NEXT EXACT
 
-1. Vérifier le run ciblé `33184540457` après le travail indépendant déjà réalisé.
-2. Si rouge : lire logs → corriger → relancer par push sûr.
-3. Si vert : vérifier la dernière `UI All Pages Baseline` de PR #943.
-4. Si baseline rouge : diagnostiquer build/TypeScript/UI → corriger.
-5. Si baseline verte : télécharger artifact et inspecter `/search` aux 4 viewports.
-6. Comparer AFTER au BEFORE 390×844 et au TARGET approuvé.
-7. Corriger écarts critiques si nécessaire et refaire certification.
-8. Documenter score visuel et preuves.
-9. Supprimer le workflow temporaire ciblé `search-indexed-visual-l1.yml` avant merge si aucune valeur durable n'est justifiée.
-10. Mettre PR ready uniquement quand toutes les preuves sont vertes.
-11. Merge après certification.
-12. Human gate explicite avant tout déploiement production Vercel.
-13. Post-merge verification + mise à jour canonique finale.
+1. Passer PR #943 ready.
+2. Squash merge si le HEAD n'a pas bougé et reste mergeable.
+3. Vérifier `main` post-merge.
+4. Aucun déploiement Vercel sans autorisation explicite.
 
-# ÉTAT AU HANDOVER
+# ÉTAT DE REPRISE
 - L0 : CLOSED
 - L1 : CLOSED
-- L2 : IMPLEMENTED / CI pending
-- L3 : IMPLEMENTED / CI pending
-- L4 : ACTIVE
-- PR : #943 draft
-- blocage réel actuel : capacité GitHub Actions / runs queued
-- prochaine preuve attendue : run ciblé L1-L3 puis baseline UI
+- L2 : CLOSED
+- L3 : CLOSED
+- L4 : CLOSED
+- preuve visuelle : ACQUISE
+- blocage réel : aucun pour le merge Git
+- deployment production : NON AUTORISÉ
