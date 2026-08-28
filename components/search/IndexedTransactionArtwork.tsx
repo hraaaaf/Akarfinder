@@ -12,6 +12,9 @@ export function IndexedTransactionArtwork({
   showIndexedDisclosure?: boolean;
 }) {
   const visual = getIndexedTransactionVisual(transaction);
+  const forcePremiumLabels = visual.key !== "unknown";
+  const renderTransactionLabel = showTransactionLabel || forcePremiumLabels;
+  const renderIndexedDisclosure = showIndexedDisclosure || forcePremiumLabels;
 
   return (
     <div
@@ -91,7 +94,7 @@ export function IndexedTransactionArtwork({
         )}
       </svg>
 
-      {showTransactionLabel ? (
+      {renderTransactionLabel ? (
         <div
           className="absolute left-3 top-3 rounded-md px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.08em] text-white shadow-sm sm:left-4 sm:top-4 sm:text-[11px]"
           style={{ backgroundColor: visual.accent }}
@@ -99,7 +102,7 @@ export function IndexedTransactionArtwork({
           {visual.label}
         </div>
       ) : null}
-      {showIndexedDisclosure ? (
+      {renderIndexedDisclosure ? (
         <div
           className="absolute right-3 top-3 text-[9px] font-black uppercase tracking-[0.08em] sm:right-4 sm:top-4 sm:text-[10px]"
           style={{ color: visual.foreground }}
