@@ -45,13 +45,32 @@ Pages : `/map`
 Goal : faire passer la page d’un rendu "outil interne" à une expérience de recherche immobilière premium, avec une hiérarchie claire entre recherche, filtres, résultats et carte.
 
 Succès :
-- panneau gauche plus lisible et moins dense ;
+- panneau décisionnel plus compact et plus lisible ;
 - actions primaires/secondaires clairement hiérarchisées ;
-- carte visuellement dominante sans étouffer les résultats ;
+- carte visuellement dominante ;
 - mobile sans empilement confus ;
 - aucun changement logique de recherche.
 
 Référence : langage visuel AkarFinder premium déjà validé sur les cartes Search indexées + rythme/espacement des meilleures pages éditoriales actuelles.
+
+BEFORE :
+- captures `/map` 390×844 / 430×932 / 768×900 / 1280×900 inspectées ;
+- source : dernier artifact all-pages disponible avant le lot P0.1 ;
+- les fichiers `/map` observés sont inchangés par rapport à la base de la branche P0 ;
+- findings de cet artifact : 0.
+
+Implémentation P0.1 :
+- mobile : toolbar raccourcie en supprimant le titre redondant déjà porté par le sélecteur ville ;
+- mobile : contrôles plus compacts ;
+- mobile : decision sheet réduite aux informations/actions essentielles ;
+- tablette : decision sheet limitée pour rendre davantage de carte visible ;
+- desktop : rail ramené à 360 px fixes au lieu d’un split 60/40 trop large ;
+- desktop : chrome et espacements du rail resserrés ;
+- logique métier, data, ranking et DB inchangés.
+
+HEAD fonctionnel P0.1 : `2b722755ef988eff16d5de09bd194390c5f75f56`.
+
+État : IMPLEMENTED — AFTER exact-head + comparaison aux 4 viewports requis avant clôture.
 
 ### P0.2 — Search : état vide + densité résultats
 Pages : `/search`
@@ -143,9 +162,10 @@ Goal : harmoniser rythme, cards, headers secondaires, états vides, CTA et perso
 
 ## État actuel
 - branche : `feat/ux-ui-polish-p0`
-- P0.1 : PREP — BEFORE exact-branch requis avant implémentation.
+- PR : `#949` draft.
+- P0.1 : IMPLEMENTED — AFTER exact-head requis.
 - P0.2 : WAIT dependency PR #947.
 - aucun déploiement Vercel.
 
 ## NEXT EXACT
-Ouvrir la PR P0 en draft pour déclencher les captures exact-branch, récupérer BEFORE `/map` aux 4 viewports, figer la référence visuelle P0.1, puis implémenter.
+Obtenir la CI/artifact du HEAD P0.1, inspecter AFTER `/map` 390/430/768/1280, comparer au BEFORE et au contrat visuel, corriger si nécessaire, puis clôturer P0.1 avant P0.2.
