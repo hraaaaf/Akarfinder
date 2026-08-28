@@ -17,23 +17,23 @@
   /* City is already explicit in the select. Removing the duplicate title
      gives the map back a meaningful band of vertical space. */
   [data-p4-map-canvas] [data-akarfinder-premium-map-toolbar] > div:first-child p,
-  [data-p4-map-canvas] [data-akarfinder-generic-premium-toolbar] > div:first-child p {
+  [data-p4-map-canvas] [data-akarfinder-generic-premium-map-toolbar] > div:first-child p {
     display: none !important;
   }
 
   [data-p4-map-canvas] [data-akarfinder-premium-map-toolbar] label,
-  [data-p4-map-canvas] [data-akarfinder-generic-premium-toolbar] label {
+  [data-p4-map-canvas] [data-akarfinder-generic-premium-map-toolbar] label {
     margin-top: 0 !important;
   }
 
   [data-p4-map-canvas] [data-akarfinder-premium-map-toolbar] select,
-  [data-p4-map-canvas] [data-akarfinder-generic-premium-toolbar] select {
+  [data-p4-map-canvas] [data-akarfinder-generic-premium-map-toolbar] select {
     height: 34px !important;
     border-radius: 10px !important;
   }
 
   [data-p4-map-canvas] [data-akarfinder-premium-map-toolbar] > div:last-child,
-  [data-p4-map-canvas] [data-akarfinder-generic-premium-toolbar] > div:last-child {
+  [data-p4-map-canvas] [data-akarfinder-generic-premium-map-toolbar] > div:last-child {
     margin-top: 5px !important;
     gap: 5px !important;
     padding-top: 5px !important;
@@ -84,9 +84,28 @@
   }
 }
 
+/* Let blank overlay surface pass pointer events to MapLibre while retaining
+   every actual navigation control as interactive. This solves the interaction
+   obstruction without hiding or weakening the territorial controls. */
+section[aria-label="Navigation territoriale nationale"] {
+  pointer-events: none !important;
+}
+
+section[aria-label="Navigation territoriale nationale"] :is(
+  a,
+  button,
+  input,
+  select,
+  textarea,
+  [role="button"],
+  [role="tab"],
+  [role="combobox"]
+) {
+  pointer-events: auto !important;
+}
+
 /* Keep the floating national navigation panel compact enough that the map
-   remains directly hoverable/clickable. This panel is a sibling of the canvas,
-   not a descendant, so target its actual section rather than the canvas tree. */
+   remains directly hoverable/clickable. */
 @media (min-width: 640px) {
   section[aria-label="Navigation territoriale nationale"] {
     width: min(360px, calc(100% - 2rem)) !important;
@@ -150,7 +169,7 @@
   }
 
   [data-p4-map-canvas] [data-akarfinder-premium-map-toolbar],
-  [data-p4-map-canvas] [data-akarfinder-generic-premium-toolbar] {
+  [data-p4-map-canvas] [data-akarfinder-generic-premium-map-toolbar] {
     left: 16px !important;
     right: 16px !important;
     top: 16px !important;
