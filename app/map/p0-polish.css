@@ -46,7 +46,7 @@
   }
 
   [data-p4-map-canvas] [data-akarfinder-premium-map-toolbar] [aria-label="Transaction"] button,
-  [data-p4-map-canvas] [data-akarfinder-generic-premium-toolbar] [aria-label="Transaction"] button {
+  [data-p4-map-canvas] [data-akarfinder-generic-premium-map-toolbar] [aria-label="Transaction"] button {
     min-height: 26px !important;
     padding: 3px 9px !important;
   }
@@ -84,11 +84,11 @@
   }
 }
 
-/* The national navigation panel used to span far enough across the canvas to
-   intercept map hover/click targets. Keep the controls intact, but bound the
-   panel so the geographic canvas remains directly interactive. */
+/* Keep the floating national navigation panel compact enough that the map
+   remains directly hoverable/clickable. This panel is a sibling of the canvas,
+   not a descendant, so target its actual section rather than the canvas tree. */
 @media (min-width: 640px) {
-  [data-p4-map-canvas] section[aria-label="Navigation territoriale nationale"] {
+  section[aria-label="Navigation territoriale nationale"] {
     width: min(360px, calc(100% - 2rem)) !important;
     max-width: 360px !important;
   }
