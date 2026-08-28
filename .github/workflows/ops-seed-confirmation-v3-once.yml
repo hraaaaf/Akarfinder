@@ -1,0 +1,82 @@
+name: OPS Seed Confirmation V3 Once
+
+on:
+  push:
+    branches:
+      - ops/seed-confirmation-v3-once
+    paths:
+      - ".github/workflows/ops-seed-confirmation-v3-once.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ops-seed-confirmation-v3-once
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm ci
+      - name: Seed confirmation regressions
+        run: npx tsx --test scripts/scrapers/__tests__/seed-confirmation-policy-preflight.test.ts scripts/scrapers/__tests__/seed-listing-mass-conversion-v1.test.ts
+      - name: Prepare SearXNG settings
+        run: |
+          set -e
+          SEARXNG_SECRET=$(openssl rand -hex 32)
+          cat > /tmp/searxng-settings.yml <<YAML
+          use_default_settings: true
+          general:
+            debug: false
+            instance_name: "AkarFinder secured seed V3"
+          search:
+            safe_search: 0
+            default_lang: "fr"
+            formats:
+              - html
+              - json
+          server:
+            secret_key: "$SEARXNG_SECRET"
+            limiter: false
+            image_proxy: false
+          outgoing:
+            request_timeout: 8.0
+          engines:
+            - name: yandex
+              engine: yandex
+              disabled: false
+          YAML
+      - name: Start SearXNG
+        run: |
+          set -e
+          docker run -d --name searxng -p 8888:8080 \
+            -v /tmp/searxng-settings.yml:/etc/searxng/settings.yml:ro \
+            searxng/searxng:latest
+      - name: Wait for SearXNG JSON API
+        run: |
+          set -e
+          STATUS="000"
+          for i in $(seq 1 60); do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "http://127.0.0.1:8888/search?q=test&format=json" || echo "000")
+            if [ "$STATUS" = "200" ]; then break; fi
+            sleep 2
+          done
+          test "$STATUS" = "200"
+      - name: Run V3 bounded seed confirmation
+        env:
+          OPENSERP_SEARXNG_LOCAL_URL: http://127.0.0.1:8888
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          OPENSERP_AUTOMATED_INGESTION_ENABLED: ${{ secrets.OPENSERP_AUTOMATED_INGESTION_ENABLED }}
+          OPENSERP_INGESTION_WRITE_ENABLED: ${{ secrets.OPENSERP_INGESTION_WRITE_ENABLED }}
+          OPENSERP_INGESTION_CRON_ENABLED: ${{ secrets.OPENSERP_INGESTION_CRON_ENABLED }}
+        run: npx tsx scripts/openserp/confirm-seed-listing-candidates.ts --apply --batch=40
+      - name: Stop SearXNG
+        if: always()
+        run: docker rm -f searxng || true
