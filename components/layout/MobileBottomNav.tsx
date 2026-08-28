@@ -32,9 +32,9 @@ const items = [
   },
   {
     href: "/mon-projet",
-    label: "Compte",
+    label: "Mon Projet",
     icon: UserRound,
-    activePrefixes: ["/mon-projet", "/profil-recherche", "/onboarding"],
+    activePrefixes: ["/mon-projet", "/profil-recherche", "/onboarding", "/compagnon"],
   },
 ] as const;
 

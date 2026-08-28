@@ -27,12 +27,12 @@ const searchPrimaryNav = [
   { href: "/louer", text: "Louer" },
   { href: "/neuf", text: "Neuf" },
   { href: "/pro/agences", text: "Agences" },
-  { href: "/compagnon", text: "Conseils" },
+  { href: "/mon-projet", text: "Mon Projet" },
 ] as const;
 
 const secondaryNav = [
   { href: "/map", text: "Carte" },
-  { href: "/compagnon", text: "Compagnon" },
+  { href: "/mon-projet", text: "Mon Projet" },
   { href: "/pro/agences", text: "Agences" },
   { href: "/promoteurs", text: "Promoteurs" },
 ] as const;
@@ -102,7 +102,7 @@ export function SiteHeader({
 
             <Link
               href="/mon-projet"
-              aria-label="Mon compte"
+              aria-label="Mon Projet"
               className="grid h-11 w-11 place-items-center rounded-full text-[#0B2545] transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0B63CE]/30"
             >
               <UserRound size={23} strokeWidth={1.8} />
@@ -169,7 +169,7 @@ export function SiteHeader({
 
               <Link
                 href="/mon-projet"
-                aria-label="Mon compte"
+                aria-label="Mon Projet"
                 className="grid h-10 w-10 place-items-center rounded-full text-[#0B2545] transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0B63CE]/30"
               >
                 <UserRound size={21} strokeWidth={1.8} />
@@ -336,7 +336,7 @@ export function SiteHeader({
                 : "rounded-xl bg-[#0B63CE] px-3 py-2 text-[11.5px] font-bold text-white shadow-[0_4px_14px_rgba(11,99,206,0.24)] transition hover:bg-[#084BA8] sm:px-4 sm:text-[13px]"
             }
           >
-            Mon projet
+            Mon Projet
           </Link>
 
           <button
