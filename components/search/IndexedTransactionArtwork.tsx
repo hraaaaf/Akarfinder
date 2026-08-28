@@ -23,48 +23,108 @@ export function IndexedTransactionArtwork({
       style={{ backgroundColor: visual.background, color: visual.foreground }}
       aria-hidden="true"
     >
-      <svg viewBox="0 0 320 190" className="absolute inset-0 h-full w-full" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <g stroke={visual.foreground} strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke">
-          <path d="M18 151C64 146 99 146 129 151C174 158 218 157 302 149" strokeOpacity="0.14" strokeWidth="0.8" />
-          <path d="M28 159H294" strokeOpacity="0.06" strokeWidth="0.7" />
-          <path d="M30 63H48M34 58C38 52 44 52 48 58M48 58C52 55 57 56 60 60" strokeOpacity="0.13" strokeWidth="0.7" />
-          <path d="M260 57H278M264 52C268 46 274 46 278 52M278 52C282 49 287 50 290 54" strokeOpacity="0.11" strokeWidth="0.7" />
-        </g>
-
+      <svg
+        viewBox="0 0 320 190"
+        className="absolute inset-0 h-full w-full"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
         {visual.key === "buy" ? (
           <g stroke={visual.foreground} strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke">
-            <path d="M35 139V111H58V139M46 111V95H69V139M251 139V108H274V139M263 108V94H286V139" strokeOpacity="0.13" strokeWidth="0.72" />
-            <path d="M82 138V89L158 47L234 89V138" strokeWidth="1.18" />
-            <path d="M101 76L158 41L216 74" strokeOpacity="0.66" strokeWidth="0.82" />
-            <path d="M101 138V96H216V138" strokeOpacity="0.32" strokeWidth="0.72" />
-            <path d="M158 66C146 66 137 75 137 87C137 104 158 121 158 121C158 121 179 104 179 87C179 75 170 66 158 66Z" fill={visual.accent} fillOpacity="0.025" strokeWidth="1.05" />
-            <circle cx="158" cy="87" r="6" strokeWidth="0.9" />
-            <circle cx="125" cy="136" r="6" strokeWidth="0.9" />
-            <path d="M131 136H160M149 136V142M157 136V140" strokeWidth="0.9" />
-            <path d="M70 146C96 139 116 140 137 144M179 145C202 139 225 140 248 146" strokeOpacity="0.16" strokeWidth="0.72" />
+            {/* Context copied from the approved mockup: faint skyline + horizon. */}
+            <g strokeOpacity="0.13" strokeWidth="0.72">
+              <path d="M20 143V105H44V143M31 105V87H55V143" />
+              <path d="M56 143V123H76V143M68 123V111H88V143" />
+              <path d="M244 143V116H268V143M257 116V99H282V143M282 143V125H299V143" />
+              <path d="M30 64H53M34 60C38 53 46 53 50 60M50 60C55 56 61 57 64 62" />
+              <path d="M260 60H282M264 56C268 49 276 49 280 56M280 56C284 53 290 54 293 59" />
+            </g>
+
+            {/* House: intentionally centered and compact like the reference. */}
+            <path d="M99 137V86L160 51L221 86V137" strokeWidth="1.15" />
+            <path d="M89 78L160 38L232 78" strokeWidth="0.92" strokeOpacity="0.72" />
+            <path d="M111 137V96H209V137" strokeWidth="0.72" strokeOpacity="0.28" />
+
+            {/* Pin. */}
+            <path
+              d="M160 71C148 71 139 80 139 92C139 108 160 126 160 126C160 126 181 108 181 92C181 80 172 71 160 71Z"
+              fill={visual.accent}
+              fillOpacity="0.018"
+              strokeWidth="1.05"
+            />
+            <circle cx="160" cy="92" r="6.4" strokeWidth="0.9" />
+
+            {/* Key, directly below the house as in the mockup. */}
+            <circle cx="145" cy="140" r="6.2" strokeWidth="0.92" />
+            <path d="M151 140H182M168 140V146M177 140V144" strokeWidth="0.92" />
+
+            {/* Soft ground curves. */}
+            <path d="M23 145C62 143 88 136 111 136C130 136 142 140 154 143" strokeOpacity="0.15" strokeWidth="0.72" />
+            <path d="M173 143C193 138 216 137 240 141C259 144 277 145 298 144" strokeOpacity="0.15" strokeWidth="0.72" />
+            <path d="M25 153H296" strokeOpacity="0.055" strokeWidth="0.65" />
           </g>
         ) : visual.key === "rent" ? (
           <g stroke={visual.foreground} strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke">
-            <path d="M39 139V106H60V139M49 106V91H70V139M247 139V101H270V139M259 101V86H282V139" strokeOpacity="0.12" strokeWidth="0.68" />
-            <path d="M98 139V77C98 56 114 42 135 42H182C203 42 219 56 219 77V139" strokeOpacity="0.20" strokeWidth="0.78" />
-            <path d="M117 139V68H178V139" strokeWidth="1.18" />
-            <path d="M129 77L168 68V132L129 139V77Z" fill={visual.accent} fillOpacity="0.032" strokeWidth="0.9" />
-            <path d="M178 68H196V139" strokeOpacity="0.40" strokeWidth="0.78" />
-            <circle cx="158" cy="101" r="2.1" fill={visual.foreground} stroke="none" />
-            <circle cx="223" cy="96" r="7.5" strokeWidth="0.9" />
-            <path d="M231 96H255M244 96V103M252 96V101" strokeWidth="0.9" />
-            <path d="M102 145C121 139 141 136 160 137C184 138 204 142 226 148" strokeOpacity="0.15" strokeWidth="0.72" />
-            <path d="M76 139V124M70 139H82M76 124C70 124 67 118 70 113C73 108 79 108 82 113C85 118 82 124 76 124Z" strokeOpacity="0.13" strokeWidth="0.68" />
+            {/* City context. */}
+            <g strokeOpacity="0.13" strokeWidth="0.7">
+              <path d="M27 142V111H49V142M38 111V94H62V142" />
+              <path d="M66 142V122H84V142" />
+              <path d="M235 142V109H258V142M247 109V91H273V142M274 142V121H296V142" />
+              <path d="M29 63H51M34 58C38 52 45 52 49 58M49 58C54 55 60 56 63 61" />
+              <path d="M252 61H275M258 56C262 50 269 50 273 56M273 56C278 53 284 54 287 59" />
+              <path d="M73 141V124M67 141H79M73 124C67 124 64 118 67 113C70 108 76 108 79 113C82 118 79 124 73 124Z" />
+              <path d="M286 141V126M280 141H292M286 126C280 126 277 120 280 115C283 110 289 110 292 115C295 120 292 126 286 126Z" />
+            </g>
+
+            {/* Arched entry shell. */}
+            <path d="M103 141V79C103 56 119 41 141 41H178C200 41 216 56 216 79V141" strokeOpacity="0.22" strokeWidth="0.82" />
+
+            {/* Door frame and open leaf, matching the reference silhouette. */}
+            <path d="M123 141V69H178V141" strokeWidth="1.12" />
+            <path d="M136 78L166 70V133L136 141V78Z" fill={visual.accent} fillOpacity="0.085" strokeWidth="0.94" />
+            <path d="M178 69H194V141" strokeOpacity="0.38" strokeWidth="0.78" />
+            <circle cx="159" cy="103" r="2.1" fill={visual.foreground} stroke="none" />
+
+            {/* Small key to the right of the door. */}
+            <circle cx="220" cy="100" r="7.1" strokeWidth="0.9" />
+            <path d="M227 100H250M239 100V107M247 100V105" strokeWidth="0.9" />
+
+            <path d="M91 148C116 140 141 136 162 137C187 138 207 143 231 150" strokeOpacity="0.15" strokeWidth="0.72" />
+            <path d="M25 153H296" strokeOpacity="0.055" strokeWidth="0.65" />
           </g>
         ) : visual.key === "new" ? (
           <g stroke={visual.foreground} strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke">
-            <path d="M72 142V57M65 142H79M65 57H184M72 69L112 57L150 69M112 57V142" strokeWidth="1" />
-            <path d="M112 57H193M178 57V44H193V57M186 57V104" strokeWidth="0.78" />
-            <path d="M186 104C186 109 182 113 177 113C172 113 168 109 168 104" strokeOpacity="0.52" strokeWidth="0.72" />
-            <path d="M133 142V92H269V142M133 105H269M133 118H269M133 131H269M157 92V142M182 92V142M207 92V142M232 92V142M257 92V142" strokeOpacity="0.56" strokeWidth="0.72" />
-            <path d="M133 142H280" strokeWidth="0.92" />
-            <path d="M43 143V126M37 143H49M43 126C37 126 34 120 37 115C40 110 46 110 49 115C52 120 49 126 43 126Z" strokeOpacity="0.15" strokeWidth="0.68" />
-            <path d="M293 143V122M286 143H300M293 122C286 122 283 115 286 110C289 105 296 105 299 110C302 115 300 122 293 122Z" strokeOpacity="0.13" strokeWidth="0.68" />
+            {/* Faint skyline/landscape behind the construction site. */}
+            <g strokeOpacity="0.12" strokeWidth="0.68">
+              <path d="M23 143V121H40V143M40 143V110H58V143" />
+              <path d="M262 143V116H281V143M282 143V128H298V143" />
+              <path d="M29 62H52M34 57C38 51 45 51 49 57M49 57C54 54 60 55 63 60" />
+              <path d="M258 61H281M263 56C267 50 274 50 278 56M278 56C283 53 289 54 292 59" />
+              <path d="M24 143C62 142 91 143 117 146M202 146C230 142 258 142 298 144" />
+            </g>
+
+            {/* Detailed crane tower, rebuilt from the reference. */}
+            <path d="M74 145V55M65 145H84M68 55H190" strokeWidth="0.98" />
+            <path d="M74 55L116 38L159 55M116 38V145" strokeWidth="0.94" />
+            <path d="M74 55L116 72L74 88L116 104L74 120L116 136" strokeOpacity="0.66" strokeWidth="0.68" />
+            <path d="M116 55L74 72L116 88L74 104L116 120L74 136" strokeOpacity="0.66" strokeWidth="0.68" />
+            <path d="M116 55H196M182 55V42H196V55" strokeWidth="0.8" />
+            <path d="M188 55V97" strokeWidth="0.76" />
+            <path d="M188 97C188 103 184 107 179 107C174 107 170 103 170 97" strokeWidth="0.7" strokeOpacity="0.55" />
+            <path d="M67 145H122" strokeWidth="0.9" />
+
+            {/* Construction frame to the right. */}
+            <path d="M147 145V93H276V145" strokeWidth="0.8" />
+            <path d="M147 107H276M147 120H276M147 133H276" strokeOpacity="0.62" strokeWidth="0.68" />
+            <path d="M171 93V145M197 93V145M223 93V145M249 93V145" strokeOpacity="0.62" strokeWidth="0.68" />
+            <path d="M147 145H288" strokeWidth="0.9" />
+
+            {/* Trees at both sides. */}
+            <g strokeOpacity="0.15" strokeWidth="0.68">
+              <path d="M35 145V126M29 145H41M35 126C29 126 26 120 29 115C32 110 38 110 41 115C44 120 41 126 35 126Z" />
+              <path d="M296 145V123M289 145H303M296 123C289 123 286 116 289 111C292 106 299 106 302 111C305 116 303 123 296 123Z" />
+            </g>
+            <path d="M25 153H297" strokeOpacity="0.055" strokeWidth="0.65" />
           </g>
         ) : (
           <g stroke={visual.foreground} strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke">
