@@ -75,13 +75,19 @@ export function IndexedTransactionArtwork({
       </svg>
 
       {renderTransactionLabel ? (
-        <div className="absolute left-3 top-3 rounded-md px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.06em] text-white shadow-[0_1px_4px_rgba(15,23,42,0.06)] sm:left-4 sm:top-4 sm:text-[10px]" style={{ backgroundColor: visual.accent }}>
+        <div
+          className="absolute left-3 top-3 rounded-md px-2 py-0.5 text-[7px] font-black uppercase tracking-[0.055em] text-white shadow-[0_1px_4px_rgba(15,23,42,0.06)] sm:left-4 sm:top-4 sm:px-2.5 sm:py-1 sm:text-[10px] sm:tracking-[0.06em]"
+          style={{ backgroundColor: visual.accent }}
+        >
           {visual.label}
         </div>
       ) : null}
 
       {renderIndexedDisclosure ? (
-        <div className="absolute left-1/2 top-4 -translate-x-1/2 whitespace-nowrap text-[8px] font-black uppercase tracking-[0.08em] sm:top-[18px] sm:text-[9px]" style={{ color: visual.foreground }}>
+        <div
+          className="absolute right-3 top-[14px] whitespace-nowrap text-[6.5px] font-black uppercase tracking-[0.035em] sm:left-1/2 sm:right-auto sm:top-[18px] sm:-translate-x-1/2 sm:text-[9px] sm:tracking-[0.08em]"
+          style={{ color: visual.foreground }}
+        >
           Annonce indexée
         </div>
       ) : null}
@@ -107,6 +113,7 @@ export function IndexedTransactionArtwork({
           font-weight: 800 !important;
           letter-spacing: -0.035em !important;
           line-height: 1 !important;
+          font-variant-numeric: tabular-nums;
         }
         [data-indexed-artwork-card="true"] [data-card-price] + p { display: none !important; }
         [data-indexed-artwork-card="true"]:has([data-indexed-transaction-artwork="buy"]) [data-card-price],
@@ -151,27 +158,47 @@ export function IndexedTransactionArtwork({
           border-top-color: #edf0f4 !important;
           font-weight: 700 !important;
         }
-        [data-indexed-artwork-card="true"] [data-card-provenance] > span:first-child { font-size: 0 !important; }
+        [data-indexed-artwork-card="true"] [data-card-provenance] > span:first-child {
+          flex: 0 0 auto;
+          font-size: 0 !important;
+        }
         [data-indexed-artwork-card="true"] [data-card-provenance] > span:first-child::after {
           content: "Annonce indexée";
           font-size: 10.5px;
           font-weight: 800;
         }
-        [data-indexed-artwork-card="true"] [data-card-provenance] [data-public-attribution] { font-size: 0 !important; color: inherit !important; }
+        [data-indexed-artwork-card="true"] [data-card-provenance] [data-public-attribution] {
+          flex: 0 0 auto;
+          max-width: none !important;
+          overflow: visible !important;
+          text-overflow: clip !important;
+          white-space: nowrap !important;
+          font-size: 0 !important;
+          color: inherit !important;
+        }
         [data-indexed-artwork-card="true"] [data-card-provenance] [data-public-attribution]::after {
           content: "Voir sur la source ↗";
           font-size: 10.5px;
           font-weight: 800;
         }
         [data-indexed-artwork-card="true"] [data-card-primary-action] { display: none !important; }
+        [data-indexed-artwork-card="true"] a.sm\\:hidden { display: none !important; }
         @media (min-width: 640px) {
           [data-indexed-artwork-card="true"] > div.flex.flex-1 { padding: 1rem 1rem 0.9rem !important; }
         }
         @media (max-width: 639px) {
           [data-indexed-artwork-card="true"] { border-radius: 14px !important; }
           [data-indexed-artwork-card="true"] [data-card-image] { height: 154px !important; }
+          [data-indexed-artwork-card="true"] [data-card-provenance] {
+            gap: 4px !important;
+            margin-top: 0.7rem !important;
+            padding-top: 0.65rem !important;
+          }
           [data-indexed-artwork-card="true"] [data-card-provenance] > span:first-child::after,
-          [data-indexed-artwork-card="true"] [data-card-provenance] [data-public-attribution]::after { font-size: 9px; }
+          [data-indexed-artwork-card="true"] [data-card-provenance] [data-public-attribution]::after {
+            font-size: 7.5px;
+            letter-spacing: -0.01em;
+          }
         }
       `}</style>
     </div>
