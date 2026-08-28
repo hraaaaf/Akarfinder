@@ -85,7 +85,11 @@ export function IndexedTransactionArtwork({
             <circle cx="158" cy="122" r="1.9" fill="#fff" stroke="none" />
             <path d="M153 122H159M156 119V125" stroke="#fff" strokeWidth="0.72" />
 
-            {/* Entrance path replacing the oversized floating key from the previous pass. */}
+            {/* Small reference key, restored at the right scale and position. */}
+            <circle cx="214" cy="129" r="4.6" strokeWidth="0.82" />
+            <path d="M219 129H236M228 129V134M234 129V132" strokeWidth="0.82" />
+
+            {/* Entrance path kept subtle beneath the door. */}
             <path d="M143 151L137 165" strokeWidth="0.86" />
             <path d="M172 146C178 153 188 157 202 159C220 162 238 162 257 162" strokeWidth="0.82" strokeOpacity="0.72" />
             <path d="M22 160H92M262 160H299" strokeOpacity="0.07" strokeWidth="0.62" />
