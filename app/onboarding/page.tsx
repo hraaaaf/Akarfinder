@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 export const metadata: Metadata = {
   title: "Clarifier mon projet immobilier — AkarFinder",
   description:
-    "Clarifiez votre objectif, votre budget, vos zones et vos critères avec le Compagnon AkarFinder.",
+    "Clarifiez votre objectif, votre budget, vos zones et vos critères dans Mon Projet AkarFinder.",
   robots: {
     index: false,
     follow: true,
@@ -22,9 +22,9 @@ function normalizeIntent(intent?: string): string | null {
 }
 
 /**
- * Legacy buyer/tenant lead-onboarding flow retired into the single Companion →
- * Mon Projet journey. Human-advisor CTAs coming from /neuf are routed to the
- * dedicated accompaniment form instead of masquerading as buyer onboarding.
+ * Legacy buyer/tenant lead-onboarding flow retired into the single Mon Projet
+ * journey. Human-advisor CTAs coming from /neuf are routed to the dedicated
+ * accompaniment form instead of masquerading as buyer onboarding.
  */
 export default async function OnboardingPage({ searchParams }: Props) {
   const { listing, intent } = await searchParams;
@@ -48,5 +48,5 @@ export default async function OnboardingPage({ searchParams }: Props) {
   if (normalizedIntent) params.set("type", normalizedIntent);
   if (listing) params.set("listing", listing);
   params.set("from", "legacy_onboarding");
-  redirect(`/compagnon?${params.toString()}`);
+  redirect(`/mon-projet?${params.toString()}`);
 }
