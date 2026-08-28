@@ -25,12 +25,13 @@ export type CertifiedNeighborhoodSeedRow = {
 // It contains only POIs that were <= 1.8 km from the current pilot reference
 // and that map to the Lot 1 category scope. This is candidate context only:
 // NO "inside neighborhood" claim is made here; territorial assignment is Lot 2.
+// Low-quality source labels may be removed from this continuity subset rather
+// than exposed to users; no replacement is invented without a certified run.
 const ANN_L5_CERTIFIED_SEED: CertifiedNeighborhoodSeedRow[] = [
   { canonical_neighborhood_id: "district_rabat_agdal", osm_type: "node", osm_id: 313473516, name: "Paul Cézanne", category: "education", latitude: 33.992901, longitude: -6.8452232 },
   { canonical_neighborhood_id: "district_rabat_agdal", osm_type: "node", osm_id: 444380728, name: "Pharmacie Ibn Sina صيدلية ابن سينا", category: "health", latitude: 33.9962816, longitude: -6.8481761 },
   { canonical_neighborhood_id: "district_rabat_agdal", osm_type: "node", osm_id: 1824603903, name: "Hopital Ibn Sina /CHU Ibn SIna", category: "health", latitude: 33.9838968, longitude: -6.8504077 },
   { canonical_neighborhood_id: "district_rabat_agdal", osm_type: "node", osm_id: 1881124839, name: "Carrefour Market", category: "groceries", latitude: 34.0023902, longitude: -6.8519558 },
-  { canonical_neighborhood_id: "district_rabat_agdal", osm_type: "node", osm_id: 10308418440, name: "crastelf 2", category: "green_sport", latitude: 34.0005188, longitude: -6.8516728 },
 
   { canonical_neighborhood_id: "district_casablanca_maarif", osm_type: "node", osm_id: 2714951127, name: "Clinique Badr مصحة بدر", category: "health", latitude: 33.5948697, longitude: -7.6410981 },
   { canonical_neighborhood_id: "district_casablanca_maarif", osm_type: "node", osm_id: 12328946044, name: "Promenade Maritime de la Mosquée Hassan II", category: "green_sport", latitude: 33.6046877, longitude: -7.6447275 },
