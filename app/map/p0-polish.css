@@ -84,6 +84,16 @@
   }
 }
 
+/* The national navigation panel used to span far enough across the canvas to
+   intercept map hover/click targets. Keep the controls intact, but bound the
+   panel so the geographic canvas remains directly interactive. */
+@media (min-width: 640px) {
+  [data-p4-map-canvas] section[aria-label="Navigation territoriale nationale"] {
+    width: min(360px, calc(100% - 2rem)) !important;
+    max-width: 360px !important;
+  }
+}
+
 @media (min-width: 768px) and (max-width: 1023px) {
   .p4-map-decision-rail {
     inset-inline: 16px !important;
