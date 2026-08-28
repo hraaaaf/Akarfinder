@@ -1,0 +1,35 @@
+name: Search Indexed Visual L1
+
+on:
+  push:
+    branches:
+      - feat/search-indexed-visual-l1
+    paths:
+      - "components/search/IndexedTransactionArtwork.tsx"
+      - "lib/ux/indexed-transaction-visual.ts"
+      - "scripts/scrapers/__tests__/indexed-transaction-visual.test.ts"
+      - ".github/workflows/search-indexed-visual-l1.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Test indexed transaction visual mapping
+        run: npx tsx --test scripts/scrapers/__tests__/indexed-transaction-visual.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
