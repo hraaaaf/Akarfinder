@@ -1,9 +1,9 @@
 /* UX/UI POLISH P0.3 — /mon-projet
-   Goal: reduce dead space, keep progress close to the task, and prevent mobile
-   controls/content from feeling buried behind the persistent bottom navigation. */
+   Goal: reduce dead space, keep progress close to the task, and preserve the
+   canonical mobile navigation without letting it cover selectable objectives. */
 
 [data-p7-mon-projet] {
-  padding-bottom: 5.5rem;
+  padding-bottom: 6.5rem;
 }
 
 [data-p7-progress-mobile] {
@@ -34,7 +34,39 @@
 
 [data-p7-question-panel] button,
 [data-p7-question-panel] a {
-  scroll-margin-bottom: 96px;
+  scroll-margin-bottom: 108px;
+}
+
+@media (max-width: 639px) {
+  [data-p7-progress-mobile] {
+    padding: 11px 13px !important;
+    border-radius: 17px !important;
+  }
+
+  [data-p7-progress-mobile] > div:last-child {
+    margin-top: 8px !important;
+  }
+
+  [data-p7-question-panel] {
+    margin-top: 10px !important;
+    padding: 16px !important;
+    border-radius: 20px !important;
+  }
+
+  /* Four stacked cards collide with the persistent dock at 390/430 px.
+     Keep every objective visible and touchable by using a compact 2×2 choice
+     matrix on phones instead of removing the global navigation. */
+  [data-p7-question-panel] div:has(> [data-p7-primary-objective]) {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+    margin-top: 16px !important;
+  }
+
+  [data-p7-primary-objective] {
+    min-height: 104px !important;
+    padding: 12px !important;
+    border-radius: 16px !important;
+  }
 }
 
 @media (min-width: 640px) {
