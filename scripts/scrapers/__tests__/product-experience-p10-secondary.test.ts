@@ -24,12 +24,14 @@ describe("Product Experience P10 — secondary pages", () => {
     }
   });
 
-  it("keeps the secondary shell on the canonical AkarFinder chrome", () => {
+  it("keeps the secondary shell on the canonical AkarFinder chrome without duplicating the global mobile nav", () => {
     const shell = source("components/layout/SecondaryPageShell.tsx");
+    const rootLayout = source("app/layout.tsx");
     assert.ok(shell.includes('data-secondary-page-shell="akarfinder-v1"'));
     assert.ok(shell.includes("<SiteHeader searchMode fluid />"));
     assert.ok(shell.includes("<SiteFooter />"));
-    assert.ok(shell.includes("<MobileBottomNav />"));
+    assert.ok(!shell.includes("<MobileBottomNav />"));
+    assert.ok(rootLayout.includes("<MobileBottomNav />"));
     assert.ok(shell.includes('maxWidth === "3xl"'));
   });
 
