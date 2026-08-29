@@ -1,0 +1,54 @@
+/* UX/UI POLISH P1.3 — /alerts
+   Alerts are not active yet: keep that truth prominent without stretching a short task into a full-screen hero. */
+
+[data-p1-alerts] section.mx-auto {
+  min-height: 0 !important;
+  padding-top: 1.5rem !important;
+  padding-bottom: 5rem !important;
+}
+
+@media (max-width: 639px) {
+  [data-p1-alerts] section.mx-auto > div {
+    border-radius: 1.25rem !important;
+  }
+
+  [data-p1-alerts] section.mx-auto > div > div:first-child {
+    padding: 1.125rem !important;
+  }
+
+  [data-p1-alerts] section.mx-auto > div > div:first-child > div {
+    gap: 0.75rem !important;
+  }
+
+  [data-p1-alerts] section.mx-auto > div > div:first-child > div > div:first-child {
+    width: 2.75rem !important;
+    height: 2.75rem !important;
+    border-radius: 0.875rem !important;
+  }
+
+  [data-p1-alerts] section.mx-auto h1 {
+    font-size: 1.55rem !important;
+    line-height: 1.08 !important;
+  }
+
+  [data-p1-alerts] section.mx-auto > div > .grid {
+    gap: 0.625rem !important;
+    padding: 1rem 1.125rem !important;
+  }
+
+  [data-p1-alerts] section.mx-auto > div > .grid > div {
+    padding: 0.875rem !important;
+    border-radius: 1rem !important;
+  }
+
+  [data-p1-alerts] section.mx-auto > div > div:last-child {
+    padding: 1rem 1.125rem !important;
+  }
+}
+
+@media (min-width: 640px) {
+  [data-p1-alerts] section.mx-auto {
+    padding-top: 2.5rem !important;
+    padding-bottom: 3rem !important;
+  }
+}
