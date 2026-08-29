@@ -25,14 +25,7 @@ Contraintes : pas de changement ranking/data/DB dans ce chantier ; pas de déplo
 ## P0.1 — `/map` — CLOSED
 Goal : carte dominante, rail compact, mobile lisible, aucune régression d’interaction.
 
-Preuves :
-- stratégie pointer-events certifiée ;
-- Product Experience P4 Search Map ✅ ;
-- Carte National Zillow UI Certification ✅ ;
-- UI All Pages Baseline/Certification ✅ ;
-- AFTER 390/430/768/1280 inspectés ;
-- canvas desktop ~71.9 %, rail ~360 px ;
-- aucune régression fonctionnelle observée.
+Preuves : Product Experience P4 Search Map ✅ ; Zillow UI ✅ ; UI All Pages Baseline/Certification ✅ ; AFTER 390/430/768/1280 inspectés ; canvas desktop ~71.9 %, rail ~360 px.
 
 Score visuel : 9.4/10.
 
@@ -41,69 +34,33 @@ Goal : état vide plus compact + densité cohérente avec les cartes indexées p
 
 Dépendance vérifiée le 2026-08-29 : PR #947 toujours OPEN, DRAFT, non mergée, mergeable=true.
 
-Règle : ne pas créer de conflit avec les 3 fichiers du lot Search Indexed Visual tant que #947 n’est pas résolue.
-
 ## P0.3 — `/mon-projet` — CLOSED
 Goal : parcours plus compact, progression rattachée au contenu, bottom-nav conservée sans recouvrement.
 
-Preuves exact-head `a8e1fe817fd648bcc2045bdb7824f6951da35a7f` :
-- Product Experience P7 Mon Projet `33249056376` ✅ ;
-- artifact `9713838935` ;
-- digest `sha256:ddf0f20ec50460d2584fb5898694cc9474fb8d489fdfb8a81db4671b0284fcee` ;
-- 4 captures ;
-- 0 finding ;
-- 390 px : bottom-nav présente et zéro chevauchement ;
-- 430/768/1280 inspectés.
+Preuves exact-head `a8e1fe817fd648bcc2045bdb7824f6951da35a7f` : Product Experience P7 `33249056376` ✅ ; artifact `9713838935` ; digest `sha256:ddf0f20ec50460d2584fb5898694cc9474fb8d489fdfb8a81db4671b0284fcee` ; 4 captures ; 0 finding.
 
 Score visuel : 9.2/10.
 
-`/profil-recherche` reste une route de compatibilité vers le parcours canonique et n’est pas un écran UI autonome à polir séparément.
+`/profil-recherche` reste une route de compatibilité vers le parcours canonique.
 
 ## P0.4 — `/vendre/dossier` — CLOSED
 Goal : formulaire prioritaire, rails secondaires, workflow vendeur inchangé.
 
-Implémentation finale :
-- mobile/tablette resserrés ;
-- desktop intermédiaire : rail gauche réduit ;
-- aperçu vendeur conservé à 1280 après correction du premier choix trop agressif ;
-- ≥1440 : rails compacts ;
-- logique vendeur/API/validation inchangée.
-
-Preuves :
-- Product Experience P8 Publication `33249056509` ✅ ;
-- UX P2 Seller Secure Publish Flow ✅ ;
-- Seller Entry Quality ✅ ;
-- Seller Structured Draft ✅ ;
-- AFTER all-pages 390/430/768/1280 inspectés.
+Preuves : Product Experience P8 `33249056509` ✅ ; Seller Secure Publish ✅ ; Seller Entry Quality ✅ ; Seller Structured Draft ✅ ; AFTER 390/430/768/1280 inspectés.
 
 Score visuel : 9.1/10.
 
 ## P0.5 — `/pro` + `/pro/leads` — CLOSED
 Goal : acquisition Pro plus nette et plus dense sans altérer la logique B2B.
 
-Implémentation : hero/preview/sections compactés principalement mobile/tablette ; `/pro/leads` reste volontairement une redirection vers le parcours Pro canonique.
-
-Preuves :
-- UI Polish P5 Global Certification `33249056417` ✅ ;
-- B2B Productization Gate ✅ ;
-- AFTER 390/430/768/1280 inspectés.
+Preuves : UI Polish P5 `33249056417` ✅ ; B2B Productization ✅ ; AFTER 390/430/768/1280 inspectés.
 
 Score visuel : 9.2/10.
 
 ## P0.6 — SEO local district/quartier — CLOSED
 Pages : `/immobilier/[city]/[district]`, `/quartiers/[city]/[neighborhood]`.
 
-Goal : rendu local plus éditorial et premium sans modifier les données/SEO métier.
-
-Implémentation : hero, shell, rythme et densité allégés ; distinction contenu éditorial / données renforcée.
-
-Preuves :
-- UI All Pages Baseline `33249056480` ✅ ;
-- artifact `9713854039` ;
-- digest `sha256:456ebb249ae36177d2df388e108336792e4dd7d170c7c84dcfb6eeea3c7504a1` ;
-- UI All Pages Certification `33249056454` ✅ ;
-- 4 viewports inspectés pour district/quartier ;
-- Accessibility Gate ✅.
+Preuves : UI All Pages Baseline `33249056480` ✅ ; artifact `9713854039` ; digest `sha256:456ebb249ae36177d2df388e108336792e4dd7d170c7c84dcfb6eeea3c7504a1` ; UI All Pages Certification `33249056454` ✅ ; 4 viewports inspectés ; Accessibility ✅.
 
 Score visuel : 9.0/10.
 
@@ -116,27 +73,47 @@ Familles :
 - `/investir`, `/mre`, `/credit` ;
 - `/accompagnement`, `/faq`, `/contact`, `/a-propos`.
 
-## P1.1 — `/neuf` — ACTIVE
-BEFORE inspecté : 390×844 et 1280×900 directement, plus baseline complète disponible pour 430/768.
+## P1.1 — `/neuf` — CLOSED
+BEFORE exact : artifact UI All Pages du HEAD `a8e1fe817fd648bcc2045bdb7824f6951da35a7f`, 390/430/768/1280 inspectés.
 
-Constat : page fonctionnelle mais premier écran trop long sur mobile, hero/formulaire/quick-links trop empilés ; desktop déjà solide mais légèrement trop volumineux.
-
-Goal : rendre le premier écran plus léger et plus premium tout en conservant l’intégralité des filtres, liens rapides, vérité d’inventaire et séparation promoteur/données réelles.
+Goal : premier écran plus léger et premium, filtres et vérité d’inventaire conservés.
 
 Référence : rythme et densité des meilleurs écrans AkarFinder actuels, sans nouvelle direction artistique.
 
-Implémentation en cours :
-- hero mobile plus court ;
-- H1 et texte resserrés ;
-- formulaire plus compact ;
-- quick-links plus compacts ;
-- sections secondaires moins hautes ;
-- desktop : hero légèrement resserré et preview moins dominante ;
-- aucune logique Search/Neuf modifiée.
+Implémentation : hero/H1/texte/formulaire/quick-links resserrés sur mobile ; sections secondaires moins hautes ; desktop légèrement resserré ; logique Search/Neuf inchangée.
 
-HEAD fonctionnel P1.1 : `a16cb48f79571150865f5af3901d94a2d39d0a5f`.
+Preuves exact-head `b3be1576a1bdbc681a1d74850e431360c566a7bc` :
+- UI All Pages Baseline `33250905857` ✅ ;
+- artifact `9714430657` ;
+- digest `sha256:e6cde359f9c8d4effae7245faa6c698c90770ad9958316b6b25999017ad77de2` ;
+- UI All Pages Certification `33250905839` ✅ ;
+- Intent Hubs `33250905871` ✅ ;
+- Accessibility `33250905998` ✅ ;
+- AFTER 390/430/768/1280 inspectés et comparés au BEFORE.
 
-État : IMPLEMENTED — AFTER exact-head 390/430/768/1280 + tests requis avant clôture.
+Score visuel : 9.1/10. Gain principal : premier écran et rythme de lecture plus compacts ; la longueur totale reste volontairement liée au contenu de transparence et d’accompagnement.
+
+## P1.2 — `/investir` + `/mre` — ACTIVE
+BEFORE exact : artifact `9714430657`, HEAD `b3be1576a1bdbc681a1d74850e431360c566a7bc`, 390/430/768/1280 inspectés.
+
+Constats :
+- hero trop haut sur mobile ;
+- CTA hero `ghost` pratiquement invisibles sur le fond clair car stylés en blanc ;
+- longue zone vide avant les cartes, alors que les actions existent ;
+- cards utiles mais trop verticales sur mobile ;
+- desktop sain mais peut être plus dense.
+
+Goal : rendre les actions hero immédiatement visibles, supprimer la fausse impression de vide, resserrer les cartes/espacements et conserver intégralement les disclaimers et garde-fous métier.
+
+Succès :
+- 390/430 : CTA hero visibles et accessibles avant le scroll profond ;
+- aucune collision avec bottom-nav ;
+- 768/1280 : hero plus court, hiérarchie lisible, cards plus compactes ;
+- aucun changement de logique, liens, contenu de prudence ou données.
+
+Référence : mêmes tokens AkarFinder, CTA secondaires clairs sur fond clair, densité proche de `/neuf` après polish.
+
+État : READY FOR IMPLEMENTATION.
 
 # P2 — Système global / détails fins
 - rayons ;
@@ -153,14 +130,11 @@ HEAD fonctionnel P1.1 : `a16cb48f79571150865f5af3901d94a2d39d0a5f`.
 # État actuel
 - branche : `feat/ux-ui-polish-p0` ;
 - PR #949 : OPEN, DRAFT, mergeable=true ;
-- P0.1 : CLOSED ;
+- P0.1/P0.3/P0.4/P0.5/P0.6 : CLOSED ;
 - P0.2 : WAIT PR #947 ;
-- P0.3 : CLOSED ;
-- P0.4 : CLOSED ;
-- P0.5 : CLOSED ;
-- P0.6 : CLOSED ;
-- P1.1 `/neuf` : ACTIVE ;
+- P1.1 `/neuf` : CLOSED ;
+- P1.2 `/investir` + `/mre` : ACTIVE ;
 - aucun déploiement Vercel.
 
 ## NEXT EXACT
-Certifier P1.1 `/neuf` sur 390/430/768/1280, corriger si nécessaire, puis poursuivre P1 avec `/investir` + `/mre` pendant que P0.2 reste bloqué par la PR #947.
+Implémenter P1.2 sur `/investir` + `/mre`, lancer l’AFTER exact-head 390/430/768/1280, corriger si nécessaire, puis poursuivre la famille `/credit` et les états personnels P1.
