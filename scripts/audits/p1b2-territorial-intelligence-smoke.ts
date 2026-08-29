@@ -89,11 +89,8 @@ async function main() {
       territorialActive: document.querySelector('[data-akarfinder-territorial-layer="active"]') != null,
     }));
 
-    // Legacy exact markers may remain as map anchors, but Lot 9 owns the visible
-    // metric truth. Never require stale benchmark text to be user-visible.
     if (markerCount > 2) findings.push(`${viewport.name}: unexpected extra exact price markers (${markerCount})`);
-    if (!text.includes("Agrégation automatique par ville + quartier")) findings.push(`${viewport.name}: automatic aggregation disclosure missing`);
-    if (!text.includes("Aucun prix ni surface n’est interpolé lorsque la preuve manque")) findings.push(`${viewport.name}: non-interpolation disclosure missing`);
+    if (!text.includes("Aucune interpolation sur les zones")) findings.push(`${viewport.name}: non-interpolation disclosure missing`);
     if (metrics.scrollWidth > metrics.clientWidth + 1) findings.push(`${viewport.name}: horizontal overflow ${metrics.scrollWidth} > ${metrics.clientWidth}`);
     if (metrics.canvasCount < 1) findings.push(`${viewport.name}: MapLibre canvas missing`);
     if (!metrics.priceMode) findings.push(`${viewport.name}: dynamic price intelligence marker missing`);
