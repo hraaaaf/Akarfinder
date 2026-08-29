@@ -29,7 +29,7 @@ test("UX-SEARCH-3 internal Search card follows the canonical scan hierarchy", ()
   assert.ok(source.includes("line-clamp-2"));
 });
 
-test("UX-SEARCH-3 external minimal card follows the Option B logical multi-source hierarchy without fabricated media", () => {
+test("UX-SEARCH-3 external indexed card follows the canonical multi-source hierarchy without third-party media", () => {
   const source = read("components/search/ExternalIndexedResultCard.tsx");
   assert.ok(source.includes("data-external-serp-group"));
   assert.ok(source.includes("getSourceDomain"));
@@ -41,13 +41,23 @@ test("UX-SEARCH-3 external minimal card follows the Option B logical multi-sourc
   assert.ok(source.includes("pages semblent concerner le même bien"));
   assert.ok(source.includes("Voir les {sourcePages.length} pages"));
   assert.ok(source.includes("Ouvrir la source"));
+
+  // Indexed external results may use AkarFinder-owned deterministic artwork,
+  // but must never render third-party listing photos or untrusted source copy.
+  assert.ok(source.includes("IndexedTransactionArtwork"));
+  assert.ok(source.includes("data-indexed-artwork-card"));
   assert.ok(!source.includes("data-card-image"));
   assert.ok(!source.includes("<img"));
   assert.ok(!source.includes("<Image"));
   assert.ok(!source.includes("ContextualListingArtwork"));
   assert.ok(!source.includes("result.title"));
   assert.ok(!source.includes("result.snippet"));
-  assert.ok(!source.includes("normalized_price_mad"));
+
+  // Normalized price is allowed only through the explicit verification layer.
+  assert.ok(source.includes("formatPriceMad(representative.normalized_price_mad)"));
+  assert.ok(source.includes("isPriceToVerify(representative)"));
+  assert.ok(source.includes("Prix à vérifier"));
+  assert.ok(source.includes("data-price-verification"));
   assert.ok(!source.includes("normalized_surface_m2"));
 });
 
