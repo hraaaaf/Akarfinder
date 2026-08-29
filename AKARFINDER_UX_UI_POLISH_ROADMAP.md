@@ -82,36 +82,49 @@ Référence : rythme et densité des meilleurs écrans AkarFinder actuels, sans 
 
 Implémentation : hero/H1/texte/formulaire/quick-links resserrés sur mobile ; sections secondaires moins hautes ; desktop légèrement resserré ; logique Search/Neuf inchangée.
 
-Preuves exact-head `b3be1576a1bdbc681a1d74850e431360c566a7bc` :
-- UI All Pages Baseline `33250905857` ✅ ;
-- artifact `9714430657` ;
-- digest `sha256:e6cde359f9c8d4effae7245faa6c698c90770ad9958316b6b25999017ad77de2` ;
-- UI All Pages Certification `33250905839` ✅ ;
-- Intent Hubs `33250905871` ✅ ;
-- Accessibility `33250905998` ✅ ;
-- AFTER 390/430/768/1280 inspectés et comparés au BEFORE.
+Preuves exact-head `b3be1576a1bdbc681a1d74850e431360c566a7bc` : UI All Pages Baseline `33250905857` ✅ ; artifact `9714430657` ; digest `sha256:e6cde359f9c8d4effae7245faa6c698c90770ad9958316b6b25999017ad77de2` ; UI All Pages Certification `33250905839` ✅ ; Intent Hubs `33250905871` ✅ ; Accessibility `33250905998` ✅ ; AFTER 390/430/768/1280 inspectés.
 
-Score visuel : 9.1/10. Gain principal : premier écran et rythme de lecture plus compacts ; la longueur totale reste volontairement liée au contenu de transparence et d’accompagnement.
+Score visuel : 9.1/10.
 
-## P1.2 — `/investir` + `/mre` — ACTIVE
+## P1.2 — `/investir` + `/mre` — CLOSED
 BEFORE exact : artifact `9714430657`, HEAD `b3be1576a1bdbc681a1d74850e431360c566a7bc`, 390/430/768/1280 inspectés.
-
-Constats :
-- hero trop haut sur mobile ;
-- CTA hero `ghost` pratiquement invisibles sur le fond clair car stylés en blanc ;
-- longue zone vide avant les cartes, alors que les actions existent ;
-- cards utiles mais trop verticales sur mobile ;
-- desktop sain mais peut être plus dense.
 
 Goal : rendre les actions hero immédiatement visibles, supprimer la fausse impression de vide, resserrer les cartes/espacements et conserver intégralement les disclaimers et garde-fous métier.
 
-Succès :
-- 390/430 : CTA hero visibles et accessibles avant le scroll profond ;
-- aucune collision avec bottom-nav ;
-- 768/1280 : hero plus court, hiérarchie lisible, cards plus compactes ;
-- aucun changement de logique, liens, contenu de prudence ou données.
+Implémentation :
+- CTA hero corrigés sur fond clair : primary bleu + secondaires lisibles ;
+- hero mobile/desktop raccourci ;
+- cards, gaps et callout resserrés ;
+- callout final rendu explicitement actionnable ;
+- disclaimers, textes de prudence, liens et logique inchangés.
 
-Référence : mêmes tokens AkarFinder, CTA secondaires clairs sur fond clair, densité proche de `/neuf` après polish.
+Preuves exact-head `3320c3926c8247e798307b790e59862bee03be75` :
+- UI All Pages Certification `33256337536` ✅ ;
+- artifact `9716004787` ;
+- digest `sha256:c266b4479e7d518aa27bc33bab6b3064481d86520b08d2c00a14f3cfac751c96` ;
+- Intent Hubs `33256337523` ✅ ;
+- UI Polish P5 `33256337471` ✅ ;
+- P7 `33256337508` ✅ ;
+- P8 `33256337482` ✅ ;
+- artifact : 280 captures, 0 finding ;
+- AFTER `/investir` + `/mre` 390/430/768/1280 inspectés et comparés au BEFORE.
+
+Score visuel : 9.2/10. Gain principal : actions visibles immédiatement et densité cohérente ; aucune suppression de garde-fou métier.
+
+## P1.3 — `/favorites` + `/compare` + `/alerts` — ACTIVE
+BEFORE exact : artifact `9714430657`, 390/430/768/1280 inspectés.
+
+Constat : pages propres mais les états vides prennent trop d’espace, surtout mobile ; le contenu utile est faible mais traité comme un hero plein écran. `/alerts` ajoute en plus un centrage vertical généreux qui allonge artificiellement le premier écran.
+
+Goal : rendre les états personnels plus compacts, actionnables et cohérents sans toucher au stockage Favoris/Compare ni à la vérité produit sur les alertes non actives.
+
+Succès :
+- 390/430 : message + CTA principal accessibles plus tôt, sans impression de page vide ;
+- 768/1280 : état vide contenu dans une largeur lisible, pas une dalle pleine largeur ;
+- `/alerts` conserve explicitement le statut non activé ;
+- aucune modification storage/API/comparaison/favoris.
+
+Référence : grammaire des surfaces P0/P1 déjà validées, état vide = tâche courte, pas hero marketing.
 
 État : READY FOR IMPLEMENTATION.
 
@@ -133,8 +146,9 @@ Référence : mêmes tokens AkarFinder, CTA secondaires clairs sur fond clair, d
 - P0.1/P0.3/P0.4/P0.5/P0.6 : CLOSED ;
 - P0.2 : WAIT PR #947 ;
 - P1.1 `/neuf` : CLOSED ;
-- P1.2 `/investir` + `/mre` : ACTIVE ;
+- P1.2 `/investir` + `/mre` : CLOSED ;
+- P1.3 `/favorites` + `/compare` + `/alerts` : ACTIVE ;
 - aucun déploiement Vercel.
 
 ## NEXT EXACT
-Implémenter P1.2 sur `/investir` + `/mre`, lancer l’AFTER exact-head 390/430/768/1280, corriger si nécessaire, puis poursuivre la famille `/credit` et les états personnels P1.
+Implémenter P1.3 sur `/favorites` + `/compare` + `/alerts`, certifier 390/430/768/1280, puis corriger le contrat User Journey Mon Projet devenu obsolète face au parcours canonique actuel si les mêmes assertions restent rouges.
