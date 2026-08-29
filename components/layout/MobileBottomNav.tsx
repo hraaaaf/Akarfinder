@@ -46,10 +46,6 @@ export function MobileBottomNav() {
   const pathname = usePathname();
 
   if (pathname.startsWith("/visual-qa/")) return null;
-  // The guided project wizard is an immersive decision flow. Keeping the
-  // fixed global dock here obscures selectable cards on 390/430 px screens.
-  // Preserve the dock on /mon-projet/espace and every other route.
-  if (pathname === "/mon-projet") return null;
 
   return (
     <nav
