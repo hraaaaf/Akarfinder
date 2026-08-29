@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 
 import { SiteFooter } from "@/components/landing/SiteFooter";
-import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { Container } from "@/components/ui/Container";
 import { ui } from "@/components/ui/design-system";
@@ -47,7 +46,6 @@ export function SecondaryPageShell({
         </Container>
       </section>
       <SiteFooter />
-      <MobileBottomNav />
     </main>
   );
 }

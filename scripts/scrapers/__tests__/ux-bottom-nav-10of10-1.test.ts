@@ -9,11 +9,13 @@ const source = (path: string) => readFileSync(resolve(ROOT, path), "utf8");
 const nav = source("components/layout/MobileBottomNav.tsx");
 const designSystem = source("components/ui/design-system.ts");
 const layout = source("app/layout.tsx");
+const secondaryShell = source("components/layout/SecondaryPageShell.tsx");
 const alerts = source("app/alerts/page.tsx");
 
 test("UX-BOTTOM-NAV remains the one global mobile navigation", () => {
   assert.match(layout, /import \{ MobileBottomNav \} from "@\/components\/layout\/MobileBottomNav"/);
   assert.match(layout, /<MobileBottomNav \/>/);
+  assert.doesNotMatch(secondaryShell, /MobileBottomNav/);
   assert.match(nav, /aria-label="Navigation mobile"/);
   assert.match(nav, /md:hidden/);
   assert.doesNotMatch(nav, /lg:hidden/);
