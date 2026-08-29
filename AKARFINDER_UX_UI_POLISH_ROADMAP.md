@@ -6,175 +6,139 @@ AkarFinder — UX/UI Global Polish
 Dernière mise à jour : 2026-08-29
 
 ## Goal
-Polir l’ensemble du site page par page sans refonte inutile, en améliorant en priorité la hiérarchie, la densité, la cohérence inter-pages, les états vides et la qualité perçue mobile/desktop.
+Polir le site page par page sans refonte gratuite, avec priorité à la hiérarchie, la densité, la cohérence inter-pages, les états vides et la qualité perçue mobile/desktop.
 
-## Succès observable
-Pour chaque lot UI :
-1. BEFORE certifié aux viewports 390×844 / 430×932 / 768×900 / 1280×900 ;
+## Méthode obligatoire
+Pour chaque lot UI significatif :
+1. BEFORE 390×844 / 430×932 / 768×900 / 1280×900 ;
 2. Goal visuel écrit ;
-3. référence/mockup défini ;
-4. implémentation ciblée ;
-5. AFTER aux mêmes viewports ;
-6. comparaison directe + tests ;
-7. score visuel justifié, jamais déclaré sans preuve.
+3. référence/mockup ;
+4. implémentation ;
+5. AFTER mêmes viewports ;
+6. comparaison + tests ;
+7. score visuel justifié.
 
-Contraintes globales :
-- pas de régression fonctionnelle ;
-- pas de modification ranking/data/DB sauf chantier explicitement séparé ;
-- pas de déploiement Vercel sans autorisation explicite ;
-- composants partagés harmonisés seulement si la preuve montre un gain transversal net.
+Contraintes : pas de changement ranking/data/DB dans ce chantier ; pas de déploiement Vercel sans autorisation explicite.
 
-## Baseline audit
-Audit initial : 70 routes × 4 viewports = 280 captures.
+# P0 — Impact utilisateur direct
 
-Constats transversaux :
-- styles inter-pages encore hétérogènes ;
-- densité et rythme vertical variables ;
-- certains états vides trop dominants ;
-- pages outil (`/map`, `/pro`, `/vendre/dossier`) plus datées visuellement que les meilleures pages du site ;
-- pages SEO locales trop utilitaires ;
-- pages éditoriales parfois trop génériques.
+## P0.1 — `/map` — CLOSED
+Goal : carte dominante, rail compact, mobile lisible, aucune régression d’interaction.
 
-# ROADMAP
+Preuves :
+- stratégie pointer-events certifiée ;
+- Product Experience P4 Search Map ✅ ;
+- Carte National Zillow UI Certification ✅ ;
+- UI All Pages Baseline/Certification ✅ ;
+- AFTER 390/430/768/1280 inspectés ;
+- canvas desktop ~71.9 %, rail ~360 px ;
+- aucune régression fonctionnelle observée.
 
-## P0 — Polish impact utilisateur direct
+Score visuel : 9.4/10.
 
-### P0.1 — Map : hiérarchie panneau / carte
-Pages : `/map`
+## P0.2 — `/search` — WAIT dépendance PR #947
+Goal : état vide plus compact + densité cohérente avec les cartes indexées premium.
 
-Goal : faire passer la page d’un rendu "outil interne" à une expérience de recherche immobilière premium, avec une hiérarchie claire entre recherche, filtres, résultats et carte.
+Dépendance vérifiée le 2026-08-29 : PR #947 toujours OPEN, DRAFT, non mergée, mergeable=true.
 
-Succès :
-- panneau décisionnel plus compact et plus lisible ;
-- actions primaires/secondaires clairement hiérarchisées ;
-- carte visuellement dominante ;
-- mobile sans empilement confus ;
-- aucun changement logique de recherche.
+Règle : ne pas créer de conflit avec les 3 fichiers du lot Search Indexed Visual tant que #947 n’est pas résolue.
 
-Référence : langage visuel AkarFinder premium déjà validé sur les cartes Search indexées + rythme/espacement des meilleures pages éditoriales actuelles.
+## P0.3 — `/mon-projet` — CLOSED
+Goal : parcours plus compact, progression rattachée au contenu, bottom-nav conservée sans recouvrement.
 
-BEFORE :
-- captures `/map` 390×844 / 430×932 / 768×900 / 1280×900 inspectées ;
-- source : dernier artifact all-pages disponible avant le lot P0.1 ;
-- les fichiers `/map` observés sont inchangés par rapport à la base de la branche P0 ;
-- findings de cet artifact : 0.
+Preuves exact-head `a8e1fe817fd648bcc2045bdb7824f6951da35a7f` :
+- Product Experience P7 Mon Projet `33249056376` ✅ ;
+- artifact `9713838935` ;
+- digest `sha256:ddf0f20ec50460d2584fb5898694cc9474fb8d489fdfb8a81db4671b0284fcee` ;
+- 4 captures ;
+- 0 finding ;
+- 390 px : bottom-nav présente et zéro chevauchement ;
+- 430/768/1280 inspectés.
 
-Implémentation P0.1 :
-- mobile : toolbar raccourcie en supprimant le titre redondant déjà porté par le sélecteur ville ;
-- mobile : contrôles plus compacts ;
-- mobile : decision sheet réduite aux informations/actions essentielles ;
-- tablette : decision sheet limitée pour rendre davantage de carte visible ;
-- desktop : rail ramené à 360 px fixes au lieu d’un split 60/40 trop large ;
-- desktop : chrome et espacements du rail resserrés ;
-- logique métier, data, ranking et DB inchangés.
+Score visuel : 9.2/10.
 
-HEAD fonctionnel P0.1 : `2b722755ef988eff16d5de09bd194390c5f75f56`.
+`/profil-recherche` reste une route de compatibilité vers le parcours canonique et n’est pas un écran UI autonome à polir séparément.
 
-État : IMPLEMENTED — AFTER exact-head + comparaison aux 4 viewports requis avant clôture.
+## P0.4 — `/vendre/dossier` — CLOSED
+Goal : formulaire prioritaire, rails secondaires, workflow vendeur inchangé.
 
-### P0.2 — Search : état vide + densité résultats
-Pages : `/search`
+Implémentation finale :
+- mobile/tablette resserrés ;
+- desktop intermédiaire : rail gauche réduit ;
+- aperçu vendeur conservé à 1280 après correction du premier choix trop agressif ;
+- ≥1440 : rails compacts ;
+- logique vendeur/API/validation inchangée.
 
-Goal : rendre l’état vide utile et compact, puis assurer une densité cohérente dès qu’il y a des résultats.
+Preuves :
+- Product Experience P8 Publication `33249056509` ✅ ;
+- UX P2 Seller Secure Publish Flow ✅ ;
+- Seller Entry Quality ✅ ;
+- Seller Structured Draft ✅ ;
+- AFTER all-pages 390/430/768/1280 inspectés.
 
-Succès :
-- état vide moins massif ;
-- meilleure continuité filtre → résultats ;
-- pas de rupture avec les cartes indexées certifiées ;
-- responsive 390/430/768/1280.
+Score visuel : 9.1/10.
 
-Dépendance : ne pas créer de conflit avec le lot Search Indexed Visual tant que PR #947 n’est pas mergée.
+## P0.5 — `/pro` + `/pro/leads` — CLOSED
+Goal : acquisition Pro plus nette et plus dense sans altérer la logique B2B.
 
-### P0.3 — Projet utilisateur
-Pages : `/mon-projet`, `/profil-recherche`
+Implémentation : hero/preview/sections compactés principalement mobile/tablette ; `/pro/leads` reste volontairement une redirection vers le parcours Pro canonique.
 
-Goal : réduire les espaces morts, clarifier progression et actions, rendre les écrans plus équilibrés.
+Preuves :
+- UI Polish P5 Global Certification `33249056417` ✅ ;
+- B2B Productization Gate ✅ ;
+- AFTER 390/430/768/1280 inspectés.
 
-Succès :
-- densité cohérente ;
-- CTA principal évident ;
-- progression compréhensible sans lecture exhaustive ;
-- mobile plus compact ;
-- aucune navigation mobile ne masque les objectifs.
+Score visuel : 9.2/10.
 
-AFTER exact-head `/mon-projet` :
-- HEAD : `110404e67c3f76b6549a95ed1fc815641cfcae60` ;
-- run P7 : `33223940945` — success ;
-- artifact : `9706206059` ;
-- digest : `sha256:0dc5ade8c7db692f57310627b490eb00814466097be68bb94144f8abdb7fc82f` ;
-- 4 captures : 390×844 / 430×932 / 768×900 / 1280×900 ;
-- findings P7 : 0 ;
-- 390/430 : les quatre objectifs sont intégralement lisibles, aucune bottom-nav ne recouvre `Investir` ou `Neuf` ;
-- 768 : grille 2×2 équilibrée, progression compacte ;
-- 1280 : rail de progression lisible sans concurrencer le panneau principal.
+## P0.6 — SEO local district/quartier — CLOSED
+Pages : `/immobilier/[city]/[district]`, `/quartiers/[city]/[neighborhood]`.
 
-Score visuel P0.3 : 9.2/10. Justification : hiérarchie claire, zéro obstruction observée et densité cohérente aux quatre viewports ; marge restante principalement cosmétique sur le volume de vide sous le contenu mobile, non bloquante.
+Goal : rendu local plus éditorial et premium sans modifier les données/SEO métier.
 
-État : CLOSED pour `/mon-projet` sur preuve P7 exacte. `/profil-recherche` reste à réinspecter dans le passage transversal P1/P2 si un écart spécifique apparaît.
+Implémentation : hero, shell, rythme et densité allégés ; distinction contenu éditorial / données renforcée.
 
-### P0.4 — Vendre / dossier
-Pages : `/vendre/dossier`
+Preuves :
+- UI All Pages Baseline `33249056480` ✅ ;
+- artifact `9713854039` ;
+- digest `sha256:456ebb249ae36177d2df388e108336792e4dd7d170c7c84dcfb6eeea3c7504a1` ;
+- UI All Pages Certification `33249056454` ✅ ;
+- 4 viewports inspectés pour district/quartier ;
+- Accessibility Gate ✅.
 
-Goal : simplifier la charge visuelle et réduire la compétition entre contenu principal et colonne d’accompagnement.
+Score visuel : 9.0/10.
 
-Succès :
-- priorité de lecture nette ;
-- colonne secondaire moins lourde ;
-- formulaire/étapes plus respirants ;
-- mobile sans surcharge ;
-- logique vendeur, validation et données inchangées.
+# P1 — Harmonisation familles de pages
 
-Référence : conserver le langage AkarFinder actuel mais traiter le formulaire comme tâche principale ; rails = assistance, jamais contenu dominant.
+Familles :
+- `/acheter`, `/louer`, `/neuf` ;
+- `/immobilier`, `/quartiers` ;
+- `/favorites`, `/compare`, `/alerts` ;
+- `/investir`, `/mre`, `/credit` ;
+- `/accompagnement`, `/faq`, `/contact`, `/a-propos`.
 
-BEFORE inspecté aux 4 viewports 390×844 / 430×932 / 768×900 / 1280×900 :
-- mobile : structure saine mais carte de progression + formulaire + footer créent une page longue et tassée ;
-- tablette : contenu principal lisible, hiérarchie correcte ;
-- 1280 : split `220px + contenu + 390px` trop dense, avec deux rails concurrençant le formulaire.
+## P1.1 — `/neuf` — ACTIVE
+BEFORE inspecté : 390×844 et 1280×900 directement, plus baseline complète disponible pour 430/768.
 
-Implémentation P0.4 :
-- mobile : carte de progression et gaps resserrés sans retirer d’information ;
-- tablette : rythme vertical légèrement resserré ;
-- 1024–1439 : rail gauche ramené à 184 px ;
-- 1024–1439 : preview droite masquée pour rendre la largeur au formulaire ;
-- ≥1440 : preview conservée mais rails réduits à 190 px / 320 px ;
-- aucun changement de logique, score, étapes, validations ou API.
+Constat : page fonctionnelle mais premier écran trop long sur mobile, hero/formulaire/quick-links trop empilés ; desktop déjà solide mais légèrement trop volumineux.
 
-HEAD fonctionnel P0.4 : `67fb4273f20239088af42444de5b1d98504d175d`.
+Goal : rendre le premier écran plus léger et plus premium tout en conservant l’intégralité des filtres, liens rapides, vérité d’inventaire et séparation promoteur/données réelles.
+
+Référence : rythme et densité des meilleurs écrans AkarFinder actuels, sans nouvelle direction artistique.
+
+Implémentation en cours :
+- hero mobile plus court ;
+- H1 et texte resserrés ;
+- formulaire plus compact ;
+- quick-links plus compacts ;
+- sections secondaires moins hautes ;
+- desktop : hero légèrement resserré et preview moins dominante ;
+- aucune logique Search/Neuf modifiée.
+
+HEAD fonctionnel P1.1 : `a16cb48f79571150865f5af3901d94a2d39d0a5f`.
 
 État : IMPLEMENTED — AFTER exact-head 390/430/768/1280 + tests requis avant clôture.
 
-### P0.5 — Pro / Leads
-Pages : `/pro`, `/pro/leads`
-
-Goal : aligner l’espace Pro avec le niveau visuel du front public tout en conservant son caractère opérationnel.
-
-Succès :
-- architecture visuelle modernisée ;
-- contraste et densité maîtrisés ;
-- tableaux/cartes/actions plus cohérents ;
-- pas de perte de lisibilité métier.
-
-### P0.6 — SEO local premium
-Pages : `/immobilier/[city]/[district]`, `/quartiers/[city]/[neighborhood]`
-
-Goal : sortir du rendu purement utilitaire et créer une page locale éditoriale crédible sans gonfler artificiellement le contenu.
-
-Succès :
-- hero/local context plus qualitatif ;
-- sections mieux rythmées ;
-- listings et contenu éditorial clairement séparés ;
-- cohérence avec `/immobilier` et `/quartiers`.
-
-## P1 — Harmonisation des familles de pages
-- `/acheter`, `/louer`, `/neuf`
-- `/immobilier`, `/quartiers`
-- `/favorites`, `/compare`, `/alerts`
-- `/investir`, `/mre`, `/credit`
-- `/accompagnement`, `/faq`, `/contact`, `/a-propos`
-
-Goal : harmoniser rythme, cards, headers secondaires, états vides, CTA et personnalité de marque.
-
-## P2 — Système global / détails fins
+# P2 — Système global / détails fins
 - rayons ;
 - ombres ;
 - largeurs max ;
@@ -184,27 +148,19 @@ Goal : harmoniser rythme, cards, headers secondaires, états vides, CTA et perso
 - états vides ;
 - cohérence typographique ;
 - petits écarts responsive ;
-- pages légales conservées sobres.
+- pages légales sobres.
 
-## Ordre d’exécution
-1. P0.1 Map
-2. P0.2 Search
-3. P0.3 Projet utilisateur
-4. P0.4 Vendre dossier
-5. P0.5 Pro / Leads
-6. P0.6 SEO local
-7. P1
-8. P2
-
-## État actuel
-- branche : `feat/ux-ui-polish-p0`
-- PR : `#949` draft ;
-- HEAD : `67fb4273f20239088af42444de5b1d98504d175d` ;
-- P0.1 : IMPLEMENTED — AFTER exact-head requis ;
-- P0.2 : WAIT dependency PR #947 ;
-- P0.3 : CLOSED `/mon-projet` — P7 success + 4 AFTER inspectés ;
-- P0.4 : IMPLEMENTED — AFTER exact-head requis ;
+# État actuel
+- branche : `feat/ux-ui-polish-p0` ;
+- PR #949 : OPEN, DRAFT, mergeable=true ;
+- P0.1 : CLOSED ;
+- P0.2 : WAIT PR #947 ;
+- P0.3 : CLOSED ;
+- P0.4 : CLOSED ;
+- P0.5 : CLOSED ;
+- P0.6 : CLOSED ;
+- P1.1 `/neuf` : ACTIVE ;
 - aucun déploiement Vercel.
 
 ## NEXT EXACT
-Obtenir la CI/artifact exact-head `67fb4273f20239088af42444de5b1d98504d175d`, inspecter `/vendre/dossier` AFTER 390/430/768/1280, comparer au BEFORE, corriger si nécessaire, puis fermer P0.4 et démarrer P0.5 Pro / Leads pendant que les gates globaux indépendants terminent.
+Certifier P1.1 `/neuf` sur 390/430/768/1280, corriger si nécessaire, puis poursuivre P1 avec `/investir` + `/mre` pendant que P0.2 reste bloqué par la PR #947.
