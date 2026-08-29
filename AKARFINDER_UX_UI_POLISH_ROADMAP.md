@@ -78,8 +78,6 @@ BEFORE exact : artifact UI All Pages du HEAD `a8e1fe817fd648bcc2045bdb7824f6951d
 
 Goal : premier écran plus léger et premium, filtres et vérité d’inventaire conservés.
 
-Référence : rythme et densité des meilleurs écrans AkarFinder actuels, sans nouvelle direction artistique.
-
 Implémentation : hero/H1/texte/formulaire/quick-links resserrés sur mobile ; sections secondaires moins hautes ; desktop légèrement resserré ; logique Search/Neuf inchangée.
 
 Preuves exact-head `b3be1576a1bdbc681a1d74850e431360c566a7bc` : UI All Pages Baseline `33250905857` ✅ ; artifact `9714430657` ; digest `sha256:e6cde359f9c8d4effae7245faa6c698c90770ad9958316b6b25999017ad77de2` ; UI All Pages Certification `33250905839` ✅ ; Intent Hubs `33250905871` ✅ ; Accessibility `33250905998` ✅ ; AFTER 390/430/768/1280 inspectés.
@@ -89,42 +87,61 @@ Score visuel : 9.1/10.
 ## P1.2 — `/investir` + `/mre` — CLOSED
 BEFORE exact : artifact `9714430657`, HEAD `b3be1576a1bdbc681a1d74850e431360c566a7bc`, 390/430/768/1280 inspectés.
 
-Goal : rendre les actions hero immédiatement visibles, supprimer la fausse impression de vide, resserrer les cartes/espacements et conserver intégralement les disclaimers et garde-fous métier.
+Goal : actions hero immédiatement visibles, moins de vide, cartes/espacements plus denses, disclaimers et garde-fous métier intacts.
+
+Implémentation : CTA hero corrigés sur fond clair ; hero raccourci ; cards/gaps/callout resserrés ; callout final actionnable ; contenu prudentiel et logique inchangés.
+
+Preuves exact-head `3320c3926c8247e798307b790e59862bee03be75` : UI All Pages Certification `33256337536` ✅ ; artifact `9716004787` ; digest `sha256:c266b4479e7d518aa27bc33bab6b3064481d86520b08d2c00a14f3cfac751c96` ; Intent Hubs `33256337523` ✅ ; UI Polish P5 ✅ ; P7 ✅ ; P8 ✅ ; 280 captures, 0 finding ; AFTER 390/430/768/1280 inspectés.
+
+Score visuel : 9.2/10.
+
+### `/credit` — CLOSED / NO-CHANGE
+Audit exact sur les quatre viewports : hiérarchie, simulateur, prudence réglementaire et responsive déjà cohérents avec le niveau P1. Aucune modification ajoutée uniquement pour produire du diff.
+
+## P1.3 — `/favorites` + `/compare` + `/alerts` — CLOSED
+BEFORE exact : artifact `9716004787`, HEAD `3320c3926c8247e798307b790e59862bee03be75`, 390/430/768/1280 inspectés.
+
+Goal : états personnels plus compacts, actionnables et cohérents sans toucher au stockage Favoris/Compare ni à la vérité produit sur les alertes non actives.
 
 Implémentation :
-- CTA hero corrigés sur fond clair : primary bleu + secondaires lisibles ;
-- hero mobile/desktop raccourci ;
-- cards, gaps et callout resserrés ;
-- callout final rendu explicitement actionnable ;
-- disclaimers, textes de prudence, liens et logique inchangés.
+- `/favorites` et `/compare` : états vides plus courts, largeur desktop maîtrisée, CTA rapproché ;
+- `/alerts` : retrait du centrage vertical excessif, cartes et actions resserrées ;
+- aucune modification storage/API/comparaison/favoris ;
+- statut des alertes non actives conservé explicitement.
 
-Preuves exact-head `3320c3926c8247e798307b790e59862bee03be75` :
-- UI All Pages Certification `33256337536` ✅ ;
-- artifact `9716004787` ;
-- digest `sha256:c266b4479e7d518aa27bc33bab6b3064481d86520b08d2c00a14f3cfac751c96` ;
-- Intent Hubs `33256337523` ✅ ;
-- UI Polish P5 `33256337471` ✅ ;
-- P7 `33256337508` ✅ ;
-- P8 `33256337482` ✅ ;
-- artifact : 280 captures, 0 finding ;
-- AFTER `/investir` + `/mre` 390/430/768/1280 inspectés et comparés au BEFORE.
+Preuves exact-head `ab7335f4fcb61dd114ad2bb86c2c15ebcba75d88` :
+- UI All Pages Baseline `33256866676` ✅ ;
+- artifact `9716144323` ;
+- digest `sha256:8bd1ded446288592cc55dca4fb71381e791a444ea0938f56867c6eb1a81b3848` ;
+- UI All Pages Certification `33256866538` ✅ ;
+- artifact `9716150634` ;
+- digest `sha256:375f62ef63cc770450446c780ab8686f6ae78eb6e33e2af630f4703970a639a0` ;
+- User Journey `33256866646` ✅ ;
+- Accessibility `33256866619` ✅ ;
+- AFTER 390/430/768/1280 inspectés et comparés au BEFORE.
 
-Score visuel : 9.2/10. Gain principal : actions visibles immédiatement et densité cohérente ; aucune suppression de garde-fou métier.
+Score visuel : 9.1/10.
 
-## P1.3 — `/favorites` + `/compare` + `/alerts` — ACTIVE
-BEFORE exact : artifact `9714430657`, 390/430/768/1280 inspectés.
+## P1.4 — `/accompagnement` + `/faq` + `/contact` + `/a-propos` — ACTIVE
+BEFORE exact : artifact `9716144323`, HEAD `ab7335f4fcb61dd114ad2bb86c2c15ebcba75d88`, 390/430/768/1280 inspectés.
 
-Constat : pages propres mais les états vides prennent trop d’espace, surtout mobile ; le contenu utile est faible mais traité comme un hero plein écran. `/alerts` ajoute en plus un centrage vertical généreux qui allonge artificiellement le premier écran.
+Constat :
+- pages saines mais trop génériques et fortement dépendantes d’une grande surface centrale ;
+- `/accompagnement` reste très vertical sur mobile et sous-exploite le desktop ;
+- `/faq` est lisible mais scanne mal sur desktop ;
+- `/contact` mélange deux intentions dans un seul bloc ;
+- `/a-propos` manque de hiérarchie entre proposition de valeur, transparence de source et règle de contact.
 
-Goal : rendre les états personnels plus compacts, actionnables et cohérents sans toucher au stockage Favoris/Compare ni à la vérité produit sur les alertes non actives.
+Goal : donner à ces pages éditoriales une structure plus intentionnelle et premium, réduire l’effet « grande carte générique », améliorer le scan mobile/desktop sans ajouter de promesse commerciale.
 
 Succès :
-- 390/430 : message + CTA principal accessibles plus tôt, sans impression de page vide ;
-- 768/1280 : état vide contenu dans une largeur lisible, pas une dalle pleine largeur ;
-- `/alerts` conserve explicitement le statut non activé ;
-- aucune modification storage/API/comparaison/favoris.
+- `/accompagnement` : contexte + formulaire clairement séparés, formulaire toujours prioritaire et logique lead inchangée ;
+- `/faq` : réponses plus scannables, 2 colonnes desktop sans dégrader le mobile ;
+- `/contact` : contact général et retrait/correction séparés en actions explicites ;
+- `/a-propos` : proposition de valeur structurée en principes déjà vérifiables dans le produit ;
+- 390/430/768/1280 sans overflow, collision bottom-nav ou contenu masqué.
 
-Référence : grammaire des surfaces P0/P1 déjà validées, état vide = tâche courte, pas hero marketing.
+Référence : mêmes tokens P0/P1, surfaces secondaires plus légères, information structurée par intention plutôt qu’ajout décoratif.
 
 État : READY FOR IMPLEMENTATION.
 
@@ -147,8 +164,11 @@ Référence : grammaire des surfaces P0/P1 déjà validées, état vide = tâche
 - P0.2 : WAIT PR #947 ;
 - P1.1 `/neuf` : CLOSED ;
 - P1.2 `/investir` + `/mre` : CLOSED ;
-- P1.3 `/favorites` + `/compare` + `/alerts` : ACTIVE ;
+- `/credit` : CLOSED / NO-CHANGE ;
+- P1.3 `/favorites` + `/compare` + `/alerts` : CLOSED ;
+- P1.4 éditorial : ACTIVE ;
+- User Journey Mon Projet exact-head : ✅ ;
 - aucun déploiement Vercel.
 
 ## NEXT EXACT
-Implémenter P1.3 sur `/favorites` + `/compare` + `/alerts`, certifier 390/430/768/1280, puis corriger le contrat User Journey Mon Projet devenu obsolète face au parcours canonique actuel si les mêmes assertions restent rouges.
+Implémenter P1.4 sur `/accompagnement`, `/faq`, `/contact`, `/a-propos`, puis certifier AFTER exact-head 390/430/768/1280 et corriger si nécessaire avant de poursuivre les familles P1 restantes.
