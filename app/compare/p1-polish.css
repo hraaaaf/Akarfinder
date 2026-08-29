@@ -1,0 +1,47 @@
+/* UX/UI POLISH P1.3 — /compare
+   Keep empty/one-item states concise so comparison feels like a utility, not a landing page. */
+
+[data-p1-compare] section.pb-24 > .mt-5 > section {
+  max-width: 48rem;
+  margin-inline: auto;
+  padding: 1.5rem !important;
+}
+
+[data-p1-compare] section.pb-24 > .mt-5 > section > span:first-child {
+  width: 3rem !important;
+  height: 3rem !important;
+}
+
+[data-p1-compare] section.pb-24 > .mt-5 > section h1 {
+  margin-top: 0.875rem !important;
+  font-size: 1.35rem !important;
+}
+
+[data-p1-compare] section.pb-24 > .mt-5 > section p {
+  margin-top: 0.375rem !important;
+  line-height: 1.55 !important;
+}
+
+[data-p1-compare] section.pb-24 > .mt-5 > section a[href="/search"] {
+  margin-top: 1rem !important;
+}
+
+@media (max-width: 639px) {
+  [data-p1-compare] section.pb-24 {
+    padding-top: 1rem !important;
+  }
+
+  [data-p1-compare] section.pb-24 > div:first-child {
+    padding: 1.125rem !important;
+    border-radius: 1.25rem !important;
+  }
+
+  [data-p1-compare] section.pb-24 > .mt-5 {
+    margin-top: 0.75rem !important;
+  }
+
+  [data-p1-compare] section.pb-24 > .mt-5 > section {
+    padding: 1.25rem !important;
+    border-radius: 1.25rem !important;
+  }
+}
