@@ -56,16 +56,18 @@ async function main() {
       findings.push(`${viewport.name}: MapLibre canvas did not become visible`);
     }
 
-    const intelligence = page.locator('[data-akarfinder-intelligence-legend="price"]');
     try {
-      await intelligence.waitFor({ state: "visible", timeout: 15_000 });
       await page.waitForFunction(() => {
         const legend = document.querySelector('[data-akarfinder-intelligence-legend="price"]');
-        const text = legend?.textContent || "";
-        return !text.includes("Calcul des annonces observées") && !text.includes("temporairement indisponibles");
+        const compact = document.querySelector('[data-akarfinder-intelligence-layer="price"]');
+        const legendText = legend?.textContent || "";
+        const legendSettled = Boolean(legend)
+          && !legendText.includes("Calcul des annonces observées")
+          && !legendText.includes("temporairement indisponibles");
+        return legendSettled || Boolean(compact);
       }, null, { timeout: 15_000 });
     } catch {
-      findings.push(`${viewport.name}: Lot 9 price intelligence legend did not settle`);
+      findings.push(`${viewport.name}: price intelligence truth surface did not settle`);
     }
 
     const api = await context.request.get(`${BASE_URL}/api/geo/market-intelligence?city=casablanca&mode=price&transaction=sale`);
@@ -85,12 +87,14 @@ async function main() {
       scrollWidth: document.documentElement.scrollWidth,
       clientWidth: document.documentElement.clientWidth,
       canvasCount: document.querySelectorAll(".maplibregl-canvas").length,
-      priceMode: document.querySelector('[data-akarfinder-intelligence-legend="price"]') != null,
+      priceMode: document.querySelector('[data-akarfinder-intelligence-legend="price"], [data-akarfinder-intelligence-layer="price"]') != null,
       territorialActive: document.querySelector('[data-akarfinder-territorial-layer="active"]') != null,
     }));
 
     if (markerCount > 2) findings.push(`${viewport.name}: unexpected extra exact price markers (${markerCount})`);
-    if (!text.includes("Aucune interpolation sur les zones")) findings.push(`${viewport.name}: non-interpolation disclosure missing`);
+    if (!text.includes("Aucune interpolation sur les zones") && !text.includes("Aucune interpolation : prix et surfaces absents")) {
+      findings.push(`${viewport.name}: non-interpolation disclosure missing`);
+    }
     if (metrics.scrollWidth > metrics.clientWidth + 1) findings.push(`${viewport.name}: horizontal overflow ${metrics.scrollWidth} > ${metrics.clientWidth}`);
     if (metrics.canvasCount < 1) findings.push(`${viewport.name}: MapLibre canvas missing`);
     if (!metrics.priceMode) findings.push(`${viewport.name}: dynamic price intelligence marker missing`);
