@@ -18,6 +18,7 @@ import { getAllNeighborhoods, getNeighborhoodBySlug } from "@/lib/seo-neighborho
 import { generateNeighborhoodSeoMetadata } from "@/lib/seo-neighborhood-pages/seo-metadata";
 import { isValidDistrictSlug } from "@/lib/seo-neighborhood-pages/types";
 import { isValidCitySlug } from "@/lib/seo-city-pages/types";
+import "./p0-polish.css";
 
 export const revalidate = 300;
 
