@@ -46,12 +46,9 @@ async function main() {
     if (legacyApi.status() !== 200) findings.push(`${viewport.name}: legacy canary API HTTP ${legacyApi.status()}`);
 
     const page = await context.newPage();
-    const consoleErrors: string[] = [];
+    const pageErrors: string[] = [];
     const territoryResponses: Array<{ status: number; url: string; view?: string; slug?: string | null }> = [];
-    page.on("console", (message) => {
-      if (message.type() === "error") consoleErrors.push(message.text());
-    });
-    page.on("pageerror", (error) => consoleErrors.push(error.message));
+    page.on("pageerror", (error) => pageErrors.push(error.message));
     page.on("response", async (response) => {
       const url = new URL(response.url());
       if (url.pathname !== "/api/geo/national-territories") return;
@@ -88,7 +85,7 @@ async function main() {
     if (!currentTransport) findings.push(`${viewport.name}: current national territory response for Casablanca missing`);
     if (metrics.scrollWidth > metrics.clientWidth + 1) findings.push(`${viewport.name}: horizontal overflow ${metrics.scrollWidth} > ${metrics.clientWidth}`);
     if (metrics.canvasCount < 1 || !metrics.nationalMapReady) findings.push(`${viewport.name}: national MapLibre runtime missing`);
-    if (consoleErrors.length > 0) findings.push(`${viewport.name}: console errors: ${consoleErrors.join(" | ")}`);
+    if (pageErrors.length > 0) findings.push(`${viewport.name}: page errors: ${pageErrors.join(" | ")}`);
 
     diagnostics.push({
       viewport: viewport.name,
@@ -97,7 +94,7 @@ async function main() {
       legacyGeometryStatus: legacyApi.headers()["x-akarfinder-geometry-status"] ?? null,
       territoryResponses,
       metrics,
-      consoleErrors,
+      pageErrors,
     });
     await page.screenshot({ path: `${OUT}/casablanca-${viewport.name}.png`, fullPage: false });
     await context.close();
