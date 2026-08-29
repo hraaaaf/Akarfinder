@@ -69,6 +69,67 @@
   }
 }
 
+/* 390 px is the only certified viewport where the secondary objective still
+   met the fixed dock. Compact the initial question itself instead of hiding a
+   navigation or action. The content remains readable and all 44 px touch
+   targets stay intact. */
+@media (max-width: 400px) {
+  [data-p7-mon-projet] {
+    padding-bottom: 5.75rem;
+  }
+
+  [data-p7-progress-mobile] {
+    padding: 9px 12px !important;
+  }
+
+  [data-p7-progress-mobile] > div:last-child {
+    margin-top: 6px !important;
+  }
+
+  [data-p7-question-panel] {
+    margin-top: 8px !important;
+    padding: 13px 14px !important;
+  }
+
+  [data-p7-question-panel] > div:first-child {
+    margin-bottom: 8px !important;
+    min-height: 32px !important;
+  }
+
+  [data-p7-question-panel] h1 {
+    margin-top: 8px !important;
+    font-size: 26px !important;
+    line-height: 1.06 !important;
+  }
+
+  [data-p7-question-panel] h1 + p {
+    margin-top: 9px !important;
+    line-height: 1.45 !important;
+  }
+
+  [data-p7-question-panel] div:has(> [data-p7-primary-objective]) {
+    margin-top: 12px !important;
+    gap: 8px !important;
+  }
+
+  [data-p7-primary-objective] {
+    min-height: 94px !important;
+    padding: 10px !important;
+  }
+
+  [data-p7-primary-objective] > span:first-of-type {
+    margin-top: 9px !important;
+  }
+
+  [data-p7-primary-objective] > span:last-of-type {
+    line-height: 1.35 !important;
+  }
+
+  [data-p7-explore-secondary] {
+    margin-top: 8px !important;
+  }
+}
+
 @media (min-width: 640px) {
   [data-p7-mon-projet] {
     padding-bottom: 2rem;
