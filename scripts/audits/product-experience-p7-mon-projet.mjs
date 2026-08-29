@@ -49,6 +49,7 @@ try {
           stepLabelCount: document.querySelectorAll("[data-p7-step-label]").length,
           desktopRailVisible: visible("[data-p7-progress-rail]"),
           mobileProgressVisible: visible("[data-p7-progress-mobile]"),
+          mobileBottomNavPresent: Boolean(document.querySelector('[data-mobile-bottom-nav]')),
           singleQuestionCopy: document.body.innerText.includes("Une question à la fois. Vos réponses deviennent directement des critères de recherche."),
           initialContinueVisible: continueButtons.some((node) => node instanceof HTMLElement && getComputedStyle(node).display !== "none" && node.getBoundingClientRect().height > 0),
           bronzeClassCount,
@@ -68,6 +69,7 @@ try {
       if (!metrics.singleQuestionCopy) localFindings.push("P7_SINGLE_QUESTION_COPY_MISSING");
       if (metrics.initialContinueVisible) localFindings.push("P7_INITIAL_CONTINUE_SHOULD_BE_HIDDEN");
       if (metrics.bronzeClassCount !== 0) localFindings.push(`P7_BRONZE_CLASS_COUNT_${metrics.bronzeClassCount}`);
+      if (metrics.mobileBottomNavPresent) localFindings.push("P7_IMMERSIVE_WIZARD_BOTTOM_NAV_PRESENT");
       if (viewport.width >= 1024) {
         if (!metrics.desktopRailVisible || metrics.mobileProgressVisible) localFindings.push("P7_DESKTOP_PROGRESS_MODE_INVALID");
       } else if (!metrics.mobileProgressVisible || metrics.desktopRailVisible) {
