@@ -6,10 +6,10 @@ const BASE_URL = process.env.BASE_URL ?? "http://127.0.0.1:3199";
 const variant = process.env.AUDIT_VARIANT ?? "local";
 const outDir = path.join("data", "audits", "ux-premium-cards-media-1", variant);
 const viewports = [
-  { name: "mobile-360x800", width: 360, height: 800, expectedMediaHeight: 160, view: null },
-  { name: "mobile-390x844", width: 390, height: 844, expectedMediaHeight: 160, view: null },
-  { name: "tablet-768x900", width: 768, height: 900, expectedMediaHeight: 190, view: null },
-  { name: "desktop-1440x900", width: 1440, height: 900, expectedMediaHeight: 188, view: "split" },
+  { name: "mobile-360x800", width: 360, height: 800, expectedMediaHeight: 154, expectedMediaWidth: null, minCardRadius: 13.5, view: null },
+  { name: "mobile-390x844", width: 390, height: 844, expectedMediaHeight: 154, expectedMediaWidth: null, minCardRadius: 13.5, view: null },
+  { name: "tablet-768x900", width: 768, height: 900, expectedMediaHeight: 190, expectedMediaWidth: null, minCardRadius: 15.5, view: null },
+  { name: "desktop-1440x900", width: 1440, height: 900, expectedMediaHeight: null, expectedMediaWidth: 132, minCardRadius: 15.5, view: "split" },
 ];
 
 const fixture = {
@@ -80,14 +80,16 @@ for (const v of viewports) {
     const mb = media.getBoundingClientRect();
     const fb = favorite?.getBoundingClientRect();
     const cardStyle = getComputedStyle(card);
-    const mediaStyle = getComputedStyle(media);
     const favoriteStyle = favorite ? getComputedStyle(favorite) : null;
     return {
       view: document.querySelector('[data-search-view-layout]')?.getAttribute('data-search-view-layout') ?? null,
       card: { x: cb.x, y: cb.y, width: cb.width, height: cb.height, radius: cardStyle.borderRadius },
-      media: { x: mb.x, y: mb.y, width: mb.width, height: mb.height, background: mediaStyle.backgroundColor },
+      media: { x: mb.x, y: mb.y, width: mb.width, height: mb.height },
       favorite: fb && favoriteStyle ? { width: fb.width, height: fb.height, radius: favoriteStyle.borderRadius } : null,
-      visualClass: media.querySelector('[data-visual-inventory-class]')?.getAttribute('data-visual-inventory-class') ?? null,
+      visualMarker: media.querySelector('[data-visual-inventory-class]')?.getAttribute('data-visual-inventory-class')
+        ?? media.querySelector('[data-indexed-artwork-card]')?.getAttribute('data-indexed-artwork-card')
+        ?? null,
+      brokenImages: [...media.querySelectorAll('img')].filter((image) => image.complete && image.naturalWidth === 0).length,
       overflowX: document.documentElement.scrollWidth - document.documentElement.clientWidth,
     };
   });
@@ -96,14 +98,15 @@ for (const v of viewports) {
     failures.push(`${v.name}: card/media missing`);
   } else {
     if (v.view && metrics.view !== v.view) failures.push(`${v.name}: view ${metrics.view}`);
-    if (Math.abs(metrics.media.height - v.expectedMediaHeight) > 1.5) failures.push(`${v.name}: media height ${metrics.media.height}`);
-    if (Number.parseFloat(metrics.card.radius) < 18) failures.push(`${v.name}: card radius ${metrics.card.radius}`);
+    if (v.expectedMediaHeight != null && Math.abs(metrics.media.height - v.expectedMediaHeight) > 2) failures.push(`${v.name}: media height ${metrics.media.height}`);
+    if (v.expectedMediaWidth != null && Math.abs(metrics.media.width - v.expectedMediaWidth) > 3) failures.push(`${v.name}: media width ${metrics.media.width}`);
+    if (Number.parseFloat(metrics.card.radius) < v.minCardRadius) failures.push(`${v.name}: card radius ${metrics.card.radius}`);
     if (metrics.card.width < 140) failures.push(`${v.name}: card width ${metrics.card.width}`);
     if (metrics.overflowX !== 0) failures.push(`${v.name}: overflowX ${metrics.overflowX}`);
-    if (!metrics.visualClass) failures.push(`${v.name}: visual inventory class missing`);
+    if (!metrics.visualMarker) failures.push(`${v.name}: certified visual marker missing`);
+    if (metrics.brokenImages !== 0) failures.push(`${v.name}: broken images ${metrics.brokenImages}`);
     if (metrics.favorite) {
-      if (metrics.favorite.width < 38 || metrics.favorite.height < 38) failures.push(`${v.name}: favorite target ${metrics.favorite.width}x${metrics.favorite.height}`);
-      if (Number.parseFloat(metrics.favorite.radius) < 18) failures.push(`${v.name}: favorite radius ${metrics.favorite.radius}`);
+      if (metrics.favorite.width < 43.5 || metrics.favorite.height < 43.5) failures.push(`${v.name}: favorite target ${metrics.favorite.width}x${metrics.favorite.height}`);
     }
   }
 

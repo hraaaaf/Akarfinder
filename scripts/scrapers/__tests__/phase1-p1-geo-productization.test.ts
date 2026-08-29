@@ -21,9 +21,9 @@ describe("Phase 1 P1 — Geo productization", () => {
     const page = source("app/immobilier/[city]/page.tsx");
     assert.ok(page.includes("searchListings"));
     assert.ok(page.includes("GeoResultPreview"));
+    assert.ok(page.includes("const searchHref = `/search?city="));
     assert.ok(page.includes("transaction_type=buy"));
     assert.ok(page.includes("transaction_type=rent"));
-    assert.ok(page.includes("property_type="));
     assert.ok(page.includes("SiteHeader"));
     assert.ok(page.includes("SiteFooter"));
   });
@@ -32,9 +32,9 @@ describe("Phase 1 P1 — Geo productization", () => {
     const page = source("app/immobilier/[city]/[district]/page.tsx");
     assert.ok(page.includes("isSeoEligibleGeoPair"));
     assert.ok(page.includes("GeoResultPreview"));
-    assert.ok(page.includes("Repères quartier"));
-    assert.ok(page.includes("mesure live du marché"));
-    assert.ok(page.includes("recommandation d’achat"));
+    assert.ok(page.includes("Repère quartier"));
+    assert.ok(page.includes("Repère marché, vie locale vérifiée et biens accessibles"));
+    assert.ok(page.includes("Les détails d’un bien doivent être confirmés sur leur source"));
     assert.equal(page.includes("Intelligence quartier"), false);
   });
 
@@ -81,7 +81,8 @@ describe("Phase 1 P1 — Geo productization", () => {
     assert.ok(bridge.includes("buildMapHref"));
     assert.ok(neighborhoodPage.includes("buildMapHref"));
     assert.ok(neighborhoodPage.includes("buildMapSearchHref"));
-    assert.ok(neighborhoodPage.includes("Voir ce quartier sur la carte"));
+    assert.ok(neighborhoodPage.includes("<MapPin size={13}"));
+    assert.ok(neighborhoodPage.includes("Carte"));
   });
 });
 

@@ -11,11 +11,12 @@ describe("UX-LISTING-NAV-FEEDBACK-1", () => {
     const internalCard = source("components/search/SearchListingCardDark.tsx");
     const gatewayCard = source("components/search/ExternalIndexedResultCard.tsx");
 
-    assert.ok(internalCard.includes('const internalHref = `/bien/${listing.id}`'));
-    assert.ok(internalCard.includes("const resultHref = observedExternal && listing.listing_url ? listing.listing_url : internalHref"));
-    assert.ok(internalCard.includes("window.location.assign(href)"));
-    assert.ok(internalCard.includes("router.push(href)"));
-    assert.ok(internalCard.includes("router.prefetch(resultHref)"));
+    assert.ok(internalCard.includes('`/listings/${listing.id}?project_id=${encodeURIComponent(projectId)}`'));
+    assert.ok(internalCard.includes('`/listings/${listing.id}`'));
+    assert.ok(internalCard.includes("const resultHref ="));
+    assert.ok(internalCard.includes("observedExternal && listing.listing_url ? listing.listing_url : internalHref"));
+    assert.ok(internalCard.includes("<Link"));
+    assert.ok(internalCard.includes("href={resultHref}"));
     assert.doesNotMatch(internalCard, /const resultTarget =/);
     assert.doesNotMatch(internalCard, /const resultRel =/);
 

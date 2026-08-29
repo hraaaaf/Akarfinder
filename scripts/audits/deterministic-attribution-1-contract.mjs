@@ -36,7 +36,10 @@ assert.match(passport, /source_name: publicAttribution\.sourceLabel/);
 
 assert.match(visual, /RAW LABEL MUST NOT RENDER/);
 assert.match(visual, /desktop-1440x900/);
-assert.match(visual, /deterministic indexed attribution is not visible/);
-assert.match(visual, /raw source_name leaked into public attribution/);
+assert.match(visual, /normalized verified-layer price is not visible/);
+assert.match(visual, /deterministic source domain\/action are not visible/);
+assert.match(visual, /raw source payload label leaked into public attribution/);
+assert.match(visual, /third-party image rendered in indexed external result/);
+assert.match(visual, /expected deterministic AkarFinder artwork on all indexed cards/);
 
 console.log("DETERMINISTIC-ATTRIBUTION-1 contract PASS");
