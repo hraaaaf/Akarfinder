@@ -2,10 +2,7 @@ import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, it } from "node:test";
-import {
-  CONTEXTUAL_ILLUSTRATION_CATALOG,
-  contextualKey,
-} from "../../../lib/contextual-illustrations/catalog";
+import { CONTEXTUAL_ILLUSTRATION_CATALOG, contextualKey } from "../../../lib/contextual-illustrations/catalog";
 import { resolveContextualIllustration } from "../../../lib/contextual-illustrations/resolver";
 
 const ROOT = process.cwd();
@@ -58,42 +55,16 @@ describe("CONTEXTUAL-ILLUSTRATIONS-AGADIR-PILOT-1", () => {
 
   it("deterministically reaches every certified Agadir variant", () => {
     for (const [url, propertyType, expectedId, expectedTier] of fixtures) {
-      const resolved = resolveContextualIllustration({
-        stableRepresentationKey: url,
-        normalizedCity: "Agadir",
-        normalizedPropertyType: propertyType,
-      });
+      const resolved = resolveContextualIllustration({ stableRepresentationKey: url, normalizedCity: "Agadir", normalizedPropertyType: propertyType });
       assert.equal(resolved?.id, expectedId, `${url} should resolve to ${expectedId}`);
       assert.equal(resolved?.tier, expectedTier);
-      assert.equal(
-        resolveContextualIllustration({
-          stableRepresentationKey: `${url}/?utm_source=pilot#gallery`,
-          normalizedCity: "Agadir",
-          normalizedPropertyType: propertyType,
-        })?.id,
-        expectedId,
-        "tracking/presentation noise must not remap the asset"
-      );
+      assert.equal(resolveContextualIllustration({ stableRepresentationKey: `${url}/?utm_source=pilot#gallery`, normalizedCity: "Agadir", normalizedPropertyType: propertyType })?.id, expectedId);
     }
   });
 
   it("specializes only certified Appartement/Villa types and otherwise falls back to city", () => {
-    assert.equal(
-      resolveContextualIllustration({
-        stableRepresentationKey: "https://example.com/agadir/terrain/10",
-        normalizedCity: "Agadir",
-        normalizedPropertyType: "Terrain",
-      })?.tier,
-      "city"
-    );
-    assert.equal(
-      resolveContextualIllustration({
-        stableRepresentationKey: "https://example.com/oujda/villa/10",
-        normalizedCity: "Oujda",
-        normalizedPropertyType: "Villa",
-      }),
-      null
-    );
+    assert.equal(resolveContextualIllustration({ stableRepresentationKey: "https://example.com/agadir/terrain/10", normalizedCity: "Agadir", normalizedPropertyType: "Terrain" })?.tier, "city");
+    assert.equal(resolveContextualIllustration({ stableRepresentationKey: "https://example.com/oujda/villa/10", normalizedCity: "Oujda", normalizedPropertyType: "Villa" }), null);
   });
 
   it("does not introduce district inference, free-text inference or external assets", () => {
@@ -107,27 +78,24 @@ describe("CONTEXTUAL-ILLUSTRATIONS-AGADIR-PILOT-1", () => {
     assert.match(catalog, /district: \{\}/);
   });
 
-  it("preserves truth disclosure and thumbnail authority in the listing card", () => {
+  it("preserves current indexed-result truth and owned artwork in the external card", () => {
     const card = source("components/search/ExternalIndexedResultCard.tsx");
-    const thumbnail = card.indexOf("showThumbnail && !thumbError");
-    const contextual = card.indexOf("<ContextualListingArtwork");
-    assert.ok(thumbnail >= 0 && contextual > thumbnail);
-    assert.match(card, /data-contextual-illustration-label/);
-    assert.match(card, />\s*Illustration\s*</);
-    assert.match(card, /stableRepresentationKey=\{result\.original_url\}/);
+    assert.match(card, /data-indexed-artwork-card="true"/);
+    assert.match(card, /<IndexedTransactionArtwork transaction=\{visualTransaction\}/);
+    assert.doesNotMatch(card, /showThumbnail && !thumbError/);
+    assert.match(card, /AkarFinder indexe la page et vous renvoie vers la source originale/);
+    assert.match(card, /href=\{sourcePages\[0\]\.url\}/);
   });
 
-  it("keeps the P0 audit extension-safe instead of pinning the old singleton", () => {
+  it("keeps the P0 audit aligned with media-free indexed results", () => {
     const predecessor = source("scripts/audits/contextual-illustrations-foundation-1-visual.mjs");
+    assert.match(predecessor, /mediaCount !== 0/);
     assert.doesNotMatch(predecessor, /certified Agadir asset id drift/);
-    assert.match(predecessor, /startsWith\("agadir-"\)/);
   });
 
   it("certifies five viewports, 12 unique assets and reload stability", () => {
     const audit = source("scripts/audits/contextual-illustrations-agadir-pilot-1-visual.mjs");
-    for (const marker of ["360x800", "390x844", "768x900", "1280x900", "1440x900"]) {
-      assert.ok(audit.includes(marker), `missing viewport ${marker}`);
-    }
+    for (const marker of ["360x800", "390x844", "768x900", "1280x900", "1440x900"]) assert.ok(audit.includes(marker), `missing viewport ${marker}`);
     assert.match(audit, /EXPECTED_ASSET_IDS/);
     assert.match(audit, /uniqueAssetIds\.size !== 12/);
     assert.match(audit, /page\.reload/);
@@ -137,14 +105,6 @@ describe("CONTEXTUAL-ILLUSTRATIONS-AGADIR-PILOT-1", () => {
 
   it("workflow keeps P0 and Search predecessor contracts", () => {
     const workflow = source(".github/workflows/contextual-illustrations-agadir-pilot-1.yml");
-    for (const predecessor of [
-      "contextual-illustrations-agadir-pilot-1.test.ts",
-      "contextual-illustrations-foundation-1.test.ts",
-      "contextual-visual-assets-1.test.ts",
-      "unified-listing-card-1.test.ts",
-      "search-truth-tier.test.ts",
-    ]) {
-      assert.ok(workflow.includes(predecessor), `missing predecessor ${predecessor}`);
-    }
+    for (const predecessor of ["contextual-illustrations-agadir-pilot-1.test.ts", "contextual-illustrations-foundation-1.test.ts", "contextual-visual-assets-1.test.ts", "unified-listing-card-1.test.ts", "search-truth-tier.test.ts"]) assert.ok(workflow.includes(predecessor), `missing predecessor ${predecessor}`);
   });
 });

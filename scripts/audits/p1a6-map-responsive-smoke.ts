@@ -6,7 +6,7 @@ const baseUrl = process.env.BASE_URL ?? "http://127.0.0.1:3000";
 const outputDir = join(process.cwd(), "artifacts", "p1a6-map-responsive");
 
 const routes = [
-  { path: "/map", slug: "map", experience: "legacy" },
+  { path: "/map", slug: "map", experience: "national" },
   { path: "/map?city=Rabat", slug: "map-rabat", experience: "intelligence" },
   { path: "/map?city=Rabat&district=Agdal", slug: "map-rabat-agdal", experience: "intelligence" },
 ] as const;
@@ -18,17 +18,7 @@ const viewports = [
   { width: 1280, height: 900, label: "1280" },
 ] as const;
 
-type Rect = { left: number; top: number; right: number; bottom: number; width: number; height: number };
 type Finding = { route: string; viewport: string; check: string; detail: string };
-
-function overlaps(a: Rect, b: Rect, tolerance = 2) {
-  return !(a.right <= b.left + tolerance || b.right <= a.left + tolerance || a.bottom <= b.top + tolerance || b.bottom <= a.top + tolerance);
-}
-
-function toRect(box: { x: number; y: number; width: number; height: number } | null): Rect | null {
-  if (!box) return null;
-  return { left: box.x, top: box.y, right: box.x + box.width, bottom: box.y + box.height, width: box.width, height: box.height };
-}
 
 async function main() {
   mkdirSync(outputDir, { recursive: true });
@@ -41,65 +31,51 @@ async function main() {
 
       for (const route of routes) {
         const page = await context.newPage();
-        const response = await page.goto(`${baseUrl}${route.path}`, { waitUntil: "domcontentloaded", timeout: 45_000 });
-        await page.waitForTimeout(900);
+        const pageErrors: string[] = [];
+        page.on("pageerror", (error) => pageErrors.push(String(error)));
 
+        let nationalResponseStatus: number | null = null;
+        page.on("response", (response) => {
+          const url = new URL(response.url());
+          if (url.pathname === "/api/geo/national-territories") nationalResponseStatus = response.status();
+        });
+
+        const response = await page.goto(`${baseUrl}${route.path}`, { waitUntil: "domcontentloaded", timeout: 45_000 });
         if (!response || response.status() >= 500) {
           findings.push({ route: route.path, viewport: viewport.label, check: "http-status", detail: `Unexpected status ${response?.status() ?? "none"}` });
         }
 
-        const documentWidth = await page.locator("html").evaluate((element) => element.scrollWidth);
-        const cockpitSelector = route.experience === "intelligence"
-          ? '[aria-label="Contrôles intelligence marché"], [aria-label="Contrôles carte des quartiers"]'
-          : '[aria-label="Contrôles carte des quartiers multi-villes"]';
-        const cockpitLocator = page.locator(cockpitSelector);
-        const cockpit = (await cockpitLocator.count()) > 0 ? toRect(await cockpitLocator.first().boundingBox()) : null;
-        const explorerLocator = page.locator('[aria-label="Exploration territoriale"]');
-        const explorer = (await explorerLocator.count()) > 0 ? toRect(await explorerLocator.boundingBox()) : null;
-        const panelLocator = route.experience === "intelligence"
-          ? page.locator('aside[aria-label^="Zone "]')
-          : page.locator('[aria-label^="Fiche repère quartier"]');
-        const panel = (await panelLocator.count()) > 0 ? toRect(await panelLocator.first().boundingBox()) : null;
-
-        const explorerButtons = page.locator('[aria-label="Exploration territoriale"] button');
-        const targetCount = await explorerButtons.count();
-        const targets: Array<{ width: number; height: number; text: string }> = [];
-        for (let index = 0; index < targetCount; index += 1) {
-          const button = explorerButtons.nth(index);
-          const box = await button.boundingBox();
-          if (!box) continue;
-          targets.push({ width: box.width, height: box.height, text: (await button.textContent())?.trim() ?? "" });
+        try {
+          await page.locator(".maplibregl-canvas").waitFor({ state: "visible", timeout: 20_000 });
+        } catch {
+          findings.push({ route: route.path, viewport: viewport.label, check: "map-canvas", detail: "MapLibre canvas missing" });
         }
 
+        const documentWidth = await page.locator("html").evaluate((element) => element.scrollWidth);
         if (documentWidth > viewport.width + 2) {
           findings.push({ route: route.path, viewport: viewport.label, check: "horizontal-overflow", detail: `${documentWidth}px document for ${viewport.width}px viewport` });
         }
 
-        if (!cockpit) {
-          findings.push({ route: route.path, viewport: viewport.label, check: "map-controls", detail: route.experience === "intelligence" ? "Intelligence cockpit missing" : "Premium generic cockpit missing" });
-        }
-
-        if (route.experience === "legacy") {
-          if (!explorer) {
-            findings.push({ route: route.path, viewport: viewport.label, check: "map-controls", detail: "Territorial explorer missing" });
-          } else if (cockpit && overlaps(cockpit, explorer)) {
-            findings.push({ route: route.path, viewport: viewport.label, check: "cockpit-explorer-overlap", detail: JSON.stringify({ cockpit, explorer }) });
+        if (route.experience === "national") {
+          try {
+            await page.waitForFunction(() => Boolean((window as typeof window & { __AKARFINDER_NATIONAL_MAP__?: unknown }).__AKARFINDER_NATIONAL_MAP__), null, { timeout: 15_000 });
+          } catch {
+            findings.push({ route: route.path, viewport: viewport.label, check: "national-map", detail: "National map runtime marker missing" });
           }
-
-          if (panel && explorer && overlaps(panel, explorer, 6)) {
-            findings.push({ route: route.path, viewport: viewport.label, check: "explorer-panel-overlap", detail: JSON.stringify({ explorer, panel }) });
+          if (nationalResponseStatus !== 200) {
+            findings.push({ route: route.path, viewport: viewport.label, check: "national-territories", detail: `National territories response ${nationalResponseStatus ?? "missing"}` });
           }
         } else {
-          const mapCanvas = page.locator('[data-akarfinder-market-intelligence-map]');
-          if ((await mapCanvas.count()) === 0) {
+          const intelligenceMap = page.locator('[data-akarfinder-market-intelligence-map]');
+          try {
+            await intelligenceMap.waitFor({ state: "visible", timeout: 15_000 });
+          } catch {
             findings.push({ route: route.path, viewport: viewport.label, check: "market-intelligence-map", detail: "Rabat intelligence map container missing" });
           }
         }
 
-        for (const target of targets) {
-          if (target.height < 31 || target.width < 31) {
-            findings.push({ route: route.path, viewport: viewport.label, check: "territorial-touch-target", detail: `${target.text || "unnamed"}: ${target.width.toFixed(1)}×${target.height.toFixed(1)}px` });
-          }
+        if (pageErrors.length > 0) {
+          findings.push({ route: route.path, viewport: viewport.label, check: "page-errors", detail: pageErrors.join(" | ") });
         }
 
         await page.screenshot({ path: join(outputDir, `${route.slug}-${viewport.label}.png`), fullPage: false });
