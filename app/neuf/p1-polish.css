@@ -1,0 +1,87 @@
+/* UX/UI POLISH P1 — /neuf
+   Goal: make the first decision screen feel lighter and more premium without
+   changing inventory, search semantics, promoter messaging or route logic. */
+
+[data-p1-neuf] main > section:first-of-type {
+  padding-block: 2.5rem !important;
+}
+
+[data-p1-neuf] main > section:first-of-type h1 {
+  max-width: 700px;
+}
+
+[data-p1-neuf] main > section:first-of-type form {
+  border-radius: 22px !important;
+  box-shadow: 0 18px 50px rgb(11 31 58 / 0.10) !important;
+}
+
+[data-p1-neuf] main > section:nth-of-type(2),
+[data-p1-neuf] main > section:nth-of-type(4),
+[data-p1-neuf] main > section:nth-of-type(5) {
+  padding-block: 3rem !important;
+}
+
+@media (max-width: 639px) {
+  [data-p1-neuf] main > section:first-of-type {
+    padding-block: 2rem !important;
+  }
+
+  [data-p1-neuf] main > section:first-of-type h1 {
+    margin-top: 8px !important;
+    font-size: 2.15rem !important;
+    line-height: 1.02 !important;
+    letter-spacing: -0.045em !important;
+  }
+
+  [data-p1-neuf] main > section:first-of-type h1 + p {
+    margin-top: 14px !important;
+    line-height: 1.55 !important;
+  }
+
+  [data-p1-neuf] main > section:first-of-type form {
+    margin-top: 20px !important;
+    padding: 10px !important;
+    border-radius: 18px !important;
+  }
+
+  [data-p1-neuf] main > section:first-of-type form label {
+    padding-block: 8px !important;
+  }
+
+  [data-p1-neuf] main > section:first-of-type form button,
+  [data-p1-neuf] main > section:first-of-type form a {
+    min-height: 44px !important;
+  }
+
+  [data-p1-neuf] main > section:first-of-type form + div {
+    margin-top: 14px !important;
+    gap: 7px !important;
+  }
+
+  [data-p1-neuf] main > section:first-of-type form + div a {
+    min-height: 44px !important;
+    border-radius: 11px !important;
+    padding-inline: 10px !important;
+  }
+
+  [data-p1-neuf] main > section:nth-of-type(2),
+  [data-p1-neuf] main > section:nth-of-type(4),
+  [data-p1-neuf] main > section:nth-of-type(5) {
+    padding-block: 2.25rem !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  [data-p1-neuf] main > section:first-of-type {
+    padding-block: 3.5rem !important;
+  }
+
+  [data-p1-neuf] main > section:first-of-type > div > div {
+    gap: 2.5rem !important;
+    grid-template-columns: minmax(0, 1fr) minmax(350px, 0.78fr) !important;
+  }
+
+  [data-p1-neuf] main > section:first-of-type h1 {
+    font-size: 3.8rem !important;
+  }
+}
