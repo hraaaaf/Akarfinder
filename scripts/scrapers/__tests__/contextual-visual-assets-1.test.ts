@@ -40,13 +40,17 @@ describe("CONTEXTUAL-VISUAL-ASSETS-1", () => {
     assert.doesNotMatch(card, /result\.(district|quartier|neighborhood|title|snippet)/);
   });
 
-  it("keeps the external minimal SERP media-free", () => {
+  it("keeps the external indexed SERP free of third-party media while allowing canonical normalized price", () => {
     const card = source("components/search/ExternalIndexedResultCard.tsx");
 
     assert.ok(card.includes("data-external-serp-group"));
+    assert.ok(card.includes("data-indexed-artwork-card"));
+    assert.ok(card.includes("<IndexedTransactionArtwork transaction={visualTransaction} />"));
+    assert.ok(card.includes("formatPriceMad(representative.normalized_price_mad)"));
+    assert.ok(card.includes("isPriceToVerify(representative)"));
     assert.doesNotMatch(card, /THUMBNAILS_ENABLED|thumbnail_url|showThumbnail|data-card-image/);
     assert.doesNotMatch(card, /ContextualListingArtwork|PropertyTypeArtwork|<img|<Image/);
-    assert.doesNotMatch(card, /normalized_price_mad|normalized_surface_m2/);
+    assert.doesNotMatch(card, /normalized_surface_m2/);
   });
 
   it("keeps contextual fallbacks available only to surfaces that still use them", () => {

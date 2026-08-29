@@ -59,7 +59,7 @@ describe("Carte C5 — rich zone sheet runtime", () => {
 
   it("locks the mobile map-first collapsed state and explicit expansion affordance", () => {
     assert.ok(sheet.includes("useState(false)"));
-    assert.ok(sheet.includes('max-h-[38svh] overflow-hidden'));
+    assert.ok(sheet.includes('max-h-[150px] overflow-hidden'));
     assert.ok(sheet.includes('max-h-[min(74svh,620px)] overflow-y-auto'));
     assert.ok(sheet.includes("data-akarfinder-zone-sheet-state"));
     assert.ok(sheet.includes("data-akarfinder-zone-sheet-toggle"));

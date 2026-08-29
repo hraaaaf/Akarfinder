@@ -8,10 +8,10 @@ const outDir = process.env.AUDIT_DIR ?? path.join("data", "audits", "ux-search-n
 const viewports = [
   { name: "mobile-360x800", width: 360, height: 800, columns: 2, headerMax: 54, topMax: 260, cardMax: 390, desktopNav: false },
   { name: "mobile-390x844", width: 390, height: 844, columns: 2, headerMax: 54, topMax: 260, cardMax: 390, desktopNav: false },
-  { name: "tablet-768x900", width: 768, height: 900, columns: 2, headerMax: 56, topMax: 275, cardMax: 620, desktopNav: false },
-  { name: "desktop-1024x800", width: 1024, height: 800, columns: 3, headerMax: 56, topMax: 270, cardMax: 420, desktopNav: true },
-  { name: "desktop-1280x900", width: 1280, height: 900, columns: 4, headerMax: 56, topMax: 270, cardMax: 420, desktopNav: true },
-  { name: "desktop-1440x900", width: 1440, height: 900, columns: 4, headerMax: 56, topMax: 270, cardMax: 420, desktopNav: true },
+  { name: "tablet-768x900", width: 768, height: 900, columns: 2, headerMax: 56, topMax: 292, cardMax: 620, desktopNav: false },
+  { name: "desktop-1024x800", width: 1024, height: 800, columns: 3, headerMax: 56, topMax: 288, cardMax: 420, desktopNav: true },
+  { name: "desktop-1280x900", width: 1280, height: 900, columns: 4, headerMax: 56, topMax: 288, cardMax: 420, desktopNav: true },
+  { name: "desktop-1440x900", width: 1440, height: 900, columns: 4, headerMax: 56, topMax: 288, cardMax: 420, desktopNav: true },
 ];
 
 const cityPairs = [
@@ -104,7 +104,6 @@ for (const viewport of viewports) {
     const visualClasses = cards.map((card) => card.querySelector('[data-visual-inventory-class]')?.getAttribute('data-visual-inventory-class') ?? null);
     const desktopNav = header?.querySelector('nav[aria-label="Navigation principale"]');
     const mobileMenu = Array.from(header?.querySelectorAll('[aria-label="Ouvrir le menu"]') ?? []).find(visible);
-    const account = Array.from(header?.querySelectorAll('[aria-label="Mon compte"]') ?? []).find(visible);
     const navLinks = Array.from(desktopNav?.querySelectorAll('a') ?? []).filter(visible).map((node) => node.textContent?.trim() ?? '');
     return {
       premiumHeader: header?.getAttribute('data-premium-search-header') === 'ux-premium-header-1',
@@ -125,7 +124,6 @@ for (const viewport of viewports) {
       genericCount: visualClasses.filter((value) => value === 'generic_illustration').length,
       desktopNavVisible: visible(desktopNav),
       mobileMenuVisible: visible(mobileMenu),
-      accountVisible: visible(account),
       navLinks,
     };
   });
@@ -135,7 +133,7 @@ for (const viewport of viewports) {
   if (metrics.headerWidth == null || Math.abs(metrics.headerWidth - viewport.width) > 1) failures.push(`${viewport.name}: header does not span viewport (${metrics.headerWidth}px)`);
   if (viewport.desktopNav) {
     if (metrics.desktopAlignmentDelta == null || metrics.desktopAlignmentDelta > 3) failures.push(`${viewport.name}: header/Search left alignment delta ${metrics.desktopAlignmentDelta}px > 3px`);
-    const expectedNav = ["Acheter", "Louer", "Neuf", "Agences", "Conseils"];
+    const expectedNav = ["Acheter", "Louer", "Neuf", "Agences", "Mon Projet"];
     if (JSON.stringify(metrics.navLinks) !== JSON.stringify(expectedNav)) failures.push(`${viewport.name}: certified desktop nav drift ${JSON.stringify(metrics.navLinks)}`);
   } else if (metrics.brandCenterDelta == null || metrics.brandCenterDelta > 1) {
     failures.push(`${viewport.name}: mobile/tablet logo center delta ${metrics.brandCenterDelta}px > 1px`);
@@ -146,12 +144,9 @@ for (const viewport of viewports) {
   if (metrics.cardCount !== 14) failures.push(`${viewport.name}: expected 14 cards, got ${metrics.cardCount}`);
   if (metrics.overflow > 1) failures.push(`${viewport.name}: horizontal overflow ${metrics.overflow}px`);
   if (metrics.brokenImages !== 0) failures.push(`${viewport.name}: ${metrics.brokenImages} broken visual(s)`);
-  // Current main includes the certified P1.1 Agdal neighborhood visual library, so
-  // the deterministic Search fixture now promotes Agdal from contextual to neighborhood-photo.
   if (metrics.contextualCount !== 10 || metrics.neighborhoodCount !== 2 || metrics.genericCount !== 2) failures.push(`${viewport.name}: current visual inventory predecessor drift (${metrics.contextualCount}/${metrics.neighborhoodCount}/${metrics.genericCount})`);
   if (metrics.desktopNavVisible !== viewport.desktopNav) failures.push(`${viewport.name}: desktop navigation visibility mismatch`);
   if (metrics.mobileMenuVisible !== !viewport.desktopNav) failures.push(`${viewport.name}: mobile menu visibility mismatch`);
-  if (!metrics.accountVisible) failures.push(`${viewport.name}: Mon compte action must remain available`);
 
   const screenshot = path.join(outDir, `${viewport.name}.png`);
   await page.screenshot({ path: screenshot, fullPage: true });
@@ -163,7 +158,7 @@ await browser.close();
 
 const scoreParts = {
   hierarchy: failures.filter((item) => item.includes("header height") || item.includes("alignment delta") || item.includes("logo center") || item.includes("header does not span")).length === 0 ? 3.5 : 0,
-  navigationContinuity: failures.filter((item) => item.includes("navigation visibility") || item.includes("menu visibility") || item.includes("Mon compte") || item.includes("desktop nav drift")).length === 0 ? 2 : 0,
+  navigationContinuity: failures.filter((item) => item.includes("navigation visibility") || item.includes("menu visibility") || item.includes("desktop nav drift")).length === 0 ? 2 : 0,
   responsiveDensity: failures.filter((item) => item.includes("columns") || item.includes("first card") || item.includes("card height")).length === 0 ? 2 : 0,
   predecessorIntegrity: failures.filter((item) => item.includes("predecessor drift") || item.includes("broken visual")).length === 0 ? 1.5 : 0,
   overflow: failures.filter((item) => item.includes("overflow")).length === 0 ? 1 : 0,

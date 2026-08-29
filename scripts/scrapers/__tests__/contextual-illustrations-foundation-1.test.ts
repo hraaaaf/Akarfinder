@@ -210,16 +210,20 @@ describe("CONTEXTUAL-ILLUSTRATIONS-FOUNDATION-1", () => {
     assert.match(resolver, /normalizedPropertyType/);
   });
 
-  it("keeps external minimal SERP media-free and source-linked", () => {
+  it("keeps external indexed SERP truth-safe, locally illustrated and source-linked", () => {
     const card = source("components/search/ExternalIndexedResultCard.tsx");
 
     assert.match(card, /data-external-serp-group/);
+    assert.match(card, /data-indexed-artwork-card/);
+    assert.match(card, /<IndexedTransactionArtwork transaction=\{visualTransaction\} \/>/);
     assert.match(card, /result\.original_url/);
     assert.match(card, /href=\{sourcePages\[0\]\.url\}/);
     assert.match(card, /href=\{source\.url\}/);
+    assert.match(card, /formatPriceMad\(representative\.normalized_price_mad\)/);
+    assert.match(card, /isPriceToVerify\(representative\)/);
     assert.doesNotMatch(card, /THUMBNAILS_ENABLED|thumbnail_url|ContextualListingArtwork|PropertyTypeArtwork|data-card-image/);
     assert.doesNotMatch(card, /result\.(district|quartier|neighborhood|title|snippet)/);
-    assert.doesNotMatch(card, /normalized_price_mad|normalized_surface_m2/);
+    assert.doesNotMatch(card, /normalized_surface_m2/);
   });
 
   it("preserves property-type and neutral fallbacks for surfaces that still use contextual artwork", () => {

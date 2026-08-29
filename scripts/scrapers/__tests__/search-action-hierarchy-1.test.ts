@@ -44,11 +44,14 @@ describe("SEARCH-ACTION-HIERARCHY-1", () => {
     assert.ok(card.includes("data-public-attribution"));
   });
 
-  it("does not change the external Gateway card action hierarchy", () => {
+  it("keeps the external Gateway source action compact and original-source linked", () => {
     const external = source("components/search/ExternalIndexedResultCard.tsx");
 
-    assert.ok(external.includes("publicAttribution.primaryCtaLabel"));
     assert.ok(external.includes("result.original_url"));
+    assert.ok(external.includes("href={sourcePages[0].url}"));
+    assert.ok(external.includes("href={source.url}"));
+    assert.ok(external.includes("Ouvrir la source"));
+    assert.ok(external.includes("Voir les {sourcePages.length} pages"));
     assert.doesNotMatch(external, /Repérer sur la carte|CompareToggleButton/);
   });
 });

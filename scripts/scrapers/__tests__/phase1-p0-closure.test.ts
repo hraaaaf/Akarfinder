@@ -106,16 +106,16 @@ describe("Phase 1 P0 — result regime separation", () => {
 });
 
 describe("Phase 1 P0 — single buyer journey", () => {
-  it("legacy search-profile route is redirect-only to Companion", () => {
+  it("legacy search-profile route is redirect-only to Mon Projet", () => {
     const profile = source("app/profil-recherche/page.tsx");
-    assert.ok(profile.includes('redirect("/compagnon")'));
+    assert.ok(profile.includes('redirect("/mon-projet")'));
     assert.ok(!profile.includes("SearchProfileWizard"));
   });
 
   it("legacy buyer onboarding no longer owns a second buyer flow", () => {
     const onboarding = source("app/onboarding/page.tsx");
     assert.ok(onboarding.includes("legacy_onboarding"));
-    assert.ok(onboarding.includes("/compagnon?"));
+    assert.ok(onboarding.includes("/mon-projet?"));
     assert.ok(!onboarding.includes("BuyerOnboardingFlow"));
   });
 });

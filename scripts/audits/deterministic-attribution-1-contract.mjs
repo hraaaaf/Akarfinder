@@ -16,9 +16,11 @@ assert.match(resolver, /Origine à confirmer/);
 assert.doesNotMatch(resolver, /title|snippet|description/i);
 assert.doesNotMatch(resolver, /ranking_score|lane_weight|display_eligibility|fetch\s*\(|insert\s*\(|update\s*\(|upsert\s*\(/i);
 
-assert.match(gatewayCard, /deriveGatewayPublicAttribution\(result\)/);
-assert.match(gatewayCard, /data-public-attribution-type/);
-assert.match(gatewayCard, /data-public-attribution-source/);
+assert.match(gatewayCard, /result\.original_url/);
+assert.match(gatewayCard, /getSourceDomain\(result\)/);
+assert.match(gatewayCard, /data-external-serp-group/);
+assert.match(gatewayCard, /AkarFinder indexe la page et vous renvoie vers la source originale\./);
+assert.match(gatewayCard, /Ouvrir la source/);
 assert.doesNotMatch(gatewayCard, /\{result\.source_name\}/);
 assert.doesNotMatch(gatewayCard, /\{result\.result_attribution_label\}/);
 assert.doesNotMatch(gatewayCard, /\{result\.primary_cta_label\}/);

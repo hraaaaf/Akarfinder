@@ -7,16 +7,21 @@ const ROOT = process.cwd();
 const source = (path: string) => readFileSync(resolve(ROOT, path), "utf8");
 
 describe("UX-LISTING-NAV-FEEDBACK-1", () => {
-  it("keeps primary Search listing navigation in the current tab", () => {
+  it("keeps primary Search listing navigation canonical and explicit", () => {
     const internalCard = source("components/search/SearchListingCardDark.tsx");
     const gatewayCard = source("components/search/ExternalIndexedResultCard.tsx");
 
-    assert.ok(internalCard.includes("const resultHref ="));
-    assert.ok(internalCard.includes("listing.listing_url : `/listings/${listing.id}`"));
+    assert.ok(internalCard.includes('const internalHref = `/bien/${listing.id}`'));
+    assert.ok(internalCard.includes("const resultHref = observedExternal && listing.listing_url ? listing.listing_url : internalHref"));
+    assert.ok(internalCard.includes("window.location.assign(href)"));
+    assert.ok(internalCard.includes("router.push(href)"));
+    assert.ok(internalCard.includes("router.prefetch(resultHref)"));
     assert.doesNotMatch(internalCard, /const resultTarget =/);
     assert.doesNotMatch(internalCard, /const resultRel =/);
-    assert.ok(gatewayCard.includes("href={result.original_url}"));
-    assert.doesNotMatch(gatewayCard, /target=["']_blank["']/);
+
+    assert.ok(gatewayCard.includes("result.original_url"));
+    assert.ok(gatewayCard.includes('target="_blank"'));
+    assert.ok(gatewayCard.includes('rel="noopener noreferrer"'));
   });
 
   it("keeps explicit secondary provenance and credit links external", () => {
@@ -26,8 +31,8 @@ describe("UX-LISTING-NAV-FEEDBACK-1", () => {
 
     assert.notEqual(secondarySource, -1);
     assert.notEqual(neighborhoodCredit, -1);
-    assert.ok(card.slice(Math.max(0, secondarySource - 180), secondarySource).includes('target="_blank"'));
-    assert.ok(card.slice(Math.max(0, neighborhoodCredit - 180), neighborhoodCredit).includes('target="_blank"'));
+    assert.ok(card.slice(Math.max(0, secondarySource - 220), secondarySource + 120).includes('target="_blank"'));
+    assert.ok(card.slice(Math.max(0, neighborhoodCredit - 220), neighborhoodCredit + 120).includes('target="_blank"'));
   });
 
   it("mounts delayed branded navigation feedback with browser-history resets", () => {

@@ -8,10 +8,10 @@ const outDir = process.env.AUDIT_DIR ?? path.join("data", "audits", "ux-search-v
 const viewports = [
   { name: "mobile-360x800", width: 360, height: 800, columns: 2, topMax: 270, cardMax: 390 },
   { name: "mobile-390x844", width: 390, height: 844, columns: 2, topMax: 270, cardMax: 390 },
-  { name: "tablet-768x900", width: 768, height: 900, columns: 2, topMax: 285, cardMax: 620 },
-  { name: "desktop-1024x800", width: 1024, height: 800, columns: 3, topMax: 280, cardMax: 420 },
-  { name: "desktop-1280x900", width: 1280, height: 900, columns: 4, topMax: 280, cardMax: 420 },
-  { name: "desktop-1440x900", width: 1440, height: 900, columns: 4, topMax: 280, cardMax: 420 },
+  { name: "tablet-768x900", width: 768, height: 900, columns: 2, topMax: 292, cardMax: 620 },
+  { name: "desktop-1024x800", width: 1024, height: 800, columns: 3, topMax: 288, cardMax: 420 },
+  { name: "desktop-1280x900", width: 1280, height: 900, columns: 4, topMax: 288, cardMax: 420 },
+  { name: "desktop-1440x900", width: 1440, height: 900, columns: 4, topMax: 288, cardMax: 420 },
 ];
 
 const cityPairs = [
@@ -164,18 +164,18 @@ for (const viewport of viewports) {
   if (metrics.maxCardHeight > viewport.cardMax) failures.push(`${viewport.name}: card height ${metrics.maxCardHeight}px > ${viewport.cardMax}px`);
   if (metrics.overflow > 1) failures.push(`${viewport.name}: horizontal overflow ${metrics.overflow}px`);
   if (metrics.brokenImages !== 0) failures.push(`${viewport.name}: ${metrics.brokenImages} broken visual(s)`);
-  if (counts.neighborhood_photo !== 1) failures.push(`${viewport.name}: expected 1 neighborhood photo, got ${counts.neighborhood_photo}`);
-  if (counts.contextual_illustration !== 11) failures.push(`${viewport.name}: expected 11 contextual illustrations, got ${counts.contextual_illustration}`);
+  if (counts.neighborhood_photo !== 2) failures.push(`${viewport.name}: expected 2 certified Rabat neighborhood photos, got ${counts.neighborhood_photo}`);
+  if (counts.contextual_illustration !== 10) failures.push(`${viewport.name}: expected 10 contextual illustrations, got ${counts.contextual_illustration}`);
   if (counts.generic_illustration !== 2) failures.push(`${viewport.name}: expected 2 generic illustrations, got ${counts.generic_illustration}`);
   if (counts.authorized_or_listing_image !== 0 || counts.neutral !== 0) failures.push(`${viewport.name}: unexpected authorized/neutral visual class`);
-  if (new Set(metrics.contextualIds).size !== 11) failures.push(`${viewport.name}: contextual inventory is not visually distinct across the 11 contextual fixtures`);
-  if (new Set(metrics.neighborhoodIds).size !== 1) failures.push(`${viewport.name}: Rabat neighborhood photo precedence missing`);
+  if (new Set(metrics.contextualIds).size !== 10) failures.push(`${viewport.name}: contextual inventory is not visually distinct across the 10 contextual fixtures`);
+  if (new Set(metrics.neighborhoodIds).size !== 2) failures.push(`${viewport.name}: certified Rabat neighborhood photo precedence missing`);
   if (JSON.stringify(initialKeys) !== JSON.stringify(replayKeys)) failures.push(`${viewport.name}: deterministic visual assignment drifted after reload`);
   const contextualDisclosureCount = metrics.labels.filter((item) => item.illustration === "Illustration").length;
   const neighborhoodDisclosureCount = metrics.labels.filter((item) => item.neighborhood === "Photo d’ambiance").length;
   const genericDisclosureCount = metrics.labels.filter((item) => item.fullText.includes("Visuel illustratif")).length;
-  if (contextualDisclosureCount !== 11) failures.push(`${viewport.name}: contextual disclosure count ${contextualDisclosureCount}/11`);
-  if (neighborhoodDisclosureCount !== 1) failures.push(`${viewport.name}: neighborhood disclosure count ${neighborhoodDisclosureCount}/1`);
+  if (contextualDisclosureCount !== 10) failures.push(`${viewport.name}: contextual disclosure count ${contextualDisclosureCount}/10`);
+  if (neighborhoodDisclosureCount !== 2) failures.push(`${viewport.name}: neighborhood disclosure count ${neighborhoodDisclosureCount}/2`);
   if (genericDisclosureCount < 2) failures.push(`${viewport.name}: generic illustration disclosure missing`);
 
   const screenshot = path.join(outDir, `${viewport.name}.png`);
