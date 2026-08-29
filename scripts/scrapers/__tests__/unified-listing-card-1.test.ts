@@ -28,15 +28,25 @@ describe("UNIFIED-LISTING-CARD-1", () => {
     assert.ok(disclaimer < action, "source action must remain after the disclaimer");
   });
 
-  it("fails visibly closed for external minimal results", () => {
+  it("fails visibly closed for external indexed results", () => {
     const card = source("components/search/ExternalIndexedResultCard.tsx");
 
     assert.ok(card.includes("buildGeneratedTitle(representative)"));
     assert.ok(card.includes("result.normalized_city"));
     assert.ok(card.includes("result.normalized_property_type"));
     assert.ok(card.includes("result.normalized_intent"));
-    assert.doesNotMatch(card, /result\.title|result\.snippet|normalized_price_mad|normalized_surface_m2/);
-    assert.doesNotMatch(card, /thumbnail_url|data-card-image|ContextualListingArtwork|PropertyTypeArtwork/);
+    assert.doesNotMatch(card, /result\.title|result\.snippet|normalized_surface_m2/);
+
+    // Normalized price is permitted only through the explicit verification layer.
+    assert.ok(card.includes("formatPriceMad(representative.normalized_price_mad)"));
+    assert.ok(card.includes("isPriceToVerify(representative)"));
+    assert.ok(card.includes("Prix à vérifier"));
+    assert.ok(card.includes("data-price-verification"));
+
+    // External cards may use AkarFinder-owned deterministic artwork, never third-party listing media.
+    assert.ok(card.includes("IndexedTransactionArtwork"));
+    assert.ok(card.includes("data-indexed-artwork-card"));
+    assert.doesNotMatch(card, /thumbnail_url|data-card-image|ContextualListingArtwork|PropertyTypeArtwork|<img|<Image/);
     assert.ok(card.includes("AkarFinder indexe la page et vous renvoie vers la source originale."));
   });
 
@@ -47,7 +57,7 @@ describe("UNIFIED-LISTING-CARD-1", () => {
     assert.ok(card.includes("href={source.url}"));
     assert.ok(card.includes('target="_blank"'));
     assert.ok(card.includes('rel="noopener noreferrer"'));
-    assert.doesNotMatch(card, /data-card-image|ContextualListingArtwork|PropertyTypeArtwork|THUMBNAILS_ENABLED/);
+    assert.doesNotMatch(card, /data-card-image|ContextualListingArtwork|PropertyTypeArtwork|THUMBNAILS_ENABLED|<img|<Image/);
     assert.doesNotMatch(card, /href=\{?['"]\/listings\//);
   });
 
