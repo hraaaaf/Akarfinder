@@ -86,8 +86,8 @@ for (const v of viewports) {
       card: { x: cb.x, y: cb.y, width: cb.width, height: cb.height, radius: cardStyle.borderRadius },
       media: { x: mb.x, y: mb.y, width: mb.width, height: mb.height },
       favorite: fb && favoriteStyle ? { width: fb.width, height: fb.height, radius: favoriteStyle.borderRadius } : null,
-      visualMarker: media.querySelector('[data-visual-inventory-class]')?.getAttribute('data-visual-inventory-class')
-        ?? media.querySelector('[data-indexed-artwork-card]')?.getAttribute('data-indexed-artwork-card')
+      visualMarker: card.querySelector('[data-visual-inventory-class]')?.getAttribute('data-visual-inventory-class')
+        ?? card.querySelector('[data-indexed-artwork-card]')?.getAttribute('data-indexed-artwork-card')
         ?? null,
       brokenImages: [...media.querySelectorAll('img')].filter((image) => image.complete && image.naturalWidth === 0).length,
       overflowX: document.documentElement.scrollWidth - document.documentElement.clientWidth,
