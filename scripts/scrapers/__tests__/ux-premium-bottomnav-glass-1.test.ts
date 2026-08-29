@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import test from "node:test";
 
-test("UX-PREMIUM-BOTTOMNAV-GLASS-1 canonical mockup contract", () => {
+test("UX-PREMIUM-BOTTOMNAV-GLASS-1 canonical navigation contract", () => {
   const nav = fs.readFileSync("components/layout/MobileBottomNav.tsx", "utf8");
   const designSystem = fs.readFileSync("components/ui/design-system.ts", "utf8");
   const alerts = fs.readFileSync("app/alerts/page.tsx", "utf8");
@@ -11,7 +11,7 @@ test("UX-PREMIUM-BOTTOMNAV-GLASS-1 canonical mockup contract", () => {
   assert.match(nav, /ui\.surfaceGlass/);
   assert.match(designSystem, /surfaceGlass:/);
   assert.match(designSystem, /backdrop-blur-\[20px\]/);
-  assert.match(designSystem, /rounded-\[24px\]/);
+  assert.match(designSystem, /rounded-\[28px\]/);
   assert.match(designSystem, /bg-white\/82/);
   assert.match(designSystem, /supports-\[backdrop-filter\]:bg-white\/76/);
   assert.match(nav, /h-\[66px\]/);
@@ -21,7 +21,7 @@ test("UX-PREMIUM-BOTTOMNAV-GLASS-1 canonical mockup contract", () => {
     ["/favorites", "Favoris"],
     ["/map", "Carte"],
     ["/alerts", "Alertes"],
-    ["/mon-projet", "Compte"],
+    ["/mon-projet", "Mon Projet"],
   ]) {
     assert.ok(nav.includes(`href: "${href}"`), `missing ${href}`);
     assert.ok(nav.includes(`label: "${label}"`), `missing ${label}`);
@@ -32,5 +32,5 @@ test("UX-PREMIUM-BOTTOMNAV-GLASS-1 canonical mockup contract", () => {
   const explorerBlock = nav.slice(nav.indexOf('href: "/search"'), nav.indexOf('href: "/favorites"'));
   assert.doesNotMatch(explorerBlock, /"\/map"/);
   assert.match(alerts, /Les notifications automatiques ne sont pas encore activées/);
-  assert.match(alerts, /href="\/profil-recherche"/);
+  assert.match(alerts, /href="\/mon-projet"/);
 });
