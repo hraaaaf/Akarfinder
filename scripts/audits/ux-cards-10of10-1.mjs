@@ -30,8 +30,6 @@ const titles = [
   "Appartement avec terrasse et double orientation",
 ];
 
-// Same deterministic, read-only Playwright fixture strategy as the frozen UX-SEARCH-3 card gate.
-// No database writes are needed for visual certification.
 const listings = Array.from({ length: 8 }, (_, index) => ({
   id: `ux-cards-10of10-1-${index + 1}`,
   title: titles[index],
@@ -72,26 +70,10 @@ function rgb(value) {
   if (!match) return null;
   return { r: Number(match[1]), g: Number(match[2]), b: Number(match[3]) };
 }
-
-function isLight(value) {
-  const c = rgb(value);
-  return Boolean(c && c.r >= 235 && c.g >= 235 && c.b >= 235);
-}
-
-function isBlue(value) {
-  const c = rgb(value);
-  return Boolean(c && c.b >= c.r + 45 && c.b >= c.g + 30 && c.g >= c.r + 20);
-}
-
-function isBronze(value) {
-  const c = rgb(value);
-  if (!c) return false;
-  return c.r > c.b + 35 && c.g > c.b + 5 && c.r > c.g;
-}
-
-function closeTo(actual, expected, tolerance = 3) {
-  return Math.abs(actual - expected) <= tolerance;
-}
+function isLight(value) { const c = rgb(value); return Boolean(c && c.r >= 235 && c.g >= 235 && c.b >= 235); }
+function isBlue(value) { const c = rgb(value); return Boolean(c && c.b >= c.r + 45 && c.b >= c.g + 30 && c.g >= c.r + 20); }
+function isBronze(value) { const c = rgb(value); return Boolean(c && c.r > c.b + 35 && c.g > c.b + 5 && c.r > c.g); }
+function closeTo(actual, expected, tolerance = 3) { return Math.abs(actual - expected) <= tolerance; }
 
 const browser = await chromium.launch({ headless: true });
 const results = [];
@@ -103,40 +85,28 @@ try {
     const page = await context.newPage();
 
     await page.route("**/api/search?**", async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify({
-          listings,
-          total: listings.length,
-          limit: 100,
-          offset: 0,
-          source: "ux-cards-10of10-1-ci-fixture",
-          generated_at: new Date().toISOString(),
-        }),
-      });
+      await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ listings, total: listings.length, limit: 100, offset: 0, source: "ux-cards-10of10-1-ci-fixture", generated_at: new Date().toISOString() }) });
     });
     await page.route("**/api/search/gateway?**", async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify({ results: [], total_count: 0, next_cursor: null, has_more: false }),
-      });
+      await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ results: [], total_count: 0, next_cursor: null, has_more: false }) });
     });
 
     const response = await page.goto(`${baseUrl}/search?city=Rabat&view=list`, { waitUntil: "domcontentloaded", timeout: 60_000 });
-    if (!response || response.status() >= 400) {
-      failures.push(`${viewport.width}px: search route returned ${response?.status() ?? "no response"}`);
-    }
+    if (!response || response.status() >= 400) failures.push(`${viewport.width}px: search route returned ${response?.status() ?? "no response"}`);
 
     await page.waitForFunction(() => document.querySelectorAll("[data-search-listing-card]").length >= 8, null, { timeout: 30_000 });
     await page.waitForTimeout(350);
 
-    const listButton = page.locator('[data-search-view-mode-button="list"]');
-    await listButton.waitFor({ state: "visible", timeout: 10_000 });
-    if ((await listButton.getAttribute("aria-pressed")) !== "true") {
-      await listButton.click();
-      await page.waitForTimeout(250);
+    // The canonical mobile toolbar intentionally suppresses the view switcher below 640px.
+    // The URL already locks view=list for this cards audit, so only assert/click the visible
+    // segmented control at sm+ where the product actually exposes it.
+    if (viewport.width >= 640) {
+      const listButton = page.locator('[data-search-view-mode-button="list"]');
+      await listButton.waitFor({ state: "visible", timeout: 10_000 });
+      if ((await listButton.getAttribute("aria-pressed")) !== "true") {
+        await listButton.click();
+        await page.waitForTimeout(250);
+      }
     }
 
     const cards = page.locator("[data-search-listing-card]");
@@ -153,7 +123,6 @@ try {
       });
       const first = allCards[0];
       if (!first) return null;
-
       const firstRect = first.getBoundingClientRect();
       const firstTop = firstRect.top;
       const firstRow = allCards.filter((card) => Math.abs(card.getBoundingClientRect().top - firstTop) <= 3);
@@ -178,17 +147,8 @@ try {
       const actionRect = action?.getBoundingClientRect();
       const grid = first.parentElement;
       const gridStyle = grid ? getComputedStyle(grid) : null;
-
       return {
-        card: {
-          top: firstRect.top,
-          width: firstRect.width,
-          height: firstRect.height,
-          background: cardStyle.backgroundColor,
-          border: cardStyle.borderTopColor,
-          radius: parseFloat(cardStyle.borderTopLeftRadius),
-          shadow: cardStyle.boxShadow,
-        },
+        card: { top: firstRect.top, width: firstRect.width, height: firstRect.height, background: cardStyle.backgroundColor, border: cardStyle.borderTopColor, radius: parseFloat(cardStyle.borderTopLeftRadius), shadow: cardStyle.boxShadow },
         columns: firstRow.length,
         gridTemplateColumns: gridStyle?.gridTemplateColumns ?? "",
         imageHeight: imageRect?.height ?? 0,
@@ -201,13 +161,7 @@ try {
         factRadius: factStyle ? parseFloat(factStyle.borderTopLeftRadius) : null,
         factBackground: factStyle?.backgroundColor ?? "",
         favorite: favoriteRect ? { width: favoriteRect.width, height: favoriteRect.height } : null,
-        action: actionRect && actionStyle && actionRect.width > 0 && actionRect.height > 0 ? {
-          width: actionRect.width,
-          height: actionRect.height,
-          background: actionStyle.backgroundColor,
-          color: actionStyle.color,
-          border: actionStyle.borderTopColor,
-        } : null,
+        action: actionRect && actionStyle && actionRect.width > 0 && actionRect.height > 0 ? { width: actionRect.width, height: actionRect.height, background: actionStyle.backgroundColor, color: actionStyle.color, border: actionStyle.borderTopColor } : null,
         overflowX: document.documentElement.scrollWidth - document.documentElement.clientWidth,
       };
     });
@@ -241,13 +195,8 @@ try {
       if (viewport.width >= 1280 && metrics.card.width < 245) localFailures.push(`wide desktop card is too narrow: ${metrics.card.width}px`);
     }
 
-    await page.screenshot({
-      path: path.join(outDir, `cards-${viewport.width}x${viewport.height}.png`),
-      fullPage: false,
-    });
-
-    const record = { viewport, visibleCards, metrics, failures: localFailures };
-    results.push(record);
+    await page.screenshot({ path: path.join(outDir, `cards-${viewport.width}x${viewport.height}.png`), fullPage: false });
+    results.push({ viewport, visibleCards, metrics, failures: localFailures });
     for (const failure of localFailures) failures.push(`${viewport.width}px: ${failure}`);
     await context.close();
   }
@@ -255,28 +204,9 @@ try {
   await browser.close();
 }
 
-const report = {
-  lot: "UX-CARDS-10OF10-1",
-  variant,
-  baseUrl,
-  fixtureCount: listings.length,
-  generatedAt: new Date().toISOString(),
-  score: failures.length === 0 ? 10 : Math.max(0, Number((10 - failures.length * 0.5).toFixed(1))),
-  failures,
-  results,
-};
-
+const report = { lot: "UX-CARDS-10OF10-1", variant, baseUrl, fixtureCount: listings.length, generatedAt: new Date().toISOString(), score: failures.length === 0 ? 10 : Math.max(0, Number((10 - failures.length * 0.5).toFixed(1))), failures, results };
 fs.writeFileSync(path.join(outDir, "report.json"), JSON.stringify(report, null, 2));
-fs.writeFileSync(
-  path.join(outDir, "summary.txt"),
-  failures.length === 0
-    ? `UX-CARDS-10OF10-1 ${variant}: PASS 10/10\n`
-    : `UX-CARDS-10OF10-1 ${variant}: FAIL\n${failures.join("\n")}\n`,
-);
-
+fs.writeFileSync(path.join(outDir, "summary.txt"), failures.length === 0 ? `UX-CARDS-10OF10-1 ${variant}: PASS 10/10\n` : `UX-CARDS-10OF10-1 ${variant}: FAIL\n${failures.join("\n")}\n`);
 console.log(JSON.stringify(report, null, 2));
-if (failures.length > 0) {
-  console.error(`UX-CARDS-10OF10-1 visual certification failed with ${failures.length} finding(s).`);
-  process.exit(1);
-}
+if (failures.length > 0) { console.error(`UX-CARDS-10OF10-1 visual certification failed with ${failures.length} finding(s).`); process.exit(1); }
 console.log("UX-CARDS-10OF10-1 visual certification passed at 10/10.");
