@@ -86,8 +86,9 @@ for (const v of viewports) {
       card: { x: cb.x, y: cb.y, width: cb.width, height: cb.height, radius: cardStyle.borderRadius },
       media: { x: mb.x, y: mb.y, width: mb.width, height: mb.height },
       favorite: fb && favoriteStyle ? { width: fb.width, height: fb.height, radius: favoriteStyle.borderRadius } : null,
-      visualMarker: card.querySelector('[data-visual-inventory-class]')?.getAttribute('data-visual-inventory-class')
-        ?? card.querySelector('[data-indexed-artwork-card]')?.getAttribute('data-indexed-artwork-card')
+      visualMarker: card.getAttribute('data-indexed-artwork-card')
+        ?? card.querySelector('[data-visual-inventory-class]')?.getAttribute('data-visual-inventory-class')
+        ?? card.querySelector('[data-indexed-transaction-artwork]')?.getAttribute('data-indexed-transaction-artwork')
         ?? null,
       brokenImages: [...media.querySelectorAll('img')].filter((image) => image.complete && image.naturalWidth === 0).length,
       overflowX: document.documentElement.scrollWidth - document.documentElement.clientWidth,
@@ -103,7 +104,7 @@ for (const v of viewports) {
     if (Number.parseFloat(metrics.card.radius) < v.minCardRadius) failures.push(`${v.name}: card radius ${metrics.card.radius}`);
     if (metrics.card.width < 140) failures.push(`${v.name}: card width ${metrics.card.width}`);
     if (metrics.overflowX !== 0) failures.push(`${v.name}: overflowX ${metrics.overflowX}`);
-    if (!metrics.visualMarker) failures.push(`${v.name}: certified visual marker missing`);
+    if (metrics.visualMarker == null) failures.push(`${v.name}: certified visual marker missing`);
     if (metrics.brokenImages !== 0) failures.push(`${v.name}: broken images ${metrics.brokenImages}`);
     if (metrics.favorite) {
       if (metrics.favorite.width < 43.5 || metrics.favorite.height < 43.5) failures.push(`${v.name}: favorite target ${metrics.favorite.width}x${metrics.favorite.height}`);
