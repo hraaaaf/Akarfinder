@@ -34,9 +34,9 @@
   }
 }
 
-@media (min-width: 1024px) and (max-width: 1439px) {
+@media (min-width: 1024px) and (max-width: 1279px) {
   [data-p8-publication-v4] > .grid {
-    grid-template-columns: 184px minmax(0, 1fr) !important;
+    grid-template-columns: 176px minmax(0, 1fr) !important;
     gap: 18px !important;
   }
 
@@ -44,11 +44,23 @@
     padding: 14px !important;
     border-radius: 18px !important;
   }
+}
 
-  /* The live preview remains available on wider workstations. At 1280px it
-     steals too much attention and width from the actual publication task. */
-  [data-p8-publication-v4] > .grid > aside:last-child {
-    display: none !important;
+@media (min-width: 1280px) and (max-width: 1439px) {
+  /* Keep the certified live preview visible at the xl breakpoint, but make
+     both assistance rails subordinate to the central publication task. */
+  [data-p8-publication-v4] > .grid {
+    grid-template-columns: 170px minmax(0, 1fr) 270px !important;
+    gap: 16px !important;
+  }
+
+  [data-p8-publication-v4] > .grid > aside:first-child section {
+    padding: 13px !important;
+    border-radius: 18px !important;
+  }
+
+  [data-p8-publication-v4] > .grid > aside:last-child > div {
+    top: 16px !important;
   }
 }
 
