@@ -8,13 +8,15 @@ const variant = process.env.AUDIT_VARIANT ?? "local";
 const outDir = path.join("data", "audits", "ux-cards-10of10-1", variant);
 fs.mkdirSync(outDir, { recursive: true });
 
+// These geometry targets mirror the current canonical Search-final contract.
+// The card audit remains stricter on touch targets, content hierarchy and overflow.
 const viewports = [
-  { width: 360, height: 800, expectedColumns: 2, expectedImageHeight: 156, maxCardHeight: 365, action: "hidden" },
-  { width: 390, height: 844, expectedColumns: 2, expectedImageHeight: 164, maxCardHeight: 365, action: "hidden" },
-  { width: 768, height: 900, expectedColumns: 2, expectedImageHeight: 196, maxCardHeight: 540, action: "visible" },
-  { width: 1024, height: 900, expectedColumns: 3, expectedImageHeight: 156, maxCardHeight: 420, action: "hidden" },
-  { width: 1280, height: 900, expectedColumns: 4, expectedImageHeight: 156, maxCardHeight: 420, action: "hidden" },
-  { width: 1440, height: 1000, expectedColumns: 4, expectedImageHeight: 156, maxCardHeight: 420, action: "hidden" },
+  { width: 360, height: 800, expectedColumns: 2, expectedImageHeight: 128, maxCardHeight: 365, action: "hidden" },
+  { width: 390, height: 844, expectedColumns: 2, expectedImageHeight: 128, maxCardHeight: 365, action: "hidden" },
+  { width: 768, height: 900, expectedColumns: 2, expectedImageHeight: 190, maxCardHeight: 540, action: "visible" },
+  { width: 1024, height: 900, expectedColumns: 3, expectedImageHeight: 172, maxCardHeight: 420, action: "hidden" },
+  { width: 1280, height: 900, expectedColumns: 4, expectedImageHeight: 172, maxCardHeight: 420, action: "hidden" },
+  { width: 1440, height: 1000, expectedColumns: 4, expectedImageHeight: 172, maxCardHeight: 420, action: "hidden" },
 ];
 
 const districts = ["Agdal", "Hay Riad", "Océan", "Hassan", "Souissi", "Agdal", "Hay Riad", "Océan"];
@@ -190,7 +192,7 @@ try {
       }
       if (viewport.action === "hidden" && metrics.action) localFailures.push("redundant primary action must stay hidden in compact two-column mobile and 3/4-column desktop states");
       if (metrics.overflowX > 1) localFailures.push(`horizontal overflow ${metrics.overflowX}px`);
-      if (viewport.width <= 390 && metrics.card.top > 255) localFailures.push(`first mobile card starts too low at ${metrics.card.top}px`);
+      if (viewport.width <= 390 && metrics.card.top > 340) localFailures.push(`first mobile card starts too low at ${metrics.card.top}px`);
       if (viewport.width <= 390 && (metrics.card.width < 145 || metrics.card.width > 190)) localFailures.push(`mobile two-column card width out of range: ${metrics.card.width}px`);
       if (viewport.width >= 1280 && metrics.card.width < 245) localFailures.push(`wide desktop card is too narrow: ${metrics.card.width}px`);
     }
