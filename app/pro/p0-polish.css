@@ -1,0 +1,59 @@
+/* UX/UI POLISH P0.5 — /pro
+   Goal: preserve the strong Pro identity while reducing mobile scroll pressure
+   and keeping the hero/product preview hierarchy crisp. */
+
+@media (max-width: 767px) {
+  [data-p9-professionnels] [data-p9-hero] {
+    padding-top: 96px !important;
+    padding-bottom: 40px !important;
+  }
+
+  [data-p9-professionnels] [data-p9-hero] h1 {
+    font-size: 2.25rem !important;
+    line-height: 1.02 !important;
+  }
+
+  [data-p9-professionnels] [data-p9-dashboard-preview] {
+    border-radius: 22px !important;
+    padding: 8px !important;
+  }
+
+  [data-p9-professionnels] [data-p9-dashboard-preview] > div {
+    border-radius: 18px !important;
+    padding: 18px !important;
+  }
+
+  [data-p9-professionnels] [data-p9-pillars] {
+    padding-block: 24px !important;
+  }
+
+  [data-p9-professionnels] [data-p9-pillars] article {
+    padding: 16px !important;
+    border-radius: 18px !important;
+  }
+
+  [data-p9-professionnels] [data-p9-standards] {
+    padding-block: 40px !important;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  [data-p9-professionnels] [data-p9-hero] {
+    padding-top: 112px !important;
+    padding-bottom: 48px !important;
+  }
+
+  [data-p9-professionnels] [data-p9-pillars] {
+    padding-block: 28px !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  [data-p9-professionnels] [data-p9-hero] {
+    padding-bottom: 56px !important;
+  }
+
+  [data-p9-professionnels] [data-p9-dashboard-preview] {
+    transform: translateY(4px);
+  }
+}
