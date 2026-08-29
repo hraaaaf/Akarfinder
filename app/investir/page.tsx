@@ -10,13 +10,13 @@ export default function InvestirPage() {
   return (
     <IntentPageShell
       badge="Signaux de marché"
-      badgeColor="text-emerald-400"
+      badgeColor="text-emerald-600"
       title="Repères de marché indicatifs au Maroc"
       subtitle="AkarFinder agrège des prix observés sur des annonces publiques analysées. Ces données constituent des repères indicatifs, non des conseils financiers. À confirmer avant toute décision d'investissement."
       heroCtas={[
-        { label: "Comparer des biens", href: "/compare", variant: "ghost" },
-        { label: "Explorer par ville", href: "/map", variant: "ghost" },
-        { label: "Voir les prix observés", href: "/search", variant: "ghost" },
+        { label: "Voir les prix observés", href: "/search", variant: "primary" },
+        { label: "Comparer des biens", href: "/compare", variant: "secondary" },
+        { label: "Explorer par ville", href: "/map", variant: "secondary" },
       ]}
       whyTitle="Signaux disponibles sur AkarFinder"
       blocks={[
