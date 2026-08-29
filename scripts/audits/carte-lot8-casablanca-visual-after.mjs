@@ -25,20 +25,41 @@ try {
   for (const viewport of viewports) {
     const page = await browser.newPage({ viewport: { width: viewport.width, height: viewport.height } });
     const diagnostics = { pageErrors: [], requestFailures: [], basemapTileResponses: [] };
+    let resolveHighZoomTiles;
+    let rejectHighZoomTiles;
     let highZoomTileCount = 0;
+    let highZoomTileGateSettled = false;
+    const highZoomTilesReady = new Promise((resolve, reject) => {
+      resolveHighZoomTiles = resolve;
+      rejectHighZoomTiles = reject;
+    });
+    const tileGateTimeout = setTimeout(() => {
+      if (highZoomTileGateSettled) return;
+      highZoomTileGateSettled = true;
+      rejectHighZoomTiles(new Error(`${viewport.name}: no real high-zoom basemap tiles rendered within 20s`));
+    }, 20000);
+
     page.on("pageerror", (error) => diagnostics.pageErrors.push(String(error)));
     page.on("requestfailed", (request) => diagnostics.requestFailures.push({ url: request.url(), error: request.failure()?.errorText || "unknown" }));
     page.on("response", (response) => {
       const zoom = basemapTileZoom(response.url());
       if (zoom === null) return;
       diagnostics.basemapTileResponses.push({ url: response.url(), status: response.status(), zoom });
-      if (zoom >= 9 && response.ok()) highZoomTileCount += 1;
+      if (zoom >= 9 && response.ok()) {
+        highZoomTileCount += 1;
+        if (highZoomTileCount >= 2 && !highZoomTileGateSettled) {
+          highZoomTileGateSettled = true;
+          clearTimeout(tileGateTimeout);
+          resolveHighZoomTiles();
+        }
+      }
     });
 
     try {
       await page.goto(`${baseUrl}/map?city=casablanca&district=maarif&layer=explore`, { waitUntil: "domcontentloaded", timeout: 30000 });
       await page.getByText("Chargement de la carte…", { exact: true }).waitFor({ state: "hidden", timeout: 30000 });
       await page.locator(".maplibregl-canvas").waitFor({ state: "visible", timeout: 10000 });
+      await highZoomTilesReady;
       const preview = page.locator('[data-akarfinder-neighborhood-preview="maarif"]');
       await preview.waitFor({ state: "visible", timeout: 20000 });
       await page.waitForTimeout(500);
@@ -60,6 +81,7 @@ try {
       await page.screenshot({ path: `${outDir}/casablanca-maarif-${viewport.width}x${viewport.height}.png`, fullPage: false });
       report.cases.push({ viewport: viewport.name, searchHref, panelBox, mapRendered: true, highZoomTileCount, diagnostics });
     } finally {
+      clearTimeout(tileGateTimeout);
       await page.close();
     }
   }
