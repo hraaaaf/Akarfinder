@@ -3,7 +3,7 @@
 ## Chantier
 AkarFinder — UX/UI Global Polish
 
-Dernière mise à jour : 2026-08-28
+Dernière mise à jour : 2026-08-29
 
 ## Goal
 Polir l’ensemble du site page par page sans refonte inutile, en améliorant en priorité la hiérarchie, la densité, la cohérence inter-pages, les états vides et la qualité perçue mobile/desktop.
@@ -94,7 +94,23 @@ Succès :
 - densité cohérente ;
 - CTA principal évident ;
 - progression compréhensible sans lecture exhaustive ;
-- mobile plus compact.
+- mobile plus compact ;
+- aucune navigation mobile ne masque les objectifs.
+
+AFTER exact-head `/mon-projet` :
+- HEAD : `110404e67c3f76b6549a95ed1fc815641cfcae60` ;
+- run P7 : `33223940945` — success ;
+- artifact : `9706206059` ;
+- digest : `sha256:0dc5ade8c7db692f57310627b490eb00814466097be68bb94144f8abdb7fc82f` ;
+- 4 captures : 390×844 / 430×932 / 768×900 / 1280×900 ;
+- findings P7 : 0 ;
+- 390/430 : les quatre objectifs sont intégralement lisibles, aucune bottom-nav ne recouvre `Investir` ou `Neuf` ;
+- 768 : grille 2×2 équilibrée, progression compacte ;
+- 1280 : rail de progression lisible sans concurrencer le panneau principal.
+
+Score visuel P0.3 : 9.2/10. Justification : hiérarchie claire, zéro obstruction observée et densité cohérente aux quatre viewports ; marge restante principalement cosmétique sur le volume de vide sous le contenu mobile, non bloquante.
+
+État : CLOSED pour `/mon-projet` sur preuve P7 exacte. `/profil-recherche` reste à réinspecter dans le passage transversal P1/P2 si un écart spécifique apparaît.
 
 ### P0.4 — Vendre / dossier
 Pages : `/vendre/dossier`
@@ -105,7 +121,27 @@ Succès :
 - priorité de lecture nette ;
 - colonne secondaire moins lourde ;
 - formulaire/étapes plus respirants ;
-- mobile sans surcharge.
+- mobile sans surcharge ;
+- logique vendeur, validation et données inchangées.
+
+Référence : conserver le langage AkarFinder actuel mais traiter le formulaire comme tâche principale ; rails = assistance, jamais contenu dominant.
+
+BEFORE inspecté aux 4 viewports 390×844 / 430×932 / 768×900 / 1280×900 :
+- mobile : structure saine mais carte de progression + formulaire + footer créent une page longue et tassée ;
+- tablette : contenu principal lisible, hiérarchie correcte ;
+- 1280 : split `220px + contenu + 390px` trop dense, avec deux rails concurrençant le formulaire.
+
+Implémentation P0.4 :
+- mobile : carte de progression et gaps resserrés sans retirer d’information ;
+- tablette : rythme vertical légèrement resserré ;
+- 1024–1439 : rail gauche ramené à 184 px ;
+- 1024–1439 : preview droite masquée pour rendre la largeur au formulaire ;
+- ≥1440 : preview conservée mais rails réduits à 190 px / 320 px ;
+- aucun changement de logique, score, étapes, validations ou API.
+
+HEAD fonctionnel P0.4 : `67fb4273f20239088af42444de5b1d98504d175d`.
+
+État : IMPLEMENTED — AFTER exact-head 390/430/768/1280 + tests requis avant clôture.
 
 ### P0.5 — Pro / Leads
 Pages : `/pro`, `/pro/leads`
@@ -162,10 +198,13 @@ Goal : harmoniser rythme, cards, headers secondaires, états vides, CTA et perso
 
 ## État actuel
 - branche : `feat/ux-ui-polish-p0`
-- PR : `#949` draft.
-- P0.1 : IMPLEMENTED — AFTER exact-head requis.
-- P0.2 : WAIT dependency PR #947.
+- PR : `#949` draft ;
+- HEAD : `67fb4273f20239088af42444de5b1d98504d175d` ;
+- P0.1 : IMPLEMENTED — AFTER exact-head requis ;
+- P0.2 : WAIT dependency PR #947 ;
+- P0.3 : CLOSED `/mon-projet` — P7 success + 4 AFTER inspectés ;
+- P0.4 : IMPLEMENTED — AFTER exact-head requis ;
 - aucun déploiement Vercel.
 
 ## NEXT EXACT
-Obtenir la CI/artifact du HEAD P0.1, inspecter AFTER `/map` 390/430/768/1280, comparer au BEFORE et au contrat visuel, corriger si nécessaire, puis clôturer P0.1 avant P0.2.
+Obtenir la CI/artifact exact-head `67fb4273f20239088af42444de5b1d98504d175d`, inspecter `/vendre/dossier` AFTER 390/430/768/1280, comparer au BEFORE, corriger si nécessaire, puis fermer P0.4 et démarrer P0.5 Pro / Leads pendant que les gates globaux indépendants terminent.
