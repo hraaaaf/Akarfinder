@@ -12,7 +12,7 @@ const expected = [
   ["/favorites", "Favoris"],
   ["/map", "Carte"],
   ["/alerts", "Alertes"],
-  ["/mon-projet", "Compte"],
+  ["/mon-projet", "Mon Projet"],
 ];
 const hrefMatches = (actual, wanted) => actual === wanted || (wanted === "/map" && actual?.startsWith("/map?"));
 const failures = [];

@@ -8,167 +8,92 @@ Dernière mise à jour : 2026-08-29
 ## Goal
 Polir le site page par page sans refonte gratuite, avec priorité à la hiérarchie, la densité, la cohérence inter-pages, les états vides et la qualité perçue mobile/desktop.
 
-## Méthode obligatoire
-Pour chaque lot UI significatif :
-1. BEFORE 390×844 / 430×932 / 768×900 / 1280×900 ;
-2. Goal visuel écrit ;
-3. référence/mockup ;
-4. implémentation ;
-5. AFTER mêmes viewports ;
-6. comparaison + tests ;
-7. score visuel justifié.
+## Méthode
+BEFORE 390×844 / 430×932 / 768×900 / 1280×900 → Goal → référence → implémentation → AFTER mêmes viewports → comparaison + tests → score visuel.
 
-Contraintes : pas de changement ranking/data/DB dans ce chantier ; pas de déploiement Vercel sans autorisation explicite.
+Contraintes : aucun changement ranking/data/DB dans ce chantier ; aucun déploiement Vercel sans autorisation explicite.
 
 # P0 — Impact utilisateur direct
 
-## P0.1 — `/map` — CLOSED
-Goal : carte dominante, rail compact, mobile lisible, aucune régression d’interaction.
-
-Preuves : Product Experience P4 Search Map ✅ ; Zillow UI ✅ ; UI All Pages Baseline/Certification ✅ ; AFTER 390/430/768/1280 inspectés ; canvas desktop ~71.9 %, rail ~360 px.
-
-Score visuel : 9.4/10.
-
-## P0.2 — `/search` — WAIT dépendance PR #947
-Goal : état vide plus compact + densité cohérente avec les cartes indexées premium.
-
-Dépendance vérifiée le 2026-08-29 : PR #947 toujours OPEN, DRAFT, non mergée, mergeable=true.
-
-## P0.3 — `/mon-projet` — CLOSED
-Goal : parcours plus compact, progression rattachée au contenu, bottom-nav conservée sans recouvrement.
-
-Preuves exact-head `a8e1fe817fd648bcc2045bdb7824f6951da35a7f` : Product Experience P7 `33249056376` ✅ ; artifact `9713838935` ; digest `sha256:ddf0f20ec50460d2584fb5898694cc9474fb8d489fdfb8a81db4671b0284fcee` ; 4 captures ; 0 finding.
-
-Score visuel : 9.2/10.
-
-`/profil-recherche` reste une route de compatibilité vers le parcours canonique.
-
-## P0.4 — `/vendre/dossier` — CLOSED
-Goal : formulaire prioritaire, rails secondaires, workflow vendeur inchangé.
-
-Preuves : Product Experience P8 `33249056509` ✅ ; Seller Secure Publish ✅ ; Seller Entry Quality ✅ ; Seller Structured Draft ✅ ; AFTER 390/430/768/1280 inspectés.
-
-Score visuel : 9.1/10.
-
-## P0.5 — `/pro` + `/pro/leads` — CLOSED
-Goal : acquisition Pro plus nette et plus dense sans altérer la logique B2B.
-
-Preuves : UI Polish P5 `33249056417` ✅ ; B2B Productization ✅ ; AFTER 390/430/768/1280 inspectés.
-
-Score visuel : 9.2/10.
-
-## P0.6 — SEO local district/quartier — CLOSED
-Pages : `/immobilier/[city]/[district]`, `/quartiers/[city]/[neighborhood]`.
-
-Preuves : UI All Pages Baseline `33249056480` ✅ ; artifact `9713854039` ; digest `sha256:456ebb249ae36177d2df388e108336792e4dd7d170c7c84dcfb6eeea3c7504a1` ; UI All Pages Certification `33249056454` ✅ ; 4 viewports inspectés ; Accessibility ✅.
-
-Score visuel : 9.0/10.
+- P0.1 `/map` — CLOSED — score 9.4/10.
+- P0.2 `/search` — WAIT dépendance PR #947, encore OPEN/DRAFT/non mergée au 2026-08-29.
+- P0.3 `/mon-projet` — CLOSED — P7 `33249056376` ✅ ; artifact `9713838935` ; 4 captures ; 0 finding ; score 9.2/10.
+- P0.4 `/vendre/dossier` — CLOSED — P8 + seller gates ✅ ; AFTER 4 viewports ; score 9.1/10.
+- P0.5 `/pro` + `/pro/leads` — CLOSED — P5 + B2B ✅ ; AFTER 4 viewports ; score 9.2/10.
+- P0.6 SEO local district/quartier — CLOSED — UI Certification `33249056454` ✅ ; artifact `9713854039` ; AFTER 4 viewports ; score 9.0/10.
 
 # P1 — Harmonisation familles de pages
 
-Familles :
-- `/acheter`, `/louer`, `/neuf` ;
-- `/immobilier`, `/quartiers` ;
-- `/favorites`, `/compare`, `/alerts` ;
-- `/investir`, `/mre`, `/credit` ;
-- `/accompagnement`, `/faq`, `/contact`, `/a-propos`.
-
 ## P1.1 — `/neuf` — CLOSED
-BEFORE exact : artifact UI All Pages du HEAD `a8e1fe817fd648bcc2045bdb7824f6951da35a7f`, 390/430/768/1280 inspectés.
+Exact-head `b3be1576a1bdbc681a1d74850e431360c566a7bc` : UI Baseline `33250905857` ✅ ; Certification `33250905839` ✅ ; Intent Hubs + Accessibility ✅ ; AFTER 4 viewports.
 
-Goal : premier écran plus léger et premium, filtres et vérité d’inventaire conservés.
-
-Implémentation : hero/H1/texte/formulaire/quick-links resserrés sur mobile ; sections secondaires moins hautes ; desktop légèrement resserré ; logique Search/Neuf inchangée.
-
-Preuves exact-head `b3be1576a1bdbc681a1d74850e431360c566a7bc` : UI All Pages Baseline `33250905857` ✅ ; artifact `9714430657` ; digest `sha256:e6cde359f9c8d4effae7245faa6c698c90770ad9958316b6b25999017ad77de2` ; UI All Pages Certification `33250905839` ✅ ; Intent Hubs `33250905871` ✅ ; Accessibility `33250905998` ✅ ; AFTER 390/430/768/1280 inspectés.
-
-Score visuel : 9.1/10.
+Score : 9.1/10.
 
 ## P1.2 — `/investir` + `/mre` — CLOSED
-BEFORE exact : artifact `9714430657`, HEAD `b3be1576a1bdbc681a1d74850e431360c566a7bc`, 390/430/768/1280 inspectés.
+Exact-head `3320c3926c8247e798307b790e59862bee03be75` : UI Certification `33256337536` ✅ ; artifact `9716004787` ; 280 captures ; 0 finding ; AFTER 4 viewports.
 
-Goal : actions hero immédiatement visibles, moins de vide, cartes/espacements plus denses, disclaimers et garde-fous métier intacts.
+Gain : CTA hero lisibles, hero/cards/callout resserrés, garde-fous métier intacts.
 
-Implémentation : CTA hero corrigés sur fond clair ; hero raccourci ; cards/gaps/callout resserrés ; callout final actionnable ; contenu prudentiel et logique inchangés.
-
-Preuves exact-head `3320c3926c8247e798307b790e59862bee03be75` : UI All Pages Certification `33256337536` ✅ ; artifact `9716004787` ; digest `sha256:c266b4479e7d518aa27bc33bab6b3064481d86520b08d2c00a14f3cfac751c96` ; Intent Hubs `33256337523` ✅ ; UI Polish P5 ✅ ; P7 ✅ ; P8 ✅ ; 280 captures, 0 finding ; AFTER 390/430/768/1280 inspectés.
-
-Score visuel : 9.2/10.
+Score : 9.2/10.
 
 ### `/credit` — CLOSED / NO-CHANGE
-Audit exact sur les quatre viewports : hiérarchie, simulateur, prudence réglementaire et responsive déjà cohérents avec le niveau P1. Aucune modification ajoutée uniquement pour produire du diff.
+Audit 390/430/768/1280 : simulateur, hiérarchie et prudence réglementaire déjà au niveau P1.
 
 ## P1.3 — `/favorites` + `/compare` + `/alerts` — CLOSED
-BEFORE exact : artifact `9716004787`, HEAD `3320c3926c8247e798307b790e59862bee03be75`, 390/430/768/1280 inspectés.
+Exact-head `ab7335f4fcb61dd114ad2bb86c2c15ebcba75d88` : UI Baseline `33256866676` ✅ ; artifact `9716144323` ; UI Certification `33256866538` ✅ ; User Journey `33256866646` ✅ ; Accessibility ✅ ; AFTER 4 viewports.
 
-Goal : états personnels plus compacts, actionnables et cohérents sans toucher au stockage Favoris/Compare ni à la vérité produit sur les alertes non actives.
+Gain : états vides plus compacts, CTA rapprochés, `/alerts` ne simule aucune fonction active.
+
+Score : 9.1/10.
+
+## P1.4 — `/accompagnement` + `/faq` + `/contact` + `/a-propos` — CLOSED
+BEFORE : artifact `9716144323`, 390/430/768/1280 inspectés.
 
 Implémentation :
-- `/favorites` et `/compare` : états vides plus courts, largeur desktop maîtrisée, CTA rapproché ;
-- `/alerts` : retrait du centrage vertical excessif, cartes et actions resserrées ;
-- aucune modification storage/API/comparaison/favoris ;
-- statut des alertes non actives conservé explicitement.
+- `/accompagnement` : contexte et formulaire mieux séparés ; desktop mieux exploité ; logique lead inchangée ;
+- `/faq` : réponses plus scannables, grille desktop 2 colonnes ;
+- `/contact` : contact général et retrait/correction séparés ;
+- `/a-propos` : proposition de valeur, source visible et contact à l’origine structurés sans nouvelle promesse.
 
-Preuves exact-head `ab7335f4fcb61dd114ad2bb86c2c15ebcba75d88` :
-- UI All Pages Baseline `33256866676` ✅ ;
-- artifact `9716144323` ;
-- digest `sha256:8bd1ded446288592cc55dca4fb71381e791a444ea0938f56867c6eb1a81b3848` ;
-- UI All Pages Certification `33256866538` ✅ ;
-- artifact `9716150634` ;
-- digest `sha256:375f62ef63cc770450446c780ab8686f6ae78eb6e33e2af630f4703970a639a0` ;
-- User Journey `33256866646` ✅ ;
-- Accessibility `33256866619` ✅ ;
-- AFTER 390/430/768/1280 inspectés et comparés au BEFORE.
+Preuves exact-head `3461ddd27a3254f4e78750dbcde9d9a84ca44a60` :
+- UI All Pages Baseline `33260952333` ✅ ;
+- UI All Pages Certification `33260952340` ✅ ;
+- artifact `9717301238` ;
+- digest `sha256:2c22f9c66b8f684aab7080bc9be4fd0d2d950120f8d852e5b43f61f73697f471` ;
+- User Journey `33260952381` ✅ ;
+- Accessibility `33260952425` ✅ ;
+- P4 Secondary `33260952423` ✅ ;
+- AFTER 390/430/768/1280 inspectés et comparés au BEFORE ; aucun défaut visuel bloquant observé.
 
-Score visuel : 9.1/10.
+Score : 9.2/10.
 
-## P1.4 — `/accompagnement` + `/faq` + `/contact` + `/a-propos` — ACTIVE
-BEFORE exact : artifact `9716144323`, HEAD `ab7335f4fcb61dd114ad2bb86c2c15ebcba75d88`, 390/430/768/1280 inspectés.
+## P1.5 — `/acheter` + `/louer` + `/immobilier` + `/quartiers` — CLOSED / NO-CHANGE
+Audit exact 390/430/768/1280 : `/acheter`, `/louer` et `/immobilier` sont déjà cohérents avec les meilleures surfaces P1. `/quartiers` est une route de redirection canonique vers `/immobilier` et n’a pas d’UI autonome à polir.
 
-Constat :
-- pages saines mais trop génériques et fortement dépendantes d’une grande surface centrale ;
-- `/accompagnement` reste très vertical sur mobile et sous-exploite le desktop ;
-- `/faq` est lisible mais scanne mal sur desktop ;
-- `/contact` mélange deux intentions dans un seul bloc ;
-- `/a-propos` manque de hiérarchie entre proposition de valeur, transparence de source et règle de contact.
+P1 : CLOSED.
 
-Goal : donner à ces pages éditoriales une structure plus intentionnelle et premium, réduire l’effet « grande carte générique », améliorer le scan mobile/desktop sans ajouter de promesse commerciale.
+# P2 — Système global / détails fins — ACTIVE
 
-Succès :
-- `/accompagnement` : contexte + formulaire clairement séparés, formulaire toujours prioritaire et logique lead inchangée ;
-- `/faq` : réponses plus scannables, 2 colonnes desktop sans dégrader le mobile ;
-- `/contact` : contact général et retrait/correction séparés en actions explicites ;
-- `/a-propos` : proposition de valeur structurée en principes déjà vérifiables dans le produit ;
-- 390/430/768/1280 sans overflow, collision bottom-nav ou contenu masqué.
+Scope : rayons, ombres, largeurs max, rythme vertical, headers secondaires, CTA secondaires, états vides, cohérence typographique, petits écarts responsive et pages légales sobres.
 
-Référence : mêmes tokens P0/P1, surfaces secondaires plus légères, information structurée par intention plutôt qu’ajout décoratif.
+Audit déjà effectué :
+- `components/ui/design-system.ts` : tokens principaux cohérents ; pas de refonte globale risquée justifiée ;
+- pages légales `/conditions-utilisation` et `/politique-confidentialite` : lisibles et sobres sur 390/430/768/1280, NO-CHANGE recommandé ;
+- bottom-nav : le produit canonique affiche `Mon Projet`. Les tests source sont alignés ; les deux audits runtime legacy attendaient encore `Compte` et sont corrigés dans le lot suivant, sans modification du rendu.
 
-État : READY FOR IMPLEMENTATION.
-
-# P2 — Système global / détails fins
-- rayons ;
-- ombres ;
-- largeurs max ;
-- rythme vertical ;
-- headers secondaires ;
-- CTA secondaires ;
-- états vides ;
-- cohérence typographique ;
-- petits écarts responsive ;
-- pages légales sobres.
+## Succès P2
+- aucune régression all-pages ;
+- bottom-nav runtime exact vert avec `Mon Projet` ;
+- aucune modification cosmétique globale sans gain observable ;
+- cohérence finale documentée avant closeout.
 
 # État actuel
 - branche : `feat/ux-ui-polish-p0` ;
 - PR #949 : OPEN, DRAFT, mergeable=true ;
-- P0.1/P0.3/P0.4/P0.5/P0.6 : CLOSED ;
-- P0.2 : WAIT PR #947 ;
-- P1.1 `/neuf` : CLOSED ;
-- P1.2 `/investir` + `/mre` : CLOSED ;
-- `/credit` : CLOSED / NO-CHANGE ;
-- P1.3 `/favorites` + `/compare` + `/alerts` : CLOSED ;
-- P1.4 éditorial : ACTIVE ;
-- User Journey Mon Projet exact-head : ✅ ;
+- P0 utile : CLOSED hors P0.2 `/search` en WAIT PR #947 ;
+- P1 : CLOSED ;
+- P2 : ACTIVE ;
 - aucun déploiement Vercel.
 
 ## NEXT EXACT
-Implémenter P1.4 sur `/accompagnement`, `/faq`, `/contact`, `/a-propos`, puis certifier AFTER exact-head 390/430/768/1280 et corriger si nécessaire avant de poursuivre les familles P1 restantes.
+Certifier exact-head les audits Bottom Nav corrigés (`Mon Projet`), poursuivre l’audit P2 des pages légales/secondaires et ne modifier que les écarts prouvés. Ensuite closeout P2, réévaluer PR #947, puis closeout PR #949.

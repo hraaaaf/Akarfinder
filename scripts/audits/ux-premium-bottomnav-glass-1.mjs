@@ -16,7 +16,7 @@ const expectedDestinations = [
   ["/favorites", "Favoris"],
   ["/map", "Carte"],
   ["/alerts", "Alertes"],
-  ["/mon-projet", "Compte"],
+  ["/mon-projet", "Mon Projet"],
 ];
 const hrefMatches = (actual, expected) => actual === expected || (expected === "/map" && actual?.startsWith("/map?"));
 
