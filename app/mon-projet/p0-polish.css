@@ -1,0 +1,82 @@
+/* UX/UI POLISH P0.3 — /mon-projet
+   Goal: reduce dead space, keep progress close to the task, and prevent mobile
+   controls/content from feeling buried behind the persistent bottom navigation. */
+
+[data-p7-mon-projet] {
+  padding-bottom: 5.5rem;
+}
+
+[data-p7-progress-mobile] {
+  padding: 14px 15px !important;
+  border-radius: 20px !important;
+  box-shadow: 0 10px 30px rgb(15 35 66 / 0.05) !important;
+}
+
+[data-p7-progress-mobile] > div:first-child > div:first-child p:last-child {
+  margin-top: 4px !important;
+}
+
+[data-p7-progress-mobile] > div:last-child {
+  margin-top: 10px !important;
+}
+
+[data-p7-question-panel] {
+  margin-top: 12px !important;
+  border-radius: 22px !important;
+  padding: 18px !important;
+  box-shadow: 0 18px 50px rgb(15 35 66 / 0.07) !important;
+}
+
+[data-p7-question-panel] > div:first-child {
+  margin-bottom: 14px !important;
+  min-height: 36px !important;
+}
+
+[data-p7-question-panel] button,
+[data-p7-question-panel] a {
+  scroll-margin-bottom: 96px;
+}
+
+@media (min-width: 640px) {
+  [data-p7-mon-projet] {
+    padding-bottom: 2rem;
+  }
+
+  [data-p7-progress-mobile] {
+    padding: 16px 18px !important;
+  }
+
+  [data-p7-question-panel] {
+    margin-top: 16px !important;
+    padding: 24px !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  [data-p7-mon-projet] > div {
+    grid-template-columns: 188px minmax(0, 1fr) !important;
+    gap: 16px !important;
+  }
+
+  [data-p7-progress-rail] > div {
+    position: sticky;
+    top: 88px;
+    padding: 16px !important;
+    border-radius: 22px !important;
+    box-shadow: 0 12px 34px rgb(15 35 66 / 0.05) !important;
+  }
+
+  [data-p7-progress-rail] > div > div:nth-of-type(2) {
+    margin-top: 14px !important;
+  }
+
+  [data-p7-progress-rail] [data-p7-step-label] {
+    line-height: 1.25;
+  }
+
+  [data-p7-question-panel] {
+    margin-top: 0 !important;
+    border-radius: 24px !important;
+    padding: 26px 28px !important;
+  }
+}
