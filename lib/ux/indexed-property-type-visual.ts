@@ -75,23 +75,35 @@ function normalize(value: string | null | undefined): string {
     .toLowerCase();
 }
 
+const COMMERCIAL_TYPE = /\b(local commercial|commerce|commercial|magasin|boutique|retail|shop)\b/;
+const COMMERCIAL_TITLE_ALIAS = /\b(local commercial|commerce|magasin|boutique|retail|shop)\b/;
+
 export function getIndexedPropertyTypeVisual(
   propertyType: string | null | undefined,
   title?: string | null,
 ): IndexedPropertyTypeVisual {
   const type = normalize(propertyType);
-  const searchable = `${type} ${normalize(title)}`;
+  const titleText = normalize(title);
 
-  // Presentation-only enrichment. Commercial comes first because upstream
-  // listing taxonomy does not currently expose a dedicated Local commercial enum.
-  if (/\b(local commercial|commerce|commercial|magasin|boutique|retail|shop)\b/.test(searchable)) {
-    return VISUALS.commercial;
+  // Explicit métier type wins over incidental words in the title. The sole
+  // enrichment exception is Bureau -> Local commercial because the current
+  // upstream enum has no dedicated commercial type yet.
+  if (COMMERCIAL_TYPE.test(type)) return VISUALS.commercial;
+  if (/\b(riad)\b/.test(type)) return VISUALS.riad;
+  if (/\b(terrain|land|parcelle)\b/.test(type)) return VISUALS.land;
+  if (/\b(bureau|office)\b/.test(type)) {
+    return COMMERCIAL_TITLE_ALIAS.test(titleText) ? VISUALS.commercial : VISUALS.office;
   }
-  if (/\b(riad)\b/.test(searchable)) return VISUALS.riad;
-  if (/\b(terrain|land|parcelle)\b/.test(searchable)) return VISUALS.land;
-  if (/\b(bureau|office)\b/.test(searchable)) return VISUALS.office;
-  if (/\b(villa|maison|house)\b/.test(searchable)) return VISUALS.villa;
-  if (/\b(appartement|apartment|studio|duplex|penthouse)\b/.test(searchable)) return VISUALS.apartment;
+  if (/\b(villa|maison|house)\b/.test(type)) return VISUALS.villa;
+  if (/\b(appartement|apartment|studio|duplex|penthouse)\b/.test(type)) return VISUALS.apartment;
+
+  // Safe presentation fallback only when the métier type itself is unknown.
+  if (COMMERCIAL_TITLE_ALIAS.test(titleText)) return VISUALS.commercial;
+  if (/\b(riad)\b/.test(titleText)) return VISUALS.riad;
+  if (/\b(terrain|land|parcelle)\b/.test(titleText)) return VISUALS.land;
+  if (/\b(bureau|office)\b/.test(titleText)) return VISUALS.office;
+  if (/\b(villa|maison|house)\b/.test(titleText)) return VISUALS.villa;
+  if (/\b(appartement|apartment|studio|duplex|penthouse)\b/.test(titleText)) return VISUALS.apartment;
 
   return VISUALS.unknown;
 }
