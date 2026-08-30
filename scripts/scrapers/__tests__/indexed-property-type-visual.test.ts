@@ -63,6 +63,13 @@ describe("SEARCH-PROPERTY-TYPE-VISUALS-1", () => {
     assert.doesNotMatch(card, /<IndexedTransactionArtwork\b/);
   });
 
+  it("keeps the indexed source footer actionable for observed external listings", () => {
+    const card = source("components/search/SearchListingCardDark.tsx");
+    assert.match(card, /showOriginal && \(!observedExternal \|\| useIndexedArtwork\)/);
+    assert.match(card, /data-secondary-source-link/);
+    assert.match(card, /href=\{listing\.listing_url!\}/);
+  });
+
   it("ships all six TARGET illustration branches and property-colored card selectors", () => {
     const artwork = source("components/search/IndexedPropertyTypeArtwork.tsx");
     for (const key of ["apartment", "villa", "land", "office", "commercial", "riad"] as const) {
