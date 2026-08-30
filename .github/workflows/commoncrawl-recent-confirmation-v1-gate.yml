@@ -1,0 +1,31 @@
+name: Common Crawl Recent Confirmation V1 Gate
+
+on:
+  pull_request:
+    paths:
+      - "supabase/migrations/20260830230000_commoncrawl_recent_confirmation_v1.sql"
+      - "scripts/openserp/__tests__/commoncrawl-recent-confirmation-v1.test.ts"
+      - ".github/workflows/commoncrawl-recent-confirmation-v1-gate.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Common Crawl recent confirmation contract
+        run: npx tsx scripts/openserp/__tests__/commoncrawl-recent-confirmation-v1.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
