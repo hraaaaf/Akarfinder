@@ -15,6 +15,7 @@ const EXPECTED_SCALE2_IDS = [
   ...["city", "apartment", "villa"].flatMap((kind) => [1, 2, 3, 4].map((n) => `tanger-${kind}-0${n}`)),
   ...["city", "apartment", "villa"].flatMap((kind) => [1, 2, 3, 4].map((n) => `fes-${kind}-0${n}`)),
 ].sort();
+const EXPECTED_VISIBLE_CONTEXTUAL_IDS = EXPECTED_SCALE2_IDS.filter((id) => !id.startsWith("rabat-"));
 const base = {
   neighborhood: "", currency: "DH", price_per_m2: null, transaction_type: "buy", bedrooms: 0, bathrooms: 0,
   freshness_label: "Récent", source_type: "Source analysée", reliability_label: "Informations complètes", reliability_score: 90,
@@ -47,7 +48,16 @@ let failure = null;
 const readMetrics = (page) => page.evaluate(() => {
   const cards = [...document.querySelectorAll('[data-search-listing-card]')];
   const text = (node) => (node?.innerText ?? node?.textContent ?? "").replace(/\s+/g, " ").trim();
-  const visualState = cards.map((card) => ({ contextualCity: card.querySelector('[data-contextual-city]')?.getAttribute('data-contextual-city') ?? null, contextualAssetId: card.querySelector('[data-contextual-asset-id]')?.getAttribute('data-contextual-asset-id') ?? null, contextualTier: card.querySelector('[data-contextual-tier]')?.getAttribute('data-contextual-tier') ?? null, contextualLabel: text(card.querySelector('[data-contextual-illustration-label]')), generic: Boolean(card.querySelector('[data-visual-inventory-class="generic_illustration"]')), text: text(card) }));
+  const visualState = cards.map((card) => ({
+    contextualCity: card.querySelector('[data-contextual-city]')?.getAttribute('data-contextual-city') ?? null,
+    contextualAssetId: card.querySelector('[data-contextual-asset-id]')?.getAttribute('data-contextual-asset-id') ?? null,
+    contextualTier: card.querySelector('[data-contextual-tier]')?.getAttribute('data-contextual-tier') ?? null,
+    contextualLabel: text(card.querySelector('[data-contextual-illustration-label]')),
+    neighborhoodPhotoId: card.querySelector('[data-neighborhood-photo-id]')?.getAttribute('data-neighborhood-photo-id') ?? null,
+    neighborhoodPhotoDisclosure: text(card.querySelector('[data-neighborhood-photo-disclosure]')),
+    generic: Boolean(card.querySelector('[data-visual-inventory-class="generic_illustration"]')),
+    text: text(card),
+  }));
   return { cardCount: cards.length, visualState, clippedLabels: cards.map((card) => card.querySelector('[data-contextual-illustration-label]')).filter((node) => node && node.scrollWidth > node.clientWidth + 1).length, clippedPrices: cards.map((card) => card.querySelector('[data-mobile-price]')).filter((node) => node && node.scrollWidth > node.clientWidth + 1).length, clientWidth: document.documentElement.clientWidth, scrollWidth: document.documentElement.scrollWidth };
 });
 async function hydrateLazyVisuals(page) {
@@ -55,6 +65,7 @@ async function hydrateLazyVisuals(page) {
   await page.waitForFunction(() => [...document.querySelectorAll('[data-search-listing-card] img')].every((img) => img.complete && img.naturalWidth > 0), { timeout: 15_000 });
   await page.evaluate(() => scrollTo(0, 0));
 }
+const visualIdentity = (state) => `${state.contextualAssetId ?? ""}|${state.neighborhoodPhotoId ?? ""}`;
 try {
   for (const viewport of viewports) {
     const page = await browser.newPage({ viewport: { width: viewport.width, height: viewport.height } });
@@ -68,27 +79,36 @@ try {
       if (metrics.cardCount !== 41) throw new Error(`${viewport.name}: expected 41 cards, got ${metrics.cardCount}`);
       if (metrics.scrollWidth > metrics.clientWidth) throw new Error(`${viewport.name}: horizontal overflow ${metrics.scrollWidth}/${metrics.clientWidth}`);
       if (metrics.clippedLabels) throw new Error(`${viewport.name}: contextual illustration label clipping`);
+
       const scale2 = metrics.visualState.slice(0, 36);
-      const uniqueScale2Ids = new Set(scale2.map((state) => state.contextualAssetId));
-      const ids = [...uniqueScale2Ids].sort();
-      if (uniqueScale2Ids.size !== 36 || JSON.stringify(ids) !== JSON.stringify(EXPECTED_SCALE2_IDS)) throw new Error(`${viewport.name}: SCALE-2 asset set drift`);
-      if (scale2.some((state) => !["Rabat", "Tanger", "Fès"].includes(state.contextualCity) || state.contextualLabel !== "Illustration")) throw new Error(`${viewport.name}: SCALE-2 disclosure/city drift`);
-      for (const offset of [0, 12, 24]) {
-        if (scale2.slice(offset, offset + 8).some((state) => state.contextualTier !== "city_type")) throw new Error(`${viewport.name}: apartment/villa tier drift`);
-        if (scale2.slice(offset + 8, offset + 12).some((state) => state.contextualTier !== "city")) throw new Error(`${viewport.name}: generic city tier drift`);
+      const rabat = scale2.slice(0, 12);
+      const contextual = scale2.slice(12, 36);
+      if (rabat.some((state) => !state.neighborhoodPhotoId || state.contextualAssetId !== null || state.neighborhoodPhotoDisclosure !== "Photo d’ambiance")) {
+        throw new Error(`${viewport.name}: Rabat real-photo precedence drift`);
       }
+
+      const uniqueScale2Ids = new Set(contextual.map((state) => state.contextualAssetId));
+      const ids = [...uniqueScale2Ids].sort();
+      if (uniqueScale2Ids.size !== 24 || JSON.stringify(ids) !== JSON.stringify(EXPECTED_VISIBLE_CONTEXTUAL_IDS)) throw new Error(`${viewport.name}: visible SCALE-2 contextual asset set drift`);
+      if (contextual.some((state) => !["Tanger", "Fès"].includes(state.contextualCity) || state.contextualLabel !== "Illustration")) throw new Error(`${viewport.name}: SCALE-2 disclosure/city drift`);
+      for (const offset of [0, 12]) {
+        if (contextual.slice(offset, offset + 8).some((state) => state.contextualTier !== "city_type")) throw new Error(`${viewport.name}: apartment/villa tier drift`);
+        if (contextual.slice(offset + 8, offset + 12).some((state) => state.contextualTier !== "city")) throw new Error(`${viewport.name}: generic city tier drift`);
+      }
+
       const predecessors = metrics.visualState.slice(36, 39);
       if (predecessors[0]?.contextualAssetId !== "marrakech-apartment-01" || predecessors[1]?.contextualAssetId !== "casablanca-villa-01" || !predecessors[2]?.contextualAssetId?.startsWith("agadir-")) throw new Error(`${viewport.name}: predecessor drift`);
       for (const fallback of metrics.visualState.slice(39, 41)) if (fallback.contextualAssetId !== null || !fallback.generic || !fallback.text.includes("Visuel illustratif")) throw new Error(`${viewport.name}: generic fallback drift`);
-      const stable = metrics.visualState.map((state) => state.contextualAssetId);
+
+      const stable = metrics.visualState.map(visualIdentity);
       await page.reload({ waitUntil: "domcontentloaded", timeout: 45_000 });
       await page.waitForSelector('[data-search-listing-card]', { timeout: 20_000 });
       await hydrateLazyVisuals(page);
       const reloaded = await readMetrics(page);
-      if (JSON.stringify(reloaded.visualState.map((state) => state.contextualAssetId)) !== JSON.stringify(stable)) throw new Error(`${viewport.name}: asset changed after reload`);
+      if (JSON.stringify(reloaded.visualState.map(visualIdentity)) !== JSON.stringify(stable)) throw new Error(`${viewport.name}: visual asset changed after reload`);
       if (reloaded.scrollWidth > reloaded.clientWidth || reloaded.clippedLabels) throw new Error(`${viewport.name}: reload contextual layout drift`);
       await page.screenshot({ path: `${outputDir}/${viewport.name}.png`, fullPage: true });
-      results.push({ name: viewport.name, unique_scale2_assets: uniqueScale2Ids.size, stable_after_reload: true, lazy_visuals_hydrated: true, clipped_labels: metrics.clippedLabels, clipped_prices: metrics.clippedPrices, horizontal_overflow: false });
+      results.push({ name: viewport.name, resolver_scale2_assets: 36, rabat_real_photo_cards: rabat.length, visible_contextual_assets: uniqueScale2Ids.size, stable_after_reload: true, lazy_visuals_hydrated: true, clipped_labels: metrics.clippedLabels, clipped_prices: metrics.clippedPrices, horizontal_overflow: false });
     } catch (error) { failure = error; break; } finally { await page.close(); }
   }
 } finally { await browser.close(); }
