@@ -10,145 +10,73 @@ const viewports = [
   { name: "desktop-1280x900", width: 1280, height: 900 },
   { name: "desktop-1440x900", width: 1440, height: 900 },
 ];
-
 const EXPECTED_ASSET_IDS = [
   "agadir-city-01", "agadir-city-02", "agadir-city-03", "agadir-city-04",
   "agadir-apartment-01", "agadir-apartment-02", "agadir-apartment-03", "agadir-apartment-04",
   "agadir-villa-01", "agadir-villa-02", "agadir-villa-03", "agadir-villa-04",
 ].sort();
-
-const baseResult = {
-  snippet: "Fixture de certification du pilote Agadir.",
-  source_id: "fixture-source",
-  source_name: "Source Démo",
-  domain: "example.com",
-  result_origin: "public_sitemap",
-  search_result_display_mode: "thin_indexed_result",
-  source_badge: "public_indexed",
-  production_allowed: true,
-  can_show_result: true,
-  can_show_thumbnail: false,
-  can_show_contact: false,
-  can_show_gallery: false,
-  can_cache_thumbnail: false,
-  can_download_thumbnail: false,
-  primary_cta: "view_original",
-  primary_cta_label: "Voir sur le site d’origine",
-  result_attribution_label: "Résultat public indexé",
-  thumbnail_risk_accepted: false,
-  normalized_intent: "buy",
-  quality_tier: "Q2_comparable",
-  quality_score: 82,
+const base = {
+  neighborhood: "", currency: "DH", price_per_m2: null, transaction_type: "buy", bedrooms: 0, bathrooms: 0,
+  freshness_label: "Récent", source_type: "Source analysée", reliability_label: "Informations complètes", reliability_score: 90,
+  reliability_available: true, is_mre_friendly: false, description: "Fixture déterministe Agadir.", image_url: "", reliability_explanation: "Fixture CI",
+  source_name: "AkarFinder", acquisition_channel: "first_party_user", origin_type: "first_party_user", can_show_result: true, production_allowed: true,
+  can_show_thumbnail: false, image_permission_status: "unknown", source_access_level: "indexed_only", display_images: { policy: "no_listing_image", urls: [] },
 };
-
-function result(id, original_url, propertyType, price, surface) {
-  return {
-    ...baseResult,
-    id,
-    title: `${propertyType} à Agadir`,
-    original_url,
-    display_url: original_url.replace("https://", ""),
-    normalized_city: "Agadir",
-    normalized_property_type: propertyType,
-    normalized_price_mad: price,
-    normalized_surface_m2: surface,
-  };
-}
-
-const externalResults = [
-  result("a0", "https://example.com/agadir/appartement/0", "Appartement", 1450000, 91),
-  result("a1", "https://example.com/agadir/appartement/1", "Appartement", 1680000, 104),
-  result("a2", "https://example.com/agadir/appartement/2", "Appartement", 1930000, 118),
-  result("a3", "https://example.com/agadir/appartement/3", "Appartement", 2210000, 132),
-  result("v0", "https://example.com/agadir/villa/0", "Villa", 4700000, 310),
-  result("v1", "https://example.com/agadir/villa/1", "Villa", 5900000, 360),
-  result("v2", "https://example.com/agadir/villa/2", "Villa", 7100000, 410),
-  result("v3", "https://example.com/agadir/villa/3", "Villa", 8500000, 470),
-  result("c0", "https://example.com/agadir/maison/0", "Maison", 2800000, 180),
-  result("c1", "https://example.com/agadir/maison/3", "Maison", 3100000, 205),
-  result("c2", "https://example.com/agadir/maison/5", "Maison", 3400000, 225),
-  result("c3", "https://example.com/agadir/maison/6", "Maison", 3750000, 248),
-  { ...baseResult, id: "type-only", title: "Villa hors ville allowlist", original_url: "https://example.com/oujda/villa", display_url: "example.com/oujda/villa", normalized_city: "Oujda", normalized_property_type: "Villa", normalized_price_mad: 2400000, normalized_surface_m2: 280 },
-  { ...baseResult, id: "neutral", title: "Bien à confirmer", original_url: "https://example.com/neutral", display_url: "example.com/neutral" },
+const make = (id, listing_url, city, property_type, price, surface_m2) => ({ ...base, id, title: `${property_type} à ${city}`, listing_url, city, property_type, price, surface_m2 });
+const listings = [
+  make("a0", "https://example.com/agadir/appartement/0", "Agadir", "Appartement", 1450000, 91), make("a1", "https://example.com/agadir/appartement/1", "Agadir", "Appartement", 1680000, 104), make("a2", "https://example.com/agadir/appartement/2", "Agadir", "Appartement", 1930000, 118), make("a3", "https://example.com/agadir/appartement/3", "Agadir", "Appartement", 2210000, 132),
+  make("v0", "https://example.com/agadir/villa/0", "Agadir", "Villa", 4700000, 310), make("v1", "https://example.com/agadir/villa/1", "Agadir", "Villa", 5900000, 360), make("v2", "https://example.com/agadir/villa/2", "Agadir", "Villa", 7100000, 410), make("v3", "https://example.com/agadir/villa/3", "Agadir", "Villa", 8500000, 470),
+  make("c0", "https://example.com/agadir/maison/0", "Agadir", "Maison", 2800000, 180), make("c1", "https://example.com/agadir/maison/3", "Agadir", "Maison", 3100000, 205), make("c2", "https://example.com/agadir/maison/5", "Agadir", "Maison", 3400000, 225), make("c3", "https://example.com/agadir/maison/6", "Agadir", "Maison", 3750000, 248),
+  make("type-only", "https://example.com/oujda/villa", "Oujda", "Villa", 2400000, 280),
+  { ...base, id: "neutral", title: "Bien à confirmer", listing_url: "https://example.com/neutral", city: "", property_type: null, price: null, surface_m2: 0 },
 ];
 
 await mkdir(outputDir, { recursive: true });
 const browser = await chromium.launch({ headless: true });
 const results = [];
 let failure = null;
-
-async function readMetrics(page) {
-  return page.evaluate(() => {
-    const cards = [...document.querySelectorAll('[data-search-listing-card]')];
-    const text = (node) => (node?.innerText ?? node?.textContent ?? "").replace(/\s+/g, " ").trim();
-    const visualState = cards.map((card) => ({
-      contextualCity: card.querySelector('[data-contextual-city]')?.getAttribute('data-contextual-city') ?? null,
-      contextualAssetId: card.querySelector('[data-contextual-asset-id]')?.getAttribute('data-contextual-asset-id') ?? null,
-      contextualTier: card.querySelector('[data-contextual-tier]')?.getAttribute('data-contextual-tier') ?? null,
-      neutral: Boolean(card.querySelector('[data-contextual-neutral]')),
-      illustrationLabel: text(card.querySelector('[data-contextual-illustration-label]')),
-    }));
-    const clippedLabels = cards.map((card) => card.querySelector('[data-contextual-illustration-label]')).filter((node) => node && node.scrollWidth > node.clientWidth + 1).length;
-    const clippedPrices = cards.map((card) => card.querySelector('[data-mobile-price]')).filter((node) => node && node.scrollWidth > node.clientWidth + 1).length;
-    return {
-      cardCount: cards.length,
-      visualState,
-      clippedLabels,
-      clippedPrices,
-      clientWidth: document.documentElement.clientWidth,
-      scrollWidth: document.documentElement.scrollWidth,
-    };
-  });
+const readMetrics = (page) => page.evaluate(() => {
+  const cards = [...document.querySelectorAll('[data-search-listing-card]')];
+  const text = (node) => (node?.innerText ?? node?.textContent ?? "").replace(/\s+/g, " ").trim();
+  const visualState = cards.map((card) => ({ contextualCity: card.querySelector('[data-contextual-city]')?.getAttribute('data-contextual-city') ?? null, contextualAssetId: card.querySelector('[data-contextual-asset-id]')?.getAttribute('data-contextual-asset-id') ?? null, contextualTier: card.querySelector('[data-contextual-tier]')?.getAttribute('data-contextual-tier') ?? null, contextualLabel: text(card.querySelector('[data-contextual-illustration-label]')), generic: Boolean(card.querySelector('[data-visual-inventory-class="generic_illustration"]')), text: text(card) }));
+  return { cardCount: cards.length, visualState, clippedLabels: cards.map((card) => card.querySelector('[data-contextual-illustration-label]')).filter((node) => node && node.scrollWidth > node.clientWidth + 1).length, clippedPrices: cards.map((card) => card.querySelector('[data-mobile-price]')).filter((node) => node && node.scrollWidth > node.clientWidth + 1).length, clientWidth: document.documentElement.clientWidth, scrollWidth: document.documentElement.scrollWidth };
+});
+async function hydrate(page) {
+  for (const card of await page.locator('[data-search-listing-card]').all()) { await card.scrollIntoViewIfNeeded(); await page.waitForTimeout(20); }
+  await page.waitForFunction(() => [...document.querySelectorAll('[data-search-listing-card] img')].every((img) => img.complete && img.naturalWidth > 0), { timeout: 15_000 });
+  await page.evaluate(() => scrollTo(0, 0));
 }
-
 try {
   for (const viewport of viewports) {
     const page = await browser.newPage({ viewport: { width: viewport.width, height: viewport.height } });
-    await page.route("**/api/search?**", async (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ listings: [], total: 0, limit: 100, offset: 0, source: "agadir-pilot-ci", generated_at: new Date().toISOString() }) }));
-    await page.route("**/api/search/gateway?**", async (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true, degraded: false, provider: "fixture", sources_queried: ["fixture-source"], results_count: externalResults.length, results: externalResults }) }));
-
+    await page.route("**/api/search?**", async (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ listings, total: listings.length, limit: 100, offset: 0, source: "agadir-pilot-ci", generated_at: new Date().toISOString() }) }));
     try {
       const response = await page.goto(`${baseUrl}/search?q=agadir`, { waitUntil: "domcontentloaded", timeout: 45_000 });
       if (!response || response.status() >= 400) throw new Error(`${viewport.name}: search returned ${response?.status() ?? "no response"}`);
       await page.waitForSelector('[data-search-listing-card]', { timeout: 20_000 });
-
+      await hydrate(page);
       const metrics = await readMetrics(page);
       if (metrics.cardCount !== 14) throw new Error(`${viewport.name}: expected 14 cards, got ${metrics.cardCount}`);
-      if (metrics.scrollWidth > metrics.clientWidth) throw new Error(`${viewport.name}: horizontal overflow ${metrics.scrollWidth}/${metrics.clientWidth}`);
-      if (metrics.clippedLabels !== 0 || metrics.clippedPrices !== 0) throw new Error(`${viewport.name}: clipped labels/prices`);
-
+      if (metrics.scrollWidth > metrics.clientWidth || metrics.clippedLabels || metrics.clippedPrices) throw new Error(`${viewport.name}: overflow or clipping`);
       const pilot = metrics.visualState.slice(0, 12);
-      const uniqueAssetIds = new Set(pilot.map((state) => state.contextualAssetId));
-      if (uniqueAssetIds.size !== 12) throw new Error(`${viewport.name}: expected 12 unique Agadir assets, got ${uniqueAssetIds.size}`);
-      const ids = [...uniqueAssetIds].sort();
-      if (JSON.stringify(ids) !== JSON.stringify(EXPECTED_ASSET_IDS)) throw new Error(`${viewport.name}: asset set drift ${JSON.stringify(ids)}`);
-      if (pilot.some((state) => state.contextualCity !== "Agadir" || state.illustrationLabel !== "Illustration")) throw new Error(`${viewport.name}: Agadir disclosure/city drift`);
-      if (pilot.slice(0, 8).some((state) => state.contextualTier !== "city_type")) throw new Error(`${viewport.name}: Appartement/Villa must use city_type`);
-      if (pilot.slice(8, 12).some((state) => state.contextualTier !== "city")) throw new Error(`${viewport.name}: generic Agadir fallback must use city tier`);
-      if (metrics.visualState[12]?.contextualAssetId !== null || metrics.visualState[12]?.neutral) throw new Error(`${viewport.name}: unknown city must retain property artwork fallback`);
-      if (!metrics.visualState[13]?.neutral) throw new Error(`${viewport.name}: neutral fallback drift`);
-      if (metrics.visualState.some((state) => state.illustrationLabel !== "Illustration")) throw new Error(`${viewport.name}: Illustration label drift`);
-
-      const stableIds = metrics.visualState.map((state) => state.contextualAssetId);
+      const ids = [...new Set(pilot.map((state) => state.contextualAssetId))].sort();
+      if (ids.length !== 12 || JSON.stringify(ids) !== JSON.stringify(EXPECTED_ASSET_IDS)) throw new Error(`${viewport.name}: Agadir asset set drift`);
+      if (pilot.some((state) => state.contextualCity !== "Agadir" || state.contextualLabel !== "Illustration")) throw new Error(`${viewport.name}: Agadir disclosure/city drift`);
+      if (pilot.slice(0, 8).some((state) => state.contextualTier !== "city_type")) throw new Error(`${viewport.name}: apartment/villa tier drift`);
+      if (pilot.slice(8, 12).some((state) => state.contextualTier !== "city")) throw new Error(`${viewport.name}: generic city tier drift`);
+      for (const fallback of metrics.visualState.slice(12, 14)) if (fallback.contextualAssetId !== null || !fallback.generic || !fallback.text.includes("Visuel illustratif")) throw new Error(`${viewport.name}: generic fallback drift`);
+      const stable = metrics.visualState.map((state) => state.contextualAssetId);
       await page.reload({ waitUntil: "domcontentloaded", timeout: 45_000 });
       await page.waitForSelector('[data-search-listing-card]', { timeout: 20_000 });
-      const reloadMetrics = await readMetrics(page);
-      if (JSON.stringify(reloadMetrics.visualState.map((state) => state.contextualAssetId)) !== JSON.stringify(stableIds)) throw new Error(`${viewport.name}: asset changed after reload`);
-      if (reloadMetrics.scrollWidth > reloadMetrics.clientWidth || reloadMetrics.clippedLabels !== 0 || reloadMetrics.clippedPrices !== 0) throw new Error(`${viewport.name}: reload layout drift`);
-
+      await hydrate(page);
+      const reloaded = await readMetrics(page);
+      if (JSON.stringify(reloaded.visualState.map((state) => state.contextualAssetId)) !== JSON.stringify(stable)) throw new Error(`${viewport.name}: asset changed after reload`);
+      if (reloaded.scrollWidth > reloaded.clientWidth || reloaded.clippedLabels || reloaded.clippedPrices) throw new Error(`${viewport.name}: reload layout drift`);
       await page.screenshot({ path: `${outputDir}/${viewport.name}.png`, fullPage: true });
-      results.push({ name: viewport.name, unique_agadir_assets: uniqueAssetIds.size, asset_ids: ids, stable_after_reload: true, clipped_labels: 0, clipped_prices: 0, horizontal_overflow: false });
-    } catch (error) {
-      failure = error;
-      break;
-    } finally {
-      await page.close();
-    }
+      results.push({ name: viewport.name, unique_agadir_assets: ids.length, stable_after_reload: true, lazy_visuals_hydrated: true, clipped_labels: 0, clipped_prices: 0, horizontal_overflow: false });
+    } catch (error) { failure = error; break; } finally { await page.close(); }
   }
-} finally {
-  await browser.close();
-}
-
+} finally { await browser.close(); }
 await writeFile(`${outputDir}/metrics.json`, `${JSON.stringify({ generated_at: new Date().toISOString(), results, failure: failure instanceof Error ? failure.message : null }, null, 2)}\n`, "utf8");
 console.log(JSON.stringify(results, null, 2));
 if (failure) throw failure;
