@@ -1,0 +1,53 @@
+/* SEARCH-PROPERTY-TYPE-TARGET-ART-1
+ * Exact local artwork derived from the locked AkarFinder TARGET:
+ * 1448x1086 / SHA-256 004b46faab6a642674b9dac1eb623599418c3e22564884e38f2304725ce0909a.
+ * Presentation only. No ranking, listing truth, DB or third-party network asset.
+ */
+
+[data-indexed-property-artwork] {
+  background-color: #fff !important;
+}
+
+/* Keep the hand-authored SVG in the DOM as a safe fallback, but display the
+ * exact locked-target crop as the canonical visual layer. */
+[data-indexed-property-artwork] > svg {
+  opacity: 0 !important;
+}
+
+[data-indexed-property-artwork]::before {
+  opacity: 1 !important;
+  mix-blend-mode: normal !important;
+  background-color: #fff !important;
+  background-repeat: no-repeat !important;
+  background-position: center 58% !important;
+  background-size: 100% auto !important;
+}
+
+[data-indexed-property-artwork="apartment"]::before {
+  background-image: url("/visuals/property-types/target/apartment.svg") !important;
+}
+[data-indexed-property-artwork="villa"]::before {
+  background-image: url("/visuals/property-types/target/villa.svg") !important;
+}
+[data-indexed-property-artwork="land"]::before {
+  background-image: url("/visuals/property-types/target/land.svg") !important;
+}
+[data-indexed-property-artwork="office"]::before {
+  background-image: url("/visuals/property-types/target/office.svg") !important;
+}
+[data-indexed-property-artwork="commercial"]::before {
+  background-image: url("/visuals/property-types/target/commercial.svg") !important;
+}
+[data-indexed-property-artwork="riad"]::before {
+  background-image: url("/visuals/property-types/target/riad.png") !important;
+}
+
+@media (max-width: 639px) {
+  /* Two-column cards are narrower than the desktop TARGET card. Increase the
+   * scene just enough to preserve the approved visual weight without changing
+   * card geometry or the 44px favorite target. */
+  [data-indexed-property-artwork]::before {
+    background-size: 132% auto !important;
+    background-position: center 60% !important;
+  }
+}
