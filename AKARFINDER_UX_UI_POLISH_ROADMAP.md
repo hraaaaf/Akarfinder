@@ -108,9 +108,10 @@ Pages légales `/conditions-utilisation` et `/politique-confidentialite` : NO-CH
 - P1 : CLOSED ;
 - P2 : CLOSED ;
 - chantier UX/UI Global Polish : fonctionnellement CLOSED sur `a323b9f8ffffd4bae700b53dd809623a0597de4f` ;
+- commit documentation-only de closeout : `38d901f66e66f0adf81bb8efd3fdf5fcc40e02ea`, en certification exacte avant merge ;
 - PR #949 : closeout canonique en cours avant merge ;
 - PR #947 : code produit absorbé dans #949, à fermer comme supersédée après merge de #949 ;
 - aucun déploiement Vercel.
 
 ## NEXT EXACT
-Certifier le commit documentation-only de closeout, marquer PR #949 ready, merger sur `main`, vérifier le merge/post-merge, puis fermer PR #947 comme supersédée.
+Certifier `38d901f66e66f0adf81bb8efd3fdf5fcc40e02ea`, marquer PR #949 ready, merger sur `main`, vérifier le merge/post-merge, puis fermer PR #947 comme supersédée.
