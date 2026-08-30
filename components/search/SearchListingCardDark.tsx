@@ -140,7 +140,7 @@ export function SearchListingCardDark({ listing, projectId }: { listing: Listing
                   decoding="async"
                   onError={() => setThumbnailError(true)}
                   data-visual-inventory-class="authorized_or_listing_image"
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-cover object-center"
                 />
               ) : imageMode !== "fallback_visual" ? (
                 <Image
@@ -310,7 +310,7 @@ export function SearchListingCardDark({ listing, projectId }: { listing: Listing
 
           <div data-card-provenance className="mt-2 flex items-center justify-between gap-2 border-t border-slate-200/80 pt-2 text-[9.5px] sm:mt-2.5 sm:gap-3 sm:pt-3 sm:text-[11px]">
             <span className="truncate font-semibold text-slate-500">{smartCard.freshnessLabel}</span>
-            {showOriginal && !observedExternal ? (
+            {showOriginal && (!observedExternal || useIndexedArtwork) ? (
               <a
                 href={listing.listing_url!}
                 target="_blank"
