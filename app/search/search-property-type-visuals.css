@@ -1,0 +1,100 @@
+/* SEARCH-PROPERTY-TYPE-VISUALS-1
+ * Presentation-only convergence to the approved locked TARGET.
+ * No ranking, listing truth, image policy or data behavior lives here.
+ */
+
+/* TARGET: property badge only in the artwork header. Indexed disclosure belongs in the footer. */
+[data-indexed-property-artwork] > div:nth-of-type(2) {
+  display: none !important;
+}
+
+/* TARGET uses light family badges with colored type text, not solid transaction pills. */
+[data-indexed-property-artwork] > div:first-of-type {
+  box-shadow: none !important;
+  border: 1px solid currentColor !important;
+  border-color: color-mix(in srgb, currentColor 16%, transparent) !important;
+}
+[data-indexed-property-artwork="apartment"] > div:first-of-type { background: #eaf2ff !important; color: #1769e0 !important; }
+[data-indexed-property-artwork="villa"] > div:first-of-type { background: #eaf7ee !important; color: #16843a !important; }
+[data-indexed-property-artwork="land"] > div:first-of-type { background: #fff0e5 !important; color: #ea6a00 !important; }
+[data-indexed-property-artwork="office"] > div:first-of-type { background: #f1ebff !important; color: #7352c7 !important; }
+[data-indexed-property-artwork="commercial"] > div:first-of-type { background: #e6f7f9 !important; color: #008ca3 !important; }
+[data-indexed-property-artwork="riad"] > div:first-of-type { background: #fbf1dd !important; color: #b98213 !important; }
+
+/* TARGET heart is visually bare while keeping the certified 44 px hit target. */
+[data-indexed-artwork-card="true"] [data-card-favorite] button {
+  width: 44px !important;
+  height: 44px !important;
+  min-width: 44px !important;
+  min-height: 44px !important;
+  border-color: transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* TARGET footer: “Annonce indexée” left, “Voir sur la source ↗” right. */
+[data-indexed-artwork-card="true"] [data-card-provenance] {
+  margin-top: 0.8rem !important;
+  padding-top: 0.75rem !important;
+  border-top-color: #edf0f4 !important;
+  font-weight: 700 !important;
+}
+[data-indexed-artwork-card="true"] [data-card-provenance] > span:first-child {
+  flex: 0 0 auto;
+  font-size: 0 !important;
+}
+[data-indexed-artwork-card="true"] [data-card-provenance] > span:first-child::after {
+  content: "Annonce indexée";
+  font-size: 10.5px;
+  font-weight: 800;
+}
+[data-indexed-artwork-card="true"] [data-card-provenance] [data-public-attribution] {
+  flex: 0 0 auto;
+  max-width: none !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  white-space: nowrap !important;
+  font-size: 0 !important;
+  color: inherit !important;
+}
+[data-indexed-artwork-card="true"] [data-card-provenance] [data-public-attribution]::after {
+  content: "Voir sur la source ↗";
+  font-size: 10.5px;
+  font-weight: 800;
+}
+[data-indexed-artwork-card="true"] [data-card-primary-action],
+[data-indexed-artwork-card="true"] [data-card-provenance] ~ a {
+  display: none !important;
+}
+
+/* Presentation alias only: upstream métier type remains Bureau until its own taxonomy evolves. */
+[data-indexed-artwork-card="true"]:has([data-indexed-property-artwork="commercial"]) [data-card-facts] > span:first-child {
+  font-size: 0 !important;
+}
+[data-indexed-artwork-card="true"]:has([data-indexed-property-artwork="commercial"]) [data-card-facts] > span:first-child svg {
+  width: 11px !important;
+  height: 11px !important;
+}
+[data-indexed-artwork-card="true"]:has([data-indexed-property-artwork="commercial"]) [data-card-facts] > span:first-child::before {
+  content: "Local commercial";
+  font-size: 11px;
+  margin-left: 0.25rem;
+}
+
+@media (max-width: 639px) {
+  [data-indexed-artwork-card="true"] [data-card-provenance] {
+    gap: 4px !important;
+    margin-top: 0.7rem !important;
+    padding-top: 0.65rem !important;
+  }
+  [data-indexed-artwork-card="true"] [data-card-provenance] > span:first-child::after,
+  [data-indexed-artwork-card="true"] [data-card-provenance] [data-public-attribution]::after {
+    font-size: 7.5px;
+    letter-spacing: -0.01em;
+  }
+  [data-indexed-artwork-card="true"]:has([data-indexed-property-artwork="commercial"]) [data-card-facts] > span:first-child::before {
+    font-size: 9px;
+  }
+}
