@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ProPageV2 } from "@/components/pro/ProPageV2";
+import "./p0-polish.css";
 
 export const metadata: Metadata = {
   title: "AkarFinder Pro — Données immobilières structurées pour agences et promoteurs",

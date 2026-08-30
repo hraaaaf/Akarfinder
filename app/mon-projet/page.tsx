@@ -2,6 +2,7 @@ import { MonProjetWizardP1A } from "@/components/companion/MonProjetWizardP1A";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { Container } from "@/components/ui/Container";
 import { ui } from "@/components/ui/design-system";
+import "./p0-polish.css";
 
 export const metadata = {
   title: "Mon Projet immobilier | AkarFinder",

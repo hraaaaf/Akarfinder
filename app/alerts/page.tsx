@@ -4,6 +4,7 @@ import { SiteFooter } from "@/components/landing/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { Container } from "@/components/ui/Container";
 import { ui } from "@/components/ui/design-system";
+import "./p1-polish.css";
 
 export const metadata = {
   title: "Alertes immobilières — AkarFinder",
@@ -12,7 +13,7 @@ export const metadata = {
 
 export default function AlertsPage() {
   return (
-    <main className={`min-h-screen ${ui.pageLight}`}>
+    <main className={`min-h-screen ${ui.pageLight}`} data-p1-alerts>
       <SiteHeader searchMode fluid />
       <Container>
         <section className="mx-auto flex min-h-[64vh] max-w-3xl items-center justify-center py-8 pb-28 sm:py-12 md:pb-12">

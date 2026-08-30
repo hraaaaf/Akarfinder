@@ -18,43 +18,35 @@ describe("P1A.6 — Responsive hardening", () => {
     ]) assert.ok(audit.includes(expected));
   });
 
-  it("audits Morocco, city and selected district states across legacy and intelligence experiences", () => {
+  it("audits Morocco, city and selected district states across national and intelligence experiences", () => {
     const audit = source("scripts/audits/p1a6-map-responsive-smoke.ts");
-    assert.ok(audit.includes('{ path: "/map", slug: "map", experience: "legacy" }'));
+    assert.ok(audit.includes('{ path: "/map", slug: "map", experience: "national" }'));
     assert.ok(audit.includes('{ path: "/map?city=Rabat", slug: "map-rabat", experience: "intelligence" }'));
     assert.ok(audit.includes('{ path: "/map?city=Rabat&district=Agdal", slug: "map-rabat-agdal", experience: "intelligence" }'));
-    assert.ok(audit.includes('route.experience === "intelligence"'));
+    assert.ok(audit.includes('/api/geo/national-territories'));
     assert.ok(audit.includes('[data-akarfinder-market-intelligence-map]'));
   });
 
   it("certifies real viewport composition rather than full-page screenshots", () => {
     const audit = source("scripts/audits/p1a6-map-responsive-smoke.ts");
     assert.ok(audit.includes("fullPage: false"));
-    assert.ok(audit.includes("cockpit-explorer-overlap"));
-    assert.ok(audit.includes("explorer-panel-overlap"));
-    assert.ok(audit.includes("territorial-touch-target"));
+    assert.ok(audit.includes("horizontal-overflow"));
+    assert.ok(audit.includes("MapLibre canvas missing"));
     assert.equal(audit.includes('keyboard.press("Tab")'), false);
   });
 
-  it("hardens territorial controls for touch and keyboard without changing geo navigation", () => {
-    const explorer = source("components/map/TerritorialExplorer.tsx");
-    assert.ok(explorer.includes("h-10 shrink-0"));
-    assert.ok(explorer.includes("focus-visible:ring-2"));
-    assert.ok(explorer.includes("overscroll-x-contain"));
-    assert.ok(explorer.includes("withMapLocation"));
-    assert.ok(explorer.includes("resolveCityEntity"));
+  it("uses the current national router for generic explore mode", () => {
+    const router = source("components/map/NationalMapRouter.tsx");
+    const national = source("components/map/NationalTerritoryExperience.tsx");
+    assert.match(router, /NationalTerritoryExperienceDynamic/);
+    assert.match(router, /useNationalExplore/);
+    assert.match(national, /\/api\/geo\/national-territories/);
+    assert.match(national, /__AKARFINDER_NATIONAL_MAP__/);
   });
 
-  it("separates the explorer from the taller mobile and tablet cockpit", () => {
-    const explorer = source("components/map/TerritorialExplorer.tsx");
-    assert.ok(explorer.includes("top-[112px]"));
-    assert.ok(explorer.includes("sm:top-[128px]"));
-    assert.ok(explorer.includes("lg:top-[96px]"));
-  });
-
-  it("preserves the selected-district tablet collision guard from P1A.5", () => {
-    const explorer = source("components/map/TerritorialExplorer.tsx");
-    assert.ok(explorer.includes("md:w-[calc(100vw-438px)]"));
-    assert.ok(explorer.includes("md:max-w-[720px]"));
+  it("preserves Rabat market intelligence for city and district states", () => {
+    const router = source("components/map/NationalMapRouter.tsx");
+    assert.match(router, /rabat-market-intelligence/);
+    assert.match(router, /MapNeighborhoodClient/);
   });
 });

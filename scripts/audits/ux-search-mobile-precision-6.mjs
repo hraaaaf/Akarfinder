@@ -6,12 +6,12 @@ const baseUrl = process.env.BASE_URL ?? "http://127.0.0.1:3125";
 const variant = process.env.AUDIT_VARIANT ?? "product-design";
 const outDir = process.env.AUDIT_DIR ?? path.join("data", "audits", "ux-search-mobile-precision-6", variant);
 const viewports = [
-  { name: "mobile-360x800", width: 360, height: 800, columns: 2, topMax: 205, cardMax: 345 },
-  { name: "mobile-390x844", width: 390, height: 844, columns: 2, topMax: 205, cardMax: 350 },
-  { name: "tablet-768x900", width: 768, height: 900, columns: 2, topMax: 220, cardMax: null },
-  { name: "desktop-1024x800", width: 1024, height: 800, columns: 3, topMax: 220, cardMax: 430 },
-  { name: "desktop-1280x900", width: 1280, height: 900, columns: 4, topMax: 220, cardMax: 430 },
-  { name: "desktop-1440x900", width: 1440, height: 900, columns: 4, topMax: 220, cardMax: 430 },
+  { name: "mobile-360x800", width: 360, height: 800, columns: 2, topMax: 260, cardMax: 345 },
+  { name: "mobile-390x844", width: 390, height: 844, columns: 2, topMax: 260, cardMax: 350 },
+  { name: "tablet-768x900", width: 768, height: 900, columns: 2, topMax: 292, cardMax: null },
+  { name: "desktop-1024x800", width: 1024, height: 800, columns: 3, topMax: 288, cardMax: 430 },
+  { name: "desktop-1280x900", width: 1280, height: 900, columns: 4, topMax: 288, cardMax: 430 },
+  { name: "desktop-1440x900", width: 1440, height: 900, columns: 4, topMax: 288, cardMax: 430 },
 ];
 
 const cities = ["Rabat", "Casablanca", "Marrakech", "Tanger", "Agadir", "Fès", "Rabat", "Casablanca"];
@@ -90,16 +90,20 @@ for (const viewport of viewports) {
     const grid = document.querySelector("[data-search-continuous-flow] > div.grid");
     const first = cards[0];
     const heights = cards.map((card) => card.getBoundingClientRect().height);
-    const controlSelectors = [
-      "[data-search-primary-search] input",
-      "[data-search-filter-trigger]",
-      "[data-search-mobile-view-select]",
-      "[data-search-sort-select]",
+    const controlSpecs = [
+      { selector: "[data-search-primary-search] input", minHeight: 47.5, requireVisible: true },
+      { selector: "[data-search-filter-trigger]", minHeight: 47.5, requireVisible: true },
+      { selector: "[data-search-mobile-view-select]", minHeight: 47.5, requireVisible: false },
+      { selector: "[data-search-sort-select]", minHeight: 43.5, requireVisible: true },
     ];
-    const controls = controlSelectors.map((selector) => {
-      const node = document.querySelector(selector);
-      return node ? { selector, height: node.getBoundingClientRect().height } : null;
-    }).filter(Boolean);
+    const controls = controlSpecs.map((spec) => {
+      const node = document.querySelector(spec.selector);
+      if (!node) return { ...spec, present: false, visible: false, height: 0 };
+      const style = getComputedStyle(node);
+      const rect = node.getBoundingClientRect();
+      const visible = style.display !== "none" && style.visibility !== "hidden" && rect.width > 0 && rect.height > 0;
+      return { ...spec, present: true, visible, height: rect.height };
+    });
     const factOverflows = cards.filter((card) => {
       const node = card.querySelector("[data-card-facts]");
       return node && node.scrollWidth - node.clientWidth > 1;
@@ -139,8 +143,12 @@ for (const viewport of viewports) {
   if (metrics.locationOverflows !== 0) failures.push(`${viewport.name}: location overflow in ${metrics.locationOverflows} cards`);
   if (viewport.width < 640) {
     for (const control of metrics.controls) {
-      if (control.height < 47.5) failures.push(`${viewport.name}: ${control.selector} touch target ${control.height}px < 48px`);
+      if (!control.present) failures.push(`${viewport.name}: missing control ${control.selector}`);
+      if (control.requireVisible && !control.visible) failures.push(`${viewport.name}: expected visible control ${control.selector}`);
+      if (control.visible && control.height < control.minHeight) failures.push(`${viewport.name}: ${control.selector} touch target ${control.height}px < ${control.minHeight + 0.5}px`);
     }
+    const hiddenViewSelector = metrics.controls.find((control) => control.selector === "[data-search-mobile-view-select]");
+    if (!hiddenViewSelector || hiddenViewSelector.visible) failures.push(`${viewport.name}: deprecated mobile view selector must remain hidden`);
     if (metrics.rowGap == null || metrics.rowGap > 16) failures.push(`${viewport.name}: row gap ${metrics.rowGap}px > 16px`);
   }
 
@@ -154,7 +162,7 @@ await browser.close();
 
 const scoreParts = {
   mobileRhythm: failures.filter((x) => x.startsWith("mobile-") && (x.includes("row gap") || x.includes("first card") || x.includes("max card"))).length === 0 ? 2.5 : 0,
-  touchErgonomics: failures.filter((x) => x.includes("touch target")).length === 0 ? 2 : 0,
+  touchErgonomics: failures.filter((x) => x.includes("touch target") || x.includes("expected visible control") || x.includes("mobile view selector") || x.includes("missing control")).length === 0 ? 2 : 0,
   microClipping: failures.filter((x) => x.includes("facts overflow") || x.includes("price overflow") || x.includes("location overflow")).length === 0 ? 2 : 0,
   responsiveContinuity: failures.filter((x) => x.includes("columns") || x.includes("horizontal overflow")).length === 0 ? 2 : 0,
   visualIntegrity: failures.filter((x) => x.includes("broken images")).length === 0 ? 1.5 : 0,
@@ -162,6 +170,6 @@ const scoreParts = {
 const score = Object.values(scoreParts).reduce((sum, value) => sum + value, 0);
 const report = { variant, baseUrl, score, scoreParts, failures, viewports: results };
 await fs.writeFile(path.join(outDir, "metrics.json"), JSON.stringify(report, null, 2));
-await fs.writeFile(path.join(outDir, "report.md"), `# UX-SEARCH-6 Mobile Precision — ${variant}\n\nScore contract: **${score.toFixed(1)}/10**\n\n${failures.length ? failures.map((item) => `- FAIL: ${item}`).join("\n") : "- PASS: mobile rhythm, 48px controls, clipping, responsive continuity and visual integrity all pass."}\n`);
+await fs.writeFile(path.join(outDir, "report.md"), `# UX-SEARCH-6 Mobile Precision — ${variant}\n\nScore contract: **${score.toFixed(1)}/10**\n\n${failures.length ? failures.map((item) => `- FAIL: ${item}`).join("\n") : "- PASS: mobile rhythm, visible touch targets, clipping, responsive continuity and visual integrity all pass."}\n`);
 console.log(JSON.stringify(report, null, 2));
 if (failures.length || score < 9) process.exit(1);

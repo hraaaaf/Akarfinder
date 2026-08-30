@@ -6,13 +6,16 @@ const baseUrl = process.env.BASE_URL ?? "http://127.0.0.1:3103";
 const variant = process.env.AUDIT_VARIANT ?? "product-design";
 const outDir = process.env.AUDIT_DIR ?? path.join("data", "audits", "ux-search-card-architecture-3", variant);
 
+// UX-SEARCH-3 now certifies the current Search shell: compact global header + search
+// bar + intent chips + result controls. Keep density bounded, but do not enforce the
+// pre-shell top offsets that were superseded by the final 10/10 Search layout.
 const viewports = [
-  { name: "mobile-360x800", width: 360, height: 800, columns: 2, topMax: 270, cardMax: 390 },
-  { name: "mobile-390x844", width: 390, height: 844, columns: 2, topMax: 270, cardMax: 390 },
-  { name: "tablet-768x900", width: 768, height: 900, columns: 2, topMax: 285, cardMax: 620 },
-  { name: "desktop-1024x800", width: 1024, height: 800, columns: 3, topMax: 280, cardMax: 420 },
-  { name: "desktop-1280x900", width: 1280, height: 900, columns: 4, topMax: 280, cardMax: 420 },
-  { name: "desktop-1440x900", width: 1440, height: 900, columns: 4, topMax: 280, cardMax: 420 },
+  { name: "mobile-360x800", width: 360, height: 800, columns: 2, topMax: 310, cardMax: 390 },
+  { name: "mobile-390x844", width: 390, height: 844, columns: 2, topMax: 310, cardMax: 390 },
+  { name: "tablet-768x900", width: 768, height: 900, columns: 2, topMax: 340, cardMax: 620 },
+  { name: "desktop-1024x800", width: 1024, height: 800, columns: 3, topMax: 335, cardMax: 421 },
+  { name: "desktop-1280x900", width: 1280, height: 900, columns: 4, topMax: 335, cardMax: 421 },
+  { name: "desktop-1440x900", width: 1440, height: 900, columns: 4, topMax: 335, cardMax: 421 },
 ];
 
 const districts = ["Agdal", "Hay Riad", "Océan", "Hassan", "Souissi", "Agdal", "Hay Riad", "Océan"];

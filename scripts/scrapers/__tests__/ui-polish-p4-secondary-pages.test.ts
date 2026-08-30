@@ -14,8 +14,10 @@ const shellPages = [
 
 test("UI-POLISH-P4 secondary public pages converge on the canonical shell", () => {
   const shell = fs.readFileSync("components/layout/SecondaryPageShell.tsx", "utf8");
+  const rootLayout = fs.readFileSync("app/layout.tsx", "utf8");
   assert.match(shell, /SiteHeader searchMode fluid/);
-  assert.match(shell, /MobileBottomNav/);
+  assert.doesNotMatch(shell, /MobileBottomNav/, "secondary shell must not duplicate the global mobile navigation");
+  assert.match(rootLayout, /MobileBottomNav/, "root layout owns the single global mobile navigation");
   assert.match(shell, /ui\.pageLight/);
   assert.match(shell, /ui\.surfacePremium/);
   assert.match(shell, /data-p4-secondary-shell/);

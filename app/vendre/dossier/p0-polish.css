@@ -1,0 +1,77 @@
+/* UX/UI POLISH P0.4 — /vendre/dossier
+   Goal: keep the publication flow focused on the form, reduce desktop rail
+   pressure, and preserve breathing room on compact screens without changing
+   seller logic or validation. */
+
+[data-p8-publication-v4] {
+  width: 100%;
+}
+
+@media (max-width: 639px) {
+  [data-p8-publication-v4] > .mb-5 {
+    margin-bottom: 14px !important;
+    padding: 12px 14px !important;
+    border-radius: 18px !important;
+    box-shadow: 0 8px 24px rgb(11 37 69 / 0.05) !important;
+  }
+
+  [data-p8-publication-v4] > .mb-5 .mt-3 {
+    margin-top: 8px !important;
+  }
+
+  [data-p8-publication-v4] > .grid {
+    gap: 14px !important;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  [data-p8-publication-v4] > .mb-5 {
+    margin-bottom: 16px !important;
+  }
+
+  [data-p8-publication-v4] > .grid {
+    gap: 18px !important;
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1279px) {
+  [data-p8-publication-v4] > .grid {
+    grid-template-columns: 176px minmax(0, 1fr) !important;
+    gap: 18px !important;
+  }
+
+  [data-p8-publication-v4] > .grid > aside:first-child section {
+    padding: 14px !important;
+    border-radius: 18px !important;
+  }
+}
+
+@media (min-width: 1280px) and (max-width: 1439px) {
+  /* Keep the certified live preview visible at the xl breakpoint, but make
+     both assistance rails subordinate to the central publication task. */
+  [data-p8-publication-v4] > .grid {
+    grid-template-columns: 170px minmax(0, 1fr) 270px !important;
+    gap: 16px !important;
+  }
+
+  [data-p8-publication-v4] > .grid > aside:first-child section {
+    padding: 13px !important;
+    border-radius: 18px !important;
+  }
+
+  [data-p8-publication-v4] > .grid > aside:last-child > div {
+    top: 16px !important;
+  }
+}
+
+@media (min-width: 1440px) {
+  [data-p8-publication-v4] > .grid {
+    grid-template-columns: 190px minmax(0, 1fr) 320px !important;
+    gap: 20px !important;
+  }
+
+  [data-p8-publication-v4] > .grid > aside:first-child section,
+  [data-p8-publication-v4] > .grid > aside:last-child section {
+    border-radius: 20px !important;
+  }
+}

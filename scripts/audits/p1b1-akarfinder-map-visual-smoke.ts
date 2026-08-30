@@ -35,81 +35,67 @@ async function main() {
 
   for (const viewport of viewports) {
     const context = await browser.newContext({ viewport });
-    await context.addCookies([
-      {
-        name: "akar_geometry_canary",
-        value: key,
-        url: BASE_URL,
-        sameSite: "Lax",
-      },
-    ]);
+    await context.addCookies([{
+      name: "akar_geometry_canary",
+      value: key,
+      url: BASE_URL,
+      sameSite: "Lax",
+    }]);
 
-    const api = await context.request.get(`${BASE_URL}/api/geo/casablanca-arrondissements`);
-    const apiText = await api.text();
-    diagnostics.push({
-      viewport: viewport.name,
-      apiStatus: api.status(),
-      apiCanary: api.headers()["x-akarfinder-geometry-canary"] ?? null,
-      apiBucket: api.headers()["x-akarfinder-geometry-bucket"] ?? null,
-      apiGeometryStatus: api.headers()["x-akarfinder-geometry-status"] ?? null,
-      apiBodyPrefix: apiText.slice(0, 180),
-    });
-    if (api.status() !== 200) {
-      findings.push(`${viewport.name}: canary API HTTP ${api.status()} (${api.headers()["x-akarfinder-geometry-canary"] ?? "no-reason"})`);
-    }
+    const legacyApi = await context.request.get(`${BASE_URL}/api/geo/casablanca-arrondissements`);
+    if (legacyApi.status() !== 200) findings.push(`${viewport.name}: legacy canary API HTTP ${legacyApi.status()}`);
 
     const page = await context.newPage();
-    const consoleErrors: string[] = [];
-    const geometryResponses: Array<Record<string, unknown>> = [];
-    page.on("console", (message) => {
-      if (message.type() === "error" || message.type() === "warning") consoleErrors.push(`${message.type()}: ${message.text()}`);
-    });
-    page.on("pageerror", (error) => consoleErrors.push(`pageerror: ${error.message}`));
-    page.on("response", async (networkResponse) => {
-      if (!networkResponse.url().includes("/api/geo/casablanca-arrondissements")) return;
-      geometryResponses.push({
-        url: networkResponse.url(),
-        status: networkResponse.status(),
-        canary: networkResponse.headers()["x-akarfinder-geometry-canary"] ?? null,
-        bucket: networkResponse.headers()["x-akarfinder-geometry-bucket"] ?? null,
-        geometryStatus: networkResponse.headers()["x-akarfinder-geometry-status"] ?? null,
-      });
-    });
-    page.on("requestfailed", (request) => {
-      if (!request.url().includes("/api/geo/casablanca-arrondissements")) return;
-      geometryResponses.push({
-        url: request.url(),
-        failed: request.failure()?.errorText ?? "unknown",
-      });
+    const pageErrors: string[] = [];
+    const territoryResponses: Array<{ status: number; url: string; view?: string; slug?: string | null }> = [];
+    page.on("pageerror", (error) => pageErrors.push(error.message));
+    page.on("response", async (response) => {
+      const url = new URL(response.url());
+      if (url.pathname !== "/api/geo/national-territories") return;
+      let view: string | undefined;
+      let slug: string | null | undefined;
+      if (response.ok()) {
+        try {
+          const body = await response.json() as { view?: string; place?: { slug?: string } };
+          view = body.view;
+          slug = body.place?.slug ?? null;
+        } catch {}
+      }
+      territoryResponses.push({ status: response.status(), url: response.url(), view, slug });
     });
 
     const response = await page.goto(`${BASE_URL}/map?city=Casablanca`, { waitUntil: "domcontentloaded", timeout: 30_000 });
     if (!response || response.status() >= 400) findings.push(`${viewport.name}: page HTTP ${response?.status() ?? "none"}`);
     try {
       await page.locator(".maplibregl-canvas").waitFor({ state: "visible", timeout: 15_000 });
+      await page.waitForFunction(() => Boolean((window as typeof window & { __AKARFINDER_NATIONAL_MAP__?: unknown }).__AKARFINDER_NATIONAL_MAP__), null, { timeout: 15_000 });
+      await page.waitForFunction(() => performance.getEntriesByType("resource").some((entry) => entry.name.includes("/api/geo/national-territories?city=casablanca")), null, { timeout: 15_000 });
     } catch {
-      findings.push(`${viewport.name}: MapLibre canvas did not become visible`);
-    }
-
-    const layer = page.locator('[data-akarfinder-territorial-layer="active"]');
-    try {
-      await layer.waitFor({ state: "visible", timeout: 15_000 });
-    } catch {
-      findings.push(`${viewport.name}: AkarFinder territorial layer did not become active`);
+      findings.push(`${viewport.name}: national territorial runtime did not settle`);
     }
 
     const metrics = await page.evaluate(() => ({
       scrollWidth: document.documentElement.scrollWidth,
       clientWidth: document.documentElement.clientWidth,
       canvasCount: document.querySelectorAll(".maplibregl-canvas").length,
-      active: document.querySelector('[data-akarfinder-territorial-layer="active"]') != null,
+      nationalMapReady: Boolean((window as typeof window & { __AKARFINDER_NATIONAL_MAP__?: unknown }).__AKARFINDER_NATIONAL_MAP__),
     }));
-    diagnostics.push({ viewport: viewport.name, metrics, consoleErrors, geometryResponses });
-    if (metrics.scrollWidth > metrics.clientWidth + 1) findings.push(`${viewport.name}: horizontal overflow ${metrics.scrollWidth} > ${metrics.clientWidth}`);
-    if (metrics.canvasCount < 1) findings.push(`${viewport.name}: MapLibre canvas missing`);
-    if (!metrics.active) findings.push(`${viewport.name}: territorial active marker missing`);
-    if (geometryResponses.length === 0) findings.push(`${viewport.name}: component never requested territorial geometry`);
 
+    const currentTransport = territoryResponses.find((item) => item.status === 200 && item.view === "city" && item.slug === "casablanca");
+    if (!currentTransport) findings.push(`${viewport.name}: current national territory response for Casablanca missing`);
+    if (metrics.scrollWidth > metrics.clientWidth + 1) findings.push(`${viewport.name}: horizontal overflow ${metrics.scrollWidth} > ${metrics.clientWidth}`);
+    if (metrics.canvasCount < 1 || !metrics.nationalMapReady) findings.push(`${viewport.name}: national MapLibre runtime missing`);
+    if (pageErrors.length > 0) findings.push(`${viewport.name}: page errors: ${pageErrors.join(" | ")}`);
+
+    diagnostics.push({
+      viewport: viewport.name,
+      legacyApiStatus: legacyApi.status(),
+      legacyCanary: legacyApi.headers()["x-akarfinder-geometry-canary"] ?? null,
+      legacyGeometryStatus: legacyApi.headers()["x-akarfinder-geometry-status"] ?? null,
+      territoryResponses,
+      metrics,
+      pageErrors,
+    });
     await page.screenshot({ path: `${OUT}/casablanca-${viewport.name}.png`, fullPage: false });
     await context.close();
   }

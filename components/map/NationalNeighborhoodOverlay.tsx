@@ -30,6 +30,7 @@ type Props = {
   centeredNeighborhoodCount: number;
   certifiedNeighborhoodBoundaryCount: number;
   theme?: string;
+  selectedDistrictSlug?: string | null;
   onSelectDistrict?: (slug: string) => void;
 };
 
@@ -75,6 +76,7 @@ export function NationalNeighborhoodOverlay({
   centeredNeighborhoodCount,
   certifiedNeighborhoodBoundaryCount,
   theme,
+  selectedDistrictSlug,
   onSelectDistrict,
 }: Props) {
   const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
@@ -84,12 +86,16 @@ export function NationalNeighborhoodOverlay({
 
   useEffect(() => { selectedRef.current = selectedSlug; }, [selectedSlug]);
   useEffect(() => {
-    setSelectedSlug(null);
     setHoverSlug(null);
     setQuery("");
   }, [citySlug]);
 
   const bySlug = useMemo(() => new Map(neighborhoods.map((item) => [item.slug, item] as const)), [neighborhoods]);
+  useEffect(() => {
+    const nextSelectedSlug = selectedDistrictSlug && bySlug.has(selectedDistrictSlug) ? selectedDistrictSlug : null;
+    selectedRef.current = nextSelectedSlug;
+    setSelectedSlug(nextSelectedSlug);
+  }, [bySlug, selectedDistrictSlug]);
   const selected = selectedSlug ? bySlug.get(selectedSlug) ?? null : null;
   const suggestions = useMemo(() => {
     const needle = normalizedSearchText(query);

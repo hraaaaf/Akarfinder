@@ -109,15 +109,20 @@ describe("CONTEXTUAL-ILLUSTRATIONS-SCALE-2", () => {
     assert.doesNotMatch(catalog, /Math\.random|fetch\s*\(/);
     assert.match(catalog, /districtType: \{\}/);
     assert.match(catalog, /district: \{\}/);
-    assert.match(card, /showThumbnail && !thumbError/);
-    assert.match(card, />\s*Illustration\s*</);
+    assert.match(card, /data-indexed-artwork-card="true"/);
+    assert.match(card, /<IndexedTransactionArtwork transaction=\{visualTransaction\}/);
+    assert.doesNotMatch(card, /showThumbnail && !thumbError/);
+    assert.match(card, /source originale/);
   });
 
-  it("certifies five viewports, 36 SCALE-2 assets, lazy hydration and fallbacks", () => {
+  it("certifies five viewports, 36 resolver assets, Rabat photo precedence, 24 visible contextual assets, lazy hydration and fallbacks", () => {
     const audit = source("scripts/audits/contextual-illustrations-scale-2-visual.mjs");
     for (const marker of ["360x800", "390x844", "768x900", "1280x900", "1440x900"]) assert.ok(audit.includes(marker));
     assert.match(audit, /EXPECTED_SCALE2_IDS/);
-    assert.match(audit, /uniqueScale2Ids\.size !== 36/);
+    assert.match(audit, /EXPECTED_VISIBLE_CONTEXTUAL_IDS/);
+    assert.match(audit, /uniqueScale2Ids\.size !== 24/);
+    assert.match(audit, /Rabat real-photo precedence drift/);
+    assert.match(audit, /neighborhoodPhotoId/);
     assert.match(audit, /hydrateLazyVisuals/);
     assert.match(audit, /naturalWidth > 0/);
     assert.match(audit, /page\.reload/);

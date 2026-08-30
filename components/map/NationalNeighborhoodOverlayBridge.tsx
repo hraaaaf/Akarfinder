@@ -121,6 +121,7 @@ export function NationalNeighborhoodOverlayBridge({ citySlug, districtSlug, onSe
         centeredNeighborhoodCount={payload.meta.centeredNeighborhoodCount}
         certifiedNeighborhoodBoundaryCount={payload.meta.certifiedNeighborhoodBoundaryCount}
         theme={theme}
+        selectedDistrictSlug={districtSlug}
         onSelectDistrict={onSelectDistrict}
       />
       <NeighborhoodContextPoiOverlay

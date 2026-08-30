@@ -129,7 +129,7 @@ try {
       throw new Error(`${viewport.name}: missing polygon preview`);
     }
 
-    const searchHref = await sheet.getByRole("link", { name: /Rechercher dans cette zone/i }).getAttribute("href");
+    const searchHref = await sheet.locator('a[href^="/search?"]').first().getAttribute("href");
     if (!searchHref) throw new Error(`${viewport.name}: missing Search CTA`);
     const searchUrl = new URL(searchHref, baseUrl);
     if (

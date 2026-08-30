@@ -1,0 +1,179 @@
+/* UX/UI POLISH P0.1 — /map
+   Goal: make the map the hero, reduce dashboard-like chrome, and keep the
+   decision rail useful without letting it consume the viewport.
+   Reference contract: AkarFinder premium surfaces, compact controls,
+   dominant geographic canvas, one clear primary action. */
+
+@media (max-width: 767px) {
+  [data-p4-map-canvas] [data-akarfinder-premium-map-toolbar],
+  [data-p4-map-canvas] [data-akarfinder-generic-premium-toolbar] {
+    inset-inline: 8px !important;
+    top: 8px !important;
+    padding: 7px !important;
+    border-radius: 15px !important;
+    box-shadow: 0 8px 24px rgb(15 35 66 / 0.10) !important;
+  }
+
+  /* City is already explicit in the select. Removing the duplicate title
+     gives the map back a meaningful band of vertical space. */
+  [data-p4-map-canvas] [data-akarfinder-premium-map-toolbar] > div:first-child p,
+  [data-p4-map-canvas] [data-akarfinder-generic-premium-map-toolbar] > div:first-child p {
+    display: none !important;
+  }
+
+  [data-p4-map-canvas] [data-akarfinder-premium-map-toolbar] label,
+  [data-p4-map-canvas] [data-akarfinder-generic-premium-map-toolbar] label {
+    margin-top: 0 !important;
+  }
+
+  [data-p4-map-canvas] [data-akarfinder-premium-map-toolbar] select,
+  [data-p4-map-canvas] [data-akarfinder-generic-premium-map-toolbar] select {
+    height: 34px !important;
+    border-radius: 10px !important;
+  }
+
+  [data-p4-map-canvas] [data-akarfinder-premium-map-toolbar] > div:last-child,
+  [data-p4-map-canvas] [data-akarfinder-generic-premium-map-toolbar] > div:last-child {
+    margin-top: 5px !important;
+    gap: 5px !important;
+    padding-top: 5px !important;
+  }
+
+  [data-p4-map-canvas] [data-akarfinder-premium-map-toolbar] [role="tab"],
+  [data-p4-map-canvas] [data-akarfinder-generic-premium-toolbar] [role="tab"] {
+    min-height: 30px !important;
+    padding-block: 5px !important;
+  }
+
+  [data-p4-map-canvas] [data-akarfinder-premium-map-toolbar] [aria-label="Transaction"] button,
+  [data-p4-map-canvas] [data-akarfinder-generic-premium-map-toolbar] [aria-label="Transaction"] button {
+    min-height: 26px !important;
+    padding: 3px 9px !important;
+  }
+
+  .p4-map-decision-rail {
+    max-height: 128px !important;
+    padding: 13px 13px 12px !important;
+    border-radius: 20px !important;
+    box-shadow: 0 -8px 28px rgb(15 35 66 / .12) !important;
+  }
+
+  .p4-map-decision-rail .p4-sheet-handle {
+    margin-bottom: 7px !important;
+  }
+
+  .p4-map-decision-rail h2 {
+    margin-top: 2px !important;
+    font-size: 17px !important;
+    line-height: 1.15 !important;
+  }
+
+  .p4-map-decision-rail h2 + p,
+  .p4-map-decision-rail [data-p4-map-data-contract],
+  .p4-map-decision-rail [aria-label="Villes phares"],
+  .p4-map-decision-rail > .mt-3.grid {
+    display: none !important;
+  }
+
+  .p4-map-decision-rail > .mt-3.flex {
+    margin-top: 8px !important;
+  }
+
+  .p4-map-decision-rail > .mt-3.flex > * {
+    min-height: 32px !important;
+  }
+}
+
+/* Let blank overlay surface pass pointer events to MapLibre while retaining
+   every actual navigation control as interactive. This solves the interaction
+   obstruction without hiding or weakening the territorial controls. */
+section[aria-label="Navigation territoriale nationale"] {
+  pointer-events: none !important;
+}
+
+section[aria-label="Navigation territoriale nationale"] :is(
+  a,
+  button,
+  input,
+  select,
+  textarea,
+  [role="button"],
+  [role="tab"],
+  [role="combobox"]
+) {
+  pointer-events: auto !important;
+}
+
+/* Keep the floating national navigation panel compact enough that the map
+   remains directly hoverable/clickable. */
+@media (min-width: 640px) {
+  section[aria-label="Navigation territoriale nationale"] {
+    width: min(360px, calc(100% - 2rem)) !important;
+    max-width: 360px !important;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .p4-map-decision-rail {
+    inset-inline: 16px !important;
+    bottom: 16px !important;
+    max-height: 176px !important;
+    padding: 16px !important;
+    border-radius: 22px !important;
+  }
+
+  .p4-map-decision-rail h2 + p,
+  .p4-map-decision-rail [data-p4-map-data-contract],
+  .p4-map-decision-rail [aria-label="Villes phares"] {
+    display: none !important;
+  }
+
+  .p4-map-decision-rail > .mt-3.grid {
+    margin-top: 10px !important;
+    grid-template-columns: 1fr !important;
+  }
+
+  .p4-map-decision-rail > .mt-3.grid > a:last-child {
+    display: none !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  [data-p4-map-layout] {
+    grid-template-columns: minmax(0, 1fr) 360px !important;
+  }
+
+  [data-p4-map-layout]:has([data-akarfinder-market-intelligence-map]) {
+    grid-template-columns: minmax(0, 1fr) 360px !important;
+  }
+
+  .p4-map-decision-rail,
+  [data-p4-map-layout]:has([data-akarfinder-market-intelligence-map]) .p4-map-decision-rail {
+    padding: 20px 18px !important;
+    background: #fbfcfe !important;
+    border-left: 1px solid #e4eaf2 !important;
+  }
+
+  .p4-map-decision-rail h2 {
+    font-size: 18px !important;
+  }
+
+  .p4-map-decision-rail [data-p4-map-data-contract] {
+    margin-top: 12px !important;
+    padding: 12px !important;
+  }
+
+  .p4-map-decision-rail > .mt-3.grid,
+  .p4-map-decision-rail > .mt-3.flex {
+    margin-top: 12px !important;
+  }
+
+  [data-p4-map-canvas] [data-akarfinder-premium-map-toolbar],
+  [data-p4-map-canvas] [data-akarfinder-generic-premium-map-toolbar] {
+    left: 16px !important;
+    right: 16px !important;
+    top: 16px !important;
+    border-radius: 16px !important;
+    box-shadow: 0 10px 26px rgb(15 35 66 / .10) !important;
+  }
+}

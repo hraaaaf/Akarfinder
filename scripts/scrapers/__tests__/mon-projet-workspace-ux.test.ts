@@ -9,11 +9,12 @@ describe("Mon Projet workspace", () => {
   it("uses one canonical Mon Projet vocabulary and preserves the authenticated workspace", () => {
     const companionPage = source("app/compagnon/page.tsx");
     const projectPage = source("app/mon-projet/page.tsx");
+    const projectWizard = source("components/companion/MonProjetWizardP1A.tsx");
     const workspacePage = source("app/mon-projet/espace/page.tsx");
     const workspace = source("components/account/UserContinuityWorkspace.tsx");
     assert.ok(companionPage.includes('permanentRedirect("/mon-projet")'));
     assert.ok(projectPage.includes("MonProjetWizardP1A"));
-    assert.ok(projectPage.includes("Retrouver mes projets enregistrés"));
+    assert.ok(projectWizard.includes("Mes projets enregistrés"));
     assert.ok(workspacePage.includes("Mes projets AkarFinder"));
     assert.ok(workspace.includes("Mon Projet AkarFinder"));
     assert.ok(!workspace.includes("Mon espace AkarFinder"));
@@ -23,7 +24,9 @@ describe("Mon Projet workspace", () => {
     const workspace = source("components/account/UserContinuityWorkspace.tsx");
     assert.ok(!workspace.includes("async function createProject"));
     assert.ok(!workspace.includes("projectName"));
-    assert.ok(workspace.includes("Nouveau projet avec le Compagnon"));
+    assert.ok(workspace.includes('href="/mon-projet"'));
+    assert.ok(workspace.includes("Nouveau projet"));
+    assert.ok(workspace.includes("Construire Mon Projet"));
   });
 
   it("reuses structured project profiles to resume Search", () => {
@@ -40,9 +43,10 @@ describe("Mon Projet workspace", () => {
   it("keeps legacy buyer routes redirect-only", () => {
     const profile = source("app/profil-recherche/page.tsx");
     const onboarding = source("app/onboarding/page.tsx");
-    assert.ok(profile.includes('redirect("/compagnon")'));
+    assert.ok(profile.includes('redirect("/mon-projet")'));
     assert.ok(!profile.includes("SearchProfileWizard"));
-    assert.ok(onboarding.includes("/compagnon?"));
+    assert.ok(onboarding.includes('redirect(`/mon-projet?${params.toString()}`)'));
+    assert.ok(onboarding.includes('redirect("/accompagnement?intent=neuf")'));
     assert.ok(!onboarding.includes("BuyerOnboardingFlow"));
   });
 });

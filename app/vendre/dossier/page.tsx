@@ -5,6 +5,7 @@ import { Container } from "@/components/ui/Container";
 import { SellerSecurePublishForm } from "@/components/vendre/SellerSecurePublishForm";
 import { isListingPropertyType } from "@/lib/property-types/presentation";
 import type { SellerIntent } from "@/lib/seller/readiness";
+import "./p0-polish.css";
 
 export const dynamic = "force-dynamic";
 

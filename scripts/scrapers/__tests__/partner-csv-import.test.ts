@@ -14,8 +14,6 @@ import {
   ALL_EXPECTED_HEADERS,
 } from "../../import-partner-csv.js";
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
 function baseRow(overrides: Record<string, string> = {}): Record<string, string> {
   return {
     title: "Appartement 3 pièces Casablanca Gauthier",
@@ -39,8 +37,6 @@ function baseRow(overrides: Record<string, string> = {}): Record<string, string>
 function baseListing(overrides = {}) {
   return normalizePartnerCsvListing(baseRow(), "agence_test");
 }
-
-// ─── parseCsv ─────────────────────────────────────────────────────────────────
 
 describe("parseCsv", () => {
   it("parses a simple CSV with header + 1 data row", () => {
@@ -76,8 +72,6 @@ describe("parseCsv", () => {
     assert.equal(rows.length, 1);
   });
 });
-
-// ─── normalizePartnerCsvListing ───────────────────────────────────────────────
 
 describe("normalizePartnerCsvListing", () => {
   it("trims all string fields", () => {
@@ -132,8 +126,6 @@ describe("normalizePartnerCsvListing", () => {
     assert.equal(l.source_url, null);
   });
 });
-
-// ─── validatePartnerCsvListing ────────────────────────────────────────────────
 
 describe("validatePartnerCsvListing", () => {
   it("accepts a valid listing", () => {
@@ -194,64 +186,52 @@ describe("validatePartnerCsvListing", () => {
     const l = normalizePartnerCsvListing(baseRow({ surface_m2: "" }));
     const err = validatePartnerCsvListing(l, 2);
     assert.ok(err);
-    assert.ok(err.reason.includes("surface_m2 obligatoire pour apartment"));
+    assert.ok(err.reason.includes("surface_m2 invalide pour apartment"));
   });
 
   it("rejects apartment with surface < 15", () => {
     const l = normalizePartnerCsvListing(baseRow({ surface_m2: "10" }));
     const err = validatePartnerCsvListing(l, 2);
     assert.ok(err);
-    assert.ok(err.reason.includes("< 15 m²"));
+    assert.ok(err.reason.includes("surface_m2 invalide pour apartment"));
   });
 
   it("allows land without surface", () => {
-    const l = normalizePartnerCsvListing(
-      baseRow({ property_type: "land", surface_m2: "" })
-    );
+    const l = normalizePartnerCsvListing(baseRow({ property_type: "land", surface_m2: "" }));
     const err = validatePartnerCsvListing(l, 2);
     assert.equal(err, null);
   });
 
   it("rejects description_snippet with phone number", () => {
-    const l = normalizePartnerCsvListing(
-      baseRow({ description_snippet: "Contactez 0661234567 pour info" })
-    );
+    const l = normalizePartnerCsvListing(baseRow({ description_snippet: "Contactez 0661234567 pour info" }));
     const err = validatePartnerCsvListing(l, 2);
     assert.ok(err);
     assert.ok(err.reason.includes("description_snippet contient PII"));
   });
 
   it("rejects description_snippet with email", () => {
-    const l = normalizePartnerCsvListing(
-      baseRow({ description_snippet: "info@agence.ma pour contact" })
-    );
+    const l = normalizePartnerCsvListing(baseRow({ description_snippet: "info@agence.ma pour contact" }));
     const err = validatePartnerCsvListing(l, 2);
     assert.ok(err);
     assert.ok(err.reason.includes("description_snippet contient PII"));
   });
 
   it("rejects description_snippet with WhatsApp mention", () => {
-    const l = normalizePartnerCsvListing(
-      baseRow({ description_snippet: "Disponible sur WhatsApp" })
-    );
+    const l = normalizePartnerCsvListing(baseRow({ description_snippet: "Disponible sur WhatsApp" }));
     const err = validatePartnerCsvListing(l, 2);
     assert.ok(err);
     assert.ok(err.reason.includes("description_snippet contient PII"));
   });
 
   it("rejects seller_name with phone number", () => {
-    const l = normalizePartnerCsvListing(
-      baseRow({ seller_name: "Agence 0661234567" })
-    );
+    const l = normalizePartnerCsvListing(baseRow({ seller_name: "Agence 0661234567" }));
     const err = validatePartnerCsvListing(l, 2);
     assert.ok(err);
     assert.ok(err.reason.includes("seller_name contient téléphone/email"));
   });
 
   it("rejects source_url absent for non-internal source", () => {
-    const l = normalizePartnerCsvListing(
-      baseRow({ source_url: "", source_name: "agence_inconnue" })
-    );
+    const l = normalizePartnerCsvListing(baseRow({ source_url: "", source_name: "agence_inconnue" }));
     const err = validatePartnerCsvListing(l, 2);
     assert.ok(err);
     assert.ok(err.reason.includes("source_url obligatoire"));
@@ -265,31 +245,13 @@ describe("validatePartnerCsvListing", () => {
   });
 });
 
-// ─── containsPii ─────────────────────────────────────────────────────────────
-
 describe("containsPii", () => {
-  it("detects Moroccan phone format 06XXXXXXXX", () => {
-    assert.ok(containsPii("0661234567"));
-  });
-
-  it("detects +212 international format", () => {
-    assert.ok(containsPii("+212661234567"));
-  });
-
-  it("detects email address", () => {
-    assert.ok(containsPii("contact@agence.ma"));
-  });
-
-  it("detects WhatsApp mention", () => {
-    assert.ok(containsPii("Disponible sur WhatsApp"));
-  });
-
-  it("passes clean text", () => {
-    assert.equal(containsPii("Bel appartement lumineux proche centre"), false);
-  });
+  it("detects Moroccan phone format 06XXXXXXXX", () => { assert.ok(containsPii("0661234567")); });
+  it("detects +212 international format", () => { assert.ok(containsPii("+212661234567")); });
+  it("detects email address", () => { assert.ok(containsPii("contact@agence.ma")); });
+  it("detects WhatsApp mention", () => { assert.ok(containsPii("Disponible sur WhatsApp")); });
+  it("passes clean text", () => { assert.equal(containsPii("Bel appartement lumineux proche centre"), false); });
 });
-
-// ─── buildPartnerFingerprint ──────────────────────────────────────────────────
 
 describe("buildPartnerFingerprint", () => {
   it("produces a stable fingerprint", () => {
@@ -313,20 +275,13 @@ describe("buildPartnerFingerprint", () => {
 
   it("different property_type → different fingerprint", () => {
     const l1 = normalizePartnerCsvListing(baseRow({ property_type: "apartment" }));
-    const l2 = normalizePartnerCsvListing(
-      baseRow({ property_type: "villa", surface_m2: "250" })
-    );
+    const l2 = normalizePartnerCsvListing(baseRow({ property_type: "villa", surface_m2: "250" }));
     assert.notEqual(buildPartnerFingerprint(l1), buildPartnerFingerprint(l2));
   });
 
   it("different source_name with same content → same fingerprint (dedup by content)", () => {
-    const l1 = normalizePartnerCsvListing(
-      baseRow({ source_name: "agence_a", source_url: "https://a.ma/1" })
-    );
-    const l2 = normalizePartnerCsvListing(
-      baseRow({ source_name: "agence_b", source_url: "https://b.ma/1" })
-    );
-    // Fingerprint is content-based, not source-based — same property should merge
+    const l1 = normalizePartnerCsvListing(baseRow({ source_name: "agence_a", source_url: "https://a.ma/1" }));
+    const l2 = normalizePartnerCsvListing(baseRow({ source_name: "agence_b", source_url: "https://b.ma/1" }));
     assert.equal(buildPartnerFingerprint(l1), buildPartnerFingerprint(l2));
   });
 
@@ -342,8 +297,6 @@ describe("buildPartnerFingerprint", () => {
     assert.notEqual(buildPartnerFingerprint(l1), buildPartnerFingerprint(l2));
   });
 });
-
-// ─── computePartnerCompletenessScore ─────────────────────────────────────────
 
 describe("computePartnerCompletenessScore", () => {
   it("full row scores 100", () => {

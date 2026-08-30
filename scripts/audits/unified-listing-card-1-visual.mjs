@@ -40,9 +40,6 @@ const externalResults = [
     normalized_intent: "buy",
     normalized_price_mad: 1850000,
     normalized_surface_m2: 112,
-    price_per_m2_mad: 16518,
-    quality_tier: "Q2_comparable",
-    quality_score: 82,
   },
   {
     id: "external-unknown-2",
@@ -161,34 +158,30 @@ try {
     try {
       const response = await page.goto(`${baseUrl}/search?q=immobilier`, { waitUntil: "domcontentloaded", timeout: 45_000 });
       if (!response || response.status() >= 400) throw new Error(`${viewport.name}: search returned ${response?.status() ?? "no response"}`);
-      await page.waitForSelector('[data-search-external-mobile-grid] [data-unified-listing-card]', { timeout: 20_000 });
+      await page.waitForSelector('[data-search-external-serp-list] [data-external-serp-group]', { timeout: 20_000 });
 
       const metrics = await page.evaluate(() => {
-        const cards = [...document.querySelectorAll('[data-search-external-mobile-grid] [data-unified-listing-card]')];
-        const rects = cards.map((card) => card.getBoundingClientRect());
-        const first = rects[0];
-        const second = rects[1];
-        const third = rects[2];
-        const unknown = cards[1];
-        const firstCard = cards[0];
+        const cards = [...document.querySelectorAll('[data-search-external-serp-list] [data-external-serp-group]')];
         const text = (node) => (node?.textContent ?? "").replace(/\s+/g, " ").trim();
-        const childTexts = firstCard ? [...firstCard.querySelectorAll("p,h3,span")].map(text).filter(Boolean) : [];
-        const provenanceIndex = childTexts.findIndex((value) => value.includes("Source publique indexée"));
-        const actionIndex = childTexts.findIndex((value) => value.includes("Voir sur Agenz"));
-        const clippedPrices = cards
-          .map((card) => card.querySelector('[data-mobile-price]'))
-          .filter((node) => node && node.scrollWidth > node.clientWidth + 1).length;
+        const firstCard = cards[0];
+        const unknownCard = cards[1];
+        const firstText = text(firstCard);
+        const unknownText = text(unknownCard);
+        const firstAction = firstCard?.querySelector('a[target="_blank"], button[aria-controls]');
+        const disclaimer = [...(firstCard?.querySelectorAll("p") ?? [])].find((node) => text(node).includes("AkarFinder indexe la page"));
+        const disclaimerBeforeAction = Boolean(disclaimer && firstAction && (disclaimer.compareDocumentPosition(firstAction) & Node.DOCUMENT_POSITION_FOLLOWING));
+        const rawPayloadLeak = cards.some((card) => /RAW .*LABEL MUST NOT RENDER/.test(text(card)));
+        const thirdPartyImage = cards.some((card) => Boolean(card.querySelector("img")));
+        const indexedArtworkCount = cards.filter((card) => card.getAttribute("data-indexed-artwork-card") === "true").length;
 
         return {
           cardCount: cards.length,
-          firstWidth: first ? Math.round(first.width) : null,
-          firstHeight: first ? Math.round(first.height) : null,
-          secondSameRow: Boolean(first && second && Math.abs(first.top - second.top) <= 2),
-          thirdNextRow: Boolean(first && third && third.top > first.top + 40),
-          unknownText: text(unknown),
-          firstText: text(firstCard),
-          provenanceBeforeAction: provenanceIndex >= 0 && actionIndex > provenanceIndex,
-          clippedPrices,
+          firstText,
+          unknownText,
+          disclaimerBeforeAction,
+          rawPayloadLeak,
+          thirdPartyImage,
+          indexedArtworkCount,
           clientWidth: document.documentElement.clientWidth,
           scrollWidth: document.documentElement.scrollWidth,
         };
@@ -200,32 +193,23 @@ try {
 
       if (metrics.cardCount !== 4) throw new Error(`${viewport.name}: expected 4 external cards, got ${metrics.cardCount}`);
       if (overflow) throw new Error(`${viewport.name}: horizontal overflow ${metrics.scrollWidth}/${metrics.clientWidth}`);
-      if (!metrics.provenanceBeforeAction) throw new Error(`${viewport.name}: provenance must precede final action`);
-      if (!compactPriceText.includes("1850000DH")) throw new Error(`${viewport.name}: normalized price is not visible`);
-      if (!metrics.firstText.includes("Rabat") || !metrics.firstText.includes("112 m²")) throw new Error(`${viewport.name}: normalized location/facts are not visible`);
-      if (!metrics.firstText.includes("Source publique indexée") || !metrics.firstText.includes("Agenz")) throw new Error(`${viewport.name}: deterministic indexed attribution is not visible`);
-      if (metrics.firstText.includes("RAW LABEL MUST NOT RENDER")) throw new Error(`${viewport.name}: raw source_name leaked into public attribution`);
-      if (!metrics.unknownText.includes("Prix non communiqué")) throw new Error(`${viewport.name}: missing unknown-price state`);
-      if (!metrics.unknownText.includes("Localisation non précisée")) throw new Error(`${viewport.name}: missing unknown-location state`);
-      if (!metrics.unknownText.includes("Informations à compléter")) throw new Error(`${viewport.name}: missing unknown-facts state`);
-      if (!metrics.unknownText.includes("Résultat web externe") || !metrics.unknownText.includes("Mubawab")) throw new Error(`${viewport.name}: deterministic external provenance is not visible`);
-      if (metrics.clippedPrices !== 0) throw new Error(`${viewport.name}: ${metrics.clippedPrices} prices are truncated`);
-
-      if (viewport.width < 640) {
-        if (!metrics.secondSameRow || !metrics.thirdNextRow) throw new Error(`${viewport.name}: expected two-column external card grid`);
-        if (metrics.firstWidth == null || metrics.firstWidth > viewport.width * 0.49 || metrics.firstWidth < viewport.width * 0.40) {
-          throw new Error(`${viewport.name}: external card width ${metrics.firstWidth}px outside compact target`);
-        }
-      }
+      if (!metrics.disclaimerBeforeAction) throw new Error(`${viewport.name}: index-only disclaimer must precede source action`);
+      if (!compactPriceText.includes("1850000DH")) throw new Error(`${viewport.name}: normalized verified-layer price is not visible`);
+      if (!metrics.firstText.includes("Rabat") || !metrics.firstText.includes("Appartement")) throw new Error(`${viewport.name}: normalized city/property type are not visible`);
+      if (!metrics.firstText.includes("example.com") || !metrics.firstText.includes("Ouvrir la source")) throw new Error(`${viewport.name}: deterministic source domain/action are not visible`);
+      if (metrics.rawPayloadLeak) throw new Error(`${viewport.name}: raw source payload label leaked into public attribution`);
+      if (metrics.thirdPartyImage) throw new Error(`${viewport.name}: third-party image rendered in indexed external result`);
+      if (metrics.indexedArtworkCount !== 4) throw new Error(`${viewport.name}: expected deterministic AkarFinder artwork on all indexed cards`);
+      if (!metrics.unknownText.includes("Bien immobilier") || !metrics.unknownText.includes("example.org")) throw new Error(`${viewport.name}: fail-closed unknown result is not legible`);
+      if (metrics.unknownText.includes("RAW SECOND LABEL MUST NOT RENDER")) throw new Error(`${viewport.name}: unknown raw source label leaked`);
 
       results.push({
         name: viewport.name,
         card_count: metrics.cardCount,
-        card_width: metrics.firstWidth,
-        card_height: metrics.firstHeight,
-        two_column_mobile: viewport.width < 640 ? metrics.secondSameRow && metrics.thirdNextRow : null,
-        provenance_before_action: metrics.provenanceBeforeAction,
-        truncated_prices: metrics.clippedPrices,
+        disclaimer_before_action: metrics.disclaimerBeforeAction,
+        indexed_artwork_count: metrics.indexedArtworkCount,
+        raw_payload_leak: metrics.rawPayloadLeak,
+        third_party_image: metrics.thirdPartyImage,
         horizontal_overflow: overflow,
       });
     } catch (error) {

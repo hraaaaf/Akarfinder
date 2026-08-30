@@ -11,6 +11,7 @@ import { readCityMarketIntelligenceMetrics } from "@/lib/map/city-market-intelli
 import type { CityMarketMetricRow } from "@/lib/map/city-market-intelligence";
 import { getNeighborhoodBySlug, getNeighborhoods } from "@/lib/map/neighborhood-data";
 import { getNeighborhoodContextReadModelBySlugs } from "@/lib/neighborhood-context/read-model";
+import "./p0-polish.css";
 
 export const dynamic = "force-dynamic";
 
@@ -95,11 +96,11 @@ export default async function NeighborhoodPage({ params }: PageProps) {
   const mapHref = `/map?city=${encodeURIComponent(point.citySlug)}&district=${encodeURIComponent(point.neighborhoodSlug)}&layer=listings`;
 
   return (
-    <main className="min-h-screen bg-background text-foreground">
+    <main data-p0-neighborhood-page className="min-h-screen bg-background text-foreground">
       <SiteHeader variant="dark" />
 
       <section className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:py-12">
-        <article className="overflow-hidden rounded-[28px] border border-border/20 bg-surface-muted shadow-[0_24px_70px_rgba(15,35,66,0.08)]">
+        <article data-p0-neighborhood-shell className="overflow-hidden rounded-[28px] border border-border/20 bg-surface-muted shadow-[0_24px_70px_rgba(15,35,66,0.08)]">
           <header className="border-b border-border/15 bg-[linear-gradient(145deg,rgba(11,99,206,0.10),rgba(255,255,255,0.76))] p-6 sm:p-8">
             <div className="mb-5 flex items-center justify-between gap-3">
               <Link

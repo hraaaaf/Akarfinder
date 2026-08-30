@@ -1,0 +1,175 @@
+/* UX/UI POLISH P0.3 — /mon-projet
+   Goal: reduce dead space, keep progress close to the task, and preserve the
+   canonical mobile navigation without letting it cover selectable objectives. */
+
+[data-p7-mon-projet] {
+  padding-bottom: 6.5rem;
+}
+
+[data-p7-progress-mobile] {
+  padding: 14px 15px !important;
+  border-radius: 20px !important;
+  box-shadow: 0 10px 30px rgb(15 35 66 / 0.05) !important;
+}
+
+[data-p7-progress-mobile] > div:first-child > div:first-child p:last-child {
+  margin-top: 4px !important;
+}
+
+[data-p7-progress-mobile] > div:last-child {
+  margin-top: 10px !important;
+}
+
+[data-p7-question-panel] {
+  margin-top: 12px !important;
+  border-radius: 22px !important;
+  padding: 18px !important;
+  box-shadow: 0 18px 50px rgb(15 35 66 / 0.07) !important;
+}
+
+[data-p7-question-panel] > div:first-child {
+  margin-bottom: 14px !important;
+  min-height: 36px !important;
+}
+
+[data-p7-question-panel] button,
+[data-p7-question-panel] a {
+  scroll-margin-bottom: 108px;
+}
+
+@media (max-width: 639px) {
+  [data-p7-progress-mobile] {
+    padding: 11px 13px !important;
+    border-radius: 17px !important;
+  }
+
+  [data-p7-progress-mobile] > div:last-child {
+    margin-top: 8px !important;
+  }
+
+  [data-p7-question-panel] {
+    margin-top: 10px !important;
+    padding: 16px !important;
+    border-radius: 20px !important;
+  }
+
+  /* Four stacked cards collide with the persistent dock at 390/430 px.
+     Keep every objective visible and touchable by using a compact 2×2 choice
+     matrix on phones instead of removing the global navigation. */
+  [data-p7-question-panel] div:has(> [data-p7-primary-objective]) {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+    margin-top: 16px !important;
+  }
+
+  [data-p7-primary-objective] {
+    min-height: 104px !important;
+    padding: 12px !important;
+    border-radius: 16px !important;
+  }
+}
+
+/* 390 px is the only certified viewport where the secondary objective still
+   met the fixed dock. Compact the initial question itself instead of hiding a
+   navigation or action. The content remains readable and all 44 px touch
+   targets stay intact. */
+@media (max-width: 400px) {
+  [data-p7-mon-projet] {
+    padding-bottom: 5.75rem;
+  }
+
+  [data-p7-progress-mobile] {
+    padding: 9px 12px !important;
+  }
+
+  [data-p7-progress-mobile] > div:last-child {
+    margin-top: 6px !important;
+  }
+
+  [data-p7-question-panel] {
+    margin-top: 8px !important;
+    padding: 13px 14px !important;
+  }
+
+  [data-p7-question-panel] > div:first-child {
+    margin-bottom: 8px !important;
+    min-height: 32px !important;
+  }
+
+  [data-p7-question-panel] h1 {
+    margin-top: 8px !important;
+    font-size: 26px !important;
+    line-height: 1.06 !important;
+  }
+
+  [data-p7-question-panel] h1 + p {
+    margin-top: 9px !important;
+    line-height: 1.45 !important;
+  }
+
+  [data-p7-question-panel] div:has(> [data-p7-primary-objective]) {
+    margin-top: 12px !important;
+    gap: 8px !important;
+  }
+
+  [data-p7-primary-objective] {
+    min-height: 94px !important;
+    padding: 10px !important;
+  }
+
+  [data-p7-primary-objective] > span:first-of-type {
+    margin-top: 9px !important;
+  }
+
+  [data-p7-primary-objective] > span:last-of-type {
+    line-height: 1.35 !important;
+  }
+
+  [data-p7-explore-secondary] {
+    margin-top: 8px !important;
+  }
+}
+
+@media (min-width: 640px) {
+  [data-p7-mon-projet] {
+    padding-bottom: 2rem;
+  }
+
+  [data-p7-progress-mobile] {
+    padding: 16px 18px !important;
+  }
+
+  [data-p7-question-panel] {
+    margin-top: 16px !important;
+    padding: 24px !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  [data-p7-mon-projet] > div {
+    grid-template-columns: 188px minmax(0, 1fr) !important;
+    gap: 16px !important;
+  }
+
+  [data-p7-progress-rail] > div {
+    position: sticky;
+    top: 88px;
+    padding: 16px !important;
+    border-radius: 22px !important;
+    box-shadow: 0 12px 34px rgb(15 35 66 / 0.05) !important;
+  }
+
+  [data-p7-progress-rail] > div > div:nth-of-type(2) {
+    margin-top: 14px !important;
+  }
+
+  [data-p7-progress-rail] [data-p7-step-label] {
+    line-height: 1.25;
+  }
+
+  [data-p7-question-panel] {
+    margin-top: 0 !important;
+    border-radius: 24px !important;
+    padding: 26px 28px !important;
+  }
+}

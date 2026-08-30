@@ -1,0 +1,81 @@
+/* UX/UI POLISH P0.6 — neighborhood intelligence page
+   Goal: keep the evidence-rich product while reducing the 'single giant tool card'
+   feeling and improving editorial hierarchy. */
+
+[data-p0-neighborhood-page] {
+  background:
+    radial-gradient(circle at 78% 4%, rgb(11 99 206 / 0.06), transparent 30%),
+    #f7fafd;
+}
+
+[data-p0-neighborhood-page] > section {
+  max-width: 1180px !important;
+}
+
+[data-p0-neighborhood-page] article[data-p0-neighborhood-shell] {
+  box-shadow: 0 18px 54px rgb(15 35 66 / 0.065) !important;
+}
+
+[data-p0-neighborhood-page] article[data-p0-neighborhood-shell] > header {
+  background:
+    radial-gradient(circle at 86% 12%, rgb(11 99 206 / 0.08), transparent 34%),
+    linear-gradient(145deg, rgb(232 243 255 / 0.92), rgb(255 255 255 / 0.9)) !important;
+}
+
+@media (max-width: 639px) {
+  [data-p0-neighborhood-page] > section {
+    padding-top: 20px !important;
+    padding-inline: 12px !important;
+  }
+
+  [data-p0-neighborhood-page] article[data-p0-neighborhood-shell] {
+    border-radius: 20px !important;
+  }
+
+  [data-p0-neighborhood-page] article[data-p0-neighborhood-shell] > header {
+    padding: 18px !important;
+  }
+
+  [data-p0-neighborhood-page] article[data-p0-neighborhood-shell] > header h1 {
+    font-size: 2.15rem !important;
+    line-height: 1 !important;
+  }
+
+  [data-p0-neighborhood-page] article[data-p0-neighborhood-shell] > div {
+    padding: 14px !important;
+  }
+
+  [data-akarfinder-neighborhood-market-kpis] {
+    gap: 9px !important;
+  }
+
+  [data-akarfinder-neighborhood-market-kpis] > div,
+  [data-akarfinder-neighborhood-data-quality] > div,
+  [data-akarfinder-neighborhood-dominant-categories] {
+    padding: 13px !important;
+    border-radius: 15px !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  [data-p0-neighborhood-page] > section {
+    padding-top: 42px !important;
+    padding-bottom: 54px !important;
+  }
+
+  [data-p0-neighborhood-page] article[data-p0-neighborhood-shell] {
+    border-radius: 24px !important;
+  }
+
+  [data-p0-neighborhood-page] article[data-p0-neighborhood-shell] > header {
+    padding: 30px 34px !important;
+  }
+
+  [data-p0-neighborhood-page] article[data-p0-neighborhood-shell] > div {
+    padding: 28px 34px 32px !important;
+  }
+
+  [data-akarfinder-neighborhood-market-kpis] > div {
+    min-height: 116px;
+  }
+}

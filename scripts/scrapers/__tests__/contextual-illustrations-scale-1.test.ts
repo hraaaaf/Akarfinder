@@ -91,8 +91,10 @@ describe("CONTEXTUAL-ILLUSTRATIONS-SCALE-1", () => {
     assert.doesNotMatch(catalog, /Math\.random|fetch\s*\(/);
     assert.match(catalog, /districtType: \{\}/);
     assert.match(catalog, /district: \{\}/);
-    assert.match(card, /showThumbnail && !thumbError/);
-    assert.match(card, />\s*Illustration\s*</);
+    assert.match(card, /data-indexed-artwork-card="true"/);
+    assert.match(card, /<IndexedTransactionArtwork transaction=\{visualTransaction\}/);
+    assert.doesNotMatch(card, /showThumbnail && !thumbError/);
+    assert.match(card, /source originale/);
   });
 
   it("keeps the SCALE-1 five-viewport visual contract", () => {

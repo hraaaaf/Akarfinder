@@ -1,0 +1,75 @@
+/* UX/UI POLISH P0.6 — local SEO district page
+   Goal: move from utility/dashboard density to a premium local discovery page
+   while preserving every data contract and action. */
+
+[data-p6-experience="quartier"] [data-p6-stage="territoire"] {
+  background:
+    radial-gradient(circle at 84% 8%, rgb(11 99 206 / 0.07), transparent 32%),
+    linear-gradient(180deg, #ffffff 0%, #fbfdff 100%) !important;
+}
+
+[data-p6-experience="quartier"] [data-p6-summary] {
+  box-shadow: 0 8px 24px rgb(11 37 69 / 0.035);
+}
+
+[data-p6-experience="quartier"] [data-p6-stage="vie-locale-detail"] {
+  margin-top: 28px !important;
+}
+
+[data-p6-experience="quartier"] [data-p6-stage="decision"] > div > div {
+  box-shadow: 0 12px 34px rgb(11 37 69 / 0.045);
+}
+
+@media (max-width: 639px) {
+  [data-p6-experience="quartier"] [data-p6-stage="territoire"] {
+    padding-top: 26px !important;
+    padding-bottom: 30px !important;
+  }
+
+  [data-p6-experience="quartier"] [data-p6-stage="territoire"] h1 {
+    font-size: 2rem !important;
+    line-height: 1.02 !important;
+  }
+
+  [data-p6-experience="quartier"] [data-p6-stage="territoire"] h1 + p {
+    margin-top: 10px !important;
+  }
+
+  [data-p6-experience="quartier"] [data-p6-summary] {
+    padding: 11px !important;
+    border-radius: 15px !important;
+  }
+
+  [data-p6-experience="quartier"] [data-p6-summary] p:nth-child(2) {
+    font-size: 12px !important;
+  }
+
+  [data-p6-experience="quartier"] [data-p6-stage="vie-locale-detail"] {
+    margin-top: 20px !important;
+  }
+
+  [data-p6-experience="quartier"] [data-p6-stage="decision"] {
+    padding-block: 28px !important;
+  }
+}
+
+@media (min-width: 768px) {
+  [data-p6-experience="quartier"] [data-p6-stage="territoire"] > div > .mt-6 {
+    gap: 36px !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  [data-p6-experience="quartier"] [data-p6-stage="territoire"] {
+    padding-top: 52px !important;
+    padding-bottom: 48px !important;
+  }
+
+  [data-p6-experience="quartier"] [data-p6-stage="territoire"] h1 {
+    max-width: 620px;
+  }
+
+  [data-p6-experience="quartier"] [data-p6-stage="vie-locale-detail"] {
+    margin-top: 30px !important;
+  }
+}

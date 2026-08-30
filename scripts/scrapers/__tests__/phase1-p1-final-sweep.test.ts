@@ -64,7 +64,7 @@ describe("Phase 1 P1 — final route and sitemap cleanup", () => {
   });
 
   it("keeps legacy buyer and geo duplicate routes redirect-only", () => {
-    assert.ok(source("app/profil-recherche/page.tsx").includes('redirect("/compagnon")'));
+    assert.ok(source("app/profil-recherche/page.tsx").includes('redirect("/mon-projet")'));
     assert.ok(source("app/quartiers/page.tsx").includes('permanentRedirect("/immobilier")'));
   });
 });

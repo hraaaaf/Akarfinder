@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ArrowRight, ExternalLink, MapPin } from "lucide-react";
+import { ArrowRight, Bath, BedDouble, Building2, ExternalLink, MapPin, Maximize2 } from "lucide-react";
 import { FavoriteToggleButton } from "@/components/favorites/FavoriteToggleButton";
 import { PropertyTypeArtwork } from "@/components/property-types/PropertyTypeArtwork";
 import { IndexedTransactionArtwork } from "@/components/search/IndexedTransactionArtwork";
@@ -27,6 +27,14 @@ function getTransactionLabel(type: Listing["transaction_type"]) {
   if (type === "rent") return "Location";
   if (type === "new") return "Neuf";
   return "Achat";
+}
+
+function formatIndexedPrice(price: number | null, currency: Listing["currency"]) {
+  if (price == null) return formatPrice(price, currency);
+  const amount = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 })
+    .format(price)
+    .replace(/\u202f/g, " ");
+  return `${amount} ${currency}`;
 }
 
 function truthStyle(tier: SearchTruthTier) {
@@ -254,7 +262,7 @@ export function SearchListingCardDark({ listing, projectId }: { listing: Listing
           <div className="flex items-start justify-between gap-2 sm:gap-3">
             <div className="min-w-0 flex-1">
               <p data-mobile-price data-card-price className="truncate text-[1.04rem] font-extrabold leading-tight tracking-[-0.025em] text-[#173d6b] sm:text-[1.55rem] sm:leading-none sm:tracking-[-0.035em] sm:text-[#2f63a4]">
-                {formatPrice(smartCard.price, listing.currency)}
+                {useIndexedArtwork ? formatIndexedPrice(smartCard.price, listing.currency) : formatPrice(smartCard.price, listing.currency)}
               </p>
               {smartCard.pricePerM2 != null ? (
                 <p className="mt-1 hidden text-[12px] font-bold text-slate-500 sm:block">
@@ -262,8 +270,15 @@ export function SearchListingCardDark({ listing, projectId }: { listing: Listing
                 </p>
               ) : null}
             </div>
-            {!observedExternal ? (
-              <div data-card-favorite className="absolute right-2 top-2 z-20 sm:static sm:z-auto">
+            {!observedExternal || useIndexedArtwork ? (
+              <div
+                data-card-favorite
+                className={
+                  useIndexedArtwork
+                    ? "absolute right-3 top-3 z-30 sm:right-4 sm:top-4"
+                    : "absolute right-2 top-2 z-20 sm:static sm:z-auto"
+                }
+              >
                 <FavoriteToggleButton listingId={listing.id} variant="icon" />
               </div>
             ) : null}
@@ -279,11 +294,20 @@ export function SearchListingCardDark({ listing, projectId }: { listing: Listing
             </p>
           </Link>
 
-          <div data-card-facts className="mt-1.5 flex min-h-5 items-center gap-1 overflow-hidden text-[9.5px] font-bold text-slate-600 sm:mt-2.5 sm:flex-wrap sm:gap-1.5 sm:text-[11px]">
-            {smartCard.facts.slice(0, 3).map((fact) => (
-              <span key={fact} className="shrink-0 rounded-md border border-slate-200/80 bg-slate-50 px-1.5 py-0.5 sm:shrink sm:px-2">{fact}</span>
-            ))}
-          </div>
+          {useIndexedArtwork ? (
+            <div data-card-facts className="mt-2 flex min-h-5 flex-wrap items-center gap-x-3 gap-y-1 text-[9.5px] font-semibold text-slate-600 sm:mt-2.5 sm:gap-x-4 sm:text-[11px]">
+              <span className="inline-flex items-center gap-1"><Building2 size={11} aria-hidden="true" />{listing.property_type}</span>
+              {listing.bedrooms > 0 ? <span className="inline-flex items-center gap-1"><BedDouble size={11} aria-hidden="true" />{listing.bedrooms}</span> : null}
+              {listing.surface_m2 > 0 ? <span className="inline-flex items-center gap-1"><Maximize2 size={11} aria-hidden="true" />{listing.surface_m2} m²</span> : null}
+              {listing.bathrooms > 0 ? <span className="inline-flex items-center gap-1"><Bath size={11} aria-hidden="true" />{listing.bathrooms}</span> : null}
+            </div>
+          ) : (
+            <div data-card-facts className="mt-1.5 flex min-h-5 items-center gap-1 overflow-hidden text-[9.5px] font-bold text-slate-600 sm:mt-2.5 sm:flex-wrap sm:gap-1.5 sm:text-[11px]">
+              {smartCard.facts.slice(0, 3).map((fact) => (
+                <span key={fact} className="shrink-0 rounded-md border border-slate-200/80 bg-slate-50 px-1.5 py-0.5 sm:shrink sm:px-2">{fact}</span>
+              ))}
+            </div>
+          )}
 
           <div data-card-provenance className="mt-2 flex items-center justify-between gap-2 border-t border-slate-200/80 pt-2 text-[9.5px] sm:mt-2.5 sm:gap-3 sm:pt-3 sm:text-[11px]">
             <span className="truncate font-semibold text-slate-500">{smartCard.freshnessLabel}</span>

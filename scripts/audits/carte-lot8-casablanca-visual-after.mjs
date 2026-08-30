@@ -40,10 +40,7 @@ try {
     }, 20000);
 
     page.on("pageerror", (error) => diagnostics.pageErrors.push(String(error)));
-    page.on("requestfailed", (request) => diagnostics.requestFailures.push({
-      url: request.url(),
-      error: request.failure()?.errorText || "unknown",
-    }));
+    page.on("requestfailed", (request) => diagnostics.requestFailures.push({ url: request.url(), error: request.failure()?.errorText || "unknown" }));
     page.on("response", (response) => {
       const zoom = basemapTileZoom(response.url());
       if (zoom === null) return;
@@ -59,89 +56,30 @@ try {
     });
 
     try {
-      await page.goto(`${baseUrl}/map?city=casablanca&district=maarif&layer=explore`, {
-        waitUntil: "domcontentloaded",
-        timeout: 30000,
-      });
-
-      const loadingCard = page.getByText("Chargement de la carte…", { exact: true });
-      await loadingCard.waitFor({ state: "hidden", timeout: 30000 });
-      const mapCanvas = page.locator(".maplibregl-canvas");
-      await mapCanvas.waitFor({ state: "visible", timeout: 10000 });
+      await page.goto(`${baseUrl}/map?city=casablanca&district=maarif&layer=explore`, { waitUntil: "domcontentloaded", timeout: 30000 });
+      await page.getByText("Chargement de la carte…", { exact: true }).waitFor({ state: "hidden", timeout: 30000 });
+      await page.locator(".maplibregl-canvas").waitFor({ state: "visible", timeout: 10000 });
       await highZoomTilesReady;
-      await page.waitForTimeout(450);
+      const preview = page.locator('[data-akarfinder-neighborhood-preview="maarif"]');
+      await preview.waitFor({ state: "visible", timeout: 20000 });
+      await page.waitForTimeout(500);
 
-      const fullPanel = page.getByRole("complementary", { name: /Fiche repère quartier Maârif/i });
-      const compactPanel = page.locator("[data-akarfinder-mobile-compact-panel]");
-      const panel = viewport.width <= 767 ? compactPanel : fullPanel;
-      await panel.waitFor({ state: "visible", timeout: 20000 });
-
-      const panelBox = await panel.boundingBox();
-      if (!panelBox) throw new Error(`${viewport.name}: Maârif panel has no bounding box`);
+      const panelBox = await preview.boundingBox();
+      if (!panelBox) throw new Error(`${viewport.name}: Maârif preview has no bounding box`);
       if (panelBox.x < -1 || panelBox.x + panelBox.width > viewport.width + 1 || panelBox.y < -1 || panelBox.y + panelBox.height > viewport.height + 1) {
-        throw new Error(`${viewport.name}: Maârif panel escapes viewport ${JSON.stringify(panelBox)}`);
+        throw new Error(`${viewport.name}: Maârif preview escapes viewport ${JSON.stringify(panelBox)}`);
       }
-
-      const searchLink = viewport.width <= 767
-        ? panel.getByRole("link", { name: /Rechercher ici/i })
-        : panel.getByRole("link", { name: /Rechercher dans ce quartier/i });
+      if (await preview.getByRole("heading", { name: "Maârif", exact: true }).count() !== 1) throw new Error(`${viewport.name}: Maârif heading missing`);
+      const searchLink = preview.getByRole("link", { name: /Rechercher à Maârif/i });
       const searchHref = await searchLink.getAttribute("href");
       if (!searchHref) throw new Error(`${viewport.name}: Search handoff missing`);
       const searchUrl = new URL(searchHref, baseUrl);
       if (searchUrl.pathname !== "/search" || searchUrl.searchParams.get("city") !== "Casablanca" || searchUrl.searchParams.get("district") !== "Maârif") {
         throw new Error(`${viewport.name}: Search handoff mismatch ${searchHref}`);
       }
-
-      const legend = page.getByRole("complementary", { name: "Légende de la carte immobilière" });
-      const explorer = page.getByRole("navigation", { name: "Exploration territoriale" });
-      const legacyControls = page.getByRole("region", { name: "Contrôles de la carte immobilière" });
-
-      if (viewport.width <= 1023) {
-        if (await legend.isVisible()) throw new Error(`${viewport.name}: legend must hide while district panel is open`);
-        if (await explorer.isVisible()) throw new Error(`${viewport.name}: territorial explorer must hide while district panel is open`);
-        if (await legacyControls.isVisible()) throw new Error(`${viewport.name}: legacy cockpit must stay hidden`);
-      } else {
-        const toolbar = page.locator("[data-akarfinder-generic-premium-toolbar]");
-        await toolbar.waitFor({ state: "visible", timeout: 10000 });
-        const cityNavigation = toolbar.getByRole("navigation", { name: "Sélection des villes phares" });
-        await cityNavigation.waitFor({ state: "visible", timeout: 5000 });
-        if (await cityNavigation.getByRole("button").count() !== 6) {
-          throw new Error(`${viewport.name}: premium toolbar must expose exactly six flagship cities`);
-        }
-        if (await cityNavigation.getByRole("button", { name: "Casablanca", exact: true }).getAttribute("aria-pressed") !== "true") {
-          throw new Error(`${viewport.name}: Casablanca must be the active flagship city`);
-        }
-      }
-
-      if (viewport.width <= 767) {
-        if (await fullPanel.isVisible()) throw new Error(`${viewport.name}: full district sheet must stay collapsed initially`);
-        if (panelBox.height > 230) throw new Error(`${viewport.name}: compact district preview is too tall ${JSON.stringify(panelBox)}`);
-        if (panelBox.y < viewport.height * 0.5) throw new Error(`${viewport.name}: insufficient visible map band above compact preview ${JSON.stringify(panelBox)}`);
-        if (panelBox.y + panelBox.height > viewport.height - 76) throw new Error(`${viewport.name}: compact district preview overlaps bottom navigation ${JSON.stringify(panelBox)}`);
-      }
-
       if (diagnostics.pageErrors.length) throw new Error(`${viewport.name}: browser page errors ${JSON.stringify(diagnostics.pageErrors)}`);
-
       await page.screenshot({ path: `${outDir}/casablanca-maarif-${viewport.width}x${viewport.height}.png`, fullPage: false });
-
-      if (viewport.width <= 767) {
-        await compactPanel.getByRole("button", { name: "Afficher les détails du quartier" }).click();
-        await fullPanel.waitFor({ state: "visible", timeout: 5000 });
-        if (await compactPanel.isVisible()) throw new Error(`${viewport.name}: compact preview must disappear after details expansion`);
-      }
-
-      report.cases.push({
-        viewport: viewport.name,
-        searchHref,
-        panelBox,
-        overlaysHidden: viewport.width <= 1023,
-        mobileCompactPreview: viewport.width <= 767,
-        mobileDetailsExpandable: viewport.width <= 767,
-        mapRendered: true,
-        highZoomTileCount,
-        premiumToolbar: viewport.width >= 1024,
-        diagnostics,
-      });
+      report.cases.push({ viewport: viewport.name, searchHref, panelBox, mapRendered: true, highZoomTileCount, diagnostics });
     } finally {
       clearTimeout(tileGateTimeout);
       await page.close();

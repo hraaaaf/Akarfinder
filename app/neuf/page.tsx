@@ -1,4 +1,5 @@
 import { NeufPageShellV2 } from "@/components/neuf/NeufPageShellV2";
+import "./p1-polish.css";
 
 export const dynamic = "force-dynamic";
 
@@ -9,5 +10,9 @@ export const metadata = {
 };
 
 export default function NeufPage() {
-  return <NeufPageShellV2 />;
+  return (
+    <div data-p1-neuf>
+      <NeufPageShellV2 />
+    </div>
+  );
 }

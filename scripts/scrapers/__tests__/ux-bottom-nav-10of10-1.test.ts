@@ -9,11 +9,13 @@ const source = (path: string) => readFileSync(resolve(ROOT, path), "utf8");
 const nav = source("components/layout/MobileBottomNav.tsx");
 const designSystem = source("components/ui/design-system.ts");
 const layout = source("app/layout.tsx");
+const secondaryShell = source("components/layout/SecondaryPageShell.tsx");
 const alerts = source("app/alerts/page.tsx");
 
 test("UX-BOTTOM-NAV remains the one global mobile navigation", () => {
   assert.match(layout, /import \{ MobileBottomNav \} from "@\/components\/layout\/MobileBottomNav"/);
   assert.match(layout, /<MobileBottomNav \/>/);
+  assert.doesNotMatch(secondaryShell, /MobileBottomNav/);
   assert.match(nav, /aria-label="Navigation mobile"/);
   assert.match(nav, /md:hidden/);
   assert.doesNotMatch(nav, /lg:hidden/);
@@ -35,13 +37,13 @@ test("UX-BOTTOM-NAV uses the canonical floating AkarFinder glass language", () =
   assert.doesNotMatch(designSystem, /#F97316|249,115,22|orange|bronze/i);
 });
 
-test("UX-BOTTOM-NAV exposes the five destinations locked by the canonical mockup", () => {
+test("UX-BOTTOM-NAV exposes the five canonical destinations", () => {
   for (const [href, label] of [
     ["/search", "Explorer"],
     ["/favorites", "Favoris"],
     ["/map", "Carte"],
     ["/alerts", "Alertes"],
-    ["/mon-projet", "Compte"],
+    ["/mon-projet", "Mon Projet"],
   ]) {
     assert.ok(nav.includes(`href: "${href}"`), `missing ${href}`);
     assert.ok(nav.includes(`label: "${label}"`), `missing ${label}`);
@@ -70,5 +72,5 @@ test("UX-BOTTOM-NAV keeps touch, floating geometry and truthful Alerts explicit"
   assert.match(nav, /min-h-11/);
   assert.match(layout, /pb-\[calc\(64px\+env\(safe-area-inset-bottom\)\)\] md:pb-0/);
   assert.match(alerts, /Les notifications automatiques ne sont pas encore activées/);
-  assert.match(alerts, /href="\/profil-recherche"/);
+  assert.match(alerts, /href="\/mon-projet"/);
 });

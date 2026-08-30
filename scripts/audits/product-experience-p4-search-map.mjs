@@ -150,7 +150,9 @@ for (const route of routes) {
         const combined = canvas.width + rail.width;
         const canvasShare = combined > 0 ? canvas.width / combined : 0;
         if (!(canvas.x < rail.x)) finding(route.key, viewport, "MAP_CANVAS_NOT_LEFT_OF_RAIL", { canvas, rail });
-        if (canvasShare < 0.58 || canvasShare > 0.62) finding(route.key, viewport, "MAP_DESKTOP_RATIO_OUT_OF_RANGE", canvasShare);
+        // P0.1 intentionally makes the geographic canvas dominant and keeps the decision rail compact.
+        // Preserve a bounded contract rather than the former 60/40 dashboard split.
+        if (canvasShare < 0.70 || canvasShare > 0.75) finding(route.key, viewport, "MAP_DESKTOP_RATIO_OUT_OF_RANGE", canvasShare);
         if (Math.abs(canvas.height - rail.height) > 2) finding(route.key, viewport, "MAP_RAIL_HEIGHT_MISMATCH", { canvas: canvas.height, rail: rail.height });
       } else {
         const maxRailHeight = width < 430 ? 212 : width < 768 ? 224 : 310;

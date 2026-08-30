@@ -10,13 +10,13 @@ export default function MrePage() {
   return (
     <IntentPageShell
       badge="MRE — Achat à distance"
-      badgeColor="text-violet-300"
+      badgeColor="text-violet-600"
       title="Acheter au Maroc depuis l'étranger"
       subtitle="Constituez votre shortlist à distance, comparez les biens et contactez directement les vendeurs ou agences via WhatsApp. AkarFinder est pensé pour les acheteurs qui ne peuvent pas se déplacer à chaque visite."
       heroCtas={[
-        { label: "Créer mon dossier acheteur", href: "/onboarding", variant: "ghost" },
-        { label: "Comparer des biens", href: "/compare", variant: "ghost" },
-        { label: "Demander une visite", href: "/search", variant: "ghost" },
+        { label: "Créer mon dossier acheteur", href: "/onboarding", variant: "primary" },
+        { label: "Comparer des biens", href: "/compare", variant: "secondary" },
+        { label: "Demander une visite", href: "/search", variant: "secondary" },
       ]}
       whyTitle="Acheter à distance avec plus de confiance"
       blocks={[

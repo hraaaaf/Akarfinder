@@ -361,9 +361,9 @@ describe("Search Truth UX source contracts", () => {
     assert.ok(!shell.includes("Annonces sur AkarFinder"));
   });
 
-  it("links Search directly to Companion instead of legacy buyer routes", () => {
+  it("links Search directly to Mon Projet instead of retired buyer routes", () => {
     const shell = source("components/search/LightZillowSearchShell.tsx");
-    assert.ok(shell.includes('href="/compagnon"'));
+    assert.ok(shell.includes('href="/mon-projet"'));
     assert.ok(!shell.includes('href="/profil-recherche"'));
     assert.ok(!shell.includes('href="/onboarding"'));
   });
@@ -371,7 +371,7 @@ describe("Search Truth UX source contracts", () => {
   it("does not expose a false login affordance in the global header", () => {
     const header = source("components/layout/SiteHeader.tsx");
     assert.ok(header.includes('href="/mon-projet"'));
-    assert.ok(header.includes("Mon projet"));
+    assert.ok(header.includes("Mon Projet"));
     assert.ok(!header.includes("Se connecter"));
   });
 

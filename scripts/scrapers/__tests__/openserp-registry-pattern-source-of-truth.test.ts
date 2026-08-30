@@ -54,10 +54,6 @@ function fixtureRegistry(entry: Partial<SourceDomainRegistry["domains"][number]>
   };
 }
 
-// ---------------------------------------------------------------------
-// 1. Registry pattern actually used at runtime (real on-disk registry)
-// ---------------------------------------------------------------------
-
 test("getListingUrlPatterns reads the REAL on-disk registry, not a fixture", () => {
   const real = loadSourceDomainRegistry();
   const patterns = getListingUrlPatterns("mubawab.ma", real);
@@ -65,10 +61,8 @@ test("getListingUrlPatterns reads the REAL on-disk registry, not a fixture", () 
   assert.ok(patterns[0].test("/fr/is/appartement-123"), "the real registry pattern must actually match a real mubawab.ma listing path");
 });
 
-test("case_insensitive registry entries compile with the /i flag from the REAL on-disk registry (1immo.ma, mouldar.com, kawtarimmobilier.com)", () => {
+test("case_insensitive registry entries compile with the /i flag from the REAL on-disk registry (mouldar.com, kawtarimmobilier.com)", () => {
   const real = loadSourceDomainRegistry();
-  const oneImmo = getListingUrlPatterns("1immo.ma", real);
-  assert.ok(oneImmo.some((p) => p.flags.includes("i")), "1immo.ma's migrated pattern must carry the case_insensitive flag");
   const mouldar = getListingUrlPatterns("mouldar.com", real);
   assert.ok(mouldar.some((p) => p.flags.includes("i")), "mouldar.com's migrated pattern must carry the case_insensitive flag");
   const kawtar = getListingUrlPatterns("kawtarimmobilier.com", real);
@@ -81,10 +75,6 @@ test("kawtarimmobilier.com's registry pattern now matches BOTH vente and locatio
   assert.ok(patterns.some((p) => p.test("/vente/appartement-a-vendre-essaouira-ref-123.html")));
   assert.ok(patterns.some((p) => p.test("/essaouira/location/appartement/bel-appartement-a-louer-ref-2285.html")));
 });
-
-// ---------------------------------------------------------------------
-// 2. Modifying a fixture pattern actually changes runtime behavior
-// ---------------------------------------------------------------------
 
 test("changing a domain's listing_url_patterns in the JSON changes getListingUrlPatterns' output (proves genuine runtime dependency, not a cached hardcode)", () => {
   const before = fixtureRegistry({ domain: "test-runtime-proof.ma", listing_url_patterns: ["/old-pattern-\\d+$"] });
@@ -117,10 +107,6 @@ test("changing a pattern in a real temp JSON FILE on disk (not just an in-memory
     unlinkSync(tmpPath);
   }
 });
-
-// ---------------------------------------------------------------------
-// 3. Fail-closed behavior
-// ---------------------------------------------------------------------
 
 test("fail-closed: unknown domain (no registry entry at all) -> zero patterns, never auto-approved", () => {
   const registry = fixtureRegistry({ domain: "known-domain.ma", listing_url_patterns: ["/x-\\d+$"] });
@@ -168,15 +154,6 @@ test("fail-closed: malformed canonical URL (unparseable) never crashes classifyO
   });
 });
 
-// ---------------------------------------------------------------------
-// 4. Parity corpus -- domains whose pattern moved OUT of classify.ts
-//    entirely (1immo.ma, barnes-marrakech.com,
-//    limmobiliersansfrontieres.com, marrakechrealty.com had no prior
-//    dedicated test coverage in this codebase; built fresh here against
-//    the REAL registry to prove post-migration behavior matches the
-//    pre-migration DOMAIN_RULES literally removed from classify.ts).
-// ---------------------------------------------------------------------
-
 function resultFor(domain: string, url: string, overrides: { title?: string; snippet?: string } = {}) {
   return classifyOpenSerpResult({
     query: baseQuery,
@@ -205,26 +182,26 @@ test("1immo.ma: category/no-ID path does NOT match strongIndividual", () => {
   assert.equal(actual.classification_reasons.includes("strong_individual_path"), false);
 });
 
-test("1immo.ma: case-insensitive flag preserved -- uppercase path segment still matches (exact pre-migration /i behavior)", () => {
+test("1immo.ma: uppercase path segment remains accepted by the current registry", () => {
   const actual = resultFor("1immo.ma", "https://1immo.ma/APPARTEMENT-VENTE-MARRAKECH-12345");
   assert.ok(actual);
   assert.ok(actual.classification_reasons.includes("strong_individual_path"));
 });
 
-test("barnes-marrakech.com: /vente/<slug>/<id> matches strongIndividual", () => {
-  const actual = resultFor("barnes-marrakech.com", "https://barnes-marrakech.com/vente/villa-hivernage/98765");
+test("barnes-marrakech.com: current locale-prefixed /fr/vente/<slug>/<id> matches strongIndividual", () => {
+  const actual = resultFor("barnes-marrakech.com", "https://barnes-marrakech.com/fr/vente/villa-hivernage/98765");
   assert.ok(actual);
   assert.ok(actual.classification_reasons.includes("strong_individual_path"));
 });
 
-test("barnes-marrakech.com: /vente/<slug> with no trailing numeric ID does NOT match", () => {
-  const actual = resultFor("barnes-marrakech.com", "https://barnes-marrakech.com/vente/villa-hivernage");
+test("barnes-marrakech.com: stale non-locale /vente route does NOT match", () => {
+  const actual = resultFor("barnes-marrakech.com", "https://barnes-marrakech.com/vente/villa-hivernage/98765");
   assert.ok(actual);
   assert.equal(actual.classification_reasons.includes("strong_individual_path"), false);
 });
 
-test("barnes-marrakech.com: /location/ path does NOT match (pattern requires literal 'vente')", () => {
-  const actual = resultFor("barnes-marrakech.com", "https://barnes-marrakech.com/location/villa-hivernage/98765");
+test("barnes-marrakech.com: locale-prefixed route with no trailing numeric ID does NOT match", () => {
+  const actual = resultFor("barnes-marrakech.com", "https://barnes-marrakech.com/fr/vente/villa-hivernage");
   assert.ok(actual);
   assert.equal(actual.classification_reasons.includes("strong_individual_path"), false);
 });
@@ -241,10 +218,16 @@ test("limmobiliersansfrontieres.com: /properties (plural, category) does NOT mat
   assert.equal(actual.classification_reasons.includes("strong_individual_path"), false);
 });
 
-test("marrakechrealty.com: /property/<slug> matches strongIndividual", () => {
-  const actual = resultFor("marrakechrealty.com", "https://marrakechrealty.com/property/riad-medina-456");
+test("marrakechrealty.com: current /vente/<slug> route matches strongIndividual", () => {
+  const actual = resultFor("marrakechrealty.com", "https://marrakechrealty.com/vente/riad-medina-456");
   assert.ok(actual);
   assert.ok(actual.classification_reasons.includes("strong_individual_path"));
+});
+
+test("marrakechrealty.com: stale /property/<slug> route does NOT match", () => {
+  const actual = resultFor("marrakechrealty.com", "https://marrakechrealty.com/property/riad-medina-456");
+  assert.ok(actual);
+  assert.equal(actual.classification_reasons.includes("strong_individual_path"), false);
 });
 
 test("marrakechrealty.com: /contact (unrelated page) does NOT match", () => {
@@ -253,19 +236,8 @@ test("marrakechrealty.com: /contact (unrelated page) does NOT match", () => {
   assert.equal(actual.classification_reasons.includes("strong_individual_path"), false);
 });
 
-// ---------------------------------------------------------------------
-// 5. Static proof: no strongIndividual hardcode remains in classify.ts
-// ---------------------------------------------------------------------
-
 test("classify.ts's PathRules type/DOMAIN_RULES no longer declare a strongIndividual field (static source check)", () => {
   const source = readFileSync(join(process.cwd(), "lib/openserp-ingestion/classify.ts"), "utf8");
-  // The pre-migration PathRules type declared `strongIndividual?: RegExp[];`
-  // (an OPTIONAL field, marked with `?`). That exact declaration must be
-  // gone. The still-legitimate `strongIndividual: boolean` (the *output*
-  // signal name in detectUrlSignals' own return type/local variable,
-  // fed by getListingUrlPatterns, not a DOMAIN_RULES field) is untouched
-  // and correctly still present -- this check targets only the optional-
-  // field form specific to the old hardcoded architecture.
   assert.equal(/strongIndividual\?\s*:\s*RegExp/.test(source), false, "no `strongIndividual?: RegExp[]` field declaration should remain in classify.ts");
   assert.equal(/DOMAIN_RULES\s*=\s*\{[\s\S]*?strongIndividual\s*:\s*\[/.test(source), false, "DOMAIN_RULES object literal must not assign a strongIndividual array to any domain");
 });

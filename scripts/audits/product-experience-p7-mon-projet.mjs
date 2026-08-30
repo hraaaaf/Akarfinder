@@ -31,10 +31,49 @@ try {
           const rect = node.getBoundingClientRect();
           return style.display !== "none" && style.visibility !== "hidden" && rect.width > 0 && rect.height > 0;
         };
+        const visibleElement = (node) => {
+          if (!(node instanceof HTMLElement)) return false;
+          const style = getComputedStyle(node);
+          const rect = node.getBoundingClientRect();
+          return style.display !== "none" && style.visibility !== "hidden" && rect.width > 0 && rect.height > 0;
+        };
+        const rectOf = (node) => {
+          if (!(node instanceof HTMLElement)) return null;
+          const rect = node.getBoundingClientRect();
+          return {
+            top: rect.top,
+            right: rect.right,
+            bottom: rect.bottom,
+            left: rect.left,
+            width: rect.width,
+            height: rect.height,
+          };
+        };
+        const intersects = (a, b) => Boolean(
+          a && b &&
+          a.left < b.right &&
+          a.right > b.left &&
+          a.top < b.bottom &&
+          a.bottom > b.top
+        );
+
         const header = document.querySelector("header");
         const headerBackground = header instanceof HTMLElement ? getComputedStyle(header).backgroundColor : null;
         const continueButtons = Array.from(document.querySelectorAll("button")).filter((node) => node.textContent?.trim().startsWith("Continuer"));
         const bronzeClassCount = Array.from(document.querySelectorAll('[data-p7-mon-projet] [class]')).filter((node) => node.getAttribute("class")?.includes("bronze")).length;
+        const mobileBottomNav = document.querySelector('nav[data-mobile-bottom-nav]');
+        const mobileBottomNavVisible = visibleElement(mobileBottomNav);
+        const mobileBottomNavRect = mobileBottomNavVisible ? rectOf(mobileBottomNav) : null;
+        const initialActions = [
+          ...document.querySelectorAll("[data-p7-primary-objective]"),
+          ...document.querySelectorAll("[data-p7-explore-secondary]"),
+        ].filter(visibleElement);
+        const bottomNavOverlapActions = mobileBottomNavRect
+          ? initialActions
+              .filter((node) => intersects(rectOf(node), mobileBottomNavRect))
+              .map((node) => node.textContent?.trim().replace(/\s+/g, " ").slice(0, 80) || "action")
+          : [];
+
         return {
           clientWidth: document.documentElement.clientWidth,
           scrollWidth: document.documentElement.scrollWidth,
@@ -49,6 +88,8 @@ try {
           stepLabelCount: document.querySelectorAll("[data-p7-step-label]").length,
           desktopRailVisible: visible("[data-p7-progress-rail]"),
           mobileProgressVisible: visible("[data-p7-progress-mobile]"),
+          mobileBottomNavVisible,
+          bottomNavOverlapActions,
           singleQuestionCopy: document.body.innerText.includes("Une question à la fois. Vos réponses deviennent directement des critères de recherche."),
           initialContinueVisible: continueButtons.some((node) => node instanceof HTMLElement && getComputedStyle(node).display !== "none" && node.getBoundingClientRect().height > 0),
           bronzeClassCount,
@@ -68,6 +109,16 @@ try {
       if (!metrics.singleQuestionCopy) localFindings.push("P7_SINGLE_QUESTION_COPY_MISSING");
       if (metrics.initialContinueVisible) localFindings.push("P7_INITIAL_CONTINUE_SHOULD_BE_HIDDEN");
       if (metrics.bronzeClassCount !== 0) localFindings.push(`P7_BRONZE_CLASS_COUNT_${metrics.bronzeClassCount}`);
+
+      if (viewport.width < 768) {
+        if (!metrics.mobileBottomNavVisible) localFindings.push("P7_CANONICAL_MOBILE_BOTTOM_NAV_MISSING");
+        if (metrics.bottomNavOverlapActions.length > 0) {
+          localFindings.push(`P7_BOTTOM_NAV_OVERLAPS_ACTION_${metrics.bottomNavOverlapActions.join("|")}`);
+        }
+      } else if (metrics.mobileBottomNavVisible) {
+        localFindings.push("P7_MOBILE_BOTTOM_NAV_VISIBLE_ABOVE_BREAKPOINT");
+      }
+
       if (viewport.width >= 1024) {
         if (!metrics.desktopRailVisible || metrics.mobileProgressVisible) localFindings.push("P7_DESKTOP_PROGRESS_MODE_INVALID");
       } else if (!metrics.mobileProgressVisible || metrics.desktopRailVisible) {
@@ -91,7 +142,7 @@ try {
 }
 
 const report = {
-  schemaVersion: "AKARFINDER_PRODUCT_EXPERIENCE_P7_V1",
+  schemaVersion: "AKARFINDER_PRODUCT_EXPERIENCE_P7_V2",
   generatedAt: new Date().toISOString(),
   screenshotCount: results.filter((item) => item.screenshot).length,
   findingCount: findings.length,

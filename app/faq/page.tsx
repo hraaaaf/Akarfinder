@@ -33,16 +33,23 @@ export default function FaqPage() {
       eyebrow="Aide"
       title="Questions fréquentes"
       intro="Les réponses essentielles sur les sources, le contact, les repères affichés et les demandes de retrait."
+      maxWidth="3xl"
     >
-      <div className="space-y-3">
-        {FAQS.map((item) => (
-          <article key={item.q} className="rounded-[1.2rem] border border-slate-200/80 bg-slate-50/80 p-5">
-            <h2 className="text-[1rem] font-extrabold text-[#0B1F3A]">{item.q}</h2>
-            <p className="mt-2 text-[13.5px] leading-6 text-slate-600">{item.a}</p>
+      <div className="grid gap-3 md:grid-cols-2" data-p1-editorial-faq>
+        {FAQS.map((item, index) => (
+          <article
+            key={item.q}
+            className="rounded-[18px] border border-[#DCE8F5] bg-[#F8FBFF] p-4 sm:p-5"
+          >
+            <span className="text-[10px] font-extrabold tracking-[0.14em] text-[#0B63CE]">
+              {String(index + 1).padStart(2, "0")}
+            </span>
+            <h2 className="mt-2 text-[0.98rem] font-extrabold leading-snug text-[#0B1F3A]">{item.q}</h2>
+            <p className="mt-2 text-[13px] leading-6 text-slate-600">{item.a}</p>
           </article>
         ))}
       </div>
-      <div className="mt-7 flex flex-wrap gap-2">
+      <div className="mt-6 flex flex-wrap gap-2">
         <Link href="/search" className={`${ui.primaryActionPill} min-h-11 px-5`}>
           Explorer les biens
         </Link>

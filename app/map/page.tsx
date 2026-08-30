@@ -6,6 +6,7 @@ import { parseMapNavigationState } from "@/lib/map/map-navigation-state";
 import "./mockup-convergence-l2.css";
 import "./p4-map-shell.css";
 import "./market-convergence-correction.css";
+import "./p0-polish.css";
 
 export const dynamic = "force-dynamic";
 
