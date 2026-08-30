@@ -108,6 +108,14 @@
     font-size: 8px !important;
     letter-spacing: 0.02em !important;
   }
+  /* The commercial label is the only long family name. Keep it on one line
+   * while reserving the certified 44 px favorite hit target on 2-column mobile cards. */
+  [data-indexed-property-artwork="commercial"] > div:first-of-type {
+    padding-inline: 5px !important;
+    font-size: 6.5px !important;
+    letter-spacing: 0 !important;
+    white-space: nowrap !important;
+  }
   [data-indexed-artwork-card="true"] [data-card-provenance] {
     gap: 4px !important;
     margin-top: 0.7rem !important;
