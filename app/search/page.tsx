@@ -31,6 +31,7 @@ import "./search-premium-card-density.css";
 import "./mockup-convergence-l2.css";
 import "./p4-map-shell.css";
 import "./search-property-type-visuals.css";
+import "./search-property-type-target-art.css";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
