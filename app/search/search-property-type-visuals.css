@@ -13,6 +13,43 @@
 [data-indexed-property-artwork] > svg {
   transform: scale(1.12);
   transform-origin: 50% 57%;
+  z-index: 1;
+}
+
+/* Premium detail overlay: adds the environmental line-art visible in the locked TARGET
+ * without replacing the canonical SVG subject or introducing third-party imagery. */
+[data-indexed-property-artwork]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+  opacity: 0.34;
+  mix-blend-mode: multiply;
+}
+[data-indexed-property-artwork] > div {
+  z-index: 3;
+}
+[data-indexed-property-artwork="apartment"]::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 320 190' fill='none' stroke='%231769e0' stroke-linecap='round' stroke-linejoin='round'%3E%3Cg stroke-width='.65' opacity='.62'%3E%3Cpath d='M18 150h48M30 150v-25h17v25M47 150v-15h16v15M255 150v-22h19v22M274 150v-34h25v34'/%3E%3Cpath d='M54 151v-26M48 151h12M54 125c-8 0-11-7-8-13 3-6 12-7 16-1 4 6 1 14-8 14ZM266 151v-28M259 151h14M266 123c-9 0-12-8-8-14 4-6 13-6 17 0 4 7 1 14-9 14Z'/%3E%3Cpath d='M69 151h12M239 151h13M23 83h28M268 82h27' opacity='.6'/%3E%3C/g%3E%3C/svg%3E");
+}
+[data-indexed-property-artwork="villa"]::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 320 190' fill='none' stroke='%2316843a' stroke-linecap='round' stroke-linejoin='round'%3E%3Cg stroke-width='.7' opacity='.72'%3E%3Cpath d='M46 153v-47M40 153h12M46 106c-7-5-7-14 0-20 7 6 7 15 0 20ZM61 153v-58M55 153h12M61 95c-8-6-8-17 0-24 8 7 8 18 0 24ZM258 153v-52M252 153h12M258 101c-7-5-7-15 0-21 7 6 7 16 0 21Z'/%3E%3Cpath d='M72 153v-17h29v17M219 153v-17h29v17M72 136h29M219 136h29' opacity='.55'/%3E%3Cpath d='M39 153h242' opacity='.45'/%3E%3C/g%3E%3C/svg%3E");
+}
+[data-indexed-property-artwork="land"]::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 320 190' fill='none' stroke='%23ea6a00' stroke-linecap='round' stroke-linejoin='round'%3E%3Cg stroke-width='.68' opacity='.66'%3E%3Cpath d='M31 145v-31M26 145h10M31 114c-6-4-6-12 0-17 6 5 6 13 0 17ZM287 145v-33M282 145h10M287 112c-6-4-6-12 0-17 6 5 6 13 0 17Z'/%3E%3Cpath d='M58 146c19-10 37-10 54-2M208 144c20-10 38-9 54 1' opacity='.55'/%3E%3Cpath d='M44 79h28M247 78h29' opacity='.5'/%3E%3Cpath d='M83 136v10M118 123v11M214 126v11M248 131v10' stroke-dasharray='2 3' opacity='.7'/%3E%3C/g%3E%3C/svg%3E");
+}
+[data-indexed-property-artwork="office"]::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 320 190' fill='none' stroke='%237352c7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cg stroke-width='.66' opacity='.64'%3E%3Cpath d='M23 151h54M31 151v-21h19v21M50 151v-32h18v32M245 151h54M252 151v-26h18v26M270 151v-17h20v17'/%3E%3Cpath d='M72 151v-19M66 151h12M72 132c-7 0-10-7-7-12 3-5 10-5 14 0 3 5 0 12-7 12ZM242 151v-18M236 151h12M242 133c-7 0-10-6-7-11 3-5 10-5 14 0 3 5 0 11-7 11Z'/%3E%3Cpath d='M132 154c6-8 13-8 19 0M171 154c6-8 13-8 19 0' opacity='.5'/%3E%3C/g%3E%3C/svg%3E");
+}
+[data-indexed-property-artwork="commercial"]::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 320 190' fill='none' stroke='%23008ca3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cg stroke-width='.66' opacity='.7'%3E%3Cpath d='M54 153v-35M49 153h10M48 118h12M52 112h4M266 153v-29M260 153h12M260 124h12v19h-12Z'/%3E%3Cpath d='M113 139c0-9 5-15 11-15s11 6 11 15M124 124v-8M190 139c0-9 5-15 11-15s11 6 11 15M201 124v-8' opacity='.58'/%3E%3Cpath d='M101 145h44M177 145h46M28 82h27M265 81h27' opacity='.48'/%3E%3C/g%3E%3C/svg%3E");
+}
+[data-indexed-property-artwork="riad"]::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 320 190' fill='none' stroke='%23b98213' stroke-linecap='round' stroke-linejoin='round'%3E%3Cg stroke-width='.68' opacity='.68'%3E%3Cpath d='M45 153v-43M39 153h12M45 110c-8-5-8-15 0-22 8 7 8 17 0 22ZM274 153v-43M268 153h12M274 110c-8-5-8-15 0-22 8 7 8 17 0 22Z'/%3E%3Cpath d='M63 153v-21h13v21M244 153v-21h13v21M66 132c0-7 4-11 7-11s7 4 7 11M241 132c0-7 4-11 7-11s7 4 7 11' opacity='.58'/%3E%3Cpath d='M34 154h252M31 77h28M263 77h28' opacity='.45'/%3E%3C/g%3E%3C/svg%3E");
 }
 
 /* TARGET uses light family badges with colored type text, not solid transaction pills. */
@@ -101,6 +138,9 @@
   [data-indexed-property-artwork] > svg {
     transform: scale(1.16);
     transform-origin: 50% 58%;
+  }
+  [data-indexed-property-artwork]::before {
+    opacity: 0.28;
   }
   [data-indexed-property-artwork] > div:first-of-type {
     min-height: 18px;
