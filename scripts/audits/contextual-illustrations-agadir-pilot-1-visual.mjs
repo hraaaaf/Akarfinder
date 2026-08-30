@@ -79,7 +79,7 @@ let failure = null;
 
 async function readMetrics(page) {
   return page.evaluate(() => {
-    const cards = [...document.querySelectorAll('[data-search-external-mobile-grid] [data-unified-listing-card]')];
+    const cards = [...document.querySelectorAll('[data-search-listing-card]')];
     const text = (node) => (node?.innerText ?? node?.textContent ?? "").replace(/\s+/g, " ").trim();
     const visualState = cards.map((card) => ({
       contextualCity: card.querySelector('[data-contextual-city]')?.getAttribute('data-contextual-city') ?? null,
@@ -110,7 +110,7 @@ try {
     try {
       const response = await page.goto(`${baseUrl}/search?q=agadir`, { waitUntil: "domcontentloaded", timeout: 45_000 });
       if (!response || response.status() >= 400) throw new Error(`${viewport.name}: search returned ${response?.status() ?? "no response"}`);
-      await page.waitForSelector('[data-search-external-mobile-grid] [data-unified-listing-card]', { timeout: 20_000 });
+      await page.waitForSelector('[data-search-listing-card]', { timeout: 20_000 });
 
       const metrics = await readMetrics(page);
       if (metrics.cardCount !== 14) throw new Error(`${viewport.name}: expected 14 cards, got ${metrics.cardCount}`);
@@ -131,7 +131,7 @@ try {
 
       const stableIds = metrics.visualState.map((state) => state.contextualAssetId);
       await page.reload({ waitUntil: "domcontentloaded", timeout: 45_000 });
-      await page.waitForSelector('[data-search-external-mobile-grid] [data-unified-listing-card]', { timeout: 20_000 });
+      await page.waitForSelector('[data-search-listing-card]', { timeout: 20_000 });
       const reloadMetrics = await readMetrics(page);
       if (JSON.stringify(reloadMetrics.visualState.map((state) => state.contextualAssetId)) !== JSON.stringify(stableIds)) throw new Error(`${viewport.name}: asset changed after reload`);
       if (reloadMetrics.scrollWidth > reloadMetrics.clientWidth || reloadMetrics.clippedLabels !== 0 || reloadMetrics.clippedPrices !== 0) throw new Error(`${viewport.name}: reload layout drift`);
