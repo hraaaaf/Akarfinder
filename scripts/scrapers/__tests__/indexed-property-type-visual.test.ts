@@ -87,7 +87,7 @@ describe("SEARCH-PROPERTY-TYPE-VISUALS-1", () => {
       const asset = `public/visuals/property-types/target/${key}.svg`;
       assert.equal(existsSync(resolve(ROOT, asset)), true, `${key} TARGET asset missing`);
       assert.match(css, new RegExp(`/visuals/property-types/target/${key}\\.svg`));
-      assert.doesNotMatch(source(asset), /https?:\/\//, `${key} TARGET asset must stay local`);
+      assert.doesNotMatch(source(asset), /(?:href|src)=["']https?:\/\//i, `${key} TARGET asset must not load an external URL`);
     }
 
     const riadPath = "public/visuals/property-types/target/riad.png";
