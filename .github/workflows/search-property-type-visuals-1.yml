@@ -1,0 +1,60 @@
+name: SEARCH-PROPERTY-TYPE-VISUALS-1 Gate
+
+on:
+  pull_request:
+    paths:
+      - "app/search/**"
+      - "components/search/IndexedPropertyTypeArtwork.tsx"
+      - "components/search/SearchListingCardDark.tsx"
+      - "lib/ux/indexed-property-type-visual.ts"
+      - "scripts/audits/search-property-type-visuals-1.mjs"
+      - "scripts/scrapers/__tests__/indexed-property-type-visual.test.ts"
+      - "AKARFINDER_SEARCH_PROPERTY_TYPE_VISUALS_CANONICAL.md"
+      - ".github/workflows/search-property-type-visuals-1.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    name: Locked Target Certifier
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Property visual taxonomy and wiring contract
+        run: npx tsx --test scripts/scrapers/__tests__/indexed-property-type-visual.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Production build
+        run: npm run build
+      - name: Start production server
+        shell: bash
+        run: |
+          npm run start -- -p 3141 > /tmp/property-type-visuals.log 2>&1 &
+          for i in {1..40}; do
+            if curl -fsS http://127.0.0.1:3141/search >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/property-type-visuals.log
+          exit 1
+      - name: Locked TARGET visual contract
+        env:
+          BASE_URL: http://127.0.0.1:3141
+        run: node scripts/audits/search-property-type-visuals-1.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: search-property-type-visuals-1-proof
+          path: data/audits/search-property-type-visuals-1
+          if-no-files-found: warn
+          retention-days: 14
