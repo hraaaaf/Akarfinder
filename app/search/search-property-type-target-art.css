@@ -39,7 +39,7 @@
   background-image: url("/visuals/property-types/target/commercial.svg") !important;
 }
 [data-indexed-property-artwork="riad"]::before {
-  background-image: url("/visuals/property-types/target/riad.svg") !important;
+  background-image: url("/visuals/property-types/target/riad.png") !important;
 }
 
 @media (max-width: 639px) {

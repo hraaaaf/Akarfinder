@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, it } from "node:test";
 
@@ -10,6 +10,7 @@ import {
 
 const ROOT = process.cwd();
 const source = (path: string) => readFileSync(resolve(ROOT, path), "utf8");
+const bytes = (path: string) => readFileSync(resolve(ROOT, path));
 
 describe("SEARCH-PROPERTY-TYPE-VISUALS-1", () => {
   it("resolves the six approved TARGET families", () => {
@@ -78,5 +79,27 @@ describe("SEARCH-PROPERTY-TYPE-VISUALS-1", () => {
     }
     assert.match(artwork, /Annonce indexée/);
     assert.match(artwork, /data-indexed-artwork-card/);
+  });
+
+  it("keeps locked TARGET assets local and prevents the broken nested Riad image regression", () => {
+    const css = source("app/search/search-property-type-target-art.css");
+    for (const key of ["apartment", "villa", "land", "office", "commercial"] as const) {
+      const asset = `public/visuals/property-types/target/${key}.svg`;
+      assert.equal(existsSync(resolve(ROOT, asset)), true, `${key} TARGET asset missing`);
+      assert.match(css, new RegExp(`/visuals/property-types/target/${key}\\.svg`));
+      assert.doesNotMatch(source(asset), /https?:\/\//, `${key} TARGET asset must stay local`);
+    }
+
+    const riadPath = "public/visuals/property-types/target/riad.png";
+    assert.equal(existsSync(resolve(ROOT, riadPath)), true, "Riad TARGET PNG missing");
+    const riad = bytes(riadPath);
+    assert.equal(riad.length > 1000, true, "Riad TARGET PNG is unexpectedly small");
+    assert.deepEqual(
+      Array.from(riad.subarray(0, 8)),
+      [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a],
+      "Riad TARGET asset must be a valid PNG payload",
+    );
+    assert.match(css, /\/visuals\/property-types\/target\/riad\.png/);
+    assert.doesNotMatch(css, /\/visuals\/property-types\/target\/riad\.svg/);
   });
 });
