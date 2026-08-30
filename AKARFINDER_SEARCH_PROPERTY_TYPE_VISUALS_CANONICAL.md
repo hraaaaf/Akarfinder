@@ -149,6 +149,13 @@ Aucun rouge observé sur la vague produit exacte.
 - `main` a été avancé sur ce merge-ref avec `force=false` ;
 - GitHub reconnaît PR #951 : `closed`, `merged=true`, `merged_at=2026-08-30T17:59:00Z`.
 
+## Production activation — EN COURS
+
+- autorisation utilisateur explicite reçue le `2026-08-30` ;
+- déploiement Vercel direct tenté via connecteur : refusé par schéma d'outil (`Provide at least one file to deploy`) ;
+- déclenchement demandé via l'intégration Git liée au projet Vercel avec ce commit documentaire uniquement ;
+- aucun fichier produit, ranking, data ou DB modifié par ce déclencheur.
+
 ## Roadmap finale
 
 - [x] L0 — TARGET / canonique
@@ -158,8 +165,7 @@ Aucun rouge observé sur la vague produit exacte.
 - [x] L4 — Tests / CI
 - [x] L5 — AFTER / score 10/10
 - [x] L6 — Merge / post-merge
+- [ ] L7 — Production activation / live proof
 
 ## NEXT EXACT
-Aucune action restante connue dans ce chantier.
-
-Aucun déploiement Vercel n'a été réalisé dans ce chantier.
+Vérifier si l'intégration Git Vercel a créé un nouveau déploiement production sur le HEAD courant ; si oui, valider READY puis capturer `/search` live.
