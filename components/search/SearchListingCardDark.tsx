@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { ArrowRight, Bath, BedDouble, Building2, ExternalLink, MapPin, Maximize2 } from "lucide-react";
 import { FavoriteToggleButton } from "@/components/favorites/FavoriteToggleButton";
 import { PropertyTypeArtwork } from "@/components/property-types/PropertyTypeArtwork";
-import { IndexedTransactionArtwork } from "@/components/search/IndexedTransactionArtwork";
+import { IndexedPropertyTypeArtwork } from "@/components/search/IndexedPropertyTypeArtwork";
 import { usePropertySelection } from "@/components/search/PropertySelectionProvider";
 import { resolveRabatRealPhoto } from "@/lib/contextual-illustrations/rabat-real-photo-library";
 import { resolveContextualIllustration } from "@/lib/contextual-illustrations/resolver";
@@ -127,10 +127,9 @@ export function SearchListingCardDark({ listing, projectId }: { listing: Listing
           <div data-card-image className="relative h-[164px] overflow-hidden bg-slate-100 sm:h-[196px]">
             <div className="absolute inset-0 transition duration-500 group-hover:scale-[1.025]">
               {useIndexedArtwork ? (
-                <IndexedTransactionArtwork
-                  transaction={listing.transaction_type}
-                  showTransactionLabel={false}
-                  showIndexedDisclosure={false}
+                <IndexedPropertyTypeArtwork
+                  propertyType={listing.property_type}
+                  title={listing.title}
                 />
               ) : imageMode === "db_provider_thumbnail" ? (
                 // eslint-disable-next-line @next/next/no-img-element
