@@ -8,11 +8,25 @@
   display: none !important;
 }
 
+/* TARGET illustrations occupy more of the media field than the first pass.
+ * Scale only the proprietary SVG scene: card geometry, truth and hit targets stay untouched. */
+[data-indexed-property-artwork] > svg {
+  transform: scale(1.12);
+  transform-origin: 50% 57%;
+}
+
 /* TARGET uses light family badges with colored type text, not solid transaction pills. */
 [data-indexed-property-artwork] > div:first-of-type {
   box-shadow: none !important;
   border: 1px solid currentColor !important;
   border-color: color-mix(in srgb, currentColor 16%, transparent) !important;
+  min-height: 20px;
+  padding: 3px 7px !important;
+  border-radius: 6px !important;
+  font-size: 9px !important;
+  font-weight: 850 !important;
+  line-height: 1 !important;
+  letter-spacing: 0.025em !important;
 }
 [data-indexed-property-artwork="apartment"] > div:first-of-type { background: #eaf2ff !important; color: #1769e0 !important; }
 [data-indexed-property-artwork="villa"] > div:first-of-type { background: #eaf7ee !important; color: #16843a !important; }
@@ -84,6 +98,16 @@
 }
 
 @media (max-width: 639px) {
+  [data-indexed-property-artwork] > svg {
+    transform: scale(1.16);
+    transform-origin: 50% 58%;
+  }
+  [data-indexed-property-artwork] > div:first-of-type {
+    min-height: 18px;
+    padding: 2.5px 6px !important;
+    font-size: 8px !important;
+    letter-spacing: 0.02em !important;
+  }
   [data-indexed-artwork-card="true"] [data-card-provenance] {
     gap: 4px !important;
     margin-top: 0.7rem !important;
