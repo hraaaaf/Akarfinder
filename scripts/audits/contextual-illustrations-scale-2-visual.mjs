@@ -49,13 +49,13 @@ const results = [];
 let failure = null;
 
 async function hydrateLazyVisuals(page) {
-  const cards = await page.locator('[data-search-external-mobile-grid] [data-unified-listing-card]').all();
+  const cards = await page.locator('[data-search-listing-card]').all();
   for (const card of cards) {
     await card.scrollIntoViewIfNeeded();
     await page.waitForTimeout(35);
   }
   await page.waitForFunction(() => {
-    const images = [...document.querySelectorAll('[data-search-external-mobile-grid] [data-unified-listing-card] img')];
+    const images = [...document.querySelectorAll('[data-search-listing-card] img')];
     return images.every((image) => image.complete && image.naturalWidth > 0);
   }, { timeout: 15_000 });
   await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
@@ -64,7 +64,7 @@ async function hydrateLazyVisuals(page) {
 
 async function readMetrics(page) {
   return page.evaluate(() => {
-    const cards = [...document.querySelectorAll('[data-search-external-mobile-grid] [data-unified-listing-card]')];
+    const cards = [...document.querySelectorAll('[data-search-listing-card]')];
     const text = (node) => (node?.innerText ?? node?.textContent ?? "").replace(/\s+/g, " ").trim();
     const visualState = cards.map((card) => ({ contextualCity: card.querySelector('[data-contextual-city]')?.getAttribute('data-contextual-city') ?? null, contextualAssetId: card.querySelector('[data-contextual-asset-id]')?.getAttribute('data-contextual-asset-id') ?? null, contextualTier: card.querySelector('[data-contextual-tier]')?.getAttribute('data-contextual-tier') ?? null, neutral: Boolean(card.querySelector('[data-contextual-neutral]')), illustrationLabel: text(card.querySelector('[data-contextual-illustration-label]')) }));
     const clippedLabels = cards.map((card) => card.querySelector('[data-contextual-illustration-label]')).filter((node) => node && node.scrollWidth > node.clientWidth + 1).length;
@@ -81,7 +81,7 @@ try {
     try {
       const response = await page.goto(`${baseUrl}/search?q=immobilier`, { waitUntil: "domcontentloaded", timeout: 45_000 });
       if (!response || response.status() >= 400) throw new Error(`${viewport.name}: search returned ${response?.status() ?? "no response"}`);
-      await page.waitForSelector('[data-search-external-mobile-grid] [data-unified-listing-card]', { timeout: 20_000 });
+      await page.waitForSelector('[data-search-listing-card]', { timeout: 20_000 });
       await hydrateLazyVisuals(page);
       const metrics = await readMetrics(page);
       if (metrics.cardCount !== 41) throw new Error(`${viewport.name}: expected 41 cards, got ${metrics.cardCount}`);
@@ -105,7 +105,7 @@ try {
       if (metrics.visualState.some((state) => state.illustrationLabel !== "Illustration")) throw new Error(`${viewport.name}: disclosure drift`);
       const stableIds = metrics.visualState.map((state) => state.contextualAssetId);
       await page.reload({ waitUntil: "domcontentloaded", timeout: 45_000 });
-      await page.waitForSelector('[data-search-external-mobile-grid] [data-unified-listing-card]', { timeout: 20_000 });
+      await page.waitForSelector('[data-search-listing-card]', { timeout: 20_000 });
       await hydrateLazyVisuals(page);
       const reloaded = await readMetrics(page);
       if (JSON.stringify(reloaded.visualState.map((state) => state.contextualAssetId)) !== JSON.stringify(stableIds)) throw new Error(`${viewport.name}: asset changed after reload`);
