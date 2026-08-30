@@ -54,7 +54,15 @@ Viewports canoniques :
 - 768×900
 - 1280×900
 
-BEFORE de départ : produit `main@66715e555ccf1ee6f5edf82f1b69fc57a0587cb8`, où `public_indexed` utilise encore `IndexedTransactionArtwork` par transaction.
+### BEFORE — VÉRIFIÉ
+
+Surface produit précédente : `17c81df1b1f2f1a2c10abe0b3a26f165973bc67e` (ensuite mergée sur `main`; `66715e5…` n’ajoute que le closeout documentaire).
+
+- UI All Pages Certification : `33306177902` ✅
+- artifact : `9730741634`
+- digest : `sha256:504f4fa43cef1a79b75189bf7136b0324017b1b476ec032334e96d016206b743`
+- captures `visual-qa__search-indexed-cards` vérifiées : 390×844 / 430×932 / 768×900 / 1280×900
+- état visible BEFORE : système transactionnel `Achat / Location / Neuf`.
 
 ## Spécification visuelle verrouillée
 
@@ -127,57 +135,82 @@ Règle de score :
 
 ## Roadmap
 
-### L0 — Canonique / TARGET — ACTIVE
+### L0 — Canonique / TARGET — CLOSED sauf copie binaire optionnelle
 - [x] branche dédiée créée
 - [x] image source validée
 - [x] dimensions + SHA-256 calculés
 - [x] Goal / succès / preuve verrouillés
 - [x] barème 10/10 verrouillé
-- [ ] copie binaire GitHub au même SHA, si un canal binaire GitHub devient disponible
+- [ ] copie binaire GitHub au même SHA, uniquement si un canal binaire GitHub devient disponible
 
-### L1 — Taxonomie produit
-- [ ] ajouter `Local commercial` au resolver visuel sans casser la taxonomie métier
-- [ ] normaliser les aliases pertinents
-- [ ] tests unitaires de résolution des six familles
+### L1 — Taxonomie produit — DONE / À RECERTIFIER EXACT-HEAD
+- [x] resolver visuel six familles
+- [x] alias commercial de présentation sans mutation du type métier
+- [x] priorité au type métier explicite sur les mots incidents du titre
+- [x] tests de résolution, y compris anti-faux-positif `Appartement avec bureau`
 
-### L2 — Illustrations premium
-- [ ] créer les six illustrations propriétaires dans le style du TARGET
-- [ ] couleurs canoniques par famille
-- [ ] fallback sûr pour type inconnu
+### L2 — Illustrations premium — DONE / VISUAL PASS ACTIVE
+- [x] six illustrations propriétaires SVG
+- [x] couleurs canoniques par famille
+- [x] fallback sûr pour type inconnu
+- [x] premier AFTER intermédiaire `ce56d1b…` : machine contract 10/10, 0 failure
+- [x] comparaison humaine intermédiaire : familles/couleurs/hiérarchie correctes
+- [x] correction décidée : présence graphique et badges renforcés pour mieux converger vers le TARGET
+- [ ] AFTER exact-head du pass de densité à inspecter
 
-### L3 — Intégration Search
-- [ ] remplacer la priorité `IndexedTransactionArtwork` par le système type-de-bien pour `public_indexed` sans photo
-- [ ] préserver favorite/source/facts/disclosure
-- [ ] aucun changement ranking/data/DB
+### L3 — Intégration Search — DONE / À RECERTIFIER EXACT-HEAD
+- [x] `public_indexed` sans photo utilise le système type-de-bien
+- [x] favorite/source/facts/disclosure préservés
+- [x] footer `Voir sur la source` conservé comme vrai lien pour les annonces indexées externes
+- [x] aucun changement ranking/data/DB
 
-### L4 — Tests
-- [ ] TypeScript/build
-- [ ] contrats visuels
-- [ ] tests Search existants
-- [ ] assertions six types + fallback
+### L4 — Tests — ACTIVE
+- [x] contrats unitaires/taxonomie ajoutés
+- [x] certifieur visuel dédié ajouté
+- [x] premier run dédié `33313085152` ✅ sur `ce56d1b…`
+- [ ] CI exact-head finale
 
-### L5 — AFTER / score
-- [ ] captures 390×844
-- [ ] captures 430×932
-- [ ] captures 768×900
-- [ ] captures 1280×900
-- [ ] comparaison au TARGET
-- [ ] score A/B/C/D/E
-- [ ] corriger tant que score < 10/10 ou qu’un défaut observable subsiste
+### L5 — AFTER / score — ACTIVE
+- [x] AFTER intermédiaire `ce56d1b…` : 390×844 / 430×932 / 768×900 / 1280×900, machine 10/10, 0 failure
+- [x] comparaison au TARGET effectuée
+- [x] défaut résiduel identifié : illustration trop petite/aérée et badge trop discret par rapport au TARGET
+- [x] correction visuelle appliquée dans `app/search/search-property-type-visuals.css`
+- [ ] captures AFTER exact-head final
+- [ ] comparaison finale au TARGET
+- [ ] score A/B/C/D/E final
+- [ ] corriger si défaut observable ou score < 10/10
 
-### L6 — Closeout
+### L6 — Closeout — PENDING
 - [ ] CI exact-head verte
-- [ ] mise à jour du présent canonique avec preuves AFTER
-- [ ] PR
+- [ ] mise à jour finale du présent canonique avec preuves AFTER
+- [ ] PR ready
 - [ ] merge
 - [ ] post-merge
 
-## État technique initial vérifié
+## Preuve intermédiaire vérifiée
 
-- `SearchListingCardDark.tsx` utilise actuellement `shouldUseIndexedTransactionArtwork(listing)` pour les annonces indexées.
-- `IndexedTransactionArtwork.tsx` est un système par transaction `buy / rent / new`.
-- `PropertyTypeArtwork.tsx` possède déjà une taxonomie visuelle historique pour Appartement / Villa / Terrain / Studio / Riad / Bureau, mais son style et sa couverture ne correspondent pas au nouveau TARGET.
-- `lib/property-types/presentation.ts` ne couvre pas encore `Local commercial` dans `OptionAPropertyType`.
+Run dédié `33313085152` sur `ce56d1b156766cd509431cc0fc5ece4ec973a2e9` : ✅
+
+Artifact `9732760282` :
+- digest `sha256:e84a48de8447756dca4e364f5cb06e80b71a97fb52b908c173fca2ab30588384`
+- `machineScore: 10`
+- `failures: []`
+- axes : sixFamilies / colors / proprietaryArtwork / targetGeometry / targetCardHierarchy = `true`
+- 390×844 : 6 cartes, 2 colonnes, 0 overflow, 6 clés uniques
+- 430×932 : 6 cartes, 2 colonnes, 0 overflow, 6 clés uniques
+- 768×900 : 6 cartes, 2 colonnes, 0 overflow, 6 clés uniques
+- 1280×900 : 6 cartes, 4 colonnes, 0 overflow, 6 clés uniques
+
+Cette preuve n’est **pas** le closeout final : le pass visuel de densité ultérieur doit être recapturé et recertifié exact-head.
+
+## État technique vérifié
+
+- `SearchListingCardDark.tsx` utilise désormais `IndexedPropertyTypeArtwork` pour la voie visuelle `public_indexed`.
+- `IndexedTransactionArtwork.tsx` n’est plus la surface principale de cette voie dans la carte Search.
+- Le resolver visuel couvre Appartement / Villa / Terrain / Bureau / Local commercial / Riad + fallback inconnu.
+- Le type métier explicite est prioritaire ; le titre ne sert qu’aux aliases commerciaux sûrs et au fallback quand le type est non reconnu.
+- Le lien source externe reste un vrai `<a>` sur les annonces indexées autorisées.
+- Les corrections Premium historiques portent uniquement sur les contrats d’audit, pas sur ranking/data/DB.
 
 ## NEXT EXACT
-Implémenter L1 : taxonomie/résolution des six familles du TARGET, puis L2 illustrations premium dans le vrai composant Search.
+Obtenir l’AFTER exact-head du pass visuel courant, vérifier `metrics.json` + 390/430/768/1280, comparer au TARGET, scorer A/B/C/D/E, corriger si nécessaire, puis closeout CI/PR/merge/post-merge.
