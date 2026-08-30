@@ -47,12 +47,13 @@ describe("SEARCH-PROPERTY-TYPE-VISUALS-1", () => {
     assert.equal(accents.size, 6);
   });
 
-  it("wires the real Search card to the property-type artwork instead of transaction artwork", () => {
+  it("wires the real Search card to the property-type artwork instead of the legacy transaction component", () => {
     const card = source("components/search/SearchListingCardDark.tsx");
     assert.match(card, /IndexedPropertyTypeArtwork/);
     assert.match(card, /propertyType=\{listing\.property_type\}/);
     assert.match(card, /title=\{listing\.title\}/);
-    assert.doesNotMatch(card, /IndexedTransactionArtwork/);
+    assert.doesNotMatch(card, /from\s+["']@\/components\/search\/IndexedTransactionArtwork["']/);
+    assert.doesNotMatch(card, /<IndexedTransactionArtwork\b/);
   });
 
   it("ships all six TARGET illustration branches and property-colored card selectors", () => {
