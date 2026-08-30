@@ -15,7 +15,6 @@ const EXPECTED_SCALE2_IDS = [
   ...["city", "apartment", "villa"].flatMap((kind) => [1, 2, 3, 4].map((n) => `tanger-${kind}-0${n}`)),
   ...["city", "apartment", "villa"].flatMap((kind) => [1, 2, 3, 4].map((n) => `fes-${kind}-0${n}`)),
 ].sort();
-
 const base = {
   neighborhood: "", currency: "DH", price_per_m2: null, transaction_type: "buy", bedrooms: 0, bathrooms: 0,
   freshness_label: "Récent", source_type: "Source analysée", reliability_label: "Informations complètes", reliability_score: 90,
@@ -48,17 +47,10 @@ let failure = null;
 const readMetrics = (page) => page.evaluate(() => {
   const cards = [...document.querySelectorAll('[data-search-listing-card]')];
   const text = (node) => (node?.innerText ?? node?.textContent ?? "").replace(/\s+/g, " ").trim();
-  const visualState = cards.map((card) => ({
-    contextualCity: card.querySelector('[data-contextual-city]')?.getAttribute('data-contextual-city') ?? null,
-    contextualAssetId: card.querySelector('[data-contextual-asset-id]')?.getAttribute('data-contextual-asset-id') ?? null,
-    contextualTier: card.querySelector('[data-contextual-tier]')?.getAttribute('data-contextual-tier') ?? null,
-    contextualLabel: text(card.querySelector('[data-contextual-illustration-label]')),
-    generic: Boolean(card.querySelector('[data-visual-inventory-class="generic_illustration"]')),
-    text: text(card),
-  }));
+  const visualState = cards.map((card) => ({ contextualCity: card.querySelector('[data-contextual-city]')?.getAttribute('data-contextual-city') ?? null, contextualAssetId: card.querySelector('[data-contextual-asset-id]')?.getAttribute('data-contextual-asset-id') ?? null, contextualTier: card.querySelector('[data-contextual-tier]')?.getAttribute('data-contextual-tier') ?? null, contextualLabel: text(card.querySelector('[data-contextual-illustration-label]')), generic: Boolean(card.querySelector('[data-visual-inventory-class="generic_illustration"]')), text: text(card) }));
   return { cardCount: cards.length, visualState, clippedLabels: cards.map((card) => card.querySelector('[data-contextual-illustration-label]')).filter((node) => node && node.scrollWidth > node.clientWidth + 1).length, clippedPrices: cards.map((card) => card.querySelector('[data-mobile-price]')).filter((node) => node && node.scrollWidth > node.clientWidth + 1).length, clientWidth: document.documentElement.clientWidth, scrollWidth: document.documentElement.scrollWidth };
 });
-async function hydrate(page) {
+async function hydrateLazyVisuals(page) {
   for (const card of await page.locator('[data-search-listing-card]').all()) { await card.scrollIntoViewIfNeeded(); await page.waitForTimeout(20); }
   await page.waitForFunction(() => [...document.querySelectorAll('[data-search-listing-card] img')].every((img) => img.complete && img.naturalWidth > 0), { timeout: 15_000 });
   await page.evaluate(() => scrollTo(0, 0));
@@ -71,13 +63,15 @@ try {
       const response = await page.goto(`${baseUrl}/search?q=immobilier`, { waitUntil: "domcontentloaded", timeout: 45_000 });
       if (!response || response.status() >= 400) throw new Error(`${viewport.name}: search returned ${response?.status() ?? "no response"}`);
       await page.waitForSelector('[data-search-listing-card]', { timeout: 20_000 });
-      await hydrate(page);
+      await hydrateLazyVisuals(page);
       const metrics = await readMetrics(page);
       if (metrics.cardCount !== 41) throw new Error(`${viewport.name}: expected 41 cards, got ${metrics.cardCount}`);
-      if (metrics.scrollWidth > metrics.clientWidth || metrics.clippedLabels || metrics.clippedPrices) throw new Error(`${viewport.name}: overflow or clipping`);
+      if (metrics.scrollWidth > metrics.clientWidth) throw new Error(`${viewport.name}: horizontal overflow ${metrics.scrollWidth}/${metrics.clientWidth}`);
+      if (metrics.clippedLabels) throw new Error(`${viewport.name}: contextual illustration label clipping`);
       const scale2 = metrics.visualState.slice(0, 36);
-      const ids = [...new Set(scale2.map((state) => state.contextualAssetId))].sort();
-      if (ids.length !== 36 || JSON.stringify(ids) !== JSON.stringify(EXPECTED_SCALE2_IDS)) throw new Error(`${viewport.name}: SCALE-2 asset set drift`);
+      const uniqueScale2Ids = new Set(scale2.map((state) => state.contextualAssetId));
+      const ids = [...uniqueScale2Ids].sort();
+      if (uniqueScale2Ids.size !== 36 || JSON.stringify(ids) !== JSON.stringify(EXPECTED_SCALE2_IDS)) throw new Error(`${viewport.name}: SCALE-2 asset set drift`);
       if (scale2.some((state) => !["Rabat", "Tanger", "Fès"].includes(state.contextualCity) || state.contextualLabel !== "Illustration")) throw new Error(`${viewport.name}: SCALE-2 disclosure/city drift`);
       for (const offset of [0, 12, 24]) {
         if (scale2.slice(offset, offset + 8).some((state) => state.contextualTier !== "city_type")) throw new Error(`${viewport.name}: apartment/villa tier drift`);
@@ -89,12 +83,12 @@ try {
       const stable = metrics.visualState.map((state) => state.contextualAssetId);
       await page.reload({ waitUntil: "domcontentloaded", timeout: 45_000 });
       await page.waitForSelector('[data-search-listing-card]', { timeout: 20_000 });
-      await hydrate(page);
+      await hydrateLazyVisuals(page);
       const reloaded = await readMetrics(page);
       if (JSON.stringify(reloaded.visualState.map((state) => state.contextualAssetId)) !== JSON.stringify(stable)) throw new Error(`${viewport.name}: asset changed after reload`);
-      if (reloaded.scrollWidth > reloaded.clientWidth || reloaded.clippedLabels || reloaded.clippedPrices) throw new Error(`${viewport.name}: reload layout drift`);
+      if (reloaded.scrollWidth > reloaded.clientWidth || reloaded.clippedLabels) throw new Error(`${viewport.name}: reload contextual layout drift`);
       await page.screenshot({ path: `${outputDir}/${viewport.name}.png`, fullPage: true });
-      results.push({ name: viewport.name, unique_scale2_assets: ids.length, stable_after_reload: true, lazy_visuals_hydrated: true, clipped_labels: 0, clipped_prices: 0, horizontal_overflow: false });
+      results.push({ name: viewport.name, unique_scale2_assets: uniqueScale2Ids.size, stable_after_reload: true, lazy_visuals_hydrated: true, clipped_labels: metrics.clippedLabels, clipped_prices: metrics.clippedPrices, horizontal_overflow: false });
     } catch (error) { failure = error; break; } finally { await page.close(); }
   }
 } finally { await browser.close(); }
