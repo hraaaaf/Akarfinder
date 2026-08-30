@@ -140,7 +140,7 @@ export function SearchListingCardDark({ listing, projectId }: { listing: Listing
                   decoding="async"
                   onError={() => setThumbnailError(true)}
                   data-visual-inventory-class="authorized_or_listing_image"
-                  className="h-full w-full object-cover object-center"
+                  className="h-full w-full object-cover"
                 />
               ) : imageMode !== "fallback_visual" ? (
                 <Image
