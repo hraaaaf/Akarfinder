@@ -6,8 +6,8 @@ const BASE_URL = process.env.BASE_URL ?? "http://127.0.0.1:3199";
 const variant = process.env.AUDIT_VARIANT ?? "local";
 const outDir = path.join("data", "audits", "ux-premium-cards-media-1", variant);
 const viewports = [
-  { name: "mobile-360x800", width: 360, height: 800, expectedMediaHeight: 154, expectedMediaWidth: null, minCardRadius: 13.5, view: null },
-  { name: "mobile-390x844", width: 390, height: 844, expectedMediaHeight: 154, expectedMediaWidth: null, minCardRadius: 13.5, view: null },
+  { name: "mobile-360x800", width: 360, height: 800, expectedMediaHeight: 164, expectedMediaWidth: null, minCardRadius: 13.5, view: null },
+  { name: "mobile-390x844", width: 390, height: 844, expectedMediaHeight: 164, expectedMediaWidth: null, minCardRadius: 13.5, view: null },
   { name: "tablet-768x900", width: 768, height: 900, expectedMediaHeight: 190, expectedMediaWidth: null, minCardRadius: 15.5, view: null },
   { name: "desktop-1440x900", width: 1440, height: 900, expectedMediaHeight: null, expectedMediaWidth: 132, minCardRadius: 15.5, view: "split" },
 ];
@@ -88,7 +88,7 @@ for (const v of viewports) {
       favorite: fb && favoriteStyle ? { width: fb.width, height: fb.height, radius: favoriteStyle.borderRadius } : null,
       visualMarker: card.getAttribute('data-indexed-artwork-card')
         ?? card.querySelector('[data-visual-inventory-class]')?.getAttribute('data-visual-inventory-class')
-        ?? card.querySelector('[data-indexed-transaction-artwork]')?.getAttribute('data-indexed-transaction-artwork')
+        ?? card.querySelector('[data-indexed-property-artwork]')?.getAttribute('data-indexed-property-artwork')
         ?? null,
       brokenImages: [...media.querySelectorAll('img')].filter((image) => image.complete && image.naturalWidth === 0).length,
       overflowX: document.documentElement.scrollWidth - document.documentElement.clientWidth,
