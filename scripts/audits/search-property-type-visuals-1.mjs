@@ -4,6 +4,7 @@ import { chromium } from "playwright";
 
 const baseUrl = process.env.BASE_URL ?? "http://127.0.0.1:3141";
 const outDir = process.env.AUDIT_DIR ?? path.join("data", "audits", "search-property-type-visuals-1");
+const targetSha256 = "004b46faab6a642674b9dac1eb623599418c3e22564884e38f2304725ce0909a";
 
 const viewports = [
   { name: "mobile-390x844", width: 390, height: 844, columns: 2 },
@@ -11,52 +12,46 @@ const viewports = [
   { name: "tablet-768x900", width: 768, height: 900, columns: 2 },
   { name: "desktop-1280x900", width: 1280, height: 900, columns: 4 },
 ];
-
 const expected = [
-  { key: "apartment", label: "Appartement", color: "rgb(23, 105, 224)" },
-  { key: "villa", label: "Villa", color: "rgb(22, 132, 58)" },
-  { key: "land", label: "Terrain", color: "rgb(234, 106, 0)" },
-  { key: "office", label: "Bureau", color: "rgb(115, 82, 199)" },
-  { key: "commercial", label: "Local commercial", color: "rgb(0, 140, 163)" },
-  { key: "riad", label: "Riad", color: "rgb(185, 130, 19)" },
+  ["apartment", "Appartement", "rgb(23, 105, 224)"],
+  ["villa", "Villa", "rgb(22, 132, 58)"],
+  ["land", "Terrain", "rgb(234, 106, 0)"],
+  ["office", "Bureau", "rgb(115, 82, 199)"],
+  ["commercial", "Local commercial", "rgb(0, 140, 163)"],
+  ["riad", "Riad", "rgb(185, 130, 19)"],
 ];
-
-const fixtureDefinitions = [
-  { propertyType: "Appartement", title: "Appartement à vendre à Maarif", neighborhood: "Maarif", price: 1350000, surface: 112, bedrooms: 3, bathrooms: 2 },
-  { propertyType: "Villa", title: "Villa à vendre à Californie", neighborhood: "Californie", price: 2950000, surface: 240, bedrooms: 4, bathrooms: 3 },
-  { propertyType: "Terrain", title: "Terrain à vendre à Sidi Maarouf", neighborhood: "Sidi Maarouf", price: 980000, surface: 500, bedrooms: 0, bathrooms: 0 },
-  { propertyType: "Bureau", title: "Bureau à vendre à Anfa", neighborhood: "Anfa", price: 1750000, surface: 160, bedrooms: 0, bathrooms: 0 },
-  // Current business taxonomy has no Local commercial enum. The presentation resolver
-  // intentionally derives this visual family from certified listing text without changing DB types.
-  { propertyType: "Bureau", title: "Local commercial à vendre à Gauthier", neighborhood: "Gauthier", price: 2100000, surface: 120, bedrooms: 0, bathrooms: 1 },
-  { propertyType: "Riad", title: "Riad à vendre à Médina", neighborhood: "Médina", price: 3800000, surface: 190, bedrooms: 5, bathrooms: 4 },
+const defs = [
+  ["Appartement", "Appartement à vendre à Maarif", "Maarif", 1350000, 112, 3, 2],
+  ["Villa", "Villa à vendre à Californie", "Californie", 2950000, 240, 4, 3],
+  ["Terrain", "Terrain à vendre à Sidi Maarouf", "Sidi Maarouf", 980000, 500, 0, 0],
+  ["Bureau", "Bureau à vendre à Anfa", "Anfa", 1750000, 160, 0, 0],
+  ["Bureau", "Local commercial à vendre à Gauthier", "Gauthier", 2100000, 120, 0, 1],
+  ["Riad", "Riad à vendre à Médina", "Médina", 3800000, 190, 5, 4],
 ];
-
-const listings = fixtureDefinitions.map((item, index) => ({
+const listings = defs.map(([property_type, title, neighborhood, price, surface_m2, bedrooms, bathrooms], index) => ({
   id: `property-visual-${index + 1}`,
-  title: item.title,
+  title,
   city: index === 5 ? "Marrakech" : "Casablanca",
-  neighborhood: item.neighborhood,
-  price: item.price,
+  neighborhood,
+  price,
   currency: "DH",
-  surface_m2: item.surface,
-  price_per_m2: Math.round(item.price / item.surface),
-  property_type: item.propertyType,
-  // Deliberately identical across all six cards: the visual distinction must come from property type.
+  surface_m2,
+  price_per_m2: Math.round(price / surface_m2),
+  property_type,
   transaction_type: "buy",
-  bedrooms: item.bedrooms,
-  bathrooms: item.bathrooms,
+  bedrooms,
+  bathrooms,
   freshness_label: "Récent",
   source_type: "Source publique",
+  source_name: "Source publique",
   reliability_label: "Source indexée",
   reliability_score: 70,
   reliability_available: true,
   is_mre_friendly: false,
-  description: "Fixture déterministe de certification du système visuel par type de bien.",
+  description: "Fixture déterministe du système visuel par type de bien.",
   image_url: "",
   reliability_explanation: "Fixture CI",
   data_completeness_score: 82,
-  source_name: "Source publique",
   duplicate_score: 0.05,
   listing_url: `https://fixture.example/property-visual/${index + 1}`,
   can_show_result: true,
@@ -70,11 +65,6 @@ const listings = fixtureDefinitions.map((item, index) => ({
   allowed_ctas: ["view_original", "view_source"],
 }));
 
-function intersects(a, b) {
-  if (!a || !b) return false;
-  return !(a.right <= b.left || a.left >= b.right || a.bottom <= b.top || a.top >= b.bottom);
-}
-
 await fs.mkdir(outDir, { recursive: true });
 const browser = await chromium.launch({ headless: true });
 const failures = [];
@@ -83,93 +73,82 @@ const results = [];
 for (const viewport of viewports) {
   const context = await browser.newContext({ viewport: { width: viewport.width, height: viewport.height }, deviceScaleFactor: 1 });
   const page = await context.newPage();
-
-  await page.route("**/api/search?**", async (route) => route.fulfill({
+  await page.route("**/api/search?**", (route) => route.fulfill({
     status: 200,
     contentType: "application/json",
-    body: JSON.stringify({
-      listings,
-      total: listings.length,
-      limit: 100,
-      offset: 0,
-      source: "search-property-type-visuals-ci",
-      generated_at: new Date().toISOString(),
-    }),
+    body: JSON.stringify({ listings, total: 6, limit: 100, offset: 0, source: "property-type-visual-ci", generated_at: new Date().toISOString() }),
   }));
-  await page.route("**/api/search/gateway?**", async (route) => route.fulfill({
+  await page.route("**/api/search/gateway?**", (route) => route.fulfill({
     status: 200,
     contentType: "application/json",
     body: JSON.stringify({ results: [], total_count: 0, next_cursor: null, has_more: false }),
   }));
 
   const response = await page.goto(`${baseUrl}/search?city=Casablanca&view=list`, { waitUntil: "domcontentloaded", timeout: 60_000 });
-  if (!response || response.status() >= 400) failures.push(`${viewport.name}: search returned ${response?.status() ?? "no response"}`);
+  if (!response || response.status() >= 400) failures.push(`${viewport.name}: search HTTP ${response?.status() ?? "none"}`);
   await page.waitForFunction(() => document.querySelectorAll("[data-search-listing-card]").length >= 6, null, { timeout: 30_000 });
   await page.waitForTimeout(350);
 
   const metrics = await page.evaluate(({ expected }) => {
     const cards = Array.from(document.querySelectorAll("[data-search-listing-card]")).slice(0, 6);
     const grid = document.querySelector("[data-search-continuous-flow] > div.grid");
-    const overlap = (a, b) => {
-      if (!a || !b) return false;
-      return !(a.right <= b.left || a.left >= b.right || a.bottom <= b.top || a.top >= b.bottom);
-    };
-    const cardAudits = cards.map((card, index) => {
+    const overlap = (a, b) => Boolean(a && b && !(a.right <= b.left || a.left >= b.right || a.bottom <= b.top || a.top >= b.bottom));
+    const audits = cards.map((card, index) => {
       const artwork = card.querySelector("[data-indexed-property-artwork]");
-      const price = card.querySelector("[data-card-price]");
-      const favorite = card.querySelector("[data-card-favorite]");
       const image = card.querySelector("[data-card-image]");
-      const textNodes = artwork ? Array.from(artwork.querySelectorAll("div")) : [];
-      const expectedLabel = expected[index]?.label ?? "";
-      const typeLabel = textNodes.find((node) => node.textContent?.trim().toLocaleLowerCase("fr") === expectedLabel.toLocaleLowerCase("fr"));
-      const indexedDisclosure = textNodes.find((node) => node.textContent?.trim().toLocaleLowerCase("fr") === "annonce indexée");
-      const imageRect = image?.getBoundingClientRect() ?? null;
-      const typeRect = typeLabel?.getBoundingClientRect() ?? null;
-      const disclosureRect = indexedDisclosure?.getBoundingClientRect() ?? null;
-      const favoriteRect = favorite?.getBoundingClientRect() ?? null;
-      const artworkImgs = artwork ? artwork.querySelectorAll("img").length : 0;
+      const favorite = card.querySelector("[data-card-favorite]");
+      const price = card.querySelector("[data-card-price]");
+      const provenance = card.querySelector("[data-card-provenance]");
+      const [key, expectedLabel] = expected[index];
+      const label = artwork ? Array.from(artwork.querySelectorAll("div")).find((n) => n.textContent?.trim().toLowerCase() === expectedLabel.toLowerCase()) : null;
+      const centerDisclosure = artwork ? Array.from(artwork.querySelectorAll("div")).find((n) => n.textContent?.trim().toLowerCase() === "annonce indexée" && getComputedStyle(n).display !== "none") : null;
+      const ir = image?.getBoundingClientRect();
+      const lr = label?.getBoundingClientRect();
+      const fr = favorite?.getBoundingClientRect();
+      const footerText = provenance?.textContent?.replace(/\s+/g, " ").trim() ?? "";
+      const afterText = provenance ? getComputedStyle(provenance.querySelector("span:first-child"), "::after").content : "";
+      const sourceNode = provenance?.querySelector("[data-public-attribution]");
+      const sourceAfter = sourceNode ? getComputedStyle(sourceNode, "::after").content : "";
       return {
         key: artwork?.getAttribute("data-indexed-property-artwork") ?? null,
-        label: typeLabel?.textContent?.trim() ?? null,
+        label: label?.textContent?.trim() ?? null,
         priceColor: price ? getComputedStyle(price).color : null,
-        artworkImgs,
-        typeInsideImage: Boolean(typeRect && imageRect && typeRect.left >= imageRect.left && typeRect.right <= imageRect.right && typeRect.top >= imageRect.top && typeRect.bottom <= imageRect.bottom),
-        disclosureInsideImage: Boolean(disclosureRect && imageRect && disclosureRect.left >= imageRect.left && disclosureRect.right <= imageRect.right && disclosureRect.top >= imageRect.top && disclosureRect.bottom <= imageRect.bottom),
-        typeDisclosureOverlap: overlap(typeRect, disclosureRect),
-        typeFavoriteOverlap: overlap(typeRect, favoriteRect),
-        disclosureFavoriteOverlap: overlap(disclosureRect, favoriteRect),
-        finiteRect: Boolean(imageRect && Number.isFinite(imageRect.width) && Number.isFinite(imageRect.height) && imageRect.width > 0 && imageRect.height > 0),
-        hasPrice: Boolean(price?.textContent?.trim()),
-        hasTitle: Boolean(card.querySelector("[data-card-title]")?.textContent?.trim()),
-        hasLocation: Boolean(card.querySelector("[data-card-location]")?.textContent?.trim()),
-        hasFacts: Boolean(card.querySelector("[data-card-facts]")),
-        hasProvenance: Boolean(card.querySelector("[data-card-provenance]")),
+        thirdPartyImgs: artwork?.querySelectorAll("img").length ?? 0,
+        labelInside: Boolean(ir && lr && lr.left >= ir.left && lr.right <= ir.right && lr.top >= ir.top && lr.bottom <= ir.bottom),
+        labelFavoriteOverlap: overlap(lr, fr),
+        centerDisclosureVisible: Boolean(centerDisclosure),
+        footerIndexed: footerText.includes("Annonce indexée") || afterText.includes("Annonce indexée"),
+        footerSource: footerText.includes("Voir sur la source") || sourceAfter.includes("Voir sur la source"),
+        hierarchy: ["[data-card-price]", "[data-card-title]", "[data-card-location]", "[data-card-facts]", "[data-card-provenance]"].every((selector) => Boolean(card.querySelector(selector))),
+        finiteImage: Boolean(ir && ir.width > 0 && ir.height > 0 && Number.isFinite(ir.width) && Number.isFinite(ir.height)),
+        expectedKey: key,
       };
     });
     return {
       cardCount: cards.length,
       columns: grid ? getComputedStyle(grid).gridTemplateColumns.split(" ").filter(Boolean).length : 0,
-      scrollWidth: document.documentElement.scrollWidth,
-      clientWidth: document.documentElement.clientWidth,
-      uniqueKeys: new Set(cardAudits.map((item) => item.key)).size,
-      cards: cardAudits,
+      overflow: Math.max(0, document.documentElement.scrollWidth - document.documentElement.clientWidth),
+      uniqueKeys: new Set(audits.map((item) => item.key)).size,
+      cards: audits,
     };
   }, { expected });
 
   if (metrics.cardCount !== 6) failures.push(`${viewport.name}: expected 6 cards, got ${metrics.cardCount}`);
   if (metrics.columns !== viewport.columns) failures.push(`${viewport.name}: expected ${viewport.columns} columns, got ${metrics.columns}`);
-  if (metrics.scrollWidth > metrics.clientWidth + 1) failures.push(`${viewport.name}: horizontal overflow ${metrics.scrollWidth - metrics.clientWidth}px`);
-  if (metrics.uniqueKeys !== 6) failures.push(`${viewport.name}: expected 6 unique property visuals, got ${metrics.uniqueKeys}`);
+  if (metrics.overflow > 1) failures.push(`${viewport.name}: horizontal overflow ${metrics.overflow}px`);
+  if (metrics.uniqueKeys !== 6) failures.push(`${viewport.name}: expected 6 unique artwork keys, got ${metrics.uniqueKeys}`);
 
   metrics.cards.forEach((card, index) => {
-    const exp = expected[index];
-    if (card.key !== exp.key) failures.push(`${viewport.name}: card ${index + 1} expected ${exp.key}, got ${card.key}`);
-    if (card.label?.toLocaleLowerCase("fr") !== exp.label.toLocaleLowerCase("fr")) failures.push(`${viewport.name}: card ${index + 1} label drift (${card.label ?? "missing"})`);
-    if (card.priceColor !== exp.color) failures.push(`${viewport.name}: ${exp.key} price color ${card.priceColor} != ${exp.color}`);
-    if (card.artworkImgs !== 0) failures.push(`${viewport.name}: ${exp.key} indexed artwork contains third-party img element`);
-    if (!card.typeInsideImage || !card.disclosureInsideImage || !card.finiteRect) failures.push(`${viewport.name}: ${exp.key} artwork geometry invalid`);
-    if (card.typeDisclosureOverlap || card.typeFavoriteOverlap || card.disclosureFavoriteOverlap) failures.push(`${viewport.name}: ${exp.key} top-layer collision`);
-    if (!card.hasPrice || !card.hasTitle || !card.hasLocation || !card.hasFacts || !card.hasProvenance) failures.push(`${viewport.name}: ${exp.key} card hierarchy incomplete`);
+    const [key, label, color] = expected[index];
+    if (card.key !== key) failures.push(`${viewport.name}: ${index + 1} key ${card.key} != ${key}`);
+    if (card.label?.toLowerCase() !== label.toLowerCase()) failures.push(`${viewport.name}: ${key} label drift`);
+    if (card.priceColor !== color) failures.push(`${viewport.name}: ${key} color ${card.priceColor} != ${color}`);
+    if (card.thirdPartyImgs !== 0) failures.push(`${viewport.name}: ${key} contains img element`);
+    if (!card.labelInside || !card.finiteImage) failures.push(`${viewport.name}: ${key} geometry invalid`);
+    if (card.labelFavoriteOverlap) failures.push(`${viewport.name}: ${key} label/favorite collision`);
+    if (card.centerDisclosureVisible) failures.push(`${viewport.name}: ${key} centered indexed disclosure diverges from TARGET`);
+    if (!card.footerIndexed || !card.footerSource) failures.push(`${viewport.name}: ${key} TARGET footer missing`);
+    if (!card.hierarchy) failures.push(`${viewport.name}: ${key} hierarchy incomplete`);
   });
 
   const screenshot = path.join(outDir, `${viewport.name}.png`);
@@ -177,33 +156,18 @@ for (const viewport of viewports) {
   results.push({ ...viewport, ...metrics, screenshot });
   await context.close();
 }
-
 await browser.close();
 
 const axes = {
-  sixFamilies: failures.filter((item) => item.includes("expected 6") || item.includes("card ")).length === 0,
-  canonicalColors: failures.filter((item) => item.includes("price color")).length === 0,
-  proprietaryArtwork: failures.filter((item) => item.includes("third-party img")).length === 0,
-  geometry: failures.filter((item) => item.includes("geometry") || item.includes("collision") || item.includes("overflow") || item.includes("columns")).length === 0,
-  hierarchy: failures.filter((item) => item.includes("hierarchy")).length === 0,
+  sixFamilies: !failures.some((x) => x.includes("key") || x.includes("expected 6") || x.includes("label drift")),
+  colors: !failures.some((x) => x.includes(" color ")),
+  proprietaryArtwork: !failures.some((x) => x.includes("contains img")),
+  targetGeometry: !failures.some((x) => x.includes("geometry") || x.includes("collision") || x.includes("overflow") || x.includes("centered")),
+  targetCardHierarchy: !failures.some((x) => x.includes("footer") || x.includes("hierarchy") || x.includes("columns")),
 };
-const machineScore = (Object.values(axes).filter(Boolean).length / Object.keys(axes).length) * 10;
-const report = {
-  target: {
-    sha256: "004b46faab6a642674b9dac1eb623599418c3e22564884e38f2304725ce0909a",
-    dimensions: "1448x1086",
-  },
-  machineScore,
-  axes,
-  failures,
-  viewports: results,
-  note: "Machine score certifies implementation contracts only; final TARGET fidelity score requires human visual comparison.",
-};
-
+const machineScore = (Object.values(axes).filter(Boolean).length / 5) * 10;
+const report = { target: { sha256: targetSha256, dimensions: "1448x1086" }, machineScore, axes, failures, viewports: results, note: "Machine 10/10 is a contract score only. Final visual fidelity requires inspection against the locked TARGET." };
 await fs.writeFile(path.join(outDir, "metrics.json"), JSON.stringify(report, null, 2));
-await fs.writeFile(
-  path.join(outDir, "report.md"),
-  `# Search Property Type Visuals certification\n\nMachine contract: **${machineScore.toFixed(1)}/10**\n\nTARGET SHA-256: \`${report.target.sha256}\`\n\n${failures.length ? failures.map((item) => `- FAIL: ${item}`).join("\n") : "- PASS: six-family machine contract satisfied."}\n\nFinal visual fidelity to TARGET is scored separately after screenshot inspection.\n`,
-);
+await fs.writeFile(path.join(outDir, "report.md"), `# Search Property Type Visuals\n\nMachine contract: **${machineScore.toFixed(1)}/10**\nTARGET: \`${targetSha256}\`\n\n${failures.length ? failures.map((x) => `- FAIL: ${x}`).join("\n") : "- PASS: locked TARGET machine contract satisfied."}\n`);
 console.log(JSON.stringify(report, null, 2));
 if (failures.length || machineScore < 10) process.exit(1);
