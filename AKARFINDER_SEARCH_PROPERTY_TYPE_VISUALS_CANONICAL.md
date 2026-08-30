@@ -3,11 +3,12 @@
 ## Chantier
 AkarFinder — Search Property Type Visual System
 
-Statut : VALIDATED — PENDING MERGE
+Statut : CLOSED
 Date TARGET : 2026-08-30
-Branche : `feat/search-property-type-visuals`
+Branche de travail : `feat/search-property-type-visuals`
 Base de départ : `main@66715e555ccf1ee6f5edf82f1b69fc57a0587cb8`
-PR : `#951`
+PR : `#951` — MERGED
+Merge commit : `76553c7eb114e473c193d83540386f1d6268c3e2` — GitHub signature verified
 
 ## TARGET VISUEL — APPROVED / LOCKED
 
@@ -25,7 +26,7 @@ Règle : aucune régénération ou variation ne remplace cette identité sans no
 
 Reproduire dans le vrai `/search` le langage visuel du TARGET pour les annonces indexées sans photo, en faisant dépendre l’illustration principale du **type de bien** plutôt que du seul type de transaction, sans modifier ranking, données métier ou DB.
 
-## Succès observable
+## Succès observable — PROUVÉ
 
 1. Six familles immédiatement distinctes : Appartement / Villa / Terrain / Bureau / Local commercial / Riad.
 2. Illustration et couleur conformes au TARGET pour chaque famille.
@@ -136,49 +137,29 @@ Tous les workflows observés associés à `9e1f990…` sont `completed/success`,
 - `Canonical Baseline Compile Validation` `33323814293` ✅
 - `Canonical Baseline Validation` `33323814342` ✅
 
-Aucun rouge observé sur cette vague exacte.
+Aucun rouge observé sur la vague produit exacte.
 
-## Roadmap
+## Merge / post-merge — VÉRIFIÉ
 
-### L0 — TARGET / canonique — CLOSED
-- [x] TARGET verrouillé par SHA-256
-- [x] Goal / succès / preuve / score définis
+- le connecteur `mark ready` a échoué sur un bug GraphQL `fullDatabaseId`, sans impact produit ;
+- merge-ref GitHub vérifié : `76553c7eb114e473c193d83540386f1d6268c3e2` ;
+- parent 1 : `66715e555ccf1ee6f5edf82f1b69fc57a0587cb8` ;
+- parent 2 : `f161a6d184c354ffccf6db6b64d5bdd8199a9e8c` ;
+- signature GitHub : `verified=true`, reason `valid` ;
+- `main` a été avancé sur ce merge-ref avec `force=false` ;
+- GitHub reconnaît PR #951 : `closed`, `merged=true`, `merged_at=2026-08-30T17:59:00Z`.
 
-### L1 — Taxonomie visuelle — CLOSED
-- [x] six familles
-- [x] aliases sûrs
-- [x] anti-faux-positifs
+## Roadmap finale
 
-### L2 — Illustrations premium — CLOSED
-- [x] assets TARGET locaux
-- [x] six couleurs canoniques
-- [x] Riad corrigé après inspection réelle
-
-### L3 — Intégration Search — CLOSED
-- [x] vrai composant produit
-- [x] source/favorite/facts préservés
-- [x] ranking/data/DB inchangés
-
-### L4 — Tests / CI — CLOSED
-- [x] contrats statiques
-- [x] TypeScript
-- [x] build production
-- [x] runtime Playwright
-- [x] gates Search/UI croisés
-
-### L5 — AFTER / score — CLOSED
-- [x] 4 viewports
-- [x] comparaison TARGET
-- [x] score final 10/10
-
-### L6 — Closeout — ACTIVE
-- [x] validation fonctionnelle et visuelle
-- [x] canonique final préparé
-- [ ] PR ready
-- [ ] merge
-- [ ] post-merge vérifié
+- [x] L0 — TARGET / canonique
+- [x] L1 — Taxonomie visuelle
+- [x] L2 — Illustrations premium
+- [x] L3 — Intégration Search
+- [x] L4 — Tests / CI
+- [x] L5 — AFTER / score 10/10
+- [x] L6 — Merge / post-merge
 
 ## NEXT EXACT
-Marquer la PR #951 ready, merger après vérification des exigences GitHub, vérifier `main`/merge commit, puis mettre ce canonique à `CLOSED` en post-merge.
+Aucune action restante connue dans ce chantier.
 
 Aucun déploiement Vercel n'a été réalisé dans ce chantier.
