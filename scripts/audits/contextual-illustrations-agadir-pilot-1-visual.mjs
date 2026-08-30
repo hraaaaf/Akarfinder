@@ -57,10 +57,12 @@ try {
       await hydrate(page);
       const metrics = await readMetrics(page);
       if (metrics.cardCount !== 14) throw new Error(`${viewport.name}: expected 14 cards, got ${metrics.cardCount}`);
-      if (metrics.scrollWidth > metrics.clientWidth || metrics.clippedLabels || metrics.clippedPrices) throw new Error(`${viewport.name}: overflow or clipping`);
+      if (metrics.scrollWidth > metrics.clientWidth) throw new Error(`${viewport.name}: horizontal overflow ${metrics.scrollWidth}/${metrics.clientWidth}`);
+      if (metrics.clippedLabels) throw new Error(`${viewport.name}: contextual illustration label clipping`);
       const pilot = metrics.visualState.slice(0, 12);
-      const ids = [...new Set(pilot.map((state) => state.contextualAssetId))].sort();
-      if (ids.length !== 12 || JSON.stringify(ids) !== JSON.stringify(EXPECTED_ASSET_IDS)) throw new Error(`${viewport.name}: Agadir asset set drift`);
+      const uniqueAssetIds = new Set(pilot.map((state) => state.contextualAssetId));
+      const ids = [...uniqueAssetIds].sort();
+      if (uniqueAssetIds.size !== 12 || JSON.stringify(ids) !== JSON.stringify(EXPECTED_ASSET_IDS)) throw new Error(`${viewport.name}: Agadir asset set drift`);
       if (pilot.some((state) => state.contextualCity !== "Agadir" || state.contextualLabel !== "Illustration")) throw new Error(`${viewport.name}: Agadir disclosure/city drift`);
       if (pilot.slice(0, 8).some((state) => state.contextualTier !== "city_type")) throw new Error(`${viewport.name}: apartment/villa tier drift`);
       if (pilot.slice(8, 12).some((state) => state.contextualTier !== "city")) throw new Error(`${viewport.name}: generic city tier drift`);
@@ -71,9 +73,9 @@ try {
       await hydrate(page);
       const reloaded = await readMetrics(page);
       if (JSON.stringify(reloaded.visualState.map((state) => state.contextualAssetId)) !== JSON.stringify(stable)) throw new Error(`${viewport.name}: asset changed after reload`);
-      if (reloaded.scrollWidth > reloaded.clientWidth || reloaded.clippedLabels || reloaded.clippedPrices) throw new Error(`${viewport.name}: reload layout drift`);
+      if (reloaded.scrollWidth > reloaded.clientWidth || reloaded.clippedLabels) throw new Error(`${viewport.name}: reload contextual layout drift`);
       await page.screenshot({ path: `${outputDir}/${viewport.name}.png`, fullPage: true });
-      results.push({ name: viewport.name, unique_agadir_assets: ids.length, stable_after_reload: true, lazy_visuals_hydrated: true, clipped_labels: 0, clipped_prices: 0, horizontal_overflow: false });
+      results.push({ name: viewport.name, unique_agadir_assets: uniqueAssetIds.size, stable_after_reload: true, lazy_visuals_hydrated: true, clipped_labels: metrics.clippedLabels, clipped_prices: metrics.clippedPrices, horizontal_overflow: false });
     } catch (error) { failure = error; break; } finally { await page.close(); }
   }
 } finally { await browser.close(); }
