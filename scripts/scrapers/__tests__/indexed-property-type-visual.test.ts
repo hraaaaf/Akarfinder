@@ -36,6 +36,13 @@ describe("SEARCH-PROPERTY-TYPE-VISUALS-1", () => {
     assert.equal(getIndexedPropertyTypeVisual("Bureau", "Retail unit").key, "commercial");
   });
 
+  it("keeps an explicit métier type ahead of incidental title vocabulary", () => {
+    assert.equal(getIndexedPropertyTypeVisual("Appartement", "Appartement avec coin bureau").key, "apartment");
+    assert.equal(getIndexedPropertyTypeVisual("Villa", "Villa proche des commerces").key, "villa");
+    assert.equal(getIndexedPropertyTypeVisual("Terrain", "Terrain idéal pour bureaux").key, "land");
+    assert.equal(getIndexedPropertyTypeVisual("Riad", "Riad avec boutique artisanale").key, "riad");
+  });
+
   it("fails safely to a neutral visual", () => {
     assert.equal(getIndexedPropertyTypeVisual("Autre", "Bien atypique").key, "unknown");
     assert.equal(INDEXED_PROPERTY_TYPE_VISUALS.unknown.label, "Bien");
