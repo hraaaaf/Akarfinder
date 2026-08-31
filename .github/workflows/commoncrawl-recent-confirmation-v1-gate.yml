@@ -5,6 +5,7 @@ on:
     paths:
       - "supabase/migrations/20260830230000_commoncrawl_recent_confirmation_v1.sql"
       - "supabase/migrations/20260830235900_commoncrawl_recent_confirmation_v1_1_normalization.sql"
+      - "supabase/migrations/20260831094500_commoncrawl_recent_confirmation_v1_2_city_recovery.sql"
       - "scripts/openserp/__tests__/commoncrawl-recent-confirmation-v1.test.ts"
       - ".github/workflows/commoncrawl-recent-confirmation-v1-gate.yml"
   workflow_dispatch:
