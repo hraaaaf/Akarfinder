@@ -105,6 +105,8 @@ const DOMAIN_RULES: Record<string, PathRules> = {
   },
 };
 
+const AVITO_REAL_ESTATE_DETAIL_PATH = /^\/fr\/[^/]+\/(?:appartements|villas_et_riads|terrains_et_fermes|local|bureaux|maisons_et_villas|autre_immobilier|autres_immobilier|magasins_et_commerces|locations_de_vacances)\/.+_\d{7,}\.htm\/?$/i;
+
 function normalizeClassificationText(value: string): string {
   return value
     .toLowerCase()
@@ -157,7 +159,10 @@ function detectUrlSignals(domain: string, canonicalUrl: string): {
   const rules = DOMAIN_RULES[domain];
   const forceReject = rules?.forceReject?.some((pattern) => pattern.test(pathname)) ?? false;
   const forceDiscovery = rules?.forceDiscovery?.some((pattern) => pattern.test(pathname)) ?? false;
-  const strongIndividual = getListingUrlPatterns(domain).some((pattern) => pattern.test(pathname));
+  const registryStrongIndividual = getListingUrlPatterns(domain).some((pattern) => pattern.test(pathname));
+  const strongIndividual = domain === "avito.ma"
+    ? registryStrongIndividual && AVITO_REAL_ESTATE_DETAIL_PATH.test(pathname)
+    : registryStrongIndividual;
 
   if (forceReject) reasons.push("force_reject_path");
   if (forceDiscovery) reasons.push("discovery_path");
@@ -212,9 +217,16 @@ function classifyLane(input: {
   const hasDiscoveryToken = DISCOVERY_TOKENS.some((token) => input.text.includes(token)) || ARABIC_DISCOVERY_TOKENS.some((token) => input.text.includes(token));
   const detailLanguage = /\b(superficie|chambres?|terrasse|residence|situe|idealement|magnifique|visite|plain-pied)\b/.test(input.text);
   const detailSignalCount = [hasPrice, hasSurface, hasBedrooms, detailLanguage].filter(Boolean).length;
-  const explicitLocationMatchesQuery =
+  const locationMatchesQuery =
     (!explicitCity || explicitCity === input.query.city) &&
     (!explicitDistrict || explicitDistrict.city === input.query.city);
+  const avitoExactLocationOverride =
+    input.domain === "avito.ma" &&
+    urlSignals.strongIndividual &&
+    !urlSignals.forceDiscovery &&
+    Boolean(explicitCity || explicitDistrict) &&
+    !locationMatchesQuery;
+  const explicitLocationMatchesQuery = locationMatchesQuery || avitoExactLocationOverride;
   const ambiguousStrongPath = urlSignals.strongIndividual && isAmbiguousStrongPath(input.domain, input.canonicalUrl);
 
   const hasRealEstateSignal = REAL_ESTATE_TOKENS.some((token) => input.text.includes(token)) || hasArabicRealEstateSignal(input.text);
@@ -257,6 +269,7 @@ function classifyLane(input: {
   if (hasSurface) reasons.push("surface_signal");
   if (hasBedrooms) reasons.push("bedroom_signal");
   if (hasArabicRealEstateSignal(multilingualDetailText)) reasons.push("arabic_real_estate_signal");
+  if (avitoExactLocationOverride) reasons.push("avito_exact_re_path_location_authoritative");
 
   if (urlSignals.forceDiscovery) {
     return { lane: "discovery_page", reasons };
