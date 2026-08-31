@@ -10,12 +10,19 @@ const normalizationMigration = readFileSync(
   resolve("supabase/migrations/20260830235900_commoncrawl_recent_confirmation_v1_1_normalization.sql"),
   "utf8",
 );
+const cityRecoveryMigration = readFileSync(
+  resolve("supabase/migrations/20260831094500_commoncrawl_recent_confirmation_v1_2_city_recovery.sql"),
+  "utf8",
+);
 
 function baseIncludes(fragment: string, message: string) {
   assert.ok(baseMigration.includes(fragment), message);
 }
 function normalizationIncludes(fragment: string, message: string) {
   assert.ok(normalizationMigration.includes(fragment), message);
+}
+function cityIncludes(fragment: string, message: string) {
+  assert.ok(cityRecoveryMigration.includes(fragment), message);
 }
 
 baseIncludes("odm_commoncrawl_recent_confirmation_snapshot_v1", "reversible snapshot table is required");
@@ -63,6 +70,16 @@ for (const fragment of [
   normalizationIncludes(fragment, `missing canonical normalization contract: ${fragment}`);
 }
 
+for (const [needle, label] of [
+  ["dar[ -]?bouazza", "Dar Bouazza"],
+  ["benslimane", "Benslimane"],
+  ["bouznika", "Bouznika"],
+] as const) {
+  cityIncludes(needle, `missing safe city recovery for ${label}`);
+  cityIncludes(`then '${label}'`, `missing canonical city value for ${label}`);
+}
+assert.ok(!/then\s+'M'?diq/i.test(cityRecoveryMigration), "ambiguous M'diq-Fnideq URL must remain fail-closed");
+
 normalizationIncludes("freshness_status = 'fresh_confirmed'", "activation must explicitly confirm freshness");
 normalizationIncludes("fresh_last_seen_at = s.last_observed_at", "freshness timestamp must come from persisted CDX observation");
 normalizationIncludes("commoncrawl_recent_cdx", "dedicated freshness channel is required");
@@ -73,9 +90,9 @@ normalizationIncludes("document_kind = 'LISTING'", "activation must require list
 normalizationIncludes("document_kind_confidence = 'HIGH'", "listing activation must remain HIGH confidence");
 normalizationIncludes("if v_after <> v_before + v_prepared", "activation must assert exact strict-serving delta");
 
-const combined = `${baseMigration}\n${normalizationMigration}`;
+const combined = `${baseMigration}\n${normalizationMigration}\n${cityRecoveryMigration}`;
 assert.ok(!/\b(insert|update|delete)\s+(into\s+|from\s+)?public\.property_listings\b/i.test(combined), "must not mutate property_listings");
 assert.ok(!/\b(insert|update|delete)\s+(into\s+|from\s+)?public\.listing_sources\b/i.test(combined), "must not mutate listing_sources");
 assert.ok(!/\b(fetch|curl|wget|http_get|net\.http)\s*\(/i.test(combined), "migrations must not perform network access");
 
-console.log("commoncrawl recent confirmation v1.1 contract: PASS");
+console.log("commoncrawl recent confirmation v1.2 contract: PASS");
