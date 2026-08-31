@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
-**Version : 2026-08-25**  
-**Statut : DATA MASS-INDEX CLOSED / INGESTION INCIDENTS CLOSED**
+**Version : 2026-08-31**  
+**Statut : DATA MASS-INDEX CLOSED / ACQUISITION VOLUME SAFE CONVERSION CLOSED**
 
 Ce fichier est l’unique vérité canonique globale pour l’ordre des chantiers, leur état et leur progression.
 
@@ -69,8 +69,24 @@ Aucun contournement login/CAPTCHA/paywall/anti-bot. Aucun contenu riche externe 
 
 Les quatre incidents sont fermés par preuve. Les erreurs PostgreSQL `ON CONFLICT DO UPDATE command cannot affect row a second time` observées avant le correctif ne réapparaissent pas dans la fenêtre du run certifiant de 20:02Z à 20:07Z.
 
+### Acquisition volume — Seed Mass Conversion — 2026-08-31 ✅ CLOSED
+
+Closeout : `docs/COMMONCRAWL_RECENT_CONFIRMATION_V1_2_CLOSEOUT.md`.
+
+- provenance CDX certifiée jusqu’à `source_offer_seeds.last_observed_at` ;
+- 4 758 / 4 758 seeds V1 passent le gate exact-URL : aucun élargissement regex requis ;
+- 13 captures restaient dans la fenêtre policy de 14 jours ; le seul blocage commun était la ville ;
+- récupération fail-closed retenue : 12 URLs, 10 identifiants provider numériques distincts ; `M'diq-Fnideq` reste exclu ;
+- PR #957 ; merge `9fbfc94e784ed0602aafd0e7f95a2b15700b413b` ; gate `33380261508` SUCCESS ;
+- migration live `20260831100334 commoncrawl_recent_confirmation_v1_2_city_recovery` ;
+- batch `cb4aedee-1f8a-410e-b9de-c3c9abd348c1` : 12/12 activées ;
+- strict-served : **2 005 -> 2 017**, delta **+12 exact** ;
+- 12/12 `fresh_confirmed`, 12/12 LISTING HIGH, 0 titre/snippet/prix/surface exposé ;
+- candidats V1.2 restants : 0 ;
+- aucun déploiement Vercel.
+
 ### Next exact
-MASS-INDEX et ce chantier d’incidents ingestion sont fermés. Tout nouveau défaut ou travail de croissance corpus doit être ouvert comme un nouveau lot avec ses propres gates.
+Seed Mass Conversion est fermé. Le prochain lot de croissance doit mesurer en lecture seule le réservoir **Common Crawl récent + policy admissible hors allowlist V1**, puis ne proposer une extension que si le rendement net est significatif et sans fausse fraîcheur.
 
 ---
 
