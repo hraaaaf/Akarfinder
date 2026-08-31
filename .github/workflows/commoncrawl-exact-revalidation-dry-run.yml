@@ -1,0 +1,58 @@
+name: Common Crawl Exact Revalidation Dry Run
+
+on:
+  push:
+    branches:
+      - ops/commoncrawl-exact-revalidation-dry-run
+    paths:
+      - "lib/acquisition-scale-v1/commoncrawl-exact-revalidation.ts"
+      - "scripts/openserp/commoncrawl-exact-revalidation-dry-run.ts"
+      - "scripts/openserp/__tests__/commoncrawl-exact-revalidation-dry-run.test.ts"
+      - ".github/workflows/commoncrawl-exact-revalidation-dry-run.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: commoncrawl-exact-revalidation-dry-run
+  cancel-in-progress: false
+
+jobs:
+  measure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Exact revalidation contract
+        run: npx tsx --test scripts/openserp/__tests__/commoncrawl-exact-revalidation-dry-run.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Measure exact CDX revalidation yield
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          CC_EXACT_BATCH_PER_SOURCE: "20"
+        run: npx tsx scripts/openserp/commoncrawl-exact-revalidation-dry-run.ts
+
+      - name: Upload measurement artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: commoncrawl-exact-revalidation-dry-run
+          path: data/audits/runtime/commoncrawl-exact-revalidation-dry-run.json
+          if-no-files-found: warn
+          retention-days: 7
