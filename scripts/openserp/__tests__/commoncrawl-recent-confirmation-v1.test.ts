@@ -70,14 +70,20 @@ for (const fragment of [
   normalizationIncludes(fragment, `missing canonical normalization contract: ${fragment}`);
 }
 
-for (const [needle, label] of [
-  ["dar[ -]?bouazza", "Dar Bouazza"],
-  ["benslimane", "Benslimane"],
-  ["bouznika", "Bouznika"],
+cityIncludes("create or replace function public.odm_commoncrawl_recent_city_v1", "isolated Common Crawl city helper is required");
+for (const [domainFragment, label] of [
+  ["immo-dar-bouazza", "Dar Bouazza"],
+  ["immo-benslimane", "Benslimane"],
+  ["-bouznika/[0-9]+/?$", "Bouznika"],
 ] as const) {
-  cityIncludes(needle, `missing safe city recovery for ${label}`);
+  cityIncludes(domainFragment, `missing domain/path-scoped recovery for ${label}`);
   cityIncludes(`then '${label}'`, `missing canonical city value for ${label}`);
 }
+cityIncludes("public.odm_commoncrawl_recent_city_v1(s.source_domain,s.canonical_url) is not null", "candidate gate must use isolated city helper");
+cityIncludes("normalized_city = public.odm_commoncrawl_recent_city_v1(d.source_domain,d.canonical_url)", "activation must persist isolated city recovery");
+cityIncludes("d.normalized_city is distinct from public.odm_commoncrawl_recent_city_v1(d.source_domain,d.canonical_url)", "activation leak gate must verify isolated city recovery");
+assert.ok(!cityRecoveryMigration.includes("create or replace function public.odm03_recover_city"), "v1.2 must not replace global city recovery");
+assert.ok(!cityRecoveryMigration.includes("create or replace function public.odm04_normalize_city"), "v1.2 must not replace global city normalization");
 assert.ok(!/then\s+'M'?diq/i.test(cityRecoveryMigration), "ambiguous M'diq-Fnideq URL must remain fail-closed");
 
 normalizationIncludes("freshness_status = 'fresh_confirmed'", "activation must explicitly confirm freshness");
@@ -89,6 +95,9 @@ normalizationIncludes("'content_reuse',false", "freshness evidence must record n
 normalizationIncludes("document_kind = 'LISTING'", "activation must require listing document kind");
 normalizationIncludes("document_kind_confidence = 'HIGH'", "listing activation must remain HIGH confidence");
 normalizationIncludes("if v_after <> v_before + v_prepared", "activation must assert exact strict-serving delta");
+cityIncludes("'activation_version','odm_commoncrawl_recent_confirmation_v1_2'", "v1.2 freshness evidence version is required");
+cityIncludes("'content_reuse',false", "v1.2 must preserve no-content-reuse evidence");
+cityIncludes("if v_after <> v_before + v_prepared", "v1.2 must preserve exact strict-serving delta assertion");
 
 const combined = `${baseMigration}\n${normalizationMigration}\n${cityRecoveryMigration}`;
 assert.ok(!/\b(insert|update|delete)\s+(into\s+|from\s+)?public\.property_listings\b/i.test(combined), "must not mutate property_listings");
