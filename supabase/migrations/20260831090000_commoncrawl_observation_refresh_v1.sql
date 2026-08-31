@@ -75,16 +75,16 @@ begin
   loop
     if r.canonical_url is null
       or r.source_domain is null
-      or r.seed_provider <> 'commoncrawl_cdx'
+      or r.seed_provider is distinct from 'commoncrawl_cdx'
       or r.first_observed_at is null
       or r.last_observed_at is null
       or r.first_observed_at > r.last_observed_at
       or r.last_observed_at > now() + interval '5 minutes'
       or r.metadata is null
-      or r.metadata ->> 'source' <> 'commoncrawl_url_index'
-      or r.metadata ->> 'listing_pattern_matched' <> 'true'
-      or jsonb_typeof(r.metadata -> 'cdx_indexes_seen') <> 'array'
-      or jsonb_array_length(r.metadata -> 'cdx_indexes_seen') = 0
+      or r.metadata ->> 'source' is distinct from 'commoncrawl_url_index'
+      or r.metadata ->> 'listing_pattern_matched' is distinct from 'true'
+      or jsonb_typeof(r.metadata -> 'cdx_indexes_seen') is distinct from 'array'
+      or coalesce(jsonb_array_length(r.metadata -> 'cdx_indexes_seen'), 0) = 0
       or not (coalesce(r.metadata -> 'status_codes_observed', '[]'::jsonb) ? '200')
       or not exists (
         select 1
