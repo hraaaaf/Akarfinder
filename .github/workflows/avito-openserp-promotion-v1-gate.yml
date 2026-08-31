@@ -1,0 +1,31 @@
+name: Avito OpenSERP Promotion V1 Gate
+
+on:
+  pull_request:
+    paths:
+      - "supabase/migrations/20260831212000_avito_openserp_promotion_v1.sql"
+      - "scripts/openserp/__tests__/avito-openserp-promotion-v1.test.ts"
+      - ".github/workflows/avito-openserp-promotion-v1-gate.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Avito OpenSERP promotion contract
+        run: npx tsx scripts/openserp/__tests__/avito-openserp-promotion-v1.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
