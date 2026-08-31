@@ -43,12 +43,12 @@
     {
       "domain": "avito.ma",
       "status": "approved_discovery",
-      "listing_url_patterns": ["/fr/.+/.+_\\d+\\.htm$"],
+      "listing_url_patterns": ["^/fr/[^/]+/(?:appartements|villas_et_riads|terrains_et_fermes|local|bureaux|maisons_et_villas|autre_immobilier|autres_immobilier|magasins_et_commerces|locations_de_vacances)/.+_\\d{7,}\\.htm/?$"],
       "blocked_url_patterns": ["/sp/immobilier/", "/fr/.+/(?:appartements|villas|terrains|bureaux).+_vendre$", "/fr/.+/(?:appartements|villas|terrains|bureaux).+_louer$"],
       "source_type": "classifieds_marketplace",
       "external_web_result": true,
-      "compliance_note": "Already live in Production via first-write pilot.",
-      "reviewed_at": "2026-07-17",
+      "compliance_note": "Already live in Production via first-write pilot. 2026-08-31 pattern narrowed to explicit real-estate category detail routes with terminal 7+ digit listing IDs, excluding same-shaped Avito marketplace pages such as vetements, meubles and arts_et_collections.",
+      "reviewed_at": "2026-08-31",
       "coverage_cities": null
     },
     {
