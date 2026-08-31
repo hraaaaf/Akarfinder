@@ -1,0 +1,31 @@
+name: Avito Classification Recovery V1 Gate
+
+on:
+  pull_request:
+    paths:
+      - "lib/openserp-ingestion/classify.ts"
+      - "scripts/openserp/__tests__/avito-classification-recovery-v1.test.ts"
+      - ".github/workflows/avito-classification-recovery-v1-gate.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Avito classification recovery contract
+        run: npx tsx scripts/openserp/__tests__/avito-classification-recovery-v1.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
