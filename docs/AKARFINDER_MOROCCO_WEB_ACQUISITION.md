@@ -101,7 +101,7 @@ Certified evidence:
 
 Interpretation boundary: these are discovered public real-estate candidate URLs. They are not yet equivalent to validated canonical production listings.
 
-State: NUMERIC GATE PROVEN. L1 remains open only for PR/CI merge and post-merge closeout.
+State: NUMERIC GATE PROVEN. L1 remains open only for PR transition from draft, merge and post-merge closeout.
 
 ### L2 — Portal Acquisition Adapters
 
@@ -230,16 +230,17 @@ L1 therefore measures **net discoverable public real-estate inventory across mul
 
 1. Numeric discovery gate certified — DONE.
 2. Evidence artifact retained — DONE.
-3. Canonical evidence recorded — DONE in this commit.
+3. Canonical evidence recorded — DONE.
 4. PR runtime scope annotation aligned with repository audit policy — DONE.
-5. CI on closeout HEAD — PENDING.
-6. Merge PR #966 when required checks are green.
-7. Verify post-merge main.
-8. Mark L1 CLOSED and activate L2 on the post-merge baseline.
+5. CI on closeout HEAD `31b24ac0f3cfcfa2eb70228a94fa2261d85194a5` — DONE: 7/7 observed PR workflows SUCCESS, including Canonical Baseline Validation `33550930002` and Canonical Baseline Compile Validation `33550929999`.
+6. Transition PR #966 from draft to ready — BLOCKED by GitHub connector GraphQL schema error (`Repository.fullDatabaseId` undefined). Direct merge correctly refuses while the PR remains draft.
+7. Merge PR #966 once the draft-state transition succeeds.
+8. Verify post-merge main.
+9. Mark L1 CLOSED and activate L2 on the post-merge baseline.
 
 ## Current progress
 
-L1: GATE PROVEN — CLOSEOUT IN PROGRESS.
+L1: GATE PROVEN — CLOSEOUT BLOCKED ONLY ON PR DRAFT-STATE TRANSITION.
 L2-L9: NOT STARTED for credit purposes.
 
 Overall program percentage: intentionally not assigned until the first lot is fully merged and post-merge certified.
