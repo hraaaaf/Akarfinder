@@ -8,19 +8,70 @@ import {
   DEFAULT_UA,
   KNOWN_PORTAL_HOSTS,
   classifyFetchOutcome,
+  extractXmlLocs,
   isMoroccanHost,
+  normalizeHttpsUrl,
+  parseRobotsSitemaps,
   selectLatestCrawl,
 } from './commoncrawl-open-web-mesh.mjs';
 import {
   DOMAIN_FIRST_MAX_SITEMAPS,
   DOMAIN_FIRST_SEED_PROBES,
   DOMAIN_FIRST_TOP_SEEDS,
-  validateSeedDomain,
 } from './commoncrawl-domain-first.mjs';
 
 export const LIVE_SEED_PATTERN = '*.ma/*immo*';
 export const LIVE_SEED_LIMIT = 1000;
-const SEED_RE = /(?:immo|immobilier|property|agence|habitat|maison|home|realestate|annonce|bien|appart|villa|terrain|riad|vente|location|residence)/i;
+
+const STRICT_HOST_RE = /(?:immo|immobilier|property|realestate)/i;
+const STRICT_PROPERTY_TOKENS = new Set([
+  'immo',
+  'immobilier',
+  'immobiliere',
+  'immobiliers',
+  'immobilieres',
+  'appartement',
+  'appartements',
+  'appart',
+  'studio',
+  'studios',
+  'villa',
+  'villas',
+  'terrain',
+  'terrains',
+  'maison',
+  'maisons',
+  'riad',
+  'riads',
+  'residence',
+  'residences',
+  'property',
+  'properties',
+  'realestate',
+]);
+
+function normalizedTokens(value) {
+  let decoded = String(value || '');
+  try { decoded = decodeURIComponent(decoded); } catch {}
+  return decoded
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter(Boolean);
+}
+
+export function isStrictPropertyUrl(rawUrl) {
+  try {
+    const u = new URL(rawUrl);
+    const host = u.hostname.toLowerCase();
+    if (STRICT_HOST_RE.test(host)) return true;
+    const tokens = normalizedTokens(`${u.pathname} ${u.search}`);
+    return tokens.some((token) => STRICT_PROPERTY_TOKENS.has(token));
+  } catch {
+    return false;
+  }
+}
 
 async function fetchText(url, { fetchImpl, timeoutMs, userAgent }) {
   const controller = new AbortController();
@@ -98,7 +149,7 @@ export function rankLiveSeedDomains(records, knownHosts = KNOWN_PORTAL_HOSTS) {
     try { u = new URL(record.url); } catch { continue; }
     const host = u.hostname.toLowerCase();
     if (!isMoroccanHost(host) || knownHosts.has(host)) continue;
-    if (!SEED_RE.test(`${host}${u.pathname}${u.search}`)) continue;
+    if (!isStrictPropertyUrl(record.url)) continue;
 
     const current = byHost.get(host) || { host, urls: new Set() };
     current.urls.add(record.url);
@@ -110,7 +161,7 @@ export function rankLiveSeedDomains(records, knownHosts = KNOWN_PORTAL_HOSTS) {
       host: item.host,
       urls: [...item.urls].sort(),
       urlCount: item.urls.size,
-      score: Math.min(item.urls.size, 100) + (SEED_RE.test(item.host) ? 10 : 0),
+      score: Math.min(item.urls.size, 100) + (STRICT_HOST_RE.test(item.host) ? 10 : 0),
     }))
     .sort((a, b) => b.score - a.score || b.urlCount - a.urlCount || a.host.localeCompare(b.host));
 }
@@ -130,6 +181,106 @@ async function queryLiveSeeds({ crawl, fetchImpl, timeoutMs, userAgent, queryLim
   const records = request.classification === 'ok' ? parsePublicSeedCdxJsonLines(response.text) : [];
   if (request.classification === 'ok' && records.length === 0) request.classification = 'schema_drift:no_records';
   return { request, records };
+}
+
+export async function validateStrictSeedDomain({
+  domain,
+  fetchImpl,
+  timeoutMs = DEFAULT_TIMEOUT_MS,
+  userAgent = DEFAULT_UA,
+  maxSitemaps = DOMAIN_FIRST_MAX_SITEMAPS,
+  seedProbes = DOMAIN_FIRST_SEED_PROBES,
+}) {
+  const requests = [];
+  const sitemapCandidates = new Set();
+  const probeCandidates = new Set();
+  const sitemapQueue = [];
+  const seenSitemaps = new Set();
+
+  const robotsUrl = `https://${domain.host}/robots.txt`;
+  const robots = await fetchText(robotsUrl, { fetchImpl, timeoutMs, userAgent });
+  const robotsRequest = requestRecord(robotsUrl, 'domain:robots', robots, 'any');
+  requests.push(robotsRequest);
+  if (robotsRequest.classification === 'http_429') {
+    return { validated: false, requests, candidateUrls: [], stoppedEarly: 'http_429', sitemapCandidateCount: 0, probeOkCount: 0 };
+  }
+  if (robots.status >= 200 && robots.status < 300) {
+    for (const sitemap of parseRobotsSitemaps(robots.text, domain.host)) sitemapQueue.push(sitemap);
+  }
+  sitemapQueue.push(`https://${domain.host}/sitemap.xml`, `https://${domain.host}/sitemap_index.xml`);
+
+  while (sitemapQueue.length && seenSitemaps.size < maxSitemaps) {
+    const sitemapUrl = sitemapQueue.shift();
+    if (seenSitemaps.has(sitemapUrl)) continue;
+    seenSitemaps.add(sitemapUrl);
+    const response = await fetchText(sitemapUrl, { fetchImpl, timeoutMs, userAgent });
+    const request = requestRecord(sitemapUrl, 'domain:sitemap', response, 'xml');
+    requests.push(request);
+    if (request.classification === 'http_429') {
+      return {
+        validated: false,
+        requests,
+        candidateUrls: [],
+        stoppedEarly: 'http_429',
+        sitemapCandidateCount: sitemapCandidates.size,
+        probeOkCount: probeCandidates.size,
+      };
+    }
+    if (request.classification !== 'ok') continue;
+
+    for (const raw of extractXmlLocs(response.text)) {
+      const normalized = normalizeHttpsUrl(raw, sitemapUrl);
+      if (!normalized) continue;
+      let u;
+      try { u = new URL(normalized); } catch { continue; }
+      if (u.hostname.toLowerCase() !== domain.host) continue;
+      if (/\.xml(?:$|\?)/i.test(u.pathname + u.search) && seenSitemaps.size + sitemapQueue.length < maxSitemaps) {
+        sitemapQueue.push(normalized);
+      } else if (isStrictPropertyUrl(normalized)) {
+        sitemapCandidates.add(normalized);
+      }
+    }
+  }
+
+  for (const seedUrl of domain.urls.slice(0, seedProbes)) {
+    if (!isStrictPropertyUrl(seedUrl)) continue;
+    const response = await fetchText(seedUrl, { fetchImpl, timeoutMs, userAgent });
+    const request = requestRecord(seedUrl, 'domain:seed-probe', response, 'any');
+    requests.push(request);
+    if (request.classification === 'http_429') {
+      return {
+        validated: false,
+        requests,
+        candidateUrls: [],
+        stoppedEarly: 'http_429',
+        sitemapCandidateCount: sitemapCandidates.size,
+        probeOkCount: probeCandidates.size,
+      };
+    }
+    if (
+      response.status >= 200 && response.status < 300 &&
+      /text\/html/i.test(response.contentType || '')
+    ) {
+      probeCandidates.add(seedUrl);
+    }
+  }
+
+  const sitemapCandidateCount = sitemapCandidates.size;
+  const probeOkCount = probeCandidates.size;
+  const validated = (
+    sitemapCandidateCount >= 3 ||
+    probeOkCount >= 2 ||
+    (sitemapCandidateCount >= 1 && probeOkCount >= 1)
+  );
+
+  return {
+    validated,
+    requests,
+    candidateUrls: validated ? [...new Set([...sitemapCandidates, ...probeCandidates])].sort() : [],
+    stoppedEarly: null,
+    sitemapCandidateCount,
+    probeOkCount,
+  };
 }
 
 export async function discoverLiveDomainFirst({
@@ -181,7 +332,7 @@ export async function discoverLiveDomainFirst({
   let stoppedEarly = null;
 
   for (const domain of seedDomains.slice(0, topSeeds)) {
-    const validation = await validateSeedDomain({ domain, fetchImpl, timeoutMs, userAgent, maxSitemaps, seedProbes });
+    const validation = await validateStrictSeedDomain({ domain, fetchImpl, timeoutMs, userAgent, maxSitemaps, seedProbes });
     requests.push(...validation.requests);
     validationEvidence.push({
       host: domain.host,
@@ -218,7 +369,7 @@ export async function runCli() {
   const ccQueries = result.requests.filter((request) => request.role === 'commoncrawl:live-domain-seeds');
   const report = {
     startedAt: new Date().toISOString(),
-    strategy: 'domain-first-http-aware',
+    strategy: 'domain-first-http-aware-strict',
     crawl: result.crawl,
     zeroDbWrites: result.zeroDbWrites,
     stoppedEarly: result.stoppedEarly,
@@ -251,7 +402,7 @@ export async function runCli() {
   await fs.mkdir(outDir, { recursive: true });
   await fs.writeFile(path.join(outDir, 'report.json'), JSON.stringify(report, null, 2));
   await fs.writeFile(path.join(outDir, 'report.md'), [
-    '# L3 Common Crawl Open-Web Mesh — domain-first HTTP-aware strategy',
+    '# L3 Common Crawl Open-Web Mesh — domain-first HTTP-aware strict strategy',
     '',
     `- Success: **${report.success ? 'YES' : 'NO'}**`,
     `- Crawl: **${report.crawl || 'none'}**`,
