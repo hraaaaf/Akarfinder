@@ -158,6 +158,7 @@ function normalizePropertyType(v?: string): string | undefined {
   if (n === "appartement" || n === "apartment") return "apartment";
   if (n === "villa") return "villa";
   if (n === "terrain" || n === "land") return "land";
+  if (n === "riad") return "riad";
   if (n === "bureau" || n === "office") return "office";
   return v;
 }

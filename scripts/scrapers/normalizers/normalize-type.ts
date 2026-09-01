@@ -6,12 +6,22 @@ export function normalizeType(raw: string | null | undefined): PropertyTypeP0 {
   if (raw == null) return "unknown";
   const s = String(raw).toLowerCase();
 
-  if (/appartement|appart\b|apartment|flat|studio|duplex/.test(s)) return "apartment";
-  if (/villa|riad|maison|house|townhouse/.test(s)) return "villa";
-  if (/terrain|land|lot\b|parcelle|ferme|farm/.test(s)) return "land";
-  if (/bureau|local|office|plateau|commerce|magasin|shop|depot/.test(s)) return "office";
+  const candidates: Array<{ type: PropertyTypeP0; index: number }> = [];
+  const patterns: Array<[PropertyTypeP0, RegExp]> = [
+    ["apartment", /appartement|appart\b|apartment|flat|studio|duplex/],
+    ["land", /terrain|land|lot\b|parcelle|ferme|farm/],
+    ["riad", /riad/],
+    ["villa", /villa|maison|house|townhouse/],
+    ["office", /bureau|local|office|plateau|commerce|magasin|shop|depot/],
+  ];
 
-  return "unknown";
+  for (const [type, pattern] of patterns) {
+    const match = pattern.exec(s);
+    if (match?.index != null) candidates.push({ type, index: match.index });
+  }
+
+  candidates.sort((a, b) => a.index - b.index);
+  return candidates[0]?.type ?? "unknown";
 }
 
 export function normalizeTransaction(
