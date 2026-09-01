@@ -1,0 +1,61 @@
+name: Avito Direct Public Canary
+
+on:
+  workflow_dispatch:
+    inputs:
+      sample:
+        description: Detail page sample size
+        required: false
+        default: '100'
+  push:
+    branches:
+      - spike/avito-direct-public-acquisition
+    paths:
+      - 'scripts/audits/avito-direct-public-canary.mjs'
+      - '.github/workflows/avito-direct-public-canary.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: avito-direct-public-canary-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  canary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Run public-only Avito canary
+        env:
+          SAMPLE: ${{ github.event.inputs.sample || '100' }}
+        run: |
+          node scripts/audits/avito-direct-public-canary.mjs \
+            --sample "$SAMPLE" \
+            --concurrency 2 \
+            --timeout-ms 12000 \
+            --max-sitemaps 40
+
+      - name: Publish report in job summary
+        if: always()
+        run: |
+          if [ -f artifacts/avito-direct-public-canary/report.md ]; then
+            cat artifacts/avito-direct-public-canary/report.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload canary evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: avito-direct-public-canary-${{ github.run_id }}
+          path: artifacts/avito-direct-public-canary/
+          if-no-files-found: warn
+          retention-days: 14
