@@ -148,6 +148,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         <PropertyQuickPreview />
         <LightZillowSearchShell
           initialListings={initialSearchResult.listings}
+          initialTotal={initialSearchResult.total}
           projectId={requestedProjectId}
           initialFilters={{
             transactionType,

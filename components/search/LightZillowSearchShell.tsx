@@ -30,6 +30,7 @@ import { getSearchViewLayout } from "@/lib/ux/search-view";
 
 type LightZillowSearchShellProps = {
   initialListings: Listing[];
+  initialTotal: number;
   initialFilters?: Partial<ListingFiltersState>;
   projectId?: string;
 };
@@ -136,7 +137,7 @@ function EmptyState({ onReset, city }: { onReset: () => void; city?: string }) {
   );
 }
 
-export function LightZillowSearchShell({ initialListings, initialFilters, projectId }: LightZillowSearchShellProps) {
+export function LightZillowSearchShell({ initialListings, initialTotal, initialFilters, projectId }: LightZillowSearchShellProps) {
   const [filters, setFilters] = useState<ListingFiltersState>({
     ...defaultListingFilters,
     transactionType: initialFilters?.transactionType ?? defaultListingFilters.transactionType,
@@ -151,6 +152,7 @@ export function LightZillowSearchShell({ initialListings, initialFilters, projec
   const [view, setView] = useState<SearchViewMode>("split");
   const [sortBy, setSortBy] = useState<SortBy>("recommended");
   const [listings, setListings] = useState(initialListings);
+  const [searchTotalCount, setSearchTotalCount] = useState(initialTotal);
   const [isLoading, setIsLoading] = useState(true);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [hasMoreIndexed, setHasMoreIndexed] = useState(false);
@@ -201,7 +203,10 @@ export function LightZillowSearchShell({ initialListings, initialFilters, projec
         const response = await fetch(buildSearchUrl(filters, sortBy), { cache: "no-store" });
         if (!response.ok || cancelled) return;
         const payload = (await response.json()) as ApiSearchResponse;
-        if (!cancelled) setListings(payload.listings);
+        if (!cancelled) {
+          setListings(payload.listings);
+          setSearchTotalCount(payload.total);
+        }
       } catch {
         // Preserve the previous stable result set on transient failures.
       } finally {
@@ -388,9 +393,11 @@ export function LightZillowSearchShell({ initialListings, initialFilters, projec
   }, [filters]);
 
   const loadedResultCount = filteredListings.length + gatewayResults.length;
-  const totalResultCount = indexedTotalCount == null
-    ? loadedResultCount
-    : Math.max(indexedTotalCount, loadedResultCount);
+  const totalResultCount = Math.max(
+    searchTotalCount,
+    indexedTotalCount ?? 0,
+    loadedResultCount,
+  );
   const isSearching = isLoading || isGatewayLoading;
   const hasAnyResults = loadedResultCount > 0;
   const showSkeleton = isLoading && filteredListings.length === 0 && gatewayResults.length === 0;
