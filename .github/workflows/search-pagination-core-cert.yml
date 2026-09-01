@@ -1,0 +1,119 @@
+name: Search Pagination Core Cert
+
+on:
+  push:
+    branches: [agent/search-pagination-24]
+    paths: [.github/workflows/search-pagination-core-cert.yml]
+
+permissions:
+  contents: write
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/search-pagination-24
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+
+      - name: Patch pagination core
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def once(path, old, new, label):
+              p = Path(path); text = p.read_text(); count = text.count(old)
+              if count != 1: raise SystemExit(f'{label}: expected 1 match, got {count}')
+              p.write_text(text.replace(old, new, 1))
+
+          once('lib/search/search-request-query.ts',
+            '  const query: SearchQuery = {\n    // Keep the established first public tranche: the page shell, SSR and API\n    // must all hash and serve the same 100-result request when no limit is sent.\n    limit: parseBoundedInteger(read("limit"), 100, 1, 100),\n    offset: parseBoundedInteger(read("offset"), 0, 0, Number.MAX_SAFE_INTEGER),\n  };\n',
+            '  const rawOffset = read("offset");\n  const query: SearchQuery = {\n    // Keep the established first public tranche: the page shell, SSR and API\n    // must all hash and serve the same 100-result request when no limit is sent.\n    limit: parseBoundedInteger(read("limit"), 100, 1, 100),\n  };\n  // Offset is intentionally presence-sensitive. Numbered pagination explicitly\n  // sends offset=0 on page 1 so all numbered pages stay on the same legacy lane;\n  // historical requests that omit offset preserve the ODM canary behavior.\n  if (rawOffset !== undefined) {\n    query.offset = parseBoundedInteger(rawOffset, 0, 0, Number.MAX_SAFE_INTEGER);\n  }\n',
+            'presence-sensitive offset')
+
+          once('lib/search/search-request-query.ts',
+            '    offset: query.offset ?? null,\n',
+            '    // Before offset became presence-sensitive, omitted offsets normalized to 0.\n    // Keep that exact stable-key value so existing canary assignment does not move.\n    offset: query.offset ?? 0,\n',
+            'stable key compatibility')
+
+          once('lib/odm/odm-public-routing.ts',
+            '  return !query.district?.trim();\n',
+            '  // The ODM RPC is cursor-based and has no numeric offset. Never silently\n  // discard an explicit numbered-page offset, including page 1 offset=0.\n  return query.offset === undefined && !query.district?.trim();\n',
+            'odm offset guard')
+
+          once('lib/search/database-search.ts',
+            '  const legacyOffset = Math.max(query.offset ?? 0, 0);\n  const usingCursor = query.cursor != null;\n  let scanCursor = Math.max(query.cursor ?? 0, 0);\n  const targetMatches = usingCursor ? limit : legacyOffset + limit;\n',
+            '  const explicitNumberedOffset = query.offset !== undefined;\n  const legacyOffset = Math.max(query.offset ?? 0, 0);\n  const usingCursor = query.cursor != null;\n  // Explicit numbered pages must rank the same bounded candidate universe before\n  // slicing. Otherwise page 1 ranks 24 candidates while page 2 ranks 48 and the\n  // ranking can move records across page boundaries.\n  const scanFullRankedSet = explicitNumberedOffset && !usingCursor;\n  let scanCursor = Math.max(query.cursor ?? 0, 0);\n  const targetMatches = usingCursor ? limit : legacyOffset + limit;\n',
+            'full ranked set mode')
+
+          once('lib/search/database-search.ts',
+            '  while (matchedListings.length < targetMatches && scannedRows < MAX_DB_ROWS_SCANNED_PER_REQUEST) {\n',
+            '  while ((scanFullRankedSet || matchedListings.length < targetMatches) && scannedRows < MAX_DB_ROWS_SCANNED_PER_REQUEST) {\n',
+            'scan loop condition')
+
+          once('lib/search/database-search.ts',
+            '      if (matchedListings.length >= targetMatches || scannedRows >= MAX_DB_ROWS_SCANNED_PER_REQUEST) {\n',
+            '      if ((!scanFullRankedSet && matchedListings.length >= targetMatches) || scannedRows >= MAX_DB_ROWS_SCANNED_PER_REQUEST) {\n',
+            'batch stop condition')
+
+          once('lib/search/database-search.ts',
+            '  const hasMore = scanCursor < rawTotal;\n',
+            '  const hasMore = usingCursor\n    ? scanCursor < rawTotal\n    : scanFullRankedSet\n      ? legacyOffset + listings.length < matchedListings.length || scanCursor < rawTotal\n      : scanCursor < rawTotal;\n',
+            'numbered has more')
+          PY
+
+      - name: Certify offset routing semantics
+        run: |
+          cat > /tmp/pagination-core-cert.ts <<'TS'
+          import assert from 'node:assert/strict';
+          import { buildSearchRequestQuery, buildSearchStableKey } from './lib/search/search-request-query';
+          import { supportsOdmPublicSearchQuery } from './lib/odm/odm-public-routing';
+          import { searchDatabase } from './lib/search/database-search';
+
+          const from = (params: Record<string,string>) => buildSearchRequestQuery((name) => params[name]);
+          const legacy = from({ limit: '24' });
+          const page1 = from({ limit: '24', offset: '0' });
+          const page2 = from({ limit: '24', offset: '24' });
+          assert.equal(legacy.offset, undefined);
+          assert.equal(page1.offset, 0);
+          assert.equal(page2.offset, 24);
+          assert.equal(supportsOdmPublicSearchQuery(legacy), true);
+          assert.equal(supportsOdmPublicSearchQuery(page1), false);
+          assert.equal(supportsOdmPublicSearchQuery(page2), false);
+          assert.equal(JSON.parse(buildSearchStableKey(legacy)).offset, 0);
+
+          const first = await searchDatabase({ limit: 24, offset: 0 });
+          const second = await searchDatabase({ limit: 24, offset: 24 });
+          const firstAgain = await searchDatabase({ limit: 24, offset: 0 });
+          const ids1 = first.listings.map((x) => String(x.id));
+          const ids2 = second.listings.map((x) => String(x.id));
+          const ids1Again = firstAgain.listings.map((x) => String(x.id));
+          assert.ok(first.total > 24, `fixture total too small: ${first.total}`);
+          assert.ok(ids1.length <= 24 && ids2.length <= 24);
+          assert.deepEqual(ids1Again, ids1, 'page 1 order must be repeatable');
+          const overlap = ids1.filter((id) => new Set(ids2).has(id));
+          assert.deepEqual(overlap, [], `page overlap: ${overlap.join(',')}`);
+          assert.equal(first.offset, 0);
+          assert.equal(second.offset, 24);
+          console.log(JSON.stringify({ total: first.total, page1: ids1.length, page2: ids2.length, overlap: overlap.length, stableRepeat: true }, null, 2));
+          TS
+          npx tsx /tmp/pagination-core-cert.ts
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+      - name: Build
+        run: npm run build
+
+      - name: Commit core fix
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add lib/search/search-request-query.ts lib/odm/odm-public-routing.ts lib/search/database-search.ts
+          git commit -m 'fix(search): make numbered pagination stable'
+          git push origin HEAD:agent/search-pagination-24
