@@ -7,6 +7,7 @@ on:
       - feat/morocco-web-l3-commoncrawl-mesh
     paths:
       - 'scripts/acquisition/commoncrawl-open-web-mesh.mjs'
+      - 'scripts/acquisition/commoncrawl-open-web-single-query.mjs'
       - 'scripts/acquisition/__tests__/commoncrawl-open-web-mesh.test.mjs'
       - '.github/workflows/morocco-web-l3-commoncrawl-mesh.yml'
       - 'docs/AKARFINDER_MOROCCO_WEB_ACQUISITION.md'
@@ -35,7 +36,7 @@ jobs:
         run: node --test scripts/acquisition/__tests__/commoncrawl-open-web-mesh.test.mjs
 
       - name: Live public dry-run
-        run: node scripts/acquisition/commoncrawl-open-web-mesh.mjs
+        run: node scripts/acquisition/commoncrawl-open-web-single-query.mjs
 
       - name: Publish evidence summary
         if: always()
