@@ -12,6 +12,7 @@ on:
       - spike/avito-direct-public-acquisition
     paths:
       - 'scripts/audits/avito-direct-public-canary.mjs'
+      - 'scripts/audits/avito-public-surface-map.mjs'
       - '.github/workflows/avito-direct-public-canary.yml'
 
 permissions:
@@ -34,6 +35,9 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Map Avito public homepage surfaces
+        run: node scripts/audits/avito-public-surface-map.mjs
+
       - name: Run public-only Avito real-estate census
         env:
           SAMPLE: ${{ github.event.inputs.sample || '100' }}
@@ -45,10 +49,14 @@ jobs:
             --max-pages 60 \
             --max-depth 2
 
-      - name: Publish report in job summary
+      - name: Publish reports in job summary
         if: always()
         run: |
+          if [ -f artifacts/avito-public-surface-map/report.md ]; then
+            cat artifacts/avito-public-surface-map/report.md >> "$GITHUB_STEP_SUMMARY"
+          fi
           if [ -f artifacts/avito-direct-public-canary/report.md ]; then
+            printf '\n\n' >> "$GITHUB_STEP_SUMMARY"
             cat artifacts/avito-direct-public-canary/report.md >> "$GITHUB_STEP_SUMMARY"
           fi
 
@@ -57,6 +65,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: avito-direct-public-canary-${{ github.run_id }}
-          path: artifacts/avito-direct-public-canary/
+          path: |
+            artifacts/avito-public-surface-map/
+            artifacts/avito-direct-public-canary/
           if-no-files-found: warn
           retention-days: 14
