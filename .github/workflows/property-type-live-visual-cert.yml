@@ -1,0 +1,87 @@
+name: Property Type Live Visual Cert
+
+on:
+  push:
+    branches:
+      - agent/property-type-live-visual-cert
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Capture live corrected cards
+        shell: bash
+        run: |
+          mkdir -p data/audits/property-type-live-visual-cert
+          cat > /tmp/cert.mjs <<'JS'
+          import { chromium } from 'playwright';
+          import fs from 'node:fs';
+
+          const cases = [
+            {
+              slug: 'terrain-sonaba',
+              url: 'https://akarfinder.vercel.app/search?property_type=Terrain&q=sonaba',
+              title: 'Terrain pour villa à sonaba agadir Mubawab',
+              expectedType: 'Terrain',
+            },
+            {
+              slug: 'riad-gueliz',
+              url: 'https://akarfinder.vercel.app/search?property_type=Riad&q=gu%C3%A9liz',
+              title: 'Riad A vendre Guéliz marrakech Villas et Riads... Avito.ma',
+              expectedType: 'Riad',
+            },
+          ];
+          const viewports = [
+            { name: '390x844', width: 390, height: 844 },
+            { name: '430x932', width: 430, height: 932 },
+            { name: '768x900', width: 768, height: 900 },
+            { name: '1280x900', width: 1280, height: 900 },
+          ];
+
+          const browser = await chromium.launch({ headless: true });
+          const report = [];
+          for (const c of cases) {
+            for (const vp of viewports) {
+              const page = await browser.newPage({ viewport: { width: vp.width, height: vp.height } });
+              const consoleErrors = [];
+              const failedResponses = [];
+              page.on('console', msg => { if (msg.type() === 'error') consoleErrors.push(msg.text()); });
+              page.on('response', res => { if (res.status() >= 400) failedResponses.push(`${res.status()} ${res.url()}`); });
+              await page.goto(c.url, { waitUntil: 'domcontentloaded', timeout: 60000 });
+              await page.waitForTimeout(3000);
+              const card = page.locator('[data-search-listing-card]').filter({ hasText: c.title }).first();
+              await card.waitFor({ state: 'visible', timeout: 30000 });
+              const text = await card.innerText();
+              if (!text.includes(c.expectedType)) throw new Error(`${c.slug} ${vp.name}: missing type ${c.expectedType}\n${text}`);
+              if (c.expectedType !== 'Villa' && /\bVilla\b/.test(text.split('\n').slice(0,6).join('\n'))) {
+                throw new Error(`${c.slug} ${vp.name}: card still exposes Villa in top card content\n${text}`);
+              }
+              await card.scrollIntoViewIfNeeded();
+              await page.waitForTimeout(300);
+              const path = `data/audits/property-type-live-visual-cert/${c.slug}-${vp.name}.png`;
+              await card.screenshot({ path });
+              const bodyWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+              if (bodyWidth > vp.width + 1) throw new Error(`${c.slug} ${vp.name}: horizontal overflow ${bodyWidth}>${vp.width}`);
+              report.push({ case: c.slug, viewport: vp.name, expectedType: c.expectedType, consoleErrors, failedResponses, screenshot: path });
+              await page.close();
+            }
+          }
+          await browser.close();
+          fs.writeFileSync('data/audits/property-type-live-visual-cert/report.json', JSON.stringify(report, null, 2));
+          JS
+          node /tmp/cert.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: property-type-live-visual-cert
+          path: data/audits/property-type-live-visual-cert
+          if-no-files-found: error
