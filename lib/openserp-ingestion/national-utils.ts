@@ -190,8 +190,21 @@ function extractStructuredPortalDistrict(value: string): StructuredDistrictResul
   return null;
 }
 
+function extractAvitoTitleCity(normalized: string): string | null {
+  if (!normalized.includes("avito ma")) return null;
+  for (const entry of NATIONAL_CITY_ALIASES) {
+    for (const alias of entry.aliases) {
+      if (!alias) continue;
+      if (normalized.includes(` a ${alias} avito ma`)) return entry.city;
+    }
+  }
+  return null;
+}
+
 export function extractCityNational(value: string): string | null {
   const normalized = normalizeText(value);
+  const avitoTitleCity = extractAvitoTitleCity(` ${normalized} `);
+  if (avitoTitleCity) return avitoTitleCity;
   for (const entry of NATIONAL_CITY_ALIASES) {
     if (entry.aliases.some((alias) => alias.length > 0 && normalized.includes(alias))) {
       return entry.city;
@@ -206,7 +219,9 @@ export function extractDistrictNational(value: string): { city: string; district
   if (structured?.kind === "ambiguous") return null;
 
   const normalized = normalizeText(value);
+  const explicitCity = extractCityNational(value);
   for (const entry of NATIONAL_DISTRICT_ALIASES) {
+    if (explicitCity && entry.city !== explicitCity) continue;
     if (entry.aliases.some((alias) => normalized.includes(alias))) {
       return { city: entry.city, district: entry.district };
     }
