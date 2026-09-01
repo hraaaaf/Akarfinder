@@ -4,6 +4,7 @@ import { createHash } from "node:crypto";
 import { readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { decideAdmission, type AdmissionDecision } from "@/lib/openserp-ingestion/national-admission";
+import { buildQueryUniverseV2 } from "@/lib/openserp-ingestion/query-universe-v2";
 import type { OpenSerpIngestionQuery } from "@/lib/openserp-ingestion/types";
 import {
   AVITO_PUBLIC_INDEX_REPLAY_EXPECTED_QUERY_IDS,
@@ -63,8 +64,27 @@ function extractQueries(parsed: unknown): QueryDefinition[] {
   throw new Error("Unsupported query-universe JSON shape");
 }
 
+function tx(def: QueryDefinition): string | undefined {
+  return def.transaction ?? def.transaction_type;
+}
+
+function baseIdentity(def: QueryDefinition): string {
+  return JSON.stringify({
+    query_id: def.query_id,
+    city: def.city ?? null,
+    district: def.district ?? null,
+    transaction: tx(def) ?? null,
+    property_type: def.property_type ?? null,
+    language: typeof def.language === "string" ? def.language : null,
+    query_text: def.query_text ?? null,
+    priority_tier: def.priority_tier ?? null,
+    target_domain: def.target_domain ?? null,
+    query_family: def.query_family ?? null,
+  });
+}
+
 function toQuery(def: QueryDefinition): OpenSerpIngestionQuery {
-  const transaction = def.transaction ?? def.transaction_type;
+  const transaction = tx(def);
   if (transaction !== "sale" && transaction !== "rent") throw new Error(`invalid transaction for ${def.query_id}`);
   if (typeof def.city !== "string" || typeof def.property_type !== "string" || typeof def.query_text !== "string") {
     throw new Error(`incomplete query definition for ${def.query_id}`);
@@ -103,7 +123,15 @@ const snapshotBytes = readFileSync(snapshotPath);
 const catalogBytes = readFileSync(catalogPath);
 const snapshot = JSON.parse(snapshotBytes.toString("utf8")) as Snapshot;
 const catalog = extractQueries(JSON.parse(catalogBytes.toString("utf8")));
-const byId = new Map(catalog.map((def) => [def.query_id, def]));
+const v2 = buildQueryUniverseV2().queries as QueryDefinition[];
+const byId = new Map(v2.map((def) => [def.query_id, def]));
+
+for (const v1 of catalog) {
+  const generated = byId.get(v1.query_id);
+  if (!generated || baseIdentity(generated) !== baseIdentity(v1)) {
+    throw new Error(`V1/V2 base drift at ${v1.query_id}`);
+  }
+}
 
 if (snapshot.scope.rows !== AVITO_PUBLIC_INDEX_REPLAY_EXPECTED_ROWS || snapshot.rows.length !== AVITO_PUBLIC_INDEX_REPLAY_EXPECTED_ROWS) {
   throw new Error(`snapshot row count drift: ${snapshot.scope.rows}/${snapshot.rows.length}`);
@@ -113,7 +141,7 @@ if (snapshot.scope.query_ids !== AVITO_PUBLIC_INDEX_REPLAY_EXPECTED_QUERY_IDS) {
 }
 
 const unresolved = [...AVITO_PUBLIC_INDEX_REPLAY_QUERY_IDS].filter((id) => !byId.has(id));
-if (unresolved.length > 0) throw new Error(`official catalog missing ${unresolved.length} target query IDs: ${unresolved.join(",")}`);
+if (unresolved.length > 0) throw new Error(`certified V2 extension missing ${unresolved.length} target query IDs: ${unresolved.join(",")}`);
 
 const replayed: Array<{
   discovery_id: string;
@@ -154,6 +182,7 @@ const manifestCore = {
   event: "AVITO_PUBLIC_INDEX_REPLAY_MANIFEST",
   catalog_path: "data/openserp/query-universe-v1.json",
   catalog_sha256: sha256(catalogBytes),
+  query_universe_v2_version: "openserp-query-universe-v2",
   snapshot_sha256: sha256(snapshotBytes),
   scope: snapshot.scope,
   replayed_rows: replayed.length,
@@ -181,7 +210,8 @@ writeFileSync(outputPath, JSON.stringify(manifest, null, 2));
 
 console.log(JSON.stringify({
   event: "AVITO_PUBLIC_INDEX_REPLAY_CLASSIFIER_OK",
-  catalog_rows: catalog.length,
+  official_catalog_rows: catalog.length,
+  generated_v2_rows: v2.length,
   resolved_query_ids: AVITO_PUBLIC_INDEX_REPLAY_QUERY_IDS.length,
   replayed_rows: replayed.length,
   accepted_unique_urls: accepted.length,
