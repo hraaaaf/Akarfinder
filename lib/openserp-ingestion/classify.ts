@@ -129,6 +129,23 @@ function hasArabicTransaction(value: string): boolean {
   return ["للبيع", "بيع", "للإيجار", "للايجار", "إيجار", "ايجار", "للكراء", "الكراء", "كراء"].some((token) => value.includes(token));
 }
 
+function arabicTransactionType(value: string): "sale" | "rent" | null {
+  if (["للبيع", "بيع"].some((token) => value.includes(token))) return "sale";
+  if (["للإيجار", "للايجار", "إيجار", "ايجار", "للكراء", "الكراء", "كراء"].some((token) => value.includes(token))) return "rent";
+  return null;
+}
+
+function arabicPropertyType(value: string): "apartment" | "villa" | "studio" | "house" | "land" | "office" | "commercial" | null {
+  if (value.includes("استوديو")) return "studio";
+  if (value.includes("فيلا")) return "villa";
+  if (value.includes("ارض") || value.includes("أرض")) return "land";
+  if (value.includes("محل تجاري") || value.includes("متجر")) return "commercial";
+  if (value.includes("مكتب")) return "office";
+  if (value.includes("منزل")) return "house";
+  if (value.includes("شقة")) return "apartment";
+  return null;
+}
+
 function hasExplicitVacationIntent(value: string): boolean {
   return /\b(vacances?|vacation|saisonnier|saisonniere|airbnb|appart[- ]hotel|riad touristique)\b/.test(value) ||
     ["عطلة", "العطل", "يومي", "سياحي"].some((token) => value.includes(token));
@@ -319,11 +336,8 @@ function extractAttributes(input: {
 }) {
   const extractCityFn = input.extractCityFn ?? extractCity;
   const extractDistrictFn = input.extractDistrictFn ?? extractDistrict;
-  const combinedText = normalizeClassificationText([
-    input.title,
-    input.snippet,
-    input.canonicalUrl,
-  ].filter(Boolean).join(" "));
+  const rawContent = [input.title, input.snippet, input.canonicalUrl].filter(Boolean).join(" ");
+  const combinedText = normalizeClassificationText(rawContent);
   const explicitDistrict = extractDistrictFn(combinedText);
   const explicitCity = extractCityFn(combinedText);
   const extractedCity = explicitDistrict?.city ?? explicitCity ?? input.query.city;
@@ -331,8 +345,12 @@ function extractAttributes(input: {
     explicitDistrict?.district ??
     (explicitCity === input.query.city ? input.query.district : null);
 
-  const transactionFromContent = toTransactionType([input.title, input.snippet, input.canonicalUrl].filter(Boolean).join(" "));
-  const propertyTypeFromContent = toPropertyType([input.title, input.snippet, input.canonicalUrl].filter(Boolean).join(" "));
+  const latinTransactionFromContent = toTransactionType(rawContent);
+  const transactionFromContent = latinTransactionFromContent ?? arabicTransactionType(combinedText);
+  const latinPropertyTypeFromContent = toPropertyType(rawContent);
+  const propertyTypeFromContent = latinPropertyTypeFromContent ?? arabicPropertyType(combinedText);
+  const hasExplicitTransactionSignal = latinTransactionFromContent !== null || hasArabicTransaction(combinedText);
+  const hasExplicitPropertySignal = latinPropertyTypeFromContent !== null || hasArabicPropertyType(combinedText);
   const price = parsePriceMad([input.title, input.snippet].filter(Boolean).join(" "));
   const surface = parseSurfaceM2([input.title, input.snippet].filter(Boolean).join(" "));
 
@@ -341,8 +359,8 @@ function extractAttributes(input: {
     short_description: input.snippet,
     city: extractedCity,
     district: extractedDistrict,
-    transaction_type: transactionFromContent ?? input.query.transaction_type,
-    property_type: propertyTypeFromContent ?? toPropertyType(input.query.property_type),
+    transaction_type: transactionFromContent ?? (hasExplicitTransactionSignal ? null : input.query.transaction_type),
+    property_type: propertyTypeFromContent ?? (hasExplicitPropertySignal ? null : toPropertyType(input.query.property_type)),
     price_mad: price,
     currency: price ? ("MAD" as const) : null,
     surface_m2: surface,
