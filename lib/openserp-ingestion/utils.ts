@@ -235,6 +235,19 @@ export function parseSurfaceM2(text: string): number | null {
 
 export function toPropertyType(value: string | undefined): "apartment" | "villa" | "studio" | "house" | "land" | "office" | "commercial" | null {
   if (!value) return null;
+
+  // Explicit Arabic listing evidence outranks generic Latin portal category
+  // labels (e.g. "Villas et Riads", "Appartements") appended by Avito.
+  // Unsupported explicit types stay null rather than inheriting the category.
+  if (value.includes("استوديو")) return "studio";
+  if (value.includes("فيلا")) return "villa";
+  if (value.includes("أرض") || value.includes("ارض")) return "land";
+  if (value.includes("محل تجاري") || value.includes("متجر")) return "commercial";
+  if (value.includes("مكتب")) return "office";
+  if (value.includes("منزل")) return "house";
+  if (value.includes("شقة")) return "apartment";
+  if (["رياض", "عمارة", "مزرعة", "دوبلكس"].some((token) => value.includes(token))) return null;
+
   const normalized = normalizeText(value);
   if (normalized.includes("appart hotel") || normalized.includes("appart-hotel") || normalized.includes("villa hotel")) {
     return null;
@@ -251,6 +264,12 @@ export function toPropertyType(value: string | undefined): "apartment" | "villa"
 
 export function toTransactionType(value: string | undefined): "sale" | "rent" | null {
   if (!value) return null;
+
+  // Arabic intent is explicit listing content and must beat generic portal
+  // phrases such as "plateforme N°1 de vente et achat" in the same snippet.
+  if (["للبيع", "بيع"].some((token) => value.includes(token))) return "sale";
+  if (["للإيجار", "للايجار", "إيجار", "ايجار", "للكراء", "الكراء", "كراء"].some((token) => value.includes(token))) return "rent";
+
   const normalized = normalizeText(value);
   if (TOURISM_TOKENS.some((token) => normalized.includes(token))) {
     return null;
