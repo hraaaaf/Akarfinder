@@ -185,8 +185,13 @@ export async function searchDatabase(query: SearchQuery = {}): Promise<SearchRes
     : Promise.resolve(null);
 
   const limit = Math.min(Math.max(query.limit ?? 50, 1), 100);
+  const explicitNumberedOffset = query.offset !== undefined;
   const legacyOffset = Math.max(query.offset ?? 0, 0);
   const usingCursor = query.cursor != null;
+  // Explicit numbered pages must rank the same bounded candidate universe before
+  // slicing. Otherwise page 1 ranks 24 candidates while page 2 ranks 48 and the
+  // ranking can move records across page boundaries.
+  const scanFullRankedSet = explicitNumberedOffset && !usingCursor;
   let scanCursor = Math.max(query.cursor ?? 0, 0);
   const targetMatches = usingCursor ? limit : legacyOffset + limit;
   const matchedListings: Listing[] = [];
@@ -200,7 +205,7 @@ export async function searchDatabase(query: SearchQuery = {}): Promise<SearchRes
   const cityVariants = query.city ? getCitySearchVariants(query.city) : [];
   const dbCityFilter = cityVariants.length <= 1 ? query.city : undefined;
 
-  while (matchedListings.length < targetMatches && scannedRows < MAX_DB_ROWS_SCANNED_PER_REQUEST) {
+  while ((scanFullRankedSet || matchedListings.length < targetMatches) && scannedRows < MAX_DB_ROWS_SCANNED_PER_REQUEST) {
     const batchStart = scanCursor;
     const base = await queryListings({
       city: dbCityFilter,
@@ -233,7 +238,7 @@ export async function searchDatabase(query: SearchQuery = {}): Promise<SearchRes
       if (!listing || !matchesFilters(listing, query)) continue;
       matchedListings.push(listing);
 
-      if (matchedListings.length >= targetMatches || scannedRows >= MAX_DB_ROWS_SCANNED_PER_REQUEST) {
+      if ((!scanFullRankedSet && matchedListings.length >= targetMatches) || scannedRows >= MAX_DB_ROWS_SCANNED_PER_REQUEST) {
         stoppedInsideBatch = true;
         break;
       }
@@ -247,7 +252,11 @@ export async function searchDatabase(query: SearchQuery = {}): Promise<SearchRes
   const listings = usingCursor
     ? sorted.slice(0, limit)
     : sorted.slice(legacyOffset, legacyOffset + limit);
-  const hasMore = scanCursor < rawTotal;
+  const hasMore = usingCursor
+    ? scanCursor < rawTotal
+    : scanFullRankedSet
+      ? legacyOffset + listings.length < matchedListings.length || scanCursor < rawTotal
+      : scanCursor < rawTotal;
   const structuredDistrictTotal = await structuredDistrictTotalPromise;
 
   if (process.env.NODE_ENV !== "production") {

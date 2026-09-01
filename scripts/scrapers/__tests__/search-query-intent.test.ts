@@ -123,7 +123,7 @@ describe("Structured intent inferred from free-text Search", () => {
     const databaseSearch = source("lib/search/database-search.ts");
     const searchPage = source("app/search/page.tsx");
     assert.ok(databaseSearch.includes("enrichSearchQueryWithTextIntent(query)"));
-    assert.ok(searchPage.includes("const resolvedQuery = buildSearchPageQuery(params)"));
+    assert.ok(searchPage.includes("const resolvedQuery = buildSearchPageQuery(pagedParams)"));
     assert.ok(searchPage.includes("city = resolvedQuery.city"));
     assert.ok(searchPage.includes("normalizePropertyType(resolvedQuery.property_type)"));
   });
@@ -186,7 +186,7 @@ describe("CARTE-QUARTIER-P1A.2 — structured district Search contract", () => {
     const routing = source("lib/odm/odm-public-routing.ts");
     const api = source("app/api/search/route.ts");
     assert.ok(routing.includes("export function supportsOdmPublicSearchQuery"));
-    assert.ok(routing.includes("return !query.district?.trim()"));
+    assert.ok(routing.includes("return query.offset === undefined && !query.district?.trim()"));
     assert.ok(routing.includes("odmCapable && shouldServeOdmPublicCanary"));
     assert.ok(api.includes("if (!supportsOdmPublicSearchQuery(query)) return"));
   });

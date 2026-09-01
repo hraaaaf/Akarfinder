@@ -73,7 +73,7 @@ describe("SEARCH-CONTINUOUS-FLOW-1", () => {
 
     assert.ok(shell.includes("partitionCommercialSearchListings(filteredListings)"));
     assert.ok(shell.includes("return sortListings(clientFiltered, sortBy);"));
-    assert.ok(shell.includes("buildSearchUrl(filters, sortBy)"));
+    assert.ok(shell.includes("buildSearchUrl(filters, sortBy, currentPage)"));
     assert.ok(shell.includes("buildGatewayUrl(filters)"));
   });
 });

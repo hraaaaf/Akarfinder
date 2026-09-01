@@ -123,8 +123,15 @@ async function searchVisibleInitialResult(
 
 export default async function SearchPage({ searchParams }: SearchPageProps) {
   const params = searchParams ? await searchParams : {};
-  const publicRequestQuery = buildRawSearchPageQuery(params);
-  const resolvedQuery = buildSearchPageQuery(params);
+  const parsedPage = Number(pickFirst(params.page));
+  const currentPage = Number.isFinite(parsedPage) && parsedPage >= 1 ? Math.trunc(parsedPage) : 1;
+  const pagedParams = {
+    ...params,
+    limit: "24",
+    offset: String((currentPage - 1) * 24),
+  };
+  const publicRequestQuery = buildRawSearchPageQuery(pagedParams);
+  const resolvedQuery = buildSearchPageQuery(pagedParams);
   const initialSearchResult = await searchVisibleInitialResult(
     resolvedQuery,
     publicRequestQuery,
@@ -149,6 +156,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         <LightZillowSearchShell
           initialListings={initialSearchResult.listings}
           initialTotal={initialSearchResult.total}
+          initialPage={currentPage}
           projectId={requestedProjectId}
           initialFilters={{
             transactionType,

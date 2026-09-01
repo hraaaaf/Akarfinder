@@ -41,12 +41,18 @@ function publicValue(value?: string): string | undefined {
 }
 
 export function buildSearchRequestQuery(read: SearchParamReader): SearchQuery {
+  const rawOffset = read("offset");
   const query: SearchQuery = {
     // Keep the established first public tranche: the page shell, SSR and API
     // must all hash and serve the same 100-result request when no limit is sent.
     limit: parseBoundedInteger(read("limit"), 100, 1, 100),
-    offset: parseBoundedInteger(read("offset"), 0, 0, Number.MAX_SAFE_INTEGER),
   };
+  // Offset is intentionally presence-sensitive. Numbered pagination explicitly
+  // sends offset=0 on page 1 so all numbered pages stay on the same legacy lane;
+  // historical requests that omit offset preserve the ODM canary behavior.
+  if (rawOffset !== undefined) {
+    query.offset = parseBoundedInteger(rawOffset, 0, 0, Number.MAX_SAFE_INTEGER);
+  }
 
   const q = nonEmpty(read("q"));
   if (q) query.q = q;
@@ -102,6 +108,8 @@ export function buildSearchStableKey(query: SearchQuery): string {
     min_surface: query.min_surface ?? null,
     max_surface: query.max_surface ?? null,
     limit: query.limit ?? null,
-    offset: query.offset ?? null,
+    // Before offset became presence-sensitive, omitted offsets normalized to 0.
+    // Keep that exact stable-key value so existing canary assignment does not move.
+    offset: query.offset ?? 0,
   });
 }

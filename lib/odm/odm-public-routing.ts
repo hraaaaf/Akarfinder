@@ -154,7 +154,9 @@ export function supportsOdmPublicSearchQuery(query: SearchQuery): boolean {
   // The current thin-index read model has no authoritative district field.
   // Structured district searches must stay on the provider that can enforce
   // the canonical neighborhood exactly; never widen them into an ODM query.
-  return !query.district?.trim();
+  // The ODM RPC is cursor-based and has no numeric offset. Never silently
+  // discard an explicit numbered-page offset, including page 1 offset=0.
+  return query.offset === undefined && !query.district?.trim();
 }
 
 export async function routePublicSearch(

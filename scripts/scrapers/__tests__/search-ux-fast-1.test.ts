@@ -36,8 +36,8 @@ test("compact controls precede the listing stream", () => {
   assert.ok(resultToolbarPosition > filtersPosition, "result toolbar must follow filters");
   assert.ok(listingStreamPosition > resultToolbarPosition, "listing stream must follow the compact result toolbar");
   assert.match(shell, /<SearchViewSwitcher value=\{view\} onChange=\{setView\}/);
-  assert.match(shell, /const loadedResultCount = filteredListings\.length \+ gatewayResults\.length/);
-  assert.match(shell, /const totalResultCount = indexedTotalCount == null/);
+  assert.match(shell, /const loadedResultCount = filteredListings\.length \+ \(currentPage === 1 \? gatewayResults\.length : 0\)/);
+  assert.match(shell, /const totalResultCount = Math\.max\(/);
   assert.match(shell, /totalResultCount\.toLocaleString\("fr-FR"\)/);
 });
 
