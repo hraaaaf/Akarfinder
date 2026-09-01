@@ -1,6 +1,6 @@
 # AKARFINDER — Morocco Web Real-Estate Acquisition
 
-Status: ACTIVE — L1 CLOSED / L2 ACTIVE
+Status: ACTIVE — L1 CLOSED / L2 CERTIFIED — MERGE PENDING
 
 ## North-star Goal
 
@@ -57,11 +57,11 @@ Closeout proof:
 
 Boundary: these are candidate URLs, not validated canonical production listings.
 
-## L2 — Portal Acquisition Adapters — ACTIVE
+## L2 — Portal Acquisition Adapters — CERTIFIED / MERGE PENDING
 
 Goal: turn productive discovery surfaces into deterministic source adapters.
 
-Success:
+Success criteria:
 - source-specific deterministic discovery logic;
 - stable listing URL extraction;
 - bounded rate/backoff behavior;
@@ -69,9 +69,38 @@ Success:
 - exact failure classification for 403/429/timeout/schema drift;
 - live dry-run evidence with zero DB writes.
 
-Priority: **Sarouty first**, because L1 yielded 5,025 public candidate URLs from its sitemap surfaces.
+### Sarouty adapter — CERTIFIED + MERGED
 
-Current L2 branch: `feat/morocco-web-l2-sarouty-adapter`, based on `main@9722a1368fd35d08c35dad86d2973b899b3b232b`.
+- PR #968 merged into `main`.
+- Merge/main HEAD `f75d236d383f4ebfc44581b8540a762ce5869e0c` verified and signed.
+- Dedicated run `33555795314` — SUCCESS.
+- Unit tests: **6/6 PASS**.
+- Live public dry-run: **5,025 candidate URLs** from **6** property sitemaps.
+- Root + child sitemap requests: **7/7 HTTP 200 / classification ok**.
+- `stoppedEarly: null`.
+- `zeroDbWrites: true`.
+- Artifact `9819252085`.
+- Artifact SHA256 `c1d9ca1f216ee1043c0d21fbf1368f003ec0c92cf8346af415b87a31fdb658ae`.
+
+### Mubawab + MarocAnnonces adapters — CERTIFIED / MERGE PENDING
+
+- PR #971, branch `feat/morocco-web-l2-mubawab-marocannonces`.
+- Certified HEAD before closeout doc commit: `b52632ab4a7d2bad20efdf58db4d7eb2f627b6f7`.
+- Dedicated run `33560329163` — SUCCESS.
+- Unit tests: **6/6 PASS**.
+- Live public dry-run: **1,236 candidate URLs** total.
+  - Mubawab: **756** candidate URLs.
+  - MarocAnnonces: **480** candidate URLs.
+- Productive sources: **2/2**.
+- Both sources completed without 429 early stop.
+- `zeroDbWrites: true`.
+- Artifact `9820996698`.
+- Artifact SHA256 `ed2d33dfa347a2b2216091e7b095021ef019e76e7e73a0255ffcdd2be97b1d91`.
+- On certified HEAD `b52632ab...`, all 7 observed general PR workflows completed SUCCESS.
+
+Boundary: L2 certifies deterministic public discovery adapters and candidate URL extraction. It does **not** yet certify canonical field extraction, active-listing validation, deduplication or production ingestion.
+
+Current closeout branch: `feat/morocco-web-l2-mubawab-marocannonces`, based on `main@f75d236d383f4ebfc44581b8540a762ce5869e0c`.
 
 ## L3 — Open-Web Discovery Mesh
 
@@ -103,6 +132,6 @@ Validated canonical records only, scheduled acquisition/revisit jobs, source-col
 
 ## Execution order
 
-L1 ✅ → **L2 ACTIVE** → L3 → L4 → L5 → L6 → L7 → L8 → L9.
+L1 ✅ → **L2 CERTIFIED / MERGE PENDING** → L3 → L4 → L5 → L6 → L7 → L8 → L9.
 
 Overall program percentage remains intentionally unassigned until the roadmap defines a stable denominator across the remaining lots.
