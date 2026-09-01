@@ -257,7 +257,7 @@ export function toPropertyType(value: string | undefined): "apartment" | "villa"
   if (normalized.includes("studio")) return "studio";
   if (normalized.includes("villa")) return "villa";
   if (normalized.includes("terrain") || normalized.includes("land")) return "land";
-  if (normalized.includes("local commercial") || normalized.includes("commerce") || normalized.includes("commercial")) return "commercial";
+  if (normalized.includes("magasin") || normalized.includes("local commercial") || normalized.includes("commerce") || normalized.includes("commercial")) return "commercial";
   if (normalized.includes("bureau") || normalized.includes("office")) return "office";
   if (normalized.includes("maison") || normalized.includes("house")) return "house";
   if (normalized.includes("appartement") || normalized.includes("apartment") || normalized.includes("flat")) return "apartment";
