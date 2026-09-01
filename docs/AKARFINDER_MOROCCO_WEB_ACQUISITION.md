@@ -1,6 +1,6 @@
 # AKARFINDER — Morocco Web Real-Estate Acquisition
 
-Status: ACTIVE — L1 CLOSED / L2 CLOSED / L3 ACTIVE
+Status: ACTIVE — L1 CLOSED / L2 CLOSED / L3 CERTIFIED — MERGE PENDING
 
 ## North-star Goal
 
@@ -102,18 +102,40 @@ L2 closeout: all three productive L1 sources now have deterministic public disco
 
 Boundary: L2 certifies deterministic public discovery adapters and candidate URL extraction. It does **not** yet certify canonical field extraction, active-listing validation, deduplication or production ingestion.
 
-## L3 — Open-Web Discovery Mesh — ACTIVE
+## L3 — Open-Web Discovery Mesh — CERTIFIED — MERGE PENDING
 
 Goal: discover **net-new Moroccan real-estate domains and candidate URLs beyond the three L2 portals** using public web indexes and public site surfaces.
 
 Success criteria:
 - resolve the current Common Crawl collection dynamically from its public collection index;
-- bounded public-index queries with exact failure classification and hard stop on 429;
-- identify and rank net-new `.ma` domains from multiple real-estate URL signals;
-- harvest public robots/sitemap surfaces for top-ranked domains where available;
-- retain source/query/domain provenance for every candidate;
+- query the official Common Crawl columnar URL Index with bounded analytical filtering;
+- identify and rank net-new `.ma` domains from real-estate hostname/path signals while excluding known portals;
+- validate top-ranked domains against public robots/sitemaps and bounded public page probes;
+- retain domain-level validation evidence and candidate provenance;
 - fixture tests plus live dry-run evidence;
+- hard stop on 429 from live site validation;
 - zero production DB writes.
+
+Certified evidence:
+- Dedicated run `33571426830` — **SUCCESS**.
+- Evidence HEAD `a2c2238d15edd0cfe372cc0290151912e9f7eded`.
+- Current crawl resolved dynamically: `CC-MAIN-2026-34`.
+- Official URL Index manifest: **300 Parquet files**.
+- Broad filtered result: **200 raw `.ma` domains**, ranked to **12** top domains.
+- **12/12 top domains live-validated** from public site surfaces.
+- **263 candidate URLs** retained across validated domains.
+- **63** bounded live validation requests.
+- `stoppedEarly: null`.
+- `zeroDbWrites: true`.
+- Artifact `9825112976`.
+- Artifact SHA256 `4ee69220433822f24a5fee5a65abb250852c1611070c6d0ac720f88e3cbdb7c8`.
+- Unit evidence on the certified run: **14/14 Node tests PASS + 3/3 Python tests PASS** before prototype cleanup.
+
+Validated net-new domains include `immo.mitula.ma`, `immobilier.trovit.ma`, `leaderimmo.ma`, `immoservice.ma`, `www.alamal-immobilier.ma`, `proimmobilier.ma`, `www.immo.avision.ma`, `www.immoworld.ma`, `nouraimmobilier.ma`, `immobest.ma`, `logicimmo.ma`, and `www.damaneimmo.ma`.
+
+Implementation retained for closeout: `scripts/acquisition/commoncrawl_url_index_domain_discovery.py` plus its Python unit test and dedicated workflow. Earlier CDX wildcard prototypes are removed from the final branch because the columnar URL Index strategy is the certified productive path.
+
+Boundary: the **263 URLs are open-web discovery candidates**, not 263 certified active listing-detail pages. The set can contain property pages, category/search/discovery pages and sitemap-derived real-estate surfaces. Exact listing-detail classification, active-page validation and canonical field extraction belong to L4.
 
 Current L3 branch: `feat/morocco-web-l3-commoncrawl-mesh`, based on `main@b79073ceec087250914c2ca1c6dbd7cd7425c000`.
 
@@ -143,6 +165,6 @@ Validated canonical records only, scheduled acquisition/revisit jobs, source-col
 
 ## Execution order
 
-L1 ✅ → L2 ✅ → **L3 ACTIVE** → L4 → L5 → L6 → L7 → L8 → L9.
+L1 ✅ → L2 ✅ → **L3 CERTIFIED — MERGE PENDING** → L4 → L5 → L6 → L7 → L8 → L9.
 
 Overall program percentage remains intentionally unassigned until the roadmap defines a stable denominator across the remaining lots.
