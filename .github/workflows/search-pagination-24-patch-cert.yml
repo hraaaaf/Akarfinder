@@ -1,0 +1,272 @@
+name: Search Pagination 24 Patch Cert
+
+on:
+  push:
+    branches:
+      - agent/search-pagination-24
+    paths:
+      - .github/workflows/search-pagination-24-patch-cert.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch-cert:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/search-pagination-24
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+
+      - name: Write visual goal and reference
+        run: |
+          mkdir -p artifacts/search-pagination-24
+          cat > artifacts/search-pagination-24/GOAL.txt <<'EOF'
+          Goal: afficher exactement jusqu'a 24 cartes principales par page, puis une pagination explicite.
+          Success: page 1 <=24 cartes; page 2 URL ?page=2; pagination visible apres la grille; mobile precedent/suivant; desktop numeros; filtres/tri conserves dans l'URL.
+          Reference mockup:
+          [2 001 biens trouves]
+          [24 affiches sur cette page]
+          [card][card]
+          ... jusqu'a 24 ...
+          [< Precedent] [1] [2] [3] [...] [84] [Suivant >]
+          ---- Resultats indexes sur le web (supplementaires, page 1 seulement) ----
+          EOF
+
+      - name: Capture BEFORE production
+        run: |
+          node --input-type=module <<'NODE'
+          import { chromium } from 'playwright';
+          import fs from 'node:fs';
+          const browser = await chromium.launch({ headless: true });
+          const base = 'https://akarfinder.vercel.app/search';
+          const viewports = [
+            [390,844], [430,932], [768,900], [1280,900]
+          ];
+          const report = [];
+          for (const [width,height] of viewports) {
+            const page = await browser.newPage({ viewport: { width, height } });
+            const errors = [];
+            page.on('console', msg => { if (msg.type() === 'error') errors.push(msg.text()); });
+            await page.goto(base, { waitUntil: 'networkidle' });
+            const cards = await page.locator('[data-search-listing-card]').count();
+            const totalText = await page.locator('[data-search-results-toolbar] h1').innerText().catch(() => '');
+            const pagination = await page.locator('[data-search-pagination]').count();
+            await page.screenshot({ path: `artifacts/search-pagination-24/before-${width}x${height}.png`, fullPage: true });
+            report.push({ viewport: `${width}x${height}`, cards, totalText, pagination, consoleErrors: errors });
+            await page.close();
+          }
+          fs.writeFileSync('artifacts/search-pagination-24/before-report.json', JSON.stringify(report, null, 2));
+          await browser.close();
+          NODE
+
+      - name: Apply deterministic pagination patch
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace_once(text, old, new, label):
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f'{label}: expected 1 match, got {count}')
+              return text.replace(old, new, 1)
+
+          page_path = Path('app/search/page.tsx')
+          page = page_path.read_text()
+          page = replace_once(page,
+              'import type { ListingFiltersState } from "@/lib/listings/types";\n',
+              'import type { ListingFiltersState } from "@/lib/listings/types";\nimport type { SortBy } from "@/lib/listings/utils";\n',
+              'page sort import')
+          page = replace_once(page,
+              'type SearchPageProps = {\n  searchParams?: Promise<Record<string, string | string[] | undefined>>;\n};\n\nfunction pickFirst',
+              'type SearchPageProps = {\n  searchParams?: Promise<Record<string, string | string[] | undefined>>;\n};\n\nconst SEARCH_PAGE_SIZE = 24;\n\nfunction normalizePage(raw?: string): number {\n  const parsed = Number(raw);\n  return Number.isFinite(parsed) && parsed > 0 ? Math.trunc(parsed) : 1;\n}\n\nfunction normalizeSortBy(raw?: string): SortBy {\n  if (raw === "price_asc") return "price-asc";\n  if (raw === "price_desc") return "price-desc";\n  return "recommended";\n}\n\nfunction normalizeReliability(raw?: string): ListingFiltersState["reliability"] {\n  if (raw === "Information complete") return "top";\n  if (raw === "Information structuree") return "high";\n  if (raw === "A completer") return "medium";\n  if (raw === "Information limitee") return "low";\n  return "all";\n}\n\nfunction pickFirst',
+              'page helpers')
+          page = replace_once(page,
+              '  const params = searchParams ? await searchParams : {};\n  const publicRequestQuery = buildRawSearchPageQuery(params);\n  const resolvedQuery = buildSearchPageQuery(params);\n',
+              '  const params = searchParams ? await searchParams : {};\n  const requestedPage = normalizePage(pickFirst(params.page));\n  const paginatedParams = {\n    ...params,\n    limit: String(SEARCH_PAGE_SIZE),\n    offset: String((requestedPage - 1) * SEARCH_PAGE_SIZE),\n  };\n  const publicRequestQuery = buildRawSearchPageQuery(paginatedParams);\n  const resolvedQuery = buildSearchPageQuery(paginatedParams);\n',
+              'page query pagination')
+          page = replace_once(page,
+              '  const maxBudget = pickFirst(params.max_price) ?? pickFirst(params.budget_max) ?? "";\n  const search = resolvedQuery.q ?? "";\n  const requestedProjectId = pickFirst(params.project_id);\n',
+              '  const maxBudget = pickFirst(params.max_price) ?? pickFirst(params.budget_max) ?? "";\n  const minSurface = pickFirst(params.min_surface) ?? "";\n  const minReliabilityScore = resolvedQuery.minReliabilityScore ?? 0;\n  const reliability = normalizeReliability(resolvedQuery.reliability_badge);\n  const packageScore = pickFirst(params.package_score) === "bon" ? "bon" : "all";\n  const search = resolvedQuery.q ?? "";\n  const requestedProjectId = pickFirst(params.project_id);\n  const initialSortBy = normalizeSortBy(resolvedQuery.sort);\n',
+              'page initial controls')
+          page = replace_once(page,
+              '          initialTotal={initialSearchResult.total}\n          projectId={requestedProjectId}\n',
+              '          initialTotal={initialSearchResult.total}\n          initialPage={requestedPage}\n          initialSortBy={initialSortBy}\n          projectId={requestedProjectId}\n',
+              'page shell props')
+          page = replace_once(page,
+              '            maxBudget,\n            mreOnly,\n            search,\n',
+              '            maxBudget,\n            minSurface,\n            minReliabilityScore,\n            reliability,\n            packageScore,\n            mreOnly,\n            search,\n',
+              'page filter props')
+          page_path.write_text(page)
+
+          shell_path = Path('components/search/LightZillowSearchShell.tsx')
+          shell = shell_path.read_text()
+          shell = replace_once(shell,
+              '  initialTotal: number;\n  initialFilters?: Partial<ListingFiltersState>;\n',
+              '  initialTotal: number;\n  initialPage?: number;\n  initialSortBy?: SortBy;\n  initialFilters?: Partial<ListingFiltersState>;\n',
+              'shell props')
+          shell = replace_once(shell,
+              'const RELIABILITY_BADGE: Record<string, string> = {\n',
+              'const SEARCH_PAGE_SIZE = 24;\n\nconst RELIABILITY_BADGE: Record<string, string> = {\n',
+              'shell page size')
+          shell = replace_once(shell,
+              'function buildSearchUrl(filters: ListingFiltersState, sortBy: SortBy): string {\n  const params = new URLSearchParams({ limit: "100" });\n',
+              'function buildSearchUrl(filters: ListingFiltersState, sortBy: SortBy, page: number): string {\n  const params = new URLSearchParams({\n    limit: String(SEARCH_PAGE_SIZE),\n    offset: String((page - 1) * SEARCH_PAGE_SIZE),\n  });\n',
+              'search url pagination')
+          shell = replace_once(shell,
+              'function buildGatewayUrl(filters: ListingFiltersState, cursor?: string | null): string {\n  const params = new URLSearchParams({ limit: "100" });\n',
+              'function buildGatewayUrl(filters: ListingFiltersState, cursor?: string | null): string {\n  const params = new URLSearchParams({ limit: String(SEARCH_PAGE_SIZE) });\n',
+              'gateway page size')
+          marker = 'function SkeletonCard() {'
+          helper = '''function buildBrowserSearchHref(filters: ListingFiltersState, sortBy: SortBy, page: number): string {\n  const params = new URLSearchParams(typeof window === "undefined" ? "" : window.location.search);\n  for (const key of [\n    "q", "city", "district", "transaction_type", "type", "property_type",\n    "min_price", "budget_min", "max_price", "budget_max", "min_surface",\n    "minReliabilityScore", "reliability_badge", "mre", "package_score",\n    "sort", "page", "limit", "offset",\n  ]) params.delete(key);\n\n  if (filters.search.trim()) params.set("q", filters.search.trim());\n  if (filters.city !== "all") params.set("city", filters.city);\n  if (filters.neighborhood && filters.neighborhood !== "all") params.set("district", filters.neighborhood);\n  if (filters.transactionType !== "all") params.set("transaction_type", filters.transactionType);\n  if (filters.propertyType !== "all") params.set("property_type", filters.propertyType);\n  if (filters.minBudget) params.set("min_price", filters.minBudget);\n  if (filters.maxBudget) params.set("max_price", filters.maxBudget);\n  if (filters.minSurface) params.set("min_surface", filters.minSurface);\n  if (filters.minReliabilityScore > 0) params.set("minReliabilityScore", String(filters.minReliabilityScore));\n  if (filters.reliability !== "all") params.set("reliability_badge", RELIABILITY_BADGE[filters.reliability]);\n  if (filters.mreOnly) params.set("mre", "true");\n  if (filters.packageScore === "bon") params.set("package_score", "bon");\n  if (sortBy === "price-asc") params.set("sort", "price_asc");\n  else if (sortBy === "price-desc") params.set("sort", "price_desc");\n  if (page > 1) params.set("page", String(page));\n\n  const query = params.toString();\n  return `/search${query ? `?${query}` : ""}`;\n}\n\nfunction paginationItems(currentPage: number, pageCount: number): Array<number | string> {\n  if (pageCount <= 7) return Array.from({ length: pageCount }, (_, index) => index + 1);\n  const items: Array<number | string> = [1];\n  const start = Math.max(2, currentPage - 1);\n  const end = Math.min(pageCount - 1, currentPage + 1);\n  if (start > 2) items.push("left-ellipsis");\n  for (let page = start; page <= end; page += 1) items.push(page);\n  if (end < pageCount - 1) items.push("right-ellipsis");\n  items.push(pageCount);\n  return items;\n}\n\n'''
+          shell = replace_once(shell, marker, helper + marker, 'shell browser helpers')
+          shell = replace_once(shell,
+              'export function LightZillowSearchShell({ initialListings, initialTotal, initialFilters, projectId }: LightZillowSearchShellProps) {\n',
+              'export function LightZillowSearchShell({ initialListings, initialTotal, initialPage = 1, initialSortBy = "recommended", initialFilters, projectId }: LightZillowSearchShellProps) {\n',
+              'shell signature')
+          shell = replace_once(shell,
+              '  const [view, setView] = useState<SearchViewMode>("split");\n  const [sortBy, setSortBy] = useState<SortBy>("recommended");\n  const [listings, setListings] = useState(initialListings);\n',
+              '  const [view, setView] = useState<SearchViewMode>("split");\n  const [sortBy, setSortBy] = useState<SortBy>(initialSortBy);\n  const [currentPage, setCurrentPage] = useState(initialPage);\n  const [listings, setListings] = useState(initialListings);\n',
+              'shell state')
+          shell = replace_once(shell,
+              '    setFilters(next);\n  }\n\n  useEffect(() => {\n',
+              '    setCurrentPage(1);\n    setFilters(next);\n  }\n\n  useEffect(() => {\n    if (typeof window === "undefined") return;\n    const href = buildBrowserSearchHref(filters, sortBy, currentPage);\n    const currentHref = `${window.location.pathname}${window.location.search}`;\n    if (currentHref !== href) window.history.replaceState(window.history.state, "", href);\n  }, [filters, sortBy, currentPage]);\n\n  useEffect(() => {\n    const handlePopState = () => window.location.reload();\n    window.addEventListener("popstate", handlePopState);\n    return () => window.removeEventListener("popstate", handlePopState);\n  }, []);\n\n  useEffect(() => {\n',
+              'shell url sync')
+          shell = replace_once(shell,
+              '        const response = await fetch(buildSearchUrl(filters, sortBy), { cache: "no-store" });\n',
+              '        const response = await fetch(buildSearchUrl(filters, sortBy, currentPage), { cache: "no-store" });\n',
+              'shell fetch page')
+          shell = replace_once(shell,
+              '  }, [filters, sortBy]);\n\n  async function handleLoadMoreIndexed() {\n',
+              '  }, [filters, sortBy, currentPage]);\n\n  async function handleLoadMoreIndexed() {\n',
+              'shell fetch deps')
+          shell = replace_once(shell,
+              '    if (!gatewayEnabled) {\n      setGatewayResults([]);\n      setNextCursor(null);\n      setHasMoreIndexed(false);\n      setIndexedTotalCount(null);\n      setIsGatewayLoading(false);\n      return;\n    }\n    let cancelled = false;\n',
+              '    if (!gatewayEnabled || currentPage !== 1) {\n      setGatewayResults([]);\n      setNextCursor(null);\n      setHasMoreIndexed(false);\n      setIndexedTotalCount(null);\n      setIsGatewayLoading(false);\n      return;\n    }\n    let cancelled = false;\n',
+              'shell gateway page one')
+          shell = replace_once(shell,
+              '  }, [filters, gatewayEnabled]);\n\n  const filteredListings = useMemo(() => {\n',
+              '  }, [filters, gatewayEnabled, currentPage]);\n\n  const filteredListings = useMemo(() => {\n',
+              'shell gateway deps')
+          shell = replace_once(shell,
+              '  const handleReset = () => setFilters(defaultListingFilters);\n',
+              '  const handleReset = () => {\n    setCurrentPage(1);\n    setFilters(defaultListingFilters);\n  };\n',
+              'shell reset')
+          shell = replace_once(shell,
+              '    setFilters((current) => ({\n',
+              '    setCurrentPage(1);\n    setFilters((current) => ({\n',
+              'shell map reset page')
+          shell = replace_once(shell,
+              '  const isSearching = isLoading || isGatewayLoading;\n  const hasAnyResults = loadedResultCount > 0;\n  const showSkeleton = isLoading && filteredListings.length === 0 && gatewayResults.length === 0;\n\n  return (\n',
+              '  const isSearching = isLoading || isGatewayLoading;\n  const hasAnyResults = loadedResultCount > 0;\n  const showSkeleton = isLoading && filteredListings.length === 0 && gatewayResults.length === 0;\n  const pageCount = Math.max(1, Math.ceil(searchTotalCount / SEARCH_PAGE_SIZE));\n  const shownOnPage = continuousListings.length;\n  const pageItems = paginationItems(currentPage, pageCount);\n\n  useEffect(() => {\n    if (currentPage > pageCount) setCurrentPage(pageCount);\n  }, [currentPage, pageCount]);\n\n  function handlePageChange(nextPage: number) {\n    const bounded = Math.min(Math.max(nextPage, 1), pageCount);\n    if (bounded === currentPage) return;\n    if (typeof window !== "undefined") {\n      window.history.pushState(window.history.state, "", buildBrowserSearchHref(filters, sortBy, bounded));\n    }\n    setCurrentPage(bounded);\n    setTimeout(() => listRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 40);\n  }\n\n  return (\n',
+              'shell pagination state')
+          shell = replace_once(shell,
+              '            <h1 className="min-w-0 truncate text-[14px] font-extrabold text-foreground sm:text-[15px]">\n              {isSearching && totalResultCount === 0\n                ? "Recherche…"\n                : `${totalResultCount.toLocaleString("fr-FR")} résultat${totalResultCount !== 1 ? "s" : ""}${filters.search.trim() ? ` pour “${filters.search.trim()}”` : ""}`}\n            </h1>\n',
+              '            <div className="min-w-0">\n              <h1 className="truncate text-[14px] font-extrabold text-foreground sm:text-[15px]">\n                {isSearching && totalResultCount === 0\n                  ? "Recherche…"\n                  : `${totalResultCount.toLocaleString("fr-FR")} résultat${totalResultCount !== 1 ? "s" : ""}${filters.search.trim() ? ` pour “${filters.search.trim()}”` : ""}`}\n              </h1>\n              {!isSearching || shownOnPage > 0 ? (\n                <p data-search-page-summary className="mt-0.5 text-[10.5px] font-semibold text-muted-foreground sm:text-[11px]">\n                  {shownOnPage.toLocaleString("fr-FR")} affiché{shownOnPage !== 1 ? "s" : ""} sur cette page · page {currentPage.toLocaleString("fr-FR")} / {pageCount.toLocaleString("fr-FR")}\n                </p>\n              ) : null}\n            </div>\n',
+              'shell toolbar summary')
+          shell = replace_once(shell,
+              '              onChange={(event) => setSortBy(event.target.value as SortBy)}\n',
+              '              onChange={(event) => {\n                setCurrentPage(1);\n                setSortBy(event.target.value as SortBy);\n              }}\n',
+              'shell sort page reset')
+          shell = replace_once(shell,
+              '                onClick={() => setFilters((current) => ({ ...current, ...chip.clear }))}\n',
+              '                onClick={() => handleFilterChange({ ...filters, ...chip.clear })}\n',
+              'shell chip page reset')
+          shell = replace_once(shell,
+              '                  {ExternalIndexedResultsSection\n',
+              '                  {ExternalIndexedResultsSection\n',
+              'noop guard') if False else shell
+          old_flow = '''                  {continuousListings.length > 0 ? (\n                    <div className={`grid grid-cols-1 gap-5 xl:grid-cols-2 transition-opacity duration-200 ${isLoading ? "opacity-60" : "opacity-100"}`}>\n                      {continuousListings.map((listing) => (\n                        <SearchListingCardDark key={listing.id} listing={listing} projectId={projectId} />\n                      ))}\n                    </div>\n                  ) : null}\n\n                  <ExternalIndexedResultsSection\n                    results={gatewayResults}\n                    isLoading={isGatewayLoading}\n                    showHeader={false}\n                  />\n\n                  {!hasAnyResults && !isSearching ? <EmptyState onReset={handleReset} city={filters.city} /> : null}\n'''
+          new_flow = '''                  {continuousListings.length > 0 ? (\n                    <>\n                      <div className={`grid grid-cols-1 gap-5 xl:grid-cols-2 transition-opacity duration-200 ${isLoading ? "opacity-60" : "opacity-100"}`}>\n                        {continuousListings.map((listing) => (\n                          <SearchListingCardDark key={listing.id} listing={listing} projectId={projectId} />\n                        ))}\n                      </div>\n\n                      {pageCount > 1 ? (\n                        <nav data-search-pagination aria-label="Pagination des résultats" className="border-t border-border/12 pt-4 dark:border-white/8">\n                          <div className="flex items-center justify-between gap-3 sm:hidden">\n                            <button type="button" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage <= 1} className="rounded-full border border-border/20 px-4 py-2 text-[12px] font-extrabold disabled:opacity-40">Précédent</button>\n                            <span className="text-[12px] font-bold text-muted-foreground">{currentPage} / {pageCount}</span>\n                            <button type="button" onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage >= pageCount} className="rounded-full border border-border/20 px-4 py-2 text-[12px] font-extrabold disabled:opacity-40">Suivant</button>\n                          </div>\n                          <div className="hidden items-center justify-center gap-1.5 sm:flex">\n                            <button type="button" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage <= 1} className="rounded-full border border-border/20 px-3.5 py-2 text-[12px] font-extrabold disabled:opacity-40">Précédent</button>\n                            {pageItems.map((item) => typeof item === "number" ? (\n                              <button key={item} type="button" onClick={() => handlePageChange(item)} aria-current={item === currentPage ? "page" : undefined} className={`grid h-9 min-w-9 place-items-center rounded-full px-2 text-[12px] font-extrabold ${item === currentPage ? "bg-deepblue text-white" : "border border-border/20 text-foreground"}`}>{item}</button>\n                            ) : (\n                              <span key={item} className="px-1 text-muted-foreground" aria-hidden="true">…</span>\n                            ))}\n                            <button type="button" onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage >= pageCount} className="rounded-full border border-border/20 px-3.5 py-2 text-[12px] font-extrabold disabled:opacity-40">Suivant</button>\n                          </div>\n                        </nav>\n                      ) : null}\n                    </>\n                  ) : null}\n\n                  {currentPage === 1 ? (\n                    <ExternalIndexedResultsSection\n                      results={gatewayResults}\n                      isLoading={isGatewayLoading}\n                      showHeader\n                    />\n                  ) : null}\n\n                  {!hasAnyResults && !isSearching ? <EmptyState onReset={handleReset} city={filters.city} /> : null}\n'''
+          shell = replace_once(shell, old_flow, new_flow, 'shell results flow')
+          shell = replace_once(shell,
+              '              {hasMoreIndexed ? (\n',
+              '              {currentPage === 1 && hasMoreIndexed ? (\n',
+              'shell external load more page one')
+          shell_path.write_text(shell)
+          PY
+
+      - name: Verify patch shape
+        run: |
+          grep -q 'const SEARCH_PAGE_SIZE = 24' components/search/LightZillowSearchShell.tsx
+          grep -q 'data-search-pagination' components/search/LightZillowSearchShell.tsx
+          grep -q 'initialPage={requestedPage}' app/search/page.tsx
+          grep -q 'offset: String((page - 1) \* SEARCH_PAGE_SIZE)' components/search/LightZillowSearchShell.tsx
+          ! grep -q 'new URLSearchParams({ limit: "100" })' components/search/LightZillowSearchShell.tsx
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+      - name: Build
+        run: npm run build
+
+      - name: Start patched app
+        run: |
+          nohup npm run start -- -p 3000 > /tmp/akarfinder-pagination.log 2>&1 &
+          for i in $(seq 1 40); do
+            if curl -fsS http://127.0.0.1:3000/search >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/akarfinder-pagination.log
+          exit 1
+
+      - name: Capture and certify AFTER
+        run: |
+          node --input-type=module <<'NODE'
+          import { chromium } from 'playwright';
+          import fs from 'node:fs';
+          const browser = await chromium.launch({ headless: true });
+          const base = 'http://127.0.0.1:3000/search';
+          const viewports = [[390,844],[430,932],[768,900],[1280,900]];
+          const report = [];
+          for (const [width,height] of viewports) {
+            const page = await browser.newPage({ viewport: { width, height } });
+            const errors = [];
+            page.on('console', msg => { if (msg.type() === 'error') errors.push(msg.text()); });
+            await page.goto(base, { waitUntil: 'networkidle' });
+            const cards = await page.locator('[data-search-listing-card]').count();
+            const pagination = await page.locator('[data-search-pagination]').count();
+            const summary = await page.locator('[data-search-page-summary]').innerText();
+            const totalText = await page.locator('[data-search-results-toolbar] h1').innerText();
+            await page.screenshot({ path: `artifacts/search-pagination-24/after-${width}x${height}.png`, fullPage: true });
+            if (cards > 24) throw new Error(`${width}x${height}: ${cards} cards > 24`);
+            if (!pagination) throw new Error(`${width}x${height}: pagination missing`);
+            if (errors.length) throw new Error(`${width}x${height}: console errors: ${errors.join(' | ')}`);
+            report.push({ viewport: `${width}x${height}`, cards, pagination, summary, totalText, consoleErrors: errors });
+            await page.close();
+          }
+
+          const page = await browser.newPage({ viewport: { width: 430, height: 932 } });
+          await page.goto(base, { waitUntil: 'networkidle' });
+          await page.getByRole('button', { name: 'Suivant' }).first().click();
+          await page.waitForTimeout(800);
+          const url = page.url();
+          const page2Cards = await page.locator('[data-search-listing-card]').count();
+          const page2Summary = await page.locator('[data-search-page-summary]').innerText();
+          if (!/[?&]page=2(?:&|$)/.test(url)) throw new Error(`page 2 URL missing: ${url}`);
+          if (page2Cards > 24) throw new Error(`page 2 cards > 24: ${page2Cards}`);
+          if (!/page 2\s*\//i.test(page2Summary)) throw new Error(`page 2 summary mismatch: ${page2Summary}`);
+          report.push({ page2Url: url, page2Cards, page2Summary });
+          fs.writeFileSync('artifacts/search-pagination-24/after-report.json', JSON.stringify(report, null, 2));
+          await browser.close();
+          NODE
+
+      - name: Commit product patch
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add app/search/page.tsx components/search/LightZillowSearchShell.tsx
+          git commit -m 'feat(search): paginate results 24 per page'
+          git push origin HEAD:agent/search-pagination-24
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: search-pagination-24-cert
+          path: artifacts/search-pagination-24
+          if-no-files-found: error
