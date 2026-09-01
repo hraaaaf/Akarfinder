@@ -94,6 +94,8 @@ function normalizePropertyTypeFilter(value?: string) {
     case "terrain":
     case "land":
       return "land";
+    case "riad":
+      return "riad";
     case "bureau":
     case "office":
       return "office";

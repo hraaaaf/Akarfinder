@@ -3,7 +3,7 @@
 
 export type SourceName = "avito" | "mubawab" | "sarouty";
 
-export type PropertyTypeP0 = "apartment" | "villa" | "land" | "office" | "unknown";
+export type PropertyTypeP0 = "apartment" | "villa" | "land" | "office" | "riad" | "unknown";
 export type TransactionTypeP0 = "sale" | "rent" | "unknown";
 
 // P2: per-field source confidence.

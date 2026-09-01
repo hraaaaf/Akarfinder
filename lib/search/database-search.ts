@@ -56,6 +56,7 @@ function toMappedPropertyType(raw?: string): string | undefined {
   if (n === "apartment" || n === "appartement") return "Appartement";
   if (n === "villa") return "Villa";
   if (n === "land" || n === "terrain") return "Terrain";
+  if (n === "riad") return "Riad";
   if (n === "office" || n === "bureau") return "Bureau";
   if (n === "studio") return "Studio";
   if (n === "maison") return "Maison";

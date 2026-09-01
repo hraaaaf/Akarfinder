@@ -36,6 +36,8 @@ function mapPropertyType(raw: string | null): ListingPropertyType {
       return "Villa";
     case "land":
       return "Terrain";
+    case "riad":
+      return "Riad";
     case "office":
       return "Bureau";
     default:
