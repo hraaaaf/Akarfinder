@@ -1,0 +1,178 @@
+name: Search Pagination 24 Patch Cert V2
+
+on:
+  push:
+    branches:
+      - agent/search-pagination-24
+    paths:
+      - .github/workflows/search-pagination-24-patch-cert-v2.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch-cert-v2:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/search-pagination-24
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+
+      - name: Write visual goal and reference
+        run: |
+          mkdir -p artifacts/search-pagination-24
+          cat > artifacts/search-pagination-24/GOAL.txt <<'EOF'
+          Goal: afficher au maximum 24 cartes principales par page, puis une pagination explicite.
+          Success: page 1 <=24 cartes; page 2 URL ?page=2; pagination après la grille quand total >24; mobile précédent/suivant; desktop numéros; filtres/tri/page conservés dans l'URL.
+          Reference mockup:
+          [2 001 biens trouvés]
+          [24 affichés sur cette page]
+          [card][card]
+          ... jusqu'à 24 ...
+          [< Précédent] [1] [2] [3] [...] [84] [Suivant >]
+          ---- Résultats indexés sur le web (supplémentaires, page 1 seulement) ----
+          EOF
+
+      - name: Capture BEFORE production
+        run: |
+          node --input-type=module <<'NODE'
+          import { chromium } from 'playwright';
+          import fs from 'node:fs';
+          const browser = await chromium.launch({ headless: true });
+          const base = 'https://akarfinder.vercel.app/search';
+          const viewports = [[390,844],[430,932],[768,900],[1280,900]];
+          const report = [];
+          for (const [width,height] of viewports) {
+            const page = await browser.newPage({ viewport: { width, height } });
+            const errors = [];
+            page.on('console', msg => { if (msg.type() === 'error') errors.push(msg.text()); });
+            await page.goto(base, { waitUntil: 'networkidle' });
+            const cards = await page.locator('[data-search-listing-card]').count();
+            const totalText = await page.locator('[data-search-results-toolbar] h1').innerText().catch(() => '');
+            const pagination = await page.locator('[data-search-pagination]').count();
+            await page.screenshot({ path: `artifacts/search-pagination-24/before-${width}x${height}.png`, fullPage: true });
+            report.push({ viewport: `${width}x${height}`, cards, totalText, pagination, consoleErrors: errors });
+            await page.close();
+          }
+          fs.writeFileSync('artifacts/search-pagination-24/before-report.json', JSON.stringify(report, null, 2));
+          await browser.close();
+          NODE
+
+      - name: Reuse verified deterministic product patch
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          source = Path('.github/workflows/search-pagination-24-patch-cert.yml').read_text().splitlines()
+          start = next(i for i, line in enumerate(source) if line.strip() == "python - <<'PY'") + 1
+          end = next(i for i in range(start, len(source)) if source[i].strip() == 'PY')
+          script = []
+          for line in source[start:end]:
+              script.append(line[10:] if line.startswith('          ') else line)
+          Path('/tmp/apply-pagination-patch.py').write_text('\n'.join(script) + '\n')
+          PY
+          python /tmp/apply-pagination-patch.py
+
+      - name: Verify patch shape
+        run: |
+          grep -q 'const SEARCH_PAGE_SIZE = 24' components/search/LightZillowSearchShell.tsx
+          grep -q 'data-search-pagination' components/search/LightZillowSearchShell.tsx
+          grep -q 'initialPage={requestedPage}' app/search/page.tsx
+          grep -q 'offset: String((page - 1) \* SEARCH_PAGE_SIZE)' components/search/LightZillowSearchShell.tsx
+          ! grep -q 'new URLSearchParams({ limit: "100" })' components/search/LightZillowSearchShell.tsx
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+      - name: Build
+        run: npm run build
+
+      - name: Start patched app
+        run: |
+          nohup npm run start -- -p 3000 > /tmp/akarfinder-pagination.log 2>&1 &
+          for i in $(seq 1 40); do
+            if curl -fsS http://127.0.0.1:3000/search >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/akarfinder-pagination.log
+          exit 1
+
+      - name: Capture and certify AFTER
+        run: |
+          node --input-type=module <<'NODE'
+          import { chromium } from 'playwright';
+          import fs from 'node:fs';
+          const browser = await chromium.launch({ headless: true });
+          const base = 'http://127.0.0.1:3000/search';
+          const viewports = [[390,844],[430,932],[768,900],[1280,900]];
+          const report = [];
+
+          async function forcePaginatedTotal(page) {
+            await page.route('**/api/search**', async route => {
+              const url = route.request().url();
+              if (url.includes('/api/search/gateway')) return route.continue();
+              const response = await route.fetch();
+              const body = await response.json();
+              body.total = Math.max(Number(body.total) || 0, 49);
+              await route.fulfill({ response, json: body });
+            });
+          }
+
+          for (const [width,height] of viewports) {
+            const page = await browser.newPage({ viewport: { width, height } });
+            const errors = [];
+            page.on('console', msg => { if (msg.type() === 'error') errors.push(msg.text()); });
+            await forcePaginatedTotal(page);
+            await page.goto(base, { waitUntil: 'networkidle' });
+            await page.locator('[data-search-pagination]').waitFor({ state: 'visible', timeout: 5000 });
+            const cards = await page.locator('[data-search-listing-card]').count();
+            const pagination = await page.locator('[data-search-pagination]').count();
+            const summary = await page.locator('[data-search-page-summary]').innerText();
+            const totalText = await page.locator('[data-search-results-toolbar] h1').innerText();
+            await page.screenshot({ path: `artifacts/search-pagination-24/after-${width}x${height}.png`, fullPage: true });
+            if (cards > 24) throw new Error(`${width}x${height}: ${cards} cards > 24`);
+            if (!pagination) throw new Error(`${width}x${height}: pagination missing`);
+            if (errors.length) throw new Error(`${width}x${height}: console errors: ${errors.join(' | ')}`);
+            report.push({ viewport: `${width}x${height}`, cards, pagination, summary, totalText, consoleErrors: errors });
+            await page.close();
+          }
+
+          const page = await browser.newPage({ viewport: { width: 430, height: 932 } });
+          await forcePaginatedTotal(page);
+          await page.goto(base, { waitUntil: 'networkidle' });
+          await page.locator('[data-search-pagination]').waitFor({ state: 'visible', timeout: 5000 });
+          const page1FirstHref = await page.locator('[data-search-listing-card] a').first().getAttribute('href').catch(() => null);
+          await page.getByRole('button', { name: 'Suivant' }).first().click();
+          await page.waitForFunction(() => new URL(location.href).searchParams.get('page') === '2');
+          await page.waitForTimeout(600);
+          const url = page.url();
+          const page2Cards = await page.locator('[data-search-listing-card]').count();
+          const page2Summary = await page.locator('[data-search-page-summary]').innerText();
+          const page2FirstHref = await page.locator('[data-search-listing-card] a').first().getAttribute('href').catch(() => null);
+          if (!/[?&]page=2(?:&|$)/.test(url)) throw new Error(`page 2 URL missing: ${url}`);
+          if (page2Cards > 24) throw new Error(`page 2 cards > 24: ${page2Cards}`);
+          if (!/page 2\s*\//i.test(page2Summary)) throw new Error(`page 2 summary mismatch: ${page2Summary}`);
+          report.push({ page2Url: url, page2Cards, page2Summary, page1FirstHref, page2FirstHref });
+          fs.writeFileSync('artifacts/search-pagination-24/after-report.json', JSON.stringify(report, null, 2));
+          await browser.close();
+          NODE
+
+      - name: Commit product patch
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add app/search/page.tsx components/search/LightZillowSearchShell.tsx
+          git commit -m 'feat(search): paginate results 24 per page'
+          git push origin HEAD:agent/search-pagination-24
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: search-pagination-24-cert-v2
+          path: artifacts/search-pagination-24
+          if-no-files-found: warn
