@@ -116,6 +116,20 @@ assert.ok(saleRiad);
 assert.equal(saleRiad.extracted.city, "Salé", "localized Avito title city must outrank ambiguous Medina district tokens");
 assert.equal(saleRiad.extracted.district, null, "district from another city must not contaminate the listing");
 assert.equal(saleRiad.extracted.transaction_type, "sale");
+assert.equal(saleRiad.extracted.property_type, null, "explicit riad must not be rewritten as villa from Avito category boilerplate");
+
+const arabicDuplexRent = classifyNational({
+  url: "https://avito.ma/fr/m'hamid/appartements/lmhamid_abwab_Atlas__56231634.htm",
+  title: "lmhamid abwab Atlas Appartements à Marrakech Avito.ma",
+  snippet: "دوبلكس للايجار او الرهن announce Appartements au Maroc au meilleur prix sur Avito plateforme N°1 de vente et achat en ligne au Maroc.",
+  city: "Marrakech",
+  transaction: "sale",
+  propertyType: "appartement",
+});
+assert.ok(arabicDuplexRent);
+assert.equal(arabicDuplexRent.extracted.city, "Marrakech");
+assert.equal(arabicDuplexRent.extracted.transaction_type, "rent", "explicit Arabic rent intent must outrank generic Avito vente boilerplate");
+assert.equal(arabicDuplexRent.extracted.property_type, null, "explicit unsupported duplex must not inherit the Appartements category label");
 
 const unsupportedBuilding = classifyNational({
   url: "https://avito.ma/fr/biar/autre_immobilier/Immeuble_%D8%B9%D9%85%D8%A7%D8%B1%D8%A9_170%D9%85%C2%B2_5_%D8%B4%D9%82%D9%82_58389694.htm",
