@@ -115,7 +115,7 @@ test('end-to-end discovery ranks net-new domains and harvests public sitemaps de
   });
 
   assert.equal(result.crawl, 'CC-MAIN-2026-34');
-  assert.deepEqual(result.domains.map((item) => item.host), ['atlasimmo.ma', 'casa-biens.ma', 'rabat-home.ma']);
+  assert.deepEqual(result.domains.map((item) => item.host), ['rabat-home.ma', 'atlasimmo.ma', 'casa-biens.ma']);
   assert.equal(result.sitemapEvidence.length, 3);
   assert.equal(result.candidateUrls.length, 9);
   assert.equal(result.zeroDbWrites, true);
