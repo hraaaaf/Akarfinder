@@ -8,8 +8,10 @@ on:
     paths:
       - 'scripts/acquisition/commoncrawl-open-web-mesh.mjs'
       - 'scripts/acquisition/commoncrawl-domain-first.mjs'
+      - 'scripts/acquisition/commoncrawl-domain-first-live.mjs'
       - 'scripts/acquisition/__tests__/commoncrawl-open-web-mesh.test.mjs'
       - 'scripts/acquisition/__tests__/commoncrawl-domain-first.test.mjs'
+      - 'scripts/acquisition/__tests__/commoncrawl-domain-first-live.test.mjs'
       - '.github/workflows/morocco-web-l3-commoncrawl-mesh.yml'
       - 'docs/AKARFINDER_MOROCCO_WEB_ACQUISITION.md'
 
@@ -34,10 +36,10 @@ jobs:
           node-version: '22'
 
       - name: Unit tests
-        run: node --test scripts/acquisition/__tests__/commoncrawl-open-web-mesh.test.mjs scripts/acquisition/__tests__/commoncrawl-domain-first.test.mjs
+        run: node --test scripts/acquisition/__tests__/commoncrawl-open-web-mesh.test.mjs scripts/acquisition/__tests__/commoncrawl-domain-first.test.mjs scripts/acquisition/__tests__/commoncrawl-domain-first-live.test.mjs
 
       - name: Live public dry-run
-        run: node scripts/acquisition/commoncrawl-domain-first.mjs
+        run: node scripts/acquisition/commoncrawl-domain-first-live.mjs
 
       - name: Publish evidence summary
         if: always()
