@@ -1,0 +1,49 @@
+name: Morocco Web Real-Estate Discovery Canary
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - spike/morocco-web-full-acquisition
+    paths:
+      - 'scripts/audits/morocco-web-real-estate-discovery-canary.mjs'
+      - '.github/workflows/morocco-web-real-estate-discovery-canary.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: morocco-web-real-estate-discovery-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  discovery:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Discover public Moroccan real-estate inventory
+        run: node scripts/audits/morocco-web-real-estate-discovery-canary.mjs
+
+      - name: Publish evidence
+        if: always()
+        run: |
+          if [ -f artifacts/morocco-web-real-estate-discovery/report.md ]; then
+            cat artifacts/morocco-web-real-estate-discovery/report.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: morocco-web-real-estate-discovery-${{ github.run_id }}
+          path: artifacts/morocco-web-real-estate-discovery/
+          if-no-files-found: error
+          retention-days: 14
