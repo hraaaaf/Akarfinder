@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
+// Public-only acquisition proof. No DB writes, private APIs, credentials, or block evasion.
 const OUT = 'artifacts/morocco-web-real-estate-discovery';
 const UA = 'AkarFinder-public-index-audit/2.0 (+https://akarfinder.ma)';
 const timeoutMs = 15000;
