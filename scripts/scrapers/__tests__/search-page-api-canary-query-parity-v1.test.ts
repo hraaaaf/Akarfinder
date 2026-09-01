@@ -47,7 +47,7 @@ test("record and URLSearchParams readers produce an identical public search quer
 test("shared parser keeps the established first tranche and safe bounds", () => {
   const empty = buildSearchRequestQuery(() => undefined);
   assert.equal(empty.limit, 100);
-  assert.equal(empty.offset, 0);
+  assert.equal(empty.offset, undefined);
 
   const boundedParams: Record<string, string> = {
     limit: "999",
@@ -64,7 +64,7 @@ test("page and API routes consume the same parser and stable-key builder", () =>
   const page = readFileSync("app/search/page.tsx", "utf8");
   const api = readFileSync("app/api/search/route.ts", "utf8");
 
-  assert.match(page, /buildRawSearchPageQuery\(params\)/);
+  assert.match(page, /buildRawSearchPageQuery\(pagedParams\)/);
   assert.match(page, /buildSearchStableKey\(publicRequestQuery\)/);
   assert.match(api, /buildSearchRequestQuery\(/);
   assert.match(api, /buildSearchStableKey\(query\)/);

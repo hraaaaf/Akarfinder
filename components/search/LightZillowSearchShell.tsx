@@ -434,11 +434,11 @@ export function LightZillowSearchShell({ initialListings, initialTotal, initialP
   const listRef = useRef<HTMLDivElement>(null);
   const handleSelectCity = (city: string) => {
     track({ event_name: "search_map_pin_click", source_page: "/search", metadata: { city } });
-    setFilters((current) => ({
-      ...current,
-      city: current.city.toLowerCase() === city.toLowerCase() ? "all" : city,
+    handleFilterChange({
+      ...filters,
+      city: filters.city.toLowerCase() === city.toLowerCase() ? "all" : city,
       neighborhood: "all",
-    }));
+    });
     setTimeout(() => listRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
   };
 
@@ -515,7 +515,7 @@ export function LightZillowSearchShell({ initialListings, initialTotal, initialP
               <button
                 key={chip.key}
                 type="button"
-                onClick={() => setFilters((current) => ({ ...current, ...chip.clear }))}
+                onClick={() => handleFilterChange({ ...filters, ...chip.clear })}
                 className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border/20 bg-surface px-2.5 py-1 text-[11px] font-bold text-foreground/75 transition hover:border-bronze-500/35 hover:text-foreground"
               >
                 {chip.label}<X size={10} strokeWidth={2.6} aria-hidden="true" />
