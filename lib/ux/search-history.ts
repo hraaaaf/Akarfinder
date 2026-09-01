@@ -48,6 +48,11 @@ export function applySearchContinuityContext(
   if (projectId) parsed.searchParams.set("project_id", projectId);
   else parsed.searchParams.delete("project_id");
 
+  const rawPage = Number(currentParams.get("page"));
+  const page = Number.isFinite(rawPage) && rawPage > 1 ? Math.trunc(rawPage) : 1;
+  if (page > 1) parsed.searchParams.set("page", String(page));
+  else parsed.searchParams.delete("page");
+
   const query = parsed.searchParams.toString();
   return `${parsed.pathname}${query ? `?${query}` : ""}`;
 }
