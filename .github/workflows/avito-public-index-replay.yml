@@ -1,0 +1,89 @@
+name: Avito Public-Index Replay
+
+on:
+  pull_request:
+    paths:
+      - "scripts/openserp/avito-public-index-replay-scope.ts"
+      - "scripts/openserp/resolve-avito-public-index-replay.ts"
+      - "scripts/openserp/snapshot-avito-public-index-replay.ts"
+      - "scripts/openserp/replay-avito-public-index-classifier.ts"
+      - "scripts/openserp/apply-avito-public-index-replay-manifest.ts"
+      - ".github/workflows/avito-public-index-replay.yml"
+  push:
+    branches: [main]
+    paths:
+      - "scripts/openserp/avito-public-index-replay-scope.ts"
+      - "scripts/openserp/resolve-avito-public-index-replay.ts"
+      - "scripts/openserp/snapshot-avito-public-index-replay.ts"
+      - "scripts/openserp/replay-avito-public-index-classifier.ts"
+      - "scripts/openserp/apply-avito-public-index-replay-manifest.ts"
+      - ".github/workflows/avito-public-index-replay.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout exact PR/main revision
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Prepare replay workspace
+        run: mkdir -p tmp
+
+      - name: Resolve query IDs from official catalog
+        run: npx tsx scripts/openserp/resolve-avito-public-index-replay.ts
+
+      - name: Snapshot bounded production candidates (read-only)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npx tsx scripts/openserp/snapshot-avito-public-index-replay.ts --output=tmp/avito-public-index-replay-snapshot.json
+
+      - name: Replay certified TypeScript classifier with network namespace disabled
+        run: |
+          sudo --preserve-env=PATH,GITHUB_WORKSPACE unshare --net -- bash -c '
+            cd "$GITHUB_WORKSPACE"
+            npx tsx scripts/openserp/replay-avito-public-index-classifier.ts \
+              --snapshot=tmp/avito-public-index-replay-snapshot.json \
+              --output=tmp/avito-public-index-replay-manifest.json
+          '
+
+      - name: Existing Avito classifier contract
+        run: npx tsx scripts/openserp/__tests__/avito-classification-recovery-v1.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Upload retained replay evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: avito-public-index-replay-${{ github.sha }}
+          path: |
+            tmp/avito-public-index-replay-snapshot.json
+            tmp/avito-public-index-replay-manifest.json
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Apply accepted manifest through official writer on canonical main only
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          OPENSERP_AUTOMATED_INGESTION_ENABLED: ${{ secrets.OPENSERP_AUTOMATED_INGESTION_ENABLED }}
+          OPENSERP_INGESTION_WRITE_ENABLED: ${{ secrets.OPENSERP_INGESTION_WRITE_ENABLED }}
+          OPENSERP_INGESTION_CRON_ENABLED: ${{ secrets.OPENSERP_INGESTION_CRON_ENABLED }}
+        run: npx tsx scripts/openserp/apply-avito-public-index-replay-manifest.ts --apply --manifest=tmp/avito-public-index-replay-manifest.json
