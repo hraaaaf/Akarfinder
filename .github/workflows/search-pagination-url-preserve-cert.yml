@@ -1,0 +1,24 @@
+name: Search Pagination URL Preserve Cert
+
+on:
+  push:
+    branches:
+      - agent/search-pagination-url-preserve
+
+jobs:
+  certify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Verify page continuity
+        run: |
+          npx tsx -e "import { applySearchContinuityContext } from './lib/ux/search-history'; const a=applySearchContinuityContext('/search?q=rabat','?q=rabat&page=2',false); if(a!=='/search?q=rabat&page=2') throw new Error(a); const b=applySearchContinuityContext('/search?q=rabat','?q=rabat&page=1',false); if(b!=='/search?q=rabat') throw new Error(b); const c=applySearchContinuityContext('/search?q=rabat','?q=rabat&page=3&project_id=abc',false); if(c!=='/search?q=rabat&project_id=abc&page=3') throw new Error(c); console.log({a,b,c});"
+      - name: Typecheck
+        run: npx tsc --noEmit
+      - name: Build
+        run: npm run build
