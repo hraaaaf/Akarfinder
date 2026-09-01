@@ -1,0 +1,91 @@
+name: Search Pagination Live Cert Final V2
+
+on:
+  push:
+    branches:
+      - agent/search-pagination-live-cert-final-v2
+
+permissions:
+  contents: read
+
+jobs:
+  live-cert:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Certify live pagination
+        run: |
+          mkdir -p artifacts/search-pagination-live-final-v2
+          cat > scripts/search-pagination-live-final-v2.mjs <<'EOF'
+          import { chromium } from 'playwright';
+          import fs from 'node:fs';
+
+          const base = 'https://akarfinder.vercel.app';
+          const p1res = await fetch(`${base}/api/search?limit=24&offset=0`);
+          const p2res = await fetch(`${base}/api/search?limit=24&offset=24`);
+          if (!p1res.ok || !p2res.ok) throw new Error(`api status ${p1res.status}/${p2res.status}`);
+          const p1 = await p1res.json();
+          const p2 = await p2res.json();
+          const ids1 = p1.listings.map(x => String(x.id));
+          const ids2 = p2.listings.map(x => String(x.id));
+          const overlap = ids1.filter(id => ids2.includes(id));
+          if (p1.listings.length !== 24) throw new Error(`page1 length ${p1.listings.length}`);
+          if (p2.listings.length !== 24) throw new Error(`page2 length ${p2.listings.length}`);
+          if (p1.total !== p2.total) throw new Error(`total mismatch ${p1.total}/${p2.total}`);
+          if (overlap.length !== 0) throw new Error(`overlap ${overlap.join(',')}`);
+
+          const browser = await chromium.launch({headless: true});
+          const viewports = [
+            {name:'390x844', width:390, height:844},
+            {name:'430x932', width:430, height:932},
+            {name:'768x900', width:768, height:900},
+            {name:'1280x900', width:1280, height:900},
+          ];
+          const report = {deployment:'dpl_HdVBtmU4E5CzTzuP8D5jaGiFZ6gW', deployedHead:'6841c2d1d2564066c829fefafe808dc4fb9d9904', api:{total:p1.total,page1:ids1,page2:ids2,overlap}, viewports:[]};
+          for (const vp of viewports) {
+            const page = await browser.newPage({viewport:{width:vp.width,height:vp.height}});
+            const consoleErrors=[];
+            const failed=[];
+            page.on('console', msg => { if (msg.type()==='error') consoleErrors.push(msg.text()); });
+            page.on('response', res => { if (res.status() >= 400) failed.push(`${res.status()} ${res.url()}`); });
+            const response = await page.goto(`${base}/search?page=2`, {waitUntil:'domcontentloaded', timeout:45000});
+            if (!response || response.status() >= 400) throw new Error(`${vp.name} status ${response?.status()}`);
+            await page.waitForTimeout(3500);
+            const state = await page.evaluate(() => {
+              const cards = document.querySelectorAll('[data-mobile-compact-card]');
+              const bodyText = document.body.innerText;
+              return {
+                url: location.href,
+                cards: cards.length,
+                page2Visible: /Page\s+2\s+sur/i.test(bodyText) || /\b2\b/.test(bodyText),
+                hasPagination: Boolean(document.querySelector('nav[aria-label*="Pagination"], [data-search-pagination]')) || /Suivant|Précédent/.test(bodyText),
+                horizontalOverflow: document.documentElement.scrollWidth > document.documentElement.clientWidth,
+              };
+            });
+            if (!state.url.includes('page=2')) throw new Error(`${vp.name} url ${state.url}`);
+            if (state.cards !== 24) throw new Error(`${vp.name} cards ${state.cards}`);
+            if (!state.hasPagination) throw new Error(`${vp.name} pagination missing`);
+            if (state.horizontalOverflow) throw new Error(`${vp.name} horizontal overflow`);
+            if (consoleErrors.length) throw new Error(`${vp.name} console errors: ${consoleErrors.join(' | ')}`);
+            const criticalFailed = failed.filter(x => /\/api\/search(?:\?|$)|\/search(?:\?|$)/.test(x));
+            if (criticalFailed.length) throw new Error(`${vp.name} failed responses: ${criticalFailed.join(' | ')}`);
+            await page.screenshot({path:`artifacts/search-pagination-live-final-v2/after-${vp.name}.png`, fullPage:true});
+            report.viewports.push({...vp, ...state, consoleErrors, failedResponses:criticalFailed});
+            await page.close();
+          }
+          await browser.close();
+          fs.writeFileSync('artifacts/search-pagination-live-final-v2/report.json', JSON.stringify(report,null,2));
+          console.log(JSON.stringify({total:p1.total, page1:ids1.length, page2:ids2.length, overlap:overlap.length, viewports:report.viewports.map(v=>({name:v.name,url:v.url,cards:v.cards,pagination:v.hasPagination,overflow:v.horizontalOverflow,consoleErrors:v.consoleErrors.length,failedResponses:v.failedResponses.length}))}, null, 2));
+          EOF
+          node scripts/search-pagination-live-final-v2.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: search-pagination-live-final-v2
+          path: artifacts/search-pagination-live-final-v2
+          retention-days: 14
