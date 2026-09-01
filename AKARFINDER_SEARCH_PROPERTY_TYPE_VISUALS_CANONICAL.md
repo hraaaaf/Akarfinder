@@ -149,12 +149,38 @@ Aucun rouge observé sur la vague produit exacte.
 - `main` a été avancé sur ce merge-ref avec `force=false` ;
 - GitHub reconnaît PR #951 : `closed`, `merged=true`, `merged_at=2026-08-30T17:59:00Z`.
 
-## Production activation — EN COURS
+## Production activation / live proof — VÉRIFIÉ
 
-- autorisation utilisateur explicite reçue le `2026-08-30` ;
-- déploiement Vercel direct tenté via connecteur : refusé par schéma d'outil (`Provide at least one file to deploy`) ;
-- déclenchement demandé via l'intégration Git liée au projet Vercel avec ce commit documentaire uniquement ;
-- aucun fichier produit, ranking, data ou DB modifié par ce déclencheur.
+Production certifiée le `2026-09-01` :
+- deployment Vercel : `dpl_3psDqDjPZ31X7kkCwZdmM6Pd2Qw6` ✅ READY ;
+- URL production : `https://akarfinder.vercel.app/search` ;
+- HEAD production : `3e87ce700afb9a2ae4c720fb558593e973d6598b` ;
+- le merge produit `76553c7e…` est présent dans la lignée de ce HEAD production.
+
+Certification LIVE dédiée :
+- branche temporaire : `agent/search-property-type-l7-live-visual-cert` ;
+- HEAD de certification : `f76e32e636a6b6a9c8a9bddad438ee136e1eb157` ;
+- run : `33520207739` ✅ SUCCESS ;
+- artifact : `9805384854` ;
+- digest : `sha256:acfb0b0df0ef2d51e4a0cb50ff747f71202568338813febdfce70a3909cecfaf` ;
+- captures LIVE : 390×844 / 430×932 / 768×900 / 1280×900 ;
+- screenshotCount : `4/4` ;
+- findingCount : `0` ;
+- aucun overflow détecté ;
+- aucune erreur console détectée ;
+- aucune réponse HTTP >= 400 détectée pendant les quatre scénarios.
+
+Inspection visuelle LIVE :
+- système visuel par type bien visible sur la vraie surface `/search` production ;
+- exemples observés : Villa vert, Appartement bleu, Bureau violet, Terrain orange ;
+- grille propre aux quatre viewports ;
+- badges et favoris sans collision visible ;
+- illustrations nettes et intégrées à la hiérarchie des cartes.
+
+Score LIVE : **9.8/10**.
+Limite explicite : les données visibles sur les captures LIVE ne montrent pas simultanément les six familles ; la preuve 6/6 reste portée par la certification produit exacte précédente, tandis que L7 prouve l'activation et l'intégration réelles en production.
+
+Note hors scope : la capture 430 px affiche un total différent des autres viewports ; aucun diagnostic n'est attaché à ce lot et ce signal n'est pas présenté comme défaut produit sans investigation dédiée.
 
 ## Roadmap finale
 
@@ -165,7 +191,10 @@ Aucun rouge observé sur la vague produit exacte.
 - [x] L4 — Tests / CI
 - [x] L5 — AFTER / score 10/10
 - [x] L6 — Merge / post-merge
-- [ ] L7 — Production activation / live proof
+- [x] L7 — Production activation / live proof
 
-## NEXT EXACT
-Vérifier si l'intégration Git Vercel a créé un nouveau déploiement production sur le HEAD courant ; si oui, valider READY puis capturer `/search` live.
+## CLOSEOUT
+
+Search Property Type Visual System : **CLOSED — 7/7 lots prouvés**.
+
+Aucun changement ranking, data, DB ou ingestion n'a été nécessaire pour L7. Les fichiers temporaires de certification LIVE ont été retirés avant intégration du closeout.
