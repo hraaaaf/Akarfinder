@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       sample:
-        description: Detail page sample size
+        description: Public real-estate evidence sample cap
         required: false
         default: '100'
   push:
@@ -34,7 +34,7 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Run public-only Avito canary
+      - name: Run public-only Avito real-estate census
         env:
           SAMPLE: ${{ github.event.inputs.sample || '100' }}
         run: |
@@ -42,7 +42,8 @@ jobs:
             --sample "$SAMPLE" \
             --concurrency 2 \
             --timeout-ms 12000 \
-            --max-sitemaps 40
+            --max-pages 60 \
+            --max-depth 2
 
       - name: Publish report in job summary
         if: always()
