@@ -31,6 +31,7 @@ import { getSearchViewLayout } from "@/lib/ux/search-view";
 type LightZillowSearchShellProps = {
   initialListings: Listing[];
   initialTotal: number;
+  initialPage: number;
   initialFilters?: Partial<ListingFiltersState>;
   projectId?: string;
 };
@@ -51,6 +52,8 @@ type GatewaySearchResponse = {
   has_more?: boolean;
 };
 
+const PAGE_SIZE = 24;
+
 const RELIABILITY_BADGE: Record<string, string> = {
   top: "Information complete",
   high: "Information structuree",
@@ -58,8 +61,11 @@ const RELIABILITY_BADGE: Record<string, string> = {
   low: "Information limitee",
 };
 
-function buildSearchUrl(filters: ListingFiltersState, sortBy: SortBy): string {
-  const params = new URLSearchParams({ limit: "100" });
+function buildSearchUrl(filters: ListingFiltersState, sortBy: SortBy, page: number): string {
+  const params = new URLSearchParams({
+    limit: String(PAGE_SIZE),
+    offset: String((Math.max(1, page) - 1) * PAGE_SIZE),
+  });
   if (filters.search.trim()) params.set("q", filters.search.trim());
   if (filters.city !== "all") params.set("city", filters.city);
   if (filters.neighborhood && filters.neighborhood !== "all") params.set("district", filters.neighborhood);
@@ -76,6 +82,29 @@ function buildSearchUrl(filters: ListingFiltersState, sortBy: SortBy): string {
   if (sortBy === "price-asc") params.set("sort", "price_asc");
   else if (sortBy === "price-desc") params.set("sort", "price_desc");
   return `/api/search?${params.toString()}`;
+}
+
+function buildBrowserSearchUrl(
+  filters: ListingFiltersState,
+  sortBy: SortBy,
+  page: number,
+  projectId?: string,
+): string {
+  const params = new URLSearchParams();
+  if (filters.search.trim()) params.set("q", filters.search.trim());
+  if (filters.city !== "all") params.set("city", filters.city);
+  if (filters.neighborhood && filters.neighborhood !== "all") params.set("district", filters.neighborhood);
+  if (filters.transactionType !== "all") params.set("transaction_type", filters.transactionType);
+  if (filters.propertyType !== "all") params.set("property_type", filters.propertyType);
+  if (filters.minBudget) params.set("min_price", filters.minBudget);
+  if (filters.maxBudget) params.set("max_price", filters.maxBudget);
+  if (filters.minSurface) params.set("min_surface", filters.minSurface);
+  if (sortBy === "price-asc") params.set("sort", "price_asc");
+  else if (sortBy === "price-desc") params.set("sort", "price_desc");
+  if (page > 1) params.set("page", String(page));
+  if (projectId) params.set("project_id", projectId);
+  const query = params.toString();
+  return query ? `/search?${query}` : "/search";
 }
 
 function buildGatewayUrl(filters: ListingFiltersState, cursor?: string | null): string {
@@ -137,7 +166,7 @@ function EmptyState({ onReset, city }: { onReset: () => void; city?: string }) {
   );
 }
 
-export function LightZillowSearchShell({ initialListings, initialTotal, initialFilters, projectId }: LightZillowSearchShellProps) {
+export function LightZillowSearchShell({ initialListings, initialTotal, initialPage, initialFilters, projectId }: LightZillowSearchShellProps) {
   const [filters, setFilters] = useState<ListingFiltersState>({
     ...defaultListingFilters,
     transactionType: initialFilters?.transactionType ?? defaultListingFilters.transactionType,
@@ -151,6 +180,7 @@ export function LightZillowSearchShell({ initialListings, initialTotal, initialF
   });
   const [view, setView] = useState<SearchViewMode>("split");
   const [sortBy, setSortBy] = useState<SortBy>("recommended");
+  const [currentPage, setCurrentPage] = useState(Math.max(1, initialPage));
   const [listings, setListings] = useState(initialListings);
   const [searchTotalCount, setSearchTotalCount] = useState(initialTotal);
   const [isLoading, setIsLoading] = useState(true);
@@ -175,6 +205,25 @@ export function LightZillowSearchShell({ initialListings, initialTotal, initialF
     },
   });
 
+  function syncBrowserUrl(
+    page: number,
+    mode: "push" | "replace",
+    nextFilters: ListingFiltersState = filters,
+    nextSort: SortBy = sortBy,
+  ) {
+    const href = buildBrowserSearchUrl(nextFilters, nextSort, page, projectId);
+    if (mode === "push") window.history.pushState({}, "", href);
+    else window.history.replaceState({}, "", href);
+  }
+
+  function handlePageChange(nextPage: number) {
+    const page = Math.max(1, nextPage);
+    if (page === currentPage) return;
+    setCurrentPage(page);
+    syncBrowserUrl(page, "push");
+    setTimeout(() => listRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 40);
+  }
+
   function handleFilterChange(next: ListingFiltersState) {
     if (
       next.transactionType !== filters.transactionType ||
@@ -191,7 +240,18 @@ export function LightZillowSearchShell({ initialListings, initialTotal, initialF
       });
     }
     setFilters(next);
+    setCurrentPage(1);
+    syncBrowserUrl(1, "replace", next, sortBy);
   }
+
+  useEffect(() => {
+    const onPopState = () => {
+      const raw = Number(new URLSearchParams(window.location.search).get("page"));
+      setCurrentPage(Number.isFinite(raw) && raw >= 1 ? Math.trunc(raw) : 1);
+    };
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -200,7 +260,7 @@ export function LightZillowSearchShell({ initialListings, initialTotal, initialF
       if (cancelled) return;
       setIsLoading(true);
       try {
-        const response = await fetch(buildSearchUrl(filters, sortBy), { cache: "no-store" });
+        const response = await fetch(buildSearchUrl(filters, sortBy, currentPage), { cache: "no-store" });
         if (!response.ok || cancelled) return;
         const payload = (await response.json()) as ApiSearchResponse;
         if (!cancelled) {
@@ -217,7 +277,7 @@ export function LightZillowSearchShell({ initialListings, initialTotal, initialF
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [filters, sortBy]);
+  }, [filters, sortBy, currentPage]);
 
   async function handleLoadMoreIndexed() {
     if (!nextCursor || isLoadingMore) return;
@@ -248,7 +308,7 @@ export function LightZillowSearchShell({ initialListings, initialTotal, initialF
   }
 
   useEffect(() => {
-    if (!gatewayEnabled) {
+    if (!gatewayEnabled || currentPage !== 1) {
       setGatewayResults([]);
       setNextCursor(null);
       setHasMoreIndexed(false);
@@ -292,7 +352,7 @@ export function LightZillowSearchShell({ initialListings, initialTotal, initialF
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [filters, gatewayEnabled]);
+  }, [filters, gatewayEnabled, currentPage]);
 
   const filteredListings = useMemo(() => {
     const minBudget = Number(filters.minBudget) || 0;
@@ -345,7 +405,11 @@ export function LightZillowSearchShell({ initialListings, initialTotal, initialF
 
   const cities = useMemo(() => getSearchCities(listings), [listings]);
   const propertyTypes = useMemo(() => getPropertyTypes(listings), [listings]);
-  const handleReset = () => setFilters(defaultListingFilters);
+  const handleReset = () => {
+    setFilters(defaultListingFilters);
+    setCurrentPage(1);
+    syncBrowserUrl(1, "replace", defaultListingFilters, sortBy);
+  };
 
   const { cityCounts, otherCount, avgIndex } = useMemo(() => {
     const counts = new Map<string, number>();
@@ -392,13 +456,16 @@ export function LightZillowSearchShell({ initialListings, initialTotal, initialF
     return chips;
   }, [filters]);
 
-  const loadedResultCount = filteredListings.length + gatewayResults.length;
+  const loadedResultCount = filteredListings.length + (currentPage === 1 ? gatewayResults.length : 0);
   const totalResultCount = Math.max(
     searchTotalCount,
     indexedTotalCount ?? 0,
     loadedResultCount,
   );
-  const isSearching = isLoading || isGatewayLoading;
+  const totalPages = Math.max(1, Math.ceil(searchTotalCount / PAGE_SIZE));
+  const paginationPages = Array.from({ length: totalPages }, (_, index) => index + 1)
+    .filter((page) => page === 1 || page === totalPages || Math.abs(page - currentPage) <= 2);
+  const isSearching = isLoading || (currentPage === 1 && isGatewayLoading);
   const hasAnyResults = loadedResultCount > 0;
   const showSkeleton = isLoading && filteredListings.length === 0 && gatewayResults.length === 0;
 
@@ -427,7 +494,12 @@ export function LightZillowSearchShell({ initialListings, initialTotal, initialF
               data-search-sort-select
               aria-label="Trier les résultats"
               value={sortBy}
-              onChange={(event) => setSortBy(event.target.value as SortBy)}
+              onChange={(event) => {
+                const nextSort = event.target.value as SortBy;
+                setSortBy(nextSort);
+                setCurrentPage(1);
+                syncBrowserUrl(1, "replace", filters, nextSort);
+              }}
               className="h-12 max-w-[118px] shrink-0 rounded-full border border-border/20 bg-surface px-3 text-[12px] font-bold text-foreground outline-none sm:h-10 sm:max-w-none dark:border-white/12 dark:bg-white/[0.06] dark:[color-scheme:dark]"
             >
               <option value="recommended">Recommandé</option>
@@ -467,22 +539,64 @@ export function LightZillowSearchShell({ initialListings, initialTotal, initialF
                   {continuousListings.length > 0 ? (
                     <div className={`grid grid-cols-1 gap-5 xl:grid-cols-2 transition-opacity duration-200 ${isLoading ? "opacity-60" : "opacity-100"}`}>
                       {continuousListings.map((listing) => (
-                        <SearchListingCardDark key={listing.id} listing={listing} projectId={projectId} />
+                        <div key={listing.id} className="contents" data-search-primary-card data-listing-id={String(listing.id)}>
+                          <SearchListingCardDark listing={listing} projectId={projectId} />
+                        </div>
                       ))}
                     </div>
                   ) : null}
 
-                  <ExternalIndexedResultsSection
-                    results={gatewayResults}
-                    isLoading={isGatewayLoading}
-                    showHeader={false}
-                  />
+                  {totalPages > 1 ? (
+                    <nav data-search-pagination aria-label="Pagination des résultats" className="flex flex-wrap items-center justify-center gap-2 py-2">
+                      <button
+                        type="button"
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage <= 1}
+                        className="rounded-full border border-border/20 px-3 py-2 text-[12px] font-extrabold text-foreground disabled:opacity-35"
+                      >
+                        Précédent
+                      </button>
+                      {paginationPages.map((page, index) => {
+                        const previous = paginationPages[index - 1];
+                        return (
+                          <span key={page} className="contents">
+                            {previous && page - previous > 1 ? <span className="px-1 text-muted-foreground">…</span> : null}
+                            <button
+                              type="button"
+                              data-page={page}
+                              aria-current={page === currentPage ? "page" : undefined}
+                              onClick={() => handlePageChange(page)}
+                              className={`min-w-9 rounded-full border px-3 py-2 text-[12px] font-extrabold transition ${page === currentPage ? "border-bronze-500 bg-bronze-500/15 text-bronze-300" : "border-border/20 text-foreground hover:border-bronze-500/40"}`}
+                            >
+                              {page}
+                            </button>
+                          </span>
+                        );
+                      })}
+                      <button
+                        type="button"
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage >= totalPages}
+                        className="rounded-full border border-border/20 px-3 py-2 text-[12px] font-extrabold text-foreground disabled:opacity-35"
+                      >
+                        Suivant
+                      </button>
+                    </nav>
+                  ) : null}
+
+                  {currentPage === 1 ? (
+                    <ExternalIndexedResultsSection
+                      results={gatewayResults}
+                      isLoading={isGatewayLoading}
+                      showHeader={false}
+                    />
+                  ) : null}
 
                   {!hasAnyResults && !isSearching ? <EmptyState onReset={handleReset} city={filters.city} /> : null}
                 </div>
               )}
 
-              {hasMoreIndexed ? (
+              {currentPage === 1 && hasMoreIndexed ? (
                 <div className="mt-6 flex justify-center">
                   <button
                     type="button"
