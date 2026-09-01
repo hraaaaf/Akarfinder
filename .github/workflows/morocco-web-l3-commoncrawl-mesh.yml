@@ -9,9 +9,11 @@ on:
       - 'scripts/acquisition/commoncrawl-open-web-mesh.mjs'
       - 'scripts/acquisition/commoncrawl-domain-first.mjs'
       - 'scripts/acquisition/commoncrawl-domain-first-live.mjs'
+      - 'scripts/acquisition/commoncrawl_url_index_domain_discovery.py'
       - 'scripts/acquisition/__tests__/commoncrawl-open-web-mesh.test.mjs'
       - 'scripts/acquisition/__tests__/commoncrawl-domain-first.test.mjs'
       - 'scripts/acquisition/__tests__/commoncrawl-domain-first-live.test.mjs'
+      - 'scripts/acquisition/__tests__/test_commoncrawl_url_index_domain_discovery.py'
       - '.github/workflows/morocco-web-l3-commoncrawl-mesh.yml'
       - 'docs/AKARFINDER_MOROCCO_WEB_ACQUISITION.md'
 
@@ -25,7 +27,7 @@ concurrency:
 jobs:
   certify:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -35,11 +37,21 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
       - name: Unit tests
-        run: node --test scripts/acquisition/__tests__/commoncrawl-open-web-mesh.test.mjs scripts/acquisition/__tests__/commoncrawl-domain-first.test.mjs scripts/acquisition/__tests__/commoncrawl-domain-first-live.test.mjs
+        run: |
+          node --test scripts/acquisition/__tests__/commoncrawl-open-web-mesh.test.mjs scripts/acquisition/__tests__/commoncrawl-domain-first.test.mjs scripts/acquisition/__tests__/commoncrawl-domain-first-live.test.mjs
+          python -m unittest scripts/acquisition/__tests__/test_commoncrawl_url_index_domain_discovery.py
+
+      - name: Install URL Index query engine
+        run: python -m pip install --disable-pip-version-check duckdb
 
       - name: Live public dry-run
-        run: node scripts/acquisition/commoncrawl-domain-first-live.mjs
+        run: python scripts/acquisition/commoncrawl_url_index_domain_discovery.py
 
       - name: Publish evidence summary
         if: always()
