@@ -1,0 +1,53 @@
+name: Morocco Web L2 Mubawab MarocAnnonces Adapters
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feat/morocco-web-l2-mubawab-marocannonces
+    paths:
+      - 'scripts/acquisition/mubawab-marocannonces-public-adapter.mjs'
+      - 'scripts/acquisition/__tests__/mubawab-marocannonces-public-adapter.test.mjs'
+      - '.github/workflows/morocco-web-l2-mubawab-marocannonces.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: morocco-web-l2-mubawab-marocannonces-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Unit tests
+        run: node --test scripts/acquisition/__tests__/mubawab-marocannonces-public-adapter.test.mjs
+
+      - name: Live public dry-run
+        run: node scripts/acquisition/mubawab-marocannonces-public-adapter.mjs
+
+      - name: Publish evidence summary
+        if: always()
+        run: |
+          if [ -f artifacts/morocco-web-l2-mubawab-marocannonces/report.md ]; then
+            cat artifacts/morocco-web-l2-mubawab-marocannonces/report.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: morocco-web-l2-mubawab-marocannonces-${{ github.run_id }}
+          path: artifacts/morocco-web-l2-mubawab-marocannonces/
+          if-no-files-found: error
+          retention-days: 14
