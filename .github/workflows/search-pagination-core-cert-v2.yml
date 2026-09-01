@@ -1,4 +1,4 @@
-name: Search Pagination Core Cert V2
+name: Search Pagination UI Cert
 
 on:
   push:
@@ -11,7 +11,7 @@ permissions:
 jobs:
   certify:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
         with:
@@ -22,69 +22,236 @@ jobs:
           cache: npm
       - run: npm ci
 
-      - name: Apply verified core patch
+      - name: Apply 24-per-page UI patch
         run: |
           python - <<'PY'
           from pathlib import Path
-          src = Path('.github/workflows/search-pagination-core-cert.yml').read_text().splitlines()
-          start = next(i for i,l in enumerate(src) if l.strip() == "python - <<'PY'") + 1
-          end = next(i for i in range(start, len(src)) if src[i].strip() == 'PY')
-          code = [(l[10:] if l.startswith('          ') else l) for l in src[start:end]]
-          Path('/tmp/apply-core.py').write_text('\n'.join(code) + '\n')
+
+          def once(path, old, new, label):
+              p = Path(path)
+              text = p.read_text()
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f'{label}: expected 1 match, got {count}')
+              p.write_text(text.replace(old, new, 1))
+
+          once('app/search/page.tsx',
+            '  const params = searchParams ? await searchParams : {};\n  const publicRequestQuery = buildRawSearchPageQuery(params);\n  const resolvedQuery = buildSearchPageQuery(params);\n',
+            '  const params = searchParams ? await searchParams : {};\n  const parsedPage = Number(pickFirst(params.page));\n  const currentPage = Number.isFinite(parsedPage) && parsedPage >= 1 ? Math.trunc(parsedPage) : 1;\n  const pagedParams = {\n    ...params,\n    limit: "24",\n    offset: String((currentPage - 1) * 24),\n  };\n  const publicRequestQuery = buildRawSearchPageQuery(pagedParams);\n  const resolvedQuery = buildSearchPageQuery(pagedParams);\n',
+            'SSR numbered page query')
+
+          once('app/search/page.tsx',
+            '          initialTotal={initialSearchResult.total}\n          projectId={requestedProjectId}\n',
+            '          initialTotal={initialSearchResult.total}\n          initialPage={currentPage}\n          projectId={requestedProjectId}\n',
+            'pass initial page')
+
+          once('components/search/LightZillowSearchShell.tsx',
+            '  initialTotal: number;\n  initialFilters?: Partial<ListingFiltersState>;\n',
+            '  initialTotal: number;\n  initialPage: number;\n  initialFilters?: Partial<ListingFiltersState>;\n',
+            'page prop')
+
+          once('components/search/LightZillowSearchShell.tsx',
+            'const RELIABILITY_BADGE: Record<string, string> = {\n',
+            'const PAGE_SIZE = 24;\n\nconst RELIABILITY_BADGE: Record<string, string> = {\n',
+            'page size')
+
+          once('components/search/LightZillowSearchShell.tsx',
+            'function buildSearchUrl(filters: ListingFiltersState, sortBy: SortBy): string {\n  const params = new URLSearchParams({ limit: "100" });\n',
+            'function buildSearchUrl(filters: ListingFiltersState, sortBy: SortBy, page: number): string {\n  const params = new URLSearchParams({\n    limit: String(PAGE_SIZE),\n    offset: String((Math.max(1, page) - 1) * PAGE_SIZE),\n  });\n',
+            'API pagination')
+
+          marker = 'function buildGatewayUrl(filters: ListingFiltersState, cursor?: string | null): string {\n'
+          helper = '''function buildBrowserSearchUrl(\n  filters: ListingFiltersState,\n  sortBy: SortBy,\n  page: number,\n  projectId?: string,\n): string {\n  const params = new URLSearchParams();\n  if (filters.search.trim()) params.set("q", filters.search.trim());\n  if (filters.city !== "all") params.set("city", filters.city);\n  if (filters.neighborhood && filters.neighborhood !== "all") params.set("district", filters.neighborhood);\n  if (filters.transactionType !== "all") params.set("transaction_type", filters.transactionType);\n  if (filters.propertyType !== "all") params.set("property_type", filters.propertyType);\n  if (filters.minBudget) params.set("min_price", filters.minBudget);\n  if (filters.maxBudget) params.set("max_price", filters.maxBudget);\n  if (filters.minSurface) params.set("min_surface", filters.minSurface);\n  if (sortBy === "price-asc") params.set("sort", "price_asc");\n  else if (sortBy === "price-desc") params.set("sort", "price_desc");\n  if (page > 1) params.set("page", String(page));\n  if (projectId) params.set("project_id", projectId);\n  const query = params.toString();\n  return query ? `/search?${query}` : "/search";\n}\n\n'''
+          once('components/search/LightZillowSearchShell.tsx', marker, helper + marker, 'browser URL helper')
+
+          once('components/search/LightZillowSearchShell.tsx',
+            'export function LightZillowSearchShell({ initialListings, initialTotal, initialFilters, projectId }: LightZillowSearchShellProps) {\n',
+            'export function LightZillowSearchShell({ initialListings, initialTotal, initialPage, initialFilters, projectId }: LightZillowSearchShellProps) {\n',
+            'component page prop')
+
+          once('components/search/LightZillowSearchShell.tsx',
+            '  const [sortBy, setSortBy] = useState<SortBy>("recommended");\n  const [listings, setListings] = useState(initialListings);\n',
+            '  const [sortBy, setSortBy] = useState<SortBy>("recommended");\n  const [currentPage, setCurrentPage] = useState(Math.max(1, initialPage));\n  const [listings, setListings] = useState(initialListings);\n',
+            'page state')
+
+          once('components/search/LightZillowSearchShell.tsx',
+            '  function handleFilterChange(next: ListingFiltersState) {\n',
+            '''  function syncBrowserUrl(\n    page: number,\n    mode: "push" | "replace",\n    nextFilters: ListingFiltersState = filters,\n    nextSort: SortBy = sortBy,\n  ) {\n    const href = buildBrowserSearchUrl(nextFilters, nextSort, page, projectId);\n    if (mode === "push") window.history.pushState({}, "", href);\n    else window.history.replaceState({}, "", href);\n  }\n\n  function handlePageChange(nextPage: number) {\n    const page = Math.max(1, nextPage);\n    if (page === currentPage) return;\n    setCurrentPage(page);\n    syncBrowserUrl(page, "push");\n    setTimeout(() => listRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 40);\n  }\n\n  function handleFilterChange(next: ListingFiltersState) {\n''',
+            'page URL handlers')
+
+          once('components/search/LightZillowSearchShell.tsx',
+            '    setFilters(next);\n  }\n\n  useEffect(() => {\n',
+            '    setFilters(next);\n    setCurrentPage(1);\n    syncBrowserUrl(1, "replace", next, sortBy);\n  }\n\n  useEffect(() => {\n    const onPopState = () => {\n      const raw = Number(new URLSearchParams(window.location.search).get("page"));\n      setCurrentPage(Number.isFinite(raw) && raw >= 1 ? Math.trunc(raw) : 1);\n    };\n    window.addEventListener("popstate", onPopState);\n    return () => window.removeEventListener("popstate", onPopState);\n  }, []);\n\n  useEffect(() => {\n',
+            'filter reset and popstate')
+
+          once('components/search/LightZillowSearchShell.tsx',
+            '        const response = await fetch(buildSearchUrl(filters, sortBy), { cache: "no-store" });\n',
+            '        const response = await fetch(buildSearchUrl(filters, sortBy, currentPage), { cache: "no-store" });\n',
+            'fetch page')
+
+          once('components/search/LightZillowSearchShell.tsx',
+            '  }, [filters, sortBy]);\n\n  async function handleLoadMoreIndexed() {\n',
+            '  }, [filters, sortBy, currentPage]);\n\n  async function handleLoadMoreIndexed() {\n',
+            'fetch page dependency')
+
+          once('components/search/LightZillowSearchShell.tsx',
+            '  useEffect(() => {\n    if (!gatewayEnabled) {\n',
+            '  useEffect(() => {\n    if (!gatewayEnabled || currentPage !== 1) {\n',
+            'gateway only page one')
+
+          once('components/search/LightZillowSearchShell.tsx',
+            '  }, [filters, gatewayEnabled]);\n\n  const filteredListings = useMemo(() => {\n',
+            '  }, [filters, gatewayEnabled, currentPage]);\n\n  const filteredListings = useMemo(() => {\n',
+            'gateway page dependency')
+
+          once('components/search/LightZillowSearchShell.tsx',
+            '  const propertyTypes = useMemo(() => getPropertyTypes(listings), [listings]);\n  const handleReset = () => setFilters(defaultListingFilters);\n',
+            '  const propertyTypes = useMemo(() => getPropertyTypes(listings), [listings]);\n  const handleReset = () => {\n    setFilters(defaultListingFilters);\n    setCurrentPage(1);\n    syncBrowserUrl(1, "replace", defaultListingFilters, sortBy);\n  };\n',
+            'reset page')
+
+          once('components/search/LightZillowSearchShell.tsx',
+            '  const loadedResultCount = filteredListings.length + gatewayResults.length;\n',
+            '  const loadedResultCount = filteredListings.length + (currentPage === 1 ? gatewayResults.length : 0);\n',
+            'page one gateway count')
+
+          once('components/search/LightZillowSearchShell.tsx',
+            '  const isSearching = isLoading || isGatewayLoading;\n  const hasAnyResults = loadedResultCount > 0;\n',
+            '  const totalPages = Math.max(1, Math.ceil(searchTotalCount / PAGE_SIZE));\n  const paginationPages = Array.from({ length: totalPages }, (_, index) => index + 1)\n    .filter((page) => page === 1 || page === totalPages || Math.abs(page - currentPage) <= 2);\n  const isSearching = isLoading || (currentPage === 1 && isGatewayLoading);\n  const hasAnyResults = loadedResultCount > 0;\n',
+            'pagination model')
+
+          once('components/search/LightZillowSearchShell.tsx',
+            '              onChange={(event) => setSortBy(event.target.value as SortBy)}\n',
+            '              onChange={(event) => {\n                const nextSort = event.target.value as SortBy;\n                setSortBy(nextSort);\n                setCurrentPage(1);\n                syncBrowserUrl(1, "replace", filters, nextSort);\n              }}\n',
+            'sort reset page')
+
+          once('components/search/LightZillowSearchShell.tsx',
+            '                      {continuousListings.map((listing) => (\n                        <SearchListingCardDark key={listing.id} listing={listing} projectId={projectId} />\n                      ))}\n',
+            '                      {continuousListings.map((listing) => (\n                        <div key={listing.id} className="contents" data-search-primary-card data-listing-id={String(listing.id)}>\n                          <SearchListingCardDark listing={listing} projectId={projectId} />\n                        </div>\n                      ))}\n',
+            'card certification selectors')
+
+          once('components/search/LightZillowSearchShell.tsx',
+            '                  <ExternalIndexedResultsSection\n                    results={gatewayResults}\n                    isLoading={isGatewayLoading}\n                    showHeader={false}\n                  />\n',
+            '''                  {totalPages > 1 ? (\n                    <nav data-search-pagination aria-label="Pagination des résultats" className="flex flex-wrap items-center justify-center gap-2 py-2">\n                      <button\n                        type="button"\n                        onClick={() => handlePageChange(currentPage - 1)}\n                        disabled={currentPage <= 1}\n                        className="rounded-full border border-border/20 px-3 py-2 text-[12px] font-extrabold text-foreground disabled:opacity-35"\n                      >\n                        Précédent\n                      </button>\n                      {paginationPages.map((page, index) => {\n                        const previous = paginationPages[index - 1];\n                        return (\n                          <span key={page} className="contents">\n                            {previous && page - previous > 1 ? <span className="px-1 text-muted-foreground">…</span> : null}\n                            <button\n                              type="button"\n                              data-page={page}\n                              aria-current={page === currentPage ? "page" : undefined}\n                              onClick={() => handlePageChange(page)}\n                              className={`min-w-9 rounded-full border px-3 py-2 text-[12px] font-extrabold transition ${page === currentPage ? "border-bronze-500 bg-bronze-500/15 text-bronze-300" : "border-border/20 text-foreground hover:border-bronze-500/40"}`}\n                            >\n                              {page}\n                            </button>\n                          </span>\n                        );\n                      })}\n                      <button\n                        type="button"\n                        onClick={() => handlePageChange(currentPage + 1)}\n                        disabled={currentPage >= totalPages}\n                        className="rounded-full border border-border/20 px-3 py-2 text-[12px] font-extrabold text-foreground disabled:opacity-35"\n                      >\n                        Suivant\n                      </button>\n                    </nav>\n                  ) : null}\n\n                  {currentPage === 1 ? (\n                    <ExternalIndexedResultsSection\n                      results={gatewayResults}\n                      isLoading={isGatewayLoading}\n                      showHeader={false}\n                    />\n                  ) : null}\n''',
+            'pagination placement')
+
+          once('components/search/LightZillowSearchShell.tsx',
+            '              {hasMoreIndexed ? (\n',
+            '              {currentPage === 1 && hasMoreIndexed ? (\n',
+            'load more only page one')
           PY
-          python /tmp/apply-core.py
-
-      - name: Certify routing and distinct stable pages
-        run: |
-          cat > pagination-core-cert.tmp.ts <<'TS'
-          import assert from 'node:assert/strict';
-          import { buildSearchRequestQuery, buildSearchStableKey } from './lib/search/search-request-query';
-          import { supportsOdmPublicSearchQuery } from './lib/odm/odm-public-routing';
-          import { searchDatabase } from './lib/search/database-search';
-
-          async function main() {
-            const from = (params: Record<string,string>) => buildSearchRequestQuery((name) => params[name]);
-            const legacy = from({ limit: '24' });
-            const page1 = from({ limit: '24', offset: '0' });
-            const page2 = from({ limit: '24', offset: '24' });
-            assert.equal(legacy.offset, undefined);
-            assert.equal(page1.offset, 0);
-            assert.equal(page2.offset, 24);
-            assert.equal(supportsOdmPublicSearchQuery(legacy), true);
-            assert.equal(supportsOdmPublicSearchQuery(page1), false);
-            assert.equal(supportsOdmPublicSearchQuery(page2), false);
-            assert.equal(JSON.parse(buildSearchStableKey(legacy)).offset, 0);
-
-            const first = await searchDatabase({ limit: 24, offset: 0 });
-            const second = await searchDatabase({ limit: 24, offset: 24 });
-            const firstAgain = await searchDatabase({ limit: 24, offset: 0 });
-            const ids1 = first.listings.map((x) => String(x.id));
-            const ids2 = second.listings.map((x) => String(x.id));
-            const ids1Again = firstAgain.listings.map((x) => String(x.id));
-            assert.ok(first.total > 24, `fixture total too small: ${first.total}`);
-            assert.ok(ids1.length <= 24 && ids2.length <= 24);
-            assert.deepEqual(ids1Again, ids1, 'page 1 order must be repeatable');
-            const page2Set = new Set(ids2);
-            const overlap = ids1.filter((id) => page2Set.has(id));
-            assert.deepEqual(overlap, [], `page overlap: ${overlap.join(',')}`);
-            assert.equal(first.offset, 0);
-            assert.equal(second.offset, 24);
-            console.log(JSON.stringify({ total: first.total, page1: ids1.length, page2: ids2.length, overlap: overlap.length, stableRepeat: true }, null, 2));
-          }
-          main().catch((error) => { console.error(error); process.exit(1); });
-          TS
-          npx tsx pagination-core-cert.tmp.ts
-          rm pagination-core-cert.tmp.ts
 
       - name: Typecheck
         run: npx tsc --noEmit
       - name: Build
         run: npm run build
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
 
-      - name: Commit core fix
+      - name: Start production server
+        run: |
+          npm run start -- -p 3000 > /tmp/search-pagination-server.log 2>&1 &
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:3000/search >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/search-pagination-server.log
+          exit 1
+
+      - name: BEFORE and AFTER visual certification
+        run: |
+          mkdir -p artifacts/search-pagination-24
+          cat > pagination-ui-cert.cjs <<'JS'
+          const { chromium } = require('playwright');
+          const fs = require('node:fs');
+          const assert = require('node:assert/strict');
+
+          const viewports = [
+            { name: '390x844', width: 390, height: 844 },
+            { name: '430x932', width: 430, height: 932 },
+            { name: '768x900', width: 768, height: 900 },
+            { name: '1280x900', width: 1280, height: 900 },
+          ];
+
+          async function main() {
+            const fixtureResponse = await fetch('https://akarfinder.vercel.app/api/search?limit=24');
+            assert.equal(fixtureResponse.ok, true, `fixture HTTP ${fixtureResponse.status}`);
+            const fixture = await fixtureResponse.json();
+            assert.equal(Array.isArray(fixture.listings), true);
+            assert.equal(fixture.listings.length, 24, `expected 24 fixture listings, got ${fixture.listings.length}`);
+            const page1Listings = fixture.listings;
+            const page2Listings = fixture.listings.map((listing, index) => ({
+              ...listing,
+              id: `cert-p2-${index}-${listing.id}`,
+              title: `Page 2 · ${listing.title}`,
+            }));
+
+            const browser = await chromium.launch({ headless: true });
+            const report = { viewports: [], requestedOffsets: [], page2Url: null, page1Cards: null, page2Cards: null, backPage: null };
+
+            for (const viewport of viewports) {
+              const before = await browser.newPage({ viewport });
+              await before.goto('https://akarfinder.vercel.app/search', { waitUntil: 'domcontentloaded', timeout: 60000 });
+              await before.screenshot({ path: `artifacts/search-pagination-24/before-${viewport.name}.png` });
+              await before.close();
+
+              const page = await browser.newPage({ viewport });
+              await page.route('**/api/search/gateway**', async (route) => {
+                await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ results: [], total_count: 60, next_cursor: null, has_more: false }) });
+              });
+              await page.route('**/api/search?**', async (route) => {
+                const url = new URL(route.request().url());
+                const limit = Number(url.searchParams.get('limit'));
+                const offset = Number(url.searchParams.get('offset'));
+                report.requestedOffsets.push({ viewport: viewport.name, limit, offset });
+                const listings = offset >= 24 ? page2Listings : page1Listings;
+                await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ listings, total: 60, limit: 24, offset, source: 'cert_fixture', generated_at: new Date().toISOString() }) });
+              });
+
+              await page.goto('http://127.0.0.1:3000/search', { waitUntil: 'domcontentloaded' });
+              await page.locator('[data-search-primary-card]').first().waitFor({ state: 'attached', timeout: 15000 });
+              assert.equal(await page.locator('[data-search-primary-card]').count(), 24, `${viewport.name}: page 1 must render 24 cards`);
+              assert.equal(await page.locator('[data-search-pagination]').count(), 1, `${viewport.name}: pagination missing`);
+              await page.screenshot({ path: `artifacts/search-pagination-24/after-${viewport.name}.png` });
+
+              if (viewport.name === '430x932') {
+                report.page1Cards = await page.locator('[data-search-primary-card]').count();
+                await page.locator('[data-search-pagination] [data-page="2"]').click();
+                await page.waitForURL(/page=2/, { timeout: 10000 });
+                await page.waitForFunction(() => document.querySelectorAll('[data-search-primary-card]').length === 24);
+                report.page2Cards = await page.locator('[data-search-primary-card]').count();
+                report.page2Url = page.url();
+                assert.equal(report.page2Cards, 24);
+                assert.equal(await page.locator('[data-search-pagination] [data-page="2"]').getAttribute('aria-current'), 'page');
+                assert.ok(report.requestedOffsets.some((entry) => entry.viewport === '430x932' && entry.limit === 24 && entry.offset === 24), 'page 2 did not request offset=24');
+                await page.goBack();
+                await page.waitForURL((url) => !url.searchParams.has('page'));
+                report.backPage = await page.locator('[data-search-pagination] [data-page="1"]').getAttribute('aria-current');
+                assert.equal(report.backPage, 'page');
+              }
+              report.viewports.push({ ...viewport, cards: await page.locator('[data-search-primary-card]').count() });
+              await page.close();
+            }
+
+            await browser.close();
+            fs.writeFileSync('artifacts/search-pagination-24/report.json', JSON.stringify(report, null, 2));
+          }
+
+          main().catch((error) => { console.error(error); process.exit(1); });
+          JS
+          node pagination-ui-cert.cjs
+          rm pagination-ui-cert.cjs
+
+      - name: Commit product patch
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add lib/search/search-request-query.ts lib/odm/odm-public-routing.ts lib/search/database-search.ts
-          git commit -m 'fix(search): make numbered pagination stable'
+          git add app/search/page.tsx components/search/LightZillowSearchShell.tsx
+          git commit -m 'feat(search): paginate results 24 per page'
           git push origin HEAD:agent/search-pagination-24
+
+      - name: Upload visual proof
+        uses: actions/upload-artifact@v4
+        with:
+          name: search-pagination-24-visual-cert
+          path: artifacts/search-pagination-24
+          if-no-files-found: error
