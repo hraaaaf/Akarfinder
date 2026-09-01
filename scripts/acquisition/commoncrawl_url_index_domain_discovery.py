@@ -12,6 +12,7 @@ import json
 import re
 import sys
 import urllib.error
+import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
@@ -43,6 +44,11 @@ PROPERTY_TOKEN_RE = re.compile(
     r"(?:$|[^a-z0-9])",
     re.I,
 )
+BODY_PROPERTY_RE = re.compile(
+    r"\b(?:immobilier(?:e|es|s)?|appartement(?:s)?|studio(?:s)?|villa(?:s)?|"
+    r"terrain(?:s)?|maison(?:s)?|riad(?:s)?|real\s+estate|properties?)\b",
+    re.I,
+)
 
 
 @dataclass(frozen=True)
@@ -72,7 +78,7 @@ def _request(url: str, accept: str = "*/*") -> FetchResult:
         return FetchResult(exc.code, url, exc.headers.get("content-type", "") if exc.headers else "", body, f"http_{exc.code}")
     except TimeoutError:
         return FetchResult(0, url, "", b"", "timeout")
-    except Exception as exc:  # network/DNS classification only, never guessed as success
+    except Exception as exc:
         return FetchResult(0, url, "", str(exc).encode("utf-8", errors="replace"), "network_error")
 
 
@@ -88,16 +94,27 @@ def latest_crawl(collections: object) -> str | None:
     return None
 
 
+def path_property_signal(url: str) -> bool:
+    try:
+        parsed = urllib.parse.urlsplit(url)
+    except Exception:
+        return False
+    path_query = urllib.parse.unquote(f"{parsed.path} {parsed.query}").lower()
+    return bool(PROPERTY_TOKEN_RE.search(path_query))
+
+
 def strict_property_url(url: str) -> bool:
     try:
         parsed = urllib.parse.urlsplit(url)
     except Exception:
         return False
     host = (parsed.hostname or "").lower()
-    if HOST_STRONG_RE.search(host):
-        return True
-    path_query = urllib.parse.unquote(f"{parsed.path} {parsed.query}").lower()
-    return bool(PROPERTY_TOKEN_RE.search(path_query))
+    return bool(HOST_STRONG_RE.search(host)) or path_property_signal(url)
+
+
+def body_property_signal(body: bytes) -> bool:
+    text = body[:500_000].decode("utf-8", errors="ignore")
+    return bool(BODY_PROPERTY_RE.search(text))
 
 
 def rank_rows(rows: Iterable[dict]) -> list[dict]:
@@ -149,9 +166,6 @@ def query_url_index(crawl: str) -> tuple[list[dict], dict]:
     con.execute("INSTALL httpfs")
     con.execute("LOAD httpfs")
     con.execute("SET threads=2")
-    con.execute("SET enable_object_cache=true")
-    con.execute("SET http_retries=2")
-    con.execute("SET http_retry_wait_ms=500")
 
     file_list = "[" + ",".join("'" + item.replace("'", "''") + "'" for item in files) + "]"
     known = ",".join("'" + item.replace("'", "''") + "'" for item in sorted(KNOWN_HOSTS))
@@ -177,7 +191,9 @@ def query_url_index(crawl: str) -> tuple[list[dict], dict]:
         ORDER BY url_count DESC, host ASC
         LIMIT 200
     """
-    rows = con.execute(sql).fetchdf().to_dict("records")
+    cursor = con.execute(sql)
+    columns = [item[0] for item in cursor.description]
+    rows = [dict(zip(columns, values)) for values in cursor.fetchall()]
     evidence = {
         "manifestUrl": f"{DATA_ROOT}crawl-data/{crawl}/cc-index-table.paths.gz",
         "parquetFileCount": len(files),
@@ -253,7 +269,7 @@ def validate_domain(domain: dict) -> tuple[dict, list[dict]]:
                 continue
             if parsed.path.lower().endswith(".xml") and len(seen) + len(queue) < MAX_SITEMAPS_PER_DOMAIN:
                 queue.append(value)
-            elif strict_property_url(value):
+            elif path_property_signal(value):
                 sitemap_candidates.add(value)
 
     for seed_url in domain["seed_urls"][:2]:
@@ -263,21 +279,23 @@ def validate_domain(domain: dict) -> tuple[dict, list[dict]]:
         requests.append({"url": seed_url, "role": "seed-probe", "status": response.status, "classification": response.classification})
         if response.classification == "http_429":
             return {"host": host, "validated": False, "stoppedEarly": "http_429", "sitemapCandidateCount": len(sitemap_candidates), "probeOkCount": len(probe_candidates), "candidateUrls": []}, requests
-        if response.classification == "ok" and "text/html" in response.content_type.lower():
+        if (
+            response.classification == "ok"
+            and "text/html" in response.content_type.lower()
+            and (path_property_signal(seed_url) or body_property_signal(response.body))
+        ):
             probe_candidates.add(response.final_url or seed_url)
 
-    validated = (
-        len(sitemap_candidates) >= 3
-        or len(probe_candidates) >= 2
-        or (len(sitemap_candidates) >= 1 and len(probe_candidates) >= 1)
-    )
-    candidates = sorted(sitemap_candidates | probe_candidates) if validated else []
+    sitemap_count = len(sitemap_candidates)
+    probe_count = len(probe_candidates)
+    validated = sitemap_count >= 3 or probe_count >= 2 or (sitemap_count >= 1 and probe_count >= 1)
+    candidates = sorted(set(domain["seed_urls"]) | sitemap_candidates) if validated else []
     return {
         "host": host,
         "validated": validated,
         "stoppedEarly": None,
-        "sitemapCandidateCount": len(sitemap_candidates),
-        "probeOkCount": len(probe_candidates),
+        "sitemapCandidateCount": sitemap_count,
+        "probeOkCount": probe_count,
         "candidateUrls": candidates,
     }, requests
 
