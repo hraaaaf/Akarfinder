@@ -24,13 +24,13 @@ function cdxLines(urls) {
 test('domain-first seed ranking accepts one-family evidence but excludes known portals', () => {
   const ranked = rankSeedDomains([
     { url: 'https://www.mubawab.ma/fr/immo/test', family: 'immo' },
-    { url: 'https://atlasimmo.ma/offres/123', family: 'immo' },
+    { url: 'https://atlas-immo.ma/offres/123', family: 'immo' },
     { url: 'https://agence-casa.ma/immobilier/appartement', family: 'immo' },
     { url: 'https://unrelated.ma/immobilisation-comptable', family: 'immo' },
   ]);
 
   assert.equal(ranked.some((item) => item.host === 'www.mubawab.ma'), false);
-  assert.equal(ranked.some((item) => item.host === 'atlasimmo.ma'), true);
+  assert.equal(ranked.some((item) => item.host === 'atlas-immo.ma'), true);
   assert.equal(ranked.some((item) => item.host === 'agence-casa.ma'), true);
 });
 
