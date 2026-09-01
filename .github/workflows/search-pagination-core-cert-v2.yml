@@ -1,0 +1,90 @@
+name: Search Pagination Core Cert V2
+
+on:
+  push:
+    branches: [agent/search-pagination-24]
+    paths: [.github/workflows/search-pagination-core-cert-v2.yml]
+
+permissions:
+  contents: write
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/search-pagination-24
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+
+      - name: Apply verified core patch
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          src = Path('.github/workflows/search-pagination-core-cert.yml').read_text().splitlines()
+          start = next(i for i,l in enumerate(src) if l.strip() == "python - <<'PY'") + 1
+          end = next(i for i in range(start, len(src)) if src[i].strip() == 'PY')
+          code = [(l[10:] if l.startswith('          ') else l) for l in src[start:end]]
+          Path('/tmp/apply-core.py').write_text('\n'.join(code) + '\n')
+          PY
+          python /tmp/apply-core.py
+
+      - name: Certify routing and distinct stable pages
+        run: |
+          cat > pagination-core-cert.tmp.ts <<'TS'
+          import assert from 'node:assert/strict';
+          import { buildSearchRequestQuery, buildSearchStableKey } from './lib/search/search-request-query';
+          import { supportsOdmPublicSearchQuery } from './lib/odm/odm-public-routing';
+          import { searchDatabase } from './lib/search/database-search';
+
+          async function main() {
+            const from = (params: Record<string,string>) => buildSearchRequestQuery((name) => params[name]);
+            const legacy = from({ limit: '24' });
+            const page1 = from({ limit: '24', offset: '0' });
+            const page2 = from({ limit: '24', offset: '24' });
+            assert.equal(legacy.offset, undefined);
+            assert.equal(page1.offset, 0);
+            assert.equal(page2.offset, 24);
+            assert.equal(supportsOdmPublicSearchQuery(legacy), true);
+            assert.equal(supportsOdmPublicSearchQuery(page1), false);
+            assert.equal(supportsOdmPublicSearchQuery(page2), false);
+            assert.equal(JSON.parse(buildSearchStableKey(legacy)).offset, 0);
+
+            const first = await searchDatabase({ limit: 24, offset: 0 });
+            const second = await searchDatabase({ limit: 24, offset: 24 });
+            const firstAgain = await searchDatabase({ limit: 24, offset: 0 });
+            const ids1 = first.listings.map((x) => String(x.id));
+            const ids2 = second.listings.map((x) => String(x.id));
+            const ids1Again = firstAgain.listings.map((x) => String(x.id));
+            assert.ok(first.total > 24, `fixture total too small: ${first.total}`);
+            assert.ok(ids1.length <= 24 && ids2.length <= 24);
+            assert.deepEqual(ids1Again, ids1, 'page 1 order must be repeatable');
+            const page2Set = new Set(ids2);
+            const overlap = ids1.filter((id) => page2Set.has(id));
+            assert.deepEqual(overlap, [], `page overlap: ${overlap.join(',')}`);
+            assert.equal(first.offset, 0);
+            assert.equal(second.offset, 24);
+            console.log(JSON.stringify({ total: first.total, page1: ids1.length, page2: ids2.length, overlap: overlap.length, stableRepeat: true }, null, 2));
+          }
+          main().catch((error) => { console.error(error); process.exit(1); });
+          TS
+          npx tsx pagination-core-cert.tmp.ts
+          rm pagination-core-cert.tmp.ts
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+      - name: Build
+        run: npm run build
+
+      - name: Commit core fix
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add lib/search/search-request-query.ts lib/odm/odm-public-routing.ts lib/search/database-search.ts
+          git commit -m 'fix(search): make numbered pagination stable'
+          git push origin HEAD:agent/search-pagination-24
