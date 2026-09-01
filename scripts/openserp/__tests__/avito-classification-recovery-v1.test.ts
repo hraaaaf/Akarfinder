@@ -131,6 +131,20 @@ assert.equal(arabicDuplexRent.extracted.city, "Marrakech");
 assert.equal(arabicDuplexRent.extracted.transaction_type, "rent", "explicit Arabic rent intent must outrank generic Avito vente boilerplate");
 assert.equal(arabicDuplexRent.extracted.property_type, null, "explicit unsupported duplex must not inherit the Appartements category label");
 
+const magasinRent = classifyNational({
+  url: "https://avito.ma/fr/amsernate/local/magasin_a_louer_a_inezgane_56170584.htm",
+  title: "magasin a louer a inezgane Local à Agadir Avito.ma",
+  snippet: "magasin a louer a inezgane. Amsernate Agadir. magasin 50m plus 50m mezzanine a louer a inezgane.",
+  city: "Inezgane",
+  transaction: "rent",
+  propertyType: "magasin",
+});
+assert.ok(magasinRent);
+assert.equal(magasinRent.classification_lane, "individual_listing", "exact Avito magasin listing must classify as an individual listing");
+assert.equal(magasinRent.extracted.city, "Agadir");
+assert.equal(magasinRent.extracted.transaction_type, "rent");
+assert.equal(magasinRent.extracted.property_type, "commercial");
+
 const unsupportedBuilding = classifyNational({
   url: "https://avito.ma/fr/biar/autre_immobilier/Immeuble_%D8%B9%D9%85%D8%A7%D8%B1%D8%A9_170%D9%85%C2%B2_5_%D8%B4%D9%82%D9%82_58389694.htm",
   title: "Immeuble عمارة 170م² 5 شقق Autre Immobilier à Safi Avito.ma",
