@@ -1,11 +1,13 @@
 import importlib.util
 import pathlib
+import sys
 import unittest
 
 MODULE_PATH = pathlib.Path(__file__).parents[1] / "commoncrawl_url_index_domain_discovery.py"
 SPEC = importlib.util.spec_from_file_location("cc_url_index", MODULE_PATH)
-MODULE = importlib.util.module_from_spec(SPEC)
 assert SPEC and SPEC.loader
+MODULE = importlib.util.module_from_spec(SPEC)
+sys.modules[SPEC.name] = MODULE
 SPEC.loader.exec_module(MODULE)
 
 
