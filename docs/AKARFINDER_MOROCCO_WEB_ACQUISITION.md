@@ -63,7 +63,7 @@ Discovery Mesh channels:
 
 ## Roadmap
 
-### L1 — Multi-source Discovery Proof — ACTIVE
+### L1 — Multi-source Discovery Proof — GATE PROVEN / CLOSEOUT IN PROGRESS
 
 Goal: prove that AkarFinder can reproducibly discover substantial Moroccan real-estate inventory without depending on Avito.
 
@@ -82,16 +82,26 @@ Proof:
 - unique URL count and samples;
 - no-write / no-private-API assertions.
 
-Current implementation:
+Implementation:
 - `scripts/audits/morocco-web-real-estate-discovery-canary.mjs`
 - `.github/workflows/morocco-web-real-estate-discovery-canary.yml`
 
-Current candidate sources in the canary:
-- Mubawab
-- MarocAnnonces
-- Sarouty
+Certified evidence:
+- Run: `33546156641` — SUCCESS
+- Evidence HEAD: `45faf198a7a12348a742aea7f63423fa429788d8`
+- Unique candidate URLs: **5,849**
+- Productive independent sources: **3/3**
+  - Sarouty: **5,025**
+  - Mubawab: **504**
+  - MarocAnnonces: **320**
+- `zeroDbWrites: true`
+- `forbiddenInternalApiUsed: false`
+- Artifact: `9815567495`
+- Artifact SHA256: `8220952021247a0f4901242bb91ddb893cf8ff453f82b8fc066fa0dbaa9e0bac`
 
-State: IN PROGRESS. No success credit until the numeric gate above is proven.
+Interpretation boundary: these are discovered public real-estate candidate URLs. They are not yet equivalent to validated canonical production listings.
+
+State: NUMERIC GATE PROVEN. L1 remains open only for PR/CI merge and post-merge closeout.
 
 ### L2 — Portal Acquisition Adapters
 
@@ -104,7 +114,7 @@ Success:
 - per-source fixtures and tests;
 - exact failure classification for 403/429/timeout/schema drift.
 
-Priority order is determined by measured reachable inventory, not brand importance.
+Priority order is determined by measured reachable inventory, not brand importance. Sarouty is first because the certified L1 run yielded 5,025 candidate URLs from its public sitemap surfaces.
 
 ### L3 — Open-Web Discovery Mesh
 
@@ -140,7 +150,7 @@ Success:
 
 ### L6 — Freshness + Revisit Engine
 
-Goal: maintain a live index rather than accumulate a graveyard of dead listings, humanity's traditional database architecture.
+Goal: maintain a live index rather than accumulate a graveyard of dead listings.
 
 Success:
 - source-aware revisit cadence;
@@ -216,20 +226,20 @@ Conclusion supported by that evidence: Avito cannot be the single critical path 
 
 L1 therefore measures **net discoverable public real-estate inventory across multiple sources**, not success against a single portal.
 
-## L1 work sequence
+## L1 closeout sequence
 
-1. Certify current multi-source canary behavior.
-2. Fix route/URL classification errors using observed public HTML/XML only.
-3. Expand productive direct sources until >= 1,000 unique candidate URLs are proven.
-4. Add one independent broad/open-web discovery channel if required to reach the 3-channel gate.
-5. Deduplicate candidate URLs and retain source attribution.
-6. Produce evidence artifact with exact per-source counts and samples.
-7. Update this canonical file with the proven run, HEAD and gate status.
-8. Only then mark L1 CLOSED and start L2.
+1. Numeric discovery gate certified — DONE.
+2. Evidence artifact retained — DONE.
+3. Canonical evidence recorded — DONE in this commit.
+4. PR runtime scope annotation aligned with repository audit policy — DONE.
+5. CI on closeout HEAD — PENDING.
+6. Merge PR #966 when required checks are green.
+7. Verify post-merge main.
+8. Mark L1 CLOSED and activate L2 on the post-merge baseline.
 
 ## Current progress
 
-L1: ACTIVE — proof gate not yet met.
+L1: GATE PROVEN — CLOSEOUT IN PROGRESS.
 L2-L9: NOT STARTED for credit purposes.
 
-Overall program percentage: intentionally not assigned until the first measurable lot is certified; arbitrary percentages are decorative numerology, not project control.
+Overall program percentage: intentionally not assigned until the first lot is fully merged and post-merge certified.
