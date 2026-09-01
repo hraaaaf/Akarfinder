@@ -12,7 +12,8 @@ test("database fallback no longer has the historical 200-row candidate ceiling",
   assert.doesNotMatch(databaseSearch, /limit:\s*200\b/);
   assert.match(databaseSearch, /DB_SCAN_BATCH_SIZE\s*=\s*500/);
   assert.match(databaseSearch, /MAX_DB_ROWS_SCANNED_PER_REQUEST\s*=\s*10_000/);
-  assert.match(databaseSearch, /while \(matchedListings\.length < targetMatches/);
+  assert.match(databaseSearch, /matchedListings\.length < targetMatches/);
+  assert.match(databaseSearch, /scannedRows < MAX_DB_ROWS_SCANNED_PER_REQUEST/);
 });
 
 test("first search tranche still targets up to 100 local results", () => {
@@ -45,5 +46,6 @@ test("deep pagination cursor is part of the search contract and shared API routi
 
 test("cursor advances at raw-row precision instead of skipping the remainder of a DB batch", () => {
   assert.match(databaseSearch, /scanCursor = batchStart \+ index \+ 1/);
-  assert.match(databaseSearch, /if \(matchedListings\.length >= targetMatches/);
+  assert.match(databaseSearch, /matchedListings\.length >= targetMatches/);
+  assert.match(databaseSearch, /scannedRows >= MAX_DB_ROWS_SCANNED_PER_REQUEST/);
 });
