@@ -48,7 +48,7 @@ export function isMubawabListingUrl(raw) {
 
 export function canonicalizeMarocAnnoncesListing(raw) {
   const cleaned = decodeMarkup(raw).trim();
-  const match = cleaned.match(/(?:https:\/\/(?:www\.)?marocannonces\.com\/)?((?:categorie\/\d+\/[^\s"'<>]*?)?annonce\/\d+\/[^\s"'<>]+)/i);
+  const match = cleaned.match(/(?:https:\/\/(?:www\.)?marocannonces\.com\/)?(categorie\/\d+\/[^\s"'<>]*?annonce\/\d+\/[^\s"'<>]+)/i);
   if (!match) return null;
   const url = normalizeHttpsUrl(`/${match[1].replace(/^\/+/, '')}`, 'https://www.marocannonces.com/');
   if (!url) return null;
@@ -167,7 +167,7 @@ export function extractMarocAnnoncesListings(html) {
     if (url) out.add(url);
   }
   const text = decodeMarkup(html);
-  for (const match of text.matchAll(/(?:https:\/\/(?:www\.)?marocannonces\.com\/)?(?:categorie\/\d+\/[^\s"'<>]*?)?annonce\/\d+\/[^\s"'<>]+/gi)) {
+  for (const match of text.matchAll(/(?:https:\/\/(?:www\.)?marocannonces\.com\/)?categorie\/\d+\/[^\s"'<>]*?annonce\/\d+\/[^\s"'<>]+/gi)) {
     const url = canonicalizeMarocAnnoncesListing(match[0]);
     if (url) out.add(url);
   }
