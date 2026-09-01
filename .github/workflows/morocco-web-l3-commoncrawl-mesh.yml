@@ -1,0 +1,54 @@
+name: Morocco Web L3 Common Crawl Mesh
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feat/morocco-web-l3-commoncrawl-mesh
+    paths:
+      - 'scripts/acquisition/commoncrawl-open-web-mesh.mjs'
+      - 'scripts/acquisition/__tests__/commoncrawl-open-web-mesh.test.mjs'
+      - '.github/workflows/morocco-web-l3-commoncrawl-mesh.yml'
+      - 'docs/AKARFINDER_MOROCCO_WEB_ACQUISITION.md'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: morocco-web-l3-commoncrawl-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Unit tests
+        run: node --test scripts/acquisition/__tests__/commoncrawl-open-web-mesh.test.mjs
+
+      - name: Live public dry-run
+        run: node scripts/acquisition/commoncrawl-open-web-mesh.mjs
+
+      - name: Publish evidence summary
+        if: always()
+        run: |
+          if [ -f artifacts/morocco-web-l3-commoncrawl/report.md ]; then
+            cat artifacts/morocco-web-l3-commoncrawl/report.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: morocco-web-l3-commoncrawl-${{ github.run_id }}
+          path: artifacts/morocco-web-l3-commoncrawl/
+          if-no-files-found: error
+          retention-days: 14
