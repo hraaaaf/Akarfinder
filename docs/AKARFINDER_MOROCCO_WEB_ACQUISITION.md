@@ -1,6 +1,6 @@
 # AKARFINDER — Morocco Web Real-Estate Acquisition
 
-Status: ACTIVE — L1 CLOSED / L2 CERTIFIED — MERGE PENDING
+Status: ACTIVE — L1 CLOSED / L2 CLOSED / L3 ACTIVE
 
 ## North-star Goal
 
@@ -57,7 +57,7 @@ Closeout proof:
 
 Boundary: these are candidate URLs, not validated canonical production listings.
 
-## L2 — Portal Acquisition Adapters — CERTIFIED / MERGE PENDING
+## L2 — Portal Acquisition Adapters — CLOSED
 
 Goal: turn productive discovery surfaces into deterministic source adapters.
 
@@ -69,7 +69,7 @@ Success criteria:
 - exact failure classification for 403/429/timeout/schema drift;
 - live dry-run evidence with zero DB writes.
 
-### Sarouty adapter — CERTIFIED + MERGED
+### Sarouty adapter — CLOSED
 
 - PR #968 merged into `main`.
 - Merge/main HEAD `f75d236d383f4ebfc44581b8540a762ce5869e0c` verified and signed.
@@ -82,10 +82,11 @@ Success criteria:
 - Artifact `9819252085`.
 - Artifact SHA256 `c1d9ca1f216ee1043c0d21fbf1368f003ec0c92cf8346af415b87a31fdb658ae`.
 
-### Mubawab + MarocAnnonces adapters — CERTIFIED / MERGE PENDING
+### Mubawab + MarocAnnonces adapters — CLOSED
 
-- PR #971, branch `feat/morocco-web-l2-mubawab-marocannonces`.
-- Certified HEAD before closeout doc commit: `b52632ab4a7d2bad20efdf58db4d7eb2f627b6f7`.
+- PR #971 merged into `main`.
+- Final closeout HEAD `85570b4edf2be462dcd2f33ffe017751c6d1e933`: **7/7 observed general PR workflows SUCCESS**.
+- Merge/main HEAD `b79073ceec087250914c2ca1c6dbd7cd7425c000` verified and signed.
 - Dedicated run `33560329163` — SUCCESS.
 - Unit tests: **6/6 PASS**.
 - Live public dry-run: **1,236 candidate URLs** total.
@@ -96,15 +97,25 @@ Success criteria:
 - `zeroDbWrites: true`.
 - Artifact `9820996698`.
 - Artifact SHA256 `ed2d33dfa347a2b2216091e7b095021ef019e76e7e73a0255ffcdd2be97b1d91`.
-- On certified HEAD `b52632ab...`, all 7 observed general PR workflows completed SUCCESS.
+
+L2 closeout: all three productive L1 sources now have deterministic public discovery adapters merged on `main`. No post-merge run is required from the dedicated L2 workflows because both are branch-scoped plus `workflow_dispatch`; the signed merge commits on `main` contain the certified code and evidence.
 
 Boundary: L2 certifies deterministic public discovery adapters and candidate URL extraction. It does **not** yet certify canonical field extraction, active-listing validation, deduplication or production ingestion.
 
-Current closeout branch: `feat/morocco-web-l2-mubawab-marocannonces`, based on `main@f75d236d383f4ebfc44581b8540a762ce5869e0c`.
+## L3 — Open-Web Discovery Mesh — ACTIVE
 
-## L3 — Open-Web Discovery Mesh
+Goal: discover **net-new Moroccan real-estate domains and candidate URLs beyond the three L2 portals** using public web indexes and public site surfaces.
 
-Common Crawl/public-index discovery, automatic Moroccan real-estate domain identification/ranking, sitemap harvesting and material long-tail net-new candidates.
+Success criteria:
+- resolve the current Common Crawl collection dynamically from its public collection index;
+- bounded public-index queries with exact failure classification and hard stop on 429;
+- identify and rank net-new `.ma` domains from multiple real-estate URL signals;
+- harvest public robots/sitemap surfaces for top-ranked domains where available;
+- retain source/query/domain provenance for every candidate;
+- fixture tests plus live dry-run evidence;
+- zero production DB writes.
+
+Current L3 branch: `feat/morocco-web-l3-commoncrawl-mesh`, based on `main@b79073ceec087250914c2ca1c6dbd7cd7425c000`.
 
 ## L4 — Canonical Classification + Extraction
 
@@ -132,6 +143,6 @@ Validated canonical records only, scheduled acquisition/revisit jobs, source-col
 
 ## Execution order
 
-L1 ✅ → **L2 CERTIFIED / MERGE PENDING** → L3 → L4 → L5 → L6 → L7 → L8 → L9.
+L1 ✅ → L2 ✅ → **L3 ACTIVE** → L4 → L5 → L6 → L7 → L8 → L9.
 
 Overall program percentage remains intentionally unassigned until the roadmap defines a stable denominator across the remaining lots.
