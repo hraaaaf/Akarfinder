@@ -23,7 +23,13 @@ import { calculatePackageScore } from "@/lib/package-score/calculate-package-sco
 import { getListingProximity } from "@/lib/proximity/get-listing-proximity";
 import { getCityCoord } from "@/lib/search/city-coords";
 import { partitionCommercialSearchListings } from "@/lib/search/search-commercial-priority";
-import { rankListingsForFinder } from "@/lib/search-profile-v2/listing-personalization";
+import {
+  finderProjectionFromProfile,
+  finderProjectionFromSearchParams,
+  mergeFinderProjections,
+  rankListingsWithFinderProjection,
+  type FinderRankingProjection,
+} from "@/lib/search-profile-v2/listing-personalization";
 import type { SearchGatewayNormalizedResult } from "@/lib/search-gateway/search-gateway-types";
 import { track } from "@/lib/tracking/track";
 import type { SearchViewMode } from "@/lib/ux/contracts";
@@ -53,8 +59,13 @@ type GatewaySearchResponse = {
   has_more?: boolean;
 };
 
+type ContinuityResponse = {
+  projects?: Array<{ id?: string; profile?: unknown }>;
+};
+
 const PAGE_SIZE = 24;
 const FINDER_PARAM_KEYS = ["guided", "personalized"] as const;
+const PENDING_PROJECT_KEY = "akarfinder-pending-project-v2";
 
 const RELIABILITY_BADGE: Record<string, string> = {
   top: "Information complete",
@@ -202,6 +213,7 @@ export function LightZillowSearchShell({ initialListings, initialTotal, initialP
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [indexedTotalCount, setIndexedTotalCount] = useState<number | null>(null);
   const [finderParams, setFinderParams] = useState<URLSearchParams | null>(null);
+  const [privateFinderProjection, setPrivateFinderProjection] = useState<FinderRankingProjection | null>(null);
 
   const [gatewayResults, setGatewayResults] = useState<SearchGatewayNormalizedResult[]>([]);
   const gatewayEnabled = process.env.NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED !== "false";
@@ -220,8 +232,39 @@ export function LightZillowSearchShell({ initialListings, initialTotal, initialP
   });
 
   useEffect(() => {
+    let cancelled = false;
     setFinderParams(new URLSearchParams(window.location.search));
-  }, []);
+
+    try {
+      const raw = window.sessionStorage.getItem(PENDING_PROJECT_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as { profile?: unknown };
+        const projection = finderProjectionFromProfile(parsed.profile);
+        if (projection) setPrivateFinderProjection(projection);
+      }
+    } catch {
+      // Search remains fully usable when temporary continuity is unavailable.
+    }
+
+    if (projectId) {
+      void fetch("/api/me/continuity", { cache: "no-store" })
+        .then(async (response) => response.ok ? await response.json() as ContinuityResponse : null)
+        .then((payload) => {
+          if (cancelled || !payload?.projects) return;
+          const project = payload.projects.find((item) => item.id === projectId);
+          const projection = finderProjectionFromProfile(project?.profile);
+          if (projection) setPrivateFinderProjection(projection);
+        })
+        .catch(() => undefined);
+    }
+
+    return () => { cancelled = true; };
+  }, [projectId]);
+
+  const finderProjection = useMemo(() => {
+    const publicProjection = finderParams ? finderProjectionFromSearchParams(finderParams) : null;
+    return mergeFinderProjections(publicProjection, privateFinderProjection);
+  }, [finderParams, privateFinderProjection]);
 
   function syncBrowserUrl(
     page: number,
@@ -289,6 +332,7 @@ export function LightZillowSearchShell({ initialListings, initialTotal, initialP
           setSearchTotalCount(payload.total);
         }
       } catch {
+        // Preserve the previous stable result set on transient failures.
       } finally {
         if (!cancelled) setIsLoading(false);
       }
@@ -321,6 +365,7 @@ export function LightZillowSearchShell({ initialListings, initialTotal, initialP
       setHasMoreIndexed(payload.has_more === true && payload.next_cursor != null);
       if (typeof payload.total_count === "number") setIndexedTotalCount(payload.total_count);
     } catch {
+      // Preserve the current indexed page on transient failures.
     } finally {
       setIsLoadingMore(false);
     }
@@ -403,9 +448,9 @@ export function LightZillowSearchShell({ initialListings, initialTotal, initialP
       }
       return true;
     });
-    if (sortBy === "recommended" && finderParams) return rankListingsForFinder(clientFiltered, finderParams);
+    if (sortBy === "recommended") return rankListingsWithFinderProjection(clientFiltered, finderProjection);
     return sortListings(clientFiltered, sortBy);
-  }, [listings, filters, sortBy, finderParams]);
+  }, [listings, filters, sortBy, finderProjection]);
 
   const commercialGroups = useMemo(
     () => partitionCommercialSearchListings(filteredListings),
