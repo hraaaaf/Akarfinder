@@ -33,12 +33,12 @@ jobs:
             const browser = await chromium.launch({ headless: true });
             const findings = [];
             const scenarios = [
-              {name:'riad-390', width:390, height:844, path:'/search?city=Marrakech&property_type=riad'},
-              {name:'riad-430', width:430, height:932, path:'/search?city=Marrakech&property_type=riad'},
-              {name:'riad-768', width:768, height:900, path:'/search?city=Marrakech&property_type=riad'},
-              {name:'riad-1280', width:1280, height:900, path:'/search?city=Marrakech&property_type=riad'},
-              {name:'villa-hay-riad-1280', width:1280, height:900, path:'/search?q=Villa%20Hay%20Riad'},
-              {name:'terrain-pour-villa-1280', width:1280, height:900, path:'/search?q=Terrain%20pour%20villa'}
+              {name:'riad-390', width:390, height:844, path:'/search?city=Marrakech&property_type=riad', expect:/Riad/i},
+              {name:'riad-430', width:430, height:932, path:'/search?city=Marrakech&property_type=riad', expect:/Riad/i},
+              {name:'riad-768', width:768, height:900, path:'/search?city=Marrakech&property_type=riad', expect:/Riad/i},
+              {name:'riad-1280', width:1280, height:900, path:'/search?city=Marrakech&property_type=riad', expect:/Riad/i},
+              {name:'villa-live-1280', width:1280, height:900, path:'/search?property_type=villa', expect:/Villa/i},
+              {name:'terrain-live-1280', width:1280, height:900, path:'/search?property_type=terrain', expect:/Terrain|Land/i}
             ];
             for (const s of scenarios) {
               const page = await browser.newPage({ viewport: { width:s.width, height:s.height } });
@@ -49,7 +49,8 @@ jobs:
               if (!res || res.status() >= 400) throw new Error(`${s.name}: navigation failed ${res && res.status()}`);
               await page.waitForTimeout(2500);
               const body = await page.locator('body').innerText();
-              if (s.name.startsWith('riad-') && !/Riad/i.test(body)) throw new Error(`${s.name}: Riad label missing in DOM`);
+              if (!s.expect.test(body)) throw new Error(`${s.name}: expected property type label missing in DOM`);
+              if (/0 résultat/i.test(body)) throw new Error(`${s.name}: zero results`);
               if (bad.length) findings.push(`${s.name}: HTTP>=400 ${bad.slice(0,10).join(' | ')}`);
               await page.screenshot({ path:`artifacts/property-type-live/${s.name}.png`, fullPage:true });
               await page.close();
