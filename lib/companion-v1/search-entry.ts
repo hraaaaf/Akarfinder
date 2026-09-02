@@ -40,6 +40,9 @@ export function companionProfileToSearchParams(profile: DynamicSearchProfileV2):
         .join("|"),
     );
   }
+  if (profile.location.anchors.length > 0) {
+    params.set("profile_anchors", JSON.stringify(profile.location.anchors));
+  }
 
   const propertyType = profile.property.property_types[0];
   if (propertyType) params.set("property_type", propertyType);
@@ -96,6 +99,20 @@ export function companionProfileToSearchParams(profile: DynamicSearchProfileV2):
   }
   if (profile.priorities.length > 0) {
     params.set("profile_priorities", profile.priorities.join(","));
+  }
+
+  const { freeform_facts: freeformFacts, ...typedPersonalContext } = profile.personal_context;
+  if (Object.keys(typedPersonalContext).length > 0 || Object.keys(freeformFacts).length > 0) {
+    params.set("profile_personal_context", JSON.stringify(profile.personal_context));
+  }
+
+  const hasRichTolerance = profile.tolerances.tourism_intensity_max != null
+    || profile.tolerances.commute_minutes_max != null
+    || profile.tolerances.renovation_tolerance !== "unknown"
+    || profile.tolerances.location_flexibility !== "city_wide"
+    || profile.tolerances.price_flexibility !== "strict";
+  if (hasRichTolerance) {
+    params.set("profile_tolerances", JSON.stringify(profile.tolerances));
   }
 
   params.set("profile_version", profile.version);
