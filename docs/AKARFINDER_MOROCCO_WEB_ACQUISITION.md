@@ -1,6 +1,6 @@
 # AKARFINDER — Morocco Web Real-Estate Acquisition
 
-Status: ACTIVE — L1 CLOSED / L2 CLOSED / L3 CLOSED / L4 CLOSED / L5 CERTIFIED — MERGE PENDING
+Status: ACTIVE — L1 CLOSED / L2 CLOSED / L3 CLOSED / L4 CLOSED / L5 CLOSED / L6 CERTIFIED — MERGE PENDING
 
 ## North-star Goal
 
@@ -186,7 +186,7 @@ Implementation boundary:
 - each extracted field carries source URL + extraction evidence;
 - this certifies bounded canonical extraction behavior, **not yet cross-source deduplication, freshness, production ingestion or serving**.
 
-## L5 — Cross-Source Deduplication — CERTIFIED — MERGE PENDING
+## L5 — Cross-Source Deduplication — CLOSED
 
 Goal: collapse duplicate representations of the same property across sources **without losing any source URL or provenance** and without over-merging distinct properties.
 
@@ -212,6 +212,12 @@ Certified evidence:
 - Exact implementation HEAD general PR workflows: **7/7 SUCCESS** (`33577389491`, `33577389310`, `33577389337`, `33577389486`, `33577389315`, `33577389407`, `33577389311`).
 - Canonical evidence is pinned in docs-only closeout commits after the certified implementation HEAD; these commits do not change dedupe behavior.
 
+Closeout proof:
+- PR #978 squash-merged.
+- Final PR HEAD `58806569e763a399ec3def5a4ceca731ee448b83`.
+- Merge/main HEAD `80d01647a481dfbae11c40826efe0fa1d8fd9986` verified and signed (`verification.reason=valid`).
+- Merge parent is exact previous main `1af4847b268471c0d93aa0d34e04fece804a57d9`.
+
 Implementation boundary:
 - same-source fuzzy matches do not merge without an exact source offer ID;
 - incompatible city, property type or transaction blocks a merge;
@@ -219,11 +225,49 @@ Implementation boundary:
 - every merged cluster retains member source IDs and source URLs;
 - this certifies deterministic/conservative clustering behavior on bounded audited fixtures, **not yet production-scale duplicate prevalence or DB mutation**.
 
-Current L5 branch: `feat/morocco-web-l5-cross-source-dedupe`, based on `main@1af4847b268471c0d93aa0d34e04fece804a57d9`.
+## L6 — Freshness + Revisit Engine — CERTIFIED — MERGE PENDING
 
-## L6 — Freshness + Revisit Engine
+Goal: maintain measurable listing freshness with source-aware revisit cadence, active/removed/changed detection, price/content history signals and conservative failure handling without false removals.
 
-Source-aware revisit cadence, active/removed/changed detection, price/content history and measurable freshness.
+Success criteria:
+- deterministic source-aware revisit intervals;
+- stable fingerprint over serving-relevant canonical facts;
+- explicit active/removed/changed outcomes;
+- 404/410 can mark removed, while 403/429/5xx never imply removal by themselves;
+- transient failures back off rather than create false removal;
+- price and canonical-content changes are recorded;
+- freshness buckets remain measurable;
+- bounded fixture certification with zero production DB writes.
+
+Certified evidence:
+- Dedicated run `33606982260` — **SUCCESS**.
+- Exact implementation HEAD `13dc4d5c3f229e4fbf62eeaec89c3eba39113805`.
+- Unit tests: **7/7 PASS**.
+- Bounded dry-run: **5 cases**.
+- **4 active**, **1 removed**, **2 changed**.
+- Transient 503 case preserved active with backoff.
+- Blocked 403 case preserved active without false removal.
+- `zeroDbWrites: true`.
+- Artifact `9837396773`.
+- Artifact SHA256 independently verified: `f5422a9bb7f3862e8b74e260e7c934e7e0690e8a17e8c5223c3a5d06fb14b028`.
+- Exact implementation HEAD general PR workflows: **7/7 SUCCESS** (`33607012497`, `33607012435`, `33607012432`, `33607012388`, `33607012463`, `33607012429`, `33607012454`).
+
+Implementation guarantees:
+- source-aware base cadence: portal **24h**, agency **72h**, developer/promoter **96h**, long-tail **168h**;
+- transient backoff is capped at **168h**;
+- only explicit 404/410 responses mark a listing removed;
+- 403 is classified blocked/invalid without removal;
+- 429 and configured 5xx/timeout-like statuses are transient failures without removal;
+- stable fingerprinting detects canonical content changes;
+- explicit price delta is emitted when the canonical price changes;
+- freshness buckets: `fresh_24h`, `fresh_72h`, `fresh_7d`, `stale_gt7d`.
+
+Boundary:
+- L6 certifies the deterministic freshness/revisit decision engine on bounded audited fixtures.
+- The core engine performs no network requests and no DB writes.
+- Production persistence, bounded DB mutation and rollback belong to L7; continuous scheduling/operations belong to L9.
+
+Current L6 branch: `feat/morocco-web-l6-freshness-revisit`, based on `main@80d01647a481dfbae11c40826efe0fa1d8fd9986`.
 
 ## L7 — Bounded Production Ingestion
 
@@ -239,6 +283,6 @@ Validated canonical records only, scheduled acquisition/revisit jobs, source-col
 
 ## Execution order
 
-L1 ✅ → L2 ✅ → L3 ✅ → L4 ✅ → **L5 CERTIFIED — MERGE PENDING** → L6 → L7 → L8 → L9.
+L1 ✅ → L2 ✅ → L3 ✅ → L4 ✅ → L5 ✅ → **L6 CERTIFIED — MERGE PENDING** → L7 → L8 → L9.
 
 Overall program percentage remains intentionally unassigned until the roadmap defines a stable denominator across the remaining lots.
