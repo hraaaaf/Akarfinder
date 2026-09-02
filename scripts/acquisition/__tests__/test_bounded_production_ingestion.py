@@ -1,13 +1,16 @@
+import json
 import unittest
 from unittest.mock import patch
 from urllib.error import HTTPError
 
 from scripts.acquisition.bounded_production_ingestion import (
     MAX_BATCH_LIMIT,
+    PartialApplyError,
     apply_plan,
     assert_live_write_guard,
     plan_batch,
     rollback_manifest,
+    snapshot_existing,
 )
 
 
@@ -32,11 +35,17 @@ def live_env(hosts="example.ma"):
 
 
 class _Response:
+    def __init__(self, payload=None):
+        self.payload = payload
+
     def __enter__(self):
         return self
 
     def __exit__(self, *args):
         return False
+
+    def read(self):
+        return json.dumps(self.payload or []).encode("utf-8")
 
 
 class BoundedProductionIngestionTests(unittest.TestCase):
@@ -96,10 +105,35 @@ class BoundedProductionIngestionTests(unittest.TestCase):
         self.assertEqual(rollback_manifest(result)["identities"], [])
 
     @patch("scripts.acquisition.bounded_production_ingestion.urlopen")
-    def test_apply_500_is_fatal(self, mock_urlopen):
+    def test_apply_500_is_structured_fatal(self, mock_urlopen):
         mock_urlopen.side_effect = HTTPError("u", 500, "boom", None, None)
-        with self.assertRaises(HTTPError):
+        with self.assertRaises(PartialApplyError) as ctx:
             apply_plan(plan_batch([candidate()], env=live_env()), env=live_env())
+        self.assertEqual(ctx.exception.inserted_identities, [])
+        self.assertEqual(ctx.exception.cause.code, 500)
+
+    @patch("scripts.acquisition.bounded_production_ingestion.urlopen")
+    def test_partial_apply_preserves_prior_inserted_identity(self, mock_urlopen):
+        mock_urlopen.side_effect = [_Response(), HTTPError("u", 500, "boom", None, None)]
+        plan = plan_batch([candidate(1), candidate(2)], env=live_env())
+        with self.assertRaises(PartialApplyError) as ctx:
+            apply_plan(plan, env=live_env())
+        self.assertEqual(len(ctx.exception.inserted_identities), 1)
+        self.assertEqual(ctx.exception.inserted_identities[0]["canonical_url"], "https://example.ma/annonce/1")
+        live_result = {"insertedIdentities": ctx.exception.inserted_identities}
+        self.assertEqual(rollback_manifest(live_result)["identities"], ctx.exception.inserted_identities)
+
+    @patch("scripts.acquisition.bounded_production_ingestion.urlopen")
+    def test_snapshot_existing_reads_exact_identity(self, mock_urlopen):
+        plan = plan_batch([candidate()], env=live_env())
+        ident = {k: plan["rows"][0][k] for k in ("provider", "query_hash", "canonical_url")}
+        mock_urlopen.return_value = _Response([ident])
+        found = snapshot_existing(plan, env=live_env())
+        self.assertEqual(found, [ident])
+        request = mock_urlopen.call_args.args[0]
+        self.assertEqual(request.get_method(), "GET")
+        self.assertIn("provider=eq.web-discovery", request.full_url)
+        self.assertIn("limit=1", request.full_url)
 
     def test_apply_rejects_oversized_plan(self):
         plan = {"rows": [candidate(i) for i in range(MAX_BATCH_LIMIT + 1)]}
