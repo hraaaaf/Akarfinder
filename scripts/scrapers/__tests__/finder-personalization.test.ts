@@ -3,8 +3,10 @@ import test from "node:test";
 
 import type { Listing } from "@/lib/listings/types";
 import {
+  finderProjectionFromProfile,
   finderProjectionFromSearchParams,
   rankListingsForFinder,
+  rankListingsWithFinderProjection,
   scoreListingForFinder,
 } from "@/lib/search-profile-v2/listing-personalization";
 
@@ -76,12 +78,42 @@ test("excluded neighborhoods are demoted, never filtered out", () => {
   assert.deepEqual(ranked.map((item) => item.id), ["allowed", "excluded"]);
 });
 
-test("sensitive context is not parsed from URL projection", () => {
+test("sensitive context cannot be injected through URL projection", () => {
   const projection = finderProjectionFromSearchParams(
     new URLSearchParams("guided=1&children_count=3&anchor=Ecole&remote_work=1&profile_priorities=greenery"),
   )!;
-  assert.equal("children_count" in projection, false);
-  assert.equal("anchor" in projection, false);
-  assert.equal("remote_work" in projection, false);
+  assert.equal(projection.childrenCount, null);
+  assert.equal(projection.remoteWork, false);
+  assert.deepEqual(projection.anchorLabels, []);
   assert.deepEqual(projection.priorities, ["greenery"]);
+});
+
+test("private V2 context is consumed in memory without becoming an URL field", () => {
+  const profile = {
+    version: "2.0",
+    location: {
+      preferred_cities: ["Rabat"],
+      preferred_neighborhoods: [],
+      excluded_neighborhoods: [],
+      anchors: [{ label: "Technopolis", max_minutes: 25 }],
+    },
+    budget: { budget_flex_pct: 5 },
+    property: { property_types: ["Appartement"], required_features: [] },
+    priorities: ["family_fit"],
+    neighborhood_preferences: [{ key: "family_fit" }],
+    intended_uses: { value: ["family_housing"] },
+    personal_context: {
+      children_count: { value: 2 },
+      remote_work: { value: true },
+    },
+  };
+  const projection = finderProjectionFromProfile(profile);
+  assert.ok(projection);
+  assert.equal(projection.childrenCount, 2);
+  assert.equal(projection.remoteWork, true);
+  assert.deepEqual(projection.anchorLabels, ["Technopolis"]);
+
+  const suited = listing({ id: "suited", description: "Appartement familial proche école, fibre et bureau, accès Technopolis" });
+  const generic = listing({ id: "generic", description: "Appartement standard" });
+  assert.deepEqual(rankListingsWithFinderProjection([generic, suited], projection).map((item) => item.id), ["suited", "generic"]);
 });
