@@ -8,7 +8,7 @@ Classifies discovery_candidates into URL-level buckets before any network fetch 
 - uncertain
 
 This is deliberately conservative. It reuses known listing-detail patterns and refuses to
-promote ambiguous category/search URLs to listing candidates.
+promote ambiguous category/search URLs or known non-Moroccan sources to listing candidates.
 """
 from __future__ import annotations
 
@@ -36,6 +36,9 @@ DISCOVERY_PATTERNS = [
 NOISE_HOSTS = {
     "youtube.com", "www.youtube.com", "tiktok.com", "www.tiktok.com",
     "reddit.com", "www.reddit.com", "support.google.com",
+    # Observed non-Moroccan real-estate sources in the production corpus.
+    "ouedkniss.com", "www.ouedkniss.com", "ouedkniss.dz", "www.ouedkniss.dz",
+    "bakimmo-dz.com", "www.bakimmo-dz.com",
 }
 
 
