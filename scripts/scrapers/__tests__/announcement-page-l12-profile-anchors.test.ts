@@ -60,3 +60,18 @@ test("ANN-L12 deduplicates identical explicit anchors", () => {
   });
   assert.equal(next.location.anchors.length, 1);
 });
+
+test("ANN-L12 keeps same-label anchors in different cities distinct", () => {
+  const profile = createEmptyDynamicSearchProfileV2();
+  const next = applySearchProfileEvent(profile, {
+    type: "anchors",
+    values: [
+      { label: "Bureau", city: "Casablanca", max_minutes: 20 },
+      { label: "Bureau", city: "Rabat", max_minutes: 20 },
+    ],
+  });
+  assert.deepEqual(next.location.anchors, [
+    { label: "Bureau", city: "Casablanca", max_minutes: 20 },
+    { label: "Bureau", city: "Rabat", max_minutes: 20 },
+  ]);
+});
