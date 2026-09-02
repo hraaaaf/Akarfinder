@@ -1,0 +1,69 @@
+name: Live Sarouty smoke
+
+on:
+  push:
+    branches:
+      - feat/sarouty-source-first
+    paths:
+      - 'scripts/acquisition/sarouty-sitemap-enumerator.mjs'
+      - 'scripts/acquisition/__tests__/sarouty-sitemap-enumerator.test.mjs'
+      - '.github/workflows/live-sarouty-smoke.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sarouty-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Unit tests
+        run: node --test scripts/acquisition/__tests__/sarouty-sitemap-enumerator.test.mjs
+
+      - name: Tiny live robots + sitemap probe
+        run: |
+          mkdir -p artifacts/morocco-web-l8-sarouty-smoke
+          node scripts/acquisition/sarouty-sitemap-enumerator.mjs \
+            --max-sitemap-docs 1 \
+            --max-urls 100 \
+            --timeout-ms 15000 \
+            --output artifacts/morocco-web-l8-sarouty-smoke/report.json
+
+      - name: Verify zero-write safety and probe result
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const p = 'artifacts/morocco-web-l8-sarouty-smoke/report.json';
+          const r = JSON.parse(fs.readFileSync(p, 'utf8'));
+          if (r.zeroDbWrites !== true) throw new Error('zeroDbWrites guard failed');
+          if (r.crawlDelayMs < 10000) throw new Error(`crawl delay too low: ${r.crawlDelayMs}`);
+          if (r.stoppedEarly === 'http_429') throw new Error('Sarouty returned HTTP 429');
+          if (!r.sitemapRoots?.length || r.sitemapDocCount < 1) throw new Error('No sitemap document traversed');
+          console.log(JSON.stringify({
+            success: true,
+            zeroDbWrites: r.zeroDbWrites,
+            crawlDelayMs: r.crawlDelayMs,
+            requestCount: r.requestCount,
+            sitemapDocCount: r.sitemapDocCount,
+            uniqueRealEstateListingCount: r.uniqueRealEstateListingCount,
+            stoppedEarly: r.stoppedEarly ?? null,
+          }, null, 2));
+          NODE
+
+      - name: Upload smoke artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: morocco-web-l8-sarouty-smoke
+          path: artifacts/morocco-web-l8-sarouty-smoke/
+          if-no-files-found: warn
+          retention-days: 14
