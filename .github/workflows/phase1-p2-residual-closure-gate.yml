@@ -2,6 +2,18 @@ name: Phase 1 P2 Residual Closure Gate
 on:
   pull_request:
     branches: [main]
+    paths:
+      - "app/**"
+      - "components/**"
+      - "lib/**"
+      - "scripts/**"
+      - "supabase/**"
+      - "public/**"
+      - "package.json"
+      - "package-lock.json"
+      - "tsconfig*.json"
+      - "next.config.*"
+      - ".github/workflows/phase1-p2-residual-closure-gate.yml"
   workflow_dispatch: {}
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
