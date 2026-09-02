@@ -11,6 +11,7 @@ on:
       - 'lib/search/ranking.ts'
       - 'scripts/scrapers/__tests__/listing-quality-passport-v1.test.ts'
       - 'scripts/scrapers/__tests__/listing-factory-ranking-bridge.test.ts'
+      - 'scripts/scrapers/__tests__/listing-factory-v1.test.ts'
       - 'docs/AKARFINDER_LISTING_FACTORY_V1.md'
       - '.github/workflows/listing-factory-v1.yml'
 
@@ -31,7 +32,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Quality passport and ranking bridge tests
-        run: npx tsx --test scripts/scrapers/__tests__/listing-quality-passport-v1.test.ts scripts/scrapers/__tests__/listing-factory-ranking-bridge.test.ts scripts/scrapers/__tests__/search-ranking.test.ts
+      - name: Listing Factory V1 tests
+        run: npx tsx --test scripts/scrapers/__tests__/listing-quality-passport-v1.test.ts scripts/scrapers/__tests__/listing-factory-ranking-bridge.test.ts scripts/scrapers/__tests__/listing-factory-v1.test.ts scripts/scrapers/__tests__/search-ranking.test.ts
       - name: TypeScript compile
         run: npx tsc --noEmit
