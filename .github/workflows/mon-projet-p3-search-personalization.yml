@@ -1,4 +1,5 @@
 name: Mon Projet P3 Search Personalization
+# Final scoped certification launch after CI fan-out cleanup.
 
 on:
   workflow_dispatch:
