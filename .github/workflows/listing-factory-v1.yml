@@ -1,0 +1,35 @@
+name: Listing Factory V1
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feat/listing-factory-v1-quality-passport
+    paths:
+      - 'lib/intelligence/listing-quality-passport-v1.ts'
+      - 'lib/intelligence/listing-factory-v1.ts'
+      - 'scripts/scrapers/__tests__/listing-quality-passport-v1.test.ts'
+      - 'docs/AKARFINDER_LISTING_FACTORY_V1.md'
+      - '.github/workflows/listing-factory-v1.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: listing-factory-v1-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Quality passport tests
+        run: npx tsx --test scripts/scrapers/__tests__/listing-quality-passport-v1.test.ts
+      - name: TypeScript compile
+        run: npx tsc --noEmit
