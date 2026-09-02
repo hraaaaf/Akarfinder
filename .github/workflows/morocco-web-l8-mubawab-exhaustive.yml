@@ -8,8 +8,10 @@ on:
     paths:
       - 'scripts/acquisition/mubawab-exhaustive-enumerator.mjs'
       - 'scripts/acquisition/mubawab-supabase-shard-runner.mjs'
+      - 'scripts/acquisition/mubawab-marocannonces-public-adapter.mjs'
       - 'scripts/acquisition/__tests__/mubawab-exhaustive-enumerator.test.mjs'
       - 'scripts/acquisition/__tests__/mubawab-supabase-shard-runner.test.mjs'
+      - 'scripts/acquisition/__tests__/mubawab-marocannonces-public-adapter.test.mjs'
       - '.github/workflows/morocco-web-l8-mubawab-exhaustive.yml'
 
 permissions:
@@ -32,6 +34,7 @@ jobs:
         run: |
           node --test scripts/acquisition/__tests__/mubawab-exhaustive-enumerator.test.mjs
           node --test scripts/acquisition/__tests__/mubawab-supabase-shard-runner.test.mjs
+          node --test scripts/acquisition/__tests__/mubawab-marocannonces-public-adapter.test.mjs
       - name: Bounded live public root probe
         env:
           MUBAWAB_MAX_REQUESTS: '12'
