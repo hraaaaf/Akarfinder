@@ -1,14 +1,12 @@
-name: Morocco Web L8 Avito Sitemap Enumerator
+name: Morocco Web L8 Avito Full Manifest
 
 on:
   workflow_dispatch:
   push:
     branches:
-      - feat/avito-sitemap-enumerator
+      - feat/avito-full-manifest
     paths:
-      - 'scripts/acquisition/avito-sitemap-enumerator.mjs'
       - 'scripts/acquisition/avito-supabase-shard-runner.mjs'
-      - 'scripts/acquisition/__tests__/avito-sitemap-enumerator.test.mjs'
       - 'scripts/acquisition/__tests__/avito-supabase-shard-runner.test.mjs'
       - '.github/workflows/morocco-web-l8-avito-sitemap.yml'
 
@@ -16,72 +14,55 @@ permissions:
   contents: read
 
 concurrency:
-  group: morocco-web-l8-avito-sitemap-${{ github.ref }}
-  cancel-in-progress: true
+  group: morocco-web-l8-avito-full-manifest
+  cancel-in-progress: false
 
 jobs:
   certify:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+
       - name: Unit tests
-        run: |
-          node --test scripts/acquisition/__tests__/avito-sitemap-enumerator.test.mjs
-          node --test scripts/acquisition/__tests__/avito-supabase-shard-runner.test.mjs
-      - name: Bounded live sitemap probe
-        env:
-          AVITO_MAX_SITEMAP_DOCS: '10'
-          AVITO_MAX_URLS: '200000'
-        run: node scripts/acquisition/avito-sitemap-enumerator.mjs
-      - name: Verify sitemap safety and bounds
-        run: |
-          node - <<'NODE'
-          const fs = require('fs');
-          const report = JSON.parse(fs.readFileSync('artifacts/morocco-web-l8-avito-sitemap/report.json', 'utf8'));
-          if (report.zeroDbWrites !== true) throw new Error('zeroDbWrites must be true');
-          if (report.stoppedEarly === 'http_429') throw new Error('Avito sitemap probe hit HTTP 429');
-          if (!Array.isArray(report.sitemapRoots) || report.sitemapRoots.length < 1) throw new Error('no sitemap root discovered');
-          if (report.sitemapDocCount < 1 || report.sitemapDocCount > 10) throw new Error('sitemap doc bound violated');
-          if (report.requestCount < 2 || report.requestCount > 11) throw new Error('request bound violated');
-          console.log({
-            sitemapRoots: report.sitemapRoots.length,
-            sitemapDocs: report.sitemapDocCount,
-            requests: report.requestCount,
-            uniqueRealEstateListingCount: report.uniqueRealEstateListingCount,
-            queueRemaining: report.queueRemaining,
-          });
-          NODE
-      - name: Bounded Supabase shard fallback
+        run: node --test scripts/acquisition/__tests__/avito-supabase-shard-runner.test.mjs
+
+      - name: Full Avito 2505-shard manifest
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          AVITO_MANIFEST_LIMIT: '25'
+          AVITO_MANIFEST_LIMIT: '2505'
         run: |
           if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then
-            echo 'Supabase secrets unavailable; skipping connected Avito shard fallback.'
-            exit 0
+            echo 'Supabase secrets unavailable; cannot certify full Avito manifest.'
+            exit 2
           fi
           node scripts/acquisition/avito-supabase-shard-runner.mjs
-      - name: Verify shard fallback when present
+
+      - name: Verify full manifest
         run: |
-          if [ ! -f artifacts/morocco-web-l8-avito-shards/report.json ]; then
-            echo 'No connected shard artifact present.'
-            exit 0
-          fi
           node - <<'NODE'
           const fs = require('fs');
           const report = JSON.parse(fs.readFileSync('artifacts/morocco-web-l8-avito-shards/report.json', 'utf8'));
-          if (report.zeroDbWrites !== true) throw new Error('shard replay must remain zero-write');
-          if (report.stoppedEarly === 'http_429') throw new Error('shard fallback hit HTTP 429');
-          if (report.selectedShardCount > 25 || report.requestCount > 25) throw new Error('shard fallback exceeded bounds');
-          console.log({ sourceRows: report.sourceRowCount, safeShards: report.safeShardCount, requests: report.requestCount, uniqueRealEstateListingCount: report.uniqueRealEstateListingCount });
+          if (report.zeroDbWrites !== true) throw new Error('full manifest must remain zero-write');
+          if (report.stoppedEarly === 'http_429') throw new Error('full manifest hit HTTP 429');
+          if (report.safeShardCount !== 2505) throw new Error(`safe shard manifest drifted: ${report.safeShardCount}`);
+          if (report.selectedShardCount !== 2505 || report.requestCount !== 2505) throw new Error('full manifest bounds not met');
+          console.log({
+            sourceRows: report.sourceRowCount,
+            safeShards: report.safeShardCount,
+            requests: report.requestCount,
+            uniqueRealEstateListingCount: report.uniqueRealEstateListingCount,
+            stoppedEarly: report.stoppedEarly,
+            zeroDbWrites: report.zeroDbWrites,
+          });
           NODE
+
       - uses: actions/upload-artifact@v4
         with:
-          name: morocco-web-l8-avito-source-first
-          path: artifacts/morocco-web-l8-avito-*/
+          name: morocco-web-l8-avito-full-manifest
+          path: artifacts/morocco-web-l8-avito-shards/
           if-no-files-found: error
