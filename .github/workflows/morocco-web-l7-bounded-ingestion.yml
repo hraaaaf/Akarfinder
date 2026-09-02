@@ -1,0 +1,52 @@
+name: Morocco Web L7 Bounded Ingestion
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feat/morocco-web-l7-bounded-production-ingestion
+    paths:
+      - 'scripts/acquisition/bounded_production_ingestion.py'
+      - 'scripts/acquisition/bounded_production_ingestion_dry_run.py'
+      - 'scripts/acquisition/__tests__/test_bounded_production_ingestion.py'
+      - '.github/workflows/morocco-web-l7-bounded-ingestion.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: morocco-web-l7-bounded-ingestion-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      DATABASE_PROVIDER: sqlite
+      THIRD_PARTY_DB_INGESTION_ENABLED: 'false'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Unit tests
+        run: python -m unittest scripts/acquisition/__tests__/test_bounded_production_ingestion.py
+      - name: Bounded zero-write dry-run
+        run: python scripts/acquisition/bounded_production_ingestion_dry_run.py
+      - name: Publish evidence summary
+        if: always()
+        run: |
+          if [ -f artifacts/morocco-web-l7-bounded-ingestion/report.md ]; then
+            cat artifacts/morocco-web-l7-bounded-ingestion/report.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: morocco-web-l7-bounded-ingestion-${{ github.run_id }}
+          path: artifacts/morocco-web-l7-bounded-ingestion/
+          if-no-files-found: error
+          retention-days: 14
