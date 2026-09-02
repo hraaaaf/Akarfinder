@@ -1,0 +1,31 @@
+name: Search UI API Page1 Routing Parity
+
+on:
+  push:
+    branches:
+      - 'agent/search-ui-api-parity'
+  pull_request:
+    paths:
+      - 'lib/odm/odm-public-routing.ts'
+      - 'scripts/scrapers/__tests__/search-ui-api-page1-routing-parity.test.ts'
+      - '.github/workflows/search-ui-api-page1-routing-parity.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  parity:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Run page-one routing parity contract
+        run: npx tsx --test scripts/scrapers/__tests__/search-ui-api-page1-routing-parity.test.ts
+      - name: Typecheck
+        run: npx tsc --noEmit
