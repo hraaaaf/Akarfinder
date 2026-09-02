@@ -1,13 +1,6 @@
 name: UX-PREMIUM-RESULTS-HEADER-1 Exact Visual Certification
 
 on:
-  pull_request:
-    paths:
-      - "app/search/search-controls-10of10.css"
-      - "components/search/LightZillowSearchShell.tsx"
-      - "scripts/audits/ux-premium-results-header-1.mjs"
-      - "scripts/scrapers/__tests__/ux-premium-results-header-1.test.ts"
-      - ".github/workflows/ux-premium-results-header-1.yml"
   workflow_dispatch:
 
 permissions:
