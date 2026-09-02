@@ -27,9 +27,10 @@ export function shouldServeOdmPublicCanary(stableKey: string, env: NodeJS.Proces
   return percent > 0 && bucket(stableKey) < Math.floor(percent * 100);
 }
 
-function propertyType(value?: string): ListingPropertyType {
+export function mapOdmPropertyType(value?: string): ListingPropertyType {
   const normalized = value?.trim().toLowerCase();
   if (normalized?.includes("villa")) return "Villa";
+  if (normalized === "riad") return "Riad";
   if (normalized?.includes("terrain") || normalized === "land") return "Terrain";
   if (normalized?.includes("studio")) return "Studio";
   if (normalized?.includes("bureau") || normalized === "office") return "Bureau";
@@ -55,7 +56,7 @@ export function mapOdmPageToSearchResult(page: PublicSearchPage, query: SearchQu
     currency: "DH",
     surface_m2: row.normalized_surface_m2 ?? 0,
     price_per_m2: row.price_per_m2_mad ?? null,
-    property_type: propertyType(row.normalized_property_type || query.property_type),
+    property_type: mapOdmPropertyType(row.normalized_property_type || query.property_type),
     transaction_type: transactionType(row.normalized_intent || query.transaction_type),
     bedrooms: 0,
     bathrooms: 0,
