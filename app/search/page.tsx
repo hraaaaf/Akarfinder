@@ -147,12 +147,17 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const maxBudget = pickFirst(params.max_price) ?? pickFirst(params.budget_max) ?? "";
   const search = resolvedQuery.q ?? "";
   const requestedProjectId = pickFirst(params.project_id);
+  const personalizationVisible = pickFirst(params.guided) === "1" || Boolean(pickFirst(params.profile_version));
+  const personalizationEnabled = pickFirst(params.personalized) !== "0";
 
   return (
     <main className="min-h-screen bg-background text-foreground">
       <SiteHeader variant="light" compact fluid searchMode />
       <SearchMapNavigationBridge projectId={requestedProjectId} />
-      <SearchPersonalizationControl />
+      <SearchPersonalizationControl
+        initialVisible={personalizationVisible}
+        initialEnabled={personalizationEnabled}
+      />
       <PropertySelectionProvider>
         <SearchCompareDock />
         <PropertyQuickPreview />
