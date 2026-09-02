@@ -30,6 +30,10 @@ const TRANSACTION_QUERY_TERMS: Record<string, string[]> = {
   new: ["new", "neuf", "nouveau", "programme"],
 };
 
+type ListingWithQualityPassport = Listing & {
+  ranking_quality_score?: number | null;
+};
+
 function normalize(value: string) {
   return value
     .toLowerCase()
@@ -85,10 +89,33 @@ function countResidualQueryMatches(text: string | undefined, query: SearchQuery)
   return count;
 }
 
+function legacyQualityScore(listing: Listing): number {
+  let quality = 0;
+  if (listing.title) quality++;
+  if (listing.surface_m2 && listing.surface_m2 > 0) quality++;
+  if (listing.city) quality++;
+  if (listing.district) quality++;
+  if (listing.description_snippet) quality++;
+
+  if (listing.reliability_score) {
+    quality += Math.max(0, Math.min(5, (listing.reliability_score - 50) / 10));
+  }
+  return quality;
+}
+
+function intrinsicQualityScore(listing: Listing): number {
+  const passportScore = (listing as ListingWithQualityPassport).ranking_quality_score;
+  if (typeof passportScore === "number" && Number.isFinite(passportScore)) {
+    return Math.max(0, Math.min(100, passportScore)) / 10;
+  }
+  return legacyQualityScore(listing);
+}
+
 export type RankingBreakdown = {
   relevance: number;
   hasDisclosedPrice: boolean;
   quality: number;
+  qualitySource: "listing_factory_v1" | "legacy";
   total: number;
 };
 
@@ -144,24 +171,20 @@ export function computeRankingBreakdown(listing: Listing, query: SearchQuery): R
   // relevance, a disclosed price makes a result materially more actionable.
   const hasDisclosedPrice = listing.price != null && listing.price > 0;
 
-  // Remaining information quality. Price is excluded here because it is an
-  // explicit tie-break layer above this score.
-  let quality = 0;
-  if (listing.title) quality++;
-  if (listing.surface_m2 && listing.surface_m2 > 0) quality++;
-  if (listing.city) quality++;
-  if (listing.district) quality++;
-  if (listing.description_snippet) quality++;
-
-  if (listing.reliability_score) {
-    quality += Math.max(0, Math.min(5, (listing.reliability_score - 50) / 10));
-  }
+  // Quality is a strict third layer. Listing Factory V1 may replace the legacy
+  // heuristic when its explicit score is available, but it can never compensate
+  // for weaker relevance or an undisclosed price at equal relevance.
+  const passportScore = (listing as ListingWithQualityPassport).ranking_quality_score;
+  const qualitySource = typeof passportScore === "number" && Number.isFinite(passportScore)
+    ? "listing_factory_v1" as const
+    : "legacy" as const;
+  const quality = intrinsicQualityScore(listing);
 
   // Compatibility scalar for diagnostics/legacy consumers. Recommended sorting
   // must use compareRecommendedListings() so layers remain lexicographic.
   const total = relevance + (hasDisclosedPrice ? 1 : 0) + quality;
 
-  return { relevance, hasDisclosedPrice, quality, total };
+  return { relevance, hasDisclosedPrice, quality, qualitySource, total };
 }
 
 export function computeRankingScore(listing: Listing, query: SearchQuery): number {
