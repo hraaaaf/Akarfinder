@@ -6,6 +6,8 @@ on:
     paths:
       - "app/mon-projet/**"
       - "components/companion/MonProjetWizardP1A.tsx"
+      - "components/companion/MonProjetWizardP2.tsx"
+      - "components/companion/FinderLauncher.tsx"
       - "scripts/audits/mon-projet-p2-visual.mjs"
       - ".github/workflows/mon-projet-p2-visual.yml"
 
@@ -38,7 +40,7 @@ jobs:
         env:
           BASE_URL: http://127.0.0.1:3216
           AUDIT_OUTPUT_DIR: artifacts/mon-projet-p2-visual
-          AUDIT_PHASE: baseline
+          AUDIT_PHASE: after
         run: node scripts/audits/mon-projet-p2-visual.mjs
       - name: Upload Mon Projet P2 visual proof
         if: always()
