@@ -32,6 +32,9 @@ class L8CorpusTriageTests(unittest.TestCase):
             "https://www.tiktok.com/@x/video/1",
             "https://reddit.com/r/morocco/comments/x",
             "https://support.google.com/foo",
+            "https://ouedkniss.com/annonce/12345/foo.html",
+            "https://ouedkniss.dz/property/villa-123",
+            "https://bakimmo-dz.com/bien/villa-alger",
         ]:
             self.assertEqual(triage_url(url), "obvious_noise", url)
 
