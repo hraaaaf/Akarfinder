@@ -20,6 +20,8 @@ try {
   for (const scenario of scenarios) {
     const page = await browser.newPage({ viewport: { width: scenario.width, height: scenario.height }, colorScheme: "light", reducedMotion: "reduce" });
     const localFindings = [];
+    const pageErrors = [];
+    page.on("pageerror", (error) => pageErrors.push(error.message));
     try {
       const response = await page.goto(`${baseUrl}${route}`, { waitUntil: "domcontentloaded", timeout: 60_000 });
       if ((response?.status() ?? 0) !== 200) localFindings.push(`SEARCH_HTTP_${response?.status() ?? 0}`);
@@ -45,11 +47,31 @@ try {
 
       const screenshot = `${phase}-${scenario.name}.png`;
       await page.screenshot({ path: path.join(outputDir, screenshot), fullPage: false });
-      results.push({ ...scenario, screenshot, controlCount, dimensions, findings: localFindings });
+
+      let disabledScreenshot = null;
+      if (phase === "after" && controlCount === 1) {
+        const toggle = control.getByRole("switch");
+        await Promise.all([
+          page.waitForNavigation({ waitUntil: "domcontentloaded", timeout: 30_000 }),
+          toggle.click(),
+        ]);
+        await page.locator("[data-search-personalization-control]").waitFor({ state: "visible", timeout: 10_000 });
+        const disabledToggle = page.locator("[data-search-personalization-control]").getByRole("switch");
+        const currentUrl = new URL(page.url());
+        if (currentUrl.searchParams.get("personalized") !== "0") localFindings.push("DISABLE_URL_STATE_MISSING");
+        if ((await disabledToggle.getAttribute("aria-checked")) !== "false") localFindings.push("DISABLE_SWITCH_STILL_ACTIVE");
+        disabledScreenshot = `after-disabled-${scenario.name}.png`;
+        await page.screenshot({ path: path.join(outputDir, disabledScreenshot), fullPage: false });
+      }
+
+      if (pageErrors.length > 0) {
+        for (const error of pageErrors) localFindings.push(`PAGE_ERROR_${error}`);
+      }
+      results.push({ ...scenario, screenshot, disabledScreenshot, controlCount, dimensions, pageErrors, findings: localFindings });
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       localFindings.push(`AUDIT_ERROR_${message}`);
-      results.push({ ...scenario, error: message, findings: localFindings });
+      results.push({ ...scenario, error: message, pageErrors, findings: localFindings });
     } finally {
       findings.push(...localFindings.map((finding) => ({ scenario: scenario.name, finding })));
       await page.close();
@@ -60,15 +82,17 @@ try {
 }
 
 const report = {
-  schemaVersion: "FINDER_P3_VISUAL_V1",
+  schemaVersion: "FINDER_P3_VISUAL_V2",
   phase,
   route,
   scenarioCount: scenarios.length,
   screenshotCount: results.filter((item) => item.screenshot).length,
+  disabledScreenshotCount: results.filter((item) => item.disabledScreenshot).length,
   findingCount: findings.length,
   findings,
   results,
 };
 await writeFile(path.join(outputDir, "report.json"), `${JSON.stringify(report, null, 2)}\n`);
-console.log(JSON.stringify({ phase, screenshotCount: report.screenshotCount, findingCount: report.findingCount, findings }, null, 2));
+console.log(JSON.stringify({ phase, screenshotCount: report.screenshotCount, disabledScreenshotCount: report.disabledScreenshotCount, findingCount: report.findingCount, findings }, null, 2));
 if (report.screenshotCount !== scenarios.length || report.findingCount > 0) throw new Error(`Finder P3 visual audit failed: ${phase}`);
+if (phase === "after" && report.disabledScreenshotCount !== scenarios.length) throw new Error(`Finder P3 disable audit failed: ${report.disabledScreenshotCount}/${scenarios.length}`);
