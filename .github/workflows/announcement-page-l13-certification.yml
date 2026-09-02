@@ -1,19 +1,8 @@
 name: Announcement Page L13 Certification 10of10
-# Exact-head trigger after canonical rail convergence and temporary workflow cleanup.
+# Exact-head closeout certification. Kept off generic PR fan-out.
 
 on:
-  pull_request:
-    paths:
-      - 'components/listings/**'
-      - 'app/listings/**'
-      - 'app/visual-qa/announcement-page-mon-projet/**'
-      - 'lib/property-detail/**'
-      - 'lib/geo/**'
-      - 'lib/listings/**'
-      - 'docs/ANNOUNCEMENT_PAGE_*'
-      - 'scripts/audits/announcement-page-l12-visual.mjs'
-      - 'scripts/scrapers/__tests__/announcement-page-*.test.ts'
-      - '.github/workflows/announcement-page-l13-certification.yml'
+  workflow_dispatch:
   push:
     branches:
       - 'agent/announcement-page-l13-certification-10of10'
