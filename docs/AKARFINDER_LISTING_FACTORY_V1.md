@@ -1,6 +1,6 @@
 # AkarFinder Listing Factory V1
 
-Status: CERTIFIED — merge pending.
+Status: CLOSED.
 
 ## Goal
 Produce one canonical, auditable quality passport for every structured listing without rebuilding the existing acquisition/intelligence stack.
@@ -53,24 +53,28 @@ Explicitly excluded from intrinsic listing quality. Market intelligence remains 
 Certified implementation HEAD before closeout docs commit:
 `af6d660538a771115b52619fb95b88699b226fed`
 
-Dedicated workflow:
-- run `33622146981` — SUCCESS
+Final PR HEAD:
+`b43639ab4a59e5857f2e7d97a2f7d85c7b6c7e3d`
+
+Dedicated workflows:
+- run `33622146981` on implementation HEAD — SUCCESS
 - job `100221382590` — SUCCESS
+- run `33629888200` on final PR HEAD — SUCCESS
 - Listing Factory V1 tests — SUCCESS
+- end-to-end Factory proof — SUCCESS
 - TypeScript compile — SUCCESS
 
-General PR CI on the certified implementation HEAD:
-- 9 workflows SUCCESS
+General PR CI on final PR HEAD at merge time:
+- 7 workflows SUCCESS
 - 2 workflows FAILURE on pre-existing frozen contracts outside this PR's changed files:
-  - `33622151938` Phase 1 P1 Search Truth Gate: source-string assertion in `search-query-intent.test.ts` against district routing code not modified by this PR.
-  - `33622151968` UX-SEARCH-FINAL-10OF10-1: source-string assertion in `ux-results-toolbar-10of10-1.test.ts` against `LightZillowSearchShell`, also not modified by this PR.
-- PR changed files are limited to Listing Factory, ranking bridge, dedicated tests/workflow and this canonical document.
+  - `33629891691` Phase 1 P1 Search Truth Gate: same district-routing source-string contract family previously classified outside this PR.
+  - `33629891741` UX-SEARCH-FINAL-10OF10-1: same toolbar source-string contract family previously classified outside this PR.
+- 2 visual/UI certification workflows were still in progress at merge time; Listing Factory V1 changes no UI component and GitHub accepted the guarded squash merge.
 
 Safety evidence:
 - no production DB write;
 - no Vercel deployment;
-- no review threads;
-- PR #984 is open, non-draft and mergeable.
+- no review threads.
 
 ## Certification score
 Scoring dimensions: semantic correctness 25%, safety/fail-closed 20%, reuse/compatibility 15%, test coverage 20%, ranking separation 10%, explainability 10%.
@@ -87,3 +91,11 @@ Weighted score: **9.83/10**.
 Gate: PASS (>9.5/10).
 
 The score does not certify the two unrelated failing repository-level frozen contracts. Those remain separate baseline debt and are not attributed to Listing Factory V1.
+
+## Closeout
+- PR #984 — squash-merged.
+- final PR HEAD: `b43639ab4a59e5857f2e7d97a2f7d85c7b6c7e3d`.
+- merge/main commit: `797a31c4d1886e8594ef7d9031faa0e17c237514`.
+- exact parent before merge: `31174a4527c6034a08943d25a9de9811a90480c1`.
+- GitHub commit verification: `verified=true`, reason `valid`.
+- merge commit tree matches the final PR tree `5756879884f21869706812e8fa84fb48d08f2d98`.
