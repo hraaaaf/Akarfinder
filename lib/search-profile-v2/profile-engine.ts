@@ -59,7 +59,7 @@ function normalizeAnchors(values: SearchProfileAnchor[]): SearchProfileAnchor[] 
   });
   const seen = new Set<string>();
   return normalized.filter((value) => {
-    const key = `${value.label.toLocaleLowerCase("fr")}|${value.latitude ?? ""}|${value.longitude ?? ""}`;
+    const key = `${value.label.toLocaleLowerCase("fr")}|${value.city?.toLocaleLowerCase("fr") ?? ""}|${value.latitude ?? ""}|${value.longitude ?? ""}`;
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
