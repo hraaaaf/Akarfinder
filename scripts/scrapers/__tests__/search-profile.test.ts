@@ -14,6 +14,10 @@ import {
   PROPERTY_TYPE_OPTIONS,
   type SearchProfile,
 } from "../../../lib/search-profile/search-profile-types.js";
+import { companionProfileToSearchParams } from "../../../lib/companion-v1/search-entry.js";
+import { createCompanionSession, transitionCompanionSession } from "../../../lib/companion-v1/state-machine.js";
+import { applySearchProfileEvent } from "../../../lib/search-profile-v2/profile-engine.js";
+import { createEmptyDynamicSearchProfileV2 } from "../../../lib/search-profile-v2/types.js";
 
 const FORBIDDEN_PUBLIC_TERMS = [
   "vérifié", "certifié", "officiel", "fiable", "meilleur", "garanti",
@@ -36,6 +40,17 @@ function familyBuyProfile(): SearchProfile {
     neighborhoodNeeds: ["ecoles", "tram"],
     priorities: ["prix", "quartier"],
   };
+}
+
+function companionAtPreferences() {
+  let session = createCompanionSession("2026-09-02T10:00:00.000Z");
+  session = transitionCompanionSession(session, { type: "start" }, "2026-09-02T10:00:01.000Z");
+  session = transitionCompanionSession(session, { type: "answer_objective", objective: "buy" }, "2026-09-02T10:00:02.000Z");
+  session = transitionCompanionSession(session, { type: "answer_usage", intended_uses: ["primary_residence"] }, "2026-09-02T10:00:03.000Z");
+  session = transitionCompanionSession(session, { type: "answer_location", cities: ["Casablanca"] }, "2026-09-02T10:00:04.000Z");
+  session = transitionCompanionSession(session, { type: "answer_budget", purchase_max_mad: 1_500_000 }, "2026-09-02T10:00:05.000Z");
+  session = transitionCompanionSession(session, { type: "answer_type", property_types: ["Appartement"] }, "2026-09-02T10:00:06.000Z");
+  return transitionCompanionSession(session, { type: "answer_constraints", min_surface_m2: 90, min_bedrooms: 3 }, "2026-09-02T10:00:07.000Z");
 }
 
 describe("search profile summary", () => {
@@ -115,5 +130,107 @@ describe("search profile summary", () => {
         assert.equal(text.includes(term), false, `"${text}" must not contain "${term}"`);
       }
     }
+  });
+});
+
+describe("Mon Projet Dynamic Search Profile V2", () => {
+  it("writes explicit personal context with provenance and supports partial updates", () => {
+    const now = "2026-09-02T11:00:00.000Z";
+    const profile = applySearchProfileEvent(createEmptyDynamicSearchProfileV2(), {
+      type: "personal_context",
+      children_count: 2,
+      remote_work: true,
+      accessibility_need: false,
+    }, now);
+
+    assert.deepEqual(profile.personal_context.children_count, {
+      value: 2,
+      source: "explicit",
+      confidence: "high",
+      updated_at: now,
+    });
+    assert.equal(profile.personal_context.remote_work?.value, true);
+    assert.equal(profile.personal_context.accessibility_need?.value, false);
+
+    const inferred = applySearchProfileEvent(profile, {
+      type: "personal_context",
+      corporate_context: true,
+      source: "behavioral_inference",
+    }, "2026-09-02T11:01:00.000Z");
+    assert.equal(inferred.personal_context.corporate_context?.confidence, "low");
+    assert.equal(inferred.personal_context.children_count?.value, 2);
+  });
+
+  it("rejects invalid personal context", () => {
+    assert.throws(
+      () => applySearchProfileEvent(createEmptyDynamicSearchProfileV2(), { type: "personal_context", children_count: 21 }),
+      /PROFILE_CHILDREN_COUNT_INVALID/,
+    );
+  });
+
+  it("keeps context and anchors inside the historical Companion sequence", () => {
+    let session = companionAtPreferences();
+    assert.equal(session.state, "PREFERENCES");
+
+    session = transitionCompanionSession(session, { type: "answer_context", children_count: 2 }, "2026-09-02T10:00:08.000Z");
+    session = transitionCompanionSession(session, { type: "answer_context", remote_work: true }, "2026-09-02T10:00:09.000Z");
+    assert.equal(session.state, "PREFERENCES");
+    assert.equal(session.profile.personal_context.children_count?.value, 2);
+    assert.equal(session.profile.personal_context.remote_work?.value, true);
+
+    session = transitionCompanionSession(session, {
+      type: "answer_anchors",
+      anchors: [
+        { label: " École des enfants ", city: "Casablanca", max_minutes: 15 },
+        { label: "École des enfants", city: "Casablanca", max_minutes: 15 },
+      ],
+    }, "2026-09-02T10:00:10.000Z");
+    assert.equal(session.profile.location.anchors.length, 1);
+    assert.deepEqual(session.profile.location.anchors[0], { label: "École des enfants", city: "Casablanca", max_minutes: 15 });
+
+    session = transitionCompanionSession(session, { type: "answer_preferences", preferences: [] }, "2026-09-02T10:00:11.000Z");
+    assert.equal(session.state, "PRIORISATION");
+    assert.equal(session.profile.personal_context.children_count?.value, 2);
+    assert.equal(session.profile.location.anchors.length, 1);
+  });
+
+  it("rejects invalid anchors", () => {
+    assert.throws(
+      () => applySearchProfileEvent(createEmptyDynamicSearchProfileV2(), {
+        type: "anchors",
+        values: [{ label: "Bureau", city: "Casablanca", max_minutes: 0 }],
+      }),
+      /PROFILE_ANCHOR_MAX_MINUTES_INVALID/,
+    );
+  });
+
+  it("preserves anchors, personal context and rich tolerances in Search hand-off", () => {
+    let profile = companionAtPreferences().profile;
+    profile = applySearchProfileEvent(profile, {
+      type: "personal_context",
+      children_count: 2,
+      remote_work: true,
+    }, "2026-09-02T11:10:00.000Z");
+    profile = applySearchProfileEvent(profile, {
+      type: "anchors",
+      values: [{ label: "Bureau", city: "Casablanca", max_minutes: 20 }],
+    }, "2026-09-02T11:11:00.000Z");
+    profile = applySearchProfileEvent(profile, { type: "tourism_tolerance", max: 3 }, "2026-09-02T11:12:00.000Z");
+
+    const params = companionProfileToSearchParams(profile);
+    assert.equal(params.get("transaction_type"), "buy");
+    assert.equal(params.get("city"), "Casablanca");
+    assert.equal(params.get("max_price"), "1500000");
+    assert.equal(params.get("guided"), "1");
+
+    const anchors = JSON.parse(params.get("profile_anchors") ?? "[]") as Array<{ label: string; max_minutes?: number }>;
+    assert.deepEqual(anchors, [{ label: "Bureau", city: "Casablanca", max_minutes: 20 }]);
+
+    const context = JSON.parse(params.get("profile_personal_context") ?? "{}") as { children_count?: { value: number }; remote_work?: { value: boolean } };
+    assert.equal(context.children_count?.value, 2);
+    assert.equal(context.remote_work?.value, true);
+
+    const tolerances = JSON.parse(params.get("profile_tolerances") ?? "{}") as { tourism_intensity_max?: number };
+    assert.equal(tolerances.tourism_intensity_max, 3);
   });
 });
