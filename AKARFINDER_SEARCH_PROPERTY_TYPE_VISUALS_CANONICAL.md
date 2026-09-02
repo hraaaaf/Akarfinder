@@ -198,3 +198,30 @@ Note hors scope : la capture 430 px affiche un total différent des autres viewp
 Search Property Type Visual System : **CLOSED — 7/7 lots prouvés**.
 
 Aucun changement ranking, data, DB ou ingestion n'a été nécessaire pour L7. Les fichiers temporaires de certification LIVE ont été retirés avant intégration du closeout.
+
+---
+
+## Follow-up 2026-09-02 — Terrain / Riad semantic correction
+
+Statut : **ACTIVE — production activation / visual proof pending**
+
+Goal : corriger durablement les annonces Terrain et Riad classées à tort, sans dégrader les vraies Villas ni le système visuel déjà certifié.
+
+Preuves acquises :
+- correction initiale PR `#969` mergée ;
+- follow-up ODM PR `#981` mergée ;
+- merge commit PR #981 : `ede9cee2188cbb2e7cd40dc5facdb1a026c17398` ;
+- run ciblé `33611065574` ✅ SUCCESS ;
+- régression sémantique : 4/4 PASS, 0 fail ;
+- vraie Villa contenant `Hay Riad` reste Villa ;
+- Riad reste Riad jusqu'au mapper ODM ;
+- Terrain avec mentions contextuelles de villa reste Terrain ;
+- tous les gates du HEAD final PR #981 sont SUCCESS ;
+- aucun write DB pour ce follow-up.
+
+Activation production :
+- autorisation utilisateur reçue le `2026-09-02` ;
+- retrigger Git/Vercel demandé ;
+- preuve Vercel READY sur ce HEAD encore manquante au moment de cette mise à jour.
+
+NEXT EXACT : obtenir le deployment production READY contenant la correction #981, vérifier l'API LIVE, produire les captures AFTER aux viewports de référence, comparer visuellement, scorer puis fermer ce follow-up.
