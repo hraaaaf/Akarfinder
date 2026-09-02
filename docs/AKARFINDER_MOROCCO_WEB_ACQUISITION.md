@@ -1,6 +1,6 @@
 # AKARFINDER — Morocco Web Real-Estate Acquisition
 
-Status: ACTIVE — L1 CLOSED / L2 CLOSED / L3 CLOSED / L4 ACTIVE
+Status: ACTIVE — L1 CLOSED / L2 CLOSED / L3 CLOSED / L4 CERTIFIED — MERGE PENDING
 
 ## North-star Goal
 
@@ -144,7 +144,7 @@ Validated net-new domains include `immo.mitula.ma`, `immobilier.trovit.ma`, `lea
 
 Boundary: the **263 URLs are open-web discovery candidates**, not 263 certified active listing-detail pages. The set can contain property pages, category/search/discovery pages and sitemap-derived real-estate surfaces. Exact listing-detail classification, active-page validation and canonical field extraction belong to L4.
 
-## L4 — Canonical Classification + Extraction — ACTIVE
+## L4 — Canonical Classification + Extraction — CERTIFIED — MERGE PENDING
 
 Goal: turn public candidate property pages from L2/L3 into **validated canonical listing records with field-level provenance**, while rejecting unsupported or ambiguous values instead of guessing.
 
@@ -156,6 +156,28 @@ Success criteria:
 - representative fixtures across L2 portals and L3 long-tail domains;
 - live bounded public dry-run with active-page validation;
 - zero production DB writes.
+
+Certified evidence:
+- Dedicated run `33575936001` — **SUCCESS**.
+- Evidence HEAD `3a95dc896500a6681c35c85ad9c5f1724ae60fbd`.
+- Unit tests: **6/6 PASS**.
+- Bounded public live dry-run: **5 targets**.
+- Portal discovery produced **2** public candidate pages during the run.
+- **3 listing-detail pages** classified and extracted.
+- `property_type` present on **3/3** extracted listing details.
+- `transaction_type` present on **3/3** extracted listing details.
+- `price` or `surface` present on **3/3** extracted listing details.
+- `stoppedEarly: null`.
+- `zeroDbWrites: true`.
+- Artifact `9826611834`.
+- Artifact SHA256 `65ec2f57401166130995f1df17febc98f65ebdc6287303fed17570e1605781ae`.
+
+Implementation boundary:
+- values are emitted only when source text directly supports them;
+- unsupported booleans are not inferred false;
+- ambiguous fields remain null/rejected rather than guessed;
+- each extracted field carries source URL + extraction evidence;
+- this certifies bounded canonical extraction behavior, **not yet cross-source deduplication, freshness, production ingestion or serving**.
 
 Current L4 branch: `feat/morocco-web-l4-canonical-extraction`, based on `main@f13ccd5e5ec490f395d6515ac693d09d246ae58a`.
 
@@ -181,6 +203,6 @@ Validated canonical records only, scheduled acquisition/revisit jobs, source-col
 
 ## Execution order
 
-L1 ✅ → L2 ✅ → L3 ✅ → **L4 ACTIVE** → L5 → L6 → L7 → L8 → L9.
+L1 ✅ → L2 ✅ → L3 ✅ → **L4 CERTIFIED — MERGE PENDING** → L5 → L6 → L7 → L8 → L9.
 
 Overall program percentage remains intentionally unassigned until the roadmap defines a stable denominator across the remaining lots.
