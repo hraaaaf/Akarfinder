@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - feat/avito-sitemap-enumerator
+      - feat/avito-scale-gate-100
     paths:
       - 'scripts/acquisition/avito-sitemap-enumerator.mjs'
       - 'scripts/acquisition/avito-supabase-shard-runner.mjs'
@@ -22,7 +23,7 @@ concurrency:
 jobs:
   certify:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -47,41 +48,30 @@ jobs:
           if (!Array.isArray(report.sitemapRoots) || report.sitemapRoots.length < 1) throw new Error('no sitemap root discovered');
           if (report.sitemapDocCount < 1 || report.sitemapDocCount > 10) throw new Error('sitemap doc bound violated');
           if (report.requestCount < 2 || report.requestCount > 11) throw new Error('request bound violated');
-          console.log({
-            sitemapRoots: report.sitemapRoots.length,
-            sitemapDocs: report.sitemapDocCount,
-            requests: report.requestCount,
-            uniqueRealEstateListingCount: report.uniqueRealEstateListingCount,
-            queueRemaining: report.queueRemaining,
-          });
           NODE
-      - name: Bounded Supabase shard fallback
+      - name: Avito 100-shard scale gate
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          AVITO_MANIFEST_LIMIT: '25'
+          AVITO_MANIFEST_LIMIT: '100'
         run: |
           if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then
-            echo 'Supabase secrets unavailable; skipping connected Avito shard fallback.'
-            exit 0
+            echo 'Supabase secrets unavailable; cannot certify Avito gate 100.'
+            exit 2
           fi
           node scripts/acquisition/avito-supabase-shard-runner.mjs
-      - name: Verify shard fallback when present
+      - name: Verify gate 100
         run: |
-          if [ ! -f artifacts/morocco-web-l8-avito-shards/report.json ]; then
-            echo 'No connected shard artifact present.'
-            exit 0
-          fi
           node - <<'NODE'
           const fs = require('fs');
           const report = JSON.parse(fs.readFileSync('artifacts/morocco-web-l8-avito-shards/report.json', 'utf8'));
-          if (report.zeroDbWrites !== true) throw new Error('shard replay must remain zero-write');
-          if (report.stoppedEarly === 'http_429') throw new Error('shard fallback hit HTTP 429');
-          if (report.selectedShardCount > 25 || report.requestCount > 25) throw new Error('shard fallback exceeded bounds');
-          console.log({ sourceRows: report.sourceRowCount, safeShards: report.safeShardCount, requests: report.requestCount, uniqueRealEstateListingCount: report.uniqueRealEstateListingCount });
+          if (report.zeroDbWrites !== true) throw new Error('gate must remain zero-write');
+          if (report.stoppedEarly === 'http_429') throw new Error('gate hit HTTP 429');
+          if (report.selectedShardCount !== 100 || report.requestCount !== 100) throw new Error('gate 100 bounds not met');
+          console.log({sourceRows:report.sourceRowCount,safeShards:report.safeShardCount,requests:report.requestCount,uniqueRealEstateListingCount:report.uniqueRealEstateListingCount});
           NODE
       - uses: actions/upload-artifact@v4
         with:
-          name: morocco-web-l8-avito-source-first
+          name: morocco-web-l8-avito-gate-100
           path: artifacts/morocco-web-l8-avito-*/
           if-no-files-found: error
