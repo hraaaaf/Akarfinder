@@ -6,7 +6,27 @@ import argparse
 import json
 from pathlib import Path
 
-from bounded_production_ingestion import apply_plan, plan_batch, rollback_manifest, snapshot_existing
+from bounded_production_ingestion import (
+    PartialApplyError,
+    apply_plan,
+    plan_batch,
+    rollback_manifest,
+    snapshot_existing,
+)
+
+IDENTITY_FIELDS = ("provider", "query_hash", "canonical_url")
+
+
+def _key(item):
+    return tuple(item[k] for k in IDENTITY_FIELDS)
+
+
+def _write_evidence(evidence: dict, out: Path) -> None:
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "canary-evidence.json").write_text(json.dumps(evidence, indent=2), encoding="utf-8")
+    (out / "rollback-manifest.json").write_text(
+        json.dumps(rollback_manifest(evidence["result"] or evidence["plan"]), indent=2), encoding="utf-8"
+    )
 
 
 def main() -> int:
@@ -21,29 +41,55 @@ def main() -> int:
     if not isinstance(candidates, list):
         raise ValueError("manifest must contain a JSON array")
     plan = plan_batch(candidates, limit=args.limit)
-    evidence = {"mode": "dry-run", "plan": plan, "before": [], "after": [], "delta": [], "result": None}
+    evidence = {"mode": "dry-run", "plan": plan, "before": [], "after": [], "delta": [], "result": None, "error": None}
 
-    if args.apply:
-        before = snapshot_existing(plan)
+    if not args.apply:
+        _write_evidence(evidence, args.evidence_dir)
+        print(json.dumps({"mode": "dry-run", "acceptedCount": plan["acceptedCount"], "insertedCount": 0,
+                          "deltaCount": 0, "zeroDbWrites": True}, indent=2))
+        return 0
+
+    evidence["mode"] = "apply"
+    before = snapshot_existing(plan)
+    evidence["before"] = before
+    try:
         result = apply_plan(plan)
-        after = snapshot_existing(plan)
-        before_keys = {tuple(x[k] for k in ("provider", "query_hash", "canonical_url")) for x in before}
-        delta = [x for x in after if tuple(x[k] for k in ("provider", "query_hash", "canonical_url")) not in before_keys]
-        if delta != result["insertedIdentities"]:
-            raise RuntimeError("post-write DB delta does not match inserted identities")
-        evidence.update({"mode": "apply", "before": before, "after": after, "delta": delta, "result": result})
+        evidence["result"] = result
+    except PartialApplyError as exc:
+        result = {
+            **plan,
+            "zeroDbWrites": len(exc.inserted_identities) == 0,
+            "insertedCount": len(exc.inserted_identities),
+            "duplicateCount": len(exc.duplicate_identities),
+            "insertedIdentities": exc.inserted_identities,
+            "duplicateIdentities": exc.duplicate_identities,
+            "success": False,
+        }
+        evidence["result"] = result
+        evidence["error"] = {"type": type(exc.cause).__name__, "message": str(exc.cause)}
+        try:
+            evidence["after"] = snapshot_existing(plan)
+            before_keys = {_key(x) for x in before}
+            evidence["delta"] = [x for x in evidence["after"] if _key(x) not in before_keys]
+        finally:
+            _write_evidence(evidence, args.evidence_dir)
+        raise
 
-    args.evidence_dir.mkdir(parents=True, exist_ok=True)
-    (args.evidence_dir / "canary-evidence.json").write_text(json.dumps(evidence, indent=2), encoding="utf-8")
-    (args.evidence_dir / "rollback-manifest.json").write_text(
-        json.dumps(rollback_manifest(evidence["result"] or plan), indent=2), encoding="utf-8"
-    )
+    after = snapshot_existing(plan)
+    evidence["after"] = after
+    before_keys = {_key(x) for x in before}
+    delta = [x for x in after if _key(x) not in before_keys]
+    evidence["delta"] = delta
+    if {_key(x) for x in delta} != {_key(x) for x in result["insertedIdentities"]}:
+        evidence["error"] = {"type": "DeltaMismatch", "message": "post-write DB delta does not match inserted identities"}
+        _write_evidence(evidence, args.evidence_dir)
+        raise RuntimeError(evidence["error"]["message"])
+
+    result["success"] = True
+    _write_evidence(evidence, args.evidence_dir)
     print(json.dumps({
-        "mode": evidence["mode"],
-        "acceptedCount": plan["acceptedCount"],
-        "insertedCount": (evidence["result"] or {}).get("insertedCount", 0),
-        "deltaCount": len(evidence["delta"]),
-        "zeroDbWrites": not args.apply,
+        "mode": "apply", "acceptedCount": plan["acceptedCount"],
+        "insertedCount": result["insertedCount"], "deltaCount": len(delta), "zeroDbWrites": result["zeroDbWrites"],
     }, indent=2))
     return 0
 
