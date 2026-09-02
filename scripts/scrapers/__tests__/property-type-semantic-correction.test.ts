@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 
 import { normalizeType } from "../normalizers/normalize-type.js";
 import { mapDbRowToListing } from "../../../lib/listings/map-db-listing.js";
+import { mapOdmPropertyType } from "../../../lib/odm/odm-public-canary.js";
 import type { DbListingRow } from "../../../lib/listings/db-listings.js";
 
 function row(propertyType: string, title: string): DbListingRow {
@@ -27,14 +28,18 @@ describe("property type semantic precedence", () => {
     assert.equal(normalizeType("Terrain pour villa à sonaba agadir"), "land");
   });
   it("keeps a real villa when villa is the primary title concept", () => {
-    assert.equal(normalizeType("Villa à rénover en vente à Hay Riad – 741 m² terrain"), "villa");
+    const normalized = normalizeType("Villa à rénover en vente à Hay Riad – 741 m² terrain");
+    assert.equal(normalized, "villa");
+    assert.equal(mapOdmPropertyType(normalized), "Villa");
   });
   it("classifies terrain before contextual villa mentions", () => {
     assert.equal(normalizeType("Terrain titré 12H zone permettant 4 villas maximum par hectare"), "land");
   });
-  it("preserves Riad as its own property type", () => {
-    assert.equal(normalizeType("Riad A vendre Guéliz 8 chambres et piscine"), "riad");
+  it("preserves Riad through scraper, DB and ODM mapping", () => {
+    const normalized = normalizeType("Riad A vendre Guéliz 8 chambres et piscine");
+    assert.equal(normalized, "riad");
     assert.equal(normalizeType("Type de bien riad"), "riad");
     assert.equal(mapDbRowToListing(row("riad", "Riad à vendre")).property_type, "Riad");
+    assert.equal(mapOdmPropertyType(normalized), "Riad");
   });
 });
