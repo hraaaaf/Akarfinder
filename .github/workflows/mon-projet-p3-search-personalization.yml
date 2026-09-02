@@ -32,7 +32,7 @@ jobs:
       - name: Targeted Finder ranking tests
         run: npx tsx --test scripts/scrapers/__tests__/finder-personalization.test.ts
       - name: Preserve audit script
-        run: cp scripts/audits/finder-p3-visual.mjs /tmp/finder-p3-visual.mjs
+        run: cp scripts/audits/finder-p3-visual.mjs .finder-p3-visual.mjs
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
 
@@ -42,6 +42,8 @@ jobs:
           ref: ${{ env.BASELINE_SHA }}
           fetch-depth: 1
       - run: npm ci
+      - name: Restore audit script for BEFORE
+        run: git show ${{ github.event.pull_request.head.sha || github.sha }}:scripts/audits/finder-p3-visual.mjs > scripts/audits/finder-p3-visual-runtime.mjs
       - name: Build BEFORE
         run: npm run build
       - name: Start BEFORE
@@ -60,7 +62,7 @@ jobs:
           BASE_URL: http://127.0.0.1:3217
           AUDIT_PHASE: before
           AUDIT_OUTPUT_DIR: /tmp/finder-p3-proof/before
-        run: node /tmp/finder-p3-visual.mjs
+        run: node scripts/audits/finder-p3-visual-runtime.mjs
       - name: Stop BEFORE
         if: always()
         run: kill $(cat /tmp/finder-p3-before.pid) 2>/dev/null || true
@@ -89,7 +91,7 @@ jobs:
           BASE_URL: http://127.0.0.1:3218
           AUDIT_PHASE: after
           AUDIT_OUTPUT_DIR: /tmp/finder-p3-proof/after
-        run: node /tmp/finder-p3-visual.mjs
+        run: node scripts/audits/finder-p3-visual.mjs
       - name: Stop AFTER
         if: always()
         run: kill $(cat /tmp/finder-p3-after.pid) 2>/dev/null || true
