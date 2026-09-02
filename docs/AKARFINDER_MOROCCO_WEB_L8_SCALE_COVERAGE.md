@@ -140,14 +140,16 @@ This gate showed substantial cross-shard overlap; summed cards are not a scale m
 
 Run `33663293707` — SUCCESS:
 - **500 public shards**;
+- **9,533 listing references**;
 - **5,195 unique listing IDs**;
+- **427/500 productive**;
 - no HTTP 429;
 - zero DB writes.
 
 Artifact `9859737496`.
 Digest `sha256:1143ee31bf3f834c7d401e2db6f6c1a4290767ddf460e53961c05400c0272512`.
 
-Observed unique yield is **10.39 listing IDs/shard** at this gate. Mubawab remains productive enough to continue, but it is not assumed to deliver 100k alone.
+Observed unique yield is **10.39 listing IDs/shard**, with ~45.5% overlap. Mubawab remains productive enough to continue, but it is not assumed to deliver 100k alone.
 
 ## Supabase read-path hardening
 
@@ -161,52 +163,61 @@ The runner therefore filters on indexed `source_domain`, pages without `ORDER BY
 
 # Source 2 — Avito
 
+## Implementation
+
+PR #989 merged to main as signed commit:
+`ef2af49f96aeb8b2b4962d0f90bad8fa35a85452`.
+
 ## Existing production footprint
 
 Read-only production measurements before new enumeration:
 - **11,907** Avito rows;
 - **5,960** unique Avito URLs;
-- approximately **1,280** known detail-like URLs under the current URL heuristic;
-- approximately **4,680** non-detail/discovery URLs available as a fallback shard pool.
-
-Observed public shard families include `/fr/.../immobilier` and `/sp/immobilier/...`.
+- approximately **1,280** known detail-like URLs under the prior URL heuristic;
+- public discovery URLs available as the fallback shard reservoir.
 
 ## Robots + sitemap verdict
 
-Current public `robots.txt` declares:
-`https://www.avito.ma/sitemap.xml`.
+Current public `robots.txt` declares `https://www.avito.ma/sitemap.xml`.
 
 Run `33665119348` — SUCCESS as a bounded safety probe:
-- robots.txt: accessible;
+- robots.txt accessible;
 - declared sitemap root discovered: 1;
 - sitemap request: **HTTP 403** from GitHub runner;
-- real-estate listing URLs from sitemap: **0**;
+- listing URLs from sitemap: **0**;
 - no 429;
 - zero DB writes.
 
 Artifact `9860235754`.
 Digest `sha256:af8c33120c060df5ebd738cb86e8dd59f0b92115a85f7b27acc94a3c29ac4364`.
 
-Conclusion: **do not attempt to bypass the sitemap 403**. Avito continues through existing public discovery shards instead.
+Conclusion: the sitemap 403 is **not bypassed**. Acquisition continues only through public discovery shards that respond normally.
 
-## Avito shard fallback contract
+## Avito Gate 25 — CERTIFIED
 
-`feat/avito-sitemap-enumerator` now contains a read-only Supabase shard runner that:
-- reads only `source_domain = avito.ma`;
-- retains public immobilier discovery pages, not detail rows;
-- bounds live replay to 25 shards for certification;
-- extracts public `.htm` listing URLs;
-- filters observed FR/AR real-estate category segments;
-- deduplicates by Avito listing ID;
-- stops immediately on HTTP 429;
-- performs zero DB writes.
+Dedicated run `33665320708` — SUCCESS:
+- source rows read: **11,907**;
+- unique safe public shards: **2,505**;
+- selected shards: **25**;
+- HTTP requests: **25**;
+- listing references observed: **716**;
+- **689 unique real-estate listing IDs**;
+- **23/25** shards returned HTTP 200 and were productive;
+- **2/25** returned HTTP 403 and were not bypassed;
+- no HTTP 429;
+- zero DB writes.
+
+Cross-shard overlap was only **~3.77%**, materially better than Mubawab Gate 25. Avito is therefore the immediate priority for the next scale gate.
+
+Artifact `9860501534`.
+Digest `sha256:a31e42e6c3e00dd87ef17f884ac7cbdfa841477e1b0a078520dc123b865e2d54`.
 
 ## Critical path to >100k
 
-1. Certify Avito 25-shard fallback and measure marginal unique yield.
-2. Continue Mubawab beyond 500 only through bounded gates while unique yield remains productive.
-3. Scale Avito through the same bounded unique-ID gates if its 25-shard yield is productive.
-4. Repeat source-first enumeration for Sarouty, MarocAnnonces and Agenz.
+1. Run **Avito Gate 100** with the same zero-write / stop-on-429 contract.
+2. If marginal unique yield remains strong, run Avito Gate 500 and then a larger safe-manifest gate.
+3. Continue Mubawab beyond 500 only through bounded gates while unique yield remains productive.
+4. Add Sarouty source-first while respecting its public `Crawl-delay: 10`, then MarocAnnonces and Agenz.
 5. Union source listing IDs/URLs, validate active/fresh + canonical extractability, then cross-source dedupe.
 6. Certify **10k → 50k → 100k usable canonical listings**.
 
@@ -219,4 +230,4 @@ Conclusion: **do not attempt to bypass the sitemap 403**. Avito continues throug
 
 ## Next exact
 
-Finish Avito shard-fallback certification on the exact final branch HEAD, measure **25-shard unique yield**, then choose the next bounded Avito/Mubawab scale gate based on observed marginal unique yield rather than raw page-card counts.
+Run **Avito Gate 100** from the merged implementation, measure references, unique IDs, HTTP outcomes, overlap and marginal unique yield, then choose Gate 500 only if the observed yield remains productive.
