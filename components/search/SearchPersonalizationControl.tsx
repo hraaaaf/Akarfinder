@@ -1,21 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Sparkles } from "lucide-react";
 
-import { finderProjectionFromSearchParams } from "@/lib/search-profile-v2/listing-personalization";
+type SearchPersonalizationControlProps = {
+  initialVisible: boolean;
+  initialEnabled: boolean;
+};
 
-export function SearchPersonalizationControl() {
-  const [visible, setVisible] = useState(false);
-  const [enabled, setEnabled] = useState(true);
+export function SearchPersonalizationControl({ initialVisible, initialEnabled }: SearchPersonalizationControlProps) {
+  const [enabled] = useState(initialEnabled);
 
-  useEffect(() => {
-    const projection = finderProjectionFromSearchParams(new URLSearchParams(window.location.search));
-    setVisible(Boolean(projection));
-    setEnabled(projection?.enabled ?? true);
-  }, []);
-
-  if (!visible) return null;
+  if (!initialVisible) return null;
 
   function setPersonalization(nextEnabled: boolean) {
     const url = new URL(window.location.href);
