@@ -1,18 +1,11 @@
 name: UX-SEARCH-2 Compact Search Filters Certification
 
 on:
-  pull_request:
-    branches: [main]
-    paths:
-      - "components/search/QuickFilters.tsx"
-      - "components/search/SearchViewSwitcher.tsx"
-      - "components/search/LightZillowSearchShell.tsx"
-      - "app/search/search-density.css"
-      - "scripts/audits/ux-search-compact-filters-2-visual.mjs"
-      - ".github/workflows/ux-search-compact-filters-2.yml"
-      - "docs/ROADMAP.md"
-      - "docs/SESSION.md"
   workflow_dispatch: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
