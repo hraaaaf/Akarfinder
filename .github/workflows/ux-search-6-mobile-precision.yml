@@ -1,17 +1,13 @@
 name: UX-SEARCH-6 Mobile Precision Certification
 
+# Heavy historical visual certification. Run explicitly for Search closeout/release,
+# not on every PR synchronization.
 on:
-  pull_request:
-    paths:
-      - "app/search/search-density.css"
-      - "components/search/LightZillowSearchShell.tsx"
-      - "components/search/QuickFilters.tsx"
-      - "components/search/SearchListingCardDark.tsx"
-      - "components/search/SearchViewSwitcher.tsx"
-      - "scripts/audits/ux-search-mobile-precision-6.mjs"
-      - "scripts/scrapers/__tests__/ux-search-mobile-precision-6.test.ts"
-      - ".github/workflows/ux-search-6-mobile-precision.yml"
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
