@@ -1,6 +1,6 @@
 # AKARFINDER — Morocco Web L7 Production Canary Hardening
 
-Status: CLOSED — production activation remains a human gate.
+Status: CLOSED — first bounded production canary CERTIFIED.
 
 ## Goal
 
@@ -35,23 +35,57 @@ Make the first bounded production canary fail-closed, auditable, delta-verifiabl
 - CLI is dry-run by default and requires explicit `--apply` for live staging writes;
 - expected DB delta must match inserted identities.
 
-## Production state
+## First production canary — CERTIFIED
 
-No production DB write was performed during implementation, certification, PR review or merge.
-No Vercel deployment was performed.
+Explicit human authorization was received on 2026-09-02 for a maximum of 3 production staging writes.
 
-## First canary candidate set
+Target project:
+- Supabase project `AqarFinder` / `kusfiyimwvxblvsrhaes`.
+- Table: `public.discovery_candidates` only.
+- Provider: `leaderimmo`.
+- Exact source host: `www.leaderimmo.ma`.
+- Query hash: `cc94dbf542ae6a86ef92139b028df87d70b76672ef1c6efdcfd8f4aacc3323ba`.
 
-Fresh public-web verification on 2026-09-02 confirmed these three Leaderimmo listing pages remain discoverable with listing data visible:
-
+Candidate identities:
 1. `https://www.leaderimmo.ma/biens/10/appartement-a-vendre-a-temara-`
 2. `https://www.leaderimmo.ma/biens/39/appartement-a-vendre-a-temara-centre-ville-`
 3. `https://www.leaderimmo.ma/biens/59/appartement-a-vendre-a-harhoura-temara`
 
-Proposed live allowlist: `www.leaderimmo.ma`.
+Before snapshot:
+- matching rows: **0/3**.
 
-These URLs are only the bounded canary input. Production mutation is not authorized by this document and remains an explicit human gate.
+Apply result at `2026-09-02 15:11:05.352158+00`:
+- inserted: **3**;
+- duplicates: **0**;
+- failures: **0**.
+
+Inserted IDs:
+- `fcaa455c-97c0-4ddc-b9ff-f0a290a1fa2a`
+- `fb6d6004-82e4-4550-bd2e-a18714a5bbe2`
+- `e6214f7b-e915-4965-aa79-9a95a1c1843f`
+
+After snapshot:
+- matching rows: **3/3**;
+- all three remain `discovery_status='discovered'`;
+- source domain/source URL/canonical URL match the intended public Leaderimmo identities;
+- metadata marks `ingestion=l7-production-canary` and `source=public-web`.
+
+Exact DB delta:
+- expected: **+3**;
+- observed: **+3**;
+- mismatch: **0**.
+
+Rollback decision:
+- no anomaly observed;
+- rollback not executed;
+- rollback scope, if needed, is limited to the three inserted UUIDs above.
+
+No canonical `listings` publication occurred. No Vercel deployment occurred.
+
+## Boundary
+
+This canary certifies bounded production staging mutation into `discovery_candidates`. It does not certify bulk ingestion, promotion into canonical serving, or visible search-volume growth.
 
 ## Next exact
 
-After explicit human authorization: snapshot before -> apply <=3 rows to `discovery_candidates` -> snapshot after -> prove exact delta -> retain rollback identities -> stop and assess before any scale-up.
+Proceed to L8 Scale + Coverage Certification with staged gates, beginning with a bounded 10k-candidate plan and dry-run/measurement before any larger production mutation.
