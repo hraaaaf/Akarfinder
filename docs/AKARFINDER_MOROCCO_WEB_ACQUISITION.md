@@ -1,6 +1,6 @@
 # AKARFINDER — Morocco Web Real-Estate Acquisition
 
-Status: ACTIVE — L1 CLOSED / L2 CLOSED / L3 CLOSED / L4 CLOSED / L5 CLOSED / L6 CERTIFIED — MERGE PENDING
+Status: ACTIVE — L1 CLOSED / L2 CLOSED / L3 CLOSED / L4 CLOSED / L5 CLOSED / L6 CLOSED / L7 CERTIFIED — MERGE PENDING
 
 ## North-star Goal
 
@@ -225,7 +225,7 @@ Implementation boundary:
 - every merged cluster retains member source IDs and source URLs;
 - this certifies deterministic/conservative clustering behavior on bounded audited fixtures, **not yet production-scale duplicate prevalence or DB mutation**.
 
-## L6 — Freshness + Revisit Engine — CERTIFIED — MERGE PENDING
+## L6 — Freshness + Revisit Engine — CLOSED
 
 Goal: maintain measurable listing freshness with source-aware revisit cadence, active/removed/changed detection, price/content history signals and conservative failure handling without false removals.
 
@@ -262,16 +262,58 @@ Implementation guarantees:
 - explicit price delta is emitted when the canonical price changes;
 - freshness buckets: `fresh_24h`, `fresh_72h`, `fresh_7d`, `stale_gt7d`.
 
+Closeout proof:
+- PR #980 squash-merged.
+- Final pre-merge HEAD `2180b4b6a338932aeffb669920d498fad6c84ddd`.
+- Merge/main HEAD `8bd9dc17d74bc17c895d142f711126c62ec1b58d` verified and signed (`verification.reason=valid`).
+- Merge parent is exact previous main `80d01647a481dfbae11c40826efe0fa1d8fd9986`.
+
 Boundary:
 - L6 certifies the deterministic freshness/revisit decision engine on bounded audited fixtures.
 - The core engine performs no network requests and no DB writes.
 - Production persistence, bounded DB mutation and rollback belong to L7; continuous scheduling/operations belong to L9.
 
-Current L6 branch: `feat/morocco-web-l6-freshness-revisit`, based on `main@80d01647a481dfbae11c40826efe0fa1d8fd9986`.
+## L7 — Bounded Production Ingestion — CERTIFIED — MERGE PENDING
 
-## L7 — Bounded Production Ingestion
+Goal: provide a bounded, idempotent, fail-closed path into the existing `discovery_candidates` staging table, with explicit rollback identities and no production activation by default.
 
-Dry-run manifest, official bounded idempotent writer, rollback manifest, before/after DB deltas. Human gate before production write.
+Success criteria:
+- existing schema only; no migration required;
+- dry-run performs zero DB writes;
+- default batch limit **25**, hard cap **100**;
+- optional domain allowlist enforced before any live write;
+- live write requires `THIRD_PARTY_DB_INGESTION_ENABLED=true`;
+- live write requires `DATABASE_PROVIDER=supabase` and service-role credentials;
+- duplicate identities are idempotent no-ops rather than duplicate rows;
+- rollback manifest records exact `(provider, query_hash, canonical_url)` identities;
+- unit tests + dedicated dry-run certification + general PR CI;
+- production DB write remains a human gate.
+
+Certified evidence:
+- Exact implementation HEAD `1d23804acc85f915569b916bdfca33f4e17e2a86`.
+- Dedicated run `33614467721` — **SUCCESS**.
+- Unit tests: **7/7 PASS**.
+- Bounded dry-run: **3 input → 3 accepted / 0 rejected**.
+- `zeroDbWrites: true`.
+- Rollback manifest: **3 exact identities**.
+- Artifact `9840326546`.
+- Artifact SHA256 `24f9ab289626f325382f5f8dbc65f01d32e44a578c8c07d352314d0a59b1e2bb`.
+- Exact implementation HEAD general PR workflows: **7/7 SUCCESS** (`33614471720`, `33614471773`, `33614471726`, `33614471751`, `33614471856`, `33614471741`, `33614471740`).
+- PR #982 is non-draft and mergeable on the current main base.
+
+Implementation guarantees:
+- target table is `discovery_candidates` only;
+- L7 is **insert-only**: no update and no delete path in the writer;
+- planner deduplicates repeated identities within the bounded batch;
+- DB duplicate conflicts (HTTP 409 on the existing partial unique index) are treated as idempotent no-ops;
+- non-409 HTTP failures remain fatal;
+- live credentials are never needed for the certified dry-run;
+- no schema mutation, no production DB write and no Vercel deployment occurred during certification.
+
+Boundary:
+- L7 certifies the bounded writer and rollback scope, **not** production activation.
+- First production ingestion is a human gate because it mutates production state.
+- L8 owns volume/coverage scale-up after the bounded production canary is explicitly authorized and validated.
 
 ## L8 — Scale + Coverage Certification
 
@@ -283,6 +325,6 @@ Validated canonical records only, scheduled acquisition/revisit jobs, source-col
 
 ## Execution order
 
-L1 ✅ → L2 ✅ → L3 ✅ → L4 ✅ → L5 ✅ → **L6 CERTIFIED — MERGE PENDING** → L7 → L8 → L9.
+L1 ✅ → L2 ✅ → L3 ✅ → L4 ✅ → L5 ✅ → L6 ✅ → **L7 CERTIFIED — MERGE PENDING** → L8 → L9.
 
 Overall program percentage remains intentionally unassigned until the roadmap defines a stable denominator across the remaining lots.
