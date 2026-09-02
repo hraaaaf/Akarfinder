@@ -1,6 +1,6 @@
 # AKARFINDER — Morocco Web Real-Estate Acquisition
 
-Status: ACTIVE — L1 CLOSED / L2 CLOSED / L3 CERTIFIED — MERGE PENDING
+Status: ACTIVE — L1 CLOSED / L2 CLOSED / L3 CLOSED / L4 ACTIVE
 
 ## North-star Goal
 
@@ -102,7 +102,7 @@ L2 closeout: all three productive L1 sources now have deterministic public disco
 
 Boundary: L2 certifies deterministic public discovery adapters and candidate URL extraction. It does **not** yet certify canonical field extraction, active-listing validation, deduplication or production ingestion.
 
-## L3 — Open-Web Discovery Mesh — CERTIFIED — MERGE PENDING
+## L3 — Open-Web Discovery Mesh — CLOSED
 
 Goal: discover **net-new Moroccan real-estate domains and candidate URLs beyond the three L2 portals** using public web indexes and public site surfaces.
 
@@ -133,17 +133,31 @@ Final certified evidence:
 - Unit evidence on the final certified run: **5/5 Python tests PASS**.
 - Exact evidence HEAD general PR workflows: **7/7 SUCCESS** (`33574917425`, `33574917428`, `33574917433`, `33574917546`, `33574917430`, `33574917460`, `33574917575`).
 
-Validated net-new domains include `immo.mitula.ma`, `immobilier.trovit.ma`, `leaderimmo.ma`, `immoservice.ma`, `www.alamal-immobilier.ma`, `proimmobilier.ma`, `www.immo.avision.ma`, `www.immoworld.ma`, `nouraimmobilier.ma`, `immobest.ma`, `logicimmo.ma`, and `www.damaneimmo.ma`.
+Closeout proof:
+- Original draft PR #972 closed only because the connector Ready-for-review mutation failed on an upstream GitHub GraphQL schema mismatch; it was not closed for a code or CI defect.
+- Replacement non-draft PR #973 merged by squash.
+- Merge/main HEAD `f13ccd5e5ec490f395d6515ac693d09d246ae58a` verified and signed (`verification.reason=valid`).
+- Merge parent is exact previous main `b79073ceec087250914c2ca1c6dbd7cd7425c000`.
+- Final pre-merge docs HEAD `3e1420ac802c89b9a4b94ef15187dff65fa79d55`: **7/7 general PR workflows SUCCESS**.
 
-Implementation retained for closeout: `scripts/acquisition/commoncrawl_url_index_domain_discovery.py`, `scripts/acquisition/commoncrawl_url_index_resilient_certify.py`, their Python unit tests, and the dedicated workflow. Earlier CDX wildcard prototypes are removed from the final branch because the columnar URL Index strategy is the certified productive path.
+Validated net-new domains include `immo.mitula.ma`, `immobilier.trovit.ma`, `leaderimmo.ma`, `immoservice.ma`, `www.alamal-immobilier.ma`, `proimmobilier.ma`, `www.immo.avision.ma`, `www.immoworld.ma`, `nouraimmobilier.ma`, `immobest.ma`, `logicimmo.ma`, and `www.damaneimmo.ma`.
 
 Boundary: the **263 URLs are open-web discovery candidates**, not 263 certified active listing-detail pages. The set can contain property pages, category/search/discovery pages and sitemap-derived real-estate surfaces. Exact listing-detail classification, active-page validation and canonical field extraction belong to L4.
 
-Current L3 branch: `feat/morocco-web-l3-commoncrawl-mesh`, based on `main@b79073ceec087250914c2ca1c6dbd7cd7425c000`.
+## L4 — Canonical Classification + Extraction — ACTIVE
 
-## L4 — Canonical Classification + Extraction
+Goal: turn public candidate property pages from L2/L3 into **validated canonical listing records with field-level provenance**, while rejecting unsupported or ambiguous values instead of guessing.
 
-Exact real-estate classification, canonical fields with field-level provenance, city/district/type/transaction normalization, representative fixtures, reject ambiguity instead of guessing.
+Success criteria:
+- deterministic listing-detail vs discovery-page classification;
+- canonical extraction for transaction type, property type, city, neighborhood, price, surface, description, bedrooms, bathrooms, floor, orientation, parking and garage where supported by source evidence;
+- source URL and field-level provenance retained for every extracted value;
+- explicit null/reject behavior for unsupported or ambiguous fields;
+- representative fixtures across L2 portals and L3 long-tail domains;
+- live bounded public dry-run with active-page validation;
+- zero production DB writes.
+
+Current L4 branch: `feat/morocco-web-l4-canonical-extraction`, based on `main@f13ccd5e5ec490f395d6515ac693d09d246ae58a`.
 
 ## L5 — Cross-Source Deduplication
 
@@ -167,6 +181,6 @@ Validated canonical records only, scheduled acquisition/revisit jobs, source-col
 
 ## Execution order
 
-L1 ✅ → L2 ✅ → **L3 CERTIFIED — MERGE PENDING** → L4 → L5 → L6 → L7 → L8 → L9.
+L1 ✅ → L2 ✅ → L3 ✅ → **L4 ACTIVE** → L5 → L6 → L7 → L8 → L9.
 
 Overall program percentage remains intentionally unassigned until the roadmap defines a stable denominator across the remaining lots.
