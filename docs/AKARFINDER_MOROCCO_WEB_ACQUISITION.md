@@ -116,24 +116,26 @@ Success criteria:
 - hard stop on 429 from live site validation;
 - zero production DB writes.
 
-Certified evidence:
-- Dedicated run `33571426830` — **SUCCESS**.
-- Evidence HEAD `a2c2238d15edd0cfe372cc0290151912e9f7eded`.
+Final certified evidence:
+- Dedicated run `33574912787` — **SUCCESS**.
+- Evidence HEAD `42d85a6f7470b5f1920c52de83e9fa3cd982b20a`.
 - Current crawl resolved dynamically: `CC-MAIN-2026-34`.
 - Official URL Index manifest: **300 Parquet files**.
+- Resilient bounded scan: **30/30 batches SUCCESS**, **300/300 Parquet files scanned**, **0 failed batches**.
 - Broad filtered result: **200 raw `.ma` domains**, ranked to **12** top domains.
 - **12/12 top domains live-validated** from public site surfaces.
 - **263 candidate URLs** retained across validated domains.
 - **63** bounded live validation requests.
 - `stoppedEarly: null`.
 - `zeroDbWrites: true`.
-- Artifact `9825112976`.
-- Artifact SHA256 `4ee69220433822f24a5fee5a65abb250852c1611070c6d0ac720f88e3cbdb7c8`.
-- Unit evidence on the certified run: **14/14 Node tests PASS + 3/3 Python tests PASS** before prototype cleanup.
+- Artifact `9826293287`.
+- Artifact SHA256 `fde8e376f2552fbd5c21f545e7847730a5046f91bfa1d38a55a6d55702cd74e2`.
+- Unit evidence on the final certified run: **5/5 Python tests PASS**.
+- Exact evidence HEAD general PR workflows: **7/7 SUCCESS** (`33574917425`, `33574917428`, `33574917433`, `33574917546`, `33574917430`, `33574917460`, `33574917575`).
 
 Validated net-new domains include `immo.mitula.ma`, `immobilier.trovit.ma`, `leaderimmo.ma`, `immoservice.ma`, `www.alamal-immobilier.ma`, `proimmobilier.ma`, `www.immo.avision.ma`, `www.immoworld.ma`, `nouraimmobilier.ma`, `immobest.ma`, `logicimmo.ma`, and `www.damaneimmo.ma`.
 
-Implementation retained for closeout: `scripts/acquisition/commoncrawl_url_index_domain_discovery.py` plus its Python unit test and dedicated workflow. Earlier CDX wildcard prototypes are removed from the final branch because the columnar URL Index strategy is the certified productive path.
+Implementation retained for closeout: `scripts/acquisition/commoncrawl_url_index_domain_discovery.py`, `scripts/acquisition/commoncrawl_url_index_resilient_certify.py`, their Python unit tests, and the dedicated workflow. Earlier CDX wildcard prototypes are removed from the final branch because the columnar URL Index strategy is the certified productive path.
 
 Boundary: the **263 URLs are open-web discovery candidates**, not 263 certified active listing-detail pages. The set can contain property pages, category/search/discovery pages and sitemap-derived real-estate surfaces. Exact listing-detail classification, active-page validation and canonical field extraction belong to L4.
 
