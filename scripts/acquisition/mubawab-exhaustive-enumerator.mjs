@@ -44,7 +44,8 @@ export function isRobotsSafeUrl(raw) {
   if (!normalized) return false;
   const url = new URL(normalized);
   const pathname = url.pathname;
-  if (DISALLOWED_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(prefix))) return false;
+  const robotsPath = pathname.replace(/^\/(?:fr|en|ar|es|nl|it)(?=\/)/i, '');
+  if (DISALLOWED_PREFIXES.some((prefix) => robotsPath === prefix || robotsPath.startsWith(prefix))) return false;
   // Current Mubawab robots.txt disallows every path containing ':'. This intentionally
   // excludes the legacy :p:2 pagination form used by the earlier L2 adapter.
   if (pathname.includes(':')) return false;
