@@ -1,21 +1,11 @@
 name: UX-SEARCH-FINAL-10OF10-1 Full Page Certification
 
+# Exhaustive six-viewport release certification. Never run automatically on PR sync.
 on:
-  pull_request:
-    paths:
-      - ".github/workflows/ux-search-final-10of10-1.yml"
-      - "app/search/**"
-      - "components/layout/**"
-      - "components/search/**"
-      - "components/landing/SiteFooter.tsx"
-      - "lib/search/**"
-      - "lib/listings/**"
-      - "scripts/audits/ux-*.mjs"
-      - "scripts/scrapers/__tests__/ux-*.test.ts"
   workflow_dispatch:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
