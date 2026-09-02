@@ -11,6 +11,7 @@ on:
       - "lib/search-profile-v2/listing-personalization.ts"
       - "scripts/scrapers/__tests__/finder-personalization.test.ts"
       - "scripts/audits/finder-p3-visual.mjs"
+      - "scripts/audits/finder-p3-continuity-runtime.mjs"
       - ".github/workflows/mon-projet-p3-search-personalization.yml"
 
 jobs:
@@ -92,6 +93,11 @@ jobs:
           AUDIT_PHASE: after
           AUDIT_OUTPUT_DIR: /tmp/finder-p3-proof/after
         run: node scripts/audits/finder-p3-visual.mjs
+      - name: Continuity runtime proof
+        env:
+          BASE_URL: http://127.0.0.1:3218
+          AUDIT_OUTPUT_DIR: /tmp/finder-p3-proof/continuity
+        run: node scripts/audits/finder-p3-continuity-runtime.mjs
       - name: Stop AFTER
         if: always()
         run: kill $(cat /tmp/finder-p3-after.pid) 2>/dev/null || true
