@@ -1,0 +1,49 @@
+name: Morocco Web L8 Corpus Triage
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feat/morocco-web-l8-corpus-triage
+    paths:
+      - 'scripts/acquisition/l8_corpus_triage.py'
+      - 'scripts/acquisition/__tests__/test_l8_corpus_triage.py'
+      - '.github/workflows/morocco-web-l8-corpus-triage.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: morocco-web-l8-corpus-triage-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Unit tests
+        run: python -m unittest scripts/acquisition/__tests__/test_l8_corpus_triage.py
+      - name: Fixture triage proof
+        run: |
+          python - <<'PY'
+          from scripts.acquisition.l8_corpus_triage import classify_rows
+          rows = [
+              {'source_domain':'mubawab.ma','canonical_url':'https://www.mubawab.ma/fr/a/12345/appartement-a-vendre'},
+              {'source_domain':'sarouty.ma','canonical_url':'https://www.sarouty.ma/louer/dar-bouazza/villas-a-louer.html'},
+              {'source_domain':'youtube.com','canonical_url':'https://youtube.com/watch?v=x'},
+              {'source_domain':'example.ma','canonical_url':'https://example.ma/foo/bar'},
+          ]
+          report = classify_rows(rows)
+          assert report['zeroDbWrites'] is True
+          assert report['counts'] == {
+              'listing_detail_candidate': 1,
+              'discovery_page': 1,
+              'obvious_noise': 1,
+              'uncertain': 1,
+          }
+          print(report['counts'])
+          PY
