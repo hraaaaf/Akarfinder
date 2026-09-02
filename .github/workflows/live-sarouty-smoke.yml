@@ -13,10 +13,14 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: live-sarouty-smoke-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   sarouty-smoke:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -30,24 +34,22 @@ jobs:
         run: node --test scripts/acquisition/__tests__/sarouty-sitemap-enumerator.test.mjs
 
       - name: Tiny live robots + sitemap probe
-        run: |
-          mkdir -p artifacts/morocco-web-l8-sarouty-smoke
-          node scripts/acquisition/sarouty-sitemap-enumerator.mjs \
-            --max-sitemap-docs 1 \
-            --max-urls 100 \
-            --timeout-ms 15000 \
-            --output artifacts/morocco-web-l8-sarouty-smoke/report.json
+        env:
+          SAROUTY_MAX_SITEMAP_DOCS: '1'
+          SAROUTY_MAX_URLS: '100'
+        run: node scripts/acquisition/sarouty-sitemap-enumerator.mjs
 
       - name: Verify zero-write safety and probe result
         run: |
           node - <<'NODE'
           const fs = require('fs');
-          const p = 'artifacts/morocco-web-l8-sarouty-smoke/report.json';
+          const p = 'artifacts/morocco-web-l8-sarouty-sitemap/report.json';
           const r = JSON.parse(fs.readFileSync(p, 'utf8'));
           if (r.zeroDbWrites !== true) throw new Error('zeroDbWrites guard failed');
           if (r.crawlDelayMs < 10000) throw new Error(`crawl delay too low: ${r.crawlDelayMs}`);
           if (r.stoppedEarly === 'http_429') throw new Error('Sarouty returned HTTP 429');
-          if (!r.sitemapRoots?.length || r.sitemapDocCount < 1) throw new Error('No sitemap document traversed');
+          if (!r.sitemapRoots?.length || r.sitemapDocCount !== 1) throw new Error(`Expected exactly one sitemap document, got ${r.sitemapDocCount}`);
+          if (r.requestCount !== 2) throw new Error(`Expected exactly two HTTP requests, got ${r.requestCount}`);
           console.log(JSON.stringify({
             success: true,
             zeroDbWrites: r.zeroDbWrites,
@@ -64,6 +66,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: morocco-web-l8-sarouty-smoke
-          path: artifacts/morocco-web-l8-sarouty-smoke/
-          if-no-files-found: warn
+          path: artifacts/morocco-web-l8-sarouty-sitemap/
+          if-no-files-found: error
           retention-days: 14
