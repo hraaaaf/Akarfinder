@@ -8,6 +8,7 @@ export const DEFAULT_MAX_SITEMAP_DOCS = 20;
 export const DEFAULT_MAX_URLS = 200000;
 export const DEFAULT_TIMEOUT_MS = 15000;
 export const DEFAULT_UA = 'AkarFinder-public-index/4.0 (+https://akarfinder.ma)';
+export const MIN_CRAWL_DELAY_MS = 10000;
 
 const SAROUTY_HOSTS = new Set(['sarouty.ma', 'www.sarouty.ma']);
 const TRANSACTION_SEGMENTS = new Set(['buy', 'rent', 'acheter', 'louer', 'للبيع', 'للكراء']);
@@ -140,7 +141,8 @@ export async function enumerateSaroutySitemaps({
   const parsedRobots = parseRobots(decodeBody(robots.bytes));
   const sitemapRoots = parsedRobots.sitemapRoots.filter(isSaroutyUrl);
   if (!sitemapRoots.length) throw new Error('No Sarouty sitemap declared in robots.txt');
-  const crawlDelayMs = Math.max(0, Math.ceil((parsedRobots.crawlDelaySeconds ?? 10) * 1000));
+  const declaredDelayMs = Math.ceil((parsedRobots.crawlDelaySeconds ?? 10) * 1000);
+  const crawlDelayMs = Math.max(MIN_CRAWL_DELAY_MS, declaredDelayMs);
 
   const queue = [...sitemapRoots];
   const seenDocs = new Set();
@@ -214,7 +216,7 @@ export async function runCli() {
   report.success = report.zeroDbWrites === true
     && report.sitemapRoots?.length > 0
     && report.sitemapDocCount > 0
-    && report.crawlDelayMs >= 10000
+    && report.crawlDelayMs >= MIN_CRAWL_DELAY_MS
     && report.stoppedEarly !== 'http_429';
 
   const outDir = 'artifacts/morocco-web-l8-sarouty-sitemap';
