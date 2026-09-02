@@ -1,0 +1,60 @@
+name: Morocco Web L3 Common Crawl Mesh
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feat/morocco-web-l3-commoncrawl-mesh
+    paths:
+      - 'scripts/acquisition/commoncrawl_url_index_domain_discovery.py'
+      - 'scripts/acquisition/commoncrawl_url_index_resilient_certify.py'
+      - 'scripts/acquisition/__tests__/test_commoncrawl_url_index_domain_discovery.py'
+      - 'scripts/acquisition/__tests__/test_commoncrawl_url_index_resilient_certify.py'
+      - '.github/workflows/morocco-web-l3-commoncrawl-mesh.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: morocco-web-l3-commoncrawl-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Unit tests
+        run: |
+          python -m unittest scripts/acquisition/__tests__/test_commoncrawl_url_index_domain_discovery.py
+          python -m unittest scripts/acquisition/__tests__/test_commoncrawl_url_index_resilient_certify.py
+
+      - name: Install URL Index query engine
+        run: python -m pip install --disable-pip-version-check duckdb
+
+      - name: Live public dry-run
+        run: python scripts/acquisition/commoncrawl_url_index_resilient_certify.py
+
+      - name: Publish evidence summary
+        if: always()
+        run: |
+          if [ -f artifacts/morocco-web-l3-commoncrawl/report.md ]; then
+            cat artifacts/morocco-web-l3-commoncrawl/report.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: morocco-web-l3-commoncrawl-${{ github.run_id }}
+          path: artifacts/morocco-web-l3-commoncrawl/
+          if-no-files-found: error
+          retention-days: 14

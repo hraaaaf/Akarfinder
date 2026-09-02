@@ -1,6 +1,6 @@
 # AKARFINDER — Morocco Web Real-Estate Acquisition
 
-Status: ACTIVE — L1 CLOSED / L2 CERTIFIED — MERGE PENDING
+Status: ACTIVE — L1 CLOSED / L2 CLOSED / L3 CERTIFIED — MERGE PENDING
 
 ## North-star Goal
 
@@ -57,7 +57,7 @@ Closeout proof:
 
 Boundary: these are candidate URLs, not validated canonical production listings.
 
-## L2 — Portal Acquisition Adapters — CERTIFIED / MERGE PENDING
+## L2 — Portal Acquisition Adapters — CLOSED
 
 Goal: turn productive discovery surfaces into deterministic source adapters.
 
@@ -69,7 +69,7 @@ Success criteria:
 - exact failure classification for 403/429/timeout/schema drift;
 - live dry-run evidence with zero DB writes.
 
-### Sarouty adapter — CERTIFIED + MERGED
+### Sarouty adapter — CLOSED
 
 - PR #968 merged into `main`.
 - Merge/main HEAD `f75d236d383f4ebfc44581b8540a762ce5869e0c` verified and signed.
@@ -82,10 +82,11 @@ Success criteria:
 - Artifact `9819252085`.
 - Artifact SHA256 `c1d9ca1f216ee1043c0d21fbf1368f003ec0c92cf8346af415b87a31fdb658ae`.
 
-### Mubawab + MarocAnnonces adapters — CERTIFIED / MERGE PENDING
+### Mubawab + MarocAnnonces adapters — CLOSED
 
-- PR #971, branch `feat/morocco-web-l2-mubawab-marocannonces`.
-- Certified HEAD before closeout doc commit: `b52632ab4a7d2bad20efdf58db4d7eb2f627b6f7`.
+- PR #971 merged into `main`.
+- Final closeout HEAD `85570b4edf2be462dcd2f33ffe017751c6d1e933`: **7/7 observed general PR workflows SUCCESS**.
+- Merge/main HEAD `b79073ceec087250914c2ca1c6dbd7cd7425c000` verified and signed.
 - Dedicated run `33560329163` — SUCCESS.
 - Unit tests: **6/6 PASS**.
 - Live public dry-run: **1,236 candidate URLs** total.
@@ -96,15 +97,49 @@ Success criteria:
 - `zeroDbWrites: true`.
 - Artifact `9820996698`.
 - Artifact SHA256 `ed2d33dfa347a2b2216091e7b095021ef019e76e7e73a0255ffcdd2be97b1d91`.
-- On certified HEAD `b52632ab...`, all 7 observed general PR workflows completed SUCCESS.
+
+L2 closeout: all three productive L1 sources now have deterministic public discovery adapters merged on `main`. No post-merge run is required from the dedicated L2 workflows because both are branch-scoped plus `workflow_dispatch`; the signed merge commits on `main` contain the certified code and evidence.
 
 Boundary: L2 certifies deterministic public discovery adapters and candidate URL extraction. It does **not** yet certify canonical field extraction, active-listing validation, deduplication or production ingestion.
 
-Current closeout branch: `feat/morocco-web-l2-mubawab-marocannonces`, based on `main@f75d236d383f4ebfc44581b8540a762ce5869e0c`.
+## L3 — Open-Web Discovery Mesh — CERTIFIED — MERGE PENDING
 
-## L3 — Open-Web Discovery Mesh
+Goal: discover **net-new Moroccan real-estate domains and candidate URLs beyond the three L2 portals** using public web indexes and public site surfaces.
 
-Common Crawl/public-index discovery, automatic Moroccan real-estate domain identification/ranking, sitemap harvesting and material long-tail net-new candidates.
+Success criteria:
+- resolve the current Common Crawl collection dynamically from its public collection index;
+- query the official Common Crawl columnar URL Index with bounded analytical filtering;
+- identify and rank net-new `.ma` domains from real-estate hostname/path signals while excluding known portals;
+- validate top-ranked domains against public robots/sitemaps and bounded public page probes;
+- retain domain-level validation evidence and candidate provenance;
+- fixture tests plus live dry-run evidence;
+- hard stop on 429 from live site validation;
+- zero production DB writes.
+
+Final certified evidence:
+- Dedicated run `33574912787` — **SUCCESS**.
+- Evidence HEAD `42d85a6f7470b5f1920c52de83e9fa3cd982b20a`.
+- Current crawl resolved dynamically: `CC-MAIN-2026-34`.
+- Official URL Index manifest: **300 Parquet files**.
+- Resilient bounded scan: **30/30 batches SUCCESS**, **300/300 Parquet files scanned**, **0 failed batches**.
+- Broad filtered result: **200 raw `.ma` domains**, ranked to **12** top domains.
+- **12/12 top domains live-validated** from public site surfaces.
+- **263 candidate URLs** retained across validated domains.
+- **63** bounded live validation requests.
+- `stoppedEarly: null`.
+- `zeroDbWrites: true`.
+- Artifact `9826293287`.
+- Artifact SHA256 `fde8e376f2552fbd5c21f545e7847730a5046f91bfa1d38a55a6d55702cd74e2`.
+- Unit evidence on the final certified run: **5/5 Python tests PASS**.
+- Exact evidence HEAD general PR workflows: **7/7 SUCCESS** (`33574917425`, `33574917428`, `33574917433`, `33574917546`, `33574917430`, `33574917460`, `33574917575`).
+
+Validated net-new domains include `immo.mitula.ma`, `immobilier.trovit.ma`, `leaderimmo.ma`, `immoservice.ma`, `www.alamal-immobilier.ma`, `proimmobilier.ma`, `www.immo.avision.ma`, `www.immoworld.ma`, `nouraimmobilier.ma`, `immobest.ma`, `logicimmo.ma`, and `www.damaneimmo.ma`.
+
+Implementation retained for closeout: `scripts/acquisition/commoncrawl_url_index_domain_discovery.py`, `scripts/acquisition/commoncrawl_url_index_resilient_certify.py`, their Python unit tests, and the dedicated workflow. Earlier CDX wildcard prototypes are removed from the final branch because the columnar URL Index strategy is the certified productive path.
+
+Boundary: the **263 URLs are open-web discovery candidates**, not 263 certified active listing-detail pages. The set can contain property pages, category/search/discovery pages and sitemap-derived real-estate surfaces. Exact listing-detail classification, active-page validation and canonical field extraction belong to L4.
+
+Current L3 branch: `feat/morocco-web-l3-commoncrawl-mesh`, based on `main@b79073ceec087250914c2ca1c6dbd7cd7425c000`.
 
 ## L4 — Canonical Classification + Extraction
 
@@ -132,6 +167,6 @@ Validated canonical records only, scheduled acquisition/revisit jobs, source-col
 
 ## Execution order
 
-L1 ✅ → **L2 CERTIFIED / MERGE PENDING** → L3 → L4 → L5 → L6 → L7 → L8 → L9.
+L1 ✅ → L2 ✅ → **L3 CERTIFIED — MERGE PENDING** → L4 → L5 → L6 → L7 → L8 → L9.
 
 Overall program percentage remains intentionally unassigned until the roadmap defines a stable denominator across the remaining lots.
