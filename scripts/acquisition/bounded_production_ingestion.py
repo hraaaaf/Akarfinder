@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""L7 bounded production ingestion into discovery_candidates.
+"""Bounded staging ingestion into discovery_candidates.
 
-Fail-closed by design. Planning/dry-run never touches the network. Live writes require
-THIRD_PARTY_DB_INGESTION_ENABLED=true plus an explicit caller action.
+Planning is network-free. Live writes are fail-closed and require explicit enablement,
+Supabase service credentials, and a non-empty host allowlist.
 """
 from __future__ import annotations
 
@@ -11,11 +11,23 @@ import json
 import os
 from typing import Any
 from urllib.error import HTTPError
-from urllib.parse import urlparse
+from urllib.parse import urlencode, urlparse
 from urllib.request import Request, urlopen
 
 DEFAULT_BATCH_LIMIT = 25
 MAX_BATCH_LIMIT = 100
+IDENTITY_FIELDS = ("provider", "query_hash", "canonical_url")
+
+
+class PartialApplyError(RuntimeError):
+    """Fatal live-write error carrying exact identities written before failure."""
+
+    def __init__(self, message: str, *, inserted_identities: list[dict[str, str]],
+                 duplicate_identities: list[dict[str, str]], cause: Exception):
+        super().__init__(message)
+        self.inserted_identities = inserted_identities
+        self.duplicate_identities = duplicate_identities
+        self.cause = cause
 
 
 def _truthy(value: str | None) -> bool:
@@ -24,6 +36,10 @@ def _truthy(value: str | None) -> bool:
 
 def query_hash(provider: str, query: str) -> str:
     return hashlib.sha256(f"{provider.strip().lower()}\n{query.strip()}".encode()).hexdigest()
+
+
+def identity(row: dict[str, Any]) -> dict[str, str]:
+    return {k: str(row[k]) for k in IDENTITY_FIELDS}
 
 
 def canonical_candidate(raw: dict[str, Any]) -> dict[str, Any]:
@@ -71,7 +87,7 @@ def plan_batch(candidates: list[dict[str, Any]], *, limit: int = DEFAULT_BATCH_L
         if hosts and row["source_domain"] not in hosts:
             rejected.append({"canonical_url": row["canonical_url"], "reason": "host_not_allowed"})
             continue
-        key = (row["provider"], row["query_hash"], row["canonical_url"])
+        key = tuple(str(row[k]) for k in IDENTITY_FIELDS)
         if key in seen:
             continue
         seen.add(key)
@@ -80,7 +96,7 @@ def plan_batch(candidates: list[dict[str, Any]], *, limit: int = DEFAULT_BATCH_L
         "table": "discovery_candidates", "inputCount": len(candidates),
         "boundedCount": len(normalized), "acceptedCount": len(accepted),
         "rejectedCount": len(rejected), "rows": accepted, "rejected": rejected,
-        "idempotencyKey": ["provider", "query_hash", "canonical_url"], "zeroDbWrites": True,
+        "idempotencyKey": list(IDENTITY_FIELDS), "zeroDbWrites": True,
     }
 
 
@@ -92,41 +108,86 @@ def assert_live_write_guard(env: dict[str, str] | None = None) -> None:
         raise PermissionError("DATABASE_PROVIDER must be supabase for live ingestion")
     if not env.get("SUPABASE_URL") or not env.get("SUPABASE_SERVICE_ROLE_KEY"):
         raise PermissionError("Supabase service credentials are required")
+    if not allowed_hosts(env):
+        raise PermissionError("THIRD_PARTY_DB_INGESTION_ALLOWED_HOSTS must be non-empty for live ingestion")
+
+
+def _headers(env: dict[str, str]) -> dict[str, str]:
+    key = env["SUPABASE_SERVICE_ROLE_KEY"]
+    return {"apikey": key, "Authorization": "Bearer " + key, "Content-Type": "application/json"}
+
+
+def snapshot_existing(plan: dict[str, Any], *, env: dict[str, str] | None = None) -> list[dict[str, str]]:
+    """Read exact idempotency identities already present before/after a live canary."""
+    env = env or dict(os.environ)
+    assert_live_write_guard(env)
+    found: list[dict[str, str]] = []
+    base = env["SUPABASE_URL"].rstrip("/") + "/rest/v1/discovery_candidates"
+    for row in plan.get("rows") or []:
+        ident = identity(row)
+        params = {
+            "select": ",".join(IDENTITY_FIELDS),
+            "provider": "eq." + ident["provider"],
+            "query_hash": "eq." + ident["query_hash"],
+            "canonical_url": "eq." + ident["canonical_url"],
+            "limit": "1",
+        }
+        req = Request(base + "?" + urlencode(params), headers=_headers(env), method="GET")
+        with urlopen(req, timeout=20) as response:
+            rows = json.loads(response.read().decode("utf-8"))
+        if rows:
+            found.append(ident)
+    return found
 
 
 def apply_plan(plan: dict[str, Any], *, env: dict[str, str] | None = None) -> dict[str, Any]:
-    """Insert a bounded staging batch; DB unique index makes retries idempotent."""
+    """Insert a bounded staging batch and report exact inserted/duplicate identities."""
     env = env or dict(os.environ)
     assert_live_write_guard(env)
     rows = plan.get("rows") or []
     if len(rows) > MAX_BATCH_LIMIT:
         raise ValueError("plan exceeds hard batch limit")
+    hosts = allowed_hosts(env)
+    for row in rows:
+        if row.get("source_domain") not in hosts:
+            raise PermissionError(f"live plan contains non-allowlisted host: {row.get('source_domain')}")
     if not rows:
-        return {**plan, "zeroDbWrites": True, "insertedCount": 0, "duplicateCount": 0}
-    base = env["SUPABASE_URL"].rstrip("/")
-    url = base + "/rest/v1/discovery_candidates"
-    headers = {
-        "apikey": env["SUPABASE_SERVICE_ROLE_KEY"],
-        "Authorization": "Bearer " + env["SUPABASE_SERVICE_ROLE_KEY"],
-        "Content-Type": "application/json", "Prefer": "return=minimal",
-    }
-    inserted = duplicates = 0
+        return {**plan, "zeroDbWrites": True, "insertedCount": 0, "duplicateCount": 0,
+                "insertedIdentities": [], "duplicateIdentities": []}
+    url = env["SUPABASE_URL"].rstrip("/") + "/rest/v1/discovery_candidates"
+    headers = {**_headers(env), "Prefer": "return=minimal"}
+    inserted_ids: list[dict[str, str]] = []
+    duplicate_ids: list[dict[str, str]] = []
     for row in rows:
         req = Request(url, data=json.dumps(row, ensure_ascii=False).encode("utf-8"), method="POST", headers=headers)
         try:
             with urlopen(req, timeout=20):
-                inserted += 1
+                inserted_ids.append(identity(row))
         except HTTPError as exc:
             if exc.code == 409:
-                duplicates += 1
+                duplicate_ids.append(identity(row))
                 continue
-            raise
-    return {**plan, "zeroDbWrites": inserted == 0, "insertedCount": inserted, "duplicateCount": duplicates}
-
-
-def rollback_manifest(plan: dict[str, Any]) -> dict[str, Any]:
+            raise PartialApplyError(
+                f"live apply failed after {len(inserted_ids)} inserts and {len(duplicate_ids)} duplicates",
+                inserted_identities=list(inserted_ids),
+                duplicate_identities=list(duplicate_ids),
+                cause=exc,
+            ) from exc
     return {
-        "table": "discovery_candidates",
-        "identities": [{k: row[k] for k in ("provider", "query_hash", "canonical_url")} for row in plan.get("rows", [])],
-        "note": "L7 is insert-only. Before any rollback deletion, compare identities with the pre-run snapshot; never auto-delete.",
+        **plan,
+        "zeroDbWrites": len(inserted_ids) == 0,
+        "insertedCount": len(inserted_ids),
+        "duplicateCount": len(duplicate_ids),
+        "insertedIdentities": inserted_ids,
+        "duplicateIdentities": duplicate_ids,
     }
+
+
+def rollback_manifest(result: dict[str, Any]) -> dict[str, Any]:
+    identities = result.get("insertedIdentities")
+    if identities is None:
+        identities = [identity(row) for row in result.get("rows", [])]
+        note = "Dry-run plan only: identities are planned, not safe for deletion."
+    else:
+        note = "Live result: only newly inserted identities are rollback candidates. Verify before deleting."
+    return {"table": "discovery_candidates", "identities": identities, "note": note}

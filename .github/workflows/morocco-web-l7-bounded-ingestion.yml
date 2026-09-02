@@ -5,10 +5,13 @@ on:
   push:
     branches:
       - feat/morocco-web-l7-bounded-production-ingestion
+      - feat/morocco-web-l7-production-canary-hardening
     paths:
       - 'scripts/acquisition/bounded_production_ingestion.py'
+      - 'scripts/acquisition/bounded_production_ingestion_apply.py'
       - 'scripts/acquisition/bounded_production_ingestion_dry_run.py'
       - 'scripts/acquisition/__tests__/test_bounded_production_ingestion.py'
+      - '.env.local.example'
       - '.github/workflows/morocco-web-l7-bounded-ingestion.yml'
 
 permissions:
@@ -36,6 +39,18 @@ jobs:
         run: python -m unittest scripts/acquisition/__tests__/test_bounded_production_ingestion.py
       - name: Bounded zero-write dry-run
         run: python scripts/acquisition/bounded_production_ingestion_dry_run.py
+      - name: CLI remains dry-run by default
+        run: |
+          cat > /tmp/l7-canary.json <<'JSON'
+          [{"provider":"ci-fixture","discovery_query":"appartement casablanca","source_url":"https://example.ma/a/1","canonical_url":"https://example.ma/a/1"}]
+          JSON
+          THIRD_PARTY_DB_INGESTION_ALLOWED_HOSTS=example.ma python scripts/acquisition/bounded_production_ingestion_apply.py /tmp/l7-canary.json --limit 1 --evidence-dir artifacts/morocco-web-l7-cli-dry-run
+          python - <<'PY'
+          import json
+          p=json.load(open('artifacts/morocco-web-l7-cli-dry-run/canary-evidence.json'))
+          assert p['mode']=='dry-run'
+          assert p['plan']['zeroDbWrites'] is True
+          PY
       - name: Publish evidence summary
         if: always()
         run: |
@@ -47,6 +62,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: morocco-web-l7-bounded-ingestion-${{ github.run_id }}
-          path: artifacts/morocco-web-l7-bounded-ingestion/
+          path: |
+            artifacts/morocco-web-l7-bounded-ingestion/
+            artifacts/morocco-web-l7-cli-dry-run/
           if-no-files-found: error
           retention-days: 14
