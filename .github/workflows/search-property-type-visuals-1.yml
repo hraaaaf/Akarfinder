@@ -3,7 +3,7 @@ name: SEARCH-PROPERTY-TYPE-VISUALS-1 Gate
 on:
   pull_request:
     paths:
-      - "app/search/**"
+      - "app/search/page.tsx"
       - "components/search/IndexedPropertyTypeArtwork.tsx"
       - "components/search/SearchListingCardDark.tsx"
       - "lib/ux/indexed-property-type-visual.ts"
@@ -13,11 +13,41 @@ on:
       - ".github/workflows/search-property-type-visuals-1.yml"
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
 jobs:
+  scope:
+    name: Latest-commit scope check
+    runs-on: ubuntu-latest
+    outputs:
+      relevant: ${{ steps.scope.outputs.relevant }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - id: scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${GITHUB_EVENT_NAME}" != "pull_request" ]]; then
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git diff --name-only HEAD^ HEAD > /tmp/changed.txt
+          if grep -Eq '^(app/search/page\.tsx$|components/search/(IndexedPropertyTypeArtwork|SearchListingCardDark)\.tsx$|lib/ux/indexed-property-type-visual\.ts$|scripts/audits/search-property-type-visuals-1\.mjs$|scripts/scrapers/__tests__/indexed-property-type-visual\.test\.ts$|AKARFINDER_SEARCH_PROPERTY_TYPE_VISUALS_CANONICAL\.md$)' /tmp/changed.txt; then
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "relevant=false" >> "$GITHUB_OUTPUT"
+          fi
+
   certify:
+    needs: scope
+    if: needs.scope.outputs.relevant == 'true'
     name: Locked Target Certifier
     runs-on: ubuntu-latest
     env:
