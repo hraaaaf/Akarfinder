@@ -1,4 +1,4 @@
-import type { CanonicalOfferV1, CanonicalPropertyV1, FreshnessVerificationChannel } from "../property-schema/core";
+import type { CanonicalOfferV1, CanonicalPropertyV1 } from "../property-schema/core";
 import type { CompletenessResultV1 } from "../property-schema/completeness";
 import type { FreshnessProvenanceV2 } from "./freshness-provenance-v2";
 import type { AnomalyEngineV1 } from "./anomaly-engine-v1";
