@@ -1,6 +1,6 @@
 # AKARFINDER — Morocco Web Real-Estate Acquisition
 
-Status: ACTIVE — L1 CLOSED / L2 CLOSED / L3 CLOSED / L4 CERTIFIED — MERGE PENDING
+Status: ACTIVE — L1 CLOSED / L2 CLOSED / L3 CLOSED / L4 CLOSED / L5 ACTIVE
 
 ## North-star Goal
 
@@ -144,7 +144,7 @@ Validated net-new domains include `immo.mitula.ma`, `immobilier.trovit.ma`, `lea
 
 Boundary: the **263 URLs are open-web discovery candidates**, not 263 certified active listing-detail pages. The set can contain property pages, category/search/discovery pages and sitemap-derived real-estate surfaces. Exact listing-detail classification, active-page validation and canonical field extraction belong to L4.
 
-## L4 — Canonical Classification + Extraction — CERTIFIED — MERGE PENDING
+## L4 — Canonical Classification + Extraction — CLOSED
 
 Goal: turn public candidate property pages from L2/L3 into **validated canonical listing records with field-level provenance**, while rejecting unsupported or ambiguous values instead of guessing.
 
@@ -171,6 +171,13 @@ Certified evidence:
 - `zeroDbWrites: true`.
 - Artifact `9826611834`.
 - Artifact SHA256 `65ec2f57401166130995f1df17febc98f65ebdc6287303fed17570e1605781ae`.
+- Final closeout HEAD `8162ad0f6d1fa6a6cc24ab7fceb56d2f1fab514a`: **7/7 general PR workflows SUCCESS**.
+
+Closeout proof:
+- Replacement non-draft PR #976 merged by squash after the connector Ready-for-review mutation failed on draft PR #975.
+- Merge/main HEAD `1af4847b268471c0d93aa0d34e04fece804a57d9` verified and signed (`verification.reason=valid`).
+- Merge parent is `99e7ea78c305e45ffd07f9faa39315c0599bf378`.
+- No post-merge PR-triggered workflows are expected on the merge SHA; the dedicated L4 workflow is branch-scoped plus `workflow_dispatch`.
 
 Implementation boundary:
 - values are emitted only when source text directly supports them;
@@ -179,11 +186,21 @@ Implementation boundary:
 - each extracted field carries source URL + extraction evidence;
 - this certifies bounded canonical extraction behavior, **not yet cross-source deduplication, freshness, production ingestion or serving**.
 
-Current L4 branch: `feat/morocco-web-l4-canonical-extraction`, based on `main@f13ccd5e5ec490f395d6515ac693d09d246ae58a`.
+## L5 — Cross-Source Deduplication — ACTIVE
 
-## L5 — Cross-Source Deduplication
+Goal: collapse duplicate representations of the same property across sources **without losing any source URL or provenance** and without over-merging distinct properties.
 
-Deterministic exact URL/ID handling plus audited fuzzy cross-source property clustering while preserving all source URLs.
+Success criteria:
+- deterministic exact canonical URL and source-offer ID handling;
+- cross-source candidate blocking on compatible geography, property type and transaction;
+- conservative fuzzy matching using supported canonical facts only;
+- strong contradiction guards for incompatible city/type/transaction and materially different price/surface evidence;
+- every cluster preserves all member source URLs and per-source provenance;
+- audited fixtures covering true duplicates, near-duplicates and false-positive traps;
+- bounded dry-run report with cluster counts, singleton counts, merge reasons and rejected-pair reasons;
+- zero production DB writes.
+
+Current L5 branch: `feat/morocco-web-l5-cross-source-dedupe`, based on `main@1af4847b268471c0d93aa0d34e04fece804a57d9`.
 
 ## L6 — Freshness + Revisit Engine
 
@@ -203,6 +220,6 @@ Validated canonical records only, scheduled acquisition/revisit jobs, source-col
 
 ## Execution order
 
-L1 ✅ → L2 ✅ → L3 ✅ → **L4 CERTIFIED — MERGE PENDING** → L5 → L6 → L7 → L8 → L9.
+L1 ✅ → L2 ✅ → L3 ✅ → L4 ✅ → **L5 ACTIVE** → L6 → L7 → L8 → L9.
 
 Overall program percentage remains intentionally unassigned until the roadmap defines a stable denominator across the remaining lots.
