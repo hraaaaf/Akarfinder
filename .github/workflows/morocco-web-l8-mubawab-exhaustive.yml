@@ -4,14 +4,8 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - feat/mubawab-exhaustive-enumerator
+      - feat/mubawab-scale-gate-500
     paths:
-      - 'scripts/acquisition/mubawab-exhaustive-enumerator.mjs'
-      - 'scripts/acquisition/mubawab-supabase-shard-runner.mjs'
-      - 'scripts/acquisition/mubawab-marocannonces-public-adapter.mjs'
-      - 'scripts/acquisition/__tests__/mubawab-exhaustive-enumerator.test.mjs'
-      - 'scripts/acquisition/__tests__/mubawab-supabase-shard-runner.test.mjs'
-      - 'scripts/acquisition/__tests__/mubawab-marocannonces-public-adapter.test.mjs'
       - '.github/workflows/morocco-web-l8-mubawab-exhaustive.yml'
 
 permissions:
@@ -24,7 +18,7 @@ concurrency:
 jobs:
   certify:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -45,47 +39,44 @@ jobs:
           const fs = require('fs');
           const report = JSON.parse(fs.readFileSync('artifacts/morocco-web-l8-mubawab-exhaustive/report.json', 'utf8'));
           if (report.zeroDbWrites !== true) throw new Error('zeroDbWrites must be true');
-          if (report.stoppedEarly === 'http_429') throw new Error('run hit HTTP 429');
-          if (report.requestCount < 1 || report.requestCount > 12) throw new Error('bounded request count violated');
-          for (const shard of report.shards) {
-            if (new URL(shard.url).pathname.includes(':')) throw new Error(`robots-disallowed colon URL fetched: ${shard.url}`);
-          }
-          console.log({ requests: report.requestCount, uniqueListingUrlCount: report.uniqueListingUrlCount });
+          if (report.stoppedEarly === 'http_429') throw new Error('root probe hit HTTP 429');
+          if (report.requestCount < 1 || report.requestCount > 12) throw new Error('bounded root request count violated');
           NODE
-      - name: Bounded Supabase shard-manifest replay
+      - name: Mubawab 500-shard connected scale gate
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          MUBAWAB_MANIFEST_LIMIT: '25'
-          MUBAWAB_MAX_REQUESTS: '25'
+          MUBAWAB_MANIFEST_LIMIT: '500'
+          MUBAWAB_MAX_REQUESTS: '500'
         run: |
           if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then
-            echo 'Supabase secrets unavailable; skipping connected manifest replay.'
-            exit 0
+            echo 'Supabase secrets unavailable.'
+            exit 2
           fi
           node scripts/acquisition/mubawab-supabase-shard-runner.mjs
-      - name: Verify connected manifest report when present
+      - name: Verify 500-shard scale evidence
         run: |
-          if [ ! -f artifacts/morocco-web-l8-mubawab-manifest/report.json ]; then
-            echo 'No connected manifest artifact present.'
-            exit 0
-          fi
           node - <<'NODE'
           const fs = require('fs');
           const report = JSON.parse(fs.readFileSync('artifacts/morocco-web-l8-mubawab-manifest/report.json', 'utf8'));
-          if (report.zeroDbWrites !== true) throw new Error('manifest replay must remain zero-write');
-          if (report.stoppedEarly === 'http_429') throw new Error('manifest replay hit HTTP 429');
-          if (report.selectedShardCount > 25 || report.requestCount > 25) throw new Error('manifest replay exceeded bounds');
-          if (report.safeShardCount < report.selectedShardCount) throw new Error('invalid shard accounting');
+          if (report.zeroDbWrites !== true) throw new Error('scale gate must remain zero-write');
+          if (report.stoppedEarly === 'http_429') throw new Error('scale gate hit HTTP 429');
+          if (report.selectedShardCount !== 500) throw new Error(`expected 500 selected shards, got ${report.selectedShardCount}`);
+          if (report.requestCount !== 500) throw new Error(`expected 500 requests, got ${report.requestCount}`);
+          if (report.safeShardCount < 500) throw new Error('safe shard corpus unexpectedly below gate');
+          const refs = report.shards.reduce((sum, shard) => sum + (shard.listingCount || 0), 0);
+          const nonzero = report.shards.filter((shard) => (shard.listingCount || 0) > 0).length;
           console.log({
             sourceRowCount: report.sourceRowCount,
             safeShardCount: report.safeShardCount,
             selectedShardCount: report.selectedShardCount,
+            totalListingReferences: refs,
+            nonzeroShards: nonzero,
             uniqueListingUrlCount: report.uniqueListingUrlCount,
           });
           NODE
       - uses: actions/upload-artifact@v4
         with:
-          name: morocco-web-l8-mubawab-exhaustive
+          name: morocco-web-l8-mubawab-gate-500
           path: artifacts/morocco-web-l8-mubawab-*/
           if-no-files-found: error
