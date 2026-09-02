@@ -5,6 +5,7 @@ on:
   pull_request:
     paths:
       - "app/search/page.tsx"
+      - "components/search/LightZillowSearchShell.tsx"
       - "components/search/SearchPersonalizationControl.tsx"
       - "lib/listings/utils.ts"
       - "lib/search-profile-v2/listing-personalization.ts"
