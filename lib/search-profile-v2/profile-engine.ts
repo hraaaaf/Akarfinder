@@ -24,16 +24,19 @@ function nonNegative(value: number | null | undefined): number | null | undefine
   return value;
 }
 
-function cleanAnchorText(value: string | undefined, max = 120): string | undefined {
+function cleanAnchorText(value: unknown, max = 120): string | undefined {
   if (value == null) return undefined;
+  if (typeof value !== "string") throw new Error("PROFILE_ANCHOR_TEXT_INVALID");
   const cleaned = value.trim();
   if (!cleaned || cleaned.length > max) throw new Error("PROFILE_ANCHOR_TEXT_INVALID");
   return cleaned;
 }
 
 function normalizeAnchors(values: SearchProfileAnchor[]): SearchProfileAnchor[] {
+  if (!Array.isArray(values)) throw new Error("PROFILE_ANCHOR_VALUES_INVALID");
   if (values.length > 10) throw new Error("PROFILE_ANCHOR_LIMIT_EXCEEDED");
   const normalized = values.map((value) => {
+    if (!value || typeof value !== "object") throw new Error("PROFILE_ANCHOR_VALUE_INVALID");
     const label = cleanAnchorText(value.label)!;
     const city = cleanAnchorText(value.city, 120);
     const hasLat = value.latitude != null;
@@ -68,6 +71,12 @@ function signal<T>(value: T, now: string, source: ProfileEvidenceSource = "expli
 }
 
 function contextSignalOptions(source: ProfileEvidenceSource | undefined, confidence: ProfileConfidence | undefined) {
+  if (source != null && !(["explicit", "behavioral_inference", "companion_derived"] as const).includes(source)) {
+    throw new Error("PROFILE_CONTEXT_SOURCE_INVALID");
+  }
+  if (confidence != null && !(["high", "medium", "low"] as const).includes(confidence)) {
+    throw new Error("PROFILE_CONTEXT_CONFIDENCE_INVALID");
+  }
   const resolvedSource = source ?? "explicit";
   return {
     source: resolvedSource,
@@ -104,7 +113,10 @@ export function applySearchProfileEvent(profile: DynamicSearchProfileV2, event: 
         if (!(key in event)) continue;
         const value = event[key];
         if (value == null) delete next.personal_context[key];
-        else next.personal_context[key] = signal(value, now, source, confidence);
+        else {
+          if (typeof value !== "boolean") throw new Error("PROFILE_CONTEXT_BOOLEAN_INVALID");
+          next.personal_context[key] = signal(value, now, source, confidence);
+        }
       }
       break;
     }
