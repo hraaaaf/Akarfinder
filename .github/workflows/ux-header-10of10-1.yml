@@ -1,13 +1,11 @@
 name: UX-HEADER-10OF10-1 Exact Visual Certification
 
 on:
-  pull_request:
-    paths:
-      - "app/search/page.tsx"
-      - "components/layout/SiteHeader.tsx"
-      - "scripts/audits/ux-header-10of10-1.mjs"
-      - ".github/workflows/ux-header-10of10-1.yml"
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
