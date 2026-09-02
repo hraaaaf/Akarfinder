@@ -2,16 +2,10 @@ name: Mon Projet P2 Visual Proof
 
 on:
   workflow_dispatch:
-  pull_request:
-    paths:
-      - "app/mon-projet/**"
-      - "app/search/**"
-      - "components/companion/MonProjetWizardP1A.tsx"
-      - "components/companion/MonProjetWizardP2.tsx"
-      - "components/companion/FinderLauncher.tsx"
-      - "scripts/audits/mon-projet-p2-visual.mjs"
-      - "scripts/audits/finder-p2-interaction.mjs"
-      - ".github/workflows/mon-projet-p2-visual.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   capture:
