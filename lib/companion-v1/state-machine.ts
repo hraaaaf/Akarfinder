@@ -90,12 +90,12 @@ export function transitionCompanionSession(session: CompanionSession, event: Com
     case "answer_context":
       next.profile = applySearchProfileEvent(next.profile, {
         type: "personal_context",
-        children_count: event.children_count,
-        accessibility_need: event.accessibility_need,
-        mre_context: event.mre_context,
-        student_context: event.student_context,
-        corporate_context: event.corporate_context,
-        remote_work: event.remote_work,
+        ...(Object.prototype.hasOwnProperty.call(event, "children_count") ? { children_count: event.children_count } : {}),
+        ...(Object.prototype.hasOwnProperty.call(event, "accessibility_need") ? { accessibility_need: event.accessibility_need } : {}),
+        ...(Object.prototype.hasOwnProperty.call(event, "mre_context") ? { mre_context: event.mre_context } : {}),
+        ...(Object.prototype.hasOwnProperty.call(event, "student_context") ? { student_context: event.student_context } : {}),
+        ...(Object.prototype.hasOwnProperty.call(event, "corporate_context") ? { corporate_context: event.corporate_context } : {}),
+        ...(Object.prototype.hasOwnProperty.call(event, "remote_work") ? { remote_work: event.remote_work } : {}),
       }, now);
       break;
     case "answer_anchors":
