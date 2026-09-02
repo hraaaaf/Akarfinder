@@ -4,354 +4,199 @@ Status: **ACTIVE**
 
 Last verified: **2026-09-02**
 
-This file is the **canonical restart / handover entrypoint** for L8. For deeper historical evidence, read `docs/AKARFINDER_MOROCCO_WEB_L8_SCALE_COVERAGE.md`.
-
-If this file and the detailed scale document disagree on runtime status, **this handover file wins until the detailed document is refreshed**.
-
----
+This is the canonical restart / handover entrypoint for L8. Detailed evidence remains in `docs/AKARFINDER_MOROCCO_WEB_L8_SCALE_COVERAGE.md`.
 
 ## Goal
 
 Build and certify **more than 100,000 usable Moroccan real-estate listings** from public web inventory.
 
-Success is **not** raw discovery URL volume. A listing only counts toward the final target after:
-
+Raw discovery URLs or raw enumerated IDs do **not** count. A listing counts only after:
 1. public source-first enumeration;
 2. listing-detail validity;
 3. active/fresh validation;
 4. canonical extraction with source evidence;
-5. cross-source deduplication;
-6. quality / Listing Factory admission where observable;
-7. serve admission for validated canonical records.
+5. cross-source dedupe;
+6. quality admission;
+7. serve admission.
 
-Final scale gates: **10k → 50k → 100k usable canonical listings**.
-
----
+Final gates: **10k → 50k → 100k usable canonical listings**.
 
 ## Guardrails
 
 - Public content only.
-- No CAPTCHA bypass.
-- No credential abuse.
-- No private/internal API unless explicitly authorized and legitimately public-facing.
-- No proxy/fingerprint/block evasion.
-- Respect robots rules and source crawl delays.
+- No CAPTCHA bypass, credential abuse, proxy/fingerprint evasion or blocked-path workaround.
+- Respect robots rules and declared crawl delays.
 - Stop on HTTP 429 / hard block.
-- Current L8 enumeration is read-only against production Supabase.
+- L8 enumeration is read-only against production Supabase.
 - No bulk production DB mutation without a separately authorized bounded canary + rollback proof.
 - No Vercel deployment without explicit human approval.
-
----
-
-## Repo state
-
-Repository: `hraaaaf/Akarfinder`
-
-Main HEAD verified before this handover commit:
-`b289cd800d43f3fbd596d95f525d7488381f2cc1`
-
-Detailed L8 canonical:
-`docs/AKARFINDER_MOROCCO_WEB_L8_SCALE_COVERAGE.md`
-
----
-
-# Completed evidence
-
-## L1–L7
-
-L1 Discovery, L2 portal expansion, L3 Common Crawl, L4 extraction, L5 dedupe, L6 freshness/revisit, and L7 bounded production ingestion are already certified in their prior canonical evidence.
-
-L7 first production canary:
-- target: `public.discovery_candidates` only;
-- before: 0/3;
-- inserted: 3;
-- after: 3/3;
-- exact delta: +3;
-- no canonical publication;
-- no Vercel deployment.
-
-Do not reopen L1–L7 unless a dependency regresses.
-
----
-
-# L8 current state
 
 ## Production raw corpus baseline
 
 Verified 2026-09-02 in Supabase project `AqarFinder` / `kusfiyimwvxblvsrhaes`:
-
 - total `discovery_candidates`: **304,933**
 - rejected: **142,143**
 - unclassified: **137,868**
 - accepted: **13,757**
 - discovered: **11,165**
 
-These counts are **not** usable-listing certification.
+Supporting unclassified triage:
+- 5,536 listing-detail candidates
+- 44,749 discovery pages
+- 7,420 obvious noise
+- 80,163 uncertain
 
-Supporting triage of the 137,868 unclassified rows:
-- 5,536 listing-detail candidates;
-- 44,749 discovery pages;
-- 7,420 obvious noise;
-- 80,163 uncertain.
+These counts are not usable-listing certification.
 
-The triage is useful for cleanup but is **not the critical path** to >100k.
-
-Current critical-path doctrine:
-
+Critical path:
 `productive source → public shard/sitemap manifest → listing IDs/URLs → freshness → extraction → dedupe → quality → serving`
 
----
+# Certified sources
 
-# Source 1 — Mubawab
+## Mubawab
 
-Core enumerator merged via PR #988.
+Core merged via PR #988, commit `c7306784653339ab942a69403cfaca9a39688973`.
 
-Merged commit:
-`c7306784653339ab942a69403cfaca9a39688973`
-
-Robots constraint:
-- current robots disallows `:` paths;
-- legacy `:p:N` pagination removed;
-- enumerator rejects colon paths.
-
-Production source slice:
-- source rows: **14,750**
-- unique robots-safe public shards: **3,172**
+Robots-safe public shard manifest: **3,172**.
 
 Certified gates:
+- 25 shards → **301 unique IDs** — run `33662143708`
+- 100 shards → **663 unique IDs** — run `33662906605`
+- 500 shards → **5,195 unique IDs** — run `33663293707`
+- no 429; zero DB writes.
 
-### Gate 25
-- run `33662143708` — SUCCESS
-- 25 shards
-- 615 listing references
-- **301 unique listing IDs**
-- 22/25 productive
-- no 429
-- zero DB writes
+Full Mubawab remains deferred until multi-source union shows it is needed.
 
-### Gate 100
-- run `33662906605` — SUCCESS
-- 100 shards
-- 2,149 listing references
-- **663 unique listing IDs**
-- 89/100 productive
-- no 429
-- zero DB writes
+## Avito — FULL ENUMERATION CERTIFIED
 
-### Gate 500
-- run `33663293707` — SUCCESS
-- 500 shards
-- 9,533 listing references
-- **5,195 unique listing IDs**
-- 427/500 productive
-- ~45.5% cross-shard overlap
-- no 429
-- zero DB writes
+Core merged via PR #989, commit `ef2af49f96aeb8b2b4962d0f90bad8fa35a85452`.
 
-Mubawab remains productive, but **full Mubawab is no longer the immediate critical path** until Avito + Sarouty union evidence is measured.
+Declared sitemap returned 403 from GitHub runner; no bypass attempted. Public discovery shards only.
 
----
-
-# Source 2 — Avito
-
-Core source-first implementation merged via PR #989.
-
-Merged commit:
-`ef2af49f96aeb8b2b4962d0f90bad8fa35a85452`
-
-## Sitemap verdict
-
-Public robots declares `https://www.avito.ma/sitemap.xml`.
-
-Safety probe run `33665119348`:
-- robots accessible;
-- sitemap declared;
-- sitemap request returned HTTP 403 from GitHub runner;
-- no bypass attempted;
-- zero DB writes.
-
-Therefore Avito acquisition uses only public discovery shards that respond normally.
-
-## Certified scale gates
-
-### Gate 25
-Run `33665320708` — SUCCESS
-- source rows: 11,907
-- safe public shards: 2,505
-- selected/requested: 25/25
-- 716 listing references
-- **689 unique listing IDs**
-- 23/25 HTTP 200 productive
-- 2/25 HTTP 403 respected
-- ~3.77% overlap
-- no 429
-- zero DB writes
-
-Artifact: `9860501534`
-Digest: `sha256:a31e42e6c3e00dd87ef17f884ac7cbdfa841477e1b0a078520dc123b865e2d54`
-
-### Gate 100
-Run `33666296763` — SUCCESS
-- selected/requested: 100/100
-- **2,652 unique listing IDs**
-- 26.52 IDs/shard
-- 9/9 unit tests PASS
-- no 429
-- zero DB writes
-
-Artifact: `9860777972`
-Digest: `sha256:a7cb05be67130e36172ce8a85769420a26607fe1c907f7aba8e0b55e37847f35`
-
-### Gate 500
-Run `33667799510` — SUCCESS
-- selected/requested: 500/500
-- **12,172 unique listing IDs**
-- 24.34 IDs/shard
-- 9/9 unit tests PASS
-- no 429
-- no early stop
-- zero DB writes
-
-Artifact: `9862395809`
-Digest: `sha256:867b00cc5bcda186cc136d657f163112cf071dab4bffbeec8cc42db0acaaa5cd`
-
-## FULL MANIFEST — CERTIFIED
-
-Branch:
-`feat/avito-full-manifest`
-
-HEAD:
-`4866fe6e33525c24a867b0d7559d438c520ddb84`
-
-Run:
-`33672899097` — **SUCCESS**
-
-Exact result:
+Full safe manifest result:
+- branch `feat/avito-full-manifest`
+- HEAD `4866fe6e33525c24a867b0d7559d438c520ddb84`
+- run `33672899097` — **SUCCESS**
 - source rows: **11,907**
-- safe shard manifest: **2,505**
-- selected shards: **2,505 / 2,505**
-- HTTP requests: **2,505 / 2,505**
+- safe shards: **2,505**
+- selected/requested: **2,505 / 2,505**
 - **27,053 unique real-estate listing IDs**
 - stoppedEarly: `null`
 - no HTTP 429
 - zero DB writes
-- runner unit tests: **4/4 PASS**
+- artifact `9865177626`
+- digest `sha256:f952e9e6d57c1752dd2c1762a0bdd95c24e083dfa7bbead7b7a6e8474d0f9836`
 
-Artifact:
-`9865177626`
+Important: 27,053 enumerated IDs are not yet 27,053 usable canonical listings.
 
-Artifact digest:
-`sha256:f952e9e6d57c1752dd2c1762a0bdd95c24e083dfa7bbead7b7a6e8474d0f9836`
+# Active source — Sarouty
 
-This is the strongest current L8 source-scale proof.
+Public contract reverified 2026-09-02:
+- `https://www.sarouty.ma/robots.txt` responds publicly;
+- `User-agent: *` has `Crawl-delay: 10`;
+- declared sitemap index: `https://www.sarouty.ma/sitemap_index.xml`.
 
-Important: **27,053 enumerated Avito IDs are not yet 27,053 usable canonical listings**. Freshness, canonical extraction and cross-source dedupe still remain.
-
----
-
-# Source 3 — Sarouty
-
-Preparation branch:
-`feat/sarouty-source-first`
-
-Preparation HEAD verified:
-`197c39ede17f7e5dd7fed165f064c931423d9163`
-
-Current public robots contract recorded in the detailed canonical:
-- sitemap index: `https://www.sarouty.ma/sitemap_index.xml`
-- `Crawl-delay: 10` for `User-agent: *`
-
-Observed listing identity formats that must be supported:
+Public listing pages are live and indexed. Verified identity formats remain:
 - SEO transaction URL ending `-<listing_id>/`
 - `property-details/?listing_id=<id>`
-- legacy `/plp/...-<id>.html`
+- legacy `/plp/...-<id>.html`.
 
-Prepared enumerator contract:
-- public robots + declared sitemap docs only;
-- recursive sitemap-index support;
-- gzip support;
-- all observed listing-ID formats;
-- dedupe by listing ID;
-- enforce at least 10 seconds between Sarouty requests;
-- immediate stop on HTTP 429;
+Implementation state:
+- branch `feat/sarouty-source-first`
+- crawl-delay floor fix commit `3aa575f8a12b134b288746895d43c1db30929bb5`
+- test commit `13212b8b01fa7521a1cf69106deb2cb9a861f84e`
+- bounded smoke runner correction `e712e05d6a1bbd81c7a81a2518d85a44da40fd03`
+- refreshed branch HEAD `0ad79fdd18627a848757f34b304a0df08f66d2bc`
+- PR #990 OPEN / DRAFT / mergeable at last verification.
+
+Verified unit logic:
+- 6/6 tests PASS locally from connector-fetched branch content;
+- minimum 10-second delay enforced even if robots declares less;
+- immediate 429 stop;
 - zero DB writes.
 
-**No Sarouty live scale result is certified yet.**
+Current limitation:
+- the web fetcher can read robots but rejects the sitemap index because of its `text/xml` wrapper;
+- local container DNS cannot resolve Sarouty;
+- this is an environment limitation, **not evidence of a Sarouty block**.
 
----
+No full Sarouty scale result is certified yet.
 
-# Decisions already made
+# Parallel source — MarocAnnonces
 
-1. The >100k target is explicitly **multi-source**.
-2. Raw `discovery_candidates` volume does not count as success.
-3. Avito is currently the strongest source reservoir, with **27,053 unique IDs certified** from its entire current safe manifest.
-4. Do **not** waste another immediate benchmark on Avito; full manifest is already exhausted/certified.
-5. Do **not** bypass Avito sitemap 403.
-6. Next source is Sarouty, respecting its 10-second crawl delay.
-7. Mubawab full replay is deferred until multi-source union shows whether it is still necessary.
-8. No production bulk writes are currently authorized.
-9. No Vercel deployment is required for this L8 acquisition work.
+Public market evidence reverified 2026-09-02:
+- Vente immobilier section: approximately **18.2k active public ads**;
+- Location immobilier section: approximately **22.7k active public ads**;
+- examples: sale apartments ~7.7k, sale villas/houses/riads ~3.8k, sale land ~3.25k, rental apartments ~10.1k, rental villas/houses/riads ~2.5k.
 
----
+These are portal counters, not unique/usable certification.
+
+Verified detail identity pattern:
+`/categorie/<category_id>/<type>/annonce/<listing_id>/<slug>.html`
+
+Examples observed publicly include listing IDs `10229450`, `10288297`, `7513995`.
+
+Implementation started:
+- branch `feat/marocannonces-source-first`
+- enumerator commit `237467231cbd12aeb5d516f7c49668356e42876f`
+- tests commit `bdc5a6451c41da21d67c18fe0a1467186f9b8425`
+
+Enumerator contract:
+- public pages only;
+- starts with five major residential roots: sale apartments, sale villas/houses/riads, sale land, rental apartments, rental villas/houses/riads;
+- reads robots first;
+- conservative delay floor 3s when no larger crawl delay is declared;
+- dedupe by listing ID;
+- stop on 429 or verification/CAPTCHA hard-block content;
+- zero DB writes;
+- no bypass.
+
+Tests are written but **not yet execution-certified**. No MarocAnnonces scale count is certified yet.
+
+# Decisions
+
+1. Goal >100k is explicitly **multi-source**.
+2. Raw candidate volume does not count.
+3. Avito full is frozen as certified enumeration evidence at **27,053 unique IDs**.
+4. Do not waste another Avito benchmark.
+5. Sarouty remains active, but environment-specific XML access does not justify stalling L8.
+6. MarocAnnonces is now developed in parallel because public inventory is materially large.
+7. Agenz remains next fallback/source after MarocAnnonces if needed.
+8. Mubawab full replay remains deferred until union measurement.
+9. No production bulk write is authorized.
+10. No Vercel deployment is required.
 
 # Next exact
 
-**Certify Sarouty source-first.**
+1. Execute/certify MarocAnnonces unit tests.
+2. Perform a tiny read-only public probe respecting robots; if hard-blocked, record and stop without evasion.
+3. If productive, enumerate a bounded sample then full safe public category inventory.
+4. Finish Sarouty enumeration whenever its declared sitemap is reachable through a compliant execution channel.
+5. Measure union: Avito + Sarouty + MarocAnnonces + certified Mubawab IDs/URLs.
+6. Apply freshness → canonical extraction → cross-source dedupe → quality → serving.
+7. Certify **10k → 50k → 100k usable**.
 
-Exact sequence:
+# Remaining sequence
 
-1. Rebase/refresh `feat/sarouty-source-first` against current `main` if needed.
-2. Run Sarouty unit tests.
-3. Verify robots parser and enforced `Crawl-delay >= 10s`.
-4. Run a very small live sitemap/document probe first.
-5. If green and no 429/block, enumerate declared sitemap inventory under the same 10-second delay.
-6. Record exact unique listing-ID total + artifact + digest.
-7. Update this handover canonical and the detailed L8 canonical.
-8. Then measure source union: Avito + Sarouty + Mubawab certified IDs/URLs.
-9. Apply freshness + canonical extraction + cross-source dedupe to move from enumerated IDs to **usable canonical listings**.
-10. Certify 10k → 50k → 100k usable gates.
-
-If Sarouty blocks or becomes unproductive, pivot next to **MarocAnnonces**, then **Agenz**. Do not burn time trying to defeat a hard block.
-
----
-
-# Remaining sequence to L8 closeout
-
-`Sarouty certification → MarocAnnonces/Agenz if needed → multi-source union → freshness validation → canonical extraction → cross-source dedupe → quality admission → 10k usable → 50k usable → 100k usable → bounded production-ingestion plan/canary if required → closeout docs → merge/post-merge verification`
-
----
+`MarocAnnonces certification ↔ Sarouty certification → Agenz if needed → multi-source union → freshness → canonical extraction → cross-source dedupe → quality → 10k usable → 50k usable → 100k usable → bounded production-ingestion plan/canary if required → closeout docs → merge/post-merge verification`
 
 # Human gates
 
-Only stop for human approval when required by project rules, especially:
-
+Stop only for:
 - bulk production DB mutation / ingestion apply;
 - Vercel deployment;
 - irreversible production-critical action.
 
-Read-only enumeration, tests, CI, docs, safe PRs and merges may continue autonomously.
-
----
-
-# Resume checklist for a new window
-
-1. Read this file first.
-2. Verify current `main` HEAD.
-3. Verify `feat/sarouty-source-first` HEAD and whether it has diverged from main.
-4. Check GitHub Actions load once before any heavy benchmark.
-5. Continue from **Sarouty unit/live certification**.
-6. Do not reopen already certified Avito/Mubawab gates unless evidence regresses.
-
----
+Read-only research, enumeration, tests, branch work, docs, safe PRs and merges may continue autonomously.
 
 ## Current handover state
 
 - chantier: **Morocco Web Acquisition / L8 Scale + Coverage**
 - Goal: **>100,000 usable canonical Moroccan listings**
-- strongest current enumeration proof: **Avito full = 27,053 unique IDs**
-- active next source: **Sarouty**
-- production DB mutation: **none pending / none authorized**
-- Vercel deployment: **not required / not authorized by this file**
-- real blocker: **none at handover creation**
-- Next exact: **Sarouty unit tests → tiny robots/sitemap live probe → bounded source-first certification**
+- strongest certified enumeration: **Avito full = 27,053 unique IDs**
+- active sources: **Sarouty + MarocAnnonces**
+- production DB mutation: **none authorized**
+- Vercel: **not required / not authorized**
+- strategic blocker: **none**
+- Next exact: **execute/certify MarocAnnonces tests, then tiny public probe; continue Sarouty when compliant XML access is available**
 - global project percentage: **intentionally unassigned; do not invent one**
