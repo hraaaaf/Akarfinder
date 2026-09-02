@@ -204,16 +204,17 @@ describe("Mon Projet Dynamic Search Profile V2", () => {
     );
   });
 
-  it("preserves anchors, personal context and rich tolerances in Search hand-off", () => {
+  it("keeps sensitive context out of Search URLs while preserving canonical constraints", () => {
     let profile = companionAtPreferences().profile;
     profile = applySearchProfileEvent(profile, {
       type: "personal_context",
       children_count: 2,
       remote_work: true,
+      accessibility_need: true,
     }, "2026-09-02T11:10:00.000Z");
     profile = applySearchProfileEvent(profile, {
       type: "anchors",
-      values: [{ label: "Bureau", city: "Casablanca", max_minutes: 20 }],
+      values: [{ label: "École des enfants", city: "Casablanca", max_minutes: 20 }],
     }, "2026-09-02T11:11:00.000Z");
     profile = applySearchProfileEvent(profile, { type: "tourism_tolerance", max: 3 }, "2026-09-02T11:12:00.000Z");
 
@@ -221,16 +222,15 @@ describe("Mon Projet Dynamic Search Profile V2", () => {
     assert.equal(params.get("transaction_type"), "buy");
     assert.equal(params.get("city"), "Casablanca");
     assert.equal(params.get("max_price"), "1500000");
+    assert.equal(params.get("profile_intended_uses"), "primary_residence");
     assert.equal(params.get("guided"), "1");
 
-    const anchors = JSON.parse(params.get("profile_anchors") ?? "[]") as Array<{ label: string; max_minutes?: number }>;
-    assert.deepEqual(anchors, [{ label: "Bureau", city: "Casablanca", max_minutes: 20 }]);
-
-    const context = JSON.parse(params.get("profile_personal_context") ?? "{}") as { children_count?: { value: number }; remote_work?: { value: boolean } };
-    assert.equal(context.children_count?.value, 2);
-    assert.equal(context.remote_work?.value, true);
-
-    const tolerances = JSON.parse(params.get("profile_tolerances") ?? "{}") as { tourism_intensity_max?: number };
-    assert.equal(tolerances.tourism_intensity_max, 3);
+    assert.equal(params.has("profile_anchors"), false);
+    assert.equal(params.has("profile_personal_context"), false);
+    assert.equal(params.has("profile_tolerances"), false);
+    const query = params.toString();
+    assert.equal(query.includes("École"), false);
+    assert.equal(query.includes("children_count"), false);
+    assert.equal(query.includes("accessibility_need"), false);
   });
 });
