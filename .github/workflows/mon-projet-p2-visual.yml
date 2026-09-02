@@ -5,10 +5,12 @@ on:
   pull_request:
     paths:
       - "app/mon-projet/**"
+      - "app/search/**"
       - "components/companion/MonProjetWizardP1A.tsx"
       - "components/companion/MonProjetWizardP2.tsx"
       - "components/companion/FinderLauncher.tsx"
       - "scripts/audits/mon-projet-p2-visual.mjs"
+      - "scripts/audits/finder-p2-interaction.mjs"
       - ".github/workflows/mon-projet-p2-visual.yml"
 
 jobs:
@@ -42,6 +44,11 @@ jobs:
           AUDIT_OUTPUT_DIR: artifacts/mon-projet-p2-visual
           AUDIT_PHASE: after
         run: node scripts/audits/mon-projet-p2-visual.mjs
+      - name: Exercise Finder shell on Search
+        env:
+          BASE_URL: http://127.0.0.1:3216
+          AUDIT_OUTPUT_DIR: artifacts/mon-projet-p2-visual
+        run: node scripts/audits/finder-p2-interaction.mjs
       - name: Upload Mon Projet P2 visual proof
         if: always()
         uses: actions/upload-artifact@v4
