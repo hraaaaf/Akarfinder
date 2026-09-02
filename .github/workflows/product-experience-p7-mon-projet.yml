@@ -1,16 +1,6 @@
 name: Product Experience P7 Mon Projet
 
 on:
-  pull_request:
-    branches:
-      - main
-    paths:
-      - "app/mon-projet/page.tsx"
-      - "components/companion/MonProjetWizardP1A.tsx"
-      - "scripts/scrapers/__tests__/product-experience-p7-mon-projet.test.ts"
-      - "scripts/audits/product-experience-p7-mon-projet.mjs"
-      - "docs/AKARFINDER_PRODUCT_EXPERIENCE_P7.md"
-      - ".github/workflows/product-experience-p7-mon-projet.yml"
   workflow_dispatch:
 
 permissions:
