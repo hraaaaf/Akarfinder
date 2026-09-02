@@ -41,13 +41,17 @@ export async function loadMubawabShardManifestFromSupabase({
     const url = new URL(`${base}/rest/v1/discovery_candidates`);
     url.searchParams.set('select', 'canonical_url');
     url.searchParams.set('source_domain', 'eq.mubawab.ma');
-    url.searchParams.set('order', 'id.asc');
+    url.searchParams.set('canonical_url', 'not.is.null');
+    // Deliberately avoid ORDER BY here. Production EXPLAIN showed ordering by
+    // canonical_url forces a broad index scan (~100s), while the source_domain
+    // index serves an unordered 1000-row page in ~0.5s. Sorting/dedupe happens
+    // in memory after this small (~15k rows) source slice is loaded.
+    url.searchParams.set('limit', String(pageSize));
+    url.searchParams.set('offset', String(offset));
     const response = await fetchImpl(url, {
       headers: {
         apikey: serviceRoleKey,
         authorization: `Bearer ${serviceRoleKey}`,
-        range: `${offset}-${offset + pageSize - 1}`,
-        'range-unit': 'items',
       },
     });
     if (!response.ok) throw new Error(`Supabase manifest read failed: HTTP ${response.status}`);
