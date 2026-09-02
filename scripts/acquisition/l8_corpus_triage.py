@@ -36,10 +36,10 @@ DISCOVERY_PATTERNS = [
 NOISE_HOSTS = {
     "youtube.com", "www.youtube.com", "tiktok.com", "www.tiktok.com",
     "reddit.com", "www.reddit.com", "support.google.com",
-    # Observed non-Moroccan real-estate sources in the production corpus.
-    "ouedkniss.com", "www.ouedkniss.com", "ouedkniss.dz", "www.ouedkniss.dz",
-    "bakimmo-dz.com", "www.bakimmo-dz.com",
+    # Observed non-Moroccan .com real-estate sources in the production corpus.
+    "ouedkniss.com", "www.ouedkniss.com", "bakimmo-dz.com", "www.bakimmo-dz.com",
 }
+NON_MOROCCAN_COUNTRY_TLDS = (".dz", ".tn")
 
 
 def triage_url(url: str) -> str:
@@ -48,7 +48,7 @@ def triage_url(url: str) -> str:
     path = parsed.path or "/"
     if parsed.scheme not in {"http", "https"} or not host:
         return "obvious_noise"
-    if host in NOISE_HOSTS:
+    if host in NOISE_HOSTS or host.endswith(NON_MOROCCAN_COUNTRY_TLDS):
         return "obvious_noise"
     if any(p.search(path) for p in DETAIL_PATTERNS):
         return "listing_detail_candidate"
