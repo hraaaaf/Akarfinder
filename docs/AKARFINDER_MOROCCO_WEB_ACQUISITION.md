@@ -202,14 +202,15 @@ Success criteria:
 
 Certified evidence:
 - Dedicated run `33577372699` — **SUCCESS**.
-- Evidence HEAD `f97d7cdb3cfa1e8089e92cebb5b59e3eef2d66f2`.
+- Evidence implementation HEAD `f97d7cdb3cfa1e8089e92cebb5b59e3eef2d66f2`.
 - Unit tests: **6/6 PASS**.
 - Bounded dedupe dry-run: **6 records → 4 clusters**.
 - **2 merged clusters** and **2 singletons**.
 - `zeroDbWrites: true`.
 - Artifact `9827116907`.
 - Artifact SHA256 `dd3f2b9d165692174c57e4aed5a17cfd54639ef84b0163be4765ef00c2ad7d29`.
-- Exact evidence HEAD general PR workflows: **7/7 SUCCESS** (`33577389491`, `33577389310`, `33577389337`, `33577389486`, `33577389315`, `33577389407`, `33577389311`).
+- Exact implementation HEAD general PR workflows: **7/7 SUCCESS** (`33577389491`, `33577389310`, `33577389337`, `33577389486`, `33577389315`, `33577389407`, `33577389311`).
+- Final canonical closeout HEAD `c9d21b96ec8951c1636f826385bf6f93371eb289` records the certified evidence without changing the dedupe implementation.
 
 Implementation boundary:
 - same-source fuzzy matches do not merge without an exact source offer ID;
