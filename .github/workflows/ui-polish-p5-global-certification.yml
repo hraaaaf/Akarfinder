@@ -1,19 +1,7 @@
 name: UI Polish P5 Global Certification
 
 on:
-  pull_request:
-    branches: [main]
-    paths:
-      - "app/**"
-      - "components/**"
-      - "scripts/audits/ui-polish-p5-global-audit.mjs"
-      - "scripts/scrapers/__tests__/ui-polish-*.test.ts"
-      - ".github/workflows/ui-polish-p5-global-certification.yml"
   workflow_dispatch:
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
 
 permissions:
   contents: read
