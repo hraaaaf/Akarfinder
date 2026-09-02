@@ -9,7 +9,7 @@ type SearchPersonalizationControlProps = {
 };
 
 export function SearchPersonalizationControl({ initialVisible, initialEnabled }: SearchPersonalizationControlProps) {
-  const [enabled] = useState(initialEnabled);
+  const [enabled, setEnabled] = useState(initialEnabled);
 
   if (!initialVisible) return null;
 
@@ -17,7 +17,10 @@ export function SearchPersonalizationControl({ initialVisible, initialEnabled }:
     const url = new URL(window.location.href);
     if (nextEnabled) url.searchParams.delete("personalized");
     else url.searchParams.set("personalized", "0");
-    window.location.assign(`${url.pathname}${url.search}${url.hash}`);
+
+    window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+    setEnabled(nextEnabled);
+    window.dispatchEvent(new PopStateEvent("popstate"));
   }
 
   return (
