@@ -1,6 +1,6 @@
 # AKARFINDER — Morocco Web Real-Estate Acquisition
 
-Status: ACTIVE — L1 CLOSED / L2 CLOSED / L3 CLOSED / L4 CLOSED / L5 ACTIVE
+Status: ACTIVE — L1 CLOSED / L2 CLOSED / L3 CLOSED / L4 CLOSED / L5 CERTIFIED — MERGE PENDING
 
 ## North-star Goal
 
@@ -186,7 +186,7 @@ Implementation boundary:
 - each extracted field carries source URL + extraction evidence;
 - this certifies bounded canonical extraction behavior, **not yet cross-source deduplication, freshness, production ingestion or serving**.
 
-## L5 — Cross-Source Deduplication — ACTIVE
+## L5 — Cross-Source Deduplication — CERTIFIED — MERGE PENDING
 
 Goal: collapse duplicate representations of the same property across sources **without losing any source URL or provenance** and without over-merging distinct properties.
 
@@ -199,6 +199,24 @@ Success criteria:
 - audited fixtures covering true duplicates, near-duplicates and false-positive traps;
 - bounded dry-run report with cluster counts, singleton counts, merge reasons and rejected-pair reasons;
 - zero production DB writes.
+
+Certified evidence:
+- Dedicated run `33577372699` — **SUCCESS**.
+- Evidence HEAD `f97d7cdb3cfa1e8089e92cebb5b59e3eef2d66f2`.
+- Unit tests: **6/6 PASS**.
+- Bounded dedupe dry-run: **6 records → 4 clusters**.
+- **2 merged clusters** and **2 singletons**.
+- `zeroDbWrites: true`.
+- Artifact `9827116907`.
+- Artifact SHA256 `dd3f2b9d165692174c57e4aed5a17cfd54639ef84b0163be4765ef00c2ad7d29`.
+- Exact evidence HEAD general PR workflows: **7/7 SUCCESS** (`33577389491`, `33577389310`, `33577389337`, `33577389486`, `33577389315`, `33577389407`, `33577389311`).
+
+Implementation boundary:
+- same-source fuzzy matches do not merge without an exact source offer ID;
+- incompatible city, property type or transaction blocks a merge;
+- surface differences above 25% and price differences above 35% block fuzzy merging;
+- every merged cluster retains member source IDs and source URLs;
+- this certifies deterministic/conservative clustering behavior on bounded audited fixtures, **not yet production-scale duplicate prevalence or DB mutation**.
 
 Current L5 branch: `feat/morocco-web-l5-cross-source-dedupe`, based on `main@1af4847b268471c0d93aa0d34e04fece804a57d9`.
 
@@ -220,6 +238,6 @@ Validated canonical records only, scheduled acquisition/revisit jobs, source-col
 
 ## Execution order
 
-L1 ✅ → L2 ✅ → L3 ✅ → L4 ✅ → **L5 ACTIVE** → L6 → L7 → L8 → L9.
+L1 ✅ → L2 ✅ → L3 ✅ → L4 ✅ → **L5 CERTIFIED — MERGE PENDING** → L6 → L7 → L8 → L9.
 
 Overall program percentage remains intentionally unassigned until the roadmap defines a stable denominator across the remaining lots.
