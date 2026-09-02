@@ -1,0 +1,54 @@
+name: Morocco Web L4 Canonical Extraction
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feat/morocco-web-l4-canonical-extraction
+    paths:
+      - 'scripts/acquisition/canonical_listing_extractor.py'
+      - 'scripts/acquisition/canonical_listing_live_dry_run.py'
+      - 'scripts/acquisition/__tests__/test_canonical_listing_extractor.py'
+      - '.github/workflows/morocco-web-l4-canonical-extraction.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: morocco-web-l4-canonical-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Unit tests
+        run: python -m unittest scripts/acquisition/__tests__/test_canonical_listing_extractor.py
+
+      - name: Live public dry-run
+        run: python scripts/acquisition/canonical_listing_live_dry_run.py
+
+      - name: Publish evidence summary
+        if: always()
+        run: |
+          if [ -f artifacts/morocco-web-l4-canonical/report.md ]; then
+            cat artifacts/morocco-web-l4-canonical/report.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: morocco-web-l4-canonical-${{ github.run_id }}
+          path: artifacts/morocco-web-l4-canonical/
+          if-no-files-found: error
+          retention-days: 14
