@@ -8,6 +8,7 @@ import { PropertyQuickPreview } from "@/components/search/PropertyQuickPreview";
 import { PropertySelectionProvider } from "@/components/search/PropertySelectionProvider";
 import { SearchCompareDock } from "@/components/search/SearchCompareDock";
 import { SearchMapNavigationBridge } from "@/components/search/SearchMapNavigationBridge";
+import { SearchPersonalizationControl } from "@/components/search/SearchPersonalizationControl";
 import { SearchPriceExplorerDock } from "@/components/search/SearchPriceExplorerDock";
 import { runOdmDualReadShadow } from "@/lib/odm/odm-dual-read-runner";
 import { shouldRunOdmDualRead } from "@/lib/odm/odm-dual-read-shadow";
@@ -151,6 +152,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     <main className="min-h-screen bg-background text-foreground">
       <SiteHeader variant="light" compact fluid searchMode />
       <SearchMapNavigationBridge projectId={requestedProjectId} />
+      <SearchPersonalizationControl />
       <PropertySelectionProvider>
         <SearchCompareDock />
         <PropertyQuickPreview />
