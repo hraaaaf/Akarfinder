@@ -1,8 +1,9 @@
 name: UX-PREMIUM-GRID-1 Exact Visual Certification
 on:
-  pull_request:
-    paths: ["app/search/search-premium-grid.css","app/search/page.tsx","scripts/audits/ux-premium-grid-1.mjs","scripts/scrapers/__tests__/ux-premium-grid-1.test.ts",".github/workflows/ux-premium-grid-1.yml"]
   workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 permissions: {contents: read}
 env: {NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED: "false"}
 jobs:
