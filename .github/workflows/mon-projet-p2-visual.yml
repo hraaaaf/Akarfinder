@@ -1,6 +1,7 @@
 name: Mon Projet P2 Visual Proof
 
 on:
+  workflow_dispatch:
   pull_request:
     paths:
       - "app/mon-projet/**"
