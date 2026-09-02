@@ -10,13 +10,13 @@ invalidate the entire public-index scan. HTTP 429 remains a hard stop.
 from __future__ import annotations
 
 import re
-import sys
-from collections import defaultdict
 
 import commoncrawl_url_index_domain_discovery as base
 
-BATCH_SIZE = 25
-MIN_SUCCESSFUL_BATCHES = 8
+# Reduce the failure blast radius while preserving the same two-thirds coverage gate:
+# 20 successful batches * 10 files = 200 of the official 300 Parquet files.
+BATCH_SIZE = 10
+MIN_SUCCESSFUL_BATCHES = 20
 HTTP_RETRIES = 5
 
 
