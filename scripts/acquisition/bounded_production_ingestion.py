@@ -19,6 +19,17 @@ MAX_BATCH_LIMIT = 100
 IDENTITY_FIELDS = ("provider", "query_hash", "canonical_url")
 
 
+class PartialApplyError(RuntimeError):
+    """Fatal live-write error carrying exact identities written before failure."""
+
+    def __init__(self, message: str, *, inserted_identities: list[dict[str, str]],
+                 duplicate_identities: list[dict[str, str]], cause: Exception):
+        super().__init__(message)
+        self.inserted_identities = inserted_identities
+        self.duplicate_identities = duplicate_identities
+        self.cause = cause
+
+
 def _truthy(value: str | None) -> bool:
     return (value or "").strip().lower() in {"1", "true", "yes", "on"}
 
@@ -156,7 +167,12 @@ def apply_plan(plan: dict[str, Any], *, env: dict[str, str] | None = None) -> di
             if exc.code == 409:
                 duplicate_ids.append(identity(row))
                 continue
-            raise
+            raise PartialApplyError(
+                f"live apply failed after {len(inserted_ids)} inserts and {len(duplicate_ids)} duplicates",
+                inserted_identities=list(inserted_ids),
+                duplicate_identities=list(duplicate_ids),
+                cause=exc,
+            ) from exc
     return {
         **plan,
         "zeroDbWrites": len(inserted_ids) == 0,
