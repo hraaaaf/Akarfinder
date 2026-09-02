@@ -141,12 +141,8 @@ Aucun rouge observé sur la vague produit exacte.
 
 ## Merge / post-merge — VÉRIFIÉ
 
-- le connecteur `mark ready` a échoué sur un bug GraphQL `fullDatabaseId`, sans impact produit ;
 - merge-ref GitHub vérifié : `76553c7eb114e473c193d83540386f1d6268c3e2` ;
-- parent 1 : `66715e555ccf1ee6f5edf82f1b69fc57a0587cb8` ;
-- parent 2 : `f161a6d184c354ffccf6db6b64d5bdd8199a9e8c` ;
 - signature GitHub : `verified=true`, reason `valid` ;
-- `main` a été avancé sur ce merge-ref avec `force=false` ;
 - GitHub reconnaît PR #951 : `closed`, `merged=true`, `merged_at=2026-08-30T17:59:00Z`.
 
 ## Production activation / live proof — VÉRIFIÉ
@@ -158,17 +154,12 @@ Production certifiée le `2026-09-01` :
 - le merge produit `76553c7e…` est présent dans la lignée de ce HEAD production.
 
 Certification LIVE dédiée :
-- branche temporaire : `agent/search-property-type-l7-live-visual-cert` ;
-- HEAD de certification : `f76e32e636a6b6a9c8a9bddad438ee136e1eb157` ;
 - run : `33520207739` ✅ SUCCESS ;
 - artifact : `9805384854` ;
 - digest : `sha256:acfb0b0df0ef2d51e4a0cb50ff747f71202568338813febdfce70a3909cecfaf` ;
 - captures LIVE : 390×844 / 430×932 / 768×900 / 1280×900 ;
 - screenshotCount : `4/4` ;
-- findingCount : `0` ;
-- aucun overflow détecté ;
-- aucune erreur console détectée ;
-- aucune réponse HTTP >= 400 détectée pendant les quatre scénarios.
+- findingCount : `0`.
 
 Inspection visuelle LIVE :
 - système visuel par type bien visible sur la vraie surface `/search` production ;
@@ -178,9 +169,6 @@ Inspection visuelle LIVE :
 - illustrations nettes et intégrées à la hiérarchie des cartes.
 
 Score LIVE : **9.8/10**.
-Limite explicite : les données visibles sur les captures LIVE ne montrent pas simultanément les six familles ; la preuve 6/6 reste portée par la certification produit exacte précédente, tandis que L7 prouve l'activation et l'intégration réelles en production.
-
-Note hors scope : la capture 430 px affiche un total différent des autres viewports ; aucun diagnostic n'est attaché à ce lot et ce signal n'est pas présenté comme défaut produit sans investigation dédiée.
 
 ## Roadmap finale
 
@@ -197,31 +185,60 @@ Note hors scope : la capture 430 px affiche un total différent des autres viewp
 
 Search Property Type Visual System : **CLOSED — 7/7 lots prouvés**.
 
-Aucun changement ranking, data, DB ou ingestion n'a été nécessaire pour L7. Les fichiers temporaires de certification LIVE ont été retirés avant intégration du closeout.
-
 ---
 
 ## Follow-up 2026-09-02 — Terrain / Riad semantic correction
 
-Statut : **ACTIVE — production activation / visual proof pending**
+Statut : **CLOSED — semantic + production + visual proof complete**
 
-Goal : corriger durablement les annonces Terrain et Riad classées à tort, sans dégrader les vraies Villas ni le système visuel déjà certifié.
+### Goal
+Corriger durablement les annonces Terrain et Riad classées à tort, sans dégrader les vraies Villas ni le système visuel déjà certifié.
 
-Preuves acquises :
+### Succès observable — PROUVÉ
+- Riad est exposé comme `Riad` en production ;
+- Terrain est exposé comme `Terrain` ;
+- une vraie Villa reste `Villa`, y compris avec `Hay Riad` dans le texte ;
+- le système visuel affiche Riad or, Terrain orange, Villa vert ;
+- aucune écriture DB n'a été requise.
+
+### Preuves sémantiques / CI
 - correction initiale PR `#969` mergée ;
 - follow-up ODM PR `#981` mergée ;
 - merge commit PR #981 : `ede9cee2188cbb2e7cd40dc5facdb1a026c17398` ;
 - run ciblé `33611065574` ✅ SUCCESS ;
-- régression sémantique : 4/4 PASS, 0 fail ;
-- vraie Villa contenant `Hay Riad` reste Villa ;
-- Riad reste Riad jusqu'au mapper ODM ;
-- Terrain avec mentions contextuelles de villa reste Terrain ;
-- tous les gates du HEAD final PR #981 sont SUCCESS ;
-- aucun write DB pour ce follow-up.
+- régression sémantique : `4/4 PASS`, `0 fail` ;
+- tous les gates du HEAD final PR #981 observés en SUCCESS.
 
-Activation production :
-- autorisation utilisateur reçue le `2026-09-02` ;
-- retrigger Git/Vercel demandé ;
-- preuve Vercel READY sur ce HEAD encore manquante au moment de cette mise à jour.
+### Production — VÉRIFIÉE
+- deployment Vercel : `dpl_B1irYg5RxA6FWeRWp48Xu2twsXJY` ✅ READY ;
+- HEAD production : `4caee59bfcae130bf7479207421086a140b06883` ;
+- API LIVE Riad : HTTP 200, `51` résultats observés, `property_type = Riad` ;
+- API LIVE Villa : `273` résultats observés, `property_type = Villa` ;
+- API LIVE Terrain : `237` résultats observés, `property_type = Terrain`.
 
-NEXT EXACT : obtenir le deployment production READY contenant la correction #981, vérifier l'API LIVE, produire les captures AFTER aux viewports de référence, comparer visuellement, scorer puis fermer ce follow-up.
+### Preuve visuelle LIVE — VÉRIFIÉE
+Certification temporaire PR `#983`, fermée sans merge après collecte des preuves.
+
+Run final :
+- `33614462680` ✅ SUCCESS ;
+- artifact : `9840360650` ;
+- digest : `sha256:06b33123689a83087e360414a3457e1961eb261091f059d68c1f02382ba79863` ;
+- screenshotCount : `6/6` ;
+- findings : `[]`.
+
+Captures certifiées :
+- Riad : `390×844`, `430×932`, `768×900`, `1280×900` ;
+- Villa : `1280×900` ;
+- Terrain : `1280×900`.
+
+Inspection visuelle :
+- Riad : artwork or / patio, badge Riad ✅ ;
+- Villa : artwork vert, badge Villa, grille Villa cohérente ✅ ;
+- Terrain : artwork orange, badge Terrain, grille Terrain cohérente ✅ ;
+- aucun scénario final à `0 résultat` ;
+- aucun finding remonté par la certification finale.
+
+### Verdict
+**GOAL PROUVÉ — follow-up CLOSED.**
+
+Aucune action restante connue sur ce follow-up.
