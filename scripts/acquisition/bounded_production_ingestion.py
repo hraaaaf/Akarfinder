@@ -11,7 +11,7 @@ import json
 import os
 from typing import Any
 from urllib.error import HTTPError
-from urllib.parse import urlparse
+from urllib.parse import urlencode, urlparse
 from urllib.request import Request, urlopen
 
 DEFAULT_BATCH_LIMIT = 25
@@ -101,6 +101,34 @@ def assert_live_write_guard(env: dict[str, str] | None = None) -> None:
         raise PermissionError("THIRD_PARTY_DB_INGESTION_ALLOWED_HOSTS must be non-empty for live ingestion")
 
 
+def _headers(env: dict[str, str]) -> dict[str, str]:
+    key = env["SUPABASE_SERVICE_ROLE_KEY"]
+    return {"apikey": key, "Authorization": "Bearer " + key, "Content-Type": "application/json"}
+
+
+def snapshot_existing(plan: dict[str, Any], *, env: dict[str, str] | None = None) -> list[dict[str, str]]:
+    """Read exact idempotency identities already present before/after a live canary."""
+    env = env or dict(os.environ)
+    assert_live_write_guard(env)
+    found: list[dict[str, str]] = []
+    base = env["SUPABASE_URL"].rstrip("/") + "/rest/v1/discovery_candidates"
+    for row in plan.get("rows") or []:
+        ident = identity(row)
+        params = {
+            "select": ",".join(IDENTITY_FIELDS),
+            "provider": "eq." + ident["provider"],
+            "query_hash": "eq." + ident["query_hash"],
+            "canonical_url": "eq." + ident["canonical_url"],
+            "limit": "1",
+        }
+        req = Request(base + "?" + urlencode(params), headers=_headers(env), method="GET")
+        with urlopen(req, timeout=20) as response:
+            rows = json.loads(response.read().decode("utf-8"))
+        if rows:
+            found.append(ident)
+    return found
+
+
 def apply_plan(plan: dict[str, Any], *, env: dict[str, str] | None = None) -> dict[str, Any]:
     """Insert a bounded staging batch and report exact inserted/duplicate identities."""
     env = env or dict(os.environ)
@@ -115,13 +143,8 @@ def apply_plan(plan: dict[str, Any], *, env: dict[str, str] | None = None) -> di
     if not rows:
         return {**plan, "zeroDbWrites": True, "insertedCount": 0, "duplicateCount": 0,
                 "insertedIdentities": [], "duplicateIdentities": []}
-    base = env["SUPABASE_URL"].rstrip("/")
-    url = base + "/rest/v1/discovery_candidates"
-    headers = {
-        "apikey": env["SUPABASE_SERVICE_ROLE_KEY"],
-        "Authorization": "Bearer " + env["SUPABASE_SERVICE_ROLE_KEY"],
-        "Content-Type": "application/json", "Prefer": "return=minimal",
-    }
+    url = env["SUPABASE_URL"].rstrip("/") + "/rest/v1/discovery_candidates"
+    headers = {**_headers(env), "Prefer": "return=minimal"}
     inserted_ids: list[dict[str, str]] = []
     duplicate_ids: list[dict[str, str]] = []
     for row in rows:
@@ -145,7 +168,6 @@ def apply_plan(plan: dict[str, Any], *, env: dict[str, str] | None = None) -> di
 
 
 def rollback_manifest(result: dict[str, Any]) -> dict[str, Any]:
-    """Rollback scope is newly inserted rows only; duplicates are never deletion candidates."""
     identities = result.get("insertedIdentities")
     if identities is None:
         identities = [identity(row) for row in result.get("rows", [])]
