@@ -7,7 +7,9 @@ on:
       - feat/mubawab-exhaustive-enumerator
     paths:
       - 'scripts/acquisition/mubawab-exhaustive-enumerator.mjs'
+      - 'scripts/acquisition/mubawab-supabase-shard-runner.mjs'
       - 'scripts/acquisition/__tests__/mubawab-exhaustive-enumerator.test.mjs'
+      - 'scripts/acquisition/__tests__/mubawab-supabase-shard-runner.test.mjs'
       - '.github/workflows/morocco-web-l8-mubawab-exhaustive.yml'
 
 permissions:
@@ -20,19 +22,21 @@ concurrency:
 jobs:
   certify:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
       - name: Unit tests
-        run: node --test scripts/acquisition/__tests__/mubawab-exhaustive-enumerator.test.mjs
-      - name: Bounded live public enumeration
+        run: |
+          node --test scripts/acquisition/__tests__/mubawab-exhaustive-enumerator.test.mjs
+          node --test scripts/acquisition/__tests__/mubawab-supabase-shard-runner.test.mjs
+      - name: Bounded live public root probe
         env:
           MUBAWAB_MAX_REQUESTS: '12'
         run: node scripts/acquisition/mubawab-exhaustive-enumerator.mjs
-      - name: Verify safety and report
+      - name: Verify root-probe safety
         run: |
           node - <<'NODE'
           const fs = require('fs');
@@ -43,16 +47,42 @@ jobs:
           for (const shard of report.shards) {
             if (new URL(shard.url).pathname.includes(':')) throw new Error(`robots-disallowed colon URL fetched: ${shard.url}`);
           }
+          console.log({ requests: report.requestCount, uniqueListingUrlCount: report.uniqueListingUrlCount });
+          NODE
+      - name: Bounded Supabase shard-manifest replay
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          MUBAWAB_MANIFEST_LIMIT: '25'
+          MUBAWAB_MAX_REQUESTS: '25'
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then
+            echo 'Supabase secrets unavailable; skipping connected manifest replay.'
+            exit 0
+          fi
+          node scripts/acquisition/mubawab-supabase-shard-runner.mjs
+      - name: Verify connected manifest report when present
+        run: |
+          if [ ! -f artifacts/morocco-web-l8-mubawab-manifest/report.json ]; then
+            echo 'No connected manifest artifact present.'
+            exit 0
+          fi
+          node - <<'NODE'
+          const fs = require('fs');
+          const report = JSON.parse(fs.readFileSync('artifacts/morocco-web-l8-mubawab-manifest/report.json', 'utf8'));
+          if (report.zeroDbWrites !== true) throw new Error('manifest replay must remain zero-write');
+          if (report.stoppedEarly === 'http_429') throw new Error('manifest replay hit HTTP 429');
+          if (report.selectedShardCount > 25 || report.requestCount > 25) throw new Error('manifest replay exceeded bounds');
+          if (report.safeShardCount < report.selectedShardCount) throw new Error('invalid shard accounting');
           console.log({
-            requests: report.requestCount,
-            rootExpectedCount: report.rootExpectedCount,
+            sourceRowCount: report.sourceRowCount,
+            safeShardCount: report.safeShardCount,
+            selectedShardCount: report.selectedShardCount,
             uniqueListingUrlCount: report.uniqueListingUrlCount,
-            reconciliationGap: report.reconciliationGap,
-            shardStates: report.shardStates,
           });
           NODE
       - uses: actions/upload-artifact@v4
         with:
           name: morocco-web-l8-mubawab-exhaustive
-          path: artifacts/morocco-web-l8-mubawab-exhaustive/
+          path: artifacts/morocco-web-l8-mubawab-*/
           if-no-files-found: error
