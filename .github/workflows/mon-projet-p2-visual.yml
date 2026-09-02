@@ -1,0 +1,49 @@
+name: Mon Projet P2 Visual Proof
+
+on:
+  pull_request:
+    paths:
+      - "app/mon-projet/**"
+      - "components/companion/MonProjetWizardP1A.tsx"
+      - "scripts/audits/mon-projet-p2-visual.mjs"
+      - ".github/workflows/mon-projet-p2-visual.yml"
+
+jobs:
+  capture:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Production build
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Start Mon Projet production server
+        shell: bash
+        run: |
+          npm run start -- -p 3216 > /tmp/mon-projet-p2.log 2>&1 &
+          for attempt in {1..60}; do
+            if curl -fsS http://127.0.0.1:3216/mon-projet >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/mon-projet-p2.log
+          exit 1
+      - name: Capture Mon Projet P2 visual proof
+        env:
+          BASE_URL: http://127.0.0.1:3216
+          AUDIT_OUTPUT_DIR: artifacts/mon-projet-p2-visual
+          AUDIT_PHASE: baseline
+        run: node scripts/audits/mon-projet-p2-visual.mjs
+      - name: Upload Mon Projet P2 visual proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mon-projet-p2-visual-${{ github.run_id }}
+          path: artifacts/mon-projet-p2-visual
+          if-no-files-found: error
+          retention-days: 14
