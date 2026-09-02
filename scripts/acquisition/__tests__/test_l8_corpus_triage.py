@@ -26,7 +26,7 @@ class L8CorpusTriageTests(unittest.TestCase):
         for url in urls:
             self.assertEqual(triage_url(url), "discovery_page", url)
 
-    def test_noise_hosts(self):
+    def test_noise_hosts_and_non_moroccan_country_tlds(self):
         for url in [
             "https://youtube.com/watch?v=x",
             "https://www.tiktok.com/@x/video/1",
@@ -35,6 +35,8 @@ class L8CorpusTriageTests(unittest.TestCase):
             "https://ouedkniss.com/annonce/12345/foo.html",
             "https://ouedkniss.dz/property/villa-123",
             "https://bakimmo-dz.com/bien/villa-alger",
+            "https://www.mubawab.tn/fr/a/12345/appartement-a-vendre",
+            "https://example.dz/biens/10/villa-alger",
         ]:
             self.assertEqual(triage_url(url), "obvious_noise", url)
 
