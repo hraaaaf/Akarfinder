@@ -22,7 +22,7 @@ test('safe manifest keeps only public robots-safe Mubawab shards and prioritizes
   assert.ok(shards.at(-1).includes('/fr/cc/'));
 });
 
-test('Supabase manifest loader paginates read-only source rows', async () => {
+test('Supabase manifest loader paginates read-only source rows without ORDER BY', async () => {
   const calls = [];
   const batches = [
     [
@@ -49,14 +49,20 @@ test('Supabase manifest loader paginates read-only source rows', async () => {
   assert.equal(manifest.sourceRowCount, 3);
   assert.equal(manifest.shardUrls.length, 2);
   assert.equal(calls.length, 2);
-  assert.match(calls[0].url, /source_domain=eq\.mubawab\.ma/);
-  assert.equal(calls[0].options.headers.range, '0-1');
-  assert.equal(calls[1].options.headers.range, '2-3');
+  const first = new URL(calls[0].url);
+  const second = new URL(calls[1].url);
+  assert.equal(first.searchParams.get('source_domain'), 'eq.mubawab.ma');
+  assert.equal(first.searchParams.get('canonical_url'), 'not.is.null');
+  assert.equal(first.searchParams.get('limit'), '2');
+  assert.equal(first.searchParams.get('offset'), '0');
+  assert.equal(first.searchParams.has('order'), false);
+  assert.equal(second.searchParams.get('offset'), '2');
+  assert.equal(calls[0].options.headers.range, undefined);
 });
 
 test('bounded manifest replay enumerates selected shards and remains zero-write', async () => {
   let dbCall = 0;
-  const fetchImpl = async (url, options = {}) => {
+  const fetchImpl = async (url) => {
     const asString = String(url);
     if (asString.includes('/rest/v1/discovery_candidates')) {
       dbCall += 1;
