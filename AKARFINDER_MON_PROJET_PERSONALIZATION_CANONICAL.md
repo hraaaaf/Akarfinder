@@ -43,21 +43,15 @@ Faire de **Mon Projet** le moteur canonique de personnalisation AkarFinder : com
 7. Récapitulatif
 8. Recherche
 
-### Modèle V2 déjà disponible
+### Modèle V2 disponible
 
-`DynamicSearchProfileV2` version `2.0` couvre déjà : objectif/usages, localisation, anchors + temps maximum, budget, contraintes du bien, préférences quartier, priorités, tolérances et contexte utile (`children_count`, accessibilité, MRE, étudiant, corporate, `remote_work`, faits libres), avec provenance/confiance du signal.
+`DynamicSearchProfileV2` version `2.0` couvre : objectif/usages, localisation, anchors + temps maximum, budget, contraintes du bien, préférences quartier, priorités, tolérances et contexte utile (`children_count`, accessibilité, MRE, étudiant, corporate, `remote_work`, faits libres), avec provenance/confiance du signal.
 
-### Écarts réels trouvés au P0
+### Écarts UI encore ouverts après P1
 
-- `profile-engine.ts` sait déjà écrire et valider `anchors`, mais le Companion n’expose aucun événement `answer_anchors`.
-- `DynamicSearchProfileV2.personal_context` existe, mais `profile-engine.ts` ne fournit aucun événement permettant d’écrire `children_count`, `remote_work`, etc.
-- `companion-v1/state-machine.ts` ne sait donc pas recevoir/persister le contexte quotidien ni les anchors pendant l’onboarding.
-- `companionProfileToSearchParams()` transmet le socle canonique, intended uses, préférences et priorités, mais Search ne consomme actuellement que les paramètres de recherche canoniques et `project_id`.
-- `LightZillowSearchShell` reconstruit ensuite l’URL à partir des filtres canoniques + `project_id`, donc les paramètres riches non consommés seraient éphémères.
-- Dans l’UI actuelle, `surfaceLocation` est collecté mais n’est jamais écrit dans le profil.
-- Dans l’UI actuelle, `centralityCalm` est converti en `tourism_intensity_max`, ce qui est une erreur sémantique : centralité/calme et intensité touristique ne sont pas équivalents.
-- La continuity authentifiée écrit le profil V2 complet.
-- `launchSearch()` stocke déjà le profil et la session Companion complets dans `sessionStorage` sous `akarfinder-pending-project-v2` avant navigation.
+- `surfaceLocation` est collecté par le wizard mais n’est jamais écrit dans le profil.
+- `centralityCalm` est converti en `tourism_intensity_max`, ce qui est une erreur sémantique : centralité/calme et intensité touristique ne sont pas équivalents.
+- le wizard expose toujours 8 étapes visibles alors que le contrat cible en exige 3 maximum.
 
 ## Décision produit verrouillée
 
@@ -73,13 +67,11 @@ Ne jamais sérialiser dans l’URL :
 - anchors / lieux importants ;
 - tolérances riches pouvant révéler le contexte du projet.
 
-Raison : ces valeurs peuvent contenir enfants, accessibilité, lieux de travail/école et autres éléments qui n’ont aucune raison d’apparaître dans l’historique navigateur, les referrers ou les logs d’URL.
-
 Transport retenu :
 
-- anonyme : `sessionStorage` déjà écrit par `launchSearch()` ;
+- anonyme : `sessionStorage` sous `akarfinder-pending-project-v2` ;
 - authentifié : profil V2 complet persisté via `/api/me/continuity`, avec `project_id` dans l’URL ;
-- consommation active du profil complet par Search : **P3**, pas P1.
+- consommation active du profil complet par Search : **P3**.
 
 ## Architecture cible du funnel
 
@@ -119,9 +111,9 @@ Selon pertinence :
 - Recherche = action/résultat, pas étape d’onboarding.
 - Compromis = interaction contextuelle, jamais un faux mapping vers une donnée différente.
 
-## Mapping P0 — existant → cible
+## Mapping existant → cible
 
-| Existant | Cible | Décision P0 |
+| Existant | Cible | Décision |
 |---|---|---|
 | Votre projet | Étape 1 — Mon besoin | CONSERVER / regrouper |
 | Zone et budget | Étape 1 — Mon besoin | FUSIONNER |
@@ -146,14 +138,14 @@ Selon pertinence :
 | parking / ascenseur | oui | `required_features` | oui | paramètres riches existants | profil complet | KEEP |
 | préférences quartier | oui | oui | oui | paramètres riches existants | profil complet | KEEP |
 | priorités | oui | oui | oui | paramètres riches existants | profil complet | KEEP |
-| anchors / temps max | non | oui | **P1 : oui** | **sessionStorage / continuity, jamais URL** | profil complet | P1 plomberie |
-| enfants | non explicite | **P1 : oui** | **P1 : oui** | **sessionStorage / continuity, jamais URL** | profil complet | P1 plomberie |
-| télétravail | non | **P1 : oui** | **P1 : oui** | **sessionStorage / continuity, jamais URL** | profil complet | P1 plomberie |
-| accessibilité | non | **P1 : oui** | **P1 : oui** | **sessionStorage / continuity, jamais URL** | profil complet | P1 plomberie, UI conditionnelle P2 |
-| voiture / mobilité | partiel via préférences | `car_accessibility` + anchors | préférences + anchors | privé si anchor | profil complet | exploiter existant |
+| anchors / temps max | non | oui | **P1 : oui** | **sessionStorage / continuity, jamais URL** | profil complet | P2 UI |
+| enfants | non explicite | **P1 : oui** | **P1 : oui** | **sessionStorage / continuity, jamais URL** | profil complet | P2 UI |
+| télétravail | non | **P1 : oui** | **P1 : oui** | **sessionStorage / continuity, jamais URL** | profil complet | P2 UI |
+| accessibilité | non | **P1 : oui** | **P1 : oui** | **sessionStorage / continuity, jamais URL** | profil complet | P2 UI conditionnelle |
+| voiture / mobilité | partiel | `car_accessibility` + anchors | préférences + anchors | privé si anchor | profil complet | P2 UI |
 | surface vs localisation | oui | aucun signal dédié | perdu | non | non | supprimer/repenser P2 |
-| centralité vs calme | oui | préférences `centrality` / `calmness` existent | mal mappé vers tourisme | indirect | profil complet | corriger P2 |
-| tolérance tourisme | indirecte/mal utilisée | oui | oui | **privé hors URL** | profil complet | ne plus détourner P2 |
+| centralité vs calme | oui | `centrality` / `calmness` | mal mappé vers tourisme | indirect | profil complet | corriger P2 |
+| tolérance tourisme | indirecte/mal utilisée | oui | oui | privé hors URL | profil complet | ne plus détourner P2 |
 
 ## Roadmap
 
@@ -162,68 +154,71 @@ Selon pertinence :
 **Goal**  
 Verrouiller le contrat produit/data du nouveau Mon Projet sans modifier le comportement production.
 
-**Succès atteint**
+**Preuve**
 - architecture 3 étapes documentée ;
 - mapping ancien → nouveau documenté ;
 - matrice champ-par-champ documentée ;
-- écarts de données identifiés ;
-- changements P1 et tests P1/P2 verrouillés.
+- revue du wizard, profile V2, profile engine, Companion, Search et continuity.
 
-**Preuve**
-- revue source de `MonProjetWizardP1A`, `DynamicSearchProfileV2`, `profile-engine.ts`, `state-machine.ts`, `search-entry.ts`, Search et `/api/me/continuity` ;
-- matrice ci-dessus ;
-- aucun changement production ni déploiement.
-
-### P1 — Profile core enrichment — ACTIVE
+### P1 — Profile core enrichment — CLOSED
 
 **Goal**  
 Rendre le contexte quotidien et les anchors réellement écrivables, transportables de façon sûre et testés, sans casser les profils V2 existants ni modifier encore le funnel visuel.
 
-**Implémenté**
-1. événement `personal_context` dans le profile engine avec validation des valeurs supportées ;
-2. `answer_context` et `answer_anchors` dans le Companion, dans l’état interne `PREFERENCES` sans nouvelle étape visible ;
-3. compatibilité du chemin historique `answer_preferences` conservée ;
-4. anchors continuent d’utiliser la validation/déduplication ANN-L12 existante ;
-5. données contextuelles riches explicitement exclues des URLs Search ;
-6. transport complet existant conservé via `sessionStorage` et continuity authentifiée ;
-7. tests ciblés ajoutés dans `search-profile.test.ts`.
+**Réalisé**
+1. `personal_context` écrit via le profile engine avec validation runtime ;
+2. `answer_context` et `answer_anchors` ajoutés au Companion sans nouvelle étape visible ;
+3. mises à jour partielles du contexte sans effacer les signaux absents ;
+4. validation runtime des payloads API malformés ;
+5. anchors validés/dédoublonnés ; même label dans deux villes reste distinct ;
+6. données contextuelles riches exclues des URLs Search ;
+7. continuité complète conservée via `sessionStorage` et persistence authentifiée ;
+8. tests ciblés ajoutés aux suites existantes.
 
-**Tests P1 attendus**
-- contexte : enfants / télétravail / accessibilité écrits avec signal explicite + timestamp ;
-- contexte invalide rejeté ;
-- anchors validés/dédoublonnés ;
-- `answer_context` / `answer_anchors` ne cassent pas la séquence historique du Companion ;
-- `answer_preferences` continue à faire progresser vers `PRIORISATION` ;
-- URL Search conserve les contraintes canoniques mais exclut anchors / contexte personnel / tolérances riches ;
-- suite ANN-L12 anchors reste compatible ;
-- typecheck + build verts.
+**Preuve vérifiée**
+- HEAD certifié : `c8f651aae9873a11c58eef49edb19f8762816faf` ;
+- workflow dédié : `Announcement Page L12 Mon Projet Personalise` ;
+- run : `33623128050` ;
+- conclusion : **SUCCESS** ;
+- job `contract` : **SUCCESS** ;
+- tests ciblés : SUCCESS ;
+- TypeScript : SUCCESS ;
+- production build : SUCCESS ;
+- Chromium install/server : SUCCESS ;
+- certification visuelle ANN-L12 : SUCCESS ;
+- artifact upload : SUCCESS ;
+- gates supplémentaires observés verts sur ce HEAD : Canonical Baseline Compile Validation, Phase 1 P1 User Journey Gate, UX Gate 0 Contracts, Phase 1 P1 Final Sweep Gate.
 
-**Non inclus volontairement dans P1**
-- consommation du profil complet par Search : P3 ;
-- correction visuelle `centralityCalm` / `surfaceLocation` : P2 avec protocole UI complet.
-
-**État** : ACTIVE — en attente de preuve CI.
-
-### P2 — 3-step UX refactor — NOT STARTED
+### P2 — 3-step UX refactor — ACTIVE
 
 **Goal**  
-Remplacer les 8 étapes visibles par 3 étapes visibles maximum.
+Remplacer les 8 étapes visibles par **3 étapes visibles maximum**, sans perte de données ni faux compromis sémantiques.
 
-**Cible**
-- Step 1 Mon besoin ;
-- Step 2 Mon quotidien ;
-- Step 3 Mes priorités ;
-- résumé compact ;
-- compromis dynamiques ;
-- CTA final direct Search.
+**Goal visuel verrouillé**
+- lecture immédiate : `Mon besoin → Mon quotidien → Mes priorités` ;
+- aucun écran ne doit donner la sensation d’un tunnel de 8 étapes ;
+- hiérarchie claire sur mobile 390 px et desktop 1280 px ;
+- une action principale évidente par étape ;
+- champs secondaires révélés uniquement lorsqu’ils sont utiles ;
+- résumé final compact et modifiable ;
+- CTA final : **Voir les biens faits pour mon projet** ;
+- aucun overflow horizontal, aucune erreur console/HTTP de la page ;
+- accessibilité clavier/focus conservée.
 
-**Validation UI obligatoire**
-- BEFORE mêmes viewports ;
-- Goal visuel écrit ;
-- mockup/référence ;
-- implémentation ;
-- AFTER mêmes viewports ;
-- comparaison + tests + score visuel.
+**Protocole obligatoire P2**
+1. BEFORE `/mon-projet` aux mêmes viewports ;
+2. référence/mockup cible ;
+3. implémentation ;
+4. AFTER aux mêmes viewports ;
+5. comparaison + tests + score visuel.
+
+**Infrastructure P2 vérifiée**
+- le harness Playwright ANN-L12 existant est réutilisable comme modèle technique ;
+- il photographie cependant `/visual-qa/announcement-page-mon-projet`, c.-à-d. la personnalisation d’une annonce, **pas** le wizard `/mon-projet` ;
+- aucune route `visual-qa` dédiée au wizard n’a été identifiée ;
+- P2 doit donc disposer d’un audit visuel dédié à `/mon-projet`.
+
+**État** : ACTIVE — BEFORE non encore capturé.
 
 ### P3 — Search + continuity activation — NOT STARTED
 
@@ -265,10 +260,10 @@ Certifier fonctionnalité, UX, compatibilité et documentation.
 
 ## Progression vérifiée
 
-- Lots CLOSED : `1 / 5`
-- Lot actif : `P1`
-- Avancement global par lots CLOSED : `20%`
+- Lots CLOSED : `2 / 5`
+- Lot actif : `P2`
+- Avancement global par lots CLOSED : `40%`
 
 ## Next exact
 
-Obtenir la preuve CI du HEAD P1 corrigé ; si vert, fermer P1 dans ce canonique puis démarrer P2 par les captures BEFORE et le Goal visuel.
+Créer le harness visuel P2 dédié à `/mon-projet`, produire les captures BEFORE aux viewports verrouillés, puis définir le mockup cible avant toute modification du wizard.
