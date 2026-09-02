@@ -210,7 +210,7 @@ Certified evidence:
 - Artifact `9827116907`.
 - Artifact SHA256 `dd3f2b9d165692174c57e4aed5a17cfd54639ef84b0163be4765ef00c2ad7d29`.
 - Exact implementation HEAD general PR workflows: **7/7 SUCCESS** (`33577389491`, `33577389310`, `33577389337`, `33577389486`, `33577389315`, `33577389407`, `33577389311`).
-- Final canonical closeout HEAD `c9d21b96ec8951c1636f826385bf6f93371eb289` records the certified evidence without changing the dedupe implementation.
+- Canonical evidence is pinned in docs-only closeout commits after the certified implementation HEAD; these commits do not change dedupe behavior.
 
 Implementation boundary:
 - same-source fuzzy matches do not merge without an exact source offer ID;
