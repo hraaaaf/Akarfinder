@@ -1,28 +1,7 @@
 name: UI Polish P3 Visual Certification
 
 on:
-  pull_request:
-    branches: [main]
-    paths:
-      - "app/favorites/**"
-      - "components/favorites/**"
-      - "app/map/**"
-      - "components/map/**"
-      - "app/alerts/**"
-      - "app/compare/**"
-      - "components/compare/**"
-      - "app/mon-projet/**"
-      - "components/mon-projet/**"
-      - "components/ui/design-system.ts"
-      - "components/layout/MobileBottomNav.tsx"
-      - "scripts/audits/ui-polish-p3-visual-audit.mjs"
-      - "scripts/scrapers/__tests__/ui-polish-*.test.ts"
-      - ".github/workflows/ui-polish-p3-visual-certification.yml"
   workflow_dispatch:
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
 
 permissions:
   contents: read
