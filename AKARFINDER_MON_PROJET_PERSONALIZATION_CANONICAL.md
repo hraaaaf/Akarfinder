@@ -179,22 +179,10 @@ Rendre le contexte quotidien et les anchors réellement écrivables, transportab
 - TypeScript : SUCCESS ;
 - production build : SUCCESS.
 
-### P2 — 3-step UX + Finder shell — ACTIVE
+### P2 — 3-step UX + Finder shell — CLOSED
 
 **Goal**  
 Remplacer les 8 étapes visibles par **3 étapes visibles maximum**, sans perte de données ni faux compromis sémantiques, et exposer ce même moteur via Finder optionnel dans `/search`.
-
-**Goal visuel verrouillé**
-- lecture immédiate : `Mon besoin → Mon quotidien → Mes priorités` ;
-- aucun écran ne doit donner la sensation d’un tunnel de 8 étapes ;
-- hiérarchie claire sur mobile 390 px et desktop 1280 px ;
-- une action principale évidente par étape ;
-- champs secondaires révélés uniquement lorsqu’ils sont utiles ;
-- résumé final compact ;
-- CTA final : **Voir les biens faits pour mon projet** ;
-- aucun overflow horizontal, aucune erreur console/HTTP de la page ;
-- Finder : panneau latéral desktop / plein écran mobile ;
-- recherche classique toujours disponible lorsque Finder est fermé.
 
 **BEFORE vérifié**
 - workflow : `Mon Projet P2 Visual Proof` ;
@@ -209,7 +197,7 @@ Remplacer les 8 étapes visibles par **3 étapes visibles maximum**, sans perte 
 - `/mon-projet` utilise le même contenu en mode page ;
 - 3 étapes visibles seulement.
 
-**Implémentation P2 présente**
+**Implémentation P2**
 - `MonProjetWizardP2` : funnel 3 étapes ;
 - `/mon-projet` basculé sur `MonProjetWizardP2` ;
 - `FinderLauncher` ajouté à `/search` ;
@@ -227,25 +215,41 @@ Remplacer les 8 étapes visibles par **3 étapes visibles maximum**, sans perte 
 - 390 : `scrollWidth=390`, `clientWidth=390` ;
 - 768 : `scrollWidth=768`, `clientWidth=768` ;
 - 1280 : `scrollWidth=1280`, `clientWidth=1280` ;
-- aucune erreur HTTP/console relevée par le harness ;
-- score visuel provisoire `/mon-projet` : **9/10**.
+- aucune erreur HTTP/console relevée ;
+- score visuel : **9/10**.
 
-**Dernière gate P2 en cours**
-- audit `finder-p2-interaction.mjs` ajouté ;
-- vérifie `/search` sur 390 + 1280 : launcher, ouverture, dimensions, lock scroll, `Escape`, restauration du scroll et captures Finder ouvert ;
-- P2 ne passe CLOSED qu’après succès observable de cette gate.
+**Finder `/search` vérifié**
+- run : `33665341707` ;
+- conclusion : **SUCCESS** ;
+- artifact : `9860482949` ;
+- SHA256 artifact : `59f19d11a41c82f9791c859371a5ab52d6b9cd6904917f741880d250a737e099` ;
+- audit : `FINDER_P2_INTERACTION_V1` ;
+- 2/2 scénarios ; `findingCount=0` ;
+- mobile 390 : panneau `390×844`, body scroll verrouillé puis restauré ;
+- desktop 1280 : panneau `520×900`, positionné à droite, body scroll verrouillé puis restauré ;
+- fermeture `Escape` vérifiée.
 
-### P3 — Search + continuity activation — NOT STARTED
+### P3 — Search + continuity activation — ACTIVE
 
 **Goal**  
-Faire consommer le profil complet par Search/ranking et garantir la reprise du projet sans exposition dans l’URL.
+Faire consommer le profil par Search/ranking sans remplacer les filtres classiques, puis garantir la reprise du projet sans exposition des données riches dans l’URL.
 
-**Cible**
-- consommation de `project_id` authentifié ;
-- consommation sûre du pending project anonyme ;
-- reprise dans `/mon-projet/espace` ;
-- raffinage sans repartir de zéro ;
-- comportement dégradé sûr si persistence indisponible.
+**Implémentation en cours**
+- le tri `recommended` consomme la projection Finder non sensible déjà présente dans l’URL ;
+- le ranking est déterministe et stable ;
+- ville, quartiers, exclusions, types, priorités, préférences, usages et features explicites peuvent influencer l’ordre ;
+- aucune préférence souple ne filtre un résultat : elle ne fait que le réordonner ;
+- `personalized=0` restaure l’ordre classique ;
+- `SearchPersonalizationControl` expose l’état actif/en pause ;
+- `personal_context`, anchors et tolérances privées restent exclus de cette projection URL ;
+- tests ciblés : `finder-personalization.test.ts` ;
+- certification visuelle BEFORE/AFTER dédiée : `Mon Projet P3 Search Personalization`.
+
+**Restant P3 avant CLOSED**
+- certifier tests + build + BEFORE/AFTER 390/1280 ;
+- vérifier la consommation sûre du profil complet authentifié via `project_id` ;
+- vérifier la reprise du pending project anonyme / `/mon-projet/espace` sans exposer les données privées ;
+- vérifier le raffinage sans repartir de zéro.
 
 ### P4 — Certification + closeout — NOT STARTED
 
@@ -276,10 +280,10 @@ Certifier fonctionnalité, UX, compatibilité et documentation.
 
 ## Progression vérifiée
 
-- Lots CLOSED : `2 / 5`
-- Lot actif : `P2`
-- Avancement global par lots CLOSED : `40%`
+- Lots CLOSED : `3 / 5`
+- Lot actif : `P3`
+- Avancement global par lots CLOSED : `60%`
 
 ## Next exact
 
-Obtenir le résultat de la gate Finder P2 sur `/search`; si verte, montrer les captures Finder ouvertes, comparer mobile/desktop, fermer P2 puis démarrer P3 Search + continuity activation. Si rouge, diagnostiquer et corriger avant closeout P2.
+Obtenir le résultat du workflow `Mon Projet P3 Search Personalization`. Si vert : montrer les captures BEFORE/AFTER, comparer le contrôle de personnalisation, puis poursuivre la consommation `project_id` / pending profile. Si rouge : diagnostiquer, corriger et relancer par commit sûr.
