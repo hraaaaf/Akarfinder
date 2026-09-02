@@ -31,7 +31,7 @@ export function SearchPersonalizationControl({ initialVisible, initialEnabled }:
             <Sparkles size={15} aria-hidden="true" />
           </span>
           <div className="min-w-0">
-            <p className="text-[12px] font-extrabold">Finder {enabled ? "personnalise le tri recommandé" : "est en pause"}</p>
+            <p className="text-[12px] font-extrabold">Akar Sense {enabled ? "personnalise le tri recommandé" : "est en pause"}</p>
             <p className="truncate text-[11px] text-slate-500 dark:text-white/55">Les filtres classiques restent inchangés.</p>
           </div>
         </div>
@@ -42,7 +42,7 @@ export function SearchPersonalizationControl({ initialVisible, initialEnabled }:
           onClick={() => setPersonalization(!enabled)}
           className={`inline-flex min-h-9 items-center rounded-full border px-3 text-[11px] font-extrabold transition ${enabled ? "border-[#0B63CE] bg-[#EAF3FF] text-[#084FA8]" : "border-slate-200 bg-white text-slate-600 dark:bg-white/5 dark:text-white/70"}`}
         >
-          {enabled ? "Personnalisation active" : "Activer la personnalisation"}
+          {enabled ? "Akar Sense actif" : "Activer Akar Sense"}
         </button>
       </div>
     </div>
