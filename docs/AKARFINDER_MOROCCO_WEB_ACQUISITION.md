@@ -1,6 +1,6 @@
 # AKARFINDER — Morocco Web Real-Estate Acquisition
 
-Status: ACTIVE — L1 CLOSED / L2 CLOSED / L3 CLOSED / L4 CLOSED / L5 CLOSED / L6 CLOSED / L7 CERTIFIED — MERGE PENDING
+Status: ACTIVE — L1 CLOSED / L2 CLOSED / L3 CLOSED / L4 CLOSED / L5 CLOSED / L6 CLOSED / L7 CLOSED
 
 ## North-star Goal
 
@@ -273,7 +273,7 @@ Boundary:
 - The core engine performs no network requests and no DB writes.
 - Production persistence, bounded DB mutation and rollback belong to L7; continuous scheduling/operations belong to L9.
 
-## L7 — Bounded Production Ingestion — CERTIFIED — MERGE PENDING
+## L7 — Bounded Production Ingestion — CLOSED
 
 Goal: provide a bounded, idempotent, fail-closed path into the existing `discovery_candidates` staging table, with explicit rollback identities and no production activation by default.
 
@@ -299,7 +299,6 @@ Certified evidence:
 - Artifact `9840326546`.
 - Artifact SHA256 `24f9ab289626f325382f5f8dbc65f01d32e44a578c8c07d352314d0a59b1e2bb`.
 - Exact implementation HEAD general PR workflows: **7/7 SUCCESS** (`33614471720`, `33614471773`, `33614471726`, `33614471751`, `33614471856`, `33614471741`, `33614471740`).
-- PR #982 is non-draft and mergeable on the current main base.
 
 Implementation guarantees:
 - target table is `discovery_candidates` only;
@@ -309,6 +308,13 @@ Implementation guarantees:
 - non-409 HTTP failures remain fatal;
 - live credentials are never needed for the certified dry-run;
 - no schema mutation, no production DB write and no Vercel deployment occurred during certification.
+
+Closeout proof:
+- PR #982 squash-merged.
+- Final PR HEAD `96b86df7c2498d5cb2ceb4043940612ab94528a7`.
+- Merge/main commit `75b9e85818f02d77e3443aec701f3d88020cb380` verified and signed (`verification.reason=valid`).
+- Merge parent is exact previous main `4caee59bfcae130bf7479207421086a140b06883`.
+- `main` later advanced through unrelated property-type and Listing Factory work; L7 remains in its ancestry.
 
 Boundary:
 - L7 certifies the bounded writer and rollback scope, **not** production activation.
@@ -325,6 +331,6 @@ Validated canonical records only, scheduled acquisition/revisit jobs, source-col
 
 ## Execution order
 
-L1 ✅ → L2 ✅ → L3 ✅ → L4 ✅ → L5 ✅ → L6 ✅ → **L7 CERTIFIED — MERGE PENDING** → L8 → L9.
+L1 ✅ → L2 ✅ → L3 ✅ → L4 ✅ → L5 ✅ → L6 ✅ → L7 ✅ → L8 → L9.
 
 Overall program percentage remains intentionally unassigned until the roadmap defines a stable denominator across the remaining lots.
