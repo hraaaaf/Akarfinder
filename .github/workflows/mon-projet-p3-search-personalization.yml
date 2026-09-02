@@ -63,7 +63,7 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - name: Targeted Finder ranking tests
+      - name: Targeted Akar Sense ranking tests
         run: npx tsx --test scripts/scrapers/__tests__/finder-personalization.test.ts
       - name: Preserve audit script
         run: cp scripts/audits/finder-p3-visual.mjs .finder-p3-visual.mjs
@@ -139,7 +139,7 @@ jobs:
         run: |
           mkdir -p artifacts
           cp -R /tmp/finder-p3-proof artifacts/finder-p3-proof 2>/dev/null || true
-      - name: Upload Finder P3 proof
+      - name: Upload Akar Sense P3 proof
         if: always()
         uses: actions/upload-artifact@v4
         with:
