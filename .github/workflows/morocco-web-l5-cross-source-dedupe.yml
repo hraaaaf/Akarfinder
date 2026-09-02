@@ -1,0 +1,49 @@
+name: Morocco Web L5 Cross-Source Dedupe
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feat/morocco-web-l5-cross-source-dedupe
+    paths:
+      - 'scripts/acquisition/cross_source_dedupe.py'
+      - 'scripts/acquisition/cross_source_dedupe_dry_run.py'
+      - 'scripts/acquisition/__tests__/test_cross_source_dedupe.py'
+      - '.github/workflows/morocco-web-l5-cross-source-dedupe.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: morocco-web-l5-dedupe-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Unit tests
+        run: python -m unittest scripts/acquisition/__tests__/test_cross_source_dedupe.py
+      - name: Bounded dedupe dry-run
+        run: python scripts/acquisition/cross_source_dedupe_dry_run.py
+      - name: Publish evidence summary
+        if: always()
+        run: |
+          if [ -f artifacts/morocco-web-l5-dedupe/report.md ]; then
+            cat artifacts/morocco-web-l5-dedupe/report.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: morocco-web-l5-dedupe-${{ github.run_id }}
+          path: artifacts/morocco-web-l5-dedupe/
+          if-no-files-found: error
+          retention-days: 14
