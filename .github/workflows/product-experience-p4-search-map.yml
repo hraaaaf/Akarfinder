@@ -1,24 +1,10 @@
 name: Product Experience P4 Search Map
 
 on:
-  pull_request:
-    branches: [main]
-    paths:
-      - "app/map/page.tsx"
-      - "app/map/p4-map-shell.css"
-      - "app/search/page.tsx"
-      - "app/search/p4-map-shell.css"
-      - "components/map/P4MapDecisionRail.tsx"
-      - "components/map/RabatMarketIntelligenceExperience.tsx"
-      - "components/search/SearchMapPanel.tsx"
-      - "scripts/scrapers/__tests__/p4-territorial-map-contract.test.ts"
-      - "scripts/audits/product-experience-p4-search-map.mjs"
-      - "docs/AKARFINDER_PRODUCT_EXPERIENCE_P4.md"
-      - ".github/workflows/product-experience-p4-search-map.yml"
   workflow_dispatch:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
