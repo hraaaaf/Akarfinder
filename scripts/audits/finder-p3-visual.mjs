@@ -28,15 +28,22 @@ try {
       await page.locator("[data-search-results-section]").waitFor({ state: "visible", timeout: 20_000 });
 
       const control = page.locator("[data-search-personalization-control]");
-      const controlCount = await control.count();
-      if (phase === "before" && controlCount !== 0) localFindings.push("BEFORE_CONTROL_ALREADY_PRESENT");
+      let controlCount = 0;
       if (phase === "after") {
+        try {
+          await control.waitFor({ state: "visible", timeout: 10_000 });
+        } catch {
+          // Count below records the exact failure without conflating it with a timeout exception.
+        }
+        controlCount = await control.count();
         if (controlCount !== 1) localFindings.push(`AFTER_CONTROL_COUNT_${controlCount}`);
         else {
-          await control.waitFor({ state: "visible", timeout: 10_000 });
           const toggle = control.getByRole("switch");
           if ((await toggle.getAttribute("aria-checked")) !== "true") localFindings.push("AFTER_PERSONALIZATION_NOT_ACTIVE");
         }
+      } else {
+        controlCount = await control.count();
+        if (controlCount !== 0) localFindings.push("BEFORE_CONTROL_ALREADY_PRESENT");
       }
 
       const dimensions = await page.evaluate(() => ({
@@ -55,8 +62,9 @@ try {
           page.waitForNavigation({ waitUntil: "domcontentloaded", timeout: 30_000 }),
           toggle.click(),
         ]);
-        await page.locator("[data-search-personalization-control]").waitFor({ state: "visible", timeout: 10_000 });
-        const disabledToggle = page.locator("[data-search-personalization-control]").getByRole("switch");
+        const disabledControl = page.locator("[data-search-personalization-control]");
+        await disabledControl.waitFor({ state: "visible", timeout: 10_000 });
+        const disabledToggle = disabledControl.getByRole("switch");
         const currentUrl = new URL(page.url());
         if (currentUrl.searchParams.get("personalized") !== "0") localFindings.push("DISABLE_URL_STATE_MISSING");
         if ((await disabledToggle.getAttribute("aria-checked")) !== "false") localFindings.push("DISABLE_SWITCH_STILL_ACTIVE");
@@ -82,7 +90,7 @@ try {
 }
 
 const report = {
-  schemaVersion: "FINDER_P3_VISUAL_V2",
+  schemaVersion: "FINDER_P3_VISUAL_V3",
   phase,
   route,
   scenarioCount: scenarios.length,
