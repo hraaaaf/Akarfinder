@@ -30,11 +30,7 @@ try {
       const control = page.locator("[data-search-personalization-control]");
       let controlCount = 0;
       if (phase === "after") {
-        try {
-          await control.waitFor({ state: "visible", timeout: 10_000 });
-        } catch {
-          // Count below records the exact failure without conflating it with a timeout exception.
-        }
+        await control.waitFor({ state: "visible", timeout: 10_000 });
         controlCount = await control.count();
         if (controlCount !== 1) localFindings.push(`AFTER_CONTROL_COUNT_${controlCount}`);
         else {
@@ -58,10 +54,8 @@ try {
       let disabledScreenshot = null;
       if (phase === "after" && controlCount === 1) {
         const toggle = control.getByRole("switch");
-        await Promise.all([
-          page.waitForNavigation({ waitUntil: "domcontentloaded", timeout: 30_000 }),
-          toggle.click(),
-        ]);
+        await toggle.click();
+        await page.waitForURL((url) => url.searchParams.get("personalized") === "0", { timeout: 30_000 });
         const disabledControl = page.locator("[data-search-personalization-control]");
         await disabledControl.waitFor({ state: "visible", timeout: 10_000 });
         const disabledToggle = disabledControl.getByRole("switch");
@@ -90,7 +84,7 @@ try {
 }
 
 const report = {
-  schemaVersion: "FINDER_P3_VISUAL_V3",
+  schemaVersion: "FINDER_P3_VISUAL_V4",
   phase,
   route,
   scenarioCount: scenarios.length,
