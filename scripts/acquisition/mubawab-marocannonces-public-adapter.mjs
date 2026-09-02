@@ -99,12 +99,14 @@ async function fetchText(url, { fetchImpl, timeoutMs, userAgent }) {
   }
 }
 
-function mubawabSeeds(maxPages) {
-  const roots = [
+function mubawabSeeds() {
+  // Mubawab currently disallows paths containing ':' in robots.txt, so the
+  // legacy :p:N pagination must not be generated. Exhaustive L8 acquisition
+  // uses the dedicated robots-safe shard manifest enumerator instead.
+  return [
     'https://www.mubawab.ma/fr/cc/immobilier-a-vendre',
     'https://www.mubawab.ma/fr/cc/immobilier-a-louer',
   ];
-  return roots.flatMap((root) => [root, ...Array.from({ length: Math.max(0, maxPages - 1) }, (_, i) => `${root}:p:${i + 2}`)]);
 }
 
 function marocAnnoncesSeeds(maxPages) {
@@ -185,7 +187,7 @@ export async function discoverMubawabAndMarocAnnonces({
 
   const mubawab = await discoverSource({
     name: 'mubawab',
-    seeds: mubawabSeeds(maxPages),
+    seeds: mubawabSeeds(),
     extract: extractMubawabListings,
     fetchImpl,
     timeoutMs,
