@@ -4,9 +4,11 @@ import type { DynamicSearchProfileV2 } from "@/lib/search-profile-v2/types";
  * Deterministic Companion → Search hand-off.
  *
  * Search-supported constraints are sent through canonical structured params.
- * Richer profile data is preserved in namespaced `profile_*` params so the
- * guided intent is never silently discarded while Search/Mon Projet consume
- * progressively more of Dynamic Search Profile V2.
+ * Existing non-sensitive richer intent remains namespaced in `profile_*` params.
+ * Sensitive/rich context such as anchors, personal context and tolerances is
+ * intentionally kept out of the URL: Mon Projet already stores the complete
+ * profile in sessionStorage for temporary continuity and persists it through
+ * `/api/me/continuity` when authentication is available.
  */
 export function companionProfileToSearchParams(profile: DynamicSearchProfileV2): URLSearchParams {
   const params = new URLSearchParams();
@@ -39,9 +41,6 @@ export function companionProfileToSearchParams(profile: DynamicSearchProfileV2):
         .map((item) => `${item.city}:${item.neighborhood}`)
         .join("|"),
     );
-  }
-  if (profile.location.anchors.length > 0) {
-    params.set("profile_anchors", JSON.stringify(profile.location.anchors));
   }
 
   const propertyType = profile.property.property_types[0];
@@ -99,20 +98,6 @@ export function companionProfileToSearchParams(profile: DynamicSearchProfileV2):
   }
   if (profile.priorities.length > 0) {
     params.set("profile_priorities", profile.priorities.join(","));
-  }
-
-  const { freeform_facts: freeformFacts, ...typedPersonalContext } = profile.personal_context;
-  if (Object.keys(typedPersonalContext).length > 0 || Object.keys(freeformFacts).length > 0) {
-    params.set("profile_personal_context", JSON.stringify(profile.personal_context));
-  }
-
-  const hasRichTolerance = profile.tolerances.tourism_intensity_max != null
-    || profile.tolerances.commute_minutes_max != null
-    || profile.tolerances.renovation_tolerance !== "unknown"
-    || profile.tolerances.location_flexibility !== "city_wide"
-    || profile.tolerances.price_flexibility !== "strict";
-  if (hasRichTolerance) {
-    params.set("profile_tolerances", JSON.stringify(profile.tolerances));
   }
 
   params.set("profile_version", profile.version);
