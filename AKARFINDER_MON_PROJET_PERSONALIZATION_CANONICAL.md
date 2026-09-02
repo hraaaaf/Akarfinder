@@ -9,9 +9,12 @@ Deployment: none — production deployment requires explicit authorization.
 
 Faire de **Mon Projet** le moteur canonique de personnalisation AkarFinder : comprendre le besoin immobilier et le quotidien de l’utilisateur en **3 étapes visibles maximum**, produire un profil structuré persistant, puis l’utiliser pour lancer et affiner la recherche sans repartir de zéro.
 
+Finder est le point d’entrée contextuel optionnel depuis `/search`. La recherche classique reste immédiatement utilisable et `/mon-projet` reste l’URL canonique de reprise/modification du projet.
+
 ### Succès observable
 
-- `/mon-projet` reste l’unique destination canonique.
+- `/mon-projet` reste la destination canonique du projet.
+- Finder est optionnel et n’empêche jamais la recherche classique.
 - Onboarding initial : **3 étapes visibles maximum**.
 - Le parcours collecte au minimum : objectif, usage, zone, budget, type de bien, contraintes essentielles, contexte quotidien et priorités.
 - Les données riches déjà supportées par `DynamicSearchProfileV2` ne sont pas perdues.
@@ -25,14 +28,15 @@ Faire de **Mon Projet** le moteur canonique de personnalisation AkarFinder : com
 
 ### Produit / routes
 
-- `/mon-projet` rend `MonProjetWizardP1A`.
-- `/compagnon` effectue un `permanentRedirect("/mon-projet")`.
-- `/profil-recherche` redirige vers `/mon-projet` et déclare explicitement Mon Projet comme destination canonique unique.
+Baseline avant P2 :
+- `/mon-projet` rendait `MonProjetWizardP1A` ;
+- `/compagnon` effectue un `permanentRedirect("/mon-projet")` ;
+- `/profil-recherche` redirige vers `/mon-projet` ;
 - `/mon-projet/espace` existe et expose la continuité des projets enregistrés.
 
-### Funnel actuel
+### Funnel avant P2
 
-`MonProjetWizardP1A` expose 8 étapes visibles :
+`MonProjetWizardP1A` exposait 8 étapes visibles :
 
 1. Votre projet
 2. Zone et budget
@@ -47,28 +51,23 @@ Faire de **Mon Projet** le moteur canonique de personnalisation AkarFinder : com
 
 `DynamicSearchProfileV2` version `2.0` couvre : objectif/usages, localisation, anchors + temps maximum, budget, contraintes du bien, préférences quartier, priorités, tolérances et contexte utile (`children_count`, accessibilité, MRE, étudiant, corporate, `remote_work`, faits libres), avec provenance/confiance du signal.
 
-### Écarts UI encore ouverts après P1
+## Décisions produit verrouillées
 
-- `surfaceLocation` est collecté par le wizard mais n’est jamais écrit dans le profil.
-- `centralityCalm` est converti en `tourism_intensity_max`, ce qui est une erreur sémantique : centralité/calme et intensité touristique ne sont pas équivalents.
-- le wizard expose toujours 8 étapes visibles alors que le contrat cible en exige 3 maximum.
-
-## Décision produit verrouillée
-
-**Ne pas créer une nouvelle surface “Profil”.**
-
-`Mon Projet` reste le nom, le point d’entrée et la destination canonique. Le chantier consiste à faire évoluer le wizard actuel d’un formulaire de critères vers un moteur de compréhension du besoin.
+1. **Ne pas créer une nouvelle surface “Profil”.**
+2. `Mon Projet` reste le nom et l’URL canonique.
+3. Finder devient une couche optionnelle au-dessus de `/search`, jamais un passage obligatoire.
+4. Desktop : panneau latéral Finder.
+5. Mobile : Finder plein écran `100dvh`.
+6. Même moteur `MonProjetWizardP2` dans `/mon-projet` et Finder, pour éviter deux funnels divergents.
 
 ## Décision confidentialité P1
 
 Ne jamais sérialiser dans l’URL :
-
 - `personal_context` ;
 - anchors / lieux importants ;
 - tolérances riches pouvant révéler le contexte du projet.
 
 Transport retenu :
-
 - anonyme : `sessionStorage` sous `akarfinder-pending-project-v2` ;
 - authentifié : profil V2 complet persisté via `/api/me/continuity`, avec `project_id` dans l’URL ;
 - consommation active du profil complet par Search : **P3**.
@@ -76,7 +75,6 @@ Transport retenu :
 ## Architecture cible du funnel
 
 ### Étape 1 — Mon besoin
-
 - objectif : acheter / louer / investir / neuf / explorer ;
 - usage ;
 - ville / zone ;
@@ -85,7 +83,6 @@ Transport retenu :
 - contraintes absolues essentielles.
 
 ### Étape 2 — Mon quotidien
-
 Selon pertinence :
 - enfants / vie familiale ;
 - télétravail ;
@@ -99,14 +96,12 @@ Selon pertinence :
 - anchors importants + temps maximum.
 
 ### Étape 3 — Mes priorités
-
 - 3 à 5 priorités principales ;
 - compromis uniquement lorsqu’ils sont nécessaires ;
 - résumé compact modifiable ;
 - CTA principal : **Voir les biens faits pour mon projet**.
 
 ### Après onboarding
-
 - Récapitulatif = état de projet, pas étape obligatoire.
 - Recherche = action/résultat, pas étape d’onboarding.
 - Compromis = interaction contextuelle, jamais un faux mapping vers une donnée différente.
@@ -126,7 +121,7 @@ Selon pertinence :
 
 ## Matrice champ-par-champ P0/P1
 
-| Signal | Wizard actuel | Profile V2 / engine | Companion | Transport | Continuity | Décision |
+| Signal | Wizard avant P2 | Profile V2 / engine | Companion | Transport | Continuity | Décision |
 |---|---|---|---|---|---|---|
 | objectif | oui | oui | oui | URL canonique | profil complet | KEEP |
 | usage | oui | oui | oui | `profile_intended_uses` | profil complet | KEEP |
@@ -138,14 +133,14 @@ Selon pertinence :
 | parking / ascenseur | oui | `required_features` | oui | paramètres riches existants | profil complet | KEEP |
 | préférences quartier | oui | oui | oui | paramètres riches existants | profil complet | KEEP |
 | priorités | oui | oui | oui | paramètres riches existants | profil complet | KEEP |
-| anchors / temps max | non | oui | **P1 : oui** | **sessionStorage / continuity, jamais URL** | profil complet | P2 UI |
-| enfants | non explicite | **P1 : oui** | **P1 : oui** | **sessionStorage / continuity, jamais URL** | profil complet | P2 UI |
-| télétravail | non | **P1 : oui** | **P1 : oui** | **sessionStorage / continuity, jamais URL** | profil complet | P2 UI |
-| accessibilité | non | **P1 : oui** | **P1 : oui** | **sessionStorage / continuity, jamais URL** | profil complet | P2 UI conditionnelle |
+| anchors / temps max | non | oui | oui | sessionStorage / continuity, jamais URL | profil complet | P2 UI |
+| enfants | non explicite | oui | oui | sessionStorage / continuity, jamais URL | profil complet | P2 UI |
+| télétravail | non | oui | oui | sessionStorage / continuity, jamais URL | profil complet | P2 UI |
+| accessibilité | non | oui | oui | sessionStorage / continuity, jamais URL | profil complet | UI conditionnelle future |
 | voiture / mobilité | partiel | `car_accessibility` + anchors | préférences + anchors | privé si anchor | profil complet | P2 UI |
-| surface vs localisation | oui | aucun signal dédié | perdu | non | non | supprimer/repenser P2 |
-| centralité vs calme | oui | `centrality` / `calmness` | mal mappé vers tourisme | indirect | profil complet | corriger P2 |
-| tolérance tourisme | indirecte/mal utilisée | oui | oui | privé hors URL | profil complet | ne plus détourner P2 |
+| surface vs localisation | oui | aucun signal dédié | perdu | non | non | supprimé/repenser |
+| centralité vs calme | oui | `centrality` / `calmness` | ancien mapping incorrect | indirect | profil complet | corrigé P2 |
+| tolérance tourisme | ancien détournement | oui | oui | privé hors URL | profil complet | ne plus détourner |
 
 ## Roadmap
 
@@ -180,19 +175,14 @@ Rendre le contexte quotidien et les anchors réellement écrivables, transportab
 - workflow dédié : `Announcement Page L12 Mon Projet Personalise` ;
 - run : `33623128050` ;
 - conclusion : **SUCCESS** ;
-- job `contract` : **SUCCESS** ;
 - tests ciblés : SUCCESS ;
 - TypeScript : SUCCESS ;
-- production build : SUCCESS ;
-- Chromium install/server : SUCCESS ;
-- certification visuelle ANN-L12 : SUCCESS ;
-- artifact upload : SUCCESS ;
-- gates supplémentaires observés verts sur ce HEAD : Canonical Baseline Compile Validation, Phase 1 P1 User Journey Gate, UX Gate 0 Contracts, Phase 1 P1 Final Sweep Gate.
+- production build : SUCCESS.
 
-### P2 — 3-step UX refactor — ACTIVE
+### P2 — 3-step UX + Finder shell — ACTIVE
 
 **Goal**  
-Remplacer les 8 étapes visibles par **3 étapes visibles maximum**, sans perte de données ni faux compromis sémantiques.
+Remplacer les 8 étapes visibles par **3 étapes visibles maximum**, sans perte de données ni faux compromis sémantiques, et exposer ce même moteur via Finder optionnel dans `/search`.
 
 **Goal visuel verrouillé**
 - lecture immédiate : `Mon besoin → Mon quotidien → Mes priorités` ;
@@ -200,25 +190,50 @@ Remplacer les 8 étapes visibles par **3 étapes visibles maximum**, sans perte 
 - hiérarchie claire sur mobile 390 px et desktop 1280 px ;
 - une action principale évidente par étape ;
 - champs secondaires révélés uniquement lorsqu’ils sont utiles ;
-- résumé final compact et modifiable ;
+- résumé final compact ;
 - CTA final : **Voir les biens faits pour mon projet** ;
 - aucun overflow horizontal, aucune erreur console/HTTP de la page ;
-- accessibilité clavier/focus conservée.
+- Finder : panneau latéral desktop / plein écran mobile ;
+- recherche classique toujours disponible lorsque Finder est fermé.
 
-**Protocole obligatoire P2**
-1. BEFORE `/mon-projet` aux mêmes viewports ;
-2. référence/mockup cible ;
-3. implémentation ;
-4. AFTER aux mêmes viewports ;
-5. comparaison + tests + score visuel.
+**BEFORE vérifié**
+- workflow : `Mon Projet P2 Visual Proof` ;
+- run : `33649422239` ;
+- artifact : `9854176771` ;
+- viewports : 390 / 768 / 1280 ;
+- baseline : wizard 8 étapes visible.
 
-**Infrastructure P2 vérifiée**
-- le harness Playwright ANN-L12 existant est réutilisable comme modèle technique ;
-- il photographie cependant `/visual-qa/announcement-page-mon-projet`, c.-à-d. la personnalisation d’une annonce, **pas** le wizard `/mon-projet` ;
-- aucune route `visual-qa` dédiée au wizard n’a été identifiée ;
-- P2 doit donc disposer d’un audit visuel dédié à `/mon-projet`.
+**Mockup/référence P2 verrouillé avant implémentation**
+- desktop : panneau Finder latéral ~460–520 px sur `/search` ;
+- mobile : plein écran `100dvh` ;
+- `/mon-projet` utilise le même contenu en mode page ;
+- 3 étapes visibles seulement.
 
-**État** : ACTIVE — BEFORE non encore capturé.
+**Implémentation P2 présente**
+- `MonProjetWizardP2` : funnel 3 étapes ;
+- `/mon-projet` basculé sur `MonProjetWizardP2` ;
+- `FinderLauncher` ajouté à `/search` ;
+- body scroll verrouillé lorsque Finder est ouvert ;
+- fermeture par bouton et `Escape` ;
+- aucune modification de production/Vercel.
+
+**AFTER `/mon-projet` vérifié**
+- run : `33660556543` ;
+- conclusion : **SUCCESS** ;
+- artifact : `9858651735` ;
+- SHA256 artifact : `e7908fa68299584a9dc256a9faa319f8072b08f43a8874b9faf1ee6c8911de07` ;
+- 3/3 captures ;
+- `findingCount=0` ;
+- 390 : `scrollWidth=390`, `clientWidth=390` ;
+- 768 : `scrollWidth=768`, `clientWidth=768` ;
+- 1280 : `scrollWidth=1280`, `clientWidth=1280` ;
+- aucune erreur HTTP/console relevée par le harness ;
+- score visuel provisoire `/mon-projet` : **9/10**.
+
+**Dernière gate P2 en cours**
+- audit `finder-p2-interaction.mjs` ajouté ;
+- vérifie `/search` sur 390 + 1280 : launcher, ouverture, dimensions, lock scroll, `Escape`, restauration du scroll et captures Finder ouvert ;
+- P2 ne passe CLOSED qu’après succès observable de cette gate.
 
 ### P3 — Search + continuity activation — NOT STARTED
 
@@ -249,14 +264,15 @@ Certifier fonctionnalité, UX, compatibilité et documentation.
 ## Invariants
 
 1. `/mon-projet` reste canonique.
-2. Aucune nouvelle page “profil” concurrente.
-3. Les profils V2 existants restent lisibles.
-4. Search doit rester disponible même si la persistence échoue.
-5. Une préférence souple ne doit pas masquer automatiquement tous les résultats.
-6. Les données riches doivent être conservées sans les exposer inutilement dans l’URL.
-7. Le nombre d’étapes visibles concerne l’expérience utilisateur, pas le nombre d’états internes de la machine.
-8. Pas de promesse de rendement ou d’inférence personnelle non justifiée.
-9. Aucun déploiement Vercel sans autorisation explicite.
+2. Finder reste optionnel.
+3. Aucune nouvelle page “profil” concurrente.
+4. Les profils V2 existants restent lisibles.
+5. Search doit rester disponible même si la persistence échoue.
+6. Une préférence souple ne doit pas masquer automatiquement tous les résultats.
+7. Les données riches doivent être conservées sans les exposer inutilement dans l’URL.
+8. Le nombre d’étapes visibles concerne l’expérience utilisateur, pas le nombre d’états internes de la machine.
+9. Pas de promesse de rendement ou d’inférence personnelle non justifiée.
+10. Aucun déploiement Vercel sans autorisation explicite.
 
 ## Progression vérifiée
 
@@ -266,4 +282,4 @@ Certifier fonctionnalité, UX, compatibilité et documentation.
 
 ## Next exact
 
-Créer le harness visuel P2 dédié à `/mon-projet`, produire les captures BEFORE aux viewports verrouillés, puis définir le mockup cible avant toute modification du wizard.
+Obtenir le résultat de la gate Finder P2 sur `/search`; si verte, montrer les captures Finder ouvertes, comparer mobile/desktop, fermer P2 puis démarrer P3 Search + continuity activation. Si rouge, diagnostiquer et corriger avant closeout P2.
