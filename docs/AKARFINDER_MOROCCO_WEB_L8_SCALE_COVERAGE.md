@@ -207,17 +207,90 @@ Dedicated run `33665320708` — SUCCESS:
 - no HTTP 429;
 - zero DB writes.
 
-Cross-shard overlap was only **~3.77%**, materially better than Mubawab Gate 25. Avito is therefore the immediate priority for the next scale gate.
+Cross-shard overlap was only **~3.77%**.
 
 Artifact `9860501534`.
 Digest `sha256:a31e42e6c3e00dd87ef17f884ac7cbdfa841477e1b0a078520dc123b865e2d54`.
 
+## Avito Gate 100 — CERTIFIED
+
+Run `33666296763` — SUCCESS:
+- source rows: **11,907**;
+- safe shards: **2,505**;
+- selected/requested: **100/100**;
+- **2,652 unique real-estate listing IDs**;
+- unique yield: **26.52 IDs/shard**;
+- no HTTP 429;
+- zero DB writes;
+- unit tests: **9/9 PASS**.
+
+Artifact `9860777972`.
+Digest `sha256:a7cb05be67130e36172ce8a85769420a26607fe1c907f7aba8e0b55e37847f35`.
+
+## Avito Gate 500 — CERTIFIED
+
+Run `33667799510` — SUCCESS:
+- source rows: **11,907**;
+- safe shards: **2,505**;
+- selected/requested: **500/500**;
+- **12,172 unique real-estate listing IDs**;
+- unique yield: **24.34 IDs/shard**;
+- no HTTP 429;
+- no early stop;
+- zero DB writes;
+- unit tests: **9/9 PASS**.
+
+Artifact `9862395809`.
+Digest `sha256:867b00cc5bcda186cc136d657f163112cf071dab4bffbeec8cc42db0acaaa5cd`.
+
+Yield remained strong from Gate 100 to Gate 500, so a full safe-manifest replay is justified. No linear extrapolation is treated as certification.
+
+## Avito full manifest — IN PROGRESS
+
+Branch: `feat/avito-full-manifest`.
+HEAD: `4866fe6e33525c24a867b0d7559d438c520ddb84`.
+Run: `33672899097`.
+
+Contract:
+- exact expected safe manifest: **2,505 shards**;
+- exact selected/request count required: **2,505**;
+- fail on manifest drift;
+- immediate failure on HTTP 429;
+- zero DB writes;
+- artifact required.
+
+Current state at last verification: **QUEUED** because GitHub Actions capacity is occupied by other AkarFinder work.
+
+# Source 3 — Sarouty
+
+Current public `robots.txt` declares `https://www.sarouty.ma/sitemap_index.xml` and requires `Crawl-delay: 10` for `User-agent: *`.
+
+Observed listing identity formats include:
+- SEO transaction URLs ending `-<listing_id>/`;
+- `property-details/?listing_id=<id>`;
+- legacy `/plp/...-<id>.html`.
+
+Preparation branch: `feat/sarouty-source-first`.
+Preparation HEAD: `197c39ede17f7e5dd7fed165f064c931423d9163`.
+
+Prepared enumerator contract:
+- public robots + declared sitemap documents only;
+- recursive sitemap index support;
+- gzip sitemap support;
+- all three observed listing-ID formats;
+- dedupe by listing ID;
+- enforce robots crawl delay of at least 10 seconds between Sarouty requests;
+- immediate stop on HTTP 429;
+- zero DB writes.
+
+Unit tests are written but **not yet executed**; no Sarouty live scale claim is certified yet.
+
 ## Critical path to >100k
 
-1. Run **Avito Gate 100** with the same zero-write / stop-on-429 contract.
-2. If marginal unique yield remains strong, run Avito Gate 500 and then a larger safe-manifest gate.
-3. Continue Mubawab beyond 500 only through bounded gates while unique yield remains productive.
-4. Add Sarouty source-first while respecting its public `Crawl-delay: 10`, then MarocAnnonces and Agenz.
+1. Complete **Avito full 2,505-shard manifest** and record the exact unique-ID total.
+2. If Avito full is green, freeze its enumeration evidence and move to Sarouty certification rather than inventing further Avito extrapolation.
+3. Continue Mubawab beyond 500 only if needed after multi-source union measurement.
+4. Certify Sarouty source-first, then MarocAnnonces and Agenz.
 5. Union source listing IDs/URLs, validate active/fresh + canonical extractability, then cross-source dedupe.
 6. Certify **10k → 50k → 100k usable canonical listings**.
 
@@ -230,4 +303,4 @@ Digest `sha256:a31e42e6c3e00dd87ef17f884ac7cbdfa841477e1b0a078520dc123b865e2d54`
 
 ## Next exact
 
-Run **Avito Gate 100** from the merged implementation, measure references, unique IDs, HTTP outcomes, overlap and marginal unique yield, then choose Gate 500 only if the observed yield remains productive.
+Read the final artifact from Avito full-manifest run `33672899097`; if green, record the exact full Avito unique-ID total and begin Sarouty unit/live certification under the verified 10-second robots crawl delay.
