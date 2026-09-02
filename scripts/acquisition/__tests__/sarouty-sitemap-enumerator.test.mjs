@@ -73,6 +73,22 @@ test('recursive sitemap enumeration deduplicates IDs and honors crawl delay with
   assert.equal(requested.length, 4);
 });
 
+test('enforces 10 second minimum even if robots declares a lower delay', async () => {
+  const sleeps = [];
+  const robots = `User-agent: *\nCrawl-delay: 1\nSitemap: https://www.sarouty.ma/sitemap_index.xml\n`;
+  const index = '<urlset><url><loc>https://www.sarouty.ma/en/buy/test-894039/</loc></url></urlset>';
+  const report = await enumerateSaroutySitemaps({
+    fetchImpl: async (url) => url.endsWith('/robots.txt')
+      ? response(200, robots, url, 'text/plain')
+      : response(200, index, url),
+    sleepImpl: async (ms) => sleeps.push(ms),
+    maxSitemapDocs: 1,
+  });
+  assert.equal(report.crawlDelaySeconds, 1);
+  assert.equal(report.crawlDelayMs, 10000);
+  assert.deepEqual(sleeps, [10000]);
+});
+
 test('HTTP 429 stops traversal immediately', async () => {
   const robots = `User-agent: *\nCrawl-delay: 10\nSitemap: https://www.sarouty.ma/sitemap_index.xml\n`;
   let calls = 0;
