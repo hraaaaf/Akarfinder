@@ -73,6 +73,27 @@ test('deterministic discovery returns both productive sources and provenance', a
   assert.ok(result.sources.every((source) => source.requests.every((request) => request.classification === 'ok')));
 });
 
+test('legacy Mubawab adapter never emits colon pagination even when maxPages is high', async () => {
+  const seen = [];
+  const fakeFetch = async (url) => {
+    seen.push(String(url));
+    const isMubawab = String(url).includes('mubawab.ma');
+    return {
+      status: 200,
+      url,
+      headers: { get: () => 'text/html; charset=UTF-8' },
+      text: async () => isMubawab
+        ? '<a href="/fr/a/123456/appartement-casablanca">listing</a>'
+        : '<a href="categorie/315/Vente-immobilier/Appartements/annonce/654321/appartement-rabat.html">listing</a>',
+    };
+  };
+  const result = await discoverMubawabAndMarocAnnonces({ fetchImpl: fakeFetch, maxPages: 3 });
+  const mubawab = result.sources.find((source) => source.name === 'mubawab');
+  assert.equal(mubawab.requests.length, 2);
+  assert.ok(mubawab.requests.every((request) => !new URL(request.url).pathname.includes(':')));
+  assert.ok(seen.some((url) => url.includes('marocannonces.com') && url.includes('/2.html')));
+});
+
 test('429 stops a source instead of continuing or evading the rate limit', async () => {
   let count = 0;
   const fakeFetch = async (url) => {
