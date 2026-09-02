@@ -1,0 +1,35 @@
+name: C8 Rabat Postal Locality Evidence
+
+on:
+  pull_request:
+    paths:
+      - "data/geo/rabat-postal-locality-evidence-v1.json"
+      - "docs/CARTE_C8_RABAT_POSTAL_LOCALITY_EVIDENCE.md"
+      - "scripts/scrapers/__tests__/carte-c8-rabat-postal-locality-evidence.test.ts"
+      - ".github/workflows/carte-c8-rabat-postal-locality-evidence.yml"
+  push:
+    branches: [main]
+    paths:
+      - "data/geo/rabat-postal-locality-evidence-v1.json"
+      - "docs/CARTE_C8_RABAT_POSTAL_LOCALITY_EVIDENCE.md"
+      - "scripts/scrapers/__tests__/carte-c8-rabat-postal-locality-evidence.test.ts"
+      - ".github/workflows/carte-c8-rabat-postal-locality-evidence.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  postal-evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Postal evidence contracts
+        run: npx tsx --test scripts/scrapers/__tests__/carte-c8-rabat-postal-locality-evidence.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
