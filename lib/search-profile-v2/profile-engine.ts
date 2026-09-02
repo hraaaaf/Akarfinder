@@ -8,6 +8,7 @@ export type SearchProfileEvent =
   | { type: "budget"; purchase_max_mad?: number | null; rent_monthly_max_mad?: number | null; budget_flex_pct?: number }
   | { type: "cities"; values: string[] }
   | { type: "anchors"; values: SearchProfileAnchor[] }
+  | { type: "personal_context"; children_count?: number | null; accessibility_need?: boolean | null; mre_context?: boolean | null; student_context?: boolean | null; corporate_context?: boolean | null; remote_work?: boolean | null; source?: ProfileEvidenceSource; confidence?: ProfileConfidence }
   | { type: "property"; property_types?: string[]; min_surface_m2?: number | null; min_bedrooms?: number | null; required_features?: string[]; works_accepted?: boolean | null }
   | { type: "preference"; key: NeighborhoodPreferenceKey; direction: PreferenceDirection; importance: Importance; target?: number | null; source?: ProfileEvidenceSource; confidence?: ProfileConfidence }
   | { type: "priorities"; values: string[] }
@@ -66,6 +67,14 @@ function signal<T>(value: T, now: string, source: ProfileEvidenceSource = "expli
   return { value, source, confidence, updated_at: now };
 }
 
+function contextSignalOptions(source: ProfileEvidenceSource | undefined, confidence: ProfileConfidence | undefined) {
+  const resolvedSource = source ?? "explicit";
+  return {
+    source: resolvedSource,
+    confidence: confidence ?? (resolvedSource === "behavioral_inference" ? "low" : "high"),
+  } as const;
+}
+
 export function applySearchProfileEvent(profile: DynamicSearchProfileV2, event: SearchProfileEvent, now = new Date().toISOString()): DynamicSearchProfileV2 {
   const next = structuredClone(profile);
   next.updated_at = now;
@@ -82,6 +91,23 @@ export function applySearchProfileEvent(profile: DynamicSearchProfileV2, event: 
       break;
     case "cities": next.location.preferred_cities = clean(event.values); break;
     case "anchors": next.location.anchors = normalizeAnchors(event.values); break;
+    case "personal_context": {
+      const { source, confidence } = contextSignalOptions(event.source, event.confidence);
+      if ("children_count" in event) {
+        if (event.children_count == null) delete next.personal_context.children_count;
+        else {
+          if (!Number.isInteger(event.children_count) || event.children_count < 0 || event.children_count > 20) throw new Error("PROFILE_CHILDREN_COUNT_INVALID");
+          next.personal_context.children_count = signal(event.children_count, now, source, confidence);
+        }
+      }
+      for (const key of ["accessibility_need", "mre_context", "student_context", "corporate_context", "remote_work"] as const) {
+        if (!(key in event)) continue;
+        const value = event[key];
+        if (value == null) delete next.personal_context[key];
+        else next.personal_context[key] = signal(value, now, source, confidence);
+      }
+      break;
+    }
     case "property":
       if (event.property_types) next.property.property_types = clean(event.property_types);
       if ("min_surface_m2" in event) next.property.min_surface_m2 = nonNegative(event.min_surface_m2) ?? null;
