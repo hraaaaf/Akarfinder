@@ -14,8 +14,41 @@ on:
       - "scripts/audits/finder-p3-continuity-runtime.mjs"
       - ".github/workflows/mon-projet-p3-search-personalization.yml"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
 jobs:
+  scope:
+    name: Latest-commit scope check
+    runs-on: ubuntu-latest
+    outputs:
+      relevant: ${{ steps.scope.outputs.relevant }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - id: scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${GITHUB_EVENT_NAME}" != "pull_request" ]]; then
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git diff --name-only HEAD^ HEAD > /tmp/changed.txt
+          if grep -Eq '^(app/search/page\.tsx$|components/search/(LightZillowSearchShell|SearchPersonalizationControl)\.tsx$|lib/listings/utils\.ts$|lib/search-profile-v2/listing-personalization\.ts$|scripts/scrapers/__tests__/finder-personalization\.test\.ts$|scripts/audits/finder-p3-(visual|continuity-runtime)\.mjs$|\.github/workflows/mon-projet-p3-search-personalization\.yml$)' /tmp/changed.txt; then
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "relevant=false" >> "$GITHUB_OUTPUT"
+          fi
+
   certify:
+    needs: scope
+    if: needs.scope.outputs.relevant == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     env:
