@@ -1,5 +1,6 @@
 import { mockListings } from "@/lib/listings/mock-listings";
 import type { Listing, ListingFiltersState } from "@/lib/listings/types";
+import { rankListingsForFinder } from "@/lib/search-profile-v2/listing-personalization";
 
 export const cityMapPositions: Record<string, { x: number; y: number }> = {
   Tanger: { x: 70, y: 18 },
@@ -72,7 +73,7 @@ function matchesReliabilityFilter(listing: Listing, filter: ListingFiltersState[
 export type SortBy = "recommended" | "reliability" | "price-asc" | "price-desc";
 
 export function sortListings(listings: Listing[], sortBy: SortBy): Listing[] {
-  if (sortBy === "recommended") return listings;
+  if (sortBy === "recommended") return rankListingsForFinder(listings);
   return [...listings].sort((a, b) => {
     if (sortBy === "reliability") return (b.reliability_score ?? 0) - (a.reliability_score ?? 0);
     if (sortBy === "price-asc" || sortBy === "price-desc") {
