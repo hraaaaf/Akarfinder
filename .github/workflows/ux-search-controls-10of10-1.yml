@@ -1,15 +1,12 @@
 name: UX-SEARCH-CONTROLS-10OF10-1 Exact Visual Certification
 
+# Frozen visual certification. Explicit closeout/release gate only.
 on:
-  pull_request:
-    paths:
-      - "app/search/page.tsx"
-      - "app/search/search-controls-10of10.css"
-      - "components/search/QuickFilters.tsx"
-      - "scripts/audits/ux-search-controls-10of10-1.mjs"
-      - "scripts/scrapers/__tests__/search-ux-fast-1.test.ts"
-      - ".github/workflows/ux-search-controls-10of10-1.yml"
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
