@@ -1,0 +1,149 @@
+name: Mon Projet P4 Akar Sense Accessibility
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'components/companion/FinderLauncher.tsx'
+      - 'scripts/audits/finder-p4-accessibility-runtime.mjs'
+      - '.github/workflows/mon-projet-p4-akar-sense-accessibility.yml'
+      - 'AKARFINDER_MON_PROJET_PERSONALIZATION_CANONICAL.md'
+
+concurrency:
+  group: mon-projet-p4-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  scope:
+    name: Latest-commit scope check
+    runs-on: ubuntu-latest
+    outputs:
+      relevant: ${{ steps.scope.outputs.relevant }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - id: scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          changed="$(git diff --name-only HEAD^ HEAD)"
+          printf '%s\n' "$changed"
+          if printf '%s\n' "$changed" | grep -Eq '^(components/companion/FinderLauncher\.tsx|scripts/audits/finder-p4-accessibility-runtime\.mjs|\.github/workflows/mon-projet-p4-akar-sense-accessibility\.yml|AKARFINDER_MON_PROJET_PERSONALIZATION_CANONICAL\.md)$'; then
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "relevant=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  certify:
+    needs: scope
+    if: needs.scope.outputs.relevant == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout target
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install target dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Preserve P4 audit script and resolve BEFORE
+        shell: bash
+        run: |
+          cp scripts/audits/finder-p4-accessibility-runtime.mjs /tmp/finder-p4-accessibility-runtime.mjs
+          echo "BEFORE_SHA=$(git rev-parse HEAD^)" >> "$GITHUB_ENV"
+          echo "AFTER_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+
+      - name: Checkout BEFORE
+        run: git checkout "$BEFORE_SHA"
+
+      - name: Install BEFORE dependencies
+        run: npm ci
+
+      - name: Build BEFORE
+        run: npm run build
+
+      - name: Start BEFORE
+        shell: bash
+        run: |
+          npm run start -- -p 3218 > /tmp/akar-p4-before.log 2>&1 &
+          echo $! > /tmp/akar-p4-before.pid
+          for i in {1..60}; do
+            if curl -fsS http://127.0.0.1:3218/search >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/akar-p4-before.log
+          exit 1
+
+      - name: Capture BEFORE
+        env:
+          BASE_URL: http://127.0.0.1:3218
+          AUDIT_OUTPUT_DIR: artifacts/finder-p4-proof/before
+          P4_AUDIT: '0'
+        run: node /tmp/finder-p4-accessibility-runtime.mjs
+
+      - name: Stop BEFORE
+        if: always()
+        shell: bash
+        run: |
+          if [[ -f /tmp/akar-p4-before.pid ]]; then kill "$(cat /tmp/akar-p4-before.pid)" || true; fi
+
+      - name: Checkout AFTER
+        run: git checkout "$AFTER_SHA"
+
+      - name: Install AFTER dependencies
+        run: npm ci
+
+      - name: Build AFTER
+        run: npm run build
+
+      - name: Start AFTER
+        shell: bash
+        run: |
+          npm run start -- -p 3218 > /tmp/akar-p4-after.log 2>&1 &
+          echo $! > /tmp/akar-p4-after.pid
+          for i in {1..60}; do
+            if curl -fsS http://127.0.0.1:3218/search >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/akar-p4-after.log
+          exit 1
+
+      - name: Capture AFTER + accessibility runtime proof
+        env:
+          BASE_URL: http://127.0.0.1:3218
+          AUDIT_OUTPUT_DIR: artifacts/finder-p4-proof/after
+          P4_AUDIT: '1'
+        run: node scripts/audits/finder-p4-accessibility-runtime.mjs
+
+      - name: Stop AFTER
+        if: always()
+        shell: bash
+        run: |
+          if [[ -f /tmp/akar-p4-after.pid ]]; then kill "$(cat /tmp/akar-p4-after.pid)" || true; fi
+
+      - name: Upload Akar Sense P4 proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mon-projet-p4-accessibility-${{ github.run_id }}
+          path: artifacts/finder-p4-proof
+          if-no-files-found: error
+          retention-days: 14
