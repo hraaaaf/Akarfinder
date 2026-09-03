@@ -51,26 +51,33 @@ function classify(html: string): { status: "live" | "unavailable"; title: string
   return { status: unavailable ? "unavailable" : "live", title };
 }
 
-const results: Array<Record<string, unknown>> = [];
-for (const [source_id, url] of targets) {
-  try {
-    if (!(await isAllowedByRobots(url))) {
-      results.push({ source_id, url, status: "robots_disallowed" });
-      continue;
+async function main() {
+  const results: Array<Record<string, unknown>> = [];
+  for (const [source_id, url] of targets) {
+    try {
+      if (!(await isAllowedByRobots(url))) {
+        results.push({ source_id, url, status: "robots_disallowed" });
+        continue;
+      }
+      const fetched = await fetchHtml(url);
+      results.push({ source_id, url, ...classify(fetched.html) });
+    } catch (error) {
+      results.push({ source_id, url, status: "fetch_error", error: error instanceof Error ? error.message : String(error) });
     }
-    const fetched = await fetchHtml(url);
-    results.push({ source_id, url, ...classify(fetched.html) });
-  } catch (error) {
-    results.push({ source_id, url, status: "fetch_error", error: error instanceof Error ? error.message : String(error) });
+    await new Promise((resolve) => setTimeout(resolve, 500));
   }
-  await new Promise((resolve) => setTimeout(resolve, 500));
+
+  const counts = results.reduce<Record<string, number>>((acc, row) => {
+    const key = String(row.status);
+    acc[key] = (acc[key] ?? 0) + 1;
+    return acc;
+  }, {});
+  const proof = { generated_at: new Date().toISOString(), target_count: targets.length, counts, results };
+  await writeFile("mubawab-reject-availability-audit.json", JSON.stringify(proof, null, 2), "utf8");
+  console.log(JSON.stringify(proof, null, 2));
 }
 
-const counts = results.reduce<Record<string, number>>((acc, row) => {
-  const key = String(row.status);
-  acc[key] = (acc[key] ?? 0) + 1;
-  return acc;
-}, {});
-const proof = { generated_at: new Date().toISOString(), target_count: targets.length, counts, results };
-await writeFile("mubawab-reject-availability-audit.json", JSON.stringify(proof, null, 2), "utf8");
-console.log(JSON.stringify(proof, null, 2));
+main().catch((error) => {
+  console.error(error instanceof Error ? error.stack ?? error.message : String(error));
+  process.exitCode = 1;
+});
