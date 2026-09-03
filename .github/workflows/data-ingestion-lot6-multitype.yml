@@ -5,6 +5,7 @@ on:
     paths:
       - "data-ingestion/**"
       - "scripts/mubawab-crawl-lot6-multitype.ts"
+      - "scripts/mubawab-rejection-review.ts"
       - "scripts/scrapers/__tests__/data-ingestion-transaction-context.test.ts"
       - ".github/workflows/data-ingestion-lot6-multitype.yml"
 
@@ -25,6 +26,8 @@ jobs:
         run: npx tsx scripts/mubawab-crawl-lot6-multitype.ts
       - name: Resume multi-type crawl
         run: npx tsx scripts/mubawab-crawl-lot6-multitype.ts --resume
+      - name: Build rejection review
+        run: npx tsx scripts/mubawab-rejection-review.ts
       - uses: actions/upload-artifact@v4
         if: always()
         with:
