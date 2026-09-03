@@ -26,6 +26,7 @@ export type SandboxListingRow = {
   property_type: string | null;
   transaction_type: string;
   surface_m2: number | null;
+  data_completeness_score: number;
   source_name: string;
   source_id: string;
   source_url: string | null;
@@ -51,6 +52,7 @@ export class Lot7SandboxStore {
         property_type TEXT,
         transaction_type TEXT NOT NULL CHECK(transaction_type IN ('sale','rent')),
         surface_m2 REAL,
+        data_completeness_score REAL NOT NULL DEFAULT 0,
         offer_status TEXT NOT NULL,
         updated_at TEXT NOT NULL
       );
@@ -86,24 +88,25 @@ export class Lot7SandboxStore {
       throw new Error(`lot7_invalid_transaction:${property.property_id}`);
     }
 
+    const sourceId = offer.external_offer_id ?? offer.offer_id;
     const existing = this.db.prepare(
       "SELECT property_listing_id FROM listing_sources WHERE source_name = ? AND source_id = ? LIMIT 1",
-    ).get(offer.source_name, offer.external_offer_id ?? offer.offer_id) as { property_listing_id: number } | undefined;
+    ).get(offer.source_name, sourceId) as { property_listing_id: number } | undefined;
 
-    const fingerprint = `${offer.source_name}:${offer.external_offer_id ?? offer.offer_id}`;
+    const fingerprint = `${offer.source_name}:${sourceId}`;
     const title = offer.title.value;
     const price = offer.price_amount.value;
     const city = property.facts.location.city.value;
     const propertyType = property.facts.classification.property_type.value;
     const surface = property.facts.surfaces.surface_total_m2?.value ?? null;
-    const sourceId = offer.external_offer_id ?? offer.offer_id;
+    const completeness = property.intelligence?.data_completeness_score ?? 0;
 
     if (existing) {
       this.db.prepare(`
         UPDATE property_listings
-        SET title=?, price_mad=?, city=?, property_type=?, transaction_type=?, surface_m2=?, offer_status=?, updated_at=?
+        SET title=?, price_mad=?, city=?, property_type=?, transaction_type=?, surface_m2=?, data_completeness_score=?, offer_status=?, updated_at=?
         WHERE id=?
-      `).run(title, price, city, propertyType, offer.transaction_type, surface, offer.offer_status, property.updated_at, existing.property_listing_id);
+      `).run(title, price, city, propertyType, offer.transaction_type, surface, completeness, offer.offer_status, property.updated_at, existing.property_listing_id);
       this.db.prepare(`
         UPDATE listing_sources
         SET listing_url=?, source_url=?, origin_type=?, is_active=1, last_seen_at=?
@@ -114,9 +117,9 @@ export class Lot7SandboxStore {
 
     const inserted = this.db.prepare(`
       INSERT INTO property_listings
-      (canonical_fingerprint, property_id, title, price_mad, city, property_type, transaction_type, surface_m2, offer_status, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(fingerprint, property.property_id, title, price, city, propertyType, offer.transaction_type, surface, offer.offer_status, property.updated_at);
+      (canonical_fingerprint, property_id, title, price_mad, city, property_type, transaction_type, surface_m2, data_completeness_score, offer_status, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(fingerprint, property.property_id, title, price, city, propertyType, offer.transaction_type, surface, completeness, offer.offer_status, property.updated_at);
 
     this.db.prepare(`
       INSERT INTO listing_sources
