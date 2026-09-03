@@ -3,6 +3,17 @@ name: UX Gate 0 Contracts
 on:
   pull_request:
     branches: [main, ux-ui-master-program]
+    paths:
+      - "app/**"
+      - "components/**"
+      - "lib/**"
+      - "scripts/**"
+      - "public/**"
+      - "package.json"
+      - "package-lock.json"
+      - "tsconfig*.json"
+      - "next.config.*"
+      - ".github/workflows/ux-gate0-contracts.yml"
   workflow_dispatch: {}
 
 concurrency:

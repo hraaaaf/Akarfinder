@@ -7,6 +7,18 @@ on:
   pull_request:
     branches:
       - main
+    paths:
+      - "app/**"
+      - "components/**"
+      - "lib/**"
+      - "scripts/**"
+      - "supabase/**"
+      - "public/**"
+      - "package.json"
+      - "package-lock.json"
+      - "tsconfig*.json"
+      - "next.config.*"
+      - ".github/workflows/canonical-baseline-compile-validation.yml"
   workflow_dispatch: {}
 
 concurrency:

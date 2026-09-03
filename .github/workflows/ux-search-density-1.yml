@@ -9,12 +9,14 @@ on:
       - "components/search/**"
       - "scripts/audits/ux-search-density-1-visual.mjs"
       - ".github/workflows/ux-search-density-1.yml"
-      - "docs/ROADMAP.md"
-      - "docs/SESSION.md"
   workflow_dispatch: {}
 
 permissions:
   contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   product-design-reviewer:

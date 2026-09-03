@@ -2,6 +2,18 @@ name: Phase 1 Final Design Accessibility Gate
 on:
   pull_request:
     branches: [main, phase1-p2-residual-closure]
+    paths:
+      - "app/**"
+      - "components/**"
+      - "lib/**"
+      - "scripts/audits/**"
+      - "scripts/scrapers/__tests__/phase1-final-design-a11y.test.ts"
+      - "public/**"
+      - "package.json"
+      - "package-lock.json"
+      - "tsconfig*.json"
+      - "next.config.*"
+      - ".github/workflows/phase1-final-design-a11y-gate.yml"
   workflow_dispatch: {}
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
