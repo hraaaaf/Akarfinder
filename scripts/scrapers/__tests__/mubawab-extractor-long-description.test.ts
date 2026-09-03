@@ -69,3 +69,45 @@ test("recognizes explicit location longue durée wording as rent", () => {
   assert.equal(listing.price.period, "month");
   assert.equal(listing.quality.warnings.includes("transaction_missing"), false);
 });
+
+test("recognizes maison à acheter in the primary title as sale", () => {
+  const html = `<!doctype html><html><head><meta property="og:title" content="Maison à acheter à Dar Touzani"></head><body><div>20 000 000 DH</div><div>256 m²</div><div>Dar Touzani à Casablanca</div><h1>Maison à acheter à Dar Touzani</h1><script type="application/ld+json">${JSON.stringify({
+    "@type": "House",
+    name: "Maison à acheter à Dar Touzani",
+    offers: { price: "20000000" },
+    address: { addressLocality: "Casablanca", streetAddress: "Dar Touzani" },
+    floorSize: { value: 256 },
+    description: "Maison familiale avec façade moderne.",
+  })}</script></body></html>`;
+  const listing = extractMubawabCollectionListing("https://www.mubawab.ma/fr/a/8407067/maison-a-acheter-a-dar-touzani", html, "2026-09-03T18:45:00.000Z");
+  assert.equal(listing.transaction, "sale");
+  assert.equal(listing.price.period, "total");
+});
+
+test("recognizes pour location meublé in the primary description as rent", () => {
+  const html = `<!doctype html><html><head><meta property="og:title" content="Belle villa meublé près Naershore sidi maarouf"></head><body><div>22 000 DH</div><div>350 m²</div><div>Sidi Maarouf à Casablanca</div><h1>Belle villa meublé près Naershore sidi maarouf</h1><script type="application/ld+json">${JSON.stringify({
+    "@type": "House",
+    name: "Belle villa meublé près Naershore sidi maarouf",
+    offers: { price: "22000" },
+    address: { addressLocality: "Casablanca", streetAddress: "Sidi Maarouf" },
+    floorSize: { value: 350 },
+    description: "Serraj immobilier vous propose une villa pour location meublé entièrement.",
+  })}</script></body></html>`;
+  const listing = extractMubawabCollectionListing("https://www.mubawab.ma/fr/a/8303206/belle-villa-meuble", html, "2026-09-03T18:45:00.000Z");
+  assert.equal(listing.transaction, "rent");
+  assert.equal(listing.price.period, "month");
+});
+
+test("recognizes magasin pour la location in the primary description as rent", () => {
+  const html = `<!doctype html><html><head><meta property="og:title" content="Local commercial de 450m² à Agdal idéal pour superette"></head><body><div>50 000 DH</div><div>500 m²</div><div>Agdal à Rabat</div><h1>Local commercial de 450m² à Agdal idéal pour superette</h1><script type="application/ld+json">${JSON.stringify({
+    "@type": "Product",
+    name: "Local commercial de 450m² à Agdal idéal pour superette",
+    offers: { price: "50000" },
+    address: { addressLocality: "Rabat", streetAddress: "Agdal" },
+    floorSize: { value: 500 },
+    description: "Magasin pour la location bien situé à Agdal, idéal pour une supérette.",
+  })}</script></body></html>`;
+  const listing = extractMubawabCollectionListing("https://www.mubawab.ma/fr/a/8332692/local-commercial-agdal", html, "2026-09-03T18:45:00.000Z");
+  assert.equal(listing.transaction, "rent");
+  assert.equal(listing.price.period, "month");
+});
