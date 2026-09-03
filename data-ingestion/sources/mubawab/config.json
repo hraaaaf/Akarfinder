@@ -1,0 +1,53 @@
+{
+  "source": "mubawab",
+  "country": "MA",
+  "locale": "fr",
+  "base_url": "https://www.mubawab.ma",
+  "discovery_version": "1.0",
+  "primary_route_families": ["st", "sc"],
+  "validation_route_families": ["ct"],
+  "diagnostic_route_families": ["sd", "is"],
+  "detail_pattern": "^/fr/pa/(?<source_id>[0-9]+)/",
+  "pagination": {
+    "page_1_suffix": "",
+    "page_n_suffix_template": ":p:{page}",
+    "start_page": 1,
+    "stop_on_zero_new_unique_ids": true
+  },
+  "cities": [
+    { "name": "Casablanca", "slug": "casablanca" },
+    { "name": "Rabat", "slug": "rabat" },
+    { "name": "Marrakech", "slug": "marrakech" },
+    { "name": "Tanger", "slug": "tanger" },
+    { "name": "Agadir", "slug": "agadir" },
+    { "name": "Fès", "slug": "fès" },
+    { "name": "Kénitra", "slug": "kénitra" },
+    { "name": "Mohammedia", "slug": "mohammedia" },
+    { "name": "Témara", "slug": "temara" },
+    { "name": "Dar Bouazza", "slug": "dar-bouazza" },
+    { "name": "Bouskoura", "slug": "bouskoura" },
+    { "name": "Salé", "slug": "salé" }
+  ],
+  "categories": [
+    { "key": "apartment_sale", "transaction": "sale", "property_type": "apartment", "st_slug": "appartements-a-vendre", "enabled": true },
+    { "key": "apartment_rent", "transaction": "rent", "property_type": "apartment", "st_slug": "appartements-a-louer", "enabled": true },
+    { "key": "land_sale", "transaction": "sale", "property_type": "land", "st_slug": "terrains-a-vendre", "enabled": true },
+    { "key": "villa_sale", "transaction": "sale", "property_type": "villa", "st_slug": "villas-et-maisons-de-luxe-a-vendre", "enabled": true },
+    { "key": "villa_rent", "transaction": "rent", "property_type": "villa", "st_slug": "villas-et-maisons-de-luxe-a-louer", "enabled": true },
+    { "key": "house_sale", "transaction": "sale", "property_type": "house", "st_slug": "maisons-a-vendre", "enabled": true },
+    { "key": "house_rent", "transaction": "rent", "property_type": "house", "st_slug": "maisons-a-louer", "enabled": true },
+    { "key": "commercial_sale", "transaction": "sale", "property_type": "commercial", "st_slug": "locaux-a-vendre", "enabled": false, "reason": "slug_not_yet_verified" },
+    { "key": "commercial_rent", "transaction": "rent", "property_type": "commercial", "st_slug": "locaux-a-louer", "enabled": false, "reason": "slug_not_yet_verified" },
+    { "key": "office_sale", "transaction": "sale", "property_type": "office", "st_slug": "bureaux-a-vendre", "enabled": false, "reason": "slug_not_yet_verified" },
+    { "key": "office_rent", "transaction": "rent", "property_type": "office", "st_slug": "bureaux-a-louer", "enabled": false, "reason": "slug_not_yet_verified" },
+    { "key": "riad_sale", "transaction": "sale", "property_type": "riad", "st_slug": "riads-a-vendre", "enabled": false, "reason": "slug_not_yet_verified" }
+  ],
+  "safety": {
+    "discovery_only": true,
+    "open_detail_pages": false,
+    "write_database": false,
+    "download_images": false,
+    "collect_contact_details": false,
+    "max_pages_per_combo_default": 2
+  }
+}
