@@ -1,9 +1,10 @@
 # AkarFinder — Mon Projet Personalization Canonical
 
-Status: READY_TO_MERGE  
-Canonical branch: `feat/mon-projet-personalization`  
-Base: `main` @ `31174a4527c6034a08943d25a9de9811a90480c1`  
-Deployment: none — production deployment requires explicit authorization.
+Status: CLOSED  
+Canonical branch: `main`  
+Merged PR: `#985`  
+Production baseline before canonical closeout: `main` @ `47bdf2cb2a9fe1b6dbe1886e53ba3618e49cebbd`  
+Production deployment: `dpl_76i1Tt58NypyaJMcu896TYMgkUnz` — READY, authorized and verified on 2026-09-03.
 
 ## Goal final
 
@@ -158,6 +159,16 @@ Après onboarding, le récapitulatif est un état modifiable et la recherche une
 - BEFORE/AFTER 1280×900 : panneau Akar Sense identique pixel pour pixel ; seules les données de fond `/search` ont varié ;
 - score visuel : **9/10**.
 
+## Production closeout — VERIFIED — 2026-09-03
+
+- PR `#985` : mergée sur `main` ;
+- SHA production vérifié avant le commit canonique final : `47bdf2cb2a9fe1b6dbe1886e53ba3618e49cebbd` ;
+- deployment Vercel : `dpl_76i1Tt58NypyaJMcu896TYMgkUnz` — **READY** ;
+- `/mon-projet` : HTTP **200**, cache `HIT/PRERENDER` observé ;
+- `/search` : HTTP **200** sur plusieurs requêtes ;
+- ODM Search : `failure_stage=null`, `error_name=null`, `result_count=24` sur la dernière vérification ;
+- aucun déploiement non autorisé n’a été lancé pendant le chantier ; le commit canonique final est explicitement autorisé par l’utilisateur.
+
 ## Invariants
 
 1. `/mon-projet` reste canonique.
@@ -175,8 +186,8 @@ Après onboarding, le récapitulatif est un état modifiable et la recherche une
 - Lots CLOSED : `5 / 5`
 - Lot actif : aucun
 - Avancement global par lots CLOSED : **100%**
-- État chantier : **READY_TO_MERGE** tant que PR/merge/post-merge ne sont pas vérifiés.
+- État chantier : **CLOSED**.
 
 ## Next exact
 
-Mettre à jour la PR #985 avec le closeout P0–P4, vérifier son état de merge et le couplage éventuel merge→Vercel. Ne merger que si cela ne déclenche pas de déploiement Vercel non autorisé ; sinon s’arrêter au human gate de déploiement. Après merge autorisé : vérifier `main`, puis passer le chantier de READY_TO_MERGE à CLOSED.
+Aucune action restante pour ce chantier après validation du commit canonique final, de sa CI et du deployment Vercel automatique autorisé. Le prochain travail relève d’un nouveau chantier.
