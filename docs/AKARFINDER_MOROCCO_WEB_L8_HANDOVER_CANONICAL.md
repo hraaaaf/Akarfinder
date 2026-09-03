@@ -71,34 +71,61 @@ Certified:
 
 Full replay deferred until source union shows it is required.
 
-## 3. Sarouty — SMOKE CERTIFIED / FULL RUN QUEUED
+## 3. Sarouty — MANIFEST CERTIFIED / TARGETED PROPERTY FULL QUEUED
 
-Branch `feat/sarouty-source-first`.
-Relevant commits:
-- crawl-delay floor: `3aa575f8a12b134b288746895d43c1db30929bb5`
-- tests: `13212b8b01fa7521a1cf69106deb2cb9a861f84e`
-- bounded runner fix: `e712e05d6a1bbd81c7a81a2518d85a44da40fd03`
-- refreshed branch HEAD: `0ad79fdd18627a848757f34b304a0df08f66d2bc`
-- full benchmark commit: `36b77cc7801c86f9b24914a2c0aee9798c18db21`
-- PR #990 OPEN / DRAFT.
+Branch `feat/sarouty-source-first`, PR #990 OPEN / DRAFT.
+
+Safety baseline:
+- tests **6/6 PASS**;
+- minimum crawl delay **10s**;
+- immediate stop on HTTP 429;
+- zero DB writes.
 
 Bounded smoke — run `33690151575` — **SUCCESS**:
-- tests **6/6 PASS**
-- robots + declared sitemap accessible
-- crawlDelaySeconds **10**
-- crawlDelayMs **10000**
-- sitemapDocCount **1**
-- requestCount **2**
-- uniqueRealEstateListingCount **0** at root index by design
-- queueRemaining **3** child sitemaps
-- stoppedEarly `null`
-- zeroDbWrites **true**
-- artifact `9870484076`
-- digest `sha256:713204a0803c27f4729a810fe1a6f1e58312a5911458ec0aa61f2ce637e23a48`
+- robots + declared sitemap accessible;
+- crawlDelaySeconds **10** / crawlDelayMs **10000**;
+- requestCount **2**;
+- stoppedEarly `null`;
+- zeroDbWrites **true**;
+- artifact `9870484076`;
+- digest `sha256:713204a0803c27f4729a810fe1a6f1e58312a5911458ec0aa61f2ce637e23a48`.
 
-The smoke proves the root index exposes exactly **3 child sitemaps**, so full traversal is bounded to **4 sitemap documents total** under the current sitemap graph.
+Full attempt #1 — run `33764142715` — **INCOMPLETE / DIAGNOSED**:
+- workflow failed only at completeness verification;
+- sitemapDocCount **4** / requestCount **5**;
+- root sitemap index locCount **446**;
+- first generic children produced **0** listing IDs;
+- queueRemaining **12** / cappedByDocs **true**;
+- stoppedEarly `null`, no 429, zeroDbWrites **true**;
+- artifact `9896852823`;
+- digest `sha256:6f45d48fbf899d28493c87a566e7789fbfe907f463aa50bd09107892b6005b05`.
 
-Full run `33764142715` is **QUEUED** on HEAD `36b77cc7801c86f9b24914a2c0aee9798c18db21`.
+The earlier inference that the root exposed only three children was disproved by the full attempt. Blind traversal of all declared children is rejected.
+
+Root manifest — run `33765033217` — **SUCCESS**:
+- HEAD `6bad4603a9a273670131aac0d2f7690655b6dad7`;
+- robotsStatus **200** / rootStatus **200**;
+- crawlDelay **10s**;
+- rootLocCount / sitemapUrlCount **446**;
+- sitemap families:
+  - `page-sitemap*.xml`: **438** total including base page sitemap;
+  - `post-sitemap.xml`: **1**;
+  - `agency-sitemap.xml`: **1**;
+  - `property_details*.xml`: **6**;
+- zeroDbWrites **true**;
+- artifact `9897115870`;
+- digest `sha256:c1be815fc97645100fbf776c50946f8b635aa70929393051e44eb9d9bf6c9997`.
+
+Only **6 / 446** declared child sitemaps belong to the property-detail family relevant to L8.
+
+Targeted property full:
+- single final commit `c52760742e9418c37567c6b26d7fcfc34a9624b0`;
+- dedicated `property_details*.xml` selector + tests + targeted workflow;
+- exactly max **6** property sitemaps;
+- 10s minimum delay, stop 429, zero writes;
+- run `33765427351` — **QUEUED** at last verification.
+
+Certification requires discovered=6, selected=6, requestCount=8, no caps/early-stop, nonzero unique listing count, artifact + digest.
 
 ## 4. MarocAnnonces — FULL ENUMERATION CERTIFIED / MERGED
 
@@ -106,61 +133,65 @@ Branch `feat/marocannonces-source-first`.
 PR #992 **MERGED** into main.
 Merge commit `21ec5032c56312e213367c5cacb76b39d5a15a59`.
 
-Implementation:
-- enumerator `237467231cbd12aeb5d516f7c49668356e42876f`
-- tests `bdc5a6451c41da21d67c18fe0a1467186f9b8425`
-- observed public-ID fixtures `c963df926f4de692f6a003a082b543abc4f9e0d9`
-- bounded smoke workflow `8127f1f15ab56baa7117a642c8c8bf398f0b2130`
-- full benchmark commit `6b87c05eec27b731ae7b4379d9ae9a00b49cf115`
-
 Bounded live smoke — run `33738909895` — **SUCCESS**:
-- tests **9/9 PASS**
-- robotsStatus **200**
-- delay **3000 ms**
-- requestCount **2**
-- pageCount **1**
-- **20 unique listing IDs**
-- stoppedEarly `null`
-- zeroDbWrites **true**
-- artifact `9886906086`
-- digest `sha256:abb343fd6253d93b8af494485601d3dc44161a3353baf533bf0ccb5d6230b802`
+- tests **9/9 PASS**;
+- robotsStatus **200**;
+- delay **3000 ms**;
+- requestCount **2** / pageCount **1**;
+- **20 unique listing IDs**;
+- stoppedEarly `null`;
+- zeroDbWrites **true**;
+- artifact `9886906086`;
+- digest `sha256:abb343fd6253d93b8af494485601d3dc44161a3353baf533bf0ccb5d6230b802`.
 
 Full safe enumeration — run `33739495442` — **SUCCESS**:
-- robotsStatus **200**
-- delay **3000 ms**
-- public category pages **546**
-- total requests **547**
-- **10,000 unique listing IDs**
-- queueRemaining **0**
-- stoppedEarly `null`
-- cappedByPages **false**
-- cappedByListings **false**
-- zeroDbWrites **true**
-- artifact `9888335708`
-- digest `sha256:c23c571acae2863e1dd866126938174af67186da704e3ad30c8bb97fb3bf5bc9`
+- robotsStatus **200**;
+- delay **3000 ms**;
+- public category pages **546**;
+- total requests **547**;
+- **10,000 unique listing IDs**;
+- queueRemaining **0**;
+- stoppedEarly `null`;
+- cappedByPages **false** / cappedByListings **false**;
+- zeroDbWrites **true**;
+- artifact `9888335708`;
+- digest `sha256:c23c571acae2863e1dd866126938174af67186da704e3ad30c8bb97fb3bf5bc9`.
 
-This certifies complete traversal of the enumerator's five residential roots under the current public pagination graph. It does **not** certify 10,000 usable canonical listings yet.
+This is complete enumeration evidence for the current five residential roots, not yet usable-listing certification.
 
-## 5. Agenz — SMOKE PREP PUSHED / RUN QUEUED
+## 5. Agenz — SMOKE CERTIFIED / FULL IN PROGRESS
 
-Branch `feat/agenz-source-first`:
-- enumerator `cbacc8b72a8b976cffc6a5ac0ddd0d11ba915890`
-- tests `62c16db5957c3de940f10a7c62c1bf2d413749d3`
-- bounded smoke workflow commit `efc56c46b90dc0301ffef0da12f9552f888ceb47`
+Branch `feat/agenz-source-first`, PR #993 OPEN / DRAFT.
 
-Verified locally on reconstructed exact branch logic:
-- **9/9 tests PASS**;
-- robots-first;
-- conservative 3s delay floor unless robots requires more;
-- numeric listing-ID dedupe;
-- 429/hard-block stop;
-- zero DB writes.
+Implementation:
+- enumerator `cbacc8b72a8b976cffc6a5ac0ddd0d11ba915890`;
+- tests `62c16db5957c3de940f10a7c62c1bf2d413749d3`;
+- exact suite **9/9 PASS**;
+- robots-first, 3s conservative delay floor, 429/hard-block stop, zero writes.
 
-Live smoke run `33764290049` is **QUEUED**.
+Bounded live smoke — run `33764290049` — **SUCCESS**:
+- HEAD `efc56c46b90dc0301ffef0da12f9552f888ceb47`;
+- robotsStatus **200**;
+- delayMs **3000**;
+- pageCount **1** / requestCount **2**;
+- **36 unique listing IDs**;
+- queueRemaining **123**;
+- stoppedEarly `null`;
+- zeroDbWrites **true**;
+- artifact `9896887028`;
+- digest `sha256:03e03acabee3908ba3265b991e20b903a54aed527af647a16e60443e72a5125b`.
+
+Full safe enumeration:
+- benchmark HEAD `8aa3101cc8bbbdc833e7eea666fd1226a22d1c80`;
+- max 1000 public discovery pages / 50,000 IDs;
+- 3s minimum delay, stop 429/hard block, zero writes;
+- run `33764930794` — **IN_PROGRESS** at last verification.
+
+Certification requires queueRemaining=0, no caps/early-stop, artifact + digest.
 
 # Current artifact union
 
-Using the exact certified artifact URL sets downloaded from Avito and MarocAnnonces:
+Using exact certified artifact URL sets from Avito and MarocAnnonces:
 - Avito URLs: **27,053**
 - MarocAnnonces URLs: **10,000**
 - exact URL overlap: **0**
@@ -175,17 +206,17 @@ This is a source-scoped URL union only. It is **not** semantic/canonical cross-s
 3. MarocAnnonces full = **10,000 certified enumerated IDs**, merged on main.
 4. Current exact artifact URL union Avito + MarocAnnonces = **37,053**.
 5. Mubawab bounded = **5,195 IDs on 500 shards** and remains available for deeper replay if required.
-6. Sarouty full is the next critical certification.
-7. Agenz smoke is queued in parallel.
+6. Sarouty is now narrowed from 446 declared sitemaps to exactly **6 property-detail sitemaps**.
+7. Agenz is live-productive: **36 IDs on one page**, full enumeration in progress.
 8. No production bulk writes are authorized.
 9. No Vercel deployment is required.
 
 # Next exact
 
-1. finish Sarouty full run `33764142715`; if green, capture exact IDs + artifact/digest, update PR #990, ready/merge/post-merge;
-2. finish Agenz smoke `33764290049`; if green, derive a bounded/full scale from observed graph and certify it;
-3. extend exact artifact union with Sarouty/Agenz outputs;
-4. run listing-detail freshness → canonical extraction → semantic cross-source dedupe → quality → serving;
+1. finish Sarouty targeted property run `33765427351`; if green, record exact IDs/artifact/digest then ready/merge PR #990 and post-merge verify;
+2. finish Agenz full run `33764930794`; if green, record exact IDs/artifact/digest then ready/merge PR #993 and post-merge verify;
+3. extend exact artifact union with certified Sarouty/Agenz outputs;
+4. run listing-detail validity/freshness → canonical extraction → semantic cross-source dedupe → quality → serving;
 5. replay Mubawab deeper/full only if union/usable gates require it;
 6. certify **10k → 50k → 100k usable**.
 
@@ -193,21 +224,20 @@ No bypass if a source returns a true hard block.
 
 # Remaining sequence
 
-`Sarouty full → PR #990 merge → Agenz smoke/full → multi-source artifact union → listing-detail freshness → canonical extraction → semantic dedupe → quality → 10k → 50k → 100k usable → Mubawab deeper replay if needed → bounded prod-ingestion canary if required → closeout docs → post-merge verification`
+`Sarouty targeted full → PR #990 closeout/merge → Agenz full → PR #993 closeout/merge → multi-source artifact union → listing-detail freshness → canonical extraction → semantic dedupe → quality → 10k → 50k → 100k usable → Mubawab deeper replay if needed → bounded prod-ingestion canary if required → closeout docs → post-merge verification`
 
 ## Current handover state
 
 - chantier: **Morocco Web Acquisition / L8 Scale + Coverage**
 - Goal: **>100,000 usable canonical Moroccan listings**
-- main: `21ec5032c56312e213367c5cacb76b39d5a15a59` before this canonical-only update
 - strongest certified enumeration: **Avito full = 27,053 unique IDs**
 - second full source: **MarocAnnonces = 10,000 unique IDs**
 - current exact artifact URL union: **37,053**
 - active sources: **Sarouty + Agenz**
-- Sarouty run: `33764142715` — **QUEUED**
-- Agenz run: `33764290049` — **QUEUED**
+- Sarouty targeted run: `33765427351` — **QUEUED** at last verification
+- Agenz full run: `33764930794` — **IN_PROGRESS** at last verification
 - production DB mutation: **none authorized**
 - Vercel: **not required / not authorized**
 - strategic blocker: **none**
-- Next exact: **Sarouty full result; Agenz smoke in parallel**
+- Next exact: **Sarouty targeted full + Agenz full results**
 - global project percentage: **intentionally unassigned; do not invent one**
