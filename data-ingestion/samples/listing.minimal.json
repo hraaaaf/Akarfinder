@@ -14,17 +14,8 @@
   "property_type": "unknown",
   "title": "Bien immobilier à vendre",
   "description": null,
-  "price": {
-    "amount": null,
-    "currency": "MAD",
-    "period": null,
-    "on_request": true
-  },
-  "surface": {
-    "total_m2": null,
-    "habitable_m2": null,
-    "land_m2": null
-  },
+  "price": { "amount": null, "currency": "MAD", "period": "unknown", "on_request": true },
+  "surface": { "total_m2": null, "habitable_m2": null, "built_m2": null, "land_m2": null },
   "rooms": null,
   "bedrooms": null,
   "bathrooms": null,
@@ -37,23 +28,16 @@
     "address_text": null,
     "latitude": null,
     "longitude": null,
-    "precision": "city"
+    "precision": "city_centroid"
   },
   "features": [],
   "images": [],
-  "seller": {
-    "name": null,
-    "type": "unknown",
-    "source_profile_url": null
-  },
+  "seller": { "name": null, "type": "unknown", "source_profile_url": null },
   "provenance": {
     "source_type": "portal",
     "source_listing_url": "https://example.com/listing/fixture-minimal-001",
     "retrieval_method": "crawl"
   },
-  "quality": {
-    "score": 45,
-    "warnings": ["property_type_unknown", "price_on_request"]
-  },
+  "quality": { "score": 45, "warnings": ["property_type_unknown", "price_on_request"] },
   "raw": {}
 }
