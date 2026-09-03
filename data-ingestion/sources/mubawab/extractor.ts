@@ -59,6 +59,72 @@ function extractPrimaryImageUrls($: ReturnType<typeof load>): string[] {
   ]);
 }
 
+function extractPrimaryJsonLdType($: ReturnType<typeof load>, sourceId: string): string | null {
+  let fallback: string | null = null;
+
+  $("script[type='application/ld+json']").each((_, el) => {
+    const raw = $(el).contents().text();
+    if (!raw) return;
+
+    try {
+      const parsed = JSON.parse(raw);
+      const roots = Array.isArray(parsed) ? parsed : [parsed];
+      const nodes: any[] = [];
+
+      for (const root of roots) {
+        if (root && Array.isArray(root["@graph"])) nodes.push(...root["@graph"]);
+        else nodes.push(root);
+      }
+
+      for (const node of nodes) {
+        if (!node || typeof node !== "object") continue;
+        const nodeType = Array.isArray(node["@type"]) ? node["@type"].join(" ") : node["@type"];
+        if (typeof nodeType !== "string" || !nodeType.trim()) continue;
+
+        const nodeUrl = typeof node.url === "string" ? node.url : "";
+        if (nodeUrl.includes(`/a/${sourceId}/`) || nodeUrl.includes(`/pa/${sourceId}/`)) {
+          fallback = nodeType;
+          return false;
+        }
+
+        if (fallback == null && /apartment|house|villa|residence|land|office|store|place/i.test(nodeType)) {
+          fallback = nodeType;
+        }
+      }
+    } catch {
+      // Ignore malformed JSON-LD; title remains the primary deterministic signal.
+    }
+  });
+
+  return fallback;
+}
+
+function normalizeMubawabPropertyType(title: string | null, jsonLdType: string | null, pageText: string): CollectionListing["property_type"] {
+  const titleType = normalizeType(title);
+  if (titleType !== "unknown") return titleType;
+
+  const jsonLdNormalized = normalizeType(jsonLdType);
+  if (jsonLdNormalized !== "unknown") return jsonLdNormalized;
+
+  const explicitTypeLabel = pageText.match(/Type de bien\s*[:\-]?\s*([^\n\r|]{2,80})/i)?.[1] ?? null;
+  const fallbackType = normalizeType(explicitTypeLabel);
+  if (fallbackType === "office" && /local|commerce|magasin/i.test(explicitTypeLabel ?? "")) return "commercial";
+  return fallbackType;
+}
+
+function normalizeMubawabTransaction(title: string | null, pageText: string) {
+  const titleTransaction = normalizeTransaction(null, title);
+  if (titleTransaction !== "unknown") return titleTransaction;
+
+  const explicitTransaction = pageText.match(/(?:Transaction|Type d['’]offre)\s*[:\-]?\s*([^\n\r|]{2,80})/i)?.[1] ?? null;
+  if (explicitTransaction) {
+    const normalized = normalizeTransaction(explicitTransaction);
+    if (normalized !== "unknown") return normalized;
+  }
+
+  return "unknown" as const;
+}
+
 export function extractMubawabCollectionListing(url: string, html: string, now = new Date().toISOString()): CollectionListing {
   const match = new URL(url).pathname.match(DETAIL_RE);
   if (!match) throw new Error("unsupported_mubawab_detail_url");
@@ -68,10 +134,9 @@ export function extractMubawabCollectionListing(url: string, html: string, now =
 
   const title = text($("h1").first().text()) ?? text($("meta[property='og:title']").attr("content"));
   const pageText = $("body").text();
-  const typeRaw = text($("body").find("*:contains('Type de bien')").next().first().text()) ?? title;
-  const transaction = normalizeTransaction(null, `${title ?? ""} ${pageText.slice(0, 1200)}`);
-  const rawType = normalizeType(typeRaw);
-  const propertyType = rawType === "office" && /local|commerce|magasin/i.test(typeRaw ?? "") ? "commercial" : rawType;
+  const jsonLdType = extractPrimaryJsonLdType($, sourceId);
+  const transaction = normalizeMubawabTransaction(title, pageText);
+  const propertyType = normalizeMubawabPropertyType(title, jsonLdType, pageText);
   const priceAmount = normalizePrice(detail.price_raw);
   const totalSurface = normalizeSurface(detail.surface_raw);
 
@@ -98,6 +163,8 @@ export function extractMubawabCollectionListing(url: string, html: string, now =
   const warnings: string[] = [];
   if (!title) warnings.push("title_missing");
   if (!city) warnings.push("city_missing");
+  if (transaction === "unknown") warnings.push("transaction_missing");
+  if (propertyType === "unknown") warnings.push("property_type_missing");
   if (priceAmount == null) warnings.push("price_missing_or_on_request");
   if (totalSurface == null) warnings.push("surface_missing");
 
@@ -119,7 +186,12 @@ export function extractMubawabCollectionListing(url: string, html: string, now =
     property_type: propertyType,
     title,
     description,
-    price: { amount: priceAmount, currency: "MAD", period: transaction === "rent" ? "month" : "total", on_request: priceAmount == null },
+    price: {
+      amount: priceAmount,
+      currency: "MAD",
+      period: transaction === "rent" ? "month" : transaction === "sale" ? "total" : null,
+      on_request: priceAmount == null,
+    },
     surface: { total_m2: totalSurface, habitable_m2: null, built_m2: detail.built_surface_m2 ?? null, land_m2: detail.plot_surface_m2 ?? null },
     rooms: detail.rooms,
     bedrooms: detail.bedrooms,
