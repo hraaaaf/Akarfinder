@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 
 import { runDiscovery, type DiscoveredListingRef } from "../data-ingestion/sources/mubawab/discovery.js";
 import { extractMubawabCollectionListing } from "../data-ingestion/sources/mubawab/extractor.js";
+import { getMubawabHumanTransactionOverride } from "../data-ingestion/sources/mubawab/human-transaction-overrides.js";
 import { inferContextualTransaction, type DiscoveryTransaction } from "../data-ingestion/transaction-context.js";
 import { fetchHtml, isAllowedByRobots } from "./scrapers/utils/fetch-html.js";
 
@@ -93,6 +94,22 @@ function applyTransactionContext(listing: Listing, candidate: Candidate): Listin
     listing.raw = { ...listing.raw, transaction_evidence: { mode: "explicit_detail", confidence: "explicit", discovery_transactions: transactions, discovery_categories: categories } };
     return listing;
   }
+
+  const humanOverride = getMubawabHumanTransactionOverride(candidate.source_id);
+  if (humanOverride) {
+    listing.transaction = humanOverride.transaction;
+    listing.price.period = humanOverride.transaction === "sale" ? "total" : "month";
+    listing.quality.warnings = listing.quality.warnings.filter((warning) => warning !== "transaction_missing").concat("transaction_human_override");
+    listing.raw = { ...listing.raw, transaction_evidence: {
+      mode: "human_override",
+      confidence: "human_confirmed",
+      rationale: humanOverride.rationale,
+      discovery_transactions: transactions,
+      discovery_categories: categories,
+    } };
+    return listing;
+  }
+
   const decision = inferContextualTransaction({
     discovery_transactions: transactions,
     price_amount: listing.price.amount,
@@ -191,14 +208,17 @@ async function metrics() {
   const ids = listings.map((listing) => listing.source.source_id);
   const typeCounts: Record<string, number> = {};
   const transactionCounts: Record<string, number> = {};
-  let explicit = 0; let contextual = 0; let missing = 0;
+  let explicit = 0; let contextual = 0; let humanOverride = 0; let missing = 0;
   for (const listing of listings) {
     typeCounts[listing.property_type ?? "missing"] = (typeCounts[listing.property_type ?? "missing"] ?? 0) + 1;
     transactionCounts[listing.transaction ?? "missing"] = (transactionCounts[listing.transaction ?? "missing"] ?? 0) + 1;
     const mode = (listing.raw.transaction_evidence as { mode?: string } | undefined)?.mode;
-    if (mode === "explicit_detail") explicit += 1; else if (mode === "discovery_context_plus_price") contextual += 1; else missing += 1;
+    if (mode === "explicit_detail") explicit += 1;
+    else if (mode === "discovery_context_plus_price") contextual += 1;
+    else if (mode === "human_override") humanOverride += 1;
+    else missing += 1;
   }
-  return { written: listings.length, unique_source_ids: new Set(ids).size, type_counts: typeCounts, transaction_counts: transactionCounts, transaction_evidence: { explicit, contextual, missing } };
+  return { written: listings.length, unique_source_ids: new Set(ids).size, type_counts: typeCounts, transaction_counts: transactionCounts, transaction_evidence: { explicit, contextual, human_override: humanOverride, missing } };
 }
 
 async function processBatch(limit: number) {
