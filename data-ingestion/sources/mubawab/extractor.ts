@@ -66,14 +66,15 @@ function extractPrimaryTransaction(title: string | null, description: string | n
   if (titleTransaction !== "unknown") return titleTransaction;
   if (!description) return null;
 
+  const primaryDescription = description.slice(0, 700);
   const signals: Array<{ transaction: "sale" | "rent"; index: number }> = [];
   const patterns: Array<{ transaction: "sale" | "rent"; pattern: RegExp }> = [
-    { transaction: "sale", pattern: /(?:à|a)\s+vendre|(?:à|a)\s+la\s+vente|\ben\s+vente\b|\bvente\b/giu },
-    { transaction: "rent", pattern: /(?:à|a)\s+louer|(?:à|a)\s+la\s+location|\ben\s+location\b|\bloyer\b[^.]{0,40}\/\s*mois\b/giu },
+    { transaction: "sale", pattern: /(?:à|a)\s+vendre|(?:à|a)\s+la\s+vente|\bmis(?:e)?\s+en\s+vente\b/giu },
+    { transaction: "rent", pattern: /(?:à|a)\s+louer|(?:à|a)\s+la\s+location|\bloyer\b[^.]{0,40}\/\s*mois\b/giu },
   ];
 
   for (const { transaction, pattern } of patterns) {
-    const match = pattern.exec(description);
+    const match = pattern.exec(primaryDescription);
     if (match?.index != null) signals.push({ transaction, index: match.index });
   }
 
