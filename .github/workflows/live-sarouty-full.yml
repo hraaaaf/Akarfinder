@@ -1,53 +1,55 @@
-name: Live Sarouty full
+name: Live Sarouty property full
 
 on:
   push:
     branches:
       - feat/sarouty-source-first
     paths:
+      - scripts/acquisition/sarouty-property-sitemap-enumerator.mjs
+      - scripts/acquisition/__tests__/sarouty-property-sitemap-enumerator.test.mjs
       - .github/workflows/live-sarouty-full.yml
 
 concurrency:
-  group: live-sarouty-full-${{ github.ref }}
+  group: live-sarouty-property-full-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  sarouty-full:
+  sarouty-property-full:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
       - name: Unit tests
-        run: node --test scripts/acquisition/__tests__/sarouty-sitemap-enumerator.test.mjs
-      - name: Full public sitemap enumeration
+        run: node --test scripts/acquisition/__tests__/sarouty-property-sitemap-enumerator.test.mjs
+      - name: Targeted public property sitemap enumeration
         env:
-          SAROUTY_MAX_SITEMAP_DOCS: '4'
+          SAROUTY_MAX_PROPERTY_SITEMAPS: '6'
           SAROUTY_MAX_URLS: '200000'
-        run: node scripts/acquisition/sarouty-sitemap-enumerator.mjs
-      - name: Verify complete report
+        run: node scripts/acquisition/sarouty-property-sitemap-enumerator.mjs
+      - name: Verify complete targeted report
         run: |
           node - <<'NODE'
           const fs = require('fs');
-          const p = 'artifacts/morocco-web-l8-sarouty-sitemap/report.json';
+          const p = 'artifacts/morocco-web-l8-sarouty-property-sitemap/report.json';
           const r = JSON.parse(fs.readFileSync(p, 'utf8'));
           if (r.zeroDbWrites !== true) throw new Error('zeroDbWrites != true');
           if (r.crawlDelayMs < 10000) throw new Error(`crawlDelayMs=${r.crawlDelayMs}`);
           if (r.stoppedEarly) throw new Error(`stoppedEarly=${r.stoppedEarly}`);
-          if (r.sitemapDocCount !== 4) throw new Error(`sitemapDocCount=${r.sitemapDocCount}`);
-          if (r.requestCount !== 5) throw new Error(`requestCount=${r.requestCount}`);
-          if (r.queueRemaining !== 0) throw new Error(`queueRemaining=${r.queueRemaining}`);
-          if (r.cappedByDocs) throw new Error('cappedByDocs=true');
+          if (r.discoveredPropertySitemapCount !== 6) throw new Error(`discoveredPropertySitemapCount=${r.discoveredPropertySitemapCount}`);
+          if (r.selectedPropertySitemapCount !== 6) throw new Error(`selectedPropertySitemapCount=${r.selectedPropertySitemapCount}`);
+          if (r.requestCount !== 8) throw new Error(`requestCount=${r.requestCount}`);
+          if (r.cappedBySitemaps) throw new Error('cappedBySitemaps=true');
           if (r.cappedByUrls) throw new Error('cappedByUrls=true');
           if (r.uniqueRealEstateListingCount < 1) throw new Error(`uniqueRealEstateListingCount=${r.uniqueRealEstateListingCount}`);
-          console.log(JSON.stringify({crawlDelayMs:r.crawlDelayMs,sitemapDocCount:r.sitemapDocCount,requestCount:r.requestCount,uniqueRealEstateListingCount:r.uniqueRealEstateListingCount,queueRemaining:r.queueRemaining,stoppedEarly:r.stoppedEarly,cappedByDocs:r.cappedByDocs,cappedByUrls:r.cappedByUrls,zeroDbWrites:r.zeroDbWrites}, null, 2));
+          console.log(JSON.stringify({crawlDelayMs:r.crawlDelayMs,discoveredPropertySitemapCount:r.discoveredPropertySitemapCount,selectedPropertySitemapCount:r.selectedPropertySitemapCount,requestCount:r.requestCount,uniqueRealEstateListingCount:r.uniqueRealEstateListingCount,stoppedEarly:r.stoppedEarly,cappedBySitemaps:r.cappedBySitemaps,cappedByUrls:r.cappedByUrls,zeroDbWrites:r.zeroDbWrites}, null, 2));
           NODE
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: sarouty-full-enumeration
-          path: artifacts/morocco-web-l8-sarouty-sitemap/
+          name: sarouty-property-full-enumeration
+          path: artifacts/morocco-web-l8-sarouty-property-sitemap/
           if-no-files-found: error
           retention-days: 14
