@@ -21,14 +21,14 @@ async function fetchDiscoveryPage(url: string): Promise<string> {
 }
 
 async function main() {
-  const result = await runDiscovery(fetchDiscoveryPage, { maxPages: maxPagesFromEnv() });
+  const result = await runDiscovery(fetchDiscoveryPage, {
+    maxPages: maxPagesFromEnv(),
+    city: process.env.MUBAWAB_DISCOVERY_CITY || undefined,
+    category_key: process.env.MUBAWAB_DISCOVERY_CATEGORY || undefined,
+  });
   await mkdir(outputDir, { recursive: true });
   await writeFile(join(outputDir, "discovery-manifest.json"), JSON.stringify(result.manifest, null, 2), "utf8");
-  await writeFile(
-    join(outputDir, "listing-refs.jsonl"),
-    result.listings.map((listing) => JSON.stringify(listing)).join("\n") + (result.listings.length ? "\n" : ""),
-    "utf8",
-  );
+  await writeFile(join(outputDir, "listing-refs.jsonl"), result.listings.map((listing) => JSON.stringify(listing)).join("\n") + (result.listings.length ? "\n" : ""), "utf8");
 
   console.log(JSON.stringify({
     source: result.manifest.source,
@@ -37,6 +37,7 @@ async function main() {
     failed: result.manifest.pages_failed,
     unique_listings: result.manifest.unique_listings,
     duplicate_refs: result.manifest.duplicate_refs,
+    detail_family_counts: result.manifest.detail_family_counts,
     output_dir: outputDir,
   }, null, 2));
 }
