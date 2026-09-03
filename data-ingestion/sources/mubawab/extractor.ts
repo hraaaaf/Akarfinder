@@ -59,70 +59,68 @@ function extractPrimaryImageUrls($: ReturnType<typeof load>): string[] {
   ]);
 }
 
-function extractPrimaryJsonLdType($: ReturnType<typeof load>, sourceId: string): string | null {
+function extractJsonLdPrimaryType($: ReturnType<typeof load>, title: string | null): string | null {
+  const normalizedTitle = title?.toLowerCase().replace(/\s+/g, " ").trim() ?? null;
   let fallback: string | null = null;
 
   $("script[type='application/ld+json']").each((_, el) => {
+    if (fallback && !normalizedTitle) return;
     const raw = $(el).contents().text();
     if (!raw) return;
-
     try {
       const parsed = JSON.parse(raw);
-      const roots = Array.isArray(parsed) ? parsed : [parsed];
-      const nodes: any[] = [];
-
-      for (const root of roots) {
-        if (root && Array.isArray(root["@graph"])) nodes.push(...root["@graph"]);
-        else nodes.push(root);
-      }
-
-      for (const node of nodes) {
+      const stack = Array.isArray(parsed) ? [...parsed] : [parsed];
+      while (stack.length) {
+        const node = stack.shift();
         if (!node || typeof node !== "object") continue;
-        const nodeType = Array.isArray(node["@type"]) ? node["@type"].join(" ") : node["@type"];
-        if (typeof nodeType !== "string" || !nodeType.trim()) continue;
-
-        const nodeUrl = typeof node.url === "string" ? node.url : "";
-        if (nodeUrl.includes(`/a/${sourceId}/`) || nodeUrl.includes(`/pa/${sourceId}/`)) {
-          fallback = nodeType;
-          return false;
+        if (Array.isArray(node)) {
+          stack.push(...node);
+          continue;
         }
-
-        if (fallback == null && /apartment|house|villa|residence|land|office|store|place/i.test(nodeType)) {
-          fallback = nodeType;
+        if (Array.isArray(node["@graph"])) stack.push(...node["@graph"]);
+        const type = typeof node["@type"] === "string" ? node["@type"] : null;
+        const name = typeof node.name === "string" ? node.name.toLowerCase().replace(/\s+/g, " ").trim() : null;
+        if (type && !fallback) fallback = type;
+        if (type && normalizedTitle && name === normalizedTitle) {
+          fallback = type;
+          return false;
         }
       }
     } catch {
-      // Ignore malformed JSON-LD; title remains the primary deterministic signal.
+      // Ignore malformed JSON-LD and keep DOM/title fallbacks.
     }
   });
 
   return fallback;
 }
 
-function normalizeMubawabPropertyType(title: string | null, jsonLdType: string | null, pageText: string): CollectionListing["property_type"] {
-  const titleType = normalizeType(title);
-  if (titleType !== "unknown") return titleType;
+function extractExplicitDetailType($: ReturnType<typeof load>): string | null {
+  let found: string | null = null;
+  $("body *").each((_, el) => {
+    if (found) return false;
+    const ownText = text($(el).clone().children().remove().end().text());
+    if (!ownText || !/^type de bien\s*:?.*$/i.test(ownText)) return;
 
-  const jsonLdNormalized = normalizeType(jsonLdType);
-  if (jsonLdNormalized !== "unknown") return jsonLdNormalized;
+    const inline = text(ownText.replace(/^type de bien\s*:?\s*/i, ""));
+    if (inline) {
+      found = inline;
+      return false;
+    }
 
-  const explicitTypeLabel = pageText.match(/Type de bien\s*[:\-]?\s*([^\n\r|]{2,80})/i)?.[1] ?? null;
-  const fallbackType = normalizeType(explicitTypeLabel);
-  if (fallbackType === "office" && /local|commerce|magasin/i.test(explicitTypeLabel ?? "")) return "commercial";
-  return fallbackType;
+    const sibling = text($(el).next().first().text());
+    if (sibling) {
+      found = sibling;
+      return false;
+    }
+  });
+  return found;
 }
 
-function normalizeMubawabTransaction(title: string | null, pageText: string) {
-  const titleTransaction = normalizeTransaction(null, title);
-  if (titleTransaction !== "unknown") return titleTransaction;
-
-  const explicitTransaction = pageText.match(/(?:Transaction|Type d['’]offre)\s*[:\-]?\s*([^\n\r|]{2,80})/i)?.[1] ?? null;
-  if (explicitTransaction) {
-    const normalized = normalizeTransaction(explicitTransaction);
-    if (normalized !== "unknown") return normalized;
-  }
-
-  return "unknown" as const;
+function mapMubawabPropertyType(typeRaw: string | null): CollectionListing["property_type"] {
+  if (!typeRaw) return "unknown";
+  if (/\bmaison\b|\bhouse\b/i.test(typeRaw) && !/\bvilla\b/i.test(typeRaw)) return "house";
+  const rawType = normalizeType(typeRaw);
+  return rawType === "office" && /local|commerce|magasin/i.test(typeRaw) ? "commercial" : rawType;
 }
 
 export function extractMubawabCollectionListing(url: string, html: string, now = new Date().toISOString()): CollectionListing {
@@ -134,9 +132,14 @@ export function extractMubawabCollectionListing(url: string, html: string, now =
 
   const title = text($("h1").first().text()) ?? text($("meta[property='og:title']").attr("content"));
   const pageText = $("body").text();
-  const jsonLdType = extractPrimaryJsonLdType($, sourceId);
-  const transaction = normalizeMubawabTransaction(title, pageText);
-  const propertyType = normalizeMubawabPropertyType(title, jsonLdType, pageText);
+  const explicitType = extractExplicitDetailType($);
+  const jsonLdType = extractJsonLdPrimaryType($, title);
+  const typeRaw = explicitType ?? jsonLdType ?? title;
+  const titleTransaction = normalizeTransaction(null, title);
+  const transaction = titleTransaction !== "unknown"
+    ? titleTransaction
+    : normalizeTransaction(null, `${text($("meta[property='og:title']").attr("content")) ?? ""} ${explicitType ?? ""}`);
+  const propertyType = mapMubawabPropertyType(typeRaw);
   const priceAmount = normalizePrice(detail.price_raw);
   const totalSurface = normalizeSurface(detail.surface_raw);
 
@@ -163,8 +166,6 @@ export function extractMubawabCollectionListing(url: string, html: string, now =
   const warnings: string[] = [];
   if (!title) warnings.push("title_missing");
   if (!city) warnings.push("city_missing");
-  if (transaction === "unknown") warnings.push("transaction_missing");
-  if (propertyType === "unknown") warnings.push("property_type_missing");
   if (priceAmount == null) warnings.push("price_missing_or_on_request");
   if (totalSurface == null) warnings.push("surface_missing");
 
@@ -186,12 +187,7 @@ export function extractMubawabCollectionListing(url: string, html: string, now =
     property_type: propertyType,
     title,
     description,
-    price: {
-      amount: priceAmount,
-      currency: "MAD",
-      period: transaction === "rent" ? "month" : transaction === "sale" ? "total" : null,
-      on_request: priceAmount == null,
-    },
+    price: { amount: priceAmount, currency: "MAD", period: transaction === "rent" ? "month" : "total", on_request: priceAmount == null },
     surface: { total_m2: totalSurface, habitable_m2: null, built_m2: detail.built_surface_m2 ?? null, land_m2: detail.plot_surface_m2 ?? null },
     rooms: detail.rooms,
     bedrooms: detail.bedrooms,
