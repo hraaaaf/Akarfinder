@@ -143,7 +143,13 @@ async function initialize() {
     const ids: string[] = [];
     for (const ref of result.listings) {
       ids.push(ref.source_id);
-      const context: Context = { ...scope, route_url: ref.route_url };
+      const context: Context = {
+        scope_id: scope.id,
+        city: scope.city,
+        category_key: scope.category_key,
+        transaction: scope.transaction,
+        route_url: ref.route_url,
+      };
       const existing = candidateMap.get(ref.source_id);
       if (existing) {
         discoveredDuplicates += 1;
