@@ -1,0 +1,27 @@
+name: L8 canonical multisource tests
+
+on:
+  push:
+    branches: [feat/l8-canonical-multisource]
+    paths:
+      - 'scripts/acquisition/canonical_listing_extractor.py'
+      - 'scripts/acquisition/__tests__/test_canonical_listing_extractor.py'
+      - '.github/workflows/l8-canonical-multisource-tests.yml'
+
+concurrency:
+  group: l8-canonical-multisource-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  extractor-tests:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Canonical extractor unit tests
+        run: python -m unittest scripts/acquisition/__tests__/test_canonical_listing_extractor.py -v
