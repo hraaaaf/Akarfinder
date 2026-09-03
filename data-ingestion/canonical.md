@@ -1,0 +1,564 @@
+# AkarFinder — Data Ingestion Canonical
+
+**Status:** ACTIVE / foundation
+
+**Branch:** `feat/data-ingestion-canonical`
+
+**Purpose:** boussole canonique pour toute ingestion de données immobilières externes vers AkarFinder.
+
+---
+
+## 1. Goal
+
+Construire une couche d’ingestion multi-source capable de découvrir, extraire, normaliser, dédupliquer, mettre à jour et retirer des annonces immobilières provenant de plusieurs sources, sans coupler AkarFinder à un portail particulier.
+
+La première expérimentation ciblée est Mubawab. Si elle fonctionne, le même contrat d’ingestion doit pouvoir accueillir d’autres grands portails, agences, partenaires, feeds et sources autorisées sans réécrire le cœur AkarFinder.
+
+---
+
+## 2. Critères de réussite
+
+Le chantier n’est considéré comme réussi que si :
+
+1. une source peut être ajoutée via un adaptateur dédié sans modifier le modèle canonique AkarFinder ;
+2. chaque annonce importée garde une provenance complète ;
+3. une annonce existante peut être mise à jour sans créer de doublon ;
+4. une annonce disparue peut être marquée inactive ou retirée ;
+5. toutes les annonces issues d’une source donnée peuvent être purgées sans affecter les autres sources ;
+6. les annonces directes, partenaires ou provenant d’agences signées restent indépendantes des annonces collectées sur un portail tiers ;
+7. l’ingestion peut reprendre après interruption sans recommencer tout le crawl ;
+8. le résultat peut être validé sur un petit échantillon avant toute ingestion massive ;
+9. aucune donnée n’entre dans l’index public AkarFinder sans passer les contrôles de normalisation et de qualité.
+
+---
+
+## 3. Principe d’architecture
+
+```text
+Source externe
+    ↓
+Source Adapter
+    ↓
+Raw Listing
+    ↓
+Normalizer
+    ↓
+Canonical Listing
+    ↓
+Deduplication / Matching
+    ↓
+Validation
+    ↓
+AkarFinder ingestion store
+    ↓
+Search / Ranking / UI
+```
+
+Le cœur AkarFinder ne doit jamais connaître la structure HTML ou API spécifique d’un portail.
+
+Chaque portail possède son propre adaptateur.
+
+Exemples futurs :
+
+```text
+MubawabAdapter
+AvitoAdapter
+SaroutyAdapter
+AgencyFeedAdapter
+PartnerFeedAdapter
+OpenDataAdapter
+        ↓
+CanonicalListing
+```
+
+---
+
+## 4. Organisation du dossier
+
+Structure cible :
+
+```text
+data-ingestion/
+  canonical.md
+  schema/
+    listing.schema.json
+  sources/
+    mubawab/
+      README.md
+      config.json
+      fixtures/
+    avito/
+    sarouty/
+  runs/
+    .gitkeep
+  samples/
+    .gitkeep
+```
+
+Les données massives de crawl ne doivent pas être commitées dans Git par défaut.
+
+Git conserve le code, le schéma, les fixtures de test, les petits échantillons et les manifestes nécessaires à la reproductibilité.
+
+---
+
+## 5. Identité canonique d’une annonce
+
+Une annonce AkarFinder importée doit avoir deux identités distinctes :
+
+### Identité interne
+
+`akar_id`
+
+Identifiant stable propre à AkarFinder.
+
+### Identité source
+
+- `source_name`
+- `source_id`
+- `source_url`
+
+Clé source recommandée :
+
+```text
+source_name + source_id
+```
+
+Si la source ne fournit pas d’identifiant stable, dériver une clé déterministe à partir de l’URL canonique ou d’une empreinte stable.
+
+---
+
+## 6. Schéma canonique minimal
+
+```json
+{
+  "akar_id": null,
+  "source": {
+    "name": null,
+    "source_id": null,
+    "url": null,
+    "first_seen_at": null,
+    "last_seen_at": null,
+    "scraped_at": null,
+    "content_hash": null
+  },
+  "status": "active",
+  "transaction": null,
+  "property_type": null,
+  "title": null,
+  "description": null,
+  "price": {
+    "amount": null,
+    "currency": "MAD",
+    "period": null,
+    "on_request": false
+  },
+  "surface": {
+    "total_m2": null,
+    "habitable_m2": null,
+    "land_m2": null
+  },
+  "rooms": null,
+  "bedrooms": null,
+  "bathrooms": null,
+  "floor": null,
+  "location": {
+    "country": "Morocco",
+    "region": null,
+    "city": null,
+    "district": null,
+    "address_text": null,
+    "latitude": null,
+    "longitude": null,
+    "precision": null
+  },
+  "features": [],
+  "images": [],
+  "seller": {
+    "name": null,
+    "type": null,
+    "source_profile_url": null
+  },
+  "provenance": {
+    "source_type": null,
+    "source_listing_url": null,
+    "retrieval_method": null
+  },
+  "quality": {
+    "score": null,
+    "warnings": []
+  },
+  "raw": {}
+}
+```
+
+Le schéma JSON formel sera créé séparément dans `schema/listing.schema.json`.
+
+---
+
+## 7. Provenance obligatoire
+
+Aucune annonce importée ne doit perdre sa provenance.
+
+Valeurs possibles de `source_type` :
+
+- `portal`
+- `agency_direct`
+- `partner_feed`
+- `owner_direct`
+- `developer_direct`
+- `open_data`
+- `manual`
+
+Une annonce issue d’un portail tiers reste marquée `portal` même si l’agence présente dans l’annonce devient ultérieurement partenaire AkarFinder.
+
+Si l’agence fournit ensuite directement la même annonce, cette nouvelle version peut devenir une annonce `agency_direct`, après matching et validation, sans dépendre du portail d’origine.
+
+---
+
+## 8. Règle de purge par source
+
+La suppression d’une source doit être une opération native du système.
+
+Exemple :
+
+```text
+purge source = mubawab
+```
+
+Cette opération doit pouvoir supprimer ou désactiver toutes les annonces dont :
+
+```text
+source.name == "mubawab"
+AND provenance.source_type == "portal"
+```
+
+Elle ne doit jamais supprimer :
+
+- les annonces `agency_direct` ;
+- les annonces `partner_feed` ;
+- les annonces `owner_direct` ;
+- les annonces devenues indépendantes d’un portail après ingestion directe autorisée.
+
+Cette séparation est obligatoire dès la première version.
+
+---
+
+## 9. Déduplication
+
+La déduplication se fait en plusieurs niveaux.
+
+### Niveau 1 — exact source match
+
+Même `source_name + source_id` → même annonce source.
+
+### Niveau 2 — URL canonique
+
+Même URL canonique → très forte probabilité de doublon.
+
+### Niveau 3 — fingerprint immobilier
+
+Comparer notamment :
+
+- ville ;
+- quartier ;
+- latitude/longitude si disponibles ;
+- type de bien ;
+- transaction ;
+- surface ;
+- prix ;
+- chambres ;
+- texte ;
+- images ;
+- agence / vendeur.
+
+### Niveau 4 — cross-source matching
+
+Deux annonces de portails différents peuvent représenter le même bien.
+
+Le système doit pouvoir les relier sans forcément supprimer leur provenance individuelle.
+
+Objectif futur :
+
+```text
+Property Entity
+  ├── Mubawab listing
+  ├── Avito listing
+  ├── Sarouty listing
+  └── Agency direct listing
+```
+
+---
+
+## 10. Gestion du temps et de la fraîcheur
+
+Champs obligatoires :
+
+- `first_seen_at`
+- `last_seen_at`
+- `scraped_at`
+- `content_hash`
+
+À chaque nouveau passage :
+
+### annonce retrouvée inchangée
+
+Mettre à jour `last_seen_at` uniquement.
+
+### annonce retrouvée modifiée
+
+Mettre à jour les champs concernés + `content_hash` + `last_seen_at`.
+
+### annonce non retrouvée
+
+Ne pas supprimer immédiatement.
+
+Passer progressivement par exemple :
+
+```text
+active → stale → inactive
+```
+
+Le seuil exact sera défini après observation réelle des sources.
+
+---
+
+## 11. Images
+
+Chaque image doit conserver au minimum :
+
+```json
+{
+  "url": null,
+  "position": 1,
+  "hash": null
+}
+```
+
+La stratégie de stockage local, proxy, cache ou simple référence distante sera décidée séparément.
+
+Ne pas lier le modèle canonique à une stratégie de stockage d’image particulière.
+
+---
+
+## 12. Seller / agence
+
+Ne pas confondre :
+
+- l’annonce ;
+- le bien immobilier ;
+- l’agence ;
+- la source où l’annonce a été trouvée.
+
+Une agence peut apparaître sur plusieurs portails.
+
+À terme :
+
+```text
+Agency Entity
+  ├── Mubawab profile
+  ├── Avito profile
+  ├── Sarouty profile
+  └── AkarFinder partner profile
+```
+
+Le matching d’agence doit donc être séparé du matching d’annonce.
+
+---
+
+## 13. Pipeline d’un crawl
+
+Chaque run doit produire un manifeste.
+
+Exemple :
+
+```json
+{
+  "run_id": "mubawab-2026-09-03-001",
+  "source": "mubawab",
+  "started_at": null,
+  "completed_at": null,
+  "pages_discovered": 0,
+  "pages_processed": 0,
+  "listings_discovered": 0,
+  "listings_fetched": 0,
+  "listings_normalized": 0,
+  "listings_rejected": 0,
+  "duplicates": 0,
+  "errors": []
+}
+```
+
+Le run doit être reprenable après interruption.
+
+---
+
+## 14. Format de sortie des crawls
+
+Pour les volumes importants, préférer JSONL à un unique énorme fichier JSON.
+
+Structure possible :
+
+```text
+runs/mubawab/2026-09-03/
+  manifest.json
+  listings-0001.jsonl
+  listings-0002.jsonl
+  errors.jsonl
+```
+
+Une ligne = une annonce canonique.
+
+Avantages :
+
+- streaming ;
+- reprise ;
+- traitement par chunks ;
+- erreurs isolées ;
+- ingestion progressive ;
+- mémoire maîtrisée.
+
+---
+
+## 15. Quality gate
+
+Une annonce ne doit pas être publiée automatiquement si elle échoue aux contrôles essentiels.
+
+Contrôles minimaux :
+
+- source connue ;
+- URL valide ;
+- transaction reconnue ;
+- type de bien reconnu ou explicitement `unknown` ;
+- ville identifiable ;
+- prix correctement typé ou marqué `on_request` ;
+- surfaces numériques cohérentes ;
+- absence de valeurs impossibles évidentes ;
+- fingerprint calculable ;
+- provenance complète.
+
+Les annonces rejetées sont conservées dans les logs du run avec motif d’échec.
+
+---
+
+## 16. MVP Mubawab
+
+Le premier test ne doit PAS commencer par tout le site.
+
+Séquence canonique :
+
+### Phase M0 — découverte
+
+- comprendre catégories et pagination ;
+- identifier les URLs d’annonces ;
+- identifier les champs disponibles ;
+- identifier les variations entre types de biens et transactions.
+
+### Phase M1 — échantillon contrôlé
+
+Extraire environ 20 annonces réparties entre plusieurs types et villes.
+
+Comparer manuellement :
+
+```text
+page source ↔ raw extraction ↔ canonical JSON
+```
+
+Objectif : exactitude des champs, pas volume.
+
+### Phase M2 — pagination limitée
+
+Crawler plusieurs pages d’une catégorie et tester :
+
+- déduplication ;
+- reprise ;
+- erreurs ;
+- stabilité des IDs ;
+- évolution d’une annonce entre deux runs.
+
+### Phase M3 — couverture élargie
+
+Étendre progressivement aux catégories, villes et transactions.
+
+### Phase M4 — ingestion AkarFinder de test
+
+Charger le dataset dans un environnement isolé AkarFinder.
+
+Valider recherche, filtres, ranking, détails et purge par source.
+
+### Phase M5 — décision
+
+Seulement après preuve : décider si la source peut être intégrée durablement, conservée comme expérimentation, remplacée par un partenariat/feed, ou entièrement purgée.
+
+---
+
+## 17. Règles de sécurité opérationnelle
+
+- Aucun crawl massif avant validation d’un échantillon.
+- Aucun write direct dans la base production pendant le développement du connecteur.
+- Aucun secret ou cookie de session dans Git.
+- Aucun fichier massif de crawl dans le repository.
+- Chaque run doit être identifiable et reproductible.
+- Chaque source doit disposer d’un interrupteur de désactivation.
+- Chaque source doit pouvoir être purgée indépendamment.
+- Les données partenaires/directes doivent être séparées des données portail.
+
+---
+
+## 18. Ce que ce chantier ne doit pas devenir
+
+Ne pas :
+
+- coder Mubawab directement dans les composants de recherche ;
+- importer aveuglément tout champ fourni par une source ;
+- traiter une URL comme l’identité universelle d’un bien immobilier ;
+- mélanger annonce et propriété réelle ;
+- mélanger agence et portail ;
+- garder éternellement une annonce disparue ;
+- dépendre d’un unique gros fichier JSON mutable ;
+- publier des données dont la provenance est inconnue.
+
+---
+
+## 19. Ordre des prochaines briques
+
+1. `data-ingestion/schema/listing.schema.json`
+2. fixture canonique minimale
+3. fixture canonique complète
+4. manifest de run
+5. `MubawabAdapter` expérimental
+6. extraction de 20 annonces
+7. validation champ par champ
+8. déduplication intra-source
+9. second run pour tester changements/disparitions
+10. ingestion dans un environnement AkarFinder isolé
+11. test de purge `source=mubawab`
+12. seulement ensuite : extension de couverture
+
+---
+
+## 20. Definition of Done du chantier initial
+
+Le chantier initial est CLOSED uniquement lorsqu’on possède :
+
+- un schéma canonique versionné ;
+- un adaptateur Mubawab expérimental ;
+- un dataset contrôlé ;
+- une preuve de normalisation correcte ;
+- une preuve de déduplication ;
+- une preuve de reprise après interruption ;
+- une preuve de mise à jour ;
+- une preuve de désactivation d’annonce disparue ;
+- une preuve de purge complète d’une source ;
+- une preuve que les annonces directes/partenaires restent intactes après cette purge.
+
+Tant que ces preuves n’existent pas, le pipeline n’est pas considéré comme prêt pour une ingestion massive.
+
+---
+
+## 21. Décision canonique actuelle
+
+**AkarFinder devient source-agnostic.**
+
+Mubawab est le premier adaptateur expérimental, pas le modèle de données.
+
+La valeur durable est le moteur d’ingestion, la normalisation, la déduplication, la fraîcheur, la provenance et la capacité à convertir progressivement les agences découvertes en relations directes avec AkarFinder.
