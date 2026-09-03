@@ -73,31 +73,46 @@ try {
     await context.close();
   }
 
-  // 2) Authenticated project continuity: wait for the hydrated effect to request continuity.
+  // 2) Authenticated project continuity: instrument the exact browser fetch API used by Search before React hydrates.
   {
     const context = await browser.newContext();
+    await context.addInitScript(({ continuityBody }) => {
+      const calls = [];
+      Object.defineProperty(window, "__akarAuditFetchCalls", { value: calls, configurable: true });
+      const originalFetch = window.fetch.bind(window);
+      window.fetch = async function auditedFetch(input, init) {
+        const raw = typeof input === "string"
+          ? input
+          : input instanceof URL
+            ? input.toString()
+            : input.url;
+        const url = new URL(raw, window.location.href);
+        calls.push(url.pathname);
+        if (url.pathname === "/api/me/continuity") {
+          return new Response(continuityBody, {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
+        return originalFetch(input, init);
+      };
+    }, { continuityBody: JSON.stringify({ projects: [{ id: "audit-project", profile }] }) });
+
     const page = await context.newPage();
-    let continuityHits = 0;
-    await page.route("**/api/me/continuity", async (route) => {
-      continuityHits += 1;
-      await route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify({ projects: [{ id: "audit-project", profile }] }),
-      });
-    });
-    const continuityRequest = page.waitForRequest(
-      (request) => new URL(request.url()).pathname === "/api/me/continuity",
-      { timeout: 15_000 },
-    ).catch(() => null);
     const response = await page.goto(`${baseUrl}/search?guided=1&profile_version=2.0&city=Rabat&project_id=audit-project`, { waitUntil: "domcontentloaded", timeout: 60_000 });
     if ((response?.status() ?? 0) !== 200) findings.push(`PROJECT_SEARCH_HTTP_${response?.status() ?? 0}`);
     await page.locator("[data-search-results-section]").waitFor({ state: "visible", timeout: 20_000 });
-    await continuityRequest;
+    await page.waitForFunction(
+      () => Array.isArray(window.__akarAuditFetchCalls) && window.__akarAuditFetchCalls.includes("/api/me/continuity"),
+      undefined,
+      { timeout: 15_000 },
+    ).catch(() => undefined);
+    const calls = await page.evaluate(() => window.__akarAuditFetchCalls ?? []);
+    const continuityHits = calls.filter((pathname) => pathname === "/api/me/continuity").length;
     if (continuityHits < 1) findings.push("PROJECT_CONTINUITY_NOT_REQUESTED");
     const url = assertSafeUrl(page.url(), "PROJECT");
     if (url.searchParams.get("project_id") !== "audit-project") findings.push("PROJECT_ID_MISSING");
-    results.project = { continuityHits, url: page.url() };
+    results.project = { continuityHits, calls, url: page.url() };
     await context.close();
   }
 
