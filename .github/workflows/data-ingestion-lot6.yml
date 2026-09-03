@@ -4,8 +4,10 @@ on:
   pull_request:
     paths:
       - "data-ingestion/LOT6_STATUS.md"
+      - "data-ingestion/transaction-context.ts"
       - "data-ingestion/sources/mubawab/**"
       - "scripts/mubawab-crawl-lot6-shakedown.ts"
+      - "scripts/scrapers/__tests__/data-ingestion-transaction-context.test.ts"
       - "scripts/scrapers/utils/fetch-html.ts"
       - ".github/workflows/data-ingestion-lot6.yml"
 
@@ -20,6 +22,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Validate contextual transaction guards
+        run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-transaction-context.test.ts
       - name: First chunked pass 50
         run: npx tsx scripts/mubawab-crawl-lot6-shakedown.ts
       - name: Resume from checkpoint
