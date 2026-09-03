@@ -35,6 +35,8 @@ type TransactionEvidence = {
   confidence: "explicit" | "contextual" | "missing";
 };
 
+type RouteMismatch = { source_id: string; url: string; discovery_transaction: "sale" | "rent"; detail_transaction: "sale" | "rent" };
+
 async function checkedFetch(url: string) {
   const allowed = await isAllowedByRobots(url);
   if (!allowed) throw new Error(`robots_disallowed:${url}`);
@@ -151,13 +153,26 @@ async function initialize() {
   await writeFile(errorsPath, "", "utf8");
 }
 
-async function transactionEvidenceCounts() {
+async function proofMetrics() {
   const raw = await readFile(listingsPath, "utf8");
   const listings = raw.split("\n").filter(Boolean).map((line) => JSON.parse(line) as ExtractedListing);
+  const routeMismatches: RouteMismatch[] = listings
+    .filter((listing) => listing.transaction && listing.transaction !== DISCOVERY_TRANSACTION)
+    .map((listing) => ({
+      source_id: listing.source.source_id,
+      url: listing.source.url,
+      discovery_transaction: DISCOVERY_TRANSACTION,
+      detail_transaction: listing.transaction as "sale" | "rent",
+    }));
+
   return {
-    explicit_detail: listings.filter((listing) => (listing.raw.transaction_evidence as TransactionEvidence | undefined)?.mode === "explicit_detail").length,
-    contextual: listings.filter((listing) => (listing.raw.transaction_evidence as TransactionEvidence | undefined)?.mode === "discovery_context_plus_price").length,
-    missing: listings.filter((listing) => (listing.raw.transaction_evidence as TransactionEvidence | undefined)?.mode === "missing").length,
+    transaction_evidence_counts: {
+      explicit_detail: listings.filter((listing) => (listing.raw.transaction_evidence as TransactionEvidence | undefined)?.mode === "explicit_detail").length,
+      contextual: listings.filter((listing) => (listing.raw.transaction_evidence as TransactionEvidence | undefined)?.mode === "discovery_context_plus_price").length,
+      missing: listings.filter((listing) => (listing.raw.transaction_evidence as TransactionEvidence | undefined)?.mode === "missing").length,
+    },
+    route_mismatch_count: routeMismatches.length,
+    route_mismatches: routeMismatches,
   };
 }
 
@@ -214,6 +229,7 @@ async function processBatch(limit: number) {
   manifest.completed_at = new Date().toISOString();
   await writeFile(checkpointPath, JSON.stringify(checkpoint, null, 2), "utf8");
   await writeFile(manifestPath, JSON.stringify(manifest, null, 2), "utf8");
+  const metrics = await proofMetrics();
 
   const proof = {
     generated_at: new Date().toISOString(),
@@ -227,7 +243,7 @@ async function processBatch(limit: number) {
     resume_observed: resumeMode && checkpoint.first_pass_processed > 0,
     checkpoint_next_index: checkpoint.next_index,
     candidates: candidates.length,
-    transaction_evidence_counts: await transactionEvidenceCounts(),
+    ...metrics,
     database_writes: 0,
     image_downloads: 0,
     mass_ingestion: false,
