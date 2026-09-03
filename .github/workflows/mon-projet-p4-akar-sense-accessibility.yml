@@ -25,6 +25,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 2
       - id: scope
         shell: bash
@@ -51,6 +52,7 @@ jobs:
       - name: Checkout target
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 2
 
       - uses: actions/setup-node@v4
@@ -67,7 +69,7 @@ jobs:
       - name: Preserve P4 audit script and resolve BEFORE
         shell: bash
         run: |
-          cp scripts/audits/finder-p4-accessibility-runtime.mjs /tmp/finder-p4-accessibility-runtime.mjs
+          cp scripts/audits/finder-p4-accessibility-runtime.mjs .finder-p4-accessibility-runtime.mjs
           echo "BEFORE_SHA=$(git rev-parse HEAD^)" >> "$GITHUB_ENV"
           echo "AFTER_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
 
@@ -97,7 +99,7 @@ jobs:
           BASE_URL: http://127.0.0.1:3218
           AUDIT_OUTPUT_DIR: artifacts/finder-p4-proof/before
           P4_AUDIT: '0'
-        run: node /tmp/finder-p4-accessibility-runtime.mjs
+        run: node ./.finder-p4-accessibility-runtime.mjs
 
       - name: Stop BEFORE
         if: always()
