@@ -12,7 +12,7 @@ Build and certify **>100,000 usable Moroccan real-estate listings**.
 A listing counts only after:
 `public enumeration → listing-detail validity → freshness → canonical extraction → cross-source dedupe → quality → serving`.
 
-Raw portal counters, raw URLs and raw enumerated IDs do **not** count as final success.
+Raw URL volume, portal counters and raw enumerated IDs do **not** count as final success.
 
 Final gates: **10k → 50k → 100k usable canonical listings**.
 
@@ -35,16 +35,21 @@ Supabase `AqarFinder` / `kusfiyimwvxblvsrhaes`, verified 2026-09-02:
 - accepted: **13,757**
 - discovered: **11,165**
 
-These are not usable-listing certification.
+Not usable-listing certification.
 
 # Source evidence
 
 ## 1. Avito — FULL ENUMERATION CERTIFIED
 
-- core merged PR #989, commit `ef2af49f96aeb8b2b4962d0f90bad8fa35a85452`
-- full branch HEAD `4866fe6e33525c24a867b0d7559d438c520ddb84`
+Core merged PR #989, commit `ef2af49f96aeb8b2b4962d0f90bad8fa35a85452`.
+
+Full safe-manifest proof:
+- branch `feat/avito-full-manifest`
+- HEAD `4866fe6e33525c24a867b0d7559d438c520ddb84`
 - run `33672899097` — **SUCCESS**
-- safe manifest **2,505 / 2,505**
+- source rows **11,907**
+- safe shards **2,505**
+- requested **2,505 / 2,505**
 - **27,053 unique listing IDs**
 - no 429
 - zero DB writes
@@ -55,25 +60,26 @@ These are not usable-listing certification.
 
 ## 2. Mubawab — BOUNDED ENUMERATION CERTIFIED
 
-- core merged PR #988, commit `c7306784653339ab942a69403cfaca9a39688973`
-- robots-safe manifest **3,172 shards**
-- 25 shards → **301 IDs**
-- 100 shards → **663 IDs**
-- 500 shards → **5,195 IDs**
+Core merged PR #988, commit `c7306784653339ab942a69403cfaca9a39688973`.
+
+Certified:
+- 25 shards → **301 IDs** — run `33662143708`
+- 100 shards → **663 IDs** — run `33662906605`
+- 500 shards → **5,195 IDs** — run `33663293707`
 - no 429
 - zero DB writes
 
-Full replay deferred until union measurement shows it is required.
+Full replay deferred until source union shows it is required.
 
-## 3. Sarouty — LOGIC CERTIFIED / FULL SCALE PENDING
+## 3. Sarouty — ACTIVE, LOGIC CERTIFIED / FULL SCALE NOT YET CERTIFIED
 
-Public contract:
-- robots public;
-- `Crawl-delay: 10` for wildcard agent;
-- sitemap index declared;
-- stable numeric listing IDs observed.
-
-Branch `feat/sarouty-source-first`, refreshed HEAD `0ad79fdd18627a848757f34b304a0df08f66d2bc`, PR #990.
+Branch `feat/sarouty-source-first`.
+Relevant commits:
+- crawl-delay floor: `3aa575f8a12b134b288746895d43c1db30929bb5`
+- tests: `13212b8b01fa7521a1cf69106deb2cb9a861f84e`
+- bounded runner fix: `e712e05d6a1bbd81c7a81a2518d85a44da40fd03`
+- refreshed branch HEAD: `0ad79fdd18627a848757f34b304a0df08f66d2bc`
+- PR #990 OPEN / DRAFT.
 
 Verified logic:
 - **6/6 tests PASS**;
@@ -81,97 +87,92 @@ Verified logic:
 - immediate 429 stop;
 - zero DB writes.
 
-No full unique-ID total certified yet.
+No full Sarouty unique-ID total is certified yet.
 
 ## 4. MarocAnnonces — PUBLIC ACCESS VERIFIED / SCALE PENDING
 
-### Public web proof — 2026-09-03
+Public evidence reverified 2026-09-03:
+- Vente immobilier: **18,263** ads;
+- Location immobilier: **22,706** ads;
+- sale apartments: **7,719**;
+- public detail URLs expose stable numeric IDs under `/annonce/<id>/` paths;
+- observed examples include **10277023** and **10381609**.
 
-Fresh public pages are accessible through the web channel without authentication or bypass.
-
-Observed current section counters:
-- Vente immobilier: **18,263** public ads on a page crawled 2026-09-03;
-- Location immobilier: **22,706** public ads on a page crawled 2026-09-03;
-- sale apartments page: **7,719** apartments within ~18.2k sale inventory.
-
-These counters are discovery evidence only and are not unique/usable certification.
-
-Observed HTML detail hrefs expose stable numeric IDs, including:
-- `10277023` under a sale apartment detail href;
-- `10381609` under a rental apartment detail href.
-
-Verified identity contract remains `/annonce/<listing_id>/` anywhere inside the MarocAnnonces category path. The current parser correctly accepts both observed nested-category href forms.
+These counters are discovery evidence only.
 
 Branch `feat/marocannonces-source-first`:
 - enumerator `237467231cbd12aeb5d516f7c49668356e42876f`
-- original tests `bdc5a6451c41da21d67c18fe0a1467186f9b8425`
-- observed-ID fixture update `c963df926f4de692f6a003a082b543abc4f9e0d9`
-- PR #992 DRAFT.
+- tests `bdc5a6451c41da21d67c18fe0a1467186f9b8425`
+- observed public-ID fixtures `c963df926f4de692f6a003a082b543abc4f9e0d9`
+- bounded live-smoke workflow `8127f1f15ab56baa7117a642c8c8bf398f0b2130`
+- PR #992 OPEN / DRAFT.
 
-Verification:
-- previous reconstructed branch suite **9/9 PASS**;
-- observed real-world ID fixtures **3/3 PASS** against the exact parser regex;
+Verified:
+- reconstructed original suite **9/9 PASS**;
+- observed-ID fixtures **3/3 PASS**;
 - robots-first;
-- conservative 3s floor unless robots requires more;
+- 3s conservative delay floor unless robots requires more;
 - listing-ID dedupe;
-- immediate 429/hard-block stop;
+- 429/hard-block immediate stop;
 - zero DB writes.
 
-Important: public page accessibility is now verified. A compliant robots fetch + bounded enumeration run is still required before claiming a MarocAnnonces unique-ID scale total.
+Bounded runner contract:
+- 1 robots request + max 1 category page;
+- max 100 listings;
+- requires `pageCount=1`, `requestCount=2`, `stoppedEarly=null`, `uniqueListingCount>=1`, `zeroDbWrites=true`;
+- uploads `artifacts/morocco-web-l8-marocannonces/`.
 
-## 5. Agenz — SOURCE-FIRST PREP CERTIFIED / LIVE SCALE PENDING
+**The bounded smoke result is not yet certified.**
 
-Public evidence previously observed:
-- **1,529** apartments for sale in Casablanca;
-- **1,104** rental listings in Casablanca;
-- stable numeric detail pattern, e.g. `/fr/annonces/immo-casablanca/vente-appartements/2-mars/540241`.
+## 5. Agenz — SOURCE-FIRST PREP CERTIFIED
 
 Branch `feat/agenz-source-first`:
 - enumerator `cbacc8b72a8b976cffc6a5ac0ddd0d11ba915890`
 - tests `62c16db5957c3de940f10a7c62c1bf2d413749d3`
-- PR #993 DRAFT.
 
-Verified reconstructed branch logic: **9/9 PASS**, robots-first, conservative delay, numeric-ID dedupe, immediate 429/hard-block stop, zero DB writes.
-
-No Agenz unique-ID scale total certified yet.
+Verified locally on reconstructed exact branch logic:
+- **9/9 tests PASS**;
+- robots-first;
+- conservative 3s delay floor unless robots requires more;
+- numeric listing-ID dedupe;
+- 429/hard-block stop;
+- zero DB writes.
 
 # Current doctrine
 
-1. Goal >100k is explicitly multi-source.
+1. Goal >100k is multi-source.
 2. Avito is frozen at **27,053 certified enumerated IDs**.
-3. Mubawab remains a productive reserve.
-4. MarocAnnonces is now **public-access verified** and is the strongest next reservoir by observed section volume (~41k sale+rent before dedupe/freshness).
-5. Sarouty remains active but requires sitemap-capable execution for full enumeration.
-6. Agenz remains complementary.
+3. Mubawab remains productive and available for deeper replay if union requires it.
+4. Sarouty remains active.
+5. MarocAnnonces is the strongest new source candidate by public counters (~40k sale+rent section volume before dedupe/freshness).
+6. Agenz is complementary.
 7. No production bulk writes are authorized.
 8. No Vercel deployment is required.
 
 # Next exact
 
-1. **MarocAnnonces:** obtain robots response through a compliant raw-network runner, then run a tiny bounded category enumeration; if no hard block/429, expand to safe full public enumeration and record exact unique IDs + artifact/digest.
-2. **Sarouty:** finish sitemap enumeration under the verified 10-second delay.
-3. **Agenz:** perform equivalent bounded public certification.
-4. Measure union: Avito + MarocAnnonces + Sarouty + Agenz + certified Mubawab.
-5. Freshness → canonical extraction → cross-source dedupe → quality → serving.
-6. Certify **10k → 50k → 100k usable**.
+**MarocAnnonces bounded smoke → if green, full safe public enumeration → exact unique-ID total + artifact/digest.**
+
+Then:
+1. finish Sarouty sitemap enumeration;
+2. measure union: Avito + Sarouty + MarocAnnonces + Agenz + certified Mubawab;
+3. freshness → canonical extraction → cross-source dedupe → quality → serving;
+4. certify **10k → 50k → 100k usable**.
 
 No bypass if a source returns a true hard block.
 
 # Remaining sequence
 
-`MarocAnnonces bounded/full enumeration ↔ Sarouty full enumeration ↔ Agenz certification → source union → Mubawab deeper replay if needed → freshness → extraction → dedupe → quality → 10k → 50k → 100k usable → bounded prod-ingestion canary if required → closeout docs → merge/post-merge verification`
+`MarocAnnonces bounded smoke → MarocAnnonces full safe enumeration → Sarouty certification → Agenz certification → multi-source union → Mubawab deeper replay if needed → freshness → extraction → dedupe → quality → 10k → 50k → 100k usable → bounded prod-ingestion canary if required → closeout docs → merge/post-merge verification`
 
 ## Current handover state
 
 - chantier: **Morocco Web Acquisition / L8 Scale + Coverage**
 - Goal: **>100,000 usable canonical Moroccan listings**
 - strongest certified enumeration: **Avito full = 27,053 unique IDs**
-- active sources: **MarocAnnonces + Sarouty + Agenz**
-- MarocAnnonces public access: **VERIFIED 2026-09-03**
-- source-prep tests: Sarouty **6/6**, MarocAnnonces **9/9 + 3/3 observed-ID fixtures**, Agenz **9/9**
+- active sources: **Sarouty + MarocAnnonces + Agenz**
 - production DB mutation: **none authorized**
 - Vercel: **not required / not authorized**
 - strategic blocker: **none**
-- execution blocker: raw robots/full crawling still needs a compliant network runner; public HTML access itself is proven for MarocAnnonces
-- Next exact: **MarocAnnonces robots + bounded enumeration → full safe enumeration; Sarouty/Agenz in parallel**
+- Next exact: **MarocAnnonces bounded smoke result; if green, full safe enumeration**
 - global project percentage: **intentionally unassigned; do not invent one**
