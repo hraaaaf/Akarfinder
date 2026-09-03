@@ -21,9 +21,13 @@ test('parses wildcard robots rules and delay', () => {
   });
 });
 
-test('detects MarocAnnonces detail IDs', () => {
-  const url = 'https://www.marocannonces.com/categorie/315/Appartements/annonce/10229450/Appartement.html';
-  assert.equal(marocAnnoncesListingId(url), '10229450');
+test('detects MarocAnnonces detail IDs including observed public hrefs', () => {
+  const fixtures = [
+    ['https://www.marocannonces.com/categorie/315/Appartements/annonce/10229450/Appartement.html', '10229450'],
+    ['https://www.marocannonces.com/categorie/16/categorie/315/Appartements/annonce/10277023/example.html', '10277023'],
+    ['https://www.marocannonces.com/categorie/305/categorie/321/Appartements/annonce/10381609/example.html', '10381609'],
+  ];
+  for (const [url, id] of fixtures) assert.equal(marocAnnoncesListingId(url), id);
   assert.equal(marocAnnoncesListingId('https://example.com/annonce/10229450/x'), null);
 });
 
