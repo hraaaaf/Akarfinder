@@ -73,7 +73,7 @@ function extractPrimaryTransaction(title: string | null, description: string | n
   const signals: Array<{ transaction: "sale" | "rent"; index: number }> = [];
   const patterns: Array<{ transaction: "sale" | "rent"; pattern: RegExp }> = [
     { transaction: "sale", pattern: /(?:à|a)\s+vendre|(?:à|a)\s+la\s+vente|\b(?:mis(?:e)?|met|mettre)\s+en\s+vente\b|\bpeut\s+être\s+vendu(?:e)?\b|\bachetez\b|\bvente\b|\bvend(?:s|ons|ez|ent)?\b|\bvendu(?:e|es|s)?\b/giu },
-    { transaction: "rent", pattern: /(?:à|a)\s+louer|(?:à|a)\s+la\s+location|\bloyer\b[^.]{0,40}\/\s*mois\b/giu },
+    { transaction: "rent", pattern: /(?:à|a)\s+louer|(?:à|a)\s+la\s+location|\blocation\s+longue\s+dur[ée]e?\b|\bpour\s+location\s+longue\s+dur[ée]e?\b|\bloyer\b[^.]{0,40}\/\s*mois\b/giu },
   ];
 
   for (const { transaction, pattern } of patterns) {
