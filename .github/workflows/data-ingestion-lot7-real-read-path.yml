@@ -1,0 +1,23 @@
+name: Data Ingestion Lot 7 Real Read Path Gate
+
+on:
+  pull_request:
+    paths:
+      - "data-ingestion/**"
+      - "lib/listings/db-listings.ts"
+      - "scripts/scrapers/__tests__/data-ingestion-lot7-real-read-path.test.ts"
+      - ".github/workflows/data-ingestion-lot7-real-read-path.yml"
+
+jobs:
+  real-read-path:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Validate real AkarFinder SQLite read path
+        run: node --import tsx --test scripts/scrapers/__tests__/data-ingestion-lot7-real-read-path.test.ts
