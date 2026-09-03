@@ -1,0 +1,51 @@
+name: Live MarocAnnonces full
+
+on:
+  push:
+    branches:
+      - feat/marocannonces-source-first
+    paths:
+      - .github/workflows/live-marocannonces-full.yml
+
+concurrency:
+  group: live-marocannonces-full-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  marocannonces-full:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Unit tests
+        run: node --test scripts/acquisition/__tests__/marocannonces-source-first.test.mjs
+      - name: Full safe public enumeration
+        env:
+          MAROCANNONCES_MAX_PAGES: '3000'
+          MAROCANNONCES_MAX_LISTINGS: '35000'
+        run: node scripts/acquisition/marocannonces-source-first.mjs
+      - name: Verify full report
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const p = 'artifacts/morocco-web-l8-marocannonces/report.json';
+          const r = JSON.parse(fs.readFileSync(p, 'utf8'));
+          if (r.zeroDbWrites !== true) throw new Error('zeroDbWrites != true');
+          if (r.robotsStatus !== 200 && r.robotsStatus !== 404) throw new Error(`robotsStatus=${r.robotsStatus}`);
+          if (r.stoppedEarly) throw new Error(`stoppedEarly=${r.stoppedEarly}`);
+          if (r.cappedByPages) throw new Error(`cappedByPages=true pageCount=${r.pageCount} queueRemaining=${r.queueRemaining}`);
+          if (r.cappedByListings) throw new Error(`cappedByListings=true uniqueListingCount=${r.uniqueListingCount}`);
+          if (r.queueRemaining !== 0) throw new Error(`queueRemaining=${r.queueRemaining}`);
+          if (r.uniqueListingCount < 1) throw new Error(`uniqueListingCount=${r.uniqueListingCount}`);
+          console.log(JSON.stringify({robotsStatus:r.robotsStatus,delayMs:r.delayMs,requestCount:r.requestCount,pageCount:r.pageCount,uniqueListingCount:r.uniqueListingCount,queueRemaining:r.queueRemaining,stoppedEarly:r.stoppedEarly,cappedByPages:r.cappedByPages,cappedByListings:r.cappedByListings,zeroDbWrites:r.zeroDbWrites}, null, 2));
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: marocannonces-full-enumeration
+          path: artifacts/morocco-web-l8-marocannonces/
+          if-no-files-found: error
+          retention-days: 14
