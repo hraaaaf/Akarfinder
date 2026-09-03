@@ -1,0 +1,21 @@
+name: Data Ingestion Lot 3 Extractor Gate
+
+on:
+  pull_request:
+    paths:
+      - "data-ingestion/**"
+      - "scripts/scrapers/__tests__/mubawab-extractor-v3.test.ts"
+      - ".github/workflows/data-ingestion-lot3.yml"
+
+jobs:
+  test-extractor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx tsx --test scripts/scrapers/__tests__/mubawab-extractor-v3.test.ts
