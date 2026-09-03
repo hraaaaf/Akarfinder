@@ -1,0 +1,148 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://akarfinder.ma/schemas/listing.schema.json",
+  "title": "AkarFinder Canonical Listing",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "akar_id",
+    "source",
+    "status",
+    "transaction",
+    "property_type",
+    "title",
+    "description",
+    "price",
+    "surface",
+    "rooms",
+    "bedrooms",
+    "bathrooms",
+    "floor",
+    "location",
+    "features",
+    "images",
+    "seller",
+    "provenance",
+    "quality",
+    "raw"
+  ],
+  "properties": {
+    "akar_id": { "type": ["string", "null"], "minLength": 1 },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "source_id", "url", "first_seen_at", "last_seen_at", "scraped_at", "content_hash"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "pattern": "^[a-z0-9][a-z0-9_-]*$" },
+        "source_id": { "type": "string", "minLength": 1 },
+        "url": { "type": "string", "format": "uri", "pattern": "^https?://" },
+        "first_seen_at": { "type": "string", "format": "date-time" },
+        "last_seen_at": { "type": "string", "format": "date-time" },
+        "scraped_at": { "type": "string", "format": "date-time" },
+        "content_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      }
+    },
+    "status": { "type": "string", "enum": ["active", "stale", "inactive", "rejected"] },
+    "transaction": { "type": ["string", "null"], "enum": ["sale", "rent", null] },
+    "property_type": {
+      "type": ["string", "null"],
+      "enum": ["apartment", "villa", "riad", "house", "terrain", "office", "commercial", "warehouse", "farm", "building", "room", "other", "unknown", null]
+    },
+    "title": { "type": ["string", "null"], "maxLength": 500 },
+    "description": { "type": ["string", "null"], "maxLength": 50000 },
+    "price": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["amount", "currency", "period", "on_request"],
+      "properties": {
+        "amount": { "type": ["number", "null"], "minimum": 0 },
+        "currency": { "type": "string", "enum": ["MAD", "EUR", "USD", "GBP", "OTHER"] },
+        "period": { "type": ["string", "null"], "enum": ["day", "week", "month", "year", null] },
+        "on_request": { "type": "boolean" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "on_request": { "const": true } }, "required": ["on_request"] },
+          "then": { "properties": { "amount": { "type": "null" } } }
+        }
+      ]
+    },
+    "surface": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["total_m2", "habitable_m2", "land_m2"],
+      "properties": {
+        "total_m2": { "type": ["number", "null"], "minimum": 0 },
+        "habitable_m2": { "type": ["number", "null"], "minimum": 0 },
+        "land_m2": { "type": ["number", "null"], "minimum": 0 }
+      }
+    },
+    "rooms": { "type": ["integer", "null"], "minimum": 0 },
+    "bedrooms": { "type": ["integer", "null"], "minimum": 0 },
+    "bathrooms": { "type": ["integer", "null"], "minimum": 0 },
+    "floor": { "type": ["integer", "null"] },
+    "location": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["country", "region", "city", "district", "address_text", "latitude", "longitude", "precision"],
+      "properties": {
+        "country": { "type": "string", "const": "Morocco" },
+        "region": { "type": ["string", "null"] },
+        "city": { "type": ["string", "null"] },
+        "district": { "type": ["string", "null"] },
+        "address_text": { "type": ["string", "null"] },
+        "latitude": { "type": ["number", "null"], "minimum": -90, "maximum": 90 },
+        "longitude": { "type": ["number", "null"], "minimum": -180, "maximum": 180 },
+        "precision": { "type": ["string", "null"], "enum": ["exact", "street", "district", "city", "approximate", "unknown", null] }
+      }
+    },
+    "features": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "images": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["url", "position", "hash"],
+        "properties": {
+          "url": { "type": "string", "format": "uri", "pattern": "^https?://" },
+          "position": { "type": "integer", "minimum": 1 },
+          "hash": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "seller": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "type", "source_profile_url"],
+      "properties": {
+        "name": { "type": ["string", "null"] },
+        "type": { "type": ["string", "null"], "enum": ["agency", "owner", "developer", "broker", "unknown", null] },
+        "source_profile_url": { "type": ["string", "null"], "format": "uri" }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_type", "source_listing_url", "retrieval_method"],
+      "properties": {
+        "source_type": { "type": "string", "enum": ["portal", "agency_direct", "partner_feed", "owner_direct", "developer_direct", "open_data", "manual"] },
+        "source_listing_url": { "type": "string", "format": "uri", "pattern": "^https?://" },
+        "retrieval_method": { "type": "string", "enum": ["crawl", "api", "feed", "manual", "import"] }
+      }
+    },
+    "quality": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["score", "warnings"],
+      "properties": {
+        "score": { "type": ["number", "null"], "minimum": 0, "maximum": 100 },
+        "warnings": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "raw": { "type": "object" }
+  }
+}
