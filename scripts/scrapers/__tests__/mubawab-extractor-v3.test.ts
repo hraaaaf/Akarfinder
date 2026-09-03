@@ -80,6 +80,20 @@ describe("Mubawab Lot 3 extractor", () => {
     assert.equal(listing.price.period, "total");
   });
 
+  it("recognizes explicit peut être vendu wording", () => {
+    const html = `<!doctype html><html><head><meta property="og:title" content="Appartement 85 m2 avec vue agréable sur la mer"></head><body><div>1 230 000 DH</div><div>85 m²</div><div>Casablanca</div><h1>Appartement 85 m2 avec vue agréable sur la mer</h1><script type="application/ld+json">{"@type":"Apartment","name":"Appartement 85 m2 avec vue agréable sur la mer","offers":{"price":"1230000"},"address":{"addressLocality":"Casablanca"},"floorSize":{"value":85},"description":"Le bien peut être vendu vide ou meublé, selon les besoins de l’acquéreur."}</script></body></html>`;
+    const listing = extractMubawabCollectionListing("https://www.mubawab.ma/fr/a/8403579/appartement-85-m2-avec-vue-agreable-sur-la-mer", html, "2026-09-03T18:45:00.000Z");
+    assert.equal(listing.transaction, "sale");
+    assert.equal(listing.price.period, "total");
+  });
+
+  it("recognizes explicit achetez wording", () => {
+    const html = `<!doctype html><html><head><meta property="og:title" content="Studio premium avec terrasse"></head><body><div>1 320 000 DH</div><div>55 m²</div><div>Casablanca</div><h1>Studio premium avec terrasse</h1><script type="application/ld+json">{"@type":"Apartment","name":"Studio premium avec terrasse","offers":{"price":"1320000"},"address":{"addressLocality":"Casablanca"},"floorSize":{"value":55},"description":"Achetez votre studio dans une résidence premium au coeur de Casablanca et profitez d'un rendement locatif."}</script></body></html>`;
+    const listing = extractMubawabCollectionListing("https://www.mubawab.ma/fr/a/8134180/studio-premium-avec-terrasse", html, "2026-09-03T18:45:00.000Z");
+    assert.equal(listing.transaction, "sale");
+    assert.equal(listing.price.period, "total");
+  });
+
   it("keeps numbered districts and short Ch. stats when parsing primary location", () => {
     const html = `<!doctype html><html><head><meta property="og:title" content="Appartement à l'achat à Bournazil"><meta property="og:image" content="https://www.mubawab-media.com/a.jpg"></head><body>
 <div>880 000 DH</div>
