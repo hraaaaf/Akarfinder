@@ -14,6 +14,15 @@ const FOCUSABLE_SELECTOR = [
   '[tabindex]:not([tabindex="-1"])',
 ].join(",");
 
+function isTabbable(element: HTMLElement) {
+  const style = window.getComputedStyle(element);
+  return element.isConnected
+    && !element.hasAttribute("disabled")
+    && style.visibility !== "hidden"
+    && style.display !== "none"
+    && element.getClientRects().length > 0;
+}
+
 export function FinderLauncher() {
   const [open, setOpen] = useState(false);
   const launcherRef = useRef<HTMLButtonElement>(null);
@@ -41,9 +50,7 @@ export function FinderLauncher() {
       const panel = panelRef.current;
       if (!panel) return;
 
-      const focusable = Array.from(panel.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter(
-        (element) => element.isConnected && !element.hasAttribute("disabled"),
-      );
+      const focusable = Array.from(panel.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter(isTabbable);
 
       if (focusable.length === 0) {
         event.preventDefault();
