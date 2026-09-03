@@ -24,20 +24,17 @@ export type DbListingRow = {
   bathrooms_count: number | null;
   description_snippet: string | null;
   images_count: number | null;
-  // MUBAWAB-DB-THUMBNAILS-RISK-ACCEPTED-1: public og:image URL, remote only.
   thumbnail_url: string | null;
   seller_name: string | null;
   data_completeness_score: number;
   field_confidence: string | null;
   created_at: string;
   updated_at: string;
-  // P6 — persisted enrichment (null when not yet enriched or column absent).
   duplicate_group_id: string | null;
   duplicate_score: number | null;
   reliability_score: number | null;
   reliability_badge: string | null;
-  reliability_reasons: string | null; // JSON string[]
-  // P8A — advanced characteristics (null/0 when not extracted).
+  reliability_reasons: string | null;
   built_surface_m2: number | null;
   plot_surface_m2: number | null;
   condition: string | null;
@@ -48,17 +45,15 @@ export type DbListingRow = {
   garden_m2: number | null;
   terrace_m2: number | null;
   garage_spaces: number | null;
-  has_pool: number | null;             // INTEGER 0/1 (SQLite) — normalised in mapDbRowToListing
+  has_pool: number | null;
   has_concierge: number | null;
   has_moroccan_living_room: number | null;
   has_european_living_room: number | null;
   has_equipped_kitchen: number | null;
-  premium_features: string | null;    // JSON string[]
+  premium_features: string | null;
   source_name: string | null;
   listing_url: string | null;
   source_url: string | null;
-  // Optional because historical/local SQLite schemas do not expose this column.
-  // Supabase-backed reads populate it; missing values remain fail-closed in tier 4.
   origin_type?: string | null;
 };
 
@@ -82,46 +77,32 @@ export type DbListingsResult = {
 
 function normalizePropertyTypeFilter(value?: string) {
   if (!value) return undefined;
-
   const normalized = value.trim().toLowerCase();
-
   switch (normalized) {
     case "appartement":
-    case "apartment":
-      return "apartment";
-    case "villa":
-      return "villa";
+    case "apartment": return "apartment";
+    case "villa": return "villa";
     case "terrain":
-    case "land":
-      return "land";
-    case "riad":
-      return "riad";
+    case "land": return "land";
+    case "riad": return "riad";
     case "bureau":
-    case "office":
-      return "office";
-    default:
-      return value;
+    case "office": return "office";
+    default: return value;
   }
 }
 
 function normalizeTransactionTypeFilter(value?: string) {
   if (!value) return undefined;
-
   const normalized = value.trim().toLowerCase();
-
   switch (normalized) {
     case "buy":
     case "sale":
-    case "achat":
-      return "sale";
+    case "achat": return "sale";
     case "rent":
-    case "location":
-      return "rent";
+    case "location": return "rent";
     case "new":
-    case "neuf":
-      return "new";
-    default:
-      return value;
+    case "neuf": return "new";
+    default: return value;
   }
 }
 
@@ -133,125 +114,55 @@ export function isDbAvailable(dbPath = DEFAULT_DB_PATH): boolean {
   return existsSync(dbPath);
 }
 
+const ACTIVE_SOURCE_EXISTS = "EXISTS (SELECT 1 FROM listing_sources active_ls WHERE active_ls.property_listing_id = pl.id AND active_ls.is_active = 1)";
+
 export function queryDbListings(
   query: DbListingsQuery = {},
   dbPath = DEFAULT_DB_PATH
 ): DbListingsResult {
-  if (!isDbAvailable(dbPath)) {
-    return { listings: [], total: 0 };
-  }
+  if (!isDbAvailable(dbPath)) return { listings: [], total: 0 };
 
   let db: DatabaseSync | null = null;
-
   try {
     db = openReadOnlyDb(dbPath);
-
-    const conditions: string[] = [];
+    const conditions: string[] = [ACTIVE_SOURCE_EXISTS];
     const params: Array<string | number> = [];
-
     const propertyType = normalizePropertyTypeFilter(query.property_type);
-    const transactionType = normalizeTransactionTypeFilter(
-      query.transaction_type
-    );
+    const transactionType = normalizeTransactionTypeFilter(query.transaction_type);
 
-    if (query.city) {
-      conditions.push("pl.city = ?");
-      params.push(query.city);
-    }
+    if (query.city) { conditions.push("pl.city = ?"); params.push(query.city); }
+    if (propertyType) { conditions.push("pl.property_type = ?"); params.push(propertyType); }
+    if (transactionType) { conditions.push("pl.transaction_type = ?"); params.push(transactionType); }
+    if (query.min_price != null) { conditions.push("pl.price_mad >= ?"); params.push(query.min_price); }
+    if (query.max_price != null) { conditions.push("pl.price_mad <= ?"); params.push(query.max_price); }
+    if (query.min_surface != null) { conditions.push("pl.surface_m2 >= ?"); params.push(query.min_surface); }
+    if (query.max_surface != null) { conditions.push("pl.surface_m2 <= ?"); params.push(query.max_surface); }
+    if (query.bedrooms != null) { conditions.push("pl.bedrooms_count = ?"); params.push(query.bedrooms); }
 
-    if (propertyType) {
-      conditions.push("pl.property_type = ?");
-      params.push(propertyType);
-    }
-
-    if (transactionType) {
-      conditions.push("pl.transaction_type = ?");
-      params.push(transactionType);
-    }
-
-    if (query.min_price != null) {
-      conditions.push("pl.price_mad >= ?");
-      params.push(query.min_price);
-    }
-
-    if (query.max_price != null) {
-      conditions.push("pl.price_mad <= ?");
-      params.push(query.max_price);
-    }
-
-    if (query.min_surface != null) {
-      conditions.push("pl.surface_m2 >= ?");
-      params.push(query.min_surface);
-    }
-
-    if (query.max_surface != null) {
-      conditions.push("pl.surface_m2 <= ?");
-      params.push(query.max_surface);
-    }
-
-    if (query.bedrooms != null) {
-      conditions.push("pl.bedrooms_count = ?");
-      params.push(query.bedrooms);
-    }
-
-    const whereClause =
-      conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+    const whereClause = `WHERE ${conditions.join(" AND ")}`;
     const limit = Math.min(Math.max(query.limit ?? 50, 1), 100);
     const offset = Math.max(query.offset ?? 0, 0);
 
-    const countSql = `SELECT COUNT(*) as total FROM property_listings pl ${whereClause}`;
-    const countStatement = db.prepare(countSql);
-    const countRow = countStatement.get(...params) as { total: number } | undefined;
+    const countRow = db.prepare(`SELECT COUNT(*) as total FROM property_listings pl ${whereClause}`).get(...params) as { total: number } | undefined;
 
-    const rowsSql = `
+    const rows = db.prepare(`
       SELECT
         pl.*,
-        (
-          SELECT ls.source_name
-          FROM listing_sources ls
-          WHERE ls.property_listing_id = pl.id AND ls.is_active = 1
-          ORDER BY ls.first_seen_at
-          LIMIT 1
-        ) AS source_name,
-        (
-          SELECT ls.listing_url
-          FROM listing_sources ls
-          WHERE ls.property_listing_id = pl.id AND ls.is_active = 1
-          ORDER BY ls.first_seen_at
-          LIMIT 1
-        ) AS listing_url,
-        (
-          SELECT ls.source_url
-          FROM listing_sources ls
-          WHERE ls.property_listing_id = pl.id AND ls.is_active = 1
-          ORDER BY ls.first_seen_at
-          LIMIT 1
-        ) AS source_url
+        (SELECT ls.source_name FROM listing_sources ls WHERE ls.property_listing_id = pl.id AND ls.is_active = 1 ORDER BY ls.first_seen_at LIMIT 1) AS source_name,
+        (SELECT ls.listing_url FROM listing_sources ls WHERE ls.property_listing_id = pl.id AND ls.is_active = 1 ORDER BY ls.first_seen_at LIMIT 1) AS listing_url,
+        (SELECT ls.source_url FROM listing_sources ls WHERE ls.property_listing_id = pl.id AND ls.is_active = 1 ORDER BY ls.first_seen_at LIMIT 1) AS source_url
       FROM property_listings pl
       ${whereClause}
       ORDER BY pl.data_completeness_score DESC, pl.updated_at DESC, pl.id DESC
       LIMIT ? OFFSET ?
-    `;
+    `).all(...params, limit, offset) as DbListingRow[];
 
-    const rowsStatement = db.prepare(rowsSql);
-    const rows = rowsStatement.all(...params, limit, offset) as DbListingRow[];
-
-    return {
-      listings: rows,
-      total: countRow?.total ?? 0,
-    };
+    return { listings: rows, total: countRow?.total ?? 0 };
   } catch (error) {
-    console.error(
-      "[db-listings]",
-      error instanceof Error ? error.message : String(error)
-    );
+    console.error("[db-listings]", error instanceof Error ? error.message : String(error));
     return { listings: [], total: 0 };
   } finally {
-    try {
-      db?.close();
-    } catch {
-      // Ignore close errors on defensive cleanup.
-    }
+    try { db?.close(); } catch { /* ignore */ }
   }
 }
 
@@ -275,7 +186,8 @@ export function queryDbStats(dbPath = DEFAULT_DB_PATH): DbStats {
         ROUND(AVG(data_completeness_score), 1) AS avg_completeness,
         COUNT(DISTINCT duplicate_group_id) AS duplicates_detected,
         ROUND(AVG(CASE WHEN reliability_score IS NOT NULL THEN reliability_score END), 1) AS avg_reliability
-      FROM property_listings
+      FROM property_listings pl
+      WHERE ${ACTIVE_SOURCE_EXISTS}
     `).get() as { total_listings: number; avg_completeness: number; duplicates_detected: number; avg_reliability: number } | undefined;
     return row ?? empty;
   } catch {
@@ -289,61 +201,28 @@ export function getDbListingById(
   id: string,
   dbPath = DEFAULT_DB_PATH
 ): DbListingRow | null {
-  if (!isDbAvailable(dbPath)) {
-    return null;
-  }
-
+  if (!isDbAvailable(dbPath)) return null;
   const numericId = Number(id);
-  if (!Number.isInteger(numericId) || numericId <= 0) {
-    return null;
-  }
+  if (!Number.isInteger(numericId) || numericId <= 0) return null;
 
   let db: DatabaseSync | null = null;
-
   try {
     db = openReadOnlyDb(dbPath);
-    const sql = `
+    const row = db.prepare(`
       SELECT
         pl.*,
-        (
-          SELECT ls.source_name
-          FROM listing_sources ls
-          WHERE ls.property_listing_id = pl.id AND ls.is_active = 1
-          ORDER BY ls.first_seen_at
-          LIMIT 1
-        ) AS source_name,
-        (
-          SELECT ls.listing_url
-          FROM listing_sources ls
-          WHERE ls.property_listing_id = pl.id AND ls.is_active = 1
-          ORDER BY ls.first_seen_at
-          LIMIT 1
-        ) AS listing_url,
-        (
-          SELECT ls.source_url
-          FROM listing_sources ls
-          WHERE ls.property_listing_id = pl.id AND ls.is_active = 1
-          ORDER BY ls.first_seen_at
-          LIMIT 1
-        ) AS source_url
+        (SELECT ls.source_name FROM listing_sources ls WHERE ls.property_listing_id = pl.id AND ls.is_active = 1 ORDER BY ls.first_seen_at LIMIT 1) AS source_name,
+        (SELECT ls.listing_url FROM listing_sources ls WHERE ls.property_listing_id = pl.id AND ls.is_active = 1 ORDER BY ls.first_seen_at LIMIT 1) AS listing_url,
+        (SELECT ls.source_url FROM listing_sources ls WHERE ls.property_listing_id = pl.id AND ls.is_active = 1 ORDER BY ls.first_seen_at LIMIT 1) AS source_url
       FROM property_listings pl
-      WHERE pl.id = ?
+      WHERE pl.id = ? AND ${ACTIVE_SOURCE_EXISTS}
       LIMIT 1
-    `;
-
-    const row = db.prepare(sql).get(numericId) as DbListingRow | undefined;
+    `).get(numericId) as DbListingRow | undefined;
     return row ?? null;
   } catch (error) {
-    console.error(
-      "[db-listings:getById]",
-      error instanceof Error ? error.message : String(error)
-    );
+    console.error("[db-listings:getById]", error instanceof Error ? error.message : String(error));
     return null;
   } finally {
-    try {
-      db?.close();
-    } catch {
-      // Ignore close errors on defensive cleanup.
-    }
+    try { db?.close(); } catch { /* ignore */ }
   }
 }
