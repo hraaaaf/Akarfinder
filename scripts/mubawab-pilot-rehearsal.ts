@@ -36,12 +36,14 @@ async function checkedFetch(url: string) {
   }
 }
 
-function isAcceptable(listing: ReturnType<typeof extractMubawabCollectionListing>) {
-  if (!listing.title || !listing.location.city) return false;
-  if (!listing.transaction) return false;
-  if (!listing.property_type || listing.property_type === "unknown") return false;
-  if (listing.price.amount == null && !listing.price.on_request) return false;
-  return true;
+function rejectionReasons(listing: ReturnType<typeof extractMubawabCollectionListing>): string[] {
+  const reasons: string[] = [];
+  if (!listing.title) reasons.push("title_missing");
+  if (!listing.location.city) reasons.push("city_missing");
+  if (!listing.transaction) reasons.push("transaction_missing");
+  if (!listing.property_type || listing.property_type === "unknown") reasons.push("property_type_missing_or_unknown");
+  if (listing.price.amount == null && !listing.price.on_request) reasons.push("price_missing_without_on_request");
+  return reasons;
 }
 
 type PilotError = {
@@ -135,8 +137,20 @@ async function processBatch(limit: number) {
       const fetched = await checkedFetch(ref.url);
       const listing = extractMubawabCollectionListing(ref.url, fetched.html);
       manifest.listings_fetched += 1;
-      if (isAcceptable(listing)) manifest.listings_normalized += 1;
-      else manifest.listings_rejected += 1;
+      const reasons = rejectionReasons(listing);
+      if (reasons.length === 0) {
+        manifest.listings_normalized += 1;
+      } else {
+        manifest.listings_rejected += 1;
+        const rejection: PilotError = {
+          stage: "quality",
+          url: ref.url,
+          source_id: ref.source_id,
+          message: reasons.join(","),
+          retryable: false,
+        };
+        await appendFile(errorsPath, `${JSON.stringify(rejection)}\n`, "utf8");
+      }
       await appendFile(listingsPath, `${JSON.stringify(listing)}\n`, "utf8");
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
