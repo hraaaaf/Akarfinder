@@ -1,0 +1,59 @@
+{
+  "akar_id": null,
+  "source": {
+    "name": "fixture",
+    "source_id": "fixture-minimal-001",
+    "url": "https://example.com/listing/fixture-minimal-001",
+    "first_seen_at": "2026-09-03T16:00:00Z",
+    "last_seen_at": "2026-09-03T16:00:00Z",
+    "scraped_at": "2026-09-03T16:00:00Z",
+    "content_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  "status": "active",
+  "transaction": "sale",
+  "property_type": "unknown",
+  "title": "Bien immobilier à vendre",
+  "description": null,
+  "price": {
+    "amount": null,
+    "currency": "MAD",
+    "period": null,
+    "on_request": true
+  },
+  "surface": {
+    "total_m2": null,
+    "habitable_m2": null,
+    "land_m2": null
+  },
+  "rooms": null,
+  "bedrooms": null,
+  "bathrooms": null,
+  "floor": null,
+  "location": {
+    "country": "Morocco",
+    "region": null,
+    "city": "Casablanca",
+    "district": null,
+    "address_text": null,
+    "latitude": null,
+    "longitude": null,
+    "precision": "city"
+  },
+  "features": [],
+  "images": [],
+  "seller": {
+    "name": null,
+    "type": "unknown",
+    "source_profile_url": null
+  },
+  "provenance": {
+    "source_type": "portal",
+    "source_listing_url": "https://example.com/listing/fixture-minimal-001",
+    "retrieval_method": "crawl"
+  },
+  "quality": {
+    "score": 45,
+    "warnings": ["property_type_unknown", "price_on_request"]
+  },
+  "raw": {}
+}
