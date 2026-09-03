@@ -1,10 +1,10 @@
 # Lot 4 Status
 
-**Status: 🟡 OPEN — controlled rehearsal proven; canonical 100–500 pilot still required**
+**Status: 🟡 OPEN — controlled rehearsal proven; canonical pilot 100 launched**
 
 ## Goal
 
-Valider le comportement du crawl pilote Mubawab sur un périmètre volontairement limité avant tout volume canonique 100–500 et avant toute ingestion AkarFinder.
+Valider le comportement du crawl pilote Mubawab sur un périmètre volontairement limité avant toute ingestion AkarFinder.
 
 ## Lot 4A rehearsal
 
@@ -30,7 +30,7 @@ Workflow : `Data Ingestion Lot 4 Controlled Rehearsal`
 - artifact ID : **9910362535**
 - digest : `sha256:37662c920312d3c5c280419190ab23d152527f054b31ae669f4219725dae98b7`
 
-Résultat inspecté dans `proof.json`, `manifest.json`, `checkpoint.json`, `errors.jsonl` et `listings.jsonl` :
+Résultat inspecté :
 
 - pages découvertes : **2**
 - pages traitées : **2**
@@ -53,13 +53,11 @@ Résultat inspecté dans `proof.json`, `manifest.json`, `checkpoint.json`, `erro
 
 ### Provenance transactionnelle
 
-La transaction du détail reste prioritaire.
+La transaction du détail reste prioritaire. Quand le détail ne contient aucun signal transactionnel explicite, le pipeline peut confirmer `sale` uniquement avec le contexte contrôlé `apartment_sale` **et** un prix numérique non périodique. Cette inférence est enregistrée séparément dans `raw.transaction_evidence` avec `confidence = contextual`.
 
-Quand le détail ne contient aucun signal transactionnel explicite, le rehearsal peut confirmer `sale` uniquement avec le contexte contrôlé `apartment_sale` **et** un prix numérique non périodique. Cette inférence est enregistrée séparément dans `raw.transaction_evidence` avec `confidence = contextual`; elle n'est jamais présentée comme une lecture explicite du détail.
+Sur la preuve rehearsal finale, une seule annonce utilise ce fallback contextuel : **source ID 8278761**.
 
-Sur la preuve finale, une seule annonce utilise ce fallback contextuel : **source ID 8278761**.
-
-Le cas `8399780` a permis d'identifier une limite réelle : le signal `Vente pour cause d'achat plus grand` se trouvait après le 700e caractère de la description. L'extracteur lit désormais toute la description principale pour les signaux transactionnels. Un test de régression dédié couvre explicitement un signal situé après 700 caractères.
+Le cas `8399780` a exposé une limite réelle : le signal `Vente pour cause d'achat plus grand` se trouvait après le 700e caractère. L'extracteur lit désormais toute la description principale, et un test de régression dédié couvre ce cas.
 
 ## Lot 3 non régressé
 
@@ -71,37 +69,36 @@ Workflow : `Data Ingestion Lot 3 Extractor Gate`
 - `live-proof` : SUCCESS
 - `sample-20` : SUCCESS
 
-Le test-extractor inclut désormais :
+## Lot 4B — canonical pilot 100
 
-- `mubawab-extractor-v3.test.ts`
-- `mubawab-extractor-long-description.test.ts`
+Runner : `scripts/mubawab-pilot-100.ts`
 
-## Ce que ce rehearsal prouve
+Gate : `Data Ingestion Lot 4 Pilot 100`
 
-- pagination > 1 page
-- compteurs discovery cohérents
-- doublons mesurés
-- checkpoint persistant
-- reprise sans refetch des source IDs déjà traités
-- erreurs et rejets auditables
-- arrêt prévu sur robots disallow / 403 / 429
-- extraction vers `CollectionListing`
-- provenance explicite vs contextuelle conservée
+Périmètre :
+
+- source : Mubawab
+- ville : Casablanca
+- catégorie : `apartment_sale`
+- pages discovery max : **4**
+- détails : **100 exactement**
+- première passe : **25**
+- reprise checkpoint jusqu'à **100**
+- délai inter-requêtes : **750 ms**
+- arrêt immédiat sur robots disallow / HTTP 403 / HTTP 429
+- mesure des mismatches route/detail
+- provenance transactionnelle explicite vs contextuelle
 - zéro écriture DB
 - zéro téléchargement image
-- zéro ingestion massive
+- zéro ingestion AkarFinder
 
-## Limite volontaire
-
-Ce rehearsal à 40 détails maximum **ne ferme pas Lot 4**.
-
-Le prochain gate canonique reste un pilote contrôlé **100–500**. Le point de départ recommandé est **100 annonces**, avec les mêmes protections : délai inter-requêtes, checkpoint, arrêt 403/429/robots, provenance transactionnelle, zéro écriture AkarFinder.
+**État : lancé — preuve CI à inspecter avant toute clôture.**
 
 ## Interdictions inchangées
 
 - aucune DB production
 - aucune ingestion AkarFinder
-- aucune collecte massive
+- aucune collecte massive hors périmètre contrôlé
 - aucun contournement anti-bot
 - aucun merge automatique
 - aucun déploiement Vercel
