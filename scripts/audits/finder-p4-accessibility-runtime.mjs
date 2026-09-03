@@ -10,11 +10,11 @@ const viewports = [
   { name: "1280", width: 1280, height: 900 },
 ];
 const focusableSelector = [
-  'a[href]',
+  'a[href]:not([tabindex="-1"])',
   'button:not([disabled]):not([tabindex="-1"])',
-  'input:not([disabled])',
-  'select:not([disabled])',
-  'textarea:not([disabled])',
+  'input:not([disabled]):not([tabindex="-1"])',
+  'select:not([disabled]):not([tabindex="-1"])',
+  'textarea:not([disabled]):not([tabindex="-1"])',
   '[tabindex]:not([tabindex="-1"])',
 ].join(",");
 
@@ -68,15 +68,6 @@ try {
         return !!panelElement && panelElement.contains(document.activeElement);
       });
       if (!initialFocusInside) findings.push("INITIAL_FOCUS_OUTSIDE_DIALOG");
-
-      const tabbableHandles = await panel.locator(focusableSelector).evaluateAll((elements) => elements.filter((element) => {
-        const style = window.getComputedStyle(element);
-        return element.isConnected
-          && !element.hasAttribute("disabled")
-          && style.visibility !== "hidden"
-          && style.display !== "none"
-          && element.getClientRects().length > 0;
-      }).map((element) => element.getAttribute("data-finder-focus-id") || null));
 
       await panel.locator(focusableSelector).evaluateAll((elements) => {
         let index = 0;
