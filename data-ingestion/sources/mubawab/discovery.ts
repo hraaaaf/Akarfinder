@@ -12,6 +12,7 @@ export type DiscoveredListingRef = {
   source_id: string;
   url: string;
   route_url: string;
+  detail_family: "a" | "pa";
 };
 
 export type DiscoveryManifest = {
@@ -23,6 +24,7 @@ export type DiscoveryManifest = {
   pages_failed: number;
   unique_listings: number;
   duplicate_refs: number;
+  detail_family_counts: { a: number; pa: number };
   routes: Array<{
     city: string;
     category_key: string;
@@ -61,16 +63,17 @@ export function buildDiscoveryRoutes(maxPages = config.safety.max_pages_per_comb
 export function extractListingRefs(html: string, routeUrl: string): DiscoveredListingRef[] {
   const $ = load(html);
   const byId = new Map<string, DiscoveredListingRef>();
-  const detailRe = /\/fr\/pa\/(\d+)(?:\/[^?#\s"']*)?/i;
+  const detailRe = /\/fr\/(a|pa)\/(\d+)(?:\/[^?#\s"']*)?/i;
 
   $("a[href]").each((_, el) => {
     const href = $(el).attr("href");
     if (!href) return;
     const match = href.match(detailRe);
     if (!match) return;
-    const sourceId = match[1];
+    const detailFamily = match[1].toLowerCase() as "a" | "pa";
+    const sourceId = match[2];
     const url = new URL(href, config.base_url).toString();
-    if (!byId.has(sourceId)) byId.set(sourceId, { source_id: sourceId, url, route_url: routeUrl });
+    if (!byId.has(sourceId)) byId.set(sourceId, { source_id: sourceId, url, route_url: routeUrl, detail_family: detailFamily });
   });
 
   return [...byId.values()];
@@ -115,6 +118,7 @@ export async function runDiscovery(
     }
   }
 
+  const listings = [...globalById.values()];
   const manifest: DiscoveryManifest = {
     source: "mubawab",
     generated_at: options.now?.() ?? new Date().toISOString(),
@@ -124,8 +128,12 @@ export async function runDiscovery(
     pages_failed: pagesFailed,
     unique_listings: globalById.size,
     duplicate_refs: duplicateRefs,
+    detail_family_counts: {
+      a: listings.filter((ref) => ref.detail_family === "a").length,
+      pa: listings.filter((ref) => ref.detail_family === "pa").length,
+    },
     routes: routeReports,
   };
 
-  return { manifest, listings: [...globalById.values()] };
+  return { manifest, listings };
 }
