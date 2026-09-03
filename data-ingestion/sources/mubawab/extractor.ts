@@ -83,12 +83,9 @@ function extractPrimaryTransaction(title: string | null, description: string | n
   return signals[0]?.transaction ?? null;
 }
 
-function primaryPriceIsOnRequest(pageText: string, title: string | null): boolean {
-  const normalizedTitle = title ? title.replace(/\s+/g, " ") : null;
-  const titleIndex = normalizedTitle ? pageText.indexOf(normalizedTitle) : -1;
-  const start = titleIndex >= 0 ? titleIndex : 0;
-  const primaryBlock = pageText.slice(start, start + 1200);
-  return /\bprix\s+(?:à|a)\s+consulter\b|\bdemander\s+le\s+prix\b/i.test(primaryBlock);
+function primaryPriceIsOnRequest(pageText: string): boolean {
+  const primaryHeader = pageText.slice(0, 1800);
+  return /\bprix\s+(?:à|a)\s+consulter\b|\bdemander\s+le\s+prix\b/i.test(primaryHeader);
 }
 
 function extractPrimaryImageUrls($: ReturnType<typeof load>): string[] {
@@ -195,7 +192,7 @@ export function extractMubawabCollectionListing(url: string, html: string, now =
   const typeRaw = explicitType ?? jsonLdType ?? title;
   const transaction = extractPrimaryTransaction(title, detail.description_snippet);
   const propertyType = mapMubawabPropertyType(typeRaw);
-  const onRequest = primaryPriceIsOnRequest(pageText, title);
+  const onRequest = primaryPriceIsOnRequest(pageText);
   const priceAmount = onRequest ? null : normalizePrice(detail.price_raw);
   const totalSurface = normalizeSurface(detail.surface_raw);
 
