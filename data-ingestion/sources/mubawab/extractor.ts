@@ -8,6 +8,17 @@ import { normalizeSurface } from "../../../scripts/scrapers/normalizers/normaliz
 import { normalizeTransaction, normalizeType } from "../../../scripts/scrapers/normalizers/normalize-type";
 
 const DETAIL_RE = /\/fr\/(a|pa)\/(\d+)\//i;
+const MUBAWAB_MEDIA_RE = /^https?:\/\/[^/]*mubawab-media\.com\//i;
+const PRIMARY_GALLERY_SELECTORS = [
+  '[data-testid="listing-gallery"]',
+  '[data-testid="property-gallery"]',
+  '[data-testid="ad-gallery"]',
+  '[data-gallery="listing"]',
+  '[data-gallery="property"]',
+  '.listing-gallery',
+  '.property-gallery',
+  '.ad-gallery',
+];
 
 function text(v: string | undefined | null): string | null {
   const s = v?.replace(/\s+/g, " ").trim();
@@ -20,6 +31,32 @@ function parseFloor(value: string | null): number | null {
   if (!value) return null;
   const m = value.match(/(\d+)/);
   return m ? Number.parseInt(m[1], 10) : null;
+}
+
+function extractPrimaryImageUrls($: ReturnType<typeof load>): string[] {
+  const ogImage = text($("meta[property='og:image']").attr("content"));
+  const galleryImages: string[] = [];
+
+  for (const selector of PRIMARY_GALLERY_SELECTORS) {
+    const gallery = $(selector).first();
+    if (!gallery.length) continue;
+
+    gallery.find("img").each((_, el) => {
+      const imageUrl = text(
+        $(el).attr("src") ??
+        $(el).attr("data-src") ??
+        $(el).attr("data-lazy-src") ??
+        $(el).attr("data-original"),
+      );
+      if (imageUrl && MUBAWAB_MEDIA_RE.test(imageUrl)) galleryImages.push(imageUrl);
+    });
+    break;
+  }
+
+  return unique([
+    ...(ogImage && MUBAWAB_MEDIA_RE.test(ogImage) ? [ogImage] : []),
+    ...galleryImages,
+  ]);
 }
 
 export function extractMubawabCollectionListing(url: string, html: string, now = new Date().toISOString()): CollectionListing {
@@ -38,12 +75,8 @@ export function extractMubawabCollectionListing(url: string, html: string, now =
   const priceAmount = normalizePrice(detail.price_raw);
   const totalSurface = normalizeSurface(detail.surface_raw);
 
-  const images = unique(
-    $("img[src], meta[property='og:image']")
-      .map((_, el) => $(el).attr("src") ?? $(el).attr("content") ?? "")
-      .get()
-      .filter((src) => /^https?:\/\//.test(src) && /mubawab-media\.com/i.test(src)),
-  ).map((imageUrl, index) => ({ url: imageUrl, position: index + 1, hash: null }));
+  const images = extractPrimaryImageUrls($)
+    .map((imageUrl, index) => ({ url: imageUrl, position: index + 1, hash: null }));
 
   const features = unique([
     ...(detail.premium_features ?? []),
