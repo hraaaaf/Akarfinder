@@ -43,6 +43,51 @@ describe("contextual transaction inference", () => {
     );
   });
 
+  it("accepts calibrated villa, house, commercial and land sale contexts", () => {
+    const cases = [
+      { property_type: "villa" as const, price_amount: 24_000_000 },
+      { property_type: "house" as const, price_amount: 2_520_000 },
+      { property_type: "commercial" as const, price_amount: 9_600_000 },
+      { property_type: "land" as const, price_amount: 1_850_000 },
+    ];
+    for (const item of cases) {
+      assert.equal(inferContextualTransaction({
+        discovery_transactions: ["sale"],
+        price_amount: item.price_amount,
+        price_on_request: false,
+        property_type: item.property_type,
+      }).transaction, "sale");
+    }
+  });
+
+  it("accepts calibrated villa, house and commercial rent contexts", () => {
+    const cases = [
+      { property_type: "villa" as const, price_amount: 45_000 },
+      { property_type: "house" as const, price_amount: 18_000 },
+      { property_type: "commercial" as const, price_amount: 40_000 },
+    ];
+    for (const item of cases) {
+      assert.equal(inferContextualTransaction({
+        discovery_transactions: ["rent"],
+        price_amount: item.price_amount,
+        price_on_request: false,
+        property_type: item.property_type,
+      }).transaction, "rent");
+    }
+  });
+
+  it("does not infer land rent without calibration", () => {
+    assert.deepEqual(
+      inferContextualTransaction({
+        discovery_transactions: ["rent"],
+        price_amount: 20_000,
+        price_on_request: false,
+        property_type: "land",
+      }),
+      { transaction: null, confidence: "missing", reason: "unsupported_context_for_property_type" },
+    );
+  });
+
   it("never infers from contradictory sale and rent discovery contexts", () => {
     assert.deepEqual(
       inferContextualTransaction({
@@ -55,27 +100,15 @@ describe("contextual transaction inference", () => {
     );
   });
 
-  it("never infers when the numeric price is missing", () => {
+  it("never infers when the numeric price is missing or on request", () => {
     assert.equal(
       inferContextualTransaction({
         discovery_transactions: ["sale"],
         price_amount: null,
         price_on_request: true,
-        property_type: "apartment",
+        property_type: "villa",
       }).transaction,
       null,
-    );
-  });
-
-  it("does not infer contextual transactions for uncalibrated property types", () => {
-    assert.deepEqual(
-      inferContextualTransaction({
-        discovery_transactions: ["sale"],
-        price_amount: 3_500_000,
-        price_on_request: false,
-        property_type: "villa",
-      }),
-      { transaction: null, confidence: "missing", reason: "unsupported_property_type_for_contextual_inference" },
     );
   });
 
