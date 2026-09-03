@@ -77,22 +77,16 @@ export class Lot7SandboxStore {
     `);
   }
 
-  close() {
-    this.db.close();
-  }
+  close() { this.db.close(); }
 
   importCanonical(property: CanonicalPropertyV1): "inserted" | "updated" {
     const offer = property.offers[0];
     if (!offer) throw new Error(`lot7_missing_offer:${property.property_id}`);
-    if (offer.transaction_type !== "sale" && offer.transaction_type !== "rent") {
-      throw new Error(`lot7_invalid_transaction:${property.property_id}`);
-    }
+    if (offer.transaction_type !== "sale" && offer.transaction_type !== "rent") throw new Error(`lot7_invalid_transaction:${property.property_id}`);
 
     const sourceId = offer.external_offer_id ?? offer.offer_id;
-    const existing = this.db.prepare(
-      "SELECT property_listing_id FROM listing_sources WHERE source_name = ? AND source_id = ? LIMIT 1",
-    ).get(offer.source_name, sourceId) as { property_listing_id: number } | undefined;
-
+    const existing = this.db.prepare("SELECT property_listing_id FROM listing_sources WHERE source_name = ? AND source_id = ? LIMIT 1")
+      .get(offer.source_name, sourceId) as { property_listing_id: number } | undefined;
     const fingerprint = `${offer.source_name}:${sourceId}`;
     const title = offer.title.value;
     const price = offer.price_amount.value;
@@ -102,32 +96,24 @@ export class Lot7SandboxStore {
     const completeness = property.intelligence?.data_completeness_score ?? 0;
 
     if (existing) {
-      this.db.prepare(`
-        UPDATE property_listings
-        SET title=?, price_mad=?, city=?, property_type=?, transaction_type=?, surface_m2=?, data_completeness_score=?, offer_status=?, updated_at=?
-        WHERE id=?
-      `).run(title, price, city, propertyType, offer.transaction_type, surface, completeness, offer.offer_status, property.updated_at, existing.property_listing_id);
-      this.db.prepare(`
-        UPDATE listing_sources
-        SET listing_url=?, source_url=?, origin_type=?, is_active=1, last_seen_at=?
-        WHERE source_name=? AND source_id=?
-      `).run(offer.canonical_source_url, offer.source_url, offer.origin_type, offer.last_observed_at, offer.source_name, sourceId);
+      this.db.prepare(`UPDATE property_listings SET title=?, price_mad=?, city=?, property_type=?, transaction_type=?, surface_m2=?, data_completeness_score=?, offer_status=?, updated_at=? WHERE id=?`)
+        .run(title, price, city, propertyType, offer.transaction_type, surface, completeness, offer.offer_status, property.updated_at, existing.property_listing_id);
+      this.db.prepare(`UPDATE listing_sources SET listing_url=?, source_url=?, origin_type=?, is_active=1, last_seen_at=? WHERE source_name=? AND source_id=?`)
+        .run(offer.canonical_source_url, offer.source_url, offer.origin_type, offer.last_observed_at, offer.source_name, sourceId);
       return "updated";
     }
 
-    const inserted = this.db.prepare(`
-      INSERT INTO property_listings
-      (canonical_fingerprint, property_id, title, price_mad, city, property_type, transaction_type, surface_m2, data_completeness_score, offer_status, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(fingerprint, property.property_id, title, price, city, propertyType, offer.transaction_type, surface, completeness, offer.offer_status, property.updated_at);
-
-    this.db.prepare(`
-      INSERT INTO listing_sources
-      (property_listing_id, source_name, source_id, listing_url, source_url, origin_type, is_active, first_seen_at, last_seen_at)
-      VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?)
-    `).run(Number(inserted.lastInsertRowid), offer.source_name, sourceId, offer.canonical_source_url, offer.source_url, offer.origin_type, offer.first_observed_at, offer.last_observed_at);
-
+    const inserted = this.db.prepare(`INSERT INTO property_listings (canonical_fingerprint, property_id, title, price_mad, city, property_type, transaction_type, surface_m2, data_completeness_score, offer_status, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+      .run(fingerprint, property.property_id, title, price, city, propertyType, offer.transaction_type, surface, completeness, offer.offer_status, property.updated_at);
+    this.db.prepare(`INSERT INTO listing_sources (property_listing_id, source_name, source_id, listing_url, source_url, origin_type, is_active, first_seen_at, last_seen_at) VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?)`)
+      .run(Number(inserted.lastInsertRowid), offer.source_name, sourceId, offer.canonical_source_url, offer.source_url, offer.origin_type, offer.first_observed_at, offer.last_observed_at);
     return "inserted";
+  }
+
+  setSourceActive(sourceName: string, sourceId: string, active: boolean): number {
+    const result = this.db.prepare("UPDATE listing_sources SET is_active = ? WHERE source_name = ? AND source_id = ?")
+      .run(active ? 1 : 0, sourceName, sourceId);
+    return Number(result.changes);
   }
 
   count(): number {
@@ -136,12 +122,8 @@ export class Lot7SandboxStore {
   }
 
   getById(id: number): SandboxListingRow | null {
-    return (this.db.prepare(`
-      SELECT pl.*, ls.source_name, ls.source_id, ls.source_url, ls.origin_type
-      FROM property_listings pl
-      JOIN listing_sources ls ON ls.property_listing_id = pl.id AND ls.is_active = 1
-      WHERE pl.id = ? LIMIT 1
-    `).get(id) as SandboxListingRow | undefined) ?? null;
+    return (this.db.prepare(`SELECT pl.*, ls.source_name, ls.source_id, ls.source_url, ls.origin_type FROM property_listings pl JOIN listing_sources ls ON ls.property_listing_id = pl.id AND ls.is_active = 1 WHERE pl.id = ? LIMIT 1`)
+      .get(id) as SandboxListingRow | undefined) ?? null;
   }
 
   query(input: SandboxListingQuery = {}): SandboxListingRow[] {
@@ -156,21 +138,13 @@ export class Lot7SandboxStore {
     if (input.max_surface != null) { conditions.push("pl.surface_m2 <= ?"); params.push(input.max_surface); }
     const limit = Math.min(Math.max(input.limit ?? 100, 1), 1000);
     const offset = Math.max(input.offset ?? 0, 0);
-    return this.db.prepare(`
-      SELECT pl.*, ls.source_name, ls.source_id, ls.source_url, ls.origin_type
-      FROM property_listings pl
-      JOIN listing_sources ls ON ls.property_listing_id = pl.id
-      WHERE ${conditions.join(" AND ")}
-      ORDER BY pl.id ASC LIMIT ? OFFSET ?
-    `).all(...params, limit, offset) as SandboxListingRow[];
+    return this.db.prepare(`SELECT pl.*, ls.source_name, ls.source_id, ls.source_url, ls.origin_type FROM property_listings pl JOIN listing_sources ls ON ls.property_listing_id = pl.id WHERE ${conditions.join(" AND ")} ORDER BY pl.id ASC LIMIT ? OFFSET ?`)
+      .all(...params, limit, offset) as SandboxListingRow[];
   }
 
   purgePortalSource(sourceName: string): number {
-    const rows = this.db.prepare(`
-      SELECT ls.property_listing_id
-      FROM listing_sources ls
-      WHERE ls.source_name = ? AND ls.origin_type = 'unknown'
-    `).all(sourceName) as Array<{ property_listing_id: number }>;
+    const rows = this.db.prepare(`SELECT ls.property_listing_id FROM listing_sources ls WHERE ls.source_name = ? AND ls.origin_type = 'unknown'`)
+      .all(sourceName) as Array<{ property_listing_id: number }>;
     if (!rows.length) return 0;
     const ids = rows.map((row) => row.property_listing_id);
     this.db.prepare("DELETE FROM listing_sources WHERE source_name = ? AND origin_type = 'unknown'").run(sourceName);
