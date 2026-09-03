@@ -1,0 +1,33 @@
+name: Data Ingestion Lot 6 Multi-Type Crawl
+
+on:
+  pull_request:
+    paths:
+      - "data-ingestion/**"
+      - "scripts/mubawab-crawl-lot6-multitype.ts"
+      - "scripts/scrapers/__tests__/data-ingestion-transaction-context.test.ts"
+      - ".github/workflows/data-ingestion-lot6-multitype.yml"
+
+jobs:
+  multitype-crawl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Validate contextual transaction guards
+        run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-transaction-context.test.ts
+      - name: First multi-type pass
+        run: npx tsx scripts/mubawab-crawl-lot6-multitype.ts
+      - name: Resume multi-type crawl
+        run: npx tsx scripts/mubawab-crawl-lot6-multitype.ts --resume
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mubawab-lot6-multitype
+          path: data-ingestion/runs/mubawab/lot6-multitype/
+          if-no-files-found: error
