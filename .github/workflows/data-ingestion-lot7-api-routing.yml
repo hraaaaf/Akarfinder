@@ -1,0 +1,26 @@
+name: Data Ingestion Lot 7 API Routing Gate
+
+on:
+  pull_request:
+    paths:
+      - "data-ingestion/**"
+      - "lib/listings/**"
+      - "lib/odm/**"
+      - "lib/search-gateway/**"
+      - "scripts/scrapers/__tests__/data-ingestion-lot7-api-routing.test.ts"
+      - ".github/workflows/data-ingestion-lot7-api-routing.yml"
+  workflow_dispatch:
+
+jobs:
+  api-routing:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Validate Lot 7 public API routing on isolated SQLite sandbox
+        run: node --import tsx --test scripts/scrapers/__tests__/data-ingestion-lot7-api-routing.test.ts
