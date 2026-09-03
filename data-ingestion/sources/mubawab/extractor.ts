@@ -135,10 +135,7 @@ export function extractMubawabCollectionListing(url: string, html: string, now =
   const explicitType = extractExplicitDetailType($);
   const jsonLdType = extractJsonLdPrimaryType($, title);
   const typeRaw = explicitType ?? jsonLdType ?? title;
-  const titleTransaction = normalizeTransaction(null, title);
-  const transaction = titleTransaction !== "unknown"
-    ? titleTransaction
-    : normalizeTransaction(null, `${text($("meta[property='og:title']").attr("content")) ?? ""} ${explicitType ?? ""}`);
+  const transaction = normalizeTransaction(null, `${title ?? ""} ${detail.description_snippet ?? ""}`);
   const propertyType = mapMubawabPropertyType(typeRaw);
   const priceAmount = normalizePrice(detail.price_raw);
   const totalSurface = normalizeSurface(detail.surface_raw);
@@ -187,7 +184,7 @@ export function extractMubawabCollectionListing(url: string, html: string, now =
     property_type: propertyType,
     title,
     description,
-    price: { amount: priceAmount, currency: "MAD", period: transaction === "rent" ? "month" : "total", on_request: priceAmount == null },
+    price: { amount: priceAmount, currency: "MAD", period: transaction === "rent" ? "month" : transaction === "sale" ? "total" : null, on_request: priceAmount == null },
     surface: { total_m2: totalSurface, habitable_m2: null, built_m2: detail.built_surface_m2 ?? null, land_m2: detail.plot_surface_m2 ?? null },
     rooms: detail.rooms,
     bedrooms: detail.bedrooms,
