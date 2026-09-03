@@ -1,6 +1,6 @@
 # AkarFinder — Mon Projet Personalization Canonical
 
-Status: ACTIVE  
+Status: READY_TO_MERGE  
 Canonical branch: `feat/mon-projet-personalization`  
 Base: `main` @ `31174a4527c6034a08943d25a9de9811a90480c1`  
 Deployment: none — production deployment requires explicit authorization.
@@ -119,33 +119,44 @@ Après onboarding, le récapitulatif est un état modifiable et la recherche une
 - clés privées interdites dans URL : aucune trouvée ;
 - score visuel : **9/10**.
 
-### P4 — Accessibility + final closeout — ACTIVE
+### P4 — Accessibility + final closeout — CLOSED
 
-**Goal** : certifier le dialogue Akar Sense au clavier puis fermer le chantier sans régression visuelle.
+**Goal** : certifier le dialogue Akar Sense au clavier puis fermer le lot sans régression visuelle.
 
-**Baseline vérifiée avant implémentation**
-- `Escape` ferme le dialogue ✅
-- body scroll lock/restauration ✅
-- `role="dialog"` + `aria-modal="true"` ✅
-- focus initial dans le dialogue ❌
-- trap `Tab / Shift+Tab` ❌
-- retour focus au launcher ❌
+**Baseline pré-P4**
+- SHA : `962b6090cdc44b1208a78ff18b1921a437e03ec1` ;
+- `Escape` ferme le dialogue ✅ ;
+- body scroll lock/restauration ✅ ;
+- `role="dialog"` + `aria-modal="true"` ✅ ;
+- focus initial dans le dialogue ❌ ;
+- trap `Tab / Shift+Tab` ❌ ;
+- retour focus au launcher ❌.
 
-**Implémentation préparée dans le lot P4**
+**Implémentation certifiée**
 - focus initial sur le bouton de fermeture ;
-- trap `Tab / Shift+Tab` dans le panneau ;
-- `Escape` conservé ;
-- focus restauré au launcher à la fermeture ;
+- cycle clavier déterministe dans le panneau ;
+- `Tab` et `Shift+Tab` restent dans le dialogue ;
+- `Escape` ferme le dialogue ;
+- focus restauré au launcher ;
 - aucune modification visuelle intentionnelle.
 
-**Succès P4 attendu avant CLOSED**
-- runtime `AKAR_SENSE_P4_ACCESSIBILITY_RUNTIME_V1` avec `findingCount=0` ;
-- BEFORE/AFTER mêmes viewports 390×844 et 1280×900 ;
-- aucune erreur page ni overflow ;
-- comparaison visuelle et score ;
-- canonique passé à 100 % seulement après preuve ;
-- PR prête puis merge/post-merge vérifiés ;
-- aucun déploiement Vercel sans autorisation explicite.
+**Preuve finale vérifiée — 2026-09-03**
+- HEAD certifié : `1774f0f51b64bb15bd1c41bd147b2813a57728bf` ;
+- workflow : `Mon Projet P4 Akar Sense Accessibility` ;
+- run #10 : `33806161125` — **SUCCESS** ;
+- artifact : `9913235161` ;
+- artifact : `mon-projet-p4-accessibility-33806161125` ;
+- taille : `311849` octets ;
+- artifact SHA256 : `4e5f83c4dc78a42794f3315eed59ce38dd526492410222705be1e63cf5111bee` ;
+- BEFORE SHA : `962b6090cdc44b1208a78ff18b1921a437e03ec1` ;
+- AFTER SHA : `1774f0f51b64bb15bd1c41bd147b2813a57728bf` ;
+- schema runtime : `AKAR_SENSE_P4_ACCESSIBILITY_RUNTIME_V1` ;
+- `findingCount=0` ;
+- mobile 390×844 : `initialFocusInside=true`, `focusableCount=20`, `shiftTabStayedInside=true`, `tabStayedInside=true`, `closed=true`, `focusReturned=true` ;
+- mobile + desktop : `role=dialog`, `ariaModal=true`, body overflow `hidden`, aucune page error, aucun overflow horizontal ;
+- BEFORE/AFTER 390×844 : identiques pixel pour pixel ;
+- BEFORE/AFTER 1280×900 : panneau Akar Sense identique pixel pour pixel ; seules les données de fond `/search` ont varié ;
+- score visuel : **9/10**.
 
 ## Invariants
 
@@ -161,10 +172,11 @@ Après onboarding, le récapitulatif est un état modifiable et la recherche une
 
 ## Progression vérifiée
 
-- Lots CLOSED : `4 / 5`
-- Lot actif : `P4`
-- Avancement global par lots CLOSED : **80%**
+- Lots CLOSED : `5 / 5`
+- Lot actif : aucun
+- Avancement global par lots CLOSED : **100%**
+- État chantier : **READY_TO_MERGE** tant que PR/merge/post-merge ne sont pas vérifiés.
 
 ## Next exact
 
-Exécuter `Mon Projet P4 Akar Sense Accessibility` sur le commit P4 atomique. Si vert : récupérer l’artifact, montrer les captures BEFORE/AFTER, valider `findingCount=0`, comparer visuellement, passer P4 à CLOSED / 100 %, puis préparer PR/merge et post-merge. Si rouge : diagnostiquer le point exact avant toute correction.
+Mettre à jour la PR #985 avec le closeout P0–P4, vérifier son état de merge et le couplage éventuel merge→Vercel. Ne merger que si cela ne déclenche pas de déploiement Vercel non autorisé ; sinon s’arrêter au human gate de déploiement. Après merge autorisé : vérifier `main`, puis passer le chantier de READY_TO_MERGE à CLOSED.
