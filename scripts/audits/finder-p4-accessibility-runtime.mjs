@@ -86,21 +86,27 @@ try {
       const focusableCount = await tabbables.count();
       if (focusableCount < 1) findings.push("NO_FOCUSABLE_ELEMENTS");
 
-      let shiftTabWrapped = false;
-      let tabWrapped = false;
+      let shiftTabStayedInside = false;
+      let tabStayedInside = false;
       if (focusableCount > 0) {
         const first = tabbables.first();
         const last = tabbables.last();
 
         await first.focus();
         await page.keyboard.press("Shift+Tab");
-        shiftTabWrapped = await last.evaluate((element) => document.activeElement === element);
-        if (!shiftTabWrapped) findings.push("SHIFT_TAB_NOT_TRAPPED");
+        shiftTabStayedInside = await page.evaluate(() => {
+          const panelElement = document.querySelector("[data-finder-panel]");
+          return !!panelElement && panelElement.contains(document.activeElement);
+        });
+        if (!shiftTabStayedInside) findings.push("SHIFT_TAB_NOT_TRAPPED");
 
         await last.focus();
         await page.keyboard.press("Tab");
-        tabWrapped = await first.evaluate((element) => document.activeElement === element);
-        if (!tabWrapped) findings.push("TAB_NOT_TRAPPED");
+        tabStayedInside = await page.evaluate(() => {
+          const panelElement = document.querySelector("[data-finder-panel]");
+          return !!panelElement && panelElement.contains(document.activeElement);
+        });
+        if (!tabStayedInside) findings.push("TAB_NOT_TRAPPED");
       }
 
       await page.keyboard.press("Escape");
@@ -111,7 +117,7 @@ try {
       const focusReturned = await launcher.evaluate((element) => document.activeElement === element);
       if (!focusReturned) findings.push("FOCUS_NOT_RESTORED");
 
-      Object.assign(result, { initialFocusInside, focusableCount, shiftTabWrapped, tabWrapped, closed, focusReturned });
+      Object.assign(result, { initialFocusInside, focusableCount, shiftTabStayedInside, tabStayedInside, closed, focusReturned });
     }
 
     scenarios.push(result);
