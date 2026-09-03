@@ -65,15 +65,15 @@ function extractDistrictFromPrimaryStats(pageText: string, city: string | null):
 function extractPrimaryTransaction(title: string | null, description: string | null): CollectionListing["transaction"] {
   const titleTransaction = normalizeTransaction(null, title);
   if (titleTransaction !== "unknown") return titleTransaction;
-  if (title && /\b(?:vendre|vend(?:s|ons|ez|ent)?|vendu(?:e|es|s)?)\b/iu.test(title)) return "sale";
-  if (title && /\blouer\b/iu.test(title)) return "rent";
+  if (title && /\b(?:vendre|vend(?:s|ons|ez|ent)?|vendu(?:e|es|s)?|acheter|achat)\b/iu.test(title)) return "sale";
+  if (title && /\b(?:louer|location)\b/iu.test(title)) return "rent";
   if (!description) return null;
 
   const primaryDescription = description;
   const signals: Array<{ transaction: "sale" | "rent"; index: number }> = [];
   const patterns: Array<{ transaction: "sale" | "rent"; pattern: RegExp }> = [
-    { transaction: "sale", pattern: /(?:à|a)\s+vendre|(?:à|a)\s+la\s+vente|\b(?:mis(?:e)?|met|mettre)\s+en\s+vente\b|\bpeut\s+être\s+vendu(?:e)?\b|\bachetez\b|\bvente\b|\bvend(?:s|ons|ez|ent)?\b|\bvendu(?:e|es|s)?\b/giu },
-    { transaction: "rent", pattern: /(?:à|a)\s+louer|(?:à|a)\s+la\s+location|\blocation\s+longue\s+dur[ée]e?\b|\bpour\s+location\s+longue\s+dur[ée]e?\b|\bloyer\b[^.]{0,40}\/\s*mois\b/giu },
+    { transaction: "sale", pattern: /(?:à|a)\s+vendre|(?:à|a)\s+la\s+vente|\b(?:mis(?:e)?|met|mettre)\s+en\s+vente\b|\bpeut\s+être\s+vendu(?:e)?\b|\bachetez\b|\bacheter\b|\bvente\b|\bvend(?:s|ons|ez|ent)?\b|\bvendu(?:e|es|s)?\b/giu },
+    { transaction: "rent", pattern: /(?:à|a)\s+louer|(?:à|a)\s+la\s+location|\bpour\s+(?:la\s+)?location\b|\bpropos(?:e|ons|ent)?\b[^.]{0,50}(?:à|a)\s+la\s+location|\blocation\s+longue\s+dur[ée]e?\b|\bpour\s+location\s+longue\s+dur[ée]e?\b|\bloyer\b[^.]{0,40}\/\s*mois\b/giu },
   ];
 
   for (const { transaction, pattern } of patterns) {
