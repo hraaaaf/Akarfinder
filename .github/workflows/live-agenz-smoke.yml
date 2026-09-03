@@ -1,0 +1,51 @@
+name: Live Agenz smoke
+
+on:
+  push:
+    branches:
+      - feat/agenz-source-first
+    paths:
+      - scripts/acquisition/agenz-source-first.mjs
+      - scripts/acquisition/__tests__/agenz-source-first.test.mjs
+      - .github/workflows/live-agenz-smoke.yml
+
+concurrency:
+  group: live-agenz-smoke-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  agenz-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Unit tests
+        run: node --test scripts/acquisition/__tests__/agenz-source-first.test.mjs
+      - name: Tiny live probe
+        env:
+          AGENZ_MAX_PAGES: '1'
+          AGENZ_MAX_LISTINGS: '100'
+        run: node scripts/acquisition/agenz-source-first.mjs
+      - name: Verify bounded report
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const p = 'artifacts/morocco-web-l8-agenz/report.json';
+          const r = JSON.parse(fs.readFileSync(p, 'utf8'));
+          if (r.zeroDbWrites !== true) throw new Error('zeroDbWrites != true');
+          if (r.pageCount !== 1) throw new Error(`pageCount=${r.pageCount}`);
+          if (r.requestCount !== 2) throw new Error(`requestCount=${r.requestCount}`);
+          if (r.stoppedEarly) throw new Error(`stoppedEarly=${r.stoppedEarly}`);
+          if (r.uniqueListingCount < 1) throw new Error(`uniqueListingCount=${r.uniqueListingCount}`);
+          console.log(JSON.stringify({robotsStatus:r.robotsStatus,delayMs:r.delayMs,requestCount:r.requestCount,pageCount:r.pageCount,uniqueListingCount:r.uniqueListingCount,stoppedEarly:r.stoppedEarly,zeroDbWrites:r.zeroDbWrites}, null, 2));
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: agenz-live-smoke
+          path: artifacts/morocco-web-l8-agenz/
+          if-no-files-found: error
+          retention-days: 14
