@@ -43,7 +43,15 @@ describe("Mubawab Lot 3 extractor", () => {
   });
 
   it("prefers a visible on-request price over a stale numeric JSON-LD price", () => {
-    const html = `<!doctype html><html><head><meta property="og:title" content="Local commercial titré à Derb Omar"><meta property="og:image" content="https://www.mubawab-media.com/local.jpg"></head><body><div>Immobilier Casablanca Locaux commerciaux Casablanca Derb Omar</div><div>Prix à consulter</div><div>Demander le prix</div><div>107 m²</div><div>1 Salle de bain</div><div>Derb Omar à Casablanca</div><h1>Local commercial titré à Derb Omar</h1><script type="application/ld+json">{"@type":"Product","name":"Local commercial titré à Derb Omar","offers":{"price":"2500000","priceCurrency":"MAD"},"address":{"addressLocality":"Casablanca","streetAddress":"Derb Omar"},"floorSize":{"value":107},"description":"Local commercial titré idéalement situé au cœur de Derb Omar."}</script></body></html>`;
+    const html = `<!doctype html><html><head><meta property="og:title" content="Local commercial titré à Derb Omar"><meta property="og:image" content="https://www.mubawab-media.com/local.jpg"></head><body>
+<div>Immobilier Casablanca Locaux commerciaux Casablanca Derb Omar</div>
+<div>Prix à consulter</div>
+<div>Demander le prix</div>
+<div>107 m²</div>
+<div>1 Salle de bain</div>
+<div>Derb Omar à Casablanca</div>
+<h1>Local commercial titré à Derb Omar</h1>
+<script type="application/ld+json">{"@type":"Product","name":"Local commercial titré à Derb Omar","offers":{"price":"2500000","priceCurrency":"MAD"},"address":{"addressLocality":"Casablanca","streetAddress":"Derb Omar"},"floorSize":{"value":107},"description":"Local commercial titré idéalement situé au cœur de Derb Omar."}</script></body></html>`;
     const listing = extractMubawabCollectionListing("https://www.mubawab.ma/fr/pa/8311288/local-commercial-titre-a-derb-omar", html, "2026-09-03T18:45:00.000Z");
     assert.equal(listing.price.amount, null);
     assert.equal(listing.price.on_request, true);
@@ -58,7 +66,11 @@ describe("Mubawab Lot 3 extractor", () => {
   });
 
   it("keeps numbered districts and short Ch. stats when parsing primary location", () => {
-    const html = `<!doctype html><html><head><meta property="og:title" content="Appartement à l'achat à Bournazil"><meta property="og:image" content="https://www.mubawab-media.com/a.jpg"></head><body><div>880 000 DH</div><div>80m² 3 Pièces Hay Almassira 2 à Casablanca</div><h1>Appartement à l'achat à Bournazil</h1><script type="application/ld+json">{"@type":"Apartment","name":"Appartement à l'achat à Bournazil","offers":{"price":"880000","priceCurrency":"MAD"},"address":{"addressLocality":"Casablanca"},"floorSize":{"value":80},"description":"Ne laissez pas passer cet appartement à vendre."}</script></body></html>`;
+    const html = `<!doctype html><html><head><meta property="og:title" content="Appartement à l'achat à Bournazil"><meta property="og:image" content="https://www.mubawab-media.com/a.jpg"></head><body>
+<div>880 000 DH</div>
+<div>80m² 3 Pièces Hay Almassira 2 à Casablanca</div>
+<h1>Appartement à l'achat à Bournazil</h1>
+<script type="application/ld+json">{"@type":"Apartment","name":"Appartement à l'achat à Bournazil","offers":{"price":"880000","priceCurrency":"MAD"},"address":{"addressLocality":"Casablanca"},"floorSize":{"value":80},"description":"Ne laissez pas passer cet appartement à vendre."}</script></body></html>`;
     const listing = extractMubawabCollectionListing("https://www.mubawab.ma/fr/pa/8294692/appartement-a-l-achat-a-bournazil", html, "2026-09-03T18:45:00.000Z");
     assert.equal(listing.location.district, "Hay Almassira 2");
   });
