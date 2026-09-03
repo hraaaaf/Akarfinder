@@ -67,6 +67,18 @@ describe("contextual transaction inference", () => {
     );
   });
 
+  it("does not infer contextual transactions for uncalibrated property types", () => {
+    assert.deepEqual(
+      inferContextualTransaction({
+        discovery_transactions: ["sale"],
+        price_amount: 3_500_000,
+        price_on_request: false,
+        property_type: "villa",
+      }),
+      { transaction: null, confidence: "missing", reason: "unsupported_property_type_for_contextual_inference" },
+    );
+  });
+
   it("flags Moroccan price wording in millions for local centime normalization review", () => {
     assert.equal(hasMoroccanCentimeMillionPriceLanguage("le prix est de 180 millions négociable, prix actuel 170 millions"), true);
     assert.equal(hasMoroccanCentimeMillionPriceLanguage("Appartement de 180 m²"), false);
