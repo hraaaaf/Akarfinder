@@ -13,7 +13,7 @@ import re
 from dataclasses import dataclass, asdict
 from html.parser import HTMLParser
 from typing import Any
-from urllib.parse import urlparse
+from urllib.parse import urlparse, parse_qs
 
 PROPERTY_TYPES = [
     ("apartment", ("appartement", "apartment")),
@@ -183,6 +183,28 @@ def _find_transaction(text: str, url: str) -> tuple[str, str] | tuple[None, None
     return None, None
 
 
+def _known_portal_detail_url(source_url: str) -> bool:
+    parsed = urlparse(source_url)
+    host = parsed.hostname.lower() if parsed.hostname else ""
+    path = parsed.path
+
+    if host in {"avito.ma", "www.avito.ma"}:
+        return bool(re.search(r"_\d{7,9}\.htm$", path, re.I))
+
+    if host in {"sarouty.ma", "www.sarouty.ma"}:
+        if re.search(r"/property-details/?$", path, re.I):
+            listing_id = parse_qs(parsed.query).get("listing_id", [""])[0]
+            return bool(re.fullmatch(r"\d{5,9}", listing_id))
+        if re.search(r"/plp/.+-\d{5,9}\.html/?$", path, re.I):
+            return True
+        return bool(re.search(r"-\d{5,9}/?$", path, re.I))
+
+    if host == "agenz.ma":
+        return bool(re.search(r"^/fr/annonces/immo-[^/]+/(?:vente|location)-[^/]+/[^/]+/\d+/?$", path, re.I))
+
+    return False
+
+
 def _regex_fact(regex: re.Pattern[str], text: str, source_url: str, method: str, *, numeric: bool = True) -> FieldFact | None:
     match = regex.search(text)
     if not match:
@@ -197,7 +219,7 @@ def _regex_fact(regex: re.Pattern[str], text: str, source_url: str, method: str,
 def classify_page(source_url: str, title: str, text: str, nodes: list[dict[str, Any]]) -> tuple[str, list[str]]:
     path = urlparse(source_url).path
     reasons: list[str] = []
-    if any(pattern.search(path) for pattern in DETAIL_PATH_PATTERNS):
+    if _known_portal_detail_url(source_url) or any(pattern.search(path) for pattern in DETAIL_PATH_PATTERNS):
         reasons.append("detail_url_pattern")
     if any(pattern.search(path) for pattern in DISCOVERY_PATH_PATTERNS):
         reasons.append("discovery_url_pattern")
