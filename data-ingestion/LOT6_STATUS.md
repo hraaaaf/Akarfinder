@@ -1,122 +1,102 @@
 # Lot 6 Status
 
-**Status: 🟡 OPEN — balanced 200 proof passed; broader coverage remains**
+**Status: ✅ CLOSED — multi-type guarded crawl proven, zero unresolved rejection**
 
 ## Goal
 
 Produire un dataset Mubawab large, chunké, reprenable et auditable sans l'injecter dans AkarFinder.
 
-## Lot 6A — shakedown mécanique
+## Proof chain
 
-Workflow : `Data Ingestion Lot 6 Shakedown`
+### Lot 6A — shakedown mécanique
 
-- run ID : `33801636244`
-- head SHA : `2b0b00e3bae404b42e98bf70399622142cf86513`
-- artifact ID : `9911415210`
+- workflow: `Data Ingestion Lot 6 Shakedown`
+- run ID: `33801636244`
+- head SHA: `2b0b00e3bae404b42e98bf70399622142cf86513`
+- artifact ID: `9911415210`
 - 200 détails traités, 4 chunks × 50, checkpoint/reprise prouvés
 - 199 normalisées / 1 rejetée
 - zéro erreur réseau / doublon / write DB / ingestion AkarFinder
 
-Ce run a révélé les risques sémantiques suivants : prix vente contextuel aberrant, langage marocain en millions de centimes, et annonces location présentes sur routes vente.
+Ce run a révélé les risques transactionnels qui ont conduit aux garde-fous contextuels.
 
-## Garde-fous sémantiques
+### Lot 6B — balanced guarded crawl 200
 
-`data-ingestion/transaction-context.ts` impose :
+- workflow: `Data Ingestion Lot 6 Balanced Crawl`
+- run ID: `33803042568`
+- head SHA: `ec828867e1e81ce2007251f16bc6397eba5ebc0f`
+- artifact ID: `9911938970`
+- digest: `sha256:e6b8f07bd47a11303a54214236c4eba3284d85bd6eb65d7ae791706b65ea834d`
+- 200 candidats, 4 scopes équilibrés Casablanca/Rabat × appartement sale/rent
+- 199 normalisées / 1 rejet volontaire (`8407358`, 6 300 MAD sur route sale sans preuve explicite)
+- zéro erreur réseau / doublon / write DB / ingestion AkarFinder
 
-- contexte contradictoire → aucune inférence ;
-- prix numérique absent → aucune inférence ;
-- appartement `sale` contextuel < 100 000 MAD → refus ;
-- appartement `rent` contextuel > 100 000 MAD → refus ;
-- langage `prix ... N millions` signalé pour revue centimes ;
-- détail explicite prioritaire sur discovery.
+### Lot 6C — multi-type guarded crawl final
 
-## Lot 6B — balanced guarded crawl 200
+- workflow: `Data Ingestion Lot 6 Multi-Type Crawl`
+- run: **#17**
+- run ID: **33810596251**
+- head SHA: **6263ea26b50d77133c55194e230f9d14a889c99f**
+- artifact: `mubawab-lot6-multitype`
+- artifact ID: **9914877485**
+- digest: **sha256:bea270cffda9bcb7173699ef6e1f0af072d10e0961d0130f7b31686b839ff38e**
 
-Workflow : `Data Ingestion Lot 6 Balanced Crawl`
+Couverture ciblée:
 
-### Preuve autoritative
+- Casablanca + Rabat
+- `apartment_sale`, `apartment_rent`
+- `villa_sale`, `villa_rent`
+- `house_sale`, `house_rent`
+- `commercial_sale`, `commercial_rent`
+- `land_sale`
 
-- run : **#1**
-- run ID : **33803042568**
-- head SHA : **ec828867e1e81ce2007251f16bc6397eba5ebc0f**
-- artifact : `mubawab-lot6-balanced`
-- artifact ID : **9911938970**
-- digest : `sha256:e6b8f07bd47a11303a54214236c4eba3284d85bd6eb65d7ae791706b65ea834d`
+Résultat final inspecté:
 
-### Couverture équilibrée
-
-- Casablanca / `apartment_sale` : **50** candidats
-- Casablanca / `apartment_rent` : **50** candidats
-- Rabat / `apartment_sale` : **50** candidats
-- Rabat / `apartment_rent` : **50** candidats
-
-Discovery : **8/8 pages**, **254** annonces uniques découvertes.
-
-### Résultat inspecté
-
-- candidats : **200**
-- détails fetchés : **200**
-- source IDs uniques : **200/200**
-- chunks : **4 × 50**
-- première passe : **50**
-- checkpoint final : **200**
-- reprise observée : **oui**
-- normalisées : **199**
-- rejetées : **1**
-- erreurs réseau : **0**
-- doublons écrits : **0**
-- transactions explicites : **173**
-- contextuelles : **26**
-- manquantes : **1**
-- transactions finales : **98 sale / 101 rent / 1 missing**
-- context conflicts : **0**
-- route/detail mismatch : **1** (`8371385`, route sale mais détail rent)
-- qualité moyenne : **97.75/100**
-- langage millions de centimes signalé : **1**
+- annonces traitées: **268**
+- normalisées: **268**
+- rejetées: **0**
+- erreurs réseau: **0**
+- doublons écrits: **0**
+- transactions explicites: **226**
+- transactions contextuelles: **41**
+- override humain: **1** (`8408402` = rent)
+- transactions manquantes: **0**
+- `rejection-review.json`: **0 rejet**
 - `database_writes = 0`
 - `production_writes = 0`
-- `image_downloads = 0`
 - `akar_ingestion = false`
 
-### Rejet volontaire validé
+## Garde-fous verrouillés
 
-`8407358` — Rabat, découvert via `apartment_sale`, prix **6 300 MAD**, aucun signal transactionnel explicite.
+- détail explicite prioritaire sur discovery
+- contexte discovery contradictoire → aucune inférence
+- prix absent / `on_request` → aucune inférence automatique
+- prix de vente contextuel < 100 000 MAD → refus
+- prix de location contextuel > 100 000 MAD → refus
+- calibration contextuelle pour appartement, villa, maison et commercial
+- terrain: sale calibré, rent non calibré donc refusé
+- URLs Mubawab: toujours URL canonique découverte, jamais reconstruite depuis l'ID
+- override humain explicite conservé pour `8408402`
+- toute vraie ambiguïté future reste reviewable, sans fabrication de transaction
 
-Décision correcte :
+## Conclusion
 
-- `transaction = null`
-- warning `transaction_context_implausible_sale_price`
-- aucune vente fabriquée depuis la route discovery.
+**Lot 6 = CLOSED.**
 
-Les **26** transactions contextuelles acceptées ont été inspectées : leurs prix restent cohérents avec leur contexte vente/location.
-
-## Conclusion actuelle
-
-- mécanique chunk/checkpoint/reprise : ✅
-- équilibrage par scope : ✅
-- garde-fous transactionnels : ✅
-- dataset 200 auditable : ✅
-- couverture large multi-types / multi-villes : ⏳
-
-**Lot 6 reste OPEN** : le goal canonique demande encore une couverture élargie des catégories / villes / transactions ciblées avant fermeture.
+La mécanique chunk/checkpoint/reprise, la couverture multi-types ciblée, les transactions explicites/contextuelles, le rapport de rejets et les interdictions de write production sont tous prouvés.
 
 ## Next exact
 
-Étendre prudemment le runner hors appartement à un périmètre multi-types, toujours hors production, avec sélection équilibrée et cap contrôlé :
+Avant Lot 7 sandbox, terminer le re-audit Lot 1 de l'adapter Collection Listing → Property Schema V1, notamment:
 
-- Casablanca + Rabat ;
-- `apartment_sale`, `apartment_rent` ;
-- `villa_sale`, `villa_rent` ;
-- `house_sale`, `house_rent` ;
-- `commercial_sale`, `commercial_rent` ;
-- `land_sale` ;
-- chunks/reprise/garde-fous identiques ;
-- mesurer couverture et rejets avant toute extension à d'autres villes.
+- interdire `transaction = null` au lieu de la convertir implicitement en `sale`;
+- revalider la provenance `agency_direct` face aux enums actuels du Property Schema;
+- exécuter le gate contrat Lot 1.
 
 ## Interdictions inchangées
 
 - zéro write production
-- zéro ingestion AkarFinder
+- zéro ingestion AkarFinder production
 - zéro contournement anti-bot
 - aucun merge automatique
 - aucun déploiement Vercel
