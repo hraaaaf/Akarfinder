@@ -1,0 +1,22 @@
+name: Data Ingestion Lot 7 Sandbox 100 Gate
+
+on:
+  pull_request:
+    paths:
+      - "data-ingestion/**"
+      - "scripts/scrapers/__tests__/data-ingestion-lot7-sandbox-100.test.ts"
+      - ".github/workflows/data-ingestion-lot7-sandbox-100.yml"
+
+jobs:
+  sandbox-100:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Validate isolated 100-listing sandbox
+        run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot7-sandbox-100.test.ts
