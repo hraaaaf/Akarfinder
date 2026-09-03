@@ -91,26 +91,39 @@ try {
     await context.close();
   }
 
-  // 3) Workspace resume: authenticated project link must rebuild only the safe URL projection plus project_id.
+  // 3) Workspace resume: inject deterministic client fetch responses and verify the real rendered resume link.
   {
     const context = await browser.newContext();
+    const continuityState = {
+      user: { id: "audit-user", email: "audit@example.test" },
+      projects: [{ id: "audit-project", name: "Projet audit", status: "active", profile, updated_at: "2026-09-02T20:00:00.000Z" }],
+      favorites: [], saved_searches: [], history: [], comparisons: [], eliminated: [], preferences: [],
+    };
+    await context.addInitScript(({ state }) => {
+      const originalFetch = window.fetch.bind(window);
+      window.fetch = async (input, init) => {
+        const raw = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
+        const url = new URL(raw, window.location.origin);
+        if (url.pathname === "/api/auth/session") {
+          return new Response(JSON.stringify({ user: { id: "audit-user" } }), {
+            status: 200,
+            headers: { "content-type": "application/json" },
+          });
+        }
+        if (url.pathname === "/api/me/continuity") {
+          return new Response(JSON.stringify(state), {
+            status: 200,
+            headers: { "content-type": "application/json" },
+          });
+        }
+        return originalFetch(input, init);
+      };
+    }, { state: continuityState });
+
     const page = await context.newPage();
-    await page.route("**/api/auth/session", async (route) => {
-      await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ user: { id: "audit-user" } }) });
-    });
-    await page.route("**/api/me/continuity", async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify({
-          user: { id: "audit-user", email: "audit@example.test" },
-          projects: [{ id: "audit-project", name: "Projet audit", status: "active", profile, updated_at: "2026-09-02T20:00:00.000Z" }],
-          favorites: [], saved_searches: [], history: [], comparisons: [], eliminated: [], preferences: [],
-        }),
-      });
-    });
     const response = await page.goto(`${baseUrl}/mon-projet/espace`, { waitUntil: "domcontentloaded", timeout: 60_000 });
     if ((response?.status() ?? 0) !== 200) findings.push(`WORKSPACE_HTTP_${response?.status() ?? 0}`);
+    await page.getByText("Projet audit", { exact: true }).waitFor({ state: "visible", timeout: 15_000 });
     const resume = page.getByRole("link", { name: "Reprendre la recherche" }).first();
     await resume.waitFor({ state: "visible", timeout: 15_000 });
     const href = await resume.getAttribute("href");
