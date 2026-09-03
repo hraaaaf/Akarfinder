@@ -1,26 +1,12 @@
 name: UX-SEARCH-7 Final Visual Certification
-# Exact-head replay after calibrating the final audit to the certified active-filter state and UX-SEARCH-5 alignment tolerance.
+# Heavy historical visual certification. Explicit closeout/release gate only.
 
 on:
-  pull_request:
-    paths:
-      - "app/search/**"
-      - "components/layout/SiteHeader.tsx"
-      - "components/search/**"
-      - "components/ui/Container.tsx"
-      - "lib/contextual-illustrations/**"
-      - "lib/listings/**"
-      - "lib/search/**"
-      - "lib/ux/**"
-      - "scripts/audits/ux-search-final-visual-certification-7.mjs"
-      - "scripts/scrapers/__tests__/ux-p1-mobile-decision-ergonomics.test.ts"
-      - "scripts/scrapers/__tests__/search-mobile-card-grid-1.test.ts"
-      - "scripts/scrapers/__tests__/ux-search-card-architecture-3.test.ts"
-      - "scripts/scrapers/__tests__/ux-search-visual-inventory-4.test.ts"
-      - "scripts/scrapers/__tests__/ux-search-navigation-hierarchy-5.test.ts"
-      - "scripts/scrapers/__tests__/ux-search-mobile-precision-6.test.ts"
-      - ".github/workflows/ux-search-7-final-visual-certification.yml"
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read

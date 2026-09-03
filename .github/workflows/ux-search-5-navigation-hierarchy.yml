@@ -1,15 +1,11 @@
 name: UX-SEARCH-5 Navigation Hierarchy Certification
 
 on:
-  pull_request:
-    paths:
-      - "app/search/page.tsx"
-      - "components/layout/SiteHeader.tsx"
-      - "components/ui/Container.tsx"
-      - "scripts/audits/ux-search-navigation-hierarchy-5.mjs"
-      - "scripts/scrapers/__tests__/ux-search-navigation-hierarchy-5.test.ts"
-      - ".github/workflows/ux-search-5-navigation-hierarchy.yml"
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read

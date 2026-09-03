@@ -1,17 +1,11 @@
 name: UX-SEARCH-1 Density First Certification
 
 on:
-  pull_request:
-    branches: [main]
-    paths:
-      - "app/search/page.tsx"
-      - "app/search/search-density.css"
-      - "components/search/**"
-      - "scripts/audits/ux-search-density-1-visual.mjs"
-      - ".github/workflows/ux-search-density-1.yml"
-      - "docs/ROADMAP.md"
-      - "docs/SESSION.md"
   workflow_dispatch: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read

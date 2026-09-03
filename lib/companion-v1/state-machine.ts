@@ -8,6 +8,8 @@ export const COMPANION_STATES = [
 ] as const;
 export type CompanionState = (typeof COMPANION_STATES)[number];
 
+type CompanionAnchor = DynamicSearchProfileV2["location"]["anchors"][number];
+
 export type CompanionSession = {
   version: typeof COMPANION_STATE_MACHINE_VERSION;
   state: CompanionState;
@@ -33,6 +35,8 @@ export type CompanionEvent =
   | { type: "answer_budget"; purchase_max_mad?: number | null; rent_monthly_max_mad?: number | null; budget_flex_pct?: number }
   | { type: "answer_type"; property_types: string[] }
   | { type: "answer_constraints"; min_surface_m2?: number | null; min_bedrooms?: number | null; required_features?: string[]; works_accepted?: boolean | null }
+  | { type: "answer_context"; children_count?: number | null; accessibility_need?: boolean | null; mre_context?: boolean | null; student_context?: boolean | null; corporate_context?: boolean | null; remote_work?: boolean | null }
+  | { type: "answer_anchors"; anchors: CompanionAnchor[] }
   | { type: "answer_preferences"; preferences: CompanionPreferenceAnswer[] }
   | { type: "answer_priorities"; priorities: string[] }
   | { type: "answer_compromise"; tourism_intensity_max?: number | null }
@@ -51,7 +55,7 @@ const EXPECTED_EVENT: Record<CompanionState, CompanionEvent["type"][]> = {
   BUDGET: ["answer_budget"],
   TYPE: ["answer_type"],
   CONTRAINTES_ABSOLUES: ["answer_constraints"],
-  PREFERENCES: ["answer_preferences"],
+  PREFERENCES: ["answer_context", "answer_anchors", "answer_preferences"],
   PRIORISATION: ["answer_priorities"],
   COMPROMIS: ["answer_compromise"],
   PROFIL_RECAP: ["revise_profile", "confirm_profile"],
@@ -83,6 +87,20 @@ export function transitionCompanionSession(session: CompanionSession, event: Com
     case "answer_budget": next.profile = applySearchProfileEvent(next.profile, { type: "budget", purchase_max_mad: event.purchase_max_mad, rent_monthly_max_mad: event.rent_monthly_max_mad, budget_flex_pct: event.budget_flex_pct }, now); next.state = "TYPE"; break;
     case "answer_type": next.profile = applySearchProfileEvent(next.profile, { type: "property", property_types: event.property_types }, now); next.state = "CONTRAINTES_ABSOLUES"; break;
     case "answer_constraints": next.profile = applySearchProfileEvent(next.profile, { type: "property", min_surface_m2: event.min_surface_m2, min_bedrooms: event.min_bedrooms, required_features: event.required_features, works_accepted: event.works_accepted }, now); next.state = "PREFERENCES"; break;
+    case "answer_context":
+      next.profile = applySearchProfileEvent(next.profile, {
+        type: "personal_context",
+        ...(Object.prototype.hasOwnProperty.call(event, "children_count") ? { children_count: event.children_count } : {}),
+        ...(Object.prototype.hasOwnProperty.call(event, "accessibility_need") ? { accessibility_need: event.accessibility_need } : {}),
+        ...(Object.prototype.hasOwnProperty.call(event, "mre_context") ? { mre_context: event.mre_context } : {}),
+        ...(Object.prototype.hasOwnProperty.call(event, "student_context") ? { student_context: event.student_context } : {}),
+        ...(Object.prototype.hasOwnProperty.call(event, "corporate_context") ? { corporate_context: event.corporate_context } : {}),
+        ...(Object.prototype.hasOwnProperty.call(event, "remote_work") ? { remote_work: event.remote_work } : {}),
+      }, now);
+      break;
+    case "answer_anchors":
+      next.profile = applySearchProfileEvent(next.profile, { type: "anchors", values: event.anchors }, now);
+      break;
     case "answer_preferences":
       // Revision is authoritative: remove preferences that the user unchecked,
       // then rebuild only the currently selected set.

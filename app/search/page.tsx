@@ -1,5 +1,6 @@
 import { after } from "next/server";
 import type { Metadata } from "next";
+import { FinderLauncher } from "@/components/companion/FinderLauncher";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { LightZillowSearchShell } from "@/components/search/LightZillowSearchShell";
@@ -7,6 +8,7 @@ import { PropertyQuickPreview } from "@/components/search/PropertyQuickPreview";
 import { PropertySelectionProvider } from "@/components/search/PropertySelectionProvider";
 import { SearchCompareDock } from "@/components/search/SearchCompareDock";
 import { SearchMapNavigationBridge } from "@/components/search/SearchMapNavigationBridge";
+import { SearchPersonalizationControl } from "@/components/search/SearchPersonalizationControl";
 import { SearchPriceExplorerDock } from "@/components/search/SearchPriceExplorerDock";
 import { runOdmDualReadShadow } from "@/lib/odm/odm-dual-read-runner";
 import { shouldRunOdmDualRead } from "@/lib/odm/odm-dual-read-shadow";
@@ -145,11 +147,17 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const maxBudget = pickFirst(params.max_price) ?? pickFirst(params.budget_max) ?? "";
   const search = resolvedQuery.q ?? "";
   const requestedProjectId = pickFirst(params.project_id);
+  const personalizationVisible = pickFirst(params.guided) === "1" || Boolean(pickFirst(params.profile_version));
+  const personalizationEnabled = pickFirst(params.personalized) !== "0";
 
   return (
     <main className="min-h-screen bg-background text-foreground">
       <SiteHeader variant="light" compact fluid searchMode />
       <SearchMapNavigationBridge projectId={requestedProjectId} />
+      <SearchPersonalizationControl
+        initialVisible={personalizationVisible}
+        initialEnabled={personalizationEnabled}
+      />
       <PropertySelectionProvider>
         <SearchCompareDock />
         <PropertyQuickPreview />
@@ -171,6 +179,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         />
         <SearchPriceExplorerDock />
       </PropertySelectionProvider>
+      <FinderLauncher />
       <div className="l2-secondary-footer">
         <SiteFooter variant="search" />
       </div>

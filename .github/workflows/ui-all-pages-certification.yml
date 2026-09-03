@@ -1,17 +1,17 @@
 name: UI All Pages Certification
 
 on:
-  pull_request:
+  workflow_dispatch:
+  push:
     branches: [main]
     paths:
       - "app/**"
       - "components/**"
       - "scripts/audits/ui-all-pages-*.mjs"
       - ".github/workflows/ui-all-pages-*.yml"
-  workflow_dispatch:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:

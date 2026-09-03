@@ -1,15 +1,12 @@
 name: UX-RESULTS-TOOLBAR-10OF10-1 Exact Visual Certification
 
+# Frozen visual certification. Explicit closeout/release gate only.
 on:
-  pull_request:
-    paths:
-      - "components/search/LightZillowSearchShell.tsx"
-      - "components/search/SearchViewSwitcher.tsx"
-      - "components/search/SearchViewSwitcher.module.css"
-      - "scripts/audits/ux-results-toolbar-10of10-1.mjs"
-      - "scripts/scrapers/__tests__/ux-results-toolbar-10of10-1.test.ts"
-      - ".github/workflows/ux-results-toolbar-10of10-1.yml"
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read

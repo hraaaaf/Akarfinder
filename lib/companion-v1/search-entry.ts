@@ -4,9 +4,11 @@ import type { DynamicSearchProfileV2 } from "@/lib/search-profile-v2/types";
  * Deterministic Companion → Search hand-off.
  *
  * Search-supported constraints are sent through canonical structured params.
- * Richer profile data is preserved in namespaced `profile_*` params so the
- * guided intent is never silently discarded while Search/Mon Projet consume
- * progressively more of Dynamic Search Profile V2.
+ * Existing non-sensitive richer intent remains namespaced in `profile_*` params.
+ * Sensitive/rich context such as anchors, personal context and tolerances is
+ * intentionally kept out of the URL: Mon Projet already stores the complete
+ * profile in sessionStorage for temporary continuity and persists it through
+ * `/api/me/continuity` when authentication is available.
  */
 export function companionProfileToSearchParams(profile: DynamicSearchProfileV2): URLSearchParams {
   const params = new URLSearchParams();

@@ -1,7 +1,8 @@
 name: UI All Pages Baseline
 
 on:
-  pull_request:
+  workflow_dispatch:
+  push:
     branches: [main]
     paths:
       - "app/**"
@@ -9,10 +10,9 @@ on:
       - "scripts/audits/ui-all-pages-*.mjs"
       - "scripts/__tests__/mon-projet-naming-convergence.test.ts"
       - ".github/workflows/ui-all-pages-*.yml"
-  workflow_dispatch:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:

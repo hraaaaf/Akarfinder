@@ -23,6 +23,13 @@ import { calculatePackageScore } from "@/lib/package-score/calculate-package-sco
 import { getListingProximity } from "@/lib/proximity/get-listing-proximity";
 import { getCityCoord } from "@/lib/search/city-coords";
 import { partitionCommercialSearchListings } from "@/lib/search/search-commercial-priority";
+import {
+  finderProjectionFromProfile,
+  finderProjectionFromSearchParams,
+  mergeFinderProjections,
+  rankListingsWithFinderProjection,
+  type FinderRankingProjection,
+} from "@/lib/search-profile-v2/listing-personalization";
 import type { SearchGatewayNormalizedResult } from "@/lib/search-gateway/search-gateway-types";
 import { track } from "@/lib/tracking/track";
 import type { SearchViewMode } from "@/lib/ux/contracts";
@@ -52,7 +59,13 @@ type GatewaySearchResponse = {
   has_more?: boolean;
 };
 
+type ContinuityResponse = {
+  projects?: Array<{ id?: string; profile?: unknown }>;
+};
+
 const PAGE_SIZE = 24;
+const FINDER_PARAM_KEYS = ["guided", "personalized"] as const;
+const PENDING_PROJECT_KEY = "akarfinder-pending-project-v2";
 
 const RELIABILITY_BADGE: Record<string, string> = {
   top: "Information complete",
@@ -84,6 +97,16 @@ function buildSearchUrl(filters: ListingFiltersState, sortBy: SortBy, page: numb
   return `/api/search?${params.toString()}`;
 }
 
+function preserveFinderParams(params: URLSearchParams) {
+  if (typeof window === "undefined") return;
+  const current = new URLSearchParams(window.location.search);
+  for (const [key, value] of current.entries()) {
+    if (key.startsWith("profile_") || FINDER_PARAM_KEYS.includes(key as (typeof FINDER_PARAM_KEYS)[number])) {
+      params.set(key, value);
+    }
+  }
+}
+
 function buildBrowserSearchUrl(
   filters: ListingFiltersState,
   sortBy: SortBy,
@@ -103,6 +126,7 @@ function buildBrowserSearchUrl(
   else if (sortBy === "price-desc") params.set("sort", "price_desc");
   if (page > 1) params.set("page", String(page));
   if (projectId) params.set("project_id", projectId);
+  preserveFinderParams(params);
   const query = params.toString();
   return query ? `/search?${query}` : "/search";
 }
@@ -188,6 +212,8 @@ export function LightZillowSearchShell({ initialListings, initialTotal, initialP
   const [hasMoreIndexed, setHasMoreIndexed] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [indexedTotalCount, setIndexedTotalCount] = useState<number | null>(null);
+  const [finderParams, setFinderParams] = useState<URLSearchParams | null>(null);
+  const [privateFinderProjection, setPrivateFinderProjection] = useState<FinderRankingProjection | null>(null);
 
   const [gatewayResults, setGatewayResults] = useState<SearchGatewayNormalizedResult[]>([]);
   const gatewayEnabled = process.env.NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED !== "false";
@@ -205,6 +231,43 @@ export function LightZillowSearchShell({ initialListings, initialTotal, initialP
     },
   });
 
+  useEffect(() => {
+    let cancelled = false;
+    const browserParams = new URLSearchParams(window.location.search);
+    const effectiveProjectId = projectId ?? browserParams.get("project_id") ?? undefined;
+    setFinderParams(browserParams);
+
+    try {
+      const raw = window.sessionStorage.getItem(PENDING_PROJECT_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as { profile?: unknown };
+        const projection = finderProjectionFromProfile(parsed.profile);
+        if (projection) setPrivateFinderProjection(projection);
+      }
+    } catch {
+      // Search remains fully usable when temporary continuity is unavailable.
+    }
+
+    if (effectiveProjectId) {
+      void fetch("/api/me/continuity", { cache: "no-store" })
+        .then(async (response) => response.ok ? await response.json() as ContinuityResponse : null)
+        .then((payload) => {
+          if (cancelled || !payload?.projects) return;
+          const project = payload.projects.find((item) => item.id === effectiveProjectId);
+          const projection = finderProjectionFromProfile(project?.profile);
+          if (projection) setPrivateFinderProjection(projection);
+        })
+        .catch(() => undefined);
+    }
+
+    return () => { cancelled = true; };
+  }, [projectId]);
+
+  const finderProjection = useMemo(() => {
+    const publicProjection = finderParams ? finderProjectionFromSearchParams(finderParams) : null;
+    return mergeFinderProjections(publicProjection, privateFinderProjection);
+  }, [finderParams, privateFinderProjection]);
+
   function syncBrowserUrl(
     page: number,
     mode: "push" | "replace",
@@ -214,6 +277,7 @@ export function LightZillowSearchShell({ initialListings, initialTotal, initialP
     const href = buildBrowserSearchUrl(nextFilters, nextSort, page, projectId);
     if (mode === "push") window.history.pushState({}, "", href);
     else window.history.replaceState({}, "", href);
+    setFinderParams(new URLSearchParams(window.location.search));
   }
 
   function handlePageChange(nextPage: number) {
@@ -246,8 +310,10 @@ export function LightZillowSearchShell({ initialListings, initialTotal, initialP
 
   useEffect(() => {
     const onPopState = () => {
-      const raw = Number(new URLSearchParams(window.location.search).get("page"));
+      const params = new URLSearchParams(window.location.search);
+      const raw = Number(params.get("page"));
       setCurrentPage(Number.isFinite(raw) && raw >= 1 ? Math.trunc(raw) : 1);
+      setFinderParams(params);
     };
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
@@ -384,8 +450,9 @@ export function LightZillowSearchShell({ initialListings, initialTotal, initialP
       }
       return true;
     });
+    if (sortBy === "recommended") return rankListingsWithFinderProjection(clientFiltered, finderProjection);
     return sortListings(clientFiltered, sortBy);
-  }, [listings, filters, sortBy]);
+  }, [listings, filters, sortBy, finderProjection]);
 
   const commercialGroups = useMemo(
     () => partitionCommercialSearchListings(filteredListings),

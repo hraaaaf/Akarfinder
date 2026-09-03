@@ -1,0 +1,151 @@
+name: Mon Projet P3 Search Personalization
+# Final scoped certification launch after CI fan-out cleanup.
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "app/search/page.tsx"
+      - "components/search/LightZillowSearchShell.tsx"
+      - "components/search/SearchPersonalizationControl.tsx"
+      - "lib/listings/utils.ts"
+      - "lib/search-profile-v2/listing-personalization.ts"
+      - "lib/companion-v1/search-entry.ts"
+      - "scripts/scrapers/__tests__/finder-personalization.test.ts"
+      - "scripts/audits/finder-p3-visual.mjs"
+      - "scripts/audits/finder-p3-continuity-runtime.mjs"
+      - ".github/workflows/mon-projet-p3-search-personalization.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  scope:
+    name: Latest-commit scope check
+    runs-on: ubuntu-latest
+    outputs:
+      relevant: ${{ steps.scope.outputs.relevant }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - id: scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${GITHUB_EVENT_NAME}" != "pull_request" ]]; then
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git diff --name-only HEAD^ HEAD > /tmp/changed.txt
+          if grep -Eq '^(app/search/page\.tsx$|components/search/(LightZillowSearchShell|SearchPersonalizationControl)\.tsx$|lib/listings/utils\.ts$|lib/search-profile-v2/listing-personalization\.ts$|lib/companion-v1/search-entry\.ts$|scripts/scrapers/__tests__/finder-personalization\.test\.ts$|scripts/audits/finder-p3-(visual|continuity-runtime)\.mjs$|\.github/workflows/mon-projet-p3-search-personalization\.yml$)' /tmp/changed.txt; then
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "relevant=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  certify:
+    needs: scope
+    if: needs.scope.outputs.relevant == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    env:
+      BASELINE_SHA: 03ef9c7a5760f29394458f001db2c5c0ecc38c86
+    steps:
+      - name: Checkout target
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Targeted Akar Sense ranking tests
+        run: npx tsx --test scripts/scrapers/__tests__/finder-personalization.test.ts
+      - name: Preserve audit script
+        run: cp scripts/audits/finder-p3-visual.mjs .finder-p3-visual.mjs
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Checkout BEFORE
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BASELINE_SHA }}
+          fetch-depth: 1
+      - run: npm ci
+      - name: Restore audit script for BEFORE
+        run: git show ${{ github.event.pull_request.head.sha || github.sha }}:scripts/audits/finder-p3-visual.mjs > scripts/audits/finder-p3-visual-runtime.mjs
+      - name: Build BEFORE
+        run: npm run build
+      - name: Start BEFORE
+        shell: bash
+        run: |
+          npm run start -- -p 3217 > /tmp/finder-p3-before-server.log 2>&1 &
+          echo $! > /tmp/finder-p3-before.pid
+          for attempt in {1..60}; do
+            if curl -fsS "http://127.0.0.1:3217/search?guided=1&profile_version=2.0&city=Rabat" >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/finder-p3-before-server.log
+          exit 1
+      - name: Capture BEFORE
+        env:
+          BASE_URL: http://127.0.0.1:3217
+          AUDIT_PHASE: before
+          AUDIT_OUTPUT_DIR: /tmp/finder-p3-proof/before
+        run: node scripts/audits/finder-p3-visual-runtime.mjs
+      - name: Stop BEFORE
+        if: always()
+        run: kill $(cat /tmp/finder-p3-before.pid) 2>/dev/null || true
+
+      - name: Checkout AFTER
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 1
+      - run: npm ci
+      - name: Build AFTER
+        run: npm run build
+      - name: Start AFTER
+        shell: bash
+        run: |
+          npm run start -- -p 3218 > /tmp/finder-p3-after-server.log 2>&1 &
+          echo $! > /tmp/finder-p3-after.pid
+          for attempt in {1..60}; do
+            if curl -fsS "http://127.0.0.1:3218/search?guided=1&profile_version=2.0&city=Rabat" >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/finder-p3-after-server.log
+          exit 1
+      - name: Capture AFTER
+        env:
+          BASE_URL: http://127.0.0.1:3218
+          AUDIT_PHASE: after
+          AUDIT_OUTPUT_DIR: /tmp/finder-p3-proof/after
+        run: node scripts/audits/finder-p3-visual.mjs
+      - name: Continuity runtime proof
+        env:
+          BASE_URL: http://127.0.0.1:3218
+          AUDIT_OUTPUT_DIR: /tmp/finder-p3-proof/continuity
+        run: npx tsx scripts/audits/finder-p3-continuity-runtime.mjs
+      - name: Stop AFTER
+        if: always()
+        run: kill $(cat /tmp/finder-p3-after.pid) 2>/dev/null || true
+      - name: Stage visual proof
+        if: always()
+        run: |
+          mkdir -p artifacts
+          cp -R /tmp/finder-p3-proof artifacts/finder-p3-proof 2>/dev/null || true
+      - name: Upload Akar Sense P3 proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mon-projet-p3-personalization-${{ github.run_id }}
+          path: artifacts/finder-p3-proof
+          if-no-files-found: error
+          retention-days: 14
