@@ -40,8 +40,8 @@ function escapeRegExp(value: string): string {
 function extractDistrictFromPrimaryStats(pageText: string, city: string | null): string | null {
   if (!city) return null;
   const marker = new RegExp(`\\s(?:à|a)\\s${escapeRegExp(city)}\\b`, "giu");
-  const statPattern = /\d+\s*(?:m(?:²|2)|pi[eè]ces?|chambres?|salles?\s*de\s*bains?)/giu;
-  const stopPattern = /\d|\b(?:dh|dhs|mad|favori|partager|contacter|prix|surface)\b/i;
+  const statPattern = /\d+\s*(?:m(?:²|2)|pi[eè]ces?|chambres?|ch\.|salles?\s*de\s*bains?)/giu;
+  const stopPattern = /\b(?:dh|dhs|mad|favori|partager|contacter|prix|surface)\b/i;
 
   for (const match of pageText.matchAll(marker)) {
     if (match.index == null) continue;
@@ -54,6 +54,7 @@ function extractDistrictFromPrimaryStats(pageText: string, city: string | null):
     if (!candidate) continue;
     if (candidate.length > 70) candidate = candidate.split(/\s+/).slice(-8).join(" ");
     if (candidate.length < 2 || candidate.length > 70 || stopPattern.test(candidate)) continue;
+    if (!/[\p{L}]/u.test(candidate)) continue;
     if (candidate.localeCompare(city, "fr", { sensitivity: "base" }) === 0) continue;
     return candidate;
   }
@@ -80,6 +81,14 @@ function extractPrimaryTransaction(title: string | null, description: string | n
 
   signals.sort((a, b) => a.index - b.index);
   return signals[0]?.transaction ?? null;
+}
+
+function primaryPriceIsOnRequest(pageText: string, title: string | null): boolean {
+  const normalizedTitle = title ? title.replace(/\s+/g, " ") : null;
+  const titleIndex = normalizedTitle ? pageText.indexOf(normalizedTitle) : -1;
+  const start = titleIndex >= 0 ? titleIndex : 0;
+  const primaryBlock = pageText.slice(start, start + 1200);
+  return /\bprix\s+(?:à|a)\s+consulter\b|\bdemander\s+le\s+prix\b/i.test(primaryBlock);
 }
 
 function extractPrimaryImageUrls($: ReturnType<typeof load>): string[] {
@@ -186,7 +195,8 @@ export function extractMubawabCollectionListing(url: string, html: string, now =
   const typeRaw = explicitType ?? jsonLdType ?? title;
   const transaction = extractPrimaryTransaction(title, detail.description_snippet);
   const propertyType = mapMubawabPropertyType(typeRaw);
-  const priceAmount = normalizePrice(detail.price_raw);
+  const onRequest = primaryPriceIsOnRequest(pageText, title);
+  const priceAmount = onRequest ? null : normalizePrice(detail.price_raw);
   const totalSurface = normalizeSurface(detail.surface_raw);
 
   const images = extractPrimaryImageUrls($)
@@ -234,7 +244,7 @@ export function extractMubawabCollectionListing(url: string, html: string, now =
     property_type: propertyType,
     title,
     description,
-    price: { amount: priceAmount, currency: "MAD", period: transaction === "rent" ? "month" : transaction === "sale" ? "total" : null, on_request: priceAmount == null },
+    price: { amount: priceAmount, currency: "MAD", period: transaction === "rent" ? "month" : transaction === "sale" ? "total" : null, on_request: onRequest || priceAmount == null },
     surface: { total_m2: totalSurface, habitable_m2: null, built_m2: detail.built_surface_m2 ?? null, land_m2: detail.plot_surface_m2 ?? null },
     rooms: detail.rooms,
     bedrooms: detail.bedrooms,
