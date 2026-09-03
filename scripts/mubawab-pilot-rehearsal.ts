@@ -19,10 +19,23 @@ const MAX_DISCOVERY_PAGES = 2;
 const MAX_DETAIL_FETCHES = 40;
 const FIRST_PASS_LIMIT = 15;
 const REQUEST_DELAY_MS = 750;
+const DISCOVERY_CITY = "Casablanca";
+const DISCOVERY_CATEGORY_KEY = "apartment_sale";
+const DISCOVERY_TRANSACTION: "sale" | "rent" = "sale";
 
 const resumeMode = process.argv.includes("--resume");
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+type ExtractedListing = ReturnType<typeof extractMubawabCollectionListing>;
+
+type TransactionEvidence = {
+  mode: "explicit_detail" | "discovery_context_plus_price" | "missing";
+  discovery_category: string;
+  discovery_transaction: "sale" | "rent";
+  price_shape: "numeric_non_periodic" | "other";
+  confidence: "explicit" | "contextual" | "missing";
+};
 
 async function checkedFetch(url: string) {
   const allowed = await isAllowedByRobots(url);
@@ -36,7 +49,45 @@ async function checkedFetch(url: string) {
   }
 }
 
-function rejectionReasons(listing: ReturnType<typeof extractMubawabCollectionListing>): string[] {
+function withTransactionEvidence(listing: ExtractedListing): ExtractedListing {
+  const numericNonPeriodic = listing.price.amount != null && listing.price.period == null && !listing.price.on_request;
+  let evidence: TransactionEvidence;
+
+  if (listing.transaction) {
+    evidence = {
+      mode: "explicit_detail",
+      discovery_category: DISCOVERY_CATEGORY_KEY,
+      discovery_transaction: DISCOVERY_TRANSACTION,
+      price_shape: numericNonPeriodic ? "numeric_non_periodic" : "other",
+      confidence: "explicit",
+    };
+  } else if (numericNonPeriodic) {
+    listing.transaction = DISCOVERY_TRANSACTION;
+    listing.price.period = DISCOVERY_TRANSACTION === "sale" ? "total" : "month";
+    listing.quality.warnings = listing.quality.warnings.filter((warning) => warning !== "transaction_missing");
+    if (listing.quality.score != null) listing.quality.score = Math.min(100, listing.quality.score + 15);
+    evidence = {
+      mode: "discovery_context_plus_price",
+      discovery_category: DISCOVERY_CATEGORY_KEY,
+      discovery_transaction: DISCOVERY_TRANSACTION,
+      price_shape: "numeric_non_periodic",
+      confidence: "contextual",
+    };
+  } else {
+    evidence = {
+      mode: "missing",
+      discovery_category: DISCOVERY_CATEGORY_KEY,
+      discovery_transaction: DISCOVERY_TRANSACTION,
+      price_shape: "other",
+      confidence: "missing",
+    };
+  }
+
+  listing.raw = { ...listing.raw, transaction_evidence: evidence };
+  return listing;
+}
+
+function rejectionReasons(listing: ExtractedListing): string[] {
   const reasons: string[] = [];
   if (!listing.title) reasons.push("title_missing");
   if (!listing.location.city) reasons.push("city_missing");
@@ -83,7 +134,7 @@ async function initialize() {
 
   const discovery = await runDiscovery(
     async (url) => (await checkedFetch(url)).html,
-    { maxPages: MAX_DISCOVERY_PAGES, city: "Casablanca", category_key: "apartment_sale" },
+    { maxPages: MAX_DISCOVERY_PAGES, city: DISCOVERY_CITY, category_key: DISCOVERY_CATEGORY_KEY },
   );
 
   if (discovery.manifest.pages_failed > 0) {
@@ -118,6 +169,16 @@ async function initialize() {
   await writeFile(errorsPath, "", "utf8");
 }
 
+async function transactionEvidenceCounts() {
+  const raw = await readFile(listingsPath, "utf8");
+  const listings = raw.split("\n").filter(Boolean).map((line) => JSON.parse(line) as ExtractedListing);
+  return {
+    explicit_detail: listings.filter((listing) => (listing.raw.transaction_evidence as TransactionEvidence | undefined)?.mode === "explicit_detail").length,
+    contextual: listings.filter((listing) => (listing.raw.transaction_evidence as TransactionEvidence | undefined)?.mode === "discovery_context_plus_price").length,
+    missing: listings.filter((listing) => (listing.raw.transaction_evidence as TransactionEvidence | undefined)?.mode === "missing").length,
+  };
+}
+
 async function processBatch(limit: number) {
   const candidates = JSON.parse(await readFile(candidatesPath, "utf8")) as DiscoveredListingRef[];
   const manifest = JSON.parse(await readFile(manifestPath, "utf8")) as PilotManifest;
@@ -135,7 +196,7 @@ async function processBatch(limit: number) {
 
     try {
       const fetched = await checkedFetch(ref.url);
-      const listing = extractMubawabCollectionListing(ref.url, fetched.html);
+      const listing = withTransactionEvidence(extractMubawabCollectionListing(ref.url, fetched.html));
       manifest.listings_fetched += 1;
       const reasons = rejectionReasons(listing);
       if (reasons.length === 0) {
@@ -185,7 +246,7 @@ async function processBatch(limit: number) {
 
   const proof = {
     generated_at: new Date().toISOString(),
-    scope: "Casablanca × apartment_sale",
+    scope: `${DISCOVERY_CITY} × ${DISCOVERY_CATEGORY_KEY}`,
     discovery_pages_max: MAX_DISCOVERY_PAGES,
     detail_fetch_cap: MAX_DETAIL_FETCHES,
     request_delay_ms: REQUEST_DELAY_MS,
@@ -195,6 +256,7 @@ async function processBatch(limit: number) {
     resume_observed: resumeMode && checkpoint.first_pass_processed > 0,
     checkpoint_next_index: checkpoint.next_index,
     candidates: candidates.length,
+    transaction_evidence_counts: await transactionEvidenceCounts(),
     database_writes: 0,
     image_downloads: 0,
     mass_ingestion: false,
