@@ -48,3 +48,24 @@ test("recognizes conjugated vend wording in the primary title", () => {
   assert.equal(listing.price.period, "total");
   assert.equal(listing.quality.warnings.includes("transaction_missing"), false);
 });
+
+test("recognizes explicit location longue durée wording as rent", () => {
+  const html = `<!doctype html><html><head><meta property="og:title" content="Studio neuf aux princesses"></head><body><div>8 000 DH</div><div>49 m²</div><div>Les princesses à Casablanca</div><h1>Studio neuf aux princesses</h1><script type="application/ld+json">${JSON.stringify({
+    "@type": "Apartment",
+    name: "Studio neuf aux princesses",
+    offers: { price: "8000" },
+    address: { addressLocality: "Casablanca", streetAddress: "Les princesses" },
+    floorSize: { value: 49 },
+    description: "Studio neuf de 49m carré pour location longue durée. 2 façades, est et ouest. 2 balcons. Syndic inclus.",
+  })}</script></body></html>`;
+
+  const listing = extractMubawabCollectionListing(
+    "https://www.mubawab.ma/fr/a/8391927/studio-neuf-aux-princesses",
+    html,
+    "2026-09-03T18:45:00.000Z",
+  );
+
+  assert.equal(listing.transaction, "rent");
+  assert.equal(listing.price.period, "month");
+  assert.equal(listing.quality.warnings.includes("transaction_missing"), false);
+});
