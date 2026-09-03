@@ -233,7 +233,9 @@ export function LightZillowSearchShell({ initialListings, initialTotal, initialP
 
   useEffect(() => {
     let cancelled = false;
-    setFinderParams(new URLSearchParams(window.location.search));
+    const browserParams = new URLSearchParams(window.location.search);
+    const effectiveProjectId = projectId ?? browserParams.get("project_id") ?? undefined;
+    setFinderParams(browserParams);
 
     try {
       const raw = window.sessionStorage.getItem(PENDING_PROJECT_KEY);
@@ -246,12 +248,12 @@ export function LightZillowSearchShell({ initialListings, initialTotal, initialP
       // Search remains fully usable when temporary continuity is unavailable.
     }
 
-    if (projectId) {
+    if (effectiveProjectId) {
       void fetch("/api/me/continuity", { cache: "no-store" })
         .then(async (response) => response.ok ? await response.json() as ContinuityResponse : null)
         .then((payload) => {
           if (cancelled || !payload?.projects) return;
-          const project = payload.projects.find((item) => item.id === projectId);
+          const project = payload.projects.find((item) => item.id === effectiveProjectId);
           const projection = finderProjectionFromProfile(project?.profile);
           if (projection) setPrivateFinderProjection(projection);
         })
