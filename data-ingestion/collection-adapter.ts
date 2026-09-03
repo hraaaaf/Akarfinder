@@ -75,7 +75,7 @@ function stableId(prefix: string, value: string): string {
 function originType(input: CollectionListing): OfferOriginType {
   switch (input.provenance.source_type) {
     case "partner_feed": return "partner_feed";
-    case "agency_direct": return "partner_feed";
+    case "agency_direct": return "agency_direct";
     case "owner_direct": return "first_party_user";
     default: return "unknown";
   }
@@ -88,6 +88,10 @@ function offerStatus(input: CollectionListing): CanonicalOfferV1["offer_status"]
 }
 
 export function adaptCollectionListing(input: CollectionListing, ingestionRunId: string | null = null): CanonicalPropertyV1 {
+  if (input.transaction == null) {
+    throw new Error("collection_listing_transaction_required_for_canonical_offer");
+  }
+
   const propertyId = input.akar_id ?? stableId("property", `${input.source.name}:${input.source.source_id}`);
   const offerId = stableId("offer", `${input.source.name}:${input.source.source_id}`);
   const facts = emptyPropertyFacts();
@@ -140,7 +144,7 @@ export function adaptCollectionListing(input: CollectionListing, ingestionRunId:
     canonical_source_url: input.provenance.source_listing_url,
     acquisition_channel: input.provenance.retrieval_method === "feed" ? "partner_feed" : input.provenance.retrieval_method === "manual" ? "manual_partner" : "source_page",
     origin_type: originType(input),
-    transaction_type: input.transaction ?? "sale",
+    transaction_type: input.transaction,
     title: collected(input.title),
     description: collected(input.description),
     price_amount: collected(input.price.amount),
