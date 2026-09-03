@@ -1,0 +1,65 @@
+name: Live Sarouty manifest
+
+on:
+  push:
+    branches: [feat/sarouty-source-first]
+    paths:
+      - '.github/workflows/live-sarouty-manifest.yml'
+
+concurrency:
+  group: live-sarouty-manifest-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  manifest:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Discover declared Sarouty sitemap manifest only
+        run: |
+          mkdir -p artifacts/morocco-web-l8-sarouty-manifest
+          node - <<'NODE'
+          const fs = require('fs');
+          (async () => {
+            const robotsUrl = 'https://www.sarouty.ma/robots.txt';
+            const ua = 'AkarFinder-public-index/4.0 (+https://akarfinder.ma)';
+            const headers = {'user-agent': ua, accept:'application/xml,text/xml,text/plain;q=0.9,*/*;q=0.5'};
+            const robots = await fetch(robotsUrl,{headers,redirect:'follow'});
+            if (!robots.ok) throw new Error(`robots HTTP ${robots.status}`);
+            const robotsText = await robots.text();
+            const delayMatch = robotsText.match(/Crawl-delay:\s*([0-9]+(?:\.[0-9]+)?)/i);
+            const crawlDelaySeconds = delayMatch ? Number(delayMatch[1]) : 10;
+            const delayMs = Math.max(10000, Math.ceil(crawlDelaySeconds*1000));
+            const sm = robotsText.match(/^Sitemap:\s*(https?:\/\/\S+)/im);
+            if (!sm) throw new Error('No declared sitemap');
+            const root = sm[1].trim();
+            await new Promise(r=>setTimeout(r,delayMs));
+            const res = await fetch(root,{headers,redirect:'follow'});
+            if (!res.ok) throw new Error(`sitemap HTTP ${res.status}`);
+            const xml = await res.text();
+            const locs = [...xml.matchAll(/<loc>\s*([^<]+?)\s*<\/loc>/gi)].map(m=>m[1].replace(/&amp;/g,'&').trim());
+            const sitemapUrls = locs.filter(u => { try { return /\.xml(?:\.gz)?$/i.test(new URL(u).pathname); } catch { return false; } });
+            const groups = {};
+            for (const u of sitemapUrls) {
+              const base = new URL(u).pathname.split('/').pop() || '';
+              const key = base.replace(/\d+(?=\.xml(?:\.gz)?$)/i,'#');
+              groups[key] = (groups[key]||0)+1;
+            }
+            const report={zeroDbWrites:true,robotsStatus:robots.status,crawlDelaySeconds,delayMs,sitemapRoot:root,rootStatus:res.status,rootLocCount:locs.length,sitemapUrlCount:sitemapUrls.length,groups,stoppedEarly:null};
+            fs.writeFileSync('artifacts/morocco-web-l8-sarouty-manifest/report.json',JSON.stringify(report,null,2));
+            fs.writeFileSync('artifacts/morocco-web-l8-sarouty-manifest/sitemap-urls.txt',sitemapUrls.join('\n')+'\n');
+            console.log(JSON.stringify(report,null,2));
+          })().catch(err => { console.error(err); process.exit(1); });
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sarouty-sitemap-manifest
+          path: artifacts/morocco-web-l8-sarouty-manifest/
+          if-no-files-found: error
+          retention-days: 14
