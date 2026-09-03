@@ -94,7 +94,7 @@ async function main() {
   const updateSeed = listing({ sourceName: "mubawab", sourceId: "B", hashChar: "b", district: "Palmier", surface: 90 });
   const disappearingSeed = listing({ sourceName: "mubawab", sourceId: "C", hashChar: "c", district: "Oasis", surface: 110 });
   const directSeed = listing({ sourceName: "agency-alpha", sourceId: "D", hashChar: "d", sourceType: "agency_direct", district: "Racine", surface: 80 });
-  const partnerSeed = listing({ sourceName: "partner-x", sourceId: "P", hashChar: "p", sourceType: "partner_feed", district: "Gauthier", surface: 75 });
+  const partnerSeed = listing({ sourceName: "partner-x", sourceId: "P", hashChar: "7", sourceType: "partner_feed", district: "Gauthier", surface: 75 });
 
   const seedRecords = [
     record(unchangedSeed, "group-A"),
@@ -107,7 +107,7 @@ async function main() {
   const unchangedRun2 = listing({ sourceName: "mubawab", sourceId: "A", hashChar: "a", district: "Maarif", surface: 100 });
   const updatedRun2 = listing({ sourceName: "mubawab", sourceId: "B", hashChar: "e", price: 1_650_000, district: "Palmier", surface: 90 });
   const duplicateOfA = listing({ sourceName: "mubawab", sourceId: "A2", hashChar: "f", price: 1_520_000, district: "Maarif", surface: 100 });
-  const portalMatchingDirect = listing({ sourceName: "mubawab", sourceId: "D2", hashChar: "g", price: 1_700_000, district: "Racine", surface: 80 });
+  const portalMatchingDirect = listing({ sourceName: "mubawab", sourceId: "D2", hashChar: "6", price: 1_700_000, district: "Racine", surface: 80 });
 
   const run2 = reconcileLifecycleRun(
     seedRecords,
