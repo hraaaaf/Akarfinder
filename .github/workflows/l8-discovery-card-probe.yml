@@ -1,0 +1,35 @@
+name: L8 discovery card evidence
+
+on:
+  push:
+    branches: [feat/l8-discovery-card-evidence]
+    paths:
+      - 'scripts/acquisition/l8_discovery_card_probe.py'
+      - '.github/workflows/l8-discovery-card-probe.yml'
+
+concurrency:
+  group: l8-discovery-card-evidence-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Probe allowed discovery cards
+        working-directory: scripts/acquisition
+        run: python l8_discovery_card_probe.py
+      - name: Upload evidence
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: l8-discovery-card-evidence
+          path: scripts/acquisition/artifacts/morocco-web-l8-discovery-card-probe/
+          if-no-files-found: error
+          retention-days: 14
