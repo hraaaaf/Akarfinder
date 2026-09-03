@@ -1,6 +1,6 @@
 # Lot 6 Status
 
-**Status: 🟡 OPEN — chunked off-production crawl shakedown**
+**Status: 🟡 OPEN — chunked off-production crawl shakedown launched**
 
 ## Goal
 
@@ -25,13 +25,21 @@ Périmètre initial :
 - catégories : `apartment_sale`, `apartment_rent` ;
 - pages discovery max par combinaison : 2 ;
 - détails max : 200 ;
+- minimum de candidats : 100 ;
 - chunk JSONL : 50 annonces ;
 - première passe : 50 ;
-- reprise checkpoint jusqu'au cap ;
+- reprise checkpoint jusqu'au nombre de candidats contrôlés ;
 - délai inter-requêtes : 750 ms ;
+- contexte discovery contradictoire sale/rent interdit tout fallback transactionnel ;
 - zéro DB write ;
 - zéro téléchargement image ;
 - zéro ingestion AkarFinder.
+
+Runner : `scripts/mubawab-crawl-lot6-shakedown.ts`
+
+Workflow : `Data Ingestion Lot 6 Shakedown`
+
+**État : gate CI lancé — preuve à inspecter avant tout élargissement.**
 
 ## Preuve attendue
 
@@ -43,6 +51,7 @@ Périmètre initial :
 - `proof.json` ;
 - IDs source uniques ;
 - compteurs explicite/contextuel/manquant ;
+- conflits de contexte sale/rent ;
 - route/detail mismatches ;
 - reprise démontrée ;
 - taille de chunk respectée.
@@ -54,10 +63,12 @@ Le shakedown est valide si :
 - toutes les routes prévues sont auditées ;
 - le cap est respecté ;
 - aucun source ID dupliqué n'est écrit ;
-- les chunks sont déterministes ;
+- les chunks font au plus 50 lignes ;
 - la reprise ne refetch pas les IDs déjà traités ;
 - les erreurs/rejets sont mesurés ;
 - aucune écriture production n'a lieu.
+
+Le détail échantillonné n'est pas encore revendiqué comme représentatif de toute la couverture Lot 6 ; l'équilibrage par scope sera imposé avant l'élargissement final si nécessaire.
 
 ## Lot 6 complet
 
