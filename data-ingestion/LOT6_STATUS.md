@@ -1,123 +1,117 @@
 # Lot 6 Status
 
-**Status: 🟡 OPEN — shakedown mechanics proven; semantic hardening required before expansion**
+**Status: 🟡 OPEN — balanced 200 proof passed; broader coverage remains**
 
 ## Goal
 
 Produire un dataset Mubawab large, chunké, reprenable et auditable sans l'injecter dans AkarFinder.
 
-## Lot 6A — shakedown contrôlé
-
-Périmètre :
-
-- villes : Casablanca, Rabat ;
-- catégories : `apartment_sale`, `apartment_rent` ;
-- 2 pages discovery par combinaison ;
-- 200 détails max ;
-- chunks JSONL de 50 ;
-- première passe 50 puis reprise ;
-- délai 750 ms ;
-- zéro DB write / image download / ingestion AkarFinder.
-
-### Preuve mécanique
+## Lot 6A — shakedown mécanique
 
 Workflow : `Data Ingestion Lot 6 Shakedown`
 
-- run : **#2**
-- run ID : **33801636244**
-- head SHA : **2b0b00e3bae404b42e98bf70399622142cf86513**
-- artifact : `mubawab-lot6-shakedown`
-- artifact ID : **9911415210**
-- digest : `sha256:801861f08d9b48512851d1a677a4f4b5b67ec7d52dd20438decde17f27fea50b`
+- run ID : `33801636244`
+- head SHA : `2b0b00e3bae404b42e98bf70399622142cf86513`
+- artifact ID : `9911415210`
+- 200 détails traités, 4 chunks × 50, checkpoint/reprise prouvés
+- 199 normalisées / 1 rejetée
+- zéro erreur réseau / doublon / write DB / ingestion AkarFinder
 
-Résultat inspecté :
+Ce run a révélé les risques sémantiques suivants : prix vente contextuel aberrant, langage marocain en millions de centimes, et annonces location présentes sur routes vente.
 
-- pages discovery : **8/8** ;
-- annonces uniques découvertes : **254** ;
-- candidats traités : **200** ;
-- écrites : **200** ;
-- source IDs uniques : **200/200** ;
-- chunks : **4 × 50** ;
-- première passe : **50** ;
-- checkpoint final : **200** ;
-- reprise observée : **oui** ;
-- normalisées : **199** ;
-- rejetées : **1** ;
-- erreurs réseau : **0** ;
-- doublons écrits : **0** ;
-- transactions explicites : **180** ;
-- contextuelles : **19** ;
-- manquantes : **1** ;
-- route/detail mismatches : **3** ;
-- context conflicts observés dans les 200 écrites : **0** ;
-- `database_writes = 0` ;
-- `production_writes = 0` ;
-- `image_downloads = 0` ;
-- `akar_ingestion = false`.
+## Garde-fous sémantiques
 
-### Couverture discovery
+`data-ingestion/transaction-context.ts` impose :
 
-- Casablanca / sale : **62** uniques ;
-- Casablanca / rent : **64** uniques ;
-- Rabat / sale : **64** uniques ;
-- Rabat / rent : **64** uniques.
-
-Le détail des 200 candidats n'est pas encore équilibré par scope : **126 Casablanca / 74 Rabat**. Cette exécution prouve donc le moteur de crawl/chunk/reprise, pas encore une couverture finale représentative.
-
-## Findings sémantiques bloquants avant élargissement
-
-### 1. Prix vente contextuel aberrant
-
-`8407358` a été découvert dans `Rabat apartment_sale` avec un prix **6 300 MAD** et aucun signal transactionnel explicite. Le fallback l'a classé `sale`.
-
-Ce classement n'est pas acceptable : un prix contextuel manifestement incompatible avec une vente d'appartement doit rester `transaction=null` plutôt que fabriquer une vente.
-
-Garde-fou ajouté : `data-ingestion/transaction-context.ts` + tests. Pour un appartement, un fallback `sale` inférieur à **100 000 MAD** est refusé.
-
-### 2. Prix marocain en millions de centimes
-
-`8406807` contient dans sa description : prix 180 millions, prix actuel 170 millions. L'extracteur n'a pas normalisé ce prix et l'annonce est restée `transaction_missing` / prix non normalisé.
-
-La formulation est désormais détectable via `hasMoroccanCentimeMillionPriceLanguage()` pour traitement local ultérieur. Aucune conversion automatique naïve vers 170 000 000 MAD n'est autorisée.
-
-### 3. Route vente contenant des locations
-
-Trois annonces découvertes en `apartment_sale` sont explicitement `rent` dans le détail et sont correctement conservées comme location :
-
-- `8399856` ;
-- `8391927` ;
-- `8371385` — 25 000 MAD/mois, description `propose à la location`.
-
-Le détail reste prioritaire sur la route discovery.
-
-## Garde-fous ajoutés
-
-- `data-ingestion/transaction-context.ts`
-- `scripts/scrapers/__tests__/data-ingestion-transaction-context.test.ts`
-- CI Lot 6 exécute ces tests avant le crawl.
-
-Règles :
-
-- contexte sale/rent contradictoire → aucune inférence ;
+- contexte contradictoire → aucune inférence ;
 - prix numérique absent → aucune inférence ;
-- appartement sale contextuel < 100 000 MAD → refus ;
-- appartement rent contextuel > 100 000 MAD → refus ;
-- langage `prix ... N millions` signalé pour revue de normalisation centimes.
+- appartement `sale` contextuel < 100 000 MAD → refus ;
+- appartement `rent` contextuel > 100 000 MAD → refus ;
+- langage `prix ... N millions` signalé pour revue centimes ;
+- détail explicite prioritaire sur discovery.
 
-## Conclusion Lot 6A
+## Lot 6B — balanced guarded crawl 200
 
-**Mécanique : ✅ PROUVÉE.**
+Workflow : `Data Ingestion Lot 6 Balanced Crawl`
 
-**Sémantique pour élargissement : 🟡 À DURCIR.**
+### Preuve autoritative
 
-Le shakedown ne ferme pas Lot 6 et ne justifie pas encore un crawl complet.
+- run : **#1**
+- run ID : **33803042568**
+- head SHA : **ec828867e1e81ce2007251f16bc6397eba5ebc0f**
+- artifact : `mubawab-lot6-balanced`
+- artifact ID : **9911938970**
+- digest : `sha256:e6b8f07bd47a11303a54214236c4eba3284d85bd6eb65d7ae791706b65ea834d`
+
+### Couverture équilibrée
+
+- Casablanca / `apartment_sale` : **50** candidats
+- Casablanca / `apartment_rent` : **50** candidats
+- Rabat / `apartment_sale` : **50** candidats
+- Rabat / `apartment_rent` : **50** candidats
+
+Discovery : **8/8 pages**, **254** annonces uniques découvertes.
+
+### Résultat inspecté
+
+- candidats : **200**
+- détails fetchés : **200**
+- source IDs uniques : **200/200**
+- chunks : **4 × 50**
+- première passe : **50**
+- checkpoint final : **200**
+- reprise observée : **oui**
+- normalisées : **199**
+- rejetées : **1**
+- erreurs réseau : **0**
+- doublons écrits : **0**
+- transactions explicites : **173**
+- contextuelles : **26**
+- manquantes : **1**
+- transactions finales : **98 sale / 101 rent / 1 missing**
+- context conflicts : **0**
+- route/detail mismatch : **1** (`8371385`, route sale mais détail rent)
+- qualité moyenne : **97.75/100**
+- langage millions de centimes signalé : **1**
+- `database_writes = 0`
+- `production_writes = 0`
+- `image_downloads = 0`
+- `akar_ingestion = false`
+
+### Rejet volontaire validé
+
+`8407358` — Rabat, découvert via `apartment_sale`, prix **6 300 MAD**, aucun signal transactionnel explicite.
+
+Décision correcte :
+
+- `transaction = null`
+- warning `transaction_context_implausible_sale_price`
+- aucune vente fabriquée depuis la route discovery.
+
+Les **26** transactions contextuelles acceptées ont été inspectées : leurs prix restent cohérents avec leur contexte vente/location.
+
+## Conclusion actuelle
+
+- mécanique chunk/checkpoint/reprise : ✅
+- équilibrage par scope : ✅
+- garde-fous transactionnels : ✅
+- dataset 200 auditable : ✅
+- couverture large multi-types / multi-villes : ⏳
+
+**Lot 6 reste OPEN** : le goal canonique demande encore une couverture élargie des catégories / villes / transactions ciblées avant fermeture.
 
 ## Next exact
 
-1. intégrer `transaction-context.ts` au prochain runner large ;
-2. équilibrer la sélection de détails par scope ;
-3. revalider les contextual transactions ;
-4. seulement ensuite élargir villes / catégories.
+Étendre prudemment le runner hors appartement à un périmètre multi-types, toujours hors production, avec sélection équilibrée et cap contrôlé :
+
+- Casablanca + Rabat ;
+- `apartment_sale`, `apartment_rent` ;
+- `villa_sale`, `villa_rent` ;
+- `house_sale`, `house_rent` ;
+- `commercial_sale`, `commercial_rent` ;
+- `land_sale` ;
+- chunks/reprise/garde-fous identiques ;
+- mesurer couverture et rejets avant toute extension à d'autres villes.
 
 ## Interdictions inchangées
 
