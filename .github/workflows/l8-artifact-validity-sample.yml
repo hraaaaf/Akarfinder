@@ -23,14 +23,6 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Download MarocAnnonces certified artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: marocannonces-full-enumeration
-          path: artifacts/input/marocannonces
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          repository: hraaaaf/Akarfinder
-          run-id: 33739495442
       - name: Download Sarouty certified artifact
         uses: actions/download-artifact@v4
         with:
@@ -39,19 +31,18 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           repository: hraaaaf/Akarfinder
           run-id: 33765427351
-      - name: Run bounded public validity + canonical sample on unblocked sources
+      - name: Run isolated Sarouty detail validity + canonical sample
         working-directory: scripts/acquisition
         run: |
           python l8_artifact_validity_sample.py \
-            --marocannonces ../../artifacts/input/marocannonces/listing-urls.txt \
             --sarouty ../../artifacts/input/sarouty/listing-urls.txt \
-            --sources marocannonces,sarouty \
+            --sources sarouty \
             --per-source 2
       - name: Upload evidence
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: l8-artifact-validity-sample-unblocked
+          name: l8-artifact-validity-sample-sarouty
           path: scripts/acquisition/artifacts/morocco-web-l8-artifact-validity/
           if-no-files-found: error
           retention-days: 14
