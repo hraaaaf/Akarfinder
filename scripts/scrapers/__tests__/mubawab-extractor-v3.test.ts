@@ -3,7 +3,7 @@ import { describe, it } from "node:test";
 
 import { extractMubawabCollectionListing } from "../../../data-ingestion/sources/mubawab/extractor.js";
 
-const HTML = `<!doctype html><html><head><meta property="og:title" content="Appartement 2 Chambres Haut Standing à Vendre"><meta property="og:image" content="https://www.mubawab-media.com/image1.jpg"></head><body><h1>Appartement 2 Chambres Haut Standing à Vendre</h1><div>1 390 000 DH</div><div>82 m²</div><div>3 Pièces</div><div>2 Chambres</div><div>2 Salles de bains</div><div>Franceville à Casablanca</div><div>Étage du bien 5ème</div><div>Terrasse Garage Ascenseur Climatisation Sécurité</div><div data-testid="listing-gallery"><img src="https://www.mubawab-media.com/image1.jpg"><img src="https://www.mubawab-media.com/image2.jpg"></div><section class="recommendations"><img src="https://www.mubawab-media.com/recommended-x.jpg"></section><script type="application/ld+json">{"@type":"Apartment","name":"Appartement 2 Chambres Haut Standing à Vendre","offers":{"price":"1390000","priceCurrency":"MAD"},"address":{"addressLocality":"Casablanca","streetAddress":"Franceville"},"floorSize":{"value":82},"numberOfRooms":3,"numberOfBedrooms":2,"numberOfBathroomsTotal":2,"description":"Appartement neuf haut standing à Franceville.","url":"https://www.mubawab.ma/fr/a/8345081/appartement-2-chambres-haut-standing-a-vendre"}</script></body></html>`;
+const HTML = `<!doctype html><html><head><meta property="og:title" content="Appartement 2 Chambres Haut Standing à Vendre"><meta property="og:image" content="https://www.mubawab-media.com/image1.jpg"></head><body><h1>Appartement 2 Chambres Haut Standing à Vendre</h1><div>1 390 000 DH</div><div>82 m²</div><div>3 Pièces</div><div>2 Chambres</div><div>2 Salles de bains</div><div>Franceville à Casablanca</div><div>Étage du bien 5ème</div><div>Terrasse Garage Ascenseur Climatisation Sécurité</div><div data-testid="listing-gallery"><img src="https://www.mubawab-media.com/image1.jpg"><img src="https://www.mubawab-media.com/image2.jpg"></div><section class="recommendations"><div>Terrain à louer à Casablanca</div><img src="https://www.mubawab-media.com/recommended-x.jpg"></section><script type="application/ld+json">{"@type":"Apartment","name":"Appartement 2 Chambres Haut Standing à Vendre","offers":{"price":"1390000","priceCurrency":"MAD"},"address":{"addressLocality":"Casablanca","streetAddress":"Franceville"},"floorSize":{"value":82},"numberOfRooms":3,"numberOfBedrooms":2,"numberOfBathroomsTotal":2,"description":"Appartement neuf haut standing à Franceville.","url":"https://www.mubawab.ma/fr/a/8345081/appartement-2-chambres-haut-standing-a-vendre"}</script></body></html>`;
 
 describe("Mubawab Lot 3 extractor", () => {
   it("maps /a/ detail HTML into the collection contract", () => {
@@ -13,6 +13,7 @@ describe("Mubawab Lot 3 extractor", () => {
     assert.equal(listing.transaction, "sale");
     assert.equal(listing.property_type, "apartment");
     assert.equal(listing.price.amount, 1390000);
+    assert.equal(listing.price.period, "total");
     assert.equal(listing.surface.total_m2, 82);
     assert.equal(listing.location.city, "Casablanca");
     assert.equal(listing.provenance.source_type, "portal");
@@ -21,6 +22,13 @@ describe("Mubawab Lot 3 extractor", () => {
       "https://www.mubawab-media.com/image1.jpg",
       "https://www.mubawab-media.com/image2.jpg",
     ]);
+  });
+
+  it("does not let recommendation text override the primary listing transaction or type", () => {
+    const listing = extractMubawabCollectionListing("https://www.mubawab.ma/fr/a/8345081/appartement-2-chambres-haut-standing-a-vendre", HTML, "2026-09-03T18:45:00.000Z");
+    assert.equal(listing.transaction, "sale");
+    assert.equal(listing.property_type, "apartment");
+    assert.equal(listing.price.period, "total");
   });
 
   it("never imports images from recommendation blocks outside the primary gallery", () => {
