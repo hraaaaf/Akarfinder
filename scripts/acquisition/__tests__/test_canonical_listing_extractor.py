@@ -63,6 +63,28 @@ class CanonicalListingExtractorTests(unittest.TestCase):
         self.assertEqual(out["fields"]["classification.property_type"]["value"], "riad")
         self.assertTrue(out["fields"]["features.has_garage"]["value"])
 
+    def test_certified_avito_sarouty_agenz_detail_formats_are_recognized(self):
+        html = """
+        <html><head><title>Appartement à vendre à Casablanca - 1 500 000 DH</title></head>
+        <body>Appartement à vendre, 90 m2, 1 500 000 DH.</body></html>
+        """
+        urls = [
+            "https://www.avito.ma/fr/casablanca/appartements/appartement_12345678.htm",
+            "https://www.sarouty.ma/property-details/?listing_id=123456",
+            "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/maarif/540241",
+        ]
+        for url in urls:
+            with self.subTest(url=url):
+                out = MODULE.extract_canonical(url, html)
+                self.assertEqual(out["page_kind"], "listing_detail")
+                self.assertIn("detail_url_pattern", out["classification_reasons"])
+                self.assertEqual(out["fields"]["classification.property_type"]["value"], "apartment")
+                self.assertEqual(out["fields"]["offer.transaction_type"]["value"], "sale")
+
+    def test_sarouty_property_details_requires_numeric_listing_id(self):
+        out = MODULE.extract_canonical("https://www.sarouty.ma/property-details/", "<html><body>Fiche</body></html>")
+        self.assertEqual(out["page_kind"], "unknown")
+
     def test_discovery_page_is_not_promoted_to_listing(self):
         html = """
         <html><head><title>Appartements à vendre au Maroc</title></head>
