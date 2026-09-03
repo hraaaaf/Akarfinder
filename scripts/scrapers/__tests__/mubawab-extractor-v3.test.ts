@@ -63,6 +63,21 @@ describe("Mubawab Lot 3 extractor", () => {
     const listing = extractMubawabCollectionListing("https://www.mubawab.ma/fr/a/8370483/riad-traditionnel-au-coeur-de-la-medina-4-chambres", html, "2026-09-03T18:45:00.000Z");
     assert.equal(listing.transaction, null);
     assert.equal(listing.price.period, null);
+    assert.equal(listing.quality.warnings.includes("transaction_missing"), true);
+  });
+
+  it("recognizes an explicit bare vendre signal in the primary title", () => {
+    const html = `<!doctype html><html><head><meta property="og:title" content="Appartement deux chambres neufs vendre à Ferme Bretonne"><meta property="og:image" content="https://www.mubawab-media.com/a.jpg"></head><body><div>1 225 500 DH</div><div>95 m²</div><div>Ferme Bretonne à Casablanca</div><h1>Appartement deux chambres neufs vendre à Ferme Bretonne</h1><script type="application/ld+json">{"@type":"Apartment","name":"Appartement deux chambres neufs vendre à Ferme Bretonne","offers":{"price":"1225500","priceCurrency":"MAD"},"address":{"addressLocality":"Casablanca"},"floorSize":{"value":95},"description":"Résidence neuve de standing."}</script></body></html>`;
+    const listing = extractMubawabCollectionListing("https://www.mubawab.ma/fr/a/8407244/appartement-deux-chambres-neufs-vendre", html, "2026-09-03T18:45:00.000Z");
+    assert.equal(listing.transaction, "sale");
+    assert.equal(listing.price.period, "total");
+  });
+
+  it("recognizes met en vente in the primary description", () => {
+    const html = `<!doctype html><html><head><meta property="og:title" content="Pas de porte SAROUTE"><meta property="og:image" content="https://www.mubawab-media.com/a.jpg"></head><body><div>290 000 DH</div><div>50 m²</div><div>La Gironde à Casablanca</div><h1>Pas de porte SAROUTE</h1><script type="application/ld+json">{"@type":"Apartment","name":"Pas de porte SAROUTE","offers":{"price":"290000","priceCurrency":"MAD"},"address":{"addressLocality":"Casablanca"},"floorSize":{"value":50},"description":"Je met en vente le pas de porte de mon appartement sise quartier la GIRONDE Casablanca."}</script></body></html>`;
+    const listing = extractMubawabCollectionListing("https://www.mubawab.ma/fr/a/8407055/pas-de-porte-saroute", html, "2026-09-03T18:45:00.000Z");
+    assert.equal(listing.transaction, "sale");
+    assert.equal(listing.price.period, "total");
   });
 
   it("keeps numbered districts and short Ch. stats when parsing primary location", () => {
