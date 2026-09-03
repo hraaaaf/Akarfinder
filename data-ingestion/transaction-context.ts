@@ -10,6 +10,7 @@ export type ContextualTransactionDecision = {
     | "context_conflict"
     | "missing_numeric_price"
     | "unsupported_property_type_for_contextual_inference"
+    | "unsupported_context_for_property_type"
     | "implausible_sale_price"
     | "implausible_rent_price";
 };
@@ -21,8 +22,15 @@ export type ContextualTransactionInput = {
   property_type: CollectionListing["property_type"];
 };
 
-const APARTMENT_CONTEXTUAL_SALE_MIN_MAD = 100_000;
-const APARTMENT_CONTEXTUAL_RENT_MAX_MAD = 100_000;
+type PriceCalibration = { sale_min_mad: number; rent_max_mad: number | null };
+
+const CONTEXTUAL_PRICE_CALIBRATION: Partial<Record<NonNullable<CollectionListing["property_type"]>, PriceCalibration>> = {
+  apartment: { sale_min_mad: 100_000, rent_max_mad: 100_000 },
+  villa: { sale_min_mad: 100_000, rent_max_mad: 100_000 },
+  house: { sale_min_mad: 100_000, rent_max_mad: 100_000 },
+  commercial: { sale_min_mad: 100_000, rent_max_mad: 100_000 },
+  land: { sale_min_mad: 100_000, rent_max_mad: null },
+};
 
 export function inferContextualTransaction(input: ContextualTransactionInput): ContextualTransactionDecision {
   const contexts = [...new Set(input.discovery_transactions)];
@@ -34,18 +42,22 @@ export function inferContextualTransaction(input: ContextualTransactionInput): C
     return { transaction: null, confidence: "missing", reason: "missing_numeric_price" };
   }
 
-  // Contextual inference is calibrated only for apartments for now.
-  // Other property types must remain explicit until live samples establish safe price ranges.
-  if (input.property_type !== "apartment") {
+  const calibration = input.property_type ? CONTEXTUAL_PRICE_CALIBRATION[input.property_type] : undefined;
+  if (!calibration) {
     return { transaction: null, confidence: "missing", reason: "unsupported_property_type_for_contextual_inference" };
   }
 
   const transaction = contexts[0];
-  if (transaction === "sale" && input.price_amount < APARTMENT_CONTEXTUAL_SALE_MIN_MAD) {
+  if (transaction === "sale" && input.price_amount < calibration.sale_min_mad) {
     return { transaction: null, confidence: "missing", reason: "implausible_sale_price" };
   }
-  if (transaction === "rent" && input.price_amount > APARTMENT_CONTEXTUAL_RENT_MAX_MAD) {
-    return { transaction: null, confidence: "missing", reason: "implausible_rent_price" };
+  if (transaction === "rent") {
+    if (calibration.rent_max_mad == null) {
+      return { transaction: null, confidence: "missing", reason: "unsupported_context_for_property_type" };
+    }
+    if (input.price_amount > calibration.rent_max_mad) {
+      return { transaction: null, confidence: "missing", reason: "implausible_rent_price" };
+    }
   }
 
   return { transaction, confidence: "contextual", reason: "single_context_plausible_price" };
