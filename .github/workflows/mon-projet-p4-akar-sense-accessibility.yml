@@ -16,6 +16,9 @@ concurrency:
 permissions:
   contents: read
 
+env:
+  P4_BEFORE_SHA: 962b6090cdc44b1208a78ff18b1921a437e03ec1
+
 jobs:
   scope:
     name: Latest-commit scope check
@@ -53,7 +56,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
-          fetch-depth: 2
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -66,11 +69,12 @@ jobs:
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
 
-      - name: Preserve P4 audit script and resolve BEFORE
+      - name: Preserve P4 audit script and resolve AFTER
         shell: bash
         run: |
           cp scripts/audits/finder-p4-accessibility-runtime.mjs .finder-p4-accessibility-runtime.mjs
-          echo "BEFORE_SHA=$(git rev-parse HEAD^)" >> "$GITHUB_ENV"
+          git cat-file -e "$P4_BEFORE_SHA^{commit}"
+          echo "BEFORE_SHA=$P4_BEFORE_SHA" >> "$GITHUB_ENV"
           echo "AFTER_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
 
       - name: Checkout BEFORE
@@ -119,10 +123,10 @@ jobs:
       - name: Start AFTER
         shell: bash
         run: |
-          npm run start -- -p 3218 > /tmp/akar-p4-after.log 2>&1 &
+          npm run start -- -p 3219 > /tmp/akar-p4-after.log 2>&1 &
           echo $! > /tmp/akar-p4-after.pid
           for i in {1..60}; do
-            if curl -fsS http://127.0.0.1:3218/search >/dev/null; then exit 0; fi
+            if curl -fsS http://127.0.0.1:3219/search >/dev/null; then exit 0; fi
             sleep 1
           done
           cat /tmp/akar-p4-after.log
@@ -130,7 +134,7 @@ jobs:
 
       - name: Capture AFTER + accessibility runtime proof
         env:
-          BASE_URL: http://127.0.0.1:3218
+          BASE_URL: http://127.0.0.1:3219
           AUDIT_OUTPUT_DIR: artifacts/finder-p4-proof/after
           P4_AUDIT: '1'
         run: node scripts/audits/finder-p4-accessibility-runtime.mjs
