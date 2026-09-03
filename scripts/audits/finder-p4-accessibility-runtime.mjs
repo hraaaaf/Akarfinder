@@ -69,15 +69,37 @@ try {
       });
       if (!initialFocusInside) findings.push("INITIAL_FOCUS_OUTSIDE_DIALOG");
 
-      const focusableCount = await panel.locator(focusableSelector).count();
+      const tabbableHandles = await panel.locator(focusableSelector).evaluateAll((elements) => elements.filter((element) => {
+        const style = window.getComputedStyle(element);
+        return element.isConnected
+          && !element.hasAttribute("disabled")
+          && style.visibility !== "hidden"
+          && style.display !== "none"
+          && element.getClientRects().length > 0;
+      }).map((element) => element.getAttribute("data-finder-focus-id") || null));
+
+      await panel.locator(focusableSelector).evaluateAll((elements) => {
+        let index = 0;
+        for (const element of elements) {
+          const style = window.getComputedStyle(element);
+          const tabbable = element.isConnected
+            && !element.hasAttribute("disabled")
+            && style.visibility !== "hidden"
+            && style.display !== "none"
+            && element.getClientRects().length > 0;
+          if (tabbable) element.setAttribute("data-finder-focus-id", `p4-${index++}`);
+        }
+      });
+
+      const tabbables = panel.locator('[data-finder-focus-id]');
+      const focusableCount = await tabbables.count();
       if (focusableCount < 1) findings.push("NO_FOCUSABLE_ELEMENTS");
 
       let shiftTabWrapped = false;
       let tabWrapped = false;
       if (focusableCount > 0) {
-        const focusables = panel.locator(focusableSelector);
-        const first = focusables.first();
-        const last = focusables.last();
+        const first = tabbables.first();
+        const last = tabbables.last();
 
         await first.focus();
         await page.keyboard.press("Shift+Tab");
