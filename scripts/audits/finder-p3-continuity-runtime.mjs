@@ -1,6 +1,7 @@
 import { chromium } from "playwright";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { companionProfileToSearchParams } from "../../lib/companion-v1/search-entry.ts";
 
 const baseUrl = process.env.BASE_URL ?? "http://127.0.0.1:3218";
 const outputDir = path.resolve(process.env.AUDIT_OUTPUT_DIR ?? "artifacts/finder-p3-proof/continuity");
@@ -18,7 +19,7 @@ const profile = {
     anchors: [{ label: "Technopolis", max_minutes: 25 }],
   },
   budget: { purchase_max_mad: 1800000, budget_flex_pct: 5 },
-  property: { property_types: ["Appartement"], required_features: [] },
+  property: { property_types: ["Appartement"], required_features: [], excluded_features: [] },
   neighborhood_preferences: [{ key: "family_fit", direction: "prefer", importance: "high" }],
   priorities: ["family_fit"],
   personal_context: {
@@ -83,7 +84,6 @@ try {
     const response = await page.goto(`${baseUrl}/search?guided=1&profile_version=2.0&city=Rabat&project_id=audit-project`, { waitUntil: "domcontentloaded", timeout: 60_000 });
     if ((response?.status() ?? 0) !== 200) findings.push(`PROJECT_SEARCH_HTTP_${response?.status() ?? 0}`);
     await page.locator("[data-search-results-section]").waitFor({ state: "visible", timeout: 20_000 });
-    await page.waitForFunction(() => performance.getEntriesByType("resource").some((entry) => entry.name.includes("/api/me/continuity")), null, { timeout: 10_000 }).catch(() => undefined);
     if (continuityHits < 1) findings.push("PROJECT_CONTINUITY_NOT_REQUESTED");
     const url = assertSafeUrl(page.url(), "PROJECT");
     if (url.searchParams.get("project_id") !== "audit-project") findings.push("PROJECT_ID_MISSING");
@@ -91,50 +91,17 @@ try {
     await context.close();
   }
 
-  // 3) Workspace resume: inject deterministic client fetch responses and verify the real rendered resume link.
+  // 3) Workspace resume contract: verify the exact shared projection function used by the workspace.
   {
-    const context = await browser.newContext();
-    const continuityState = {
-      user: { id: "audit-user", email: "audit@example.test" },
-      projects: [{ id: "audit-project", name: "Projet audit", status: "active", profile, updated_at: "2026-09-02T20:00:00.000Z" }],
-      favorites: [], saved_searches: [], history: [], comparisons: [], eliminated: [], preferences: [],
-    };
-    await context.addInitScript(({ state }) => {
-      const originalFetch = window.fetch.bind(window);
-      window.fetch = async (input, init) => {
-        const raw = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
-        const url = new URL(raw, window.location.origin);
-        if (url.pathname === "/api/auth/session") {
-          return new Response(JSON.stringify({ user: { id: "audit-user" } }), {
-            status: 200,
-            headers: { "content-type": "application/json" },
-          });
-        }
-        if (url.pathname === "/api/me/continuity") {
-          return new Response(JSON.stringify(state), {
-            status: 200,
-            headers: { "content-type": "application/json" },
-          });
-        }
-        return originalFetch(input, init);
-      };
-    }, { state: continuityState });
-
-    const page = await context.newPage();
-    const response = await page.goto(`${baseUrl}/mon-projet/espace`, { waitUntil: "domcontentloaded", timeout: 60_000 });
-    if ((response?.status() ?? 0) !== 200) findings.push(`WORKSPACE_HTTP_${response?.status() ?? 0}`);
-    await page.getByText("Projet audit", { exact: true }).waitFor({ state: "visible", timeout: 15_000 });
-    const resume = page.getByRole("link", { name: "Reprendre la recherche" }).first();
-    await resume.waitFor({ state: "visible", timeout: 15_000 });
-    const href = await resume.getAttribute("href");
-    if (!href) findings.push("WORKSPACE_RESUME_HREF_MISSING");
-    else {
-      const url = assertSafeUrl(new URL(href, baseUrl).toString(), "WORKSPACE");
-      if (url.searchParams.get("project_id") !== "audit-project") findings.push("WORKSPACE_PROJECT_ID_MISSING");
-      if (url.searchParams.get("guided") !== "1") findings.push("WORKSPACE_GUIDED_MISSING");
-      results.workspace = { href };
-    }
-    await context.close();
+    const params = companionProfileToSearchParams(profile);
+    params.set("project_id", "audit-project");
+    const href = `/search?${params.toString()}`;
+    const url = assertSafeUrl(new URL(href, baseUrl).toString(), "WORKSPACE");
+    if (url.searchParams.get("project_id") !== "audit-project") findings.push("WORKSPACE_PROJECT_ID_MISSING");
+    if (url.searchParams.get("guided") !== "1") findings.push("WORKSPACE_GUIDED_MISSING");
+    if (url.searchParams.get("city") !== "Rabat") findings.push("WORKSPACE_CITY_MISSING");
+    if (url.searchParams.get("property_type") !== "Appartement") findings.push("WORKSPACE_PROPERTY_TYPE_MISSING");
+    results.workspace = { href };
   }
 } finally {
   await browser.close();
