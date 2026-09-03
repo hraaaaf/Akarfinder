@@ -71,7 +71,7 @@ Certified:
 
 Full replay deferred until source union shows it is required.
 
-## 3. Sarouty — ACTIVE, LOGIC CERTIFIED / FULL SCALE NOT YET CERTIFIED
+## 3. Sarouty — SMOKE CERTIFIED / FULL RUN QUEUED
 
 Branch `feat/sarouty-source-first`.
 Relevant commits:
@@ -79,20 +79,32 @@ Relevant commits:
 - tests: `13212b8b01fa7521a1cf69106deb2cb9a861f84e`
 - bounded runner fix: `e712e05d6a1bbd81c7a81a2518d85a44da40fd03`
 - refreshed branch HEAD: `0ad79fdd18627a848757f34b304a0df08f66d2bc`
+- full benchmark commit: `36b77cc7801c86f9b24914a2c0aee9798c18db21`
 - PR #990 OPEN / DRAFT.
 
-Verified logic:
-- **6/6 tests PASS**;
-- minimum 10-second delay;
-- immediate 429 stop;
-- zero DB writes.
+Bounded smoke — run `33690151575` — **SUCCESS**:
+- tests **6/6 PASS**
+- robots + declared sitemap accessible
+- crawlDelaySeconds **10**
+- crawlDelayMs **10000**
+- sitemapDocCount **1**
+- requestCount **2**
+- uniqueRealEstateListingCount **0** at root index by design
+- queueRemaining **3** child sitemaps
+- stoppedEarly `null`
+- zeroDbWrites **true**
+- artifact `9870484076`
+- digest `sha256:713204a0803c27f4729a810fe1a6f1e58312a5911458ec0aa61f2ce637e23a48`
 
-No full Sarouty unique-ID total is certified yet.
+The smoke proves the root index exposes exactly **3 child sitemaps**, so full traversal is bounded to **4 sitemap documents total** under the current sitemap graph.
 
-## 4. MarocAnnonces — FULL ENUMERATION CERTIFIED
+Full run `33764142715` is **QUEUED** on HEAD `36b77cc7801c86f9b24914a2c0aee9798c18db21`.
+
+## 4. MarocAnnonces — FULL ENUMERATION CERTIFIED / MERGED
 
 Branch `feat/marocannonces-source-first`.
-PR #992.
+PR #992 **MERGED** into main.
+Merge commit `21ec5032c56312e213367c5cacb76b39d5a15a59`.
 
 Implementation:
 - enumerator `237467231cbd12aeb5d516f7c49668356e42876f`
@@ -129,11 +141,12 @@ Full safe enumeration — run `33739495442` — **SUCCESS**:
 
 This certifies complete traversal of the enumerator's five residential roots under the current public pagination graph. It does **not** certify 10,000 usable canonical listings yet.
 
-## 5. Agenz — SOURCE-FIRST PREP CERTIFIED
+## 5. Agenz — SMOKE PREP PUSHED / RUN QUEUED
 
 Branch `feat/agenz-source-first`:
 - enumerator `cbacc8b72a8b976cffc6a5ac0ddd0d11ba915890`
 - tests `62c16db5957c3de940f10a7c62c1bf2d413749d3`
+- bounded smoke workflow commit `efc56c46b90dc0301ffef0da12f9552f888ceb47`
 
 Verified locally on reconstructed exact branch logic:
 - **9/9 tests PASS**;
@@ -143,41 +156,58 @@ Verified locally on reconstructed exact branch logic:
 - 429/hard-block stop;
 - zero DB writes.
 
+Live smoke run `33764290049` is **QUEUED**.
+
+# Current artifact union
+
+Using the exact certified artifact URL sets downloaded from Avito and MarocAnnonces:
+- Avito URLs: **27,053**
+- MarocAnnonces URLs: **10,000**
+- exact URL overlap: **0**
+- exact URL union: **37,053**
+
+This is a source-scoped URL union only. It is **not** semantic/canonical cross-source property deduplication and does not count as 37,053 usable listings.
+
 # Current doctrine
 
 1. Goal >100k is multi-source.
 2. Avito full = **27,053 certified enumerated IDs**.
-3. MarocAnnonces full = **10,000 certified enumerated IDs**.
-4. Mubawab bounded = **5,195 IDs on 500 shards** and remains available for deeper replay if required.
-5. Sarouty remains the next scale source to certify.
-6. Agenz is complementary.
-7. No production bulk writes are authorized.
-8. No Vercel deployment is required.
+3. MarocAnnonces full = **10,000 certified enumerated IDs**, merged on main.
+4. Current exact artifact URL union Avito + MarocAnnonces = **37,053**.
+5. Mubawab bounded = **5,195 IDs on 500 shards** and remains available for deeper replay if required.
+6. Sarouty full is the next critical certification.
+7. Agenz smoke is queued in parallel.
+8. No production bulk writes are authorized.
+9. No Vercel deployment is required.
 
 # Next exact
 
-1. merge/close MarocAnnonces PR #992 after post-certification metadata is aligned;
-2. finish Sarouty source-first/full certification;
-3. certify Agenz live/full if productive;
-4. measure multi-source union using exact artifact URL sets where available;
-5. run freshness → canonical extraction → cross-source dedupe → quality → serving;
+1. finish Sarouty full run `33764142715`; if green, capture exact IDs + artifact/digest, update PR #990, ready/merge/post-merge;
+2. finish Agenz smoke `33764290049`; if green, derive a bounded/full scale from observed graph and certify it;
+3. extend exact artifact union with Sarouty/Agenz outputs;
+4. run listing-detail freshness → canonical extraction → semantic cross-source dedupe → quality → serving;
+5. replay Mubawab deeper/full only if union/usable gates require it;
 6. certify **10k → 50k → 100k usable**.
 
 No bypass if a source returns a true hard block.
 
 # Remaining sequence
 
-`MarocAnnonces closeout/merge → Sarouty certification → Agenz certification → multi-source union → Mubawab deeper replay if needed → freshness → extraction → dedupe → quality → 10k → 50k → 100k usable → bounded prod-ingestion canary if required → closeout docs → post-merge verification`
+`Sarouty full → PR #990 merge → Agenz smoke/full → multi-source artifact union → listing-detail freshness → canonical extraction → semantic dedupe → quality → 10k → 50k → 100k usable → Mubawab deeper replay if needed → bounded prod-ingestion canary if required → closeout docs → post-merge verification`
 
 ## Current handover state
 
 - chantier: **Morocco Web Acquisition / L8 Scale + Coverage**
 - Goal: **>100,000 usable canonical Moroccan listings**
+- main: `21ec5032c56312e213367c5cacb76b39d5a15a59` before this canonical-only update
 - strongest certified enumeration: **Avito full = 27,053 unique IDs**
 - second full source: **MarocAnnonces = 10,000 unique IDs**
+- current exact artifact URL union: **37,053**
 - active sources: **Sarouty + Agenz**
+- Sarouty run: `33764142715` — **QUEUED**
+- Agenz run: `33764290049` — **QUEUED**
 - production DB mutation: **none authorized**
 - Vercel: **not required / not authorized**
 - strategic blocker: **none**
-- Next exact: **close PR #992 then finish Sarouty certification**
+- Next exact: **Sarouty full result; Agenz smoke in parallel**
 - global project percentage: **intentionally unassigned; do not invent one**
