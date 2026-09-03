@@ -33,6 +33,34 @@ function parseFloor(value: string | null): number | null {
   return m ? Number.parseInt(m[1], 10) : null;
 }
 
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function extractDistrictFromPrimaryStats(pageText: string, city: string | null): string | null {
+  if (!city) return null;
+  const marker = new RegExp(`\\s(?:à|a)\\s${escapeRegExp(city)}\\b`, "giu");
+  const statPattern = /\d+\s*(?:m(?:²|2)|pi[eè]ces?|chambres?|salles?\s*de\s*bains?)/giu;
+  const stopPattern = /\d|\b(?:dh|dhs|mad|favori|partager|contacter|prix|surface)\b/i;
+
+  for (const match of pageText.matchAll(marker)) {
+    if (match.index == null) continue;
+    const prefix = pageText.slice(Math.max(0, match.index - 220), match.index);
+    const stats = [...prefix.matchAll(statPattern)];
+    if (!stats.length) continue;
+    const last = stats[stats.length - 1];
+    const afterLastStat = (last.index ?? 0) + last[0].length;
+    let candidate = text(prefix.slice(afterLastStat).replace(/^[\s,:;\-–—]+|[\s,:;\-–—]+$/g, ""));
+    if (!candidate) continue;
+    if (candidate.length > 70) candidate = candidate.split(/\s+/).slice(-8).join(" ");
+    if (candidate.length < 2 || candidate.length > 70 || stopPattern.test(candidate)) continue;
+    if (candidate.localeCompare(city, "fr", { sensitivity: "base" }) === 0) continue;
+    return candidate;
+  }
+
+  return null;
+}
+
 function extractPrimaryImageUrls($: ReturnType<typeof load>): string[] {
   const ogImage = text($("meta[property='og:image']").attr("content"));
   const galleryImages: string[] = [];
@@ -131,7 +159,7 @@ export function extractMubawabCollectionListing(url: string, html: string, now =
   const detail = extractDetail(html);
 
   const title = text($("h1").first().text()) ?? text($("meta[property='og:title']").attr("content"));
-  const pageText = $("body").text();
+  const pageText = $("body").text().replace(/\s+/g, " ");
   const explicitType = extractExplicitDetailType($);
   const jsonLdType = extractJsonLdPrimaryType($, title);
   const typeRaw = explicitType ?? jsonLdType ?? title;
@@ -157,8 +185,9 @@ export function extractMubawabCollectionListing(url: string, html: string, now =
 
   const floorLabel = pageText.match(/Étage du bien\s*([0-9]+(?:er|ème|e)?)/i)?.[1] ?? null;
   const description = detail.description_snippet;
-  const district = detail.district ?? detail.location_candidates?.[0] ?? null;
   const city = detail.city ?? detail.location_candidates?.find((v) => /casablanca|rabat|marrakech|tanger|agadir|fès|fes|kénitra|kenitra|mohammedia|temara|témara|salé|sale/i.test(v)) ?? null;
+  const candidateDistrict = detail.location_candidates?.find((v) => !city || v.localeCompare(city, "fr", { sensitivity: "base" }) !== 0) ?? null;
+  const district = detail.district ?? extractDistrictFromPrimaryStats(pageText, city) ?? candidateDistrict;
 
   const warnings: string[] = [];
   if (!title) warnings.push("title_missing");
