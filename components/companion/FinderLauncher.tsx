@@ -58,17 +58,18 @@ export function FinderLauncher() {
         return;
       }
 
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
       const active = document.activeElement;
+      const currentIndex = focusable.findIndex((element) => element === active);
+      const nextIndex = event.shiftKey
+        ? currentIndex <= 0
+          ? focusable.length - 1
+          : currentIndex - 1
+        : currentIndex < 0 || currentIndex === focusable.length - 1
+          ? 0
+          : currentIndex + 1;
 
-      if (event.shiftKey && (active === first || !panel.contains(active))) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && (active === last || !panel.contains(active))) {
-        event.preventDefault();
-        first.focus();
-      }
+      event.preventDefault();
+      focusable[nextIndex]?.focus();
     };
 
     document.addEventListener("keydown", onKeyDown, true);
