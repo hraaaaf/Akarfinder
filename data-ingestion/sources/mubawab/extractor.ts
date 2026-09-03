@@ -69,7 +69,7 @@ function extractPrimaryTransaction(title: string | null, description: string | n
   if (title && /\blouer\b/iu.test(title)) return "rent";
   if (!description) return null;
 
-  const primaryDescription = description.slice(0, 700);
+  const primaryDescription = description;
   const signals: Array<{ transaction: "sale" | "rent"; index: number }> = [];
   const patterns: Array<{ transaction: "sale" | "rent"; pattern: RegExp }> = [
     { transaction: "sale", pattern: /(?:à|a)\s+vendre|(?:à|a)\s+la\s+vente|\b(?:mis(?:e)?|met|mettre)\s+en\s+vente\b|\bpeut\s+être\s+vendu(?:e)?\b|\bachetez\b|\bvente\b/giu },
