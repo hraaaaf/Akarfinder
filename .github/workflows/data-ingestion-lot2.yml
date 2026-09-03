@@ -1,0 +1,22 @@
+name: Data Ingestion Lot 2 Discovery Gate
+
+on:
+  pull_request:
+    paths:
+      - "data-ingestion/**"
+      - "scripts/mubawab-discovery-v2.ts"
+      - "scripts/scrapers/__tests__/mubawab-discovery-v2.test.ts"
+      - ".github/workflows/data-ingestion-lot2.yml"
+
+jobs:
+  test-discovery:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx tsx --test scripts/scrapers/__tests__/mubawab-discovery-v2.test.ts
