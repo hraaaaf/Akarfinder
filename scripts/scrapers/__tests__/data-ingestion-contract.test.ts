@@ -45,7 +45,7 @@ describe("Data ingestion collection contract", () => {
       assert.equal(canonical.schema_version, "1.0");
       assert.equal(canonical.offers.length, 1);
       assert.equal(canonical.offers[0].external_offer_id, input.source.source_id);
-      assert.equal(canonical.offers[0].transaction_type, input.transaction ?? "sale");
+      assert.equal(canonical.offers[0].transaction_type, input.transaction);
       assert.equal(canonical.facts.classification.property_type.value, input.property_type ?? "unknown");
       assert.equal(canonical.facts.location.city.value, input.location.city);
       assert.equal(canonical.facts.surfaces.surface_total_m2?.value ?? null, input.surface.total_m2);
@@ -54,6 +54,15 @@ describe("Data ingestion collection contract", () => {
       assert.equal(canonical.offers[0].ingestion_run_id, "fixture-run");
     });
   }
+
+  it("rejects a missing transaction instead of fabricating a sale", () => {
+    const input = fixture("listing.minimal.json");
+    input.transaction = null;
+    assert.throws(
+      () => adaptCollectionListing(input),
+      /collection_listing_transaction_required_for_canonical_offer/,
+    );
+  });
 
   it("keeps missing price as undisclosed rather than zero", () => {
     const canonical = adaptCollectionListing(fixture("listing.minimal.json"));
@@ -68,9 +77,10 @@ describe("Data ingestion collection contract", () => {
     assert.equal(canonical.facts.surfaces.surface_land_m2?.value, 1200);
   });
 
-  it("maps direct agency media as publishable but portal media as unknown rights", () => {
+  it("preserves agency_direct origin and direct media permissions", () => {
     const direct = adaptCollectionListing(fixture("listing.complete.json"));
     const portal = adaptCollectionListing(fixture("listing.villa.json"));
+    assert.equal(direct.offers[0].origin_type, "agency_direct");
     assert.equal(direct.media[0]?.publication_permission, "allowed");
     assert.equal(portal.media.length, 0);
     assert.equal(direct.offers[0].compliance_status, "allowed");
