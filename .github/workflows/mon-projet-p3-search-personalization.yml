@@ -10,6 +10,7 @@ on:
       - "components/search/SearchPersonalizationControl.tsx"
       - "lib/listings/utils.ts"
       - "lib/search-profile-v2/listing-personalization.ts"
+      - "lib/companion-v1/search-entry.ts"
       - "scripts/scrapers/__tests__/finder-personalization.test.ts"
       - "scripts/audits/finder-p3-visual.mjs"
       - "scripts/audits/finder-p3-continuity-runtime.mjs"
@@ -41,7 +42,7 @@ jobs:
             exit 0
           fi
           git diff --name-only HEAD^ HEAD > /tmp/changed.txt
-          if grep -Eq '^(app/search/page\.tsx$|components/search/(LightZillowSearchShell|SearchPersonalizationControl)\.tsx$|lib/listings/utils\.ts$|lib/search-profile-v2/listing-personalization\.ts$|scripts/scrapers/__tests__/finder-personalization\.test\.ts$|scripts/audits/finder-p3-(visual|continuity-runtime)\.mjs$|\.github/workflows/mon-projet-p3-search-personalization\.yml$)' /tmp/changed.txt; then
+          if grep -Eq '^(app/search/page\.tsx$|components/search/(LightZillowSearchShell|SearchPersonalizationControl)\.tsx$|lib/listings/utils\.ts$|lib/search-profile-v2/listing-personalization\.ts$|lib/companion-v1/search-entry\.ts$|scripts/scrapers/__tests__/finder-personalization\.test\.ts$|scripts/audits/finder-p3-(visual|continuity-runtime)\.mjs$|\.github/workflows/mon-projet-p3-search-personalization\.yml$)' /tmp/changed.txt; then
             echo "relevant=true" >> "$GITHUB_OUTPUT"
           else
             echo "relevant=false" >> "$GITHUB_OUTPUT"
@@ -131,7 +132,7 @@ jobs:
         env:
           BASE_URL: http://127.0.0.1:3218
           AUDIT_OUTPUT_DIR: /tmp/finder-p3-proof/continuity
-        run: node scripts/audits/finder-p3-continuity-runtime.mjs
+        run: npx tsx scripts/audits/finder-p3-continuity-runtime.mjs
       - name: Stop AFTER
         if: always()
         run: kill $(cat /tmp/finder-p3-after.pid) 2>/dev/null || true
