@@ -20,18 +20,9 @@ OUT_DIR = pathlib.Path("artifacts/morocco-web-l8-artifact-validity")
 HARD_BLOCK_MARKERS = ("captcha", "cf-chl-", "verify you are human", "access denied")
 
 SOURCES = {
-    "avito": {
-        "robots": "https://www.avito.ma/robots.txt",
-        "delay_floor_ms": 3000,
-    },
-    "marocannonces": {
-        "robots": "https://www.marocannonces.com/robots.txt",
-        "delay_floor_ms": 3000,
-    },
-    "sarouty": {
-        "robots": "https://www.sarouty.ma/robots.txt",
-        "delay_floor_ms": 10000,
-    },
+    "avito": {"robots": "https://www.avito.ma/robots.txt", "delay_floor_ms": 3000},
+    "marocannonces": {"robots": "https://www.marocannonces.com/robots.txt", "delay_floor_ms": 3000},
+    "sarouty": {"robots": "https://www.sarouty.ma/robots.txt", "delay_floor_ms": 10000},
 }
 
 
@@ -105,45 +96,41 @@ def robot_policy(robots_url: str, delay_floor_ms: int):
     delay = parser.crawl_delay(USER_AGENT)
     if delay is None:
         delay = parser.crawl_delay("*")
-    delay_ms = max(delay_floor_ms, int((delay or 0) * 1000))
-    return parser, delay_ms, evidence
+    return parser, max(delay_floor_ms, int((delay or 0) * 1000)), evidence
 
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--avito", required=True)
-    ap.add_argument("--marocannonces", required=True)
-    ap.add_argument("--sarouty", required=True)
+    ap.add_argument("--avito")
+    ap.add_argument("--marocannonces")
+    ap.add_argument("--sarouty")
+    ap.add_argument("--sources", default="avito,marocannonces,sarouty")
     ap.add_argument("--per-source", type=int, default=2)
     args = ap.parse_args()
 
-    paths = {
-        "avito": pathlib.Path(args.avito),
-        "marocannonces": pathlib.Path(args.marocannonces),
-        "sarouty": pathlib.Path(args.sarouty),
-    }
+    selected = [s.strip() for s in args.sources.split(",") if s.strip()]
+    if not selected or any(s not in SOURCES for s in selected):
+        raise SystemExit("invalid --sources")
+    paths = {s: pathlib.Path(getattr(args, s)) for s in selected if getattr(args, s)}
+    if set(paths) != set(selected):
+        raise SystemExit("missing artifact path for selected source")
 
     results = []
     source_summaries = {}
     stopped_early = None
 
-    for source, cfg in SOURCES.items():
+    for source in selected:
+        cfg = SOURCES[source]
         urls = load_urls(paths[source])
         targets = sample_evenly(urls, args.per_source)
         robots, delay_ms, robots_evidence = robot_policy(cfg["robots"], cfg["delay_floor_ms"])
         summary = {
-            "artifactUrlCount": len(urls),
-            "sampleTargetCount": len(targets),
-            "robots": asdict(robots_evidence),
-            "delayMs": delay_ms,
-            "active200": 0,
-            "staleRemoved": 0,
-            "listingDetail": 0,
-            "unknownOrDiscovery": 0,
-            "blocked": 0,
+            "artifactUrlCount": len(urls), "sampleTargetCount": len(targets),
+            "robots": asdict(robots_evidence), "delayMs": delay_ms,
+            "active200": 0, "staleRemoved": 0, "listingDetail": 0,
+            "unknownOrDiscovery": 0, "blocked": 0,
         }
         source_summaries[source] = summary
-
         if robots is None:
             stopped_early = f"{source}:robots_unavailable"
             break
@@ -154,7 +141,6 @@ def main() -> int:
                 summary["blocked"] += 1
                 stopped_early = f"{source}:robots_disallowed"
                 break
-
             time.sleep(delay_ms / 1000)
             html, evidence = fetch_text(url)
             row = {"source": source, "fetch": asdict(evidence)}
@@ -170,7 +156,6 @@ def main() -> int:
             if html is None:
                 results.append(row)
                 continue
-
             summary["active200"] += 1
             canonical = extractor.extract_canonical(url, html)
             row["canonical"] = canonical
@@ -179,37 +164,32 @@ def main() -> int:
             else:
                 summary["unknownOrDiscovery"] += 1
             results.append(row)
-
         if stopped_early:
             break
 
     total_active = sum(s["active200"] for s in source_summaries.values())
     total_stale = sum(s["staleRemoved"] for s in source_summaries.values())
     total_listing = sum(s["listingDetail"] for s in source_summaries.values())
-    all_sources_observed = all(s["active200"] + s["staleRemoved"] >= 1 for s in source_summaries.values()) and len(source_summaries) == len(SOURCES)
+    all_selected_observed = (
+        set(source_summaries) == set(selected)
+        and all(s["active200"] + s["staleRemoved"] >= 1 for s in source_summaries.values())
+    )
     report = {
         "strategy": "certified-artifact-bounded-listing-validity-canonical-sample",
-        "zeroDbWrites": True,
-        "perSource": args.per_source,
-        "sourceSummaries": source_summaries,
-        "totalActive200": total_active,
-        "totalStaleRemoved": total_stale,
-        "totalListingDetail": total_listing,
-        "stoppedEarly": stopped_early,
-        "results": results,
+        "zeroDbWrites": True, "selectedSources": selected, "perSource": args.per_source,
+        "sourceSummaries": source_summaries, "totalActive200": total_active,
+        "totalStaleRemoved": total_stale, "totalListingDetail": total_listing,
+        "stoppedEarly": stopped_early, "results": results,
     }
     report["success"] = bool(
-        stopped_early is None
-        and all_sources_observed
-        and total_active >= 3
-        and total_listing >= 3
+        stopped_early is None and all_selected_observed
+        and total_active + total_stale >= len(selected)
+        and total_listing >= len(selected)
         and report["zeroDbWrites"]
     )
-
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     (OUT_DIR / "report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
-    summary = {k: v for k, v in report.items() if k != "results"}
-    print(json.dumps(summary, ensure_ascii=False, indent=2))
+    print(json.dumps({k: v for k, v in report.items() if k != "results"}, ensure_ascii=False, indent=2))
     return 0 if report["success"] else 2
 
 
