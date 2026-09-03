@@ -1,47 +1,22 @@
 # Lot 7 Status
 
-**Status: 🟡 OPEN — sandbox 20 implemented, CI proof pending**
+**Status: 🟡 OPEN — Phase 7A CLOSED; real AkarFinder read path / ranking / lifecycle / API-UI proof remain**
 
 ## Goal
 
 Prouver que les données canoniques peuvent alimenter AkarFinder dans un environnement strictement isolé, sans toucher à la production ni à la base SQLite historique.
 
-## Success
-
-Progression contrôlée :
-
-```text
-20 annonces
-→ 100 annonces
-→ 1 000 annonces
-```
-
-Pour chaque palier, valider :
-
-- import canonique ;
-- recherche ;
-- filtres ;
-- ranking ;
-- page détail ;
-- provenance ;
-- mise à jour idempotente ;
-- désactivation ;
-- purge `source=mubawab` ;
-- absence d'impact sur toute donnée non-Mubawab / directe / partenaire.
-
 ## Safety boundary
 
-Le Lot 7 utilise une base SQLite dédiée au sandbox.
+Interdictions inchangées :
 
-Interdictions :
-
-- ne jamais écrire dans `scripts/scrapers/output/akarfinder.db` ;
-- ne jamais utiliser Supabase production ;
+- jamais écrire dans `scripts/scrapers/output/akarfinder.db` ;
+- jamais utiliser Supabase production ;
 - aucun déploiement Vercel ;
 - aucun write production ;
 - aucun merge automatique.
 
-Le sandbox est créé dans un répertoire temporaire et détruit après le test.
+Toutes les DB Lot 7 sont créées dans un répertoire temporaire et supprimables sans effet collatéral.
 
 ## Upstream prerequisite
 
@@ -50,62 +25,82 @@ Lot 1 re-certification : **GREEN**.
 - workflow : `Data Ingestion Lot 1 Contract Gate`
 - run ID : `33814112348`
 - résultat : `success`
-- transaction absente : fail-closed, jamais transformée en vente par défaut ;
+- transaction absente : fail-closed ;
 - `agency_direct` conservé comme provenance distincte.
 
-## Phase 7A — sandbox store contract
+## Phase 7A — isolated sandbox store
+
+**Status: ✅ CLOSED**
 
 Implémenté :
 
 - `data-ingestion/sandbox-store.ts`
-  - crée une SQLite dédiée à un chemin explicite ;
-  - tables `property_listings` + `listing_sources` ;
-  - import `CanonicalPropertyV1` ;
-  - idempotence par `source_name + source_id` ;
-  - requêtes ville / type / transaction / prix / surface ;
-  - détail par ID ;
-  - purge portal source ;
-  - provenance persistée séparément.
+- import `CanonicalPropertyV1` ;
+- clé idempotente `source_name + source_id` ;
+- filtres ville / type / transaction / prix / surface ;
+- détail par ID ;
+- pagination ;
+- purge source portail ;
+- témoin `agency_direct` protégé ;
+- SQLite temporaire uniquement.
 
-- `scripts/scrapers/__tests__/data-ingestion-lot7-sandbox.test.ts`
-  - 20 annonces Mubawab canoniques synthétiques à partir des fixtures validées ;
-  - 1 annonce témoin `agency_direct` ;
-  - re-import des 20 ;
-  - vérification filtres et détail ;
-  - purge Mubawab ;
-  - vérification que le témoin direct survit ;
-  - nettoyage du répertoire temporaire.
+### Preuves autoritatives
 
-- `.github/workflows/data-ingestion-lot7-sandbox.yml`
-  - gate CI dédié `Data Ingestion Lot 7 Sandbox Gate` ;
-  - Node 22 ;
-  - zéro réseau métier ;
-  - zéro secret ;
-  - zéro production.
+#### Palier 20
 
-## Proof required for 7A
+- workflow : `Data Ingestion Lot 7 Sandbox Gate`
+- run : `33816613177`
+- conclusion : **success**
+- 20 Mubawab + 1 témoin direct ;
+- re-import idempotent ;
+- purge Mubawab sélective.
 
-Le gate CI doit démontrer :
+#### Palier 100
 
-- sandbox DB créée dans un répertoire temporaire ;
-- 20 Mubawab + 1 témoin direct importés ;
-- re-import = 0 doublon supplémentaire ;
-- filtres vente/location/type/ville/prix/surface fonctionnels ;
-- détail accessible ;
-- purge Mubawab retire les 20 Mubawab ;
-- la fixture `agency_direct` reste intacte ;
-- DB sandbox supprimable après test ;
-- `production_writes = 0` par construction du workflow.
+- workflow : `Data Ingestion Lot 7 Sandbox 100 Gate`
+- run : `33816499499`
+- conclusion : **success**
+- 100 Mubawab + 1 témoin direct ;
+- 50 Casablanca / 50 Rabat ;
+- 50 sale / 50 rent ;
+- filtres + pagination + idempotence + purge sélective.
 
-## Current proof state
+#### Palier 1 000
 
-Code + test + workflow : ✅
+- workflow : `Data Ingestion Lot 7 Sandbox 1000 Gate`
+- run : `33816613319`
+- conclusion : **success**
+- 1 000 Mubawab + 1 témoin direct ;
+- pagination profonde ;
+- idempotence ;
+- purge Mubawab sélective ;
+- témoin direct intact.
 
-CI autoritative : ⏳ en attente d'indexation/exécution du nouveau HEAD.
+## Phase 7B — real AkarFinder SQLite read path
+
+**Status: 🟡 OPEN**
+
+Risque identifié : les preuves 7A utilisaient le helper `Lot7SandboxStore.query()` et ne prouvaient donc pas encore le lecteur réel AkarFinder.
+
+Correction engagée :
+
+- schéma sandbox aligné avec les attentes de `lib/listings/db-listings.ts`, notamment `data_completeness_score` ;
+- test `scripts/scrapers/__tests__/data-ingestion-lot7-real-read-path.test.ts` ;
+- le test importe via le store puis lit via les fonctions réelles `queryDbListings()` et `getDbListingById()` ;
+- gate dédié `.github/workflows/data-ingestion-lot7-real-read-path.yml`.
+
+## Remaining Lot 7 proof
+
+Après 7B, il restera à démontrer sur environnement isolé :
+
+1. ranking AkarFinder sur les données sandbox ;
+2. désactivation/lifecycle dans le store sandbox ;
+3. API AkarFinder branchée au dataset isolé ;
+4. validation UI/recherche/filtres/détail ;
+5. provenance et purge visibles de bout en bout.
+
+Lot 7 ne sera CLOSED qu'après ces preuves, même si le simple volume 20 → 100 → 1 000 est déjà validé.
 
 ## Next exact
 
-1. obtenir le premier run GREEN du `Data Ingestion Lot 7 Sandbox Gate` ;
-2. si vert, certifier **7A / palier 20** ;
-3. étendre le même store au palier **100 annonces** sans ajouter de nouvelle architecture ;
-4. ajouter ranking et désactivation/lifecycle au gate avant passage à 1 000.
+Obtenir le GREEN de `Data Ingestion Lot 7 Real Read Path Gate`, puis brancher le ranking réel AkarFinder sur le même dataset sandbox.
