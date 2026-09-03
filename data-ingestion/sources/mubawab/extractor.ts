@@ -65,12 +65,14 @@ function extractDistrictFromPrimaryStats(pageText: string, city: string | null):
 function extractPrimaryTransaction(title: string | null, description: string | null): CollectionListing["transaction"] {
   const titleTransaction = normalizeTransaction(null, title);
   if (titleTransaction !== "unknown") return titleTransaction;
+  if (title && /\bvendre\b/iu.test(title)) return "sale";
+  if (title && /\blouer\b/iu.test(title)) return "rent";
   if (!description) return null;
 
   const primaryDescription = description.slice(0, 700);
   const signals: Array<{ transaction: "sale" | "rent"; index: number }> = [];
   const patterns: Array<{ transaction: "sale" | "rent"; pattern: RegExp }> = [
-    { transaction: "sale", pattern: /(?:à|a)\s+vendre|(?:à|a)\s+la\s+vente|\bmis(?:e)?\s+en\s+vente\b/giu },
+    { transaction: "sale", pattern: /(?:à|a)\s+vendre|(?:à|a)\s+la\s+vente|\b(?:mis(?:e)?|met|mettre)\s+en\s+vente\b/giu },
     { transaction: "rent", pattern: /(?:à|a)\s+louer|(?:à|a)\s+la\s+location|\bloyer\b[^.]{0,40}\/\s*mois\b/giu },
   ];
 
@@ -220,6 +222,8 @@ export function extractMubawabCollectionListing(url: string, html: string, now =
   const warnings: string[] = [];
   if (!title) warnings.push("title_missing");
   if (!city) warnings.push("city_missing");
+  if (!transaction) warnings.push("transaction_missing");
+  if (!propertyType || propertyType === "unknown") warnings.push("property_type_missing_or_unknown");
   if (priceAmount == null) warnings.push("price_missing_or_on_request");
   if (totalSurface == null) warnings.push("surface_missing");
 
