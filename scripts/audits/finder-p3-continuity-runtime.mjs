@@ -42,7 +42,7 @@ function assertSafeUrl(rawUrl, label) {
 }
 
 try {
-  // 1) Anonymous continuity: Search must read the pending full profile from sessionStorage.
+  // 1) Anonymous continuity: wait for client hydration, then prove Search reads the pending profile.
   {
     const context = await browser.newContext();
     await context.addInitScript(({ key, value }) => {
@@ -60,15 +60,20 @@ try {
     const response = await page.goto(`${baseUrl}/search?guided=1&profile_version=2.0&city=Rabat`, { waitUntil: "domcontentloaded", timeout: 60_000 });
     if ((response?.status() ?? 0) !== 200) findings.push(`ANON_SEARCH_HTTP_${response?.status() ?? 0}`);
     await page.locator("[data-search-results-section]").waitFor({ state: "visible", timeout: 20_000 });
+    await page.waitForFunction(
+      (key) => Array.isArray(window.__akarAuditStorageReads) && window.__akarAuditStorageReads.includes(key),
+      pendingKey,
+      { timeout: 15_000 },
+    ).catch(() => undefined);
     const reads = await page.evaluate(() => window.__akarAuditStorageReads ?? []);
-    const storageRead = reads.includes("akarfinder-pending-project-v2");
+    const storageRead = reads.includes(pendingKey);
     if (!storageRead) findings.push("ANON_PENDING_PROFILE_NOT_READ");
     assertSafeUrl(page.url(), "ANON");
     results.anonymous = { storageRead, reads, url: page.url() };
     await context.close();
   }
 
-  // 2) Authenticated project continuity: Search with project_id must request continuity and keep rich context out of the URL.
+  // 2) Authenticated project continuity: wait for the hydrated effect to request continuity.
   {
     const context = await browser.newContext();
     const page = await context.newPage();
@@ -81,9 +86,14 @@ try {
         body: JSON.stringify({ projects: [{ id: "audit-project", profile }] }),
       });
     });
+    const continuityRequest = page.waitForRequest(
+      (request) => new URL(request.url()).pathname === "/api/me/continuity",
+      { timeout: 15_000 },
+    ).catch(() => null);
     const response = await page.goto(`${baseUrl}/search?guided=1&profile_version=2.0&city=Rabat&project_id=audit-project`, { waitUntil: "domcontentloaded", timeout: 60_000 });
     if ((response?.status() ?? 0) !== 200) findings.push(`PROJECT_SEARCH_HTTP_${response?.status() ?? 0}`);
     await page.locator("[data-search-results-section]").waitFor({ state: "visible", timeout: 20_000 });
+    await continuityRequest;
     if (continuityHits < 1) findings.push("PROJECT_CONTINUITY_NOT_REQUESTED");
     const url = assertSafeUrl(page.url(), "PROJECT");
     if (url.searchParams.get("project_id") !== "audit-project") findings.push("PROJECT_ID_MISSING");
