@@ -36,11 +36,12 @@
     { "key": "villa_rent", "transaction": "rent", "property_type": "villa", "st_slug": "villas-et-maisons-de-luxe-a-louer", "enabled": true },
     { "key": "house_sale", "transaction": "sale", "property_type": "house", "st_slug": "maisons-a-vendre", "enabled": true },
     { "key": "house_rent", "transaction": "rent", "property_type": "house", "st_slug": "maisons-a-louer", "enabled": true },
-    { "key": "commercial_sale", "transaction": "sale", "property_type": "commercial", "st_slug": "locaux-a-vendre", "enabled": false, "reason": "slug_not_yet_verified" },
-    { "key": "commercial_rent", "transaction": "rent", "property_type": "commercial", "st_slug": "locaux-a-louer", "enabled": false, "reason": "slug_not_yet_verified" },
-    { "key": "office_sale", "transaction": "sale", "property_type": "office", "st_slug": "bureaux-a-vendre", "enabled": false, "reason": "slug_not_yet_verified" },
-    { "key": "office_rent", "transaction": "rent", "property_type": "office", "st_slug": "bureaux-a-louer", "enabled": false, "reason": "slug_not_yet_verified" },
-    { "key": "riad_sale", "transaction": "sale", "property_type": "riad", "st_slug": "riads-a-vendre", "enabled": false, "reason": "slug_not_yet_verified" }
+    { "key": "commercial_sale", "transaction": "sale", "property_type": "commercial", "st_slug": "locaux-a-vendre", "enabled": true },
+    { "key": "commercial_rent", "transaction": "rent", "property_type": "commercial", "st_slug": "locaux-a-louer", "enabled": true },
+    { "key": "office_sale", "transaction": "sale", "property_type": "office", "st_slug": "bureaux-a-vendre", "enabled": false, "reason": "route_not_verified_as_distinct_category" },
+    { "key": "office_rent", "transaction": "rent", "property_type": "office", "st_slug": "bureaux-a-louer", "enabled": false, "reason": "route_not_verified_as_distinct_category" },
+    { "key": "riad_sale", "transaction": "sale", "property_type": "riad", "st_slug": "riads-a-vendre", "enabled": true },
+    { "key": "riad_rent", "transaction": "rent", "property_type": "riad", "st_slug": "riads-a-louer", "enabled": true }
   ],
   "safety": {
     "discovery_only": true,
