@@ -43,7 +43,7 @@ Raw counters, URLs and enumerated IDs do **not** count as final success. Final g
 - deeper replay deferred until union/usable gates require it.
 
 ## Sarouty — FULL PROPERTY ENUMERATION CERTIFIED / MERGED
-PR #990 **MERGED**. Post-merge main: `e00adbe3a242c129bcb222ec4a5cfbf511f71e42`.
+PR #990 **MERGED**. Merge commit `e00adbe3a242c129bcb222ec4a5cfbf511f71e42`.
 
 Safety smoke `33690151575` — **SUCCESS**:
 - crawl delay **10s**, requestCount **2**, no early stop, zero writes
@@ -107,34 +107,54 @@ Using downloaded certified URL artifacts:
 
 This is source-scoped URL union only, **not semantic property dedupe** and not 42,117 usable listings.
 
+# Canonical extraction readiness
+PR #994 **MERGED** at `f177bf8609ed36960d67ced56e33715919ddc505`.
+
+Targeted extractor run `33766506107` — **SUCCESS** on HEAD `5a6a7cf92d76ba1c1106ee3eafad814beb9f3e21`:
+- Python 3.12
+- **8/8 tests PASS**
+- certified detail URL formats for Avito / Sarouty / Agenz recognized
+- numeric-ID guard retained for Sarouty query detail format
+- existing Mubawab / MarocAnnonces / long-tail / discovery behavior remains green.
+
+Artifact-backed listing validity/canonical smoke:
+- branch `feat/l8-artifact-validity-sample`
+- HEAD `cf876525e94d5cf72176c85c0449d9ea2390bbd4`
+- run `33766904139` — **IN_PROGRESS** at last verification
+- exact certified artifacts: Avito `9865177626`, MarocAnnonces `9888335708`, Sarouty `9897323745`
+- 2 evenly spaced URLs per source
+- robots-first; 3s Avito/MarocAnnonces floor; 10s Sarouty floor; 404/410 treated as stale; stop on 403/429/hard block; zero DB writes.
+
 # Current doctrine
 1. Goal >100k remains multi-source.
-2. Three full enumerations are now certified: Avito **27,053**, MarocAnnonces **10,000**, Sarouty **5,064**.
+2. Three full enumerations are certified: Avito **27,053**, MarocAnnonces **10,000**, Sarouty **5,064**.
 3. Exact certified artifact union = **42,117 URLs** before semantic dedupe/freshness.
-4. Agenz full is the next active source certification.
-5. Mubawab deeper replay remains available if later gates require it.
-6. No production bulk write; no Vercel deploy.
+4. Canonical extractor multisource URL coverage is now merged and unit-certified.
+5. Agenz full and artifact-backed validity/canonical smoke are the two active read-only validations.
+6. Mubawab deeper replay remains available if later gates require it.
+7. No production bulk write; no Vercel deploy.
 
 # Next exact
-1. finish Agenz full `33764930794`; if green, artifact/digest → PR #993 ready/merge/post-merge;
-2. extend exact artifact union with Agenz;
-3. listing-detail validity/freshness → canonical extraction → semantic cross-source dedupe → quality → serving;
-4. Mubawab deeper/full replay only if needed;
-5. certify **10k → 50k → 100k usable**.
+1. finish Agenz full `33764930794`; if green, artifact/digest → PR #993 ready/merge/post-merge → extend exact union;
+2. finish artifact-backed validity/canonical smoke `33766904139`; diagnose/fix if runner logic fails, stop without evasion if source returns a true block;
+3. after smoke green, scale listing-detail validity/freshness + canonical extraction on a statistically useful bounded corpus;
+4. semantic cross-source dedupe → quality → serving;
+5. Mubawab deeper/full replay only if needed;
+6. certify **10k → 50k → 100k usable**.
 
 # Remaining sequence
-`Agenz full → PR #993 closeout/merge → exact multi-source union → listing-detail validity/freshness → canonical extraction → semantic dedupe → quality → 10k → 50k → 100k usable → Mubawab deeper replay if needed → bounded prod-ingestion canary if required → closeout docs → post-merge verification`
+`Agenz full → PR #993 closeout/merge → extend exact union → artifact-backed validity smoke → bounded freshness/canonical extraction → semantic dedupe → quality → 10k → 50k → 100k usable → Mubawab deeper replay if needed → bounded prod-ingestion canary if required → closeout docs → post-merge verification`
 
 ## Current handover state
 - chantier: **Morocco Web Acquisition / L8 Scale + Coverage**
 - Goal: **>100,000 usable canonical Moroccan listings**
-- main post-Sarouty merge: `e00adbe3a242c129bcb222ec4a5cfbf511f71e42` before this canonical-only commit
+- main: `f177bf8609ed36960d67ced56e33715919ddc505` before this canonical-only commit
 - certified full IDs: Avito **27,053** + MarocAnnonces **10,000** + Sarouty **5,064**
 - current exact artifact URL union: **42,117**
-- active source: **Agenz**
-- Agenz run: `33764930794` — **IN_PROGRESS** at last verification
+- active source certification: **Agenz** run `33764930794` — IN_PROGRESS
+- active post-enumeration proof: artifact validity run `33766904139` — IN_PROGRESS
 - production DB mutation: **none authorized**
 - Vercel: **not required / not authorized**
 - strategic blocker: **none**
-- Next exact: **Agenz full result**
+- Next exact: **first completed active run → evidence → closeout/fix → continue**
 - global project percentage: **intentionally unassigned; do not invent one**
