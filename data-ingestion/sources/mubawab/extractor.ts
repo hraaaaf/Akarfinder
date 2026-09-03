@@ -61,6 +61,26 @@ function extractDistrictFromPrimaryStats(pageText: string, city: string | null):
   return null;
 }
 
+function extractPrimaryTransaction(title: string | null, description: string | null): CollectionListing["transaction"] {
+  const titleTransaction = normalizeTransaction(null, title);
+  if (titleTransaction !== "unknown") return titleTransaction;
+  if (!description) return null;
+
+  const signals: Array<{ transaction: "sale" | "rent"; index: number }> = [];
+  const patterns: Array<{ transaction: "sale" | "rent"; pattern: RegExp }> = [
+    { transaction: "sale", pattern: /(?:à|a)\s+vendre|(?:à|a)\s+la\s+vente|\ben\s+vente\b|\bvente\b/giu },
+    { transaction: "rent", pattern: /(?:à|a)\s+louer|(?:à|a)\s+la\s+location|\ben\s+location\b|\bloyer\b[^.]{0,40}\/\s*mois\b/giu },
+  ];
+
+  for (const { transaction, pattern } of patterns) {
+    const match = pattern.exec(description);
+    if (match?.index != null) signals.push({ transaction, index: match.index });
+  }
+
+  signals.sort((a, b) => a.index - b.index);
+  return signals[0]?.transaction ?? null;
+}
+
 function extractPrimaryImageUrls($: ReturnType<typeof load>): string[] {
   const ogImage = text($("meta[property='og:image']").attr("content"));
   const galleryImages: string[] = [];
@@ -163,7 +183,7 @@ export function extractMubawabCollectionListing(url: string, html: string, now =
   const explicitType = extractExplicitDetailType($);
   const jsonLdType = extractJsonLdPrimaryType($, title);
   const typeRaw = explicitType ?? jsonLdType ?? title;
-  const transaction = normalizeTransaction(null, `${title ?? ""} ${detail.description_snippet ?? ""}`);
+  const transaction = extractPrimaryTransaction(title, detail.description_snippet);
   const propertyType = mapMubawabPropertyType(typeRaw);
   const priceAmount = normalizePrice(detail.price_raw);
   const totalSurface = normalizeSurface(detail.surface_raw);
@@ -209,7 +229,7 @@ export function extractMubawabCollectionListing(url: string, html: string, now =
       content_hash: createHash("sha256").update(hashPayload).digest("hex"),
     },
     status: "active",
-    transaction: transaction === "unknown" ? null : transaction,
+    transaction,
     property_type: propertyType,
     title,
     description,
