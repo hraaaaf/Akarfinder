@@ -1,0 +1,32 @@
+name: Data Ingestion Lot 4 Pilot 100
+
+on:
+  pull_request:
+    paths:
+      - "data-ingestion/sources/mubawab/**"
+      - "data-ingestion/LOT4_STATUS.md"
+      - "scripts/mubawab-pilot-100.ts"
+      - "scripts/scrapers/utils/fetch-html.ts"
+      - ".github/workflows/data-ingestion-lot4-pilot-100.yml"
+
+jobs:
+  pilot-100:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: First controlled pass 25
+        run: npx tsx scripts/mubawab-pilot-100.ts
+      - name: Resume to 100 from checkpoint
+        run: npx tsx scripts/mubawab-pilot-100.ts --resume
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mubawab-lot4-pilot-100
+          path: data-ingestion/runs/mubawab/lot4-pilot-100/
+          if-no-files-found: error
