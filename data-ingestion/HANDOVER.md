@@ -4,10 +4,10 @@
 
 ## Read order
 
-1. `data-ingestion/canonical.md` — authoritative roadmap;
-2. `data-ingestion/MUBAWAB_PHASE0_COVERAGE_PROOF.md` — active proof;
-3. `data-ingestion/LOT9_STATUS.md` — historical evidence;
-4. this file — operational snapshot.
+1. `data-ingestion/canonical.md`
+2. `data-ingestion/MUBAWAB_PHASE0_COVERAGE_PROOF.md`
+3. `data-ingestion/LOT9_STATUS.md`
+4. this file
 
 ---
 
@@ -27,7 +27,7 @@
 
 Before adding another portal, prove and then obtain **100% explained coverage of all publicly accessible, authorized and relevant Mubawab listings**.
 
-Full Harvest is blocked until the Phase 0 coverage model is proven complete **and authorized**.
+Full Harvest remains blocked until Phase 0 is both complete and authorized.
 
 ---
 
@@ -51,35 +51,31 @@ Lot 12 Other sources if needed for ≥100K
 
 ---
 
-# Historical data evidence
+# Historical anchors
 
-Classic run `33899083917` observed **29,741 unique source IDs**.
-
-Office run `33906589600` extended the historical union to **31,731 unique source IDs**:
-
-- sale office: 710, technical terminal page 24;
-- rent office: 1,280 through page 40;
+- classic run `33899083917`: **29,741 unique source IDs**;
+- office run `33906589600`: historical union **31,731**;
 - artifact `9949834432`;
 - digest `sha256:964a8cc44255bfd793615c4adea1c3be4238bed87b09aad0514c326da681bacc`.
 
-**Critical:** those numbers remain historical observations/seed evidence, but no longer count as compliance certification because the old robots parser mishandled wildcard rules.
+These remain useful seed observations but are **not compliance certification**, because the former robots parser mishandled wildcard rules and historical deep pagination used `:p:N`.
 
 ---
 
 # Critical robots finding
 
-Mubawab public robots policy contains `Disallow: /*:` for `User-agent: *`.
+Mubawab robots policy for `User-agent: *` includes:
 
-Historical pagination uses `:p:N`, therefore future colon-pagination requests are disallowed for the AkarFinder research bot.
+```text
+Disallow: /*:
+Disallow: /*?n=1
+```
 
-The robots utility has been corrected to support wildcard/query semantics and a regression test now explicitly blocks `:p:2`.
+Therefore future `:p:N` requests are forbidden for the AkarFinder research bot.
 
-Current consequence:
+The robots utility is wildcard/query aware and regression-tested.
 
-- **P0-D Authorized traversal = 🔴 FAIL / BLOCKED**;
-- do not use `:p:N`;
-- Phase 0 must find another robots-allowed traversal mechanism or quantify the restricted remainder;
-- no bypass is allowed.
+**P0-D Authorized traversal = 🔴 FAIL / BLOCKED.**
 
 ---
 
@@ -88,42 +84,58 @@ Current consequence:
 - P0-A Route families: 🟡
 - P0-B Dimensions: 🟡
 - P0-C Reachability: 🟡
-- P0-D Authorized traversal: 🔴 FAIL / BLOCKED
+- P0-D Authorized traversal: 🔴 FAIL
 - P0-E Denominator: ⚪
 
-All five must PASS before Full Harvest.
+Full Harvest stays BLOCKED until all five PASS.
 
 ---
 
-# Route families currently known
+# Current route model
+
+Unit/control families:
 
 - `st`
 - `sc`
 - `cc`
 - `ct`
 - `t`
+- `tw`
+- `cd`
+- `sd`
 - `is`
-- `crp` — newly discovered hierarchical region/prefecture aggregate, pending qualification
 - vacation `st`
-- `pl`
-- detail identity `a/pa`
 
-Do not declare a family redundant without reachability evidence.
+Geography/taxonomy hierarchy:
+
+- `mpr`
+- `mprp`
+- `mprpt`
+- `mprptd`
+
+Separate buckets:
+
+- `pl` = project/non-unit;
+- detail `a/pa` = identity/detail only.
+
+The old `crp` hypothesis is removed because it was not reproduced.
+
+`mpr*` is used for geography/taxonomy enumeration, not silently counted as unit inventory.
 
 ---
 
-# Dimension gaps already proven
+# Dimension evidence
 
 Historical 12-city config is incomplete.
 
-Bounded Phase 0 proof found at least:
+Confirmed missing examples:
 
 - Dakhla
 - Essaouira
 - Martil
 - Meknès
 
-and unconfigured semantics:
+Confirmed unconfigured semantics include:
 
 - `appartements-vacational`
 - `bureaux-et-commerces-a-louer`
@@ -131,19 +143,22 @@ and unconfigured semantics:
 - `immobilier-a-louer`
 - `immobilier-a-vendre`
 
+Latest dimension proof:
+
+- run `33918393534` ✅
+- artifact `9954070944`
+- digest `sha256:3305e3fbd918ca9ccaf7b31dcdd0251dddc8671c000843c290762aea91af1a75`
+- exposed `mpr → mprp → mprpt → mprptd → tw` plus finer `cd/sd` inventory surfaces.
+
 ---
 
-# Current reachability evidence
+# Reachability evidence
 
-Run `33912205981` ✅ SUCCESS.
+Residual proof run `33912205981` ✅:
 
-Residual classification artifact `9951845045`, digest `sha256:71e34e6f29ae2e7dde1954684af3ea061237d00d2c5a706f8417aee43c0796a9`.
-
-Exact result against historical 31,731 union:
-
-- 78 sampled residual IDs unique;
-- 23 were already known;
-- **55 are absent from the historical union**.
+- 78 sampled residual IDs;
+- 23 already in historical 31,731;
+- 55 absent from that historical union.
 
 Breakdown:
 
@@ -152,38 +167,37 @@ Breakdown:
 - `is` Casablanca sale-cheap: 22 absent;
 - `is` Casablanca rent-cheap: 28 absent.
 
-The major open reachability question is therefore `is`, not `ct` sale.
+These are reachability/classification evidence, not proof that all 55 exist only on `ct/is`.
 
 ---
 
-# Human ambiguity gate — corrected order
+# Ambiguity rule
 
-Do not escalate from a vague card alone.
-
-Canonical flow:
+Canonical order:
 
 ```text
 card clear → classify
-card ambiguous → robots-check exact detail URL
-allowed detail → inspect ONE detail description
+card ambiguous → robots-check exact detail
+allowed detail → inspect ONE description
 clear detail → classify
-still ambiguous / detail unavailable by policy → show user → user decides
+trusted origin route may resolve transaction if non-conflicting
+still ambiguous / unavailable → show user → user decides
 ```
 
-No bulk detail crawl. One detail request is allowed only to resolve a genuinely ambiguous case and only if robots permits the exact URL.
+No bulk detail crawl.
 
-Methodology counter-example: Mubawab `8298787` had a nonsense card title, but its public description explicitly says it is an **apartment for sale**, 54 m², 2 bedrooms, Sidi Othmane, Casablanca. It should never have been escalated to the user.
+Latest bounded detail proof:
 
-Implementation guard:
+- run `33917777332` ✅
+- artifact `9953873543`
+- 4 allowed details inspected;
+- all four sampled cases ultimately resolved without a new human arbitration.
 
-- `data-ingestion/sources/mubawab/ambiguity-resolution.ts`
-- `scripts/scrapers/__tests__/data-ingestion-lot9-phase0-ambiguity-resolution.test.ts`
+Methodology counter-example `8298787`: nonsense card title but explicit public description = apartment sale, Sidi Othmane.
 
-## Precedent #1 — room/colocation inside apartment
+## Human precedent #1
 
-User chose **A** on 2026-09-04 for Mubawab source ID `8322103` (`Chambre meublée de 25 m² pour fille`).
-
-Canonical rule:
+Source ID `8322103`: explicit room/colocation inside an apartment.
 
 ```text
 property_type = apartment
@@ -191,47 +205,97 @@ transaction_type = rent
 offer_scope = room
 ```
 
-Do not create `room` as a property type. The apartment is the physical property; the offer concerns one room.
+A normal apartment mentioning “1 chambre” remains `whole_property`.
 
-Implementation:
+---
 
-- `CanonicalOfferV1.offer_scope` required;
-- values currently `whole_property | room`;
-- generic adapters default to `whole_property`;
-- Collection adapter detects explicit room/colocation wording and sets `room`;
-- focused test: `scripts/scrapers/__tests__/data-ingestion-offer-scope.test.ts`.
+# P0-D decisive proof
 
-Equivalent explicit room/colocation cases reuse this precedent. If the wording does not make the scope clear, inspect an allowed detail description first; escalate only if still unresolved.
+## Standard sitemap/index route
+
+Run `33917777332`: standard sitemap candidates were robots-allowed but all returned 404.
+
+Artifact `9953831525`, digest `sha256:3b370500a1e34b3223a49ca605eea0072b45f3ec5981e02b7707f402177a2c3e`.
+
+No standard public sitemap traversal found.
+
+## Deepest-known authorized leaf test
+
+Dedicated workflow:
+
+`Data Ingestion Lot 9 P0-D Authorized Traversal`
+
+Run `33920078656` ✅ SUCCESS.
+
+Artifact:
+
+- ID `9954738361`
+- digest `sha256:019f4e8a937667866427f7f6bb151da44cb9142878b6219304d15c2db2c0a1fc`
+
+Safety:
+
+- 7 public `sd` page-1 requests;
+- robots checked per URL;
+- 0 `:p:N`;
+- 0 details;
+- 0 DB/prod/images;
+- no source block.
+
+Oasis sample:
+
+| Leaf | Total | Page-1 IDs | Minimum inaccessible |
+|---|---:|---:|---:|
+| apartments sale | 117 | 32 | **85** |
+| apartments rent | 281 | 32 | **249** |
+| offices/commercial sale | 16 | 16 | 0 |
+| offices/commercial rent | 108 | 32 | **76** |
+| locaux sale | 12 | 12 | 0 |
+| locaux rent | 24 | 24 | 0 |
+| luxury villas/houses sale | 33 | 32 | **1** |
+
+Exact summary:
+
+```text
+7 leaves
+3 complete on page 1
+4 overflow
+180 unique page-1 IDs
+sampled minimum unexplained remainder = 411
+current known first-party leaf model certifiable = false
+```
+
+**Important:** 411 is only the lower bound across these seven Oasis leaves, not the Morocco-wide restricted remainder.
+
+Current conclusion: the known first-party model cannot provide complete authorized traversal because some deepest-known exhaustive `sd` leaves still overflow while colon pagination is robots-disallowed.
 
 ---
 
 # Public denominator
 
-The ~102K public presentation is **not yet a certified denominator**. Public/indexed page/language snapshots fluctuate and are not synchronized.
+The ~102K public presentation remains a reconciliation anchor, not a certified unique-ID count.
 
-P0-E must explain:
+P0-E equation:
 
 ```text
-unique authorized accessible unit IDs
+unique authorized-accessible unit IDs
 + project/non-unit objects
 + aliases/duplicates
-+ documented restricted/non-indexable components
++ documented restricted/non-indexable component
 = explained public universe
 ```
+
+Never add overlapping route counters blindly. `is` is thematic/overlapping. Project hierarchy stays separate from unit inventory.
 
 ---
 
 # NEXT EXACT
 
-1. continue classifying the **55 absent IDs** using card evidence;
-2. for every card ambiguity, inspect the single robots-allowed public detail description before human escalation;
-3. reuse Precedent #1 for explicit room/colocation offers;
-4. classify all card/detail-clear cases automatically;
-5. show user only genuinely unresolved cases;
-6. qualify `crp` against existing geography/control families;
-7. keep discovering route/dimension gaps using allowed surfaces;
-8. identify an authorized complete traversal mechanism without `:p:N`;
-9. if no complete allowed traversal exists, quantify the restricted remainder for the denominator;
-10. Full Harvest stays BLOCKED until P0-A..P0-E all PASS.
+1. expand the P0-D lower-bound measurement from Oasis to a bounded representative set of cities/neighborhoods/category×transaction leaves;
+2. record complete vs overflow leaves using actual page-1 source IDs and visible totals;
+3. continue searching only for public, robots-allowed exhaustive mechanisms;
+4. if no such first-party mechanism is found, formalize P0-E restricted-component reconciliation;
+5. keep P0-A/P0-B discovery running until repeated bounded probes stop revealing new route/dimension families;
+6. keep P0-C ambiguity process card → allowed detail → provenance → human only if still unresolved;
+7. Full Harvest remains BLOCKED until P0-A..P0-E all PASS.
 
 **Current chantier: Mubawab Phase 0 Coverage Proof 🔵**
