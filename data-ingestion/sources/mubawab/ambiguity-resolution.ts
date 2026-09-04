@@ -42,13 +42,24 @@ function transactionFromText(text: string): ResolvedTransaction | null {
   return sale ? "sale" : "rent";
 }
 
+function isExplicitRoomScopedOffer(title: string, description: string): boolean {
+  const combined = `${title} ${description}`;
+  if (/\bcoloc(?:ation)?\b|\bco[- ]?location\b/i.test(combined)) return true;
+  if (/^(?:loue[rz]?\s+|location\s+)?(?:une\s+)?chambre\b/i.test(title.trim())) return true;
+  if (/\bchambre\b[^.]{0,80}\b(?:à\s+louer|a\s+louer|louer|location|meubl[ée]e?\s+pour|pour\s+(?:fille|gar[çc]on|étudiant|etudiant))\b/i.test(combined)) return true;
+  if (/\b(?:loue|louer|location)\b[^.]{0,60}\b(?:une\s+)?chambre\b/i.test(combined)) return true;
+  return false;
+}
+
 export function resolveDetailSemanticEvidence(input: {
   extractedPropertyType?: string | null;
   extractedTransaction?: ResolvedTransaction | null;
   title?: string | null;
   description?: string | null;
 }): DetailSemanticResolution {
-  const text = `${input.title ?? ""} ${input.description ?? ""}`.replace(/\s+/g, " ").trim();
+  const title = (input.title ?? "").replace(/\s+/g, " ").trim();
+  const description = (input.description ?? "").replace(/\s+/g, " ").trim();
+  const text = `${title} ${description}`.trim();
   const evidence: string[] = [];
 
   const knownExtracted = input.extractedPropertyType && input.extractedPropertyType !== "unknown"
@@ -63,16 +74,19 @@ export function resolveDetailSemanticEvidence(input: {
   if (input.extractedTransaction) evidence.push("transaction_from_detail_extractor");
   else if (transaction) evidence.push("transaction_from_detail_text");
 
-  const roomScoped = /\bchambre\b|\bcolocation\b|\bco[- ]?location\b/i.test(text);
+  const roomScoped = isExplicitRoomScopedOffer(title, description);
   const offerScope: ResolvedOfferScope = roomScoped ? "room" : "whole_property";
   if (roomScoped) evidence.push("room_scope_from_detail_text");
 
-  // Human precedent #1: explicit room/colocation inside an apartment remains
-  // an apartment property with a room-scoped offer.
-  const precedentProperty = !propertyType && roomScoped && /\bappartement\b|\bappart\b|\bapartement\b|\bapartment\b/i.test(text)
+  // Human precedent #1: an explicit room/colocation offer whose physical
+  // dwelling is an apartment remains an apartment with offer_scope=room.
+  const apartmentMentioned = /\bappartement\b|\bappart\b|\bapartement\b|\bapartment\b/i.test(text);
+  const precedentProperty = !propertyType && roomScoped && apartmentMentioned
     ? "apartment" as const
     : propertyType;
-  if (precedentProperty === "apartment" && !propertyType && roomScoped) evidence.push("human_precedent_1_room_in_apartment");
+  if (roomScoped && precedentProperty === "apartment") {
+    evidence.push("human_precedent_1_room_in_apartment");
+  }
 
   return {
     clear: precedentProperty != null && transaction != null,
