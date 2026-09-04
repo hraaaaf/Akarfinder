@@ -1,0 +1,48 @@
+name: Data Ingestion Lot 9 P0-D Common Crawl Index
+
+on:
+  pull_request:
+    paths:
+      - "data-ingestion/sources/mubawab/commoncrawl-index.ts"
+      - "scripts/mubawab-phase0-commoncrawl-index-probe.ts"
+      - "scripts/scrapers/__tests__/data-ingestion-lot9-phase0-commoncrawl-index.test.ts"
+      - ".github/workflows/data-ingestion-lot9-phase0-commoncrawl-index.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  commoncrawl-index:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Restore historical 31,731-ID Mubawab union
+        uses: actions/download-artifact@v4
+        with:
+          name: lot9-office-catalog-campaign-proof
+          path: data-ingestion/runs/mubawab/lot9-office-catalog-campaign
+          github-token: ${{ github.token }}
+          run-id: 33906589600
+      - name: Prove Common Crawl index parsing and query semantics
+        run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-phase0-commoncrawl-index.test.ts
+      - name: Run bounded Common Crawl Mubawab detail-index probe
+        run: npx tsx scripts/mubawab-phase0-commoncrawl-index-probe.ts
+      - name: Upload Common Crawl P0-D proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lot9-phase0-commoncrawl-index-proof
+          path: data-ingestion/runs/mubawab/phase0-commoncrawl-index-probe/
+          if-no-files-found: warn
+          retention-days: 7
+
+      # Safety: two public Common Crawl CDX queries, max 250 lines per a/pa family.
+      # No live Mubawab request, no detail fetch, no :p:N, no DB/prod write, no images.
