@@ -25,7 +25,7 @@ test("extracts detail identity and visible card evidence without opening detail 
   assert.equal(signals[1].detail_family, "pa");
 });
 
-test("marks explicit single-type titles clear and multi-type titles ambiguous", () => {
+test("marks explicit single-type titles clear and true multi-type titles ambiguous", () => {
   const apartment = reviewCardSemantics({
     source_id: "1",
     detail_family: "a",
@@ -47,4 +47,43 @@ test("marks explicit single-type titles clear and multi-type titles ambiguous", 
   });
   assert.equal(ambiguous.status, "ambiguous_or_unmapped");
   assert.deepEqual(ambiguous.property_type_candidates.sort(), ["commercial", "office"]);
+});
+
+test("does not mistake Riad place names for a second property type", () => {
+  const result = reviewCardSemantics({
+    source_id: "3",
+    detail_family: "a",
+    url: "https://www.mubawab.ma/fr/a/3/x",
+    route_url: "https://www.mubawab.ma/fr/is/x",
+    title_text: "Appartement à louer à Riad El Oulfa",
+    card_text: "Appartement à louer à Riad El Oulfa Oulfa, Casablanca 55m²",
+  });
+  assert.equal(result.status, "clear");
+  assert.deepEqual(result.property_type_candidates, ["apartment"]);
+});
+
+test("keeps room and colocation offers behind the human ambiguity gate", () => {
+  const result = reviewCardSemantics({
+    source_id: "4",
+    detail_family: "a",
+    url: "https://www.mubawab.ma/fr/a/4/x",
+    route_url: "https://www.mubawab.ma/fr/is/x",
+    title_text: "Chambre meublée en colocation",
+    card_text: "Chambre à louer dans un appartement de 100 m² à Casablanca",
+  });
+  assert.equal(result.status, "ambiguous_or_unmapped");
+  assert.deepEqual(result.property_type_candidates.sort(), ["apartment", "room_or_colocation"]);
+});
+
+test("uses visible card description when the title is vague", () => {
+  const result = reviewCardSemantics({
+    source_id: "5",
+    detail_family: "a",
+    url: "https://www.mubawab.ma/fr/a/5/x",
+    route_url: "https://www.mubawab.ma/fr/is/x",
+    title_text: "F3 meublé 80m entièrement rénové",
+    card_text: "Appartement de 80 m² situé à Belvédère, Casablanca",
+  });
+  assert.equal(result.status, "clear");
+  assert.deepEqual(result.property_type_candidates, ["apartment"]);
 });
