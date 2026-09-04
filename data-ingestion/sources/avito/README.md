@@ -16,14 +16,23 @@ Sitemap: https://www.avito.ma/sitemap.xml
 
 The observed file contains crawler-specific groups and no visible `User-agent: *` group. It also disallows `/api/v1` for named crawler groups.
 
-This is not treated as blanket permission. The project robots checker must evaluate the current policy against the exact identifiable AkarFinder user-agent before every live lane is certified.
+The probe user-agent is explicitly identifiable:
+
+```text
+AkarFinderCoverageBot/0.1 (+https://akarfinder.vercel.app)
+```
+
+Under RFC 9309 matching semantics, if no group matches a crawler product-token and no `User-agent: *` group exists, no robots rules apply to that crawler. On the robots snapshot observed on 2026-09-04, no `AkarFinderCoverageBot` group and no wildcard group were visible. Therefore the **robots matching sub-check currently has no applicable disallow rule for this exact product-token**.
+
+This is not treated as a guarantee that Avito will return HTTP 200, nor as blanket permission outside the exact public surfaces being qualified. Server responses and other applicable access constraints remain independent gates.
 
 Absolute rule:
 
 - no private API harvesting;
 - no CAPTCHA/access-control bypass;
 - no rotating-proxy bypass;
-- no request to a route that the current applicable robots policy disallows.
+- no request to a route that the current applicable robots policy disallows;
+- explicit 403/429 => stop the native lane rather than evade it.
 
 ## Alternative public discovery strategy
 
@@ -44,6 +53,14 @@ sitemap URLs
 ```
 
 No detail content or images are required during coverage proof.
+
+A bounded GitHub-hosted qualification probe now exists at:
+
+`scripts/scrapers/avito-sitemap-probe.mjs`
+
+It performs one request to the advertised root sitemap with the identifiable AkarFinder user-agent and reports HTTP status, content type, XML structure, `<loc>` count and control-ID overlap. It opens no listing detail page.
+
+The existing P0-D workflow contains a dedicated `avito-sitemap-probe` job so this check can run in the already-established authorized-traversal gate.
 
 ### Lane B — public Avito category/search pages — PRIMARY CANDIDATE
 
@@ -115,6 +132,12 @@ Interpretation:
 - this result does **not** prove those IDs are absent from every search engine or public web index;
 - sitemap/native overlap remains the important next measurement.
 
+### Lane E — Common Crawl / public crawl indexes — SECONDARY DISCOVERY
+
+Common Crawl provides public CDXJ/URL indexes that can be queried without requesting Avito directly. This lane is useful for historical URL discovery and residual coverage, with Common Crawl provenance retained separately from native Avito observations.
+
+It must not be mistaken for current-availability proof: an archived Avito URL may be stale or deleted today.
+
 ## Why this matters
 
 A single blocked route must not be confused with a blocked source.
@@ -126,6 +149,7 @@ Can the complete public Avito universe be explained through
 sitemap
 + allowed native public surfaces
 + external public control indexes
++ public crawl indexes
 + explicit restricted remainder?
 ```
 
@@ -135,19 +159,19 @@ If yes, Avito remains viable even without private APIs or aggressive crawling.
 
 | Gate | Status | Current fact |
 |---|---:|---|
-| P0-A route families | 🟡 | sitemap + native category + external-index control lanes identified |
+| P0-A route families | 🟡 | sitemap + native category + external/public-crawl control lanes identified |
 | P0-B dimensions | 🟡 | detail URL exposes district/category structure; full matrix pending |
-| P0-C reachability | 🟡 | 12-ID external control sample exists; exact-ID web search found 0/12; sitemap/native overlap pending |
-| P0-D authorized traversal | 🟡 | robots is crawler-specific; exact AkarFinder matching + sitemap/native lane authorization still to prove |
+| P0-C reachability | 🟡 | 12-ID external control sample exists; exact-ID web search found 0/12; sitemap/Common Crawl overlap pending |
+| P0-D authorized traversal | 🟡 | robots matching sub-check has no applicable rule for the exact AkarFinder product-token on the observed snapshot; live sitemap HTTP result pending |
 | P0-E denominator | ⚪ | no certified Avito-native unique-ID denominator yet |
 
 ## Next exact
 
-1. evaluate current robots policy against the exact AkarFinder user-agent;
-2. qualify the advertised sitemap structure;
-3. extract a bounded real-estate ID sample from the sitemap if allowed;
-4. native-confirm the trailing numeric detail-ID pattern;
-5. run the overlap manifest: `kaynly_control` vs `sitemap` vs other qualified lanes;
+1. obtain the bounded root-sitemap HTTP result from the P0-D job;
+2. qualify sitemap structure and, if it is a sitemap index, identify inventory-bearing child sitemaps before requesting any child;
+3. compare native sitemap IDs with the 12-ID Kaynly control sample;
+4. query Common Crawl URL indexes for the same control sample and measure historical discovery overlap;
+5. native-confirm the trailing numeric detail-ID pattern when an allowed native surface exposes it;
 6. enumerate residual IDs and explain every residual by route/dimension/restriction;
 7. investigate an official/commercial partner-feed route for high-volume freshness;
 8. only then decide whether a complete authorized Full Harvest is possible.
