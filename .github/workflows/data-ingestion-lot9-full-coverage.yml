@@ -27,7 +27,7 @@ permissions:
 jobs:
   full-coverage:
     runs-on: macos-14
-    timeout-minutes: 25
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -47,26 +47,26 @@ jobs:
         run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-full-coverage-campaign.test.ts
       - name: Prove Lot 9 live campaign policy bounds
         run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-live-campaign-policy.test.ts
-      - name: Restore scale-288 campaign state
+      - name: Restore deep extinction checkpoint
         uses: actions/download-artifact@v4
         with:
-          name: lot9-live-campaign-scale-288-proof
+          name: lot9-live-campaign-deep-extinction-proof
           path: data-ingestion/runs/mubawab/lot9-live-campaign
           github-token: ${{ github.token }}
-          run-id: 33893444230
-      - name: Prove deep extinction resume state is present
+          run-id: 33894675980
+      - name: Prove final classic resume state is present
         run: test -f data-ingestion/runs/mubawab/lot9-live-campaign/state.json
-      - name: Run bounded Lot 9 deep extinction campaign
+      - name: Run bounded Lot 9 final classic extinction
         env:
-          LOT9_MAX_WAVES: "16"
-          LOT9_MAX_PARTITIONS_PER_WAVE: "6"
-          LOT9_REQUEST_DELAY_MS: "2500"
+          LOT9_MAX_WAVES: "10"
+          LOT9_MAX_PARTITIONS_PER_WAVE: "4"
+          LOT9_REQUEST_DELAY_MS: "2750"
         run: npx tsx scripts/mubawab-full-coverage-live-campaign.ts --resume
-      - name: Upload Lot 9 deep extinction proof
+      - name: Upload Lot 9 final classic proof
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: lot9-live-campaign-deep-extinction-proof
+          name: lot9-live-campaign-final-classic-proof
           path: data-ingestion/runs/mubawab/lot9-live-campaign/
           if-no-files-found: warn
           retention-days: 7
