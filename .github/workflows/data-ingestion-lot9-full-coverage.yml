@@ -47,24 +47,26 @@ jobs:
         run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-full-coverage-campaign.test.ts
       - name: Prove Lot 9 live campaign policy bounds
         run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-live-campaign-policy.test.ts
-      - name: Restore previous live campaign state artifact
+      - name: Restore latest 889-listing campaign state artifact
         uses: actions/download-artifact@v4
         with:
-          name: lot9-live-campaign-proof
+          name: lot9-live-campaign-resume-proof
           path: data-ingestion/runs/mubawab/lot9-live-campaign
           github-token: ${{ github.token }}
-          run-id: 33889776735
-      - name: Prove inter-run resume from previous checkpoint
+          run-id: 33890843084
+      - name: Prove scaled resume state is present
+        run: test -f data-ingestion/runs/mubawab/lot9-live-campaign/state.json
+      - name: Run bounded Lot 9 scale-120 campaign
         env:
-          LOT9_MAX_WAVES: "2"
-          LOT9_MAX_PARTITIONS_PER_WAVE: "3"
-          LOT9_REQUEST_DELAY_MS: "1500"
+          LOT9_MAX_WAVES: "8"
+          LOT9_MAX_PARTITIONS_PER_WAVE: "5"
+          LOT9_REQUEST_DELAY_MS: "1750"
         run: npx tsx scripts/mubawab-full-coverage-live-campaign.ts --resume
-      - name: Upload Lot 9 inter-run resume proof
+      - name: Upload Lot 9 scale-120 proof
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: lot9-live-campaign-resume-proof
+          name: lot9-live-campaign-scale-120-proof
           path: data-ingestion/runs/mubawab/lot9-live-campaign/
           if-no-files-found: warn
           retention-days: 7
