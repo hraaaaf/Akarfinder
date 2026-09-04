@@ -12,7 +12,9 @@
     ],
     "primary_candidates": [
       { "key": "apartment_sale", "path": "/categorie/315/Vente-immobilier/Appartements.html", "transaction": "sale", "property_type": "apartment", "verified": true },
-      { "key": "apartment_rent", "path_prefix": "/categorie/321/Location-immobilier/Appartements/", "transaction": "rent", "property_type": "apartment", "verified": true },
+      { "key": "apartment_rent", "path": "/categorie/321/immobilier-location/appartements.html", "transaction": "rent", "property_type": "apartment", "verified": true }
+    ],
+    "diagnostic_candidates": [
       { "key": "villa_house_riad_rent", "path_prefix": "/categorie/322/Location-immobilier/Villas-Maisons-Riads/", "transaction": "rent", "property_type": "mixed", "verified": true }
     ]
   },
@@ -22,9 +24,9 @@
     "certified_for_full_traversal": false
   },
   "identity": {
-    "detail_pattern": null,
-    "source_id_pattern": null,
-    "status": "pending_proof"
+    "detail_pattern": "^/categorie/[0-9]+/[^/]+/annonce/(?<source_id>[0-9]+)/[^/?#]+\\.html$",
+    "source_id_pattern": "^[0-9]+$",
+    "status": "verified_from_public_detail_page"
   },
   "safety": {
     "discovery_only": true,
