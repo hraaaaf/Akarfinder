@@ -30,6 +30,7 @@ on:
       - "scripts/mubawab-phase0-reachability-probe.ts"
       - "scripts/mubawab-phase0-residual-classifier.ts"
       - "scripts/mubawab-phase0-residual-card-probe.ts"
+      - "scripts/mubawab-phase0-residual-detail-probe.ts"
       - "scripts/scrapers/__tests__/mubawab-discovery-v2.test.ts"
       - "scripts/scrapers/__tests__/data-ingestion-lot9-full-coverage-planner.test.ts"
       - "scripts/scrapers/__tests__/data-ingestion-lot9-catalog-coverage-campaign.test.ts"
@@ -124,7 +125,7 @@ jobs:
           path: data-ingestion/runs/mubawab/phase0-residual-classification/
           if-no-files-found: warn
           retention-days: 7
-      - name: Prepare page-level evidence for residual human ambiguity gate
+      - name: Prepare page-level evidence for residual ambiguity resolution
         run: npx tsx scripts/mubawab-phase0-residual-card-probe.ts
       - name: Upload Lot 9 Phase 0 residual card proof
         if: always()
@@ -134,8 +135,20 @@ jobs:
           path: data-ingestion/runs/mubawab/phase0-residual-card-probe/
           if-no-files-found: warn
           retention-days: 7
+      - name: Resolve up to five ambiguous residuals from robots-allowed detail pages
+        env:
+          MAX_DETAIL_LOOKUPS: "5"
+        run: npx tsx scripts/mubawab-phase0-residual-detail-probe.ts
+      - name: Upload Lot 9 Phase 0 residual detail proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lot9-phase0-residual-detail-proof
+          path: data-ingestion/runs/mubawab/phase0-residual-detail-probe/
+          if-no-files-found: warn
+          retention-days: 7
 
       # Phase 0 rule: no broad live harvest in this gate.
       # Only bounded, robots-allowed public probes may run.
-      # A single detail page may be inspected only to resolve a card ambiguity and only if robots allows that detail URL.
+      # At most five robots-allowed detail pages may be inspected per run, solely to resolve genuine card ambiguities.
       # Colon pagination (:p:N) is not permitted while matching robots Disallow: /*:.
