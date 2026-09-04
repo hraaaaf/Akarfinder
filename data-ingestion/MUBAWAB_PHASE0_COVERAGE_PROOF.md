@@ -202,6 +202,36 @@ Rules:
 - ambiguity must not block clearly classified cases;
 - if a later case materially differs, escalate again.
 
+### Human precedent #1 — room/colocation inside an apartment
+
+User decision: **A**, recorded 2026-09-04.
+
+Reference case:
+
+- Mubawab source ID `8322103`;
+- visible title: `Chambre meublée de 25 m² pour fille`;
+- page-level evidence indicates a room/colocation offer inside an apartment.
+
+Canonical decision:
+
+```text
+property_type = apartment
+offer_scope = room
+transaction_type = rent
+```
+
+Do **not** create a canonical `room` property type for this case. The physical property remains the apartment; the commercial offer is scoped to one room.
+
+Equivalent explicit room/colocation offers may reuse this precedent without human re-escalation. If it is unclear whether the offer concerns one room or the whole dwelling, the Human ambiguity gate still applies.
+
+Implementation proof:
+
+- `lib/property-schema/core.ts` defines `OfferScope = whole_property | room`;
+- `CanonicalOfferV1.offer_scope` is required;
+- generic adapters default to `whole_property`;
+- `data-ingestion/collection-adapter.ts` infers explicit room/colocation offers as `room` while preserving the apartment property type;
+- `scripts/scrapers/__tests__/data-ingestion-offer-scope.test.ts` locks the precedent and guards against misclassifying ordinary multi-bedroom apartment rentals as room offers.
+
 ---
 
 ## 8. P0-D — Authorized traversal blocker
@@ -257,9 +287,9 @@ unique authorized accessible unit-listing IDs
 
 ## 10. Current exact next
 
-1. enrich the 55 absent IDs with **listing-card signals** from the already approved page-1 control surfaces: source ID, detail URL, visible title/text/location when available;
-2. auto-classify only clear cases;
-3. surface materially ambiguous listings to the user for arbitration;
+1. continue semantic classification of the 55 absent IDs using **listing-card signals** from approved page-1 surfaces;
+2. reuse Human precedent #1 for explicit room/colocation offers, while escalating materially different ambiguities;
+3. auto-classify only clear cases;
 4. qualify `crp` against `ct/t/st/sc` using robots-allowed page-1 evidence;
 5. continue P0-A/P0-B discovery until repeated allowed seeds stop revealing new families/dimensions;
 6. find an **authorized complete traversal strategy that does not use `:p:N`**;
