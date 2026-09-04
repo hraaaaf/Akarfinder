@@ -69,20 +69,15 @@ Une purge Mubawab ne doit jamais supprimer une annonce `agency_direct`, `partner
 
 ## Lots — état courant
 
-- Lot 1 : ✅ CLOSED
-- Lot 2 : ✅ CLOSED
-- Lot 3 : ✅ CLOSED
-- Lot 4 : ✅ CLOSED
-- Lot 5 : ✅ CLOSED
-- Lot 6 : ✅ CLOSED pour crawl / transaction ; mismatch taxonomique historique séparé
-- Lot 7 : ✅ CLOSED — functional + browser visual proof
-- Lot 8 : ✅ CLOSED — controlled massive ingestion proof GREEN
+- Lots 1–8 : ✅ CLOSED
 - Lot 9 : 🟡 OPEN — Mubawab Full Coverage
 - Lot 10 : ⚪ À FAIRE
 - Lot 11 : ⚪ À FAIRE
 - Lot 12 : ⚪ À FAIRE
 
-## Lot 7 — preuve de référence
+## Preuves historiques de référence
+
+### Lot 7
 
 - workflow : `Data Ingestion Lot 7 Visual Proof` ;
 - run : `33877438332` ✅ SUCCESS ;
@@ -90,9 +85,7 @@ Une purge Mubawab ne doit jamais supprimer une annonce `agency_direct`, `partner
 - artifact : `9938461473` ;
 - digest : `sha256:08b2c8f3679c22e4c3c02075b29d1f26276b460664aac7c0832ccd7da9746ee9`.
 
-Canonique visuel Search conforme.
-
-## Lot 8 — preuve de référence
+### Lot 8
 
 - workflow : `Data Ingestion Lot 8 Controlled Massive Gate` ;
 - run : `33879281908` ✅ SUCCESS ;
@@ -102,57 +95,77 @@ Canonique visuel Search conforme.
 - régression Lot 7 : 1/1 GREEN ;
 - Lot 8 : 4/4 GREEN.
 
-Prouvé : 2 500 annonces, batching, idempotence, checkpoint / reprise, rollback mid-batch, purge portail sélective, protection direct/partner, SQLite sandbox uniquement.
+## Canonique roadmap ≥100K
 
-## Lot 9 — chantier courant
-
-**Goal :** parcourir exhaustivement le périmètre Mubawab accessible et autorisé afin de mesurer le stock canonique réel avant d’ouvrir une deuxième source.
-
-Le nouveau canonique a été aligné sur ce cap au commit :
+Le fichier `data-ingestion/canonical.md` a été réaligné au commit :
 
 `6912915f4f6a5eb96ae3552f15c30397a2156c55`
 
-### Étape 1 — Full Coverage planner
+Décision canonique :
 
-Fichiers :
+> terminer la couverture Mubawab, mesurer le stock réel, certifier le dataset massif, l’ingérer de manière contrôlée, puis seulement ajouter les sources nécessaires pour atteindre ou dépasser 100K.
 
-- `data-ingestion/sources/mubawab/full-coverage.ts` ;
-- `scripts/scrapers/__tests__/data-ingestion-lot9-full-coverage-planner.test.ts` ;
-- `.github/workflows/data-ingestion-lot9-full-coverage.yml` ;
-- `data-ingestion/LOT9_STATUS.md`.
+## Lot 9 — étape 1 planner ✅ CERTIFIED
 
-La config actuelle produit :
+Fichier : `data-ingestion/sources/mubawab/full-coverage.ts`.
+
+Config actuelle :
 
 - 12 villes ;
 - 11 catégories activées ;
-- **132 scopes** initiaux `ville × catégorie`.
+- 132 scopes `ville × catégorie`.
 
-Le scheduler découpe chaque scope en fenêtres de pages :
+Scheduler :
 
 ```text
 1–25 → 26–50 → 51–75 → ...
 ```
 
-La fenêtre suivante n’existe que si la précédente est terminée avec `window_exhausted`.
+La fenêtre suivante est créée uniquement après `window_exhausted`.
 
-Un scope s’arrête sur `zero_new_unique_ids` ou sur un signal de sécurité explicite.
+Un scope s’arrête sur `zero_new_unique_ids` ou stop sécurité explicite.
 
-Chaque partition possède un ID stable, statut, checkpoint, compteurs et erreurs.
+Preuve :
 
-### Gate planner
+- workflow initial : `Data Ingestion Lot 9 Full Coverage Planner Gate` ;
+- run : `33881976620` ✅ SUCCESS ;
+- job : `full-coverage-planner` ;
+- job id : `101052543906` ;
+- HEAD produit prouvé : `1f9f0ae095fd28b9821008dd33dfb83e120ff5b4`.
 
-- workflow : `Data Ingestion Lot 9 Full Coverage Planner Gate` ;
-- run initial : `33881976620` ;
-- état au moment de ce handover : en cours / preuve non encore enregistrée comme GREEN.
+## Lot 9 — étape 2 bounded runner 🟡
 
-Le gate exécute :
+Implémentation :
 
-1. régression Discovery Mubawab ;
-2. contrat du scheduler Lot 9.
+- `data-ingestion/sources/mubawab/full-coverage-runner.ts` ;
+- `scripts/scrapers/__tests__/data-ingestion-lot9-full-coverage-runner.test.ts` ;
+- `.github/workflows/data-ingestion-lot9-full-coverage.yml`.
 
-### Sécurité live héritée du Lot 6
+Le runner :
 
-Toute future collecte :
+- traite une vague bornée par `maxPartitions` ;
+- maintient la déduplication globale des `source_id` ;
+- checkpoint après chaque page ;
+- arrête un scope sur zéro nouvel ID unique ;
+- classe robots / 403-429 comme stops sécurité ;
+- conserve les autres erreurs en `failed` ;
+- honore le kill-switch ;
+- génère la partition suivante uniquement après épuisement normal de la fenêtre ;
+- ne fait aucun write DB dans cette preuve.
+
+Gate courant :
+
+- workflow : `Data Ingestion Lot 9 Full Coverage Gate` ;
+- run : `33882260391` ;
+- HEAD produit : `83526761f40b68429349b2513c2d96862bf0de4a` ;
+- état au dernier contrôle : `queued` ;
+- job : `full-coverage`.
+
+Le gate exécute : Discovery regression + planner + bounded runner.
+
+## Sécurité live héritée du Lot 6
+
+Toute future collecte live :
 
 - passe par contrôle robots ;
 - stoppe sur blocage explicite 403 / 429 ;
@@ -162,14 +175,14 @@ Toute future collecte :
 
 ## NEXT EXACT
 
-1. vérifier le verdict du run `33881976620` ;
+1. vérifier le verdict du run `33882260391` ;
 2. si rouge, corriger uniquement la cause exacte ;
-3. si vert, enregistrer la preuve du planner dans `LOT9_STATUS.md` ;
-4. construire le runner Full Coverage reprenable en réutilisant les garde-fous Lot 6 ;
-5. lancer d’abord une vague limitée de partitions ;
+3. si vert, certifier le bounded runner dans `LOT9_STATUS.md` ;
+4. construire la persistance manifest / checkpoint du Full Coverage run ;
+5. lancer ensuite seulement une vague live limitée ;
 6. mesurer couverture / doublons / erreurs / stock unique ;
 7. étendre progressivement jusqu’au manifest Full Coverage final ;
 8. garder PR `#996` OPEN / DRAFT / non mergée et ne rien déployer sans autorisation explicite.
 
 **Lots 1–8 : CLOSED ✅**
-**Lot 9 : OPEN — Full Coverage planner proof pending 🟡**
+**Lot 9 : OPEN — bounded runner proof pending 🟡**
