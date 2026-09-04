@@ -12,9 +12,11 @@ on:
       - "data-ingestion/sources/mubawab/live-campaign-policy.ts"
       - "data-ingestion/sources/mubawab/catalog-inventory.ts"
       - "data-ingestion/sources/mubawab/catalog-overlap.ts"
+      - "data-ingestion/sources/mubawab/catalog-coverage-campaign.ts"
       - "scripts/mubawab-full-coverage-live-campaign.ts"
       - "scripts/mubawab-catalog-overlap-live.ts"
       - "scripts/mubawab-office-catalog-deep-probe.ts"
+      - "scripts/mubawab-office-catalog-campaign.ts"
       - "scripts/scrapers/__tests__/mubawab-discovery-v2.test.ts"
       - "scripts/scrapers/__tests__/data-ingestion-lot9-full-coverage-planner.test.ts"
       - "scripts/scrapers/__tests__/data-ingestion-lot9-full-coverage-runner.test.ts"
@@ -23,6 +25,7 @@ on:
       - "scripts/scrapers/__tests__/data-ingestion-lot9-live-campaign-policy.test.ts"
       - "scripts/scrapers/__tests__/data-ingestion-lot9-catalog-inventory.test.ts"
       - "scripts/scrapers/__tests__/data-ingestion-lot9-catalog-overlap.test.ts"
+      - "scripts/scrapers/__tests__/data-ingestion-lot9-catalog-coverage-campaign.test.ts"
       - ".github/workflows/data-ingestion-lot9-full-coverage.yml"
   workflow_dispatch:
 
@@ -57,6 +60,8 @@ jobs:
         run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-catalog-inventory.test.ts
       - name: Prove Lot 9 catalog overlap semantics
         run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-catalog-overlap.test.ts
+      - name: Prove Lot 9 persistent catalog coverage semantics
+        run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-catalog-coverage-campaign.test.ts
       - name: Restore final classic baseline
         uses: actions/download-artifact@v4
         with:
@@ -66,13 +71,16 @@ jobs:
           run-id: 33899083917
       - name: Prove final classic baseline is present
         run: test -f data-ingestion/runs/mubawab/lot9-live-campaign/state.json
-      - name: Run bounded Lot 9 office catalog deep probe
-        run: npx tsx scripts/mubawab-office-catalog-deep-probe.ts
-      - name: Upload Lot 9 office catalog deep proof
+      - name: Run persistent Lot 9 office catalog campaign
+        env:
+          LOT9_CATALOG_MAX_PAGES: "80"
+          LOT9_CATALOG_MAX_PAGES_PER_SURFACE: "40"
+        run: npx tsx scripts/mubawab-office-catalog-campaign.ts
+      - name: Upload Lot 9 office catalog campaign proof
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: lot9-office-catalog-deep-proof
-          path: data-ingestion/runs/mubawab/lot9-office-catalog-deep-probe/
+          name: lot9-office-catalog-campaign-proof
+          path: data-ingestion/runs/mubawab/lot9-office-catalog-campaign/
           if-no-files-found: warn
           retention-days: 7
