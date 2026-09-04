@@ -8,7 +8,6 @@ import {
   nextFullCoveragePartition,
   pausePartition,
   type FullCoveragePartition,
-  type FullCoverageStopReason,
 } from "./full-coverage.js";
 
 export type FullCoverageWaveRef = DiscoveredListingRef & {
@@ -44,7 +43,7 @@ function positiveInteger(value: number, field: string): number {
   return value;
 }
 
-function safetyStopReason(error: unknown): FullCoverageStopReason | null {
+function safetyStopReason(error: unknown): "robots_disallowed" | "source_block" | null {
   const message = error instanceof Error ? error.message : String(error);
   if (message.startsWith("robots_disallowed:")) return "robots_disallowed";
   if (message.startsWith("explicit_source_block:")) return "source_block";
