@@ -1,0 +1,38 @@
+{
+  "source": "avito",
+  "probe": "commoncrawl_exact_url_control",
+  "observed_at": "2026-09-04T21:45:31Z",
+  "control_surface": "kaynly",
+  "control_sample_size": 12,
+  "commoncrawl_indexes": [
+    "CC-MAIN-2026-34",
+    "CC-MAIN-2026-30",
+    "CC-MAIN-2026-25"
+  ],
+  "requests_max": 36,
+  "found_count": 8,
+  "coverage_ratio": 0.6666666666666666,
+  "found_ids": [
+    "57875516",
+    "56777033",
+    "57980066",
+    "55221675",
+    "56107349",
+    "55818998",
+    "57804311",
+    "57841791"
+  ],
+  "missing_ids": [
+    "57530092",
+    "57415455",
+    "57670239",
+    "56932715"
+  ],
+  "interpretation": "Common Crawl exact-URL lookup recovered 8/12 Kaynly-exposed Avito URLs across three recent public indexes. This is historical public-index discovery only and is not proof that a listing is active today.",
+  "provenance": {
+    "workflow_run_id": 33921186849,
+    "job_id": 101179640434,
+    "artifact_id": 9955578776,
+    "artifact_sha256": "72e56c5e828aef911bd12340e805bd5325c60bd8628b6852f1f274d8c244b83c"
+  }
+}
