@@ -56,6 +56,11 @@ function normalizeEvidenceCount(value: number): number | null {
   return Math.max(0, Math.floor(value));
 }
 
+function normalizeGateThreshold(value: number): number | null {
+  if (!Number.isFinite(value) || value < 1) return null;
+  return Math.floor(value);
+}
+
 export function canonicalizeSeoIntent(value: string): SeoIntentSlug | null {
   const normalized = normalizeToken(value);
   if (normalized === "acheter" || INTENT_ALIASES.acheter.includes(normalized)) return "acheter";
@@ -94,8 +99,8 @@ export function evaluateSeoInventoryEvidence(
 ): SeoEligibilityDecision {
   const listingCount = normalizeEvidenceCount(evidence.listingCount);
   const sourceCount = normalizeEvidenceCount(evidence.sourceCount);
-  const minListings = normalizeEvidenceCount(gate.minListings);
-  const minSources = normalizeEvidenceCount(gate.minSources);
+  const minListings = normalizeGateThreshold(gate.minListings);
+  const minSources = normalizeGateThreshold(gate.minSources);
 
   if (listingCount === null || sourceCount === null || minListings === null || minSources === null) {
     return unavailableSeoInventoryDecision();

@@ -44,7 +44,7 @@ describe("SEO eligibility gate V1", () => {
     assert.equal(evaluateSeoInventoryEvidence({ listingCount: 200, sourceCount: 2 }).reason, "insufficient_sources");
   });
 
-  it("fails closed for unavailable or non-finite evidence", () => {
+  it("fails closed for unavailable, non-finite, or invalid gate evidence", () => {
     assert.deepEqual(unavailableSeoInventoryDecision(), {
       eligible: false,
       reason: "inventory_unavailable",
@@ -53,13 +53,17 @@ describe("SEO eligibility gate V1", () => {
     });
     assert.equal(evaluateSeoInventoryEvidence({ listingCount: Number.NaN, sourceCount: 3 }).reason, "inventory_unavailable");
     assert.equal(evaluateSeoInventoryEvidence({ listingCount: 20, sourceCount: Number.POSITIVE_INFINITY }).reason, "inventory_unavailable");
-    assert.equal(
-      evaluateSeoInventoryEvidence(
-        { listingCount: 20, sourceCount: 3 },
-        { minListings: Number.NaN, minSources: 3 },
-      ).reason,
-      "inventory_unavailable",
-    );
+    for (const gate of [
+      { minListings: Number.NaN, minSources: 3 },
+      { minListings: 0, minSources: 3 },
+      { minListings: 20, minSources: 0 },
+      { minListings: -1, minSources: 3 },
+    ]) {
+      assert.equal(
+        evaluateSeoInventoryEvidence({ listingCount: 20, sourceCount: 3 }, gate).reason,
+        "inventory_unavailable",
+      );
+    }
   });
 
   it("reads only the strict public representation model and performs no database writes", () => {
