@@ -21,6 +21,7 @@ const SEEDS = [
   "https://www.mubawab.ma/fr/sc/appartements-a-louer",
   "https://www.mubawab.ma/fr/t/casablanca",
   "https://www.mubawab.ma/fr/ct/casablanca/immobilier-a-vendre",
+  "https://www.mubawab.ma/fr/crp/rabat-salé-zemmour-zaër/préfecture-de-rabat/immobilier-a-vendre",
   "https://www.mubawab.ma/fr/pl/cité-ennasr/listing-promotion",
 ];
 
