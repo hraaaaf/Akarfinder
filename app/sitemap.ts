@@ -10,13 +10,12 @@ import { getAllNeighborhoods } from "@/lib/seo-neighborhood-pages/neighborhood-s
 export const dynamic = "force-dynamic";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  // Stable public product/index routes only. Search stays dynamic/noindex;
-  // demos and user workspaces are intentionally excluded.
+  // Stable public product/index routes only. Search and Neuf stay crawlable but
+  // noindex until their own publication gates are satisfied.
   const baseRoutes = [
     "/",
     "/acheter",
     "/louer",
-    "/neuf",
     "/vendre",
     "/pro",
     "/pro/agences",
