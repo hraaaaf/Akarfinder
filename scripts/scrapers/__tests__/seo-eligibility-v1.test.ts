@@ -90,13 +90,12 @@ describe("SEO eligibility gate V1", () => {
     assert.equal(combineSeoCityIntentEligibility(unavailable, unavailable).eligible, false);
   });
 
-  it("gates city and neighborhood sitemap publication from live inventory", () => {
+  it("gates city sitemap publication from live inventory", () => {
     const source = readFileSync(resolve(process.cwd(), "app/sitemap.ts"), "utf8");
     assert.ok(source.includes('export const dynamic = "force-dynamic"'));
     assert.ok(source.includes("getSeoCityIndexability"));
     assert.ok(source.includes("eligibleCitySlugs"));
-    assert.ok(source.includes("eligibleCitySlugs.has(n.citySlug)"));
-    assert.ok(source.includes("decision.eligible"));
+    assert.ok(source.includes("eligibleCitySlugs.has(neighborhood.citySlug)"));
   });
 
   it("fails city metadata closed while keeping the page crawlable and periodically revalidated", () => {
@@ -105,6 +104,36 @@ describe("SEO eligibility gate V1", () => {
     assert.ok(source.includes("getSeoCityIndexability(cityData.displayName)"));
     assert.ok(source.includes("robots: { index: indexability.eligible, follow: true }"));
     assert.ok(source.includes("export const revalidate = 3600"));
+    assert.ok(source.includes("alternates: { canonical: seo.canonical }"));
+  });
+
+  it("reads strict neighborhood offer evidence and performs no database writes", () => {
+    const source = readFileSync(resolve(process.cwd(), "lib/seo/neighborhood-indexability.ts"), "utf8");
+    assert.ok(source.includes('"odm_neighborhood_offer_shadow_listing_v1"'));
+    assert.ok(source.includes('.eq("city_slug", citySlug)'));
+    assert.ok(source.includes('.eq("neighborhood_slug", neighborhoodSlug)'));
+    assert.ok(source.includes('.eq("display_eligibility", "eligible_primary")'));
+    assert.ok(source.includes('.eq("freshness_status", "fresh_confirmed")'));
+    assert.ok(source.includes('count: "exact"'));
+    assert.equal(source.includes(".insert("), false);
+    assert.equal(source.includes(".update("), false);
+    assert.equal(source.includes(".upsert("), false);
+    assert.equal(source.includes(".delete("), false);
+  });
+
+  it("gates neighborhood sitemap publication independently from the parent city", () => {
+    const source = readFileSync(resolve(process.cwd(), "app/sitemap.ts"), "utf8");
+    assert.ok(source.includes("getSeoNeighborhoodIndexability"));
+    assert.ok(source.includes("neighborhoodDecisions"));
+    assert.ok(source.includes("decision.eligible"));
+  });
+
+  it("fails neighborhood metadata closed while keeping the local page accessible", () => {
+    const source = readFileSync(resolve(process.cwd(), "app/immobilier/[city]/[district]/page.tsx"), "utf8");
+    assert.ok(source.includes("getSeoNeighborhoodIndexability"));
+    assert.ok(source.includes("citySlug: n.citySlug"));
+    assert.ok(source.includes("neighborhoodSlug: n.slug"));
+    assert.ok(source.includes("robots: { index: indexability.eligible, follow: true }"));
     assert.ok(source.includes("alternates: { canonical: seo.canonical }"));
   });
 });

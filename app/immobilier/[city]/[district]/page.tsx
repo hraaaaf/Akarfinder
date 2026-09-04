@@ -14,6 +14,7 @@ import { buildMapHref, buildMapSearchHref, parseMapNavigationState } from "@/lib
 import { neighborhoodCoverageLabel } from "@/lib/neighborhood-context/presentation";
 import { getNeighborhoodContextReadModelBySlugs } from "@/lib/neighborhood-context/read-model";
 import { searchListings } from "@/lib/search";
+import { getSeoNeighborhoodIndexability } from "@/lib/seo/neighborhood-indexability";
 import { siteConfig } from "@/lib/seo/site";
 import { getAllNeighborhoods, getNeighborhoodBySlug } from "@/lib/seo-neighborhood-pages/neighborhood-seo-data";
 import { generateNeighborhoodSeoMetadata } from "@/lib/seo-neighborhood-pages/seo-metadata";
@@ -49,11 +50,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const n = getNeighborhoodBySlug(city, district);
   if (!n) return { title: "Not Found", robots: { index: false, follow: false } };
   const seo = generateNeighborhoodSeoMetadata(n);
+  const indexability = await getSeoNeighborhoodIndexability({
+    citySlug: n.citySlug,
+    neighborhoodSlug: n.slug,
+  });
   return {
     title: seo.title,
     description: seo.description,
     alternates: { canonical: seo.canonical },
-    robots: { index: true, follow: true },
+    robots: { index: indexability.eligible, follow: true },
     openGraph: { title: seo.ogTitle, description: seo.ogDescription, type: "website", url: seo.canonical },
   };
 }
