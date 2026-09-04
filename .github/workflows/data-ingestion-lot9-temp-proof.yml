@@ -1,0 +1,32 @@
+name: Data Ingestion Lot 9 Isolated Proof
+
+on:
+  push:
+    branches:
+      - "ci/lot9-proof-ea9fb3f"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lot9-isolated-proof:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Discovery regression
+        run: npx tsx --test scripts/scrapers/__tests__/mubawab-discovery-v2.test.ts
+      - name: Full Coverage planner
+        run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-full-coverage-planner.test.ts
+      - name: Bounded runner and resumable kill switch
+        run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-full-coverage-runner.test.ts
+      - name: Persistent state across waves
+        run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-full-coverage-state.test.ts
+      - name: Bounded campaign checkpoints
+        run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-full-coverage-campaign.test.ts
