@@ -108,6 +108,7 @@ export class Lot7SandboxStore {
     const propertyType = property.facts.classification.property_type.value;
     const surface = property.facts.surfaces.surface_total_m2?.value ?? null;
     const completeness = property.intelligence?.data_completeness_score ?? 0;
+    // Keep collection provenance distinct from canonical origin_type so portal purge never conflates generic unknown origins.
     const sourceType = offer.source_type ?? null;
 
     if (existing) {
