@@ -7,6 +7,7 @@ on:
       - ".github/workflows/data-ingestion-avito-sitemap-probe.yml"
   workflow_dispatch:
 
+# One bounded request to Avito's sitemap advertised in robots.txt.
 jobs:
   probe:
     runs-on: ubuntu-latest
