@@ -1,0 +1,31 @@
+name: Data Ingestion Lot 9 Full Coverage Planner Gate
+
+on:
+  pull_request:
+    paths:
+      - "data-ingestion/sources/mubawab/config.json"
+      - "data-ingestion/sources/mubawab/discovery.ts"
+      - "data-ingestion/sources/mubawab/full-coverage.ts"
+      - "scripts/scrapers/__tests__/mubawab-discovery-v2.test.ts"
+      - "scripts/scrapers/__tests__/data-ingestion-lot9-full-coverage-planner.test.ts"
+      - ".github/workflows/data-ingestion-lot9-full-coverage.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  full-coverage-planner:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Prove Mubawab discovery regression remains green
+        run: npx tsx --test scripts/scrapers/__tests__/mubawab-discovery-v2.test.ts
+      - name: Prove Lot 9 deterministic full coverage partition planner
+        run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-full-coverage-planner.test.ts
