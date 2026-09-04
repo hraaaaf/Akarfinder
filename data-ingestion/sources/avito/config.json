@@ -4,11 +4,38 @@
   "locale": "fr",
   "base_url": "https://www.avito.ma",
   "phase": "phase0_coverage_proof",
-  "status": "verification_pending",
+  "status": "public_discovery_lanes_qualified_pending_certification",
   "public_robots_url": "https://www.avito.ma/robots.txt",
   "advertised_sitemap_url": "https://www.avito.ma/sitemap.xml",
+  "robots_observation": {
+    "generic_user_agent_group_observed": false,
+    "named_groups_observed": true,
+    "api_v1_disallowed_for_named_groups": true,
+    "akarfinder_policy_status": "must_be_evaluated_with_current_robots_semantics_before_live_requests"
+  },
+  "discovery_lanes": {
+    "primary": [
+      "advertised_public_sitemap",
+      "public_real_estate_category_pages"
+    ],
+    "control": [
+      "public_external_indexes_with_direct_avito_source_links",
+      "public_search_engine_index"
+    ]
+  },
+  "identity": {
+    "candidate_detail_pattern": "_(?<source_id>[0-9]+)\\.htm$",
+    "seed_example_source_id": "58413694",
+    "status": "pattern_observed_via_public_direct_source_link_pending_bounded_native_confirmation"
+  },
+  "external_index_policy": {
+    "role": "coverage_control_and_seed_only",
+    "ingest_external_index_content_as_avito": false,
+    "require_native_avito_confirmation_before_canonical_ingestion": true
+  },
   "private_api_allowed": false,
-  "detail_identity_status": "not_yet_proven",
+  "captcha_bypass_allowed": false,
+  "proxy_rotation_for_access_bypass_allowed": false,
   "full_harvest_allowed": false,
   "database_writes_allowed": false,
   "image_downloads_allowed": false,
