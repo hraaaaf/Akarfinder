@@ -172,6 +172,30 @@ Do not silently auto-classify ambiguous property type, transaction, geography, p
 
 Use listing-card evidence first. Do not open dozens of detail pages just to classify the residual set.
 
+## Precedent #1 — room/colocation inside apartment
+
+User chose **A** on 2026-09-04 for Mubawab source ID `8322103` (`Chambre meublée de 25 m² pour fille`).
+
+Canonical rule:
+
+```text
+property_type = apartment
+transaction_type = rent
+offer_scope = room
+```
+
+Do not create `room` as a property type. The apartment is the physical property; the offer concerns one room.
+
+Implementation:
+
+- `CanonicalOfferV1.offer_scope` required;
+- values currently `whole_property | room`;
+- generic adapters default to `whole_property`;
+- Collection adapter detects explicit room/colocation wording and sets `room`;
+- focused test: `scripts/scrapers/__tests__/data-ingestion-offer-scope.test.ts`.
+
+Equivalent explicit room/colocation cases reuse this precedent. If the wording does not make the scope clear, escalate again.
+
 ---
 
 # Public denominator
@@ -192,9 +216,9 @@ unique authorized accessible unit IDs
 
 # NEXT EXACT
 
-1. enrich the **55 absent IDs** with listing-card title/text/location/URL from robots-allowed page-1 surfaces;
-2. classify clear cases automatically;
-3. escalate materially ambiguous cases to the user;
+1. continue classifying the **55 absent IDs** using listing-card title/text/location/URL from robots-allowed page-1 surfaces;
+2. reuse Precedent #1 for explicit room/colocation offers;
+3. classify clear cases automatically and escalate only materially different ambiguities;
 4. qualify `crp` against existing geography/control families;
 5. keep discovering route/dimension gaps using allowed page-1 surfaces;
 6. identify an authorized complete traversal mechanism without `:p:N`;
