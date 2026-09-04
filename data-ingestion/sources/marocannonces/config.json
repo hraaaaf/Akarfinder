@@ -1,0 +1,39 @@
+{
+  "source": "marocannonces",
+  "country": "MA",
+  "locale": "fr",
+  "base_url": "https://www.marocannonces.com",
+  "phase": "phase0_coverage_proof",
+  "status": "open_robots_verification_pending",
+  "route_families": {
+    "control": [
+      { "key": "sale_all", "path": "/categorie/16/Vente-immobilier.html", "verified": true },
+      { "key": "rent_all", "path": "/categorie/305/Location-immobilier.html", "verified": true }
+    ],
+    "primary_candidates": [
+      { "key": "apartment_sale", "path": "/categorie/315/Vente-immobilier/Appartements.html", "transaction": "sale", "property_type": "apartment", "verified": true },
+      { "key": "apartment_rent", "path_prefix": "/categorie/321/Location-immobilier/Appartements/", "transaction": "rent", "property_type": "apartment", "verified": true },
+      { "key": "villa_house_riad_rent", "path_prefix": "/categorie/322/Location-immobilier/Villas-Maisons-Riads/", "transaction": "rent", "property_type": "mixed", "verified": true }
+    ]
+  },
+  "pagination": {
+    "observed_query_parameter": "pge",
+    "page_n_verified_on_some_public_routes": true,
+    "certified_for_full_traversal": false
+  },
+  "identity": {
+    "detail_pattern": null,
+    "source_id_pattern": null,
+    "status": "pending_proof"
+  },
+  "safety": {
+    "discovery_only": true,
+    "live_deep_traversal": false,
+    "robots_must_pass_before_requests": true,
+    "open_detail_pages": false,
+    "write_database": false,
+    "download_images": false,
+    "collect_contact_details": false,
+    "max_page1_control_requests_default": 6
+  }
+}
