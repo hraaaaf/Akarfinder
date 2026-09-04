@@ -92,7 +92,7 @@ export function buildInitialFullCoveragePlan(pageWindow = DEFAULT_PAGE_WINDOW): 
 
 export function markPartitionRunning(partition: FullCoveragePartition): FullCoveragePartition {
   if (partition.status !== "pending") throw new Error(`lot9_partition_not_pending:${partition.partition_id}:${partition.status}`);
-  return { ...partition, status: "running" };
+  return { ...partition, status: "running", stop_reason: null };
 }
 
 export function checkpointPartition(
@@ -116,9 +116,14 @@ export function checkpointPartition(
   };
 }
 
+export function pausePartition(partition: FullCoveragePartition): FullCoveragePartition {
+  if (partition.status !== "running") throw new Error(`lot9_partition_not_running:${partition.partition_id}:${partition.status}`);
+  return { ...partition, status: "pending", stop_reason: "manual_kill_switch" };
+}
+
 export function completePartition(
   partition: FullCoveragePartition,
-  stopReason: Extract<FullCoverageStopReason, "window_exhausted" | "zero_new_unique_ids" | "robots_disallowed" | "source_block" | "manual_kill_switch">,
+  stopReason: Extract<FullCoverageStopReason, "window_exhausted" | "zero_new_unique_ids" | "robots_disallowed" | "source_block">,
 ): FullCoveragePartition {
   if (partition.status !== "running") throw new Error(`lot9_partition_not_running:${partition.partition_id}:${partition.status}`);
   return { ...partition, status: "completed", stop_reason: stopReason };
