@@ -6,6 +6,7 @@ import {
   failPartition,
   markPartitionRunning,
   nextFullCoveragePartition,
+  pausePartition,
   type FullCoveragePartition,
   type FullCoverageStopReason,
 } from "./full-coverage.js";
@@ -83,17 +84,15 @@ export async function runFullCoverageWave(input: {
     started += 1;
 
     if (input.isKilled?.()) {
-      current = completePartition(current, "manual_kill_switch");
+      current = pausePartition(current);
       partitions[index] = current;
-      completed += 1;
       stoppedByKillSwitch = true;
       break;
     }
 
     for (let page = current.next_page; page <= current.page_end; page++) {
       if (input.isKilled?.()) {
-        current = completePartition(current, "manual_kill_switch");
-        completed += 1;
+        current = pausePartition(current);
         stoppedByKillSwitch = true;
         break;
       }
@@ -142,6 +141,7 @@ export async function runFullCoverageWave(input: {
         if (stopReason) {
           current = completePartition(current, stopReason);
           completed += 1;
+          if (stopReason === "source_block" && input.isKilled?.()) stoppedByKillSwitch = true;
         } else {
           const message = error instanceof Error ? error.message : String(error);
           current = failPartition(current, message);
