@@ -30,7 +30,6 @@ jobs:
     env:
       DATABASE_PROVIDER: sqlite
       SEARCH_PROVIDER: database
-      AKARFINDER_SQLITE_PATH: ${{ runner.temp }}/lot7-visual.db
       ODM_PUBLIC_CANARY_ENABLED: "false"
       ODM_PUBLIC_CANARY_APPROVED: "false"
       ODM_PUBLIC_CANARY_PERCENT: "0"
@@ -41,6 +40,8 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      - name: Configure isolated Lot 7 SQLite path
+        run: echo "AKARFINDER_SQLITE_PATH=$RUNNER_TEMP/lot7-visual.db" >> "$GITHUB_ENV"
       - run: npm ci
       - name: Validate Lot 7 public API routing on isolated SQLite sandbox
         run: node --import tsx --test scripts/scrapers/__tests__/data-ingestion-lot7-api-routing.test.ts
