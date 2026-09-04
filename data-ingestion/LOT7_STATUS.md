@@ -1,6 +1,6 @@
 # Lot 7 Status
 
-**Status: 🟡 OPEN — Phase 7A CLOSED; real AkarFinder read path / ranking / lifecycle / API-UI proof remain**
+**Status: 🟡 OPEN — functional gates GREEN; final browser visual proof pending**
 
 ## Goal
 
@@ -18,89 +18,44 @@ Interdictions inchangées :
 
 Toutes les DB Lot 7 sont créées dans un répertoire temporaire et supprimables sans effet collatéral.
 
-## Upstream prerequisite
+## Functional proof status
 
-Lot 1 re-certification : **GREEN**.
+Les gates Lot 7 fonctionnels sont validés sur la branche :
 
-- workflow : `Data Ingestion Lot 1 Contract Gate`
-- run ID : `33814112348`
-- résultat : `success`
-- transaction absente : fail-closed ;
-- `agency_direct` conservé comme provenance distincte.
+- sandbox 20 / 100 / 1 000 ;
+- real SQLite read path ;
+- ranking ;
+- lifecycle ;
+- API routing ;
+- Search page contract.
 
-## Phase 7A — isolated sandbox store
+La purge source est désormais explicite via `source_type='portal'` et ne repose plus sur `origin_type='unknown'`. Les sources directes et partenaires restent distinctes et protégées.
 
-**Status: ✅ CLOSED**
+## Final browser proof
 
-Implémenté :
+**Status: ⏳ PENDING**
 
-- `data-ingestion/sandbox-store.ts`
-- import `CanonicalPropertyV1` ;
-- clé idempotente `source_name + source_id` ;
-- filtres ville / type / transaction / prix / surface ;
-- détail par ID ;
-- pagination ;
-- purge source portail ;
-- témoin `agency_direct` protégé ;
-- SQLite temporaire uniquement.
+La preuve finale doit venir d'un vrai Chromium headless lancé contre la vraie page `/search`, alimentée par une SQLite Lot 7 isolée.
 
-### Preuves autoritatives
+Le job existant `Data Ingestion Lot 7 API Routing Gate / api-routing` porte désormais directement les étapes suivantes :
 
-#### Palier 20
+1. validation API routing ;
+2. installation Chromium Playwright ;
+3. seed SQLite Lot 7 isolée ;
+4. lancement local AkarFinder ;
+5. capture réelle de `/search` ;
+6. screenshots desktop 1440 et mobile 390 ;
+7. upload de l'artefact `lot7-search-visual-proof`.
 
-- workflow : `Data Ingestion Lot 7 Sandbox Gate`
-- run : `33816613177`
-- conclusion : **success**
-- 20 Mubawab + 1 témoin direct ;
-- re-import idempotent ;
-- purge Mubawab sélective.
+## Closure rule
 
-#### Palier 100
+Lot 7 ne sera **CLOSED** qu'après :
 
-- workflow : `Data Ingestion Lot 7 Sandbox 100 Gate`
-- run : `33816499499`
-- conclusion : **success**
-- 100 Mubawab + 1 témoin direct ;
-- 50 Casablanca / 50 Rabat ;
-- 50 sale / 50 rent ;
-- filtres + pagination + idempotence + purge sélective.
-
-#### Palier 1 000
-
-- workflow : `Data Ingestion Lot 7 Sandbox 1000 Gate`
-- run : `33816613319`
-- conclusion : **success**
-- 1 000 Mubawab + 1 témoin direct ;
-- pagination profonde ;
-- idempotence ;
-- purge Mubawab sélective ;
-- témoin direct intact.
-
-## Phase 7B — real AkarFinder SQLite read path
-
-**Status: 🟡 OPEN**
-
-Risque identifié : les preuves 7A utilisaient le helper `Lot7SandboxStore.query()` et ne prouvaient donc pas encore le lecteur réel AkarFinder.
-
-Correction engagée :
-
-- schéma sandbox aligné avec les attentes de `lib/listings/db-listings.ts`, notamment `data_completeness_score` ;
-- test `scripts/scrapers/__tests__/data-ingestion-lot7-real-read-path.test.ts` ;
-- le test importe via le store puis lit via les fonctions réelles `queryDbListings()` et `getDbListingById()` ;
-- gate dédié `.github/workflows/data-ingestion-lot7-real-read-path.yml`.
-
-## Remaining Lot 7 proof
-
-Après 7B, il restera à démontrer sur environnement isolé :
-
-1. ranking AkarFinder sur les données sandbox ;
-2. désactivation/lifecycle dans le store sandbox ;
-3. API AkarFinder branchée au dataset isolé ;
-4. validation UI/recherche/filtres/détail ;
-5. provenance et purge visibles de bout en bout.
-
-Lot 7 ne sera CLOSED qu'après ces preuves, même si le simple volume 20 → 100 → 1 000 est déjà validé.
+- run `api-routing` final GREEN avec les étapes navigateur ;
+- artefact `lot7-search-visual-proof` récupéré ;
+- inspection des deux PNG ;
+- aucune écriture production / historique.
 
 ## Next exact
 
-Obtenir le GREEN de `Data Ingestion Lot 7 Real Read Path Gate`, puis brancher le ranking réel AkarFinder sur le même dataset sandbox.
+Attendre le run déclenché par cette mise à jour `data-ingestion/**`, inspecter le job `api-routing`, puis récupérer et vérifier l'artefact visuel.
