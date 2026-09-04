@@ -1,6 +1,7 @@
 import { mkdir } from "node:fs/promises";
 import { chromium } from "playwright";
 
+// Real-browser proof only: no mocked page, no production deployment.
 const baseUrl = process.env.LOT7_VISUAL_BASE_URL || "http://127.0.0.1:3000";
 const outDir = process.env.LOT7_VISUAL_OUTPUT || "artifacts/lot7-visual";
 await mkdir(outDir, { recursive: true });
