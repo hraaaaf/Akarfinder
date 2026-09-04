@@ -245,7 +245,7 @@ export function extractMubawabCollectionListing(url: string, html: string, now =
     property_type: propertyType,
     title,
     description,
-    price: { amount: priceAmount, currency: "MAD", period: transaction === "rent" ? "month" : transaction === "sale" ? "total" : null, on_request: onRequest || priceAmount == null },
+    price: { amount: priceAmount, currency: "MAD", period: transaction === "rent" ? "month" : transaction === "sale" ? "total" : "unknown", on_request: onRequest || priceAmount == null },
     surface: { total_m2: totalSurface, habitable_m2: null, built_m2: detail.built_surface_m2 ?? null, land_m2: detail.plot_surface_m2 ?? null },
     rooms: detail.rooms,
     bedrooms: detail.bedrooms,
