@@ -1,13 +1,6 @@
 name: Data Ingestion Lot 9 Live Wave
 
 on:
-  pull_request:
-    paths:
-      - "scripts/mubawab-full-coverage-live-wave.ts"
-      - "data-ingestion/sources/mubawab/full-coverage.ts"
-      - "data-ingestion/sources/mubawab/full-coverage-runner.ts"
-      - "scripts/scrapers/utils/fetch-html.ts"
-      - ".github/workflows/data-ingestion-lot9-live-wave.yml"
   workflow_dispatch:
 
 permissions:
