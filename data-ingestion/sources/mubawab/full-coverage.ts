@@ -26,6 +26,7 @@ export type FullCoveragePartition = FullCoverageScope & {
 };
 
 const DEFAULT_PAGE_WINDOW = 25;
+const RETRYABLE_PARTITION_ERROR = /(?:HTTP\s+5\d\d\b|ECONNRESET|ETIMEDOUT|EAI_AGAIN|fetch failed|socket hang up)/i;
 
 function positiveInteger(value: number, field: string): number {
   if (!Number.isInteger(value) || value <= 0) throw new Error(`lot9_invalid_${field}:${value}`);
@@ -133,6 +134,30 @@ export function failPartition(partition: FullCoveragePartition, error: string): 
   if (partition.status !== "running") throw new Error(`lot9_partition_not_running:${partition.partition_id}:${partition.status}`);
   if (!error.trim()) throw new Error(`lot9_empty_partition_error:${partition.partition_id}`);
   return { ...partition, status: "failed", errors: [...partition.errors, error] };
+}
+
+export function isRetryablePartitionError(error: string): boolean {
+  return RETRYABLE_PARTITION_ERROR.test(error);
+}
+
+export function requeueRetryableFailedPartitions(
+  partitions: FullCoveragePartition[],
+  maxAttempts = 3,
+): FullCoveragePartition[] {
+  positiveInteger(maxAttempts, "retry_max_attempts");
+  return partitions.map((partition) => {
+    if (partition.status !== "failed") return { ...partition, errors: [...partition.errors] };
+    const lastError = partition.errors.at(-1) ?? "";
+    if (!isRetryablePartitionError(lastError) || partition.errors.length >= maxAttempts) {
+      return { ...partition, errors: [...partition.errors] };
+    }
+    return {
+      ...partition,
+      status: "pending",
+      stop_reason: null,
+      errors: [...partition.errors],
+    };
+  });
 }
 
 export function nextFullCoveragePartition(
