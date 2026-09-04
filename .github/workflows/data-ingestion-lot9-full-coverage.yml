@@ -8,10 +8,12 @@ on:
       - "data-ingestion/sources/mubawab/full-coverage.ts"
       - "data-ingestion/sources/mubawab/full-coverage-runner.ts"
       - "data-ingestion/sources/mubawab/full-coverage-state.ts"
+      - "data-ingestion/sources/mubawab/full-coverage-campaign.ts"
       - "scripts/scrapers/__tests__/mubawab-discovery-v2.test.ts"
       - "scripts/scrapers/__tests__/data-ingestion-lot9-full-coverage-planner.test.ts"
       - "scripts/scrapers/__tests__/data-ingestion-lot9-full-coverage-runner.test.ts"
       - "scripts/scrapers/__tests__/data-ingestion-lot9-full-coverage-state.test.ts"
+      - "scripts/scrapers/__tests__/data-ingestion-lot9-full-coverage-campaign.test.ts"
       - ".github/workflows/data-ingestion-lot9-full-coverage.yml"
   workflow_dispatch:
 
@@ -37,3 +39,5 @@ jobs:
         run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-full-coverage-runner.test.ts
       - name: Prove Lot 9 persistent state across waves
         run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-full-coverage-state.test.ts
+      - name: Prove Lot 9 bounded campaign checkpoints
+        run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-full-coverage-campaign.test.ts
