@@ -1,0 +1,26 @@
+name: Data Ingestion Lot 9 Isolated Proof macOS
+
+on:
+  push:
+    branches:
+      - "ci/lot9-proof-ea9fb3f"
+
+permissions:
+  contents: read
+
+jobs:
+  lot9-isolated-proof-macos:
+    runs-on: macos-14
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx tsx --test scripts/scrapers/__tests__/mubawab-discovery-v2.test.ts
+      - run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-full-coverage-planner.test.ts
+      - run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-full-coverage-runner.test.ts
+      - run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-full-coverage-state.test.ts
+      - run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-full-coverage-campaign.test.ts
