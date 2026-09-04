@@ -11,6 +11,7 @@ const html = `
 <a href="/fr/t/casablanca">Casa</a>
 <a href="/fr/st/tetouan/appartements-a-vendre">Tetouan apartments</a>
 <a href="/fr/ct/rabat/immobilier-a-vendre">Rabat sale</a>
+<a href="/fr/crp/rabat-sale-zemmour-zaer/prefecture-de-rabat/immobilier-a-vendre">Rabat hierarchy</a>
 <a href="/fr/sc/locaux-a-vendre">Commercial</a>
 <a href="/fr/cc/immobilier-a-louer">All rent</a>
 <a href="/fr/pl/cite-ennasr/listing-promotion">Projects</a>
@@ -18,10 +19,11 @@ const html = `
 `;
 
 describe("Lot 9 Phase 0 dimension discovery", () => {
-  it("extracts route families, geographies and category slugs from public Mubawab links", () => {
+  it("extracts route families, flat and hierarchical geographies and category slugs", () => {
     const result = extractCoverageDimensions(html, "https://www.mubawab.ma/fr");
-    assert.deepEqual(result.route_families, ["cc", "ct", "pl", "sc", "st", "t"]);
+    assert.deepEqual(result.route_families, ["cc", "crp", "ct", "pl", "sc", "st", "t"]);
     assert.deepEqual(result.geographies, ["casablanca", "rabat", "tetouan"]);
+    assert.deepEqual(result.hierarchical_geography_paths, ["rabat-sale-zemmour-zaer/prefecture-de-rabat"]);
     assert(result.category_slugs.includes("appartements-a-vendre"));
     assert(result.category_slugs.includes("immobilier-a-vendre"));
     assert(result.category_slugs.includes("locaux-a-vendre"));
@@ -38,6 +40,7 @@ describe("Lot 9 Phase 0 dimension discovery", () => {
       configuredCategorySlugs: ["appartements-a-vendre", "riads-a-vendre"],
     });
     assert.deepEqual(gap.missing_geographies, ["essaouira", "tetouan"]);
+    assert.deepEqual(gap.hierarchical_geography_paths, ["rabat-sale-zemmour-zaer/prefecture-de-rabat"]);
     assert(gap.unconfigured_category_slugs.includes("immobilier-a-vendre"));
     assert(gap.unconfigured_category_slugs.includes("locaux-a-vendre"));
   });
