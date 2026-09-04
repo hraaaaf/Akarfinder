@@ -99,6 +99,7 @@ describe("Lot 7 isolated SQLite sandbox — 100 listings", () => {
 
       const first = store.query({ limit: 1 })[0];
       assert.ok(first);
+      assert.equal(first.source_type, "portal");
       assert.equal(store.getById(first.id)?.property_id, first.property_id);
 
       const purged = store.purgePortalSource("mubawab");
@@ -110,6 +111,7 @@ describe("Lot 7 isolated SQLite sandbox — 100 listings", () => {
       assert.equal(survivor.length, 1);
       assert.equal(survivor[0].source_name, "akar-direct");
       assert.equal(survivor[0].origin_type, "agency_direct");
+      assert.equal(survivor[0].source_type, "agency_direct");
     } finally {
       store.close();
       rmSync(dir, { recursive: true, force: true });
