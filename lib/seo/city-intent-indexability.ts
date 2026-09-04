@@ -2,6 +2,8 @@ import { getSeoInventoryEligibility } from "@/lib/seo/eligibility-read-model";
 import type { SeoEligibilityDecision } from "@/lib/seo/eligibility";
 import type { SearchIntent } from "@/lib/seo-city-pages/types";
 
+type SeoEligibilityLoader = typeof getSeoInventoryEligibility;
+
 export type SeoCityIntentIndexability = SeoEligibilityDecision & {
   city: string;
   intent: SearchIntent;
@@ -10,8 +12,9 @@ export type SeoCityIntentIndexability = SeoEligibilityDecision & {
 export async function getSeoCityIntentIndexability(
   city: string,
   intent: SearchIntent,
+  loadEligibility: SeoEligibilityLoader = getSeoInventoryEligibility,
 ): Promise<SeoCityIntentIndexability> {
-  const decision = await getSeoInventoryEligibility({ city, intent });
+  const decision = await loadEligibility({ city, intent });
 
   return {
     ...decision,
