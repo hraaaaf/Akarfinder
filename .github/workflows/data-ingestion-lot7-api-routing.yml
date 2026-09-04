@@ -10,6 +10,17 @@ on:
       - "scripts/lot7-visual-*"
       - "scripts/scrapers/__tests__/data-ingestion-lot7-api-routing.test.ts"
       - ".github/workflows/data-ingestion-lot7-api-routing.yml"
+  push:
+    branches:
+      - "feat/data-ingestion-canonical"
+    paths:
+      - "data-ingestion/**"
+      - "lib/listings/**"
+      - "lib/odm/**"
+      - "lib/search-gateway/**"
+      - "scripts/lot7-visual-*"
+      - "scripts/scrapers/__tests__/data-ingestion-lot7-api-routing.test.ts"
+      - ".github/workflows/data-ingestion-lot7-api-routing.yml"
   workflow_dispatch:
 
 jobs:
