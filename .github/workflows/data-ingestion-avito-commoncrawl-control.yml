@@ -1,0 +1,29 @@
+name: Data Ingestion Avito Common Crawl Control
+
+on:
+  push:
+    paths:
+      - "scripts/scrapers/avito-commoncrawl-control-probe.mjs"
+      - "data-ingestion/sources/avito/evidence/kaynly-avito-sample-2026-09-04.json"
+      - ".github/workflows/data-ingestion-avito-commoncrawl-control.yml"
+  workflow_dispatch:
+
+# Bounded public-index lookup only. This workflow never requests Avito directly.
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Query bounded Common Crawl control sample
+        run: node scripts/scrapers/avito-commoncrawl-control-probe.mjs
+      - name: Upload Common Crawl overlap proof
+        uses: actions/upload-artifact@v4
+        with:
+          name: avito-commoncrawl-control-proof
+          path: data-ingestion/runs/avito/commoncrawl-control-probe/report.json
+          if-no-files-found: error
+          retention-days: 14
