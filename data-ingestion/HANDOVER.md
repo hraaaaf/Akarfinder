@@ -6,26 +6,34 @@ Date: 2026-09-04
 
 Lire dans cet ordre :
 
-1. `data-ingestion/canonical.md` — architecture / roadmap canonique ;
+1. `data-ingestion/canonical.md` — architecture + roadmap canonique actuelle ;
 2. `data-ingestion/HANDOVER.md` — état opérationnel courant ;
-3. `data-ingestion/LOT8_STATUS.md` — closeout détaillé Lot 8 ;
-4. `data-ingestion/LOT7_STATUS.md` — closeout détaillé Lot 7 ;
-5. `AKARFINDER_SEARCH_PROPERTY_TYPE_VISUALS_CANONICAL.md` — canonique visuel Search par type de bien.
+3. `data-ingestion/LOT9_STATUS.md` — chantier courant ;
+4. `data-ingestion/LOT8_STATUS.md` — closeout Lot 8 ;
+5. `data-ingestion/LOT7_STATUS.md` — closeout Lot 7 ;
+6. `AKARFINDER_SEARCH_PROPERTY_TYPE_VISUALS_CANONICAL.md` — canonique visuel Search.
 
-Certaines lignes de statut historiques de `data-ingestion/canonical.md` peuvent être anciennes. Pour l’état opérationnel courant, ce HANDOVER + les fichiers `LOT*_STATUS.md` font foi.
+## Goal produit actuel
 
-## Canonique visuel verrouillé
+Atteindre puis maintenir **≥ 100 000 annonces canoniques exploitables** dans AkarFinder.
 
-Pour tout rendu Search sans photo / `public_indexed` :
+Le seuil 100K se mesure après normalisation / déduplication, jamais sur le volume brut découvert.
 
-- Appartement : bleu azur ;
-- Villa : vert émeraude ;
-- Terrain : orange terre ;
-- Bureau : violet ;
-- Local commercial : turquoise ;
-- Riad : or chaleureux.
+Ordre stratégique verrouillé :
 
-Le système visuel de référence reste celui certifié dans `AKARFINDER_SEARCH_PROPERTY_TYPE_VISUALS_CANONICAL.md`.
+```text
+Lots 1–8 CLOSED
+      ↓
+Lot 9  — Mubawab Full Coverage
+      ↓
+Lot 10 — Massive Dataset Certification
+      ↓
+Lot 11 — Massive AkarFinder Ingestion
+      ↓
+Lot 12 — Multi-source jusqu’à ≥100K
+```
+
+On ne passe pas prématurément à un second portail avant d’avoir mesuré le stock réel de la source pilote, sauf blocage documenté.
 
 ## Repo / branche / PR
 
@@ -33,142 +41,135 @@ Le système visuel de référence reste celui certifié dans `AKARFINDER_SEARCH_
 - Branche : `feat/data-ingestion-canonical`
 - PR : `#996`
 - PR : OPEN / DRAFT / non mergée
-- Aucun déploiement Vercel autorisé dans ce chantier
-- Aucun write production autorisé
-- Ne jamais toucher à la SQLite historique `scripts/scrapers/output/akarfinder.db`
+- aucun merge sans autorisation explicite ;
+- aucun déploiement Vercel sans autorisation explicite ;
+- aucun write production autorisé ;
+- ne jamais toucher à `scripts/scrapers/output/akarfinder.db` pendant les preuves.
 
 ## Architecture verrouillée
 
-Pipeline :
+```text
+Discovery
+→ extraction
+→ Collection Listing Contract
+→ validation
+→ adapter
+→ CanonicalPropertyV1 / CanonicalOfferV1 / MediaAssetV1
+→ déduplication / lifecycle / provenance
+→ ingestion contrôlée AkarFinder
+```
 
-`Discovery → extraction → Collection Listing Contract → validation → adapter → CanonicalPropertyV1 / CanonicalOfferV1 / MediaAssetV1 → ingestion contrôlée AkarFinder`
+Le modèle canonique applicatif reste `lib/property-schema/`.
 
-Les données portail et les données directes/partenaires restent indépendantes.
+`data-ingestion/schema/listing.schema.json` reste uniquement le Collection/Input Contract.
 
-Une purge Mubawab ne doit jamais supprimer une annonce `agency_direct` ou `partner_feed` représentant le même bien.
+Les données portail et les données directes / partenaires sont indépendantes.
 
-`data-ingestion/schema/listing.schema.json` est le Collection/Input Contract, pas un second modèle canonique applicatif.
+Une purge Mubawab ne doit jamais supprimer une annonce `agency_direct`, `partner_feed`, `owner_direct` ou autre provenance indépendante représentant éventuellement le même bien.
 
 ## Lots — état courant
 
-- Lot 1 : GREEN
-- Lot 2 : CLOSED
-- Lot 3 : CLOSED
-- Lot 4 : CLOSED
-- Lot 5 : CLOSED
-- Lot 6 : CLOSED pour crawl/transaction ; mismatch taxonomique historique séparé
-- Lot 7 : ✅ CLOSED — functional + browser visual proof complete
+- Lot 1 : ✅ CLOSED
+- Lot 2 : ✅ CLOSED
+- Lot 3 : ✅ CLOSED
+- Lot 4 : ✅ CLOSED
+- Lot 5 : ✅ CLOSED
+- Lot 6 : ✅ CLOSED pour crawl / transaction ; mismatch taxonomique historique séparé
+- Lot 7 : ✅ CLOSED — functional + browser visual proof
 - Lot 8 : ✅ CLOSED — controlled massive ingestion proof GREEN
-- Lot 9 : 🟡 NEXT — industrialisation multi-source
+- Lot 9 : 🟡 OPEN — Mubawab Full Coverage
+- Lot 10 : ⚪ À FAIRE
+- Lot 11 : ⚪ À FAIRE
+- Lot 12 : ⚪ À FAIRE
 
-## Lot 7 — closeout final
-
-Les gates principaux ont prouvé :
-
-- sandbox 20 / 100 / 1000 ;
-- vraie lecture SQLite AkarFinder ;
-- ranking ;
-- lifecycle ;
-- API routing ;
-- SSR Search / Search page contract ;
-- idempotence ;
-- deactivation ;
-- purge source ;
-- survie direct/partner.
-
-La purge est explicitement bornée par `source_type='portal'`. `origin_type='unknown'` n’est plus utilisé comme proxy de portail.
-
-### Preuve navigateur finale
-
-La preuve corrigée qui fait foi est :
+## Lot 7 — preuve de référence
 
 - workflow : `Data Ingestion Lot 7 Visual Proof` ;
 - run : `33877438332` ✅ SUCCESS ;
-- HEAD produit prouvé : `10ecf3b36afdcbf68b84857ddc8f153cd3ab2610` ;
+- HEAD produit : `10ecf3b36afdcbf68b84857ddc8f153cd3ab2610` ;
 - artifact : `9938461473` ;
 - digest : `sha256:08b2c8f3679c22e4c3c02075b29d1f26276b460664aac7c0832ccd7da9746ee9`.
 
-Comparaison au canonique visuel : **CONFORME**.
+Canonique visuel Search conforme.
 
-Le trigger `push` temporaire du workflow visual-proof a été supprimé ; le workflow conserve `pull_request` + `workflow_dispatch` uniquement.
-
-## Lot 8 — CLOSED
-
-Goal canonique : rendre possible une ingestion large depuis un dataset validé avec rollback et contrôle opérationnel.
-
-Implémentation bornée à une SQLite isolée dans le répertoire temporaire de l’OS :
-
-- `data-ingestion/controlled-ingestion.ts` ;
-- `scripts/scrapers/__tests__/data-ingestion-lot8-controlled-massive.test.ts` ;
-- `.github/workflows/data-ingestion-lot8-controlled-massive.yml` ;
-- `data-ingestion/LOT8_STATUS.md`.
-
-Capacités prouvées :
-
-- ingestion par batch ;
-- métriques inserted/updated/batchs commités ;
-- idempotence ;
-- checkpoint `next_batch` ;
-- reprise déterministe via `startBatch` ;
-- kill-switch entre batchs ;
-- rollback du batch courant via snapshot pré-batch ;
-- purge source sélective ;
-- survie des sources `agency_direct` / `partner_feed` ;
-- refus de toute SQLite hors répertoire temporaire.
-
-### Preuve finale Lot 8
+## Lot 8 — preuve de référence
 
 - workflow : `Data Ingestion Lot 8 Controlled Massive Gate` ;
 - run : `33879281908` ✅ SUCCESS ;
-- HEAD exact prouvé : `979c7f57e46f5eb39c6d0a552fe78b635185e634` ;
+- HEAD produit : `979c7f57e46f5eb39c6d0a552fe78b635185e634` ;
 - job : `controlled-massive` ;
-- job id : `101043688350`.
+- job id : `101043688350` ;
+- régression Lot 7 : 1/1 GREEN ;
+- Lot 8 : 4/4 GREEN.
 
-Régression Lot 7 : 1/1 GREEN.
+Prouvé : 2 500 annonces, batching, idempotence, checkpoint / reprise, rollback mid-batch, purge portail sélective, protection direct/partner, SQLite sandbox uniquement.
 
-Lot 8 : 4/4 GREEN, couvrant :
+## Lot 9 — chantier courant
 
-- 2 500 annonces ;
-- batching ;
-- ré-ingestion idempotente ;
-- stop/resume par checkpoint ;
-- rollback après erreur mid-batch ;
-- purge `portal` sélective ;
-- protection `agency_direct` / `partner_feed` ;
-- refus d’un chemin SQLite non isolé.
+**Goal :** parcourir exhaustivement le périmètre Mubawab accessible et autorisé afin de mesurer le stock canonique réel avant d’ouvrir une deuxième source.
 
-**Décision : Lot 8 CLOSED sur le scope sandbox / ingestion contrôlée.**
+Le nouveau canonique a été aligné sur ce cap au commit :
 
-Cette fermeture n’autorise aucun write production, merge ou déploiement.
+`6912915f4f6a5eb96ae3552f15c30397a2156c55`
 
-## Lot 9 — chantier suivant
+### Étape 1 — Full Coverage planner
 
-Goal canonique : réutiliser le moteur pour une seconde source sans réécrire le cœur AkarFinder.
+Fichiers :
 
-Architecture cible :
+- `data-ingestion/sources/mubawab/full-coverage.ts` ;
+- `scripts/scrapers/__tests__/data-ingestion-lot9-full-coverage-planner.test.ts` ;
+- `.github/workflows/data-ingestion-lot9-full-coverage.yml` ;
+- `data-ingestion/LOT9_STATUS.md`.
 
-`MubawabAdapter / SecondSourceAdapter / AgencyFeedAdapter / PartnerFeedAdapter → CanonicalListing → AkarFinder ingestion pipeline`
+La config actuelle produit :
 
-Le critère déterminant est architectural : une seconde source doit produire un objet canonique valide puis traverser le même pipeline existant, sans branche spécifique injectée dans le cœur de recherche ou d’ingestion.
+- 12 villes ;
+- 11 catégories activées ;
+- **132 scopes** initiaux `ville × catégorie`.
 
-## Sécurité inchangée
+Le scheduler découpe chaque scope en fenêtres de pages :
 
-- pas de merge sans autorisation explicite ;
-- pas de Vercel sans autorisation explicite ;
-- pas de prod DB write ;
-- sandbox SQLite uniquement ;
-- CI en cours ne bloque pas les autres actions sûres ;
-- toute capture présentée comme preuve doit venir du vrai navigateur Playwright, jamais d’un mockup.
+```text
+1–25 → 26–50 → 51–75 → ...
+```
+
+La fenêtre suivante n’existe que si la précédente est terminée avec `window_exhausted`.
+
+Un scope s’arrête sur `zero_new_unique_ids` ou sur un signal de sécurité explicite.
+
+Chaque partition possède un ID stable, statut, checkpoint, compteurs et erreurs.
+
+### Gate planner
+
+- workflow : `Data Ingestion Lot 9 Full Coverage Planner Gate` ;
+- run initial : `33881976620` ;
+- état au moment de ce handover : en cours / preuve non encore enregistrée comme GREEN.
+
+Le gate exécute :
+
+1. régression Discovery Mubawab ;
+2. contrat du scheduler Lot 9.
+
+### Sécurité live héritée du Lot 6
+
+Toute future collecte :
+
+- passe par contrôle robots ;
+- stoppe sur blocage explicite 403 / 429 ;
+- n’essaie jamais de contourner CAPTCHA, authentification ou contrôle d’accès ;
+- reste hors production ;
+- produit manifests / checkpoints reproductibles.
 
 ## NEXT EXACT
 
-1. Ouvrir le Lot 9 comme chantier multi-source.
-2. Choisir une seconde source de preuve qui minimise le risque légal/opérationnel et maximise la valeur architecturale.
-3. Implémenter uniquement les briques spécifiques à cette source : Discovery / Extractor / mapping / fixtures / fraîcheur-purge.
-4. Faire passer cette seconde source dans le même Collection Contract, le même adapter canonique et la même ingestion contrôlée.
-5. Prouver qu’aucune modification structurelle du cœur canonique n’est nécessaire.
-6. Garder PR `#996` OPEN / DRAFT / non mergée et ne rien déployer sans autorisation explicite.
+1. vérifier le verdict du run `33881976620` ;
+2. si rouge, corriger uniquement la cause exacte ;
+3. si vert, enregistrer la preuve du planner dans `LOT9_STATUS.md` ;
+4. construire le runner Full Coverage reprenable en réutilisant les garde-fous Lot 6 ;
+5. lancer d’abord une vague limitée de partitions ;
+6. mesurer couverture / doublons / erreurs / stock unique ;
+7. étendre progressivement jusqu’au manifest Full Coverage final ;
+8. garder PR `#996` OPEN / DRAFT / non mergée et ne rien déployer sans autorisation explicite.
 
-**Handover Lot 7 : CLOSED ✅**
-**Handover Lot 8 : CLOSED ✅**
-**Lot 9 : NEXT 🟡**
+**Lots 1–8 : CLOSED ✅**
+**Lot 9 : OPEN — Full Coverage planner proof pending 🟡**
