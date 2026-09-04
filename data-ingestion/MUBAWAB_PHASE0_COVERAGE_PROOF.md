@@ -58,9 +58,9 @@ These numbers are evidence, not the Phase 0 target.
 
 | Gate | Goal | Status | Closure proof |
 |---|---|---:|---|
-| P0-A Route families | identify every inventory-bearing public route family | 🟡 | route-family registry + evidence |
+| P0-A Route families | identify every inventory-bearing public route family | 🟡 | route-family registry + live qualification |
 | P0-B Dimensions | enumerate transaction/type/geography/product dimensions | 🟡 | dimension registry + gap report |
-| P0-C Reachability | prove control-surface IDs are explained by harvest surfaces | ⚪ | sampled ID reachability matrix |
+| P0-C Reachability | prove control-surface IDs are explained by harvest surfaces | 🟡 | sampled ID reachability matrix; residuals still unexplained |
 | P0-D Pagination | prove paging and terminal semantics for each harvest class | 🟡 | tests + live bounded evidence |
 | P0-E Denominator | reconcile ~102.5K into explainable buckets | ⚪ | denominator reconciliation report |
 
@@ -68,131 +68,148 @@ These numbers are evidence, not the Phase 0 target.
 
 ---
 
-## 4. Route-family registry V0
+## 4. Route-family registry V1
 
-| Family | Observed semantic role | Initial classification | Known example | P0 decision |
-|---|---|---|---|---|
-| `st` | city × category listing surface | primary candidate | `/fr/st/casablanca/appartements-a-vendre` | already used, inventory incomplete globally |
-| `sc` | national category listing surface | primary candidate | `/fr/sc/appartements-a-vendre` | confirmed inventory-bearing |
-| `cc` | broad national aggregate | control/diagnostic candidate | `/fr/cc/immobilier-a-louer` | must detect residual IDs |
-| `t` | city aggregate | control/geography discovery candidate | `/fr/t/casablanca` | confirmed public inventory surface |
-| `pl` | new-development/project catalogue | project/non-unit until proven otherwise | `/fr/pl/cité-ennasr/listing-promotion` | separate denominator bucket required |
-| vacation `st` | city/type vacation inventory | primary candidate, distinct transaction | `/fr/st/rabat/appartements-vacational` | not covered by classic matrix |
-| detail `a` / `pa` | listing detail identity | not a discovery surface | `/fr/a/<id>/...`, `/fr/pa/<id>/...` | identity only during Phase 0 |
+| Family | Role in Phase 0 | Inventory-bearing | Decision |
+|---|---|---:|---|
+| `st` | primary harvest | yes | city × category |
+| `sc` | primary harvest | yes | national category |
+| vacation `st` | primary harvest | yes | distinct vacation transaction family |
+| `cc` | control | yes | national broad aggregate / residual detector |
+| `t` | control | yes | city aggregate / geography detector |
+| `ct` | control pending qualification | yes | city × transaction aggregate; cannot yet be treated as redundant |
+| `is` | control pending qualification | yes | thematic/search-like inventory surface; cannot yet be treated as redundant |
+| `pl` | project/non-unit bucket | yes | new-development catalogue, separate denominator bucket |
+| detail `a` / `pa` | identity only | no discovery role | listing identity only during Phase 0 |
 
-### Current evidence
+### Important correction
 
-- `/fr/t/casablanca` publicly exposes an aggregate Casablanca catalogue with a visible result counter.
-- `/fr/pl/cité-ennasr/listing-promotion` publicly exposes 225 projects over 11 pages.
-- the Mubawab home explicitly separates `Vente`, `Location`, `Loc. vacances` and `Immobilier Neuf`.
+The first dimension probe discovered two public route families missing from the V0 registry:
 
-### P0-A open questions
+- `ct`
+- `is`
 
-1. Are there additional inventory-bearing route families beyond `st`, `sc`, `cc`, `t`, vacation and `pl`?
-2. Are language variants merely aliases or can they expose inventory absent from `/fr`?
-3. Are there geography aggregate routes below city level that expose distinct inventory?
-4. Does `pa` represent ordinary listing identity, project-unit identity, or a mixture requiring separate treatment?
+They are now explicitly represented and tested. Neither is promoted to primary harvest yet.
 
 ---
 
-## 5. Dimension registry V0
+## 5. Dimension discovery proof
 
-### Transactions
+Run `33908825931` ✅ SUCCESS.
 
-- sale
-- long-term rent
-- vacation rent
-- new-development/project catalogue as separate product dimension until reconciled
+Artifact:
 
-### Property families already known
+- id `9950573019`;
+- digest `sha256:3cb3720c97e89018d98966a09582593500e12fc57988b19878e20b5acb688256`.
 
-- apartment
-- land
-- villa/luxury house
-- house
-- commercial premises
-- office/commercial aggregate
-- riad
+Bounded probe:
 
-### Geography
+- 8 public requests;
+- robots checked;
+- 0 detail pages;
+- 0 DB writes;
+- 0 production writes;
+- 0 image downloads.
 
-Classic matrix covered only:
+Discovered route families:
 
-- Casablanca
-- Rabat
-- Marrakech
-- Tanger
-- Agadir
-- Fès
-- Kénitra
-- Mohammedia
-- Témara
-- Dar Bouazza
-- Bouskoura
-- Salé
+```text
+cc, ct, is, pl, sc, st, t
+```
 
-This list is explicitly **not exhaustive**.
+Confirmed missing geographies relative to the historical 12-city config:
 
-Public project/search evidence already exposes additional localities such as:
+```text
+dakhla
+essaouira
+martil
+meknes
+```
 
-- Meknès
-- Essaouira
-- Zenata
-- Asilah
-- Had Soualem
-- Ouislane
-- Harhoura
-- and others to be inventoried systematically.
+These are only the geographies surfaced by the deliberately small probe, not the final exhaustive geography vocabulary.
 
-### P0-B open questions
+Confirmed unconfigured route/category semantics:
 
-1. complete public city/locality vocabulary;
-2. which localities are aliases/children of larger cities vs independent inventory partitions;
-3. complete property-type vocabulary across sale/rent/vacation/new;
-4. whether office/commercial aggregate can be safely decomposed semantically;
-5. project vs unit semantics.
+```text
+appartements-vacational
+bureaux-et-commerces-a-louer
+bureaux-et-commerces-a-vendre
+immobilier-a-louer
+immobilier-a-vendre
+```
+
+The public project catalogue additionally exposes many localities that must be classified as unit-inventory geography vs project-only geography.
 
 ---
 
-## 6. Pagination proof status
+## 6. P0-C Reachability proof #1 — `ct` / `is`
+
+Run `33909710386` ✅ SUCCESS.
+
+Artifact:
+
+- id `9950937544`;
+- digest `sha256:6c5324bd6cf894ba3f9738ad9a4f78cca1af2155615d70f41292c42df2e6274a`.
+
+Safety:
+
+- 8 public page requests maximum;
+- delay 2,750 ms;
+- robots checked;
+- 0 detail pages;
+- 0 DB writes;
+- 0 production writes;
+- 0 image downloads.
+
+### Bounded comparison results
+
+| Control surface | IDs | Explained by bounded primary sample | Unexplained | Overlap | Verdict |
+|---|---:|---:|---:|---:|---|
+| `ct-casablanca-sale` | 31 | 26 | 5 | 83.9% | `inventory_bearing_residual` |
+| `ct-casablanca-rent` | 32 | 25 | 7 | 78.1% | `inventory_bearing_residual` |
+| `is-casablanca-sale-cheap` | 33 | 1 | 32 | 3.0% | `inventory_bearing_residual` |
+| `is-casablanca-rent-cheap` | 33 | 0 | 33 | 0% | `inventory_bearing_residual` |
+
+### Interpretation rule
+
+This probe was deliberately bounded. Therefore:
+
+```text
+unexplained in bounded sample
+≠
+proven globally unique to ct/is
+```
+
+But it DOES prove:
+
+```text
+ct/is cannot currently be dismissed as aliases/control-only surfaces
+```
+
+The `is` result is especially strong: the tested sale surface had 32/33 IDs unexplained by the bounded primary sample, and the tested rent surface had 33/33 unexplained.
+
+P0-C therefore remains **OPEN** until those residual IDs are classified against a broader, semantically complete primary surface set.
+
+---
+
+## 7. Pagination proof status
 
 Already demonstrated:
 
 - `st` supports `:p:N` pagination and deep resumable windows;
-- national office `sc` surfaces support `:p:N`;
+- national office `sc` supports `:p:N`;
 - office sale reached clean terminal behavior at page 24 (`zero_refs`);
 - persistent collector checkpoints after each page and preserves global source-ID union.
 
-Still to prove:
+Still to prove or classify:
 
 - `cc` terminal semantics;
 - `t` terminal semantics;
+- `ct` terminal semantics if it remains relevant;
+- `is` terminal semantics if it remains relevant;
 - vacation terminal semantics;
-- `pl` terminal semantics and whether its objects are units vs projects;
+- `pl` terminal semantics and project/unit meaning;
 - any newly discovered family.
-
----
-
-## 7. Reachability proof design
-
-For each broad control surface:
-
-1. sample listing IDs from early, middle and late pagination;
-2. test whether each ID is present in at least one candidate primary harvest surface;
-3. classify misses by missing dimension/route family;
-4. add newly discovered harvest surface if justified;
-5. repeat until control surfaces stop revealing unexplained categories/geographies.
-
-Core invariant:
-
-```text
-control ID
-→ known harvest surface
-OR
-→ documented new surface/dimension
-```
-
-If neither is true, P0-C FAILS.
 
 ---
 
@@ -211,47 +228,13 @@ unique accessible unit-listing IDs
 
 Current public counter anchor: ~102.5K.
 
-Current exact unit-ID union: 31,731.
+Current exact persistent unit-ID union: 31,731.
 
-The raw gap MUST NOT be interpreted yet as 70K missing unique listings because the public counter denominator is not certified.
-
-P0-E must quantify each bucket before Phase 0 closes.
+The raw delta MUST NOT yet be interpreted as ~70K missing unique listings because the public counter denominator is still uncertified.
 
 ---
 
-## 9. Phase 0 implementation roadmap
-
-### Step 0.1 — Route family registry
-
-- formalize registry in code;
-- attach semantic role and harvest/control/project classification;
-- tests prevent accidental assumption that aggregate counters are additive.
-
-### Step 0.2 — Dimension discovery
-
-- enumerate public cities/localities and categories from public navigation/listing surfaces;
-- compare with current config;
-- produce `missing_geographies` and `missing_semantics`.
-
-### Step 0.3 — Reachability sampler
-
-- implement bounded control-surface ID sampler;
-- compare sampled IDs against candidate harvest surface IDs;
-- record explained/unexplained IDs.
-
-### Step 0.4 — Pagination certification
-
-- bounded paging proof per route family;
-- verify terminal condition and checkpoint safety.
-
-### Step 0.5 — Denominator reconciliation
-
-- compare home/catalog counters with unique IDs and project/alias buckets;
-- refuse 100% claim while unexplained material remainder exists.
-
----
-
-## 10. No-harvest gate
+## 9. No-harvest gate
 
 Until Phase 0 PASS:
 
@@ -262,13 +245,14 @@ Until Phase 0 PASS:
 
 ---
 
-## 11. Next exact
+## 10. Next exact
 
-1. implement route-family registry V1 in code;
-2. test classification and denominator non-additivity;
-3. build public geography/category inventory collector with bounded requests;
-4. compare discovered dimensions against `config.json`;
-5. produce first `missing_geographies` / `missing_categories` report;
-6. then build the reachability sampler for `cc` and `t` control surfaces.
+1. expand the primary comparison set for the exact residual `ct/is` IDs using relevant `st/sc` categories, not only apartments/locals;
+2. classify each residual as `explained_by_primary`, `missing_semantic`, `missing_geography`, or `control_unique_candidate`;
+3. probe `cc` and `t` reachability with the same strict invariant;
+4. continue geography/category discovery until repeated public seeds stop producing new dimensions;
+5. certify pagination semantics for remaining relevant families;
+6. build P0-E denominator buckets;
+7. keep Full Harvest BLOCKED until P0-A..P0-E all PASS.
 
-**Phase 0 Coverage Proof: ACTIVE 🔵**
+**Phase 0 Coverage Proof: ACTIVE 🔵 — first reachability probe proves the current coverage model still has unexplained residual inventory.**
