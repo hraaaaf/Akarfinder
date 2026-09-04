@@ -104,7 +104,11 @@ describe("Lot 9 persistent Full Coverage state", () => {
       completedAt: "2026-09-04T15:00:04.000Z",
     }), /lot9_state_duplicate_wave/);
 
-    const regressed = { ...wave, seen_source_ids: [] };
+    const regressed = {
+      ...wave,
+      next_partitions: [],
+      seen_source_ids: [],
+    };
     assert.throws(() => applyFullCoverageWave(applied, regressed, {
       waveId: "guard-wave-2",
       startedAt: "2026-09-04T15:00:05.000Z",
