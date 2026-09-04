@@ -2,6 +2,7 @@ import { appendFile, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
 import { runFullCoverageCampaign } from "../data-ingestion/sources/mubawab/full-coverage-campaign.js";
+import { requeueRetryableFailedPartitions } from "../data-ingestion/sources/mubawab/full-coverage.js";
 import { resolveLiveCampaignPolicy } from "../data-ingestion/sources/mubawab/live-campaign-policy.js";
 import {
   createFullCoverageState,
@@ -31,7 +32,10 @@ async function loadOrCreateState(): Promise<FullCoveragePersistentState> {
     const state = JSON.parse(raw) as FullCoveragePersistentState;
     if (state.version !== 1 || state.source !== "mubawab") throw new Error("lot9_live_campaign_invalid_resume_state");
     if (state.page_window !== PAGE_WINDOW) throw new Error(`lot9_live_campaign_page_window_mismatch:${state.page_window}:${PAGE_WINDOW}`);
-    return state;
+    return {
+      ...state,
+      partitions: requeueRetryableFailedPartitions(state.partitions, 3),
+    };
   }
 
   await rm(OUTPUT_DIR, { recursive: true, force: true });
