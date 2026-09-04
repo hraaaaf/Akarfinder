@@ -16,9 +16,11 @@ on:
       - "data-ingestion/sources/mubawab/coverage-proof.ts"
       - "data-ingestion/sources/mubawab/coverage-dimensions.ts"
       - "data-ingestion/sources/mubawab/reachability-proof.ts"
+      - "data-ingestion/sources/mubawab/residual-classifier.ts"
       - "data-ingestion/MUBAWAB_PHASE0_COVERAGE_PROOF.md"
       - "scripts/mubawab-phase0-dimension-probe.ts"
       - "scripts/mubawab-phase0-reachability-probe.ts"
+      - "scripts/mubawab-phase0-residual-classifier.ts"
       - "scripts/scrapers/__tests__/mubawab-discovery-v2.test.ts"
       - "scripts/scrapers/__tests__/data-ingestion-lot9-full-coverage-planner.test.ts"
       - "scripts/scrapers/__tests__/data-ingestion-lot9-catalog-coverage-campaign.test.ts"
@@ -27,11 +29,13 @@ on:
       - "scripts/scrapers/__tests__/data-ingestion-lot9-phase0-coverage-proof.test.ts"
       - "scripts/scrapers/__tests__/data-ingestion-lot9-phase0-dimensions.test.ts"
       - "scripts/scrapers/__tests__/data-ingestion-lot9-phase0-reachability.test.ts"
+      - "scripts/scrapers/__tests__/data-ingestion-lot9-phase0-residual-classifier.test.ts"
       - ".github/workflows/data-ingestion-lot9-full-coverage.yml"
   workflow_dispatch:
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
   coverage-proof:
@@ -44,6 +48,13 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Restore certified 31,731-ID Mubawab union
+        uses: actions/download-artifact@v4
+        with:
+          name: lot9-office-catalog-campaign-proof
+          path: data-ingestion/runs/mubawab/lot9-office-catalog-campaign
+          github-token: ${{ github.token }}
+          run-id: 33906589600
       - name: Prove Mubawab discovery regression remains green
         run: npx tsx --test scripts/scrapers/__tests__/mubawab-discovery-v2.test.ts
       - name: Prove Lot 9 deterministic full coverage partition planner
@@ -60,6 +71,8 @@ jobs:
         run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-phase0-dimensions.test.ts
       - name: Prove Lot 9 Phase 0 reachability semantics
         run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-phase0-reachability.test.ts
+      - name: Prove Lot 9 Phase 0 residual classification semantics
+        run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-phase0-residual-classifier.test.ts
       - name: Run bounded Lot 9 Phase 0 dimension probe
         run: npx tsx scripts/mubawab-phase0-dimension-probe.ts
       - name: Upload Lot 9 Phase 0 dimension proof
@@ -78,6 +91,16 @@ jobs:
         with:
           name: lot9-phase0-reachability-proof
           path: data-ingestion/runs/mubawab/phase0-reachability-probe/
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Classify reachability residuals against certified union
+        run: npx tsx scripts/mubawab-phase0-residual-classifier.ts
+      - name: Upload Lot 9 Phase 0 residual classification proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lot9-phase0-residual-classification-proof
+          path: data-ingestion/runs/mubawab/phase0-residual-classification/
           if-no-files-found: warn
           retention-days: 7
 
