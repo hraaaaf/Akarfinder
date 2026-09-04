@@ -16,7 +16,7 @@ permissions:
 jobs:
   commoncrawl-index:
     runs-on: ubuntu-latest
-    timeout-minutes: 6
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -31,9 +31,16 @@ jobs:
           path: data-ingestion/runs/mubawab/lot9-office-catalog-campaign
           github-token: ${{ github.token }}
           run-id: 33906589600
-      - name: Prove Common Crawl index parsing and query semantics
+      - name: Restore current 372-ID first-party control sample
+        uses: actions/download-artifact@v4
+        with:
+          name: lot9-phase0-authorized-leaf-proof
+          path: data-ingestion/runs/mubawab/phase0-authorized-leaf-probe
+          github-token: ${{ github.token }}
+          run-id: 33920686277
+      - name: Prove Common Crawl index parsing and paging semantics
         run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-phase0-commoncrawl-index.test.ts
-      - name: Run bounded Common Crawl Mubawab detail-index probe
+      - name: Run bounded multi-snapshot Common Crawl Mubawab detail-index probe
         run: npx tsx scripts/mubawab-phase0-commoncrawl-index-probe.ts
       - name: Upload Common Crawl P0-D proof
         if: always()
@@ -44,5 +51,9 @@ jobs:
           if-no-files-found: warn
           retention-days: 7
 
-      # Safety: two public Common Crawl CDX queries, max 250 lines per a/pa family.
-      # No live Mubawab request, no detail fetch, no :p:N, no DB/prod write, no images.
+      # Safety: three recent public Common Crawl snapshots, a/pa families only.
+      # Each family/index performs one page-count query plus at most three spread pages,
+      # pageSize=1 block, limit=1000 rows/page, sequential requests with 1250 ms delay.
+      # Theoretical max = 24 Common Crawl index requests.
+      # No live Mubawab request, no Mubawab detail fetch, no :p:N, no WARC fetch,
+      # no DB/prod write, no image download.
