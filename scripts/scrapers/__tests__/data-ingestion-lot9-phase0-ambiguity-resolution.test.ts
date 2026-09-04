@@ -50,6 +50,19 @@ test("human precedent #1 resolves explicit room rental inside an apartment", () 
   assert(result.evidence.includes("human_precedent_1_room_in_apartment"));
 });
 
+test("ordinary one-bedroom apartment remains a whole-property offer", () => {
+  const result = resolveDetailSemanticEvidence({
+    extractedPropertyType: "apartment",
+    extractedTransaction: "rent",
+    title: "Appartement à louer à Casablanca",
+    description: "Appartement de 60 m² avec 1 chambre, salon et cuisine.",
+  });
+  assert.equal(result.clear, true);
+  assert.equal(result.property_type, "apartment");
+  assert.equal(result.offer_scope, "whole_property");
+  assert.equal(result.evidence.includes("human_precedent_1_room_in_apartment"), false);
+});
+
 test("detail remains human-review material when no single property type can be proven", () => {
   const result = resolveDetailSemanticEvidence({
     extractedPropertyType: "unknown",
