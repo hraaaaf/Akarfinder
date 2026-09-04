@@ -64,17 +64,37 @@ CI noise unrelated to the active lot does not block safe work.
 
 ## Human ambiguity gate
 
-If a listing remains materially ambiguous after page-level evidence:
+Human review is a **last semantic resort**, not the first reaction to a vague listing card.
+
+Canonical decision sequence:
 
 ```text
-preserve source_id + URL + evidence
-→ show user
+listing card
+→ if card evidence is clear: classify
+→ if card is ambiguous: robots-check the exact detail URL
+→ if the detail URL is public + allowed: inspect ONE detail page / description
+→ if detail evidence is clear: classify
+→ only if detail remains materially ambiguous or detail access is not authorized: show user
 → explain competing classifications
 → user arbitrates
 → record precedent for genuinely equivalent cases
 ```
 
-No silent heuristic classification of materially ambiguous listings.
+Rules:
+
+- no silent guessing;
+- no bulk detail crawl to classify residuals;
+- one detail request is acceptable only for a genuinely ambiguous case and only after an explicit robots check;
+- never escalate to the user merely because the listing title/card is badly written when an allowed description can resolve it;
+- materially different ambiguities still require human arbitration.
+
+Implementation guard: `data-ingestion/sources/mubawab/ambiguity-resolution.ts` + `scripts/scrapers/__tests__/data-ingestion-lot9-phase0-ambiguity-resolution.test.ts`.
+
+### Methodology correction example — Mubawab #8298787
+
+The card title `La miséricorde est le bonheur 1 près du bus à Casablanca` looked semantically useless. The public description explicitly identifies it as an **apartment for sale** in Sidi Othmane, Casablanca.
+
+Therefore this case must be auto-classified from detail evidence and must **not** reach the Human ambiguity gate.
 
 ### Canonical precedent #1 — room/colocation inside an apartment
 
@@ -252,7 +272,7 @@ Interpretation:
 - `ct` rent still has a small residual;
 - the major unexplained surface is `is`;
 - the remaining 55 IDs require route/semantic classification;
-- only materially ambiguous cases are escalated to the user.
+- ambiguity resolution must follow **card → allowed detail → human only if still unresolved**.
 
 ---
 
@@ -300,14 +320,16 @@ No `100%` claim until the unexplained material remainder is zero.
 
 # 11. Current exact next
 
-1. classify the **55 IDs absent from the historical union** using listing-page/card evidence first;
-2. reuse Canonical precedent #1 for explicit room/colocation offers; escalate only materially different ambiguities;
-3. qualify `crp` and continue route-family discovery until no new inventory-bearing family appears;
-4. test `cc`, `t`, `ct`, `is`, `crp` reachability using only robots-allowed page-1/control surfaces;
-5. search for a **robots-allowed complete traversal mechanism**; do not use `:p:N`;
-6. if no authorized complete traversal exists, quantify the restricted remainder and reflect it in P0-E;
-7. reconcile the unstable ~102K public presentation;
-8. keep Phase 1 Full Harvest BLOCKED until P0-A..P0-E all PASS.
+1. classify the **55 IDs absent from the historical union** using card evidence first;
+2. for every card-level ambiguity, robots-check and inspect the individual public detail description when authorized;
+3. auto-classify every case resolved by card or allowed detail evidence;
+4. reuse Canonical precedent #1 for explicit room/colocation offers;
+5. escalate to the user only cases still materially ambiguous after allowed detail evidence, or cases whose detail page cannot be accessed within policy;
+6. qualify `crp` and continue route-family discovery until no new inventory-bearing family appears;
+7. test `cc`, `t`, `ct`, `is`, `crp` reachability using only authorized surfaces;
+8. search for a **robots-allowed complete traversal mechanism**; do not use `:p:N`;
+9. if no authorized complete traversal exists, quantify the restricted remainder and reflect it in P0-E;
+10. keep Phase 1 Full Harvest BLOCKED until P0-A..P0-E all PASS.
 
 ---
 
@@ -324,6 +346,7 @@ No `100%` claim until the unexplained material remainder is zero.
 - Phase 0 active;
 - P0-D currently FAIL/BLOCKED due `/*:` robots restriction on `:p:N`;
 - P0-C currently has **55 sampled IDs absent from the historical union**;
-- Human ambiguity gate is mandatory;
+- Human ambiguity gate is mandatory but only after card + authorized detail evidence are exhausted;
 - Canonical precedent #1: room/colocation inside an apartment = `property_type=apartment` + `offer_scope=room`;
+- methodology correction #8298787: vague card + explicit allowed description = auto-classify, do not escalate;
 - target remains **100% explained authorized Mubawab coverage**, not an arbitrary count.
