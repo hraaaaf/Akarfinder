@@ -17,13 +17,18 @@ describe("Lot 9 Phase 0 Mubawab coverage proof", () => {
     assert.equal(byFamily.get("st")?.role, "primary_harvest");
     assert.equal(byFamily.get("sc")?.role, "primary_harvest");
     assert.equal(byFamily.get("cc")?.role, "control");
+    assert.equal(byFamily.get("ct")?.role, "control");
+    assert.equal(byFamily.get("crp")?.role, "control");
+    assert.equal(byFamily.get("is")?.role, "control");
     assert.equal(byFamily.get("t")?.role, "control");
     assert.equal(byFamily.get("pl")?.role, "project_non_unit");
     assert.equal(byFamily.get("pl")?.unit_listing_candidate, false);
     assert.equal(byFamily.get("detail")?.inventory_bearing, false);
   });
 
-  it("blocks Full Harvest until all five Phase 0 gates pass", () => {
+  it("blocks Full Harvest while authorized pagination is unresolved", () => {
+    const pagination = INITIAL_PHASE0_GATES.find((gate) => gate.id === "P0-D");
+    assert.equal(pagination?.status, "fail");
     assert.equal(phase0CanPass(INITIAL_PHASE0_GATES), false);
     assert.equal(fullHarvestIsBlocked(INITIAL_PHASE0_GATES), true);
 
