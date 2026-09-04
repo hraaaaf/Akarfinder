@@ -9,12 +9,17 @@ import { TerritoryMiniMap } from "@/components/map/TerritoryMiniMap";
 import { Container } from "@/components/ui/Container";
 import { getNeighborhoodBySlug as getCanonicalNeighborhoodBySlug } from "@/lib/map/canonical-neighborhood-data";
 import { getNeighborhoodContextReadModelBySlugs } from "@/lib/neighborhood-context/read-model";
+import { getSeoCityIndexability } from "@/lib/seo/city-indexability";
 import { getCityBySlug, getAllCities } from "@/lib/seo-city-pages/city-seo-data";
 import { generateCitySeoMetadata } from "@/lib/seo-city-pages/seo-metadata";
 import { getNeighborhoodsByCity } from "@/lib/seo-neighborhood-pages/neighborhood-seo-data";
 import { searchListings } from "@/lib/search";
 
 type CityPageProps = { params: Promise<{ city: string }> };
+
+// City indexability depends on live inventory. Refresh metadata/page evidence hourly
+// without turning every city request into permanently dynamic SSR.
+export const revalidate = 3600;
 
 export async function generateStaticParams() {
   return getAllCities().map((city) => ({ city: city.slug }));
@@ -24,12 +29,15 @@ export async function generateMetadata({ params }: CityPageProps): Promise<Metad
   const { city } = await params;
   const cityData = getCityBySlug(city);
   if (!cityData) return { title: "Not Found", robots: { index: false, follow: false } };
+
   const seo = generateCitySeoMetadata(cityData);
+  const indexability = await getSeoCityIndexability(cityData.displayName);
+
   return {
     title: seo.title,
     description: seo.description,
     alternates: { canonical: seo.canonical },
-    robots: { index: true, follow: true },
+    robots: { index: indexability.eligible, follow: true },
     openGraph: { title: seo.ogTitle, description: seo.ogDescription, type: "website", url: seo.canonical },
   };
 }
