@@ -42,13 +42,18 @@ function transactionFromText(text: string): ResolvedTransaction | null {
   return sale ? "sale" : "rent";
 }
 
-function isExplicitRoomScopedOffer(title: string, description: string): boolean {
-  const combined = `${title} ${description}`;
-  if (/\bcoloc(?:ation)?\b|\bco[- ]?location\b/i.test(combined)) return true;
-  if (/^(?:loue[rz]?\s+|location\s+)?(?:une\s+)?chambre\b/i.test(title.trim())) return true;
-  if (/\bchambre\b[^.]{0,80}\b(?:à\s+louer|a\s+louer|louer|location|meubl[ée]e?\s+pour|pour\s+(?:fille|gar[çc]on|étudiant|etudiant))\b/i.test(combined)) return true;
-  if (/\b(?:loue|louer|location)\b[^.]{0,60}\b(?:une\s+)?chambre\b/i.test(combined)) return true;
+function hasExplicitRoomOfferWording(text: string): boolean {
+  if (/\bcoloc(?:ation)?\b|\bco[- ]?location\b/i.test(text)) return true;
+  if (/^(?:loue[rz]?\s+|location\s+)?(?:une\s+)?chambre\b/i.test(text.trim())) return true;
+  if (/\bchambre\b[^.]{0,80}\b(?:à\s+louer|a\s+louer|louer|location|meubl[ée]e?\s+pour|pour\s+(?:fille|gar[çc]on|étudiant|etudiant))\b/i.test(text)) return true;
+  if (/\b(?:loue|louer|location)\b[^.]{0,60}\b(?:une\s+)?chambre\b/i.test(text)) return true;
   return false;
+}
+
+function isExplicitRoomScopedOffer(title: string, description: string): boolean {
+  // Keep the fields isolated. "Appartement à louer" in the title plus
+  // "1 chambre" in the description is a whole-apartment listing, not a room offer.
+  return hasExplicitRoomOfferWording(title) || hasExplicitRoomOfferWording(description);
 }
 
 export function resolveDetailSemanticEvidence(input: {
