@@ -1,6 +1,6 @@
 # Lot 7 Status
 
-**Status: 🟡 OPEN — functional gates GREEN; final browser visual proof pending**
+**Status: ✅ CLOSED — functional + browser visual proof complete**
 
 ## Goal
 
@@ -18,7 +18,7 @@ Interdictions inchangées :
 
 Toutes les DB Lot 7 sont créées dans un répertoire temporaire et supprimables sans effet collatéral.
 
-## Functional proof status
+## Functional proof status — GREEN
 
 Les gates Lot 7 fonctionnels sont validés sur la branche :
 
@@ -27,35 +27,74 @@ Les gates Lot 7 fonctionnels sont validés sur la branche :
 - ranking ;
 - lifecycle ;
 - API routing ;
-- Search page contract.
+- Search page contract / SSR Search ;
+- idempotence ;
+- deactivation ;
+- purge source ;
+- survie `agency_direct` / `partner_feed`.
 
-La purge source est désormais explicite via `source_type='portal'` et ne repose plus sur `origin_type='unknown'`. Les sources directes et partenaires restent distinctes et protégées.
+La purge source est explicite via `source_type='portal'` et ne repose plus sur `origin_type='unknown'`. Les sources directes et partenaires restent distinctes et protégées.
 
-## Final browser proof
+## Final browser visual proof — GREEN
 
-**Status: ⏳ PENDING**
+Workflow : `Data Ingestion Lot 7 Visual Proof`
 
-La preuve finale doit venir d'un vrai Chromium headless lancé contre la vraie page `/search`, alimentée par une SQLite Lot 7 isolée.
+- run : `33877438332` ✅ SUCCESS ;
+- HEAD produit prouvé : `10ecf3b36afdcbf68b84857ddc8f153cd3ab2610` ;
+- job `visual-proof` : ✅ SUCCESS ;
+- step `Seed isolated Lot 7 indexed visual SQLite` : ✅ ;
+- step `Capture and assert real indexed Search artwork` : ✅ ;
+- artifact : `9938461473` ;
+- size : `1,176,379 bytes` ;
+- digest : `sha256:08b2c8f3679c22e4c3c02075b29d1f26276b460664aac7c0832ccd7da9746ee9`.
 
-Le job existant `Data Ingestion Lot 7 API Routing Gate / api-routing` porte désormais directement les étapes suivantes :
+Captures inspectées :
 
-1. validation API routing ;
-2. installation Chromium Playwright ;
-3. seed SQLite Lot 7 isolée ;
-4. lancement local AkarFinder ;
-5. capture réelle de `/search` ;
-6. screenshots desktop 1440 et mobile 390 ;
-7. upload de l'artefact `lot7-search-visual-proof`.
+- `lot7-search-property-types-desktop-1440.png` ;
+- `lot7-search-property-types-mobile-390.png` ;
+- `lot7-search-apartment-desktop-1440.png` ;
+- `lot7-search-apartment-mobile-390.png`.
 
-## Closure rule
+## Inspection visuelle finale — CONFORME
 
-Lot 7 ne sera **CLOSED** qu'après :
+Comparaison effectuée avec `AKARFINDER_SEARCH_PROPERTY_TYPE_VISUALS_CANONICAL.md`.
 
-- run `api-routing` final GREEN avec les étapes navigateur ;
-- artefact `lot7-search-visual-proof` récupéré ;
-- inspection des deux PNG ;
-- aucune écriture production / historique.
+Constats :
 
-## Next exact
+- Appartement : bleu azur ✅ ;
+- Villa : vert émeraude ✅ ;
+- Terrain : orange terre ✅ ;
+- Bureau : violet ✅ ;
+- Local commercial : turquoise ✅ ;
+- Riad : or chaleureux ✅ ;
+- la Villa utilise bien le langage premium vert du système par type, pas le fallback générique/contextuel ✅ ;
+- vraie surface Search / lane `public_indexed` ✅ ;
+- hiérarchie badge → artwork → prix → titre → facts → provenance conservée ✅ ;
+- aucun overflow ou collision bloquante observé sur 390 px ;
+- rendu desktop cohérent avec le canonique.
 
-Attendre le run déclenché par cette mise à jour `data-ingestion/**`, inspecter le job `api-routing`, puis récupérer et vérifier l'artefact visuel.
+## Cleanup proof
+
+Le trigger `push` temporaire utilisé pendant le debugging du visual proof a été retiré de `.github/workflows/data-ingestion-lot7-visual-proof.yml`.
+
+Commit cleanup : `4910066e7760354692d2a331b8bbdccca17f8d02`.
+
+Le workflow conserve uniquement :
+
+- `pull_request` ;
+- `workflow_dispatch`.
+
+## Closure rule — SATISFIED
+
+- preuve fonctionnelle GREEN ✅ ;
+- vrai Chromium contre `/search` ✅ ;
+- SQLite isolée ✅ ;
+- artifact récupéré ✅ ;
+- captures 1440 + 390 inspectées ✅ ;
+- conformité au canonique visuel ✅ ;
+- aucun write production / historique ✅ ;
+- trigger push temporaire nettoyé ✅.
+
+**Verdict : Lot 7 CLOSED.**
+
+PR `#996` reste OPEN / DRAFT / non mergée. Aucun déploiement Vercel n'est autorisé ou requis pour ce closeout.
