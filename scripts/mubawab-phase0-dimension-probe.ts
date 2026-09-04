@@ -21,7 +21,11 @@ const SEEDS = [
   "https://www.mubawab.ma/fr/sc/appartements-a-louer",
   "https://www.mubawab.ma/fr/t/casablanca",
   "https://www.mubawab.ma/fr/ct/casablanca/immobilier-a-vendre",
-  "https://www.mubawab.ma/fr/crp/rabat-salé-zemmour-zaër/préfecture-de-rabat/immobilier-a-vendre",
+  "https://www.mubawab.ma/fr/mpr/casablanca-settat/listing-promotion",
+  "https://www.mubawab.ma/fr/mprp/casablanca-settat/préfecture-de-casablanca/listing-promotion",
+  "https://www.mubawab.ma/fr/mprpt/casablanca-settat/préfecture-de-casablanca/casablanca/listing-promotion",
+  "https://www.mubawab.ma/fr/mprptd/casablanca-settat/préfecture-de-casablanca/casablanca/maârif/listing-promotion",
+  "https://www.mubawab.ma/fr/tw/casablanca/oasis",
   "https://www.mubawab.ma/fr/pl/cité-ennasr/listing-promotion",
 ];
 
@@ -67,6 +71,7 @@ async function main() {
       database_writes: 0,
       production_writes: 0,
       image_downloads: 0,
+      disallowed_pagination_requests: 0,
     },
     requested_urls,
     configured: {
