@@ -1,41 +1,33 @@
-# HANDOVER — AkarFinder Data Ingestion
+# HANDOVER — AkarFinder Data Ingestion / Mubawab
 
 **Date:** 2026-09-04
 
 ## Read order
 
-1. `data-ingestion/canonical.md` — authoritative architecture + roadmap;
-2. `data-ingestion/MUBAWAB_PHASE0_COVERAGE_PROOF.md` — active Phase 0 proof;
-3. `data-ingestion/LOT9_STATUS.md` — detailed Lot 9 historical/status evidence;
-4. `data-ingestion/HANDOVER.md` — this operational snapshot.
+1. `data-ingestion/canonical.md` — authoritative roadmap;
+2. `data-ingestion/MUBAWAB_PHASE0_COVERAGE_PROOF.md` — active proof;
+3. `data-ingestion/LOT9_STATUS.md` — historical evidence;
+4. this file — operational snapshot.
 
 ---
 
-# Current product goal
-
-AkarFinder ultimately targets **≥100,000 canonical exploitable listings** across all sources.
-
-Before adding another portal, the current source pilot Mubawab must reach **100% explained coverage of all publicly accessible, authorized and relevant listings**.
-
-This means:
-
-- prove the coverage model first;
-- then harvest all approved surfaces to extinction;
-- reconcile the final unique-ID universe against Mubawab's public catalog presentation;
-- no material unexplained residual.
-
----
-
-# Repo / branch / PR
+# Repo state
 
 - repo: `hraaaaf/Akarfinder`
 - branch: `feat/data-ingestion-canonical`
 - PR: `#996`
-- keep PR OPEN / DRAFT / unmerged;
-- no merge without explicit user authorization;
+- keep OPEN / DRAFT / unmerged;
 - no Vercel deployment;
 - no production DB writes;
-- do not touch `scripts/scrapers/output/akarfinder.db` during sandbox/coverage proofs.
+- no merge without explicit user authorization.
+
+---
+
+# Goal
+
+Before adding another portal, prove and then obtain **100% explained coverage of all publicly accessible, authorized and relevant Mubawab listings**.
+
+Full Harvest is blocked until the Phase 0 coverage model is proven complete **and authorized**.
 
 ---
 
@@ -44,159 +36,169 @@ This means:
 ```text
 Lots 1–8 CLOSED
       ↓
-Lot 9 Phase 0 — Coverage Proof  ← ACTIVE
+Lot 9 Phase 0 Coverage Proof  ← ACTIVE
       ↓
-Lot 9 Phase 1 — Full Harvest to extinction
+Lot 9 Phase 1 Full Harvest  ← BLOCKED
       ↓
-Lot 9 Reconciliation — prove 100% explained Mubawab coverage
+Reconciliation 100%
       ↓
-Lot 10 — Massive Dataset Certification
+Lot 10 Certification
       ↓
-Lot 11 — Controlled Massive AkarFinder Ingestion
+Lot 11 Controlled ingestion
       ↓
-Lot 12 — Add sources if needed to reach ≥100K
+Lot 12 Other sources if needed for ≥100K
 ```
-
-**Full Harvest is BLOCKED until Phase 0 PASS.**
 
 ---
 
-# Current exact data state
+# Historical data evidence
 
-## Classic matrix
+Classic run `33899083917` observed **29,741 unique source IDs**.
 
-Run `33899083917` ✅
+Office run `33906589600` extended the historical union to **31,731 unique source IDs**:
 
-- 12 cities × 11 enabled categories;
-- technical extinction of that configured matrix;
-- **29,741 unique Mubawab source IDs**;
-- artifact `9947122701`;
-- digest `sha256:1b27ba2946bd671644e6ec1bf03a396df6c86a51706f5a17265466d041a0cb6d`.
-
-## National office campaign
-
-Run `33906589600` ✅
-
-- persistent global source-ID union;
-- 64 pages requested;
-- **+1,990 unique IDs** globally;
-- office sale terminal at page 24 with 710 unique IDs;
-- office rent reached page 40 with 1,280 unique IDs and was still open;
-- **current exact persistent union = 31,731 unique IDs**;
+- sale office: 710, technical terminal page 24;
+- rent office: 1,280 through page 40;
 - artifact `9949834432`;
 - digest `sha256:964a8cc44255bfd793615c4adea1c3be4238bed87b09aad0514c326da681bacc`.
 
-This proved the original 12-city matrix was incomplete as a model of the portal.
-
-## Public catalog anchor
-
-Mubawab home observed on 2026-09-04 around **102.5K properties**.
-
-This is NOT yet a certified unique-listing denominator.
+**Critical:** those numbers remain historical observations/seed evidence, but no longer count as compliance certification because the old robots parser mishandled wildcard rules.
 
 ---
 
-# Active chantier — Lot 9 Phase 0 Coverage Proof
+# Critical robots finding
 
-Canonical working file:
+Mubawab public robots policy contains `Disallow: /*:` for `User-agent: *`.
 
-`data-ingestion/MUBAWAB_PHASE0_COVERAGE_PROOF.md`
+Historical pagination uses `:p:N`, therefore future colon-pagination requests are disallowed for the AkarFinder research bot.
 
-Phase 0 gates:
+The robots utility has been corrected to support wildcard/query semantics and a regression test now explicitly blocks `:p:2`.
 
-- **P0-A Route families** — identify every public inventory-bearing route family;
-- **P0-B Dimensions** — enumerate transactions, property types, cities/localities and product dimensions;
-- **P0-C Reachability** — prove IDs from broad control surfaces are explainable by harvest surfaces;
-- **P0-D Pagination** — prove paging and terminal behavior for each harvest class;
-- **P0-E Denominator** — reconcile the ~102.5K public universe into unique listings/projects/duplicates/other explained buckets.
+Current consequence:
+
+- **P0-D Authorized traversal = 🔴 FAIL / BLOCKED**;
+- do not use `:p:N`;
+- Phase 0 must find another robots-allowed traversal mechanism or quantify the restricted remainder;
+- no bypass is allowed.
+
+---
+
+# Phase 0 gates
+
+- P0-A Route families: 🟡
+- P0-B Dimensions: 🟡
+- P0-C Reachability: 🟡
+- P0-D Authorized traversal: 🔴 FAIL / BLOCKED
+- P0-E Denominator: ⚪
 
 All five must PASS before Full Harvest.
 
 ---
 
-# Phase 0 implementation already added
+# Route families currently known
 
-## Route family registry
+- `st`
+- `sc`
+- `cc`
+- `ct`
+- `t`
+- `is`
+- `crp` — newly discovered hierarchical region/prefecture aggregate, pending qualification
+- vacation `st`
+- `pl`
+- detail identity `a/pa`
 
-`data-ingestion/sources/mubawab/coverage-proof.ts`
-
-Current explicit families:
-
-- `st` → primary harvest candidate;
-- `sc` → primary harvest candidate;
-- `cc` → control/diagnostic;
-- `t` → city aggregate control/geography discovery;
-- vacation `st` → distinct primary harvest candidate;
-- `pl` → project/non-unit until proven otherwise;
-- detail `a/pa` → identity, not Phase 0 discovery surface.
-
-## Tests
-
-`scripts/scrapers/__tests__/data-ingestion-lot9-phase0-coverage-proof.test.ts`
-
-Tests prove:
-
-- harvest/control/project/identity semantics remain distinct;
-- project pages cannot silently become unit-listing inventory;
-- Full Harvest remains blocked until P0-A…P0-E all PASS.
-
-## CI
-
-`.github/workflows/data-ingestion-lot9-full-coverage.yml`
-
-Renamed logically to Phase 0 coverage gate behavior.
-
-Important change:
-
-- the previous broad office live campaign was removed from the automatic PR gate;
-- the gate now runs semantic/tests only;
-- Phase 0 permits only small bounded live probes when needed to prove a coverage gate.
+Do not declare a family redundant without reachability evidence.
 
 ---
 
-# Current route evidence
+# Dimension gaps already proven
 
-Public observations already establish at least:
+Historical 12-city config is incomplete.
 
-- `t` city aggregate pages, e.g. Casablanca;
-- `st` city/category pages;
-- `sc` national category pages;
-- `cc` national broad aggregate pages;
-- vacation inventory as a distinct transaction family;
-- `pl` new-development/project pages;
-- detail identities using `a` / `pa`.
+Bounded Phase 0 proof found at least:
 
-Public project catalogue evidence also exposes localities outside the original 12-city matrix, including examples such as Meknès, Essaouira, Zenata, Asilah, Had Soualem, Ouislane and Harhoura.
+- Dakhla
+- Essaouira
+- Martil
+- Meknès
 
-Therefore no fixed 12-city list may be treated as exhaustive.
+and unconfigured semantics:
+
+- `appartements-vacational`
+- `bureaux-et-commerces-a-louer`
+- `bureaux-et-commerces-a-vendre`
+- `immobilier-a-louer`
+- `immobilier-a-vendre`
 
 ---
 
-# Safety
+# Current reachability evidence
 
-- robots check before live requests;
-- identifiable User-Agent;
-- no auth/CAPTCHA/access bypass;
-- explicit 403/429 → stop;
-- bounded request budgets;
-- no detail pages during Phase 0 unless explicitly justified by a later proof design;
-- no images;
-- no DB/prod;
-- no deploy;
-- no merge.
+Run `33912205981` ✅ SUCCESS.
+
+Residual classification artifact `9951845045`, digest `sha256:71e34e6f29ae2e7dde1954684af3ea061237d00d2c5a706f8417aee43c0796a9`.
+
+Exact result against historical 31,731 union:
+
+- 78 sampled residual IDs unique;
+- 23 were already known;
+- **55 are absent from the historical union**.
+
+Breakdown:
+
+- `ct` Casablanca sale: 0 absent;
+- `ct` Casablanca rent: 5 absent;
+- `is` Casablanca sale-cheap: 22 absent;
+- `is` Casablanca rent-cheap: 28 absent.
+
+The major open reachability question is therefore `is`, not `ct` sale.
+
+---
+
+# Human ambiguity gate
+
+User rule:
+
+```text
+materially ambiguous listing
+→ show user
+→ explain competing classifications
+→ user decides
+→ record precedent for genuinely equivalent cases
+```
+
+Do not silently auto-classify ambiguous property type, transaction, geography, project/unit or residual semantics.
+
+Use listing-card evidence first. Do not open dozens of detail pages just to classify the residual set.
+
+---
+
+# Public denominator
+
+The ~102K public presentation is **not yet a certified denominator**. Public/indexed page/language snapshots fluctuate and are not synchronized.
+
+P0-E must explain:
+
+```text
+unique authorized accessible unit IDs
++ project/non-unit objects
++ aliases/duplicates
++ documented restricted/non-indexable components
+= explained public universe
+```
 
 ---
 
 # NEXT EXACT
 
-1. certify the new Phase 0 registry/test gate on CI;
-2. implement bounded public dimension inventory for cities/localities + categories/transactions;
-3. compare discovered dimensions against `config.json`;
-4. emit `missing_geographies` and `missing_semantics`;
-5. build bounded reachability sampler for `cc` and `t` control surfaces;
-6. prove pagination/terminal semantics for `cc`, `t`, vacation and `pl`;
-7. build the denominator reconciliation model;
-8. close Phase 0 only when all five gates PASS;
-9. only then launch Full Harvest with one persistent global union of source IDs.
+1. enrich the **55 absent IDs** with listing-card title/text/location/URL from robots-allowed page-1 surfaces;
+2. classify clear cases automatically;
+3. escalate materially ambiguous cases to the user;
+4. qualify `crp` against existing geography/control families;
+5. keep discovering route/dimension gaps using allowed page-1 surfaces;
+6. identify an authorized complete traversal mechanism without `:p:N`;
+7. if no complete allowed traversal exists, quantify the restricted remainder for the denominator;
+8. Full Harvest stays BLOCKED until P0-A..P0-E all PASS.
 
-**Current chantier: Mubawab Phase 0 Coverage Proof — ACTIVE 🔵**
+**Current chantier: Mubawab Phase 0 Coverage Proof 🔵**
