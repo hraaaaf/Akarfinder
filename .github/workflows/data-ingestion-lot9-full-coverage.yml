@@ -10,6 +10,7 @@ on:
       - "data-ingestion/sources/mubawab/full-coverage-state.ts"
       - "data-ingestion/sources/mubawab/full-coverage-campaign.ts"
       - "data-ingestion/sources/mubawab/live-campaign-policy.ts"
+      - "data-ingestion/sources/mubawab/catalog-inventory.ts"
       - "scripts/mubawab-full-coverage-live-campaign.ts"
       - "scripts/scrapers/__tests__/mubawab-discovery-v2.test.ts"
       - "scripts/scrapers/__tests__/data-ingestion-lot9-full-coverage-planner.test.ts"
@@ -17,6 +18,7 @@ on:
       - "scripts/scrapers/__tests__/data-ingestion-lot9-full-coverage-state.test.ts"
       - "scripts/scrapers/__tests__/data-ingestion-lot9-full-coverage-campaign.test.ts"
       - "scripts/scrapers/__tests__/data-ingestion-lot9-live-campaign-policy.test.ts"
+      - "scripts/scrapers/__tests__/data-ingestion-lot9-catalog-inventory.test.ts"
       - ".github/workflows/data-ingestion-lot9-full-coverage.yml"
   workflow_dispatch:
 
@@ -27,7 +29,7 @@ permissions:
 jobs:
   full-coverage:
     runs-on: macos-14
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -47,26 +49,28 @@ jobs:
         run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-full-coverage-campaign.test.ts
       - name: Prove Lot 9 live campaign policy bounds
         run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-live-campaign-policy.test.ts
-      - name: Restore deep extinction checkpoint
+      - name: Prove Lot 9 catalog inventory semantics
+        run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-catalog-inventory.test.ts
+      - name: Restore deep-extinction campaign state
         uses: actions/download-artifact@v4
         with:
           name: lot9-live-campaign-deep-extinction-proof
           path: data-ingestion/runs/mubawab/lot9-live-campaign
           github-token: ${{ github.token }}
           run-id: 33894675980
-      - name: Prove final classic resume state is present
+      - name: Prove final classic extinction resume state is present
         run: test -f data-ingestion/runs/mubawab/lot9-live-campaign/state.json
-      - name: Run bounded Lot 9 final classic extinction
+      - name: Run bounded Lot 9 final classic extinction campaign
         env:
-          LOT9_MAX_WAVES: "10"
-          LOT9_MAX_PARTITIONS_PER_WAVE: "4"
+          LOT9_MAX_WAVES: "8"
+          LOT9_MAX_PARTITIONS_PER_WAVE: "5"
           LOT9_REQUEST_DELAY_MS: "2750"
         run: npx tsx scripts/mubawab-full-coverage-live-campaign.ts --resume
-      - name: Upload Lot 9 final classic proof
+      - name: Upload Lot 9 final classic extinction proof
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: lot9-live-campaign-final-classic-proof
+          name: lot9-live-campaign-final-classic-extinction-proof
           path: data-ingestion/runs/mubawab/lot9-live-campaign/
           if-no-files-found: warn
           retention-days: 7
