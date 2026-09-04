@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { isSeoEligibleGeoPair } from "@/lib/geo/geo-entity-registry";
 import { getSeoCityIndexability } from "@/lib/seo/city-indexability";
+import { getSeoNeighborhoodIndexability } from "@/lib/seo/neighborhood-indexability";
 import { siteConfig } from "@/lib/seo/site";
 import { getAllCities } from "@/lib/seo-city-pages/city-seo-data";
 import { getAllNeighborhoods } from "@/lib/seo-neighborhood-pages/neighborhood-seo-data";
@@ -38,9 +39,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const cityRoutes = cityDecisions
     .filter(({ decision }) => decision.eligible)
     .map(({ city }) => `/immobilier/${city.slug}`);
-  const neighborhoodRoutes = getAllNeighborhoods()
-    .filter((n) => eligibleCitySlugs.has(n.citySlug) && isSeoEligibleGeoPair(n.citySlug, n.slug))
-    .map((n) => `/immobilier/${n.citySlug}/${n.slug}`);
+
+  const neighborhoodCandidates = getAllNeighborhoods().filter(
+    (neighborhood) =>
+      eligibleCitySlugs.has(neighborhood.citySlug) &&
+      isSeoEligibleGeoPair(neighborhood.citySlug, neighborhood.slug),
+  );
+  const neighborhoodDecisions = await Promise.all(
+    neighborhoodCandidates.map(async (neighborhood) => ({
+      neighborhood,
+      decision: await getSeoNeighborhoodIndexability({
+        citySlug: neighborhood.citySlug,
+        neighborhoodSlug: neighborhood.slug,
+      }),
+    })),
+  );
+  const neighborhoodRoutes = neighborhoodDecisions
+    .filter(({ decision }) => decision.eligible)
+    .map(({ neighborhood }) => `/immobilier/${neighborhood.citySlug}/${neighborhood.slug}`);
 
   // Do not emit a synthetic lastModified timestamp. Google expects <lastmod>
   // to represent the page's last significant change, not sitemap generation time.
