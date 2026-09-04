@@ -35,6 +35,7 @@ jobs:
     env:
       DATABASE_PROVIDER: sqlite
       SEARCH_PROVIDER: database
+      PERSISTED_OPENSERP_LISTINGS_ENABLED: "true"
       ODM_PUBLIC_CANARY_ENABLED: "false"
       ODM_PUBLIC_CANARY_APPROVED: "false"
       ODM_PUBLIC_CANARY_PERCENT: "0"
@@ -50,7 +51,7 @@ jobs:
       - run: npm ci
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
-      - name: Seed isolated Lot 7 SQLite
+      - name: Seed isolated Lot 7 indexed visual SQLite
         run: node --import tsx scripts/lot7-visual-seed.ts
       - name: Start AkarFinder locally
         run: |
@@ -64,7 +65,7 @@ jobs:
           done
           cat /tmp/lot7-next.log
           exit 1
-      - name: Capture real Search page
+      - name: Capture and assert real indexed Search artwork
         run: node scripts/lot7-visual-capture.mjs
       - name: Upload visual proof
         uses: actions/upload-artifact@v4
