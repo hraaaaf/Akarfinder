@@ -87,7 +87,7 @@ describe("Lot 9 bounded Full Coverage runner", () => {
     assert.equal(result.summary.next_partitions_created, 0);
   });
 
-  it("honors a kill-switch before the first page and leaves later partitions untouched", async () => {
+  it("pauses instead of falsely completing a partition when the kill-switch fires before the first page", async () => {
     const partitions = buildInitialFullCoveragePlan(2)
       .filter((partition) => partition.city === "Casablanca")
       .slice(0, 3);
@@ -109,11 +109,58 @@ describe("Lot 9 bounded Full Coverage runner", () => {
     });
 
     assert.equal(fetchCalls, 0);
-    assert.equal(result.partitions[0].status, "completed");
+    assert.equal(result.partitions[0].status, "pending");
     assert.equal(result.partitions[0].stop_reason, "manual_kill_switch");
+    assert.equal(result.partitions[0].next_page, 1);
     assert.equal(result.partitions[1].status, "pending");
     assert.equal(result.partitions[2].status, "pending");
+    assert.equal(result.summary.partitions_completed, 0);
     assert.equal(result.summary.stopped_by_kill_switch, true);
     assert.equal(result.summary.partitions_started, 1);
+  });
+
+  it("resumes from the exact page checkpoint after a mid-partition kill-switch", async () => {
+    const partition = buildInitialFullCoveragePlan(3)
+      .find((item) => item.city === "Casablanca" && item.category_key === "apartment_sale");
+    assert.ok(partition);
+    let killChecks = 0;
+
+    const paused = await runFullCoverageWave({
+      partitions: [partition],
+      maxPartitions: 1,
+      pageWindow: 3,
+      isKilled: () => {
+        killChecks += 1;
+        return killChecks >= 3;
+      },
+      fetchPage: async () => html(["7001"]),
+    });
+
+    assert.equal(paused.partitions[0].status, "pending");
+    assert.equal(paused.partitions[0].stop_reason, "manual_kill_switch");
+    assert.equal(paused.partitions[0].pages_processed, 1);
+    assert.equal(paused.partitions[0].next_page, 2);
+    assert.deepEqual(paused.seen_source_ids, ["7001"]);
+
+    const requested: string[] = [];
+    const resumed = await runFullCoverageWave({
+      partitions: paused.partitions,
+      seenSourceIds: paused.seen_source_ids,
+      maxPartitions: 1,
+      pageWindow: 3,
+      fetchPage: async (url) => {
+        requested.push(url);
+        return url.includes(":p:2") ? html(["7002"]) : html(["7003"]);
+      },
+    });
+
+    assert.equal(requested.length, 2);
+    assert.ok(requested[0].includes(":p:2"));
+    assert.ok(requested[1].includes(":p:3"));
+    assert.equal(resumed.partitions[0].status, "completed");
+    assert.equal(resumed.partitions[0].stop_reason, "window_exhausted");
+    assert.equal(resumed.partitions[0].pages_processed, 3);
+    assert.equal(resumed.partitions[0].next_page, 4);
+    assert.deepEqual(resumed.seen_source_ids, ["7001", "7002", "7003"]);
   });
 });
