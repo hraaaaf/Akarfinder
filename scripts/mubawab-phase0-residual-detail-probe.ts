@@ -72,12 +72,14 @@ async function main() {
       const semantic = resolveDetailSemanticEvidence({
         extractedPropertyType: listing.property_type,
         extractedTransaction: listing.transaction,
+        routeUrl: card.route_url,
         title: listing.title,
         description: listing.description,
       });
 
       const evidence = {
         source_id: card.source_id,
+        route_url: card.route_url,
         requested_url: card.url,
         final_url: response.url,
         card_title: card.title_text,
