@@ -48,8 +48,21 @@ function directWitness(): CollectionListing {
   return base;
 }
 
+function partnerWitness(): CollectionListing {
+  const base = structuredClone(fixture("listing.complete.json"));
+  base.akar_id = null;
+  base.source.name = "partner-feed";
+  base.source.source_id = "lot7-partner-witness";
+  base.source.url = "https://partner.example/lot7-witness";
+  base.provenance.source_type = "partner_feed";
+  base.provenance.source_listing_url = base.source.url;
+  base.provenance.retrieval_method = "feed";
+  base.source.content_hash = "e".repeat(64);
+  return base;
+}
+
 describe("Lot 7 isolated SQLite sandbox", () => {
-  it("imports 20 Mubawab listings, queries them, reimports idempotently and purges only portal data", () => {
+  it("imports 20 Mubawab listings, queries them, reimports idempotently and purges only explicit portal data", () => {
     const dir = mkdtempSync(join(tmpdir(), "akarfinder-lot7-"));
     const dbPath = join(dir, "lot7-sandbox.db");
     const store = new Lot7SandboxStore(dbPath);
@@ -59,13 +72,15 @@ describe("Lot 7 isolated SQLite sandbox", () => {
         adaptCollectionListing(mubawabListing(index + 1), "lot7-sandbox-20"),
       );
       const direct = adaptCollectionListing(directWitness(), "lot7-sandbox-20");
+      const partner = adaptCollectionListing(partnerWitness(), "lot7-sandbox-20");
 
       for (const property of mubawab) assert.equal(store.importCanonical(property), "inserted");
       assert.equal(store.importCanonical(direct), "inserted");
-      assert.equal(store.count(), 21);
+      assert.equal(store.importCanonical(partner), "inserted");
+      assert.equal(store.count(), 22);
 
       for (const property of mubawab) assert.equal(store.importCanonical(property), "updated");
-      assert.equal(store.count(), 21, "re-import must not create duplicates");
+      assert.equal(store.count(), 22, "re-import must not create duplicates");
 
       const casablanca = store.query({ city: "Casablanca" });
       assert.equal(casablanca.filter((row) => row.source_name === "mubawab").length, 10);
@@ -89,16 +104,22 @@ describe("Lot 7 isolated SQLite sandbox", () => {
       const first = store.query({ limit: 1 })[0];
       assert.ok(first);
       assert.equal(store.getById(first.id)?.property_id, first.property_id);
+      assert.equal(store.query().filter((row) => row.source_name === "mubawab")[0]?.source_type, "portal");
+      assert.equal(store.query().find((row) => row.source_name === "akar-direct")?.source_type, "agency_direct");
+      assert.equal(store.query().find((row) => row.source_name === "partner-feed")?.source_type, "partner_feed");
 
       const purged = store.purgePortalSource("mubawab");
       assert.equal(purged, 20);
       assert.equal(store.query().filter((row) => row.source_name === "mubawab").length, 0);
-      assert.equal(store.count(), 1);
+      assert.equal(store.count(), 2);
 
-      const survivor = store.query({ limit: 10 });
-      assert.equal(survivor.length, 1);
-      assert.equal(survivor[0].source_name, "akar-direct");
-      assert.equal(survivor[0].origin_type, "agency_direct");
+      const survivors = store.query({ limit: 10 });
+      assert.equal(survivors.length, 2);
+      assert.deepEqual(new Set(survivors.map((row) => row.source_name)), new Set(["akar-direct", "partner-feed"]));
+      assert.equal(survivors.find((row) => row.source_name === "akar-direct")?.origin_type, "agency_direct");
+      assert.equal(survivors.find((row) => row.source_name === "akar-direct")?.source_type, "agency_direct");
+      assert.equal(survivors.find((row) => row.source_name === "partner-feed")?.origin_type, "partner_feed");
+      assert.equal(survivors.find((row) => row.source_name === "partner-feed")?.source_type, "partner_feed");
     } finally {
       store.close();
       rmSync(dir, { recursive: true, force: true });
