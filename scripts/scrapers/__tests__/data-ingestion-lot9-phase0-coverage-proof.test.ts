@@ -10,7 +10,7 @@ import {
 } from "../../../data-ingestion/sources/mubawab/coverage-proof.js";
 
 describe("Lot 9 Phase 0 Mubawab coverage proof", () => {
-  it("keeps harvest, control, project and identity semantics distinct", () => {
+  it("keeps harvest, control, hierarchy, project and identity semantics distinct", () => {
     validateCoverageRegistry();
 
     const byFamily = new Map(MUBAWAB_ROUTE_FAMILIES.map((item) => [item.family, item]));
@@ -18,12 +18,19 @@ describe("Lot 9 Phase 0 Mubawab coverage proof", () => {
     assert.equal(byFamily.get("sc")?.role, "primary_harvest");
     assert.equal(byFamily.get("cc")?.role, "control");
     assert.equal(byFamily.get("ct")?.role, "control");
-    assert.equal(byFamily.get("crp")?.role, "control");
-    assert.equal(byFamily.get("is")?.role, "control");
     assert.equal(byFamily.get("t")?.role, "control");
+    assert.equal(byFamily.get("tw")?.inventory_bearing, true);
+    assert.equal(byFamily.get("cd")?.inventory_bearing, true);
+    assert.equal(byFamily.get("sd")?.inventory_bearing, true);
+    assert.equal(byFamily.get("mpr")?.inventory_bearing, false);
+    assert.equal(byFamily.get("mprp")?.inventory_bearing, false);
+    assert.equal(byFamily.get("mprpt")?.inventory_bearing, false);
+    assert.equal(byFamily.get("mprptd")?.inventory_bearing, false);
+    assert.equal(byFamily.get("is")?.role, "control");
     assert.equal(byFamily.get("pl")?.role, "project_non_unit");
     assert.equal(byFamily.get("pl")?.unit_listing_candidate, false);
     assert.equal(byFamily.get("detail")?.inventory_bearing, false);
+    assert.equal(byFamily.has("crp"), false);
   });
 
   it("blocks Full Harvest while authorized pagination is unresolved", () => {
