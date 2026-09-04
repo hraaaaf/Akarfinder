@@ -4,7 +4,7 @@
 **Date opened:** 2026-09-04  
 **Canonical parent:** `data-ingestion/canonical.md`
 
-**Goal:** prove that the planned method can cover 100% of the publicly accessible, authorized and relevant Mubawab listing universe before Full Harvest.
+**Goal:** prove that the planned method can explain 100% of the publicly accessible, authorized and relevant Mubawab listing universe before Full Harvest.
 
 ---
 
@@ -16,7 +16,7 @@ technical exhaustion of a configured matrix
 ≠ proof that the traversal is authorized
 ```
 
-Phase 0 must prove coverage model, dimensions, reachability, authorized traversal and denominator reconciliation.
+Phase 0 must prove route families, dimensions, reachability, authorized traversal and denominator reconciliation.
 
 ---
 
@@ -24,11 +24,11 @@ Phase 0 must prove coverage model, dimensions, reachability, authorized traversa
 
 | Gate | Goal | Status | Current fact |
 |---|---|---:|---|
-| P0-A | Route families | 🟡 | registry expanded to flat, thematic and hierarchical families; repeated discovery still required before PASS |
-| P0-B | Dimensions | 🟡 | historical 12-city matrix proven incomplete; public geography hierarchy now mapped |
-| P0-C | Reachability | 🟡 | `ct/is` residuals proven; sampled ambiguous cases now resolved by card/detail/provenance evidence |
-| P0-D | Authorized traversal | 🔴 FAIL | deepest known `sd` leaves can still overflow page 1 while `:p:N` is robots-disallowed |
-| P0-E | Denominator | ⚪ | ~102K public presentation remains a reconciliation anchor, not a unique-ID denominator |
+| P0-A | Route families | 🟡 | registry includes flat, thematic and hierarchical families; repeated discovery still required before PASS |
+| P0-B | Dimensions | 🟡 | historical 12-city matrix proven incomplete; public geography hierarchy mapped |
+| P0-C | Reachability | 🟡 | `ct/is` residuals and sampled ambiguities proven/classified; wider reachability closure still required |
+| P0-D | Authorized traversal | 🔴 FAIL first-party / 🔵 external-index recovery ACTIVE | multi-city `sd` leaves overflow while `:p:N` is robots-disallowed; Common Crawl exposes additional source IDs without Mubawab requests |
+| P0-E | Denominator | 🟡 | deterministic reconciliation guard is GREEN; real-world denominator evidence remains incomplete |
 
 **Phase 0 PASS requires P0-A..P0-E all PASS. Full Harvest remains BLOCKED.**
 
@@ -59,13 +59,13 @@ Disallow: /*?n=1
 
 Historical colon pagination such as `:p:2` therefore matches a disallowed path form.
 
-The robots utility now supports wildcard/query semantics and the regression test explicitly rejects `:p:N`.
+The robots utility supports wildcard/query semantics and regression tests explicitly reject `:p:N`.
 
 **No future `:p:N` request is permitted while this rule applies.** Historical deep-pagination counts are not compliance certification.
 
 ---
 
-## 4. P0-A — Route-family registry V3
+## 4. P0-A — Route-family registry
 
 ### Unit inventory / control surfaces
 
@@ -80,7 +80,7 @@ The robots utility now supports wildcard/query semantics and the regression test
 | `tw` | control | neighborhood aggregate |
 | `cd` | control | neighborhood × transaction |
 | `sd` | control / partition candidate | neighborhood × category/transaction-style leaf |
-| `is` | control | thematic/search-like surface, overlapping rather than an exhaustive partition |
+| `is` | control | thematic/search-like surface; overlapping rather than proven exhaustive partition |
 
 ### Geography/taxonomy hierarchy
 
@@ -91,7 +91,7 @@ The robots utility now supports wildcard/query semantics and the regression test
 | `mprpt` | city/arrondissement hierarchy |
 | `mprptd` | district/neighborhood hierarchy leading toward `tw` |
 
-These `mpr*` routes are used to enumerate geography/taxonomy. They are **not assumed to be unit-listing harvest surfaces**.
+`mpr*` routes enumerate geography/taxonomy. They are **not assumed to be unit-listing harvest surfaces**.
 
 ### Separate buckets
 
@@ -138,9 +138,9 @@ Latest bounded dimension proof:
 - 0 disallowed pagination;
 - 0 DB/prod/image writes.
 
-This proof exposed the `mpr → mprp → mprpt → mprptd → tw` geography hierarchy and the finer `cd/sd` inventory surfaces.
+This proof exposed the `mpr → mprp → mprpt → mprptd → tw` geography hierarchy and finer `cd/sd` inventory surfaces.
 
-Important semantic boundary: project/taxonomy hierarchy counts are not silently treated as unit-listing counts.
+Project/taxonomy hierarchy counts are not silently treated as unit-listing counts.
 
 ---
 
@@ -164,19 +164,17 @@ Breakdown:
 | `is-casablanca-sale-cheap` | 22 |
 | `is-casablanca-rent-cheap` | 28 |
 
-These IDs are not assumed unique to `ct/is`; they are classification/reachability evidence.
+These IDs are classification/reachability evidence, not proof that they exist uniquely on `ct/is`.
 
 ### Detail-before-human rule
-
-Canonical sequence:
 
 ```text
 card clear → classify
 card ambiguous → robots-check exact detail URL
 allowed detail → inspect ONE detail description
 clear detail → classify
-if transaction is explicit in the trusted origin route, use that provenance unless conflicting evidence exists
-still ambiguous / policy-unavailable → show user → user decides
+trusted origin route may resolve transaction if non-conflicting
+still ambiguous / policy-unavailable → human arbitration
 ```
 
 No bulk detail crawl.
@@ -189,16 +187,14 @@ Latest bounded ambiguity-detail proof:
 - 4 robots-allowed detail pages opened;
 - 0 DB/prod/image writes.
 
-The four sampled cases were resolved without a new human decision once detail + route provenance were used:
+Sampled resolutions:
 
 - `8298787` → apartment / sale;
 - `8160402` → apartment / sale via `is` sale provenance;
 - `8285323` → apartment / rent via `is` rent provenance;
 - `8274907` → apartment / rent via `is` rent provenance.
 
-### Human precedent #1 — room/colocation inside apartment
-
-User decision **A** for source ID `8322103`:
+Human precedent #1, source ID `8322103`:
 
 ```text
 property_type = apartment
@@ -208,89 +204,145 @@ offer_scope = room
 
 `room` is an offer scope, not a property type.
 
-A plain apartment that merely has “1 chambre” remains `offer_scope = whole_property`; room scope requires explicit room-rental/colocation evidence.
-
 ---
 
 ## 7. P0-D — Authorized traversal proof
 
-**Status: 🔴 FAIL / BLOCKED.**
+**Status: 🔴 FAIL for known first-party traversal. External public-index recovery lane: 🔵 ACTIVE.**
 
-### 7.1 Standard public index probe
+### 7.1 Standard public sitemap probe
 
-Run `33917777332` probed standard public sitemap candidates.
+Run `33917777332` probed standard sitemap candidates.
 
-Artifact:
-
-- `9953831525`;
+- artifact `9953831525`;
 - digest `sha256:3b370500a1e34b3223a49ca605eea0072b45f3ec5981e02b7707f402177a2c3e`.
 
 All tested standard sitemap endpoints were robots-allowed but returned **404**. No complete standard sitemap traversal was found.
 
-### 7.2 Deepest-known first-party leaf test
+### 7.2 Oasis deepest-known leaf proof
 
-Dedicated gate:
-
-`Data Ingestion Lot 9 P0-D Authorized Traversal`
-
-Run `33920078656` ✅ SUCCESS.
-
-Artifact:
-
-- `9954738361`;
-- digest `sha256:019f4e8a937667866427f7f6bb151da44cb9142878b6219304d15c2db2c0a1fc`.
-
-Safety:
-
-- 7 robots-allowed public requests;
-- 0 `:p:N` requests;
-- 0 detail pages;
-- 0 DB writes;
-- 0 production writes;
-- 0 images;
-- no source block.
-
-Representative Oasis `sd` leaves:
-
-| Leaf | Public total | IDs visible page 1 | Status | Minimum unexplained |
-|---|---:|---:|---|---:|
-| apartments sale | 117 | 32 | overflow | **85** |
-| apartments rent | 281 | 32 | overflow | **249** |
-| offices/commercial sale | 16 | 16 | complete | 0 |
-| offices/commercial rent | 108 | 32 | overflow | **76** |
-| locaux sale | 12 | 12 | complete | 0 |
-| locaux rent | 24 | 24 | complete | 0 |
-| luxury villas/houses sale | 33 | 32 | overflow | **1** |
-
-Summary:
+Run `33920078656` established the first decisive lower bound on seven robots-allowed `sd` leaves:
 
 ```text
 7 leaves tested
 3 complete on page 1
-4 overflowing
+4 overflow
 180 unique IDs observed
 minimum unexplained remainder = 411
-current first-party leaf model certifiable = false
 ```
 
-This **411 is a sampled lower bound for these seven Oasis leaves only**, not the Morocco-wide restricted remainder.
+The **411** is only a sampled Oasis lower bound, not a Morocco-wide restricted remainder.
 
-### P0-D conclusion
+### 7.3 Multi-city structural proof
 
-The currently known first-party model cannot be certified complete because:
+Run `33920686277` extended the authorized page-1 test across Casablanca, Rabat and Marrakech, including Oasis, Maârif, Agdal and Guéliz.
 
-1. colon pagination is explicitly disallowed by robots;
-2. standard sitemap candidates did not provide an alternate traversal;
-3. even fine `sd` geography/category leaves can exceed the page-1 capacity;
-4. thematic `is` routes overlap and are not proven to form an exhaustive partition.
+Artifact:
 
-P0-D remains FAIL until one of the following is proven:
+- `9955181479`;
+- digest `sha256:31cb27d4952ad6bfdf5d68d3a17df7db783c87f005d0d544610647a2f5a7d77d`.
 
-- a different robots-allowed exhaustive first-party mechanism;
-- an explicitly authorized feed/index/permission path;
-- or a complete, defensible quantification of the restricted component for P0-E.
+Exact result:
 
-No robots/access-control bypass is permitted.
+```text
+13 leaves tested
+3 complete on page 1
+10 overflow
+372 IDs visible
+minimum unexplained remainder >= 2,223
+```
+
+The workflow conclusion is intentionally FAIL because the gate rejects a traversal model that cannot certify complete coverage. This is not an implementation crash.
+
+**Conclusion:** overflow is structural across multiple cities, not an Oasis anomaly.
+
+### 7.4 Partition Inventory
+
+Workflow `Data Ingestion Lot 9 P0-D Partition Inventory`, run `33920795086` ✅ SUCCESS.
+
+Artifact:
+
+- `9955242717`;
+- digest `sha256:326116c241715734a08a147b914def093d3cc4c3946763ea5bfa3094ee153061`.
+
+Safety:
+
+- 1 robots-allowed page request;
+- 0 detail pages;
+- 0 disallowed pagination;
+- 0 DB/prod/image writes.
+
+Overflow leaf inspected:
+
+```text
+https://www.mubawab.ma/fr/sd/casablanca/oasis/appartements-a-louer
+public total = 281
+first-page unit IDs = 32
+```
+
+The page exposes routes such as `ct`, `is`, language aliases and business/project links, plus filter fields (`minPrice`, `maxPrice`, `minSurface`, `maxSurface`, `minRooms`, etc.).
+
+**No exposed candidate was proven to be an exhaustive, disjoint, robots-allowed finer partition.** Filter inventory alone is not promoted into a traversal mechanism.
+
+Interpretation rule remains:
+
+```text
+inventory ≠ proof of partition
+partition acceptance requires subset + disjointness + completeness evidence
+```
+
+### 7.5 Common Crawl external-index recovery lane
+
+Workflow `Data Ingestion Lot 9 P0-D Common Crawl Index`, run `33921381132` ✅ SUCCESS.
+
+Artifact:
+
+- `9955501704`;
+- digest `sha256:cfd55d0e64d944274aebf57e88c7f23082363a27e9ac887acc08124d162245e6`.
+
+Index: `CC-MAIN-2026-30`.
+
+Queries:
+
+```text
+https://www.mubawab.ma/fr/a/*/*
+https://www.mubawab.ma/fr/pa/*/*
+```
+
+Exact bounded result:
+
+```text
+Common Crawl pages attempted: 4
+rows observed: 749
+Mubawab detail rows: 366
+unique Mubawab source IDs: 366
+IDs absent from historical 31,731 union: 112
+Mubawab live requests: 0
+detail fetches: 0
+DB writes: 0
+production writes: 0
+images: 0
+coverage_state = external_index_residual
+```
+
+The 112 are **newly indexable source IDs in this bounded external-index sample**. They are not yet certified as 112 current active canonical listings; Common Crawl may contain stale/historical pages.
+
+This proves that an external public index can expose Mubawab IDs beyond the frozen historical union without requesting prohibited Mubawab pagination.
+
+### P0-D decision
+
+P0-D is now modeled as two explicit lanes:
+
+```text
+first_party_authorized_traversal = FAIL
+external_public_index_recovery = ACTIVE / NOT YET COMPLETE
+```
+
+First-party failure is proven by multi-city overflow + robots restriction + lack of a proven finer exhaustive partition.
+
+The recovery strategy is to measure and validate the external public-index universe, with provenance/staleness controls, rather than attempting to bypass Mubawab robots policy.
+
+P0-D remains globally FAIL until the combined authorized method has defensible complete reachability semantics.
 
 ---
 
@@ -313,20 +365,27 @@ Rules:
 
 - never sum counters from overlapping route families;
 - `is` counters are not additive;
-- project hierarchy is a separate bucket from unit inventory;
-- P0-D overflow becomes evidence for the restricted component, not invented accessible stock;
-- 100% means **100% explained authorized coverage**, not forcing the unique-ID union to match one unstable marketing counter.
+- project hierarchy is separate from unit inventory;
+- first-party overflow is evidence for a restricted component, not invented accessible stock;
+- Common Crawl IDs remain an external-index/provenance bucket until freshness and unit semantics are established;
+- numerical equality with the public counter is insufficient by itself;
+- 100% means **100% explained authorized coverage**.
+
+Deterministic P0-E gate run `33920795113` ✅ SUCCESS. The guard prevents a fabricated PASS based only on arithmetic reconciliation.
+
+**P0-E code/guard = GREEN. Real-world denominator evidence = 🟡 IN PROGRESS.**
 
 ---
 
 ## 9. Current exact next
 
-1. expand P0-D overflow quantification from Oasis to a bounded representative set of neighborhoods/cities and category/transaction leaves;
-2. derive page-1 capacity and restricted lower bounds from actual IDs, never assumptions;
-3. keep searching only for robots-allowed, publicly exposed exhaustive traversal mechanisms;
-4. if no such mechanism emerges, build the P0-E restricted-component estimator/reconciliation model;
-5. continue P0-A/P0-B discovery until repeated bounded seeds stop producing new route families/dimensions;
-6. continue P0-C reachability checks using card → allowed detail → route provenance → human review only as last resort;
-7. keep Full Harvest BLOCKED until P0-A..P0-E all PASS.
+1. expand Common Crawl coverage beyond the bounded 366-ID sample using safe index queries/pages and, where useful, multiple index snapshots;
+2. deduplicate all external-index IDs against the frozen 31,731 seed union and across CC snapshots;
+3. classify external IDs by provenance/freshness: current-looking, historical/stale, project/non-unit, malformed/non-listing;
+4. do not live-fetch Mubawab detail pages in bulk; preserve 0-request external-index discovery unless a separately authorized bounded validation is justified;
+5. quantify how much of the multi-city first-party overflow is explained by the external-index union;
+6. feed only qualified buckets into P0-E reconciliation;
+7. continue P0-A/P0-B until repeated bounded discovery stops producing new route families/dimensions;
+8. keep Full Harvest BLOCKED until P0-A..P0-E all PASS.
 
 **Phase 0 Coverage Proof: ACTIVE 🔵**
