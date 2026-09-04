@@ -76,6 +76,26 @@ preserve source_id + URL + evidence
 
 No silent heuristic classification of materially ambiguous listings.
 
+### Canonical precedent #1 — room/colocation inside an apartment
+
+User decision: **A** on 2026-09-04.
+
+When an offer explicitly concerns a room/colocation inside an apartment:
+
+```text
+property_type = apartment
+transaction_type = rent
+offer_scope = room
+```
+
+The physical property remains an apartment. The commercial offer is scoped to one room.
+
+`CanonicalOfferV1` therefore carries required `offer_scope: whole_property | room`.
+
+Generic offers default to `whole_property`. Explicit room/colocation wording maps to `room`. Equivalent explicit cases reuse this precedent; materially different cases still go through the Human ambiguity gate.
+
+Reference case: Mubawab source ID `8322103`, visible title `Chambre meublée de 25 m² pour fille`.
+
 ---
 
 # 3. Roadmap
@@ -281,7 +301,7 @@ No `100%` claim until the unexplained material remainder is zero.
 # 11. Current exact next
 
 1. classify the **55 IDs absent from the historical union** using listing-page/card evidence first;
-2. escalate only materially ambiguous listings through the Human ambiguity gate;
+2. reuse Canonical precedent #1 for explicit room/colocation offers; escalate only materially different ambiguities;
 3. qualify `crp` and continue route-family discovery until no new inventory-bearing family appears;
 4. test `cc`, `t`, `ct`, `is`, `crp` reachability using only robots-allowed page-1/control surfaces;
 5. search for a **robots-allowed complete traversal mechanism**; do not use `:p:N`;
@@ -305,4 +325,5 @@ No `100%` claim until the unexplained material remainder is zero.
 - P0-D currently FAIL/BLOCKED due `/*:` robots restriction on `:p:N`;
 - P0-C currently has **55 sampled IDs absent from the historical union**;
 - Human ambiguity gate is mandatory;
+- Canonical precedent #1: room/colocation inside an apartment = `property_type=apartment` + `offer_scope=room`;
 - target remains **100% explained authorized Mubawab coverage**, not an arbitrary count.
