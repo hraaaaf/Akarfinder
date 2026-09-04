@@ -14,6 +14,7 @@ import { buildMapHref, buildMapSearchHref, parseMapNavigationState } from "@/lib
 import { neighborhoodCoverageLabel } from "@/lib/neighborhood-context/presentation";
 import { getNeighborhoodContextReadModelBySlugs } from "@/lib/neighborhood-context/read-model";
 import { searchListings } from "@/lib/search";
+import { siteConfig } from "@/lib/seo/site";
 import { getAllNeighborhoods, getNeighborhoodBySlug } from "@/lib/seo-neighborhood-pages/neighborhood-seo-data";
 import { generateNeighborhoodSeoMetadata } from "@/lib/seo-neighborhood-pages/seo-metadata";
 import { isValidDistrictSlug } from "@/lib/seo-neighborhood-pages/types";
@@ -78,8 +79,8 @@ export default async function DistrictPage({ params, searchParams }: PageProps) 
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Immobilier", item: "https://akarfinder.vercel.app/immobilier" },
-      { "@type": "ListItem", position: 2, name: n.cityDisplayName, item: `https://akarfinder.vercel.app/immobilier/${n.citySlug}` },
+      { "@type": "ListItem", position: 1, name: "Immobilier", item: `${siteConfig.siteUrl}/immobilier` },
+      { "@type": "ListItem", position: 2, name: n.cityDisplayName, item: `${siteConfig.siteUrl}/immobilier/${n.citySlug}` },
       { "@type": "ListItem", position: 3, name: n.displayName, item: seo.canonical },
     ],
   };
