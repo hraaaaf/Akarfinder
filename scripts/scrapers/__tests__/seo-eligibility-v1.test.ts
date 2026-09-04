@@ -98,4 +98,13 @@ describe("SEO eligibility gate V1", () => {
     assert.ok(source.includes("eligibleCitySlugs.has(n.citySlug)"));
     assert.ok(source.includes("decision.eligible"));
   });
+
+  it("fails city metadata closed while keeping the page crawlable and periodically revalidated", () => {
+    const source = readFileSync(resolve(process.cwd(), "app/immobilier/[city]/page.tsx"), "utf8");
+    assert.ok(source.includes("getSeoCityIndexability"));
+    assert.ok(source.includes("getSeoCityIndexability(cityData.displayName)"));
+    assert.ok(source.includes("robots: { index: indexability.eligible, follow: true }"));
+    assert.ok(source.includes("export const revalidate = 3600"));
+    assert.ok(source.includes("alternates: { canonical: seo.canonical }"));
+  });
 });
