@@ -1,6 +1,6 @@
 # Lot 9 Status — Mubawab Full Coverage
 
-**Status: 🟡 OPEN — partition planner certified; bounded runner next**
+**Status: 🟡 OPEN — planner certified; bounded runner implemented; proof pending**
 
 ## Goal
 
@@ -55,27 +55,47 @@ Le planificateur :
 - run : `33881976620` ✅ SUCCESS ;
 - job : `full-coverage-planner` ;
 - job id : `101052543906` ;
-- step Discovery regression : ✅ SUCCESS ;
-- step Lot 9 planner contract : ✅ SUCCESS ;
+- Discovery regression : ✅ SUCCESS ;
+- planner contract : ✅ SUCCESS ;
 - HEAD produit prouvé : `1f9f0ae095fd28b9821008dd33dfb83e120ff5b4`.
-
-Le planner est donc certifié. Cette preuve n’autorise pas encore un crawl exhaustif.
 
 ## Étape 2 — bounded Full Coverage runner
 
-**Status : 🟡 NEXT**
+**Status : 🟡 IMPLEMENTED — dedicated proof queued**
 
-Le runner doit :
+Fichiers :
 
-- consommer les partitions certifiées ;
-- exécuter seulement une vague bornée ;
-- conserver un set global de `source_id` uniques ;
+- `data-ingestion/sources/mubawab/full-coverage-runner.ts` ;
+- `scripts/scrapers/__tests__/data-ingestion-lot9-full-coverage-runner.test.ts` ;
+- `.github/workflows/data-ingestion-lot9-full-coverage.yml`.
+
+Le runner :
+
+- consomme uniquement des partitions `pending` ;
+- borne chaque vague par `maxPartitions` ;
+- maintient un set global de `source_id` ;
+- déduplique entre pages et partitions ;
 - checkpoint après chaque page ;
-- arrêter un scope sur zéro nouvel ID unique ;
-- classifier robots / source block / erreur retryable ;
-- produire un résumé de vague ;
-- générer la partition suivante uniquement après `window_exhausted` ;
-- ne faire aucun write DB et aucune extraction de détail pendant cette première preuve d’orchestration.
+- arrête un scope sur zéro nouvel ID unique ;
+- classe `robots_disallowed` et blocage source comme stops sécurité terminaux ;
+- conserve les erreurs ordinaires en `failed` ;
+- honore un kill-switch avant / entre les pages ;
+- génère la fenêtre suivante uniquement après `window_exhausted` ;
+- ne fait aucun write DB et aucune extraction de détail dans cette preuve synthétique.
+
+### Gate runner
+
+- workflow : `Data Ingestion Lot 9 Full Coverage Gate` ;
+- run : `33882260391` ;
+- HEAD produit : `83526761f40b68429349b2513c2d96862bf0de4a` ;
+- état au dernier contrôle : `queued` ;
+- job attendu : `full-coverage`.
+
+Le gate exécute :
+
+1. régression Discovery Mubawab ;
+2. contrat du planner ;
+3. contrat du bounded runner.
 
 ## Closure rule du Lot 9
 
@@ -83,8 +103,10 @@ Lot 9 ne sera CLOSED qu’après un vrai manifest Full Coverage final couvrant t
 
 ## Next exact
 
-1. construire le bounded Full Coverage runner ;
-2. le prouver avec fetchers synthétiques, sans réseau ;
-3. ensuite seulement autoriser une vague live limitée utilisant les garde-fous robots / 403 / 429 du Lot 6 ;
-4. mesurer la vague ;
-5. étendre progressivement jusqu’au manifest Full Coverage final.
+1. vérifier le run `33882260391` ;
+2. si rouge, corriger la cause exacte ;
+3. si vert, certifier le bounded runner ;
+4. construire la persistance de manifest / checkpoint du Full Coverage run ;
+5. autoriser ensuite seulement une vague live limitée utilisant les garde-fous robots / 403 / 429 du Lot 6 ;
+6. mesurer cette vague ;
+7. étendre progressivement jusqu’au manifest Full Coverage final.
