@@ -48,7 +48,7 @@ test("unknown total or robots-disallowed leaf can never be certified complete", 
   }).status, "unproven");
 });
 
-test("summary keeps the unresolved remainder explicit", () => {
+test("one overflowing exhaustive leaf blocks certification of the current first-party leaf model", () => {
   const items = [
     assessAuthorizedLeaf({ url: "a", family: "sd", total_results: 2, first_page_unit_ids: ["1", "2"], robots_allowed: true }),
     assessAuthorizedLeaf({ url: "b", family: "sd", total_results: 10, first_page_unit_ids: ["3", "4", "5"], robots_allowed: true }),
@@ -58,4 +58,6 @@ test("summary keeps the unresolved remainder explicit", () => {
   assert.equal(summary.overflow, 1);
   assert.equal(summary.unexplained_lower_bound, 7);
   assert.equal(summary.observed_unit_ids, 5);
+  assert.equal(summary.blocked_by_overflow, true);
+  assert.equal(summary.can_certify_current_leaf_model, false);
 });
