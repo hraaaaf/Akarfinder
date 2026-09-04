@@ -21,6 +21,7 @@ on:
       - "data-ingestion/sources/mubawab/reachability-proof.ts"
       - "data-ingestion/sources/mubawab/residual-classifier.ts"
       - "data-ingestion/sources/mubawab/listing-card-signals.ts"
+      - "data-ingestion/sources/mubawab/ambiguity-resolution.ts"
       - "data-ingestion/canonical.md"
       - "data-ingestion/HANDOVER.md"
       - "data-ingestion/MUBAWAB_PHASE0_COVERAGE_PROOF.md"
@@ -39,6 +40,7 @@ on:
       - "scripts/scrapers/__tests__/data-ingestion-lot9-phase0-reachability.test.ts"
       - "scripts/scrapers/__tests__/data-ingestion-lot9-phase0-residual-classifier.test.ts"
       - "scripts/scrapers/__tests__/data-ingestion-lot9-phase0-card-signals.test.ts"
+      - "scripts/scrapers/__tests__/data-ingestion-lot9-phase0-ambiguity-resolution.test.ts"
       - "scripts/scrapers/__tests__/data-ingestion-offer-scope.test.ts"
       - "scripts/scrapers/__tests__/robots-policy.test.ts"
       - ".github/workflows/data-ingestion-lot9-full-coverage.yml"
@@ -90,6 +92,8 @@ jobs:
         run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-phase0-residual-classifier.test.ts
       - name: Prove Lot 9 Phase 0 card signal and ambiguity semantics
         run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-phase0-card-signals.test.ts
+      - name: Prove detail-before-human ambiguity resolution semantics
+        run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-phase0-ambiguity-resolution.test.ts
       - name: Run bounded Lot 9 Phase 0 dimension probe
         run: npx tsx scripts/mubawab-phase0-dimension-probe.ts
       - name: Upload Lot 9 Phase 0 dimension proof
@@ -132,5 +136,6 @@ jobs:
           retention-days: 7
 
       # Phase 0 rule: no broad live harvest in this gate.
-      # Only bounded, robots-allowed page-1 coverage probes may run.
+      # Only bounded, robots-allowed public probes may run.
+      # A single detail page may be inspected only to resolve a card ambiguity and only if robots allows that detail URL.
       # Colon pagination (:p:N) is not permitted while matching robots Disallow: /*:.
