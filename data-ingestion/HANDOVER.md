@@ -10,16 +10,13 @@ Lire dans cet ordre :
 2. `data-ingestion/HANDOVER.md` — état opérationnel courant ;
 3. `data-ingestion/LOT9_STATUS.md` — chantier courant ;
 4. `data-ingestion/LOT8_STATUS.md` — closeout Lot 8 ;
-5. `data-ingestion/LOT7_STATUS.md` — closeout Lot 7 ;
-6. `AKARFINDER_SEARCH_PROPERTY_TYPE_VISUALS_CANONICAL.md` — canonique visuel Search.
+5. `data-ingestion/LOT7_STATUS.md` — closeout Lot 7.
 
 ## Goal produit actuel
 
 Atteindre puis maintenir **≥ 100 000 annonces canoniques exploitables** dans AkarFinder.
 
-Le seuil 100K se mesure après normalisation / déduplication, jamais sur le volume brut découvert.
-
-Ordre stratégique verrouillé :
+Séquence verrouillée :
 
 ```text
 Lots 1–8 CLOSED
@@ -33,20 +30,20 @@ Lot 11 — Massive AkarFinder Ingestion
 Lot 12 — Multi-source jusqu’à ≥100K
 ```
 
-On ne passe pas prématurément à un second portail avant d’avoir mesuré le stock réel de Mubawab, sauf blocage documenté.
+Le seuil 100K se mesure après normalisation / déduplication. On mesure d'abord le maximum réel de Mubawab avant d'ouvrir un deuxième portail.
 
 ## Repo / branche / PR
 
 - Repo : `hraaaaf/Akarfinder`
 - Branche : `feat/data-ingestion-canonical`
 - PR : `#996`
-- PR : OPEN / DRAFT / non mergée
+- état attendu : OPEN / DRAFT / non mergée ;
 - aucun merge sans autorisation explicite ;
-- aucun déploiement Vercel sans autorisation explicite ;
-- aucun write production autorisé ;
+- aucun déploiement Vercel ;
+- aucun write production ;
 - ne jamais toucher à `scripts/scrapers/output/akarfinder.db` pendant les preuves.
 
-## Lots — état courant
+## Lots
 
 - Lots 1–8 : ✅ CLOSED
 - Lot 9 : 🟡 OPEN — Mubawab Full Coverage
@@ -54,118 +51,104 @@ On ne passe pas prématurément à un second portail avant d’avoir mesuré le 
 - Lot 11 : ⚪ À FAIRE
 - Lot 12 : ⚪ À FAIRE
 
-## Preuves historiques
+## Lot 9 — architecture certifiée
 
-### Lot 7
+Briques :
 
-- workflow : `Data Ingestion Lot 7 Visual Proof` ;
-- run : `33877438332` ✅ SUCCESS ;
-- HEAD produit : `10ecf3b36afdcbf68b84857ddc8f153cd3ab2610` ;
-- artifact : `9938461473` ;
-- digest : `sha256:08b2c8f3679c22e4c3c02075b29d1f26276b460664aac7c0832ccd7da9746ee9`.
+- `full-coverage.ts` — planner 132 scopes ;
+- `full-coverage-runner.ts` — vague bornée + dedup + checkpoint ;
+- `full-coverage-state.ts` — état persistant inter-run ;
+- `full-coverage-campaign.ts` — orchestration multi-vagues ;
+- `live-campaign-policy.ts` — montée en charge bornée ;
+- `scripts/mubawab-full-coverage-live-campaign.ts` — exécution live discovery-only.
 
-### Lot 8
+Preuves structurantes :
 
-- workflow : `Data Ingestion Lot 8 Controlled Massive Gate` ;
-- run : `33879281908` ✅ SUCCESS ;
-- HEAD produit : `979c7f57e46f5eb39c6d0a552fe78b635185e634` ;
-- job id : `101043688350` ;
-- régression Lot 7 : 1/1 GREEN ;
-- Lot 8 : 4/4 GREEN.
+- planner : run `33881976620` ✅ ;
+- runner : run `33882260391` ✅ ;
+- micro-vague live : run `33882641901` ✅ ;
+- orchestration state/campaign : run macOS `33887383769` ✅ ;
+- policy de scale : run `33890791066` ✅.
 
-## Roadmap ≥100K
+## Lot 9 — progression live canonique
 
-`data-ingestion/canonical.md` a été réaligné pour imposer la séquence : Mubawab Full Coverage → certification dataset massif → ingestion massive → multi-source uniquement pour combler le delta vers ≥100K.
+### Campagne persistante initiale
 
-## Lot 9 — état exact
+Run `33889776735` ✅ SUCCESS.
 
-### Étape 1 — planner ✅ CERTIFIED
+- 18 / 18 pages ;
+- 573 IDs uniques ;
+- 0 blocage ;
+- artifact `9943410758` ;
+- digest `sha256:50f5bcbf82543f5a6743cdd3b287e137a236773ea1de4ebf131590fe5ddc75d1`.
 
-- fichier : `data-ingestion/sources/mubawab/full-coverage.ts` ;
-- 12 villes ;
-- 11 catégories activées ;
-- 132 scopes initiaux ;
-- fenêtres déterministes ;
-- checkpoint monotone ;
-- progression seulement après `window_exhausted` ;
-- stops `zero_new_unique_ids` / robots / source block / kill-switch.
+### Reprise inter-run
 
-Preuve :
+Run `33890195931` ✅ SUCCESS.
 
-- run `33881976620` ✅ SUCCESS ;
-- job `101052543906` ;
-- HEAD produit `1f9f0ae095fd28b9821008dd33dfb83e120ff5b4`.
+- artifact précédent restauré ;
+- même `run_id` ;
+- cumul 32 / 32 pages ;
+- 889 IDs uniques ;
+- 28 doublons ;
+- 3 scopes terminaux ;
+- artifact `9943531219` ;
+- digest `sha256:911ca23cc63c5b576f2bf3f2aaed791df2fe1a99a183a76820edfb1e423b5d43`.
 
-### Étape 2 — bounded runner ✅ CERTIFIED
+Un replay concurrent a reproduit le même état 889 depuis l'ancien artifact. Il n'a fait aucun write DB/prod et n'est pas utilisé comme progression canonique.
 
-- fichier : `data-ingestion/sources/mubawab/full-coverage-runner.ts` ;
-- vague bornée par `maxPartitions` ;
-- dédup globale des `source_id` ;
-- checkpoint après chaque page ;
-- kill-switch ;
-- classification des stops sécurité ;
-- next partition uniquement après épuisement normal ;
-- aucun write DB.
+### Scale-120
 
-Preuve :
+Run `33891104950` ✅ SUCCESS, job `101082690570`, HEAD `2709ce27725b2455741550d7ddbc858373d7178e`.
 
-- run `33882260391` ✅ SUCCESS ;
-- job `101053487441` ;
-- Discovery regression ✅ ;
-- planner contract ✅ ;
-- bounded runner contract ✅.
+Configuration : 8 vagues × 5 partitions × 3 pages, 120 pages théoriques max, délai 1 750 ms.
 
-### Étape 3 — première vague live ✅ GREEN
+Résultat :
 
-Workflow : `Data Ingestion Lot 9 Live Wave`.
-
-Preuve :
-
-- run `33882641901` ✅ SUCCESS ;
-- job `101054741842` ;
-- HEAD produit `df0ba4494dd75b846d99d0a3b854fac30fd302c6` ;
-- artifact `9940542354` ;
-- digest `sha256:ca1b1a6b45cf0ff178e818145ef82d4189b96239b1082a65751845816a72ce5e`.
-
-Périmètre : Casablanca appartement vente + location, 2 pages par partition, soit 4 pages maximum.
-
-Résultat réel :
-
-- 2 partitions démarrées / 2 complétées ;
-- 0 failed ;
-- 4 pages demandées / 4 réussies ;
-- 126 annonces découvertes ;
-- 126 uniques ajoutées ;
-- 0 doublon observé dans cette vague ;
-- 2 partitions suivantes créées ;
-- 0 blocage source ;
+- 110 pages réelles réussies ;
+- 0 403/429 ;
 - 0 kill-switch ;
-- stop reason : `window_exhausted` pour les deux scopes.
+- +2 964 IDs uniques ;
+- **cumul 3 853 IDs uniques** ;
+- cumul 4 110 refs découvertes ;
+- 257 doublons ;
+- 142 / 142 pages réussies ;
+- 52 partitions complétées ;
+- 14 scopes terminaux ;
+- 118 scopes actifs ;
+- 80 scopes initiaux encore jamais ouverts ;
+- 38 fenêtres profondes déjà préparées.
 
-Cette vague ne fait aucune extraction de détail, aucun téléchargement d’image, aucun write DB et aucune action production.
+Artifact :
 
-## Lecture
+- id `9943999589` ;
+- name `lot9-live-campaign-scale-120-proof` ;
+- digest `sha256:dda924a70d25bf29a8c2444719aced51111e0877bed1248ef76500a51bb1b7ba`.
 
-Le chemin réel de découverte Full Coverage est maintenant prouvé sur un petit périmètre live. Il est trop tôt pour extrapoler 126 annonces / 4 pages à tout Mubawab. Le prochain travail est d’augmenter progressivement la couverture tout en persistants manifests / checkpoints / set global de source IDs et en maintenant les stops sécurité.
+Rendement unique cumulé des villes déjà touchées : Casablanca 793, Rabat 704, Marrakech 923, Tanger 830, Agadir 603.
 
-## Sécurité live
+## Safety live verrouillée
 
-- contrôle robots avant requête ;
+- robots avant requête ;
 - User-Agent identifiable ;
-- aucun cookie / login / CAPTCHA / contournement d’accès ;
-- arrêt global sur blocage explicite 403 / 429 ;
-- aucun write production ;
-- manifests / checkpoints reproductibles.
+- aucun cookie / login / CAPTCHA / contournement d'accès ;
+- stop global sur 403 / 429 ;
+- détail = 0 ;
+- images = 0 ;
+- DB = 0 ;
+- prod = 0 ;
+- délai minimum policy = 1 500 ms ;
+- plafond policy = 300 pages théoriques par exécution.
 
 ## NEXT EXACT
 
-1. étendre la vague live de manière progressive et bornée ;
-2. persister l’état global entre vagues : partitions, checkpoint, `seen_source_ids`, métriques ;
-3. mesurer rendement par ville / catégorie / page-range ;
-4. continuer jusqu’à extinction naturelle de chaque scope ou stop sécurité documenté ;
-5. produire le manifest Full Coverage final avec stock Mubawab unique réel ;
-6. seulement alors ouvrir Lot 10 ;
-7. garder PR `#996` OPEN / DRAFT / non mergée et ne rien déployer sans autorisation explicite.
+1. repartir exclusivement de l'artifact `9943999589` / état 3 853 uniques ;
+2. poursuivre la matrice initiale des 80 scopes encore jamais ouverts ;
+3. conserver une montée progressive et bornée ;
+4. une fois les 132 scopes initiaux touchés, parcourir les fenêtres profondes `p4+` jusqu'à `zero_new_unique_ids` ;
+5. maintenir dedup + checkpoint + stops sécurité ;
+6. fermer Lot 9 uniquement avec manifest Full Coverage final et stock unique réel ;
+7. ouvrir Lot 10 seulement après cette mesure ;
+8. garder PR #996 OPEN / DRAFT / non mergée, zéro Vercel / zéro prod.
 
-**Lots 1–8 : CLOSED ✅**
-**Lot 9 : OPEN — first live wave GREEN, progressive expansion next 🟡**
+**Lot 9 : OPEN — 3 853 IDs uniques découverts, surface initiale encore incomplète 🟡**
