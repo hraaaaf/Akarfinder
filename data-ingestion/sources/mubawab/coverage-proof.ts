@@ -1,7 +1,7 @@
 export type MubawabCoverageRole = "primary_harvest" | "control" | "project_non_unit" | "identity_only";
 
 export type MubawabRouteFamily = {
-  family: "st" | "sc" | "cc" | "t" | "pl" | "vacation_st" | "detail";
+  family: "st" | "sc" | "cc" | "ct" | "t" | "is" | "pl" | "vacation_st" | "detail";
   role: MubawabCoverageRole;
   inventory_bearing: boolean;
   unit_listing_candidate: boolean;
@@ -35,12 +35,28 @@ export const MUBAWAB_ROUTE_FAMILIES: MubawabRouteFamily[] = [
     rationale: "broad aggregate used to detect unexplained residual listing ids",
   },
   {
+    family: "ct",
+    role: "control",
+    inventory_bearing: true,
+    unit_listing_candidate: true,
+    example: "https://www.mubawab.ma/fr/ct/casablanca/immobilier-a-vendre",
+    rationale: "city x transaction aggregate discovered by Phase 0; control until reachability proves whether it exposes residual inventory",
+  },
+  {
     family: "t",
     role: "control",
     inventory_bearing: true,
     unit_listing_candidate: true,
     example: "https://www.mubawab.ma/fr/t/casablanca",
     rationale: "city aggregate used for geography coverage checks",
+  },
+  {
+    family: "is",
+    role: "control",
+    inventory_bearing: true,
+    unit_listing_candidate: true,
+    example: "https://www.mubawab.ma/fr/is/logement-vente_casablanca_pas-cher",
+    rationale: "indexed/search-like SEO surface discovered by Phase 0; control only until overlap/reachability semantics are proven",
   },
   {
     family: "vacation_st",
@@ -79,7 +95,7 @@ export type MubawabCoverageGate = {
 export const INITIAL_PHASE0_GATES: MubawabCoverageGate[] = [
   { id: "P0-A", name: "route families", status: "in_progress" },
   { id: "P0-B", name: "dimensions", status: "in_progress" },
-  { id: "P0-C", name: "reachability", status: "pending" },
+  { id: "P0-C", name: "reachability", status: "in_progress" },
   { id: "P0-D", name: "pagination", status: "in_progress" },
   { id: "P0-E", name: "denominator reconciliation", status: "pending" },
 ];
