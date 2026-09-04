@@ -136,4 +136,12 @@ describe("SEO eligibility gate V1", () => {
     assert.ok(source.includes("robots: { index: indexability.eligible, follow: true }"));
     assert.ok(source.includes("alternates: { canonical: seo.canonical }"));
   });
+
+  it("keeps Neuf crawlable but out of the index and sitemap until real inventory exists", () => {
+    const pageSource = readFileSync(resolve(process.cwd(), "app/neuf/page.tsx"), "utf8");
+    const sitemapSource = readFileSync(resolve(process.cwd(), "app/sitemap.ts"), "utf8");
+    assert.ok(pageSource.includes("robots: { index: false, follow: true }"));
+    assert.ok(pageSource.includes("alternates: { canonical: `${siteConfig.siteUrl}/neuf` }"));
+    assert.equal(sitemapSource.includes('    "/neuf",'), false);
+  });
 });
