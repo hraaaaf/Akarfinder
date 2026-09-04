@@ -58,15 +58,16 @@ Lot 12 Other sources if needed for ≥100K
 - artifact `9949834432`;
 - digest `sha256:964a8cc44255bfd793615c4adea1c3be4238bed87b09aad0514c326da681bacc`.
 
-These remain useful seed observations but are **not compliance certification**, because the former robots parser mishandled wildcard rules and historical deep pagination used `:p:N`.
+These remain useful seed observations but are **not compliance certification**, because historical deep pagination used `:p:N` and the old robots parser did not correctly model wildcard rules.
 
 ---
 
 # Critical robots finding
 
-Mubawab robots policy for `User-agent: *` includes:
+Mubawab robots policy includes:
 
 ```text
+User-agent: *
 Disallow: /*:
 Disallow: /*?n=1
 ```
@@ -75,8 +76,6 @@ Therefore future `:p:N` requests are forbidden for the AkarFinder research bot.
 
 The robots utility is wildcard/query aware and regression-tested.
 
-**P0-D Authorized traversal = 🔴 FAIL / BLOCKED.**
-
 ---
 
 # Phase 0 gates
@@ -84,10 +83,10 @@ The robots utility is wildcard/query aware and regression-tested.
 - P0-A Route families: 🟡
 - P0-B Dimensions: 🟡
 - P0-C Reachability: 🟡
-- P0-D Authorized traversal: 🔴 FAIL
-- P0-E Denominator: ⚪
+- P0-D Authorized traversal: 🔴 first-party FAIL / 🔵 external-index recovery ACTIVE
+- P0-E Denominator: 🟡, deterministic guard GREEN but real denominator not closed
 
-Full Harvest stays BLOCKED until all five PASS.
+**Full Harvest stays BLOCKED until all five PASS.**
 
 ---
 
@@ -120,7 +119,7 @@ Separate buckets:
 
 The old `crp` hypothesis is removed because it was not reproduced.
 
-`mpr*` is used for geography/taxonomy enumeration, not silently counted as unit inventory.
+`mpr*` enumerates geography/taxonomy and is not silently counted as unit inventory.
 
 ---
 
@@ -152,7 +151,7 @@ Latest dimension proof:
 
 ---
 
-# Reachability evidence
+# Reachability / ambiguity evidence
 
 Residual proof run `33912205981` ✅:
 
@@ -169,11 +168,7 @@ Breakdown:
 
 These are reachability/classification evidence, not proof that all 55 exist only on `ct/is`.
 
----
-
-# Ambiguity rule
-
-Canonical order:
+Canonical ambiguity order:
 
 ```text
 card clear → classify
@@ -181,23 +176,12 @@ card ambiguous → robots-check exact detail
 allowed detail → inspect ONE description
 clear detail → classify
 trusted origin route may resolve transaction if non-conflicting
-still ambiguous / unavailable → show user → user decides
+still ambiguous / unavailable → human arbitration
 ```
 
 No bulk detail crawl.
 
-Latest bounded detail proof:
-
-- run `33917777332` ✅
-- artifact `9953873543`
-- 4 allowed details inspected;
-- all four sampled cases ultimately resolved without a new human arbitration.
-
-Methodology counter-example `8298787`: nonsense card title but explicit public description = apartment sale, Sidi Othmane.
-
-## Human precedent #1
-
-Source ID `8322103`: explicit room/colocation inside an apartment.
+Human precedent #1, source ID `8322103`:
 
 ```text
 property_type = apartment
@@ -205,76 +189,141 @@ transaction_type = rent
 offer_scope = room
 ```
 
-A normal apartment mentioning “1 chambre” remains `whole_property`.
-
 ---
 
-# P0-D decisive proof
+# P0-D decisive evidence
 
-## Standard sitemap/index route
+## 1. Standard sitemap route
 
-Run `33917777332`: standard sitemap candidates were robots-allowed but all returned 404.
-
-Artifact `9953831525`, digest `sha256:3b370500a1e34b3223a49ca605eea0072b45f3ec5981e02b7707f402177a2c3e`.
+Run `33917777332`: standard sitemap candidates were robots-allowed but returned 404.
 
 No standard public sitemap traversal found.
 
-## Deepest-known authorized leaf test
+## 2. Oasis lower bound
 
-Dedicated workflow:
-
-`Data Ingestion Lot 9 P0-D Authorized Traversal`
-
-Run `33920078656` ✅ SUCCESS.
-
-Artifact:
-
-- ID `9954738361`
-- digest `sha256:019f4e8a937667866427f7f6bb151da44cb9142878b6219304d15c2db2c0a1fc`
-
-Safety:
-
-- 7 public `sd` page-1 requests;
-- robots checked per URL;
-- 0 `:p:N`;
-- 0 details;
-- 0 DB/prod/images;
-- no source block.
-
-Oasis sample:
-
-| Leaf | Total | Page-1 IDs | Minimum inaccessible |
-|---|---:|---:|---:|
-| apartments sale | 117 | 32 | **85** |
-| apartments rent | 281 | 32 | **249** |
-| offices/commercial sale | 16 | 16 | 0 |
-| offices/commercial rent | 108 | 32 | **76** |
-| locaux sale | 12 | 12 | 0 |
-| locaux rent | 24 | 24 | 0 |
-| luxury villas/houses sale | 33 | 32 | **1** |
-
-Exact summary:
+Run `33920078656`:
 
 ```text
 7 leaves
-3 complete on page 1
+3 complete page 1
 4 overflow
-180 unique page-1 IDs
-sampled minimum unexplained remainder = 411
-current known first-party leaf model certifiable = false
+180 visible IDs
+minimum unexplained remainder = 411
 ```
 
-**Important:** 411 is only the lower bound across these seven Oasis leaves, not the Morocco-wide restricted remainder.
+411 is an Oasis-sample lower bound only.
 
-Current conclusion: the known first-party model cannot provide complete authorized traversal because some deepest-known exhaustive `sd` leaves still overflow while colon pagination is robots-disallowed.
+## 3. Multi-city structural proof
+
+Run `33920686277` tested 13 robots-allowed `sd` leaves across Casablanca, Rabat and Marrakech.
+
+Artifact:
+
+- `9955181479`
+- digest `sha256:31cb27d4952ad6bfdf5d68d3a17df7db783c87f005d0d544610647a2f5a7d77d`
+
+Exact:
+
+```text
+13 leaves tested
+3 complete page 1
+10 overflow
+372 IDs visible
+minimum unexplained remainder >= 2,223
+```
+
+Workflow failure is intentional gate semantics: current traversal is not certifiable. It is not an implementation crash.
+
+**Conclusion: first-party overflow is structural, not local to Oasis.**
+
+## 4. Partition Inventory
+
+Run `33920795086` ✅ SUCCESS.
+
+Artifact:
+
+- `9955242717`
+- digest `sha256:326116c241715734a08a147b914def093d3cc4c3946763ea5bfa3094ee153061`
+
+Inspected overflow leaf:
+
+```text
+/sd/casablanca/oasis/appartements-a-louer
+total = 281
+page-1 IDs = 32
+```
+
+Exposed inventory includes `ct`, `is`, language aliases, business/project links and filter fields such as price/surface/rooms.
+
+**No exposed candidate was proven exhaustive + disjoint + complete.**
+
+Rule:
+
+```text
+inventory ≠ partition proof
+```
+
+## 5. Common Crawl recovery lane
+
+Run `33921381132` ✅ SUCCESS.
+
+Index: `CC-MAIN-2026-30`.
+
+Artifact:
+
+- `9955501704`
+- digest `sha256:cfd55d0e64d944274aebf57e88c7f23082363a27e9ac887acc08124d162245e6`
+
+Queries:
+
+```text
+https://www.mubawab.ma/fr/a/*/*
+https://www.mubawab.ma/fr/pa/*/*
+```
+
+Exact bounded result:
+
+```text
+749 CC rows observed
+366 Mubawab detail rows / unique source IDs
+112 IDs absent from historical 31,731
+0 Mubawab live requests
+0 detail fetches
+0 DB/prod/image writes
+coverage_state = external_index_residual
+```
+
+Important: the 112 are **newly indexable IDs**, not yet 112 certified current active listings. Common Crawl can contain stale/historical pages.
 
 ---
 
-# Public denominator
+# P0-D canonical decision
 
-The ~102K public presentation remains a reconciliation anchor, not a certified unique-ID count.
+P0-D is now explicitly split:
 
-P0-E equation:
+```text
+first_party_authorized_traversal = FAIL
+external_public_index_recovery = ACTIVE / NOT YET COMPLETE
+```
+
+The known first-party model cannot certify complete traversal because:
+
+1. `:p:N` is robots-disallowed;
+2. fine `sd` leaves overflow in multiple cities;
+3. no standard sitemap traversal was found;
+4. Partition Inventory found no proven finer exhaustive partition.
+
+Common Crawl is the active recovery lane because it can reveal additional public Mubawab IDs with **zero Mubawab requests**.
+
+No robots/access-control bypass is permitted.
+
+---
+
+# P0-E denominator
+
+Public ~102K presentation remains a reconciliation anchor, not a certified unique-ID count.
+
+Equation:
 
 ```text
 unique authorized-accessible unit IDs
@@ -284,18 +333,23 @@ unique authorized-accessible unit IDs
 = explained public universe
 ```
 
-Never add overlapping route counters blindly. `is` is thematic/overlapping. Project hierarchy stays separate from unit inventory.
+Deterministic P0-E gate run `33920795113` ✅ SUCCESS.
+
+The implementation refuses a fake PASS based only on arithmetic equality with the public counter.
+
+**P0-E guard = GREEN. Real-world evidence = 🟡.**
 
 ---
 
 # NEXT EXACT
 
-1. expand the P0-D lower-bound measurement from Oasis to a bounded representative set of cities/neighborhoods/category×transaction leaves;
-2. record complete vs overflow leaves using actual page-1 source IDs and visible totals;
-3. continue searching only for public, robots-allowed exhaustive mechanisms;
-4. if no such first-party mechanism is found, formalize P0-E restricted-component reconciliation;
-5. keep P0-A/P0-B discovery running until repeated bounded probes stop revealing new route/dimension families;
-6. keep P0-C ambiguity process card → allowed detail → provenance → human only if still unresolved;
-7. Full Harvest remains BLOCKED until P0-A..P0-E all PASS.
+1. expand Common Crawl coverage with bounded safe queries/pages and useful index snapshots;
+2. deduplicate external-index IDs against frozen historical 31,731 and across snapshots;
+3. classify external IDs by provenance/freshness: likely current, stale/historical, project/non-unit, malformed/non-listing;
+4. preserve zero-request external discovery by default; no bulk Mubawab detail crawl;
+5. measure how much of known first-party overflow is explained by the external-index union;
+6. feed only qualified buckets into P0-E;
+7. continue P0-A/P0-B until repeated bounded probes stop finding new families/dimensions;
+8. keep Full Harvest BLOCKED until P0-A..P0-E all PASS.
 
 **Current chantier: Mubawab Phase 0 Coverage Proof 🔵**
