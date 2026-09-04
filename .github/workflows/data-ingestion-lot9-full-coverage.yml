@@ -3,6 +3,9 @@ name: Data Ingestion Lot 9 Coverage Proof Gate
 on:
   pull_request:
     paths:
+      - "lib/property-schema/core.ts"
+      - "lib/property-schema/adapters.ts"
+      - "data-ingestion/collection-adapter.ts"
       - "data-ingestion/sources/mubawab/config.json"
       - "data-ingestion/sources/mubawab/discovery.ts"
       - "data-ingestion/sources/mubawab/full-coverage.ts"
@@ -36,6 +39,7 @@ on:
       - "scripts/scrapers/__tests__/data-ingestion-lot9-phase0-reachability.test.ts"
       - "scripts/scrapers/__tests__/data-ingestion-lot9-phase0-residual-classifier.test.ts"
       - "scripts/scrapers/__tests__/data-ingestion-lot9-phase0-card-signals.test.ts"
+      - "scripts/scrapers/__tests__/data-ingestion-offer-scope.test.ts"
       - "scripts/scrapers/__tests__/robots-policy.test.ts"
       - ".github/workflows/data-ingestion-lot9-full-coverage.yml"
   workflow_dispatch:
@@ -64,6 +68,8 @@ jobs:
           run-id: 33906589600
       - name: Prove robots wildcard/query compliance before any live probe
         run: npx tsx --test scripts/scrapers/__tests__/robots-policy.test.ts
+      - name: Prove canonical room-scoped offer semantics
+        run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-offer-scope.test.ts
       - name: Prove Mubawab discovery regression remains green
         run: npx tsx --test scripts/scrapers/__tests__/mubawab-discovery-v2.test.ts
       - name: Prove Lot 9 deterministic full coverage partition planner
