@@ -36,6 +36,7 @@ test("marks explicit single-type titles clear and true multi-type titles ambiguo
   });
   assert.equal(apartment.status, "clear");
   assert.deepEqual(apartment.property_type_candidates, ["apartment"]);
+  assert.equal(apartment.offer_scope_candidate, "whole_property");
 
   const ambiguous = reviewCardSemantics({
     source_id: "2",
@@ -62,7 +63,7 @@ test("does not mistake Riad place names for a second property type", () => {
   assert.deepEqual(result.property_type_candidates, ["apartment"]);
 });
 
-test("keeps room and colocation offers behind the human ambiguity gate", () => {
+test("applies human precedent A to explicit room and colocation offers", () => {
   const result = reviewCardSemantics({
     source_id: "4",
     detail_family: "a",
@@ -71,8 +72,23 @@ test("keeps room and colocation offers behind the human ambiguity gate", () => {
     title_text: "Chambre meublée en colocation",
     card_text: "Chambre à louer dans un appartement de 100 m² à Casablanca",
   });
+  assert.equal(result.status, "clear");
+  assert.deepEqual(result.property_type_candidates, ["apartment"]);
+  assert.equal(result.offer_scope_candidate, "room");
+});
+
+test("re-escalates a room offer when the parent dwelling explicitly conflicts with the apartment precedent", () => {
+  const result = reviewCardSemantics({
+    source_id: "44",
+    detail_family: "a",
+    url: "https://www.mubawab.ma/fr/a/44/x",
+    route_url: "https://www.mubawab.ma/fr/is/x",
+    title_text: "Chambre meublée à louer",
+    card_text: "Chambre à louer dans une villa à Casablanca",
+  });
   assert.equal(result.status, "ambiguous_or_unmapped");
-  assert.deepEqual(result.property_type_candidates.sort(), ["apartment", "room_or_colocation"]);
+  assert.deepEqual(result.property_type_candidates, ["villa"]);
+  assert.equal(result.offer_scope_candidate, "room");
 });
 
 test("uses visible card description when the title is vague", () => {
