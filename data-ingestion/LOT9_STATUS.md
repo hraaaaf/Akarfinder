@@ -1,10 +1,14 @@
 # Lot 9 Status — Mubawab Full Coverage
 
-**Status: 🟡 OPEN — matrice classique éteinte à 29 741 IDs ; réconciliation catalogue en cours**
+**Status: 🟡 OPEN — matrice classique éteinte à 29 741 IDs ; réconciliation catalogue vers 100 % en cours**
 
 ## Goal
 
-Parcourir exhaustivement le périmètre Mubawab accessible et autorisé, mesurer le stock réel d'annonces uniques disponible et expliquer quantitativement l'écart avec le catalogue public Mubawab avant d'ouvrir une deuxième source.
+Parcourir exhaustivement le périmètre Mubawab publiquement accessible, autorisé et pertinent, mesurer le stock réel d'annonces uniques disponible et réconcilier intégralement cet inventaire avec le catalogue public Mubawab avant d'ouvrir une deuxième source.
+
+**Critère produit non négociable : Lot 9 ne se ferme pas à un seuil arbitraire de 30K, 50K ou 90K. La cible est 100 % des annonces Mubawab publiquement accessibles et pertinentes, dédupliquées par `source_id`, sous réserve des limites de sécurité et d'accès documentées ci-dessous.**
+
+Le compteur marketing global Mubawab n'est pas assimilé aveuglément à un nombre d'URLs uniques : tout écart résiduel entre compteur public, surfaces accessibles et `source_id` uniques doit être expliqué et quantifié.
 
 Le Lot 9 mesure des `source_id` uniques de discovery. Le passage complet en objets canoniques et la certification du dataset massif relèvent du Lot 10.
 
@@ -46,7 +50,9 @@ Le Lot 9 mesure des `source_id` uniques de discovery. Le passage complet en obje
 - extinction finale matrice classique : run `33899083917` ✅, **29 741 IDs uniques** ;
 - artifact baseline finale : `9947122701`, digest `sha256:1b27ba2946bd671644e6ec1bf03a396df6c86a51706f5a17265466d041a0cb6d` ;
 - probe national `sc/cc` : run `33900816318` ✅ ;
-- artifact probe : `9947658003`, digest `sha256:76c7cc595ce60dda64e3d5dbb0978fc26f5493b72d5f6e36b757775ddb70f5f7`.
+- artifact probe : `9947658003`, digest `sha256:76c7cc595ce60dda64e3d5dbb0978fc26f5493b72d5f6e36b757775ddb70f5f7` ;
+- deep probe bureaux pages 3–10 : run `33905288725` ✅ ;
+- artifact deep probe : `9949244830`, digest `sha256:b4bf60fab864007b8a0fa3824d28aca132701b5b074df6113c47093e4a541c6d`.
 
 ## Baseline classique finale
 
@@ -59,9 +65,9 @@ Run `33899083917` ✅ SUCCESS.
 
 ## Catalog reconciliation
 
-Le compteur public Mubawab observé le 2026-09-04 affiche environ **102K biens immobiliers** sur le site Maroc.
+Le compteur public Mubawab observé le 2026-09-04 oscille autour de **102K biens immobiliers** sur le site Maroc selon la variante de page.
 
-Ce compteur n'est pas traité comme 102K annonces uniques exploitables. Il sert uniquement de référence de couverture à réconcilier.
+Ce compteur n'est pas traité comme 102K annonces uniques exploitables. Il sert de référence de couverture obligatoire à réconcilier.
 
 Écart apparent après extinction classique :
 
@@ -101,31 +107,37 @@ Détail :
 - `sc-office-rent` : 64 uniques, 0 connu, **64 nouveaux**, overlap **0 %** ;
 - `sc-commercial-rent` : 64 uniques, 59 connus, **5 nouveaux**, overlap 92,2 %.
 
-### Décision
+## Deep probe bureaux — preuve du 2026-09-04
 
-Les surfaces `sc/bureaux-et-commerces-a-vendre` et `sc/bureaux-et-commerces-a-louer` sont le meilleur signal de stock manquant : **126/126 IDs de l'échantillon étaient absents de la baseline classique**.
+Run `33905288725` ✅ SUCCESS.
 
-Cela ne justifie pas encore d'activer `office_sale/rent` dans la matrice `st`, car les routes `sc` sont agrégées `bureaux-et-commerces` et ne prouvent pas une taxonomie distincte Bureau vs Local commercial.
+Sécurité :
 
-## Deep probe bureaux — en cours
-
-HEAD : `cd932c0ba2b06400fc8dffcc22c24b639396c680`.
-
-Le gate Lot 9 #63 exécute un probe borné uniquement sur les deux surfaces `sc` bureaux/commerces :
-
+- 2 surfaces ;
 - pages 3 à 10 ;
 - 8 pages par surface ;
 - 16 requêtes max ;
 - délai 2 750 ms ;
 - robots vérifiés ;
-- 403/429 transformé en blocage explicite ;
 - 0 détail / 0 image / 0 DB / 0 prod.
 
-Le code supporte désormais des fenêtres de pages bornées `start_page + pages`, avec garde de sécurité et tests dédiés.
+Résultat :
 
-## Closure rule
+- `sc-office-sale` pages 3–10 : **248 IDs uniques, 248 nouveaux vs baseline 29 741, overlap 0 %** ;
+- `sc-office-rent` pages 3–10 : **256 IDs uniques, 256 nouveaux vs baseline 29 741, overlap 0 %** ;
+- total deep probe : **504 IDs uniques, 504 nouveaux vs baseline, 0 doublon inter-surface**.
 
-Lot 9 ne sera CLOSED que si les deux conditions suivantes sont satisfaites :
+Important : ce deep probe a été comparé à la baseline classique, pas à l'artifact du premier probe `sc/cc`. Le cumul global exact entre les deux probes n'est donc pas encore certifié. Le prochain état cumulatif doit persister les listes de `source_id` et faire une union globale explicite avant d'afficher un compteur total unique.
+
+### Décision
+
+Les surfaces `sc/bureaux-et-commerces-a-vendre` et `sc/bureaux-et-commerces-a-louer` sont un réservoir confirmé de stock manquant.
+
+Cela ne justifie toujours pas d'activer `office_sale/rent` dans la matrice `st`, car les routes `sc` sont agrégées `bureaux-et-commerces` et ne prouvent pas une taxonomie distincte Bureau vs Local commercial.
+
+## Closure rule — 100 % Mubawab
+
+Lot 9 ne sera CLOSED que si les conditions suivantes sont satisfaites :
 
 ### A — Full Coverage technique
 
@@ -133,20 +145,27 @@ Lot 9 ne sera CLOSED que si les deux conditions suivantes sont satisfaites :
 - aucun checkpoint perdu ;
 - manifest final avec pages, uniques, doublons, erreurs, stops et distribution par scope.
 
-### B — Catalog reconciliation
+### B — Catalog reconciliation exhaustive
 
-- inventaire des familles / transactions / villes / zones réellement présentes sur Mubawab ;
-- mesure des catégories manquantes dans la matrice actuelle ;
-- extension uniquement pour les routes vérifiées, autorisées et sémantiquement sûres ;
+- inventaire complet des familles / transactions / villes / zones réellement présentes sur Mubawab ;
+- couverture de toutes les routes publiques, autorisées, pertinentes et sémantiquement sûres ;
+- pagination de chaque surface jusqu'à extinction mesurable (`zero_new_unique_ids` ou fin de catalogue) ;
+- union globale persistante de tous les `source_id` afin d'éviter tout double comptage entre `st`, `sc`, `cc`, vacances et autres surfaces ;
 - comparaison finale `catalogue public affiché ↔ IDs accessibles ↔ IDs uniques discovery` ;
-- tout delta résiduel important doit être expliqué et quantifié.
+- aucun delta significatif non expliqué.
+
+### C — Interdiction de faux 100 %
+
+Un ratio de couverture ne peut être annoncé comme 100 % que si son dénominateur est prouvé. Si le compteur public inclut des projets, unités, doublons, annonces non indexables ou contenus non accessibles, ces éléments doivent être quantifiés séparément au lieu d'être artificiellement comptés comme annonces uniques.
 
 ## Next exact
 
-1. certifier le deep probe bureaux pages 3–10 ;
-2. mesurer son rendement marginal et l'overlap avec la baseline 29 741 ;
-3. si le rendement reste élevé, construire une campagne `sc` persistante et bornée jusqu'à extinction de ces surfaces ;
-4. conserver la taxonomie Bureau/Local commercial indépendante de la simple route agrégée ;
-5. auditer ensuite villes/zones manquantes, location vacances et neuf/projets ;
-6. produire la réconciliation finale avant fermeture Lot 9 ;
-7. seulement ensuite ouvrir Lot 10.
+1. transformer les probes `sc/cc` en état cumulatif persistant qui conserve les `source_id` eux-mêmes ;
+2. recalculer l'union exacte `baseline 29 741 + probe national + deep probe bureaux` ;
+3. crawler les surfaces bureaux `sc` par fenêtres bornées jusqu'à extinction ;
+4. auditer et couvrir villes/zones manquantes ;
+5. auditer et couvrir location vacances ;
+6. auditer immobilier neuf / projets et déterminer ce qui représente des annonces unitaires vs des agrégats de projet ;
+7. auditer les agrégats `cc` pour détecter tout stock encore absent après les surfaces spécialisées ;
+8. poursuivre jusqu'à une réconciliation complète du catalogue public ;
+9. seulement ensuite fermer Lot 9 et ouvrir Lot 10.
