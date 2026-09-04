@@ -8,8 +8,10 @@ import {
   checkpointPartition,
   completePartition,
   failPartition,
+  isRetryablePartitionError,
   markPartitionRunning,
   nextFullCoveragePartition,
+  requeueRetryableFailedPartitions,
 } from "../../../data-ingestion/sources/mubawab/full-coverage.js";
 
 describe("Lot 9 Mubawab Full Coverage planner", () => {
@@ -101,6 +103,30 @@ describe("Lot 9 Mubawab Full Coverage planner", () => {
     assert.equal(failed.status, "failed");
     assert.deepEqual(failed.errors, ["HTTP 502"]);
     assert.throws(() => nextFullCoveragePartition(failed, 25), /lot9_partition_not_completed/);
+  });
+
+  it("requeues only bounded transient failures and preserves the exact checkpoint", () => {
+    const initial = buildInitialFullCoveragePlan(3)[0];
+    const page1 = checkpointPartition(markPartitionRunning(initial), {
+      page: 1,
+      listings_discovered: 20,
+      unique_added: 20,
+    });
+    const transient = failPartition(page1, "HTTP 502 for https://example.test/page2");
+    const requeued = requeueRetryableFailedPartitions([transient], 3)[0];
+
+    assert.equal(isRetryablePartitionError("HTTP 502 for x"), true);
+    assert.equal(isRetryablePartitionError("HTTP 403 for x"), false);
+    assert.equal(requeued.status, "pending");
+    assert.equal(requeued.next_page, 2);
+    assert.equal(requeued.pages_processed, 1);
+    assert.deepEqual(requeued.errors, transient.errors);
+
+    const blocked = { ...transient, errors: ["HTTP 403 for x"] };
+    assert.equal(requeueRetryableFailedPartitions([blocked], 3)[0].status, "failed");
+
+    const exhausted = { ...transient, errors: ["HTTP 502", "HTTP 502", "HTTP 502"] };
+    assert.equal(requeueRetryableFailedPartitions([exhausted], 3)[0].status, "failed");
   });
 
   it("builds source URLs inside the partition and preserves source route semantics", () => {
