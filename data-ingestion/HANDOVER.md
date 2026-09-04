@@ -1,154 +1,202 @@
 # HANDOVER — AkarFinder Data Ingestion
 
-Date: 2026-09-04
+**Date:** 2026-09-04
 
-## Boussole canonique
+## Read order
 
-Lire dans cet ordre :
+1. `data-ingestion/canonical.md` — authoritative architecture + roadmap;
+2. `data-ingestion/MUBAWAB_PHASE0_COVERAGE_PROOF.md` — active Phase 0 proof;
+3. `data-ingestion/LOT9_STATUS.md` — detailed Lot 9 historical/status evidence;
+4. `data-ingestion/HANDOVER.md` — this operational snapshot.
 
-1. `data-ingestion/canonical.md` — architecture + roadmap canonique actuelle ;
-2. `data-ingestion/HANDOVER.md` — état opérationnel courant ;
-3. `data-ingestion/LOT9_STATUS.md` — chantier courant ;
-4. `data-ingestion/LOT8_STATUS.md` — closeout Lot 8 ;
-5. `data-ingestion/LOT7_STATUS.md` — closeout Lot 7.
+---
 
-## Goal produit actuel
+# Current product goal
 
-Atteindre puis maintenir **≥ 100 000 annonces canoniques exploitables** dans AkarFinder.
+AkarFinder ultimately targets **≥100,000 canonical exploitable listings** across all sources.
 
-Séquence verrouillée :
+Before adding another portal, the current source pilot Mubawab must reach **100% explained coverage of all publicly accessible, authorized and relevant listings**.
+
+This means:
+
+- prove the coverage model first;
+- then harvest all approved surfaces to extinction;
+- reconcile the final unique-ID universe against Mubawab's public catalog presentation;
+- no material unexplained residual.
+
+---
+
+# Repo / branch / PR
+
+- repo: `hraaaaf/Akarfinder`
+- branch: `feat/data-ingestion-canonical`
+- PR: `#996`
+- keep PR OPEN / DRAFT / unmerged;
+- no merge without explicit user authorization;
+- no Vercel deployment;
+- no production DB writes;
+- do not touch `scripts/scrapers/output/akarfinder.db` during sandbox/coverage proofs.
+
+---
+
+# Roadmap
 
 ```text
 Lots 1–8 CLOSED
       ↓
-Lot 9  — Mubawab Full Coverage
+Lot 9 Phase 0 — Coverage Proof  ← ACTIVE
+      ↓
+Lot 9 Phase 1 — Full Harvest to extinction
+      ↓
+Lot 9 Reconciliation — prove 100% explained Mubawab coverage
       ↓
 Lot 10 — Massive Dataset Certification
       ↓
-Lot 11 — Massive AkarFinder Ingestion
+Lot 11 — Controlled Massive AkarFinder Ingestion
       ↓
-Lot 12 — Multi-source jusqu’à ≥100K
+Lot 12 — Add sources if needed to reach ≥100K
 ```
 
-Le seuil 100K se mesure après normalisation / déduplication. On mesure d'abord le maximum réel de Mubawab avant d'ouvrir un deuxième portail.
+**Full Harvest is BLOCKED until Phase 0 PASS.**
 
-## Repo / branche / PR
+---
 
-- Repo : `hraaaaf/Akarfinder`
-- Branche : `feat/data-ingestion-canonical`
-- PR : `#996`
-- état attendu : OPEN / DRAFT / non mergée ;
-- aucun merge sans autorisation explicite ;
-- aucun déploiement Vercel ;
-- aucun write production ;
-- ne jamais toucher à `scripts/scrapers/output/akarfinder.db` pendant les preuves.
+# Current exact data state
 
-## Lots
+## Classic matrix
 
-- Lots 1–8 : ✅ CLOSED
-- Lot 9 : 🟡 OPEN — Mubawab Full Coverage
-- Lot 10 : ⚪ À FAIRE
-- Lot 11 : ⚪ À FAIRE
-- Lot 12 : ⚪ À FAIRE
+Run `33899083917` ✅
 
-## Lot 9 — architecture certifiée
+- 12 cities × 11 enabled categories;
+- technical extinction of that configured matrix;
+- **29,741 unique Mubawab source IDs**;
+- artifact `9947122701`;
+- digest `sha256:1b27ba2946bd671644e6ec1bf03a396df6c86a51706f5a17265466d041a0cb6d`.
 
-Briques :
+## National office campaign
 
-- `full-coverage.ts` — planner 132 scopes ;
-- `full-coverage-runner.ts` — vague bornée + dedup + checkpoint ;
-- `full-coverage-state.ts` — état persistant inter-run ;
-- `full-coverage-campaign.ts` — orchestration multi-vagues ;
-- `live-campaign-policy.ts` — montée en charge bornée ;
-- `scripts/mubawab-full-coverage-live-campaign.ts` — exécution live discovery-only.
+Run `33906589600` ✅
 
-Preuves structurantes :
+- persistent global source-ID union;
+- 64 pages requested;
+- **+1,990 unique IDs** globally;
+- office sale terminal at page 24 with 710 unique IDs;
+- office rent reached page 40 with 1,280 unique IDs and was still open;
+- **current exact persistent union = 31,731 unique IDs**;
+- artifact `9949834432`;
+- digest `sha256:964a8cc44255bfd793615c4adea1c3be4238bed87b09aad0514c326da681bacc`.
 
-- planner : run `33881976620` ✅ ;
-- runner : run `33882260391` ✅ ;
-- micro-vague live : run `33882641901` ✅ ;
-- orchestration state/campaign : run macOS `33887383769` ✅ ;
-- policy de scale : run `33890791066` ✅.
+This proved the original 12-city matrix was incomplete as a model of the portal.
 
-## Lot 9 — progression live canonique
+## Public catalog anchor
 
-### Campagne persistante initiale
+Mubawab home observed on 2026-09-04 around **102.5K properties**.
 
-Run `33889776735` ✅ SUCCESS.
+This is NOT yet a certified unique-listing denominator.
 
-- 18 / 18 pages ;
-- 573 IDs uniques ;
-- 0 blocage ;
-- artifact `9943410758` ;
-- digest `sha256:50f5bcbf82543f5a6743cdd3b287e137a236773ea1de4ebf131590fe5ddc75d1`.
+---
 
-### Reprise inter-run
+# Active chantier — Lot 9 Phase 0 Coverage Proof
 
-Run `33890195931` ✅ SUCCESS.
+Canonical working file:
 
-- artifact précédent restauré ;
-- même `run_id` ;
-- cumul 32 / 32 pages ;
-- 889 IDs uniques ;
-- 28 doublons ;
-- 3 scopes terminaux ;
-- artifact `9943531219` ;
-- digest `sha256:911ca23cc63c5b576f2bf3f2aaed791df2fe1a99a183a76820edfb1e423b5d43`.
+`data-ingestion/MUBAWAB_PHASE0_COVERAGE_PROOF.md`
 
-Un replay concurrent a reproduit le même état 889 depuis l'ancien artifact. Il n'a fait aucun write DB/prod et n'est pas utilisé comme progression canonique.
+Phase 0 gates:
 
-### Scale-120
+- **P0-A Route families** — identify every public inventory-bearing route family;
+- **P0-B Dimensions** — enumerate transactions, property types, cities/localities and product dimensions;
+- **P0-C Reachability** — prove IDs from broad control surfaces are explainable by harvest surfaces;
+- **P0-D Pagination** — prove paging and terminal behavior for each harvest class;
+- **P0-E Denominator** — reconcile the ~102.5K public universe into unique listings/projects/duplicates/other explained buckets.
 
-Run `33891104950` ✅ SUCCESS, job `101082690570`, HEAD `2709ce27725b2455741550d7ddbc858373d7178e`.
+All five must PASS before Full Harvest.
 
-Configuration : 8 vagues × 5 partitions × 3 pages, 120 pages théoriques max, délai 1 750 ms.
+---
 
-Résultat :
+# Phase 0 implementation already added
 
-- 110 pages réelles réussies ;
-- 0 403/429 ;
-- 0 kill-switch ;
-- +2 964 IDs uniques ;
-- **cumul 3 853 IDs uniques** ;
-- cumul 4 110 refs découvertes ;
-- 257 doublons ;
-- 142 / 142 pages réussies ;
-- 52 partitions complétées ;
-- 14 scopes terminaux ;
-- 118 scopes actifs ;
-- 80 scopes initiaux encore jamais ouverts ;
-- 38 fenêtres profondes déjà préparées.
+## Route family registry
 
-Artifact :
+`data-ingestion/sources/mubawab/coverage-proof.ts`
 
-- id `9943999589` ;
-- name `lot9-live-campaign-scale-120-proof` ;
-- digest `sha256:dda924a70d25bf29a8c2444719aced51111e0877bed1248ef76500a51bb1b7ba`.
+Current explicit families:
 
-Rendement unique cumulé des villes déjà touchées : Casablanca 793, Rabat 704, Marrakech 923, Tanger 830, Agadir 603.
+- `st` → primary harvest candidate;
+- `sc` → primary harvest candidate;
+- `cc` → control/diagnostic;
+- `t` → city aggregate control/geography discovery;
+- vacation `st` → distinct primary harvest candidate;
+- `pl` → project/non-unit until proven otherwise;
+- detail `a/pa` → identity, not Phase 0 discovery surface.
 
-## Safety live verrouillée
+## Tests
 
-- robots avant requête ;
-- User-Agent identifiable ;
-- aucun cookie / login / CAPTCHA / contournement d'accès ;
-- stop global sur 403 / 429 ;
-- détail = 0 ;
-- images = 0 ;
-- DB = 0 ;
-- prod = 0 ;
-- délai minimum policy = 1 500 ms ;
-- plafond policy = 300 pages théoriques par exécution.
+`scripts/scrapers/__tests__/data-ingestion-lot9-phase0-coverage-proof.test.ts`
 
-## NEXT EXACT
+Tests prove:
 
-1. repartir exclusivement de l'artifact `9943999589` / état 3 853 uniques ;
-2. poursuivre la matrice initiale des 80 scopes encore jamais ouverts ;
-3. conserver une montée progressive et bornée ;
-4. une fois les 132 scopes initiaux touchés, parcourir les fenêtres profondes `p4+` jusqu'à `zero_new_unique_ids` ;
-5. maintenir dedup + checkpoint + stops sécurité ;
-6. fermer Lot 9 uniquement avec manifest Full Coverage final et stock unique réel ;
-7. ouvrir Lot 10 seulement après cette mesure ;
-8. garder PR #996 OPEN / DRAFT / non mergée, zéro Vercel / zéro prod.
+- harvest/control/project/identity semantics remain distinct;
+- project pages cannot silently become unit-listing inventory;
+- Full Harvest remains blocked until P0-A…P0-E all PASS.
 
-**Lot 9 : OPEN — 3 853 IDs uniques découverts, surface initiale encore incomplète 🟡**
+## CI
+
+`.github/workflows/data-ingestion-lot9-full-coverage.yml`
+
+Renamed logically to Phase 0 coverage gate behavior.
+
+Important change:
+
+- the previous broad office live campaign was removed from the automatic PR gate;
+- the gate now runs semantic/tests only;
+- Phase 0 permits only small bounded live probes when needed to prove a coverage gate.
+
+---
+
+# Current route evidence
+
+Public observations already establish at least:
+
+- `t` city aggregate pages, e.g. Casablanca;
+- `st` city/category pages;
+- `sc` national category pages;
+- `cc` national broad aggregate pages;
+- vacation inventory as a distinct transaction family;
+- `pl` new-development/project pages;
+- detail identities using `a` / `pa`.
+
+Public project catalogue evidence also exposes localities outside the original 12-city matrix, including examples such as Meknès, Essaouira, Zenata, Asilah, Had Soualem, Ouislane and Harhoura.
+
+Therefore no fixed 12-city list may be treated as exhaustive.
+
+---
+
+# Safety
+
+- robots check before live requests;
+- identifiable User-Agent;
+- no auth/CAPTCHA/access bypass;
+- explicit 403/429 → stop;
+- bounded request budgets;
+- no detail pages during Phase 0 unless explicitly justified by a later proof design;
+- no images;
+- no DB/prod;
+- no deploy;
+- no merge.
+
+---
+
+# NEXT EXACT
+
+1. certify the new Phase 0 registry/test gate on CI;
+2. implement bounded public dimension inventory for cities/localities + categories/transactions;
+3. compare discovered dimensions against `config.json`;
+4. emit `missing_geographies` and `missing_semantics`;
+5. build bounded reachability sampler for `cc` and `t` control surfaces;
+6. prove pagination/terminal semantics for `cc`, `t`, vacation and `pl`;
+7. build the denominator reconciliation model;
+8. close Phase 0 only when all five gates PASS;
+9. only then launch Full Harvest with one persistent global union of source IDs.
+
+**Current chantier: Mubawab Phase 0 Coverage Proof — ACTIVE 🔵**
