@@ -9,12 +9,13 @@ describe("Mon Projet workspace", () => {
   it("uses one canonical Mon Projet vocabulary and preserves the authenticated workspace", () => {
     const companionPage = source("app/compagnon/page.tsx");
     const projectPage = source("app/mon-projet/page.tsx");
-    const projectWizard = source("components/companion/MonProjetWizardP1A.tsx");
+    const projectWizard = source("components/companion/MonProjetWizardP2.tsx");
     const workspacePage = source("app/mon-projet/espace/page.tsx");
     const workspace = source("components/account/UserContinuityWorkspace.tsx");
     assert.ok(companionPage.includes('permanentRedirect("/mon-projet")'));
-    assert.ok(projectPage.includes("MonProjetWizardP1A"));
-    assert.ok(projectWizard.includes("Mes projets enregistrés"));
+    assert.ok(projectPage.includes("MonProjetWizardP2"));
+    assert.ok(projectWizard.includes('href="/mon-projet/espace"'));
+    assert.ok(projectWizard.includes("Mes projets"));
     assert.ok(workspacePage.includes("Mes projets AkarFinder"));
     assert.ok(workspace.includes("Mon Projet AkarFinder"));
     assert.ok(!workspace.includes("Mon espace AkarFinder"));

@@ -25,8 +25,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     .filter((n) => isSeoEligibleGeoPair(n.citySlug, n.slug))
     .map((n) => `/immobilier/${n.citySlug}/${n.slug}`);
 
+  // Do not emit a synthetic lastModified timestamp. Google expects <lastmod>
+  // to represent the page's last significant change, not sitemap generation time.
   return [...baseRoutes, ...cityRoutes, ...neighborhoodRoutes].map((route) => ({
     url: `${siteConfig.siteUrl}${route}`,
-    lastModified: new Date(),
   }));
 }

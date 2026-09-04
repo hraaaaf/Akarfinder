@@ -47,9 +47,9 @@ describe("#19G Homepage & Search Entry Orchestration V1", () => {
   it("provides a real canonical Mon Projet page backed by the structured state machine and continuity handoff", () => {
     const legacyPage = readFileSync(join(process.cwd(), "app/compagnon/page.tsx"), "utf8");
     const projectPage = readFileSync(join(process.cwd(), "app/mon-projet/page.tsx"), "utf8");
-    const wizard = readFileSync(join(process.cwd(), "components/companion/MonProjetWizardP1A.tsx"), "utf8");
+    const wizard = readFileSync(join(process.cwd(), "components/companion/MonProjetWizardP2.tsx"), "utf8");
     assert.ok(legacyPage.includes('permanentRedirect("/mon-projet")'));
-    assert.ok(projectPage.includes("<MonProjetWizardP1A"));
+    assert.ok(projectPage.includes("<MonProjetWizardP2"));
     assert.ok(wizard.includes("/api/companion/transition"));
     assert.ok(wizard.includes("companionProfileToSearchParams"));
     assert.ok(wizard.includes("/api/me/continuity"));

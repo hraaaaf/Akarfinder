@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { NationalMapRouter } from "@/components/map/NationalMapRouter";
@@ -10,10 +11,11 @@ import "./p0-polish.css";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Carte immobilière du Maroc — Villes et quartiers | AkarFinder",
   description:
     "Explorez le Maroc par ville puis quartier. Les contours publiés sont des repères AkarFinder sourcés, sans prétention de frontière administrative officielle.",
+  alternates: { canonical: "/map" },
 };
 
 type MapPageProps = {
