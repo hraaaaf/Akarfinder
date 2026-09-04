@@ -1,7 +1,7 @@
 export type MubawabCoverageRole = "primary_harvest" | "control" | "project_non_unit" | "identity_only";
 
 export type MubawabRouteFamily = {
-  family: "st" | "sc" | "cc" | "ct" | "t" | "is" | "pl" | "vacation_st" | "detail";
+  family: "st" | "sc" | "cc" | "ct" | "crp" | "t" | "is" | "pl" | "vacation_st" | "detail";
   role: MubawabCoverageRole;
   inventory_bearing: boolean;
   unit_listing_candidate: boolean;
@@ -32,7 +32,7 @@ export const MUBAWAB_ROUTE_FAMILIES: MubawabRouteFamily[] = [
     inventory_bearing: true,
     unit_listing_candidate: true,
     example: "https://www.mubawab.ma/fr/cc/immobilier-a-louer",
-    rationale: "broad aggregate used to detect unexplained residual listing ids",
+    rationale: "broad national aggregate used to detect unexplained residual listing ids",
   },
   {
     family: "ct",
@@ -40,7 +40,15 @@ export const MUBAWAB_ROUTE_FAMILIES: MubawabRouteFamily[] = [
     inventory_bearing: true,
     unit_listing_candidate: true,
     example: "https://www.mubawab.ma/fr/ct/casablanca/immobilier-a-vendre",
-    rationale: "city x transaction aggregate discovered by Phase 0; control until reachability proves whether it exposes residual inventory",
+    rationale: "city x transaction aggregate; control until full reachability is proven",
+  },
+  {
+    family: "crp",
+    role: "control",
+    inventory_bearing: true,
+    unit_listing_candidate: true,
+    example: "https://www.mubawab.ma/fr/crp/rabat-salé-zemmour-zaër/préfecture-de-rabat/immobilier-a-vendre",
+    rationale: "hierarchical region/prefecture aggregate discovered during Phase 0; redundancy vs other geography surfaces is not yet proven",
   },
   {
     family: "t",
@@ -56,7 +64,7 @@ export const MUBAWAB_ROUTE_FAMILIES: MubawabRouteFamily[] = [
     inventory_bearing: true,
     unit_listing_candidate: true,
     example: "https://www.mubawab.ma/fr/is/logement-vente_casablanca_pas-cher",
-    rationale: "indexed/search-like SEO surface discovered by Phase 0; control only until overlap/reachability semantics are proven",
+    rationale: "indexed/search-like thematic surface; control until residual inventory is fully explained",
   },
   {
     family: "vacation_st",
@@ -96,7 +104,7 @@ export const INITIAL_PHASE0_GATES: MubawabCoverageGate[] = [
   { id: "P0-A", name: "route families", status: "in_progress" },
   { id: "P0-B", name: "dimensions", status: "in_progress" },
   { id: "P0-C", name: "reachability", status: "in_progress" },
-  { id: "P0-D", name: "pagination", status: "in_progress" },
+  { id: "P0-D", name: "authorized pagination / complete traversal", status: "fail" },
   { id: "P0-E", name: "denominator reconciliation", status: "pending" },
 ];
 
