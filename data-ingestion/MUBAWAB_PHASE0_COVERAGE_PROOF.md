@@ -1,123 +1,124 @@
 # Mubawab Phase 0 — Coverage Proof
 
-**Status:** 🔵 ACTIVE
-
-**Date opened:** 2026-09-04
-
+**Status:** 🔵 ACTIVE  
+**Date opened:** 2026-09-04  
 **Canonical parent:** `data-ingestion/canonical.md`
 
-**Goal:** prove that the planned discovery model can cover 100% of the publicly accessible, authorized and relevant Mubawab listing universe before launching Full Harvest.
+**Goal:** prove that the planned method can cover 100% of the publicly accessible, authorized and relevant Mubawab listing universe before Full Harvest.
 
 ---
 
-## 1. Why Phase 0 exists
-
-The original Full Coverage matrix exhausted 12 cities × 11 categories and reached 29,741 unique IDs, but later national office surfaces immediately exposed thousands of additional IDs.
-
-Therefore:
+## 1. Core invariant
 
 ```text
 technical exhaustion of a configured matrix
 ≠
 proof that the matrix represents the whole portal
+≠
+proof that the traversal is authorized
 ```
 
-Phase 0 fixes that methodological error.
+Phase 0 must prove all three dimensions: coverage model, reachability, and authorized traversal.
 
 ---
 
-## 2. Current measured anchors
+## 2. Current gates
 
-### Public catalog reference
-
-Observed on Mubawab public home on 2026-09-04:
-
-- approximately **102,532 properties** displayed by the home counter.
-
-This number is a reconciliation anchor only. It is NOT yet certified as 102,532 unique listing IDs.
-
-### Current exact persistent discovery union
-
-- classic matrix baseline: **29,741 unique IDs**;
-- persistent national office campaign added: **1,990 unique IDs**;
-- current exact persistent union: **31,731 unique IDs**;
-- run: `33906589600` ✅;
-- artifact: `9949834432`;
-- artifact digest: `sha256:964a8cc44255bfd793615c4adea1c3be4238bed87b09aad0514c326da681bacc`.
-
-Office campaign state:
-
-- `sc-office-sale`: terminal at page 24, 710 unique IDs, `zero_refs`;
-- `sc-office-rent`: page 40 reached, 1,280 unique IDs, not terminal at that checkpoint.
-
-These numbers are evidence, not the Phase 0 target.
-
----
-
-## 3. Phase 0 gates
-
-| Gate | Goal | Status | Closure proof |
+| Gate | Goal | Status | Blocking fact |
 |---|---|---:|---|
-| P0-A Route families | identify every inventory-bearing public route family | 🟡 | route-family registry + live qualification |
-| P0-B Dimensions | enumerate transaction/type/geography/product dimensions | 🟡 | dimension registry + gap report |
-| P0-C Reachability | prove control-surface IDs are explained by harvest surfaces | 🟡 | sampled ID reachability matrix; residuals still unexplained |
-| P0-D Pagination | prove paging and terminal semantics for each harvest class | 🟡 | tests + live bounded evidence |
-| P0-E Denominator | reconcile ~102.5K into explainable buckets | ⚪ | denominator reconciliation report |
+| P0-A | Route families | 🟡 | `crp` newly discovered; family inventory still being qualified |
+| P0-B | Dimensions | 🟡 | historical 12-city matrix proven incomplete |
+| P0-C | Reachability | 🟡 | 55 sampled IDs absent from historical 31,731 union |
+| P0-D | Authorized traversal | 🔴 FAIL | robots `Disallow: /*:` covers Mubawab `:p:N` pagination |
+| P0-E | Denominator | ⚪ | public counters are not a certified unique-ID denominator |
 
-**Phase 0 PASS requires all five gates PASS.**
-
----
-
-## 4. Route-family registry V1
-
-| Family | Role in Phase 0 | Inventory-bearing | Decision |
-|---|---|---:|---|
-| `st` | primary harvest | yes | city × category |
-| `sc` | primary harvest | yes | national category |
-| vacation `st` | primary harvest | yes | distinct vacation transaction family |
-| `cc` | control | yes | national broad aggregate / residual detector |
-| `t` | control | yes | city aggregate / geography detector |
-| `ct` | control pending qualification | yes | city × transaction aggregate; cannot yet be treated as redundant |
-| `is` | control pending qualification | yes | thematic/search-like inventory surface; cannot yet be treated as redundant |
-| `pl` | project/non-unit bucket | yes | new-development catalogue, separate denominator bucket |
-| detail `a` / `pa` | identity only | no discovery role | listing identity only during Phase 0 |
-
-### Important correction
-
-The first dimension probe discovered two public route families missing from the V0 registry:
-
-- `ct`
-- `is`
-
-They are now explicitly represented and tested. Neither is promoted to primary harvest yet.
+**Phase 0 PASS requires P0-A..P0-E all PASS. Full Harvest remains BLOCKED.**
 
 ---
 
-## 5. Dimension discovery proof
+## 3. Historical discovery anchors, with compliance caveat
 
-Run `33908825931` ✅ SUCCESS.
+Classic run `33899083917` observed **29,741 unique IDs**.  
+Historical office run `33906589600` extended the persistent union to **31,731 unique IDs**.
 
-Artifact:
+Office observations:
 
-- id `9950573019`;
-- digest `sha256:3cb3720c97e89018d98966a09582593500e12fc57988b19878e20b5acb688256`.
+- sale: 710 IDs, technical terminal at page 24;
+- rent: 1,280 IDs through page 40;
+- artifact `9949834432`;
+- digest `sha256:964a8cc44255bfd793615c4adea1c3be4238bed87b09aad0514c326da681bacc`.
 
-Bounded probe:
+These are retained as historical observations/seed evidence.
 
-- 8 public requests;
+### Compliance correction
+
+The old robots checker only performed literal prefix matching. It did not correctly interpret wildcard rules or query strings.
+
+The current public Mubawab robots policy includes:
+
+```text
+User-agent: *
+Disallow: /*:
+Disallow: /*?n=1
+```
+
+Mubawab's historical colon pagination such as `:p:2` therefore matches a disallowed path form.
+
+The robots utility has been fixed to support:
+
+- wildcard `*`;
+- terminal `$`;
+- Allow/Disallow precedence;
+- path + query matching;
+- applicable user-agent groups.
+
+Regression test: `scripts/scrapers/__tests__/robots-policy.test.ts`.
+
+Absolute consequence: **no future `:p:N` request is permitted while the current rule applies**. Previous deep-pagination counts are not compliance certification.
+
+---
+
+## 4. P0-A — Route-family registry V2
+
+| Family | Phase 0 role | Current decision |
+|---|---|---|
+| `st` | primary candidate | city × category |
+| `sc` | primary candidate | national category |
+| vacation `st` | primary candidate | distinct vacation transaction |
+| `cc` | control | broad national residual detector |
+| `ct` | control | city × transaction aggregate |
+| `t` | control | city aggregate / geography detector |
+| `is` | control | thematic/search-like inventory surface; large residual observed |
+| `crp` | control pending qualification | hierarchical region/prefecture aggregate discovered during Phase 0 |
+| `pl` | project/non-unit | new-development catalogue, separate denominator bucket |
+| `a` / `pa` | identity only | not a Phase 0 discovery surface |
+
+No control family may be dismissed as redundant until its sampled IDs are explained by approved harvest surfaces or a documented denominator bucket.
+
+---
+
+## 5. P0-B — Dimension proof
+
+Bounded dimension probe run `33908825931` ✅ SUCCESS.
+
+Artifact `9950573019`, digest `sha256:3cb3720c97e89018d98966a09582593500e12fc57988b19878e20b5acb688256`.
+
+Safety:
+
+- 8 page-1/public requests;
 - robots checked;
 - 0 detail pages;
 - 0 DB writes;
 - 0 production writes;
-- 0 image downloads.
+- 0 images.
 
-Discovered route families:
+Discovered route families at that stage:
 
 ```text
 cc, ct, is, pl, sc, st, t
 ```
 
-Confirmed missing geographies relative to the historical 12-city config:
+Confirmed geographies absent from historical config:
 
 ```text
 dakhla
@@ -126,9 +127,7 @@ martil
 meknes
 ```
 
-These are only the geographies surfaced by the deliberately small probe, not the final exhaustive geography vocabulary.
-
-Confirmed unconfigured route/category semantics:
+Confirmed unconfigured semantics:
 
 ```text
 appartements-vacational
@@ -138,158 +137,133 @@ immobilier-a-louer
 immobilier-a-vendre
 ```
 
-The public project catalogue additionally exposes many localities that must be classified as unit-inventory geography vs project-only geography.
+Project pages expose many additional localities. They must be separated into unit-inventory geography vs project-only geography.
 
 ---
 
-## 6. P0-C Reachability proof #1 — `ct` / `is`
+## 6. P0-C — Reachability proof
 
-Run `33909710386` ✅ SUCCESS.
+### Probe #1
 
-Artifact:
+Run `33909710386` ✅ SUCCESS.  
+Artifact `9950937544`.  
+Digest `sha256:6c5324bd6cf894ba3f9738ad9a4f78cca1af2155615d70f41292c42df2e6274a`.
 
-- id `9950937544`;
-- digest `sha256:6c5324bd6cf894ba3f9738ad9a4f78cca1af2155615d70f41292c42df2e6274a`.
+A deliberately small page-1 comparison showed residuals on `ct` and especially `is`, but this was not enough to distinguish real gaps from page-order effects.
 
-Safety:
+### Probe #2 — residuals vs full historical union
 
-- 8 public page requests maximum;
-- delay 2,750 ms;
-- robots checked;
-- 0 detail pages;
-- 0 DB writes;
-- 0 production writes;
-- 0 image downloads.
+Run `33912205981` ✅ SUCCESS.  
+Residual classification artifact `9951845045`.  
+Digest `sha256:71e34e6f29ae2e7dde1954684af3ea061237d00d2c5a706f8417aee43c0796a9`.
 
-### Bounded comparison results
+Exact union comparison:
 
-| Control surface | IDs | Explained by bounded primary sample | Unexplained | Overlap | Verdict |
-|---|---:|---:|---:|---:|---|
-| `ct-casablanca-sale` | 31 | 26 | 5 | 83.9% | `inventory_bearing_residual` |
-| `ct-casablanca-rent` | 32 | 25 | 7 | 78.1% | `inventory_bearing_residual` |
-| `is-casablanca-sale-cheap` | 33 | 1 | 32 | 3.0% | `inventory_bearing_residual` |
-| `is-casablanca-rent-cheap` | 33 | 0 | 33 | 0% | `inventory_bearing_residual` |
+- sampled residual IDs: **78 unique**;
+- already known in historical 31,731 union: **23**;
+- absent from that union: **55**.
 
-### Interpretation rule
+| Surface | Sample residual | Already known | Absent |
+|---|---:|---:|---:|
+| `ct-casablanca-sale` | 5 | 5 | **0** |
+| `ct-casablanca-rent` | 8 | 3 | **5** |
+| `is-casablanca-sale-cheap` | 32 | 10 | **22** |
+| `is-casablanca-rent-cheap` | 33 | 5 | **28** |
 
-This probe was deliberately bounded. Therefore:
+Interpretation:
 
-```text
-unexplained in bounded sample
-≠
-proven globally unique to ct/is
-```
+- the initial `ct` sale residual was entirely a bounded-sample/page-order effect;
+- `ct` rent retains five candidate gaps;
+- `is` is the major unexplained surface with 50 candidate gaps across the two sampled routes;
+- these 55 IDs are not automatically assumed unique to `ct/is`; they require semantic/route classification.
 
-But it DOES prove:
-
-```text
-ct/is cannot currently be dismissed as aliases/control-only surfaces
-```
-
-The `is` result is especially strong: the tested sale surface had 32/33 IDs unexplained by the bounded primary sample, and the tested rent surface had 33/33 unexplained.
-
-P0-C therefore remains **OPEN** until those residual IDs are classified against a broader, semantically complete primary surface set.
+No live requests were needed for the residual-vs-union classification itself.
 
 ---
 
 ## 7. Human ambiguity gate — LOCKED
 
-Any listing whose semantic classification remains ambiguous must be escalated to the user before a final classification decision is recorded.
-
-This applies in particular when an observed listing could plausibly belong to more than one of:
-
-- property type;
-- transaction family;
-- geography/locality;
-- project vs unit listing;
-- office vs commercial premises;
-- harvest/control-specific residual classification.
-
-Required workflow:
+Any materially ambiguous listing must be escalated before final semantic classification.
 
 ```text
 ambiguous listing
-→ preserve source_id + source URL + observed evidence
-→ surface the listing to the user
-→ explain the competing classifications briefly
+→ preserve source_id + source URL + page-level evidence
+→ show it to user
+→ explain competing classifications
 → user arbitrates
-→ record the decision and reuse it consistently
+→ record decision as precedent only for genuinely equivalent cases
 ```
 
-Absolute rules:
+Rules:
 
-- no silent auto-classification of a materially ambiguous listing;
-- no majority/heuristic guess presented as fact;
-- ambiguity must not block clearly classified listings;
-- human decisions become precedent for equivalent cases when the semantics are genuinely the same;
-- if a case differs materially from an earlier precedent, escalate again.
-
-This human gate is part of the Phase 0 coverage methodology and carries forward into Full Harvest and later canonical ingestion.
+- do not guess;
+- do not bulk-open detail pages merely to avoid thinking;
+- extract listing-card evidence first;
+- ambiguity must not block clearly classified cases;
+- if a later case materially differs, escalate again.
 
 ---
 
-## 8. Pagination proof status
+## 8. P0-D — Authorized traversal blocker
 
-Already demonstrated:
+**Status: 🔴 FAIL / BLOCKED.**
 
-- `st` supports `:p:N` pagination and deep resumable windows;
-- national office `sc` supports `:p:N`;
-- office sale reached clean terminal behavior at page 24 (`zero_refs`);
-- persistent collector checkpoints after each page and preserves global source-ID union.
-
-Still to prove or classify:
-
-- `cc` terminal semantics;
-- `t` terminal semantics;
-- `ct` terminal semantics if it remains relevant;
-- `is` terminal semantics if it remains relevant;
-- vacation terminal semantics;
-- `pl` terminal semantics and project/unit meaning;
-- any newly discovered family.
-
----
-
-## 9. Denominator reconciliation model
-
-Target equation:
+Historical technical pagination:
 
 ```text
-public catalog universe
-=
-unique accessible unit-listing IDs
-+ project/non-unit objects
-+ aliases/duplicates
-+ documented inaccessible/non-indexable components
+/fr/...:p:2
+/fr/...:p:3
+...
 ```
 
-Current public counter anchor: ~102.5K.
+Current robots rule:
 
-Current exact persistent unit-ID union: 31,731.
+```text
+Disallow: /*:
+```
 
-The raw delta MUST NOT yet be interpreted as ~70K missing unique listings because the public counter denominator is still uncertified.
+Therefore colon pagination cannot be used by the future compliant collection plan.
+
+P0-D may PASS only if Phase 0 proves at least one of:
+
+1. a different public and robots-allowed traversal mechanism reaches the full authorized inventory;
+2. other approved route families expose the same inventory without disallowed pagination;
+3. the restricted remainder can be quantified and removed from the authorized denominator.
+
+No access-control, robots or CAPTCHA bypass is permitted.
 
 ---
 
-## 10. No-harvest gate
+## 9. P0-E — Denominator model
 
-Until Phase 0 PASS:
+The public home/search count around ~102K is a reconciliation anchor only.
 
-- no new broad mass-harvest campaign;
-- existing 31,731-ID state is preserved as evidence/seed;
-- small bounded probes are allowed only when required to prove coverage semantics;
-- zero production writes / deploy / merge.
+Indexed public variants observed on the same date are not synchronized across page/language snapshots, so no single marketing/search counter is treated as an exact unique-ID denominator.
+
+Target reconciliation:
+
+```text
+public catalog presentation
+=
+unique authorized accessible unit-listing IDs
++ projects/non-unit objects
++ aliases/duplicates
++ documented restricted/non-indexable components
+```
+
+100% means **100% explained authorized coverage**, not numerically forcing the unique-ID union to equal one unstable headline counter.
 
 ---
 
-## 11. Next exact
+## 10. Current exact next
 
-1. expand the primary comparison set for the exact residual `ct/is` IDs using relevant `st/sc` categories, not only apartments/locals;
-2. classify each residual as `explained_by_primary`, `missing_semantic`, `missing_geography`, or `control_unique_candidate`;
-3. **escalate any materially ambiguous listing to the user under the Human ambiguity gate before final classification**;
-4. probe `cc` and `t` reachability with the same strict invariant;
-5. continue geography/category discovery until repeated public seeds stop producing new dimensions;
-6. certify pagination semantics for remaining relevant families;
-7. build P0-E denominator buckets;
-8. keep Full Harvest BLOCKED until P0-A..P0-E all PASS.
+1. enrich the 55 absent IDs with **listing-card signals** from the already approved page-1 control surfaces: source ID, detail URL, visible title/text/location when available;
+2. auto-classify only clear cases;
+3. surface materially ambiguous listings to the user for arbitration;
+4. qualify `crp` against `ct/t/st/sc` using robots-allowed page-1 evidence;
+5. continue P0-A/P0-B discovery until repeated allowed seeds stop revealing new families/dimensions;
+6. find an **authorized complete traversal strategy that does not use `:p:N`**;
+7. if none exists, quantify the robots-restricted remainder for P0-E;
+8. keep Full Harvest BLOCKED until all five gates PASS.
 
-**Phase 0 Coverage Proof: ACTIVE 🔵 — first reachability probe proves the current coverage model still has unexplained residual inventory.**
+**Phase 0 Coverage Proof: ACTIVE 🔵**
