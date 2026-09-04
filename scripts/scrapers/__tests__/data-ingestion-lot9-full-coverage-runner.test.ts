@@ -87,6 +87,36 @@ describe("Lot 9 bounded Full Coverage runner", () => {
     assert.equal(result.summary.next_partitions_created, 0);
   });
 
+  it("stops globally on an explicit source block without consuming the next untouched scope", async () => {
+    const partitions = buildInitialFullCoveragePlan(2)
+      .filter((partition) => partition.city === "Casablanca")
+      .slice(0, 3);
+    let blocked = false;
+    let fetchCalls = 0;
+
+    const result = await runFullCoverageWave({
+      partitions,
+      maxPartitions: 3,
+      pageWindow: 2,
+      isKilled: () => blocked,
+      fetchPage: async (url) => {
+        fetchCalls += 1;
+        blocked = true;
+        throw new Error(`explicit_source_block:HTTP 429 for ${url}`);
+      },
+    });
+
+    assert.equal(fetchCalls, 1);
+    assert.equal(result.partitions[0].status, "completed");
+    assert.equal(result.partitions[0].stop_reason, "source_block");
+    assert.equal(result.partitions[1].status, "pending");
+    assert.equal(result.partitions[1].next_page, 1);
+    assert.equal(result.partitions[2].status, "pending");
+    assert.equal(result.summary.partitions_started, 1);
+    assert.equal(result.summary.partitions_completed, 1);
+    assert.equal(result.summary.stopped_by_kill_switch, true);
+  });
+
   it("pauses instead of falsely completing a partition when the kill-switch fires before the first page", async () => {
     const partitions = buildInitialFullCoveragePlan(2)
       .filter((partition) => partition.city === "Casablanca")
