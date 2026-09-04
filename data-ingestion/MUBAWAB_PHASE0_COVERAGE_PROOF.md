@@ -181,26 +181,57 @@ No live requests were needed for the residual-vs-union classification itself.
 
 ---
 
-## 7. Human ambiguity gate — LOCKED
+## 7. Human ambiguity gate — LOCKED, ORDER CORRECTED
 
-Any materially ambiguous listing must be escalated before final semantic classification.
+Human arbitration happens **only after available evidence has been exhausted**.
+
+Canonical sequence:
 
 ```text
-ambiguous listing
-→ preserve source_id + source URL + page-level evidence
-→ show it to user
-→ explain competing classifications
+listing card
+→ if clear: classify
+→ if ambiguous: robots-check exact detail URL
+→ if public + allowed: inspect ONE detail page / description
+→ if detail is clear: classify
+→ if detail remains ambiguous OR detail access is not authorized: show user
 → user arbitrates
-→ record decision as precedent only for genuinely equivalent cases
+→ record precedent only for genuinely equivalent cases
 ```
 
 Rules:
 
 - do not guess;
-- do not bulk-open detail pages merely to avoid thinking;
-- extract listing-card evidence first;
+- do not bulk-open detail pages;
+- one detail request is allowed only for a genuinely ambiguous case and only after robots approval;
+- a vague/bad title alone is never enough to escalate if the allowed description can resolve it;
 - ambiguity must not block clearly classified cases;
 - if a later case materially differs, escalate again.
+
+Implementation guard:
+
+- `data-ingestion/sources/mubawab/ambiguity-resolution.ts`;
+- `scripts/scrapers/__tests__/data-ingestion-lot9-phase0-ambiguity-resolution.test.ts`.
+
+### Methodology correction case — Mubawab `8298787`
+
+Card title:
+
+```text
+La miséricorde est le bonheur 1 près du bus à Casablanca
+```
+
+The card title alone looked unclassifiable. The public description explicitly identifies an **apartment for sale**, 54 m², 2 bedrooms, in Sidi Othmane, Casablanca.
+
+Correct result:
+
+```text
+property_type = apartment
+transaction_type = sale
+city = Casablanca
+district = Sidi Othmane
+```
+
+This case must **not** be escalated to the user. It is the canonical counter-example proving that card ambiguity must be resolved with allowed detail evidence first.
 
 ### Human precedent #1 — room/colocation inside an apartment
 
@@ -210,7 +241,7 @@ Reference case:
 
 - Mubawab source ID `8322103`;
 - visible title: `Chambre meublée de 25 m² pour fille`;
-- page-level evidence indicates a room/colocation offer inside an apartment.
+- evidence indicates a room/colocation offer inside an apartment.
 
 Canonical decision:
 
@@ -222,7 +253,7 @@ transaction_type = rent
 
 Do **not** create a canonical `room` property type for this case. The physical property remains the apartment; the commercial offer is scoped to one room.
 
-Equivalent explicit room/colocation offers may reuse this precedent without human re-escalation. If it is unclear whether the offer concerns one room or the whole dwelling, the Human ambiguity gate still applies.
+Equivalent explicit room/colocation offers may reuse this precedent without human re-escalation. If it is unclear whether the offer concerns one room or the whole dwelling, inspect an allowed detail description first; escalate only if the ambiguity remains.
 
 Implementation proof:
 
@@ -230,7 +261,7 @@ Implementation proof:
 - `CanonicalOfferV1.offer_scope` is required;
 - generic adapters default to `whole_property`;
 - `data-ingestion/collection-adapter.ts` infers explicit room/colocation offers as `room` while preserving the apartment property type;
-- `scripts/scrapers/__tests__/data-ingestion-offer-scope.test.ts` locks the precedent and guards against misclassifying ordinary multi-bedroom apartment rentals as room offers.
+- `scripts/scrapers/__tests__/data-ingestion-offer-scope.test.ts` locks the precedent.
 
 ---
 
@@ -287,13 +318,15 @@ unique authorized accessible unit-listing IDs
 
 ## 10. Current exact next
 
-1. continue semantic classification of the 55 absent IDs using **listing-card signals** from approved page-1 surfaces;
-2. reuse Human precedent #1 for explicit room/colocation offers, while escalating materially different ambiguities;
-3. auto-classify only clear cases;
-4. qualify `crp` against `ct/t/st/sc` using robots-allowed page-1 evidence;
-5. continue P0-A/P0-B discovery until repeated allowed seeds stop revealing new families/dimensions;
-6. find an **authorized complete traversal strategy that does not use `:p:N`**;
-7. if none exists, quantify the robots-restricted remainder for P0-E;
-8. keep Full Harvest BLOCKED until all five gates PASS.
+1. continue semantic classification of the 55 absent IDs using card evidence first;
+2. for every card ambiguity, inspect the single public detail description if robots allows it;
+3. auto-classify all cases resolved by card/detail evidence;
+4. reuse Human precedent #1 for explicit room/colocation offers;
+5. escalate only cases still materially ambiguous after allowed detail evidence;
+6. qualify `crp` against `ct/t/st/sc` using robots-allowed evidence;
+7. continue P0-A/P0-B discovery until repeated allowed seeds stop revealing new families/dimensions;
+8. find an **authorized complete traversal strategy that does not use `:p:N`**;
+9. if none exists, quantify the robots-restricted remainder for P0-E;
+10. keep Full Harvest BLOCKED until all five gates PASS.
 
 **Phase 0 Coverage Proof: ACTIVE 🔵**
