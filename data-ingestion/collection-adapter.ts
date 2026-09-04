@@ -8,6 +8,7 @@ import {
   type CanonicalPropertyV1,
   type MediaAssetV1,
   type OfferOriginType,
+  type OfferScope,
 } from "../lib/property-schema/core";
 
 export type CollectionSourceType = "portal" | "agency_direct" | "partner_feed" | "owner_direct" | "developer_direct" | "open_data" | "manual";
@@ -26,6 +27,7 @@ export type CollectionListing = {
   status: "active" | "stale" | "inactive" | "rejected";
   transaction: "sale" | "rent" | null;
   property_type: CanonicalPropertyType | null;
+  offer_scope?: OfferScope;
   title: string | null;
   description: string | null;
   price: {
@@ -93,6 +95,21 @@ function offerStatus(input: CollectionListing): CanonicalOfferV1["offer_status"]
   return "active";
 }
 
+export function inferCollectionOfferScope(input: Pick<CollectionListing, "offer_scope" | "title" | "description" | "transaction">): OfferScope {
+  if (input.offer_scope) return input.offer_scope;
+  if (input.transaction !== "rent") return "whole_property";
+
+  const title = input.title?.toLowerCase().replace(/\s+/g, " ").trim() ?? "";
+  const description = input.description?.toLowerCase().replace(/\s+/g, " ").trim() ?? "";
+
+  const titleRoomOffer = /^(?:une\s+)?chambre\b/.test(title)
+    && /\b(?:louer|location|meubl[ée]e?|colocation|coloc|fille|gar[çc]on|étudiant|etudiant)\b/.test(title);
+  const explicitRoomPhrase = /\bchambre\b[^.]{0,80}\b(?:à\s+louer|a\s+louer|en\s+colocation|coloc(?:ation)?)\b/.test(`${title} ${description}`)
+    || /\bcoloc(?:ation)?\b[^.]{0,80}\bchambre\b/.test(`${title} ${description}`);
+
+  return titleRoomOffer || explicitRoomPhrase ? "room" : "whole_property";
+}
+
 export function adaptCollectionListing(input: CollectionListing, ingestionRunId: string | null = null): CanonicalPropertyV1 {
   if (input.transaction == null) {
     throw new Error("collection_listing_transaction_required_for_canonical_offer");
@@ -152,6 +169,7 @@ export function adaptCollectionListing(input: CollectionListing, ingestionRunId:
     origin_type: originType(input),
     source_type: input.provenance.source_type,
     transaction_type: input.transaction,
+    offer_scope: inferCollectionOfferScope(input),
     title: collected(input.title),
     description: collected(input.description),
     price_amount: collected(input.price.amount),
