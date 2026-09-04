@@ -2,6 +2,7 @@ import { appendFile, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
 import { runFullCoverageCampaign } from "../data-ingestion/sources/mubawab/full-coverage-campaign.js";
+import { resolveLiveCampaignPolicy } from "../data-ingestion/sources/mubawab/live-campaign-policy.js";
 import {
   createFullCoverageState,
   fullCoverageStateSummary,
@@ -15,10 +16,11 @@ const REFS_PATH = join(OUTPUT_DIR, "refs.jsonl");
 const PROOF_PATH = join(OUTPUT_DIR, "proof.json");
 const REQUESTS_PATH = join(OUTPUT_DIR, "requested-urls.json");
 
-const PAGE_WINDOW = 3;
-const MAX_WAVES = 2;
-const MAX_PARTITIONS_PER_WAVE = 3;
-const REQUEST_DELAY_MS = 1500;
+const policy = resolveLiveCampaignPolicy();
+const PAGE_WINDOW = policy.pageWindow;
+const MAX_WAVES = policy.maxWaves;
+const MAX_PARTITIONS_PER_WAVE = policy.maxPartitionsPerWave;
+const REQUEST_DELAY_MS = policy.requestDelayMs;
 const resumeMode = process.argv.includes("--resume");
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -96,7 +98,7 @@ async function main() {
       max_waves: MAX_WAVES,
       max_partitions_per_wave: MAX_PARTITIONS_PER_WAVE,
       page_window: PAGE_WINDOW,
-      theoretical_max_page_requests: MAX_WAVES * MAX_PARTITIONS_PER_WAVE * PAGE_WINDOW,
+      theoretical_max_page_requests: policy.theoreticalMaxPageRequests,
       request_delay_ms: REQUEST_DELAY_MS,
       robots_checked: true,
       source_block_global_stop: true,
