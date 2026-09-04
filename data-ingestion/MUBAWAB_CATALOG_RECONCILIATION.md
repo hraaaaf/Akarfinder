@@ -12,16 +12,17 @@ Ce document ne transforme jamais le compteur public Mubawab en vérité canoniqu
 
 La home Mubawab Maroc affiche environ **102K biens immobiliers**.
 
-Le dernier checkpoint AkarFinder certifié avant la deep extinction contient :
+Le dernier checkpoint AkarFinder obtenu après la première deep extinction contient :
 
-- 18 294 `source_id` uniques ;
-- 21 352 refs découvertes ;
-- 730 / 730 pages réussies ;
-- 3 058 doublons de navigation ;
-- 107 scopes terminaux ;
-- 25 partitions profondes encore pending.
+- **26 117 `source_id` uniques** ;
+- 30 057 refs découvertes ;
+- 1004 / 1005 pages réussies ;
+- 3 940 doublons de navigation ;
+- 122 scopes terminaux ;
+- 9 partitions pending ;
+- 1 partition failed sur HTTP 502 transitoire (`Marrakech / terrains vente / page 28`).
 
-Le ratio brut 18 294 / ~102K est seulement un indicateur de gap. Il ne doit pas être interprété comme un taux de couverture final tant que les métriques ne sont pas alignées.
+Le ratio brut 26 117 / ~102K est seulement un indicateur de gap. Il ne doit pas être interprété comme un taux de couverture final tant que les métriques et surfaces ne sont pas alignées.
 
 ## Périmètre actuel AkarFinder
 
@@ -48,6 +49,17 @@ Casablanca, Rabat, Marrakech, Tanger, Agadir, Fès, Kénitra, Mohammedia, Témar
 
 ## Routes publiques déjà vérifiées
 
+### Familles de routes
+
+L'audit public confirme plusieurs familles distinctes :
+
+- `st` : ville × catégorie ;
+- `sc` : catégorie nationale ;
+- `cc` : agrégats nationaux ;
+- `pl` : immobilier neuf / projets.
+
+La matrice Full Coverage historique ne couvre que `st`.
+
 ### Bureaux
 
 Routes distinctes observées :
@@ -59,10 +71,9 @@ Routes distinctes observées :
 
 Exemples de compteurs observés :
 
-- Casablanca bureaux location : ~1 901 ;
-- Rabat bureaux location : ~184 ;
+- Casablanca bureaux vente : ~399 ;
 - Maroc bureaux vente : ~713 ;
-- Maroc bureaux location : ~2 840.
+- Maroc bureaux location : ~2,9K.
 
 Attention : ces routes peuvent recouvrir partiellement la famille `locaux`. Déduplication et overlap doivent être mesurés avant ajout au total.
 
@@ -70,21 +81,28 @@ Attention : ces routes peuvent recouvrir partiellement la famille `locaux`. Déd
 
 Routes observées :
 
-- `/fr/ct/<ville>/immobilier-vacational`
-- `/fr/sc/appartements-vacational`
-- `/fr/sc/villas-et-maisons-de-luxe-vacational`
+- `/fr/st/<ville>/appartements-vacational`
+- autres surfaces `vacational` nationales / par type à inventorier.
 
-Exemples de compteurs :
+Exemples de compteurs observés :
 
-- appartements vacances Maroc : ~1 050 ;
-- villas / maisons luxe vacances Maroc : ~156 ;
-- Rabat vacances toutes familles : ~62.
+- Casablanca appartements vacances : ~162 ;
+- Rabat appartements vacances : ~54.
 
 ### Immobilier neuf / projets
 
 Une surface dédiée `listing-promotion` existe et affiche environ **225 projets** lors de l'audit.
 
-Les projets neufs apparaissent aussi au sein de listes classiques sous forme de blocs `Projet · N biens immobiliers`, donc leur contribution au compteur global doit être mesurée sans double comptage.
+Les projets neufs apparaissent aussi au sein de listes classiques sous forme de blocs promotionnels, donc leur contribution au compteur global doit être mesurée sans double comptage.
+
+### Agrégats `cc`
+
+Les agrégats montrent un ordre de grandeur très supérieur à certaines catégories `sc` :
+
+- `/fr/cc/immobilier-a-louer` : ~22,7K résultats ;
+- `/fr/cc/bureaux-et-commerces-a-vendre` : ~34,5K résultats.
+
+Ces surfaces ne doivent pas être additionnées aux catégories `sc`/`st`. Elles servent d'abord à détecter du stock ou des géographies absentes de la matrice actuelle.
 
 ## Compteurs nationaux visibles — échantillon
 
@@ -102,11 +120,37 @@ Ordres de grandeur observés le 2026-09-04 :
 - riads vente : ~1,1K ;
 - riads location : ~0,03K ;
 - bureaux vente : ~0,7K ;
-- bureaux location : ~2,8K ;
-- appartements vacances : ~1,05K ;
-- villas vacances : ~0,16K.
+- bureaux location : ~2,9K.
 
 Ces compteurs **ne doivent pas être additionnés directement** : certaines familles se chevauchent et certains projets sont injectés dans plusieurs surfaces de navigation.
+
+## Catalog Inventory V1
+
+Implémentation :
+
+- `data-ingestion/sources/mubawab/catalog-inventory.ts`
+- `scripts/scrapers/__tests__/data-ingestion-lot9-catalog-inventory.test.ts`
+
+Le modèle sépare explicitement :
+
+- `national_category` ;
+- `national_aggregate` ;
+- `city_category` ;
+- `vacational` ;
+- `new_projects`.
+
+Il enregistre le compteur visible, le titre sémantique et les groupes d'overlap. Le test interdit d'interpréter la somme naïve des compteurs comme un nombre de listings uniques.
+
+## Retry transitoire de la matrice classique
+
+Un HTTP 502 isolé sur Marrakech terrains vente page 28 a montré qu'un échec réseau/5xx ne doit pas devenir une extinction permanente.
+
+Le Lot 9 distingue désormais :
+
+- 403 / 429 / robots → stop sécurité, jamais requalifié ;
+- 5xx / timeout / reset réseau → retry borné sur `--resume` ;
+- historique d'erreurs conservé ;
+- budget max : 3 tentatives par partition avant échec final documenté.
 
 ## Hypothèses à tester
 
@@ -117,13 +161,16 @@ Ces compteurs **ne doivent pas être additionnés directement** : certaines fami
 5. **Route overlap** : `bureaux-et-commerces` et `locaux` peuvent partager des annonces.
 6. **Metric mismatch** : le compteur home peut compter des biens / unités / promotions selon une métrique différente des URLs uniques de détail.
 7. **Pagination / route aliases** : certaines annonces peuvent être absentes de nos partitions même si leur type / ville semble couvert.
+8. **National aggregates** : `cc` peut exposer des listings appartenant à des villes ou catégories jamais ouvertes par notre matrice `st`.
 
 ## Plan de preuve
 
 ### Phase A — finir la matrice actuelle
 
-- laisser la deep extinction atteindre son checkpoint final ;
-- conserver le stock unique et le manifest comme baseline `classic-12-cities`.
+- reprendre depuis le checkpoint 26 117 ;
+- retenter uniquement les échecs transitoires dans le budget autorisé ;
+- atteindre extinction ou stop documenté des dernières partitions `st` ;
+- conserver ce stock comme baseline `classic-12-cities`.
 
 ### Phase B — inventory national sans crawl massif
 
@@ -153,14 +200,32 @@ Ajouter au planner uniquement après vérification :
 
 Chaque ajout garde les mêmes garanties : robots, délai, checkpoint, kill-switch, aucune page détail pendant discovery, aucun DB/prod.
 
-### Phase E — réconciliation finale
+### Phase E — overlap mesuré
+
+Comparer les `source_id` vus via :
+
+```text
+classic st
+vs
+national sc
+vs
+aggregate cc
+vs
+vacational
+vs
+pl / projects
+```
+
+Le but est d'identifier les IDs réellement nouveaux, pas de gonfler artificiellement le stock en additionnant les routes.
+
+### Phase F — réconciliation finale
 
 Produire :
 
 ```text
 home_catalog_count
 vs
-sum_of_public_route_counts (avec overlap documenté)
+public_route_counts (avec overlap documenté)
 vs
 unique_discovery_ids
 vs
