@@ -4,6 +4,7 @@ export type CatalogOverlapSurface = {
   id: string;
   base_url: string;
   pages: number;
+  start_page?: number;
 };
 
 export type CatalogOverlapSurfaceResult = {
@@ -50,14 +51,22 @@ export async function probeCatalogOverlap(input: {
   let crossSurfaceDuplicates = 0;
 
   for (const surface of surfaces) {
-    if (!Number.isInteger(surface.pages) || surface.pages < 1 || surface.pages > 3) {
+    const startPage = surface.start_page ?? 1;
+    if (!Number.isInteger(startPage) || startPage < 1) {
+      throw new Error(`lot9_catalog_overlap_invalid_start_page:${surface.id}:${startPage}`);
+    }
+    if (!Number.isInteger(surface.pages) || surface.pages < 1 || surface.pages > 10) {
       throw new Error(`lot9_catalog_overlap_invalid_pages:${surface.id}:${surface.pages}`);
+    }
+    if (startPage + surface.pages - 1 > 50) {
+      throw new Error(`lot9_catalog_overlap_unsafe_page_window:${surface.id}:${startPage}:${surface.pages}`);
     }
 
     const surfaceIds = new Set<string>();
     let refsDiscovered = 0;
 
-    for (let page = 1; page <= surface.pages; page++) {
+    for (let offset = 0; offset < surface.pages; offset++) {
+      const page = startPage + offset;
       const url = paginatedCatalogUrl(surface.base_url, page);
       const html = await input.fetchPage(url);
       const refs = extractListingRefs(html, url);
