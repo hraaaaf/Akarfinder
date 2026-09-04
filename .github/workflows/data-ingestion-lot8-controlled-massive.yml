@@ -7,6 +7,8 @@ on:
       - "data-ingestion/sandbox-store.ts"
       - "data-ingestion/collection-adapter.ts"
       - "data-ingestion/samples/**"
+      - "data-ingestion/LOT8_STATUS.md"
+      - "data-ingestion/HANDOVER.md"
       - "scripts/scrapers/__tests__/data-ingestion-lot8-controlled-massive.test.ts"
       - ".github/workflows/data-ingestion-lot8-controlled-massive.yml"
   workflow_dispatch:
