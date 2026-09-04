@@ -20,6 +20,9 @@ permissions:
 
 jobs:
   authorized-traversal:
+    concurrency:
+      group: lot9-p0d-authorized-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: true
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
