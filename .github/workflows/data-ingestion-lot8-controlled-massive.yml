@@ -1,0 +1,31 @@
+name: Data Ingestion Lot 8 Controlled Massive Gate
+
+on:
+  pull_request:
+    paths:
+      - "data-ingestion/controlled-ingestion.ts"
+      - "data-ingestion/sandbox-store.ts"
+      - "data-ingestion/collection-adapter.ts"
+      - "data-ingestion/samples/**"
+      - "scripts/scrapers/__tests__/data-ingestion-lot8-controlled-massive.test.ts"
+      - ".github/workflows/data-ingestion-lot8-controlled-massive.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  controlled-massive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Prove Lot 7 regression remains green
+        run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot7-sandbox-1000.test.ts
+      - name: Prove controlled massive ingestion batching resume rollback and purge
+        run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot8-controlled-massive.test.ts
