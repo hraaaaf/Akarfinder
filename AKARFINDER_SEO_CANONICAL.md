@@ -4,7 +4,7 @@
 >
 > Boussole canonique de reprise. À chaque reprise : lire ce fichier, puis vérifier repo / `main` / branche / PR / CI / LIVE avant toute action.
 
-**Statut : ACTIVE — SEO-0 audité techniquement mais non CLOSED ; SEO-1 benchmark en cours**  
+**Statut : ACTIVE — SEO-0 remédiation technique en validation ; SEO-1 benchmark initial terminé ; SEO-2 qualification data initiale terminée ; SEO-3 gate conçu mais non implémenté**  
 **Dernière mise à jour : 2026-09-04**  
 **Repo : `hraaaaf/Akarfinder`**  
 **Branche active : `fix/seo-baseline-p1`**  
@@ -45,7 +45,7 @@ Règle centrale :
 
 > **Une combinaison de filtres n'est pas automatiquement une page SEO.**
 
-Une page ne devient indexable que si l'intention, le stock, la qualité des données, le contenu distinctif, le canonical, le maillage et le sitemap le justifient.
+Une page ne devient indexable que si l'intention, le stock, la diversité des sources, la qualité des données, le contenu distinctif, le canonical, le maillage et le sitemap le justifient.
 
 Interdit : industrialiser des milliers de pages faibles ou quasi identiques.
 
@@ -67,7 +67,8 @@ Interdit : industrialiser des milliers de pages faibles ou quasi identiques.
 - éligibilité ville/quartier encore **statique**, pas conditionnée par le stock réel.
 - sitemap : faux `lastModified: new Date()` retiré dans PR #999 en l'absence d'une vraie date métier.
 - URLs SEO/JSON-LD codées en dur sur l'hostname Vercel : centralisées vers `siteConfig.siteUrl` dans PR #999.
-- aucune visibilité AkarFinder n'a été retrouvée dans les recherches web publiques testées ; cela ne remplace pas Search Console.
+- `/acheter` et `/louer` sont des hubs nationaux indexables ; le helper SEO existant réserve déjà la taxonomie `/immobilier/{ville}/{acheter|louer}` pour les futures surfaces transactionnelles.
+- `/neuf` est actuellement `index,follow` mais n'a pas de programme suffisamment documenté affiché ; son statut SEO doit être réévalué avant scale, pas modifié sans preuve supplémentaire.
 - Search Console, couverture Google réelle, Core Web Vitals, profondeur de clic/orphelines et cycle des annonces retirées restent à prouver avant fermeture complète de SEO-0.
 
 ### P0
@@ -84,84 +85,131 @@ Interdit : industrialiser des milliers de pages faibles ou quasi identiques.
 
 - suppression du faux signal `lastModified` généré à chaque build.
 
-### P1 restant avant scale
-
-Créer un **gate dynamique stock + qualité** avant d'ouvrir davantage de villes/quartiers/types. Le seuil doit venir de la distribution réelle des données, pas d'un nombre choisi au hasard.
-
 ---
 
-## 4. INCIDENT CI #19G
+## 4. INCIDENTS CI INDÉPENDANTS DU SEO
 
-Le premier run de PR #999 a échoué sur un guard **indépendant du SEO** :
+PR #999 a exposé plusieurs guards Mon Projet obsolètes après le passage déjà présent du produit vers `MonProjetWizardP2` :
 
-- 1 835 / 1 835 tests scrapers passaient ;
-- contrats #11 à #19F passaient ;
-- #19G attendait encore `<MonProjetWizardP1A` alors que `main` rend `MonProjetWizardP2` ;
-- PR #999 ne touchait initialement aucun fichier Mon Projet.
+- #19G Homepage/Search Entry attendait encore `MonProjetWizardP1A` ;
+- #19H User Continuity attendait encore `MonProjetWizardP1A` ;
+- Phase 1 P1 User Journey lisait encore `MonProjetWizardP1A.tsx` dans `mon-projet-workspace-ux.test.ts`.
 
-Correction minimale ajoutée sur la branche : le guard #19G teste désormais `MonProjetWizardP2` tout en conservant les contrats transition / search / continuity.
+Corrections minimales : les guards ciblent désormais le composant réellement monté `MonProjetWizardP2` et conservent leurs contrats de continuité / search / workspace.
 
 Aucune modification UI Mon Projet n'a été faite dans ce lot.
+
+Preuve historique disponible : le run initial Canonical Baseline avait **1 835 / 1 835 tests scrapers verts** avant de tomber sur ces assertions de garde périmées.
 
 ---
 
 ## 5. SEO-1 — BENCHMARK SERP MAROC
 
-### Goal
+### État
 
-Identifier les surfaces déjà gagnées par les concurrents et les gaps exploitables avant de construire de nouvelles pages.
+**Benchmark initial terminé le 2026-09-04.** Ce n'est pas un substitut à Search Console ni une promesse de positions Google fixes.
 
-### Concurrents vérifiés au 2026-09-04
+### Concurrents vérifiés
 
-#### Kaynly
-
-Benchmark agrégateur direct :
-
-- ville × transaction ;
-- ville × transaction × type ;
-- quartier ;
-- résidence ;
-- baromètre prix/m² ;
-- volumes, médianes, comparaison locale, fraîcheur ;
-- multi-portails + redirection source ;
-- environ **100 055 annonces** affichées au relevé du 31 août 2026.
-
-#### Mubawab
-
-Très fort sur les intentions transactionnelles directes ville/type/quartier avec gros volume de pages et d'annonces.
-
-#### Yakeey
-
-Fort sur ville/type, facettes, référentiels de prix et longue traîne locale.
-
-#### AlerteImmo
-
-Agrégateur concurrent observé pendant SEO-1 : pages ville/type, prix médian, FAQ locale, multi-portails et proposition de valeur « alerte rapide ».
-
-#### Autres gagnants observés
-
-Masaken, SoukImmobilier et Palm Estates Pro sur certaines requêtes quartier/type/data.
-
-### Gap initial
-
-| Dimension | Concurrence | AkarFinder | Lecture |
-|---|---|---|---|
-| Couverture villes/quartiers | forte | 5 villes / 11 quartiers | gap de couverture, à ne pas combler sans gate |
-| transaction × ville | présente | pas de landing SEO dédiée | priorité potentielle |
-| transaction × ville × type | présente | pas de landing SEO dédiée | priorité après preuve de stock |
-| prix / prix m² | forte chez Kaynly/Yakeey | partiel selon read-model | gap important |
-| fraîcheur explicite | forte chez Kaynly/AlerteImmo | à structurer | opportunité |
-| contexte local | variable | read-model quartier + carte | avantage potentiel AkarFinder |
-| transparence source/limites | variable | forte | avantage potentiel AkarFinder |
-| gate qualité avant scale | non observable | registre contrôlé mais statique | à rendre dynamique |
+- **Kaynly** : ville × transaction, ville × transaction × type, quartiers, résidences, baromètres prix/m², volumes/médianes/fraîcheur, multi-portails.
+- **Mubawab** : très fort sur les intentions transactionnelles directes ville/type/quartier.
+- **Yakeey** : forte profondeur ville/type, facettes, longue traîne locale et référentiels de prix.
+- **AlerteImmo** : agrégation multi-portails, pages ville/type, prix médian, FAQ locale et alertes.
+- Autres gagnants observés : Masaken, SoukImmobilier, Palm Estates Pro selon les requêtes.
 
 ### Décision
 
-Ne pas copier la profondeur concurrente. Priorité : **gate stock/qualité → surfaces transactionnelles prouvées → data moat fiable**.
+Ne pas copier leur profondeur combinatoire. Priorité : **gate stock/qualité → surfaces transactionnelles prouvées → data moat fiable**.
 
 ---
 
-## 6. SOURCES SEO DE RÉFÉRENCE
+## 6. SEO-2 — QUERY MAP + QUALIFICATION DATA
+
+### Source de vérité mesurée
+
+Read-model public : `public.public_search_representations_v1`.
+
+Sous-ensemble strict utilisé pour qualifier les intentions :
+
+- `display_eligibility = 'eligible_primary'` ;
+- `freshness_status = 'fresh_confirmed'` ;
+- ville/intention connues.
+
+Le read-model contient **3 216 représentations `eligible_primary + fresh_confirmed`** avant filtres supplémentaires de ville/intention/type.
+
+### Ville × transaction — preuve actuelle
+
+Sur les 5 villes SEO actuelles, chaque intention `sale` / `rent` dispose d'au moins **115 représentations strictes** et **4 sources distinctes**.
+
+| Ville | Vente | Sources | Location | Sources |
+|---|---:|---:|---:|---:|
+| Agadir | 173 | 4 | 115 | 4 |
+| Casablanca | 260 | 6 | 198 | 6 |
+| Marrakech | 215 | 4 | 254 | 4 |
+| Rabat | 166 | 5 | 161 | 6 |
+| Tanger | 184 | 4 | 282 | 4 |
+
+**Fès** est aussi un candidat data crédible : 102 ventes / 5 sources et 106 locations / 4 sources, mais n'appartient pas encore au `CitySlug` SEO actuel.
+
+Anomalie à normaliser avant scale : Marrakech contient aussi une ligne `buy` séparée de `sale`.
+
+### Ville × transaction × type — premier gate candidat
+
+Avant comptage, normaliser au minimum :
+
+- `buy → sale` ;
+- `appartement → apartment` ;
+- `terrain → land` ;
+- `bureau → office` ;
+- `local commercial → commercial`.
+
+Floor exploratoire retenu pour la query map : **≥20 représentations strictes + ≥3 sources distinctes**. Ce floor n'est **pas** déclaré équivalent au gate DB `strong` ; il sert à sélectionner les premières surfaces à étudier.
+
+Combinaisons qui passent ce floor après alias mapping :
+
+- appartement vente/location : Agadir, Casablanca, Fès, Marrakech, Rabat, Tanger ;
+- villa vente : Tanger uniquement.
+
+Aucune landing type supplémentaire n'est créée dans PR #999.
+
+---
+
+## 7. SEO-3 — URL & INDEXATION CONTRACT
+
+### Taxonomie cible
+
+Réutiliser l'architecture déjà prévue par le repo :
+
+`/acheter` ou `/louer`  
+→ `/immobilier/{ville}/{acheter|louer}`  
+→ éventuellement une future surface type uniquement si le gate est franchi.
+
+`/search?...` reste une surface de recherche/facettes **noindex**, pas une fabrique de landing pages.
+
+### Gate à implémenter
+
+Ordre obligatoire :
+
+1. **normalisation canonique** des intentions/types ;
+2. **stock publiable et frais** issu du read-model public ;
+3. **diversité de sources** ;
+4. pour les statistiques/quartiers, réutiliser autant que possible la politique de fiabilité data existante plutôt que créer un second système divergent ;
+5. seulement ensuite : metadata/canonical/maillage/sitemap/indexation.
+
+### Quartiers — état actuel
+
+La politique data existante observée en DB est plus stricte que le registre SEO statique :
+
+- 96 métriques quartier inspectées ;
+- 92 `insufficient`, 4 `limited`, 0 certifiée ;
+- `public_activation = false` sur les segments observés ;
+- aucune publication correspondante retrouvée dans `published_neighborhood_intelligence` pour les 11 slugs actuels.
+
+Décision : **ne pas étendre la surface quartier avant franchissement d'un gate data défendable**. Les 11 pages existantes ne sont pas modifiées dans PR #999.
+
+---
+
+## 8. SOURCES SEO DE RÉFÉRENCE
 
 Références techniques prioritaires : Google Search Central.
 
@@ -179,23 +227,23 @@ Règles retenues :
 
 ---
 
-## 7. ROADMAP
+## 9. ROADMAP
 
 ### SEO-0 — Baseline Audit
 
-**EN COURS de fermeture.** Technique auditée et remédiation PR #999 en validation. Restent GSC + contrôles non encore prouvés + état LIVE après éventuel déploiement autorisé.
+**EN COURS de fermeture.** Remédiation technique dans PR #999 ; restent validation CI finale, merge, puis preuves GSC/LIVE non disponibles sans étapes séparées.
 
-### SEO-1 — Benchmark Kaynly + SERP Maroc
+### SEO-1 — Benchmark SERP Maroc
 
-**EN COURS.** Gap analysis initiale établie. Continuer par intentions prioritaires et preuves de surfaces gagnantes.
+**INITIAL TERMINÉ.** Benchmark Kaynly/Mubawab/Yakeey/AlerteImmo + gaps prioritaires documentés.
 
 ### SEO-2 — Query Map Maroc
 
-Construire les clusters : transaction × type × ville × quartier + intentions data. Associer demande observée, concurrence, stock AkarFinder, page cible, priorité.
+**INITIAL TERMINÉ.** Distribution ville × transaction et premier filtre ville × transaction × type mesurés sur le read-model public.
 
 ### SEO-3 — URL & Indexation Contract
 
-Définir précisément les classes indexables / non indexables et le gate dynamique.
+**CONÇU, NON IMPLÉMENTÉ.** Prochain lot : transformer le gate en code/test unique et empêcher sitemap/indexation sans décision d'éligibilité.
 
 ### SEO-4 — Landing Templates
 
@@ -227,27 +275,7 @@ Scaler uniquement après preuve : crawl, indexation, impressions, données fiabl
 
 ---
 
-## 8. MÉTRIQUES CANONIQUES
-
-### Acquisition
-
-Impressions, clics, CTR, position, part non brandée, Top 3 / 10 / 20.
-
-### Indexation
-
-Découvertes, crawlées, indexées, exclues, sitemap indexé, canonical Google vs déclaré.
-
-### Qualité
-
-0 impression, orphelines, duplicate/cannibalisation, 4xx/5xx, CWV, fraîcheur.
-
-### Business
-
-Sessions organiques vers résultats/annonces, clics sortants vers sources, engagement.
-
----
-
-## 9. RÈGLES D'EXÉCUTION SEO
+## 10. RÈGLES D'EXÉCUTION SEO
 
 Pour toute modification significative :
 
@@ -263,28 +291,27 @@ Pour toute modification significative :
 
 ---
 
-## 10. NEXT EXACT
+## 11. NEXT EXACT
 
-1. vérifier une fois la CI du HEAD final de PR #999 ;
-2. si échec : diagnostiquer/corriger sans masquer la cause ;
-3. si vert : merger #999 et vérifier `main` ;
+1. certifier la CI du HEAD final de PR #999 ;
+2. si échec : diagnostiquer/corriger la cause exacte ;
+3. si vert : merger #999 puis vérifier `main` ;
 4. **ne pas déployer Vercel** ;
-5. poursuivre SEO-1 / SEO-2 avec la query map et dériver le gate stock/qualité depuis les données réelles ;
-6. fermeture SEO-0 uniquement après les preuves restantes, sans inventer GSC/LIVE.
+5. ouvrir le lot SEO-3 d'implémentation du gate dynamique, en commençant par normalisation + décision ville × intention ;
+6. garder Search Console / domaine final / éventuelle activation LIVE comme human gates séparés.
 
 ---
 
-## 11. SÉQUENCE RESTANTE
+## 12. SÉQUENCE RESTANTE
 
 `CI PR #999`  
 → si vert `merge + post-merge Git`  
-→ `SEO-1 Benchmark complet`  
-→ `SEO-2 Query Map + stock distribution`  
-→ `SEO-3 gate URL/indexation`  
-→ `SEO-4/5 templates + data moat`  
+→ `SEO-3 gate dynamique code + tests`  
+→ `SEO-4 premières landings transaction × ville qualifiées`  
+→ `SEO-5 data moat`  
 → `SEO-6/7 technical + maillage`  
 → `SEO-8 authority`  
 → `SEO-9 GSC loop`  
 → `SEO-10 scale gates`.
 
-Human gate séparé : **tout déploiement Vercel / activation du domaine final**.
+Human gates séparés : **tout déploiement Vercel / activation du domaine final / accès Search Console si nécessaire**.

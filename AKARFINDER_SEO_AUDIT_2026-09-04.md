@@ -2,7 +2,7 @@
 
 ## Goal
 
-Établir le baseline SEO réel avant toute expansion de pages, corriger les défauts techniques sûrs, puis mesurer le gap concurrentiel sur les intentions immobilières marocaines prioritaires.
+Établir le baseline SEO réel avant toute expansion de pages, corriger les défauts techniques sûrs, mesurer le gap concurrentiel et dériver le premier gate stock/qualité depuis les données AkarFinder.
 
 ## Snapshot Git
 
@@ -10,8 +10,8 @@
 - Base auditée : `main` @ `82128a865149b0ded2f2ba5b408cd69bbda39a08`
 - Branche : `fix/seo-baseline-p1`
 - PR : `#999`
-- HEAD après correction du guard Mon Projet : `792583552f421514df503430f01d5a97824a520f`
-- Aucun déploiement Vercel demandé ou effectué dans ce lot.
+- HEAD produit avant ce closeout documentaire : `c0c9d9f7869ed0e62ef788272bc05d7fbaaf410f`
+- Aucun déploiement Vercel demandé ou effectué par ce chantier.
 
 ## Baseline technique vérifié
 
@@ -20,133 +20,164 @@
 | `/search` + paramètres | `noindex,follow` | canonical `/search` | hors sitemap | recherche utilisateur | conserver hors index |
 | `/map` + paramètres | indexable | canonical `/map` ajouté dans PR #999 | présente dans sitemap | carte UX | empêcher la duplication par paramètres |
 | `/immobilier/{city}` | indexable pour villes contrôlées | self canonical | oui | SSR, données ville + liens quartiers + aperçu annonces | conserver, renforcer selon stock |
-| `/immobilier/{city}/{district}` | indexable si registre `validated + seo_eligible` | self canonical | oui | SSR, Breadcrumb JSON-LD, contexte local + aperçu annonces | conserver avec futur gate stock/qualité |
+| `/immobilier/{city}/{district}` | indexable si registre `validated + seo_eligible` | self canonical | oui | SSR, Breadcrumb JSON-LD, contexte local + aperçu annonces | ne pas étendre sans gate data |
 | ville/quartier non éligible | non publié / `notFound` selon route | n/a | non | n/a | conserver fermé |
+| `/acheter`, `/louer` | indexable | aucun canonical explicite au baseline | hubs nationaux | contenu + aperçu annonces | conserver ; utiliser comme parents de la future taxonomie |
+| `/neuf` | `index,follow` | aucun canonical explicite au baseline | oui | aucun programme suffisamment documenté affiché | réévaluer avant scale |
 
 ### Surface actuellement contrôlée
-
-Le registre géographique ouvre explicitement :
 
 - 5 villes SEO : Casablanca, Rabat, Marrakech, Tanger, Agadir ;
 - 11 quartiers SEO : Casablanca 4, Rabat 3, Marrakech 2, Tanger 1, Agadir 1.
 
-L'éligibilité est actuellement statique (`validation_status="validated"` + `seo_eligible=true`). Elle n'est pas encore conditionnée par un seuil dynamique de stock ou de qualité de données.
+L'éligibilité est actuellement statique (`validation_status="validated"` + `seo_eligible=true`). Elle n'est pas encore conditionnée par le stock public réel.
 
 ## Défauts classés
 
-### P0 — gate stratégique
+### P0 — gates stratégiques
 
-1. **Domaine final non activé** : le chantier SEO ne doit pas accumuler volontairement de l'autorité sur un hostname transitoire avant décision/activation du domaine final. Aucun changement DNS/Vercel dans ce lot.
-2. **Search Console non disponible comme preuve dans cette session** : indexation Google réelle, impressions, clics, canonicals choisis par Google et couverture sitemap restent non prouvés.
+1. **Domaine final non activé lors du baseline** : ne pas construire volontairement l'autorité finale sur un hostname transitoire. Aucun changement DNS/Vercel dans ce lot.
+2. **Search Console non disponible comme preuve** : indexation Google réelle, impressions, clics, canonicals choisis par Google et couverture sitemap restent non prouvés.
 
 ### P1 — corrigés dans PR #999
 
 1. `/map` indexable sans canonical alors que la page accepte des paramètres → canonical `/map` ajouté.
-2. URLs SEO/JSON-LD codées en dur sur l'hostname Vercel dans plusieurs générateurs → utilisation de la config SEO centralisée.
+2. URLs SEO/JSON-LD codées en dur sur l'hostname Vercel → utilisation de la config SEO centralisée.
 
 ### P2 — corrigé dans PR #999
 
-1. `sitemap.ts` utilisait `lastModified: new Date()` pour toutes les URLs à chaque build → faux signal de fraîcheur supprimé en l'absence d'une vraie date de modification métier.
+1. `sitemap.ts` utilisait `lastModified: new Date()` pour toutes les URLs à chaque build → faux signal retiré en l'absence d'une vraie date métier.
 
-### P1 — restant avant scale
+## Incidents CI indépendants du SEO
 
-1. **Gate d'éligibilité SEO dynamique** : une ville/quartier peut rester `seo_eligible` même si le stock devient trop faible. Le seuil numérique ne doit pas être inventé ; il sera dérivé de la distribution réelle du stock.
-2. Vérifier avant expansion : détails annonce, pagination, profondeur de clic, pages orphelines, Core Web Vitals et comportement des URLs retirées/expirées.
+Trois guards Mon Projet obsolètes ont été trouvés successivement :
 
-## Incident CI indépendant du SEO
+- #19G Homepage/Search Entry ;
+- #19H User Continuity ;
+- Phase 1 P1 User Journey / `mon-projet-workspace-ux.test.ts`.
 
-Le premier run de PR #999 a échoué sur `#19G Homepage & Search Entry Orchestration V1`, pas sur les fichiers SEO.
+Ils attendaient encore `MonProjetWizardP1A` alors que le produit monte `MonProjetWizardP2`. Les guards ont été alignés sur P2 sans changement UI Mon Projet.
 
-Preuves :
-
-- 1 835 / 1 835 tests scrapers passaient ;
-- les contrats #11 à #19F passaient ;
-- l'échec venait d'une assertion exigeant `<MonProjetWizardP1A` alors que `main` rend déjà `<MonProjetWizardP2` ;
-- PR #999 ne modifiait aucun fichier Mon Projet.
-
-Correction minimale sur la branche : le guard #19G vise désormais le composant réellement monté `MonProjetWizardP2` et conserve les assertions transition/search/continuity.
+Preuve historique : le run Canonical Baseline initial exécutait **1 835 / 1 835 tests scrapers avec succès** avant l'échec du guard obsolète.
 
 ## Benchmark SERP / web observé le 2026-09-04
 
-> Limite : observations de moteur de recherche web public, pas export Google Search Console et pas garantie de position Google personnalisée.
+> Limite : observations du web public, pas export Google Search Console et pas garantie de position personnalisée.
 
-### Kaynly
+### Surfaces concurrentes
 
-Surfaces observées :
+- **Kaynly** : ville × transaction, ville × transaction × type, quartier, résidence, baromètre prix/m², volumes/médianes/fraîcheur, multi-portails.
+- **Mubawab** : intentions transactionnelles ville/type/quartier avec gros volume.
+- **Yakeey** : ville/type, facettes, longue traîne locale, référentiels prix.
+- **AlerteImmo** : agrégation, ville/type, médiane, FAQ locale, alertes.
+- **Autres observés** : Masaken, SoukImmobilier, Palm Estates Pro selon les requêtes.
 
-- ville × transaction : `https://kaynly.com/vente/casablanca` ;
-- ville × transaction × type : `https://kaynly.com/vente/casablanca/appartements` ;
-- quartier : `https://kaynly.com/vente/casablanca/bourgogne-est` ;
-- baromètre : `https://kaynly.com/barometre/casablanca` ;
-- maillage villes/quartiers/résidences ;
-- données visibles : volumes, médiane, prix/m², comparaison locale, répartition par type, fraîcheur du relevé, source d'origine.
+### Gap principal
 
-Observation du 31 août 2026 exposée par le site : environ 100 055 annonces agrégées depuis cinq portails.
+| Dimension | Concurrence | AkarFinder | Lecture |
+|---|---|---|---|
+| Couverture villes/quartiers | forte | 5 villes / 11 quartiers | gap de couverture, à ne pas combler sans gate |
+| transaction × ville | présente | helper URL prévu, route non publiée | meilleure première expansion potentielle |
+| transaction × ville × type | présente | non publiée | seulement après normalisation + stock multi-source |
+| prix / prix m² | forte | partiel | data moat à construire seulement avec méthodologie défendable |
+| fraîcheur explicite | variable/forte | read-model disponible | opportunité |
+| transparence source/limites | variable | forte | avantage potentiel |
 
-### Mubawab
+## SEO-2 — distribution du stock public
 
-Fort sur les intentions transactionnelles directes :
+### Read-model utilisé
 
-- `Appartement à vendre à Casablanca` ;
-- `Location appartement à Rabat` ;
-- `Terrain à vendre à Casablanca` ;
-- pages quartier telles que Maârif.
+`public.public_search_representations_v1`
 
-Les pages exposent de gros volumes d'annonces et un maillage de catégories/localisations.
+Qualification stricte :
 
-### Yakeey
+```text
+display_eligibility = eligible_primary
+freshness_status = fresh_confirmed
+```
 
-Surfaces observées :
+Volume brut observé de ce sous-ensemble avant autres filtres : **3 216 représentations**.
 
-- ville × type ;
-- pagination ;
-- facettes de prix crawlables ;
-- référentiel de prix immobilier par quartier ;
-- maillage de recherches populaires ville/quartier/type.
+### Ville × intention
 
-### AlerteImmo
+| Ville | Vente | Sources | Location | Sources |
+|---|---:|---:|---:|---:|
+| Agadir | 173 | 4 | 115 | 4 |
+| Casablanca | 260 | 6 | 198 | 6 |
+| Marrakech | 215 | 4 | 254 | 4 |
+| Rabat | 166 | 5 | 161 | 6 |
+| Tanger | 184 | 4 | 282 | 4 |
+| Fès | 102 | 5 | 106 | 4 |
 
-Concurrent agrégateur apparu dans les résultats observés :
+Conclusion : les 5 villes SEO actuelles ont chacune un stock strict multi-source conséquent pour **vente et location**. Fès est également crédible côté data mais n'est pas encore dans le `CitySlug` SEO.
 
-- pages `acheter/{ville}/{type}` ;
-- volume + prix médian ;
-- annonces multi-portails ;
-- FAQ locale ;
-- proposition de valeur forte sur l'alerte temps réel.
+Anomalie : une représentation Marrakech porte `buy` au lieu de `sale`.
 
-### Autres gagnants observés
+### Normalisation minimale avant type-level
 
-- Masaken sur certaines requêtes quartier/type ;
-- SoukImmobilier sur certains terrains ;
-- Palm Estates Pro sur `prix immobilier Casablanca`.
+- `buy → sale`
+- `appartement → apartment`
+- `terrain → land`
+- `bureau → office`
+- `local commercial → commercial`
 
-## Gap analysis initiale
+### Premier floor ville × intention × type
 
-| Dimension | Kaynly | Mubawab / Yakeey | AlerteImmo | AkarFinder actuel | Lecture |
-|---|---|---|---|---|---|
-| Couverture ville | forte | forte | forte | faible contrôlée | concurrents meilleurs |
-| Transaction × ville | oui | oui | oui | non comme landing SEO dédiée | opportunité prioritaire |
-| Type × ville | oui | oui | oui | non comme landing SEO dédiée | opportunité prioritaire |
-| Quartier | très profond | profond | partiel | 11 pages contrôlées | qualité possible, couverture faible |
-| Prix / prix m² | oui | Yakeey fort | médiane | partiel selon read-model | gap important |
-| Fraîcheur explicite | oui | variable | promesse temps réel | à structurer | opportunité AkarFinder |
-| Déduplication / multi-source | oui | n/a portail / variable | oui | architecture prévue | angle différenciant à prouver |
-| Contexte local utile | limité à data marché | variable | FAQ | read-model quartier + carte | AkarFinder peut être meilleur |
-| Transparence source / limites | forte | variable | moyenne | forte dans les pages actuelles | AkarFinder peut être meilleur |
-| Scale gate qualité | non observable | non observable | non observable | registre contrôlé mais statique | à transformer en gate stock/qualité dynamique |
+Floor exploratoire pour la query map : **≥20 représentations strictes + ≥3 sources distinctes**.
+
+Ce floor n'est pas déclaré identique au gate DB `strong` ; le sous-ensemble est déjà filtré `eligible_primary + fresh_confirmed` et ce test sert uniquement à sélectionner les premières surfaces candidates.
+
+Combinaisons qui passent après alias mapping :
+
+- **Appartement vente + location** : Agadir, Casablanca, Fès, Marrakech, Rabat, Tanger ;
+- **Villa vente** : Tanger.
+
+Les autres combinaisons observées ne franchissent pas simultanément ce floor de volume et diversité de sources.
+
+## Quartiers — contrôle croisé avec la politique data existante
+
+État DB observé :
+
+- 96 métriques quartier inspectées ;
+- 92 `insufficient` ;
+- 4 `limited` ;
+- 0 certifiée ;
+- `public_activation=false` sur les segments observés ;
+- aucune publication correspondante retrouvée dans `published_neighborhood_intelligence` pour les 11 slugs SEO actuels.
+
+La DB possède déjà une politique de fiabilité plus stricte, avec notamment des seuils d'échantillon, couverture, fraîcheur, diversité des sources, dispersion et outliers.
+
+Conclusion : ne pas créer un deuxième gate statistique divergent pour les quartiers. Réutiliser cette politique autant que possible avant toute expansion SEO quartier.
+
+## Taxonomie retenue
+
+Le repo contient déjà le helper canonical pour :
+
+`/immobilier/{ville}/{acheter|louer}`
+
+Décision :
+
+`/acheter` / `/louer` hubs nationaux  
+→ `/immobilier/{ville}/{acheter|louer}`  
+→ future surface type uniquement après gate.
+
+`/search?...` reste `noindex` et ne doit pas devenir la surface SEO de facettes.
 
 ## Conclusion prouvée
 
-AkarFinder ne doit pas répondre au gap par une explosion combinatoire d'URLs. Le chemin court est :
+AkarFinder ne doit pas répondre au gap par une explosion combinatoire d'URLs.
 
-1. terminer/merger les corrections techniques sûres de PR #999 ;
-2. dériver un **gate stock + qualité** à partir des données AkarFinder ;
-3. prioriser ensuite les landings `transaction × ville` puis `transaction × ville × type` uniquement quand elles passent ce gate ;
-4. construire les pages data/prix seulement lorsque l'échantillon et la méthodologie rendent les statistiques défendables.
+Le chemin court est maintenant :
+
+1. certifier et merger PR #999 ;
+2. implémenter un **gate unique** : normalisation → stock public frais → diversité des sources → décision d'indexation ;
+3. commencer par les landings `transaction × ville` déjà soutenues par le stock ;
+4. n'ouvrir les landings type que lorsqu'elles franchissent le gate ;
+5. réserver les pages data/prix aux segments statistiquement défendables.
 
 ## Next exact
 
-- CI PR #999 → vérifier le nouveau run quand nécessaire ;
-- si vert : mettre à jour le canonique principal, merger #999, vérifier `main` ;
-- sans déploiement Vercel ;
-- poursuivre SEO-1 par la query/gap map puis SEO-2 sur les intentions prioritaires.
+- certifier la CI du HEAD final PR #999 ;
+- si vert : merger puis vérifier `main` ;
+- aucun déploiement Vercel ;
+- lot suivant : SEO-3, implémentation du gate dynamique + tests + intégration sitemap/indexation.
