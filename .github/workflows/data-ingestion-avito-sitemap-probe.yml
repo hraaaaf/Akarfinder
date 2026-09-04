@@ -1,0 +1,20 @@
+name: Data Ingestion Avito Sitemap Probe
+
+on:
+  push:
+    paths:
+      - "scripts/scrapers/avito-sitemap-probe.mjs"
+      - ".github/workflows/data-ingestion-avito-sitemap-probe.yml"
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Probe advertised Avito sitemap once
+        run: node scripts/scrapers/avito-sitemap-probe.mjs
