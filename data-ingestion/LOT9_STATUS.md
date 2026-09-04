@@ -1,10 +1,10 @@
 # Lot 9 Status — Mubawab Full Coverage
 
-**Status: 🟡 OPEN — architecture Full Coverage certifiée ; collecte progressive live à 3 853 IDs uniques**
+**Status: 🟡 OPEN — discovery Full Coverage en extinction profonde ; catalog reconciliation obligatoire avant fermeture**
 
 ## Goal
 
-Parcourir exhaustivement le périmètre Mubawab accessible et autorisé afin de mesurer le stock réel d'annonces uniques disponible avant d'ouvrir une deuxième source.
+Parcourir exhaustivement le périmètre Mubawab accessible et autorisé, mesurer le stock réel d'annonces uniques disponible et expliquer quantitativement l'écart avec le catalogue public Mubawab avant d'ouvrir une deuxième source.
 
 Le Lot 9 mesure des `source_id` uniques de discovery. Le passage complet en objets canoniques et la certification du dataset massif relèvent du Lot 10.
 
@@ -20,177 +20,114 @@ Le Lot 9 mesure des `source_id` uniques de discovery. Le passage complet en obje
 - aucun téléchargement d'image ;
 - ne jamais toucher à `scripts/scrapers/output/akarfinder.db` pendant les preuves.
 
-## Périmètre initial
+## Périmètre actuellement implémenté
 
 - 12 villes ;
 - 11 catégories activées ;
 - 132 scopes initiaux `ville × catégorie` ;
 - familles : appartement, terrain, villa, maison, commercial, riad ;
-- bureaux désactivés tant que leurs routes distinctes ne sont pas vérifiées.
+- vente + location classique ;
+- bureaux désactivés tant que leurs routes distinctes ne sont pas vérifiées ;
+- location vacances non couverte dans la matrice actuelle.
 
-## Étape 1 — Full Coverage planner ✅ CERTIFIED
+## Preuves structurantes
 
-Fichier : `data-ingestion/sources/mubawab/full-coverage.ts`.
+- planner : run `33881976620` ✅ ;
+- bounded runner : run `33882260391` ✅ ;
+- micro-vague live : run `33882641901` ✅ ;
+- state/campaign persistants : run `33887383769` ✅ ;
+- première campagne persistante : run `33889776735` ✅, 573 IDs uniques ;
+- reprise inter-run : run `33890843084` ✅, cumul 889 IDs uniques ;
+- policy de montée en charge : run `33890791066` ✅ ;
+- scale-120 : run `33891104950` ✅, cumul 3 853 IDs uniques ;
+- scale-180 : run `33891846308` ✅, cumul 6 599 IDs uniques ;
+- scale-216 : run `33892580900` ✅, cumul 10 925 IDs uniques ;
+- scale-288 : run `33893444230` ✅, cumul 18 294 IDs uniques ;
+- deep extinction : run `33894675980` en cours au moment de cette mise à jour.
 
-Preuve : run `33881976620` ✅ SUCCESS, job `101052543906`, HEAD produit `1f9f0ae095fd28b9821008dd33dfb83e120ff5b4`.
+## Dernier checkpoint certifié — scale-288
 
-## Étape 2 — bounded runner ✅ CERTIFIED
-
-Fichier : `data-ingestion/sources/mubawab/full-coverage-runner.ts`.
-
-Preuve : run `33882260391` ✅ SUCCESS, job `101053487441`.
-
-Garanties : dédup globale, checkpoint page par page, fenêtre suivante uniquement après `window_exhausted`, stop sécurité robots / 403 / 429, kill-switch reprenable, aucun write DB.
-
-## Étape 3 — première micro-vague live ✅ GREEN
-
-Run `33882641901` ✅ SUCCESS.
-
-- 4 / 4 pages ;
-- 126 annonces découvertes ;
-- 126 uniques ;
-- 0 doublon ;
-- 0 blocage source.
-
-Artifact `9940542354`, digest `sha256:ca1b1a6b45cf0ff178e818145ef82d4189b96239b1082a65751845816a72ce5e`.
-
-## Étape 4 — état persistant + campaign runner ✅ CERTIFIED
-
-Fichiers :
-
-- `data-ingestion/sources/mubawab/full-coverage-state.ts` ;
-- `data-ingestion/sources/mubawab/full-coverage-campaign.ts` ;
-- tests associés.
-
-Garanties :
-
-- `state.json` sérialisable entre runs ;
-- `seen_source_ids` persistant ;
-- métriques cumulées et historique des vagues ;
-- checkpoint après chaque vague ;
-- détection de vague dupliquée ;
-- interdiction de perte d'IDs déjà vus ;
-- kill-switch = pause reprenable, jamais faux `completed` ;
-- un blocage source stoppe globalement sans consommer le scope suivant.
-
-Preuve GitHub complète : run isolé macOS `33887383769` ✅ SUCCESS.
-
-## Étape 5 — première campagne persistante ✅ GREEN
-
-Run `33889776735` ✅ SUCCESS, job `101078344166`.
-
-Limite : 2 vagues × 3 partitions × 3 pages = 18 pages max, délai 1 500 ms.
-
-Résultat :
-
-- 18 / 18 pages réussies ;
-- 573 découvertes ;
-- 573 IDs uniques ;
-- 0 doublon ;
-- 0 blocage source ;
-- 6 scopes avancés ;
-- 132 scopes encore actifs à ce stade.
-
-Artifact `9943410758`, digest `sha256:50f5bcbf82543f5a6743cdd3b287e137a236773ea1de4ebf131590fe5ddc75d1`.
-
-## Étape 6 — reprise inter-run ✅ GREEN
-
-Run `33890195931` ✅ SUCCESS, job `101079713566`.
-
-Le run restaure l'artifact précédent, vérifie `state.json`, puis reprend le même `run_id` sans reset.
-
-Cumul après reprise :
-
-- 32 / 32 pages réussies ;
-- 917 refs découvertes ;
-- 889 IDs uniques ;
-- 28 doublons ;
-- 3 scopes terminaux ;
-- 129 scopes encore actifs.
-
-Artifact `9943531219`, digest `sha256:911ca23cc63c5b576f2bf3f2aaed791df2fe1a99a183a76820edfb1e423b5d43`.
-
-Un replay concurrent depuis l'ancien checkpoint a reproduit le même état 889 sans corruption DB ni prod ; il n'est pas utilisé comme progression canonique.
-
-## Étape 7 — policy de montée en charge ✅ CERTIFIED
-
-Fichier : `data-ingestion/sources/mubawab/live-campaign-policy.ts`.
-
-- défaut : 18 pages théoriques max ;
-- délai minimum : 1 500 ms ;
-- overrides bornés par variables d'environnement ;
-- plafond dur : 300 pages théoriques par exécution ;
-- configurations invalides rejetées avant réseau.
-
-Preuve : run macOS `33890791066` ✅ SUCCESS, incluant Discovery + planner + runner + state + campaign + policy.
-
-## Étape 8 — scale-120 ✅ GREEN
-
-Run `33891104950` ✅ SUCCESS, job `101082690570`, HEAD `2709ce27725b2455741550d7ddbc858373d7178e`.
+Run `33893444230` ✅ SUCCESS.
 
 Configuration :
 
-- 8 vagues ;
-- 5 partitions par vague ;
-- 3 pages par partition ;
-- plafond théorique 120 pages ;
-- délai 1 750 ms ;
-- reprise depuis le checkpoint 889 ;
+- reprise depuis le checkpoint scale-216 ;
+- 16 vagues ;
+- 6 partitions par vague ;
+- fenêtre 3 pages ;
+- plafond théorique 288 pages ;
+- délai 2 500 ms ;
 - 0 détail / 0 image / 0 DB / 0 prod.
 
-Résultat de cette campagne :
+Cumul :
 
-- 110 pages effectivement demandées ;
-- 110 pages réussies ;
+- **730 / 730 pages réussies** ;
+- **21 352 refs découvertes** ;
+- **18 294 IDs uniques** ;
+- **3 058 doublons** ;
+- **107 scopes terminaux** ;
+- **25 partitions profondes pending** ;
 - 0 blocage source ;
-- 0 kill-switch ;
-- 2 964 nouveaux IDs uniques ajoutés.
+- 0 kill-switch.
 
-Cumul Full Coverage :
+Artifact `9945178093`, digest `sha256:e1ca03755ef8ccb31911da453d8f2c53787f91b3088636fefa1ce3b9399ffa15`.
 
-- **142 pages demandées / 142 réussies** ;
-- **4 110 refs découvertes** ;
-- **3 853 IDs d'annonces uniques** ;
-- **257 doublons** (~6,3 % des refs découvertes) ;
-- **52 partitions complétées** ;
-- **14 scopes terminaux** ;
-- **118 scopes actifs** ;
-- **80 scopes initiaux encore jamais ouverts** ;
-- **38 fenêtres profondes `p4+` déjà préparées**.
+Les 25 partitions restantes étaient concentrées dans les fenêtres profondes : 19 en `p13-15` et 6 en `p16-18`.
 
-Rendement unique cumulé par ville déjà touchée :
+## Catalog reconciliation — NOUVEAU VERROU DE FERMETURE
 
-- Casablanca : 793 ;
-- Rabat : 704 ;
-- Marrakech : 923 ;
-- Tanger : 830 ;
-- Agadir : 603.
+Le compteur public Mubawab observé le 2026-09-04 affiche environ **102K biens immobiliers** sur le site Maroc.
 
-Scopes déjà terminés naturellement (`zero_new_unique_ids`) :
+Ce nombre public n'est pas assimilé automatiquement à 102K annonces uniques, actives et accessibles dans notre périmètre, mais il devient une référence de couverture obligatoire.
 
-- Casablanca : maison location, riad vente, riad location ;
-- Rabat : maison vente, maison location, riad vente, riad location ;
-- Marrakech : maison location, riad location ;
-- Tanger : maison location, riad vente, riad location ;
-- Agadir : villa location, maison location.
+Écart actuel avant extinction finale :
 
-Artifact `9943999589`, digest `sha256:dda924a70d25bf29a8c2444719aced51111e0877bed1248ef76500a51bb1b7ba`.
+- catalogue public Mubawab : ~102K biens affichés ;
+- discovery unique certifiée AkarFinder : 18 294 IDs ;
+- couverture brute apparente : ~18 % ;
+- delta apparent : ~84K.
 
-## Lecture opérationnelle
+Cet écart interdit de fermer le Lot 9 sur la seule condition `pending=0` de la matrice actuelle.
 
-L'architecture de collecte est maintenant prouvée jusqu'à une campagne live de 110 pages et une reprise inter-run réelle. Le scheduler sait continuer les gros scopes et éteindre les petits sans perdre le checkpoint.
+### Hypothèses de couverture à auditer
 
-Les 3 853 éléments actuels sont des IDs uniques de discovery, pas encore le stock canonique final du Lot 10. Le Lot 9 reste OPEN car 80 scopes initiaux n'ont pas encore été ouverts et les scopes volumineux possèdent déjà des fenêtres profondes à parcourir.
+1. villes / zones hors des 12 villes configurées ;
+2. bureaux vente + location actuellement désactivés ;
+3. location vacances ;
+4. immobilier neuf / projets / programmes ne passant pas par les mêmes routes ;
+5. autres familles ou routes agrégées Mubawab non incluses ;
+6. différences entre compteur global et annonces réellement actives / uniques ;
+7. éventuels plafonds de pagination, alias de routes ou partitions qui masquent une partie du catalogue.
 
-## Closure rule
+Aucune hypothèse ne sera acceptée comme explication sans mesure.
 
-Lot 9 ne sera CLOSED qu'après extinction ou stop sécurité documenté de tous les scopes autorisés, avec manifest final contenant couverture, erreurs, doublons, checkpoints et nombre unique final.
+## Nouvelle closure rule
+
+Lot 9 ne sera CLOSED que si les deux conditions suivantes sont satisfaites :
+
+### A — Full Coverage technique
+
+- toutes les partitions autorisées connues sont `completed`, ou arrêtées avec raison de sécurité documentée ;
+- aucun checkpoint perdu ;
+- manifest final avec pages, uniques, doublons, erreurs, stops et distribution par scope.
+
+### B — Catalog reconciliation
+
+- inventaire des familles / transactions / villes / zones réellement présentes sur Mubawab ;
+- mesure des catégories manquantes dans la matrice actuelle ;
+- extension de la matrice pour chaque route autorisée et pertinente ;
+- comparaison finale `catalogue public affiché ↔ IDs accessibles ↔ IDs uniques discovery` ;
+- tout delta résiduel important doit être expliqué et quantifié.
+
+`pending=0` sur les 132 scopes initiaux ne suffit donc plus à fermer le Lot 9.
 
 ## Next exact
 
-1. reprendre depuis l'artifact scale-120 `9943999589` ;
-2. poursuivre progressivement les 80 scopes initiaux restants avant de privilégier la pagination profonde ;
-3. maintenir le plafond dur et le délai poli ;
-4. continuer jusqu'à extinction de la matrice initiale puis des fenêtres profondes ;
-5. produire le manifest Full Coverage final ;
-6. seulement ensuite ouvrir Lot 10.
+1. laisser terminer la deep extinction depuis l'artifact `9945178093` ;
+2. récupérer le nouveau checkpoint et le stock unique final de la matrice actuelle ;
+3. auditer systématiquement la surface publique Mubawab : villes, bureaux, location vacances, neuf/projets et autres routes ;
+4. produire une matrice de réconciliation avec compteurs visibles par famille / transaction ;
+5. étendre le planner uniquement aux routes vérifiées, autorisées et pertinentes ;
+6. relancer les campagnes bornées sur la couverture manquante ;
+7. fermer Lot 9 uniquement lorsque la couverture technique et la réconciliation catalogue sont toutes deux prouvées ;
+8. seulement ensuite ouvrir Lot 10.
