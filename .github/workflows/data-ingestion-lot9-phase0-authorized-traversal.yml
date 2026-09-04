@@ -7,6 +7,7 @@ on:
       - "data-ingestion/sources/mubawab/discovery.ts"
       - "data-ingestion/sources/mubawab/geo-hierarchy.ts"
       - "scripts/mubawab-phase0-authorized-leaf-probe.ts"
+      - "scripts/scrapers/avito-sitemap-probe.mjs"
       - "scripts/scrapers/utils/fetch-html.ts"
       - "scripts/scrapers/__tests__/data-ingestion-lot9-phase0-authorized-traversal.test.ts"
       - ".github/workflows/data-ingestion-lot9-phase0-authorized-traversal.yml"
@@ -41,3 +42,17 @@ jobs:
 
       # Safety: representative page-1 leaf proof only.
       # No :p:N pagination, no detail pages, no DB/prod writes, no images.
+
+  avito-sitemap-probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Probe Avito sitemap advertised by robots.txt once
+        run: node scripts/scrapers/avito-sitemap-probe.mjs
+
+      # Safety: exactly one sitemap request with an identifiable AkarFinder UA.
+      # No detail pages, no private API, no images, no DB/prod writes.
