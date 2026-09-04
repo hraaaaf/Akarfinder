@@ -8,7 +8,7 @@ Lire dans cet ordre :
 
 1. `data-ingestion/canonical.md` — architecture / roadmap canonique ;
 2. `data-ingestion/HANDOVER.md` — état opérationnel courant ;
-3. `data-ingestion/LOT8_STATUS.md` — chantier opérationnel courant ;
+3. `data-ingestion/LOT8_STATUS.md` — closeout détaillé Lot 8 ;
 4. `data-ingestion/LOT7_STATUS.md` — closeout détaillé Lot 7 ;
 5. `AKARFINDER_SEARCH_PROPERTY_TYPE_VISUALS_CANONICAL.md` — canonique visuel Search par type de bien.
 
@@ -58,8 +58,8 @@ Une purge Mubawab ne doit jamais supprimer une annonce `agency_direct` ou `partn
 - Lot 5 : CLOSED
 - Lot 6 : CLOSED pour crawl/transaction ; mismatch taxonomique historique séparé
 - Lot 7 : ✅ CLOSED — functional + browser visual proof complete
-- Lot 8 : 🟡 OPEN — controlled massive ingestion implementation landed; proof pending
-- Lot 9 : ⚪ À FAIRE
+- Lot 8 : ✅ CLOSED — controlled massive ingestion proof GREEN
+- Lot 9 : 🟡 NEXT — industrialisation multi-source
 
 ## Lot 7 — closeout final
 
@@ -92,18 +92,18 @@ Comparaison au canonique visuel : **CONFORME**.
 
 Le trigger `push` temporaire du workflow visual-proof a été supprimé ; le workflow conserve `pull_request` + `workflow_dispatch` uniquement.
 
-## Lot 8 — chantier courant
+## Lot 8 — CLOSED
 
 Goal canonique : rendre possible une ingestion large depuis un dataset validé avec rollback et contrôle opérationnel.
 
-Première implémentation volontairement bornée à une SQLite isolée dans le répertoire temporaire de l’OS :
+Implémentation bornée à une SQLite isolée dans le répertoire temporaire de l’OS :
 
 - `data-ingestion/controlled-ingestion.ts` ;
 - `scripts/scrapers/__tests__/data-ingestion-lot8-controlled-massive.test.ts` ;
 - `.github/workflows/data-ingestion-lot8-controlled-massive.yml` ;
 - `data-ingestion/LOT8_STATUS.md`.
 
-Capacités actuellement implémentées :
+Capacités prouvées :
 
 - ingestion par batch ;
 - métriques inserted/updated/batchs commités ;
@@ -116,7 +116,40 @@ Capacités actuellement implémentées :
 - survie des sources `agency_direct` / `partner_feed` ;
 - refus de toute SQLite hors répertoire temporaire.
 
-La preuve dédiée couvre 2 500 annonces en batchs de 500, ré-ingestion idempotente, arrêt/reprise, rollback sur erreur en milieu de batch et purge sélective.
+### Preuve finale Lot 8
+
+- workflow : `Data Ingestion Lot 8 Controlled Massive Gate` ;
+- run : `33879281908` ✅ SUCCESS ;
+- HEAD exact prouvé : `979c7f57e46f5eb39c6d0a552fe78b635185e634` ;
+- job : `controlled-massive` ;
+- job id : `101043688350`.
+
+Régression Lot 7 : 1/1 GREEN.
+
+Lot 8 : 4/4 GREEN, couvrant :
+
+- 2 500 annonces ;
+- batching ;
+- ré-ingestion idempotente ;
+- stop/resume par checkpoint ;
+- rollback après erreur mid-batch ;
+- purge `portal` sélective ;
+- protection `agency_direct` / `partner_feed` ;
+- refus d’un chemin SQLite non isolé.
+
+**Décision : Lot 8 CLOSED sur le scope sandbox / ingestion contrôlée.**
+
+Cette fermeture n’autorise aucun write production, merge ou déploiement.
+
+## Lot 9 — chantier suivant
+
+Goal canonique : réutiliser le moteur pour une seconde source sans réécrire le cœur AkarFinder.
+
+Architecture cible :
+
+`MubawabAdapter / SecondSourceAdapter / AgencyFeedAdapter / PartnerFeedAdapter → CanonicalListing → AkarFinder ingestion pipeline`
+
+Le critère déterminant est architectural : une seconde source doit produire un objet canonique valide puis traverser le même pipeline existant, sans branche spécifique injectée dans le cœur de recherche ou d’ingestion.
 
 ## Sécurité inchangée
 
@@ -129,12 +162,13 @@ La preuve dédiée couvre 2 500 annonces en batchs de 500, ré-ingestion idempot
 
 ## NEXT EXACT
 
-1. Obtenir le run du workflow `Data Ingestion Lot 8 Controlled Massive Gate` sur le HEAD exact.
-2. Vérifier la régression Lot 7 1 000 annonces.
-3. Vérifier le test Lot 8 : 2 500 annonces / batching / idempotence / stop-resume / rollback / purge sélective.
-4. Si GREEN, enregistrer run + preuves dans `data-ingestion/LOT8_STATUS.md`.
-5. Seulement alors décider si Lot 8 peut être CLOSED sur le scope isolé.
+1. Ouvrir le Lot 9 comme chantier multi-source.
+2. Choisir une seconde source de preuve qui minimise le risque légal/opérationnel et maximise la valeur architecturale.
+3. Implémenter uniquement les briques spécifiques à cette source : Discovery / Extractor / mapping / fixtures / fraîcheur-purge.
+4. Faire passer cette seconde source dans le même Collection Contract, le même adapter canonique et la même ingestion contrôlée.
+5. Prouver qu’aucune modification structurelle du cœur canonique n’est nécessaire.
 6. Garder PR `#996` OPEN / DRAFT / non mergée et ne rien déployer sans autorisation explicite.
 
 **Handover Lot 7 : CLOSED ✅**
-**Lot 8 : OPEN — proof pending 🟡**
+**Handover Lot 8 : CLOSED ✅**
+**Lot 9 : NEXT 🟡**
