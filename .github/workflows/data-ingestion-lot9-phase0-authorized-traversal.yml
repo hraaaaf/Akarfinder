@@ -1,0 +1,43 @@
+name: Data Ingestion Lot 9 P0-D Authorized Traversal
+
+on:
+  pull_request:
+    paths:
+      - "data-ingestion/sources/mubawab/authorized-traversal.ts"
+      - "data-ingestion/sources/mubawab/discovery.ts"
+      - "data-ingestion/sources/mubawab/geo-hierarchy.ts"
+      - "scripts/mubawab-phase0-authorized-leaf-probe.ts"
+      - "scripts/scrapers/utils/fetch-html.ts"
+      - "scripts/scrapers/__tests__/data-ingestion-lot9-phase0-authorized-traversal.test.ts"
+      - ".github/workflows/data-ingestion-lot9-phase0-authorized-traversal.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  authorized-traversal:
+    runs-on: macos-14
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Prove P0-D leaf assessment semantics
+        run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-phase0-authorized-traversal.test.ts
+      - name: Run bounded robots-allowed Oasis leaf probe
+        run: npx tsx scripts/mubawab-phase0-authorized-leaf-probe.ts
+      - name: Upload P0-D authorized leaf proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lot9-phase0-authorized-leaf-proof
+          path: data-ingestion/runs/mubawab/phase0-authorized-leaf-probe/
+          if-no-files-found: warn
+          retention-days: 7
+
+      # Safety: representative page-1 leaf proof only.
+      # No :p:N pagination, no detail pages, no DB/prod writes, no images.
