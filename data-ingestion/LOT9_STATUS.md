@@ -1,6 +1,6 @@
 # Lot 9 Status — Mubawab Full Coverage
 
-**Status: 🟡 OPEN — discovery Full Coverage en extinction profonde ; catalog reconciliation obligatoire avant fermeture**
+**Status: 🟡 OPEN — matrice classique éteinte à 29 741 IDs ; réconciliation catalogue en cours**
 
 ## Goal
 
@@ -20,15 +20,15 @@ Le Lot 9 mesure des `source_id` uniques de discovery. Le passage complet en obje
 - aucun téléchargement d'image ;
 - ne jamais toucher à `scripts/scrapers/output/akarfinder.db` pendant les preuves.
 
-## Périmètre actuellement implémenté
+## Périmètre classique certifié
 
 - 12 villes ;
 - 11 catégories activées ;
 - 132 scopes initiaux `ville × catégorie` ;
 - familles : appartement, terrain, villa, maison, commercial, riad ;
 - vente + location classique ;
-- bureaux désactivés tant que leurs routes distinctes ne sont pas vérifiées ;
-- location vacances non couverte dans la matrice actuelle.
+- bureaux `st` toujours désactivés tant que leurs routes distinctes ne sont pas vérifiées ;
+- location vacances non couverte dans la matrice classique.
 
 ## Preuves structurantes
 
@@ -43,65 +43,87 @@ Le Lot 9 mesure des `source_id` uniques de discovery. Le passage complet en obje
 - scale-180 : run `33891846308` ✅, cumul 6 599 IDs uniques ;
 - scale-216 : run `33892580900` ✅, cumul 10 925 IDs uniques ;
 - scale-288 : run `33893444230` ✅, cumul 18 294 IDs uniques ;
-- deep extinction : run `33894675980` en cours au moment de cette mise à jour.
+- extinction finale matrice classique : run `33899083917` ✅, **29 741 IDs uniques** ;
+- artifact baseline finale : `9947122701`, digest `sha256:1b27ba2946bd671644e6ec1bf03a396df6c86a51706f5a17265466d041a0cb6d` ;
+- probe national `sc/cc` : run `33900816318` ✅ ;
+- artifact probe : `9947658003`, digest `sha256:76c7cc595ce60dda64e3d5dbb0978fc26f5493b72d5f6e36b757775ddb70f5f7`.
 
-## Dernier checkpoint certifié — scale-288
+## Baseline classique finale
 
-Run `33893444230` ✅ SUCCESS.
+Run `33899083917` ✅ SUCCESS.
 
-Configuration :
+- **29 741 IDs uniques** dans le checkpoint final ;
+- matrice classique arrivée à extinction technique ;
+- ce checkpoint devient la baseline de comparaison pour toutes les surfaces catalogue supplémentaires ;
+- aucune page détail, image, DB ou production impliquée dans les probes de réconciliation.
 
-- reprise depuis le checkpoint scale-216 ;
-- 16 vagues ;
-- 6 partitions par vague ;
-- fenêtre 3 pages ;
-- plafond théorique 288 pages ;
-- délai 2 500 ms ;
-- 0 détail / 0 image / 0 DB / 0 prod.
-
-Cumul :
-
-- **730 / 730 pages réussies** ;
-- **21 352 refs découvertes** ;
-- **18 294 IDs uniques** ;
-- **3 058 doublons** ;
-- **107 scopes terminaux** ;
-- **25 partitions profondes pending** ;
-- 0 blocage source ;
-- 0 kill-switch.
-
-Artifact `9945178093`, digest `sha256:e1ca03755ef8ccb31911da453d8f2c53787f91b3088636fefa1ce3b9399ffa15`.
-
-Les 25 partitions restantes étaient concentrées dans les fenêtres profondes : 19 en `p13-15` et 6 en `p16-18`.
-
-## Catalog reconciliation — NOUVEAU VERROU DE FERMETURE
+## Catalog reconciliation
 
 Le compteur public Mubawab observé le 2026-09-04 affiche environ **102K biens immobiliers** sur le site Maroc.
 
-Ce nombre public n'est pas assimilé automatiquement à 102K annonces uniques, actives et accessibles dans notre périmètre, mais il devient une référence de couverture obligatoire.
+Ce compteur n'est pas traité comme 102K annonces uniques exploitables. Il sert uniquement de référence de couverture à réconcilier.
 
-Écart actuel avant extinction finale :
+Écart apparent après extinction classique :
 
-- catalogue public Mubawab : ~102K biens affichés ;
-- discovery unique certifiée AkarFinder : 18 294 IDs ;
-- couverture brute apparente : ~18 % ;
-- delta apparent : ~84K.
+- catalogue public affiché : ~102K ;
+- discovery classique certifiée : **29 741 IDs uniques** ;
+- couverture brute apparente : ~29 % ;
+- delta apparent : ~72K.
 
-Cet écart interdit de fermer le Lot 9 sur la seule condition `pending=0` de la matrice actuelle.
+Cet écart interdit de fermer le Lot 9 sur la seule extinction des 132 scopes classiques.
 
-### Hypothèses de couverture à auditer
+## Probe national `sc/cc` — preuve du 2026-09-04
 
-1. villes / zones hors des 12 villes configurées ;
-2. bureaux vente + location actuellement désactivés ;
-3. location vacances ;
-4. immobilier neuf / projets / programmes ne passant pas par les mêmes routes ;
-5. autres familles ou routes agrégées Mubawab non incluses ;
-6. différences entre compteur global et annonces réellement actives / uniques ;
-7. éventuels plafonds de pagination, alias de routes ou partitions qui masquent une partie du catalogue.
+Run `33900816318` ✅ SUCCESS sur HEAD produit `a63740d66c379b335f266618c99c0e49079eb6fb`.
 
-Aucune hypothèse ne sera acceptée comme explication sans mesure.
+Sécurité :
 
-## Nouvelle closure rule
+- 6 surfaces ;
+- 2 pages par surface ;
+- 12 requêtes max ;
+- délai 2 750 ms ;
+- robots vérifiés ;
+- 0 détail / 0 image / 0 DB / 0 prod.
+
+Résultat global :
+
+- **334 IDs uniques observés** ;
+- **173 déjà présents** dans la baseline classique ;
+- **161 réellement nouveaux** ;
+- **44 doublons inter-surfaces**.
+
+Détail :
+
+- `cc-all-sale` : 62 uniques, 49 connus, **13 nouveaux**, overlap 79,0 % ;
+- `cc-all-rent` : 64 uniques, 45 connus, **19 nouveaux**, overlap 70,3 % ;
+- `sc-apartment-sale` : 62 uniques, 48 connus, **14 nouveaux**, overlap 77,4 % ;
+- `sc-office-sale` : 62 uniques, 0 connu, **62 nouveaux**, overlap **0 %** ;
+- `sc-office-rent` : 64 uniques, 0 connu, **64 nouveaux**, overlap **0 %** ;
+- `sc-commercial-rent` : 64 uniques, 59 connus, **5 nouveaux**, overlap 92,2 %.
+
+### Décision
+
+Les surfaces `sc/bureaux-et-commerces-a-vendre` et `sc/bureaux-et-commerces-a-louer` sont le meilleur signal de stock manquant : **126/126 IDs de l'échantillon étaient absents de la baseline classique**.
+
+Cela ne justifie pas encore d'activer `office_sale/rent` dans la matrice `st`, car les routes `sc` sont agrégées `bureaux-et-commerces` et ne prouvent pas une taxonomie distincte Bureau vs Local commercial.
+
+## Deep probe bureaux — en cours
+
+HEAD : `cd932c0ba2b06400fc8dffcc22c24b639396c680`.
+
+Le gate Lot 9 #63 exécute un probe borné uniquement sur les deux surfaces `sc` bureaux/commerces :
+
+- pages 3 à 10 ;
+- 8 pages par surface ;
+- 16 requêtes max ;
+- délai 2 750 ms ;
+- robots vérifiés ;
+- 403/429 transformé en blocage explicite ;
+- 0 détail / 0 image / 0 DB / 0 prod.
+
+Le code supporte désormais des fenêtres de pages bornées `start_page + pages`, avec garde de sécurité et tests dédiés.
+
+## Closure rule
 
 Lot 9 ne sera CLOSED que si les deux conditions suivantes sont satisfaites :
 
@@ -115,19 +137,16 @@ Lot 9 ne sera CLOSED que si les deux conditions suivantes sont satisfaites :
 
 - inventaire des familles / transactions / villes / zones réellement présentes sur Mubawab ;
 - mesure des catégories manquantes dans la matrice actuelle ;
-- extension de la matrice pour chaque route autorisée et pertinente ;
+- extension uniquement pour les routes vérifiées, autorisées et sémantiquement sûres ;
 - comparaison finale `catalogue public affiché ↔ IDs accessibles ↔ IDs uniques discovery` ;
 - tout delta résiduel important doit être expliqué et quantifié.
 
-`pending=0` sur les 132 scopes initiaux ne suffit donc plus à fermer le Lot 9.
-
 ## Next exact
 
-1. laisser terminer la deep extinction depuis l'artifact `9945178093` ;
-2. récupérer le nouveau checkpoint et le stock unique final de la matrice actuelle ;
-3. auditer systématiquement la surface publique Mubawab : villes, bureaux, location vacances, neuf/projets et autres routes ;
-4. produire une matrice de réconciliation avec compteurs visibles par famille / transaction ;
-5. étendre le planner uniquement aux routes vérifiées, autorisées et pertinentes ;
-6. relancer les campagnes bornées sur la couverture manquante ;
-7. fermer Lot 9 uniquement lorsque la couverture technique et la réconciliation catalogue sont toutes deux prouvées ;
-8. seulement ensuite ouvrir Lot 10.
+1. certifier le deep probe bureaux pages 3–10 ;
+2. mesurer son rendement marginal et l'overlap avec la baseline 29 741 ;
+3. si le rendement reste élevé, construire une campagne `sc` persistante et bornée jusqu'à extinction de ces surfaces ;
+4. conserver la taxonomie Bureau/Local commercial indépendante de la simple route agrégée ;
+5. auditer ensuite villes/zones manquantes, location vacances et neuf/projets ;
+6. produire la réconciliation finale avant fermeture Lot 9 ;
+7. seulement ensuite ouvrir Lot 10.
