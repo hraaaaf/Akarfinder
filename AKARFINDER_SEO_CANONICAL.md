@@ -6,8 +6,8 @@
 **Statut : ACTIVE**  
 **Dernière mise à jour : 2026-09-04**  
 **Repo : `hraaaaf/Akarfinder`**  
-**Main vérifié : `62633b3d4f8e27654ded8f3bb17c451d90b697a4`**  
-**Branche active : `fix/seo-neuf-noindex-until-inventory`**  
+**Main vérifié : `afa80ddf3fe32c60c12fc26450f36df8847ad1d4`**  
+**Branche closeout : `docs/seo-3c-closeout`**  
 **Preuve baseline : `AKARFINDER_SEO_AUDIT_2026-09-04.md`**
 
 ---
@@ -94,67 +94,39 @@ Snapshot ville revalidé le 2026-09-04 : **2 445** représentations strictes, **
 
 PR **#1000** — merge `d409d32db127e74bd59515718c97ccfd76add715`.
 
-Livré : gate 20/3, loaders read-only, normalisation, fail-closed, tests. CI finale 7/7 gates SUCCESS.
-
 ### SEO-3B1 — sitemap ville ✅
 
 PR **#1001** — merge `58bbe0837ae6050c52656b65a49d40acb88ba245`.
-
-Livré : sitemap dynamique ; ville publiée seulement si `acheter` OU `louer` passe le gate ; quartiers exclus si parent ville insuffisant.
 
 ### SEO-3B2 — metadata ville ✅
 
 PR **#1002** — merge `1e88e74b2c00be764103c943afdfa9bb5be58ca0`.
 
-Livré : `index,follow` si gate ville passe ; `noindex,follow` sinon ; self-canonical ; ISR 3600 ; aucun changement visuel.
-
 ### SEO-3B3 — quartiers ✅
 
-PR **#1003** — merge / `main` actuel : `62633b3d4f8e27654ded8f3bb17c451d90b697a4`.
+PR **#1003** — merge `62633b3d4f8e27654ded8f3bb17c451d90b697a4`.
+
+Preuve data au 2026-09-04 : 11 quartiers SEO observés ; maximum strict **10 offres / 2 sources** ; **0/11** passe le gate 20/3.
+
+Livré : gate quartier read-only, sitemap + metadata synchronisés, `noindex,follow` fail-closed, self-canonical, aucun changement visuel.
+
+CI #1003 : Baseline ✅, Compile/build ✅, P0 ✅, P1 ✅, P2 ✅, UX ✅, UI Inventory ✅. Post-merge : 0 déploiement Vercel observé.
+
+### SEO-3C — `/neuf` — MERGED / PROD PENDING
+
+PR **#1004** — merge `afa80ddf3fe32c60c12fc26450f36df8847ad1d4`.
 
 Preuve data au 2026-09-04 :
-
-- 11 quartiers SEO observés ;
-- maximum strict : **10 offres** ;
-- maximum strict : **2 sources** ;
-- **0/11** passe le gate 20/3.
-
-Livré :
-
-- loader quartier read-only fail-closed ;
-- quartier publié dans sitemap seulement s'il passe son propre gate ;
-- metadata quartier pilotées par le même gate ;
-- page toujours accessible avec `noindex,follow` si insuffisante ;
-- self-canonical conservé ;
-- aucun changement visuel.
-
-CI #1003 : Canonical Baseline ✅, Compile/build ✅, P0 ✅, P1 ✅, P2 ✅, UX ✅, UI Inventory ✅.
-
-Post-merge : `main = 62633b3d…` confirmé ; **0 déploiement Vercel observé**.
-
----
-
-## 6. SEO-3C — `/neuf` — EN COURS
-
-Branche : `fix/seo-neuf-noindex-until-inventory`.
-
-### Preuve data
-
-Snapshot strict revalidé le 2026-09-04 :
 
 - `sale` : 1 256 offres strictes / 7 sources ;
 - `rent` : 1 150 / 6 ;
 - intention inconnue : 38 / 6 ;
 - `buy` : 1 / 1 ;
-- **aucune offre stricte avec intention `new/neuf`**.
+- **0 offre stricte `new/neuf`**.
 
-La page `/neuf` utilise actuellement `ProgramsSection programs={[]}` et ses CTA pointent vers `transaction_type=new`.
+Preuve produit avant activation : `/neuf` rend `ProgramsSection programs={[]}` et le LIVE expose encore `robots: index, follow`.
 
-### Goal
-
-Éviter qu'une verticale sans inventaire réel soit indexée comme surface SEO active.
-
-### Implémenté sur la branche
+Livré dans `main` :
 
 - `/neuf` reste accessible ;
 - self-canonical explicite ;
@@ -162,16 +134,19 @@ La page `/neuf` utilise actuellement `ProgramsSection programs={[]}` et ses CTA 
 - `/neuf` retiré du sitemap ;
 - test de contrat ajouté ;
 - aucun changement visuel ;
-- aucune DB write ;
-- aucun déploiement Vercel.
+- aucune DB write.
 
-### Réactivation future
+CI #1004 : **8/8 gates SUCCESS** : Baseline, Compile/build, P0, P1 Intent, P1 Final Sweep, P2, UX, UI Inventory.
 
-Ne réindexer `/neuf` qu'après existence d'un inventaire/programme réel et vérifié, avec une source de vérité dédiée et un gate défendable.
+Post-merge : `main = afa80ddf…` confirmé ; **0 déploiement Vercel observé après merge**.
+
+**Production : non activée.** Le LIVE restera inchangé tant qu'un déploiement Vercel n'est pas explicitement autorisé.
+
+Réactivation SEO future de `/neuf` : uniquement après inventaire/programmes réels vérifiés et gate dédié défendable.
 
 ---
 
-## 7. TAXONOMIE CIBLE
+## 6. TAXONOMIE CIBLE
 
 ```text
 /acheter | /louer
@@ -185,7 +160,7 @@ Le niveau `/{ville}/{segment}` possède déjà `[district]` : `acheter/` et `lou
 
 ---
 
-## 8. ROADMAP
+## 7. ROADMAP
 
 - SEO-0 : baseline/remédiation ✅
 - SEO-1 : benchmark initial ✅
@@ -194,13 +169,33 @@ Le niveau `/{ville}/{segment}` possède déjà `[district]` : `acheter/` et `lou
 - SEO-3B1 : sitemap ville ✅
 - SEO-3B2 : metadata ville ✅
 - SEO-3B3 : gate quartier ✅
-- SEO-3C : `/neuf` noindex jusqu'à inventaire réel — **EN COURS**
-- SEO-4 : landings ville×transaction qualifiées
+- SEO-3C : `/neuf` fail-closed — **MERGED / PROD PENDING**
+- SEO-4 : landings ville×transaction qualifiées — **NEXT**
 - SEO-5 : data moat prix/m² / volumes / fraîcheur
 - SEO-6/7 : technical SEO + maillage interne
 - SEO-8 : autorité / backlinks / études data
 - SEO-9 : boucle Search Console
 - SEO-10 : scale uniquement par preuves
+
+---
+
+## 8. SEO-4 — PRÉREQUIS VISUEL
+
+SEO-4 crée de nouvelles pages visibles. Protocole obligatoire :
+
+```text
+BEFORE -> Goal -> mockup/référence -> implémentation -> AFTER mêmes viewports -> comparaison/tests -> score visuel
+```
+
+État vérifié :
+
+- routes statiques `app/immobilier/[city]/acheter/` et `louer/` libres ;
+- helper `generateIntentSeoMetadata()` déjà disponible ;
+- LIVE `/immobilier/casablanca` répond HTTP 200 ;
+- capture navigateur locale bloquée par `ERR_BLOCKED_BY_ADMINISTRATOR` ;
+- fallback de capture externe également bloqué par l'environnement.
+
+**Aucune capture BEFORE fiable n'a donc été produite. Ne pas implémenter la surface visible SEO-4 sans cette preuve.**
 
 ---
 
@@ -224,9 +219,10 @@ Interdits :
 
 ## 10. NEXT EXACT
 
-1. ouvrir PR SEO-3C sur le HEAD final ;
-2. certifier test SEO + TypeScript + Production build + gates proportionnels ;
-3. corriger tout échec exact ;
-4. si vert : merge + post-merge `main` + vérification Vercel ;
-5. ensuite SEO-4 `ville × acheter/louer` ;
-6. SEO-4 crée de nouvelles pages visibles : protocole UI/UX **BEFORE -> Goal -> mockup/référence -> implémentation -> AFTER mêmes viewports -> comparaison/tests -> score visuel** obligatoire.
+1. merge du closeout canonique docs-only ;
+2. SEO-3C production reste au human gate Vercel ;
+3. obtenir une vraie capture BEFORE de la page ville pour SEO-4 ;
+4. écrire Goal visuel + mockup/référence ;
+5. implémenter d'abord `/immobilier/{ville}/acheter` et `/louer` seulement pour les couples qui passent le gate ;
+6. captures AFTER mêmes viewports + comparaison/tests + score visuel ;
+7. aucun déploiement Vercel sans autorisation explicite.
