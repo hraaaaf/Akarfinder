@@ -1,0 +1,16 @@
+{
+  "source": "avito",
+  "country": "MA",
+  "locale": "fr",
+  "base_url": "https://www.avito.ma",
+  "phase": "phase0_coverage_proof",
+  "status": "verification_pending",
+  "public_robots_url": "https://www.avito.ma/robots.txt",
+  "advertised_sitemap_url": "https://www.avito.ma/sitemap.xml",
+  "private_api_allowed": false,
+  "detail_identity_status": "not_yet_proven",
+  "full_harvest_allowed": false,
+  "database_writes_allowed": false,
+  "image_downloads_allowed": false,
+  "robots_check_required": true
+}
