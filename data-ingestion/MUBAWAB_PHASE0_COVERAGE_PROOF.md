@@ -192,7 +192,43 @@ P0-C therefore remains **OPEN** until those residual IDs are classified against 
 
 ---
 
-## 7. Pagination proof status
+## 7. Human ambiguity gate — LOCKED
+
+Any listing whose semantic classification remains ambiguous must be escalated to the user before a final classification decision is recorded.
+
+This applies in particular when an observed listing could plausibly belong to more than one of:
+
+- property type;
+- transaction family;
+- geography/locality;
+- project vs unit listing;
+- office vs commercial premises;
+- harvest/control-specific residual classification.
+
+Required workflow:
+
+```text
+ambiguous listing
+→ preserve source_id + source URL + observed evidence
+→ surface the listing to the user
+→ explain the competing classifications briefly
+→ user arbitrates
+→ record the decision and reuse it consistently
+```
+
+Absolute rules:
+
+- no silent auto-classification of a materially ambiguous listing;
+- no majority/heuristic guess presented as fact;
+- ambiguity must not block clearly classified listings;
+- human decisions become precedent for equivalent cases when the semantics are genuinely the same;
+- if a case differs materially from an earlier precedent, escalate again.
+
+This human gate is part of the Phase 0 coverage methodology and carries forward into Full Harvest and later canonical ingestion.
+
+---
+
+## 8. Pagination proof status
 
 Already demonstrated:
 
@@ -213,7 +249,7 @@ Still to prove or classify:
 
 ---
 
-## 8. Denominator reconciliation model
+## 9. Denominator reconciliation model
 
 Target equation:
 
@@ -234,7 +270,7 @@ The raw delta MUST NOT yet be interpreted as ~70K missing unique listings becaus
 
 ---
 
-## 9. No-harvest gate
+## 10. No-harvest gate
 
 Until Phase 0 PASS:
 
@@ -245,14 +281,15 @@ Until Phase 0 PASS:
 
 ---
 
-## 10. Next exact
+## 11. Next exact
 
 1. expand the primary comparison set for the exact residual `ct/is` IDs using relevant `st/sc` categories, not only apartments/locals;
 2. classify each residual as `explained_by_primary`, `missing_semantic`, `missing_geography`, or `control_unique_candidate`;
-3. probe `cc` and `t` reachability with the same strict invariant;
-4. continue geography/category discovery until repeated public seeds stop producing new dimensions;
-5. certify pagination semantics for remaining relevant families;
-6. build P0-E denominator buckets;
-7. keep Full Harvest BLOCKED until P0-A..P0-E all PASS.
+3. **escalate any materially ambiguous listing to the user under the Human ambiguity gate before final classification**;
+4. probe `cc` and `t` reachability with the same strict invariant;
+5. continue geography/category discovery until repeated public seeds stop producing new dimensions;
+6. certify pagination semantics for remaining relevant families;
+7. build P0-E denominator buckets;
+8. keep Full Harvest BLOCKED until P0-A..P0-E all PASS.
 
 **Phase 0 Coverage Proof: ACTIVE 🔵 — first reachability probe proves the current coverage model still has unexplained residual inventory.**
