@@ -11,6 +11,7 @@ const OUT_FILE = path.join(OUT_DIR, "proof.json");
 const DELAY_MS = 2750;
 
 const LEAVES = [
+  // Casablanca / Oasis: mixed categories to prove complete vs overflowing leaves.
   "https://www.mubawab.ma/fr/sd/casablanca/oasis/appartements-a-vendre",
   "https://www.mubawab.ma/fr/sd/casablanca/oasis/appartements-a-louer",
   "https://www.mubawab.ma/fr/sd/casablanca/oasis/bureaux-et-commerces-a-vendre",
@@ -18,6 +19,14 @@ const LEAVES = [
   "https://www.mubawab.ma/fr/sd/casablanca/oasis/locaux-a-vendre",
   "https://www.mubawab.ma/fr/sd/casablanca/oasis/locaux-a-louer",
   "https://www.mubawab.ma/fr/sd/casablanca/oasis/villas-et-maisons-de-luxe-a-vendre",
+
+  // Cross-city structure check: same apartment semantics, sale + rent.
+  "https://www.mubawab.ma/fr/sd/casablanca/ma%C3%A2rif/appartements-a-vendre",
+  "https://www.mubawab.ma/fr/sd/casablanca/ma%C3%A2rif/appartements-a-louer",
+  "https://www.mubawab.ma/fr/sd/rabat/agdal/appartements-a-vendre",
+  "https://www.mubawab.ma/fr/sd/rabat/agdal/appartements-a-louer",
+  "https://www.mubawab.ma/fr/sd/marrakech/gu%C3%A9liz/appartements-a-vendre",
+  "https://www.mubawab.ma/fr/sd/marrakech/gu%C3%A9liz/appartements-a-louer",
 ] as const;
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -90,7 +99,7 @@ async function main() {
       production_writes: 0,
       image_downloads: 0,
     },
-    scope: "Representative Oasis category x transaction leaves only; this quantifies P0-D mechanics and is not an exhaustive Morocco traversal.",
+    scope: "Representative sd leaves across Casablanca (Oasis, Maarif), Rabat (Agdal) and Marrakech (Gueliz). This quantifies P0-D mechanics; it is not an exhaustive Morocco traversal.",
     requested_urls: requestedUrls,
     assessments,
     summary: summarizeAuthorizedLeaves(assessments),
