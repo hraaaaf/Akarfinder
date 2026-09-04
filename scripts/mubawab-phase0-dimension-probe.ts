@@ -6,6 +6,7 @@ import {
   extractCoverageDimensions,
   mergeCoverageDimensions,
 } from "../data-ingestion/sources/mubawab/coverage-dimensions.js";
+import { extractGeoHierarchyEvidence } from "../data-ingestion/sources/mubawab/geo-hierarchy.js";
 import { fetchHtml, isAllowedByRobots } from "./scrapers/utils/fetch-html.js";
 
 const CONFIG_PATH = join(process.cwd(), "data-ingestion", "sources", "mubawab", "config.json");
@@ -49,7 +50,11 @@ async function main() {
     lastRequestAt = Date.now();
     requested_urls.push(url);
     const response = await fetchHtml(url, { timeoutMs: 20_000 });
-    observations.push({ url, dimensions: extractCoverageDimensions(response.html, url) });
+    observations.push({
+      url,
+      dimensions: extractCoverageDimensions(response.html, url),
+      hierarchy: extractGeoHierarchyEvidence(response.html, url),
+    });
   }
 
   const discovered = mergeCoverageDimensions(observations.map((item) => item.dimensions));
@@ -58,6 +63,10 @@ async function main() {
     configuredCitySlugs: config.cities.map((city) => city.slug),
     configuredCategorySlugs: config.categories.map((category) => category.st_slug),
   });
+
+  const hierarchyPages = observations
+    .map((item) => item.hierarchy)
+    .filter((item) => item.page_family && ["mpr", "mprp", "mprpt", "mprptd"].includes(item.page_family));
 
   const proof = {
     generated_at: new Date().toISOString(),
@@ -80,6 +89,7 @@ async function main() {
     },
     discovered,
     gap,
+    hierarchy_pages: hierarchyPages,
     observations,
   };
 
