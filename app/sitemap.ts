@@ -31,7 +31,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       decision: await getSeoCityIndexability(city.displayName),
     })),
   );
-  const eligibleCitySlugs = new Set(
+  const eligibleCitySlugs = new Set<string>(
     cityDecisions.filter(({ decision }) => decision.eligible).map(({ city }) => city.slug),
   );
 
