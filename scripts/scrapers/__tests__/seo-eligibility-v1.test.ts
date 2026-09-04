@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, it } from "node:test";
+import { combineSeoCityIntentEligibility } from "../../../lib/seo/city-indexability.js";
 import {
   canonicalizeSeoIntent,
   canonicalizeSeoPropertyType,
@@ -79,5 +80,22 @@ describe("SEO eligibility gate V1", () => {
     assert.equal(source.includes(".update("), false);
     assert.equal(source.includes(".upsert("), false);
     assert.equal(source.includes(".delete("), false);
+  });
+
+  it("keeps a generic city indexable when at least one transaction intent qualifies", () => {
+    const eligible = evaluateSeoInventoryEvidence({ listingCount: 25, sourceCount: 4 });
+    const unavailable = unavailableSeoInventoryDecision();
+    assert.equal(combineSeoCityIntentEligibility(eligible, unavailable).eligible, true);
+    assert.equal(combineSeoCityIntentEligibility(unavailable, eligible).eligible, true);
+    assert.equal(combineSeoCityIntentEligibility(unavailable, unavailable).eligible, false);
+  });
+
+  it("gates city and neighborhood sitemap publication from live inventory", () => {
+    const source = readFileSync(resolve(process.cwd(), "app/sitemap.ts"), "utf8");
+    assert.ok(source.includes('export const dynamic = "force-dynamic"'));
+    assert.ok(source.includes("getSeoCityIndexability"));
+    assert.ok(source.includes("eligibleCitySlugs"));
+    assert.ok(source.includes("eligibleCitySlugs.has(n.citySlug)"));
+    assert.ok(source.includes("decision.eligible"));
   });
 });
