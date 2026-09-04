@@ -1,6 +1,6 @@
 # Lot 8 Status
 
-**Status: 🟡 OPEN — implementation landed; dedicated proof pending**
+**Status: ✅ CLOSED — controlled massive ingestion proof GREEN**
 
 ## Goal
 
@@ -8,7 +8,7 @@ Rendre possible une ingestion large depuis un dataset validé avec contrôle op�
 
 ## Safety boundary
 
-Cette première implémentation Lot 8 est volontairement limitée à une SQLite isolée située sous le répertoire temporaire de l'OS.
+Cette implémentation Lot 8 reste volontairement limitée à une SQLite isolée située sous le répertoire temporaire de l'OS.
 
 Interdictions inchangées :
 
@@ -24,7 +24,7 @@ Interdictions inchangées :
 
 Fichier : `data-ingestion/controlled-ingestion.ts`.
 
-Capacités :
+Capacités prouvées :
 
 - ingestion par batch configurable ;
 - taille de batch bornée ;
@@ -37,35 +37,60 @@ Capacités :
 - purge source sélective héritée du store Lot 7 ;
 - protection des sources `agency_direct` / `partner_feed`.
 
-## Dedicated proof
+## Dedicated proof — GREEN
 
 Workflow : `Data Ingestion Lot 8 Controlled Massive Gate`.
 
-Le gate doit exécuter :
+- run : `33879281908` ;
+- conclusion : `SUCCESS` ;
+- HEAD exact : `979c7f57e46f5eb39c6d0a552fe78b635185e634` ;
+- job : `controlled-massive` ;
+- job id : `101043688350`.
 
-1. la régression Lot 7 à 1 000 annonces ;
-2. le test Lot 8 contrôlé.
+### Regression Lot 7
 
-Le test Lot 8 couvre :
+`data-ingestion-lot7-sandbox-1000.test.ts`
 
-- 2 500 annonces Mubawab en 5 batchs de 500 ;
-- ré-ingestion idempotente des 2 500 annonces ;
-- purge des 2 500 lignes `portal` sans supprimer les witnesses directs/partenaires ;
-- arrêt après un batch puis reprise via `next_batch` ;
-- rollback complet après une erreur au milieu d'un batch ;
-- refus d'un chemin SQLite non isolé.
+- 1 000 listings ;
+- pass : 1 ;
+- fail : 0 ;
+- conclusion : GREEN.
 
-## Closure rule
+### Lot 8 controlled massive proof
 
-Lot 8 ne sera CLOSED qu'après une preuve GREEN du workflow dédié sur le HEAD exact et vérification que :
+`data-ingestion-lot8-controlled-massive.test.ts`
 
-- les batchs restent idempotents ;
-- le checkpoint reprend sans doublon ;
-- le kill-switch arrête entre deux batchs ;
-- le rollback restaure l'état pré-batch ;
-- la purge portail préserve `agency_direct` / `partner_feed` ;
-- aucune base historique ou production n'est touchée.
+- tests : 4 ;
+- pass : 4 ;
+- fail : 0 ;
+- cancelled : 0 ;
+- skipped : 0.
+
+Cas prouvés :
+
+1. ingestion de 2 500 annonces Mubawab en batchs, idempotence et purge portal sélective ;
+2. arrêt propre entre batchs puis reprise depuis le checkpoint retourné ;
+3. rollback complet du batch courant après erreur au milieu du batch ;
+4. refus de tout chemin SQLite hors du répertoire temporaire de l'OS.
+
+La purge `portal` préserve les witnesses directs/partenaires.
+
+## Closure decision
+
+Les critères de fermeture du Lot 8 sont satisfaits sur le scope isolé :
+
+- batchs idempotents : ✅ ;
+- checkpoint/reprise sans doublon : ✅ ;
+- kill-switch entre batchs : ✅ ;
+- rollback pré-batch : ✅ ;
+- purge portail sans suppression `agency_direct` / `partner_feed` : ✅ ;
+- aucune base historique ou production touchée : ✅ ;
+- régression Lot 7 : ✅.
+
+**Lot 8 est CLOSED sur le scope sandbox / ingestion contrôlée.**
+
+Cela n'autorise ni write production, ni merge, ni déploiement Vercel.
 
 ## Next exact
 
-Attendre la preuve CI du workflow `Data Ingestion Lot 8 Controlled Massive Gate`, inspecter ses deux steps de test, puis seulement décider si le Lot 8 peut être CLOSED sur ce scope isolé.
+Passer au **Lot 9 — Industrialisation multi-source** : prouver qu'une seconde source peut produire le même `CanonicalListing` et traverser le pipeline existant sans modification structurelle du cœur canonique.
