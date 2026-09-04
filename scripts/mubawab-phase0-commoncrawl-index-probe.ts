@@ -2,76 +2,262 @@ import fs from "node:fs";
 import path from "node:path";
 
 import {
+  buildCommonCrawlPageCountQuery,
   buildCommonCrawlPrefixQuery,
   parseCommonCrawlCdxJsonLines,
+  parseCommonCrawlPageCount,
+  selectSpreadPages,
 } from "../data-ingestion/sources/mubawab/commoncrawl-index";
 
-const INDEX = "CC-MAIN-2026-34";
-const LIMIT_PER_FAMILY = 250;
-const CERTIFIED_STATE = path.resolve("data-ingestion/runs/mubawab/lot9-office-catalog-campaign/state.json");
+const INDEXES = ["CC-MAIN-2026-34", "CC-MAIN-2026-30", "CC-MAIN-2026-25"] as const;
+const DETAIL_FAMILIES = ["a", "pa"] as const;
+const PAGE_SIZE_BLOCKS = 1;
+const MAX_PAGES_PER_FAMILY_PER_INDEX = 3;
+const LIMIT_PER_PAGE = 1000;
+const REQUEST_DELAY_MS = 1250;
+const HISTORICAL_STATE = path.resolve("data-ingestion/runs/mubawab/lot9-office-catalog-campaign/state.json");
+const CURRENT_CONTROL_PROOF = path.resolve("data-ingestion/runs/mubawab/phase0-authorized-leaf-probe/proof.json");
 const OUT_DIR = path.resolve("data-ingestion/runs/mubawab/phase0-commoncrawl-index-probe");
 const OUT_FILE = path.join(OUT_DIR, "proof.json");
 
 type CatalogState = { version: number; source: string; seen_source_ids: string[] };
+type CurrentLeafProof = {
+  assessments: Array<{ first_page_unit_ids: string[] }>;
+  summary?: { observed_unit_ids?: number };
+};
+type ListingRef = ReturnType<typeof parseCommonCrawlCdxJsonLines>[number];
 
-async function fetchIndex(detailFamily: "a" | "pa") {
-  const url = buildCommonCrawlPrefixQuery({ index: INDEX, detailFamily, limit: LIMIT_PER_FAMILY });
+type PageObservation = {
+  page: number;
+  query_url: string;
+  raw_lines: number;
+  unique_listing_ids: number;
+};
+
+type FamilyObservation = {
+  index: string;
+  detail_family: "a" | "pa";
+  page_count_query_url: string;
+  pages_available: number;
+  blocks_available: number | null;
+  selected_pages: number[];
+  page_observations: PageObservation[];
+  raw_lines: number;
+  unique_listing_ids: number;
+  refs: ListingRef[];
+};
+
+type AggregateRef = {
+  source_id: string;
+  detail_families: Set<"a" | "pa">;
+  indexes: Set<string>;
+  earliest_timestamp: string | null;
+  latest_timestamp: string | null;
+  latest_url: string;
+};
+
+let indexRequestCount = 0;
+let lastIndexRequestAt = 0;
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function fetchIndexText(url: string, label: string): Promise<string> {
+  const elapsed = Date.now() - lastIndexRequestAt;
+  if (indexRequestCount > 0 && elapsed < REQUEST_DELAY_MS) await sleep(REQUEST_DELAY_MS - elapsed);
+  lastIndexRequestAt = Date.now();
+  indexRequestCount += 1;
+
   const response = await fetch(url, {
     headers: { "User-Agent": "AkarFinderResearchBot/1.0 (+https://akarfinder.vercel.app)" },
-    signal: AbortSignal.timeout(20_000),
+    signal: AbortSignal.timeout(30_000),
   });
-  if (!response.ok) throw new Error(`commoncrawl_http_${response.status}:${detailFamily}`);
-  const raw = await response.text();
-  return { url, refs: parseCommonCrawlCdxJsonLines(raw), raw_lines: raw.split(/\r?\n/).filter(Boolean).length };
+  if (!response.ok) throw new Error(`commoncrawl_http_${response.status}:${label}`);
+  return response.text();
+}
+
+async function fetchFamily(index: string, detailFamily: "a" | "pa"): Promise<FamilyObservation> {
+  const pageCountQueryUrl = buildCommonCrawlPageCountQuery({
+    index,
+    detailFamily,
+    pageSize: PAGE_SIZE_BLOCKS,
+  });
+  const pageCountRaw = await fetchIndexText(pageCountQueryUrl, `${index}:${detailFamily}:page-count`);
+  const pageCount = parseCommonCrawlPageCount(pageCountRaw);
+  const selectedPages = selectSpreadPages(pageCount.pages, MAX_PAGES_PER_FAMILY_PER_INDEX);
+
+  const pageObservations: PageObservation[] = [];
+  const byId = new Map<string, ListingRef>();
+  let rawLines = 0;
+
+  for (const page of selectedPages) {
+    const queryUrl = buildCommonCrawlPrefixQuery({
+      index,
+      detailFamily,
+      limit: LIMIT_PER_PAGE,
+      page,
+      pageSize: PAGE_SIZE_BLOCKS,
+    });
+    const raw = await fetchIndexText(queryUrl, `${index}:${detailFamily}:page-${page}`);
+    const refs = parseCommonCrawlCdxJsonLines(raw);
+    const pageRawLines = raw.split(/\r?\n/).map((line) => line.trim()).filter(Boolean).length;
+    rawLines += pageRawLines;
+
+    for (const ref of refs) {
+      const existing = byId.get(ref.source_id);
+      if (!existing || (ref.timestamp ?? "") > (existing.timestamp ?? "")) byId.set(ref.source_id, ref);
+    }
+
+    pageObservations.push({
+      page,
+      query_url: queryUrl,
+      raw_lines: pageRawLines,
+      unique_listing_ids: refs.length,
+    });
+  }
+
+  return {
+    index,
+    detail_family: detailFamily,
+    page_count_query_url: pageCountQueryUrl,
+    pages_available: pageCount.pages,
+    blocks_available: pageCount.blocks,
+    selected_pages: selectedPages,
+    page_observations: pageObservations,
+    raw_lines: rawLines,
+    unique_listing_ids: byId.size,
+    refs: [...byId.values()],
+  };
+}
+
+function mergeAggregate(target: Map<string, AggregateRef>, ref: ListingRef, index: string): void {
+  const existing = target.get(ref.source_id);
+  if (!existing) {
+    target.set(ref.source_id, {
+      source_id: ref.source_id,
+      detail_families: new Set([ref.detail_family]),
+      indexes: new Set([index]),
+      earliest_timestamp: ref.timestamp,
+      latest_timestamp: ref.timestamp,
+      latest_url: ref.url,
+    });
+    return;
+  }
+
+  existing.detail_families.add(ref.detail_family);
+  existing.indexes.add(index);
+  if (ref.timestamp && (!existing.earliest_timestamp || ref.timestamp < existing.earliest_timestamp)) {
+    existing.earliest_timestamp = ref.timestamp;
+  }
+  if (ref.timestamp && (!existing.latest_timestamp || ref.timestamp > existing.latest_timestamp)) {
+    existing.latest_timestamp = ref.timestamp;
+    existing.latest_url = ref.url;
+  }
+}
+
+function ratio(numerator: number, denominator: number): number {
+  return denominator === 0 ? 0 : Number((numerator / denominator).toFixed(6));
 }
 
 async function main() {
-  const state = JSON.parse(fs.readFileSync(CERTIFIED_STATE, "utf8")) as CatalogState;
+  const state = JSON.parse(fs.readFileSync(HISTORICAL_STATE, "utf8")) as CatalogState;
   if (state.version !== 1 || state.source !== "mubawab" || state.seen_source_ids.length !== 31_731) {
     throw new Error("invalid_historical_mubawab_union");
   }
-  const known = new Set(state.seen_source_ids);
+  const historical = new Set(state.seen_source_ids);
 
-  const observations = [];
-  for (const family of ["a", "pa"] as const) observations.push(await fetchIndex(family));
-
-  const byId = new Map<string, ReturnType<typeof parseCommonCrawlCdxJsonLines>[number]>();
-  for (const observation of observations) {
-    for (const ref of observation.refs) if (!byId.has(ref.source_id)) byId.set(ref.source_id, ref);
+  const currentLeafProof = JSON.parse(fs.readFileSync(CURRENT_CONTROL_PROOF, "utf8")) as CurrentLeafProof;
+  const currentControlIds = new Set(currentLeafProof.assessments.flatMap((item) => item.first_page_unit_ids));
+  if (currentControlIds.size !== 372 || currentLeafProof.summary?.observed_unit_ids !== 372) {
+    throw new Error(`invalid_current_leaf_control:${currentControlIds.size}`);
   }
-  const refs = [...byId.values()];
-  const alreadyKnown = refs.filter((ref) => known.has(ref.source_id));
-  const absentHistorical = refs.filter((ref) => !known.has(ref.source_id));
+
+  const observations: FamilyObservation[] = [];
+  for (const index of INDEXES) {
+    for (const family of DETAIL_FAMILIES) observations.push(await fetchFamily(index, family));
+  }
+
+  const aggregate = new Map<string, AggregateRef>();
+  for (const observation of observations) {
+    for (const ref of observation.refs) mergeAggregate(aggregate, ref, observation.index);
+  }
+
+  const records = [...aggregate.values()].sort((a, b) => a.source_id.localeCompare(b.source_id));
+  const newestIndex = INDEXES[0];
+  const absentHistorical = records.filter((record) => !historical.has(record.source_id));
+  const alreadyKnown = records.filter((record) => historical.has(record.source_id));
+  const absentNewest = absentHistorical.filter((record) => record.indexes.has(newestIndex));
+  const absentOlderOnly = absentHistorical.filter((record) => !record.indexes.has(newestIndex));
+  const absentMultiSnapshot = absentHistorical.filter((record) => record.indexes.size >= 2);
+
+  const aggregateIds = new Set(records.map((record) => record.source_id));
+  const newestIndexIds = new Set(
+    observations.filter((item) => item.index === newestIndex).flatMap((item) => item.refs.map((ref) => ref.source_id)),
+  );
+  const currentControlMatched = [...currentControlIds].filter((id) => aggregateIds.has(id));
+  const currentControlMatchedNewest = [...currentControlIds].filter((id) => newestIndexIds.has(id));
 
   const proof = {
     generated_at: new Date().toISOString(),
-    mode: "phase0_commoncrawl_index_probe",
-    commoncrawl_index: INDEX,
-    historical_union_unique_ids: known.size,
+    mode: "phase0_commoncrawl_multi_snapshot_spread_probe",
+    commoncrawl_indexes: INDEXES,
+    historical_union_unique_ids: historical.size,
+    current_first_party_control_unique_ids: currentControlIds.size,
     safety: {
-      index_requests: observations.length,
-      request_limit_per_family: LIMIT_PER_FAMILY,
+      indexes: INDEXES.length,
+      detail_families: DETAIL_FAMILIES.length,
+      page_size_blocks: PAGE_SIZE_BLOCKS,
+      max_pages_per_family_per_index: MAX_PAGES_PER_FAMILY_PER_INDEX,
+      max_rows_per_page: LIMIT_PER_PAGE,
+      request_delay_ms: REQUEST_DELAY_MS,
+      theoretical_max_index_requests: INDEXES.length * DETAIL_FAMILIES.length * (1 + MAX_PAGES_PER_FAMILY_PER_INDEX),
+      actual_index_requests: indexRequestCount,
       mubawab_live_requests: 0,
       mubawab_detail_pages_opened: 0,
       disallowed_mubawab_pagination_requests: 0,
+      commoncrawl_warc_fetches: 0,
       database_writes: 0,
       production_writes: 0,
       image_downloads: 0,
     },
     observations: observations.map((item) => ({
-      query_url: item.url,
+      index: item.index,
+      detail_family: item.detail_family,
+      page_count_query_url: item.page_count_query_url,
+      pages_available: item.pages_available,
+      blocks_available: item.blocks_available,
+      selected_pages: item.selected_pages,
+      page_observations: item.page_observations,
       raw_lines: item.raw_lines,
-      unique_listing_ids: item.refs.length,
-      detail_family_counts: {
-        a: item.refs.filter((ref) => ref.detail_family === "a").length,
-        pa: item.refs.filter((ref) => ref.detail_family === "pa").length,
-      },
+      unique_listing_ids: item.unique_listing_ids,
     })),
-    sample_union_unique_ids: refs.length,
-    already_known_in_historical_union: alreadyKnown.length,
-    absent_from_historical_union: absentHistorical.length,
-    absent_source_ids: absentHistorical.map((ref) => ref.source_id),
-    interpretation_rule: "This is a bounded viability probe, not a complete denominator. New IDs prove Common Crawl can supplement authorized discovery; zero new IDs does not prove uselessness without broader index coverage.",
+    external_index_union: {
+      unique_source_ids: records.length,
+      already_known_in_historical_union: alreadyKnown.length,
+      absent_from_historical_union: absentHistorical.length,
+      absent_with_newest_snapshot_presence: absentNewest.length,
+      absent_older_snapshots_only: absentOlderOnly.length,
+      absent_with_multi_snapshot_presence: absentMultiSnapshot.length,
+    },
+    current_first_party_control_recall: {
+      control_unique_ids: currentControlIds.size,
+      matched_by_external_union: currentControlMatched.length,
+      union_recall_ratio: ratio(currentControlMatched.length, currentControlIds.size),
+      matched_by_newest_snapshot_sample: currentControlMatchedNewest.length,
+      newest_snapshot_sample_recall_ratio: ratio(currentControlMatchedNewest.length, currentControlIds.size),
+      unmatched_control_ids: [...currentControlIds].filter((id) => !aggregateIds.has(id)),
+    },
+    absent_records: absentHistorical.map((record) => ({
+      source_id: record.source_id,
+      detail_families: [...record.detail_families].sort(),
+      indexes: [...record.indexes].sort(),
+      earliest_timestamp: record.earliest_timestamp,
+      latest_timestamp: record.latest_timestamp,
+      latest_url: record.latest_url,
+      newest_snapshot_present: record.indexes.has(newestIndex),
+    })),
+    interpretation_rule: "This remains a bounded Common Crawl sample, not a denominator. Presence in the newest snapshot is recent-index evidence, not proof that a listing is currently active. The 372-ID live first-party page-1 control measures sample recall; it does not reveal the identities hidden behind robots-disallowed Mubawab pagination.",
   };
 
   fs.mkdirSync(OUT_DIR, { recursive: true });
