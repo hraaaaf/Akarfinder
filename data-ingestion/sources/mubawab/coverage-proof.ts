@@ -1,7 +1,7 @@
 export type MubawabCoverageRole = "primary_harvest" | "control" | "project_non_unit" | "identity_only";
 
 export type MubawabRouteFamily = {
-  family: "st" | "sc" | "cc" | "ct" | "crp" | "t" | "is" | "pl" | "vacation_st" | "detail";
+  family: "st" | "sc" | "cc" | "ct" | "t" | "tw" | "cd" | "sd" | "mpr" | "mprp" | "mprpt" | "mprptd" | "is" | "pl" | "vacation_st" | "detail";
   role: MubawabCoverageRole;
   inventory_bearing: boolean;
   unit_listing_candidate: boolean;
@@ -43,20 +43,68 @@ export const MUBAWAB_ROUTE_FAMILIES: MubawabRouteFamily[] = [
     rationale: "city x transaction aggregate; control until full reachability is proven",
   },
   {
-    family: "crp",
-    role: "control",
-    inventory_bearing: true,
-    unit_listing_candidate: true,
-    example: "https://www.mubawab.ma/fr/crp/rabat-salé-zemmour-zaër/préfecture-de-rabat/immobilier-a-vendre",
-    rationale: "hierarchical region/prefecture aggregate discovered during Phase 0; redundancy vs other geography surfaces is not yet proven",
-  },
-  {
     family: "t",
     role: "control",
     inventory_bearing: true,
     unit_listing_candidate: true,
     example: "https://www.mubawab.ma/fr/t/casablanca",
     rationale: "city aggregate used for geography coverage checks",
+  },
+  {
+    family: "tw",
+    role: "control",
+    inventory_bearing: true,
+    unit_listing_candidate: true,
+    example: "https://www.mubawab.ma/fr/tw/casablanca/oasis",
+    rationale: "neighborhood aggregate listing surface discovered through the public map hierarchy",
+  },
+  {
+    family: "cd",
+    role: "control",
+    inventory_bearing: true,
+    unit_listing_candidate: true,
+    example: "https://www.mubawab.ma/fr/cd/casablanca/oasis/immobilier-a-vendre",
+    rationale: "neighborhood x transaction listing surface; candidate for finer authorized partitioning",
+  },
+  {
+    family: "sd",
+    role: "control",
+    inventory_bearing: true,
+    unit_listing_candidate: true,
+    example: "https://www.mubawab.ma/fr/sd/casablanca/oasis/appartements-a-vendre",
+    rationale: "neighborhood x category listing surface; candidate for finer authorized partitioning",
+  },
+  {
+    family: "mpr",
+    role: "control",
+    inventory_bearing: false,
+    unit_listing_candidate: true,
+    example: "https://www.mubawab.ma/fr/mpr/casablanca-settat/listing-promotion",
+    rationale: "region map/count hierarchy; taxonomy and denominator control, not a listing harvest surface",
+  },
+  {
+    family: "mprp",
+    role: "control",
+    inventory_bearing: false,
+    unit_listing_candidate: true,
+    example: "https://www.mubawab.ma/fr/mprp/casablanca-settat/préfecture-de-casablanca/listing-promotion",
+    rationale: "province/prefecture map/count hierarchy",
+  },
+  {
+    family: "mprpt",
+    role: "control",
+    inventory_bearing: false,
+    unit_listing_candidate: true,
+    example: "https://www.mubawab.ma/fr/mprpt/casablanca-settat/préfecture-de-casablanca/casablanca/listing-promotion",
+    rationale: "city/arrondissement map/count hierarchy",
+  },
+  {
+    family: "mprptd",
+    role: "control",
+    inventory_bearing: false,
+    unit_listing_candidate: true,
+    example: "https://www.mubawab.ma/fr/mprptd/casablanca-settat/préfecture-de-casablanca/casablanca/maârif/listing-promotion",
+    rationale: "district/neighborhood map/count hierarchy leading to tw inventory surfaces",
   },
   {
     family: "is",
