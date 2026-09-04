@@ -10,6 +10,8 @@ import {
   type OfferOriginType,
 } from "../lib/property-schema/core";
 
+export type CollectionSourceType = "portal" | "agency_direct" | "partner_feed" | "owner_direct" | "developer_direct" | "open_data" | "manual";
+
 export type CollectionListing = {
   akar_id: string | null;
   source: {
@@ -60,12 +62,16 @@ export type CollectionListing = {
     source_profile_url: string | null;
   };
   provenance: {
-    source_type: "portal" | "agency_direct" | "partner_feed" | "owner_direct" | "developer_direct" | "open_data" | "manual";
+    source_type: CollectionSourceType;
     source_listing_url: string;
     retrieval_method: "crawl" | "api" | "feed" | "manual" | "import";
   };
   quality: { score: number | null; warnings: string[] };
   raw: Record<string, unknown>;
+};
+
+export type CanonicalOfferWithCollectionSourceType = CanonicalOfferV1 & {
+  source_type: CollectionSourceType;
 };
 
 function stableId(prefix: string, value: string): string {
@@ -134,7 +140,7 @@ export function adaptCollectionListing(input: CollectionListing, ingestionRunId:
   facts.features.is_furnished = collected(featureSet.has("furnished") ? true : null);
   facts.features.premium_features = collected(input.features.length ? input.features : null);
 
-  const offer: CanonicalOfferV1 = {
+  const offer: CanonicalOfferWithCollectionSourceType = {
     offer_id: offerId,
     property_id: propertyId,
     source_id: input.source.name,
@@ -144,6 +150,7 @@ export function adaptCollectionListing(input: CollectionListing, ingestionRunId:
     canonical_source_url: input.provenance.source_listing_url,
     acquisition_channel: input.provenance.retrieval_method === "feed" ? "partner_feed" : input.provenance.retrieval_method === "manual" ? "manual_partner" : "source_page",
     origin_type: originType(input),
+    source_type: input.provenance.source_type,
     transaction_type: input.transaction,
     title: collected(input.title),
     description: collected(input.description),
