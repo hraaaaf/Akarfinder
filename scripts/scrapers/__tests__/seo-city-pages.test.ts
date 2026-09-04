@@ -20,6 +20,7 @@ import {
   assertSeoCityPageSafety,
   assertNoSerperInSeoPages,
 } from "@/lib/seo-city-pages/public-safety";
+import { getSeoCityIntentIndexability } from "@/lib/seo/city-intent-indexability";
 
 test("getAllCities returns 5 cities for V1", () => {
   const cities = getAllCities();
@@ -60,17 +61,14 @@ test("buildSearchQueryForCity generates valid URL query", () => {
   const query = buildSearchQueryForCity("Casablanca");
   assert.ok(query.includes("Casablanca"));
   assert.ok(query.includes("appartement"));
-  // Should be URL encoded
   assert.ok(!query.includes(" "));
 });
 
 test("buildSearchQueryForIntent generates correct intent-based queries", () => {
   const buyQuery = buildSearchQueryForIntent("Casablanca", "acheter");
-  // Query is URL encoded, so decode to check content
   assert.ok(decodeURIComponent(buyQuery).includes("acheter"));
 
   const rentQuery = buildSearchQueryForIntent("Casablanca", "louer");
-  // Uses "location" as search term for rental intent
   assert.ok(decodeURIComponent(rentQuery).includes("location"));
 });
 
@@ -83,7 +81,6 @@ test("cityPageTitle generates non-promissive title", () => {
   assert.ok(title.includes("Immobilier"));
   assert.ok(title.includes("AkarFinder"));
 
-  // Verify no forbidden wording
   assert.equal(title.toLowerCase().includes("toutes les annonces"), false);
   assert.equal(title.toLowerCase().includes("annonces vérifiées"), false);
   assert.equal(title.toLowerCase().includes("meilleur"), false);
@@ -97,15 +94,8 @@ test("cityPageDescription is non-promissive", () => {
   assert.ok(description.includes("AkarFinder"));
   assert.ok(description.includes("source originale"));
 
-  // Check forbidden wording absent
-  assert.equal(
-    description.toLowerCase().includes("annonces vérifiées"),
-    false
-  );
-  assert.equal(
-    description.toLowerCase().includes("annonces fiables"),
-    false
-  );
+  assert.equal(description.toLowerCase().includes("annonces vérifiées"), false);
+  assert.equal(description.toLowerCase().includes("annonces fiables"), false);
   assert.equal(description.toLowerCase().includes("prix officiel"), false);
 });
 
@@ -134,6 +124,43 @@ test("intentPageTitle includes intent and city", () => {
   const rentTitle = intentPageTitle(city, "louer");
   assert.ok(rentTitle.includes("Louer"));
   assert.ok(rentTitle.includes("Marrakech"));
+});
+
+test("generateIntentSeoMetadata produces a stable city-intent canonical", () => {
+  const city = getCityBySlug("casablanca");
+  assert.ok(city);
+
+  const seo = generateIntentSeoMetadata(city, "acheter");
+  assert.equal(seo.canonical, "https://akarfinder.vercel.app/immobilier/casablanca/acheter");
+  assert.ok(seo.title.includes("Acheter"));
+  assert.ok(seo.description.includes("Casablanca"));
+});
+
+test("city-intent indexability delegates to the shared inventory gate", async () => {
+  const calls: unknown[] = [];
+  const decision = await getSeoCityIntentIndexability(
+    "Casablanca",
+    "acheter",
+    async (query) => {
+      calls.push(query);
+      return {
+        eligible: true,
+        reason: "eligible",
+        listingCount: 260,
+        sourceCount: 5,
+      };
+    },
+  );
+
+  assert.deepEqual(calls, [{ city: "Casablanca", intent: "acheter" }]);
+  assert.deepEqual(decision, {
+    city: "Casablanca",
+    intent: "acheter",
+    eligible: true,
+    reason: "eligible",
+    listingCount: 260,
+    sourceCount: 5,
+  });
 });
 
 test("assertSeoCityPageSafety throws on forbidden wording", () => {
