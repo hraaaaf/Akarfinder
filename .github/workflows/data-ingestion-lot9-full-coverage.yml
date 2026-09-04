@@ -18,6 +18,7 @@ on:
       - "data-ingestion/sources/mubawab/catalog-coverage-campaign.ts"
       - "data-ingestion/sources/mubawab/coverage-proof.ts"
       - "data-ingestion/sources/mubawab/coverage-dimensions.ts"
+      - "data-ingestion/sources/mubawab/geo-hierarchy.ts"
       - "data-ingestion/sources/mubawab/reachability-proof.ts"
       - "data-ingestion/sources/mubawab/residual-classifier.ts"
       - "data-ingestion/sources/mubawab/listing-card-signals.ts"
@@ -38,6 +39,7 @@ on:
       - "scripts/scrapers/__tests__/data-ingestion-lot9-catalog-overlap.test.ts"
       - "scripts/scrapers/__tests__/data-ingestion-lot9-phase0-coverage-proof.test.ts"
       - "scripts/scrapers/__tests__/data-ingestion-lot9-phase0-dimensions.test.ts"
+      - "scripts/scrapers/__tests__/data-ingestion-lot9-phase0-geo-hierarchy.test.ts"
       - "scripts/scrapers/__tests__/data-ingestion-lot9-phase0-reachability.test.ts"
       - "scripts/scrapers/__tests__/data-ingestion-lot9-phase0-residual-classifier.test.ts"
       - "scripts/scrapers/__tests__/data-ingestion-lot9-phase0-card-signals.test.ts"
@@ -87,6 +89,8 @@ jobs:
         run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-phase0-coverage-proof.test.ts
       - name: Prove Lot 9 Phase 0 dimension extraction semantics
         run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-phase0-dimensions.test.ts
+      - name: Prove Lot 9 Phase 0 geo hierarchy count semantics
+        run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-phase0-geo-hierarchy.test.ts
       - name: Prove Lot 9 Phase 0 reachability semantics
         run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-phase0-reachability.test.ts
       - name: Prove Lot 9 Phase 0 residual classification semantics
