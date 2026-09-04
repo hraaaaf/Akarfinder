@@ -2,676 +2,289 @@
 
 > **Chantier principal : Référencement organique / SEO AkarFinder**
 >
-> **Rôle de ce fichier :** boussole canonique de reprise. Toute nouvelle session doit lire ce fichier avant d'engager un travail SEO, puis vérifier le repo, le HEAD, la branche/PR éventuelle, la CI et l'état réel du site.
+> Boussole canonique de reprise. À chaque reprise : lire ce fichier, puis vérifier repo / `main` / branche / PR / CI / LIVE avant toute action.
 
-**Statut : ACTIVE — roadmap initialisée, baseline SEO non encore auditée**  
+**Statut : ACTIVE — SEO-0 audité techniquement mais non CLOSED ; SEO-1 benchmark en cours**  
 **Dernière mise à jour : 2026-09-04**  
 **Repo : `hraaaaf/Akarfinder`**  
-**Branche d'initialisation : `chore/seo-canonical`**  
-**Base au démarrage : `main` @ `009f2f9fe8d3ccf214026307e7d5ea13e521768e`**
+**Branche active : `fix/seo-baseline-p1`**  
+**PR : `#999`**  
+**Preuve détaillée : `AKARFINDER_SEO_AUDIT_2026-09-04.md`**
 
 ---
 
 ## 1. GOAL GLOBAL
 
-Faire du **SEO l'avantage compétitif principal d'AkarFinder** : devenir le moteur immobilier marocain que Google comprend, explore, indexe et recommande mieux que les portails et agrégateurs concurrents sur les requêtes immobilières transactionnelles et informationnelles au Maroc.
-
-AkarFinder ne doit pas seulement avoir un bon moteur interne. Il doit transformer son index immobilier en **surface d'acquisition organique scalable**.
+Faire du SEO un avantage compétitif majeur d'AkarFinder : transformer l'index immobilier en surface d'acquisition organique utile, mesurable et scalable au Maroc.
 
 ### Succès observable
 
-Le Goal global n'est pas déclaré atteint sur la base d'un nombre de pages indexées.
+Le Goal global sera prouvé par une combinaison durable de :
 
-Il sera prouvé par une combinaison durable de :
+- impressions et clics organiques non brandés ;
+- requêtes cibles en Top 10 / Top 3 ;
+- ratio pages utiles indexées / pages publiées ;
+- trafic organique vers les annonces et sources ;
+- croissance des domaines référents et recherches de marque.
 
-- croissance des **impressions organiques non brandées** ;
-- croissance des **clics organiques qualifiés** ;
-- progression du nombre de requêtes immobilières cibles en **Top 10 / Top 3** ;
-- couverture des clusters ville × quartier × type × transaction ;
-- bon ratio **pages utiles indexées / pages publiées** ;
-- croissance des backlinks/domaines référents vers nos pages data ;
-- croissance des recherches de marque `AkarFinder` ;
-- trafic organique qui mène réellement vers les annonces et les sources.
+### Preuve principale
 
-### Preuve
+**Google Search Console**, complétée par analytics, logs/crawl, SERP observées et tests techniques.
 
-Source principale de preuve : **Google Search Console**, complétée par analytics, logs/crawl, SERP observées et tests techniques.
-
-Les objectifs numériques précis seront verrouillés **après le baseline audit**, pas inventés avant de connaître l'état réel.
+Aucun objectif numérique n'est inventé avant disponibilité du baseline Search Console.
 
 ---
 
 ## 2. THÈSE STRATÉGIQUE
 
-Le moat SEO d'AkarFinder doit venir de la combinaison suivante :
+Moat visé :
 
-**Stock immobilier large + données normalisées + pages utiles uniques + architecture SEO propre + fraîcheur + autorité.**
+**stock large + données normalisées + fraîcheur + pages réellement utiles + architecture SEO propre + transparence + autorité.**
 
-Ce que nous ne voulons PAS faire : fabriquer des milliers de pages faibles à partir de toutes les combinaisons de filtres.
-
-Ce que nous voulons faire : publier uniquement les pages qui répondent à une vraie intention de recherche et qui disposent d'assez de données pour produire une expérience réellement utile.
-
-### Principe central
+Règle centrale :
 
 > **Une combinaison de filtres n'est pas automatiquement une page SEO.**
->
-> Une page devient indexable uniquement si elle mérite réellement d'être trouvée dans Google.
+
+Une page ne devient indexable que si l'intention, le stock, la qualité des données, le contenu distinctif, le canonical, le maillage et le sitemap le justifient.
+
+Interdit : industrialiser des milliers de pages faibles ou quasi identiques.
 
 ---
 
-## 3. BENCHMARK PRIORITAIRE — KAYNLY
-
-Kaynly est le **benchmark concurrent n°1** du chantier SEO, pas le cap stratégique.
-
-### Faits vérifiés au 2026-09-04
-
-Kaynly se présente comme un index immobilier marocain multi-portails et indique agréger :
-
-- Avito ;
-- Mubawab ;
-- Sarouty ;
-- Yakeey ;
-- Noura Immobilier.
-
-Le site affichait environ **100 055 annonces** au relevé du 31 août 2026, avec redirection vers la source d'origine.
-
-Kaynly possède déjà :
-
-- pages ville ;
-- pages transaction × ville ;
-- pages transaction × ville × type ;
-- pages quartier ;
-- pages résidence ;
-- baromètres de prix ;
-- prix médian et prix/m² ;
-- comparaison au marché local ;
-- dédoublonnage annoncé ;
-- maillage interne vers villes/quartiers/résidences ;
-- pages d'annonces agrégées reliées à la source.
-
-Exemple vérifié : la page `vente/casablanca` expose volume d'annonces, prix médian, prix/m², répartition par type et aperçu de marché.
-
-### Photos
-
-**Non confirmé à ce stade.** Les pages accessibles au crawler montrent les données de l'annonce et les liens vers la source, mais l'utilisation exacte des photos doit être vérifiée séparément par audit visuel/browser.
-
-### Sources de benchmark
-
-- https://kaynly.com/
-- https://kaynly.com/vente/casablanca
-- https://kaynly.com/barometre/casablanca
-
-### Règle benchmark
-
-Ne jamais copier mécaniquement Kaynly.
-
-Pour chaque mécanisme observé :
-
-1. comprendre ce qu'ils font ;
-2. mesurer si cela fonctionne en SERP ;
-3. identifier le gap AkarFinder ;
-4. égaler le socle utile ;
-5. dépasser sur la qualité, l'UX, les données, la fiabilité et le SEO.
-
----
-
-## 4. SOURCES SEO DE RÉFÉRENCE
-
-Les décisions techniques doivent être fondées prioritairement sur la documentation officielle Google Search Central et vérifiées contre le comportement observé du site.
-
-Références initiales :
-
-- Navigation à facettes / crawl : https://developers.google.com/search/blog/2024/12/crawling-december-faceted-nav
-- Canonicalisation : https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls
-- Sitemaps : https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap
-- Données structurées : https://developers.google.com/search/docs/appearance/structured-data/search-gallery
-
-### Contraintes officielles à respecter
-
-Google confirme notamment que :
-
-- la navigation à facettes peut générer un nombre quasi infini d'URLs et gaspiller le crawl ;
-- `rel="canonical"`, redirections et sitemaps sont des signaux de canonicalisation de forces différentes ;
-- un sitemap doit privilégier les URLs canoniques que nous souhaitons voir dans Search ;
-- les données structurées aident Google à comprendre le contenu, sans garantir un résultat enrichi.
-
----
-
-# 5. ROADMAP D'EXÉCUTION
-
-L'ordre ci-dessous est le chemin critique. Ne pas sauter directement à la génération de pages.
-
----
-
-## LOT SEO-0 — BASELINE AUDIT
+## 3. SEO-0 — BASELINE AUDIT
 
 ### Goal
 
-Établir exactement ce que Google peut découvrir, crawler, indexer et comprendre aujourd'hui sur AkarFinder.
+Établir ce que les moteurs peuvent découvrir, crawler, indexer et comprendre aujourd'hui sur AkarFinder, puis classer les défauts P0/P1/P2.
 
-### À vérifier
+### État vérifié
 
-- domaine canonique réellement utilisé ;
-- `robots.txt` ;
-- sitemap(s) ;
-- metadata ;
-- canonical tags ;
-- SSR / HTML initial ;
-- statuts HTTP ;
-- redirections ;
-- pages `/search` et paramètres ;
-- pagination ;
-- pages détail annonce ;
-- pages ville/quartier/type existantes ;
-- données structurées ;
-- performance/Core Web Vitals ;
-- maillage interne ;
-- profondeur de clic ;
-- pages orphelines ;
-- URLs indexables accidentelles ;
-- Search Console si disponible ;
-- sitemap soumis et couverture réelle ;
-- requêtes/impressions/clics actuels ;
-- éventuels problèmes duplicate/canonical/noindex.
+- `/search` : `noindex,follow`, canonical `/search`, hors sitemap.
+- `/map` : indexable ; canonical `/map` ajouté dans PR #999 pour neutraliser les variantes à paramètres.
+- `/immobilier/{city}` : landing SSR indexable avec self-canonical.
+- `/immobilier/{city}/{district}` : landing SSR indexable uniquement si registre géographique `validated + seo_eligible`, self-canonical + Breadcrumb JSON-LD.
+- surface contrôlée actuelle : **5 villes SEO + 11 quartiers SEO**.
+- éligibilité ville/quartier encore **statique**, pas conditionnée par le stock réel.
+- sitemap : faux `lastModified: new Date()` retiré dans PR #999 en l'absence d'une vraie date métier.
+- URLs SEO/JSON-LD codées en dur sur l'hostname Vercel : centralisées vers `siteConfig.siteUrl` dans PR #999.
+- aucune visibilité AkarFinder n'a été retrouvée dans les recherches web publiques testées ; cela ne remplace pas Search Console.
+- Search Console, couverture Google réelle, Core Web Vitals, profondeur de clic/orphelines et cycle des annonces retirées restent à prouver avant fermeture complète de SEO-0.
 
-### Succès
+### P0
 
-Une matrice **URL type → crawl → index → canonical → sitemap → rendu → action** existe et chaque problème prioritaire est classé P0/P1/P2.
+1. **Domaine final** : le domaine `akarfinder.ma` n'était pas attaché au projet Vercel lors du baseline. Ne pas bâtir volontairement l'autorité finale sur un hostname transitoire.
+2. **Search Console** : absence de preuve privée GSC dans cette session. Indexation réelle, clics, impressions et canonicals choisis par Google restent inconnus.
 
-### Preuve
+### P1 corrigés dans PR #999
 
-Crawl/tests HTTP + HTML rendu + Search Console + captures si impact visuel.
+- canonical `/map` ;
+- suppression des URLs Vercel codées en dur dans les générateurs SEO/JSON-LD concernés.
+
+### P2 corrigé dans PR #999
+
+- suppression du faux signal `lastModified` généré à chaque build.
+
+### P1 restant avant scale
+
+Créer un **gate dynamique stock + qualité** avant d'ouvrir davantage de villes/quartiers/types. Le seuil doit venir de la distribution réelle des données, pas d'un nombre choisi au hasard.
 
 ---
 
-## LOT SEO-1 — BENCHMARK KAYNLY + SERP MAROC
+## 4. INCIDENT CI #19G
+
+Le premier run de PR #999 a échoué sur un guard **indépendant du SEO** :
+
+- 1 835 / 1 835 tests scrapers passaient ;
+- contrats #11 à #19F passaient ;
+- #19G attendait encore `<MonProjetWizardP1A` alors que `main` rend `MonProjetWizardP2` ;
+- PR #999 ne touchait initialement aucun fichier Mon Projet.
+
+Correction minimale ajoutée sur la branche : le guard #19G teste désormais `MonProjetWizardP2` tout en conservant les contrats transition / search / continuity.
+
+Aucune modification UI Mon Projet n'a été faite dans ce lot.
+
+---
+
+## 5. SEO-1 — BENCHMARK SERP MAROC
 
 ### Goal
 
-Comprendre précisément les surfaces SEO déjà occupées et les gaps exploitables.
+Identifier les surfaces déjà gagnées par les concurrents et les gaps exploitables avant de construire de nouvelles pages.
 
-### À auditer
+### Concurrents vérifiés au 2026-09-04
 
-- architecture URL Kaynly ;
-- pages ville/quartier/type/résidence ;
-- titres/H1/descriptions ;
-- profondeur de maillage ;
-- nombre approximatif de surfaces indexables ;
-- photos ou absence de photos ;
-- fraîcheur ;
-- données propriétaires ;
-- schema.org ;
-- sitemaps/robots/canonical ;
-- performance ;
-- SERP réellement gagnées ;
-- concurrents directs : Mubawab, Avito, Sarouty, Yakeey + autres gagnants SERP observés.
+#### Kaynly
 
-### Succès
+Benchmark agrégateur direct :
 
-Une **gap analysis** classe : `Kaynly meilleur / égalité / AkarFinder meilleur / opportunité non couverte`.
+- ville × transaction ;
+- ville × transaction × type ;
+- quartier ;
+- résidence ;
+- baromètre prix/m² ;
+- volumes, médianes, comparaison locale, fraîcheur ;
+- multi-portails + redirection source ;
+- environ **100 055 annonces** affichées au relevé du 31 août 2026.
 
-### Preuve
+#### Mubawab
 
-SERP + pages inspectées + captures + crawl/documentation.
+Très fort sur les intentions transactionnelles directes ville/type/quartier avec gros volume de pages et d'annonces.
 
----
+#### Yakeey
 
-## LOT SEO-2 — QUERY MAP MAROC
+Fort sur ville/type, facettes, référentiels de prix et longue traîne locale.
 
-### Goal
+#### AlerteImmo
 
-Construire la carte des intentions immobilières marocaines avant de construire les pages.
+Agrégateur concurrent observé pendant SEO-1 : pages ville/type, prix médian, FAQ locale, multi-portails et proposition de valeur « alerte rapide ».
 
-### Axes
+#### Autres gagnants observés
 
-- transaction : vente / location ;
-- type : appartement / villa / terrain / riad / studio / maison / commerce / bureau / etc. ;
-- localisation : Maroc → ville → quartier → résidence ;
-- intention data : prix/m², prix immobilier, évolution, quartier, comparaison ;
-- longue traîne utile ;
-- langues réellement demandées : français / arabe / autres seulement si preuve de demande.
+Masaken, SoukImmobilier et Palm Estates Pro sur certaines requêtes quartier/type/data.
 
-### Exemple de clusters
+### Gap initial
 
-- `appartement à vendre Casablanca`
-- `location appartement Rabat`
-- `villa Marrakech`
-- `appartement Maarif`
-- `prix immobilier Casablanca`
-- `prix m2 Agdal Rabat`
+| Dimension | Concurrence | AkarFinder | Lecture |
+|---|---|---|---|
+| Couverture villes/quartiers | forte | 5 villes / 11 quartiers | gap de couverture, à ne pas combler sans gate |
+| transaction × ville | présente | pas de landing SEO dédiée | priorité potentielle |
+| transaction × ville × type | présente | pas de landing SEO dédiée | priorité après preuve de stock |
+| prix / prix m² | forte chez Kaynly/Yakeey | partiel selon read-model | gap important |
+| fraîcheur explicite | forte chez Kaynly/AlerteImmo | à structurer | opportunité |
+| contexte local | variable | read-model quartier + carte | avantage potentiel AkarFinder |
+| transparence source/limites | variable | forte | avantage potentiel AkarFinder |
+| gate qualité avant scale | non observable | registre contrôlé mais statique | à rendre dynamique |
 
-### Règle
+### Décision
 
-La structure finale vient des **intentions + stock + qualité des données**, pas d'une multiplication combinatoire aveugle.
-
-### Succès
-
-Chaque cluster prioritaire possède : intention, volume relatif si disponible, concurrence, stock AkarFinder, page cible et priorité.
+Ne pas copier la profondeur concurrente. Priorité : **gate stock/qualité → surfaces transactionnelles prouvées → data moat fiable**.
 
 ---
 
-## LOT SEO-3 — URL & INDEXATION CONTRACT
+## 6. SOURCES SEO DE RÉFÉRENCE
 
-### Goal
+Références techniques prioritaires : Google Search Central.
 
-Définir une architecture d'URLs stable avant de scaler.
+- Faceted navigation : `https://developers.google.com/search/blog/2024/12/crawling-december-faceted-nav`
+- Canonicalisation : `https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls`
+- Sitemaps : `https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap`
+- Structured data : `https://developers.google.com/search/docs/appearance/structured-data/search-gallery`
 
-### Classes d'URLs attendues
+Règles retenues :
 
-1. **Pages SEO indexables** choisies explicitement.
-2. **Pages annonce** si elles apportent une surface utile et légalement exploitable.
-3. **Pages data/baromètres**.
-4. **Recherche utilisateur `/search`** et filtres avancés non destinés automatiquement à l'index.
-5. **Combinaisons faibles / vides / dupliquées** non indexables.
-
-### Gate d'indexabilité
-
-Une landing SEO n'est publiée/indexée que si elle satisfait les dimensions suivantes :
-
-- intention de recherche réelle ;
-- stock suffisant ;
-- données suffisamment complètes ;
-- contenu distinctif ;
-- URL canonique stable ;
-- maillage interne réel ;
-- statut HTTP correct ;
-- présence pertinente dans le sitemap.
-
-Le seuil numérique de stock sera déterminé après analyse du baseline et des distributions de données.
-
-### Règle filtres
-
-Prix, surface, chambres, tri, équipements et autres facettes ne doivent pas créer par défaut un espace infini d'URLs crawlables/indexables.
+- éviter les espaces quasi infinis d'URLs de facettes ;
+- sitemap = URLs canoniques voulues ;
+- canonical, redirections et sitemap sont des signaux complémentaires ;
+- structured data aide à comprendre mais ne garantit aucun rich result.
 
 ---
 
-## LOT SEO-4 — TEMPLATES DE LANDING PAGES
+## 7. ROADMAP
 
-### Goal
+### SEO-0 — Baseline Audit
 
-Créer des pages qui méritent réellement leur indexation.
+**EN COURS de fermeture.** Technique auditée et remédiation PR #999 en validation. Restent GSC + contrôles non encore prouvés + état LIVE après éventuel déploiement autorisé.
 
-### Contenu minimal cible
+### SEO-1 — Benchmark Kaynly + SERP Maroc
 
-Selon le type de page :
+**EN COURS.** Gap analysis initiale établie. Continuer par intentions prioritaires et preuves de surfaces gagnantes.
 
-- H1 répondant exactement à l'intention ;
-- annonces actives pertinentes ;
-- nombre d'annonces ;
-- fraîcheur / date de relevé ;
-- médiane prix ;
-- médiane prix/m² si statistiquement fiable ;
-- fourchette / distribution utile ;
-- quartiers ou types les plus représentés ;
-- comparaison avec zone parent ;
-- maillage vers pages enfants/parents ;
-- provenance et méthodologie des données ;
-- liens directs vers les annonces/sources selon le modèle AkarFinder ;
-- metadata unique ;
-- structured data uniquement si appropriée et conforme.
+### SEO-2 — Query Map Maroc
 
-### Interdit
+Construire les clusters : transaction × type × ville × quartier + intentions data. Associer demande observée, concurrence, stock AkarFinder, page cible, priorité.
 
-- texte générique IA du type « Casablanca est une ville dynamique » ;
-- paragraphes créés uniquement pour ajouter des mots-clés ;
-- pages quasi identiques avec simple substitution de ville ;
-- statistiques calculées sur échantillon non fiable sans signalement.
+### SEO-3 — URL & Indexation Contract
 
----
+Définir précisément les classes indexables / non indexables et le gate dynamique.
 
-## LOT SEO-5 — DATA MOAT
+### SEO-4 — Landing Templates
 
-### Goal
+Templates utiles : annonces actives, fraîcheur, statistiques fiables, maillage, provenance/méthode. Aucun texte générique de remplissage.
 
-Faire des données agrégées AkarFinder une raison de nous citer et de nous rechercher directement.
+### SEO-5 — Data Moat
 
-### Surfaces candidates
+Baromètres, prix/m², volumes, fraîcheur, répartition, qualité, sources, comparaisons. Toujours distinguer « index AkarFinder » de la vérité exhaustive du marché.
 
-- baromètre immobilier par ville ;
-- prix/m² par quartier ;
-- évolution temporelle lorsque l'historique devient fiable ;
-- volume d'offres ;
-- fraîcheur du marché ;
-- répartition par type ;
-- score de qualité/fiabilité des annonces ;
-- taux de doublons ;
-- sources représentées ;
-- comparaison quartiers/villes.
+### SEO-6 — Technical SEO
 
-### Règle
+Robots, sitemap, canonical, redirects, pagination, 4xx/5xx, SSR, metadata, breadcrumbs, structured data, performance mobile.
 
-Aucune statistique ne doit être publiée comme « marché marocain » si notre couverture ne le permet pas.
+### SEO-7 — Internal Linking
 
-Toujours distinguer : **données observées dans l'index AkarFinder** vs vérité exhaustive du marché.
+Graphe cible : `Maroc → ville → transaction → type → quartier/résidence → annonces`.
+
+### SEO-8 — Authority
+
+Études/data citables, méthodologie, médias/partenaires. Pas de backlinks artificiels.
+
+### SEO-9 — Search Console Loop
+
+`Publier → découvrir → indexer → impressions → CTR → position → conversion → corriger`.
+
+### SEO-10 — Scale Gates
+
+Scaler uniquement après preuve : crawl, indexation, impressions, données fiables, maillage correct, absence de cannibalisation majeure.
 
 ---
 
-## LOT SEO-6 — TECHNICAL SEO FOUNDATION
+## 8. MÉTRIQUES CANONIQUES
 
-### Goal
+### Acquisition
 
-Garantir que l'architecture choisie est crawlable, canonique et rapide.
+Impressions, clics, CTR, position, part non brandée, Top 3 / 10 / 20.
 
-### Checklist
+### Indexation
 
-- robots.txt cohérent ;
-- sitemap dynamique ;
-- uniquement URLs canoniques pertinentes dans le sitemap ;
-- canonical self-reference sur pages indexables ;
-- gestion des duplicates ;
-- 404/410/redirects des annonces supprimées selon cas ;
-- pagination maîtrisée ;
-- aucun conflit `noindex` / sitemap ;
-- rendu HTML exploitable sans dépendre d'une interaction client ;
-- titles/descriptions/H1 uniques ;
-- OpenGraph secondaire au SEO mais cohérent ;
-- breadcrumbs ;
-- structured data validée ;
-- performance mobile ;
-- images optimisées lorsque nous sommes autorisés à les utiliser ;
-- monitoring des erreurs 4xx/5xx.
+Découvertes, crawlées, indexées, exclues, sitemap indexé, canonical Google vs déclaré.
 
-### Succès
+### Qualité
 
-Zéro contradiction connue entre :
+0 impression, orphelines, duplicate/cannibalisation, 4xx/5xx, CWV, fraîcheur.
 
-**status HTTP ↔ robots ↔ noindex ↔ canonical ↔ sitemap ↔ liens internes.**
+### Business
+
+Sessions organiques vers résultats/annonces, clics sortants vers sources, engagement.
 
 ---
 
-## LOT SEO-7 — MAILLAGE INTERNE
-
-### Goal
-
-Faire circuler le crawl et l'autorité vers les pages prioritaires sans dépendre uniquement du sitemap.
-
-### Graphe cible
-
-`Maroc → ville → transaction → type → quartier/résidence → annonces`
-
-avec remontée vers parents et recommandations latérales utiles.
-
-### Règle
-
-Une page SEO importante ne doit jamais être orpheline.
-
----
-
-## LOT SEO-8 — AUTHORITY / BACKLINKS
-
-### Goal
-
-Faire d'AkarFinder une source que d'autres acteurs marocains ont intérêt à citer.
-
-### Priorités
-
-- données/baromètres citables ;
-- pages méthodologie transparentes ;
-- études périodiques ;
-- journalistes immobiliers/économiques ;
-- blogs et médias locaux ;
-- partenaires/agences/promoteurs lorsque cohérent ;
-- outils utiles partageables.
-
-### Règle
-
-Pas d'achat massif de backlinks douteux ni de réseau artificiel.
-
----
-
-## LOT SEO-9 — SEARCH CONSOLE LOOP
-
-### Goal
-
-Faire du SEO une boucle d'amélioration mesurable, pas un chantier ponctuel.
-
-### Boucle
-
-`Publier → découvrir → indexer → impressions → CTR → position → conversion → corriger → renforcer`
-
-### Analyse récurrente
-
-- pages avec impressions mais CTR faible ;
-- positions 4–20 à pousser ;
-- requêtes non prévues qui émergent ;
-- pages crawlées mais non indexées ;
-- pages indexées sans impressions ;
-- cannibalisation ;
-- canonicals choisis par Google différents de ceux déclarés ;
-- erreurs Core Web Vitals ;
-- pages gagnantes à décliner seulement si la donnée justifie l'extension.
-
----
-
-## LOT SEO-10 — SCALE GATES
-
-### Goal
-
-Scaler seulement ce qui a prouvé sa valeur.
-
-### Gate avant expansion
-
-Avant de multiplier un template :
-
-1. pages pilotes crawlables ;
-2. indexation observée ;
-3. impressions réelles ;
-4. absence de duplication/cannibalisation majeure ;
-5. données fiables ;
-6. maillage correct ;
-7. performance acceptable ;
-8. preuve qu'une extension du cluster a du sens.
-
-### Principe
-
-**20–40 pages excellentes valent mieux que 10 000 pages faibles.**
-
-Le nombre exact de pages pilotes sera fixé après le query map et l'audit de stock.
-
----
-
-# 6. DIFFÉRENCIATION AKARFINDER
-
-Kaynly prouve que l'agrégation seule n'est plus différenciante.
-
-AkarFinder doit chercher à dépasser les concurrents sur :
-
-1. **SEO natif** : architecture construite dès le départ pour la recherche organique ;
-2. **qualité/normalisation des données** ;
-3. **fiabilité et fraîcheur** ;
-4. **scoring qualité/fiabilité des annonces** ;
-5. **UX de recherche** ;
-6. **couverture marché** ;
-7. **pages data propriétaires** ;
-8. **transparence source/méthode**.
-
----
-
-# 7. RISQUES À ÉVITER
-
-## R1 — Explosion d'URLs de filtres
-
-Risque : crawl gaspillé + duplicate content + dilution.
-
-Mitigation : URL/indexation contract avant scale.
-
-## R2 — Scaled content pauvre
-
-Risque : milliers de pages presque identiques sans valeur.
-
-Mitigation : gate d'indexabilité + données uniques.
-
-## R3 — Stock insuffisant par page
-
-Risque : landing pages vides/faibles.
-
-Mitigation : seuil de stock/données déterminé par l'audit.
-
-## R4 — Données trompeuses
-
-Risque : publier des « prix du marché » basés sur couverture partielle.
-
-Mitigation : méthodologie + taille d'échantillon + formulation « index AkarFinder ».
-
-## R5 — Dépendance à une source
-
-Risque : perte massive de pages/données si une source disparaît.
-
-Mitigation : architecture source-agnostique et statistiques avec provenance.
-
-## R6 — Cannibalisation
-
-Risque : plusieurs pages attaquent la même intention.
-
-Mitigation : query map + une page canonique par intention principale.
-
-## R7 — Gagner le crawl mais perdre l'utilisateur
-
-Risque : pages optimisées pour Google, médiocres pour la recherche immobilière.
-
-Mitigation : page utile d'abord, SEO ensuite.
-
----
-
-# 8. RÈGLES DE VALIDATION
-
-Pour toute modification SEO significative :
-
-1. définir Goal / Succès / Preuve ;
-2. établir baseline avant changement ;
-3. implémenter ;
-4. tester localement/preview ;
-5. vérifier HTTP + HTML + metadata + canonical + robots + sitemap selon impact ;
-6. si UI impactée : BEFORE → Goal visuel → mockup/référence → implémentation → AFTER mêmes viewports → comparaison + tests → score visuel ;
-7. documenter uniquement l'état réellement prouvé ;
-8. ne jamais déclarer « SEO validé » uniquement parce que le code compile.
-
-### Vercel
+## 9. RÈGLES D'EXÉCUTION SEO
+
+Pour toute modification significative :
+
+1. Goal / Succès / Preuve ;
+2. baseline ;
+3. implémentation ;
+4. tests ;
+5. HTTP + HTML + metadata + canonical + robots + sitemap selon impact ;
+6. si UI : BEFORE → Goal visuel → mockup → AFTER mêmes viewports → comparaison/tests/score ;
+7. documentation uniquement de l'état prouvé.
 
 **Aucun déploiement Vercel sans autorisation explicite d'Achraf.**
 
 ---
 
-# 9. MÉTRIQUES CANONIQUES
+## 10. NEXT EXACT
 
-À capturer au LOT SEO-0 puis suivre :
-
-### Acquisition
-
-- impressions organiques ;
-- clics organiques ;
-- CTR ;
-- position moyenne ;
-- part non brandée ;
-- requêtes Top 3 / Top 10 / Top 20.
-
-### Indexation
-
-- pages découvertes ;
-- pages crawlées ;
-- pages indexées ;
-- pages exclues et raisons ;
-- pages sitemap indexées ;
-- canonicals Google vs déclarées.
-
-### Qualité SEO
-
-- pages avec 0 impression ;
-- pages orphelines ;
-- duplicate/cannibalisation ;
-- erreurs 4xx/5xx ;
-- Core Web Vitals ;
-- fraîcheur des pages.
-
-### Autorité
-
-- domaines référents ;
-- backlinks vers pages data ;
-- mentions de marque ;
-- recherches brandées.
-
-### Business
-
-- sessions organiques vers résultats/annonces ;
-- clics sortants vers sources ;
-- taux d'engagement des visiteurs SEO.
+1. vérifier une fois la CI du HEAD final de PR #999 ;
+2. si échec : diagnostiquer/corriger sans masquer la cause ;
+3. si vert : merger #999 et vérifier `main` ;
+4. **ne pas déployer Vercel** ;
+5. poursuivre SEO-1 / SEO-2 avec la query map et dériver le gate stock/qualité depuis les données réelles ;
+6. fermeture SEO-0 uniquement après les preuves restantes, sans inventer GSC/LIVE.
 
 ---
 
-# 10. ÉTAT ACTUEL CONNU
+## 11. SÉQUENCE RESTANTE
 
-### Vérifié
+`CI PR #999`  
+→ si vert `merge + post-merge Git`  
+→ `SEO-1 Benchmark complet`  
+→ `SEO-2 Query Map + stock distribution`  
+→ `SEO-3 gate URL/indexation`  
+→ `SEO-4/5 templates + data moat`  
+→ `SEO-6/7 technical + maillage`  
+→ `SEO-8 authority`  
+→ `SEO-9 GSC loop`  
+→ `SEO-10 scale gates`.
 
-- Repo : `hraaaaf/Akarfinder`.
-- `main` au démarrage de ce fichier : `009f2f9fe8d3ccf214026307e7d5ea13e521768e`.
-- Kaynly est un concurrent/benchmark direct d'agrégation immobilière au Maroc.
-- Kaynly expose déjà des pages SEO ville/type/quartier, baromètres et données de marché issues de son index.
-
-### Non encore vérifié dans ce chantier
-
-- état SEO réel d'AkarFinder ;
-- Search Console ;
-- pages actuellement indexées ;
-- performance SERP ;
-- qualité actuelle du sitemap/robots/canonicals ;
-- photos exactes utilisées par Kaynly ;
-- volumes de recherche des clusters ;
-- thresholds de stock nécessaires ;
-- architecture URL finale.
-
-Aucune conclusion ne doit être inventée sur ces points avant audit.
-
----
-
-# 11. NEXT EXACT
-
-**LOT SEO-0 — BASELINE AUDIT**
-
-Première action à la reprise :
-
-1. vérifier repo / branche / HEAD / PR / CI ;
-2. identifier le domaine LIVE canonique réellement servi ;
-3. inspecter `robots.txt`, sitemap(s), metadata/canonical et principales familles d'URLs ;
-4. récupérer Search Console si disponible ;
-5. produire la matrice baseline ;
-6. classer les problèmes P0/P1/P2 ;
-7. seulement ensuite verrouiller l'architecture SEO cible.
-
----
-
-# 12. SÉQUENCE RESTANTE
-
-`SEO-0 Baseline`  
-→ `SEO-1 Benchmark Kaynly + SERP`  
-→ `SEO-2 Query Map`  
-→ `SEO-3 URL & Indexation Contract`  
-→ `SEO-4 Landing Templates`  
-→ `SEO-5 Data Moat`  
-→ `SEO-6 Technical SEO`  
-→ `SEO-7 Internal Linking`  
-→ `SEO-8 Authority`  
-→ `SEO-9 Search Console Loop`  
-→ `SEO-10 Scale Gates`  
-→ closeout et roadmap suivante.
-
-Les lots peuvent se chevaucher uniquement si le travail parallèle ne dépend pas d'une décision non encore prouvée.
-
----
-
-# 13. PROTOCOLE DE REPRISE / HANDOVER
-
-Dans une nouvelle conversation :
-
-1. lire `AKARFINDER_SEO_CANONICAL.md` ;
-2. vérifier GitHub `main`, branche active, HEAD, PR, CI ;
-3. vérifier que le canonique correspond encore au code et aux preuves ;
-4. reprendre au **Next exact** ;
-5. après chaque lot significatif, mettre à jour : état, preuves, décisions, Next exact et séquence restante.
-
-Ne jamais réécrire l'historique pour faire paraître un lot terminé.
-
----
-
-## RÉSUMÉ EN UNE LIGNE
-
-> **AkarFinder doit gagner Google non pas en générant le plus de pages, mais en ayant le meilleur graphe de pages immobilières réellement utiles, alimentées par les meilleures données disponibles et mesurées en continu.**
+Human gate séparé : **tout déploiement Vercel / activation du domaine final**.
