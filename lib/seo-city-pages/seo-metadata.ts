@@ -1,3 +1,4 @@
+import { siteConfig } from "@/lib/seo/site";
 import type { CityMetadata, SearchIntent, SeoMetadata } from "./types";
 
 // Generate canonical title for city page (non-promissive)
@@ -28,7 +29,7 @@ export function intentPageDescription(
 // Generate full SEO metadata for city page
 export function generateCitySeoMetadata(
   city: CityMetadata,
-  baseUrl: string = "https://akarfinder.vercel.app",
+  baseUrl: string = siteConfig.siteUrl,
 ): SeoMetadata {
   const title = cityPageTitle(city);
   const description = cityPageDescription(city);
@@ -43,11 +44,11 @@ export function generateCitySeoMetadata(
   };
 }
 
-// Generate full SEO metadata for intent page
+// Generate full SEO metadata for city + intent page
 export function generateIntentSeoMetadata(
   city: CityMetadata,
   intent: SearchIntent,
-  baseUrl: string = "https://akarfinder.vercel.app",
+  baseUrl: string = siteConfig.siteUrl,
 ): SeoMetadata {
   const title = intentPageTitle(city, intent);
   const description = intentPageDescription(city, intent);
