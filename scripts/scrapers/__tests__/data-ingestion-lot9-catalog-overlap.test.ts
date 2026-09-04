@@ -37,7 +37,26 @@ describe("Lot 9 catalog overlap probe", () => {
     assert.equal(result.cross_surface_duplicates, 2);
   });
 
-  it("builds deterministic pagination and rejects unsafe page counts", async () => {
+  it("supports deterministic bounded deep page windows", async () => {
+    const requested: string[] = [];
+    const result = await probeCatalogOverlap({
+      knownSourceIds: [],
+      surfaces: [{ id: "deep", base_url: "https://example.test/x", start_page: 3, pages: 3 }],
+      fetchPage: async (url) => {
+        requested.push(url);
+        return html([String(requested.length)]);
+      },
+    });
+
+    assert.deepEqual(requested, [
+      "https://example.test/x:p:3",
+      "https://example.test/x:p:4",
+      "https://example.test/x:p:5",
+    ]);
+    assert.equal(result.total_unique_ids, 3);
+  });
+
+  it("builds deterministic pagination and rejects unsafe page windows", async () => {
     assert.equal(paginatedCatalogUrl("https://example.test/x", 1), "https://example.test/x");
     assert.equal(paginatedCatalogUrl("https://example.test/x", 3), "https://example.test/x:p:3");
     assert.throws(() => paginatedCatalogUrl("https://example.test/x", 0), /invalid_page/);
@@ -45,10 +64,19 @@ describe("Lot 9 catalog overlap probe", () => {
     await assert.rejects(
       probeCatalogOverlap({
         knownSourceIds: [],
-        surfaces: [{ id: "too-deep", base_url: "https://example.test/x", pages: 4 }],
+        surfaces: [{ id: "too-many-pages", base_url: "https://example.test/x", pages: 11 }],
         fetchPage: async () => "",
       }),
       /invalid_pages/,
+    );
+
+    await assert.rejects(
+      probeCatalogOverlap({
+        knownSourceIds: [],
+        surfaces: [{ id: "too-deep", base_url: "https://example.test/x", start_page: 48, pages: 4 }],
+        fetchPage: async () => "",
+      }),
+      /unsafe_page_window/,
     );
   });
 });
