@@ -4,10 +4,14 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 
-const DEFAULT_DB_PATH = join(
+const HISTORICAL_DB_PATH = join(
   process.cwd(),
   "scripts/scrapers/output/akarfinder.db"
 );
+
+function defaultDbPath(): string {
+  return process.env.AKARFINDER_SQLITE_PATH?.trim() || HISTORICAL_DB_PATH;
+}
 
 export type DbListingRow = {
   id: number;
@@ -110,7 +114,7 @@ function openReadOnlyDb(dbPath: string) {
   return new DatabaseSync(dbPath, { readOnly: true });
 }
 
-export function isDbAvailable(dbPath = DEFAULT_DB_PATH): boolean {
+export function isDbAvailable(dbPath = defaultDbPath()): boolean {
   return existsSync(dbPath);
 }
 
@@ -118,7 +122,7 @@ const ACTIVE_SOURCE_EXISTS = "EXISTS (SELECT 1 FROM listing_sources active_ls WH
 
 export function queryDbListings(
   query: DbListingsQuery = {},
-  dbPath = DEFAULT_DB_PATH
+  dbPath = defaultDbPath()
 ): DbListingsResult {
   if (!isDbAvailable(dbPath)) return { listings: [], total: 0 };
 
@@ -173,7 +177,7 @@ export type DbStats = {
   avg_reliability: number;
 };
 
-export function queryDbStats(dbPath = DEFAULT_DB_PATH): DbStats {
+export function queryDbStats(dbPath = defaultDbPath()): DbStats {
   const empty: DbStats = { total_listings: 0, avg_completeness: 0, duplicates_detected: 0, avg_reliability: 0 };
   if (!isDbAvailable(dbPath)) return empty;
 
@@ -199,7 +203,7 @@ export function queryDbStats(dbPath = DEFAULT_DB_PATH): DbStats {
 
 export function getDbListingById(
   id: string,
-  dbPath = DEFAULT_DB_PATH
+  dbPath = defaultDbPath()
 ): DbListingRow | null {
   if (!isDbAvailable(dbPath)) return null;
   const numericId = Number(id);
