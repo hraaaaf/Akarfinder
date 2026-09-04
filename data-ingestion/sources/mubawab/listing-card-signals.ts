@@ -12,6 +12,7 @@ export type ListingCardSignal = {
 
 export type CardSemanticReview = ListingCardSignal & {
   property_type_candidates: string[];
+  offer_scope_candidate: "whole_property" | "room" | null;
   status: "clear" | "ambiguous_or_unmapped";
 };
 
@@ -82,28 +83,53 @@ export function extractListingCardSignals(html: string, routeUrl: string): Listi
 
 function explicitWholePropertyCandidates(text: string): Set<string> {
   const candidates = new Set<string>();
-  if (/\bappartement\b|\bappart\b|\bapartement\b|\bapartment\b|\bstudio\b|\bduplex\b/i.test(text)) candidates.add("apartment");
+  if (/\bappartement\b|\bappart\b|\bapartement\b|\bapartment\b|\bstudio\b|\bduplex\b|\bf[1-6]\b/i.test(text)) candidates.add("apartment");
   if (/\bvilla\b/i.test(text)) candidates.add("villa");
   if (/\bmaison\b/i.test(text) && !/\bvilla\b/i.test(text)) candidates.add("house");
   if (/\bterrain\b|\blot\b|\bparcelle\b/i.test(text)) candidates.add("land");
   if (/\blocal\b|\bmagasin\b|\bcommerce\b|\bcommercial\b/i.test(text)) candidates.add("commercial");
   if (/\bbureau\b/i.test(text)) candidates.add("office");
-  if (/\briad\b/i.test(text)) candidates.add("riad");
+  if (/^\s*riad\b|\briad\s+(?:à|a)\s+(?:vendre|louer)\b/i.test(text)) candidates.add("riad");
   return candidates;
+}
+
+function isExplicitRoomOffer(title: string, card: string): boolean {
+  const combined = `${title} ${card}`;
+  return /\bcoloc(?:ation)?\b|\bco[- ]?location\b/i.test(combined)
+    || /\bchambre\b[^.]{0,80}\b(?:à\s+louer|a\s+louer|louer|location|meubl[ée]e?|pour\s+(?:fille|gar[çc]on|étudiant|etudiant))\b/i.test(combined)
+    || /^(?:loue[rz]?\s+|location\s+)?(?:une\s+)?chambre\b/i.test(title);
+}
+
+function conflictingRoomContainer(text: string): string[] {
+  const conflicts: string[] = [];
+  if (/\b(?:dans|au sein d['’]?)\s+(?:une\s+)?villa\b/i.test(text)) conflicts.push("villa");
+  if (/\b(?:dans|au sein d['’]?)\s+(?:une\s+)?maison\b/i.test(text)) conflicts.push("house");
+  if (/\b(?:dans|au sein d['’]?)\s+(?:un\s+)?riad\b/i.test(text)) conflicts.push("riad");
+  return conflicts;
 }
 
 export function reviewCardSemantics(signal: ListingCardSignal): CardSemanticReview {
   const title = signal.title_text?.toLowerCase() ?? "";
   const card = signal.card_text?.toLowerCase() ?? "";
 
-  // A room/colocation offer is a genuine modelling ambiguity: the underlying
-  // property may be an apartment, but the advertised object is not the whole unit.
-  if (/\bchambre\b|\bcolocation\b|\bco[- ]?location\b/i.test(title)) {
-    const underlying = explicitWholePropertyCandidates(card);
+  if (isExplicitRoomOffer(title, card)) {
+    const conflicts = conflictingRoomContainer(`${title} ${card}`);
+    if (conflicts.length) {
+      return {
+        ...signal,
+        property_type_candidates: conflicts,
+        offer_scope_candidate: "room",
+        status: "ambiguous_or_unmapped",
+      };
+    }
+
+    // Human precedent #1 (2026-09-04): explicit room/colocation offers are
+    // attached to an apartment property and represented as room-scoped offers.
     return {
       ...signal,
-      property_type_candidates: [...underlying, "room_or_colocation"],
-      status: "ambiguous_or_unmapped",
+      property_type_candidates: ["apartment"],
+      offer_scope_candidate: "room",
+      status: "clear",
     };
   }
 
@@ -111,25 +137,26 @@ export function reviewCardSemantics(signal: ListingCardSignal): CardSemanticRevi
   // "Riad El Oulfa" from creating a second false property-type candidate.
   const titleCandidates = explicitWholePropertyCandidates(title);
   if (titleCandidates.has("apartment")) {
-    return { ...signal, property_type_candidates: ["apartment"], status: "clear" };
+    return { ...signal, property_type_candidates: ["apartment"], offer_scope_candidate: "whole_property", status: "clear" };
   }
   if (titleCandidates.size === 1) {
-    return { ...signal, property_type_candidates: [...titleCandidates], status: "clear" };
+    return { ...signal, property_type_candidates: [...titleCandidates], offer_scope_candidate: "whole_property", status: "clear" };
   }
   if (titleCandidates.size > 1) {
-    return { ...signal, property_type_candidates: [...titleCandidates], status: "ambiguous_or_unmapped" };
+    return { ...signal, property_type_candidates: [...titleCandidates], offer_scope_candidate: "whole_property", status: "ambiguous_or_unmapped" };
   }
 
   // If the title is vague, the visible card description may still explicitly
   // identify the whole-property type. This remains page-level evidence only.
   const cardCandidates = explicitWholePropertyCandidates(card);
   if (cardCandidates.size === 1) {
-    return { ...signal, property_type_candidates: [...cardCandidates], status: "clear" };
+    return { ...signal, property_type_candidates: [...cardCandidates], offer_scope_candidate: "whole_property", status: "clear" };
   }
 
   return {
     ...signal,
     property_type_candidates: [...cardCandidates],
+    offer_scope_candidate: card ? "whole_property" : null,
     status: "ambiguous_or_unmapped",
   };
 }
