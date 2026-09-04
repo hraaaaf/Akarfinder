@@ -1,3 +1,4 @@
+import { siteConfig } from "@/lib/seo/site";
 import type { NeighborhoodMetadata, NeighborhoodSeoMeta } from "./types";
 
 export function neighborhoodPageTitle(n: NeighborhoodMetadata): string {
@@ -10,7 +11,7 @@ export function neighborhoodPageDescription(n: NeighborhoodMetadata): string {
 
 export function generateNeighborhoodSeoMetadata(
   n: NeighborhoodMetadata,
-  baseUrl: string = "https://akarfinder.vercel.app",
+  baseUrl: string = siteConfig.siteUrl,
 ): NeighborhoodSeoMeta {
   const title = neighborhoodPageTitle(n);
   const description = neighborhoodPageDescription(n);
