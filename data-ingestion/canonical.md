@@ -1,442 +1,308 @@
 # AkarFinder — Data Ingestion Canonical
 
-**Status:** ACTIVE — authoritative roadmap
-
-**Branch:** `feat/data-ingestion-canonical`
-
-**PR:** `#996` — must remain OPEN / DRAFT / non merged until explicit authorization.
-
-**Purpose:** canonical compass for all external real-estate ingestion into AkarFinder.
+**Status:** ACTIVE — authoritative roadmap  
+**Repo:** `hraaaaf/Akarfinder`  
+**Branch:** `feat/data-ingestion-canonical`  
+**PR:** `#996` — OPEN / DRAFT / unmerged until explicit authorization
 
 ---
 
 # 1. Product goal
 
-Build a source-agnostic ingestion layer able to discover, extract, normalize, deduplicate, update, deactivate and selectively purge external real-estate listings without coupling AkarFinder to any particular portal.
+Build a source-agnostic ingestion layer able to discover, extract, normalize, deduplicate, lifecycle-manage and selectively purge real-estate observations without coupling AkarFinder to one portal.
 
-Long-term AkarFinder target:
-
-- **≥100,000 canonical exploitable listings** across all sources;
-- complete provenance;
-- controlled deduplication;
-- lifecycle;
-- search / filters / ranking;
-- independent purge by source;
-- direct agency / partner / owner data never destructively coupled to portal data.
-
-Mubawab is the pilot source.
-
-## Current strategic decision
-
-Before adding another portal, AkarFinder must first obtain **100% coverage of the publicly accessible, authorized and relevant Mubawab listing universe**, or quantify and explain every residual item that cannot represent an accessible unique listing.
-
-`100% Mubawab` does **not** mean blindly matching the marketing counter. It means proving the denominator and exhausting the discoverable listing universe.
-
----
-
-# 2. Locked architecture
+Architecture:
 
 ```text
 Discovery
-  ↓
-Extraction
-  ↓
-Collection Listing Contract
-  ↓
-Validation
-  ↓
-Source Adapter
-  ↓
-CanonicalPropertyV1 / CanonicalOfferV1 / MediaAssetV1
-  ↓
-Deduplication / Lifecycle / Provenance
-  ↓
-Controlled AkarFinder Ingestion
-  ↓
-Search / Ranking / UI
+→ extraction
+→ Collection Listing Contract
+→ validation
+→ source adapter
+→ CanonicalPropertyV1 / CanonicalOfferV1 / MediaAssetV1
+→ deduplication / lifecycle / provenance
+→ controlled AkarFinder ingestion
 ```
 
-Application canonical model:
+Application canonical model: `lib/property-schema/`  
+Collection/input contract only: `data-ingestion/schema/listing.schema.json`
 
-```text
-lib/property-schema/
-```
+Portal observations and direct agency/partner/owner observations remain independent. Purging `source=mubawab` must never delete an independent direct observation of the same property.
 
-Collection/input contract only:
+Long-term AkarFinder target: **≥100,000 canonical exploitable listings across all sources**.
 
-```text
-data-ingestion/schema/listing.schema.json
-```
-
-It must never become a second canonical model.
+Current strategic priority: before adding another portal, prove and then obtain **100% explained coverage of the publicly accessible, authorized and relevant Mubawab listing universe**.
 
 ---
 
-# 3. Source independence
+# 2. Non-negotiable execution rules
 
-Supported provenance types include:
-
-- `portal`
-- `agency_direct`
-- `partner_feed`
-- `owner_direct`
-- `developer_direct`
-- `open_data`
-- `manual`
-
-Absolute rule:
-
-```text
-purge source=mubawab
-```
-
-must never remove an independent direct/partner/owner observation representing the same property.
-
-Source identity starts with:
-
-```text
-source_name + source_id
-```
-
-Cross-source property matching is separate from source-listing identity.
-
----
-
-# 4. Safety boundary
-
-For discovery and coverage proofs:
-
-- public/authorized routes only;
-- robots checked before live requests;
-- identifiable User-Agent;
-- no authentication, CAPTCHA or access-control bypass;
-- global stop on explicit 403 / 429;
-- bounded request budgets;
-- resumable checkpoints;
-- no detail pages unless a later explicitly authorized phase requires them;
-- no image downloads during discovery proofs;
-- no production DB writes;
-- no Vercel deployment;
-- no merge;
-- never touch `scripts/scrapers/output/akarfinder.db` during sandbox proofs.
-
-CI noise unrelated to the active lot does not block safe work.
-
----
-
-# 5. Execution doctrine
-
-Every significant lot has:
+For every meaningful lot:
 
 - **Goal** — exact result sought;
 - **Success** — observable closure criterion;
 - **Proof** — test, artifact or measured evidence.
 
-No lot is CLOSED without proof.
+No Goal is declared reached without proof.
 
-No massive crawl is launched merely because a crawler can run. The coverage model must first be demonstrated to have no material blind spots.
+Safety:
 
----
+- public/authorized routes only;
+- robots.txt must be evaluated with wildcard/query-aware semantics before live requests;
+- if a route form is explicitly disallowed, do not request it;
+- identifiable User-Agent;
+- no authentication, CAPTCHA or access-control bypass;
+- explicit 403/429 → global source stop;
+- bounded request budgets;
+- no production DB writes;
+- no Vercel deployment;
+- no merge without explicit authorization;
+- no images during discovery/coverage proofs;
+- no broad detail-page crawl during Phase 0.
 
-# 6. Roadmap
+CI noise unrelated to the active lot does not block safe work.
 
-## Lots 1–8 — CLOSED ✅
+## Human ambiguity gate
 
-The following foundations are already proven:
-
-1. canonical/input contract;
-2. Mubawab discovery;
-3. Mubawab extractor;
-4. pilot crawl;
-5. deduplication + lifecycle;
-6. enlarged resumable crawl;
-7. AkarFinder sandbox ingestion;
-8. controlled massive-ingestion mechanics.
-
-Lot 8 proves batching, idempotence, checkpoints, kill-switch, rollback of current batch, metrics, selective source purge and survival of independent direct/partner data.
-
----
-
-# 7. Lot 9 — Mubawab Full Coverage
-
-**Status: 🟡 OPEN — current chantier**
-
-## Goal
-
-Obtain **100% of Mubawab listings that are publicly accessible, authorized and relevant**, deduplicated by `source_id`, and fully reconcile the result against Mubawab's public catalog presentation.
-
-The current public home counter observed on 2026-09-04 is about **102.5K properties**. This is a reconciliation reference, not yet a proven count of unique listing IDs.
-
-## Current certified baseline
-
-Classic matrix:
-
-- 12 cities;
-- 11 enabled categories;
-- 132 initial `city × category` scopes;
-- deep pagination to technical extinction;
-- **29,741 unique source IDs** certified;
-- artifact `9947122701`;
-- digest `sha256:1b27ba2946bd671644e6ec1bf03a396df6c86a51706f5a17265466d041a0cb6d`.
-
-Persistent national office campaign, run `33906589600`:
-
-- office sale reached extinction at page 24;
-- 710 unique office-sale IDs added;
-- office rent reached page 40 and remains open;
-- 1,280 unique office-rent IDs added;
-- **1,990 catalog IDs added globally**;
-- **current exact persistent union: 31,731 unique IDs**;
-- artifact `9949834432`;
-- digest `sha256:964a8cc44255bfd793615c4adea1c3be4238bed87b09aad0514c326da681bacc`.
-
-This proves the original 12-city matrix was not a complete model of Mubawab.
-
----
-
-# 8. Lot 9 Phase 0 — Coverage Proof
-
-**Status: 🔵 ACTIVE — must finish before Full Harvest**
-
-## Phase 0 Goal
-
-Prove that the new discovery model is capable of covering the **entire public Mubawab listing universe** before launching the full harvesting campaign.
-
-Phase 0 is about proving the **net has no material holes**. It is not about maximizing the listing count yet.
-
-## Phase 0 Success
-
-Phase 0 closes only when all of the following are proven:
-
-### P0-A — Route-family inventory
-
-Inventory every public route family capable of exposing listing inventory, currently including at minimum:
-
-- `st` — city/category surfaces;
-- `sc` — national category surfaces;
-- `cc` — broad national aggregate/control surfaces;
-- `t` / city aggregate pages where relevant;
-- vacation surfaces;
-- `pl` / new-project surfaces;
-- any other listing-bearing family discovered during inventory.
-
-A route family may be classified as:
-
-- **primary harvest surface**;
-- **control/diagnostic surface**;
-- **project/non-unit surface**;
-- **irrelevant/non-listing surface**.
-
-### P0-B — Dimension inventory
-
-Enumerate the public dimensions needed to cover Mubawab:
-
-- transaction;
-- property type;
-- city;
-- zone/locality where it creates distinct inventory;
-- classic rental vs vacation rental;
-- existing inventory vs new development/project inventory;
-- any additional public dimension discovered.
-
-No fixed 12-city allowlist is treated as exhaustive without proof.
-
-### P0-C — Reachability proof
-
-For representative broad control surfaces, every sampled `source_id` must be reachable through at least one known harvest surface, or must create a documented new surface/dimension.
-
-If a `cc`/aggregate control surface continues to reveal unexplained IDs, Phase 0 remains OPEN.
-
-### P0-D — Pagination proof
-
-For each harvest-surface class, pagination semantics and terminal conditions must be demonstrated:
+If a listing remains materially ambiguous after page-level evidence:
 
 ```text
-page 1 → page N → zero refs OR zero new unique IDs OR documented terminal page
+preserve source_id + URL + evidence
+→ show user
+→ explain competing classifications
+→ user arbitrates
+→ record precedent for genuinely equivalent cases
 ```
 
-The collector must preserve exact checkpoints and global `source_id` union.
-
-### P0-E — Denominator reconciliation model
-
-Define how the public ~102K counter will be reconciled into mutually understandable buckets:
-
-```text
-unique accessible listing IDs
-+ project/non-unit objects
-+ aliases/duplicates
-+ inaccessible or non-indexable public-counter components, if any
-= explained public catalog universe
-```
-
-No claim of 100% is allowed until the denominator is proven.
-
-## Phase 0 Proof artifact
-
-Canonical Phase 0 working document:
-
-```text
-data-ingestion/MUBAWAB_PHASE0_COVERAGE_PROOF.md
-```
-
-It must contain:
-
-- route-family matrix;
-- dimension matrix;
-- control surfaces;
-- sampled reachability results;
-- discovered gaps;
-- pagination semantics;
-- denominator model;
-- PASS/FAIL per Phase 0 gate;
-- exact Next action.
-
-## Phase 0 rule
-
-**No new broad Full Harvest campaign is authorized until Phase 0 PASS.**
-
-The already completed 31,731-ID discovery work remains valid evidence and seed state. It does not itself prove total coverage.
+No silent heuristic classification of materially ambiguous listings.
 
 ---
 
-# 9. Lot 9 Phase 1 — Full Harvest
-
-**Status: ⚪ BLOCKED BY PHASE 0**
-
-## Goal
-
-Once Phase 0 proves complete coverage, cast the full net and exhaust every approved harvest surface while maintaining one persistent global union of Mubawab `source_id` values.
-
-## Method
-
-```text
-Coverage Plan from Phase 0
-        ↓
-persistent surface queue
-        ↓
-bounded page windows
-        ↓
-checkpoint after each page
-        ↓
-global source_id union
-        ↓
-surface extinction
-        ↓
-control-surface residual scan
-        ↓
-reconciliation
-```
-
-Each surface must record:
-
-- stable ID;
-- route family;
-- semantic dimensions;
-- `next_page`;
-- `pending / running / completed / failed`;
-- stop reason;
-- pages requested;
-- refs discovered;
-- IDs unique to surface;
-- global unique IDs added;
-- errors/block events.
-
-## Full Harvest Success
-
-- every approved primary surface reaches a documented terminal state;
-- global union is persistent and monotonic;
-- broad control surfaces reveal **no unexplained new listing IDs**;
-- public catalog delta is fully reconciled;
-- unexplained material residual = **0**.
-
-Only then is `Mubawab Full Coverage = 100%` allowed.
-
----
-
-# 10. Lot 10 — Mubawab Massive Dataset Certification
-
-**Status: ⚪ BLOCKED BY LOT 9**
-
-Validate the Lot 9 dataset for:
-
-- source-ID uniqueness;
-- canonical dedup;
-- field quality;
-- geographic/type/transaction coverage;
-- price/surface anomalies;
-- provenance;
-- lifecycle readiness;
-- selective purge;
-- final exploitable canonical volume.
-
-**Success:** reproducible quantified certification report.
-
----
-
-# 11. Lot 11 — Massive AkarFinder Ingestion
-
-**Status: ⚪ BLOCKED BY LOT 10**
-
-Controlled ingestion of the certified massive dataset into the target AkarFinder environment, validating batching, resume, rollback, Search, filters, ranking, performance, lifecycle and purge.
-
-No production activation is implicit.
-
----
-
-# 12. Lot 12 — Multi-source industrialization toward ≥100K
-
-**Status: ⚪ BLOCKED BY LOT 11**
-
-If Mubawab's final canonical exploitable stock is below 100K, add other compliant sources using the same source-agnostic pipeline until AkarFinder reaches **≥100,000 canonical exploitable listings**.
-
-If Mubawab alone already exceeds 100K unique exploitable listings, the product threshold is reached, but multi-source readiness remains an architectural objective.
-
----
-
-# 13. Canonical execution order
+# 3. Roadmap
 
 ```text
 Lots 1–8 CLOSED
       ↓
-Lot 9 Phase 0 — PROVE COMPLETE MUBAWAB COVERAGE MODEL
+Lot 9 Phase 0 — PROVE COMPLETE, AUTHORIZED MUBAWAB COVERAGE MODEL  ← ACTIVE
       ↓
-Lot 9 Phase 1 — FULL HARVEST TO EXTINCTION
+Lot 9 Phase 1 — FULL HARVEST USING ONLY APPROVED SURFACES
       ↓
 Lot 9 Reconciliation — PROVE 100% EXPLAINED COVERAGE
       ↓
 Lot 10 — MASSIVE DATASET CERTIFICATION
       ↓
-Lot 11 — CONTROLLED MASSIVE AKARFINDER INGESTION
+Lot 11 — CONTROLLED AKARFINDER INGESTION
       ↓
-Lot 12 — ADD SOURCES IF NEEDED TO REACH ≥100K
+Lot 12 — ADD OTHER SOURCES IF NEEDED TO REACH ≥100K
 ```
 
----
-
-# 14. Current exact next
-
-1. build `MUBAWAB_PHASE0_COVERAGE_PROOF.md`;
-2. inventory public route families and classify them as harvest/control/project/non-listing;
-3. inventory all public property/transaction/geographic dimensions, without assuming the current 12 cities are complete;
-4. create sampled reachability probes from broad control routes into candidate harvest surfaces;
-5. prove pagination/terminal behavior per surface family;
-6. define the ~102K denominator reconciliation buckets;
-7. close Phase 0 only when no unexplained inventory-bearing route family or dimension remains;
-8. only then resume broad Full Harvest.
+**Phase 1 Full Harvest is BLOCKED until all Phase 0 gates PASS.**
 
 ---
 
-# 15. Current facts to preserve in every handover
+# 4. Historical Mubawab discovery evidence
 
-- repo: `hraaaaf/Akarfinder`;
-- branch: `feat/data-ingestion-canonical`;
-- PR: `#996`;
-- PR must stay OPEN / DRAFT / unmerged unless explicitly authorized;
-- no Vercel deployment;
+## Classic matrix
+
+Historical run `33899083917`:
+
+- 12 cities × 11 enabled categories;
+- deep traversal of the configured matrix;
+- **29,741 unique source IDs observed**;
+- artifact `9947122701`;
+- digest `sha256:1b27ba2946bd671644e6ec1bf03a396df6c86a51706f5a17265466d041a0cb6d`.
+
+## National office campaign
+
+Historical run `33906589600`:
+
+- office sale: 710 IDs, technical terminal at page 24;
+- office rent: 1,280 IDs through page 40;
+- +1,990 IDs over the classic union;
+- **historical persistent union: 31,731 unique IDs**;
+- artifact `9949834432`;
+- digest `sha256:964a8cc44255bfd793615c4adea1c3be4238bed87b09aad0514c326da681bacc`.
+
+### Critical compliance correction
+
+These numbers remain useful **historical observations and seed evidence**, but the old deep-pagination proof is no longer treated as authorization proof.
+
+On 2026-09-04, Phase 0 found that Mubawab's public robots policy contains a wildcard `Disallow: /*:` rule. Mubawab's historical `:p:N` pagination therefore falls inside a disallowed route form for our research bot.
+
+The previous robots parser only used literal prefix checks and did not correctly implement `*`, `$`, Allow/Disallow precedence or query matching. It has now been corrected and regression-tested.
+
+Consequences:
+
+- **no future `:p:N` requests are authorized by this project while that robots rule applies**;
+- the 31,731 historical union must not be described as a fully compliance-certified harvest;
+- Phase 0 must discover an alternative authorized traversal strategy or quantify the robots-restricted remainder explicitly;
+- previous technical extinction via colon pagination does not close P0-D.
+
+---
+
+# 5. Lot 9 Phase 0 — Coverage Proof
+
+**Status: 🔵 ACTIVE**
+
+Goal: prove that the eventual collection method can cover the complete authorized Mubawab universe **before** casting the full net.
+
+## Gates
+
+| Gate | Goal | Current status |
+|---|---|---:|
+| P0-A | identify every inventory-bearing public route family | 🟡 |
+| P0-B | enumerate transaction/type/geography/product dimensions | 🟡 |
+| P0-C | prove control-surface IDs are explained by approved harvest surfaces | 🟡 |
+| P0-D | prove complete authorized traversal / terminal semantics | 🔴 FAIL / BLOCKED |
+| P0-E | reconcile the public catalog denominator | ⚪ |
+
+Phase 0 PASS requires **all five** gates PASS.
+
+Working proof: `data-ingestion/MUBAWAB_PHASE0_COVERAGE_PROOF.md`
+
+---
+
+# 6. P0-A — Route families currently known
+
+Current registry includes:
+
+- `st` — city × category;
+- `sc` — national category;
+- `cc` — broad national aggregate/control;
+- `ct` — city × transaction aggregate/control;
+- `t` — city aggregate/control;
+- `is` — thematic/search-like inventory surface/control;
+- `crp` — hierarchical region/prefecture aggregate discovered during Phase 0, pending qualification;
+- vacation `st` — distinct vacation transaction family;
+- `pl` — new-development/project catalogue, separate non-unit bucket until proven otherwise;
+- `a` / `pa` — detail identity, not Phase 0 discovery surfaces.
+
+No family is dismissed as redundant without reachability evidence.
+
+---
+
+# 7. P0-B — Dimension findings
+
+The historical 12-city config is explicitly non-exhaustive.
+
+A bounded 8-request Phase 0 probe already proved missing unit-inventory geographies including:
+
+- Dakhla;
+- Essaouira;
+- Martil;
+- Meknès.
+
+It also exposed unconfigured semantics:
+
+- `appartements-vacational`;
+- `bureaux-et-commerces-a-louer`;
+- `bureaux-et-commerces-a-vendre`;
+- `immobilier-a-louer`;
+- `immobilier-a-vendre`.
+
+Project pages expose many additional localities; those must be separated into unit-listing geography vs project-only geography before entering a harvest matrix.
+
+---
+
+# 8. P0-C — Reachability findings
+
+Initial bounded `ct/is` comparison showed residual IDs because only a few primary page-1 surfaces were used.
+
+Run `33912205981` then compared those residuals against the complete historical 31,731-ID union.
+
+Artifact: `9951845045`  
+Digest: `sha256:71e34e6f29ae2e7dde1954684af3ea061237d00d2c5a706f8417aee43c0796a9`
+
+Exact result:
+
+- **78 unique sampled residual IDs**;
+- **23 already existed in the historical 31,731 union**;
+- **55 remain absent from that union**.
+
+Breakdown:
+
+- `ct` Casablanca sale: 5 sampled residuals, **5 already known, 0 absent**;
+- `ct` Casablanca rent: 8 residuals, **3 known, 5 absent**;
+- `is` Casablanca sale-cheap: 32 residuals, **10 known, 22 absent**;
+- `is` Casablanca rent-cheap: 33 residuals, **5 known, 28 absent**.
+
+Interpretation:
+
+- `ct` sale page 1 is explained by the historical union;
+- `ct` rent still has a small residual;
+- the major unexplained surface is `is`;
+- the remaining 55 IDs require route/semantic classification;
+- only materially ambiguous cases are escalated to the user.
+
+---
+
+# 9. P0-D — Authorized traversal blocker
+
+**Current status: 🔴 FAIL / BLOCKED.**
+
+Historical pagination used:
+
+```text
+...:p:2
+...:p:3
+...
+```
+
+Current robots policy disallows paths matching `/*:`. Therefore colon-pagination cannot be part of the future authorized Full Harvest plan.
+
+P0-D can only PASS when one of these is proven:
+
+1. Mubawab exposes another public, robots-allowed route mechanism that provides complete traversal; or
+2. another authorized public surface family covers the same inventory without colon pagination; or
+3. the inaccessible remainder is quantifiable and explicitly excluded from the authorized denominator.
+
+No bypass or workaround designed to defeat robots restrictions is allowed.
+
+---
+
+# 10. P0-E — Denominator reconciliation
+
+The public Mubawab catalog presentation is used only as a reconciliation anchor, not as an exact unique-ID denominator.
+
+Observed public counters fluctuate around ~102K and indexed language/page variants are not synchronized. Therefore Phase 0 must decompose the denominator into:
+
+```text
+unique authorized accessible unit-listing IDs
++ project/non-unit objects
++ aliases/duplicates
++ documented restricted/non-indexable components
+= explained public catalog universe
+```
+
+No `100%` claim until the unexplained material remainder is zero.
+
+---
+
+# 11. Current exact next
+
+1. classify the **55 IDs absent from the historical union** using listing-page/card evidence first;
+2. escalate only materially ambiguous listings through the Human ambiguity gate;
+3. qualify `crp` and continue route-family discovery until no new inventory-bearing family appears;
+4. test `cc`, `t`, `ct`, `is`, `crp` reachability using only robots-allowed page-1/control surfaces;
+5. search for a **robots-allowed complete traversal mechanism**; do not use `:p:N`;
+6. if no authorized complete traversal exists, quantify the restricted remainder and reflect it in P0-E;
+7. reconcile the unstable ~102K public presentation;
+8. keep Phase 1 Full Harvest BLOCKED until P0-A..P0-E all PASS.
+
+---
+
+# 12. Facts every handover must preserve
+
+- repo `hraaaaf/Akarfinder`;
+- branch `feat/data-ingestion-canonical`;
+- PR #996 OPEN / DRAFT / unmerged;
+- no Vercel deploy;
 - no production DB write;
-- classic unique baseline: **29,741**;
-- current exact persistent union after office campaign: **31,731**;
-- Mubawab public home counter observed 2026-09-04: approximately **102.5K**, denominator not yet certified;
-- Lot 9 Phase 0 is the active chantier;
-- Phase 1 Full Harvest is blocked until Phase 0 PASS;
-- goal is **100% explained Mubawab coverage**, not an arbitrary intermediate count.
+- historical classic union 29,741;
+- historical extended union 31,731;
+- those historical deep-pagination counts are **not compliance certification** after the robots correction;
+- Phase 0 active;
+- P0-D currently FAIL/BLOCKED due `/*:` robots restriction on `:p:N`;
+- P0-C currently has **55 sampled IDs absent from the historical union**;
+- Human ambiguity gate is mandatory;
+- target remains **100% explained authorized Mubawab coverage**, not an arbitrary count.
