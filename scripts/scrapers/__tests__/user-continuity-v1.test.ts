@@ -81,7 +81,7 @@ describe("#19H User Continuity V1", () => {
     const workspacePage = readFileSync(join(process.cwd(), "app/mon-projet/espace/page.tsx"), "utf8");
     const legacyCompanionPage = readFileSync(join(process.cwd(), "app/compagnon/page.tsx"), "utf8");
     const workspace = readFileSync(join(process.cwd(), "components/account/UserContinuityWorkspace.tsx"), "utf8");
-    assert.ok(projectPage.includes("MonProjetWizardP1A"));
+    assert.ok(projectPage.includes("MonProjetWizardP2"));
     assert.ok(workspacePage.includes("UserContinuityWorkspace"));
     assert.ok(legacyCompanionPage.includes('permanentRedirect("/mon-projet")'));
     assert.ok(workspace.includes("/api/auth/session"));
