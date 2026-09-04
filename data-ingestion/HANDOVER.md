@@ -156,21 +156,28 @@ The major open reachability question is therefore `is`, not `ct` sale.
 
 ---
 
-# Human ambiguity gate
+# Human ambiguity gate — corrected order
 
-User rule:
+Do not escalate from a vague card alone.
+
+Canonical flow:
 
 ```text
-materially ambiguous listing
-→ show user
-→ explain competing classifications
-→ user decides
-→ record precedent for genuinely equivalent cases
+card clear → classify
+card ambiguous → robots-check exact detail URL
+allowed detail → inspect ONE detail description
+clear detail → classify
+still ambiguous / detail unavailable by policy → show user → user decides
 ```
 
-Do not silently auto-classify ambiguous property type, transaction, geography, project/unit or residual semantics.
+No bulk detail crawl. One detail request is allowed only to resolve a genuinely ambiguous case and only if robots permits the exact URL.
 
-Use listing-card evidence first. Do not open dozens of detail pages just to classify the residual set.
+Methodology counter-example: Mubawab `8298787` had a nonsense card title, but its public description explicitly says it is an **apartment for sale**, 54 m², 2 bedrooms, Sidi Othmane, Casablanca. It should never have been escalated to the user.
+
+Implementation guard:
+
+- `data-ingestion/sources/mubawab/ambiguity-resolution.ts`
+- `scripts/scrapers/__tests__/data-ingestion-lot9-phase0-ambiguity-resolution.test.ts`
 
 ## Precedent #1 — room/colocation inside apartment
 
@@ -194,7 +201,7 @@ Implementation:
 - Collection adapter detects explicit room/colocation wording and sets `room`;
 - focused test: `scripts/scrapers/__tests__/data-ingestion-offer-scope.test.ts`.
 
-Equivalent explicit room/colocation cases reuse this precedent. If the wording does not make the scope clear, escalate again.
+Equivalent explicit room/colocation cases reuse this precedent. If the wording does not make the scope clear, inspect an allowed detail description first; escalate only if still unresolved.
 
 ---
 
@@ -216,13 +223,15 @@ unique authorized accessible unit IDs
 
 # NEXT EXACT
 
-1. continue classifying the **55 absent IDs** using listing-card title/text/location/URL from robots-allowed page-1 surfaces;
-2. reuse Precedent #1 for explicit room/colocation offers;
-3. classify clear cases automatically and escalate only materially different ambiguities;
-4. qualify `crp` against existing geography/control families;
-5. keep discovering route/dimension gaps using allowed page-1 surfaces;
-6. identify an authorized complete traversal mechanism without `:p:N`;
-7. if no complete allowed traversal exists, quantify the restricted remainder for the denominator;
-8. Full Harvest stays BLOCKED until P0-A..P0-E all PASS.
+1. continue classifying the **55 absent IDs** using card evidence;
+2. for every card ambiguity, inspect the single robots-allowed public detail description before human escalation;
+3. reuse Precedent #1 for explicit room/colocation offers;
+4. classify all card/detail-clear cases automatically;
+5. show user only genuinely unresolved cases;
+6. qualify `crp` against existing geography/control families;
+7. keep discovering route/dimension gaps using allowed surfaces;
+8. identify an authorized complete traversal mechanism without `:p:N`;
+9. if no complete allowed traversal exists, quantify the restricted remainder for the denominator;
+10. Full Harvest stays BLOCKED until P0-A..P0-E all PASS.
 
 **Current chantier: Mubawab Phase 0 Coverage Proof 🔵**
