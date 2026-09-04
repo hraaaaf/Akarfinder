@@ -22,11 +22,12 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
   full-coverage:
     runs-on: macos-14
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -46,3 +47,24 @@ jobs:
         run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-full-coverage-campaign.test.ts
       - name: Prove Lot 9 live campaign policy bounds
         run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-live-campaign-policy.test.ts
+      - name: Restore previous live campaign state artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: lot9-live-campaign-proof
+          path: data-ingestion/runs/mubawab/lot9-live-campaign
+          github-token: ${{ github.token }}
+          run-id: 33889776735
+      - name: Prove inter-run resume from previous checkpoint
+        env:
+          LOT9_MAX_WAVES: "2"
+          LOT9_MAX_PARTITIONS_PER_WAVE: "3"
+          LOT9_REQUEST_DELAY_MS: "1500"
+        run: npx tsx scripts/mubawab-full-coverage-live-campaign.ts --resume
+      - name: Upload Lot 9 inter-run resume proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lot9-live-campaign-resume-proof
+          path: data-ingestion/runs/mubawab/lot9-live-campaign/
+          if-no-files-found: warn
+          retention-days: 7
