@@ -12,6 +12,34 @@ function sorted(values: Iterable<string>): string[] {
   return [...new Set(values)].sort((a, b) => a.localeCompare(b, "fr"));
 }
 
+const ROUTE_FAMILIES = new Set([
+  "t", "st", "ct", "tw", "cd", "sd",
+  "sc", "cc", "pl", "is",
+  "mpr", "mprp", "mprpt", "mprptd",
+  // Retained only as a detector if an old/alternate route is ever observed again.
+  // It is not considered proven by Phase 0 until reproduced from a live public page.
+  "crp",
+]);
+
+function routeDepth(family: string, offset: number): number {
+  const relative: Record<string, number> = {
+    mpr: 3,
+    mprp: 4,
+    mprpt: 5,
+    mprptd: 6,
+    crp: 5,
+    tw: 3,
+    cd: 4,
+    sd: 4,
+  };
+  return offset + (relative[family] ?? 3);
+}
+
+function addHierarchy(parts: Array<string | undefined>, target: Set<string>) {
+  const clean = parts.filter((value): value is string => Boolean(value));
+  if (clean.length) target.add(clean.join("/"));
+}
+
 export function extractCoverageDimensions(html: string, pageUrl: string): CoverageDimensions {
   const $ = load(html);
   const routeFamilies = new Set<string>();
@@ -37,19 +65,35 @@ export function extractCoverageDimensions(html: string, pageUrl: string): Covera
     const family = segments[offset];
     if (!family) return;
 
-    if (["t", "st", "ct", "crp", "sc", "cc", "pl", "sd", "is"].includes(family)) {
+    if (ROUTE_FAMILIES.has(family)) {
       routeFamilies.add(family);
-      const routeDepth = family === "crp" ? offset + 5 : offset + 3;
-      routes.add(`/${segments.slice(0, Math.min(segments.length, routeDepth)).join("/")}`);
+      routes.add(`/${segments.slice(0, Math.min(segments.length, routeDepth(family, offset))).join("/")}`);
     }
 
-    if (["t", "st", "ct"].includes(family) && segments[offset + 1]) {
+    if (["t", "st", "ct", "tw", "cd", "sd"].includes(family) && segments[offset + 1]) {
       geographies.add(segments[offset + 1]);
     }
 
+    if (["tw", "cd", "sd"].includes(family) && segments[offset + 1] && segments[offset + 2]) {
+      addHierarchy([segments[offset + 1], segments[offset + 2]], hierarchicalGeographies);
+    }
+
+    if (family === "mpr" && segments[offset + 1]) {
+      addHierarchy([segments[offset + 1]], hierarchicalGeographies);
+    }
+    if (family === "mprp" && segments[offset + 1] && segments[offset + 2]) {
+      addHierarchy([segments[offset + 1], segments[offset + 2]], hierarchicalGeographies);
+    }
+    if (family === "mprpt" && segments[offset + 1] && segments[offset + 2] && segments[offset + 3]) {
+      addHierarchy([segments[offset + 1], segments[offset + 2], segments[offset + 3]], hierarchicalGeographies);
+      geographies.add(segments[offset + 3]);
+    }
+    if (family === "mprptd" && segments[offset + 1] && segments[offset + 2] && segments[offset + 3] && segments[offset + 4]) {
+      addHierarchy([segments[offset + 1], segments[offset + 2], segments[offset + 3], segments[offset + 4]], hierarchicalGeographies);
+      geographies.add(segments[offset + 3]);
+    }
     if (family === "crp" && segments[offset + 1] && segments[offset + 2]) {
-      hierarchicalGeographies.add(`${segments[offset + 1]}/${segments[offset + 2]}`);
-      if (segments[offset + 3]) categorySlugs.add(segments[offset + 3].replace(/:p:\d+$/, ""));
+      addHierarchy([segments[offset + 1], segments[offset + 2]], hierarchicalGeographies);
     }
 
     if (["st", "ct"].includes(family) && segments[offset + 2]) {
@@ -57,6 +101,16 @@ export function extractCoverageDimensions(html: string, pageUrl: string): Covera
     }
     if (["sc", "cc"].includes(family) && segments[offset + 1]) {
       categorySlugs.add(segments[offset + 1].replace(/:p:\d+$/, ""));
+    }
+    if (["cd", "sd"].includes(family) && segments[offset + 3]) {
+      categorySlugs.add(segments[offset + 3].replace(/:p:\d+$/, ""));
+    }
+
+    const mapSemanticIndex: Record<string, number> = { mpr: 2, mprp: 3, mprpt: 4, mprptd: 5 };
+    const semanticIndex = mapSemanticIndex[family];
+    if (semanticIndex != null) {
+      const semantic = segments[offset + semanticIndex]?.replace(/:p:\d+$/, "");
+      if (semantic && semantic !== "listing-promotion") categorySlugs.add(semantic);
     }
   };
 
