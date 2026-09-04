@@ -42,6 +42,21 @@ function transactionFromText(text: string): ResolvedTransaction | null {
   return sale ? "sale" : "rent";
 }
 
+export function transactionFromExplicitRoute(routeUrl: string | null | undefined): ResolvedTransaction | null {
+  if (!routeUrl) return null;
+  let path: string;
+  try {
+    path = decodeURIComponent(new URL(routeUrl).pathname).toLowerCase();
+  } catch {
+    return null;
+  }
+
+  const sale = /(?:^|[/_-])vente(?:[/_-]|$)|-a-vendre(?:[/_-]|$)|immobilier-a-vendre(?:[/_-]|$)/i.test(path);
+  const rent = /(?:^|[/_-])location(?:[/_-]|$)|-a-louer(?:[/_-]|$)|immobilier-a-louer(?:[/_-]|$)|-vacational(?:[/_-]|$)/i.test(path);
+  if (sale === rent) return null;
+  return sale ? "sale" : "rent";
+}
+
 function hasExplicitRoomOfferWording(text: string): boolean {
   if (/\bcoloc(?:ation)?\b|\bco[- ]?location\b/i.test(text)) return true;
   if (/^(?:loue[rz]?\s+|location\s+)?(?:une\s+)?chambre\b/i.test(text.trim())) return true;
@@ -59,6 +74,7 @@ function isExplicitRoomScopedOffer(title: string, description: string): boolean 
 export function resolveDetailSemanticEvidence(input: {
   extractedPropertyType?: string | null;
   extractedTransaction?: ResolvedTransaction | null;
+  routeUrl?: string | null;
   title?: string | null;
   description?: string | null;
 }): DetailSemanticResolution {
@@ -75,9 +91,19 @@ export function resolveDetailSemanticEvidence(input: {
   if (knownExtracted) evidence.push("property_type_from_detail_extractor");
   else if (textPropertyType) evidence.push("property_type_from_detail_text");
 
-  const transaction = input.extractedTransaction ?? transactionFromText(text);
+  const routeTransaction = transactionFromExplicitRoute(input.routeUrl);
+  const detailTransaction = input.extractedTransaction ?? transactionFromText(text);
+  let transaction: ResolvedTransaction | null = detailTransaction ?? routeTransaction;
+
   if (input.extractedTransaction) evidence.push("transaction_from_detail_extractor");
-  else if (transaction) evidence.push("transaction_from_detail_text");
+  else if (detailTransaction) evidence.push("transaction_from_detail_text");
+  if (routeTransaction) evidence.push("transaction_from_explicit_route");
+
+  // If two independent explicit sources disagree, do not silently choose one.
+  if (detailTransaction && routeTransaction && detailTransaction !== routeTransaction) {
+    transaction = null;
+    evidence.push("transaction_conflict_detail_vs_route");
+  }
 
   const roomScoped = isExplicitRoomScopedOffer(title, description);
   const offerScope: ResolvedOfferScope = roomScoped ? "room" : "whole_property";
