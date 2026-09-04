@@ -80,21 +80,56 @@ export function extractListingCardSignals(html: string, routeUrl: string): Listi
   return [...byId.values()];
 }
 
+function explicitWholePropertyCandidates(text: string): Set<string> {
+  const candidates = new Set<string>();
+  if (/\bappartement\b|\bappart\b|\bapartement\b|\bapartment\b|\bstudio\b|\bduplex\b/i.test(text)) candidates.add("apartment");
+  if (/\bvilla\b/i.test(text)) candidates.add("villa");
+  if (/\bmaison\b/i.test(text) && !/\bvilla\b/i.test(text)) candidates.add("house");
+  if (/\bterrain\b|\blot\b|\bparcelle\b/i.test(text)) candidates.add("land");
+  if (/\blocal\b|\bmagasin\b|\bcommerce\b|\bcommercial\b/i.test(text)) candidates.add("commercial");
+  if (/\bbureau\b/i.test(text)) candidates.add("office");
+  if (/\briad\b/i.test(text)) candidates.add("riad");
+  return candidates;
+}
+
 export function reviewCardSemantics(signal: ListingCardSignal): CardSemanticReview {
   const title = signal.title_text?.toLowerCase() ?? "";
-  const candidates = new Set<string>();
+  const card = signal.card_text?.toLowerCase() ?? "";
 
-  if (/\bappartement\b|\bstudio\b|\bduplex\b/i.test(title)) candidates.add("apartment");
-  if (/\bvilla\b/i.test(title)) candidates.add("villa");
-  if (/\bmaison\b/i.test(title) && !/\bvilla\b/i.test(title)) candidates.add("house");
-  if (/\bterrain\b|\blot\b/i.test(title)) candidates.add("land");
-  if (/\blocal\b|\bmagasin\b|\bcommerce\b|\bcommercial\b/i.test(title)) candidates.add("commercial");
-  if (/\bbureau\b/i.test(title)) candidates.add("office");
-  if (/\briad\b/i.test(title)) candidates.add("riad");
+  // A room/colocation offer is a genuine modelling ambiguity: the underlying
+  // property may be an apartment, but the advertised object is not the whole unit.
+  if (/\bchambre\b|\bcolocation\b|\bco[- ]?location\b/i.test(title)) {
+    const underlying = explicitWholePropertyCandidates(card);
+    return {
+      ...signal,
+      property_type_candidates: [...underlying, "room_or_colocation"],
+      status: "ambiguous_or_unmapped",
+    };
+  }
+
+  // Prefer an explicit type in the title. This prevents place names such as
+  // "Riad El Oulfa" from creating a second false property-type candidate.
+  const titleCandidates = explicitWholePropertyCandidates(title);
+  if (titleCandidates.has("apartment")) {
+    return { ...signal, property_type_candidates: ["apartment"], status: "clear" };
+  }
+  if (titleCandidates.size === 1) {
+    return { ...signal, property_type_candidates: [...titleCandidates], status: "clear" };
+  }
+  if (titleCandidates.size > 1) {
+    return { ...signal, property_type_candidates: [...titleCandidates], status: "ambiguous_or_unmapped" };
+  }
+
+  // If the title is vague, the visible card description may still explicitly
+  // identify the whole-property type. This remains page-level evidence only.
+  const cardCandidates = explicitWholePropertyCandidates(card);
+  if (cardCandidates.size === 1) {
+    return { ...signal, property_type_candidates: [...cardCandidates], status: "clear" };
+  }
 
   return {
     ...signal,
-    property_type_candidates: [...candidates],
-    status: candidates.size === 1 ? "clear" : "ambiguous_or_unmapped",
+    property_type_candidates: [...cardCandidates],
+    status: "ambiguous_or_unmapped",
   };
 }
