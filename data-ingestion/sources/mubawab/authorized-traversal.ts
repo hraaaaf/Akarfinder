@@ -72,16 +72,23 @@ export function assessAuthorizedLeaf(input: AuthorizedLeafEvidence): AuthorizedL
 }
 
 export function summarizeAuthorizedLeaves(items: AuthorizedLeafAssessment[]) {
+  const complete = items.filter((item) => item.status === "complete_on_first_page").length;
+  const overflow = items.filter((item) => item.status === "overflow_requires_disallowed_pagination").length;
+  const empty = items.filter((item) => item.status === "empty").length;
+  const unproven = items.filter((item) => item.status === "unproven").length;
+
   return {
     leaves_total: items.length,
-    complete_on_first_page: items.filter((item) => item.status === "complete_on_first_page").length,
-    overflow: items.filter((item) => item.status === "overflow_requires_disallowed_pagination").length,
-    empty: items.filter((item) => item.status === "empty").length,
-    unproven: items.filter((item) => item.status === "unproven").length,
+    complete_on_first_page: complete,
+    overflow,
+    empty,
+    unproven,
     observed_unit_ids: new Set(items.flatMap((item) => item.first_page_unit_ids)).size,
     unexplained_lower_bound: items.reduce(
       (sum, item) => sum + (item.unexplained_lower_bound ?? 0),
       0,
     ),
+    blocked_by_overflow: overflow > 0,
+    can_certify_current_leaf_model: overflow === 0 && unproven === 0,
   };
 }
