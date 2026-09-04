@@ -1,4 +1,4 @@
-name: Data Ingestion Lot 9 Full Coverage Planner Gate
+name: Data Ingestion Lot 9 Full Coverage Gate
 
 on:
   pull_request:
@@ -6,8 +6,10 @@ on:
       - "data-ingestion/sources/mubawab/config.json"
       - "data-ingestion/sources/mubawab/discovery.ts"
       - "data-ingestion/sources/mubawab/full-coverage.ts"
+      - "data-ingestion/sources/mubawab/full-coverage-runner.ts"
       - "scripts/scrapers/__tests__/mubawab-discovery-v2.test.ts"
       - "scripts/scrapers/__tests__/data-ingestion-lot9-full-coverage-planner.test.ts"
+      - "scripts/scrapers/__tests__/data-ingestion-lot9-full-coverage-runner.test.ts"
       - ".github/workflows/data-ingestion-lot9-full-coverage.yml"
   workflow_dispatch:
 
@@ -15,7 +17,7 @@ permissions:
   contents: read
 
 jobs:
-  full-coverage-planner:
+  full-coverage:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -29,3 +31,5 @@ jobs:
         run: npx tsx --test scripts/scrapers/__tests__/mubawab-discovery-v2.test.ts
       - name: Prove Lot 9 deterministic full coverage partition planner
         run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-full-coverage-planner.test.ts
+      - name: Prove Lot 9 bounded full coverage runner
+        run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-full-coverage-runner.test.ts
