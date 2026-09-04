@@ -58,16 +58,33 @@ Current blocker remains the public robots wildcard rule covering historical `:p:
 
 ### Avito Immobilier
 
-**Status:** 🟡 PHASE 0 OPEN
+**Status:** 🟡 PHASE 0 OPEN / MULTI-LANE DISCOVERY STRATEGY QUALIFIED
 
-Verified public-policy facts:
+Verified public-policy and discovery facts:
 
 - `https://www.avito.ma/robots.txt` is public;
-- it explicitly disallows `/api/v1` for Googlebot and AdsBot-Google-Mobile-Apps;
 - it advertises `https://www.avito.ma/sitemap.xml`;
-- no private/API harvesting path is approved.
+- the observed robots file contains named crawler groups and no visible `User-agent: *` group;
+- `/api/v1` is disallowed for named crawler groups and remains excluded from AkarFinder;
+- public external real-estate indexes expose direct source links back to Avito listing URLs;
+- a public direct-source link exposed the candidate Avito detail identity form `..._{numericId}.htm`, including seed ID `58413694`.
 
-Initial candidate lane: public sitemap + public/indexable category/detail surfaces only, subject to the project's wildcard/query-aware robots checker and source-specific route qualification.
+Avito is therefore no longer treated as a single-route problem.
+
+Coverage proof uses four independent lanes:
+
+```text
+Lane A — Avito advertised sitemap            PRIMARY
+Lane B — allowed native public HTML routes  PRIMARY
+Lane C — public external direct-source links CONTROL / SEED ONLY
+Lane D — search-engine public index          SECONDARY CONTROL
+```
+
+External indexes are never treated as Avito content authority. They provide only source URL/ID control evidence, and native Avito confirmation remains mandatory before canonical ingestion.
+
+No private API, CAPTCHA bypass, rotating-proxy access bypass or disallowed route is approved.
+
+Working proof: `data-ingestion/sources/avito/README.md`.
 
 ### LouerVendreAuMaroc
 
@@ -150,13 +167,13 @@ Decision:
 
 ## Execution order inside the parallel Phase 0
 
-1. **MarocAnnonces** — qualify robots, route families, detail identity and pagination because the public category taxonomy is already explicit.
-2. **MarocImmo** — qualify robots, page-N semantics, detail identity and overlap among national/type/city routes.
-3. **Avito** — qualify sitemap structure and public category/detail surfaces without using `/api/v1` or any private endpoint.
+1. **Avito** — highest immediate priority because of its volume and newly qualified multi-lane discovery model. Prove robots matching, sitemap structure, native identity and external-control overlap.
+2. **MarocAnnonces** — continue the already-built read-only discovery adapter and close robots/overlap gates.
+3. **MarocImmo** — qualify robots, page-N semantics, detail identity and overlap among national/type/city routes.
 4. **LouerVendreAuMaroc** — stay blocked until the live listing application exits maintenance, then run the same qualification.
 5. **Mubawab** — continue its existing Phase 0 in parallel; its Full Harvest remains blocked independently.
 
-This order is operational only. It does not change the market-priority ranking.
+This order is operational only. It does not alter the canonical source separation model.
 
 ---
 
