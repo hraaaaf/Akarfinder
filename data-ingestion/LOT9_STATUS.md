@@ -1,6 +1,6 @@
 # Lot 9 Status — Mubawab Full Coverage
 
-**Status: 🟡 OPEN — partition planner implemented; dedicated proof running**
+**Status: 🟡 OPEN — partition planner certified; bounded runner next**
 
 ## Goal
 
@@ -16,7 +16,7 @@ Le Lot 9 ne cherche pas à forcer artificiellement 100K annonces depuis Mubawab.
 - aucun contournement CAPTCHA / authentification / contrôle d’accès ;
 - toute route live doit rester soumise au contrôle robots existant ;
 - 403 / 429 explicites restent des signaux de blocage et doivent stopper le chemin concerné ;
-- aucune collecte exhaustive avant certification du planificateur de partitions ;
+- aucune collecte exhaustive avant certification de chaque étape de contrôle ;
 - ne jamais toucher à `scripts/scrapers/output/akarfinder.db` pendant les preuves.
 
 ## Périmètre initial dérivé de la config
@@ -32,7 +32,7 @@ Config : `data-ingestion/sources/mubawab/config.json`.
 - familles supportées : appartement, terrain, villa, maison, commercial, riad ;
 - bureaux désactivés tant que leurs routes distinctes ne sont pas vérifiées.
 
-## Implémentation Lot 9 — étape 1
+## Étape 1 — Full Coverage planner ✅ CERTIFIED
 
 Fichier : `data-ingestion/sources/mubawab/full-coverage.ts`.
 
@@ -49,40 +49,42 @@ Le planificateur :
 - arrêt également possible sur robots, source block ou kill-switch ;
 - une partition failed n’avance jamais silencieusement vers la suivante.
 
-## Dedicated proof
+### Preuve planner
 
-Workflow : `Data Ingestion Lot 9 Full Coverage Planner Gate`.
+- workflow : `Data Ingestion Lot 9 Full Coverage Planner Gate` ;
+- run : `33881976620` ✅ SUCCESS ;
+- job : `full-coverage-planner` ;
+- job id : `101052543906` ;
+- step Discovery regression : ✅ SUCCESS ;
+- step Lot 9 planner contract : ✅ SUCCESS ;
+- HEAD produit prouvé : `1f9f0ae095fd28b9821008dd33dfb83e120ff5b4`.
 
-Run initial : `33881976620`.
+Le planner est donc certifié. Cette preuve n’autorise pas encore un crawl exhaustif.
 
-Le gate doit prouver :
+## Étape 2 — bounded Full Coverage runner
 
-1. la régression Discovery Mubawab existante ;
-2. la matrice complète de 132 scopes ;
-3. unicité des `scope_id` / `partition_id` ;
-4. création déterministe de la fenêtre suivante ;
-5. arrêt sur zéro nouvel ID unique ;
-6. checkpoint monotone ;
-7. erreur explicite sur transitions invalides ;
-8. absence d’avancement silencieux après failed ;
-9. URLs de découverte conformes aux routes source configurées.
+**Status : 🟡 NEXT**
 
-## Closure rule de l’étape planner
+Le runner doit :
 
-Le planificateur n’est certifié que lorsque le workflow dédié est GREEN sur le HEAD produit qui contient :
+- consommer les partitions certifiées ;
+- exécuter seulement une vague bornée ;
+- conserver un set global de `source_id` uniques ;
+- checkpoint après chaque page ;
+- arrêter un scope sur zéro nouvel ID unique ;
+- classifier robots / source block / erreur retryable ;
+- produire un résumé de vague ;
+- générer la partition suivante uniquement après `window_exhausted` ;
+- ne faire aucun write DB et aucune extraction de détail pendant cette première preuve d’orchestration.
 
-- `full-coverage.ts` ;
-- son test ;
-- le workflow Lot 9.
+## Closure rule du Lot 9
 
-La certification du planner ne ferme PAS le Lot 9 complet. Elle autorise seulement l’étape suivante : un dry-run / crawl Full Coverage progressif avec manifests et checkpoints, toujours hors production.
+Lot 9 ne sera CLOSED qu’après un vrai manifest Full Coverage final couvrant toutes les partitions découvertes du périmètre autorisé, avec couverture, doublons, erreurs, rejets, checkpoints et stock unique mesuré.
 
 ## Next exact
 
-1. obtenir le verdict du run `33881976620` ;
-2. si rouge, corriger la cause exacte ;
-3. si vert, enregistrer la preuve du planner ;
-4. construire le runner Full Coverage reprenable utilisant ces partitions et les garde-fous Lot 6 ;
-5. démarrer par une vague limitée de partitions avant toute extension exhaustive ;
-6. mesurer couverture, doublons, erreurs et stock unique ;
-7. ne fermer Lot 9 qu’après manifest Full Coverage final.
+1. construire le bounded Full Coverage runner ;
+2. le prouver avec fetchers synthétiques, sans réseau ;
+3. ensuite seulement autoriser une vague live limitée utilisant les garde-fous robots / 403 / 429 du Lot 6 ;
+4. mesurer la vague ;
+5. étendre progressivement jusqu’au manifest Full Coverage final.
