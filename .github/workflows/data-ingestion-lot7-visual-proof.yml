@@ -11,6 +11,19 @@ on:
       - "components/search/**"
       - "scripts/lot7-visual-*"
       - ".github/workflows/data-ingestion-lot7-visual-proof.yml"
+  push:
+    branches:
+      - "feat/data-ingestion-canonical"
+    paths:
+      - "data-ingestion/**"
+      - "lib/db/**"
+      - "lib/listings/**"
+      - "lib/search/**"
+      - "app/search/**"
+      - "components/search/**"
+      - "scripts/lot7-visual-*"
+      - ".github/workflows/data-ingestion-lot7-visual-proof.yml"
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -22,7 +35,6 @@ jobs:
     env:
       DATABASE_PROVIDER: sqlite
       SEARCH_PROVIDER: database
-      AKARFINDER_SQLITE_PATH: ${{ runner.temp }}/lot7-visual.db
       ODM_PUBLIC_CANARY_ENABLED: "false"
       ODM_PUBLIC_CANARY_APPROVED: "false"
       ODM_PUBLIC_CANARY_PERCENT: "0"
@@ -33,6 +45,8 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      - name: Configure isolated Lot 7 SQLite path
+        run: echo "AKARFINDER_SQLITE_PATH=$RUNNER_TEMP/lot7-visual.db" >> "$GITHUB_ENV"
       - run: npm ci
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
