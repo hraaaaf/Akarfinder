@@ -6,8 +6,10 @@ on:
       - "data-ingestion/sources/mubawab/authorized-traversal.ts"
       - "data-ingestion/sources/mubawab/discovery.ts"
       - "data-ingestion/sources/mubawab/geo-hierarchy.ts"
+      - "data-ingestion/sources/avito/evidence/**"
       - "scripts/mubawab-phase0-authorized-leaf-probe.ts"
       - "scripts/scrapers/avito-sitemap-probe.mjs"
+      - "scripts/scrapers/avito-commoncrawl-control-probe.mjs"
       - "scripts/scrapers/utils/fetch-html.ts"
       - "scripts/scrapers/__tests__/data-ingestion-lot9-phase0-authorized-traversal.test.ts"
       - ".github/workflows/data-ingestion-lot9-phase0-authorized-traversal.yml"
@@ -56,3 +58,24 @@ jobs:
 
       # Safety: exactly one sitemap request with an identifiable AkarFinder UA.
       # No detail pages, no private API, no images, no DB/prod writes.
+
+  avito-commoncrawl-control:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Measure 12-URL Avito control overlap in three public Common Crawl indexes
+        run: node scripts/scrapers/avito-commoncrawl-control-probe.mjs
+      - name: Upload Avito Common Crawl control proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: avito-commoncrawl-control-proof
+          path: data-ingestion/runs/avito/commoncrawl-control-probe/
+          if-no-files-found: warn
+          retention-days: 7
+
+      # Safety: queries Common Crawl's public index only; does not request Avito.
