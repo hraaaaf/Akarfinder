@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 
 import {
   getCityBySlug,
@@ -161,6 +162,33 @@ test("city-intent indexability delegates to the shared inventory gate", async ()
     listingCount: 260,
     sourceCount: 5,
   });
+});
+
+test("SEO-4 static routes bind acheter and louer to the shared route builder", () => {
+  const buyRoute = readFileSync("app/immobilier/[city]/acheter/page.tsx", "utf8");
+  const rentRoute = readFileSync("app/immobilier/[city]/louer/page.tsx", "utf8");
+
+  assert.match(buyRoute, /generateCityIntentMetadata\(city, "acheter"\)/);
+  assert.match(buyRoute, /renderCityIntentPage\(city, "acheter"\)/);
+  assert.match(rentRoute, /generateCityIntentMetadata\(city, "louer"\)/);
+  assert.match(rentRoute, /renderCityIntentPage\(city, "louer"\)/);
+});
+
+test("SEO-4 sitemap publishes each city intent only from its own gate decision", () => {
+  const sitemapSource = readFileSync("app/sitemap.ts", "utf8");
+
+  assert.match(sitemapSource, /decision\.acheter\.eligible/);
+  assert.match(sitemapSource, /decision\.louer\.eligible/);
+  assert.match(sitemapSource, /\/immobilier\/\$\{city\.slug\}\/acheter/);
+  assert.match(sitemapSource, /\/immobilier\/\$\{city\.slug\}\/louer/);
+});
+
+test("SEO-4 landing copy remains non-promissive", () => {
+  const landingSource = readFileSync("components/seo/CityIntentLanding.tsx", "utf8");
+  assert.equal(landingSource.toLowerCase().includes("toutes les annonces"), false);
+  assert.equal(landingSource.toLowerCase().includes("annonces vérifiées"), false);
+  assert.ok(landingSource.includes("Ce n’est pas une mesure exhaustive du marché local"));
+  assert.ok(landingSource.includes("source originale"));
 });
 
 test("assertSeoCityPageSafety throws on forbidden wording", () => {
