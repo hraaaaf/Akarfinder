@@ -1,0 +1,38 @@
+name: AkarFinder - MAnonce Route Probe
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/acquisition/mannonce-route-probe.py'
+      - '.github/workflows/mannonce-route-probe.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Probe allowed MAnonce routes
+        run: python scripts/acquisition/mannonce-route-probe.py
+      - name: Verify zero-write proof
+        run: |
+          python - <<'PY'
+          import json
+          s=json.load(open('artifacts/mannonce-route-probe/summary.json'))
+          assert s['zero_db_writes'] is True
+          assert s['robots_checked'] is True
+          print(json.dumps(s,indent=2,ensure_ascii=False))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mannonce-route-probe-proof
+          path: artifacts/mannonce-route-probe/
+          if-no-files-found: error
