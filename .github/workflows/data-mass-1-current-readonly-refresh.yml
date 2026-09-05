@@ -1,0 +1,48 @@
+name: AkarFinder - MASS-1 Current Readonly Refresh
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/data-mass-1-current-readonly-refresh.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      DATA_MASS_1_OUT_DIR: .tmp/data-mass-1-current/results
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Run canonical MASS-1 read-only audit on current data
+        run: npx tsx scripts/audits/data-mass-1-reservoir-qualification.ts
+      - name: Verify strict read-only boundary
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const p=JSON.parse(fs.readFileSync('.tmp/data-mass-1-current/results/proof.json','utf8'));
+          if(p.readOnly!==true || p.databaseWrites!==0 || p.ddlChanges!==0 || p.policyChanges!==0 || p.sourceNetworkRequests!==0 || p.detailPageFetches!==0 || p.publicRowsCreated!==0) throw new Error('MASS-1 readonly invariant failed');
+          console.log(JSON.stringify({
+            discoveryRowsRead:p.discoveryRowsRead,
+            distinctDiscoveryUrlRepresentations:p.distinctDiscoveryUrlRepresentations,
+            netNewUrlRepresentations:p.netNewUrlRepresentations,
+            likelyMoroccoListingDetailUrlRepresentations:p.likelyMoroccoListingDetailUrlRepresentations,
+            sourceFactoryCandidateDomains:p.sourceFactoryCandidateDomains,
+            sourceFactoryLikelyMoroccoListingDetailUrlRepresentations:p.sourceFactoryLikelyMoroccoListingDetailUrlRepresentations
+          },null,2));
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: data-mass-1-current-readonly-refresh
+          path: .tmp/data-mass-1-current/results/
+          retention-days: 30
