@@ -4,8 +4,10 @@ on:
   pull_request:
     paths:
       - "data-ingestion/sources/mubawab/commoncrawl-index.ts"
+      - "data-ingestion/sources/mubawab/external-recovery-reconciliation.ts"
       - "scripts/mubawab-phase0-commoncrawl-index-probe.ts"
       - "scripts/scrapers/__tests__/data-ingestion-lot9-phase0-commoncrawl-index.test.ts"
+      - "scripts/scrapers/__tests__/data-ingestion-lot9-external-recovery-reconciliation.test.ts"
       - ".github/workflows/data-ingestion-lot9-phase0-commoncrawl-index.yml"
   workflow_dispatch:
 
@@ -40,6 +42,8 @@ jobs:
           run-id: 33920686277
       - name: Prove Common Crawl index parsing and paging semantics
         run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-phase0-commoncrawl-index.test.ts
+      - name: Prove fail-closed external recovery classification semantics
+        run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-external-recovery-reconciliation.test.ts
       - name: Run bounded multi-snapshot Common Crawl Mubawab detail-index probe
         run: npx tsx scripts/mubawab-phase0-commoncrawl-index-probe.ts
       - name: Upload Common Crawl P0-D proof
