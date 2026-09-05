@@ -5,6 +5,7 @@ import type { Map as MapLibreMap } from "maplibre-gl";
 
 const BUILDING_SOURCE = "akarfinder-vivre-ici-3d-buildings-source";
 export const BUILDING_LAYER = "akarfinder-vivre-ici-3d-buildings";
+const DISTRICT_SOURCE = "akarfinder-national-neighborhood-points";
 const OPENFREEMAP_VECTOR_URL = "https://tiles.openfreemap.org/planet";
 const CASABLANCA_3D_ZOOM = 14.2;
 const CASABLANCA_3D_PITCH = 56;
@@ -12,6 +13,7 @@ const CASABLANCA_3D_BEARING = -18;
 
 type Props = {
   citySlug: string | null;
+  districtSlug: string | null;
 };
 
 type NationalMapWindow = Window & {
@@ -61,7 +63,15 @@ function removeBuildingLayer(map: MapLibreMap): void {
   if (map.getSource(BUILDING_SOURCE)) map.removeSource(BUILDING_SOURCE);
 }
 
-export function National3DBuildingsLayer({ citySlug }: Props) {
+function selectedDistrictCenter(map: MapLibreMap, districtSlug: string | null): [number, number] | null {
+  if (!districtSlug || !map.getSource(DISTRICT_SOURCE)) return null;
+  const feature = map.querySourceFeatures(DISTRICT_SOURCE).find((item) => item.properties?.slug === districtSlug);
+  if (!feature || feature.geometry.type !== "Point") return null;
+  const [lng, lat] = feature.geometry.coordinates;
+  return typeof lng === "number" && typeof lat === "number" ? [lng, lat] : null;
+}
+
+export function National3DBuildingsLayer({ citySlug, districtSlug }: Props) {
   const eligible = citySlug === "casablanca";
   const [enabled, setEnabled] = useState(eligible);
 
@@ -74,6 +84,7 @@ export function National3DBuildingsLayer({ citySlug }: Props) {
 
     let cancelled = false;
     let frame = 0;
+    let cameraAttempts = 0;
     let map: MapLibreMap | null = null;
 
     const applyLayerState = () => {
@@ -93,9 +104,14 @@ export function National3DBuildingsLayer({ citySlug }: Props) {
           frame = window.requestAnimationFrame(applyCamera);
           return;
         }
-        const center = map.getCenter();
+        const districtCenter = selectedDistrictCenter(map, districtSlug);
+        if (districtSlug && !districtCenter && cameraAttempts < 120) {
+          cameraAttempts += 1;
+          frame = window.requestAnimationFrame(applyCamera);
+          return;
+        }
         map.easeTo({
-          center,
+          center: districtCenter ?? map.getCenter(),
           zoom: Math.max(map.getZoom(), CASABLANCA_3D_ZOOM),
           pitch: CASABLANCA_3D_PITCH,
           bearing: CASABLANCA_3D_BEARING,
@@ -132,7 +148,7 @@ export function National3DBuildingsLayer({ citySlug }: Props) {
         // The map can already be tearing down while the route changes.
       }
     };
-  }, [eligible, enabled]);
+  }, [districtSlug, eligible, enabled]);
 
   if (!eligible) return null;
 
