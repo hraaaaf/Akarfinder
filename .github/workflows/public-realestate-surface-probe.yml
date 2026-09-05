@@ -1,0 +1,38 @@
+name: AkarFinder - Public Real Estate Surface Probe
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/public-realestate-surface-probe.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Probe robots and sitemaps
+        run: python scripts/public_realestate_surface_probe.py
+      - name: Publish summary
+        run: |
+          python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          d=json.load(open('public-surface-probe/summary.json',encoding='utf-8'))
+          print('# Recoverable public real-estate surfaces')
+          for s in d['sites']:
+              print(f"- {s['host']}: robots={s['robots_ok']} root_allowed={s['root_allowed']} root={s['root_status']} sitemap_locs={s['sitemap_urls']} errors={len(s['errors'])}")
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: public-realestate-surface-probe
+          path: public-surface-probe/
+          if-no-files-found: error
+          retention-days: 30
