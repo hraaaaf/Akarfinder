@@ -47,19 +47,19 @@ export function computeSearchResultDisplayPolicy(
     };
   }
 
-  // Market signal sources (Avito) - limited display
+  // Public indexed Avito results: limited preview, no third-party image/contact/gallery,
+  // always redirect to the original source.
   if (sourceId === "avito") {
     return {
       search_result_display_mode: "limited",
       result_origin: input.result_origin,
       can_show_result: true,
-      can_show_thumbnail: false, // No images for market signals
-      can_show_snippet: false,
+      can_show_thumbnail: false,
+      can_show_snippet: input.has_snippet,
       can_show_contact: false,
       can_show_gallery: false,
-      primary_cta: "view_source",
-      production_allowed: false,
-      production_block_reason: "Avito market signal - limited preview only",
+      primary_cta: "view_original",
+      production_allowed: true,
     };
   }
 
