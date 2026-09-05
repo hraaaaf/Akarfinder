@@ -1,0 +1,37 @@
+name: AkarFinder - DabaAnnonce Sakane Surface Probe
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/acquisition/daba-sakane-surface-probe.mjs'
+      - '.github/workflows/daba-sakane-surface-probe.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Probe DabaAnnonce and Sakane public surfaces
+        run: node scripts/acquisition/daba-sakane-surface-probe.mjs
+      - name: Verify read-only proof
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const p=JSON.parse(fs.readFileSync('data/audits/raw-results/daba-sakane-surface-probe.json','utf8'));
+          if (p.zero_db_writes !== true) throw new Error('zero_db_writes');
+          if (!Array.isArray(p.targets) || p.targets.length !== 2) throw new Error('targets');
+          for (const t of p.targets) if (t.direct_detail_fetches !== 0) throw new Error('detail fetch invariant');
+          console.log('DABA SAKANE SURFACE PROBE: PASS');
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: daba-sakane-surface-probe-proof
+          path: data/audits/raw-results/daba-sakane-surface-probe.json
+          retention-days: 30
