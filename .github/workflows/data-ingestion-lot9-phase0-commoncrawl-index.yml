@@ -5,9 +5,11 @@ on:
     paths:
       - "data-ingestion/sources/mubawab/commoncrawl-index.ts"
       - "data-ingestion/sources/mubawab/external-recovery-reconciliation.ts"
+      - "data-ingestion/sources/mubawab/coverage-gap-decomposition.ts"
       - "scripts/mubawab-phase0-commoncrawl-index-probe.ts"
       - "scripts/scrapers/__tests__/data-ingestion-lot9-phase0-commoncrawl-index.test.ts"
       - "scripts/scrapers/__tests__/data-ingestion-lot9-external-recovery-reconciliation.test.ts"
+      - "scripts/scrapers/__tests__/data-ingestion-lot9-coverage-gap-decomposition.test.ts"
       - ".github/workflows/data-ingestion-lot9-phase0-commoncrawl-index.yml"
   workflow_dispatch:
 
@@ -44,6 +46,8 @@ jobs:
         run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-phase0-commoncrawl-index.test.ts
       - name: Prove fail-closed external recovery classification semantics
         run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-external-recovery-reconciliation.test.ts
+      - name: Prove fail-closed coverage gap decomposition semantics
+        run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-coverage-gap-decomposition.test.ts
       - name: Run bounded multi-snapshot Common Crawl Mubawab detail-index probe
         run: npx tsx scripts/mubawab-phase0-commoncrawl-index-probe.ts
       - name: Upload Common Crawl P0-D proof
@@ -58,6 +62,7 @@ jobs:
       # Safety: three recent public Common Crawl snapshots, a/pa families only.
       # Each family/index performs one page-count query plus at most three spread pages,
       # pageSize=1 block, limit=1000 rows/page, sequential requests with 1250 ms delay.
+      # Coverage-gap decomposition is local-only over restored proofs and external IDs.
       # Theoretical max = 24 Common Crawl index requests.
       # No live Mubawab request, no Mubawab detail fetch, no :p:N, no WARC fetch,
       # no DB/prod write, no image download.
