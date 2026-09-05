@@ -20,7 +20,7 @@ const items = [
   },
   {
     href: "/map",
-    label: "Carte",
+    label: "Vivre ici",
     icon: Map,
     activePrefixes: ["/map"],
   },
