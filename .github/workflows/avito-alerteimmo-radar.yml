@@ -15,13 +15,13 @@ permissions:
 
 concurrency:
   group: avito-alerteimmo-radar
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   shard:
     name: shard-${{ matrix.shard }}
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
@@ -50,15 +50,16 @@ jobs:
           test "$(wc -l < "$UNION" | tr -d ' ')" = "6581"
           echo "UNION_IDS=$UNION" >> "$GITHUB_ENV"
 
-      - name: Run deterministic shard
+      - name: Run deterministic shard with internal checkpoint deadline
         shell: bash
         run: |
           set -euo pipefail
           python scripts/avito_alerteimmo_radar.py \
             --baseline "$UNION_IDS" \
             --output "avito-alerteimmo-shard-${{ matrix.shard }}" \
-            --max-pages 260 \
-            --sleep 0.6 \
+            --max-pages 180 \
+            --sleep 0.4 \
+            --time-budget-seconds 720 \
             --shard-index "${{ matrix.shard }}" \
             --shard-count 8
 
@@ -74,6 +75,7 @@ jobs:
   certify:
     name: certify-union
     needs: shard
+    if: ${{ always() && needs.shard.result == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
