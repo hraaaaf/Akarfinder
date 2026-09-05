@@ -40,8 +40,10 @@ export function isSeo5cCasablancaAgenzCandidate(row: Seo5cCandidate): boolean {
   if (!isRecognizedDetailUrl(row.source_domain, row.canonical_url)) return false;
   try {
     const url = new URL(row.canonical_url);
+    const pathname = url.pathname.toLowerCase();
     if (url.hostname !== SEO5C_AGENZ_SOURCE) return false;
-    if (!url.pathname.toLowerCase().includes("/immo-casablanca/")) return false;
+    if (!pathname.includes("/immo-casablanca/")) return false;
+    if (!pathname.includes("/vente-")) return false;
   } catch {
     return false;
   }
