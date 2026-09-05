@@ -13,6 +13,7 @@ Construire le Property Graph le plus large possible du marché immobilier maroca
 - **Stretch : >=250 000 candidates L0/L1 uniques**.
 - Mesurer séparément représentations source, clusters probablement uniques et annonces probablement actives.
 - Accepter le bruit en L0/L1, le classer ensuite.
+- Les preuves historiques restent L0 avec provenance/date ; elles ne deviennent jamais `active` ou `fresh` sans preuve récente.
 
 Pipeline : `DISCOVER -> RAW EVIDENCE -> NORMALIZE -> EXACT DEDUPE -> CANDIDATE LAKE -> CLUSTER -> FRESHNESS -> SEARCH ELIGIBILITY`.
 
@@ -38,16 +39,20 @@ Pipeline : `DISCOVER -> RAW EVIDENCE -> NORMALIZE -> EXACT DEDUPE -> CANDIDATE L
 | MarocAnnonces source-first residential union | **10 000** | ✅ CLOSED | run `33739495442`, artifact `9888335708`, digest `sha256:c23c571acae2863e1dd866126938174af67186da704e3ad30c8bb97fb3bf5bc9` |
 | Sarouty property-detail sitemaps | **5 064** | ✅ CLOSED | run `33765427351`, artifact `9897323745`, digest `sha256:260ab772ed4f43c5eee41fbf0e04053e59716e76589ca0beb411dc619a8f5566` |
 | Agenz source-first partial safe enumeration | **4 466** | ✅ PARTIAL | run `33764930794`, artifact `9898224274`, digest `sha256:34a34a4eb0f2ae8d8d0f185c17afbf105296f3439d5e3381abe2baa67e61b2fb` |
+| DarAgadir + LSF + Aykana canonical-link public-sitemap rows | **6 270** | ✅ HISTORICAL L0 | PR `#223`, merge `686f71657c3d683360990d3125c19034086d83c2` |
+| SoukImmobilier + Masaken + Atlas Common Crawl qualified seeds | **1 464** | ✅ HISTORICAL L0 | run `29806876923`, artifact `8485826615`; derived as `3027 total - 1563 DarAgadir overlap` |
 | Domio listing-like URLs | **2 020** | ✅ PARTIAL | run `33984423190`, artifact `9974714576` |
 | ImmoDirect `/property/...` | **4** | ✅ PARKED faible rendement | run `33985219822`, artifact `9974939355` |
 
 ### Union L0/L1 minimale mesurée
 
-**136 581 représentations candidates exactes par identité source/ID ou source/URL.**
+**144 315 représentations candidates exactes par identité source/ID ou source/URL.**
 
-Calcul : `19 739 + 76 843 + 18 445 + 10 000 + 5 064 + 4 466 + 2 020 + 4 = 136 581`.
+Calcul : `136 581 + 6 270 + 1 464 = 144 315`.
 
-Ce n'est **pas** 136 581 biens uniques actifs. Les sources différentes peuvent représenter le même bien ; le recouvrement sera traité au clustering.
+Les 6 270 et 1 464 lignes historiques sont comptées **L0 uniquement** avec provenance ; elles ne sont pas déclarées actives/fraîches en 2026-09 sans nouvelle observation.
+
+Ce n'est **pas** 144 315 biens uniques actifs. Les sources différentes peuvent représenter le même bien ; le recouvrement sera traité au clustering.
 
 ## 4. DÉTAILS / DÉCISIONS DE LANE
 
@@ -55,13 +60,19 @@ Ce n'est **pas** 136 581 biens uniques actifs. Les sources différentes peuvent 
 Run `33964834762` ✅ : **3 174/3 174 shards**, **18 445 IDs uniques**, queue=0, zeroDbWrites=true.
 
 ### MarocAnnonces — FULL SOURCE-FIRST CLOSED
-Run `33739495442` ✅ : **546 pages**, **547 requêtes**, **10 000 IDs uniques**, queueRemaining=0, aucun cap atteint, zeroDbWrites=true. Le probe direct plus récent qui a vu une route robots-disallowed ne supersède pas cette preuve historique complète déjà certifiée ; toute nouvelle reprise doit rester fail-closed selon robots courant.
+Run `33739495442` ✅ : **546 pages**, **547 requêtes**, **10 000 IDs uniques**, queueRemaining=0, aucun cap atteint, zeroDbWrites=true. Toute nouvelle reprise doit rester fail-closed selon robots courant.
 
 ### Sarouty — FULL PROPERTY SITEMAPS CLOSED
 Run `33765427351` ✅ : 6/6 property-detail sitemaps déclarés, **5 064 IDs uniques**, 8 requêtes total, aucun cap, zeroDbWrites=true.
 
 ### Agenz — PARTIAL CERTIFIED
 Run `33764930794` : **4 466 IDs uniques** observés sur 430 pages avant `hard_block`, queueRemaining=1 397. Arrêt de sécurité correct, aucun retry/bypass, zeroDbWrites=true. Ne pas présenter comme inventaire complet.
+
+### Historical public-sitemap L0 — RECONCILED
+PR `#223` : **6 270** lignes canonical-link-only, structurées, issues de sitemaps publics : DarAgadir 5 567, LSF 379, Aykana 324. Shadow only, aucune activation publique. La fraîcheur de l'époque ne vaut pas fraîcheur actuelle ; conservation L0 seulement.
+
+### Historical Common Crawl class-A — RECONCILED
+Run `29806876923` : **3 027 qualified seeds** dédupliqués sur SoukImmobilier, DarAgadir, Masaken, Atlas ; DarAgadir = **1 563** et chevauche le réservoir DarAgadir déjà compté, donc seuls les **1 464** des trois autres domaines sont ajoutés au scoreboard. Metadata-only, zero DB write.
 
 ### Domio — CLOSED PARTIAL
 Run `33984423190` ✅ : **2 020 listing-like** ; `sitemap-properties.xml` a timeout, reprise résiliente plus tard.
@@ -73,7 +84,7 @@ Run `33985219822` ✅ : **4 property URLs**. Rendement <300.
 Run `33985996717` ✅ : routes robots-allowed, **2 377 biens affichés** sur l'achat Maroc, pagination jusqu'à 96, mais 0 lien détail extrait du HTML SSR. **0 candidate ajoutée** tant qu'un identifiant/URL de fiche n'est pas prouvé.
 
 ### MAnonce — RETRY/INDIRECT
-Le probe antérieur a montré des routes/fiches exploitables, mais le full sweep `33985644309` a ensuite échoué sur `Network is unreachable` au chargement de robots. **0 candidate ajoutée** depuis ce run. Retenter seulement avec preuve robots fraîche ou surface indirecte publique.
+Le full sweep `33985644309` a échoué sur `Network is unreachable` au chargement de robots. **0 candidate ajoutée** depuis ce run. Retenter seulement avec preuve robots fraîche ou surface indirecte publique.
 
 ## 5. JALONS
 
@@ -84,7 +95,7 @@ Le probe antérieur a montré des routes/fiches exploitables, mais le full sweep
 | M25K | ✅ |
 | M50K | ✅ |
 | M100K | ✅ |
-| **M200K** | 🔵 ACTIVE — **136 581 / 200 000**, manque **63 419** |
+| **M200K** | 🔵 ACTIVE — **144 315 / 200 000**, manque **55 685** |
 | M250K+ | STRETCH |
 
 ## 6. FILE D'EXÉCUTION — 12 LOTS
@@ -112,11 +123,11 @@ Le probe antérieur a montré des routes/fiches exploitables, mais le full sweep
 
 ## 8. NEXT EXACT
 
-1. **Réconcilier le réservoir historique complet** : chercher d'autres source-first/full artifacts non encore comptés avant de lancer de nouveaux crawls.
-2. **Agenz** : mesurer ce qui reste récupérable sans bypass à partir de la queue/partitions déjà connues et des surfaces indirectes publiques.
-3. **Yakeey** : identifier la couche publique qui transporte les IDs/URLs des 2 377 résultats affichés ; ne rien compter avant preuve.
-4. **Common Crawl multi-source/archives** : viser prioritairement les sources avec potentiel >1 000 net-new.
+1. Continuer la **réconciliation historique** pour retrouver tout FULL/artifact certifié non encore compté, avec déduplication par domaine/source avant ajout.
+2. Chercher en priorité les anciens réservoirs `source_offer_seeds` / Common Crawl / source discovery dont le volume est >1 000 et dont l'identité n'est pas déjà dans le scoreboard.
+3. **Agenz** : mesurer la queue restante sans bypass via surfaces indirectes publiques.
+4. **Yakeey** : identifier la couche publique qui transporte les IDs/URLs des 2 377 résultats affichés ; ne rien compter avant preuve.
 5. Reprendre **MAnonce** et **Domio** seulement si la voie est fiable et rentable.
 6. Continuer jusqu'à **M200K**, puis unifier le Candidate Lake et mesurer le recouvrement inter-source.
 
-**Boussole actuelle : 136 581 -> 200 000 -> 250 000+.**
+**Boussole actuelle : 144 315 -> 200 000 -> 250 000+.**
