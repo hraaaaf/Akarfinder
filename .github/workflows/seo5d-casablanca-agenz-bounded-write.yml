@@ -1,0 +1,105 @@
+name: SEO5D Casablanca Agenz Bounded Writer
+
+on:
+  pull_request:
+    paths:
+      - "scripts/scrapers/seo5d-casablanca-agenz-bounded-write.ts"
+      - "scripts/scrapers/__tests__/seo5d-casablanca-agenz-bounded-write.test.ts"
+      - ".github/workflows/seo5d-casablanca-agenz-bounded-write.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "scripts/scrapers/seo5d-casablanca-agenz-bounded-write.ts"
+      - "scripts/scrapers/__tests__/seo5d-casablanca-agenz-bounded-write.test.ts"
+      - ".github/workflows/seo5d-casablanca-agenz-bounded-write.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: seo5d-casablanca-agenz-bounded-writer
+  cancel-in-progress: false
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout candidate ref
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Latest-commit scope check
+        run: git diff --name-only HEAD^ HEAD
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install
+        run: npm ci
+      - name: SEO5C candidate contracts
+        run: npx tsx --test scripts/scrapers/__tests__/seo5c-casablanca-agenz-price-audit.test.ts
+      - name: SEO5D bounded writer contracts
+        run: npx tsx --test scripts/scrapers/__tests__/seo5d-casablanca-agenz-bounded-write.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+  dry-run:
+    if: github.event_name == 'push'
+    needs: contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      THIRD_PARTY_DB_INGESTION_ENABLED: "true"
+      SEO5D_AGENZ_PRICE_WRITE: "false"
+      SEO5D_AGENZ_PRICE_MAX_WRITES: "34"
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install
+        run: npm ci
+      - name: Execute bounded Agenz writer dry-run
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx tsx scripts/scrapers/seo5d-casablanca-agenz-bounded-write.ts | tee seo5d-casablanca-agenz-bounded-write.json
+      - name: Verify zero-write proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('node:fs');
+          const payload = JSON.parse(fs.readFileSync('seo5d-casablanca-agenz-bounded-write.json', 'utf8'));
+          if (payload.mode !== 'dry_run') throw new Error(`unexpected mode: ${payload.mode}`);
+          if (payload.writeRequested !== false) throw new Error('write request must be false');
+          if (payload.productionWriteCount !== 0) throw new Error(`write invariant violated: ${payload.productionWriteCount}`);
+          if (payload.source !== 'agenz.ma' || payload.city !== 'Casablanca' || payload.intent !== 'sale') throw new Error('unexpected cohort');
+          if (payload.maxWrites !== 34) throw new Error(`unexpected maxWrites: ${payload.maxWrites}`);
+          if (!Array.isArray(payload.evidence)) throw new Error('missing evidence');
+          if (payload.reliable > 34) throw new Error(`reliable exceeds hard cap: ${payload.reliable}`);
+          for (const row of payload.evidence) {
+            if (!row.canonical_url.includes('/immo-casablanca/')) throw new Error(`non-Casablanca URL: ${row.canonical_url}`);
+            if (!row.canonical_url.includes('/vente-')) throw new Error(`non-sale URL: ${row.canonical_url}`);
+            if (row.write_count !== 0) throw new Error(`dry-run row wrote data: ${row.seed_id}`);
+          }
+          console.log(JSON.stringify({ verdict: 'SEO5D_AGENZ_BOUNDED_WRITE_DRY_RUN_VERIFIED', reliable: payload.reliable, productionWriteCount: payload.productionWriteCount }));
+          NODE
+      - name: Upload dry-run proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: seo5d-casablanca-agenz-bounded-write
+          path: seo5d-casablanca-agenz-bounded-write.json
+          if-no-files-found: warn
+          retention-days: 14
