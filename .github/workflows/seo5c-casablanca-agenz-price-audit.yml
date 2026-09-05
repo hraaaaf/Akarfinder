@@ -6,6 +6,11 @@ on:
       - "scripts/scrapers/seo5c-casablanca-agenz-price-audit.ts"
       - "scripts/scrapers/__tests__/seo5c-casablanca-agenz-price-audit.test.ts"
       - ".github/workflows/seo5c-casablanca-agenz-price-audit.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/seo5c-casablanca-agenz-price-audit.yml"
   workflow_dispatch:
     inputs:
       limit:
@@ -49,7 +54,7 @@ jobs:
         run: npx tsc --noEmit
 
   live-dry-run:
-    if: github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
     needs: contract
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -57,7 +62,7 @@ jobs:
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
       THIRD_PARTY_DB_INGESTION_ENABLED: "true"
-      SEO5C_AGENZ_PRICE_LIMIT: ${{ inputs.limit }}
+      SEO5C_AGENZ_PRICE_LIMIT: ${{ github.event_name == 'workflow_dispatch' && inputs.limit || '48' }}
     steps:
       - name: Validate bounded read-only inputs
         shell: bash
