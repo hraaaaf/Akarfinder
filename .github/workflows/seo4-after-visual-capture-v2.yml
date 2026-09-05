@@ -1,0 +1,114 @@
+name: SEO4 AFTER Visual Capture V2
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/seo4-after-visual-capture-v2.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  capture-after:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Create non-committed visual harness
+        run: |
+          mkdir -p app/visual-proof/seo4
+          cat > app/visual-proof/seo4/page.tsx <<'TSX'
+          import { CityIntentLanding } from "@/components/seo/CityIntentLanding";
+
+          const listings = [
+            { id: "v1", title: "Appartement lumineux à vendre à Casablanca", city: "Casablanca", neighborhood: "Bourgogne", price: 3850000, currency: "DH", surface_m2: 157, price_per_m2: 24522, property_type: "Appartement", transaction_type: "buy", bedrooms: 3, bathrooms: 2, freshness_label: "Récent", source_type: "Source analysée", reliability_label: "Infos limitées", reliability_score: 0, is_mre_friendly: false, description: "", image_url: "", reliability_explanation: "", listing_url: "https://example.com/1", source_name: "Source A", result_origin: "search_api", can_show_result: true, production_allowed: true },
+            { id: "v2", title: "Appartement 3 chambres à vendre à Oasis", city: "Casablanca", neighborhood: "Oasis", price: 2900000, currency: "DH", surface_m2: 169, price_per_m2: 17160, property_type: "Appartement", transaction_type: "buy", bedrooms: 3, bathrooms: 2, freshness_label: "Récent", source_type: "Source analysée", reliability_label: "Infos limitées", reliability_score: 0, is_mre_friendly: false, description: "", image_url: "", reliability_explanation: "", listing_url: "https://example.com/2", source_name: "Source B", result_origin: "search_api", can_show_result: true, production_allowed: true },
+            { id: "v3", title: "Appartement familial à vendre Californie", city: "Casablanca", neighborhood: "Californie", price: 3900000, currency: "DH", surface_m2: 313, price_per_m2: 12460, property_type: "Appartement", transaction_type: "buy", bedrooms: 3, bathrooms: 3, freshness_label: "Récent", source_type: "Source analysée", reliability_label: "Infos limitées", reliability_score: 0, is_mre_friendly: false, description: "", image_url: "", reliability_explanation: "", listing_url: "https://example.com/3", source_name: "Source C", result_origin: "search_api", can_show_result: true, production_allowed: true },
+            { id: "v4", title: "Appartement à vendre Belvédère", city: "Casablanca", neighborhood: "Belvédère", price: 1150000, currency: "DH", surface_m2: 130, price_per_m2: 8846, property_type: "Appartement", transaction_type: "buy", bedrooms: 2, bathrooms: 2, freshness_label: "Récent", source_type: "Source analysée", reliability_label: "Infos limitées", reliability_score: 0, is_mre_friendly: false, description: "", image_url: "", reliability_explanation: "", listing_url: "https://example.com/4", source_name: "Source D", result_origin: "search_api", can_show_result: true, production_allowed: true },
+            { id: "v5", title: "Appartement 2 chambres Casablanca Finance City", city: "Casablanca", neighborhood: "Casablanca Finance City", price: 2990000, currency: "DH", surface_m2: 109, price_per_m2: 27431, property_type: "Appartement", transaction_type: "buy", bedrooms: 2, bathrooms: 2, freshness_label: "Récent", source_type: "Source analysée", reliability_label: "Infos limitées", reliability_score: 0, is_mre_friendly: false, description: "", image_url: "", reliability_explanation: "", listing_url: "https://example.com/5", source_name: "Source E", result_origin: "search_api", can_show_result: true, production_allowed: true },
+            { id: "v6", title: "Villa familiale à vendre à Ain Diab", city: "Casablanca", neighborhood: "Ain Diab", price: 7200000, currency: "DH", surface_m2: 700, price_per_m2: 10286, property_type: "Villa", transaction_type: "buy", bedrooms: 4, bathrooms: 4, freshness_label: "Récent", source_type: "Source analysée", reliability_label: "Infos limitées", reliability_score: 0, is_mre_friendly: false, description: "", image_url: "", reliability_explanation: "", listing_url: "https://example.com/6", source_name: "Source F", result_origin: "search_api", can_show_result: true, production_allowed: true },
+          ] as any[];
+
+          export default function Seo4VisualHarness() {
+            return (
+              <CityIntentLanding
+                cityDisplayName="Casablanca"
+                citySlug="casablanca"
+                intent="acheter"
+                listingCount={260}
+                sourceCount={5}
+                eligible
+                listings={listings}
+              />
+            );
+          }
+          TSX
+
+      - name: Start local app
+        run: |
+          DATABASE_PROVIDER=sqlite npm run dev -- --hostname 127.0.0.1 > /tmp/seo4-dev.log 2>&1 &
+          for i in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:3000/visual-proof/seo4 >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/seo4-dev.log
+          exit 1
+
+      - name: Capture AFTER at required viewports
+        run: |
+          mkdir -p artifacts/seo4-after
+          node <<'NODE'
+          const { chromium } = require('playwright');
+          const fs = require('fs');
+          const target = 'http://127.0.0.1:3000/visual-proof/seo4';
+          const viewports = [
+            { name: '390', width: 390, height: 844 },
+            { name: '430', width: 430, height: 932 },
+            { name: '768', width: 768, height: 1024 },
+            { name: '1280', width: 1280, height: 900 },
+          ];
+
+          (async () => {
+            const browser = await chromium.launch({ headless: true });
+            const report = [];
+            try {
+              for (const viewport of viewports) {
+                const page = await browser.newPage({ viewport: { width: viewport.width, height: viewport.height } });
+                const response = await page.goto(target, { waitUntil: 'domcontentloaded', timeout: 60000 });
+                await page.waitForTimeout(1200);
+                const file = `artifacts/seo4-after/casablanca-acheter-${viewport.name}.png`;
+                await page.screenshot({ path: file, fullPage: true });
+                report.push({ viewport, status: response?.status() ?? null, h1: await page.locator('h1').first().textContent(), file });
+                await page.close();
+              }
+            } finally {
+              await browser.close();
+            }
+            fs.writeFileSync('artifacts/seo4-after/report.json', JSON.stringify({ target, capturedAt: new Date().toISOString(), report }, null, 2));
+          })().catch((error) => { console.error(error); process.exit(1); });
+          NODE
+
+      - name: Upload AFTER visual proof
+        uses: actions/upload-artifact@v4
+        with:
+          name: seo4-after-casablanca-acheter-v2
+          path: artifacts/seo4-after
+          if-no-files-found: error
+          retention-days: 7
