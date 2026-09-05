@@ -1,0 +1,47 @@
+name: Avito Kaynly Ingestion Preflight
+
+on:
+  push:
+    branches:
+      - feat/avito-kaynly-canonical-ingestion
+    paths:
+      - "scripts/acquisition/kaynly-radar-ingestion.mjs"
+      - "scripts/acquisition/__tests__/kaynly-radar-ingestion.test.mjs"
+      - ".github/workflows/avito-kaynly-ingestion-preflight.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Unit tests
+        run: node --test scripts/acquisition/__tests__/kaynly-radar-ingestion.test.mjs
+      - name: Download certified radar artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh run download 33953406309 -n avito-kaynly-radar-proof -D /tmp/kaynly-proof
+      - name: Read-only Supabase preflight
+        run: |
+          test -n "$SUPABASE_URL"
+          test -n "$SUPABASE_SERVICE_ROLE_KEY"
+          node scripts/acquisition/kaynly-radar-ingestion.mjs /tmp/kaynly-proof/records.json | tee preflight-report.json
+      - name: Upload preflight proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: avito-kaynly-ingestion-preflight
+          path: preflight-report.json
+          if-no-files-found: error
+          retention-days: 14
