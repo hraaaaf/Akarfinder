@@ -6,6 +6,7 @@
 **Branche : `docs/3-vivre-ici-akarfinder`**  
 **PR : `#1025` — OPEN**  
 **HEAD code 3D : `b4a9d2bd0911840a641cd3f20ab678631424dc64`**  
+**HEAD branche après closeout docs : `5874f19f45c99f06f32165443082a9b4a6a8d84b`**  
 **Fondation produit : `/map`**  
 **Référence UX : Bien’ici 3D, adaptée au Maroc, sans clone pixel-perfect**  
 **Vercel : aucun déploiement sans accord explicite d’Achraf.**
@@ -133,7 +134,7 @@ Pour les 4 viewports Maroc :
 
 - workflow : `Vivre Ici AFTER Certification` ;
 - run : `33991033589` ;
-- HEAD : `b4a9d2bd0911840a641cd3f20ab678631424dc64` ;
+- HEAD code : `b4a9d2bd0911840a641cd3f20ab678631424dc64` ;
 - état au dernier contrôle : `queued` ;
 - le workflow exige désormais explicitement source + layer + pitch + zoom + bâtiment rendu.
 
@@ -180,7 +181,7 @@ Toujours préserver :
 
 ## 7. NEXT EXACT
 
-1. attendre uniquement le résultat nécessaire du run `33991033589` sans modifier le HEAD ;
+1. attendre uniquement le résultat nécessaire du run `33991033589` sans modifier le code 3D ;
 2. si échec : diagnostiquer TypeScript / build / source / rendu bâtiment, corriger puis recertifier ;
 3. si succès : récupérer l’artifact `vivre-ici-after` ;
 4. montrer les 8 nouvelles captures ;
