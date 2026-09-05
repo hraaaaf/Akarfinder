@@ -81,7 +81,7 @@ export function P4MapDecisionRail() {
         </p>
       </div>
 
-      <div className="mt-3 hidden gap-1.5 overflow-x-auto lg:flex" aria-label="Villes phares">
+      <div className="mt-3 hidden flex-wrap gap-1.5 lg:flex" aria-label="Villes phares">
         {FLAGSHIP_CITIES.map((city) => {
           const active = city === cityName;
           const href = buildMapHref(withMapLocation(navigationState, city));
