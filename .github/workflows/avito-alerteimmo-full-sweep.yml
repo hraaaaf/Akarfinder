@@ -1,0 +1,127 @@
+name: AkarFinder - Avito AlerteImmo Full Sweep
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/avito-alerteimmo-full-sweep.yml"
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: avito-alerteimmo-full-sweep
+  cancel-in-progress: false
+
+jobs:
+  shard:
+    name: shard-${{ matrix.shard }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]
+    env:
+      BASELINE_ARTIFACT_ID: "9970941650"
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Download certified 10976-ID union
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p baseline
+          gh api "/repos/${GITHUB_REPOSITORY}/actions/artifacts/${BASELINE_ARTIFACT_ID}/zip" > baseline.zip
+          unzip -q baseline.zip -d baseline
+          UNION="$(find baseline -type f -name union_ids.txt -print -quit)"
+          test -n "$UNION"
+          test "$(wc -l < "$UNION" | tr -d ' ')" = "10976"
+          echo "UNION_IDS=$UNION" >> "$GITHUB_ENV"
+      - name: Sweep assigned sitemap routes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/avito_alerteimmo_sitemap_sweep.py \
+            --baseline "$UNION_IDS" \
+            --expected-baseline 10976 \
+            --output "avito-alerteimmo-full-${{ matrix.shard }}" \
+            --shard-index "${{ matrix.shard }}" \
+            --shard-count 24 \
+            --sleep 0.25 \
+            --time-budget 720
+      - name: Upload shard proof
+        uses: actions/upload-artifact@v4
+        with:
+          name: avito-alerteimmo-full-${{ matrix.shard }}
+          path: avito-alerteimmo-full-${{ matrix.shard }}/
+          if-no-files-found: error
+          retention-days: 30
+
+  certify:
+    name: certify-full-sitemap-union
+    needs: shard
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      BASELINE_ARTIFACT_ID: "9970941650"
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Download certified 10976-ID union
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p baseline
+          gh api "/repos/${GITHUB_REPOSITORY}/actions/artifacts/${BASELINE_ARTIFACT_ID}/zip" > baseline.zip
+          unzip -q baseline.zip -d baseline
+          UNION="$(find baseline -type f -name union_ids.txt -print -quit)"
+          test -n "$UNION"
+          test "$(wc -l < "$UNION" | tr -d ' ')" = "10976"
+          echo "UNION_IDS=$UNION" >> "$GITHUB_ENV"
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: avito-alerteimmo-full-*
+          path: shards
+          merge-multiple: false
+      - name: Certify 24-shard full sitemap union
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/avito_alerteimmo_sitemap_union.py \
+            --baseline "$UNION_IDS" \
+            --expected-baseline 10976 \
+            --shards-dir shards \
+            --output avito-alerteimmo-full-certification-proof \
+            --expected-shards 24
+      - name: Publish summary
+        shell: bash
+        run: |
+          python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          d=json.load(open('avito-alerteimmo-full-certification-proof/summary.json',encoding='utf-8'))
+          print('# AlerteImmo full public sitemap sweep')
+          print(f"- Baseline: **{d['baseline_unique_ids']:,}**")
+          print(f"- AlerteImmo Avito IDs: **{d['alerteimmo_unique_avito_ids']:,}**")
+          print(f"- Net new: **{d['net_new_vs_baseline']:,}**")
+          print(f"- New union: **{d['union_unique_ids']:,}**")
+          print(f"- Sitemap routes: **{d['sitemap_urls_total']:,}**")
+          print(f"- Pages visited: **{d['pages_visited_total']:,}**")
+          print(f"- All shards complete: **{d['all_shards_complete']}**")
+          print(f"- Errors: **{d['errors_total']}**")
+          print(f"- Direct Avito requests: **{d['safety']['direct_avito_requests']}**")
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: avito-alerteimmo-full-certification-proof
+          path: avito-alerteimmo-full-certification-proof/
+          if-no-files-found: error
+          retention-days: 30
