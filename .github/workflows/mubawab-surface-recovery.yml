@@ -5,6 +5,7 @@ on:
     branches: [feat/mubawab-full-enumeration]
     paths:
       - 'scripts/acquisition/mubawab-surface-recovery.mjs'
+      - 'scripts/acquisition/mubawab-surface-recovery.test.mjs'
       - '.github/workflows/mubawab-surface-recovery.yml'
 
 jobs:
@@ -20,6 +21,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci --ignore-scripts
+      - name: Test surface parser
+        run: node scripts/acquisition/mubawab-surface-recovery.test.mjs
       - name: Restore certified Mubawab shard evidence
         env:
           GH_TOKEN: ${{ github.token }}
