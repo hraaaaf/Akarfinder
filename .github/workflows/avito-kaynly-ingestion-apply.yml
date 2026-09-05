@@ -1,0 +1,43 @@
+name: Avito Kaynly Canonical Apply
+
+on:
+  push:
+    paths:
+      - ".github/workflows/avito-kaynly-ingestion-apply.yml"
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      KAYNLY_RADAR_INGESTION_ENABLED: "true"
+      DATABASE_PROVIDER: "supabase"
+      THIRD_PARTY_DB_INGESTION_ALLOWED_HOSTS: "avito.ma"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Unit tests
+        run: node --test scripts/acquisition/__tests__/kaynly-radar-ingestion.test.mjs
+      - name: Download certified radar artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh run download 33953406309 -n avito-kaynly-radar-proof -D /tmp/kaynly-proof
+      - name: Apply 5,797 novel Avito IDs in bounded batches
+        run: node scripts/acquisition/kaynly-radar-apply.mjs /tmp/kaynly-proof/records.json
+      - name: Upload apply evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: avito-kaynly-ingestion-apply-proof
+          path: artifacts/avito-kaynly-apply/
+          if-no-files-found: error
+          retention-days: 30
