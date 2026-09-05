@@ -5,8 +5,7 @@
 **Repo : `hraaaaf/Akarfinder`**  
 **Branche : `docs/3-vivre-ici-akarfinder`**  
 **PR : `#1025` — OPEN**  
-**HEAD code 3D : `b4a9d2bd0911840a641cd3f20ab678631424dc64`**  
-**HEAD branche docs : `7ecc67fb500c10ffd042902b739e84ab621bd021`**  
+**HEAD code 3D certifié par le gate courant : `b4a9d2bd0911840a641cd3f20ab678631424dc64`**  
 **Fondation produit : `/map`**  
 **Référence UX : Bien’ici 3D, adaptée au Maroc, sans clone pixel-perfect**  
 **Vercel : aucun déploiement sans accord explicite d’Achraf.**
@@ -120,7 +119,7 @@ Maroc, 4 viewports : aucun toggle/layer 3D.
 - workflow `Vivre Ici AFTER Certification` ;
 - run `33991033589` ;
 - HEAD code `b4a9d2bd0911840a641cd3f20ab678631424dc64` ;
-- dernier état vérifié : `queued` ;
+- dernier état vérifié : TypeScript `SUCCESS`, build `in_progress` ;
 - gate durci : source + layer + pitch + zoom + bâtiment rendu.
 
 **3D-L1 non certifié tant que le run et les captures ne sont pas inspectés.**
@@ -142,7 +141,7 @@ Maroc, 4 viewports : aucun toggle/layer 3D.
 - [x] L0 BEFORE `/map`
 - [x] P0 2D architecture + implémentation + responsive
 - [x] P0 2D certification : run `33990212630`, artifact `9976424591`
-- [ ] **3D-L1 Casablanca buildings** : run `33991033589` en attente
+- [ ] **3D-L1 Casablanca buildings** : run `33991033589` en cours
 - [ ] **3D-L2 Convergence Bien’ici** : lumière, profondeur, overlays, caméra
 - [ ] **3D-L3 Biens en 3D** : seulement selon vérité géographique
 - [ ] P1 Vie locale enrichie
