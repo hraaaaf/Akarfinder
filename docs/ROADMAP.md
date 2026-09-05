@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-09-05**  
-**Statut : MARKET COVERAGE — M100K CLOSED / M200K ACTIVE**
+**Statut : MARKET COVERAGE — M150K CLOSED / M200K ACTIVE**
 
 > **SOURCE UNIQUE DE VÉRITÉ GLOBALE.** Ce fichier est la seule boussole globale AkarFinder. `docs/SESSION.md` n'est qu'un handover. Les autres specs restent locales à leur périmètre.
 
@@ -40,25 +40,36 @@ Pipeline : `DISCOVER -> RAW EVIDENCE -> NORMALIZE -> EXACT DEDUPE -> CANDIDATE L
 | Sarouty property-detail sitemaps | **5 064** | ✅ CLOSED | run `33765427351`, artifact `9897323745` |
 | Agenz source-first partial safe enumeration | **4 466** | ✅ PARTIAL | run `33764930794`, artifact `9898224274` |
 | DarAgadir + LSF + Aykana canonical-link public-sitemap rows | **6 270** | ✅ HISTORICAL L0 | PR `#223`, merge `686f71657c3d683360990d3125c19034086d83c2` |
+| Aykana MASS-X5 exact-net-new addition | **509** | ✅ HISTORICAL L0 | MASS-X5 run `31762998799` |
 | Atlas + Masaken + SoukImmobilier Common Crawl candidates | **2 163** | ✅ HISTORICAL L0 | MASS-X5 run `31762998799` |
 | Mouldar Common Crawl candidates | **1 081** | ✅ HISTORICAL L0 | MASS-X5 run `31762998799` |
 | Promo Immo Marrakech Common Crawl candidates | **943** | ✅ HISTORICAL L0 | MASS-X5 run `31762998799` |
 | Kawtar Immobilier Common Crawl candidates | **188** | ✅ HISTORICAL L0 | MASS-X5 run `31762998799` |
 | DATA-4.9B six-source structural detail URLs | **2 326** | ✅ STRUCTURAL L0 | run `31370449455`, exact-head proof |
 | Domio listing-like URLs | **2 020** | ✅ PARTIAL | run `33984423190`, artifact `9974714576` |
+| MarrakechRealty current `source_offer_seeds` | **1 944** | ✅ CURRENT L0 | Supabase read-only snapshot 2026-09-05 |
+| Barnes Marrakech current `source_offer_seeds` | **282** | ✅ CURRENT L0 | Supabase read-only snapshot 2026-09-05 |
+| 1immo current `source_offer_seeds` | **201** | ✅ CURRENT L0 | Supabase read-only snapshot 2026-09-05 |
+| Sakane current `source_offer_seeds` | **191** | ✅ CURRENT L0 | Supabase read-only snapshot 2026-09-05 |
+| Milkiya current `source_offer_seeds` | **131** | ✅ CURRENT L0 | Supabase read-only snapshot 2026-09-05 |
+| Expat current `source_offer_seeds` | **83** | ✅ CURRENT L0 | Supabase read-only snapshot 2026-09-05 |
+| 1000-annonces current `source_offer_seeds` | **66** | ✅ CURRENT L0 | Supabase read-only snapshot 2026-09-05 |
+| Housing.place current `source_offer_seeds` | **22** | ✅ CURRENT L0 | Supabase read-only snapshot 2026-09-05 |
 | ImmoDirect `/property/...` | **4** | ✅ PARKED faible rendement | run `33985219822`, artifact `9974939355` |
 
 ### Union L0/L1 minimale mesurée
 
-**149 552 représentations candidates exactes par identité source/ID ou source/URL.**
+**152 981 représentations candidates exactes par identité source/ID ou source/URL.**
 
-Calcul : `144 315 - 1 464 + 2 163 + 1 081 + 943 + 188 + 2 326 = 149 552`.
+Calcul : `149 552 + 509 + 2 920 = 152 981`.
 
-MASS-X5 finale (`31762998799`) certifie globalement `candidate_unique=51 169`, `exact_overlap=36 732`, `exact_net_new=14 437`. **Les 14 437 ne sont pas additionnés en bloc** car Avito/Mubawab/Agenz/Sarouty et d'autres domaines chevauchent déjà le scoreboard. Seuls les domaines/volumes non déjà comptés, ou les remplacements plus complets, sont retenus ici.
+MASS-X5 finale (`31762998799`) certifie globalement `candidate_unique=51 169`, `exact_overlap=36 732`, `exact_net_new=14 437`. **Les 14 437 ne sont pas additionnés en bloc** car plusieurs domaines chevauchent déjà le scoreboard. Seuls les volumes dont l'absence ou le net-new est prouvé sont retenus.
+
+DATA-40K Historical 2025, run `30126275406`, a récolté **28 248 seeds qualifiées** sur 10 domaines / 8 indexes Common Crawl et en a inséré **26 777 net-new à l'époque**. Ce total historique **n'est pas ajouté en bloc aujourd'hui** : les domaines Avito, Mubawab, Agenz, Sarouty, DarAgadir, Mouldar, Masaken, SoukImmobilier et Atlas sont déjà représentés dans le scoreboard courant. Seuls les domaines actuellement absents du scoreboard et présents dans `source_offer_seeds` sont ajoutés séparément, soit **2 920** URL identities.
 
 Les lignes historiques/structurelles sont comptées **L0 uniquement** avec provenance ; elles ne sont pas déclarées actives, fraîches ou autorisées à l'affichage.
 
-Ce n'est **pas** 149 552 biens uniques actifs. Les sources différentes peuvent représenter le même bien ; le recouvrement sera traité au clustering.
+Ce n'est **pas** 152 981 biens uniques actifs. Les sources différentes peuvent représenter le même bien ; le recouvrement sera traité au clustering.
 
 ## 4. DÉTAILS / DÉCISIONS DE LANE
 
@@ -81,11 +92,17 @@ PR `#223` : **6 270** lignes canonical-link-only, structurées : DarAgadir 5 567
 Run `31762998799` ✅ / artifact `9205427369` : **51 169** candidates sur 16 domaines, **36 732** exact overlap, **14 437** exact net-new contre `source_offer_seeds`, 0 write/fetch source/WARC/permission inference.
 
 Pour le scoreboard courant :
-- Atlas + Masaken + SoukImmobilier : **2 163** candidates, remplace l'ancien total 1 464 ;
+- Aykana : **+509 exact-net-new** distinct des 324 lignes sitemap déjà comptées ;
+- Atlas + Masaken + SoukImmobilier : **2 163** candidates ;
 - Mouldar : **1 081** ;
 - Promo Immo Marrakech : **943** ;
 - Kawtar Immobilier : **188** ;
-- les autres domaines MASS-X5 ne sont pas additionnés ici sans reconciliation avec leurs lanes déjà comptées.
+- les autres domaines MASS-X5 ne sont pas additionnés sans reconciliation exacte avec leurs lanes déjà comptées.
+
+### DATA-40K HISTORICAL 2025 — RECONCILED
+Run `30126275406` ✅ : **80/80 requêtes Common Crawl**, **28 248 qualified seeds**, **26 777 newly inserted seed rows** au snapshot du 24 juillet 2026 ; artifact `8609457925`, artifact SHA256 `d34a220d7aae303f65e8c77bd2951977072bd9d1552087e08be78000ba7508ae`.
+
+Ce lot n'est pas additionné globalement au compteur actuel, car ses domaines principaux chevauchent des lanes plus récentes et plus complètes. La réconciliation `source_offer_seeds` courante ajoute uniquement les domaines jusque-là absents du scoreboard : MarrakechRealty 1 944, Barnes 282, 1immo 201, Sakane 191, Milkiya 131, Expat 83, 1000-annonces 66, Housing.place 22 = **2 920**.
 
 ### DATA-4.9B — STRUCTURAL L0
 Run `31370449455` ✅ : **10 127 net-new sitemap identities -> 2 326 structural-detail URL representations**, 7 801 rejects, 0 identity collision. Sources : ValFoncier 709, Christie's Morocco 602, Immo-Maroc 276, AgadirImmobilier.ma 37, ProImmobilier 99, Capital Properties 603. Ces sources restent `unverified + hidden + internal_signal_only`; structure != autorisation.
@@ -111,8 +128,8 @@ Le full sweep `33985644309` a échoué sur `Network is unreachable` au chargemen
 | M25K | ✅ |
 | M50K | ✅ |
 | M100K | ✅ |
-| **M150K** | 🟡 **149 552 / 150 000**, manque **448** |
-| **M200K** | 🔵 ACTIVE — manque **50 448** |
+| **M150K** | ✅ CLOSED — **152 981** |
+| **M200K** | 🔵 ACTIVE — manque **47 019** |
 | M250K+ | STRETCH |
 
 ## 6. FILE D'EXÉCUTION — 12 LOTS
@@ -140,12 +157,12 @@ Le full sweep `33985644309` a échoué sur `Network is unreachable` au chargemen
 
 ## 8. NEXT EXACT
 
-1. Fermer **M150K** : il manque seulement **448** candidates exactes.
-2. Continuer la réconciliation historique sur les sources non encore présentes dans le scoreboard, surtout les cohorts zero-stock / long-tail certifiés.
-3. **Agenz** : mesurer la queue restante sans bypass via surfaces indirectes publiques.
-4. **Yakeey** : identifier la couche publique qui transporte les IDs/URLs des 2 377 résultats affichés ; ne rien compter avant preuve.
-5. Reprendre **MAnonce** et **Domio** seulement si la voie est fiable et rentable.
-6. Après M150K, viser le prochain réservoir >10k pour fermer les **50 448** restants vers M200K.
+1. **M150K fermé** à **152 981** ; ne plus travailler pour le seuil, uniquement pour M200K.
+2. Chercher un prochain réservoir **>10 000 net-new exact** ; priorité aux domaines absents du scoreboard et aux surfaces publiques/archives déjà qualifiées.
+3. Réconcilier les anciens lots DATA-40K / MASS par URL exacte avant tout ajout sur un domaine déjà présent.
+4. **Agenz** : mesurer la queue restante sans bypass via surfaces indirectes publiques.
+5. **Yakeey** : identifier la couche publique qui transporte les IDs/URLs des 2 377 résultats affichés ; ne rien compter avant preuve.
+6. Reprendre **MAnonce** et **Domio** seulement si la voie est fiable et rentable.
 7. À M200K : unifier Candidate Lake, exact dedupe, provenance, layer, freshness, clusters et mesure de recouvrement inter-source.
 
-**Boussole actuelle : 149 552 -> 150 000 -> 200 000 -> 250 000+.**
+**Boussole actuelle : 152 981 -> 200 000 -> 250 000+.**
