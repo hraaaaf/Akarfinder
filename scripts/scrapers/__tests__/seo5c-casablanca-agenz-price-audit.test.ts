@@ -39,6 +39,10 @@ test("SEO5C candidate contract accepts only Casablanca Agenz sale rows with surf
     isSeo5cCasablancaAgenzCandidate(candidate({ canonical_url: "https://agenz.ma/fr/annonces/immo-rabat/vente-appartements/agdal/123456" })),
     false,
   );
+  assert.equal(
+    isSeo5cCasablancaAgenzCandidate(candidate({ canonical_url: "https://agenz.ma/fr/annonces/immo-casablanca/location-bureaux/franceville/414945" })),
+    false,
+  );
   assert.equal(isSeo5cCasablancaAgenzCandidate(candidate({ canonical_url: "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/maarif" })), false);
 });
 
