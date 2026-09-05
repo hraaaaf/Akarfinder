@@ -1,0 +1,123 @@
+name: SEO5C Casablanca Agenz Price Audit
+
+on:
+  pull_request:
+    paths:
+      - "scripts/scrapers/seo5c-casablanca-agenz-price-audit.ts"
+      - "scripts/scrapers/__tests__/seo5c-casablanca-agenz-price-audit.test.ts"
+      - ".github/workflows/seo5c-casablanca-agenz-price-audit.yml"
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: Maximum Agenz detail pages to audit
+        required: true
+        default: "48"
+        type: choice
+        options:
+          - "10"
+          - "25"
+          - "48"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: seo5c-casablanca-agenz-price-audit
+  cancel-in-progress: false
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout candidate ref
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Latest-commit scope check
+        run: git diff --name-only HEAD^ HEAD
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install
+        run: npm ci
+      - name: SEO5C read-only audit contracts
+        run: npx tsx --test scripts/scrapers/__tests__/seo5c-casablanca-agenz-price-audit.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+  live-dry-run:
+    if: github.event_name == 'workflow_dispatch'
+    needs: contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      THIRD_PARTY_DB_INGESTION_ENABLED: "true"
+      SEO5C_AGENZ_PRICE_LIMIT: ${{ inputs.limit }}
+    steps:
+      - name: Validate bounded read-only inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          case "$SEO5C_AGENZ_PRICE_LIMIT" in 10|25|48) ;; *) exit 1 ;; esac
+          test -n "$SUPABASE_URL"
+          test -n "$SUPABASE_SERVICE_ROLE_KEY"
+
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Execute bounded Agenz price dry-run
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx tsx scripts/scrapers/seo5c-casablanca-agenz-price-audit.ts | tee seo5c-casablanca-agenz-price-audit.json
+
+      - name: Verify zero-write proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('node:fs');
+          const payload = JSON.parse(fs.readFileSync('seo5c-casablanca-agenz-price-audit.json', 'utf8'));
+          if (payload.mode !== 'read_only_audit') throw new Error(`unexpected mode: ${payload.mode}`);
+          if (payload.productionWriteCount !== 0) throw new Error(`write invariant violated: ${payload.productionWriteCount}`);
+          if (payload.source !== 'agenz.ma') throw new Error(`unexpected source: ${payload.source}`);
+          if (payload.city !== 'Casablanca') throw new Error(`unexpected city: ${payload.city}`);
+          if (payload.intent !== 'sale') throw new Error(`unexpected intent: ${payload.intent}`);
+          if (![10, 25, 48].includes(payload.limit)) throw new Error(`unexpected limit: ${payload.limit}`);
+          if (!Array.isArray(payload.evidence)) throw new Error('missing evidence array');
+          if (payload.recoverablePrice > payload.fetched) throw new Error('recoverable price count exceeds fetched count');
+          console.log(JSON.stringify({
+            verdict: 'SEO5C_CASABLANCA_AGENZ_PRICE_READ_ONLY_VERIFIED',
+            productionWriteCount: payload.productionWriteCount,
+            detailCandidates: payload.detailCandidates,
+            fetched: payload.fetched,
+            robotsSkipped: payload.robotsSkipped,
+            failed: payload.failed,
+            recoverablePrice: payload.recoverablePrice,
+          }));
+          NODE
+
+      - name: Upload dry-run proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: seo5c-casablanca-agenz-price-audit
+          path: seo5c-casablanca-agenz-price-audit.json
+          if-no-files-found: warn
+          retention-days: 14
