@@ -1,0 +1,51 @@
+name: Vivre Ici L0 BEFORE
+
+on:
+  push:
+    branches:
+      - docs/3-vivre-ici-akarfinder
+    paths:
+      - 'scripts/vivre-ici-l0-before-capture.mjs'
+      - '.github/workflows/vivre-ici-l0-before.yml'
+      - '3-vivre-ici-akarfinder.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  capture-before:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Capture live /search BEFORE
+        env:
+          AKARFINDER_LIVE_URL: https://akarfinder.vercel.app
+        run: node scripts/vivre-ici-l0-before-capture.mjs
+      - name: Verify proof
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const s = JSON.parse(fs.readFileSync('artifacts/vivre-ici-l0-before/summary.json','utf8'));
+          if (s.zeroDbWritesByScript !== true) throw new Error('write safety not proven');
+          if (s.zeroDeploymentActionsByScript !== true) throw new Error('deployment safety not proven');
+          if (s.results.length !== 4) throw new Error('expected 4 viewports');
+          for (const r of s.results) {
+            if (!r.httpStatus || r.httpStatus >= 400) throw new Error(`bad HTTP ${r.viewport.name}: ${r.httpStatus}`);
+            if (!fs.existsSync(r.screenshot)) throw new Error(`missing screenshot ${r.screenshot}`);
+          }
+          console.log(JSON.stringify(s,null,2));
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: vivre-ici-l0-before
+          path: artifacts/vivre-ici-l0-before/
+          if-no-files-found: error
