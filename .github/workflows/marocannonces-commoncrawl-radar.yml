@@ -1,0 +1,39 @@
+name: AkarFinder - MarocAnnonces Common Crawl Radar
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/acquisition/marocannonces-commoncrawl-radar.py'
+      - '.github/workflows/marocannonces-commoncrawl-radar.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  radar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Query Common Crawl URL Index only
+        run: python scripts/acquisition/marocannonces-commoncrawl-radar.py
+      - name: Verify proof
+        run: |
+          python - <<'PY'
+          import json
+          s=json.load(open('artifacts/marocannonces-commoncrawl-radar/summary.json'))
+          assert s['zero_db_writes'] is True
+          assert s['direct_marocannonces_requests'] == 0
+          assert s['requests'] >= 1
+          print(json.dumps(s,indent=2,ensure_ascii=False))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: marocannonces-commoncrawl-radar-proof
+          path: artifacts/marocannonces-commoncrawl-radar/
+          if-no-files-found: error
