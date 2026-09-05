@@ -1,0 +1,92 @@
+name: AkarFinder - Certify Avito Common Crawl Real Estate
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/avito-commoncrawl-realestate-certify.yml"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      BASELINE_ARTIFACT_ID: "9965997820"
+      RAW_COMMONCRAWL_ARTIFACT_ID: "9968710621"
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download certified inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p baseline raw-proof
+          gh api "/repos/${GITHUB_REPOSITORY}/actions/artifacts/${BASELINE_ARTIFACT_ID}/zip" > baseline.zip
+          gh api "/repos/${GITHUB_REPOSITORY}/actions/artifacts/${RAW_COMMONCRAWL_ARTIFACT_ID}/zip" > raw-proof.zip
+          unzip -q baseline.zip -d baseline
+          unzip -q raw-proof.zip -d raw-proof
+          BASELINE_RECORDS="$(find baseline -type f -name records.json -print -quit)"
+          test -n "$BASELINE_RECORDS"
+          test -f raw-proof/summary.json
+          test -f raw-proof/commoncrawl_records.jsonl
+          echo "BASELINE_RECORDS=$BASELINE_RECORDS" >> "$GITHUB_ENV"
+
+      - name: Verify immutable input facts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - "$BASELINE_RECORDS" <<'PY'
+          import json, sys
+          b = json.load(open(sys.argv[1], encoding="utf-8"))
+          r = json.load(open("raw-proof/summary.json", encoding="utf-8"))
+          assert b.get("unique_avito_ids") == 5807
+          assert len(b.get("records", [])) == 5807
+          assert r.get("discovered_unique_avito_ids") == 24386
+          assert r.get("safety", {}).get("direct_avito_requests") == 0
+          assert r.get("errors") == []
+          assert r.get("limits", {}).get("truncated") is False
+          print("Inputs verified: Kaynly=5807, CommonCrawl raw=24386, direct Avito requests=0")
+          PY
+
+      - name: Certify AkarFinder real-estate scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/avito_commoncrawl_realestate_filter.py \
+            --raw-proof raw-proof \
+            --baseline "$BASELINE_RECORDS" \
+            --output avito-commoncrawl-realestate-proof
+
+      - name: Publish certification summary
+        shell: bash
+        run: |
+          python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          d = json.load(open("avito-commoncrawl-realestate-proof/summary.json", encoding="utf-8"))
+          print("# P0-F - Avito Common Crawl Real-Estate Certification")
+          print()
+          print(f"- Kaynly baseline: **{d['baseline_unique_avito_ids']:,}**")
+          print(f"- Common Crawl real-estate IDs: **{d['commoncrawl_realestate_unique_avito_ids']:,}**")
+          print(f"- Overlap: **{d['overlap_with_kaynly']:,}**")
+          print(f"- Net new: **{d['net_new_vs_kaynly']:,}**")
+          print(f"- Union: **{d['union_unique_avito_ids']:,}**")
+          print(f"- Gain vs Kaynly: **{d['gain_vs_kaynly_pct']:.2f}%**")
+          print(f"- Non-real-estate raw IDs excluded: **{d['raw_non_realestate_ids_excluded']:,}**")
+          print(f"- Direct Avito requests: **{d['safety']['direct_avito_requests']}**")
+          PY
+
+      - name: Upload certification artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: avito-commoncrawl-realestate-certification-proof
+          path: avito-commoncrawl-realestate-proof/
+          if-no-files-found: error
+          retention-days: 30
