@@ -1,0 +1,35 @@
+name: AkarFinder - SoukImmobilier Open Data Probe
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/soukimmobilier-open-data-probe.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Probe public CSV only
+        run: python scripts/acquisition/soukimmobilier-open-data-probe.py
+      - name: Verify read-only proof
+        run: |
+          python - <<'PY'
+          import json
+          p=json.load(open('artifacts/soukimmobilier-open-data-probe/summary.json'))
+          assert p['zero_db_writes'] is True
+          assert p['direct_detail_fetches'] == 0
+          print('SOUKIMMOBILIER OPEN DATA PROBE: PASS')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: soukimmobilier-open-data-probe-proof
+          path: artifacts/soukimmobilier-open-data-probe/
+          retention-days: 30
