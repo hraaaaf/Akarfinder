@@ -4,6 +4,9 @@ on:
   push:
     paths:
       - ".github/workflows/avito-kaynly-ingestion-apply.yml"
+      - "scripts/acquisition/kaynly-radar-apply.mjs"
+      - "scripts/acquisition/kaynly-radar-ingestion.mjs"
+      - "scripts/acquisition/__tests__/kaynly-radar-ingestion.test.mjs"
   workflow_dispatch:
 
 permissions:
