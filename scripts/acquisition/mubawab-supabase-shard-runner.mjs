@@ -12,6 +12,7 @@ import {
 
 export const DEFAULT_DB_PAGE_SIZE = 1000;
 export const DEFAULT_MANIFEST_LIMIT = 50;
+export const DEFAULT_REQUEST_DELAY_MS = 2750;
 
 export function selectSafeShardManifest(rows) {
   const unique = new Map();
@@ -42,10 +43,6 @@ export async function loadMubawabShardManifestFromSupabase({
     url.searchParams.set('select', 'canonical_url');
     url.searchParams.set('source_domain', 'eq.mubawab.ma');
     url.searchParams.set('canonical_url', 'not.is.null');
-    // Deliberately avoid ORDER BY here. Production EXPLAIN showed ordering by
-    // canonical_url forces a broad index scan (~100s), while the source_domain
-    // index serves an unordered 1000-row page in ~0.5s. Sorting/dedupe happens
-    // in memory after this small (~15k rows) source slice is loaded.
     url.searchParams.set('limit', String(pageSize));
     url.searchParams.set('offset', String(offset));
     const response = await fetchImpl(url, {
@@ -73,6 +70,7 @@ export async function runShardManifest({
   fetchImpl = globalThis.fetch,
   manifestLimit = DEFAULT_MANIFEST_LIMIT,
   maxRequests = manifestLimit,
+  requestDelayMs = DEFAULT_REQUEST_DELAY_MS,
 } = {}) {
   const manifest = await loadMubawabShardManifestFromSupabase({ supabaseUrl, serviceRoleKey, fetchImpl });
   const roots = manifest.shardUrls.slice(0, manifestLimit);
@@ -81,6 +79,7 @@ export async function runShardManifest({
     fetchImpl,
     maxRequests,
     maxDepth: 0,
+    requestDelayMs,
   });
   return {
     ...enumeration,
@@ -94,11 +93,13 @@ export async function runShardManifest({
 export async function runCli() {
   const manifestLimit = Number.parseInt(process.env.MUBAWAB_MANIFEST_LIMIT || String(DEFAULT_MANIFEST_LIMIT), 10);
   const maxRequests = Number.parseInt(process.env.MUBAWAB_MAX_REQUESTS || String(manifestLimit), 10);
+  const requestDelayMs = Number.parseInt(process.env.MUBAWAB_REQUEST_DELAY_MS || String(DEFAULT_REQUEST_DELAY_MS), 10);
   const report = await runShardManifest({
     supabaseUrl: process.env.SUPABASE_URL,
     serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
     manifestLimit,
     maxRequests,
+    requestDelayMs,
   });
   report.startedAt = new Date().toISOString();
   report.success = report.zeroDbWrites
@@ -120,6 +121,7 @@ export async function runCli() {
     `- Robots-safe shard URLs: **${report.safeShardCount}**`,
     `- Selected shards: **${report.selectedShardCount}**`,
     `- HTTP requests: **${report.requestCount}**`,
+    `- Request delay: **${report.requestDelayMs} ms**`,
     `- Unique listing URLs: **${report.uniqueListingUrlCount}**`,
     `- Early stop: **${report.stoppedEarly || 'none'}**`,
     '',
@@ -127,7 +129,9 @@ export async function runCli() {
     '- Supabase access is read-only in this runner.',
     '- Only public robots-safe Mubawab shard URLs are fetched.',
     '- Deepest known shards are replayed first.',
-    '- Listing URLs are deduplicated by Mubawab listing ID.',
+    '- Request starts are paced by the configured floor.',
+    '- Each successful shard preserves its observed listing IDs/URLs for attribution.',
+    '- Listing URLs are globally deduplicated by Mubawab listing ID.',
     '- HTTP 429 stops enumeration immediately.',
   ].join('\n'));
   console.log(JSON.stringify({ ...report, listingUrls: undefined, shards: undefined }, null, 2));
