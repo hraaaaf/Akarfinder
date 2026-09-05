@@ -42,7 +42,7 @@ function ensureBuildingLayer(map: MapLibreMap): void {
     minzoom: 13,
     filter: ["all", ["!=", ["get", "hide_3d"], true], ["has", "render_height"]],
     paint: {
-      "fill-extrusion-color": "#D8E1E8",
+      "fill-extrusion-color": "#C5CFD8",
       "fill-extrusion-height": [
         "interpolate",
         ["linear"],
@@ -53,7 +53,7 @@ function ensureBuildingLayer(map: MapLibreMap): void {
         ["get", "render_height"],
       ],
       "fill-extrusion-base": ["coalesce", ["get", "render_min_height"], 0],
-      "fill-extrusion-opacity": 0.9,
+      "fill-extrusion-opacity": 0.96,
     },
   }, firstLabelLayerId(map));
 }
