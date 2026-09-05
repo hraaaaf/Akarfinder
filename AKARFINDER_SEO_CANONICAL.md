@@ -8,6 +8,7 @@
 **Repo : `hraaaaf/Akarfinder`**  
 **Main de départ SEO-4 UI : `f72b312fb0183218e879d0e4ef2c80e9116da60c`**  
 **Branche active : `feat/seo4-city-intent-landings-v1`**  
+**PR active : #1009**  
 **Preuve baseline : `AKARFINDER_SEO_AUDIT_2026-09-04.md`**
 
 ---
@@ -42,64 +43,81 @@ Snapshot revalidé : les 10 couples `5 villes SEO V1 × acheter/louer` passent l
 - SEO-3B2 — metadata ville fail-closed — #1002 ✅
 - SEO-3B3 — gate quartier — #1003 ✅
 - SEO-3C — `/neuf` fail-closed — #1004 ✅ code / **PROD PENDING**
-- SEO-4 PREP — contrat ville×intention — #1006 ✅, merge `503dd1caa12ee396db22f1682fde80b8b803324e`
+- SEO-4 PREP — contrat ville×intention — #1006 ✅
 - Closeout SEO-4 PREP — #1007 ✅, `main=f72b312f…`
 
 Aucun déploiement Vercel autorisé/effectué dans ces lots.
 
 ---
 
-## 4. SEO-4 UI — BEFORE / GOAL / RÉFÉRENCE
+## 4. SEO-4 UI — PROTOCOLE VISUEL
 
-### BEFORE — PROUVÉ ✅
+### BEFORE ✅
 
-Capture LIVE `/immobilier/casablanca` produite via GitHub Actions, run **33945702517**, artifact **9963263361**.
+LIVE `/immobilier/casablanca` capturé via GitHub Actions :
 
-Viewports : **390 / 430 / 768 / 1280**.
-
-Preuve technique associée :
-
+- run **33945702517** ;
+- artifact **9963263361** ;
+- viewports **390 / 430 / 768 / 1280** ;
 - HTTP 200 ;
 - H1 `Casablanca, en données utiles` ;
 - robots `index, follow` ;
 - canonical `https://akarfinder.vercel.app/immobilier/casablanca`.
 
-### Goal visuel
+### Goal
 
-Créer `/immobilier/{ville}/acheter` et `/immobilier/{ville}/louer` comme extensions naturelles de la page ville :
+Créer `/immobilier/{ville}/acheter` et `/immobilier/{ville}/louer` comme extensions naturelles de la page ville : intention immédiate, preuve stock/source explicite, résultats plus tôt sur mobile, Search préfiltré, indexation pilotée par gate, aucune duplication de grille.
 
-- intention visible immédiatement ;
-- preuve stock/source non assimilée au marché total ;
-- résultats plus tôt, surtout mobile ;
-- même langage visuel AkarFinder ;
-- CTA Search préfiltré + carte ;
-- metadata/indexation pilotées par le gate 20/3 ;
-- aucune ferme à pages ni duplication de grille.
+### Référence
 
-### Référence retenue
+Shell visuel ville existant + `GeoResultPreview` existant. Suppression du grand bloc carte dans le hero intention ; carte conservée comme CTA secondaire.
 
-Réutiliser le shell actuel + `GeoResultPreview` existant. Pour les pages intention, supprimer le grand bloc carte du hero afin de faire remonter les résultats sur mobile ; garder la carte comme CTA secondaire.
+### AFTER ✅
+
+Le vrai composant `CityIntentLanding` a été rendu dans un harness local GitHub Actions non committé :
+
+- run **33946136029** ;
+- artifact **9963390475** ;
+- viewports **390 / 430 / 768 / 1280** ;
+- HTTP 200 sur les 4 captures ;
+- H1 `Acheter à Casablanca` sur les 4 captures.
+
+Comparaison vérifiée :
+
+- 390/430 : intention immédiatement lisible, preuve 20/3 compacte, résultats remontés nettement avant le niveau où se trouvait la carte dans le BEFORE, aucun overflow observé ;
+- 768 : grille 2 colonnes cohérente ;
+- 1280 : hero intention + preuve équilibrés, grille 3 colonnes compacte ;
+- le bandeau mobile fixe visible au milieu des screenshots full-page est un artefact de stitching Playwright des éléments `position: fixed`, pas une rupture de layout observée.
+
+**Score visuel de revue : 9,5/10.**
+
+Les PR temporaires de capture #1008, #1010 et #1011 ont été fermées sans merge.
 
 ---
 
-## 5. SEO-4 UI — IMPLÉMENTATION EN COURS
+## 5. SEO-4 UI — IMPLÉMENTATION #1009
 
-Branche : `feat/seo4-city-intent-landings-v1`.
-
-Implémenté avant certification :
+Livré sur `feat/seo4-city-intent-landings-v1` :
 
 - `components/seo/CityIntentLanding.tsx` ;
 - builder serveur `lib/seo-city-pages/intent-route.tsx` ;
 - routes statiques `app/immobilier/[city]/acheter/page.tsx` et `louer/page.tsx` ;
 - self-canonical + metadata transactionnelles ;
 - `robots index/noindex` via `getSeoCityIntentIndexability()` ;
-- `revalidate=3600` ;
+- `revalidate = 3600` en littéral Next.js ;
 - Search préfiltré `buy/rent` ;
-- sitemap ville×intention publié uniquement si le sous-gate correspondant passe ;
-- tests source/contrat ajoutés dans `seo-city-pages.test.ts` ;
-- aucun accès image ajouté ; aucune DB write.
+- sitemap ville×intention uniquement si le sous-gate correspondant passe ;
+- classification UI Inventory ajoutée pour les deux nouvelles routes dynamiques ;
+- tests source/contrat ajoutés ;
+- aucune DB write ;
+- aucun nouveau droit image.
 
-**État : non certifié tant que CI + AFTER visuel ne sont pas passés.**
+Corrections de certification déjà appliquées :
+
+1. UI Inventory : ajout des fixtures `/immobilier/rabat/acheter` et `/immobilier/rabat/louer` ;
+2. Next build : `revalidate` remplacé par la valeur littérale `3600` exigée par Next.js.
+
+**État : visuel validé ; certification CI finale du HEAD #1009 encore à verrouiller avant merge.**
 
 ---
 
@@ -127,11 +145,9 @@ Autorisation explicite obligatoire pour :
 
 ## 8. NEXT EXACT
 
-1. ouvrir PR SEO-4 UI ;
-2. certifier tests/TypeScript/build ;
-3. produire AFTER 390/430/768/1280 via GitHub Actions sans Vercel ;
-4. comparer BEFORE/AFTER + score visuel ;
-5. corriger si nécessaire ;
-6. closeout canonique ;
-7. merge si preuves suffisantes ;
-8. production reste derrière human gate Vercel.
+1. certifier le HEAD final de #1009 après ce closeout ;
+2. si échec : diagnostiquer/corriger puis recertifier ;
+3. si vert : merge #1009 ;
+4. post-merge vérifier `main` + absence de déploiement Vercel ;
+5. production reste derrière human gate Vercel ;
+6. lot suivant : SEO-5 data moat prix/m² / volumes / fraîcheur, sans ouvrir de nouvelle surface faible.
