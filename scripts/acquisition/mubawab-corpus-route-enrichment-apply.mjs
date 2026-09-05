@@ -40,7 +40,7 @@ function headers(key) {
 async function getAll(base, key) {
   const out = [];
   for (let offset = 0;; offset += 1000) {
-    const r = await fetch(`${base}/rest/v1/mubawab_listing_corpus_v1?select=source_listing_id,evidence_status,metadata&limit=1000&offset=${offset}&evidence_status=eq.current_verified`, { headers: headers(key) });
+    const r = await fetch(`${base}/rest/v1/mubawab_listing_corpus_v1?select=source_listing_id,source_domain,evidence_status,evidence_observed_at,metadata&limit=1000&offset=${offset}&evidence_status=eq.current_verified`, { headers: headers(key) });
     if (!r.ok) throw new Error(`corpus read failed ${r.status}: ${await r.text()}`);
     const batch = await r.json(); out.push(...batch); if (batch.length < 1000) break;
   }
@@ -88,6 +88,9 @@ const outputRows = corpus.map(row => {
   if (!evidence) throw new Error(`missing route evidence for ${row.source_listing_id}`);
   return {
     source_listing_id: row.source_listing_id,
+    source_domain: row.source_domain,
+    evidence_status: row.evidence_status,
+    evidence_observed_at: row.evidence_observed_at,
     metadata: {
       ...(row.metadata || {}),
       route_enrichment_v1: {
