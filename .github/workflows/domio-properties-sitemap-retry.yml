@@ -1,0 +1,36 @@
+name: AkarFinder - Domio Properties Sitemap Retry
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/domio-properties-sitemap-retry.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  retry:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Retry Domio property sitemap only
+        run: python scripts/acquisition/domio-properties-sitemap-retry.py
+      - name: Verify read-only proof
+        run: |
+          python - <<'PY'
+          import json
+          p=json.load(open('artifacts/domio-properties-sitemap-retry/summary.json'))
+          assert p['zero_db_writes'] is True
+          assert p['robots_allowed'] is True
+          assert p['success'] is True
+          print(json.dumps({k:p[k] for k in ['attempts','status','locs_total','unique_property_urls','errors']},indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: domio-properties-sitemap-retry-proof
+          path: artifacts/domio-properties-sitemap-retry
+          retention-days: 30
