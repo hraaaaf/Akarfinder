@@ -94,7 +94,7 @@ export function NationalMapRouter({ initialState }: Props) {
         onSelectCity={selectCity}
         onBackToMorocco={backToMorocco}
       />
-      <National3DBuildingsLayer citySlug={selectedCitySlug} />
+      <National3DBuildingsLayer citySlug={selectedCitySlug} districtSlug={selectedDistrictSlug} />
       <NationalNeighborhoodOverlayBridge
         citySlug={selectedCitySlug}
         districtSlug={selectedDistrictSlug}
