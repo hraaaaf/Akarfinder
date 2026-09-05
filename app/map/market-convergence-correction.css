@@ -65,3 +65,72 @@
     grid-template-columns: minmax(0, 3fr) minmax(360px, 2fr);
   }
 }
+
+/* VIVRE ICI 3D-L2 — make the city world the primary surface.
+   Casablanca 3D already has a dedicated decision rail and district CTA, so the
+   map must not be buried under duplicate chrome. */
+[data-p4-map-layout]:has([data-vivre-ici-3d-toggle])
+  [data-akarfinder-national-map]
+  > section[aria-label="Navigation territoriale nationale"] {
+  width: min(320px, calc(100vw - 32px)) !important;
+  padding: 10px 12px !important;
+  border-radius: 18px !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  box-shadow: 0 12px 34px rgba(15, 35, 66, 0.12) !important;
+}
+
+[data-p4-map-layout]:has([data-vivre-ici-3d-toggle])
+  [data-akarfinder-national-map]
+  > section[aria-label="Navigation territoriale nationale"]
+  h1 + p,
+[data-p4-map-layout]:has([data-vivre-ici-3d-toggle])
+  [data-akarfinder-national-map]
+  > section[aria-label="Navigation territoriale nationale"]
+  > a {
+  display: none !important;
+}
+
+@media (max-width: 1023px) {
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-map-decision-rail {
+    display: none !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle])
+    [data-akarfinder-national-map]
+    > section[aria-label="Navigation territoriale nationale"] {
+    left: 12px !important;
+    right: auto !important;
+    top: 12px !important;
+    width: min(300px, calc(100vw - 24px)) !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle])
+    [data-akarfinder-national-neighborhood-overlay]
+    > div:first-child {
+    top: 84px !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) [data-vivre-ici-3d-toggle] {
+    top: 140px !important;
+  }
+}
+
+@media (max-width: 767px) {
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle])
+    [data-akarfinder-neighborhood-preview] {
+    bottom: 84px !important;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle])
+    [data-akarfinder-neighborhood-preview] {
+    bottom: 16px !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) [data-vivre-ici-3d-toggle] {
+    top: 96px !important;
+  }
+}
