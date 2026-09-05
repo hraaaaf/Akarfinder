@@ -33,40 +33,38 @@ Pipeline : `DISCOVER -> RAW EVIDENCE -> NORMALIZE -> EXACT DEDUPE -> CANDIDATE L
 | Source/lane | Représentations candidates retenues | Statut | Preuve |
 |---|---:|---|---|
 | Avito indirect — AlerteImmo/Kaynly/CC union | **19 739** | ✅ | run `33971383335`, artifact `9971118875` |
-| Akaar `/listing/...` | **76 843** | ✅ | run `33984287820`, artifact `9974670013`, digest `sha256:286130c0acf8a338c5dd26167282bd6590e7203b3c3316ed23b1dc9da7122300` |
-| Mubawab canonical URLs | **7 595** | ✅ | run `33984246637`, artifact `9974774486`, digest `sha256:dcc3d358991a006c3a0f1a8e35db3dd49b343a5b82f0e21e3905cd38ade3ebf4` |
-| Domio listing-like URLs | **2 020** | ✅ partial | run `33984423190`, artifact `9974714576`, digest `sha256:95f81667afd69c4d86e1a5130d4bcbf8daddff50e4acc18995ae2c044a404d1d` |
+| Akaar `/listing/...` | **76 843** | ✅ | run `33984287820`, artifact `9974670013` |
+| Mubawab canonical URLs | **7 595** | ✅ | run `33984246637`, artifact `9974774486` |
+| Domio listing-like URLs | **2 020** | ✅ partial | run `33984423190`, artifact `9974714576` |
+| ImmoDirect `/property/...` | **4** | ✅ PARKED faible rendement | run `33985219822`, artifact `9974939355`, digest `sha256:1fcac464815bd6752c7de4efb28c5799bae863a3fe7c6f4e81e083c1c5050e1f` |
 
 ### Union L0/L1 minimale mesurée
 
-**106 197 représentations candidates exactes par identité URL/source.**
+**106 201 représentations candidates exactes par identité URL/source.**
 
-Calcul : `19 739 + 76 843 + 7 595 + 2 020 = 106 197`.
+Calcul : `19 739 + 76 843 + 7 595 + 2 020 + 4 = 106 201`.
 
-Ce n'est **pas** 106 197 biens uniques actifs. Les sources différentes peuvent représenter le même bien ; ce recouvrement sera traité au clustering, pas détruit à la collecte.
+Ce n'est **pas** 106 201 biens uniques actifs. Les sources différentes peuvent représenter le même bien ; le recouvrement sera traité au clustering.
 
-## 4. DÉTAILS UTILES
+## 4. DÉTAILS / DÉCISIONS DE LANE
 
-### Mubawab — réconciliation CLOSED
+### Mubawab — CLOSED
 
-Run `33984246637` ✅ :
-- 317 084 lignes DB scannées read-only ;
-- 14 778 lignes Mubawab ;
-- **7 595 URLs canoniques uniques** ;
-- 7 183 doublons exacts ;
-- 5 686 `unclassified`, 1 301 `accepted`, 608 `rejected` ;
-- 2 540 vues 30j ; 178 vues 7j ;
-- 3 661 shard-like ;
-- le claim historique `>30k Mubawab` n'est **pas prouvé** par le corpus actuel.
+Run `33984246637` ✅ : 14 778 lignes, **7 595 URLs uniques**, 7 183 doublons exacts. Le claim historique `>30k` n'est pas prouvé par le corpus actuel.
 
-### Domio — premier sweep CLOSED PARTIAL
+### Domio — CLOSED PARTIAL
 
-Run `33984423190` ✅ :
-- 17 439 URLs sitemap publiques observées ;
-- 17 623 union avec liens HTML ;
-- **2 020 listing-like retenues** ;
-- `sitemap-properties.xml` a timeout : lane non exhaustive et à reprendre plus tard ;
-- autres milliers d'URLs sont catégories/quartiers/multilingues et ne sont pas comptées comme listings.
+Run `33984423190` ✅ : 17 439 URLs sitemap, **2 020 listing-like**. `sitemap-properties.xml` a timeout ; reprise résiliente plus tard.
+
+### ImmoDirect — PARKED faible rendement
+
+Run `33985219822` ✅ : 7 XML, 74 URLs sitemap, **4 property URLs**, 0 erreur. Rendement <300 : park selon règle canonique.
+
+### MarocAnnonces direct pagination — PARKED / robots
+
+Run `33985150107` : la pagination numérique construite (`/categorie/16/Immobilier-vente/{page}.html`) est `robots_disallowed`. **0 candidate comptée** depuis cette lane directe. Aucun contournement n'est autorisé.
+
+Pivot actif : **Common Crawl URL Index** ciblé sur les URLs publiques historiques `/annonce/{id}/...`, avec **0 requête directe MarocAnnonces**. Run `33985242057`.
 
 ## 5. JALONS
 
@@ -76,8 +74,8 @@ Run `33984423190` ✅ :
 | M20K | ✅ |
 | M25K | ✅ |
 | M50K | ✅ |
-| **M100K** | ✅ **106 197** |
-| **M200K** | 🔵 ACTIVE — manque **93 803** |
+| **M100K** | ✅ **106 201** |
+| **M200K** | 🔵 ACTIVE — manque **93 799** |
 | M250K+ | STRETCH |
 
 ## 6. FILE D'EXÉCUTION — 12 LOTS
@@ -87,11 +85,11 @@ Run `33984423190` ✅ :
 3. ✅ Mubawab reconciliation — 7 595 uniques.
 4. ✅ Akaar full sitemap — 76 843 listing URLs.
 5. ✅ Domio first sitemap — 2 020 listing-like ; reprise properties à prévoir.
-6. 🔵 **MarocAnnonces mass pagination sweep** — next exact.
-7. 🔵 **ImmoDirect sitemap expansion**.
-8. 🟡 MAnonce route expansion.
+6. 🔵 **MarocAnnonces indirect — Common Crawl radar** ; direct pagination PARKED robots.
+7. ✅ **ImmoDirect sitemap** — 4, PARKED faible rendement.
+8. 🔵 **MAnonce route expansion**.
 9. 🟡 Agenz / Yakeey / autres surfaces autorisées.
-10. 🟡 Common Crawl multi-collection + search indexes + archives.
+10. 🔵 Common Crawl multi-collection + search indexes + archives.
 11. ⏳ Candidate Lake unifié : exact dedupe + provenance + layer + freshness + clusters.
 12. ⛔ Gate humain avant toute écriture prod/Vercel.
 
@@ -105,10 +103,10 @@ Run `33984423190` ✅ :
 
 ## 8. NEXT EXACT
 
-1. **MarocAnnonces mass pagination sweep** : extraire les IDs publics `/annonce/{id}/...` sur la pagination immobilier vente, checkpointé et sharded.
-2. En parallèle **ImmoDirect sitemap expansion**.
-3. Reprendre `Domio sitemap-properties.xml` avec stratégie résiliente.
-4. Continuer jusqu'à **M200K**, sans pause au M100K.
-5. Unifier ensuite le Candidate Lake et mesurer le recouvrement inter-source.
+1. Fermer **MarocAnnonces Common Crawl radar** et ajouter uniquement les IDs prouvés.
+2. Ouvrir **MAnonce** puis **Agenz/Yakeey** selon rendement public.
+3. Lancer une passe **Common Crawl multi-collection** sur les sources déjà connues pour rattraper le bruit/historique.
+4. Reprendre Domio properties avec stratégie résiliente en parallèle seulement si rentable.
+5. Continuer jusqu'à **M200K**, sans pause intermédiaire.
 
-**Boussole actuelle : 106 197 -> 200 000 -> 250 000+.**
+**Boussole actuelle : 106 201 -> 200 000 -> 250 000+.**
