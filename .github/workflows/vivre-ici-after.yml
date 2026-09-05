@@ -68,6 +68,15 @@ jobs:
               if (r.poiControls !== 1) throw new Error(`missing POI controls ${r.viewport.name}`);
               if (r.poiAvailableToggle + r.poiUnavailable !== 1) throw new Error(`POI state is not truthful/exclusive ${r.viewport.name}`);
             }
+            if (r.threeDExpected) {
+              if (r.threeDToggle !== 1) throw new Error(`missing 3D toggle ${r.viewport.name}`);
+              if (!r.threeDLayer || !r.threeDSource) throw new Error(`missing 3D layer/source ${r.viewport.name}`);
+              if (r.mapPitch < 45) throw new Error(`3D pitch too low ${r.viewport.name}: ${r.mapPitch}`);
+              if (r.mapZoom < 13) throw new Error(`3D zoom too low ${r.viewport.name}: ${r.mapZoom}`);
+              if (r.renderedBuildingCount < 1) throw new Error(`no rendered 3D buildings ${r.viewport.name}`);
+            } else {
+              if (r.threeDToggle !== 0 || r.threeDLayer) throw new Error(`national view must remain 2D ${r.viewport.name}`);
+            }
             if (!fs.existsSync(r.screenshot)) throw new Error(`missing screenshot ${r.screenshot}`);
           }
           console.log(JSON.stringify(s,null,2));
