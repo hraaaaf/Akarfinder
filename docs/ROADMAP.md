@@ -34,23 +34,31 @@ Pipeline : `DISCOVER -> RAW EVIDENCE -> NORMALIZE -> EXACT DEDUPE -> CANDIDATE L
 |---|---:|---|---|
 | Avito indirect — AlerteImmo/Kaynly/CC union | **19 739** | ✅ | run `33971383335`, artifact `9971118875` |
 | Akaar `/listing/...` | **76 843** | ✅ | run `33984287820`, artifact `9974670013` |
-| Mubawab canonical URLs | **7 595** | ✅ | run `33984246637`, artifact `9974774486` |
+| Mubawab FULL robots-safe shard union | **18 445** | ✅ CLOSED | run `33964834762`, artifact `9969651653`, digest `sha256:82dcfe2cadf9de95128373e8ecd6d2c0828cb125fc044e0231a4fa681cd4db67` |
 | Domio listing-like URLs | **2 020** | ✅ partial | run `33984423190`, artifact `9974714576` |
 | ImmoDirect `/property/...` | **4** | ✅ PARKED faible rendement | run `33985219822`, artifact `9974939355`, digest `sha256:1fcac464815bd6752c7de4efb28c5799bae863a3fe7c6f4e81e083c1c5050e1f` |
 
 ### Union L0/L1 minimale mesurée
 
-**106 201 représentations candidates exactes par identité URL/source.**
+**117 051 représentations candidates exactes par identité URL/source.**
 
-Calcul : `19 739 + 76 843 + 7 595 + 2 020 + 4 = 106 201`.
+Calcul : `19 739 + 76 843 + 18 445 + 2 020 + 4 = 117 051`.
 
-Ce n'est **pas** 106 201 biens uniques actifs. Les sources différentes peuvent représenter le même bien ; le recouvrement sera traité au clustering.
+Ce n'est **pas** 117 051 biens uniques actifs. Les sources différentes peuvent représenter le même bien ; le recouvrement sera traité au clustering.
 
 ## 4. DÉTAILS / DÉCISIONS DE LANE
 
-### Mubawab — CLOSED
+### Mubawab — FULL CLOSED
 
-Run `33984246637` ✅ : 14 778 lignes, **7 595 URLs uniques**, 7 183 doublons exacts. Le claim historique `>30k` n'est pas prouvé par le corpus actuel.
+Run `33964834762` ✅ strict cumulative certification :
+- **3 174 / 3 174 shards robots-safe terminés** ;
+- `remainingShardCount=0`, `queueRemaining=0`, `stoppedEarly=null` ;
+- **18 445 IDs listing uniques agrégés** ;
+- 2 311 shards issus du checkpoint + 863 terminés dans le run final ;
+- `requestDelayMs=2750` ;
+- **zeroDbWrites=true**.
+
+Le précédent audit DB `33984246637` à 7 595 URLs canoniques reste une réconciliation de table, mais il est **superseded pour le KPI de découverte Mubawab** par la preuve cumulative FULL à 18 445.
 
 ### Domio — CLOSED PARTIAL
 
@@ -64,7 +72,13 @@ Run `33985219822` ✅ : 7 XML, 74 URLs sitemap, **4 property URLs**, 0 erreur. R
 
 Run `33985150107` : la pagination numérique construite (`/categorie/16/Immobilier-vente/{page}.html`) est `robots_disallowed`. **0 candidate comptée** depuis cette lane directe. Aucun contournement n'est autorisé.
 
-Pivot actif : **Common Crawl URL Index** ciblé sur les URLs publiques historiques `/annonce/{id}/...`, avec **0 requête directe MarocAnnonces**. Run `33985242057`.
+Pivot actif : **Common Crawl Parquet URL Index** ciblé sur `/annonce/{id}/...`, avec **0 requête directe MarocAnnonces**. Run `33985530196`.
+
+### MAnonce — FULL SWEEP ACTIVE
+
+Probe `33985588326` ✅ : robots autorise les routes testées ; fiches détectées sous le motif `/<slug>_<ID>.htm` ; pagination publique `?page=N` ; 6 sous-catégories immobilières identifiées.
+
+Full sweep run `33985644309` 🔵 en cours, read-only, robots-check par page, déduplication par ID.
 
 ## 5. JALONS
 
@@ -74,20 +88,20 @@ Pivot actif : **Common Crawl URL Index** ciblé sur les URLs publiques historiqu
 | M20K | ✅ |
 | M25K | ✅ |
 | M50K | ✅ |
-| **M100K** | ✅ **106 201** |
-| **M200K** | 🔵 ACTIVE — manque **93 799** |
+| **M100K** | ✅ **117 051** |
+| **M200K** | 🔵 ACTIVE — manque **82 949** |
 | M250K+ | STRETCH |
 
 ## 6. FILE D'EXÉCUTION — 12 LOTS
 
 1. ✅ AlerteImmo full / Avito indirect.
 2. ✅ Probe multi-sites.
-3. ✅ Mubawab reconciliation — 7 595 uniques.
+3. ✅ **Mubawab FULL — 18 445 IDs, 3 174/3 174 shards.**
 4. ✅ Akaar full sitemap — 76 843 listing URLs.
 5. ✅ Domio first sitemap — 2 020 listing-like ; reprise properties à prévoir.
-6. 🔵 **MarocAnnonces indirect — Common Crawl radar** ; direct pagination PARKED robots.
-7. ✅ **ImmoDirect sitemap** — 4, PARKED faible rendement.
-8. 🔵 **MAnonce route expansion**.
+6. 🔵 **MarocAnnonces indirect — Common Crawl Parquet radar** ; direct pagination PARKED robots.
+7. ✅ ImmoDirect sitemap — 4, PARKED faible rendement.
+8. 🔵 **MAnonce full real-estate sweep**.
 9. 🟡 Agenz / Yakeey / autres surfaces autorisées.
 10. 🔵 Common Crawl multi-collection + search indexes + archives.
 11. ⏳ Candidate Lake unifié : exact dedupe + provenance + layer + freshness + clusters.
@@ -103,10 +117,10 @@ Pivot actif : **Common Crawl URL Index** ciblé sur les URLs publiques historiqu
 
 ## 8. NEXT EXACT
 
-1. Fermer **MarocAnnonces Common Crawl radar** et ajouter uniquement les IDs prouvés.
-2. Ouvrir **MAnonce** puis **Agenz/Yakeey** selon rendement public.
-3. Lancer une passe **Common Crawl multi-collection** sur les sources déjà connues pour rattraper le bruit/historique.
+1. Fermer **MAnonce full sweep** et **MarocAnnonces Common Crawl Parquet radar** ; ajouter uniquement les IDs prouvés.
+2. Ouvrir **Yakeey** puis **Agenz** sur leurs surfaces publiques autorisées selon rendement.
+3. Lancer une passe **Common Crawl multi-collection** sur les sources déjà connues pour rattraper historique/bruit utile.
 4. Reprendre Domio properties avec stratégie résiliente en parallèle seulement si rentable.
 5. Continuer jusqu'à **M200K**, sans pause intermédiaire.
 
-**Boussole actuelle : 106 201 -> 200 000 -> 250 000+.**
+**Boussole actuelle : 117 051 -> 200 000 -> 250 000+.**
