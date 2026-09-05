@@ -25,7 +25,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
-      - name: Capture live /search BEFORE
+      - name: Capture live Vivre ici foundation /map BEFORE
         env:
           AKARFINDER_LIVE_URL: https://akarfinder.vercel.app
         run: node scripts/vivre-ici-l0-before-capture.mjs
@@ -34,6 +34,7 @@ jobs:
           node - <<'NODE'
           const fs = require('fs');
           const s = JSON.parse(fs.readFileSync('artifacts/vivre-ici-l0-before/summary.json','utf8'));
+          if (s.surface !== 'vivre-ici-foundation-/map') throw new Error(`wrong surface: ${s.surface}`);
           if (s.zeroDbWritesByScript !== true) throw new Error('write safety not proven');
           if (s.zeroDeploymentActionsByScript !== true) throw new Error('deployment safety not proven');
           if (s.results.length !== 4) throw new Error('expected 4 viewports');
