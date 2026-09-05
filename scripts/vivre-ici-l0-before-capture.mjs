@@ -3,7 +3,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 
 const baseUrl = process.env.AKARFINDER_LIVE_URL || 'https://akarfinder.vercel.app';
-const targetUrl = `${baseUrl.replace(/\/$/, '')}/search`;
+const targetUrl = `${baseUrl.replace(/\/$/, '')}/map`;
 const outDir = 'artifacts/vivre-ici-l0-before';
 
 const viewports = [
@@ -28,7 +28,7 @@ try {
     const finalUrl = page.url();
     const title = await page.title();
     const bodyText = await page.locator('body').innerText().catch(() => '');
-    const file = path.join(outDir, `search-before-${vp.name}.png`);
+    const file = path.join(outDir, `map-before-${vp.name}.png`);
     await page.screenshot({ path: file, fullPage: true });
 
     results.push({
@@ -49,6 +49,7 @@ try {
 const summary = {
   generatedAt: new Date().toISOString(),
   mode: 'read-only-live-before',
+  surface: 'vivre-ici-foundation-/map',
   zeroDbWritesByScript: true,
   zeroDeploymentActionsByScript: true,
   targetUrl,
