@@ -3,20 +3,22 @@
 **Statut : ACTIVE — CADRAGE / BEFORE À CERTIFIER**  
 **Dernière mise à jour : 2026-09-05**  
 **Repo : `hraaaaf/Akarfinder`**  
-**Branche canonique : `docs/3-vivre-ici-akarfinder`**  
-**Base vérifiée : `main@0c3e3ea3ea86b5cba97a72f67ba0af347215241d`**  
-**Référence produit : `https://www.bienici.com/`**  
-**Vercel : aucun déploiement autorisé sans accord explicite d’Achraf.**
+**Branche : `docs/3-vivre-ici-akarfinder`**  
+**PR : `#1025` — OPEN**  
+**HEAD canonique : `7db26d9a47a919fcc138db12b572fc7d563ef5e6` avant cette synchronisation**  
+**Base de création vérifiée : `main@0c3e3ea3ea86b5cba97a72f67ba0af347215241d`**  
+**Référence : `https://www.bienici.com/`**  
+**Vercel : aucun déploiement sans accord explicite d’Achraf.**
 
 ---
 
 ## 0. RÈGLE DE REPRISE
 
-À toute reprise de ce chantier :
+À toute reprise :
 
 1. lire ce fichier ;
 2. vérifier `main`, branche, PR, HEAD et CI ;
-3. vérifier l’état réel de `/search` et de la carte avant toute conclusion ;
+3. vérifier l’état réel de `/search` et de la carte ;
 4. ne jamais déduire un état LIVE depuis le seul code ;
 5. pour tout changement UI/UX : `BEFORE → Goal → référence/mockup → implémentation → AFTER mêmes viewports → comparaison + tests → score visuel`.
 
@@ -24,294 +26,271 @@
 
 ## 1. GOAL
 
-Transformer la recherche AkarFinder en une expérience **map-first contextualisée**, inspirée du meilleur de Bien’ici mais adaptée au Maroc et à l’avantage compétitif propre d’AkarFinder.
+Transformer la recherche AkarFinder en une expérience **map-first contextualisée**, inspirée du meilleur de Bien’ici mais adaptée au Maroc et aux avantages propres d’AkarFinder.
 
 Doctrine produit :
 
 > **Chercher un endroit, pas seulement une annonce.**
 
-Le chantier doit permettre à l’utilisateur de comprendre simultanément :
+L’utilisateur doit comprendre simultanément :
 
-- **où** se trouvent les biens ;
-- **combien** ils coûtent ;
-- **ce qui existe autour** ;
-- **comment comparer les zones** ;
-- **d’où vient chaque annonce** et à quel niveau elle est fiable.
+- où se trouvent les biens ;
+- combien ils coûtent ;
+- ce qui existe autour ;
+- comment comparer les zones ;
+- d’où vient chaque annonce et à quel niveau elle est fiable.
 
-AkarFinder ne doit pas devenir un clone pixel-perfect de Bien’ici. La référence sert à verrouiller le niveau d’expérience attendu, pas à copier son identité.
+AkarFinder ne doit pas devenir un clone pixel-perfect de Bien’ici. La référence fixe le niveau d’expérience attendu, pas l’identité visuelle.
 
 ---
 
-## 2. SUCCÈS OBSERVABLE
-
-### P0 — Search + Map synchronisés
+## 2. SUCCÈS OBSERVABLE — P0
 
 Le P0 est réussi uniquement si les preuves montrent :
 
 1. desktop : liste et carte réellement utilisables ensemble ;
-2. mobile : comportement carte/liste explicitement conçu pour 390/430 px, pas un desktop compressé ;
-3. sélection d’une carte annonce ↔ mise en évidence correspondante dans la carte ;
-4. mouvement/zoom carte ↔ résultats cohérents avec la zone visible selon le contrat produit retenu ;
+2. mobile : comportement carte/liste conçu pour 390/430 px ;
+3. sélection annonce ↔ carte synchronisée ;
+4. mouvement/zoom carte ↔ résultats cohérents selon le contrat produit retenu ;
 5. clusters et/ou marqueurs de prix lisibles ;
 6. filtres essentiels immédiatement accessibles ;
 7. état URL/recherche déterministe et partageable pour les champs non privés ;
-8. aucune régression ranking, politique média, provenance, déduplication ou règles de publication ;
+8. aucune régression ranking, média, provenance, déduplication ou publication ;
 9. responsive propre à `390×844`, `430×932`, `768×900`, `1280×900` ;
 10. aucune collision/clipping/overflow critique ;
-11. comportement clavier/accessibilité de base vérifié ;
-12. comparaison visuelle BEFORE / TARGET / AFTER inspectée humainement.
+11. accessibilité/clavier de base vérifiés ;
+12. comparaison BEFORE / TARGET / AFTER inspectée.
 
-### Preuve minimale P0
+### Preuve minimale
 
 - captures BEFORE réelles sur les 4 viewports ;
-- référence/mockup cible documenté ;
+- référence/mockup cible ;
 - tests interactionnels Search/Map ;
 - TypeScript + build ;
-- captures AFTER sur les mêmes 4 viewports ;
+- captures AFTER mêmes viewports ;
 - comparaison BEFORE/TARGET/AFTER ;
 - score visuel documenté ;
-- aucune déclaration LIVE sans preuve LIVE distincte.
+- preuve LIVE distincte avant toute déclaration LIVE.
 
 ---
 
 ## 3. DIFFÉRENCIATEURS AKARFINDER À PRÉSERVER
 
-Le chantier doit renforcer, et non sacrifier :
-
 - agrégation multi-sources ;
 - déduplication multi-portails ;
 - provenance explicite ;
-- score de confiance / qualité lorsque prouvé ;
-- distinction entre données vérifiées, incomplètes et à confirmer ;
-- redirection vers la source lorsque le contrat de publication l’impose ;
-- personnalisation `Mon Projet / Akar Sense` déjà livrée ;
-- langage visuel des annonces indexées sans photo déjà certifié.
+- score confiance/qualité uniquement quand prouvé ;
+- distinction vérifié / incomplet / à confirmer ;
+- redirection vers la source quand le contrat de publication l’impose ;
+- `Mon Projet / Akar Sense` déjà livré ;
+- langage visuel certifié des annonces indexées sans photo.
 
-Le produit cible est donc : **Bien’ici dans l’ergonomie cartographique + l’intelligence multi-sources propre à AkarFinder**.
+Produit cible : **ergonomie cartographique de référence + intelligence multi-sources AkarFinder**.
 
 ---
 
 ## 4. PÉRIMÈTRE
 
-### P0 — À faire maintenant
+### P0 — maintenant
 
-- architecture liste + carte synchronisée ;
-- comportement responsive desktop/tablette/mobile ;
+- liste + carte synchronisées ;
+- responsive desktop/tablette/mobile ;
 - clusters / marqueurs de prix ;
 - sélection croisée liste ↔ carte ;
 - filtres principaux ;
-- états loading / empty / error ;
-- conservation de la vérité des données et de la provenance ;
-- instrumentation/testabilité suffisante pour certifier l’expérience.
+- loading / empty / error ;
+- vérité des données et provenance ;
+- instrumentation/testabilité pour certification.
 
-### P1 — Après certification P0
+### P1 — après P0 certifié
 
-- POI utiles : écoles, transports, santé, commerces, espaces verts selon données autorisées et fiables ;
+- POI utiles selon sources fiables/autorisées ;
 - dessin de zone ;
-- recherche par temps de trajet si une source fiable et soutenable existe ;
+- temps de trajet si source soutenable ;
 - couches quartier / marché ;
-- contextualisation de la vie locale sans fabriquer de précision.
+- vie locale sans fausse précision.
 
-### P2 — Seulement après P0/P1 solides
+### P2 — seulement après P0/P1
 
 - 3D ;
 - bâtiments enrichis ;
 - ensoleillement ;
-- autres effets immersifs.
+- immersion avancée.
 
-La 3D n’est pas un prérequis. Un cube qui tourne ne répare pas une mauvaise recherche. L’humanité survivra à cette privation temporaire.
+La 3D n’est pas un prérequis. Un cube qui tourne ne répare toujours pas une mauvaise recherche.
 
 ### Hors périmètre immédiat
 
-- clone visuel exact de Bien’ici ;
-- refonte du ranking sans preuve séparée ;
-- mutation DB juste pour embellir la carte ;
-- changement de politique source ;
+- clone exact Bien’ici ;
+- refonte ranking sans lot séparé ;
+- mutation DB pour embellissement ;
+- changement politique source ;
 - déploiement Vercel sans autorisation explicite.
 
 ---
 
-## 5. PORTEFEUILLE AKARFINDER — TRI AU 2026-09-05
+## 5. PORTEFEUILLE — DÉCISION 2026-09-05
 
-Le portefeuille est volontairement ramené à **3 chantiers actifs principaux**.
+Le portefeuille principal est ramené à **3 chantiers actifs**.
 
 ### 1 — DATA / ACQUISITION — GARDER
 
-**État : ACTIF.**
+Canonique actuel : `data-ingestion/canonical.md`, lane `feat/data-ingestion-canonical`, PR `#996`.
 
-Source de reprise principale : `data-ingestion/canonical.md` sur la lane `feat/data-ingestion-canonical` / PR `#996`.
-
-À intégrer dans ce même chantier, et non à compter comme projets indépendants :
+Lanes rattachées :
 
 - `#997` — full Mubawab enumeration ;
 - `#1016` — ingestion canonique des 5 807 IDs Avito Kaynly ;
-- `#956` — Common Crawl observation refresh, à revalider sur le main courant ;
-- anciens lots DATA encore nécessaires uniquement après comparaison avec l’architecture actuelle.
+- `#956` — Common Crawl observation refresh, à revalider sur main.
 
 Décision : **GARDER / FUSIONNER sous un seul chantier DATA**.
 
 ### 2 — SEO — GARDER
 
-**État : ACTIF.**
-
 Canonique : `AKARFINDER_SEO_CANONICAL.md`.
 
-État vérifié le 2026-09-05 : SEO-5D a écrit les 34 prix Agenz Casablanca prouvés ; le blocage courant est le bridge géographique ODM, pas la récupération des prix.
+État vérifié au 2026-09-05 : SEO-5D a obtenu/écrit les prix Agenz prévus ; le bridge géographique reste le blocage documenté.
 
-`#938` appartient à ce chantier et doit être **revalidée/fusionnée dans SEO**, pas maintenue comme chantier autonome.
+`#938` appartient à SEO et doit être revalidée/fusionnée, pas traitée comme projet autonome.
 
 Décision : **GARDER**.
 
-### 3 — VIVRE ICI AKARFINDER — GARDER / NOUVEAU CANONIQUE
+### 3 — VIVRE ICI AKARFINDER — GARDER
 
-**État : ACTIF.**
+Canonique : ce fichier / PR `#1025`.
 
-Canonique : ce fichier.
-
-Il absorbe les objectifs encore pertinents de :
+Il absorbe les objectifs utiles des anciennes PR :
 
 - `#822` — Map + Listing Standard N0 ;
 - `#797` — Refonte carte reference.
 
-Ces deux PR ne doivent plus piloter un chantier parallèle.
+Les deux PR ont été **fermées sans merge le 2026-09-05 comme supersédées**.
 
-Décision : **SUPERSEDE / ABSORBER DANS LE CHANTIER 3**.
-
----
-
-## 6. CHANTIERS DÉJÀ FERMÉS — NE PAS RÉOUVRIR COMME PROJETS
-
-### Search Indexed Visual
-
-`AKARFINDER_SEARCH_INDEXED_VISUAL_CANONICAL.md` : lots fermés et merges documentés.
-
-### Search Indexed Visual Polish P1
-
-`AKARFINDER_SEARCH_INDEXED_VISUAL_POLISH_P1_CANONICAL.md` contient un `NEXT EXACT` devenu périmé, mais la PR `#945` est réellement **MERGED** depuis le 2026-08-28 (`b36111644ea5d50e3205e8313c8c6bc6b8885a47`).
-
-Décision : **FERMÉ — canonique historique à ne plus traiter comme actif**.
-
-### Search Property Type Visual System
-
-`AKARFINDER_SEARCH_PROPERTY_TYPE_VISUALS_CANONICAL.md` : `CLOSED`, PR `#951` merged, preuve LIVE documentée.
-
-Décision : **FERMÉ**.
-
-### Mon Projet / Akar Sense
-
-`AKARFINDER_MON_PROJET_PERSONALIZATION_CANONICAL.md` : `CLOSED`, PR `#985` merged, activation production déjà documentée.
-
-Décision : **FERMÉ**.
+Décision : **GARDER ce chantier comme unique source de vérité Search/Map future**.
 
 ---
 
-## 7. PR OUVERTES : GARDER, RÉCONCILIER OU ABANDONNER
+## 6. CHANTIERS SEARCH DÉJÀ FERMÉS
 
-### À garder comme support, pas comme chantier
+Ne pas les réouvrir comme projets parallèles :
 
-- `#991` — réduction de charge CI : **MAINTENANCE / REVALIDER SUR MAIN** ;
-- `#936` — garde Data Trust quartier/POI : **SÉCURITÉ DE DONNÉES / REVALIDER SUR MAIN**.
+- `AKARFINDER_SEARCH_INDEXED_VISUAL_CANONICAL.md` — fermé ;
+- `AKARFINDER_SEARCH_INDEXED_VISUAL_POLISH_P1_CANONICAL.md` — texte historique partiellement périmé mais PR `#945` réellement merged le 2026-08-28, merge `b36111644ea5d50e3205e8313c8c6bc6b8885a47` ;
+- `AKARFINDER_SEARCH_PROPERTY_TYPE_VISUALS_CANONICAL.md` — CLOSED, PR `#951` merged ;
+- `AKARFINDER_MON_PROJET_PERSONALIZATION_CANONICAL.md` — CLOSED, PR `#985` merged.
+
+---
+
+## 7. TRI DES PR OUVERTES / HISTORIQUES
+
+### Support à garder, pas chantier autonome
+
+- `#991` — CI : **MAINTENANCE / REVALIDER SUR MAIN** ;
+- `#936` — Data Trust quartier/POI : **REVALIDER SUR MAIN** ;
+- `#938` — SEO : **RATTACHER À SEO** ;
+- `#956` — Common Crawl refresh : **RATTACHER À DATA**.
 
 ### Réconciliation obligatoire avant fermeture
 
-Ces lanes ont touché ou déclarent avoir touché un état production/DB ; elles ne doivent pas être jetées comme de vieux post-it :
+Ces lanes déclarent un état production/DB déjà modifié. Ne pas fermer aveuglément :
 
-- `#454` — Registry Agadir : **RECONCILIATION REQUIRED** explicite ;
+- `#454` — Registry Agadir, `RECONCILIATION REQUIRED` explicite ;
 - `#622` — REAL-LISTINGS-ONLY, migration production déclarée appliquée ;
 - `#487` — Rabat neighborhood visual library, migration production déclarée appliquée ;
-- stack historique `#110 / #115 / #118 / #121 / #124 / #125 / #126` — plusieurs migrations/activations Supabase internes déclarées appliquées.
+- stack `#110 / #115 / #118 / #121 / #124 / #125 / #126` — migrations/activations Supabase internes déclarées appliquées.
 
-Décision : **FUSIONNER LA DETTE DE RÉCONCILIATION DANS DATA, puis fermer une fois l’état courant prouvé**.
+Décision : **rattacher la dette à DATA, vérifier état actuel repo + DB, puis fermer/reconstruire proprement**.
 
-### Sécurité à conserver en backlog
+### Sécurité à conserver
 
 - `#310` — auth/session/RLS pro : **SECURITY BACKLOG — REVALIDATE BEFORE RESUME**.
 
-Décision : **NE PAS ABANDONNER SANS RÉAUDIT**.
+### B2B à consolider ultérieurement
 
-### À abandonner / superséder comme lanes actives
+- `#644 / #645 / #653` — anciennes Partner Pages.
 
-- `#995` — détail Avito/MarocAnnonces bloqué par 403/robots, stratégie déjà pivotée vers des voies autorisées ;
-- `#474 / #478` — ancienne architecture MASS-FIRST / DNS hold, à archiver après conservation de ses invariants de sécurité dans DATA ;
+Décision : **un seul futur audit B2B depuis main**, pas trois chantiers.
+
+### Fermées le 2026-09-05 comme supersédées / archivées
+
+- `#995` — détail Avito/MarocAnnonces bloqué, stratégie pivotée ;
+- `#474 / #478` — ancienne architecture MASS-FIRST / DNS hold ;
 - `#319` — adaptive partition ancien ;
-- `#289` — ancien objectif A5.4 ;
-- `#255` — ancienne baseline DATA P0 ;
+- `#289` — ancien A5.4 ;
+- `#255` — ancienne baseline DATA ;
 - `#133` — ancien public-index delta ;
-- `#113` — ancien Search Gateway certification ;
+- `#113` — ancienne certification Search Gateway ;
 - `#54` — ancien bulk seed confirmation ;
-- `#383` — gouvernance déjà elle-même marquée superseded candidate.
+- `#383` — ancienne gouvernance ;
+- `#796 / #785 / #752` — anciennes preuves/propositions géographiques ;
+- `#671` — ancienne lane Favoris ;
+- `#628` — ancienne lane visuels Maârif.
 
-Décision : **ARCHIVE / CLOSE-AS-SUPERSEDED après pointeur vers DATA actuel**, sans réintroduire leur ancien code par merge tardif.
-
-### Anciennes lanes cartographiques / géographiques
-
-- `#796`, `#785`, `#752` : preuves/propositions historiques utiles, mais pas des chantiers actifs.
-
-Décision : **ARCHIVE ; réutiliser seulement les preuves encore valides**.
-
-### B2B
-
-- `#644`, `#645`, `#653` : chaîne ancienne Partner Pages.
-
-Décision : **UN SEUL FUTUR BACKLOG B2B À RÉAUDITER SUR MAIN**, pas trois chantiers actifs.
-
-### Anciennes lanes UI
-
-- `#671` — Favoris ;
-- `#628` — visuels Maârif.
-
-Décision : **BACKLOG / ARCHIVE**, hors chemin critique Vivre Ici.
+Aucune de ces fermetures n’a réalisé de merge, de mutation DB ou de déploiement.
 
 ---
 
 ## 8. ACTIFS SEARCH À PRÉSERVER PENDANT LA REFONTE
 
-Le chantier Vivre Ici part de l’existant au lieu de le démolir joyeusement puis de redécouvrir trois semaines plus tard pourquoi il existait.
-
-À préserver tant qu’aucune preuve contraire ne justifie un changement :
-
 - `SearchListingCardDark` et sa politique média ;
-- système `IndexedPropertyTypeArtwork` pour `public_indexed` sans photo ;
+- `IndexedPropertyTypeArtwork` pour `public_indexed` sans photo ;
 - provenance / CTA source ;
-- ranking et personnalisation hors scope du P0 visuel ;
-- `Mon Projet / Akar Sense` comme couche optionnelle ;
-- règles de publication et de vérité source ;
-- responsive déjà certifié des cartes comme baseline de non-régression.
+- ranking et personnalisation hors scope P0 visuel ;
+- `Mon Projet / Akar Sense` optionnel ;
+- règles de publication / vérité source ;
+- responsive certifié des cartes comme baseline de non-régression.
 
 ---
 
-## 9. ROADMAP DU CHANTIER 3
+## 9. ROADMAP CHANTIER 3
 
-- [ ] **L0 — BEFORE / audit actuel `/search`** : captures réelles 390/430/768/1280 + inventaire code/carte/interactions.
-- [ ] **L1 — TARGET** : référence Bien’ici décortiquée + mockup AkarFinder desktop/mobile + critères visuels verrouillés.
-- [ ] **L2 — Architecture P0** : contrat liste/carte, viewport, URL/query state, markers/clusters, erreurs/loading.
-- [ ] **L3 — Implémentation Search + Map** : synchronisation liste ↔ carte sans régression de données.
-- [ ] **L4 — Mobile-first** : interactions 390/430, bascule/overlay/sheet selon TARGET verrouillé.
-- [ ] **L5 — Certification** : tests + AFTER mêmes viewports + comparaison + score visuel + closeout.
-- [ ] **P1 — Contexte de quartier** : POI / dessin de zone / mobilité selon sources certifiées.
-- [ ] **P2 — Immersion** : 3D / ensoleillement uniquement si le ROI et les données sont prouvés.
+- [ ] **L0 — BEFORE / audit `/search`** : captures 390/430/768/1280 + inventaire code/carte/interactions.
+- [ ] **L1 — TARGET** : Bien’ici décortiqué + mockup AkarFinder desktop/mobile + critères verrouillés.
+- [ ] **L2 — Architecture P0** : liste/carte, viewport, URL/query state, markers/clusters, erreurs/loading.
+- [ ] **L3 — Implémentation Search + Map** : synchronisation sans régression de données.
+- [ ] **L4 — Mobile-first** : interactions 390/430 selon TARGET.
+- [ ] **L5 — Certification** : tests + AFTER + comparaison + score visuel + closeout.
+- [ ] **P1 — Contexte quartier** : POI / zone / mobilité selon sources certifiées.
+- [ ] **P2 — Immersion** : 3D / ensoleillement seulement si ROI et données prouvés.
 
-Aucun pourcentage global n’est déclaré à ce stade : le BEFORE du nouveau chantier n’est pas encore certifié.
-
----
-
-## 10. NEXT EXACT
-
-1. capturer le vrai `/search` actuel aux viewports `390×844`, `430×932`, `768×900`, `1280×900` ;
-2. montrer les captures ;
-3. auditer l’architecture Search/Map existante sur le HEAD courant ;
-4. comparer précisément avec la référence Bien’ici ;
-5. produire le TARGET/mockup AkarFinder avant toute modification visuelle.
-
-**Aucune implémentation UI du chantier 3 ne commence avant cette preuve BEFORE.**
+**Avancement global : non chiffré.** Le BEFORE du nouveau chantier n’est pas encore certifié.
 
 ---
 
-## 11. ÉTAT GIT AU DÉMARRAGE
+## 10. PREUVES DU LOT DE CRÉATION
 
-- repo : `hraaaaf/Akarfinder` ;
-- base vérifiée : `main@0c3e3ea3ea86b5cba97a72f67ba0af347215241d` ;
-- branche : `docs/3-vivre-ici-akarfinder` ;
-- PR du chantier 3 : à créer après écriture du présent canonique ;
-- DB : aucune mutation effectuée par la création de ce chantier ;
-- Vercel : aucun déploiement demandé ou effectué.
+### Git
+
+- branche créée depuis `main@0c3e3ea3ea86b5cba97a72f67ba0af347215241d` ;
+- commit initial canonique : `7db26d9a47a919fcc138db12b572fc7d563ef5e6` ;
+- PR : `#1025` ;
+- le `main` avance en parallèle sur DATA ; le chantier 3 doit donc toujours recontrôler le delta avant merge.
+
+### CI sur le commit initial `7db26d9…`
+
+6/6 workflows observés **SUCCESS** :
+
+- `33985867133` — Phase 1 P0 Closure Gate ;
+- `33985867170` — Canonical Baseline Compile Validation ;
+- `33985867144` — Phase 1 P1 Final Sweep Gate ;
+- `33985867118` — UX Gate 0 Contracts ;
+- `33985867135` — Phase 1 P2 Residual Closure Gate ;
+- `33985867143` — Canonical Baseline Validation.
+
+### Production
+
+- DB : aucune mutation liée à ce lot ;
+- Vercel : aucun déploiement demandé ou effectué par ce lot.
+
+---
+
+## 11. NEXT EXACT
+
+1. vérifier le nouveau HEAD de la PR `#1025` et sa CI après cette synchronisation ;
+2. capturer le vrai `/search` actuel en `390×844`, `430×932`, `768×900`, `1280×900` ;
+3. montrer les captures ;
+4. auditer l’architecture Search/Map existante sur le HEAD courant ;
+5. comparer précisément avec Bien’ici ;
+6. produire le TARGET/mockup AkarFinder avant toute modification visuelle.
+
+**Aucune implémentation UI du chantier 3 avant la preuve BEFORE.**
