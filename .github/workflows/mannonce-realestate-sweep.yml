@@ -1,0 +1,39 @@
+name: AkarFinder - MAnonce Real Estate Sweep
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/acquisition/mannonce-realestate-sweep.py'
+      - '.github/workflows/mannonce-realestate-sweep.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Sweep allowed MAnonce real-estate categories
+        run: python scripts/acquisition/mannonce-realestate-sweep.py
+      - name: Verify proof
+        run: |
+          python - <<'PY'
+          import json
+          s=json.load(open('artifacts/mannonce-realestate-sweep/summary.json'))
+          assert s['zero_db_writes'] is True
+          assert s['robots_checked'] is True
+          assert s['categories_processed'] >= 1
+          print(json.dumps(s,indent=2,ensure_ascii=False))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mannonce-realestate-sweep-proof
+          path: artifacts/mannonce-realestate-sweep/
+          if-no-files-found: error
