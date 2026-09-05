@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  DEFAULT_REQUEST_DELAY_MS,
   loadMubawabShardManifestFromSupabase,
   runShardManifest,
   selectSafeShardManifest,
@@ -20,6 +21,7 @@ test('safe manifest keeps only public robots-safe Mubawab shards and prioritizes
   assert.equal(shards.length, 4);
   assert.ok(shards[0].includes('/fr/sd/'));
   assert.ok(shards.at(-1).includes('/fr/cc/'));
+  assert.equal(DEFAULT_REQUEST_DELAY_MS, 2750);
 });
 
 test('Supabase manifest loader paginates read-only source rows without ORDER BY', async () => {
@@ -60,7 +62,7 @@ test('Supabase manifest loader paginates read-only source rows without ORDER BY'
   assert.equal(calls[0].options.headers.range, undefined);
 });
 
-test('bounded manifest replay enumerates selected shards and remains zero-write', async () => {
+test('bounded manifest replay enumerates selected shards, preserves attribution and remains zero-write', async () => {
   let dbCall = 0;
   const fetchImpl = async (url) => {
     const asString = String(url);
@@ -90,10 +92,14 @@ test('bounded manifest replay enumerates selected shards and remains zero-write'
     fetchImpl,
     manifestLimit: 2,
     maxRequests: 2,
+    requestDelayMs: 0,
   });
   assert.equal(report.zeroDbWrites, true);
   assert.equal(report.safeShardCount, 2);
   assert.equal(report.selectedShardCount, 2);
   assert.equal(report.requestCount, 2);
+  assert.equal(report.requestDelayMs, 0);
   assert.equal(report.uniqueListingUrlCount, 1);
+  assert.deepEqual(report.shards[0].listingIds, ['12345']);
+  assert.deepEqual(report.shards[1].listingIds, ['12345']);
 });
