@@ -160,15 +160,15 @@ export function deriveSourceDisplayPolicy(rawSourceName: string | null): V95Disp
 
   if (src === "avito") {
     return {
-      source_display_type: "audit_source",
-      source_badge: "market_signal",
-      display_depth: "market_signal_only",
+      source_display_type: "public_index_source",
+      source_badge: "public_indexed",
+      display_depth: "limited_preview",
       thumbnail_policy: "no_listing_image",
       original_source_required: true,
-      allowed_ctas: ["view_market_signal", "view_source"],
-      source_attribution_label: "Signal marche",
+      allowed_ctas: ["view_original", "view_source", "compare"],
+      source_attribution_label: "Source publique indexee",
       display_policy_reason:
-        "Source utilisee uniquement comme signal marche. Aucune annonce n'est republiee.",
+        "Annonce publique indexee en apercu limite, sans image tierce ni contact, avec redirection vers la source originale.",
       display_images: { policy: "no_listing_image", urls: [] },
     };
   }
@@ -188,7 +188,7 @@ export function mapDbRowToListing(
   const fieldConfidenceMetadata = parseJsonSafe<FieldConfidenceMetadata>(row.field_confidence);
   const persistedExternalPolicy = derivePersistedExternalDisplayPolicy(fieldConfidenceMetadata);
   // A missing price must never become 0 (which every consumer must now
-  // null-guard) — see lib/listings/utils.ts formatPrice() for the display
+  // null-guard) â€” see lib/listings/utils.ts formatPrice() for the display
   // convention this preserves through to the API/UI layer.
   const priceMad = row.price_mad ?? null;
   const surface = row.surface_m2 ?? 0;
@@ -330,7 +330,7 @@ export function mapDbRowToListing(
         ...(serpPolicy.production_block_reason
           ? { production_block_reason: serpPolicy.production_block_reason }
           : {}),
-        // MUBAWAB-DB-THUMBNAILS-RISK-ACCEPTED-1 — raw thumbnail data + hard policy.
+        // MUBAWAB-DB-THUMBNAILS-RISK-ACCEPTED-1 â€” raw thumbnail data + hard policy.
         thumbnail_url: row.thumbnail_url ?? undefined,
         can_cache_thumbnail: false,
         can_download_thumbnail: false,
