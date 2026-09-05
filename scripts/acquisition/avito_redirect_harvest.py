@@ -23,7 +23,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 from urllib.error import HTTPError, URLError
-from urllib.parse import quote, urljoin, urlparse, urlunparse
+from urllib.parse import urljoin, urlparse, urlunparse
 from urllib.request import Request, urlopen
 
 AVITO_ID_RE = re.compile(r"_(\d{7,9})\.htm(?:$|[?#])", re.I)
@@ -103,37 +103,19 @@ def fetch_existing_avito_seeds() -> list[str]:
     return urls[:MAX_SEEDS]
 
 
-def fetch_known_ids() -> set[str]:
-    known: set[str] = set()
-    # Existing canonical listings.
-    rows = supabase_get(
-        "listing_sources",
-        "select=listing_url,source_url&source_name=ilike.avito&limit=1000",
-    )
-    for row in rows:
-        for field in ("listing_url", "source_url"):
-            value = row.get(field)
-            if isinstance(value, str):
-                avito_id = extract_avito_id(value)
-                if avito_id:
-                    known.add(avito_id)
+def known_ids_from_seeds(seeds: list[str]) -> set[str]:
+    """Return IDs already represented by the canonical Avito seed cohort.
 
-    # Discovery candidates are paginated explicitly to avoid PostgREST's 1000-row cap.
-    offset = 0
-    while True:
-        batch = supabase_get(
-            "discovery_candidates",
-            f"select=canonical_url&source_domain=eq.avito.ma&order=id.asc&limit=1000&offset={offset}",
-        )
-        for row in batch:
-            value = row.get("canonical_url")
-            if isinstance(value, str):
-                avito_id = extract_avito_id(value)
-                if avito_id:
-                    known.add(avito_id)
-        if len(batch) < 1000:
-            break
-        offset += 1000
+    Discovery-candidate dedup is intentionally deferred until after harvesting. The old
+    implementation scanned all Avito discovery_candidates before making any Avito request,
+    which made the read-only harvest depend on a large PostgREST query and repeatedly
+    failed with HTTP 500. Harvest first, reconcile reservoirs second.
+    """
+    known: set[str] = set()
+    for seed in seeds:
+        avito_id = extract_avito_id(seed)
+        if avito_id:
+            known.add(avito_id)
     return known
 
 
@@ -168,7 +150,7 @@ def harvest_visible_listing_urls(body: str, base_url: str) -> dict[str, str]:
 def main() -> int:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     seeds = fetch_existing_avito_seeds()
-    known_ids = fetch_known_ids()
+    known_ids = known_ids_from_seeds(seeds)
 
     discovered: dict[str, dict[str, Any]] = {}
     seed_results: list[dict[str, Any]] = []
@@ -233,7 +215,7 @@ def main() -> int:
             time.sleep(DELAY_SECONDS)
 
     records = sorted(discovered.values(), key=lambda item: int(item["avito_id"]))
-    novel = [item for item in records if item["avito_id"] not in known_ids]
+    new_vs_existing = [item for item in records if item["avito_id"] not in known_ids]
     existing = [item for item in records if item["avito_id"] in known_ids]
 
     report = {
@@ -243,20 +225,22 @@ def main() -> int:
         "pagination_requests": 0,
         "max_seeds": MAX_SEEDS,
         "seed_count": len(seeds),
+        "known_id_scope": "existing_avito_listing_sources_only",
+        "discovery_candidate_reconciliation": "deferred_post_harvest",
         "requested_detail_seeds": requested_detail_seeds,
         "fetch_ok": fetch_ok,
         "fetch_failed": fetch_failed,
         "identity_rejected_redirects": identity_rejected,
         "unique_visible_avito_ids": len(records),
-        "already_known_ids": len(existing),
-        "novel_ids": len(novel),
+        "already_existing_listing_ids": len(existing),
+        "new_vs_existing_listing_ids": len(new_vs_existing),
         "user_agent": USER_AGENT,
         "delay_seconds": DELAY_SECONDS,
     }
 
     (OUT_DIR / "report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
     (OUT_DIR / "records.json").write_text(json.dumps(records, ensure_ascii=False, indent=2), encoding="utf-8")
-    (OUT_DIR / "novel-records.json").write_text(json.dumps(novel, ensure_ascii=False, indent=2), encoding="utf-8")
+    (OUT_DIR / "new-vs-existing-records.json").write_text(json.dumps(new_vs_existing, ensure_ascii=False, indent=2), encoding="utf-8")
     (OUT_DIR / "seeds.json").write_text(json.dumps(seed_results, ensure_ascii=False, indent=2), encoding="utf-8")
 
     print(json.dumps(report, ensure_ascii=False, indent=2))
