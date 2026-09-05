@@ -50,12 +50,22 @@ jobs:
           if (s.mode !== 'branch-local-after') throw new Error(`wrong mode: ${s.mode}`);
           if (s.zeroDbWritesByScript !== true) throw new Error('write safety not proven');
           if (s.zeroDeploymentActionsByScript !== true) throw new Error('deployment safety not proven');
-          if (s.results.length !== 4) throw new Error('expected 4 viewports');
+          if (s.results.length !== 8) throw new Error(`expected 8 viewport/scenario proofs, got ${s.results.length}`);
+          const national = s.results.filter((r) => r.scenario === 'national');
+          const neighborhood = s.results.filter((r) => r.scenario === 'casablanca-maarif');
+          if (national.length !== 4) throw new Error(`expected 4 national proofs, got ${national.length}`);
+          if (neighborhood.length !== 4) throw new Error(`expected 4 neighborhood proofs, got ${neighborhood.length}`);
           for (const r of s.results) {
-            if (!r.httpStatus || r.httpStatus >= 400) throw new Error(`bad HTTP ${r.viewport.name}: ${r.httpStatus}`);
-            if (r.hasVivreIciPage !== 1) throw new Error(`missing Vivre ici page marker ${r.viewport.name}`);
-            if (r.hasDecisionRail !== 1) throw new Error(`missing decision rail ${r.viewport.name}`);
-            if (r.vivreIciTextCount < 1) throw new Error(`missing Vivre ici wording ${r.viewport.name}`);
+            if (!r.httpStatus || r.httpStatus >= 400) throw new Error(`bad HTTP ${r.scenario}/${r.viewport.name}: ${r.httpStatus}`);
+            if (r.hasVivreIciPage !== 1) throw new Error(`missing Vivre ici page marker ${r.scenario}/${r.viewport.name}`);
+            if (r.hasDecisionRail !== 1) throw new Error(`missing decision rail ${r.scenario}/${r.viewport.name}`);
+            if (r.vivreIciTextCount < 1) throw new Error(`missing Vivre ici wording ${r.scenario}/${r.viewport.name}`);
+            const expectedView = r.scenario === 'national' ? 'morocco' : 'city';
+            if (r.nationalView !== expectedView) throw new Error(`wrong map view ${r.scenario}/${r.viewport.name}: ${r.nationalView}`);
+            if (r.neighborhoodContext) {
+              if (r.poiControls !== 1) throw new Error(`missing POI controls ${r.viewport.name}`);
+              if (r.poiAvailableToggle + r.poiUnavailable !== 1) throw new Error(`POI state is not truthful/exclusive ${r.viewport.name}`);
+            }
             if (!fs.existsSync(r.screenshot)) throw new Error(`missing screenshot ${r.screenshot}`);
           }
           console.log(JSON.stringify(s,null,2));
