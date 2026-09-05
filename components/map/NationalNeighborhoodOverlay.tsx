@@ -230,7 +230,7 @@ export function NationalNeighborhoodOverlay({
 
   return (
     <div className="pointer-events-none absolute inset-0 z-20" data-akarfinder-national-neighborhood-overlay data-city={citySlug}>
-      <div className="pointer-events-auto absolute left-3 right-3 top-[132px] lg:left-auto lg:right-4 lg:top-4 lg:w-[340px]">
+      <div className="pointer-events-auto absolute left-3 right-3 top-[172px] lg:left-auto lg:right-4 lg:top-4 lg:w-[340px]">
         <div className="relative rounded-[18px] border border-white/80 bg-white/95 p-2.5 shadow-[0_14px_38px_rgba(15,35,66,0.14)] backdrop-blur-xl dark:border-white/10 dark:bg-[#0A1A2F]/95">
           <label className="sr-only" htmlFor={`neighborhood-search-${citySlug}`}>Rechercher un quartier à {cityName}</label>
           <div className="flex items-center gap-2">
@@ -270,7 +270,7 @@ export function NationalNeighborhoodOverlay({
 
       {selected ? (
         <aside
-          className="pointer-events-auto absolute inset-x-3 bottom-[110px] rounded-[22px] border border-white/85 bg-white/96 p-3.5 shadow-[0_18px_48px_rgba(15,35,66,0.18)] backdrop-blur-xl dark:border-white/10 dark:bg-[#0A1A2F]/96 sm:inset-x-auto sm:bottom-4 sm:left-4 sm:w-[350px]"
+          className="pointer-events-auto absolute inset-x-3 bottom-[220px] rounded-[22px] border border-white/85 bg-white/96 p-3.5 shadow-[0_18px_48px_rgba(15,35,66,0.18)] backdrop-blur-xl dark:border-white/10 dark:bg-[#0A1A2F]/96 sm:inset-x-auto sm:bottom-[200px] sm:left-4 sm:w-[350px] lg:bottom-4"
           data-akarfinder-neighborhood-preview={selected.slug}
           aria-label={`Quartier sélectionné ${selected.name}`}
         >
