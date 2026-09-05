@@ -1,0 +1,30 @@
+name: Avito Identity Guard
+
+on:
+  push:
+    paths:
+      - "scripts/acquisition/avito_identity_guard.py"
+      - "scripts/acquisition/canonical_listing_live_dry_run.py"
+      - "scripts/acquisition/__tests__/avito_identity_guard_test.py"
+      - ".github/workflows/avito-identity-guard.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  identity-guard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Unit tests
+        run: python -m unittest scripts/acquisition/__tests__/avito_identity_guard_test.py -v
+      - name: Compile acquisition modules
+        run: |
+          python -m py_compile scripts/acquisition/avito_identity_guard.py
+          python -m py_compile scripts/acquisition/canonical_listing_live_dry_run.py
+          python -m py_compile scripts/acquisition/canonical_listing_extractor.py
