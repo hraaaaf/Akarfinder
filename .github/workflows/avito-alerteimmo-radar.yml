@@ -7,6 +7,7 @@ on:
     paths:
       - ".github/workflows/avito-alerteimmo-radar.yml"
       - "scripts/avito_alerteimmo_radar.py"
+      - "scripts/avito_alerteimmo_union.py"
 
 permissions:
   contents: read
@@ -17,9 +18,14 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  alerteimmo-radar:
+  shard:
+    name: shard-${{ matrix.shard }}
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
     env:
       BASELINE_ARTIFACT_ID: "9968819905"
       GH_TOKEN: ${{ github.token }}
@@ -44,25 +50,80 @@ jobs:
           test "$(wc -l < "$UNION" | tr -d ' ')" = "6581"
           echo "UNION_IDS=$UNION" >> "$GITHUB_ENV"
 
-      - name: Run AlerteImmo public-surface radar
+      - name: Run deterministic shard
         shell: bash
         run: |
           set -euo pipefail
           python scripts/avito_alerteimmo_radar.py \
             --baseline "$UNION_IDS" \
-            --output avito-alerteimmo-proof \
-            --max-pages 1500 \
-            --sleep 0.8
+            --output "avito-alerteimmo-shard-${{ matrix.shard }}" \
+            --max-pages 260 \
+            --sleep 0.6 \
+            --shard-index "${{ matrix.shard }}" \
+            --shard-count 8
 
-      - name: Publish summary
+      - name: Upload shard proof
         if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: avito-alerteimmo-shard-${{ matrix.shard }}
+          path: avito-alerteimmo-shard-${{ matrix.shard }}/
+          if-no-files-found: error
+          retention-days: 30
+
+  certify:
+    name: certify-union
+    needs: shard
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      BASELINE_ARTIFACT_ID: "9968819905"
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Download certified 6581-ID union
         shell: bash
         run: |
-          if [[ -f avito-alerteimmo-proof/summary.json ]]; then
-            python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          set -euo pipefail
+          mkdir -p baseline
+          gh api "/repos/${GITHUB_REPOSITORY}/actions/artifacts/${BASELINE_ARTIFACT_ID}/zip" > baseline.zip
+          unzip -q baseline.zip -d baseline
+          UNION="$(find baseline -type f -name union_ids.txt -print -quit)"
+          test -n "$UNION"
+          test "$(wc -l < "$UNION" | tr -d ' ')" = "6581"
+          echo "UNION_IDS=$UNION" >> "$GITHUB_ENV"
+
+      - name: Download all shard artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: avito-alerteimmo-shard-*
+          path: shards
+          merge-multiple: false
+
+      - name: Certify 8-shard union
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/avito_alerteimmo_union.py \
+            --baseline "$UNION_IDS" \
+            --shards-dir shards \
+            --output avito-alerteimmo-certification-proof \
+            --expected-shards 8
+
+      - name: Publish final summary
+        shell: bash
+        run: |
+          python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
           import json
-          d=json.load(open('avito-alerteimmo-proof/summary.json',encoding='utf-8'))
-          print('# Avito Public Surface Union - AlerteImmo')
+          d=json.load(open('avito-alerteimmo-certification-proof/summary.json',encoding='utf-8'))
+          print('# Avito Public Surface Union - AlerteImmo certified')
           print()
           print(f"- Baseline union: **{d['baseline_unique_ids']:,}**")
           print(f"- AlerteImmo Avito IDs: **{d['alerteimmo_unique_avito_ids']:,}**")
@@ -70,18 +131,16 @@ jobs:
           print(f"- Net new: **{d['net_new_vs_baseline']:,}**")
           print(f"- New union: **{d['union_unique_ids']:,}**")
           print(f"- Gain: **{d['gain_pct']:.2f}%**")
-          print(f"- Pages visited: **{d['pages_visited']:,}**")
+          print(f"- Pages visited: **{d['pages_visited_total']:,}**")
           print(f"- Direct Avito requests: **{d['safety']['direct_avito_requests']}**")
-          print(f"- Truncated: **{d['limits']['truncated']}**")
-          print(f"- Errors: **{len(d['errors'])}**")
+          print(f"- Any shard truncated: **{d['any_shard_truncated']}**")
+          print(f"- Errors: **{d['errors_total']}**")
           PY
-          fi
 
-      - name: Upload proof artifact
-        if: always()
+      - name: Upload certified proof
         uses: actions/upload-artifact@v4
         with:
-          name: avito-alerteimmo-radar-proof
-          path: avito-alerteimmo-proof/
-          if-no-files-found: warn
+          name: avito-alerteimmo-certification-proof
+          path: avito-alerteimmo-certification-proof/
+          if-no-files-found: error
           retention-days: 30
