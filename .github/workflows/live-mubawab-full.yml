@@ -21,7 +21,7 @@ concurrency:
 jobs:
   enumerate:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 240
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -39,6 +39,7 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           MUBAWAB_MANIFEST_LIMIT: '100000'
           MUBAWAB_MAX_REQUESTS: '100000'
+          MUBAWAB_REQUEST_DELAY_MS: '2750'
         run: |
           test -n "$SUPABASE_URL"
           test -n "$SUPABASE_SERVICE_ROLE_KEY"
@@ -52,6 +53,7 @@ jobs:
           const report = JSON.parse(fs.readFileSync(p, 'utf8'));
 
           if (report.zeroDbWrites !== true) throw new Error('zeroDbWrites must be true');
+          if (report.requestDelayMs !== 2750) throw new Error(`request delay drift: ${report.requestDelayMs}`);
           if (!(report.safeShardCount > 0)) throw new Error('safeShardCount must be > 0');
           if (report.selectedShardCount !== report.safeShardCount) {
             throw new Error(`manifest incomplete: selected=${report.selectedShardCount} safe=${report.safeShardCount}`);
@@ -71,12 +73,17 @@ jobs:
           if (badFetches.length > 0) {
             throw new Error(`non-ok shard fetches: ${badFetches.length}`);
           }
+          const missingAttribution = (report.shards || []).filter(s => !Array.isArray(s.listingIds) || !Array.isArray(s.listingUrls));
+          if (missingAttribution.length > 0) {
+            throw new Error(`shards missing listing attribution: ${missingAttribution.length}`);
+          }
 
           console.log({
             sourceRowCount: report.sourceRowCount,
             safeShardCount: report.safeShardCount,
             selectedShardCount: report.selectedShardCount,
             requestCount: report.requestCount,
+            requestDelayMs: report.requestDelayMs,
             uniqueListingUrlCount: report.uniqueListingUrlCount,
             queueRemaining: report.queueRemaining,
             stoppedEarly: report.stoppedEarly,
