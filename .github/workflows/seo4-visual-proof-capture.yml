@@ -1,0 +1,82 @@
+name: SEO4 Visual Proof Capture
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/seo4-visual-proof-capture.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  capture-live-city-page:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Capture LIVE BEFORE at required viewports
+        env:
+          TARGET_URL: https://akarfinder.vercel.app/immobilier/casablanca
+        run: |
+          mkdir -p artifacts/seo4-before
+          node <<'NODE'
+          const { chromium } = require('playwright');
+          const fs = require('fs');
+
+          const target = process.env.TARGET_URL;
+          const viewports = [
+            { name: '390', width: 390, height: 844 },
+            { name: '430', width: 430, height: 932 },
+            { name: '768', width: 768, height: 1024 },
+            { name: '1280', width: 1280, height: 900 },
+          ];
+
+          (async () => {
+            const browser = await chromium.launch({ headless: true });
+            const report = [];
+            try {
+              for (const viewport of viewports) {
+                const page = await browser.newPage({ viewport: { width: viewport.width, height: viewport.height } });
+                const response = await page.goto(target, { waitUntil: 'domcontentloaded', timeout: 60000 });
+                await page.waitForTimeout(5000);
+                const title = await page.title();
+                const h1 = await page.locator('h1').first().textContent().catch(() => null);
+                const robots = await page.locator('meta[name="robots"]').getAttribute('content').catch(() => null);
+                const canonical = await page.locator('link[rel="canonical"]').getAttribute('href').catch(() => null);
+                const file = `artifacts/seo4-before/casablanca-${viewport.name}.png`;
+                await page.screenshot({ path: file, fullPage: true });
+                report.push({ viewport, status: response?.status() ?? null, title, h1, robots, canonical, file });
+                await page.close();
+              }
+            } finally {
+              await browser.close();
+            }
+            fs.writeFileSync('artifacts/seo4-before/report.json', JSON.stringify({ target, capturedAt: new Date().toISOString(), report }, null, 2));
+          })().catch((error) => {
+            console.error(error);
+            process.exit(1);
+          });
+          NODE
+
+      - name: Upload visual proof
+        uses: actions/upload-artifact@v4
+        with:
+          name: seo4-before-casablanca
+          path: artifacts/seo4-before
+          if-no-files-found: error
+          retention-days: 7
