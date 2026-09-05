@@ -1,0 +1,40 @@
+name: AkarFinder - Domio Sitemap Expansion
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/acquisition/domio-sitemap-expansion.py'
+      - '.github/workflows/domio-sitemap-expansion.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  expand:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Expand Domio public sitemap and links
+        run: python scripts/acquisition/domio-sitemap-expansion.py
+      - name: Verify read-only proof
+        run: |
+          python - <<'PY'
+          import json
+          s=json.load(open('artifacts/domio-sitemap-expansion/summary.json'))
+          assert s['zero_db_writes'] is True
+          assert s['robots_sitemap_allowed'] is True
+          assert s['xml_documents_visited'] >= 1
+          assert s['candidate_union_urls'] >= 1
+          print(json.dumps(s,indent=2,ensure_ascii=False))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: domio-sitemap-expansion-proof
+          path: artifacts/domio-sitemap-expansion/
+          if-no-files-found: error
