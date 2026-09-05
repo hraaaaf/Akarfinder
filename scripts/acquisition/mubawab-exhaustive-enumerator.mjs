@@ -6,6 +6,7 @@ export const DEFAULT_TIMEOUT_MS = 15_000;
 export const DEFAULT_UA = 'AkarFinder-public-index/4.0 (+https://akarfinder.ma)';
 export const DEFAULT_MAX_REQUESTS = 40;
 export const DEFAULT_MAX_DEPTH = 4;
+export const DEFAULT_REQUEST_DELAY_MS = 0;
 export const DEFAULT_ROOTS = [
   'https://www.mubawab.ma/fr/cc/immobilier-a-vendre',
   'https://www.mubawab.ma/fr/cc/immobilier-a-louer',
@@ -17,6 +18,8 @@ const DISALLOWED_PREFIXES = ['/login', '/cms/', '/ads/b/', '/report-inappropriat
 const SHARD_PATH = /^\/fr\/(cc|ct|cd|sd)\/[^?#]+$/i;
 const LISTING_PATH = /^\/fr\/(?:a|pa)\/(\d+)(?:\/|$)/i;
 const RESULT_COUNT_RE = /\(([0-9][0-9\s\u00a0\u202f.,]*)\s+r[ée]sultats?\)/iu;
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function decodeMarkup(value) {
   return String(value || '')
@@ -46,8 +49,6 @@ export function isRobotsSafeUrl(raw) {
   const pathname = url.pathname;
   const robotsPath = pathname.replace(/^\/(?:fr|en|ar|es|nl|it)(?=\/)/i, '');
   if (DISALLOWED_PREFIXES.some((prefix) => robotsPath === prefix || robotsPath.startsWith(prefix))) return false;
-  // Current Mubawab robots.txt disallows every path containing ':'. This intentionally
-  // excludes the legacy :p:2 pagination form used by the earlier L2 adapter.
   if (pathname.includes(':')) return false;
   if (url.searchParams.get('n') === '1') return false;
   return true;
@@ -79,6 +80,12 @@ export function extractListingUrls(html, base = 'https://www.mubawab.ma/') {
     if (!byId.has(match[1])) byId.set(match[1], normalized);
   }
   return [...byId.values()];
+}
+
+function listingIdFromUrl(raw) {
+  const normalized = normalizeMubawabUrl(raw);
+  if (!normalized) return null;
+  return new URL(normalized).pathname.match(LISTING_PATH)?.[1] || null;
 }
 
 export function shardKind(raw) {
@@ -198,19 +205,28 @@ export async function enumerateMubawab({
   userAgent = DEFAULT_UA,
   maxRequests = DEFAULT_MAX_REQUESTS,
   maxDepth = DEFAULT_MAX_DEPTH,
+  requestDelayMs = DEFAULT_REQUEST_DELAY_MS,
 } = {}) {
   if (typeof fetchImpl !== 'function') throw new TypeError('fetchImpl must be a function');
+  if (!Number.isFinite(requestDelayMs) || requestDelayMs < 0) throw new TypeError('requestDelayMs must be a non-negative number');
   const queue = roots.map((url) => ({ url: normalizeMubawabUrl(url), depth: 0 })).filter((item) => item.url && isRobotsSafeUrl(item.url));
   const queued = new Set(queue.map((item) => item.url));
   const visited = new Set();
   const listingById = new Map();
   const shards = [];
   let stoppedEarly = null;
+  let lastRequestStartedAt = 0;
 
   while (queue.length > 0 && shards.length < maxRequests) {
     const item = queue.shift();
     if (!item || visited.has(item.url)) continue;
     visited.add(item.url);
+
+    if (lastRequestStartedAt > 0 && requestDelayMs > 0) {
+      const remaining = requestDelayMs - (Date.now() - lastRequestStartedAt);
+      if (remaining > 0) await sleep(remaining);
+    }
+    lastRequestStartedAt = Date.now();
 
     const response = await fetchText(item.url, { fetchImpl, timeoutMs, userAgent });
     const fetchState = classifyFetch(response);
@@ -219,13 +235,21 @@ export async function enumerateMubawab({
       break;
     }
     if (fetchState !== 'ok') {
-      shards.push({ url: item.url, depth: item.depth, fetchState, reconciliation: reconcileShard({ url: item.url, expectedCount: null, listingUrls: [], childUrls: [] }) });
+      shards.push({
+        url: item.url,
+        depth: item.depth,
+        fetchState,
+        listingIds: [],
+        listingUrls: [],
+        reconciliation: reconcileShard({ url: item.url, expectedCount: null, listingUrls: [], childUrls: [] }),
+      });
       continue;
     }
 
     const listings = extractListingUrls(response.text, response.finalUrl);
+    const listingIds = listings.map(listingIdFromUrl).filter(Boolean);
     for (const listing of listings) {
-      const id = new URL(listing).pathname.match(LISTING_PATH)?.[1];
+      const id = listingIdFromUrl(listing);
       if (id && !listingById.has(id)) listingById.set(id, listing);
     }
 
@@ -238,6 +262,8 @@ export async function enumerateMubawab({
       depth: item.depth,
       fetchState,
       listingCount: listings.length,
+      listingIds,
+      listingUrls: listings,
       childShardCount: children.length,
       reconciliation,
     });
@@ -255,6 +281,7 @@ export async function enumerateMubawab({
   const listingUrls = [...listingById.values()];
   return {
     ...summarizeEnumeration(shards, listingUrls),
+    requestDelayMs,
     stoppedEarly,
     queueRemaining: queue.length,
     shards,
@@ -264,7 +291,8 @@ export async function enumerateMubawab({
 
 export async function runCli() {
   const maxRequests = Number.parseInt(process.env.MUBAWAB_MAX_REQUESTS || String(DEFAULT_MAX_REQUESTS), 10);
-  const report = await enumerateMubawab({ maxRequests });
+  const requestDelayMs = Number.parseInt(process.env.MUBAWAB_REQUEST_DELAY_MS || String(DEFAULT_REQUEST_DELAY_MS), 10);
+  const report = await enumerateMubawab({ maxRequests, requestDelayMs });
   report.startedAt = new Date().toISOString();
   report.success = report.zeroDbWrites && report.stoppedEarly !== 'http_429' && report.requestCount > 0;
 
@@ -278,6 +306,7 @@ export async function runCli() {
     `- Success: **${report.success ? 'YES' : 'NO'}**`,
     `- Zero DB writes: **${report.zeroDbWrites}**`,
     `- Requests: **${report.requestCount}**`,
+    `- Request delay: **${report.requestDelayMs} ms**`,
     `- Root expected count: **${report.rootExpectedCount}**`,
     `- Unique listing URLs: **${report.uniqueListingUrlCount}**`,
     `- Reconciliation gap: **${report.reconciliationGap}**`,
@@ -288,8 +317,9 @@ export async function runCli() {
     '## Safety',
     '- Public HTTPS pages only.',
     '- Legacy colon pagination is rejected by robots safety guard.',
+    '- Request starts are paced by the configured floor.',
     '- 429 stops the run immediately.',
-    '- No credentials, CAPTCHA bypass, private API, proxy evasion or DB writes.',
+    '- No credentials against Mubawab, CAPTCHA bypass, private API, proxy evasion or DB writes.',
   ].join('\n'));
   console.log(JSON.stringify({ ...report, listingUrls: undefined, shards: undefined }, null, 2));
   if (!report.success) process.exitCode = 2;
