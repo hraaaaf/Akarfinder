@@ -9,6 +9,7 @@ import {
   selectSpreadPages,
 } from "../data-ingestion/sources/mubawab/commoncrawl-index";
 import { summarizeExternalRecovery } from "../data-ingestion/sources/mubawab/external-recovery-reconciliation";
+import { decomposeCoverageGap } from "../data-ingestion/sources/mubawab/coverage-gap-decomposition";
 
 const INDEXES = ["CC-MAIN-2026-34", "CC-MAIN-2026-30", "CC-MAIN-2026-25"] as const;
 const DETAIL_FAMILIES = ["a", "pa"] as const;
@@ -22,7 +23,16 @@ const OUT_DIR = path.resolve("data-ingestion/runs/mubawab/phase0-commoncrawl-ind
 const OUT_FILE = path.join(OUT_DIR, "proof.json");
 
 type CatalogState = { version: number; source: string; seen_source_ids: string[] };
-type CurrentLeafProof = { assessments: Array<{ first_page_unit_ids: string[] }>; summary?: { observed_unit_ids?: number } };
+type CurrentLeafProof = {
+  assessments: Array<{
+    url: string;
+    total_results: number | null;
+    first_page_unit_ids: string[];
+    status: string;
+    unexplained_lower_bound: number | null;
+  }>;
+  summary?: { observed_unit_ids?: number };
+};
 type ListingRef = ReturnType<typeof parseCommonCrawlCdxJsonLines>[number];
 type PageObservation = { page: number; query_url: string; raw_lines: number; unique_listing_ids: number };
 type FamilyObservation = {
@@ -138,6 +148,13 @@ async function main() {
   const currentControlMatched = [...currentControlIds].filter((id) => aggregateIds.has(id));
   const currentControlMatchedNewest = [...currentControlIds].filter((id) => newestIndexIds.has(id));
 
+  const coverageGapDecomposition = decomposeCoverageGap({
+    leaves: currentLeafProof.assessments,
+    external_union_ids: aggregateIds,
+    newest_snapshot_ids: newestIndexIds,
+    recent_external_candidates: externalRecoveryReconciliation.counts.likely_recent_unit_candidate,
+  });
+
   const proof = {
     generated_at: new Date().toISOString(),
     mode: "phase0_commoncrawl_multi_snapshot_spread_probe",
@@ -167,6 +184,7 @@ async function main() {
       absent_with_multi_snapshot_presence: absentMultiSnapshot.length,
     },
     external_recovery_reconciliation: externalRecoveryReconciliation,
+    coverage_gap_decomposition: coverageGapDecomposition,
     current_first_party_control_recall: {
       control_unique_ids: currentControlIds.size,
       matched_by_external_union: currentControlMatched.length,
@@ -180,7 +198,7 @@ async function main() {
       earliest_timestamp: record.earliest_timestamp, latest_timestamp: record.latest_timestamp, latest_url: record.latest_url,
       newest_snapshot_present: record.indexes.has(newestIndex),
     })),
-    interpretation_rule: "This remains a bounded Common Crawl sample, not a denominator. External recovery classification is fail-closed: newest-snapshot presence is recent-index evidence, never proof that a listing is currently active. pa-only records are project/non-unit candidates; mixed a+pa records remain ambiguous.",
+    interpretation_rule: "This remains a bounded Common Crawl sample, not a denominator. External recovery classification is fail-closed: newest-snapshot presence is recent-index evidence, never proof that a listing is currently active. External detail-index IDs cannot be credited against a hidden leaf residual without independently proven geography/type membership.",
   };
 
   fs.mkdirSync(OUT_DIR, { recursive: true });
