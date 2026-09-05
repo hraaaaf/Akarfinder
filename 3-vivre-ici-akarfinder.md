@@ -1,11 +1,10 @@
 # 3 — Vivre Ici AkarFinder
 
-**Statut : ACTIVE — P0 2D PROUVÉ / PIVOT 3D EN CERTIFICATION**  
+**Statut : ACTIVE — 3D-L1 CERTIFIÉ / 3D-L2 EN CERTIFICATION**  
 **Dernière mise à jour : 2026-09-05**  
 **Repo : `hraaaaf/Akarfinder`**  
 **Branche : `docs/3-vivre-ici-akarfinder`**  
 **PR : `#1025` — OPEN**  
-**HEAD code 3D certifié par le gate courant : `b4a9d2bd0911840a641cd3f20ab678631424dc64`**  
 **Fondation produit : `/map`**  
 **Référence UX : Bien’ici 3D, adaptée au Maroc, sans clone pixel-perfect**  
 **Vercel : aucun déploiement sans accord explicite d’Achraf.**
@@ -34,7 +33,7 @@ Doctrine produit :
 
 > **Territoire → Marché → Vie locale → Biens**
 
-Nouvelle cible visuelle :
+Cible visuelle :
 
 > **Maroc 2D → ville 3D → quartier / vie locale → biens.**
 
@@ -43,15 +42,6 @@ Nouvelle cible visuelle :
 ---
 
 ## 2. P0 2D — FONDATION PROUVÉE
-
-- `/map` devient la rubrique **Vivre ici** ;
-- Maroc utilisable en 390 / 430 / 768 / 1280 ;
-- décision rail territoire / marché / vie locale / biens ;
-- navigation ville / quartier ;
-- Casablanca → Maârif prouvé ;
-- POI sourcés conservés ;
-- accès aux biens via `/search` préservé ;
-- responsive et collisions Maârif corrigés.
 
 ### BEFORE LIVE `/map`
 
@@ -68,65 +58,91 @@ Nouvelle cible visuelle :
 - 2 marqueurs POI observés sur Maârif ;
 - score visuel **9,0/10 pour le Goal P0 2D uniquement**.
 
-Ce score ne signifie pas fidélité Bien’ici 3D. Le P0 2D est désormais une fondation.
+Le P0 2D est la fondation, pas la cible finale Bien’ici 3D.
 
 ---
 
-## 3. PIVOT 3D — GOAL ACTIF
+## 3. 3D-L1 CASABLANCA — CERTIFIÉ
 
-### Goal exact
-
-À Casablanca :
-
-- bâtiments extrudés 3D issus d’une source vectorielle publique ;
-- aucune hauteur maison inventée ;
-- caméra `pitch / bearing` ;
-- transition Maroc 2D → ville 3D ;
-- centrage quartier sélectionné si son repère réel est disponible ;
-- toggle 2D / 3D ;
-- POI et contexte quartier conservés ;
-- aucune DB / aucun Vercel.
-
-### Implémentation code HEAD `b4a9d2b…`
+### Implémentation
 
 - `components/map/National3DBuildingsLayer.tsx` ;
 - OpenFreeMap `https://tiles.openfreemap.org/planet` ;
 - source-layer `building` ;
 - hauteur source `render_height` uniquement ;
+- aucune hauteur bâtiment inventée ;
 - layer `akarfinder-vivre-ici-3d-buildings` ;
 - zoom `14.2`, pitch `56°`, bearing `-18°` ;
 - centrage Maârif via `akarfinder-national-neighborhood-points` ;
-- montage via `NationalMapRouter` ;
-- vue Maroc maintenue 2D.
+- toggle 2D / 3D ;
+- vue Maroc maintenue 2D ;
+- POI et contexte quartier conservés.
 
-### Succès observable
+### Preuve exacte
 
-Maârif, chacun des viewports `390 / 430 / 768 / 1280` :
+Workflow `Vivre Ici AFTER Certification` :
 
-1. toggle 3D présent ;
-2. source 3D présente ;
-3. layer 3D présent ;
-4. pitch ≥ 45° ;
-5. zoom ≥ 13 ;
-6. ≥1 bâtiment réellement rendu ;
-7. contexte quartier / POI présents ;
-8. aucune collision critique après inspection.
+- run `33991033589` — **SUCCESS** ;
+- code HEAD `b4a9d2bd0911840a641cd3f20ab678631424dc64` ;
+- artifact `9976706376` ;
+- digest `sha256:67f416481841e99836fa93f50d517167c9f1f8c321c94853d5ab610187561a80` ;
+- 8/8 HTTP 200 ;
+- Maroc 390/430/768/1280 : pitch `0`, aucun layer/source/toggle 3D ;
+- Maârif 390/430/768/1280 : source + layer + toggle 3D présents ;
+- pitch `56°`, bearing `-18°`, zoom `14.2` sur les 4 viewports ;
+- bâtiments réellement rendus : `64 / 68 / 113 / 120` ;
+- POI controls présents ;
+- 2 marqueurs POI observés sur chaque viewport Maârif ;
+- aucune écriture DB / aucune action de déploiement par le gate.
 
-Maroc, 4 viewports : aucun toggle/layer 3D.
+### Inspection visuelle
 
-### Gate actuel
+- 3D réelle, lisible et centrée sur Maârif ;
+- mobile 390/430 : beaucoup de chrome masque encore la carte ;
+- tablette : 3D convaincante mais panneau bas trop dominant ;
+- desktop : vraie profondeur, mais duplication du contexte entre carte et rail latéral ;
+- fidélité actuelle au mécanisme Bien’ici : **6,5/10**.
 
-- workflow `Vivre Ici AFTER Certification` ;
-- run `33991033589` ;
-- HEAD code `b4a9d2bd0911840a641cd3f20ab678631424dc64` ;
-- dernier état vérifié : TypeScript `SUCCESS`, build `in_progress` ;
-- gate durci : source + layer + pitch + zoom + bâtiment rendu.
-
-**3D-L1 non certifié tant que le run et les captures ne sont pas inspectés.**
+**3D-L1 est certifié. La fidélité finale Bien’ici ne l’est pas.**
 
 ---
 
-## 4. CONTRAT DE VÉRITÉ
+## 4. 3D-L2 — CONVERGENCE VISUELLE ACTIVE
+
+### Goal
+
+Rendre la ville 3D dominante :
+
+1. réduire le chrome redondant ;
+2. supprimer la duplication des CTAs/panneaux ;
+3. libérer l’espace mobile/tablette ;
+4. garder recherche quartier, POI et CTA biens accessibles ;
+5. renforcer le contraste des volumes sans modifier leur géométrie ni leurs hauteurs.
+
+### Implémentation actuelle
+
+Code HEAD `30fc76a3a045545e030f85e52219c2b4252d023c` :
+
+- carte territoire compacte en vue 3D ;
+- CTA dupliqué masqué ;
+- rail bas Vivre ici masqué sur mobile/tablette en vue Casablanca 3D ;
+- recherche quartier remontée ;
+- fiche quartier repositionnée au-dessus de la bottom-nav ;
+- toggle 3D repositionné ;
+- bâtiments légèrement plus contrastés (`#C5CFD8`, opacity `0.96`) sans changement de hauteur/source.
+
+### Gate courant
+
+- workflow `Vivre Ici AFTER Certification` ;
+- run `33992302013` ;
+- HEAD code `30fc76a3a045545e030f85e52219c2b4252d023c` ;
+- dernier état vérifié : `queued`.
+
+**3D-L2 non certifié tant que les nouvelles captures ne sont pas inspectées.**
+
+---
+
+## 5. CONTRAT DE VÉRITÉ
 
 - pin exact seulement si exact certifié ;
 - quartier seulement → zone/repère limité ;
@@ -136,20 +152,20 @@ Maroc, 4 viewports : aucun toggle/layer 3D.
 
 ---
 
-## 5. ROADMAP
+## 6. ROADMAP
 
 - [x] L0 BEFORE `/map`
 - [x] P0 2D architecture + implémentation + responsive
 - [x] P0 2D certification : run `33990212630`, artifact `9976424591`
-- [ ] **3D-L1 Casablanca buildings** : run `33991033589` en cours
-- [ ] **3D-L2 Convergence Bien’ici** : lumière, profondeur, overlays, caméra
+- [x] **3D-L1 Casablanca buildings** : run `33991033589`, artifact `9976706376`
+- [ ] **3D-L2 Convergence Bien’ici** : run `33992302013` en cours
 - [ ] **3D-L3 Biens en 3D** : seulement selon vérité géographique
 - [ ] P1 Vie locale enrichie
 - [ ] P2 terrain / soleil / modèles neufs si données + ROI prouvés
 
 ---
 
-## 6. SÉCURITÉ / PRODUCTION
+## 7. SÉCURITÉ / PRODUCTION
 
 - aucune mutation DB liée au chantier ;
 - aucun déploiement de la branche observé au dernier contrôle ;
@@ -158,14 +174,13 @@ Maroc, 4 viewports : aucun toggle/layer 3D.
 
 ---
 
-## 7. NEXT EXACT
+## 8. NEXT EXACT
 
-1. vérifier le run `33991033589` une fois utilement ;
+1. vérifier le run `33992302013` une fois utilement ;
 2. si échec : diagnostiquer et corriger ;
 3. si succès : récupérer l’artifact ;
-4. montrer les 8 captures ;
-5. comparer au P0 2D et à Bien’ici 3D ;
-6. score 3D fondé sur preuve ;
-7. closeout canonical + PR ;
-8. poursuivre 3D-L2 si écart visuel corrigeable ;
-9. arrêt uniquement au gate merge/Vercel une fois le lot branch-local certifié.
+4. montrer les 8 nouvelles captures ;
+5. comparer 3D-L1 → 3D-L2 → Bien’ici ;
+6. score 3D-L2 fondé sur preuve ;
+7. poursuivre 3D-L3 si la convergence visuelle est suffisante ;
+8. arrêt uniquement au gate merge/Vercel une fois le lot branch-local certifié.
