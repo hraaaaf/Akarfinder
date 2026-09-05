@@ -1,0 +1,69 @@
+name: Vivre Ici AFTER Certification
+
+on:
+  push:
+    branches:
+      - docs/3-vivre-ici-akarfinder
+    paths:
+      - 'app/map/**'
+      - 'components/map/**'
+      - 'components/layout/MobileBottomNav.tsx'
+      - 'components/layout/SiteHeader.tsx'
+      - 'scripts/vivre-ici-after-capture.mjs'
+      - 'scripts/scrapers/__tests__/ux-bottom-nav-10of10-1.test.ts'
+      - 'scripts/scrapers/__tests__/ux-premium-bottomnav-glass-1.test.ts'
+      - '.github/workflows/vivre-ici-after.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED: 'false'
+
+jobs:
+  certify-after:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Vivre ici navigation contracts
+        run: npx tsx --test scripts/scrapers/__tests__/ux-bottom-nav-10of10-1.test.ts scripts/scrapers/__tests__/ux-premium-bottomnav-glass-1.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Capture branch-local AFTER
+        run: node scripts/vivre-ici-after-capture.mjs
+      - name: Verify AFTER proof
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const s = JSON.parse(fs.readFileSync('artifacts/vivre-ici-after/summary.json','utf8'));
+          if (s.mode !== 'branch-local-after') throw new Error(`wrong mode: ${s.mode}`);
+          if (s.zeroDbWritesByScript !== true) throw new Error('write safety not proven');
+          if (s.zeroDeploymentActionsByScript !== true) throw new Error('deployment safety not proven');
+          if (s.results.length !== 4) throw new Error('expected 4 viewports');
+          for (const r of s.results) {
+            if (!r.httpStatus || r.httpStatus >= 400) throw new Error(`bad HTTP ${r.viewport.name}: ${r.httpStatus}`);
+            if (r.hasVivreIciPage !== 1) throw new Error(`missing Vivre ici page marker ${r.viewport.name}`);
+            if (r.hasDecisionRail !== 1) throw new Error(`missing decision rail ${r.viewport.name}`);
+            if (r.vivreIciTextCount < 1) throw new Error(`missing Vivre ici wording ${r.viewport.name}`);
+            if (!fs.existsSync(r.screenshot)) throw new Error(`missing screenshot ${r.screenshot}`);
+          }
+          console.log(JSON.stringify(s,null,2));
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: vivre-ici-after
+          path: artifacts/vivre-ici-after/
+          if-no-files-found: error
+          retention-days: 30
