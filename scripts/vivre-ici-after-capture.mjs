@@ -5,9 +5,11 @@ import path from 'node:path';
 
 const outDir = 'artifacts/vivre-ici-after';
 const baseUrl = 'http://127.0.0.1:3000';
+const threeDLayerId = 'akarfinder-vivre-ici-3d-buildings';
+const threeDSourceId = 'akarfinder-vivre-ici-3d-buildings-source';
 const scenarios = [
-  { name: 'national', path: '/map', expectedView: 'morocco', neighborhoodContext: false },
-  { name: 'casablanca-maarif', path: '/map?city=casablanca&district=maarif&layer=explore', expectedView: 'city', neighborhoodContext: true },
+  { name: 'national', path: '/map', expectedView: 'morocco', neighborhoodContext: false, threeDExpected: false },
+  { name: 'casablanca-maarif', path: '/map?city=casablanca&district=maarif&layer=explore', expectedView: 'city', neighborhoodContext: true, threeDExpected: true },
 ];
 const viewports = [
   { name: '390x844', width: 390, height: 844 },
@@ -59,7 +61,19 @@ try {
       if (scenario.neighborhoodContext) {
         await page.locator('[data-neighborhood-context-poi-controls]').waitFor({ state: 'attached', timeout: 8000 }).catch(() => {});
       }
-      await page.waitForTimeout(2200);
+      if (scenario.threeDExpected) {
+        await page.locator('[data-vivre-ici-3d-toggle][aria-pressed="true"]').waitFor({ state: 'visible', timeout: 12000 }).catch(() => {});
+        await page.waitForFunction((layerId) => {
+          const map = window.__AKARFINDER_NATIONAL_MAP__;
+          return Boolean(map?.getLayer(layerId)) && map.getPitch() >= 45 && map.getZoom() >= 13;
+        }, threeDLayerId, { timeout: 15000 }).catch(() => {});
+        await page.waitForFunction((layerId) => {
+          const map = window.__AKARFINDER_NATIONAL_MAP__;
+          if (!map?.getLayer(layerId)) return false;
+          return map.queryRenderedFeatures({ layers: [layerId] }).length > 0;
+        }, threeDLayerId, { timeout: 12000 }).catch(() => {});
+      }
+      await page.waitForTimeout(1800);
 
       const filename = scenario.name === 'national'
         ? `map-after-${vp.name}.png`
@@ -67,9 +81,24 @@ try {
       const file = path.join(outDir, filename);
       await page.screenshot({ path: file, fullPage: true });
 
+      const mapState = await page.evaluate(({ layerId, sourceId }) => {
+        const map = window.__AKARFINDER_NATIONAL_MAP__;
+        if (!map) return null;
+        const layerPresent = Boolean(map.getLayer(layerId));
+        return {
+          layerPresent,
+          sourcePresent: Boolean(map.getSource(sourceId)),
+          pitch: map.getPitch(),
+          bearing: map.getBearing(),
+          zoom: map.getZoom(),
+          renderedBuildingCount: layerPresent ? map.queryRenderedFeatures({ layers: [layerId] }).length : 0,
+        };
+      }, { layerId: threeDLayerId, sourceId: threeDSourceId }).catch(() => null);
+
       results.push({
         scenario: scenario.name,
         neighborhoodContext: scenario.neighborhoodContext,
+        threeDExpected: scenario.threeDExpected,
         viewport: vp,
         httpStatus: response?.status() ?? null,
         finalUrl: page.url(),
@@ -82,6 +111,13 @@ try {
         poiAvailableToggle: await page.locator('[data-neighborhood-context-poi-toggle]').count(),
         poiUnavailable: await page.locator('[data-neighborhood-context-poi-unavailable]').count(),
         poiMarkerCount: await page.locator('[data-neighborhood-context-poi]').count(),
+        threeDToggle: await page.locator('[data-vivre-ici-3d-toggle]').count(),
+        threeDLayer: mapState?.layerPresent ?? false,
+        threeDSource: mapState?.sourcePresent ?? false,
+        mapPitch: mapState?.pitch ?? 0,
+        mapBearing: mapState?.bearing ?? 0,
+        mapZoom: mapState?.zoom ?? 0,
+        renderedBuildingCount: mapState?.renderedBuildingCount ?? 0,
         screenshot: file,
       });
       await context.close();
@@ -95,7 +131,7 @@ try {
     zeroDbWritesByScript: true,
     zeroDeploymentActionsByScript: true,
     baseUrl,
-    scenarios: scenarios.map(({ name, path: scenarioPath }) => ({ name, path: scenarioPath })),
+    scenarios: scenarios.map(({ name, path: scenarioPath, threeDExpected }) => ({ name, path: scenarioPath, threeDExpected })),
     results,
   };
   await fs.writeFile(path.join(outDir, 'summary.json'), JSON.stringify(summary, null, 2));
@@ -105,6 +141,14 @@ try {
   if (results.some((r) => r.hasVivreIciPage !== 1 || r.hasDecisionRail !== 1 || r.vivreIciTextCount < 1)) process.exitCode = 3;
   if (results.some((r) => r.nationalView !== (r.scenario === 'national' ? 'morocco' : 'city'))) process.exitCode = 4;
   if (results.some((r) => r.neighborhoodContext && (r.poiControls !== 1 || r.poiAvailableToggle + r.poiUnavailable !== 1))) process.exitCode = 5;
+  if (results.some((r) => r.threeDExpected && (
+    r.threeDToggle !== 1
+    || !r.threeDLayer
+    || !r.threeDSource
+    || r.mapPitch < 45
+    || r.mapZoom < 13
+    || r.renderedBuildingCount < 1
+  ))) process.exitCode = 6;
 } finally {
   await browser?.close();
   server.kill('SIGTERM');
