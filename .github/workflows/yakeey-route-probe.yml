@@ -1,0 +1,38 @@
+name: AkarFinder - Yakeey Route Probe
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/acquisition/yakeey-route-probe.py'
+      - '.github/workflows/yakeey-route-probe.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Probe Yakeey allowed routes
+        run: python scripts/acquisition/yakeey-route-probe.py
+      - name: Verify proof
+        run: |
+          python - <<'PY'
+          import json
+          s=json.load(open('artifacts/yakeey-route-probe/summary.json'))
+          assert s['zero_db_writes'] is True
+          assert s['robots_checked'] is True
+          print(json.dumps(s,indent=2,ensure_ascii=False))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: yakeey-route-probe-proof
+          path: artifacts/yakeey-route-probe/
+          if-no-files-found: error
