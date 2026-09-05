@@ -13,6 +13,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 concurrency:
   group: live-mubawab-full-${{ github.ref }}
@@ -33,19 +34,34 @@ jobs:
           node --test scripts/acquisition/__tests__/mubawab-exhaustive-enumerator.test.mjs
           node --test scripts/acquisition/__tests__/mubawab-supabase-shard-runner.test.mjs
 
-      - name: Full robots-safe Supabase shard-manifest replay
+      - name: Restore prior successful shard checkpoint
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CHECKPOINT_ARTIFACT_ID: '9967776380'
+        run: |
+          mkdir -p artifacts/mubawab-checkpoint-prev
+          curl --fail --silent --show-error --location \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/artifacts/$CHECKPOINT_ARTIFACT_ID/zip" \
+            -o /tmp/mubawab-checkpoint.zip
+          unzip -q /tmp/mubawab-checkpoint.zip -d artifacts/mubawab-checkpoint-prev
+          test -f artifacts/mubawab-checkpoint-prev/report.json
+
+      - name: Resume robots-safe Supabase shard-manifest replay
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           MUBAWAB_MANIFEST_LIMIT: '100000'
           MUBAWAB_MAX_REQUESTS: '100000'
           MUBAWAB_REQUEST_DELAY_MS: '2750'
+          MUBAWAB_CHECKPOINT_REPORT: artifacts/mubawab-checkpoint-prev/report.json
         run: |
           test -n "$SUPABASE_URL"
           test -n "$SUPABASE_SERVICE_ROLE_KEY"
           node scripts/acquisition/mubawab-supabase-shard-runner.mjs
 
-      - name: Strict full certification
+      - name: Strict cumulative certification
         run: |
           node - <<'NODE'
           const fs = require('fs');
@@ -55,37 +71,33 @@ jobs:
           if (report.zeroDbWrites !== true) throw new Error('zeroDbWrites must be true');
           if (report.requestDelayMs !== 2750) throw new Error(`request delay drift: ${report.requestDelayMs}`);
           if (!(report.safeShardCount > 0)) throw new Error('safeShardCount must be > 0');
-          if (report.selectedShardCount !== report.safeShardCount) {
-            throw new Error(`manifest incomplete: selected=${report.selectedShardCount} safe=${report.safeShardCount}`);
+          if (report.targetShardCount !== report.safeShardCount) {
+            throw new Error(`manifest incomplete: target=${report.targetShardCount} safe=${report.safeShardCount}`);
           }
-          if (report.requestCount !== report.selectedShardCount) {
-            throw new Error(`request coverage incomplete: requests=${report.requestCount} selected=${report.selectedShardCount}`);
+          if (report.totalCompletedShardCount !== report.targetShardCount) {
+            throw new Error(`cumulative shard coverage incomplete: completed=${report.totalCompletedShardCount} target=${report.targetShardCount}`);
+          }
+          if (report.remainingShardCount !== 0) {
+            throw new Error(`remainingShardCount must be 0, got ${report.remainingShardCount}`);
           }
           if (report.queueRemaining !== 0) {
             throw new Error(`queueRemaining must be 0, got ${report.queueRemaining}`);
           }
-          if (report.stoppedEarly) {
-            throw new Error(`unexpected early stop: ${report.stoppedEarly}`);
-          }
-          if (!(report.uniqueListingUrlCount > 0)) throw new Error('no listing URLs found');
-
-          const badFetches = (report.shards || []).filter(s => s.fetchState !== 'ok');
-          if (badFetches.length > 0) {
-            throw new Error(`non-ok shard fetches: ${badFetches.length}`);
-          }
-          const missingAttribution = (report.shards || []).filter(s => !Array.isArray(s.listingIds) || !Array.isArray(s.listingUrls));
-          if (missingAttribution.length > 0) {
-            throw new Error(`shards missing listing attribution: ${missingAttribution.length}`);
+          if (report.stoppedEarly) throw new Error(`unexpected early stop: ${report.stoppedEarly}`);
+          if (!(report.aggregatedUniqueListingIdCount > 0)) throw new Error('no aggregated listing IDs found');
+          if (!report.checkpoint || report.checkpoint.completedShardUrls.length !== report.targetShardCount) {
+            throw new Error('checkpoint does not cover all target shards');
           }
 
           console.log({
             sourceRowCount: report.sourceRowCount,
             safeShardCount: report.safeShardCount,
+            previousCompletedShardCount: report.previousCompletedShardCount,
             selectedShardCount: report.selectedShardCount,
-            requestCount: report.requestCount,
-            requestDelayMs: report.requestDelayMs,
-            uniqueListingUrlCount: report.uniqueListingUrlCount,
-            queueRemaining: report.queueRemaining,
+            currentCompletedShardCount: report.currentCompletedShardCount,
+            totalCompletedShardCount: report.totalCompletedShardCount,
+            remainingShardCount: report.remainingShardCount,
+            aggregatedUniqueListingIdCount: report.aggregatedUniqueListingIdCount,
             stoppedEarly: report.stoppedEarly,
             zeroDbWrites: report.zeroDbWrites,
           });
