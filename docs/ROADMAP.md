@@ -1,103 +1,271 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
-**Version : 2026-08-31**  
-**Statut : DATA MASS-INDEX CLOSED / ACQUISITION VOLUME SAFE CONVERSION CLOSED**
+**Version : 2026-09-05**  
+**Statut : MARKET COVERAGE — MASS DISCOVERY ACTIVE**
 
-Ce fichier est l’unique vérité canonique globale pour l’ordre des chantiers, leur état et leur progression.
-
-## 1. Chantier P0 — DATA MASS-INDEX ✅ CLOSED
-
-**Issue canonique : #854**  
-**Plan : `docs/MASS_INDEX.md`**
-
-### Goal
-Construire l’index le plus large possible de l’immobilier marocain dans AkarFinder, avec provenance réelle, déduplication, fraîcheur et séparation stricte entre index externe minimal et contenu partenaire riche.
-
-### Doctrine
-`DISCOVERED -> INDEXED_EXTERNAL -> ENRICHED -> PARTNER_FULL`
-
-Aucun contournement login/CAPTCHA/paywall/anti-bot. Aucun contenu riche externe copié par défaut. Aucun provider relabel. Aucun Vercel sans autorisation explicite.
-
-### Progression stricte
-
-**8/8 lots CLOSED = 100 %.**
-
-| Lot | Scope | État | Preuve principale |
-|---|---|---|---|
-| M0 | Current-main audit + baseline fraîche | ✅ CLOSED | `docs/MASS_INDEX_M0_AUDIT.md` |
-| M1 | Universal candidate promotion | ✅ CLOSED | run `32577296107` SUCCESS |
-| M2 | External Index model | ✅ CLOSED | run `32580352867` SUCCESS |
-| M3 | Source Factory adapters | ✅ CLOSED | PR #863 ; run `32594176513` SUCCESS |
-| M4 | National MASS ingest | ✅ CLOSED | PR #871 ; run `32610621902` SUCCESS |
-| M5 | Dedup + freshness hardening | ✅ CLOSED | PR #874 + #876 ; runs `32611464377` + `32631787333` SUCCESS |
-| M6 | Search activation + SEO | ✅ CLOSED | production `dpl_GHqzoTyvJpsTo1R5D8yELfbrbtq6` certifiée |
-| M7 | Conversion partenaires + droits | ✅ CLOSED | PR #890/#891/#893/#895 ; M7-E live certified |
-
-### M6 — closeout certifié
-- production : `dpl_GHqzoTyvJpsTo1R5D8yELfbrbtq6`, alias `akarfinder.vercel.app`, SHA `6ade8c35dcaad013cef28422137dbad83ea1dbdf` ;
-- ODM 100 % sur requêtes compatibles ; fallback legacy contrôlé ;
-- SQL + Node servent `fresh_confirmed` uniquement ; `seed_only` rejeté ;
-- `/search` : `noindex, follow`, canonical `/search` ; absent du sitemap ;
-- aucun 5xx Search observé pendant la fenêtre de certification ;
-- rollback disponible sans rollback DB destructif.
-
-### M7 — closeout certifié
-- M7-A : hardening `saved_alerts` live ; `anon/authenticated` refusés, `service_role` conservé ; PR #890 ; run `32702512105` SUCCESS ;
-- M7-B : `external_source_claims_v1` live, RLS active, direct client access refusé, `content_enrichment_authorized=false` verrouillé ; PR #891 ;
-- M7-C : `PARTNER_FULL` reste fail-closed ; aucun partenaire actif sans droits explicites ;
-- M7-D : funnel d’autorisation dormant ; 0 contact envoyé, 0 autorisation écrite, 0 activation partenaire ;
-- M7-E : fuite de projection publique riche détectée puis corrigée ; PR #893, run `32705238465` SUCCESS ;
-- récupération lien-only : PR #895, run `32706329238` SUCCESS, merge `baf8baf8fe61ee9b6de975ebeaf04bb3c344c20d` ;
-- migration live `m7_public_search_link_only_recovery` appliquée ;
-- validation live Rabat : 101 résultats, 101 `fresh_confirmed`, 0 `seed_only`, 101 lane `external_minimal_index`, 4 domaines ;
-- lane externe minimale : 0 snippet, 0 prix, 0 surface, 0 price/m² ;
-- sources `authorization_status=prohibited` : 0 résultat public ;
-- RPC publique privilégiée : `anon/authenticated EXECUTE=false`, `service_role=true`.
-
-### Vérité quantitative
-- `source_offer_seeds` certifié : 57 843 lignes et 57 843 URL canoniques distinctes au snapshot M7-E ;
-- ce chiffre mesure des URL canoniques d’index, **pas des biens immobiliers uniques**.
-
-### Maintenance ingestion — 2026-08-25 ✅ CLOSED
-
-| Incident | Résolution | Preuve runtime |
-|---|---|---|
-| OpenSERP `discovery_candidates` collision / lookup PostgREST >1 000 | PR #878, atomic PostgreSQL RPC | run `32766339030` ; `docs/OPENSERP_ATOMIC_UPSERT_CLOSEOUT.md` |
-| Common Crawl remainder import timeout `57014` | PR #910, chunks 100 + retry borné | run `32829365500` ; `docs/COMMONCRAWL_IMPORT_TIMEOUT_CLOSEOUT.md` |
-| Public Sitemap deep offset ~8000 timeout | UUID keyset pagination on `main`; PR #884 supersédée | run `32766268682` ; `docs/PUBLIC_SITEMAP_OFFSET_TIMEOUT_CLOSEOUT.md` |
-| OpenSERP `property_listings` duplicate conflict key | PR #911, dedupe par `canonical_fingerprint` | run DB `openserp-github-cron-2026-08-25T20-02-23-835Z` ; 12 property rows + 12 source rows touchées ; `docs/OPENSERP_PROPERTY_LISTINGS_BATCH_DEDUPE_CLOSEOUT.md` |
-
-Les quatre incidents sont fermés par preuve. Les erreurs PostgreSQL `ON CONFLICT DO UPDATE command cannot affect row a second time` observées avant le correctif ne réapparaissent pas dans la fenêtre du run certifiant de 20:02Z à 20:07Z.
-
-### Acquisition volume — Seed Mass Conversion — 2026-08-31 ✅ CLOSED
-
-Closeout : `docs/COMMONCRAWL_RECENT_CONFIRMATION_V1_2_CLOSEOUT.md`.
-
-- provenance CDX certifiée jusqu’à `source_offer_seeds.last_observed_at` ;
-- 4 758 / 4 758 seeds V1 passent le gate exact-URL : aucun élargissement regex requis ;
-- 13 captures restaient dans la fenêtre policy de 14 jours ; le seul blocage commun était la ville ;
-- récupération fail-closed retenue : 12 URLs, 10 identifiants provider numériques distincts ; `M'diq-Fnideq` reste exclu ;
-- PR #957 ; merge `9fbfc94e784ed0602aafd0e7f95a2b15700b413b` ; gate `33380261508` SUCCESS ;
-- migration live `20260831100334 commoncrawl_recent_confirmation_v1_2_city_recovery` ;
-- batch `cb4aedee-1f8a-410e-b9de-c3c9abd348c1` : 12/12 activées ;
-- strict-served : **2 005 -> 2 017**, delta **+12 exact** ;
-- 12/12 `fresh_confirmed`, 12/12 LISTING HIGH, 0 titre/snippet/prix/surface exposé ;
-- candidats V1.2 restants : 0 ;
-- aucun déploiement Vercel.
-
-### Next exact
-Seed Mass Conversion est fermé. Le prochain lot de croissance doit mesurer en lecture seule le réservoir **Common Crawl récent + policy admissible hors allowlist V1**, puis ne proposer une extension que si le rendement net est significatif et sans fausse fraîcheur.
+> **SOURCE UNIQUE DE VÉRITÉ GLOBALE.**
+> Ce fichier est la seule boussole pour la stratégie, les priorités, les jalons, la couverture et l’ordre d’exécution AkarFinder.
+> Les autres fichiers `*_CANONICAL.md` sont des specs canoniques **de leur périmètre seulement** ; ils ne remplacent jamais cette roadmap globale.
+> `docs/SESSION.md` est un handover court et doit toujours renvoyer ici.
 
 ---
 
-## 2. Homepage Visual Reconciliation ✅ CLOSED
-Issue #849 : 6/6 CLOSED = 100 %. Preuve finale : PR #861 ; merge `78079f179ffbbf6285e23bf86ba18c609563f661` ; run `32595444588` SUCCESS ; artifact `9481435261` ; score 9,4/10 ; human gate APPROVED.
+## 1. NORTH STAR
 
-## 3. Règles permanentes
-- provenance + canonical URL obligatoires ;
-- aucune métrique propriété unique avant dédup certifiée ;
-- writer idempotent, budgets, rollback et circuit breakers ;
-- aucune donnée inventée ;
-- aucune copie implicite de contenu riche externe ;
-- CI pending n’arrête pas le travail indépendant ;
-- **aucun déploiement Vercel sans autorisation explicite**.
+Construire le **Property Graph le plus large possible du marché immobilier marocain** à partir de surfaces publiques récupérables et traçables, avec bruit accepté au stade de découverte puis classement, déduplication et fraîcheur en aval.
+
+### Objectifs quantitatifs
+
+- **Stretch discovery : >= 250 000 candidates L0/L1 uniques** ;
+- **Goal principal : >= 200 000 candidates exploitables** ;
+- mesurer séparément les **clusters probablement uniques** et les **annonces probablement actives** ;
+- ne jamais présenter `candidate`, `URL`, `ID source` ou `représentation` comme un bien immobilier unique sans preuve dédiée.
+
+Le cap 200k porte donc d’abord sur un **lac de découverte massif**, pas sur une affirmation de 200k biens uniques actifs.
+
+---
+
+## 2. DOCTRINE DE COUVERTURE
+
+### Couches
+
+| Couche | Définition | Tolérance au bruit |
+|---|---|---|
+| **L0 — Discovery** | URL / ID / représentation candidate avec provenance | élevée |
+| **L1 — Observed** | candidate effectivement observée sur une surface publique autorisée | moyenne |
+| **L2 — Normalized** | ville, type, transaction, prix, surface, source, etc. normalisés quand disponibles | faible |
+| **L3 — Active** | preuve récente et explicite que l’annonce paraît encore active | minimale |
+
+### Règle fondamentale
+
+**Collecter large, conserver la preuve, dédupliquer tard.**
+
+On ne détruit pas une ligne source parce qu’elle ressemble à une autre. On conserve la provenance puis on crée un `property_cluster_id` avec un niveau de confiance.
+
+### Champs minimaux à préserver
+
+`source`, `source_id`, `source_url`, `canonical_url`, `title`, `city`, `district`, `transaction`, `property_type`, `price`, `surface`, `phone_hash`, `image_hash`, `first_seen`, `last_seen`, `evidence`, `layer`, `freshness_confidence`, `property_cluster_id`.
+
+### KPI obligatoire par lane
+
+`found -> overlap/already_seen -> net_new -> candidate_union -> probable_unique -> live_confidence`
+
+Aucune lane n’est jugée sur le nombre de pages parcourues seul.
+
+---
+
+## 3. NON-NÉGOCIABLES
+
+- respecter `robots.txt`, limites publiques et contraintes explicites des sources ;
+- aucun contournement login, CAPTCHA, paywall, anti-bot ou API privée ;
+- **Avito : 0 requête directe** pour les lanes d’indexation indirecte ;
+- provenance et evidence obligatoires ;
+- bruit accepté en L0/L1, mais jamais transformé en certitude ;
+- `candidate != active` ; `candidate != authorization` ; `URL != property unique` ;
+- ne jamais annoncer `100 %` sans dénominateur mesurable ;
+- déduplication non destructive ;
+- CI en cours n’arrête pas les travaux indépendants ;
+- **aucun déploiement Vercel sans autorisation explicite** ;
+- **aucune écriture Supabase / production sans gate humain explicite séparé**.
+
+---
+
+## 4. SCOREBOARD CERTIFIÉ — AVITO INDIRECT
+
+| Lane | Found | Overlap | Net-new | Union certifiée | Statut | Preuve |
+|---|---:|---:|---:|---:|---|---|
+| Kaynly public graph | 5 807 | — | 5 807 | **5 807** | ✅ EXHAUSTED | artifact `9965997820`, SHA256 `a315502dd6e4cc59d6c4dfcac8199d12ae6f15e023a110d10b1006f68a35301c` |
+| Common Crawl RE exact | 782 | 8 | 774 | **6 581** | ✅ CLOSED | artifact `9968819905`, digest `0376eda9950b3afbef8f298436a84931d8ac271b7fdffaa964b66607c9052c6f` |
+| Wayback 2025–2026 | 0 | 0 | 0 | 6 581 | ⏸ PARKED | rendement nul |
+| AlerteImmo 8 shards | 4 813 | 418 | 4 395 | **10 976** | ✅ SUPERSEDED BY FULL | run `33970879901`, artifact `9970941650` |
+| **AlerteImmo full sitemap 24 shards** | **14 540** | **5 777** | **8 763** | **19 739** | ✅ CLOSED | run `33971383335`, artifact `9971118875`, digest `sha256:8db625a5217b4032af9b5a9202e74603c3b6c2d5f4f4f612eb3fa56b79455393` |
+
+### Certification AlerteImmo full
+
+- sitemap : **4 434 / 4 434 routes visitées** ;
+- 24/24 shards complets ;
+- erreurs : **0** ;
+- direct Avito requests : **0** ;
+- contenu Avito fetché : **non** ;
+- gain vs baseline 10 976 : **+79,84 %** ;
+- `exhaustive_claim` limité au **sitemap public AlerteImmo observé**, jamais à Avito entier ni au marché entier.
+
+**Baseline Avito indirecte canonique actuelle : 19 739 IDs candidats certifiés.**
+
+---
+
+## 5. PROBE DE RÉCUPÉRABILITÉ MULTI-SITES — 2026-09-05
+
+Run `33971441131` ✅ SUCCESS ; artifact `9971074508`, digest `sha256:0899ec82c4d0dd876578a23c9735486ee4f6772c734a7770926538884708c054`.
+
+| Source | robots lisible | Racine autorisée | Sitemap observé | Décision immédiate |
+|---|---|---|---:|---|
+| **Akaar** | ✅ | ✅ | 7 locs | **NEXT — inspecter sitemap puis mass discovery** |
+| **Domio** | ✅ | ✅ | 6 locs | **NEXT — inspecter sitemap puis mass discovery** |
+| **MarocAnnonces** | ✅ | ✅ | 0 | **NEXT — cartographier pagination publique** |
+| **ImmoDirect** | ✅ | ✅ | 10 locs observées | **NEXT — inspecter les sitemap indexes** |
+| **MAnonce** | ✅ | ✅ | 0 | PROBE pagination / routes publiques |
+| **Sarout** | ✅ | ❌ racine | 0 | HOLD direct ; chercher uniquement route explicitement autorisée / surface tierce |
+| **MarocImmo** | ✅ | ❌ racine | 0 | HOLD direct ; chercher uniquement route explicitement autorisée / surface tierce |
+| **Sekna** | ✅ | ❌ racine | 0 | HOLD direct ; chercher uniquement route explicitement autorisée / surface tierce |
+
+`root_allowed=false` interdit de transformer un gros chiffre marketing en permission implicite. Le volume potentiel ne prime jamais sur les contraintes publiques.
+
+---
+
+## 6. RÉSERVOIRS ET PRIORITÉS
+
+Les chiffres externes non certifiés servent uniquement à **prioriser les probes**. Ils ne comptent pas dans le score canonique avant artifact de découverte.
+
+### Tier A — exécution prioritaire
+
+1. **Mubawab** — inventorier d’abord les artifacts/runs déjà présents dans le repo ; l’utilisateur signale >30k déjà trouvées, mais aucun exact canonique ne sera publié avant réconciliation artifact.
+2. **Akaar** — racine autorisée, sitemap présent ; forte priorité.
+3. **Domio** — racine autorisée, sitemap présent.
+4. **MarocAnnonces** — racine autorisée ; construire un crawler de pagination borné, checkpointé et robots-aware.
+5. **ImmoDirect** — racine autorisée, sitemap/index présent.
+
+### Tier B — lanes complémentaires
+
+- MAnonce ;
+- Agenz ;
+- Yakeey ;
+- autres agrégateurs / portails marocains dont l’accès public est prouvé ;
+- surfaces tierces qui exposent légalement des liens source.
+
+### Tier C — découverte indirecte massive
+
+- Common Crawl collections multiples / fenêtres temporelles ;
+- moteurs/index publics ou APIs de recherche autorisées ;
+- archives publiques ;
+- sitemaps/SEO lattices ;
+- datasets publics ;
+- partner feeds / exports fournis volontairement.
+
+Une lane à fort bruit peut rester utile si son **net-new marginal** est élevé et sa provenance est conservée.
+
+---
+
+## 7. ROADMAP QUANTITATIVE
+
+| Jalon | Critère | État |
+|---|---|---|
+| **M10K** | >=10k candidates certifiées sur une union mesurable | ✅ atteint |
+| **M20K** | >=20k candidates certifiées | 🟡 **19 739 — à 261 du seuil** |
+| **M25K** | >=25k candidates | NEXT |
+| **M50K** | >=50k candidates | PLANNED |
+| **M100K** | >=100k candidates | PLANNED |
+| **M200K** | >=200k candidates exploitables | NORTH STAR |
+| **M250K+** | >=250k L0/L1 discovery candidates | STRETCH |
+
+### Definition of Done — M200K
+
+M200K n’est CLOSED que si :
+
+1. `candidate_union >= 200 000` après normalisation minimale des identifiants ;
+2. provenance/evidence disponible pour **100 %** des candidates conservées ;
+3. score par `source`, `ville`, `layer`, fraîcheur et statut publié ;
+4. doublons exacts supprimés du compteur d’union mais représentations sources conservées ;
+5. clustering probable non destructif disponible ;
+6. distribution `L0/L1/L2/L3` publiée ;
+7. limites robots / droits / zones non récupérables documentées ;
+8. aucun chiffre `active` ou `unique property` inféré à partir du seul volume candidate.
+
+---
+
+## 8. PIPELINE CIBLE
+
+`DISCOVER -> RAW EVIDENCE ARTIFACT -> NORMALIZE -> EXACT DEDUPE -> CANDIDATE LAKE -> PROBABILISTIC CLUSTER -> FRESHNESS SCORE -> SEARCH/INDEX ELIGIBILITY`
+
+### Règle de promotion
+
+- L0/L1 peuvent être massifs et bruyants ;
+- L2 exige normalisation suffisamment fiable ;
+- L3 exige evidence récente ;
+- Search/production constitue un **gate séparé** du discovery lake.
+
+Le lac de candidats n’accorde aucune autorisation de publication riche.
+
+---
+
+## 9. RÈGLES DE DÉDUPLICATION
+
+### Exact
+
+- même `source + source_id` ;
+- même canonical URL ;
+- identifiant provider stable identique.
+
+### Probable — cluster uniquement, jamais suppression destructive
+
+Combinaisons possibles :
+- `phone_hash + city + price + surface` ;
+- `image_hash` / perceptual image signature ;
+- titre normalisé + quartier + surface + prix ;
+- coordonnées proches + caractéristiques convergentes.
+
+Chaque cluster garde toutes ses représentations et un `cluster_confidence`.
+
+---
+
+## 10. RÈGLES DE RENDEMENT / STOP
+
+Après un probe ou premier batch :
+
+- **>=1 000 net-new** : full sweep prioritaire ;
+- **300–999 net-new** : continuer si coût faible, en parallèle d’une autre lane ;
+- **<300 net-new** : lane secondaire / park sauf evidence d’un réservoir non encore atteint ;
+- erreurs, truncation et couverture de sitemap doivent être affichées séparément ;
+- un run `SUCCESS` ne signifie jamais automatiquement que la lane a atteint son Goal.
+
+---
+
+## 11. FILE D’EXÉCUTION CANONIQUE — NOW
+
+1. ✅ **Certifier AlerteImmo full sitemap** -> CLOSED à **19 739** union Avito indirecte.
+2. ✅ **Probe multi-sites** -> CLOSED ; Akaar/Domio/MarocAnnonces/ImmoDirect/MAnonce récupérables au niveau racine, trois autres HOLD direct.
+3. 🔵 **Mubawab inventory & reconciliation** -> retrouver les artifacts existants, mesurer exact found/duplicates/net-new et établir la baseline Mubawab canonique.
+4. 🔵 **Akaar sitemap expansion** -> compter les vraies URLs de listing / sources exposées et mesurer net-new.
+5. 🔵 **Domio sitemap expansion**.
+6. 🔵 **MarocAnnonces pagination expansion**.
+7. 🔵 **ImmoDirect sitemap expansion**.
+8. 🟡 **MAnonce route probe**.
+9. 🟡 **Agenz / Yakeey / autres surfaces autorisées**.
+10. 🟡 **Common Crawl multi-collection + search indexes + archives** pour bruit contrôlé et rattrapage historique.
+11. **Unifier le Candidate Lake** : exact dedupe + provenance + layer + freshness + clusters.
+12. **Gate humain séparé** avant toute écriture Supabase/search prod ou déploiement Vercel.
+
+La règle d’or de la file : **le chantier ne s’arrête pas parce qu’une CI indépendante est pending**.
+
+---
+
+## 12. HISTORIQUE STRUCTUREL — CLOSED, À NE PAS RESSUSCITER
+
+### DATA MASS-INDEX — 8/8 CLOSED
+
+M0→M7 restent fermés. Les preuves détaillées historiques restent dans leurs docs (`docs/MASS_INDEX.md`, closeouts ingestion, Common Crawl V1.2, etc.).
+
+Vérités à conserver :
+- `source_offer_seeds` / représentations publiques ne sont pas des biens uniques ;
+- provenance ≠ permission ;
+- quality ≠ eligibility ≠ permission ;
+- Search activation / contenu riche / partenariat restent des gates séparés ;
+- les anciennes preuves ne définissent plus la priorité courante : **la priorité courante est MARKET COVERAGE / M200K**.
+
+### Homepage / visuel / ranking / SEO
+
+Les lots CLOSED gardent leurs preuves dans les specs de périmètre et le README. Ils ne concurrencent pas cette roadmap pour définir le **Next exact**.
+
+---
+
+## 13. NEXT EXACT
+
+**Atteindre M25K puis M50K sans attendre une source parfaite.**
+
+Action immédiate :
+1. réconcilier le stock Mubawab déjà découvert dans les artifacts GitHub ;
+2. en parallèle, ouvrir Akaar puis Domio/MarocAnnonces/ImmoDirect selon rendement ;
+3. unionner chaque lane dans le Candidate Lake en publiant `found / overlap / net-new / union` ;
+4. conserver le bruit en L0/L1 au lieu de le supprimer prématurément.
+
+**Boussole : 250k discovery candidates -> >=200k exploitables -> clusters/fraîcheur mesurés séparément.**
