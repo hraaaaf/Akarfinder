@@ -15,10 +15,10 @@ permissions:
 jobs:
   kaynly-radar:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     env:
-      KAYNLY_RADAR_MAX_PAGES: "700"
-      KAYNLY_RADAR_MAX_IDS: "5000"
+      KAYNLY_RADAR_MAX_PAGES: "1400"
+      KAYNLY_RADAR_MAX_IDS: "8000"
       KAYNLY_RADAR_DELAY_MS: "650"
     steps:
       - uses: actions/checkout@v4
