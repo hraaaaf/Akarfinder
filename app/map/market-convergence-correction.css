@@ -42,18 +42,20 @@
   }
 }
 
-/* A selected market zone owns the lower-sheet surface on mobile/tablet.
-   Keep the P4 rail in exploration, then remove the competing chrome once the
-   richer zone sheet is open. The legend is redundant in that selected state. */
+/* A selected rich zone owns the lower-sheet surface on mobile/tablet.
+   Vivre ici keeps a compact decision rail visible while exploring, then gives
+   that space to the city preview or richer zone sheet only when needed. */
 @media (max-width: 1023px) {
   [data-p4-map-layout]:has([data-akarfinder-rich-zone-sheet]) .p4-map-decision-rail,
   [data-p4-map-layout]:has([data-akarfinder-rich-zone-sheet]) [data-akarfinder-intelligence-legend] {
     display: none !important;
   }
 
-  /* National territorial navigation owns the lower mobile/tablet surface.
-     Its first-tap city preview must never compete with the generic P4 rail. */
   [data-p4-map-layout]:has([data-akarfinder-national-map]) .p4-map-decision-rail {
+    display: block !important;
+  }
+
+  [data-p4-map-layout]:has([data-akarfinder-city-preview]) .p4-map-decision-rail {
     display: none !important;
   }
 }
