@@ -1,0 +1,48 @@
+name: L8 artifact validity sample
+
+on:
+  push:
+    branches: [feat/l8-artifact-validity-sample]
+    paths:
+      - 'scripts/acquisition/l8_artifact_validity_sample.py'
+      - '.github/workflows/l8-artifact-validity-sample.yml'
+
+concurrency:
+  group: l8-artifact-validity-sample-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sample:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      actions: read
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Download Sarouty certified artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: sarouty-property-full-enumeration
+          path: artifacts/input/sarouty
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: hraaaaf/Akarfinder
+          run-id: 33765427351
+      - name: Run isolated Sarouty detail validity + canonical sample
+        working-directory: scripts/acquisition
+        run: |
+          python l8_artifact_validity_sample.py \
+            --sarouty ../../artifacts/input/sarouty/listing-urls.txt \
+            --sources sarouty \
+            --per-source 2
+      - name: Upload evidence
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: l8-artifact-validity-sample-sarouty
+          path: scripts/acquisition/artifacts/morocco-web-l8-artifact-validity/
+          if-no-files-found: error
+          retention-days: 14
