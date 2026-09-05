@@ -1,14 +1,13 @@
 import type { Metadata } from "next";
 
 import {
-  CITY_INTENT_REVALIDATE_SECONDS,
   generateCityIntentMetadata,
   renderCityIntentPage,
 } from "@/lib/seo-city-pages/intent-route";
 
 type Props = { params: Promise<{ city: string }> };
 
-export const revalidate = CITY_INTENT_REVALIDATE_SECONDS;
+export const revalidate = 3600;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { city } = await params;
