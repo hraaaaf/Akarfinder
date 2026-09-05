@@ -28,52 +28,56 @@ export function P4MapDecisionRail() {
     : null;
   const provider = getPremiumMarketIntelligenceProvider(navigationState.city);
   const searchHref = buildMapSearchHref(navigationState);
+  const title = cityName === "Maroc" ? "Où vivre au Maroc ?" : `Vivre à ${cityName}`;
 
   return (
     <aside
       className="p4-map-decision-rail"
       data-p4-map-decision-rail
-      aria-label="Marché et biens de la zone affichée"
+      aria-label="Vivre ici : territoire, vie locale et biens"
     >
       <div className="p4-sheet-handle" aria-hidden="true" />
 
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-[9px] font-extrabold uppercase tracking-[0.16em] text-brand-primary">Intelligence territoriale</p>
+          <p className="text-[9px] font-extrabold uppercase tracking-[0.16em] text-brand-primary">Vivre ici · AkarFinder</p>
           <h2 className="mt-1 truncate text-[19px] font-extrabold tracking-[-0.025em] text-foreground">
-            {cityName} · Marché & biens
+            {title}
           </h2>
           <p className="mt-1 text-[10.5px] leading-4 text-muted-foreground">
             {districtEntity
-              ? `${districtEntity.canonical_name} reste dans la même session de recherche.`
-              : "Explorez le territoire puis ouvrez les biens sans perdre votre contexte."}
+              ? `${districtEntity.canonical_name} · quartier, repères disponibles et biens dans le même contexte.`
+              : "Explorez les quartiers, le marché observé et les lieux du quotidien disponibles avant de voir les biens."}
           </p>
         </div>
         <span className="shrink-0 rounded-full border border-border bg-surface-muted px-2.5 py-1 text-[8.5px] font-extrabold text-muted-foreground">
-          AkarFinder
+          Territoire
         </span>
       </div>
 
-      <div className="mt-3 flex gap-2">
-        <Link href={searchHref} className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-brand-primary px-3 text-[10px] font-extrabold text-white shadow-sm">
-          <Building2 size={12} aria-hidden="true" /> Biens
-        </Link>
+      <div className="mt-3 flex flex-wrap gap-2" aria-label="Parcours Vivre ici">
         <span className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-border bg-surface px-3 text-[10px] font-extrabold text-foreground">
           <Layers3 size={12} aria-hidden="true" /> Quartiers
         </span>
+        <span className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-border bg-surface px-3 text-[10px] font-extrabold text-foreground">
+          <MapPin size={12} aria-hidden="true" /> Vie locale
+        </span>
+        <Link href={searchHref} className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-brand-primary px-3 text-[10px] font-extrabold text-white shadow-sm">
+          <Building2 size={12} aria-hidden="true" /> Biens
+        </Link>
       </div>
 
       <div className="mt-3 rounded-2xl border border-brand-primary/15 bg-brand-primary-soft/45 p-3" data-p4-map-data-contract>
         <p className="text-[9px] font-extrabold uppercase tracking-[0.12em] text-brand-primary">
-          {provider === "rabat-market-intelligence" ? "Marché observé" : "Repères territoriaux"}
+          {provider === "rabat-market-intelligence" ? "Marché observé" : "Repères disponibles"}
         </p>
         <p className="mt-1 text-[11px] font-extrabold text-foreground">
           {provider === "rabat-market-intelligence"
             ? "Prix · Densité · Annonces"
-            : "Territoire · Prix exacts disponibles"}
+            : "Territoire · quartiers · positions certifiées"}
         </p>
         <p className="mt-1 text-[9.5px] leading-4 text-muted-foreground">
-          Aucune valeur, limite ou position précise n’est inventée lorsqu’elle n’est pas certifiée.
+          Aucune valeur, limite, position ou proximité précise n’est inventée lorsqu’elle n’est pas certifiée.
         </p>
       </div>
 
@@ -98,7 +102,7 @@ export function P4MapDecisionRail() {
           href={searchHref}
           className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-brand-primary px-4 text-[11.5px] font-extrabold text-white shadow-accent transition hover:bg-brand-primary-hover"
         >
-          <Search size={14} aria-hidden="true" /> Rechercher dans cette zone
+          <Search size={14} aria-hidden="true" /> Voir les biens de cette zone
         </Link>
         {districtEntity?.seo_eligible && cityEntity ? (
           <Link
