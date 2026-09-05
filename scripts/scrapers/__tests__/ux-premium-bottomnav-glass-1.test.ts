@@ -19,7 +19,7 @@ test("UX-PREMIUM-BOTTOMNAV-GLASS-1 canonical navigation contract", () => {
   for (const [href, label] of [
     ["/search", "Explorer"],
     ["/favorites", "Favoris"],
-    ["/map", "Carte"],
+    ["/map", "Vivre ici"],
     ["/alerts", "Alertes"],
     ["/mon-projet", "Mon Projet"],
   ]) {
