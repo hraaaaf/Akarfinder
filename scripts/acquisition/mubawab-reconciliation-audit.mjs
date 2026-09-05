@@ -6,20 +6,24 @@ const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
 if (!url || !key) throw new Error('Missing Supabase read credentials');
 
 const headers = { apikey: key, Authorization: `Bearer ${key}` };
-const pageSize = 500;
+const pageSize = 1000;
 const rows = [];
 let lastId = null;
+let scannedRows = 0;
 for (;;) {
   const endpoint = new URL('/rest/v1/discovery_candidates', url);
-  endpoint.searchParams.set('select', 'id,canonical_url,discovery_status,last_seen_at');
-  endpoint.searchParams.set('source_domain', 'eq.mubawab.ma');
+  endpoint.searchParams.set('select', 'id,source_domain,canonical_url,discovery_status,last_seen_at');
   endpoint.searchParams.set('limit', String(pageSize));
   endpoint.searchParams.set('order', 'id.asc');
   if (lastId) endpoint.searchParams.set('id', `gt.${lastId}`);
   const res = await fetch(endpoint, { headers });
   if (!res.ok) throw new Error(`Supabase read failed: ${res.status} ${await res.text()}`);
   const batch = await res.json();
-  rows.push(...batch);
+  scannedRows += batch.length;
+  for (const r of batch) {
+    const host = String(r.source_domain || '').toLowerCase().replace(/^www\./, '');
+    if (host === 'mubawab.ma') rows.push(r);
+  }
   if (batch.length < pageSize) break;
   lastId = batch.at(-1)?.id;
   if (!lastId) throw new Error('Keyset pagination lost last id');
@@ -44,9 +48,10 @@ const safePath = raw => {
 const summary = {
   generated_at: new Date().toISOString(),
   source: 'public.discovery_candidates',
-  source_filter: 'source_domain = mubawab.ma',
-  pagination: 'id keyset',
+  source_filter: 'local source_domain normalization == mubawab.ma',
+  pagination: 'full-table id keyset; local filter',
   zero_db_writes: true,
+  scanned_rows: scannedRows,
   raw_rows: rows.length,
   unique_canonical_urls: uniq.size,
   exact_duplicates: rows.length - uniq.size,
