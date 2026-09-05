@@ -1,0 +1,88 @@
+name: AkarFinder - Avito Wayback Radar
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/avito-wayback-radar.yml"
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: avito-wayback-radar
+  cancel-in-progress: false
+
+jobs:
+  wayback-radar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      BASELINE_ARTIFACT_ID: "9968819905"
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Download certified 6581-ID union
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p baseline
+          gh api "/repos/${GITHUB_REPOSITORY}/actions/artifacts/${BASELINE_ARTIFACT_ID}/zip" > baseline.zip
+          unzip -q baseline.zip -d baseline
+          UNION="$(find baseline -type f -name union_ids.txt -print -quit)"
+          test -n "$UNION"
+          test "$(wc -l < "$UNION" | tr -d ' ')" = "6581"
+          echo "UNION_IDS=$UNION" >> "$GITHUB_ENV"
+
+      - name: Run Wayback CDX real-estate radar
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/avito_wayback_radar.py \
+            --baseline "$UNION_IDS" \
+            --output avito-wayback-proof \
+            --from-year 2025 \
+            --to-year 2026 \
+            --limit 5000 \
+            --max-pages 20 \
+            --sleep 1.5
+
+      - name: Publish summary
+        if: always()
+        shell: bash
+        run: |
+          if [[ -f avito-wayback-proof/summary.json ]]; then
+            python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          d=json.load(open('avito-wayback-proof/summary.json',encoding='utf-8'))
+          print('# Avito Public Surface Union - Wayback CDX')
+          print()
+          print(f"- Baseline union: **{d['baseline_unique_ids']:,}**")
+          print(f"- Wayback unique IDs: **{d['wayback_unique_ids']:,}**")
+          print(f"- Overlap: **{d['overlap_with_baseline']:,}**")
+          print(f"- Net new: **{d['net_new_vs_baseline']:,}**")
+          print(f"- New union: **{d['union_unique_ids']:,}**")
+          print(f"- Gain: **{d['gain_pct']:.2f}%**")
+          print(f"- Direct Avito requests: **{d['safety']['direct_avito_requests']}**")
+          print(f"- Truncated: **{d['limits']['truncated']}**")
+          print(f"- Errors: **{len(d['errors'])}**")
+          PY
+          fi
+
+      - name: Upload proof artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: avito-wayback-radar-proof
+          path: avito-wayback-proof/
+          if-no-files-found: warn
+          retention-days: 30
