@@ -6,9 +6,8 @@
 **Statut : ACTIVE**  
 **Dernière mise à jour : 2026-09-05**  
 **Repo : `hraaaaf/Akarfinder`**  
-**Main de départ SEO-4 UI : `f72b312fb0183218e879d0e4ef2c80e9116da60c`**  
-**Branche active : `feat/seo4-city-intent-landings-v1`**  
-**PR active : #1009**  
+**Main vérifié : `93c54a04c243e4047c810cdbabe65f8bda37ea2d`**  
+**SEO-4 UI : MERGED / PROD PENDING**  
 **Preuve baseline : `AKARFINDER_SEO_AUDIT_2026-09-04.md`**
 
 ---
@@ -44,13 +43,13 @@ Snapshot revalidé : les 10 couples `5 villes SEO V1 × acheter/louer` passent l
 - SEO-3B3 — gate quartier — #1003 ✅
 - SEO-3C — `/neuf` fail-closed — #1004 ✅ code / **PROD PENDING**
 - SEO-4 PREP — contrat ville×intention — #1006 ✅
-- Closeout SEO-4 PREP — #1007 ✅, `main=f72b312f…`
+- SEO-4 UI — landings ville×transaction — #1009 ✅, merge `93c54a04c243e4047c810cdbabe65f8bda37ea2d`
 
 Aucun déploiement Vercel autorisé/effectué dans ces lots.
 
 ---
 
-## 4. SEO-4 UI — PROTOCOLE VISUEL
+## 4. SEO-4 UI — PREUVES
 
 ### BEFORE ✅
 
@@ -64,14 +63,6 @@ LIVE `/immobilier/casablanca` capturé via GitHub Actions :
 - robots `index, follow` ;
 - canonical `https://akarfinder.vercel.app/immobilier/casablanca`.
 
-### Goal
-
-Créer `/immobilier/{ville}/acheter` et `/immobilier/{ville}/louer` comme extensions naturelles de la page ville : intention immédiate, preuve stock/source explicite, résultats plus tôt sur mobile, Search préfiltré, indexation pilotée par gate, aucune duplication de grille.
-
-### Référence
-
-Shell visuel ville existant + `GeoResultPreview` existant. Suppression du grand bloc carte dans le hero intention ; carte conservée comme CTA secondaire.
-
 ### AFTER ✅
 
 Le vrai composant `CityIntentLanding` a été rendu dans un harness local GitHub Actions non committé :
@@ -80,44 +71,47 @@ Le vrai composant `CityIntentLanding` a été rendu dans un harness local GitHub
 - artifact **9963390475** ;
 - viewports **390 / 430 / 768 / 1280** ;
 - HTTP 200 sur les 4 captures ;
-- H1 `Acheter à Casablanca` sur les 4 captures.
+- H1 `Acheter à Casablanca` sur les 4 captures ;
+- score visuel de revue : **9,5/10**.
 
-Comparaison vérifiée :
+Comparaison vérifiée : intention immédiate, preuve stock/source explicite, résultats remontés sur mobile, grille 2 colonnes à 768 et 3 colonnes à 1280, aucun overflow observé.
 
-- 390/430 : intention immédiatement lisible, preuve 20/3 compacte, résultats remontés nettement avant le niveau où se trouvait la carte dans le BEFORE, aucun overflow observé ;
-- 768 : grille 2 colonnes cohérente ;
-- 1280 : hero intention + preuve équilibrés, grille 3 colonnes compacte ;
-- le bandeau mobile fixe visible au milieu des screenshots full-page est un artefact de stitching Playwright des éléments `position: fixed`, pas une rupture de layout observée.
-
-**Score visuel de revue : 9,5/10.**
-
-Les PR temporaires de capture #1008, #1010 et #1011 ont été fermées sans merge.
+PR temporaires de capture #1008, #1010, #1011 fermées sans merge.
 
 ---
 
-## 5. SEO-4 UI — IMPLÉMENTATION #1009
+## 5. SEO-4 UI — LIVRÉ
 
-Livré sur `feat/seo4-city-intent-landings-v1` :
+PR **#1009** mergée sur `main`.
+
+Livré :
 
 - `components/seo/CityIntentLanding.tsx` ;
 - builder serveur `lib/seo-city-pages/intent-route.tsx` ;
-- routes statiques `app/immobilier/[city]/acheter/page.tsx` et `louer/page.tsx` ;
+- routes statiques `/immobilier/[city]/acheter` et `/immobilier/[city]/louer` ;
 - self-canonical + metadata transactionnelles ;
-- `robots index/noindex` via `getSeoCityIntentIndexability()` ;
-- `revalidate = 3600` en littéral Next.js ;
+- `robots index/noindex` via le gate ville×intention ;
+- `revalidate = 3600` ;
 - Search préfiltré `buy/rent` ;
-- sitemap ville×intention uniquement si le sous-gate correspondant passe ;
-- classification UI Inventory ajoutée pour les deux nouvelles routes dynamiques ;
-- tests source/contrat ajoutés ;
+- sitemap ville×intention uniquement si le sous-gate passe ;
+- classification UI Inventory des deux routes ;
+- tests SEO source/contrat ;
 - aucune DB write ;
 - aucun nouveau droit image.
 
-Corrections de certification déjà appliquées :
+Preuves HEAD final avant merge :
 
-1. UI Inventory : ajout des fixtures `/immobilier/rabat/acheter` et `/immobilier/rabat/louer` ;
-2. Next build : `revalidate` remplacé par la valeur littérale `3600` exigée par Next.js.
+- UI All Pages Inventory ✅ ;
+- TypeScript ✅ ;
+- Production build ✅ ;
+- Scraper regression suite ✅ ;
+- SEO Eligibility Gate V1 ✅ ;
+- UX Gate 0 Contracts ✅ ;
+- visual AFTER 4 viewports ✅.
 
-**État : visuel validé ; certification CI finale du HEAD #1009 encore à verrouiller avant merge.**
+Post-merge : `main = 93c54a04…` confirmé ; **0 déploiement Vercel après merge**.
+
+**Production : non activée.** Ne pas appeler ces routes LIVE avant déploiement explicitement autorisé.
 
 ---
 
@@ -145,9 +139,10 @@ Autorisation explicite obligatoire pour :
 
 ## 8. NEXT EXACT
 
-1. certifier le HEAD final de #1009 après ce closeout ;
-2. si échec : diagnostiquer/corriger puis recertifier ;
-3. si vert : merge #1009 ;
-4. post-merge vérifier `main` + absence de déploiement Vercel ;
-5. production reste derrière human gate Vercel ;
-6. lot suivant : SEO-5 data moat prix/m² / volumes / fraîcheur, sans ouvrir de nouvelle surface faible.
+**SEO-5 — DATA MOAT**
+
+1. inventorier les read-models de prix/m², volumes et fraîcheur déjà existants ;
+2. définir une politique statistique de publication distincte du simple gate d'inventaire 20/3 ;
+3. mesurer quelles villes/intentions ont assez de données pour publier une médiane ou un baromètre sans surpromesse ;
+4. ne créer aucune nouvelle page data tant que la méthode, l'échantillon et la fraîcheur ne sont pas prouvés ;
+5. production SEO-3C/SEO-4 reste derrière human gate Vercel.
