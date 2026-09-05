@@ -1,6 +1,6 @@
 # 3 — Vivre Ici AkarFinder
 
-**Statut : ACTIVE — 3D-L1 CERTIFIÉ / 3D-L2 EN CERTIFICATION**  
+**Statut : ACTIVE — 3D-L2b CERTIFIÉ / 3D-L3 BIENS EN 3D ACTIF**  
 **Dernière mise à jour : 2026-09-05**  
 **Repo : `hraaaaf/Akarfinder`**  
 **Branche : `docs/3-vivre-ici-akarfinder`**  
@@ -62,87 +62,105 @@ Le P0 2D est la fondation, pas la cible finale Bien’ici 3D.
 
 ---
 
-## 3. 3D-L1 CASABLANCA — CERTIFIÉ
+## 3. 3D-L1 CASABLANCA — TECHNIQUEMENT CERTIFIÉ
+
+### Preuve exacte
+
+- run `33991033589` — SUCCESS ;
+- code HEAD `b4a9d2bd0911840a641cd3f20ab678631424dc64` ;
+- artifact `9976706376` ;
+- digest `sha256:67f416481841e99836fa93f50d517167c9f1f8c321c94853d5ab610187561a80` ;
+- pitch `56°`, bearing `-18°`, zoom `14.2` ;
+- bâtiments réellement rendus : `64 / 68 / 113 / 120` ;
+- POI Maârif : 2 ;
+- Maroc maintenu 2D ;
+- aucune écriture DB / aucune action de déploiement par le gate.
+
+### Réévaluation visuelle
+
+La preuve technique était correcte, mais l’impression perçue restait trop proche d’une carte inclinée 2,5D. Le score initial `6,5/10` a été retiré après inspection humaine et retour utilisateur.
+
+**Fidélité perçue L1 réévaluée : ~5/10.**
+
+---
+
+## 4. 3D-L2b — IMMERSION VISIBLE CERTIFIÉE
+
+### Goal
+
+La 3D doit être immédiatement visible à l’œil, pas seulement validée par des métriques MapLibre.
 
 ### Implémentation
 
-- `components/map/National3DBuildingsLayer.tsx` ;
-- OpenFreeMap `https://tiles.openfreemap.org/planet` ;
-- source-layer `building` ;
-- hauteur source `render_height` uniquement ;
-- aucune hauteur bâtiment inventée ;
-- layer `akarfinder-vivre-ici-3d-buildings` ;
-- zoom `14.2`, pitch `56°`, bearing `-18°` ;
-- centrage Maârif via `akarfinder-national-neighborhood-points` ;
-- toggle 2D / 3D ;
-- vue Maroc maintenue 2D ;
-- POI et contexte quartier conservés.
+- zoom cible `15.5` ;
+- pitch `60°` ;
+- bearing `-28°` ;
+- lumière 3D dédiée ;
+- contraste / gradient vertical des façades basé sur les hauteurs sourcées ;
+- aucun changement de géométrie ni de hauteur inventée ;
+- chrome mobile/tablette allégé ;
+- rail bas masqué en 3D mobile/tablette ;
+- recherche / toggle / fiche quartier repositionnés ;
+- Maroc reste 2D ;
+- POI Maârif préservés.
 
 ### Preuve exacte
 
 Workflow `Vivre Ici AFTER Certification` :
 
-- run `33991033589` — **SUCCESS** ;
-- code HEAD `b4a9d2bd0911840a641cd3f20ab678631424dc64` ;
-- artifact `9976706376` ;
-- digest `sha256:67f416481841e99836fa93f50d517167c9f1f8c321c94853d5ab610187561a80` ;
+- run `33992903877` — **SUCCESS** ;
+- code HEAD `e5e0727dd107ecd00c6106d0286c3a78ef090841` ;
+- artifact `9977221838` ;
+- digest `sha256:78cb01d6a7c0c014f10f2584a620e53dd0d1fc270e2f5d822301a333d5057e0b` ;
 - 8/8 HTTP 200 ;
 - Maroc 390/430/768/1280 : pitch `0`, aucun layer/source/toggle 3D ;
 - Maârif 390/430/768/1280 : source + layer + toggle 3D présents ;
-- pitch `56°`, bearing `-18°`, zoom `14.2` sur les 4 viewports ;
-- bâtiments réellement rendus : `64 / 68 / 113 / 120` ;
+- pitch `60°`, bearing `-28°`, zoom `15.5` sur les 4 viewports ;
+- bâtiments réellement rendus : `43 / 46 / 65 / 70` ;
 - POI controls présents ;
 - 2 marqueurs POI observés sur chaque viewport Maârif ;
 - aucune écriture DB / aucune action de déploiement par le gate.
 
 ### Inspection visuelle
 
-- 3D réelle, lisible et centrée sur Maârif ;
-- mobile 390/430 : beaucoup de chrome masque encore la carte ;
-- tablette : 3D convaincante mais panneau bas trop dominant ;
-- desktop : vraie profondeur, mais duplication du contexte entre carte et rail latéral ;
-- fidélité actuelle au mécanisme Bien’ici : **6,5/10**.
+- 390/430 : volumes clairement perceptibles, carte dominante et lisible malgré la fiche quartier ;
+- 768 : effet urbain 3D net, bonne profondeur ;
+- 1280 : ville 3D clairement lisible avec rail décisionnel séparé ;
+- limite principale restante : palette encore monochrome / technique et absence de biens intégrés dans la scène.
 
-**3D-L1 est certifié. La fidélité finale Bien’ici ne l’est pas.**
+**Score de fidélité au mécanisme Bien’ici : ~7,5/10.**
+
+3D-L2b est certifié branch-local. Ce n’est pas une preuve LIVE.
 
 ---
 
-## 4. 3D-L2 — CONVERGENCE VISUELLE ACTIVE
+## 5. 3D-L3 — BIENS EN 3D ACTIF
 
 ### Goal
 
-Rendre la ville 3D dominante :
+Afficher les biens dans la scène 3D **uniquement lorsque leur vérité géographique permet un positionnement honnête**.
 
-1. réduire le chrome redondant ;
-2. supprimer la duplication des CTAs/panneaux ;
-3. libérer l’espace mobile/tablette ;
-4. garder recherche quartier, POI et CTA biens accessibles ;
-5. renforcer le contraste des volumes sans modifier leur géométrie ni leurs hauteurs.
+### Contrat
 
-### Implémentation actuelle
+- `EXACT` : pin bien autorisé ;
+- `DISTRICT` : agrégation / zone seulement, aucun faux pin exact ;
+- `CITY` : agrégation ville seulement ;
+- `UNKNOWN` : aucun pin ;
+- aucun jitter ou déplacement artificiel pour donner l’illusion de précision ;
+- CTA vers la fiche / source seulement sur entité réellement indexée.
 
-Code HEAD `30fc76a3a045545e030f85e52219c2b4252d023c` :
+### Succès attendu
 
-- carte territoire compacte en vue 3D ;
-- CTA dupliqué masqué ;
-- rail bas Vivre ici masqué sur mobile/tablette en vue Casablanca 3D ;
-- recherche quartier remontée ;
-- fiche quartier repositionnée au-dessus de la bottom-nav ;
-- toggle 3D repositionné ;
-- bâtiments légèrement plus contrastés (`#C5CFD8`, opacity `0.96`) sans changement de hauteur/source.
-
-### Gate courant
-
-- workflow `Vivre Ici AFTER Certification` ;
-- run `33992302013` ;
-- HEAD code `30fc76a3a045545e030f85e52219c2b4252d023c` ;
-- dernier état vérifié : `queued`.
-
-**3D-L2 non certifié tant que les nouvelles captures ne sont pas inspectées.**
+1. source de biens branchée en lecture seule ;
+2. pins 3D visibles uniquement pour coordonnées certifiées ;
+3. district/city/unknown exclus des pins exacts ;
+4. interaction pin → bien / source cohérente ;
+5. captures 390/430/768/1280 ;
+6. aucune DB / aucun Vercel.
 
 ---
 
-## 5. CONTRAT DE VÉRITÉ
+## 6. CONTRAT DE VÉRITÉ GLOBAL
 
 - pin exact seulement si exact certifié ;
 - quartier seulement → zone/repère limité ;
@@ -152,20 +170,20 @@ Code HEAD `30fc76a3a045545e030f85e52219c2b4252d023c` :
 
 ---
 
-## 6. ROADMAP
+## 7. ROADMAP
 
 - [x] L0 BEFORE `/map`
 - [x] P0 2D architecture + implémentation + responsive
 - [x] P0 2D certification : run `33990212630`, artifact `9976424591`
-- [x] **3D-L1 Casablanca buildings** : run `33991033589`, artifact `9976706376`
-- [ ] **3D-L2 Convergence Bien’ici** : run `33992302013` en cours
-- [ ] **3D-L3 Biens en 3D** : seulement selon vérité géographique
+- [x] 3D-L1 Casablanca buildings : run `33991033589`, artifact `9976706376`
+- [x] **3D-L2b immersion visible** : run `33992903877`, artifact `9977221838`
+- [ ] **3D-L3 Biens en 3D** : vérité géographique stricte
 - [ ] P1 Vie locale enrichie
 - [ ] P2 terrain / soleil / modèles neufs si données + ROI prouvés
 
 ---
 
-## 7. SÉCURITÉ / PRODUCTION
+## 8. SÉCURITÉ / PRODUCTION
 
 - aucune mutation DB liée au chantier ;
 - aucun déploiement de la branche observé au dernier contrôle ;
@@ -174,13 +192,13 @@ Code HEAD `30fc76a3a045545e030f85e52219c2b4252d023c` :
 
 ---
 
-## 8. NEXT EXACT
+## 9. NEXT EXACT
 
-1. vérifier le run `33992302013` une fois utilement ;
-2. si échec : diagnostiquer et corriger ;
-3. si succès : récupérer l’artifact ;
-4. montrer les 8 nouvelles captures ;
-5. comparer 3D-L1 → 3D-L2 → Bien’ici ;
-6. score 3D-L2 fondé sur preuve ;
-7. poursuivre 3D-L3 si la convergence visuelle est suffisante ;
-8. arrêt uniquement au gate merge/Vercel une fois le lot branch-local certifié.
+1. inventorier le provider / modèle actuel des biens cartographiques ;
+2. identifier la précision géographique réellement disponible ;
+3. brancher uniquement les biens `EXACT` dans la scène 3D ;
+4. tester les exclusions `DISTRICT/CITY/UNKNOWN` ;
+5. capturer les 4 viewports Maârif + contrôles nationaux nécessaires ;
+6. score visuel 3D-L3 ;
+7. closeout PR/canonical ;
+8. arrêt au human gate merge/Vercel.
