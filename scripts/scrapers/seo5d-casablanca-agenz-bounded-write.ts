@@ -15,6 +15,12 @@ import { safeDelay } from "./utils/safe-delay";
 
 export const SEO5D_MAX_WRITES = 34;
 export const SEO5D_WRITE_CONFIRMATION = "WRITE_SEO5D_AGENZ_CASABLANCA_PRICES";
+export const SEO5D_MAX_FETCH_ATTEMPTS = 3;
+
+const SEO5D_REQUEST_DELAY_MIN_MS = 1_800;
+const SEO5D_REQUEST_DELAY_MAX_MS = 3_000;
+const SEO5D_RATE_LIMIT_BACKOFF_MIN_MS = 8_000;
+const SEO5D_RATE_LIMIT_BACKOFF_MAX_MS = 12_000;
 
 type Candidate = {
   seed_id: string;
@@ -34,6 +40,28 @@ export function hasSeo5dWriteConfirmation(raw: string | undefined): boolean {
 export function boundSeo5dWriteLimit(raw: number): number {
   if (!Number.isFinite(raw)) throw new Error("SEO5D_AGENZ_PRICE_MAX_WRITES must be finite");
   return Math.max(1, Math.min(Math.trunc(raw), SEO5D_MAX_WRITES));
+}
+
+export function isSeo5dRateLimitError(errorValue: unknown): boolean {
+  return errorValue instanceof Error && /HTTP 429\b/.test(errorValue.message);
+}
+
+export function shouldRetrySeo5dFetch(errorValue: unknown, attempt: number): boolean {
+  return isSeo5dRateLimitError(errorValue) && attempt < SEO5D_MAX_FETCH_ATTEMPTS;
+}
+
+async function fetchSeo5dDetail(url: string) {
+  let attempt = 0;
+  while (attempt < SEO5D_MAX_FETCH_ATTEMPTS) {
+    attempt += 1;
+    try {
+      return await fetchHtml(url, { timeoutMs: 15_000 });
+    } catch (errorValue) {
+      if (!shouldRetrySeo5dFetch(errorValue, attempt)) throw errorValue;
+      await safeDelay(SEO5D_RATE_LIMIT_BACKOFF_MIN_MS, SEO5D_RATE_LIMIT_BACKOFF_MAX_MS);
+    }
+  }
+  throw new Error(`SEO5D fetch attempts exhausted for ${url}`);
 }
 
 async function writeOne(row: Candidate, amount: number) {
@@ -98,7 +126,7 @@ async function main() {
         robotsSkipped += 1;
         continue;
       }
-      const response = await fetchHtml(row.canonical_url, { timeoutMs: 15_000 });
+      const response = await fetchSeo5dDetail(row.canonical_url);
       fetched += 1;
       const amount = extractStrictDetailPrice(response.html, "sale");
       if (amount == null) continue;
@@ -114,7 +142,7 @@ async function main() {
       failed += 1;
       console.warn(`[seo5d-casablanca-agenz-bounded-write] ${row.seed_id}: ${errorValue instanceof Error ? errorValue.message : String(errorValue)}`);
     }
-    await safeDelay(500, 1200);
+    await safeDelay(SEO5D_REQUEST_DELAY_MIN_MS, SEO5D_REQUEST_DELAY_MAX_MS);
   }
 
   console.log(JSON.stringify({
