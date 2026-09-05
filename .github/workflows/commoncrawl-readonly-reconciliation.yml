@@ -29,42 +29,48 @@ jobs:
         run: |
           node <<'NODE'
           const fs = require('fs');
-          const path = 'data/audits/raw-results/commoncrawl-registry-mass-seeds.jsonl';
-          const rows = fs.readFileSync(path,'utf8').trim().split('\n').filter(Boolean).map(JSON.parse);
-          const harvested = new Map(rows.map(r => [r.canonical_url || r.url, r]));
-          const base = process.env.SUPABASE_URL.replace(/\/$/,'');
-          const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-          const existing = new Set();
-          let last = null;
-          for (;;) {
-            const params = new URLSearchParams({select:'canonical_url',order:'canonical_url.asc',limit:'1000'});
-            if (last) params.set('canonical_url',`gt.${last}`);
-            const res = await fetch(`${base}/rest/v1/source_offer_seeds?${params}`, {headers:{apikey:key,Authorization:`Bearer ${key}`}});
-            if (!res.ok) throw new Error(`Supabase read ${res.status}: ${await res.text()}`);
-            const page = await res.json();
-            if (!page.length) break;
-            for (const r of page) if (r.canonical_url) existing.add(r.canonical_url);
-            last = page.at(-1).canonical_url;
-            if (page.length < 1000) break;
-          }
-          const net = [...harvested.entries()].filter(([u]) => !existing.has(u));
-          const byDomain = {};
-          for (const [u,r] of net) {
-            const d = r.source_domain || r.domain || new URL(u).hostname.replace(/^www\./,'');
-            byDomain[d] = (byDomain[d] || 0) + 1;
-          }
-          const summary = {
-            generated_at:new Date().toISOString(),
-            zero_db_writes:true,
-            harvested_unique:harvested.size,
-            current_seed_unique:existing.size,
-            exact_overlap:harvested.size-net.length,
-            exact_net_new:net.length,
-            net_new_by_domain:Object.entries(byDomain).sort((a,b)=>b[1]-a[1]),
-          };
-          fs.writeFileSync('data/audits/raw-results/commoncrawl-readonly-reconciliation-summary.json', JSON.stringify(summary,null,2)+'\n');
-          fs.writeFileSync('data/audits/raw-results/commoncrawl-readonly-net-new.txt', net.map(([u])=>u).sort().join('\n') + (net.length?'\n':''));
-          console.log(JSON.stringify(summary,null,2));
+          (async () => {
+            const path = 'data/audits/raw-results/commoncrawl-registry-mass-seeds.jsonl';
+            const raw = fs.readFileSync(path,'utf8').trim();
+            const rows = raw ? raw.split('\n').filter(Boolean).map(JSON.parse) : [];
+            const harvested = new Map(rows.map(r => [r.canonical_url || r.url, r]));
+            const base = process.env.SUPABASE_URL.replace(/\/$/,'');
+            const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+            const existing = new Set();
+            let last = null;
+            for (;;) {
+              const params = new URLSearchParams({select:'canonical_url',order:'canonical_url.asc',limit:'1000'});
+              if (last) params.set('canonical_url',`gt.${last}`);
+              const res = await fetch(`${base}/rest/v1/source_offer_seeds?${params}`, {headers:{apikey:key,Authorization:`Bearer ${key}`}});
+              if (!res.ok) throw new Error(`Supabase read ${res.status}: ${await res.text()}`);
+              const page = await res.json();
+              if (!page.length) break;
+              for (const r of page) if (r.canonical_url) existing.add(r.canonical_url);
+              last = page.at(-1).canonical_url;
+              if (page.length < 1000) break;
+            }
+            const net = [...harvested.entries()].filter(([u]) => !existing.has(u));
+            const byDomain = {};
+            for (const [u,r] of net) {
+              const d = r.source_domain || r.domain || new URL(u).hostname.replace(/^www\./,'');
+              byDomain[d] = (byDomain[d] || 0) + 1;
+            }
+            const summary = {
+              generated_at:new Date().toISOString(),
+              zero_db_writes:true,
+              harvested_unique:harvested.size,
+              current_seed_unique:existing.size,
+              exact_overlap:harvested.size-net.length,
+              exact_net_new:net.length,
+              net_new_by_domain:Object.entries(byDomain).sort((a,b)=>b[1]-a[1]),
+            };
+            fs.writeFileSync('data/audits/raw-results/commoncrawl-readonly-reconciliation-summary.json', JSON.stringify(summary,null,2)+'\n');
+            fs.writeFileSync('data/audits/raw-results/commoncrawl-readonly-net-new.txt', net.map(([u])=>u).sort().join('\n') + (net.length?'\n':''));
+            console.log(JSON.stringify(summary,null,2));
+          })().catch((error) => {
+            console.error(error);
+            process.exit(1);
+          });
           NODE
       - name: Verify no-write proof
         run: |
