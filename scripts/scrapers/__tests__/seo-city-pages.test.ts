@@ -23,6 +23,7 @@ import {
 } from "@/lib/seo-city-pages/public-safety";
 import { getSeoCityIntentIndexability } from "@/lib/seo/city-intent-indexability";
 import { evaluateMarketMetricPublication } from "@/lib/seo/market-metric-publication";
+import { toPublishedMarketMetric } from "@/lib/seo/market-metric-read-model";
 
 test("getAllCities returns 5 cities for V1", () => {
   const cities = getAllCities();
@@ -264,6 +265,63 @@ test("SEO-5 market metric gate rejects invalid medians", () => {
       { publishable: false, reason: "invalid_metric" },
     );
   }
+});
+
+test("SEO-5B read model maps only a certified activated published row", () => {
+  const metric = toPublishedMarketMetric({
+    city_slug: "rabat",
+    city_name: "Rabat",
+    neighborhood_slug: "agdal",
+    neighborhood_name: "Agdal",
+    transaction_type: "sale",
+    metric_name: "price_per_m2_mad",
+    sample_count: "24",
+    source_domain_count: "4",
+    median: "16750.50",
+    q1: "14500",
+    q3: "19000",
+    fresh_sample_percent: "82.50",
+    field_coverage_percent: "78.20",
+    reliability_level: "strong",
+    market_representativeness_certified: true,
+    public_activation: true,
+    metric_state: "published",
+    reliability_policy_version: "p1c2_neighborhood_offer_reliability_v1",
+  });
+
+  assert.ok(metric);
+  assert.equal(metric.citySlug, "rabat");
+  assert.equal(metric.neighborhoodSlug, "agdal");
+  assert.equal(metric.median, 16750.5);
+  assert.equal(metric.sampleCount, 24);
+  assert.equal(metric.sourceDomainCount, 4);
+});
+
+test("SEO-5B read model drops shadow and malformed rows", () => {
+  const baseRow = {
+    city_slug: "rabat",
+    city_name: "Rabat",
+    neighborhood_slug: "agdal",
+    neighborhood_name: "Agdal",
+    transaction_type: "sale",
+    metric_name: "price_per_m2_mad",
+    sample_count: 24,
+    source_domain_count: 4,
+    median: 16750,
+    q1: 14500,
+    q3: 19000,
+    fresh_sample_percent: 82.5,
+    field_coverage_percent: 78.2,
+    reliability_level: "strong",
+    market_representativeness_certified: true,
+    public_activation: true,
+    metric_state: "published",
+    reliability_policy_version: "p1c2_neighborhood_offer_reliability_v1",
+  };
+
+  assert.equal(toPublishedMarketMetric({ ...baseRow, metric_state: "shadow" }), null);
+  assert.equal(toPublishedMarketMetric({ ...baseRow, median: "not-a-number" }), null);
+  assert.equal(toPublishedMarketMetric({ ...baseRow, neighborhood_slug: null }), null);
 });
 
 test("assertSeoCityPageSafety throws on forbidden wording", () => {
