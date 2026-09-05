@@ -17,6 +17,8 @@ const dynamicAuditByPattern = new Map([
     blocker: "No deterministic local listing id is guaranteed: the page requires a database-backed listing visible under the current source-access registry.",
   }],
   ["/immobilier/[city]", { fixtureUrl: "/immobilier/rabat", auditMode: "render" }],
+  ["/immobilier/[city]/acheter", { fixtureUrl: "/immobilier/rabat/acheter", auditMode: "render" }],
+  ["/immobilier/[city]/louer", { fixtureUrl: "/immobilier/rabat/louer", auditMode: "render" }],
   ["/immobilier/[city]/[district]", { fixtureUrl: "/immobilier/rabat/agdal", auditMode: "render" }],
   ["/quartiers/[citySlug]/[neighborhoodSlug]", { fixtureUrl: "/quartiers/rabat/agdal", auditMode: "render" }],
   ["/projets/[slug]", { fixtureUrl: "/projets/residence-demo-akarfinder?preview=demo", auditMode: "render-demo" }],
