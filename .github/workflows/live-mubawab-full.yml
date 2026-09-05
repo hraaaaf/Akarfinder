@@ -37,7 +37,7 @@ jobs:
       - name: Restore prior successful shard checkpoint
         env:
           GH_TOKEN: ${{ github.token }}
-          CHECKPOINT_ARTIFACT_ID: '9967776380'
+          CHECKPOINT_ARTIFACT_ID: '9968679191'
         run: |
           mkdir -p artifacts/mubawab-checkpoint-prev
           curl --fail --silent --show-error --location \
