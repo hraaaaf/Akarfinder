@@ -6,45 +6,21 @@
 **Statut : ACTIVE**  
 **Dernière mise à jour : 2026-09-05**  
 **Repo : `hraaaaf/Akarfinder`**  
-**Main vérifié : `503dd1caa12ee396db22f1682fde80b8b803324e`**  
-**Branche active : aucune branche produit ouverte après merge #1006**  
+**Main de départ SEO-4 UI : `f72b312fb0183218e879d0e4ef2c80e9116da60c`**  
+**Branche active : `feat/seo4-city-intent-landings-v1`**  
 **Preuve baseline : `AKARFINDER_SEO_AUDIT_2026-09-04.md`**
 
 ---
 
 ## 1. GOAL
 
-Faire du SEO l'avantage compétitif principal d'AkarFinder : transformer l'index immobilier multi-source en acquisition organique utile, mesurable et scalable au Maroc.
+Faire du SEO l'avantage compétitif principal d'AkarFinder : stock normalisé + fraîcheur + diversité de sources + pages utiles + architecture propre + mesure Search Console.
 
-### Succès
-
-- croissance impressions/clics organiques non brandés ;
-- progression Top 10 / Top 3 sur intentions cibles ;
-- pages indexées majoritairement utiles et alimentées ;
-- trafic organique vers Search et les sources ;
-- croissance des domaines référents et recherches de marque.
-
-### Preuve principale
-
-Google Search Console + analytics + logs/crawl + SERP observées + tests techniques.
-
-**Aucun objectif numérique n'est inventé avant baseline GSC.**
+Règle centrale : **une combinaison de filtres n'est jamais automatiquement une page SEO.**
 
 ---
 
-## 2. THÈSE
-
-Moat SEO : **stock + normalisation + fraîcheur + diversité de sources + data locale + architecture propre + transparence + autorité.**
-
-> Une combinaison de filtres n'est jamais automatiquement une page SEO.
-
-Une surface n'est publiée/indexable que si elle franchit un gate de données et apporte une valeur distincte.
-
----
-
-## 3. GATE SEO V1
-
-Gate commun :
+## 2. GATE SEO V1
 
 ```text
 >= 20 offres strictes
@@ -53,159 +29,109 @@ ET >= 3 domaines source distincts
 
 Fail-closed si preuve absente/invalide/indisponible.
 
-Ville/intention : `public.public_search_representations_v1`, avec :
+Ville/intention : `public.public_search_representations_v1` avec `display_eligibility=eligible_primary` et `freshness_status=fresh_confirmed`.
 
-```text
-display_eligibility = eligible_primary
-freshness_status = fresh_confirmed
-```
-
-Quartier : `public.odm_neighborhood_offer_shadow_listing_v1`, même filtre strict.
-
-Normalisation :
-
-- `sale|buy|achat -> acheter` ;
-- `rent|location -> louer` ;
-- aliases principaux de type normalisés avant décision.
-
-Snapshot revalidé : les 10 couples `5 villes SEO V1 × acheter/louer` passent actuellement le gate 20/3.
+Snapshot revalidé : les 10 couples `5 villes SEO V1 × acheter/louer` passent le gate 20/3.
 
 ---
 
-## 4. BASELINE TECHNIQUE — VÉRIFIÉE
+## 3. LOTS MERGÉS
 
-- `/search` : `noindex,follow`, canonical propre, hors sitemap ;
-- `/map` : canonical propre ;
-- faux `lastModified: new Date()` retiré du sitemap dans `main` ;
-- hostnames SEO/JSON-LD centralisés sur `siteConfig.siteUrl` ;
-- `/acheter` et `/louer` : hubs nationaux existants ;
-- helper metadata prévu pour `/immobilier/{ville}/{acheter|louer}` ;
-- pages ville/quartier accessibles aux humains même lorsqu'elles sont `noindex`.
+- SEO-3A — gate central — #1000 ✅
+- SEO-3B1 — sitemap ville — #1001 ✅
+- SEO-3B2 — metadata ville fail-closed — #1002 ✅
+- SEO-3B3 — gate quartier — #1003 ✅
+- SEO-3C — `/neuf` fail-closed — #1004 ✅ code / **PROD PENDING**
+- SEO-4 PREP — contrat ville×intention — #1006 ✅, merge `503dd1caa12ee396db22f1682fde80b8b803324e`
+- Closeout SEO-4 PREP — #1007 ✅, `main=f72b312f…`
 
-Benchmark initial : Kaynly, Mubawab, Yakeey, AlerteImmo.
-
----
-
-## 5. LOTS MERGÉS
-
-- **SEO-3A** — gate central — PR #1000 ✅
-- **SEO-3B1** — sitemap ville — PR #1001 ✅
-- **SEO-3B2** — metadata ville fail-closed — PR #1002 ✅
-- **SEO-3B3** — gate quartier + sitemap/metadata — PR #1003 ✅
-- **SEO-3C** — `/neuf` fail-closed — PR #1004 ✅, **PROD PENDING**
-- **SEO-4 PREP** — contrat ville×intention — PR #1006 ✅, merge `503dd1caa12ee396db22f1682fde80b8b803324e`
-
-### Preuve #1006
-
-CI finale : **6/6 SUCCESS** : Canonical Baseline, Compile, P0, P1, P2, UX.
-
-Livré :
-
-- `getSeoCityIntentIndexability(city, intent)` ;
-- réutilisation stricte du gate 20/3 ;
-- contrat metadata/canonical `/immobilier/{city}/{acheter|louer}` ;
-- tests de délégation exacte au gate partagé ;
-- aucune route visible ;
-- aucun composant UI ;
-- aucun sitemap modifié ;
-- aucune DB write ;
-- aucun déploiement Vercel.
-
-Post-merge : `main = 503dd1ca…` confirmé ; **0 déploiement Vercel observé**.
+Aucun déploiement Vercel autorisé/effectué dans ces lots.
 
 ---
 
-## 6. SEO-3C — ÉTAT PROD
+## 4. SEO-4 UI — BEFORE / GOAL / RÉFÉRENCE
 
-Le code `/neuf` est mergé mais non déployé.
+### BEFORE — PROUVÉ ✅
 
-État attendu après activation future :
+Capture LIVE `/immobilier/casablanca` produite via GitHub Actions, run **33945702517**, artifact **9963263361**.
 
-- `/neuf` accessible ;
-- self-canonical ;
-- `noindex,follow` ;
-- hors sitemap.
+Viewports : **390 / 430 / 768 / 1280**.
 
-État LIVE précédemment observé avant déploiement : `/neuf` encore `index,follow` et présent dans le sitemap.
+Preuve technique associée :
 
-**Aucun déploiement Vercel sans autorisation explicite.**
+- HTTP 200 ;
+- H1 `Casablanca, en données utiles` ;
+- robots `index, follow` ;
+- canonical `https://akarfinder.vercel.app/immobilier/casablanca`.
+
+### Goal visuel
+
+Créer `/immobilier/{ville}/acheter` et `/immobilier/{ville}/louer` comme extensions naturelles de la page ville :
+
+- intention visible immédiatement ;
+- preuve stock/source non assimilée au marché total ;
+- résultats plus tôt, surtout mobile ;
+- même langage visuel AkarFinder ;
+- CTA Search préfiltré + carte ;
+- metadata/indexation pilotées par le gate 20/3 ;
+- aucune ferme à pages ni duplication de grille.
+
+### Référence retenue
+
+Réutiliser le shell actuel + `GeoResultPreview` existant. Pour les pages intention, supprimer le grand bloc carte du hero afin de faire remonter les résultats sur mobile ; garder la carte comme CTA secondaire.
 
 ---
 
-## 7. TAXONOMIE CIBLE
+## 5. SEO-4 UI — IMPLÉMENTATION EN COURS
+
+Branche : `feat/seo4-city-intent-landings-v1`.
+
+Implémenté avant certification :
+
+- `components/seo/CityIntentLanding.tsx` ;
+- builder serveur `lib/seo-city-pages/intent-route.tsx` ;
+- routes statiques `app/immobilier/[city]/acheter/page.tsx` et `louer/page.tsx` ;
+- self-canonical + metadata transactionnelles ;
+- `robots index/noindex` via `getSeoCityIntentIndexability()` ;
+- `revalidate=3600` ;
+- Search préfiltré `buy/rent` ;
+- sitemap ville×intention publié uniquement si le sous-gate correspondant passe ;
+- tests source/contrat ajoutés dans `seo-city-pages.test.ts` ;
+- aucun accès image ajouté ; aucune DB write.
+
+**État : non certifié tant que CI + AFTER visuel ne sont pas passés.**
+
+---
+
+## 6. TAXONOMIE
 
 ```text
 /acheter | /louer
   -> /immobilier/{ville}/acheter | /immobilier/{ville}/louer
-  -> /immobilier/{ville}/{intention}/{type} uniquement après gate
+  -> /immobilier/{ville}/{intention}/{type} uniquement après gate futur
 ```
 
 `/search?...` reste `noindex`.
 
-`acheter/` et `louer/` doivent être des routes statiques sous `[city]`, pas un second segment dynamique concurrent de `[district]`.
-
 ---
 
-## 8. ROADMAP
+## 7. HUMAN GATES
 
-- SEO-0 : baseline/remédiation ✅
-- SEO-1 : benchmark initial ✅
-- SEO-2 : qualification data ✅
-- SEO-3A : gate central ✅
-- SEO-3B1 : sitemap ville ✅
-- SEO-3B2 : metadata ville ✅
-- SEO-3B3 : gate quartier ✅
-- SEO-3C : `/neuf` fail-closed ✅ code / **PROD PENDING**
-- SEO-4 PREP : contrat ville×intention ✅
-- SEO-4 UI : landings ville×transaction qualifiées — **BLOQUÉ VISUEL**
-- SEO-5 : data moat prix/m² / volumes / fraîcheur
-- SEO-6/7 : technical SEO + maillage interne
-- SEO-8 : autorité / backlinks / études data
-- SEO-9 : boucle Search Console
-- SEO-10 : scale uniquement par preuves
-
----
-
-## 9. SEO-4 — PRÉREQUIS VISUEL
-
-SEO-4 crée de nouvelles pages visibles. Protocole obligatoire :
-
-```text
-BEFORE -> Goal -> mockup/référence -> implémentation -> AFTER mêmes viewports -> comparaison/tests -> score visuel
-```
-
-État vérifié :
-
-- routes statiques `app/immobilier/[city]/acheter/` et `louer/` libres ;
-- helper metadata + contrat d'indexabilité ville×intention prêts ;
-- LIVE `/immobilier/casablanca` répond HTTP 200 ;
-- capture navigateur locale bloquée par `ERR_BLOCKED_BY_ADMINISTRATOR` ;
-- lien Vercel temporaire testé, même blocage navigateur ;
-- fallback externe de capture également bloqué ;
-- Product Design/Cloud Browser non disponible dans ce chat standard.
-
-**Aucune capture BEFORE fiable n'a été produite. Ne pas implémenter la surface visible SEO-4 sans cette preuve.**
-
----
-
-## 10. HUMAN GATES / RISQUES
-
-Human gate obligatoire :
+Autorisation explicite obligatoire pour :
 
 - tout déploiement Vercel ;
-- activation/migration domaine final `akarfinder.ma` ;
-- accès Search Console si authentification/intervention utilisateur nécessaire.
-
-Interdits : doorway pages, facettes arbitraires indexables, contenu massifié sans valeur propre, images sans droits vérifiés, seuil SEO inventé sans données.
+- activation/migration `akarfinder.ma` ;
+- accès Search Console si intervention utilisateur nécessaire.
 
 ---
 
-## 11. NEXT EXACT
+## 8. NEXT EXACT
 
-1. obtenir une vraie capture BEFORE de `/immobilier/casablanca` dans un environnement navigateur autorisé ;
-2. écrire Goal visuel + mockup/référence ;
-3. créer d'abord `/immobilier/{ville}/acheter` et `/immobilier/{ville}/louer` uniquement pour les couples passant le gate ;
-4. captures AFTER mêmes viewports + comparaison/tests + score visuel ;
-5. mettre à jour ce canonique ;
-6. merge si preuves suffisantes ;
-7. aucun déploiement Vercel sans autorisation explicite.
+1. ouvrir PR SEO-4 UI ;
+2. certifier tests/TypeScript/build ;
+3. produire AFTER 390/430/768/1280 via GitHub Actions sans Vercel ;
+4. comparer BEFORE/AFTER + score visuel ;
+5. corriger si nécessaire ;
+6. closeout canonique ;
+7. merge si preuves suffisantes ;
+8. production reste derrière human gate Vercel.
