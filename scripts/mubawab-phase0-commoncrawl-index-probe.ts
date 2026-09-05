@@ -17,6 +17,8 @@ const PAGE_SIZE_BLOCKS = 1;
 const MAX_PAGES_PER_FAMILY_PER_INDEX = 3;
 const LIMIT_PER_PAGE = 1000;
 const REQUEST_DELAY_MS = 1250;
+const MAX_INDEX_REQUEST_ATTEMPTS = 3;
+const RETRY_BACKOFF_MS = 1500;
 const HISTORICAL_STATE = path.resolve("data-ingestion/runs/mubawab/lot9-office-catalog-campaign/state.json");
 const CURRENT_CONTROL_PROOF = path.resolve("data-ingestion/runs/mubawab/phase0-authorized-leaf-probe/proof.json");
 const OUT_DIR = path.resolve("data-ingestion/runs/mubawab/phase0-commoncrawl-index-probe");
@@ -49,17 +51,31 @@ let indexRequestCount = 0;
 let lastIndexRequestAt = 0;
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+function retryableStatus(status: number): boolean {
+  return status === 429 || status >= 500;
+}
+
 async function fetchIndexText(url: string, label: string): Promise<string> {
-  const elapsed = Date.now() - lastIndexRequestAt;
-  if (indexRequestCount > 0 && elapsed < REQUEST_DELAY_MS) await sleep(REQUEST_DELAY_MS - elapsed);
-  lastIndexRequestAt = Date.now();
-  indexRequestCount += 1;
-  const response = await fetch(url, {
-    headers: { "User-Agent": "AkarFinderResearchBot/1.0 (+https://akarfinder.vercel.app)" },
-    signal: AbortSignal.timeout(30_000),
-  });
-  if (!response.ok) throw new Error(`commoncrawl_http_${response.status}:${label}`);
-  return response.text();
+  for (let attempt = 1; attempt <= MAX_INDEX_REQUEST_ATTEMPTS; attempt++) {
+    const elapsed = Date.now() - lastIndexRequestAt;
+    if (indexRequestCount > 0 && elapsed < REQUEST_DELAY_MS) await sleep(REQUEST_DELAY_MS - elapsed);
+    lastIndexRequestAt = Date.now();
+    indexRequestCount += 1;
+
+    const response = await fetch(url, {
+      headers: { "User-Agent": "AkarFinderResearchBot/1.0 (+https://akarfinder.vercel.app)" },
+      signal: AbortSignal.timeout(30_000),
+    });
+
+    if (response.ok) return response.text();
+    if (!retryableStatus(response.status) || attempt === MAX_INDEX_REQUEST_ATTEMPTS) {
+      throw new Error(`commoncrawl_http_${response.status}:${label}:attempt_${attempt}`);
+    }
+
+    await sleep(RETRY_BACKOFF_MS * attempt);
+  }
+
+  throw new Error(`commoncrawl_retry_exhausted:${label}`);
 }
 
 async function fetchFamily(index: string, detailFamily: "a" | "pa"): Promise<FamilyObservation> {
@@ -165,7 +181,9 @@ async function main() {
       indexes: INDEXES.length, detail_families: DETAIL_FAMILIES.length, page_size_blocks: PAGE_SIZE_BLOCKS,
       max_pages_per_family_per_index: MAX_PAGES_PER_FAMILY_PER_INDEX, max_rows_per_page: LIMIT_PER_PAGE,
       request_delay_ms: REQUEST_DELAY_MS,
-      theoretical_max_index_requests: INDEXES.length * DETAIL_FAMILIES.length * (1 + MAX_PAGES_PER_FAMILY_PER_INDEX),
+      max_index_request_attempts: MAX_INDEX_REQUEST_ATTEMPTS,
+      retry_backoff_ms: RETRY_BACKOFF_MS,
+      theoretical_max_index_requests: INDEXES.length * DETAIL_FAMILIES.length * (1 + MAX_PAGES_PER_FAMILY_PER_INDEX) * MAX_INDEX_REQUEST_ATTEMPTS,
       actual_index_requests: indexRequestCount, mubawab_live_requests: 0, mubawab_detail_pages_opened: 0,
       disallowed_mubawab_pagination_requests: 0, commoncrawl_warc_fetches: 0, database_writes: 0,
       production_writes: 0, image_downloads: 0,
