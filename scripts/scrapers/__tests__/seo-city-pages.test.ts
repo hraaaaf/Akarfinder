@@ -22,6 +22,7 @@ import {
   assertNoSerperInSeoPages,
 } from "@/lib/seo-city-pages/public-safety";
 import { getSeoCityIntentIndexability } from "@/lib/seo/city-intent-indexability";
+import { evaluateMarketMetricPublication } from "@/lib/seo/market-metric-publication";
 
 test("getAllCities returns 5 cities for V1", () => {
   const cities = getAllCities();
@@ -189,6 +190,80 @@ test("SEO-4 landing copy remains non-promissive", () => {
   assert.equal(landingSource.toLowerCase().includes("annonces vérifiées"), false);
   assert.ok(landingSource.includes("Ce n’est pas une mesure exhaustive du marché local"));
   assert.ok(landingSource.includes("source originale"));
+});
+
+test("SEO-5 market metric gate is fail-closed for current shadow state", () => {
+  assert.deepEqual(
+    evaluateMarketMetricPublication({
+      reliabilityLevel: "strong",
+      marketRepresentativenessCertified: false,
+      publicActivation: false,
+      metricState: "shadow",
+      median: 15000,
+    }),
+    { publishable: false, reason: "not_certified" },
+  );
+});
+
+test("SEO-5 market metric gate rejects limited reliability even if flags are enabled", () => {
+  assert.deepEqual(
+    evaluateMarketMetricPublication({
+      reliabilityLevel: "limited",
+      marketRepresentativenessCertified: true,
+      publicActivation: true,
+      metricState: "published",
+      median: 15000,
+    }),
+    { publishable: false, reason: "reliability_too_low" },
+  );
+});
+
+test("SEO-5 market metric gate requires certification, public activation and non-shadow state", () => {
+  assert.equal(
+    evaluateMarketMetricPublication({
+      reliabilityLevel: "moderate",
+      marketRepresentativenessCertified: true,
+      publicActivation: false,
+      metricState: "published",
+      median: 15000,
+    }).publishable,
+    false,
+  );
+  assert.equal(
+    evaluateMarketMetricPublication({
+      reliabilityLevel: "moderate",
+      marketRepresentativenessCertified: true,
+      publicActivation: true,
+      metricState: "shadow",
+      median: 15000,
+    }).publishable,
+    false,
+  );
+  assert.deepEqual(
+    evaluateMarketMetricPublication({
+      reliabilityLevel: "moderate",
+      marketRepresentativenessCertified: true,
+      publicActivation: true,
+      metricState: "published",
+      median: 15000,
+    }),
+    { publishable: true, reason: "eligible" },
+  );
+});
+
+test("SEO-5 market metric gate rejects invalid medians", () => {
+  for (const median of [0, -1, Number.NaN, Number.POSITIVE_INFINITY, null]) {
+    assert.deepEqual(
+      evaluateMarketMetricPublication({
+        reliabilityLevel: "strong",
+        marketRepresentativenessCertified: true,
+        publicActivation: true,
+        metricState: "published",
+        median,
+      }),
+      { publishable: false, reason: "invalid_metric" },
+    );
+  }
 });
 
 test("assertSeoCityPageSafety throws on forbidden wording", () => {

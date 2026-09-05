@@ -6,7 +6,8 @@
 **Statut : ACTIVE**  
 **Dernière mise à jour : 2026-09-05**  
 **Repo : `hraaaaf/Akarfinder`**  
-**Main vérifié : `93c54a04c243e4047c810cdbabe65f8bda37ea2d`**  
+**Main de départ SEO-5 : `ef5c36aba2b185ee6bf1109bb673b080ee6714ad`**  
+**Branche active : `feat/seo5-market-metric-publication-gate`**  
 **SEO-4 UI : MERGED / PROD PENDING**  
 **Preuve baseline : `AKARFINDER_SEO_AUDIT_2026-09-04.md`**
 
@@ -16,11 +17,11 @@
 
 Faire du SEO l'avantage compétitif principal d'AkarFinder : stock normalisé + fraîcheur + diversité de sources + pages utiles + architecture propre + mesure Search Console.
 
-Règle centrale : **une combinaison de filtres n'est jamais automatiquement une page SEO.**
+Règle centrale : **une combinaison de filtres ou une métrique calculée n'est jamais automatiquement une surface SEO publique.**
 
 ---
 
-## 2. GATE SEO V1
+## 2. GATE INVENTAIRE SEO V1
 
 ```text
 >= 20 offres strictes
@@ -29,7 +30,7 @@ ET >= 3 domaines source distincts
 
 Fail-closed si preuve absente/invalide/indisponible.
 
-Ville/intention : `public.public_search_representations_v1` avec `display_eligibility=eligible_primary` et `freshness_status=fresh_confirmed`.
+Ville/intention : `public.public_search_representations_v1`, `display_eligibility=eligible_primary`, `freshness_status=fresh_confirmed`.
 
 Snapshot revalidé : les 10 couples `5 villes SEO V1 × acheter/louer` passent le gate 20/3.
 
@@ -44,6 +45,7 @@ Snapshot revalidé : les 10 couples `5 villes SEO V1 × acheter/louer` passent l
 - SEO-3C — `/neuf` fail-closed — #1004 ✅ code / **PROD PENDING**
 - SEO-4 PREP — contrat ville×intention — #1006 ✅
 - SEO-4 UI — landings ville×transaction — #1009 ✅, merge `93c54a04c243e4047c810cdbabe65f8bda37ea2d`
+- SEO-4 closeout — #1012 ✅, merge `ef5c36aba2b185ee6bf1109bb673b080ee6714ad`
 
 Aucun déploiement Vercel autorisé/effectué dans ces lots.
 
@@ -51,79 +53,91 @@ Aucun déploiement Vercel autorisé/effectué dans ces lots.
 
 ## 4. SEO-4 UI — PREUVES
 
-### BEFORE ✅
+BEFORE LIVE : run **33945702517**, artifact **9963263361**, viewports 390/430/768/1280.  
+AFTER vrai composant : run **33946136029**, artifact **9963390475**, mêmes viewports.  
+Score visuel de revue : **9,5/10**.
 
-LIVE `/immobilier/casablanca` capturé via GitHub Actions :
-
-- run **33945702517** ;
-- artifact **9963263361** ;
-- viewports **390 / 430 / 768 / 1280** ;
-- HTTP 200 ;
-- H1 `Casablanca, en données utiles` ;
-- robots `index, follow` ;
-- canonical `https://akarfinder.vercel.app/immobilier/casablanca`.
-
-### AFTER ✅
-
-Le vrai composant `CityIntentLanding` a été rendu dans un harness local GitHub Actions non committé :
-
-- run **33946136029** ;
-- artifact **9963390475** ;
-- viewports **390 / 430 / 768 / 1280** ;
-- HTTP 200 sur les 4 captures ;
-- H1 `Acheter à Casablanca` sur les 4 captures ;
-- score visuel de revue : **9,5/10**.
-
-Comparaison vérifiée : intention immédiate, preuve stock/source explicite, résultats remontés sur mobile, grille 2 colonnes à 768 et 3 colonnes à 1280, aucun overflow observé.
-
-PR temporaires de capture #1008, #1010, #1011 fermées sans merge.
+Post-merge : 0 déploiement Vercel observé. Les routes SEO-4 ne sont donc pas déclarées LIVE.
 
 ---
 
-## 5. SEO-4 UI — LIVRÉ
+## 5. SEO-5 — DATA MOAT BASELINE
 
-PR **#1009** mergée sur `main`.
+### Sources DB vérifiées
 
-Livré :
+- `latest_price_m2_references`
+- `latest_reliable_condition_price_m2`
+- `odm_neighborhood_offer_reliability_metric_v1`
+- `odm_neighborhood_offer_reliability_segment_health_v1`
+- `published_neighborhood_intelligence`
 
-- `components/seo/CityIntentLanding.tsx` ;
-- builder serveur `lib/seo-city-pages/intent-route.tsx` ;
-- routes statiques `/immobilier/[city]/acheter` et `/immobilier/[city]/louer` ;
-- self-canonical + metadata transactionnelles ;
-- `robots index/noindex` via le gate ville×intention ;
-- `revalidate = 3600` ;
-- Search préfiltré `buy/rent` ;
-- sitemap ville×intention uniquement si le sous-gate passe ;
-- classification UI Inventory des deux routes ;
-- tests SEO source/contrat ;
-- aucune DB write ;
-- aucun nouveau droit image.
+### État prix/m² actuel
 
-Preuves HEAD final avant merge :
+`latest_price_m2_references` :
 
-- UI All Pages Inventory ✅ ;
-- TypeScript ✅ ;
-- Production build ✅ ;
-- Scraper regression suite ✅ ;
-- SEO Eligibility Gate V1 ✅ ;
-- UX Gate 0 Contracts ✅ ;
-- visual AFTER 4 viewports ✅.
+- **2 lignes seulement** ;
+- sample_size **5** sur chaque ligne ;
+- confidence **0,3333** ;
+- quality_status `provisional` ;
+- méthodologie `listing_price_m2_v1` ;
+- exemples : Guéliz et Souissi, période jusqu'au 2026-07-25.
 
-Post-merge : `main = 93c54a04…` confirmé ; **0 déploiement Vercel après merge**.
+`latest_reliable_condition_price_m2` : **0 ligne**.
 
-**Production : non activée.** Ne pas appeler ces routes LIVE avant déploiement explicitement autorisé.
+ODM `price_per_m2_mad` :
+
+- 32 métriques observées ;
+- niveau **insufficient** partout ;
+- max sample **2** ;
+- max sources **2** ;
+- **0 market_representativeness_certified** ;
+- **0 public_activation**.
+
+Conclusion vérifiée : **aucune médiane prix/m² n'est actuellement publiable comme donnée marché SEO.**
+
+### Politique ODM existante
+
+Source de vérité : `odm_p1c2_metric_reliability_level_v1`.
+
+`strong` :
+
+- sample >=20
+- couverture >=75%
+- fraîcheur >=70%
+- sources >=3
+- outliers <=15%
+- IQR/médiane <=0,75
+
+`moderate` :
+
+- sample >=10
+- couverture >=60%
+- fraîcheur >=60%
+- sources >=2
+- outliers <=20%
+- IQR/médiane <=1,00
+
+Le SEO ne réimplémente pas ces seuils : il consomme le niveau calculé par la DB.
 
 ---
 
-## 6. TAXONOMIE
+## 6. SEO-5A — PUBLICATION GATE
 
-```text
-/acheter | /louer
-  -> /immobilier/{ville}/acheter | /immobilier/{ville}/louer
-  -> /immobilier/{ville}/{intention}/{type} uniquement après gate futur
-```
+Branche : `feat/seo5-market-metric-publication-gate`.
 
-`/search?...` reste `noindex`.
+Nouveau contrat `lib/seo/market-metric-publication.ts` : une métrique ne franchit la frontière SEO publique que si :
+
+1. `reliabilityLevel` = `moderate` ou `strong` ;
+2. `marketRepresentativenessCertified = true` ;
+3. `publicActivation = true` ;
+4. `metricState != shadow` ;
+5. médiane finie et >0.
+
+Sinon fail-closed avec raison explicite.
+
+Tests ajoutés à la suite SEO existante : shadow, limited, activation/certification, état publié et médianes invalides.
+
+**Aucune page data créée. Aucune DB write.**
 
 ---
 
@@ -139,10 +153,9 @@ Autorisation explicite obligatoire pour :
 
 ## 8. NEXT EXACT
 
-**SEO-5 — DATA MOAT**
-
-1. inventorier les read-models de prix/m², volumes et fraîcheur déjà existants ;
-2. définir une politique statistique de publication distincte du simple gate d'inventaire 20/3 ;
-3. mesurer quelles villes/intentions ont assez de données pour publier une médiane ou un baromètre sans surpromesse ;
-4. ne créer aucune nouvelle page data tant que la méthode, l'échantillon et la fraîcheur ne sont pas prouvés ;
-5. production SEO-3C/SEO-4 reste derrière human gate Vercel.
+1. certifier SEO-5A par CI ;
+2. si vert : merge et post-merge ;
+3. SEO-5B : read-model public read-only pour métriques certifiées uniquement ;
+4. snapshot des métriques réellement publiables ;
+5. tant que snapshot = 0, **aucune page baromètre/prix-m² n'est créée** ;
+6. production SEO-3C/SEO-4 reste derrière human gate Vercel.
