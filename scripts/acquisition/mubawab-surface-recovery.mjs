@@ -7,38 +7,56 @@ const DETAIL_RE = /\/(?:fr|en)\/(?:a|pa)\/(\d+)(?:\/|$)/i;
 const SHARD_RE = /\/fr\/(cc|ct|cd|sd)\//i;
 const RANK = { cc: 0, ct: 1, cd: 2, sd: 3 };
 const DEFAULT_DELAY_MS = 2750;
-const UA = 'AkarFinder-surface-recovery/1.0 (+https://akarfinder.ma)';
+const UA = 'AkarFinder-surface-recovery/1.1 (+https://akarfinder.ma)';
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export function normalizeText(value) {
   return String(value || '').replace(/\u00a0|\u202f/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
-export function parseSurface(text) {
+export function surfaceCandidates(text) {
   const normalized = normalizeText(text);
-  const matches = [...normalized.matchAll(/\b([0-9]{1,5}(?:[.,][0-9]+)?)\s*(?:m²|m2|m\s*2)\b/gi)]
-    .map((m) => Math.round(Number.parseFloat(m[1].replace(',', '.'))))
-    .filter((v) => Number.isInteger(v) && v >= 10 && v <= 100000);
-  const unique = [...new Set(matches)];
+  const regex = /\b([0-9]{1,5}(?:[.,][0-9]+)?)\s*(?:m²|m2|m\s*2)(?![A-Za-z0-9])/giu;
+  const values = [];
+  for (const match of normalized.matchAll(regex)) {
+    const value = Math.round(Number.parseFloat(match[1].replace(',', '.')));
+    if (Number.isInteger(value) && value >= 10 && value <= 100000) values.push(value);
+  }
+  return values;
+}
+
+export function parseSurface(text) {
+  const unique = [...new Set(surfaceCandidates(text))];
   return unique.length === 1 ? unique[0] : null;
+}
+
+export function parsePrimarySurface(text) {
+  return surfaceCandidates(text)[0] ?? null;
 }
 
 function candidateFromElement($, node) {
   const root = $(node);
-  const values = new Set();
+  const attrValues = new Set();
   root.find('[data-surface],[data-area],[itemprop="floorSize"]').addBack('[data-surface],[data-area],[itemprop="floorSize"]').each((_, el) => {
     const wrapped = $(el);
     for (const raw of [wrapped.attr('data-surface'), wrapped.attr('data-area'), wrapped.attr('content'), wrapped.text()]) {
       if (!raw) continue;
-      const numeric = /^\s*[0-9]+(?:[.,][0-9]+)?\s*$/.test(raw) ? Math.round(Number.parseFloat(raw.replace(',', '.'))) : parseSurface(raw);
-      if (Number.isInteger(numeric) && numeric >= 10 && numeric <= 100000) values.add(numeric);
+      const numeric = /^\s*[0-9]+(?:[.,][0-9]+)?\s*$/.test(raw)
+        ? Math.round(Number.parseFloat(raw.replace(',', '.')))
+        : parsePrimarySurface(raw);
+      if (Number.isInteger(numeric) && numeric >= 10 && numeric <= 100000) attrValues.add(numeric);
     }
   });
+
+  if (attrValues.size === 1) {
+    return { surface: [...attrValues][0], context: normalizeText(root.text()).slice(0, 800), source: 'structured_attribute' };
+  }
+  if (attrValues.size > 1) return null;
+
   const text = normalizeText(root.text());
-  const parsed = parseSurface(text);
-  if (parsed !== null) values.add(parsed);
-  if (values.size !== 1) return null;
-  return { surface: [...values][0], context: text.slice(0, 800) };
+  const primary = parsePrimarySurface(text);
+  if (primary === null) return null;
+  return { surface: primary, context: text.slice(0, 800), source: 'primary_card_metric' };
 }
 
 export function extractSurfaceForListing(html, listingId) {
@@ -109,7 +127,7 @@ export async function runRecovery(){
   const targets=await loadTargets(base,key);const targetById=new Map(targets.map(r=>[r.source_listing_id,r]));const shardById=await loadShardMap(reportFiles,new Set(targetById.keys()));
   const idsByShard=new Map();for(const [id,shard] of shardById){if(!idsByShard.has(shard))idsByShard.set(shard,[]);idsByShard.get(shard).push(id);}
   const recovered=[],unresolved=[];let requests=0,stoppedEarly=null,lastStarted=0;
-  for(const [shardUrl,ids] of idsByShard){const rem=delayMs-(Date.now()-lastStarted);if(lastStarted&&rem>0)await sleep(rem);lastStarted=Date.now();const response=await fetch(shardUrl,{headers:{'user-agent':UA,accept:'text/html,application/xhtml+xml;q=0.9,*/*;q=0.5','accept-language':'fr-MA,fr;q=0.9'}});requests++;if(response.status===429){stoppedEarly='http_429';break;}if(!response.ok){for(const id of ids)unresolved.push({source_listing_id:id,reason:`http_${response.status}`,shard_url:shardUrl});continue;}const html=await response.text();for(const id of ids){const parsed=extractSurfaceForListing(html,id);if(!parsed){unresolved.push({source_listing_id:id,reason:'surface_not_found_on_shard',shard_url:shardUrl});continue;}const target=targetById.get(id);const now=new Date().toISOString();await patchRow(base,key,'property_listings',`id=eq.${target.property_listing_id}&surface_m2=is.null`,{surface_m2:parsed.surface,updated_at:now});recovered.push({source_listing_id:id,property_listing_id:target.property_listing_id,surface_m2:parsed.surface,shard_url:shardUrl,evidence:parsed.evidence});}}
+  for(const [shardUrl,ids] of idsByShard){const rem=delayMs-(Date.now()-lastStarted);if(lastStarted&&rem>0)await sleep(rem);lastStarted=Date.now();const response=await fetch(shardUrl,{headers:{'user-agent':UA,accept:'text/html,application/xhtml+xml;q=0.9,*/*;q=0.5','accept-language':'fr-MA,fr;q=0.9'}});requests++;if(response.status===429){stoppedEarly='http_429';break;}if(!response.ok){for(const id of ids)unresolved.push({source_listing_id:id,reason:`http_${response.status}`,shard_url:shardUrl});continue;}const html=await response.text();for(const id of ids){const parsed=extractSurfaceForListing(html,id);if(!parsed){unresolved.push({source_listing_id:id,reason:'surface_not_found_on_shard',shard_url:shardUrl});continue;}const target=targetById.get(id);const now=new Date().toISOString();await patchRow(base,key,'property_listings',`id=eq.${target.property_listing_id}&surface_m2=is.null`,{surface_m2:parsed.surface,updated_at:now});recovered.push({source_listing_id:id,property_listing_id:target.property_listing_id,surface_m2:parsed.surface,shard_url:shardUrl,evidence:parsed.evidence,source:parsed.source});}}
   for(const t of targets)if(!shardById.has(t.source_listing_id))unresolved.push({source_listing_id:t.source_listing_id,reason:'no_shard_attribution'});
   const report={success:stoppedEarly===null,targetCurrentDetailNoSurfaceCount:targets.length,mappedToShardCount:shardById.size,uniqueShardRequestCount:requests,recoveredSurfaceCount:recovered.length,unresolvedCount:unresolved.length,stoppedEarly,zeroDetailPageRequests:true,requestDelayMs:delayMs,recovered,unresolved};
   const outDir='artifacts/mubawab-surface-recovery';await fs.mkdir(outDir,{recursive:true});await fs.writeFile(path.join(outDir,'report.json'),JSON.stringify(report,null,2));await fs.writeFile(path.join(outDir,'report.md'),[`# Mubawab current surface recovery`,'',`- Success: **${report.success?'YES':'NO'}**`,`- Current detail targets without surface: **${targets.length}**`,`- Targets mapped to certified safe shards: **${shardById.size}**`,`- Safe shard requests: **${requests}**`,`- Surfaces recovered: **${recovered.length}**`,`- Unresolved: **${unresolved.length}**`,`- Detail page requests: **0**`,`- Early stop: **${stoppedEarly||'none'}**`].join('\n'));
