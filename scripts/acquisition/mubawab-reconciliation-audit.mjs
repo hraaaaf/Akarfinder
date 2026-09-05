@@ -6,20 +6,23 @@ const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
 if (!url || !key) throw new Error('Missing Supabase read credentials');
 
 const headers = { apikey: key, Authorization: `Bearer ${key}` };
-const pageSize = 1000;
+const pageSize = 500;
 const rows = [];
-for (let offset = 0; ; offset += pageSize) {
+let lastId = null;
+for (;;) {
   const endpoint = new URL('/rest/v1/discovery_candidates', url);
-  endpoint.searchParams.set('select', 'canonical_url,discovery_status,last_seen_at');
-  endpoint.searchParams.set('canonical_url', 'ilike.*mubawab.ma*');
+  endpoint.searchParams.set('select', 'id,canonical_url,discovery_status,last_seen_at');
+  endpoint.searchParams.set('source_domain', 'eq.mubawab.ma');
   endpoint.searchParams.set('limit', String(pageSize));
-  endpoint.searchParams.set('offset', String(offset));
-  endpoint.searchParams.set('order', 'canonical_url.asc');
+  endpoint.searchParams.set('order', 'id.asc');
+  if (lastId) endpoint.searchParams.set('id', `gt.${lastId}`);
   const res = await fetch(endpoint, { headers });
   if (!res.ok) throw new Error(`Supabase read failed: ${res.status} ${await res.text()}`);
   const batch = await res.json();
   rows.push(...batch);
   if (batch.length < pageSize) break;
+  lastId = batch.at(-1)?.id;
+  if (!lastId) throw new Error('Keyset pagination lost last id');
 }
 
 const uniq = new Map();
@@ -34,10 +37,15 @@ const values = [...uniq.values()];
 const byStatus = {};
 for (const r of values) byStatus[r.discovery_status || 'null'] = (byStatus[r.discovery_status || 'null'] || 0) + 1;
 
+const safePath = raw => {
+  try { return new URL(raw).pathname; } catch { return ''; }
+};
+
 const summary = {
   generated_at: new Date().toISOString(),
   source: 'public.discovery_candidates',
-  source_filter: 'canonical_url ILIKE %mubawab.ma%',
+  source_filter: 'source_domain = mubawab.ma',
+  pagination: 'id keyset',
   zero_db_writes: true,
   raw_rows: rows.length,
   unique_canonical_urls: uniq.size,
@@ -45,8 +53,8 @@ const summary = {
   by_status_unique: byStatus,
   seen_7d_unique: values.filter(r => Date.parse(r.last_seen_at || '') >= days(7)).length,
   seen_30d_unique: values.filter(r => Date.parse(r.last_seen_at || '') >= days(30)).length,
-  shard_like_unique: values.filter(r => /\/(cc|ct|cd|sd)\//i.test(new URL(r.canonical_url).pathname)).length,
-  numeric_path_unique: values.filter(r => /\/[0-9]+[A-Za-z0-9_-]*(?:\/|$)/.test(new URL(r.canonical_url).pathname)).length,
+  shard_like_unique: values.filter(r => /\/(cc|ct|cd|sd)\//i.test(safePath(r.canonical_url))).length,
+  numeric_path_unique: values.filter(r => /\/[0-9]+[A-Za-z0-9_-]*(?:\/|$)/.test(safePath(r.canonical_url))).length,
   claim_30k_supported: uniq.size >= 30000,
 };
 
