@@ -32,7 +32,7 @@ async function readOne(base,key,id){
   const rows=await r.json(); if(rows.length!==1) throw new Error(`expected one property row for ${id}, got ${rows.length}`); return rows[0];
 }
 async function patchOne(base,key,id,payload){
-  const r=await fetch(`${base}/rest/v1/property_listings?id=eq.${id}&district=is.null`,{method:'PATCH',headers:{...headers(key),prefer:'return=representation'},body:JSON.stringify(payload)});
+  const r=await fetch(`${base}/rest/v1/property_listings?id=eq.${id}`,{method:'PATCH',headers:{...headers(key),prefer:'return=representation'},body:JSON.stringify(payload)});
   if(!r.ok) throw new Error(`patch ${id} failed ${r.status}: ${await r.text()}`);
   return r.json();
 }
