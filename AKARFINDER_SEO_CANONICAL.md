@@ -6,8 +6,8 @@
 **Statut : ACTIVE**  
 **Dernière mise à jour : 2026-09-05**  
 **Repo : `hraaaaf/Akarfinder`**  
-**Main vérifié : `e62fef258020bef6249c0222feb9e5ee80bab730`**  
-**Branche active : `feat/seo5-certified-market-metric-read-model`**  
+**Main vérifié : `232f53d2936f0db6ea4c20306dc74fb979bcad3a`**  
+**Branche active : `docs/seo5b-closeout`**  
 **SEO-4 UI : MERGED / PROD PENDING**  
 **Preuve baseline : `AKARFINDER_SEO_AUDIT_2026-09-04.md`**
 
@@ -44,9 +44,10 @@ Snapshot revalidé : les 10 couples `5 villes SEO V1 × acheter/louer` passent l
 - SEO-4 PREP — contrat ville×intention — #1006 ✅
 - SEO-4 UI — landings ville×transaction — #1009 ✅
 - SEO-4 closeout — #1012 ✅
-- SEO-5A — market metric publication gate — #1013 ✅, merge `e62fef258020bef6249c0222feb9e5ee80bab730`
+- SEO-5A — market metric publication gate — #1013 ✅
+- SEO-5B — certified market metric read model — #1014 ✅, merge `232f53d2936f0db6ea4c20306dc74fb979bcad3a`
 
-Post-merge SEO-5A : **0 déploiement Vercel observé**.
+Post-merge SEO-5B : **0 déploiement Vercel observé**.
 
 ---
 
@@ -104,13 +105,10 @@ Preuves avant merge #1013 : Scraper regression ✅, tests SEO-5A ✅, TypeScript
 
 ---
 
-## 7. SEO-5B — CERTIFIED READ MODEL
+## 7. SEO-5B — CERTIFIED READ MODEL ✅
 
-Branche : `feat/seo5-certified-market-metric-read-model`.
+`lib/seo/market-metric-read-model.ts` :
 
-Implémenté avant certification :
-
-- `lib/seo/market-metric-read-model.ts` ;
 - lecture serveur service-role uniquement ;
 - source `odm_neighborhood_offer_reliability_metric_v1` ;
 - préfiltrage DB : `moderate|strong`, certification, activation publique, état non-shadow ;
@@ -120,7 +118,15 @@ Implémenté avant certification :
 - filtres optionnels ville / transaction / métrique ;
 - tests de mapping d'une ligne certifiée et rejet des lignes shadow/malformed.
 
-**Aucune page data. Aucune DB write. Snapshot réel attendu et vérifié : 0 métrique publique.**
+Preuves #1014 avant merge :
+
+- Scraper regression suite ✅, incluant `seo-city-pages.test.ts` ;
+- Canonical Compile / Production build ✅ ;
+- P1 Final Sweep ✅ ;
+- PR mergeable=true ;
+- diff = 3 fichiers, aucune UI, route publique, sitemap ou DB write.
+
+**Snapshot réel : 0 métrique publique. Aucune page baromètre/prix-m² ne doit être créée tant que ce nombre reste à 0.**
 
 ---
 
@@ -136,9 +142,10 @@ Autorisation explicite obligatoire pour :
 
 ## 9. NEXT EXACT
 
-1. ouvrir PR SEO-5B ;
-2. certifier tests/TypeScript/build ;
-3. si vert : merge + post-merge ;
-4. tant que `publishable_rows = 0`, **ne créer aucune page baromètre/prix-m²** ;
-5. prochaine voie utile : améliorer la qualité/couverture des données qui alimentent l'ODM, puis réévaluer le gate statistique ;
-6. production SEO-3C/SEO-4 reste derrière human gate Vercel.
+1. closeout SEO-5B docs-only ;
+2. diagnostiquer pourquoi les métriques ODM restent `insufficient` ;
+3. identifier le goulot dominant : sample, couverture, fraîcheur, diversité source, outliers ou dispersion ;
+4. corriger uniquement la chaîne de données responsable ;
+5. réévaluer le snapshot ;
+6. tant que `publishable_rows = 0`, **ne créer aucune page baromètre/prix-m²** ;
+7. production SEO-3C/SEO-4 reste derrière human gate Vercel.
