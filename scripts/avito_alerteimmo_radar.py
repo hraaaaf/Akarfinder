@@ -30,7 +30,7 @@ class LinkParser(HTMLParser):
             self.links.append(href)
 
 
-def fetch(url, timeout=25):
+def fetch(url, timeout=10):
     req = urllib.request.Request(
         url,
         headers={"User-Agent": UA, "Accept": "text/html,application/xml;q=0.9,*/*;q=0.8"},
@@ -55,12 +55,12 @@ def shard_for(url, shard_count):
     return int.from_bytes(digest[:8], "big") % shard_count
 
 
-def sitemap_urls(rp, sleep_s, errors):
+def sitemap_urls(rp, sleep_s, errors, deadline):
     found = set()
     todo = deque([BASE + "/sitemap.xml"])
     seen = set()
     loc_re = re.compile(r"<loc>\s*(.*?)\s*</loc>", re.I | re.S)
-    while todo and len(seen) < 20:
+    while todo and len(seen) < 20 and time.monotonic() < deadline:
         url = todo.popleft()
         if url in seen or not rp.can_fetch(UA, url):
             continue
@@ -86,15 +86,20 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--baseline", required=True)
     ap.add_argument("--output", required=True)
-    ap.add_argument("--max-pages", type=int, default=300)
-    ap.add_argument("--sleep", type=float, default=0.6)
+    ap.add_argument("--max-pages", type=int, default=180)
+    ap.add_argument("--sleep", type=float, default=0.4)
     ap.add_argument("--shard-index", type=int, default=0)
     ap.add_argument("--shard-count", type=int, default=1)
+    ap.add_argument("--time-budget-seconds", type=int, default=720)
     args = ap.parse_args()
 
     if args.shard_count < 1 or not 0 <= args.shard_index < args.shard_count:
         raise SystemExit("invalid shard configuration")
+    if args.time_budget_seconds < 60:
+        raise SystemExit("time budget must be >= 60 seconds")
 
+    started = time.monotonic()
+    deadline = started + args.time_budget_seconds
     out = Path(args.output)
     out.mkdir(parents=True, exist_ok=True)
     baseline = {x.strip() for x in Path(args.baseline).read_text().splitlines() if x.strip()}
@@ -112,7 +117,7 @@ def main():
 
     errors = []
     all_seeds = {BASE + "/", BASE + "/quartiers"}
-    all_seeds |= sitemap_urls(rp, args.sleep, errors)
+    all_seeds |= sitemap_urls(rp, args.sleep, errors, deadline)
     shard_seeds = {
         u for u in all_seeds
         if u in (BASE + "/", BASE + "/quartiers") or shard_for(u, args.shard_count) == args.shard_index
@@ -122,8 +127,12 @@ def main():
     visited = set()
     records = {}
     blocked_by_robots = 0
+    stopped_by = "queue_exhausted"
 
     while q and len(visited) < args.max_pages:
+        if time.monotonic() >= deadline:
+            stopped_by = "time_budget"
+            break
         url = q.popleft()
         if url in visited:
             continue
@@ -161,11 +170,14 @@ def main():
             q.append(n)
             queued.add(n)
 
+    if q and len(visited) >= args.max_pages:
+        stopped_by = "page_cap"
+
     ids = set(records)
     overlap = ids & baseline
     net_new = ids - baseline
     union = ids | baseline
-    truncated = bool(q) and len(visited) >= args.max_pages
+    truncated = bool(q)
 
     for name, values in (
         ("alerteimmo_ids.txt", ids),
@@ -193,7 +205,14 @@ def main():
         "seed_count_shard": len(shard_seeds),
         "shard": {"index": args.shard_index, "count": args.shard_count},
         "robots": {"url": BASE + "/robots.txt", "blocked_pages": blocked_by_robots, "error": robots_error},
-        "limits": {"max_pages": args.max_pages, "truncated": truncated, "sleep_seconds": args.sleep},
+        "limits": {
+            "max_pages": args.max_pages,
+            "truncated": truncated,
+            "sleep_seconds": args.sleep,
+            "time_budget_seconds": args.time_budget_seconds,
+            "stopped_by": stopped_by,
+            "elapsed_seconds": round(time.monotonic() - started, 3),
+        },
         "safety": {
             "direct_avito_requests": 0,
             "avito_content_fetched": False,
