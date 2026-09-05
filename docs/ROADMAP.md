@@ -36,23 +36,29 @@ Pipeline : `DISCOVER -> RAW EVIDENCE -> NORMALIZE -> EXACT DEDUPE -> CANDIDATE L
 | Avito indirect — AlerteImmo/Kaynly/CC union | **19 739** | ✅ | run `33971383335`, artifact `9971118875` |
 | Akaar `/listing/...` | **76 843** | ✅ | run `33984287820`, artifact `9974670013` |
 | Mubawab FULL robots-safe shard union | **18 445** | ✅ CLOSED | run `33964834762`, artifact `9969651653` |
-| MarocAnnonces source-first residential union | **10 000** | ✅ CLOSED | run `33739495442`, artifact `9888335708`, digest `sha256:c23c571acae2863e1dd866126938174af67186da704e3ad30c8bb97fb3bf5bc9` |
-| Sarouty property-detail sitemaps | **5 064** | ✅ CLOSED | run `33765427351`, artifact `9897323745`, digest `sha256:260ab772ed4f43c5eee41fbf0e04053e59716e76589ca0beb411dc619a8f5566` |
-| Agenz source-first partial safe enumeration | **4 466** | ✅ PARTIAL | run `33764930794`, artifact `9898224274`, digest `sha256:34a34a4eb0f2ae8d8d0f185c17afbf105296f3439d5e3381abe2baa67e61b2fb` |
+| MarocAnnonces source-first residential union | **10 000** | ✅ CLOSED | run `33739495442`, artifact `9888335708` |
+| Sarouty property-detail sitemaps | **5 064** | ✅ CLOSED | run `33765427351`, artifact `9897323745` |
+| Agenz source-first partial safe enumeration | **4 466** | ✅ PARTIAL | run `33764930794`, artifact `9898224274` |
 | DarAgadir + LSF + Aykana canonical-link public-sitemap rows | **6 270** | ✅ HISTORICAL L0 | PR `#223`, merge `686f71657c3d683360990d3125c19034086d83c2` |
-| SoukImmobilier + Masaken + Atlas Common Crawl qualified seeds | **1 464** | ✅ HISTORICAL L0 | run `29806876923`, artifact `8485826615`; derived as `3027 total - 1563 DarAgadir overlap` |
+| Atlas + Masaken + SoukImmobilier Common Crawl candidates | **2 163** | ✅ HISTORICAL L0 | MASS-X5 run `31762998799` |
+| Mouldar Common Crawl candidates | **1 081** | ✅ HISTORICAL L0 | MASS-X5 run `31762998799` |
+| Promo Immo Marrakech Common Crawl candidates | **943** | ✅ HISTORICAL L0 | MASS-X5 run `31762998799` |
+| Kawtar Immobilier Common Crawl candidates | **188** | ✅ HISTORICAL L0 | MASS-X5 run `31762998799` |
+| DATA-4.9B six-source structural detail URLs | **2 326** | ✅ STRUCTURAL L0 | run `31370449455`, exact-head proof |
 | Domio listing-like URLs | **2 020** | ✅ PARTIAL | run `33984423190`, artifact `9974714576` |
 | ImmoDirect `/property/...` | **4** | ✅ PARKED faible rendement | run `33985219822`, artifact `9974939355` |
 
 ### Union L0/L1 minimale mesurée
 
-**144 315 représentations candidates exactes par identité source/ID ou source/URL.**
+**149 552 représentations candidates exactes par identité source/ID ou source/URL.**
 
-Calcul : `136 581 + 6 270 + 1 464 = 144 315`.
+Calcul : `144 315 - 1 464 + 2 163 + 1 081 + 943 + 188 + 2 326 = 149 552`.
 
-Les 6 270 et 1 464 lignes historiques sont comptées **L0 uniquement** avec provenance ; elles ne sont pas déclarées actives/fraîches en 2026-09 sans nouvelle observation.
+MASS-X5 finale (`31762998799`) certifie globalement `candidate_unique=51 169`, `exact_overlap=36 732`, `exact_net_new=14 437`. **Les 14 437 ne sont pas additionnés en bloc** car Avito/Mubawab/Agenz/Sarouty et d'autres domaines chevauchent déjà le scoreboard. Seuls les domaines/volumes non déjà comptés, ou les remplacements plus complets, sont retenus ici.
 
-Ce n'est **pas** 144 315 biens uniques actifs. Les sources différentes peuvent représenter le même bien ; le recouvrement sera traité au clustering.
+Les lignes historiques/structurelles sont comptées **L0 uniquement** avec provenance ; elles ne sont pas déclarées actives, fraîches ou autorisées à l'affichage.
+
+Ce n'est **pas** 149 552 biens uniques actifs. Les sources différentes peuvent représenter le même bien ; le recouvrement sera traité au clustering.
 
 ## 4. DÉTAILS / DÉCISIONS DE LANE
 
@@ -69,10 +75,20 @@ Run `33765427351` ✅ : 6/6 property-detail sitemaps déclarés, **5 064 IDs uni
 Run `33764930794` : **4 466 IDs uniques** observés sur 430 pages avant `hard_block`, queueRemaining=1 397. Arrêt de sécurité correct, aucun retry/bypass, zeroDbWrites=true. Ne pas présenter comme inventaire complet.
 
 ### Historical public-sitemap L0 — RECONCILED
-PR `#223` : **6 270** lignes canonical-link-only, structurées, issues de sitemaps publics : DarAgadir 5 567, LSF 379, Aykana 324. Shadow only, aucune activation publique. La fraîcheur de l'époque ne vaut pas fraîcheur actuelle ; conservation L0 seulement.
+PR `#223` : **6 270** lignes canonical-link-only, structurées : DarAgadir 5 567, LSF 379, Aykana 324. Shadow only, aucune activation publique.
 
-### Historical Common Crawl class-A — RECONCILED
-Run `29806876923` : **3 027 qualified seeds** dédupliqués sur SoukImmobilier, DarAgadir, Masaken, Atlas ; DarAgadir = **1 563** et chevauche le réservoir DarAgadir déjà compté, donc seuls les **1 464** des trois autres domaines sont ajoutés au scoreboard. Metadata-only, zero DB write.
+### MASS-X5 — RECONCILED WITHOUT DOUBLE COUNT
+Run `31762998799` ✅ / artifact `9205427369` : **51 169** candidates sur 16 domaines, **36 732** exact overlap, **14 437** exact net-new contre `source_offer_seeds`, 0 write/fetch source/WARC/permission inference.
+
+Pour le scoreboard courant :
+- Atlas + Masaken + SoukImmobilier : **2 163** candidates, remplace l'ancien total 1 464 ;
+- Mouldar : **1 081** ;
+- Promo Immo Marrakech : **943** ;
+- Kawtar Immobilier : **188** ;
+- les autres domaines MASS-X5 ne sont pas additionnés ici sans reconciliation avec leurs lanes déjà comptées.
+
+### DATA-4.9B — STRUCTURAL L0
+Run `31370449455` ✅ : **10 127 net-new sitemap identities -> 2 326 structural-detail URL representations**, 7 801 rejects, 0 identity collision. Sources : ValFoncier 709, Christie's Morocco 602, Immo-Maroc 276, AgadirImmobilier.ma 37, ProImmobilier 99, Capital Properties 603. Ces sources restent `unverified + hidden + internal_signal_only`; structure != autorisation.
 
 ### Domio — CLOSED PARTIAL
 Run `33984423190` ✅ : **2 020 listing-like** ; `sitemap-properties.xml` a timeout, reprise résiliente plus tard.
@@ -95,7 +111,8 @@ Le full sweep `33985644309` a échoué sur `Network is unreachable` au chargemen
 | M25K | ✅ |
 | M50K | ✅ |
 | M100K | ✅ |
-| **M200K** | 🔵 ACTIVE — **144 315 / 200 000**, manque **55 685** |
+| **M150K** | 🟡 **149 552 / 150 000**, manque **448** |
+| **M200K** | 🔵 ACTIVE — manque **50 448** |
 | M250K+ | STRETCH |
 
 ## 6. FILE D'EXÉCUTION — 12 LOTS
@@ -123,11 +140,12 @@ Le full sweep `33985644309` a échoué sur `Network is unreachable` au chargemen
 
 ## 8. NEXT EXACT
 
-1. Continuer la **réconciliation historique** pour retrouver tout FULL/artifact certifié non encore compté, avec déduplication par domaine/source avant ajout.
-2. Chercher en priorité les anciens réservoirs `source_offer_seeds` / Common Crawl / source discovery dont le volume est >1 000 et dont l'identité n'est pas déjà dans le scoreboard.
+1. Fermer **M150K** : il manque seulement **448** candidates exactes.
+2. Continuer la réconciliation historique sur les sources non encore présentes dans le scoreboard, surtout les cohorts zero-stock / long-tail certifiés.
 3. **Agenz** : mesurer la queue restante sans bypass via surfaces indirectes publiques.
 4. **Yakeey** : identifier la couche publique qui transporte les IDs/URLs des 2 377 résultats affichés ; ne rien compter avant preuve.
 5. Reprendre **MAnonce** et **Domio** seulement si la voie est fiable et rentable.
-6. Continuer jusqu'à **M200K**, puis unifier le Candidate Lake et mesurer le recouvrement inter-source.
+6. Après M150K, viser le prochain réservoir >10k pour fermer les **50 448** restants vers M200K.
+7. À M200K : unifier Candidate Lake, exact dedupe, provenance, layer, freshness, clusters et mesure de recouvrement inter-source.
 
-**Boussole actuelle : 144 315 -> 200 000 -> 250 000+.**
+**Boussole actuelle : 149 552 -> 150 000 -> 200 000 -> 250 000+.**
