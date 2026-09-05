@@ -1,0 +1,37 @@
+name: Data Ingestion Avito Kaynly Radar
+
+on:
+  push:
+    paths:
+      - "scripts/scrapers/kaynly-avito-radar.mjs"
+      - ".github/workflows/data-ingestion-avito-kaynly-radar.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Bounded public-control discovery. Requests Kaynly public SEO pages only.
+# It never requests Avito pages, APIs, images, auth, CAPTCHA, or private endpoints.
+jobs:
+  kaynly-radar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      KAYNLY_RADAR_MAX_PAGES: "1400"
+      KAYNLY_RADAR_MAX_IDS: "8000"
+      KAYNLY_RADAR_DELAY_MS: "650"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Discover Avito IDs through Kaynly public SEO lattice
+        run: node scripts/scrapers/kaynly-avito-radar.mjs
+      - name: Upload Kaynly Avito radar proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: avito-kaynly-radar-proof
+          path: data-ingestion/runs/avito/kaynly-radar/
+          if-no-files-found: error
+          retention-days: 14

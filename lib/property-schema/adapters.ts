@@ -111,6 +111,7 @@ function makeOffer(
     canonical_source_url: context.source_url ?? null,
     acquisition_channel: context.acquisition_channel ?? "system",
     origin_type: context.origin_type ?? "unknown",
+    offer_scope: input.offer_scope ?? "whole_property",
     price_currency: "MAD",
     price_period: input.price_period ?? (input.transaction_type === "rent" ? "month" : "total"),
     published_at_source: null,
