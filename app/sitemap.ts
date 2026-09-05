@@ -39,6 +39,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .filter(({ decision }) => decision.eligible)
     .map(({ city }) => `/immobilier/${city.slug}`);
 
+  const cityIntentRoutes = cityDecisions.flatMap(({ city, decision }) => {
+    const routes: string[] = [];
+    if (decision.acheter.eligible) routes.push(`/immobilier/${city.slug}/acheter`);
+    if (decision.louer.eligible) routes.push(`/immobilier/${city.slug}/louer`);
+    return routes;
+  });
+
   const neighborhoodCandidates = getAllNeighborhoods().filter(
     (neighborhood) =>
       eligibleCitySlugs.has(neighborhood.citySlug) &&
@@ -59,7 +66,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Do not emit a synthetic lastModified timestamp. Google expects <lastmod>
   // to represent the page's last significant change, not sitemap generation time.
-  return [...baseRoutes, ...cityRoutes, ...neighborhoodRoutes].map((route) => ({
+  return [...baseRoutes, ...cityRoutes, ...cityIntentRoutes, ...neighborhoodRoutes].map((route) => ({
     url: `${siteConfig.siteUrl}${route}`,
   }));
 }
