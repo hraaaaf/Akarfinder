@@ -1,0 +1,42 @@
+name: AkarFinder - Mubawab Reconciliation Audit
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/acquisition/mubawab-reconciliation-audit.mjs'
+      - '.github/workflows/mubawab-reconciliation-audit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Read-only Mubawab reconciliation
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/acquisition/mubawab-reconciliation-audit.mjs
+      - name: Verify zero-write report
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const s = JSON.parse(fs.readFileSync('artifacts/mubawab-reconciliation-audit/summary.json','utf8'));
+          if (s.zero_db_writes !== true) throw new Error('audit must remain zero-write');
+          if (!Number.isInteger(s.unique_canonical_urls) || s.unique_canonical_urls < 1) throw new Error('invalid unique count');
+          if (s.raw_rows < s.unique_canonical_urls) throw new Error('invalid dedupe accounting');
+          console.log(s);
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mubawab-reconciliation-audit-proof
+          path: artifacts/mubawab-reconciliation-audit/
+          if-no-files-found: error
