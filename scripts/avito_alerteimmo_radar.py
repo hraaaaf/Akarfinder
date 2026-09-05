@@ -21,6 +21,7 @@ class LinkParser(HTMLParser):
     def __init__(self):
         super().__init__()
         self.links = []
+
     def handle_starttag(self, tag, attrs):
         if tag.lower() != "a":
             return
@@ -30,7 +31,10 @@ class LinkParser(HTMLParser):
 
 
 def fetch(url, timeout=25):
-    req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "text/html,application/xml;q=0.9,*/*;q=0.8"})
+    req = urllib.request.Request(
+        url,
+        headers={"User-Agent": UA, "Accept": "text/html,application/xml;q=0.9,*/*;q=0.8"},
+    )
     with urllib.request.urlopen(req, timeout=timeout) as r:
         return r.status, r.headers.get("Content-Type", ""), r.read().decode("utf-8", "replace")
 
@@ -44,6 +48,11 @@ def normalize_same_domain(href, current):
     if path == "/" or path == "/quartiers" or path.startswith(ALLOWED_PREFIXES):
         return urllib.parse.urlunparse(("https", "alerteimmo.ma", path, "", "", ""))
     return None
+
+
+def shard_for(url, shard_count):
+    digest = hashlib.sha256(url.encode("utf-8")).digest()
+    return int.from_bytes(digest[:8], "big") % shard_count
 
 
 def sitemap_urls(rp, sleep_s, errors):
@@ -77,11 +86,17 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--baseline", required=True)
     ap.add_argument("--output", required=True)
-    ap.add_argument("--max-pages", type=int, default=1500)
-    ap.add_argument("--sleep", type=float, default=0.8)
+    ap.add_argument("--max-pages", type=int, default=300)
+    ap.add_argument("--sleep", type=float, default=0.6)
+    ap.add_argument("--shard-index", type=int, default=0)
+    ap.add_argument("--shard-count", type=int, default=1)
     args = ap.parse_args()
 
-    out = Path(args.output); out.mkdir(parents=True, exist_ok=True)
+    if args.shard_count < 1 or not 0 <= args.shard_index < args.shard_count:
+        raise SystemExit("invalid shard configuration")
+
+    out = Path(args.output)
+    out.mkdir(parents=True, exist_ok=True)
     baseline = {x.strip() for x in Path(args.baseline).read_text().splitlines() if x.strip()}
     if len(baseline) != 6581:
         raise SystemExit(f"Expected certified baseline 6581, got {len(baseline)}")
@@ -96,9 +111,13 @@ def main():
         raise SystemExit(f"robots.txt unavailable; refusing crawl: {e}")
 
     errors = []
-    seeds = {BASE + "/", BASE + "/quartiers"}
-    seeds |= sitemap_urls(rp, args.sleep, errors)
-    q = deque(sorted(seeds))
+    all_seeds = {BASE + "/", BASE + "/quartiers"}
+    all_seeds |= sitemap_urls(rp, args.sleep, errors)
+    shard_seeds = {
+        u for u in all_seeds
+        if u in (BASE + "/", BASE + "/quartiers") or shard_for(u, args.shard_count) == args.shard_index
+    }
+    q = deque(sorted(shard_seeds))
     queued = set(q)
     visited = set()
     records = {}
@@ -135,8 +154,12 @@ def main():
             pass
         for href in parser.links:
             n = normalize_same_domain(href, url)
-            if n and n not in visited and n not in queued:
-                q.append(n); queued.add(n)
+            if not n or n in visited or n in queued:
+                continue
+            if n not in (BASE + "/", BASE + "/quartiers") and shard_for(n, args.shard_count) != args.shard_index:
+                continue
+            q.append(n)
+            queued.add(n)
 
     ids = set(records)
     overlap = ids & baseline
@@ -144,8 +167,14 @@ def main():
     union = ids | baseline
     truncated = bool(q) and len(visited) >= args.max_pages
 
-    for name, values in (("alerteimmo_ids.txt", ids), ("overlap_ids.txt", overlap), ("net_new_ids.txt", net_new), ("union_ids.txt", union)):
+    for name, values in (
+        ("alerteimmo_ids.txt", ids),
+        ("overlap_ids.txt", overlap),
+        ("net_new_ids.txt", net_new),
+        ("union_ids.txt", union),
+    ):
         (out / name).write_text("\n".join(sorted(values, key=int)) + ("\n" if values else ""), encoding="utf-8")
+
     with (out / "records.jsonl").open("w", encoding="utf-8") as f:
         for aid in sorted(records, key=int):
             f.write(json.dumps(records[aid], ensure_ascii=False, sort_keys=True) + "\n")
@@ -160,14 +189,22 @@ def main():
         "gain_pct": round((len(net_new) / len(baseline)) * 100, 4),
         "pages_visited": len(visited),
         "pages_queued_remaining": len(q),
-        "seed_count": len(seeds),
+        "seed_count_total": len(all_seeds),
+        "seed_count_shard": len(shard_seeds),
+        "shard": {"index": args.shard_index, "count": args.shard_count},
         "robots": {"url": BASE + "/robots.txt", "blocked_pages": blocked_by_robots, "error": robots_error},
         "limits": {"max_pages": args.max_pages, "truncated": truncated, "sleep_seconds": args.sleep},
-        "safety": {"direct_avito_requests": 0, "avito_content_fetched": False, "only_alerteimmo_pages_fetched_for_listing_discovery": True},
+        "safety": {
+            "direct_avito_requests": 0,
+            "avito_content_fetched": False,
+            "only_alerteimmo_pages_fetched_for_listing_discovery": True,
+        },
         "errors": errors,
-        "exhaustive_claim": False
+        "exhaustive_claim": False,
     }
-    (out / "summary.json").write_text(json.dumps(summary, indent=2, ensure_ascii=False, sort_keys=True) + "\n", encoding="utf-8")
+    (out / "summary.json").write_text(
+        json.dumps(summary, indent=2, ensure_ascii=False, sort_keys=True) + "\n", encoding="utf-8"
+    )
 
     hashes = []
     for p in sorted(out.iterdir()):
@@ -176,6 +213,7 @@ def main():
         hashes.append(f"{hashlib.sha256(p.read_bytes()).hexdigest()}  {p.name}")
     (out / "SHA256SUMS").write_text("\n".join(hashes) + "\n", encoding="utf-8")
     print(json.dumps(summary, indent=2, ensure_ascii=False))
+
 
 if __name__ == "__main__":
     main()
