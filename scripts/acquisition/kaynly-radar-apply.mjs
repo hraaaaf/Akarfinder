@@ -40,14 +40,13 @@ function assertGuard(env) {
 
 async function insertBatch(batch, { supabaseUrl, serviceRoleKey, fetchImpl = globalThis.fetch }) {
   const url = new URL(`${supabaseUrl.replace(/\/$/, '')}/rest/v1/discovery_candidates`);
-  url.searchParams.set('on_conflict', 'provider,query_hash,canonical_url');
   const response = await fetchImpl(url, {
     method: 'POST',
     headers: {
       apikey: serviceRoleKey,
       authorization: `Bearer ${serviceRoleKey}`,
       'content-type': 'application/json',
-      prefer: 'resolution=ignore-duplicates,return=representation',
+      prefer: 'return=representation',
     },
     body: JSON.stringify(batch),
   });
@@ -66,21 +65,29 @@ export async function applyKaynlyRadar({ payload, env = process.env, batchSize =
   const pre = diffAgainstExisting(manifest, beforeRows);
 
   await fs.mkdir(evidenceDir, { recursive: true });
-  const rollback = {
+  const plannedRollback = {
     table: 'discovery_candidates',
     run: 'avito-kaynly-radar',
-    note: 'Delete only these exact provider/query_hash/canonical_url identities if rollback is required.',
+    note: 'Planned identities only. Use inserted-identities.json for an exact rollback after any partial or complete apply.',
     identities: pre.novel.map((row) => ({ provider: row.provider, query_hash: row.query_hash, canonical_url: row.canonical_url, avito_id: row.metadata.avito_id })),
   };
-  await fs.writeFile(path.join(evidenceDir, 'rollback-manifest.json'), JSON.stringify(rollback, null, 2));
+  await fs.writeFile(path.join(evidenceDir, 'rollback-manifest.json'), JSON.stringify(plannedRollback, null, 2));
 
   let insertedCount = 0;
-  const insertedIds = [];
+  const insertedIdentities = [];
   for (let offset = 0; offset < pre.novel.length; offset += batchSize) {
     const batch = pre.novel.slice(offset, offset + batchSize);
     const inserted = await insertBatch(batch, { supabaseUrl: env.SUPABASE_URL, serviceRoleKey: env.SUPABASE_SERVICE_ROLE_KEY, fetchImpl });
     insertedCount += inserted.length;
-    for (const row of inserted) insertedIds.push(row?.metadata?.avito_id || null);
+    for (const row of inserted) {
+      insertedIdentities.push({
+        provider: row.provider,
+        query_hash: row.query_hash,
+        canonical_url: row.canonical_url,
+        avito_id: row?.metadata?.avito_id || null,
+      });
+    }
+    await fs.writeFile(path.join(evidenceDir, 'inserted-identities.json'), JSON.stringify(insertedIdentities, null, 2));
     console.log(JSON.stringify({ batch: Math.floor(offset / batchSize) + 1, offset, requested: batch.length, inserted: inserted.length, cumulativeInserted: insertedCount }));
   }
 
@@ -100,10 +107,9 @@ export async function applyKaynlyRadar({ payload, env = process.env, batchSize =
     verified,
     batchSize,
     batchCount: Math.ceil(pre.novelCount / batchSize),
-    rollbackIdentityCount: rollback.identities.length,
+    rollbackIdentityCount: insertedIdentities.length,
   };
   await fs.writeFile(path.join(evidenceDir, 'apply-report.json'), JSON.stringify(report, null, 2));
-  await fs.writeFile(path.join(evidenceDir, 'inserted-avito-ids.json'), JSON.stringify(insertedIds.filter(Boolean), null, 2));
   if (!verified) throw new Error(`Post-write verification failed: ${JSON.stringify(report)}`);
   return report;
 }
