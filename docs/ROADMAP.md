@@ -55,21 +55,24 @@ Pipeline : `DISCOVER -> RAW EVIDENCE -> NORMALIZE -> EXACT DEDUPE -> CANDIDATE L
 | Expat current `source_offer_seeds` | **83** | ✅ CURRENT L0 | Supabase read-only snapshot 2026-09-05 |
 | 1000-annonces current `source_offer_seeds` | **66** | ✅ CURRENT L0 | Supabase read-only snapshot 2026-09-05 |
 | Housing.place current `source_offer_seeds` | **22** | ✅ CURRENT L0 | Supabase read-only snapshot 2026-09-05 |
+| B3 strict Morocco reserve — `.ma` + immobilier/classified signal, exact anti-overlap | **5 797** | ✅ DISCOVERY-ONLY L0 | Supabase read-only replay of DATA-1.2 classifier, 2026-09-05 |
 | ImmoDirect `/property/...` | **4** | ✅ PARKED faible rendement | run `33985219822`, artifact `9974939355` |
 
 ### Union L0/L1 minimale mesurée
 
-**152 981 représentations candidates exactes par identité source/ID ou source/URL.**
+**158 778 représentations candidates exactes par identité source/ID ou source/URL.**
 
-Calcul : `149 552 + 509 + 2 920 = 152 981`.
+Calcul : `152 981 + 5 797 = 158 778`.
 
 MASS-X5 finale (`31762998799`) certifie globalement `candidate_unique=51 169`, `exact_overlap=36 732`, `exact_net_new=14 437`. **Les 14 437 ne sont pas additionnés en bloc** car plusieurs domaines chevauchent déjà le scoreboard. Seuls les volumes dont l'absence ou le net-new est prouvé sont retenus.
 
 DATA-40K Historical 2025, run `30126275406`, a récolté **28 248 seeds qualifiées** sur 10 domaines / 8 indexes Common Crawl et en a inséré **26 777 net-new à l'époque**. Ce total historique **n'est pas ajouté en bloc aujourd'hui** : les domaines Avito, Mubawab, Agenz, Sarouty, DarAgadir, Mouldar, Masaken, SoukImmobilier et Atlas sont déjà représentés dans le scoreboard courant. Seuls les domaines actuellement absents du scoreboard et présents dans `source_offer_seeds` sont ajoutés séparément, soit **2 920** URL identities.
 
+DATA-1.2 B3 reserve contient toujours **37 009** URLs exactes ; **36 284** ne chevauchent pas `source_offer_seeds`. Le classifier historique HIGH donne 9 124 URLs, mais ce lot contient aussi des domaines immobiliers étrangers. Le scoreboard n'en retient donc que le sous-ensemble **strict Morocco** : domaine `.ma` + signal immobilier/classified explicite, soit **5 797 URLs sur 114 domaines**, après anti-overlap exact contre `source_offer_seeds`. Ce lot reste **L0 discovery-only** : aucune autorisation, fraîcheur ou activité n'est inférée.
+
 Les lignes historiques/structurelles sont comptées **L0 uniquement** avec provenance ; elles ne sont pas déclarées actives, fraîches ou autorisées à l'affichage.
 
-Ce n'est **pas** 152 981 biens uniques actifs. Les sources différentes peuvent représenter le même bien ; le recouvrement sera traité au clustering.
+Ce n'est **pas** 158 778 biens uniques actifs. Les sources différentes peuvent représenter le même bien ; le recouvrement sera traité au clustering.
 
 ## 4. DÉTAILS / DÉCISIONS DE LANE
 
@@ -104,6 +107,9 @@ Run `30126275406` ✅ : **80/80 requêtes Common Crawl**, **28 248 qualified see
 
 Ce lot n'est pas additionné globalement au compteur actuel, car ses domaines principaux chevauchent des lanes plus récentes et plus complètes. La réconciliation `source_offer_seeds` courante ajoute uniquement les domaines jusque-là absents du scoreboard : MarrakechRealty 1 944, Barnes 282, 1immo 201, Sakane 191, Milkiya 131, Expat 83, 1000-annonces 66, Housing.place 22 = **2 920**.
 
+### DATA-1.2 B3 STRICT MOROCCO — RECONCILED
+Snapshot read-only 2026-09-05 : **37 009** URLs en `policy_review_backlog`, **725** exact overlap avec `source_offer_seeds`, **36 284** hors seeds. Rejeu du classifier historique DATA-1.2 puis resserrage Morocco : `.ma` + signal immobilier/classified => **5 797 exact-net-new**, **114 domaines**. Principaux concentrateurs : `immo.mitula.ma` 1 675, `immobilier.trovit.ma` 1 653, `dabaannonce.ma` 794, `sakane.ma` 363, `souqcity.ma` 253. Aucun de ces chiffres n'accorde une policy ou une autorisation d'ingestion.
+
 ### DATA-4.9B — STRUCTURAL L0
 Run `31370449455` ✅ : **10 127 net-new sitemap identities -> 2 326 structural-detail URL representations**, 7 801 rejects, 0 identity collision. Sources : ValFoncier 709, Christie's Morocco 602, Immo-Maroc 276, AgadirImmobilier.ma 37, ProImmobilier 99, Capital Properties 603. Ces sources restent `unverified + hidden + internal_signal_only`; structure != autorisation.
 
@@ -119,6 +125,9 @@ Run `33985996717` ✅ : routes robots-allowed, **2 377 biens affichés** sur l'a
 ### MAnonce — RETRY/INDIRECT
 Le full sweep `33985644309` a échoué sur `Network is unreachable` au chargement de robots. **0 candidate ajoutée** depuis ce run. Retenter seulement avec preuve robots fraîche ou surface indirecte publique.
 
+### Mitula / Trovit — ACTIVE PROBE
+Les deux surfaces sont publiques et vivantes en septembre 2026. Un probe `robots + sitemap + root`, sans detail fetch et sans DB write, est lancé via workflow `AkarFinder - Morocco Aggregator Surface Probe`, run `33988656243`.
+
 ## 5. JALONS
 
 | Jalon | État |
@@ -128,8 +137,8 @@ Le full sweep `33985644309` a échoué sur `Network is unreachable` au chargemen
 | M25K | ✅ |
 | M50K | ✅ |
 | M100K | ✅ |
-| **M150K** | ✅ CLOSED — **152 981** |
-| **M200K** | 🔵 ACTIVE — manque **47 019** |
+| **M150K** | ✅ CLOSED |
+| **M200K** | 🔵 ACTIVE — **158 778 / 200 000**, manque **41 222** |
 | M250K+ | STRETCH |
 
 ## 6. FILE D'EXÉCUTION — 12 LOTS
@@ -142,7 +151,7 @@ Le full sweep `33985644309` a échoué sur `Network is unreachable` au chargemen
 6. ✅ MarocAnnonces historical full source-first — 10 000 ; nouvelles reprises uniquement robots-safe.
 7. ✅ ImmoDirect — 4, PARKED.
 8. 🟡 MAnonce retry/indirect.
-9. 🔵 **Agenz continuation + Yakeey detail-surface discovery + Sarouty refresh only if net-new evidence**.
+9. 🔵 **Mitula/Trovit probe + Agenz continuation + Yakeey detail-surface discovery**.
 10. 🔵 **Common Crawl multi-source / archives / long-tail source discovery**.
 11. ⏳ Candidate Lake unifié : exact dedupe + provenance + layer + freshness + clusters.
 12. ⛔ Gate humain avant toute écriture prod/Vercel.
@@ -157,12 +166,11 @@ Le full sweep `33985644309` a échoué sur `Network is unreachable` au chargemen
 
 ## 8. NEXT EXACT
 
-1. **M150K fermé** à **152 981** ; ne plus travailler pour le seuil, uniquement pour M200K.
-2. Chercher un prochain réservoir **>10 000 net-new exact** ; priorité aux domaines absents du scoreboard et aux surfaces publiques/archives déjà qualifiées.
-3. Réconcilier les anciens lots DATA-40K / MASS par URL exacte avant tout ajout sur un domaine déjà présent.
+1. Fermer le probe **Mitula/Trovit** ; si robots/sitemaps exposent un réservoir >1 000, ouvrir un sweep read-only séparé.
+2. Auditer `dabaannonce.ma` (**794** B3 exact-net-new) et les autres concentrateurs B3 `.ma`.
+3. Continuer la réconciliation B3 MEDIUM uniquement après ancrage immobilier explicite ; ne pas compter les `.ma` génériques par défaut.
 4. **Agenz** : mesurer la queue restante sans bypass via surfaces indirectes publiques.
 5. **Yakeey** : identifier la couche publique qui transporte les IDs/URLs des 2 377 résultats affichés ; ne rien compter avant preuve.
-6. Reprendre **MAnonce** et **Domio** seulement si la voie est fiable et rentable.
-7. À M200K : unifier Candidate Lake, exact dedupe, provenance, layer, freshness, clusters et mesure de recouvrement inter-source.
+6. À M200K : unifier Candidate Lake, exact dedupe, provenance, layer, freshness, clusters et mesure de recouvrement inter-source.
 
-**Boussole actuelle : 152 981 -> 200 000 -> 250 000+.**
+**Boussole actuelle : 158 778 -> 200 000 -> 250 000+.**
