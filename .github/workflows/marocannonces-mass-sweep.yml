@@ -1,0 +1,86 @@
+name: AkarFinder - MarocAnnonces Mass Sweep
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/acquisition/marocannonces-mass-sweep.py'
+      - '.github/workflows/marocannonces-mass-sweep.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: marocannonces-mass-sweep
+  cancel-in-progress: true
+
+jobs:
+  shard:
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0,1,2,3,4,5,6,7]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Sweep public pagination shard
+        run: python scripts/acquisition/marocannonces-mass-sweep.py --shard-index ${{ matrix.shard }} --shard-count 8 --max-page 2200 --sleep 0.18 --time-budget-seconds 720
+      - name: Verify shard proof
+        run: |
+          python - <<'PY'
+          import json,glob
+          p=glob.glob('artifacts/marocannonces-mass-sweep/shard-*/summary.json')[0]
+          s=json.load(open(p))
+          assert s['zero_db_writes'] is True
+          assert s['direct_public_pages_only'] is True
+          print(s)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: marocannonces-shard-${{ matrix.shard }}
+          path: artifacts/marocannonces-mass-sweep/shard-${{ matrix.shard }}/
+          if-no-files-found: error
+
+  certify:
+    needs: shard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: marocannonces-shard-*
+          path: shards
+      - name: Union and certify
+        run: |
+          python - <<'PY'
+          import glob,json,hashlib,os
+          ids=set(); summaries=[]; errors=[]
+          for p in glob.glob('shards/**/summary.json',recursive=True):
+            s=json.load(open(p)); summaries.append(s); errors += s.get('errors',[])
+          for p in glob.glob('shards/**/listing_ids.txt',recursive=True):
+            ids |= {x.strip() for x in open(p) if x.strip()}
+          os.makedirs('proof',exist_ok=True)
+          out={
+            'source':'marocannonces.com','shards':len(summaries),
+            'zero_db_writes':all(s.get('zero_db_writes') is True for s in summaries),
+            'pages_visited':sum(s.get('pages_visited',0) for s in summaries),
+            'unique_listing_ids':len(ids),
+            'advertised_counts':[s.get('advertised_count_observed') for s in summaries if s.get('advertised_count_observed')],
+            'errors':errors,
+            'truncated_shards':sum(bool(s.get('truncated')) for s in summaries)
+          }
+          open('proof/listing_ids.txt','w').write('\n'.join(sorted(ids))+'\n')
+          open('proof/summary.json','w').write(json.dumps(out,indent=2,ensure_ascii=False)+'\n')
+          assert out['shards']==8
+          assert out['zero_db_writes'] is True
+          print(json.dumps(out,indent=2,ensure_ascii=False))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: marocannonces-mass-sweep-certification-proof
+          path: proof/
+          if-no-files-found: error
