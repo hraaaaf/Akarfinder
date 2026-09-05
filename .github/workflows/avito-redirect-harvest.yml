@@ -1,0 +1,46 @@
+name: Avito Redirect Harvest
+
+on:
+  push:
+    paths:
+      - "scripts/acquisition/avito_redirect_harvest.py"
+      - ".github/workflows/avito-redirect-harvest.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  harvest:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      AVITO_REDIRECT_HARVEST_MAX_SEEDS: "672"
+      AVITO_REDIRECT_HARVEST_DELAY_SECONDS: "0.35"
+      AVITO_REDIRECT_HARVEST_TIMEOUT_SECONDS: "12"
+      AVITO_REDIRECT_HARVEST_OUT: "evidence/avito-redirect-harvest"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Compile harvest script
+        run: python -m py_compile scripts/acquisition/avito_redirect_harvest.py
+      - name: Run bounded discovery-only harvest
+        run: python scripts/acquisition/avito_redirect_harvest.py
+      - name: Print report
+        if: always()
+        run: |
+          if [ -f evidence/avito-redirect-harvest/report.json ]; then
+            cat evidence/avito-redirect-harvest/report.json
+          fi
+      - name: Upload harvest evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: avito-redirect-harvest-proof
+          path: evidence/avito-redirect-harvest/
+          if-no-files-found: warn
+          retention-days: 14

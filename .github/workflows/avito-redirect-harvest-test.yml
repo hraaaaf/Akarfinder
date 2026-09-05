@@ -1,0 +1,23 @@
+name: Avito Redirect Harvest Tests
+
+on:
+  push:
+    paths:
+      - "scripts/acquisition/avito_redirect_harvest.py"
+      - "scripts/acquisition/__tests__/avito_redirect_harvest_test.py"
+      - ".github/workflows/avito-redirect-harvest-test.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m unittest scripts/acquisition/__tests__/avito_redirect_harvest_test.py -v
+      - run: python -m py_compile scripts/acquisition/avito_redirect_harvest.py

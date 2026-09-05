@@ -10,13 +10,13 @@ import json
 import pathlib
 import re
 import ssl
-import sys
 import urllib.error
 import urllib.parse
 import urllib.request
 from dataclasses import dataclass, asdict
 
 import canonical_listing_extractor as extractor
+from avito_identity_guard import verify_avito_identity
 
 OUT_DIR = pathlib.Path("artifacts/morocco-web-l4-canonical")
 USER_AGENT = "AkarFinder-L4-PublicDryRun/1.0"
@@ -26,7 +26,8 @@ MAX_BYTES = 2_500_000
 
 @dataclass
 class FetchEvidence:
-    url: str
+    requested_url: str
+    final_url: str
     status: int | None
     classification: str
     bytes: int
@@ -37,24 +38,26 @@ def fetch_text(url: str) -> tuple[str | None, FetchEvidence]:
     try:
         with urllib.request.urlopen(req, timeout=TIMEOUT, context=ssl.create_default_context()) as response:
             status = int(getattr(response, "status", 200))
+            final_url = str(response.geturl() or url)
             body = response.read(MAX_BYTES + 1)
             if len(body) > MAX_BYTES:
-                return None, FetchEvidence(url, status, "oversize", len(body))
+                return None, FetchEvidence(url, final_url, status, "oversize", len(body))
             content_type = str(response.headers.get("content-type", "")).lower()
             if status == 429:
-                return None, FetchEvidence(url, status, "http_429", len(body))
+                return None, FetchEvidence(url, final_url, status, "http_429", len(body))
             if status >= 400:
-                return None, FetchEvidence(url, status, f"http_{status}", len(body))
+                return None, FetchEvidence(url, final_url, status, f"http_{status}", len(body))
             if "html" not in content_type:
-                return None, FetchEvidence(url, status, "non_html", len(body))
-            return body.decode("utf-8", errors="replace"), FetchEvidence(url, status, "ok", len(body))
+                return None, FetchEvidence(url, final_url, status, "non_html", len(body))
+            return body.decode("utf-8", errors="replace"), FetchEvidence(url, final_url, status, "ok", len(body))
     except urllib.error.HTTPError as exc:
         status = int(exc.code)
-        return None, FetchEvidence(url, status, "http_429" if status == 429 else f"http_{status}", 0)
+        final_url = str(getattr(exc, "url", None) or url)
+        return None, FetchEvidence(url, final_url, status, "http_429" if status == 429 else f"http_{status}", 0)
     except urllib.error.URLError as exc:
-        return None, FetchEvidence(url, None, f"network:{type(exc.reason).__name__}", 0)
+        return None, FetchEvidence(url, url, None, f"network:{type(exc.reason).__name__}", 0)
     except TimeoutError:
-        return None, FetchEvidence(url, None, "timeout", 0)
+        return None, FetchEvidence(url, url, None, "timeout", 0)
 
 
 def first_match(base_url: str, html: str, pattern: re.Pattern[str]) -> str | None:
@@ -85,7 +88,7 @@ def discover_portal_sample() -> tuple[list[str], list[FetchEvidence], str | None
             stopped = "http_429"
             break
         if html:
-            sample = first_match(url, html, pattern)
+            sample = first_match(evidence.final_url, html, pattern)
             if sample:
                 out.append(sample)
     return out, requests, stopped
@@ -111,22 +114,40 @@ def main() -> int:
             if html is None:
                 results.append({"source_url": url, "page_kind": "fetch_failed", "fields": {}, "fetch": asdict(evidence)})
                 continue
-            extracted = extractor.extract_canonical(url, html)
+
+            identity = verify_avito_identity(url, evidence.final_url)
+            if identity.is_avito and not identity.identity_verified:
+                results.append({
+                    "source_url": url,
+                    "page_kind": "identity_rejected",
+                    "classification_reasons": [identity.reason],
+                    "fields": {},
+                    "identity": identity.to_dict(),
+                    "fetch": asdict(evidence),
+                })
+                continue
+
+            # Classify using the actual final URL after redirects, never the stale requested URL.
+            extracted = extractor.extract_canonical(evidence.final_url, html)
+            extracted["requested_source_url"] = url
+            extracted["identity"] = identity.to_dict()
             extracted["fetch"] = asdict(evidence)
             results.append(extracted)
 
     listing_results = [item for item in results if item.get("page_kind") == "listing_detail"]
+    identity_rejected = [item for item in results if item.get("page_kind") == "identity_rejected"]
     typed = [item for item in listing_results if "classification.property_type" in item.get("fields", {})]
     transacted = [item for item in listing_results if "offer.transaction_type" in item.get("fields", {})]
     rich = [item for item in listing_results if ("offer.price_amount" in item.get("fields", {}) or "surfaces.surface_total_m2" in item.get("fields", {}))]
 
     report = {
-        "strategy": "bounded-public-cross-source-canonical-extraction",
+        "strategy": "bounded-public-cross-source-canonical-extraction-with-final-url-identity",
         "zeroDbWrites": True,
         "stoppedEarly": stopped,
         "targetCount": len(targets),
         "portalDiscoveredCount": len(portal_urls),
         "listingDetailCount": len(listing_results),
+        "identityRejectedCount": len(identity_rejected),
         "propertyTypeCount": len(typed),
         "transactionCount": len(transacted),
         "priceOrSurfaceCount": len(rich),
@@ -152,6 +173,7 @@ def main() -> int:
         f"- targets: {report['targetCount']}",
         f"- portal discovered: {report['portalDiscoveredCount']}",
         f"- listing details: {report['listingDetailCount']}",
+        f"- identity rejected: {report['identityRejectedCount']}",
         f"- property types: {report['propertyTypeCount']}",
         f"- transactions: {report['transactionCount']}",
         f"- price or surface: {report['priceOrSurfaceCount']}",
