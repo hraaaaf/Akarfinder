@@ -1,0 +1,108 @@
+name: AkarFinder - Avito Common Crawl Radar
+
+on:
+  workflow_dispatch:
+    inputs:
+      collections:
+        description: "Recent Common Crawl collections to inspect"
+        required: false
+        default: "8"
+      max_pages_per_query:
+        description: "Safety cap per collection/pattern"
+        required: false
+        default: "12"
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/avito-commoncrawl-radar.yml"
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: avito-commoncrawl-radar
+  cancel-in-progress: false
+
+jobs:
+  commoncrawl-radar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      BASELINE_ARTIFACT_ID: "9965997820"
+      COLLECTIONS: ${{ inputs.collections || '8' }}
+      MAX_PAGES_PER_QUERY: ${{ inputs.max_pages_per_query || '12' }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Download certified Kaynly baseline artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p baseline
+          gh api "/repos/${GITHUB_REPOSITORY}/actions/artifacts/${BASELINE_ARTIFACT_ID}/zip" > baseline.zip
+          unzip -q baseline.zip -d baseline
+          BASELINE_RECORDS="$(find baseline -type f -name records.json -print -quit)"
+          test -n "$BASELINE_RECORDS"
+          python - "$BASELINE_RECORDS" <<'PY'
+          import json, sys
+          p = sys.argv[1]
+          d = json.load(open(p, encoding="utf-8"))
+          assert d.get("unique_avito_ids") == 5807, d.get("unique_avito_ids")
+          assert len(d.get("records", [])) == 5807, len(d.get("records", []))
+          print(f"Certified baseline OK: {p} -> 5807 IDs")
+          PY
+          echo "BASELINE_RECORDS=$BASELINE_RECORDS" >> "$GITHUB_ENV"
+
+      - name: Run Common Crawl public-surface radar
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/avito_commoncrawl_radar.py \
+            --baseline "$BASELINE_RECORDS" \
+            --output avito-commoncrawl-proof \
+            --collections "$COLLECTIONS" \
+            --max-pages-per-query "$MAX_PAGES_PER_QUERY" \
+            --sleep-seconds 1.5
+
+      - name: Publish run summary
+        if: always()
+        shell: bash
+        run: |
+          if [[ -f avito-commoncrawl-proof/summary.json ]]; then
+            python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          d = json.load(open("avito-commoncrawl-proof/summary.json", encoding="utf-8"))
+          print("# Avito Public Surface Union - Common Crawl")
+          print()
+          print(f"- Kaynly baseline: **{d['baseline']['unique_avito_ids']:,}**")
+          print(f"- Common Crawl unique IDs: **{d['discovered_unique_avito_ids']:,}**")
+          print(f"- Overlap: **{d['overlap_with_kaynly']:,}**")
+          print(f"- Net new vs Kaynly: **{d['net_new_vs_kaynly']:,}**")
+          print(f"- Union: **{d['union_unique_avito_ids']:,}**")
+          print(f"- Gain: **{d['gain_vs_kaynly_pct']:.2f}%**")
+          print(f"- Direct Avito requests: **{d['safety']['direct_avito_requests']}**")
+          print(f"- Truncated by safety caps: **{d['limits']['truncated']}**")
+          print(f"- Errors recorded: **{len(d['errors'])}**")
+          PY
+          else
+            echo "# Avito Common Crawl Radar" >> "$GITHUB_STEP_SUMMARY"
+            echo "No summary.json produced; inspect job logs." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload proof artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: avito-commoncrawl-radar-proof
+          path: avito-commoncrawl-proof/
+          if-no-files-found: warn
+          retention-days: 30
