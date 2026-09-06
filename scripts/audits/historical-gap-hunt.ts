@@ -5,12 +5,17 @@ import { classifyReservoirCandidate } from '../data-mass/reservoir-qualification
 
 const OUT = process.env.GAP_HUNT_OUT ?? '.tmp/historical-gap-hunt';
 const PAGE = 1000;
-const TARGETS = new Set([
+const AS_OF = process.env.GAP_HUNT_AS_OF?.trim() || null;
+const DEFAULT_TARGETS = [
   'agenz.ma', '1immo.ma', 'ma.afribaba.com', 'masaken.ma', 'soukimmobilier.com', 'mouldar.com',
   'promoimmomarrakech.com', 'logic-immo.com', 'yakeey.com', '2p.ma', '1000-annonces.com',
   'housing.place', 'expat.com', 'milkiya.ma', 'sakane.ma', 'domio.ma', 'dabaannonce.ma',
   'portail-immobilier.ma', 'souqcity.ma', 'kawtarimmobilier.com', 'atlasimmobilier.com',
-]);
+];
+const TARGETS = new Set(
+  (process.env.GAP_HUNT_TARGETS?.split(',').map((value) => value.trim()).filter(Boolean) ?? DEFAULT_TARGETS)
+    .map((value) => value.toLowerCase().replace(/^www\./, '')),
+);
 
 function env(name: string): string {
   const value = process.env[name];
@@ -64,9 +69,10 @@ type DiscoveryRow = {
   discovery_query: string | null;
   content_fingerprint: string | null;
   last_seen_at: string | null;
+  created_at: string;
 };
 
-type SeedRow = { canonical_url: string; source_domain?: string | null };
+type SeedRow = { canonical_url: string; source_domain?: string | null; created_at: string };
 
 type DomainSets = {
   all: Set<string>;
@@ -80,11 +86,13 @@ async function readDiscovery(): Promise<DiscoveryRow[]> {
   let last = '';
   for (;;) {
     const query: Record<string, string> = {
-      select: 'id,source_domain,source_url,canonical_url,title,snippet,discovery_query,content_fingerprint,last_seen_at',
+      select: 'id,source_domain,source_url,canonical_url,title,snippet,discovery_query,content_fingerprint,last_seen_at,created_at',
       order: 'id.asc',
       limit: String(PAGE),
     };
     if (last) query.id = `gt.${last}`;
+    if (AS_OF) query.created_at = `lte.${AS_OF}`;
+    if (TARGETS.size === 1) query.source_domain = `eq.${[...TARGETS][0]}`;
     const page = await rest<DiscoveryRow>('discovery_candidates', query);
     out.push(...page.filter((row) => TARGETS.has(norm(row.source_domain))));
     if (page.length < PAGE) break;
@@ -98,12 +106,14 @@ async function readDiscovery(): Promise<DiscoveryRow[]> {
 async function readSeeds(): Promise<SeedRow[]> {
   const out: SeedRow[] = [];
   for (let offset = 0; ; offset += PAGE) {
-    const page = await rest<SeedRow>('source_offer_seeds', {
-      select: 'canonical_url,source_domain',
+    const query: Record<string, string> = {
+      select: 'canonical_url,source_domain,created_at',
       order: 'canonical_url.asc',
       limit: String(PAGE),
       offset: String(offset),
-    });
+    };
+    if (AS_OF) query.created_at = `lte.${AS_OF}`;
+    const page = await rest<SeedRow>('source_offer_seeds', query);
     out.push(...page);
     if (page.length < PAGE) break;
   }
@@ -188,6 +198,7 @@ async function main(): Promise<void> {
 
   const summary = {
     generatedAt: new Date().toISOString(),
+    asOf: AS_OF,
     readOnly: true,
     databaseWrites: 0,
     productionWrites: 0,
