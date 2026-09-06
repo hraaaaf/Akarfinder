@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-09-06**  
-**Statut : MARKET COVERAGE — M250K CLOSED / QUALITY + CLUSTERING ACTIVE**
+**Statut : MARKET COVERAGE — M250K FROZEN / CANDIDATE LAKE + CLUSTERING ACTIVE**
 
 > **SOURCE UNIQUE DE VÉRITÉ GLOBALE.** Ce fichier est la seule boussole globale AkarFinder. `docs/SESSION.md` n'est qu'un handover. Les autres specs restent locales à leur périmètre.
 
@@ -10,7 +10,7 @@
 Construire le Property Graph le plus large possible du marché immobilier marocain à partir de surfaces publiques récupérables et traçables.
 
 - **Goal principal M200K : >=200 000 représentations candidates exploitables — ATTEINT.**
-- **Stretch M250K : >=250 000 candidates L0/L1 — ATTEINT.**
+- **Stretch M250K : >=250 000 candidates L0/L1 — ATTEINT ET FIGÉ À 253 372.**
 - Mesurer séparément représentations source, clusters probablement uniques et annonces probablement actives.
 - Accepter le bruit en L0/L1, le classer ensuite.
 - Les preuves historiques restent L0 avec provenance/date ; elles ne deviennent jamais `active` ou `fresh` sans preuve récente.
@@ -78,6 +78,16 @@ Progression certifiée depuis le snapshot 158 778 :
 `158 778 + 82 + 73 + 1 613 + 3 471 + 3 819 + 21 374 + 17 394 + 22 381 + 4 089 + 15 514 + 4 784 = 253 372`.
 
 **M250K est dépassé de 3 372 représentations candidates : 253 372 / 250 000 = 101,35 %. M200K et M250K sont CLOSED.**
+
+### FREEZE M250K — 2026-09-06
+
+- **Union certifiée figée : 253 372 représentations L0/L1.**
+- **Union Mubawab exacte : 76 816 IDs source.**
+- **Union Avito exacte : 46 904 IDs source.**
+- Expansion publique GitHub certifiée au-dessus des baselines déjà comptées : **+85 536 exact-net-new**.
+- Preuve de fermeture finale : run `34040405000`, artifact `9991488198`, SHA256 `63906e15b14fc772ddd4d49f0c05bee236e95ab478ad989ba56bfe32208f6543`.
+- Contrat de freeze : le compteur **253 372** ne change plus qu'avec un manifeste d'identités exactes et un `set-diff` contre l'union figée. Aucun total marketing, aucune ligne sans identité source, aucun overlap supposé ne peut l'augmenter.
+- Le freeze porte sur le **compteur de représentations candidates**, pas sur `probable_unique`, `active` ou `fresh`.
 
 MASS-X5 finale (`31762998799`) certifie globalement `candidate_unique=51 169`, `exact_overlap=36 732`, `exact_net_new=14 437`. **Les 14 437 ne sont pas additionnés en bloc** car plusieurs domaines chevauchent déjà le scoreboard. Seuls les volumes dont l'absence ou le net-new est prouvé sont retenus.
 
@@ -222,12 +232,18 @@ Le full sweep `33985644309` a échoué sur `Network is unreachable` au chargemen
 
 ## 8. NEXT EXACT
 
-1. **Freeze M250K** : conserver les manifests/artifacts qui produisent le total **253 372** et empêcher tout double comptage futur.
-2. **Candidate Lake** : unifier provenance, source ID/URL, couche L0/L1, date/cohorte temporelle et fingerprints.
+1. ✅ **Freeze M250K** : total canonique figé à **253 372**, unions source et preuve de fermeture consignées ci-dessus.
+2. 🔵 **Candidate Lake** : unifier provenance, source ID/URL, couche L0/L1, date/cohorte temporelle et fingerprints.
 3. **Exact dedupe + clustering** : mesurer `253 372 representations -> probable_unique` sans suppression destructive.
 4. **Freshness** : échantillonnage/validation récente uniquement sur lanes autorisées, puis publier `live_confidence` par source.
 5. **Discovery incrémentale** : devient secondaire ; tout nouveau lot reste set-diff contre l'union certifiée, mais la priorité passe au clustering, à la provenance et à la freshness.
 6. Les **1 938 non-Factory** restent en réserve jusqu'à filtre qualité excluant social/bruit.
 7. Aucun onboarding de nouvelle source dans `source_policy_registry` sans gate humain séparé.
 
-**Boussole actuelle : 253 372 représentations L0/L1 -> probable_unique -> live_confidence. M250K CLOSED.**
+### Goal actif — Candidate Lake / Q1
+
+- **Goal :** produire un manifest unifié et reproductible des **253 372 représentations** avec provenance, identité source, couche, cohorte temporelle et fingerprint de clustering.
+- **Succès :** total d'entrée = 253 372 ; aucune perte silencieuse ; exact duplicates mesurés ; `probable_unique` calculé sans suppression destructive ; couverture provenance/layer/cohorte publiée.
+- **Preuve :** run GitHub déterministe + artifact manifest/summary + invariants `databaseWrites=0`, `sourceSiteFetches=0`, `productionWrites=0`.
+
+**Boussole actuelle : 253 372 représentations L0/L1 -> probable_unique -> live_confidence. M250K FROZEN.**
