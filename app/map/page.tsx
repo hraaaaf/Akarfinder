@@ -10,6 +10,7 @@ import "./market-convergence-correction.css";
 import "./p0-polish.css";
 import "./premium-lot4.css";
 import "./premium-lot5.css";
+import "./premium-lot6.css";
 
 export const dynamic = "force-dynamic";
 
