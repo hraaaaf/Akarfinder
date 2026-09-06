@@ -125,20 +125,21 @@ async function writeJsonl(name: string, rows: ManifestRow[]) {
 async function main(): Promise<void> {
   await fs.mkdir(OUT, { recursive: true });
 
+  // Server-side ordering on these audit tables is needlessly expensive. Q1A sorts
+  // every emitted identity locally before hashing, so retrieval order has no bearing
+  // on deterministic output.
   const [allSeeds, b3Rows, canonicalLinkRows] = await Promise.all([
     restAll<SeedRow>('source_offer_seeds', {
       select: 'canonical_url,source_domain,seed_provider,first_observed_at,last_observed_at',
-      order: 'canonical_url.asc',
     }),
     restAll<B3Row>('odm_b3_discovery_expansion_audit_v1', {
       select: 'source_domain,canonical_url,provider,last_seen_at,decision',
       decision: 'eq.reserve_unregistered_source',
-      order: 'canonical_url.asc',
+      source_domain: 'like.*.ma',
     }),
     restAll<CanonicalLinkRow>('odm_search_read_model_shadow_v3', {
       select: 'canonical_url,source_domain,observation_observed_at,ranking_policy_version',
       ranking_policy_version: 'eq.canonical_link_coverage_expansion_v2',
-      order: 'canonical_url.asc',
     }),
   ]);
 
