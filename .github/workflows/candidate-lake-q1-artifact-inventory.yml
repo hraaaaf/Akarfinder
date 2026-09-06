@@ -1,0 +1,79 @@
+name: AkarFinder - Candidate Lake Q1 Artifact Inventory
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/audits/candidate-lake-q1-artifact-inventory.py'
+      - '.github/workflows/candidate-lake-q1-artifact-inventory.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  inventory:
+    runs-on: ubuntu-24.04
+    env:
+      Q1_ARTIFACT_ROOT: .tmp/q1-artifacts
+      Q1_INVENTORY_OUT: .tmp/q1-artifact-inventory
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Fetch frozen proof artifacts only
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$Q1_ARTIFACT_ROOT"
+          fetch_artifact() {
+            id="$1"; slug="$2"; dir="$Q1_ARTIFACT_ROOT/${id}-${slug}"
+            mkdir -p "$dir"
+            curl --fail --location --retry 3 \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              -H 'Accept: application/vnd.github+json' \
+              -H 'X-GitHub-Api-Version: 2022-11-28' \
+              "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/${id}/zip" \
+              -o ".tmp/${id}.zip"
+            unzip -q ".tmp/${id}.zip" -d "$dir"
+          }
+          fetch_artifact 9971118875 avito-baseline
+          fetch_artifact 9974670013 akaar
+          fetch_artifact 9969651653 mubawab-direct
+          fetch_artifact 9888335708 marocannonces
+          fetch_artifact 9897323745 sarouty
+          fetch_artifact 9898224274 agenz-direct
+          fetch_artifact 9974714576 domio
+          fetch_artifact 9976337671 yakeey-purchase
+          fetch_artifact 9988296190 mass1-additive
+          fetch_artifact 9988514932 historical-gap
+          fetch_artifact 9989328673 agenz-historical
+          fetch_artifact 9991042950 realestatebuddy
+          fetch_artifact 9991207598 hicham
+          fetch_artifact 9991403015 marwane
+          fetch_artifact 9991447841 mubawab-public-batch
+          fetch_artifact 9991488198 avito-public-batch
+          fetch_artifact 9205427369 mass-x5
+      - name: Inventory files and identity candidates
+        run: python scripts/audits/candidate-lake-q1-artifact-inventory.py
+      - name: Verify read-only invariants
+        run: |
+          python - <<'PY'
+          import json
+          p=json.load(open('.tmp/q1-artifact-inventory/inventory.json'))
+          assert p['readOnly'] is True
+          assert p['databaseWrites']==0
+          assert p['sourceSiteFetches']==0
+          assert p['productionWrites']==0
+          assert p['artifactCount']==17
+          print('artifactCount=',p['artifactCount'])
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: candidate-lake-q1-artifact-inventory
+          path: .tmp/q1-artifact-inventory/
+          retention-days: 30
+          if-no-files-found: error
