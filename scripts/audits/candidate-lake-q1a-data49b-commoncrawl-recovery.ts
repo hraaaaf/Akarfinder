@@ -28,8 +28,9 @@ async function requestText(url: URL): Promise<string> {
       headers: { 'user-agent': 'AkarFinder-Q1A-DATA49B-recovery/1.0 metadata-only' },
       signal: AbortSignal.timeout(60_000),
     });
-    if (response.ok) return response.text();
     const body = await response.text();
+    if (response.ok) return body;
+    if (response.status === 404 && body.includes('No Captures found')) return '';
     if (attempt === 4 || (response.status < 500 && response.status !== 429)) {
       throw new Error(`Common Crawl ${response.status}: ${body.slice(0, 500)}`);
     }
@@ -38,10 +39,10 @@ async function requestText(url: URL): Promise<string> {
   return '';
 }
 
-async function queryIndex(index: string, domain: string, to?: string): Promise<string[]> {
+async function queryPattern(index: string, pattern: string, to?: string): Promise<string[]> {
   const base = `https://index.commoncrawl.org/${index}-index`;
   const common = new URLSearchParams({
-    url: `${domain}/*`,
+    url: pattern,
     output: 'json',
     fl: 'url',
     filter: 'status:200',
@@ -52,9 +53,11 @@ async function queryIndex(index: string, domain: string, to?: string): Promise<s
   const pagesUrl = new URL(base);
   for (const [key, value] of common) pagesUrl.searchParams.set(key, value);
   pagesUrl.searchParams.set('showNumPages', 'true');
+  const pageText = await requestText(pagesUrl);
+  if (!pageText.trim()) return [];
+
   let pages = 1;
   try {
-    const pageText = await requestText(pagesUrl);
     const parsed = JSON.parse(pageText);
     pages = Math.max(1, Number(parsed.pages ?? parsed.numPages ?? 1));
   } catch {
@@ -74,11 +77,17 @@ async function queryIndex(index: string, domain: string, to?: string): Promise<s
         const row = JSON.parse(trimmed) as { url?: string };
         if (row.url) urls.add(row.url);
       } catch {
-        // Ignore malformed index rows; they cannot become candidate identities.
+        // Malformed index rows cannot become candidate identities.
       }
     }
   }
   return [...urls];
+}
+
+async function queryIndex(index: string, domain: string, to?: string): Promise<string[]> {
+  const patterns = [`${domain}/*`, `www.${domain}/*`];
+  const results = await Promise.all(patterns.map((pattern) => queryPattern(index, pattern, to)));
+  return [...new Set(results.flat())];
 }
 
 async function main(): Promise<void> {
@@ -147,7 +156,7 @@ async function main(): Promise<void> {
   }
 
   const summary = {
-    schemaVersion: 'Q1A_DATA49B_COMMONCRAWL_URL_INDEX_RECOVERY_V1',
+    schemaVersion: 'Q1A_DATA49B_COMMONCRAWL_URL_INDEX_RECOVERY_V2',
     historicalRun: 31370449455,
     historicalArtifact: 9055869351,
     historicalArtifactSha256: 'df4f38102877a5de29a7980dbb7e5b32a4110813d8af132fc48a46cf87126520',
@@ -160,6 +169,7 @@ async function main(): Promise<void> {
     sourceContentFetches: 0,
     warcFetches: 0,
     commonCrawlUrlIndexRequestsOnly: true,
+    queriedHostForms: ['apex', 'www'],
     vercelDeployments: 0,
     certificationRule: 'A Common Crawl reconstruction is evidence only unless every source count matches the historical 4.9B count; no count match is silently coerced.',
     modes: summaryModes,
