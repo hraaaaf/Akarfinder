@@ -1,6 +1,6 @@
 # 3 — Vivre Ici AkarFinder
 
-**Statut : ACTIVE — TARGET PREMIUM FREEZÉ / LOT 2b EN CERTIFICATION**  
+**Statut : ACTIVE — TARGET PREMIUM FREEZÉ / LOT 2d EN CERTIFICATION**  
 **Dernière mise à jour : 2026-09-06**  
 **Repo : `hraaaaf/Akarfinder`**  
 **Branche : `docs/3-vivre-ici-akarfinder`**  
@@ -43,8 +43,8 @@ Cible qualitative : **3D immédiatement perceptible + carte dominante + chrome l
 Trois vues servent de Goal visuel officiel :
 
 1. **Desktop Maroc** : national 2D premium, villes mises en avant, panneau droit contextuel ;
-2. **Desktop Casablanca → Maârif 3D** : ville 3D dominante, POI intégrés, quelques biens exacts en callouts, panneau `Vivre à Maârif` ;
-3. **Mobile Casablanca → Maârif 3D** : 3D lisible, recherche compacte, POI limités, 1–2 biens maximum, bottom sheet premium.
+2. **Desktop Casablanca → Maârif 3D** : ville 3D dominante, POI intégrés, biens exacts en callouts uniquement si réellement éligibles, panneau `Vivre à Maârif` ;
+3. **Mobile Casablanca → Maârif 3D** : 3D lisible, recherche compacte, POI limités, biens exacts maximum 1–2 si disponibles, bottom sheet premium.
 
 Standards : carte héro, 3D évidente, header/nav légers, recherche flottante compacte, filtres POI en pills, toggle 2D/3D, panneau droit desktop, bottom sheet mobile, verre/overlays sobres, cartes biens rares et ancrées dans la scène.
 
@@ -67,7 +67,7 @@ Le Goal premium est atteint uniquement si :
 9. build + TypeScript + tests UI verts ;
 10. zéro mutation DB / zéro Vercel sans gate explicite.
 
-Preuves : captures 390 / 430 / 768 / 1280, Maroc, Casablanca → Maârif, Maârif + biens exacts si réellement éligibles, build/TS/tests, inspection humaine et comparaison TARGET/AFTER.
+Preuves : captures 390 / 430 / 768 / 1280, Maroc, Casablanca → Maârif, Maârif + biens exacts uniquement si réellement éligibles, build/TS/tests, inspection humaine et comparaison TARGET/AFTER.
 
 ---
 
@@ -93,6 +93,47 @@ Preuves : captures 390 / 430 / 768 / 1280, Maroc, Casablanca → Maârif, Maâri
 - Maroc 2D, POI Maârif préservés ;
 - fidélité ~`7,5/10` au mécanisme 3D, avant target premium.
 
+### Lot 2a — shell premium
+- run `34030333919` — SUCCESS ;
+- artifact `9988409177` ;
+- 8/8 captures OK ;
+- Maârif : pitch `60°`, bearing `-28°`, zoom `15.5`, bâtiments `49 / 52 / 74 / 82` ;
+- carte desktop ≈ `69,8 %` ;
+- Maroc strictement 2D ;
+- zéro collision top chrome ;
+- score visuel humain ~`6,5/10`.
+
+### Lot 2b — convergence perceptuelle
+- code `7aabe8f247408e643eb56069e82dc91ce323afe9` ;
+- run `34030849447` — SUCCESS ;
+- artifact `9988593627` ;
+- inspection 8 captures ;
+- score visuel humain ~`7,4/10` ;
+- target premium non atteint.
+
+### Candidat premium intermédiaire
+- code `0d92fccdfbeab346fdad0935d539c52868026e13` ;
+- run `34032104891` — SUCCESS ;
+- artifact `9988982037` ;
+- carte desktop Maârif ≈ `71,9 %` ;
+- score visuel humain ~`7,6/10` ;
+- target premium non atteint.
+
+### Lot 2c
+- code `a884021cf35e6471fdb0b092083d20eeb4ff4d98` ;
+- run `34033038551` — SUCCESS ;
+- artifact `9989287797`, digest `sha256:0bbe22385f68270dd8e9eececfaa3d4c2ecd05feba074ac5854997bb93b52a30` ;
+- navigation contracts, TypeScript, production build, Chromium, 8 captures et proof gate : SUCCESS ;
+- Maroc : 2D sur les 4 viewports ;
+- Maârif : pitch `60°`, bearing `-28°`, zoom `15.5`, bâtiments `43 / 46 / 65 / 70` ;
+- POI Maârif : `2` ;
+- carte desktop Maârif ≈ `72,19 %` ;
+- bottom sheet mobile visible, hauteur mesurée ≈ `235 px` ;
+- zéro collision top chrome ;
+- gate : `zeroDbWritesByScript=true`, `zeroDeploymentActionsByScript=true` ;
+- inspection visuelle humaine : progression nette mais encore trop technique / dashboard ; **score ~`8,1/10`** ;
+- target ≥9 non atteint.
+
 ---
 
 ## 5. CONTRAT DE VÉRITÉ GÉOGRAPHIQUE
@@ -105,7 +146,26 @@ Preuves : captures 390 / 430 / 768 / 1280, Maroc, Casablanca → Maârif, Maâri
 - aucun temps, distance, frontière, POI, hauteur ou métrique inventé ;
 - CTA bien/source uniquement pour une entité réellement indexée avec provenance valide.
 
-Persistance + provenance + mapping DB des biens restent à prouver avant activation des pins exacts.
+### Truth gate Lot 3 — CERTIFIÉ EN LECTURE SEULE
+
+Audit consolidé Supabase production, sans écriture :
+
+- `property_listings` : **7 926** lignes ;
+- colonnes géographiques structurées sur `property_listings` : **0** ;
+- lignes `property_listings` avec sémantique latitude / longitude / coordonnées / précision : **0** ;
+- `geo_entities` : **45**, coordonnée exploitable : **0** ;
+- `geo_resolution_events` : **102**, coordonnée exploitable : **0** ;
+- corpus `mubawab_listing_corpus_v1` : **37 420**, coordonnée exploitable : **0** ;
+- le code `isExactMapListing` reste fail-closed et exige `geo_precision="exact"` + provenance `scraped_coordinates|manual_import` + latitude/longitude valides au Maroc ;
+- les enrichissements ville/quartier ne produisent pas `exact`.
+
+**Conclusion prouvée : `0` bien est actuellement éligible à un pin/callout `EXACT`.**
+
+Comportement produit requis tant que cet état ne change pas :
+- aucun pin bien ponctuel ;
+- recherche de biens accessible par CTA ;
+- repères de quartier / POI uniquement selon leur propre provenance ;
+- aucune fausse précision pour remplir visuellement la carte.
 
 ---
 
@@ -116,58 +176,46 @@ Persistance + provenance + mapping DB des biens restent à prouver avant activat
 
 ### Lot 2 — Convergence 3D + shell premium
 
-#### Lot 2a — Shell premium
-**✅ TECHNIQUEMENT CERTIFIÉ / ❌ TARGET VISUEL NON ATTEINT**
+#### Lot 2a
+**✅ TECHNIQUEMENT CERTIFIÉ / ❌ TARGET VISUEL NON ATTEINT — ~6,5/10**
 
-Implémenté : géométrie desktop proche `72/28`, carte dominante, panneau premium, onglets, fail-closed marché, toggle segmenté, top chrome aligné, bottom sheet mobile/tablette, aucune donnée fictive.
+#### Lot 2b
+**✅ TECHNIQUEMENT CERTIFIÉ / ❌ TARGET VISUEL NON ATTEINT — ~7,4/10**
 
-Historique :
-- `022c04cd37081fa8b3231bd0f824ef4ee8516478` → run `34030080046` FAILURE sur `TS2367` uniquement ;
-- correctif `782c124090f994d559eda9938b1f22edc5990d65` ;
-- recertification `34030333919` → **SUCCESS** ;
-- artifact `9988409177` ;
-- 8/8 HTTP 200 ;
-- Maroc strictement 2D ;
-- Maârif 3D : pitch `60°`, bearing `-28°`, zoom `15.5`, bâtiments `49 / 52 / 74 / 82` ;
-- POI : 2 ;
-- desktop map share ≈ `69,8 %` ;
-- bottom sheet visible sous 1024 ;
-- aucun overlap top chrome ;
-- zéro écriture DB / zéro action de déploiement par le gate.
+#### Lot 2c
+**✅ TECHNIQUEMENT CERTIFIÉ / ❌ TARGET VISUEL NON ATTEINT — ~8,1/10**
 
-Inspection humaine des 8 captures : structure améliorée mais scène encore trop technique/monochrome, top chrome mobile trop lourd, bottom sheet trop pauvre. **Score visuel 2a vs target : ~6,5/10.**
-
-#### Lot 2b — Convergence perceptuelle
+#### Lot 2d — convergence éditoriale
 **🟡 IMPLÉMENTÉ / EN CERTIFICATION**
 
-Code HEAD visuel : `7aabe8f247408e643eb56069e82dc91ce323afe9`.
+Code visuel : `22547e02986ca89fdc998a832c03d48a9477911d`.
 
-Implémenté :
-- bottom sheet `Vivre à Maârif` enrichi avec uniquement des états vrais ;
-- tabs `Aperçu / Vie locale / Biens` ;
-- repère sourcé / vie locale via filtres / pin exact requis ;
-- palette des volumes 3D réchauffée et contraste par hauteur sourcée ;
-- lumière 3D plus chaude et plus forte ;
-- chrome mobile fortement compacté ;
-- aucune donnée métier fictive.
+Goal :
+- desktop carte encore plus dominante ;
+- rail droit moins dashboard et plus éditorial ;
+- traitement 3D plus chaud / moins bleuté ;
+- mobile bottom sheet plus compact et hiérarchisé ;
+- aucun changement de donnée ni activation de faux pins.
 
-Gate `Vivre Ici AFTER Certification` : run `34030849447`, dernier état vérifié avant closeout docs : **queued**.
+Run `Vivre Ici AFTER Certification` : `34036441560`, dernier état vérifié après lancement : **in_progress**.
 
-**2b n’est pas certifié avant run vert + artifact + inspection des 8 captures.**
+**2d n’est pas certifié avant run vert + artifact + inspection humaine des 8 captures.**
 
 ### Lot 3 — Vérité data + biens exacts + vie locale
-- auditer coordonnées + `geo_precision` + provenance ;
-- mapper DB ;
-- pins/callouts uniquement `EXACT` ;
-- `DISTRICT/CITY` agrégés ; `UNKNOWN` sans pin ;
-- POI/métriques uniquement sourcés.
+**✅ TRUTH GATE CERTIFIÉ / MODE FAIL-CLOSED REQUIS**
+
+- audit coordonnées + provenance terminé ;
+- `0 EXACT` aujourd’hui ;
+- aucun pin bien autorisé ;
+- POI/métriques uniquement sourcés ;
+- une future activation de pins exige persistance + provenance exacte réellement alimentées, puis nouveau gate.
 
 ### Lot 4 — Polish + certification finale
-- typographie, espacements, animations légères ;
-- densité mobile, icônes, collisions, labels, callouts ;
-- captures 4 viewports ;
+- convergence visuelle restante après 2d si score <9 ;
+- typographie, spacing, collisions et labels uniquement si nécessaire ;
+- captures mêmes 4 viewports ;
 - BEFORE/TARGET/AFTER ;
-- score final ;
+- score final ≥9 ;
 - closeout PR/canonical ;
 - human gate merge/Vercel.
 
@@ -180,9 +228,9 @@ Gate `Vivre Ici AFTER Certification` : run `34030849447`, dernier état vérifi�
 - [x] 3D-L1 technique
 - [x] 3D-L2b immersion visible
 - [x] Lot 1 Target premium
-- [ ] **Lot 2 Convergence 3D + shell premium** — 2a prouvé, 2b en certification
-- [ ] Lot 3 Vérité data + biens exacts + vie locale
-- [ ] Lot 4 Polish + certification premium
+- [ ] **Lot 2 Convergence 3D + shell premium** — 2c certifié à ~8,1 ; 2d en certification
+- [x] Lot 3 Vérité data — truth gate `0 EXACT`, fail-closed
+- [ ] Lot 4 Polish + certification premium ≥9
 - [ ] P2 terrain / soleil / modèles neufs si données + ROI prouvés
 
 ---
@@ -190,6 +238,7 @@ Gate `Vivre Ici AFTER Certification` : run `34030849447`, dernier état vérifi�
 ## 8. SÉCURITÉ / PRODUCTION
 
 - aucune mutation DB liée au chantier ;
+- audit Lot 3 réalisé en lecture seule ;
 - aucun déploiement de cette branche autorisé ;
 - pas de merge sans human gate explicite ;
 - PR `#1025` reste ouverte ;
@@ -199,11 +248,11 @@ Gate `Vivre Ici AFTER Certification` : run `34030849447`, dernier état vérifi�
 
 ## 9. NEXT EXACT
 
-1. vérifier une fois le run 2b `34030849447` ;
-2. si vert : récupérer artifact → inspecter + montrer 8 captures → comparer 2a / TARGET / 2b → score ;
-3. si rouge : logs → correction → nouveau gate ;
-4. continuer 2c tant que la perception reste sous le niveau cible ;
-5. ensuite Lot 3 data/biens exacts ;
-6. Lot 4 polish/certification ;
-7. closeout PR/canonical ;
-8. human gate merge/Vercel.
+1. run 2d `34036441560` → artifact ;
+2. montrer et inspecter les 8 captures ;
+3. comparer TARGET / 2c / 2d ;
+4. si score <9 : correction visuelle suivante sans modifier le truth gate ;
+5. si score ≥9 : Lot 4 certification finale + cohérence canonical ;
+6. vérifier PR / CI / HEAD ;
+7. human gate merge ;
+8. **Vercel uniquement après autorisation explicite d’Achraf**.
