@@ -63,17 +63,18 @@ Pipeline : `DISCOVER -> RAW EVIDENCE -> NORMALIZE -> EXACT DEDUPE -> CANDIDATE L
 | 1immo historical detail exact delta au-dessus des 201 seeds | **3 471** | ✅ HISTORICAL L0 | run `34030138761`, artifact `9988514932` |
 | Agenz historical detail exact delta au-dessus des 4 466 directes | **3 819** | ✅ HISTORICAL L0 | artifact `9989328673` + baseline `9898224274`, exact ID set-diff 2026-09-06 |
 | Mubawab — RealEstateBuddy public GitHub dataset exact ID delta | **21 374** | ✅ HISTORICAL PUBLIC-DATASET L0 | run `34038898808`, artifact `9991042950` |
-| Mubawab — HichamBenelmahi public GitHub dumps exact ID delta vs union précédente | **17 394** | ✅ HISTORICAL PUBLIC-DATASET L0 | run `34039054428`, artifact `9991092046` |
+| Mubawab — HichamBenelmahi public GitHub dumps exact ID delta vs union précédente | **17 394** | ✅ HISTORICAL PUBLIC-DATASET L0 | run `34039440480`, artifact `9991207598` |
+| Avito — HichamBenelmahi public GitHub CSV exact ID delta vs 19 739 baseline | **22 381** | ✅ HISTORICAL PUBLIC-DATASET L0 | run `34039440480`, artifact `9991207598` |
 
 ### Union L0/L1 minimale mesurée
 
-**206 604 représentations candidates exactes par identité source/ID ou source/URL.**
+**228 985 représentations candidates exactes par identité source/ID ou source/URL.**
 
 Progression certifiée depuis le snapshot 158 778 :
 
-`158 778 + 82 + 73 + 1 613 + 3 471 + 3 819 + 21 374 + 17 394 = 206 604`.
+`158 778 + 82 + 73 + 1 613 + 3 471 + 3 819 + 21 374 + 17 394 + 22 381 = 228 985`.
 
-**M200K est donc dépassé de 6 604 représentations candidates, soit 103,3 % du jalon.**
+**M200K est dépassé de 28 985 représentations candidates, soit 114,5 % du jalon. Le stretch M250K est à 91,6 %, reste 21 015.**
 
 MASS-X5 finale (`31762998799`) certifie globalement `candidate_unique=51 169`, `exact_overlap=36 732`, `exact_net_new=14 437`. **Les 14 437 ne sont pas additionnés en bloc** car plusieurs domaines chevauchent déjà le scoreboard. Seuls les volumes dont l'absence ou le net-new est prouvé sont retenus.
 
@@ -81,11 +82,11 @@ DATA-40K Historical 2025, run `30126275406`, a récolté **28 248 seeds qualifi�
 
 DATA-1.2 B3 reserve contient toujours **37 009** URLs exactes ; **36 284** ne chevauchent pas `source_offer_seeds`. Le classifier historique HIGH donne 9 124 URLs, mais ce lot contient aussi des domaines immobiliers étrangers. Le scoreboard n'en retient donc que le sous-ensemble **strict Morocco** : domaine `.ma` + signal immobilier/classified explicite, soit **5 797 URLs sur 114 domaines**, après anti-overlap exact contre `source_offer_seeds`. Ce lot reste **L0 discovery-only** : aucune autorisation, fraîcheur ou activité n'est inférée.
 
-Le run non-Factory `34036331806` a trouvé **1 938** autres représentations exact-additive hors seeds/B3/lanes, mais **459 TikTok + 454 Facebook** dominent le lot. **Ces 1 938 ne sont pas incluses dans le compteur strict 206 604** tant qu'un filtre qualité source n'est pas appliqué.
+Le run non-Factory `34036331806` a trouvé **1 938** autres représentations exact-additive hors seeds/B3/lanes, mais **459 TikTok + 454 Facebook** dominent le lot. **Ces 1 938 ne sont pas incluses dans le compteur strict 228 985** tant qu'un filtre qualité source n'est pas appliqué.
 
 Les lignes historiques/structurelles/public-dataset sont comptées **L0 uniquement** avec provenance ; elles ne sont pas déclarées actives, fraîches ou autorisées à l'affichage.
 
-Ce n'est **pas** 206 604 biens uniques actifs. Les sources différentes et les cohortes temporelles peuvent représenter le même bien ; le recouvrement physique sera traité au clustering.
+Ce n'est **pas** 228 985 biens uniques actifs. Les sources différentes et les cohortes temporelles peuvent représenter le même bien ; le recouvrement physique sera traité au clustering.
 
 ## 4. DÉTAILS / DÉCISIONS DE LANE
 
@@ -94,9 +95,21 @@ Run direct `33964834762` ✅ : **3 174/3 174 shards**, **18 445 IDs uniques**, q
 
 Expansion indirecte publique 2026-09-06 :
 - `hakkache/RealEstateBuddy:data/Clean_Data_Step2.csv` : **23 796 lignes**, **22 011 IDs Mubawab distincts**, overlap exact direct **637**, **+21 374 net-new** ; run `34038898808`, artifact `9991042950`, dataset SHA256 `9d32451a56ba7977b7365d5ac06366ad05e7c059696ce3476b25737e3d445558`, artifact SHA256 `97936f5668a11f9fdc3a5b5f6ba3c32bb00a592883a8b4efaa95b0d6579e67ea`.
-- `HichamBenelmahi/analyse-des-tendances-immobili-res-` : **20 459 IDs Mubawab distincts** dans les dumps publics vente/location ; baseline union déjà comptée **39 819 IDs**, overlap exact **3 065**, **+17 394 net-new** ; run `34039054428`, artifact `9991092046`, artifact SHA256 `64dc822a6e986b429f8d5af462d7024e30cf428352f982bb17e171d4a694aae5`.
+- `HichamBenelmahi/analyse-des-tendances-immobili-res-` : **20 459 IDs Mubawab distincts** dans les dumps publics vente/location ; baseline union déjà comptée **39 819 IDs**, overlap exact **3 065**, **+17 394 net-new** ; run `34039440480`, artifact `9991207598`.
 
-Les deux expansions ne font **aucune requête Mubawab** : GitHub public + artifacts AkarFinder uniquement. `sourceSiteFetches=0`, `databaseWrites=0`. Elles sont historiques L0, pas des preuves de fraîcheur.
+Ces expansions ne font **aucune requête Mubawab** : GitHub public + artifacts AkarFinder uniquement. `sourceSiteFetches=0`, `databaseWrites=0`. Elles sont historiques L0, pas des preuves de fraîcheur.
+
+### Avito — INDIRECT BASELINE + PUBLIC DATASET EXPANSION
+Baseline indirecte certifiée : **19 739 IDs** via run `33971383335`, artifact `9971118875`.
+
+Les CSV publics du repo `HichamBenelmahi/analyse-des-tendances-immobili-res-` contiennent :
+- location : **17 671 IDs Avito distincts** ;
+- vente : **5 516 IDs Avito distincts** ;
+- union : **23 187 IDs** ;
+- exact overlap avec le baseline 19 739 : **806** ;
+- **exact net-new : 22 381**.
+
+Preuve : run `34039440480`, artifact `9991207598`, artifact SHA256 `9a236ad31ffde306ceda8458edc9f8bce789e37affcbe690a3276e8dbc4d66e5`. `sourceSiteFetches=0`, `databaseWrites=0`. Historique L0 uniquement.
 
 ### MarocAnnonces — FULL SOURCE-FIRST CLOSED
 Run `33739495442` ✅ : **546 pages**, **547 requêtes**, **10 000 IDs uniques**, queueRemaining=0, aucun cap atteint, zeroDbWrites=true. Toute nouvelle reprise doit rester fail-closed selon robots courant.
@@ -175,8 +188,8 @@ Le full sweep `33985644309` a échoué sur `Network is unreachable` au chargemen
 | M50K | ✅ |
 | M100K | ✅ |
 | **M150K** | ✅ CLOSED |
-| **M200K** | ✅ **CLOSED — 206 604 / 200 000 (103,3 %), dépassement +6 604** |
-| **M250K+** | 🔵 STRETCH — manque **43 396** au seuil 250K |
+| **M200K** | ✅ **CLOSED — 228 985 representations courantes / 200 000 (114,5 %)** |
+| **M250K+** | 🔵 STRETCH — **228 985 / 250 000 (91,6 %), manque 21 015** |
 
 ## 6. FILE D'EXÉCUTION — 12 LOTS
 
@@ -189,7 +202,7 @@ Le full sweep `33985644309` a échoué sur `Network is unreachable` au chargemen
 7. ✅ ImmoDirect — 4, PARKED.
 8. ✅ Yakeey exact L0 — 82.
 9. ✅ MASS-1 + Historical Gap + Agenz historical reconciliations.
-10. ✅ **Public GitHub dataset expansion Mubawab : +38 768 exact-net-new au-dessus du direct, M200K franchi.**
+10. ✅ **Public GitHub dataset expansion Mubawab + Avito : +61 149 exact-net-new au-dessus des baselines déjà comptées.**
 11. 🔵 Candidate Lake unifié : exact dedupe + provenance + layer + temporal cohort + clusters + freshness.
 12. ⛔ Gate humain avant toute écriture prod/Vercel/policy registry.
 
@@ -204,12 +217,12 @@ Le full sweep `33985644309` a échoué sur `Network is unreachable` au chargemen
 
 ## 8. NEXT EXACT
 
-1. **Freeze M200K** : conserver les manifests/artifacts qui produisent le total 206 604 et empêcher tout double comptage futur.
+1. **Freeze M200K** : conserver les manifests/artifacts qui produisent le total 228 985 et empêcher tout double comptage futur.
 2. **Candidate Lake** : unifier provenance, source ID/URL, couche L0/L1, date/cohorte temporelle et fingerprints.
-3. **Exact dedupe + clustering** : mesurer `206 604 representations -> probable_unique` sans suppression destructive.
+3. **Exact dedupe + clustering** : mesurer `228 985 representations -> probable_unique` sans suppression destructive.
 4. **Freshness** : échantillonnage/validation récente uniquement sur lanes autorisées, puis publier `live_confidence` par source.
-5. **M250K stretch** : continuer la recherche de dumps/datasets/archives publics avec IDs/URLs exacts ; chaque nouveau lot doit être set-diff contre l'union certifiée courante.
+5. **M250K stretch** : continuer la recherche de dumps/datasets/archives publics avec IDs/URLs exacts ; chaque nouveau lot doit être set-diff contre l'union certifiée courante. Gap actuel : **21 015**.
 6. Les **1 938 non-Factory** restent en réserve jusqu'à filtre qualité excluant social/bruit.
 7. Aucun onboarding de nouvelle source dans `source_policy_registry` sans gate humain séparé.
 
-**Boussole actuelle : 206 604 représentations L0/L1 -> probable_unique -> live_confidence -> 250 000+ stretch.**
+**Boussole actuelle : 228 985 représentations L0/L1 -> probable_unique -> live_confidence -> 250 000+ stretch.**
