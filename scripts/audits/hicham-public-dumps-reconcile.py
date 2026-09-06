@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import json, os, re, hashlib
+import csv, json, os, re, hashlib
 from pathlib import Path
 
 OUT = Path(os.environ.get('HICHAM_OUT', '.tmp/hicham-public-dumps-reconcile'))
@@ -26,9 +26,32 @@ def read_ids(p: Path):
 def clean_url(u: str):
     return u.rstrip('.,;)]}')
 
+def scan_avito_csv(p: Path):
+    out={}
+    with p.open('r', encoding='utf-8-sig', errors='ignore', newline='') as f:
+        reader=csv.DictReader(f)
+        if not reader.fieldnames:
+            return out
+        names={str(x).strip().lower():x for x in reader.fieldnames if x is not None}
+        id_col=names.get('id')
+        url_col=names.get('url_annonce') or names.get('url') or names.get('link')
+        if not id_col:
+            return out
+        for row in reader:
+            raw=str(row.get(id_col) or '').strip()
+            m=re.search(r'\d{6,}', raw)
+            if not m:
+                continue
+            sid=m.group(0)
+            url=str(row.get(url_col) or '').strip() if url_col else ''
+            out.setdefault(sid, url)
+    return out
+
 def scan_file(p: Path):
-    text=p.read_text(encoding='utf-8', errors='ignore').replace('\\/','/')
     mub, avito = {}, {}
+    if p.suffix.lower()=='.csv' and p.name.lower().startswith('avito_'):
+        avito.update(scan_avito_csv(p))
+    text=p.read_text(encoding='utf-8', errors='ignore').replace('\\/','/')
     for m in URL_RE.finditer(text):
         u=clean_url(m.group(0))
         lu=u.lower()
@@ -81,7 +104,7 @@ def main():
     (OUT/'mubawab-net-new-ids.txt').write_text('\n'.join(sorted(mub_net,key=int))+('\n' if mub_net else ''),encoding='utf-8')
     (OUT/'mubawab-net-new-urls.txt').write_text('\n'.join(mub_all[i] for i in sorted(mub_net,key=int))+('\n' if mub_net else ''),encoding='utf-8')
     (OUT/'avito-net-new-ids.txt').write_text('\n'.join(sorted(avito_net,key=int))+('\n' if avito_net else ''),encoding='utf-8')
-    (OUT/'avito-net-new-urls.txt').write_text('\n'.join(avito_all[i] for i in sorted(avito_net,key=int))+('\n' if avito_net else ''),encoding='utf-8')
+    (OUT/'avito-net-new-urls.txt').write_text('\n'.join(avito_all[i] for i in sorted(avito_net,key=int) if avito_all.get(i))+('\n' if avito_net else ''),encoding='utf-8')
     print(json.dumps(summary,indent=2,ensure_ascii=False))
 
 if __name__=='__main__': main()
