@@ -12,11 +12,12 @@ const OPENFREEMAP_VECTOR_URL = "https://tiles.openfreemap.org/planet";
 const WORLD_IMAGERY_TILE_URL = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
 const WORLD_IMAGERY_ATTRIBUTION = "© Esri, Maxar, Earthstar Geographics, GIS User Community";
 
-// 2L REFRAME: satellite-first city context, not block-level model inspection.
-// The selected district remains the sourced camera anchor; no boundary is inferred.
-const CASABLANCA_3D_ZOOM = 13.65;
-const CASABLANCA_3D_PITCH = 48;
-const CASABLANCA_3D_BEARING = -16;
+// 2L.1: keep the satellite as the visual material while moving just far enough
+// into building-detail tiles to restore real depth. The selected district remains
+// the sourced camera anchor; no boundary, property position or metric is inferred.
+const CASABLANCA_3D_ZOOM = 14.3;
+const CASABLANCA_3D_PITCH = 46;
+const CASABLANCA_3D_BEARING = -14;
 
 const IMMERSIVE_LIGHT: LightSpecification = {
   anchor: "viewport",
@@ -123,7 +124,7 @@ function ensureBuildingLayer(map: MapLibreMap): void {
         ["get", "render_height"],
       ],
       "fill-extrusion-base": ["coalesce", ["get", "render_min_height"], 0],
-      "fill-extrusion-opacity": 0.42,
+      "fill-extrusion-opacity": 0.34,
       "fill-extrusion-vertical-gradient": true,
     },
   }, firstLabelLayerId(map));
