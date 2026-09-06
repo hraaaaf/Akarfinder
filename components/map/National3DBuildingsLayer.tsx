@@ -13,9 +13,9 @@ const CASABLANCA_3D_BEARING = -28;
 
 const IMMERSIVE_LIGHT: LightSpecification = {
   anchor: "viewport",
-  color: "#FFF8EC",
-  intensity: 0.74,
-  position: [1.35, 210, 42],
+  color: "#FFE8C7",
+  intensity: 0.84,
+  position: [1.25, 210, 38],
 };
 
 type Props = {
@@ -54,15 +54,15 @@ function ensureBuildingLayer(map: MapLibreMap): void {
         ["linear"],
         ["coalesce", ["get", "render_height"], 0],
         0,
-        "#F6F2EA",
+        "#F8F0E4",
         18,
-        "#E9E2D7",
+        "#ECD9BF",
         45,
-        "#D7CDC0",
+        "#D9BE98",
         90,
-        "#B9AD9D",
+        "#BC986D",
         140,
-        "#9C9185",
+        "#8F7158",
       ],
       "fill-extrusion-height": [
         "interpolate",
@@ -74,7 +74,7 @@ function ensureBuildingLayer(map: MapLibreMap): void {
         ["get", "render_height"],
       ],
       "fill-extrusion-base": ["coalesce", ["get", "render_min_height"], 0],
-      "fill-extrusion-opacity": 0.97,
+      "fill-extrusion-opacity": 0.96,
       "fill-extrusion-vertical-gradient": true,
     },
   }, firstLabelLayerId(map));
