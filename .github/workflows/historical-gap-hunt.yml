@@ -1,14 +1,10 @@
-name: AkarFinder - Historical Gap Hunt
+name: AkarFinder - Q1A DATA4.9B Archive Recovery
 
 on:
   push:
     paths:
-      - "scripts/audits/historical-gap-hunt.ts"
-      - "scripts/audits/candidate-lake-q1a-1immo-replay.ts"
-      - "scripts/audits/candidate-lake-q1a-db-export.ts"
-      - "scripts/audits/candidate-lake-q1a-massx2-replay.ts"
-      - "scripts/audits/candidate-lake-q1a-data49b-commoncrawl-recovery.ts"
       - "scripts/audits/candidate-lake-q1a-data49b-wayback-recovery.ts"
+      - "scripts/audits/candidate-lake-q1a-data49b-wayback-sitemap-recovery-v2.ts"
       - ".github/workflows/historical-gap-hunt.yml"
   workflow_dispatch:
 
@@ -16,193 +12,9 @@ permissions:
   contents: read
 
 jobs:
-  audit:
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    env:
-      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-      GAP_HUNT_OUT: .tmp/historical-gap-hunt
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: npm
-      - run: npm ci
-      - name: Run read-only historical gap hunt
-        run: npx tsx scripts/audits/historical-gap-hunt.ts
-      - name: Verify no-write contract
-        run: |
-          node - <<'NODE'
-          const fs=require('fs');
-          const p=JSON.parse(fs.readFileSync('.tmp/historical-gap-hunt/summary.json','utf8'));
-          if(p.readOnly!==true || p.databaseWrites!==0 || p.sourceNetworkRequests!==0 || p.detailPageFetches!==0) throw new Error('read-only invariant failed');
-          console.log(JSON.stringify({totalExactNetNewVsSeeds:p.totalExactNetNewVsSeeds,top:p.domains.slice(0,10)},null,2));
-          NODE
-      - uses: actions/upload-artifact@v4
-        with:
-          name: historical-gap-hunt-proof
-          path: .tmp/historical-gap-hunt/
-          if-no-files-found: error
-          retention-days: 30
-
-  q1a-1immo-asof:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - label: run-start
-            as_of: "2026-09-06T11:24:03Z"
-          - label: run-end
-            as_of: "2026-09-06T11:37:31Z"
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    env:
-      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-      Q1A_1IMMO_AS_OF: ${{ matrix.as_of }}
-      Q1A_1IMMO_OUT: .tmp/candidate-lake-q1a-1immo-${{ matrix.label }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: npm
-      - run: npm ci
-      - name: Replay exact 1immo historical state read-only
-        run: npx tsx scripts/audits/candidate-lake-q1a-1immo-replay.ts
-      - name: Verify exact 1immo historical replay
-        run: |
-          node - <<'NODE'
-          const fs=require('fs');
-          const dir=process.env.Q1A_1IMMO_OUT;
-          const p=JSON.parse(fs.readFileSync(`${dir}/summary.json`,'utf8'));
-          if(p.readOnly!==true || p.databaseWrites!==0 || p.productionWrites!==0 || p.sourceNetworkRequests!==0 || p.sourceSiteFetches!==0 || p.vercelDeployments!==0) throw new Error('read-only boundary violated');
-          if(!p.exactHistoricalMatch) throw new Error(`1immo historical mismatch ${JSON.stringify(p.actual)}`);
-          if(p.actual.discoveryDistinct!==5219 || p.actual.detailDistinct!==3661 || p.actual.exactOverlapSeeds!==190 || p.actual.exactNetNewVsSeeds!==3471) throw new Error('1immo count drift');
-          console.log(JSON.stringify({asOf:p.asOf,actual:p.actual,manifest:p.hashes['manifest.jsonl']},null,2));
-          NODE
-      - uses: actions/upload-artifact@v4
-        with:
-          name: candidate-lake-q1a-1immo-${{ matrix.label }}
-          path: .tmp/candidate-lake-q1a-1immo-${{ matrix.label }}/
-          if-no-files-found: error
-          retention-days: 30
-
-  q1a-massx2:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - label: audit-commit
-            as_of: "2026-08-13T23:07:33Z"
-          - label: pr-created
-            as_of: "2026-08-13T23:10:45Z"
-          - label: pr-merged
-            as_of: "2026-08-13T23:15:11Z"
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    env:
-      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-      Q1A_MASSX2_OUT: .tmp/candidate-lake-q1a-massx2-${{ matrix.label }}
-      Q1A_MASSX2_AS_OF: ${{ matrix.as_of }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: npm
-      - run: npm ci
-      - name: Replay MASS-X2 historical exact identities read-only
-        run: npx tsx scripts/audits/candidate-lake-q1a-massx2-replay.ts
-      - name: Report MASS-X2 historical replay
-        run: |
-          node - <<'NODE'
-          const fs=require('fs');
-          const dir=process.env.Q1A_MASSX2_OUT;
-          const p=JSON.parse(fs.readFileSync(`${dir}/summary.json`,'utf8'));
-          if(p.readOnly!==true || p.databaseWrites!==0 || p.productionWrites!==0 || p.sourceNetworkRequests!==0 || p.sourceSiteFetches!==0 || p.vercelDeployments!==0) throw new Error('read-only boundary violated');
-          console.log(JSON.stringify({asOf:p.asOf,actualTotal:p.actualTotal,expectedTotal:p.expectedTotal,exactHistoricalMatch:p.exactHistoricalMatch,lanes:p.lanes,hash:p.hashes['manifest.jsonl']},null,2));
-          NODE
-      - uses: actions/upload-artifact@v4
-        with:
-          name: candidate-lake-q1a-massx2-${{ matrix.label }}
-          path: .tmp/candidate-lake-q1a-massx2-${{ matrix.label }}/
-          if-no-files-found: error
-          retention-days: 30
-
-  q1a-db-backed:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    env:
-      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-      Q1A_DB_OUT: .tmp/candidate-lake-q1a-db
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: npm
-      - run: npm ci
-      - name: Export frozen DB-backed candidate identities read-only
-        run: npx tsx scripts/audits/candidate-lake-q1a-db-export.ts
-      - name: Verify Q1A DB export invariants
-        run: |
-          node - <<'NODE'
-          const fs=require('fs');
-          const p=JSON.parse(fs.readFileSync('.tmp/candidate-lake-q1a-db/summary.json','utf8'));
-          if(p.readOnly!==true) throw new Error('readOnly=false');
-          if(p.databaseWrites!==0 || p.productionWrites!==0) throw new Error('write boundary violated');
-          if(p.sourceSiteFetches!==0 || p.sourceNetworkRequests!==0) throw new Error('source-site boundary violated');
-          if(p.vercelDeployments!==0) throw new Error('Vercel boundary violated');
-          if(p.actual.total!==14987) throw new Error(`unexpected total ${p.actual.total}`);
-          if(p.actual.b3StrictMorocco!==5797 || p.actual.canonicalLinkV2!==6270 || p.actual.currentSeedLanes!==2920) throw new Error('lane count drift');
-          console.log(JSON.stringify(p.actual,null,2));
-          NODE
-      - uses: actions/upload-artifact@v4
-        with:
-          name: candidate-lake-q1a-db-backed-proof
-          path: .tmp/candidate-lake-q1a-db/
-          if-no-files-found: error
-          retention-days: 30
-
-  q1a-data49b-commoncrawl:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    env:
-      Q1A_DATA49B_CC_OUT: .tmp/candidate-lake-q1a-data49b-cc
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: npm
-      - run: npm ci
-      - name: Probe historical DATA4.9B identities from Common Crawl URL index only
-        run: npx tsx scripts/audits/candidate-lake-q1a-data49b-commoncrawl-recovery.ts
-      - name: Verify metadata-only boundary
-        run: |
-          node - <<'NODE'
-          const fs=require('fs');
-          const p=JSON.parse(fs.readFileSync('.tmp/candidate-lake-q1a-data49b-cc/summary.json','utf8'));
-          if(p.readOnly!==true || p.databaseWrites!==0 || p.productionWrites!==0 || p.sourceSiteFetches!==0 || p.sourceContentFetches!==0 || p.warcFetches!==0 || p.vercelDeployments!==0 || p.commonCrawlUrlIndexRequestsOnly!==true) throw new Error('metadata-only boundary violated');
-          console.log(JSON.stringify(p.modes.map(m=>({mode:m.mode,total:m.totalCandidateRows,allPerSourceCountsMatch:m.allPerSourceCountsMatch,domains:m.domains.map(d=>({sourceDomain:d.sourceDomain,candidateRows:d.candidateRows,expected:d.expectedHistoricalCandidateRows}))})),null,2));
-          NODE
-      - uses: actions/upload-artifact@v4
-        with:
-          name: candidate-lake-q1a-data49b-commoncrawl-recovery
-          path: .tmp/candidate-lake-q1a-data49b-cc/
-          if-no-files-found: error
-          retention-days: 30
-
-  q1a-data49b-wayback:
+  q1a-data49b-wayback-sitemap:
     runs-on: ubuntu-latest
     timeout-minutes: 25
-    env:
-      Q1A_DATA49B_WAYBACK_OUT: .tmp/candidate-lake-q1a-data49b-wayback
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -210,19 +22,22 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - name: Probe historical DATA4.9B identities from Wayback CDX URL index only
+      - name: Replay DATA4.9B from archived Registry robots and declared sitemaps only
         run: npx tsx scripts/audits/candidate-lake-q1a-data49b-wayback-recovery.ts
-      - name: Verify Wayback metadata-only boundary
+      - name: Verify archive-only fail-closed contract
         run: |
           node - <<'NODE'
           const fs=require('fs');
-          const p=JSON.parse(fs.readFileSync('.tmp/candidate-lake-q1a-data49b-wayback/summary.json','utf8'));
-          if(p.readOnly!==true || p.databaseWrites!==0 || p.productionWrites!==0 || p.sourceSiteFetches!==0 || p.sourceContentFetches!==0 || p.archiveContentFetches!==0 || p.warcFetches!==0 || p.vercelDeployments!==0 || p.waybackCdxUrlIndexRequestsOnly!==true) throw new Error('metadata-only boundary violated');
-          console.log(JSON.stringify({total:p.totalCandidateRows,expected:p.expectedHistoricalTotal,exactHistoricalCountMatch:p.exactHistoricalCountMatch,domains:p.domains.map(d=>({sourceDomain:d.sourceDomain,candidateRows:d.candidateRows,expected:d.expectedHistoricalCandidateRows,queryComplete:d.queryComplete}))},null,2));
+          const p=JSON.parse(fs.readFileSync('.tmp/candidate-lake-q1a-data49b-wayback-sitemap/summary.json','utf8'));
+          if(p.readOnly!==true || p.databaseWrites!==0 || p.productionWrites!==0) throw new Error('write boundary violated');
+          if(p.sourceSiteFetches!==0 || p.sourceContentFetches!==0 || p.detailPageFetches!==0) throw new Error('current source-site boundary violated');
+          if(p.archiveContentFetchesOnly!==true || p.archiveRobotsAndSitemapsOnly!==true || p.warcFetches!==0) throw new Error('archive-content boundary violated');
+          if(p.vercelDeployments!==0) throw new Error('Vercel boundary violated');
+          console.log(JSON.stringify({candidateRows:p.candidateRows,candidateCountVector:p.candidateCountVector,allArchiveReadsComplete:p.allArchiveReadsComplete,allCandidateCountsMatch:p.allCandidateCountsMatch,manifestSha256:p.manifestSha256,certificationState:p.certificationState,results:p.results.map(r=>({domain:r.domain,robotsCapture:r.robotsCapture?.timestamp??null,candidates:r.candidateRows,expected:r.expectedCandidateRows,digest:r.candidateDigestSha256,complete:r.complete,errors:r.errors}))},null,2));
           NODE
       - uses: actions/upload-artifact@v4
         with:
-          name: candidate-lake-q1a-data49b-wayback-recovery
-          path: .tmp/candidate-lake-q1a-data49b-wayback/
+          name: candidate-lake-q1a-data49b-wayback-sitemap-proof
+          path: .tmp/candidate-lake-q1a-data49b-wayback-sitemap/
           if-no-files-found: error
           retention-days: 30
