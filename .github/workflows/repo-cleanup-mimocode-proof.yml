@@ -1,0 +1,44 @@
+name: Repo Cleanup Mimocode Proof
+
+on:
+  push:
+    branches:
+      - chore/repo-cleanup-structural-2
+    paths:
+      - ".github/workflows/repo-cleanup-mimocode-proof.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  prove-and-remove-helper:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: chore/repo-cleanup-structural-2
+          fetch-depth: 0
+      - name: Prove deleted Mimocode config has no tracked consumers
+        shell: bash
+        run: |
+          set -euo pipefail
+          test ! -e .mimocode/mimocode.json
+          if git grep -n -i -E '(mimocode|\.mimocode|opencode\.ai/config\.json)' -- . \
+            ':!.github/workflows/repo-cleanup-mimocode-proof.yml'; then
+            echo 'Tracked Mimocode/OpenCode reference found. Deletion is not proven safe.'
+            exit 1
+          fi
+          echo 'No tracked Mimocode/OpenCode references remain.'
+          echo 'History of deleted config:'
+          git log --oneline --all -- .mimocode/mimocode.json
+      - name: Remove temporary proof workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/repo-cleanup-mimocode-proof.yml
+          git commit -m "chore(cleanup): remove temporary Mimocode proof workflow"
+          git pull --rebase origin chore/repo-cleanup-structural-2
+          git push origin HEAD:chore/repo-cleanup-structural-2
