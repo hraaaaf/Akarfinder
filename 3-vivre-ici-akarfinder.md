@@ -1,6 +1,6 @@
 # 3 — Vivre Ici AkarFinder
 
-**Statut : ACTIVE — TARGET PREMIUM FREEZÉ / LOT 2d EN CERTIFICATION**  
+**Statut : ACTIVE — TARGET PREMIUM FREEZÉ / POST-SYNC RECERTIFICATION EN COURS**  
 **Dernière mise à jour : 2026-09-06**  
 **Repo : `hraaaaf/Akarfinder`**  
 **Branche : `docs/3-vivre-ici-akarfinder`**  
@@ -67,7 +67,7 @@ Le Goal premium est atteint uniquement si :
 9. build + TypeScript + tests UI verts ;
 10. zéro mutation DB / zéro Vercel sans gate explicite.
 
-Preuves : captures 390 / 430 / 768 / 1280, Maroc, Casablanca → Maârif, Maârif + biens exacts uniquement si réellement éligibles, build/TS/tests, inspection humaine et comparaison TARGET/AFTER.
+Preuves : captures 390 / 430 / 768 / 1280, Maroc, Casablanca → Maârif, build/TS/tests, inspection humaine et comparaison TARGET/AFTER.
 
 ---
 
@@ -80,59 +80,75 @@ Preuves : captures 390 / 430 / 768 / 1280, Maroc, Casablanca → Maârif, Maâri
 
 ### 3D-L1
 - run `33991033589` — SUCCESS ;
-- code `b4a9d2bd0911840a641cd3f20ab678631424dc64` ;
 - artifact `9976706376` ;
 - pitch `56°`, zoom `14.2` ; bâtiments `64 / 68 / 113 / 120` ;
 - fidélité perçue réévaluée ~`5/10`.
 
-### 3D-L2b — immersion visible
+### 3D-L2b
 - run `33992903877` — SUCCESS ;
 - code `e5e0727dd107ecd00c6106d0286c3a78ef090841` ;
 - artifact `9977221838` ;
 - pitch `60°`, bearing `-28°`, zoom `15.5` ; bâtiments `43 / 46 / 65 / 70` ;
 - Maroc 2D, POI Maârif préservés ;
-- fidélité ~`7,5/10` au mécanisme 3D, avant target premium.
+- fidélité ~`7,5/10`.
 
 ### Lot 2a — shell premium
-- run `34030333919` — SUCCESS ;
-- artifact `9988409177` ;
-- 8/8 captures OK ;
-- Maârif : pitch `60°`, bearing `-28°`, zoom `15.5`, bâtiments `49 / 52 / 74 / 82` ;
-- carte desktop ≈ `69,8 %` ;
-- Maroc strictement 2D ;
-- zéro collision top chrome ;
+- run `34030333919` — SUCCESS ; artifact `9988409177` ;
+- 8/8 captures OK ; carte desktop ≈ `69,8 %` ;
 - score visuel humain ~`6,5/10`.
 
 ### Lot 2b — convergence perceptuelle
 - code `7aabe8f247408e643eb56069e82dc91ce323afe9` ;
-- run `34030849447` — SUCCESS ;
-- artifact `9988593627` ;
-- inspection 8 captures ;
-- score visuel humain ~`7,4/10` ;
-- target premium non atteint.
+- run `34030849447` — SUCCESS ; artifact `9988593627` ;
+- score visuel humain ~`7,4/10`.
 
 ### Candidat premium intermédiaire
 - code `0d92fccdfbeab346fdad0935d539c52868026e13` ;
-- run `34032104891` — SUCCESS ;
-- artifact `9988982037` ;
-- carte desktop Maârif ≈ `71,9 %` ;
-- score visuel humain ~`7,6/10` ;
-- target premium non atteint.
+- run `34032104891` — SUCCESS ; artifact `9988982037` ;
+- carte desktop Maârif ≈ `71,9 %` ; score ~`7,6/10`.
 
 ### Lot 2c
 - code `a884021cf35e6471fdb0b092083d20eeb4ff4d98` ;
 - run `34033038551` — SUCCESS ;
 - artifact `9989287797`, digest `sha256:0bbe22385f68270dd8e9eececfaa3d4c2ecd05feba074ac5854997bb93b52a30` ;
 - navigation contracts, TypeScript, production build, Chromium, 8 captures et proof gate : SUCCESS ;
-- Maroc : 2D sur les 4 viewports ;
 - Maârif : pitch `60°`, bearing `-28°`, zoom `15.5`, bâtiments `43 / 46 / 65 / 70` ;
-- POI Maârif : `2` ;
-- carte desktop Maârif ≈ `72,19 %` ;
-- bottom sheet mobile visible, hauteur mesurée ≈ `235 px` ;
-- zéro collision top chrome ;
-- gate : `zeroDbWritesByScript=true`, `zeroDeploymentActionsByScript=true` ;
-- inspection visuelle humaine : progression nette mais encore trop technique / dashboard ; **score ~`8,1/10`** ;
-- target ≥9 non atteint.
+- carte desktop ≈ `72,19 %` ; bottom sheet mobile ≈ `235 px` ;
+- `zeroDbWritesByScript=true`, `zeroDeploymentActionsByScript=true` ;
+- score visuel humain ~`8,1/10`.
+
+### Lot 2d — convergence éditoriale
+- code `22547e02986ca89fdc998a832c03d48a9477911d` ;
+- run `34036441560` — SUCCESS ;
+- artifact `9990349262`, digest `sha256:e3f6822c0f7f55bf0999fac6f1575c95425bd3f001f20161c4b2bec49e9f4971` ;
+- navigation contracts, TypeScript, production build, Chromium, 8 captures et proof gate : SUCCESS ;
+- carte desktop Maârif ≈ `73,9 %` ; bottom sheet mobile ≈ `202 px` ;
+- vérité géographique inchangée, Maroc 2D, Maârif 3D ;
+- score visuel humain ~`8,8/10`.
+
+### Lot 2e — matérialité 3D / seuil premium
+- code `88df506241d77fbe8d67718fd421f6ac9b7fd496` ;
+- run `34039217117` — SUCCESS ;
+- artifact `9991177033`, digest `sha256:96b8defdea1f4c06b8eca71f1aaa510b214c02afd3566577f7748389a4ff2d67` ;
+- navigation contracts, TypeScript, production build, Chromium, 8 captures et proof gate : SUCCESS ;
+- Maârif : pitch `60°`, bearing `-28°`, zoom `15.5`, bâtiments `43 / 46 / 65 / 70` ;
+- carte desktop ≈ `73,9 %` ; bottom sheet mobile `202 px` ;
+- aucun overlap ; Maroc strictement 2D ;
+- `zeroDbWritesByScript=true`, `zeroDeploymentActionsByScript=true` ;
+- inspection humaine : **~`9,0/10`**, seuil premium atteint sur le tree pré-sync.
+
+### Synchronisation avec `main` — 2026-09-06
+- ancien HEAD Vivre Ici : `88df506241d77fbe8d67718fd421f6ac9b7fd496` ;
+- `main` verrouillé : `b8c89681358e93ec254016bcca9b78f4717ea8de` ;
+- merge-base : `0c3e3ea3ea86b5cba97a72f67ba0af347215241d` ;
+- avant sync : branche 62 commits devant et 69 derrière ;
+- intersection des fichiers modifiés par `main` avec les 21 fichiers Vivre Ici : **0** ;
+- merge commit construit sans conflit fonctionnel : `f7c28368ce2d9de54be42985e8c690fa3c6e080f` ;
+- comparaison `main...f7c28368` : **ahead 63 / behind 0**, exactement les 21 fichiers Vivre Ici attendus ;
+- commit d’ancrage de recertification : `45cd3174ca3a6dd10035eadd8755c03116ad1236` ;
+- recertification post-sync : run `34042235527`, dernier état vérifié **queued**.
+
+Le seuil ≥9 n’est considéré **finalement certifié sur le tree synchronisé** qu’après run `34042235527` vert + artifact + inspection des 8 captures post-sync.
 
 ---
 
@@ -152,107 +168,53 @@ Audit consolidé Supabase production, sans écriture :
 
 - `property_listings` : **7 926** lignes ;
 - colonnes géographiques structurées sur `property_listings` : **0** ;
-- lignes `property_listings` avec sémantique latitude / longitude / coordonnées / précision : **0** ;
+- lignes avec sémantique latitude / longitude / coordonnées / précision : **0** ;
 - `geo_entities` : **45**, coordonnée exploitable : **0** ;
 - `geo_resolution_events` : **102**, coordonnée exploitable : **0** ;
-- corpus `mubawab_listing_corpus_v1` : **37 420**, coordonnée exploitable : **0** ;
-- le code `isExactMapListing` reste fail-closed et exige `geo_precision="exact"` + provenance `scraped_coordinates|manual_import` + latitude/longitude valides au Maroc ;
+- `mubawab_listing_corpus_v1` : **37 420**, coordonnée exploitable : **0** ;
+- `isExactMapListing` exige `geo_precision="exact"` + provenance `scraped_coordinates|manual_import` + latitude/longitude valides au Maroc ;
 - les enrichissements ville/quartier ne produisent pas `exact`.
 
 **Conclusion prouvée : `0` bien est actuellement éligible à un pin/callout `EXACT`.**
 
-Comportement produit requis tant que cet état ne change pas :
-- aucun pin bien ponctuel ;
-- recherche de biens accessible par CTA ;
-- repères de quartier / POI uniquement selon leur propre provenance ;
-- aucune fausse précision pour remplir visuellement la carte.
+Comportement requis : aucun pin bien ponctuel ; CTA vers recherche ; repères/POI uniquement selon provenance ; aucune fausse précision.
 
 ---
 
-## 6. PLAN D’EXÉCUTION
-
-### Lot 1 — Target premium canonique
-**✅ FREEZÉ**
-
-### Lot 2 — Convergence 3D + shell premium
-
-#### Lot 2a
-**✅ TECHNIQUEMENT CERTIFIÉ / ❌ TARGET VISUEL NON ATTEINT — ~6,5/10**
-
-#### Lot 2b
-**✅ TECHNIQUEMENT CERTIFIÉ / ❌ TARGET VISUEL NON ATTEINT — ~7,4/10**
-
-#### Lot 2c
-**✅ TECHNIQUEMENT CERTIFIÉ / ❌ TARGET VISUEL NON ATTEINT — ~8,1/10**
-
-#### Lot 2d — convergence éditoriale
-**🟡 IMPLÉMENTÉ / EN CERTIFICATION**
-
-Code visuel : `22547e02986ca89fdc998a832c03d48a9477911d`.
-
-Goal :
-- desktop carte encore plus dominante ;
-- rail droit moins dashboard et plus éditorial ;
-- traitement 3D plus chaud / moins bleuté ;
-- mobile bottom sheet plus compact et hiérarchisé ;
-- aucun changement de donnée ni activation de faux pins.
-
-Run `Vivre Ici AFTER Certification` : `34036441560`, dernier état vérifié après lancement : **in_progress**.
-
-**2d n’est pas certifié avant run vert + artifact + inspection humaine des 8 captures.**
-
-### Lot 3 — Vérité data + biens exacts + vie locale
-**✅ TRUTH GATE CERTIFIÉ / MODE FAIL-CLOSED REQUIS**
-
-- audit coordonnées + provenance terminé ;
-- `0 EXACT` aujourd’hui ;
-- aucun pin bien autorisé ;
-- POI/métriques uniquement sourcés ;
-- une future activation de pins exige persistance + provenance exacte réellement alimentées, puis nouveau gate.
-
-### Lot 4 — Polish + certification finale
-- convergence visuelle restante après 2d si score <9 ;
-- typographie, spacing, collisions et labels uniquement si nécessaire ;
-- captures mêmes 4 viewports ;
-- BEFORE/TARGET/AFTER ;
-- score final ≥9 ;
-- closeout PR/canonical ;
-- human gate merge/Vercel.
-
----
-
-## 7. ROADMAP
+## 6. PLAN / ROADMAP
 
 - [x] L0 BEFORE `/map`
 - [x] P0 2D
 - [x] 3D-L1 technique
 - [x] 3D-L2b immersion visible
 - [x] Lot 1 Target premium
-- [ ] **Lot 2 Convergence 3D + shell premium** — 2c certifié à ~8,1 ; 2d en certification
-- [x] Lot 3 Vérité data — truth gate `0 EXACT`, fail-closed
-- [ ] Lot 4 Polish + certification premium ≥9
-- [ ] P2 terrain / soleil / modèles neufs si données + ROI prouvés
+- [x] Lot 2 convergence jusqu’à 2e — tree pré-sync ~`9,0/10`
+- [x] Lot 3 vérité data — truth gate `0 EXACT`, fail-closed
+- [ ] Lot 4 certification finale post-sync ≥9 — run `34042235527` en cours
+- [ ] Closeout canonical + PR
+- [ ] Human gate merge
+- [ ] P2 terrain / soleil / modèles neufs uniquement si données + ROI prouvés
 
 ---
 
-## 8. SÉCURITÉ / PRODUCTION
+## 7. SÉCURITÉ / PRODUCTION
 
 - aucune mutation DB liée au chantier ;
-- audit Lot 3 réalisé en lecture seule ;
-- aucun déploiement de cette branche autorisé ;
+- audit Lot 3 en lecture seule ;
+- aucun déploiement Vercel depuis cette branche ;
 - pas de merge sans human gate explicite ;
-- PR `#1025` reste ouverte ;
+- PR `#1025` ouverte ;
 - CI pending/in-progress n’arrête pas le travail indépendant.
 
 ---
 
-## 9. NEXT EXACT
+## 8. NEXT EXACT
 
-1. run 2d `34036441560` → artifact ;
-2. montrer et inspecter les 8 captures ;
-3. comparer TARGET / 2c / 2d ;
-4. si score <9 : correction visuelle suivante sans modifier le truth gate ;
-5. si score ≥9 : Lot 4 certification finale + cohérence canonical ;
-6. vérifier PR / CI / HEAD ;
-7. human gate merge ;
+1. run post-sync `34042235527` → résultat + artifact ;
+2. montrer et inspecter les 8 captures post-sync ;
+3. comparer 2e pré-sync / post-sync aux mêmes viewports ;
+4. si régression ou score <9 : corriger puis recertifier ;
+5. si ≥9 : marquer Lot 4 final, synchroniser canonical + body PR ;
+6. vérifier PR / HEAD / CI / mergeability ;
+7. **human gate merge** ;
 8. **Vercel uniquement après autorisation explicite d’Achraf**.
