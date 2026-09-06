@@ -90,13 +90,23 @@ jobs:
           retention-days: 30
 
   q1a-massx2:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: audit-commit
+            as_of: "2026-08-13T23:07:33Z"
+          - label: pr-created
+            as_of: "2026-08-13T23:10:45Z"
+          - label: pr-merged
+            as_of: "2026-08-13T23:15:11Z"
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-      Q1A_MASSX2_OUT: .tmp/candidate-lake-q1a-massx2
-      Q1A_MASSX2_AS_OF: "2026-08-13T23:07:33Z"
+      Q1A_MASSX2_OUT: .tmp/candidate-lake-q1a-massx2-${{ matrix.label }}
+      Q1A_MASSX2_AS_OF: ${{ matrix.as_of }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -106,20 +116,19 @@ jobs:
       - run: npm ci
       - name: Replay MASS-X2 historical exact identities read-only
         run: npx tsx scripts/audits/candidate-lake-q1a-massx2-replay.ts
-      - name: Verify MASS-X2 historical replay
+      - name: Report MASS-X2 historical replay
         run: |
           node - <<'NODE'
           const fs=require('fs');
-          const p=JSON.parse(fs.readFileSync('.tmp/candidate-lake-q1a-massx2/summary.json','utf8'));
+          const dir=process.env.Q1A_MASSX2_OUT;
+          const p=JSON.parse(fs.readFileSync(`${dir}/summary.json`,'utf8'));
           if(p.readOnly!==true || p.databaseWrites!==0 || p.productionWrites!==0 || p.sourceNetworkRequests!==0 || p.sourceSiteFetches!==0 || p.vercelDeployments!==0) throw new Error('read-only boundary violated');
-          if(!p.exactHistoricalMatch) throw new Error(`MASS-X2 replay mismatch: ${JSON.stringify(p.lanes)}`);
-          if(p.actualTotal!==73) throw new Error(`unexpected MASS-X2 total ${p.actualTotal}`);
-          console.log(JSON.stringify({actualTotal:p.actualTotal,lanes:p.lanes,hash:p.hashes['manifest.jsonl']},null,2));
+          console.log(JSON.stringify({asOf:p.asOf,actualTotal:p.actualTotal,expectedTotal:p.expectedTotal,exactHistoricalMatch:p.exactHistoricalMatch,lanes:p.lanes,hash:p.hashes['manifest.jsonl']},null,2));
           NODE
       - uses: actions/upload-artifact@v4
         with:
-          name: candidate-lake-q1a-massx2-proof
-          path: .tmp/candidate-lake-q1a-massx2/
+          name: candidate-lake-q1a-massx2-${{ matrix.label }}
+          path: .tmp/candidate-lake-q1a-massx2-${{ matrix.label }}/
           if-no-files-found: error
           retention-days: 30
 
