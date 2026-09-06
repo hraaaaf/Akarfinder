@@ -23,6 +23,14 @@ jobs:
         with:
           node-version: 24
           cache: npm
+      - name: Exhaustive tracked-source usage scan for remaining removals
+        shell: bash
+        run: |
+          echo '=== pglite/playwright tracked references excluding manifests/helper ==='
+          git grep -n -i -E '(@electric-sql/pglite|pglite|playwright)' -- . \
+            ':!package.json' \
+            ':!package-lock.json' \
+            ':!.github/workflows/repo-cleanup-restore-cheerio.yml' || true
       - name: Restore active cheerio dependency only
         run: |
           node <<'NODE'
