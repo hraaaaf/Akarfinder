@@ -12,6 +12,48 @@ Construire un moteur de données immobilier interne capable de maximiser le corp
 - manifest robots-safe certifié : **3 174 / 3 174 shards**
 - aucune suppression destructive du corpus historique
 
+### V2.3 — Provenance historique Mubawab
+**TERMINÉ + CERTIFIÉ**
+
+Les **18 975 / 18 975** lignes `historical_unverified` disposent désormais d'une provenance first-party exploitable en interne, sans reclassification artificielle de fraîcheur :
+- historiques classiques : **18 207** avec `metadata.classic_catalog_evidence.provenance_version=mubawab-historical-classic-provenance-v2.3`
+- historiques office/category : **768** avec `metadata.historical_surface_evidence_v1`
+- chevauchement classic / office : **0**
+- union des deux familles : **18 975 / 18 975**
+- historique sans provenance : **0**
+- classiques avec ville/type/transaction/route manquants : **0**
+- classiques sous le plancher interne **58** : **0**
+
+Pour les **18 207** historiques classiques, le sidecar V2.3 matérialise annonce par annonce :
+- ville
+- famille de bien
+- transaction vente/location
+- route catalogue Mubawab exacte
+- run/artifact/digest source
+- fenêtre d'observation
+- `robots_checked=true`
+- `detail_pages_opened=0`
+- `database_writes_in_source_campaign=0`
+- `production_writes_in_source_campaign=0`
+
+Preuve source certifiée :
+- run GitHub : **33899083917**
+- artifact : **9947122701** — `lot9-live-campaign-final-classic-extinction-proof`
+- digest : `sha256:1b27ba2946bd671644e6ec1bf03a396df6c86a51706f5a17265466d041a0cb6d`
+- `refs.jsonl` : **29 741 IDs uniques**
+- campagne source : **0 page détail ouverte, 0 écriture DB, 0 écriture production**
+
+Garde-fous certifiés après V2.3 sur les **18 975** historiques :
+- `evidence_status=historical_unverified` conservé
+- `freshness_status=uncertain` conservé : dérive **0**
+- `metadata.internal_quality_v2.public_status=internal_only` : dérive **0**
+- `metadata.internal_quality_v2.rank_lane=historical_tail` : dérive **0**
+- aucune publication publique ouverte
+- aucun merge
+- aucun déploiement Vercel
+
+Important : une observation récente sur une route catalogue first-party améliore la **provenance et la confiance interne**, mais ne constitue pas à elle seule une preuve qu'une page détail individuelle est encore active. Les historiques restent donc `historical_unverified` et `uncertain` tant qu'une preuve plus forte n'existe pas.
+
 ### P1 — Freshness Engine
 **TERMINÉ**
 
@@ -214,10 +256,11 @@ P4 reste en cours :
 - PR : **#997 OPEN + READY FOR REVIEW**
 - merge : **NON**
 - déploiement Vercel : **NON**
+- V2.3 historique : **18 975 / 18 975 avec provenance interne certifiée**
 - P3 : **noyau strict exécuté + 18 445 current_verified scorés en interne**
 - P4 : **6 clusters multi-portails réels, non destructifs**
 
-Dernier état CI certifié avant les mises à jour documentaires P3/P4, sur `5794024bd7bcdbd4a9e92a45c25b42642970262d` :
+Dernier état CI certifié avant les mises à jour documentaires P3/P4/V2.3, sur `5794024bd7bcdbd4a9e92a45c25b42642970262d` :
 - CI Workflow Efficiency Policy : **SUCCESS**
 - Phase 1 P0 Closure Gate : **SUCCESS**
 - Phase 1 P1 Final Sweep Gate : **SUCCESS**
@@ -428,7 +471,7 @@ Maximiser la couverture Mubawab puis reproduire le pipeline sur Avito, Agenz, Sa
 4. **Promotion vers `property_listings`** — noyau strict terminé + tail interne scorée
 5. **Déduplication inter-portails** — en cours, 6 clusters multi-portails haute confiance
 6. **Ranking AkarFinder** — prochain lot : consommer le score interne et les clusters sans contourner la policy source
-7. **Archive & Market Memory**
+7. **Archive & Market Memory** — corpus historique désormais 18 975 / 18 975 avec provenance interne exploitable
 8. **Coverage Expansion multi-sources**
 
 ---
