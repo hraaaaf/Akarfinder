@@ -21,22 +21,31 @@ const MODES = [
 ] as const;
 
 const sha256 = (text: string) => createHash('sha256').update(text, 'utf8').digest('hex');
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 async function requestText(url: URL): Promise<string> {
-  for (let attempt = 1; attempt <= 4; attempt += 1) {
-    const response = await fetch(url, {
-      headers: { 'user-agent': 'AkarFinder-Q1A-DATA49B-recovery/1.0 metadata-only' },
-      signal: AbortSignal.timeout(60_000),
-    });
-    const body = await response.text();
-    if (response.ok) return body;
-    if (response.status === 404 && body.includes('No Captures found')) return '';
-    if (attempt === 4 || (response.status < 500 && response.status !== 429)) {
-      throw new Error(`Common Crawl ${response.status}: ${body.slice(0, 500)}`);
+  let lastStatus = 0;
+  let lastBody = '';
+  for (let attempt = 1; attempt <= 8; attempt += 1) {
+    try {
+      const response = await fetch(url, {
+        headers: { 'user-agent': 'AkarFinder-Q1A-DATA49B-recovery/1.0 metadata-only' },
+        signal: AbortSignal.timeout(60_000),
+      });
+      const body = await response.text();
+      if (response.ok) return body;
+      if (response.status === 404 && body.includes('No Captures found')) return '';
+      lastStatus = response.status;
+      lastBody = body;
+      const retryable = response.status === 429 || response.status >= 500;
+      if (!retryable) throw new Error(`Common Crawl ${response.status}: ${body.slice(0, 500)}`);
+    } catch (error) {
+      if (attempt === 8) throw error;
+      if (error instanceof Error && error.message.startsWith('Common Crawl ') && !/Common Crawl (429|5\d\d):/.test(error.message)) throw error;
     }
-    await new Promise((resolve) => setTimeout(resolve, attempt * 750));
+    if (attempt < 8) await sleep(Math.min(15_000, 1000 * 2 ** (attempt - 1)));
   }
-  return '';
+  throw new Error(`Common Crawl ${lastStatus || 'network'}: ${lastBody.slice(0, 500)}`);
 }
 
 async function queryPattern(index: string, pattern: string, to?: string): Promise<string[]> {
@@ -84,10 +93,18 @@ async function queryPattern(index: string, pattern: string, to?: string): Promis
   return [...urls];
 }
 
-async function queryIndex(index: string, domain: string, to?: string): Promise<string[]> {
-  const patterns = [`${domain}/*`, `www.${domain}/*`];
-  const results = await Promise.all(patterns.map((pattern) => queryPattern(index, pattern, to)));
-  return [...new Set(results.flat())];
+async function queryIndex(index: string, domain: string, to?: string): Promise<{ urls: string[]; errors: string[] }> {
+  const urls = new Set<string>();
+  const errors: string[] = [];
+  for (const pattern of [`${domain}/*`, `www.${domain}/*`]) {
+    try {
+      const found = await queryPattern(index, pattern, to);
+      for (const url of found) urls.add(url);
+    } catch (error) {
+      errors.push(`${index} ${pattern}: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+  return { urls: [...urls], errors };
 }
 
 async function main(): Promise<void> {
@@ -101,10 +118,12 @@ async function main(): Promise<void> {
     for (const sourceDomain of DATA_4_9B_SOURCES) {
       const raw = new Set<string>();
       const indexCounts: Record<string, number> = {};
+      const queryErrors: string[] = [];
       for (const index of mode.indexes) {
-        const urls = await queryIndex(index.name, sourceDomain, 'to' in index ? index.to : undefined);
-        indexCounts[index.name] = urls.length;
-        for (const url of urls) raw.add(url);
+        const result = await queryIndex(index.name, sourceDomain, 'to' in index ? index.to : undefined);
+        indexCounts[index.name] = result.urls.length;
+        queryErrors.push(...result.errors);
+        for (const url of result.urls) raw.add(url);
       }
 
       const buckets = new Map<string, string[]>();
@@ -131,11 +150,13 @@ async function main(): Promise<void> {
       domains.push({
         sourceDomain,
         indexCounts,
+        queryErrors,
+        queryComplete: queryErrors.length === 0,
         distinctRawUrls: raw.size,
         distinctConservativeIdentities: buckets.size,
         candidateRows: candidates.length,
         expectedHistoricalCandidateRows: EXPECTED[sourceDomain],
-        exactCountMatch: candidates.length === EXPECTED[sourceDomain],
+        exactCountMatch: queryErrors.length === 0 && candidates.length === EXPECTED[sourceDomain],
         candidateDigestSha256: sha256(candidateLines.join('\n')),
       });
     }
@@ -150,13 +171,14 @@ async function main(): Promise<void> {
       domains,
       totalCandidateRows: modeManifest.length,
       expectedHistoricalTotal: 2326,
+      allQueriesComplete: domains.every((row) => row.queryComplete === true),
       allPerSourceCountsMatch: domains.every((row) => row.exactCountMatch === true),
       manifest: { file, rows: modeManifest.length, sha256: sha256(manifestText) },
     });
   }
 
   const summary = {
-    schemaVersion: 'Q1A_DATA49B_COMMONCRAWL_URL_INDEX_RECOVERY_V2',
+    schemaVersion: 'Q1A_DATA49B_COMMONCRAWL_URL_INDEX_RECOVERY_V3',
     historicalRun: 31370449455,
     historicalArtifact: 9055869351,
     historicalArtifactSha256: 'df4f38102877a5de29a7980dbb7e5b32a4110813d8af132fc48a46cf87126520',
@@ -171,7 +193,7 @@ async function main(): Promise<void> {
     commonCrawlUrlIndexRequestsOnly: true,
     queriedHostForms: ['apex', 'www'],
     vercelDeployments: 0,
-    certificationRule: 'A Common Crawl reconstruction is evidence only unless every source count matches the historical 4.9B count; no count match is silently coerced.',
+    certificationRule: 'A reconstruction is evidence only when every query is complete and every source count matches historical 4.9B; outages are recorded, never coerced to zero.',
     modes: summaryModes,
   };
   await fs.writeFile(path.join(OUT, 'summary.json'), `${JSON.stringify(summary, null, 2)}\n`, 'utf8');
