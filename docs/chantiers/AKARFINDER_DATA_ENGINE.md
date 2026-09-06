@@ -55,11 +55,11 @@ Classification initiale `listing_sources` : **1 286**
 
 Total non individuel initial : **805**.
 
-État live vérifié après verrouillage et après P3 :
+État live vérifié après verrouillage et après P3/P4 :
 - sources Mubawab non détail actives : **0**
 - trigger de quarantaine `listing_sources` présent : **oui**
 - trigger de protection `thin_index_search_documents` présent : **oui**
-- aucune mauvaise surface search réactivée par P3
+- aucune mauvaise surface search réactivée par P3/P4
 
 Test de non-régression DB : tentative transactionnelle de réactiver une source quarantinée avec `is_active=true` => valeur retournée **false** ; transaction annulée ensuite. Le verrou empêche donc la réactivation par une ingestion legacy.
 
@@ -125,12 +125,17 @@ Résidu volontairement non promu :
 - les autres lignes incomplètes / ambiguës restent matière interne et ne sont pas forcées dans le canonique
 
 ### P4 — Déduplication inter-portails
-**OUVERT — SHADOW AUDIT + PREMIERS GROUPES HAUTE CONFIANCE**
+**EN COURS — CLUSTERING MULTI-PORTAIL RÉEL OUVERT**
 
 Baseline P4 :
 - biens canoniques déjà reliés à plusieurs portails : **0**
+- `property_clusters` : **7 789**
+- `property_cluster_members` : **7 789**
+- clusters multi-membres : **0**
+- clusters multi-portails : **0**
+- tous les clusters existants étaient donc des projections 1:1
 - lignes avec `duplicate_group_id` préexistantes : **82**
-- groupes préexistants : **54**
+- groupes `duplicate_group_id` préexistants : **54**
 - groupes multi-lignes préexistants : **14**
 
 Audit shadow Mubawab vs autres portails, à ville/type/transaction cohérents et avec garde-fous prix/surface lorsqu'ils sont disponibles :
@@ -142,20 +147,53 @@ Audit shadow Mubawab vs autres portails, à ville/type/transaction cohérents et
 
 Conclusion : un seuil titre seul est insuffisant. Exemple de faux positif observé : une fiche générique `Terrain titré à vendre` d'un portail correspondait à deux annonces Mubawab distinctes. Aucune fusion automatique globale n'est donc autorisée sur ce seul signal.
 
-Trois paires cross-postées très fortement confirmées ont été **marquées seulement**, sans fusion destructive, suppression ni déplacement de source :
+#### P4-A — marquage legacy non destructif
+Trois premières paires cross-postées très fortement confirmées ont reçu un `duplicate_group_id`, sans suppression ni déplacement :
 - `p4v1_lisf_mhamid_8214447` — listings **8126 + 29434** — score titre **1,000000** — même maison Mhamid, même surface 97 m²
 - `p4v1_lisf_majorelle_8349003` — listings **2071 + 33044** — score titre **0,916667** — même appartement Majorelle, même surface 87 m²
 - `p4v1_lisf_souihla_8164127` — listings **3840 + 28959** — score titre **0,901639** — même villa Souihla au libellé très spécifique
 
-État après ce marquage :
-- nouveaux groupes P4 haute confiance : **3**
-- lignes marquées : **6**
-- aucune ligne supprimée
-- aucun `property_listing_id` déplacé
-- aucune `listing_source` fusionnée
+Ce marquage a servi de preuve intermédiaire mais **`duplicate_group_id` n'est pas la sortie canonique P4**.
+
+#### P4-B — modèle canonique `property_clusters`
+Le modèle déjà présent en base est la vraie sortie :
+- `property_clusters`
+- `property_cluster_members`
+- un membre pointe directement vers un `listing_sources.id`
+- `origin_type=manual_review` est supporté nativement
+
+Vérification d'impact avant écriture :
+- aucune vue de recherche ne consomme les memberships de clusters
+- la seule vue DB trouvée utilisant `property_clusters` est `acquisition_scale_metrics_v1`, uniquement pour compter les clusters
+- aucune suppression de `property_listings` n'est nécessaire
+- aucune réaffectation de FK utilisateur n'est nécessaire
+
+Six clusters 1:1 existants ont été convertis en **clusters multi-portails réels** par ajout du membre Mubawab vérifié, sans déplacer le membre externe :
+1. Mhamid — `limmobiliersansfrontieres` + Mubawab — listings **8126 + 29434**
+2. Majorelle — `limmobiliersansfrontieres` + Mubawab — listings **2071 + 33044**
+3. Souihla / villa meublée puits — `limmobiliersansfrontieres` + Mubawab — listings **3840 + 28959**
+4. Souihla km16 / 1 hectare — `limmobiliersansfrontieres` + Mubawab — listings **3831 + 28513**
+5. Prestigia / appartement meublé — `limmobiliersansfrontieres` + Mubawab — listings **1061 + 34063**
+6. Massira / appartement meublé 170 m² — `limmobiliersansfrontieres` + Mubawab — listings **2072 + 29860**
+
+État certifié après P4-B :
+- `property_clusters` : **7 789**
+- `property_cluster_members` : **7 795**
+- clusters multi-membres : **6**
+- clusters multi-portails : **6**
+- clusters `manual_review` : **6**
+- source offers présentes dans plusieurs clusters : **0**
+- aucune `property_listing` supprimée
+- aucune `listing_source` supprimée ou déplacée
+- aucune FK utilisateur touchée
 - aucun déploiement public déclenché
 
-P4 reste en cours : le prochain objectif est de transformer les groupes haute confiance en `1 bien canonique -> N sources` uniquement après vérification que la consolidation n'entraîne ni perte de donnée ni régression de recherche.
+Une paire Route d'Amizmiz a été explicitement **retenue hors cluster** malgré une forte similarité de titre : notre snapshot canonique portait un prix incohérent avec la page publique recoupée et une surface manquante. Le conflit doit être résolu avant regroupement.
+
+P4 reste en cours :
+- élargir les clusters uniquement sur preuves croisées fortes
+- mesurer la précision sur échantillon annoté
+- connecter ensuite le ranking/recherche aux clusters afin de réduire les doublons visibles sans supprimer la mémoire source
 
 ### État GitHub / livraison
 - branche : `feat/mubawab-full-enumeration`
@@ -163,9 +201,9 @@ P4 reste en cours : le prochain objectif est de transformer les groupes haute co
 - merge : **NON**
 - déploiement Vercel : **NON**
 - P3 : **AUTORISÉ ET EXÉCUTÉ pour le noyau strict actuel**
-- P4 : **audit + marquage non destructif en cours**
+- P4 : **6 clusters multi-portails réels, non destructifs**
 
-Dernier état CI certifié avant la présente mise à jour documentaire, sur `5794024bd7bcdbd4a9e92a45c25b42642970262d` :
+Dernier état CI certifié avant les mises à jour documentaires P3/P4, sur `5794024bd7bcdbd4a9e92a45c25b42642970262d` :
 - CI Workflow Efficiency Policy : **SUCCESS**
 - Phase 1 P0 Closure Gate : **SUCCESS**
 - Phase 1 P1 Final Sweep Gate : **SUCCESS**
@@ -174,7 +212,7 @@ Dernier état CI certifié avant la présente mise à jour documentaire, sur `57
 - Canonical Baseline Compile Validation : **SUCCESS**
 - UX Gate 0 Contracts : **SUCCESS**
 
-Toute nouvelle CI déclenchée par la mise à jour de ce fichier doit être observée avant d'être déclarée verte.
+Toute nouvelle CI déclenchée par les mises à jour de ce fichier doit être observée avant d'être déclarée verte.
 
 ---
 
@@ -273,7 +311,7 @@ Promouvoir progressivement les candidats suffisamment fiables vers le modèle ca
 ## P4 — Déduplication inter-portails
 
 ### Statut
-**EN COURS — politique conservatrice.** Aucun regroupement global fondé sur la seule similarité de titre.
+**EN COURS — politique conservatrice.** Six clusters multi-portails réels existent ; aucun regroupement global fondé sur la seule similarité de titre.
 
 ### Goal
 Reconnaître plusieurs annonces comme représentations d'un même bien.
@@ -288,7 +326,7 @@ Reconnaître plusieurs annonces comme représentations d'un même bien.
 - proximité temporelle
 
 ### Sortie
-`1 bien canonique -> N sources`
+`1 property_cluster -> N listing_sources`
 
 ### Succès
 - réduction mesurable des doublons visibles
@@ -298,7 +336,8 @@ Reconnaître plusieurs annonces comme représentations d'un même bien.
 - échantillon annoté
 - précision / rappel estimés
 - groupes suspects audités
-- consolidation testée sans perte de données
+- clusters multi-portails certifiés sans perte de données
+- consommation sûre des clusters par la recherche/ranking
 
 ---
 
@@ -368,8 +407,8 @@ Maximiser la couverture Mubawab puis reproduire le pipeline sur Avito, Agenz, Sa
 2. **Enrichissement Mubawab** — terminé pour le lot actuel
 3. **Canonical Hygiene / quarantine** — terminé et verrouillé
 4. **Promotion vers `property_listings`** — noyau strict actuel terminé
-5. **Déduplication inter-portails** — en cours, shadow audit + 3 groupes haute confiance
-6. **Ranking AkarFinder** — à suivre après consolidation P4 sûre
+5. **Déduplication inter-portails** — en cours, 6 clusters multi-portails haute confiance
+6. **Ranking AkarFinder** — prochain lot : faire consommer les clusters sans perte de pertinence
 7. **Archive & Market Memory**
 8. **Coverage Expansion multi-sources**
 
@@ -381,7 +420,8 @@ Maximiser la couverture Mubawab puis reproduire le pipeline sur Avito, Agenz, Sa
 - pas de publication publique d'un candidat non qualifié
 - toute source `canonical_eligible=false` doit rester `is_active=false` et non servable
 - pas de promotion d'un résidu P3 ambigu sans résolution de ses conflits
-- pas de consolidation destructive P4 sans preuve de non-régression
+- pas de fusion P4 fondée sur la seule similarité de titre
+- pas de suppression/reparenting destructif pour créer un cluster multi-source
 - pas de merge sans autorisation explicite
 - pas de déploiement Vercel sans autorisation explicite
 - tout lot significatif doit verrouiller : **Goal / Succès / Preuve**
