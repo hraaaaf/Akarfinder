@@ -11,22 +11,25 @@ const DISTRICT_SOURCE = "akarfinder-national-neighborhood-points";
 const OPENFREEMAP_VECTOR_URL = "https://tiles.openfreemap.org/planet";
 const WORLD_IMAGERY_TILE_URL = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
 const WORLD_IMAGERY_ATTRIBUTION = "© Esri, Maxar, Earthstar Geographics, GIS User Community";
-const CASABLANCA_3D_ZOOM = 15.5;
-const CASABLANCA_3D_PITCH = 60;
-const CASABLANCA_3D_BEARING = -28;
+
+// 2L REFRAME: satellite-first city context, not block-level model inspection.
+// The selected district remains the sourced camera anchor; no boundary is inferred.
+const CASABLANCA_3D_ZOOM = 13.65;
+const CASABLANCA_3D_PITCH = 48;
+const CASABLANCA_3D_BEARING = -16;
 
 const IMMERSIVE_LIGHT: LightSpecification = {
   anchor: "viewport",
-  color: "#FFF0D5",
-  intensity: 0.9,
-  position: [1.25, 210, 38],
+  color: "#FFF3DF",
+  intensity: 0.72,
+  position: [1.25, 210, 42],
 };
 
 const PRESENTATION_LAYER_TARGETS = [
-  { id: "akarfinder-national-city-fill", property: "fill-opacity", value: 0.025 },
-  { id: "akarfinder-national-city-line", property: "line-opacity", value: 0.32 },
-  { id: "akarfinder-neighborhood-fill", property: "fill-opacity", value: 0.045 },
-  { id: "akarfinder-neighborhood-outline", property: "line-opacity", value: 0.42 },
+  { id: "akarfinder-national-city-fill", property: "fill-opacity", value: 0.012 },
+  { id: "akarfinder-national-city-line", property: "line-opacity", value: 0.2 },
+  { id: "akarfinder-neighborhood-fill", property: "fill-opacity", value: 0.02 },
+  { id: "akarfinder-neighborhood-outline", property: "line-opacity", value: 0.28 },
 ] as const;
 
 type Props = {
@@ -68,12 +71,12 @@ function ensureImageryLayer(map: MapLibreMap): void {
       source: IMAGERY_SOURCE,
       minzoom: 10,
       paint: {
-        "raster-opacity": 0.93,
-        "raster-saturation": -0.05,
-        "raster-contrast": 0.06,
-        "raster-brightness-min": 0.05,
-        "raster-brightness-max": 0.98,
-        "raster-fade-duration": 180,
+        "raster-opacity": 0.985,
+        "raster-saturation": 0.06,
+        "raster-contrast": 0.1,
+        "raster-brightness-min": 0.03,
+        "raster-brightness-max": 1,
+        "raster-fade-duration": 160,
       },
     }, firstLabelLayerId(map));
   }
@@ -102,15 +105,13 @@ function ensureBuildingLayer(map: MapLibreMap): void {
         ["linear"],
         ["coalesce", ["get", "render_height"], 0],
         0,
-        "#FFF9EF",
-        18,
-        "#F2E3CC",
-        45,
-        "#E2C9A6",
-        90,
-        "#C7A47A",
-        140,
-        "#9D7B5D",
+        "#FFFDF8",
+        24,
+        "#F7F0E5",
+        60,
+        "#EDE2D2",
+        120,
+        "#D8C8B5",
       ],
       "fill-extrusion-height": [
         "interpolate",
@@ -118,11 +119,11 @@ function ensureBuildingLayer(map: MapLibreMap): void {
         ["zoom"],
         13,
         0,
-        14.2,
+        14.25,
         ["get", "render_height"],
       ],
       "fill-extrusion-base": ["coalesce", ["get", "render_min_height"], 0],
-      "fill-extrusion-opacity": 0.82,
+      "fill-extrusion-opacity": 0.42,
       "fill-extrusion-vertical-gradient": true,
     },
   }, firstLabelLayerId(map));
@@ -143,8 +144,8 @@ function muteBasemapSymbols(map: MapLibreMap, snapshots: Map<string, SymbolOpaci
     const iconOpacity = map.getPaintProperty(layer.id, "icon-opacity");
     snapshots.set(layer.id, { textOpacity, iconOpacity });
     try {
-      if (layer.layout?.["text-field"] !== undefined) map.setPaintProperty(layer.id, "text-opacity", 0.12);
-      if (layer.layout?.["icon-image"] !== undefined) map.setPaintProperty(layer.id, "icon-opacity", 0.05);
+      if (layer.layout?.["text-field"] !== undefined) map.setPaintProperty(layer.id, "text-opacity", 0.08);
+      if (layer.layout?.["icon-image"] !== undefined) map.setPaintProperty(layer.id, "icon-opacity", 0.03);
     } catch {
       // Third-party basemap symbol layers do not all expose identical paint properties.
     }
@@ -156,7 +157,7 @@ function restoreBasemapSymbols(map: MapLibreMap, snapshots: Map<string, SymbolOp
     if (!map.getLayer(layerId)) continue;
     try {
       map.setPaintProperty(layerId, "text-opacity", (snapshot.textOpacity ?? null) as never);
-      map.setPaintProperty(layerId, "icon-opacity", (snapshot.iconOpacity ?? null) as never);
+      map.setPaintProperty(layer.id, "icon-opacity", (snapshot.iconOpacity ?? null) as never);
     } catch {
       // Style teardown can remove paint properties before React cleanup finishes.
     }
@@ -251,15 +252,17 @@ export function National3DBuildingsLayer({ citySlug, districtSlug }: Props) {
           return;
         }
         map.setMaxZoom(16);
+        const focusedDistrict = Boolean(districtCenter);
         map.easeTo({
           center: districtCenter ?? map.getCenter(),
-          zoom: Math.max(map.getZoom(), CASABLANCA_3D_ZOOM),
+          zoom: focusedDistrict ? CASABLANCA_3D_ZOOM : Math.max(map.getZoom(), 12.8),
           pitch: CASABLANCA_3D_PITCH,
           bearing: CASABLANCA_3D_BEARING,
-          duration: 950,
+          offset: focusedDistrict ? [0, window.innerWidth >= 1024 ? 108 : 58] : [0, 0],
+          duration: 1000,
         });
       } else {
-        map.easeTo({ pitch: 0, bearing: 0, duration: 650 });
+        map.easeTo({ pitch: 0, bearing: 0, offset: [0, 0], duration: 650 });
       }
     };
 
@@ -286,7 +289,7 @@ export function National3DBuildingsLayer({ citySlug, districtSlug }: Props) {
         restoreBasemapSymbols(map, symbolSnapshots);
         restoreTerritorialPresentation(map, presentationSnapshots);
         removePresentationLayers(map);
-        map.easeTo({ pitch: 0, bearing: 0, duration: 0 });
+        map.easeTo({ pitch: 0, bearing: 0, offset: [0, 0], duration: 0 });
       } catch {
         // The map can already be tearing down while the route changes.
       }
