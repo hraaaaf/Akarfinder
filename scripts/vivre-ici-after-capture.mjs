@@ -18,6 +18,11 @@ const viewports = [
   { name: '1280x900', width: 1280, height: 900 },
 ];
 
+function intersects(a, b) {
+  if (!a || !b) return false;
+  return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
+}
+
 await fs.mkdir(outDir, { recursive: true });
 const server = spawn(process.execPath, ['node_modules/next/dist/bin/next', 'start', '-H', '127.0.0.1', '-p', '3000'], {
   env: { ...process.env, NODE_ENV: 'production' },
@@ -65,7 +70,7 @@ try {
         await page.locator('[data-vivre-ici-3d-toggle][aria-pressed="true"]').waitFor({ state: 'visible', timeout: 12000 }).catch(() => {});
         await page.waitForFunction((layerId) => {
           const map = window.__AKARFINDER_NATIONAL_MAP__;
-          return Boolean(map?.getLayer(layerId)) && map.getPitch() >= 45 && map.getZoom() >= 13;
+          return Boolean(map?.getLayer(layerId)) && map.getPitch() >= 58 && map.getZoom() >= 15;
         }, threeDLayerId, { timeout: 15000 }).catch(() => {});
         await page.waitForFunction((layerId) => {
           const map = window.__AKARFINDER_NATIONAL_MAP__;
@@ -95,6 +100,21 @@ try {
         };
       }, { layerId: threeDLayerId, sourceId: threeDSourceId }).catch(() => null);
 
+      const layoutBox = await page.locator('[data-p4-map-layout]').boundingBox().catch(() => null);
+      const canvasBox = await page.locator('[data-p4-map-canvas]').boundingBox().catch(() => null);
+      const railBox = await page.locator('[data-p4-map-decision-rail]').boundingBox().catch(() => null);
+      const topNavBox = await page.locator('[data-akarfinder-national-map] > section[aria-label="Navigation territoriale nationale"]').boundingBox().catch(() => null);
+      const districtSearchBox = scenario.neighborhoodContext
+        ? await page.locator('[data-akarfinder-national-neighborhood-overlay] > div:first-child').boundingBox().catch(() => null)
+        : null;
+      const toggleBox = scenario.threeDExpected
+        ? await page.locator('[data-vivre-ici-3d-toggle]').boundingBox().catch(() => null)
+        : null;
+      const preview = page.locator('[data-akarfinder-neighborhood-preview]');
+      const previewCount = await preview.count();
+      const previewVisible = previewCount ? await preview.isVisible().catch(() => false) : false;
+      const previewBox = previewVisible ? await preview.boundingBox().catch(() => null) : null;
+
       results.push({
         scenario: scenario.name,
         neighborhoodContext: scenario.neighborhoodContext,
@@ -105,6 +125,7 @@ try {
         title: await page.title(),
         hasVivreIciPage: await page.locator('[data-vivre-ici-page]').count(),
         hasDecisionRail: await page.locator('[data-p4-map-decision-rail]').count(),
+        hasPremiumContext: await page.locator('[data-vivre-ici-premium-context]').count(),
         vivreIciTextCount: await page.getByText(/Vivre ici/i).count().catch(() => 0),
         nationalView: await page.locator('[data-akarfinder-national-view]').getAttribute('data-akarfinder-national-view').catch(() => null),
         poiControls: await page.locator('[data-neighborhood-context-poi-controls]').count(),
@@ -118,6 +139,15 @@ try {
         mapBearing: mapState?.bearing ?? 0,
         mapZoom: mapState?.zoom ?? 0,
         renderedBuildingCount: mapState?.renderedBuildingCount ?? 0,
+        layoutWidth: layoutBox?.width ?? 0,
+        mapCanvasWidth: canvasBox?.width ?? 0,
+        decisionRailWidth: railBox?.width ?? 0,
+        mapWidthShare: layoutBox?.width && canvasBox?.width ? canvasBox.width / layoutBox.width : 0,
+        neighborhoodPreviewCount: previewCount,
+        neighborhoodPreviewVisible: previewVisible,
+        neighborhoodPreviewHeight: previewBox?.height ?? 0,
+        topChromeDistrictOverlap: intersects(topNavBox, districtSearchBox),
+        topChromeToggleOverlap: intersects(districtSearchBox, toggleBox) || intersects(topNavBox, toggleBox),
         screenshot: file,
       });
       await context.close();
@@ -128,6 +158,7 @@ try {
     generatedAt: new Date().toISOString(),
     mode: 'branch-local-after',
     surface: 'vivre-ici-/map',
+    premiumTarget: 'freeze-2026-09-06',
     zeroDbWritesByScript: true,
     zeroDeploymentActionsByScript: true,
     baseUrl,
@@ -138,17 +169,20 @@ try {
   console.log(JSON.stringify(summary, null, 2));
 
   if (results.some((r) => !r.httpStatus || r.httpStatus >= 400)) process.exitCode = 2;
-  if (results.some((r) => r.hasVivreIciPage !== 1 || r.hasDecisionRail !== 1 || r.vivreIciTextCount < 1)) process.exitCode = 3;
+  if (results.some((r) => r.hasVivreIciPage !== 1 || r.hasDecisionRail !== 1 || r.hasPremiumContext !== 1 || r.vivreIciTextCount < 1)) process.exitCode = 3;
   if (results.some((r) => r.nationalView !== (r.scenario === 'national' ? 'morocco' : 'city'))) process.exitCode = 4;
   if (results.some((r) => r.neighborhoodContext && (r.poiControls !== 1 || r.poiAvailableToggle + r.poiUnavailable !== 1))) process.exitCode = 5;
   if (results.some((r) => r.threeDExpected && (
     r.threeDToggle !== 1
     || !r.threeDLayer
     || !r.threeDSource
-    || r.mapPitch < 45
-    || r.mapZoom < 13
+    || r.mapPitch < 58
+    || r.mapZoom < 15
     || r.renderedBuildingCount < 1
   ))) process.exitCode = 6;
+  if (results.some((r) => r.viewport.width >= 1024 && r.mapWidthShare < 0.68)) process.exitCode = 7;
+  if (results.some((r) => r.scenario === 'casablanca-maarif' && r.viewport.width < 1024 && (!r.neighborhoodPreviewVisible || r.neighborhoodPreviewHeight <= 0))) process.exitCode = 8;
+  if (results.some((r) => r.scenario === 'casablanca-maarif' && (r.topChromeDistrictOverlap || r.topChromeToggleOverlap))) process.exitCode = 9;
 } finally {
   await browser?.close();
   server.kill('SIGTERM');
