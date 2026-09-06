@@ -1,0 +1,80 @@
+name: Mubawab card corpus enrichment
+
+on:
+  push:
+    branches: [feat/mubawab-full-enumeration]
+    paths:
+      - scripts/acquisition/mubawab-card-corpus-enrichment.mjs
+      - .github/workflows/mubawab-card-corpus-enrichment.yml
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  lane:
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        lane: [0, 1, 2, 3]
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Restore certified Mubawab shard evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p artifacts/shards/a artifacts/shards/b artifacts/shards/c
+          gh run download 33958132411 -n mubawab-full-enumeration -D artifacts/shards/a
+          gh run download 33961150352 -n mubawab-full-enumeration -D artifacts/shards/b
+          gh run download 33964834762 -n mubawab-full-enumeration -D artifacts/shards/c
+      - name: Sweep safe shard cards
+        env:
+          MODE: lane
+          LANE_INDEX: ${{ matrix.lane }}
+          LANE_COUNT: 4
+          DELAY_MS: 2750
+          MUBAWAB_REPORT_FILES: artifacts/shards/a/report.json,artifacts/shards/b/report.json,artifacts/shards/c/report.json
+        run: node scripts/acquisition/mubawab-card-corpus-enrichment.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mubawab-card-lane-${{ matrix.lane }}
+          path: artifacts/mubawab-card-lanes/lane-${{ matrix.lane }}.json
+          if-no-files-found: error
+
+  apply:
+    needs: lane
+    if: ${{ success() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: mubawab-card-lane-*
+          path: artifacts/card-lanes
+          merge-multiple: true
+      - name: Apply conflict-safe card enrichment
+        env:
+          MODE: apply
+          LANE_DIR: artifacts/card-lanes
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/acquisition/mubawab-card-corpus-enrichment.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mubawab-card-corpus-enrichment
+          path: artifacts/mubawab-card-corpus-enrichment/

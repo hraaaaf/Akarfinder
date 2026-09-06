@@ -1,0 +1,93 @@
+name: Mubawab freshness engine
+
+on:
+  push:
+    branches:
+      - feat/mubawab-full-enumeration
+    paths:
+      - '.github/workflows/mubawab-freshness-engine.yml'
+      - 'scripts/acquisition/mubawab-freshness-engine.mjs'
+      - 'scripts/acquisition/__tests__/mubawab-freshness-engine.test.mjs'
+      - 'supabase/migrations/20260905193000_mubawab_freshness_engine_v1.sql'
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  score:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Test freshness policy
+        run: node --test scripts/acquisition/__tests__/mubawab-freshness-engine.test.mjs
+
+      - name: Restore evidence artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/mubawab-historical artifacts/mubawab-current
+          download_artifact() {
+            local id="$1" dest="$2"
+            curl --fail --silent --show-error --location \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/${{ github.repository }}/actions/artifacts/${id}/zip" \
+              -o "/tmp/${id}.zip"
+            unzip -q "/tmp/${id}.zip" -d "$dest"
+          }
+          download_artifact 9949834432 artifacts/mubawab-historical
+          download_artifact 9969651653 artifacts/mubawab-current
+          test -f artifacts/mubawab-historical/state.json
+          test -f artifacts/mubawab-current/listing-ids.txt
+
+      - name: Score full Mubawab corpus
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          MUBAWAB_HISTORICAL_STATE: artifacts/mubawab-historical/state.json
+          MUBAWAB_CURRENT_IDS: artifacts/mubawab-current/listing-ids.txt
+        run: |
+          test -n "$SUPABASE_URL"
+          test -n "$SUPABASE_SERVICE_ROLE_KEY"
+          node scripts/acquisition/mubawab-freshness-engine.mjs
+
+      - name: Verify 100 percent scored
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          node - <<'NODE'
+          const base = process.env.SUPABASE_URL.replace(/\/$/, '');
+          const headers = {
+            apikey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+            authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
+          };
+          async function count(filter='') {
+            const r = await fetch(`${base}/rest/v1/mubawab_listing_corpus_v1?select=source_listing_id${filter}`, {
+              headers: { ...headers, prefer: 'count=exact', range: '0-0' },
+            });
+            if (!r.ok) throw new Error(`count failed ${r.status}: ${await r.text()}`);
+            return Number((r.headers.get('content-range') || '').split('/')[1]);
+          }
+          const total = await count();
+          const scored = await count('&freshness_score=not.is.null&freshness_policy_version=eq.mubawab-freshness-v1.0.0');
+          const fresh = await count('&freshness_status=eq.fresh_confirmed');
+          const uncertain = await count('&freshness_status=eq.uncertain');
+          console.log({ total, scored, fresh, uncertain });
+          if (total !== 37420 || scored !== 37420 || fresh !== 18445 || uncertain !== 18975) {
+            throw new Error(`freshness verification mismatch total=${total} scored=${scored} fresh=${fresh} uncertain=${uncertain}`);
+          }
+          NODE
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mubawab-freshness-engine-v1
+          path: artifacts/mubawab-freshness/report.json
+          retention-days: 14
