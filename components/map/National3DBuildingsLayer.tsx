@@ -177,14 +177,19 @@ export function National3DBuildingsLayer({ citySlug, districtSlug }: Props) {
   return (
     <button
       type="button"
+      aria-label={enabled ? "Afficher la carte en 2D" : "Afficher la carte en 3D"}
       aria-pressed={enabled}
       data-vivre-ici-3d-toggle
       data-vivre-ici-3d-active={enabled ? "true" : "false"}
       onClick={() => setEnabled((value) => !value)}
-      className="absolute left-3 top-[132px] z-30 inline-flex min-h-9 items-center gap-1.5 rounded-full border border-white/85 bg-white/95 px-3 text-[10px] font-extrabold text-foreground shadow-[0_10px_28px_rgba(15,35,66,0.15)] backdrop-blur-xl dark:border-white/10 dark:bg-[#0A1A2F]/95 sm:left-4 sm:top-[150px]"
+      className="absolute left-3 top-[132px] z-30 inline-grid min-h-10 grid-cols-2 items-center rounded-full border border-white/85 bg-white/95 p-1 text-[10px] font-extrabold text-foreground shadow-[0_10px_28px_rgba(15,35,66,0.15)] backdrop-blur-xl dark:border-white/10 dark:bg-[#0A1A2F]/95 sm:left-4 sm:top-[150px]"
     >
-      <span className="text-brand-primary">{enabled ? "3D" : "2D"}</span>
-      <span className="text-muted-foreground">{enabled ? "Immersion active" : "Activer la 3D"}</span>
+      <span className={`grid min-h-8 min-w-10 place-items-center rounded-full px-3 transition ${enabled ? "text-muted-foreground" : "bg-brand-primary text-white shadow-sm"}`}>
+        2D
+      </span>
+      <span className={`grid min-h-8 min-w-10 place-items-center rounded-full px-3 transition ${enabled ? "bg-brand-primary text-white shadow-sm" : "text-muted-foreground"}`}>
+        3D
+      </span>
     </button>
   );
 }
