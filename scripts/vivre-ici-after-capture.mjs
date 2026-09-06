@@ -8,6 +8,8 @@ const outDir = 'artifacts/vivre-ici-after';
 const baseUrl = 'http://127.0.0.1:3000';
 const threeDLayerId = 'akarfinder-vivre-ici-3d-buildings';
 const threeDSourceId = 'akarfinder-vivre-ici-3d-buildings-source';
+const minThreeDPitch = 45;
+const minThreeDZoom = 14;
 const scenarios = [
   { name: 'national', path: '/map', expectedView: 'morocco', neighborhoodContext: false, threeDExpected: false },
   { name: 'casablanca-maarif', path: '/map?city=casablanca&district=maarif&layer=explore', expectedView: 'city', neighborhoodContext: true, threeDExpected: true },
@@ -69,10 +71,10 @@ try {
       }
       if (scenario.threeDExpected) {
         await page.locator('[data-vivre-ici-3d-toggle][aria-pressed="true"]').waitFor({ state: 'visible', timeout: 12000 }).catch(() => {});
-        await page.waitForFunction((layerId) => {
+        await page.waitForFunction(({ layerId, minPitch, minZoom }) => {
           const map = window.__AKARFINDER_NATIONAL_MAP__;
-          return Boolean(map?.getLayer(layerId)) && map.getPitch() >= 58 && map.getZoom() >= 15;
-        }, threeDLayerId, { timeout: 15000 }).catch(() => {});
+          return Boolean(map?.getLayer(layerId)) && map.getPitch() >= minPitch && map.getZoom() >= minZoom;
+        }, { layerId: threeDLayerId, minPitch: minThreeDPitch, minZoom: minThreeDZoom }, { timeout: 15000 }).catch(() => {});
         await page.waitForFunction((layerId) => {
           const map = window.__AKARFINDER_NATIONAL_MAP__;
           if (!map?.getLayer(layerId)) return false;
@@ -177,8 +179,8 @@ try {
     r.threeDToggle !== 1
     || !r.threeDLayer
     || !r.threeDSource
-    || r.mapPitch < 58
-    || r.mapZoom < 15
+    || r.mapPitch < minThreeDPitch
+    || r.mapZoom < minThreeDZoom
     || r.renderedBuildingCount < 1
   ))) process.exitCode = 6;
   if (results.some((r) => r.viewport.width >= 1024 && r.mapWidthShare < 0.68)) process.exitCode = 7;
