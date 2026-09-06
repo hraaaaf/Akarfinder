@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
-**Version : 2026-09-05**  
-**Statut : MARKET COVERAGE — M150K CLOSED / M200K ACTIVE**
+**Version : 2026-09-06**  
+**Statut : MARKET COVERAGE — M200K CLOSED / QUALITY + M250K STRETCH ACTIVE**
 
 > **SOURCE UNIQUE DE VÉRITÉ GLOBALE.** Ce fichier est la seule boussole globale AkarFinder. `docs/SESSION.md` n'est qu'un handover. Les autres specs restent locales à leur périmètre.
 
@@ -9,8 +9,8 @@
 
 Construire le Property Graph le plus large possible du marché immobilier marocain à partir de surfaces publiques récupérables et traçables.
 
-- **Goal principal : >=200 000 candidates exploitables**.
-- **Stretch : >=250 000 candidates L0/L1 uniques**.
+- **Goal principal M200K : >=200 000 représentations candidates exploitables — ATTEINT.**
+- **Stretch : >=250 000 candidates L0/L1.**
 - Mesurer séparément représentations source, clusters probablement uniques et annonces probablement actives.
 - Accepter le bruit en L0/L1, le classer ensuite.
 - Les preuves historiques restent L0 avec provenance/date ; elles ne deviennent jamais `active` ou `fresh` sans preuve récente.
@@ -57,12 +57,23 @@ Pipeline : `DISCOVER -> RAW EVIDENCE -> NORMALIZE -> EXACT DEDUPE -> CANDIDATE L
 | Housing.place current `source_offer_seeds` | **22** | ✅ CURRENT L0 | Supabase read-only snapshot 2026-09-05 |
 | B3 strict Morocco reserve — `.ma` + immobilier/classified signal, exact anti-overlap | **5 797** | ✅ DISCOVERY-ONLY L0 | Supabase read-only replay of DATA-1.2 classifier, 2026-09-05 |
 | ImmoDirect `/property/...` | **4** | ✅ PARKED faible rendement | run `33985219822`, artifact `9974939355` |
+| Yakeey purchase + rental exact source IDs | **82** | ✅ L0 EXACT IDs | runs `33989989300` + `33990176467`, purchase artifact `9976337671` |
+| MASS-X2 conservative additive — Jibril + SW Immobilier + Loco | **73** | ✅ HISTORICAL L0 | exact anti-overlap read-only 2026-09-06 |
+| MASS-1 Source Factory exact additive hors lanes existantes | **1 613** | ✅ HISTORICAL L0 | run `34029546664`, artifact `9988296190` |
+| 1immo historical detail exact delta au-dessus des 201 seeds | **3 471** | ✅ HISTORICAL L0 | run `34030138761`, artifact `9988514932` |
+| Agenz historical detail exact delta au-dessus des 4 466 directes | **3 819** | ✅ HISTORICAL L0 | artifact `9989328673` + baseline `9898224274`, exact ID set-diff 2026-09-06 |
+| Mubawab — RealEstateBuddy public GitHub dataset exact ID delta | **21 374** | ✅ HISTORICAL PUBLIC-DATASET L0 | run `34038898808`, artifact `9991042950` |
+| Mubawab — HichamBenelmahi public GitHub dumps exact ID delta vs union précédente | **17 394** | ✅ HISTORICAL PUBLIC-DATASET L0 | run `34039054428`, artifact `9991092046` |
 
 ### Union L0/L1 minimale mesurée
 
-**158 778 représentations candidates exactes par identité source/ID ou source/URL.**
+**206 604 représentations candidates exactes par identité source/ID ou source/URL.**
 
-Calcul : `152 981 + 5 797 = 158 778`.
+Progression certifiée depuis le snapshot 158 778 :
+
+`158 778 + 82 + 73 + 1 613 + 3 471 + 3 819 + 21 374 + 17 394 = 206 604`.
+
+**M200K est donc dépassé de 6 604 représentations candidates, soit 103,3 % du jalon.**
 
 MASS-X5 finale (`31762998799`) certifie globalement `candidate_unique=51 169`, `exact_overlap=36 732`, `exact_net_new=14 437`. **Les 14 437 ne sont pas additionnés en bloc** car plusieurs domaines chevauchent déjà le scoreboard. Seuls les volumes dont l'absence ou le net-new est prouvé sont retenus.
 
@@ -70,14 +81,22 @@ DATA-40K Historical 2025, run `30126275406`, a récolté **28 248 seeds qualifi�
 
 DATA-1.2 B3 reserve contient toujours **37 009** URLs exactes ; **36 284** ne chevauchent pas `source_offer_seeds`. Le classifier historique HIGH donne 9 124 URLs, mais ce lot contient aussi des domaines immobiliers étrangers. Le scoreboard n'en retient donc que le sous-ensemble **strict Morocco** : domaine `.ma` + signal immobilier/classified explicite, soit **5 797 URLs sur 114 domaines**, après anti-overlap exact contre `source_offer_seeds`. Ce lot reste **L0 discovery-only** : aucune autorisation, fraîcheur ou activité n'est inférée.
 
-Les lignes historiques/structurelles sont comptées **L0 uniquement** avec provenance ; elles ne sont pas déclarées actives, fraîches ou autorisées à l'affichage.
+Le run non-Factory `34036331806` a trouvé **1 938** autres représentations exact-additive hors seeds/B3/lanes, mais **459 TikTok + 454 Facebook** dominent le lot. **Ces 1 938 ne sont pas incluses dans le compteur strict 206 604** tant qu'un filtre qualité source n'est pas appliqué.
 
-Ce n'est **pas** 158 778 biens uniques actifs. Les sources différentes peuvent représenter le même bien ; le recouvrement sera traité au clustering.
+Les lignes historiques/structurelles/public-dataset sont comptées **L0 uniquement** avec provenance ; elles ne sont pas déclarées actives, fraîches ou autorisées à l'affichage.
+
+Ce n'est **pas** 206 604 biens uniques actifs. Les sources différentes et les cohortes temporelles peuvent représenter le même bien ; le recouvrement physique sera traité au clustering.
 
 ## 4. DÉTAILS / DÉCISIONS DE LANE
 
-### Mubawab — FULL CLOSED
-Run `33964834762` ✅ : **3 174/3 174 shards**, **18 445 IDs uniques**, queue=0, zeroDbWrites=true.
+### Mubawab — DIRECT FULL CLOSED + PUBLIC DATASET EXPANSION
+Run direct `33964834762` ✅ : **3 174/3 174 shards**, **18 445 IDs uniques**, queue=0, zeroDbWrites=true.
+
+Expansion indirecte publique 2026-09-06 :
+- `hakkache/RealEstateBuddy:data/Clean_Data_Step2.csv` : **23 796 lignes**, **22 011 IDs Mubawab distincts**, overlap exact direct **637**, **+21 374 net-new** ; run `34038898808`, artifact `9991042950`, dataset SHA256 `9d32451a56ba7977b7365d5ac06366ad05e7c059696ce3476b25737e3d445558`, artifact SHA256 `97936f5668a11f9fdc3a5b5f6ba3c32bb00a592883a8b4efaa95b0d6579e67ea`.
+- `HichamBenelmahi/analyse-des-tendances-immobili-res-` : **20 459 IDs Mubawab distincts** dans les dumps publics vente/location ; baseline union déjà comptée **39 819 IDs**, overlap exact **3 065**, **+17 394 net-new** ; run `34039054428`, artifact `9991092046`, artifact SHA256 `64dc822a6e986b429f8d5af462d7024e30cf428352f982bb17e171d4a694aae5`.
+
+Les deux expansions ne font **aucune requête Mubawab** : GitHub public + artifacts AkarFinder uniquement. `sourceSiteFetches=0`, `databaseWrites=0`. Elles sont historiques L0, pas des preuves de fraîcheur.
 
 ### MarocAnnonces — FULL SOURCE-FIRST CLOSED
 Run `33739495442` ✅ : **546 pages**, **547 requêtes**, **10 000 IDs uniques**, queueRemaining=0, aucun cap atteint, zeroDbWrites=true. Toute nouvelle reprise doit rester fail-closed selon robots courant.
@@ -85,8 +104,13 @@ Run `33739495442` ✅ : **546 pages**, **547 requêtes**, **10 000 IDs uniques**
 ### Sarouty — FULL PROPERTY SITEMAPS CLOSED
 Run `33765427351` ✅ : 6/6 property-detail sitemaps déclarés, **5 064 IDs uniques**, 8 requêtes total, aucun cap, zeroDbWrites=true.
 
-### Agenz — PARTIAL CERTIFIED
-Run `33764930794` : **4 466 IDs uniques** observés sur 430 pages avant `hard_block`, queueRemaining=1 397. Arrêt de sécurité correct, aucun retry/bypass, zeroDbWrites=true. Ne pas présenter comme inventaire complet.
+### Agenz — PARTIAL DIRECT + HISTORICAL DELTA
+Run direct `33764930794` : **4 466 IDs uniques** observés sur 430 pages avant `hard_block`, queueRemaining=1 397. Arrêt de sécurité correct, aucun retry/bypass, zeroDbWrites=true.
+
+Export historique read-only `34032779387` / artifact `9989328673` : **4 283 fiches historiques**. Set-diff exact contre les 4 466 URLs/IDs directes : overlap **464**, **+3 819 représentations historiques additives**. Elles restent L0 historique et ne rendent pas la lane direct complète.
+
+### Yakeey — EXACT IDs L0
+Achat run `33989989300` ✅ : **66 IDs** sur pages de résultats publiques ; artifact `9976337671`. Location run `33990176467` ✅ : **16 IDs**. Union exacte retenue : **82**, aucun detail fetch, zeroDbWrites=true.
 
 ### Historical public-sitemap L0 — RECONCILED
 PR `#223` : **6 270** lignes canonical-link-only, structurées : DarAgadir 5 567, LSF 379, Aykana 324. Shadow only, aucune activation publique.
@@ -102,6 +126,13 @@ Pour le scoreboard courant :
 - Kawtar Immobilier : **188** ;
 - les autres domaines MASS-X5 ne sont pas additionnés sans reconciliation exacte avec leurs lanes déjà comptées.
 
+### MASS-1 / HISTORICAL GAP — RECONCILED
+Refresh MASS-1 `33993932592` : **317 605 discovery rows**, **169 252 URLs distinctes**, **30 637 détails Maroc probables**, zero write/source fetch.
+
+Reconcile exact `34029546664` / artifact `9988296190` : **+1 613 exact-additive** hors lanes déjà comptées.
+
+Historical Gap Hunt `34030138761` / artifact `9988514932` : 1immo apporte **+3 471** détails exact-net-new au-dessus de ses 201 seeds courantes. Les gros gaps Agenz/Masaken/Mouldar/Souk ne sont pas additionnés en bloc sans anti-overlap avec leurs lanes historiques.
+
 ### DATA-40K HISTORICAL 2025 — RECONCILED
 Run `30126275406` ✅ : **80/80 requêtes Common Crawl**, **28 248 qualified seeds**, **26 777 newly inserted seed rows** au snapshot du 24 juillet 2026 ; artifact `8609457925`, artifact SHA256 `d34a220d7aae303f65e8c77bd2951977072bd9d1552087e08be78000ba7508ae`.
 
@@ -113,20 +144,26 @@ Snapshot read-only 2026-09-05 : **37 009** URLs en `policy_review_backlog`, **72
 ### DATA-4.9B — STRUCTURAL L0
 Run `31370449455` ✅ : **10 127 net-new sitemap identities -> 2 326 structural-detail URL representations**, 7 801 rejects, 0 identity collision. Sources : ValFoncier 709, Christie's Morocco 602, Immo-Maroc 276, AgadirImmobilier.ma 37, ProImmobilier 99, Capital Properties 603. Ces sources restent `unverified + hidden + internal_signal_only`; structure != autorisation.
 
-### Domio — CLOSED PARTIAL
-Run `33984423190` ✅ : **2 020 listing-like** ; `sitemap-properties.xml` a timeout, reprise résiliente plus tard.
+### COMMON CRAWL CURRENT RECONCILIATION — CLOSED +0
+Run `33990451626` ✅ : **5 836 qualified seeds** sur 10 domaines / 3 indexes, exact overlap actuel **5 836**, exact net-new **0**, zeroDbWrites=true ; artifact `9976495165`.
+
+### Domio — CLOSED PARTIAL / RETRY PARKED
+Run `33984423190` ✅ : **2 020 listing-like**. Retry `33990882356` : 5/5 timeouts de 60 s sur `sitemap-properties.xml`, 0 ajout, zeroDbWrites=true. Lane directe parkée.
+
+### Mitula / Trovit — DIRECT PROBE CLOSED +0
+Run `33988656243` ✅ : robots/root accessibles, mais aucun réservoir sitemap/listing-detail exploitable certifié. Les volumes B3 historiques restent L0 uniquement ; aucune addition directe.
+
+### MarocImmo — DIRECT CLOSED BY ROBOTS
+Les probes directs ultérieurs ont fail-closed sur robots (`sitemap.xml` puis root). Aucun crawl direct additionnel ; les identités `MI-*` publiques restent seulement une piste indirecte.
+
+### External reservoirs — POLICY ABSENT
+Run `34038068489` ✅ : aucune ligne `source_policy_registry` pour Properstar, Green-Acres, Holprop, OpenSooq, JamesEdition, LuxuryEstate, FazWaz et variantes testées. **0 crawl direct ouvert** depuis ces domaines. Les volumes visibles sur moteurs/index publics ne sont pas comptés.
 
 ### ImmoDirect — PARKED
 Run `33985219822` ✅ : **4 property URLs**. Rendement <300.
 
-### Yakeey — PROBE ONLY
-Run `33985996717` ✅ : routes robots-allowed, **2 377 biens affichés** sur l'achat Maroc, pagination jusqu'à 96, mais 0 lien détail extrait du HTML SSR. **0 candidate ajoutée** tant qu'un identifiant/URL de fiche n'est pas prouvé.
-
 ### MAnonce — RETRY/INDIRECT
 Le full sweep `33985644309` a échoué sur `Network is unreachable` au chargement de robots. **0 candidate ajoutée** depuis ce run. Retenter seulement avec preuve robots fraîche ou surface indirecte publique.
-
-### Mitula / Trovit — ACTIVE PROBE
-Les deux surfaces sont publiques et vivantes en septembre 2026. Un probe `robots + sitemap + root`, sans detail fetch et sans DB write, est lancé via workflow `AkarFinder - Morocco Aggregator Surface Probe`, run `33988656243`.
 
 ## 5. JALONS
 
@@ -138,23 +175,23 @@ Les deux surfaces sont publiques et vivantes en septembre 2026. Un probe `robots
 | M50K | ✅ |
 | M100K | ✅ |
 | **M150K** | ✅ CLOSED |
-| **M200K** | 🔵 ACTIVE — **158 778 / 200 000**, manque **41 222** |
-| M250K+ | STRETCH |
+| **M200K** | ✅ **CLOSED — 206 604 / 200 000 (103,3 %), dépassement +6 604** |
+| **M250K+** | 🔵 STRETCH — manque **43 396** au seuil 250K |
 
 ## 6. FILE D'EXÉCUTION — 12 LOTS
 
 1. ✅ AlerteImmo full / Avito indirect.
 2. ✅ Probe multi-sites.
-3. ✅ Mubawab FULL — 18 445.
+3. ✅ Mubawab direct FULL — 18 445.
 4. ✅ Akaar full sitemap — 76 843.
-5. ✅ Domio first sitemap — 2 020 partial.
+5. ✅ Domio first sitemap — 2 020 partial ; retry parké.
 6. ✅ MarocAnnonces historical full source-first — 10 000 ; nouvelles reprises uniquement robots-safe.
 7. ✅ ImmoDirect — 4, PARKED.
-8. 🟡 MAnonce retry/indirect.
-9. 🔵 **Mitula/Trovit probe + Agenz continuation + Yakeey detail-surface discovery**.
-10. 🔵 **Common Crawl multi-source / archives / long-tail source discovery**.
-11. ⏳ Candidate Lake unifié : exact dedupe + provenance + layer + freshness + clusters.
-12. ⛔ Gate humain avant toute écriture prod/Vercel.
+8. ✅ Yakeey exact L0 — 82.
+9. ✅ MASS-1 + Historical Gap + Agenz historical reconciliations.
+10. ✅ **Public GitHub dataset expansion Mubawab : +38 768 exact-net-new au-dessus du direct, M200K franchi.**
+11. 🔵 Candidate Lake unifié : exact dedupe + provenance + layer + temporal cohort + clusters + freshness.
+12. ⛔ Gate humain avant toute écriture prod/Vercel/policy registry.
 
 ## 7. RÈGLES DE RENDEMENT
 
@@ -162,15 +199,17 @@ Les deux surfaces sont publiques et vivantes en septembre 2026. Un probe `robots
 - `300–999` : poursuivre en parallèle si coût faible ;
 - `<300` : park sauf réservoir non atteint ;
 - toujours publier `found -> overlap -> net-new -> union -> probable_unique -> live_confidence` ;
-- erreurs/truncation séparées du statut CI.
+- erreurs/truncation séparées du statut CI ;
+- un dataset historique exact peut augmenter L0 mais **jamais** `active`/`fresh` sans validation récente.
 
 ## 8. NEXT EXACT
 
-1. Fermer le probe **Mitula/Trovit** ; si robots/sitemaps exposent un réservoir >1 000, ouvrir un sweep read-only séparé.
-2. Auditer `dabaannonce.ma` (**794** B3 exact-net-new) et les autres concentrateurs B3 `.ma`.
-3. Continuer la réconciliation B3 MEDIUM uniquement après ancrage immobilier explicite ; ne pas compter les `.ma` génériques par défaut.
-4. **Agenz** : mesurer la queue restante sans bypass via surfaces indirectes publiques.
-5. **Yakeey** : identifier la couche publique qui transporte les IDs/URLs des 2 377 résultats affichés ; ne rien compter avant preuve.
-6. À M200K : unifier Candidate Lake, exact dedupe, provenance, layer, freshness, clusters et mesure de recouvrement inter-source.
+1. **Freeze M200K** : conserver les manifests/artifacts qui produisent le total 206 604 et empêcher tout double comptage futur.
+2. **Candidate Lake** : unifier provenance, source ID/URL, couche L0/L1, date/cohorte temporelle et fingerprints.
+3. **Exact dedupe + clustering** : mesurer `206 604 representations -> probable_unique` sans suppression destructive.
+4. **Freshness** : échantillonnage/validation récente uniquement sur lanes autorisées, puis publier `live_confidence` par source.
+5. **M250K stretch** : continuer la recherche de dumps/datasets/archives publics avec IDs/URLs exacts ; chaque nouveau lot doit être set-diff contre l'union certifiée courante.
+6. Les **1 938 non-Factory** restent en réserve jusqu'à filtre qualité excluant social/bruit.
+7. Aucun onboarding de nouvelle source dans `source_policy_registry` sans gate humain séparé.
 
-**Boussole actuelle : 158 778 -> 200 000 -> 250 000+.**
+**Boussole actuelle : 206 604 représentations L0/L1 -> probable_unique -> live_confidence -> 250 000+ stretch.**
