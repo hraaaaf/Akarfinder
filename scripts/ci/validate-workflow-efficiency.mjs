@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 
 const base = process.env.CI_DIFF_BASE || "HEAD^";
 const head = process.env.CI_DIFF_HEAD || "HEAD";
@@ -10,6 +10,8 @@ const changed = execFileSync("git", ["diff", "--name-only", base, head], { encod
 
 const failures = [];
 for (const path of changed) {
+  if (!existsSync(path)) continue;
+
   const text = readFileSync(path, "utf8");
   const hasPullRequest = /(^|\n)\s{0,2}pull_request\s*:/m.test(text);
   if (!hasPullRequest) continue;
