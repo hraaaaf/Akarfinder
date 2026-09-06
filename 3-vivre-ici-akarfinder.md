@@ -54,22 +54,28 @@ Mesures post-sync :
 La première lecture post-sync avait été trop généreuse. La comparaison stricte au TARGET FREEZE montre encore : cartographie trop technique/dense, rail desktop encore partiellement SaaS/dashboard et chrome mobile trop empilé. **Score visuel réaliste du 2e post-sync : ~8,3/10. Le Goal ≥9 n’est donc pas atteint.**
 
 ## LOT 2f — CONVERGENCE PERCEPTUELLE
-Goal : réduire le bruit cartographique et rapprocher le rendu du target premium sans toucher au contrat de vérité.
+Goal : réduire le bruit visuel et rapprocher desktop/mobile du target premium sans toucher au contrat de vérité.
 
-Changement prouvé :
-- `lib/map/akarfinder-territorial-style.ts` ;
-- commit style `1581c108a5b0ebe41170bcdec91c96e535aafc5a` ;
-- traitement du basemap ajusté pour un rendu plus calme/premium ;
+Changement prouvé par le diff du commit :
+- fichier unique : `app/map/premium-lot4.css` ;
+- commit `1581c108a5b0ebe41170bcdec91c96e535aafc5a` ;
+- carte 3D plus chaude/calme via filtre canvas ;
+- rail desktop resserré vers `282–292 px`, ombres/contrastes atténués, signaux plus éditoriaux ;
+- overlays desktop allégés ;
+- bottom sheet mobile compacté, avec plafond `220 px` sous 430 px ;
+- recherche/POI mobiles resserrés ;
 - aucun changement de données métier ni activation de pin bien.
 
-Le workflow visuel dédié ne surveillait pas `lib/map/**`. Correction :
-- workflow `.github/workflows/vivre-ici-after.yml` inclut désormais `lib/map/**` ;
-- commit `83104152d9e6426ae967f43c4e81543563280233`.
+Le workflow dédié a ensuite été élargi à `lib/map/**` pour que les futures corrections de style cartographique hors `app/map/**` soient aussi certifiées :
+- commit workflow `83104152d9e6426ae967f43c4e81543563280233`.
 
 Déclenchement explicite du gate via `scripts/vivre-ici-after-capture.mjs` :
-- HEAD `196f465fef439d4126a81eeb5f3986b0c30bdf1c` ;
-- run `34044165796` — état au lancement : `queued` ;
-- prochaines preuves requises : build/TS/tests + artifact + 8 captures + comparaison directe 2e/2f + score humain.
+- HEAD certifié `196f465fef439d4126a81eeb5f3986b0c30bdf1c` ;
+- run `34044165796` ;
+- navigation contracts ✅ ;
+- TypeScript ✅ ;
+- production build en cours au dernier contrôle ;
+- prochaines preuves requises : artifact + 8 captures + comparaison directe 2e/2f + score humain.
 
 **2f n’est pas certifié avant ces preuves.**
 
