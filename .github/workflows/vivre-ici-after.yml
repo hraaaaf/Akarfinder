@@ -8,6 +8,7 @@ on:
     paths:
       - 'app/map/**'
       - 'components/map/**'
+      - 'lib/map/**'
       - 'components/layout/MobileBottomNav.tsx'
       - 'components/layout/SiteHeader.tsx'
       - 'scripts/vivre-ici-after-capture.mjs'
