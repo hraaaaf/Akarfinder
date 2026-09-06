@@ -1,3 +1,4 @@
+// Lot 2f certification anchor: force the dedicated visual gate on the final basemap tree.
 import { chromium } from 'playwright';
 import { spawn } from 'node:child_process';
 import fs from 'node:fs/promises';
