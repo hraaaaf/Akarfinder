@@ -88,15 +88,33 @@ function visibleAt(createdAt: string): boolean {
 
 async function readDiscovery(): Promise<DiscoveryRow[]> {
   const out: DiscoveryRow[] = [];
+  const select = 'id,source_domain,source_url,canonical_url,title,snippet,discovery_query,content_fingerprint,last_seen_at,created_at';
+
+  if (TARGETS.size === 1) {
+    const target = [...TARGETS][0];
+    for (let offset = 0; ; offset += PAGE) {
+      const query: Record<string, string> = {
+        select,
+        source_domain: `eq.${target}`,
+        limit: String(PAGE),
+        offset: String(offset),
+      };
+      if (AS_OF) query.created_at = `lte.${AS_OF}`;
+      const page = await rest<DiscoveryRow>('discovery_candidates', query);
+      out.push(...page);
+      if (page.length < PAGE) break;
+    }
+    return out;
+  }
+
   let last = '';
   for (;;) {
     const query: Record<string, string> = {
-      select: 'id,source_domain,source_url,canonical_url,title,snippet,discovery_query,content_fingerprint,last_seen_at,created_at',
+      select,
       order: 'id.asc',
       limit: String(PAGE),
     };
     if (last) query.id = `gt.${last}`;
-    if (TARGETS.size === 1) query.source_domain = `eq.${[...TARGETS][0]}`;
     const page = await rest<DiscoveryRow>('discovery_candidates', query);
     out.push(...page.filter((row) => TARGETS.has(norm(row.source_domain)) && visibleAt(row.created_at)));
     if (page.length < PAGE) break;
