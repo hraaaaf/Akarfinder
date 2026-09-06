@@ -50,6 +50,7 @@ jobs:
           const fs = require('fs');
           const s = JSON.parse(fs.readFileSync('artifacts/vivre-ici-after/summary.json','utf8'));
           if (s.mode !== 'branch-local-after') throw new Error(`wrong mode: ${s.mode}`);
+          if (s.premiumTarget !== 'freeze-2026-09-06') throw new Error(`wrong premium target: ${s.premiumTarget}`);
           if (s.zeroDbWritesByScript !== true) throw new Error('write safety not proven');
           if (s.zeroDeploymentActionsByScript !== true) throw new Error('deployment safety not proven');
           if (s.results.length !== 8) throw new Error(`expected 8 viewport/scenario proofs, got ${s.results.length}`);
@@ -61,12 +62,17 @@ jobs:
             if (!r.httpStatus || r.httpStatus >= 400) throw new Error(`bad HTTP ${r.scenario}/${r.viewport.name}: ${r.httpStatus}`);
             if (r.hasVivreIciPage !== 1) throw new Error(`missing Vivre ici page marker ${r.scenario}/${r.viewport.name}`);
             if (r.hasDecisionRail !== 1) throw new Error(`missing decision rail ${r.scenario}/${r.viewport.name}`);
+            if (r.hasPremiumContext !== 1) throw new Error(`missing premium context ${r.scenario}/${r.viewport.name}`);
             if (r.vivreIciTextCount < 1) throw new Error(`missing Vivre ici wording ${r.scenario}/${r.viewport.name}`);
             const expectedView = r.scenario === 'national' ? 'morocco' : 'city';
             if (r.nationalView !== expectedView) throw new Error(`wrong map view ${r.scenario}/${r.viewport.name}: ${r.nationalView}`);
+            if (r.viewport.width >= 1024 && r.mapWidthShare < 0.68) throw new Error(`map is not dominant enough ${r.scenario}/${r.viewport.name}: ${r.mapWidthShare}`);
             if (r.neighborhoodContext) {
               if (r.poiControls !== 1) throw new Error(`missing POI controls ${r.viewport.name}`);
               if (r.poiAvailableToggle + r.poiUnavailable !== 1) throw new Error(`POI state is not truthful/exclusive ${r.viewport.name}`);
+              if (r.topChromeDistrictOverlap) throw new Error(`district search overlaps territory chrome ${r.viewport.name}`);
+              if (r.topChromeToggleOverlap) throw new Error(`2D/3D toggle overlaps top chrome ${r.viewport.name}`);
+              if (r.viewport.width < 1024 && !r.neighborhoodPreviewVisible) throw new Error(`premium bottom sheet not visible ${r.viewport.name}`);
             }
             if (r.threeDExpected) {
               if (r.threeDToggle !== 1) throw new Error(`missing 3D toggle ${r.viewport.name}`);
