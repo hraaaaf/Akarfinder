@@ -90,21 +90,30 @@ async function readDiscovery(): Promise<DiscoveryRow[]> {
   const out: DiscoveryRow[] = [];
   const select = 'id,source_domain,source_url,canonical_url,title,snippet,discovery_query,content_fingerprint,last_seen_at,created_at';
 
-  // Single-domain historical replays intentionally use only the indexed source_domain
-  // predicate. Combining source_domain + created_at caused Postgres statement timeouts.
-  // The as-of boundary is applied client-side before dedupe/classification. Output is
-  // sorted locally, so retrieval order cannot affect hashes.
+  // Historical single-domain replay uses canonical_url keyset pagination instead of
+  // OFFSET or id-order scans. canonical_url is indexed and 1immo has no NULL canonical
+  // rows in the frozen cohort. We deliberately overlap one distinct URL at each page
+  // boundary so that all duplicate observations for that URL are retained.
   if (TARGETS.size === 1) {
     const target = [...TARGETS][0];
-    for (let offset = 0; ; offset += PAGE) {
-      const page = await rest<DiscoveryRow>('discovery_candidates', {
+    let cursor = '';
+    for (;;) {
+      const query: Record<string, string> = {
         select,
         source_domain: `eq.${target}`,
+        order: 'canonical_url.asc,id.asc',
         limit: String(PAGE),
-        offset: String(offset),
-      });
+      };
+      if (cursor) query.canonical_url = `gte.${cursor}`;
+      const page = await rest<DiscoveryRow>('discovery_candidates', query);
       out.push(...page.filter((row) => visibleAt(row.created_at)));
       if (page.length < PAGE) break;
+
+      const distinct = [...new Set(page.map((row) => row.canonical_url).filter((value): value is string => Boolean(value)))];
+      if (distinct.length < 2) throw new Error(`canonical keyset cannot progress for ${target}`);
+      const next = distinct.at(-2)!;
+      if (next === cursor) throw new Error(`canonical keyset stalled for ${target} at ${cursor}`);
+      cursor = next;
     }
     return out;
   }
