@@ -1,12 +1,12 @@
 # 3 — Vivre Ici AkarFinder
 
-**Statut : ACTIVE — 3D-L2b CERTIFIÉ / 3D-L3 BIENS EN 3D ACTIF**  
-**Dernière mise à jour : 2026-09-05**  
+**Statut : ACTIVE — TARGET PREMIUM FREEZÉ / CONVERGENCE PREMIUM ACTIVE**  
+**Dernière mise à jour : 2026-09-06**  
 **Repo : `hraaaaf/Akarfinder`**  
 **Branche : `docs/3-vivre-ici-akarfinder`**  
 **PR : `#1025` — OPEN**  
 **Fondation produit : `/map`**  
-**Référence UX : Bien’ici 3D, adaptée au Maroc, sans clone pixel-perfect**  
+**Référence UX : mécanisme Bien’ici 3D + mockups AkarFinder premium validés en session, sans clone pixel-perfect**  
 **Vercel : aucun déploiement sans accord explicite d’Achraf.**
 
 ---
@@ -21,164 +21,195 @@
 4. ne jamais utiliser `/search` comme baseline de ce chantier ;
 5. pour tout changement UI/UX : `BEFORE → Goal → référence/mockup → implémentation → AFTER mêmes viewports → comparaison + tests → score visuel` ;
 6. aucune déclaration LIVE sans preuve LIVE distincte ;
-7. aucune déclaration 3D sans preuve d’un layer bâtiment réellement rendu, d’une caméra inclinée et de captures inspectées.
+7. aucune déclaration 3D sans preuve d’un layer bâtiment réellement rendu, d’une caméra inclinée et de captures inspectées ;
+8. le mockup fixe la **qualité perçue, la hiérarchie et les mécanismes UX**, pas des données métier fictives ni un pixel-perfect impossible avec les sources disponibles ;
+9. tout chiffre, photo, prix, temps de trajet, distance, POI ou position de bien montré dans un mockup est un **placeholder de design** tant qu’il n’est pas relié à une source prouvée.
 
 ---
 
-## 1. GOAL
+## 1. GOAL PREMIUM OFFICIEL
 
-Transformer **uniquement Vivre ici**, fondé sur `/map`, en une expérience immersive de découverte territoriale inspirée du mécanisme Bien’ici et adaptée au Maroc.
+Transformer **uniquement Vivre ici**, fondé sur `/map`, en une expérience immersive premium de découverte territoriale adaptée au Maroc.
 
 Doctrine produit :
 
 > **Territoire → Marché → Vie locale → Biens**
 
-Cible visuelle :
+Cible d’expérience :
 
-> **Maroc 2D → ville 3D → quartier / vie locale → biens.**
+> **Maroc 2D premium → ville 3D dominante → quartier / vie locale → biens exacts intégrés dans la scène.**
+
+Cible qualitative validée :
+
+> **Ville 3D immédiatement perceptible + carte dominante + chrome léger + panneau de contexte premium + biens intégrés honnêtement + mobile cohérent.**
 
 `/search` reste la recherche classique de biens.
 
 ---
 
-## 2. P0 2D — FONDATION PROUVÉE
+## 2. TARGET PREMIUM CANONIQUE — FREEZE 2026-09-06
 
-### BEFORE LIVE `/map`
+Les trois vues de référence produites et validées servent désormais de **Goal visuel officiel** :
 
-- run `33987108479` — SUCCESS ;
-- artifact `9975502810` ;
-- 4 captures LIVE 390/430/768/1280.
+1. **Desktop Maroc** : vue nationale 2D premium, villes mises en avant, panneau droit contextuel ;
+2. **Desktop Casablanca → Maârif 3D** : ville 3D dominante, POI intégrés, quelques biens exacts en callouts, panneau droit `Vivre à Maârif` ;
+3. **Mobile Casablanca → Maârif 3D** : 3D lisible, recherche compacte, POI limités, 1–2 biens maximum, bottom sheet premium.
 
-### AFTER P0 2D branch-local
+### Standards visuels figés
 
-- run `33990212630` — SUCCESS ;
-- artifact `9976424591` ;
-- digest `sha256:a95b2c59e5ed6007f02b5b285f6e4190aecbf764e82b35e9ef003f92fe5ccdf9` ;
-- 8 captures Maroc + Casablanca/Maârif ;
-- 2 marqueurs POI observés sur Maârif ;
-- score visuel **9,0/10 pour le Goal P0 2D uniquement**.
+- la carte est la surface héro ;
+- la 3D doit être évidente à l’œil sans devoir expliquer qu’elle existe ;
+- header / nav légers et cohérents avec AkarFinder ;
+- recherche flottante compacte ;
+- filtres POI en pills ;
+- toggle 2D / 3D visible ;
+- panneau droit desktop dédié au contexte quartier ;
+- bottom sheet mobile dédié au contexte quartier ;
+- cartes biens discrètes, peu nombreuses et ancrées dans la scène ;
+- verre / overlays sobres, ombres légères, hiérarchie typographique nette ;
+- aucune densité d’UI qui masque la lecture de la ville.
 
-Le P0 2D est la fondation, pas la cible finale Bien’ici 3D.
+### Garde-fous de fidélité
+
+- le target est une **référence de qualité perçue**, pas une promesse de photoréalisme exact ;
+- aucune géométrie, hauteur, photo aérienne, chiffre ou donnée de quartier ne doit être inventé pour “ressembler” au mockup ;
+- si une donnée manque, le composant correspondant est masqué, remplacé par une information prouvée ou présenté comme agrégation explicitement non exacte ;
+- aucune valeur marketing du mockup (`26 000 DH/m²`, temps de trajet, nombres d’écoles, etc.) n’est autorisée en produit sans source.
 
 ---
 
-## 3. 3D-L1 CASABLANCA — TECHNIQUEMENT CERTIFIÉ
+## 3. SUCCÈS GLOBAL
 
-### Preuve exacte
+Le Goal premium est atteint uniquement si :
+
+1. **3D perceptible** : Casablanca/Maârif lit immédiatement comme une ville en volume sur 390 / 430 / 768 / 1280 ;
+2. **carte dominante** : l’UI accompagne la scène sans l’étouffer ;
+3. **biens honnêtes** : seuls les biens `EXACT` peuvent devenir des pins/callouts ponctuels ;
+4. **contexte premium** : panneau droit desktop et bottom sheet mobile suivent la hiérarchie du target ;
+5. **vie locale crédible** : écoles, santé, commerces, transports, parcs uniquement quand sourcés ;
+6. **responsive cohérent** : zéro collision ou overflow sur 390 / 430 / 768 / 1280 ;
+7. **cohérence visuelle** : desktop Maroc, desktop Maârif 3D et mobile Maârif 3D appartiennent au même système ;
+8. **qualité finale** : inspection `BEFORE / TARGET / AFTER` avec score visuel global ≥ **9/10** sans violation du contrat de vérité ;
+9. **qualité technique** : build, TypeScript et tests UI/contrats verts ;
+10. **sécurité** : aucune mutation DB ni déploiement Vercel sans gate explicite.
+
+### Preuves obligatoires
+
+- captures 390 / 430 / 768 / 1280 ;
+- scénario Maroc ;
+- scénario Casablanca → Maârif ;
+- scénario Casablanca → Maârif + biens exacts si des biens éligibles existent réellement ;
+- build + TypeScript + tests UI ;
+- comparaison BEFORE / TARGET / AFTER ;
+- inspection humaine des collisions, profondeur 3D, densité d’UI et lisibilité des callouts.
+
+---
+
+## 4. ÉTAT PROUVÉ AVANT CONVERGENCE PREMIUM
+
+### P0 2D — fondation prouvée
+
+- BEFORE LIVE `/map` : run `33987108479` — SUCCESS, artifact `9975502810` ;
+- AFTER P0 2D : run `33990212630` — SUCCESS, artifact `9976424591` ;
+- 8 captures Maroc + Casablanca/Maârif ;
+- score visuel **9,0/10 pour le Goal P0 2D uniquement**.
+
+### 3D-L1 — techniquement certifié
 
 - run `33991033589` — SUCCESS ;
 - code HEAD `b4a9d2bd0911840a641cd3f20ab678631424dc64` ;
 - artifact `9976706376` ;
-- digest `sha256:67f416481841e99836fa93f50d517167c9f1f8c321c94853d5ab610187561a80` ;
 - pitch `56°`, bearing `-18°`, zoom `14.2` ;
-- bâtiments réellement rendus : `64 / 68 / 113 / 120` ;
-- POI Maârif : 2 ;
-- Maroc maintenu 2D ;
-- aucune écriture DB / aucune action de déploiement par le gate.
+- bâtiments rendus `64 / 68 / 113 / 120` ;
+- fidélité perçue réévaluée à ~`5/10`.
 
-### Réévaluation visuelle
+### 3D-L2b — immersion visible certifiée
 
-La preuve technique était correcte, mais l’impression perçue restait trop proche d’une carte inclinée 2,5D. Le score initial `6,5/10` a été retiré après inspection humaine et retour utilisateur.
-
-**Fidélité perçue L1 réévaluée : ~5/10.**
-
----
-
-## 4. 3D-L2b — IMMERSION VISIBLE CERTIFIÉE
-
-### Goal
-
-La 3D doit être immédiatement visible à l’œil, pas seulement validée par des métriques MapLibre.
-
-### Implémentation
-
-- zoom cible `15.5` ;
-- pitch `60°` ;
-- bearing `-28°` ;
-- lumière 3D dédiée ;
-- contraste / gradient vertical des façades basé sur les hauteurs sourcées ;
-- aucun changement de géométrie ni de hauteur inventée ;
-- chrome mobile/tablette allégé ;
-- rail bas masqué en 3D mobile/tablette ;
-- recherche / toggle / fiche quartier repositionnés ;
-- Maroc reste 2D ;
-- POI Maârif préservés.
-
-### Preuve exacte
-
-Workflow `Vivre Ici AFTER Certification` :
-
-- run `33992903877` — **SUCCESS** ;
+- run `33992903877` — SUCCESS ;
 - code HEAD `e5e0727dd107ecd00c6106d0286c3a78ef090841` ;
 - artifact `9977221838` ;
-- digest `sha256:78cb01d6a7c0c014f10f2584a620e53dd0d1fc270e2f5d822301a333d5057e0b` ;
-- 8/8 HTTP 200 ;
-- Maroc 390/430/768/1280 : pitch `0`, aucun layer/source/toggle 3D ;
-- Maârif 390/430/768/1280 : source + layer + toggle 3D présents ;
-- pitch `60°`, bearing `-28°`, zoom `15.5` sur les 4 viewports ;
-- bâtiments réellement rendus : `43 / 46 / 65 / 70` ;
-- POI controls présents ;
-- 2 marqueurs POI observés sur chaque viewport Maârif ;
-- aucune écriture DB / aucune action de déploiement par le gate.
+- pitch `60°`, bearing `-28°`, zoom `15.5` ;
+- bâtiments rendus `43 / 46 / 65 / 70` ;
+- Maroc maintenu 2D ;
+- POI Maârif préservés ;
+- score de fidélité au mécanisme cible ~`7,5/10`.
 
-### Inspection visuelle
-
-- 390/430 : volumes clairement perceptibles, carte dominante et lisible malgré la fiche quartier ;
-- 768 : effet urbain 3D net, bonne profondeur ;
-- 1280 : ville 3D clairement lisible avec rail décisionnel séparé ;
-- limite principale restante : palette encore monochrome / technique et absence de biens intégrés dans la scène.
-
-**Score de fidélité au mécanisme Bien’ici : ~7,5/10.**
-
-3D-L2b est certifié branch-local. Ce n’est pas une preuve LIVE.
+3D-L2b est prouvé branch-local, pas LIVE.
 
 ---
 
-## 5. 3D-L3 — BIENS EN 3D ACTIF
+## 5. CONTRAT DE VÉRITÉ GÉOGRAPHIQUE
 
-### Goal
-
-Afficher les biens dans la scène 3D **uniquement lorsque leur vérité géographique permet un positionnement honnête**.
-
-### Contrat
-
-- `EXACT` : pin bien autorisé ;
-- `DISTRICT` : agrégation / zone seulement, aucun faux pin exact ;
+- `EXACT` : pin / callout ponctuel autorisé ;
+- `DISTRICT` : agrégation ou zone seulement ;
 - `CITY` : agrégation ville seulement ;
 - `UNKNOWN` : aucun pin ;
-- aucun jitter ou déplacement artificiel pour donner l’illusion de précision ;
-- CTA vers la fiche / source seulement sur entité réellement indexée.
+- aucun jitter ou déplacement artificiel ;
+- aucun temps de trajet, distance, frontière, POI ou hauteur 3D inventé ;
+- CTA bien/source uniquement pour une entité réellement indexée et reliée à une provenance valide.
 
-### Succès attendu
-
-1. source de biens branchée en lecture seule ;
-2. pins 3D visibles uniquement pour coordonnées certifiées ;
-3. district/city/unknown exclus des pins exacts ;
-4. interaction pin → bien / source cohérente ;
-5. captures 390/430/768/1280 ;
-6. aucune DB / aucun Vercel.
+État actuel : le modèle connaît la précision géographique, mais la persistance + provenance + mapping DB des biens doivent encore être prouvés avant activation des pins exacts.
 
 ---
 
-## 6. CONTRAT DE VÉRITÉ GLOBAL
+## 6. PLAN D’EXÉCUTION — 4 LOTS
 
-- pin exact seulement si exact certifié ;
-- quartier seulement → zone/repère limité ;
-- ville seulement → agrégation ville ;
-- inconnu → aucun faux pin ;
-- aucune frontière, POI, distance, temps de trajet ou hauteur 3D inventés.
+### Lot 1 — Target premium canonique
+
+**Statut : ✅ FREEZÉ**
+
+- 3 vues officielles : Desktop Maroc / Desktop Maârif 3D / Mobile Maârif 3D ;
+- hiérarchie, chrome, 2D/3D, POI, panneau droit, bottom sheet et cartes biens figés ;
+- placeholders métier explicitement exclus du contrat produit.
+
+### Lot 2 — Convergence 3D + shell premium
+
+**Goal :** rapprocher l’interface réelle du target sans dépendre encore des données de biens.
+
+- carte plus dominante ;
+- lumière / contraste / profondeur / caméra ;
+- palette et extrusion mieux lisibles ;
+- header, recherche et filtres plus légers ;
+- panneau droit desktop + bottom sheet mobile structurés ;
+- aucune donnée métier inventée pour remplir le design.
+
+### Lot 3 — Vérité data + biens exacts + vie locale
+
+**Goal :** intégrer le contenu réel dans le shell premium.
+
+- auditer coordonnées + `geo_precision` + provenance ;
+- mapper DB correctement ;
+- pins/callouts uniquement `EXACT` ;
+- agrégations pour `DISTRICT/CITY` ;
+- POI et métriques locales uniquement sourcés ;
+- si aucun bien exact n’est disponible sur le scénario, le produit doit fail closed et la preuve doit le montrer.
+
+### Lot 4 — Polish + certification finale
+
+- typographie ;
+- espacements ;
+- animations légères ;
+- densité mobile ;
+- cohérence des icônes ;
+- collisions / labels / callouts ;
+- captures 390 / 430 / 768 / 1280 ;
+- comparaison BEFORE / TARGET / AFTER ;
+- score final ;
+- closeout canonical / PR ;
+- arrêt au human gate merge/Vercel.
 
 ---
 
 ## 7. ROADMAP
 
 - [x] L0 BEFORE `/map`
-- [x] P0 2D architecture + implémentation + responsive
-- [x] P0 2D certification : run `33990212630`, artifact `9976424591`
-- [x] 3D-L1 Casablanca buildings : run `33991033589`, artifact `9976706376`
-- [x] **3D-L2b immersion visible** : run `33992903877`, artifact `9977221838`
-- [ ] **3D-L3 Biens en 3D** : vérité géographique stricte
-- [ ] P1 Vie locale enrichie
+- [x] P0 2D architecture + responsive + certification
+- [x] 3D-L1 technique
+- [x] 3D-L2b immersion visible
+- [x] **Lot 1 Target premium canonique**
+- [ ] **Lot 2 Convergence 3D + shell premium**
+- [ ] **Lot 3 Vérité data + biens exacts + vie locale**
+- [ ] **Lot 4 Polish + certification premium**
 - [ ] P2 terrain / soleil / modèles neufs si données + ROI prouvés
 
 ---
@@ -187,18 +218,20 @@ Afficher les biens dans la scène 3D **uniquement lorsque leur vérité géograp
 
 - aucune mutation DB liée au chantier ;
 - aucun déploiement de la branche observé au dernier contrôle ;
-- Vercel visible reste sur `main` ;
-- pas de merge sans human gate explicite.
+- Vercel visible reste sur `main` au dernier contrôle connu ;
+- pas de merge sans human gate explicite ;
+- PR `#1025` reste ouverte ;
+- l’état de mergeabilité doit être résolu avant tout merge, mais n’empêche pas le travail UI indépendant.
 
 ---
 
 ## 9. NEXT EXACT
 
-1. inventorier le provider / modèle actuel des biens cartographiques ;
-2. identifier la précision géographique réellement disponible ;
-3. brancher uniquement les biens `EXACT` dans la scène 3D ;
-4. tester les exclusions `DISTRICT/CITY/UNKNOWN` ;
-5. capturer les 4 viewports Maârif + contrôles nationaux nécessaires ;
-6. score visuel 3D-L3 ;
-7. closeout PR/canonical ;
-8. arrêt au human gate merge/Vercel.
+1. auditer l’écart réel entre le shell Maârif actuel et le target premium ;
+2. identifier le plus petit lot UI à fort impact sur la perception : carte dominante + chrome + panneau/bottom sheet ;
+3. implémenter ce lot sans données fictives ;
+4. build + TypeScript + tests ;
+5. captures AFTER 390 / 430 / 768 / 1280 ;
+6. comparer au target et corriger ;
+7. ensuite seulement brancher le Lot 3 data/biens ;
+8. closeout Lot 4 puis human gate merge/Vercel.
