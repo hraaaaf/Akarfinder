@@ -1,4 +1,4 @@
-name: Repo Cleanup Restore Cheerio
+name: Repo Cleanup Orphan Dependency Proof
 
 on:
   push:
@@ -11,7 +11,7 @@ permissions:
   contents: write
 
 jobs:
-  restore-and-validate:
+  prove-and-remove-helper:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -23,36 +23,28 @@ jobs:
         with:
           node-version: 24
           cache: npm
-      - name: Exhaustive tracked-source usage scan for remaining removals
+      - name: Prove PGlite and direct Playwright are unreferenced
         shell: bash
         run: |
-          echo '=== pglite/playwright tracked references excluding manifests/helper ==='
-          git grep -n -i -E '(@electric-sql/pglite|pglite|playwright)' -- . \
+          set -euo pipefail
+          if git grep -n -i -E '(@electric-sql/pglite|pglite|playwright)' -- . \
             ':!package.json' \
             ':!package-lock.json' \
-            ':!.github/workflows/repo-cleanup-restore-cheerio.yml' || true
-      - name: Restore active cheerio dependency only
-        run: |
+            ':!.github/workflows/repo-cleanup-restore-cheerio.yml'; then
+            echo 'Tracked references found: dependency removal is not proven safe.'
+            exit 1
+          fi
           node <<'NODE'
-          const fs = require('fs');
-          const version = '^1.2.0';
-          const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-          const lock = JSON.parse(fs.readFileSync('package-lock.json', 'utf8'));
-
-          pkg.devDependencies ??= {};
-          lock.packages ??= {};
-          lock.packages[''] ??= {};
-          lock.packages[''].devDependencies ??= {};
-
-          pkg.devDependencies.cheerio = version;
-          lock.packages[''].devDependencies.cheerio = version;
-
-          const sortObject = (obj) => Object.fromEntries(Object.entries(obj).sort(([a], [b]) => a.localeCompare(b)));
-          pkg.devDependencies = sortObject(pkg.devDependencies);
-          lock.packages[''].devDependencies = sortObject(lock.packages[''].devDependencies);
-
-          fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
-          fs.writeFileSync('package-lock.json', JSON.stringify(lock, null, 2) + '\n');
+          const pkg = require('./package.json');
+          const direct = { ...(pkg.dependencies || {}), ...(pkg.devDependencies || {}) };
+          for (const name of ['@electric-sql/pglite', 'playwright']) {
+            if (Object.prototype.hasOwnProperty.call(direct, name)) {
+              throw new Error(`${name} is still declared directly`);
+            }
+          }
+          if (!Object.prototype.hasOwnProperty.call(direct, 'cheerio')) {
+            throw new Error('cheerio must remain: active scraper dependency');
+          }
           NODE
       - name: Validate dependency graph
         run: npm ci
@@ -60,12 +52,13 @@ jobs:
         run: npx tsc --noEmit
       - name: Scraper regression suite
         run: npm run test:scrapers
-      - name: Commit restored dependency
+      - name: Remove temporary proof workflow
+        shell: bash
         run: |
+          set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add package.json package-lock.json
-          git diff --cached --quiet && exit 0
-          git commit -m "fix(cleanup): keep active cheerio dependency"
+          git rm .github/workflows/repo-cleanup-restore-cheerio.yml
+          git commit -m "chore(cleanup): remove temporary dependency proof workflow"
           git pull --rebase origin chore/repo-cleanup-structural-2
           git push origin HEAD:chore/repo-cleanup-structural-2
