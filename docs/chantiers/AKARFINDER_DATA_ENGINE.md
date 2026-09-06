@@ -45,7 +45,7 @@ Aucun prix n'est inventé. Les prix EUR/USD conservés le sont dans leur devise 
 ### Canonical Hygiene Mubawab
 **CLASSIFICATION + QUARANTAINE PHYSIQUE TERMINÉES**
 
-`listing_sources` classifiées : **1 286**
+Classification initiale `listing_sources` : **1 286**
 - vraies pages détail : **481**, `canonical_eligible=true`
 - `/is/` search : **663**, `canonical_eligible=false`
 - legacy search surfaces : **123**, `canonical_eligible=false`
@@ -53,14 +53,13 @@ Aucun prix n'est inventé. Les prix EUR/USD conservés le sont dans leur devise 
 - project pages : **6**, `canonical_eligible=false`
 - autre non-individuel : **1**, `canonical_eligible=false`
 
-Total non individuel : **805**.
+Total non individuel initial : **805**.
 
-État live vérifié après verrouillage :
-- sources non individuelles encore actives : **0 / 805**
-- lignes `thin_index_search_documents` liées à ces mauvaises URLs : **446**
-- lignes mauvaises encore servables : **0 / 446**
+État live vérifié après verrouillage et après P3 :
+- sources Mubawab non détail actives : **0**
 - trigger de quarantaine `listing_sources` présent : **oui**
 - trigger de protection `thin_index_search_documents` présent : **oui**
+- aucune mauvaise surface search réactivée par P3
 
 Test de non-régression DB : tentative transactionnelle de réactiver une source quarantinée avec `is_active=true` => valeur retournée **false** ; transaction annulée ensuite. Le verrou empêche donc la réactivation par une ingestion legacy.
 
@@ -70,23 +69,112 @@ Commits de fermeture :
 
 Migration live appliquée : `lock_mubawab_source_quarantine_v1`.
 
+### P3 — Promotion vers `property_listings`
+**NOYAU STRICT ACTUEL TERMINÉ**
+
+Baseline avant P3 :
+- `property_listings` : **7 928**
+- `listing_sources` Mubawab : **1 286**
+
+État après P3 :
+- `property_listings` : **19 609**
+- `listing_sources` Mubawab : **12 967**
+- nouvelles promotions déterministes Mubawab : **11 681**
+- nouvelles sources Mubawab liées : **11 681**
+- orphelins P3 : **0**
+- sources P3 inactives / inéligibles / non-détail : **0**
+- titres `%XX` encore encodés parmi les promotions P3 : **0**
+- IDs `current_verified` désormais représentés par au moins une source Mubawab détail : **11 833 / 18 445**
+
+Gate strict observé : **11 781** candidats :
+- **11 681** nouvelles promotions déterministes
+- **97** étaient déjà représentés dans `listing_sources`
+- **3** titres décodés > 240 caractères exclus par prudence
+
+Donc **11 778 / 11 781** candidats du gate strict sont représentés ; les 3 exclus restent internes.
+
+Règles P3 appliquées :
+- fraîcheur `>= 90`
+- état `fresh_confirmed` ou `likely_active`
+- URL Mubawab détail `/a/<id>`
+- ville `unique`
+- transaction `unique`
+- type de bien `unique`
+- titre `unique`
+- aucun conflit critique
+- prix canonique en MAD uniquement quand la devise native observée est MAD ; aucune conversion arbitraire
+- empreinte déterministe : SHA-256 de `mubawab:<source_listing_id>`
+- `source_offer_key = source_listing_id`
+- source créée en `canonical_kind=detail`, `canonical_eligible=true`
+
+Qualité titre :
+- **9 461** titres strictement qualifiés provenaient du slug canonique avec percent-encoding
+- décodage UTF-8 déterministe effectué
+- **0** séquence `%XX` résiduelle après décodage
+- **3** titres > 240 caractères non promus
+
+Incident d'exécution P3-A :
+- une première CTE data-modifying a inséré **2 309** `property_listings` mais **0** `listing_sources`, à cause du snapshot PostgreSQL entre CTE sœurs
+- incident détecté immédiatement
+- réparation atomique : **2 309 / 2 309** sources créées ensuite
+- certification finale : **0 orphelin**
+- les lots suivants ont utilisé `INSERT ... RETURNING` comme relation source de la CTE suivante afin d'éviter cette classe d'erreur
+
+Résidu volontairement non promu :
+- **5 025** lignes présentent notamment un conflit explicite sur `property_type`
+- les autres lignes incomplètes / ambiguës restent matière interne et ne sont pas forcées dans le canonique
+
+### P4 — Déduplication inter-portails
+**OUVERT — SHADOW AUDIT + PREMIERS GROUPES HAUTE CONFIANCE**
+
+Baseline P4 :
+- biens canoniques déjà reliés à plusieurs portails : **0**
+- lignes avec `duplicate_group_id` préexistantes : **82**
+- groupes préexistants : **54**
+- groupes multi-lignes préexistants : **14**
+
+Audit shadow Mubawab vs autres portails, à ville/type/transaction cohérents et avec garde-fous prix/surface lorsqu'ils sont disponibles :
+- paires préfiltrées : **161 271**
+- similarité titre `>= 0,70` : **133**
+- `>= 0,80` : **37**
+- `>= 0,90` : **8**
+- paires `>= 0,80` disposant simultanément du prix et de la surface des deux côtés : **0**
+
+Conclusion : un seuil titre seul est insuffisant. Exemple de faux positif observé : une fiche générique `Terrain titré à vendre` d'un portail correspondait à deux annonces Mubawab distinctes. Aucune fusion automatique globale n'est donc autorisée sur ce seul signal.
+
+Trois paires cross-postées très fortement confirmées ont été **marquées seulement**, sans fusion destructive, suppression ni déplacement de source :
+- `p4v1_lisf_mhamid_8214447` — listings **8126 + 29434** — score titre **1,000000** — même maison Mhamid, même surface 97 m²
+- `p4v1_lisf_majorelle_8349003` — listings **2071 + 33044** — score titre **0,916667** — même appartement Majorelle, même surface 87 m²
+- `p4v1_lisf_souihla_8164127` — listings **3840 + 28959** — score titre **0,901639** — même villa Souihla au libellé très spécifique
+
+État après ce marquage :
+- nouveaux groupes P4 haute confiance : **3**
+- lignes marquées : **6**
+- aucune ligne supprimée
+- aucun `property_listing_id` déplacé
+- aucune `listing_source` fusionnée
+- aucun déploiement public déclenché
+
+P4 reste en cours : le prochain objectif est de transformer les groupes haute confiance en `1 bien canonique -> N sources` uniquement après vérification que la consolidation n'entraîne ni perte de donnée ni régression de recherche.
+
 ### État GitHub / livraison
 - branche : `feat/mubawab-full-enumeration`
-- PR : **#997 OPEN + DRAFT**
+- PR : **#997 OPEN + READY FOR REVIEW**
 - merge : **NON**
 - déploiement Vercel : **NON**
-- promotion P3 vers `property_listings` : **NON AUTORISÉE / NON LANCÉE**
+- P3 : **AUTORISÉ ET EXÉCUTÉ pour le noyau strict actuel**
+- P4 : **audit + marquage non destructif en cours**
 
-CI du commit `31120707c9ab0320362d070066c581a854408cbd` au moment du handover :
+Dernier état CI certifié avant la présente mise à jour documentaire, sur `5794024bd7bcdbd4a9e92a45c25b42642970262d` :
 - CI Workflow Efficiency Policy : **SUCCESS**
-- Phase 1 P0 Closure Gate : **in_progress**
-- Phase 1 P1 Final Sweep Gate : **in_progress**
-- Phase 1 P2 Residual Closure Gate : **in_progress**
-- Canonical Baseline Validation : **in_progress**
-- Canonical Baseline Compile Validation : **in_progress**
-- UX Gate 0 Contracts : **in_progress**
+- Phase 1 P0 Closure Gate : **SUCCESS**
+- Phase 1 P1 Final Sweep Gate : **SUCCESS**
+- Phase 1 P2 Residual Closure Gate : **SUCCESS**
+- Canonical Baseline Validation : **SUCCESS**
+- Canonical Baseline Compile Validation : **SUCCESS**
+- UX Gate 0 Contracts : **SUCCESS**
 
-Une CI `in_progress` n'annule pas les preuves DB déjà obtenues, mais elle ne doit pas être déclarée verte avant conclusion réelle.
+Toute nouvelle CI déclenchée par la mise à jour de ce fichier doit être observée avant d'être déclarée verte.
 
 ---
 
@@ -157,7 +245,7 @@ Transformer les IDs bruts en fiches exploitables sans inventer les champs absent
 ## P3 — Promotion vers `property_listings`
 
 ### Statut
-**PAS ENCORE AUTORISÉE.** Toute écriture de promotion vers `property_listings` nécessite une autorisation explicite séparée.
+**NOYAU STRICT ACTUEL TERMINÉ.** Les résidus ambigus restent non promus tant que leurs conflits ne sont pas résolus.
 
 ### Goal
 Promouvoir progressivement les candidats suffisamment fiables vers le modèle canonique.
@@ -177,12 +265,15 @@ Promouvoir progressivement les candidats suffisamment fiables vers le modèle ca
 
 ### Preuve
 - delta avant/après `property_listings`
-- tests de recherche
-- contrôle de régression
+- relation 1:1 vérifiée entre chaque promotion déterministe et sa `listing_source`
+- contrôle de régression sur quarantaine canonique
 
 ---
 
 ## P4 — Déduplication inter-portails
+
+### Statut
+**EN COURS — politique conservatrice.** Aucun regroupement global fondé sur la seule similarité de titre.
 
 ### Goal
 Reconnaître plusieurs annonces comme représentations d'un même bien.
@@ -207,6 +298,7 @@ Reconnaître plusieurs annonces comme représentations d'un même bien.
 - échantillon annoté
 - précision / rappel estimés
 - groupes suspects audités
+- consolidation testée sans perte de données
 
 ---
 
@@ -275,9 +367,9 @@ Maximiser la couverture Mubawab puis reproduire le pipeline sur Avito, Agenz, Sa
 1. **Freshness Engine** — terminé
 2. **Enrichissement Mubawab** — terminé pour le lot actuel
 3. **Canonical Hygiene / quarantine** — terminé et verrouillé
-4. **Promotion vers `property_listings`** — prochain lot, autorisation explicite requise
-5. **Déduplication inter-portails**
-6. **Ranking AkarFinder**
+4. **Promotion vers `property_listings`** — noyau strict actuel terminé
+5. **Déduplication inter-portails** — en cours, shadow audit + 3 groupes haute confiance
+6. **Ranking AkarFinder** — à suivre après consolidation P4 sûre
 7. **Archive & Market Memory**
 8. **Coverage Expansion multi-sources**
 
@@ -288,7 +380,8 @@ Maximiser la couverture Mubawab puis reproduire le pipeline sur Avito, Agenz, Sa
 - pas de suppression destructive du corpus historique par défaut
 - pas de publication publique d'un candidat non qualifié
 - toute source `canonical_eligible=false` doit rester `is_active=false` et non servable
-- pas d'écriture P3 `property_listings` sans autorisation explicite
+- pas de promotion d'un résidu P3 ambigu sans résolution de ses conflits
+- pas de consolidation destructive P4 sans preuve de non-régression
 - pas de merge sans autorisation explicite
 - pas de déploiement Vercel sans autorisation explicite
 - tout lot significatif doit verrouiller : **Goal / Succès / Preuve**
