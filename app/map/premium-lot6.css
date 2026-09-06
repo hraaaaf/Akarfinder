@@ -397,3 +397,36 @@
     opacity: .76 !important;
   }
 }
+
+/* 2L.2 — optical polish only. Keep imagery and geography sourced as-is. */
+[data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) [data-akarfinder-national-map] .maplibregl-canvas {
+  filter: saturate(.94) contrast(.91) brightness(1.115) sepia(.035) !important;
+}
+
+@media (min-width: 1024px) {
+  /* Maârif content fits in the rail: prevent accidental internal scroll from hiding the editorial heading. */
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-map-decision-rail:has(.p4-premium-local-guide) {
+    overflow-y: clip !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-premium-context-header h2 {
+    display: block !important;
+    visibility: visible !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-premium-context-header > p:last-child {
+    max-width: 34ch !important;
+    line-height: 1.52 !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-premium-local-guide-list article {
+    min-height: 76px !important;
+    background: rgb(252 251 247 / .94) !important;
+  }
+}
+
+@media (max-width: 1023px) {
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) [data-akarfinder-national-map] .maplibregl-canvas {
+    filter: saturate(.96) contrast(.93) brightness(1.09) sepia(.025) !important;
+  }
+}
