@@ -5,8 +5,12 @@ import type { LightSpecification, Map as MapLibreMap } from "maplibre-gl";
 
 const BUILDING_SOURCE = "akarfinder-vivre-ici-3d-buildings-source";
 export const BUILDING_LAYER = "akarfinder-vivre-ici-3d-buildings";
+const IMAGERY_SOURCE = "akarfinder-vivre-ici-world-imagery";
+const IMAGERY_LAYER = "akarfinder-vivre-ici-world-imagery-layer";
 const DISTRICT_SOURCE = "akarfinder-national-neighborhood-points";
 const OPENFREEMAP_VECTOR_URL = "https://tiles.openfreemap.org/planet";
+const WORLD_IMAGERY_TILE_URL = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
+const WORLD_IMAGERY_ATTRIBUTION = "© Esri, Maxar, Earthstar Geographics, GIS User Community";
 const CASABLANCA_3D_ZOOM = 15.5;
 const CASABLANCA_3D_PITCH = 60;
 const CASABLANCA_3D_BEARING = -28;
@@ -43,6 +47,36 @@ type PaintSnapshot = Map<string, unknown>;
 
 function firstLabelLayerId(map: MapLibreMap): string | undefined {
   return map.getStyle().layers?.find((layer) => layer.type === "symbol" && Boolean(layer.layout?.["text-field"]))?.id;
+}
+
+function ensureImageryLayer(map: MapLibreMap): void {
+  if (!map.getSource(IMAGERY_SOURCE)) {
+    map.addSource(IMAGERY_SOURCE, {
+      type: "raster",
+      tiles: [WORLD_IMAGERY_TILE_URL],
+      tileSize: 256,
+      minzoom: 0,
+      maxzoom: 19,
+      attribution: WORLD_IMAGERY_ATTRIBUTION,
+    });
+  }
+
+  if (!map.getLayer(IMAGERY_LAYER)) {
+    map.addLayer({
+      id: IMAGERY_LAYER,
+      type: "raster",
+      source: IMAGERY_SOURCE,
+      minzoom: 10,
+      paint: {
+        "raster-opacity": 0.93,
+        "raster-saturation": -0.05,
+        "raster-contrast": 0.06,
+        "raster-brightness-min": 0.05,
+        "raster-brightness-max": 0.98,
+        "raster-fade-duration": 180,
+      },
+    }, firstLabelLayerId(map));
+  }
 }
 
 function ensureBuildingLayer(map: MapLibreMap): void {
@@ -88,15 +122,17 @@ function ensureBuildingLayer(map: MapLibreMap): void {
         ["get", "render_height"],
       ],
       "fill-extrusion-base": ["coalesce", ["get", "render_min_height"], 0],
-      "fill-extrusion-opacity": 0.91,
+      "fill-extrusion-opacity": 0.82,
       "fill-extrusion-vertical-gradient": true,
     },
   }, firstLabelLayerId(map));
 }
 
-function removeBuildingLayer(map: MapLibreMap): void {
+function removePresentationLayers(map: MapLibreMap): void {
   if (map.getLayer(BUILDING_LAYER)) map.removeLayer(BUILDING_LAYER);
   if (map.getSource(BUILDING_SOURCE)) map.removeSource(BUILDING_SOURCE);
+  if (map.getLayer(IMAGERY_LAYER)) map.removeLayer(IMAGERY_LAYER);
+  if (map.getSource(IMAGERY_SOURCE)) map.removeSource(IMAGERY_SOURCE);
 }
 
 function muteBasemapSymbols(map: MapLibreMap, snapshots: Map<string, SymbolOpacitySnapshot>): void {
@@ -107,8 +143,8 @@ function muteBasemapSymbols(map: MapLibreMap, snapshots: Map<string, SymbolOpaci
     const iconOpacity = map.getPaintProperty(layer.id, "icon-opacity");
     snapshots.set(layer.id, { textOpacity, iconOpacity });
     try {
-      if (layer.layout?.["text-field"] !== undefined) map.setPaintProperty(layer.id, "text-opacity", 0.16);
-      if (layer.layout?.["icon-image"] !== undefined) map.setPaintProperty(layer.id, "icon-opacity", 0.08);
+      if (layer.layout?.["text-field"] !== undefined) map.setPaintProperty(layer.id, "text-opacity", 0.12);
+      if (layer.layout?.["icon-image"] !== undefined) map.setPaintProperty(layer.id, "icon-opacity", 0.05);
     } catch {
       // Third-party basemap symbol layers do not all expose identical paint properties.
     }
@@ -186,7 +222,9 @@ export function National3DBuildingsLayer({ citySlug, districtSlug }: Props) {
     const applyLayerState = () => {
       if (!map || cancelled || !map.isStyleLoaded()) return;
       if (enabled) {
+        ensureImageryLayer(map);
         ensureBuildingLayer(map);
+        map.setLayoutProperty(IMAGERY_LAYER, "visibility", "visible");
         map.setLayoutProperty(BUILDING_LAYER, "visibility", "visible");
         map.setLight(IMMERSIVE_LIGHT);
         muteBasemapSymbols(map, symbolSnapshots);
@@ -195,6 +233,7 @@ export function National3DBuildingsLayer({ citySlug, districtSlug }: Props) {
         restoreBasemapSymbols(map, symbolSnapshots);
         restoreTerritorialPresentation(map, presentationSnapshots);
         if (map.getLayer(BUILDING_LAYER)) map.setLayoutProperty(BUILDING_LAYER, "visibility", "none");
+        if (map.getLayer(IMAGERY_LAYER)) map.setLayoutProperty(IMAGERY_LAYER, "visibility", "none");
       }
     };
 
@@ -246,7 +285,7 @@ export function National3DBuildingsLayer({ citySlug, districtSlug }: Props) {
       try {
         restoreBasemapSymbols(map, symbolSnapshots);
         restoreTerritorialPresentation(map, presentationSnapshots);
-        removeBuildingLayer(map);
+        removePresentationLayers(map);
         map.easeTo({ pitch: 0, bearing: 0, duration: 0 });
       } catch {
         // The map can already be tearing down while the route changes.
