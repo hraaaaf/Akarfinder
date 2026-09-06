@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Building2, Layers3, MapPin, Search, ShieldCheck, Trees } from "lucide-react";
+import { Building2, MapPin, Search, ShieldCheck, Trees } from "lucide-react";
 import { useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { resolveCityEntity, resolveNeighborhoodEntity } from "@/lib/geo/geo-entity-registry";
@@ -29,7 +29,7 @@ export function P4MapDecisionRail() {
   const provider = getPremiumMarketIntelligenceProvider(navigationState.city);
   const searchHref = buildMapSearchHref(navigationState);
   const contextName = districtEntity?.canonical_name ?? cityName;
-  const title = cityName === "Maroc" ? "Où vivre au Maroc ?" : `Vivre à ${contextName}`;
+  const title = cityName === "Maroc" ? "Où vivre au Maroc ?" : contextName;
 
   return (
     <aside
@@ -42,22 +42,25 @@ export function P4MapDecisionRail() {
 
       <header className="p4-premium-context-header">
         <p className="text-[9px] font-extrabold uppercase tracking-[0.16em] text-brand-primary">
-          Vivre ici {cityName !== "Maroc" ? `› ${cityName}` : "› Maroc"}
+          Vivre ici
         </p>
-        <h2 className="mt-1 text-[clamp(20px,2vw,28px)] font-extrabold tracking-[-0.035em] text-foreground">
+        <h2 className="mt-1 text-[clamp(22px,2vw,30px)] font-extrabold tracking-[-0.045em] text-foreground">
           {title}
         </h2>
-        <p className="mt-1.5 text-[11px] leading-[1.55] text-muted-foreground">
+        {districtEntity ? (
+          <p className="p4-premium-context-location">{cityName}</p>
+        ) : null}
+        <p className="mt-2 text-[11px] leading-[1.55] text-muted-foreground">
           {districtEntity
-            ? `${districtEntity.canonical_name} dans son contexte : repères de vie locale disponibles et accès aux biens sans fausse précision.`
+            ? `Découvrez ${districtEntity.canonical_name} à travers les repères réellement disponibles. Aucun prix, temps, distance ou emplacement de bien n’est déduit.`
             : cityName === "Maroc"
-              ? "Comparez les territoires disponibles, puis descendez vers les villes, quartiers et biens avec une précision explicitement qualifiée."
-              : "Explorez les quartiers, les repères disponibles et les biens de la zone sans inventer de proximité ni de position."}
+              ? "Explorez les territoires disponibles puis descendez vers les villes et quartiers avec une précision explicitement qualifiée."
+              : `Explorez ${cityName} et ses quartiers avec des repères sourcés uniquement.`}
         </p>
       </header>
 
       <nav className="p4-premium-tabs" aria-label="Contexte Vivre ici">
-        <span aria-current="page">Aperçu</span>
+        <span aria-current="page">Vue d’ensemble</span>
         <span>Vie locale</span>
         {provider === "rabat-market-intelligence" ? <span>Prix</span> : null}
         <Link href={searchHref}>Biens</Link>
@@ -65,24 +68,19 @@ export function P4MapDecisionRail() {
 
       <section className="p4-premium-signal-grid" aria-label="Repères disponibles">
         <div>
-          <Layers3 size={16} aria-hidden="true" />
-          <strong>{districtEntity ? "Quartier" : "Territoire"}</strong>
-          <span>{districtEntity?.canonical_name ?? cityName}</span>
-        </div>
-        <div>
           <MapPin size={16} aria-hidden="true" />
-          <strong>Vie locale</strong>
-          <span>Selon disponibilité</span>
-        </div>
-        <div>
-          <Trees size={16} aria-hidden="true" />
           <strong>Repères</strong>
           <span>Sourcés uniquement</span>
         </div>
         <div>
+          <Trees size={16} aria-hidden="true" />
+          <strong>Vie locale</strong>
+          <span>Selon disponibilité</span>
+        </div>
+        <div>
           <ShieldCheck size={16} aria-hidden="true" />
           <strong>Biens</strong>
-          <span>Exact exigé pour un pin</span>
+          <span>Pin exact requis</span>
         </div>
       </section>
 
@@ -92,14 +90,11 @@ export function P4MapDecisionRail() {
             {provider === "rabat-market-intelligence" ? "Marché observé" : "Données de marché"}
           </p>
           <p className="mt-1 text-[12px] font-extrabold text-foreground">
-            {provider === "rabat-market-intelligence" ? "Indicateurs disponibles" : "Non publiées pour cette vue"}
+            {provider === "rabat-market-intelligence" ? "Indicateurs disponibles" : "Publication conditionnée à une source validée"}
           </p>
         </div>
-        <span className="rounded-full border border-border bg-surface px-2.5 py-1 text-[8.5px] font-extrabold text-muted-foreground">
-          {provider === "rabat-market-intelligence" ? "Observé" : "Fail closed"}
-        </span>
         <p className="col-span-full text-[9.5px] leading-4 text-muted-foreground">
-          Aucun prix, temps de trajet, distance ou proximité précise n’est affiché sans source validée.
+          La présentation premium ne remplit jamais les cases manquantes par estimation.
         </p>
       </section>
 
