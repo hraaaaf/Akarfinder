@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - "scripts/audits/historical-gap-hunt.ts"
+      - "scripts/audits/candidate-lake-q1a-1immo-replay.ts"
       - "scripts/audits/candidate-lake-q1a-db-export.ts"
       - "scripts/audits/candidate-lake-q1a-massx2-replay.ts"
       - ".github/workflows/historical-gap-hunt.yml"
@@ -58,9 +59,8 @@ jobs:
     env:
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-      GAP_HUNT_TARGETS: 1immo.ma
-      GAP_HUNT_AS_OF: ${{ matrix.as_of }}
-      GAP_HUNT_OUT: .tmp/historical-gap-hunt-1immo-${{ matrix.label }}
+      Q1A_1IMMO_AS_OF: ${{ matrix.as_of }}
+      Q1A_1IMMO_OUT: .tmp/candidate-lake-q1a-1immo-${{ matrix.label }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -68,24 +68,23 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - name: Replay 1immo historical state read-only
-        run: npx tsx scripts/audits/historical-gap-hunt.ts
-      - name: Verify historical replay invariants
+      - name: Replay exact 1immo historical state read-only
+        run: npx tsx scripts/audits/candidate-lake-q1a-1immo-replay.ts
+      - name: Verify exact 1immo historical replay
         run: |
           node - <<'NODE'
           const fs=require('fs');
-          const dir=process.env.GAP_HUNT_OUT;
+          const dir=process.env.Q1A_1IMMO_OUT;
           const p=JSON.parse(fs.readFileSync(`${dir}/summary.json`,'utf8'));
-          if(p.readOnly!==true || p.databaseWrites!==0 || p.sourceNetworkRequests!==0 || p.detailPageFetches!==0) throw new Error('read-only invariant failed');
-          if(p.targets.length!==1 || p.targets[0]!=='1immo.ma') throw new Error('unexpected target');
-          const row=p.domains.find(x=>x.sourceDomain==='1immo.ma');
-          if(!row) throw new Error('1immo missing');
-          console.log(JSON.stringify({asOf:p.asOf,oneImmo:row,hash:p.hashes['exact-net-new/1immo.ma.txt']},null,2));
+          if(p.readOnly!==true || p.databaseWrites!==0 || p.productionWrites!==0 || p.sourceNetworkRequests!==0 || p.sourceSiteFetches!==0 || p.vercelDeployments!==0) throw new Error('read-only boundary violated');
+          if(!p.exactHistoricalMatch) throw new Error(`1immo historical mismatch ${JSON.stringify(p.actual)}`);
+          if(p.actual.discoveryDistinct!==5219 || p.actual.detailDistinct!==3661 || p.actual.exactOverlapSeeds!==190 || p.actual.exactNetNewVsSeeds!==3471) throw new Error('1immo count drift');
+          console.log(JSON.stringify({asOf:p.asOf,actual:p.actual,manifest:p.hashes['manifest.jsonl']},null,2));
           NODE
       - uses: actions/upload-artifact@v4
         with:
-          name: historical-gap-hunt-1immo-${{ matrix.label }}
-          path: .tmp/historical-gap-hunt-1immo-${{ matrix.label }}/
+          name: candidate-lake-q1a-1immo-${{ matrix.label }}
+          path: .tmp/candidate-lake-q1a-1immo-${{ matrix.label }}/
           if-no-files-found: error
           retention-days: 30
 
