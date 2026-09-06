@@ -1,4 +1,4 @@
-// Q1A DATA4.9B recovery entrypoint.
-// The earlier whole-domain CDX probe was evidence-only and over-collected historical generations.
-// This entrypoint now replays only archived robots.txt + declared sitemap snapshots before the frozen cutoff.
-import './candidate-lake-q1a-data49b-wayback-sitemap-recovery';
+// Q1A DATA4.9B archive-recovery entrypoint.
+// Replays only archived copies of the exact Registry robots.txt URLs and their declared sitemaps.
+// No current source-site request, no detail-page request, no WARC fetch, no database write.
+import './candidate-lake-q1a-data49b-wayback-sitemap-recovery-v2';
