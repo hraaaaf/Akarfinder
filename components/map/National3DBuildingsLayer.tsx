@@ -27,6 +27,11 @@ type NationalMapWindow = Window & {
   __AKARFINDER_NATIONAL_MAP__?: MapLibreMap;
 };
 
+type SymbolOpacitySnapshot = {
+  textOpacity: unknown;
+  iconOpacity: unknown;
+};
+
 function firstLabelLayerId(map: MapLibreMap): string | undefined {
   return map.getStyle().layers?.find((layer) => layer.type === "symbol" && Boolean(layer.layout?.["text-field"]))?.id;
 }
@@ -85,6 +90,35 @@ function removeBuildingLayer(map: MapLibreMap): void {
   if (map.getSource(BUILDING_SOURCE)) map.removeSource(BUILDING_SOURCE);
 }
 
+function muteBasemapSymbols(map: MapLibreMap, snapshots: Map<string, SymbolOpacitySnapshot>): void {
+  snapshots.clear();
+  for (const layer of map.getStyle().layers ?? []) {
+    if (layer.type !== "symbol" || layer.id.startsWith("akarfinder-")) continue;
+    const textOpacity = map.getPaintProperty(layer.id, "text-opacity");
+    const iconOpacity = map.getPaintProperty(layer.id, "icon-opacity");
+    snapshots.set(layer.id, { textOpacity, iconOpacity });
+    try {
+      if (layer.layout?.["text-field"] !== undefined) map.setPaintProperty(layer.id, "text-opacity", 0.24);
+      if (layer.layout?.["icon-image"] !== undefined) map.setPaintProperty(layer.id, "icon-opacity", 0.14);
+    } catch {
+      // Third-party basemap symbol layers do not all expose identical paint properties.
+    }
+  }
+}
+
+function restoreBasemapSymbols(map: MapLibreMap, snapshots: Map<string, SymbolOpacitySnapshot>): void {
+  for (const [layerId, snapshot] of snapshots) {
+    if (!map.getLayer(layerId)) continue;
+    try {
+      map.setPaintProperty(layerId, "text-opacity", (snapshot.textOpacity ?? null) as never);
+      map.setPaintProperty(layerId, "icon-opacity", (snapshot.iconOpacity ?? null) as never);
+    } catch {
+      // Style teardown can remove paint properties before React cleanup finishes.
+    }
+  }
+  snapshots.clear();
+}
+
 function selectedDistrictCenter(map: MapLibreMap, districtSlug: string | null): [number, number] | null {
   if (!districtSlug || !map.getSource(DISTRICT_SOURCE)) return null;
   const feature = map.querySourceFeatures(DISTRICT_SOURCE).find((item) => item.properties?.slug === districtSlug);
@@ -108,6 +142,7 @@ export function National3DBuildingsLayer({ citySlug, districtSlug }: Props) {
     let frame = 0;
     let cameraAttempts = 0;
     let map: MapLibreMap | null = null;
+    const symbolSnapshots = new Map<string, SymbolOpacitySnapshot>();
 
     const applyLayerState = () => {
       if (!map || cancelled || !map.isStyleLoaded()) return;
@@ -115,8 +150,10 @@ export function National3DBuildingsLayer({ citySlug, districtSlug }: Props) {
         ensureBuildingLayer(map);
         map.setLayoutProperty(BUILDING_LAYER, "visibility", "visible");
         map.setLight(IMMERSIVE_LIGHT);
-      } else if (map.getLayer(BUILDING_LAYER)) {
-        map.setLayoutProperty(BUILDING_LAYER, "visibility", "none");
+        muteBasemapSymbols(map, symbolSnapshots);
+      } else {
+        restoreBasemapSymbols(map, symbolSnapshots);
+        if (map.getLayer(BUILDING_LAYER)) map.setLayoutProperty(BUILDING_LAYER, "visibility", "none");
       }
     };
 
@@ -166,6 +203,7 @@ export function National3DBuildingsLayer({ citySlug, districtSlug }: Props) {
       if (!map) return;
       map.off("style.load", applyLayerState);
       try {
+        restoreBasemapSymbols(map, symbolSnapshots);
         removeBuildingLayer(map);
         map.easeTo({ pitch: 0, bearing: 0, duration: 0 });
       } catch {

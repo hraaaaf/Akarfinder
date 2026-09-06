@@ -1,4 +1,4 @@
-/* VIVRE ICI — Premium 2f convergence, 2026-09-06
+/* VIVRE ICI — Premium 2g convergence, 2026-09-06
    Presentation only. No business or geographic data is created here. */
 
 [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) [data-akarfinder-national-map] .maplibregl-canvas {
@@ -89,4 +89,13 @@
 
 @media (max-width:430px) {
   [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) [data-akarfinder-neighborhood-preview] {max-height:min(27svh,220px) !important;}
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) [data-vivre-ici-3d-toggle] {
+    left:auto !important; right:12px !important; top:10px !important;
+  }
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) [data-akarfinder-national-neighborhood-overlay] > div:first-child {
+    left:12px !important; right:12px !important; top:70px !important;
+  }
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) [data-neighborhood-context-poi-controls] {
+    top:116px !important; transform:scale(.9); transform-origin:left top;
+  }
 }
