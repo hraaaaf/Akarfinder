@@ -60,6 +60,20 @@ async function restAll<T>(table: string, params: Record<string, string>): Promis
   }
 }
 
+async function mapWithConcurrency<T, R>(items: T[], concurrency: number, fn: (item: T) => Promise<R>): Promise<R[]> {
+  const out = new Array<R>(items.length);
+  let cursor = 0;
+  async function worker() {
+    for (;;) {
+      const index = cursor++;
+      if (index >= items.length) return;
+      out[index] = await fn(items[index]);
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(concurrency, items.length) }, () => worker()));
+  return out;
+}
+
 type SeedRow = {
   canonical_url: string;
   source_domain: string;
@@ -122,16 +136,19 @@ async function writeJsonl(name: string, rows: ManifestRow[]) {
   return { file: name, rows: rows.length, sha256: sha256(text) };
 }
 
+async function readSeedsForDomain(domain: string): Promise<SeedRow[]> {
+  return restAll<SeedRow>('source_offer_seeds', {
+    select: 'canonical_url,source_domain,seed_provider,first_observed_at,last_observed_at',
+    source_domain: `eq.${domain}`,
+  });
+}
+
 async function main(): Promise<void> {
   await fs.mkdir(OUT, { recursive: true });
 
-  // Server-side ordering on these audit tables is needlessly expensive. Q1A sorts
-  // every emitted identity locally before hashing, so retrieval order has no bearing
-  // on deterministic output.
-  const [allSeeds, b3Rows, canonicalLinkRows] = await Promise.all([
-    restAll<SeedRow>('source_offer_seeds', {
-      select: 'canonical_url,source_domain,seed_provider,first_observed_at,last_observed_at',
-    }),
+  // Retrieval order is deliberately irrelevant: every emitted lane is sorted locally
+  // before hashing. Avoid expensive server-side sorts on audit tables.
+  const [b3Rows, canonicalLinkRows] = await Promise.all([
     restAll<B3Row>('odm_b3_discovery_expansion_audit_v1', {
       select: 'source_domain,canonical_url,provider,last_seen_at,decision',
       decision: 'eq.reserve_unregistered_source',
@@ -143,7 +160,11 @@ async function main(): Promise<void> {
     }),
   ]);
 
-  const seedUrls = new Set(allSeeds.map((row) => row.canonical_url));
+  const strictDomains = [...new Set(b3Rows.filter((row) => strictB3Domain(row.source_domain)).map((row) => row.source_domain))].sort();
+  const seedDomains = [...new Set([...strictDomains, ...Object.keys(SEED_LANES)])].sort();
+  const seedGroups = await mapWithConcurrency(seedDomains, 8, readSeedsForDomain);
+  const allRelevantSeeds = seedGroups.flat();
+  const seedUrls = new Set(allRelevantSeeds.map((row) => row.canonical_url));
 
   const b3 = uniqueByIdentity(
     b3Rows
@@ -173,7 +194,7 @@ async function main(): Promise<void> {
     })),
   );
 
-  const seedLaneRows = allSeeds.filter((row) => Object.hasOwn(SEED_LANES, row.source_domain));
+  const seedLaneRows = allRelevantSeeds.filter((row) => Object.hasOwn(SEED_LANES, row.source_domain));
   const seeds = uniqueByIdentity(seedLaneRows.map((row) => ({
     lane: 'current_source_offer_seed_lanes_at_m250k_freeze',
     source: row.source_domain,
@@ -231,6 +252,7 @@ async function main(): Promise<void> {
     vercelDeployments: 0,
     expected: EXPECTED,
     actual: { b3StrictMorocco: b3.length, canonicalLinkV2: canonical.length, currentSeedLanes: seeds.length, total: combined.length },
+    b3StrictDomainCount: strictDomains.length,
     seedCounts,
     canonicalCounts,
     files,
