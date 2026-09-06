@@ -1,14 +1,16 @@
-﻿import assert from "node:assert/strict";
+import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { describe, it } from "node:test";
 import { geoEnrichedMockListings } from "@/lib/listings/mock-listings";
+import type { Listing } from "@/lib/listings/types";
 import {
   defaultMapFilters,
   filterMapListings,
   getMapClusters,
   getMapPoints,
   getMapSearchHref,
+  isExactMapListing,
 } from "@/lib/map/listing-map";
 import {
   NEIGHBORHOOD_POINTS,
@@ -19,60 +21,73 @@ import {
 
 // NOTE: As of MAP-NEIGHBORHOOD-INTELLIGENCE-1, the /map page uses neighborhood-data.ts
 // and no longer uses filterMapListings or MapFilters for its UI.
-// These helpers are preserved here for backward compatibility only.
+// These helpers are preserved here for backward compatibility only, but must stay fail-closed.
+
+const exactListing: Listing = {
+  ...geoEnrichedMockListings[0],
+  id: "exact-map-proof",
+  latitude: 33.585,
+  longitude: -7.632,
+  geo_precision: "exact",
+  geo_source: "manual_import",
+};
 
 describe("P10B - map helpers (listing-based, preserved for compat)", () => {
-  it("keeps only listings with geo coordinates", () => {
+  it("fails closed on centroid-enriched listings", () => {
     const listings = filterMapListings(geoEnrichedMockListings, {
       ...defaultMapFilters,
       hideDuplicates: false,
     });
 
-    assert.ok(listings.length > 0);
-    assert.ok(
-      listings.every(
-        (listing) =>
-          listing.latitude != null &&
-          listing.longitude != null
-      )
-    );
+    assert.equal(listings.length, 0);
+    assert.ok(geoEnrichedMockListings.some((listing) => listing.geo_precision === "neighborhood_centroid"));
+    assert.ok(geoEnrichedMockListings.every((listing) => isExactMapListing(listing) === false));
+  });
+
+  it("accepts only exact coordinates with traceable exact provenance", () => {
+    assert.equal(isExactMapListing(exactListing), true);
+    assert.equal(isExactMapListing({ ...exactListing, geo_source: "unknown" }), false);
+    assert.equal(isExactMapListing({ ...exactListing, geo_precision: "city_centroid" }), false);
+    assert.equal(isExactMapListing({ ...exactListing, latitude: 999 }), false);
+    assert.equal(isExactMapListing({ ...exactListing, longitude: Number.NaN }), false);
   });
 
   it("can hide likely duplicates without deleting source data", () => {
-    const duplicateLike = {
-      ...geoEnrichedMockListings[0],
+    const duplicateLike: Listing = {
+      ...exactListing,
       id: "duplicate-like-listing",
       duplicate_score: 0.82,
     };
 
-    const listings = filterMapListings([...geoEnrichedMockListings, duplicateLike], {
+    const listings = filterMapListings([exactListing, duplicateLike], {
       ...defaultMapFilters,
       hideDuplicates: true,
     });
 
-    assert.equal(
-      listings.some((listing) => listing.id === duplicateLike.id),
-      false
-    );
+    assert.deepEqual(listings.map((listing) => listing.id), [exactListing.id]);
   });
 
-  it("projects map points inside the controlled Morocco visual area", () => {
-    const points = getMapPoints(geoEnrichedMockListings);
+  it("projects map points only from real exact coordinates", () => {
+    const points = getMapPoints([...geoEnrichedMockListings, exactListing]);
 
-    assert.ok(points.length > 0);
+    assert.equal(points.length, 1);
+    assert.equal(points[0]?.listing.id, exactListing.id);
+    assert.equal(points[0]?.precisionLabel, "Position exacte");
     assert.ok(points.every((point) => point.x >= 8 && point.x <= 92));
     assert.ok(points.every((point) => point.y >= 8 && point.y <= 92));
   });
 
-  it("builds city clusters and search handoff URLs", () => {
-    const clusters = getMapClusters(geoEnrichedMockListings);
+  it("builds city clusters only from exact listings and keeps search handoff URLs", () => {
+    const clusters = getMapClusters([...geoEnrichedMockListings, exactListing]);
     const href = getMapSearchHref({
       ...defaultMapFilters,
       city: "Casablanca",
       transactionType: "buy",
     });
 
-    assert.ok(clusters.some((cluster) => cluster.city === "Casablanca"));
+    assert.equal(clusters.length, 1);
+    assert.equal(clusters[0]?.city, "Casablanca");
+    assert.equal(clusters[0]?.count, 1);
     assert.match(href, /^\/search\?/);
     assert.match(href, /city=Casablanca/);
     assert.match(href, /type=buy/);
@@ -97,13 +112,13 @@ describe("MAP-NEIGHBORHOOD-INTELLIGENCE-1 - neighborhood map contract", () => {
 
   it("/map n'utilise plus de contrat listings legacy", () => {
     assert.equal(neighborhoodExperienceSource.includes("/listings/"), false);
-    assert.equal(neighborhoodExperienceSource.includes("annonces analysÃ©es"), false);
-    assert.equal(neighborhoodExperienceSource.includes("biens analysÃ©s"), false);
-    assert.equal(neighborhoodExperienceSource.includes("densitÃ© d'annonces"), false);
+    assert.equal(neighborhoodExperienceSource.includes("annonces analysées"), false);
+    assert.equal(neighborhoodExperienceSource.includes("biens analysés"), false);
+    assert.equal(neighborhoodExperienceSource.includes("densité d'annonces"), false);
     assert.equal(neighborhoodExperienceSource.includes("clusters d'annonces"), false);
   });
 
-  it("neighborhood-data expose villes, quartiers et repÃ¨res sÃ»rs", () => {
+  it("neighborhood-data expose villes, quartiers et repères sûrs", () => {
     assert.ok(getNeighborhoodCities().length > 0);
     assert.ok(NEIGHBORHOOD_POINTS.some((point) => point.neighborhood != null));
     assert.ok(
@@ -149,14 +164,14 @@ describe("MAP-NEIGHBORHOOD-INTELLIGENCE-1 - neighborhood map contract", () => {
 
   it("no forbidden wording appears in the map neighborhood experience", () => {
     const forbidden = [
-      "annonces analysÃ©es",
-      "biens analysÃ©s",
-      "sources analysÃ©es",
-      "donnÃ©es analysÃ©es",
+      "annonces analysées",
+      "biens analysés",
+      "sources analysées",
+      "données analysées",
       "index AkarFinder",
-      "densitÃ© d'annonces",
+      "densité d'annonces",
       "clusters d'annonces",
-      "fiabilitÃ© moyenne des annonces",
+      "fiabilité moyenne des annonces",
     ];
 
     for (const word of forbidden) {
@@ -174,5 +189,3 @@ describe("MAP-NEIGHBORHOOD-INTELLIGENCE-1 - neighborhood map contract", () => {
     assert.equal(listingTypesSource.includes("reliability_score"), true);
   });
 });
-
-
