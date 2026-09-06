@@ -3,15 +3,90 @@
 ## Goal
 Construire un moteur de données immobilier interne capable de maximiser le corpus multi-sources, mesurer la fraîcheur, enrichir les annonces, dédupliquer les biens et promouvoir seulement les représentations suffisamment fiables vers la recherche publique AkarFinder.
 
-## État de départ vérifié
+## État vérifié — handover 2026-09-06
 
-- Corpus Mubawab interne : **37 420 IDs uniques**
-- Mubawab `current_verified` : **18 445**
-- Mubawab `historical_unverified` : **18 975**
-- `property_listings` existants : **7 921**
-- représentations de recherche publique : **21 537**
+### Corpus Mubawab
+- corpus interne total : **37 420 IDs uniques**
+- `current_verified` : **18 445**
+- `historical_unverified` : **18 975**
+- manifest robots-safe certifié : **3 174 / 3 174 shards**
+- aucune suppression destructive du corpus historique
 
-Le corpus historique n'est pas considéré comme mort par défaut. Il reste conservé comme matière interne et doit être scoré avant promotion publique.
+### P1 — Freshness Engine
+**TERMINÉ**
+
+Distribution certifiée :
+- score 100 : **12 149**
+- score 95 : **6 160**
+- score 90 : **136**
+- score 40 : **18 975**
+
+Le corpus complet est scoré et explicable. Les historiques restent conservés comme matière interne.
+
+### P2 — Enrichissement Mubawab
+**TERMINÉ pour le lot actuel**
+
+Sur les **18 445** lignes `current_verified` :
+- route enrichment : **18 445 / 18 445 = 100 %**
+- titre : **17 702 / 18 445 = 96,0 %**
+- prix connu : **12 584 / 18 445 = 68,22 %**
+- surface : **15 012 / 18 445 = 81,4 %**
+
+Statut prix explicite sur **18 445 / 18 445** :
+- `known` : **12 584**
+- `not_observed_on_card` : **4 058**
+- `not_disclosed` : **1 271**
+- `no_card_observation` : **468**
+- `ambiguous` : **62**
+- `rejected_evidence` : **2**
+
+Aucun prix n'est inventé. Les prix EUR/USD conservés le sont dans leur devise native sans conversion arbitraire.
+
+### Canonical Hygiene Mubawab
+**CLASSIFICATION + QUARANTAINE PHYSIQUE TERMINÉES**
+
+`listing_sources` classifiées : **1 286**
+- vraies pages détail : **481**, `canonical_eligible=true`
+- `/is/` search : **663**, `canonical_eligible=false`
+- legacy search surfaces : **123**, `canonical_eligible=false`
+- safe shards : **12**, `canonical_eligible=false`
+- project pages : **6**, `canonical_eligible=false`
+- autre non-individuel : **1**, `canonical_eligible=false`
+
+Total non individuel : **805**.
+
+État live vérifié après verrouillage :
+- sources non individuelles encore actives : **0 / 805**
+- lignes `thin_index_search_documents` liées à ces mauvaises URLs : **446**
+- lignes mauvaises encore servables : **0 / 446**
+- trigger de quarantaine `listing_sources` présent : **oui**
+- trigger de protection `thin_index_search_documents` présent : **oui**
+
+Test de non-régression DB : tentative transactionnelle de réactiver une source quarantinée avec `is_active=true` => valeur retournée **false** ; transaction annulée ensuite. Le verrou empêche donc la réactivation par une ingestion legacy.
+
+Commits de fermeture :
+- `80f3670f426f2a563f65b953ea807d7cac054239` — `db(data): enforce Mubawab canonical quarantine`
+- `31120707c9ab0320362d070066c581a854408cbd` — `db(data): lock Mubawab quarantine against reactivation`
+
+Migration live appliquée : `lock_mubawab_source_quarantine_v1`.
+
+### État GitHub / livraison
+- branche : `feat/mubawab-full-enumeration`
+- PR : **#997 OPEN + DRAFT**
+- merge : **NON**
+- déploiement Vercel : **NON**
+- promotion P3 vers `property_listings` : **NON AUTORISÉE / NON LANCÉE**
+
+CI du commit `31120707c9ab0320362d070066c581a854408cbd` au moment du handover :
+- CI Workflow Efficiency Policy : **SUCCESS**
+- Phase 1 P0 Closure Gate : **in_progress**
+- Phase 1 P1 Final Sweep Gate : **in_progress**
+- Phase 1 P2 Residual Closure Gate : **in_progress**
+- Canonical Baseline Validation : **in_progress**
+- Canonical Baseline Compile Validation : **in_progress**
+- UX Gate 0 Contracts : **in_progress**
+
+Une CI `in_progress` n'annule pas les preuves DB déjà obtenues, mais elle ne doit pas être déclarée verte avant conclusion réelle.
 
 ---
 
@@ -81,6 +156,9 @@ Transformer les IDs bruts en fiches exploitables sans inventer les champs absent
 
 ## P3 — Promotion vers `property_listings`
 
+### Statut
+**PAS ENCORE AUTORISÉE.** Toute écriture de promotion vers `property_listings` nécessite une autorisation explicite séparée.
+
 ### Goal
 Promouvoir progressivement les candidats suffisamment fiables vers le modèle canonique.
 
@@ -88,6 +166,7 @@ Promouvoir progressivement les candidats suffisamment fiables vers le modèle ca
 - score fraîcheur minimum
 - données minimales présentes
 - URL ou représentation source sûre
+- `canonical_eligible=true` pour toute source individuelle utilisée
 - aucune incohérence critique
 - déduplication source effectuée
 
@@ -193,13 +272,14 @@ Maximiser la couverture Mubawab puis reproduire le pipeline sur Avito, Agenz, Sa
 
 ## Ordre d'exécution
 
-1. **Freshness Engine**
-2. **Enrichissement Mubawab**
-3. **Promotion vers `property_listings`**
-4. **Déduplication inter-portails**
-5. **Ranking AkarFinder**
-6. **Archive & Market Memory**
-7. **Coverage Expansion multi-sources**
+1. **Freshness Engine** — terminé
+2. **Enrichissement Mubawab** — terminé pour le lot actuel
+3. **Canonical Hygiene / quarantine** — terminé et verrouillé
+4. **Promotion vers `property_listings`** — prochain lot, autorisation explicite requise
+5. **Déduplication inter-portails**
+6. **Ranking AkarFinder**
+7. **Archive & Market Memory**
+8. **Coverage Expansion multi-sources**
 
 ---
 
@@ -207,21 +287,22 @@ Maximiser la couverture Mubawab puis reproduire le pipeline sur Avito, Agenz, Sa
 
 - pas de suppression destructive du corpus historique par défaut
 - pas de publication publique d'un candidat non qualifié
-- pas d'écriture production hors lot explicitement autorisé
+- toute source `canonical_eligible=false` doit rester `is_active=false` et non servable
+- pas d'écriture P3 `property_listings` sans autorisation explicite
 - pas de merge sans autorisation explicite
 - pas de déploiement Vercel sans autorisation explicite
 - tout lot significatif doit verrouiller : **Goal / Succès / Preuve**
 - CI en cours n'arrête pas les travaux sûrs indépendants
+- aucune CI `in_progress` ne doit être présentée comme SUCCESS
 
 ---
 
 ## Cible produit
 
 Construire progressivement :
-
 - **100k+ annonces brutes multi-sources**
 - un corpus historique plus large encore
 - **50k–80k annonces réellement exploitables** comme cible intermédiaire
 - un moteur public propre, scoré, dédupliqué et explicable
 
-Le compteur brut n'est jamais le KPI final. Le KPI utile est : **couverture maximale x fraîcheur x qualité x déduplication**.
+Le compteur brut n'est jamais le KPI final. Le KPI utile est : **couverture maximale × fraîcheur × qualité × déduplication**.
