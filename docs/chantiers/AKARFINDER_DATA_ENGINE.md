@@ -70,7 +70,7 @@ Commits de fermeture :
 Migration live appliquée : `lock_mubawab_source_quarantine_v1`.
 
 ### P3 — Promotion vers `property_listings`
-**NOYAU STRICT ACTUEL TERMINÉ**
+**NOYAU STRICT TERMINÉ + RÉSIDU SCORÉ EN INTERNE**
 
 Baseline avant P3 :
 - `property_listings` : **7 928**
@@ -120,9 +120,23 @@ Incident d'exécution P3-A :
 - certification finale : **0 orphelin**
 - les lots suivants ont utilisé `INSERT ... RETURNING` comme relation source de la CTE suivante afin d'éviter cette classe d'erreur
 
-Résidu volontairement non promu :
-- **5 025** lignes présentent notamment un conflit explicite sur `property_type`
-- les autres lignes incomplètes / ambiguës restent matière interne et ne sont pas forcées dans le canonique
+#### P3-C — score interne des annonces douteuses
+Nouvelle doctrine : **douteux ≠ supprimé**. Les candidats incertains restent dans le corpus et reçoivent une note interne plus faible afin de former une future `tail` de ranking, sans les présenter artificiellement comme fiables.
+
+`metadata.internal_quality_v1` est désormais renseigné sur **18 445 / 18 445** lignes `current_verified` :
+- `S_strict` : **11 781** — score **80–99**, moyenne **93,9** — `rank_lane=primary_candidate`
+- `A_type_conflict_only` : **4 650** — score **40–49**, moyenne **47,1** — `rank_lane=tail`
+- `B_type_unresolved` : **1 147** — score **30–39**, moyenne **37,1** — `rank_lane=tail`
+- `C_city_uncertain` : **124** — score **20–29**, moyenne **26,3** — `rank_lane=tail`
+- `D_title_uncertain` : **743** — score **10–19**, moyenne **15,0** — `rank_lane=tail`
+
+Le score est explicable par les statuts ville / transaction / type / titre, puis par la présence du prix et de la surface. Il est stocké avec `public_status=internal_only` et ne remplace ni `reliability_score` public ni le registre de policy source.
+
+Résidu non représenté après P3 strict : **6 612** lignes `current_verified` :
+- **5 869** disposent encore d'une vraie URL Mubawab détail sûre et restent techniquement exploitables comme matière interne
+- **743** ont un titre / une représentation canonique insuffisante et ne disposent pas d'une URL détail sûre pour une éventuelle sortie
+
+Le registre live `source_policy_registry` garde `mubawab.ma` en `authorization_status=prohibited` avec politique `canonical_link_only`. Aucun score interne ne contourne ce garde-fou : **aucune publication publique supplémentaire n'a été ouverte**.
 
 ### P4 — Déduplication inter-portails
 **EN COURS — CLUSTERING MULTI-PORTAIL RÉEL OUVERT**
@@ -200,7 +214,7 @@ P4 reste en cours :
 - PR : **#997 OPEN + READY FOR REVIEW**
 - merge : **NON**
 - déploiement Vercel : **NON**
-- P3 : **AUTORISÉ ET EXÉCUTÉ pour le noyau strict actuel**
+- P3 : **noyau strict exécuté + 18 445 current_verified scorés en interne**
 - P4 : **6 clusters multi-portails réels, non destructifs**
 
 Dernier état CI certifié avant les mises à jour documentaires P3/P4, sur `5794024bd7bcdbd4a9e92a45c25b42642970262d` :
@@ -283,28 +297,31 @@ Transformer les IDs bruts en fiches exploitables sans inventer les champs absent
 ## P3 — Promotion vers `property_listings`
 
 ### Statut
-**NOYAU STRICT ACTUEL TERMINÉ.** Les résidus ambigus restent non promus tant que leurs conflits ne sont pas résolus.
+**NOYAU STRICT TERMINÉ ; résidu ambigu conservé et scoré en interne.** Une ambiguïté ne provoque plus une suppression logique du corpus.
 
 ### Goal
-Promouvoir progressivement les candidats suffisamment fiables vers le modèle canonique.
+Promouvoir progressivement les candidats suffisamment fiables vers le modèle canonique tout en conservant les autres comme `tail` interne scorée.
 
 ### Gates
 - score fraîcheur minimum
 - données minimales présentes
 - URL ou représentation source sûre
 - `canonical_eligible=true` pour toute source individuelle utilisée
-- aucune incohérence critique
+- aucune incohérence critique pour le noyau strict
 - déduplication source effectuée
 
 ### Succès
 - promotion idempotente
 - aucun doublon source
 - aucune baisse de qualité du moteur public
+- 100 % des `current_verified` disposent d'un score qualité interne explicable
+- les candidats douteux restent sous la bande de score des candidats stricts
 
 ### Preuve
 - delta avant/après `property_listings`
 - relation 1:1 vérifiée entre chaque promotion déterministe et sa `listing_source`
 - contrôle de régression sur quarantaine canonique
+- distribution `internal_quality_v1` par classe
 
 ---
 
@@ -355,9 +372,11 @@ Classer les résultats selon utilité réelle, pas seulement récence.
 - cohérence prix / surface
 - duplication
 - qualité globale
+- `internal_quality_v1.score` comme signal de tail interne, sans jamais contourner la policy source
 
 ### Succès
 - les meilleurs résultats remontent sans masquer artificiellement les historiques utiles
+- à pertinence comparable, les classes douteuses restent derrière les classes strictes
 
 ### Preuve
 - jeux de requêtes fixes
@@ -406,9 +425,9 @@ Maximiser la couverture Mubawab puis reproduire le pipeline sur Avito, Agenz, Sa
 1. **Freshness Engine** — terminé
 2. **Enrichissement Mubawab** — terminé pour le lot actuel
 3. **Canonical Hygiene / quarantine** — terminé et verrouillé
-4. **Promotion vers `property_listings`** — noyau strict actuel terminé
+4. **Promotion vers `property_listings`** — noyau strict terminé + tail interne scorée
 5. **Déduplication inter-portails** — en cours, 6 clusters multi-portails haute confiance
-6. **Ranking AkarFinder** — prochain lot : faire consommer les clusters sans perte de pertinence
+6. **Ranking AkarFinder** — prochain lot : consommer le score interne et les clusters sans contourner la policy source
 7. **Archive & Market Memory**
 8. **Coverage Expansion multi-sources**
 
@@ -417,9 +436,11 @@ Maximiser la couverture Mubawab puis reproduire le pipeline sur Avito, Agenz, Sa
 ## Garde-fous
 
 - pas de suppression destructive du corpus historique par défaut
+- une annonce douteuse n'est pas supprimée : elle reste matière interne scorée
 - pas de publication publique d'un candidat non qualifié
+- un score interne ne contourne jamais `source_policy_registry`
 - toute source `canonical_eligible=false` doit rester `is_active=false` et non servable
-- pas de promotion d'un résidu P3 ambigu sans résolution de ses conflits
+- pas de promotion publique d'un résidu P3 ambigu uniquement parce qu'il possède un score
 - pas de fusion P4 fondée sur la seule similarité de titre
 - pas de suppression/reparenting destructif pour créer un cluster multi-source
 - pas de merge sans autorisation explicite
