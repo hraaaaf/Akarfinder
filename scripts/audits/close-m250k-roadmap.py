@@ -1,0 +1,71 @@
+#!/usr/bin/env python3
+from pathlib import Path
+
+p = Path('docs/ROADMAP.md')
+s = p.read_text(encoding='utf-8')
+
+
+def once(old: str, new: str) -> None:
+    global s
+    count = s.count(old)
+    if count != 1:
+        raise SystemExit(f'ROADMAP anchor count={count}, expected=1: {old[:140]!r}')
+    s = s.replace(old, new, 1)
+
+
+once('**Statut : MARKET COVERAGE — M200K CLOSED / QUALITY + M250K STRETCH ACTIVE**',
+     '**Statut : MARKET COVERAGE — M250K CLOSED / QUALITY + CLUSTERING ACTIVE**')
+once('- **Stretch : >=250 000 candidates L0/L1.**',
+     '- **Stretch M250K : >=250 000 candidates L0/L1 — ATTEINT.**')
+
+anchor = '| Avito — HichamBenelmahi public GitHub CSV exact ID delta vs 19 739 baseline | **22 381** | ✅ HISTORICAL PUBLIC-DATASET L0 | run `34039440480`, artifact `9991207598` |'
+additions = '''| Avito — HichamBenelmahi public GitHub CSV exact ID delta vs 19 739 baseline | **22 381** | ✅ HISTORICAL PUBLIC-DATASET L0 | run `34039440480`, artifact `9991207598` |
+| Mubawab — MarwaneMLE public GitHub exact ID delta vs 57 213 union | **4 089** | ✅ HISTORICAL PUBLIC-DATASET L0 | run `34040109352`, artifact `9991403015` |
+| Mubawab — BenTouhami + Agadir + Loubaris public GitHub sequential delta | **15 514** | ✅ HISTORICAL PUBLIC-DATASET L0 | run `34040263021`, artifact `9991447841` |
+| Avito — public GitHub repo batch sequential delta vs 42 120 union | **4 784** | ✅ HISTORICAL PUBLIC-DATASET L0 | run `34040405000`, artifact `9991488198` |'''
+once(anchor, additions)
+
+once('**228 985 représentations candidates exactes par identité source/ID ou source/URL.**',
+     '**253 372 représentations candidates exactes par identité source/ID ou source/URL.**')
+once('`158 778 + 82 + 73 + 1 613 + 3 471 + 3 819 + 21 374 + 17 394 + 22 381 = 228 985`.',
+     '`158 778 + 82 + 73 + 1 613 + 3 471 + 3 819 + 21 374 + 17 394 + 22 381 + 4 089 + 15 514 + 4 784 = 253 372`.')
+once('**M200K est dépassé de 28 985 représentations candidates, soit 114,5 % du jalon. Le stretch M250K est à 91,6 %, reste 21 015.**',
+     '**M250K est dépassé de 3 372 représentations candidates : 253 372 / 250 000 = 101,35 %. M200K et M250K sont CLOSED.**')
+once('**Ces 1 938 ne sont pas incluses dans le compteur strict 228 985**',
+     '**Ces 1 938 ne sont pas incluses dans le compteur strict 253 372**')
+once("Ce n'est **pas** 228 985 biens uniques actifs.",
+     "Ce n'est **pas** 253 372 biens uniques actifs.")
+
+once(
+    '- `HichamBenelmahi/analyse-des-tendances-immobili-res-` : **20 459 IDs Mubawab distincts** dans les dumps publics vente/location ; baseline union déjà comptée **39 819 IDs**, overlap exact **3 065**, **+17 394 net-new** ; run `34039440480`, artifact `9991207598`.',
+    '- `HichamBenelmahi/analyse-des-tendances-immobili-res-` : **20 459 IDs Mubawab distincts** dans les dumps publics vente/location ; baseline union déjà comptée **39 819 IDs**, overlap exact **3 065**, **+17 394 net-new** ; run `34039440480`, artifact `9991207598`.\n'
+    '- `MarwaneMLE/morocco-appartements-price` : **8 745 IDs** trouvés, overlap **4 656** contre union 57 213, **+4 089 net-new** ; run `34040109352`, artifact `9991403015`, artifact SHA256 `80d1123e5f05b1d2f102a5767c85e202cb90283d469851b5599f9858e5ccdea2`.\n'
+    '- Batch `BenTouhami-MR` + `hassanelq` + `Loubaris` : **+15 514 net-new séquentiels** contre union Mubawab 61 302 ; BenTouhami +14 519, Agadir +486, Loubaris +509 ; run `34040263021`, artifact `9991447841`, artifact SHA256 `79738f2c2d5af5219bd3c5aafcaa2f61042105bfb6e33e747a4dcc5e8c15e2a4`. Union Mubawab exacte résultante : **76 816 IDs**.'
+)
+
+once(
+    'Preuve : run `34039440480`, artifact `9991207598`, artifact SHA256 `9a236ad31ffde306ceda8458edc9f8bce789e37affcbe690a3276e8dbc4d66e5`. `sourceSiteFetches=0`, `databaseWrites=0`. Historique L0 uniquement.',
+    'Preuve baseline/dump Hicham : run `34039440480`, artifact `9991207598`, artifact SHA256 `9a236ad31ffde306ceda8458edc9f8bce789e37affcbe690a3276e8dbc4d66e5`. Expansion publique supplémentaire : batch GitHub run `34040405000` -> **+4 784 IDs exact-net-new** (achrafdigital +1 625 ; Rabat Immobilier Prediction +3 159), artifact `9991488198`, SHA256 `63906e15b14fc772ddd4d49f0c05bee236e95ab478ad989ba56bfe32208f6543`. Union Avito exacte résultante : **46 904 IDs**. `sourceSiteFetches=0`, `databaseWrites=0`. Historique L0 uniquement.'
+)
+
+once('| **M200K** | ✅ **CLOSED — 228 985 representations courantes / 200 000 (114,5 %)** |',
+     '| **M200K** | ✅ **CLOSED — 253 372 représentations courantes / 200 000 (126,7 %)** |')
+once('| **M250K+** | 🔵 STRETCH — **228 985 / 250 000 (91,6 %), manque 21 015** |',
+     '| **M250K** | ✅ **CLOSED — 253 372 / 250 000 (101,35 %)** |')
+once('10. ✅ **Public GitHub dataset expansion Mubawab + Avito : +61 149 exact-net-new au-dessus des baselines déjà comptées.**',
+     '10. ✅ **Public GitHub dataset expansion Mubawab + Avito : +85 536 exact-net-new au-dessus des baselines déjà comptées.**')
+once('1. **Freeze M200K** : conserver les manifests/artifacts qui produisent le total 228 985 et empêcher tout double comptage futur.',
+     '1. **Freeze M250K** : conserver les manifests/artifacts qui produisent le total **253 372** et empêcher tout double comptage futur.')
+once('3. **Exact dedupe + clustering** : mesurer `228 985 representations -> probable_unique` sans suppression destructive.',
+     '3. **Exact dedupe + clustering** : mesurer `253 372 representations -> probable_unique` sans suppression destructive.')
+once("5. **M250K stretch** : continuer la recherche de dumps/datasets/archives publics avec IDs/URLs exacts ; chaque nouveau lot doit être set-diff contre l'union certifiée courante. Gap actuel : **21 015**.",
+     "5. **Discovery incrémentale** : devient secondaire ; tout nouveau lot reste set-diff contre l'union certifiée, mais la priorité passe au clustering, à la provenance et à la freshness.")
+once('**Boussole actuelle : 228 985 représentations L0/L1 -> probable_unique -> live_confidence -> 250 000+ stretch.**',
+     '**Boussole actuelle : 253 372 représentations L0/L1 -> probable_unique -> live_confidence. M250K CLOSED.**')
+
+assert '253 372 représentations candidates exactes' in s
+assert '| **M250K** | ✅ **CLOSED' in s
+assert 'M250K STRETCH ACTIVE' not in s
+assert 'sourceSiteFetches=0' in s
+p.write_text(s, encoding='utf-8')
+print('ROADMAP M250K patch OK')

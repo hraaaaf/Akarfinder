@@ -1,0 +1,36 @@
+name: AkarFinder - Yakeey Rental Index Sweep
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/yakeey-rental-index-sweep.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Sweep Yakeey public rental result pages only
+        run: node scripts/acquisition/yakeey-rental-index-sweep.mjs
+      - name: Verify proof invariants
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const p=JSON.parse(fs.readFileSync('data/audits/raw-results/yakeey-rental-index-sweep.json','utf8'));
+          if (p.zero_db_writes !== true) throw new Error('zero_db_writes');
+          if (p.direct_detail_fetches !== 0) throw new Error('detail fetch invariant');
+          if (p.robots_status !== 200 || p.results_path_allowed !== true) throw new Error('robots gate');
+          console.log(JSON.stringify({pages_ok:p.pages_ok,unique_listing_urls:p.unique_listing_urls,unique_listing_ids:p.unique_listing_ids,stopped_by:p.stopped_by,errors:p.errors.length},null,2));
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: yakeey-rental-index-sweep-proof
+          path: data/audits/raw-results/yakeey-rental-index-sweep.json
+          retention-days: 30

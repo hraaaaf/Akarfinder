@@ -1,0 +1,42 @@
+name: AkarFinder - External Reservoir Policy Probe
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/audits/external-reservoir-policy-probe.mjs'
+      - '.github/workflows/external-reservoir-policy-probe.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      EXTERNAL_POLICY_OUT: .tmp/external-reservoir-policy-probe
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Probe external reservoir policy registry read-only
+        run: node scripts/audits/external-reservoir-policy-probe.mjs
+      - name: Verify no-write contract
+        run: |
+          node - <<'NODE'
+          const fs=require('fs'); const p=JSON.parse(fs.readFileSync('.tmp/external-reservoir-policy-probe/summary.json','utf8'));
+          if(p.readOnly!==true||p.databaseWrites!==0||p.sourceNetworkRequests!==0) throw new Error('read-only invariant failed');
+          console.log(JSON.stringify(p,null,2));
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: external-reservoir-policy-probe-proof
+          path: .tmp/external-reservoir-policy-probe/
+          if-no-files-found: error
+          retention-days: 30

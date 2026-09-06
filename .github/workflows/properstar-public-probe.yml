@@ -1,0 +1,38 @@
+name: AkarFinder - Properstar Public Probe
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/properstar-public-probe.yml'
+      - 'scripts/acquisition/properstar-public-probe.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Probe Properstar Morocco public surfaces
+        run: node scripts/acquisition/properstar-public-probe.mjs
+      - name: Verify read-only proof
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const p=JSON.parse(fs.readFileSync('data/audits/raw-results/properstar-public-probe.json','utf8'));
+          if(p.zero_db_writes!==true) throw new Error('zero_db_writes');
+          if(p.direct_detail_fetches!==0) throw new Error('detail fetch invariant');
+          if(p.robots_status!==200) throw new Error('robots unavailable');
+          console.log('PROPERSTAR PUBLIC PROBE: PASS');
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: properstar-public-probe-proof
+          path: data/audits/raw-results/properstar-public-probe.json
+          retention-days: 30

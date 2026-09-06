@@ -1,0 +1,37 @@
+name: AkarFinder - Close M250K Roadmap
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/roadmap-m250k-close.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  close-roadmap:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Patch canonical ROADMAP fail-closed
+        run: python scripts/audits/close-m250k-roadmap.py
+
+      - name: Commit ROADMAP only
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add docs/ROADMAP.md
+          test "$(git diff --cached --name-only)" = 'docs/ROADMAP.md'
+          git commit -m 'docs(roadmap): close M250K at 253372'
+          git pull --rebase origin main
+          git push origin HEAD:main
+
+      - name: Verify canonical closure
+        run: |
+          grep -F '**253 372 représentations candidates exactes par identité source/ID ou source/URL.**' docs/ROADMAP.md
+          grep -F '| **M250K** | ✅ **CLOSED — 253 372 / 250 000 (101,35 %)** |' docs/ROADMAP.md

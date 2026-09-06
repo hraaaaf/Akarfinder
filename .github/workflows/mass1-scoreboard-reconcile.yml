@@ -1,0 +1,45 @@
+name: AkarFinder - MASS-1 Scoreboard Reconcile
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/audits/mass1-scoreboard-reconcile.ts'
+      - '.github/workflows/mass1-scoreboard-reconcile.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      MASS1_RECON_OUT: .tmp/mass1-scoreboard-reconcile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Run exact read-only reconciliation
+        run: npx tsx scripts/audits/mass1-scoreboard-reconcile.ts
+      - name: Verify invariants
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const p=JSON.parse(fs.readFileSync('.tmp/mass1-scoreboard-reconcile/summary.json','utf8'));
+          if(p.zeroDbWrites!==true||p.zeroSourceFetches!==true) throw new Error('readonly invariant failed');
+          if(!(p.sourceFactoryDetailCandidates>0)) throw new Error('empty candidate set');
+          console.log(JSON.stringify(p,null,2));
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mass1-scoreboard-reconcile-proof
+          path: .tmp/mass1-scoreboard-reconcile/
+          retention-days: 30
+          if-no-files-found: error

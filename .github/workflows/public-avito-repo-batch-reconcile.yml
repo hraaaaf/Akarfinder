@@ -1,0 +1,91 @@
+name: AkarFinder - Public Avito Repo Batch Reconcile
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/audits/public-avito-repo-batch-reconcile.py'
+      - '.github/workflows/public-avito-repo-batch-reconcile.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-24.04
+    env:
+      AVITO_BATCH_ROOT: .tmp/public-avito-repos
+      AVITO_BATCH_OUT: .tmp/public-avito-repo-batch
+      AVITO_BASELINE_IDS: .tmp/avito-baseline/union_ids.txt
+      AVITO_HICHAM_NET_IDS: .tmp/hicham-baseline/avito-net-new-ids.txt
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Fetch public GitHub repository archives only
+        run: |
+          set -euo pipefail
+          fetch_repo() {
+            owner_repo="$1"; branch="$2"; slug="$3"
+            mkdir -p "$AVITO_BATCH_ROOT/$slug"
+            curl --fail --location --retry 3 --connect-timeout 20 --max-time 180 \
+              "https://codeload.github.com/${owner_repo}/tar.gz/refs/heads/${branch}" \
+              -o ".tmp/${slug}.tar.gz"
+            tar -xzf ".tmp/${slug}.tar.gz" --strip-components=1 -C "$AVITO_BATCH_ROOT/$slug"
+          }
+          fetch_repo 'achrafdigital/Simplon-Python-Challenges' main achrafdigital
+          fetch_repo 'Ilhamelgharbi/pfma' master pfma
+          fetch_repo 'Ilhamelgharbi/Real-Estate-Price-Estimation-Project' main ilham-price
+          fetch_repo 'ABDELOUAHEDTEX/Rabat_Immobilier_Prediction' main rabat
+
+      - name: Fetch certified Avito baseline artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          fetch_artifact() {
+            id="$1"; out="$2"; dir="$3"
+            curl --fail --location --retry 3 \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              -H 'Accept: application/vnd.github+json' \
+              -H 'X-GitHub-Api-Version: 2022-11-28' \
+              "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/$id/zip" \
+              -o "$out"
+            mkdir -p "$dir"
+            unzip -q "$out" -d "$dir"
+          }
+          fetch_artifact 9971118875 .tmp/avito-baseline.zip .tmp/avito-baseline
+          fetch_artifact 9991207598 .tmp/hicham-baseline.zip .tmp/hicham-baseline
+          test "$(wc -l < "$AVITO_BASELINE_IDS")" -eq 19739
+          test "$(wc -l < "$AVITO_HICHAM_NET_IDS")" -eq 22381
+
+      - name: Reconcile public repositories sequentially
+        run: python scripts/audits/public-avito-repo-batch-reconcile.py
+
+      - name: Verify read-only invariants
+        run: |
+          python - <<'PY'
+          import json
+          p=json.load(open('.tmp/public-avito-repo-batch/summary.json'))
+          assert p['readOnly'] is True
+          assert p['databaseWrites'] == 0
+          assert p['sourceSiteFetches'] == 0
+          assert p['baselineUnionIds'] == 42120
+          print(json.dumps({
+            'baselineUnionIds':p['baselineUnionIds'],
+            'combinedExactNetNewSequential':p['combinedExactNetNewSequential'],
+            'finalAvitoUnionIds':p['finalAvitoUnionIds'],
+            'repos':[{'repo':r['repo'],'found':r['foundDistinctIds'],'netNew':r['exactNetNewSequential']} for r in p['repos']]
+          },indent=2))
+          PY
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: public-avito-repo-batch-reconcile-proof
+          path: .tmp/public-avito-repo-batch/
+          retention-days: 30
+          if-no-files-found: error

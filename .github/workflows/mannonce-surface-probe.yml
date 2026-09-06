@@ -1,0 +1,38 @@
+name: AkarFinder - MAnonce Surface Probe
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/acquisition/mannonce-surface-probe.py'
+      - '.github/workflows/mannonce-surface-probe.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Probe robots sitemap and public routes
+        run: python scripts/acquisition/mannonce-surface-probe.py
+      - name: Verify read-only proof
+        run: |
+          python - <<'PY'
+          import json
+          s=json.load(open('artifacts/mannonce-surface-probe/summary.json'))
+          assert s['zero_db_writes'] is True
+          assert s['robots_loaded'] is True
+          print(json.dumps(s,indent=2,ensure_ascii=False))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mannonce-surface-probe-proof
+          path: artifacts/mannonce-surface-probe/
+          if-no-files-found: error

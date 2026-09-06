@@ -1,0 +1,36 @@
+name: AkarFinder - Agenz Historical Detail Export
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/audits/agenz-historical-detail-export.ts'
+      - '.github/workflows/agenz-historical-detail-export.yml'
+permissions:
+  contents: read
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      AGENZ_EXPORT_OUT: .tmp/agenz-historical-detail-export
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Export Agenz historical detail URLs read-only
+        run: npx tsx scripts/audits/agenz-historical-detail-export.ts
+      - name: Verify no-write contract
+        run: |
+          node - <<'NODE'
+          const fs=require('fs'); const p=JSON.parse(fs.readFileSync('.tmp/agenz-historical-detail-export/summary.json','utf8'));
+          if(p.readOnly!==true||p.databaseWrites!==0||p.sourceNetworkRequests!==0||p.detailPageFetches!==0) throw new Error('readonly invariant failed');
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: agenz-historical-detail-export-proof
+          path: .tmp/agenz-historical-detail-export/
+          retention-days: 30

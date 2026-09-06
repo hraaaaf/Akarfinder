@@ -1,0 +1,74 @@
+name: AkarFinder - M250K Clustering Readiness
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/audits/m250k-clustering-readiness.py'
+      - '.github/workflows/m250k-clustering-readiness.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  readiness:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      READINESS_ROOT: .tmp/m250k-readiness-repos
+      READINESS_OUT: .tmp/m250k-clustering-readiness
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Fetch selected public GitHub datasets only
+        run: |
+          set -euo pipefail
+          mkdir -p "$READINESS_ROOT"
+          fetch_repo() {
+            owner_repo="$1"; branch="$2"; slug="$3"
+            mkdir -p "$READINESS_ROOT/$slug"
+            curl --fail --location --retry 3 --connect-timeout 20 --max-time 180 \
+              "https://codeload.github.com/${owner_repo}/tar.gz/refs/heads/${branch}" \
+              -o ".tmp/readiness-${slug}.tar.gz"
+            tar -xzf ".tmp/readiness-${slug}.tar.gz" --strip-components=1 -C "$READINESS_ROOT/$slug"
+          }
+          fetch_repo 'hakkache/RealEstateBuddy' main realestatebuddy
+          fetch_repo 'HichamBenelmahi/analyse-des-tendances-immobili-res-' main hicham
+          fetch_repo 'MarwaneMLE/morocco-appartements-price' main marwane
+          fetch_repo 'BenTouhami-MR/ApartmentPricePredictionInMorocco' main bentouhami
+          fetch_repo 'hassanelq/Agadir-House-Prices-Prediction' main hassanelq
+          fetch_repo 'Loubaris/Data-Immo' main loubaris
+          fetch_repo 'achrafdigital/Simplon-Python-Challenges' main achrafdigital
+          fetch_repo 'ABDELOUAHEDTEX/Rabat_Immobilier_Prediction' main rabat
+
+      - name: Measure exact-identity attribute readiness
+        run: python scripts/audits/m250k-clustering-readiness.py
+
+      - name: Verify read-only and semantic invariants
+        run: |
+          python - <<'PY'
+          import json
+          p=json.load(open('.tmp/m250k-clustering-readiness/summary.json'))
+          assert p['canonicalRepresentations'] == 253372
+          assert p['readOnly'] is True
+          assert p['databaseWrites'] == 0
+          assert p['sourceSiteFetches'] == 0
+          assert p['exactIdentitiesObserved'] > 0
+          assert p['strongClusterReady'] + p['mediumClusterReady'] + p['identityOnly'] == p['exactIdentitiesObserved']
+          print(json.dumps({k:p[k] for k in [
+            'canonicalRepresentations','exactIdentitiesObserved','strongClusterReady',
+            'mediumClusterReady','identityOnly','clusterReadyUnion',
+            'coveragePctOfCanonicalByExactIdentity'
+          ]}, indent=2))
+          PY
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: m250k-clustering-readiness-proof
+          path: .tmp/m250k-clustering-readiness/
+          retention-days: 30
+          if-no-files-found: error

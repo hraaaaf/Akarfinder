@@ -1,0 +1,38 @@
+name: AkarFinder - Yakeey Public Probe
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/acquisition/yakeey-public-probe.py'
+      - '.github/workflows/yakeey-public-probe.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Probe Yakeey public routes
+        run: python scripts/acquisition/yakeey-public-probe.py
+      - name: Verify read-only proof
+        run: |
+          python - <<'PY'
+          import json
+          s=json.load(open('artifacts/yakeey-public-probe/summary.json'))
+          assert s['zero_db_writes'] is True
+          assert s['robots_loaded'] is True
+          print(json.dumps(s,indent=2,ensure_ascii=False))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: yakeey-public-probe-proof
+          path: artifacts/yakeey-public-probe/
+          if-no-files-found: error

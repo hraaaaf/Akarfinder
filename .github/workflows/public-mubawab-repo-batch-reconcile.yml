@@ -1,0 +1,97 @@
+name: AkarFinder - Public Mubawab Repo Batch Reconcile
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/audits/public-mubawab-repo-batch-reconcile.py'
+      - '.github/workflows/public-mubawab-repo-batch-reconcile.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-24.04
+    env:
+      BATCH_ROOT: .tmp/public-mubawab-repos
+      BATCH_OUT: .tmp/public-mubawab-repo-batch
+      MUB_BASELINE_IDS: .tmp/mubawab-baseline/listing-ids.txt
+      MUB_REB_NET_IDS: .tmp/realestatebuddy-baseline/net-new-ids.txt
+      MUB_HICHAM_NET_IDS: .tmp/hicham-baseline/mubawab-net-new-ids.txt
+      MUB_MARWANE_NET_IDS: .tmp/marwane-baseline/net-new-ids.txt
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Fetch public GitHub repository archives only
+        run: |
+          set -euo pipefail
+          fetch_repo() {
+            owner_repo="$1"; branch="$2"; slug="$3"
+            mkdir -p "$BATCH_ROOT/$slug"
+            curl --fail --location --retry 3 --connect-timeout 20 --max-time 180 \
+              "https://codeload.github.com/${owner_repo}/tar.gz/refs/heads/${branch}" \
+              -o ".tmp/${slug}.tar.gz"
+            tar -xzf ".tmp/${slug}.tar.gz" --strip-components=1 -C "$BATCH_ROOT/$slug"
+          }
+          fetch_repo 'BenTouhami-MR/ApartmentPricePredictionInMorocco' main bentouhami
+          fetch_repo 'hassanelq/Agadir-House-Prices-Prediction' main hassanelq
+          fetch_repo 'Loubaris/Data-Immo' main loubaris
+          fetch_repo 'karzalSlimane/datascrapperV2' master karzal
+
+      - name: Fetch certified Mubawab baseline artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          fetch_artifact() {
+            id="$1"; out="$2"; dir="$3"
+            curl --fail --location --retry 3 \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              -H 'Accept: application/vnd.github+json' \
+              -H 'X-GitHub-Api-Version: 2022-11-28' \
+              "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/$id/zip" \
+              -o "$out"
+            mkdir -p "$dir"
+            unzip -q "$out" -d "$dir"
+          }
+          fetch_artifact 9969651653 .tmp/mubawab-baseline.zip .tmp/mubawab-baseline
+          fetch_artifact 9991042950 .tmp/realestatebuddy-baseline.zip .tmp/realestatebuddy-baseline
+          fetch_artifact 9991207598 .tmp/hicham-baseline.zip .tmp/hicham-baseline
+          fetch_artifact 9991403015 .tmp/marwane-baseline.zip .tmp/marwane-baseline
+          test "$(wc -l < "$MUB_BASELINE_IDS")" -eq 18445
+          test "$(wc -l < "$MUB_REB_NET_IDS")" -eq 21374
+          test "$(wc -l < "$MUB_HICHAM_NET_IDS")" -eq 17394
+          test "$(wc -l < "$MUB_MARWANE_NET_IDS")" -eq 4089
+
+      - name: Reconcile public repositories sequentially
+        run: python scripts/audits/public-mubawab-repo-batch-reconcile.py
+
+      - name: Verify read-only invariants
+        run: |
+          python - <<'PY'
+          import json
+          p=json.load(open('.tmp/public-mubawab-repo-batch/summary.json'))
+          assert p['readOnly'] is True
+          assert p['databaseWrites'] == 0
+          assert p['sourceSiteFetches'] == 0
+          assert p['baselineUnionIds'] == 61302
+          print(json.dumps({
+            'baselineUnionIds':p['baselineUnionIds'],
+            'combinedExactNetNewSequential':p['combinedExactNetNewSequential'],
+            'finalMubawabUnionIds':p['finalMubawabUnionIds'],
+            'repos':[{'repo':r['repo'],'found':r['foundDistinctIds'],'netNew':r['exactNetNewSequential']} for r in p['repos']]
+          },indent=2))
+          PY
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: public-mubawab-repo-batch-reconcile-proof
+          path: .tmp/public-mubawab-repo-batch/
+          retention-days: 30
+          if-no-files-found: error

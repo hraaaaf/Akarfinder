@@ -1,0 +1,70 @@
+name: AkarFinder - RealEstateBuddy Mubawab Reconcile
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/audits/realestatebuddy-mubawab-reconcile.py'
+      - '.github/workflows/realestatebuddy-mubawab-reconcile.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      REB_OUT: .tmp/realestatebuddy-mubawab-reconcile
+      REB_DATASET: .tmp/realestatebuddy/Clean_Data_Step2.csv
+      MUBAWAB_BASELINE_IDS: .tmp/mubawab-baseline/listing-ids.txt
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Fetch public RealEstateBuddy dataset from GitHub only
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/realestatebuddy
+          curl --fail --location --retry 3 --connect-timeout 20 --max-time 180 \
+            'https://raw.githubusercontent.com/hakkache/RealEstateBuddy/main/data/Clean_Data_Step2.csv' \
+            -o "$REB_DATASET"
+          test -s "$REB_DATASET"
+          ls -lh "$REB_DATASET"
+      - name: Fetch certified Mubawab baseline artifact from this repo
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/mubawab-baseline
+          curl --fail --location --retry 3 \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            'https://api.github.com/repos/hraaaaf/Akarfinder/actions/artifacts/9969651653/zip' \
+            -o .tmp/mubawab-baseline.zip
+          unzip -q .tmp/mubawab-baseline.zip -d .tmp/mubawab-baseline
+          test -s "$MUBAWAB_BASELINE_IDS"
+          test "$(wc -l < "$MUBAWAB_BASELINE_IDS")" -eq 18445
+      - name: Reconcile dataset IDs against certified Mubawab full baseline
+        run: python scripts/audits/realestatebuddy-mubawab-reconcile.py
+      - name: Verify read-only invariants
+        run: |
+          python - <<'PY'
+          import json
+          p=json.load(open('.tmp/realestatebuddy-mubawab-reconcile/summary.json'))
+          assert p['readOnly'] is True
+          assert p['databaseWrites'] == 0
+          assert p['sourceSiteFetches'] == 0
+          assert p['baselineMubawabIds'] == 18445
+          print(json.dumps({k:p[k] for k in ['datasetRows','datasetValidMubawabRowsDistinctIds','exactIdOverlapBaseline','exactIdNetNewVsBaseline']}, indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: realestatebuddy-mubawab-reconcile-proof
+          path: .tmp/realestatebuddy-mubawab-reconcile/
+          retention-days: 30
+          if-no-files-found: error

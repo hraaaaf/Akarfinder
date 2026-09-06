@@ -1,0 +1,36 @@
+name: AkarFinder - MarocImmo Public Probe
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/marocimmo-public-probe.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Probe MarocImmo public surfaces
+        run: python scripts/acquisition/marocimmo-public-probe.py
+      - name: Verify read-only proof
+        run: |
+          python - <<'PY'
+          import json
+          p=json.load(open('artifacts/marocimmo-public-probe/summary.json'))
+          assert p['zero_db_writes'] is True
+          assert p['direct_detail_fetches']==0
+          assert p['robots_status']==200
+          print('MAROCIMMO PUBLIC PROBE: PASS')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: marocimmo-public-probe-proof
+          path: artifacts/marocimmo-public-probe/summary.json
+          retention-days: 30
