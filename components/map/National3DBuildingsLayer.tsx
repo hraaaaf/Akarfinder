@@ -157,7 +157,7 @@ function restoreBasemapSymbols(map: MapLibreMap, snapshots: Map<string, SymbolOp
     if (!map.getLayer(layerId)) continue;
     try {
       map.setPaintProperty(layerId, "text-opacity", (snapshot.textOpacity ?? null) as never);
-      map.setPaintProperty(layer.id, "icon-opacity", (snapshot.iconOpacity ?? null) as never);
+      map.setPaintProperty(layerId, "icon-opacity", (snapshot.iconOpacity ?? null) as never);
     } catch {
       // Style teardown can remove paint properties before React cleanup finishes.
     }
