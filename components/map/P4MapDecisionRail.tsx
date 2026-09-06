@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Building2, MapPin, Search, ShieldCheck, Trees } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { resolveCityEntity, resolveNeighborhoodEntity } from "@/lib/geo/geo-entity-registry";
 import type { NeighborhoodContextReadModelV1 } from "@/lib/neighborhood-context/read-model";
@@ -37,6 +37,7 @@ export function P4MapDecisionRail() {
   const contextName = districtEntity?.canonical_name ?? cityName;
   const title = cityName === "Maroc" ? "Où vivre au Maroc ?" : contextName;
   const [localContext, setLocalContext] = useState<NeighborhoodContextReadModelV1 | null>(null);
+  const railRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     setLocalContext(null);
@@ -63,10 +64,15 @@ export function P4MapDecisionRail() {
     return () => controller.abort();
   }, [cityEntity?.slug, districtEntity?.slug]);
 
+  useEffect(() => {
+    railRef.current?.scrollTo({ top: 0, behavior: "auto" });
+  }, [navigationState.city, navigationState.district, localContext]);
+
   const localAnchors = localContext?.anchors.slice(0, 4) ?? [];
 
   return (
     <aside
+      ref={railRef}
       className="p4-map-decision-rail"
       data-p4-map-decision-rail
       data-vivre-ici-premium-context

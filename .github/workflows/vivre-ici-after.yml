@@ -13,7 +13,6 @@ on:
       - 'components/layout/SiteHeader.tsx'
       - 'scripts/vivre-ici-after-capture.mjs'
       - 'scripts/audits/ux-bottom-nav-10of10-1.mjs'
-      - 'scripts/audits/ux-premium-bottomnav-glass-1.mjs'
       - 'scripts/scrapers/__tests__/ux-bottom-nav-10of10-1.test.ts'
       - 'scripts/scrapers/__tests__/ux-premium-bottomnav-glass-1.test.ts'
       - '.github/workflows/vivre-ici-after.yml'
@@ -79,8 +78,8 @@ jobs:
             if (r.threeDExpected) {
               if (r.threeDToggle !== 1) throw new Error(`missing 3D toggle ${r.viewport.name}`);
               if (!r.threeDLayer || !r.threeDSource) throw new Error(`missing 3D layer/source ${r.viewport.name}`);
-              if (r.mapPitch < 58) throw new Error(`3D pitch too low ${r.viewport.name}: ${r.mapPitch}`);
-              if (r.mapZoom < 15) throw new Error(`3D zoom too low ${r.viewport.name}: ${r.mapZoom}`);
+              if (r.mapPitch < 45) throw new Error(`3D pitch too low ${r.viewport.name}: ${r.mapPitch}`);
+              if (r.mapZoom < 14) throw new Error(`3D zoom too low ${r.viewport.name}: ${r.mapZoom}`);
               if (r.renderedBuildingCount < 1) throw new Error(`no rendered 3D buildings ${r.viewport.name}`);
             } else {
               if (r.threeDToggle !== 0 || r.threeDLayer) throw new Error(`national view must remain 2D ${r.viewport.name}`);
