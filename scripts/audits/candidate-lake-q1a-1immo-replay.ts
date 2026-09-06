@@ -85,8 +85,6 @@ async function readWindow(startMs: number, endMs: number, depth = 0): Promise<Di
 }
 
 async function readDiscovery(): Promise<DiscoveryRow[]> {
-  // Split the frozen period into seven-day outer windows. Any window that reaches the
-  // PostgREST page cap is recursively bisected until its complete rowset is proven <1000.
   const rows: DiscoveryRow[] = [];
   const WEEK = 7 * 24 * 60 * 60 * 1000;
   const exclusiveEnd = AS_OF_MS + 1;
@@ -95,7 +93,10 @@ async function readDiscovery(): Promise<DiscoveryRow[]> {
     rows.push(...await readWindow(start, end));
   }
   const byId = new Map(rows.map((row) => [row.id, row]));
-  return [...byId.values()];
+  // The historical run read discovery_candidates with ORDER BY id ASC. Its URL collapse
+  // replaced an existing row only when last_seen_at was strictly greater, so equal
+  // last_seen_at ties retained the lowest-id row. Reproduce that ordering exactly.
+  return [...byId.values()].sort((a, b) => a.id.localeCompare(b.id));
 }
 
 async function readSeeds(): Promise<SeedRow[]> {
@@ -177,9 +178,11 @@ async function main(): Promise<void> {
     actual.exactNetNewVsSeeds === expected.exactNetNewVsSeeds;
 
   const summary = {
-    schemaVersion: 'Q1A_1IMMO_EXACT_HISTORICAL_REPLAY_V1',
+    schemaVersion: 'Q1A_1IMMO_EXACT_HISTORICAL_REPLAY_V2',
     sourceHistoricalRun: 34030138761,
     sourceHistoricalArtifact: 9988514932,
+    historicalClassifierBlob: 'f2ff507996529fa8cd49fdb9b581b1e52595eebc',
+    historicalTieBreak: 'id ASC input; replace URL representative only when last_seen_at strictly greater',
     asOf: AS_OF,
     readOnly: true,
     databaseWrites: 0,
