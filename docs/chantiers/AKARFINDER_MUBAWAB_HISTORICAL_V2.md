@@ -1,155 +1,233 @@
 # AKARFINDER — MUBAWAB HISTORICAL EVIDENCE SCORING V2
 
 ## Goal
-Remplacer le score uniforme des 18 975 lignes `historical_unverified` par une note interne individuelle fondée uniquement sur des preuves effectivement présentes ou récupérées depuis les artifacts certifiés AkarFinder, sans inventer de variation lorsqu'aucune preuve supplémentaire ne distingue deux annonces.
+Remplacer le score uniforme des **18 975** lignes `historical_unverified` par une note interne fondée uniquement sur des preuves réellement présentes ou récupérées depuis des artifacts AkarFinder certifiés, sans transformer une observation historique en preuve d'activité actuelle.
 
 ## Succès
-- `metadata.internal_quality_v2` présent sur **18 975 / 18 975** historiques.
-- aucune ligne `current_verified` ne reçoit `internal_quality_v2`.
-- `rank_lane=historical_tail` sur **18 975 / 18 975**.
-- `public_status=internal_only` sur **18 975 / 18 975**.
-- `freshness_status` historique reste `uncertain` sur **18 975 / 18 975**.
-- `evidence_status` reste `historical_unverified`.
-- aucun changement de policy source, aucune publication, aucun merge, aucun déploiement Vercel.
+- `metadata.internal_quality_v2` présent sur **18 975 / 18 975** historiques ;
+- `rank_lane=historical_tail` sur **18 975 / 18 975** ;
+- `public_status=internal_only` sur **18 975 / 18 975** ;
+- `freshness_status=uncertain` sur **18 975 / 18 975** ;
+- `evidence_status=historical_unverified` conservé ;
+- `catalog_only` résiduel : **0** ;
+- aucune ligne `current_verified` ne porte `internal_quality_v2` ;
+- aucune publication, aucun merge, aucun déploiement Vercel.
 
 ## Provenance historique certifiée
-Les **18 975** lignes historiques portent toutes `metadata.source_artifact = 9949834432`.
+Les **18 975** historiques proviennent de l'union Mubawab historique de **31 731 IDs** portée par l'artifact `9949834432`.
 
-L'artifact `9949834432` certifie une campagne catalogue Mubawab du **4 septembre 2026** :
-- baseline : **29 741 IDs** ;
-- ajout bureaux/commerces : **1 990 IDs** ;
-- union catalogue : **31 731 IDs** ;
+Cette union est composée de deux couches first-party distinctes :
+
+1. **baseline classique : 29 741 IDs** ;
+2. **extension bureaux/commerces : +1 990 IDs**.
+
+Le full sweep courant contient **18 445 IDs**, dont **12 756** recoupent cette union historique. Le résiduel exact est donc :
+
+`31 731 - 12 756 = 18 975 historiques`.
+
+Cette provenance remplace l'hypothèse antérieure selon laquelle le stock historique aurait été créé principalement depuis des datasets GitHub publics. Ces datasets peuvent fournir des preuves secondaires indépendantes, mais ne constituent pas la provenance primaire de ce corpus.
+
+---
+
+## V2.1 — surfaces bureaux/commerces
+
+L'artifact `9949834432`, produit par le run GitHub Actions **33906589600**, certifie la campagne du **4 septembre 2026** :
+- artifact : `lot9-office-catalog-campaign-proof` ;
+- digest : `sha256:964a8cc44255bfd793615c4adea1c3be4238bed87b09aad0514c326da681bacc` ;
+- baseline : **29 741** ;
+- extension : **1 990** ;
+- union : **31 731** ;
 - `robots_checked=true` ;
 - `detail_pages_opened=0` ;
 - aucune écriture DB/production dans le run source.
 
-Les 1 990 IDs ajoutés sont répartis sur deux surfaces first-party :
+Extension first-party :
 - `bureaux-et-commerces-a-vendre` : **710 IDs** ;
 - `bureaux-et-commerces-a-louer` : **1 280 IDs**.
 
-Le full sweep courant contient 18 445 IDs, dont **12 756** recoupent cette union catalogue. Le résiduel exact est donc :
-
-`31 731 - 12 756 = 18 975 historiques`.
-
-Cette provenance remplace l'hypothèse antérieure selon laquelle le stock historique aurait été créé principalement depuis des datasets GitHub publics. Ces datasets restent utilisables comme preuves secondaires indépendantes, mais ne sont pas la provenance primaire de ces 18 975 lignes.
-
-## Preuves utilisées
-Le score V2 combine uniquement :
-- réobservation dans `source_offer_seeds` et son `freshness_status` ;
-- nombre de réobservations et nombre de providers indépendants ;
-- dernière date de preuve réellement observée ;
-- `thin_index_search_documents.quality_score` et `quality_tier` lorsqu'ils existent ;
-- présence d'une `listing_source` Mubawab `canonical_kind=detail`, `canonical_eligible=true`, `is_active=true` ;
-- observations structurées liées : titre fingerprint, surface, prix ;
-- `discovery_candidates` : statut accepted / unclassified / rejected, rang et date de dernière observation ;
-- réobservation first-party dans les surfaces catalogue certifiées de l'artifact `9949834432`.
-
-`updated_at` du corpus n'est pas utilisé comme preuve de fraîcheur : il a été modifié par des opérations de scoring antérieures.
-
-## Passe V2.1 — récupération des surfaces bureaux/commerces
-Parmi les **1 990 IDs** observés directement le 4 septembre sur les deux surfaces catalogue :
+Parmi ces **1 990** IDs :
 - **1 222** appartiennent ensuite au full sweep `current_verified` ;
-- **768** appartiennent au résiduel `historical_unverified`.
+- **768** restent `historical_unverified`.
 
 Répartition des 768 historiques :
-- **189 vente** ;
-- **579 location**.
+- vente : **189** ;
+- location : **579**.
 
-Ces 768 lignes reçoivent `metadata.historical_surface_evidence_v1` avec :
-- artifact `9949834432` ;
-- source `mubawab` ;
-- surface exacte ;
-- `transaction_type=sale|rent` ;
-- `property_family=office_commercial` ;
-- date d'observation du run ;
-- `robots_checked=true` ;
-- `detail_pages_opened=0`.
-
-Doctrine de score : une réobservation récente sur une surface first-party Mubawab est plus forte qu'un simple seed/discovery, mais reste sous une fiche détail active/reconfirmée. Un plancher prudent **58/100, H_C** est donc appliqué sans jamais réduire une note supérieure.
-
-Résultat :
-- **768 / 768** portent la nouvelle preuve de surface ;
+Les 768 lignes portent une preuve de surface first-party. Un plancher prudent **58/100, H_C** est appliqué sans réduire une preuve supérieure :
 - **767** ont été relevées jusqu'au plancher lorsque nécessaire ;
-- la 768e avait déjà **69/100** et conserve sa note supérieure ;
-- **4** de ces 768 ont également une `active_detail_source` ; cette classe plus forte reste leur preuve principale ;
-- **661** lignes quittent effectivement `catalog_only` ;
-- **107** avaient déjà une autre preuve secondaire et sont seulement enrichies.
+- **1** était déjà à **69** et conserve sa note ;
+- **4** possèdent une `active_detail_source` plus forte et conservent cette classe principale ;
+- **764** utilisent donc `recent_category_surface` comme classe principale.
 
-## Inventaire des preuves secondaires après V2.1
-Sur **18 975** historiques :
-- **2 499** disposent désormais d'au moins une preuve secondaire ou d'une preuve catalogue first-party qualifiée ;
-- **16 476** restent `catalog_only`, sans seconde preuve actuellement exploitable.
+---
 
-Les `listing_sources` historiques qualifiées restent des pages détail `canonical_eligible=true` et `is_active=true` ; leur classe principale n'est pas dégradée par la preuve catalogue additionnelle.
+## V2.2 — fermeture de la provenance classique 29 741
 
-## Distribution certifiée V2.1
-- `fresh_reconfirmed` : **82** — score **65–89** ;
-- `active_detail_source` : **50** — score **48–69** ;
-- `recent_category_surface` : **764** — score **58** ;
-- `accepted_discovery` : **10** — score **49–54** ;
-- `seed_only` : **1 573** — score **23–32** ;
-- `unclassified_discovery` : **15** — score **18–25** ;
-- `catalog_only` : **16 476** — score **5** ;
-- `rejected_discovery` : **5** — score **3**.
+Le parent exact du baseline a été remonté dans l'ancienne lane `feat/data-ingestion-canonical`.
+
+### Preuve parent
+Run GitHub Actions : **33899083917**
+
+Artifact : **9947122701** — `lot9-live-campaign-final-classic-extinction-proof`
+
+Digest :
+`sha256:1b27ba2946bd671644e6ec1bf03a396df6c86a51706f5a17265466d041a0cb6d`
+
+État source certifié :
+- `run_id = mubawab-full-coverage-2026-09-04T15-31-17-539Z` ;
+- preuve finale générée le `2026-09-04T17:16:19.197Z` ;
+- **29 741 IDs uniques** ;
+- **74 waves** cumulées ;
+- **423 partitions** ;
+- **1 124** pages demandées ;
+- **1 123** pages réussies ;
+- **33 812** références observées ;
+- **4 071** doublons de référence absorbés ;
+- `robots_checked=true` ;
+- `detail_pages_opened=0` ;
+- `database_writes=0` ;
+- `production_writes=0` ;
+- `image_downloads=0`.
+
+Le fichier source `refs.jsonl` de cet artifact contient exactement **29 741 lignes / 29 741 IDs uniques**. Chaque observation conserve notamment :
+- `source_id` ;
+- `url` de représentation ;
+- `route_url` Mubawab first-party ;
+- `partition_id` ;
+- `page` ;
+- `detail_family`.
+
+Exemple de sémantique certifiée : une partition comme `casablanca:apartment_sale:p1-3` correspond à une observation issue de la route first-party Casablanca / appartements / vente. La provenance n'est donc plus un nombre agrégé opaque : elle existe annonce par annonce dans l'artifact parent.
+
+### Réconciliation exacte
+Le croisement de l'artifact classique avec le full sweep courant donne :
+- baseline classique : **29 741** ;
+- classiques encore dans le sweep courant : **11 534** ;
+- historiques issus du classique : **18 207**.
+
+L'extension bureaux/commerces apporte séparément :
+- historiques office/commercial : **768**.
+
+Les deux résiduels sont disjoints :
+
+`18 207 + 768 = 18 975 historiques`
+
+Chevauchement classic-historical / office-historical : **0**.
+
+### Ventilation exacte des 18 207 historiques classiques
+Transactions :
+- vente : **10 408** ;
+- location : **7 799**.
+
+Types :
+- appartements : **9 079** ;
+- villas : **4 559** ;
+- locaux/commerces : **1 790** ;
+- terrains : **1 667** ;
+- riads : **665** ;
+- maisons : **447**.
+
+Scopes :
+- `apartment_rent` : **5 014** ;
+- `apartment_sale` : **4 065** ;
+- `villa_sale` : **2 735** ;
+- `villa_rent` : **1 824** ;
+- `land_sale` : **1 667** ;
+- `commercial_rent` : **945** ;
+- `commercial_sale` : **845** ;
+- `riad_sale` : **665** ;
+- `house_sale` : **431** ;
+- `house_rent` : **16**.
+
+Villes :
+- Marrakech : **5 709** ;
+- Casablanca : **4 055** ;
+- Tanger : **2 302** ;
+- Rabat : **2 233** ;
+- Bouskoura : **1 499** ;
+- Dar Bouazza : **1 382** ;
+- Agadir : **345** ;
+- Kénitra : **218** ;
+- Salé : **141** ;
+- Fès : **122** ;
+- Mohammedia : **114** ;
+- Temara : **87**.
+
+En ajoutant les 768 historiques bureaux/commerces, le corpus historique complet se répartit par transaction en :
+- vente : **10 597** ;
+- location : **8 378**.
+
+### Scoring V2.2
+Les **16 476** lignes qui restaient `catalog_only` possèdent en réalité cette preuve parent first-party classique.
+
+Elles reçoivent :
+- `score=58` ;
+- `quality_class=H_C` ;
+- `evidence_class=recent_classic_route_surface` ;
+- `rank_lane=historical_tail` inchangé ;
+- `public_status=internal_only` inchangé ;
+- `freshness_status=uncertain` inchangé ;
+- `evidence_status=historical_unverified` inchangé.
+
+Le lineage artifact/run est persisté dans `metadata.classic_catalog_evidence` sur ces lignes.
+
+La correspondance détaillée `source_id -> route_url / partition / page / detail_family` est certifiée dans `refs.jsonl`. Le bulk V2.2 ne prétend pas avoir recopié tous ces champs détaillés dans chaque ligne DB : cette matérialisation fine reste un enrichissement séparé. Le score V2.2 repose uniquement sur la provenance parent effectivement prouvée.
+
+Résultat : **`catalog_only = 0`**.
+
+---
+
+## Distribution certifiée V2.2
+- `fresh_reconfirmed` / H_A : **8** — score **81–89** ;
+- `fresh_reconfirmed` / H_B : **74** — score **65–79** ;
+- `active_detail_source` / H_B : **16** — score **62–69** ;
+- `active_detail_source` / H_C : **34** — score **48–59** ;
+- `recent_classic_route_surface` / H_C : **16 476** — score **58** ;
+- `recent_category_surface` / H_C : **764** — score **58** ;
+- `accepted_discovery` / H_C : **10** — score **49–54** ;
+- `seed_only` / H_D : **1 573** — score **23–32** ;
+- `unclassified_discovery` / H_D : **4** — score **22–25** ;
+- `unclassified_discovery` / H_E : **11** — score **18** ;
+- `rejected_discovery` / H_F : **5** — score **3**.
 
 Total : **18 975 / 18 975**.
 
-Note : 768 lignes portent la preuve de surface, mais seulement 764 utilisent `recent_category_surface` comme classe principale, car 4 possèdent une preuve détail plus forte.
+`catalog_only` : **0**.
+
+---
 
 ## Doctrine de scoring
-Le score mesure la force de la preuve historique et la qualité de la représentation disponible. Il ne transforme pas une annonce historique en annonce actuelle et ne donne aucun droit de publication.
+Le score mesure la force de la preuve historique et la qualité de représentation disponible. Il ne transforme pas une annonce historique en annonce actuelle et ne donne aucun droit de publication.
 
-Base par preuve principale :
-- `fresh_reconfirmed` : 50 ;
-- source détail active : 40 ;
-- surface first-party récente et qualifiée : plancher 58 après contributions implicites de récence + catégorie/transaction ;
-- discovery acceptée : 30 ;
-- seed aging : 25 ;
-- `seed_only` : 20 ;
-- discovery non classée : 15 ;
-- discovery rejetée : 5 ;
-- `catalog_only` : 5.
+Une observation first-party de route Mubawab le 4 septembre est une preuve de présence historique récente et structurée, pas une preuve qu'une fiche est encore active au moment présent.
 
-Contributions additionnelles bornées :
-- qualité thin-index : jusqu'à +20 ;
-- répétition d'observation : jusqu'à +10 ;
-- récence réelle de la dernière preuve : +10 / +7 / +3 selon fenêtre ;
-- source détail active : +8 ;
-- titre structuré : +3 ;
-- surface structurée : +3 ;
-- prix structuré : +4 ;
-- discovery acceptée : +4 ;
-- discovery rejetée sans preuve supérieure : pénalité -5.
+Ordre qualitatif conservé :
+- réconfirmation fraîche / fiche détail active structurée : preuve supérieure ;
+- surface first-party récente et qualifiée : **H_C / plancher 58** ;
+- discovery / seed : niveaux inférieurs ;
+- preuve rejetée : niveau le plus faible.
 
-Score final borné entre 0 et 99.
-
-## Contrôle externe spot-check
-Un contrôle exact-ID via moteur de recherche public a été effectué sur huit IDs alors `catalog_only` :
-- 5648088
-- 5793170
-- 6029005
-- 6068741
-- 6133672
-- 6149331
-- 6156168
-- 6160306
-
-Les résultats n'ont fourni aucune page détail exacte correspondant à ces IDs ; seulement des pages génériques Mubawab. Ce spot-check ne prouve pas que les IDs n'existent plus et ne justifie aucune démotion supplémentaire.
+Aucune note supérieure n'est abaissée par l'ajout d'une preuve de surface.
 
 ## Garde-fous
-- `catalog_only` n'est pas synonyme de faux ou supprimé : cela signifie seulement absence de seconde preuve disponible.
-- aucune variation artificielle n'est créée entre deux lignes portant exactement les mêmes preuves.
-- `internal_quality_v2` ne remplace ni `freshness_status`, ni `evidence_status`, ni `source_policy_registry`.
-- une preuve de surface catalogue ne transforme pas automatiquement un historique en `current_verified`.
-- les historiques restent `historical_tail` tant qu'une étape séparée de reclassification n'apporte pas une preuve suffisante.
-- la policy Mubawab reste indépendante de ce score et doit toujours être respectée.
+- `internal_quality_v2` ne remplace ni `freshness_status`, ni `evidence_status`, ni `source_policy_registry` ;
+- une preuve de surface ne transforme pas automatiquement un historique en `current_verified` ;
+- les historiques restent `historical_tail` ;
+- la policy Mubawab reste indépendante du score ;
+- aucune publication publique supplémentaire n'est ouverte ;
+- aucune annonce n'est déclarée active uniquement parce qu'elle a été observée le 4 septembre ;
+- aucune variation artificielle n'est créée sans différence de preuve.
 
-## État certifié
+## État certifié final V2.2
 - corpus Mubawab total : **37 420** ;
-- `current_verified` : **18 445 / 18 445** ;
-- historiques avec V2 : **18 975 / 18 975** ;
-- historiques avec preuve first-party bureaux/commerces V2.1 : **768 / 768** ;
-- historiques `catalog_only` restant à investiguer : **16 476** ;
-- lignes historiques ayant changé de `evidence_status` : **0** ;
-- lignes historiques ayant changé de `freshness_status` : **0** ;
-- historiques publiés par cette opération : **0**.
+- `current_verified` : **18 445** ;
+- `historical_unverified` : **18 975** ;
+- historiques avec `internal_quality_v2` : **18 975 / 18 975** ;
+- historiques `freshness_status=uncertain` : **18 975 / 18 975** ;
+- historiques `public_status=internal_only` : **18 975 / 18 975** ;
+- historiques `rank_lane=historical_tail` : **18 975 / 18 975** ;
+- historiques `catalog_only` : **0** ;
+- lignes `current_verified` portant par erreur V2 : **0** ;
+- changements de `evidence_status` provoqués par V2.2 : **0** ;
+- changements de `freshness_status` provoqués par V2.2 : **0** ;
+- publications provoquées par V2.2 : **0**.
