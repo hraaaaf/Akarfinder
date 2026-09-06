@@ -107,8 +107,8 @@ function muteBasemapSymbols(map: MapLibreMap, snapshots: Map<string, SymbolOpaci
     const iconOpacity = map.getPaintProperty(layer.id, "icon-opacity");
     snapshots.set(layer.id, { textOpacity, iconOpacity });
     try {
-      if (layer.layout?.["text-field"] !== undefined) map.setPaintProperty(layer.id, "text-opacity", 0.31);
-      if (layer.layout?.["icon-image"] !== undefined) map.setPaintProperty(layer.id, "icon-opacity", 0.18);
+      if (layer.layout?.["text-field"] !== undefined) map.setPaintProperty(layer.id, "text-opacity", 0.16);
+      if (layer.layout?.["icon-image"] !== undefined) map.setPaintProperty(layer.id, "icon-opacity", 0.08);
     } catch {
       // Third-party basemap symbol layers do not all expose identical paint properties.
     }
