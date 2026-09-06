@@ -13,10 +13,17 @@ const CASABLANCA_3D_BEARING = -28;
 
 const IMMERSIVE_LIGHT: LightSpecification = {
   anchor: "viewport",
-  color: "#FFE8C7",
-  intensity: 0.84,
+  color: "#FFF0D5",
+  intensity: 0.9,
   position: [1.25, 210, 38],
 };
+
+const PRESENTATION_LAYER_TARGETS = [
+  { id: "akarfinder-national-city-fill", property: "fill-opacity", value: 0.025 },
+  { id: "akarfinder-national-city-line", property: "line-opacity", value: 0.32 },
+  { id: "akarfinder-neighborhood-fill", property: "fill-opacity", value: 0.045 },
+  { id: "akarfinder-neighborhood-outline", property: "line-opacity", value: 0.42 },
+] as const;
 
 type Props = {
   citySlug: string | null;
@@ -31,6 +38,8 @@ type SymbolOpacitySnapshot = {
   textOpacity: unknown;
   iconOpacity: unknown;
 };
+
+type PaintSnapshot = Map<string, unknown>;
 
 function firstLabelLayerId(map: MapLibreMap): string | undefined {
   return map.getStyle().layers?.find((layer) => layer.type === "symbol" && Boolean(layer.layout?.["text-field"]))?.id;
@@ -59,15 +68,15 @@ function ensureBuildingLayer(map: MapLibreMap): void {
         ["linear"],
         ["coalesce", ["get", "render_height"], 0],
         0,
-        "#F8F0E4",
+        "#FFF9EF",
         18,
-        "#ECD9BF",
+        "#F2E3CC",
         45,
-        "#D9BE98",
+        "#E2C9A6",
         90,
-        "#BC986D",
+        "#C7A47A",
         140,
-        "#8F7158",
+        "#9D7B5D",
       ],
       "fill-extrusion-height": [
         "interpolate",
@@ -79,7 +88,7 @@ function ensureBuildingLayer(map: MapLibreMap): void {
         ["get", "render_height"],
       ],
       "fill-extrusion-base": ["coalesce", ["get", "render_min_height"], 0],
-      "fill-extrusion-opacity": 0.96,
+      "fill-extrusion-opacity": 0.91,
       "fill-extrusion-vertical-gradient": true,
     },
   }, firstLabelLayerId(map));
@@ -98,8 +107,8 @@ function muteBasemapSymbols(map: MapLibreMap, snapshots: Map<string, SymbolOpaci
     const iconOpacity = map.getPaintProperty(layer.id, "icon-opacity");
     snapshots.set(layer.id, { textOpacity, iconOpacity });
     try {
-      if (layer.layout?.["text-field"] !== undefined) map.setPaintProperty(layer.id, "text-opacity", 0.24);
-      if (layer.layout?.["icon-image"] !== undefined) map.setPaintProperty(layer.id, "icon-opacity", 0.14);
+      if (layer.layout?.["text-field"] !== undefined) map.setPaintProperty(layer.id, "text-opacity", 0.31);
+      if (layer.layout?.["icon-image"] !== undefined) map.setPaintProperty(layer.id, "icon-opacity", 0.18);
     } catch {
       // Third-party basemap symbol layers do not all expose identical paint properties.
     }
@@ -112,6 +121,35 @@ function restoreBasemapSymbols(map: MapLibreMap, snapshots: Map<string, SymbolOp
     try {
       map.setPaintProperty(layerId, "text-opacity", (snapshot.textOpacity ?? null) as never);
       map.setPaintProperty(layerId, "icon-opacity", (snapshot.iconOpacity ?? null) as never);
+    } catch {
+      // Style teardown can remove paint properties before React cleanup finishes.
+    }
+  }
+  snapshots.clear();
+}
+
+function softenTerritorialPresentation(map: MapLibreMap, snapshots: PaintSnapshot): void {
+  snapshots.clear();
+  for (const target of PRESENTATION_LAYER_TARGETS) {
+    if (!map.getLayer(target.id)) continue;
+    const key = `${target.id}:${target.property}`;
+    try {
+      snapshots.set(key, map.getPaintProperty(target.id, target.property));
+      map.setPaintProperty(target.id, target.property, target.value);
+    } catch {
+      // The relevant custom layer may not expose this paint property in every city state.
+    }
+  }
+}
+
+function restoreTerritorialPresentation(map: MapLibreMap, snapshots: PaintSnapshot): void {
+  for (const [key, value] of snapshots) {
+    const split = key.lastIndexOf(":");
+    const layerId = key.slice(0, split);
+    const property = key.slice(split + 1);
+    if (!map.getLayer(layerId)) continue;
+    try {
+      map.setPaintProperty(layerId, property, (value ?? null) as never);
     } catch {
       // Style teardown can remove paint properties before React cleanup finishes.
     }
@@ -143,6 +181,7 @@ export function National3DBuildingsLayer({ citySlug, districtSlug }: Props) {
     let cameraAttempts = 0;
     let map: MapLibreMap | null = null;
     const symbolSnapshots = new Map<string, SymbolOpacitySnapshot>();
+    const presentationSnapshots: PaintSnapshot = new Map();
 
     const applyLayerState = () => {
       if (!map || cancelled || !map.isStyleLoaded()) return;
@@ -151,8 +190,10 @@ export function National3DBuildingsLayer({ citySlug, districtSlug }: Props) {
         map.setLayoutProperty(BUILDING_LAYER, "visibility", "visible");
         map.setLight(IMMERSIVE_LIGHT);
         muteBasemapSymbols(map, symbolSnapshots);
+        softenTerritorialPresentation(map, presentationSnapshots);
       } else {
         restoreBasemapSymbols(map, symbolSnapshots);
+        restoreTerritorialPresentation(map, presentationSnapshots);
         if (map.getLayer(BUILDING_LAYER)) map.setLayoutProperty(BUILDING_LAYER, "visibility", "none");
       }
     };
@@ -204,6 +245,7 @@ export function National3DBuildingsLayer({ citySlug, districtSlug }: Props) {
       map.off("style.load", applyLayerState);
       try {
         restoreBasemapSymbols(map, symbolSnapshots);
+        restoreTerritorialPresentation(map, presentationSnapshots);
         removeBuildingLayer(map);
         map.easeTo({ pitch: 0, bearing: 0, duration: 0 });
       } catch {
