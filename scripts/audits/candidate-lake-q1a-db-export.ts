@@ -146,13 +146,13 @@ async function readSeedsForDomain(domain: string): Promise<SeedRow[]> {
 async function main(): Promise<void> {
   await fs.mkdir(OUT, { recursive: true });
 
-  // Retrieval order is deliberately irrelevant: every emitted lane is sorted locally
-  // before hashing. Avoid expensive server-side sorts on audit tables.
-  const [b3Rows, canonicalLinkRows] = await Promise.all([
+  // B3 has no useful index for decision/domain predicates. Filtering those 37k audit
+  // rows in PostgREST caused statement timeouts; read the small frozen audit table
+  // page-by-page and apply the certified DATA-1.2 predicates client-side instead.
+  // Every emitted identity is sorted locally before hashing, so retrieval order is irrelevant.
+  const [allB3Rows, canonicalLinkRows] = await Promise.all([
     restAll<B3Row>('odm_b3_discovery_expansion_audit_v1', {
       select: 'source_domain,canonical_url,provider,last_seen_at,decision',
-      decision: 'eq.reserve_unregistered_source',
-      source_domain: 'like.*.ma',
     }),
     restAll<CanonicalLinkRow>('odm_search_read_model_shadow_v3', {
       select: 'canonical_url,source_domain,observation_observed_at,ranking_policy_version',
@@ -160,6 +160,7 @@ async function main(): Promise<void> {
     }),
   ]);
 
+  const b3Rows = allB3Rows.filter((row) => row.decision === 'reserve_unregistered_source');
   const strictDomains = [...new Set(b3Rows.filter((row) => strictB3Domain(row.source_domain)).map((row) => row.source_domain))].sort();
   const seedDomains = [...new Set([...strictDomains, ...Object.keys(SEED_LANES)])].sort();
   const seedGroups = await mapWithConcurrency(seedDomains, 8, readSeedsForDomain);
@@ -252,6 +253,7 @@ async function main(): Promise<void> {
     vercelDeployments: 0,
     expected: EXPECTED,
     actual: { b3StrictMorocco: b3.length, canonicalLinkV2: canonical.length, currentSeedLanes: seeds.length, total: combined.length },
+    b3AuditRowsRead: allB3Rows.length,
     b3StrictDomainCount: strictDomains.length,
     seedCounts,
     canonicalCounts,
