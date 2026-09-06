@@ -1,6 +1,6 @@
 # 3 — Vivre Ici AkarFinder
 
-**Statut : ACTIVE — TARGET 9,8/10 LOCKED / LOT 2j EN CERTIFICATION**  
+**Statut : ACTIVE — TARGET 9,8/10 LOCKED / LOT 2j RECERTIFICATION APRÈS CORRECTIF OVERLAP**  
 **Dernière mise à jour : 2026-09-06**  
 **Repo : `hraaaaf/Akarfinder`**  
 **Branche : `docs/3-vivre-ici-akarfinder`**  
@@ -51,20 +51,33 @@ Le mockup contient des éléments illustratifs (photos, prix, météo, scores, p
 ## LOT 2j — CONVERGENCE ÉDITORIALE TARGET LOCK
 But : supprimer l’effet dashboard encore visible sans modifier la vérité des données.
 
-Implémentation :
+Implémentation initiale :
 - `app/map/premium-lot5.css` créé au commit `6d3c58017bcff8cd8229ebb928c3db1a5e325c4f` ;
-- activation dans `app/map/page.tsx` au commit code HEAD `db43f168a262a58be2b7825a7773df960b59db05` ;
+- activation dans `app/map/page.tsx` au commit code `db43f168a262a58be2b7825a7773df960b59db05` ;
 - rail desktop : marché vide masqué, signalétique ramenée à trois lignes éditoriales, CTA/teinte rapprochés du TARGET ;
 - desktop : chrome carte plus fin, rail 350 px, carte héro conservée ;
 - mobile : un seul bottom sheet éditorial, tabs masqués, trois facts compacts, contrôles regroupés ;
 - aucune création de prix/photo/score/distance/temps/coordonnée.
 
-Certification dédiée :
+Première certification dédiée :
 - workflow `Vivre Ici AFTER Certification` ;
-- run `34057285291` ;
-- job `101551374883` (`certify-after`) ;
-- HEAD certifié visé : `db43f168a262a58be2b7825a7773df960b59db05` ;
-- état au dernier contrôle : `queued`.
+- run `34057285291` ; job `101551374883` ; HEAD `db43f168a262a58be2b7825a7773df960b59db05` ;
+- contracts ✅ ; TypeScript ✅ ; build ✅ ; Chromium ✅ ;
+- capture AFTER ❌ uniquement sur l’invariant `topChromeToggleOverlap=true` en Maârif 1280 ;
+- artifact partiel réel `9996408072`, digest `sha256:a7f48e2d848283f499df8f97e46ff35d2465525443cbd61bf59d54f9934f4877` ;
+- preuve 1280 : 3D layer/source présents, pitch 60°, bearing -28°, zoom 15.5, 69 bâtiments rendus, map share 0.6953125, district-search overlap false.
+
+Correctif minimal :
+- recherche desktop : marge droite portée de `102px` à `118px` pour séparer la recherche du toggle 3D ;
+- commit `6dccce7c148da6e1e21eab9d24f71e2032aff61c` (`fix(vivre-ici): clear desktop search toggle overlap`).
+
+Recertification en cours :
+- run dédié `34059445434` ;
+- job `101557220830` (`certify-after`) ;
+- HEAD `6dccce7c148da6e1e21eab9d24f71e2032aff61c` ;
+- au dernier contrôle : contracts ✅, TypeScript ✅, build ✅, Chromium ✅, capture AFTER `in_progress`.
+
+Aucun score ≥9,8 n’est déclaré tant que les 8 captures du run corrigé ne sont pas vérifiées et comparées au TARGET LOCK.
 
 ## TRUTH GATE GÉOGRAPHIQUE
 Audit Supabase production read-only :
@@ -90,8 +103,10 @@ Audit Supabase production read-only :
 - [x] Seuil officiel relevé à ≥9,8/10
 - [x] Lot 2i vérifié techniquement sans fausse déclaration ≥9,8
 - [x] Lot 2j implémenté
-- [ ] Lot 2j certification dédiée + artifact 8 captures
-- [ ] Comparaison directe TARGET LOCK ↔ 2j desktop + mobile
+- [x] Premier run 2j diagnostiqué : overlap 1280 isolé
+- [x] Correctif overlap 2j poussé
+- [ ] Recertification 2j corrigée + artifact 8 captures
+- [ ] Comparaison directe TARGET LOCK ↔ 2j corrigé desktop + mobile
 - [ ] Correction 2k immédiate si score <9,8
 - [ ] Certification finale visuelle ≥9,8
 - [ ] Canonical closeout final
@@ -99,4 +114,4 @@ Audit Supabase production read-only :
 - [ ] Vercel uniquement après autorisation explicite
 
 ## NEXT EXACT
-Run `34057285291` → artifact `vivre-ici-after` → montrer les 8 captures réelles → produire `TARGET LOCK | 2j` desktop + mobile → scorer strictement → si <9,8 corriger immédiatement en 2k et recertifier. Aucun merge ni déploiement Vercel avant le gate correspondant.
+Run `34059445434` → artifact `vivre-ici-after` → vérifier les 8 captures réelles et les overlaps → montrer Maârif desktop/mobile → produire `TARGET LOCK | 2j corrigé` → scorer strictement → si <9,8 corriger immédiatement en 2k et recertifier. Aucun merge ni déploiement Vercel avant le gate correspondant.
