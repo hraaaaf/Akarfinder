@@ -1,0 +1,63 @@
+name: Repo Cleanup Restore Cheerio
+
+on:
+  push:
+    branches:
+      - chore/repo-cleanup-structural-2
+    paths:
+      - ".github/workflows/repo-cleanup-restore-cheerio.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  restore-and-validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: chore/repo-cleanup-structural-2
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Restore active cheerio dependency only
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const version = '^1.2.0';
+          const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+          const lock = JSON.parse(fs.readFileSync('package-lock.json', 'utf8'));
+
+          pkg.devDependencies ??= {};
+          lock.packages ??= {};
+          lock.packages[''] ??= {};
+          lock.packages[''].devDependencies ??= {};
+
+          pkg.devDependencies.cheerio = version;
+          lock.packages[''].devDependencies.cheerio = version;
+
+          const sortObject = (obj) => Object.fromEntries(Object.entries(obj).sort(([a], [b]) => a.localeCompare(b)));
+          pkg.devDependencies = sortObject(pkg.devDependencies);
+          lock.packages[''].devDependencies = sortObject(lock.packages[''].devDependencies);
+
+          fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+          fs.writeFileSync('package-lock.json', JSON.stringify(lock, null, 2) + '\n');
+          NODE
+      - name: Validate dependency graph
+        run: npm ci
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Scraper regression suite
+        run: npm run test:scrapers
+      - name: Commit restored dependency
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json
+          git diff --cached --quiet && exit 0
+          git commit -m "fix(cleanup): keep active cheerio dependency"
+          git pull --rebase origin chore/repo-cleanup-structural-2
+          git push origin HEAD:chore/repo-cleanup-structural-2
