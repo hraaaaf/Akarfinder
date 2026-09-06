@@ -1,0 +1,399 @@
+/* VIVRE ICI — 2L REFRAME, research-backed structural convergence.
+   Satellite-first map, editorial hierarchy, truth-safe content only. */
+
+[data-vivre-ici-page] {
+  --vivre-ink: #0d2633;
+  --vivre-teal: #0b555d;
+  --vivre-teal-soft: #edf6f3;
+  --vivre-paper-warm: #fffdf9;
+  --vivre-hairline: rgb(207 207 199 / .62);
+}
+
+@media (min-width: 1024px) {
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) {
+    grid-template-columns: minmax(0, 1fr) 356px !important;
+    gap: 10px !important;
+    padding: 10px 12px 12px !important;
+    background: #f4f1eb !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) [data-p4-map-canvas] {
+    border-radius: 26px !important;
+    box-shadow: 0 24px 64px rgb(31 43 47 / .11) !important;
+  }
+
+  /* Header chrome sits on one calm optical line, like the locked target. */
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) [data-akarfinder-national-map] > section[aria-label="Navigation territoriale nationale"] {
+    left: 18px !important;
+    top: 18px !important;
+    min-width: 142px !important;
+    max-width: 176px !important;
+    min-height: 42px !important;
+    padding: 6px 10px !important;
+    border-radius: 999px !important;
+    border-color: rgb(255 255 255 / .84) !important;
+    background: rgb(255 255 255 / .93) !important;
+    box-shadow: 0 8px 26px rgb(19 36 42 / .12) !important;
+    backdrop-filter: blur(14px) !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) [data-akarfinder-national-neighborhood-overlay] > div:first-child {
+    left: 214px !important;
+    right: 118px !important;
+    top: 18px !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) [data-akarfinder-national-neighborhood-overlay] > div:first-child > div {
+    min-height: 42px !important;
+    padding: 8px 15px !important;
+    border-radius: 999px !important;
+    border-color: rgb(255 255 255 / .84) !important;
+    background: rgb(255 255 255 / .94) !important;
+    box-shadow: 0 8px 26px rgb(19 36 42 / .12) !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) [data-vivre-ici-3d-toggle] {
+    right: 18px !important;
+    top: 18px !important;
+    min-height: 42px !important;
+    padding: 3px !important;
+    border-radius: 999px !important;
+    background: rgb(255 255 255 / .94) !important;
+    box-shadow: 0 8px 26px rgb(19 36 42 / .12) !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) [data-neighborhood-context-poi-controls] {
+    left: 214px !important;
+    top: 72px !important;
+    gap: 6px !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) [data-neighborhood-context-poi-controls] button {
+    min-height: 34px !important;
+    padding-inline: 12px !important;
+    border-radius: 999px !important;
+    box-shadow: 0 7px 20px rgb(19 36 42 / .10) !important;
+  }
+
+  /* Editorial rail: content first. No fake photo placeholder. */
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-map-decision-rail {
+    height: calc(100dvh - 90px) !important;
+    padding: 28px 20px 18px !important;
+    border: 1px solid var(--vivre-hairline) !important;
+    border-radius: 26px !important;
+    background: var(--vivre-paper-warm) !important;
+    box-shadow: 0 20px 52px rgb(34 42 44 / .09) !important;
+    overflow-y: auto !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-map-decision-rail::before {
+    left: 20px !important;
+    right: 20px !important;
+    top: 14px !important;
+    height: 3px !important;
+    border-radius: 999px !important;
+    background: linear-gradient(90deg, var(--vivre-teal), rgb(128 181 170 / .55), transparent) !important;
+    box-shadow: none !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-map-decision-rail::after {
+    display: none !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-premium-context-header > p:first-child {
+    color: var(--vivre-teal) !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-premium-context-header h2 {
+    margin-top: 7px !important;
+    font-size: 36px !important;
+    line-height: .96 !important;
+    letter-spacing: -.055em !important;
+    color: var(--vivre-ink) !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-premium-context-location {
+    margin-top: 7px !important;
+    font-size: 12.5px !important;
+    color: rgb(66 76 77) !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-premium-context-header > p:last-child {
+    margin-top: 17px !important;
+    max-width: 39ch !important;
+    font-size: 12px !important;
+    line-height: 1.58 !important;
+    color: rgb(72 77 76) !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-premium-tabs {
+    margin-top: 20px !important;
+    gap: 22px !important;
+    border-bottom-color: rgb(207 207 199 / .62) !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-premium-tabs > * {
+    padding: 8px 0 10px !important;
+    font-size: 10.5px !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-premium-tabs > [aria-current="page"] {
+    color: var(--vivre-teal) !important;
+    border-bottom-color: var(--vivre-teal) !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-premium-signal-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 7px !important;
+    margin-top: 16px !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-premium-signal-grid > div {
+    min-height: 72px !important;
+    padding: 10px 8px !important;
+    align-content: start !important;
+    border: 1px solid rgb(217 216 207 / .76) !important;
+    border-radius: 15px !important;
+    background: #fbfaf6 !important;
+    text-align: left !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-premium-signal-grid svg {
+    color: var(--vivre-teal) !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-premium-signal-grid strong {
+    margin-top: 5px !important;
+    font-size: 10.5px !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-premium-signal-grid span {
+    margin-top: 2px !important;
+    font-size: 7.8px !important;
+    line-height: 1.25 !important;
+  }
+
+  .p4-premium-local-guide {
+    margin-top: 20px !important;
+    padding-top: 17px !important;
+    border-top: 1px solid rgb(207 207 199 / .62) !important;
+  }
+
+  .p4-premium-local-guide-heading {
+    display: flex !important;
+    align-items: end !important;
+    justify-content: space-between !important;
+    gap: 12px !important;
+  }
+
+  .p4-premium-local-guide-heading p {
+    font-size: 8.5px !important;
+    font-weight: 800 !important;
+    letter-spacing: .12em !important;
+    text-transform: uppercase !important;
+    color: var(--vivre-teal) !important;
+  }
+
+  .p4-premium-local-guide-heading h3 {
+    margin-top: 4px !important;
+    font-size: 14px !important;
+    line-height: 1.15 !important;
+    letter-spacing: -.025em !important;
+    color: var(--vivre-ink) !important;
+  }
+
+  .p4-premium-local-guide-heading > span {
+    display: grid !important;
+    width: 28px !important;
+    height: 28px !important;
+    place-items: center !important;
+    border-radius: 999px !important;
+    background: var(--vivre-teal-soft) !important;
+    font-size: 10px !important;
+    font-weight: 900 !important;
+    color: var(--vivre-teal) !important;
+  }
+
+  .p4-premium-local-guide-list {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    margin-top: 11px !important;
+  }
+
+  .p4-premium-local-guide-list article {
+    min-width: 0 !important;
+    min-height: 82px !important;
+    padding: 11px !important;
+    border: 1px solid rgb(217 216 207 / .76) !important;
+    border-radius: 15px !important;
+    background: #fbfaf6 !important;
+  }
+
+  .p4-premium-local-guide-list article > span {
+    display: block !important;
+    font-size: 7.7px !important;
+    font-weight: 850 !important;
+    letter-spacing: .06em !important;
+    text-transform: uppercase !important;
+    color: var(--vivre-teal) !important;
+  }
+
+  .p4-premium-local-guide-list article > strong {
+    display: block !important;
+    margin-top: 5px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    font-size: 10.5px !important;
+    line-height: 1.22 !important;
+    color: var(--vivre-ink) !important;
+  }
+
+  .p4-premium-local-guide-list article > small {
+    display: block !important;
+    margin-top: 5px !important;
+    font-size: 7.8px !important;
+    line-height: 1.25 !important;
+    color: rgb(110 116 115) !important;
+  }
+
+  .p4-premium-local-guide-source {
+    margin-top: 9px !important;
+    font-size: 7.3px !important;
+    line-height: 1.35 !important;
+    color: rgb(129 132 128) !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-premium-market-card {
+    display: none !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-premium-actions {
+    margin-top: 18px !important;
+    padding-top: 0 !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-premium-actions > a:first-child {
+    min-height: 44px !important;
+    border-radius: 14px !important;
+    background: var(--vivre-teal) !important;
+    box-shadow: 0 10px 24px rgb(11 85 93 / .14) !important;
+  }
+}
+
+@media (max-width: 1023px) {
+  /* Mobile: map first, one control stack, one concise sheet. */
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) [data-akarfinder-national-map] > section[aria-label="Navigation territoriale nationale"] {
+    left: 12px !important;
+    top: 12px !important;
+    max-width: 160px !important;
+    min-height: 38px !important;
+    padding: 5px 8px !important;
+    border-radius: 999px !important;
+    background: rgb(255 255 255 / .94) !important;
+    box-shadow: 0 7px 22px rgb(19 36 42 / .12) !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) [data-vivre-ici-3d-toggle] {
+    right: 12px !important;
+    top: 12px !important;
+    min-height: 38px !important;
+    padding: 2px !important;
+    box-shadow: 0 7px 22px rgb(19 36 42 / .12) !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) [data-akarfinder-national-neighborhood-overlay] > div:first-child {
+    left: 12px !important;
+    right: 12px !important;
+    top: 64px !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) [data-akarfinder-national-neighborhood-overlay] > div:first-child > div {
+    min-height: 42px !important;
+    padding: 8px 13px !important;
+    border-radius: 18px !important;
+    background: rgb(255 255 255 / .95) !important;
+    box-shadow: 0 8px 24px rgb(19 36 42 / .11) !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) [data-neighborhood-context-poi-controls] {
+    top: 114px !important;
+    left: 12px !important;
+    right: 12px !important;
+    max-width: calc(100vw - 24px) !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) [data-neighborhood-context-poi-controls] button {
+    min-height: 32px !important;
+    padding-inline: 10px !important;
+    font-size: 9px !important;
+    box-shadow: 0 6px 18px rgb(19 36 42 / .09) !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) [data-akarfinder-neighborhood-preview] {
+    inset-inline: 10px !important;
+    bottom: 68px !important;
+    max-height: min(30svh, 246px) !important;
+    padding: 18px 14px 12px !important;
+    border: 1px solid rgb(218 216 207 / .8) !important;
+    border-radius: 26px !important;
+    background: rgb(255 253 249 / .985) !important;
+    box-shadow: 0 -12px 40px rgb(26 37 41 / .16) !important;
+    backdrop-filter: blur(18px) !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) [data-akarfinder-neighborhood-preview]::before {
+    content: "" !important;
+    display: block !important;
+    width: 38px !important;
+    height: 4px !important;
+    margin: -8px auto 10px !important;
+    border-radius: 999px !important;
+    background: rgb(119 125 121 / .36) !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) [data-akarfinder-neighborhood-preview] h2 {
+    margin-top: 4px !important;
+    font-size: 24px !important;
+    line-height: 1 !important;
+    letter-spacing: -.045em !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) [data-akarfinder-neighborhood-preview] > p:nth-of-type(2) {
+    margin-top: 6px !important;
+    font-size: 9.5px !important;
+    line-height: 1.4 !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) [data-akarfinder-neighborhood-preview] nav {
+    display: none !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) [data-vivre-ici-neighborhood-truth-grid] {
+    margin-top: 10px !important;
+    gap: 6px !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) [data-vivre-ici-neighborhood-truth-grid] > div {
+    min-height: 48px !important;
+    padding: 7px 4px !important;
+    border-radius: 12px !important;
+    background: #fbfaf6 !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) [data-vivre-ici-neighborhood-truth-grid] strong {
+    font-size: 8.2px !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) [data-vivre-ici-neighborhood-truth-grid] span {
+    font-size: 6.6px !important;
+  }
+
+  /* Keep the legal attribution visible but out of the visual hierarchy. */
+  [data-akarfinder-national-map] .maplibregl-ctrl-attrib {
+    max-width: 58vw !important;
+    font-size: 7px !important;
+    line-height: 1.2 !important;
+    opacity: .76 !important;
+  }
+}
