@@ -8,6 +8,7 @@ import {
   canPublishPersistedExternalListing,
 } from "../../../lib/listings/public-listing-access.js";
 import { mapDbRowToListing } from "../../../lib/listings/map-db-listing.js";
+import { normalizeSearchGatewayResult } from "../../../lib/search-gateway/search-gateway-normalizer.js";
 import type { DbListingRow } from "../../../lib/listings/db-listings.js";
 
 function withEnv<T>(env: Partial<NodeJS.ProcessEnv>, fn: () => T): T {
@@ -17,7 +18,6 @@ function withEnv<T>(env: Partial<NodeJS.ProcessEnv>, fn: () => T): T {
     if (value === undefined) delete process.env[key];
     else process.env[key] = value;
   }
-
   try {
     return fn();
   } finally {
@@ -85,45 +85,33 @@ function createRow(overrides: Partial<DbListingRow> = {}): DbListingRow {
 }
 
 test("persisted OpenSERP rows stay hidden from the structured-only guard", () => {
-  const row = createRow();
-  assert.equal(canPublishDbRowToPublicSurface(row), false);
+  assert.equal(canPublishDbRowToPublicSurface(createRow()), false);
 });
 
 test("persisted OpenSERP rows stay hidden when the feature flag is absent", () => {
-  const row = createRow();
   const visible = withEnv({ PERSISTED_OPENSERP_LISTINGS_ENABLED: undefined }, () =>
-    canPublishPersistedExternalListing(row),
+    canPublishPersistedExternalListing(createRow()),
   );
   assert.equal(visible, false);
 });
 
 test("persisted OpenSERP rows stay hidden when the feature flag is false", () => {
-  const row = createRow();
   const visible = withEnv({ PERSISTED_OPENSERP_LISTINGS_ENABLED: "false" }, () =>
-    canPublishPersistedExternalListing(row),
+    canPublishPersistedExternalListing(createRow()),
   );
   assert.equal(visible, false);
 });
 
-test("persisted OpenSERP rows become visible on search surfaces when the feature flag is true", () => {
+test("REAL-LISTINGS-ONLY: the legacy feature flag can no longer bypass live source policy", () => {
   const row = createRow();
-
   withEnv({ PERSISTED_OPENSERP_LISTINGS_ENABLED: "true" }, () => {
-    assert.equal(canPublishPersistedExternalListing(row), true);
-    assert.equal(canPublishDbRowToPublicSearchSurface(row), true);
-
-    const listing = mapDbRowToListing(row);
-    assert.equal(canPublishListingToPublicSearchSurface(listing), true);
-    assert.equal(listing.source_badge, "external_web_result");
-    assert.equal(listing.original_source_required, true);
-    assert.deepEqual(listing.allowed_ctas, ["view_original", "view_source", "compare"]);
-    assert.equal(listing.listing_url, row.listing_url);
-    assert.equal(listing.thumbnail_url, undefined);
-    assert.equal(listing.can_show_thumbnail, false);
+    assert.equal(canPublishPersistedExternalListing(row), false);
+    assert.equal(canPublishDbRowToPublicSearchSurface(row), false);
+    assert.equal(canPublishListingToPublicSearchSurface(mapDbRowToListing(row)), false);
   });
 });
 
-test("persisted OpenSERP rows with invalid metadata stay hidden even when the feature flag is true", () => {
+test("persisted OpenSERP invalid metadata remains hidden", () => {
   const row = createRow({
     field_confidence: JSON.stringify({
       provider: "openserp",
@@ -132,29 +120,33 @@ test("persisted OpenSERP rows with invalid metadata stay hidden even when the fe
       classification_lane: "discovery_page",
     }),
   });
-
-  const visible = withEnv({ PERSISTED_OPENSERP_LISTINGS_ENABLED: "true" }, () =>
-    canPublishPersistedExternalListing(row),
-  );
-  assert.equal(visible, false);
+  assert.equal(canPublishPersistedExternalListing(row), false);
 });
 
-test("persisted OpenSERP rows with invalid URLs stay hidden even when the feature flag is true", () => {
-  const row = createRow({ listing_url: "javascript:alert(1)" });
-
-  const visible = withEnv({ PERSISTED_OPENSERP_LISTINGS_ENABLED: "true" }, () =>
-    canPublishPersistedExternalListing(row),
-  );
-  assert.equal(visible, false);
+test("persisted OpenSERP invalid URLs remain hidden", () => {
+  assert.equal(canPublishPersistedExternalListing(createRow({ listing_url: "javascript:alert(1)" })), false);
 });
 
 test("persisted OpenSERP rows never spoof a partner badge", () => {
-  const row = createRow();
+  const listing = mapDbRowToListing(createRow());
+  assert.notEqual(listing.source_badge, "premium_partner");
+  assert.notEqual(listing.source_badge, "authorized_source");
+  assert.equal(listing.source_badge, "external_web_result");
+});
 
-  withEnv({ PERSISTED_OPENSERP_LISTINGS_ENABLED: "true" }, () => {
-    const listing = mapDbRowToListing(row);
-    assert.notEqual(listing.source_badge, "premium_partner");
-    assert.notEqual(listing.source_badge, "authorized_source");
-    assert.equal(listing.source_badge, "external_web_result");
-  });
+test("REAL-LISTINGS-ONLY: live search-provider observations are intelligence-only", () => {
+  const result = normalizeSearchGatewayResult(
+    {
+      title: "Appartement réel indexé à Casablanca",
+      link: "https://avito.ma/casablanca/appartement-123",
+      imageUrl: "https://images.example.test/property.jpg",
+    },
+    "avito_serper",
+  );
+  assert.notEqual(result, null);
+  assert.equal(result?.production_allowed, false);
+  assert.equal(result?.can_show_result, false);
+  assert.equal(result?.can_show_thumbnail, false);
+  assert.equal(result?.can_cache_thumbnail, false);
+  assert.equal(result?.can_download_thumbnail, false);
 });
