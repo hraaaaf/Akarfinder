@@ -1,6 +1,6 @@
 # 3 — Vivre Ici AkarFinder
 
-**Statut : ACTIVE — LOT 2f EN CERTIFICATION / GOAL VISUEL NON ATTEINT**  
+**Statut : ACTIVE — TARGET 9,8/10 LOCKED / LOT 2g CERTIFIÉ TECHNIQUEMENT / ÉVALUATION VISUELLE À FAIRE**  
 **Dernière mise à jour : 2026-09-06**  
 **Repo : `hraaaaf/Akarfinder`**  
 **Branche : `docs/3-vivre-ici-akarfinder`**  
@@ -9,75 +9,53 @@
 **Vercel : aucun déploiement sans accord explicite d’Achraf.**
 
 ## GOAL
-Transformer Vivre ici (`/map`) en expérience territoriale premium : Maroc 2D → ville/quartier 3D, carte dominante, chrome léger, panneau/bottom-sheet premium, aucune fausse précision.
+Transformer Vivre ici (`/map`) en expérience territoriale premium inspirée du site référent : carte héro dominante, ville/quartier 3D, chrome léger, rail desktop éditorial, bottom sheet mobile premium, aucune fausse précision.
 
-Succès : score visuel global ≥9/10 + build/TypeScript/tests verts + mêmes captures 390/430/768/1280 + truth gate géographique fail-closed.
+**Succès observable : score visuel global ≥9,8/10 contre le TARGET LOCK ci-dessous + build/TypeScript/tests verts + captures 390/430/768/1280 + truth gate géographique fail-closed.**
 
-## TARGET FREEZE 2026-09-06
-1. Desktop Maroc 2D premium.
-2. Desktop Casablanca → Maârif 3D.
-3. Mobile Casablanca → Maârif 3D.
+## TARGET LOCK — 2026-09-06 — AUTORITÉ VISUELLE
+Cible approuvée explicitement par Achraf le 2026-09-06 : mockup unique contenant **Desktop Maârif 3D + Mobile Maârif 3D**.
 
-Aucun prix, photo, temps, distance, métrique ou position n'est inventé pour reproduire le mockup.
+Artefact durable :
+- fichier : `AKARFINDER_VIVRE_ICI_TARGET_FREEZE_2026-09-06.png`
+- stockage canonique : Google Drive
+- file ID : `1nt6ouxqGp-z6cHnj5A3iQHmw8I_YnGFL`
+- URL : `https://drive.google.com/file/d/1nt6ouxqGp-z6cHnj5A3iQHmw8I_YnGFL/view?usp=drivesdk`
+- dimensions : `1536 × 1024`
+- taille originale : `2 879 788` octets
+- SHA-256 de l’original généré et approuvé : `c552bc2d4ef669394694f71027c9852a6c56d155b7853a27f2e9e672942637c8`
+
+**Règle : cette image remplace toutes les anciennes descriptions vagues de cible. Toute future note visuelle doit être calculée contre cette image. Le seuil de clôture est désormais ≥9,8/10.**
+
+Important : le mockup contient des éléments illustratifs (photos, prix, météo, scores, proximité, labels). Ils définissent le niveau de qualité visuelle et la hiérarchie, **pas une autorisation d’inventer ces données en production**. Les données absentes restent absentes ou présentées honnêtement.
+
+## TARGET — CRITÈRES À MATCHER
+1. Desktop : carte 3D spectaculaire et lisible, couvrant la majorité de l’écran, chrome flottant fin et premium.
+2. Desktop : rail quartier visuel riche, éditorial et aéré, avec image uniquement si une vraie image fiable existe.
+3. Mobile : carte 3D héro, contrôles regroupés, bottom sheet compact et riche, navigation légère.
+4. Basemap : densité de labels maîtrisée, relief/bâtiments lisibles, rendu chaud et premium.
+5. Cohérence marque AkarFinder : typographie, rayons, ombres, blanc cassé/bleu, hiérarchie nette.
+6. Truth gate : aucun prix/photo/temps/distance/score/position n’est fabriqué.
 
 ## PREUVES DE CONVERGENCE
-- P0 2D : run `33990212630`, artifact `9976424591`, ancien Goal P0 ~9,0/10.
-- 3D-L2b : run `33992903877`, artifact `9977221838`, ~7,5/10.
 - Lot 2a : run `34030333919`, artifact `9988409177`, ~6,5/10.
 - Lot 2b : run `34030849447`, artifact `9988593627`, ~7,4/10.
 - intermédiaire : run `34032104891`, artifact `9988982037`, ~7,6/10.
 - Lot 2c : run `34033038551`, artifact `9989287797`, ~8,1/10.
-- Lot 2d : run `34036441560`, artifact `9990349262`, ~8,8/10.
-- Lot 2e pré-sync : run `34039217117`, artifact `9991177033`.
+- Lot 2d : run `34036441560`, artifact `9990349262`, ~8,8/10 contre l’ancienne cible.
+- Lot 2e post-sync : run `34042235527`, artifact `9992071591`, techniquement certifié ; réévaluation stricte ~8,3/10.
+- Lot 2f : commit `1581c108a5b0ebe41170bcdec91c96e535aafc5a`, run `34044165796`, artifact `9992613601`, digest `sha256:8b759ccf1a3803aa5a6e50fb1fdd32f3b9f783da4b4ff3d9002044e81619e4e8`, techniquement certifié ; estimation visuelle ~8,7/10 avant TARGET LOCK 9,8.
 
-## SYNCHRONISATION MAIN
-- ancien HEAD visuel : `88df506241d77fbe8d67718fd421f6ac9b7fd496`.
-- main synchronisé : `b8c89681358e93ec254016bcca9b78f4717ea8de`.
-- intersection des changements main avec les 21 fichiers Vivre Ici : `0`.
-- merge sync : `f7c28368ce2d9de54be42985e8c690fa3c6e080f`.
-- comparaison après sync : behind `0`, diff limité aux 21 fichiers Vivre Ici attendus.
-- recertification post-sync : HEAD `45cd3174ca3a6dd10035eadd8755c03116ad1236`, run `34042235527`, artifact `9992071591`, digest `sha256:d3da569fb2e1a850302996c117564cd640343961576ef37149f8a65043676a61`.
+## LOT 2g — BASEMAP / MOBILE CHROME
+Commit : `c9a8e28a62a42874f58e7d8df3905a40405198c6` (`style(vivre-ici): reduce 3d basemap noise and mobile chrome`).
 
-Mesures post-sync :
-- 8/8 HTTP 200 ;
-- Maroc strictement 2D sur 390/430/768/1280 ;
-- Maârif : pitch `60°`, zoom `15.5`, bearing `-28°` ;
-- bâtiments rendus `43 / 46 / 65 / 70` ;
-- POI Maârif `2` ;
-- carte desktop Maârif ≈ `73,91 %` ;
-- bottom sheet mobile 390/430 ≈ `202,25 px`, tablette ≈ `216,94 px` ;
-- aucun overlap top chrome ;
-- `zeroDbWritesByScript=true` ;
-- `zeroDeploymentActionsByScript=true`.
+Certification :
+- run `34044522522` — `completed / success`
+- artifact `9992715124`
+- digest `sha256:05e389d9b3c3ac83af1dce66398f2e724d2dd70612b409c402e84f994b6a9211`
+- HEAD certifié `c9a8e28a62a42874f58e7d8df3905a40405198c6`
 
-### Correction de score visuel
-La première lecture post-sync avait été trop généreuse. La comparaison stricte au TARGET FREEZE montre encore : cartographie trop technique/dense, rail desktop encore partiellement SaaS/dashboard et chrome mobile trop empilé. **Score visuel réaliste du 2e post-sync : ~8,3/10. Le Goal ≥9 n’est donc pas atteint.**
-
-## LOT 2f — CONVERGENCE PERCEPTUELLE
-Goal : réduire le bruit visuel et rapprocher desktop/mobile du target premium sans toucher au contrat de vérité.
-
-Changement prouvé par le diff du commit :
-- fichier unique : `app/map/premium-lot4.css` ;
-- commit `1581c108a5b0ebe41170bcdec91c96e535aafc5a` ;
-- carte 3D plus chaude/calme via filtre canvas ;
-- rail desktop resserré vers `282–292 px`, ombres/contrastes atténués, signaux plus éditoriaux ;
-- overlays desktop allégés ;
-- bottom sheet mobile compacté, avec plafond `220 px` sous 430 px ;
-- recherche/POI mobiles resserrés ;
-- aucun changement de données métier ni activation de pin bien.
-
-Le workflow dédié a ensuite été élargi à `lib/map/**` pour que les futures corrections de style cartographique hors `app/map/**` soient aussi certifiées :
-- commit workflow `83104152d9e6426ae967f43c4e81543563280233`.
-
-Déclenchement explicite du gate via `scripts/vivre-ici-after-capture.mjs` :
-- HEAD certifié `196f465fef439d4126a81eeb5f3986b0c30bdf1c` ;
-- run `34044165796` ;
-- navigation contracts ✅ ;
-- TypeScript ✅ ;
-- production build en cours au dernier contrôle ;
-- prochaines preuves requises : artifact + 8 captures + comparaison directe 2e/2f + score humain.
-
-**2f n’est pas certifié avant ces preuves.**
+**2g est certifié techniquement. Il n’est pas déclaré ≥9,8 tant que les captures ne sont pas comparées directement au TARGET LOCK.**
 
 ## TRUTH GATE GÉOGRAPHIQUE
 Audit Supabase production read-only :
@@ -88,21 +66,26 @@ Audit Supabase production read-only :
 
 `isExactMapListing` exige `geo_precision="exact"` + provenance `scraped_coordinates|manual_import` + coordonnées valides au Maroc.
 
-**Conclusion : `0` bien actuellement éligible à un pin/callout EXACT.** Aucun faux pin bien n'est autorisé.
+**Conclusion : `0` bien actuellement éligible à un pin/callout EXACT. Aucun faux pin bien n’est autorisé.**
+
+## SYNCHRONISATION MAIN
+- main synchronisé : `b8c89681358e93ec254016bcca9b78f4717ea8de`.
+- merge sync : `f7c28368ce2d9de54be42985e8c690fa3c6e080f`.
+- intersection main/Vivre lors de la sync : `0`.
 
 ## ROADMAP
-- [x] L0 BEFORE `/map`
-- [x] P0 2D
-- [x] 3D-L1 / L2b
-- [x] Target premium
-- [x] Lots 2a→2e convergence technique
+- [x] Target premium initial
+- [x] Lots 2a→2f convergence
 - [x] Lot 3 truth gate `0 EXACT`, fail-closed
-- [ ] Lot 2f convergence perceptuelle — certification en cours
-- [ ] Lot 4 certification finale visuelle ≥9
+- [x] TARGET LOCK 2026-09-06 stocké durablement + SHA-256
+- [x] Seuil officiel relevé à ≥9,8/10
+- [x] Lot 2g certification technique
+- [ ] Comparaison directe TARGET LOCK ↔ 2g, desktop + mobile
+- [ ] Corrections 2h+ jusqu’à ≥9,8/10
+- [ ] Certification finale visuelle ≥9,8
 - [ ] Canonical closeout final
 - [ ] Human gate merge PR #1025
 - [ ] Vercel uniquement après autorisation explicite
-- [ ] P2 terrain/soleil/modèles neufs seulement si données + ROI prouvés
 
 ## NEXT EXACT
-Run `34044165796` → artifact → montrer les 8 captures → comparaison directe TARGET / 2e / 2f → si <9 correction suivante ; si ≥9 closeout canonical/PR → human gate merge. Aucun déploiement Vercel sans autorisation explicite.
+Télécharger l’artifact `9992715124` → montrer les captures 2g → produire un côte-à-côte **TARGET LOCK | 2g** desktop et mobile → scorer précisément les écarts → corriger immédiatement tout écart empêchant ≥9,8 → recertifier. Aucun merge ni déploiement Vercel avant le gate correspondant.
