@@ -106,14 +106,9 @@ export function P4MapDecisionRail() {
       {cityName === "Maroc" ? (
         <div className="p4-premium-city-list" aria-label="Villes phares">
           {FLAGSHIP_CITIES.map((city) => {
-            const active = city === cityName;
             const href = buildMapHref(withMapLocation(navigationState, city));
             return (
-              <Link
-                key={city}
-                href={href}
-                className={active ? "is-active" : undefined}
-              >
+              <Link key={city} href={href}>
                 {city}
               </Link>
             );
