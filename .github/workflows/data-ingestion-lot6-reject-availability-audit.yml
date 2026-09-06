@@ -1,0 +1,32 @@
+name: Data Ingestion Lot 6 Reject Availability Audit
+
+on:
+  push:
+    branches:
+      - feat/data-ingestion-canonical
+    paths:
+      - scripts/mubawab-reject-availability-audit.ts
+      - .github/workflows/data-ingestion-lot6-reject-availability-audit.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Audit 38 rejected listing URLs
+        run: npx tsx scripts/mubawab-reject-availability-audit.ts
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mubawab-reject-availability-audit
+          path: mubawab-reject-availability-audit.json
+          if-no-files-found: error

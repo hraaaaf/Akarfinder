@@ -1,0 +1,36 @@
+name: Data Ingestion Lot 6 Shakedown
+
+on:
+  pull_request:
+    paths:
+      - "data-ingestion/LOT6_STATUS.md"
+      - "data-ingestion/transaction-context.ts"
+      - "data-ingestion/sources/mubawab/**"
+      - "scripts/mubawab-crawl-lot6-shakedown.ts"
+      - "scripts/scrapers/__tests__/data-ingestion-transaction-context.test.ts"
+      - "scripts/scrapers/utils/fetch-html.ts"
+      - ".github/workflows/data-ingestion-lot6.yml"
+
+jobs:
+  shakedown:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Validate contextual transaction guards
+        run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-transaction-context.test.ts
+      - name: First chunked pass 50
+        run: npx tsx scripts/mubawab-crawl-lot6-shakedown.ts
+      - name: Resume from checkpoint
+        run: npx tsx scripts/mubawab-crawl-lot6-shakedown.ts --resume
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mubawab-lot6-shakedown
+          path: data-ingestion/runs/mubawab/lot6-shakedown/
+          if-no-files-found: error

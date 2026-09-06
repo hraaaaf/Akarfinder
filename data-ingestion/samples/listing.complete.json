@@ -1,0 +1,46 @@
+{
+  "akar_id": "fixture-complete-001",
+  "source": {
+    "name": "fixture",
+    "source_id": "fixture-complete-001",
+    "url": "https://example.com/listing/fixture-complete-001",
+    "first_seen_at": "2026-09-03T16:05:00Z",
+    "last_seen_at": "2026-09-03T16:05:00Z",
+    "scraped_at": "2026-09-03T16:05:00Z",
+    "content_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  "status": "active",
+  "transaction": "rent",
+  "property_type": "apartment",
+  "title": "Appartement meublé à louer à Agdal",
+  "description": "Appartement de démonstration destiné à valider le contrat de données canonique AkarFinder.",
+  "price": { "amount": 8500, "currency": "MAD", "period": "month", "on_request": false },
+  "surface": { "total_m2": 112, "habitable_m2": 105, "built_m2": 112, "land_m2": null },
+  "rooms": 4,
+  "bedrooms": 2,
+  "bathrooms": 2,
+  "floor": 3,
+  "location": {
+    "country": "Morocco",
+    "region": "Rabat-Salé-Kénitra",
+    "city": "Rabat",
+    "district": "Agdal",
+    "address_text": "Agdal, Rabat",
+    "latitude": 33.9908,
+    "longitude": -6.8481,
+    "precision": "neighborhood_centroid"
+  },
+  "features": ["elevator", "furnished", "parking", "balcony"],
+  "images": [
+    { "url": "https://example.com/images/fixture-complete-001-1.jpg", "position": 1, "hash": null },
+    { "url": "https://example.com/images/fixture-complete-001-2.jpg", "position": 2, "hash": null }
+  ],
+  "seller": { "name": "Agence Démo", "type": "agency", "source_profile_url": "https://example.com/agency/demo" },
+  "provenance": {
+    "source_type": "agency_direct",
+    "source_listing_url": "https://example.com/listing/fixture-complete-001",
+    "retrieval_method": "feed"
+  },
+  "quality": { "score": 96, "warnings": [] },
+  "raw": { "fixture": true, "source_fields_preserved": ["reference", "published_at"] }
+}

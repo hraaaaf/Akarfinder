@@ -1,0 +1,29 @@
+name: Data Ingestion Lot 9 Live Campaign
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  live-campaign:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Run persistent bounded Mubawab live campaign
+        run: npx tsx scripts/mubawab-full-coverage-live-campaign.ts
+      - name: Upload Lot 9 live campaign proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lot9-live-campaign-proof
+          path: data-ingestion/runs/mubawab/lot9-live-campaign/
+          if-no-files-found: warn
+          retention-days: 7

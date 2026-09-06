@@ -1,0 +1,59 @@
+name: Data Ingestion Lot 7 Sandbox 100 Gate
+
+on:
+  pull_request:
+    paths:
+      - "data-ingestion/**"
+      - "scripts/lot7-visual-*"
+      - "scripts/scrapers/__tests__/data-ingestion-lot7-sandbox-100.test.ts"
+      - ".github/workflows/data-ingestion-lot7-sandbox-100.yml"
+
+jobs:
+  sandbox-100:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      DATABASE_PROVIDER: sqlite
+      SEARCH_PROVIDER: database
+      AKARFINDER_SQLITE_PATH: ${{ runner.temp }}/lot7-visual.db
+      ODM_PUBLIC_CANARY_ENABLED: "false"
+      ODM_PUBLIC_CANARY_APPROVED: "false"
+      ODM_PUBLIC_CANARY_PERCENT: "0"
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Validate isolated 100-listing sandbox
+        run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot7-sandbox-100.test.ts
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Seed isolated Lot 7 visual SQLite
+        run: node --import tsx scripts/lot7-visual-seed.ts
+      - name: Start AkarFinder locally
+        run: |
+          npm run dev -- --hostname 127.0.0.1 > /tmp/lot7-next.log 2>&1 &
+          echo $! > /tmp/lot7-next.pid
+          for i in {1..60}; do
+            if curl -fsS http://127.0.0.1:3000/search >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          cat /tmp/lot7-next.log
+          exit 1
+      - name: Capture real Search page
+        run: node scripts/lot7-visual-capture.mjs
+      - name: Upload visual proof
+        uses: actions/upload-artifact@v4
+        with:
+          name: lot7-search-visual-proof
+          path: artifacts/lot7-visual/*.png
+          if-no-files-found: error
+          retention-days: 14
+      - name: Show server log on failure
+        if: failure()
+        run: cat /tmp/lot7-next.log || true

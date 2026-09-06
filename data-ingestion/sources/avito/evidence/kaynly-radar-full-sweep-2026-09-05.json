@@ -1,0 +1,66 @@
+{
+  "source": "avito",
+  "discovery_surface": "kaynly_public_seo_lattice",
+  "observed_at": "2026-09-05T07:45:29.896Z",
+  "status": "completed_full_bounded_sweep",
+  "safety": {
+    "avito_requests": 0,
+    "control_surface_host": "kaynly.com",
+    "identifiable_user_agent": "AkarFinderCoverageResearch/0.2 (+https://akarfinder.vercel.app)",
+    "max_pages": 1400,
+    "max_ids": 8000,
+    "delay_ms": 650
+  },
+  "robots": {
+    "status": 200,
+    "allowed": true,
+    "mode": "parsed"
+  },
+  "root_http_status": 200,
+  "discovered_city_transaction_roots": 121,
+  "pages_requested": 1289,
+  "pages_ok": 1289,
+  "pages_failed": 0,
+  "unique_avito_ids": 5807,
+  "by_transaction": {
+    "sale": 3399,
+    "rent": 2408,
+    "unknown": 0
+  },
+  "top_cities": {
+    "casablanca": 808,
+    "marrakech": 692,
+    "tanger": 640,
+    "agadir": 486,
+    "kenitra": 318,
+    "sale": 290,
+    "mohammedia": 274,
+    "rabat": 264,
+    "fes": 206,
+    "temara": 197,
+    "meknes": 187,
+    "el-jadida": 184,
+    "tetouan": 165
+  },
+  "queue_remaining": 0,
+  "stopped_by": "queue_exhausted",
+  "workflow": {
+    "run_id": 33953406309,
+    "job_id": 101272257613,
+    "head_sha": "85721b9bf4f02790ccf820a30abf15026e8b5433",
+    "conclusion": "success"
+  },
+  "artifact": {
+    "id": 9965997820,
+    "name": "avito-kaynly-radar-proof",
+    "size_in_bytes": 186151,
+    "digest": "sha256:a315502dd6e4cc59d6c4dfcac8199d12ae6f15e023a110d10b1006f68a35301c"
+  },
+  "interpretation": [
+    "This is a complete bounded traversal of the currently discovered Kaynly public SEO graph under the stated limits.",
+    "All 1,289 requested Kaynly pages returned successfully and the queue was exhausted.",
+    "The 5,807 unique IDs are Avito source IDs discovered from public outbound Avito links exposed on Kaynly pages.",
+    "This does not by itself certify that all 5,807 listings are active on Avito at the observation time.",
+    "No Avito page, API, image, auth, CAPTCHA, or private endpoint was requested by this workflow."
+  ]
+}
