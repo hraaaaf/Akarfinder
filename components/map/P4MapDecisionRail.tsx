@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import { Building2, MapPin, Search, ShieldCheck, Trees } from "lucide-react";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { resolveCityEntity, resolveNeighborhoodEntity } from "@/lib/geo/geo-entity-registry";
+import type { NeighborhoodContextReadModelV1 } from "@/lib/neighborhood-context/read-model";
+import { mapPoiCategoryLabel } from "@/lib/neighborhood-context/map-poi-presentation";
 import {
   buildMapHref,
   buildMapSearchHref,
@@ -14,6 +16,10 @@ import {
 import { getPremiumMarketIntelligenceProvider } from "@/lib/map/premium-map-city-registry";
 
 const FLAGSHIP_CITIES = ["Casablanca", "Rabat", "Marrakech", "Tanger", "Agadir", "Fès"] as const;
+
+type ContextPayload =
+  | { status: "ok"; context: NeighborhoodContextReadModelV1 }
+  | { status: "not_found" | "invalid_request" | "unavailable"; [key: string]: unknown };
 
 export function P4MapDecisionRail() {
   const searchParams = useSearchParams();
@@ -30,6 +36,34 @@ export function P4MapDecisionRail() {
   const searchHref = buildMapSearchHref(navigationState);
   const contextName = districtEntity?.canonical_name ?? cityName;
   const title = cityName === "Maroc" ? "Où vivre au Maroc ?" : contextName;
+  const [localContext, setLocalContext] = useState<NeighborhoodContextReadModelV1 | null>(null);
+
+  useEffect(() => {
+    setLocalContext(null);
+    if (!cityEntity || !districtEntity) return;
+
+    const controller = new AbortController();
+    void fetch(`/api/geo/neighborhood-context?city=${encodeURIComponent(cityEntity.slug)}&district=${encodeURIComponent(districtEntity.slug)}`, {
+      credentials: "same-origin",
+      cache: "no-store",
+      signal: controller.signal,
+    })
+      .then(async (response) => {
+        const payload = await response.json() as ContextPayload;
+        if (!response.ok || payload.status !== "ok") return null;
+        return payload.context;
+      })
+      .then((context) => {
+        if (!controller.signal.aborted) setLocalContext(context);
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setLocalContext(null);
+      });
+
+    return () => controller.abort();
+  }, [cityEntity?.slug, districtEntity?.slug]);
+
+  const localAnchors = localContext?.anchors.slice(0, 4) ?? [];
 
   return (
     <aside
@@ -47,12 +81,10 @@ export function P4MapDecisionRail() {
         <h2 className="mt-1 text-[clamp(22px,2vw,30px)] font-extrabold tracking-[-0.045em] text-foreground">
           {title}
         </h2>
-        {districtEntity ? (
-          <p className="p4-premium-context-location">{cityName}</p>
-        ) : null}
+        {districtEntity ? <p className="p4-premium-context-location">{cityName}</p> : null}
         <p className="mt-2 text-[11px] leading-[1.55] text-muted-foreground">
           {districtEntity
-            ? `Découvrez ${districtEntity.canonical_name} à travers les repères réellement disponibles. Aucun prix, temps, distance ou emplacement de bien n’est déduit.`
+            ? `Explorez ${districtEntity.canonical_name} par son contexte urbain et les repères publics réellement disponibles. Les biens restent exclus de la carte sans position exacte vérifiée.`
             : cityName === "Maroc"
               ? "Explorez les territoires disponibles puis descendez vers les villes et quartiers avec une précision explicitement qualifiée."
               : `Explorez ${cityName} et ses quartiers avec des repères sourcés uniquement.`}
@@ -70,7 +102,7 @@ export function P4MapDecisionRail() {
         <div>
           <MapPin size={16} aria-hidden="true" />
           <strong>Repères</strong>
-          <span>Sourcés uniquement</span>
+          <span>{localContext ? `${localContext.anchor_count} sourcé${localContext.anchor_count > 1 ? "s" : ""}` : "Sourcés uniquement"}</span>
         </div>
         <div>
           <Trees size={16} aria-hidden="true" />
@@ -83,6 +115,30 @@ export function P4MapDecisionRail() {
           <span>Pin exact requis</span>
         </div>
       </section>
+
+      {districtEntity && localAnchors.length ? (
+        <section className="p4-premium-local-guide" aria-label={`Repères sourcés à ${districtEntity.canonical_name}`} data-vivre-ici-local-guide>
+          <div className="p4-premium-local-guide-heading">
+            <div>
+              <p>À proximité</p>
+              <h3>Repères réellement observés</h3>
+            </div>
+            <span>{localContext?.anchor_count ?? localAnchors.length}</span>
+          </div>
+          <div className="p4-premium-local-guide-list">
+            {localAnchors.map((anchor) => (
+              <article key={anchor.poi_id}>
+                <span>{mapPoiCategoryLabel(anchor.category)}</span>
+                <strong>{anchor.name}</strong>
+                <small>{anchor.territorial_wording}</small>
+              </article>
+            ))}
+          </div>
+          <p className="p4-premium-local-guide-source">
+            Repères sourcés et datés dans le contexte quartier. Aucune proximité n’est extrapolée.
+          </p>
+        </section>
+      ) : null}
 
       <section className="p4-premium-market-card" data-p4-map-data-contract>
         <div>
@@ -102,11 +158,7 @@ export function P4MapDecisionRail() {
         <div className="p4-premium-city-list" aria-label="Villes phares">
           {FLAGSHIP_CITIES.map((city) => {
             const href = buildMapHref(withMapLocation(navigationState, city));
-            return (
-              <Link key={city} href={href}>
-                {city}
-              </Link>
-            );
+            return <Link key={city} href={href}>{city}</Link>;
           })}
         </div>
       ) : null}
