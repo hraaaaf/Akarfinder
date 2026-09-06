@@ -1,6 +1,6 @@
 # 3 — Vivre Ici AkarFinder
 
-**Statut : ACTIVE — TARGET PREMIUM FREEZÉ / LOT 2a SHELL PREMIUM EN CERTIFICATION**  
+**Statut : ACTIVE — TARGET PREMIUM FREEZÉ / LOT 2a SHELL PREMIUM EN RECERTIFICATION**  
 **Dernière mise à jour : 2026-09-06**  
 **Repo : `hraaaaf/Akarfinder`**  
 **Branche : `docs/3-vivre-ici-akarfinder`**  
@@ -162,10 +162,7 @@ Le Goal premium est atteint uniquement si :
 
 ### Lot 2 — Convergence 3D + shell premium
 
-**Statut : 🟡 LOT 2a IMPLÉMENTÉ, EN CERTIFICATION**
-
-**Code sous certification : `022c04cd37081fa8b3231bd0f824ef4ee8516478`**  
-**Workflow : `Vivre Ici AFTER Certification` — run `34008751570` — dernier état vérifié : `queued`.**
+**Statut : 🟡 LOT 2a IMPLÉMENTÉ, EN RECERTIFICATION**
 
 Lot 2a implémenté :
 
@@ -180,7 +177,7 @@ Lot 2a implémenté :
 - mobile/tablette : fiche quartier transformée en vrai bottom sheet ;
 - aucune métrique métier ajoutée pour remplir le design.
 
-Gate premium renforcé sur le même HEAD :
+Gate premium :
 
 - marqueur target `freeze-2026-09-06` ;
 - 8 captures Maroc + Maârif ;
@@ -191,7 +188,17 @@ Gate premium renforcé sur le même HEAD :
 - Maroc reste 2D ;
 - zéro écriture DB / zéro action de déploiement par le gate.
 
-**Lot 2a n’est PAS certifié tant que l’artifact et les captures du run ne sont pas inspectés.**
+### Historique exact de certification 2a
+
+- code `022c04cd37081fa8b3231bd0f824ef4ee8516478` → run `34030080046` : **FAILURE** ;
+- cause exacte : TypeScript `TS2367` dans `P4MapDecisionRail.tsx`, comparaison impossible entre une ville phare et `Maroc` ;
+- navigation contracts : **SUCCESS** ;
+- build/captures non exécutés après l’échec TypeScript ;
+- correctif poussé : `782c124090f994d559eda9938b1f22edc5990d65` ;
+- recertification `Vivre Ici AFTER Certification` : run `34030333919` ;
+- dernier état exact vérifié : **in_progress**.
+
+**Lot 2a n’est PAS certifié tant que la recertification, l’artifact et les captures ne sont pas inspectés.**
 
 ### Lot 3 — Vérité data + biens exacts + vie locale
 
@@ -224,7 +231,7 @@ Gate premium renforcé sur le même HEAD :
 - [x] 3D-L1 technique
 - [x] 3D-L2b immersion visible
 - [x] **Lot 1 Target premium canonique**
-- [ ] **Lot 2 Convergence 3D + shell premium** — 2a en certification
+- [ ] **Lot 2 Convergence 3D + shell premium** — 2a en recertification
 - [ ] **Lot 3 Vérité data + biens exacts + vie locale**
 - [ ] **Lot 4 Polish + certification premium**
 - [ ] P2 terrain / soleil / modèles neufs si données + ROI prouvés
@@ -243,11 +250,11 @@ Gate premium renforcé sur le même HEAD :
 
 ## 9. NEXT EXACT
 
-1. terminer tout travail indépendant du Lot 2a ;
-2. vérifier une fois le run `34008751570` ;
+1. terminer le closeout indépendant docs/PR du Lot 2a ;
+2. vérifier une fois le run `34030333919` ;
 3. si vert : récupérer artifact → inspecter + montrer les 8 captures → comparer TARGET / AFTER → score ;
-4. corriger les écarts Lot 2b tant que le shell n’atteint pas le niveau attendu ;
-5. ensuite Lot 3 data / biens exacts ;
-6. Lot 4 polish / certification ;
-7. closeout PR/canonical ;
-8. arrêt au human gate merge/Vercel.
+4. si rouge : diagnostiquer → corriger → relancer naturellement ;
+5. corriger les écarts Lot 2b tant que le shell n’atteint pas le niveau attendu ;
+6. ensuite Lot 3 data / biens exacts ;
+7. Lot 4 polish / certification ;
+8. closeout PR/canonical puis arrêt au human gate merge/Vercel.
