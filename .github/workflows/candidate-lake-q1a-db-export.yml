@@ -1,0 +1,48 @@
+name: AkarFinder - Candidate Lake Q1A DB Export
+
+on:
+  push:
+    paths:
+      - 'scripts/audits/candidate-lake-q1a-db-export.ts'
+      - '.github/workflows/candidate-lake-q1a-db-export.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      Q1A_DB_OUT: .tmp/candidate-lake-q1a-db
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Export frozen DB-backed candidate identities read-only
+        run: npx tsx scripts/audits/candidate-lake-q1a-db-export.ts
+      - name: Verify Q1A DB export invariants
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const p=JSON.parse(fs.readFileSync('.tmp/candidate-lake-q1a-db/summary.json','utf8'));
+          if(p.readOnly!==true) throw new Error('readOnly=false');
+          if(p.databaseWrites!==0 || p.productionWrites!==0) throw new Error('write boundary violated');
+          if(p.sourceSiteFetches!==0 || p.sourceNetworkRequests!==0) throw new Error('source-site boundary violated');
+          if(p.vercelDeployments!==0) throw new Error('Vercel boundary violated');
+          if(p.actual.total!==14987) throw new Error(`unexpected total ${p.actual.total}`);
+          if(p.actual.b3StrictMorocco!==5797 || p.actual.canonicalLinkV2!==6270 || p.actual.currentSeedLanes!==2920) throw new Error('lane count drift');
+          console.log(JSON.stringify(p.actual,null,2));
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: candidate-lake-q1a-db-backed-proof
+          path: .tmp/candidate-lake-q1a-db/
+          if-no-files-found: error
+          retention-days: 30
