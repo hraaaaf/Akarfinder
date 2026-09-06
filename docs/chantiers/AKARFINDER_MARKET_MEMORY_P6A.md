@@ -1,4 +1,4 @@
-# AKARFINDER — P6-A MARKET MEMORY INDEX
+# AKARFINDER — P6 MARKET MEMORY
 
 Date: 2026-09-06
 Branch: `feat/mubawab-full-enumeration`
@@ -21,7 +21,9 @@ Transformer le corpus Mubawab historique en mémoire immobilière interne exploi
 - historiques office/category : **768**
 - provenance manquante après V2.3 : **0**
 
-## P6-A exécuté
+# P6-A — Market Memory Index
+
+## Exécution
 `metadata.market_memory_v1` est renseigné sur **18 975 / 18 975** historiques.
 
 Champs internes stockés :
@@ -39,34 +41,22 @@ Champs internes stockés :
 - `publication_eligible=false`
 - `public_status=internal_only`
 
-## Distribution certifiée
+## Distribution
 - `structural_comparable_ready` : **18 207**
   - ville + famille de bien + transaction connues via preuve first-party structurée
 - `category_memory_only` : **768**
   - famille `office_commercial` + transaction connues
   - ville non prouvée dans la preuve source, donc laissée inconnue
-- `economic_comparable_ready=true` : **0**
-- `price_history_ready=true` : **0**
 
-## Pourquoi les prix restent à 0
-Audit du lien historique vers les observations économiques :
-- historiques avec chaîne propre `listing_source` exploitable par `source_offer_key` : **0**
-- historiques avec observation prix+surface MAD liée de façon déterministe : **0**
-
-Conclusion : le corpus historique est désormais exploitable comme **mémoire structurelle de présence marché**, mais pas encore comme série historique de prix. Une route catalogue ne prouve ni prix ni surface.
-
-## Contrôles de non-régression
+## Contrôles P6-A
 - historiques indexées mémoire : **18 975 / 18 975**
 - `current_verified` polluées par `market_memory_v1` : **0**
 - `publication_eligible=true` sur historique : **0**
 - dérive `updated_at` pendant la matérialisation : **0**
 - aucun changement `freshness_status`
 - aucun changement `evidence_status`
-- aucun merge
-- aucun déploiement Vercel
 
 ## Premiers segments structurels volumineux
-Exemples issus de l'index interne :
 - Rabat / appartement / location : **1 192**
 - Marrakech / appartement / location : **1 061**
 - Marrakech / villa / vente : **1 055**
@@ -80,21 +70,85 @@ Exemples issus de l'index interne :
 
 Ces volumes mesurent la mémoire de présence observée dans les surfaces historiques certifiées. Ils ne sont pas présentés comme stock actif ni comme parts de marché actuelles.
 
-## Succès P6-A
-**ATTEINT**
+# P6-B — Trusted Economic Memory
 
-Le corpus historique est maintenant entièrement indexé comme mémoire interne avec séparation explicite entre :
-1. mémoire structurelle exploitable ;
-2. mémoire catégorie sans géographie prouvée ;
-3. mémoire économique non encore qualifiée.
+## Goal
+Faire monter `economic_comparable_ready` uniquement lorsqu'une annonce historique possède une preuve économique structurée, déterministe et auditée.
 
-## Prochain lot P6-B
-Recover uniquement des preuves économiques déterministes pour faire monter progressivement `economic_comparable_ready` et `price_history_ready` :
-- prix observé natif ;
-- devise ;
-- surface observée ;
-- date d'observation ;
-- provenance exacte ;
-- aucun parsing spéculatif de snippets ambigus.
+## Audit shadow
+Croisement des **18 975** historiques avec `thin_index_search_documents` par ID Mubawab extrait de l'URL détail :
+- historiques retrouvées dans le thin-index : **2 027**
+- prix MAD normalisé disponible : **73**
+- surface normalisée disponible : **115**
+- prix + surface présents simultanément : **45**
 
-P6-B doit rester shadow/internal tant qu'un gate de qualité et de policy n'est pas explicitement franchi.
+Un simple couple prix+surface n'est pas suffisant.
+
+## Gate économique strict v1
+Pour devenir `economic_comparable_ready=true` :
+- `normalization_status=normalized`
+- `quality_tier=A`
+- `normalized_price_mad` présent
+- `normalized_surface_m2` présent
+- preuve prix explicite (`bounded_mad_v2` ou `price_mad` explicite)
+- `price_to_verify != true`
+- `price_suppressed != true`
+- aucune donnée inventée depuis un snippet ambigu
+
+Résultat : **8 / 45** candidats passent le gate.
+Les **37 autres restent exclus** de la mémoire économique.
+
+## Matérialisation P6-B
+Pour les 8 lignes qualifiées, `metadata.market_memory_v1` contient désormais :
+- `economic_comparable_ready=true`
+- `price_history_ready=false`
+- `economic_gate_version=market_memory_economic_gate_v1`
+- `economic_snapshot.price_mad`
+- `economic_snapshot.surface_m2`
+- `economic_snapshot.price_per_m2_mad` dérivé uniquement du prix et de la surface validés
+- `economic_snapshot.observed_at`
+- statut/version de normalisation
+- qualité A + score
+- méthode de preuve prix/surface
+- version de réconciliation prix
+- `method=trusted_thin_index_economic_snapshot_v1`
+
+Les 8 snapshots qualifiés couvrent :
+- Rabat / villa / location : 45 000 MAD, 800 m²
+- Casablanca / commercial / vente : 1 620 000 MAD, 180 m²
+- Marrakech / appartement / vente : 2 500 000 MAD, 146 m²
+- Marrakech / terrain / vente : 1 450 000 MAD, 304 m²
+- Casablanca / villa / location : 35 000 MAD, 600 m²
+- Marrakech / villa / vente : 3 210 000 MAD, 243 m²
+- Marrakech / villa / vente : 6 500 000 MAD, 200 m²
+- Rabat / appartement / location : 11 500 MAD, 98 m²
+
+Ces valeurs sont des snapshots historiques internes, pas des références de marché publiables.
+
+## Pourquoi `price_history_ready` reste à 0
+Un snapshot économique unique ne constitue pas une série temporelle.
+
+État actuel :
+- `economic_comparable_ready=true` : **8**
+- `price_history_ready=true` : **0**
+
+Aucune table `price_m2_references` n'est alimentée à partir de cet échantillon : **8 observations isolées sont insuffisantes pour fabriquer une référence statistique robuste**.
+
+## Succès P6
+- mémoire structurelle : **18 975 / 18 975** indexées
+- comparables structurels géolocalisés : **18 207**
+- mémoire catégorie sans ville prouvée : **768**
+- snapshots économiques strictement qualifiés : **8**
+- séries historiques de prix qualifiées : **0**
+- publication supplémentaire : **0**
+- aucun merge
+- aucun déploiement Vercel
+
+## Prochain lot P6-C
+Construire une vraie dimension temporelle sans crawl interdit :
+- rechercher des réobservations datées persistées par moteurs/index externes autorisés ;
+- relier plusieurs snapshots économiques du même ID lorsqu'ils sont déterministes ;
+- seulement à partir de >=2 observations économiques datées compatibles, ouvrir `price_history_ready` ;
+- ne produire aucune référence prix/m² de ville/type tant que le sample et les contrôles d'outliers ne sont pas suffisants.
+
+P6-C reste shadow/internal jusqu'à certification explicite.
