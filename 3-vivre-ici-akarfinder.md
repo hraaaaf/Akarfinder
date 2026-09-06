@@ -1,6 +1,6 @@
 # 3 — Vivre Ici AkarFinder
 
-**Statut : ACTIVE — TARGET 9,8/10 LOCKED / LOT 2g CERTIFIÉ TECHNIQUEMENT / ÉVALUATION VISUELLE À FAIRE**  
+**Statut : ACTIVE — TARGET 9,8/10 LOCKED / LOT 2j EN CERTIFICATION**  
 **Dernière mise à jour : 2026-09-06**  
 **Repo : `hraaaaf/Akarfinder`**  
 **Branche : `docs/3-vivre-ici-akarfinder`**  
@@ -23,18 +23,18 @@ Artefact durable :
 - URL : `https://drive.google.com/file/d/1nt6ouxqGp-z6cHnj5A3iQHmw8I_YnGFL/view?usp=drivesdk`
 - dimensions : `1536 × 1024`
 - taille originale : `2 879 788` octets
-- SHA-256 de l’original généré et approuvé : `c552bc2d4ef669394694f71027c9852a6c56d155b7853a27f2e9e672942637c8`
+- SHA-256 : `c552bc2d4ef669394694f71027c9852a6c56d155b7853a27f2e9e672942637c8`
 
-**Règle : cette image remplace toutes les anciennes descriptions vagues de cible. Toute future note visuelle doit être calculée contre cette image. Le seuil de clôture est désormais ≥9,8/10.**
+**Règle : cette image est l’autorité visuelle. Toute note future est calculée contre elle. Seuil de clôture : ≥9,8/10.**
 
-Important : le mockup contient des éléments illustratifs (photos, prix, météo, scores, proximité, labels). Ils définissent le niveau de qualité visuelle et la hiérarchie, **pas une autorisation d’inventer ces données en production**. Les données absentes restent absentes ou présentées honnêtement.
+Le mockup contient des éléments illustratifs (photos, prix, météo, scores, proximité, labels). Ils définissent le niveau visuel et la hiérarchie, **pas une autorisation d’inventer ces données en production**. Les données absentes restent absentes ou sont présentées honnêtement.
 
 ## TARGET — CRITÈRES À MATCHER
 1. Desktop : carte 3D spectaculaire et lisible, couvrant la majorité de l’écran, chrome flottant fin et premium.
-2. Desktop : rail quartier visuel riche, éditorial et aéré, avec image uniquement si une vraie image fiable existe.
+2. Desktop : rail quartier riche, éditorial et aéré, avec image uniquement si une vraie image fiable existe.
 3. Mobile : carte 3D héro, contrôles regroupés, bottom sheet compact et riche, navigation légère.
 4. Basemap : densité de labels maîtrisée, relief/bâtiments lisibles, rendu chaud et premium.
-5. Cohérence marque AkarFinder : typographie, rayons, ombres, blanc cassé/bleu, hiérarchie nette.
+5. Cohérence marque AkarFinder : typographie, rayons, ombres, blanc cassé/bleu-teal, hiérarchie nette.
 6. Truth gate : aucun prix/photo/temps/distance/score/position n’est fabriqué.
 
 ## PREUVES DE CONVERGENCE
@@ -44,18 +44,27 @@ Important : le mockup contient des éléments illustratifs (photos, prix, mété
 - Lot 2c : run `34033038551`, artifact `9989287797`, ~8,1/10.
 - Lot 2d : run `34036441560`, artifact `9990349262`, ~8,8/10 contre l’ancienne cible.
 - Lot 2e post-sync : run `34042235527`, artifact `9992071591`, techniquement certifié ; réévaluation stricte ~8,3/10.
-- Lot 2f : commit `1581c108a5b0ebe41170bcdec91c96e535aafc5a`, run `34044165796`, artifact `9992613601`, digest `sha256:8b759ccf1a3803aa5a6e50fb1fdd32f3b9f783da4b4ff3d9002044e81619e4e8`, techniquement certifié ; estimation visuelle ~8,7/10 avant TARGET LOCK 9,8.
+- Lot 2f : commit `1581c108a5b0ebe41170bcdec91c96e535aafc5a`, run `34044165796`, artifact `9992613601`, digest `sha256:8b759ccf1a3803aa5a6e50fb1fdd32f3b9f783da4b4ff3d9002044e81619e4e8`, techniquement certifié ; ~8,7/10 avant TARGET LOCK 9,8.
+- Lot 2g : commit `c9a8e28a62a42874f58e7d8df3905a40405198c6`, run `34044522522`, artifact `9992715124`, digest `sha256:05e389d9b3c3ac83af1dce66398f2e724d2dd70612b409c402e84f994b6a9211`, techniquement certifié.
+- Lot 2i : HEAD `ff6e7330bf248e2c74fbc9e444284678404f6465`. `Mockup Convergence Target Gate` run `34052743509` SUCCESS. `Carte National Zillow UI Certification` run `34052743504` SUCCESS, artifact `9995086969`, digest `sha256:50fa657a86369fc0b2bbbad04a8db380f1f44646c097c42feb17f4f2710101ad`. Cet artifact prouve la carte nationale/Casablanca, **pas à lui seul le rendu canonique Maârif 3D**. Donc aucun ≥9,8 déclaré.
 
-## LOT 2g — BASEMAP / MOBILE CHROME
-Commit : `c9a8e28a62a42874f58e7d8df3905a40405198c6` (`style(vivre-ici): reduce 3d basemap noise and mobile chrome`).
+## LOT 2j — CONVERGENCE ÉDITORIALE TARGET LOCK
+But : supprimer l’effet dashboard encore visible sans modifier la vérité des données.
 
-Certification :
-- run `34044522522` — `completed / success`
-- artifact `9992715124`
-- digest `sha256:05e389d9b3c3ac83af1dce66398f2e724d2dd70612b409c402e84f994b6a9211`
-- HEAD certifié `c9a8e28a62a42874f58e7d8df3905a40405198c6`
+Implémentation :
+- `app/map/premium-lot5.css` créé au commit `6d3c58017bcff8cd8229ebb928c3db1a5e325c4f` ;
+- activation dans `app/map/page.tsx` au commit code HEAD `db43f168a262a58be2b7825a7773df960b59db05` ;
+- rail desktop : marché vide masqué, signalétique ramenée à trois lignes éditoriales, CTA/teinte rapprochés du TARGET ;
+- desktop : chrome carte plus fin, rail 350 px, carte héro conservée ;
+- mobile : un seul bottom sheet éditorial, tabs masqués, trois facts compacts, contrôles regroupés ;
+- aucune création de prix/photo/score/distance/temps/coordonnée.
 
-**2g est certifié techniquement. Il n’est pas déclaré ≥9,8 tant que les captures ne sont pas comparées directement au TARGET LOCK.**
+Certification dédiée :
+- workflow `Vivre Ici AFTER Certification` ;
+- run `34057285291` ;
+- job `101551374883` (`certify-after`) ;
+- HEAD certifié visé : `db43f168a262a58be2b7825a7773df960b59db05` ;
+- état au dernier contrôle : `queued`.
 
 ## TRUTH GATE GÉOGRAPHIQUE
 Audit Supabase production read-only :
@@ -69,23 +78,25 @@ Audit Supabase production read-only :
 **Conclusion : `0` bien actuellement éligible à un pin/callout EXACT. Aucun faux pin bien n’est autorisé.**
 
 ## SYNCHRONISATION MAIN
-- main synchronisé : `b8c89681358e93ec254016bcca9b78f4717ea8de`.
+- main synchronisé lors du dernier gate : `b8c89681358e93ec254016bcca9b78f4717ea8de`.
 - merge sync : `f7c28368ce2d9de54be42985e8c690fa3c6e080f`.
-- intersection main/Vivre lors de la sync : `0`.
+- intersection main/Vivre lors de cette sync : `0`.
 
 ## ROADMAP
 - [x] Target premium initial
-- [x] Lots 2a→2f convergence
+- [x] Lots 2a→2g convergence technique
 - [x] Lot 3 truth gate `0 EXACT`, fail-closed
 - [x] TARGET LOCK 2026-09-06 stocké durablement + SHA-256
 - [x] Seuil officiel relevé à ≥9,8/10
-- [x] Lot 2g certification technique
-- [ ] Comparaison directe TARGET LOCK ↔ 2g, desktop + mobile
-- [ ] Corrections 2h+ jusqu’à ≥9,8/10
+- [x] Lot 2i vérifié techniquement sans fausse déclaration ≥9,8
+- [x] Lot 2j implémenté
+- [ ] Lot 2j certification dédiée + artifact 8 captures
+- [ ] Comparaison directe TARGET LOCK ↔ 2j desktop + mobile
+- [ ] Correction 2k immédiate si score <9,8
 - [ ] Certification finale visuelle ≥9,8
 - [ ] Canonical closeout final
 - [ ] Human gate merge PR #1025
 - [ ] Vercel uniquement après autorisation explicite
 
 ## NEXT EXACT
-Télécharger l’artifact `9992715124` → montrer les captures 2g → produire un côte-à-côte **TARGET LOCK | 2g** desktop et mobile → scorer précisément les écarts → corriger immédiatement tout écart empêchant ≥9,8 → recertifier. Aucun merge ni déploiement Vercel avant le gate correspondant.
+Run `34057285291` → artifact `vivre-ici-after` → montrer les 8 captures réelles → produire `TARGET LOCK | 2j` desktop + mobile → scorer strictement → si <9,8 corriger immédiatement en 2k et recertifier. Aucun merge ni déploiement Vercel avant le gate correspondant.
