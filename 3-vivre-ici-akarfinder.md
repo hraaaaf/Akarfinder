@@ -1,6 +1,6 @@
 # 3 — Vivre Ici AkarFinder
 
-**Statut : PREMIUM ≥9 CERTIFIÉ POST-SYNC / HUMAN GATE MERGE**  
+**Statut : ACTIVE — LOT 2f EN CERTIFICATION / GOAL VISUEL NON ATTEINT**  
 **Dernière mise à jour : 2026-09-06**  
 **Repo : `hraaaaf/Akarfinder`**  
 **Branche : `docs/3-vivre-ici-akarfinder`**  
@@ -28,7 +28,7 @@ Aucun prix, photo, temps, distance, métrique ou position n'est inventé pour re
 - intermédiaire : run `34032104891`, artifact `9988982037`, ~7,6/10.
 - Lot 2c : run `34033038551`, artifact `9989287797`, ~8,1/10.
 - Lot 2d : run `34036441560`, artifact `9990349262`, ~8,8/10.
-- Lot 2e pré-sync : run `34039217117`, artifact `9991177033`, ~9,0/10.
+- Lot 2e pré-sync : run `34039217117`, artifact `9991177033`.
 
 ## SYNCHRONISATION MAIN
 - ancien HEAD visuel : `88df506241d77fbe8d67718fd421f6ac9b7fd496`.
@@ -36,16 +36,7 @@ Aucun prix, photo, temps, distance, métrique ou position n'est inventé pour re
 - intersection des changements main avec les 21 fichiers Vivre Ici : `0`.
 - merge sync : `f7c28368ce2d9de54be42985e8c690fa3c6e080f`.
 - comparaison après sync : behind `0`, diff limité aux 21 fichiers Vivre Ici attendus.
-- ancrage de recertification : `45cd3174ca3a6dd10035eadd8755c03116ad1236`.
-
-## CERTIFICATION FINALE POST-SYNC
-Run `34042235527` : artifact produit et proof gate exécuté sur HEAD `45cd3174ca3a6dd10035eadd8755c03116ad1236`.
-
-Artifact :
-- ID `9992071591` ;
-- digest `sha256:d3da569fb2e1a850302996c117564cd640343961576ef37149f8a65043676a61` ;
-- taille `2 909 302` octets ;
-- 8 captures mêmes viewports/scénarios.
+- recertification post-sync : HEAD `45cd3174ca3a6dd10035eadd8755c03116ad1236`, run `34042235527`, artifact `9992071591`, digest `sha256:d3da569fb2e1a850302996c117564cd640343961576ef37149f8a65043676a61`.
 
 Mesures post-sync :
 - 8/8 HTTP 200 ;
@@ -59,7 +50,28 @@ Mesures post-sync :
 - `zeroDbWritesByScript=true` ;
 - `zeroDeploymentActionsByScript=true`.
 
-Inspection visuelle des captures desktop 1280 et mobile 390 : système 2e préservé après sync, 3D immédiatement lisible, carte dominante, rail éditorial compact, mobile hero-map + sheet cohérent. **Score final maintenu ~9,0/10. Goal premium atteint sur le tree synchronisé.**
+### Correction de score visuel
+La première lecture post-sync avait été trop généreuse. La comparaison stricte au TARGET FREEZE montre encore : cartographie trop technique/dense, rail desktop encore partiellement SaaS/dashboard et chrome mobile trop empilé. **Score visuel réaliste du 2e post-sync : ~8,3/10. Le Goal ≥9 n’est donc pas atteint.**
+
+## LOT 2f — CONVERGENCE PERCEPTUELLE
+Goal : réduire le bruit cartographique et rapprocher le rendu du target premium sans toucher au contrat de vérité.
+
+Changement prouvé :
+- `lib/map/akarfinder-territorial-style.ts` ;
+- commit style `1581c108a5b0ebe41170bcdec91c96e535aafc5a` ;
+- traitement du basemap ajusté pour un rendu plus calme/premium ;
+- aucun changement de données métier ni activation de pin bien.
+
+Le workflow visuel dédié ne surveillait pas `lib/map/**`. Correction :
+- workflow `.github/workflows/vivre-ici-after.yml` inclut désormais `lib/map/**` ;
+- commit `83104152d9e6426ae967f43c4e81543563280233`.
+
+Déclenchement explicite du gate via `scripts/vivre-ici-after-capture.mjs` :
+- HEAD `196f465fef439d4126a81eeb5f3986b0c30bdf1c` ;
+- run `34044165796` — état au lancement : `queued` ;
+- prochaines preuves requises : build/TS/tests + artifact + 8 captures + comparaison directe 2e/2f + score humain.
+
+**2f n’est pas certifié avant ces preuves.**
 
 ## TRUTH GATE GÉOGRAPHIQUE
 Audit Supabase production read-only :
@@ -77,13 +89,14 @@ Audit Supabase production read-only :
 - [x] P0 2D
 - [x] 3D-L1 / L2b
 - [x] Target premium
-- [x] Lots 2a→2e convergence
+- [x] Lots 2a→2e convergence technique
 - [x] Lot 3 truth gate `0 EXACT`, fail-closed
-- [x] Lot 4 certification finale post-sync ≥9
-- [x] Canonical closeout
+- [ ] Lot 2f convergence perceptuelle — certification en cours
+- [ ] Lot 4 certification finale visuelle ≥9
+- [ ] Canonical closeout final
 - [ ] Human gate merge PR #1025
 - [ ] Vercel uniquement après autorisation explicite
 - [ ] P2 terrain/soleil/modèles neufs seulement si données + ROI prouvés
 
 ## NEXT EXACT
-Human gate : merge PR `#1025`. Après merge, vérifier HEAD/main et CI post-merge. Aucun déploiement Vercel sans autorisation explicite.
+Run `34044165796` → artifact → montrer les 8 captures → comparaison directe TARGET / 2e / 2f → si <9 correction suivante ; si ≥9 closeout canonical/PR → human gate merge. Aucun déploiement Vercel sans autorisation explicite.
