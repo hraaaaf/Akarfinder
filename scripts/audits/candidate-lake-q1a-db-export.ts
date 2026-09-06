@@ -1,3 +1,4 @@
+// Q1A deterministic DB-backed candidate export.
 import { createHash } from 'node:crypto';
 import fs from 'node:fs/promises';
 import path from 'node:path';
