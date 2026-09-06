@@ -6,6 +6,7 @@ import { classifyReservoirCandidate } from '../data-mass/reservoir-qualification
 const OUT = process.env.GAP_HUNT_OUT ?? '.tmp/historical-gap-hunt';
 const PAGE = 1000;
 const AS_OF = process.env.GAP_HUNT_AS_OF?.trim() || null;
+const AS_OF_MS = AS_OF ? Date.parse(AS_OF) : null;
 const DEFAULT_TARGETS = [
   'agenz.ma', '1immo.ma', 'ma.afribaba.com', 'masaken.ma', 'soukimmobilier.com', 'mouldar.com',
   'promoimmomarrakech.com', 'logic-immo.com', 'yakeey.com', '2p.ma', '1000-annonces.com',
@@ -81,6 +82,10 @@ type DomainSets = {
   net: Set<string>;
 };
 
+function visibleAt(createdAt: string): boolean {
+  return AS_OF_MS === null || Date.parse(createdAt) <= AS_OF_MS;
+}
+
 async function readDiscovery(): Promise<DiscoveryRow[]> {
   const out: DiscoveryRow[] = [];
   let last = '';
@@ -91,10 +96,9 @@ async function readDiscovery(): Promise<DiscoveryRow[]> {
       limit: String(PAGE),
     };
     if (last) query.id = `gt.${last}`;
-    if (AS_OF) query.created_at = `lte.${AS_OF}`;
     if (TARGETS.size === 1) query.source_domain = `eq.${[...TARGETS][0]}`;
     const page = await rest<DiscoveryRow>('discovery_candidates', query);
-    out.push(...page.filter((row) => TARGETS.has(norm(row.source_domain))));
+    out.push(...page.filter((row) => TARGETS.has(norm(row.source_domain)) && visibleAt(row.created_at)));
     if (page.length < PAGE) break;
     const next = page.at(-1)?.id;
     if (!next || next === last) throw new Error('keyset stalled');
@@ -106,15 +110,12 @@ async function readDiscovery(): Promise<DiscoveryRow[]> {
 async function readSeeds(): Promise<SeedRow[]> {
   const out: SeedRow[] = [];
   for (let offset = 0; ; offset += PAGE) {
-    const query: Record<string, string> = {
+    const page = await rest<SeedRow>('source_offer_seeds', {
       select: 'canonical_url,source_domain,created_at',
-      order: 'canonical_url.asc',
       limit: String(PAGE),
       offset: String(offset),
-    };
-    if (AS_OF) query.created_at = `lte.${AS_OF}`;
-    const page = await rest<SeedRow>('source_offer_seeds', query);
-    out.push(...page);
+    });
+    out.push(...page.filter((row) => visibleAt(row.created_at)));
     if (page.length < PAGE) break;
   }
   return out;
