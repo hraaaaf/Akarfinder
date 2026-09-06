@@ -1,7 +1,7 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
 **Version : 2026-09-06**  
-**Statut : MARKET COVERAGE — M250K FROZEN / CANDIDATE LAKE + CLUSTERING ACTIVE**
+**Statut : M250K FROZEN / CANDIDATE LAKE → CLUSTERING → FRESHNESS ACTIVE**
 
 > **SOURCE UNIQUE DE VÉRITÉ GLOBALE.** Ce fichier est la seule boussole globale AkarFinder. `docs/SESSION.md` n'est qu'un handover. Les autres specs restent locales à leur périmètre.
 
@@ -203,10 +203,16 @@ Le full sweep `33985644309` a échoué sur `Network is unreachable` au chargemen
 | M50K | ✅ |
 | M100K | ✅ |
 | **M150K** | ✅ CLOSED |
-| **M200K** | ✅ **CLOSED — 253 372 représentations courantes / 200 000 (126,7 %)** |
-| **M250K** | ✅ **CLOSED — 253 372 / 250 000 (101,35 %)** |
+| **M200K** | ✅ **CLOSED — 253 372 / 200 000 (126,7 %)** |
+| **M250K** | ✅ **FROZEN — 253 372 / 250 000 (101,35 %)** |
+| **Q1 Candidate Lake** | 🔵 ACTIVE |
+| **Q2 probable_unique** | ⬜ NEXT |
+| **Q3 live_confidence** | ⬜ NEXT |
+| **Q4 search eligibility shadow** | ⬜ NEXT |
 
-## 6. FILE D'EXÉCUTION — 12 LOTS
+## 6. FILE D'EXÉCUTION — LOTS PASSÉS + LOTS À VENIR
+
+### Couverture — fermé
 
 1. ✅ AlerteImmo full / Avito indirect.
 2. ✅ Probe multi-sites.
@@ -217,13 +223,78 @@ Le full sweep `33985644309` a échoué sur `Network is unreachable` au chargemen
 7. ✅ ImmoDirect — 4, PARKED.
 8. ✅ Yakeey exact L0 — 82.
 9. ✅ MASS-1 + Historical Gap + Agenz historical reconciliations.
-10. ✅ **Public GitHub dataset expansion Mubawab + Avito : +85 536 exact-net-new au-dessus des baselines déjà comptées.**
-11. 🔵 Candidate Lake unifié : exact dedupe + provenance + layer + temporal cohort + clusters + freshness.
-12. ⛔ Gate humain avant toute écriture prod/Vercel/policy registry.
+10. ✅ Public GitHub dataset expansion Mubawab + Avito : **+85 536 exact-net-new** au-dessus des baselines déjà comptées.
+
+### Post-M250K — séquence canonique
+
+11. 🔵 **Q1A — Candidate Lake manifest freeze**
+   - **Goal :** matérialiser un manifest reproductible des **253 372 représentations**.
+   - **Succès :** entrée = 253 372 ; chaque ligne possède `source`, `source_identity`, provenance/evidence et couche L0/L1 ; aucune perte silencieuse.
+   - **Preuve :** run GitHub déterministe + artifact manifest/summary + hash du manifest ; `databaseWrites=0`, `sourceSiteFetches=0`, `productionWrites=0`.
+
+12. ⬜ **Q1B — Provenance + temporal cohort normalization**
+   - **Goal :** normaliser provenance, origine directe/indirecte, artifact/run, date de collecte et cohorte temporelle.
+   - **Succès :** couverture provenance/cohorte mesurée ; tout champ inconnu reste explicitement `unknown`, jamais inféré.
+   - **Preuve :** tableau de couverture par source/lane + liste des lignes incomplètes/quarantinées.
+
+13. ⬜ **Q1C — Exact identity dedupe / canonical keys**
+   - **Goal :** détecter les répétitions exactes d'une même identité source sans supprimer l'historique.
+   - **Succès :** `253 372 input -> exact identities -> exact duplicate representations` publié ; aucun collision silencieuse entre sources.
+   - **Preuve :** manifest anti-overlap + invariants source-ID/source-URL + exemples audités.
+
+14. ⬜ **Q1D — Normalized property features + fingerprints**
+   - **Goal :** produire les features utiles au clustering : ville/quartier, type, transaction, prix, surface, chambres, géolocalisation disponible, tokens titre/adresse et empreintes stables.
+   - **Succès :** couverture de chaque feature publiée par source ; aucune donnée absente inventée ; fingerprints déterministes/rejouables.
+   - **Preuve :** artifact features + coverage matrix + tests unitaires de normalisation.
+
+15. ⬜ **Q2A — Candidate-pair blocking**
+   - **Goal :** réduire le problème `253k × 253k` à des paires plausibles sans perdre les doublons évidents.
+   - **Succès :** règles de blocking explicites par ville/type/transaction + buckets prix/surface/géo ; volume de paires et taux de réduction publiés.
+   - **Preuve :** run read-only + distribution des blocks + golden cases conservés.
+
+16. ⬜ **Q2B — Clustering V1 conservateur**
+   - **Goal :** créer des `property_cluster_id` shadow, non destructifs, avec score et raisons de match.
+   - **Succès :** publication de `representations -> probable_unique`, taille des clusters, singletons, paires cross-source et niveaux de confiance ; aucun merge irréversible.
+   - **Preuve :** artifact clusters + audit des plus gros clusters + règles de split/replay.
+
+17. ⬜ **Q2C — Cluster QA / false-merge control**
+   - **Goal :** mesurer et réduire les faux merges et faux splits avant toute utilisation produit.
+   - **Succès :** échantillon stratifié par ville/source/taille de cluster ; cas à risque isolés ; règles corrigées jusqu'à stabilité.
+   - **Preuve :** rapport QA avec exemples, causes, corrections et avant/après ; aucune promotion si qualité insuffisante.
+
+18. ⬜ **Q3A — Freshness evidence model**
+   - **Goal :** séparer historique, récemment observé et probablement actif sans extrapoler.
+   - **Succès :** `freshness_state` + `last_observed_at` + provenance de la preuve ; seules les lanes actuellement autorisées peuvent recevoir une nouvelle observation directe.
+   - **Preuve :** matrice freshness par source/lane + audit des règles de vieillissement.
+
+19. ⬜ **Q3B — live_confidence**
+   - **Goal :** calculer un niveau de confiance d'activité par représentation puis par cluster.
+   - **Succès :** score explicable utilisant fraîcheur, qualité source, cohérence inter-sources et signaux disponibles ; historique seul ne peut jamais produire `active=true`.
+   - **Preuve :** distribution des scores + cas limites + tests anti-réactivation abusive.
+
+20. ⬜ **Q4A — Search eligibility shadow**
+   - **Goal :** produire une décision shadow `eligible / hold / historical_only / quarantine` pour chaque cluster.
+   - **Succès :** zéro publication publique ; raisons de décision traçables ; aucune source/lane non autorisée ne devient servable.
+   - **Preuve :** artifact shadow eligibility + compteurs par raison/source + invariants de policy.
+
+21. ⬜ **Q4B — Search quality / ranking rehearsal**
+   - **Goal :** tester l'impact du nouveau Property Graph sur recherches réelles sans déployer.
+   - **Succès :** jeux de requêtes Casablanca/Rabat/Marrakech/Tanger/Agadir ; mesures couverture, diversité, duplications visibles et pertinence avant/après.
+   - **Preuve :** rapport comparatif reproductible + cas régressifs identifiés.
+
+22. ⬜ **Q4C — Production gate**
+   - **Goal :** préparer, pas déclencher, l'écriture/serving du Candidate Lake et des clusters.
+   - **Succès :** migration/plan rollback/impact/chiffres exacts prêts ; aucune écriture prod, policy registry ou Vercel avant validation humaine séparée.
+   - **Preuve :** dry-run complet + checklist GO/NO-GO.
+
+23. ⬜ **Discovery incrémentale secondaire**
+   - Tout nouveau lot doit présenter un manifest d'identités exactes et un set-diff contre le freeze **253 372**.
+   - Les **1 938 non-Factory** restent en réserve jusqu'au filtre qualité excluant social/bruit.
+   - La découverte ne doit pas détourner la priorité de Q1/Q2/Q3/Q4 sauf réservoir exceptionnel et propre.
 
 ## 7. RÈGLES DE RENDEMENT
 
-- `>=1000 net-new` : full sweep prioritaire ;
+- `>=1000 net-new` : full sweep prioritaire seulement si la phase active n'est pas bloquée ;
 - `300–999` : poursuivre en parallèle si coût faible ;
 - `<300` : park sauf réservoir non atteint ;
 - toujours publier `found -> overlap -> net-new -> union -> probable_unique -> live_confidence` ;
@@ -232,18 +303,18 @@ Le full sweep `33985644309` a échoué sur `Network is unreachable` au chargemen
 
 ## 8. NEXT EXACT
 
-1. ✅ **Freeze M250K** : total canonique figé à **253 372**, unions source et preuve de fermeture consignées ci-dessus.
-2. 🔵 **Candidate Lake** : unifier provenance, source ID/URL, couche L0/L1, date/cohorte temporelle et fingerprints.
-3. **Exact dedupe + clustering** : mesurer `253 372 representations -> probable_unique` sans suppression destructive.
-4. **Freshness** : échantillonnage/validation récente uniquement sur lanes autorisées, puis publier `live_confidence` par source.
-5. **Discovery incrémentale** : devient secondaire ; tout nouveau lot reste set-diff contre l'union certifiée, mais la priorité passe au clustering, à la provenance et à la freshness.
-6. Les **1 938 non-Factory** restent en réserve jusqu'à filtre qualité excluant social/bruit.
-7. Aucun onboarding de nouvelle source dans `source_policy_registry` sans gate humain séparé.
+1. ✅ **Freeze M250K** : total canonique figé à **253 372**, unions source et preuves consignées.
+2. 🔵 **Lot 11 / Q1A — Candidate Lake manifest freeze** : construire le manifest unifié exact et reproductible.
+3. Puis **Q1B provenance/cohorte** → **Q1C exact dedupe** → **Q1D features/fingerprints**.
+4. Puis **Q2A blocking** → **Q2B clustering V1** → **Q2C QA** pour produire `probable_unique` crédible.
+5. Puis **Q3A freshness** → **Q3B live_confidence**.
+6. Puis **Q4A search eligibility shadow** → **Q4B ranking rehearsal** → **Q4C production gate**.
+7. Aucun onboarding de nouvelle source dans `source_policy_registry`, aucune écriture Supabase/prod et aucun Vercel sans gate humain séparé.
 
-### Goal actif — Candidate Lake / Q1
+### Goal actif — Lot 11 / Candidate Lake Q1A
 
-- **Goal :** produire un manifest unifié et reproductible des **253 372 représentations** avec provenance, identité source, couche, cohorte temporelle et fingerprint de clustering.
-- **Succès :** total d'entrée = 253 372 ; aucune perte silencieuse ; exact duplicates mesurés ; `probable_unique` calculé sans suppression destructive ; couverture provenance/layer/cohorte publiée.
-- **Preuve :** run GitHub déterministe + artifact manifest/summary + invariants `databaseWrites=0`, `sourceSiteFetches=0`, `productionWrites=0`.
+- **Goal :** produire un manifest unifié et reproductible des **253 372 représentations** avec provenance et identité source.
+- **Succès :** total d'entrée = 253 372 ; aucune perte silencieuse ; toutes les lignes ont une identité exploitable ; incohérences explicitement quarantinées.
+- **Preuve :** run GitHub déterministe + artifact manifest/summary + hashes + invariants `databaseWrites=0`, `sourceSiteFetches=0`, `productionWrites=0`.
 
-**Boussole actuelle : 253 372 représentations L0/L1 -> probable_unique -> live_confidence. M250K FROZEN.**
+**Boussole actuelle : 253 372 représentations L0/L1 FROZEN -> Candidate Lake -> probable_unique -> live_confidence -> search eligibility shadow.**
