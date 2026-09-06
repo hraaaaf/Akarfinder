@@ -10,7 +10,7 @@ AVITO_BASELINE = Path(os.environ.get('AVITO_BASELINE_IDS', '.tmp/avito-baseline/
 
 URL_RE = re.compile(r'https?://[^\s\"\'<>]+', re.I)
 MUB_ID_RE = re.compile(r'/(?:a|pa)/(\d+)(?:/|$)', re.I)
-AVITO_ID_RE = re.compile(r'_(\d{6,})\.htm(?:$|[?#])', re.I)
+AVITO_ID_RE = re.compile(r'(\d{6,})\.htm(?:$|[?#])', re.I)
 
 
 def sha256_file(p: Path):
