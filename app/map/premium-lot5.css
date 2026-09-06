@@ -52,7 +52,7 @@
 
   [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) [data-akarfinder-national-neighborhood-overlay] > div:first-child {
     left: 205px !important;
-    right: 102px !important;
+    right: 118px !important;
     top: 18px !important;
   }
   [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) [data-akarfinder-national-neighborhood-overlay] > div:first-child > div {
