@@ -8,6 +8,7 @@ on:
       - "scripts/audits/candidate-lake-q1a-db-export.ts"
       - "scripts/audits/candidate-lake-q1a-massx2-replay.ts"
       - "scripts/audits/candidate-lake-q1a-data49b-commoncrawl-recovery.ts"
+      - "scripts/audits/candidate-lake-q1a-data49b-wayback-recovery.ts"
       - ".github/workflows/historical-gap-hunt.yml"
   workflow_dispatch:
 
@@ -194,5 +195,34 @@ jobs:
         with:
           name: candidate-lake-q1a-data49b-commoncrawl-recovery
           path: .tmp/candidate-lake-q1a-data49b-cc/
+          if-no-files-found: error
+          retention-days: 30
+
+  q1a-data49b-wayback:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      Q1A_DATA49B_WAYBACK_OUT: .tmp/candidate-lake-q1a-data49b-wayback
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Probe historical DATA4.9B identities from Wayback CDX URL index only
+        run: npx tsx scripts/audits/candidate-lake-q1a-data49b-wayback-recovery.ts
+      - name: Verify Wayback metadata-only boundary
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const p=JSON.parse(fs.readFileSync('.tmp/candidate-lake-q1a-data49b-wayback/summary.json','utf8'));
+          if(p.readOnly!==true || p.databaseWrites!==0 || p.productionWrites!==0 || p.sourceSiteFetches!==0 || p.sourceContentFetches!==0 || p.archiveContentFetches!==0 || p.warcFetches!==0 || p.vercelDeployments!==0 || p.waybackCdxUrlIndexRequestsOnly!==true) throw new Error('metadata-only boundary violated');
+          console.log(JSON.stringify({total:p.totalCandidateRows,expected:p.expectedHistoricalTotal,exactHistoricalCountMatch:p.exactHistoricalCountMatch,domains:p.domains.map(d=>({sourceDomain:d.sourceDomain,candidateRows:d.candidateRows,expected:d.expectedHistoricalCandidateRows,queryComplete:d.queryComplete}))},null,2));
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: candidate-lake-q1a-data49b-wayback-recovery
+          path: .tmp/candidate-lake-q1a-data49b-wayback/
           if-no-files-found: error
           retention-days: 30
