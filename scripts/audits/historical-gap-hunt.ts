@@ -90,18 +90,20 @@ async function readDiscovery(): Promise<DiscoveryRow[]> {
   const out: DiscoveryRow[] = [];
   const select = 'id,source_domain,source_url,canonical_url,title,snippet,discovery_query,content_fingerprint,last_seen_at,created_at';
 
+  // Single-domain historical replays intentionally use only the indexed source_domain
+  // predicate. Combining source_domain + created_at caused Postgres statement timeouts.
+  // The as-of boundary is applied client-side before dedupe/classification. Output is
+  // sorted locally, so retrieval order cannot affect hashes.
   if (TARGETS.size === 1) {
     const target = [...TARGETS][0];
     for (let offset = 0; ; offset += PAGE) {
-      const query: Record<string, string> = {
+      const page = await rest<DiscoveryRow>('discovery_candidates', {
         select,
         source_domain: `eq.${target}`,
         limit: String(PAGE),
         offset: String(offset),
-      };
-      if (AS_OF) query.created_at = `lte.${AS_OF}`;
-      const page = await rest<DiscoveryRow>('discovery_candidates', query);
-      out.push(...page);
+      });
+      out.push(...page.filter((row) => visibleAt(row.created_at)));
       if (page.length < PAGE) break;
     }
     return out;
@@ -127,12 +129,15 @@ async function readDiscovery(): Promise<DiscoveryRow[]> {
 
 async function readSeeds(): Promise<SeedRow[]> {
   const out: SeedRow[] = [];
+  const target = TARGETS.size === 1 ? [...TARGETS][0] : null;
   for (let offset = 0; ; offset += PAGE) {
-    const page = await rest<SeedRow>('source_offer_seeds', {
+    const params: Record<string, string> = {
       select: 'canonical_url,source_domain,created_at',
       limit: String(PAGE),
       offset: String(offset),
-    });
+    };
+    if (target) params.source_domain = `eq.${target}`;
+    const page = await rest<SeedRow>('source_offer_seeds', params);
     out.push(...page.filter((row) => visibleAt(row.created_at)));
     if (page.length < PAGE) break;
   }
