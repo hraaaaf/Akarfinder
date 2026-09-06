@@ -1,5 +1,6 @@
 name: Vivre Ici AFTER Certification
 
+# Re-certification anchor: this gate validates the synchronized branch tree after main updates.
 on:
   push:
     branches:
