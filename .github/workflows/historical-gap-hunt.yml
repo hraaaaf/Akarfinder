@@ -43,6 +43,51 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
+  q1a-1immo-asof:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: run-start
+            as_of: "2026-09-06T11:24:03Z"
+          - label: run-end
+            as_of: "2026-09-06T11:37:31Z"
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      GAP_HUNT_TARGETS: 1immo.ma
+      GAP_HUNT_AS_OF: ${{ matrix.as_of }}
+      GAP_HUNT_OUT: .tmp/historical-gap-hunt-1immo-${{ matrix.label }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Replay 1immo historical state read-only
+        run: npx tsx scripts/audits/historical-gap-hunt.ts
+      - name: Verify historical replay invariants
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const dir=process.env.GAP_HUNT_OUT;
+          const p=JSON.parse(fs.readFileSync(`${dir}/summary.json`,'utf8'));
+          if(p.readOnly!==true || p.databaseWrites!==0 || p.sourceNetworkRequests!==0 || p.detailPageFetches!==0) throw new Error('read-only invariant failed');
+          if(p.targets.length!==1 || p.targets[0]!=='1immo.ma') throw new Error('unexpected target');
+          const row=p.domains.find(x=>x.sourceDomain==='1immo.ma');
+          if(!row) throw new Error('1immo missing');
+          console.log(JSON.stringify({asOf:p.asOf,oneImmo:row,hash:p.hashes['exact-net-new/1immo.ma.txt']},null,2));
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: historical-gap-hunt-1immo-${{ matrix.label }}
+          path: .tmp/historical-gap-hunt-1immo-${{ matrix.label }}/
+          if-no-files-found: error
+          retention-days: 30
+
   q1a-db-backed:
     runs-on: ubuntu-latest
     timeout-minutes: 20
