@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Building2, Layers3, MapPin, Search } from "lucide-react";
+import { Building2, Layers3, MapPin, Search, ShieldCheck, Trees } from "lucide-react";
 import { useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { resolveCityEntity, resolveNeighborhoodEntity } from "@/lib/geo/geo-entity-registry";
@@ -28,88 +28,113 @@ export function P4MapDecisionRail() {
     : null;
   const provider = getPremiumMarketIntelligenceProvider(navigationState.city);
   const searchHref = buildMapSearchHref(navigationState);
-  const title = cityName === "Maroc" ? "Où vivre au Maroc ?" : `Vivre à ${cityName}`;
+  const contextName = districtEntity?.canonical_name ?? cityName;
+  const title = cityName === "Maroc" ? "Où vivre au Maroc ?" : `Vivre à ${contextName}`;
 
   return (
     <aside
       className="p4-map-decision-rail"
       data-p4-map-decision-rail
+      data-vivre-ici-premium-context
       aria-label="Vivre ici : territoire, vie locale et biens"
     >
       <div className="p4-sheet-handle" aria-hidden="true" />
 
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-[9px] font-extrabold uppercase tracking-[0.16em] text-brand-primary">Vivre ici · AkarFinder</p>
-          <h2 className="mt-1 truncate text-[19px] font-extrabold tracking-[-0.025em] text-foreground">
-            {title}
-          </h2>
-          <p className="mt-1 text-[10.5px] leading-4 text-muted-foreground">
-            {districtEntity
-              ? `${districtEntity.canonical_name} · quartier, repères disponibles et biens dans le même contexte.`
-              : "Explorez les quartiers, le marché observé et les lieux du quotidien disponibles avant de voir les biens."}
+      <header className="p4-premium-context-header">
+        <p className="text-[9px] font-extrabold uppercase tracking-[0.16em] text-brand-primary">
+          Vivre ici {cityName !== "Maroc" ? `› ${cityName}` : "› Maroc"}
+        </p>
+        <h2 className="mt-1 text-[clamp(20px,2vw,28px)] font-extrabold tracking-[-0.035em] text-foreground">
+          {title}
+        </h2>
+        <p className="mt-1.5 text-[11px] leading-[1.55] text-muted-foreground">
+          {districtEntity
+            ? `${districtEntity.canonical_name} dans son contexte : repères de vie locale disponibles et accès aux biens sans fausse précision.`
+            : cityName === "Maroc"
+              ? "Comparez les territoires disponibles, puis descendez vers les villes, quartiers et biens avec une précision explicitement qualifiée."
+              : "Explorez les quartiers, les repères disponibles et les biens de la zone sans inventer de proximité ni de position."}
+        </p>
+      </header>
+
+      <nav className="p4-premium-tabs" aria-label="Contexte Vivre ici">
+        <span aria-current="page">Aperçu</span>
+        <span>Vie locale</span>
+        {provider === "rabat-market-intelligence" ? <span>Prix</span> : null}
+        <Link href={searchHref}>Biens</Link>
+      </nav>
+
+      <section className="p4-premium-signal-grid" aria-label="Repères disponibles">
+        <div>
+          <Layers3 size={16} aria-hidden="true" />
+          <strong>{districtEntity ? "Quartier" : "Territoire"}</strong>
+          <span>{districtEntity?.canonical_name ?? cityName}</span>
+        </div>
+        <div>
+          <MapPin size={16} aria-hidden="true" />
+          <strong>Vie locale</strong>
+          <span>Selon disponibilité</span>
+        </div>
+        <div>
+          <Trees size={16} aria-hidden="true" />
+          <strong>Repères</strong>
+          <span>Sourcés uniquement</span>
+        </div>
+        <div>
+          <ShieldCheck size={16} aria-hidden="true" />
+          <strong>Biens</strong>
+          <span>Exact exigé pour un pin</span>
+        </div>
+      </section>
+
+      <section className="p4-premium-market-card" data-p4-map-data-contract>
+        <div>
+          <p className="text-[9px] font-extrabold uppercase tracking-[0.12em] text-brand-primary">
+            {provider === "rabat-market-intelligence" ? "Marché observé" : "Données de marché"}
+          </p>
+          <p className="mt-1 text-[12px] font-extrabold text-foreground">
+            {provider === "rabat-market-intelligence" ? "Indicateurs disponibles" : "Non publiées pour cette vue"}
           </p>
         </div>
-        <span className="shrink-0 rounded-full border border-border bg-surface-muted px-2.5 py-1 text-[8.5px] font-extrabold text-muted-foreground">
-          Territoire
+        <span className="rounded-full border border-border bg-surface px-2.5 py-1 text-[8.5px] font-extrabold text-muted-foreground">
+          {provider === "rabat-market-intelligence" ? "Observé" : "Fail closed"}
         </span>
-      </div>
-
-      <div className="mt-3 flex flex-wrap gap-2" aria-label="Parcours Vivre ici">
-        <span className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-border bg-surface px-3 text-[10px] font-extrabold text-foreground">
-          <Layers3 size={12} aria-hidden="true" /> Quartiers
-        </span>
-        <span className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-border bg-surface px-3 text-[10px] font-extrabold text-foreground">
-          <MapPin size={12} aria-hidden="true" /> Vie locale
-        </span>
-        <Link href={searchHref} className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-brand-primary px-3 text-[10px] font-extrabold text-white shadow-sm">
-          <Building2 size={12} aria-hidden="true" /> Biens
-        </Link>
-      </div>
-
-      <div className="mt-3 rounded-2xl border border-brand-primary/15 bg-brand-primary-soft/45 p-3" data-p4-map-data-contract>
-        <p className="text-[9px] font-extrabold uppercase tracking-[0.12em] text-brand-primary">
-          {provider === "rabat-market-intelligence" ? "Marché observé" : "Repères disponibles"}
+        <p className="col-span-full text-[9.5px] leading-4 text-muted-foreground">
+          Aucun prix, temps de trajet, distance ou proximité précise n’est affiché sans source validée.
         </p>
-        <p className="mt-1 text-[11px] font-extrabold text-foreground">
-          {provider === "rabat-market-intelligence"
-            ? "Prix · Densité · Annonces"
-            : "Territoire · quartiers · positions certifiées"}
-        </p>
-        <p className="mt-1 text-[9.5px] leading-4 text-muted-foreground">
-          Aucune valeur, limite, position ou proximité précise n’est inventée lorsqu’elle n’est pas certifiée.
-        </p>
-      </div>
+      </section>
 
-      <div className="mt-3 hidden flex-wrap gap-1.5 lg:flex" aria-label="Villes phares">
-        {FLAGSHIP_CITIES.map((city) => {
-          const active = city === cityName;
-          const href = buildMapHref(withMapLocation(navigationState, city));
-          return (
-            <Link
-              key={city}
-              href={href}
-              className={`shrink-0 rounded-full border px-2.5 py-1.5 text-[9px] font-extrabold transition ${active ? "border-brand-primary bg-brand-primary text-white" : "border-border bg-surface text-text-secondary hover:border-brand-primary/30"}`}
-            >
-              {city}
-            </Link>
-          );
-        })}
-      </div>
+      {cityName === "Maroc" ? (
+        <div className="p4-premium-city-list" aria-label="Villes phares">
+          {FLAGSHIP_CITIES.map((city) => {
+            const active = city === cityName;
+            const href = buildMapHref(withMapLocation(navigationState, city));
+            return (
+              <Link
+                key={city}
+                href={href}
+                className={active ? "is-active" : undefined}
+              >
+                {city}
+              </Link>
+            );
+          })}
+        </div>
+      ) : null}
 
-      <div className="mt-3 grid gap-2 lg:mt-4">
+      <div className="p4-premium-actions">
         <Link
           href={searchHref}
-          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-brand-primary px-4 text-[11.5px] font-extrabold text-white shadow-accent transition hover:bg-brand-primary-hover"
+          className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[14px] bg-brand-primary px-4 text-[12px] font-extrabold text-white shadow-accent transition hover:bg-brand-primary-hover"
         >
-          <Search size={14} aria-hidden="true" /> Voir les biens de cette zone
+          <Search size={15} aria-hidden="true" />
+          {districtEntity ? `Voir les biens à ${districtEntity.canonical_name}` : `Voir les biens de ${cityName === "Maroc" ? "la zone" : cityName}`}
         </Link>
         {districtEntity?.seo_eligible && cityEntity ? (
           <Link
             href={`/quartiers/${cityEntity.slug}/${districtEntity.slug}`}
-            className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-border-strong bg-surface px-4 text-[10.5px] font-extrabold text-foreground"
+            className="inline-flex min-h-10 items-center justify-center gap-2 rounded-[14px] border border-border-strong bg-surface px-4 text-[10.5px] font-extrabold text-foreground"
           >
-            <MapPin size={13} aria-hidden="true" /> Voir la fiche quartier
+            <Building2 size={13} aria-hidden="true" /> Voir la fiche quartier
           </Link>
         ) : null}
       </div>
