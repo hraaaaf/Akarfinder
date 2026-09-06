@@ -1,22 +1,222 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { createHash } from 'node:crypto';
 import { classifyReservoirCandidate } from '../data-mass/reservoir-qualification';
 
-const OUT=process.env.GAP_HUNT_OUT ?? '.tmp/historical-gap-hunt';
-const PAGE=1000;
-const TARGETS=new Set([
-  'agenz.ma','1immo.ma','ma.afribaba.com','masaken.ma','soukimmobilier.com','mouldar.com',
-  'promoimmomarrakech.com','logic-immo.com','yakeey.com','2p.ma','1000-annonces.com',
-  'housing.place','expat.com','milkiya.ma','sakane.ma','domio.ma','dabaannonce.ma',
-  'portail-immobilier.ma','souqcity.ma','kawtarimmobilier.com','atlasimmobilier.com'
+const OUT = process.env.GAP_HUNT_OUT ?? '.tmp/historical-gap-hunt';
+const PAGE = 1000;
+const TARGETS = new Set([
+  'agenz.ma', '1immo.ma', 'ma.afribaba.com', 'masaken.ma', 'soukimmobilier.com', 'mouldar.com',
+  'promoimmomarrakech.com', 'logic-immo.com', 'yakeey.com', '2p.ma', '1000-annonces.com',
+  'housing.place', 'expat.com', 'milkiya.ma', 'sakane.ma', 'domio.ma', 'dabaannonce.ma',
+  'portail-immobilier.ma', 'souqcity.ma', 'kawtarimmobilier.com', 'atlasimmobilier.com',
 ]);
-function env(n:string){const v=process.env[n];if(!v)throw new Error(`missing ${n}`);return v;}
-const norm=(d:string)=>d.trim().toLowerCase().replace(/^www\./,'');
-const canon=(raw:string)=>{try{const u=new URL(raw);u.hash='';u.hostname=u.hostname.toLowerCase().replace(/^www\./,'');if(u.pathname.length>1)u.pathname=u.pathname.replace(/\/+$/,'');return u.toString();}catch{return raw.trim();}};
-async function rest<T>(table:string,params:Record<string,string>):Promise<T[]>{const u=new URL(`/rest/v1/${table}`,env('SUPABASE_URL'));for(const[k,v]of Object.entries(params))u.searchParams.set(k,v);const key=env('SUPABASE_SERVICE_ROLE_KEY');for(let a=1;a<=3;a++){const r=await fetch(u,{headers:{apikey:key,authorization:`Bearer ${key}`},signal:AbortSignal.timeout(60000)});if(r.ok)return r.json() as Promise<T[]>;const body=await r.text();if(a===3||!(r.status===429||r.status>=500))throw new Error(`${table} ${r.status} ${body}`);await new Promise(res=>setTimeout(res,500*a));}return[];}
-type D={id:string,source_domain:string,source_url:string,canonical_url:string|null,title:string|null,snippet:string|null,discovery_query:string|null,content_fingerprint:string|null,last_seen_at:string|null};
-type S={canonical_url:string,source_domain?:string|null};
-async function readDiscovery(){const out:D[]=[];let last='';for(;;){const q:Record<string,string>={select:'id,source_domain,source_url,canonical_url,title,snippet,discovery_query,content_fingerprint,last_seen_at',order:'id.asc',limit:String(PAGE)};if(last)q.id=`gt.${last}`;const p=await rest<D>('discovery_candidates',q);out.push(...p.filter(x=>TARGETS.has(norm(x.source_domain))));if(p.length<PAGE)break;const n=p.at(-1)?.id;if(!n||n===last)throw new Error('keyset stalled');last=n;}return out;}
-async function readSeeds(){const out:S[]=[];for(let offset=0;;offset+=PAGE){const p=await rest<S>('source_offer_seeds',{select:'canonical_url,source_domain',order:'canonical_url.asc',limit:String(PAGE),offset:String(offset)});out.push(...p);if(p.length<PAGE)break;}return out;}
-async function main(){const [rows,seeds]=await Promise.all([readDiscovery(),readSeeds()]);const seedSet=new Set(seeds.map(x=>canon(x.canonical_url)));const uniq=new Map<string,D>();for(const r of rows){const raw=r.canonical_url||r.source_url;if(!raw)continue;const u=canon(raw);const e=uniq.get(u);if(!e||(r.last_seen_at??'')>(e.last_seen_at??''))uniq.set(u,r);}const by=new Map<string,{all:Set<string>,details:Set<string>,overlap:Set<string>,net:Set<string>}>();for(const [url,r] of uniq){const d=norm(r.source_domain);if(!TARGETS.has(d))continue;const b=by.get(d)??{all:new Set(),details:new Set(),overlap:new Set(),net:new Set()};b.all.add(url);const c=classifyReservoirCandidate({sourceDomain:d,url,title:r.title,snippet:r.snippet,discoveryQuery:r.discovery_query,contentFingerprint:r.content_fingerprint});if(c.likelyRealEstate&&c.pageKind==='LIKELY_LISTING_DETAIL'&&c.geographyScope==='MOROCCO_LIKELY'){b.details.add(url);if(seedSet.has(url))b.overlap.add(url);else b.net.add(url);}by.set(d,b);}const domains=[...by.entries()].map(([sourceDomain,b])=>({sourceDomain,discoveryDistinct:b.all.size,detailDistinct:b.details.size,exactOverlapSeeds:b.overlap.size,exactNetNewVsSeeds:b.net.size})).sort((a,b)=>b.exactNetNewVsSeeds-a.exactNetNewVsSeeds);const summary={generatedAt:new Date().toISOString(),readOnly:true,databaseWrites:0,sourceNetworkRequests:0,detailPageFetches:0,targets:[...TARGETS],domains,totalExactNetNewVsSeeds:domains.reduce((s,x)=>s+x.exactNetNewVsSeeds,0)};await fs.mkdir(OUT,{recursive:true});await fs.writeFile(path.join(OUT,'summary.json'),JSON.stringify(summary,null,2)+'\n');await fs.writeFile(path.join(OUT,'domains.csv'),['source_domain,discovery_distinct,detail_distinct,exact_overlap_seeds,exact_net_new_vs_seeds',...domains.map(x=>`${x.sourceDomain},${x.discoveryDistinct},${x.detailDistinct},${x.exactOverlapSeeds},${x.exactNetNewVsSeeds}`)].join('\n')+'\n');console.log(JSON.stringify(summary,null,2));}
-main().catch(e=>{console.error(e);process.exit(1)});
+
+function env(name: string): string {
+  const value = process.env[name];
+  if (!value) throw new Error(`missing ${name}`);
+  return value;
+}
+
+const norm = (domain: string) => domain.trim().toLowerCase().replace(/^www\./, '');
+const canon = (raw: string) => {
+  try {
+    const url = new URL(raw);
+    url.hash = '';
+    url.hostname = url.hostname.toLowerCase().replace(/^www\./, '');
+    if (url.pathname.length > 1) url.pathname = url.pathname.replace(/\/+$/, '');
+    return url.toString();
+  } catch {
+    return raw.trim();
+  }
+};
+
+function sha256(text: string): string {
+  return createHash('sha256').update(text, 'utf8').digest('hex');
+}
+
+async function rest<T>(table: string, params: Record<string, string>): Promise<T[]> {
+  const url = new URL(`/rest/v1/${table}`, env('SUPABASE_URL'));
+  for (const [key, value] of Object.entries(params)) url.searchParams.set(key, value);
+  const serviceKey = env('SUPABASE_SERVICE_ROLE_KEY');
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    const response = await fetch(url, {
+      headers: { apikey: serviceKey, authorization: `Bearer ${serviceKey}` },
+      signal: AbortSignal.timeout(60_000),
+    });
+    if (response.ok) return response.json() as Promise<T[]>;
+    const body = await response.text();
+    if (attempt === 3 || !(response.status === 429 || response.status >= 500)) {
+      throw new Error(`${table} ${response.status} ${body}`);
+    }
+    await new Promise((resolve) => setTimeout(resolve, 500 * attempt));
+  }
+  return [];
+}
+
+type DiscoveryRow = {
+  id: string;
+  source_domain: string;
+  source_url: string;
+  canonical_url: string | null;
+  title: string | null;
+  snippet: string | null;
+  discovery_query: string | null;
+  content_fingerprint: string | null;
+  last_seen_at: string | null;
+};
+
+type SeedRow = { canonical_url: string; source_domain?: string | null };
+
+type DomainSets = {
+  all: Set<string>;
+  details: Set<string>;
+  overlap: Set<string>;
+  net: Set<string>;
+};
+
+async function readDiscovery(): Promise<DiscoveryRow[]> {
+  const out: DiscoveryRow[] = [];
+  let last = '';
+  for (;;) {
+    const query: Record<string, string> = {
+      select: 'id,source_domain,source_url,canonical_url,title,snippet,discovery_query,content_fingerprint,last_seen_at',
+      order: 'id.asc',
+      limit: String(PAGE),
+    };
+    if (last) query.id = `gt.${last}`;
+    const page = await rest<DiscoveryRow>('discovery_candidates', query);
+    out.push(...page.filter((row) => TARGETS.has(norm(row.source_domain))));
+    if (page.length < PAGE) break;
+    const next = page.at(-1)?.id;
+    if (!next || next === last) throw new Error('keyset stalled');
+    last = next;
+  }
+  return out;
+}
+
+async function readSeeds(): Promise<SeedRow[]> {
+  const out: SeedRow[] = [];
+  for (let offset = 0; ; offset += PAGE) {
+    const page = await rest<SeedRow>('source_offer_seeds', {
+      select: 'canonical_url,source_domain',
+      order: 'canonical_url.asc',
+      limit: String(PAGE),
+      offset: String(offset),
+    });
+    out.push(...page);
+    if (page.length < PAGE) break;
+  }
+  return out;
+}
+
+async function main(): Promise<void> {
+  const [rows, seeds] = await Promise.all([readDiscovery(), readSeeds()]);
+  const seedSet = new Set(seeds.map((row) => canon(row.canonical_url)));
+
+  const uniq = new Map<string, DiscoveryRow>();
+  for (const row of rows) {
+    const raw = row.canonical_url || row.source_url;
+    if (!raw) continue;
+    const url = canon(raw);
+    const existing = uniq.get(url);
+    if (!existing || (row.last_seen_at ?? '') > (existing.last_seen_at ?? '')) uniq.set(url, row);
+  }
+
+  const byDomain = new Map<string, DomainSets>();
+  for (const [url, row] of uniq) {
+    const sourceDomain = norm(row.source_domain);
+    if (!TARGETS.has(sourceDomain)) continue;
+    const bucket = byDomain.get(sourceDomain) ?? {
+      all: new Set<string>(),
+      details: new Set<string>(),
+      overlap: new Set<string>(),
+      net: new Set<string>(),
+    };
+    bucket.all.add(url);
+    const classified = classifyReservoirCandidate({
+      sourceDomain,
+      url,
+      title: row.title,
+      snippet: row.snippet,
+      discoveryQuery: row.discovery_query,
+      contentFingerprint: row.content_fingerprint,
+    });
+    if (
+      classified.likelyRealEstate &&
+      classified.pageKind === 'LIKELY_LISTING_DETAIL' &&
+      classified.geographyScope === 'MOROCCO_LIKELY'
+    ) {
+      bucket.details.add(url);
+      if (seedSet.has(url)) bucket.overlap.add(url);
+      else bucket.net.add(url);
+    }
+    byDomain.set(sourceDomain, bucket);
+  }
+
+  const domains = [...byDomain.entries()]
+    .map(([sourceDomain, bucket]) => ({
+      sourceDomain,
+      discoveryDistinct: bucket.all.size,
+      detailDistinct: bucket.details.size,
+      exactOverlapSeeds: bucket.overlap.size,
+      exactNetNewVsSeeds: bucket.net.size,
+    }))
+    .sort((a, b) => b.exactNetNewVsSeeds - a.exactNetNewVsSeeds || a.sourceDomain.localeCompare(b.sourceDomain));
+
+  await fs.mkdir(OUT, { recursive: true });
+  const exactDir = path.join(OUT, 'exact-net-new');
+  await fs.mkdir(exactDir, { recursive: true });
+
+  const manifestRows: Array<{ source_domain: string; canonical_url: string }> = [];
+  const hashes: Record<string, { rows: number; sha256: string }> = {};
+  for (const sourceDomain of [...byDomain.keys()].sort()) {
+    const urls = [...(byDomain.get(sourceDomain)?.net ?? [])].sort();
+    const text = urls.length ? `${urls.join('\n')}\n` : '';
+    const relative = `exact-net-new/${sourceDomain}.txt`;
+    await fs.writeFile(path.join(OUT, relative), text, 'utf8');
+    hashes[relative] = { rows: urls.length, sha256: sha256(text) };
+    for (const canonicalUrl of urls) manifestRows.push({ source_domain: sourceDomain, canonical_url: canonicalUrl });
+  }
+
+  manifestRows.sort((a, b) =>
+    a.source_domain.localeCompare(b.source_domain) || a.canonical_url.localeCompare(b.canonical_url),
+  );
+  const manifestText = manifestRows.map((row) => JSON.stringify(row)).join('\n') + (manifestRows.length ? '\n' : '');
+  await fs.writeFile(path.join(OUT, 'exact-net-new.jsonl'), manifestText, 'utf8');
+  hashes['exact-net-new.jsonl'] = { rows: manifestRows.length, sha256: sha256(manifestText) };
+
+  const summary = {
+    generatedAt: new Date().toISOString(),
+    readOnly: true,
+    databaseWrites: 0,
+    productionWrites: 0,
+    sourceNetworkRequests: 0,
+    sourceSiteFetches: 0,
+    detailPageFetches: 0,
+    unitOfCount: 'CANONICAL_URL_REPRESENTATION',
+    identityExportDeterministic: true,
+    targets: [...TARGETS].sort(),
+    domains,
+    totalExactNetNewVsSeeds: domains.reduce((sum, row) => sum + row.exactNetNewVsSeeds, 0),
+    hashes,
+  };
+
+  await fs.writeFile(path.join(OUT, 'summary.json'), `${JSON.stringify(summary, null, 2)}\n`, 'utf8');
+  await fs.writeFile(
+    path.join(OUT, 'domains.csv'),
+    [
+      'source_domain,discovery_distinct,detail_distinct,exact_overlap_seeds,exact_net_new_vs_seeds',
+      ...domains.map((row) =>
+        `${row.sourceDomain},${row.discoveryDistinct},${row.detailDistinct},${row.exactOverlapSeeds},${row.exactNetNewVsSeeds}`,
+      ),
+    ].join('\n') + '\n',
+    'utf8',
+  );
+  console.log(JSON.stringify(summary, null, 2));
+}
+
+main().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});
