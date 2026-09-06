@@ -7,6 +7,7 @@ on:
       - "scripts/audits/candidate-lake-q1a-1immo-replay.ts"
       - "scripts/audits/candidate-lake-q1a-db-export.ts"
       - "scripts/audits/candidate-lake-q1a-massx2-replay.ts"
+      - "scripts/audits/candidate-lake-q1a-data49b-commoncrawl-recovery.ts"
       - ".github/workflows/historical-gap-hunt.yml"
   workflow_dispatch:
 
@@ -164,5 +165,34 @@ jobs:
         with:
           name: candidate-lake-q1a-db-backed-proof
           path: .tmp/candidate-lake-q1a-db/
+          if-no-files-found: error
+          retention-days: 30
+
+  q1a-data49b-commoncrawl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      Q1A_DATA49B_CC_OUT: .tmp/candidate-lake-q1a-data49b-cc
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Probe historical DATA4.9B identities from Common Crawl URL index only
+        run: npx tsx scripts/audits/candidate-lake-q1a-data49b-commoncrawl-recovery.ts
+      - name: Verify metadata-only boundary
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const p=JSON.parse(fs.readFileSync('.tmp/candidate-lake-q1a-data49b-cc/summary.json','utf8'));
+          if(p.readOnly!==true || p.databaseWrites!==0 || p.productionWrites!==0 || p.sourceSiteFetches!==0 || p.sourceContentFetches!==0 || p.warcFetches!==0 || p.vercelDeployments!==0 || p.commonCrawlUrlIndexRequestsOnly!==true) throw new Error('metadata-only boundary violated');
+          console.log(JSON.stringify(p.modes.map(m=>({mode:m.mode,total:m.totalCandidateRows,allPerSourceCountsMatch:m.allPerSourceCountsMatch,domains:m.domains.map(d=>({sourceDomain:d.sourceDomain,candidateRows:d.candidateRows,expected:d.expectedHistoricalCandidateRows}))})),null,2));
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: candidate-lake-q1a-data49b-commoncrawl-recovery
+          path: .tmp/candidate-lake-q1a-data49b-cc/
           if-no-files-found: error
           retention-days: 30
