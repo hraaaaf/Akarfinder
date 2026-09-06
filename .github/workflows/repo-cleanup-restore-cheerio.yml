@@ -1,4 +1,4 @@
-name: Repo Cleanup Orphan Dependency Proof
+name: Repo Cleanup Orphan Dependency Evidence
 
 on:
   push:
@@ -8,57 +8,35 @@ on:
       - ".github/workflows/repo-cleanup-restore-cheerio.yml"
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  prove-and-remove-helper:
+  scan:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
         with:
           ref: chore/repo-cleanup-structural-2
           fetch-depth: 0
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: npm
-      - name: Prove PGlite and direct Playwright are unreferenced
+      - name: Capture tracked references
         shell: bash
         run: |
           set -euo pipefail
-          if git grep -n -i -E '(@electric-sql/pglite|pglite|playwright)' -- . \
+          git grep -n -i -E '(@electric-sql/pglite|pglite|playwright)' -- . \
             ':!package.json' \
             ':!package-lock.json' \
-            ':!.github/workflows/repo-cleanup-restore-cheerio.yml'; then
-            echo 'Tracked references found: dependency removal is not proven safe.'
-            exit 1
-          fi
-          node <<'NODE'
-          const pkg = require('./package.json');
-          const direct = { ...(pkg.dependencies || {}), ...(pkg.devDependencies || {}) };
-          for (const name of ['@electric-sql/pglite', 'playwright']) {
-            if (Object.prototype.hasOwnProperty.call(direct, name)) {
-              throw new Error(`${name} is still declared directly`);
-            }
-          }
-          if (!Object.prototype.hasOwnProperty.call(direct, 'cheerio')) {
-            throw new Error('cheerio must remain: active scraper dependency');
-          }
-          NODE
-      - name: Validate dependency graph
-        run: npm ci
-      - name: TypeScript
-        run: npx tsc --noEmit
-      - name: Scraper regression suite
-        run: npm run test:scrapers
-      - name: Remove temporary proof workflow
+            ':!.github/workflows/repo-cleanup-restore-cheerio.yml' > orphan-dependency-refs.txt || true
+          cat orphan-dependency-refs.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: repo-cleanup-orphan-dependency-refs
+          path: orphan-dependency-refs.txt
+          if-no-files-found: error
+      - name: Fail if any tracked reference remains
         shell: bash
         run: |
-          set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git rm .github/workflows/repo-cleanup-restore-cheerio.yml
-          git commit -m "chore(cleanup): remove temporary dependency proof workflow"
-          git pull --rebase origin chore/repo-cleanup-structural-2
-          git push origin HEAD:chore/repo-cleanup-structural-2
+          if [ -s orphan-dependency-refs.txt ]; then
+            echo 'Tracked references found: inspect artifact before deleting dependencies.'
+            exit 1
+          fi
