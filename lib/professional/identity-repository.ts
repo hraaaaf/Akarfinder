@@ -1,4 +1,5 @@
-import { getSupabaseServerClient } from "@/lib/db/supabase-client";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { getSupabaseAdminClient } from "@/lib/db/supabase-client";
 import { capabilitiesForRole, permissionsForRole } from "./permissions";
 import { resolveActiveProfessionalContext, workspaceStatusFromValidation } from "./identity";
 import type {
@@ -13,8 +14,10 @@ import type {
 function asOrganization(row: unknown): ProfessionalOrganization { return row as ProfessionalOrganization; }
 function asMembership(row: unknown): ProfessionalMembership { return row as ProfessionalMembership; }
 
-export async function listCanonicalProfessionalContextsForUser(userId: string): Promise<ProfessionalMembershipContext[]> {
-  const supabase = getSupabaseServerClient();
+export async function listCanonicalProfessionalContextsForUserWithClient(
+  supabase: SupabaseClient,
+  userId: string,
+): Promise<ProfessionalMembershipContext[]> {
   const { data: memberships, error: membershipError } = await supabase.from("professional_memberships").select("*").eq("user_id", userId).eq("status", "active");
   if (membershipError) throw new Error(`[professional-identity] memberships: ${membershipError.message}`);
 
@@ -46,12 +49,29 @@ export async function listCanonicalProfessionalContextsForUser(userId: string): 
   });
 }
 
+/** @deprecated Partner request paths must inject a user-scoped client. */
+export async function listCanonicalProfessionalContextsForUser(userId: string): Promise<ProfessionalMembershipContext[]> {
+  return listCanonicalProfessionalContextsForUserWithClient(getSupabaseAdminClient(), userId);
+}
+
+export async function resolveProfessionalIdentityForUserWithClient(
+  supabase: SupabaseClient,
+  userId: string,
+  preferredOrganizationId?: string | null,
+): Promise<ProfessionalIdentityResolution> {
+  return resolveActiveProfessionalContext(
+    await listCanonicalProfessionalContextsForUserWithClient(supabase, userId),
+    preferredOrganizationId,
+  );
+}
+
+/** @deprecated Partner request paths must inject a user-scoped client. */
 export async function resolveProfessionalIdentityForUser(userId: string, preferredOrganizationId?: string | null): Promise<ProfessionalIdentityResolution> {
-  return resolveActiveProfessionalContext(await listCanonicalProfessionalContextsForUser(userId), preferredOrganizationId);
+  return resolveProfessionalIdentityForUserWithClient(getSupabaseAdminClient(), userId, preferredOrganizationId);
 }
 
 export async function convertProfessionalActivationToOrganization(input: ConvertProfessionalActivationInput): Promise<ConvertProfessionalActivationResult> {
-  const supabase = getSupabaseServerClient();
+  const supabase = getSupabaseAdminClient();
   const { data, error } = await supabase.rpc("convert_professional_activation_request", {
     p_activation_request_id: input.activation_request_id,
     p_owner_user_id: input.owner_user_id,
