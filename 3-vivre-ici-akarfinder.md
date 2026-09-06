@@ -1,6 +1,6 @@
 # 3 — Vivre Ici AkarFinder
 
-**Statut : ACTIVE — TARGET 9,8/10 LOCKED / LOT 2j RECERTIFICATION APRÈS CORRECTIF OVERLAP**  
+**Statut : ACTIVE — TARGET 9,8/10 LOCKED / 2K CERTIFIÉ / REFRAME RESEARCH LOCKED**  
 **Dernière mise à jour : 2026-09-06**  
 **Repo : `hraaaaf/Akarfinder`**  
 **Branche : `docs/3-vivre-ici-akarfinder`**  
@@ -9,80 +9,26 @@
 **Vercel : aucun déploiement sans accord explicite d’Achraf.**
 
 ## GOAL
-Transformer Vivre ici (`/map`) en expérience territoriale premium inspirée du site référent : carte héro dominante, ville/quartier 3D, chrome léger, rail desktop éditorial, bottom sheet mobile premium, aucune fausse précision.
+Transformer Vivre ici (`/map`) en expérience territoriale premium : carte héro dominante, quartier lisible, rail desktop éditorial, bottom sheet mobile premium, aucune fausse précision.
 
-**Succès observable : score visuel global ≥9,8/10 contre le TARGET LOCK ci-dessous + build/TypeScript/tests verts + captures 390/430/768/1280 + truth gate géographique fail-closed.**
+**Succès observable : score visuel global ≥9,8/10 contre le TARGET LOCK + build/TypeScript/tests verts + captures 390/430/768/1280 + truth gate géographique fail-closed.**
 
 ## TARGET LOCK — 2026-09-06 — AUTORITÉ VISUELLE
-Cible approuvée explicitement par Achraf le 2026-09-06 : mockup unique contenant **Desktop Maârif 3D + Mobile Maârif 3D**.
+Cible approuvée explicitement par Achraf : mockup unique Desktop Maârif + Mobile Maârif.
 
-Artefact durable :
 - fichier : `AKARFINDER_VIVRE_ICI_TARGET_FREEZE_2026-09-06.png`
-- stockage canonique : Google Drive
-- file ID : `1nt6ouxqGp-z6cHnj5A3iQHmw8I_YnGFL`
-- URL : `https://drive.google.com/file/d/1nt6ouxqGp-z6cHnj5A3iQHmw8I_YnGFL/view?usp=drivesdk`
+- Google Drive ID : `1nt6ouxqGp-z6cHnj5A3iQHmw8I_YnGFL`
 - dimensions : `1536 × 1024`
 - taille originale : `2 879 788` octets
 - SHA-256 : `c552bc2d4ef669394694f71027c9852a6c56d155b7853a27f2e9e672942637c8`
+- seuil de clôture : **≥9,8/10**
 
-**Règle : cette image est l’autorité visuelle. Toute note future est calculée contre elle. Seuil de clôture : ≥9,8/10.**
-
-Le mockup contient des éléments illustratifs (photos, prix, météo, scores, proximité, labels). Ils définissent le niveau visuel et la hiérarchie, **pas une autorisation d’inventer ces données en production**. Les données absentes restent absentes ou sont présentées honnêtement.
-
-## TARGET — CRITÈRES À MATCHER
-1. Desktop : carte 3D spectaculaire et lisible, couvrant la majorité de l’écran, chrome flottant fin et premium.
-2. Desktop : rail quartier riche, éditorial et aéré, avec image uniquement si une vraie image fiable existe.
-3. Mobile : carte 3D héro, contrôles regroupés, bottom sheet compact et riche, navigation légère.
-4. Basemap : densité de labels maîtrisée, relief/bâtiments lisibles, rendu chaud et premium.
-5. Cohérence marque AkarFinder : typographie, rayons, ombres, blanc cassé/bleu-teal, hiérarchie nette.
-6. Truth gate : aucun prix/photo/temps/distance/score/position n’est fabriqué.
-
-## PREUVES DE CONVERGENCE
-- Lot 2a : run `34030333919`, artifact `9988409177`, ~6,5/10.
-- Lot 2b : run `34030849447`, artifact `9988593627`, ~7,4/10.
-- intermédiaire : run `34032104891`, artifact `9988982037`, ~7,6/10.
-- Lot 2c : run `34033038551`, artifact `9989287797`, ~8,1/10.
-- Lot 2d : run `34036441560`, artifact `9990349262`, ~8,8/10 contre l’ancienne cible.
-- Lot 2e post-sync : run `34042235527`, artifact `9992071591`, techniquement certifié ; réévaluation stricte ~8,3/10.
-- Lot 2f : commit `1581c108a5b0ebe41170bcdec91c96e535aafc5a`, run `34044165796`, artifact `9992613601`, digest `sha256:8b759ccf1a3803aa5a6e50fb1fdd32f3b9f783da4b4ff3d9002044e81619e4e8`, techniquement certifié ; ~8,7/10 avant TARGET LOCK 9,8.
-- Lot 2g : commit `c9a8e28a62a42874f58e7d8df3905a40405198c6`, run `34044522522`, artifact `9992715124`, digest `sha256:05e389d9b3c3ac83af1dce66398f2e724d2dd70612b409c402e84f994b6a9211`, techniquement certifié.
-- Lot 2i : HEAD `ff6e7330bf248e2c74fbc9e444284678404f6465`. `Mockup Convergence Target Gate` run `34052743509` SUCCESS. `Carte National Zillow UI Certification` run `34052743504` SUCCESS, artifact `9995086969`, digest `sha256:50fa657a86369fc0b2bbbad04a8db380f1f44646c097c42feb17f4f2710101ad`. Cet artifact prouve la carte nationale/Casablanca, **pas à lui seul le rendu canonique Maârif 3D**. Donc aucun ≥9,8 déclaré.
-
-## LOT 2j — CONVERGENCE ÉDITORIALE TARGET LOCK
-But : supprimer l’effet dashboard encore visible sans modifier la vérité des données.
-
-Implémentation initiale :
-- `app/map/premium-lot5.css` créé au commit `6d3c58017bcff8cd8229ebb928c3db1a5e325c4f` ;
-- activation dans `app/map/page.tsx` au commit code `db43f168a262a58be2b7825a7773df960b59db05` ;
-- rail desktop : marché vide masqué, signalétique ramenée à trois lignes éditoriales, CTA/teinte rapprochés du TARGET ;
-- desktop : chrome carte plus fin, rail 350 px, carte héro conservée ;
-- mobile : un seul bottom sheet éditorial, tabs masqués, trois facts compacts, contrôles regroupés ;
-- aucune création de prix/photo/score/distance/temps/coordonnée.
-
-Première certification dédiée :
-- workflow `Vivre Ici AFTER Certification` ;
-- run `34057285291` ; job `101551374883` ; HEAD `db43f168a262a58be2b7825a7773df960b59db05` ;
-- contracts ✅ ; TypeScript ✅ ; build ✅ ; Chromium ✅ ;
-- capture AFTER ❌ uniquement sur l’invariant `topChromeToggleOverlap=true` en Maârif 1280 ;
-- artifact partiel réel `9996408072`, digest `sha256:a7f48e2d848283f499df8f97e46ff35d2465525443cbd61bf59d54f9934f4877` ;
-- preuve 1280 : 3D layer/source présents, pitch 60°, bearing -28°, zoom 15.5, 69 bâtiments rendus, map share 0.6953125, district-search overlap false.
-
-Correctif minimal :
-- recherche desktop : marge droite portée de `102px` à `118px` pour séparer la recherche du toggle 3D ;
-- commit `6dccce7c148da6e1e21eab9d24f71e2032aff61c` (`fix(vivre-ici): clear desktop search toggle overlap`).
-
-Recertification en cours :
-- run dédié `34059445434` ;
-- job `101557220830` (`certify-after`) ;
-- HEAD `6dccce7c148da6e1e21eab9d24f71e2032aff61c` ;
-- au dernier contrôle : contracts ✅, TypeScript ✅, build ✅, Chromium ✅, capture AFTER `in_progress`.
-
-Aucun score ≥9,8 n’est déclaré tant que les 8 captures du run corrigé ne sont pas vérifiées et comparées au TARGET LOCK.
+Le mockup est une autorité de **composition et qualité visuelle**, pas une autorisation d’inventer photos, prix, météo, scores, proximité, temps, distances ou positions.
 
 ## TRUTH GATE GÉOGRAPHIQUE
 Audit Supabase production read-only :
-- `property_listings` : `7 926`, aucune sémantique coordonnée exploitable ;
-- `geo_entities` : `45`, coordonnée exploitable `0` ;
+- `property_listings` : `7 926`, aucune coordonnée exploitable ;
+- `geo_entities` : `45`, géométrie exploitable `0` ;
 - `geo_resolution_events` : `102`, coordonnée exploitable `0` ;
 - `mubawab_listing_corpus_v1` : `37 420`, coordonnée exploitable `0`.
 
@@ -90,28 +36,124 @@ Audit Supabase production read-only :
 
 **Conclusion : `0` bien actuellement éligible à un pin/callout EXACT. Aucun faux pin bien n’est autorisé.**
 
+## PREUVES DE CONVERGENCE — DERNIER ÉTAT
+Historique utile : 2a ~6,5/10 → 2b ~7,4 → intermédiaire ~7,6 → 2c ~8,1 → 2d ~8,8 ancienne cible → 2f/2g haut 8 → 2i techniquement vert mais sous TARGET LOCK.
+
+### Lot 2j — convergence éditoriale
+Code initial : `db43f168a262a58be2b7825a7773df960b59db05`.
+
+Premier run dédié `34057285291` : build/TypeScript verts, échec capture uniquement sur `topChromeToggleOverlap=true` en Maârif 1280.
+
+Correctif minimal :
+- commit `6dccce7c148da6e1e21eab9d24f71e2032aff61c` ;
+- run `34059445434` ;
+- job `101557220830` ;
+- artifact `9997023623` ;
+- digest `sha256:4f3b8686409e7f04e76625c2931a517ac0c8e9bec95ec86396ffa2ae104b8e1d` ;
+- 8 captures réelles produites ;
+- capture AFTER ✅ ; verify AFTER ✅ ; overlap corrigé ✅ ;
+- zéro DB write / zéro deploy.
+
+Verdict visuel : **2j corrigé reste nettement sous 9,8**. Gap principal : carte vectorielle/3D trop technique et rail/mobile trop pauvres face au TARGET.
+
+### Lot 2k — satellite réel sous bâtiments 3D
+Commit : `d2d89c88e9e9c5b185851e914ed788740ecd04f9`.
+
+Implémentation :
+- source raster Esri World Imagery sous le rendu 3D ;
+- attribution intégrée ;
+- fallback vectoriel conservé ;
+- aucune donnée immobilière inventée.
+
+Certification :
+- workflow `Vivre Ici AFTER Certification` ;
+- run `34059691255` ;
+- job `101557881082` ;
+- conclusion `SUCCESS` ;
+- artifact `9997112230` ;
+- digest `sha256:9f1919b914f703614429025761aff6ce65254b9a14daa54872c381f539fb36ea` ;
+- contracts ✅ TypeScript ✅ build ✅ Chromium ✅ capture ✅ verify ✅ upload artifact ✅.
+
+Paramètres 2k actuellement vérifiés dans `National3DBuildingsLayer.tsx` :
+- zoom `15.5` ; pitch `60°` ; bearing `-28°` ;
+- raster opacity `0.93` ;
+- extrusion opacity `0.82` ;
+- labels de fond fortement atténués.
+
+Verdict visuel : **amélioration majeure du matériau de carte, mais écart structurel toujours important**. Le TARGET montre une vue urbaine beaucoup plus large, aérienne et éditoriale ; 2k reste block-level avec extrusions trop dominantes.
+
+## RECHERCHE EXTERNE — 2026-09-06 — DÉCISION MÉTHODOLOGIQUE
+Recherche effectuée avant toute nouvelle modification UI, à partir de documentation primaire MapLibre, Mapbox, Esri/ArcGIS et Google Map Tiles, complétée par l’étude UX de Zillow/Redfin/Idealista/StreetEasy.
+
+### Constats vérifiés
+1. **Caméra** : les exemples officiels 3D MapLibre/Mapbox utilisent typiquement un pitch autour de `45°` à zoom ~`15.5`, pas `60°` comme 2k. Le TARGET, lui, est beaucoup plus large que le cadrage actuel ; sa composition ne doit donc pas être poursuivie en restant bloqué à zoom 15.5.
+2. **Extrusions** : l’exemple Mapbox 3D utilise une extrusion sensiblement plus transparente (`~0.6`). À `0.82`, 2k masque trop l’imagerie et crée un effet de maquette beige.
+3. **Satellite-first** : MapLibre supporte officiellement raster satellite, hybrid satellite/terrain et couches 3D. La voie propre est donc de faire de l’imagerie réelle la matière principale puis de superposer une 3D discrète.
+4. **Photorealistic 3D** : Google propose bien des Photorealistic 3D Tiles, mais la table de couverture actuelle ne confirme pas la surface 3D pour le Maroc. **Ne pas baser Casablanca sur cette technologie sans validation explicite de couverture/API.**
+5. **Esri production** : le chemin développeur moderne Esri/MapLibre repose sur les services de basemap avec accès authentifié + attribution. Le endpoint legacy utilisé en 2k doit être validé juridiquement/techniquement ou remplacé par le chemin officiel avant production.
+6. **Modèle produit** : le TARGET ressemble davantage à un **neighborhood guide éditorial avec carte héro** qu'à une interface de recherche cartographique technique. Les produits immobiliers de référence séparent généralement recherche carte et contenu de quartier/guide ; le rail doit donc raconter le quartier avec des faits sourcés, pas afficher un dashboard vide.
+7. **Média quartier** : une photo Wikimedia explicitement prise depuis Maârif et publiée CC0 a été identifiée comme candidate, mais les droits liés à certains bâtiments marocains nécessitent prudence. Aucun média architecture-focused ne sera intégré sans validation de licence/usage.
+
+### Décision
+**STOP aux micro-retouches 2l/2m/2n.**  
+La prochaine passe est une reconstruction structurante nommée **2L REFRAME**.
+
+## LOT 2L — REFRAME RESEARCH-BACKED
+### Goal
+Rapprocher la **composition** du TARGET sans prétendre disposer d'une photogrammétrie 3D inexistante/non vérifiée et sans inventer de contenu.
+
+### Success
+- même hiérarchie générale que TARGET desktop/mobile ;
+- carte aérienne = matériau dominant ;
+- cadrage urbain beaucoup plus large et respirant ;
+- extrusions discrètes, sans effet “blocs beige” ;
+- rail desktop réellement éditorial et dense uniquement avec contenu sourcé ;
+- mobile = carte héro + sheet compact, pas copie réduite du dashboard desktop ;
+- attribution fournisseur conforme et visuellement maîtrisée ;
+- zéro fausse donnée ;
+- 390/430/768/1280 sans overlap ;
+- build/TypeScript/tests verts ;
+- comparaison directe TARGET ↔ AFTER avant toute déclaration de score.
+
+### Plan d'implémentation verrouillé
+1. **Reframe caméra** : partir d'une vue Casablanca/Maârif plus large ; tuner zoom/pitch/bearing contre TARGET par captures, pas par intuition.
+2. **Satellite-first** : conserver l'imagerie réelle visible ; réduire fortement la domination des extrusions et des overlays territoriaux.
+3. **3D sobre** : extrusions plus transparentes et éclairage plus naturel ; aucune tentative de simuler de la photogrammétrie texturée avec des blocs opaques.
+4. **Rail éditorial** : reconstruire la hiérarchie title/context/story/facts/POI/CTA ; supprimer les grands vides ; ne montrer que faits et médias sourcés.
+5. **Mobile dédié** : simplifier top controls ; donner la majorité de la hauteur à la carte ; sheet unique, compacte, riche en contenu réellement disponible.
+6. **Provider cleanup** : avant production, utiliser un chemin d'imagerie officiellement supporté/licencié ou prouver explicitement la conformité du service retenu.
+7. **Certification** : BEFORE 2k conservé → implémentation 2L → AFTER mêmes viewports → contact sheet → TARGET vs 2L → score honnête → correction suivante seulement sur écarts prouvés.
+
+## GARDE-FOUS
+- aucun ImageGen pour évaluer ou certifier le site ;
+- aucune nouvelle cible : TARGET LOCK reste inchangé ;
+- aucune photo/score/prix/distance/temps/position inventé ;
+- aucun pin immobilier sans EXACT ;
+- aucun deploy Vercel sans autorisation explicite ;
+- aucun ≥9,8 déclaré sans comparaison visuelle prouvée.
+
 ## SYNCHRONISATION MAIN
-- main synchronisé lors du dernier gate : `b8c89681358e93ec254016bcca9b78f4717ea8de`.
-- merge sync : `f7c28368ce2d9de54be42985e8c690fa3c6e080f`.
-- intersection main/Vivre lors de cette sync : `0`.
+Dernière sync explicitement prouvée dans ce chantier : main `b8c89681358e93ec254016bcca9b78f4717ea8de`, merge sync `f7c28368ce2d9de54be42985e8c690fa3c6e080f`. À revérifier avant merge final.
 
 ## ROADMAP
-- [x] Target premium initial
-- [x] Lots 2a→2g convergence technique
-- [x] Lot 3 truth gate `0 EXACT`, fail-closed
-- [x] TARGET LOCK 2026-09-06 stocké durablement + SHA-256
-- [x] Seuil officiel relevé à ≥9,8/10
-- [x] Lot 2i vérifié techniquement sans fausse déclaration ≥9,8
-- [x] Lot 2j implémenté
-- [x] Premier run 2j diagnostiqué : overlap 1280 isolé
-- [x] Correctif overlap 2j poussé
-- [ ] Recertification 2j corrigée + artifact 8 captures
-- [ ] Comparaison directe TARGET LOCK ↔ 2j corrigé desktop + mobile
-- [ ] Correction 2k immédiate si score <9,8
-- [ ] Certification finale visuelle ≥9,8
-- [ ] Canonical closeout final
-- [ ] Human gate merge PR #1025
+- [x] TARGET LOCK durable + SHA-256
+- [x] Truth gate géographique fail-closed / `0 EXACT`
+- [x] 2i techniquement vérifié
+- [x] 2j corrigé et certifié techniquement
+- [x] comparaison 2j ↔ TARGET : gap structurel confirmé
+- [x] 2k satellite réel implémenté et certifié
+- [x] comparaison 2k : gap structurel confirmé
+- [x] recherche externe primaire effectuée avant reprise
+- [x] méthode **2L REFRAME** verrouillée
+- [ ] BEFORE 2L : conserver/figer captures 2k 390/430/768/1280
+- [ ] 2L REFRAME implémentation structurante
+- [ ] 2L certification + 8 captures
+- [ ] TARGET LOCK ↔ 2L desktop/mobile
+- [ ] correction uniquement selon écarts prouvés
+- [ ] certification finale visuelle ≥9,8 si réellement atteinte
+- [ ] canonical closeout final
+- [ ] human gate merge PR #1025
 - [ ] Vercel uniquement après autorisation explicite
 
 ## NEXT EXACT
-Run `34059445434` → artifact `vivre-ici-after` → vérifier les 8 captures réelles et les overlaps → montrer Maârif desktop/mobile → produire `TARGET LOCK | 2j corrigé` → scorer strictement → si <9,8 corriger immédiatement en 2k et recertifier. Aucun merge ni déploiement Vercel avant le gate correspondant.
+**Ne plus micro-polir 2k.** Figer 2k comme BEFORE → implémenter 2L REFRAME selon le plan ci-dessus → recertifier → montrer les captures réelles → comparer strictement au TARGET LOCK. Aucun merge ni déploiement Vercel avant les gates correspondants.
