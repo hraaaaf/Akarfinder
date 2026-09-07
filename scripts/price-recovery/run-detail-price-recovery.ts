@@ -27,7 +27,7 @@ async function rest<T>(table: string, params: Record<string, string>): Promise<T
 }
 
 type Thin = {
-  id: string;
+  seed_id: string;
   canonical_url: string;
   source_domain: string;
   intent: string | null;
@@ -82,7 +82,7 @@ async function main() {
   const rows: Thin[] = [];
   for (const source of SOURCES) {
     const sourceRows = await rest<Thin>('thin_index_search_documents', {
-      select: 'id,canonical_url,source_domain,intent,freshness_status,display_eligibility',
+      select: 'seed_id,canonical_url,source_domain,intent,freshness_status,display_eligibility',
       source_domain: `eq.${source}`,
       price_mad: 'is.null',
       display_eligibility: 'in.(eligible_primary,eligible_secondary)',
