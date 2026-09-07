@@ -1,9 +1,9 @@
-name: AkarFinder - Q1A DATA4.9B Historical CC Union
+name: AkarFinder - Q1A DATA4.9B Direct Archived Sitemaps
 
 on:
   push:
     paths:
-      - "scripts/audits/candidate-lake-q1a-data49b-commoncrawl-historical-union.ts"
+      - "scripts/audits/candidate-lake-q1a-data49b-wayback-direct-sitemaps.ts"
       - ".github/workflows/historical-gap-hunt.yml"
   workflow_dispatch:
 
@@ -11,7 +11,7 @@ permissions:
   contents: read
 
 jobs:
-  q1a-data49b-historical-cc-union:
+  q1a-data49b-direct-archived-sitemaps:
     strategy:
       fail-fast: false
       max-parallel: 6
@@ -30,10 +30,10 @@ jobs:
           - domain: capital-properties.ma
             slug: capital-properties
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 30
     env:
       Q1A_DATA49B_DOMAIN: ${{ matrix.domain }}
-      Q1A_DATA49B_CC_HIST_OUT: .tmp/candidate-lake-q1a-data49b-cc-historical-${{ matrix.slug }}
+      Q1A_DATA49B_WAYBACK_DIRECT_OUT: .tmp/candidate-lake-q1a-data49b-wayback-direct-${{ matrix.slug }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -41,22 +41,22 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - name: Union 2025-2026 Common Crawl URL indexes for one DATA4.9B source
-        run: npx tsx scripts/audits/candidate-lake-q1a-data49b-commoncrawl-historical-union.ts
-      - name: Verify metadata-only fail-closed contract
+      - name: Replay conventional sitemap roots from Wayback before DATA4.9B cutoff
+        run: npx tsx scripts/audits/candidate-lake-q1a-data49b-wayback-direct-sitemaps.ts
+      - name: Verify archive-only fail-closed contract
         run: |
           node - <<'NODE'
           const fs=require('fs');
-          const dir=process.env.Q1A_DATA49B_CC_HIST_OUT;
+          const dir=process.env.Q1A_DATA49B_WAYBACK_DIRECT_OUT;
           const p=JSON.parse(fs.readFileSync(`${dir}/summary.json`,'utf8'));
           if(p.readOnly!==true || p.databaseWrites!==0 || p.productionWrites!==0) throw new Error('write boundary violated');
-          if(p.sourceSiteFetches!==0 || p.sourceContentFetches!==0 || p.warcFetches!==0) throw new Error('metadata-only boundary violated');
-          if(p.commonCrawlUrlIndexRequestsOnly!==true || p.vercelDeployments!==0) throw new Error('network/deploy boundary violated');
-          console.log(JSON.stringify({domain:process.env.Q1A_DATA49B_DOMAIN,total:p.totalCandidateRows,expected:p.expectedHistoricalTotal,allQueriesComplete:p.allQueriesComplete,allFinalCountsMatch:p.allFinalCountsMatch,allDomainsHitExactAtSomeHorizon:p.allDomainsHitExactAtSomeHorizon,manifestSha256:p.manifestSha256,detail:p.domains[0]},null,2));
+          if(p.sourceSiteFetches!==0 || p.sourceContentFetches!==0 || p.detailPageFetches!==0 || p.warcFetches!==0) throw new Error('source/WARC boundary violated');
+          if(p.archiveContentFetchesOnly!==true || p.archiveSitemapsOnly!==true || p.vercelDeployments!==0) throw new Error('archive/deploy boundary violated');
+          console.log(JSON.stringify({domain:p.domain,exactAttemptCount:p.exactAttemptCount,uniqueExactManifestHashes:p.uniqueExactManifestHashes,selectedExactManifest:p.selectedExactManifest,certificationState:p.certificationState},null,2));
           NODE
       - uses: actions/upload-artifact@v4
         with:
-          name: candidate-lake-q1a-data49b-cc-historical-${{ matrix.slug }}
-          path: .tmp/candidate-lake-q1a-data49b-cc-historical-${{ matrix.slug }}/
+          name: candidate-lake-q1a-data49b-wayback-direct-${{ matrix.slug }}
+          path: .tmp/candidate-lake-q1a-data49b-wayback-direct-${{ matrix.slug }}/
           if-no-files-found: error
           retention-days: 30
