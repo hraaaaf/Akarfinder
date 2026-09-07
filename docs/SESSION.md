@@ -30,6 +30,16 @@ ROADMAP post-M250K : commit `0d1a91b4b49c75ccac34c16e950b91fe4262a6c8`.
 
 ## Chantier actif — Lot 11 / Q1A Candidate Lake manifest freeze
 
+### Recovery checkpoint — 2026-09-07
+
+- DB-backed export is exact: **14,987 / 14,987**, run `34059828610`, artifact `9997114366`.
+- 1immo freeze-time cohort is exact: **3,471 / 3,471**, run `34062181098`, artifact `9997824477`.
+- MASS-X2 is exact: **73 / 73**, run `34063582288`, artifact `9998233478`.
+- DATA4.9B remains **2,326 aggregate-only historical identities**: the original artifact is expired and bounded archive/metadata replays did not recover a unique row-level manifest.
+- Honest row-level ceiling: **251,046 materializable + 2,326 aggregate-only = 253,372 frozen accounting total**. Never create placeholders.
+- Live gateway baseline verified through `search_public_representations_v2`: **2,065** servable representations.
+- Detailed proof: `docs/data/Q1A-CANDIDATE-LAKE-RECOVERY-STATUS.md`.
+
 ### Goal
 
 Produire un manifest unifié, déterministe et reproductible des **253 372 représentations**.
