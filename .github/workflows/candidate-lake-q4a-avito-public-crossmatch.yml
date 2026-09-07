@@ -1,0 +1,47 @@
+name: AkarFinder - Q4A Avito Public Crossmatch
+
+on:
+  push:
+    branches:
+      - data/q4a-minimal-search-ready
+    paths:
+      - 'scripts/audits/candidate-lake-q4a-avito-public-crossmatch.py'
+      - '.github/workflows/candidate-lake-q4a-avito-public-crossmatch.yml'
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download frozen Q1D and public GitHub dataset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p .tmp/q4a-avito-public/q1d
+          gh api repos/${{ github.repository }}/actions/artifacts/10022063956/zip > /tmp/q1d.zip
+          unzip -q /tmp/q1d.zip -d .tmp/q4a-avito-public/q1d
+          curl --fail --location --retry 3 \
+            'https://raw.githubusercontent.com/itsachrafmansari/moroccan-real-estate-analysis/0a5eeabc98aab88e4f4548c3ef19510d553f1433/data/raw-fetched-data.csv' \
+            --output .tmp/q4a-avito-public/raw-fetched-data.csv
+      - name: Exact ID crossmatch
+        run: python scripts/audits/candidate-lake-q4a-avito-public-crossmatch.py
+      - name: Verify no source fetch / exact-only invariants
+        run: |
+          python - <<'PY'
+          import json
+          s=json.load(open('.tmp/q4a-avito-public-out/summary.json'))
+          assert s['datasetCommit']=='0a5eeabc98aab88e4f4548c3ef19510d553f1433'
+          assert s['sourceSiteFetches']==0 and s['publicGitHubDatasetFetches']==1
+          assert s['databaseWrites']==0 and s['productionWrites']==0 and s['vercelDeployments']==0
+          print(json.dumps(s,indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: candidate-lake-q4a-avito-public-crossmatch
+          path: .tmp/q4a-avito-public-out/
+          retention-days: 30
