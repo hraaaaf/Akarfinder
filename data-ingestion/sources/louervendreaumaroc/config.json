@@ -1,0 +1,15 @@
+{
+  "source": "louervendreaumaroc",
+  "country": "MA",
+  "locale": "fr",
+  "base_url": "https://louervendreaumaroc.com",
+  "phase": "phase0_coverage_proof",
+  "status": "blocked_live_site_maintenance",
+  "homepage_marketing_counter": "57000+",
+  "marketing_counter_is_certified_denominator": false,
+  "detail_identity_status": "not_yet_proven",
+  "full_harvest_allowed": false,
+  "database_writes_allowed": false,
+  "image_downloads_allowed": false,
+  "robots_check_required": true
+}

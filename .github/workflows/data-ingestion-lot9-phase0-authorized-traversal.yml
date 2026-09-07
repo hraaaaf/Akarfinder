@@ -1,0 +1,84 @@
+name: Data Ingestion Lot 9 P0-D Authorized Traversal
+
+on:
+  pull_request:
+    paths:
+      - "data-ingestion/sources/mubawab/authorized-traversal.ts"
+      - "data-ingestion/sources/mubawab/discovery.ts"
+      - "data-ingestion/sources/mubawab/geo-hierarchy.ts"
+      - "data-ingestion/sources/avito/evidence/**"
+      - "scripts/mubawab-phase0-authorized-leaf-probe.ts"
+      - "scripts/scrapers/avito-sitemap-probe.mjs"
+      - "scripts/scrapers/avito-commoncrawl-control-probe.mjs"
+      - "scripts/scrapers/utils/fetch-html.ts"
+      - "scripts/scrapers/__tests__/data-ingestion-lot9-phase0-authorized-traversal.test.ts"
+      - ".github/workflows/data-ingestion-lot9-phase0-authorized-traversal.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  authorized-traversal:
+    concurrency:
+      group: lot9-p0d-authorized-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: true
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Prove P0-D leaf assessment semantics
+        run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-phase0-authorized-traversal.test.ts
+      - name: Run bounded robots-allowed Oasis leaf probe
+        run: npx tsx scripts/mubawab-phase0-authorized-leaf-probe.ts
+      - name: Upload P0-D authorized leaf proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lot9-phase0-authorized-leaf-proof
+          path: data-ingestion/runs/mubawab/phase0-authorized-leaf-probe/
+          if-no-files-found: warn
+          retention-days: 7
+
+      # Safety: representative page-1 leaf proof only.
+      # No :p:N pagination, no detail pages, no DB/prod writes, no images.
+
+  avito-sitemap-probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Probe Avito sitemap advertised by robots.txt once
+        run: node scripts/scrapers/avito-sitemap-probe.mjs
+
+      # Safety: exactly one sitemap request with an identifiable AkarFinder UA.
+      # No detail pages, no private API, no images, no DB/prod writes.
+
+  avito-commoncrawl-control:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Measure 12-URL Avito control overlap in three public Common Crawl indexes
+        run: node scripts/scrapers/avito-commoncrawl-control-probe.mjs
+      - name: Upload Avito Common Crawl control proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: avito-commoncrawl-control-proof
+          path: data-ingestion/runs/avito/commoncrawl-control-probe/
+          if-no-files-found: warn
+          retention-days: 7
+
+      # Safety: queries Common Crawl's public index only; does not request Avito.

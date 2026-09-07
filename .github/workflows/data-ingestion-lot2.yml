@@ -1,0 +1,56 @@
+name: Data Ingestion Lot 2 Discovery Gate
+
+on:
+  pull_request:
+    paths:
+      - "data-ingestion/**"
+      - "scripts/mubawab-discovery-v2.ts"
+      - "scripts/scrapers/__tests__/mubawab-discovery-v2.test.ts"
+      - ".github/workflows/data-ingestion-lot2.yml"
+
+jobs:
+  test-discovery:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx tsx --test scripts/scrapers/__tests__/mubawab-discovery-v2.test.ts
+
+  live-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Read-only live discovery proof
+        env:
+          MUBAWAB_DISCOVERY_CITY: Casablanca
+          MUBAWAB_DISCOVERY_CATEGORY: apartment_sale
+          MUBAWAB_DISCOVERY_MAX_PAGES: "1"
+        run: npx tsx scripts/mubawab-discovery-v2.ts
+      - name: Validate live manifest
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const p = 'data-ingestion/runs/mubawab/discovery-latest/discovery-manifest.json';
+          const m = JSON.parse(fs.readFileSync(p, 'utf8'));
+          if (m.routes_total !== 1) throw new Error(`expected 1 route, got ${m.routes_total}`);
+          if (m.pages_succeeded !== 1 || m.pages_failed !== 0) throw new Error(`live fetch failed: succeeded=${m.pages_succeeded} failed=${m.pages_failed}`);
+          if (!(m.unique_listings > 0)) throw new Error('live discovery returned zero listings');
+          if (m.detail_family_counts.a + m.detail_family_counts.pa !== m.unique_listings) throw new Error('detail family counts do not match unique listings');
+          console.log(JSON.stringify(m, null, 2));
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mubawab-lot2-live-proof
+          path: data-ingestion/runs/mubawab/discovery-latest/
+          if-no-files-found: error

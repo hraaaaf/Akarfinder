@@ -1,0 +1,41 @@
+name: Data Ingestion Lot 9 P0-D Partition Inventory
+
+on:
+  pull_request:
+    paths:
+      - "data-ingestion/sources/mubawab/partition-surface-inventory.ts"
+      - "scripts/mubawab-phase0-partition-surface-inventory-probe.ts"
+      - "scripts/scrapers/__tests__/data-ingestion-lot9-phase0-partition-surface-inventory.test.ts"
+      - ".github/workflows/data-ingestion-lot9-phase0-partition-inventory.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  partition-inventory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Prove partition inventory extraction semantics
+        run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-phase0-partition-surface-inventory.test.ts
+      - name: Inventory exposed controls on one robots-allowed overflow leaf
+        run: npx tsx scripts/mubawab-phase0-partition-surface-inventory-probe.ts
+      - name: Upload P0-D partition inventory proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lot9-phase0-partition-surface-inventory-proof
+          path: data-ingestion/runs/mubawab/phase0-partition-surface-inventory/
+          if-no-files-found: warn
+          retention-days: 7
+
+      # Safety: exactly one page-1 listing request.
+      # Inventory only: no filter is executed, no detail page, no :p:N pagination,
+      # no private API, no DB/prod write, no image download.

@@ -1,0 +1,68 @@
+name: Data Ingestion Lot 9 P0-D Common Crawl Index
+
+on:
+  pull_request:
+    paths:
+      - "data-ingestion/sources/mubawab/commoncrawl-index.ts"
+      - "data-ingestion/sources/mubawab/external-recovery-reconciliation.ts"
+      - "data-ingestion/sources/mubawab/coverage-gap-decomposition.ts"
+      - "scripts/mubawab-phase0-commoncrawl-index-probe.ts"
+      - "scripts/scrapers/__tests__/data-ingestion-lot9-phase0-commoncrawl-index.test.ts"
+      - "scripts/scrapers/__tests__/data-ingestion-lot9-external-recovery-reconciliation.test.ts"
+      - "scripts/scrapers/__tests__/data-ingestion-lot9-coverage-gap-decomposition.test.ts"
+      - ".github/workflows/data-ingestion-lot9-phase0-commoncrawl-index.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  commoncrawl-index:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Restore historical 31,731-ID Mubawab union
+        uses: actions/download-artifact@v4
+        with:
+          name: lot9-office-catalog-campaign-proof
+          path: data-ingestion/runs/mubawab/lot9-office-catalog-campaign
+          github-token: ${{ github.token }}
+          run-id: 33906589600
+      - name: Restore current 372-ID first-party control sample
+        uses: actions/download-artifact@v4
+        with:
+          name: lot9-phase0-authorized-leaf-proof
+          path: data-ingestion/runs/mubawab/phase0-authorized-leaf-probe
+          github-token: ${{ github.token }}
+          run-id: 33920686277
+      - name: Prove Common Crawl index parsing and paging semantics
+        run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-phase0-commoncrawl-index.test.ts
+      - name: Prove fail-closed external recovery classification semantics
+        run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-external-recovery-reconciliation.test.ts
+      - name: Prove fail-closed coverage gap decomposition semantics
+        run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-coverage-gap-decomposition.test.ts
+      - name: Run bounded multi-snapshot Common Crawl Mubawab detail-index probe
+        run: npx tsx scripts/mubawab-phase0-commoncrawl-index-probe.ts
+      - name: Upload Common Crawl P0-D proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lot9-phase0-commoncrawl-index-proof
+          path: data-ingestion/runs/mubawab/phase0-commoncrawl-index-probe/
+          if-no-files-found: warn
+          retention-days: 7
+
+      # Safety: three recent public Common Crawl snapshots, a/pa families only.
+      # Each family/index performs one page-count query plus at most three spread pages,
+      # pageSize=1 block, limit=1000 rows/page, sequential requests with 1250 ms delay.
+      # Coverage-gap decomposition is local-only over restored proofs and external IDs.
+      # Theoretical max = 24 Common Crawl index requests.
+      # No live Mubawab request, no Mubawab detail fetch, no :p:N, no WARC fetch,
+      # no DB/prod write, no image download.

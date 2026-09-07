@@ -20,18 +20,19 @@ import { getDbProvider, isSupabaseConfigured } from "./provider";
 
 export type { DbListingsQuery, DbListingsResult, DbStats, DbListingRow };
 
-const SQLITE_DB_PATH = join(
+const HISTORICAL_SQLITE_DB_PATH = join(
   process.cwd(),
   "scripts/scrapers/output/akarfinder.db"
 );
+
+function sqliteDbPath(): string {
+  return process.env.AKARFINDER_SQLITE_PATH?.trim() || HISTORICAL_SQLITE_DB_PATH;
+}
 
 function useSupabase(): boolean {
   return getDbProvider() === "supabase" && isSupabaseConfigured();
 }
 
-// Logs the active DB provider — visible in Vercel Functions logs to diagnose
-// silent fallback to SQLite (which returns 0 rows on Vercel where the DB file
-// is absent).
 function logProvider(via: "supabase" | "sqlite" | "sqlite_fallback") {
   const configured = isSupabaseConfigured();
   const provider = getDbProvider();
@@ -53,7 +54,6 @@ export async function queryListings(
   } else {
     logProvider("sqlite");
   }
-  // Dynamic import: node:sqlite only loaded when this code path executes.
   const { queryDbListings } = await import("@/lib/listings/db-listings");
   return queryDbListings(query);
 }
@@ -87,8 +87,7 @@ export async function queryListingById(
   return getDbListingById(id);
 }
 
-// Synchronous — safe because in Supabase mode we never touch the file system.
 export function isAvailable(): boolean {
   if (getDbProvider() === "supabase") return isSupabaseConfigured();
-  return existsSync(SQLITE_DB_PATH);
+  return existsSync(sqliteDbPath());
 }

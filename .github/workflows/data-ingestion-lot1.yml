@@ -1,0 +1,26 @@
+name: Data Ingestion Lot 1 Contract Gate
+
+on:
+  pull_request:
+    paths:
+      - "data-ingestion/collection-adapter.ts"
+      - "data-ingestion/schema/**"
+      - "data-ingestion/samples/**"
+      - "lib/property-schema/core.ts"
+      - "scripts/scrapers/__tests__/data-ingestion-contract.test.ts"
+      - ".github/workflows/data-ingestion-lot1.yml"
+  workflow_dispatch:
+
+jobs:
+  contract-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Validate collection contract and adapter
+        run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-contract.test.ts

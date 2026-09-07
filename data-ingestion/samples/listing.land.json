@@ -1,0 +1,22 @@
+{
+  "akar_id": null,
+  "source": {"name":"fixture","source_id":"fixture-land-001","url":"https://example.com/listing/fixture-land-001","first_seen_at":"2026-09-03T16:15:00Z","last_seen_at":"2026-09-03T16:15:00Z","scraped_at":"2026-09-03T16:15:00Z","content_hash":"dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"},
+  "status":"active",
+  "transaction":"sale",
+  "property_type":"land",
+  "title":"Terrain à vendre à Marrakech",
+  "description":"Fixture terrain/land pour vérifier qu'aucune logique appartement n'est imposée.",
+  "price":{"amount":2400000,"currency":"MAD","period":"total","on_request":false},
+  "surface":{"total_m2":1200,"habitable_m2":null,"built_m2":null,"land_m2":1200},
+  "rooms":null,
+  "bedrooms":null,
+  "bathrooms":null,
+  "floor":null,
+  "location":{"country":"Morocco","region":"Marrakech-Safi","city":"Marrakech","district":null,"address_text":"Marrakech","latitude":null,"longitude":null,"precision":"city_centroid"},
+  "features":["road_access"],
+  "images":[],
+  "seller":{"name":null,"type":"owner","source_profile_url":null},
+  "provenance":{"source_type":"owner_direct","source_listing_url":"https://example.com/listing/fixture-land-001","retrieval_method":"manual"},
+  "quality":{"score":82,"warnings":["district_missing"]},
+  "raw":{"fixture":true}
+}

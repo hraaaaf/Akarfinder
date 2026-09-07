@@ -1,0 +1,29 @@
+name: Data Ingestion Lot 9 Live Wave
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  live-wave:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Run bounded Mubawab live discovery wave
+        run: npx tsx scripts/mubawab-full-coverage-live-wave.ts
+      - name: Upload Lot 9 live wave proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lot9-live-wave-proof
+          path: data-ingestion/runs/mubawab/lot9-live-wave/
+          if-no-files-found: warn
+          retention-days: 7

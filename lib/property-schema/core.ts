@@ -114,7 +114,8 @@ export interface CanonicalPropertyFactsV1 {
 export type PriceStatus = "valid" | "not_disclosed" | "ambiguous" | "unavailable" | "invalid";
 export type OfferAvailabilityStatus = "available" | "upcoming" | "reserved" | "sold" | "rented" | "withdrawn" | "unknown";
 export type OfferComplianceStatus = "allowed" | "restricted" | "review_required" | "blocked";
-export type OfferOriginType = "partner_api" | "partner_feed" | "first_party_user" | "persisted_openserp" | "authorized_static_page" | "legacy_import" | "unknown";
+export type OfferOriginType = "partner_api" | "partner_feed" | "agency_direct" | "first_party_user" | "persisted_openserp" | "authorized_static_page" | "legacy_import" | "unknown";
+export type OfferScope = "whole_property" | "room";
 
 export interface CanonicalOfferV1 {
   offer_id: string;
@@ -127,6 +128,7 @@ export interface CanonicalOfferV1 {
   acquisition_channel: AcquisitionChannel;
   origin_type: OfferOriginType;
   transaction_type: CanonicalTransactionType;
+  offer_scope: OfferScope;
   title: CanonicalFact<string>;
   description: CanonicalFact<string>;
   price_amount: CanonicalFact<number>;

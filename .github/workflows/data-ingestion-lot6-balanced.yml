@@ -1,0 +1,33 @@
+name: Data Ingestion Lot 6 Balanced Crawl
+
+on:
+  pull_request:
+    paths:
+      - "data-ingestion/**"
+      - "scripts/mubawab-crawl-lot6-balanced.ts"
+      - "scripts/scrapers/__tests__/data-ingestion-transaction-context.test.ts"
+      - ".github/workflows/data-ingestion-lot6-balanced.yml"
+
+jobs:
+  balanced-crawl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Validate contextual transaction guards
+        run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-transaction-context.test.ts
+      - name: First balanced controlled pass
+        run: npx tsx scripts/mubawab-crawl-lot6-balanced.ts
+      - name: Resume balanced crawl from checkpoint
+        run: npx tsx scripts/mubawab-crawl-lot6-balanced.ts --resume
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mubawab-lot6-balanced
+          path: data-ingestion/runs/mubawab/lot6-balanced/
+          if-no-files-found: error

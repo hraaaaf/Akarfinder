@@ -1,0 +1,29 @@
+name: Data Ingestion Avito Expanded Control
+
+on:
+  push:
+    paths:
+      - "scripts/scrapers/avito-expanded-control-probe.mjs"
+      - ".github/workflows/data-ingestion-avito-expanded-control.yml"
+  workflow_dispatch:
+
+# Bounded public-control benchmark. This workflow requests Kaynly public pages
+# and Common Crawl indexes only. It never requests Avito listing pages.
+jobs:
+  expanded-control:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Build stratified Avito URL sample and measure Common Crawl overlap
+        run: node scripts/scrapers/avito-expanded-control-probe.mjs
+      - name: Upload expanded Avito control proof
+        uses: actions/upload-artifact@v4
+        with:
+          name: avito-expanded-control-proof
+          path: data-ingestion/runs/avito/expanded-control/
+          if-no-files-found: error
+          retention-days: 14

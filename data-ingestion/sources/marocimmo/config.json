@@ -1,0 +1,23 @@
+{
+  "source": "marocimmo",
+  "country": "MA",
+  "locale": "fr",
+  "base_url": "https://www.marocimmo.com",
+  "phase": "phase0_coverage_proof",
+  "status": "verification_pending",
+  "verified_public_routes": [
+    "/fr/vente",
+    "/fr/location",
+    "/fr/vente/appartement",
+    "/fr/location/bureau",
+    "/fr/vente/commercial",
+    "/fr/location/rabat",
+    "/fr/location/bureau/casablanca"
+  ],
+  "pagination_status": "pattern_not_yet_proven",
+  "detail_identity_status": "not_yet_proven",
+  "full_harvest_allowed": false,
+  "database_writes_allowed": false,
+  "image_downloads_allowed": false,
+  "robots_check_required": true
+}
