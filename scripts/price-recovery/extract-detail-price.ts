@@ -1,11 +1,13 @@
 import * as cheerio from 'cheerio';
 
 export type PricePeriod = 'sale_total' | 'month' | 'night' | 'unknown';
+export type PriceStatus = 'available' | 'not_disclosed' | 'unknown';
 export type PriceEvidence = {
   currentPriceMad: number | null;
   oldPriceMad: number | null;
   pricePerM2Mad: number | null;
   period: PricePeriod;
+  priceStatus: PriceStatus;
   currency: 'MAD' | null;
   confidence: 'high' | 'medium' | 'none';
   evidence: string | null;
@@ -113,7 +115,7 @@ function visibleCandidates($: cheerio.CheerioAPI, intent: string | null): Candid
 export function extractDetailPrice(sourceDomain: string, html: string, intent: string | null): PriceEvidence {
   const domain = sourceDomain.toLowerCase().replace(/^www\./, '');
   if (!['agenz.ma', 'mubawab.ma'].includes(domain)) {
-    return { currentPriceMad: null, oldPriceMad: null, pricePerM2Mad: null, period: 'unknown', currency: null, confidence: 'none', evidence: null, rejected: ['unsupported_source'] };
+    return { currentPriceMad: null, oldPriceMad: null, pricePerM2Mad: null, period: 'unknown', priceStatus: 'unknown', currency: null, confidence: 'none', evidence: null, rejected: ['unsupported_source'] };
   }
   const $ = cheerio.load(html);
   const body = normalizeText($('body').text());
@@ -122,6 +124,7 @@ export function extractDetailPrice(sourceDomain: string, html: string, intent: s
   const candidates = visibleCandidates($, intent).sort((a, b) => b.score - a.score || b.value - a.value);
   const old = candidates.filter(c => c.old && c.score >= 1)[0] ?? null;
   const current = candidates.filter(c => !c.old && c.score >= 5)[0] ?? null;
+  const notDisclosed = /\b(prix\s+(?:à\s+)?consulter|demander\s+le\s+prix|prix\s+sur\s+demande|price\s+on\s+request|contact(?:ez)?\s+(?:nous|l['’]annonceur).*prix)\b/i.test(body);
 
   if (json) {
     return {
@@ -129,6 +132,7 @@ export function extractDetailPrice(sourceDomain: string, html: string, intent: s
       oldPriceMad: old && old.value !== json.value ? old.value : null,
       pricePerM2Mad,
       period: intent === 'sale' ? 'sale_total' : intent === 'rent' ? 'month' : 'unknown',
+      priceStatus: 'available',
       currency: 'MAD',
       confidence: 'high',
       evidence: json.evidence,
@@ -137,7 +141,17 @@ export function extractDetailPrice(sourceDomain: string, html: string, intent: s
   }
 
   if (!current) {
-    return { currentPriceMad: null, oldPriceMad: old?.value ?? null, pricePerM2Mad, period: 'unknown', currency: null, confidence: 'none', evidence: null, rejected: ['no_high_confidence_total_price'] };
+    return {
+      currentPriceMad: null,
+      oldPriceMad: old?.value ?? null,
+      pricePerM2Mad,
+      period: 'unknown',
+      priceStatus: notDisclosed ? 'not_disclosed' : 'unknown',
+      currency: null,
+      confidence: 'none',
+      evidence: notDisclosed ? 'visible:not_disclosed' : null,
+      rejected: [notDisclosed ? 'price_not_disclosed' : 'no_high_confidence_total_price'],
+    };
   }
 
   return {
@@ -145,6 +159,7 @@ export function extractDetailPrice(sourceDomain: string, html: string, intent: s
     oldPriceMad: old && old.value !== current.value ? old.value : null,
     pricePerM2Mad,
     period: current.period,
+    priceStatus: 'available',
     currency: 'MAD',
     confidence: current.score >= 10 ? 'high' : 'medium',
     evidence: current.evidence,
