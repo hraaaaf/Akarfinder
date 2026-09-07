@@ -12,10 +12,10 @@ const OPENFREEMAP_VECTOR_URL = "https://tiles.openfreemap.org/planet";
 const WORLD_IMAGERY_TILE_URL = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
 const WORLD_IMAGERY_ATTRIBUTION = "© Esri, Maxar, Earthstar Geographics, GIS User Community";
 
-// 2L.1: keep the satellite as the visual material while moving just far enough
-// into building-detail tiles to restore real depth. The selected district remains
-// the sourced camera anchor; no boundary, property position or metric is inferred.
-const CASABLANCA_3D_ZOOM = 14.3;
+// 2L.4: the TARGET is city-context first, not parcel-detail first. Keep the
+// selected district as the sourced anchor while widening the real satellite view.
+// No boundary, property position or metric is inferred by this presentation camera.
+const CASABLANCA_3D_ZOOM = 13.35;
 const CASABLANCA_3D_PITCH = 46;
 const CASABLANCA_3D_BEARING = -14;
 
@@ -259,7 +259,7 @@ export function National3DBuildingsLayer({ citySlug, districtSlug }: Props) {
           zoom: focusedDistrict ? CASABLANCA_3D_ZOOM : Math.max(map.getZoom(), 12.8),
           pitch: CASABLANCA_3D_PITCH,
           bearing: CASABLANCA_3D_BEARING,
-          offset: focusedDistrict ? [0, window.innerWidth >= 1024 ? 108 : 58] : [0, 0],
+          offset: focusedDistrict ? [0, window.innerWidth >= 1024 ? 82 : 38] : [0, 0],
           duration: 1000,
         });
       } else {
