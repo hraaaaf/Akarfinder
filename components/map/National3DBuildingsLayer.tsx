@@ -20,11 +20,13 @@ const CASABLANCA_3D_ZOOM = 14.0;
 const CASABLANCA_3D_PITCH = 58;
 const CASABLANCA_3D_BEARING = -12;
 
+// TARGET is explicitly a daylight composition. Keep the real imagery source,
+// but lift exposure and soften contrast instead of faking a replacement basemap.
 const IMMERSIVE_LIGHT: LightSpecification = {
   anchor: "viewport",
-  color: "#FFF3DF",
-  intensity: 0.72,
-  position: [1.25, 210, 42],
+  color: "#FFF8EC",
+  intensity: 0.96,
+  position: [1.35, 210, 46],
 };
 
 const PRESENTATION_LAYER_TARGETS = [
@@ -74,9 +76,9 @@ function ensureImageryLayer(map: MapLibreMap): void {
       minzoom: 10,
       paint: {
         "raster-opacity": 0.985,
-        "raster-saturation": 0.06,
-        "raster-contrast": 0.1,
-        "raster-brightness-min": 0.03,
+        "raster-saturation": -0.03,
+        "raster-contrast": -0.18,
+        "raster-brightness-min": 0.16,
         "raster-brightness-max": 1,
         "raster-fade-duration": 160,
       },
@@ -107,13 +109,13 @@ function ensureBuildingLayer(map: MapLibreMap): void {
         ["linear"],
         ["coalesce", ["get", "render_height"], 0],
         0,
-        "#FFFDF8",
+        "#FFFFFF",
         24,
-        "#F7F0E5",
+        "#FBF6EE",
         60,
-        "#EDE2D2",
+        "#F4E9DC",
         120,
-        "#D8C8B5",
+        "#E5D4C2",
       ],
       "fill-extrusion-height": [
         "interpolate",
@@ -125,7 +127,7 @@ function ensureBuildingLayer(map: MapLibreMap): void {
         ["get", "render_height"],
       ],
       "fill-extrusion-base": ["coalesce", ["get", "render_min_height"], 0],
-      "fill-extrusion-opacity": 0.34,
+      "fill-extrusion-opacity": 0.28,
       "fill-extrusion-vertical-gradient": true,
     },
   }, firstLabelLayerId(map));
