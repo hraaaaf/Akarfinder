@@ -1,0 +1,97 @@
+name: Vivre Ici AFTER Certification
+
+# Re-certification anchor: this gate validates the synchronized branch tree after main updates.
+on:
+  push:
+    branches:
+      - docs/3-vivre-ici-akarfinder
+    paths:
+      - 'app/map/**'
+      - 'components/map/**'
+      - 'lib/map/**'
+      - 'components/layout/MobileBottomNav.tsx'
+      - 'components/layout/SiteHeader.tsx'
+      - 'scripts/vivre-ici-after-capture.mjs'
+      - 'scripts/audits/ux-bottom-nav-10of10-1.mjs'
+      - 'scripts/scrapers/__tests__/ux-bottom-nav-10of10-1.test.ts'
+      - 'scripts/scrapers/__tests__/ux-premium-bottomnav-glass-1.test.ts'
+      - '.github/workflows/vivre-ici-after.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED: 'false'
+
+jobs:
+  certify-after:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Vivre ici navigation contracts
+        run: npx tsx --test scripts/scrapers/__tests__/ux-bottom-nav-10of10-1.test.ts scripts/scrapers/__tests__/ux-premium-bottomnav-glass-1.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Capture branch-local AFTER
+        run: node scripts/vivre-ici-after-capture.mjs
+      - name: Verify AFTER proof
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const s = JSON.parse(fs.readFileSync('artifacts/vivre-ici-after/summary.json','utf8'));
+          if (s.mode !== 'branch-local-after') throw new Error(`wrong mode: ${s.mode}`);
+          if (s.premiumTarget !== 'freeze-2026-09-06') throw new Error(`wrong premium target: ${s.premiumTarget}`);
+          if (s.zeroDbWritesByScript !== true) throw new Error('write safety not proven');
+          if (s.zeroDeploymentActionsByScript !== true) throw new Error('deployment safety not proven');
+          if (s.results.length !== 8) throw new Error(`expected 8 viewport/scenario proofs, got ${s.results.length}`);
+          const national = s.results.filter((r) => r.scenario === 'national');
+          const neighborhood = s.results.filter((r) => r.scenario === 'casablanca-maarif');
+          if (national.length !== 4) throw new Error(`expected 4 national proofs, got ${national.length}`);
+          if (neighborhood.length !== 4) throw new Error(`expected 4 neighborhood proofs, got ${neighborhood.length}`);
+          for (const r of s.results) {
+            if (!r.httpStatus || r.httpStatus >= 400) throw new Error(`bad HTTP ${r.scenario}/${r.viewport.name}: ${r.httpStatus}`);
+            if (r.hasVivreIciPage !== 1) throw new Error(`missing Vivre ici page marker ${r.scenario}/${r.viewport.name}`);
+            if (r.hasDecisionRail !== 1) throw new Error(`missing decision rail ${r.scenario}/${r.viewport.name}`);
+            if (r.hasPremiumContext !== 1) throw new Error(`missing premium context ${r.scenario}/${r.viewport.name}`);
+            if (r.vivreIciTextCount < 1) throw new Error(`missing Vivre ici wording ${r.scenario}/${r.viewport.name}`);
+            const expectedView = r.scenario === 'national' ? 'morocco' : 'city';
+            if (r.nationalView !== expectedView) throw new Error(`wrong map view ${r.scenario}/${r.viewport.name}: ${r.nationalView}`);
+            if (r.viewport.width >= 1024 && r.mapWidthShare < 0.68) throw new Error(`map is not dominant enough ${r.scenario}/${r.viewport.name}: ${r.mapWidthShare}`);
+            if (r.neighborhoodContext) {
+              if (r.poiControls !== 1) throw new Error(`missing POI controls ${r.viewport.name}`);
+              if (r.poiAvailableToggle + r.poiUnavailable !== 1) throw new Error(`POI state is not truthful/exclusive ${r.viewport.name}`);
+              if (r.topChromeDistrictOverlap) throw new Error(`district search overlaps territory chrome ${r.viewport.name}`);
+              if (r.topChromeToggleOverlap) throw new Error(`2D/3D toggle overlaps top chrome ${r.viewport.name}`);
+              if (r.viewport.width < 1024 && !r.neighborhoodPreviewVisible) throw new Error(`premium bottom sheet not visible ${r.viewport.name}`);
+            }
+            if (r.threeDExpected) {
+              if (r.threeDToggle !== 1) throw new Error(`missing 3D toggle ${r.viewport.name}`);
+              if (!r.threeDLayer || !r.threeDSource) throw new Error(`missing 3D layer/source ${r.viewport.name}`);
+              if (r.mapPitch < 45) throw new Error(`3D pitch too low ${r.viewport.name}: ${r.mapPitch}`);
+              if (r.mapZoom < 14) throw new Error(`3D zoom too low ${r.viewport.name}: ${r.mapZoom}`);
+              if (r.renderedBuildingCount < 1) throw new Error(`no rendered 3D buildings ${r.viewport.name}`);
+            } else {
+              if (r.threeDToggle !== 0 || r.threeDLayer) throw new Error(`national view must remain 2D ${r.viewport.name}`);
+            }
+            if (!fs.existsSync(r.screenshot)) throw new Error(`missing screenshot ${r.screenshot}`);
+          }
+          console.log(JSON.stringify(s,null,2));
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: vivre-ici-after
+          path: artifacts/vivre-ici-after/
+          if-no-files-found: error
+          retention-days: 30

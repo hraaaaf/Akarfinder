@@ -372,13 +372,13 @@ export function NationalTerritoryExperience({ selectedCitySlug, onSelectCity, on
             </button>
           ) : null}
           <div className="min-w-0 flex-1">
-            <p className="text-[9px] font-extrabold uppercase tracking-[0.16em] text-brand-primary">Carte territoriale AkarFinder</p>
+            <p className="text-[9px] font-extrabold uppercase tracking-[0.16em] text-brand-primary">Vivre ici · territoire</p>
             <h1 className="mt-0.5 truncate text-[16px] font-extrabold tracking-[-0.025em] text-foreground">
-              {payload?.view === "city" ? payload.place.name : "Explorer le Maroc par ville"}
+              {payload?.view === "city" ? `Vivre à ${payload.place.name}` : "Où vivre au Maroc ?"}
             </h1>
             <p className="mt-1 text-[10.5px] font-semibold leading-4 text-muted-foreground">
               {payload?.view === "city"
-                ? `${payload.place.neighborhoodCount.toLocaleString("fr-FR")} quartiers / labels répertoriés · contours OSM candidats`
+                ? `${payload.place.neighborhoodCount.toLocaleString("fr-FR")} quartiers répertoriés · repères de vie locale selon disponibilité`
                 : payload?.view === "morocco"
                   ? `${payload.meta.cityCount} villes / localités cartographiées · ${payload.meta.boundaryCount} contours qualifiés`
                   : "Chargement du registre territorial…"}
@@ -388,11 +388,11 @@ export function NationalTerritoryExperience({ selectedCitySlug, onSelectCity, on
         {payload?.view === "city" ? (
           <Link href={searchHref} className="mt-3 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-xl bg-brand-primary px-4 text-[11.5px] font-extrabold text-white shadow-accent">
             <Search size={14} aria-hidden="true" />
-            Rechercher à {payload.place.name}
+            Voir les biens à {payload.place.name}
           </Link>
         ) : (
           <p className="mt-2 rounded-xl bg-brand-primary-soft px-3 py-2 text-[10px] font-bold leading-4 text-brand-primary">
-            Desktop : survolez puis cliquez. Mobile : premier tap pour révéler, second tap pour entrer.
+            Desktop : survolez ou cliquez. Mobile : touchez une ville puis entrez.
           </p>
         )}
       </section>
