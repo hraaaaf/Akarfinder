@@ -1,0 +1,51 @@
+name: Vivre Ici Cesium Spike
+
+on:
+  push:
+    branches:
+      - spike/vivre-ici-cesium-target
+    paths:
+      - 'app/map/cesium-spike/**'
+      - 'components/map/CesiumMaarifSpike.tsx'
+      - 'scripts/vivre-ici-cesium-spike-capture.mjs'
+      - '.github/workflows/vivre-ici-cesium-spike.yml'
+      - 'lib/geo/casablanca-neighborhood-geometry-shadow.ts'
+      - 'data/geo/casablanca-arrondissements-osm.json'
+  workflow_dispatch:
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Build
+        run: npm run build
+
+      - name: Capture Cesium spike
+        run: node scripts/vivre-ici-cesium-spike-capture.mjs
+
+      - name: Upload visual artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vivre-ici-cesium-spike
+          path: artifacts/vivre-ici-cesium-spike
+          if-no-files-found: error
