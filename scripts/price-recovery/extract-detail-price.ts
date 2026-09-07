@@ -125,8 +125,12 @@ function agenzPrimaryBlockCandidate($: cheerio.CheerioAPI, intent: string | null
     if (!own || own.length > 120) continue;
     if (/^(?:ref\.?|réf\.?|reference)\b/i.test(own)) break;
 
-    const around = normalizeText(`${$(el).parent().text()} ${$(el).prev().text()}`).slice(0, 300);
-    if (/syndic|charges?\b|mensualit|mortgage|crédit|credit|loyer\s+potentiel|potential\s+rent/i.test(around)) continue;
+    const localContext = normalizeText([
+      $(el).prev().text(),
+      own,
+      $(el).next().text(),
+    ].join(' ')).slice(0, 300);
+    if (/syndic|charges?\b|mensualit|mortgage|crédit|credit|loyer\s+potentiel|potential\s+rent/i.test(localContext)) continue;
     if (/\/\s*m(?:²|2)|par\s*m(?:²|2)/i.test(own)) continue;
 
     MONEY.lastIndex = 0;
