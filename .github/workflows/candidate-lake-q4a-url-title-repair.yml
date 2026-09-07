@@ -1,0 +1,52 @@
+name: AkarFinder - Q4A URL Title Repair
+
+on:
+  push:
+    branches:
+      - data/q4a-minimal-search-ready
+    paths:
+      - 'scripts/audits/candidate-lake-q4a-url-title-repair.py'
+      - '.github/workflows/candidate-lake-q4a-url-title-repair.yml'
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download frozen inputs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p .tmp/q4a-repair-input/q1d .tmp/q4a-repair-input/public .tmp/q4a-repair-input/dbrec
+          gh api repos/${{ github.repository }}/actions/artifacts/10022063956/zip > /tmp/q1d.zip
+          unzip -q /tmp/q1d.zip -d .tmp/q4a-repair-input/q1d
+          gh api repos/${{ github.repository }}/actions/artifacts/10021998663/zip > /tmp/public.zip
+          unzip -q /tmp/public.zip -d .tmp/q4a-repair-input/public
+          gh api repos/${{ github.repository }}/actions/artifacts/10025190623/zip > /tmp/dbrec.zip
+          unzip -q /tmp/dbrec.zip -d .tmp/q4a-repair-input/dbrec
+      - name: Repair literal fields from exact URL and title
+        run: python scripts/audits/candidate-lake-q4a-url-title-repair.py
+      - name: Verify repair invariants
+        run: |
+          python - <<'PY'
+          import json
+          s=json.load(open('.tmp/q4a-url-title-repair/summary.json'))
+          assert s['inputRepresentations']==251046
+          assert s['baselineSearchReady']==70537
+          assert s['repairedSearchReady']>=s['baselineSearchReady']
+          assert s['netNewSearchReady']==s['repairedSearchReady']-s['baselineSearchReady']
+          assert s['sourceSiteFetches']==0 and s['databaseWrites']==0 and s['productionWrites']==0 and s['vercelDeployments']==0
+          assert s['urlInvented'] is False
+          assert s['freshnessIsGate'] is False and s['liveConfidenceIsGate'] is False and s['clusteringIsGate'] is False
+          print(json.dumps(s,indent=2,ensure_ascii=False))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: candidate-lake-q4a-url-title-repair
+          path: .tmp/q4a-url-title-repair/
+          retention-days: 30
