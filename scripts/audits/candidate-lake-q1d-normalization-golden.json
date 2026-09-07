@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "q1d-normalization-golden-v1",
+  "cases": [
+    {"field":"city","input":"Casablanca","expected":"casablanca"},
+    {"field":"city","input":"Marrakech","expected":"marrakech"},
+    {"field":"property_type","input":"Appartement","expected":"appartement"},
+    {"field":"transaction_type","input":"À vendre","expected":"a vendre"},
+    {"field":"district","input":"Maârif","expected":"maarif"}
+  ],
+  "note": "Golden text normalization only. No semantic city/type remapping is inferred here."
+}
