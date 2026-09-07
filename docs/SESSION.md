@@ -2,93 +2,96 @@
 
 **Mise à jour : 2026-09-07**
 
-> `docs/ROADMAP.md` est l’unique vérité canonique globale. Ce fichier est uniquement un handover opérationnel court.
+> `docs/ROADMAP.md` reste la vérité canonique globale. Ce fichier est un handover opérationnel court.
 
-## État de reprise
+## État global
 
-**M250K est CLOSED et FROZEN.**
+**M250K est CLOSED + FROZEN à 253 372 représentations candidates L0/L1.**
 
-- compteur canonique : **253 372 représentations candidates L0/L1** ;
 - Mubawab : **76 816 IDs source exacts** ;
 - Avito : **46 904 IDs source exacts** ;
-- expansion datasets GitHub publics : **+85 536 exact-net-new** au-dessus des baselines déjà comptées ;
 - `253 372 != biens physiques uniques` ;
-- historique/public-dataset reste L0 tant qu’aucune preuve récente ne justifie `fresh`/`active`.
+- historique/public-dataset reste L0 tant qu’aucune preuve récente ne justifie `fresh`/`active` ;
+- DATA4.9B reste **2 326 aggregate-only**, non matérialisé row-level et sans placeholder.
 
-ROADMAP post-M250K : commit `0d1a91b4b49c75ccac34c16e950b91fe4262a6c8`.
+## Q1A — Candidate Lake materializable — ✅ CERTIFIED
 
-## Dernières preuves à connaître
+- Run corrigé : `34125731609` ; artifact `10020001261`.
+- **251 046 rows / 251 046 unique representation keys / 0 cross-lane duplicate**.
+- SHA256 manifest : `28d55d66a14e7d398db85183a65e07dcd019ef947dfbda2d4c10a6dc7cfadc1c`.
+- `akaar.fr` restauré depuis la preuve artifact ; faux `source_domain='mixed'` supprimés sans changer le compteur.
 
-- M250K fermeture / Avito public batch : run `34040405000`, artifact `9991488198`, SHA256 `63906e15b14fc772ddd4d49f0c05bee236e95ab478ad989ba56bfe32208f6543`, **+4 784 Avito exact-net-new** ;
-- Mubawab public batch : run `34040263021`, artifact `9991447841`, **+15 514 exact-net-new** ;
-- Marwane Mubawab : run `34040109352`, artifact `9991403015`, **+4 089** ;
-- Hicham public dumps : run `34039440480`, artifact `9991207598`, **+17 394 Mubawab +22 381 Avito** ;
-- RealEstateBuddy : run `34038898808`, artifact `9991042950`, **+21 374 Mubawab** ;
-- MASS-1 exact reconcile : run `34029546664`, artifact `9988296190`, **+1 613** ;
-- Historical Gap Hunt : run `34030138761`, artifact `9988514932`, **1immo +3 471** ;
-- Agenz exact delta : artifact `9989328673` vs baseline `9898224274`, **+3 819**.
-
-## Lot 11 / Q1A Candidate Lake manifest freeze — CERTIFIED
-
-- DB-backed export exact: **14 987 / 14 987**, run `34059828610`, artifact `9997114366`.
-- 1immo freeze-time exact: **3 471 / 3 471**, run `34062181098`, artifact `9998238197`.
-- MASS-X2 exact: **73 / 73**, run `34063582288`, artifact `9998233478`.
-- DATA4.9B reste **2 326 aggregate-only** : aucune identité row-level récupérable, aucun placeholder autorisé.
-- Plafond honnête : **251 046 matérialisables + 2 326 aggregate-only = 253 372 comptables gelées**.
-- Manifest Q1A corrigé et recertifié : run `34125731609`, artifact `10020001261`, **251 046 rows / 251 046 unique representation keys / 0 cross-lane duplicate**, SHA256 `28d55d66a14e7d398db85183a65e07dcd019ef947dfbda2d4c10a6dc7cfadc1c`.
-- Correction Q1A : `akaar.fr` restauré depuis son artifact exact et suppression des faux domaines `mixed`, sans changer le nombre de lignes ni créer de doublon.
-- Le run antérieur `34118173681` / artifact `10017109800` est superseded.
-
-## Lot 11 / Q1B provenance + temporal cohort — CERTIFIED
+## Q1B — Provenance + temporal cohort — ✅ CERTIFIED
 
 - Branche : `data/q1b-provenance-temporal-cohort`.
-- Run : **`34126402435` SUCCESS**.
-- Artifact : **`10020251605`**.
-- Artifact ZIP digest : `sha256:60fc2a45a2441d47335f9b4b17fd3d71afb6498ef634fd86fde01eae22d8ab5b`.
-- Manifest Q1B : **251 046 input -> 251 046 output**, **251 046 clés uniques**.
-- SHA256 manifest : **`a11fa40efc083e1538d7df6485557c1a612957fc3f7a0f5bb91fa4da7e6a9fc5`**.
-- `representationKeysPreserved=true` ; `sourceIdentitiesPreserved=true`.
-- `dbBackedRowsMatched=14 987` avec sous-cohortes exactes **5 797 B3 / 6 270 canonical-link / 2 920 current seeds**.
-- `normalizedSourceDomainCorrections=0` après la correction Q1A.
-- Couverture temporelle : **14 987 exact_observed_at + 98 606 evidence_timestamp + 137 453 cohort_only = 251 046**, donc **0 ligne unknown**.
-- Les timestamps `evidence_timestamp` datent la preuve/artifact, **pas la fraîcheur de l'annonce**.
+- Run `34126402435` SUCCESS ; artifact `10020251605`.
+- **251 046 -> 251 046** ; identités et representation keys préservées.
+- DB-backed row-level : **14 987 / 14 987**.
+- Temporal coverage : **14 987 exact_observed_at + 98 606 evidence_timestamp + 137 453 cohort_only = 251 046** ; unknown = 0.
+- SHA256 manifest : `a11fa40efc083e1538d7df6485557c1a612957fc3f7a0f5bb91fa4da7e6a9fc5`.
 - `freshnessInferred=false` ; `authorizationInferred=false`.
-- `databaseWrites=0` ; `productionWrites=0` ; `sourceSiteFetches=0` ; `vercelDeployments=0`.
 
-## État du live / policy — READ-ONLY CHECK
+## Q1C — Exact identity dedupe / canonical keys — ✅ CERTIFIED
+
+- Branche : `data/q1c-exact-identity-dedupe`.
+- Run `34126920547` SUCCESS ; artifact `10020459850`.
+- **251 046 input -> 251 046 output**.
+- Exact duplicate groups : **0** ; exact rows removed : **0**.
+- 15 068 URL normalization variants observées mais **0 collision** ; elles restent diagnostiques et ne réécrivent pas l’identité gelée.
+- SHA256 manifest : `a819c1f464e2e8eeb29c9747800ac71fc0d5727e5f85e4f2baab2762f9b80a36`.
+
+## Q1D — Normalized property features + fingerprints — ✅ CERTIFIED
+
+- Branche : `data/q1d-normalized-features-fingerprints`.
+- Public structured feature export : run `34130789679` SUCCESS ; artifact `10021998663`.
+- Public dataset feature pool : **75 440 exact source IDs** = **51 899 Mubawab + 23 541 Avito**, depuis 8 datasets GitHub publics pinés par commit ; `phoneFieldsExported=false`.
+- Final assembly : run `34130980612` SUCCESS ; artifact **`10022063956`** ; artifact ZIP digest `sha256:786cba78a8cde4313a275bffb9dbb1fbfb55b1593bc15971ed9fd3128107895f`.
+- Manifest Q1D : **251 046 input -> 251 046 output**.
+- **101 349 représentations enrichies**, **149 697 sparse/unmatched**.
+- Coverage : city **98 984** ; district **67 371** ; property_type **81 033** ; transaction **75 089** ; price **76 439** ; surface **82 778** ; bedrooms **69 678** ; bathrooms **64 626** ; rooms **37 769** ; title **47 271** ; lat/lon **22 673**.
+- Fingerprints : **95 717 rows** avec au moins une empreinte ; location/type `79 972`, numeric `71 253`, title `43 787`, geo `22 673`.
+- Match bases exactes seulement : URL canonique DB, source ID dataset public, ou source ID extrait d’URL DB ; ambiguous keys exclues séparément.
+- `missingDataInvented=false` ; `freshnessInferred=false` ; `authorizationInferred=false` ; `physicalPropertyMergePerformed=false`.
+- `databaseWrites=0` ; `productionWrites=0` ; `sourceSiteFetches=0` ; `vercelDeployments=0`.
+- SHA256 manifest : `36a4a0b153403d4989cacc416e2a441740cc160dc89e51b734d1b26247a7056a`.
+- Le ref de branche a été remis en fast-forward sur le commit de certification `551543168cbc970deaafc40a1ce714b3b975732a` après un recul accidentel d’un commit ; aucun force push.
+
+## État live / policy — lecture seule
 
 - `search_public_representations_v2` servait **2 153** représentations lors du contrôle du 2026-09-07.
-- Le gateway actuel exige encore notamment `freshness_status='fresh_confirmed'` puis un gate strict via `source_policy_registry`.
-- `source_policy_registry` a RLS ON.
-- `source_public_index_owner_override_v1` et `mubawab_public_minimal_index_v1` ont toujours RLS OFF ; risque gardé ouvert, aucune modification à l'aveugle.
-- Aucune policy `permission_required` / `prohibited` n'a été transformée en autorisée.
+- Le gateway live exige encore notamment `freshness_status='fresh_confirmed'` + gate strict `source_policy_registry`.
+- `source_policy_registry` : RLS ON.
+- `source_public_index_owner_override_v1` et `mubawab_public_minimal_index_v1` : RLS OFF, risque encore ouvert ; aucune mutation faite.
+- Aucune policy `permission_required` / `prohibited` n’a été transformée en autorisée.
 
 ## Séquence active
 
-1. ✅ **Q1A** Candidate Lake manifest materializable.
-2. ✅ **Q1B** provenance + temporal cohort normalization.
-3. 🔵 **Q1C** exact identity dedupe / canonical keys.
-4. Puis **Q1D** normalized features + fingerprints.
-5. Puis **Q2A/Q2B/Q2C** blocking + clustering conservateur + QA -> `probable_unique`.
-6. Puis **Q3A/Q3B** freshness evidence + `live_confidence`.
-7. Puis **Q4A/Q4B** search eligibility shadow + ranking rehearsal.
-8. **Q4C production gate séparé** uniquement après preuves.
+1. ✅ Q1A Candidate Lake manifest.
+2. ✅ Q1B provenance/cohorte.
+3. ✅ Q1C exact dedupe/canonical keys.
+4. ✅ Q1D normalized features/fingerprints.
+5. 🔵 **Q2A candidate-pair blocking**.
+6. Puis Q2B clustering V1 conservateur -> `probable_unique`.
+7. Puis Q2C cluster QA / false-merge control.
+8. Puis Q3A/Q3B freshness evidence + `live_confidence`.
+9. Puis Q4A/Q4B search eligibility shadow + ranking rehearsal.
+10. Q4C production gate séparé uniquement après preuves.
 
 ## Invariants
 
 - `candidate != active` ;
 - `URL != property unique` ;
-- pas de suppression destructive pendant le clustering ;
+- pas de suppression destructive pendant clustering ;
 - aucune donnée absente inventée ;
 - aucune preuve de pipeline transformée en fraîcheur listing ;
 - respect robots / surfaces publiques ;
 - aucun bypass login/CAPTCHA/paywall/anti-bot/API privée ;
 - aucune écriture Supabase/prod ou policy registry sans gate humain explicite ;
 - aucun Vercel sans autorisation explicite ;
-- CI pending n'arrête pas les lots indépendants.
+- CI pending n’arrête pas les lots indépendants.
 
 ## Reprise immédiate
 
-**Continuer Q1C à partir de l'artifact Q1B `10020251605`.** Produire des clés canoniques exactes et mesurer les collisions sans fusion approximative. Si l'exact dedupe est déjà nul, le certifier au lieu de forcer artificiellement une réduction. DATA4.9B reste séparé et non matérialisé.
+**Commencer Q2A à partir de l’artifact Q1D `10022063956`.** Construire des blocks conservateurs à partir des seules features présentes, publier nombre de blocks/paires, distribution et réduction versus `251046²`, et garder les lignes trop sparse en singleton/no-block au lieu d’inventer des features. Aucun merge physique ni écriture prod dans Q2A.
 
 **Boussole : 253 372 FROZEN -> Candidate Lake -> probable_unique -> live_confidence -> search eligibility shadow.**
