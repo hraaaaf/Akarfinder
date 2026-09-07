@@ -114,7 +114,7 @@ function agenzPrimaryBlockCandidate($: cheerio.CheerioAPI, intent: string | null
   const headingIndex = nodes.findIndex(el => {
     if (!el || el.type !== 'tag' || !$(el).is('h1')) return false;
     const text = normalizeText($(el).text());
-    return /\b(for\s+sale|for\s+rent|à\s+vendre|à\s+louer)\b/i.test(text);
+    return /(?:\bfor\s+sale\b|\bfor\s+rent\b|à\s+vendre\b|à\s+louer\b)/i.test(text);
   });
   if (headingIndex < 0) return null;
 
