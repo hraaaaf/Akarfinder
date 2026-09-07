@@ -1,0 +1,58 @@
+name: AkarFinder - Q3A Freshness Evidence
+
+on:
+  push:
+    branches: [data/q3a-freshness-evidence]
+    paths:
+      - 'scripts/audits/candidate-lake-q3a-freshness-evidence.py'
+      - 'scripts/audits/candidate-lake-q3a-smoke-test.py'
+      - '.github/workflows/candidate-lake-q3a-freshness-assemble.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  assemble:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      Q3A_Q1D_ROOT: .tmp/q3a-input/q1d
+      Q3A_Q2C_ROOT: .tmp/q3a-input/q2c
+      Q3A_DB_ROOT: .tmp/q3a-input/db
+      Q3A_OUT: .tmp/q3a-freshness
+      Q1D_ARTIFACT_ID: '10022063956'
+      Q2C_ARTIFACT_ID: '10023858578'
+      Q3A_DB_ARTIFACT_ID: '10024371424'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download exact certified inputs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$Q3A_Q1D_ROOT" "$Q3A_Q2C_ROOT" "$Q3A_DB_ROOT" .tmp/downloads
+          download_artifact() {
+            local id="$1" dest="$2" label="$3"
+            curl --fail --location --retry 3 \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              -H 'Accept: application/vnd.github+json' \
+              -H 'X-GitHub-Api-Version: 2022-11-28' \
+              "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/${id}/zip" \
+              -o ".tmp/downloads/${label}.zip"
+            unzip -q ".tmp/downloads/${label}.zip" -d "$dest"
+          }
+          download_artifact "$Q1D_ARTIFACT_ID" "$Q3A_Q1D_ROOT" q1d
+          download_artifact "$Q2C_ARTIFACT_ID" "$Q3A_Q2C_ROOT" q2c
+          download_artifact "$Q3A_DB_ARTIFACT_ID" "$Q3A_DB_ROOT" db
+      - name: Assemble exact dated freshness evidence
+        run: python scripts/audits/candidate-lake-q3a-freshness-evidence.py
+      - name: Verify Q3A no-inference invariants
+        run: python scripts/audits/candidate-lake-q3a-smoke-test.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: candidate-lake-q3a-freshness-evidence
+          path: .tmp/q3a-freshness/
+          retention-days: 30
+          if-no-files-found: error
