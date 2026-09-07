@@ -16,9 +16,9 @@ const WORLD_IMAGERY_ATTRIBUTION = "© Esri, Maxar, Earthstar Geographics, GIS Us
 // truth-safe anchor while using composition only to open the city/coast context.
 // Zoom 14+ keeps detailed building tiles available for real 3D depth.
 // No boundary, property position or metric is inferred by this presentation camera.
-const CASABLANCA_3D_ZOOM = 14.1;
-const CASABLANCA_3D_PITCH = 60;
-const CASABLANCA_3D_BEARING = -8;
+const CASABLANCA_3D_ZOOM = 14.0;
+const CASABLANCA_3D_PITCH = 52;
+const CASABLANCA_3D_BEARING = -12;
 
 const IMMERSIVE_LIGHT: LightSpecification = {
   anchor: "viewport",
@@ -260,7 +260,7 @@ export function National3DBuildingsLayer({ citySlug, districtSlug }: Props) {
           zoom: focusedDistrict ? CASABLANCA_3D_ZOOM : Math.max(map.getZoom(), 12.8),
           pitch: CASABLANCA_3D_PITCH,
           bearing: CASABLANCA_3D_BEARING,
-          offset: focusedDistrict ? [0, window.innerWidth >= 1024 ? 128 : 52] : [0, 0],
+          offset: focusedDistrict ? [0, window.innerWidth >= 1024 ? 150 : 64] : [0, 0],
           duration: 1000,
         });
       } else {
