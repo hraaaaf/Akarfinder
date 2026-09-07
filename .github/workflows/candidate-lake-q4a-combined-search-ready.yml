@@ -1,0 +1,54 @@
+name: AkarFinder - Q4A Combined Search Ready
+
+on:
+  push:
+    branches:
+      - data/q4a-minimal-search-ready
+    paths:
+      - 'scripts/audits/candidate-lake-q4a-combined-search-ready.py'
+      - '.github/workflows/candidate-lake-q4a-combined-search-ready.yml'
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download frozen inputs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p .tmp/q4a-combined/q1d .tmp/q4a-combined/public .tmp/q4a-combined/dbrec .tmp/q4a-combined/repair .tmp/q4a-combined/dbfield
+          gh api repos/${{ github.repository }}/actions/artifacts/10022063956/zip > /tmp/q1d.zip
+          unzip -q /tmp/q1d.zip -d .tmp/q4a-combined/q1d
+          gh api repos/${{ github.repository }}/actions/artifacts/10021998663/zip > /tmp/public.zip
+          unzip -q /tmp/public.zip -d .tmp/q4a-combined/public
+          gh api repos/${{ github.repository }}/actions/artifacts/10025190623/zip > /tmp/dbrec.zip
+          unzip -q /tmp/dbrec.zip -d .tmp/q4a-combined/dbrec
+          gh api repos/${{ github.repository }}/actions/artifacts/10026608098/zip > /tmp/repair.zip
+          unzip -q /tmp/repair.zip -d .tmp/q4a-combined/repair
+          gh api repos/${{ github.repository }}/actions/artifacts/10026575439/zip > /tmp/dbfield.zip
+          unzip -q /tmp/dbfield.zip -d .tmp/q4a-combined/dbfield
+      - name: Build combined corpus
+        run: python scripts/audits/candidate-lake-q4a-combined-search-ready.py
+      - name: Verify single product gate
+        run: |
+          python - <<'PY'
+          import json
+          s=json.load(open('.tmp/q4a-combined-out/summary.json'))
+          assert s['searchReady'] == 72472
+          assert s['strictDbNetNew'] == 48
+          assert s['rule'] == 'url + city + price_mad>0 + surface_m2>0'
+          assert s['freshnessIsGate'] is False and s['liveConfidenceIsGate'] is False and s['clusteringIsGate'] is False
+          assert s['databaseWrites']==0 and s['productionWrites']==0 and s['sourceSiteFetches']==0 and s['vercelDeployments']==0
+          print(json.dumps(s,indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: candidate-lake-q4a-combined-search-ready
+          path: .tmp/q4a-combined-out/
+          retention-days: 30
