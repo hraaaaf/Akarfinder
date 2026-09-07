@@ -7,6 +7,7 @@ DBREC=Path(os.getenv('Q4A_DBREC_ROOT','.tmp/q4a-combined/dbrec'))
 REPAIR=Path(os.getenv('Q4A_REPAIR_ROOT','.tmp/q4a-combined/repair'))
 DBFIELD=Path(os.getenv('Q4A_DBFIELD_ROOT','.tmp/q4a-combined/dbfield'))
 AVITO=Path(os.getenv('Q4A_AVITO_PUBLIC_ROOT','.tmp/q4a-combined/avito'))
+VERIFIED=Path(os.getenv('Q4A_VERIFIED_ROOT','.tmp/q4a-combined/verified'))
 OUT=Path(os.getenv('Q4A_COMBINED_OUT','.tmp/q4a-combined-out'))
 EXPECTED=251_046
 
@@ -21,9 +22,10 @@ rec={r['representation_key']:r['url'] for r in jl(DBREC/'recovered-search-ready.
 repair={r['row_index']:r for r in jl(REPAIR/'new-search-ready.jsonl')}
 db={r['url'].strip().lower():r for r in jl(DBFIELD/'db-url-field-evidence.jsonl')}
 avito={r['row_index']:r for r in jl(AVITO/'exact-crossmatches.jsonl')}
+verified={r['url'].strip().lower():r for r in jl(VERIFIED/'verified-repairs.jsonl')}
 
 OUT.mkdir(parents=True,exist_ok=True)
-h=hashlib.sha256();ready=0;dbadd=0;dbadd_by={};avadd=0;avadd_by={};missing={}
+h=hashlib.sha256();ready=0;dbadd=0;dbadd_by={};avadd=0;avadd_by={};vadd=0;vadd_by={};missing={}
 with open(OUT/'search-ready-combined.jsonl','w',encoding='utf-8') as o:
  for i,r in enumerate(jl(Q1D/'manifest-q1d.jsonl')):
   f=r['features'];key=r['representation_key'];sid=r['source_identity'];dom=r['normalized_source_domain']
@@ -44,9 +46,18 @@ with open(OUT/'search-ready-combined.jsonl','w',encoding='utf-8') as o:
    c=c or a.get('public_city')
    p=p if good(p) else a.get('public_price_mad')
    s=s if good(s) else a.get('public_surface_m2')
-  now=bool(url and c and good(p) and good(s))
-  if now and not after_db and a:
+  after_avito=bool(url and c and good(p) and good(s))
+  if after_avito and not after_db and a:
    avadd+=1;avadd_by[dom]=avadd_by.get(dom,0)+1
+
+  v=verified.get(url.strip().lower()) if url else None
+  if v:
+   c=v.get('city') or c
+   p=v.get('price_mad') if good(v.get('price_mad')) else p
+   s=v.get('surface_m2') if good(v.get('surface_m2')) else s
+  now=bool(url and c and good(p) and good(s))
+  if now and not after_avito and v:
+   vadd+=1;vadd_by[dom]=vadd_by.get(dom,0)+1
 
   if now:
    ready+=1
@@ -60,5 +71,5 @@ with open(OUT/'search-ready-combined.jsonl','w',encoding='utf-8') as o:
    if not good(s):miss.append('surface')
    k='+'.join(miss);missing[k]=missing.get(k,0)+1
 assert i+1==EXPECTED
-summary={'schemaVersion':'q4a-combined-search-ready-v2-avito-public','inputRepresentations':EXPECTED,'searchReady':ready,'strictDbNetNew':dbadd,'strictDbNetNewByDomain':dbadd_by,'avitoPublicNetNew':avadd,'avitoPublicNetNewByDomain':avadd_by,'remainingMissingPatterns':dict(sorted(missing.items(),key=lambda kv:(-kv[1],kv[0]))),'rule':'url + city + price_mad>0 + surface_m2>0','freshnessIsGate':False,'liveConfidenceIsGate':False,'clusteringIsGate':False,'databaseWrites':0,'productionWrites':0,'sourceSiteFetches':0,'publicGitHubDatasetEvidence':True,'vercelDeployments':0,'sha256':h.hexdigest()}
+summary={'schemaVersion':'q4a-combined-search-ready-v3-verified','inputRepresentations':EXPECTED,'searchReady':ready,'strictDbNetNew':dbadd,'strictDbNetNewByDomain':dbadd_by,'avitoPublicNetNew':avadd,'avitoPublicNetNewByDomain':avadd_by,'verifiedRepairNetNew':vadd,'verifiedRepairNetNewByDomain':vadd_by,'remainingMissingPatterns':dict(sorted(missing.items(),key=lambda kv:(-kv[1],kv[0]))),'rule':'url + city + price_mad>0 + surface_m2>0','freshnessIsGate':False,'liveConfidenceIsGate':False,'clusteringIsGate':False,'databaseWrites':0,'productionWrites':0,'sourceSiteFetches':0,'publicGitHubDatasetEvidence':True,'verifiedManualEvidence':True,'vercelDeployments':0,'sha256':h.hexdigest()}
 (OUT/'summary.json').write_text(json.dumps(summary,indent=2,ensure_ascii=False)+'\n',encoding='utf-8');print(json.dumps(summary,indent=2,ensure_ascii=False))
