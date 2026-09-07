@@ -1,0 +1,103 @@
+/* VIVRE ICI — 2L.4 TARGET convergence.
+   Visual-only correction from real TARGET ↔ AFTER comparison.
+   No geographic, property, market, price, score, distance or weather data is created here. */
+
+/* The locked target is brighter and calmer than 2L.3. Preserve the real Esri imagery,
+   but lift it optically instead of manufacturing a replacement scene. */
+[data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) [data-akarfinder-national-map] .maplibregl-canvas {
+  filter: saturate(.90) contrast(.87) brightness(1.19) sepia(.025) !important;
+}
+
+@media (min-width: 1024px) {
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) {
+    grid-template-columns: minmax(0, 1fr) 360px !important;
+    gap: 8px !important;
+    padding: 10px 10px 10px 12px !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-map-decision-rail,
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-map-decision-rail:has(.p4-premium-local-guide) {
+    height: calc(100dvh - 83px) !important;
+    overflow-y: auto !important;
+    scrollbar-width: none !important;
+    padding: 25px 18px 18px !important;
+    border-radius: 22px !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-map-decision-rail::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-premium-context-header h2 {
+    margin-top: 5px !important;
+    font-size: 39px !important;
+    line-height: .98 !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-premium-context-header > p:last-child {
+    margin-top: 13px !important;
+    max-width: 36ch !important;
+    font-size: 11.5px !important;
+    line-height: 1.48 !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-premium-tabs {
+    margin-top: 16px !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-premium-signal-grid {
+    margin-top: 14px !important;
+  }
+
+  /* 2L.3 hid the only truthful market-state card, leaving an artificial empty rail.
+     Re-expose the existing fail-closed copy instead of inventing target metrics. */
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-premium-market-card {
+    display: grid !important;
+    margin-top: 15px !important;
+    padding: 13px 14px !important;
+    gap: 5px !important;
+    border: 1px solid rgb(217 216 207 / .76) !important;
+    border-radius: 15px !important;
+    background: #fbfaf6 !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-premium-actions {
+    margin-top: 15px !important;
+  }
+}
+
+@media (max-width: 1023px) {
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) [data-akarfinder-national-map] .maplibregl-canvas {
+    filter: saturate(.91) contrast(.88) brightness(1.17) sepia(.018) !important;
+  }
+
+  /* The target mobile experience is a genuine editorial sheet, not a one-line toolbar. */
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) [data-akarfinder-neighborhood-preview] {
+    bottom: 70px !important;
+    max-height: min(34svh, 278px) !important;
+    padding: 18px 15px 14px !important;
+    border-radius: 27px !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) [data-akarfinder-neighborhood-preview] > p:nth-of-type(2) {
+    display: block !important;
+    margin-top: 7px !important;
+    font-size: 9.5px !important;
+    line-height: 1.42 !important;
+    color: rgb(72 77 76) !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) [data-vivre-ici-neighborhood-truth-grid] {
+    margin-top: 11px !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) [data-vivre-ici-neighborhood-truth-grid] > div {
+    min-height: 52px !important;
+  }
+}
+
+@media (max-width: 430px) {
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) [data-akarfinder-neighborhood-preview] {
+    max-height: min(35svh, 268px) !important;
+  }
+}
