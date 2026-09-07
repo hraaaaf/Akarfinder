@@ -1,0 +1,22 @@
+name: AkarFinder - Q1D Tests
+
+on:
+  push:
+    branches: [data/q1d-normalized-features-fingerprints]
+    paths:
+      - 'scripts/audits/candidate-lake-q1d-normalization-golden.json'
+      - 'scripts/audits/candidate-lake-q1d-golden-test.py'
+      - 'scripts/audits/candidate-lake-q1d-smoke-test.py'
+      - '.github/workflows/candidate-lake-q1d-tests.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  golden:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run deterministic normalization golden cases
+        run: python scripts/audits/candidate-lake-q1d-golden-test.py
