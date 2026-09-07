@@ -13,20 +13,28 @@ async function main(){
  const url=process.env.SUPABASE_URL,key=process.env.SUPABASE_SERVICE_ROLE_KEY
  if(!url||!key)throw new Error('Supabase credentials required')
  const sb=createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}})
- async function all(table:string,select:string,order:string){const out:any[]=[];const size=1000;for(let from=0;;from+=size){const {data,error}=await sb.from(table).select(select).order(order,{ascending:true}).range(from,from+size-1);if(error)throw new Error(`${table}: ${error.message}`);const b=data||[];out.push(...b);if(b.length<size)break}return out}
- const thin=await all('thin_index_search_documents','seed_id,canonical_url,city,recovered_city,normalized_city,price_mad,normalized_price_mad,surface_m2,normalized_surface_m2,document_kind','seed_id')
+ async function all(table:string,select:string,order:string,filter?:{column:string,value:string}){
+  const out:any[]=[];const size=1000
+  for(let from=0;;from+=size){
+   let q:any=sb.from(table).select(select).order(order,{ascending:true}).range(from,from+size-1)
+   if(filter) q=q.eq(filter.column,filter.value)
+   const {data,error}=await q
+   if(error)throw new Error(`${table}: ${error.message}`)
+   const b=data||[];out.push(...b);if(b.length<size)break
+  }
+  return out
+ }
+ const thin=await all('thin_index_search_documents','seed_id,canonical_url,city,recovered_city,normalized_city,price_mad,normalized_price_mad,surface_m2,normalized_surface_m2,document_kind','seed_id',{column:'document_kind',value:'LISTING'})
  const props=await all('property_listings','id,city,price_mad,surface_m2','id')
- const sources=await all('listing_sources','id,property_listing_id,listing_url,source_url,displayed_price,price_currency,canonical_kind','id')
+ const sources=await all('listing_sources','id,property_listing_id,listing_url,source_url,displayed_price,price_currency,canonical_kind','id',{column:'canonical_kind',value:'detail'})
  const pmap=new Map(props.map((p:any)=>[String(p.id),p]))
  const city=new Map<string,Set<string>>(), price=new Map<string,Set<string>>(), surface=new Map<string,Set<string>>(), evidence=new Map<string,Set<string>>()
- let thinAccepted=0,sourceAccepted=0,thinRejectedNonListing=0,sourceRejectedNonDetail=0
+ let thinAccepted=0,sourceAccepted=0
  for(const r of thin){
-  if(r.document_kind!=='LISTING'){thinRejectedNonListing++;continue}
   const u=cleanUrl(r.canonical_url);if(!u)continue;thinAccepted++
   add(city,u,text(r.normalized_city)||text(r.recovered_city)||text(r.city));add(price,u,pos(r.normalized_price_mad)||pos(r.price_mad));add(surface,u,pos(r.normalized_surface_m2)||pos(r.surface_m2));add(evidence,u,'thin_index_search_documents:LISTING')
  }
  for(const s of sources){
-  if(s.canonical_kind!=='detail'){sourceRejectedNonDetail++;continue}
   const raw=s.listing_url||s.source_url,u=cleanUrl(raw);if(!u)continue;const p:any=pmap.get(String(s.property_listing_id));if(!p)continue;sourceAccepted++
   add(city,u,text(p.city));const displayed=String(s.price_currency||'MAD').toUpperCase()==='MAD'?pos(s.displayed_price):null;add(price,u,displayed||pos(p.price_mad));add(surface,u,pos(p.surface_m2));add(evidence,u,'listing_sources:detail+property_listings')
  }
@@ -39,7 +47,7 @@ async function main(){
  }
  await mkdir(OUT,{recursive:true});const body=rows.map(r=>JSON.stringify(r)).join('\n')+(rows.length?'\n':'');await writeFile(path.join(OUT,'db-url-field-evidence.jsonl'),body)
  const h=createHash('sha256').update(body).digest('hex')
- const summary={schemaVersion:'q4a-db-field-export-v2-individual-only',thinRows:thin.length,propertyRows:props.length,listingSourceRows:sources.length,thinAccepted,sourceAccepted,thinRejectedNonListing,sourceRejectedNonDetail,uniqueUrls:rows.length,urlsWithCity:rows.filter(r=>r.city).length,urlsWithPrice:rows.filter(r=>r.price_mad).length,urlsWithSurface:rows.filter(r=>r.surface_m2).length,ambiguousCityUrls:ambCity,ambiguousPriceUrls:ambPrice,ambiguousSurfaceUrls:ambSurface,individualListingEvidenceOnly:true,databaseReadsOnly:true,databaseWrites:0,productionWrites:0,sourceSiteFetches:0,vercelDeployments:0,sha256:h}
+ const summary={schemaVersion:'q4a-db-field-export-v3-server-filtered-individual-only',thinRows:thin.length,propertyRows:props.length,listingSourceRows:sources.length,thinAccepted,sourceAccepted,uniqueUrls:rows.length,urlsWithCity:rows.filter(r=>r.city).length,urlsWithPrice:rows.filter(r=>r.price_mad).length,urlsWithSurface:rows.filter(r=>r.surface_m2).length,ambiguousCityUrls:ambCity,ambiguousPriceUrls:ambPrice,ambiguousSurfaceUrls:ambSurface,individualListingEvidenceOnly:true,serverSideIndividualFiltering:true,databaseReadsOnly:true,databaseWrites:0,productionWrites:0,sourceSiteFetches:0,vercelDeployments:0,sha256:h}
  await writeFile(path.join(OUT,'summary.json'),JSON.stringify(summary,null,2)+'\n');console.log(JSON.stringify(summary,null,2))
 }
 main().catch(e=>{console.error(e);process.exitCode=1})
