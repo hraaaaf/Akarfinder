@@ -5,6 +5,7 @@ on:
     branches:
       - data/q4a-minimal-search-ready
     paths:
+      - 'scripts/audits/q4a-mubawab-commoncrawl-artifact-only.mjs'
       - '.github/workflows/q4a-mubawab-commoncrawl-artifact-only-smoke.yml'
 
 permissions:
