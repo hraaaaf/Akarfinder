@@ -36,7 +36,7 @@ function plausible(amount: number, intent: string | null, period: PricePeriod): 
 
 function detectPeriod(text: string, intent: string | null): PricePeriod {
   const t = text.toLowerCase();
-  if (/\b(par\s+)?(nuit|nuitée|nuitée|night|jour|journée|day)\b/.test(t)) return 'night';
+  if (/\b(par\s+)?(nuit|nuitée|night|jour|journée|day)\b/.test(t)) return 'night';
   if (/\b(par\s+)?(mois|mensuel|mensuelle|month|monthly)\b/.test(t) || /\/\s*mois\b/.test(t)) return 'month';
   if (intent === 'sale') return 'sale_total';
   if (intent === 'rent') return 'month';
@@ -90,7 +90,6 @@ function visibleCandidates($: cheerio.CheerioAPI, intent: string | null): Candid
     while ((m = MONEY.exec(own))) {
       const value = parseAmount(m[1]);
       if (!value) continue;
-      const lower = own.toLowerCase();
       const period = detectPeriod(own, intent);
       const around = normalizeText($(el).parent().text()).slice(0, 260);
       const classId = `${$(el).attr('class') ?? ''} ${$(el).attr('id') ?? ''}`.toLowerCase();
@@ -121,7 +120,7 @@ export function extractDetailPrice(sourceDomain: string, html: string, intent: s
   const pricePerM2Mad = firstPerM2(body);
   const json = jsonLdPrice($, intent);
   const candidates = visibleCandidates($, intent).sort((a, b) => b.score - a.score || b.value - a.value);
-  const old = candidates.filter(c => c.old && c.score >= 3)[0] ?? null;
+  const old = candidates.filter(c => c.old && c.score >= 1)[0] ?? null;
   const current = candidates.filter(c => !c.old && c.score >= 5)[0] ?? null;
 
   if (json) {
