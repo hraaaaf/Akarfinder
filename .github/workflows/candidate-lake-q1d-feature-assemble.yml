@@ -23,41 +23,19 @@ jobs:
       Q1D_DB_ROOT: .tmp/q1d-input/db
       Q1D_PUBLIC_ROOT: .tmp/q1d-input/public
       Q1D_OUT: .tmp/q1d-features
+      Q1C_ARTIFACT_ID: '10020459850'
+      Q1D_DB_ARTIFACT_ID: '10021396904'
+      Q1D_PUBLIC_ARTIFACT_ID: '10021998663'
     steps:
       - uses: actions/checkout@v4
-      - name: Download certified Q1C artifact
+      - name: Download exact certified feature inputs
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           mkdir -p "$Q1D_Q1C_ROOT" "$Q1D_DB_ROOT" "$Q1D_PUBLIC_ROOT" .tmp/downloads
-          curl --fail --location --retry 3 \
-            -H "Authorization: Bearer $GH_TOKEN" \
-            -H 'Accept: application/vnd.github+json' \
-            -H 'X-GitHub-Api-Version: 2022-11-28' \
-            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/10020459850/zip" \
-            -o .tmp/downloads/q1c.zip
-          unzip -q .tmp/downloads/q1c.zip -d "$Q1D_Q1C_ROOT"
-      - name: Resolve exact prerequisite artifacts
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          python - <<'PY'
-          import json, os, urllib.request
-          repo=os.environ['GITHUB_REPOSITORY']; token=os.environ['GH_TOKEN']; branch='data/q1d-normalized-features-fingerprints'
-          headers={'Authorization':f'Bearer {token}','Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'}
-          for name,out in [('candidate-lake-q1d-db-feature-export','.tmp/q1d-db-artifact-id'),('candidate-lake-q1d-public-dataset-features','.tmp/q1d-public-artifact-id')]:
-            req=urllib.request.Request(f'https://api.github.com/repos/{repo}/actions/artifacts?name={name}&per_page=30',headers=headers)
-            data=json.load(urllib.request.urlopen(req))
-            arts=[a for a in data.get('artifacts',[]) if not a.get('expired') and a.get('workflow_run',{}).get('head_branch')==branch]
-            if not arts: raise SystemExit(f'no prerequisite artifact: {name}')
-            art=max(arts,key=lambda a:a['created_at']); open(out,'w').write(str(art['id']))
-            print(json.dumps({'name':name,'artifact_id':art['id'],'created_at':art['created_at']}))
-          PY
-          for pair in "db:.tmp/q1d-db-artifact-id:$Q1D_DB_ROOT" "public:.tmp/q1d-public-artifact-id:$Q1D_PUBLIC_ROOT"; do
-            IFS=: read -r label idfile dest <<< "$pair"
-            id=$(cat "$idfile")
+          download_artifact() {
+            local id="$1" dest="$2" label="$3"
             curl --fail --location --retry 3 \
               -H "Authorization: Bearer $GH_TOKEN" \
               -H 'Accept: application/vnd.github+json' \
@@ -65,7 +43,10 @@ jobs:
               "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/${id}/zip" \
               -o ".tmp/downloads/${label}.zip"
             unzip -q ".tmp/downloads/${label}.zip" -d "$dest"
-          done
+          }
+          download_artifact "$Q1C_ARTIFACT_ID" "$Q1D_Q1C_ROOT" q1c
+          download_artifact "$Q1D_DB_ARTIFACT_ID" "$Q1D_DB_ROOT" db
+          download_artifact "$Q1D_PUBLIC_ARTIFACT_ID" "$Q1D_PUBLIC_ROOT" public
       - name: Assemble normalized features and deterministic fingerprints
         run: python scripts/audits/candidate-lake-q1d-feature-assemble.py
       - name: Verify Q1D accounting and no-inference invariants
