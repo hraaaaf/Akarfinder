@@ -37,10 +37,11 @@ ROADMAP post-M250K : commit `0d1a91b4b49c75ccac34c16e950b91fe4262a6c8`.
 - MASS-X2 is exact: **73 / 73**, run `34063582288`, artifact `9998233478`.
 - DATA4.9B remains **2,326 aggregate-only historical identities**: the original artifact is expired and bounded archive/metadata replays did not recover a unique row-level manifest.
 - Honest row-level ceiling: **251,046 materializable + 2,326 aggregate-only = 253,372 frozen accounting total**. Never create placeholders.
-- Live gateway baseline verified through `search_public_representations_v2`: **2,065** servable representations.
+- Live gateway baseline verified through `search_public_representations_v2`: **2,153** servable representations on 2026-09-07.
 - Detailed proof: `docs/data/Q1A-CANDIDATE-LAKE-RECOVERY-STATUS.md`.
 - Machine accounting contract: `scripts/audits/candidate-lake-q1a-materializable-contract.json`; 25 row-level lanes sum to **251,046**, and DATA4.9B remains a separate non-public, no-placeholder **2,326** aggregate.
-- Deterministic row-level manifest is certified: run `34118173681`, artifact `10017109800`, **251,046 rows / 251,046 unique representation keys / 0 cross-lane duplicates**, SHA256 `a9616b7aee28cda1044fad5c64f2bd1fb171f4046d5fa4a59b2d8d3276e7ecd0`.
+- Deterministic row-level manifest recertified after exact source-domain correction: run `34125731609`, artifact `10020001261`, **251,046 rows / 251,046 unique representation keys / 0 cross-lane duplicates**, SHA256 `28d55d66a14e7d398db85183a65e07dcd019ef947dfbda2d4c10a6dc7cfadc1c`.
+- The prior run `34118173681` / artifact `10017109800` is superseded because Q1A mislabeled the `akaar` source as `akaar.ma` while the frozen artifact itself proves `akaar.fr`, and two mixed URL lanes used `source_domain='mixed'`. The correction changes no row count and introduces no duplicate.
 
 ### Goal
 
@@ -102,6 +103,6 @@ Run GitHub déterministe + artifact contenant au minimum :
 
 ## Reprise immédiate
 
-**Commencer par Lot 11 / Q1A.** Inspecter les manifests/artifacts déjà présents et réutiliser les preuves exactes du scoreboard pour reconstruire l’union **253 372**. Ne relancer aucun crawl source pour ce lot. Ne modifier le compteur canonique que si un futur lot fournit un manifest d’identités exactes + set-diff contre le freeze.
+**Q1A row-level materializable is certified. Continue with Q1B provenance + temporal cohort normalization on top of artifact `10020001261`.** Keep DATA4.9B as a separate aggregate-only accounting cohort. Do not relaunch source crawls for Q1B and do not infer freshness or authorization from provenance alone.
 
 **Boussole : 253 372 FROZEN -> Candidate Lake -> probable_unique -> live_confidence -> search eligibility shadow.**
