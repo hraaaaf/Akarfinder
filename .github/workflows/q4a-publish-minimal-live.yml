@@ -1,0 +1,53 @@
+name: AkarFinder - Q4A Publish Minimal Live
+
+on:
+  push:
+    branches:
+      - data/q4a-minimal-search-ready
+    paths:
+      - 'scripts/audits/q4a-publish-minimal-live.ts'
+      - '.github/workflows/q4a-publish-minimal-live.yml'
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      Q4A_LIVE_JSONL: .tmp/q4a-live/search-ready-combined.jsonl
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Download certified 72,834-row artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p .tmp/q4a-live
+          gh api repos/${{ github.repository }}/actions/artifacts/10028198847/zip > /tmp/q4a-live.zip
+          unzip -q /tmp/q4a-live.zip -d .tmp/q4a-live
+      - name: Publish full four-field corpus
+        run: npx tsx scripts/audits/q4a-publish-minimal-live.ts
+      - name: Verify exact live count
+        run: |
+          node - <<'NODE'
+          const fs=require('fs')
+          const s=JSON.parse(fs.readFileSync('.tmp/q4a-minimal-live-out/summary.json','utf8'))
+          if (s.inputRows !== 72834) throw new Error('input mismatch')
+          if (s.tableCount !== 72834) throw new Error(`table mismatch: ${s.tableCount}`)
+          if (s.publicSearchCount !== 72834) throw new Error(`search mismatch: ${s.publicSearchCount}`)
+          console.log(s)
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: q4a-publish-minimal-live
+          path: .tmp/q4a-minimal-live-out/
+          retention-days: 30
