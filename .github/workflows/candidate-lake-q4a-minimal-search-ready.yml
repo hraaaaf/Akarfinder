@@ -1,0 +1,48 @@
+name: AkarFinder - Q4A Minimal Search Ready
+
+on:
+  push:
+    branches:
+      - data/q4a-minimal-search-ready
+    paths:
+      - 'scripts/audits/candidate-lake-q4a-minimal-search-ready.ts'
+      - '.github/workflows/candidate-lake-q4a-minimal-search-ready.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      Q4A_OUT: .tmp/q4a-minimal-search-ready
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Build read-only four-field search-ready projection
+        run: npx tsx scripts/audits/candidate-lake-q4a-minimal-search-ready.ts
+      - name: Verify single product gate
+        run: |
+          node - <<'NODE'
+          const fs = require('fs')
+          const s = JSON.parse(fs.readFileSync('.tmp/q4a-minimal-search-ready/summary.json','utf8'))
+          if (s.rule.expression !== 'link && city && price > 0 && surface > 0') throw new Error('wrong rule')
+          if (s.rule.freshnessIsGate) throw new Error('freshness must not gate search_ready')
+          if (s.rule.liveConfidenceIsGate) throw new Error('live confidence must not gate search_ready')
+          if (s.rule.clusteringIsGate) throw new Error('clustering must not gate search_ready')
+          if (s.databaseWrites !== 0 || s.productionWrites !== 0 || s.sourceSiteFetches !== 0 || s.vercelDeployments !== 0) throw new Error('read-only invariant failed')
+          if (!Number.isInteger(s.unionReady) || s.unionReady <= 0) throw new Error('empty projection')
+          console.log(s)
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: candidate-lake-q4a-minimal-search-ready
+          path: .tmp/q4a-minimal-search-ready/
+          retention-days: 30
