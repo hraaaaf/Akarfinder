@@ -14,6 +14,10 @@ function env(name: string): string {
   return value;
 }
 
+function sleep(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 async function rest<T>(table: string, params: Record<string, string>): Promise<T[]> {
   const url = new URL(`/rest/v1/${table}`, env('SUPABASE_URL'));
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
@@ -40,30 +44,45 @@ type Result = Thin & {
   fetched: boolean;
   extraction: ReturnType<typeof extractDetailPrice> | null;
   error: string | null;
+  attempts: number;
 };
 
 async function fetchOne(row: Thin): Promise<Result> {
-  try {
-    const response = await fetch(row.canonical_url, {
-      headers: {
-        'user-agent': 'AkarFinder-PriceRecovery/1.0 (+read-only audit)',
-        accept: 'text/html,application/xhtml+xml',
-        'accept-language': 'fr-FR,fr;q=0.9,en;q=0.7',
-      },
-      redirect: 'follow',
-      signal: AbortSignal.timeout(20_000),
-    });
-    const httpStatus = response.status;
-    if (!response.ok) return { ...row, httpStatus, fetched: false, extraction: null, error: `http_${httpStatus}` };
-    const html = await response.text();
-    const extraction = extractDetailPrice(row.source_domain, html, row.intent);
-    return { ...row, httpStatus, fetched: true, extraction, error: null };
-  } catch (error) {
-    return { ...row, httpStatus: null, fetched: false, extraction: null, error: error instanceof Error ? error.message : String(error) };
+  const maxAttempts = row.source_domain === 'agenz.ma' ? 4 : 1;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const response = await fetch(row.canonical_url, {
+        headers: {
+          'user-agent': 'AkarFinder-PriceRecovery/1.0 (+read-only audit)',
+          accept: 'text/html,application/xhtml+xml',
+          'accept-language': 'fr-FR,fr;q=0.9,en;q=0.7',
+        },
+        redirect: 'follow',
+        signal: AbortSignal.timeout(20_000),
+      });
+      const httpStatus = response.status;
+      if (httpStatus === 429 && attempt < maxAttempts) {
+        const retryAfter = Number(response.headers.get('retry-after'));
+        const waitMs = Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter * 1000 : attempt * 5000;
+        await sleep(waitMs);
+        continue;
+      }
+      if (!response.ok) return { ...row, httpStatus, fetched: false, extraction: null, error: `http_${httpStatus}`, attempts: attempt };
+      const html = await response.text();
+      const extraction = extractDetailPrice(row.source_domain, html, row.intent);
+      return { ...row, httpStatus, fetched: true, extraction, error: null, attempts: attempt };
+    } catch (error) {
+      if (attempt < maxAttempts) {
+        await sleep(attempt * 3000);
+        continue;
+      }
+      return { ...row, httpStatus: null, fetched: false, extraction: null, error: error instanceof Error ? error.message : String(error), attempts: attempt };
+    }
   }
+  return { ...row, httpStatus: null, fetched: false, extraction: null, error: 'unreachable', attempts: maxAttempts };
 }
 
-async function mapLimited<T, R>(items: T[], fn: (item: T) => Promise<R>): Promise<R[]> {
+async function mapLimited<T, R>(items: T[], fn: (item: T) => Promise<R>, concurrency = CONCURRENCY, pauseMs = 250): Promise<R[]> {
   const out = new Array<R>(items.length);
   let next = 0;
   async function worker() {
@@ -71,15 +90,15 @@ async function mapLimited<T, R>(items: T[], fn: (item: T) => Promise<R>): Promis
       const i = next++;
       if (i >= items.length) return;
       out[i] = await fn(items[i]);
-      await new Promise(resolve => setTimeout(resolve, 250));
+      await sleep(pauseMs);
     }
   }
-  await Promise.all(Array.from({ length: Math.min(CONCURRENCY, items.length) }, () => worker()));
+  await Promise.all(Array.from({ length: Math.min(concurrency, items.length) }, () => worker()));
   return out;
 }
 
 async function main() {
-  const rows: Thin[] = [];
+  const rowsBySource = new Map<string, Thin[]>();
   for (const source of SOURCES) {
     const sourceRows = await rest<Thin>('thin_index_search_documents', {
       select: 'seed_id,canonical_url,source_domain,intent,freshness_status,display_eligibility',
@@ -89,28 +108,40 @@ async function main() {
       document_kind: 'eq.LISTING',
       limit: String(LIMIT),
     });
-    rows.push(...sourceRows);
+    rowsBySource.set(source, sourceRows);
   }
 
-  const results = await mapLimited(rows, fetchOne);
+  const results: Result[] = [];
+  for (const source of SOURCES) {
+    const sourceRows = rowsBySource.get(source) ?? [];
+    const sourceConcurrency = source === 'agenz.ma' ? 1 : CONCURRENCY;
+    const pauseMs = source === 'agenz.ma' ? 2500 : 250;
+    results.push(...await mapLimited(sourceRows, fetchOne, sourceConcurrency, pauseMs));
+  }
+
   const extracted = results.filter(r => r.extraction?.currentPriceMad != null);
   const high = extracted.filter(r => r.extraction?.confidence === 'high');
   const monthly = extracted.filter(r => r.extraction?.period === 'month');
   const sale = extracted.filter(r => r.extraction?.period === 'sale_total');
   const perM2Only = results.filter(r => !r.extraction?.currentPriceMad && r.extraction?.pricePerM2Mad != null);
+  const notDisclosed = results.filter(r => r.extraction?.priceStatus === 'not_disclosed');
+  const unresolved = results.filter(r => r.fetched && !r.extraction?.currentPriceMad && r.extraction?.priceStatus !== 'not_disclosed');
 
   await fs.mkdir(OUT, { recursive: true });
   await fs.writeFile(path.join(OUT, 'results.jsonl'), results.map(r => JSON.stringify(r)).join('\n') + '\n');
   const summary = {
     readOnly: true,
     databaseWrites: 0,
-    requested: rows.length,
+    requested: results.length,
     fetched: results.filter(r => r.fetched).length,
     extracted: extracted.length,
     highConfidence: high.length,
     monthly: monthly.length,
     saleTotal: sale.length,
     perM2Only: perM2Only.length,
+    notDisclosed: notDisclosed.length,
+    unresolved: unresolved.length,
+    rateLimited: results.filter(r => r.httpStatus === 429).length,
     bySource: Object.fromEntries(SOURCES.map(source => {
       const scoped = results.filter(r => r.source_domain === source);
       return [source, {
@@ -118,6 +149,9 @@ async function main() {
         fetched: scoped.filter(r => r.fetched).length,
         extracted: scoped.filter(r => r.extraction?.currentPriceMad != null).length,
         highConfidence: scoped.filter(r => r.extraction?.confidence === 'high').length,
+        notDisclosed: scoped.filter(r => r.extraction?.priceStatus === 'not_disclosed').length,
+        unresolved: scoped.filter(r => r.fetched && !r.extraction?.currentPriceMad && r.extraction?.priceStatus !== 'not_disclosed').length,
+        rateLimited: scoped.filter(r => r.httpStatus === 429).length,
       }];
     })),
   };
