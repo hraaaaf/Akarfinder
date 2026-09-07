@@ -1,0 +1,24 @@
+name: AkarFinder - Q1A Materializable Contract
+
+on:
+  push:
+    branches: [data/q1a-candidate-lake-freeze]
+    paths:
+      - 'scripts/audits/candidate-lake-q1a-materializable-contract.json'
+      - 'scripts/audits/candidate-lake-q1a-materializable-contract.test.mjs'
+      - '.github/workflows/candidate-lake-q1a-materializable-contract.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Verify Q1A materializable accounting and fail-closed gap
+        run: node scripts/audits/candidate-lake-q1a-materializable-contract.test.mjs
