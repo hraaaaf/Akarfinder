@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import * as cheerio from 'cheerio';
 import { extractDetailPrice } from './extract-detail-price';
 
 const OUT = process.env.PRICE_RECOVERY_OUT ?? '.tmp/price-recovery';
@@ -41,13 +42,40 @@ type Thin = {
   display_eligibility: string;
 };
 
+type Diagnostic = {
+  title: string;
+  h1: string[];
+  metaDescription: string;
+  moneyContexts: string[];
+};
+
 type Result = Thin & {
   httpStatus: number | null;
   fetched: boolean;
   extraction: ReturnType<typeof extractDetailPrice> | null;
+  diagnostic: Diagnostic | null;
   error: string | null;
   attempts: number;
 };
+
+function compact(value: string): string {
+  return value.replace(/\u00a0/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function buildDiagnostic(html: string): Diagnostic {
+  const $ = cheerio.load(html);
+  const title = compact($('title').first().text()).slice(0, 300);
+  const h1 = $('h1').toArray().map(el => compact($(el).text())).filter(Boolean).slice(0, 8);
+  const metaDescription = compact($('meta[name="description"]').attr('content') ?? '').slice(0, 600);
+  const moneyContexts: string[] = [];
+  $('body *').each((_, el) => {
+    if (moneyContexts.length >= 12 || !el || el.type !== 'tag') return;
+    const own = compact($(el).clone().children().remove().end().text());
+    if (!own || own.length > 220) return;
+    if (/(?:\d[\d\s,.]{1,14})\s*(?:DH|DHS|MAD|dirhams?)/i.test(own)) moneyContexts.push(own.slice(0, 220));
+  });
+  return { title, h1, metaDescription, moneyContexts };
+}
 
 async function loadFallbackManifest(): Promise<Thin[]> {
   const raw = await fs.readFile(FALLBACK_MANIFEST, 'utf8');
@@ -75,19 +103,20 @@ async function fetchOne(row: Thin): Promise<Result> {
         await sleep(waitMs);
         continue;
       }
-      if (!response.ok) return { ...row, httpStatus, fetched: false, extraction: null, error: `http_${httpStatus}`, attempts: attempt };
+      if (!response.ok) return { ...row, httpStatus, fetched: false, extraction: null, diagnostic: null, error: `http_${httpStatus}`, attempts: attempt };
       const html = await response.text();
       const extraction = extractDetailPrice(row.source_domain, html, row.intent);
-      return { ...row, httpStatus, fetched: true, extraction, error: null, attempts: attempt };
+      const diagnostic = row.source_domain === 'agenz.ma' && extraction.currentPriceMad == null ? buildDiagnostic(html) : null;
+      return { ...row, httpStatus, fetched: true, extraction, diagnostic, error: null, attempts: attempt };
     } catch (error) {
       if (attempt < maxAttempts) {
         await sleep(attempt * 3000);
         continue;
       }
-      return { ...row, httpStatus: null, fetched: false, extraction: null, error: error instanceof Error ? error.message : String(error), attempts: attempt };
+      return { ...row, httpStatus: null, fetched: false, extraction: null, diagnostic: null, error: error instanceof Error ? error.message : String(error), attempts: attempt };
     }
   }
-  return { ...row, httpStatus: null, fetched: false, extraction: null, error: 'unreachable', attempts: maxAttempts };
+  return { ...row, httpStatus: null, fetched: false, extraction: null, diagnostic: null, error: 'unreachable', attempts: maxAttempts };
 }
 
 async function mapLimited<T, R>(items: T[], fn: (item: T) => Promise<R>, concurrency = CONCURRENCY, pauseMs = 250): Promise<R[]> {
