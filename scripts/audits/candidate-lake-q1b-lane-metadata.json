@@ -1,0 +1,67 @@
+{
+  "schemaVersion": "q1b-lane-metadata-v1",
+  "lanes": {
+    "avito_baseline": {
+      "provenance_class": "indirect_public_evidence",
+      "temporal_cohort": "2026-09-05",
+      "temporal_precision": "evidence_timestamp",
+      "artifact_ids": [9971118875],
+      "run_ids": [33971383335],
+      "evidence_observed_at": "2026-09-05T14:25:00Z"
+    },
+    "akaar": {
+      "provenance_class": "source_snapshot_artifact",
+      "temporal_cohort": "2026-09-05",
+      "temporal_precision": "evidence_timestamp",
+      "artifact_ids": [9974670013],
+      "run_ids": [],
+      "evidence_observed_at": "2026-09-05T18:30:52.458475+00:00"
+    },
+    "mubawab_direct": {"provenance_class":"source_discovery_artifact","temporal_cohort":"m250k_freeze_period","temporal_precision":"cohort_only","artifact_ids":[9969651653],"run_ids":[33964834762]},
+    "marocannonces": {"provenance_class":"source_discovery_artifact","temporal_cohort":"m250k_freeze_period","temporal_precision":"cohort_only","artifact_ids":[9888335708],"run_ids":[33739495442]},
+    "sarouty": {"provenance_class":"source_discovery_artifact","temporal_cohort":"m250k_freeze_period","temporal_precision":"cohort_only","artifact_ids":[9897323745],"run_ids":[33765427351]},
+    "agenz_direct": {"provenance_class":"source_discovery_artifact","temporal_cohort":"m250k_freeze_period","temporal_precision":"cohort_only","artifact_ids":[9898224274],"run_ids":[33764930794]},
+    "db_backed_union": {"provenance_class":"database_snapshot","temporal_cohort":"row_level_from_db_artifact","temporal_precision":"row_level","artifact_ids":[9997114366],"run_ids":[34059828610]},
+    "aykana_mass_x5": {"provenance_class":"historical_commoncrawl_reconciliation","temporal_cohort":"historical_archive","temporal_precision":"cohort_only","artifact_ids":[9205427369],"run_ids":[31762998799]},
+    "kawtar_mass_x5": {"provenance_class":"historical_commoncrawl_snapshot","temporal_cohort":"historical_archive","temporal_precision":"cohort_only","artifact_ids":[9205374370],"run_ids":[]},
+    "atlas_masaken_souk": {"provenance_class":"historical_commoncrawl_snapshot","temporal_cohort":"historical_archive","temporal_precision":"cohort_only","artifact_ids":[9203620957,9205410118,9205361327],"run_ids":[]},
+    "mouldar_mass_x5": {"provenance_class":"historical_commoncrawl_snapshot","temporal_cohort":"historical_archive","temporal_precision":"cohort_only","artifact_ids":[9205390731],"run_ids":[]},
+    "promo_mass_x5": {"provenance_class":"historical_commoncrawl_snapshot","temporal_cohort":"historical_archive","temporal_precision":"cohort_only","artifact_ids":[9203620957],"run_ids":[]},
+    "domio": {
+      "provenance_class": "source_snapshot_artifact",
+      "temporal_cohort": "2026-09-05",
+      "temporal_precision": "evidence_timestamp",
+      "artifact_ids": [9974714576],
+      "run_ids": [],
+      "evidence_observed_at": "2026-09-05T18:33:54.615939+00:00"
+    },
+    "immodirect": {
+      "provenance_class": "source_snapshot_artifact",
+      "temporal_cohort": "2026-09-05",
+      "temporal_precision": "evidence_timestamp",
+      "artifact_ids": [9974939355],
+      "run_ids": [],
+      "evidence_observed_at": "2026-09-05T18:49:05.430021+00:00"
+    },
+    "yakeey": {"provenance_class":"source_result_discovery_artifact","temporal_cohort":"m250k_freeze_period","temporal_precision":"cohort_only","artifact_ids":[9976337671,9976383551],"run_ids":[33989989300,33990176467]},
+    "mass_x2": {"provenance_class":"historical_snapshot_replay","temporal_cohort":"historical_archive","temporal_precision":"cohort_only","artifact_ids":[9998233478],"run_ids":[34063582288]},
+    "oneimmo_historical": {"provenance_class":"historical_detail_replay","temporal_cohort":"historical_archive","temporal_precision":"cohort_only","artifact_ids":[9998238197],"run_ids":[34062181098]},
+    "mass1_additive": {"provenance_class":"historical_discovery_reconciliation","temporal_cohort":"historical_archive","temporal_precision":"cohort_only","artifact_ids":[9988296190],"run_ids":[34029546664]},
+    "agenz_historical_delta": {"provenance_class":"historical_detail_export","temporal_cohort":"historical_archive","temporal_precision":"cohort_only","artifact_ids":[9989328673],"run_ids":[34032779387]},
+    "mubawab_realestatebuddy": {"provenance_class":"public_dataset_historical","temporal_cohort":"historical_public_dataset","temporal_precision":"cohort_only","artifact_ids":[9991042950],"run_ids":[34038898808]},
+    "mubawab_hicham": {"provenance_class":"public_dataset_historical","temporal_cohort":"historical_public_dataset","temporal_precision":"cohort_only","artifact_ids":[9991207598],"run_ids":[34039440480]},
+    "avito_hicham": {"provenance_class":"public_dataset_historical","temporal_cohort":"historical_public_dataset","temporal_precision":"cohort_only","artifact_ids":[9991207598],"run_ids":[34039440480]},
+    "mubawab_marwane": {"provenance_class":"public_dataset_historical","temporal_cohort":"historical_public_dataset","temporal_precision":"cohort_only","artifact_ids":[9991403015],"run_ids":[34040109352]},
+    "mubawab_public_batch": {"provenance_class":"public_dataset_historical","temporal_cohort":"historical_public_dataset","temporal_precision":"cohort_only","artifact_ids":[9991447841],"run_ids":[34040263021]},
+    "avito_public_batch": {"provenance_class":"public_dataset_historical","temporal_cohort":"historical_public_dataset","temporal_precision":"cohort_only","artifact_ids":[9991488198],"run_ids":[34040405000]}
+  },
+  "invariants": {
+    "preserve_q1a_representation_key": true,
+    "infer_freshness": false,
+    "infer_authorization": false,
+    "database_writes": 0,
+    "production_writes": 0,
+    "source_site_fetches": 0,
+    "vercel_deployments": 0
+  }
+}
