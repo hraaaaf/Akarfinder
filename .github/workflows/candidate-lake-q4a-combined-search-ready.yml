@@ -22,7 +22,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          mkdir -p .tmp/q4a-combined/q1d .tmp/q4a-combined/public .tmp/q4a-combined/dbrec .tmp/q4a-combined/repair .tmp/q4a-combined/dbfield
+          mkdir -p .tmp/q4a-combined/q1d .tmp/q4a-combined/public .tmp/q4a-combined/dbrec .tmp/q4a-combined/repair .tmp/q4a-combined/dbfield .tmp/q4a-combined/avito
           gh api repos/${{ github.repository }}/actions/artifacts/10022063956/zip > /tmp/q1d.zip
           unzip -q /tmp/q1d.zip -d .tmp/q4a-combined/q1d
           gh api repos/${{ github.repository }}/actions/artifacts/10021998663/zip > /tmp/public.zip
@@ -33,6 +33,8 @@ jobs:
           unzip -q /tmp/repair.zip -d .tmp/q4a-combined/repair
           gh api repos/${{ github.repository }}/actions/artifacts/10026575439/zip > /tmp/dbfield.zip
           unzip -q /tmp/dbfield.zip -d .tmp/q4a-combined/dbfield
+          gh api repos/${{ github.repository }}/actions/artifacts/10027851678/zip > /tmp/avito.zip
+          unzip -q /tmp/avito.zip -d .tmp/q4a-combined/avito
       - name: Build combined corpus
         run: python scripts/audits/candidate-lake-q4a-combined-search-ready.py
       - name: Verify single product gate
@@ -40,8 +42,9 @@ jobs:
           python - <<'PY'
           import json
           s=json.load(open('.tmp/q4a-combined-out/summary.json'))
-          assert s['searchReady'] == 72472
+          assert s['searchReady'] == 72832
           assert s['strictDbNetNew'] == 48
+          assert s['avitoPublicNetNew'] == 360
           assert s['rule'] == 'url + city + price_mad>0 + surface_m2>0'
           assert s['freshnessIsGate'] is False and s['liveConfidenceIsGate'] is False and s['clusteringIsGate'] is False
           assert s['databaseWrites']==0 and s['productionWrites']==0 and s['sourceSiteFetches']==0 and s['vercelDeployments']==0
