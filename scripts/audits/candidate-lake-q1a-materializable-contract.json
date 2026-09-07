@@ -1,0 +1,51 @@
+{
+  "schemaVersion": "q1a-materializable-contract-v1",
+  "frozenAccountingTotal": 253372,
+  "materializableExpected": 251046,
+  "aggregateOnlyExpected": 2326,
+  "lanes": {
+    "avito_baseline": 19739,
+    "akaar": 76843,
+    "mubawab_direct": 18445,
+    "marocannonces": 10000,
+    "sarouty": 5064,
+    "agenz_direct": 4466,
+    "db_backed_union": 14987,
+    "aykana_mass_x5": 509,
+    "atlas_masaken_souk": 2163,
+    "mouldar_mass_x5": 1081,
+    "promo_mass_x5": 943,
+    "kawtar_mass_x5": 188,
+    "domio": 2020,
+    "immodirect": 4,
+    "yakeey": 82,
+    "mass_x2": 73,
+    "mass1_additive": 1613,
+    "oneimmo_historical": 3471,
+    "agenz_historical_delta": 3819,
+    "mubawab_realestatebuddy": 21374,
+    "mubawab_hicham": 17394,
+    "avito_hicham": 22381,
+    "mubawab_marwane": 4089,
+    "mubawab_public_batch": 15514,
+    "avito_public_batch": 4784
+  },
+  "aggregateOnly": {
+    "data_4_9b": {
+      "count": 2326,
+      "publicationEligible": false,
+      "placeholderAllowed": false,
+      "reason": "Historical aggregate is proven but the exact row-level manifest is unavailable."
+    }
+  },
+  "invariants": {
+    "candidateIsActive": false,
+    "urlIsPhysicalProperty": false,
+    "freshnessInferred": false,
+    "authorizationInferred": false,
+    "databaseWrites": 0,
+    "productionWrites": 0,
+    "sourceSiteFetches": 0,
+    "vercelDeployments": 0
+  }
+}
