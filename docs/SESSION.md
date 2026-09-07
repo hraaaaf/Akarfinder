@@ -1,6 +1,6 @@
 # AkarFinder — Session courante
 
-**Mise à jour : 2026-09-06**
+**Mise à jour : 2026-09-07**
 
 > `docs/ROADMAP.md` est l’unique vérité canonique globale. Ce fichier est uniquement un handover opérationnel court.
 
@@ -33,13 +33,14 @@ ROADMAP post-M250K : commit `0d1a91b4b49c75ccac34c16e950b91fe4262a6c8`.
 ### Recovery checkpoint — 2026-09-07
 
 - DB-backed export is exact: **14,987 / 14,987**, run `34059828610`, artifact `9997114366`.
-- 1immo freeze-time cohort is exact: **3,471 / 3,471**, run `34062181098`, artifact `9997824477`.
+- 1immo freeze-time cohort is exact: **3,471 / 3,471**, run `34062181098`, artifact `9998238197`.
 - MASS-X2 is exact: **73 / 73**, run `34063582288`, artifact `9998233478`.
 - DATA4.9B remains **2,326 aggregate-only historical identities**: the original artifact is expired and bounded archive/metadata replays did not recover a unique row-level manifest.
 - Honest row-level ceiling: **251,046 materializable + 2,326 aggregate-only = 253,372 frozen accounting total**. Never create placeholders.
 - Live gateway baseline verified through `search_public_representations_v2`: **2,065** servable representations.
 - Detailed proof: `docs/data/Q1A-CANDIDATE-LAKE-RECOVERY-STATUS.md`.
 - Machine accounting contract: `scripts/audits/candidate-lake-q1a-materializable-contract.json`; 25 row-level lanes sum to **251,046**, and DATA4.9B remains a separate non-public, no-placeholder **2,326** aggregate.
+- Deterministic row-level manifest is certified: run `34118173681`, artifact `10017109800`, **251,046 rows / 251,046 unique representation keys / 0 cross-lane duplicates**, SHA256 `a9616b7aee28cda1044fad5c64f2bd1fb171f4046d5fa4a59b2d8d3276e7ecd0`.
 
 ### Goal
 
