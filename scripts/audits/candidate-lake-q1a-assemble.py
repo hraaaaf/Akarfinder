@@ -24,7 +24,7 @@ put('mubawab_direct','mubawab.ma',lines(9969651653,'listing-ids.txt'),'id')
 put('marocannonces','marocannonces.com',lines(9888335708,'listing-urls.txt'))
 put('sarouty','sarouty.ma',lines(9897323745,'listing-urls.txt'))
 put('agenz_direct','agenz.ma',lines(9898224274,'listing-urls.txt'))
-db=[json.loads(x) for x in lines(9997114366,'db-backed-candidates.jsonl')]; lanes['db_backed_union']=[{'representation_key':f"{r['source_domain']}|url:{canon(r['canonical_url'])}",'source_domain':r['source_domain'],'source_identity':canon(r['canonical_url']),'identity_kind':'url','lane':'db_backed_union','layer':'L0','candidate_status':'private_unverified'} for r in db]
+db=[json.loads(x) for x in lines(9997114366,'db-backed-candidates.jsonl')]; lanes['db_backed_union']=[{'representation_key':f"{r['source']}|url:{canon(r['source_identity'])}",'source_domain':r['source'],'source_identity':canon(r['source_identity']),'identity_kind':'url','lane':'db_backed_union','layer':'L0','candidate_status':'private_unverified'} for r in db]
 def domain_urls(a,d): return [u for u in urls(a) if host(u)==d]
 put('aykana_mass_x5','aykana.ma',domain_urls(9205427369,'aykana.ma'))
 put('kawtar_mass_x5','kawtarimmobilier.com',domain_urls(9205427369,'kawtarimmobilier.com'))
