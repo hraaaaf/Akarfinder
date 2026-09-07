@@ -73,6 +73,8 @@ Pipeline : `DISCOVER -> RAW EVIDENCE -> NORMALIZE -> EXACT DEDUPE -> CANDIDATE L
 
 **253 372 représentations candidates exactes par identité source/ID ou source/URL.**
 
+Manifest row-level matérialisable certifié le 2026-09-07 : run `34118173681`, artifact `10017109800`, **251 046 lignes / 251 046 clés uniques / 0 doublon inter-lanes**, SHA256 `a9616b7aee28cda1044fad5c64f2bd1fb171f4046d5fa4a59b2d8d3276e7ecd0`. Les **2 326 DATA-4.9B** restent une preuve agrégée séparée sans placeholders.
+
 Progression certifiée depuis le snapshot 158 778 :
 
 `158 778 + 82 + 73 + 1 613 + 3 471 + 3 819 + 21 374 + 17 394 + 22 381 + 4 089 + 15 514 + 4 784 = 253 372`.
