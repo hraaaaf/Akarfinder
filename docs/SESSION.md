@@ -28,66 +28,51 @@ ROADMAP post-M250K : commit `0d1a91b4b49c75ccac34c16e950b91fe4262a6c8`.
 - Historical Gap Hunt : run `34030138761`, artifact `9988514932`, **1immo +3 471** ;
 - Agenz exact delta : artifact `9989328673` vs baseline `9898224274`, **+3 819**.
 
-## Chantier actif — Lot 11 / Q1A Candidate Lake manifest freeze
+## Lot 11 / Q1A Candidate Lake manifest freeze — CERTIFIED
 
-### Recovery checkpoint — 2026-09-07
+- DB-backed export exact: **14 987 / 14 987**, run `34059828610`, artifact `9997114366`.
+- 1immo freeze-time exact: **3 471 / 3 471**, run `34062181098`, artifact `9998238197`.
+- MASS-X2 exact: **73 / 73**, run `34063582288`, artifact `9998233478`.
+- DATA4.9B reste **2 326 aggregate-only** : aucune identité row-level récupérable, aucun placeholder autorisé.
+- Plafond honnête : **251 046 matérialisables + 2 326 aggregate-only = 253 372 comptables gelées**.
+- Manifest Q1A corrigé et recertifié : run `34125731609`, artifact `10020001261`, **251 046 rows / 251 046 unique representation keys / 0 cross-lane duplicate**, SHA256 `28d55d66a14e7d398db85183a65e07dcd019ef947dfbda2d4c10a6dc7cfadc1c`.
+- Correction Q1A : `akaar.fr` restauré depuis son artifact exact et suppression des faux domaines `mixed`, sans changer le nombre de lignes ni créer de doublon.
+- Le run antérieur `34118173681` / artifact `10017109800` est superseded.
 
-- DB-backed export is exact: **14,987 / 14,987**, run `34059828610`, artifact `9997114366`.
-- 1immo freeze-time cohort is exact: **3,471 / 3,471**, run `34062181098`, artifact `9998238197`.
-- MASS-X2 is exact: **73 / 73**, run `34063582288`, artifact `9998233478`.
-- DATA4.9B remains **2,326 aggregate-only historical identities**: the original artifact is expired and bounded archive/metadata replays did not recover a unique row-level manifest.
-- Honest row-level ceiling: **251,046 materializable + 2,326 aggregate-only = 253,372 frozen accounting total**. Never create placeholders.
-- Live gateway baseline verified through `search_public_representations_v2`: **2,153** servable representations on 2026-09-07.
-- Detailed proof: `docs/data/Q1A-CANDIDATE-LAKE-RECOVERY-STATUS.md`.
-- Machine accounting contract: `scripts/audits/candidate-lake-q1a-materializable-contract.json`; 25 row-level lanes sum to **251,046**, and DATA4.9B remains a separate non-public, no-placeholder **2,326** aggregate.
-- Deterministic row-level manifest recertified after exact source-domain correction: run `34125731609`, artifact `10020001261`, **251,046 rows / 251,046 unique representation keys / 0 cross-lane duplicates**, SHA256 `28d55d66a14e7d398db85183a65e07dcd019ef947dfbda2d4c10a6dc7cfadc1c`.
-- The prior run `34118173681` / artifact `10017109800` is superseded because Q1A mislabeled the `akaar` source as `akaar.ma` while the frozen artifact itself proves `akaar.fr`, and two mixed URL lanes used `source_domain='mixed'`. The correction changes no row count and introduces no duplicate.
+## Lot 11 / Q1B provenance + temporal cohort — CERTIFIED
 
-### Goal
+- Branche : `data/q1b-provenance-temporal-cohort`.
+- Run : **`34126402435` SUCCESS**.
+- Artifact : **`10020251605`**.
+- Artifact ZIP digest : `sha256:60fc2a45a2441d47335f9b4b17fd3d71afb6498ef634fd86fde01eae22d8ab5b`.
+- Manifest Q1B : **251 046 input -> 251 046 output**, **251 046 clés uniques**.
+- SHA256 manifest : **`a11fa40efc083e1538d7df6485557c1a612957fc3f7a0f5bb91fa4da7e6a9fc5`**.
+- `representationKeysPreserved=true` ; `sourceIdentitiesPreserved=true`.
+- `dbBackedRowsMatched=14 987` avec sous-cohortes exactes **5 797 B3 / 6 270 canonical-link / 2 920 current seeds**.
+- `normalizedSourceDomainCorrections=0` après la correction Q1A.
+- Couverture temporelle : **14 987 exact_observed_at + 98 606 evidence_timestamp + 137 453 cohort_only = 251 046**, donc **0 ligne unknown**.
+- Les timestamps `evidence_timestamp` datent la preuve/artifact, **pas la fraîcheur de l'annonce**.
+- `freshnessInferred=false` ; `authorizationInferred=false`.
+- `databaseWrites=0` ; `productionWrites=0` ; `sourceSiteFetches=0` ; `vercelDeployments=0`.
 
-Produire un manifest unifié, déterministe et reproductible des **253 372 représentations**.
+## État du live / policy — READ-ONLY CHECK
 
-Chaque ligne doit au minimum porter :
-- `source` ;
-- `source_identity` (`source_id` ou URL canonique selon la lane) ;
-- provenance/evidence (`run`, `artifact`, dataset ou snapshot) ;
-- couche L0/L1 ;
-- statut de cohorte temporelle disponible ou `unknown` explicite.
+- `search_public_representations_v2` servait **2 153** représentations lors du contrôle du 2026-09-07.
+- Le gateway actuel exige encore notamment `freshness_status='fresh_confirmed'` puis un gate strict via `source_policy_registry`.
+- `source_policy_registry` a RLS ON.
+- `source_public_index_owner_override_v1` et `mubawab_public_minimal_index_v1` ont toujours RLS OFF ; risque gardé ouvert, aucune modification à l'aveugle.
+- Aucune policy `permission_required` / `prohibited` n'a été transformée en autorisée.
 
-### Succès
+## Séquence active
 
-- input exact = **253 372** ;
-- aucune perte silencieuse ;
-- aucune identité fabriquée ;
-- incohérences/quarantaines comptées séparément ;
-- manifest hashé et rejouable ;
-- **0 Supabase/prod write** ;
-- **0 source-site fetch** ;
-- **0 Vercel**.
-
-### Preuve attendue
-
-Run GitHub déterministe + artifact contenant au minimum :
-- `manifest.*` ;
-- `summary.json` ;
-- hashes ;
-- compteurs par source/lane ;
-- couverture provenance/layer/cohorte ;
-- invariants read-only.
-
-## Séquence après Q1A
-
-1. **Q1B** provenance + temporal cohort normalization.
-2. **Q1C** exact identity dedupe / canonical keys.
-3. **Q1D** normalized features + fingerprints.
-4. **Q2A** candidate-pair blocking.
-5. **Q2B** clustering V1 conservateur → `probable_unique`.
-6. **Q2C** cluster QA / false-merge control.
-7. **Q3A** freshness evidence model.
-8. **Q3B** `live_confidence`.
-9. **Q4A** search eligibility shadow.
-10. **Q4B** search/ranking rehearsal.
-11. **Q4C** production gate séparé.
+1. ✅ **Q1A** Candidate Lake manifest materializable.
+2. ✅ **Q1B** provenance + temporal cohort normalization.
+3. 🔵 **Q1C** exact identity dedupe / canonical keys.
+4. Puis **Q1D** normalized features + fingerprints.
+5. Puis **Q2A/Q2B/Q2C** blocking + clustering conservateur + QA -> `probable_unique`.
+6. Puis **Q3A/Q3B** freshness evidence + `live_confidence`.
+7. Puis **Q4A/Q4B** search eligibility shadow + ranking rehearsal.
+8. **Q4C production gate séparé** uniquement après preuves.
 
 ## Invariants
 
@@ -95,14 +80,15 @@ Run GitHub déterministe + artifact contenant au minimum :
 - `URL != property unique` ;
 - pas de suppression destructive pendant le clustering ;
 - aucune donnée absente inventée ;
+- aucune preuve de pipeline transformée en fraîcheur listing ;
 - respect robots / surfaces publiques ;
 - aucun bypass login/CAPTCHA/paywall/anti-bot/API privée ;
 - aucune écriture Supabase/prod ou policy registry sans gate humain explicite ;
 - aucun Vercel sans autorisation explicite ;
-- CI pending n’arrête pas les lots indépendants.
+- CI pending n'arrête pas les lots indépendants.
 
 ## Reprise immédiate
 
-**Q1A row-level materializable is certified. Continue with Q1B provenance + temporal cohort normalization on top of artifact `10020001261`.** Keep DATA4.9B as a separate aggregate-only accounting cohort. Do not relaunch source crawls for Q1B and do not infer freshness or authorization from provenance alone.
+**Continuer Q1C à partir de l'artifact Q1B `10020251605`.** Produire des clés canoniques exactes et mesurer les collisions sans fusion approximative. Si l'exact dedupe est déjà nul, le certifier au lieu de forcer artificiellement une réduction. DATA4.9B reste séparé et non matérialisé.
 
 **Boussole : 253 372 FROZEN -> Candidate Lake -> probable_unique -> live_confidence -> search eligibility shadow.**
