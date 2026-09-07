@@ -33,11 +33,11 @@ async function main() {
 
   const seeds = await pageAll(
     'source_offer_seeds',
-    'id,canonical_url,source_domain,seed_provider,first_observed_at,last_observed_at,observation_count,freshness_status,fresh_last_seen_at,fresh_channels,freshness_evidence,fresh_last_checked_at'
+    'id,canonical_url,source_domain,seed_provider,first_observed_at,last_observed_at,observation_count,freshness_status,fresh_last_seen_at,fresh_channels,created_at,updated_at'
   )
   const listingSources = await pageAll(
     'listing_sources',
-    'id,property_listing_id,source_name,source_url,listing_url,is_active,first_seen_at,last_seen_at,observation_count,source_offer_key,content_fingerprint'
+    'id,property_listing_id,source_name,source_url,listing_url,is_active,first_seen_at,last_seen_at,source_offer_key,origin_type,compliance_status,content_fingerprint,canonical_kind,canonical_eligible'
   )
 
   function jsonl(rows: any[]) {
