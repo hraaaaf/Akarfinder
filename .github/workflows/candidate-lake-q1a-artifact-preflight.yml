@@ -5,6 +5,7 @@ on:
     branches: [data/q1a-candidate-lake-freeze]
     paths:
       - 'scripts/audits/candidate-lake-q1a-artifact-preflight.py'
+      - 'scripts/audits/candidate-lake-q1a-assemble.py'
       - '.github/workflows/candidate-lake-q1a-artifact-preflight.yml'
   workflow_dispatch:
 
@@ -19,6 +20,7 @@ jobs:
     env:
       Q1A_ARTIFACT_ROOT: .tmp/q1a-materializable-artifacts
       Q1A_PREFLIGHT_OUT: .tmp/q1a-materializable-preflight
+      Q1A_MANIFEST_OUT: .tmp/q1a-materializable-manifest
     steps:
       - uses: actions/checkout@v4
       - name: Download exact frozen artifacts
@@ -46,9 +48,17 @@ jobs:
           done
       - name: Verify complete row-level dependency set
         run: python scripts/audits/candidate-lake-q1a-artifact-preflight.py
+      - name: Assemble and certify 251046 row-level representations
+        run: python scripts/audits/candidate-lake-q1a-assemble.py
       - uses: actions/upload-artifact@v4
         with:
           name: candidate-lake-q1a-materializable-artifact-preflight
           path: .tmp/q1a-materializable-preflight/
+          retention-days: 30
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        with:
+          name: candidate-lake-q1a-materializable-manifest
+          path: .tmp/q1a-materializable-manifest/
           retention-days: 30
           if-no-files-found: error
