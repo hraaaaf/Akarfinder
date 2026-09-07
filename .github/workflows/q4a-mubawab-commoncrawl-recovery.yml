@@ -1,0 +1,48 @@
+name: AkarFinder - Q4A Mubawab Common Crawl Recovery
+
+on:
+  push:
+    branches: [data/q4a-minimal-search-ready]
+    paths:
+      - 'scripts/audits/q4a-mubawab-commoncrawl-recovery.mjs'
+      - '.github/workflows/q4a-mubawab-commoncrawl-recovery.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+  SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+  Q4A_CC_LIMIT: '1000'
+  Q4A_CC_PUBLISH: '1'
+  Q4A_CC_OUT: '.tmp/q4a-cc-mubawab'
+
+jobs:
+  recover:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Recover archived Mubawab fields and publish complete rows
+        run: node scripts/audits/q4a-mubawab-commoncrawl-recovery.mjs
+      - name: Verify summary invariants
+        run: |
+          node - <<'NODE'
+          const fs=require('fs')
+          const s=JSON.parse(fs.readFileSync('.tmp/q4a-cc-mubawab/summary.json','utf8'))
+          if(!s.publish) throw new Error('publish flag false')
+          if(s.targets>1000) throw new Error('target cap violated')
+          if(s.liveCountAfter<74846) throw new Error('live count regressed')
+          console.log(s)
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: q4a-mubawab-commoncrawl-recovery
+          path: .tmp/q4a-cc-mubawab/
+          retention-days: 30
