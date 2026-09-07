@@ -15,6 +15,22 @@ test('Agenz monthly rent extracts current price and ignores crossed-out old pric
   assert.equal(r.currency, 'MAD');
 });
 
+test('Agenz recovers sale price from title when body has no price block', () => {
+  const html = `
+    <html>
+      <head>
+        <title>Villa for sale 13 500 000 MAD 730 m², 6 rooms - Oasis</title>
+        <meta property="og:title" content="Villa à vendre 13 500 000 DH 730 m² - Oasis" />
+      </head>
+      <body><h1>Villa for sale in Oasis</h1></body>
+    </html>`;
+  const r = extractDetailPrice('agenz.ma', html, 'sale');
+  assert.equal(r.currentPriceMad, 13500000);
+  assert.equal(r.period, 'sale_total');
+  assert.equal(r.priceStatus, 'available');
+  assert.equal(r.confidence, 'high');
+});
+
 test('Mubawab sale extracts total price', () => {
   const html = `
     <html><body>
