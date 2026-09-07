@@ -1,13 +1,15 @@
 # 3 — Vivre Ici AkarFinder
 
-**Statut : ACTIVE — TARGET 9,8/10 LOCKED / 2L.3 TECHNIQUEMENT CERTIFIÉ / SCORE VISUEL FINAL À CERTIFIER**  
+**Statut : ACTIVE — TARGET 9,8/10 LOCKED / ÉTAPE 1 CAMÉRA CERTIFIÉE / ÉTAPE 2 COMPOSITION EN VALIDATION**  
 **Dernière mise à jour : 2026-09-07**  
 **Repo : `hraaaaf/Akarfinder`**  
 **Branche : `docs/3-vivre-ici-akarfinder`**  
-**PR : `#1025` — OPEN**  
+**PR : `#1025` — OPEN / non mergée**  
 **Fondation produit : `/map`**  
-**HEAD produit 2L.3 certifié : `1e36c08935673980c36e25725c66324e139f7a0c`**  
-**Main observé avant handover : `84c1a01141f23246cf0c62a183acc270ac50b71b`**  
+**Baseline 2L.3 certifiée : `1e36c08935673980c36e25725c66324e139f7a0c`**  
+**Dernier HEAD visuel étape 1 certifié : `1f93e91befe236dfcec9b5a03a12434e4b50a75f`**  
+**HEAD UI étape 2 avant canonique : `4aa0b4ae7faca98726692f20c247d896aad13443`**  
+**Main vérifié : `df8b8d9a493553d5fa39ea8b0fa0ee789cf71ee2`**  
 **Vercel : aucun déploiement sans accord explicite d’Achraf.**
 
 ## GOAL
@@ -20,13 +22,9 @@ Cible approuvée explicitement par Achraf : mockup unique Desktop Maârif + Mobi
 
 - fichier durable : `AKARFINDER_VIVRE_ICI_TARGET_FREEZE_2026-09-06.png`
 - Google Drive ID : `1nt6ouxqGp-z6cHnj5A3iQHmw8I_YnGFL`
-- Google Drive URL : `https://drive.google.com/file/d/1nt6ouxqGp-z6cHnj5A3iQHmw8I_YnGFL/view?usp=drivesdk`
 - dimensions : `1536 × 1024`
-- taille originale : `2 879 788` octets
 - SHA-256 : `c552bc2d4ef669394694f71027c9852a6c56d155b7853a27f2e9e672942637c8`
 - seuil de clôture : **≥9,8/10**
-
-Le chemin local historique `/mnt/data/wide_clean_ui_mockup_image_of_a_real_estate_neigh.png` est **éphémère** et ne doit jamais être la source de reprise. La source durable est le fichier Drive ci-dessus, contrôlé par nom + dimensions + SHA-256.
 
 Le TARGET est une autorité de **composition et qualité visuelle**, pas une autorisation d’inventer photos, prix, météo, scores, proximité, temps, distances ou positions.
 
@@ -41,49 +39,66 @@ Audit Supabase production read-only :
 
 **Conclusion : `0` bien actuellement éligible à un pin/callout EXACT. Aucun faux pin bien n’est autorisé.**
 
-## CONVERGENCE — HISTORIQUE UTILE
-- 2j corrigé : `6dccce7c148da6e1e21eab9d24f71e2032aff61c`, techniquement certifié, toujours sous TARGET.
-- 2k : `d2d89c88e9e9c5b185851e914ed788740ecd04f9`, satellite réel Esri sous bâtiments 3D, techniquement certifié, gap structurel confirmé.
-- recherche externe primaire MapLibre/Mapbox/Esri/Google + benchmark immobilier : décision de stopper les micro-polish et reconstruire en **2L REFRAME**.
-
-## 2L REFRAME — ÉTAT ACTUEL
-Objectif méthodologique : satellite-first, cadrage plus large, 3D discrète, rail éditorial truth-safe, mobile dédié, aucune photogrammétrie ou donnée fictive.
-
-Commits structurants vérifiés :
-- `f4a4fff904edb7a568f21131d3fe2e5f6c3f3121` — restore subtle 3D depth ;
-- `1f6268f543d603370d677815e0c0966e393a335e` — align AFTER gate avec la caméra 2L.1 ;
-- `fd9232b69f545d1058eab399e77aef544e471bd7` — brighten 2L satellite hierarchy ;
-- `1e36c08935673980c36e25725c66324e139f7a0c` — refine 2L editorial split and typography.
-
-### Certification technique 2L.3 — PROUVÉE
+## BASELINE 2L.3 — CERTIFICATION TECHNIQUE
 Workflow : `Vivre Ici AFTER Certification`  
 Run : `34065048997` — **SUCCESS**  
 Job : `101572225137` — **SUCCESS**  
-HEAD certifié : `1e36c08935673980c36e25725c66324e139f7a0c`  
+HEAD : `1e36c08935673980c36e25725c66324e139f7a0c`  
 Artifact : `9998699255` — `vivre-ici-after`  
-Taille artifact : `5 255 919` octets  
-Digest ZIP : `sha256:4bf145289444fd137f7be1593082b55f7694aba33f75cdb74f214595573c0608`
+Digest : `sha256:4bf145289444fd137f7be1593082b55f7694aba33f75cdb74f214595573c0608`
 
-Étapes vertes : contracts ✅ TypeScript ✅ production build ✅ Chromium ✅ capture AFTER ✅ verify AFTER ✅ upload artifact ✅.
+8 captures réelles : National + Casablanca/Maârif en `390×844`, `430×932`, `768×900`, `1280×900`.
 
-Le verifier prouve **8 captures** : National + Casablanca/Maârif aux viewports `390×844`, `430×932`, `768×900`, `1280×900`.
+Maârif 2L.3 : pitch `46°`, bearing `-14°`, zoom `14.3`, bâtiments `60 / 66 / 105 / 116`, POI `2`, zéro overlap, zéro DB write, zéro deploy.
 
-Métriques Maârif vérifiées :
-- pitch `46°`, bearing `-14°`, zoom `14.3` ;
-- 3D layer/source présents ;
-- bâtiments rendus : `60 / 66 / 105 / 116` selon viewport ;
-- POI : `2` ;
-- mobile bottom sheet : `170.875 px` ;
-- desktop 1280 : map `890 px`, rail `350 px`, map share `0.6953125` ;
-- `topChromeDistrictOverlap=false` et `topChromeToggleOverlap=false` partout ;
-- `zeroDbWritesByScript=true` ;
-- `zeroDeploymentActionsByScript=true`.
+## INSPECTION VISUELLE TARGET ↔ 2L.3 — PROUVÉE
+L’artifact exact `9998699255` a été téléchargé et inspecté. Comparaison visuelle directe TARGET ↔ 2L.3 construite aux mêmes viewports.
 
-**Limite : cette certification est technique. Le score visuel 2L.3 contre TARGET LOCK n’est PAS encore certifié. Ne jamais déclarer ≥9,8 sans inspection de l’artifact et comparaison directe.**
+**Score manuel de référence 2L.3 : `6,4/10` contre TARGET.**
+
+Écarts structurants constatés :
+1. caméra/perspective trop plate et trop quartier ;
+2. composition desktop incomplète ;
+3. rail éditorial trop pauvre ;
+4. mobile trop utilitaire ;
+5. matière satellite/finition encore éloignée du rendu premium cible.
+
+Ce score est une évaluation visuelle par grille, pas une métrique mathématique automatisée.
+
+## ÉTAPE 1 — CAMÉRA / PERSPECTIVE — CERTIFIÉE
+Itérations réelles comparées au TARGET. La v4 est retenue comme meilleure base actuelle du stack MapLibre/Esri :
+
+- HEAD : `1f93e91befe236dfcec9b5a03a12434e4b50a75f`
+- run : `34125068246` — **SUCCESS**
+- artifact : `10019831615` — `vivre-ici-after`
+- digest : `sha256:4621d022835b298c14b5e8daca9bd8337ee22d90d4847f763c4124ca724464ac`
+- caméra Maârif : zoom `14.0`, pitch `58°`, bearing `-12°`
+- bâtiments rendus : `73 / 78 / 119 / 120`
+- overlaps : `false` partout
+- zéro DB write / zéro deploy
+
+**Score caméra manuel : ~`7,4/10` vs `5,8/10` sur la baseline 2L.3.**
+
+Conclusion : la caméra reste moins spectaculaire que le TARGET mais n’est plus le principal bloqueur visuel. La profondeur réelle et le contexte côte/ville sont présents ; poursuivre les micro-ajustements caméra avant de corriger composition/rail serait de rendement décroissant.
+
+## ÉTAPE 2 — COMPOSITION DESKTOP — EN VALIDATION
+Goal : rapprocher la silhouette desktop du TARGET avant toute refonte éditoriale du rail.
+
+Mutation UI actuelle :
+- page : bande basse compacte `Découvrez les quartiers autrement` ;
+- layout desktop : map/rail intégrés dans une surface beige chaude ;
+- hauteur carte/rail réduite pour rendre la bande basse visible dans le viewport ;
+- map/rail gardés autour de `70/30` ;
+- aucun contenu factuel ajouté.
+
+HEAD UI avant mise à jour canonique : `4aa0b4ae7faca98726692f20c247d896aad13443`.
+Run `Vivre Ici AFTER Certification` : `34139351676`, lancé sur ce HEAD ; état au dernier contrôle : `queued`.
+
+Ne pas déclarer l’étape 2 réussie sans artifact + captures AFTER + comparaison TARGET.
 
 ## RECHERCHE / DÉCISIONS À CONSERVER
 1. Le satellite réel doit rester la matière principale ; les extrusions doivent rester discrètes.
-2. Ne pas tenter de simuler une photogrammétrie texturée non disponible/vérifiée pour Casablanca.
+2. Ne pas simuler une photogrammétrie texturée non disponible/vérifiée pour Casablanca.
 3. Le TARGET est un neighborhood guide éditorial avec carte héro, pas un dashboard GIS.
 4. Le rail ne doit utiliser que du contenu sourcé ; aucun remplissage factice.
 5. Le mobile doit rester une expérience dédiée, pas une réduction mécanique du desktop.
@@ -100,31 +115,26 @@ Métriques Maârif vérifiées :
 - aucun ≥9,8 déclaré sans comparaison visuelle prouvée.
 
 ## SYNCHRONISATION MAIN
-- dernière ancienne sync documentée : main `b8c89681358e93ec254016bcca9b78f4717ea8de`, merge `f7c28368ce2d9de54be42985e8c690fa3c6e080f` ;
-- main observé au handover : `84c1a01141f23246cf0c62a183acc270ac50b71b`.
+Main vérifié le 2026-09-07 : `df8b8d9a493553d5fa39ea8b0fa0ee789cf71ee2`.
 
-**Obligation de reprise : re-fetch branch HEAD + PR #1025 + main, puis comparer/synchroniser avant le merge final. Ne pas supposer que main est resté immobile.**
+**Obligation de reprise : re-fetch branch HEAD + PR #1025 + main, puis comparer/synchroniser avant le merge final.**
 
 ## ROADMAP
-- [x] TARGET LOCK durable + SHA-256 + Drive ID/URL
+- [x] TARGET LOCK durable + SHA-256 + Drive ID
 - [x] truth gate géographique fail-closed / `0 EXACT`
-- [x] 2j techniquement certifié
-- [x] 2k satellite-first techniquement certifié
-- [x] recherche externe primaire + méthode 2L verrouillées
-- [x] 2L REFRAME implémenté
-- [x] 2L.1 profondeur 3D restaurée
-- [x] AFTER gate modernisé sans supprimer l’exigence de bâtiments réellement rendus
-- [x] 2L.2 hiérarchie satellite
-- [x] 2L.3 split éditorial / typographie
-- [x] 2L.3 AFTER technique : 8 captures + verify vert
-- [ ] télécharger/inspecter l’artifact exact `9998699255`
-- [ ] construire comparaison même viewport `TARGET LOCK ↔ 2L.3`
-- [ ] attribuer un score visuel honnête
-- [ ] si `<9,8` : corriger uniquement les écarts prouvés puis recertifier
+- [x] baseline 2L.3 technique : 8 captures + verify vert
+- [x] artifact exact 2L.3 inspecté
+- [x] comparaison TARGET ↔ 2L.3 construite
+- [x] score baseline honnête : `6,4/10`
+- [x] Étape 1 caméra/perspective : v4 certifiée techniquement et visuellement retenue
+- [ ] Étape 2 composition desktop : implementation poussée, AFTER à certifier
+- [ ] Étape 3 rail éditorial
+- [ ] Étape 4 responsive mobile/tablette
+- [ ] Étape 5 polish + captures 390/430/768/1280 + score final
 - [ ] closeout canonique final + PR body final
 - [ ] re-fetch/compare/sync latest main
 - [ ] human merge gate PR #1025
 - [ ] Vercel uniquement après autorisation explicite
 
 ## NEXT EXACT
-**Télécharger artifact `9998699255` du run `34065048997` → inspecter les 8 captures réelles → construire une comparaison même viewport TARGET LOCK ↔ 2L.3 → scorer honnêtement → si <9,8 corriger uniquement les gaps visuellement prouvés puis recertifier. Ensuite seulement : closeout canonique/PR → compare/sync latest main → human merge gate.**
+**Laisser le run `34139351676` produire l’artifact sans polling passif → télécharger `vivre-ici-after` → afficher les captures AFTER 1280/768/430/390 → comparer TARGET ↔ AFTER → scorer l’étape 2. Si insuffisant : corriger uniquement la composition ; si validé : enchaîner immédiatement sur l’étape 3 rail éditorial.**
