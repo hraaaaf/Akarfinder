@@ -56,7 +56,7 @@ test('reconciliation distinguishes complete, splittable and gaps', () => {
   assert.equal(reconcileShard({ url: 'x', expectedCount: 100, listingUrls: ['a'], childUrls: [] }).state, 'coverage-gap');
 });
 
-test('bounded enumeration recursively splits without DB writes', async () => {
+test('bounded enumeration recursively splits, preserves shard listing ids and remains zero-write', async () => {
   const pages = new Map([
     ['https://www.mubawab.ma/fr/cc/immobilier-a-vendre', `
       <div>(3 résultats)</div>
@@ -79,12 +79,41 @@ test('bounded enumeration recursively splits without DB writes', async () => {
     roots: ['https://www.mubawab.ma/fr/cc/immobilier-a-vendre'],
     fetchImpl,
     maxRequests: 5,
+    requestDelayMs: 0,
   });
   assert.equal(report.zeroDbWrites, true);
   assert.equal(report.requestCount, 2);
   assert.equal(report.uniqueListingUrlCount, 2);
   assert.equal(report.shards[0].reconciliation.state, 'split-required');
   assert.equal(report.shards[1].reconciliation.state, 'complete-leaf');
+  assert.deepEqual(report.shards[0].listingIds, ['1']);
+  assert.deepEqual(report.shards[1].listingIds, ['1', '2']);
+  assert.equal(report.shards[1].listingUrls.length, 2);
+});
+
+test('configured request floor paces sequential shard starts', async () => {
+  const starts = [];
+  const fetchImpl = async (url) => {
+    starts.push(Date.now());
+    return {
+      status: 200,
+      url,
+      headers: { get: () => 'text/html; charset=utf-8' },
+      text: async () => '<a href="/fr/a/12345/listing">listing</a>',
+    };
+  };
+  const report = await enumerateMubawab({
+    roots: [
+      'https://www.mubawab.ma/fr/sd/casablanca/oasis/appartements-a-louer',
+      'https://www.mubawab.ma/fr/sd/rabat/agdal/appartements-a-vendre',
+    ],
+    fetchImpl,
+    maxRequests: 2,
+    requestDelayMs: 25,
+  });
+  assert.equal(report.requestCount, 2);
+  assert.equal(report.requestDelayMs, 25);
+  assert.ok(starts[1] - starts[0] >= 20, `expected paced starts, got ${starts[1] - starts[0]}ms`);
 });
 
 test('429 stops immediately', async () => {
@@ -101,6 +130,7 @@ test('429 stops immediately', async () => {
   const report = await enumerateMubawab({
     roots: ['https://www.mubawab.ma/fr/cc/immobilier-a-vendre', 'https://www.mubawab.ma/fr/cc/immobilier-a-louer'],
     fetchImpl,
+    requestDelayMs: 0,
   });
   assert.equal(calls, 1);
   assert.equal(report.stoppedEarly, 'http_429');

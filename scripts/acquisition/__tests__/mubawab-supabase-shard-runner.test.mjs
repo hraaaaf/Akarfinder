@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  DEFAULT_REQUEST_DELAY_MS,
+  checkpointFromReport,
   loadMubawabShardManifestFromSupabase,
   runShardManifest,
   selectSafeShardManifest,
@@ -20,6 +22,23 @@ test('safe manifest keeps only public robots-safe Mubawab shards and prioritizes
   assert.equal(shards.length, 4);
   assert.ok(shards[0].includes('/fr/sd/'));
   assert.ok(shards.at(-1).includes('/fr/cc/'));
+  assert.equal(DEFAULT_REQUEST_DELAY_MS, 2750);
+});
+
+test('checkpoint folds prior successful shards and listing ids', () => {
+  const checkpoint = checkpointFromReport({
+    checkpoint: {
+      completedShardUrls: ['https://mubawab.ma/fr/sd/rabat/agdal/appartements-a-louer'],
+      listingIds: ['10'],
+    },
+    shards: [{
+      url: 'https://www.mubawab.ma/fr/sd/casablanca/oasis/appartements-a-vendre',
+      fetchState: 'ok',
+      listingIds: ['11', '10'],
+    }],
+  });
+  assert.equal(checkpoint.completedShardUrls.length, 2);
+  assert.deepEqual(checkpoint.listingIds, ['10', '11']);
 });
 
 test('Supabase manifest loader paginates read-only source rows without ORDER BY', async () => {
@@ -33,17 +52,10 @@ test('Supabase manifest loader paginates read-only source rows without ORDER BY'
   ];
   const fetchImpl = async (url, options) => {
     calls.push({ url: String(url), options });
-    return {
-      ok: true,
-      status: 200,
-      json: async () => batches.shift() || [],
-    };
+    return { ok: true, status: 200, json: async () => batches.shift() || [] };
   };
   const manifest = await loadMubawabShardManifestFromSupabase({
-    supabaseUrl: 'https://example.supabase.co',
-    serviceRoleKey: 'secret',
-    fetchImpl,
-    pageSize: 2,
+    supabaseUrl: 'https://example.supabase.co', serviceRoleKey: 'secret', fetchImpl, pageSize: 2,
   });
   assert.equal(manifest.zeroDbWrites, true);
   assert.equal(manifest.sourceRowCount, 3);
@@ -60,21 +72,20 @@ test('Supabase manifest loader paginates read-only source rows without ORDER BY'
   assert.equal(calls[0].options.headers.range, undefined);
 });
 
-test('bounded manifest replay enumerates selected shards and remains zero-write', async () => {
+test('checkpoint resume skips completed shard and aggregates listing ids', async () => {
   let dbCall = 0;
+  const fetchedMubawab = [];
+  const shardA = 'https://www.mubawab.ma/fr/sd/casablanca/hay-hassani/bureaux-et-commerces-a-louer';
+  const shardB = 'https://www.mubawab.ma/fr/cd/rabat/agdal/immobilier-a-vendre';
   const fetchImpl = async (url) => {
     const asString = String(url);
     if (asString.includes('/rest/v1/discovery_candidates')) {
       dbCall += 1;
-      return {
-        ok: true,
-        status: 200,
-        json: async () => dbCall === 1 ? [
-          { canonical_url: 'https://www.mubawab.ma/fr/sd/casablanca/hay-hassani/bureaux-et-commerces-a-louer' },
-          { canonical_url: 'https://www.mubawab.ma/fr/cd/rabat/agdal/immobilier-a-vendre' },
-        ] : [],
-      };
+      return { ok: true, status: 200, json: async () => dbCall === 1 ? [
+        { canonical_url: shardA }, { canonical_url: shardB },
+      ] : [] };
     }
+    fetchedMubawab.push(asString);
     return {
       ok: true,
       status: 200,
@@ -90,10 +101,19 @@ test('bounded manifest replay enumerates selected shards and remains zero-write'
     fetchImpl,
     manifestLimit: 2,
     maxRequests: 2,
+    requestDelayMs: 0,
+    checkpoint: { completedShardUrls: [shardA], listingIds: ['999'] },
   });
   assert.equal(report.zeroDbWrites, true);
   assert.equal(report.safeShardCount, 2);
-  assert.equal(report.selectedShardCount, 2);
-  assert.equal(report.requestCount, 2);
-  assert.equal(report.uniqueListingUrlCount, 1);
+  assert.equal(report.targetShardCount, 2);
+  assert.equal(report.previousCompletedShardCount, 1);
+  assert.equal(report.selectedShardCount, 1);
+  assert.equal(report.requestCount, 1);
+  assert.equal(report.totalCompletedShardCount, 2);
+  assert.equal(report.remainingShardCount, 0);
+  assert.equal(report.aggregatedUniqueListingIdCount, 2);
+  assert.deepEqual(report.checkpoint.listingIds, ['999', '12345']);
+  assert.equal(fetchedMubawab.length, 1);
+  assert.ok(fetchedMubawab[0].includes('/fr/cd/rabat/agdal/'));
 });

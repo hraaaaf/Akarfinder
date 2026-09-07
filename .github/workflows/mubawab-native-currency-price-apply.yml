@@ -1,0 +1,40 @@
+name: Mubawab native-currency price apply
+
+on:
+  push:
+    branches: [feat/mubawab-full-enumeration]
+    paths:
+      - 'scripts/acquisition/mubawab-native-currency-price-apply.mjs'
+      - '.github/workflows/mubawab-native-currency-price-apply.yml'
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Restore certified diagnostic
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p artifacts/diagnostic
+          gh run download 34030267032 -n mubawab-price-unknown-diagnostic -D artifacts/diagnostic
+          node -e "const r=require('./artifacts/diagnostic/report.json'); if(!r.success||r.currentUnknownCount!==6225||r.counts.eur_unique!==337||r.counts.usd_unique!==3) process.exit(2)"
+      - name: Apply native-currency prices
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/acquisition/mubawab-native-currency-price-apply.mjs artifacts/diagnostic/recoverable.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mubawab-native-currency-price-apply
+          path: artifacts/mubawab-native-currency-price-apply
+          retention-days: 90

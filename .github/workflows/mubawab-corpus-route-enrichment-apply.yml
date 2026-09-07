@@ -1,0 +1,41 @@
+name: Mubawab corpus route enrichment apply
+
+on:
+  push:
+    branches: [feat/mubawab-full-enumeration]
+    paths:
+      - 'scripts/acquisition/mubawab-corpus-route-enrichment-apply.mjs'
+      - '.github/workflows/mubawab-corpus-route-enrichment-apply.yml'
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Restore certified Mubawab shard evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p artifacts/shards/a artifacts/shards/b artifacts/shards/c
+          gh run download 33958132411 -n mubawab-full-enumeration -D artifacts/shards/a
+          gh run download 33961150352 -n mubawab-full-enumeration -D artifacts/shards/b
+          gh run download 33964834762 -n mubawab-full-enumeration -D artifacts/shards/c
+      - name: Apply deterministic route enrichment
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          MUBAWAB_REPORT_FILES: artifacts/shards/a/report.json,artifacts/shards/b/report.json,artifacts/shards/c/report.json
+        run: node scripts/acquisition/mubawab-corpus-route-enrichment-apply.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mubawab-corpus-route-enrichment-apply
+          path: artifacts/mubawab-corpus-route-enrichment-apply
+          retention-days: 14

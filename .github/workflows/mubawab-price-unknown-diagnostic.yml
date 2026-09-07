@@ -1,0 +1,42 @@
+name: Mubawab price unknown diagnostic
+
+on:
+  push:
+    branches: [feat/mubawab-full-enumeration]
+    paths:
+      - 'scripts/acquisition/mubawab-price-unknown-diagnostic.mjs'
+      - '.github/workflows/mubawab-price-unknown-diagnostic.yml'
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  diagnostic:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Restore P2.3 certified card artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p artifacts/card-lanes
+          gh run download 33990932869 -n mubawab-card-lane-0 -D artifacts/card-lanes/l0
+          gh run download 33990932869 -n mubawab-card-lane-1 -D artifacts/card-lanes/l1
+          gh run download 33990932869 -n mubawab-card-lane-2 -D artifacts/card-lanes/l2
+          gh run download 33990932869 -n mubawab-card-lane-3 -D artifacts/card-lanes/l3
+      - name: Classify current price unknowns
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/acquisition/mubawab-price-unknown-diagnostic.mjs artifacts/card-lanes/l0/lane-0.json artifacts/card-lanes/l1/lane-1.json artifacts/card-lanes/l2/lane-2.json artifacts/card-lanes/l3/lane-3.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mubawab-price-unknown-diagnostic
+          path: artifacts/mubawab-price-unknown-diagnostic
+          retention-days: 90

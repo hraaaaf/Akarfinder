@@ -1,0 +1,55 @@
+name: Mubawab Historical Dataset V3 Reconcile
+
+on:
+  push:
+    branches:
+      - feat/mubawab-full-enumeration
+    paths:
+      - '.github/workflows/mubawab-historical-dataset-v3.yml'
+      - 'scripts/acquisition/mubawab-historical-dataset-v3.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Dry-run exact historical dataset reconcile
+        env:
+          MODE: dry-run
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: python scripts/acquisition/mubawab-historical-dataset-v3.py
+
+      - name: Assert dry-run proof is PII-free
+        shell: bash
+        run: |
+          set -euo pipefail
+          ! grep -R -E 'phone_number|property_info|phone_count|"title"|"location"' artifacts/mubawab-dataset-v3/matches-dry-run.jsonl
+
+      - name: Apply metadata-only V3 enrichment
+        env:
+          MODE: apply
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: python scripts/acquisition/mubawab-historical-dataset-v3.py
+
+      - name: Assert apply proof is PII-free
+        shell: bash
+        run: |
+          set -euo pipefail
+          ! grep -R -E 'phone_number|property_info|phone_count|"title"|"location"' artifacts/mubawab-dataset-v3/matches-apply.jsonl
+
+      - name: Upload proof artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mubawab-historical-dataset-v3-realestatebuddy
+          path: artifacts/mubawab-dataset-v3/
+          if-no-files-found: error
+          retention-days: 90

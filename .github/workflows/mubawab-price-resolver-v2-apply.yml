@@ -1,0 +1,40 @@
+name: Mubawab price resolver v2 apply
+
+on:
+  push:
+    branches: [feat/mubawab-full-enumeration]
+    paths:
+      - 'scripts/acquisition/mubawab-price-resolver-v2-apply.mjs'
+      - '.github/workflows/mubawab-price-resolver-v2-apply.yml'
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Restore certified resolver output
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p artifacts/resolver
+          gh run download 34029646674 -n mubawab-price-resolver-v2-dry-run -D artifacts/resolver
+          node -e "const r=require('./artifacts/resolver/report.json'); if(r.resolvedCount!==944||r.unresolvedCount!==8) process.exit(2)"
+      - name: Apply certified price resolutions
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/acquisition/mubawab-price-resolver-v2-apply.mjs artifacts/resolver/resolved.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mubawab-price-resolver-v2-apply
+          path: artifacts/mubawab-price-resolver-v2-apply
+          retention-days: 90
