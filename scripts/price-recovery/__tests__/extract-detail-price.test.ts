@@ -31,6 +31,37 @@ test('Agenz recovers sale price from title when body has no price block', () => 
   assert.equal(r.confidence, 'high');
 });
 
+test('Agenz recovers a bare primary-block sale price after the listing heading', () => {
+  const html = `
+    <html><body>
+      <h1>Apartment for sale in Beauséjour</h1>
+      <div>1 400 000 MAD</div>
+      <div>Casablanca – Beauséjour</div>
+      <div><span>Syndic fees :</span><strong>140 MAD / month</strong></div>
+      <div>Ref. CMN-HA-1710</div>
+      <section><h2>Similar listings</h2><div>2 900 000 MAD</div></section>
+    </body></html>`;
+  const r = extractDetailPrice('agenz.ma', html, 'sale');
+  assert.equal(r.currentPriceMad, 1400000);
+  assert.equal(r.period, 'sale_total');
+  assert.equal(r.priceStatus, 'available');
+  assert.match(r.evidence ?? '', /^agenz:primary-block:/);
+});
+
+test('Agenz primary-block rent price wins before syndic fees', () => {
+  const html = `
+    <html><body>
+      <h1>Appartement à louer à Agdal</h1>
+      <div>8 500 DH / mois</div>
+      <div>Rabat – Agdal</div>
+      <div><span>Syndic :</span><strong>900 DH / mois</strong></div>
+      <div>Ref. RBT-101</div>
+    </body></html>`;
+  const r = extractDetailPrice('agenz.ma', html, 'rent');
+  assert.equal(r.currentPriceMad, 8500);
+  assert.equal(r.period, 'month');
+});
+
 test('Mubawab sale extracts total price', () => {
   const html = `
     <html><body>
