@@ -1,0 +1,62 @@
+name: AkarFinder - Q4B Exact ID URL Recovery
+
+on:
+  push:
+    branches: [data/q4a-minimal-search-ready]
+    paths:
+      - 'scripts/audits/q4b-id-url-recovery.py'
+      - '.github/workflows/q4b-id-url-recovery.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  recover:
+    strategy:
+      fail-fast: false
+      matrix:
+        source: [mubawab.ma, avito.ma]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download frozen evidence artifacts
+        run: |
+          mkdir -p .tmp/q4b-input
+          gh api /repos/${{ github.repository }}/actions/artifacts/10022063956/zip > .tmp/q4b-input/q1d.zip
+          gh api /repos/${{ github.repository }}/actions/artifacts/10021998663/zip > .tmp/q4b-input/public.zip
+          gh api /repos/${{ github.repository }}/actions/artifacts/10026575439/zip > .tmp/q4b-input/dbfields.zip
+      - name: Recover exact URLs from Common Crawl
+        run: |
+          python scripts/audits/q4b-id-url-recovery.py \
+            --q1d .tmp/q4b-input/q1d.zip \
+            --public .tmp/q4b-input/public.zip \
+            --dbfields .tmp/q4b-input/dbfields.zip \
+            --source '${{ matrix.source }}' \
+            --offset 0 \
+            --limit 500 \
+            --workers 16 \
+            --indexes 6 \
+            --out '.tmp/q4b-${{ matrix.source }}'
+      - name: Verify exact-ID invariants
+        run: |
+          python - <<'PY'
+          import json, pathlib
+          p=pathlib.Path('.tmp/q4b-${{ matrix.source }}/summary.json')
+          s=json.loads(p.read_text())
+          assert s['originalIdOnly']['mubawab.ma']==76816
+          assert s['originalIdOnly']['avito.ma']==46904
+          assert s['unresolvedBefore']['mubawab.ma']>0
+          assert s['unresolvedBefore']['avito.ma']>0
+          assert s['recoveredExactUrls'] <= 500
+          print(json.dumps(s,indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: q4b-id-url-${{ matrix.source }}-batch0
+          path: .tmp/q4b-${{ matrix.source }}/
+          retention-days: 30
