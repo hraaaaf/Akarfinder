@@ -1,0 +1,54 @@
+name: AkarFinder - Q4A DB URL Recovery
+
+on:
+  push:
+    branches:
+      - data/q4a-minimal-search-ready
+    paths:
+      - 'scripts/audits/candidate-lake-q4a-db-url-recovery.ts'
+      - '.github/workflows/candidate-lake-q4a-db-url-recovery.yml'
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Download certified Q1D inputs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p .tmp/q4a-input/q1d .tmp/q4a-input/public
+          gh api repos/${{ github.repository }}/actions/artifacts/10022063956/zip > /tmp/q1d.zip
+          unzip -q /tmp/q1d.zip -d .tmp/q4a-input/q1d
+          gh api repos/${{ github.repository }}/actions/artifacts/10021998663/zip > /tmp/public.zip
+          unzip -q /tmp/public.zip -d .tmp/q4a-input/public
+      - name: Recover exact stored URLs by source ID
+        run: npx tsx scripts/audits/candidate-lake-q4a-db-url-recovery.ts
+      - name: Verify strict exact-match invariants
+        run: |
+          node - <<'NODE'
+          const fs=require('fs')
+          const s=JSON.parse(fs.readFileSync('.tmp/q4a-db-url-recovery/summary.json','utf8'))
+          if (s.missingUrlInvented) throw new Error('URL invention forbidden')
+          if (!s.databaseReadsOnly || s.databaseWrites!==0 || s.productionWrites!==0 || s.sourceSiteFetches!==0 || s.vercelDeployments!==0) throw new Error('read-only invariant failed')
+          if (s.projectedSearchReadyTotal < s.alreadyReadyFromQ1DPlusPublic) throw new Error('counter regression')
+          console.log(s)
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: candidate-lake-q4a-db-url-recovery
+          path: .tmp/q4a-db-url-recovery/
+          retention-days: 30
