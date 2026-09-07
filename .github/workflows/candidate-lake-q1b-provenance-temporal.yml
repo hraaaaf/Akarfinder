@@ -1,0 +1,53 @@
+name: AkarFinder - Q1B Provenance Temporal Cohort
+
+on:
+  push:
+    branches: [data/q1b-provenance-temporal-cohort]
+    paths:
+      - 'scripts/audits/candidate-lake-q1b-normalize.py'
+      - 'scripts/audits/candidate-lake-q1b-lane-metadata.json'
+      - '.github/workflows/candidate-lake-q1b-provenance-temporal.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  normalize:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      Q1B_Q1A_MANIFEST_ROOT: .tmp/q1b-input/q1a
+      Q1B_DB_BACKED_ROOT: .tmp/q1b-input/db-backed
+      Q1B_OUT: .tmp/q1b-normalized
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download exact certified Q1A and DB-backed artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$Q1B_Q1A_MANIFEST_ROOT" "$Q1B_DB_BACKED_ROOT" .tmp/downloads
+          curl --fail --location --retry 3 \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/10020001261/zip" \
+            -o .tmp/downloads/q1a.zip
+          curl --fail --location --retry 3 \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/9997114366/zip" \
+            -o .tmp/downloads/db-backed.zip
+          unzip -q .tmp/downloads/q1a.zip -d "$Q1B_Q1A_MANIFEST_ROOT"
+          unzip -q .tmp/downloads/db-backed.zip -d "$Q1B_DB_BACKED_ROOT"
+      - name: Normalize provenance and temporal cohorts
+        run: python scripts/audits/candidate-lake-q1b-normalize.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: candidate-lake-q1b-provenance-temporal-cohort
+          path: .tmp/q1b-normalized/
+          retention-days: 30
+          if-no-files-found: error
