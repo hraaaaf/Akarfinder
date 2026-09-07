@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { CesiumMaarifSpike } from "@/components/map/CesiumMaarifSpike";
+import { MaarifTargetRail } from "@/components/map/MaarifTargetRail";
 
 export const metadata: Metadata = {
   title: "Vivre Ici Cesium Spike | AkarFinder",
@@ -9,9 +10,10 @@ export const metadata: Metadata = {
 
 export default function CesiumSpikePage() {
   return (
-    <main className="min-h-[100svh] bg-[#f4efe7]" data-vivre-ici-cesium-spike-page>
+    <main className="relative min-h-[100svh] bg-[#f4efe7]" data-vivre-ici-cesium-spike-page>
       <SiteHeader searchMode fluid />
       <CesiumMaarifSpike />
+      <MaarifTargetRail />
     </main>
   );
 }
