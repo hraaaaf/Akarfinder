@@ -7,6 +7,8 @@ const LIMIT = Math.max(1, Number(process.env.PRICE_RECOVERY_LIMIT ?? 100));
 const CONCURRENCY = Math.max(1, Math.min(5, Number(process.env.PRICE_RECOVERY_CONCURRENCY ?? 3)));
 const SOURCES = (process.env.PRICE_RECOVERY_SOURCES ?? 'agenz.ma,mubawab.ma')
   .split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+const FALLBACK_MANIFEST = process.env.PRICE_RECOVERY_FALLBACK_MANIFEST
+  ?? 'scripts/price-recovery/fallback-seed-manifest.json';
 
 function env(name: string): string {
   const value = process.env[name];
@@ -46,6 +48,12 @@ type Result = Thin & {
   error: string | null;
   attempts: number;
 };
+
+async function loadFallbackManifest(): Promise<Thin[]> {
+  const raw = await fs.readFile(FALLBACK_MANIFEST, 'utf8');
+  const rows = JSON.parse(raw) as Thin[];
+  return rows.filter(row => SOURCES.includes(row.source_domain));
+}
 
 async function fetchOne(row: Thin): Promise<Result> {
   const maxAttempts = row.source_domain === 'agenz.ma' ? 4 : 1;
@@ -99,16 +107,29 @@ async function mapLimited<T, R>(items: T[], fn: (item: T) => Promise<R>, concurr
 
 async function main() {
   const rowsBySource = new Map<string, Thin[]>();
-  for (const source of SOURCES) {
-    const sourceRows = await rest<Thin>('thin_index_search_documents', {
-      select: 'seed_id,canonical_url,source_domain,intent,freshness_status,display_eligibility',
-      source_domain: `eq.${source}`,
-      price_mad: 'is.null',
-      display_eligibility: 'in.(eligible_primary,eligible_secondary)',
-      document_kind: 'eq.LISTING',
-      limit: String(LIMIT),
-    });
-    rowsBySource.set(source, sourceRows);
+  let inputMode: 'supabase_rest' | 'fallback_manifest' = 'supabase_rest';
+
+  try {
+    for (const source of SOURCES) {
+      const sourceRows = await rest<Thin>('thin_index_search_documents', {
+        select: 'seed_id,canonical_url,source_domain,intent,freshness_status,display_eligibility',
+        source_domain: `eq.${source}`,
+        price_mad: 'is.null',
+        display_eligibility: 'in.(eligible_primary,eligible_secondary)',
+        document_kind: 'eq.LISTING',
+        limit: String(LIMIT),
+      });
+      rowsBySource.set(source, sourceRows);
+    }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (!/\b402\b|exceed_egress_quota/i.test(message)) throw error;
+    const fallback = await loadFallbackManifest();
+    inputMode = 'fallback_manifest';
+    for (const source of SOURCES) {
+      rowsBySource.set(source, fallback.filter(row => row.source_domain === source).slice(0, LIMIT));
+    }
+    console.warn(`Supabase REST unavailable due to egress restriction; using ${FALLBACK_MANIFEST}`);
   }
 
   const results: Result[] = [];
@@ -132,6 +153,7 @@ async function main() {
   const summary = {
     readOnly: true,
     databaseWrites: 0,
+    inputMode,
     requested: results.length,
     fetched: results.filter(r => r.fetched).length,
     extracted: extracted.length,
