@@ -45,6 +45,7 @@ try {
   await ready;
   browser = await chromium.launch({ headless: true });
   const results = [];
+
   for (const vp of viewports) {
     const context = await browser.newContext({ viewport: { width: vp.width, height: vp.height } });
     const page = await context.newPage();
@@ -65,8 +66,13 @@ try {
     });
 
     const response = await page.goto(`${baseUrl}${route}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
-    await page.locator('[data-cesium-spike]').waitFor({ state: 'visible', timeout: 15000 });
-    await page.waitForFunction(() => document.querySelector('[data-cesium-spike]')?.getAttribute('data-cesium-ready') === 'true', null, { timeout: 30000 }).catch(() => {});
+    const shellLocator = page.locator('[data-cesium-spike]');
+    await shellLocator.waitFor({ state: 'visible', timeout: 15000 });
+    await page.waitForFunction(() => {
+      const shell = document.querySelector('[data-cesium-spike]');
+      return shell?.getAttribute('data-cesium-ready') === 'true'
+        && shell?.getAttribute('data-cesium-render-state') === 'ready';
+    }, null, { timeout: 30000 }).catch(() => {});
     await page.waitForTimeout(2500);
 
     const file = path.join(outDir, `cesium-maarif-${vp.name}.png`);
@@ -75,11 +81,14 @@ try {
     await page.locator('[data-cesium-map-surface]').screenshot({ path: mapFile });
 
     const mapStat = await fs.stat(mapFile);
-    const shell = await page.locator('[data-cesium-spike]').boundingBox().catch(() => null);
+    const shell = await shellLocator.boundingBox().catch(() => null);
     const canvasCount = await page.locator('.cesium-spike-map canvas').count();
-    const readyState = await page.locator('[data-cesium-spike]').getAttribute('data-cesium-ready');
-    const renderState = await page.locator('[data-cesium-spike]').getAttribute('data-cesium-render-state');
-    const imageryLayerCount = Number(await page.locator('[data-cesium-spike]').getAttribute('data-cesium-imagery-layers') ?? '0');
+    const readyState = await shellLocator.getAttribute('data-cesium-ready');
+    const renderState = await shellLocator.getAttribute('data-cesium-render-state');
+    const imageryLayerCount = Number(await shellLocator.getAttribute('data-cesium-imagery-layers') ?? '0');
+    const boundaryState = await shellLocator.getAttribute('data-cesium-boundary-state');
+    const contextState = await shellLocator.getAttribute('data-cesium-context-state');
+    const anchorCount = Number(await shellLocator.getAttribute('data-cesium-anchor-count') ?? '0');
     const requiredFailedResponses = failedResponses.filter((entry) => !/api\.cesium\.com\/v1\/assets\/96188\/endpoint/i.test(entry.url));
 
     results.push({
@@ -88,6 +97,9 @@ try {
       readyState,
       renderState,
       imageryLayerCount,
+      boundaryState,
+      contextState,
+      anchorCount,
       canvasCount,
       shell,
       mapScreenshotBytes: mapStat.size,
@@ -102,7 +114,7 @@ try {
 
   const summary = {
     generatedAt: new Date().toISOString(),
-    mode: 'cesium-spike',
+    mode: 'cesium-spike-neighborhood-detail',
     route,
     zeroDbWritesByScript: true,
     zeroDeploymentActionsByScript: true,
@@ -118,6 +130,9 @@ try {
     || r.readyState !== 'true'
     || r.renderState !== 'ready'
     || r.imageryLayerCount < 1
+    || r.boundaryState !== 'reference'
+    || r.contextState !== 'ready'
+    || r.anchorCount < 1
     || r.canvasCount < 1
     || r.mapScreenshotBytes < minMapScreenshotBytes
     || r.requiredFailedResponses.length > 0
