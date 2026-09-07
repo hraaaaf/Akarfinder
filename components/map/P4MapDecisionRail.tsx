@@ -69,6 +69,16 @@ export function P4MapDecisionRail() {
   }, [navigationState.city, navigationState.district, localContext]);
 
   const localAnchors = localContext?.anchors.slice(0, 4) ?? [];
+  const localCategoryLabels = localContext
+    ? Array.from(new Set(localContext.categories.map((category) => mapPoiCategoryLabel(category))))
+    : [];
+  const contextIntro = districtEntity
+    ? localContext
+      ? `${districtEntity.canonical_name} se découvre ici à travers ${localContext.anchor_count} repère${localContext.anchor_count > 1 ? "s" : ""} public${localContext.anchor_count > 1 ? "s" : ""} sourcé${localContext.anchor_count > 1 ? "s" : ""}. Les biens ne sont cartographiés que lorsqu’une position exacte vérifiée est disponible.`
+      : `Découvrez ${districtEntity.canonical_name} par ses repères publics sourcés. Les biens ne sont cartographiés que lorsqu’une position exacte vérifiée est disponible.`
+    : cityName === "Maroc"
+      ? "Explorez les territoires disponibles, puis descendez vers les villes et quartiers avec une précision explicitement qualifiée."
+      : `Explorez ${cityName} et ses quartiers avec des repères sourcés uniquement.`;
 
   return (
     <aside
@@ -81,20 +91,18 @@ export function P4MapDecisionRail() {
       <div className="p4-sheet-handle" aria-hidden="true" />
 
       <header className="p4-premium-context-header">
-        <p className="text-[9px] font-extrabold uppercase tracking-[0.16em] text-brand-primary">
-          Vivre ici
+        <p className="p4-premium-kicker">
+          {districtEntity ? `${cityName} · Quartier` : "Vivre ici"}
         </p>
-        <h2 className="mt-1 text-[clamp(22px,2vw,30px)] font-extrabold tracking-[-0.045em] text-foreground">
-          {title}
-        </h2>
-        {districtEntity ? <p className="p4-premium-context-location">{cityName}</p> : null}
-        <p className="mt-2 text-[11px] leading-[1.55] text-muted-foreground">
-          {districtEntity
-            ? `Explorez ${districtEntity.canonical_name} par son contexte urbain et les repères publics réellement disponibles. Les biens restent exclus de la carte sans position exacte vérifiée.`
-            : cityName === "Maroc"
-              ? "Explorez les territoires disponibles puis descendez vers les villes et quartiers avec une précision explicitement qualifiée."
-              : `Explorez ${cityName} et ses quartiers avec des repères sourcés uniquement.`}
-        </p>
+        <h2>{title}</h2>
+        {districtEntity ? <p className="p4-premium-context-location">Vivre, comprendre, puis chercher</p> : null}
+        <p className="p4-premium-lede">{contextIntro}</p>
+        {districtEntity ? (
+          <div className="p4-premium-proofline" aria-label="Règles de fiabilité">
+            <span>Repères publics sourcés</span>
+            <span>Positions immobilières exactes uniquement</span>
+          </div>
+        ) : null}
       </header>
 
       <nav className="p4-premium-tabs" aria-label="Contexte Vivre ici">
@@ -107,27 +115,33 @@ export function P4MapDecisionRail() {
       <section className="p4-premium-signal-grid" aria-label="Repères disponibles">
         <div>
           <MapPin size={16} aria-hidden="true" />
-          <strong>Repères</strong>
-          <span>{localContext ? `${localContext.anchor_count} sourcé${localContext.anchor_count > 1 ? "s" : ""}` : "Sourcés uniquement"}</span>
+          <strong>{localContext ? localContext.anchor_count : "—"}</strong>
+          <span>Repères sourcés</span>
         </div>
         <div>
           <Trees size={16} aria-hidden="true" />
-          <strong>Vie locale</strong>
-          <span>Selon disponibilité</span>
+          <strong>{localContext ? localCategoryLabels.length : "—"}</strong>
+          <span>Catégories observées</span>
         </div>
         <div>
           <ShieldCheck size={16} aria-hidden="true" />
-          <strong>Biens</strong>
-          <span>Pin exact requis</span>
+          <strong>Exact</strong>
+          <span>Position requise pour un pin</span>
         </div>
       </section>
+
+      {districtEntity && localCategoryLabels.length ? (
+        <p className="p4-premium-category-line">
+          {localCategoryLabels.join(" · ")}
+        </p>
+      ) : null}
 
       {districtEntity && localAnchors.length ? (
         <section className="p4-premium-local-guide" aria-label={`Repères sourcés à ${districtEntity.canonical_name}`} data-vivre-ici-local-guide>
           <div className="p4-premium-local-guide-heading">
             <div>
               <p>À proximité</p>
-              <h3>Repères réellement observés</h3>
+              <h3>Ce que l’on peut réellement repérer</h3>
             </div>
             <span>{localContext?.anchor_count ?? localAnchors.length}</span>
           </div>
@@ -148,15 +162,15 @@ export function P4MapDecisionRail() {
 
       <section className="p4-premium-market-card" data-p4-map-data-contract>
         <div>
-          <p className="text-[9px] font-extrabold uppercase tracking-[0.12em] text-brand-primary">
+          <p className="p4-premium-market-eyebrow">
             {provider === "rabat-market-intelligence" ? "Marché observé" : "Données de marché"}
           </p>
-          <p className="mt-1 text-[12px] font-extrabold text-foreground">
-            {provider === "rabat-market-intelligence" ? "Indicateurs disponibles" : "Publication conditionnée à une source validée"}
+          <p className="p4-premium-market-title">
+            {provider === "rabat-market-intelligence" ? "Indicateurs disponibles" : "Pas de prix de quartier publié sans source validée"}
           </p>
         </div>
-        <p className="col-span-full text-[9.5px] leading-4 text-muted-foreground">
-          La présentation premium ne remplit jamais les cases manquantes par estimation.
+        <p className="p4-premium-market-copy">
+          AkarFinder laisse volontairement une information absente plutôt que de la remplacer par une estimation.
         </p>
       </section>
 
@@ -172,15 +186,15 @@ export function P4MapDecisionRail() {
       <div className="p4-premium-actions">
         <Link
           href={searchHref}
-          className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[14px] bg-brand-primary px-4 text-[12px] font-extrabold text-white shadow-accent transition hover:bg-brand-primary-hover"
+          className="p4-premium-primary-action"
         >
           <Search size={15} aria-hidden="true" />
-          {districtEntity ? `Voir les biens à ${districtEntity.canonical_name}` : `Voir les biens de ${cityName === "Maroc" ? "la zone" : cityName}`}
+          {districtEntity ? `Voir les biens disponibles à ${districtEntity.canonical_name}` : `Voir les biens de ${cityName === "Maroc" ? "la zone" : cityName}`}
         </Link>
         {districtEntity?.seo_eligible && cityEntity ? (
           <Link
             href={`/quartiers/${cityEntity.slug}/${districtEntity.slug}`}
-            className="inline-flex min-h-10 items-center justify-center gap-2 rounded-[14px] border border-border-strong bg-surface px-4 text-[10.5px] font-extrabold text-foreground"
+            className="p4-premium-secondary-action"
           >
             <Building2 size={13} aria-hidden="true" /> Voir la fiche quartier
           </Link>
