@@ -109,6 +109,45 @@ function metadataCandidates($: cheerio.CheerioAPI, intent: string | null): Candi
   return out;
 }
 
+function agenzPrimaryBlockCandidate($: cheerio.CheerioAPI, intent: string | null): Candidate | null {
+  const nodes = $('body *').toArray();
+  const headingIndex = nodes.findIndex(el => {
+    if (!el || el.type !== 'tag' || !$(el).is('h1')) return false;
+    const text = normalizeText($(el).text());
+    return /\b(for\s+sale|for\s+rent|à\s+vendre|à\s+louer)\b/i.test(text);
+  });
+  if (headingIndex < 0) return null;
+
+  for (let i = headingIndex + 1; i < Math.min(nodes.length, headingIndex + 80); i++) {
+    const el = nodes[i];
+    if (!el || el.type !== 'tag') continue;
+    const own = normalizeText($(el).clone().children().remove().end().text());
+    if (!own || own.length > 120) continue;
+    if (/^(?:ref\.?|réf\.?|reference)\b/i.test(own)) break;
+
+    const around = normalizeText(`${$(el).parent().text()} ${$(el).prev().text()}`).slice(0, 300);
+    if (/syndic|charges?\b|mensualit|mortgage|crédit|credit|loyer\s+potentiel|potential\s+rent/i.test(around)) continue;
+    if (/\/\s*m(?:²|2)|par\s*m(?:²|2)/i.test(own)) continue;
+
+    MONEY.lastIndex = 0;
+    let m: RegExpExecArray | null;
+    while ((m = MONEY.exec(own))) {
+      const value = parseAmount(m[1]);
+      if (!value) continue;
+      const period = detectPeriod(own, intent);
+      if (!plausible(value, intent, period)) continue;
+      return {
+        value,
+        score: 11,
+        period,
+        evidence: `agenz:primary-block:${own}`,
+        old: false,
+      };
+    }
+  }
+  return null;
+}
+
 function visibleCandidates($: cheerio.CheerioAPI, intent: string | null): Candidate[] {
   const out: Candidate[] = [];
   $('body *').each((_, el) => {
@@ -155,8 +194,12 @@ export function extractDetailPrice(sourceDomain: string, html: string, intent: s
   ].join(' '));
   const pricePerM2Mad = firstPerM2(`${headText} ${body}`);
   const json = jsonLdPrice($, intent);
-  const candidates = [...metadataCandidates($, intent), ...visibleCandidates($, intent)]
-    .sort((a, b) => b.score - a.score || b.value - a.value);
+  const agenzPrimary = domain === 'agenz.ma' ? agenzPrimaryBlockCandidate($, intent) : null;
+  const candidates = [
+    ...metadataCandidates($, intent),
+    ...(agenzPrimary ? [agenzPrimary] : []),
+    ...visibleCandidates($, intent),
+  ].sort((a, b) => b.score - a.score || b.value - a.value);
   const old = candidates.filter(c => c.old && c.score >= 1)[0] ?? null;
   const current = candidates.filter(c => !c.old && c.score >= 5)[0] ?? null;
   const notDisclosed = /\b(prix\s+(?:à\s+)?consulter|demander\s+le\s+prix|prix\s+sur\s+demande|price\s+on\s+request|contact(?:ez)?\s+(?:nous|l['’]annonceur).*prix)\b/i.test(`${headText} ${body}`);
