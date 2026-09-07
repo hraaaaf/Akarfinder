@@ -12,6 +12,7 @@ import "./premium-lot4.css";
 import "./premium-lot5.css";
 import "./premium-lot6.css";
 import "./premium-lot7.css";
+import "./premium-lot8.css";
 
 export const dynamic = "force-dynamic";
 
