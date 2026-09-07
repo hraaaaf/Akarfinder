@@ -87,7 +87,6 @@ async function main() {
       price_mad: 'is.null',
       display_eligibility: 'in.(eligible_primary,eligible_secondary)',
       document_kind: 'eq.LISTING',
-      order: 'canonical_url.asc',
       limit: String(LIMIT),
     });
     rows.push(...sourceRows);
