@@ -33,7 +33,7 @@ async function main() {
 
   const seeds = await pageAll(
     'source_offer_seeds',
-    'id,canonical_url,source_domain,seed_provider,first_observed_at,last_observed_at,source_offer_key,observation_count,freshness_status,fresh_last_seen_at,fresh_channels,freshness_evidence,fresh_last_checked_at'
+    'id,canonical_url,source_domain,seed_provider,first_observed_at,last_observed_at,observation_count,freshness_status,fresh_last_seen_at,fresh_channels,freshness_evidence,fresh_last_checked_at'
   )
   const listingSources = await pageAll(
     'listing_sources',
