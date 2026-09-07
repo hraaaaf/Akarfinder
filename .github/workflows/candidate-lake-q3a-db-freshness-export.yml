@@ -1,0 +1,36 @@
+name: AkarFinder - Q3A DB Freshness Export
+
+on:
+  push:
+    branches: [data/q3a-freshness-evidence]
+    paths:
+      - 'scripts/audits/candidate-lake-q3a-db-freshness-export.ts'
+      - '.github/workflows/candidate-lake-q3a-db-freshness-export.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      Q3A_DB_OUT: .tmp/q3a-db-freshness
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Export exact dated freshness evidence from Supabase
+        run: npx tsx scripts/audits/candidate-lake-q3a-db-freshness-export.ts
+      - uses: actions/upload-artifact@v4
+        with:
+          name: candidate-lake-q3a-db-freshness-export
+          path: .tmp/q3a-db-freshness/
+          retention-days: 30
+          if-no-files-found: error
