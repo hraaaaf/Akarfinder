@@ -67,7 +67,7 @@ function jsonLdPrice($: cheerio.CheerioAPI, intent: string | null): { value: num
         }
       }
     } catch {
-      // Invalid JSON-LD is ignored; visible page evidence is still evaluated below.
+      // Invalid JSON-LD is ignored; visible or metadata evidence is evaluated below.
     }
   }
   return null;
@@ -80,6 +80,34 @@ function firstPerM2(text: string): number | null {
 }
 
 type Candidate = { value: number; score: number; period: PricePeriod; evidence: string; old: boolean };
+
+function metadataCandidates($: cheerio.CheerioAPI, intent: string | null): Candidate[] {
+  const fields: Array<[string, string]> = [
+    ['title', normalizeText($('title').first().text())],
+    ['meta:og:title', normalizeText($('meta[property="og:title"]').attr('content') ?? '')],
+    ['meta:description', normalizeText($('meta[name="description"]').attr('content') ?? '')],
+    ['meta:og:description', normalizeText($('meta[property="og:description"]').attr('content') ?? '')],
+  ];
+  const out: Candidate[] = [];
+  for (const [source, text] of fields) {
+    if (!text || text.length > 500) continue;
+    MONEY.lastIndex = 0;
+    let m: RegExpExecArray | null;
+    while ((m = MONEY.exec(text))) {
+      const value = parseAmount(m[1]);
+      if (!value) continue;
+      const period = detectPeriod(text, intent);
+      let score = source === 'title' || source === 'meta:og:title' ? 12 : 9;
+      if (/\b(vendre|vente|sale|for sale)\b/i.test(text) && intent === 'sale') score += 4;
+      if (/\b(louer|location|rent|for rent)\b/i.test(text) && intent === 'rent') score += 4;
+      if (/\/\s*(?:mois|month)\b|\bpar\s+mois\b/i.test(text) && intent === 'rent') score += 3;
+      if (/\/\s*m(?:²|2)|par\s*m(?:²|2)/i.test(text)) score -= 30;
+      if (!plausible(value, intent, period)) score -= 30;
+      if (score > -10) out.push({ value, score, period, evidence: `${source}:${text}`, old: false });
+    }
+  }
+  return out;
+}
 
 function visibleCandidates($: cheerio.CheerioAPI, intent: string | null): Candidate[] {
   const out: Candidate[] = [];
@@ -119,12 +147,19 @@ export function extractDetailPrice(sourceDomain: string, html: string, intent: s
   }
   const $ = cheerio.load(html);
   const body = normalizeText($('body').text());
-  const pricePerM2Mad = firstPerM2(body);
+  const headText = normalizeText([
+    $('title').first().text(),
+    $('meta[property="og:title"]').attr('content') ?? '',
+    $('meta[name="description"]').attr('content') ?? '',
+    $('meta[property="og:description"]').attr('content') ?? '',
+  ].join(' '));
+  const pricePerM2Mad = firstPerM2(`${headText} ${body}`);
   const json = jsonLdPrice($, intent);
-  const candidates = visibleCandidates($, intent).sort((a, b) => b.score - a.score || b.value - a.value);
+  const candidates = [...metadataCandidates($, intent), ...visibleCandidates($, intent)]
+    .sort((a, b) => b.score - a.score || b.value - a.value);
   const old = candidates.filter(c => c.old && c.score >= 1)[0] ?? null;
   const current = candidates.filter(c => !c.old && c.score >= 5)[0] ?? null;
-  const notDisclosed = /\b(prix\s+(?:à\s+)?consulter|demander\s+le\s+prix|prix\s+sur\s+demande|price\s+on\s+request|contact(?:ez)?\s+(?:nous|l['’]annonceur).*prix)\b/i.test(body);
+  const notDisclosed = /\b(prix\s+(?:à\s+)?consulter|demander\s+le\s+prix|prix\s+sur\s+demande|price\s+on\s+request|contact(?:ez)?\s+(?:nous|l['’]annonceur).*prix)\b/i.test(`${headText} ${body}`);
 
   if (json) {
     return {
@@ -149,7 +184,7 @@ export function extractDetailPrice(sourceDomain: string, html: string, intent: s
       priceStatus: notDisclosed ? 'not_disclosed' : 'unknown',
       currency: null,
       confidence: 'none',
-      evidence: notDisclosed ? 'visible:not_disclosed' : null,
+      evidence: notDisclosed ? 'visible_or_meta:not_disclosed' : null,
       rejected: [notDisclosed ? 'price_not_disclosed' : 'no_high_confidence_total_price'],
     };
   }
