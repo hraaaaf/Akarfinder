@@ -1,0 +1,49 @@
+name: AkarFinder - Q2A Candidate Pair Blocking
+
+on:
+  push:
+    branches: [data/q2a-candidate-pair-blocking]
+    paths:
+      - 'scripts/audits/candidate-lake-q2a-blocking.py'
+      - 'scripts/audits/candidate-lake-q2a-smoke-test.py'
+      - '.github/workflows/candidate-lake-q2a-blocking.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  block:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      Q2A_Q1D_ROOT: .tmp/q2a-input/q1d
+      Q2A_OUT: .tmp/q2a-blocking
+      Q1D_ARTIFACT_ID: '10022063956'
+      Q2A_BLOCK_CAP: '250'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download certified Q1D artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$Q2A_Q1D_ROOT" .tmp/downloads
+          curl --fail --location --retry 3 \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/${Q1D_ARTIFACT_ID}/zip" \
+            -o .tmp/downloads/q1d.zip
+          unzip -q .tmp/downloads/q1d.zip -d "$Q2A_Q1D_ROOT"
+      - name: Build conservative candidate pairs
+        run: python scripts/audits/candidate-lake-q2a-blocking.py
+      - name: Verify Q2A invariants
+        run: python scripts/audits/candidate-lake-q2a-smoke-test.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: candidate-lake-q2a-candidate-pairs
+          path: .tmp/q2a-blocking/
+          retention-days: 30
+          if-no-files-found: error
