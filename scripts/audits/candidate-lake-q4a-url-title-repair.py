@@ -11,7 +11,8 @@ EXPECTED=251_046
 ALIASES={
 'rabat':'Rabat','casablanca':'Casablanca','casa':'Casablanca','marrakech':'Marrakech','agadir':'Agadir','tanger':'Tanger','tangier':'Tanger','fes':'Fès','fez':'Fès','meknes':'Meknès','tetouan':'Tétouan','kenitra':'Kénitra','sale':'Salé','temara':'Témara','mohammedia':'Mohammedia','el jadida':'El Jadida','essaouira':'Essaouira','oujda':'Oujda','ifrane':'Ifrane','saidia':'Saidia','beni mellal':'Béni Mellal','khouribga':'Khouribga','safi':'Safi','settat':'Settat','berrechid':'Berrechid','larache':'Larache','nador':'Nador','dakhla':'Dakhla','laayoune':'Laâyoune','youssoufia':'Youssoufia','chefchaouen':'Chefchaouen','martil':'Martil','bouskoura':'Bouskoura','dar bouazza':'Dar Bouazza','harhoura':'Harhoura','asilah':'Asilah','azrou':'Azrou','tiznit':'Tiznit','taroudant':'Taroudant','ouarzazate':'Ouarzazate'}
 CITY_RX=re.compile(r'(?<![a-z0-9])('+'|'.join(sorted(map(re.escape,ALIASES),key=len,reverse=True))+r')(?![a-z0-9])')
-SURF_RX=re.compile(r'(?<!\d)(\d{1,3}(?:[ .]\d{3})+|\d{1,6})(?:[.,]\d{1,2})?\s*(?:m2|m²|m 2|metres? carres?|mètres? carrés?)(?!\w)',re.I)
+SURF_RX=re.compile(r'(?<!\d)(\d{1,3}(?:[ .]\d{3})+|\d{1,9})(?:[.,]\d{1,2})?\s*(?:m2|m²|m 2|metres? carres?|mètres? carrés?)(?!\w)',re.I)
+HECTARE_RX=re.compile(r'(?<!\d)(\d{1,6}(?:[.,]\d{1,2})?)\s*hectares?\b',re.I)
 PRICE_RX=re.compile(r'(?<!\d)(\d{1,3}(?:[ .,_]\d{3})+|\d{2,9})(?:[.,]\d{1,2})?\s*(?:dh|dhs|mad)(?!\w)',re.I)
 
 
@@ -37,6 +38,19 @@ def infer_one(rx,text,lo,hi):
  vals=set(vals)
  return next(iter(vals)) if len(vals)==1 else None
 
+def infer_surface(text):
+ m2=infer_one(SURF_RX,text,5,100_000_000)
+ raw=urllib.parse.unquote(str(text or '')).replace('_',' ').replace('-',' ')
+ ha=[]
+ for m in HECTARE_RX.finditer(raw):
+  v=parse_num(m.group(1))
+  if v and 0.0005<=v<=10_000: ha.append(round(v*10_000,2))
+ vals=set(ha)
+ hv=next(iter(vals)) if len(vals)==1 else None
+ if m2 is not None and hv is not None:
+  return m2 if abs(m2-hv)<=max(1,0.01*m2) else None
+ return m2 if m2 is not None else hv
+
 def city_hits(text):
  t=norm(text); hits=[]
  for m in CITY_RX.finditer(t):
@@ -53,7 +67,6 @@ def infer_city_generic(text):
  return c[0][0]
 
 def infer_city_strong(url,title,domain):
- # Strong source-specific URL patterns for individual listing geography.
  u=norm(url)
  if domain=='agenz.ma':
   m=re.search(r'\bimmo ([a-z ]+?) (?:vente|location)\b',u)
@@ -61,13 +74,10 @@ def infer_city_strong(url,title,domain):
    v=infer_city_generic(m.group(1))
    if v:return v
  if domain=='sarouty.ma':
-  # Typical detail slugs contain the city immediately after transaction/type.
   hits=city_hits(url)
   if len(set(hits))==1:return hits[0]
- # Generic URL city only when exactly one city appears.
  uh=city_hits(url)
  if len(set(uh))==1:return uh[0]
- # Title only when exactly one city appears.
  th=city_hits(title)
  if len(set(th))==1:return th[0]
  return None
@@ -94,10 +104,9 @@ with open(OUT/'new-search-ready.jsonl','w',encoding='utf-8') as out:
 
   literal_city=infer_city_strong(url or '',title,domain)
   literal_price=infer_one(PRICE_RX,title,50,1_000_000_000)
-  literal_surface=infer_one(SURF_RX,title,5,200_000)
-  # URL can fill missing numeric fields, but explicit title literals may reconcile existing conflicts.
+  literal_surface=infer_surface(title)
   url_price=infer_one(PRICE_RX,url or '',50,1_000_000_000)
-  url_surface=infer_one(SURF_RX,url or '',5,200_000)
+  url_surface=infer_surface(url or '')
 
   nc=c
   if literal_city:
@@ -127,13 +136,13 @@ with open(OUT/'new-search-ready.jsonl','w',encoding='utf-8') as out:
   now=bool(url and nc and np is not None and np>0 and ns is not None and ns>0)
   if now:after+=1
   if now and (not was or nc!=c or np!=p or ns!=s):
-   row={'row_index':i,'representation_key':key,'source_domain':domain,'url':url,'city':nc,'price_mad':np,'surface_m2':ns,'title':title or None,'repair_basis':'explicit_title_or_exact_url_reconciliation_v2','search_ready':True,'reconciled':{'city':nc!=c,'price':np!=p,'surface':ns!=s}}
+   row={'row_index':i,'representation_key':key,'source_domain':domain,'url':url,'city':nc,'price_mad':np,'surface_m2':ns,'title':title or None,'repair_basis':'explicit_title_or_exact_url_reconciliation_v3','search_ready':True,'reconciled':{'city':nc!=c,'price':np!=p,'surface':ns!=s}}
    txt=json.dumps(row,separators=(',',':'),ensure_ascii=False)+'\n';out.write(txt);h.update(txt.encode())
    if not was:domains[domain]+=1
    if len(examples)<25:examples.append(row)
   if len(conflict_examples)<25 and ((c and nc!=c) or (p is not None and np!=p) or (s is not None and ns!=s)):
    conflict_examples.append({'row_index':i,'source_domain':domain,'url':url,'title':title or None,'before':{'city':c,'price_mad':p,'surface_m2':s},'after':{'city':nc,'price_mad':np,'surface_m2':ns}})
 assert total==EXPECTED
-summary={'schemaVersion':'q4a-url-title-repair-v2-reconciled','inputRepresentations':total,'baselineSearchReady':before,'repairedSearchReady':after,'netNewSearchReady':after-before,'fieldGains':dict(fields),'reconciledConflicts':dict(conflicts),'netNewByDomain':dict(domains),'repairSources':['exact URL','existing Q1D title'],'pageFetches':0,'sourceSiteFetches':0,'databaseWrites':0,'productionWrites':0,'vercelDeployments':0,'freshnessIsGate':False,'liveConfidenceIsGate':False,'clusteringIsGate':False,'urlInvented':False,'newRowsSha256':h.hexdigest(),'examples':examples,'conflictExamples':conflict_examples}
+summary={'schemaVersion':'q4a-url-title-repair-v3-land-units','inputRepresentations':total,'baselineSearchReady':before,'repairedSearchReady':after,'netNewSearchReady':after-before,'fieldGains':dict(fields),'reconciledConflicts':dict(conflicts),'netNewByDomain':dict(domains),'repairSources':['exact URL','existing Q1D title'],'pageFetches':0,'sourceSiteFetches':0,'databaseWrites':0,'productionWrites':0,'vercelDeployments':0,'freshnessIsGate':False,'liveConfidenceIsGate':False,'clusteringIsGate':False,'urlInvented':False,'newRowsSha256':h.hexdigest(),'examples':examples,'conflictExamples':conflict_examples}
 (OUT/'summary.json').write_text(json.dumps(summary,indent=2,ensure_ascii=False)+'\n',encoding='utf-8')
 print(json.dumps(summary,indent=2,ensure_ascii=False))
