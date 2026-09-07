@@ -230,6 +230,7 @@ Le full sweep `33985644309` a échoué sur `Network is unreachable` au chargemen
 11. 🔵 **Q1A — Candidate Lake manifest freeze**
    - **Goal :** matérialiser un manifest reproductible des **253 372 représentations**.
    - **Succès :** entrée = 253 372 ; chaque ligne possède `source`, `source_identity`, provenance/evidence et couche L0/L1 ; aucune perte silencieuse.
+   - **Checkpoint 2026-09-07 :** `14 987` DB-backed + `3 471` 1immo + `73` MASS-X2 sont matérialisés exactement. DATA4.9B reste `2 326` aggregate-only après expiration de l'artifact source et échec honnête des replays archive à produire un manifest unique. Plafond row-level actuel : **251 046 / 253 372**, delta explicite **2 326**, placeholders interdits. Voir `docs/data/Q1A-CANDIDATE-LAKE-RECOVERY-STATUS.md`.
    - **Preuve :** run GitHub déterministe + artifact manifest/summary + hash du manifest ; `databaseWrites=0`, `sourceSiteFetches=0`, `productionWrites=0`.
 
 12. ⬜ **Q1B — Provenance + temporal cohort normalization**
