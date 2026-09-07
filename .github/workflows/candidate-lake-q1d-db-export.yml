@@ -1,0 +1,47 @@
+name: AkarFinder - Q1D DB Feature Export
+
+on:
+  push:
+    branches: [data/q1d-normalized-features-fingerprints]
+    paths:
+      - 'scripts/audits/candidate-lake-q1d-db-export.ts'
+      - '.github/workflows/candidate-lake-q1d-db-export.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      Q1D_DB_OUT: .tmp/q1d-db-export
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Export existing structured feature evidence read-only
+        run: npx tsx scripts/audits/candidate-lake-q1d-db-export.ts
+      - name: Verify read-only boundary
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const p=JSON.parse(fs.readFileSync('.tmp/q1d-db-export/summary.json','utf8'));
+          if(p.readOnly!==true || p.databaseWrites!==0 || p.productionWrites!==0) throw new Error('write boundary violated');
+          if(p.sourceSiteFetches!==0 || p.sourceNetworkRequests!==0) throw new Error('source network boundary violated');
+          if(p.vercelDeployments!==0) throw new Error('Vercel boundary violated');
+          if(p.thinIndexRows < 1 || p.listingSourceRows < 1 || p.propertyListingRows < 1) throw new Error('empty feature export');
+          console.log(JSON.stringify(p,null,2));
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: candidate-lake-q1d-db-feature-export
+          path: .tmp/q1d-db-export/
+          retention-days: 30
+          if-no-files-found: error
