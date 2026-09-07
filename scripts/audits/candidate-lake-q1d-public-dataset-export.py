@@ -7,20 +7,22 @@ from urllib.parse import urlsplit
 OUT=Path(os.getenv('Q1D_PUBLIC_OUT','.tmp/q1d-public-features'))
 OUT.mkdir(parents=True,exist_ok=True)
 DATASETS=[
- {'name':'realestatebuddy_mubawab','source_domain':'mubawab.ma','transaction':None,'price_is_mad':False,'city_mode':'direct','commit':'a890a7da899d84d879c702bec09b9d628671f758','url':'https://raw.githubusercontent.com/hakkache/RealEstateBuddy/a890a7da899d84d879c702bec09b9d628671f758/data/Clean_Data_Step2.csv'},
- {'name':'hicham_mubawab_sale','source_domain':'mubawab.ma','transaction':'buy','price_is_mad':True,'city_mode':'direct','commit':'ad204e00ba8df9ee5a78b7ae6366709cd070d567','url':'https://raw.githubusercontent.com/HichamBenelmahi/analyse-des-tendances-immobili-res-/ad204e00ba8df9ee5a78b7ae6366709cd070d567/data/clean_data/annonces_nettoyees_mubawab.csv'},
- {'name':'hicham_avito_rent','source_domain':'avito.ma','transaction':'rent','price_is_mad':True,'city_mode':'direct','commit':'ad204e00ba8df9ee5a78b7ae6366709cd070d567','url':'https://raw.githubusercontent.com/HichamBenelmahi/analyse-des-tendances-immobili-res-/ad204e00ba8df9ee5a78b7ae6366709cd070d567/data/clean_data/avito_location_clean.csv'},
- {'name':'hicham_avito_sale','source_domain':'avito.ma','transaction':'buy','price_is_mad':True,'city_mode':'direct','commit':'ad204e00ba8df9ee5a78b7ae6366709cd070d567','url':'https://raw.githubusercontent.com/HichamBenelmahi/analyse-des-tendances-immobili-res-/ad204e00ba8df9ee5a78b7ae6366709cd070d567/data/clean_data/avito_vendre_clean.csv'},
- {'name':'bentouhami_mubawab_1','source_domain':'mubawab.ma','transaction':'buy','price_is_mad':False,'city_mode':'location_suffix','commit':'c9e037a184197ea35df79293a7adaef3115472f8','url':'https://raw.githubusercontent.com/BenTouhami-MR/ApartmentPricePredictionInMorocco/c9e037a184197ea35df79293a7adaef3115472f8/data/appartements1.csv'},
- {'name':'bentouhami_mubawab_2','source_domain':'mubawab.ma','transaction':'buy','price_is_mad':False,'city_mode':'location_suffix','commit':'c9e037a184197ea35df79293a7adaef3115472f8','url':'https://raw.githubusercontent.com/BenTouhami-MR/ApartmentPricePredictionInMorocco/c9e037a184197ea35df79293a7adaef3115472f8/data/appartements2.csv'},
+ {'name':'realestatebuddy_mubawab','source_domain':'mubawab.ma','transaction':None,'price_is_mad':False,'city_mode':'direct','property_type_mode':'direct','commit':'a890a7da899d84d879c702bec09b9d628671f758','url':'https://raw.githubusercontent.com/hakkache/RealEstateBuddy/a890a7da899d84d879c702bec09b9d628671f758/data/Clean_Data_Step2.csv'},
+ {'name':'hicham_mubawab_sale','source_domain':'mubawab.ma','transaction':'buy','price_is_mad':True,'city_mode':'direct','property_type_mode':'direct','commit':'ad204e00ba8df9ee5a78b7ae6366709cd070d567','url':'https://raw.githubusercontent.com/HichamBenelmahi/analyse-des-tendances-immobili-res-/ad204e00ba8df9ee5a78b7ae6366709cd070d567/data/clean_data/annonces_nettoyees_mubawab.csv'},
+ {'name':'hicham_avito_rent','source_domain':'avito.ma','transaction':'rent','price_is_mad':True,'city_mode':'direct','property_type_mode':'direct','commit':'ad204e00ba8df9ee5a78b7ae6366709cd070d567','url':'https://raw.githubusercontent.com/HichamBenelmahi/analyse-des-tendances-immobili-res-/ad204e00ba8df9ee5a78b7ae6366709cd070d567/data/clean_data/avito_location_clean.csv'},
+ {'name':'hicham_avito_sale','source_domain':'avito.ma','transaction':'buy','price_is_mad':True,'city_mode':'direct','property_type_mode':'direct','commit':'ad204e00ba8df9ee5a78b7ae6366709cd070d567','url':'https://raw.githubusercontent.com/HichamBenelmahi/analyse-des-tendances-immobili-res-/ad204e00ba8df9ee5a78b7ae6366709cd070d567/data/clean_data/avito_vendre_clean.csv'},
+ {'name':'bentouhami_mubawab_1','source_domain':'mubawab.ma','transaction':'buy','price_is_mad':False,'city_mode':'location_suffix','property_type_mode':'direct','commit':'c9e037a184197ea35df79293a7adaef3115472f8','url':'https://raw.githubusercontent.com/BenTouhami-MR/ApartmentPricePredictionInMorocco/c9e037a184197ea35df79293a7adaef3115472f8/data/appartements1.csv'},
+ {'name':'bentouhami_mubawab_2','source_domain':'mubawab.ma','transaction':'buy','price_is_mad':False,'city_mode':'location_suffix','property_type_mode':'direct','commit':'c9e037a184197ea35df79293a7adaef3115472f8','url':'https://raw.githubusercontent.com/BenTouhami-MR/ApartmentPricePredictionInMorocco/c9e037a184197ea35df79293a7adaef3115472f8/data/appartements2.csv'},
+ {'name':'achrafdigital_avito_sale','source_domain':'avito.ma','transaction':'buy','price_is_mad':False,'city_mode':'direct','property_type_mode':'direct','commit':'b7417b916e32a0e29f09dc070160fb62ce705961','url':'https://raw.githubusercontent.com/achrafdigital/Simplon-Python-Challenges/b7417b916e32a0e29f09dc070160fb62ce705961/Brief_2_SalesHouses/appartements-data-db-6872f0ba853ec096170787.csv'},
+ {'name':'rabat_prediction_avito_sale','source_domain':'avito.ma','transaction':'buy','price_is_mad':True,'city_mode':'location_last_comma','property_type_mode':'before_comma','commit':'85d8bca6337d8f5f7dbbd1c2cf5a00aa2a83714a','url':'https://raw.githubusercontent.com/ABDELOUAHEDTEX/Rabat_Immobilier_Prediction/85d8bca6337d8f5f7dbbd1c2cf5a00aa2a83714a/Model/Scraping/avito_properties.csv'},
 ]
 ALIASES={
- 'source_id':['Property_ID','property_id','propertyid','id','ID','identifiant'], 'city':['city','City','ville','Ville'],
+ 'source_id':['Property_ID','property_id','propertyid','id','ID','identifiant'], 'city':['city','City','ville','Ville','city_name','location'],
  'district':['neighborhood','quartier','district','zone'], 'price':['Prix','prix','price','Price','prix_mad','prix(DHs)'],
- 'currency':['Devise','devise','currency','currency_code'], 'surface_m2':['Surface','surface','surface_m2','superficie','surface(m²)'],
- 'rooms_count':['Piece','piece','pieces','pièces','nb_pieces','nombre_pieces','rooms'],
+ 'currency':['Devise','devise','currency','currency_code'], 'surface_m2':['Surface','surface','surface_m2','superficie','surface(m²)','surface_area','area'],
+ 'rooms_count':['Piece','piece','pieces','pièces','nb_pieces','nombre_pieces','rooms','nb_rooms'],
  'bedrooms_count':['Chambre','chambre','chambres','nb_chambres','nombre_chambres','bedrooms'],
- 'bathrooms_count':['Salle_de_Bain','salle_de_bain','salles_de_bain','salles de bains','nb_salle_de_bain','nb_salles_bain','nombre_salles_bain','bathrooms'],
+ 'bathrooms_count':['Salle_de_Bain','salle_de_bain','salles_de_bain','salles de bains','nb_salle_de_bain','nb_salles_bain','nombre_salles_bain','bathrooms','nb_baths'],
  'property_type':['type_de_bien','type_bien','property_type','type'], 'latitude':['latitude','lat'], 'longitude':['longitude','lon','lng'],
  'title':['title','titre','Title','Titre'], 'url':['url','URL','url_annonce','lienArticle','lien','link'], 'address_text':['location','adresse','address','localisation'],
 }
@@ -42,7 +44,7 @@ def id_from_url(v):
  return vals[-1] if vals else None
 def num(v):
  if v is None:return None
- s=str(v).strip().replace('\u00a0',' ').replace(' ','').replace(',','.')
+ s=str(v).strip().replace('\u202f','').replace('\u00a0',' ').replace(' ','').replace(',','.')
  m=re.search(r'-?\d+(?:\.\d+)?',s)
  if not m:return None
  try:return float(m.group())
@@ -53,27 +55,32 @@ def txt(v):
  if v is None:return None
  s=' '.join(str(v).replace('\t',' ').replace('\r',' ').replace('\n',' ').split()).strip(); return s or None
 def derive_city_and_address(rec,ds):
- raw=txt(pick(rec,ALIASES['city']))
- explicit_address=txt(pick(rec,ALIASES['address_text']))
- if ds.get('city_mode')!='location_suffix':return raw,explicit_address
+ raw=txt(pick(rec,ALIASES['city'])); explicit_address=txt(pick(rec,ALIASES['address_text']))
+ mode=ds.get('city_mode','direct')
+ if mode=='direct':return raw,explicit_address
  if not raw:return None,explicit_address
- parts=re.split(r'\s+[àa]\s+',raw,flags=re.IGNORECASE)
- city=txt(parts[-1]) if parts else raw
- return city, explicit_address or raw
+ if mode=='location_suffix':
+  parts=re.split(r'\s+[àa]\s+',raw,flags=re.IGNORECASE); city=txt(parts[-1]) if parts else raw
+  return city, explicit_address or raw
+ if mode=='location_last_comma':
+  city=txt(raw.split(',')[-1]); return city,explicit_address or raw
+ raise ValueError(f'unknown city_mode {mode}')
+def derive_property_type(rec,ds):
+ raw=txt(pick(rec,ALIASES['property_type']))
+ if not raw:return None
+ return txt(raw.split(',')[0]) if ds.get('property_type_mode')=='before_comma' else raw
 def mad_price(rec,ds):
  raw=pick(rec,ALIASES['price']); value=num(raw)
  if value is None or value<=0:return None
  if ds['price_is_mad']:return value
- cur=txt(pick(rec,ALIASES['currency']))
- evidence=' '.join(x for x in [txt(raw),cur] if x)
- c=re.sub(r'[^a-z0-9]+','',evidence.lower())
+ cur=txt(pick(rec,ALIASES['currency'])); evidence=' '.join(x for x in [txt(raw),cur] if x); c=re.sub(r'[^a-z0-9]+','',evidence.lower())
  return value if any(mark in c for mark in ('dh','dhs','mad')) and 'eur' not in c and 'usd' not in c else None
 def positive(v):
  x=num(v); return x if x is not None and x>0 else None
 def geo(v,lo,hi):
  x=num(v); return x if x is not None and lo<=x<=hi else None
 def download(url):
- req=urllib.request.Request(url,headers={'User-Agent':'AkarFinder-Q1D-public-dataset-export/1.3'})
+ req=urllib.request.Request(url,headers={'User-Agent':'AkarFinder-Q1D-public-dataset-export/1.4'})
  with urllib.request.urlopen(req,timeout=90) as r:return r.read()
 rows=[]; dataset_summaries=[]
 for ds in DATASETS:
@@ -83,7 +90,7 @@ for ds in DATASETS:
   if not sid:continue
   usable+=1; city,address_text=derive_city_and_address(rec,ds)
   rows.append({'source_domain':ds['source_domain'],'source_id':sid,'identity_key':f"{ds['source_domain']}|id:{sid}",'dataset':ds['name'],'dataset_commit':ds['commit'],'dataset_sha256':digest,
-   'city':city,'district':txt(pick(rec,ALIASES['district'])),'property_type':txt(pick(rec,ALIASES['property_type'])),'transaction_type':ds['transaction'],
+   'city':city,'district':txt(pick(rec,ALIASES['district'])),'property_type':derive_property_type(rec,ds),'transaction_type':ds['transaction'],
    'price_mad':mad_price(rec,ds),'surface_m2':positive(pick(rec,ALIASES['surface_m2'])),'rooms_count':integer(pick(rec,ALIASES['rooms_count'])),'bedrooms_count':integer(pick(rec,ALIASES['bedrooms_count'])),
    'bathrooms_count':integer(pick(rec,ALIASES['bathrooms_count'])),'latitude':geo(pick(rec,ALIASES['latitude']),-90,90),'longitude':geo(pick(rec,ALIASES['longitude']),-180,180),
    'title':txt(pick(rec,ALIASES['title'])),'address_text':address_text,'url':urlv})
@@ -96,6 +103,6 @@ for r in sorted(rows,key=lambda x:(x['identity_key'],x['dataset'],json.dumps(x,s
  if cur is None or score(r)>score(cur):by[k]=r
 final=[by[k] for k in sorted(by)]; text=''.join(json.dumps(r,separators=(',',':'),ensure_ascii=False)+'\n' for r in final)
 (OUT/'public-dataset-features.jsonl').write_text(text,encoding='utf-8')
-summary={'schemaVersion':'q1d-public-dataset-features-v3','datasets':dataset_summaries,'rawRows':len(rows),'uniqueExactSourceIds':len(final),'sourceCounts':dict(Counter(r['source_domain'] for r in final)),
+summary={'schemaVersion':'q1d-public-dataset-features-v4','datasets':dataset_summaries,'rawRows':len(rows),'uniqueExactSourceIds':len(final),'sourceCounts':dict(Counter(r['source_domain'] for r in final)),
  'phoneFieldsExported':False,'sourceSiteFetches':0,'publicGitHubFetches':len(DATASETS),'databaseWrites':0,'productionWrites':0,'vercelDeployments':0,'sha256':hashlib.sha256(text.encode()).hexdigest()}
 (OUT/'summary.json').write_text(json.dumps(summary,indent=2,ensure_ascii=False)+'\n',encoding='utf-8'); print(json.dumps(summary,indent=2,ensure_ascii=False))
