@@ -1,0 +1,50 @@
+name: AkarFinder - Q4A Candidate Lake Search Ready
+
+on:
+  push:
+    branches:
+      - data/q4a-minimal-search-ready
+    paths:
+      - 'scripts/audits/candidate-lake-q4a-q1d-search-ready.py'
+      - '.github/workflows/candidate-lake-q4a-q1d-search-ready.yml'
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download certified Q1D inputs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p .tmp/q4a-input/q1d .tmp/q4a-input/public
+          gh api repos/${{ github.repository }}/actions/artifacts/10022063956/zip > /tmp/q1d.zip
+          unzip -q /tmp/q1d.zip -d .tmp/q4a-input/q1d
+          gh api repos/${{ github.repository }}/actions/artifacts/10021998663/zip > /tmp/public.zip
+          unzip -q /tmp/public.zip -d .tmp/q4a-input/public
+      - name: Build exact four-field search-ready corpus
+        run: python scripts/audits/candidate-lake-q4a-q1d-search-ready.py
+      - name: Verify no-invention and single-gate invariants
+        run: |
+          python - <<'PY'
+          import json
+          s=json.load(open('.tmp/q4a-q1d-search-ready/summary.json'))
+          assert s['rule']=='url + city + price_mad>0 + surface_m2>0'
+          assert s['freshnessIsGate'] is False
+          assert s['liveConfidenceIsGate'] is False
+          assert s['clusteringIsGate'] is False
+          assert s['missingUrlInvented'] is False
+          assert s['databaseWrites']==0 and s['productionWrites']==0 and s['sourceSiteFetches']==0 and s['vercelDeployments']==0
+          assert s['searchReady']>0
+          print(json.dumps(s,indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: candidate-lake-q4a-q1d-search-ready
+          path: .tmp/q4a-q1d-search-ready/
+          retention-days: 30
