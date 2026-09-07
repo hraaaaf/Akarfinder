@@ -6,12 +6,15 @@ import { CASABLANCA_NEIGHBORHOOD_GEOMETRY_SHADOW } from "@/lib/geo/casablanca-ne
 declare global {
   interface Window {
     Cesium?: any;
+    CESIUM_BASE_URL?: string;
   }
 }
 
-const CESIUM_JS = "https://cdn.jsdelivr.net/npm/cesium@1.141.0/Build/Cesium/Cesium.js";
-const CESIUM_CSS = "https://cdn.jsdelivr.net/npm/cesium@1.141.0/Build/Cesium/Widgets/widgets.css";
-const ESRI_WORLD_IMAGERY = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
+const CESIUM_VERSION = "1.141.0";
+const CESIUM_BASE_URL = `https://cdn.jsdelivr.net/npm/cesium@${CESIUM_VERSION}/Build/Cesium/`;
+const CESIUM_JS = `${CESIUM_BASE_URL}Cesium.js`;
+const CESIUM_CSS = `${CESIUM_BASE_URL}Widgets/widgets.css`;
+const ESRI_WORLD_IMAGERY = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer";
 
 function flattenCoordinates(value: unknown, out: Array<[number, number]>) {
   if (!Array.isArray(value)) return;
@@ -33,6 +36,7 @@ function maarifCenter(): [number, number] {
 
 function loadExternalAsset(): Promise<void> {
   if (window.Cesium) return Promise.resolve();
+  window.CESIUM_BASE_URL = CESIUM_BASE_URL;
   if (!document.querySelector(`link[href="${CESIUM_CSS}"]`)) {
     const link = document.createElement("link");
     link.rel = "stylesheet";
@@ -42,8 +46,11 @@ function loadExternalAsset(): Promise<void> {
   return new Promise((resolve, reject) => {
     const existing = document.querySelector<HTMLScriptElement>(`script[src="${CESIUM_JS}"]`);
     if (existing) {
-      existing.addEventListener("load", () => resolve(), { once: true });
-      existing.addEventListener("error", () => reject(new Error("Cesium CDN load failed")), { once: true });
+      if (window.Cesium) resolve();
+      else {
+        existing.addEventListener("load", () => resolve(), { once: true });
+        existing.addEventListener("error", () => reject(new Error("Cesium CDN load failed")), { once: true });
+      }
       return;
     }
     const script = document.createElement("script");
@@ -58,12 +65,15 @@ function loadExternalAsset(): Promise<void> {
 export function CesiumMaarifSpike() {
   const mapRef = useRef<HTMLDivElement>(null);
   const [ready, setReady] = useState(false);
+  const [renderState, setRenderState] = useState<"loading" | "ready" | "error">("loading");
+  const [imageryLayers, setImageryLayers] = useState(0);
   const [buildings, setBuildings] = useState<"loading" | "available" | "unavailable">("loading");
   const center = useMemo(() => maarifCenter(), []);
 
   useEffect(() => {
     let disposed = false;
     let viewer: any = null;
+    let readyTimer: ReturnType<typeof setTimeout> | null = null;
 
     void loadExternalAsset().then(async () => {
       if (disposed || !mapRef.current || !window.Cesium) return;
@@ -80,34 +90,35 @@ export function CesiumMaarifSpike() {
         selectionIndicator: false,
         timeline: false,
         shouldAnimate: false,
+        requestRenderMode: false,
         baseLayer: false,
         terrainProvider: new Cesium.EllipsoidTerrainProvider(),
       });
 
-      viewer.imageryLayers.addImageryProvider(new Cesium.UrlTemplateImageryProvider({
-        url: ESRI_WORLD_IMAGERY,
-        credit: "Esri, Maxar, Earthstar Geographics, GIS User Community",
-        maximumLevel: 19,
-      }));
+      const imageryProvider = await Cesium.ArcGisMapServerImageryProvider.fromUrl(ESRI_WORLD_IMAGERY, {
+        enablePickFeatures: false,
+      });
+      if (disposed || !viewer || viewer.isDestroyed()) return;
+
+      const imagery = viewer.imageryLayers.addImageryProvider(imageryProvider);
+      imagery.brightness = 1.10;
+      imagery.contrast = 0.96;
+      imagery.saturation = 1.05;
+      imagery.gamma = 0.98;
+      setImageryLayers(viewer.imageryLayers.length);
 
       viewer.scene.globe.enableLighting = false;
       viewer.scene.globe.baseColor = Cesium.Color.fromCssColorString("#dce8ea");
       viewer.scene.backgroundColor = Cesium.Color.fromCssColorString("#dfeef2");
+      viewer.scene.globe.maximumScreenSpaceError = 1.25;
+      viewer.scene.globe.tileCacheSize = 800;
       viewer.scene.highDynamicRange = true;
       viewer.scene.fog.enabled = true;
-      viewer.scene.fog.density = 0.00045;
+      viewer.scene.fog.density = 0.00035;
+      viewer.scene.skyAtmosphere.saturationShift = -0.03;
+      viewer.scene.skyAtmosphere.brightnessShift = 0.16;
       viewer.scene.screenSpaceCameraController.minimumZoomDistance = 180;
       viewer.scene.screenSpaceCameraController.maximumZoomDistance = 18000;
-
-      try {
-        const osmBuildings = await Cesium.createOsmBuildingsAsync();
-        if (!disposed) {
-          viewer.scene.primitives.add(osmBuildings);
-          setBuildings("available");
-        }
-      } catch {
-        if (!disposed) setBuildings("unavailable");
-      }
 
       const target = Cesium.Cartesian3.fromDegrees(center[0], center[1], 0);
       const range = window.innerWidth >= 1024 ? 5200 : 4300;
@@ -121,25 +132,50 @@ export function CesiumMaarifSpike() {
       );
       viewer.camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
 
-      requestAnimationFrame(() => {
-        if (!disposed) setReady(true);
-      });
-    }).catch(() => {
+      // Imagery and camera are the spike's critical path. OSM Buildings is optional and
+      // must never block a valid aerial render when Cesium ion is unavailable.
+      void Cesium.createOsmBuildingsAsync()
+        .then((osmBuildings: unknown) => {
+          if (!disposed && viewer && !viewer.isDestroyed()) {
+            viewer.scene.primitives.add(osmBuildings);
+            setBuildings("available");
+          }
+        })
+        .catch(() => {
+          if (!disposed) setBuildings("unavailable");
+        });
+
+      readyTimer = setTimeout(() => {
+        if (!disposed) {
+          setRenderState("ready");
+          setReady(true);
+        }
+      }, 6500);
+    }).catch((error) => {
+      console.error("[vivre-ici-cesium-spike] renderer failed", error);
       if (!disposed) {
         setBuildings("unavailable");
-        setReady(true);
+        setRenderState("error");
+        setReady(false);
       }
     });
 
     return () => {
       disposed = true;
+      if (readyTimer) clearTimeout(readyTimer);
       try { viewer?.destroy(); } catch { /* spike teardown */ }
     };
   }, [center]);
 
   return (
-    <section className="cesium-spike-shell" data-cesium-spike data-cesium-ready={ready ? "true" : "false"}>
-      <div className="cesium-spike-map" ref={mapRef} />
+    <section
+      className="cesium-spike-shell"
+      data-cesium-spike
+      data-cesium-ready={ready ? "true" : "false"}
+      data-cesium-render-state={renderState}
+      data-cesium-imagery-layers={imageryLayers}
+    >
+      <div className="cesium-spike-map" ref={mapRef} data-cesium-map-surface />
 
       <div className="cesium-spike-map-chrome" aria-hidden="true">
         <div className="cesium-spike-location">←&nbsp; Vivre à Casablanca</div>
