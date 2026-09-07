@@ -39,6 +39,13 @@ export default async function MapPage({ searchParams }: MapPageProps) {
         </div>
         <P4MapDecisionRail />
       </div>
+      <section className="vivre-ici-target-outro" aria-label="Découvrir les quartiers autrement">
+        <div>
+          <strong>Découvrez les quartiers autrement</strong>
+          <span>Explorez, comparez, vivez mieux avec AkarFinder.</span>
+        </div>
+        <p>Des lieux. Des vies. Des projets.</p>
+      </section>
       <div className="l2-secondary-footer">
         <SiteFooter />
       </div>
