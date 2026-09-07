@@ -1,4 +1,4 @@
-/* VIVRE ICI — 2L.4 TARGET convergence.
+/* VIVRE ICI — TARGET convergence.
    Visual-only correction from real TARGET ↔ AFTER comparison.
    No geographic, property, market, price, score, distance or weather data is created here. */
 
@@ -8,20 +8,39 @@
   filter: saturate(.90) contrast(.87) brightness(1.19) sepia(.025) !important;
 }
 
+.vivre-ici-target-outro {
+  display: none;
+}
+
 @media (min-width: 1024px) {
+  [data-vivre-ici-page] {
+    background: #f3efe7 !important;
+  }
+
   [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) {
     grid-template-columns: minmax(0, 1fr) 360px !important;
-    gap: 8px !important;
-    padding: 10px 10px 10px 12px !important;
+    gap: 7px !important;
+    height: calc(100svh - 64px - 78px) !important;
+    min-height: calc(100svh - 64px - 78px) !important;
+    padding: 10px 10px 8px 12px !important;
+    background: #f3efe7 !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) [data-p4-map-canvas] {
+    border-radius: 19px !important;
+    box-shadow: 0 14px 34px rgb(43 48 49 / .08) !important;
   }
 
   [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-map-decision-rail,
   [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-map-decision-rail:has(.p4-premium-local-guide) {
-    height: calc(100dvh - 83px) !important;
+    height: 100% !important;
     overflow-y: auto !important;
     scrollbar-width: none !important;
     padding: 25px 18px 18px !important;
-    border-radius: 22px !important;
+    border-radius: 19px !important;
+    border-left: 0 !important;
+    background: #fffefa !important;
+    box-shadow: 0 14px 34px rgb(43 48 49 / .07) !important;
   }
 
   [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-map-decision-rail::-webkit-scrollbar {
@@ -63,6 +82,47 @@
 
   [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-premium-actions {
     margin-top: 15px !important;
+  }
+
+  .vivre-ici-target-outro {
+    display: flex;
+    min-height: 78px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 32px;
+    padding: 13px 38px 15px;
+    border-top: 1px solid rgb(220 213 200 / .75);
+    background: linear-gradient(180deg, #f6f1e9 0%, #f1ebe2 100%);
+    color: #202b2a;
+  }
+
+  .vivre-ici-target-outro > div {
+    display: grid;
+    gap: 2px;
+  }
+
+  .vivre-ici-target-outro strong {
+    font-size: 18px;
+    line-height: 1.15;
+    letter-spacing: -.025em;
+  }
+
+  .vivre-ici-target-outro span {
+    font-size: 10.5px;
+    line-height: 1.35;
+    color: #6f7470;
+  }
+
+  .vivre-ici-target-outro p {
+    margin: 0;
+    max-width: 190px;
+    transform: rotate(-4deg);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 14px;
+    font-style: italic;
+    line-height: 1.2;
+    text-align: center;
+    color: #6f6a60;
   }
 }
 
