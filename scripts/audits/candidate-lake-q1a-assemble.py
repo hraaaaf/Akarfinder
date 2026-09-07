@@ -17,9 +17,14 @@ def urls(a,n=None):
 def host(u): return (urlsplit(u).hostname or '').lower().removeprefix('www.')
 lanes={}
 def put(k,domain,vals,kind='url'):
- vals=sorted(set(vals)); lanes[k]=[{'representation_key':f'{domain}|{kind}:{v}','source_domain':domain,'source_identity':v,'identity_kind':kind,'lane':k,'layer':'L0','candidate_status':'private_unverified'} for v in vals]
+ vals=sorted(set(vals)); rows=[]
+ for v in vals:
+  row_domain=host(v) if kind=='url' else domain
+  assert row_domain,(k,v)
+  rows.append({'representation_key':f'{row_domain}|{kind}:{v}','source_domain':row_domain,'source_identity':v,'identity_kind':kind,'lane':k,'layer':'L0','candidate_status':'private_unverified'})
+ lanes[k]=rows
 put('avito_baseline','avito.ma',lines(9971118875,'union_ids.txt'),'id')
-put('akaar','akaar.ma',lines(9974670013,'listing_hint_urls.txt'))
+put('akaar','akaar.fr',lines(9974670013,'listing_hint_urls.txt'))
 put('mubawab_direct','mubawab.ma',lines(9969651653,'listing-ids.txt'),'id')
 put('marocannonces','marocannonces.com',lines(9888335708,'listing-urls.txt'))
 put('sarouty','sarouty.ma',lines(9897323745,'listing-urls.txt'))
