@@ -1,0 +1,41 @@
+name: AkarFinder - Q1D Public Dataset Feature Export
+
+on:
+  push:
+    branches: [data/q1d-normalized-features-fingerprints]
+    paths:
+      - 'scripts/audits/candidate-lake-q1d-public-dataset-export.py'
+      - '.github/workflows/candidate-lake-q1d-public-dataset-export.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      Q1D_PUBLIC_OUT: .tmp/q1d-public-features
+    steps:
+      - uses: actions/checkout@v4
+      - name: Export pinned public GitHub dataset features only
+        run: python scripts/audits/candidate-lake-q1d-public-dataset-export.py
+      - name: Verify public-dataset boundary
+        run: |
+          python - <<'PY'
+          import json
+          p=json.load(open('.tmp/q1d-public-features/summary.json'))
+          assert p['phoneFieldsExported'] is False
+          assert p['sourceSiteFetches']==0
+          assert p['databaseWrites']==0 and p['productionWrites']==0
+          assert p['vercelDeployments']==0
+          assert p['uniqueExactSourceIds'] > 10000
+          print(json.dumps(p,indent=2,ensure_ascii=False))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: candidate-lake-q1d-public-dataset-features
+          path: .tmp/q1d-public-features/
+          retention-days: 30
+          if-no-files-found: error
