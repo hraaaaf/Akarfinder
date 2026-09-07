@@ -12,12 +12,12 @@ const OPENFREEMAP_VECTOR_URL = "https://tiles.openfreemap.org/planet";
 const WORLD_IMAGERY_TILE_URL = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
 const WORLD_IMAGERY_ATTRIBUTION = "© Esri, Maxar, Earthstar Geographics, GIS User Community";
 
-// 2L.4: the TARGET is city-context first, not parcel-detail first. Keep the
-// selected district as the sourced anchor while widening the real satellite view.
+// Step 1 — TARGET camera convergence. Keep the sourced district center as the
+// truth-safe anchor while using composition only to open the city/coast context.
 // No boundary, property position or metric is inferred by this presentation camera.
-const CASABLANCA_3D_ZOOM = 13.35;
-const CASABLANCA_3D_PITCH = 46;
-const CASABLANCA_3D_BEARING = -14;
+const CASABLANCA_3D_ZOOM = 13.2;
+const CASABLANCA_3D_PITCH = 60;
+const CASABLANCA_3D_BEARING = -8;
 
 const IMMERSIVE_LIGHT: LightSpecification = {
   anchor: "viewport",
@@ -157,8 +157,8 @@ function restoreBasemapSymbols(map: MapLibreMap, snapshots: Map<string, SymbolOp
   for (const [layerId, snapshot] of snapshots) {
     if (!map.getLayer(layerId)) continue;
     try {
-      map.setPaintProperty(layerId, "text-opacity", (snapshot.textOpacity ?? null) as never);
-      map.setPaintProperty(layerId, "icon-opacity", (snapshot.iconOpacity ?? null) as never);
+      map.setPaintProperty(layer.id, "text-opacity", (snapshot.textOpacity ?? null) as never);
+      map.setPaintProperty(layer.id, "icon-opacity", (snapshot.iconOpacity ?? null) as never);
     } catch {
       // Style teardown can remove paint properties before React cleanup finishes.
     }
@@ -259,7 +259,7 @@ export function National3DBuildingsLayer({ citySlug, districtSlug }: Props) {
           zoom: focusedDistrict ? CASABLANCA_3D_ZOOM : Math.max(map.getZoom(), 12.8),
           pitch: CASABLANCA_3D_PITCH,
           bearing: CASABLANCA_3D_BEARING,
-          offset: focusedDistrict ? [0, window.innerWidth >= 1024 ? 82 : 38] : [0, 0],
+          offset: focusedDistrict ? [0, window.innerWidth >= 1024 ? 128 : 52] : [0, 0],
           duration: 1000,
         });
       } else {
