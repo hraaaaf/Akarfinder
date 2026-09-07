@@ -22,6 +22,7 @@ async function main() {
       const { data, error } = await supabase
         .from(table)
         .select(select)
+        .order('id', { ascending: true })
         .range(from, from + pageSize - 1)
       if (error) throw new Error(`${table}: ${error.message}`)
       const batch = data || []
@@ -55,6 +56,7 @@ async function main() {
     generatedAt: new Date().toISOString(),
     sourceOfferSeeds: seeds.length,
     listingSources: listingSources.length,
+    paginationOrder: 'id ASC',
     sourceOfferSeedsSha256: sha(seedText),
     listingSourcesSha256: sha(listingText),
     databaseReadsOnly: true,
