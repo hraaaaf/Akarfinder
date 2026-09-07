@@ -1,0 +1,41 @@
+name: AkarFinder - Q4A Mubawab Common Crawl Artifact Smoke
+
+on:
+  push:
+    branches:
+      - data/q4a-minimal-search-ready
+    paths:
+      - '.github/workflows/q4a-mubawab-commoncrawl-artifact-only-smoke.yml'
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  recover:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      Q4A_CC_INPUT_ROOT: .tmp/q4a-cc-artifact
+      Q4A_CC_OUT: .tmp/q4a-cc-artifact-out
+      Q4A_CC_LIMIT: 50
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup inputs from frozen artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p .tmp/q4a-cc-artifact/{q1d,public,dbrec,repair,dbfield,verified}
+          gh api repos/${{ github.repository }}/actions/artifacts/10022063956/zip > /tmp/q1d.zip && unzip -q /tmp/q1d.zip -d .tmp/q4a-cc-artifact/q1d
+          gh api repos/${{ github.repository }}/actions/artifacts/10021998663/zip > /tmp/public.zip && unzip -q /tmp/public.zip -d .tmp/q4a-cc-artifact/public
+          gh api repos/${{ github.repository }}/actions/artifacts/10025190623/zip > /tmp/dbrec.zip && unzip -q /tmp/dbrec.zip -d .tmp/q4a-cc-artifact/dbrec
+          gh api repos/${{ github.repository }}/actions/artifacts/10026608098/zip > /tmp/repair.zip && unzip -q /tmp/repair.zip -d .tmp/q4a-cc-artifact/repair
+          gh api repos/${{ github.repository }}/actions/artifacts/10026575439/zip > /tmp/dbfield.zip && unzip -q /tmp/dbfield.zip -d .tmp/q4a-cc-artifact/dbfield
+          gh api repos/${{ github.repository }}/actions/artifacts/10028170135/zip > /tmp/verified.zip && unzip -q /tmp/verified.zip -d .tmp/q4a-cc-artifact/verified
+      - name: Recover smoke batch
+        run: node scripts/audits/q4a-mubawab-commoncrawl-artifact-only.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: q4a-mubawab-commoncrawl-artifact-smoke
+          path: .tmp/q4a-cc-artifact-out/
+          retention-days: 30
