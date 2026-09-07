@@ -1,0 +1,33 @@
+name: AkarFinder - Q4A Verified Parser Repairs
+
+on:
+  push:
+    branches:
+      - data/q4a-minimal-search-ready
+    paths:
+      - 'scripts/audits/candidate-lake-q4a-verified-manual-repair.py'
+      - '.github/workflows/candidate-lake-q4a-verified-manual-repair.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: python scripts/audits/candidate-lake-q4a-verified-manual-repair.py
+      - name: Verify exact-only repairs
+        run: |
+          python - <<'PY'
+          import json
+          s=json.load(open('.tmp/q4a-verified-manual-repair/summary.json'))
+          assert s['rows']==3 and s['inferredValues']==0
+          assert s['databaseWrites']==0 and s['productionWrites']==0 and s['sourceSiteFetches']==0 and s['vercelDeployments']==0
+          print(json.dumps(s,indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: candidate-lake-q4a-verified-manual-repair
+          path: .tmp/q4a-verified-manual-repair/
+          retention-days: 30
