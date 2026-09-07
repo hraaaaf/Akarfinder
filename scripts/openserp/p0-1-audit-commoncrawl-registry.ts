@@ -1,6 +1,7 @@
 #!/usr/bin/env tsx
 // P0.1 — Read-only proof of the exact Common Crawl source/channel policy set.
 // No Common Crawl request, no source-site request, no DB mutation.
+// 2026-09-07 operational refresh trigger after bounded P0.1 policy revalidation.
 
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
