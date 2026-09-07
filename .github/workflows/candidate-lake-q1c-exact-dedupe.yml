@@ -1,0 +1,44 @@
+name: AkarFinder - Q1C Exact Identity Dedupe
+
+on:
+  push:
+    branches: [data/q1c-exact-identity-dedupe]
+    paths:
+      - 'scripts/audits/candidate-lake-q1c-exact-dedupe.py'
+      - '.github/workflows/candidate-lake-q1c-exact-dedupe.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  exact-dedupe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      Q1C_Q1B_ROOT: .tmp/q1c-input/q1b
+      Q1C_OUT: .tmp/q1c-exact-dedupe
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download certified Q1B artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$Q1C_Q1B_ROOT" .tmp/downloads
+          curl --fail --location --retry 3 \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/10020251605/zip" \
+            -o .tmp/downloads/q1b.zip
+          unzip -q .tmp/downloads/q1b.zip -d "$Q1C_Q1B_ROOT"
+      - name: Certify exact canonical identity uniqueness
+        run: python scripts/audits/candidate-lake-q1c-exact-dedupe.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: candidate-lake-q1c-exact-identity-dedupe
+          path: .tmp/q1c-exact-dedupe/
+          retention-days: 30
+          if-no-files-found: error
