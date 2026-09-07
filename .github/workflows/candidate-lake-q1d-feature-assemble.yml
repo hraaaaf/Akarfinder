@@ -1,0 +1,69 @@
+name: AkarFinder - Q1D Feature Assembly
+
+on:
+  push:
+    branches: [data/q1d-normalized-features-fingerprints]
+    paths:
+      - 'scripts/audits/candidate-lake-q1d-feature-assemble.py'
+      - '.github/workflows/candidate-lake-q1d-feature-assemble.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  assemble:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      Q1D_Q1C_ROOT: .tmp/q1d-input/q1c
+      Q1D_DB_ROOT: .tmp/q1d-input/db
+      Q1D_OUT: .tmp/q1d-features
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download certified Q1C artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$Q1D_Q1C_ROOT" "$Q1D_DB_ROOT" .tmp/downloads
+          curl --fail --location --retry 3 \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/10020459850/zip" \
+            -o .tmp/downloads/q1c.zip
+          unzip -q .tmp/downloads/q1c.zip -d "$Q1D_Q1C_ROOT"
+      - name: Resolve latest successful Q1D DB feature artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json, os, urllib.request
+          repo=os.environ['GITHUB_REPOSITORY']; token=os.environ['GH_TOKEN']
+          req=urllib.request.Request(f'https://api.github.com/repos/{repo}/actions/artifacts?name=candidate-lake-q1d-db-feature-export&per_page=20',headers={'Authorization':f'Bearer {token}','Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'})
+          data=json.load(urllib.request.urlopen(req))
+          arts=[a for a in data.get('artifacts',[]) if not a.get('expired') and a.get('workflow_run',{}).get('head_branch')=='data/q1d-normalized-features-fingerprints']
+          if not arts: raise SystemExit('no Q1D DB feature artifact available')
+          art=max(arts,key=lambda a:a['created_at'])
+          open('.tmp/q1d-db-artifact-id','w').write(str(art['id']))
+          print(json.dumps({'artifact_id':art['id'],'created_at':art['created_at']}))
+          PY
+          id=$(cat .tmp/q1d-db-artifact-id)
+          curl --fail --location --retry 3 \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/${id}/zip" \
+            -o .tmp/downloads/db.zip
+          unzip -q .tmp/downloads/db.zip -d "$Q1D_DB_ROOT"
+      - name: Assemble normalized features and deterministic fingerprints
+        run: python scripts/audits/candidate-lake-q1d-feature-assemble.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: candidate-lake-q1d-normalized-features-fingerprints
+          path: .tmp/q1d-features/
+          retention-days: 30
+          if-no-files-found: error
