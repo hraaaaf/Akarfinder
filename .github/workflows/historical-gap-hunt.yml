@@ -1,9 +1,9 @@
-name: AkarFinder - Q1A DATA4.9B Temporal CDX
+name: AkarFinder - Q1A DATA4.9B Historical CC Union
 
 on:
   push:
     paths:
-      - "scripts/audits/candidate-lake-q1a-data49b-wayback-temporal-index.ts"
+      - "scripts/audits/candidate-lake-q1a-data49b-commoncrawl-historical-union.ts"
       - ".github/workflows/historical-gap-hunt.yml"
   workflow_dispatch:
 
@@ -11,9 +11,11 @@ permissions:
   contents: read
 
 jobs:
-  q1a-data49b-temporal-cdx:
+  q1a-data49b-historical-cc-union:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 45
+    env:
+      Q1A_DATA49B_CC_HIST_OUT: .tmp/candidate-lake-q1a-data49b-cc-historical
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -21,21 +23,21 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - name: Probe Wayback URL index in bounded windows around DATA4.9B
-        run: npx tsx scripts/audits/candidate-lake-q1a-data49b-wayback-temporal-index.ts
+      - name: Union 2025-2026 Common Crawl URL indexes for DATA4.9B
+        run: npx tsx scripts/audits/candidate-lake-q1a-data49b-commoncrawl-historical-union.ts
       - name: Verify metadata-only fail-closed contract
         run: |
           node - <<'NODE'
           const fs=require('fs');
-          const p=JSON.parse(fs.readFileSync('.tmp/candidate-lake-q1a-data49b-wayback-temporal/summary.json','utf8'));
+          const p=JSON.parse(fs.readFileSync('.tmp/candidate-lake-q1a-data49b-cc-historical/summary.json','utf8'));
           if(p.readOnly!==true || p.databaseWrites!==0 || p.productionWrites!==0) throw new Error('write boundary violated');
-          if(p.sourceSiteFetches!==0 || p.sourceContentFetches!==0 || p.archiveContentFetches!==0 || p.warcFetches!==0) throw new Error('metadata-only boundary violated');
-          if(p.waybackCdxUrlIndexRequestsOnly!==true || p.vercelDeployments!==0) throw new Error('network/deploy boundary violated');
-          console.log(JSON.stringify(p.results.map(r=>({window:r.window,total:r.total,expected:r.expectedTotal,allPerSourceCountsMatch:r.allPerSourceCountsMatch,manifestSha256:r.manifestSha256,domains:r.domains.map(d=>({domain:d.domain,candidates:d.candidateRows,expected:d.expected,digest:d.candidateDigestSha256,complete:d.queryComplete}))})),null,2));
+          if(p.sourceSiteFetches!==0 || p.sourceContentFetches!==0 || p.warcFetches!==0) throw new Error('metadata-only boundary violated');
+          if(p.commonCrawlUrlIndexRequestsOnly!==true || p.vercelDeployments!==0) throw new Error('network/deploy boundary violated');
+          console.log(JSON.stringify({total:p.totalCandidateRows,expected:p.expectedHistoricalTotal,allQueriesComplete:p.allQueriesComplete,allFinalCountsMatch:p.allFinalCountsMatch,allDomainsHitExactAtSomeHorizon:p.allDomainsHitExactAtSomeHorizon,manifestSha256:p.manifestSha256,domains:p.domains.map(d=>({domain:d.sourceDomain,candidates:d.candidateRows,expected:d.expectedHistoricalCandidateRows,delta:d.deltaToExpected,firstExactAt:d.firstExactAt,complete:d.queryComplete}))},null,2));
           NODE
       - uses: actions/upload-artifact@v4
         with:
-          name: candidate-lake-q1a-data49b-wayback-temporal-proof
-          path: .tmp/candidate-lake-q1a-data49b-wayback-temporal/
+          name: candidate-lake-q1a-data49b-commoncrawl-historical-union
+          path: .tmp/candidate-lake-q1a-data49b-cc-historical/
           if-no-files-found: error
           retention-days: 30
