@@ -1,0 +1,43 @@
+name: AkarFinder - Q4A DB Field Export
+
+on:
+  push:
+    branches:
+      - data/q4a-minimal-search-ready
+    paths:
+      - 'scripts/audits/candidate-lake-q4a-db-field-export.ts'
+      - '.github/workflows/candidate-lake-q4a-db-field-export.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Export exact DB field evidence
+        run: npx tsx scripts/audits/candidate-lake-q4a-db-field-export.ts
+      - name: Verify read-only invariants
+        run: |
+          node - <<'NODE'
+          const fs=require('fs')
+          const s=JSON.parse(fs.readFileSync('.tmp/q4a-db-field-export/summary.json','utf8'))
+          if(!s.databaseReadsOnly||s.databaseWrites!==0||s.productionWrites!==0||s.sourceSiteFetches!==0||s.vercelDeployments!==0) throw new Error('read-only invariant failed')
+          if(!Number.isInteger(s.uniqueUrls)||s.uniqueUrls<=0) throw new Error('empty export')
+          console.log(s)
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: candidate-lake-q4a-db-field-export
+          path: .tmp/q4a-db-field-export/
+          retention-days: 30
