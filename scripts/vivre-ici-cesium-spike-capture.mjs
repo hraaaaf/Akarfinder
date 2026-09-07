@@ -77,8 +77,20 @@ try {
 
     const file = path.join(outDir, `cesium-maarif-${vp.name}.png`);
     const mapFile = path.join(outDir, `cesium-map-${vp.name}.png`);
-    await page.screenshot({ path: file, fullPage: false });
-    await page.locator('[data-cesium-map-surface]').screenshot({ path: mapFile });
+    const mapLocator = page.locator('[data-cesium-map-surface]');
+    const mapBox = await mapLocator.boundingBox();
+    if (!mapBox || mapBox.width < 1 || mapBox.height < 1) {
+      throw new Error(`Cesium map surface has no stable bounding box at ${vp.name}`);
+    }
+    const clip = {
+      x: Math.max(0, mapBox.x),
+      y: Math.max(0, mapBox.y),
+      width: Math.min(mapBox.width, vp.width - Math.max(0, mapBox.x)),
+      height: Math.min(mapBox.height, vp.height - Math.max(0, mapBox.y)),
+    };
+    await page.screenshot({ path: mapFile, clip, animations: 'disabled' });
+    await page.waitForTimeout(800);
+    await page.screenshot({ path: file, fullPage: false, animations: 'disabled' });
 
     const mapStat = await fs.stat(mapFile);
     const shell = await shellLocator.boundingBox().catch(() => null);
