@@ -1,6 +1,12 @@
 /* VIVRE ICI — editorial hierarchy correction after visual AFTER review.
    Presentation-only. No geographic, property, market, price, score, distance or weather facts are created. */
 
+/* DAY MODE v2 — keep the real Esri imagery, but restore the warm, sunny tonal balance
+   of the frozen target after the first daylight pass proved too cool/washed out. */
+[data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) [data-akarfinder-national-map] .maplibregl-canvas {
+  filter: saturate(1.06) contrast(.96) brightness(1.10) sepia(.055) !important;
+}
+
 @media (min-width: 1024px) {
   [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-premium-context-header {
     display: block !important;
