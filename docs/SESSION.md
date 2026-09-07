@@ -47,38 +47,38 @@
 
 ## Q2A — Candidate-pair blocking — ✅ CERTIFIED
 
-- Branche : `data/q2a-candidate-pair-blocking`.
-- Run **`34131847974` SUCCESS** ; artifact **`10022400823`**.
-- Artifact ZIP digest : `sha256:89a801481683761ff3726b16c5924251c99f3274a2f67e5d703de7514ac9a41b`.
-- Baseline non ordonné : **31 511 921 535** paires possibles sur 251 046 rows.
-- Candidate pairs retenues : **1 892 724**.
-- Cross-source : **779 029** ; same-source : **1 113 695**.
-- Réduction : **99,9939936 %**, facteur **16 648,98×**.
-- **374 927 blocks**, 261 oversized exclus par cap 250 ; block P99 = 35, max observé = 2 363.
-- **91 024 rows blockables**, **58 260 rows** présentes dans au moins une paire retenue.
+- Run `34131847974` SUCCESS ; artifact `10022400823`.
+- **31 511 921 535** paires possibles -> **1 892 724** candidates.
+- Cross-source **779 029** ; same-source **1 113 695**.
+- Réduction **99,9939936 %**, facteur **16 648,98×**.
+- **374 927 blocks**, 261 oversized exclus par cap 250.
 - SHA256 candidate pairs : `50b3e0ee123f4240478cb0b430740e23db9e6ebfe4af7149fe24623997e6dede`.
-- Aucune fusion physique dans Q2A ; aucun write/fetch source/Vercel.
 
 ## Q2B — Conservative clustering V1 / probable_unique — ✅ CERTIFIED
 
-- Branche : `data/q2b-conservative-clustering-v1`.
-- Run **`34132862250` SUCCESS** ; artifact **`10022797604`**.
-- Artifact ZIP digest : `sha256:b9b534a75deb7a96987c6af771e1677f597e84670c81af7bf804a101434d815f`.
+- Run `34132862250` SUCCESS ; artifact `10022797604`.
 - **251 046 representations -> 250 774 probable_unique materializable**.
-- Réduction : **272 représentations** seulement, volontairement conservatrice.
-- **250 503 singletons**.
-- **271 clusters multi-member** portant **543 représentations**.
-- Distribution : **270 clusters de 2 + 1 cluster de 3** ; max cluster = **3**.
-- 422 edges cross-source avaient passé le gate pair-level ; **272 merge edges** finalement utilisées.
-- Aucune paire same-source n’est autorisée à fusionner directement en V1.
-- `uniqueSourcePerCluster=true`, max-cluster guard = 8.
-- Accept reasons : **417 tight_structured_cross_source + 5 title_supported_cross_source**.
-- Cluster constraints ont refusé **148 source-repeat** et **2 price-span**.
-- Confidence representations : **464 high + 79 conservative + 250 503 singleton**.
-- DATA4.9B `2 326` reste explicitement hors `probable_unique`; aucun chiffre unique n’est revendiqué pour ce lot agrégé.
+- Réduction : **272 représentations**.
+- **250 503 singletons** ; **271 clusters multi-member / 543 représentations**.
+- Distribution : **270 clusters de 2 + 1 cluster de 3**, max cluster = 3.
+- Aucune paire same-source fusionnée directement ; `uniqueSourcePerCluster=true`.
 - SHA256 assignments : `9a4478d45fa5aaaecc309c259aa2b490093291d6c848ab4c43e12debb4b2af34`.
-- SHA256 multi-clusters : `504a42a083c3ce7dc4612481217cdb18d1765cae8b3c40cf4f3f17381a921f70`.
-- `physicalMergeDestructive=false` ; `missingDataInvented=false` ; `freshnessInferred=false` ; `authorizationInferred=false` ; DB/prod/source fetch/Vercel = 0.
+
+## Q2C — Cluster QA / false-merge control — ✅ CERTIFIED
+
+- Branche : `data/q2c-cluster-qa`.
+- Run **`34135667715` SUCCESS** ; artifact **`10023858578`**.
+- Artifact ZIP digest : `sha256:e01171a1fdcbe4d5901df3649e55c24e23b7e0fe50e2a202a9f69384c07f011c`.
+- **271 / 271 clusters multi-member audités exhaustivement**, soit **543 représentations** et **273 comparaisons pairwise**.
+- **0 hard-break cluster** ; compteur QA ajusté reste **250 774 probable_unique**.
+- QA : **14 accepted_clean + 257 accepted_with_risk_flags**.
+- Risk principal : **257 bathroom_count_conflict_nonblocking** ; **256/257** conflits proviennent de paires de schémas publics Hicham/RealEstateBuddy, donc le champ salle de bain n’est pas utilisé comme hard gate V1.
+- **1 title_surface_number_mismatch_nonblocking**.
+- Comparabilité : title pairwise disponible sur seulement **3** paires ; géo comparable pairwise **0**.
+- Échantillon manuel déterministe : **54 clusters**.
+- `allMultiClustersExhaustivelyAudited=true` ; `physicalMergeDestructive=false` ; `missingDataInvented=false` ; `freshnessInferred=false` ; `authorizationInferred=false`.
+- DB/prod/source fetch/Vercel = **0**.
+- SHA256 assignments QA : `083878e578edc64575adcbb27d1309a03b64dd49c6a85ea1112eb4163ad6a9e8`.
 
 ## État live / policy — lecture seule
 
@@ -95,11 +95,12 @@
 3. ✅ Q1C exact dedupe/canonical keys.
 4. ✅ Q1D normalized features/fingerprints.
 5. ✅ Q2A candidate-pair blocking.
-6. ✅ Q2B clustering V1 conservateur -> `probable_unique`.
-7. 🔵 **Q2C cluster QA / false-merge control**.
-8. Puis Q3A/Q3B freshness evidence + `live_confidence`.
-9. Puis Q4A/Q4B search eligibility shadow + ranking rehearsal.
-10. Q4C production gate séparé uniquement après preuves.
+6. ✅ Q2B clustering V1 conservateur.
+7. ✅ Q2C cluster QA -> **250 774 probable_unique QA-clean V1**.
+8. 🔵 **Q3A freshness evidence**.
+9. Puis Q3B `live_confidence`.
+10. Puis Q4A/Q4B search eligibility shadow + ranking rehearsal.
+11. Q4C production gate séparé uniquement après preuves.
 
 ## Invariants
 
@@ -116,6 +117,6 @@
 
 ## Reprise immédiate
 
-**Commencer Q2C depuis artifact Q2B `10022797604` + Q1D `10022063956`.** Auditer tous les 271 clusters multi-member puisque le volume est faible, produire risk flags et échantillon stratifié, et casser tout cluster présentant une contradiction non couverte par les gates V1. Ne promouvoir aucun `probable_unique` au serving pendant Q2C.
+**Commencer Q3A à partir de Q2C `10023858578` + Q1D `10022063956`.** Joindre uniquement des observations fraîches exactes et datées : `source_offer_seeds` (`freshness_status`, `fresh_last_seen_at`, `last_observed_at`) et `listing_sources` (`is_active`, `last_seen_at`) via URL/ID exact. Les timestamps d’artifact/cohorte restent du contexte, jamais une preuve `fresh`. Produire une matrice de couverture/âge sans écrire en DB.
 
-**Boussole : 253 372 FROZEN -> 250 774 probable_unique matérialisables V1 -> QA -> live_confidence -> search eligibility shadow.**
+**Boussole : 253 372 FROZEN -> 250 774 probable_unique QA-clean V1 -> freshness -> live_confidence -> search eligibility shadow.**
