@@ -14,8 +14,9 @@ const WORLD_IMAGERY_ATTRIBUTION = "© Esri, Maxar, Earthstar Geographics, GIS Us
 
 // Step 1 — TARGET camera convergence. Keep the sourced district center as the
 // truth-safe anchor while using composition only to open the city/coast context.
+// Zoom 14+ keeps detailed building tiles available for real 3D depth.
 // No boundary, property position or metric is inferred by this presentation camera.
-const CASABLANCA_3D_ZOOM = 13.2;
+const CASABLANCA_3D_ZOOM = 14.1;
 const CASABLANCA_3D_PITCH = 60;
 const CASABLANCA_3D_BEARING = -8;
 
