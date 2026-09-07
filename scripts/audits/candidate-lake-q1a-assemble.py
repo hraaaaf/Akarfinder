@@ -27,7 +27,7 @@ put('agenz_direct','agenz.ma',lines(9898224274,'listing-urls.txt'))
 db=[json.loads(x) for x in lines(9997114366,'db-backed-candidates.jsonl')]; lanes['db_backed_union']=[{'representation_key':f"{r['source']}|url:{canon(r['source_identity'])}",'source_domain':r['source'],'source_identity':canon(r['source_identity']),'identity_kind':'url','lane':'db_backed_union','layer':'L0','candidate_status':'private_unverified'} for r in db]
 def domain_urls(a,d): return [u for u in urls(a) if host(u)==d]
 put('aykana_mass_x5','aykana.ma',domain_urls(9205427369,'aykana.ma'))
-put('kawtar_mass_x5','kawtarimmobilier.com',domain_urls(9205427369,'kawtarimmobilier.com'))
+put('kawtar_mass_x5','kawtarimmobilier.com',domain_urls(9205374370,'kawtarimmobilier.com'))
 put('atlas_masaken_souk','mixed',[*domain_urls(9203620957,'atlasimmobilier.com'),*domain_urls(9205410118,'masaken.ma'),*domain_urls(9205361327,'soukimmobilier.com')])
 put('mouldar_mass_x5','mouldar.com',domain_urls(9205390731,'mouldar.com'))
 put('promo_mass_x5','promoimmomarrakech.com',domain_urls(9203620957,'promoimmomarrakech.com'))
@@ -36,7 +36,7 @@ put('yakeey','yakeey.com',[*domain_urls(9976337671,'yakeey.com'),*domain_urls(99
 for k,a in [('mass_x2',9998233478),('oneimmo_historical',9998238197)]:
  rs=[json.loads(x) for x in lines(a,'manifest.jsonl')]; lanes[k]=[{'representation_key':f"{r['source_domain']}|url:{canon(r.get('canonical_url') or r.get('source_url'))}",'source_domain':r['source_domain'],'source_identity':canon(r.get('canonical_url') or r.get('source_url')),'identity_kind':'url','lane':k,'layer':'L0','candidate_status':'private_unverified'} for r in rs]
 put('mass1_additive','mixed',lines(9988296190,'exact-additive-urls.txt'))
-hist=set(map(canon,lines(9989328673,'agenz-historical-detail-urls.txt'))); direct=set(map(canon,lines(9898224274,'listing-urls.txt'))); put('agenz_historical_delta','agenz.ma',hist-direct)
+hist=set(lines(9989328673,'agenz-historical-detail-urls.txt')); direct=set(lines(9898224274,'listing-urls.txt')); put('agenz_historical_delta','agenz.ma',hist-direct)
 for k,a,n,d in [('mubawab_realestatebuddy',9991042950,'net-new-ids.txt','mubawab.ma'),('mubawab_hicham',9991207598,'mubawab-net-new-ids.txt','mubawab.ma'),('avito_hicham',9991207598,'avito-net-new-ids.txt','avito.ma'),('mubawab_marwane',9991403015,'net-new-ids.txt','mubawab.ma'),('mubawab_public_batch',9991447841,'combined-net-new-ids.txt','mubawab.ma'),('avito_public_batch',9991488198,'combined-net-new-ids.txt','avito.ma')]: put(k,d,lines(a,n),'id')
 fails=[]
 for k,n in C['lanes'].items():
