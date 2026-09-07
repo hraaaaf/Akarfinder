@@ -39,6 +39,7 @@ ROADMAP post-M250K : commit `0d1a91b4b49c75ccac34c16e950b91fe4262a6c8`.
 - Honest row-level ceiling: **251,046 materializable + 2,326 aggregate-only = 253,372 frozen accounting total**. Never create placeholders.
 - Live gateway baseline verified through `search_public_representations_v2`: **2,065** servable representations.
 - Detailed proof: `docs/data/Q1A-CANDIDATE-LAKE-RECOVERY-STATUS.md`.
+- Machine accounting contract: `scripts/audits/candidate-lake-q1a-materializable-contract.json`; 25 row-level lanes sum to **251,046**, and DATA4.9B remains a separate non-public, no-placeholder **2,326** aggregate.
 
 ### Goal
 
