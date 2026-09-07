@@ -17,7 +17,7 @@ const WORLD_IMAGERY_ATTRIBUTION = "© Esri, Maxar, Earthstar Geographics, GIS Us
 // Zoom 14+ keeps detailed building tiles available for real 3D depth.
 // No boundary, property position or metric is inferred by this presentation camera.
 const CASABLANCA_3D_ZOOM = 14.0;
-const CASABLANCA_3D_PITCH = 52;
+const CASABLANCA_3D_PITCH = 58;
 const CASABLANCA_3D_BEARING = -12;
 
 const IMMERSIVE_LIGHT: LightSpecification = {
