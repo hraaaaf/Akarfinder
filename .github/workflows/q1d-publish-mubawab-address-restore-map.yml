@@ -1,0 +1,103 @@
+name: Q1D Publish Mubawab Address Restore Map
+
+on:
+  push:
+    branches: [data/q1d-normalized-features-fingerprints]
+    paths:
+      - '.github/workflows/q1d-publish-mubawab-address-restore-map.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      Q1D_ARTIFACT_ID: '10022063956'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download certified Q1D artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/q1d
+          curl --fail --location --retry 3 \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/${Q1D_ARTIFACT_ID}/zip" \
+            -o .tmp/q1d.zip
+          unzip -q .tmp/q1d.zip -d .tmp/q1d
+      - name: Build exact address-text restore map
+        run: |
+          python - <<'PY'
+          import csv,json,re,unicodedata,urllib.parse,collections
+          from pathlib import Path
+
+          src=Path('.tmp/q1d/manifest-q1d.jsonl')
+          rows=[]
+          def norm(s):
+              if not s: return ''
+              s=urllib.parse.unquote(str(s)).lower()
+              s=unicodedata.normalize('NFKD',s)
+              s=''.join(c for c in s if not unicodedata.combining(c))
+              s=re.sub(r'[^a-z0-9]+',' ',s)
+              return ' '.join(s.split())
+
+          generic={'centre','centre ville','medina','ancienne medina','ville nouvelle','quartier','zone industrielle','route','marina','ocean','plage','corniche','downtown'}
+          support=collections.Counter()
+          mub=[]
+          with src.open() as f:
+              for idx,line in enumerate(f):
+                  o=json.loads(line)
+                  if o.get('normalized_source_domain')!='mubawab.ma':
+                      continue
+                  feat=o.get('features') or {}
+                  city=norm(feat.get('city'))
+                  district=norm(feat.get('district'))
+                  addr=feat.get('address_text')
+                  mub.append((idx,o,city,district,addr))
+                  if city and district:
+                      support[(city,district)]+=1
+
+          out=[]
+          rejected=[]
+          for idx,o,city,district,addr in mub:
+              if district or not city or not addr:
+                  continue
+              na=norm(addr)
+              cand=None
+              if na.endswith(' a '+city):
+                  cand=na[:-(len(city)+3)].strip()
+              elif na.endswith(' '+city):
+                  cand=na[:-(len(city)+1)].strip()
+              if not cand or len(cand)<3 or cand==city or cand in generic:
+                  continue
+              n=support.get((city,cand),0)
+              if n<=0:
+                  rejected.append((idx,o.get('source_identity'),city,cand,addr,'UNKNOWN_DISTRICT'))
+                  continue
+              tier='SAFE_25' if n>=25 else 'SAFE_10' if n>=10 else 'SAFE_5' if n>=5 else 'LOW'
+              out.append((idx,o.get('source_identity'),city,cand,n,tier,addr))
+
+          Path('data/audits').mkdir(parents=True,exist_ok=True)
+          with open('data/audits/q1d-mubawab-address-restore-map.csv','w',newline='',encoding='utf-8') as f:
+              w=csv.writer(f); w.writerow(['artifact_row_index','source_id','city','district','support','tier','address_text']); w.writerows(out)
+          with open('data/audits/q1d-mubawab-address-restore-rejected.csv','w',newline='',encoding='utf-8') as f:
+              w=csv.writer(f); w.writerow(['artifact_row_index','source_id','city','candidate','address_text','reason']); w.writerows(rejected)
+          counts=collections.Counter(x[5] for x in out)
+          print('accepted',len(out),'rejected',len(rejected),'tiers',dict(counts))
+          PY
+      - name: Commit derived maps
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add data/audits/q1d-mubawab-address-restore-map.csv data/audits/q1d-mubawab-address-restore-rejected.csv
+          git diff --cached --quiet && exit 0
+          git commit -m 'data(q1d): publish exact Mubawab address restore map'
+          git push
