@@ -73,6 +73,33 @@ function jsonLdPrice($: cheerio.CheerioAPI, intent: string | null): { value: num
   return null;
 }
 
+function agenzStructuredPrice($: cheerio.CheerioAPI, intent: string | null): { value: number; period: PricePeriod; evidence: string } | null {
+  const candidates: Array<{ value: number; period: PricePeriod; evidence: string; score: number }> = [];
+  $('body *').each((_, el) => {
+    if (!el || el.type !== 'tag') return;
+    const attrs = el.attribs ?? {};
+    const raw = attrs['data-prix'] ?? attrs['data-price'];
+    if (!raw) return;
+    const value = parseAmount(raw);
+    if (!value) return;
+    const tx = normalizeText(attrs['data-transaction-type'] ?? attrs['data-transaction'] ?? '').toLowerCase();
+    const period: PricePeriod = /location|rent/.test(tx) ? 'month' : /vente|sale/.test(tx) ? 'sale_total' : intent === 'rent' ? 'month' : intent === 'sale' ? 'sale_total' : 'unknown';
+    if (!plausible(value, intent, period)) return;
+    const id = attrs['data-id'] ?? '';
+    let score = 0;
+    if (attrs['data-prix']) score += 6;
+    if (attrs['data-price']) score += 4;
+    if (id) score += 5;
+    if (tx) score += 5;
+    if (intent === 'rent' && /location|rent/.test(tx)) score += 6;
+    if (intent === 'sale' && /vente|sale/.test(tx)) score += 6;
+    candidates.push({ value, period, evidence: `agenz:data-price:${value}${id ? `;id=${id}` : ''}${tx ? `;transaction=${tx}` : ''}`, score });
+  });
+  candidates.sort((a, b) => b.score - a.score);
+  const best = candidates[0];
+  return best ? { value: best.value, period: best.period, evidence: best.evidence } : null;
+}
+
 function firstPerM2(text: string): number | null {
   PER_M2.lastIndex = 0;
   const m = PER_M2.exec(text);
@@ -197,6 +224,7 @@ export function extractDetailPrice(sourceDomain: string, html: string, intent: s
     $('meta[property="og:description"]').attr('content') ?? '',
   ].join(' '));
   const pricePerM2Mad = firstPerM2(`${headText} ${body}`);
+  const structured = domain === 'agenz.ma' ? agenzStructuredPrice($, intent) : null;
   const json = jsonLdPrice($, intent);
   const agenzPrimary = domain === 'agenz.ma' ? agenzPrimaryBlockCandidate($, intent) : null;
   const candidates = [
@@ -207,6 +235,20 @@ export function extractDetailPrice(sourceDomain: string, html: string, intent: s
   const old = candidates.filter(c => c.old && c.score >= 1)[0] ?? null;
   const current = candidates.filter(c => !c.old && c.score >= 5)[0] ?? null;
   const notDisclosed = /\b(prix\s+(?:à\s+)?consulter|demander\s+le\s+prix|prix\s+sur\s+demande|price\s+on\s+request|contact(?:ez)?\s+(?:nous|l['’]annonceur).*prix)\b/i.test(`${headText} ${body}`);
+
+  if (structured) {
+    return {
+      currentPriceMad: structured.value,
+      oldPriceMad: old && old.value !== structured.value ? old.value : null,
+      pricePerM2Mad,
+      period: structured.period,
+      priceStatus: 'available',
+      currency: 'MAD',
+      confidence: 'high',
+      evidence: structured.evidence,
+      rejected: [],
+    };
+  }
 
   if (json) {
     return {
