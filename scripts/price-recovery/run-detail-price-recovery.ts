@@ -47,6 +47,9 @@ type Diagnostic = {
   h1: string[];
   metaDescription: string;
   moneyContexts: string[];
+  scriptSources: string[];
+  apiHints: string[];
+  nextDataHints: string[];
 };
 
 type Result = Thin & {
@@ -62,6 +65,20 @@ function compact(value: string): string {
   return value.replace(/\u00a0/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
+function contexts(text: string, pattern: RegExp, radius = 180, limit = 20): string[] {
+  const out: string[] = [];
+  const flags = pattern.flags.includes('g') ? pattern.flags : `${pattern.flags}g`;
+  const rx = new RegExp(pattern.source, flags);
+  let match: RegExpExecArray | null;
+  while ((match = rx.exec(text)) && out.length < limit) {
+    const start = Math.max(0, match.index - radius);
+    const end = Math.min(text.length, match.index + match[0].length + radius);
+    out.push(compact(text.slice(start, end)).slice(0, radius * 2 + 120));
+    if (match[0].length === 0) rx.lastIndex++;
+  }
+  return [...new Set(out)];
+}
+
 function buildDiagnostic(html: string): Diagnostic {
   const $ = cheerio.load(html);
   const title = compact($('title').first().text()).slice(0, 300);
@@ -74,7 +91,24 @@ function buildDiagnostic(html: string): Diagnostic {
     if (!own || own.length > 220) return;
     if (/(?:\d[\d\s,.]{1,14})\s*(?:DH|DHS|MAD|dirhams?)/i.test(own)) moneyContexts.push(own.slice(0, 220));
   });
-  return { title, h1, metaDescription, moneyContexts };
+
+  const scriptSources = $('script[src]').toArray()
+    .map(el => String($(el).attr('src') ?? '').trim())
+    .filter(Boolean)
+    .slice(0, 80);
+  const inlineScripts = $('script:not([src])').toArray().map(el => $(el).html() ?? '').join('\n');
+  const apiHints = [
+    ...contexts(html, /api\.agenz\.ma/ig, 220, 20),
+    ...contexts(inlineScripts, /https?:\\?\/\\?\/[^\s"'<>]*agenz[^\s"'<>]*/ig, 180, 20),
+    ...contexts(inlineScripts, /(?:fetch|axios|graphql|annonce|listing|property|offer|price)/ig, 140, 30),
+  ].filter((v, i, a) => a.indexOf(v) === i).slice(0, 40);
+  const nextData = $('#__NEXT_DATA__').text() || inlineScripts;
+  const nextDataHints = [
+    ...contexts(nextData, /api\.agenz\.ma/ig, 220, 20),
+    ...contexts(nextData, /(?:price|prix|loyer|annonce|listing|property|offer)/ig, 160, 30),
+  ].filter((v, i, a) => a.indexOf(v) === i).slice(0, 40);
+
+  return { title, h1, metaDescription, moneyContexts, scriptSources, apiHints, nextDataHints };
 }
 
 async function loadFallbackManifest(): Promise<Thin[]> {
