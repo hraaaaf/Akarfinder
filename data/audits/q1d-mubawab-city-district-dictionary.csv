@@ -1,0 +1,1585 @@
+city,district,support,city_equals_district,generic_risk,tier
+tanger,centre,483,0,1,LOW_OR_RISK
+dar bouazza,dar bouazza,478,1,0,LOW_OR_RISK
+casablanca,anfa,374,0,0,LOW_OR_RISK
+marrakech,marrakech,263,1,0,LOW_OR_RISK
+martil,martil,230,1,0,LOW_OR_RISK
+berrechid,berrechid,195,1,0,LOW_OR_RISK
+tanger,de la plage,188,0,1,LOW_OR_RISK
+tanger,administratif,164,0,1,LOW_OR_RISK
+casablanca,casablanca,133,1,0,LOW_OR_RISK
+saidia,saidia,130,1,0,LOW_OR_RISK
+tanger,medina,124,0,1,LOW_OR_RISK
+asilah,asilah,110,1,0,LOW_OR_RISK
+had soualem,had soualem,103,1,0,LOW_OR_RISK
+kenitra,centre,98,0,1,LOW_OR_RISK
+el menzeh,el menzeh,91,1,0,LOW_OR_RISK
+casablanca,polo,90,0,0,LOW_OR_RISK
+tamesna,tamesna,90,1,0,LOW_OR_RISK
+sidi rahal,sidi rahal,88,1,0,LOW_OR_RISK
+harhoura,harhoura,79,1,0,LOW_OR_RISK
+nouaceur,nouaceur,78,1,0,LOW_OR_RISK
+el mansouria,el mansouria,76,1,0,LOW_OR_RISK
+sidi rahal chatai,sidi rahal chatai,70,1,0,LOW_OR_RISK
+errahma,errahma,69,1,0,LOW_OR_RISK
+beni mellal,beni mellal,66,1,0,LOW_OR_RISK
+ait melloul,ait melloul,62,1,0,LOW_OR_RISK
+al hoceima,al hoceima,61,1,0,LOW_OR_RISK
+tit mellil,tit mellil,59,1,0,LOW_OR_RISK
+k c3 a9nitra,centre,58,0,1,LOW_OR_RISK
+deroua,deroua,56,1,0,LOW_OR_RISK
+fnideq,fnideq,56,1,0,LOW_OR_RISK
+mehdia,mehdia,56,1,0,LOW_OR_RISK
+sidi allal el bahraoui,sidi allal el bahraoui,54,1,0,LOW_OR_RISK
+tiznit,tiznit,53,1,0,LOW_OR_RISK
+b c3 a9ni mellal,b c3 a9ni mellal,52,1,0,LOW_OR_RISK
+m diq,m diq,51,1,0,LOW_OR_RISK
+azemmour,azemmour,50,1,0,LOW_OR_RISK
+azrou,azrou,47,1,0,LOW_OR_RISK
+ksar sghir,ksar sghir,46,1,0,LOW_OR_RISK
+berkane,berkane,45,1,0,LOW_OR_RISK
+chefchaouen,chefchaouen,44,1,0,LOW_OR_RISK
+ourika,ourika,44,1,0,LOW_OR_RISK
+larache,larache,42,1,0,LOW_OR_RISK
+meknes,centre,40,0,1,LOW_OR_RISK
+sidi abdallah ghiat,sidi abdallah ghiat,40,1,0,LOW_OR_RISK
+sidi bouzid,sidi bouzid,40,1,0,LOW_OR_RISK
+ben guerir,ben guerir,39,1,0,LOW_OR_RISK
+sidi bouknadel,sidi bouknadel,39,1,0,LOW_OR_RISK
+tameslohte,tameslohte,39,1,0,LOW_OR_RISK
+tifelt,tifelt,39,1,0,LOW_OR_RISK
+bir jdid,bir jdid,37,1,0,LOW_OR_RISK
+t c3 a9touan,medina,37,0,1,LOW_OR_RISK
+cabo negro,cabo negro,36,1,0,LOW_OR_RISK
+khouribga,khouribga,35,1,0,LOW_OR_RISK
+ouarzazate,ouarzazate,35,1,0,LOW_OR_RISK
+sefrou,sefrou,35,1,0,LOW_OR_RISK
+fes,centre,34,0,1,LOW_OR_RISK
+agadir,anza,33,0,0,LOW_OR_RISK
+ain aouda,ain aouda,33,1,0,LOW_OR_RISK
+oulad salah,oulad salah,33,1,0,LOW_OR_RISK
+rabat,rabat,33,1,0,LOW_OR_RISK
+taghazout,taghazout,33,1,0,LOW_OR_RISK
+taza,taza,33,1,0,LOW_OR_RISK
+agadir,ville nouvelle,32,0,1,LOW_OR_RISK
+marrakech,azli,32,0,0,LOW_OR_RISK
+zenata,zenata,32,1,0,LOW_OR_RISK
+fes,nouvelle ville,31,0,1,LOW_OR_RISK
+ain attig,ain attig,30,1,0,LOW_OR_RISK
+gueznaia,gueznaia,30,1,0,LOW_OR_RISK
+tassoultante,tassoultante,30,1,0,LOW_OR_RISK
+oued laou,oued laou,29,1,0,LOW_OR_RISK
+tetouan,medina,29,0,1,LOW_OR_RISK
+essaouira,nouvelle ville,28,0,1,LOW_OR_RISK
+mediouna,mediouna,28,1,0,LOW_OR_RISK
+ain harrouda,ain harrouda,27,1,0,LOW_OR_RISK
+sidi kacem,sidi kacem,27,1,0,LOW_OR_RISK
+rabat,medina,26,0,1,LOW_OR_RISK
+ait ourir,ait ourir,25,1,0,LOW_OR_RISK
+mohammedia,wafa,25,0,0,LOW_OR_RISK
+meknes,ancienne medina,24,0,1,LOW_OR_RISK
+tanger,aida,23,0,0,LOW_OR_RISK
+essaouira,essaouira,22,1,0,LOW_OR_RISK
+ksar el k c3 a9bir,ksar el k c3 a9bir,22,1,0,LOW_OR_RISK
+ras el ma,ras el ma,22,1,0,LOW_OR_RISK
+sidi yahya zaer,sidi yahya zaer,22,1,0,LOW_OR_RISK
+beni yakhlef,beni yakhlef,21,1,0,LOW_OR_RISK
+tahannaout,tahannaout,21,1,0,LOW_OR_RISK
+casablanca,port,20,0,0,LOW_OR_RISK
+oulad hassoune,oulad hassoune,20,1,0,LOW_OR_RISK
+tanger,tanger,20,1,0,LOW_OR_RISK
+ouled teima,ouled teima,19,1,0,LOW_OR_RISK
+haouzia,haouzia,18,1,0,LOW_OR_RISK
+mers el kheir,mers el kheir,18,1,0,LOW_OR_RISK
+sidi slimane,sidi slimane,18,1,0,LOW_OR_RISK
+tinghir,tinghir,18,1,0,LOW_OR_RISK
+essaouira,medina,17,0,1,LOW_OR_RISK
+guelmim,guelmim,17,1,0,LOW_OR_RISK
+ksar el kebir,ksar el kebir,17,1,0,LOW_OR_RISK
+oualidia,oualidia,17,1,0,LOW_OR_RISK
+essaouira,borj,16,0,0,LOW_OR_RISK
+chtouka,chtouka,15,1,0,LOW_OR_RISK
+el kelaa des sraghna,el kelaa des sraghna,15,1,0,LOW_OR_RISK
+mirleft,mirleft,15,1,0,LOW_OR_RISK
+sal c3 a9,medina,15,0,1,LOW_OR_RISK
+sidi hajjaj oued hassar,sidi hajjaj oued hassar,15,1,0,LOW_OR_RISK
+biougra,biougra,14,1,0,LOW_OR_RISK
+ouislane,ouislane,14,1,0,LOW_OR_RISK
+youssoufia,youssoufia,14,1,0,LOW_OR_RISK
+aourir,aourir,13,1,0,LOW_OR_RISK
+bourrous,bourrous,13,1,0,LOW_OR_RISK
+khenifra,khenifra,13,1,0,LOW_OR_RISK
+oujda,cgi,13,0,0,LOW_OR_RISK
+selouane,selouane,13,1,0,LOW_OR_RISK
+tetouan,tetouan,13,1,0,LOW_OR_RISK
+dcheira el jihadia,dcheira el jihadia,12,1,0,LOW_OR_RISK
+laayoune,laayoune,12,1,0,LOW_OR_RISK
+ahfir,ahfir,11,1,0,LOW_OR_RISK
+ait faska,ait faska,11,1,0,LOW_OR_RISK
+amizmiz,amizmiz,11,1,0,LOW_OR_RISK
+ghmate,ghmate,11,1,0,LOW_OR_RISK
+moulay bousselham,moulay bousselham,11,1,0,LOW_OR_RISK
+sale,medina,11,0,1,LOW_OR_RISK
+benslimane,administratif,10,0,1,LOW_OR_RISK
+el hajeb,el hajeb,10,1,0,LOW_OR_RISK
+guercif,guercif,10,1,0,LOW_OR_RISK
+imouzzer kendar,imouzzer kendar,10,1,0,LOW_OR_RISK
+inzegan,inzegan,10,1,0,LOW_OR_RISK
+taounate,taounate,10,1,0,LOW_OR_RISK
+anjra,anjra,9,1,0,LOW_OR_RISK
+chichaoua,chichaoua,9,1,0,LOW_OR_RISK
+el kel c3 a2a des sraghna,el kel c3 a2a des sraghna,9,1,0,LOW_OR_RISK
+el majjatia ouled taleb,el majjatia ouled taleb,9,1,0,LOW_OR_RISK
+harbil,harbil,9,1,0,LOW_OR_RISK
+kenitra,kenitra,9,1,0,LOW_OR_RISK
+oujda,najd,9,0,0,LOW_OR_RISK
+sidi bibi,sidi bibi,9,1,0,LOW_OR_RISK
+tetouan,bled,9,0,0,LOW_OR_RISK
+drargua,drargua,8,1,0,LOW_OR_RISK
+khemisset,cgi,8,0,0,LOW_OR_RISK
+malloussa,malloussa,8,1,0,LOW_OR_RISK
+midelt,midelt,8,1,0,LOW_OR_RISK
+moulay yaacoub,moulay yaacoub,8,1,0,LOW_OR_RISK
+ouahat sidi brahim,ouahat sidi brahim,8,1,0,LOW_OR_RISK
+sidi bou othmane,sidi bou othmane,8,1,0,LOW_OR_RISK
+tnine aglou,tnine aglou,8,1,0,LOW_OR_RISK
+agafay,agafay,7,1,0,LOW_OR_RISK
+al aaroui,al aaroui,7,1,0,LOW_OR_RISK
+azilal,azilal,7,1,0,LOW_OR_RISK
+boufkrane,boufkrane,7,1,0,LOW_OR_RISK
+boukhalef,boukhalef,7,1,0,LOW_OR_RISK
+bouskoura,bouskoura,7,1,0,LOW_OR_RISK
+eddir,eddir,7,1,0,LOW_OR_RISK
+errachidia,errachidia,7,1,0,LOW_OR_RISK
+f c3 a8s,nouvelle ville,7,0,1,LOW_OR_RISK
+fquih ben saleh,fquih ben saleh,7,1,0,LOW_OR_RISK
+moulay abdallah,moulay abdallah,7,1,0,LOW_OR_RISK
+rommani,rommani,7,1,0,LOW_OR_RISK
+sidi ali ben hamdouche,sidi ali ben hamdouche,7,1,0,LOW_OR_RISK
+sidi ifni,sidi ifni,7,1,0,LOW_OR_RISK
+sidi moussa lhamri,sidi moussa lhamri,7,1,0,LOW_OR_RISK
+tamazouzte,tamazouzte,7,1,0,LOW_OR_RISK
+agadir melloul,agadir melloul,6,1,0,LOW_OR_RISK
+ain taoujdate,ain taoujdate,6,1,0,LOW_OR_RISK
+azla,azla,6,1,0,LOW_OR_RISK
+ben maachou,ben maachou,6,1,0,LOW_OR_RISK
+casablanca,ancienne medina,6,0,1,LOW_OR_RISK
+el gara,el gara,6,1,0,LOW_OR_RISK
+imzouren,imzouren,6,1,0,LOW_OR_RISK
+laaouama,laaouama,6,1,0,LOW_OR_RISK
+lamaachate,lamaachate,6,1,0,LOW_OR_RISK
+lamharza essahel,lamharza essahel,6,1,0,LOW_OR_RISK
+safi,ville nouvelle,6,0,1,LOW_OR_RISK
+sahel oulad h riz,sahel oulad h riz,6,1,0,LOW_OR_RISK
+sale,sale,6,1,0,LOW_OR_RISK
+sidi ghanem,sidi ghanem,6,1,0,LOW_OR_RISK
+taghzout,taghzout,6,1,0,LOW_OR_RISK
+tetouan,mdiq,6,0,0,LOW_OR_RISK
+agadir,port,5,0,0,LOW_OR_RISK
+ait kamra,ait kamra,5,1,0,LOW_OR_RISK
+ait malek,ait malek,5,1,0,LOW_OR_RISK
+bin el ouidane,bin el ouidane,5,1,0,LOW_OR_RISK
+bni ansar,bni ansar,5,1,0,LOW_OR_RISK
+bouznika,bouznika,5,1,0,LOW_OR_RISK
+el argoub,el argoub,5,1,0,LOW_OR_RISK
+el beddouza,el beddouza,5,1,0,LOW_OR_RISK
+itzer,itzer,5,1,0,LOW_OR_RISK
+lalla takarkoust,lalla takarkoust,5,1,0,LOW_OR_RISK
+loudaya,loudaya,5,1,0,LOW_OR_RISK
+oulad dahou,oulad dahou,5,1,0,LOW_OR_RISK
+oulad hamdane,oulad hamdane,5,1,0,LOW_OR_RISK
+sidi moussa ben ali,sidi moussa ben ali,5,1,0,LOW_OR_RISK
+t c3 a9touan,bled,5,0,0,LOW_OR_RISK
+zaio,zaio,5,1,0,LOW_OR_RISK
+agadir,agadir oufella,4,0,0,LOW_OR_RISK
+agourai,agourai,4,1,0,LOW_OR_RISK
+al manzla,al manzla,4,1,0,LOW_OR_RISK
+asni,asni,4,1,0,LOW_OR_RISK
+benslimane,benslimane,4,1,0,LOW_OR_RISK
+benslimane,quods,4,0,0,LOW_OR_RISK
+bir gandouz,bir gandouz,4,1,0,LOW_OR_RISK
+casablanca,derb chorfa,4,0,0,LOW_OR_RISK
+casablanca,derb douam,4,0,0,LOW_OR_RISK
+casablanca,derb moulay cherif,4,0,0,LOW_OR_RISK
+casablanca,finance city,4,0,0,LOW_OR_RISK
+casablanca,hay al fath,4,0,0,LOW_OR_RISK
+casablanca,hay almassira 2,4,0,0,LOW_OR_RISK
+casablanca,hay m barka,4,0,0,LOW_OR_RISK
+casablanca,hay tarik,4,0,0,LOW_OR_RISK
+casablanca,jawadi,4,0,0,LOW_OR_RISK
+casablanca,lusitania,4,0,0,LOW_OR_RISK
+casablanca,mabroka,4,0,0,LOW_OR_RISK
+casablanca,yasmina,4,0,0,LOW_OR_RISK
+cherrat,cherrat,4,1,0,LOW_OR_RISK
+el jadida,cite des cadres saniat al mourakib,4,0,0,LOW_OR_RISK
+el jadida,lalla zahra,4,0,0,LOW_OR_RISK
+essaouira,argana,4,0,0,LOW_OR_RISK
+essaouira,bhibah,4,0,0,LOW_OR_RISK
+essaouira,douar lareich,4,0,0,LOW_OR_RISK
+essaouira,le boulevard mohammed v,4,0,0,LOW_OR_RISK
+essaouira,tafoukt,4,0,0,LOW_OR_RISK
+fdalate,fdalate,4,1,0,LOW_OR_RISK
+fes,al karaouiyine,4,0,0,LOW_OR_RISK
+fes,ancienne medina,4,0,1,LOW_OR_RISK
+fes,el mokhfia,4,0,0,LOW_OR_RISK
+fes,hay badr,4,0,0,LOW_OR_RISK
+fes,hay lalla soukaina,4,0,0,LOW_OR_RISK
+fes,hay moulay el kamel,4,0,0,LOW_OR_RISK
+fes,hay riad,4,0,0,LOW_OR_RISK
+fes,riad,4,0,0,LOW_OR_RISK
+fes,route de fez,4,0,0,LOW_OR_RISK
+fes,tghat,4,0,0,LOW_OR_RISK
+jahjouh,jahjouh,4,1,0,LOW_OR_RISK
+k c3 a9nitra,val fleuri,4,0,0,LOW_OR_RISK
+kasba tadla,kasba tadla,4,1,0,LOW_OR_RISK
+khemisset,lot almouna,4,0,0,LOW_OR_RISK
+laanoussar,laanoussar,4,1,0,LOW_OR_RISK
+laattaouia,laattaouia,4,1,0,LOW_OR_RISK
+lagfifat,lagfifat,4,1,0,LOW_OR_RISK
+lqliaa,lqliaa,4,1,0,LOW_OR_RISK
+marrakech,aouatif,4,0,0,LOW_OR_RISK
+marrakech,hay chouhada,4,0,0,LOW_OR_RISK
+marrakech,koudia,4,0,0,LOW_OR_RISK
+marrakech,targa,4,0,0,LOW_OR_RISK
+mohammedia,diour dokala,4,0,0,LOW_OR_RISK
+mohammedia,hassania 1,4,0,0,LOW_OR_RISK
+mohammedia,hay annasr,4,0,0,LOW_OR_RISK
+mohammedia,hay mesk lil,4,0,0,LOW_OR_RISK
+mohammedia,hay saada,4,0,0,LOW_OR_RISK
+mohammedia,mohammedia,4,1,0,LOW_OR_RISK
+mohammedia,riad 2,4,0,0,LOW_OR_RISK
+nador,al aroui,4,0,0,LOW_OR_RISK
+nador,al boustane,4,0,0,LOW_OR_RISK
+nador,ouled boutaib,4,0,0,LOW_OR_RISK
+oujda,hikma i,4,0,0,LOW_OR_RISK
+oulad abbou,oulad abbou,4,1,0,LOW_OR_RISK
+oulad frej,oulad frej,4,1,0,LOW_OR_RISK
+oulad rahmoune,oulad rahmoune,4,1,0,LOW_OR_RISK
+oulad yahya louta,oulad yahya louta,4,1,0,LOW_OR_RISK
+ouled berhil,ouled berhil,4,1,0,LOW_OR_RISK
+ounagha,ounagha,4,1,0,LOW_OR_RISK
+safi,achbar,4,0,0,LOW_OR_RISK
+sal c3 a9,hay chmaou,4,0,0,LOW_OR_RISK
+sale,bab sebta,4,0,0,LOW_OR_RISK
+settat,hay kassam,4,0,0,LOW_OR_RISK
+sidi moussa,sidi moussa,4,1,0,LOW_OR_RISK
+sidi moussa el majdoub,sidi moussa el majdoub,4,1,0,LOW_OR_RISK
+sidi taibi,sidi taibi,4,1,0,LOW_OR_RISK
+skhirat,skhirat,4,1,0,LOW_OR_RISK
+t c3 a9touan,el mdrassi,4,0,0,LOW_OR_RISK
+tahla,tahla,4,1,0,LOW_OR_RISK
+tanger,alia,4,0,0,LOW_OR_RISK
+tanger,bir chifa,4,0,0,LOW_OR_RISK
+tanger,el mers 2,4,0,0,LOW_OR_RISK
+tanger,hanaa 1,4,0,0,LOW_OR_RISK
+tanger,lalla chafia,4,0,0,LOW_OR_RISK
+tanger,les rosiers,4,0,0,LOW_OR_RISK
+tanger,mghayer,4,0,0,LOW_OR_RISK
+taroudant,kasbah,4,0,0,LOW_OR_RISK
+taroudant,taroudant,4,1,0,LOW_OR_RISK
+temara,hoda,4,0,0,LOW_OR_RISK
+temara,nahda 1,4,0,0,LOW_OR_RISK
+temara,temara,4,1,0,LOW_OR_RISK
+temara,temara plage,4,0,0,LOW_OR_RISK
+temsia,temsia,4,1,0,LOW_OR_RISK
+tetouan,el ensanche,4,0,0,LOW_OR_RISK
+tetouan,korat essba,4,0,0,LOW_OR_RISK
+agadir,boutchakat,3,0,0,LOW_OR_RISK
+agadir,hay hassani,3,0,0,LOW_OR_RISK
+agadir,ihchach,3,0,0,LOW_OR_RISK
+ain johra,ain johra,3,1,0,LOW_OR_RISK
+ait baha,ait baha,3,1,0,LOW_OR_RISK
+amtar,amtar,3,1,0,LOW_OR_RISK
+aquermoud,aquermoud,3,1,0,LOW_OR_RISK
+benslimane,lallamaryem,3,0,0,LOW_OR_RISK
+casablanca,bouchentouf,3,0,0,LOW_OR_RISK
+casablanca,chaabi,3,0,0,LOW_OR_RISK
+casablanca,derb al madania,3,0,0,LOW_OR_RISK
+casablanca,derb el mitre,3,0,0,LOW_OR_RISK
+casablanca,derb espagnol,3,0,0,LOW_OR_RISK
+casablanca,derb khalid,3,0,0,LOW_OR_RISK
+casablanca,derb milan hay omar bnou alkhattab,3,0,0,LOW_OR_RISK
+casablanca,hay al kodia,3,0,0,LOW_OR_RISK
+casablanca,hay alfalah,3,0,0,LOW_OR_RISK
+casablanca,hay alfoqara,3,0,0,LOW_OR_RISK
+casablanca,hay arrahma,3,0,0,LOW_OR_RISK
+casablanca,hay hakam,3,0,0,LOW_OR_RISK
+casablanca,hay moulay rachid 2,3,0,0,LOW_OR_RISK
+casablanca,hay rajaa,3,0,0,LOW_OR_RISK
+casablanca,hay rmila,3,0,0,LOW_OR_RISK
+casablanca,hay tasahol,3,0,0,LOW_OR_RISK
+casablanca,ifriquia,3,0,0,LOW_OR_RISK
+casablanca,jamila 2,3,0,0,LOW_OR_RISK
+casablanca,jamila 7,3,0,0,LOW_OR_RISK
+casablanca,la jonquiere,3,0,0,LOW_OR_RISK
+casablanca,sour jdid,3,0,0,LOW_OR_RISK
+dakhla,al kassam,3,0,0,LOW_OR_RISK
+dakhla,blue bay,3,0,0,LOW_OR_RISK
+dakhla,essalam,3,0,0,LOW_OR_RISK
+el jadida,cheminoits,3,0,0,LOW_OR_RISK
+el jadida,cite portugaise,3,0,0,LOW_OR_RISK
+el jadida,port,3,0,0,LOW_OR_RISK
+el menzel,el menzel,3,1,0,LOW_OR_RISK
+fes,al adarissa,3,0,0,LOW_OR_RISK
+fes,annouzha,3,0,0,LOW_OR_RISK
+fes,atlas,3,0,0,LOW_OR_RISK
+fes,hay ait skato,3,0,0,LOW_OR_RISK
+fes,oued fes,3,0,0,LOW_OR_RISK
+guisser,guisser,3,1,0,LOW_OR_RISK
+hrara,hrara,3,1,0,LOW_OR_RISK
+ifrane,la belle vue,3,0,0,LOW_OR_RISK
+ifrane,zaouiat sidi abdeslam,3,0,0,LOW_OR_RISK
+imsouane,imsouane,3,1,0,LOW_OR_RISK
+k c3 a9nitra,bir rami ouest,3,0,0,LOW_OR_RISK
+k c3 a9nitra,ismalia,3,0,0,LOW_OR_RISK
+kalaat m gouna,kalaat m gouna,3,1,0,LOW_OR_RISK
+laghdira,laghdira,3,1,0,LOW_OR_RISK
+lahraouyine,lahraouyine,3,1,0,LOW_OR_RISK
+mallalienne,mallalienne,3,1,0,LOW_OR_RISK
+marrakech,arset moulay bouaazza,3,0,0,LOW_OR_RISK
+marrakech,hay firdaouss,3,0,0,LOW_OR_RISK
+meknes,bab lekhmiss,3,0,0,LOW_OR_RISK
+mohammedia,hassania 2,3,0,0,LOW_OR_RISK
+mohammedia,hay al amal,3,0,0,LOW_OR_RISK
+mohammedia,kasbah,3,0,0,LOW_OR_RISK
+mohammedia,port,3,0,0,LOW_OR_RISK
+moualine el oued,moualine el oued,3,1,0,LOW_OR_RISK
+moulay bouzarqtoune,moulay bouzarqtoune,3,1,0,LOW_OR_RISK
+mrir t,mrir t,3,1,0,LOW_OR_RISK
+nador,barakia,3,0,0,LOW_OR_RISK
+ouazzane,ouazzane,3,1,0,LOW_OR_RISK
+oued zem,oued zem,3,1,0,LOW_OR_RISK
+oujda,bd hassan ii,3,0,0,LOW_OR_RISK
+oujda,hikma ii,3,0,0,LOW_OR_RISK
+oujda,nahda,3,0,0,LOW_OR_RISK
+oujda,route tayret,3,0,0,LOW_OR_RISK
+oulad said,oulad said,3,1,0,LOW_OR_RISK
+oulad zidane,oulad zidane,3,1,0,LOW_OR_RISK
+rabat,abi ragrag,3,0,0,LOW_OR_RISK
+rabat,ahlane,3,0,0,LOW_OR_RISK
+rabat,aviation,3,0,0,LOW_OR_RISK
+rabat,hay al rajaa fillah,3,0,0,LOW_OR_RISK
+rabat,zone industrielle,3,0,0,LOW_OR_RISK
+ras ain rhamna,ras ain rhamna,3,1,0,LOW_OR_RISK
+safi,hay anas,3,0,0,LOW_OR_RISK
+safi,hay essaada,3,0,0,LOW_OR_RISK
+safi,hay essalam,3,0,0,LOW_OR_RISK
+safi,kawki,3,0,0,LOW_OR_RISK
+safi,plateau,3,0,0,LOW_OR_RISK
+safi,safi,3,1,0,LOW_OR_RISK
+safi,sidi abdelkrim,3,0,0,LOW_OR_RISK
+sal c3 a9,el qaria,3,0,0,LOW_OR_RISK
+sale,dar el lhamra,3,0,0,LOW_OR_RISK
+sale,hay moulay ismail,3,0,0,LOW_OR_RISK
+sale,horria,3,0,0,LOW_OR_RISK
+sale,pepiniere,3,0,0,LOW_OR_RISK
+sebt gzoula,sebt gzoula,3,1,0,LOW_OR_RISK
+settat,settat,3,1,0,LOW_OR_RISK
+settat,tanmiya,3,0,0,LOW_OR_RISK
+sidi bennour,sidi bennour,3,1,0,LOW_OR_RISK
+sidi boukhalkhal,sidi boukhalkhal,3,1,0,LOW_OR_RISK
+sidi el aidi,sidi el aidi,3,1,0,LOW_OR_RISK
+sidi harazem,sidi harazem,3,1,0,LOW_OR_RISK
+sidi ouassay,sidi ouassay,3,1,0,LOW_OR_RISK
+sidi rahhal,sidi rahhal,3,1,0,LOW_OR_RISK
+sidi yahya,sidi yahya,3,1,0,LOW_OR_RISK
+skhirat,belkhir,3,0,0,LOW_OR_RISK
+skoura ahl el oust,skoura ahl el oust,3,1,0,LOW_OR_RISK
+t c3 a9touan,essania,3,0,0,LOW_OR_RISK
+tamri,tamri,3,1,0,LOW_OR_RISK
+tan tan,tan tan,3,1,0,LOW_OR_RISK
+tanger,ahammar,3,0,0,LOW_OR_RISK
+tanger,beausejour,3,0,0,LOW_OR_RISK
+tanger,beni said,3,0,0,LOW_OR_RISK
+tanger,bir chairi,3,0,0,LOW_OR_RISK
+tanger,boubana,3,0,0,LOW_OR_RISK
+tanger,dher lahmam,3,0,0,LOW_OR_RISK
+tanger,el baraka,3,0,0,LOW_OR_RISK
+tanger,el oued,3,0,0,LOW_OR_RISK
+tanger,hanaa 2,3,0,0,LOW_OR_RISK
+tanger,hanaa 3 soussi,3,0,0,LOW_OR_RISK
+tanger,iberia,3,0,0,LOW_OR_RISK
+tarmigt,tarmigt,3,1,0,LOW_OR_RISK
+taroudant,lablalia,3,0,0,LOW_OR_RISK
+taroudant,mellah,3,0,0,LOW_OR_RISK
+temara,nahda 2,3,0,0,LOW_OR_RISK
+temara,nemsia,3,0,0,LOW_OR_RISK
+temara,oulad ogba,3,0,0,LOW_OR_RISK
+zagora,zagora,3,1,0,LOW_OR_RISK
+zaouiat sidi kacem,zaouiat sidi kacem,3,1,0,LOW_OR_RISK
+agadir,cit c3 a9 adrar,2,0,0,LOW_OR_RISK
+agadir,hay al wafaa,2,0,0,LOW_OR_RISK
+agadir,laazib,2,0,0,LOW_OR_RISK
+agadir,route d agadir essaouira,2,0,0,LOW_OR_RISK
+agdz,agdz,2,1,0,LOW_OR_RISK
+ain beida,ain beida,2,1,0,LOW_OR_RISK
+ain cheggag,ain cheggag,2,1,0,LOW_OR_RISK
+ain erreggada,ain erreggada,2,1,0,LOW_OR_RISK
+ain lahsan,ain lahsan,2,1,0,LOW_OR_RISK
+ait ikkou,ait ikkou,2,1,0,LOW_OR_RISK
+ait imour,ait imour,2,1,0,LOW_OR_RISK
+ait youssef ou ali,ait youssef ou ali,2,1,0,LOW_OR_RISK
+al oioun sidi mellouk,al oioun sidi mellouk,2,1,0,LOW_OR_RISK
+ameur seflia,ameur seflia,2,1,0,LOW_OR_RISK
+aquouass briech,aquouass briech,2,1,0,LOW_OR_RISK
+arbaa sahel,arbaa sahel,2,1,0,LOW_OR_RISK
+arbaoua,arbaoua,2,1,0,LOW_OR_RISK
+arfoud,arfoud,2,1,0,LOW_OR_RISK
+azzinate,azzinate,2,1,0,LOW_OR_RISK
+bejaad,bejaad,2,1,0,LOW_OR_RISK
+belfaa,belfaa,2,1,0,LOW_OR_RISK
+bhalil,bhalil,2,1,0,LOW_OR_RISK
+bouarg,bouarg,2,1,0,LOW_OR_RISK
+boujdour,boujdour,2,1,0,LOW_OR_RISK
+boumalne dades,boumalne dades,2,1,0,LOW_OR_RISK
+casablanca,al hassania,2,0,0,LOW_OR_RISK
+casablanca,bel air,2,0,0,LOW_OR_RISK
+casablanca,bouskoura ville,2,0,0,LOW_OR_RISK
+casablanca,dar bouazza,2,0,0,LOW_OR_RISK
+casablanca,dar lamane,2,0,0,LOW_OR_RISK
+casablanca,derb al kabir,2,0,0,LOW_OR_RISK
+casablanca,derb khlifa,2,0,0,LOW_OR_RISK
+casablanca,derb lahjar,2,0,0,LOW_OR_RISK
+casablanca,derb mesfioui,2,0,0,LOW_OR_RISK
+casablanca,hay adil,2,0,0,LOW_OR_RISK
+casablanca,hay la c3 a2youne,2,0,0,LOW_OR_RISK
+casablanca,hay moulay rachid 4,2,0,0,LOW_OR_RISK
+casablanca,jamila 1,2,0,0,LOW_OR_RISK
+casablanca,jamila 4,2,0,0,LOW_OR_RISK
+casablanca,jamila 6,2,0,0,LOW_OR_RISK
+casablanca,ksar lebhar,2,0,0,LOW_OR_RISK
+casablanca,massoudia,2,0,0,LOW_OR_RISK
+casablanca,sidi rahal,2,0,0,LOW_OR_RISK
+chellalate,chellalate,2,1,0,LOW_OR_RISK
+chrafat,chrafat,2,1,0,LOW_OR_RISK
+dakhla,ghribilate,2,0,0,LOW_OR_RISK
+dar bni karrich,dar bni karrich,2,1,0,LOW_OR_RISK
+driouch,driouch,2,1,0,LOW_OR_RISK
+el ghiate,el ghiate,2,1,0,LOW_OR_RISK
+el guerdane,el guerdane,2,1,0,LOW_OR_RISK
+el hanchane,el hanchane,2,1,0,LOW_OR_RISK
+el jadida,derb al hajjar,2,0,0,LOW_OR_RISK
+el jadida,derb lahona,2,0,0,LOW_OR_RISK
+el jadida,mouilha,2,0,0,LOW_OR_RISK
+el marsa,el marsa,2,1,0,LOW_OR_RISK
+el outia,el outia,2,1,0,LOW_OR_RISK
+er rich,er rich,2,1,0,LOW_OR_RISK
+et taous,et taous,2,1,0,LOW_OR_RISK
+f c3 a8s,ancienne medina,2,0,1,LOW_OR_RISK
+f c3 a8s,hay riad,2,0,0,LOW_OR_RISK
+f c3 a8s,oued fes,2,0,0,LOW_OR_RISK
+farkhana,farkhana,2,1,0,LOW_OR_RISK
+fes,boutaaa,2,0,0,LOW_OR_RISK
+fes,fes jdid,2,0,0,LOW_OR_RISK
+fes,hay al wifaq,2,0,0,LOW_OR_RISK
+fes,hay karim amrani,2,0,0,LOW_OR_RISK
+fes,hay tazi,2,0,0,LOW_OR_RISK
+fes,route d imouzzer,2,0,0,LOW_OR_RISK
+fes,sehb el ward,2,0,0,LOW_OR_RISK
+fes,zone industrielle ain chkef,2,0,0,LOW_OR_RISK
+gdana,gdana,2,1,0,LOW_OR_RISK
+had dra,had dra,2,1,0,LOW_OR_RISK
+haddada,haddada,2,1,0,LOW_OR_RISK
+ifrane,club onicl,2,0,0,LOW_OR_RISK
+ifrane,la prairie,2,0,0,LOW_OR_RISK
+imintanoute,imintanoute,2,1,0,LOW_OR_RISK
+jaidate,jaidate,2,1,0,LOW_OR_RISK
+k c3 a9nitra,assam,2,0,0,LOW_OR_RISK
+kandar sidi khiar,kandar sidi khiar,2,1,0,LOW_OR_RISK
+kenitra,el inara,2,0,0,LOW_OR_RISK
+khemisset,hay idari,2,0,0,LOW_OR_RISK
+khemisset,hay maamoura,2,0,0,LOW_OR_RISK
+khemisset chaouia,khemisset chaouia,2,1,0,LOW_OR_RISK
+lakhiaita,lakhiaita,2,1,0,LOW_OR_RISK
+lamzoudia,lamzoudia,2,1,0,LOW_OR_RISK
+marrakech,douar dlam,2,0,0,LOW_OR_RISK
+marrakech,route de fes,2,0,0,LOW_OR_RISK
+meknassa al gharbia,meknassa al gharbia,2,1,0,LOW_OR_RISK
+meknes,el manar,2,0,0,LOW_OR_RISK
+mohammedia,diour lakrai,2,0,0,LOW_OR_RISK
+mohammedia,el bradaa,2,0,0,LOW_OR_RISK
+mohammedia,les cretes,2,0,0,LOW_OR_RISK
+nador,tirakaa,2,0,0,LOW_OR_RISK
+ouazguita,ouazguita,2,1,0,LOW_OR_RISK
+oujda,bd allal el fassi,2,0,0,LOW_OR_RISK
+oujda,nour,2,0,0,LOW_OR_RISK
+oujda,park,2,0,0,LOW_OR_RISK
+oulad aissa,oulad aissa,2,1,0,LOW_OR_RISK
+oulad ali mansour,oulad ali mansour,2,1,0,LOW_OR_RISK
+oulad ghanem,oulad ghanem,2,1,0,LOW_OR_RISK
+oulad slama,oulad slama,2,1,0,LOW_OR_RISK
+oulad tayeb,oulad tayeb,2,1,0,LOW_OR_RISK
+ouled dlim,ouled dlim,2,1,0,LOW_OR_RISK
+oulmes,oulmes,2,1,0,LOW_OR_RISK
+rabat,errahma,2,0,0,LOW_OR_RISK
+rabat,hassan,2,0,0,LOW_OR_RISK
+rabat,mechouar,2,0,0,LOW_OR_RISK
+saada,saada,2,1,0,LOW_OR_RISK
+safi,bled eljed,2,0,0,LOW_OR_RISK
+safi,chenguite,2,0,0,LOW_OR_RISK
+safi,ijennane,2,0,0,LOW_OR_RISK
+safi,jnane chkouri,2,0,0,LOW_OR_RISK
+safi,l a b c,2,0,0,LOW_OR_RISK
+safi,lala hnia hamria,2,0,0,LOW_OR_RISK
+safi,safi 2,2,0,0,LOW_OR_RISK
+sahel chamali,sahel chamali,2,1,0,LOW_OR_RISK
+sahtryine,sahtryine,2,1,0,LOW_OR_RISK
+saidate,saidate,2,1,0,LOW_OR_RISK
+saka,saka,2,1,0,LOW_OR_RISK
+sal c3 a9,inbiaat,2,0,0,LOW_OR_RISK
+sale,al mouahidine,2,0,0,LOW_OR_RISK
+sale,californie,2,0,0,LOW_OR_RISK
+sale,ghrablia,2,0,0,LOW_OR_RISK
+sale,hay alqods,2,0,0,LOW_OR_RISK
+sale,hay cheikh lamfadel,2,0,0,LOW_OR_RISK
+sale,hay inbiat,2,0,0,LOW_OR_RISK
+sale,zone industrielle saniat sbihi,2,0,0,LOW_OR_RISK
+sidi abderrazak,sidi abderrazak,2,1,0,LOW_OR_RISK
+sidi ahmed ou amar,sidi ahmed ou amar,2,1,0,LOW_OR_RISK
+sidi badhaj,sidi badhaj,2,1,0,LOW_OR_RISK
+sidi el ghandour,sidi el ghandour,2,1,0,LOW_OR_RISK
+sidi hajjaj,sidi hajjaj,2,1,0,LOW_OR_RISK
+souihla,souihla,2,1,0,LOW_OR_RISK
+souk tlet el gharb,souk tlet el gharb,2,1,0,LOW_OR_RISK
+t c3 a9touan,aeroport,2,0,0,LOW_OR_RISK
+t c3 a9touan,sidi talha,2,0,0,LOW_OR_RISK
+t c3 a9touan,tamouda,2,0,0,LOW_OR_RISK
+tamallalt,tamallalt,2,1,0,LOW_OR_RISK
+tanger,al anbar,2,0,0,LOW_OR_RISK
+tanger,nejma,2,0,0,LOW_OR_RISK
+tanger,tanger medina,2,0,0,LOW_OR_RISK
+targuist,targuist,2,1,0,LOW_OR_RISK
+tata,tata,2,1,0,LOW_OR_RISK
+temara,abi horaira,2,0,0,LOW_OR_RISK
+temara,madwaz,2,0,0,LOW_OR_RISK
+tetouan,fnideq,2,0,0,LOW_OR_RISK
+tetouan,laayoune,2,0,0,LOW_OR_RISK
+tetouan,sidi talha,2,0,0,LOW_OR_RISK
+tetouan,touilaa foqia,2,0,0,LOW_OR_RISK
+tizgane,tizgane,2,1,0,LOW_OR_RISK
+zeghanghane,zeghanghane,2,1,0,LOW_OR_RISK
+zemamra,zemamra,2,1,0,LOW_OR_RISK
+abadou,abadou,1,1,0,LOW_OR_RISK
+adar,adar,1,1,0,LOW_OR_RISK
+aferkat,aferkat,1,1,0,LOW_OR_RISK
+afourar,afourar,1,1,0,LOW_OR_RISK
+agadir,al qods,1,0,0,LOW_OR_RISK
+agadir,bensergao,1,0,0,LOW_OR_RISK
+agadir,cite suisse,1,0,0,LOW_OR_RISK
+agadir,founty,1,0,0,LOW_OR_RISK
+agadir,marina,1,0,0,LOW_OR_RISK
+agadir,route de safi,1,0,0,LOW_OR_RISK
+agadir,sidi ahmed ou moussa,1,0,0,LOW_OR_RISK
+agadir,taghazout,1,0,0,LOW_OR_RISK
+agadir,tassila,1,0,0,LOW_OR_RISK
+aghbala,aghbala,1,1,0,LOW_OR_RISK
+aghbar,aghbar,1,1,0,LOW_OR_RISK
+aglif,aglif,1,1,0,LOW_OR_RISK
+aguerd,aguerd,1,1,0,LOW_OR_RISK
+ahl angad,ahl angad,1,1,0,LOW_OR_RISK
+ahlaf,ahlaf,1,1,0,LOW_OR_RISK
+ahmar laglalcha,ahmar laglalcha,1,1,0,LOW_OR_RISK
+ain bida,ain bida,1,1,0,LOW_OR_RISK
+ain dorbane,ain dorbane,1,1,0,LOW_OR_RISK
+ain jemaa,ain jemaa,1,1,0,LOW_OR_RISK
+ain karma,ain karma,1,1,0,LOW_OR_RISK
+ain mediouna,ain mediouna,1,1,0,LOW_OR_RISK
+ain orma,ain orma,1,1,0,LOW_OR_RISK
+ain tizgha,ain tizgha,1,1,0,LOW_OR_RISK
+ait amira,ait amira,1,1,0,LOW_OR_RISK
+ait ayach,ait ayach,1,1,0,LOW_OR_RISK
+ait ben yacoub,ait ben yacoub,1,1,0,LOW_OR_RISK
+ait boubidmane,ait boubidmane,1,1,0,LOW_OR_RISK
+ait bouyahya el hajjama,ait bouyahya el hajjama,1,1,0,LOW_OR_RISK
+ait hani,ait hani,1,1,0,LOW_OR_RISK
+ait m hamed,ait m hamed,1,1,0,LOW_OR_RISK
+ait oum el bekht,ait oum el bekht,1,1,0,LOW_OR_RISK
+ait said,ait said,1,1,0,LOW_OR_RISK
+ait sebaa lajrouf,ait sebaa lajrouf,1,1,0,LOW_OR_RISK
+ait siberne,ait siberne,1,1,0,LOW_OR_RISK
+ait sidi daoud,ait sidi daoud,1,1,0,LOW_OR_RISK
+al bahraoyine,al bahraoyine,1,1,0,LOW_OR_RISK
+alouidane,alouidane,1,1,0,LOW_OR_RISK
+amskroud,amskroud,1,1,0,LOW_OR_RISK
+aoulouz,aoulouz,1,1,0,LOW_OR_RISK
+arekmane,arekmane,1,1,0,LOW_OR_RISK
+asrir,asrir,1,1,0,LOW_OR_RISK
+assahrij,assahrij,1,1,0,LOW_OR_RISK
+assif el mal,assif el mal,1,1,0,LOW_OR_RISK
+ayacha,ayacha,1,1,0,LOW_OR_RISK
+ayir,ayir,1,1,0,LOW_OR_RISK
+azlaf,azlaf,1,1,0,LOW_OR_RISK
+ben smim,ben smim,1,1,0,LOW_OR_RISK
+benslimane,hay al mohammadi,1,0,0,LOW_OR_RISK
+benslimane,industriel,1,0,0,LOW_OR_RISK
+benslimane,quartier soufal,1,0,0,LOW_OR_RISK
+bghaghza,bghaghza,1,1,0,LOW_OR_RISK
+bir anzarane,bir anzarane,1,1,0,LOW_OR_RISK
+bir ennasr,bir ennasr,1,1,0,LOW_OR_RISK
+bir tam tam,bir tam tam,1,1,0,LOW_OR_RISK
+bitit,bitit,1,1,0,LOW_OR_RISK
+bni ayat,bni ayat,1,1,0,LOW_OR_RISK
+bni bouayach,bni bouayach,1,1,0,LOW_OR_RISK
+bni ftah,bni ftah,1,1,0,LOW_OR_RISK
+bni hilal,bni hilal,1,1,0,LOW_OR_RISK
+bni rzine,bni rzine,1,1,0,LOW_OR_RISK
+bni sidel louta,bni sidel louta,1,1,0,LOW_OR_RISK
+bouarfa,bouarfa,1,1,0,LOW_OR_RISK
+bouchane,bouchane,1,1,0,LOW_OR_RISK
+boudnib,boudnib,1,1,0,LOW_OR_RISK
+boughriba,boughriba,1,1,0,LOW_OR_RISK
+bouguargouh,bouguargouh,1,1,0,LOW_OR_RISK
+boujniba,boujniba,1,1,0,LOW_OR_RISK
+boulemane,boulemane,1,1,0,LOW_OR_RISK
+bouskoura,californie,1,0,0,LOW_OR_RISK
+bouzemmour,bouzemmour,1,1,0,LOW_OR_RISK
+casablanca,2 mars,1,0,0,LOW_OR_RISK
+casablanca,al ahd al jadid,1,0,0,LOW_OR_RISK
+casablanca,artisanat,1,0,0,LOW_OR_RISK
+casablanca,beni mellal,1,0,0,LOW_OR_RISK
+casablanca,berrechid,1,0,0,LOW_OR_RISK
+casablanca,bourgogne,1,0,0,LOW_OR_RISK
+casablanca,bouskoura,1,0,0,LOW_OR_RISK
+casablanca,derb abdellah,1,0,0,LOW_OR_RISK
+casablanca,derb al youssofia,1,0,0,LOW_OR_RISK
+casablanca,derb tolba,1,0,0,LOW_OR_RISK
+casablanca,ferme bretonne,1,0,0,LOW_OR_RISK
+casablanca,florida mandarona,1,0,0,LOW_OR_RISK
+casablanca,hay al othmania,1,0,0,LOW_OR_RISK
+casablanca,hay al qods,1,0,0,LOW_OR_RISK
+casablanca,hay alhoda,1,0,0,LOW_OR_RISK
+casablanca,hay almassira 1,1,0,0,LOW_OR_RISK
+casablanca,hay almassira 3,1,0,0,LOW_OR_RISK
+casablanca,hay assafaa,1,0,0,LOW_OR_RISK
+casablanca,hay laayoune,1,0,0,LOW_OR_RISK
+casablanca,hay lalla meriem,1,0,0,LOW_OR_RISK
+casablanca,hay lamiaa,1,0,0,LOW_OR_RISK
+casablanca,hay mansour,1,0,0,LOW_OR_RISK
+casablanca,hay moulay rachid 3,1,0,0,LOW_OR_RISK
+casablanca,hay moulay rachid 5,1,0,0,LOW_OR_RISK
+casablanca,hay moulay rachid 6,1,0,0,LOW_OR_RISK
+casablanca,hay tissir,1,0,0,LOW_OR_RISK
+casablanca,longchamps hay al han c3 a2a,1,0,0,LOW_OR_RISK
+casablanca,m diq,1,0,0,LOW_OR_RISK
+casablanca,massira,1,0,0,LOW_OR_RISK
+casablanca,miamar,1,0,0,LOW_OR_RISK
+casablanca,nouaceur,1,0,0,LOW_OR_RISK
+casablanca,ourika,1,0,0,LOW_OR_RISK
+casablanca,quartier cheminots,1,0,0,LOW_OR_RISK
+casablanca,salmia 1,1,0,0,LOW_OR_RISK
+casablanca,sidi yahya zaer,1,0,0,LOW_OR_RISK
+casablanca,taghazout,1,0,0,LOW_OR_RISK
+casablanca,vermont,1,0,0,LOW_OR_RISK
+casablanca,zenata,1,0,0,LOW_OR_RISK
+chaibate,chaibate,1,1,0,LOW_OR_RISK
+dakhla,al ghoufrane,1,0,0,LOW_OR_RISK
+dakhla,rahma,1,0,0,LOW_OR_RISK
+dar chaoui,dar chaoui,1,1,0,LOW_OR_RISK
+demnate,demnate,1,1,0,LOW_OR_RISK
+dkhissa,dkhissa,1,1,0,LOW_OR_RISK
+echemmaia,echemmaia,1,1,0,LOW_OR_RISK
+el borouj,el borouj,1,1,0,LOW_OR_RISK
+el faid,el faid,1,1,0,LOW_OR_RISK
+el gantour,el gantour,1,1,0,LOW_OR_RISK
+el jadida,achakar,1,0,0,LOW_OR_RISK
+el jadida,el jadida,1,1,0,LOW_OR_RISK
+el jadida,hay nassim,1,0,0,LOW_OR_RISK
+el jadida,lot rida,1,0,0,LOW_OR_RISK
+el jadida,sala el jadida,1,0,0,LOW_OR_RISK
+el ksiba,el ksiba,1,1,0,LOW_OR_RISK
+essaouira,ahl agadir,1,0,0,LOW_OR_RISK
+essaouira,bab al bahar,1,0,0,LOW_OR_RISK
+essaouira,bab sbaa,1,0,0,LOW_OR_RISK
+essaouira,chbanat,1,0,0,LOW_OR_RISK
+essaouira,skala,1,0,0,LOW_OR_RISK
+essaouira,tidzi,1,0,0,LOW_OR_RISK
+ezzhiliga,ezzhiliga,1,1,0,LOW_OR_RISK
+f c3 a8s,champ de course,1,0,0,LOW_OR_RISK
+f c3 a8s,fes jdid,1,0,0,LOW_OR_RISK
+f c3 a8s,hay badr,1,0,0,LOW_OR_RISK
+f c3 a8s,hay lalla soukaina,1,0,0,LOW_OR_RISK
+f c3 a8s,l habitat,1,0,0,LOW_OR_RISK
+f c3 a8s,saada,1,0,0,LOW_OR_RISK
+f c3 a8s,talaa,1,0,0,LOW_OR_RISK
+fes,ain haroun,1,0,0,LOW_OR_RISK
+fes,ain johra,1,0,0,LOW_OR_RISK
+fes,al farah,1,0,0,LOW_OR_RISK
+fes,asilah,1,0,0,LOW_OR_RISK
+fes,bad boujloud,1,0,0,LOW_OR_RISK
+fes,batha,1,0,0,LOW_OR_RISK
+fes,ben debbab,1,0,0,LOW_OR_RISK
+fes,ben zakour,1,0,0,LOW_OR_RISK
+fes,champs de course,1,0,0,LOW_OR_RISK
+fes,dhar mehraz,1,0,0,LOW_OR_RISK
+fes,dokkarat,1,0,0,LOW_OR_RISK
+fes,dunes 2,1,0,0,LOW_OR_RISK
+fes,el keddan,1,0,0,LOW_OR_RISK
+fes,fes,1,1,0,LOW_OR_RISK
+fes,fnideq,1,0,0,LOW_OR_RISK
+fes,hamria,1,0,0,LOW_OR_RISK
+fes,hay al qods,1,0,0,LOW_OR_RISK
+fes,hay anas,1,0,0,LOW_OR_RISK
+fes,hay annassim,1,0,0,LOW_OR_RISK
+fes,hay gryou,1,0,0,LOW_OR_RISK
+fes,hay hassani,1,0,0,LOW_OR_RISK
+fes,hay jdid,1,0,0,LOW_OR_RISK
+fes,hay massira,1,0,0,LOW_OR_RISK
+fes,hay raha,1,0,0,LOW_OR_RISK
+fes,laayoun,1,0,0,LOW_OR_RISK
+fes,lido,1,0,0,LOW_OR_RISK
+fes,medina,1,0,1,LOW_OR_RISK
+fes,mellah,1,0,0,LOW_OR_RISK
+fes,mimosa,1,0,0,LOW_OR_RISK
+fes,mourabitine,1,0,0,LOW_OR_RISK
+fes,rachidya,1,0,0,LOW_OR_RISK
+fes,rahbet zbib,1,0,0,LOW_OR_RISK
+fes,route de ain chkef,1,0,0,LOW_OR_RISK
+fes,sehrij gnawa,1,0,0,LOW_OR_RISK
+fes,sidi brahim,1,0,0,LOW_OR_RISK
+fes,zone industrielle bensouda,1,0,0,LOW_OR_RISK
+fes,zone industrielle sidi brahim,1,0,0,LOW_OR_RISK
+foum oudi,foum oudi,1,1,0,LOW_OR_RISK
+ghiata al gharbia,ghiata al gharbia,1,1,0,LOW_OR_RISK
+gmassa,route d agadir essaouira,1,0,0,LOW_OR_RISK
+guigou,guigou,1,1,0,LOW_OR_RISK
+haj kaddour,haj kaddour,1,1,0,LOW_OR_RISK
+iaazzanene,iaazzanene,1,1,0,LOW_OR_RISK
+ifrane,public camping,1,0,0,LOW_OR_RISK
+ihaddadene,ihaddadene,1,1,0,LOW_OR_RISK
+inchaden,inchaden,1,1,0,LOW_OR_RISK
+jemaa shaim,jemaa shaim,1,1,0,LOW_OR_RISK
+jorf el melha,jorf el melha,1,1,0,LOW_OR_RISK
+k c3 a9nitra,maghrib arabi,1,0,0,LOW_OR_RISK
+karia ba mohamed,karia ba mohamed,1,1,0,LOW_OR_RISK
+kenitra,el fath,1,0,0,LOW_OR_RISK
+kenitra,el menzeh,1,0,0,LOW_OR_RISK
+khemisset,diour chouhada,1,0,0,LOW_OR_RISK
+khemisset,hay najah,1,0,0,LOW_OR_RISK
+khemisset,hay saada,1,0,0,LOW_OR_RISK
+khemisset,hay saada 2,1,0,0,LOW_OR_RISK
+khemisset,lot al wafa,1,0,0,LOW_OR_RISK
+khemisset,lot boubia,1,0,0,LOW_OR_RISK
+khemisset,lot hakamate,1,0,0,LOW_OR_RISK
+khemisset,lot tadart,1,0,0,LOW_OR_RISK
+khemisset,lot wouroud,1,0,0,LOW_OR_RISK
+krifate,krifate,1,1,0,LOW_OR_RISK
+ksar bjir,ksar bjir,1,1,0,LOW_OR_RISK
+ksar sghir,centre,1,0,1,LOW_OR_RISK
+laakarta,laakarta,1,1,0,LOW_OR_RISK
+laattaouia ech chaybia,laattaouia ech chaybia,1,1,0,LOW_OR_RISK
+laghnimyine,laghnimyine,1,1,0,LOW_OR_RISK
+lahsinate,lahsinate,1,1,0,LOW_OR_RISK
+lmechrek,lmechrek,1,1,0,LOW_OR_RISK
+majjate,majjate,1,1,0,LOW_OR_RISK
+marchouch,marchouch,1,1,0,LOW_OR_RISK
+marrakech,allal el fassi,1,0,0,LOW_OR_RISK
+marrakech,medina,1,0,1,LOW_OR_RISK
+marrakech,ounagha,1,0,0,LOW_OR_RISK
+marrakech,palmeraie,1,0,0,LOW_OR_RISK
+marrakech,route d amizmiz,1,0,0,LOW_OR_RISK
+marrakech,saada,1,0,0,LOW_OR_RISK
+marrakech,sidi aamara,1,0,0,LOW_OR_RISK
+massa,massa,1,1,0,LOW_OR_RISK
+mechouar fes jdid,mechouar fes jdid,1,1,0,LOW_OR_RISK
+meknassa acharqia,meknassa acharqia,1,1,0,LOW_OR_RISK
+meknes,guelmim,1,0,0,LOW_OR_RISK
+meknes,hay saada,1,0,0,LOW_OR_RISK
+meknes,meknes,1,1,0,LOW_OR_RISK
+meknes,riad ismailia,1,0,0,LOW_OR_RISK
+mellila,mellila,1,1,0,LOW_OR_RISK
+meskala,meskala,1,1,0,LOW_OR_RISK
+midar,midar,1,1,0,LOW_OR_RISK
+mijik,mijik,1,1,0,LOW_OR_RISK
+mogress,mogress,1,1,0,LOW_OR_RISK
+mohammedia,derb lfath,1,0,0,LOW_OR_RISK
+mohammedia,derb meknes,1,0,0,LOW_OR_RISK
+mohammedia,derb rbat,1,0,0,LOW_OR_RISK
+mohammedia,hay al wahda,1,0,0,LOW_OR_RISK
+mohammedia,l habitat,1,0,0,LOW_OR_RISK
+moqrisset,moqrisset,1,1,0,LOW_OR_RISK
+moulay driss zerhoun,moulay driss zerhoun,1,1,0,LOW_OR_RISK
+nador,el khattabi,1,0,0,LOW_OR_RISK
+nador,el kindi,1,0,0,LOW_OR_RISK
+nador,nador el jadid,1,0,0,LOW_OR_RISK
+nador,ouled lahcen,1,0,0,LOW_OR_RISK
+nador,ouled mimoun,1,0,0,LOW_OR_RISK
+nador,ouled tayeb,1,0,0,LOW_OR_RISK
+oued amlil,oued amlil,1,1,0,LOW_OR_RISK
+ouirgane,ouirgane,1,1,0,LOW_OR_RISK
+oujda,el firdaws,1,0,0,LOW_OR_RISK
+oujda,hay massira,1,0,0,LOW_OR_RISK
+oujda,oulfa,1,0,0,LOW_OR_RISK
+oujda,zitoune,1,0,0,LOW_OR_RISK
+oukaimden,oukaimden,1,1,0,LOW_OR_RISK
+oulad gouaouch,oulad gouaouch,1,1,0,LOW_OR_RISK
+oulad h cine,oulad h cine,1,1,0,LOW_OR_RISK
+oulad hcine,oulad hcine,1,1,0,LOW_OR_RISK
+oulad m barek,oulad m barek,1,1,0,LOW_OR_RISK
+oulad mtaa,oulad mtaa,1,1,0,LOW_OR_RISK
+oulad sbaita,oulad sbaita,1,1,0,LOW_OR_RISK
+oulad sbih,oulad sbih,1,1,0,LOW_OR_RISK
+oulad si bouhya,oulad si bouhya,1,1,0,LOW_OR_RISK
+oulad yaich,oulad yaich,1,1,0,LOW_OR_RISK
+rabat,ait kamra,1,0,0,LOW_OR_RISK
+rabat,al kouass,1,0,0,LOW_OR_RISK
+rabat,asilah,1,0,0,LOW_OR_RISK
+rabat,azib haj kaddour,1,0,0,LOW_OR_RISK
+rabat,azilal,1,0,0,LOW_OR_RISK
+rabat,berkane,1,0,0,LOW_OR_RISK
+rabat,bir jdid,1,0,0,LOW_OR_RISK
+rabat,bouitate,1,0,0,LOW_OR_RISK
+rabat,branes 2,1,0,0,LOW_OR_RISK
+rabat,hay al barid,1,0,0,LOW_OR_RISK
+rabat,hay bouhlal,1,0,0,LOW_OR_RISK
+rabat,hay hassani,1,0,0,LOW_OR_RISK
+rabat,inzegan,1,0,0,LOW_OR_RISK
+rabat,karrakchou,1,0,0,LOW_OR_RISK
+rabat,marjane,1,0,0,LOW_OR_RISK
+rabat,martil,1,0,0,LOW_OR_RISK
+rabat,ocean,1,0,0,LOW_OR_RISK
+rabat,oued zem,1,0,0,LOW_OR_RISK
+rabat,saidia,1,0,0,LOW_OR_RISK
+rabat,sidi bennour,1,0,0,LOW_OR_RISK
+rabat,sidi yahya zaer,1,0,0,LOW_OR_RISK
+rabat,skhirat,1,0,0,LOW_OR_RISK
+rabat,taghazout,1,0,0,LOW_OR_RISK
+rabat,tamesna,1,0,0,LOW_OR_RISK
+rabat,tifelt,1,0,0,LOW_OR_RISK
+rabat,yacoub el mansour,1,0,0,LOW_OR_RISK
+ras tabouda,ras tabouda,1,1,0,LOW_OR_RISK
+rass oumlil,rass oumlil,1,1,0,LOW_OR_RISK
+rfala,rfala,1,1,0,LOW_OR_RISK
+ribat el kheir,ribat el kheir,1,1,0,LOW_OR_RISK
+rissana chamalia,rissana chamalia,1,1,0,LOW_OR_RISK
+rissana janoubia,rissana janoubia,1,1,0,LOW_OR_RISK
+saadla,saadla,1,1,0,LOW_OR_RISK
+sabaa aiyoun,sabaa aiyoun,1,1,0,LOW_OR_RISK
+sabbah,sabbah,1,1,0,LOW_OR_RISK
+saddina,saddina,1,1,0,LOW_OR_RISK
+safi,driba lamziwka,1,0,0,LOW_OR_RISK
+safi,hay el bouwab,1,0,0,LOW_OR_RISK
+safi,hay riyad,1,0,0,LOW_OR_RISK
+safi,jnane colonne 1 et 2,1,0,0,LOW_OR_RISK
+safi,jnane el mestari,1,0,0,LOW_OR_RISK
+safi,m dina k dima l ancienne medina,1,0,0,LOW_OR_RISK
+safi,miftah el kheir,1,0,0,LOW_OR_RISK
+safi,rhat a rih,1,0,0,LOW_OR_RISK
+safi,saaida 1 et 2,1,0,0,LOW_OR_RISK
+safi,sania,1,0,0,LOW_OR_RISK
+safi,swinia,1,0,0,LOW_OR_RISK
+sahel,sahel,1,1,0,LOW_OR_RISK
+sal c3 a9,abouab sala,1,0,0,LOW_OR_RISK
+sal c3 a9,bled el gharbi,1,0,0,LOW_OR_RISK
+sal c3 a9,hay rahma,1,0,0,LOW_OR_RISK
+sal c3 a9,sidi abdellah,1,0,0,LOW_OR_RISK
+sal c3 a9,sidi hajji,1,0,0,LOW_OR_RISK
+sal c3 a9,technopolis,1,0,0,LOW_OR_RISK
+sale,achakar,1,0,0,LOW_OR_RISK
+sale,al bassatine,1,0,0,LOW_OR_RISK
+sale,al fath,1,0,0,LOW_OR_RISK
+sale,andalouss,1,0,0,LOW_OR_RISK
+sale,bled el gharbi,1,0,0,LOW_OR_RISK
+sale,centre,1,0,1,LOW_OR_RISK
+sale,dyour nejjar,1,0,0,LOW_OR_RISK
+sale,frougui,1,0,0,LOW_OR_RISK
+sale,inbiaat,1,0,0,LOW_OR_RISK
+sale,kharouba,1,0,0,LOW_OR_RISK
+sale,lakhmis,1,0,0,LOW_OR_RISK
+sale,lalla aicha,1,0,0,LOW_OR_RISK
+sale,lharya,1,0,0,LOW_OR_RISK
+sale,malabata,1,0,0,LOW_OR_RISK
+sale,marina,1,0,0,LOW_OR_RISK
+sale,omar,1,0,0,LOW_OR_RISK
+sale,plage oued cherrat,1,0,0,LOW_OR_RISK
+sale,plage rose maree,1,0,0,LOW_OR_RISK
+sale,polo,1,0,0,LOW_OR_RISK
+sale,riyad,1,0,0,LOW_OR_RISK
+sale,route de safi,1,0,0,LOW_OR_RISK
+sale,secteur touristique,1,0,0,LOW_OR_RISK
+sale,sidi bouknadel,1,0,0,LOW_OR_RISK
+sale,tanja balia,1,0,0,LOW_OR_RISK
+sale,triangle d or,1,0,0,LOW_OR_RISK
+settat,hay kilz,1,0,0,LOW_OR_RISK
+settat,hensali,1,0,0,LOW_OR_RISK
+sidi abdallah,sidi abdallah,1,1,0,LOW_OR_RISK
+sidi abed,sidi abed,1,1,0,LOW_OR_RISK
+sidi allal lamsadder,sidi allal lamsadder,1,1,0,LOW_OR_RISK
+sidi allal tazi,sidi allal tazi,1,1,0,LOW_OR_RISK
+sidi bettache,sidi bettache,1,1,0,LOW_OR_RISK
+sidi bouhria,sidi bouhria,1,1,0,LOW_OR_RISK
+sidi boumoussa,sidi boumoussa,1,1,0,LOW_OR_RISK
+sidi lamine,sidi lamine,1,1,0,LOW_OR_RISK
+sidi m hamed dalil,sidi m hamed dalil,1,1,0,LOW_OR_RISK
+sidi mohamed lahmar,sidi mohamed lahmar,1,1,0,LOW_OR_RISK
+sidi smail,sidi smail,1,1,0,LOW_OR_RISK
+skhour rhamna,skhour rhamna,1,1,0,LOW_OR_RISK
+souk kdim,souk kdim,1,1,0,LOW_OR_RISK
+souk l qolla,souk l qolla,1,1,0,LOW_OR_RISK
+souk sebt ouled nemma,souk sebt ouled nemma,1,1,0,LOW_OR_RISK
+steha,steha,1,1,0,LOW_OR_RISK
+sti fadma,sti fadma,1,1,0,LOW_OR_RISK
+t c3 a9touan,el matar,1,0,0,LOW_OR_RISK
+t c3 a9touan,fnideq,1,0,0,LOW_OR_RISK
+t c3 a9touan,inara,1,0,0,LOW_OR_RISK
+t c3 a9touan,mdiq,1,0,0,LOW_OR_RISK
+t c3 a9touan,tetouan,1,0,0,LOW_OR_RISK
+tabant,tabant,1,1,0,LOW_OR_RISK
+tabouda,tabouda,1,1,0,LOW_OR_RISK
+tadrart,tadrart,1,1,0,LOW_OR_RISK
+tafoughalt,tafoughalt,1,1,0,LOW_OR_RISK
+tafraout,tafraout,1,1,0,LOW_OR_RISK
+tafraouten,tafraouten,1,1,0,LOW_OR_RISK
+tagante,tagante,1,1,0,LOW_OR_RISK
+taghzirt,taghzirt,1,1,0,LOW_OR_RISK
+taliouine,taliouine,1,1,0,LOW_OR_RISK
+tamadroust,tamadroust,1,1,0,LOW_OR_RISK
+tamanar,tamanar,1,1,0,LOW_OR_RISK
+tanant,tanant,1,1,0,LOW_OR_RISK
+tanger,ahlan,1,0,0,LOW_OR_RISK
+tanger,algerie,1,0,0,LOW_OR_RISK
+tanger,bir aharchoune,1,0,0,LOW_OR_RISK
+tanger,bouhout 1,1,0,0,LOW_OR_RISK
+tanger,boukhalf,1,0,0,LOW_OR_RISK
+tanger,el haj el mokhtar,1,0,0,LOW_OR_RISK
+tanger,el mers 1,1,0,0,LOW_OR_RISK
+tanger,gueznaia,1,0,0,LOW_OR_RISK
+tanger,hay zaoudia,1,0,0,LOW_OR_RISK
+tanger,view tower,1,0,0,LOW_OR_RISK
+taourirt,taourirt,1,1,0,LOW_OR_RISK
+temara,centre,1,0,1,LOW_OR_RISK
+temara,contrebandier,1,0,0,LOW_OR_RISK
+temara,ittihad arabi,1,0,0,LOW_OR_RISK
+temara,messrour 2,1,0,0,LOW_OR_RISK
+temara,quartier rif ii,1,0,0,LOW_OR_RISK
+temara,sable d or,1,0,0,LOW_OR_RISK
+tetouan,essania,1,0,0,LOW_OR_RISK
+tetouan,rbat asfaa,1,0,0,LOW_OR_RISK
+tetouan,touabel,1,0,0,LOW_OR_RISK
+tetouan,zaouiat sidi kacem,1,0,0,LOW_OR_RISK
+tighassaline,tighassaline,1,1,0,LOW_OR_RISK
+timahdite,timahdite,1,1,0,LOW_OR_RISK
+touama,touama,1,1,0,LOW_OR_RISK
+youssoufia,beni yakhlef,1,0,0,LOW_OR_RISK
+youssoufia,tamesna,1,0,0,LOW_OR_RISK
+zegzel,zegzel,1,1,0,LOW_OR_RISK
+zinat,zinat,1,1,0,LOW_OR_RISK
+el jadida,quartier a c3 a9rodrome,24,0,0,SAFE_10
+marrakech,arset ihiri,24,0,0,SAFE_10
+sale,hay salam,24,0,0,SAFE_10
+agadir,zone industrielle agadir,23,0,0,SAFE_10
+fes,narjis,23,0,0,SAFE_10
+marrakech,arset el houta,23,0,0,SAFE_10
+marrakech,zaouiat lahdar,23,0,0,SAFE_10
+casablanca,fonciere,22,0,0,SAFE_10
+casablanca,zone industrielle,22,0,0,SAFE_10
+marrakech,massira 2,22,0,0,SAFE_10
+marrakech,michouar,22,0,0,SAFE_10
+marrakech,sidi abbad,22,0,0,SAFE_10
+mohammedia,la colline,22,0,0,SAFE_10
+tanger,beni touzine,22,0,0,SAFE_10
+tanger,msala,22,0,0,SAFE_10
+benslimane,alfilline,21,0,0,SAFE_10
+bouznika,hamza,21,0,0,SAFE_10
+casablanca,ahl loghlam hay assalam,21,0,0,SAFE_10
+casablanca,al azhar,21,0,0,SAFE_10
+casablanca,habbous,21,0,0,SAFE_10
+casablanca,liberte,21,0,0,SAFE_10
+fes,zouagha,21,0,0,SAFE_10
+marrakech,arset el maach,21,0,0,SAFE_10
+marrakech,hay lalla haya,21,0,0,SAFE_10
+marrakech,massira 3,21,0,0,SAFE_10
+nador,selouane,21,0,0,SAFE_10
+oujda,lazaret,21,0,0,SAFE_10
+el jadida,quartier aerodrome,20,0,0,SAFE_10
+essaouira,ghazoua,20,0,0,SAFE_10
+marrakech,bab lhmar,20,0,0,SAFE_10
+marrakech,el moukef,20,0,0,SAFE_10
+oujda,agdal,20,0,0,SAFE_10
+oujda,andalous,20,0,0,SAFE_10
+oujda,jawhara,20,0,0,SAFE_10
+tanger,ain el hayani,20,0,0,SAFE_10
+taroudant,assarag,20,0,0,SAFE_10
+casablanca,hay albaraka,19,0,0,SAFE_10
+casablanca,hay salama,19,0,0,SAFE_10
+kenitra,ismalia,19,0,0,SAFE_10
+marrakech,route de l 27ourika,19,0,0,SAFE_10
+tanger,jirrari,19,0,0,SAFE_10
+tanger,mediouna,19,0,0,SAFE_10
+taroudant,benyara,19,0,0,SAFE_10
+tetouan,route de ceuta,19,0,0,SAFE_10
+agadir,ben serguaou,18,0,0,SAFE_10
+agadir,talborjt,18,0,0,SAFE_10
+agadir,tikiouine,18,0,0,SAFE_10
+casablanca,al madina aljadida,18,0,0,SAFE_10
+casablanca,hay lmkansa,18,0,0,SAFE_10
+el jadida,najmat al janoub,18,0,0,SAFE_10
+el jadida,sidi moussa,18,0,0,SAFE_10
+f c3 a8s,quartier oued fes,18,0,0,SAFE_10
+mohammedia,route de rabat,18,0,0,SAFE_10
+mohammedia,zone industrielle,18,0,0,SAFE_10
+sale,sidi abdellah,18,0,0,SAFE_10
+tanger,casabarata,18,0,0,SAFE_10
+casablanca,al osra,17,0,0,SAFE_10
+f c3 a8s,fes city center,17,0,0,SAFE_10
+fes,champ de course,17,0,0,SAFE_10
+kenitra,assam,17,0,0,SAFE_10
+marrakech,berrima,17,0,0,SAFE_10
+mohammedia,monica,17,0,0,SAFE_10
+sale,abouab sala,17,0,0,SAFE_10
+skhirat,plage rose mar c3 a9e,17,0,0,SAFE_10
+t c3 a9touan,taboula,17,0,0,SAFE_10
+tanger,charf,17,0,0,SAFE_10
+taroudant,maihta,17,0,0,SAFE_10
+agadir,cite adrar,16,0,0,SAFE_10
+bouznika,assanaouber,16,0,0,SAFE_10
+casablanca,bournazil,16,0,0,SAFE_10
+fes,route se sefrou,16,0,0,SAFE_10
+marrakech,hay al massar,16,0,0,SAFE_10
+marrakech,ouasis,16,0,0,SAFE_10
+oujda,hay fath,16,0,0,SAFE_10
+sale,bettana,16,0,0,SAFE_10
+tanger,branes 1,16,0,0,SAFE_10
+agadir,charaf,15,0,0,SAFE_10
+agadir,extension dakhla,15,0,0,SAFE_10
+casablanca,la vilette,15,0,0,SAFE_10
+f c3 a8s,zouagha bas,15,0,0,SAFE_10
+fes,talaa,15,0,0,SAFE_10
+k c3 a9nitra,bir rami est,15,0,0,SAFE_10
+kh c3 a9misset,lot almouna,15,0,0,SAFE_10
+marrakech,sanaoubar,15,0,0,SAFE_10
+nador,hay el matar,15,0,0,SAFE_10
+oujda,boustane,15,0,0,SAFE_10
+rabat,el youssoufia,15,0,0,SAFE_10
+safi,sidi bouzid,15,0,0,SAFE_10
+sal c3 a9,bettana,15,0,0,SAFE_10
+skhirat,imarat,15,0,0,SAFE_10
+tanger,m c3 a9dina,15,0,0,SAFE_10
+tanger,mister khouch,15,0,0,SAFE_10
+agadir,hay massira,14,0,0,SAFE_10
+casablanca,la floride,14,0,0,SAFE_10
+casablanca,les cretes,14,0,0,SAFE_10
+casablanca,sidi el khadir,14,0,0,SAFE_10
+casablanca,zone industrielle moulay rachid,14,0,0,SAFE_10
+el jadida,dar assalam,14,0,0,SAFE_10
+f c3 a8s,route immouzer,14,0,0,SAFE_10
+marrakech,boukar,14,0,0,SAFE_10
+marrakech,jawhar,14,0,0,SAFE_10
+marrakech,sidi ghanem,14,0,0,SAFE_10
+sal c3 a9,mkinssia,14,0,0,SAFE_10
+tanger,al amal,14,0,0,SAFE_10
+tetouan,taboula,14,0,0,SAFE_10
+agadir,amicales,13,0,0,SAFE_10
+casablanca,lekrimat,13,0,0,SAFE_10
+essaouira,lahrarta,13,0,0,SAFE_10
+essaouira,route d agadir,13,0,0,SAFE_10
+fes,mont fleuri,13,0,0,SAFE_10
+fes,route de meknes,13,0,0,SAFE_10
+ifrane,r c3 a9sidence al arz,13,0,0,SAFE_10
+marrakech,essebtiyen,13,0,0,SAFE_10
+marrakech,hay alfadl,13,0,0,SAFE_10
+sal c3 a9,bab al bahr,13,0,0,SAFE_10
+sale,mkinssia,13,0,0,SAFE_10
+skhirat,al fath,13,0,0,SAFE_10
+tanger,beni makada lakdima,13,0,0,SAFE_10
+tanger,el majd,13,0,0,SAFE_10
+temara,massira 3,13,0,0,SAFE_10
+tetouan,aeroport,13,0,0,SAFE_10
+tetouan,kouilma,13,0,0,SAFE_10
+casablanca,city dar es salaam,12,0,0,SAFE_10
+casablanca,hay moulay rachid 1,12,0,0,SAFE_10
+el jadida,plateau,12,0,0,SAFE_10
+fes,agdal,12,0,0,SAFE_10
+fes,hay bensouda,12,0,0,SAFE_10
+k c3 a9nitra,mimosas,12,0,0,SAFE_10
+marrakech,bab ighli,12,0,0,SAFE_10
+marrakech,hay annahda,12,0,0,SAFE_10
+meknes,sidi bouzekri,12,0,0,SAFE_10
+oujda,les iris,12,0,0,SAFE_10
+rabat,riyad extension,12,0,0,SAFE_10
+sal c3 a9,hay moulay ismail,12,0,0,SAFE_10
+sale,bab al bahr,12,0,0,SAFE_10
+sale,sakani,12,0,0,SAFE_10
+sale,technopolis,12,0,0,SAFE_10
+skhirat,kasbah,12,0,0,SAFE_10
+tanger,bir el ghazi,12,0,0,SAFE_10
+tanger,ennasr,12,0,0,SAFE_10
+tanger,souani,12,0,0,SAFE_10
+agadir,hay najah,11,0,0,SAFE_10
+agadir,taddart anza,11,0,0,SAFE_10
+casablanca,al farah dar essalam,11,0,0,SAFE_10
+casablanca,garage allal,11,0,0,SAFE_10
+casablanca,hay alamal,11,0,0,SAFE_10
+casablanca,hay alfarah,11,0,0,SAFE_10
+el jadida,derb sid daoui,11,0,0,SAFE_10
+f c3 a8s,hay al azhar,11,0,0,SAFE_10
+fes,ain amiyer,11,0,0,SAFE_10
+fes,hay al azhar,11,0,0,SAFE_10
+khemisset,hay essalam,11,0,0,SAFE_10
+marrakech,hay inara,11,0,0,SAFE_10
+mohammedia,quartier du soleil,11,0,0,SAFE_10
+nador,aarid,11,0,0,SAFE_10
+oujda,hay ennasr,11,0,0,SAFE_10
+oujda,riad isli,11,0,0,SAFE_10
+sale,cherkaoui marzouka,11,0,0,SAFE_10
+sale,el qaria,11,0,0,SAFE_10
+settat,alouane,11,0,0,SAFE_10
+tanger,al mandar al jamil,11,0,0,SAFE_10
+tanger,ben dibane,11,0,0,SAFE_10
+tanger,gourziana,11,0,0,SAFE_10
+tanger,zemmouri,11,0,0,SAFE_10
+temara,ain atig,11,0,0,SAFE_10
+temara,oued eddahab,11,0,0,SAFE_10
+tetouan,saniat errmel,11,0,0,SAFE_10
+agadir,hay qods,10,0,0,SAFE_10
+casablanca,hay palestine,10,0,0,SAFE_10
+casablanca,jamila 5,10,0,0,SAFE_10
+dakhla,ryad dakhla,10,0,0,SAFE_10
+el jadida,jawhara,10,0,0,SAFE_10
+f c3 a8s,hay atlas,10,0,0,SAFE_10
+f c3 a8s,route ain chkaf,10,0,0,SAFE_10
+k c3 a9nitra,maamora,10,0,0,SAFE_10
+marrakech,arset sbaia,10,0,0,SAFE_10
+marrakech,jnan ben chagra,10,0,0,SAFE_10
+meknes,hay zitoune,10,0,0,SAFE_10
+oujda,el qods,10,0,0,SAFE_10
+oujda,grand boulevard ahfir,10,0,0,SAFE_10
+oujda,hay salam,10,0,0,SAFE_10
+oujda,sidi yahya,10,0,0,SAFE_10
+rabat,hay achchabab,10,0,0,SAFE_10
+sale,hay oued dahab,10,0,0,SAFE_10
+sale,hay rahma,10,0,0,SAFE_10
+sale,ouled moussa,10,0,0,SAFE_10
+tanger,azib haj kaddour,10,0,0,SAFE_10
+temara,val d or,10,0,0,SAFE_10
+tetouan,touilaa,10,0,0,SAFE_10
+marrakech,gueliz,1250,0,0,SAFE_25
+marrakech,route de l ourika,877,0,0,SAFE_25
+casablanca,californie,735,0,0,SAFE_25
+casablanca,racine,596,0,0,SAFE_25
+rabat,riyad,566,0,0,SAFE_25
+rabat,souissi,566,0,0,SAFE_25
+casablanca,sidi maarouf,518,0,0,SAFE_25
+marrakech,agdal,514,0,0,SAFE_25
+marrakech,route amizmiz,500,0,0,SAFE_25
+marrakech,hay targa,491,0,0,SAFE_25
+marrakech,ennakhil palmeraie,469,0,0,SAFE_25
+marrakech,route de fez,469,0,0,SAFE_25
+casablanca,ain diab,457,0,0,SAFE_25
+casablanca,gauthier,422,0,0,SAFE_25
+tanger,malabata,421,0,0,SAFE_25
+casablanca,oulfa,409,0,0,SAFE_25
+marrakech,route de tahanaout,394,0,0,SAFE_25
+casablanca,les hopitaux,385,0,0,SAFE_25
+casablanca,bourgogne ouest,380,0,0,SAFE_25
+casablanca,maarif extension,351,0,0,SAFE_25
+casablanca,ain sebaa,344,0,0,SAFE_25
+casablanca,palmier,340,0,0,SAFE_25
+bouskoura,bouskoura ville,335,0,0,SAFE_25
+casablanca,les princesses,332,0,0,SAFE_25
+casablanca,oasis,332,0,0,SAFE_25
+casablanca,maarif,326,0,0,SAFE_25
+rabat,agdal,313,0,0,SAFE_25
+casablanca,belvedere,301,0,0,SAFE_25
+marrakech,route de ouarzazate,289,0,0,SAFE_25
+marrakech,hivernage,273,0,0,SAFE_25
+marrakech,route casablanca,269,0,0,SAFE_25
+casablanca,route casablanca,266,0,0,SAFE_25
+marrakech,mhamid,253,0,0,SAFE_25
+marrakech,route de safi,237,0,0,SAFE_25
+casablanca,cil hay salam,225,0,0,SAFE_25
+marrakech,amelkis,224,0,0,SAFE_25
+tanger,tanja balia,220,0,0,SAFE_25
+casablanca,casablanca finance city,208,0,0,SAFE_25
+casablanca,roches noires,198,0,0,SAFE_25
+casablanca,val fleury,190,0,0,SAFE_25
+casablanca,ferme bretonne hay arraha,189,0,0,SAFE_25
+casablanca,ain diab extension,188,0,0,SAFE_25
+agadir,hay mohammadi,183,0,0,SAFE_25
+tanger,iberie,173,0,0,SAFE_25
+casablanca,mers sultan,170,0,0,SAFE_25
+tanger,marjane,165,0,0,SAFE_25
+tanger,achakar,164,0,0,SAFE_25
+casablanca,bourgogne est,157,0,0,SAFE_25
+marrakech,majorelle,157,0,0,SAFE_25
+bouskoura,ville verte,156,0,0,SAFE_25
+meknes,hamria,152,0,0,SAFE_25
+casablanca,beausejour,150,0,0,SAFE_25
+meknes,marjane,146,0,0,SAFE_25
+marrakech,route d agadir essaouira,143,0,0,SAFE_25
+casablanca,triangle d or,142,0,0,SAFE_25
+casablanca,ma c3 a2rif,135,0,0,SAFE_25
+tanger,route nationale assilah n1,134,0,0,SAFE_25
+casablanca,al qods,132,0,0,SAFE_25
+marrakech,samlalia,132,0,0,SAFE_25
+tanger,moujahidine,132,0,0,SAFE_25
+tanger,bel air val fleuri,128,0,0,SAFE_25
+marrakech,boulevard med 6,124,0,0,SAFE_25
+tanger,du golf,123,0,0,SAFE_25
+casablanca,la gironde,122,0,0,SAFE_25
+temara,wifak,121,0,0,SAFE_25
+casablanca,ain chock,119,0,0,SAFE_25
+casablanca,sidi moumen,119,0,0,SAFE_25
+rabat,hassan centre ville,119,0,0,SAFE_25
+bouznika,plage oued cherrat,118,0,0,SAFE_25
+casablanca,hay hassani,116,0,0,SAFE_25
+marrakech,camp al ghoul,112,0,0,SAFE_25
+casablanca,lissasfa,104,0,0,SAFE_25
+tanger,manar,103,0,0,SAFE_25
+casablanca,casablanca marina,100,0,0,SAFE_25
+casablanca,centre ville,100,0,0,SAFE_25
+casablanca,laymoune,100,0,0,SAFE_25
+casablanca,bernoussi,99,0,0,SAFE_25
+casablanca,derb ghalef,98,0,0,SAFE_25
+tanger,boukhalef,98,0,0,SAFE_25
+marrakech,izdihar,97,0,0,SAFE_25
+marrakech,rmila,97,0,0,SAFE_25
+agadir,founti,96,0,0,SAFE_25
+marrakech,riad zitoun,96,0,0,SAFE_25
+tanger,ahlane,96,0,0,SAFE_25
+tanger,mesnana,96,0,0,SAFE_25
+marrakech,hay mabrouka,95,0,0,SAFE_25
+marrakech,les portes de marrakech,94,0,0,SAFE_25
+agadir,secteur touristique,92,0,0,SAFE_25
+tanger,hay hassani,92,0,0,SAFE_25
+temara,harhoura,92,0,0,SAFE_25
+casablanca,ain borja,88,0,0,SAFE_25
+temara,centre ville,88,0,0,SAFE_25
+casablanca,mandarona,87,0,0,SAFE_25
+tanger,tanger city center,86,0,0,SAFE_25
+rabat,haut agdal,84,0,0,SAFE_25
+sale,sala el jadida,84,0,0,SAFE_25
+el jadida,centre ville,83,0,0,SAFE_25
+casablanca,a c3 afn seba c3 a2,81,0,0,SAFE_25
+tanger,jbel kbir,80,0,0,SAFE_25
+tanger,mghogha,80,0,0,SAFE_25
+mohammedia,quartier du parc,79,0,0,SAFE_25
+rabat,aviation mabella,79,0,0,SAFE_25
+oujda,centre ville,77,0,0,SAFE_25
+casablanca,franceville,76,0,0,SAFE_25
+casablanca,ma c3 a2rif extension,76,0,0,SAFE_25
+casablanca,riviera,76,0,0,SAFE_25
+tanger,castilla,76,0,0,SAFE_25
+marrakech,sidi ben slimane el jazouli,75,0,0,SAFE_25
+casablanca,beaus c3 a9jour,73,0,0,SAFE_25
+marrakech,gu c3 a9liz,73,0,0,SAFE_25
+bouznika,al kawtar,71,0,0,SAFE_25
+marrakech,sidi bou amar,71,0,0,SAFE_25
+casablanca,quartier bachkou,69,0,0,SAFE_25
+kenitra,la ville haute,69,0,0,SAFE_25
+casablanca,anfa superieur,66,0,0,SAFE_25
+rabat,quartier des ambassades,66,0,0,SAFE_25
+agadir,hay houda,65,0,0,SAFE_25
+casablanca,hay mohammadi,65,0,0,SAFE_25
+marrakech,ben saleh,65,0,0,SAFE_25
+agadir,hay salam,64,0,0,SAFE_25
+casablanca,nassim 1,64,0,0,SAFE_25
+marrakech,daoudiat,64,0,0,SAFE_25
+tanger,aouama gharbia,64,0,0,SAFE_25
+tanger,mozart,64,0,0,SAFE_25
+tanger,sania,64,0,0,SAFE_25
+casablanca,hermitage,63,0,0,SAFE_25
+kenitra,oulad wjih,62,0,0,SAFE_25
+mohammedia,la siesta,62,0,0,SAFE_25
+rabat,l ocean,61,0,0,SAFE_25
+casablanca,longchamps hay al hanaa,60,0,0,SAFE_25
+casablanca,almaz,59,0,0,SAFE_25
+marrakech,mouassine,59,0,0,SAFE_25
+kenitra,maamora,58,0,0,SAFE_25
+mohammedia,centre ville,58,0,0,SAFE_25
+agadir,hay dakhla,57,0,0,SAFE_25
+kenitra,mimosas,57,0,0,SAFE_25
+marrakech,ksibat nhas,57,0,0,SAFE_25
+casablanca,les h c3 b4pitaux,56,0,0,SAFE_25
+meknes,al bassatine,56,0,0,SAFE_25
+rabat,hay el menzah,56,0,0,SAFE_25
+sale,hay chmaou,56,0,0,SAFE_25
+el jadida,essaada,55,0,0,SAFE_25
+agadir,tilila,54,0,0,SAFE_25
+marrakech,ain mezouar,54,0,0,SAFE_25
+marrakech,moulay lyazid,54,0,0,SAFE_25
+casablanca,burger,53,0,0,SAFE_25
+marrakech,bouaakkaz,53,0,0,SAFE_25
+meknes,wislane,53,0,0,SAFE_25
+casablanca,racine extension,51,0,0,SAFE_25
+fes,route ain chkaf,51,0,0,SAFE_25
+kenitra,el hadadda,51,0,0,SAFE_25
+marrakech,massira 1,51,0,0,SAFE_25
+mohammedia,al aalia,51,0,0,SAFE_25
+casablanca,benjdia,50,0,0,SAFE_25
+marrakech,amerchich,50,0,0,SAFE_25
+casablanca,hay chrifa,49,0,0,SAFE_25
+el jadida,hay essalam,49,0,0,SAFE_25
+marrakech,bab aylan,49,0,0,SAFE_25
+tanger,ziaten,49,0,0,SAFE_25
+benslimane,golf de benslimane,48,0,0,SAFE_25
+bouskoura,victoria,48,0,0,SAFE_25
+marrakech,zaouia sidi ghalem,48,0,0,SAFE_25
+rabat,guich oudaya,48,0,0,SAFE_25
+tanger,californie,48,0,0,SAFE_25
+agadir,haut founty,47,0,0,SAFE_25
+marrakech,rahba kedima,47,0,0,SAFE_25
+marrakech,sidi mimoun,47,0,0,SAFE_25
+el jadida,corniche,46,0,0,SAFE_25
+marrakech,sidi youssef,46,0,0,SAFE_25
+marrakech,bab ghmat,45,0,0,SAFE_25
+tanger,marchan,45,0,0,SAFE_25
+el jadida,al boustane,44,0,0,SAFE_25
+casablanca,alsace lorraine,43,0,0,SAFE_25
+casablanca,nassim 2,43,0,0,SAFE_25
+marrakech,assouel,43,0,0,SAFE_25
+rabat,hay nahda,43,0,0,SAFE_25
+tanger,port tanger ville,43,0,0,SAFE_25
+casablanca,sidi othmane,42,0,0,SAFE_25
+kenitra,bir rami est,42,0,0,SAFE_25
+marrakech,hay saada,42,0,0,SAFE_25
+tanger,branes 2,42,0,0,SAFE_25
+benslimane,entree sud,41,0,0,SAFE_25
+casablanca,beausite,41,0,0,SAFE_25
+tanger,rmilat,41,0,0,SAFE_25
+tanger,zone industrielle mghogha,41,0,0,SAFE_25
+tetouan,wilaya,41,0,0,SAFE_25
+casablanca,anassi,40,0,0,SAFE_25
+marrakech,azzouzia,40,0,0,SAFE_25
+marrakech,kennaria,40,0,0,SAFE_25
+casablanca,sidi belyout,39,0,0,SAFE_25
+agadir,al wifaq,38,0,0,SAFE_25
+casablanca,hay zobir,38,0,0,SAFE_25
+casablanca,plateau al batha,38,0,0,SAFE_25
+fes,route immouzer,38,0,0,SAFE_25
+kenitra,bir rami ouest,38,0,0,SAFE_25
+marrakech,sidi mansour,38,0,0,SAFE_25
+rabat,diour jamaa,38,0,0,SAFE_25
+essaouira,essaouira el jadida,37,0,0,SAFE_25
+mohammedia,mannesmann,37,0,0,SAFE_25
+mohammedia,nassim,37,0,0,SAFE_25
+sale,tabriquet,37,0,0,SAFE_25
+tanger,aharrarine,37,0,0,SAFE_25
+sal c3 a9,sala el jadida,36,0,0,SAFE_25
+k c3 a9nitra,la ville haute,35,0,0,SAFE_25
+temara,riad oulad mtaa,35,0,0,SAFE_25
+fes,quartier oued fes,34,0,0,SAFE_25
+marrakech,kbour chou,34,0,0,SAFE_25
+rabat,hay al fath,34,0,0,SAFE_25
+skhirat,plage rose maree,34,0,0,SAFE_25
+agadir,riad salam,33,0,0,SAFE_25
+casablanca,tantonville,33,0,0,SAFE_25
+marrakech,arset ben chebli,33,0,0,SAFE_25
+rabat,kebibat,33,0,0,SAFE_25
+casablanca,el manar el hank,32,0,0,SAFE_25
+k c3 a9nitra,el hadadda,32,0,0,SAFE_25
+marrakech,assif,32,0,0,SAFE_25
+marrakech,derb chtouka,32,0,0,SAFE_25
+bouznika,quartier industriel,31,0,0,SAFE_25
+casablanca,moulay youssef,31,0,0,SAFE_25
+kenitra,val fleuri,31,0,0,SAFE_25
+marrakech,riad al atlas,31,0,0,SAFE_25
+meknes,cente,31,0,0,SAFE_25
+agadir,abattoirs,30,0,0,SAFE_25
+casablanca,hay moulay abdellah,30,0,0,SAFE_25
+f c3 a8s,boutaaa,30,0,0,SAFE_25
+meknes,hay salam,30,0,0,SAFE_25
+taroudant,agafay,30,0,0,SAFE_25
+casablanca,tacharouk hay al walaa,29,0,0,SAFE_25
+essaouira,route de marrakech,29,0,0,SAFE_25
+kenitra,maghrib arabi,29,0,0,SAFE_25
+marrakech,issil,29,0,0,SAFE_25
+marrakech,kaat ben nahid,29,0,0,SAFE_25
+marrakech,masmoudi,29,0,0,SAFE_25
+tanger,branes kdima,29,0,0,SAFE_25
+agadir,illigh,28,0,0,SAFE_25
+casablanca,anfa sup c3 a9rieur,28,0,0,SAFE_25
+essaouira,centre ville,28,0,0,SAFE_25
+t c3 a9touan,route de ceuta,28,0,0,SAFE_25
+tanger,bella vista,28,0,0,SAFE_25
+temara,massira 1,28,0,0,SAFE_25
+temara,skikina,28,0,0,SAFE_25
+casablanca,hay inara,27,0,0,SAFE_25
+casablanca,zone industrielle oukacha,27,0,0,SAFE_25
+el jadida,ennajd,27,0,0,SAFE_25
+f c3 a8s,narjis,27,0,0,SAFE_25
+rabat,les orangers,27,0,0,SAFE_25
+sale,sidi hajji,27,0,0,SAFE_25
+tanger,drissia,27,0,0,SAFE_25
+temara,massira 2,27,0,0,SAFE_25
+agadir,hay al farah,26,0,0,SAFE_25
+casablanca,derb omar,26,0,0,SAFE_25
+casablanca,salmia 2,26,0,0,SAFE_25
+casablanca,al hadika,25,0,0,SAFE_25
+casablanca,oasis sud,25,0,0,SAFE_25
+essaouira,route de safi,25,0,0,SAFE_25
+rabat,hay ach chbanat,25,0,0,SAFE_25
+temara,abbadi,25,0,0,SAFE_25
+agadir,siusse,9,0,0,SAFE_5
+agadir,taddart,9,0,0,SAFE_5
+benslimane,entr c3 a9e sud,9,0,0,SAFE_5
+bouznika,hay toummert,9,0,0,SAFE_5
+casablanca,al andalous,9,0,0,SAFE_5
+casablanca,derb ben houmane,9,0,0,SAFE_5
+casablanca,derb loubila,9,0,0,SAFE_5
+casablanca,hay idrissia,9,0,0,SAFE_5
+casablanca,les cr c3 aates,9,0,0,SAFE_5
+casablanca,riad el ali,9,0,0,SAFE_5
+el jadida,al kodia,9,0,0,SAFE_5
+ifrane,atlas,9,0,0,SAFE_5
+marrakech,hay al hassani,9,0,0,SAFE_5
+meknes,plaisance,9,0,0,SAFE_5
+rabat,hay al amal,9,0,0,SAFE_5
+rabat,hay al massira,9,0,0,SAFE_5
+rabat,quartier administratif,9,0,0,SAFE_5
+settat,hay al kamal,9,0,0,SAFE_5
+settat,smaala,9,0,0,SAFE_5
+skhirat,ain el hayat,9,0,0,SAFE_5
+tanger,cap spartel,9,0,0,SAFE_5
+temara,al moustakbal,9,0,0,SAFE_5
+tetouan,mounia,9,0,0,SAFE_5
+agadir,haut anza,8,0,0,SAFE_5
+agadir,lekhiam,8,0,0,SAFE_5
+casablanca,derb carlotti,8,0,0,SAFE_5
+casablanca,hay annour,8,0,0,SAFE_5
+casablanca,hay haddaouia,8,0,0,SAFE_5
+casablanca,hay smara,8,0,0,SAFE_5
+casablanca,michouar,8,0,0,SAFE_5
+el jadida,biranzarane,8,0,0,SAFE_5
+el jadida,derb ghalef,8,0,0,SAFE_5
+essaouira,douar laarab,8,0,0,SAFE_5
+essaouira,sidi kaouki,8,0,0,SAFE_5
+fes,fes city center,8,0,0,SAFE_5
+fes,hay atlas,8,0,0,SAFE_5
+fes,saada,8,0,0,SAFE_5
+ifrane,les jardins d ifrane,8,0,0,SAFE_5
+k c3 a9nitra,oulad wjih,8,0,0,SAFE_5
+kenitra,mellah,8,0,0,SAFE_5
+marrakech,belbekkar,8,0,0,SAFE_5
+marrakech,el hara,8,0,0,SAFE_5
+marrakech,hay saada 1,8,0,0,SAFE_5
+marrakech,hay zitoun,8,0,0,SAFE_5
+marrakech,iziki,8,0,0,SAFE_5
+marrakech,kaa el machraa,8,0,0,SAFE_5
+meknes,la cienda,8,0,0,SAFE_5
+mohammedia,hay al horria,8,0,0,SAFE_5
+oujda,hay el qods,8,0,0,SAFE_5
+rabat,akkari,8,0,0,SAFE_5
+rabat,hay al kora,8,0,0,SAFE_5
+rabat,hay riad,8,0,0,SAFE_5
+safi,azib derai,8,0,0,SAFE_5
+skhirat,ain errouz,8,0,0,SAFE_5
+t c3 a9touan,touilaa,8,0,0,SAFE_5
+temara,fath el kheir,8,0,0,SAFE_5
+tetouan,cabo negro,8,0,0,SAFE_5
+tetouan,tamouda,8,0,0,SAFE_5
+tetouan,ziana,8,0,0,SAFE_5
+benslimane,hay nejma,7,0,0,SAFE_5
+benslimane,les chenes,7,0,0,SAFE_5
+casablanca,derb korea,7,0,0,SAFE_5
+casablanca,hay al amal,7,0,0,SAFE_5
+casablanca,hay al fadl,7,0,0,SAFE_5
+casablanca,hay arsalan,7,0,0,SAFE_5
+casablanca,hay sadri,7,0,0,SAFE_5
+casablanca,lahraouiyine,7,0,0,SAFE_5
+casablanca,quartier al woroud,7,0,0,SAFE_5
+el jadida,narjiss,7,0,0,SAFE_5
+essaouira,arriere pays,7,0,0,SAFE_5
+essaouira,bab doukkala,7,0,0,SAFE_5
+essaouira,idaougard,7,0,0,SAFE_5
+marrakech,arset moulay moussa,7,0,0,SAFE_5
+marrakech,boumesmar,7,0,0,SAFE_5
+meknes,ancien combatant,7,0,0,SAFE_5
+meknes,hay ez zaitoune,7,0,0,SAFE_5
+mohammedia,hay salam,7,0,0,SAFE_5
+mohammedia,riad 1,7,0,0,SAFE_5
+mohammedia,tenoukchet,7,0,0,SAFE_5
+rabat,les oudayas,7,0,0,SAFE_5
+safi,el massira,7,0,0,SAFE_5
+safi,el matar cite aviation,7,0,0,SAFE_5
+sale,el qods,7,0,0,SAFE_5
+settat,sidi abdelkarim,7,0,0,SAFE_5
+t c3 a9touan,kouilma,7,0,0,SAFE_5
+t c3 a9touan,saniat errmel,7,0,0,SAFE_5
+tanger,el mrabet,7,0,0,SAFE_5
+tanger,hay el boughaz,7,0,0,SAFE_5
+taroudant,akniss,7,0,0,SAFE_5
+temara,maghreb arabi,7,0,0,SAFE_5
+tetouan,el matar,7,0,0,SAFE_5
+agadir,amsernate,6,0,0,SAFE_5
+agadir,bouargane,6,0,0,SAFE_5
+casablanca,dar touzani,6,0,0,SAFE_5
+casablanca,hay antaria,6,0,0,SAFE_5
+casablanca,hay chifa,6,0,0,SAFE_5
+casablanca,itissal,6,0,0,SAFE_5
+casablanca,jamila 3,6,0,0,SAFE_5
+dakhla,al massira,6,0,0,SAFE_5
+el jadida,riad essalam,6,0,0,SAFE_5
+essaouira,raounak,6,0,0,SAFE_5
+f c3 a8s,mont fleuri,6,0,0,SAFE_5
+fes,al hadiqa,6,0,0,SAFE_5
+fes,bourmana,6,0,0,SAFE_5
+fes,l habitat,6,0,0,SAFE_5
+marrakech,zone industrielle sidi ghanem,6,0,0,SAFE_5
+meknes,place lahdim,6,0,0,SAFE_5
+mohammedia,hay al falah,6,0,0,SAFE_5
+oujda,hay boudir,6,0,0,SAFE_5
+oujda,hay zitoune,6,0,0,SAFE_5
+rabat,al irfane,6,0,0,SAFE_5
+rabat,al kamra,6,0,0,SAFE_5
+safi,lamiaa,6,0,0,SAFE_5
+sal c3 a9,cit c3 a9 militaire,6,0,0,SAFE_5
+sale,hay karima,6,0,0,SAFE_5
+settat,hay salam,6,0,0,SAFE_5
+t c3 a9touan,cabo negro,6,0,0,SAFE_5
+tanger,benkirane,6,0,0,SAFE_5
+tanger,haddad,6,0,0,SAFE_5
+tanger,hay al bassatine,6,0,0,SAFE_5
+tanger,laaouina,6,0,0,SAFE_5
+tanger,star hill,6,0,0,SAFE_5
+taroudant,jamaa el kbir,6,0,0,SAFE_5
+temara,andalousse,6,0,0,SAFE_5
+temara,firdaouss,6,0,0,SAFE_5
+agadir,assaka,5,0,0,SAFE_5
+agadir,hay zaytoun,5,0,0,SAFE_5
+benslimane,oasis,5,0,0,SAFE_5
+casablanca,belv c3 a9d c3 a8re,5,0,0,SAFE_5
+casablanca,derb salama,5,0,0,SAFE_5
+casablanca,hay almasjid,5,0,0,SAFE_5
+el jadida,al qods,5,0,0,SAFE_5
+el jadida,hay al amal,5,0,0,SAFE_5
+el jadida,hay riad,5,0,0,SAFE_5
+essaouira,ounagha,5,0,0,SAFE_5
+f c3 a8s,agdal,5,0,0,SAFE_5
+f c3 a8s,rahbet zbib,5,0,0,SAFE_5
+f c3 a8s,route de meknes,5,0,0,SAFE_5
+f c3 a8s,route se sefrou,5,0,0,SAFE_5
+fes,hay dalia,5,0,0,SAFE_5
+fes,hay tarik 1,5,0,0,SAFE_5
+fes,zekak erroumane,5,0,0,SAFE_5
+fes,zouagha bas,5,0,0,SAFE_5
+marrakech,hay al bahja,5,0,0,SAFE_5
+marrakech,hay al haouz,5,0,0,SAFE_5
+marrakech,hay mohammadi,5,0,0,SAFE_5
+marrakech,hay yasmina,5,0,0,SAFE_5
+marrakech,jbilat,5,0,0,SAFE_5
+marrakech,kechich,5,0,0,SAFE_5
+mohammedia,al qods,5,0,0,SAFE_5
+mohammedia,hassania 3,5,0,0,SAFE_5
+mohammedia,rachidia,5,0,0,SAFE_5
+nador,centre ville,5,0,0,SAFE_5
+nador,laarassi,5,0,0,SAFE_5
+oujda,bd derfoufi,5,0,0,SAFE_5
+rabat,m c3 a9dina,5,0,0,SAFE_5
+rabat,takadoum,5,0,0,SAFE_5
+safi,route de safi,5,0,0,SAFE_5
+safi,safi 1,5,0,0,SAFE_5
+sal c3 a9,tabriquet,5,0,0,SAFE_5
+sale,cite militaire,5,0,0,SAFE_5
+settat,hay mabrouka,5,0,0,SAFE_5
+t c3 a9touan,el ensanche,5,0,0,SAFE_5
+t c3 a9touan,korat essba,5,0,0,SAFE_5
+t c3 a9touan,martil,5,0,0,SAFE_5
+t c3 a9touan,touabel,5,0,0,SAFE_5
+t c3 a9touan,wilaya,5,0,0,SAFE_5
+tanger,achennad,5,0,0,SAFE_5
+tanger,draoua,5,0,0,SAFE_5
+tanger,nzaha,5,0,0,SAFE_5
+tetouan,el mdrassi,5,0,0,SAFE_5
+tetouan,inara,5,0,0,SAFE_5
+tetouan,martil,5,0,0,SAFE_5
+tetouan,msalla,5,0,0,SAFE_5
