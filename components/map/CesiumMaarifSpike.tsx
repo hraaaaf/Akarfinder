@@ -43,6 +43,7 @@ type NeighborhoodContext = {
 };
 
 type MutablePosition = [number, number];
+type ScreenPoint = { x: number; y: number; visible: boolean };
 
 const CESIUM_VERSION = "1.141.0";
 const CESIUM_BASE_URL = `https://cdn.jsdelivr.net/npm/cesium@${CESIUM_VERSION}/Build/Cesium/`;
@@ -53,10 +54,10 @@ const ESRI_WORLD_IMAGERY = "https://server.arcgisonline.com/ArcGIS/rest/services
 const CATEGORY_META: Record<LivingHereCategory, { label: string; color: string; glyph: string }> = {
   education: { label: "Écoles", color: "#2f80ed", glyph: "E" },
   groceries: { label: "Courses", color: "#7b61ff", glyph: "C" },
-  health: { label: "Santé", color: "#e5484d", glyph: "+" },
+  health: { label: "Santé", color: "#df5a56", glyph: "+" },
   transport: { label: "Transports", color: "#2979d3", glyph: "T" },
   food: { label: "Cafés & restaurants", color: "#e8872d", glyph: "R" },
-  green_sport: { label: "Parcs & sport", color: "#3a9b54", glyph: "P" },
+  green_sport: { label: "Parcs & sport", color: "#3c9a63", glyph: "P" },
   worship: { label: "Mosquées", color: "#2b8f7b", glyph: "M" },
   banking: { label: "Banques", color: "#667085", glyph: "B" },
   parking: { label: "Parking", color: "#4f6f8f", glyph: "P" },
@@ -150,7 +151,8 @@ export function CesiumMaarifSpike() {
   const [context, setContext] = useState<NeighborhoodContext | null>(null);
   const [activeCategory, setActiveCategory] = useState<LivingHereCategory | "all">("all");
   const [renderedAnchorCount, setRenderedAnchorCount] = useState(0);
-  const [buildings, setBuildings] = useState<"loading" | "available" | "unavailable">("loading");
+  const [screenPoints, setScreenPoints] = useState<Record<string, ScreenPoint>>({});
+  const [centerPoint, setCenterPoint] = useState<ScreenPoint | null>(null);
   const center = useMemo(() => maarifCenter(), []);
 
   useEffect(() => {
@@ -177,6 +179,14 @@ export function CesiumMaarifSpike() {
     let disposed = false;
     let viewer: any = null;
     let readyTimer: ReturnType<typeof setTimeout> | null = null;
+    let settleTimer: ReturnType<typeof setTimeout> | null = null;
+    let onTileProgress: ((remaining: number) => void) | null = null;
+
+    const markReady = () => {
+      if (disposed) return;
+      setRenderState("ready");
+      setReady(true);
+    };
 
     void loadExternalAsset()
       .then(async () => {
@@ -207,21 +217,26 @@ export function CesiumMaarifSpike() {
         if (disposed || !viewer || viewer.isDestroyed()) return;
 
         const imagery = viewer.imageryLayers.addImageryProvider(imageryProvider);
-        imagery.brightness = 1.1;
-        imagery.contrast = 0.96;
-        imagery.saturation = 1.05;
-        imagery.gamma = 0.98;
+        imagery.brightness = 1.13;
+        imagery.contrast = 0.91;
+        imagery.saturation = 0.95;
+        imagery.gamma = 1.06;
         setImageryLayers(viewer.imageryLayers.length);
 
-        viewer.scene.globe.enableLighting = false;
-        viewer.scene.globe.baseColor = Cesium.Color.fromCssColorString("#dce8ea");
-        viewer.scene.backgroundColor = Cesium.Color.fromCssColorString("#dfeef2");
-        viewer.scene.globe.maximumScreenSpaceError = 1.25;
-        viewer.scene.globe.tileCacheSize = 800;
-        viewer.scene.highDynamicRange = true;
-        viewer.scene.fog.enabled = true;
-        viewer.scene.fog.density = 0.00028;
-        viewer.scene.skyAtmosphere.brightnessShift = 0.18;
+        const globe = viewer.scene.globe;
+        globe.enableLighting = false;
+        globe.baseColor = Cesium.Color.fromCssColorString("#d8e6e8");
+        globe.maximumScreenSpaceError = 0.7;
+        globe.tileCacheSize = 1500;
+        globe.preloadAncestors = true;
+        globe.preloadSiblings = true;
+        globe.depthTestAgainstTerrain = false;
+        viewer.scene.backgroundColor = Cesium.Color.fromCssColorString("#dcebed");
+        viewer.scene.highDynamicRange = false;
+        viewer.scene.fog.enabled = false;
+        viewer.scene.skyAtmosphere.show = false;
+        if (viewer.scene.skyBox) viewer.scene.skyBox.show = false;
+        if (viewer.scene.postProcessStages?.fxaa) viewer.scene.postProcessStages.fxaa.enabled = true;
 
         const rings = outerRings();
         if (rings.length) {
@@ -230,69 +245,52 @@ export function CesiumMaarifSpike() {
             viewer.entities.add({
               polygon: {
                 hierarchy: Cesium.Cartesian3.fromDegreesArray(degrees),
-                material: Cesium.Color.fromCssColorString("#0b6668").withAlpha(0.1),
+                material: Cesium.Color.fromCssColorString("#0b6668").withAlpha(0.012),
                 outline: false,
               },
               polyline: {
                 positions: Cesium.Cartesian3.fromDegreesArray(degrees),
-                width: 4,
-                material: Cesium.Color.fromCssColorString("#f3d8a5").withAlpha(0.96),
+                width: 1.4,
+                material: Cesium.Color.fromCssColorString("#f1d8a6").withAlpha(0.34),
                 clampToGround: true,
               },
             });
-          });
-          viewer.entities.add({
-            position: Cesium.Cartesian3.fromDegrees(center[0], center[1], 20),
-            label: {
-              text: "Maârif",
-              font: "700 22px system-ui, sans-serif",
-              fillColor: Cesium.Color.WHITE,
-              backgroundColor: Cesium.Color.fromCssColorString("#0b6668").withAlpha(0.92),
-              showBackground: true,
-              backgroundPadding: new Cesium.Cartesian2(12, 8),
-              pixelOffset: new Cesium.Cartesian2(0, -8),
-              disableDepthTestDistance: Number.POSITIVE_INFINITY,
-            },
           });
           setBoundaryState("reference");
         } else {
           setBoundaryState("unavailable");
         }
 
-        const target = Cesium.Cartesian3.fromDegrees(center[0], center[1], 0);
-        const range = window.innerWidth >= 1024 ? 3600 : 3000;
+        const desktop = window.innerWidth >= 1024;
+        const cameraTarget = Cesium.Cartesian3.fromDegrees(
+          center[0] - (desktop ? 0.0007 : 0),
+          center[1] + (desktop ? 0.0055 : 0),
+          0,
+        );
         viewer.camera.lookAt(
-          target,
+          cameraTarget,
           new Cesium.HeadingPitchRange(
-            Cesium.Math.toRadians(338),
-            Cesium.Math.toRadians(-33),
-            range,
+            Cesium.Math.toRadians(desktop ? 328 : 338),
+            Cesium.Math.toRadians(desktop ? -48 : -39),
+            desktop ? 5350 : 3300,
           ),
         );
         viewer.camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
 
-        void Cesium.createOsmBuildingsAsync()
-          .then((osmBuildings: unknown) => {
-            if (!disposed && viewer && !viewer.isDestroyed()) {
-              viewer.scene.primitives.add(osmBuildings);
-              setBuildings("available");
-            }
-          })
-          .catch(() => {
-            if (!disposed) setBuildings("unavailable");
-          });
-
-        readyTimer = setTimeout(() => {
-          if (!disposed) {
-            setRenderState("ready");
-            setReady(true);
+        onTileProgress = (remaining: number) => {
+          if (disposed || remaining !== 0) {
+            if (settleTimer) clearTimeout(settleTimer);
+            return;
           }
-        }, 6500);
+          if (settleTimer) clearTimeout(settleTimer);
+          settleTimer = setTimeout(markReady, 1400);
+        };
+        globe.tileLoadProgressEvent.addEventListener(onTileProgress);
+        readyTimer = setTimeout(markReady, 14000);
       })
       .catch((error) => {
         console.error("[vivre-ici-cesium-spike] renderer failed", error);
         if (!disposed) {
-          setBuildings("unavailable");
           setRenderState("error");
           setReady(false);
         }
@@ -301,6 +299,8 @@ export function CesiumMaarifSpike() {
     return () => {
       disposed = true;
       if (readyTimer) clearTimeout(readyTimer);
+      if (settleTimer) clearTimeout(settleTimer);
+      if (viewer && onTileProgress) viewer.scene.globe.tileLoadProgressEvent.removeEventListener(onTileProgress);
       anchorEntitiesRef.current = [];
       viewerRef.current = null;
       try {
@@ -321,26 +321,14 @@ export function CesiumMaarifSpike() {
 
     context.anchors.forEach((anchor) => {
       const meta = CATEGORY_META[anchor.category] ?? CATEGORY_META.other;
-      const color = Cesium.Color.fromCssColorString(meta.color);
       const entity = viewer.entities.add({
-        position: Cesium.Cartesian3.fromDegrees(anchor.longitude, anchor.latitude, 26),
+        position: Cesium.Cartesian3.fromDegrees(anchor.longitude, anchor.latitude, 18),
         point: {
-          pixelSize: 16,
-          color,
+          pixelSize: 10,
+          color: Cesium.Color.fromCssColorString(meta.color),
           outlineColor: Cesium.Color.WHITE,
-          outlineWidth: 3,
+          outlineWidth: 2,
           disableDepthTestDistance: Number.POSITIVE_INFINITY,
-        },
-        label: {
-          text: anchor.name,
-          font: "700 12px system-ui, sans-serif",
-          fillColor: Cesium.Color.fromCssColorString("#17302e"),
-          backgroundColor: Cesium.Color.WHITE.withAlpha(0.94),
-          showBackground: true,
-          backgroundPadding: new Cesium.Cartesian2(8, 5),
-          pixelOffset: new Cesium.Cartesian2(0, -25),
-          disableDepthTestDistance: Number.POSITIVE_INFINITY,
-          distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 9000),
         },
       });
       anchorEntitiesRef.current.push({ entity, category: anchor.category });
@@ -354,6 +342,47 @@ export function CesiumMaarifSpike() {
       entity.show = activeCategory === "all" || category === activeCategory;
     });
   }, [activeCategory, renderedAnchorCount]);
+
+  useEffect(() => {
+    const viewer = viewerRef.current;
+    const Cesium = window.Cesium;
+    if (!viewer || !Cesium || !context || !ready || !mapRef.current) return;
+
+    const project = (lng: number, lat: number, height = 18): ScreenPoint => {
+      const point = Cesium.SceneTransforms.worldToWindowCoordinates(
+        viewer.scene,
+        Cesium.Cartesian3.fromDegrees(lng, lat, height),
+      );
+      const width = mapRef.current?.clientWidth ?? 0;
+      const heightPx = mapRef.current?.clientHeight ?? 0;
+      if (!point) return { x: 0, y: 0, visible: false };
+      return {
+        x: point.x,
+        y: point.y,
+        visible: point.x > -120 && point.x < width + 120 && point.y > -80 && point.y < heightPx + 80,
+      };
+    };
+
+    const updatePositions = () => {
+      const next: Record<string, ScreenPoint> = {};
+      context.anchors.forEach((anchor) => {
+        next[anchor.poi_id] = project(anchor.longitude, anchor.latitude);
+      });
+      setScreenPoints(next);
+      setCenterPoint(project(center[0], center[1], 20));
+    };
+
+    const timer = setTimeout(updatePositions, 180);
+    window.addEventListener("resize", updatePositions);
+    const removeCameraListener = viewer.camera.changed.addEventListener(updatePositions);
+    updatePositions();
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("resize", updatePositions);
+      if (typeof removeCameraListener === "function") removeCameraListener();
+    };
+  }, [context, ready, center]);
 
   const categories = context?.categories.filter((category) => Boolean(CATEGORY_META[category])) ?? [];
   const visibleAnchors =
@@ -370,7 +399,27 @@ export function CesiumMaarifSpike() {
       data-cesium-context-state={contextState}
       data-cesium-anchor-count={renderedAnchorCount}
     >
-      <div className="cesium-spike-map" ref={mapRef} data-cesium-map-surface />
+      <div className="cesium-spike-map" data-cesium-map-surface>
+        <div className="cesium-spike-canvas" ref={mapRef} />
+        <div className="cesium-spike-dom-labels" aria-hidden="true">
+          {centerPoint?.visible && (
+            <div className="cesium-spike-neighborhood-label" style={{ left: centerPoint.x, top: centerPoint.y }}>
+              Maârif
+            </div>
+          )}
+          {visibleAnchors.map((anchor) => {
+            const screen = screenPoints[anchor.poi_id];
+            if (!screen?.visible) return null;
+            const meta = CATEGORY_META[anchor.category] ?? CATEGORY_META.other;
+            return (
+              <div key={anchor.poi_id} className="cesium-spike-poi-label" style={{ left: screen.x, top: screen.y }}>
+                <span>{anchor.name}</span>
+                <i style={{ background: meta.color }} />
+              </div>
+            );
+          })}
+        </div>
+      </div>
 
       <div className="cesium-spike-map-chrome">
         <div className="cesium-spike-location">←&nbsp; Vivre à Casablanca</div>
@@ -400,40 +449,6 @@ export function CesiumMaarifSpike() {
         </span>
       </div>
 
-      <aside className="cesium-spike-rail">
-        <p className="cesium-spike-kicker">Casablanca · Quartier</p>
-        <h1>Maârif</h1>
-        <p className="cesium-spike-subtitle">
-          Explorez le quartier à partir de repères publics sourcés, affichés directement sur la carte.
-        </p>
-        <nav><strong>Carte quartier</strong><span>Vie locale</span><span>Biens</span></nav>
-
-        <div className="cesium-spike-signals">
-          <article><b>{context?.anchor_count ?? "—"}</b><small>Repères sourcés</small></article>
-          <article><b>{categories.length || "—"}</b><small>Catégories observées</small></article>
-          <article><b>Exact</b><small>Requis pour un pin immobilier</small></article>
-        </div>
-
-        <div className="cesium-spike-nearby">
-          <p>Repères visibles</p>
-          <h2>{activeCategory === "all" ? "Autour de Maârif" : CATEGORY_META[activeCategory].label}</h2>
-          <div className="cesium-spike-anchor-list">
-            {visibleAnchors.slice(0, 6).map((anchor) => (
-              <div key={anchor.poi_id} className="cesium-spike-anchor-row">
-                <i style={{ background: CATEGORY_META[anchor.category].color }}>{CATEGORY_META[anchor.category].glyph}</i>
-                <span><b>{anchor.name}</b><small>{anchor.territorial_wording}</small></span>
-              </div>
-            ))}
-            {contextState !== "ready" && <div className="cesium-spike-empty">Contexte de quartier indisponible.</div>}
-          </div>
-        </div>
-
-        <div className="cesium-spike-proof">
-          <strong>Contour OSM de référence · prototype non publié</strong>
-          <span>© OpenStreetMap contributors · Pins immobiliers affichés uniquement avec coordonnées exactes.</span>
-        </div>
-      </aside>
-
       <footer className="cesium-spike-outro">
         <div><strong>Découvrez les quartiers autrement</strong><span>Explorez, comparez, vivez mieux avec AkarFinder.</span></div>
         <em>Des lieux. Des vies. Des projets.</em>
@@ -441,20 +456,15 @@ export function CesiumMaarifSpike() {
 
       <style jsx global>{`
         .cesium-spike-shell{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 372px;grid-template-rows:minmax(0,1fr) 76px;gap:8px;height:calc(100svh - 64px);padding:10px 10px 0 12px;background:#f4efe7;color:#17302e;overflow:hidden}
-        .cesium-spike-map{position:relative;min-width:0;overflow:hidden;border-radius:22px;box-shadow:0 18px 44px rgb(38 48 48/.12);background:#dfeef2}
-        .cesium-spike-map .cesium-viewer,.cesium-spike-map .cesium-viewer-cesiumWidgetContainer,.cesium-spike-map .cesium-widget,.cesium-spike-map canvas{width:100%!important;height:100%!important}
-        .cesium-spike-map .cesium-viewer-bottom{font-size:8px!important;opacity:.68}
-        .cesium-spike-map-chrome{position:absolute;z-index:10;left:28px;right:398px;top:28px;display:grid;grid-template-columns:auto minmax(220px,1fr) auto;gap:10px}
-        .cesium-spike-location,.cesium-spike-search,.cesium-spike-mode{min-height:40px;display:flex;align-items:center;border:1px solid rgb(255 255 255/.85);background:rgb(255 255 255/.94);box-shadow:0 8px 26px rgb(30 46 47/.13);backdrop-filter:blur(14px);font-size:10px;font-weight:800;color:#243a39}
-        .cesium-spike-location{padding:0 13px;border-radius:999px}.cesium-spike-search{padding:0 16px;border-radius:999px;color:#7b817e}.cesium-spike-mode{padding:3px;border-radius:999px}.cesium-spike-mode span,.cesium-spike-mode strong{display:grid;place-items:center;min-width:37px;min-height:32px;border-radius:999px}.cesium-spike-mode strong{background:#0b6668;color:#fff}
-        .cesium-spike-filters{position:absolute;z-index:11;left:190px;right:404px;top:78px;display:flex;gap:7px;overflow:hidden}.cesium-spike-filters button{flex:0 0 auto;border:0;padding:7px 11px;border-radius:999px;background:rgb(255 255 255/.94);box-shadow:0 6px 18px rgb(30 46 47/.10);font-size:8px;font-weight:800;color:#364845}.cesium-spike-filters button.active{background:#0b6668;color:#fff}
-        .cesium-spike-map-note{position:absolute;z-index:10;left:28px;bottom:102px;display:grid;gap:2px;padding:9px 12px;border-radius:13px;background:rgb(255 255 255/.92);box-shadow:0 8px 22px rgb(30 46 47/.13);font-size:8px}.cesium-spike-map-note strong{font-size:9px}.cesium-spike-map-note span{color:#6f7773}
-        .cesium-spike-rail{grid-column:2;grid-row:1;min-height:0;overflow:auto;border-radius:22px;background:#fffefa;box-shadow:0 18px 44px rgb(38 48 48/.08);padding:22px 20px 18px}.cesium-spike-kicker{margin:0;font-size:8px;font-weight:900;letter-spacing:.13em;text-transform:uppercase;color:#0b6668}.cesium-spike-rail h1{margin:5px 0 0;font-size:42px;line-height:.95;letter-spacing:-.05em}.cesium-spike-subtitle{margin:10px 0 0;font-size:11px;line-height:1.55;color:#69716d}.cesium-spike-rail nav{display:flex;gap:18px;margin-top:17px;border-bottom:1px solid #e5dfd4}.cesium-spike-rail nav>*{padding:8px 0 10px;font-size:9px}.cesium-spike-rail nav strong{color:#0b6668;border-bottom:2px solid #0b6668}
-        .cesium-spike-signals{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:15px}.cesium-spike-signals article{min-height:72px;padding:10px;border:1px solid #e2ded4;border-radius:14px;background:#fbfaf6}.cesium-spike-signals b,.cesium-spike-signals small{display:block}.cesium-spike-signals b{font-size:14px}.cesium-spike-signals small{margin-top:6px;font-size:7.5px;line-height:1.3;color:#7b817e}
-        .cesium-spike-nearby{margin-top:18px;padding-top:15px;border-top:1px solid #e5dfd4}.cesium-spike-nearby>p{margin:0;font-size:8px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:#0b6668}.cesium-spike-nearby h2{margin:5px 0 10px;font-size:15px;line-height:1.2}.cesium-spike-anchor-list{display:grid;gap:7px}.cesium-spike-anchor-row{display:flex;gap:9px;align-items:center;padding:8px 9px;border-radius:12px;background:#f6f5f0}.cesium-spike-anchor-row i{display:grid;place-items:center;flex:0 0 25px;width:25px;height:25px;border-radius:999px;color:#fff;font-style:normal;font-size:9px;font-weight:900}.cesium-spike-anchor-row span,.cesium-spike-anchor-row b,.cesium-spike-anchor-row small{display:block}.cesium-spike-anchor-row b{font-size:9px}.cesium-spike-anchor-row small{margin-top:2px;font-size:7.5px;color:#777e79}.cesium-spike-empty{font-size:9px;color:#777e79}
-        .cesium-spike-proof{margin-top:15px;padding:11px 12px;border-radius:13px;background:#eef5f2;color:#31524e}.cesium-spike-proof strong,.cesium-spike-proof span{display:block}.cesium-spike-proof strong{font-size:8px}.cesium-spike-proof span{margin-top:4px;font-size:7.5px;line-height:1.4}
+        .cesium-spike-map{position:relative;grid-column:1;grid-row:1;min-width:0;overflow:hidden;border-radius:22px;box-shadow:0 18px 44px rgb(38 48 48/.12);background:#dfeef2}
+        .cesium-spike-canvas,.cesium-spike-canvas .cesium-viewer,.cesium-spike-canvas .cesium-viewer-cesiumWidgetContainer,.cesium-spike-canvas .cesium-widget,.cesium-spike-canvas canvas{width:100%!important;height:100%!important}
+        .cesium-spike-canvas{position:absolute;inset:0}.cesium-spike-map .cesium-viewer-bottom{font-size:7px!important;opacity:.55}
+        .cesium-spike-dom-labels{position:absolute;z-index:9;inset:0;pointer-events:none;overflow:hidden}.cesium-spike-neighborhood-label{position:absolute;transform:translate(-50%,-50%);padding:7px 11px;border-radius:8px;background:rgb(8 101 97/.92);box-shadow:0 5px 14px rgb(18 50 49/.18);color:#fff;font-size:13px;font-weight:850;letter-spacing:-.01em;white-space:nowrap}.cesium-spike-poi-label{position:absolute;display:flex;flex-direction:column;align-items:center;gap:5px;transform:translate(-50%,-100%)}.cesium-spike-poi-label span{max-width:250px;padding:7px 14px;border:1px solid rgb(224 221 214/.9);border-radius:999px;background:rgb(255 253 249/.94);box-shadow:0 7px 19px rgb(30 46 47/.15);backdrop-filter:blur(8px);color:#33433f;font-size:10px;font-weight:750;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cesium-spike-poi-label i{display:block;width:10px;height:10px;border:2px solid #fff;border-radius:999px;box-shadow:0 2px 8px rgb(30 46 47/.22)}
+        .cesium-spike-map-chrome{position:absolute;z-index:12;left:28px;right:398px;top:28px;display:grid;grid-template-columns:auto minmax(220px,1fr) auto;gap:10px}.cesium-spike-location,.cesium-spike-search,.cesium-spike-mode{min-height:40px;display:flex;align-items:center;border:1px solid rgb(255 255 255/.88);background:rgb(255 255 255/.94);box-shadow:0 8px 26px rgb(30 46 47/.12);backdrop-filter:blur(14px);font-size:10px;font-weight:800;color:#243a39}.cesium-spike-location{padding:0 13px;border-radius:999px}.cesium-spike-search{padding:0 16px;border-radius:999px;color:#7b817e}.cesium-spike-mode{padding:3px;border-radius:999px}.cesium-spike-mode span,.cesium-spike-mode strong{display:grid;place-items:center;min-width:37px;min-height:32px;border-radius:999px}.cesium-spike-mode strong{background:#0b6668;color:#fff}
+        .cesium-spike-filters{position:absolute;z-index:13;left:190px;right:404px;top:78px;display:flex;gap:7px;overflow:hidden}.cesium-spike-filters button{flex:0 0 auto;border:0;padding:7px 11px;border-radius:999px;background:rgb(255 255 255/.94);box-shadow:0 6px 18px rgb(30 46 47/.10);font-size:8px;font-weight:800;color:#364845}.cesium-spike-filters button.active{background:#0b6668;color:#fff}
+        .cesium-spike-map-note{position:absolute;z-index:12;left:28px;bottom:102px;display:grid;gap:2px;padding:9px 12px;border-radius:13px;background:rgb(255 255 255/.9);box-shadow:0 8px 22px rgb(30 46 47/.12);backdrop-filter:blur(8px);font-size:8px}.cesium-spike-map-note strong{font-size:9px}.cesium-spike-map-note span{color:#6f7773}
         .cesium-spike-outro{grid-column:1/3;grid-row:2;display:flex;align-items:center;justify-content:space-between;padding:12px 24px 15px;border-top:1px solid #ded6c9}.cesium-spike-outro div{display:grid;gap:2px}.cesium-spike-outro strong{font-size:17px}.cesium-spike-outro span{font-size:9px;color:#767972}.cesium-spike-outro em{font-family:Georgia,serif;font-size:13px;color:#777067;transform:rotate(-4deg)}
-        @media(max-width:1023px){.cesium-spike-shell{display:block;height:calc(100svh - 58px);padding:0;background:#eef2f2}.cesium-spike-map{height:100%;border-radius:0;box-shadow:none}.cesium-spike-map-chrome{left:12px;right:12px;top:12px;grid-template-columns:auto 1fr auto;gap:6px}.cesium-spike-location{max-width:138px}.cesium-spike-search{position:absolute;left:0;right:0;top:50px}.cesium-spike-filters{left:12px;right:12px;top:112px;overflow-x:auto}.cesium-spike-map-note{left:12px;bottom:275px}.cesium-spike-rail{position:absolute;z-index:12;left:12px;right:12px;bottom:16px;max-height:31svh;padding:14px;border-radius:25px;overflow:hidden}.cesium-spike-kicker{margin-top:0}.cesium-spike-rail h1{font-size:27px}.cesium-spike-subtitle{margin-top:5px;font-size:9px}.cesium-spike-rail nav,.cesium-spike-nearby{display:none}.cesium-spike-signals{margin-top:10px}.cesium-spike-signals article{min-height:52px}.cesium-spike-proof{margin-top:9px;padding:8px 9px}.cesium-spike-outro{display:none}}
+        @media(max-width:1023px){.cesium-spike-shell{display:block;height:calc(100svh - 58px);padding:0;background:#eef2f2}.cesium-spike-map{height:100%;border-radius:0;box-shadow:none}.cesium-spike-map-chrome{left:12px;right:12px;top:12px;grid-template-columns:auto 1fr auto;gap:6px}.cesium-spike-location{max-width:138px}.cesium-spike-search{position:absolute;left:0;right:0;top:50px}.cesium-spike-filters{left:12px;right:12px;top:112px;overflow-x:auto}.cesium-spike-map-note{left:12px;bottom:275px}.cesium-spike-poi-label span{max-width:180px;padding:6px 9px;font-size:8px}.cesium-spike-neighborhood-label{font-size:11px;padding:6px 9px}.cesium-spike-outro{display:none}}
       `}</style>
     </section>
   );
