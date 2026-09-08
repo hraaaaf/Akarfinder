@@ -25,8 +25,8 @@ function installTargetLens(Cesium: any) {
 
         if (isCasablancaTarget) {
           const tunedTarget = Cesium.Cartesian3.fromDegrees(
-            longitude - 0.0048,
-            latitude + 0.0056,
+            longitude + 0.0035,
+            latitude + 0.0100,
             0,
           );
 
@@ -35,9 +35,9 @@ function installTargetLens(Cesium: any) {
           }
 
           const tunedOffset = new Cesium.HeadingPitchRange(
-            Cesium.Math.toRadians(326),
-            Cesium.Math.toRadians(-49),
-            8200,
+            Cesium.Math.toRadians(346),
+            Cesium.Math.toRadians(-40),
+            8500,
           );
 
           return originalLookAt.call(this, tunedTarget, tunedOffset);
