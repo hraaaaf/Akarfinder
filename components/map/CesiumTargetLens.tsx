@@ -17,8 +17,15 @@ type OverpassElement = {
 };
 type OverpassPayload = { elements?: OverpassElement[] };
 
-const OVERPASS_ENDPOINT = "https://overpass-api.de/api/interpreter";
+const OVERPASS_ENDPOINTS = [
+  "https://overpass.private.coffee/api/interpreter",
+  "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+  "https://overpass-api.de/api/interpreter",
+] as const;
+const BUILDING_QUERY_RADIUS_M = 1800;
+const BUILDING_QUERY_LIMIT = 160;
 const LEVEL_HEIGHT_ESTIMATE_M = 3;
+const MIN_BUILDINGS = 8;
 
 function setShellAttribute(name: string, value: string) {
   document.querySelector<HTMLElement>("[data-cesium-spike]")?.setAttribute(name, value);
@@ -106,8 +113,8 @@ function createOverpassBuildingPrimitive(Cesium: any, elements: OverpassElement[
         vertexFormat: Cesium.PerInstanceColorAppearance.VERTEX_FORMAT,
       });
       const color = height.precision === "height"
-        ? Cesium.Color.fromCssColorString("#efe6d9").withAlpha(0.92)
-        : Cesium.Color.fromCssColorString("#e6ded2").withAlpha(0.82);
+        ? Cesium.Color.fromCssColorString("#f1e8dc").withAlpha(0.94)
+        : Cesium.Color.fromCssColorString("#e7ded1").withAlpha(0.84);
       instances.push(new Cesium.GeometryInstance({
         geometry: polygon,
         attributes: {
@@ -136,6 +143,27 @@ function createOverpassBuildingPrimitive(Cesium: any, elements: OverpassElement[
   return { primitive, count: instances.length, exactHeightCount, estimatedHeightCount };
 }
 
+async function fetchOverpassBuildings(endpoint: string, latitude: number, longitude: number) {
+  // Start with building:levels only. It is dramatically lighter than requesting all buildings,
+  // while remaining sourced and usable for an explicitly disclosed 3 m/level approximation.
+  const query = `[out:json][timeout:14];way["building"]["building:levels"](around:${BUILDING_QUERY_RADIUS_M},${latitude.toFixed(6)},${longitude.toFixed(6)});out tags geom ${BUILDING_QUERY_LIMIT};`;
+  const controller = new AbortController();
+  const timer = window.setTimeout(() => controller.abort(), 16000);
+
+  try {
+    const response = await fetch(`${endpoint}?data=${encodeURIComponent(query)}`, {
+      method: "GET",
+      headers: { Accept: "application/json" },
+      cache: "no-store",
+      signal: controller.signal,
+    });
+    if (!response.ok) throw new Error(`Overpass ${response.status}`);
+    return (await response.json()) as OverpassPayload;
+  } finally {
+    window.clearTimeout(timer);
+  }
+}
+
 async function ensureTokenlessOsmBuildings(Cesium: any, scene: any, latitude: number, longitude: number) {
   if (!scene || window.innerWidth < 1024) {
     setShellAttribute("data-cesium-buildings-state", "skipped");
@@ -148,36 +176,28 @@ async function ensureTokenlessOsmBuildings(Cesium: any, scene: any, latitude: nu
   setShellAttribute("data-cesium-buildings-source", "overpass-osm");
   setShellAttribute("data-cesium-buildings-count", "0");
 
-  const query = `[out:json][timeout:20];(way["building"]["height"](around:3200,${latitude.toFixed(6)},${longitude.toFixed(6)});way["building"]["building:levels"](around:3200,${latitude.toFixed(6)},${longitude.toFixed(6)}););out tags geom 300;`;
-  const url = `${OVERPASS_ENDPOINT}?data=${encodeURIComponent(query)}`;
+  for (const endpoint of OVERPASS_ENDPOINTS) {
+    try {
+      const payload = await fetchOverpassBuildings(endpoint, latitude, longitude);
+      const built = createOverpassBuildingPrimitive(Cesium, payload.elements ?? []);
+      if (!built || built.count < MIN_BUILDINGS) continue;
 
-  try {
-    const response = await fetch(url, {
-      method: "GET",
-      headers: { Accept: "application/json" },
-      cache: "no-store",
-    });
-    if (!response.ok) throw new Error(`Overpass ${response.status}`);
-
-    const payload = (await response.json()) as OverpassPayload;
-    const built = createOverpassBuildingPrimitive(Cesium, payload.elements ?? []);
-    if (!built || built.count < 8) {
-      setShellAttribute("data-cesium-buildings-state", "unavailable");
+      scene.primitives.add(built.primitive);
+      scene.requestRender?.();
+      ensureOsmAttribution();
+      setShellAttribute("data-cesium-buildings-endpoint", new URL(endpoint).hostname);
+      setShellAttribute("data-cesium-buildings-count", String(built.count));
+      setShellAttribute("data-cesium-buildings-exact-count", String(built.exactHeightCount));
+      setShellAttribute("data-cesium-buildings-estimated-count", String(built.estimatedHeightCount));
+      setShellAttribute("data-cesium-buildings-precision", built.estimatedHeightCount > 0 ? "mixed" : "exact-height-tags");
+      setShellAttribute("data-cesium-buildings-state", "available");
       return;
+    } catch (error) {
+      console.warn(`[vivre-ici-cesium-spike] Overpass endpoint failed: ${endpoint}`, error);
     }
-
-    scene.primitives.add(built.primitive);
-    scene.requestRender?.();
-    ensureOsmAttribution();
-    setShellAttribute("data-cesium-buildings-count", String(built.count));
-    setShellAttribute("data-cesium-buildings-exact-count", String(built.exactHeightCount));
-    setShellAttribute("data-cesium-buildings-estimated-count", String(built.estimatedHeightCount));
-    setShellAttribute("data-cesium-buildings-precision", built.estimatedHeightCount > 0 ? "mixed" : "exact-height-tags");
-    setShellAttribute("data-cesium-buildings-state", "available");
-  } catch (error) {
-    console.warn("[vivre-ici-cesium-spike] tokenless OSM buildings unavailable", error);
-    setShellAttribute("data-cesium-buildings-state", "unavailable");
   }
+
+  setShellAttribute("data-cesium-buildings-state", "unavailable");
 }
 
 function installTargetLens(Cesium: any) {
@@ -264,13 +284,13 @@ export function CesiumTargetLens() {
     <style jsx global>{`
       @media (min-width: 1024px) {
         .cesium-spike-map-atmosphere {
-          height: 36% !important;
+          height: 38% !important;
           background: linear-gradient(
             180deg,
-            rgba(118, 203, 239, 0.42),
-            rgba(151, 215, 240, 0.24) 46%,
-            rgba(190, 226, 239, 0.08) 72%,
-            rgba(190, 226, 239, 0)
+            rgba(112, 203, 241, 0.55),
+            rgba(145, 216, 242, 0.30) 44%,
+            rgba(195, 230, 243, 0.10) 72%,
+            rgba(195, 230, 243, 0)
           ) !important;
           mix-blend-mode: screen !important;
         }
