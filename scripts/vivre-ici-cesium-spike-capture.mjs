@@ -119,6 +119,7 @@ try {
     const buildingsCount = Number(await shellLocator.getAttribute('data-cesium-buildings-count') ?? '0');
     const buildingsExactCount = Number(await shellLocator.getAttribute('data-cesium-buildings-exact-count') ?? '0');
     const buildingsEstimatedCount = Number(await shellLocator.getAttribute('data-cesium-buildings-estimated-count') ?? '0');
+    const buildingsRejectedOversize = Number(await shellLocator.getAttribute('data-cesium-buildings-rejected-oversize') ?? '0');
     const buildingsPrecision = await shellLocator.getAttribute('data-cesium-buildings-precision');
     const requiredFailedResponses = failedResponses.filter((entry) => !/api\.cesium\.com\/v1\/assets\/96188\/endpoint/i.test(entry.url));
     const requiredFailedRequests = failedRequests.filter((entry) => !/api\.cesium\.com\/v1\/assets\/96188\/endpoint/i.test(entry.url));
@@ -140,6 +141,7 @@ try {
       buildingsCount,
       buildingsExactCount,
       buildingsEstimatedCount,
+      buildingsRejectedOversize,
       buildingsPrecision,
       canvasCount,
       shell,
