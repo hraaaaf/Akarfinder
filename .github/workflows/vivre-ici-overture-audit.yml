@@ -10,6 +10,9 @@ on:
       - 'data/geo/casablanca-arrondissements-osm.json'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   audit:
     runs-on: ubuntu-latest
@@ -28,6 +31,18 @@ jobs:
 
       - name: Audit Maârif 3D coverage
         run: python scripts/vivre-ici-overture-audit.py
+
+      - name: Commit compact runtime bundle
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/data/vivre-ici/maarif-overture-3d.compact.json
+          if git diff --cached --quiet; then
+            echo "Runtime bundle unchanged"
+            exit 0
+          fi
+          git commit -m "data(vivre-ici): materialize Overture 3D bundle"
+          git push
 
       - name: Upload audit artifact
         if: always()
