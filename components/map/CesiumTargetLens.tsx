@@ -22,8 +22,8 @@ const OVERPASS_ENDPOINTS = [
   "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
   "https://overpass-api.de/api/interpreter",
 ] as const;
-const BUILDING_QUERY_RADIUS_M = 2800;
-const BUILDING_QUERY_LIMIT = 520;
+const BUILDING_QUERY_RADIUS_M = 2500;
+const BUILDING_QUERY_LIMIT = 900;
 const LEVEL_HEIGHT_ESTIMATE_M = 3;
 const MIN_BUILDINGS = 8;
 
@@ -47,14 +47,14 @@ function applyDaylightGrade(Cesium: any, scene: any) {
   for (let index = 0; index < scene.imageryLayers.length; index += 1) {
     const layer = scene.imageryLayers.get(index);
     if (!layer) continue;
-    layer.brightness = 1.4;
-    layer.contrast = 0.86;
-    layer.saturation = 1.05;
-    layer.gamma = 1.2;
-    layer.hue = Cesium.Math.toRadians(-2);
+    layer.brightness = 1.42;
+    layer.contrast = 0.84;
+    layer.saturation = 1.08;
+    layer.gamma = 1.22;
+    layer.hue = Cesium.Math.toRadians(-2.5);
   }
 
-  scene.backgroundColor = Cesium.Color.fromCssColorString("#caeaf7");
+  scene.backgroundColor = Cesium.Color.fromCssColorString("#d0edf8");
   setShellAttribute("data-cesium-day-mode", "true");
 }
 
@@ -84,9 +84,10 @@ function buildingHeight(tags: Record<string, string> | undefined) {
 }
 
 function buildingColor(Cesium: any, meters: number, precision: "height" | "levels-estimate") {
-  if (meters >= 28) return Cesium.Color.fromCssColorString(precision === "height" ? "#d8b684" : "#d8c3a2");
-  if (meters >= 18) return Cesium.Color.fromCssColorString(precision === "height" ? "#e7cda8" : "#e3d3bd");
-  return Cesium.Color.fromCssColorString(precision === "height" ? "#f2e5d4" : "#e9dfd0");
+  if (meters >= 32) return Cesium.Color.fromCssColorString(precision === "height" ? "#cfa976" : "#d4b995");
+  if (meters >= 22) return Cesium.Color.fromCssColorString(precision === "height" ? "#dfc49e" : "#dfcdb5");
+  if (meters >= 12) return Cesium.Color.fromCssColorString(precision === "height" ? "#ead7bd" : "#e5d6c3");
+  return Cesium.Color.fromCssColorString(precision === "height" ? "#f0e3d2" : "#e9dfd1");
 }
 
 function createOverpassBuildingPrimitive(Cesium: any, elements: OverpassElement[]) {
@@ -109,7 +110,7 @@ function createOverpassBuildingPrimitive(Cesium: any, elements: OverpassElement[
     for (const point of geometry) {
       if (!Number.isFinite(point.lon) || !Number.isFinite(point.lat)) continue;
       degrees.push(point.lon, point.lat);
-      degreesHeights.push(point.lon, point.lat, height.meters + 0.45);
+      degreesHeights.push(point.lon, point.lat, height.meters + 0.5);
     }
     if (degrees.length < 8) continue;
 
@@ -134,12 +135,12 @@ function createOverpassBuildingPrimitive(Cesium: any, elements: OverpassElement[
         roofOutlineInstances.push(new Cesium.GeometryInstance({
           geometry: new Cesium.PolylineGeometry({
             positions: roofPositions,
-            width: 0.8,
+            width: height.meters >= 18 ? 1.35 : 1.0,
             vertexFormat: Cesium.PolylineColorAppearance.VERTEX_FORMAT,
           }),
           attributes: {
             color: Cesium.ColorGeometryInstanceAttribute.fromColor(
-              Cesium.Color.fromCssColorString("#7b6d5b").withAlpha(height.meters >= 18 ? 0.52 : 0.28),
+              Cesium.Color.fromCssColorString("#736454").withAlpha(height.meters >= 18 ? 0.68 : 0.42),
             ),
           },
         }));
@@ -177,9 +178,11 @@ function createOverpassBuildingPrimitive(Cesium: any, elements: OverpassElement[
 }
 
 async function fetchOverpassBuildings(endpoint: string, latitude: number, longitude: number) {
-  const query = `[out:json][timeout:16];way["building"]["building:levels"](around:${BUILDING_QUERY_RADIUS_M},${latitude.toFixed(6)},${longitude.toFixed(6)});out tags geom ${BUILDING_QUERY_LIMIT};`;
+  // Truth-safe density pass: include exact height tags, level-derived heights and mapped building parts.
+  // No default height is fabricated for features missing both height and building:levels.
+  const query = `[out:json][timeout:18];(way["building"]["height"](around:${BUILDING_QUERY_RADIUS_M},${latitude.toFixed(6)},${longitude.toFixed(6)});way["building"]["building:levels"](around:${BUILDING_QUERY_RADIUS_M},${latitude.toFixed(6)},${longitude.toFixed(6)});way["building:part"]["height"](around:${BUILDING_QUERY_RADIUS_M},${latitude.toFixed(6)},${longitude.toFixed(6)});way["building:part"]["building:levels"](around:${BUILDING_QUERY_RADIUS_M},${latitude.toFixed(6)},${longitude.toFixed(6)}););out tags geom ${BUILDING_QUERY_LIMIT};`;
   const controller = new AbortController();
-  const timer = window.setTimeout(() => controller.abort(), 19000);
+  const timer = window.setTimeout(() => controller.abort(), 21000);
 
   try {
     const response = await fetch(`${endpoint}?data=${encodeURIComponent(query)}`, {
@@ -213,7 +216,7 @@ async function ensureTokenlessOsmBuildings(Cesium: any, scene: any, latitude: nu
       const built = createOverpassBuildingPrimitive(Cesium, payload.elements ?? []);
       if (!built || built.count < MIN_BUILDINGS) continue;
 
-      if (Cesium.SunLight) scene.light = new Cesium.SunLight({ intensity: 1.35 });
+      if (Cesium.SunLight) scene.light = new Cesium.SunLight({ intensity: 1.55 });
       if (scene.shadowMap) {
         scene.shadowMap.enabled = true;
         scene.shadowMap.softShadows = true;
@@ -257,19 +260,19 @@ function installTargetLens(Cesium: any) {
           void ensureTokenlessOsmBuildings(Cesium, scene, latitude, longitude);
 
           const tunedTarget = Cesium.Cartesian3.fromDegrees(
-            longitude + 0.0040,
-            latitude + 0.0110,
+            longitude + 0.0035,
+            latitude + 0.0118,
             0,
           );
 
           if (this.frustum && "fov" in this.frustum) {
-            this.frustum.fov = Cesium.Math.toRadians(36);
+            this.frustum.fov = Cesium.Math.toRadians(37);
           }
 
           const tunedOffset = new Cesium.HeadingPitchRange(
             Cesium.Math.toRadians(346),
-            Cesium.Math.toRadians(-31),
-            8200,
+            Cesium.Math.toRadians(-28),
+            7600,
           );
 
           return originalLookAt.call(this, tunedTarget, tunedOffset);
@@ -321,13 +324,13 @@ export function CesiumTargetLens() {
     <style jsx global>{`
       @media (min-width: 1024px) {
         .cesium-spike-map-atmosphere {
-          height: 35% !important;
+          height: 36% !important;
           background: linear-gradient(
             180deg,
-            rgba(75, 184, 235, 0.78),
-            rgba(121, 207, 241, 0.52) 48%,
-            rgba(190, 229, 244, 0.16) 76%,
-            rgba(200, 234, 246, 0)
+            rgba(82, 190, 236, 0.92),
+            rgba(120, 207, 241, 0.66) 43%,
+            rgba(182, 226, 244, 0.22) 72%,
+            rgba(205, 237, 248, 0)
           ) !important;
           mix-blend-mode: screen !important;
         }
