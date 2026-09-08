@@ -60,54 +60,48 @@ The code currently converts some provider failures into `0/0` rows, which makes 
 
 Migration: `20260908144500_create_listing_representations_union_v1.sql`.
 
-Database object:
+Database object: `public.listing_representations_union_v1`.
 
-`public.listing_representations_union_v1`
-
-Properties:
-
-- additive only;
-- `security_invoker = true`;
-- one canonical row per `canonical_url`;
-- source provenance retained through `source_system`, `source_record_id`, `source_copy_count`;
-- no live reader switched yet;
-- no source table deleted.
-
-Verified result after migration:
+Verified:
 
 - canonical rows: **143,121**
-- rows backed by multiple source copies: **18,660**
+- multisource URLs: **18,660**
 - canonical source winners:
   - `minimal_live_search_documents_v1`: 64,977
   - `thin_index_search_documents`: 58,523
   - `property_listings`: 19,621
-- non-null title: 24,772
-- non-null city: 107,415
-- non-null price: 79,146
-- non-null surface: 81,608
 
-The low title coverage proves this union surface is an inventory/consolidation layer, not yet a production-ready public-search read model.
+No live reader was switched and no source table was deleted.
+
+## Lot U2 — canonical field merge — DONE
+
+Migration: `20260908150500_create_listing_representations_canonical_v1.sql`.
+
+Database object: `public.listing_representations_canonical_v1`.
+
+The view keeps one row per canonical URL and merges the best available field values across duplicate source records while retaining source lineage.
+
+Verified coverage:
+
+- rows: **143,121**
+- multisource URLs: **18,660**
+- title: **27,424**
+- city: **107,415**
+- district: **68,374**
+- property type: **48,384**
+- transaction type: **44,600**
+- price: **79,884**
+- surface: **83,997**
+
+Compared with U1, title coverage increased from 24,772 to 27,424, price from 79,146 to 79,884 and surface from 81,608 to 83,997 without reducing the 143,121-URL corpus.
+
+This proves field-level consolidation is preferable to selecting one source row wholesale.
 
 ## Migration sequence
 
-### U2 — field contract and enrichment
+### U3 — canonical search RPC — NEXT
 
-Create a canonical representation contract that keeps source provenance and merges the best fields across duplicate URLs instead of simply selecting one winning source row.
-
-Required core fields:
-
-- canonical URL/source/provenance
-- title/snippet
-- city/district
-- property type/transaction
-- price/surface/price per m²
-- quality/reliability/freshness
-- publication eligibility
-- timestamps
-
-### U3 — canonical search RPC
-
-Build a new search RPC over the canonical representation model with:
+Build a new search RPC over `listing_representations_canonical_v1` with:
 
 - city and district
 - property type
@@ -149,4 +143,4 @@ Only after no live readers/writers remain:
 
 Branch: `refactor/unify-public-listing-source`
 
-Next exact: implement U2 field-level merge contract and verify canonical coverage improves without reducing the 143,121 URL union.
+Next exact: implement U3 canonical search RPC and verify it against a fixed query matrix before any reader cutover.
