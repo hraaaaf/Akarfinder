@@ -22,8 +22,8 @@ jobs:
       PRICE_RECOVERY_OUT: .tmp/price-recovery
       PRICE_RECOVERY_LIMIT: ${{ inputs.limit || '100' }}
       PRICE_RECOVERY_CONCURRENCY: '3'
-      PRICE_RECOVERY_SOURCES: agenz.ma
-      PRICE_RECOVERY_FALLBACK_MANIFEST: scripts/price-recovery/fallback-agenz-30-manifest.json
+      PRICE_RECOVERY_SOURCES: mubawab.ma
+      PRICE_RECOVERY_FALLBACK_MANIFEST: scripts/price-recovery/fallback-mubawab-unavailable-fresh-50.json
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -37,10 +37,6 @@ jobs:
         run: npx tsc --noEmit
       - name: Read-only detail price recovery
         run: npx tsx scripts/price-recovery/run-detail-price-recovery.ts
-      - name: Audit Hassan residual pages
-        run: npx tsx scripts/price-recovery/audit-hassan-residuals.ts
-      - name: Trace Agenz client API assets
-        run: npx tsx scripts/price-recovery/trace-agenz-client-api.ts
       - name: Verify no-write contract
         run: |
           node - <<'NODE'
@@ -48,10 +44,6 @@ jobs:
           const p=JSON.parse(fs.readFileSync('.tmp/price-recovery/summary.json','utf8'));
           if(p.readOnly!==true||p.databaseWrites!==0) throw new Error('readonly invariant failed');
           if(p.requested<1) throw new Error('no rows audited');
-          const h=JSON.parse(fs.readFileSync('.tmp/price-recovery/hassan-residual-audit.json','utf8'));
-          if(h.readOnly!==true||h.databaseWrites!==0) throw new Error('Hassan audit readonly invariant failed');
-          const trace=JSON.parse(fs.readFileSync('.tmp/price-recovery/agenz-client-api-trace.json','utf8'));
-          if(trace.readOnly!==true) throw new Error('Agenz trace readonly invariant failed');
           NODE
       - uses: actions/upload-artifact@v4
         with:
