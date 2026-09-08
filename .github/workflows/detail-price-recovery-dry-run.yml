@@ -36,6 +36,8 @@ jobs:
         run: npx tsc --noEmit
       - name: Read-only detail price recovery
         run: npx tsx scripts/price-recovery/run-detail-price-recovery.ts
+      - name: Trace Agenz client API assets
+        run: npx tsx scripts/price-recovery/trace-agenz-client-api.ts
       - name: Verify no-write contract
         run: |
           node - <<'NODE'
@@ -43,6 +45,8 @@ jobs:
           const p=JSON.parse(fs.readFileSync('.tmp/price-recovery/summary.json','utf8'));
           if(p.readOnly!==true||p.databaseWrites!==0) throw new Error('readonly invariant failed');
           if(p.requested<1) throw new Error('no rows audited');
+          const trace=JSON.parse(fs.readFileSync('.tmp/price-recovery/agenz-client-api-trace.json','utf8'));
+          if(trace.readOnly!==true) throw new Error('Agenz trace readonly invariant failed');
           NODE
       - uses: actions/upload-artifact@v4
         with:
