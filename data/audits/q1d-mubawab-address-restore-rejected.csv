@@ -1,0 +1,89 @@
+artifact_row_index,source_id,city,candidate,address_text,reason
+167631,7317241,fes,ain kadous,Ain kadous à Fès,UNKNOWN_DISTRICT
+168231,7408467,temara,talaa,Talaa à Temara,UNKNOWN_DISTRICT
+168683,7460430,settat,mania,Mania à Settat,UNKNOWN_DISTRICT
+169153,7501514,fes,oliverie,Oliverie à Fès,UNKNOWN_DISTRICT
+169575,7551854,sale,annaim,Annaim à Salé,UNKNOWN_DISTRICT
+170635,7612563,tanger,al warda,Al Warda à Tanger,UNKNOWN_DISTRICT
+170748,7614447,rabat,hay al farah,Hay Al Farah à Rabat,UNKNOWN_DISTRICT
+170767,7614768,rabat,hay al farah,Hay Al Farah à Rabat,UNKNOWN_DISTRICT
+170859,7616588,sale,zone industrielle hay arrahma,Zone Industrielle Hay Arrahma à Salé,UNKNOWN_DISTRICT
+171412,7629146,mohammedia,derb jamila,Derb Jamila à Mohammedia,UNKNOWN_DISTRICT
+171509,7632612,temara,lazrek nemsia,Lazrek Nemsia à Temara,UNKNOWN_DISTRICT
+171517,7632747,safi,jerifat,Jerifat à Safi,UNKNOWN_DISTRICT
+171735,7637190,sale,annaim,Annaim à Salé,UNKNOWN_DISTRICT
+171813,7638791,tetouan,borj,Borj à Tétouan,UNKNOWN_DISTRICT
+171869,7640287,settat,hay mimouna,Hay Mimouna à Settat,UNKNOWN_DISTRICT
+171989,7643814,temara,talaa,Talaa à Temara,UNKNOWN_DISTRICT
+172014,7644562,safi,zawiyat sidi wassel,Zawiyat Sidi Wassel à Safi,UNKNOWN_DISTRICT
+172040,7645172,temara,fadli,Fadli à Temara,UNKNOWN_DISTRICT
+172217,7649244,mohammedia,hay essalama,Hay Essalama à Mohammedia,UNKNOWN_DISTRICT
+172754,7660772,rabat,hay al farah,Hay Al Farah à Rabat,UNKNOWN_DISTRICT
+173023,7664413,khemisset,hay kettania,Hay Kettania à Khémisset,UNKNOWN_DISTRICT
+173139,7664869,fes,oliverie,Oliverie à Fès,UNKNOWN_DISTRICT
+173140,7664870,fes,oliverie,Oliverie à Fès,UNKNOWN_DISTRICT
+173141,7664871,fes,oliverie,Oliverie à Fès,UNKNOWN_DISTRICT
+173142,7664872,fes,oliverie,Oliverie à Fès,UNKNOWN_DISTRICT
+173143,7664873,fes,oliverie,Oliverie à Fès,UNKNOWN_DISTRICT
+173144,7664874,fes,oliverie,Oliverie à Fès,UNKNOWN_DISTRICT
+173145,7664875,fes,oliverie,Oliverie à Fès,UNKNOWN_DISTRICT
+173146,7664876,fes,oliverie,Oliverie à Fès,UNKNOWN_DISTRICT
+173458,7670416,casablanca,bin lamdoun,Bin Lamdoun à Casablanca,UNKNOWN_DISTRICT
+173777,7676530,temara,abbadi braika,Abbadi Braika à Temara,UNKNOWN_DISTRICT
+174145,7683761,temara,abbadi braika,Abbadi Braika à Temara,UNKNOWN_DISTRICT
+174146,7683798,safi,jerifat,Jerifat à Safi,UNKNOWN_DISTRICT
+174340,7687043,tanger,el khair 1,El Khair 1 à Tanger,UNKNOWN_DISTRICT
+174519,7690281,tanger,zouitina,Zouitina à Tanger,UNKNOWN_DISTRICT
+174661,7692469,safi,wad el bacha,Wad El Bacha à Safi,UNKNOWN_DISTRICT
+174908,7695822,sale,annaim,Annaim à Salé,UNKNOWN_DISTRICT
+175022,7697419,fes,jnane eddar,Jnane Eddar à Fès,UNKNOWN_DISTRICT
+175308,7701334,sale,annaim,Annaim à Salé,UNKNOWN_DISTRICT
+175655,7706009,temara,masrou 1,Masrou 1 à Temara,UNKNOWN_DISTRICT
+175970,7710791,temara,lazrek nemsia,Lazrek Nemsia à Temara,UNKNOWN_DISTRICT
+176329,7716049,sale,annaim,Annaim à Salé,UNKNOWN_DISTRICT
+176340,7716158,temara,talaa,Talaa à Temara,UNKNOWN_DISTRICT
+176351,7716284,fes,hay tarik 2,Hay Tarik 2 à Fès,UNKNOWN_DISTRICT
+176381,7716770,temara,lazrak,Lazrak à Temara,UNKNOWN_DISTRICT
+176515,7718899,sale,annaim,Annaim à Salé,UNKNOWN_DISTRICT
+176725,7721607,temara,masrou 1,Masrou 1 à Temara,UNKNOWN_DISTRICT
+176969,7725238,khemisset,hay kettania,Hay Kettania à Khémisset,UNKNOWN_DISTRICT
+177030,7725968,safi,hrayat albayde,Hrayat Albayde à Safi,UNKNOWN_DISTRICT
+177240,7729086,sale,annaim,Annaim à Salé,UNKNOWN_DISTRICT
+177242,7729097,safi,hrayat albayde,Hrayat Albayde à Safi,UNKNOWN_DISTRICT
+177669,7735293,sale,annaim,Annaim à Salé,UNKNOWN_DISTRICT
+177788,7736774,settat,ahbas,Ahbas à Settat,UNKNOWN_DISTRICT
+178147,7741490,fes,hay al wafaa,Hay Al Wafaa à Fès,UNKNOWN_DISTRICT
+178366,7744278,fes,hay essalam,Hay Essalam à Fès,UNKNOWN_DISTRICT
+178400,7745676,tetouan,ennakata,Ennakata à Tétouan,UNKNOWN_DISTRICT
+178853,7753094,settat,tahiri,Tahiri à Settat,UNKNOWN_DISTRICT
+179150,7756908,temara,masrou 1,Masrou 1 à Temara,UNKNOWN_DISTRICT
+179512,7761000,sale,annaim,Annaim à Salé,UNKNOWN_DISTRICT
+179942,7766029,fes,hay fadela,Hay Fadela à Fès,UNKNOWN_DISTRICT
+180106,7768394,temara,talaa,Talaa à Temara,UNKNOWN_DISTRICT
+180511,7773120,settat,hay mimouna,Hay Mimouna à Settat,UNKNOWN_DISTRICT
+180869,7778359,fes,hay palestine,Hay Palestine à Fès,UNKNOWN_DISTRICT
+180904,7778718,benslimane,hay al hassani,Hay al Hassani à Benslimane,UNKNOWN_DISTRICT
+181183,7782145,sale,annaim,Annaim à Salé,UNKNOWN_DISTRICT
+181640,7787088,ifrane,residence al arz,Résidence al arz à Ifrane,UNKNOWN_DISTRICT
+181660,7787347,settat,mania,Mania à Settat,UNKNOWN_DISTRICT
+181838,7789255,mohammedia,derb marrakech,Derb Marrakech à Mohammedia,UNKNOWN_DISTRICT
+182062,7791626,tetouan,boujdade,Boujdade à Tétouan,UNKNOWN_DISTRICT
+182421,7795208,sale,zone industrielle hay arrahma,Zone Industrielle Hay Arrahma à Salé,UNKNOWN_DISTRICT
+182452,7795435,casablanca,derb laadam,Derb Laâdam à Casablanca,UNKNOWN_DISTRICT
+182481,7795730,settat,ahbas,Ahbas à Settat,UNKNOWN_DISTRICT
+182697,7797655,casablanca,hay laalou,Hay Laalou à Casablanca,UNKNOWN_DISTRICT
+182742,7798076,ifrane,residence al arz,Résidence al arz à Ifrane,UNKNOWN_DISTRICT
+184112,7810977,ifrane,residence al arz,Résidence al arz à Ifrane,UNKNOWN_DISTRICT
+184621,7815177,fes,quartier ben slimane,Quartier Ben Slimane à Fès,UNKNOWN_DISTRICT
+184625,7815206,ifrane,residence al arz,Résidence al arz à Ifrane,UNKNOWN_DISTRICT
+184804,7816654,temara,derd bennaceur,Derd Bennaceur à Temara,UNKNOWN_DISTRICT
+184809,7816661,mohammedia,derb bouchman,Derb Bouchman à Mohammedia,UNKNOWN_DISTRICT
+184976,7818212,tanger,behair,Behair à Tanger,UNKNOWN_DISTRICT
+185132,7819467,ifrane,residence al arz,Résidence al arz à Ifrane,UNKNOWN_DISTRICT
+185274,7820548,safi,hay sanyat zine el abidine,Hay Sanyat Zine El Abidine à Safi,UNKNOWN_DISTRICT
+185740,7823797,ifrane,cite al alkhawaine,Cité al alkhawaine à Ifrane,UNKNOWN_DISTRICT
+185765,7823932,safi,jerifat,Jerifat à Safi,UNKNOWN_DISTRICT
+185818,7824325,ifrane,famille francaise,Famille-française à Ifrane,UNKNOWN_DISTRICT
+186130,7826369,safi,mouna,Mouna à Safi,UNKNOWN_DISTRICT
+186308,7827670,dakhla,laftihat,Laftihat à Dakhla,UNKNOWN_DISTRICT
+186335,7827838,ifrane,lotissement en phase d amenagement,Lotissement en phase d'amenagement à Ifrane,UNKNOWN_DISTRICT
