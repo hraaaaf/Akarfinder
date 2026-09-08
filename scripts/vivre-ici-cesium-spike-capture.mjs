@@ -73,6 +73,15 @@ try {
       return shell?.getAttribute('data-cesium-ready') === 'true'
         && shell?.getAttribute('data-cesium-render-state') === 'ready';
     }, null, { timeout: 30000 }).catch(() => {});
+
+    if (vp.width >= 1024) {
+      await page.waitForFunction(() => {
+        const shell = document.querySelector('[data-cesium-spike]');
+        const state = shell?.getAttribute('data-cesium-buildings-state');
+        return state === 'available' || state === 'unavailable';
+      }, null, { timeout: 15000 }).catch(() => {});
+    }
+
     await page.waitForTimeout(2500);
 
     const file = path.join(outDir, `cesium-maarif-${vp.name}.png`);
@@ -101,6 +110,8 @@ try {
     const boundaryState = await shellLocator.getAttribute('data-cesium-boundary-state');
     const contextState = await shellLocator.getAttribute('data-cesium-context-state');
     const anchorCount = Number(await shellLocator.getAttribute('data-cesium-anchor-count') ?? '0');
+    const dayModeState = await shellLocator.getAttribute('data-cesium-day-mode');
+    const buildingsState = await shellLocator.getAttribute('data-cesium-buildings-state');
     const requiredFailedResponses = failedResponses.filter((entry) => !/api\.cesium\.com\/v1\/assets\/96188\/endpoint/i.test(entry.url));
 
     results.push({
@@ -112,6 +123,8 @@ try {
       boundaryState,
       contextState,
       anchorCount,
+      dayModeState,
+      buildingsState,
       canvasCount,
       shell,
       mapScreenshotBytes: mapStat.size,
@@ -148,6 +161,8 @@ try {
     || r.canvasCount < 1
     || r.mapScreenshotBytes < minMapScreenshotBytes
     || r.requiredFailedResponses.length > 0
+    || (r.viewport.width >= 1024 && r.dayModeState !== 'true')
+    || (r.viewport.width >= 1024 && r.buildingsState !== 'available')
   )) process.exitCode = 2;
 } finally {
   await browser?.close();
