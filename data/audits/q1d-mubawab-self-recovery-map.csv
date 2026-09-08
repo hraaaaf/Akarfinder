@@ -1,0 +1,905 @@
+artifact_row_index,source_id,city,district,support,tier
+234771,8347297,mohammedia,la colline,22,SAFE_10
+236921,8371270,marrakech,massira 2,22,SAFE_10
+239354,8391780,marrakech,sidi abbad,22,SAFE_10
+213250,8134843,nador,selouane,21,SAFE_10
+223895,8258696,oujda,lazaret,21,SAFE_10
+236242,8365058,oujda,lazaret,21,SAFE_10
+237124,8372992,oujda,lazaret,21,SAFE_10
+241323,8404083,marrakech,massira 3,21,SAFE_10
+231129,8292294,essaouira,ghazoua,20,SAFE_10
+231597,8299740,essaouira,ghazoua,20,SAFE_10
+232378,8313540,essaouira,ghazoua,20,SAFE_10
+233653,8332079,oujda,agdal,20,SAFE_10
+237809,8379767,oujda,agdal,20,SAFE_10
+239894,8396009,oujda,agdal,20,SAFE_10
+240306,8398544,oujda,agdal,20,SAFE_10
+240383,8398970,oujda,agdal,20,SAFE_10
+240499,8399652,essaouira,ghazoua,20,SAFE_10
+240651,8400376,essaouira,ghazoua,20,SAFE_10
+241774,8406180,essaouira,ghazoua,20,SAFE_10
+242678,8409557,marrakech,el moukef,20,SAFE_10
+210718,8083399,tanger,mediouna,19,SAFE_10
+227810,8278550,tanger,mediouna,19,SAFE_10
+228456,8282018,casablanca,hay albaraka,19,SAFE_10
+234663,8345990,tanger,mediouna,19,SAFE_10
+235818,8360645,kenitra,ismalia,19,SAFE_10
+237778,8379485,tanger,jirrari,19,SAFE_10
+239360,8391843,casablanca,hay albaraka,19,SAFE_10
+241401,8404430,tanger,mediouna,19,SAFE_10
+223471,8256024,agadir,talborjt,18,SAFE_10
+235182,8352758,agadir,talborjt,18,SAFE_10
+237165,8373369,casablanca,hay lmkansa,18,SAFE_10
+238982,8389093,agadir,ben serguaou,18,SAFE_10
+241204,8403542,el jadida,sidi moussa,18,SAFE_10
+212755,8126799,f c3 a8s,fes city center,17,SAFE_10
+240532,8399797,t c3 a9touan,taboula,17,SAFE_10
+214194,8149875,marrakech,hay al massar,16,SAFE_10
+236264,8365307,marrakech,hay al massar,16,SAFE_10
+239576,8393444,marrakech,hay al massar,16,SAFE_10
+239921,8396195,marrakech,hay al massar,16,SAFE_10
+242048,8407319,casablanca,bournazil,16,SAFE_10
+214094,8147987,k c3 a9nitra,bir rami est,15,SAFE_10
+214702,8157847,nador,hay el matar,15,SAFE_10
+222524,8248498,rabat,el youssoufia,15,SAFE_10
+222674,8249744,nador,hay el matar,15,SAFE_10
+229995,8288500,sal c3 a9,bettana,15,SAFE_10
+230995,8291748,oujda,boustane,15,SAFE_10
+231624,8300083,k c3 a9nitra,bir rami est,15,SAFE_10
+232834,8320531,oujda,boustane,15,SAFE_10
+233027,8323597,f c3 a8s,zouagha bas,15,SAFE_10
+233468,8329455,k c3 a9nitra,bir rami est,15,SAFE_10
+233756,8333865,k c3 a9nitra,bir rami est,15,SAFE_10
+235334,8354945,agadir,charaf,15,SAFE_10
+235497,8357064,sal c3 a9,bettana,15,SAFE_10
+236016,8362886,k c3 a9nitra,bir rami est,15,SAFE_10
+236360,8366267,k c3 a9nitra,bir rami est,15,SAFE_10
+236707,8369306,k c3 a9nitra,bir rami est,15,SAFE_10
+237680,8378455,skhirat,imarat,15,SAFE_10
+237835,8379987,agadir,charaf,15,SAFE_10
+238860,8388192,tanger,mister khouch,15,SAFE_10
+239498,8392889,k c3 a9nitra,bir rami est,15,SAFE_10
+239578,8393456,agadir,extension dakhla,15,SAFE_10
+240436,8399328,safi,sidi bouzid,15,SAFE_10
+241205,8403543,agadir,charaf,15,SAFE_10
+242286,8408213,agadir,charaf,15,SAFE_10
+211901,8111477,marrakech,sidi ghanem,14,SAFE_10
+214406,8152991,marrakech,sidi ghanem,14,SAFE_10
+214407,8152992,marrakech,sidi ghanem,14,SAFE_10
+214596,8156002,marrakech,sidi ghanem,14,SAFE_10
+216912,8192203,f c3 a8s,route immouzer,14,SAFE_10
+222442,8247882,marrakech,sidi ghanem,14,SAFE_10
+228725,8283871,marrakech,sidi ghanem,14,SAFE_10
+232172,8309839,marrakech,sidi ghanem,14,SAFE_10
+232931,8322227,marrakech,jawhar,14,SAFE_10
+235067,8351213,marrakech,sidi ghanem,14,SAFE_10
+237456,8376270,marrakech,sidi ghanem,14,SAFE_10
+238784,8387392,marrakech,sidi ghanem,14,SAFE_10
+239807,8395287,marrakech,sidi ghanem,14,SAFE_10
+242070,8407373,marrakech,sidi ghanem,14,SAFE_10
+242576,8409239,marrakech,sidi ghanem,14,SAFE_10
+231146,8292374,essaouira,lahrarta,13,SAFE_10
+236632,8368599,essaouira,lahrarta,13,SAFE_10
+238545,8385601,agadir,amicales,13,SAFE_10
+238654,8386518,essaouira,route d agadir,13,SAFE_10
+240062,8397087,essaouira,route d agadir,13,SAFE_10
+240952,8402208,temara,massira 3,13,SAFE_10
+241456,8404662,tanger,el majd,13,SAFE_10
+213843,8144260,k c3 a9nitra,mimosas,12,SAFE_10
+227700,8277969,k c3 a9nitra,mimosas,12,SAFE_10
+232883,8321269,tanger,bir el ghazi,12,SAFE_10
+234124,8338905,marrakech,bab ighli,12,SAFE_10
+236538,8367878,el jadida,plateau,12,SAFE_10
+236866,8370789,marrakech,bab ighli,12,SAFE_10
+236872,8370821,k c3 a9nitra,mimosas,12,SAFE_10
+237111,8372935,oujda,les iris,12,SAFE_10
+238141,8382648,el jadida,plateau,12,SAFE_10
+240144,8397555,k c3 a9nitra,mimosas,12,SAFE_10
+241396,8404411,k c3 a9nitra,mimosas,12,SAFE_10
+219244,8220147,tanger,al mandar al jamil,11,SAFE_10
+220141,8228408,mohammedia,quartier du soleil,11,SAFE_10
+222643,8249459,nador,aarid,11,SAFE_10
+222753,8250393,nador,aarid,11,SAFE_10
+225866,8267358,f c3 a8s,hay al azhar,11,SAFE_10
+233236,8326774,el jadida,derb sid daoui,11,SAFE_10
+234557,8344621,oujda,riad isli,11,SAFE_10
+239954,8396321,f c3 a8s,hay al azhar,11,SAFE_10
+166305,6714004,f c3 a8s,route ain chkaf,10,SAFE_10
+167489,7291957,f c3 a8s,route ain chkaf,10,SAFE_10
+212756,8126802,f c3 a8s,route ain chkaf,10,SAFE_10
+215980,8177736,f c3 a8s,route ain chkaf,10,SAFE_10
+215986,8177774,f c3 a8s,route ain chkaf,10,SAFE_10
+218427,8212405,f c3 a8s,route ain chkaf,10,SAFE_10
+220432,8231247,f c3 a8s,route ain chkaf,10,SAFE_10
+227653,8277695,casablanca,hay palestine,10,SAFE_10
+229965,8288377,f c3 a8s,route ain chkaf,10,SAFE_10
+231856,8304629,f c3 a8s,route ain chkaf,10,SAFE_10
+233242,8326833,k c3 a9nitra,maamora,10,SAFE_10
+233306,8327552,casablanca,hay palestine,10,SAFE_10
+233453,8329304,f c3 a8s,route ain chkaf,10,SAFE_10
+233483,8329553,f c3 a8s,hay atlas,10,SAFE_10
+233739,8333626,f c3 a8s,route ain chkaf,10,SAFE_10
+233818,8334740,oujda,sidi yahya,10,SAFE_10
+234104,8338742,oujda,sidi yahya,10,SAFE_10
+234368,8342197,f c3 a8s,route ain chkaf,10,SAFE_10
+234437,8343122,k c3 a9nitra,maamora,10,SAFE_10
+234824,8347957,f c3 a8s,route ain chkaf,10,SAFE_10
+235565,8357905,f c3 a8s,route ain chkaf,10,SAFE_10
+237024,8372242,dakhla,ryad dakhla,10,SAFE_10
+237326,8375172,oujda,hay salam,10,SAFE_10
+237558,8377255,dakhla,ryad dakhla,10,SAFE_10
+237760,8379244,oujda,el qods,10,SAFE_10
+237932,8380810,dakhla,ryad dakhla,10,SAFE_10
+238212,8383165,oujda,el qods,10,SAFE_10
+238555,8385651,dakhla,ryad dakhla,10,SAFE_10
+239362,8391848,f c3 a8s,route ain chkaf,10,SAFE_10
+241028,8402625,agadir,hay qods,10,SAFE_10
+241342,8404213,el jadida,jawhara,10,SAFE_10
+242270,8408137,temara,val d or,10,SAFE_10
+167367,7268425,marrakech,gueliz,1250,SAFE_25
+203039,8018754,marrakech,gueliz,1250,SAFE_25
+211666,8106812,marrakech,gueliz,1250,SAFE_25
+213547,8139636,marrakech,gueliz,1250,SAFE_25
+221250,8237979,marrakech,gueliz,1250,SAFE_25
+232433,8314419,marrakech,gueliz,1250,SAFE_25
+233570,8330994,marrakech,gueliz,1250,SAFE_25
+233572,8331001,marrakech,gueliz,1250,SAFE_25
+233583,8331101,marrakech,gueliz,1250,SAFE_25
+233928,8336198,marrakech,gueliz,1250,SAFE_25
+234835,8348029,marrakech,gueliz,1250,SAFE_25
+234847,8348271,marrakech,gueliz,1250,SAFE_25
+235865,8361126,marrakech,gueliz,1250,SAFE_25
+236466,8367326,marrakech,gueliz,1250,SAFE_25
+236548,8367980,marrakech,gueliz,1250,SAFE_25
+237522,8376832,marrakech,gueliz,1250,SAFE_25
+237852,8380141,marrakech,gueliz,1250,SAFE_25
+238413,8384676,marrakech,gueliz,1250,SAFE_25
+238703,8386864,marrakech,gueliz,1250,SAFE_25
+238780,8387378,marrakech,gueliz,1250,SAFE_25
+240276,8398359,marrakech,gueliz,1250,SAFE_25
+240304,8398540,marrakech,gueliz,1250,SAFE_25
+241215,8403600,marrakech,gueliz,1250,SAFE_25
+242105,8407491,marrakech,gueliz,1250,SAFE_25
+242271,8408138,marrakech,gueliz,1250,SAFE_25
+242367,8408438,marrakech,gueliz,1250,SAFE_25
+234258,8340810,marrakech,route de l ourika,877,SAFE_25
+210643,8080409,casablanca,californie,735,SAFE_25
+214254,8150730,casablanca,californie,735,SAFE_25
+215532,8170898,casablanca,californie,735,SAFE_25
+222535,8248608,casablanca,californie,735,SAFE_25
+232127,8309123,casablanca,californie,735,SAFE_25
+232423,8314166,casablanca,californie,735,SAFE_25
+234698,8346526,casablanca,californie,735,SAFE_25
+234710,8346624,casablanca,californie,735,SAFE_25
+235143,8352209,casablanca,californie,735,SAFE_25
+235434,8356272,casablanca,californie,735,SAFE_25
+236026,8363047,casablanca,californie,735,SAFE_25
+236053,8363190,casablanca,californie,735,SAFE_25
+236582,8368153,casablanca,californie,735,SAFE_25
+236779,8369849,casablanca,californie,735,SAFE_25
+239094,8389868,casablanca,californie,735,SAFE_25
+240332,8398694,casablanca,californie,735,SAFE_25
+240778,8401189,casablanca,californie,735,SAFE_25
+240781,8401196,casablanca,californie,735,SAFE_25
+186055,7825881,casablanca,racine,596,SAFE_25
+186056,7825882,casablanca,racine,596,SAFE_25
+188986,7870459,casablanca,racine,596,SAFE_25
+193536,7922793,casablanca,racine,596,SAFE_25
+212365,8120231,casablanca,racine,596,SAFE_25
+212388,8120707,casablanca,racine,596,SAFE_25
+213603,8140634,casablanca,racine,596,SAFE_25
+215656,8173080,casablanca,racine,596,SAFE_25
+222936,8251853,casablanca,racine,596,SAFE_25
+227980,8279439,casablanca,racine,596,SAFE_25
+231432,8296597,casablanca,racine,596,SAFE_25
+232563,8316261,casablanca,racine,596,SAFE_25
+233503,8329871,casablanca,racine,596,SAFE_25
+235588,8358148,casablanca,racine,596,SAFE_25
+236251,8365155,casablanca,racine,596,SAFE_25
+236569,8368114,casablanca,racine,596,SAFE_25
+236571,8368117,casablanca,racine,596,SAFE_25
+237700,8378785,casablanca,racine,596,SAFE_25
+238282,8383621,casablanca,racine,596,SAFE_25
+238283,8383624,casablanca,racine,596,SAFE_25
+238285,8383632,casablanca,racine,596,SAFE_25
+238345,8384019,casablanca,racine,596,SAFE_25
+238723,8387000,casablanca,racine,596,SAFE_25
+240709,8400703,casablanca,racine,596,SAFE_25
+242875,8410111,casablanca,racine,596,SAFE_25
+213908,8145401,rabat,riyad,566,SAFE_25
+221692,8241733,rabat,riyad,566,SAFE_25
+229827,8287889,rabat,riyad,566,SAFE_25
+232776,8319550,rabat,riyad,566,SAFE_25
+234257,8340798,rabat,riyad,566,SAFE_25
+235126,8351976,rabat,riyad,566,SAFE_25
+237060,8372495,rabat,riyad,566,SAFE_25
+239110,8389936,rabat,riyad,566,SAFE_25
+239612,8393829,rabat,riyad,566,SAFE_25
+239945,8396277,rabat,riyad,566,SAFE_25
+239973,8396426,rabat,riyad,566,SAFE_25
+240633,8400273,rabat,riyad,566,SAFE_25
+241229,8403661,rabat,riyad,566,SAFE_25
+242053,8407331,rabat,riyad,566,SAFE_25
+242322,8408337,rabat,riyad,566,SAFE_25
+242917,8410207,rabat,riyad,566,SAFE_25
+171421,7629208,casablanca,sidi maarouf,518,SAFE_25
+173864,7678606,casablanca,sidi maarouf,518,SAFE_25
+229437,8286341,casablanca,sidi maarouf,518,SAFE_25
+231473,8297225,casablanca,sidi maarouf,518,SAFE_25
+232408,8313943,casablanca,sidi maarouf,518,SAFE_25
+233650,8332021,casablanca,sidi maarouf,518,SAFE_25
+234305,8341386,casablanca,sidi maarouf,518,SAFE_25
+234571,8344755,casablanca,sidi maarouf,518,SAFE_25
+234594,8345086,casablanca,sidi maarouf,518,SAFE_25
+234599,8345126,casablanca,sidi maarouf,518,SAFE_25
+234684,8346322,casablanca,sidi maarouf,518,SAFE_25
+236416,8366942,casablanca,sidi maarouf,518,SAFE_25
+236426,8367063,casablanca,sidi maarouf,518,SAFE_25
+237167,8373416,casablanca,sidi maarouf,518,SAFE_25
+237323,8375124,casablanca,sidi maarouf,518,SAFE_25
+237928,8380779,casablanca,sidi maarouf,518,SAFE_25
+238027,8381612,casablanca,sidi maarouf,518,SAFE_25
+238852,8388061,casablanca,sidi maarouf,518,SAFE_25
+238865,8388268,casablanca,sidi maarouf,518,SAFE_25
+239340,8391595,casablanca,sidi maarouf,518,SAFE_25
+241631,8405540,casablanca,sidi maarouf,518,SAFE_25
+232174,8309845,marrakech,agdal,514,SAFE_25
+233095,8324788,marrakech,agdal,514,SAFE_25
+238751,8387234,marrakech,hay targa,491,SAFE_25
+234453,8343409,marrakech,route de fez,469,SAFE_25
+237414,8375908,marrakech,route de fez,469,SAFE_25
+239728,8394688,marrakech,ennakhil palmeraie,469,SAFE_25
+166580,6899423,casablanca,ain diab,457,SAFE_25
+222956,8251980,casablanca,ain diab,457,SAFE_25
+233135,8325400,casablanca,ain diab,457,SAFE_25
+233515,8329969,casablanca,ain diab,457,SAFE_25
+233801,8334447,casablanca,ain diab,457,SAFE_25
+234582,8344874,casablanca,ain diab,457,SAFE_25
+236056,8363198,casablanca,ain diab,457,SAFE_25
+236247,8365114,casablanca,ain diab,457,SAFE_25
+236927,8371336,casablanca,ain diab,457,SAFE_25
+237062,8372555,casablanca,ain diab,457,SAFE_25
+237207,8373985,casablanca,ain diab,457,SAFE_25
+238225,8383218,casablanca,ain diab,457,SAFE_25
+238446,8384911,casablanca,ain diab,457,SAFE_25
+239440,8392463,casablanca,ain diab,457,SAFE_25
+240820,8401430,casablanca,ain diab,457,SAFE_25
+240827,8401476,casablanca,ain diab,457,SAFE_25
+240867,8401699,casablanca,ain diab,457,SAFE_25
+190714,7891715,casablanca,gauthier,422,SAFE_25
+205065,8036611,casablanca,gauthier,422,SAFE_25
+211480,8103542,casablanca,gauthier,422,SAFE_25
+212141,8115167,casablanca,gauthier,422,SAFE_25
+218041,8207717,casablanca,gauthier,422,SAFE_25
+218137,8208967,casablanca,gauthier,422,SAFE_25
+222197,8245862,casablanca,gauthier,422,SAFE_25
+230647,8290421,casablanca,gauthier,422,SAFE_25
+231450,8296878,casablanca,gauthier,422,SAFE_25
+233740,8333628,casablanca,gauthier,422,SAFE_25
+235695,8359286,casablanca,gauthier,422,SAFE_25
+235978,8362429,casablanca,gauthier,422,SAFE_25
+236386,8366554,casablanca,gauthier,422,SAFE_25
+236926,8371335,casablanca,gauthier,422,SAFE_25
+237358,8375453,casablanca,gauthier,422,SAFE_25
+240974,8402323,casablanca,gauthier,422,SAFE_25
+242739,8409787,casablanca,gauthier,422,SAFE_25
+210853,8087570,tanger,malabata,421,SAFE_25
+210986,8091851,tanger,malabata,421,SAFE_25
+218970,8217694,tanger,malabata,421,SAFE_25
+220140,8228404,tanger,malabata,421,SAFE_25
+223191,8253893,tanger,malabata,421,SAFE_25
+225629,8265783,tanger,malabata,421,SAFE_25
+228976,8284799,tanger,malabata,421,SAFE_25
+236646,8368752,tanger,malabata,421,SAFE_25
+239266,8390965,tanger,malabata,421,SAFE_25
+239367,8391900,tanger,malabata,421,SAFE_25
+240677,8400550,tanger,malabata,421,SAFE_25
+203093,8019304,casablanca,oulfa,409,SAFE_25
+215081,8163545,casablanca,oulfa,409,SAFE_25
+233274,8327181,casablanca,oulfa,409,SAFE_25
+233931,8336215,casablanca,oulfa,409,SAFE_25
+233937,8336435,casablanca,oulfa,409,SAFE_25
+236120,8363755,casablanca,oulfa,409,SAFE_25
+236238,8365006,casablanca,oulfa,409,SAFE_25
+238060,8381921,casablanca,oulfa,409,SAFE_25
+238326,8383886,casablanca,oulfa,409,SAFE_25
+239102,8389895,casablanca,oulfa,409,SAFE_25
+240286,8398404,casablanca,oulfa,409,SAFE_25
+241183,8403449,casablanca,oulfa,409,SAFE_25
+241954,8406914,casablanca,oulfa,409,SAFE_25
+242293,8408237,casablanca,oulfa,409,SAFE_25
+242778,8409894,casablanca,oulfa,409,SAFE_25
+242795,8409944,casablanca,oulfa,409,SAFE_25
+213158,8133460,casablanca,bourgogne ouest,380,SAFE_25
+233727,8333399,casablanca,bourgogne ouest,380,SAFE_25
+235468,8356755,casablanca,bourgogne ouest,380,SAFE_25
+187790,7855161,casablanca,ain sebaa,344,SAFE_25
+210744,8084247,casablanca,ain sebaa,344,SAFE_25
+216485,8185991,casablanca,ain sebaa,344,SAFE_25
+222682,8249797,casablanca,ain sebaa,344,SAFE_25
+231750,8302607,casablanca,ain sebaa,344,SAFE_25
+232406,8313925,casablanca,ain sebaa,344,SAFE_25
+234700,8346529,casablanca,ain sebaa,344,SAFE_25
+236587,8368172,casablanca,ain sebaa,344,SAFE_25
+239215,8390628,casablanca,ain sebaa,344,SAFE_25
+239456,8392559,casablanca,ain sebaa,344,SAFE_25
+239811,8395313,casablanca,ain sebaa,344,SAFE_25
+240985,8402371,casablanca,ain sebaa,344,SAFE_25
+241133,8403183,casablanca,ain sebaa,344,SAFE_25
+186818,7835574,casablanca,palmier,340,SAFE_25
+217577,8201509,casablanca,palmier,340,SAFE_25
+235285,8354284,casablanca,palmier,340,SAFE_25
+240914,8401927,casablanca,palmier,340,SAFE_25
+242664,8409511,casablanca,palmier,340,SAFE_25
+166214,6160209,casablanca,oasis,332,SAFE_25
+166460,6881033,casablanca,oasis,332,SAFE_25
+166463,6881183,casablanca,oasis,332,SAFE_25
+197263,7963753,casablanca,oasis,332,SAFE_25
+215157,8164772,casablanca,oasis,332,SAFE_25
+221315,8238516,casablanca,les princesses,332,SAFE_25
+222492,8248265,casablanca,oasis,332,SAFE_25
+223862,8258423,casablanca,oasis,332,SAFE_25
+233760,8333896,casablanca,oasis,332,SAFE_25
+234355,8342008,casablanca,les princesses,332,SAFE_25
+235636,8358574,casablanca,oasis,332,SAFE_25
+236333,8365974,casablanca,oasis,332,SAFE_25
+236358,8366247,casablanca,oasis,332,SAFE_25
+236745,8369590,casablanca,oasis,332,SAFE_25
+237391,8375733,casablanca,les princesses,332,SAFE_25
+237871,8380284,casablanca,oasis,332,SAFE_25
+237988,8381269,casablanca,oasis,332,SAFE_25
+238743,8387186,casablanca,oasis,332,SAFE_25
+239451,8392533,casablanca,oasis,332,SAFE_25
+241084,8402905,casablanca,oasis,332,SAFE_25
+241088,8402924,casablanca,oasis,332,SAFE_25
+241374,8404335,casablanca,oasis,332,SAFE_25
+241482,8404850,casablanca,oasis,332,SAFE_25
+242024,8407222,casablanca,les princesses,332,SAFE_25
+242084,8407412,casablanca,oasis,332,SAFE_25
+242097,8407450,casablanca,oasis,332,SAFE_25
+242233,8408029,casablanca,oasis,332,SAFE_25
+214559,8155604,casablanca,maarif,326,SAFE_25
+218157,8209352,casablanca,maarif,326,SAFE_25
+219258,8220308,casablanca,maarif,326,SAFE_25
+223368,8255339,casablanca,maarif,326,SAFE_25
+232080,8308232,casablanca,maarif,326,SAFE_25
+236318,8365853,casablanca,maarif,326,SAFE_25
+174627,7692013,rabat,agdal,313,SAFE_25
+176134,7713455,rabat,agdal,313,SAFE_25
+186144,7826500,rabat,agdal,313,SAFE_25
+195363,7943233,rabat,agdal,313,SAFE_25
+207990,8059180,rabat,agdal,313,SAFE_25
+212834,8128439,rabat,agdal,313,SAFE_25
+214060,8147529,rabat,agdal,313,SAFE_25
+216326,8183366,rabat,agdal,313,SAFE_25
+220527,8232071,rabat,agdal,313,SAFE_25
+221010,8236085,rabat,agdal,313,SAFE_25
+221222,8237768,rabat,agdal,313,SAFE_25
+222177,8245575,rabat,agdal,313,SAFE_25
+222495,8248330,rabat,agdal,313,SAFE_25
+223208,8254007,rabat,agdal,313,SAFE_25
+225075,8263366,rabat,agdal,313,SAFE_25
+225727,8266416,rabat,agdal,313,SAFE_25
+229444,8286360,rabat,agdal,313,SAFE_25
+231052,8291995,rabat,agdal,313,SAFE_25
+231390,8295728,rabat,agdal,313,SAFE_25
+231762,8303000,rabat,agdal,313,SAFE_25
+232246,8311248,rabat,agdal,313,SAFE_25
+232377,8313516,rabat,agdal,313,SAFE_25
+232426,8314243,rabat,agdal,313,SAFE_25
+232656,8317662,rabat,agdal,313,SAFE_25
+233024,8323515,rabat,agdal,313,SAFE_25
+233047,8324165,rabat,agdal,313,SAFE_25
+233331,8327887,rabat,agdal,313,SAFE_25
+233425,8328989,rabat,agdal,313,SAFE_25
+233511,8329946,rabat,agdal,313,SAFE_25
+233683,8332615,rabat,agdal,313,SAFE_25
+233688,8332692,rabat,agdal,313,SAFE_25
+234020,8337488,rabat,agdal,313,SAFE_25
+236022,8362998,rabat,agdal,313,SAFE_25
+236023,8362999,rabat,agdal,313,SAFE_25
+236605,8368291,rabat,agdal,313,SAFE_25
+237331,8375222,rabat,agdal,313,SAFE_25
+238391,8384489,rabat,agdal,313,SAFE_25
+238392,8384492,rabat,agdal,313,SAFE_25
+239100,8389887,rabat,agdal,313,SAFE_25
+239249,8390863,rabat,agdal,313,SAFE_25
+239406,8392179,rabat,agdal,313,SAFE_25
+240212,8397988,rabat,agdal,313,SAFE_25
+240706,8400699,rabat,agdal,313,SAFE_25
+240721,8400800,rabat,agdal,313,SAFE_25
+241440,8404574,rabat,agdal,313,SAFE_25
+241940,8406866,rabat,agdal,313,SAFE_25
+242085,8407413,rabat,agdal,313,SAFE_25
+242229,8408016,rabat,agdal,313,SAFE_25
+242751,8409812,rabat,agdal,313,SAFE_25
+242894,8410160,rabat,agdal,313,SAFE_25
+242900,8410175,rabat,agdal,313,SAFE_25
+218009,8207244,casablanca,belvedere,301,SAFE_25
+234812,8347791,casablanca,belvedere,301,SAFE_25
+231933,8305614,marrakech,route de ouarzazate,289,SAFE_25
+236297,8365618,marrakech,route de ouarzazate,289,SAFE_25
+232097,8308583,marrakech,hivernage,273,SAFE_25
+218430,8212439,marrakech,mhamid,253,SAFE_25
+226617,8272015,marrakech,mhamid,253,SAFE_25
+232340,8312957,marrakech,mhamid,253,SAFE_25
+232764,8319433,marrakech,mhamid,253,SAFE_25
+233186,8325959,marrakech,mhamid,253,SAFE_25
+233290,8327307,marrakech,mhamid,253,SAFE_25
+236078,8363348,marrakech,mhamid,253,SAFE_25
+237902,8380473,marrakech,mhamid,253,SAFE_25
+238340,8384000,marrakech,mhamid,253,SAFE_25
+240006,8396637,marrakech,mhamid,253,SAFE_25
+237550,8377173,casablanca,cil hay salam,225,SAFE_25
+225084,8263418,marrakech,amelkis,224,SAFE_25
+219450,8222250,tanger,tanja balia,220,SAFE_25
+226125,8268929,tanger,tanja balia,220,SAFE_25
+226938,8273853,tanger,tanja balia,220,SAFE_25
+234798,8347601,tanger,tanja balia,220,SAFE_25
+235722,8359584,tanger,tanja balia,220,SAFE_25
+240619,8400179,tanger,tanja balia,220,SAFE_25
+240988,8402399,tanger,tanja balia,220,SAFE_25
+223727,8257732,casablanca,casablanca finance city,208,SAFE_25
+236570,8368116,casablanca,casablanca finance city,208,SAFE_25
+242433,8408662,casablanca,casablanca finance city,208,SAFE_25
+166612,6914700,casablanca,roches noires,198,SAFE_25
+221177,8237365,casablanca,roches noires,198,SAFE_25
+223901,8258725,casablanca,roches noires,198,SAFE_25
+232463,8314755,casablanca,roches noires,198,SAFE_25
+233530,8330285,casablanca,roches noires,198,SAFE_25
+233813,8334673,casablanca,roches noires,198,SAFE_25
+235002,8350362,casablanca,roches noires,198,SAFE_25
+236428,8367074,casablanca,roches noires,198,SAFE_25
+236470,8367382,casablanca,roches noires,198,SAFE_25
+236562,8368094,casablanca,roches noires,198,SAFE_25
+236564,8368099,casablanca,roches noires,198,SAFE_25
+236599,8368238,casablanca,roches noires,198,SAFE_25
+238026,8381593,casablanca,roches noires,198,SAFE_25
+238661,8386588,casablanca,roches noires,198,SAFE_25
+240789,8401238,casablanca,roches noires,198,SAFE_25
+241223,8403633,casablanca,roches noires,198,SAFE_25
+242501,8409000,casablanca,roches noires,198,SAFE_25
+242394,8408536,casablanca,val fleury,190,SAFE_25
+213607,8140790,casablanca,ferme bretonne hay arraha,189,SAFE_25
+236879,8370910,agadir,hay mohammadi,183,SAFE_25
+238655,8386527,agadir,hay mohammadi,183,SAFE_25
+227228,8275513,tanger,marjane,165,SAFE_25
+227937,8279201,tanger,marjane,165,SAFE_25
+234272,8340998,tanger,marjane,165,SAFE_25
+235289,8354298,tanger,marjane,165,SAFE_25
+214490,8154570,casablanca,bourgogne est,157,SAFE_25
+235157,8352358,marrakech,majorelle,157,SAFE_25
+236176,8364383,marrakech,majorelle,157,SAFE_25
+239725,8394673,marrakech,majorelle,157,SAFE_25
+239822,8395381,marrakech,majorelle,157,SAFE_25
+242223,8408003,marrakech,majorelle,157,SAFE_25
+242391,8408531,marrakech,majorelle,157,SAFE_25
+203493,8022885,meknes,hamria,152,SAFE_25
+218357,8211611,meknes,hamria,152,SAFE_25
+222314,8246842,meknes,hamria,152,SAFE_25
+222634,8249404,meknes,hamria,152,SAFE_25
+226593,8271911,meknes,hamria,152,SAFE_25
+231656,8300759,meknes,hamria,152,SAFE_25
+231796,8303478,meknes,hamria,152,SAFE_25
+233283,8327262,meknes,hamria,152,SAFE_25
+234945,8349603,meknes,hamria,152,SAFE_25
+235386,8355597,meknes,hamria,152,SAFE_25
+235822,8360670,meknes,hamria,152,SAFE_25
+236043,8363138,meknes,hamria,152,SAFE_25
+236046,8363148,meknes,hamria,152,SAFE_25
+236066,8363238,meknes,hamria,152,SAFE_25
+236090,8363466,meknes,hamria,152,SAFE_25
+236109,8363642,meknes,hamria,152,SAFE_25
+237063,8372563,meknes,hamria,152,SAFE_25
+237249,8374491,meknes,hamria,152,SAFE_25
+237328,8375206,meknes,hamria,152,SAFE_25
+237685,8378476,meknes,hamria,152,SAFE_25
+237886,8380395,meknes,hamria,152,SAFE_25
+238069,8381984,meknes,hamria,152,SAFE_25
+241184,8403455,meknes,hamria,152,SAFE_25
+241754,8406099,meknes,hamria,152,SAFE_25
+241887,8406631,meknes,hamria,152,SAFE_25
+211489,8103761,meknes,marjane,146,SAFE_25
+212171,8115553,meknes,marjane,146,SAFE_25
+231494,8297718,meknes,marjane,146,SAFE_25
+233478,8329517,meknes,marjane,146,SAFE_25
+240099,8397245,meknes,marjane,146,SAFE_25
+240191,8397837,meknes,marjane,146,SAFE_25
+237333,8375244,casablanca,triangle d or,142,SAFE_25
+218781,8215903,marrakech,samlalia,132,SAFE_25
+241582,8405333,casablanca,al qods,132,SAFE_25
+210825,8086559,marrakech,boulevard med 6,124,SAFE_25
+208810,8065383,temara,wifak,121,SAFE_25
+216921,8192326,temara,wifak,121,SAFE_25
+217936,8206523,temara,wifak,121,SAFE_25
+218889,8216940,temara,wifak,121,SAFE_25
+225412,8264629,temara,wifak,121,SAFE_25
+226242,8269656,temara,wifak,121,SAFE_25
+230649,8290428,temara,wifak,121,SAFE_25
+231292,8293260,temara,wifak,121,SAFE_25
+232309,8312352,temara,wifak,121,SAFE_25
+232435,8314451,temara,wifak,121,SAFE_25
+234140,8339197,temara,wifak,121,SAFE_25
+237199,8373833,temara,wifak,121,SAFE_25
+239114,8389949,temara,wifak,121,SAFE_25
+239188,8390482,temara,wifak,121,SAFE_25
+241361,8404281,temara,wifak,121,SAFE_25
+232761,8319410,rabat,hassan centre ville,119,SAFE_25
+233798,8334413,rabat,hassan centre ville,119,SAFE_25
+234924,8349429,rabat,hassan centre ville,119,SAFE_25
+235193,8352991,rabat,hassan centre ville,119,SAFE_25
+237353,8375433,rabat,hassan centre ville,119,SAFE_25
+237859,8380160,rabat,hassan centre ville,119,SAFE_25
+242187,8407827,rabat,hassan centre ville,119,SAFE_25
+218719,8215193,bouznika,plage oued cherrat,118,SAFE_25
+219338,8221105,bouznika,plage oued cherrat,118,SAFE_25
+242083,8407411,bouznika,plage oued cherrat,118,SAFE_25
+240317,8398599,casablanca,hay hassani,116,SAFE_25
+242856,8410071,casablanca,hay hassani,116,SAFE_25
+235046,8350974,marrakech,camp al ghoul,112,SAFE_25
+166517,6885142,casablanca,lissasfa,104,SAFE_25
+199978,7990922,casablanca,lissasfa,104,SAFE_25
+228565,8283084,casablanca,lissasfa,104,SAFE_25
+236509,8367602,casablanca,lissasfa,104,SAFE_25
+239322,8391418,casablanca,lissasfa,104,SAFE_25
+240884,8401790,casablanca,lissasfa,104,SAFE_25
+241566,8405207,casablanca,lissasfa,104,SAFE_25
+241556,8405172,tanger,manar,103,SAFE_25
+212535,8123289,casablanca,centre ville,100,SAFE_25
+215578,8171835,casablanca,centre ville,100,SAFE_25
+223762,8257870,casablanca,centre ville,100,SAFE_25
+229204,8285641,casablanca,centre ville,100,SAFE_25
+229207,8285651,casablanca,centre ville,100,SAFE_25
+229210,8285661,casablanca,centre ville,100,SAFE_25
+232155,8309501,casablanca,laymoune,100,SAFE_25
+233212,8326330,casablanca,laymoune,100,SAFE_25
+235701,8359379,casablanca,laymoune,100,SAFE_25
+236325,8365908,casablanca,laymoune,100,SAFE_25
+238132,8382574,casablanca,laymoune,100,SAFE_25
+238262,8383430,casablanca,laymoune,100,SAFE_25
+231963,8306293,marrakech,izdihar,97,SAFE_25
+235183,8352772,marrakech,izdihar,97,SAFE_25
+235989,8362533,marrakech,izdihar,97,SAFE_25
+236417,8366947,marrakech,izdihar,97,SAFE_25
+236801,8370086,marrakech,izdihar,97,SAFE_25
+237287,8374850,marrakech,izdihar,97,SAFE_25
+237620,8377814,marrakech,izdihar,97,SAFE_25
+237985,8381210,marrakech,izdihar,97,SAFE_25
+239776,8395105,marrakech,izdihar,97,SAFE_25
+241364,8404291,marrakech,izdihar,97,SAFE_25
+241968,8406960,marrakech,izdihar,97,SAFE_25
+216661,8188759,agadir,founti,96,SAFE_25
+239886,8395878,agadir,founti,96,SAFE_25
+242276,8408155,tanger,ahlane,96,SAFE_25
+242753,8409818,marrakech,riad zitoun,96,SAFE_25
+222357,8247265,marrakech,hay mabrouka,95,SAFE_25
+210096,8074694,marrakech,les portes de marrakech,94,SAFE_25
+227738,8278186,marrakech,les portes de marrakech,94,SAFE_25
+236124,8363784,marrakech,les portes de marrakech,94,SAFE_25
+237547,8377154,marrakech,les portes de marrakech,94,SAFE_25
+239659,8394128,marrakech,les portes de marrakech,94,SAFE_25
+205396,8039222,temara,harhoura,92,SAFE_25
+214682,8157381,temara,harhoura,92,SAFE_25
+219551,8223051,temara,harhoura,92,SAFE_25
+230321,8289510,temara,harhoura,92,SAFE_25
+231337,8294319,temara,harhoura,92,SAFE_25
+231420,8296519,temara,harhoura,92,SAFE_25
+232075,8308140,tanger,hay hassani,92,SAFE_25
+232494,8315256,temara,harhoura,92,SAFE_25
+233421,8328964,temara,harhoura,92,SAFE_25
+233479,8329520,temara,harhoura,92,SAFE_25
+234621,8345424,temara,harhoura,92,SAFE_25
+234890,8349014,temara,harhoura,92,SAFE_25
+236391,8366599,temara,harhoura,92,SAFE_25
+238337,8383984,temara,harhoura,92,SAFE_25
+239307,8391265,tanger,hay hassani,92,SAFE_25
+241080,8402892,temara,harhoura,92,SAFE_25
+212140,8115147,casablanca,ain borja,88,SAFE_25
+223801,8258103,casablanca,ain borja,88,SAFE_25
+231290,8293225,temara,centre ville,88,SAFE_25
+231444,8296757,casablanca,ain borja,88,SAFE_25
+234537,8344380,casablanca,ain borja,88,SAFE_25
+236222,8364859,temara,centre ville,88,SAFE_25
+237239,8374396,temara,centre ville,88,SAFE_25
+236276,8365425,casablanca,mandarona,87,SAFE_25
+212625,8124834,tanger,tanger city center,86,SAFE_25
+223087,8252965,tanger,tanger city center,86,SAFE_25
+233852,8335148,tanger,tanger city center,86,SAFE_25
+234581,8344842,tanger,tanger city center,86,SAFE_25
+235835,8360828,tanger,tanger city center,86,SAFE_25
+238061,8381933,tanger,tanger city center,86,SAFE_25
+240918,8401983,tanger,tanger city center,86,SAFE_25
+169044,7494013,el jadida,centre ville,83,SAFE_25
+218855,8216643,el jadida,centre ville,83,SAFE_25
+222210,8245941,el jadida,centre ville,83,SAFE_25
+232201,8310266,el jadida,centre ville,83,SAFE_25
+233261,8326982,el jadida,centre ville,83,SAFE_25
+234809,8347741,el jadida,centre ville,83,SAFE_25
+214979,8162095,tanger,jbel kbir,80,SAFE_25
+221736,8242092,tanger,jbel kbir,80,SAFE_25
+225870,8267381,tanger,jbel kbir,80,SAFE_25
+229422,8286296,tanger,jbel kbir,80,SAFE_25
+232284,8311887,tanger,jbel kbir,80,SAFE_25
+235278,8354195,tanger,jbel kbir,80,SAFE_25
+236951,8371599,tanger,jbel kbir,80,SAFE_25
+238031,8381651,tanger,jbel kbir,80,SAFE_25
+238122,8382493,tanger,jbel kbir,80,SAFE_25
+239024,8389395,tanger,jbel kbir,80,SAFE_25
+239257,8390933,tanger,mghogha,80,SAFE_25
+241059,8402741,tanger,jbel kbir,80,SAFE_25
+241986,8407030,tanger,mghogha,80,SAFE_25
+242003,8407105,tanger,jbel kbir,80,SAFE_25
+242318,8408328,tanger,jbel kbir,80,SAFE_25
+212751,8126718,mohammedia,quartier du parc,79,SAFE_25
+224073,8259954,mohammedia,quartier du parc,79,SAFE_25
+240019,8396750,mohammedia,quartier du parc,79,SAFE_25
+169499,7543440,oujda,centre ville,77,SAFE_25
+177750,7736313,oujda,centre ville,77,SAFE_25
+222109,8245151,oujda,centre ville,77,SAFE_25
+226243,8269659,oujda,centre ville,77,SAFE_25
+231695,8301607,oujda,centre ville,77,SAFE_25
+215856,8176283,tanger,castilla,76,SAFE_25
+216550,8186839,casablanca,riviera,76,SAFE_25
+221991,8244031,casablanca,riviera,76,SAFE_25
+231315,8293819,casablanca,franceville,76,SAFE_25
+233554,8330775,tanger,castilla,76,SAFE_25
+234815,8347840,casablanca,riviera,76,SAFE_25
+238165,8382849,casablanca,franceville,76,SAFE_25
+238716,8386925,casablanca,riviera,76,SAFE_25
+241832,8406445,tanger,castilla,76,SAFE_25
+220597,8232632,bouznika,al kawtar,71,SAFE_25
+237386,8375697,agadir,hay houda,65,SAFE_25
+242843,8410043,marrakech,ben saleh,65,SAFE_25
+232011,8307016,marrakech,daoudiat,64,SAFE_25
+232113,8308783,marrakech,daoudiat,64,SAFE_25
+233185,8325954,marrakech,daoudiat,64,SAFE_25
+235107,8351711,agadir,hay salam,64,SAFE_25
+235702,8359385,tanger,sania,64,SAFE_25
+237804,8379725,tanger,mozart,64,SAFE_25
+239211,8390620,tanger,aouama gharbia,64,SAFE_25
+239276,8391061,tanger,mozart,64,SAFE_25
+239743,8394807,casablanca,hermitage,63,SAFE_25
+241296,8403974,casablanca,hermitage,63,SAFE_25
+214910,8161008,mohammedia,la siesta,62,SAFE_25
+215441,8169135,mohammedia,la siesta,62,SAFE_25
+235410,8355945,rabat,l ocean,61,SAFE_25
+230273,8289316,casablanca,almaz,59,SAFE_25
+232565,8316272,casablanca,almaz,59,SAFE_25
+232853,8320734,casablanca,almaz,59,SAFE_25
+237914,8380678,marrakech,mouassine,59,SAFE_25
+241083,8402903,casablanca,almaz,59,SAFE_25
+211028,8093084,agadir,hay dakhla,57,SAFE_25
+214607,8156216,agadir,hay dakhla,57,SAFE_25
+236414,8366895,agadir,hay dakhla,57,SAFE_25
+237059,8372489,agadir,hay dakhla,57,SAFE_25
+237374,8375596,meknes,al bassatine,56,SAFE_25
+239426,8392282,meknes,al bassatine,56,SAFE_25
+237967,8381065,marrakech,ain mezouar,54,SAFE_25
+239062,8389645,marrakech,ain mezouar,54,SAFE_25
+239481,8392716,marrakech,moulay lyazid,54,SAFE_25
+242405,8408560,marrakech,ain mezouar,54,SAFE_25
+187435,7850582,marrakech,bouaakkaz,53,SAFE_25
+242016,8407155,marrakech,bouaakkaz,53,SAFE_25
+242180,8407808,meknes,wislane,53,SAFE_25
+231335,8294299,mohammedia,al aalia,51,SAFE_25
+233033,8323756,mohammedia,al aalia,51,SAFE_25
+233977,8336864,marrakech,massira 1,51,SAFE_25
+239070,8389710,marrakech,massira 1,51,SAFE_25
+231857,8304652,marrakech,amerchich,50,SAFE_25
+232373,8313443,casablanca,benjdia,50,SAFE_25
+232887,8321294,marrakech,amerchich,50,SAFE_25
+233723,8333350,marrakech,amerchich,50,SAFE_25
+240909,8401911,marrakech,amerchich,50,SAFE_25
+235958,8362192,el jadida,hay essalam,49,SAFE_25
+231859,8304660,rabat,guich oudaya,48,SAFE_25
+236702,8369265,benslimane,golf de benslimane,48,SAFE_25
+231747,8302590,agadir,haut founty,47,SAFE_25
+242644,8409469,agadir,haut founty,47,SAFE_25
+242752,8409816,marrakech,sidi mimoun,47,SAFE_25
+232977,8322908,el jadida,corniche,46,SAFE_25
+234344,8341785,marrakech,sidi youssef,46,SAFE_25
+217584,8201682,marrakech,bab ghmat,45,SAFE_25
+227133,8274976,el jadida,al boustane,44,SAFE_25
+233766,8333973,el jadida,al boustane,44,SAFE_25
+225399,8264569,rabat,hay nahda,43,SAFE_25
+231363,8295227,rabat,hay nahda,43,SAFE_25
+231986,8306752,marrakech,assouel,43,SAFE_25
+233139,8325457,rabat,hay nahda,43,SAFE_25
+237305,8374994,rabat,hay nahda,43,SAFE_25
+237697,8378779,rabat,hay nahda,43,SAFE_25
+237699,8378782,rabat,hay nahda,43,SAFE_25
+238678,8386732,rabat,hay nahda,43,SAFE_25
+241822,8406422,rabat,hay nahda,43,SAFE_25
+236461,8367288,tanger,branes 2,42,SAFE_25
+240464,8399511,casablanca,beausite,41,SAFE_25
+207161,8051987,marrakech,azzouzia,40,SAFE_25
+213853,8144340,marrakech,azzouzia,40,SAFE_25
+229556,8286798,marrakech,azzouzia,40,SAFE_25
+232261,8311439,marrakech,azzouzia,40,SAFE_25
+236938,8371410,marrakech,azzouzia,40,SAFE_25
+237006,8371978,marrakech,azzouzia,40,SAFE_25
+238381,8384374,marrakech,azzouzia,40,SAFE_25
+238919,8388674,marrakech,azzouzia,40,SAFE_25
+239090,8389861,marrakech,azzouzia,40,SAFE_25
+242215,8407953,marrakech,azzouzia,40,SAFE_25
+239653,8394094,casablanca,sidi belyout,39,SAFE_25
+231035,8291952,rabat,diour jamaa,38,SAFE_25
+236240,8365014,fes,route immouzer,38,SAFE_25
+238203,8383112,rabat,diour jamaa,38,SAFE_25
+242244,8408068,rabat,diour jamaa,38,SAFE_25
+238246,8383299,essaouira,essaouira el jadida,37,SAFE_25
+239717,8394625,mohammedia,mannesmann,37,SAFE_25
+241393,8404401,mohammedia,mannesmann,37,SAFE_25
+235043,8350960,sal c3 a9,sala el jadida,36,SAFE_25
+236758,8369645,sal c3 a9,sala el jadida,36,SAFE_25
+237272,8374705,sal c3 a9,sala el jadida,36,SAFE_25
+208283,8061618,k c3 a9nitra,la ville haute,35,SAFE_25
+226634,8272128,k c3 a9nitra,la ville haute,35,SAFE_25
+237672,8378278,temara,riad oulad mtaa,35,SAFE_25
+238910,8388634,temara,riad oulad mtaa,35,SAFE_25
+240459,8399453,k c3 a9nitra,la ville haute,35,SAFE_25
+241484,8404858,casablanca,tantonville,33,SAFE_25
+242196,8407858,casablanca,tantonville,33,SAFE_25
+231813,8303853,k c3 a9nitra,el hadadda,32,SAFE_25
+232142,8309323,k c3 a9nitra,el hadadda,32,SAFE_25
+232472,8314888,marrakech,assif,32,SAFE_25
+233775,8334092,k c3 a9nitra,el hadadda,32,SAFE_25
+234548,8344535,k c3 a9nitra,el hadadda,32,SAFE_25
+237122,8372986,k c3 a9nitra,el hadadda,32,SAFE_25
+241562,8405195,marrakech,assif,32,SAFE_25
+241711,8405902,marrakech,assif,32,SAFE_25
+212401,8120891,casablanca,moulay youssef,31,SAFE_25
+216010,8178199,bouznika,quartier industriel,31,SAFE_25
+218451,8212619,casablanca,moulay youssef,31,SAFE_25
+236105,8363577,marrakech,riad al atlas,31,SAFE_25
+232073,8308062,essaouira,route de marrakech,29,SAFE_25
+242849,8410054,marrakech,issil,29,SAFE_25
+170066,7593667,temara,skikina,28,SAFE_25
+220511,8231923,t c3 a9touan,route de ceuta,28,SAFE_25
+226493,8271301,agadir,illigh,28,SAFE_25
+231397,8295919,t c3 a9touan,route de ceuta,28,SAFE_25
+233584,8331148,t c3 a9touan,route de ceuta,28,SAFE_25
+234129,8338960,temara,skikina,28,SAFE_25
+236662,8368995,temara,skikina,28,SAFE_25
+237291,8374906,temara,massira 1,28,SAFE_25
+237826,8379879,essaouira,centre ville,28,SAFE_25
+238530,8385514,temara,skikina,28,SAFE_25
+238906,8388576,temara,skikina,28,SAFE_25
+239170,8390360,agadir,illigh,28,SAFE_25
+239318,8391342,essaouira,centre ville,28,SAFE_25
+241458,8404675,essaouira,centre ville,28,SAFE_25
+241797,8406314,temara,massira 1,28,SAFE_25
+242176,8407792,essaouira,centre ville,28,SAFE_25
+213748,8142868,tanger,drissia,27,SAFE_25
+218355,8211609,f c3 a8s,narjis,27,SAFE_25
+220961,8235675,tanger,drissia,27,SAFE_25
+222914,8251673,f c3 a8s,narjis,27,SAFE_25
+223196,8253922,f c3 a8s,narjis,27,SAFE_25
+231327,8294186,temara,massira 2,27,SAFE_25
+233341,8327979,f c3 a8s,narjis,27,SAFE_25
+234906,8349224,f c3 a8s,narjis,27,SAFE_25
+235663,8358904,f c3 a8s,narjis,27,SAFE_25
+236554,8368058,temara,massira 2,27,SAFE_25
+220604,8232688,casablanca,derb omar,26,SAFE_25
+231342,8294404,temara,abbadi,25,SAFE_25
+235737,8359679,temara,abbadi,25,SAFE_25
+241319,8404074,essaouira,route de safi,25,SAFE_25
+241885,8406629,essaouira,route de safi,25,SAFE_25
+214283,8151131,settat,smaala,9,SAFE_5
+219375,8221459,settat,smaala,9,SAFE_5
+221543,8240367,tanger,cap spartel,9,SAFE_5
+229236,8285729,tanger,cap spartel,9,SAFE_5
+231594,8299692,ifrane,atlas,9,SAFE_5
+232083,8308345,meknes,plaisance,9,SAFE_5
+232804,8320049,rabat,quartier administratif,9,SAFE_5
+234331,8341667,meknes,plaisance,9,SAFE_5
+237191,8373786,rabat,quartier administratif,9,SAFE_5
+239715,8394620,agadir,siusse,9,SAFE_5
+188914,7869477,rabat,hay riad,8,SAFE_5
+201228,8002941,rabat,hay riad,8,SAFE_5
+211059,8094114,rabat,hay riad,8,SAFE_5
+212491,8122518,rabat,hay riad,8,SAFE_5
+218847,8216562,rabat,hay riad,8,SAFE_5
+219818,8225477,rabat,hay riad,8,SAFE_5
+220229,8229293,rabat,hay riad,8,SAFE_5
+221720,8242003,rabat,hay riad,8,SAFE_5
+225993,8268217,rabat,hay riad,8,SAFE_5
+227148,8275071,rabat,hay riad,8,SAFE_5
+227155,8275109,rabat,hay riad,8,SAFE_5
+231646,8300563,rabat,hay riad,8,SAFE_5
+232137,8309268,essaouira,douar laarab,8,SAFE_5
+232564,8316269,rabat,hay riad,8,SAFE_5
+232617,8317138,essaouira,sidi kaouki,8,SAFE_5
+232735,8319017,k c3 a9nitra,oulad wjih,8,SAFE_5
+233424,8328978,rabat,hay riad,8,SAFE_5
+233596,8331365,rabat,hay riad,8,SAFE_5
+234624,8345537,rabat,hay riad,8,SAFE_5
+235219,8353386,rabat,hay riad,8,SAFE_5
+235335,8354968,rabat,hay riad,8,SAFE_5
+235534,8357585,marrakech,iziki,8,SAFE_5
+235556,8357826,rabat,hay riad,8,SAFE_5
+235570,8357976,rabat,hay riad,8,SAFE_5
+235649,8358745,rabat,hay riad,8,SAFE_5
+235706,8359430,k c3 a9nitra,oulad wjih,8,SAFE_5
+235849,8360929,rabat,hay riad,8,SAFE_5
+236008,8362810,rabat,hay riad,8,SAFE_5
+236116,8363710,rabat,hay riad,8,SAFE_5
+236243,8365063,agadir,haut anza,8,SAFE_5
+236289,8365548,rabat,hay riad,8,SAFE_5
+236363,8366279,rabat,hay riad,8,SAFE_5
+236669,8369042,rabat,hay riad,8,SAFE_5
+236928,8371341,rabat,hay riad,8,SAFE_5
+236934,8371385,rabat,hay riad,8,SAFE_5
+238105,8382426,rabat,hay riad,8,SAFE_5
+238724,8387004,rabat,hay riad,8,SAFE_5
+239163,8390289,meknes,la cienda,8,SAFE_5
+239175,8390393,essaouira,douar laarab,8,SAFE_5
+239269,8390988,essaouira,sidi kaouki,8,SAFE_5
+239306,8391257,rabat,hay riad,8,SAFE_5
+239392,8392128,rabat,hay riad,8,SAFE_5
+239870,8395754,agadir,haut anza,8,SAFE_5
+240036,8396895,rabat,hay riad,8,SAFE_5
+240488,8399622,agadir,haut anza,8,SAFE_5
+240634,8400277,essaouira,sidi kaouki,8,SAFE_5
+241110,8403065,k c3 a9nitra,oulad wjih,8,SAFE_5
+241111,8403066,k c3 a9nitra,oulad wjih,8,SAFE_5
+241387,8404371,rabat,hay riad,8,SAFE_5
+241431,8404541,rabat,hay riad,8,SAFE_5
+241764,8406134,rabat,hay riad,8,SAFE_5
+241923,8406805,rabat,hay riad,8,SAFE_5
+242152,8407676,mohammedia,hay al horria,8,SAFE_5
+242520,8409080,rabat,hay riad,8,SAFE_5
+242881,8410132,rabat,hay riad,8,SAFE_5
+242898,8410167,rabat,hay riad,8,SAFE_5
+217274,8197049,t c3 a9touan,saniat errmel,7,SAFE_5
+218726,8215271,essaouira,idaougard,7,SAFE_5
+218859,8216677,t c3 a9touan,saniat errmel,7,SAFE_5
+222402,8247559,rabat,les oudayas,7,SAFE_5
+226145,8269053,t c3 a9touan,saniat errmel,7,SAFE_5
+227654,8277697,el jadida,narjiss,7,SAFE_5
+231560,8299312,t c3 a9touan,saniat errmel,7,SAFE_5
+236131,8363854,meknes,ancien combatant,7,SAFE_5
+237444,8376213,el jadida,narjiss,7,SAFE_5
+238065,8381959,rabat,les oudayas,7,SAFE_5
+239158,8390245,t c3 a9touan,saniat errmel,7,SAFE_5
+239485,8392757,rabat,les oudayas,7,SAFE_5
+241085,8402910,rabat,les oudayas,7,SAFE_5
+219676,8224089,f c3 a8s,mont fleuri,6,SAFE_5
+231848,8304457,agadir,bouargane,6,SAFE_5
+235388,8355623,t c3 a9touan,cabo negro,6,SAFE_5
+235857,8361007,f c3 a8s,mont fleuri,6,SAFE_5
+235863,8361107,tanger,star hill,6,SAFE_5
+236671,8369052,f c3 a8s,mont fleuri,6,SAFE_5
+237151,8373222,agadir,bouargane,6,SAFE_5
+238886,8388441,agadir,bouargane,6,SAFE_5
+239019,8389372,essaouira,raounak,6,SAFE_5
+239926,8396210,essaouira,raounak,6,SAFE_5
+241192,8403481,essaouira,raounak,6,SAFE_5
+241224,8403637,agadir,amsernate,6,SAFE_5
+212850,8128685,sal c3 a9,tabriquet,5,SAFE_5
+213045,8131612,t c3 a9touan,wilaya,5,SAFE_5
+213047,8131647,t c3 a9touan,wilaya,5,SAFE_5
+215404,8168434,marrakech,hay al haouz,5,SAFE_5
+217204,8196175,t c3 a9touan,touabel,5,SAFE_5
+218801,8216120,t c3 a9touan,martil,5,SAFE_5
+224161,8260350,t c3 a9touan,wilaya,5,SAFE_5
+228123,8280215,f c3 a8s,agdal,5,SAFE_5
+231837,8304228,sal c3 a9,tabriquet,5,SAFE_5
+232038,8307455,sal c3 a9,tabriquet,5,SAFE_5
+232067,8307980,sal c3 a9,tabriquet,5,SAFE_5
+232810,8320124,f c3 a8s,route se sefrou,5,SAFE_5
+232998,8323156,f c3 a8s,route se sefrou,5,SAFE_5
+234607,8345285,sal c3 a9,tabriquet,5,SAFE_5
+234783,8347403,t c3 a9touan,martil,5,SAFE_5
+235152,8352305,sal c3 a9,tabriquet,5,SAFE_5
+235381,8355498,f c3 a8s,route de meknes,5,SAFE_5
+235771,8360071,el jadida,hay riad,5,SAFE_5
+237265,8374656,f c3 a8s,route se sefrou,5,SAFE_5
+237842,8380073,tanger,nzaha,5,SAFE_5
+238250,8383308,marrakech,hay mohammadi,5,SAFE_5
+240118,8397337,t c3 a9touan,touabel,5,SAFE_5
+240403,8399108,f c3 a8s,route se sefrou,5,SAFE_5
+240612,8400135,rabat,takadoum,5,SAFE_5
+240678,8400551,agadir,assaka,5,SAFE_5
+241292,8403966,safi,safi 1,5,SAFE_5
+241844,8406485,marrakech,hay al haouz,5,SAFE_5
