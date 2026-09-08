@@ -7,6 +7,7 @@ on:
     paths:
       - 'app/map/cesium-spike/**'
       - 'components/map/CesiumMaarifSpike.tsx'
+      - 'components/map/CesiumTargetLens.tsx'
       - 'scripts/vivre-ici-cesium-spike-capture.mjs'
       - '.github/workflows/vivre-ici-cesium-spike.yml'
       - 'lib/geo/casablanca-neighborhood-geometry-shadow.ts'
