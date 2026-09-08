@@ -47,14 +47,14 @@ function applyDaylightGrade(Cesium: any, scene: any) {
   for (let index = 0; index < scene.imageryLayers.length; index += 1) {
     const layer = scene.imageryLayers.get(index);
     if (!layer) continue;
-    layer.brightness = 1.42;
-    layer.contrast = 0.84;
-    layer.saturation = 1.08;
-    layer.gamma = 1.22;
-    layer.hue = Cesium.Math.toRadians(-2.5);
+    layer.brightness = 1.3;
+    layer.contrast = 0.96;
+    layer.saturation = 1.05;
+    layer.gamma = 1.1;
+    layer.hue = Cesium.Math.toRadians(-1.5);
   }
 
-  scene.backgroundColor = Cesium.Color.fromCssColorString("#d0edf8");
+  scene.backgroundColor = Cesium.Color.fromCssColorString("#d9f1fb");
   setShellAttribute("data-cesium-day-mode", "true");
 }
 
@@ -84,10 +84,10 @@ function buildingHeight(tags: Record<string, string> | undefined) {
 }
 
 function buildingColor(Cesium: any, meters: number, precision: "height" | "levels-estimate") {
-  if (meters >= 32) return Cesium.Color.fromCssColorString(precision === "height" ? "#cfa976" : "#d4b995");
-  if (meters >= 22) return Cesium.Color.fromCssColorString(precision === "height" ? "#dfc49e" : "#dfcdb5");
-  if (meters >= 12) return Cesium.Color.fromCssColorString(precision === "height" ? "#ead7bd" : "#e5d6c3");
-  return Cesium.Color.fromCssColorString(precision === "height" ? "#f0e3d2" : "#e9dfd1");
+  if (meters >= 32) return Cesium.Color.fromCssColorString(precision === "height" ? "#c39258" : "#c9a779");
+  if (meters >= 22) return Cesium.Color.fromCssColorString(precision === "height" ? "#d6b27d" : "#d8c09d");
+  if (meters >= 12) return Cesium.Color.fromCssColorString(precision === "height" ? "#e6cfaa" : "#dfceb4");
+  return Cesium.Color.fromCssColorString(precision === "height" ? "#f1dfc7" : "#e8dccb");
 }
 
 function createOverpassBuildingPrimitive(Cesium: any, elements: OverpassElement[]) {
@@ -135,12 +135,12 @@ function createOverpassBuildingPrimitive(Cesium: any, elements: OverpassElement[
         roofOutlineInstances.push(new Cesium.GeometryInstance({
           geometry: new Cesium.PolylineGeometry({
             positions: roofPositions,
-            width: height.meters >= 18 ? 1.35 : 1.0,
+            width: height.meters >= 18 ? 1.65 : 1.15,
             vertexFormat: Cesium.PolylineColorAppearance.VERTEX_FORMAT,
           }),
           attributes: {
             color: Cesium.ColorGeometryInstanceAttribute.fromColor(
-              Cesium.Color.fromCssColorString("#736454").withAlpha(height.meters >= 18 ? 0.68 : 0.42),
+              Cesium.Color.fromCssColorString("#5f5043").withAlpha(height.meters >= 18 ? 0.8 : 0.58),
             ),
           },
         }));
@@ -216,7 +216,7 @@ async function ensureTokenlessOsmBuildings(Cesium: any, scene: any, latitude: nu
       const built = createOverpassBuildingPrimitive(Cesium, payload.elements ?? []);
       if (!built || built.count < MIN_BUILDINGS) continue;
 
-      if (Cesium.SunLight) scene.light = new Cesium.SunLight({ intensity: 1.55 });
+      if (Cesium.SunLight) scene.light = new Cesium.SunLight({ intensity: 1.8 });
       if (scene.shadowMap) {
         scene.shadowMap.enabled = true;
         scene.shadowMap.softShadows = true;
@@ -260,19 +260,19 @@ function installTargetLens(Cesium: any) {
           void ensureTokenlessOsmBuildings(Cesium, scene, latitude, longitude);
 
           const tunedTarget = Cesium.Cartesian3.fromDegrees(
-            longitude + 0.0035,
-            latitude + 0.0118,
+            longitude + 0.0038,
+            latitude + 0.0132,
             0,
           );
 
           if (this.frustum && "fov" in this.frustum) {
-            this.frustum.fov = Cesium.Math.toRadians(37);
+            this.frustum.fov = Cesium.Math.toRadians(39);
           }
 
           const tunedOffset = new Cesium.HeadingPitchRange(
             Cesium.Math.toRadians(346),
-            Cesium.Math.toRadians(-28),
-            7600,
+            Cesium.Math.toRadians(-24),
+            7200,
           );
 
           return originalLookAt.call(this, tunedTarget, tunedOffset);
@@ -324,13 +324,13 @@ export function CesiumTargetLens() {
     <style jsx global>{`
       @media (min-width: 1024px) {
         .cesium-spike-map-atmosphere {
-          height: 36% !important;
+          height: 43% !important;
           background: linear-gradient(
             180deg,
-            rgba(82, 190, 236, 0.92),
-            rgba(120, 207, 241, 0.66) 43%,
-            rgba(182, 226, 244, 0.22) 72%,
-            rgba(205, 237, 248, 0)
+            rgba(72, 188, 236, 0.98),
+            rgba(111, 207, 244, 0.82) 39%,
+            rgba(166, 224, 246, 0.34) 68%,
+            rgba(209, 239, 249, 0) 100%
           ) !important;
           mix-blend-mode: screen !important;
         }
