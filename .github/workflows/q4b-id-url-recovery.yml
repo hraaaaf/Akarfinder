@@ -18,8 +18,9 @@ jobs:
       fail-fast: false
       matrix:
         source: [mubawab.ma, avito.ma]
+        offset: [0, 100, 200, 300, 400]
     runs-on: ubuntu-24.04
-    timeout-minutes: 45
+    timeout-minutes: 30
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
@@ -37,26 +38,26 @@ jobs:
             --public .tmp/q4b-input/public.zip \
             --dbfields .tmp/q4b-input/dbfields.zip \
             --source '${{ matrix.source }}' \
-            --offset 0 \
-            --limit 500 \
+            --offset '${{ matrix.offset }}' \
+            --limit 100 \
             --workers 16 \
-            --indexes 6 \
-            --out '.tmp/q4b-${{ matrix.source }}'
+            --indexes 4 \
+            --out '.tmp/q4b-${{ matrix.source }}-${{ matrix.offset }}'
       - name: Verify exact-ID invariants
         run: |
           python - <<'PY'
           import json, pathlib
-          p=pathlib.Path('.tmp/q4b-${{ matrix.source }}/summary.json')
+          p=pathlib.Path('.tmp/q4b-${{ matrix.source }}-${{ matrix.offset }}/summary.json')
           s=json.loads(p.read_text())
           assert s['originalIdOnly']['mubawab.ma']==76816
           assert s['originalIdOnly']['avito.ma']==46904
           assert s['unresolvedBefore']['mubawab.ma']>0
           assert s['unresolvedBefore']['avito.ma']>0
-          assert s['recoveredExactUrls'] <= 500
+          assert s['recoveredExactUrls'] <= 100
           print(json.dumps(s,indent=2))
           PY
       - uses: actions/upload-artifact@v4
         with:
-          name: q4b-id-url-${{ matrix.source }}-batch0
-          path: .tmp/q4b-${{ matrix.source }}/
+          name: q4b-id-url-${{ matrix.source }}-${{ matrix.offset }}
+          path: .tmp/q4b-${{ matrix.source }}-${{ matrix.offset }}/
           retention-days: 30
