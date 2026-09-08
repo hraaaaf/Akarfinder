@@ -62,7 +62,7 @@ function importedAssets(text: string, baseUrl: string): string[] {
 
 function serializedState($: cheerio.CheerioAPI, html: string) {
   const dataAttributes: Array<{tag:string,attrs:Record<string,string>}> = [];
-  $('[data-\u005b\u005d], *').each((_, el) => {
+  $('*').each((_, el) => {
     if (!el || el.type !== 'tag') return;
     const attrs = Object.fromEntries(Object.entries(el.attribs ?? {})
       .filter(([k,v]) => k.startsWith('data-') && typeof v === 'string' && v.length > 0)
