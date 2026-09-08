@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-import argparse, json, os, re, sys, time, urllib.parse, urllib.request, zipfile
+import argparse, json, re, urllib.parse, urllib.request, zipfile
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
-UA = 'AkarFinder-Q4B/1.0 exact-id-url-recovery'
+UA = 'AkarFinder-Q4B/1.1 exact-id-url-recovery'
 
 def read_jsonl_from_zip(path, member):
     with zipfile.ZipFile(path) as z, z.open(member) as f:
@@ -53,7 +53,7 @@ def build_targets(args):
     unresolved = {d: [dict(ids[d][sid], known_url=None) for sid in sorted(ids[d], key=lambda x:int(x)) if sid not in known[d]] for d in ids}
     return ids, known, unresolved
 
-def http_json_lines(url, timeout=30):
+def http_json_lines(url, timeout=25):
     req = urllib.request.Request(url, headers={'User-Agent': UA})
     try:
         with urllib.request.urlopen(req, timeout=timeout) as r:
@@ -66,10 +66,17 @@ def http_json_lines(url, timeout=30):
     except Exception:
         return []
 
-def get_indexes(n=6):
+def get_indexes(n=6, years=None):
     req=urllib.request.Request('https://index.commoncrawl.org/collinfo.json',headers={'User-Agent':UA})
     with urllib.request.urlopen(req, timeout=30) as r:
         data=json.load(r)
+    if years:
+        wanted=[str(y).strip() for y in years.split(',') if str(y).strip()]
+        picked=[]
+        for y in wanted:
+            hit=next((x['id'] for x in data if re.match(rf'^CC-MAIN-{re.escape(y)}-', x['id'])), None)
+            if hit: picked.append(hit)
+        return picked[:n]
     return [x['id'] for x in data[:n]]
 
 def cc_query_for_id(domain, sid, indexes):
@@ -108,22 +115,24 @@ def main():
     ap.add_argument('--q1d',required=True); ap.add_argument('--public',required=True); ap.add_argument('--dbfields',required=True)
     ap.add_argument('--out',required=True); ap.add_argument('--source',choices=['mubawab.ma','avito.ma','all'],default='all')
     ap.add_argument('--offset',type=int,default=0); ap.add_argument('--limit',type=int,default=500); ap.add_argument('--workers',type=int,default=16); ap.add_argument('--indexes',type=int,default=6)
+    ap.add_argument('--index-years',default='',help='Comma-separated Common Crawl years; selects newest index in each year')
     args=ap.parse_args(); Path(args.out).mkdir(parents=True,exist_ok=True)
     ids,known,unresolved=build_targets(args)
-    summary={'schemaVersion':'q4b-id-url-recovery-v1','originalIdOnly':{d:len(ids[d]) for d in ids},'knownExactUrlBefore':{d:len(known[d]) for d in known},'unresolvedBefore':{d:len(unresolved[d]) for d in unresolved}}
+    summary={'schemaVersion':'q4b-id-url-recovery-v1.1','originalIdOnly':{d:len(ids[d]) for d in ids},'knownExactUrlBefore':{d:len(known[d]) for d in known},'unresolvedBefore':{d:len(unresolved[d]) for d in unresolved}}
     Path(args.out,'targets-summary.json').write_text(json.dumps(summary,indent=2,ensure_ascii=False)+'\n')
     with open(Path(args.out,'unresolved-ids.jsonl'),'w') as f:
         for d in unresolved:
             for r in unresolved[d]: f.write(json.dumps(r,ensure_ascii=False)+'\n')
     sources=['mubawab.ma','avito.ma'] if args.source=='all' else [args.source]
-    indexes=get_indexes(args.indexes)
+    indexes=get_indexes(args.indexes,args.index_years or None)
+    if not indexes: raise RuntimeError('No Common Crawl indexes selected')
     recovered=[]; scanned={}
     for d in sources:
         batch,out=recover_batch(d,unresolved[d],args.offset,args.limit,args.workers,indexes)
         scanned[d]=len(batch); recovered.extend(out)
     with open(Path(args.out,'recovered-urls.jsonl'),'w') as f:
         for r in recovered:f.write(json.dumps(r,ensure_ascii=False)+'\n')
-    summary.update({'indexes':indexes,'offset':args.offset,'limit':args.limit,'scanned':scanned,'recoveredExactUrls':len(recovered),'recoveredBySource':{d:sum(1 for r in recovered if r['source_domain']==d) for d in sources}})
+    summary.update({'indexes':indexes,'indexYearsRequested':args.index_years,'offset':args.offset,'limit':args.limit,'scanned':scanned,'recoveredExactUrls':len(recovered),'recoveredBySource':{d:sum(1 for r in recovered if r['source_domain']==d) for d in sources}})
     Path(args.out,'summary.json').write_text(json.dumps(summary,indent=2,ensure_ascii=False)+'\n')
     print(json.dumps(summary,indent=2,ensure_ascii=False))
 
