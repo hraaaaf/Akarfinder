@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-"""Audit truth-safe Overture building coverage around Maârif for Vivre Ici.
+"""Audit and materialize truth-safe Overture building coverage around Maârif.
 
-The script intentionally does not invent a default building height. A feature is
-renderable only when Overture supplies either an explicit height or a floor count.
-Building parts are preserved separately because they can encode stacked/floating
-volumes through min_height/min_floor.
+No default building height is invented. A feature is renderable only when Overture
+supplies an explicit height or a floor count. Floor-derived heights use the same
+explicitly disclosed 3 m/floor approximation already used by the OSM fallback.
 """
 
 from __future__ import annotations
@@ -19,9 +18,10 @@ from statistics import median
 ROOT = Path(__file__).resolve().parents[1]
 GEOMETRY_FILE = ROOT / "data/geo/casablanca-arrondissements-osm.json"
 OUT_DIR = ROOT / "artifacts/vivre-ici-overture-audit"
+RUNTIME_DATA_FILE = ROOT / "public/data/vivre-ici/maarif-overture-3d.compact.json"
 
-# Context envelope, not an administrative boundary. It deliberately extends the
-# Maârif bbox toward the coast and adjacent central neighborhoods visible in TARGET.
+# Context envelope, not an administrative boundary. It extends Maârif toward the
+# coast and adjacent central areas visible in the TARGET composition.
 PAD_WEST = 0.035
 PAD_EAST = 0.035
 PAD_SOUTH = 0.025
@@ -29,6 +29,7 @@ PAD_NORTH = 0.040
 
 ATTRIBUTION = "© OpenStreetMap contributors, Overture Maps Foundation"
 THEME_LICENSE = "ODbL-1.0"
+FLOOR_HEIGHT_ESTIMATE_M = 3.0
 
 
 def iter_positions(node):
@@ -92,8 +93,7 @@ def inferred_height(properties: dict) -> tuple[float | None, str | None]:
         return height, "height"
     floors = finite_positive(properties.get("num_floors"))
     if floors is not None:
-        # Same disclosed approximation already used by the current OSM renderer.
-        return floors * 3.0, "num_floors_estimate"
+        return floors * FLOOR_HEIGHT_ESTIMATE_M, "num_floors_estimate"
     return None, None
 
 
@@ -157,7 +157,7 @@ def compact_feature(feature: dict, kind: str) -> dict | None:
     min_height = finite_positive(props.get("min_height")) or 0.0
     min_floor = finite_positive(props.get("min_floor"))
     if min_height == 0.0 and min_floor is not None:
-        min_height = min_floor * 3.0
+        min_height = min_floor * FLOOR_HEIGHT_ESTIMATE_M
 
     return {
         "type": "Feature",
@@ -187,6 +187,58 @@ def write_feature_collection(path: Path, features: list[dict]) -> None:
         "features": features,
     }
     path.write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+
+
+def round_coordinates(node):
+    if (
+        isinstance(node, list)
+        and len(node) >= 2
+        and isinstance(node[0], (int, float))
+        and isinstance(node[1], (int, float))
+    ):
+        # ~1 m coordinate precision at Casablanca latitude; enough for this 3D spike.
+        return [round(float(node[0]), 5), round(float(node[1]), 5)]
+    if isinstance(node, list):
+        return [round_coordinates(child) for child in node]
+    return node
+
+
+def runtime_record(feature: dict) -> list:
+    props = feature["properties"]
+    geometry = feature["geometry"]
+    return [
+        round(float(props["height"]), 2),
+        round(float(props.get("minHeight") or 0), 2),
+        0 if props["heightPrecision"] == "height" else 1,
+        0 if props["kind"] == "building" else 1,
+        0 if geometry.get("type") == "Polygon" else 1,
+        round_coordinates(geometry.get("coordinates") or []),
+    ]
+
+
+def write_runtime_bundle(renderable: list[dict], release: str | None) -> None:
+    RUNTIME_DATA_FILE.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "v": 1,
+        "source": "Overture Maps Foundation",
+        "release": release,
+        "license": THEME_LICENSE,
+        "attribution": ATTRIBUTION,
+        "floorEstimateMeters": FLOOR_HEIGHT_ESTIMATE_M,
+        "defaultHeightInvented": False,
+        "features": [runtime_record(feature) for feature in renderable],
+    }
+    RUNTIME_DATA_FILE.write_text(
+        json.dumps(payload, ensure_ascii=False, separators=(",", ":")),
+        encoding="utf-8",
+    )
+
+
+def read_release(state_path: Path) -> str | None:
+    try:
+        return json.loads(state_path.read_text(encoding="utf-8")).get("last_release")
+    except (OSError, json.JSONDecodeError):
+        return None
 
 
 def main() -> None:
@@ -220,6 +272,7 @@ def main() -> None:
 
     buildings = load_features(buildings_path)
     parts = load_features(parts_path)
+    release = read_release(Path(f"{buildings_path}.state"))
 
     renderable = []
     for feature in buildings:
@@ -233,9 +286,11 @@ def main() -> None:
 
     renderable_path = OUT_DIR / "overture-renderable-3d.geojson"
     write_feature_collection(renderable_path, renderable)
+    write_runtime_bundle(renderable, release)
 
     summary = {
         "mode": "vivre-ici-overture-3d-coverage-audit",
+        "release": release,
         "scope": {
             "authority": "Maârif OSM shadow geometry used only to derive an audit envelope",
             "coreBbox": [round(v, 7) for v in core_bbox],
@@ -258,9 +313,14 @@ def main() -> None:
             "explicitHeight": sum(1 for f in renderable if f["properties"]["heightPrecision"] == "height"),
             "floorEstimate": sum(1 for f in renderable if f["properties"]["heightPrecision"] == "num_floors_estimate"),
         },
+        "runtimeBundle": {
+            "path": str(RUNTIME_DATA_FILE.relative_to(ROOT)),
+            "bytes": RUNTIME_DATA_FILE.stat().st_size,
+            "coordinatePrecisionDecimals": 5,
+        },
         "truthPolicy": {
             "defaultHeightInvented": False,
-            "floorEstimateMetersPerFloor": 3.0,
+            "floorEstimateMetersPerFloor": FLOOR_HEIGHT_ESTIMATE_M,
             "floorEstimateDisclosed": True,
         },
     }
