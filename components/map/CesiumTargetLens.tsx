@@ -1,6 +1,7 @@
 "use client";
 
 import { useLayoutEffect } from "react";
+import { tryLoadOvertureStaticBuildings } from "@/components/map/cesium-overture-buildings";
 
 declare global {
   interface Window {
@@ -33,7 +34,7 @@ function setShellAttribute(name: string, value: string) {
 
 function ensureOsmAttribution() {
   const map = document.querySelector<HTMLElement>(".cesium-spike-map");
-  if (!map || map.querySelector("[data-osm-3d-attribution]")) return;
+  if (!map || map.querySelector("[data-osm-3d-attribution]") || map.querySelector("[data-open-3d-attribution]")) return;
   const attribution = document.createElement("div");
   attribution.dataset.osm3dAttribution = "true";
   attribution.className = "cesium-spike-osm-3d-attribution";
@@ -178,8 +179,6 @@ function createOverpassBuildingPrimitive(Cesium: any, elements: OverpassElement[
 }
 
 async function fetchOverpassBuildings(endpoint: string, latitude: number, longitude: number) {
-  // Truth-safe density pass: include exact height tags, level-derived heights and mapped building parts.
-  // No default height is fabricated for features missing both height and building:levels.
   const query = `[out:json][timeout:18];(way["building"]["height"](around:${BUILDING_QUERY_RADIUS_M},${latitude.toFixed(6)},${longitude.toFixed(6)});way["building"]["building:levels"](around:${BUILDING_QUERY_RADIUS_M},${latitude.toFixed(6)},${longitude.toFixed(6)});way["building:part"]["height"](around:${BUILDING_QUERY_RADIUS_M},${latitude.toFixed(6)},${longitude.toFixed(6)});way["building:part"]["building:levels"](around:${BUILDING_QUERY_RADIUS_M},${latitude.toFixed(6)},${longitude.toFixed(6)}););out tags geom ${BUILDING_QUERY_LIMIT};`;
   const controller = new AbortController();
   const timer = window.setTimeout(() => controller.abort(), 21000);
@@ -198,7 +197,7 @@ async function fetchOverpassBuildings(endpoint: string, latitude: number, longit
   }
 }
 
-async function ensureTokenlessOsmBuildings(Cesium: any, scene: any, latitude: number, longitude: number) {
+async function ensureOpenBuildings(Cesium: any, scene: any, latitude: number, longitude: number) {
   if (!scene || window.innerWidth < 1024) {
     setShellAttribute("data-cesium-buildings-state", "skipped");
     return;
@@ -207,9 +206,14 @@ async function ensureTokenlessOsmBuildings(Cesium: any, scene: any, latitude: nu
   if ((scene as any).__AKARFINDER_OSM_BUILDINGS_REQUESTED__) return;
   (scene as any).__AKARFINDER_OSM_BUILDINGS_REQUESTED__ = true;
   setShellAttribute("data-cesium-buildings-state", "loading");
-  setShellAttribute("data-cesium-buildings-source", "overpass-osm");
   setShellAttribute("data-cesium-buildings-count", "0");
 
+  // Primary path: one audited, versioned, local Overture bundle. This removes the
+  // runtime Overpass dependency and gives us thousands of truth-safe volumes.
+  if (await tryLoadOvertureStaticBuildings(Cesium, scene)) return;
+
+  // Fallback only: live OSM remains useful if the static bundle is missing or corrupt.
+  setShellAttribute("data-cesium-buildings-source", "overpass-osm");
   for (const endpoint of OVERPASS_ENDPOINTS) {
     try {
       const payload = await fetchOverpassBuildings(endpoint, latitude, longitude);
@@ -257,7 +261,7 @@ function installTargetLens(Cesium: any) {
         if (isCasablancaTarget) {
           const scene = this?._scene;
           applyDaylightGrade(Cesium, scene);
-          void ensureTokenlessOsmBuildings(Cesium, scene, latitude, longitude);
+          void ensureOpenBuildings(Cesium, scene, latitude, longitude);
 
           const tunedTarget = Cesium.Cartesian3.fromDegrees(
             longitude + 0.0038,
@@ -339,7 +343,7 @@ export function CesiumTargetLens() {
           z-index: 14;
           right: 10px;
           bottom: 8px;
-          max-width: 330px;
+          max-width: 360px;
           padding: 4px 7px;
           border-radius: 7px;
           background: rgba(255, 253, 249, 0.82);
