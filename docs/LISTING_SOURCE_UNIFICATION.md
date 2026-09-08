@@ -19,12 +19,12 @@ Production Supabase project: `kusfiyimwvxblvsrhaes`.
 
 Physical listing/search corpora verified:
 
-- `property_listings`: 19,616 rows; rich legacy canonical listing model.
-- `minimal_live_search_documents_v1`: 74,846 rows; current ODM live-search RPC source.
-- `thin_index_search_documents`: 77,123 rows; thin search/normalization/quality corpus.
-- `public_search_representations_v1`: VIEW, not a physical table.
+- `property_listings`: 19,616 rows
+- `minimal_live_search_documents_v1`: 74,846 rows
+- `thin_index_search_documents`: 77,123 rows
+- `public_search_representations_v1`: VIEW
 
-Distinct URL union across the three physical corpora: **143,121**.
+Distinct URL union: **143,121**.
 
 Observed URL overlap:
 
@@ -32,115 +32,124 @@ Observed URL overlap:
 - property ↔ thin: 17,819
 - minimal ↔ thin: 10,590
 
-Therefore none of the existing physical tables can be deleted or selected as the sole source without data loss.
+## Current LIVE routing
 
-## Current public search routing
+`/search` and `/api/search` still use `routePublicSearch`.
 
-`app/search/page.tsx` and `app/api/search/route.ts` call `routePublicSearch`.
+ODM: `search_public_representations_v2` → `minimal_live_search_documents_v1`.
 
-ODM path:
+Legacy: `searchDatabase` → legacy listing DB path.
 
-`searchPublicRepresentationsWithOwner` → `search_public_representations_v2` → `minimal_live_search_documents_v1`.
+No reader cutover has been performed in this chantier.
 
-Legacy path:
+## Production outage discovered
 
-`searchListings` → `searchDatabase` → `queryListings` → legacy DB listing model (`property_listings` path).
+Vercel runtime logs on 2026-09-08 show Supabase restriction `exceed_egress_quota`. Some current failure paths become `0/0` results. This outage is separate from source unification.
 
-The routing currently allows ODM/legacy dual paths and fallbacks. This is the architecture to retire after canonical parity.
-
-## Production outage discovered during this lot
-
-Vercel runtime logs on 2026-09-08 show Supabase Data API restriction:
-
-`exceed_egress_quota`
-
-The code currently converts some provider failures into `0/0` rows, which makes the UI appear to have zero listings. This outage is separate from the schema-unification work.
-
-## Lot U1 — additive union surface — DONE
+## U1 — additive union surface — DONE
 
 Migration: `20260908144500_create_listing_representations_union_v1.sql`.
 
-Database object: `public.listing_representations_union_v1`.
+Object: `public.listing_representations_union_v1`.
 
 Verified:
 
-- canonical rows: **143,121**
+- canonical URLs: **143,121**
 - multisource URLs: **18,660**
-- canonical source winners:
-  - `minimal_live_search_documents_v1`: 64,977
-  - `thin_index_search_documents`: 58,523
-  - `property_listings`: 19,621
 
-No live reader was switched and no source table was deleted.
-
-## Lot U2 — canonical field merge — DONE
+## U2 — canonical field merge — DONE
 
 Migration: `20260908150500_create_listing_representations_canonical_v1.sql`.
 
-Database object: `public.listing_representations_canonical_v1`.
-
-The view keeps one row per canonical URL and merges the best available field values across duplicate source records while retaining source lineage.
+Object: `public.listing_representations_canonical_v1`.
 
 Verified coverage:
 
 - rows: **143,121**
-- multisource URLs: **18,660**
 - title: **27,424**
 - city: **107,415**
 - district: **68,374**
 - property type: **48,384**
-- transaction type: **44,600**
+- transaction: **44,600**
 - price: **79,884**
 - surface: **83,997**
 
-Compared with U1, title coverage increased from 24,772 to 27,424, price from 79,146 to 79,884 and surface from 81,608 to 83,997 without reducing the 143,121-URL corpus.
+## U3 — canonical search RPC — DONE, NOT CUT OVER
 
-This proves field-level consolidation is preferable to selecting one source row wholesale.
+Migrations:
 
-## Migration sequence
+- `20260908152500_create_search_canonical_representations_v1.sql`
+- `20260908153500_fix_search_canonical_text_fallback_v1.sql`
 
-### U3 — canonical search RPC — NEXT
+Object: `public.search_canonical_representations_v1`.
 
-Build a new search RPC over `listing_representations_canonical_v1` with:
+Capabilities verified:
 
-- city and district
+- city
+- district
 - property type
-- transaction intent
-- price and surface ranges
-- free text
-- stable ranking
-- cursor pagination
-- exact total where required
+- intent
+- price/surface filters
+- free-text fallback for missing structured type/intent
+- deterministic stable ID from canonical URL
+- ranking lanes
+- keyset cursor pagination
+- full filtered total retained across cursor pages
 
-### U4 — dual-read parity
+Cursor proof:
 
-Compare canonical vs current ODM/legacy paths on a fixed query matrix. Do not switch readers until coverage and behavior are proven.
+- page 1: 5 rows
+- page 2: 5 rows
+- overlap: **0**
+- page 2 total preserved: **143,121**
 
-### U5 — reader cutover
+Initial parity exposed a too-strict structured filter. It was corrected to preserve the legacy text-inference behavior for NULL property type / transaction fields.
 
-Switch `/api/search` and `/search` to the canonical RPC. Remove the legacy fallback only after parity.
+Post-fix comparison examples:
 
-### U6 — writer convergence
+| Query | current ODM | canonical |
+|---|---:|---:|
+| all | 74,846 | 143,121 |
+| Casablanca | 25,377 | 30,710 |
+| Casablanca + Appartement + sale | 7,174 | 8,542 |
+| Rabat + rent | 1,739 | 2,768 |
 
-Inventory all writers to `property_listings`, `minimal_live_search_documents_v1` and `thin_index_search_documents`. Redirect or consolidate ingestion into the canonical representation model.
+The canonical totals are intentionally broader because they cover the union corpus. This is not yet sufficient proof for reader cutover; ranking/content quality parity must be certified next.
 
-### U7 — retirement
+## U4 — dual-read parity — NEXT
 
-Only after no live readers/writers remain:
+Build a fixed query matrix and compare:
 
-- archive/drop obsolete tables or convert them to compatibility views;
-- remove ODM/legacy dual-routing code;
-- update canonical docs and CI.
+- top-result URL overlap
+- structured-filter correctness
+- empty/NULL field behavior
+- result quality
+- pagination stability
+- latency/cost characteristics
 
-## Safety rules
+Do not switch readers until U4 passes.
 
-- no Vercel deployment without explicit user authorization;
-- no destructive table drop before U7 proof;
-- no public-search cutover before parity tests;
-- every migration must be represented in repo and verified in Supabase.
+## U5 — reader cutover
+
+Switch `/api/search` and `/search` only after U4. Remove legacy fallback only after certified parity.
+
+## U6 — writer convergence
+
+Inventory writers to all three physical corpora and converge ingestion.
+
+## U7 — retirement
+
+Only after no live readers/writers remain: archive/drop obsolete physical tables or replace them with compatibility views; remove dual-routing code.
+
+## Safety
+
+- no Vercel deployment without explicit user authorization
+- no destructive source-table drop before U7 proof
+- no public-search cutover before U4 proof
+- every DB migration mirrored in repo
 
 ## Resume point
 
 Branch: `refactor/unify-public-listing-source`
 
-Next exact: implement U3 canonical search RPC and verify it against a fixed query matrix before any reader cutover.
+Next exact: U4 query-matrix parity and top-result overlap audit.
