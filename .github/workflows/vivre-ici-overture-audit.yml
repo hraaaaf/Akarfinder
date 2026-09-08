@@ -29,8 +29,26 @@ jobs:
       - name: Install Overture client
         run: pip install --disable-pip-version-check overturemaps
 
-      - name: Audit Maârif 3D coverage
-        run: python scripts/vivre-ici-overture-audit.py
+      - name: Audit TARGET camera 3D coverage
+        run: |
+          python - <<'PY'
+          import importlib.util
+          from pathlib import Path
+
+          script = Path('scripts/vivre-ici-overture-audit.py')
+          spec = importlib.util.spec_from_file_location('vivre_ici_overture_audit', script)
+          module = importlib.util.module_from_spec(spec)
+          assert spec and spec.loader
+          spec.loader.exec_module(module)
+
+          # Widen the non-administrative context envelope so the oblique TARGET
+          # camera does not expose a hard 3D-data edge across Ain Diab / Anfa.
+          module.PAD_WEST = 0.075
+          module.PAD_EAST = 0.050
+          module.PAD_SOUTH = 0.035
+          module.PAD_NORTH = 0.050
+          module.main()
+          PY
 
       - name: Commit compact runtime bundle
         run: |
