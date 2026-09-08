@@ -1,0 +1,111 @@
+name: Q1D Publish Mubawab Self Recovery Map
+
+on:
+  push:
+    branches: [data/q1d-normalized-features-fingerprints]
+    paths:
+      - '.github/workflows/q1d-publish-mubawab-self-recovery-map.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      Q1D_ARTIFACT_ID: '10022063956'
+      OUT: data/audits/q1d-mubawab-self-recovery-map.csv
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download certified Q1D artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/q1d
+          curl --fail --location --retry 3 \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/${Q1D_ARTIFACT_ID}/zip" \
+            -o .tmp/q1d.zip
+          unzip -q .tmp/q1d.zip -d .tmp/q1d
+      - name: Build exact city-scoped recovery map
+        run: |
+          python - <<'PY'
+          import csv, json, urllib.parse, collections, re
+          from pathlib import Path
+
+          src=Path('.tmp/q1d/manifest-q1d.jsonl')
+          out=Path('${{ env.OUT }}')
+          out.parent.mkdir(parents=True, exist_ok=True)
+          rows=[]; pairs=collections.Counter()
+          with src.open(encoding='utf-8') as f:
+              for idx,line in enumerate(f):
+                  o=json.loads(line)
+                  if o.get('source_domain')!='mubawab.ma':
+                      continue
+                  ft=o.get('features') or {}
+                  city=urllib.parse.unquote((ft.get('city') or '').strip().lower())
+                  district=urllib.parse.unquote((ft.get('district') or '').strip().lower())
+                  title=urllib.parse.unquote((ft.get('title') or '').strip().lower())
+                  ident=(o.get('source_identity') or '').strip()
+                  url=urllib.parse.unquote(ident.lower())
+                  if city and district:
+                      pairs[(city,district)] += 1
+                  rows.append((idx,city,district,title,url,ident))
+
+          generic={'centre','medina','ancienne medina','nouvelle ville','ville nouvelle','route','quartier','de la plage','administratif'}
+          dictionary=collections.defaultdict(list)
+          for (city,district),support in pairs.items():
+              if city==district or district in generic or len(district)<5 or support<5:
+                  continue
+              dictionary[city].append((district,support))
+
+          def norm(s):
+              s=s.lower().replace('’', "'")
+              s=re.sub(r'[^a-z0-9àâäéèêëîïôöùûüç]+',' ',s)
+              return ' '+re.sub(r'\s+',' ',s).strip()+' '
+
+          recovered=[]
+          for idx,city,district,title,url,ident in rows:
+              if district or not city:
+                  continue
+              text=norm(title+' '+url)
+              matches=[]
+              for candidate,support in dictionary.get(city,[]):
+                  needle=norm(candidate)
+                  if needle.strip() and needle in text:
+                      matches.append((candidate,support))
+              if len(matches)!=1:
+                  continue
+              candidate,support=matches[0]
+              tier='SAFE_25' if support>=25 else 'SAFE_10' if support>=10 else 'SAFE_5'
+              m=re.search(r'/(?:a|pa)/(\d+)', url)
+              source_id=m.group(1) if m else (ident if ident.isdigit() else '')
+              recovered.append((idx,source_id,city,candidate,support,tier))
+
+          recovered.sort(key=lambda x:(x[5],-x[4],x[0]))
+          with out.open('w', newline='', encoding='utf-8') as f:
+              w=csv.writer(f)
+              w.writerow(['artifact_row_index','source_id','city','district','support','tier'])
+              w.writerows(recovered)
+          print('recovered=',len(recovered))
+          for tier in ('SAFE_25','SAFE_10','SAFE_5'):
+              print(tier, sum(r[-1]==tier for r in recovered))
+          PY
+      - name: Commit map if changed
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- "$OUT" && git ls-files --error-unmatch "$OUT" >/dev/null 2>&1; then
+            echo 'No map changes'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$OUT"
+          git commit -m 'data(q1d): publish Mubawab self recovery map'
+          git push
