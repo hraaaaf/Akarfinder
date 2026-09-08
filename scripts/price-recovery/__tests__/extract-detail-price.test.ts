@@ -15,6 +15,33 @@ test('Agenz monthly rent extracts current price and ignores crossed-out old pric
   assert.equal(r.currency, 'MAD');
 });
 
+test('Agenz structured data price wins when visible text omits price', () => {
+  const html = `
+    <html><body>
+      <h1>Appartement à louer à Charaf</h1>
+      <div data-id="8d2d4956-c374-4a19-a084-8712e6408420" data-prix="6500" data-price="6500" data-transaction-type="Location"></div>
+      <div data-value="6500"></div>
+    </body></html>`;
+  const r = extractDetailPrice('agenz.ma', html, 'rent');
+  assert.equal(r.currentPriceMad, 6500);
+  assert.equal(r.period, 'month');
+  assert.equal(r.priceStatus, 'available');
+  assert.equal(r.confidence, 'high');
+  assert.match(r.evidence ?? '', /^agenz:data-price:6500/);
+});
+
+test('Agenz structured sale price maps to sale_total', () => {
+  const html = `
+    <html><body>
+      <h1>Villa à vendre à Californie</h1>
+      <div data-id="56cd4d3e-85f9-4af0-9bb7-99f781c4a6f0" data-prix="4200000" data-transaction-type="Vente"></div>
+    </body></html>`;
+  const r = extractDetailPrice('agenz.ma', html, 'sale');
+  assert.equal(r.currentPriceMad, 4200000);
+  assert.equal(r.period, 'sale_total');
+  assert.equal(r.confidence, 'high');
+});
+
 test('Agenz recovers sale price from title when body has no price block', () => {
   const html = `
     <html>
