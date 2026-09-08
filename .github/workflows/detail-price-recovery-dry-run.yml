@@ -10,19 +10,16 @@ on:
       limit:
         description: 'Max rows per source'
         required: false
-        default: '100'
+        default: '300'
 permissions:
   contents: read
 jobs:
   price-recovery:
     runs-on: ubuntu-latest
     env:
-      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
       PRICE_RECOVERY_OUT: .tmp/price-recovery
-      PRICE_RECOVERY_LIMIT: ${{ inputs.limit || '100' }}
-      PRICE_RECOVERY_CONCURRENCY: '3'
-      PRICE_RECOVERY_SOURCES: mubawab.ma
+      PRICE_RECOVERY_LIMIT: ${{ inputs.limit || '300' }}
+      PRICE_RECOVERY_CONCURRENCY: '6'
       PRICE_RECOVERY_FALLBACK_MANIFEST: scripts/price-recovery/fallback-mubawab-unavailable-seedonly-industrial-003.json
     steps:
       - uses: actions/checkout@v4
@@ -32,11 +29,11 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Unit tests
-        run: npx tsx --test scripts/price-recovery/__tests__/extract-detail-price.test.ts
+        run: npx tsx --test scripts/price-recovery/__tests__/*.test.ts
       - name: TypeScript check
         run: npx tsc --noEmit
-      - name: Read-only detail price recovery
-        run: npx tsx scripts/price-recovery/run-detail-price-recovery.ts
+      - name: Read-only safe Mubawab detail price recovery
+        run: npx tsx scripts/price-recovery/run-mubawab-price-recovery-safe.ts
       - name: Verify no-write contract
         run: |
           node - <<'NODE'
