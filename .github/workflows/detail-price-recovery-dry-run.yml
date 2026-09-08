@@ -22,7 +22,8 @@ jobs:
       PRICE_RECOVERY_OUT: .tmp/price-recovery
       PRICE_RECOVERY_LIMIT: ${{ inputs.limit || '100' }}
       PRICE_RECOVERY_CONCURRENCY: '3'
-      PRICE_RECOVERY_SOURCES: agenz.ma,mubawab.ma
+      PRICE_RECOVERY_SOURCES: agenz.ma
+      PRICE_RECOVERY_FALLBACK_MANIFEST: scripts/price-recovery/fallback-agenz-30-manifest.json
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
