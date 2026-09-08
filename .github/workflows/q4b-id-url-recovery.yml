@@ -18,7 +18,7 @@ jobs:
       fail-fast: false
       matrix:
         source: [mubawab.ma, avito.ma]
-        offset: [0, 100, 200, 300, 400]
+        offset: [0, 50, 100, 150]
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     env:
@@ -31,7 +31,7 @@ jobs:
           gh api /repos/${{ github.repository }}/actions/artifacts/10022063956/zip > .tmp/q4b-input/q1d.zip
           gh api /repos/${{ github.repository }}/actions/artifacts/10021998663/zip > .tmp/q4b-input/public.zip
           gh api /repos/${{ github.repository }}/actions/artifacts/10026575439/zip > .tmp/q4b-input/dbfields.zip
-      - name: Recover exact URLs from Common Crawl
+      - name: Recover exact URLs from historical Common Crawl
         run: |
           python scripts/audits/q4b-id-url-recovery.py \
             --q1d .tmp/q4b-input/q1d.zip \
@@ -39,25 +39,27 @@ jobs:
             --dbfields .tmp/q4b-input/dbfields.zip \
             --source '${{ matrix.source }}' \
             --offset '${{ matrix.offset }}' \
-            --limit 100 \
-            --workers 16 \
-            --indexes 4 \
-            --out '.tmp/q4b-${{ matrix.source }}-${{ matrix.offset }}'
+            --limit 50 \
+            --workers 20 \
+            --indexes 6 \
+            --index-years '2025,2024,2023,2022,2021,2020' \
+            --out '.tmp/q4b-historical-${{ matrix.source }}-${{ matrix.offset }}'
       - name: Verify exact-ID invariants
         run: |
           python - <<'PY'
           import json, pathlib
-          p=pathlib.Path('.tmp/q4b-${{ matrix.source }}-${{ matrix.offset }}/summary.json')
+          p=pathlib.Path('.tmp/q4b-historical-${{ matrix.source }}-${{ matrix.offset }}/summary.json')
           s=json.loads(p.read_text())
           assert s['originalIdOnly']['mubawab.ma']==76816
           assert s['originalIdOnly']['avito.ma']==46904
           assert s['unresolvedBefore']['mubawab.ma']>0
           assert s['unresolvedBefore']['avito.ma']>0
-          assert s['recoveredExactUrls'] <= 100
+          assert s['recoveredExactUrls'] <= 50
+          assert len(s['indexes']) <= 6 and len(s['indexes']) > 0
           print(json.dumps(s,indent=2))
           PY
       - uses: actions/upload-artifact@v4
         with:
-          name: q4b-id-url-${{ matrix.source }}-${{ matrix.offset }}
-          path: .tmp/q4b-${{ matrix.source }}-${{ matrix.offset }}/
+          name: q4b-historical-id-url-${{ matrix.source }}-${{ matrix.offset }}
+          path: .tmp/q4b-historical-${{ matrix.source }}-${{ matrix.offset }}/
           retention-days: 30
