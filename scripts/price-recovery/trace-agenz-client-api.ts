@@ -60,6 +60,48 @@ function importedAssets(text: string, baseUrl: string): string[] {
   return [...found];
 }
 
+function serializedState($: cheerio.CheerioAPI, html: string) {
+  const dataAttributes: Array<{tag:string,attrs:Record<string,string>}> = [];
+  $('[data-\u005b\u005d], *').each((_, el) => {
+    if (!el || el.type !== 'tag') return;
+    const attrs = Object.fromEntries(Object.entries(el.attribs ?? {})
+      .filter(([k,v]) => k.startsWith('data-') && typeof v === 'string' && v.length > 0)
+      .map(([k,v]) => [k, compact(v).slice(0, 4000)]));
+    if (Object.keys(attrs).length) dataAttributes.push({ tag: el.tagName, attrs });
+  });
+
+  const jsonScripts = $('script').toArray().flatMap(el => {
+    const type = ($(el).attr('type') ?? '').toLowerCase();
+    const id = $(el).attr('id') ?? '';
+    const text = ($(el).html() ?? '').trim();
+    if (!text) return [];
+    if (!(type.includes('json') || id.includes('astro') || id.includes('next') || /listing|annonce|property|price|prix/i.test(text))) return [];
+    return [{ id, type, text: text.slice(0, 12000) }];
+  }).slice(0, 80);
+
+  const uuids = [...new Set(html.match(/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/ig) ?? [])];
+  const uuidContexts = uuids.slice(0, 30).map(uuid => {
+    const idx = html.indexOf(uuid);
+    return { uuid, context: compact(html.slice(Math.max(0, idx - 1200), Math.min(html.length, idx + 2200))).slice(0, 5000) };
+  });
+
+  const keywordContexts: string[] = [];
+  const re = /(?:price|prix|loyer|listing|annonce|property|uuid|data-)/ig;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(html)) && keywordContexts.length < 80) {
+    const s = compact(html.slice(Math.max(0, m.index - 500), Math.min(html.length, m.index + 1200)));
+    if (s && !keywordContexts.includes(s)) keywordContexts.push(s.slice(0, 2200));
+  }
+
+  return {
+    dataAttributes: dataAttributes.slice(0, 200),
+    jsonScripts,
+    uuids: uuids.slice(0, 100),
+    uuidContexts,
+    keywordContexts,
+  };
+}
+
 async function main() {
   const page = await getText(PAGE);
   if (page.status !== 200) throw new Error(`page http_${page.status}`);
@@ -94,6 +136,7 @@ async function main() {
   const routeCandidates = [...new Set(assets.flatMap(a => a.hints)
     .flatMap(h => h.match(/https?:\\?\/\\?\/api\.agenz\.ma[^"'`\s)]+|["'`]\/?(?:annonce|annonces|listing|listings|property|properties|offer|offers)[^"'`\s]{0,180}["'`]/ig) ?? [])
     .map(x => compact(x.replace(/^["'`]|["'`]$/g, ''))))].slice(0, 200);
+  const state = serializedState($, page.text);
 
   const report = {
     readOnly: true,
@@ -103,6 +146,7 @@ async function main() {
     crawledAssetCount: seen.size,
     pageHints,
     routeCandidates,
+    serializedState: state,
     assets,
   };
   await fs.mkdir(OUT, { recursive: true });
@@ -114,6 +158,9 @@ async function main() {
     crawledAssetCount:seen.size,
     assetsWithEvidence:assets.length,
     routeCandidateCount:routeCandidates.length,
+    dataAttributeCount:state.dataAttributes.length,
+    jsonScriptCount:state.jsonScripts.length,
+    uuidCount:state.uuids.length,
     routeCandidates:routeCandidates.slice(0,40),
   }, null, 2));
 }
