@@ -8,6 +8,8 @@ on:
       - 'app/map/cesium-spike/**'
       - 'components/map/CesiumMaarifSpike.tsx'
       - 'components/map/CesiumTargetLens.tsx'
+      - 'components/map/cesium-overture-buildings.ts'
+      - 'public/data/vivre-ici/maarif-overture-3d.compact.json'
       - 'scripts/vivre-ici-cesium-spike-capture.mjs'
       - '.github/workflows/vivre-ici-cesium-spike.yml'
       - 'lib/geo/casablanca-neighborhood-geometry-shadow.ts'
@@ -17,7 +19,7 @@ on:
 jobs:
   capture:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v4
