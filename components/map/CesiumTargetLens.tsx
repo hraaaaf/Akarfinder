@@ -22,8 +22,8 @@ const OVERPASS_ENDPOINTS = [
   "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
   "https://overpass-api.de/api/interpreter",
 ] as const;
-const BUILDING_QUERY_RADIUS_M = 1800;
-const BUILDING_QUERY_LIMIT = 160;
+const BUILDING_QUERY_RADIUS_M = 2200;
+const BUILDING_QUERY_LIMIT = 260;
 const LEVEL_HEIGHT_ESTIMATE_M = 3;
 const MIN_BUILDINGS = 8;
 
@@ -47,14 +47,14 @@ function applyDaylightGrade(Cesium: any, scene: any) {
   for (let index = 0; index < scene.imageryLayers.length; index += 1) {
     const layer = scene.imageryLayers.get(index);
     if (!layer) continue;
-    layer.brightness = 1.38;
-    layer.contrast = 0.8;
-    layer.saturation = 1.02;
-    layer.gamma = 1.2;
+    layer.brightness = 1.44;
+    layer.contrast = 0.82;
+    layer.saturation = 0.98;
+    layer.gamma = 1.24;
     layer.hue = Cesium.Math.toRadians(-1.5);
   }
 
-  scene.backgroundColor = Cesium.Color.fromCssColorString("#bfe4f2");
+  scene.backgroundColor = Cesium.Color.fromCssColorString("#c8e8f4");
   setShellAttribute("data-cesium-day-mode", "true");
 }
 
@@ -113,8 +113,8 @@ function createOverpassBuildingPrimitive(Cesium: any, elements: OverpassElement[
         vertexFormat: Cesium.PerInstanceColorAppearance.VERTEX_FORMAT,
       });
       const color = height.precision === "height"
-        ? Cesium.Color.fromCssColorString("#f1e8dc").withAlpha(0.94)
-        : Cesium.Color.fromCssColorString("#e7ded1").withAlpha(0.84);
+        ? Cesium.Color.fromCssColorString("#f4ecdf")
+        : Cesium.Color.fromCssColorString("#e9dfd0");
       instances.push(new Cesium.GeometryInstance({
         geometry: polygon,
         attributes: {
@@ -134,7 +134,7 @@ function createOverpassBuildingPrimitive(Cesium: any, elements: OverpassElement[
     geometryInstances: instances,
     appearance: new Cesium.PerInstanceColorAppearance({
       closed: true,
-      translucent: true,
+      translucent: false,
       flat: false,
     }),
     asynchronous: false,
@@ -144,8 +144,6 @@ function createOverpassBuildingPrimitive(Cesium: any, elements: OverpassElement[
 }
 
 async function fetchOverpassBuildings(endpoint: string, latitude: number, longitude: number) {
-  // Start with building:levels only. It is dramatically lighter than requesting all buildings,
-  // while remaining sourced and usable for an explicitly disclosed 3 m/level approximation.
   const query = `[out:json][timeout:14];way["building"]["building:levels"](around:${BUILDING_QUERY_RADIUS_M},${latitude.toFixed(6)},${longitude.toFixed(6)});out tags geom ${BUILDING_QUERY_LIMIT};`;
   const controller = new AbortController();
   const timer = window.setTimeout(() => controller.abort(), 16000);
@@ -221,18 +219,18 @@ function installTargetLens(Cesium: any) {
 
           const tunedTarget = Cesium.Cartesian3.fromDegrees(
             longitude + 0.0035,
-            latitude + 0.0100,
+            latitude + 0.0095,
             0,
           );
 
           if (this.frustum && "fov" in this.frustum) {
-            this.frustum.fov = Cesium.Math.toRadians(40);
+            this.frustum.fov = Cesium.Math.toRadians(38);
           }
 
           const tunedOffset = new Cesium.HeadingPitchRange(
             Cesium.Math.toRadians(346),
-            Cesium.Math.toRadians(-40),
-            8500,
+            Cesium.Math.toRadians(-34),
+            9000,
           );
 
           return originalLookAt.call(this, tunedTarget, tunedOffset);
@@ -284,13 +282,13 @@ export function CesiumTargetLens() {
     <style jsx global>{`
       @media (min-width: 1024px) {
         .cesium-spike-map-atmosphere {
-          height: 38% !important;
+          height: 40% !important;
           background: linear-gradient(
             180deg,
-            rgba(112, 203, 241, 0.55),
-            rgba(145, 216, 242, 0.30) 44%,
-            rgba(195, 230, 243, 0.10) 72%,
-            rgba(195, 230, 243, 0)
+            rgba(108, 199, 238, 0.68),
+            rgba(143, 215, 241, 0.38) 46%,
+            rgba(198, 231, 243, 0.12) 74%,
+            rgba(198, 231, 243, 0)
           ) !important;
           mix-blend-mode: screen !important;
         }
