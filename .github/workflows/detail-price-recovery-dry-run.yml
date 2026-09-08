@@ -23,7 +23,7 @@ jobs:
       PRICE_RECOVERY_LIMIT: ${{ inputs.limit || '100' }}
       PRICE_RECOVERY_CONCURRENCY: '3'
       PRICE_RECOVERY_SOURCES: mubawab.ma
-      PRICE_RECOVERY_FALLBACK_MANIFEST: scripts/price-recovery/fallback-mubawab-unavailable-seedonly-50.json
+      PRICE_RECOVERY_FALLBACK_MANIFEST: scripts/price-recovery/fallback-mubawab-unavailable-seedonly-next50.json
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
