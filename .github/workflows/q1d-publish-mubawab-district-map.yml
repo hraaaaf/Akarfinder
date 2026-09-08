@@ -1,0 +1,71 @@
+name: Q1D Publish Mubawab District Map
+
+on:
+  push:
+    branches: [data/q1d-normalized-features-fingerprints]
+    paths:
+      - '.github/workflows/q1d-publish-mubawab-district-map.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  publish-map:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: data/q1d-normalized-features-fingerprints
+      - name: Download certified Q1D artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/q1d
+          curl --fail --location --retry 3 \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/10022063956/zip" \
+            -o .tmp/q1d.zip
+          unzip -q .tmp/q1d.zip -d .tmp/q1d
+      - name: Build exact restore map
+        run: |
+          python - <<'PY'
+          import csv, json, pathlib
+          src = pathlib.Path('.tmp/q1d/manifest-q1d.jsonl')
+          out = pathlib.Path('data/audits/q1d-mubawab-district-restore-map.csv')
+          out.parent.mkdir(parents=True, exist_ok=True)
+          rows = []
+          with src.open(encoding='utf-8') as f:
+              for idx, line in enumerate(f):
+                  obj = json.loads(line)
+                  feat = obj.get('features') or {}
+                  bases = feat.get('feature_match_basis') or []
+                  district = feat.get('district')
+                  if obj.get('normalized_source_domain') != 'mubawab.ma':
+                      continue
+                  if not district or 'source_id_exact_public_dataset' not in bases:
+                      continue
+                  sid = str(obj.get('source_identity') or '')
+                  if not sid.isdigit():
+                      continue
+                  rows.append((idx, sid, district))
+          with out.open('w', encoding='utf-8', newline='') as f:
+              w = csv.writer(f)
+              w.writerow(['artifact_row_index','source_id','district'])
+              w.writerows(rows)
+          print(f'rows={len(rows)}')
+          assert len(rows) == 35916, len(rows)
+          PY
+      - name: Commit restore map
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/audits/q1d-mubawab-district-restore-map.csv
+          git diff --cached --quiet && exit 0
+          git commit -m 'data(q1d): publish exact Mubawab district restore map'
+          git push origin HEAD:data/q1d-normalized-features-fingerprints
