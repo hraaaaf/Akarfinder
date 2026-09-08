@@ -7,7 +7,7 @@ const outDir = 'artifacts/vivre-ici-cesium-spike';
 const baseUrl = 'http://127.0.0.1:3000';
 const route = '/map/cesium-spike';
 const minMapScreenshotBytes = 20000;
-const minDesktopBuildings = 8;
+const minDesktopBuildings = 4000;
 const viewports = [
   { name: '390x844', width: 390, height: 844 },
   { name: '430x932', width: 430, height: 932 },
@@ -55,13 +55,13 @@ try {
 
     page.on('requestfailed', (request) => {
       const url = request.url();
-      if (/arcgisonline|cesium|jsdelivr|overpass-api\.de/i.test(url)) {
+      if (/arcgisonline|cesium|jsdelivr|overpass-api\.de|overpass\.private\.coffee|maps\.mail\.ru/i.test(url)) {
         failedRequests.push({ url, error: request.failure()?.errorText ?? 'unknown' });
       }
     });
     page.on('response', (response) => {
       const url = response.url();
-      if (/arcgisonline|cesium|jsdelivr|overpass-api\.de/i.test(url) && response.status() >= 400) {
+      if (/arcgisonline|cesium|jsdelivr|overpass-api\.de|overpass\.private\.coffee|maps\.mail\.ru/i.test(url) && response.status() >= 400) {
         failedResponses.push({ url, status: response.status() });
       }
     });
@@ -80,10 +80,10 @@ try {
         const shell = document.querySelector('[data-cesium-spike]');
         const state = shell?.getAttribute('data-cesium-buildings-state');
         return state === 'available' || state === 'unavailable';
-      }, null, { timeout: 30000 }).catch(() => {});
+      }, null, { timeout: 45000 }).catch(() => {});
     }
 
-    await page.waitForTimeout(2500);
+    await page.waitForTimeout(3000);
 
     const file = path.join(outDir, `cesium-maarif-${vp.name}.png`);
     const mapFile = path.join(outDir, `cesium-map-${vp.name}.png`);
@@ -114,6 +114,8 @@ try {
     const dayModeState = await shellLocator.getAttribute('data-cesium-day-mode');
     const buildingsState = await shellLocator.getAttribute('data-cesium-buildings-state');
     const buildingsSource = await shellLocator.getAttribute('data-cesium-buildings-source');
+    const buildingsRelease = await shellLocator.getAttribute('data-cesium-buildings-release');
+    const buildingsLicense = await shellLocator.getAttribute('data-cesium-buildings-license');
     const buildingsCount = Number(await shellLocator.getAttribute('data-cesium-buildings-count') ?? '0');
     const buildingsExactCount = Number(await shellLocator.getAttribute('data-cesium-buildings-exact-count') ?? '0');
     const buildingsEstimatedCount = Number(await shellLocator.getAttribute('data-cesium-buildings-estimated-count') ?? '0');
@@ -133,6 +135,8 @@ try {
       dayModeState,
       buildingsState,
       buildingsSource,
+      buildingsRelease,
+      buildingsLicense,
       buildingsCount,
       buildingsExactCount,
       buildingsEstimatedCount,
@@ -178,7 +182,8 @@ try {
     || r.requiredFailedResponses.length > 0
     || (r.viewport.width >= 1024 && r.dayModeState !== 'true')
     || (r.viewport.width >= 1024 && r.buildingsState !== 'available')
-    || (r.viewport.width >= 1024 && r.buildingsSource !== 'overpass-osm')
+    || (r.viewport.width >= 1024 && r.buildingsSource !== 'overture-static')
+    || (r.viewport.width >= 1024 && r.buildingsLicense !== 'ODbL-1.0')
     || (r.viewport.width >= 1024 && r.buildingsCount < minDesktopBuildings)
   )) process.exitCode = 2;
 } finally {
