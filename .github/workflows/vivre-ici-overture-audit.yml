@@ -1,0 +1,38 @@
+name: Vivre Ici Overture 3D Audit
+
+on:
+  push:
+    branches:
+      - spike/vivre-ici-cesium-target
+    paths:
+      - 'scripts/vivre-ici-overture-audit.py'
+      - '.github/workflows/vivre-ici-overture-audit.yml'
+      - 'data/geo/casablanca-arrondissements-osm.json'
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Overture client
+        run: pip install --disable-pip-version-check overturemaps
+
+      - name: Audit Maârif 3D coverage
+        run: python scripts/vivre-ici-overture-audit.py
+
+      - name: Upload audit artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vivre-ici-overture-audit
+          path: artifacts/vivre-ici-overture-audit
+          if-no-files-found: error
