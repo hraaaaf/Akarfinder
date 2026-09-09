@@ -21,10 +21,10 @@ export default function CesiumSpikePage() {
           [data-vivre-ici-cesium-spike-page] .cesium-spike-map-atmosphere {
             background: linear-gradient(
               180deg,
-              rgba(109, 196, 230, 0.68),
-              rgba(127, 205, 234, 0.52) 44%,
-              rgba(166, 220, 241, 0.20) 72%,
-              rgba(209, 239, 249, 0) 100%
+              rgba(126, 207, 238, 0.82),
+              rgba(146, 216, 241, 0.68) 44%,
+              rgba(183, 229, 245, 0.30) 72%,
+              rgba(219, 243, 251, 0) 100%
             ) !important;
           }
         }
