@@ -101,10 +101,10 @@ function polygonHierarchy(Cesium: any, polygon: unknown) {
 function buildingColor(Cesium: any, height: number, precisionCode: 0 | 1, kindCode: 0 | 1) {
   const exact = precisionCode === 0;
   const part = kindCode === 1;
-  if (height >= 36) return Cesium.Color.fromCssColorString(part ? "#a38369" : exact ? "#b38e70" : "#c1a58b");
-  if (height >= 24) return Cesium.Color.fromCssColorString(part ? "#b79779" : exact ? "#c4a382" : "#d0b99f");
-  if (height >= 14) return Cesium.Color.fromCssColorString(part ? "#cbb092" : exact ? "#d7b99a" : "#dfcbb4");
-  return Cesium.Color.fromCssColorString(part ? "#ddc6a8" : exact ? "#e6ceb0" : "#eadcca");
+  if (height >= 36) return Cesium.Color.fromCssColorString(part ? "#876550" : exact ? "#9e7356" : "#b89e84");
+  if (height >= 24) return Cesium.Color.fromCssColorString(part ? "#9d775d" : exact ? "#b28767" : "#c7ab90");
+  if (height >= 14) return Cesium.Color.fromCssColorString(part ? "#b79372" : exact ? "#c59f7a" : "#d3baa0");
+  return Cesium.Color.fromCssColorString(part ? "#ccb18c" : exact ? "#d5b794" : "#dfcbb5");
 }
 
 function polygonsForRecord(record: RuntimeFeature): unknown[] {
