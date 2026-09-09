@@ -48,14 +48,14 @@ function applyDaylightGrade(Cesium: any, scene: any) {
   for (let index = 0; index < scene.imageryLayers.length; index += 1) {
     const layer = scene.imageryLayers.get(index);
     if (!layer) continue;
-    layer.brightness = 1.38;
-    layer.contrast = 0.9;
-    layer.saturation = 1.0;
-    layer.gamma = 1.16;
-    layer.hue = Cesium.Math.toRadians(-1.5);
+    layer.brightness = 1.24;
+    layer.contrast = 1.03;
+    layer.saturation = 1.06;
+    layer.gamma = 1.04;
+    layer.hue = Cesium.Math.toRadians(-0.8);
   }
 
-  scene.backgroundColor = Cesium.Color.fromCssColorString("#d9f1fb");
+  scene.backgroundColor = Cesium.Color.fromCssColorString("#d5edf7");
   setShellAttribute("data-cesium-day-mode", "true");
 }
 
@@ -208,11 +208,8 @@ async function ensureOpenBuildings(Cesium: any, scene: any, latitude: number, lo
   setShellAttribute("data-cesium-buildings-state", "loading");
   setShellAttribute("data-cesium-buildings-count", "0");
 
-  // Primary path: one audited, versioned, local Overture bundle. This removes the
-  // runtime Overpass dependency and gives us thousands of truth-safe volumes.
   if (await tryLoadOvertureStaticBuildings(Cesium, scene)) return;
 
-  // Fallback only: live OSM remains useful if the static bundle is missing or corrupt.
   setShellAttribute("data-cesium-buildings-source", "overpass-osm");
   for (const endpoint of OVERPASS_ENDPOINTS) {
     try {
@@ -270,13 +267,13 @@ function installTargetLens(Cesium: any) {
           );
 
           if (this.frustum && "fov" in this.frustum) {
-            this.frustum.fov = Cesium.Math.toRadians(36);
+            this.frustum.fov = Cesium.Math.toRadians(34);
           }
 
           const tunedOffset = new Cesium.HeadingPitchRange(
             Cesium.Math.toRadians(346),
-            Cesium.Math.toRadians(-20),
-            6750,
+            Cesium.Math.toRadians(-17),
+            6400,
           );
 
           return originalLookAt.call(this, tunedTarget, tunedOffset);
@@ -328,12 +325,12 @@ export function CesiumTargetLens() {
     <style jsx global>{`
       @media (min-width: 1024px) {
         .cesium-spike-map-atmosphere {
-          height: 51% !important;
+          height: 44% !important;
           background: linear-gradient(
             180deg,
-            rgba(72, 188, 236, 0.98),
-            rgba(111, 207, 244, 0.82) 39%,
-            rgba(166, 224, 246, 0.34) 68%,
+            rgba(70, 188, 232, 0.78),
+            rgba(105, 203, 239, 0.52) 38%,
+            rgba(164, 224, 244, 0.18) 67%,
             rgba(209, 239, 249, 0) 100%
           ) !important;
           mix-blend-mode: screen !important;
