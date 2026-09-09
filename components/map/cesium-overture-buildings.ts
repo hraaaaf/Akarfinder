@@ -101,10 +101,10 @@ function polygonHierarchy(Cesium: any, polygon: unknown) {
 function buildingColor(Cesium: any, height: number, precisionCode: 0 | 1, kindCode: 0 | 1) {
   const exact = precisionCode === 0;
   const part = kindCode === 1;
-  if (height >= 36) return Cesium.Color.fromCssColorString(part ? "#876550" : exact ? "#9e7356" : "#b89e84");
-  if (height >= 24) return Cesium.Color.fromCssColorString(part ? "#9d775d" : exact ? "#b28767" : "#c7ab90");
-  if (height >= 14) return Cesium.Color.fromCssColorString(part ? "#b79372" : exact ? "#c59f7a" : "#d3baa0");
-  return Cesium.Color.fromCssColorString(part ? "#ccb18c" : exact ? "#d5b794" : "#dfcbb5");
+  if (height >= 36) return Cesium.Color.fromCssColorString(part ? "#7d5d4a" : exact ? "#8d6045" : "#c5b19d");
+  if (height >= 24) return Cesium.Color.fromCssColorString(part ? "#906a50" : exact ? "#a67352" : "#d2bea8");
+  if (height >= 14) return Cesium.Color.fromCssColorString(part ? "#aa8663" : exact ? "#b88f69" : "#ddcbb5");
+  return Cesium.Color.fromCssColorString(part ? "#c2a581" : exact ? "#c9a47d" : "#e6dacb");
 }
 
 function polygonsForRecord(record: RuntimeFeature): unknown[] {
@@ -161,7 +161,7 @@ function createRuntimePrimitives(Cesium: any, records: RuntimeFeature[]) {
         );
         featureRendered = true;
 
-        if (height >= 18 && Array.isArray(polygon) && Array.isArray(polygon[0])) {
+        if (precisionCode === 0 && height >= 18 && Array.isArray(polygon) && Array.isArray(polygon[0])) {
           const roofDegrees: number[] = [];
           for (const coordinate of polygon[0]) {
             if (!Array.isArray(coordinate) || coordinate.length < 2) continue;
@@ -180,7 +180,7 @@ function createRuntimePrimitives(Cesium: any, records: RuntimeFeature[]) {
                 }),
                 attributes: {
                   color: Cesium.ColorGeometryInstanceAttribute.fromColor(
-                    Cesium.Color.fromCssColorString("#74675d").withAlpha(height >= 30 ? 0.55 : 0.34),
+                    Cesium.Color.fromCssColorString("#68594f").withAlpha(height >= 30 ? 0.52 : 0.30),
                   ),
                 },
               }),
