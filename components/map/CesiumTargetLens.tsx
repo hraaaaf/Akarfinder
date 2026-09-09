@@ -48,14 +48,14 @@ function applyDaylightGrade(Cesium: any, scene: any) {
   for (let index = 0; index < scene.imageryLayers.length; index += 1) {
     const layer = scene.imageryLayers.get(index);
     if (!layer) continue;
-    layer.brightness = 1.16;
-    layer.contrast = 1.08;
-    layer.saturation = 1.08;
-    layer.gamma = 1.0;
-    layer.hue = Cesium.Math.toRadians(-0.5);
+    layer.brightness = 1.22;
+    layer.contrast = 1.0;
+    layer.saturation = 0.96;
+    layer.gamma = 1.06;
+    layer.hue = Cesium.Math.toRadians(1.25);
   }
 
-  scene.backgroundColor = Cesium.Color.fromCssColorString("#d5edf7");
+  scene.backgroundColor = Cesium.Color.fromCssColorString("#c8e9f5");
   setShellAttribute("data-cesium-day-mode", "true");
 }
 
@@ -136,12 +136,12 @@ function createOverpassBuildingPrimitive(Cesium: any, elements: OverpassElement[
         roofOutlineInstances.push(new Cesium.GeometryInstance({
           geometry: new Cesium.PolylineGeometry({
             positions: roofPositions,
-            width: height.meters >= 18 ? 1.65 : 1.15,
+            width: height.meters >= 18 ? 1.35 : 0.9,
             vertexFormat: Cesium.PolylineColorAppearance.VERTEX_FORMAT,
           }),
           attributes: {
             color: Cesium.ColorGeometryInstanceAttribute.fromColor(
-              Cesium.Color.fromCssColorString("#5f5043").withAlpha(height.meters >= 18 ? 0.8 : 0.58),
+              Cesium.Color.fromCssColorString("#75685d").withAlpha(height.meters >= 18 ? 0.58 : 0.4),
             ),
           },
         }));
@@ -217,7 +217,7 @@ async function ensureOpenBuildings(Cesium: any, scene: any, latitude: number, lo
       const built = createOverpassBuildingPrimitive(Cesium, payload.elements ?? []);
       if (!built || built.count < MIN_BUILDINGS) continue;
 
-      if (Cesium.SunLight) scene.light = new Cesium.SunLight({ intensity: 1.8 });
+      if (Cesium.SunLight) scene.light = new Cesium.SunLight({ intensity: 1.55 });
       if (scene.shadowMap) {
         scene.shadowMap.enabled = true;
         scene.shadowMap.softShadows = true;
@@ -308,15 +308,43 @@ export function CesiumTargetLens() {
     <style jsx global>{`
       @media (min-width: 1024px) {
         .cesium-spike-map-atmosphere {
-          height: 26% !important;
+          height: 16% !important;
           background: linear-gradient(
             180deg,
-            rgba(70, 188, 232, 0.34),
-            rgba(105, 203, 239, 0.16) 42%,
-            rgba(164, 224, 244, 0.05) 72%,
-            rgba(209, 239, 249, 0) 100%
+            rgba(83, 191, 232, 0.18),
+            rgba(121, 207, 239, 0.08) 48%,
+            rgba(183, 229, 246, 0) 100%
           ) !important;
           mix-blend-mode: normal !important;
+        }
+        [data-vivre-ici-cesium-spike-page] .cesium-spike-shell {
+          column-gap: 0 !important;
+        }
+        [data-vivre-ici-cesium-spike-page] .cesium-spike-map {
+          border-radius: 22px 0 0 22px !important;
+          box-shadow: 0 18px 44px rgb(38 48 48 / .10) !important;
+        }
+        [data-vivre-ici-cesium-spike-page] .maarif-target-rail {
+          border-radius: 0 22px 22px 0 !important;
+          background: #fffaf4 !important;
+          box-shadow: 0 18px 44px rgb(38 48 48 / .10) !important;
+        }
+        [data-vivre-ici-cesium-spike-page] .maarif-target-hero {
+          height: 166px !important;
+          border-radius: 0 22px 0 0 !important;
+        }
+        [data-vivre-ici-cesium-spike-page] .maarif-target-head {
+          padding: 18px 20px 10px !important;
+        }
+        [data-vivre-ici-cesium-spike-page] .maarif-target-copy {
+          padding: 14px 20px 7px !important;
+        }
+        [data-vivre-ici-cesium-spike-page] .maarif-target-metrics {
+          gap: 6px !important;
+          padding: 7px 20px 14px !important;
+        }
+        [data-vivre-ici-cesium-spike-page] .maarif-target-nearby {
+          padding: 14px 20px 18px !important;
         }
         .cesium-spike-osm-3d-attribution {
           position: absolute;
@@ -332,6 +360,68 @@ export function CesiumTargetLens() {
           line-height: 1.25;
           pointer-events: none;
           backdrop-filter: blur(7px);
+        }
+      }
+      @media (max-width: 1023px) {
+        [data-vivre-ici-cesium-spike-page] .maarif-target-rail {
+          bottom: 10px !important;
+          max-height: 31svh !important;
+          border-radius: 24px !important;
+        }
+        [data-vivre-ici-cesium-spike-page] .maarif-target-hero {
+          display: block !important;
+          height: 58px !important;
+          margin: 10px 12px 0 !important;
+          border-radius: 16px !important;
+        }
+        [data-vivre-ici-cesium-spike-page] .maarif-target-hero figcaption {
+          display: none !important;
+        }
+        [data-vivre-ici-cesium-spike-page] .maarif-target-head {
+          padding: 8px 16px 2px !important;
+        }
+        [data-vivre-ici-cesium-spike-page] .maarif-target-head h1 {
+          font-size: 22px !important;
+        }
+        [data-vivre-ici-cesium-spike-page] .maarif-target-head p {
+          margin-top: 2px !important;
+          font-size: 10px !important;
+        }
+        [data-vivre-ici-cesium-spike-page] .maarif-target-head button {
+          width: 30px !important;
+          height: 30px !important;
+          font-size: 16px !important;
+        }
+        [data-vivre-ici-cesium-spike-page] .maarif-target-tabs {
+          display: none !important;
+        }
+        [data-vivre-ici-cesium-spike-page] .maarif-target-copy {
+          padding: 5px 16px 2px !important;
+        }
+        [data-vivre-ici-cesium-spike-page] .maarif-target-copy p {
+          font-size: 9px !important;
+          line-height: 1.35 !important;
+        }
+        [data-vivre-ici-cesium-spike-page] .maarif-target-metrics {
+          grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+          gap: 6px !important;
+          padding: 6px 12px 12px !important;
+        }
+        [data-vivre-ici-cesium-spike-page] .maarif-target-metrics article {
+          min-height: 56px !important;
+          padding: 8px !important;
+        }
+        [data-vivre-ici-cesium-spike-page] .maarif-target-metrics i {
+          width: 24px !important;
+          height: 24px !important;
+          font-size: 11px !important;
+        }
+        [data-vivre-ici-cesium-spike-page] .maarif-target-metrics strong {
+          margin-top: 5px !important;
+          font-size: 12px !important;
+        }
+        [data-vivre-ici-cesium-spike-page] .maarif-target-metrics span {
+          font-size: 7px !important;
         }
       }
     `}</style>
