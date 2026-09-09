@@ -48,11 +48,11 @@ function applyDaylightGrade(Cesium: any, scene: any) {
   for (let index = 0; index < scene.imageryLayers.length; index += 1) {
     const layer = scene.imageryLayers.get(index);
     if (!layer) continue;
-    layer.brightness = 1.24;
-    layer.contrast = 1.03;
-    layer.saturation = 1.06;
-    layer.gamma = 1.04;
-    layer.hue = Cesium.Math.toRadians(-0.8);
+    layer.brightness = 1.16;
+    layer.contrast = 1.08;
+    layer.saturation = 1.08;
+    layer.gamma = 1.0;
+    layer.hue = Cesium.Math.toRadians(-0.5);
   }
 
   scene.backgroundColor = Cesium.Color.fromCssColorString("#d5edf7");
@@ -259,24 +259,7 @@ function installTargetLens(Cesium: any) {
           const scene = this?._scene;
           applyDaylightGrade(Cesium, scene);
           void ensureOpenBuildings(Cesium, scene, latitude, longitude);
-
-          const tunedTarget = Cesium.Cartesian3.fromDegrees(
-            longitude + 0.0038,
-            latitude + 0.0132,
-            0,
-          );
-
-          if (this.frustum && "fov" in this.frustum) {
-            this.frustum.fov = Cesium.Math.toRadians(34);
-          }
-
-          const tunedOffset = new Cesium.HeadingPitchRange(
-            Cesium.Math.toRadians(346),
-            Cesium.Math.toRadians(-17),
-            6400,
-          );
-
-          return originalLookAt.call(this, tunedTarget, tunedOffset);
+          return originalLookAt.call(this, target, offset);
         }
       }
     } catch {
@@ -325,15 +308,15 @@ export function CesiumTargetLens() {
     <style jsx global>{`
       @media (min-width: 1024px) {
         .cesium-spike-map-atmosphere {
-          height: 44% !important;
+          height: 26% !important;
           background: linear-gradient(
             180deg,
-            rgba(70, 188, 232, 0.78),
-            rgba(105, 203, 239, 0.52) 38%,
-            rgba(164, 224, 244, 0.18) 67%,
+            rgba(70, 188, 232, 0.34),
+            rgba(105, 203, 239, 0.16) 42%,
+            rgba(164, 224, 244, 0.05) 72%,
             rgba(209, 239, 249, 0) 100%
           ) !important;
-          mix-blend-mode: screen !important;
+          mix-blend-mode: normal !important;
         }
         .cesium-spike-osm-3d-attribution {
           position: absolute;
