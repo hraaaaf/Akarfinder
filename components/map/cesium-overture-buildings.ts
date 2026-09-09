@@ -101,10 +101,10 @@ function polygonHierarchy(Cesium: any, polygon: unknown) {
 function buildingColor(Cesium: any, height: number, precisionCode: 0 | 1, kindCode: 0 | 1) {
   const exact = precisionCode === 0;
   const part = kindCode === 1;
-  if (height >= 36) return Cesium.Color.fromCssColorString(part ? "#8f7a67" : exact ? "#9e876f" : "#b09d8b");
-  if (height >= 24) return Cesium.Color.fromCssColorString(part ? "#a89580" : exact ? "#b7a087" : "#c7b5a4");
-  if (height >= 14) return Cesium.Color.fromCssColorString(part ? "#c0aa92" : exact ? "#cdb79e" : "#d8c9ba");
-  return Cesium.Color.fromCssColorString(part ? "#d2bea7" : exact ? "#dbc8b1" : "#e2d6c8");
+  if (height >= 36) return Cesium.Color.fromCssColorString(part ? "#a38369" : exact ? "#b38e70" : "#c1a58b");
+  if (height >= 24) return Cesium.Color.fromCssColorString(part ? "#b79779" : exact ? "#c4a382" : "#d0b99f");
+  if (height >= 14) return Cesium.Color.fromCssColorString(part ? "#cbb092" : exact ? "#d7b99a" : "#dfcbb4");
+  return Cesium.Color.fromCssColorString(part ? "#ddc6a8" : exact ? "#e6ceb0" : "#eadcca");
 }
 
 function polygonsForRecord(record: RuntimeFeature): unknown[] {
@@ -175,12 +175,12 @@ function createRuntimePrimitives(Cesium: any, records: RuntimeFeature[]) {
               new Cesium.GeometryInstance({
                 geometry: new Cesium.PolylineGeometry({
                   positions: Cesium.Cartesian3.fromDegreesArrayHeights(roofDegrees),
-                  width: height >= 30 ? 1.55 : 1.0,
+                  width: height >= 30 ? 1.25 : 0.85,
                   vertexFormat: Cesium.PolylineColorAppearance.VERTEX_FORMAT,
                 }),
                 attributes: {
                   color: Cesium.ColorGeometryInstanceAttribute.fromColor(
-                    Cesium.Color.fromCssColorString("#564c44").withAlpha(height >= 30 ? 0.74 : 0.5),
+                    Cesium.Color.fromCssColorString("#74675d").withAlpha(height >= 30 ? 0.55 : 0.34),
                   ),
                 },
               }),
@@ -246,9 +246,9 @@ export async function tryLoadOvertureStaticBuildings(Cesium: any, scene: any): P
     const built = createRuntimePrimitives(Cesium, payload.features);
     if (built.renderedFeatures < MIN_OVERTURE_FEATURES) return false;
 
-    if (Cesium.SunLight) scene.light = new Cesium.SunLight({ intensity: 1.7 });
+    if (Cesium.SunLight) scene.light = new Cesium.SunLight({ intensity: 1.55 });
     if (scene.postProcessStages?.fxaa) scene.postProcessStages.fxaa.enabled = true;
-    scene.highDynamicRange = true;
+    scene.highDynamicRange = false;
     if (scene.shadowMap) {
       scene.shadowMap.enabled = true;
       scene.shadowMap.softShadows = true;
