@@ -55,7 +55,7 @@ function applyDaylightGrade(Cesium: any, scene: any) {
     layer.hue = Cesium.Math.toRadians(0.5);
   }
 
-  scene.backgroundColor = Cesium.Color.fromCssColorString("#cfeaf4");
+  scene.backgroundColor = Cesium.Color.fromCssColorString("#d9f0f8");
   setShellAttribute("data-cesium-day-mode", "true");
 }
 
@@ -313,14 +313,15 @@ export function CesiumTargetLens() {
     <style jsx global>{`
       @media (min-width: 1024px) {
         .cesium-spike-map-atmosphere {
-          height: 12% !important;
+          height: 26% !important;
           background: linear-gradient(
             180deg,
-            rgba(90, 195, 232, 0.12),
-            rgba(135, 211, 238, 0.05) 52%,
-            rgba(190, 232, 247, 0) 100%
+            rgba(84, 179, 218, 0.34),
+            rgba(109, 193, 226, 0.24) 44%,
+            rgba(154, 215, 239, 0.10) 72%,
+            rgba(209, 239, 249, 0) 100%
           ) !important;
-          mix-blend-mode: normal !important;
+          mix-blend-mode: screen !important;
         }
         [data-vivre-ici-cesium-spike-page] .cesium-spike-shell {
           column-gap: 0 !important;
