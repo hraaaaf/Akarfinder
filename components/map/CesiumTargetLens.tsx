@@ -48,14 +48,14 @@ function applyDaylightGrade(Cesium: any, scene: any) {
   for (let index = 0; index < scene.imageryLayers.length; index += 1) {
     const layer = scene.imageryLayers.get(index);
     if (!layer) continue;
-    layer.brightness = 1.22;
-    layer.contrast = 1.0;
-    layer.saturation = 0.96;
-    layer.gamma = 1.06;
-    layer.hue = Cesium.Math.toRadians(1.25);
+    layer.brightness = 1.24;
+    layer.contrast = 0.98;
+    layer.saturation = 0.94;
+    layer.gamma = 1.08;
+    layer.hue = Cesium.Math.toRadians(0.5);
   }
 
-  scene.backgroundColor = Cesium.Color.fromCssColorString("#c8e9f5");
+  scene.backgroundColor = Cesium.Color.fromCssColorString("#cfeaf4");
   setShellAttribute("data-cesium-day-mode", "true");
 }
 
@@ -259,7 +259,12 @@ function installTargetLens(Cesium: any) {
           const scene = this?._scene;
           applyDaylightGrade(Cesium, scene);
           void ensureOpenBuildings(Cesium, scene, latitude, longitude);
-          return originalLookAt.call(this, target, offset);
+          const tunedOffset = new Cesium.HeadingPitchRange(
+            Cesium.Math.toRadians(329),
+            Cesium.Math.toRadians(-42),
+            6200,
+          );
+          return originalLookAt.call(this, target, tunedOffset);
         }
       }
     } catch {
@@ -308,12 +313,12 @@ export function CesiumTargetLens() {
     <style jsx global>{`
       @media (min-width: 1024px) {
         .cesium-spike-map-atmosphere {
-          height: 16% !important;
+          height: 12% !important;
           background: linear-gradient(
             180deg,
-            rgba(83, 191, 232, 0.18),
-            rgba(121, 207, 239, 0.08) 48%,
-            rgba(183, 229, 246, 0) 100%
+            rgba(90, 195, 232, 0.12),
+            rgba(135, 211, 238, 0.05) 52%,
+            rgba(190, 232, 247, 0) 100%
           ) !important;
           mix-blend-mode: normal !important;
         }
