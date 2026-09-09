@@ -313,12 +313,14 @@ export function CesiumTargetLens() {
     <style jsx global>{`
       @media (min-width: 1024px) {
         .cesium-spike-map-atmosphere {
-          height: 26% !important;
+          height: 34% !important;
           background: linear-gradient(
             180deg,
-            rgba(84, 179, 218, 0.34),
-            rgba(109, 193, 226, 0.24) 44%,
-            rgba(154, 215, 239, 0.10) 72%,
+            rgba(84, 179, 218, 0.16) 0%,
+            rgba(104, 194, 229, 0.20) 34%,
+            rgba(126, 211, 239, 0.46) 60%,
+            rgba(151, 222, 244, 0.54) 76%,
+            rgba(188, 234, 248, 0.18) 92%,
             rgba(209, 239, 249, 0) 100%
           ) !important;
           mix-blend-mode: screen !important;
