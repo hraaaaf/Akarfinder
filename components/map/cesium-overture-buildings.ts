@@ -104,10 +104,10 @@ function polygonHierarchy(Cesium: any, polygon: unknown) {
 function buildingColor(Cesium: any, height: number, precisionCode: 0 | 1, kindCode: 0 | 1) {
   const exact = precisionCode === 0;
   const part = kindCode === 1;
-  if (height >= 36) return Cesium.Color.fromCssColorString(part ? "#b7783f" : exact ? "#c78a4d" : "#caa06e");
-  if (height >= 24) return Cesium.Color.fromCssColorString(part ? "#c89158" : exact ? "#d4a36b" : "#d6b789");
-  if (height >= 14) return Cesium.Color.fromCssColorString(part ? "#d8ae79" : exact ? "#e0bc8b" : "#dfc8a5");
-  return Cesium.Color.fromCssColorString(part ? "#e4c79f" : exact ? "#ecd4b5" : "#e8dac7");
+  if (height >= 36) return Cesium.Color.fromCssColorString(part ? "#b7a38a" : exact ? "#c8b69d" : "#d0c3b2");
+  if (height >= 24) return Cesium.Color.fromCssColorString(part ? "#c8b59d" : exact ? "#d8c7af" : "#ddd2c2");
+  if (height >= 14) return Cesium.Color.fromCssColorString(part ? "#d8c7b0" : exact ? "#e5d7c2" : "#e9dfd1");
+  return Cesium.Color.fromCssColorString(part ? "#e4d6c4" : exact ? "#eee3d4" : "#f0e9df");
 }
 
 function polygonsForRecord(record: RuntimeFeature): unknown[] {
@@ -183,7 +183,7 @@ function createRuntimePrimitives(Cesium: any, records: RuntimeFeature[]) {
                 }),
                 attributes: {
                   color: Cesium.ColorGeometryInstanceAttribute.fromColor(
-                    Cesium.Color.fromCssColorString("#6d5139").withAlpha(height >= 30 ? 0.72 : 0.42),
+                    Cesium.Color.fromCssColorString("#756a61").withAlpha(height >= 30 ? 0.66 : 0.36),
                   ),
                 },
               }),
@@ -249,7 +249,9 @@ export async function tryLoadOvertureStaticBuildings(Cesium: any, scene: any): P
     const built = createRuntimePrimitives(Cesium, payload.features);
     if (built.renderedFeatures < MIN_OVERTURE_FEATURES) return false;
 
-    if (Cesium.SunLight) scene.light = new Cesium.SunLight({ intensity: 2.15 });
+    if (Cesium.SunLight) scene.light = new Cesium.SunLight({ intensity: 2.55 });
+    if (scene.postProcessStages?.fxaa) scene.postProcessStages.fxaa.enabled = true;
+    scene.highDynamicRange = true;
     if (scene.shadowMap) {
       scene.shadowMap.enabled = true;
       scene.shadowMap.softShadows = true;

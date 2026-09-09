@@ -48,10 +48,10 @@ function applyDaylightGrade(Cesium: any, scene: any) {
   for (let index = 0; index < scene.imageryLayers.length; index += 1) {
     const layer = scene.imageryLayers.get(index);
     if (!layer) continue;
-    layer.brightness = 1.3;
-    layer.contrast = 0.96;
-    layer.saturation = 1.05;
-    layer.gamma = 1.1;
+    layer.brightness = 1.38;
+    layer.contrast = 0.9;
+    layer.saturation = 1.0;
+    layer.gamma = 1.16;
     layer.hue = Cesium.Math.toRadians(-1.5);
   }
 
@@ -270,13 +270,13 @@ function installTargetLens(Cesium: any) {
           );
 
           if (this.frustum && "fov" in this.frustum) {
-            this.frustum.fov = Cesium.Math.toRadians(39);
+            this.frustum.fov = Cesium.Math.toRadians(36);
           }
 
           const tunedOffset = new Cesium.HeadingPitchRange(
             Cesium.Math.toRadians(346),
-            Cesium.Math.toRadians(-24),
-            7200,
+            Cesium.Math.toRadians(-20),
+            6750,
           );
 
           return originalLookAt.call(this, tunedTarget, tunedOffset);
@@ -328,7 +328,7 @@ export function CesiumTargetLens() {
     <style jsx global>{`
       @media (min-width: 1024px) {
         .cesium-spike-map-atmosphere {
-          height: 43% !important;
+          height: 51% !important;
           background: linear-gradient(
             180deg,
             rgba(72, 188, 236, 0.98),
