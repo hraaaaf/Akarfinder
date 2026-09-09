@@ -101,10 +101,10 @@ function polygonHierarchy(Cesium: any, polygon: unknown) {
 function buildingColor(Cesium: any, height: number, precisionCode: 0 | 1, kindCode: 0 | 1) {
   const exact = precisionCode === 0;
   const part = kindCode === 1;
-  if (height >= 36) return Cesium.Color.fromCssColorString(part ? "#7d5d4a" : exact ? "#8d6045" : "#c5b19d");
-  if (height >= 24) return Cesium.Color.fromCssColorString(part ? "#906a50" : exact ? "#a67352" : "#d2bea8");
-  if (height >= 14) return Cesium.Color.fromCssColorString(part ? "#aa8663" : exact ? "#b88f69" : "#ddcbb5");
-  return Cesium.Color.fromCssColorString(part ? "#c2a581" : exact ? "#c9a47d" : "#e6dacb");
+  if (height >= 36) return Cesium.Color.fromCssColorString(part ? "#7d5d4a" : exact ? "#8d6045" : "#b79d84");
+  if (height >= 24) return Cesium.Color.fromCssColorString(part ? "#906a50" : exact ? "#a67352" : "#c5a98f");
+  if (height >= 14) return Cesium.Color.fromCssColorString(part ? "#aa8663" : exact ? "#b88f69" : "#d1b99f");
+  return Cesium.Color.fromCssColorString(part ? "#c2a581" : exact ? "#c9a47d" : "#dccbb8");
 }
 
 function exactRoofColor(Cesium: any, height: number) {
