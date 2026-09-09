@@ -53,4 +53,4 @@ jobs:
           path: artifacts/vivre-ici-cesium-spike
           if-no-files-found: error
 
-# Trigger capture after CI materializes a widened Overture bundle.
+# Trigger capture after the expert UX/UI daylight + 3D material pass.
