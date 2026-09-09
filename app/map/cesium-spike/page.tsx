@@ -16,6 +16,19 @@ export default function CesiumSpikePage() {
       <CesiumTargetLens />
       <CesiumMaarifSpike />
       <MaarifTargetRail />
+      <style>{`
+        @media (min-width: 1024px) {
+          [data-vivre-ici-cesium-spike-page] .cesium-spike-map-atmosphere {
+            background: linear-gradient(
+              180deg,
+              rgba(109, 196, 230, 0.68),
+              rgba(127, 205, 234, 0.52) 44%,
+              rgba(166, 220, 241, 0.20) 72%,
+              rgba(209, 239, 249, 0) 100%
+            ) !important;
+          }
+        }
+      `}</style>
     </main>
   );
 }
