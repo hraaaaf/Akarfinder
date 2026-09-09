@@ -161,7 +161,7 @@ function createRuntimePrimitives(Cesium: any, records: RuntimeFeature[]) {
         );
         featureRendered = true;
 
-        if (precisionCode === 0 && height >= 18 && Array.isArray(polygon) && Array.isArray(polygon[0])) {
+        if (precisionCode === 0 && height >= 12 && Array.isArray(polygon) && Array.isArray(polygon[0])) {
           const roofDegrees: number[] = [];
           for (const coordinate of polygon[0]) {
             if (!Array.isArray(coordinate) || coordinate.length < 2) continue;
@@ -175,12 +175,12 @@ function createRuntimePrimitives(Cesium: any, records: RuntimeFeature[]) {
               new Cesium.GeometryInstance({
                 geometry: new Cesium.PolylineGeometry({
                   positions: Cesium.Cartesian3.fromDegreesArrayHeights(roofDegrees),
-                  width: height >= 30 ? 1.25 : 0.85,
+                  width: height >= 30 ? 1.45 : height >= 18 ? 1.05 : 0.75,
                   vertexFormat: Cesium.PolylineColorAppearance.VERTEX_FORMAT,
                 }),
                 attributes: {
                   color: Cesium.ColorGeometryInstanceAttribute.fromColor(
-                    Cesium.Color.fromCssColorString("#68594f").withAlpha(height >= 30 ? 0.52 : 0.30),
+                    Cesium.Color.fromCssColorString("#68594f").withAlpha(height >= 30 ? 0.60 : height >= 18 ? 0.40 : 0.24),
                   ),
                 },
               }),
