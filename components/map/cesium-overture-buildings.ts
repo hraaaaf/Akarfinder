@@ -107,6 +107,13 @@ function buildingColor(Cesium: any, height: number, precisionCode: 0 | 1, kindCo
   return Cesium.Color.fromCssColorString(part ? "#c2a581" : exact ? "#c9a47d" : "#e6dacb");
 }
 
+function exactRoofColor(Cesium: any, height: number) {
+  if (height >= 36) return Cesium.Color.fromCssColorString("#d4ad86");
+  if (height >= 24) return Cesium.Color.fromCssColorString("#ddbc99");
+  if (height >= 14) return Cesium.Color.fromCssColorString("#e6cbaa");
+  return Cesium.Color.fromCssColorString("#edd9bd");
+}
+
 function polygonsForRecord(record: RuntimeFeature): unknown[] {
   const geometryTypeCode = record[4];
   const coordinates = record[5];
@@ -117,7 +124,7 @@ function polygonsForRecord(record: RuntimeFeature): unknown[] {
 function createRuntimePrimitives(Cesium: any, records: RuntimeFeature[]) {
   const geometryInstances: any[] = [];
   const tallRoofInstances: any[] = [];
-  const exactFacadeEdgeInstances: any[] = [];
+  const exactRoofCapInstances: any[] = [];
   let renderedFeatures = 0;
   let exactHeightCount = 0;
   let estimatedHeightCount = 0;
@@ -163,6 +170,21 @@ function createRuntimePrimitives(Cesium: any, records: RuntimeFeature[]) {
         featureRendered = true;
 
         if (precisionCode === 0 && height >= 12 && Array.isArray(polygon) && Array.isArray(polygon[0])) {
+          exactRoofCapInstances.push(
+            new Cesium.GeometryInstance({
+              geometry: new Cesium.PolygonGeometry({
+                polygonHierarchy: hierarchy,
+                height: topHeight + 0.22,
+                closeTop: true,
+                closeBottom: false,
+                vertexFormat: Cesium.PerInstanceColorAppearance.VERTEX_FORMAT,
+              }),
+              attributes: {
+                color: Cesium.ColorGeometryInstanceAttribute.fromColor(exactRoofColor(Cesium, height)),
+              },
+            }),
+          );
+
           const roofDegrees: number[] = [];
           for (const coordinate of polygon[0]) {
             if (!Array.isArray(coordinate) || coordinate.length < 2) continue;
@@ -170,38 +192,18 @@ function createRuntimePrimitives(Cesium: any, records: RuntimeFeature[]) {
             const lat = finiteNumber(coordinate[1]);
             if (lng === null || lat === null) continue;
             roofDegrees.push(lng, lat, topHeight + 0.35);
-
-            if (height >= 18 && Cesium.PolylineGeometry && Cesium.PolylineColorAppearance) {
-              exactFacadeEdgeInstances.push(
-                new Cesium.GeometryInstance({
-                  geometry: new Cesium.PolylineGeometry({
-                    positions: Cesium.Cartesian3.fromDegreesArrayHeights([
-                      lng, lat, minHeight + 0.15,
-                      lng, lat, topHeight + 0.20,
-                    ]),
-                    width: height >= 30 ? 0.85 : 0.55,
-                    vertexFormat: Cesium.PolylineColorAppearance.VERTEX_FORMAT,
-                  }),
-                  attributes: {
-                    color: Cesium.ColorGeometryInstanceAttribute.fromColor(
-                      Cesium.Color.fromCssColorString("#64554b").withAlpha(height >= 30 ? 0.34 : 0.22),
-                    ),
-                  },
-                }),
-              );
-            }
           }
           if (roofDegrees.length >= 12 && Cesium.PolylineGeometry && Cesium.PolylineColorAppearance) {
             tallRoofInstances.push(
               new Cesium.GeometryInstance({
                 geometry: new Cesium.PolylineGeometry({
                   positions: Cesium.Cartesian3.fromDegreesArrayHeights(roofDegrees),
-                  width: height >= 30 ? 1.45 : height >= 18 ? 1.05 : 0.75,
+                  width: height >= 30 ? 1.25 : height >= 18 ? 0.95 : 0.70,
                   vertexFormat: Cesium.PolylineColorAppearance.VERTEX_FORMAT,
                 }),
                 attributes: {
                   color: Cesium.ColorGeometryInstanceAttribute.fromColor(
-                    Cesium.Color.fromCssColorString("#68594f").withAlpha(height >= 30 ? 0.60 : height >= 18 ? 0.40 : 0.24),
+                    Cesium.Color.fromCssColorString("#77665a").withAlpha(height >= 30 ? 0.46 : height >= 18 ? 0.32 : 0.20),
                   ),
                 },
               }),
@@ -236,20 +238,24 @@ function createRuntimePrimitives(Cesium: any, records: RuntimeFeature[]) {
     );
   }
 
-  for (let start = 0; start < tallRoofInstances.length; start += PRIMITIVE_BATCH_SIZE) {
+  for (let start = 0; start < exactRoofCapInstances.length; start += PRIMITIVE_BATCH_SIZE) {
     primitives.push(
       new Cesium.Primitive({
-        geometryInstances: tallRoofInstances.slice(start, start + PRIMITIVE_BATCH_SIZE),
-        appearance: new Cesium.PolylineColorAppearance({ translucent: true }),
+        geometryInstances: exactRoofCapInstances.slice(start, start + PRIMITIVE_BATCH_SIZE),
+        appearance: new Cesium.PerInstanceColorAppearance({
+          closed: false,
+          translucent: false,
+          flat: true,
+        }),
         asynchronous: false,
       }),
     );
   }
 
-  for (let start = 0; start < exactFacadeEdgeInstances.length; start += PRIMITIVE_BATCH_SIZE) {
+  for (let start = 0; start < tallRoofInstances.length; start += PRIMITIVE_BATCH_SIZE) {
     primitives.push(
       new Cesium.Primitive({
-        geometryInstances: exactFacadeEdgeInstances.slice(start, start + PRIMITIVE_BATCH_SIZE),
+        geometryInstances: tallRoofInstances.slice(start, start + PRIMITIVE_BATCH_SIZE),
         appearance: new Cesium.PolylineColorAppearance({ translucent: true }),
         asynchronous: false,
       }),
