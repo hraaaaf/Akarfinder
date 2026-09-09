@@ -117,6 +117,7 @@ function polygonsForRecord(record: RuntimeFeature): unknown[] {
 function createRuntimePrimitives(Cesium: any, records: RuntimeFeature[]) {
   const geometryInstances: any[] = [];
   const tallRoofInstances: any[] = [];
+  const exactFacadeEdgeInstances: any[] = [];
   let renderedFeatures = 0;
   let exactHeightCount = 0;
   let estimatedHeightCount = 0;
@@ -169,6 +170,26 @@ function createRuntimePrimitives(Cesium: any, records: RuntimeFeature[]) {
             const lat = finiteNumber(coordinate[1]);
             if (lng === null || lat === null) continue;
             roofDegrees.push(lng, lat, topHeight + 0.35);
+
+            if (height >= 18 && Cesium.PolylineGeometry && Cesium.PolylineColorAppearance) {
+              exactFacadeEdgeInstances.push(
+                new Cesium.GeometryInstance({
+                  geometry: new Cesium.PolylineGeometry({
+                    positions: Cesium.Cartesian3.fromDegreesArrayHeights([
+                      lng, lat, minHeight + 0.15,
+                      lng, lat, topHeight + 0.20,
+                    ]),
+                    width: height >= 30 ? 0.85 : 0.55,
+                    vertexFormat: Cesium.PolylineColorAppearance.VERTEX_FORMAT,
+                  }),
+                  attributes: {
+                    color: Cesium.ColorGeometryInstanceAttribute.fromColor(
+                      Cesium.Color.fromCssColorString("#64554b").withAlpha(height >= 30 ? 0.34 : 0.22),
+                    ),
+                  },
+                }),
+              );
+            }
           }
           if (roofDegrees.length >= 12 && Cesium.PolylineGeometry && Cesium.PolylineColorAppearance) {
             tallRoofInstances.push(
@@ -219,6 +240,16 @@ function createRuntimePrimitives(Cesium: any, records: RuntimeFeature[]) {
     primitives.push(
       new Cesium.Primitive({
         geometryInstances: tallRoofInstances.slice(start, start + PRIMITIVE_BATCH_SIZE),
+        appearance: new Cesium.PolylineColorAppearance({ translucent: true }),
+        asynchronous: false,
+      }),
+    );
+  }
+
+  for (let start = 0; start < exactFacadeEdgeInstances.length; start += PRIMITIVE_BATCH_SIZE) {
+    primitives.push(
+      new Cesium.Primitive({
+        geometryInstances: exactFacadeEdgeInstances.slice(start, start + PRIMITIVE_BATCH_SIZE),
         appearance: new Cesium.PolylineColorAppearance({ translucent: true }),
         asynchronous: false,
       }),
