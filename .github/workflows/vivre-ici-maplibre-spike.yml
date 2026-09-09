@@ -1,0 +1,51 @@
+name: Vivre Ici MapLibre Morocco Spike
+
+on:
+  push:
+    branches:
+      - spike/vivre-ici-maplibre-morocco
+    paths:
+      - 'app/map/maplibre-spike/**'
+      - 'components/map/MapLibreMaarifSpike.tsx'
+      - 'components/map/MaarifTargetRail.tsx'
+      - 'scripts/vivre-ici-maplibre-spike-capture.mjs'
+      - '.github/workflows/vivre-ici-maplibre-spike.yml'
+      - 'lib/geo/casablanca-neighborhood-geometry-shadow.ts'
+  workflow_dispatch:
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Build
+        run: npm run build
+
+      - name: Capture MapLibre Morocco spike
+        run: node scripts/vivre-ici-maplibre-spike-capture.mjs
+
+      - name: Upload visual artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vivre-ici-maplibre-spike
+          path: artifacts/vivre-ici-maplibre-spike
+          if-no-files-found: error
