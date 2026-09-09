@@ -21,9 +21,6 @@ type RuntimePayload = {
 const OVERTURE_RUNTIME_URL = "/data/vivre-ici/maarif-overture-3d.compact.json";
 const MIN_OVERTURE_FEATURES = 1000;
 const PRIMITIVE_BATCH_SIZE = 700;
-// Safety guard: a single malformed/oversized footprint can triangulate across a
-// large slice of the oblique camera and create the visible beige wedge. A real
-// building footprint in this city-scale view should remain far below ~1.3 km.
 const MAX_BUILDING_SPAN_DEGREES = 0.012;
 
 function setShellAttribute(name: string, value: string) {
@@ -104,10 +101,10 @@ function polygonHierarchy(Cesium: any, polygon: unknown) {
 function buildingColor(Cesium: any, height: number, precisionCode: 0 | 1, kindCode: 0 | 1) {
   const exact = precisionCode === 0;
   const part = kindCode === 1;
-  if (height >= 36) return Cesium.Color.fromCssColorString(part ? "#b7a38a" : exact ? "#c8b69d" : "#d0c3b2");
-  if (height >= 24) return Cesium.Color.fromCssColorString(part ? "#c8b59d" : exact ? "#d8c7af" : "#ddd2c2");
-  if (height >= 14) return Cesium.Color.fromCssColorString(part ? "#d8c7b0" : exact ? "#e5d7c2" : "#e9dfd1");
-  return Cesium.Color.fromCssColorString(part ? "#e4d6c4" : exact ? "#eee3d4" : "#f0e9df");
+  if (height >= 36) return Cesium.Color.fromCssColorString(part ? "#8f7a67" : exact ? "#9e876f" : "#b09d8b");
+  if (height >= 24) return Cesium.Color.fromCssColorString(part ? "#a89580" : exact ? "#b7a087" : "#c7b5a4");
+  if (height >= 14) return Cesium.Color.fromCssColorString(part ? "#c0aa92" : exact ? "#cdb79e" : "#d8c9ba");
+  return Cesium.Color.fromCssColorString(part ? "#d2bea7" : exact ? "#dbc8b1" : "#e2d6c8");
 }
 
 function polygonsForRecord(record: RuntimeFeature): unknown[] {
@@ -178,12 +175,12 @@ function createRuntimePrimitives(Cesium: any, records: RuntimeFeature[]) {
               new Cesium.GeometryInstance({
                 geometry: new Cesium.PolylineGeometry({
                   positions: Cesium.Cartesian3.fromDegreesArrayHeights(roofDegrees),
-                  width: height >= 30 ? 1.25 : 0.8,
+                  width: height >= 30 ? 1.55 : 1.0,
                   vertexFormat: Cesium.PolylineColorAppearance.VERTEX_FORMAT,
                 }),
                 attributes: {
                   color: Cesium.ColorGeometryInstanceAttribute.fromColor(
-                    Cesium.Color.fromCssColorString("#756a61").withAlpha(height >= 30 ? 0.66 : 0.36),
+                    Cesium.Color.fromCssColorString("#564c44").withAlpha(height >= 30 ? 0.74 : 0.5),
                   ),
                 },
               }),
@@ -249,7 +246,7 @@ export async function tryLoadOvertureStaticBuildings(Cesium: any, scene: any): P
     const built = createRuntimePrimitives(Cesium, payload.features);
     if (built.renderedFeatures < MIN_OVERTURE_FEATURES) return false;
 
-    if (Cesium.SunLight) scene.light = new Cesium.SunLight({ intensity: 2.55 });
+    if (Cesium.SunLight) scene.light = new Cesium.SunLight({ intensity: 1.7 });
     if (scene.postProcessStages?.fxaa) scene.postProcessStages.fxaa.enabled = true;
     scene.highDynamicRange = true;
     if (scene.shadowMap) {
