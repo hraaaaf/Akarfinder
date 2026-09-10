@@ -4,7 +4,8 @@
 **Dernière mise à jour : 2026-09-10**  
 **Repo : `hraaaaf/Akarfinder`**  
 **Branche active : `spike/vivre-ici-maplibre-morocco`**  
-**HEAD actif vérifié : `d4a71d8c75dfa947b5a31f1261f2666828751692`**  
+**Dernier HEAD produit validé : `d4a71d8c75dfa947b5a31f1261f2666828751692`**  
+**HEAD branche : toujours re-fetch à la reprise ; un commit documentaire peut être plus récent que le dernier HEAD produit validé.**  
 **Main vérifié : `df8b8d9a493553d5fa39ea8b0fa0ee789cf71ee2`**  
 **PR #1025 : OPEN / mergeable / non mergée / branche `docs/3-vivre-ici-akarfinder` / HEAD `56fcf05b2bf8c3cedccc46f55a7ad2cd8dfb469a`**  
 **Fondation produit : `/map`**  
@@ -171,10 +172,10 @@ Baseline rail prouvée :
 - DB `0`, deploy `0`.
 
 ### 6.3 Hero photo du rail
-Le dernier lot ajoute le hero rail Maârif et étend le gate visuel au decision rail.
+Le dernier lot produit ajoute le hero rail Maârif et étend le gate visuel au decision rail.
 
 - commit feature : `aebee4e2dd49d7340e9722876eadb3f53cc31975` ;
-- HEAD actuel / harness : `d4a71d8c75dfa947b5a31f1261f2666828751692` ;
+- **dernier HEAD produit validé / harness** : `d4a71d8c75dfa947b5a31f1261f2666828751692` ;
 - run : `34536609567` — **SUCCESS** ;
 - artifact : `10175712833` ;
 - Maârif : `67` volumes desktop / `45` mobile ;
@@ -263,7 +264,7 @@ Dans une nouvelle conversation / fenêtre :
 1. Lire **ce fichier en premier** : `3-vivre-ici-akarfinder.md`.
 2. Vérifier immédiatement :
    - branche `spike/vivre-ici-maplibre-morocco` ;
-   - HEAD attendu `d4a71d8c75dfa947b5a31f1261f2666828751692` ou HEAD plus récent expliqué par ce canonique ;
+   - **HEAD branche réel via GitHub** ; le dernier HEAD produit validé connu est `d4a71d8c75dfa947b5a31f1261f2666828751692`, mais des commits documentaires peuvent être plus récents ;
    - `main` ;
    - PR #1025 + head/base/mergeability ;
    - dernier run MapLibre pertinent.
@@ -299,10 +300,11 @@ Dans une nouvelle conversation / fenêtre :
 - Goal : `/map` premium 3D scalable quartier → Maroc
 - repo : `hraaaaf/Akarfinder`
 - branche : `spike/vivre-ici-maplibre-morocco`
-- HEAD : `d4a71d8c75dfa947b5a31f1261f2666828751692`
+- dernier HEAD produit validé : `d4a71d8c75dfa947b5a31f1261f2666828751692`
+- HEAD branche : **à re-fetch à chaque reprise**
 - main : `df8b8d9a493553d5fa39ea8b0fa0ee789cf71ee2`
 - PR : `#1025` OPEN / mergeable / non mergée / branche distincte
-- dernière CI : `34536609567` SUCCESS
+- dernière CI produit : `34536609567` SUCCESS
 - deployment : aucun
 - DB : 0 write
 - dernière preuve : hero rail + capture TARGET réelle + score `8,9/10`
