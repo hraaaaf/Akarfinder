@@ -56,6 +56,16 @@ export default async function MapPage({ searchParams }: MapPageProps) {
           <p>Des lieux. Des vies. Des projets.</p>
         </section>
       ) : null}
+      {hasNeighborhoodSelection ? (
+        <style>{`
+          [data-vivre-ici-page] .maplibre-spike-shell {
+            grid-template-rows: minmax(0, 1fr) !important;
+          }
+          [data-vivre-ici-page] .maplibre-spike-outro {
+            display: none !important;
+          }
+        `}</style>
+      ) : null}
       <div className="l2-secondary-footer">
         <SiteFooter />
       </div>
