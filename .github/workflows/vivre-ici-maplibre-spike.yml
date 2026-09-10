@@ -7,6 +7,7 @@ on:
     paths:
       - 'app/map/maplibre-spike/**'
       - 'app/map/page.tsx'
+      - 'app/map/premium-lot8.css'
       - 'components/map/MapLibreMaarifSpike.tsx'
       - 'components/map/MapLibreNeighborhood3D.tsx'
       - 'components/map/NationalMapRouter.tsx'
