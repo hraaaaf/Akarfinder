@@ -98,13 +98,13 @@ export function MapLibreMaarifSpike() {
         if (disposed || !mapRef.current) return;
         const desktop = window.innerWidth >= 1024;
         const targetCenter: MutablePosition = desktop
-          ? [center[0] - 0.0065, center[1] + 0.0105]
+          ? [center[0] - 0.0028, center[1] + 0.0048]
           : center;
         map = new maplibregl.Map({
           container: mapRef.current,
           center: targetCenter,
-          zoom: desktop ? 13.65 : 14.85,
-          pitch: desktop ? 52 : 48,
+          zoom: desktop ? 14.15 : 14.85,
+          pitch: desktop ? 55 : 48,
           bearing: desktop ? -31 : -22,
           attributionControl: false,
           canvasContextAttributes: { antialias: true },
