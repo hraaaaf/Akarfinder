@@ -128,10 +128,10 @@ export function MapLibreNeighborhood3D({
               {
                 id: "imagery", type: "raster", source: "imagery",
                 paint: {
-                  "raster-brightness-min": 0.14,
+                  "raster-brightness-min": 0.20,
                   "raster-brightness-max": 1,
-                  "raster-contrast": -0.03,
-                  "raster-saturation": -0.08,
+                  "raster-contrast": -0.08,
+                  "raster-saturation": -0.02,
                 },
               },
             ],
