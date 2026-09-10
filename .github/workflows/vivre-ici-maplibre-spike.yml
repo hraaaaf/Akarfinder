@@ -12,6 +12,7 @@ on:
       - 'components/map/MapLibreNeighborhood3D.tsx'
       - 'components/map/NationalMapRouter.tsx'
       - 'components/map/MaarifTargetRail.tsx'
+      - 'components/map/P4MapDecisionRail.tsx'
       - 'scripts/vivre-ici-maplibre-spike-capture.mjs'
       - '.github/workflows/vivre-ici-maplibre-spike.yml'
       - 'lib/geo/casablanca-neighborhood-geometry-shadow.ts'
