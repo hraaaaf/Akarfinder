@@ -4,8 +4,10 @@ import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { MapNeighborhoodClient } from "@/components/map/MapNeighborhoodClient";
+import { MapLibreNeighborhood3D } from "@/components/map/MapLibreNeighborhood3D";
 import { National3DBuildingsLayer } from "@/components/map/National3DBuildingsLayer";
 import { NationalNeighborhoodOverlayBridge } from "@/components/map/NationalNeighborhoodOverlayBridge";
+import { getNeighborhoodBySlug } from "@/lib/map/canonical-neighborhood-data";
 import { getPremiumMarketIntelligenceProvider } from "@/lib/map/premium-map-city-registry";
 import { MAP_LAYER_EXPLORE, type MapNavigationState } from "@/lib/map/map-navigation-state";
 
@@ -34,8 +36,17 @@ export function NationalMapRouter({ initialState }: Props) {
   const rawLayer = params.get("layer") ?? MAP_LAYER_EXPLORE;
   const selectedCitySlug = useMemo(() => safeSlug(rawCity), [rawCity]);
   const selectedDistrictSlug = useMemo(() => safeSlug(params.get("district")), [params]);
+  const selectedNeighborhood = useMemo(
+    () => selectedCitySlug && selectedDistrictSlug
+      ? getNeighborhoodBySlug(selectedCitySlug, selectedDistrictSlug)
+      : null,
+    [selectedCitySlug, selectedDistrictSlug],
+  );
+  const useMapLibreNeighborhood = rawLayer === MAP_LAYER_EXPLORE && Boolean(selectedNeighborhood);
   const premiumProvider = getPremiumMarketIntelligenceProvider(selectedCitySlug ?? "all");
-  const useNationalExplore = rawLayer === MAP_LAYER_EXPLORE && premiumProvider !== "rabat-market-intelligence";
+  const useNationalExplore = rawLayer === MAP_LAYER_EXPLORE
+    && premiumProvider !== "rabat-market-intelligence"
+    && !useMapLibreNeighborhood;
 
   useEffect(() => {
     if (!useNationalExplore || !shellRef.current) return;
@@ -84,6 +95,21 @@ export function NationalMapRouter({ initialState }: Props) {
     next.set("layer", MAP_LAYER_EXPLORE);
     router.push(`/map?${next.toString()}`, { scroll: false });
   }, [params, router]);
+
+  if (useMapLibreNeighborhood && selectedNeighborhood) {
+    const isMaarifReference = selectedNeighborhood.citySlug === "casablanca"
+      && selectedNeighborhood.neighborhoodSlug === "maarif";
+    return (
+      <MapLibreNeighborhood3D
+        citySlug={selectedNeighborhood.citySlug}
+        cityLabel={selectedNeighborhood.city}
+        districtSlug={selectedNeighborhood.neighborhoodSlug}
+        districtLabel={selectedNeighborhood.neighborhood}
+        center={[selectedNeighborhood.lng, selectedNeighborhood.lat]}
+        desktopCameraOffset={isMaarifReference ? [-0.0055, 0.0090] : [0, 0]}
+      />
+    );
+  }
 
   if (!useNationalExplore) return <MapNeighborhoodClient initialState={initialState} />;
 

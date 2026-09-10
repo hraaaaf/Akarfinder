@@ -5,7 +5,7 @@ import path from 'node:path';
 
 const outDir = 'artifacts/vivre-ici-maplibre-spike';
 const baseUrl = 'http://127.0.0.1:3000';
-const route = '/map/maplibre-spike';
+const route = '/map';
 const minMapScreenshotBytes = 20000;
 const mobileViewports = [
   { name: '390x844', width: 390, height: 844 },
@@ -71,7 +71,7 @@ try {
         }
       });
 
-      const query = new URLSearchParams({ city: locale.city, district: locale.district });
+      const query = new URLSearchParams({ city: locale.city, district: locale.district, layer: 'explore' });
       const response = await page.goto(`${baseUrl}${route}?${query}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
       const shellLocator = page.locator('[data-maplibre-spike]');
       await shellLocator.waitFor({ state: 'visible', timeout: 15000 });
@@ -90,8 +90,8 @@ try {
 
       await page.waitForTimeout(2500);
 
-      const file = path.join(outDir, `maplibre-${locale.key}-${vp.name}.png`);
-      const mapFile = path.join(outDir, `maplibre-map-${locale.key}-${vp.name}.png`);
+      const file = path.join(outDir, `maplibre-integrated-${locale.key}-${vp.name}.png`);
+      const mapFile = path.join(outDir, `maplibre-integrated-map-${locale.key}-${vp.name}.png`);
       const mapLocator = page.locator('[data-maplibre-map-surface]');
       const mapBox = await mapLocator.boundingBox();
       if (!mapBox || mapBox.width < 1 || mapBox.height < 1) throw new Error(`MapLibre map surface has no stable bounding box at ${locale.key}/${vp.name}`);
@@ -116,6 +116,8 @@ try {
       const anchorCount = Number(await shellLocator.getAttribute('data-maplibre-anchor-count') ?? '0');
       const renderedCity = await shellLocator.getAttribute('data-maplibre-city');
       const renderedDistrict = await shellLocator.getAttribute('data-maplibre-district');
+      const hasVivreIciPage = await page.locator('[data-vivre-ici-page]').count();
+      const hasDecisionRail = await page.locator('[data-p4-map-layout]').count();
 
       results.push({
         locale: { key: locale.key, city: locale.city, district: locale.district, minDesktopBuildings: locale.minDesktopBuildings },
@@ -123,6 +125,7 @@ try {
         httpStatus: response?.status() ?? null,
         readyState, renderState, sourceState, buildingsSource, buildingsCount, contextState, anchorCount,
         renderedCity, renderedDistrict, canvasCount, shell, mapScreenshotBytes: mapStat.size,
+        hasVivreIciPage, hasDecisionRail,
         failedRequests, failedResponses,
         requiredFailedRequests: failedRequests,
         requiredFailedResponses: failedResponses,
@@ -134,7 +137,7 @@ try {
 
   const summary = {
     generatedAt: new Date().toISOString(),
-    mode: 'maplibre-morocco-3d-national-spike',
+    mode: 'maplibre-morocco-3d-integrated-map',
     route,
     zeroDbWritesByScript: true,
     zeroDeploymentActionsByScript: true,
@@ -155,6 +158,8 @@ try {
     || r.anchorCount < 1
     || r.canvasCount < 1
     || r.mapScreenshotBytes < minMapScreenshotBytes
+    || r.hasVivreIciPage !== 1
+    || r.hasDecisionRail !== 1
     || r.renderedCity !== r.locale.city
     || r.renderedDistrict !== r.locale.district
     || r.requiredFailedRequests.length > 0

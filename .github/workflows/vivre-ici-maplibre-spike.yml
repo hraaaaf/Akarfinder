@@ -6,11 +6,15 @@ on:
       - spike/vivre-ici-maplibre-morocco
     paths:
       - 'app/map/maplibre-spike/**'
+      - 'app/map/page.tsx'
       - 'components/map/MapLibreMaarifSpike.tsx'
+      - 'components/map/MapLibreNeighborhood3D.tsx'
+      - 'components/map/NationalMapRouter.tsx'
       - 'components/map/MaarifTargetRail.tsx'
       - 'scripts/vivre-ici-maplibre-spike-capture.mjs'
       - '.github/workflows/vivre-ici-maplibre-spike.yml'
       - 'lib/geo/casablanca-neighborhood-geometry-shadow.ts'
+      - 'lib/map/canonical-neighborhood-data.ts'
   workflow_dispatch:
 
 jobs:
