@@ -27,9 +27,16 @@ type MapPageProps = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
+function firstParam(value: string | string[] | undefined): string {
+  return Array.isArray(value) ? value[0] ?? "" : value ?? "";
+}
+
 export default async function MapPage({ searchParams }: MapPageProps) {
   const params = searchParams ? await searchParams : {};
   const initialState = parseMapNavigationState(params);
+  const hasNeighborhoodSelection = Boolean(
+    firstParam(params.city).trim() && firstParam(params.district).trim(),
+  );
 
   return (
     <main className="flex min-h-[100svh] flex-col bg-[#F8FAFC] text-[#0B1F3A]" data-vivre-ici-page>
@@ -40,13 +47,15 @@ export default async function MapPage({ searchParams }: MapPageProps) {
         </div>
         <P4MapDecisionRail />
       </div>
-      <section className="vivre-ici-target-outro" aria-label="Découvrir les quartiers autrement">
-        <div>
-          <strong>Découvrez les quartiers autrement</strong>
-          <span>Explorez, comparez, vivez mieux avec AkarFinder.</span>
-        </div>
-        <p>Des lieux. Des vies. Des projets.</p>
-      </section>
+      {!hasNeighborhoodSelection ? (
+        <section className="vivre-ici-target-outro" aria-label="Découvrir les quartiers autrement">
+          <div>
+            <strong>Découvrez les quartiers autrement</strong>
+            <span>Explorez, comparez, vivez mieux avec AkarFinder.</span>
+          </div>
+          <p>Des lieux. Des vies. Des projets.</p>
+        </section>
+      ) : null}
       <div className="l2-secondary-footer">
         <SiteFooter />
       </div>
