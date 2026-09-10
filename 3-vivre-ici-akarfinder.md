@@ -1,21 +1,19 @@
 # 3 — Vivre Ici AkarFinder
 
-**Statut : ACTIVE — TARGET 9,8/10 LOCKED / ÉTAPE 1 CAMÉRA CERTIFIÉE / ÉTAPE 2 COMPOSITION EN VALIDATION**  
-**Dernière mise à jour : 2026-09-07**  
+**Statut : ACTIVE — TARGET LOCK conservé / PIVOT MAPLIBRE NATIONAL VALIDÉ / INTÉGRATION `/map` EN POLISH**  
+**Dernière mise à jour : 2026-09-10**  
 **Repo : `hraaaaf/Akarfinder`**  
-**Branche : `docs/3-vivre-ici-akarfinder`**  
-**PR : `#1025` — OPEN / non mergée**  
+**Branche active : `spike/vivre-ici-maplibre-morocco`**  
+**PR : `#1025` — OPEN / non mergée / branche distincte `docs/3-vivre-ici-akarfinder`**  
 **Fondation produit : `/map`**  
-**Baseline 2L.3 certifiée : `1e36c08935673980c36e25725c66324e139f7a0c`**  
-**Dernier HEAD visuel étape 1 certifié : `1f93e91befe236dfcec9b5a03a12434e4b50a75f`**  
-**HEAD UI étape 2 avant canonique : `4aa0b4ae7faca98726692f20c247d896aad13443`**  
+**HEAD MapLibre intégré validé : `6185cfed2d70c371ff6f6c6390f65d1fe7c5fb54`**  
 **Main vérifié : `df8b8d9a493553d5fa39ea8b0fa0ee789cf71ee2`**  
 **Vercel : aucun déploiement sans accord explicite d’Achraf.**
 
 ## GOAL
-Transformer Vivre ici (`/map`) en expérience territoriale premium : carte héro dominante, quartier lisible, rail desktop éditorial, bottom sheet mobile premium, aucune fausse précision.
+Transformer Vivre ici (`/map`) en expérience territoriale premium : carte héro dominante, quartier lisible, rail desktop éditorial, bottom sheet mobile premium, aucune fausse précision, avec un moteur 3D scalable du quartier au Maroc.
 
-**Succès observable : score visuel global ≥9,8/10 contre le TARGET LOCK + build/TypeScript/tests verts + captures 390/430/768/1280 + truth gate géographique fail-closed.**
+**Succès observable : score visuel final contre le TARGET LOCK + build/TypeScript/tests verts + captures 390/430/768/1280 + truth gate géographique fail-closed + moteur cartographique national réutilisable.**
 
 ## TARGET LOCK — AUTORITÉ VISUELLE DURABLE
 Cible approuvée explicitement par Achraf : mockup unique Desktop Maârif + Mobile Maârif.
@@ -24,12 +22,12 @@ Cible approuvée explicitement par Achraf : mockup unique Desktop Maârif + Mobi
 - Google Drive ID : `1nt6ouxqGp-z6cHnj5A3iQHmw8I_YnGFL`
 - dimensions : `1536 × 1024`
 - SHA-256 : `c552bc2d4ef669394694f71027c9852a6c56d155b7853a27f2e9e672942637c8`
-- seuil de clôture : **≥9,8/10**
+- seuil historique de clôture visuelle : **≥9,8/10**
 
 Le TARGET est une autorité de **composition et qualité visuelle**, pas une autorisation d’inventer photos, prix, météo, scores, proximité, temps, distances ou positions.
 
 ## TRUTH GATE GÉOGRAPHIQUE
-Audit Supabase production read-only :
+Audit Supabase production read-only historique :
 - `property_listings` : `7 926`, aucune coordonnée exploitable ;
 - `geo_entities` : `45`, géométrie exploitable `0` ;
 - `geo_resolution_events` : `102`, coordonnée exploitable `0` ;
@@ -37,7 +35,7 @@ Audit Supabase production read-only :
 
 `isExactMapListing` exige `geo_precision="exact"` + provenance `scraped_coordinates|manual_import` + coordonnées valides au Maroc.
 
-**Conclusion : `0` bien actuellement éligible à un pin/callout EXACT. Aucun faux pin bien n’est autorisé.**
+**Conclusion historique : `0` bien éligible à un pin/callout EXACT au moment de cet audit. Aucun faux pin bien n’est autorisé.**
 
 ## BASELINE 2L.3 — CERTIFICATION TECHNIQUE
 Workflow : `Vivre Ici AFTER Certification`  
@@ -56,53 +54,67 @@ L’artifact exact `9998699255` a été téléchargé et inspecté. Comparaison 
 
 **Score manuel de référence 2L.3 : `6,4/10` contre TARGET.**
 
-Écarts structurants constatés :
-1. caméra/perspective trop plate et trop quartier ;
-2. composition desktop incomplète ;
-3. rail éditorial trop pauvre ;
-4. mobile trop utilitaire ;
-5. matière satellite/finition encore éloignée du rendu premium cible.
+Écarts structurants constatés : caméra/perspective trop plate, composition desktop incomplète, rail trop pauvre, mobile trop utilitaire, matière satellite/finition éloignée du TARGET.
 
-Ce score est une évaluation visuelle par grille, pas une métrique mathématique automatisée.
+## PIVOT ARCHITECTURE — MAPLIBRE NATIONAL — VALIDÉ
+Le chantier a abandonné la génération manuelle de volumes quartier par quartier au profit d’un moteur MapLibre réutilisable.
 
-## ÉTAPE 1 — CAMÉRA / PERSPECTIVE — CERTIFIÉE
-Itérations réelles comparées au TARGET. La v4 est retenue comme meilleure base actuelle du stack MapLibre/Esri :
+Architecture validée :
+- `MapLibreNeighborhood3D.tsx` paramétré par ville/quartier/centre ;
+- bâtiments vectoriels globaux OpenFreeMap ;
+- fond satellite Esri pour le prototype ;
+- données quartier issues du registre canonique ;
+- aucun asset local de bâtiments Maârif requis ;
+- aucune écriture DB ;
+- aucun déploiement Vercel.
 
-- HEAD : `1f93e91befe236dfcec9b5a03a12434e4b50a75f`
-- run : `34125068246` — **SUCCESS**
-- artifact : `10019831615` — `vivre-ici-after`
-- digest : `sha256:4621d022835b298c14b5e8daca9bd8337ee22d90d4847f763c4124ca724464ac`
-- caméra Maârif : zoom `14.0`, pitch `58°`, bearing `-12°`
-- bâtiments rendus : `73 / 78 / 119 / 120`
-- overlaps : `false` partout
-- zéro DB write / zéro deploy
+Benchmark national réel :
+- commit : `628947bb24bf247a73c5161b64a25fc47aafe33c`
+- run : `34513592437` — **SUCCESS**
+- Casablanca / Maârif : `66` volumes desktop
+- Rabat / Agdal : `96` volumes desktop
+- Marrakech / Guéliz : `53` volumes desktop
+- HTTP `200`, render `ready`, source `available`, requêtes cartographiques obligatoires en échec `0`.
 
-**Score caméra manuel : ~`7,4/10` vs `5,8/10` sur la baseline 2L.3.**
+**Conclusion : la scalabilité quartier → Maroc est prouvée sur 3 villes avec un même moteur.**
 
-Conclusion : la caméra reste moins spectaculaire que le TARGET mais n’est plus le principal bloqueur visuel. La profondeur réelle et le contexte côte/ville sont présents ; poursuivre les micro-ajustements caméra avant de corriger composition/rail serait de rendement décroissant.
+## INTÉGRATION `/map` — VALIDÉE TECHNIQUEMENT
+Le moteur MapLibre national est branché dans `NationalMapRouter` pour les couples ville + quartier canoniques, sans remplacer la vue nationale ville seule.
 
-## ÉTAPE 2 — COMPOSITION DESKTOP — EN VALIDATION
-Goal : rapprocher la silhouette desktop du TARGET avant toute refonte éditoriale du rail.
+- commit intégration : `11769c0c2e7a9abb262bd19614efb314f9d5b4b3`
+- run : `34526882196` — **SUCCESS**
+- TypeScript : SUCCESS
+- Build : SUCCESS
+- captures intégrées : SUCCESS
+- artifact : `10171990999`
+- digest : `sha256:75c4223becbdb1bfe0f3342a8c64a88a14455b1d59ada3d121546f6fbd4327b0`
+- Maârif intégré : `68` volumes desktop, `45` mobile
+- zéro DB write / zéro deploy.
 
-Mutation UI actuelle :
-- page : bande basse compacte `Découvrez les quartiers autrement` ;
-- layout desktop : map/rail intégrés dans une surface beige chaude ;
-- hauteur carte/rail réduite pour rendre la bande basse visible dans le viewport ;
-- map/rail gardés autour de `70/30` ;
-- aucun contenu factuel ajouté.
+## POLISH INTÉGRATION — DOUBLON OUTRO — CORRIGÉ ET PROUVÉ
+Premier essai `5917eaf3a990cade76c125640f1b9680f6ba7afa` : CI verte mais BEFORE/AFTER visuellement identique, donc non retenu comme preuve de correction.
 
-HEAD UI avant mise à jour canonique : `4aa0b4ae7faca98726692f20c247d896aad13443`.
-Run `Vivre Ici AFTER Certification` : `34139351676`, lancé sur ce HEAD ; état au dernier contrôle : `queued`.
-
-Ne pas déclarer l’étape 2 réussie sans artifact + captures AFTER + comparaison TARGET.
+Correction effective :
+- HEAD : `6185cfed2d70c371ff6f6c6390f65d1fe7c5fb54`
+- run : `34531542541` — **SUCCESS**
+- artifact : `10173769689`
+- digest : `sha256:eb52a650a2dfb26f376fa6779ea31caaeae9600efbe2fd402d21272b1798fb0f`
+- TypeScript / Build / Capture : SUCCESS
+- desktop 1280 : la bande basse interne MapLibre est réellement supprimée et la carte récupère la hauteur correspondante ;
+- mobile 390 : composition stable, pas de régression observée ;
+- Maârif : `67` volumes desktop, `45` mobile ;
+- HTTP `200`, render `ready`, source `available`, required failed requests `0` ;
+- zéro DB write / zéro deploy.
 
 ## RECHERCHE / DÉCISIONS À CONSERVER
-1. Le satellite réel doit rester la matière principale ; les extrusions doivent rester discrètes.
-2. Ne pas simuler une photogrammétrie texturée non disponible/vérifiée pour Casablanca.
-3. Le TARGET est un neighborhood guide éditorial avec carte héro, pas un dashboard GIS.
-4. Le rail ne doit utiliser que du contenu sourcé ; aucun remplissage factice.
-5. Le mobile doit rester une expérience dédiée, pas une réduction mécanique du desktop.
-6. Avant production, le provider d’imagerie doit avoir un chemin officiellement supporté/licencié ou une conformité explicitement prouvée.
+1. MapLibre est désormais le moteur cible pour la 3D quartier scalable.
+2. Le satellite réel reste la matière principale ; les extrusions restent discrètes.
+3. Ne pas simuler une photogrammétrie texturée non disponible/vérifiée pour Casablanca.
+4. Le TARGET est un neighborhood guide éditorial avec carte héro, pas un dashboard GIS.
+5. Le rail ne doit utiliser que du contenu sourcé ; aucun remplissage factice.
+6. Le mobile doit rester une expérience dédiée, pas une réduction mécanique du desktop.
+7. Avant production, le provider d’imagerie doit avoir un chemin officiellement supporté/licencié ou une conformité explicitement prouvée.
+8. Aucun score final ≥9,8 n’est déclaré à ce stade.
 
 ## GARDE-FOUS
 - aucun ImageGen pour évaluer/certifier le site ;
@@ -111,30 +123,30 @@ Ne pas déclarer l’étape 2 réussie sans artifact + captures AFTER + comparai
 - aucun pin immobilier sans EXACT ;
 - aucune DB mutation pour ce lot ;
 - aucun deploy Vercel sans autorisation explicite ;
-- aucun merge PR #1025 avant le human gate ;
+- aucun merge PR #1025 avant human gate ;
 - aucun ≥9,8 déclaré sans comparaison visuelle prouvée.
 
-## SYNCHRONISATION MAIN
-Main vérifié le 2026-09-07 : `df8b8d9a493553d5fa39ea8b0fa0ee789cf71ee2`.
-
-**Obligation de reprise : re-fetch branch HEAD + PR #1025 + main, puis comparer/synchroniser avant le merge final.**
+## SYNCHRONISATION MAIN / PR
+- main vérifié : `df8b8d9a493553d5fa39ea8b0fa0ee789cf71ee2`
+- PR #1025 : OPEN, mergeable au dernier contrôle ; branche `docs/3-vivre-ici-akarfinder`, distincte du spike MapLibre.
+- le spike ne doit pas être mergé directement sans intégration propre avec la branche PR et revalidation finale.
 
 ## ROADMAP
 - [x] TARGET LOCK durable + SHA-256 + Drive ID
-- [x] truth gate géographique fail-closed / `0 EXACT`
-- [x] baseline 2L.3 technique : 8 captures + verify vert
-- [x] artifact exact 2L.3 inspecté
-- [x] comparaison TARGET ↔ 2L.3 construite
-- [x] score baseline honnête : `6,4/10`
-- [x] Étape 1 caméra/perspective : v4 certifiée techniquement et visuellement retenue
-- [ ] Étape 2 composition desktop : implementation poussée, AFTER à certifier
-- [ ] Étape 3 rail éditorial
-- [ ] Étape 4 responsive mobile/tablette
-- [ ] Étape 5 polish + captures 390/430/768/1280 + score final
-- [ ] closeout canonique final + PR body final
-- [ ] re-fetch/compare/sync latest main
+- [x] truth gate géographique fail-closed / `0 EXACT` lors de l’audit de référence
+- [x] baseline 2L.3 technique + inspection visuelle
+- [x] pivot MapLibre national
+- [x] benchmark 3 villes : Casablanca / Rabat / Marrakech
+- [x] intégration MapLibre quartier dans `/map`
+- [x] correction du doublon d’outro + BEFORE/AFTER réel
+- [ ] rail desktop final contre TARGET
+- [ ] responsive mobile/tablette final
+- [ ] captures finales 390/430/768/1280 + score final honnête
+- [ ] intégration du spike dans la branche PR #1025
+- [ ] closeout PR body final
+- [ ] re-fetch/compare/sync latest main avant merge
 - [ ] human merge gate PR #1025
 - [ ] Vercel uniquement après autorisation explicite
 
 ## NEXT EXACT
-**Laisser le run `34139351676` produire l’artifact sans polling passif → télécharger `vivre-ici-after` → afficher les captures AFTER 1280/768/430/390 → comparer TARGET ↔ AFTER → scorer l’étape 2. Si insuffisant : corriger uniquement la composition ; si validé : enchaîner immédiatement sur l’étape 3 rail éditorial.**
+**Comparer le rail desktop intégré au TARGET sur la capture 1280 validée du HEAD `6185cfed` → corriger uniquement le défaut dominant du rail sans toucher caméra/3D → recapturer aux mêmes viewports → si validé, passer au polish mobile/tablette.**
