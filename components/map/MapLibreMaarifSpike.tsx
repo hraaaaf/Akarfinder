@@ -98,7 +98,7 @@ export function MapLibreMaarifSpike() {
         if (disposed || !mapRef.current) return;
         const desktop = window.innerWidth >= 1024;
         const targetCenter: MutablePosition = desktop
-          ? [center[0] - 0.0028, center[1] + 0.0048]
+          ? [center[0] - 0.0055, center[1] + 0.0090]
           : center;
         map = new maplibregl.Map({
           container: mapRef.current,
