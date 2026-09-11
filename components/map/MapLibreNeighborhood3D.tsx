@@ -131,7 +131,7 @@ export function MapLibreNeighborhood3D({
                   "raster-brightness-min": 0.20,
                   "raster-brightness-max": 1,
                   "raster-contrast": -0.08,
-                  "raster-saturation": -0.02,
+                  "raster-saturation": 0.12,
                 },
               },
             ],
