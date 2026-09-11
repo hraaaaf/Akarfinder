@@ -1,0 +1,231 @@
+/* Vivre Ici TARGET alignment — approved visual lock 2026-09-06.
+   Presentation only: keep MapLibre truth/data contracts untouched. */
+
+[data-p4-map-canvas] .maplibre-spike-canvas canvas {
+  filter: saturate(1.08) contrast(.96) brightness(1.055) !important;
+}
+
+[data-p4-map-canvas] .maplibre-spike-map-grade {
+  background:
+    linear-gradient(180deg, rgb(176 221 234 / .13) 0%, transparent 24%, transparent 72%, rgb(16 54 55 / .05) 100%) !important;
+  mix-blend-mode: soft-light !important;
+}
+
+[data-p4-map-canvas] .maplibre-spike-map-chrome {
+  left: 24px !important;
+  right: 24px !important;
+  top: 20px !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+[data-p4-map-canvas] .maplibre-spike-brand {
+  display: none !important;
+}
+
+[data-p4-map-canvas] .maplibre-spike-search,
+[data-p4-map-canvas] .maplibre-spike-mode {
+  border-color: rgb(255 255 255 / .92) !important;
+  background: rgb(255 255 255 / .94) !important;
+  box-shadow: 0 10px 28px rgb(11 39 42 / .14) !important;
+  backdrop-filter: blur(18px) saturate(1.08) !important;
+}
+
+[data-p4-map-canvas] .maplibre-spike-search {
+  width: min(620px, 100%) !important;
+  min-height: 46px !important;
+  padding-inline: 17px !important;
+  border-radius: 16px !important;
+}
+
+[data-p4-map-canvas] .maplibre-spike-search strong {
+  color: #15383a !important;
+  font-size: 13px !important;
+}
+
+[data-p4-map-canvas] .maplibre-spike-search span {
+  color: #768685 !important;
+  font-size: 10px !important;
+}
+
+[data-p4-map-canvas] .maplibre-spike-mode {
+  min-height: 46px !important;
+  padding: 4px !important;
+  border-radius: 16px !important;
+}
+
+[data-p4-map-canvas] .maplibre-spike-mode span,
+[data-p4-map-canvas] .maplibre-spike-mode strong {
+  min-width: 46px !important;
+  min-height: 36px !important;
+  border-radius: 12px !important;
+}
+
+[data-p4-map-canvas] .maplibre-spike-mode span {
+  font-size: 0 !important;
+}
+
+[data-p4-map-canvas] .maplibre-spike-mode span::after {
+  content: "2D";
+  font-size: 10px;
+  font-weight: 850;
+}
+
+[data-p4-map-canvas] .maplibre-spike-mode strong {
+  background: #075f60 !important;
+  box-shadow: none !important;
+}
+
+[data-p4-map-canvas] .maplibre-spike-view-chips {
+  display: none !important;
+}
+
+[data-p4-map-canvas] .maplibre-spike-filters {
+  left: 24px !important;
+  right: 24px !important;
+  top: 78px !important;
+  gap: 8px !important;
+}
+
+[data-p4-map-canvas] .maplibre-spike-filters button {
+  padding: 8px 13px !important;
+  border-color: rgb(255 255 255 / .9) !important;
+  border-radius: 14px !important;
+  background: rgb(255 255 255 / .93) !important;
+  box-shadow: 0 7px 18px rgb(13 44 46 / .1) !important;
+  color: #294645 !important;
+  font-size: 9px !important;
+}
+
+[data-p4-map-canvas] .maplibre-spike-filters button.active {
+  background: #0b6968 !important;
+  color: #fff !important;
+}
+
+[data-p4-map-canvas] .maplibre-spike-controls {
+  top: auto !important;
+  right: 18px !important;
+  bottom: 26px !important;
+  transform: none !important;
+  gap: 8px !important;
+}
+
+[data-p4-map-canvas] .maplibre-spike-controls > :nth-child(2),
+[data-p4-map-canvas] .maplibre-spike-controls > :nth-child(3) {
+  display: none !important;
+}
+
+[data-p4-map-canvas] .maplibre-spike-controls button,
+[data-p4-map-canvas] .maplibre-spike-controls > span {
+  width: 42px !important;
+  height: 42px !important;
+  border-radius: 999px !important;
+  border-color: rgb(255 255 255 / .94) !important;
+  background: rgb(255 255 255 / .94) !important;
+  box-shadow: 0 9px 24px rgb(12 39 41 / .17) !important;
+}
+
+[data-p4-map-canvas] .maplibre-spike-controls .maplibre-spike-control-primary {
+  background: #0b6968 !important;
+  color: #fff !important;
+}
+
+[data-p4-map-canvas] .maplibre-spike-map-note {
+  display: none !important;
+}
+
+[data-p4-map-canvas] .maplibre-spike-neighborhood-label {
+  gap: 5px !important;
+  filter: drop-shadow(0 6px 14px rgb(0 42 43 / .2)) !important;
+}
+
+[data-p4-map-canvas] .maplibre-spike-neighborhood-label span {
+  padding: 8px 12px !important;
+  border-radius: 11px !important;
+  background: rgb(5 102 99 / .94) !important;
+  font-size: 11px !important;
+}
+
+[data-p4-map-canvas] .maplibre-spike-poi-label span {
+  border-radius: 11px !important;
+  background: rgb(255 255 255 / .92) !important;
+  box-shadow: 0 6px 16px rgb(14 45 44 / .12) !important;
+}
+
+@media (min-width: 1024px) {
+  .p4-map-decision-rail {
+    background: #fff !important;
+    border-left-color: #e6ecef !important;
+    padding: 24px 20px !important;
+  }
+
+  .p4-premium-context-header h2 {
+    letter-spacing: -.045em !important;
+  }
+
+  .p4-premium-signal-grid > div,
+  .p4-premium-market-card {
+    border-color: #e4ebee !important;
+    background: #fbfcfc !important;
+    box-shadow: none !important;
+  }
+
+  .p4-premium-primary-action {
+    border-radius: 14px !important;
+    background: #0b6968 !important;
+  }
+}
+
+@media (max-width: 1023px) {
+  [data-p4-map-canvas] .maplibre-spike-map-chrome {
+    left: 12px !important;
+    right: 12px !important;
+    top: 10px !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  [data-p4-map-canvas] .maplibre-spike-search {
+    width: 100% !important;
+    min-height: 44px !important;
+    border-radius: 15px !important;
+  }
+
+  [data-p4-map-canvas] .maplibre-spike-mode {
+    display: none !important;
+  }
+
+  [data-p4-map-canvas] .maplibre-spike-filters {
+    left: 12px !important;
+    right: 12px !important;
+    top: 62px !important;
+    overflow-x: auto !important;
+    scrollbar-width: none;
+  }
+
+  [data-p4-map-canvas] .maplibre-spike-filters::-webkit-scrollbar {
+    display: none;
+  }
+
+  [data-p4-map-canvas] .maplibre-spike-controls {
+    right: 12px !important;
+    bottom: 248px !important;
+  }
+
+  [data-p4-map-canvas] .maplibre-spike-controls button,
+  [data-p4-map-canvas] .maplibre-spike-controls > span {
+    width: 40px !important;
+    height: 40px !important;
+  }
+
+  [data-p4-map-canvas] .maplibre-spike-neighborhood-label span {
+    padding: 7px 10px !important;
+    font-size: 10px !important;
+  }
+
+  .p4-map-decision-rail {
+    border-radius: 24px 24px 18px 18px !important;
+    background: rgb(255 255 255 / .985) !important;
+    box-shadow: 0 -10px 34px rgb(15 35 66 / .12) !important;
+  }
+}
