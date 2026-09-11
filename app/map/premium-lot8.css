@@ -84,11 +84,15 @@
     text-overflow: clip !important;
   }
 
-  /* MapLibre neighborhood route: keep the premium decision rail inside the
-     real viewport. Older sizing rules target the legacy 3D toggle path only. */
+  /* MapLibre neighborhood route: the layout is itself a flex child. Percentage
+     heights let intrinsic rail content enlarge the grid, so bind both the flex
+     basis and the rail directly to the viewport. The rail height mirrors the
+     previously certified premium path and keeps a 26px bottom breathing room. */
   [data-p4-map-layout]:has([data-maplibre-spike]) {
-    height: calc(100svh - 64px) !important;
+    flex: 0 0 calc(100dvh - 64px) !important;
+    height: calc(100dvh - 64px) !important;
     min-height: 0 !important;
+    max-height: calc(100dvh - 64px) !important;
     grid-template-rows: minmax(0, 1fr) !important;
     overflow: hidden !important;
   }
@@ -99,8 +103,8 @@
   }
 
   [data-p4-map-layout]:has([data-maplibre-spike]) .p4-map-decision-rail {
-    height: 100% !important;
-    max-height: 100% !important;
+    height: calc(100dvh - 90px) !important;
+    max-height: calc(100dvh - 90px) !important;
     overflow-y: auto !important;
     box-sizing: border-box !important;
   }
