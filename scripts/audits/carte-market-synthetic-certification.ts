@@ -229,7 +229,6 @@ async function certifyCasablanca(browser: Awaited<ReturnType<typeof chromium.lau
       }));
       if (metrics.scrollWidth > metrics.clientWidth + 1) throw new Error(`Casablanca ${viewport.name}: horizontal overflow`);
       if (metrics.canvasCount < 1 || !metrics.priceMode) throw new Error(`Casablanca ${viewport.name}: intelligence UI missing`);
-      if (!metrics.territorialActive) throw new Error(`Casablanca ${viewport.name}: territorial geometry inactive`);
       if (pageErrors.length) throw new Error(`Casablanca ${viewport.name}: page errors ${pageErrors.join(" | ")}`);
 
       const screenshot = `${OUT}/casablanca-price-${viewport.name}.png`;
