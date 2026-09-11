@@ -137,7 +137,7 @@ try {
       const postalCard = page.locator('[data-akarfinder-neighborhood-preview="quartier-maarif"]');
       await postalCard.waitFor({ state: "visible", timeout: 5000 });
       await postalCard.getByText(/repère cartographique indisponible/i).waitFor({ state: "visible", timeout: 5000 });
-      const postalHref = await postalCard.getByRole("link", { name: /Rechercher à QUARTIER MAARIF/i }).getAttribute("href");
+      const postalHref = await postalCard.getByRole("link", { name: /Voir les biens à QUARTIER MAARIF/i }).getAttribute("href");
       if (!postalHref?.includes("district=QUARTIER%20MAARIF")) throw new Error(`postal Search handoff ${postalHref}`);
       await page.screenshot({ path: `${outDir}/postal-maarif-${viewport.name}-after.png`, fullPage: false });
 

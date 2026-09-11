@@ -72,8 +72,44 @@ try {
 
       const panelBox = await rail.boundingBox();
       if (!panelBox) throw new Error(`${viewport.name}: Vivre Ici rail has no bounding box`);
+      const layoutDiagnostics = await page.evaluate(() => {
+        const layout = document.querySelector("[data-p4-map-layout]");
+        const railElement = document.querySelector("[data-p4-map-decision-rail]");
+        const maplibreElement = document.querySelector("[data-maplibre-spike]");
+        const layoutStyle = layout ? getComputedStyle(layout) : null;
+        const railStyle = railElement ? getComputedStyle(railElement) : null;
+        const rect = (element) => element ? (() => { const r = element.getBoundingClientRect(); return { x: r.x, y: r.y, width: r.width, height: r.height, bottom: r.bottom }; })() : null;
+        return {
+          innerHeight: window.innerHeight,
+          visualViewportHeight: window.visualViewport?.height ?? null,
+          maplibrePresent: Boolean(maplibreElement),
+          layoutRect: rect(layout),
+          railRect: rect(railElement),
+          layout: layoutStyle ? {
+            display: layoutStyle.display,
+            height: layoutStyle.height,
+            minHeight: layoutStyle.minHeight,
+            maxHeight: layoutStyle.maxHeight,
+            gridTemplateColumns: layoutStyle.gridTemplateColumns,
+            gridTemplateRows: layoutStyle.gridTemplateRows,
+            overflow: layoutStyle.overflow,
+          } : null,
+          rail: railStyle ? {
+            position: railStyle.position,
+            height: railStyle.height,
+            minHeight: railStyle.minHeight,
+            maxHeight: railStyle.maxHeight,
+            overflowY: railStyle.overflowY,
+            boxSizing: railStyle.boxSizing,
+            gridColumn: railStyle.gridColumn,
+          } : null,
+          railClientHeight: railElement?.clientHeight ?? null,
+          railScrollHeight: railElement?.scrollHeight ?? null,
+        };
+      });
+      console.log(`${viewport.name}: layout diagnostics ${JSON.stringify(layoutDiagnostics)}`);
       if (panelBox.x < -1 || panelBox.x + panelBox.width > viewport.width + 1 || panelBox.y < -1 || panelBox.y + panelBox.height > viewport.height + 1) {
-        throw new Error(`${viewport.name}: Vivre Ici rail escapes viewport ${JSON.stringify(panelBox)}`);
+        throw new Error(`${viewport.name}: Vivre Ici rail escapes viewport ${JSON.stringify({ panelBox, layoutDiagnostics })}`);
       }
       if (await rail.getByRole("heading", { name: "Maârif", exact: true }).count() !== 1) throw new Error(`${viewport.name}: Maârif heading missing`);
       const searchLink = rail.getByRole("link", { name: /Voir les biens disponibles à Maârif/i });
@@ -87,7 +123,7 @@ try {
       if (overflow > 1) throw new Error(`${viewport.name}: horizontal overflow ${overflow}`);
       if (diagnostics.pageErrors.length) throw new Error(`${viewport.name}: browser page errors ${JSON.stringify(diagnostics.pageErrors)}`);
       await page.screenshot({ path: `${outDir}/casablanca-maarif-${viewport.width}x${viewport.height}.png`, fullPage: false });
-      report.cases.push({ viewport: viewport.name, searchHref, panelBox, overflow, mapRendered: true, highZoomTileCount, diagnostics });
+      report.cases.push({ viewport: viewport.name, searchHref, panelBox, layoutDiagnostics, overflow, mapRendered: true, highZoomTileCount, diagnostics });
     } finally {
       clearTimeout(tileGateTimeout);
       await page.close();
