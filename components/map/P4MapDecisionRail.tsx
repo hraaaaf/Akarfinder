@@ -17,6 +17,15 @@ import { getPremiumMarketIntelligenceProvider } from "@/lib/map/premium-map-city
 
 const FLAGSHIP_CITIES = ["Casablanca", "Rabat", "Marrakech", "Tanger", "Agadir", "Fès"] as const;
 
+const DISTRICT_HERO_MEDIA = {
+  "casablanca:maarif": {
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Parfumerie_jura%2C_Ma%C3%A2rif%2C_Casablanca.jpg/1280px-Parfumerie_jura%2C_Ma%C3%A2rif%2C_Casablanca.jpg",
+    alt: "Place publique derrière la rue Abou Zaid Addadoussi à Maârif, Casablanca",
+    credit: "Sam Nabi · CC BY-SA 2.0",
+    source: "https://commons.wikimedia.org/wiki/File:Parfumerie_jura,_Ma%C3%A2rif,_Casablanca.jpg",
+  },
+} as const;
+
 type ContextPayload =
   | { status: "ok"; context: NeighborhoodContextReadModelV1 }
   | { status: "not_found" | "invalid_request" | "unavailable"; [key: string]: unknown };
@@ -31,6 +40,10 @@ export function P4MapDecisionRail() {
   const cityName = cityEntity?.canonical_name ?? (navigationState.city === "all" ? "Maroc" : navigationState.city);
   const districtEntity = cityEntity && navigationState.district
     ? resolveNeighborhoodEntity(cityEntity.canonical_name, navigationState.district)
+    : null;
+  const districtHeroKey = cityEntity && districtEntity ? `${cityEntity.slug}:${districtEntity.slug}` : null;
+  const districtHero = districtHeroKey
+    ? DISTRICT_HERO_MEDIA[districtHeroKey as keyof typeof DISTRICT_HERO_MEDIA] ?? null
     : null;
   const provider = getPremiumMarketIntelligenceProvider(navigationState.city);
   const searchHref = buildMapSearchHref(navigationState);
@@ -89,6 +102,19 @@ export function P4MapDecisionRail() {
       aria-label="Vivre ici : territoire, vie locale et biens"
     >
       <div className="p4-sheet-handle" aria-hidden="true" />
+
+      {districtHero ? (
+        <figure className="relative -mx-6 -mt-6 mb-4 hidden h-[136px] overflow-hidden bg-[#d7e3e1] lg:block" data-p4-neighborhood-hero>
+          <img src={districtHero.src} alt={districtHero.alt} className="h-full w-full object-cover object-center" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" aria-hidden="true" />
+          <figcaption className="absolute inset-x-3 bottom-3 flex items-center justify-between gap-2 text-[8px] font-semibold text-white">
+            <span className="rounded-full bg-black/35 px-2 py-1 backdrop-blur-sm">{districtEntity?.canonical_name}</span>
+            <a href={districtHero.source} target="_blank" rel="noreferrer" className="rounded-full bg-black/35 px-2 py-1 backdrop-blur-sm hover:bg-black/45">
+              {districtHero.credit}
+            </a>
+          </figcaption>
+        </figure>
+      ) : null}
 
       <header className="p4-premium-context-header">
         <p className="p4-premium-kicker">

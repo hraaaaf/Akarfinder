@@ -1,140 +1,301 @@
 # 3 — Vivre Ici AkarFinder
 
-**Statut : ACTIVE — TARGET 9,8/10 LOCKED / ÉTAPE 1 CAMÉRA CERTIFIÉE / ÉTAPE 2 COMPOSITION EN VALIDATION**  
-**Dernière mise à jour : 2026-09-07**  
+**Statut : ACTIVE — TARGET LOCK CONSERVÉ / MAPLIBRE NATIONAL VALIDÉ / CLOSEOUT VISUEL PROUVÉ / INTÉGRATION PR #1025 RESTANTE**  
+**Dernière mise à jour : 2026-09-11**  
 **Repo : `hraaaaf/Akarfinder`**  
-**Branche : `docs/3-vivre-ici-akarfinder`**  
-**PR : `#1025` — OPEN / non mergée**  
+**Branche active : `spike/vivre-ici-maplibre-morocco`**  
+**Dernier HEAD produit validé : `5060ed138237d0e1f08533f2d7ebdcb32fa42b9a`**  
+**Main vérifié avant closeout : `df8b8d9a493553d5fa39ea8b0fa0ee789cf71ee2` — toujours re-fetch avant intégration/merge**  
+**PR #1025 : OPEN / branche `docs/3-vivre-ici-akarfinder` / dernier HEAD vérifié `56fcf05b2bf8c3cedccc46f55a7ad2cd8dfb469a` — re-fetch obligatoire avant écriture**  
 **Fondation produit : `/map`**  
-**Baseline 2L.3 certifiée : `1e36c08935673980c36e25725c66324e139f7a0c`**  
-**Dernier HEAD visuel étape 1 certifié : `1f93e91befe236dfcec9b5a03a12434e4b50a75f`**  
-**HEAD UI étape 2 avant canonique : `4aa0b4ae7faca98726692f20c247d896aad13443`**  
-**Main vérifié : `df8b8d9a493553d5fa39ea8b0fa0ee789cf71ee2`**  
-**Vercel : aucun déploiement sans accord explicite d’Achraf.**
+**Avancement chantier : `92 %`**  
+**Vercel : aucun déploiement sans autorisation explicite d’Achraf.**
 
-## GOAL
-Transformer Vivre ici (`/map`) en expérience territoriale premium : carte héro dominante, quartier lisible, rail desktop éditorial, bottom sheet mobile premium, aucune fausse précision.
+---
 
-**Succès observable : score visuel global ≥9,8/10 contre le TARGET LOCK + build/TypeScript/tests verts + captures 390/430/768/1280 + truth gate géographique fail-closed.**
+## 1. GOAL / SUCCÈS / PREUVE
 
-## TARGET LOCK — AUTORITÉ VISUELLE DURABLE
-Cible approuvée explicitement par Achraf : mockup unique Desktop Maârif + Mobile Maârif.
+### Goal
+Transformer `/map` en expérience territoriale premium AkarFinder : carte héro 3D dominante, quartier lisible, rail desktop éditorial, bottom sheet mobile premium, aucune fausse précision et moteur scalable du quartier au Maroc.
 
-- fichier durable : `AKARFINDER_VIVRE_ICI_TARGET_FREEZE_2026-09-06.png`
-- Google Drive ID : `1nt6ouxqGp-z6cHnj5A3iQHmw8I_YnGFL`
+### Succès observable
+- moteur MapLibre réutilisable sur plusieurs villes/quartiers ;
+- composition proche du TARGET LOCK ;
+- captures réelles `390 / 430 / 768 / 1280` ;
+- TypeScript + build + visual gate verts ;
+- truth gate géographique fail-closed ;
+- aucun faux pin immobilier ;
+- aucun DB write pour ce chantier ;
+- aucun Vercel sans human gate ;
+- score final honnête contre TARGET.
+
+### État du Goal
+Le **lot visuel MapLibre est clos avec preuve**. Le chantier global reste ACTIVE car l’intégration dans PR #1025, la CI PR, le human merge gate, le post-merge et les audits provider/sécurité restent à faire.
+
+---
+
+## 2. TARGET LOCK — AUTORITÉ VISUELLE DURABLE
+
+- fichier : `AKARFINDER_VIVRE_ICI_TARGET_FREEZE_2026-09-06.png`
+- stockage durable : Google Drive
+- Drive ID : `1nt6ouxqGp-z6cHnj5A3iQHmw8I_YnGFL`
 - dimensions : `1536 × 1024`
 - SHA-256 : `c552bc2d4ef669394694f71027c9852a6c56d155b7853a27f2e9e672942637c8`
-- seuil de clôture : **≥9,8/10**
+- seuil historique souhaité : `≥9,8/10`
 
-Le TARGET est une autorité de **composition et qualité visuelle**, pas une autorisation d’inventer photos, prix, météo, scores, proximité, temps, distances ou positions.
+Le TARGET est une autorité de composition et de qualité visuelle. Il n’autorise pas à inventer photo, prix, météo, score, proximité, temps, distance, position ou données immobilières.
 
-## TRUTH GATE GÉOGRAPHIQUE
-Audit Supabase production read-only :
+**Conclusion finale de ce lot :** le seuil `≥9,8` n’est pas certifié avec le raster Esri actuel. Une poursuite par simple grade global dégrade le tissu urbain avant d’atteindre la mer/lumière du TARGET. Toute ambition `≥9,8` exige désormais un lot distinct sur le provider/imagerie ou une autre stratégie de rendu, pas une nouvelle série de micro-tweaks.
+
+---
+
+## 3. TRUTH GATE GÉOGRAPHIQUE
+
+Audit production read-only historique :
 - `property_listings` : `7 926`, aucune coordonnée exploitable ;
 - `geo_entities` : `45`, géométrie exploitable `0` ;
 - `geo_resolution_events` : `102`, coordonnée exploitable `0` ;
 - `mubawab_listing_corpus_v1` : `37 420`, coordonnée exploitable `0`.
 
-`isExactMapListing` exige `geo_precision="exact"` + provenance `scraped_coordinates|manual_import` + coordonnées valides au Maroc.
+`isExactMapListing` exige :
+- `geo_precision="exact"` ;
+- provenance `scraped_coordinates|manual_import` ;
+- coordonnées valides au Maroc.
 
-**Conclusion : `0` bien actuellement éligible à un pin/callout EXACT. Aucun faux pin bien n’est autorisé.**
+**Conclusion de l’audit de référence : `0` bien éligible à un pin/callout EXACT.** Aucun faux pin immobilier n’est autorisé.
 
-## BASELINE 2L.3 — CERTIFICATION TECHNIQUE
-Workflow : `Vivre Ici AFTER Certification`  
-Run : `34065048997` — **SUCCESS**  
-Job : `101572225137` — **SUCCESS**  
-HEAD : `1e36c08935673980c36e25725c66324e139f7a0c`  
-Artifact : `9998699255` — `vivre-ici-after`  
-Digest : `sha256:4bf145289444fd137f7be1593082b55f7694aba33f75cdb74f214595573c0608`
+---
 
-8 captures réelles : National + Casablanca/Maârif en `390×844`, `430×932`, `768×900`, `1280×900`.
+## 4. ARCHITECTURE RETENUE — MAPLIBRE NATIONAL
 
-Maârif 2L.3 : pitch `46°`, bearing `-14°`, zoom `14.3`, bâtiments `60 / 66 / 105 / 116`, POI `2`, zéro overlap, zéro DB write, zéro deploy.
+L’ancienne reconstruction manuelle quartier par quartier est abandonnée.
 
-## INSPECTION VISUELLE TARGET ↔ 2L.3 — PROUVÉE
-L’artifact exact `9998699255` a été téléchargé et inspecté. Comparaison visuelle directe TARGET ↔ 2L.3 construite aux mêmes viewports.
+- `MapLibreNeighborhood3D.tsx` paramétré ville/quartier/centre ;
+- MapLibre GL ;
+- bâtiments vectoriels globaux OpenFreeMap ;
+- imagerie Esri comme provider de prototype tant que conformité/licence production non explicitement prouvée ;
+- données quartier via registre canonique ;
+- `/map` utilise MapLibre pour les couples ville + quartier canoniques ;
+- vue nationale ville seule indépendante ;
+- aucun asset bâtiment spécifique Maârif requis ;
+- aucun DB write ;
+- aucun déploiement Vercel.
 
-**Score manuel de référence 2L.3 : `6,4/10` contre TARGET.**
+Data policy 3D : hauteur explicite = factuelle ; floors explicites = estimation déclarée si utilisée ; hauteur inconnue = éventuel rendu visuel jamais persisté/exposé comme hauteur factuelle.
 
-Écarts structurants constatés :
-1. caméra/perspective trop plate et trop quartier ;
-2. composition desktop incomplète ;
-3. rail éditorial trop pauvre ;
-4. mobile trop utilitaire ;
-5. matière satellite/finition encore éloignée du rendu premium cible.
+### Scalabilité prouvée
+Commit `628947bb24bf247a73c5161b64a25fc47aafe33c` — run `34513592437` ✅
 
-Ce score est une évaluation visuelle par grille, pas une métrique mathématique automatisée.
+- Casablanca / Maârif : `66` volumes desktop ;
+- Rabat / Agdal : `96` ;
+- Marrakech / Guéliz : `53` ;
+- HTTP `200`, render `ready`, source `available` ;
+- required failed requests `0` ;
+- DB writes `0`, deployment actions `0`.
 
-## ÉTAPE 1 — CAMÉRA / PERSPECTIVE — CERTIFIÉE
-Itérations réelles comparées au TARGET. La v4 est retenue comme meilleure base actuelle du stack MapLibre/Esri :
+---
 
-- HEAD : `1f93e91befe236dfcec9b5a03a12434e4b50a75f`
-- run : `34125068246` — **SUCCESS**
-- artifact : `10019831615` — `vivre-ici-after`
-- digest : `sha256:4621d022835b298c14b5e8daca9bd8337ee22d90d4847f763c4124ca724464ac`
-- caméra Maârif : zoom `14.0`, pitch `58°`, bearing `-12°`
-- bâtiments rendus : `73 / 78 / 119 / 120`
-- overlaps : `false` partout
-- zéro DB write / zéro deploy
+## 5. INTÉGRATION RÉELLE DANS `/map`
 
-**Score caméra manuel : ~`7,4/10` vs `5,8/10` sur la baseline 2L.3.**
+Commit `11769c0c2e7a9abb262bd19614efb314f9d5b4b3` — run `34526882196` ✅  
+Artifact `10171990999` — digest `sha256:75c4223becbdb1bfe0f3342a8c64a88a14455b1d59ada3d121546f6fbd4327b0`
 
-Conclusion : la caméra reste moins spectaculaire que le TARGET mais n’est plus le principal bloqueur visuel. La profondeur réelle et le contexte côte/ville sont présents ; poursuivre les micro-ajustements caméra avant de corriger composition/rail serait de rendement décroissant.
+Maârif intégré : desktop `68` volumes, mobile `45`, TypeScript/build/capture SUCCESS, DB `0`, deploy `0`.
 
-## ÉTAPE 2 — COMPOSITION DESKTOP — EN VALIDATION
-Goal : rapprocher la silhouette desktop du TARGET avant toute refonte éditoriale du rail.
+---
 
-Mutation UI actuelle :
-- page : bande basse compacte `Découvrez les quartiers autrement` ;
-- layout desktop : map/rail intégrés dans une surface beige chaude ;
-- hauteur carte/rail réduite pour rendre la bande basse visible dans le viewport ;
-- map/rail gardés autour de `70/30` ;
-- aucun contenu factuel ajouté.
+## 6. POLISH UI — PREUVES
 
-HEAD UI avant mise à jour canonique : `4aa0b4ae7faca98726692f20c247d896aad13443`.
-Run `Vivre Ici AFTER Certification` : `34139351676`, lancé sur ce HEAD ; état au dernier contrôle : `queued`.
+### 6.1 Doublon outro
+- premier essai `5917eaf3...` : CI verte mais BEFORE/AFTER identique, non retenu ;
+- correction effective `6185cfed2d70c371ff6f6c6390f65d1fe7c5fb54` ;
+- run `34531542541` ✅ ; artifact `10173769689` ;
+- desktop `67` / mobile `45`, HTTP/render/source OK, DB `0`, deploy `0`.
 
-Ne pas déclarer l’étape 2 réussie sans artifact + captures AFTER + comparaison TARGET.
+### 6.2 Rail desktop premium
+HEAD `e1c59a3f5e1428d20981122bfd8af7cf3966d813` — run `34534627318` ✅ — artifact `10174979779`.
 
-## RECHERCHE / DÉCISIONS À CONSERVER
-1. Le satellite réel doit rester la matière principale ; les extrusions doivent rester discrètes.
-2. Ne pas simuler une photogrammétrie texturée non disponible/vérifiée pour Casablanca.
-3. Le TARGET est un neighborhood guide éditorial avec carte héro, pas un dashboard GIS.
-4. Le rail ne doit utiliser que du contenu sourcé ; aucun remplissage factice.
-5. Le mobile doit rester une expérience dédiée, pas une réduction mécanique du desktop.
-6. Avant production, le provider d’imagerie doit avoir un chemin officiellement supporté/licencié ou une conformité explicitement prouvée.
+### 6.3 Hero photo rail + harness
+Feature `aebee4e2dd49d7340e9722876eadb3f53cc31975`  
+HEAD produit précédent `d4a71d8c75dfa947b5a31f1261f2666828751692`  
+Run `34536609567` ✅ — artifact `10175712833`.
 
-## GARDE-FOUS
-- aucun ImageGen pour évaluer/certifier le site ;
-- aucune nouvelle cible sans décision explicite d’Achraf ;
-- aucune photo/score/prix/distance/temps/position inventé ;
-- aucun pin immobilier sans EXACT ;
-- aucune DB mutation pour ce lot ;
-- aucun deploy Vercel sans autorisation explicite ;
-- aucun merge PR #1025 avant le human gate ;
-- aucun ≥9,8 déclaré sans comparaison visuelle prouvée.
+Score BEFORE final grade : cadrage `8,8`, 3D/façades `8,7`, lumière `8,6`, mer/environnement `8,4`, rail/hiérarchie `9,3`, global `8,9/10`.
 
-## SYNCHRONISATION MAIN
-Main vérifié le 2026-09-07 : `df8b8d9a493553d5fa39ea8b0fa0ee789cf71ee2`.
+### 6.4 Grade satellite final — décision prouvée
+Variables gelées pendant ce lot : caméra, zoom, pitch, bearing, bâtiments 3D, labels/POI, rail, bottom sheet, truth gate et logique nationale.
 
-**Obligation de reprise : re-fetch branch HEAD + PR #1025 + main, puis comparer/synchroniser avant le merge final.**
+Baseline raster :
+```ts
+"raster-brightness-min": 0.20,
+"raster-brightness-max": 1,
+"raster-contrast": -0.08,
+"raster-saturation": -0.02,
+```
 
-## ROADMAP
-- [x] TARGET LOCK durable + SHA-256 + Drive ID
-- [x] truth gate géographique fail-closed / `0 EXACT`
-- [x] baseline 2L.3 technique : 8 captures + verify vert
-- [x] artifact exact 2L.3 inspecté
-- [x] comparaison TARGET ↔ 2L.3 construite
-- [x] score baseline honnête : `6,4/10`
-- [x] Étape 1 caméra/perspective : v4 certifiée techniquement et visuellement retenue
-- [ ] Étape 2 composition desktop : implementation poussée, AFTER à certifier
-- [ ] Étape 3 rail éditorial
-- [ ] Étape 4 responsive mobile/tablette
-- [ ] Étape 5 polish + captures 390/430/768/1280 + score final
-- [ ] closeout canonique final + PR body final
-- [ ] re-fetch/compare/sync latest main
-- [ ] human merge gate PR #1025
-- [ ] Vercel uniquement après autorisation explicite
+#### Passe 1 — retenue
+Commit `5e3c1f8400cbc877193f44ba416d540674e3dc0a`  
+Changement unique : `raster-saturation -0.02 → 0.12`  
+Run `34571508754` ✅  
+Artifact `10187991385`  
+Digest `sha256:f1c0e470f9770e14e37d7a3acc8ad48d38971c760ea101fcd7c071f3f404b798`
 
-## NEXT EXACT
-**Laisser le run `34139351676` produire l’artifact sans polling passif → télécharger `vivre-ici-after` → afficher les captures AFTER 1280/768/430/390 → comparer TARGET ↔ AFTER → scorer l’étape 2. Si insuffisant : corriger uniquement la composition ; si validé : enchaîner immédiatement sur l’étape 3 rail éditorial.**
+Effet : tissu urbain légèrement plus vivant sans casser le moteur national.
+
+#### Passe 2 — rejetée
+Commit `13a8ccd8771e6ec3f93e2f49fb1f1a46f8766939`  
+Changement unique supplémentaire : `raster-brightness-min 0.20 → 0.32`  
+Run `34571968762` ✅  
+Artifact `10188171016`  
+Digest `sha256:3ef8d662f9f00e9ee4cbab7bb56925bf2cb84abaa2e2825b71e33407ae130f90`
+
+Mesure diagnostique Maârif : mer ≈ `75,9 → 102,9` de luminance, terrain ≈ `143,0 → 155,6`, alors que le terrain du TARGET est ≈ `140,6`. La passe éclaircit donc la mer mais délave le sujet urbain. **Rejet visuel.**
+
+#### État final retenu
+Commit `5060ed138237d0e1f08533f2d7ebdcb32fa42b9a`  
+Revert ciblé : `brightness-min 0.32 → 0.20`, saturation `0.12` conservée.  
+Le compare `5e3c1f8... → 5060ed1...` retourne **aucun fichier différent**, donc le produit final est bit-pour-bit équivalent à la passe 1 déjà validée.
+
+Run final : `34572349452` — **SUCCESS**  
+Artifact : `10188312451`  
+Digest : `sha256:feeea303395bcbba1b4f8b67f154113634130084541c642138c205c4edb65212`
+
+Régression finale :
+- Casablanca / Maârif : `45` volumes à `390`, `48` à `430`, `59` à `768`, `67` à `1280` ;
+- Rabat / Agdal desktop : `80` ;
+- Marrakech / Guéliz desktop : `48` ;
+- tous HTTP `200` ;
+- render `ready` ; source `available` ;
+- required failed requests/responses `0` ;
+- DB writes par harness `0` ;
+- deployment actions par harness `0`.
+
+Grade final :
+```ts
+"raster-brightness-min": 0.20,
+"raster-brightness-max": 1,
+"raster-contrast": -0.08,
+"raster-saturation": 0.12,
+```
+
+### Score expert final TARGET ↔ AFTER
+- cadrage : `8,8` ;
+- 3D/façades : `8,7` ;
+- lumière : `8,8` ;
+- mer/environnement : `8,5` ;
+- rail/hiérarchie : `9,3` ;
+- **global : `9,0/10`**.
+
+**Conclusion :** le lot grade est clos. Le plafond restant vient principalement de l’imagerie satellite/atmosphère du provider, pas de l’architecture MapLibre. Ne pas poursuivre les tweaks globaux sur ce lot.
+
+---
+
+## 7. VARIABLES GELÉES APRÈS CLOSEOUT VISUEL
+
+Gelées jusqu’à nouveau lot explicitement motivé :
+- architecture MapLibre ;
+- caméra Maârif ;
+- zoom/pitch/bearing ;
+- bâtiments 3D ;
+- logique context/POI ;
+- rail desktop + hero ;
+- bottom sheet mobile ;
+- truth gate ;
+- route `/map` ;
+- grade final ci-dessus ;
+- aucune DB mutation.
+
+---
+
+## 8. ROADMAP FORWARD
+
+- [x] TARGET LOCK durable + Drive ID + SHA-256
+- [x] truth gate géographique fail-closed
+- [x] baseline + inspection TARGET
+- [x] pivot MapLibre national
+- [x] benchmark Casablanca / Rabat / Marrakech
+- [x] intégration MapLibre dans `/map`
+- [x] suppression effective doublon outro
+- [x] rail desktop premium
+- [x] hero rail Maârif + visual gate
+- [x] grade satellite final
+- [x] captures finales `390 / 430 / 768 / 1280`
+- [x] comparaison TARGET ↔ AFTER finale
+- [x] score final honnête `9,0/10`
+- [x] régression Casablanca / Rabat / Marrakech
+- [x] closeout visuel canonique
+- [ ] intégrer proprement le spike dans la branche PR #1025 sans force-push
+- [ ] mettre à jour le body PR #1025 avec architecture MapLibre + preuves finales
+- [ ] re-fetch latest `main` + compare avant merge
+- [ ] CI PR finale verte
+- [ ] **human merge gate PR #1025**
+- [ ] post-merge checks
+- [ ] audit séparé dépendances npm / vulnérabilités avant claim production-ready
+- [ ] valider provider d’imagerie supporté/licencié pour production
+- [ ] Vercel uniquement après autorisation explicite d’Achraf
+
+---
+
+## 9. RISQUES / NON CLOS
+
+1. **Provider imagerie production** : Esri imagery reste un choix de prototype tant que support/licence production ne sont pas explicitement prouvés.
+2. **Dépendances npm** : logs antérieurs = `8 vulnerabilities` (`1 moderate / 5 high / 2 critical`). Lot sécurité séparé ; pas de `npm audit fix --force` sans diagnostic.
+3. **Gap TARGET** : score final `9,0/10`, pas `≥9,8`. Nouveau progrès majeur exige un autre provider/traitement d’imagerie, pas un micro-grade supplémentaire.
+4. **PR #1025** : ne contient pas encore le pivot MapLibre final.
+5. **Vercel** : aucun déploiement sans autorisation explicite.
+
+---
+
+## 10. PROCÉDURE DE REPRISE
+
+1. Lire ce fichier en premier.
+2. Re-fetch branche active, HEAD, `main`, PR #1025 et CI avant toute écriture Git.
+3. TARGET durable via Drive ID `1nt6ouxqGp-z6cHnj5A3iQHmw8I_YnGFL` ; ne jamais prendre un ancien `/mnt/data/*.png` comme autorité.
+4. Ne pas rouvrir le grade satellite sans nouveau lot/provider : le test `brightness-min 0.32` a déjà été exécuté et rejeté.
+5. Pas de Vercel sans permission ; pas de faux pin/chiffre/score.
+
+### Dernières preuves
+- architecture 3 villes : `34513592437` ✅
+- intégration `/map` : `34526882196` ✅
+- outro : `34531542541` ✅
+- rail : `34534627318` ✅
+- hero rail : `34536609567` ✅
+- grade passe 1 retenue : `34571508754` ✅
+- grade passe 2 rejetée : `34571968762` ✅
+- **final restauré : `34572349452` ✅**
+- score final : **`9,0/10`**
+
+---
+
+## 11. NEXT EXACT
+
+**Re-fetch PR #1025 + latest `main` → intégrer le spike final dans la branche PR sans force-push, en préservant l’arbre du spike et en neutralisant l’ancien grade CSS obsolète → mettre à jour le body PR → comparer à latest main → lancer/observer la CI PR → s’arrêter au human merge gate.**
+
+Stratégie d’intégration préférée si les refs n’ont pas bougé : merge commit avec la branche PR actuelle comme premier parent, le spike final comme second parent et l’arbre exact du spike comme contenu. Cela conserve l’historique sans réintroduire le filtre CSS obsolète de `56fcf05b...` et sans réécriture forcée.
+
+### Séquence restante
+`intégration PR #1025` → `PR body` → `latest main compare` → `CI PR` → `human merge gate` → `post-merge` → `sécurité npm + provider imagerie` → `Vercel seulement sur autorisation`.
+
+---
+
+## 12. REPÈRES DE REPRISE
+
+- chantier/lot : `Vivre Ici / intégration PR après closeout visuel`
+- Goal : `/map` premium 3D scalable quartier → Maroc
+- repo : `hraaaaf/Akarfinder`
+- branche : `spike/vivre-ici-maplibre-morocco`
+- dernier HEAD produit validé : `5060ed138237d0e1f08533f2d7ebdcb32fa42b9a`
+- HEAD branche : re-fetch requis après commits documentaires
+- main vérifié avant closeout : `df8b8d9a493553d5fa39ea8b0fa0ee789cf71ee2`
+- PR : `#1025` OPEN / branche distincte / re-fetch requis
+- dernière CI produit : `34572349452` ✅ SUCCESS
+- artifact : `10188312451`
+- deployment : aucun
+- DB : `0 write`
+- dernière preuve : final grade restauré + 6 viewports/3 villes + score `9,0/10`
+- blocage réel : aucun
+- Next exact : intégration PR #1025 sans force-push
+- avancement global : `92 %`
+- effort suivant : `🟡`
+
+**Ce fichier est le single forward tracker de reprise du chantier Vivre Ici.**

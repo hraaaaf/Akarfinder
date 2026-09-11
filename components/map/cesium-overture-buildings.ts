@@ -1,0 +1,314 @@
+type RuntimeFeature = [
+  height: number,
+  minHeight: number,
+  precisionCode: 0 | 1,
+  kindCode: 0 | 1,
+  geometryTypeCode: 0 | 1,
+  coordinates: unknown,
+];
+
+type RuntimePayload = {
+  v?: number;
+  source?: string;
+  release?: string | null;
+  license?: string;
+  attribution?: string;
+  floorEstimateMeters?: number;
+  defaultHeightInvented?: boolean;
+  features?: RuntimeFeature[];
+};
+
+const OVERTURE_RUNTIME_URL = "/data/vivre-ici/maarif-overture-3d.compact.json";
+const MIN_OVERTURE_FEATURES = 1000;
+const PRIMITIVE_BATCH_SIZE = 700;
+const MAX_BUILDING_SPAN_DEGREES = 0.012;
+
+function setShellAttribute(name: string, value: string) {
+  document.querySelector<HTMLElement>("[data-cesium-spike]")?.setAttribute(name, value);
+}
+
+function ensureOvertureAttribution(payload: RuntimePayload) {
+  const map = document.querySelector<HTMLElement>(".cesium-spike-map");
+  if (!map) return;
+
+  const existing = map.querySelector<HTMLElement>("[data-open-3d-attribution]");
+  const attribution = existing ?? document.createElement("div");
+  attribution.dataset.open3dAttribution = "true";
+  attribution.className = "cesium-spike-osm-3d-attribution";
+  attribution.textContent = `${payload.attribution ?? "© OpenStreetMap contributors, Overture Maps Foundation"} · volumes 3D: hauteur publiée ou estimation ~3 m/niveau`;
+  if (!existing) map.appendChild(attribution);
+}
+
+function finiteNumber(value: unknown): number | null {
+  const number = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(number) ? number : null;
+}
+
+function polygonIsBuildingScale(polygon: unknown): boolean {
+  if (!Array.isArray(polygon) || !Array.isArray(polygon[0])) return false;
+  const ring = polygon[0];
+  let minLng = Number.POSITIVE_INFINITY;
+  let maxLng = Number.NEGATIVE_INFINITY;
+  let minLat = Number.POSITIVE_INFINITY;
+  let maxLat = Number.NEGATIVE_INFINITY;
+  let points = 0;
+
+  for (const coordinate of ring) {
+    if (!Array.isArray(coordinate) || coordinate.length < 2) continue;
+    const lng = finiteNumber(coordinate[0]);
+    const lat = finiteNumber(coordinate[1]);
+    if (lng === null || lat === null) continue;
+    minLng = Math.min(minLng, lng);
+    maxLng = Math.max(maxLng, lng);
+    minLat = Math.min(minLat, lat);
+    maxLat = Math.max(maxLat, lat);
+    points += 1;
+  }
+
+  if (points < 4) return false;
+  return (maxLng - minLng) <= MAX_BUILDING_SPAN_DEGREES
+    && (maxLat - minLat) <= MAX_BUILDING_SPAN_DEGREES;
+}
+
+function ringToPositions(Cesium: any, ring: unknown): any[] | null {
+  if (!Array.isArray(ring) || ring.length < 4) return null;
+  const degrees: number[] = [];
+  for (const coordinate of ring) {
+    if (!Array.isArray(coordinate) || coordinate.length < 2) continue;
+    const lng = finiteNumber(coordinate[0]);
+    const lat = finiteNumber(coordinate[1]);
+    if (lng === null || lat === null) continue;
+    degrees.push(lng, lat);
+  }
+  if (degrees.length < 8) return null;
+  return Cesium.Cartesian3.fromDegreesArray(degrees);
+}
+
+function polygonHierarchy(Cesium: any, polygon: unknown) {
+  if (!Array.isArray(polygon) || !polygon.length) return null;
+  const outer = ringToPositions(Cesium, polygon[0]);
+  if (!outer) return null;
+
+  const holes = polygon
+    .slice(1)
+    .map((ring) => ringToPositions(Cesium, ring))
+    .filter(Boolean)
+    .map((positions) => new Cesium.PolygonHierarchy(positions));
+
+  return new Cesium.PolygonHierarchy(outer, holes);
+}
+
+function buildingColor(Cesium: any, height: number, precisionCode: 0 | 1, kindCode: 0 | 1) {
+  const exact = precisionCode === 0;
+  const part = kindCode === 1;
+  if (height >= 36) return Cesium.Color.fromCssColorString(part ? "#7d5d4a" : exact ? "#8d6045" : "#b79d84");
+  if (height >= 24) return Cesium.Color.fromCssColorString(part ? "#906a50" : exact ? "#a67352" : "#c5a98f");
+  if (height >= 14) return Cesium.Color.fromCssColorString(part ? "#aa8663" : exact ? "#b88f69" : "#d1b99f");
+  return Cesium.Color.fromCssColorString(part ? "#c2a581" : exact ? "#c9a47d" : "#dccbb8");
+}
+
+function exactRoofColor(Cesium: any, height: number) {
+  if (height >= 36) return Cesium.Color.fromCssColorString("#d4ad86");
+  if (height >= 24) return Cesium.Color.fromCssColorString("#ddbc99");
+  if (height >= 14) return Cesium.Color.fromCssColorString("#e6cbaa");
+  return Cesium.Color.fromCssColorString("#edd9bd");
+}
+
+function polygonsForRecord(record: RuntimeFeature): unknown[] {
+  const geometryTypeCode = record[4];
+  const coordinates = record[5];
+  if (!Array.isArray(coordinates)) return [];
+  return geometryTypeCode === 0 ? [coordinates] : coordinates;
+}
+
+function createRuntimePrimitives(Cesium: any, records: RuntimeFeature[]) {
+  const geometryInstances: any[] = [];
+  const tallRoofInstances: any[] = [];
+  const exactRoofCapInstances: any[] = [];
+  let renderedFeatures = 0;
+  let exactHeightCount = 0;
+  let estimatedHeightCount = 0;
+  let rejectedOversizePolygons = 0;
+
+  for (const record of records) {
+    if (!Array.isArray(record) || record.length < 6) continue;
+    const height = finiteNumber(record[0]);
+    const minHeight = finiteNumber(record[1]) ?? 0;
+    const precisionCode = record[2] === 0 ? 0 : 1;
+    const kindCode = record[3] === 1 ? 1 : 0;
+    if (height === null || height <= 0 || height > 350 || minHeight < 0 || minHeight > 350) continue;
+
+    const polygons = polygonsForRecord(record);
+    let featureRendered = false;
+    for (const polygon of polygons) {
+      if (!polygonIsBuildingScale(polygon)) {
+        rejectedOversizePolygons += 1;
+        continue;
+      }
+      const hierarchy = polygonHierarchy(Cesium, polygon);
+      if (!hierarchy) continue;
+      const topHeight = minHeight + height;
+
+      try {
+        geometryInstances.push(
+          new Cesium.GeometryInstance({
+            geometry: new Cesium.PolygonGeometry({
+              polygonHierarchy: hierarchy,
+              height: minHeight,
+              extrudedHeight: topHeight,
+              closeTop: true,
+              closeBottom: true,
+              vertexFormat: Cesium.PerInstanceColorAppearance.VERTEX_FORMAT,
+            }),
+            attributes: {
+              color: Cesium.ColorGeometryInstanceAttribute.fromColor(
+                buildingColor(Cesium, height, precisionCode, kindCode),
+              ),
+            },
+          }),
+        );
+        featureRendered = true;
+
+        if (precisionCode === 0 && height >= 12 && Array.isArray(polygon) && Array.isArray(polygon[0])) {
+          exactRoofCapInstances.push(
+            new Cesium.GeometryInstance({
+              geometry: new Cesium.PolygonGeometry({
+                polygonHierarchy: hierarchy,
+                height: topHeight + 0.22,
+                closeTop: true,
+                closeBottom: false,
+                vertexFormat: Cesium.PerInstanceColorAppearance.VERTEX_FORMAT,
+              }),
+              attributes: {
+                color: Cesium.ColorGeometryInstanceAttribute.fromColor(exactRoofColor(Cesium, height)),
+              },
+            }),
+          );
+
+          const roofDegrees: number[] = [];
+          for (const coordinate of polygon[0]) {
+            if (!Array.isArray(coordinate) || coordinate.length < 2) continue;
+            const lng = finiteNumber(coordinate[0]);
+            const lat = finiteNumber(coordinate[1]);
+            if (lng === null || lat === null) continue;
+            roofDegrees.push(lng, lat, topHeight + 0.35);
+          }
+          if (roofDegrees.length >= 12 && Cesium.PolylineGeometry && Cesium.PolylineColorAppearance) {
+            tallRoofInstances.push(
+              new Cesium.GeometryInstance({
+                geometry: new Cesium.PolylineGeometry({
+                  positions: Cesium.Cartesian3.fromDegreesArrayHeights(roofDegrees),
+                  width: height >= 30 ? 1.25 : height >= 18 ? 0.95 : 0.70,
+                  vertexFormat: Cesium.PolylineColorAppearance.VERTEX_FORMAT,
+                }),
+                attributes: {
+                  color: Cesium.ColorGeometryInstanceAttribute.fromColor(
+                    Cesium.Color.fromCssColorString("#77665a").withAlpha(height >= 30 ? 0.46 : height >= 18 ? 0.32 : 0.20),
+                  ),
+                },
+              }),
+            );
+          }
+        }
+      } catch {
+        // Fail closed on malformed polygons; do not replace them with invented geometry.
+      }
+    }
+
+    if (featureRendered) {
+      renderedFeatures += 1;
+      if (precisionCode === 0) exactHeightCount += 1;
+      else estimatedHeightCount += 1;
+    }
+  }
+
+  const primitives: any[] = [];
+  for (let start = 0; start < geometryInstances.length; start += PRIMITIVE_BATCH_SIZE) {
+    primitives.push(
+      new Cesium.Primitive({
+        geometryInstances: geometryInstances.slice(start, start + PRIMITIVE_BATCH_SIZE),
+        appearance: new Cesium.PerInstanceColorAppearance({
+          closed: true,
+          translucent: false,
+          flat: false,
+        }),
+        shadows: Cesium.ShadowMode?.ENABLED,
+        asynchronous: false,
+      }),
+    );
+  }
+
+  for (let start = 0; start < exactRoofCapInstances.length; start += PRIMITIVE_BATCH_SIZE) {
+    primitives.push(
+      new Cesium.Primitive({
+        geometryInstances: exactRoofCapInstances.slice(start, start + PRIMITIVE_BATCH_SIZE),
+        appearance: new Cesium.PerInstanceColorAppearance({
+          closed: false,
+          translucent: false,
+          flat: true,
+        }),
+        asynchronous: false,
+      }),
+    );
+  }
+
+  for (let start = 0; start < tallRoofInstances.length; start += PRIMITIVE_BATCH_SIZE) {
+    primitives.push(
+      new Cesium.Primitive({
+        geometryInstances: tallRoofInstances.slice(start, start + PRIMITIVE_BATCH_SIZE),
+        appearance: new Cesium.PolylineColorAppearance({ translucent: true }),
+        asynchronous: false,
+      }),
+    );
+  }
+
+  return { primitives, renderedFeatures, exactHeightCount, estimatedHeightCount, rejectedOversizePolygons };
+}
+
+export async function tryLoadOvertureStaticBuildings(Cesium: any, scene: any): Promise<boolean> {
+  try {
+    const response = await fetch(OVERTURE_RUNTIME_URL, { cache: "force-cache" });
+    if (!response.ok) return false;
+    const payload = (await response.json()) as RuntimePayload;
+
+    if (
+      payload.v !== 1
+      || payload.defaultHeightInvented !== false
+      || !Array.isArray(payload.features)
+      || payload.features.length < MIN_OVERTURE_FEATURES
+    ) {
+      return false;
+    }
+
+    const built = createRuntimePrimitives(Cesium, payload.features);
+    if (built.renderedFeatures < MIN_OVERTURE_FEATURES) return false;
+
+    if (Cesium.SunLight) scene.light = new Cesium.SunLight({ intensity: 1.55 });
+    if (scene.postProcessStages?.fxaa) scene.postProcessStages.fxaa.enabled = true;
+    scene.highDynamicRange = false;
+    if (scene.shadowMap) {
+      scene.shadowMap.enabled = true;
+      scene.shadowMap.softShadows = true;
+    }
+    for (const primitive of built.primitives) scene.primitives.add(primitive);
+    scene.requestRender?.();
+
+    ensureOvertureAttribution(payload);
+    setShellAttribute("data-cesium-buildings-source", "overture-static");
+    setShellAttribute("data-cesium-buildings-release", payload.release ?? "unknown");
+    setShellAttribute("data-cesium-buildings-license", payload.license ?? "ODbL-1.0");
+    setShellAttribute("data-cesium-buildings-count", String(built.renderedFeatures));
+    setShellAttribute("data-cesium-buildings-exact-count", String(built.exactHeightCount));
+    setShellAttribute("data-cesium-buildings-estimated-count", String(built.estimatedHeightCount));
+    setShellAttribute("data-cesium-buildings-rejected-oversize", String(built.rejectedOversizePolygons));
+    setShellAttribute(
+      "data-cesium-buildings-precision",
+      built.estimatedHeightCount > 0 ? "mixed" : "exact-height",
+    );
+    setShellAttribute("data-cesium-buildings-state", "available");
+    return true;
+  } catch (error) {
+    console.warn("[vivre-ici-cesium-spike] materialized Overture buildings unavailable", error);
+    return false;
+  }
+}
