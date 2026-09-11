@@ -1,0 +1,69 @@
+name: Carte National Journey N3 Certification
+
+on:
+  pull_request:
+    paths:
+      - "app/api/geo/national-territories/**"
+      - "app/map/**"
+      - "app/search/**"
+      - "components/map/MapLibreNeighborhood3D.tsx"
+      - "components/map/NationalMapRouter.tsx"
+      - "components/map/NationalTerritoryExperience.tsx"
+      - "components/map/NationalNeighborhoodOverlay.tsx"
+      - "components/map/NationalNeighborhoodOverlayBridge.tsx"
+      - "components/map/P4MapDecisionRail.tsx"
+      - "components/search/**"
+      - "lib/map/canonical-neighborhood-data.ts"
+      - "lib/map/national-territory-runtime.server.ts"
+      - "lib/map/national-territory-data/**"
+      - "scripts/audits/carte-national-journey-n3.mjs"
+      - ".github/workflows/carte-national-journey-n3.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: carte-national-journey-n3-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  certify-national-journey-n3:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      BASE_URL: http://127.0.0.1:3213
+      AUDIT_OUTPUT_DIR: data/audits/carte-national-journey-n3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Start production server
+        shell: bash
+        run: |
+          npm run start -- -p 3213 > /tmp/carte-national-n3.log 2>&1 &
+          for attempt in {1..60}; do
+            if curl -fsS 'http://127.0.0.1:3213/api/geo/national-territories' >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/carte-national-n3.log
+          exit 1
+      - name: National to listings journey certification
+        run: node scripts/audits/carte-national-journey-n3.mjs
+      - name: Upload N3 evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: carte-national-journey-n3-${{ github.run_id }}
+          path: data/audits/carte-national-journey-n3
+          if-no-files-found: error
+          retention-days: 30
