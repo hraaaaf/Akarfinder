@@ -83,4 +83,25 @@
     overflow: visible !important;
     text-overflow: clip !important;
   }
+
+  /* MapLibre neighborhood route: keep the premium decision rail inside the
+     real viewport. Older sizing rules target the legacy 3D toggle path only. */
+  [data-p4-map-layout]:has([data-maplibre-spike]) {
+    height: calc(100svh - 64px) !important;
+    min-height: 0 !important;
+    grid-template-rows: minmax(0, 1fr) !important;
+    overflow: hidden !important;
+  }
+
+  [data-p4-map-layout]:has([data-maplibre-spike]) [data-p4-map-canvas],
+  [data-p4-map-layout]:has([data-maplibre-spike]) .p4-map-decision-rail {
+    min-height: 0 !important;
+  }
+
+  [data-p4-map-layout]:has([data-maplibre-spike]) .p4-map-decision-rail {
+    height: 100% !important;
+    max-height: 100% !important;
+    overflow-y: auto !important;
+    box-sizing: border-box !important;
+  }
 }
