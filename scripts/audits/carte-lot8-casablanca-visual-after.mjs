@@ -57,29 +57,37 @@ try {
 
     try {
       await page.goto(`${baseUrl}/map?city=casablanca&district=maarif&layer=explore`, { waitUntil: "domcontentloaded", timeout: 30000 });
-      await page.getByText("Chargement de la carte…", { exact: true }).waitFor({ state: "hidden", timeout: 30000 });
+      const maplibre = page.locator('[data-maplibre-spike][data-maplibre-city="casablanca"][data-maplibre-district="maarif"]');
+      await maplibre.waitFor({ state: "visible", timeout: 20000 });
       await page.locator(".maplibregl-canvas").waitFor({ state: "visible", timeout: 10000 });
+      await page.waitForFunction(() => {
+        const shell = document.querySelector('[data-maplibre-spike][data-maplibre-city="casablanca"][data-maplibre-district="maarif"]');
+        return shell?.getAttribute("data-maplibre-render-state") === "ready";
+      }, null, { timeout: 20000 });
       await highZoomTilesReady;
-      const preview = page.locator('[data-akarfinder-neighborhood-preview="maarif"]');
-      await preview.waitFor({ state: "visible", timeout: 20000 });
+
+      const rail = page.locator("[data-p4-map-decision-rail]");
+      await rail.waitFor({ state: "visible", timeout: 10000 });
       await page.waitForTimeout(500);
 
-      const panelBox = await preview.boundingBox();
-      if (!panelBox) throw new Error(`${viewport.name}: Maârif preview has no bounding box`);
+      const panelBox = await rail.boundingBox();
+      if (!panelBox) throw new Error(`${viewport.name}: Vivre Ici rail has no bounding box`);
       if (panelBox.x < -1 || panelBox.x + panelBox.width > viewport.width + 1 || panelBox.y < -1 || panelBox.y + panelBox.height > viewport.height + 1) {
-        throw new Error(`${viewport.name}: Maârif preview escapes viewport ${JSON.stringify(panelBox)}`);
+        throw new Error(`${viewport.name}: Vivre Ici rail escapes viewport ${JSON.stringify(panelBox)}`);
       }
-      if (await preview.getByRole("heading", { name: "Maârif", exact: true }).count() !== 1) throw new Error(`${viewport.name}: Maârif heading missing`);
-      const searchLink = preview.getByRole("link", { name: /Rechercher à Maârif/i });
+      if (await rail.getByRole("heading", { name: "Maârif", exact: true }).count() !== 1) throw new Error(`${viewport.name}: Maârif heading missing`);
+      const searchLink = rail.getByRole("link", { name: /Voir les biens disponibles à Maârif/i });
       const searchHref = await searchLink.getAttribute("href");
       if (!searchHref) throw new Error(`${viewport.name}: Search handoff missing`);
       const searchUrl = new URL(searchHref, baseUrl);
       if (searchUrl.pathname !== "/search" || searchUrl.searchParams.get("city") !== "Casablanca" || searchUrl.searchParams.get("district") !== "Maârif") {
         throw new Error(`${viewport.name}: Search handoff mismatch ${searchHref}`);
       }
+      const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+      if (overflow > 1) throw new Error(`${viewport.name}: horizontal overflow ${overflow}`);
       if (diagnostics.pageErrors.length) throw new Error(`${viewport.name}: browser page errors ${JSON.stringify(diagnostics.pageErrors)}`);
       await page.screenshot({ path: `${outDir}/casablanca-maarif-${viewport.width}x${viewport.height}.png`, fullPage: false });
-      report.cases.push({ viewport: viewport.name, searchHref, panelBox, mapRendered: true, highZoomTileCount, diagnostics });
+      report.cases.push({ viewport: viewport.name, searchHref, panelBox, overflow, mapRendered: true, highZoomTileCount, diagnostics });
     } finally {
       clearTimeout(tileGateTimeout);
       await page.close();
