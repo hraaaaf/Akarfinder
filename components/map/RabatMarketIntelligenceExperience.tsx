@@ -11,6 +11,7 @@ import type { RabatIntelligenceGeoJson } from "@/lib/map/intelligence-payload";
 import type { IntelligenceMode } from "@/lib/map/intelligence-scale";
 import {
   buildMapSearchHref,
+  intelligenceModeToMapLayer,
   withMapLocation,
   type MapNavigationState,
 } from "@/lib/map/map-navigation-state";
@@ -282,7 +283,11 @@ export function RabatMarketIntelligenceExperience({
       const zoneId = String(feature?.properties?.zoneId ?? "");
       const district = districtSlugForMarketZone(zoneId);
       if (!district) return;
-      onNavigationChange(withMapLocation(navigationState, "rabat", district));
+      onNavigationChange(withMapLocation(
+        { ...navigationState, layer: intelligenceModeToMapLayer(mode) },
+        "rabat",
+        district,
+      ));
     };
     const onEnter = () => { map.getCanvas().style.cursor = "pointer"; };
     const onLeave = () => { map.getCanvas().style.cursor = ""; };
@@ -300,7 +305,7 @@ export function RabatMarketIntelligenceExperience({
         // Theme/style swaps may have already removed the layers.
       }
     };
-  }, [mapLoaded, navigationState, onNavigationChange, payload, selectedZoneId, styleRevision, theme]);
+  }, [mapLoaded, mode, navigationState, onNavigationChange, payload, selectedZoneId, styleRevision, theme]);
 
   useEffect(() => {
     const map = mapRef.current;
