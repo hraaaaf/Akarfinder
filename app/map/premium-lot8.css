@@ -84,6 +84,13 @@
     text-overflow: clip !important;
   }
 
+  /* National fallback previews with no canonical MapLibre target must remain
+     visible. Older premium CSS hid every desktop preview whenever the national
+     3D toggle existed, including truth-safe no-center postal fallbacks. */
+  [data-p4-map-layout]:has([data-vivre-ici-map-shell]):not(:has([data-maplibre-spike])) [data-akarfinder-neighborhood-preview] {
+    display: block !important;
+  }
+
   /* MapLibre neighborhood route: the layout is itself a flex child. Percentage
      heights let intrinsic rail content enlarge the grid, so bind both the flex
      basis and the rail directly to the viewport. The rail height mirrors the
