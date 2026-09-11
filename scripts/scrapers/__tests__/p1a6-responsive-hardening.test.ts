@@ -18,13 +18,14 @@ describe("P1A.6 — Responsive hardening", () => {
     ]) assert.ok(audit.includes(expected));
   });
 
-  it("audits Morocco, city and selected district states across national and intelligence experiences", () => {
+  it("audits Morocco, city and selected district states across national, intelligence and MapLibre experiences", () => {
     const audit = source("scripts/audits/p1a6-map-responsive-smoke.ts");
     assert.ok(audit.includes('{ path: "/map", slug: "map", experience: "national" }'));
     assert.ok(audit.includes('{ path: "/map?city=Rabat", slug: "map-rabat", experience: "intelligence" }'));
-    assert.ok(audit.includes('{ path: "/map?city=Rabat&district=Agdal", slug: "map-rabat-agdal", experience: "intelligence" }'));
+    assert.ok(audit.includes('{ path: "/map?city=Rabat&district=Agdal", slug: "map-rabat-agdal", experience: "maplibre", citySlug: "rabat", districtSlug: "agdal" }'));
     assert.ok(audit.includes('/api/geo/national-territories'));
     assert.ok(audit.includes('[data-akarfinder-market-intelligence-map]'));
+    assert.ok(audit.includes('[data-maplibre-spike]'));
   });
 
   it("certifies real viewport composition rather than full-page screenshots", () => {
@@ -44,9 +45,11 @@ describe("P1A.6 — Responsive hardening", () => {
     assert.match(national, /__AKARFINDER_NATIONAL_MAP__/);
   });
 
-  it("preserves Rabat market intelligence for city and district states", () => {
+  it("preserves Rabat intelligence for city-only while canonical district routing uses MapLibre", () => {
     const router = source("components/map/NationalMapRouter.tsx");
     assert.match(router, /rabat-market-intelligence/);
     assert.match(router, /MapNeighborhoodClient/);
+    assert.match(router, /useMapLibreNeighborhood/);
+    assert.match(router, /MapLibreNeighborhood3D/);
   });
 });

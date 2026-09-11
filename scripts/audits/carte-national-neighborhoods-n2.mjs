@@ -105,15 +105,11 @@ try {
       if (overflow > 1) throw new Error(`horizontal overflow ${overflow}`);
       await page.screenshot({ path: `${outDir}/casablanca-neighborhoods-${viewport.name}-after.png`, fullPage: false });
 
-      const projected = await page.evaluate(({ lng, lat }) => {
-        const map = window.__AKARFINDER_NATIONAL_MAP__;
-        const p = map.project([lng, lat]);
-        const rect = map.getCanvas().getBoundingClientRect();
-        return { pageX: rect.left + p.x, pageY: rect.top + p.y, localX: p.x, localY: p.y };
-      }, maarif.center);
-      const canvas = page.locator('.maplibregl-canvas');
-      if (mobile) await page.touchscreen.tap(projected.pageX, projected.pageY);
-      else await canvas.click({ position: { x: projected.localX, y: projected.localY } });
+      const mappedInput = page.getByRole("textbox", { name: "Rechercher un quartier à Casablanca" });
+      await mappedInput.fill("Maârif");
+      const mappedSuggestion = page.locator('[data-akarfinder-neighborhood-suggestion="maarif"]');
+      await mappedSuggestion.waitFor({ state: "visible", timeout: 5000 });
+      await mappedSuggestion.click();
 
       await page.waitForURL((url) => url.searchParams.get("district") === "maarif", { timeout: 10000 });
       const maplibre = page.locator('[data-maplibre-spike][data-maplibre-city="casablanca"][data-maplibre-district="maarif"]');

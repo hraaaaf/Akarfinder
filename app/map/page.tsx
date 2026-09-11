@@ -64,6 +64,18 @@ export default async function MapPage({ searchParams }: MapPageProps) {
           [data-vivre-ici-page] .maplibre-spike-outro {
             display: none !important;
           }
+          @media (min-width: 1024px) {
+            [data-vivre-ici-page] [data-p4-map-layout] {
+              grid-template-rows: minmax(0, 1fr);
+            }
+            [data-vivre-ici-page] [data-p4-map-canvas],
+            [data-vivre-ici-page] .p4-map-decision-rail {
+              min-height: 0;
+            }
+            [data-vivre-ici-page] .p4-map-decision-rail {
+              max-height: 100%;
+            }
+          }
         `}</style>
       ) : null}
       <div className="l2-secondary-footer">
