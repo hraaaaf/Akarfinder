@@ -48,7 +48,16 @@ async function selectCasablancaFromNationalMap(page) {
   ]);
 
   if (outcome === "preview") {
-    await preview.getByRole("button", { name: /Explorer Casablanca/i }).click();
+    const alreadySelected = new URL(page.url());
+    if (alreadySelected.pathname === "/map" && alreadySelected.searchParams.get("city") === "casablanca") return;
+
+    try {
+      await preview.getByRole("button", { name: /Explorer Casablanca/i }).click({ timeout: 10000 });
+    } catch (error) {
+      const afterRace = new URL(page.url());
+      if (afterRace.pathname !== "/map" || afterRace.searchParams.get("city") !== "casablanca") throw error;
+    }
+
     await page.waitForURL((url) => url.pathname === "/map" && url.searchParams.get("city") === "casablanca", { timeout: 10000 });
   }
 }
