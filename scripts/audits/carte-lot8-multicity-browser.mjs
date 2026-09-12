@@ -14,6 +14,7 @@ const cities = [
 ];
 const viewports = [
   { name: "mobile", width: 390, height: 844 },
+  { name: "iphone14promax", width: 430, height: 932, onlyCity: "fes" },
   { name: "desktop", width: 1280, height: 900 },
 ];
 
@@ -29,6 +30,8 @@ const browser = await chromium.launch({ headless: true });
 try {
   for (const cityCase of cities) {
     for (const viewport of viewports) {
+      if (viewport.onlyCity && viewport.onlyCity !== cityCase.slug) continue;
+
       const page = await browser.newPage({ viewport: { width: viewport.width, height: viewport.height } });
       const pageErrors = [];
       const tileResponses = [];
