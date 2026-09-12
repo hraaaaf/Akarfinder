@@ -1,0 +1,47 @@
+name: Product Constitution Gate
+
+on:
+  pull_request_target:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+  pull_request_review:
+    types: [submitted, dismissed]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  constitution-gate:
+    if: github.event.pull_request.base.ref == 'main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout trusted base
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: guard-base
+          persist-credentials: false
+
+      - name: Checkout untrusted candidate as data only
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: candidate
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Enforce locked product standards
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: >-
+          node guard-base/scripts/governance/product-constitution-guard.mjs
+          --base-root guard-base
+          --candidate-root candidate
+          --event "$GITHUB_EVENT_PATH"
