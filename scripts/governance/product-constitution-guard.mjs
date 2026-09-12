@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 function parseArgs(argv) {
   const args = new Map();
@@ -20,6 +21,26 @@ export function loadManifest(root) {
   return readJson(path.join(root, "config/product-constitution.json"));
 }
 
+function safeCandidateFile(candidateRoot, relativePath) {
+  const root = path.resolve(candidateRoot);
+  const target = path.resolve(root, relativePath);
+  if (target !== root && !target.startsWith(`${root}${path.sep}`)) {
+    return { ok: false, reason: "protected path escapes candidate root" };
+  }
+  if (!fs.existsSync(target)) {
+    return { ok: false, reason: "protected file missing" };
+  }
+  const stat = fs.lstatSync(target);
+  if (stat.isSymbolicLink()) {
+    return { ok: false, reason: "protected file must not be a symlink" };
+  }
+  const real = fs.realpathSync(target);
+  if (real !== root && !real.startsWith(`${root}${path.sep}`)) {
+    return { ok: false, reason: "protected file resolves outside candidate root" };
+  }
+  return { ok: true, target };
+}
+
 export function collectInvariantViolations(manifest, candidateRoot) {
   const violations = [];
 
@@ -27,17 +48,17 @@ export function collectInvariantViolations(manifest, candidateRoot) {
     if (standard.status !== "LOCKED") continue;
 
     for (const invariant of standard.invariants ?? []) {
-      const target = path.join(candidateRoot, invariant.file);
-      if (!fs.existsSync(target)) {
+      const safeFile = safeCandidateFile(candidateRoot, invariant.file);
+      if (!safeFile.ok) {
         violations.push({
           standard: standard.id,
           file: invariant.file,
-          reason: "protected file missing",
+          reason: safeFile.reason,
         });
         continue;
       }
 
-      const content = fs.readFileSync(target, "utf8");
+      const content = fs.readFileSync(safeFile.target, "utf8");
       if (invariant.type === "contains_exact") {
         if (!content.includes(invariant.value)) {
           violations.push({
@@ -196,7 +217,7 @@ async function main() {
   );
 }
 
-const invokedDirectly = process.argv[1] && path.resolve(process.argv[1]) === path.resolve(new URL(import.meta.url).pathname);
+const invokedDirectly = process.argv[1] && path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url));
 if (invokedDirectly) {
   main().catch((error) => {
     console.error(error);
