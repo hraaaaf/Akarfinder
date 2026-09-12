@@ -2,11 +2,12 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import test from "node:test";
 
 import {
   collectInvariantViolations,
-  hasExactHeadOwnerApproval,
+  loadManifest,
   overrideDocumentationIsComplete,
 } from "./product-constitution-guard.mjs";
 
@@ -80,13 +81,16 @@ test("rejects a symlink used as a protected candidate file", () => {
   assert.match(violations[0].reason, /symlink/);
 });
 
-test("owner approval is valid only for the exact PR HEAD", () => {
-  const reviews = [
-    { user: { login: "hraaaaf" }, state: "APPROVED", commit_id: "abc123" },
-  ];
-  assert.equal(hasExactHeadOwnerApproval(reviews, "hraaaaf", "abc123"), true);
-  assert.equal(hasExactHeadOwnerApproval(reviews, "hraaaaf", "new456"), false);
-  assert.equal(hasExactHeadOwnerApproval(reviews, "someone-else", "abc123"), false);
+test("owner approval contract uses a dedicated GitHub environment", () => {
+  const testFile = fileURLToPath(import.meta.url);
+  const repoRoot = path.resolve(path.dirname(testFile), "../..");
+  const actualManifest = loadManifest(repoRoot);
+  assert.equal(actualManifest.standard_owner, "hraaaaf");
+  assert.equal(actualManifest.owner_approval?.method, "github_environment");
+  assert.equal(actualManifest.owner_approval?.environment, "product-standard-approval");
+  assert.equal(actualManifest.owner_approval?.required_reviewer, "hraaaaf");
+  assert.equal(actualManifest.owner_approval?.require_canonical_update, true);
+  assert.equal(actualManifest.owner_approval?.require_manifest_update, true);
 });
 
 test("owner override requires both canonical and manifest updates", () => {
