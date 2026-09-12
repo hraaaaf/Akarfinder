@@ -1,6 +1,6 @@
 # AKARFINDER — PRODUCT CONSTITUTION / CANONICAL
 
-**Version : 0.1 — 2026-09-12**  
+**Version : 0.2 — 2026-09-12**  
 **Statut : ACTIVE / EN CONSTRUCTION — aucun freeze global tant que les standards concernés ne sont pas explicitement approuvés par `hraaaaf`.**
 
 > Ce fichier est la source canonique pour l’architecture produit, les standards de pages et les règles anti-dérive d’AkarFinder. Il complète `docs/ROADMAP.md`, qui reste la source globale de vérité pour l’avancement data/produit.
@@ -88,9 +88,13 @@ Exemples :
 
 ---
 
-## 4. ARCHITECTURE PRODUIT — CANDIDATE V0.1
+## 4. ARCHITECTURE PRODUIT — CANDIDATE V0.2
 
 Cette section est **EN REVIEW**. Elle ne devient `LOCKED` qu’après approbation explicite.
+
+Inventaire machine-readable vérifié :
+
+`config/product-route-inventory.json`
 
 ### Navigation primaire candidate
 
@@ -101,29 +105,51 @@ Cette section est **EN REVIEW**. Elle ne devient `LOCKED` qu’après approbatio
 5. **Vendre**
 6. **Pro**
 
-### Rôles des routes principales
+### Rôles vérifiés des surfaces centrales
 
 - `/` : moteur d’entrée + preuve de valeur + accès aux parcours majeurs.
 - `/search` : moteur unique de résultats, multi-source, filtres et comparaison.
-- `/acheter` : hub d’intention achat, renvoie vers le moteur pour les recherches filtrées.
-- `/louer` : hub d’intention location.
-- `/neuf` : programmes/neuf.
+- `/listings/[id]` : détail interne uniquement lorsque les règles d’accès source le permettent ; sinon redirection source ou fail-closed.
+- `/acheter` : hub d’intention achat ; les recherches filtrées basculent vers `/search`.
+- `/louer` : hub d’intention location ; les recherches filtrées basculent vers `/search`.
+- `/neuf` : hub du neuf ; actuellement `noindex` tant que ses gates de publication ne sont pas satisfaites.
 - `/map` : **Vivre ici**, expérience géographique et intelligence quartier.
-- `/vendre` : parcours propriétaire/vendeur.
-- `/pro` : hub unique professionnels.
-- `/listings/[id]` : fiche bien.
-- `/immobilier/[ville]` et `/immobilier/[ville]/[quartier]` : surfaces SEO géographiques et contexte local.
-- `/mon-projet` : continuité utilisateur/projet.
-- `/favorites` : favoris.
+- `/vendre` : hub vendeur cohérent autour d’un même dossier : publier / estimation indicative / accompagnement.
+- `/pro` : hub professionnels.
+- `/mon-projet` : parcours projet utilisateur canonique.
+- `/favorites`, `/compare`, `/credit` : utilitaires décisionnels secondaires.
 
-### Routes/concepts à consolider
+### Géographie / SEO — rôle vérifié
 
-- `/professionnels` → sous `Pro` ;
-- `/promoteurs` → sous `Pro` ou `Neuf` selon le rôle final ;
-- `/projets` → sous `Neuf` ;
-- `/quartiers` → sous `Vivre ici` ;
-- `/compagnon`, `/profil-recherche`, `/onboarding` → sous `Mon Projet` si le benchmark final confirme cette cohérence ;
-- `/investir`, `/credit`, `/mre`, `/compare` → secondaires, non concurrents de la navigation principale.
+- `/immobilier` : racine géographique canonique.
+- `/immobilier/[city]` : page ville canonique.
+- `/immobilier/[city]/acheter` et `/immobilier/[city]/louer` : surfaces SEO d’intention, pas de nouveaux produits.
+- `/immobilier/[city]/[district]` : page quartier canonique avec règles d’indexabilité.
+
+### Pro — rôle vérifié
+
+- `/pro/agences` : audience agences sous Pro.
+- `/promoteurs` : audience promoteurs fonctionnellement sous Pro, mais URL actuellement top-level et indexée ; consolidation d’URL à arbitrer.
+- `/professionnels/[slug]` : détail public d’un professionnel ; **ce n’est pas un hub concurrent** et il n’existe pas de page index `/professionnels`.
+- `/projets/[slug]` : détail d’un programme neuf ; **ce n’est pas un hub concurrent** et il n’existe pas de page index `/projets`.
+- `/pro/analytics`, `/pro/alerts` : surfaces internes restreintes/noindex, exclues de l’architecture publique.
+- `/pro/leads` : ancienne surface interne déjà retirée vers `/pro#contact`.
+
+### Legacy / doublons vérifiés
+
+- `/compagnon` → redirection permanente vers `/mon-projet`.
+- `/profil-recherche` → redirection permanente vers `/mon-projet`; le code déclare explicitement Mon Projet comme destination canonique.
+- `/onboarding` → routeur legacy de compatibilité vers `/mon-projet` ou `/accompagnement?intent=neuf`.
+- `/quartiers` → redirection permanente vers `/immobilier`.
+- **Point ouvert important :** `/quartiers/[citySlug]/[neighborhoodSlug]` rend encore une page quartier parallèle alors que `/immobilier/[city]/[district]` est la surface canonique. Consolidation à faire après audit des liens, SEO et compatibilité.
+
+### Secondaire / institutionnel — rôle vérifié
+
+- `/investir`, `/credit`, `/mre`, `/compare`, `/favorites` : secondaires, non concurrents de la navigation principale.
+- `/alerts` : fonctionnalité publique non active ; la page dit explicitement que les notifications automatiques ne sont pas encore activées. Ne pas promouvoir comme pilier produit.
+- `/accompagnement` : formulaire d’accompagnement humain distinct de Mon Projet ; rester secondaire.
+- `/a-propos`, `/comment-ca-marche`, `/faq`, `/contact`, `/demande-retrait`, `/conditions-utilisation`, `/politique-confidentialite` : institutionnel / aide / trust / légal, hors navigation produit primaire.
+- `/demo/*`, `/visual-qa/*` : harnesses internes, exclus de l’architecture produit.
 
 ---
 
@@ -194,6 +220,7 @@ Pour une PR qui modifie un standard L0 :
 ### Implémentation CI
 
 - manifeste machine-readable versionné : `config/product-constitution.json` ;
+- inventaire architecture : `config/product-route-inventory.json` ;
 - garde : `scripts/governance/product-constitution-guard.mjs` ;
 - tests : `scripts/governance/product-constitution-guard.test.mjs` ;
 - self-check PR : `.github/workflows/product-constitution-self-check.yml` ;
@@ -201,6 +228,10 @@ Pour une PR qui modifie un standard L0 :
 - le gate autoritaire est conçu pour exécuter le garde depuis le code de confiance de `main` ;
 - la candidate est lue comme donnée uniquement, sans `npm install` ni exécution de son code ;
 - une rupture L0 exige une review GitHub `APPROVED` par `hraaaaf` au HEAD exact + mise à jour simultanée du canonique et du manifeste.
+
+### Limite actuelle vérifiée
+
+Le workflow autoritaire n’est pas encore présent dans `main`; son comportement `pull_request_target` ne peut donc pas être certifié dans la PR qui l’introduit. La preuve négative/override doit être exécutée dans une PR contrôlée **après** intégration du gate dans `main`.
 
 ---
 
@@ -215,7 +246,8 @@ Pour une PR qui modifie un standard L0 :
 - [x] créer guard local testable ;
 - [x] créer workflow CI anti-dérive ;
 - [x] créer tests négatifs H1 / moteur / exact-head / symlink ;
-- [ ] obtenir self-check CI vert sur PR #1030 ;
+- [x] self-check CI prouvé vert sur PR #1030 : run `34690296683`, HEAD `44462c74018acf180de8578c1b8526c2ddd760db` ;
+- [ ] obtenir self-check vert sur le HEAD final de la PR après cette synchronisation canonique ;
 - [ ] prouver que la CI autoritaire bloque une rupture non approuvée après présence du gate sur `main` ;
 - [ ] prouver qu’un exact-head approval propriétaire débloque seulement le HEAD approuvé ;
 - [ ] protéger `main` avec le check requis — human/admin gate si nécessaire.
@@ -234,11 +266,13 @@ Pour une PR qui modifie un standard L0 :
 - [ ] accord explicite propriétaire ;
 - [ ] freeze HOME V1.
 
-### P2 — INFORMATION ARCHITECTURE V1
+### P2 — INFORMATION ARCHITECTURE V1 — EN COURS
 
-- [ ] inventaire complet des routes ;
-- [ ] classification `primary / secondary / SEO / utility / legacy` ;
-- [ ] consolidation des doublons ;
+- [x] inventaire machine-readable des surfaces publiques majeures + legacy + internes ;
+- [x] classification `primary / secondary / SEO / utility / legacy / internal` ;
+- [x] identifier les doublons/legacy structurants connus ;
+- [ ] audit complet des callers/liens vers routes legacy ;
+- [ ] décision finale sur `/quartiers/[...]/[...]`, `/promoteurs`, namespace `/projets/[slug]` et `/onboarding` ;
 - [ ] navigation desktop/mobile unique ;
 - [ ] accord explicite ;
 - [ ] freeze IA V1 + CI.
@@ -294,15 +328,17 @@ Pour une PR qui modifie un standard L0 :
 - branche : `chore/product-constitution-v1` ;
 - PR : `#1030` — draft ;
 - base vérifiée au démarrage : `main@df8b8d9a493553d5fa39ea8b0fa0ee789cf71ee2` ;
-- HEAD avant synchronisation canonique : `6c1c19c96d679641f1d8f6571c0619b0d12036d0` ;
-- self-check initial lancé : run `34689855511`, état observé `queued` ;
+- dernier HEAD avec self-check prouvé vert avant cette synchronisation : `44462c74018acf180de8578c1b8526c2ddd760db` ;
+- preuve self-check : run `34690296683` — SUCCESS ;
+- preuve workflow efficiency sur le même HEAD : run `34690296724` — SUCCESS ;
+- autres checks observés sur ce HEAD : plusieurs encore `in_progress/queued` au dernier contrôle ;
 - Vercel : 0 action ;
 - DB : 0 write.
 
 ## 11. NEXT EXACT
 
-1. Vérifier le nouveau HEAD après cette synchronisation.
-2. Vérifier une fois la CI de ce HEAD ; si pending, continuer l’inventaire de routes P2 sans attendre.
-3. Corriger immédiatement tout échec du self-check.
-4. Une fois les preuves P0 acquises, mettre à jour le body PR et sortir du draft.
-5. Ne pas merger tant que le comportement autoritaire du gate n’est pas prouvable ou qu’un human/admin gate reste nécessaire.
+1. Vérifier le nouveau HEAD produit par cette synchronisation.
+2. Vérifier une fois le self-check du HEAD final ; corriger seulement s’il échoue.
+3. Pendant les autres CI éventuelles, auditer les callers/liens des routes legacy pour préparer la décision IA V1.
+4. Préparer le protocole de preuve post-merge du gate autoritaire sans merger automatiquement cette PR.
+5. P1 HOME : obtenir BEFORE 390 / 768 / 1280 avant toute modification visuelle.
