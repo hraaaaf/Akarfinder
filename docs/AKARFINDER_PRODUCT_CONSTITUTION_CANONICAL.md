@@ -191,14 +191,16 @@ Pour une PR qui modifie un standard L0 :
 5. tout commit ultérieur rend l’approbation obsolète ;
 6. aucune checkbox ou texte ajouté par l’agent dans la PR ne vaut approbation propriétaire.
 
-### Implémentation CI cible
+### Implémentation CI
 
-- manifeste machine-readable versionné ;
-- garde exécuté depuis le code de confiance de `main` ;
-- contrôle des invariants L0 ;
-- détection des surfaces protégées ;
-- vérification d’une approbation GitHub `APPROVED` par `hraaaaf` au HEAD exact lorsqu’un standard L0 est affecté ;
-- check requis dans la protection de `main`.
+- manifeste machine-readable versionné : `config/product-constitution.json` ;
+- garde : `scripts/governance/product-constitution-guard.mjs` ;
+- tests : `scripts/governance/product-constitution-guard.test.mjs` ;
+- self-check PR : `.github/workflows/product-constitution-self-check.yml` ;
+- gate autoritaire : `.github/workflows/product-constitution-gate.yml` ;
+- le gate autoritaire est conçu pour exécuter le garde depuis le code de confiance de `main` ;
+- la candidate est lue comme donnée uniquement, sans `npm install` ni exécution de son code ;
+- une rupture L0 exige une review GitHub `APPROVED` par `hraaaaf` au HEAD exact + mise à jour simultanée du canonique et du manifeste.
 
 ---
 
@@ -209,11 +211,12 @@ Pour une PR qui modifie un standard L0 :
 - [x] audit architecture initiale ;
 - [x] benchmark international initial ;
 - [x] création du canonique Product Constitution ;
-- [ ] créer manifeste machine-readable ;
-- [ ] créer guard local testable ;
-- [ ] créer workflow CI anti-dérive ;
-- [ ] prouver que le H1 LOCKED est détecté ;
-- [ ] prouver que la CI bloque une rupture non approuvée ;
+- [x] créer manifeste machine-readable ;
+- [x] créer guard local testable ;
+- [x] créer workflow CI anti-dérive ;
+- [x] créer tests négatifs H1 / moteur / exact-head / symlink ;
+- [ ] obtenir self-check CI vert sur PR #1030 ;
+- [ ] prouver que la CI autoritaire bloque une rupture non approuvée après présence du gate sur `main` ;
 - [ ] prouver qu’un exact-head approval propriétaire débloque seulement le HEAD approuvé ;
 - [ ] protéger `main` avec le check requis — human/admin gate si nécessaire.
 
@@ -286,13 +289,20 @@ Pour une PR qui modifie un standard L0 :
 
 ---
 
-## 10. NEXT EXACT
+## 10. ÉTAT DE CHANTIER
 
-Créer le manifeste machine-readable et le premier guard qui protège au minimum :
+- branche : `chore/product-constitution-v1` ;
+- PR : `#1030` — draft ;
+- base vérifiée au démarrage : `main@df8b8d9a493553d5fa39ea8b0fa0ee789cf71ee2` ;
+- HEAD avant synchronisation canonique : `6c1c19c96d679641f1d8f6571c0619b0d12036d0` ;
+- self-check initial lancé : run `34689855511`, état observé `queued` ;
+- Vercel : 0 action ;
+- DB : 0 write.
 
-1. le H1 HOME exact ;
-2. la présence du moteur de recherche dans le hero ;
-3. l’identité du propriétaire de standard `hraaaaf` ;
-4. le protocole exact-head pour les changements L0.
+## 11. NEXT EXACT
 
-Ensuite : brancher ce guard dans une CI dédiée, tester les cas PASS/FAIL, puis ouvrir la PR de gouvernance.
+1. Vérifier le nouveau HEAD après cette synchronisation.
+2. Vérifier une fois la CI de ce HEAD ; si pending, continuer l’inventaire de routes P2 sans attendre.
+3. Corriger immédiatement tout échec du self-check.
+4. Une fois les preuves P0 acquises, mettre à jour le body PR et sortir du draft.
+5. Ne pas merger tant que le comportement autoritaire du gate n’est pas prouvable ou qu’un human/admin gate reste nécessaire.
