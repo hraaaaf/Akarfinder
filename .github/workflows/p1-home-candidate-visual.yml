@@ -23,7 +23,9 @@ permissions:
 jobs:
   candidate:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 35
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -34,12 +36,14 @@ jobs:
         run: npm ci
       - name: TypeScript
         run: npx tsc --noEmit
+      - name: Build production app
+        run: npm run build
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
-      - name: Start candidate mockup
+      - name: Start candidate production mockup
         shell: bash
         run: |
-          npm run dev -- -p 3217 > /tmp/p1-home-candidate.log 2>&1 &
+          npm run start -- -p 3217 > /tmp/p1-home-candidate.log 2>&1 &
           curl --retry 90 --retry-delay 1 --retry-connrefused -fsS http://127.0.0.1:3217/visual-qa/p1-home-candidate >/dev/null || { cat /tmp/p1-home-candidate.log; exit 1; }
       - name: Capture candidate 390 / 768 / 1280
         env:
