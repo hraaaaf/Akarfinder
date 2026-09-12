@@ -4,18 +4,23 @@ on:
   pull_request_target:
     branches: [main]
     types: [opened, synchronize, reopened, ready_for_review]
-  pull_request_review:
-    types: [submitted, dismissed]
+
+concurrency:
+  group: product-constitution-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
   pull-requests: read
 
 jobs:
-  constitution-gate:
+  detect_drift:
     if: github.event.pull_request.base.ref == 'main'
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    outputs:
+      drift: ${{ steps.detect.outputs.drift }}
+      violation_count: ${{ steps.detect.outputs.violation_count }}
     steps:
       - name: Checkout trusted base
         uses: actions/checkout@v4
@@ -37,11 +42,86 @@ jobs:
         with:
           node-version: 24
 
-      - name: Enforce locked product standards
+      - name: Detect locked-standard drift
+        id: detect
+        run: >-
+          node guard-base/scripts/governance/product-constitution-guard.mjs
+          --mode detect
+          --base-root guard-base
+          --candidate-root candidate
+          --github-output "$GITHUB_OUTPUT"
+
+  override_preflight:
+    needs: detect_drift
+    if: needs.detect_drift.outputs.drift == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout trusted base
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: guard-base
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Require canonical override documentation on exact HEAD
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: >-
           node guard-base/scripts/governance/product-constitution-guard.mjs
+          --mode validate-override
           --base-root guard-base
-          --candidate-root candidate
-          --event "$GITHUB_EVENT_PATH"
+          --pr-number "${{ github.event.pull_request.number }}"
+          --head-sha "${{ github.event.pull_request.head.sha }}"
+
+  owner_approval:
+    needs: [detect_drift, override_preflight]
+    if: needs.detect_drift.outputs.drift == 'true' && needs.override_preflight.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment:
+      name: product-standard-approval
+    steps:
+      - name: Record explicit owner approval for this run
+        run: |
+          echo "L0 override explicitly approved for PR #${{ github.event.pull_request.number }}"
+          echo "Approved HEAD: ${{ github.event.pull_request.head.sha }}"
+
+  gate:
+    name: gate
+    needs: [detect_drift, override_preflight, owner_approval]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Resolve constitution gate
+        env:
+          DETECT_RESULT: ${{ needs.detect_drift.result }}
+          DRIFT: ${{ needs.detect_drift.outputs.drift }}
+          PREFLIGHT_RESULT: ${{ needs.override_preflight.result }}
+          APPROVAL_RESULT: ${{ needs.owner_approval.result }}
+        run: |
+          if [ "$DETECT_RESULT" != "success" ]; then
+            echo "FAIL: drift detection did not succeed."
+            exit 1
+          fi
+
+          if [ "$DRIFT" = "true" ]; then
+            if [ "$PREFLIGHT_RESULT" != "success" ]; then
+              echo "FAIL: L0 drift requires canonical + manifest update on the exact PR HEAD."
+              exit 1
+            fi
+            if [ "$APPROVAL_RESULT" != "success" ]; then
+              echo "FAIL: L0 drift requires explicit approval through the product-standard-approval environment."
+              exit 1
+            fi
+            echo "PASS: L0 drift documented and explicitly approved for this PR HEAD."
+            exit 0
+          fi
+
+          echo "PASS: no locked-standard drift detected."
