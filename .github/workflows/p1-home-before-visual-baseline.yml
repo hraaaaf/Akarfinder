@@ -1,0 +1,47 @@
+name: P1 Home BEFORE Visual Baseline
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  before-baseline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      HVR3_CERTIFICATION_MODE: "true"
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Build production app
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Start deterministic production HOME
+        shell: bash
+        run: |
+          npm run start -- -p 3216 > /tmp/p1-home-before.log 2>&1 &
+          curl --retry 90 --retry-delay 1 --retry-connrefused -fsS http://127.0.0.1:3216/ >/dev/null || { cat /tmp/p1-home-before.log; exit 1; }
+      - name: Capture BEFORE 390 / 768 / 1280
+        env:
+          BASE_URL: http://127.0.0.1:3216
+          AUDIT_OUTPUT_DIR: artifacts/p1-home-before
+        run: node scripts/audits/p1-home-before-visual.mjs
+      - name: Upload P1 HOME BEFORE evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p1-home-before-${{ github.run_id }}
+          path: artifacts/p1-home-before
+          if-no-files-found: error
+          retention-days: 30

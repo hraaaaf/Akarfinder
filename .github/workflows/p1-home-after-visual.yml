@@ -1,0 +1,85 @@
+name: P1 Home AFTER Visual Certification
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/p1-home-after-visual.yml"
+      - "scripts/audits/p1-home-after-visual.mjs"
+      - "app/page.tsx"
+      - "components/home/GoogleLikeHero.tsx"
+      - "components/home/SearchEntryOrchestrator.tsx"
+      - "components/home/HomeTrustStrip.tsx"
+      - "components/home/HomeVivreIciSection.tsx"
+      - "components/home/HomeActionGrid.tsx"
+      - "components/landing/CityIntentGrid.tsx"
+  workflow_dispatch: {}
+
+concurrency:
+  group: p1-home-after-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 2
+      - name: Latest-commit scope check
+        id: scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          changed="$(git diff --name-only HEAD^ HEAD)"
+          printf '%s\n' "$changed"
+          if printf '%s\n' "$changed" | grep -Eq '^(\.github/workflows/p1-home-after-visual\.yml|scripts/audits/p1-home-after-visual\.mjs|app/page\.tsx|components/home/(GoogleLikeHero|SearchEntryOrchestrator|HomeTrustStrip|HomeVivreIciSection|HomeActionGrid)\.tsx|components/landing/CityIntentGrid\.tsx)$'; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "Latest commit does not affect P1 HOME AFTER; skipping heavy work."
+          fi
+      - uses: actions/setup-node@v4
+        if: steps.scope.outputs.run == 'true'
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        if: steps.scope.outputs.run == 'true'
+        run: npm ci
+      - name: TypeScript
+        if: steps.scope.outputs.run == 'true'
+        run: npx tsc --noEmit
+      - name: Build production app
+        if: steps.scope.outputs.run == 'true'
+        run: npm run build
+      - name: Install Chromium
+        if: steps.scope.outputs.run == 'true'
+        run: npx playwright install --with-deps chromium
+      - name: Start production HOME
+        if: steps.scope.outputs.run == 'true'
+        shell: bash
+        run: |
+          npm run start -- -p 3218 > /tmp/p1-home-after.log 2>&1 &
+          curl --retry 90 --retry-delay 1 --retry-connrefused -fsS http://127.0.0.1:3218/ >/dev/null || { cat /tmp/p1-home-after.log; exit 1; }
+      - name: Capture AFTER 390 / 768 / 1280
+        if: steps.scope.outputs.run == 'true'
+        env:
+          BASE_URL: http://127.0.0.1:3218
+          AUDIT_OUTPUT_DIR: artifacts/p1-home-after
+        run: node scripts/audits/p1-home-after-visual.mjs
+      - name: Upload P1 HOME AFTER evidence
+        if: always() && steps.scope.outputs.run == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: p1-home-after-${{ github.run_id }}
+          path: artifacts/p1-home-after
+          if-no-files-found: error
+          retention-days: 30

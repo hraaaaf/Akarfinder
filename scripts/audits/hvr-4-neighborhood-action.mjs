@@ -25,7 +25,7 @@ try {
 
     try {
       const response = await page.goto(baseUrl, { waitUntil: "domcontentloaded", timeout: 60_000 });
-      const section = page.locator('[data-home-neighborhood-intelligence="hvr-4"]');
+      const section = page.locator('[data-home-neighborhood-intelligence="nci-l5"]');
       await section.waitFor({ state: "visible", timeout: 20_000 });
       const cards = section.locator("[data-home-neighborhood-card]");
       const cardCount = await cards.count();
@@ -61,7 +61,7 @@ try {
   await browser.close();
 }
 
-const report = { schemaVersion: "HVR_4_NEIGHBORHOOD_ACTION_PROOF_V1", generatedAt: new Date().toISOString(), scenarioCount: scenarios.length, screenshotCount: results.filter((item) => item.screenshot).length, findingCount: findings.length, findings, results };
+const report = { schemaVersion: "HVR_4_NEIGHBORHOOD_ACTION_PROOF_V2", generatedAt: new Date().toISOString(), scenarioCount: scenarios.length, screenshotCount: results.filter((item) => item.screenshot).length, findingCount: findings.length, findings, results };
 await writeFile(path.join(outputDir, "report.json"), `${JSON.stringify(report, null, 2)}\n`);
 console.log(JSON.stringify({ scenarioCount: report.scenarioCount, screenshotCount: report.screenshotCount, findingCount: report.findingCount, findings }, null, 2));
 if (report.screenshotCount !== scenarios.length) throw new Error(`HVR-4 capture incomplete: ${report.screenshotCount}/${scenarios.length}`);
