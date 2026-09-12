@@ -1,0 +1,12 @@
+/* VIVRE ICI — mobile sheet guard after real 390x844 CI measurement.
+   Presentation only. Keeps the rich neighborhood sheet within the locked mobile map band. */
+@media (max-width: 1023px) {
+  .p4-map-decision-rail {
+    bottom: calc(76px + env(safe-area-inset-bottom)) !important;
+    max-height: min(27svh, 230px) !important;
+  }
+
+  [data-p4-map-canvas] .maplibre-spike-controls {
+    bottom: calc(min(27svh, 230px) + 94px) !important;
+  }
+}
