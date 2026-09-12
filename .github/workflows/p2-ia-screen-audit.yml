@@ -1,0 +1,94 @@
+name: P2 IA Screen Audit
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "scripts/audits/p2-ia-screen-audit.mjs"
+      - ".github/workflows/p2-ia-screen-audit.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    name: Capture P2 IA pages
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      BASE_URL: http://127.0.0.1:3220
+      AUDIT_OUTPUT_DIR: data/audits/p2-ia-screens
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Latest-commit scope check
+        id: scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          changed="$(git diff --name-only HEAD^ HEAD || true)"
+          run=false
+          while IFS= read -r file; do
+            case "$file" in
+              scripts/audits/p2-ia-screen-audit.mjs|.github/workflows/p2-ia-screen-audit.yml)
+                run=true
+                ;;
+            esac
+          done <<< "$changed"
+          echo "run=$run" >> "$GITHUB_OUTPUT"
+          printf '%s\n' "$changed"
+
+      - uses: actions/setup-node@v4
+        if: steps.scope.outputs.run == 'true'
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        if: steps.scope.outputs.run == 'true'
+        run: npm ci
+
+      - name: TypeScript
+        if: steps.scope.outputs.run == 'true'
+        run: npx tsc --noEmit
+
+      - name: Install Chromium
+        if: steps.scope.outputs.run == 'true'
+        run: npx playwright install --with-deps chromium
+
+      - name: Production build
+        if: steps.scope.outputs.run == 'true'
+        run: npm run build
+
+      - name: Start production server
+        if: steps.scope.outputs.run == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run start -- -p 3220 > /tmp/p2-ia-screen-audit.log 2>&1 &
+          for attempt in {1..60}; do
+            if curl -fsS http://127.0.0.1:3220/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/p2-ia-screen-audit.log
+          exit 1
+
+      - name: Capture P2 IA screens
+        if: steps.scope.outputs.run == 'true'
+        run: node scripts/audits/p2-ia-screen-audit.mjs
+
+      - name: Upload P2 IA screens
+        if: always() && steps.scope.outputs.run == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2-ia-screens-${{ github.run_id }}
+          path: data/audits/p2-ia-screens
+          if-no-files-found: error
+          retention-days: 14
