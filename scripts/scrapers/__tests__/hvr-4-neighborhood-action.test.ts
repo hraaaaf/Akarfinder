@@ -14,9 +14,7 @@ describe("HVR-4 — actionable neighborhood intelligence", () => {
   });
 
   it("keeps the three canonical featured neighborhoods", () => {
-    for (const id of ["rabat-agdal", "casablanca-maarif", "marrakech-gueliz"]) {
-      assert.ok(section.includes(id));
-    }
+    for (const id of ["rabat-agdal", "casablanca-maarif", "marrakech-gueliz"]) assert.ok(section.includes(id));
   });
 
   it("turns every neighborhood card into a direct destination", () => {
@@ -32,9 +30,9 @@ describe("HVR-4 — actionable neighborhood intelligence", () => {
     }
   });
 
-  it("caps information density per card", () => {
-    assert.ok(section.includes("proximityHighlights.slice(0, 2)"));
-    assert.ok(section.includes("lifestyleTags.slice(0, 3)"));
+  it("caps visible context categories while retaining verified anchors and price signal", () => {
+    assert.ok(section.includes("context?.categories.slice(0, 3)"));
+    assert.ok(section.includes("context?.anchors ?? []"));
     assert.ok(section.includes("point.priceSignal.label"));
   });
 });

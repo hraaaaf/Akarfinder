@@ -6,30 +6,30 @@ import { describe, it } from "node:test";
 const ROOT = process.cwd();
 const source = (path: string) => readFileSync(resolve(ROOT, path), "utf8");
 
-describe("Homepage proof UX", () => {
+describe("Homepage proof UX — HOME V1", () => {
   it("uses the approved search-first hero claim and subtitle", () => {
     const hero = source("components/home/GoogleLikeHero.tsx");
     assert.ok(hero.includes("1er moteur de recherche immobilier au Maroc"));
     assert.ok(hero.includes("Cherchez un bien, puis comprenez son quartier, son marché et la fiabilité de l’annonce avant de décider."));
-    assert.ok(!hero.includes("analysez les biens"));
+    assert.ok(hero.includes('data-home-hero-mode="search-only-v1"'));
   });
 
-  it("keeps one direct search entry and one Companion entry", () => {
+  it("keeps one direct search entry and removes the legacy Companion hero entry", () => {
     const orchestrator = source("components/home/SearchEntryOrchestrator.tsx");
-    assert.equal(orchestrator.split('href="/compagnon"').length - 1, 1);
     assert.equal((orchestrator.match(/<HomeSearchBar/g) ?? []).length, 1);
+    assert.equal(orchestrator.split('href="/compagnon"').length - 1, 0);
     assert.equal(orchestrator.split('href="/mon-projet"').length - 1, 0);
-    assert.ok(orchestrator.includes("Construire mon projet"));
+    assert.ok(!orchestrator.includes("Construire mon projet"));
   });
 
-  it("keeps HVR-1 Intelligence qualitative instead of publishing synthetic counters", () => {
-    const intelligence = source("components/home/HomeIntelligencePanel.tsx");
-    assert.ok(intelligence.includes("AkarFinder Intelligence"));
-    assert.ok(intelligence.includes("Prix et offres visibles dans les résultats"));
-    assert.ok(intelligence.includes("Source et fraîcheur affichées quand disponibles"));
-    assert.ok(!intelligence.includes("1M+"));
-    assert.ok(!intelligence.includes("1 024 587"));
-    assert.ok(!intelligence.includes("14 580 MAD"));
+  it("keeps intelligence qualitative in the trust strip instead of competing in the hero", () => {
+    const hero = source("components/home/GoogleLikeHero.tsx");
+    const trust = source("components/home/HomeTrustStrip.tsx");
+    assert.ok(!hero.includes("HomeIntelligencePanel"));
+    assert.ok(trust.includes("Multi-source"));
+    assert.ok(trust.includes("Sources visibles"));
+    assert.ok(trust.includes("Marché & quartiers"));
+    for (const forbidden of ["1M+", "1 024 587", "14 580 MAD"]) assert.ok(!trust.includes(forbidden));
   });
 
   it("keeps approved user-facing benefits available without requiring a homepage explainer", () => {
@@ -52,16 +52,13 @@ describe("Homepage proof UX", () => {
     assert.ok(!proof.includes("Index actuel"));
   });
 
-  it("uses canonical neighborhood data for the approved HVR-4 action experience", () => {
+  it("uses canonical neighborhood data for Vivre ici", () => {
     const map = source("components/landing/SignatureMapSection.tsx");
     assert.ok(map.includes("@/lib/map/canonical-neighborhood-data"));
     assert.ok(map.includes("Vivre ici"));
     assert.ok(map.includes("Comprendre le quartier avant de visiter"));
     assert.ok(map.includes("data-home-neighborhood-card"));
     assert.ok(map.includes("point.priceSignal.label"));
-    assert.ok(!map.includes("Un bien ne se résume pas à ses mètres carrés."));
-    assert.ok(!map.includes("Profil détaillé bientôt disponible"));
-    assert.ok(!map.includes("selected.confidence"));
   });
 
   it("has no dead newsletter or redundant project block in the shared footer", () => {
@@ -70,19 +67,16 @@ describe("Homepage proof UX", () => {
     assert.ok(!footer.includes(">OK<"));
     assert.ok(!footer.includes('href="/mon-projet"'));
     assert.ok(!footer.includes("Ouvrir Mon Projet"));
-    assert.ok(footer.includes("Les sources et le niveau d&apos;information restent visibles pour chaque résultat."));
   });
 
-  it("uses the HVR-5 action grid instead of a duplicated final CTA", () => {
+  it("uses exactly the three approved final actions", () => {
     const page = source("app/page.tsx");
     const actions = source("components/home/HomeActionGrid.tsx");
     assert.ok(page.includes("<HomeActionGrid />"));
     assert.ok(!page.includes("<HomeFinalCTA />"));
-    for (const href of ["/search", "/compagnon", "/vendre", "/pro"]) {
-      assert.ok(actions.includes(`href: "${href}"`));
-    }
-    assert.ok(actions.includes("Que voulez-vous faire maintenant ?"));
-    assert.ok(!actions.includes("4 000 000 DH"));
-    assert.ok(!actions.includes("Biens enregistrés"));
+    for (const href of ["/mon-projet", "/vendre", "/pro"]) assert.ok(actions.includes(`href: "${href}"`));
+    for (const href of ["/search", "/compagnon"]) assert.ok(!actions.includes(`href: "${href}"`));
+    assert.ok(actions.includes("La suite de votre projet"));
+    assert.ok(actions.includes('data-home-action-count="3"'));
   });
 });

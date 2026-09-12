@@ -9,26 +9,26 @@ const source = (path: string) => readFileSync(resolve(ROOT, path), "utf8");
 const page = source("app/page.tsx");
 const grid = source("components/home/HomeActionGrid.tsx");
 
-describe("HVR-5 — homepage simplification", () => {
-  it("replaces the three verbose lower-homepage sections with one action grid", () => {
+describe("HVR-5 — HOME V1 simplification", () => {
+  it("keeps one compact final action grid", () => {
     assert.ok(page.includes("<HomeActionGrid />"));
     assert.ok(!page.includes("<HowItWorks />"));
     assert.ok(!page.includes("<MreTrustSection />"));
     assert.ok(!page.includes("<HomeFinalCTA />"));
   });
 
-  it("keeps the action grid after neighborhood intelligence", () => {
-    const neighborhood = page.indexOf("<SignatureMapSection />");
+  it("keeps actions after Vivre ici and compact cities", () => {
+    const neighborhood = page.indexOf("<HomeVivreIciSection />");
+    const cities = page.indexOf("<CityIntentGrid />");
     const actions = page.indexOf("<HomeActionGrid />");
     const footer = page.indexOf("<SiteFooter />");
-    assert.ok(neighborhood >= 0 && actions > neighborhood && footer > actions);
+    assert.ok(neighborhood >= 0 && cities > neighborhood && actions > cities && footer > actions);
   });
 
-  it("provides exactly four direct action destinations", () => {
-    for (const href of ["/search", "/compagnon", "/vendre", "/pro"]) {
-      assert.ok(grid.includes(`href: "${href}"`), `missing action destination ${href}`);
-    }
-    assert.equal((grid.match(/data-hvr5-action=/g) ?? []).length, 1);
+  it("provides exactly three approved direct destinations", () => {
+    for (const href of ["/mon-projet", "/vendre", "/pro"]) assert.ok(grid.includes(`href: "${href}"`));
+    for (const forbidden of ["/search", "/compagnon"]) assert.ok(!grid.includes(`href: "${forbidden}"`));
+    assert.ok(grid.includes('data-home-action-count="3"'));
     assert.ok(grid.includes("actions.map"));
   });
 
@@ -40,10 +40,10 @@ describe("HVR-5 — homepage simplification", () => {
   });
 
   it("keeps the replacement truth-safe and action-oriented", () => {
-    assert.ok(grid.includes("Que voulez-vous faire maintenant ?"));
-    assert.ok(grid.includes("Rechercher un bien"));
+    assert.ok(grid.includes("La suite de votre projet"));
     assert.ok(grid.includes("Préparer mon projet"));
-    assert.ok(grid.includes("Préparer ma vente"));
+    assert.ok(grid.includes("Vendre / Estimer"));
     assert.ok(grid.includes("Agences & promoteurs"));
+    assert.ok(!grid.includes("Rechercher un bien"));
   });
 });

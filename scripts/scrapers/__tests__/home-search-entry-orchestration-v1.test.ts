@@ -7,11 +7,14 @@ import { applySearchProfileEvent } from "../../../lib/search-profile-v2/profile-
 import { createEmptyDynamicSearchProfileV2 } from "../../../lib/search-profile-v2/types.js";
 
 describe("#19G Homepage & Search Entry Orchestration V1", () => {
-  it("exposes direct search and the canonical guided project entry from the homepage hero", () => {
-    const source = readFileSync(join(process.cwd(), "components/home/SearchEntryOrchestrator.tsx"), "utf8");
-    assert.ok(source.includes("<HomeSearchBar"));
-    assert.ok(source.includes('href="/compagnon"'));
-    assert.ok(source.includes("Construire mon projet"));
+  it("exposes direct search in the hero and the canonical project entry in the final action grid", () => {
+    const orchestrator = readFileSync(join(process.cwd(), "components/home/SearchEntryOrchestrator.tsx"), "utf8");
+    const actions = readFileSync(join(process.cwd(), "components/home/HomeActionGrid.tsx"), "utf8");
+    assert.ok(orchestrator.includes("<HomeSearchBar"));
+    assert.ok(!orchestrator.includes('href="/compagnon"'));
+    assert.ok(!orchestrator.includes("Construire mon projet"));
+    assert.ok(actions.includes('href: "/mon-projet"'));
+    assert.ok(actions.includes("Préparer mon projet"));
   });
 
   it("maps a confirmed guided profile to the canonical structured search URL contract", () => {
