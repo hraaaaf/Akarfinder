@@ -59,12 +59,65 @@ export function collectInvariantViolations(manifest, candidateRoot) {
       }
 
       const content = fs.readFileSync(safeFile.target, "utf8");
+
       if (invariant.type === "contains_exact") {
         if (!content.includes(invariant.value)) {
           violations.push({
             standard: standard.id,
             file: invariant.file,
             reason: `missing locked value: ${invariant.value}`,
+          });
+        }
+        continue;
+      }
+
+      if (invariant.type === "not_contains_exact") {
+        if (content.includes(invariant.value)) {
+          violations.push({
+            standard: standard.id,
+            file: invariant.file,
+            reason: `forbidden locked value present: ${invariant.value}`,
+          });
+        }
+        continue;
+      }
+
+      if (invariant.type === "ordered_contains_exact") {
+        const values = Array.isArray(invariant.values) ? invariant.values : [];
+        let cursor = -1;
+        let failed = false;
+        for (const value of values) {
+          const index = content.indexOf(value, cursor + 1);
+          if (index === -1) {
+            violations.push({
+              standard: standard.id,
+              file: invariant.file,
+              reason: `missing or out-of-order locked value: ${value}`,
+            });
+            failed = true;
+            break;
+          }
+          cursor = index;
+        }
+        if (!failed && values.length === 0) {
+          violations.push({
+            standard: standard.id,
+            file: invariant.file,
+            reason: "ordered_contains_exact requires a non-empty values array",
+          });
+        }
+        continue;
+      }
+
+      if (invariant.type === "count_exact") {
+        const value = invariant.value;
+        const expected = Number(invariant.count);
+        const actual = typeof value === "string" && value.length > 0 ? content.split(value).length - 1 : 0;
+        if (!Number.isInteger(expected) || expected < 0 || actual !== expected) {
+          violations.push({
+            standard: standard.id,
+            file: invariant.file,
+            reason: `locked occurrence count mismatch for ${value}: expected ${expected}, got ${actual}`,
           });
         }
         continue;

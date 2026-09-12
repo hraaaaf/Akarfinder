@@ -9,7 +9,13 @@ on:
       - "scripts/governance/product-constitution-guard.mjs"
       - "scripts/governance/product-constitution-guard.test.mjs"
       - ".github/workflows/product-constitution-*.yml"
+      - "app/page.tsx"
       - "components/home/GoogleLikeHero.tsx"
+      - "components/home/SearchEntryOrchestrator.tsx"
+      - "components/home/HomeTrustStrip.tsx"
+      - "components/home/HomeVivreIciSection.tsx"
+      - "components/home/HomeActionGrid.tsx"
+      - "components/landing/CityIntentGrid.tsx"
 
 permissions:
   contents: read

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "constitution_version": "0.3.0",
+  "constitution_version": "0.4.0",
   "canonical_file": "docs/AKARFINDER_PRODUCT_CONSTITUTION_CANONICAL.md",
   "manifest_file": "config/product-constitution.json",
   "route_inventory_file": "config/product-route-inventory.json",
@@ -32,7 +32,8 @@
       "id": "home.hero.positioning",
       "level": "L0",
       "status": "LOCKED",
-      "description": "The homepage must keep the approved AkarFinder positioning and keep search as the dominant hero action.",
+      "description": "The homepage keeps the approved AkarFinder positioning, approved hero imagery and a search-only hero hierarchy.",
+      "approved_at": "2026-09-12",
       "files": [
         "components/home/GoogleLikeHero.tsx"
       ],
@@ -46,6 +47,125 @@
           "type": "contains_exact",
           "file": "components/home/GoogleLikeHero.tsx",
           "value": "<SearchEntryOrchestrator />"
+        },
+        {
+          "type": "contains_exact",
+          "file": "components/home/GoogleLikeHero.tsx",
+          "value": "data-home-hero-mode=\"search-only-v1\""
+        },
+        {
+          "type": "contains_exact",
+          "file": "components/home/GoogleLikeHero.tsx",
+          "value": "/images/hero/akar-residence-sunset-desktop.webp"
+        },
+        {
+          "type": "contains_exact",
+          "file": "components/home/GoogleLikeHero.tsx",
+          "value": "/images/hero/akar-residence-sunset-mobile.webp"
+        },
+        {
+          "type": "not_contains_exact",
+          "file": "components/home/GoogleLikeHero.tsx",
+          "value": "HomeIntelligencePanel"
+        }
+      ]
+    },
+    {
+      "id": "home.standard.v1",
+      "level": "L0",
+      "status": "LOCKED",
+      "description": "Owner-approved HOME V1 information hierarchy. Header/footer and the internal Vivre ici preview implementation remain outside this visual freeze.",
+      "approved_at": "2026-09-12",
+      "files": [
+        "app/page.tsx",
+        "components/home/SearchEntryOrchestrator.tsx",
+        "components/home/HomeTrustStrip.tsx",
+        "components/home/HomeVivreIciSection.tsx",
+        "components/landing/CityIntentGrid.tsx",
+        "components/home/HomeActionGrid.tsx"
+      ],
+      "invariants": [
+        {
+          "type": "contains_exact",
+          "file": "app/page.tsx",
+          "value": "data-home-standard=\"home-v1\""
+        },
+        {
+          "type": "ordered_contains_exact",
+          "file": "app/page.tsx",
+          "values": [
+            "<GoogleLikeHero />",
+            "<HomeTrustStrip />",
+            "<HomeVivreIciSection />",
+            "<CityIntentGrid />",
+            "<HomeActionGrid />"
+          ]
+        },
+        {
+          "type": "not_contains_exact",
+          "file": "app/page.tsx",
+          "value": "HomeListingsSection"
+        },
+        {
+          "type": "contains_exact",
+          "file": "components/home/HomeTrustStrip.tsx",
+          "value": "data-home-trust-strip=\"v1\""
+        },
+        {
+          "type": "contains_exact",
+          "file": "components/home/HomeVivreIciSection.tsx",
+          "value": "data-home-map-preview-policy=\"flexible\""
+        },
+        {
+          "type": "contains_exact",
+          "file": "components/landing/CityIntentGrid.tsx",
+          "value": "data-home-city-layout=\"compact-v1\""
+        },
+        {
+          "type": "not_contains_exact",
+          "file": "components/home/SearchEntryOrchestrator.tsx",
+          "value": "/compagnon"
+        },
+        {
+          "type": "not_contains_exact",
+          "file": "components/home/SearchEntryOrchestrator.tsx",
+          "value": "Construire mon projet"
+        },
+        {
+          "type": "contains_exact",
+          "file": "components/home/HomeActionGrid.tsx",
+          "value": "href: \"/mon-projet\""
+        },
+        {
+          "type": "contains_exact",
+          "file": "components/home/HomeActionGrid.tsx",
+          "value": "href: \"/vendre\""
+        },
+        {
+          "type": "contains_exact",
+          "file": "components/home/HomeActionGrid.tsx",
+          "value": "href: \"/pro\""
+        },
+        {
+          "type": "not_contains_exact",
+          "file": "components/home/HomeActionGrid.tsx",
+          "value": "href: \"/search\""
+        },
+        {
+          "type": "not_contains_exact",
+          "file": "components/home/HomeActionGrid.tsx",
+          "value": "href: \"/compagnon\""
+        },
+        {
+          "type": "count_exact",
+          "file": "components/home/HomeActionGrid.tsx",
+          "value": "key: \"",
+          "count": 3
+        },
+        {
+          "type": "contains_exact",
+          "file": "components/home/HomeActionGrid.tsx",
+          "value": "data-home-action-count=\"3\""
         }
       ]
     }
@@ -55,11 +175,6 @@
       "id": "product.information-architecture.v1",
       "status": "REVIEW",
       "canonical_section": "4. ARCHITECTURE PRODUIT — CANDIDATE V0.2"
-    },
-    {
-      "id": "home.standard.v1",
-      "status": "REVIEW",
-      "canonical_section": "5. HOME STANDARD — CANDIDATE V0.1"
     }
   ]
 }
