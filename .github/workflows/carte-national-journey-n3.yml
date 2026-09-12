@@ -1,0 +1,89 @@
+name: Carte National Journey N3 Certification
+
+on:
+  pull_request:
+    paths:
+      - "app/api/geo/national-territories/**"
+      - "app/map/**"
+      - "app/search/**"
+      - "components/map/MapLibreNeighborhood3D.tsx"
+      - "components/map/NationalMapRouter.tsx"
+      - "components/map/NationalTerritoryExperience.tsx"
+      - "components/map/NationalNeighborhoodOverlay.tsx"
+      - "components/map/NationalNeighborhoodOverlayBridge.tsx"
+      - "components/map/P4MapDecisionRail.tsx"
+      - "components/search/**"
+      - "lib/map/canonical-neighborhood-data.ts"
+      - "lib/map/national-territory-runtime.server.ts"
+      - "lib/map/national-territory-data/**"
+      - "scripts/audits/carte-national-journey-n3.mjs"
+      - ".github/workflows/carte-national-journey-n3.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: carte-national-journey-n3-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  certify-national-journey-n3:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      BASE_URL: http://127.0.0.1:3213
+      AUDIT_OUTPUT_DIR: data/audits/carte-national-journey-n3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Latest-commit scope check
+        id: scope
+        shell: bash
+        run: |
+          changed="$(git diff --name-only HEAD^ HEAD)"
+          printf '%s\n' "$changed"
+          if printf '%s\n' "$changed" | grep -Eq '^(app/api/geo/national-territories/|app/map/|app/search/|components/map/(MapLibreNeighborhood3D|NationalMapRouter|NationalTerritoryExperience|NationalNeighborhoodOverlay|NationalNeighborhoodOverlayBridge|P4MapDecisionRail)\.tsx$|components/search/|lib/map/(canonical-neighborhood-data\.ts|national-territory-runtime\.server\.ts|national-territory-data/)|scripts/audits/carte-national-journey-n3\.mjs$|\.github/workflows/carte-national-journey-n3\.yml$)'; then
+            echo "run_heavy=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run_heavy=false" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/setup-node@v4
+        if: steps.scope.outputs.run_heavy == 'true'
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        if: steps.scope.outputs.run_heavy == 'true'
+        run: npm ci
+      - name: TypeScript
+        if: steps.scope.outputs.run_heavy == 'true'
+        run: npx tsc --noEmit
+      - name: Production build
+        if: steps.scope.outputs.run_heavy == 'true'
+        run: npm run build
+      - name: Install Chromium
+        if: steps.scope.outputs.run_heavy == 'true'
+        run: npx playwright install --with-deps chromium
+      - name: Start production server
+        if: steps.scope.outputs.run_heavy == 'true'
+        shell: bash
+        run: |
+          npm run start -- -p 3213 > /tmp/carte-national-n3.log 2>&1 &
+          for attempt in {1..60}; do
+            if curl -fsS 'http://127.0.0.1:3213/api/geo/national-territories' >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/carte-national-n3.log
+          exit 1
+      - name: National to listings journey certification
+        if: steps.scope.outputs.run_heavy == 'true'
+        run: node scripts/audits/carte-national-journey-n3.mjs
+      - name: Upload N3 evidence
+        if: always() && steps.scope.outputs.run_heavy == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: carte-national-journey-n3-${{ github.run_id }}
+          path: data/audits/carte-national-journey-n3
+          if-no-files-found: error
+          retention-days: 30

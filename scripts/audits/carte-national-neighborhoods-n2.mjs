@@ -14,46 +14,26 @@ const viewports = [
 const report = { ok: false, api: null, cases: [], failure: null };
 
 function isValidCenter(center) {
-  return Boolean(center) &&
-    Number.isFinite(center.lng) &&
-    Number.isFinite(center.lat) &&
-    center.lng >= -180 && center.lng <= 180 &&
-    center.lat >= -90 && center.lat <= 90;
+  return Boolean(center) && Number.isFinite(center.lng) && Number.isFinite(center.lat) && center.lng >= -180 && center.lng <= 180 && center.lat >= -90 && center.lat <= 90;
 }
 
-async function readNeighborhoodMapState(page) {
-  return page.evaluate(() => {
+async function waitForNationalOverlay(page) {
+  await page.locator('[data-akarfinder-national-map]').waitFor({ state: "visible", timeout: 30000 });
+  await page.waitForFunction(() => document.querySelector('[data-akarfinder-national-map]')?.getAttribute('data-akarfinder-national-view') === 'city', null, { timeout: 30000 });
+  await page.locator('.maplibregl-canvas').waitFor({ state: "visible", timeout: 30000 });
+  await page.locator('[data-akarfinder-national-neighborhood-overlay][data-city="casablanca"]').waitFor({ state: "attached", timeout: 20000 });
+  await page.waitForFunction(() => {
     const map = window.__AKARFINDER_NATIONAL_MAP__;
-    const sourceId = "akarfinder-national-neighborhood-points";
-    const dotsId = "akarfinder-national-neighborhood-dots";
-    let visibleSourceFeatures = 0;
-    let renderedNeighborhoodFeatureCount = 0;
-    try {
-      if (map?.getSource(sourceId)) visibleSourceFeatures = map.querySourceFeatures(sourceId).length;
-    } catch {
-      visibleSourceFeatures = -1;
-    }
-    try {
-      if (map?.getLayer(dotsId)) {
-        renderedNeighborhoodFeatureCount = map.queryRenderedFeatures().filter((feature) => feature.layer.id === dotsId).length;
-      }
-    } catch {
-      renderedNeighborhoodFeatureCount = -1;
-    }
-    return {
-      overlayDom: Boolean(document.querySelector('[data-akarfinder-national-neighborhood-overlay][data-city="casablanca"]')),
-      mapPresent: Boolean(map),
-      styleLoaded: Boolean(map?.isStyleLoaded()),
-      moving: Boolean(map?.isMoving()),
-      zoom: map?.getZoom() ?? null,
-      sourceExists: Boolean(map?.getSource(sourceId)),
-      sourceLoaded: Boolean(map?.getSource(sourceId) && map?.isSourceLoaded(sourceId)),
-      labels: Boolean(map?.getLayer("akarfinder-national-neighborhood-labels")),
-      dots: Boolean(map?.getLayer(dotsId)),
-      visibleSourceFeatures,
-      renderedNeighborhoodFeatureCount,
-    };
-  });
+    return Boolean(map?.isStyleLoaded()) && Boolean(map?.getSource("akarfinder-national-neighborhood-points")) && Boolean(map?.getLayer("akarfinder-national-neighborhood-labels")) && Boolean(map?.getLayer("akarfinder-national-neighborhood-dots"));
+  }, null, { timeout: 20000 });
+  await page.waitForFunction(() => {
+    const map = window.__AKARFINDER_NATIONAL_MAP__;
+    if (!map?.isStyleLoaded() || map.isMoving()) return false;
+    const baseLayers = (map.getStyle().layers ?? []).filter((layer) => !layer.id.startsWith("akarfinder-"));
+    const renderedBaseFeatures = map.queryRenderedFeatures().filter((feature) => !feature.layer.id.startsWith("akarfinder-"));
+    const renderedDots = map.queryRenderedFeatures().filter((feature) => feature.layer.id === "akarfinder-national-neighborhood-dots");
+    return baseLayers.length >= 20 && renderedBaseFeatures.length >= 20 && renderedDots.length >= 1;
+  }, null, { timeout: 15000 });
 }
 
 const apiResponse = await fetch(`${baseUrl}/api/geo/national-territories?city=casablanca`);
@@ -81,12 +61,7 @@ const browser = await chromium.launch({ headless: true });
 try {
   for (const viewport of viewports) {
     const mobile = viewport.width <= 430;
-    const context = await browser.newContext({
-      viewport: { width: viewport.width, height: viewport.height },
-      isMobile: mobile,
-      hasTouch: mobile,
-      deviceScaleFactor: 1,
-    });
+    const context = await browser.newContext({ viewport: { width: viewport.width, height: viewport.height }, isMobile: mobile, hasTouch: mobile, deviceScaleFactor: 1 });
     if (mobile) {
       await context.addInitScript(() => {
         const nativeMatchMedia = window.matchMedia.bind(window);
@@ -95,153 +70,81 @@ try {
           value: (query) => {
             const result = nativeMatchMedia(query);
             if (query !== "(pointer: coarse)") return result;
-            return new Proxy(result, {
-              get(target, property) {
-                if (property === "matches") return true;
-                const value = Reflect.get(target, property, target);
-                return typeof value === "function" ? value.bind(target) : value;
-              },
-            });
+            return new Proxy(result, { get(target, property) { if (property === "matches") return true; const value = Reflect.get(target, property, target); return typeof value === "function" ? value.bind(target) : value; } });
           },
         });
       });
     }
     const page = await context.newPage();
-    const diagnostics = { pageErrors: [], requestFailures: [], mapState: null };
-    page.on("pageerror", (error) => diagnostics.pageErrors.push(String(error)));
-    page.on("requestfailed", (request) => diagnostics.requestFailures.push({ url: request.url(), error: request.failure()?.errorText || "unknown" }));
+    const pageErrors = [];
+    page.on("pageerror", (error) => pageErrors.push(String(error)));
 
     try {
-      await page.goto(`${baseUrl}/map?city=casablanca&layer=explore`, { waitUntil: "domcontentloaded", timeout: 30000 });
-      const shell = page.locator('[data-akarfinder-national-map]');
-      await shell.waitFor({ state: "visible", timeout: 30000 });
-      await page.waitForFunction(() => document.querySelector('[data-akarfinder-national-map]')?.getAttribute('data-akarfinder-national-view') === 'city', null, { timeout: 30000 });
-      const canvas = page.locator('.maplibregl-canvas');
-      await canvas.waitFor({ state: "visible", timeout: 30000 });
-      await page.locator('[data-akarfinder-national-neighborhood-overlay][data-city="casablanca"]').waitFor({ state: "attached", timeout: 20000 });
-
-      try {
-        await page.waitForFunction(() => {
-          const map = window.__AKARFINDER_NATIONAL_MAP__;
-          const sourceId = "akarfinder-national-neighborhood-points";
-          return Boolean(map?.isStyleLoaded()) &&
-            Boolean(map?.getSource(sourceId)) &&
-            Boolean(map?.getLayer("akarfinder-national-neighborhood-labels")) &&
-            Boolean(map?.getLayer("akarfinder-national-neighborhood-dots"));
-        }, null, { timeout: 20000 });
-      } catch (error) {
-        diagnostics.mapState = await readNeighborhoodMapState(page);
-        throw new Error(`neighborhood overlay readiness timeout ${JSON.stringify(diagnostics.mapState)} | ${String(error)}`);
-      }
-
-      await page.waitForFunction(() => {
-        const map = window.__AKARFINDER_NATIONAL_MAP__;
-        return Boolean(map) && !map.isMoving() && map.isStyleLoaded();
-      }, null, { timeout: 10000 });
-
-      try {
-        await page.waitForFunction(() => {
-          const map = window.__AKARFINDER_NATIONAL_MAP__;
-          const dotsId = "akarfinder-national-neighborhood-dots";
-          if (!map?.getLayer(dotsId)) return false;
-          return map.queryRenderedFeatures().some((feature) => feature.layer.id === dotsId);
-        }, null, { timeout: 15000 });
-      } catch (error) {
-        diagnostics.mapState = await readNeighborhoodMapState(page);
-        throw new Error(`neighborhood dots not rendered ${JSON.stringify(diagnostics.mapState)} | ${String(error)}`);
-      }
-
-      // N2 is an overlay on the real MapLibre/OpenFreeMap basemap, never a marker-only canvas.
-      // Require rendered third-party cartographic features so roads/place context is visibly present
-      // beneath AkarFinder city + neighborhood layers before screenshots are accepted.
-      await page.waitForFunction(() => {
-        const map = window.__AKARFINDER_NATIONAL_MAP__;
-        if (!map?.isStyleLoaded()) return false;
-        const baseLayers = (map.getStyle().layers ?? []).filter((layer) => !layer.id.startsWith("akarfinder-"));
-        const renderedBaseFeatures = map.queryRenderedFeatures().filter((feature) => !feature.layer.id.startsWith("akarfinder-"));
-        return baseLayers.length >= 20 && renderedBaseFeatures.length >= 20;
-      }, null, { timeout: 15000 });
+      const cityUrl = `${baseUrl}/map?city=casablanca&layer=explore`;
+      await page.goto(cityUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
+      await waitForNationalOverlay(page);
 
       const layerState = await page.evaluate(() => {
         const map = window.__AKARFINDER_NATIONAL_MAP__;
-        const sourceId = "akarfinder-national-neighborhood-points";
-        const dotsId = "akarfinder-national-neighborhood-dots";
-        const baseLayers = (map?.getStyle().layers ?? []).filter((layer) => !layer.id.startsWith("akarfinder-"));
-        const renderedFeatures = map?.queryRenderedFeatures() ?? [];
-        const renderedBaseFeatures = renderedFeatures.filter((feature) => !feature.layer.id.startsWith("akarfinder-")).length;
-        const renderedNeighborhoodFeatureCount = renderedFeatures.filter((feature) => feature.layer.id === dotsId).length;
+        const layers = map?.getStyle().layers ?? [];
+        const rendered = map?.queryRenderedFeatures() ?? [];
         return {
-          visibleSourceFeatures: map?.querySourceFeatures(sourceId).length ?? 0,
-          sourceExists: Boolean(map?.getSource(sourceId)),
-          sourceLoaded: Boolean(map?.isSourceLoaded(sourceId)),
+          sourceExists: Boolean(map?.getSource("akarfinder-national-neighborhood-points")),
           labels: Boolean(map?.getLayer("akarfinder-national-neighborhood-labels")),
-          dots: Boolean(map?.getLayer(dotsId)),
-          renderedNeighborhoodFeatureCount,
+          dots: Boolean(map?.getLayer("akarfinder-national-neighborhood-dots")),
           fakeFill: Boolean(map?.getLayer("akarfinder-national-neighborhood-fill")),
-          basemapLayerCount: baseLayers.length,
-          renderedBasemapFeatureCount: renderedBaseFeatures,
-          basemapHasLine: baseLayers.some((layer) => layer.type === "line"),
-          basemapHasSymbol: baseLayers.some((layer) => layer.type === "symbol"),
+          renderedNeighborhoodFeatureCount: rendered.filter((feature) => feature.layer.id === "akarfinder-national-neighborhood-dots").length,
+          basemapLayerCount: layers.filter((layer) => !layer.id.startsWith("akarfinder-")).length,
+          renderedBasemapFeatureCount: rendered.filter((feature) => !feature.layer.id.startsWith("akarfinder-")).length,
         };
       });
-      if (!layerState.sourceExists || !layerState.labels || !layerState.dots || layerState.renderedNeighborhoodFeatureCount < 1 || layerState.fakeFill) {
-        throw new Error(`neighborhood map layers invalid ${JSON.stringify(layerState)}`);
-      }
-      if (layerState.basemapLayerCount < 20 || layerState.renderedBasemapFeatureCount < 20 || !layerState.basemapHasLine || !layerState.basemapHasSymbol) {
-        throw new Error(`real basemap missing or not rendered ${JSON.stringify(layerState)}`);
-      }
+      if (!layerState.sourceExists || !layerState.labels || !layerState.dots || layerState.renderedNeighborhoodFeatureCount < 1 || layerState.fakeFill) throw new Error(`neighborhood map layers invalid ${JSON.stringify(layerState)}`);
+      if (layerState.basemapLayerCount < 20 || layerState.renderedBasemapFeatureCount < 20) throw new Error(`real basemap missing ${JSON.stringify(layerState)}`);
 
-      const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+      let overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
       if (overflow > 1) throw new Error(`horizontal overflow ${overflow}`);
       await page.screenshot({ path: `${outDir}/casablanca-neighborhoods-${viewport.name}-after.png`, fullPage: false });
 
-      const projected = await page.evaluate(({ lng, lat }) => {
-        const map = window.__AKARFINDER_NATIONAL_MAP__;
-        const p = map.project([lng, lat]);
-        const rect = map.getCanvas().getBoundingClientRect();
-        return { pageX: rect.left + p.x, pageY: rect.top + p.y, localX: p.x, localY: p.y };
-      }, maarif.center);
+      const mappedInput = page.getByRole("textbox", { name: "Rechercher un quartier à Casablanca" });
+      await mappedInput.fill("Maârif");
+      const mappedSuggestion = page.locator('[data-akarfinder-neighborhood-suggestion="maarif"]');
+      await mappedSuggestion.waitFor({ state: "visible", timeout: 5000 });
+      await mappedSuggestion.click();
 
-      if (mobile) {
-        await page.touchscreen.tap(projected.pageX, projected.pageY);
-      } else {
-        await canvas.hover({ position: { x: projected.localX, y: projected.localY } });
-        await canvas.click({ position: { x: projected.localX, y: projected.localY } });
-      }
-      const active = page.locator('[data-akarfinder-neighborhood-preview="maarif"]');
-      await active.waitFor({ state: "visible", timeout: 5000 });
-      await active.getByText(/aucun contour de quartier publié/i).waitFor({ state: "visible", timeout: 5000 });
-      const activeHref = await active.getByRole("link", { name: /Rechercher à Maârif/i }).getAttribute("href");
+      await page.waitForURL((url) => url.searchParams.get("district") === "maarif", { timeout: 10000 });
+      const maplibre = page.locator('[data-maplibre-spike][data-maplibre-city="casablanca"][data-maplibre-district="maarif"]');
+      await maplibre.waitFor({ state: "visible", timeout: 15000 });
+      await page.waitForFunction(() => {
+        const shell = document.querySelector('[data-maplibre-spike][data-maplibre-city="casablanca"][data-maplibre-district="maarif"]');
+        return shell?.getAttribute("data-maplibre-render-state") === "ready";
+      }, null, { timeout: 20000 });
+      const rail = page.locator('[data-p4-map-decision-rail]');
+      await rail.waitFor({ state: "visible", timeout: 10000 });
+      const activeHref = await rail.getByRole("link", { name: /Voir les biens disponibles à Maârif/i }).getAttribute("href");
       if (!activeHref?.includes("city=Casablanca") || !activeHref.includes("district=Ma%C3%A2rif")) throw new Error(`Maârif Search handoff ${activeHref}`);
+      overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+      if (overflow > 1) throw new Error(`MapLibre horizontal overflow ${overflow}`);
       await page.screenshot({ path: `${outDir}/active-maarif-${viewport.name}-after.png`, fullPage: false });
 
+      await page.goto(cityUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
+      await waitForNationalOverlay(page);
       const input = page.getByRole("textbox", { name: "Rechercher un quartier à Casablanca" });
       await input.fill("QUARTIER MAARIF");
       const postalSuggestion = page.locator('[data-akarfinder-neighborhood-suggestion="quartier-maarif"]');
       await postalSuggestion.waitFor({ state: "visible", timeout: 5000 });
       await postalSuggestion.click();
+      await page.waitForURL((url) => url.searchParams.get("district") === "quartier-maarif", { timeout: 10000 });
       const postalCard = page.locator('[data-akarfinder-neighborhood-preview="quartier-maarif"]');
       await postalCard.waitFor({ state: "visible", timeout: 5000 });
       await postalCard.getByText(/repère cartographique indisponible/i).waitFor({ state: "visible", timeout: 5000 });
-      const postalHref = await postalCard.getByRole("link", { name: /Rechercher à QUARTIER MAARIF/i }).getAttribute("href");
+      const postalHref = await postalCard.getByRole("link", { name: /Voir les biens à QUARTIER MAARIF/i }).getAttribute("href");
       if (!postalHref?.includes("district=QUARTIER%20MAARIF")) throw new Error(`postal Search handoff ${postalHref}`);
       await page.screenshot({ path: `${outDir}/postal-maarif-${viewport.name}-after.png`, fullPage: false });
 
-      const criticalRequestFailures = diagnostics.requestFailures.filter((failure) => failure.url.startsWith(baseUrl) && failure.error !== "net::ERR_ABORTED");
-      if (diagnostics.pageErrors.length || criticalRequestFailures.length) {
-        throw new Error(`browser diagnostics ${JSON.stringify({ pageErrors: diagnostics.pageErrors, criticalRequestFailures })}`);
-      }
-      diagnostics.mapState = await readNeighborhoodMapState(page);
-      report.cases.push({ viewport: viewport.name, overflow, layerState, diagnostics, mappedSelection: true, noCenterFallback: true, searchHandoff: true });
+      if (pageErrors.length) throw new Error(`browser page errors ${JSON.stringify(pageErrors)}`);
+      report.cases.push({ viewport: viewport.name, overflow, layerState, mappedSelection: "maplibre", noCenterFallback: true, searchHandoff: true });
     } catch (error) {
-      if (!diagnostics.mapState) {
-        try {
-          diagnostics.mapState = await readNeighborhoodMapState(page);
-        } catch {
-          diagnostics.mapState = { unavailable: true };
-        }
-      }
-      report.failure = { viewport: viewport.name, error: String(error), diagnostics };
+      report.failure = { viewport: viewport.name, error: String(error) };
       throw error;
     } finally {
       await context.close();

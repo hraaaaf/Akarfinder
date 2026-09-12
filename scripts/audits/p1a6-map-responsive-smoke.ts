@@ -8,7 +8,7 @@ const outputDir = join(process.cwd(), "artifacts", "p1a6-map-responsive");
 const routes = [
   { path: "/map", slug: "map", experience: "national" },
   { path: "/map?city=Rabat", slug: "map-rabat", experience: "intelligence" },
-  { path: "/map?city=Rabat&district=Agdal", slug: "map-rabat-agdal", experience: "intelligence" },
+  { path: "/map?city=Rabat&district=Agdal", slug: "map-rabat-agdal", experience: "maplibre", citySlug: "rabat", districtSlug: "agdal" },
 ] as const;
 
 const viewports = [
@@ -65,12 +65,32 @@ async function main() {
           if (nationalResponseStatus !== 200) {
             findings.push({ route: route.path, viewport: viewport.label, check: "national-territories", detail: `National territories response ${nationalResponseStatus ?? "missing"}` });
           }
-        } else {
+        } else if (route.experience === "intelligence") {
           const intelligenceMap = page.locator('[data-akarfinder-market-intelligence-map]');
           try {
             await intelligenceMap.waitFor({ state: "visible", timeout: 15_000 });
           } catch {
-            findings.push({ route: route.path, viewport: viewport.label, check: "market-intelligence-map", detail: "Rabat intelligence map container missing" });
+            findings.push({ route: route.path, viewport: viewport.label, check: "market-intelligence-map", detail: "Rabat city intelligence map container missing" });
+          }
+        } else {
+          const maplibre = page.locator(`[data-maplibre-spike][data-maplibre-city="${route.citySlug}"][data-maplibre-district="${route.districtSlug}"]`);
+          try {
+            await maplibre.waitFor({ state: "visible", timeout: 15_000 });
+            await page.waitForFunction(
+              ({ citySlug, districtSlug }) => {
+                const shell = document.querySelector(`[data-maplibre-spike][data-maplibre-city="${citySlug}"][data-maplibre-district="${districtSlug}"]`);
+                return shell?.getAttribute("data-maplibre-render-state") === "ready";
+              },
+              { citySlug: route.citySlug, districtSlug: route.districtSlug },
+              { timeout: 20_000 },
+            );
+          } catch {
+            findings.push({ route: route.path, viewport: viewport.label, check: "maplibre-neighborhood", detail: "Canonical Rabat/Agdal MapLibre experience missing or not ready" });
+          }
+          try {
+            await page.locator("[data-p4-map-decision-rail]").waitFor({ state: "visible", timeout: 10_000 });
+          } catch {
+            findings.push({ route: route.path, viewport: viewport.label, check: "decision-rail", detail: "Vivre Ici decision rail missing" });
           }
         }
 

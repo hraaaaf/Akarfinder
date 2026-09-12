@@ -34,7 +34,7 @@ try {
   // Desktop interaction contract.
   {
     const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
-    const startPath = "/map?city=rabat&district=agdal&layer=explore&min_price=1000000&bedrooms=3";
+    const startPath = "/map?city=rabat&district=agdal&layer=price&min_price=1000000&bedrooms=3";
     const pricePromise = waitForMarketResponse(page, "price", "sale");
     await page.goto(`${baseUrl}${startPath}`, { waitUntil: "domcontentloaded", timeout: 30000 });
     await pricePromise;
@@ -46,7 +46,7 @@ try {
     const initialUrl = new URL(page.url());
     assert(initialUrl.searchParams.get("city") === "rabat", "initial city must be rabat");
     assert(initialUrl.searchParams.get("district") === "agdal", "initial district must be agdal");
-    assert(initialUrl.searchParams.get("layer") === "explore", "canonical layer missing");
+    assert(initialUrl.searchParams.get("layer") === "price", "market layer missing");
 
     const searchHref = await sheet.getByRole("link", { name: /Rechercher dans cette zone/i }).getAttribute("href");
     assert(searchHref, "Search CTA missing");
@@ -81,9 +81,9 @@ try {
     assert(rentSearch.searchParams.get("district") === "Agdal", "rent district lost");
     assert(new URL(page.url()).searchParams.get("district") === "agdal", "rent switch changed map district");
 
-    // Close restores city state and canonical URL.
+    // Close restores city state while preserving the active market layer.
     await sheet.getByRole("button", { name: "Fermer la zone" }).click();
-    const closedUrl = await expectUrl(page, (url) => url.searchParams.get("city") === "rabat" && !url.searchParams.has("district") && url.searchParams.get("layer") === "explore", "close zone");
+    const closedUrl = await expectUrl(page, (url) => url.searchParams.get("city") === "rabat" && !url.searchParams.has("district") && url.searchParams.get("layer") === "price", "close zone");
     assert(closedUrl.searchParams.get("min_price") === "1000000", "close lost min_price context");
     await sheet.waitFor({ state: "hidden", timeout: 10000 });
 
@@ -100,7 +100,7 @@ try {
   {
     const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
     const pricePromise = waitForMarketResponse(page, "price", "sale");
-    await page.goto(`${baseUrl}/map?city=rabat&district=agdal&layer=explore`, { waitUntil: "domcontentloaded", timeout: 30000 });
+    await page.goto(`${baseUrl}/map?city=rabat&district=agdal&layer=price`, { waitUntil: "domcontentloaded", timeout: 30000 });
     await pricePromise;
     const sheet = page.locator("[data-akarfinder-rich-zone-sheet]");
     const cockpit = page.locator("[data-akarfinder-premium-map-toolbar]");
@@ -121,7 +121,7 @@ try {
       await new Promise((resolve) => setTimeout(resolve, 700));
       await route.continue();
     });
-    const navigation = page.goto(`${baseUrl}/map?city=rabat&layer=explore`, { waitUntil: "domcontentloaded", timeout: 30000 });
+    const navigation = page.goto(`${baseUrl}/map?city=rabat&layer=price`, { waitUntil: "domcontentloaded", timeout: 30000 });
     await page.getByText("Chargement de la carte des quartiers…", { exact: true }).waitFor({ state: "visible", timeout: 10000 });
     await navigation;
     await page.getByText("Chargement de la carte des quartiers…", { exact: true }).waitFor({ state: "hidden", timeout: 20000 });
@@ -135,7 +135,7 @@ try {
     await page.route("**/api/geo/rabat-market-intelligence?*", async (route) => {
       await route.fulfill({ status: 503, contentType: "application/json", body: JSON.stringify({ error: "forced-lot5-certification" }) });
     });
-    await page.goto(`${baseUrl}/map?city=rabat&district=agdal&layer=explore`, { waitUntil: "domcontentloaded", timeout: 30000 });
+    await page.goto(`${baseUrl}/map?city=rabat&district=agdal&layer=price`, { waitUntil: "domcontentloaded", timeout: 30000 });
     await page.getByText("Données quartiers temporairement indisponibles", { exact: true }).waitFor({ state: "visible", timeout: 15000 });
     assert((await page.locator("[data-akarfinder-intelligence-legend]").count()) === 0, "fail-closed must not show legend");
     assert((await page.locator("[data-akarfinder-rich-zone-sheet]").count()) === 0, "fail-closed must not show zone sheet");

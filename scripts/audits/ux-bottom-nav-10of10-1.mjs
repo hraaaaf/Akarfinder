@@ -10,7 +10,7 @@ fs.mkdirSync(outDir, { recursive: true });
 const expected = [
   ["/search", "Explorer"],
   ["/favorites", "Favoris"],
-  ["/map", "Carte"],
+  ["/map", "Vivre ici"],
   ["/alerts", "Alertes"],
   ["/mon-projet", "Mon Projet"],
 ];

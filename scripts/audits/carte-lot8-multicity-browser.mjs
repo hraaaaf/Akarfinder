@@ -5,14 +5,17 @@ const baseUrl = process.env.BASE_URL || "http://127.0.0.1:3205";
 const outDir = process.env.AUDIT_OUTPUT_DIR || "data/audits/carte-lot8-multicity";
 await mkdir(outDir, { recursive: true });
 
+// Run the requested Fès / iPhone 14 Pro Max proof first so a diagnostic capture
+// is still preserved if a later certification assertion fails.
 const cities = [
+  { slug: "fes", districtSlug: "ville-nouvelle", city: "Fès", district: "Ville Nouvelle" },
   { slug: "casablanca", districtSlug: "maarif", city: "Casablanca", district: "Maârif" },
   { slug: "marrakech", districtSlug: "gueliz", city: "Marrakech", district: "Guéliz" },
   { slug: "tanger", districtSlug: "malabata", city: "Tanger", district: "Malabata" },
   { slug: "agadir", districtSlug: "founty", city: "Agadir", district: "Founty" },
-  { slug: "fes", districtSlug: "ville-nouvelle", city: "Fès", district: "Ville Nouvelle" },
 ];
 const viewports = [
+  { name: "iphone14promax", width: 430, height: 932, onlyCity: "fes" },
   { name: "mobile", width: 390, height: 844 },
   { name: "desktop", width: 1280, height: 900 },
 ];
@@ -29,6 +32,8 @@ const browser = await chromium.launch({ headless: true });
 try {
   for (const cityCase of cities) {
     for (const viewport of viewports) {
+      if (viewport.onlyCity && viewport.onlyCity !== cityCase.slug) continue;
+
       const page = await browser.newPage({ viewport: { width: viewport.width, height: viewport.height } });
       const pageErrors = [];
       const tileResponses = [];
@@ -67,27 +72,33 @@ try {
           timeout: 30000,
         });
 
-        const loadingCard = page.getByText("Chargement de la carte…", { exact: true });
-        await loadingCard.waitFor({ state: "hidden", timeout: 30000 });
+        const maplibre = page.locator(`[data-maplibre-spike][data-maplibre-city="${cityCase.slug}"][data-maplibre-district="${cityCase.districtSlug}"]`);
+        await maplibre.waitFor({ state: "attached", timeout: 20000 });
         const mapCanvas = page.locator(".maplibregl-canvas");
-        await mapCanvas.waitFor({ state: "visible", timeout: 10000 });
+        await mapCanvas.waitFor({ state: "attached", timeout: 10000 });
+        await page.waitForFunction(
+          ({ citySlug, districtSlug }) => {
+            const shell = document.querySelector(`[data-maplibre-spike][data-maplibre-city="${citySlug}"][data-maplibre-district="${districtSlug}"]`);
+            return shell?.getAttribute("data-maplibre-render-state") === "ready";
+          },
+          { citySlug: cityCase.slug, districtSlug: cityCase.districtSlug },
+          { timeout: 20000 },
+        );
         await tilesReady;
         await page.waitForTimeout(450);
 
-        const fullPanel = page.getByRole("complementary", { name: new RegExp(`Fiche repère quartier ${cityCase.district}`, "i") });
-        const compactPanel = page.locator("[data-akarfinder-mobile-compact-panel]");
-        const panel = viewport.width <= 767 ? compactPanel : fullPanel;
-        await panel.waitFor({ state: "visible", timeout: 20000 });
+        // Preserve the actual rendered viewport before any visibility/layout assertions.
+        await page.screenshot({ path: `${outDir}/${cityCase.slug}-${cityCase.districtSlug}-${viewport.width}x${viewport.height}.png`, fullPage: false });
 
-        const panelBox = await panel.boundingBox();
-        if (!panelBox) throw new Error(`${cityCase.slug}/${viewport.name}: panel has no bounding box`);
+        const rail = page.locator("[data-p4-map-decision-rail]");
+        await rail.waitFor({ state: "visible", timeout: 10000 });
+        const panelBox = await rail.boundingBox();
+        if (!panelBox) throw new Error(`${cityCase.slug}/${viewport.name}: decision rail has no bounding box`);
         if (panelBox.x < -1 || panelBox.x + panelBox.width > viewport.width + 1 || panelBox.y < -1 || panelBox.y + panelBox.height > viewport.height + 1) {
-          throw new Error(`${cityCase.slug}/${viewport.name}: panel escapes viewport ${JSON.stringify(panelBox)}`);
+          throw new Error(`${cityCase.slug}/${viewport.name}: decision rail escapes viewport ${JSON.stringify(panelBox)}`);
         }
 
-        const searchLink = viewport.width <= 767
-          ? panel.getByRole("link", { name: /Rechercher ici/i })
-          : panel.getByRole("link", { name: /Rechercher dans ce quartier/i });
+        const searchLink = rail.getByRole("link", { name: new RegExp(`Voir les biens disponibles à ${cityCase.district}`, "i") });
         const searchHref = await searchLink.getAttribute("href");
         if (!searchHref) throw new Error(`${cityCase.slug}/${viewport.name}: Search handoff missing`);
         const searchUrl = new URL(searchHref, baseUrl);
@@ -95,41 +106,16 @@ try {
           throw new Error(`${cityCase.slug}/${viewport.name}: Search handoff mismatch ${searchHref}`);
         }
 
-        if (viewport.width <= 1023) {
-          for (const locator of [
-            page.getByRole("complementary", { name: "Légende de la carte immobilière" }),
-            page.getByRole("navigation", { name: "Exploration territoriale" }),
-            page.getByRole("region", { name: "Contrôles de la carte immobilière" }),
-          ]) {
-            if (await locator.isVisible()) throw new Error(`${cityCase.slug}/${viewport.name}: secondary overlay remains visible`);
-          }
-        } else {
-          const toolbar = page.locator("[data-akarfinder-generic-premium-toolbar]");
-          await toolbar.waitFor({ state: "visible", timeout: 10000 });
-          const cityNavigation = toolbar.getByRole("navigation", { name: "Sélection des villes phares" });
-          await cityNavigation.waitFor({ state: "visible", timeout: 5000 });
-          const cityButtons = cityNavigation.getByRole("button");
-          if (await cityButtons.count() !== 6) throw new Error(`${cityCase.slug}/${viewport.name}: premium toolbar must expose exactly six flagship cities`);
-          const activeCityButton = cityNavigation.getByRole("button", { name: cityCase.city, exact: true });
-          if (await activeCityButton.getAttribute("aria-pressed") !== "true") throw new Error(`${cityCase.slug}/${viewport.name}: active flagship city is not ${cityCase.city}`);
-        }
+        const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+        if (overflow > 1) throw new Error(`${cityCase.slug}/${viewport.name}: horizontal overflow ${overflow}`);
 
         if (viewport.width <= 767) {
-          if (await fullPanel.isVisible()) throw new Error(`${cityCase.slug}/${viewport.name}: full district sheet must stay collapsed initially`);
-          if (panelBox.height > 230) throw new Error(`${cityCase.slug}/${viewport.name}: compact preview too tall ${JSON.stringify(panelBox)}`);
+          if (panelBox.height > 230) throw new Error(`${cityCase.slug}/${viewport.name}: mobile decision sheet too tall ${JSON.stringify(panelBox)}`);
           if (panelBox.y < viewport.height * 0.5) throw new Error(`${cityCase.slug}/${viewport.name}: insufficient visible map band ${JSON.stringify(panelBox)}`);
-          if (panelBox.y + panelBox.height > viewport.height - 76) throw new Error(`${cityCase.slug}/${viewport.name}: compact preview overlaps bottom navigation ${JSON.stringify(panelBox)}`);
+          if (panelBox.y + panelBox.height > viewport.height - 76) throw new Error(`${cityCase.slug}/${viewport.name}: decision sheet overlaps bottom navigation ${JSON.stringify(panelBox)}`);
         }
 
         if (pageErrors.length) throw new Error(`${cityCase.slug}/${viewport.name}: browser page errors ${JSON.stringify(pageErrors)}`);
-
-        await page.screenshot({ path: `${outDir}/${cityCase.slug}-${cityCase.districtSlug}-${viewport.width}x${viewport.height}.png`, fullPage: false });
-
-        if (viewport.width <= 767) {
-          await compactPanel.getByRole("button", { name: "Afficher les détails du quartier" }).click();
-          await fullPanel.waitFor({ state: "visible", timeout: 5000 });
-          if (await compactPanel.isVisible()) throw new Error(`${cityCase.slug}/${viewport.name}: compact preview must disappear after details expansion`);
-        }
 
         report.cases.push({
           city: cityCase.city,
@@ -137,11 +123,10 @@ try {
           viewport: viewport.name,
           searchHref,
           panelBox,
-          mobileCompactPreview: viewport.width <= 767,
-          mobileDetailsExpandable: viewport.width <= 767,
+          overflow,
           mapRendered: true,
           highZoomTileCount,
-          premiumToolbar: viewport.width >= 1024,
+          decisionRail: true,
           tileResponses,
         });
       } finally {

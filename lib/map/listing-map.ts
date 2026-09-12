@@ -33,32 +33,14 @@ export type MapCluster = {
   count: number;
   x: number;
   y: number;
-  averagePrice: number;
+  averagePrice: number | null;
 };
 
-const CITY_VISUAL_POSITIONS: Record<string, { x: number; y: number }> = {
-  Tanger: { x: 72, y: 16 },
-  Rabat: { x: 62, y: 28 },
-  Kenitra: { x: 63, y: 25 },
-  Casablanca: { x: 59, y: 34 },
-  Mohammedia: { x: 61, y: 32 },
-  Fes: { x: 73, y: 30 },
-  Marrakech: { x: 54, y: 48 },
-  Agadir: { x: 43, y: 63 },
-};
-
-const NEIGHBORHOOD_OFFSETS: Record<string, { x: number; y: number }> = {
-  "Casablanca::Finance City": { x: -1.2, y: 0.4 },
-  "Casablanca::Maârif": { x: 0.4, y: -0.3 },
-  "Casablanca::Bouskoura": { x: 1.4, y: 2.4 },
-  "Rabat::Hay Riad": { x: 0.9, y: 1.3 },
-  "Rabat::Agdal": { x: -0.7, y: 0.5 },
-  "Tanger::Malabata": { x: 1.2, y: 0.6 },
-  "Marrakech::Route de l'Ourika": { x: 0.8, y: 2.0 },
-  "Agadir::Founty": { x: -0.6, y: 1.0 },
-  "Fes::Ville Nouvelle": { x: -0.8, y: 0.7 },
-  "Kenitra::Maâmora": { x: 0.9, y: 1.0 },
-  "Mohammedia::Parc": { x: 0.6, y: -0.2 },
+const MOROCCO_MAP_LIMITS: MapBounds = {
+  west: -14.5,
+  east: 2.5,
+  south: 20.5,
+  north: 37.5,
 };
 
 export const defaultMapFilters: MapFilters = {
@@ -100,6 +82,33 @@ export function getPrecisionLabel(listing: Listing): string {
   return "Position non disponible";
 }
 
+export function isExactMapListing(
+  listing: Listing
+): listing is Listing & {
+  latitude: number;
+  longitude: number;
+  geo_precision: "exact";
+  geo_source: "scraped_coordinates" | "manual_import";
+} {
+  const { latitude, longitude } = listing;
+  const exactSource =
+    listing.geo_source === "scraped_coordinates" ||
+    listing.geo_source === "manual_import";
+
+  return (
+    listing.geo_precision === "exact" &&
+    exactSource &&
+    typeof latitude === "number" &&
+    Number.isFinite(latitude) &&
+    latitude >= MOROCCO_MAP_LIMITS.south &&
+    latitude <= MOROCCO_MAP_LIMITS.north &&
+    typeof longitude === "number" &&
+    Number.isFinite(longitude) &&
+    longitude >= MOROCCO_MAP_LIMITS.west &&
+    longitude <= MOROCCO_MAP_LIMITS.east
+  );
+}
+
 export function filterMapListings(
   listings: Listing[],
   filters: MapFilters
@@ -108,11 +117,10 @@ export function filterMapListings(
   const maxBudget = Number(filters.maxBudget) || Number.POSITIVE_INFINITY;
 
   return listings.filter((listing) => {
-    const hasGeo = listing.latitude != null && listing.longitude != null;
     const duplicateScore = listing.duplicate_score ?? 0;
 
     return (
-      hasGeo &&
+      isExactMapListing(listing) &&
       (filters.city === "all" || listing.city === filters.city) &&
       (filters.transactionType === "all" ||
         listing.transaction_type === filters.transactionType) &&
@@ -127,20 +135,19 @@ export function filterMapListings(
   });
 }
 
-export function getMapPoint(listing: Listing): MapPoint | null {
-  const base = CITY_VISUAL_POSITIONS[listing.city];
-  if (!base) return null;
+function projectExactCoordinate(longitude: number, latitude: number): { x: number; y: number } {
+  const x = 8 + ((longitude - MOROCCO_MAP_LIMITS.west) / (MOROCCO_MAP_LIMITS.east - MOROCCO_MAP_LIMITS.west)) * 84;
+  const y = 8 + ((MOROCCO_MAP_LIMITS.north - latitude) / (MOROCCO_MAP_LIMITS.north - MOROCCO_MAP_LIMITS.south)) * 84;
+  return { x, y };
+}
 
-  const offset =
-    NEIGHBORHOOD_OFFSETS[`${listing.city}::${listing.neighborhood}`] ?? {
-      x: 0,
-      y: 0,
-    };
+export function getMapPoint(listing: Listing): MapPoint | null {
+  if (!isExactMapListing(listing)) return null;
+  const position = projectExactCoordinate(listing.longitude, listing.latitude);
 
   return {
     listing,
-    x: clamp(base.x + offset.x, 8, 92),
-    y: clamp(base.y + offset.y, 8, 92),
+    ...position,
     priceLabel: formatShortPrice(listing.price),
     precisionLabel: getPrecisionLabel(listing),
   };
@@ -151,20 +158,20 @@ export function getMapPoints(listings: Listing[]): MapPoint[] {
 }
 
 export function getMapClusters(listings: Listing[]): MapCluster[] {
-  const byCity = new Map<string, Listing[]>();
+  const byCity = new Map<string, Array<Listing & { latitude: number; longitude: number }>>();
 
   listings.forEach((listing) => {
-    if (listing.latitude == null || listing.longitude == null) return;
+    if (!isExactMapListing(listing)) return;
     byCity.set(listing.city, [...(byCity.get(listing.city) ?? []), listing]);
   });
 
   return Array.from(byCity.entries())
     .map(([city, cityListings]) => {
-      const position = CITY_VISUAL_POSITIONS[city];
-      if (!position) return null;
+      const longitude = cityListings.reduce((total, listing) => total + listing.longitude, 0) / cityListings.length;
+      const latitude = cityListings.reduce((total, listing) => total + listing.latitude, 0) / cityListings.length;
+      const position = projectExactCoordinate(longitude, latitude);
 
-      // Undisclosed prices are excluded from the average, never treated as 0
-      // (which would silently drag the city average down).
+      // Undisclosed prices are excluded from the average, never treated as 0.
       const pricedListings = cityListings.filter((listing): listing is typeof listing & { price: number } => listing.price != null);
       const averagePrice = pricedListings.length === 0
         ? null
@@ -173,12 +180,10 @@ export function getMapClusters(listings: Listing[]): MapCluster[] {
       return {
         city,
         count: cityListings.length,
-        x: position.x,
-        y: position.y,
+        ...position,
         averagePrice,
       };
     })
-    .filter((cluster): cluster is MapCluster => Boolean(cluster))
     .sort((a, b) => b.count - a.count);
 }
 
@@ -186,7 +191,7 @@ export function getCitiesWithGeo(listings: Listing[]): string[] {
   return Array.from(
     new Set(
       listings
-        .filter((listing) => listing.latitude != null && listing.longitude != null)
+        .filter(isExactMapListing)
         .map((listing) => listing.city)
     )
   ).sort();
@@ -201,10 +206,6 @@ export function getMapSearchHref(filters: MapFilters): string {
   if (filters.maxBudget) params.set("max_price", filters.maxBudget);
   const query = params.toString();
   return query ? `/search?${query}` : "/search";
-}
-
-function clamp(value: number, min: number, max: number): number {
-  return Math.min(max, Math.max(min, value));
 }
 
 // ─── MapLibre helpers ──────────────────────────────────────────────────────────

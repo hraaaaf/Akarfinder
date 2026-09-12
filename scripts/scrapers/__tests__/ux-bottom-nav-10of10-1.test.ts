@@ -41,7 +41,7 @@ test("UX-BOTTOM-NAV exposes the five canonical destinations", () => {
   for (const [href, label] of [
     ["/search", "Explorer"],
     ["/favorites", "Favoris"],
-    ["/map", "Carte"],
+    ["/map", "Vivre ici"],
     ["/alerts", "Alertes"],
     ["/mon-projet", "Mon Projet"],
   ]) {

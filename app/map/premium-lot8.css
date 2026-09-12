@@ -1,0 +1,118 @@
+/* VIVRE ICI — editorial hierarchy correction after visual AFTER review.
+   Presentation-only. No geographic, property, market, price, score, distance or weather facts are created. */
+
+@media (min-width: 1024px) {
+  :is([data-p4-map-layout]:has([data-vivre-ici-3d-toggle]), [data-p4-map-layout]:has([data-maplibre-spike])) .p4-premium-context-header {
+    display: block !important;
+    overflow: visible !important;
+  }
+
+  :is([data-p4-map-layout]:has([data-vivre-ici-3d-toggle]), [data-p4-map-layout]:has([data-maplibre-spike])) .p4-premium-context-header h2 {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    margin: 6px 0 0 !important;
+    font-size: 40px !important;
+    line-height: .96 !important;
+    letter-spacing: -.05em !important;
+    color: #17302e !important;
+  }
+
+  :is([data-p4-map-layout]:has([data-vivre-ici-3d-toggle]), [data-p4-map-layout]:has([data-maplibre-spike])) .p4-premium-context-location {
+    display: block !important;
+    margin-top: 6px !important;
+    font-size: 11px !important;
+    line-height: 1.25 !important;
+  }
+
+  :is([data-p4-map-layout]:has([data-vivre-ici-3d-toggle]), [data-p4-map-layout]:has([data-maplibre-spike])) .p4-premium-lede {
+    margin-top: 12px !important;
+    max-width: 40ch !important;
+    font-size: 11.5px !important;
+    line-height: 1.5 !important;
+  }
+
+  :is([data-p4-map-layout]:has([data-vivre-ici-3d-toggle]), [data-p4-map-layout]:has([data-maplibre-spike])) .p4-premium-signal-grid > div {
+    display: flex !important;
+    min-height: 86px !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    justify-content: flex-start !important;
+    gap: 0 !important;
+  }
+
+  :is([data-p4-map-layout]:has([data-vivre-ici-3d-toggle]), [data-p4-map-layout]:has([data-maplibre-spike])) .p4-premium-signal-grid strong,
+  :is([data-p4-map-layout]:has([data-vivre-ici-3d-toggle]), [data-p4-map-layout]:has([data-maplibre-spike])) .p4-premium-signal-grid span {
+    max-width: 100% !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+  }
+
+  :is([data-p4-map-layout]:has([data-vivre-ici-3d-toggle]), [data-p4-map-layout]:has([data-maplibre-spike])) .p4-premium-market-card {
+    display: block !important;
+    grid-template-columns: none !important;
+    min-height: 0 !important;
+    padding: 14px 15px !important;
+  }
+
+  :is([data-p4-map-layout]:has([data-vivre-ici-3d-toggle]), [data-p4-map-layout]:has([data-maplibre-spike])) .p4-premium-market-card > div,
+  :is([data-p4-map-layout]:has([data-vivre-ici-3d-toggle]), [data-p4-map-layout]:has([data-maplibre-spike])) .p4-premium-market-card > p {
+    display: block !important;
+    width: 100% !important;
+    max-width: none !important;
+  }
+
+  :is([data-p4-map-layout]:has([data-vivre-ici-3d-toggle]), [data-p4-map-layout]:has([data-maplibre-spike])) .p4-premium-market-title {
+    margin-top: 5px !important;
+    font-size: 11px !important;
+    line-height: 1.3 !important;
+    white-space: normal !important;
+  }
+
+  :is([data-p4-map-layout]:has([data-vivre-ici-3d-toggle]), [data-p4-map-layout]:has([data-maplibre-spike])) .p4-premium-market-copy {
+    margin-top: 7px !important;
+    font-size: 8.6px !important;
+    line-height: 1.45 !important;
+    white-space: normal !important;
+  }
+
+  :is([data-p4-map-layout]:has([data-vivre-ici-3d-toggle]), [data-p4-map-layout]:has([data-maplibre-spike])) .p4-premium-local-guide-list article > strong,
+  :is([data-p4-map-layout]:has([data-vivre-ici-3d-toggle]), [data-p4-map-layout]:has([data-maplibre-spike])) .p4-premium-local-guide-list article > small {
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+  }
+
+  /* National fallback previews with no canonical MapLibre target must remain
+     visible. Older premium CSS hid every desktop preview whenever the national
+     3D toggle existed, including truth-safe no-center postal fallbacks. */
+  [data-p4-map-layout]:has([data-vivre-ici-map-shell]):not(:has([data-maplibre-spike])) [data-akarfinder-neighborhood-preview] {
+    display: block !important;
+  }
+
+  /* MapLibre neighborhood route: the layout is itself a flex child. Percentage
+     heights let intrinsic rail content enlarge the grid, so bind both the flex
+     basis and the rail directly to the viewport. The rail height mirrors the
+     previously certified premium path and keeps a 26px bottom breathing room. */
+  [data-p4-map-layout]:has([data-maplibre-spike]) {
+    flex: 0 0 calc(100dvh - 64px) !important;
+    height: calc(100dvh - 64px) !important;
+    min-height: 0 !important;
+    max-height: calc(100dvh - 64px) !important;
+    grid-template-rows: minmax(0, 1fr) !important;
+    overflow: hidden !important;
+  }
+
+  [data-p4-map-layout]:has([data-maplibre-spike]) [data-p4-map-canvas],
+  [data-p4-map-layout]:has([data-maplibre-spike]) .p4-map-decision-rail {
+    min-height: 0 !important;
+  }
+
+  [data-p4-map-layout]:has([data-maplibre-spike]) .p4-map-decision-rail {
+    height: calc(100dvh - 90px) !important;
+    max-height: calc(100dvh - 90px) !important;
+    overflow-y: auto !important;
+    box-sizing: border-box !important;
+  }
+}

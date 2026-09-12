@@ -1,0 +1,404 @@
+/* VIVRE ICI — TARGET convergence.
+   Visual-only correction from real TARGET ↔ AFTER comparison.
+   No geographic, property, market, price, score, distance or weather data is created here. */
+
+[data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) [data-akarfinder-national-map] .maplibregl-canvas {
+  filter: saturate(.90) contrast(.87) brightness(1.19) sepia(.025) !important;
+}
+
+.vivre-ici-target-outro {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  [data-vivre-ici-page] {
+    background: #f3efe7 !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) {
+    grid-template-columns: minmax(0, 1fr) 372px !important;
+    gap: 8px !important;
+    height: calc(100svh - 64px - 82px) !important;
+    min-height: calc(100svh - 64px - 82px) !important;
+    padding: 10px 10px 8px 12px !important;
+    background: #f3efe7 !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) [data-p4-map-canvas] {
+    border-radius: 20px !important;
+    box-shadow: 0 14px 34px rgb(43 48 49 / .08) !important;
+    overflow: hidden !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-map-decision-rail,
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-map-decision-rail:has(.p4-premium-local-guide) {
+    height: 100% !important;
+    overflow-y: auto !important;
+    scrollbar-width: none !important;
+    padding: 24px 20px 19px !important;
+    border-radius: 20px !important;
+    border-left: 0 !important;
+    background: #fffefa !important;
+    box-shadow: 0 14px 34px rgb(43 48 49 / .07) !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-map-decision-rail::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-map-decision-rail::before {
+    display: none !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-premium-context-header {
+    padding-bottom: 2px !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-premium-kicker {
+    margin: 0 !important;
+    font-size: 9px !important;
+    font-weight: 850 !important;
+    letter-spacing: .13em !important;
+    text-transform: uppercase !important;
+    color: #0b6668 !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-premium-context-header h2 {
+    margin-top: 5px !important;
+    font-size: 41px !important;
+    line-height: .94 !important;
+    letter-spacing: -.055em !important;
+    color: #17302e !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-premium-context-location {
+    margin-top: 8px !important;
+    font-size: 11.5px !important;
+    font-weight: 700 !important;
+    color: #6d716e !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-premium-lede {
+    margin-top: 14px !important;
+    max-width: 38ch !important;
+    font-size: 12px !important;
+    line-height: 1.56 !important;
+    color: #4d5552 !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-premium-proofline {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+    margin-top: 13px !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-premium-proofline span {
+    padding: 6px 8px !important;
+    border: 1px solid #dedbd1 !important;
+    border-radius: 999px !important;
+    background: #f8f6f0 !important;
+    font-size: 8px !important;
+    font-weight: 750 !important;
+    color: #59605c !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-premium-tabs {
+    margin-top: 18px !important;
+    gap: 20px !important;
+    border-bottom: 1px solid #e1ddd3 !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-premium-tabs > * {
+    padding: 9px 0 11px !important;
+    font-size: 10px !important;
+    font-weight: 750 !important;
+    color: #737773 !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-premium-tabs > [aria-current="page"] {
+    color: #0b6668 !important;
+    border-bottom: 2px solid #0b6668 !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-premium-signal-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    margin-top: 16px !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-premium-signal-grid > div {
+    min-height: 78px !important;
+    padding: 11px 9px !important;
+    border: 1px solid #dfddd4 !important;
+    border-radius: 15px !important;
+    background: #fbfaf6 !important;
+    text-align: left !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-premium-signal-grid svg {
+    color: #0b6668 !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-premium-signal-grid strong {
+    display: block !important;
+    margin-top: 6px !important;
+    font-size: 14px !important;
+    line-height: 1 !important;
+    color: #17302e !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-premium-signal-grid span {
+    display: block !important;
+    margin-top: 5px !important;
+    font-size: 7.8px !important;
+    line-height: 1.25 !important;
+    color: #7d817c !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-premium-category-line {
+    margin-top: 9px !important;
+    font-size: 8.2px !important;
+    line-height: 1.35 !important;
+    color: #8b8b84 !important;
+  }
+
+  .p4-premium-local-guide {
+    margin-top: 18px !important;
+    padding-top: 17px !important;
+    border-top: 1px solid #e1ddd3 !important;
+  }
+
+  .p4-premium-local-guide-heading {
+    display: flex !important;
+    align-items: end !important;
+    justify-content: space-between !important;
+    gap: 12px !important;
+  }
+
+  .p4-premium-local-guide-heading p {
+    font-size: 8.5px !important;
+    font-weight: 850 !important;
+    letter-spacing: .12em !important;
+    text-transform: uppercase !important;
+    color: #0b6668 !important;
+  }
+
+  .p4-premium-local-guide-heading h3 {
+    margin-top: 4px !important;
+    max-width: 245px !important;
+    font-size: 15px !important;
+    line-height: 1.15 !important;
+    letter-spacing: -.025em !important;
+    color: #17302e !important;
+  }
+
+  .p4-premium-local-guide-heading > span {
+    display: grid !important;
+    width: 28px !important;
+    height: 28px !important;
+    place-items: center !important;
+    flex: 0 0 auto !important;
+    border-radius: 999px !important;
+    background: #edf6f3 !important;
+    font-size: 10px !important;
+    font-weight: 900 !important;
+    color: #0b6668 !important;
+  }
+
+  .p4-premium-local-guide-list {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    margin-top: 11px !important;
+  }
+
+  .p4-premium-local-guide-list article {
+    min-width: 0 !important;
+    min-height: 92px !important;
+    padding: 11px !important;
+    border: 1px solid #dfddd4 !important;
+    border-radius: 15px !important;
+    background: linear-gradient(180deg, #fdfcf8 0%, #f8f6ef 100%) !important;
+  }
+
+  .p4-premium-local-guide-list article > span {
+    display: block !important;
+    font-size: 7.6px !important;
+    font-weight: 850 !important;
+    letter-spacing: .07em !important;
+    text-transform: uppercase !important;
+    color: #0b6668 !important;
+  }
+
+  .p4-premium-local-guide-list article > strong {
+    display: block !important;
+    margin-top: 5px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    font-size: 10.8px !important;
+    line-height: 1.22 !important;
+    color: #17302e !important;
+  }
+
+  .p4-premium-local-guide-list article > small {
+    display: block !important;
+    margin-top: 6px !important;
+    font-size: 7.8px !important;
+    line-height: 1.3 !important;
+    color: #747974 !important;
+  }
+
+  .p4-premium-local-guide-source {
+    margin-top: 9px !important;
+    font-size: 7.3px !important;
+    line-height: 1.35 !important;
+    color: #99988f !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-premium-market-card {
+    display: grid !important;
+    margin-top: 16px !important;
+    padding: 13px 14px !important;
+    gap: 5px !important;
+    border: 1px solid #dedbd1 !important;
+    border-radius: 15px !important;
+    background: #f7f4ed !important;
+  }
+
+  .p4-premium-market-eyebrow {
+    margin: 0 !important;
+    font-size: 8px !important;
+    font-weight: 850 !important;
+    letter-spacing: .11em !important;
+    text-transform: uppercase !important;
+    color: #0b6668 !important;
+  }
+
+  .p4-premium-market-title {
+    margin: 4px 0 0 !important;
+    font-size: 10.8px !important;
+    font-weight: 800 !important;
+    line-height: 1.25 !important;
+    color: #17302e !important;
+  }
+
+  .p4-premium-market-copy {
+    margin: 0 !important;
+    font-size: 8.2px !important;
+    line-height: 1.4 !important;
+    color: #777b76 !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) .p4-premium-actions {
+    display: grid !important;
+    gap: 8px !important;
+    margin-top: 16px !important;
+  }
+
+  .p4-premium-primary-action {
+    display: inline-flex !important;
+    min-height: 46px !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 7px !important;
+    padding: 0 14px !important;
+    border-radius: 14px !important;
+    background: #0b6668 !important;
+    box-shadow: 0 10px 24px rgb(11 102 104 / .14) !important;
+    font-size: 11px !important;
+    font-weight: 850 !important;
+    color: #fff !important;
+  }
+
+  .p4-premium-secondary-action {
+    display: inline-flex !important;
+    min-height: 40px !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    padding: 0 14px !important;
+    border: 1px solid #dedbd1 !important;
+    border-radius: 14px !important;
+    background: #fffefa !important;
+    font-size: 9.5px !important;
+    font-weight: 800 !important;
+    color: #33413f !important;
+  }
+
+  .vivre-ici-target-outro {
+    display: flex;
+    min-height: 82px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 32px;
+    padding: 14px 38px 16px;
+    border-top: 1px solid rgb(220 213 200 / .75);
+    background: linear-gradient(180deg, #f6f1e9 0%, #f1ebe2 100%);
+    color: #202b2a;
+  }
+
+  .vivre-ici-target-outro > div {
+    display: grid;
+    gap: 2px;
+  }
+
+  .vivre-ici-target-outro strong {
+    font-size: 18px;
+    line-height: 1.15;
+    letter-spacing: -.025em;
+  }
+
+  .vivre-ici-target-outro span {
+    font-size: 10.5px;
+    line-height: 1.35;
+    color: #6f7470;
+  }
+
+  .vivre-ici-target-outro p {
+    margin: 0;
+    max-width: 190px;
+    transform: rotate(-4deg);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 14px;
+    font-style: italic;
+    line-height: 1.2;
+    text-align: center;
+    color: #6f6a60;
+  }
+}
+
+@media (max-width: 1023px) {
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) [data-akarfinder-national-map] .maplibregl-canvas {
+    filter: saturate(.91) contrast(.88) brightness(1.17) sepia(.018) !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) [data-akarfinder-neighborhood-preview] {
+    bottom: 70px !important;
+    max-height: min(34svh, 278px) !important;
+    padding: 18px 15px 14px !important;
+    border-radius: 27px !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) [data-akarfinder-neighborhood-preview] > p:nth-of-type(2) {
+    display: block !important;
+    margin-top: 7px !important;
+    font-size: 9.5px !important;
+    line-height: 1.42 !important;
+    color: rgb(72 77 76) !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) [data-vivre-ici-neighborhood-truth-grid] {
+    margin-top: 11px !important;
+  }
+
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) [data-vivre-ici-neighborhood-truth-grid] > div {
+    min-height: 52px !important;
+  }
+}
+
+@media (max-width: 430px) {
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) [data-akarfinder-neighborhood-preview] {
+    max-height: min(35svh, 268px) !important;
+  }
+}

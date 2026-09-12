@@ -8,13 +8,22 @@ import "./mockup-convergence-l2.css";
 import "./p4-map-shell.css";
 import "./market-convergence-correction.css";
 import "./p0-polish.css";
+import "./premium-lot4.css";
+import "./premium-lot5.css";
+import "./premium-lot6.css";
+import "./premium-lot7.css";
+import "./premium-lot8.css";
+import "./target-alignment.css";
+import "./clinical-final.css";
+import "./clinical-recovery.css";
+import "./clinical-sheet-guard.css";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Carte immobilière du Maroc — Villes et quartiers | AkarFinder",
+  title: "Vivre ici au Maroc — Villes, quartiers et vie locale | AkarFinder",
   description:
-    "Explorez le Maroc par ville puis quartier. Les contours publiés sont des repères AkarFinder sourcés, sans prétention de frontière administrative officielle.",
+    "Explorez où vivre au Maroc : villes, quartiers, repères de marché et vie locale, puis accédez aux biens disponibles sans fausse précision géographique.",
   alternates: { canonical: "/map" },
 };
 
@@ -22,12 +31,19 @@ type MapPageProps = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
+function firstParam(value: string | string[] | undefined): string {
+  return Array.isArray(value) ? value[0] ?? "" : value ?? "";
+}
+
 export default async function MapPage({ searchParams }: MapPageProps) {
   const params = searchParams ? await searchParams : {};
   const initialState = parseMapNavigationState(params);
+  const hasNeighborhoodSelection = Boolean(
+    firstParam(params.city).trim() && firstParam(params.district).trim(),
+  );
 
   return (
-    <main className="flex min-h-[100svh] flex-col bg-[#F8FAFC] text-[#0B1F3A]">
+    <main className="flex min-h-[100svh] flex-col bg-[#F8FAFC] text-[#0B1F3A]" data-vivre-ici-page>
       <SiteHeader searchMode fluid />
       <div className="flex-1" data-p4-map-layout>
         <div data-p4-map-canvas>
@@ -35,6 +51,25 @@ export default async function MapPage({ searchParams }: MapPageProps) {
         </div>
         <P4MapDecisionRail />
       </div>
+      {!hasNeighborhoodSelection ? (
+        <section className="vivre-ici-target-outro" aria-label="Découvrir les quartiers autrement">
+          <div>
+            <strong>Découvrez les quartiers autrement</strong>
+            <span>Explorez, comparez, vivez mieux avec AkarFinder.</span>
+          </div>
+          <p>Des lieux. Des vies. Des projets.</p>
+        </section>
+      ) : null}
+      {hasNeighborhoodSelection ? (
+        <style>{`
+          [data-vivre-ici-page] .maplibre-spike-shell {
+            grid-template-rows: minmax(0, 1fr) !important;
+          }
+          [data-vivre-ici-page] .maplibre-spike-outro {
+            display: none !important;
+          }
+        `}</style>
+      ) : null}
       <div className="l2-secondary-footer">
         <SiteFooter />
       </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { MapPin, Search, X } from "lucide-react";
+import { Layers3, MapPin, Search, ShieldCheck, Trees, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Map as MapLibreMap, MapMouseEvent } from "maplibre-gl";
 
@@ -230,7 +230,7 @@ export function NationalNeighborhoodOverlay({
 
   return (
     <div className="pointer-events-none absolute inset-0 z-20" data-akarfinder-national-neighborhood-overlay data-city={citySlug}>
-      <div className="pointer-events-auto absolute left-3 right-3 top-[132px] lg:left-auto lg:right-4 lg:top-4 lg:w-[340px]">
+      <div className="pointer-events-auto absolute left-3 right-3 top-[172px] lg:left-auto lg:right-4 lg:top-4 lg:w-[340px]">
         <div className="relative rounded-[18px] border border-white/80 bg-white/95 p-2.5 shadow-[0_14px_38px_rgba(15,35,66,0.14)] backdrop-blur-xl dark:border-white/10 dark:bg-[#0A1A2F]/95">
           <label className="sr-only" htmlFor={`neighborhood-search-${citySlug}`}>Rechercher un quartier à {cityName}</label>
           <div className="flex items-center gap-2">
@@ -270,17 +270,42 @@ export function NationalNeighborhoodOverlay({
 
       {selected ? (
         <aside
-          className="pointer-events-auto absolute inset-x-3 bottom-[110px] rounded-[22px] border border-white/85 bg-white/96 p-3.5 shadow-[0_18px_48px_rgba(15,35,66,0.18)] backdrop-blur-xl dark:border-white/10 dark:bg-[#0A1A2F]/96 sm:inset-x-auto sm:bottom-4 sm:left-4 sm:w-[350px]"
+          className="pointer-events-auto absolute inset-x-3 bottom-[220px] rounded-[22px] border border-white/85 bg-white/96 p-3.5 shadow-[0_18px_48px_rgba(15,35,66,0.18)] backdrop-blur-xl dark:border-white/10 dark:bg-[#0A1A2F]/96 sm:inset-x-auto sm:bottom-[200px] sm:left-4 sm:w-[350px] lg:bottom-4"
           data-akarfinder-neighborhood-preview={selected.slug}
           aria-label={`Quartier sélectionné ${selected.name}`}
         >
-          <p className="flex items-center gap-1.5 text-[9px] font-extrabold uppercase tracking-[0.14em] text-brand-primary"><MapPin size={11} aria-hidden="true" />Quartier / repère</p>
-          <h2 className="mt-1 text-[20px] font-extrabold tracking-[-0.03em] text-foreground">{selected.name}</h2>
+          <p className="flex items-center gap-1.5 text-[9px] font-extrabold uppercase tracking-[0.14em] text-brand-primary"><MapPin size={11} aria-hidden="true" />Vivre ici · quartier</p>
+          <h2 className="mt-1 text-[22px] font-extrabold tracking-[-0.035em] text-foreground">Vivre à {selected.name}</h2>
           <p className="mt-1 text-[10.5px] font-semibold leading-4 text-muted-foreground">
-            {selected.center ? "Repère cartographique sourcé" : "Repère cartographique indisponible"} · aucun contour de quartier publié
+            {selected.center ? "Repère cartographique sourcé." : "Repère cartographique indisponible."} Aucun contour de quartier n’est publié pour cette vue.
           </p>
+
+          <nav className="mt-3 grid grid-cols-3 border-b border-border text-center text-[10px] font-extrabold text-muted-foreground" aria-label={`Contexte de ${selected.name}`}>
+            <span className="border-b-2 border-brand-primary px-2 pb-2 text-brand-primary">Aperçu</span>
+            <span className="px-2 pb-2">Vie locale</span>
+            <Link href={searchHref(cityName, selected.name)} className="px-2 pb-2">Biens</Link>
+          </nav>
+
+          <div className="mt-3 grid grid-cols-3 gap-2" data-vivre-ici-neighborhood-truth-grid>
+            <div className="rounded-[14px] border border-border bg-surface-subtle p-2.5 text-center">
+              <Layers3 size={16} className="mx-auto text-brand-primary" aria-hidden="true" />
+              <strong className="mt-1 block text-[9.5px] text-foreground">Repère</strong>
+              <span className="block text-[8px] font-semibold text-muted-foreground">{selected.center ? "Sourcé" : "Indisponible"}</span>
+            </div>
+            <div className="rounded-[14px] border border-border bg-surface-subtle p-2.5 text-center">
+              <Trees size={16} className="mx-auto text-emerald-600" aria-hidden="true" />
+              <strong className="mt-1 block text-[9.5px] text-foreground">Vie locale</strong>
+              <span className="block text-[8px] font-semibold text-muted-foreground">Via les filtres</span>
+            </div>
+            <div className="rounded-[14px] border border-border bg-surface-subtle p-2.5 text-center">
+              <ShieldCheck size={16} className="mx-auto text-brand-primary" aria-hidden="true" />
+              <strong className="mt-1 block text-[9.5px] text-foreground">Biens</strong>
+              <span className="block text-[8px] font-semibold text-muted-foreground">Pin exact requis</span>
+            </div>
+          </div>
+
           <Link href={searchHref(cityName, selected.name)} className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-brand-primary px-4 text-[11.5px] font-extrabold text-white shadow-accent">
-            Rechercher à {selected.name}
+            Voir les biens à {selected.name}
           </Link>
         </aside>
       ) : null}
