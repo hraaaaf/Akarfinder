@@ -1,316 +1,61 @@
 {
   "schema_version": 1,
-  "status": "AUDIT_IN_PROGRESS",
+  "status": "MAJOR_PUBLIC_SURFACES_VERIFIED",
   "updated_at": "2026-09-12",
   "source_of_truth": "docs/AKARFINDER_PRODUCT_CONSTITUTION_CANONICAL.md",
   "routes": [
-    {
-      "route": "/",
-      "role": "home_engine_entry",
-      "tier": "PRIMARY",
-      "status": "ACTIVE",
-      "decision": "KEEP",
-      "notes": "Homepage entry point. Exact H1 positioning is L0 LOCKED."
-    },
-    {
-      "route": "/search",
-      "role": "search_results_engine",
-      "tier": "CORE",
-      "status": "ACTIVE",
-      "decision": "KEEP",
-      "notes": "Single results engine and filtering surface."
-    },
-    {
-      "route": "/listings/[id]",
-      "role": "property_detail",
-      "tier": "CORE_DETAIL",
-      "status": "ACTIVE",
-      "decision": "KEEP",
-      "notes": "Internal detail is shown only when source-access rules permit it; otherwise external-source listings redirect or fail closed."
-    },
-    {
-      "route": "/acheter",
-      "role": "buy_intent_hub",
-      "tier": "PRIMARY",
-      "status": "ACTIVE",
-      "decision": "KEEP",
-      "notes": "Intent hub; filtered searches redirect into /search."
-    },
-    {
-      "route": "/louer",
-      "role": "rent_intent_hub",
-      "tier": "PRIMARY",
-      "status": "ACTIVE",
-      "decision": "KEEP",
-      "notes": "Intent hub; property type and budget searches redirect into /search with transaction_type=rent."
-    },
-    {
-      "route": "/neuf",
-      "role": "new_property_hub",
-      "tier": "PRIMARY",
-      "status": "ACTIVE",
-      "decision": "KEEP",
-      "notes": "Canonical new-build search surface; currently noindex pending publication gates."
-    },
-    {
-      "route": "/map",
-      "role": "living_here_geo_exploration",
-      "tier": "PRIMARY_CANDIDATE",
-      "status": "ACTIVE",
-      "decision": "KEEP",
-      "notes": "Vivre ici / MapLibre differentiated geographic intelligence surface."
-    },
-    {
-      "route": "/vendre",
-      "role": "seller_journey",
-      "tier": "PRIMARY_CANDIDATE",
-      "status": "ACTIVE",
-      "decision": "KEEP",
-      "notes": "Seller hub covering publish, indicative estimate and professional accompaniment from a shared property dossier."
-    },
-    {
-      "route": "/pro",
-      "role": "professional_hub",
-      "tier": "PRIMARY_CANDIDATE",
-      "status": "ACTIVE",
-      "decision": "KEEP",
-      "notes": "AkarFinder Pro hub for agencies and promoters."
-    },
-    {
-      "route": "/pro/agences",
-      "role": "professional_agency_audience",
-      "tier": "SECONDARY",
-      "status": "ACTIVE",
-      "decision": "KEEP_UNDER_PRO",
-      "notes": "Agency-specific ProfessionalAudiencePage."
-    },
-    {
-      "route": "/promoteurs",
-      "role": "professional_promoter_audience",
-      "tier": "SECONDARY",
-      "status": "ACTIVE",
-      "decision": "REVIEW_URL_CONSOLIDATION",
-      "notes": "Promoter-specific ProfessionalAudiencePage. Functionally belongs to Pro; current URL is top-level and sitemap-listed."
-    },
-    {
-      "route": "/professionnels/[slug]",
-      "role": "public_professional_profile_detail",
-      "tier": "DETAIL",
-      "status": "ACTIVE",
-      "decision": "KEEP_DETAIL_ROUTE",
-      "notes": "Not a duplicate hub. Dynamic public professional profile detail route; /professionnels has no index page."
-    },
-    {
-      "route": "/projets/[slug]",
-      "role": "new_project_detail",
-      "tier": "DETAIL",
-      "status": "ACTIVE",
-      "decision": "KEEP_DETAIL_REVIEW_NAMESPACE",
-      "notes": "Dynamic new-project detail route; /projets has no index page. Product ownership belongs with Neuf, URL namespace review remains."
-    },
-    {
-      "route": "/immobilier",
-      "role": "geo_seo_root",
-      "tier": "SEO_GEO",
-      "status": "ACTIVE",
-      "decision": "KEEP",
-      "notes": "Canonical geographic SEO root."
-    },
-    {
-      "route": "/immobilier/[city]/[district]",
-      "role": "canonical_neighborhood_geo_page",
-      "tier": "SEO_GEO",
-      "status": "ACTIVE",
-      "decision": "KEEP_CANONICAL",
-      "notes": "Canonical neighborhood context + market + listings surface with SEO indexability gates."
-    },
-    {
-      "route": "/quartiers",
-      "role": "legacy_neighborhood_index",
-      "tier": "LEGACY",
-      "status": "REDIRECT",
-      "decision": "KEEP_REDIRECT_ONLY_OR_REMOVE_AFTER_LINK_AUDIT",
-      "redirect_target": "/immobilier",
-      "notes": "Permanent redirect already in code."
-    },
-    {
-      "route": "/quartiers/[citySlug]/[neighborhoodSlug]",
-      "role": "legacy_parallel_neighborhood_detail",
-      "tier": "LEGACY_DUPLICATE",
-      "status": "ACTIVE",
-      "decision": "CONSOLIDATE_TO_CANONICAL_GEO",
-      "notes": "Still renders a standalone neighborhood intelligence page while /immobilier/[city]/[district] is canonical. Requires link/SEO/backward-compatibility audit before redirect/removal."
-    },
-    {
-      "route": "/mon-projet",
-      "role": "user_project_journey",
-      "tier": "USER",
-      "status": "ACTIVE",
-      "decision": "KEEP_CANONICAL",
-      "notes": "Single canonical project-building journey."
-    },
-    {
-      "route": "/favorites",
-      "role": "saved_properties",
-      "tier": "USER_UTILITY",
-      "status": "ACTIVE",
-      "decision": "KEEP_SECONDARY",
-      "notes": "User utility surfaced from search/header; not a primary information-architecture pillar."
-    },
-    {
-      "route": "/compare",
-      "role": "property_comparison",
-      "tier": "USER_UTILITY",
-      "status": "ACTIVE",
-      "decision": "KEEP_SECONDARY",
-      "notes": "Decision utility; should remain contextual to search/favorites rather than primary navigation."
-    },
-    {
-      "route": "/credit",
-      "role": "indicative_financing_simulator",
-      "tier": "DECISION_TOOL",
-      "status": "ACTIVE",
-      "decision": "KEEP_SECONDARY",
-      "notes": "Explicitly an indicative, non-contractual financing tool."
-    },
-    {
-      "route": "/investir",
-      "role": "market_signal_explainer",
-      "tier": "DECISION_CONTENT",
-      "status": "ACTIVE",
-      "decision": "KEEP_SECONDARY_REVIEW_OVERLAP",
-      "notes": "Primarily routes users toward search, compare and map market signals; review future overlap with Vivre ici / market intelligence."
-    },
-    {
-      "route": "/mre",
-      "role": "remote_buyer_intent",
-      "tier": "AUDIENCE_JOURNEY",
-      "status": "ACTIVE",
-      "decision": "KEEP_SECONDARY_REVIEW_ENTRYPOINTS",
-      "notes": "MRE remote-buyer journey. Currently still links to legacy /onboarding for dossier creation; canonical target should be reviewed toward /mon-projet."
-    },
-    {
-      "route": "/alerts",
-      "role": "future_alerts_placeholder",
-      "tier": "USER_UTILITY",
-      "status": "NOT_ACTIVE_FEATURE",
-      "decision": "DO_NOT_PROMOTE_PRIMARY",
-      "notes": "Page explicitly states automatic notifications are not yet activated; currently routes users to Mon Projet and Search."
-    },
-    {
-      "route": "/accompagnement",
-      "role": "human_support_lead_form",
-      "tier": "SUPPORT",
-      "status": "ACTIVE",
-      "decision": "KEEP_SECONDARY",
-      "notes": "Dedicated callback/support form explicitly separate from Mon Projet; noindex."
-    },
-    {
-      "route": "/comment-ca-marche",
-      "role": "product_explainer",
-      "tier": "INSTITUTIONAL",
-      "status": "ACTIVE",
-      "decision": "KEEP_FOOTER_OR_HELP",
-      "notes": "Explains search → compare → contact source in three steps."
-    },
-    {
-      "route": "/a-propos",
-      "role": "about_product",
-      "tier": "INSTITUTIONAL",
-      "status": "ACTIVE",
-      "decision": "KEEP_FOOTER",
-      "notes": "Explains AkarFinder as a Moroccan real-estate search engine and source-visible comparison product."
-    },
-    {
-      "route": "/faq",
-      "role": "help_faq",
-      "tier": "INSTITUTIONAL",
-      "status": "ACTIVE",
-      "decision": "KEEP_HELP_FOOTER",
-      "notes": "Source/contact/completeness/removal FAQs."
-    },
-    {
-      "route": "/contact",
-      "role": "contact_hub",
-      "tier": "INSTITUTIONAL",
-      "status": "ACTIVE",
-      "decision": "KEEP_FOOTER",
-      "notes": "General contact plus route to removal/correction procedure."
-    },
-    {
-      "route": "/demande-retrait",
-      "role": "rights_removal_request",
-      "tier": "TRUST_LEGAL",
-      "status": "ACTIVE",
-      "decision": "KEEP_FOOTER",
-      "notes": "Dedicated correction/removal and personal-data rights procedure."
-    },
-    {
-      "route": "/conditions-utilisation",
-      "role": "terms_of_use",
-      "tier": "LEGAL",
-      "status": "ACTIVE",
-      "decision": "KEEP_FOOTER",
-      "notes": "Defines AkarFinder as a search engine, not agency/intermediary, and explains source categories and limitations."
-    },
-    {
-      "route": "/politique-confidentialite",
-      "role": "privacy_policy",
-      "tier": "LEGAL",
-      "status": "ACTIVE",
-      "decision": "KEEP_FOOTER",
-      "notes": "Privacy, submitted data, cookies/audience measurement and data rights."
-    },
-    {
-      "route": "/compagnon",
-      "role": "legacy_project_alias",
-      "tier": "LEGACY",
-      "status": "REDIRECT",
-      "decision": "KEEP_REDIRECT_ONLY_OR_REMOVE_AFTER_LINK_AUDIT",
-      "redirect_target": "/mon-projet",
-      "notes": "Permanent redirect already in code."
-    },
-    {
-      "route": "/profil-recherche",
-      "role": "legacy_search_profile_alias",
-      "tier": "LEGACY",
-      "status": "REDIRECT",
-      "decision": "KEEP_REDIRECT_ONLY_OR_REMOVE_AFTER_LINK_AUDIT",
-      "redirect_target": "/mon-projet",
-      "notes": "Code explicitly states Mon Projet is the single canonical destination and product name."
-    },
-    {
-      "route": "/onboarding",
-      "role": "legacy_journey_router",
-      "tier": "LEGACY",
-      "status": "REDIRECT_ROUTER",
-      "decision": "KEEP_COMPATIBILITY_ROUTER_REVIEW_CALLERS",
-      "redirect_target": "/mon-projet or /accompagnement?intent=neuf",
-      "notes": "Legacy flow router preserving listing/intent parameters."
-    },
-    {
-      "route": "/demo/*",
-      "role": "design_and_product_demo_harness",
-      "tier": "INTERNAL_HARNESS",
-      "status": "NON_PRODUCT",
-      "decision": "EXCLUDE_FROM_PRODUCT_IA",
-      "notes": "Demo namespace contains multiple design/product harnesses and canonical targets; it must never be treated as public product navigation."
-    },
-    {
-      "route": "/visual-qa/*",
-      "role": "visual_regression_harness",
-      "tier": "INTERNAL_HARNESS",
-      "status": "NON_PRODUCT",
-      "decision": "EXCLUDE_FROM_PRODUCT_IA",
-      "notes": "Visual QA namespace is test infrastructure, not product information architecture."
-    }
+    {"route":"/","role":"home_engine_entry","tier":"PRIMARY","status":"ACTIVE","decision":"KEEP","notes":"Homepage entry point. Exact H1 positioning is L0 LOCKED."},
+    {"route":"/search","role":"search_results_engine","tier":"CORE","status":"ACTIVE","decision":"KEEP","notes":"Single results engine and filtering surface."},
+    {"route":"/listings/[id]","role":"property_detail","tier":"CORE_DETAIL","status":"ACTIVE","decision":"KEEP","notes":"Internal detail is shown only when source-access rules permit it; otherwise external-source listings redirect or fail closed."},
+    {"route":"/acheter","role":"buy_intent_hub","tier":"PRIMARY","status":"ACTIVE","decision":"KEEP","notes":"Intent hub; filtered searches redirect into /search."},
+    {"route":"/louer","role":"rent_intent_hub","tier":"PRIMARY","status":"ACTIVE","decision":"KEEP","notes":"Intent hub; property type and budget searches redirect into /search with transaction_type=rent."},
+    {"route":"/neuf","role":"new_property_hub","tier":"PRIMARY","status":"ACTIVE","decision":"KEEP","notes":"Canonical new-build search surface; currently noindex pending publication gates."},
+    {"route":"/map","role":"living_here_geo_exploration","tier":"PRIMARY_CANDIDATE","status":"ACTIVE","decision":"KEEP","notes":"Vivre ici / MapLibre differentiated geographic intelligence surface."},
+    {"route":"/vendre","role":"seller_journey","tier":"PRIMARY_CANDIDATE","status":"ACTIVE","decision":"KEEP","notes":"Seller hub covering publish, indicative estimate and professional accompaniment from a shared property dossier."},
+    {"route":"/pro","role":"professional_hub","tier":"PRIMARY_CANDIDATE","status":"ACTIVE","decision":"KEEP","notes":"AkarFinder Pro hub for agencies and promoters."},
+    {"route":"/pro/agences","role":"professional_agency_audience","tier":"SECONDARY","status":"ACTIVE","decision":"KEEP_UNDER_PRO","notes":"Agency-specific ProfessionalAudiencePage."},
+    {"route":"/promoteurs","role":"professional_promoter_audience","tier":"SECONDARY","status":"ACTIVE","decision":"REVIEW_URL_CONSOLIDATION","notes":"Promoter-specific ProfessionalAudiencePage. Functionally belongs to Pro; current URL is top-level and sitemap-listed."},
+    {"route":"/professionnels/[slug]","role":"public_professional_profile_detail","tier":"DETAIL","status":"ACTIVE","decision":"KEEP_DETAIL_ROUTE","notes":"Not a duplicate hub. Dynamic public professional profile detail route; /professionnels has no index page."},
+    {"route":"/projets/[slug]","role":"new_project_detail","tier":"DETAIL","status":"ACTIVE","decision":"KEEP_DETAIL_REVIEW_NAMESPACE","notes":"Dynamic new-project detail route; /projets has no index page. Product ownership belongs with Neuf, URL namespace review remains."},
+    {"route":"/pro/analytics","role":"internal_conversion_analytics","tier":"INTERNAL","status":"RESTRICTED_NOINDEX","decision":"EXCLUDE_FROM_PUBLIC_IA","notes":"Explicit internal analytics surface guarded by LEADS_ADMIN_TOKEN query access."},
+    {"route":"/pro/alerts","role":"internal_alert_inbox","tier":"INTERNAL","status":"RESTRICTED_NOINDEX","decision":"EXCLUDE_FROM_PUBLIC_IA","notes":"Internal MVP alert inbox guarded by LEADS_ADMIN_TOKEN; no public navigation role."},
+    {"route":"/pro/leads","role":"retired_internal_leads_alias","tier":"LEGACY_INTERNAL","status":"REDIRECT","decision":"KEEP_REDIRECT_ONLY","redirect_target":"/pro#contact","notes":"Legacy token-based lead inbox retired; redirect already implemented."},
+    {"route":"/immobilier","role":"geo_seo_root","tier":"SEO_GEO","status":"ACTIVE","decision":"KEEP","notes":"Canonical geographic SEO root."},
+    {"route":"/immobilier/[city]","role":"canonical_city_geo_page","tier":"SEO_GEO","status":"ACTIVE","decision":"KEEP_CANONICAL","notes":"City context, neighborhood exploration, market signals and search entry with live SEO indexability gate."},
+    {"route":"/immobilier/[city]/acheter","role":"city_buy_seo_intent","tier":"SEO_GEO_INTENT","status":"ACTIVE","decision":"KEEP","notes":"SEO intent surface rendered by the shared city intent route implementation."},
+    {"route":"/immobilier/[city]/louer","role":"city_rent_seo_intent","tier":"SEO_GEO_INTENT","status":"ACTIVE","decision":"KEEP","notes":"SEO intent surface rendered by the shared city intent route implementation."},
+    {"route":"/immobilier/[city]/[district]","role":"canonical_neighborhood_geo_page","tier":"SEO_GEO","status":"ACTIVE","decision":"KEEP_CANONICAL","notes":"Canonical neighborhood context + market + listings surface with SEO indexability gates."},
+    {"route":"/quartiers","role":"legacy_neighborhood_index","tier":"LEGACY","status":"REDIRECT","decision":"KEEP_REDIRECT_ONLY_OR_REMOVE_AFTER_LINK_AUDIT","redirect_target":"/immobilier","notes":"Permanent redirect already in code."},
+    {"route":"/quartiers/[citySlug]/[neighborhoodSlug]","role":"legacy_parallel_neighborhood_detail","tier":"LEGACY_DUPLICATE","status":"ACTIVE","decision":"CONSOLIDATE_TO_CANONICAL_GEO","notes":"Still renders a standalone neighborhood intelligence page while /immobilier/[city]/[district] is canonical. Requires link/SEO/backward-compatibility audit before redirect/removal."},
+    {"route":"/mon-projet","role":"user_project_journey","tier":"USER","status":"ACTIVE","decision":"KEEP_CANONICAL","notes":"Single canonical project-building journey."},
+    {"route":"/favorites","role":"saved_properties","tier":"USER_UTILITY","status":"ACTIVE","decision":"KEEP_SECONDARY","notes":"User utility surfaced from search/header; not a primary information-architecture pillar."},
+    {"route":"/compare","role":"property_comparison","tier":"USER_UTILITY","status":"ACTIVE","decision":"KEEP_SECONDARY","notes":"Decision utility; should remain contextual to search/favorites rather than primary navigation."},
+    {"route":"/credit","role":"indicative_financing_simulator","tier":"DECISION_TOOL","status":"ACTIVE","decision":"KEEP_SECONDARY","notes":"Explicitly an indicative, non-contractual financing tool."},
+    {"route":"/investir","role":"market_signal_explainer","tier":"DECISION_CONTENT","status":"ACTIVE","decision":"KEEP_SECONDARY_REVIEW_OVERLAP","notes":"Primarily routes users toward search, compare and map market signals; review future overlap with Vivre ici / market intelligence."},
+    {"route":"/mre","role":"remote_buyer_intent","tier":"AUDIENCE_JOURNEY","status":"ACTIVE","decision":"KEEP_SECONDARY_REVIEW_ENTRYPOINTS","notes":"MRE remote-buyer journey. Currently still links to legacy /onboarding for dossier creation; canonical target should be reviewed toward /mon-projet."},
+    {"route":"/alerts","role":"future_alerts_placeholder","tier":"USER_UTILITY","status":"NOT_ACTIVE_FEATURE","decision":"DO_NOT_PROMOTE_PRIMARY","notes":"Page explicitly states automatic notifications are not yet activated; currently routes users to Mon Projet and Search."},
+    {"route":"/accompagnement","role":"human_support_lead_form","tier":"SUPPORT","status":"ACTIVE","decision":"KEEP_SECONDARY","notes":"Dedicated callback/support form explicitly separate from Mon Projet; noindex."},
+    {"route":"/comment-ca-marche","role":"product_explainer","tier":"INSTITUTIONAL","status":"ACTIVE","decision":"KEEP_FOOTER_OR_HELP","notes":"Explains search → compare → contact source in three steps."},
+    {"route":"/a-propos","role":"about_product","tier":"INSTITUTIONAL","status":"ACTIVE","decision":"KEEP_FOOTER","notes":"Explains AkarFinder as a Moroccan real-estate search engine and source-visible comparison product."},
+    {"route":"/faq","role":"help_faq","tier":"INSTITUTIONAL","status":"ACTIVE","decision":"KEEP_HELP_FOOTER","notes":"Source/contact/completeness/removal FAQs."},
+    {"route":"/contact","role":"contact_hub","tier":"INSTITUTIONAL","status":"ACTIVE","decision":"KEEP_FOOTER","notes":"General contact plus route to removal/correction procedure."},
+    {"route":"/demande-retrait","role":"rights_removal_request","tier":"TRUST_LEGAL","status":"ACTIVE","decision":"KEEP_FOOTER","notes":"Dedicated correction/removal and personal-data rights procedure."},
+    {"route":"/conditions-utilisation","role":"terms_of_use","tier":"LEGAL","status":"ACTIVE","decision":"KEEP_FOOTER","notes":"Defines AkarFinder as a search engine, not agency/intermediary, and explains source categories and limitations."},
+    {"route":"/politique-confidentialite","role":"privacy_policy","tier":"LEGAL","status":"ACTIVE","decision":"KEEP_FOOTER","notes":"Privacy, submitted data, cookies/audience measurement and data rights."},
+    {"route":"/compagnon","role":"legacy_project_alias","tier":"LEGACY","status":"REDIRECT","decision":"KEEP_REDIRECT_ONLY_OR_REMOVE_AFTER_LINK_AUDIT","redirect_target":"/mon-projet","notes":"Permanent redirect already in code."},
+    {"route":"/profil-recherche","role":"legacy_search_profile_alias","tier":"LEGACY","status":"REDIRECT","decision":"KEEP_REDIRECT_ONLY_OR_REMOVE_AFTER_LINK_AUDIT","redirect_target":"/mon-projet","notes":"Code explicitly states Mon Projet is the single canonical destination and product name."},
+    {"route":"/onboarding","role":"legacy_journey_router","tier":"LEGACY","status":"REDIRECT_ROUTER","decision":"KEEP_COMPATIBILITY_ROUTER_REVIEW_CALLERS","redirect_target":"/mon-projet or /accompagnement?intent=neuf","notes":"Legacy flow router preserving listing/intent parameters."},
+    {"route":"/demo/*","role":"design_and_product_demo_harness","tier":"INTERNAL_HARNESS","status":"NON_PRODUCT","decision":"EXCLUDE_FROM_PRODUCT_IA","notes":"Demo namespace contains multiple design/product harnesses and canonical targets; it must never be treated as public product navigation."},
+    {"route":"/visual-qa/*","role":"visual_regression_harness","tier":"INTERNAL_HARNESS","status":"NON_PRODUCT","decision":"EXCLUDE_FROM_PRODUCT_IA","notes":"Visual QA namespace is test infrastructure, not product information architecture."}
   ],
   "confirmed_findings": [
     "Search and /listings/[id] form the core results/detail engine, with source-access fail-closed behavior on listing detail.",
     "Buy and Rent are both intent hubs that route filtered searches into the single /search engine.",
     "Vendre is a coherent seller hub combining publish, indicative estimate and professional accompaniment around one property dossier.",
+    "City and city-intent routes under /immobilier are SEO/context surfaces feeding Search, not independent products.",
     "The public professional profile namespace is a detail namespace, not a duplicate professional hub.",
     "The project namespace is a detail namespace, not a duplicate Neuf index.",
+    "Pro analytics and alert inboxes are internal restricted surfaces and /pro/leads is already a retired redirect.",
     "Compagnon and profil-recherche are already legacy aliases of Mon Projet.",
     "Quartiers has a legacy root redirect but still exposes parallel neighborhood detail pages that overlap the canonical immobilier district surface.",
     "Promoteurs is functionally a Pro audience page but still has a top-level canonical URL.",
