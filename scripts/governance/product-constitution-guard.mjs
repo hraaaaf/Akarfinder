@@ -81,17 +81,21 @@ export function collectInvariantViolations(manifest, candidateRoot) {
   return violations;
 }
 
-export function hasExactHeadOwnerApproval(reviews, owner, headSha, requiredState = "APPROVED") {
-  return reviews.some((review) =>
-    review?.user?.login === owner &&
-    review?.state === requiredState &&
-    review?.commit_id === headSha,
-  );
-}
-
 export function overrideDocumentationIsComplete(changedFiles, manifest) {
   const changed = new Set(changedFiles);
   return changed.has(manifest.canonical_file) && changed.has(manifest.manifest_file);
+}
+
+function printViolations(violations) {
+  for (const violation of violations) {
+    console.error(`- [${violation.standard}] ${violation.file}: ${violation.reason}`);
+  }
+}
+
+function writeGithubOutput(outputPath, values) {
+  if (!outputPath) return;
+  const lines = Object.entries(values).map(([key, value]) => `${key}=${String(value)}`);
+  fs.appendFileSync(outputPath, `${lines.join("\n")}\n`, "utf8");
 }
 
 async function githubJson(url, token) {
@@ -121,62 +125,84 @@ async function fetchAllPages(url, token) {
   return all;
 }
 
-async function validateOwnerOverride({ manifest, event, token, repository }) {
-  const pr = event.pull_request;
-  if (!pr) {
-    return { ok: false, reasons: ["event has no pull_request payload"] };
+async function validateOverrideDocumentation({ manifest, token, repository, prNumber, headSha }) {
+  const prUrl = `https://api.github.com/repos/${repository}/pulls/${prNumber}`;
+  const pr = await githubJson(prUrl, token);
+  const currentHeadSha = pr?.head?.sha;
+
+  if (!currentHeadSha || currentHeadSha !== headSha) {
+    return {
+      ok: false,
+      reasons: [`PR HEAD moved: expected ${headSha}, current ${currentHeadSha ?? "missing"}`],
+    };
   }
 
-  const headSha = pr.head?.sha;
-  const prNumber = pr.number;
-  if (!headSha || !prNumber) {
-    return { ok: false, reasons: ["pull request head SHA or number missing"] };
-  }
-
-  const baseUrl = `https://api.github.com/repos/${repository}/pulls/${prNumber}`;
-  const [files, reviews] = await Promise.all([
-    fetchAllPages(`${baseUrl}/files`, token),
-    fetchAllPages(`${baseUrl}/reviews`, token),
-  ]);
-
+  const files = await fetchAllPages(`${prUrl}/files`, token);
   const changedFiles = files.map((file) => file.filename);
-  const requiredState = manifest.owner_override?.required_review_state ?? "APPROVED";
-  const exactApproval = hasExactHeadOwnerApproval(
-    reviews,
-    manifest.standard_owner,
-    headSha,
-    requiredState,
-  );
-
   const docsComplete = overrideDocumentationIsComplete(changedFiles, manifest);
-  const reasons = [];
-  if (!exactApproval) {
-    reasons.push(
-      `missing ${requiredState} review by ${manifest.standard_owner} on exact HEAD ${headSha}`,
-    );
-  }
-  if (!docsComplete) {
-    reasons.push(
-      `standard override must update both ${manifest.canonical_file} and ${manifest.manifest_file}`,
-    );
-  }
 
   return {
-    ok: exactApproval && docsComplete,
-    reasons,
-    headSha,
+    ok: docsComplete,
+    reasons: docsComplete
+      ? []
+      : [`standard override must update both ${manifest.canonical_file} and ${manifest.manifest_file}`],
     changedFiles,
   };
 }
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
+  const mode = args.get("mode") ?? "enforce";
   const baseRoot = path.resolve(args.get("base-root") ?? ".");
-  const candidateRoot = path.resolve(args.get("candidate-root") ?? ".");
-  const eventPath = args.get("event");
-
   const manifest = loadManifest(baseRoot);
+
+  if (mode === "validate-override") {
+    const token = process.env.GITHUB_TOKEN;
+    const repository = process.env.GITHUB_REPOSITORY;
+    const prNumber = Number(args.get("pr-number"));
+    const headSha = args.get("head-sha");
+
+    if (!token || !repository || !Number.isInteger(prNumber) || prNumber < 1 || !headSha) {
+      console.error("FAIL: GITHUB_TOKEN, GITHUB_REPOSITORY, --pr-number and --head-sha are required.");
+      process.exitCode = 1;
+      return;
+    }
+
+    const result = await validateOverrideDocumentation({ manifest, token, repository, prNumber, headSha });
+    if (!result.ok) {
+      for (const reason of result.reasons) console.error(`- ${reason}`);
+      console.error("FAIL: human approval was granted, but the L0 override documentation contract is incomplete or stale.");
+      process.exitCode = 1;
+      return;
+    }
+
+    console.log(`PASS override documentation: exact PR HEAD ${headSha}; canonical + manifest updated.`);
+    return;
+  }
+
+  const candidateRoot = path.resolve(args.get("candidate-root") ?? ".");
   const violations = collectInvariantViolations(manifest, candidateRoot);
+
+  if (mode === "detect") {
+    const drift = violations.length > 0;
+    if (drift) {
+      console.error("LOCKED STANDARD DRIFT DETECTED — explicit owner environment approval required:");
+      printViolations(violations);
+    } else {
+      console.log(`No L0 drift detected for product constitution ${manifest.constitution_version}.`);
+    }
+    writeGithubOutput(args.get("github-output"), {
+      drift: drift ? "true" : "false",
+      violation_count: violations.length,
+    });
+    return;
+  }
+
+  if (mode !== "enforce") {
+    console.error(`FAIL: unsupported mode ${mode}`);
+    process.exitCode = 1;
+    return;
+  }
 
   if (violations.length === 0) {
     console.log(`PASS product constitution ${manifest.constitution_version}: locked invariants preserved.`);
@@ -184,37 +210,9 @@ async function main() {
   }
 
   console.error("LOCKED STANDARD DRIFT DETECTED:");
-  for (const violation of violations) {
-    console.error(`- [${violation.standard}] ${violation.file}: ${violation.reason}`);
-  }
-
-  if (!eventPath) {
-    console.error("FAIL: owner override cannot be evaluated without a GitHub event payload.");
-    process.exitCode = 1;
-    return;
-  }
-
-  const token = process.env.GITHUB_TOKEN;
-  const repository = process.env.GITHUB_REPOSITORY;
-  if (!token || !repository) {
-    console.error("FAIL: GITHUB_TOKEN/GITHUB_REPOSITORY required for owner override validation.");
-    process.exitCode = 1;
-    return;
-  }
-
-  const event = readJson(path.resolve(eventPath));
-  const override = await validateOwnerOverride({ manifest, event, token, repository });
-
-  if (!override.ok) {
-    for (const reason of override.reasons) console.error(`- ${reason}`);
-    console.error("FAIL: locked standard change is not explicitly authorized.");
-    process.exitCode = 1;
-    return;
-  }
-
-  console.log(
-    `PASS WITH OWNER OVERRIDE: ${manifest.standard_owner} approved exact HEAD ${override.headSha}; canonical + manifest updated.`,
-  );
+  printViolations(violations);
+  console.error("FAIL: candidate changes a locked standard.");
+  process.exitCode = 1;
 }
 
 const invokedDirectly = process.argv[1] && path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url));
