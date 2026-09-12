@@ -1,0 +1,31 @@
+name: Product Constitution Self Check
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "docs/AKARFINDER_PRODUCT_CONSTITUTION_CANONICAL.md"
+      - "config/product-constitution.json"
+      - "scripts/governance/product-constitution-guard.mjs"
+      - "scripts/governance/product-constitution-guard.test.mjs"
+      - ".github/workflows/product-constitution-*.yml"
+      - "components/home/GoogleLikeHero.tsx"
+
+permissions:
+  contents: read
+
+jobs:
+  self-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout candidate
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Guard unit tests
+        run: node --test scripts/governance/product-constitution-guard.test.mjs
+      - name: Candidate invariant check
+        run: node scripts/governance/product-constitution-guard.mjs --base-root . --candidate-root .
