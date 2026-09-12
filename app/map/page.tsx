@@ -14,6 +14,7 @@ import "./premium-lot6.css";
 import "./premium-lot7.css";
 import "./premium-lot8.css";
 import "./target-alignment.css";
+import "./clinical-final.css";
 
 export const dynamic = "force-dynamic";
 
