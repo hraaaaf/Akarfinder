@@ -1,6 +1,6 @@
 # AKARFINDER — PRODUCT CONSTITUTION / CANONICAL
 
-**Version : 0.2 — 2026-09-12**  
+**Version : 0.3 — 2026-09-12**  
 **Statut : ACTIVE / EN CONSTRUCTION — aucun freeze global tant que les standards concernés ne sont pas explicitement approuvés par `hraaaaf`.**
 
 > Ce fichier est la source canonique pour l’architecture produit, les standards de pages et les règles anti-dérive d’AkarFinder. Il complète `docs/ROADMAP.md`, qui reste la source globale de vérité pour l’avancement data/produit.
@@ -16,7 +16,8 @@ Empêcher toute dérive silencieuse d’un standard produit déjà validé.
 - une architecture de pages explicite, versionnée et lisible humainement ;
 - des standards `LOCKED`, `FLEXIBLE` et `FREE` clairement séparés ;
 - aucun changement d’un standard `LOCKED` sans accord explicite de `hraaaaf` ;
-- tout accord porte sur le **HEAD exact** de la PR ;
+- toute décision explicitement validée par `hraaaaf` est promue en `L0 / LOCKED` sur le périmètre exact validé, sauf mention explicite contraire ;
+- tout accord de rupture L0 porte sur le **HEAD exact** de la PR ;
 - toute nouvelle modification après accord invalide automatiquement cet accord ;
 - la CI bloque les écarts mesurables au contrat ;
 - les changements UI respectent `BEFORE → Goal → référence/mockup → implémentation → AFTER mêmes viewports → comparaison/tests → score`.
@@ -62,9 +63,18 @@ Exemples :
 - navigation primaire ;
 - moteur cartographique retenu ;
 - standards visuels ou fonctionnels explicitement gelés ;
-- TARGETs visuels explicitement certifiés.
+- TARGETs visuels explicitement certifiés ;
+- toute décision explicitement validée par le propriétaire, sur son périmètre exact.
 
-**Règle :** aucune rupture sans accord explicite de `hraaaaf` sur le HEAD exact.
+### Règle de promotion automatique vers L0 — LOCKED
+
+Une décision devient `L0 / LOCKED` dès que `hraaaaf` la valide explicitement, sauf si la validation dit expressément qu’elle reste expérimentale, flexible ou temporaire.
+
+Le verrou porte uniquement sur le périmètre réellement validé. Exemple : valider un layout ne fige pas automatiquement chaque microcopy ; valider un H1 exact fige ce H1 exact ; valider un TARGET visuel fige les invariants nécessaires à sa reproduction.
+
+Conséquence : un futur agent, polish ou refactor ne peut pas rouvrir silencieusement une décision validée sous prétexte d’optimisation.
+
+**Règle :** aucune rupture L0 sans accord explicite de `hraaaaf` sur le HEAD exact.
 
 ### L1 — STANDARD PRODUIT / FLEXIBLE DANS L’ENVELOPPE
 
@@ -213,11 +223,11 @@ Pour une PR qui modifie un standard L0 :
 1. la PR doit déclarer quel standard change ;
 2. la CI doit détecter l’impact ;
 3. la PR reste bloquée tant que `hraaaaf` n’a pas explicitement approuvé ;
-4. l’approbation doit correspondre au **HEAD SHA exact** ;
-5. tout commit ultérieur rend l’approbation obsolète ;
+4. l’accord doit viser le **HEAD SHA exact** contrôlé par le workflow ;
+5. tout commit ultérieur crée un nouveau HEAD et impose une nouvelle approbation ;
 6. aucune checkbox ou texte ajouté par l’agent dans la PR ne vaut approbation propriétaire.
 
-### Implémentation CI
+### Implémentation CI cible
 
 - manifeste machine-readable versionné : `config/product-constitution.json` ;
 - inventaire architecture : `config/product-route-inventory.json` ;
@@ -225,13 +235,17 @@ Pour une PR qui modifie un standard L0 :
 - tests : `scripts/governance/product-constitution-guard.test.mjs` ;
 - self-check PR : `.github/workflows/product-constitution-self-check.yml` ;
 - gate autoritaire : `.github/workflows/product-constitution-gate.yml` ;
-- le gate autoritaire est conçu pour exécuter le garde depuis le code de confiance de `main` ;
+- le gate autoritaire exécute le garde depuis le code de confiance de `main` ;
 - la candidate est lue comme donnée uniquement, sans `npm install` ni exécution de son code ;
-- une rupture L0 exige une review GitHub `APPROVED` par `hraaaaf` au HEAD exact + mise à jour simultanée du canonique et du manifeste.
+- une rupture L0 doit mettre à jour simultanément le canonique et le manifeste ;
+- après détection d’une rupture L0 documentée, le job d’autorisation doit référencer l’Environment GitHub `product-standard-approval` ;
+- cet Environment doit avoir `hraaaaf` comme required reviewer ;
+- `Prevent self-review` doit rester désactivé afin que le propriétaire puisse approuver un run qu’il a lui-même déclenché ;
+- idéalement, le bypass administrateur doit être désactivé pour ce gate.
 
 ### Limite actuelle vérifiée
 
-Le workflow autoritaire n’est pas encore présent dans `main`; son comportement `pull_request_target` ne peut donc pas être certifié dans la PR qui l’introduit. La preuve négative/override doit être exécutée dans une PR contrôlée **après** intégration du gate dans `main`.
+Le workflow autoritaire n’est pas encore présent dans `main`; son comportement réel de blocage + Environment approval ne peut donc pas être certifié dans la PR qui l’introduit. La preuve négative/override doit être exécutée dans une PR contrôlée **après** intégration du gate dans `main` et configuration de l’Environment.
 
 ---
 
@@ -245,11 +259,14 @@ Le workflow autoritaire n’est pas encore présent dans `main`; son comportemen
 - [x] créer manifeste machine-readable ;
 - [x] créer guard local testable ;
 - [x] créer workflow CI anti-dérive ;
-- [x] créer tests négatifs H1 / moteur / exact-head / symlink ;
-- [x] self-check CI prouvé vert sur PR #1030 : run `34690296683`, HEAD `44462c74018acf180de8578c1b8526c2ddd760db` ;
+- [x] créer tests négatifs H1 / moteur / symlink/path escape ;
+- [x] inscrire la règle `validation explicite propriétaire → promotion automatique L0` ;
+- [x] self-check CI prouvé vert sur PR #1030 : run `34690444931`, HEAD `8c23973fd2765947dcd8035adcd084224423c384` ;
 - [ ] obtenir self-check vert sur le HEAD final de la PR après cette synchronisation canonique ;
-- [ ] prouver que la CI autoritaire bloque une rupture non approuvée après présence du gate sur `main` ;
-- [ ] prouver qu’un exact-head approval propriétaire débloque seulement le HEAD approuvé ;
+- [ ] configurer l’Environment `product-standard-approval` avec `hraaaaf` required reviewer — human/admin gate ;
+- [ ] prouver qu’une rupture L0 sans validation reste bloquée après présence du gate sur `main` ;
+- [ ] prouver que l’approbation Environment débloque uniquement le run/HEAD concerné ;
+- [ ] prouver qu’un nouveau commit après approbation exige une nouvelle approbation ;
 - [ ] protéger `main` avec le check requis — human/admin gate si nécessaire.
 
 ### P1 — HOME STANDARD V1
@@ -258,12 +275,14 @@ Le workflow autoritaire n’est pas encore présent dans `main`; son comportemen
 - [x] benchmark structurel international ;
 - [x] H1 déclaré LOCKED ;
 - [ ] capture BEFORE 390 / 768 / 1280 ;
+- [ ] benchmark premium ciblé avec références réelles ;
 - [ ] mockup/référence HOME candidate ;
 - [ ] comparaison et décision des sections ;
 - [ ] implémentation HOME ;
 - [ ] captures AFTER mêmes viewports ;
 - [ ] tests + score visuel ;
 - [ ] accord explicite propriétaire ;
+- [ ] promotion automatique des décisions validées en L0 ;
 - [ ] freeze HOME V1.
 
 ### P2 — INFORMATION ARCHITECTURE V1 — EN COURS
@@ -275,6 +294,7 @@ Le workflow autoritaire n’est pas encore présent dans `main`; son comportemen
 - [ ] décision finale sur `/quartiers/[...]/[...]`, `/promoteurs`, namespace `/projets/[slug]` et `/onboarding` ;
 - [ ] navigation desktop/mobile unique ;
 - [ ] accord explicite ;
+- [ ] promotion des décisions validées en L0 ;
 - [ ] freeze IA V1 + CI.
 
 ### P3 — SEARCH STANDARD V1
@@ -283,6 +303,7 @@ Le workflow autoritaire n’est pas encore présent dans `main`; son comportemen
 - [ ] figer layout, filtres, cards, map bridge, pagination/continuity ;
 - [ ] tests responsive ;
 - [ ] accord explicite ;
+- [ ] promotion L0 ;
 - [ ] freeze SEARCH V1.
 
 ### P4 — VIVRE ICI / MAP STANDARD V1
@@ -291,7 +312,8 @@ Le workflow autoritaire n’est pas encore présent dans `main`; son comportemen
 - [ ] figer moteur, providers approuvés, navigation et TARGET ;
 - [ ] définir ce qui reste flexible ;
 - [ ] CI anti-régression ;
-- [ ] accord explicite si le freeze final diffère du handover déjà approuvé.
+- [ ] accord explicite si le freeze final diffère du handover déjà approuvé ;
+- [ ] promotion L0 des invariants validés.
 
 ### P5 — INTENT HUBS / NEUF / VENDRE / PRO
 
@@ -299,6 +321,7 @@ Le workflow autoritaire n’est pas encore présent dans `main`; son comportemen
 - [ ] benchmark ;
 - [ ] standards ;
 - [ ] accord ;
+- [ ] promotion L0 ;
 - [ ] freeze + CI.
 
 ### P6 — HARDENING
@@ -316,6 +339,7 @@ Le workflow autoritaire n’est pas encore présent dans `main`; son comportemen
 - aucun déploiement Vercel sans autorisation explicite ;
 - aucune écriture DB liée à ce chantier sans gate séparé ;
 - aucune modification UI sans BEFORE/AFTER aux mêmes viewports ;
+- toute décision explicitement validée par `hraaaaf` est promue en L0 sur le périmètre exact validé, sauf mention contraire ;
 - aucune rupture de standard `LOCKED` par un simple “polish” ;
 - si un standard est ambigu, on l’affine avant de le figer ;
 - si deux canoniques se contredisent, le plus spécialisé gouverne son périmètre, et cette Constitution gouverne l’architecture/anti-dérive ;
@@ -328,17 +352,15 @@ Le workflow autoritaire n’est pas encore présent dans `main`; son comportemen
 - branche : `chore/product-constitution-v1` ;
 - PR : `#1030` — draft ;
 - base vérifiée au démarrage : `main@df8b8d9a493553d5fa39ea8b0fa0ee789cf71ee2` ;
-- dernier HEAD avec self-check prouvé vert avant cette synchronisation : `44462c74018acf180de8578c1b8526c2ddd760db` ;
-- preuve self-check : run `34690296683` — SUCCESS ;
-- preuve workflow efficiency sur le même HEAD : run `34690296724` — SUCCESS ;
-- autres checks observés sur ce HEAD : plusieurs encore `in_progress/queued` au dernier contrôle ;
+- HEAD avant présente mise à jour canonique : `02d839a9d0496938ba21748421ce35bf8ca3732c` ;
+- dernière preuve self-check acquise : run `34690444931` — SUCCESS sur `8c23973fd2765947dcd8035adcd084224423c384` ;
 - Vercel : 0 action ;
 - DB : 0 write.
 
 ## 11. NEXT EXACT
 
-1. Vérifier le nouveau HEAD produit par cette synchronisation.
+1. Vérifier le HEAD produit par cette mise à jour canonique.
 2. Vérifier une fois le self-check du HEAD final ; corriger seulement s’il échoue.
-3. Pendant les autres CI éventuelles, auditer les callers/liens des routes legacy pour préparer la décision IA V1.
-4. Préparer le protocole de preuve post-merge du gate autoritaire sans merger automatiquement cette PR.
+3. Configurer `product-standard-approval` reste un human/admin gate GitHub avant certification réelle du verrou L0.
+4. Pendant les autres CI éventuelles, continuer l’audit des callers/liens legacy pour préparer IA V1.
 5. P1 HOME : obtenir BEFORE 390 / 768 / 1280 avant toute modification visuelle.
