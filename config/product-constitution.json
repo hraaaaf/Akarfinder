@@ -1,10 +1,21 @@
 {
   "schema_version": 1,
-  "constitution_version": "0.2.0",
+  "constitution_version": "0.3.0",
   "canonical_file": "docs/AKARFINDER_PRODUCT_CONSTITUTION_CANONICAL.md",
   "manifest_file": "config/product-constitution.json",
   "route_inventory_file": "config/product-route-inventory.json",
   "standard_owner": "hraaaaf",
+  "validation_promotion": {
+    "default_target_level": "L0",
+    "trigger": "explicit_owner_validation",
+    "scope": "exact_validated_scope_only",
+    "exceptions": [
+      "owner_explicitly_marks_decision_as_experimental",
+      "owner_explicitly_marks_decision_as_flexible",
+      "owner_explicitly_marks_decision_as_temporary"
+    ],
+    "rule": "A decision explicitly validated by hraaaaf is automatically promoted to L0/LOCKED on the exact validated scope unless the validation explicitly states otherwise."
+  },
   "owner_approval": {
     "method": "github_environment",
     "environment": "product-standard-approval",
