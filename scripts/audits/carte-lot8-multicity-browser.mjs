@@ -73,7 +73,7 @@ try {
         });
 
         const maplibre = page.locator(`[data-maplibre-spike][data-maplibre-city="${cityCase.slug}"][data-maplibre-district="${cityCase.districtSlug}"]`);
-        await maplibre.waitFor({ state: "visible", timeout: 20000 });
+        await maplibre.waitFor({ state: "attached", timeout: 20000 });
         const mapCanvas = page.locator(".maplibregl-canvas");
         await mapCanvas.waitFor({ state: "attached", timeout: 10000 });
         await page.waitForFunction(
@@ -86,6 +86,9 @@ try {
         );
         await tilesReady;
         await page.waitForTimeout(450);
+
+        // Preserve the actual rendered viewport before any visibility/layout assertions.
+        await page.screenshot({ path: `${outDir}/${cityCase.slug}-${cityCase.districtSlug}-${viewport.width}x${viewport.height}.png`, fullPage: false });
 
         const rail = page.locator("[data-p4-map-decision-rail]");
         await rail.waitFor({ state: "visible", timeout: 10000 });
@@ -105,10 +108,6 @@ try {
 
         const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
         if (overflow > 1) throw new Error(`${cityCase.slug}/${viewport.name}: horizontal overflow ${overflow}`);
-
-        // Preserve the actual rendered viewport before contract assertions so CI failures
-        // remain visually diagnosable instead of uploading a nearly-empty artifact.
-        await page.screenshot({ path: `${outDir}/${cityCase.slug}-${cityCase.districtSlug}-${viewport.width}x${viewport.height}.png`, fullPage: false });
 
         if (viewport.width <= 767) {
           if (panelBox.height > 230) throw new Error(`${cityCase.slug}/${viewport.name}: mobile decision sheet too tall ${JSON.stringify(panelBox)}`);
