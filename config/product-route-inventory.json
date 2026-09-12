@@ -21,6 +21,14 @@
       "notes": "Single results engine and filtering surface."
     },
     {
+      "route": "/listings/[id]",
+      "role": "property_detail",
+      "tier": "CORE_DETAIL",
+      "status": "ACTIVE",
+      "decision": "KEEP",
+      "notes": "Internal detail is shown only when source-access rules permit it; otherwise external-source listings redirect or fail closed."
+    },
+    {
       "route": "/acheter",
       "role": "buy_intent_hub",
       "tier": "PRIMARY",
@@ -279,9 +287,26 @@
       "decision": "KEEP_COMPATIBILITY_ROUTER_REVIEW_CALLERS",
       "redirect_target": "/mon-projet or /accompagnement?intent=neuf",
       "notes": "Legacy flow router preserving listing/intent parameters."
+    },
+    {
+      "route": "/demo/*",
+      "role": "design_and_product_demo_harness",
+      "tier": "INTERNAL_HARNESS",
+      "status": "NON_PRODUCT",
+      "decision": "EXCLUDE_FROM_PRODUCT_IA",
+      "notes": "Demo namespace contains multiple design/product harnesses and canonical targets; it must never be treated as public product navigation."
+    },
+    {
+      "route": "/visual-qa/*",
+      "role": "visual_regression_harness",
+      "tier": "INTERNAL_HARNESS",
+      "status": "NON_PRODUCT",
+      "decision": "EXCLUDE_FROM_PRODUCT_IA",
+      "notes": "Visual QA namespace is test infrastructure, not product information architecture."
     }
   ],
   "confirmed_findings": [
+    "Search and /listings/[id] form the core results/detail engine, with source-access fail-closed behavior on listing detail.",
     "Buy and Rent are both intent hubs that route filtered searches into the single /search engine.",
     "Vendre is a coherent seller hub combining publish, indicative estimate and professional accompaniment around one property dossier.",
     "The public professional profile namespace is a detail namespace, not a duplicate professional hub.",
@@ -293,6 +318,7 @@
     "Credit, Compare, Favorites, Investir and MRE are secondary decision/user journeys rather than primary navigation pillars.",
     "MRE still references the legacy onboarding entrypoint and should be normalized toward Mon Projet after caller audit.",
     "Accompagnement is a separate support/callback surface and should not be merged conceptually into Mon Projet.",
-    "About, How it works, FAQ, Contact, removal rights, terms and privacy belong to institutional/help/legal navigation, not primary product navigation."
+    "About, How it works, FAQ, Contact, removal rights, terms and privacy belong to institutional/help/legal navigation, not primary product navigation.",
+    "Demo and visual-qa namespaces are non-product harnesses and must be excluded from architecture decisions and navigation."
   ]
 }
