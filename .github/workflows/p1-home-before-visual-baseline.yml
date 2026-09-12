@@ -24,9 +24,10 @@ permissions:
 jobs:
   before-baseline:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 35
     env:
       HVR3_CERTIFICATION_MODE: "true"
+      NEXT_TELEMETRY_DISABLED: "1"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -37,12 +38,14 @@ jobs:
         run: npm ci
       - name: TypeScript
         run: npx tsc --noEmit
+      - name: Build production app
+        run: npm run build
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
-      - name: Start deterministic HOME
+      - name: Start deterministic production HOME
         shell: bash
         run: |
-          npm run dev -- -p 3216 > /tmp/p1-home-before.log 2>&1 &
+          npm run start -- -p 3216 > /tmp/p1-home-before.log 2>&1 &
           curl --retry 90 --retry-delay 1 --retry-connrefused -fsS http://127.0.0.1:3216/ >/dev/null || { cat /tmp/p1-home-before.log; exit 1; }
       - name: Capture BEFORE 390 / 768 / 1280
         env:
