@@ -190,6 +190,70 @@
       "notes": "Page explicitly states automatic notifications are not yet activated; currently routes users to Mon Projet and Search."
     },
     {
+      "route": "/accompagnement",
+      "role": "human_support_lead_form",
+      "tier": "SUPPORT",
+      "status": "ACTIVE",
+      "decision": "KEEP_SECONDARY",
+      "notes": "Dedicated callback/support form explicitly separate from Mon Projet; noindex."
+    },
+    {
+      "route": "/comment-ca-marche",
+      "role": "product_explainer",
+      "tier": "INSTITUTIONAL",
+      "status": "ACTIVE",
+      "decision": "KEEP_FOOTER_OR_HELP",
+      "notes": "Explains search → compare → contact source in three steps."
+    },
+    {
+      "route": "/a-propos",
+      "role": "about_product",
+      "tier": "INSTITUTIONAL",
+      "status": "ACTIVE",
+      "decision": "KEEP_FOOTER",
+      "notes": "Explains AkarFinder as a Moroccan real-estate search engine and source-visible comparison product."
+    },
+    {
+      "route": "/faq",
+      "role": "help_faq",
+      "tier": "INSTITUTIONAL",
+      "status": "ACTIVE",
+      "decision": "KEEP_HELP_FOOTER",
+      "notes": "Source/contact/completeness/removal FAQs."
+    },
+    {
+      "route": "/contact",
+      "role": "contact_hub",
+      "tier": "INSTITUTIONAL",
+      "status": "ACTIVE",
+      "decision": "KEEP_FOOTER",
+      "notes": "General contact plus route to removal/correction procedure."
+    },
+    {
+      "route": "/demande-retrait",
+      "role": "rights_removal_request",
+      "tier": "TRUST_LEGAL",
+      "status": "ACTIVE",
+      "decision": "KEEP_FOOTER",
+      "notes": "Dedicated correction/removal and personal-data rights procedure."
+    },
+    {
+      "route": "/conditions-utilisation",
+      "role": "terms_of_use",
+      "tier": "LEGAL",
+      "status": "ACTIVE",
+      "decision": "KEEP_FOOTER",
+      "notes": "Defines AkarFinder as a search engine, not agency/intermediary, and explains source categories and limitations."
+    },
+    {
+      "route": "/politique-confidentialite",
+      "role": "privacy_policy",
+      "tier": "LEGAL",
+      "status": "ACTIVE",
+      "decision": "KEEP_FOOTER",
+      "notes": "Privacy, submitted data, cookies/audience measurement and data rights."
+    },
+    {
       "route": "/compagnon",
       "role": "legacy_project_alias",
       "tier": "LEGACY",
@@ -227,6 +291,8 @@
     "Promoteurs is functionally a Pro audience page but still has a top-level canonical URL.",
     "Alerts must not be exposed as an active primary feature until notifications are actually implemented.",
     "Credit, Compare, Favorites, Investir and MRE are secondary decision/user journeys rather than primary navigation pillars.",
-    "MRE still references the legacy onboarding entrypoint and should be normalized toward Mon Projet after caller audit."
+    "MRE still references the legacy onboarding entrypoint and should be normalized toward Mon Projet after caller audit.",
+    "Accompagnement is a separate support/callback surface and should not be merged conceptually into Mon Projet.",
+    "About, How it works, FAQ, Contact, removal rights, terms and privacy belong to institutional/help/legal navigation, not primary product navigation."
   ]
 }
