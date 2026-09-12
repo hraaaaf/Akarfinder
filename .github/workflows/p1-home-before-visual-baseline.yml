@@ -6,6 +6,7 @@ on:
     paths:
       - ".github/workflows/p1-home-before-visual-baseline.yml"
       - "scripts/audits/p1-home-before-visual.mjs"
+      - "docs/benchmarks/2026-09-12-home-premium-benchmark.md"
       - "app/page.tsx"
       - "components/home/**"
       - "components/landing/CityIntentGrid.tsx"
@@ -30,30 +31,53 @@ jobs:
       NEXT_TELEMETRY_DISABLED: "1"
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 2
+      - name: Latest-commit scope check
+        id: scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          changed="$(git diff --name-only HEAD^ HEAD)"
+          printf '%s\n' "$changed"
+          if printf '%s\n' "$changed" | grep -Eq '^(\.github/workflows/p1-home-before-visual-baseline\.yml|scripts/audits/p1-home-before-visual\.mjs|docs/benchmarks/2026-09-12-home-premium-benchmark\.md|app/page\.tsx|components/home/|components/landing/(CityIntentGrid|SignatureMapSection|SiteFooter)\.tsx|components/layout/SiteHeader\.tsx)'; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "Latest commit does not affect the P1 HOME BEFORE baseline; skipping heavy work."
+          fi
       - uses: actions/setup-node@v4
+        if: steps.scope.outputs.run == 'true'
         with:
           node-version: 24
           cache: npm
       - name: Install dependencies
+        if: steps.scope.outputs.run == 'true'
         run: npm ci
       - name: TypeScript
+        if: steps.scope.outputs.run == 'true'
         run: npx tsc --noEmit
       - name: Build production app
+        if: steps.scope.outputs.run == 'true'
         run: npm run build
       - name: Install Chromium
+        if: steps.scope.outputs.run == 'true'
         run: npx playwright install --with-deps chromium
       - name: Start deterministic production HOME
+        if: steps.scope.outputs.run == 'true'
         shell: bash
         run: |
           npm run start -- -p 3216 > /tmp/p1-home-before.log 2>&1 &
           curl --retry 90 --retry-delay 1 --retry-connrefused -fsS http://127.0.0.1:3216/ >/dev/null || { cat /tmp/p1-home-before.log; exit 1; }
       - name: Capture BEFORE 390 / 768 / 1280
+        if: steps.scope.outputs.run == 'true'
         env:
           BASE_URL: http://127.0.0.1:3216
           AUDIT_OUTPUT_DIR: artifacts/p1-home-before
         run: node scripts/audits/p1-home-before-visual.mjs
       - name: Upload P1 HOME BEFORE evidence
-        if: always()
+        if: always() && steps.scope.outputs.run == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: p1-home-before-${{ github.run_id }}
