@@ -73,7 +73,7 @@ try {
         const maplibre = page.locator(`[data-maplibre-spike][data-maplibre-city="${cityCase.slug}"][data-maplibre-district="${cityCase.districtSlug}"]`);
         await maplibre.waitFor({ state: "visible", timeout: 20000 });
         const mapCanvas = page.locator(".maplibregl-canvas");
-        await mapCanvas.waitFor({ state: "visible", timeout: 10000 });
+        await mapCanvas.waitFor({ state: "attached", timeout: 10000 });
         await page.waitForFunction(
           ({ citySlug, districtSlug }) => {
             const shell = document.querySelector(`[data-maplibre-spike][data-maplibre-city="${citySlug}"][data-maplibre-district="${districtSlug}"]`);
