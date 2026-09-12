@@ -65,5 +65,43 @@
     "Accompagnement is a separate support/callback surface and should not be merged conceptually into Mon Projet.",
     "About, How it works, FAQ, Contact, removal rights, terms and privacy belong to institutional/help/legal navigation, not primary product navigation.",
     "Demo and visual-qa namespaces are non-product harnesses and must be excluded from architecture decisions and navigation."
+  ],
+  "navigation_findings": [
+    {
+      "surface": "SiteHeader normal desktop",
+      "status": "INCONSISTENT_WITH_CANDIDATE_IA",
+      "current": ["Acheter", "Louer", "Neuf", "Recherche", "Plus"],
+      "notes": "Uses a distinct top-level architecture from search mode and mobile."
+    },
+    {
+      "surface": "SiteHeader search desktop",
+      "status": "INCONSISTENT_WITH_NORMAL_HEADER",
+      "current": ["Acheter", "Louer", "Neuf", "Agences", "Mon Projet"],
+      "notes": "Changes primary information architecture when entering Search."
+    },
+    {
+      "surface": "SiteHeader mobile drawer",
+      "status": "INCONSISTENT_WITH_DESKTOP",
+      "current": ["Recherche", "Acheter", "Louer", "Vendre", "Pro"],
+      "notes": "Different primary set again; Neuf and Vivre ici disappear."
+    },
+    {
+      "surface": "MobileBottomNav",
+      "status": "NEEDS_CORRECTION_AFTER_STANDARD_APPROVAL",
+      "current": ["Explorer", "Favoris", "Carte", "Alertes", "Mon Projet"],
+      "notes": "Promotes /alerts as a persistent primary mobile destination although the public alerts page explicitly states automatic notifications are not active."
+    },
+    {
+      "surface": "HOME project CTAs",
+      "status": "LEGACY_LINKS",
+      "current": ["/compagnon"],
+      "notes": "SearchEntryOrchestrator and HomeActionGrid link to /compagnon even though it is a permanent redirect to canonical /mon-projet."
+    },
+    {
+      "surface": "SiteFooter",
+      "status": "COHERENT_SECONDARY_NAV",
+      "current": ["Explorer", "AkarFinder", "Professionnels & aide"],
+      "notes": "Footer classification is broadly coherent with verified route roles and does not need structural priority changes now."
+    }
   ]
 }
