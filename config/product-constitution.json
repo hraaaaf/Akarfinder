@@ -1,14 +1,20 @@
 {
   "schema_version": 1,
-  "constitution_version": "0.1.0",
+  "constitution_version": "0.2.0",
   "canonical_file": "docs/AKARFINDER_PRODUCT_CONSTITUTION_CANONICAL.md",
   "manifest_file": "config/product-constitution.json",
+  "route_inventory_file": "config/product-route-inventory.json",
   "standard_owner": "hraaaaf",
-  "owner_override": {
-    "exact_head_review_required": true,
-    "required_review_state": "APPROVED",
+  "owner_approval": {
+    "method": "github_environment",
+    "environment": "product-standard-approval",
+    "required_reviewer": "hraaaaf",
+    "exact_head_semantics": "each pull_request_target run is tied to one PR HEAD; concurrency cancels stale runs and a new HEAD requires a new environment approval",
+    "prevent_self_review": false,
+    "admin_bypass_should_be_disabled": true,
     "require_canonical_update": true,
-    "require_manifest_update": true
+    "require_manifest_update": true,
+    "setup_required": true
   },
   "locked_standards": [
     {
@@ -37,7 +43,7 @@
     {
       "id": "product.information-architecture.v1",
       "status": "REVIEW",
-      "canonical_section": "4. ARCHITECTURE PRODUIT — CANDIDATE V0.1"
+      "canonical_section": "4. ARCHITECTURE PRODUIT — CANDIDATE V0.2"
     },
     {
       "id": "home.standard.v1",
