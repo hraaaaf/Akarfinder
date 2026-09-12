@@ -68,6 +68,18 @@ test("detects removal of the hero search orchestrator", () => {
   assert.match(violations[0].reason, /SearchEntryOrchestrator/);
 });
 
+test("rejects a symlink used as a protected candidate file", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "akarfinder-constitution-symlink-"));
+  const outside = path.join(root, "outside.tsx");
+  fs.writeFileSync(outside, "1er moteur de recherche immobilier au Maroc <SearchEntryOrchestrator />", "utf8");
+  const target = path.join(root, "components/home/GoogleLikeHero.tsx");
+  fs.mkdirSync(path.dirname(target), { recursive: true });
+  fs.symlinkSync(outside, target);
+  const violations = collectInvariantViolations(manifest, root);
+  assert.equal(violations.length, 2);
+  assert.match(violations[0].reason, /symlink/);
+});
+
 test("owner approval is valid only for the exact PR HEAD", () => {
   const reviews = [
     { user: { login: "hraaaaf" }, state: "APPROVED", commit_id: "abc123" },
