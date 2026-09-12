@@ -1,0 +1,179 @@
+{
+  "schema_version": 1,
+  "status": "AUDIT_IN_PROGRESS",
+  "updated_at": "2026-09-12",
+  "source_of_truth": "docs/AKARFINDER_PRODUCT_CONSTITUTION_CANONICAL.md",
+  "routes": [
+    {
+      "route": "/",
+      "role": "home_engine_entry",
+      "tier": "PRIMARY",
+      "status": "ACTIVE",
+      "decision": "KEEP",
+      "notes": "Homepage entry point. Exact H1 positioning is L0 LOCKED."
+    },
+    {
+      "route": "/search",
+      "role": "search_results_engine",
+      "tier": "CORE",
+      "status": "ACTIVE",
+      "decision": "KEEP",
+      "notes": "Single results engine and filtering surface."
+    },
+    {
+      "route": "/acheter",
+      "role": "buy_intent_hub",
+      "tier": "PRIMARY",
+      "status": "ACTIVE",
+      "decision": "KEEP",
+      "notes": "Intent hub; filtered searches redirect into /search."
+    },
+    {
+      "route": "/louer",
+      "role": "rent_intent_hub",
+      "tier": "PRIMARY",
+      "status": "ACTIVE",
+      "decision": "REVIEW_VERIFIED_ROLE_PENDING",
+      "notes": "Route exists; exact implementation review remains."
+    },
+    {
+      "route": "/neuf",
+      "role": "new_property_hub",
+      "tier": "PRIMARY",
+      "status": "ACTIVE",
+      "decision": "KEEP",
+      "notes": "Canonical new-build search surface; currently noindex pending publication gates."
+    },
+    {
+      "route": "/map",
+      "role": "living_here_geo_exploration",
+      "tier": "PRIMARY_CANDIDATE",
+      "status": "ACTIVE",
+      "decision": "KEEP",
+      "notes": "Vivre ici / MapLibre differentiated geographic intelligence surface."
+    },
+    {
+      "route": "/vendre",
+      "role": "seller_journey",
+      "tier": "PRIMARY_CANDIDATE",
+      "status": "ACTIVE",
+      "decision": "KEEP_REVIEW_STANDARD",
+      "notes": "Seller journey; detailed audit remains."
+    },
+    {
+      "route": "/pro",
+      "role": "professional_hub",
+      "tier": "PRIMARY_CANDIDATE",
+      "status": "ACTIVE",
+      "decision": "KEEP",
+      "notes": "AkarFinder Pro hub for agencies and promoters."
+    },
+    {
+      "route": "/pro/agences",
+      "role": "professional_agency_audience",
+      "tier": "SECONDARY",
+      "status": "ACTIVE",
+      "decision": "KEEP_UNDER_PRO",
+      "notes": "Agency-specific ProfessionalAudiencePage."
+    },
+    {
+      "route": "/promoteurs",
+      "role": "professional_promoter_audience",
+      "tier": "SECONDARY",
+      "status": "ACTIVE",
+      "decision": "REVIEW_URL_CONSOLIDATION",
+      "notes": "Promoter-specific ProfessionalAudiencePage. Functionally belongs to Pro; current URL is top-level and sitemap-listed."
+    },
+    {
+      "route": "/professionnels/[slug]",
+      "role": "public_professional_profile_detail",
+      "tier": "DETAIL",
+      "status": "ACTIVE",
+      "decision": "KEEP_DETAIL_ROUTE",
+      "notes": "Not a duplicate hub. Dynamic public professional profile detail route; /professionnels has no index page."
+    },
+    {
+      "route": "/projets/[slug]",
+      "role": "new_project_detail",
+      "tier": "DETAIL",
+      "status": "ACTIVE",
+      "decision": "KEEP_DETAIL_REVIEW_NAMESPACE",
+      "notes": "Dynamic new-project detail route; /projets has no index page. Product ownership belongs with Neuf, URL namespace review remains."
+    },
+    {
+      "route": "/immobilier",
+      "role": "geo_seo_root",
+      "tier": "SEO_GEO",
+      "status": "ACTIVE",
+      "decision": "KEEP",
+      "notes": "Canonical geographic SEO root."
+    },
+    {
+      "route": "/immobilier/[city]/[district]",
+      "role": "canonical_neighborhood_geo_page",
+      "tier": "SEO_GEO",
+      "status": "ACTIVE",
+      "decision": "KEEP_CANONICAL",
+      "notes": "Canonical neighborhood context + market + listings surface with SEO indexability gates."
+    },
+    {
+      "route": "/quartiers",
+      "role": "legacy_neighborhood_index",
+      "tier": "LEGACY",
+      "status": "REDIRECT",
+      "decision": "KEEP_REDIRECT_ONLY_OR_REMOVE_AFTER_LINK_AUDIT",
+      "redirect_target": "/immobilier",
+      "notes": "Permanent redirect already in code."
+    },
+    {
+      "route": "/quartiers/[citySlug]/[neighborhoodSlug]",
+      "role": "legacy_parallel_neighborhood_detail",
+      "tier": "LEGACY_DUPLICATE",
+      "status": "ACTIVE",
+      "decision": "CONSOLIDATE_TO_CANONICAL_GEO",
+      "notes": "Still renders a standalone neighborhood intelligence page while /immobilier/[city]/[district] is canonical. Requires link/SEO/backward-compatibility audit before redirect/removal."
+    },
+    {
+      "route": "/mon-projet",
+      "role": "user_project_journey",
+      "tier": "USER",
+      "status": "ACTIVE",
+      "decision": "KEEP_CANONICAL",
+      "notes": "Single canonical project-building journey."
+    },
+    {
+      "route": "/compagnon",
+      "role": "legacy_project_alias",
+      "tier": "LEGACY",
+      "status": "REDIRECT",
+      "decision": "KEEP_REDIRECT_ONLY_OR_REMOVE_AFTER_LINK_AUDIT",
+      "redirect_target": "/mon-projet",
+      "notes": "Permanent redirect already in code."
+    },
+    {
+      "route": "/profil-recherche",
+      "role": "legacy_search_profile_alias",
+      "tier": "LEGACY",
+      "status": "REDIRECT",
+      "decision": "KEEP_REDIRECT_ONLY_OR_REMOVE_AFTER_LINK_AUDIT",
+      "redirect_target": "/mon-projet",
+      "notes": "Code explicitly states Mon Projet is the single canonical destination and product name."
+    },
+    {
+      "route": "/onboarding",
+      "role": "legacy_journey_router",
+      "tier": "LEGACY",
+      "status": "REDIRECT_ROUTER",
+      "decision": "KEEP_COMPATIBILITY_ROUTER_REVIEW_CALLERS",
+      "redirect_target": "/mon-projet or /accompagnement?intent=neuf",
+      "notes": "Legacy flow router preserving listing/intent parameters."
+    }
+  ],
+  "confirmed_findings": [
+    "The public professional profile namespace is a detail namespace, not a duplicate professional hub.",
+    "The project namespace is a detail namespace, not a duplicate Neuf index.",
+    "Compagnon and profil-recherche are already legacy aliases of Mon Projet.",
+    "Quartiers has a legacy root redirect but still exposes parallel neighborhood detail pages that overlap the canonical immobilier district surface.",
+    "Promoteurs is functionally a Pro audience page but still has a top-level canonical URL."
+  ]
+}
