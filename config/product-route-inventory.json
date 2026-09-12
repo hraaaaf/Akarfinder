@@ -57,8 +57,8 @@
       "role": "seller_journey",
       "tier": "PRIMARY_CANDIDATE",
       "status": "ACTIVE",
-      "decision": "KEEP_REVIEW_STANDARD",
-      "notes": "Seller journey; detailed audit remains."
+      "decision": "KEEP",
+      "notes": "Seller hub covering publish, indicative estimate and professional accompaniment from a shared property dossier."
     },
     {
       "route": "/pro",
@@ -142,6 +142,54 @@
       "notes": "Single canonical project-building journey."
     },
     {
+      "route": "/favorites",
+      "role": "saved_properties",
+      "tier": "USER_UTILITY",
+      "status": "ACTIVE",
+      "decision": "KEEP_SECONDARY",
+      "notes": "User utility surfaced from search/header; not a primary information-architecture pillar."
+    },
+    {
+      "route": "/compare",
+      "role": "property_comparison",
+      "tier": "USER_UTILITY",
+      "status": "ACTIVE",
+      "decision": "KEEP_SECONDARY",
+      "notes": "Decision utility; should remain contextual to search/favorites rather than primary navigation."
+    },
+    {
+      "route": "/credit",
+      "role": "indicative_financing_simulator",
+      "tier": "DECISION_TOOL",
+      "status": "ACTIVE",
+      "decision": "KEEP_SECONDARY",
+      "notes": "Explicitly an indicative, non-contractual financing tool."
+    },
+    {
+      "route": "/investir",
+      "role": "market_signal_explainer",
+      "tier": "DECISION_CONTENT",
+      "status": "ACTIVE",
+      "decision": "KEEP_SECONDARY_REVIEW_OVERLAP",
+      "notes": "Primarily routes users toward search, compare and map market signals; review future overlap with Vivre ici / market intelligence."
+    },
+    {
+      "route": "/mre",
+      "role": "remote_buyer_intent",
+      "tier": "AUDIENCE_JOURNEY",
+      "status": "ACTIVE",
+      "decision": "KEEP_SECONDARY_REVIEW_ENTRYPOINTS",
+      "notes": "MRE remote-buyer journey. Currently still links to legacy /onboarding for dossier creation; canonical target should be reviewed toward /mon-projet."
+    },
+    {
+      "route": "/alerts",
+      "role": "future_alerts_placeholder",
+      "tier": "USER_UTILITY",
+      "status": "NOT_ACTIVE_FEATURE",
+      "decision": "DO_NOT_PROMOTE_PRIMARY",
+      "notes": "Page explicitly states automatic notifications are not yet activated; currently routes users to Mon Projet and Search."
+    },
+    {
       "route": "/compagnon",
       "role": "legacy_project_alias",
       "tier": "LEGACY",
@@ -171,10 +219,14 @@
   ],
   "confirmed_findings": [
     "Buy and Rent are both intent hubs that route filtered searches into the single /search engine.",
+    "Vendre is a coherent seller hub combining publish, indicative estimate and professional accompaniment around one property dossier.",
     "The public professional profile namespace is a detail namespace, not a duplicate professional hub.",
     "The project namespace is a detail namespace, not a duplicate Neuf index.",
     "Compagnon and profil-recherche are already legacy aliases of Mon Projet.",
     "Quartiers has a legacy root redirect but still exposes parallel neighborhood detail pages that overlap the canonical immobilier district surface.",
-    "Promoteurs is functionally a Pro audience page but still has a top-level canonical URL."
+    "Promoteurs is functionally a Pro audience page but still has a top-level canonical URL.",
+    "Alerts must not be exposed as an active primary feature until notifications are actually implemented.",
+    "Credit, Compare, Favorites, Investir and MRE are secondary decision/user journeys rather than primary navigation pillars.",
+    "MRE still references the legacy onboarding entrypoint and should be normalized toward Mon Projet after caller audit."
   ]
 }
