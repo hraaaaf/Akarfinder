@@ -33,8 +33,8 @@
       "role": "rent_intent_hub",
       "tier": "PRIMARY",
       "status": "ACTIVE",
-      "decision": "REVIEW_VERIFIED_ROLE_PENDING",
-      "notes": "Route exists; exact implementation review remains."
+      "decision": "KEEP",
+      "notes": "Intent hub; property type and budget searches redirect into /search with transaction_type=rent."
     },
     {
       "route": "/neuf",
@@ -170,6 +170,7 @@
     }
   ],
   "confirmed_findings": [
+    "Buy and Rent are both intent hubs that route filtered searches into the single /search engine.",
     "The public professional profile namespace is a detail namespace, not a duplicate professional hub.",
     "The project namespace is a detail namespace, not a duplicate Neuf index.",
     "Compagnon and profil-recherche are already legacy aliases of Mon Projet.",
