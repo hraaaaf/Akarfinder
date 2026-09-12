@@ -1,6 +1,6 @@
 # AKARFINDER — PRODUCT CONSTITUTION / CANONICAL
 
-**Version : 0.4 — 2026-09-12**  
+**Version : 0.5 — 2026-09-12**  
 **Statut : ACTIVE / EN CONSTRUCTION — seuls les périmètres explicitement validés sont `L0 / LOCKED`.**
 
 > Source canonique pour l’architecture produit, les standards de pages et les règles anti-dérive d’AkarFinder. `docs/ROADMAP.md` reste la source globale de vérité pour l’avancement data/produit.
@@ -88,6 +88,17 @@ Inventaire machine-readable : `config/product-route-inventory.json`.
 - `/mon-projet` : parcours projet canonique ;
 - `/immobilier` + ville/quartier/intention : couche géographique/SEO canonique.
 
+### Navigation actuelle — dette vérifiée P2
+
+`components/layout/SiteHeader.tsx` possède encore plusieurs taxonomies concurrentes :
+
+- `primaryNav` : Acheter / Louer / Neuf / Recherche ;
+- `searchPrimaryNav` : Acheter / Louer / Neuf / Agences / Mon Projet ;
+- `secondaryNav` : Carte / Mon Projet / Agences / Promoteurs ;
+- `mobileNav` : Recherche / Acheter / Louer / Vendre / Pro.
+
+Le prochain standard IA doit converger vers une taxonomie primaire unique desktop/search/mobile. Aucun changement de navigation n’est implicitement autorisé par le freeze HOME V1.
+
 ### Legacy vérifié
 
 - `/compagnon` → `/mon-projet` ;
@@ -103,35 +114,51 @@ Inventaire machine-readable : `config/product-route-inventory.json`.
 - `/professionnels/[slug]` = détail public, pas hub ;
 - `/projets/[slug]` = détail programme neuf, pas hub ;
 - `/pro/analytics`, `/pro/alerts` = internes/noindex ;
+- `/alerts` ne doit pas être promu comme pilier tant que les notifications automatiques ne sont pas actives ;
 - `/investir`, `/credit`, `/mre`, `/compare`, `/favorites` = secondaires.
+
+**Limite d’audit :** la recherche de code distante n’a pas fourni un inventaire exhaustif fiable des callers legacy. Les callers déjà vérifiés restent valides ; l’exhaustivité doit être obtenue par un audit repo/local ou un index GitHub fiable avant suppression de routes.
 
 ---
 
-## 5. HOME STANDARD V1 — OWNER APPROVED / L0
+## 5. HOME STANDARD V1 — CLOSED / OWNER APPROVED / L0
 
 **Validation explicite propriétaire : 2026-09-12.**  
 Le message `Ok go` suivant la liste exacte des 10 décisions P1 vaut validation de ce périmètre.
 
+### Goal
+
+Faire de la HOME une entrée search-first premium, plus courte et plus claire, sans modifier le positionnement `1er moteur de recherche immobilier au Maroc`, puis verrouiller le standard approuvé contre les futurs polishes silencieux.
+
+### Succès observable
+
+- H1 exact conservé ;
+- recherche seule dominante dans le hero ;
+- structure approuvée respectée ;
+- aucune réintroduction d’Intelligence, listings génériques ou `/compagnon` ;
+- exactement 3 actions finales ;
+- 390 / 768 / 1280 sans overflow ni finding ;
+- anciens HVR alignés sur le standard courant ;
+- invariants L0 détectables par CI.
+
 ### Preuve BEFORE / candidat
 
-Même HEAD de branche avant implémentation : `6a98a89ed6546d277fe2b4f778b0e6873e5b3cd8`.
+Même HEAD avant implémentation : `6a98a89ed6546d277fe2b4f778b0e6873e5b3cd8`.
 
-- BEFORE run `34700265162` — SUCCESS — artifact `10299508661` ;
-- candidate run `34700265148` — SUCCESS — artifact `10300191918` ;
+- BEFORE run `34700265162` — SUCCESS ;
+- candidate run `34700265148` — SUCCESS ;
 - Product Constitution self-check `34700265182` — SUCCESS ;
 - CI Efficiency Policy `34700265219` — SUCCESS ;
 - Vercel : 0 ;
 - DB : 0 write.
 
-Hauteurs mesurées :
+Hauteurs mesurées avant implémentation :
 
 | Viewport | BEFORE | Candidate | Écart |
 |---|---:|---:|---:|
 | 390 | 4489 px | 3412 px | -24,0 % |
 | 768 | 4983 px | 3041 px | -39,0 % |
 | 1280 | 3171 px | 2478 px | -21,9 % |
-
-Les deux jeux de captures : H1 exact, 1 seul H1, 1 seul main, 0 overflow horizontal, 0 finding.
 
 ### Décisions L0 exactes
 
@@ -170,11 +197,74 @@ Header/footer existent autour de cette séquence mais ne sont pas figés par P1.
 - absence `/compagnon` ;
 - 3 actions et routes exactes.
 
-Le guard supporte désormais `contains_exact`, `not_contains_exact`, `ordered_contains_exact` et `count_exact`.
+Le guard supporte `contains_exact`, `not_contains_exact`, `ordered_contains_exact` et `count_exact`.
 
-### État implémentation
+### Preuve AFTER — product tree exact
 
-**EN COURS DE CERTIFICATION.** Le code HOME V1 est préparé ; le lot ne sera déclaré fermé qu’après AFTER 390/768/1280, tests, comparaison et score.
+Le runtime HOME certifié correspond au product tree :
+
+`19d8da53b1d4b40ce8a19676d009af62f60f012d`
+
+Run visuel exact : `34702315678` — SUCCESS.  
+Artifact : `10300675974` — `p1-home-after-34702315678`.  
+Digest : `sha256:79dc9193a96ca7321251f737bf182de505be36da0f85bb967a71e59ecd72e673`.
+
+Rapport AFTER :
+
+| Viewport | AFTER | BEFORE → AFTER |
+|---|---:|---:|
+| 390 × 844 | 3432 px | -23,5 % |
+| 768 × 1024 | 3013 px | -39,5 % |
+| 1280 × 900 | 2471 px | -22,1 % |
+
+Pour les 3 viewports :
+
+- `findingCount = 0` ;
+- `failedResponses = []` ;
+- `consoleErrors = []` ;
+- `scrollWidth = clientWidth` ;
+- `h1Count = 1` ;
+- `mainCount = 1` ;
+- `homeListingsCount = 0` ;
+- `homeActionCount = 3` ;
+- `legacyCompagnonLinks = 0` ;
+- `intelligencePanelCount = 0` ;
+- H1 exact conservé.
+
+### Convergence des contrats historiques
+
+Les anciens HVR avaient eux-mêmes dérivé en défendant des décisions désormais rejetées : panneau Intelligence, `/compagnon`, quatre actions, listings HOME et anciennes copies de villes.
+
+Ils ont été migrés vers HOME V1 sans affaiblir les contrôles de vérité/data.
+
+Preuves finales sur le HEAD test/audit `c66bd487d81b4705f7bb781b8d4c5a8ab9a4b64b` :
+
+- HVR-4 Neighborhood Action Proof run `34707890534` — SUCCESS ;
+- HVR-6 Final Homepage Benchmark Proof run `34707890542` — SUCCESS ;
+- Product Constitution Self Check run `34707890481` — SUCCESS ;
+- Home P1 Approved Hero V1 run `34707890513` — SUCCESS ;
+- Phase 1 P1 Home Proof Gate run `34707890556` — SUCCESS ;
+- Phase 1 P1 User Journey Gate run `34707890532` — SUCCESS ;
+- UI All Pages Inventory run `34707890522` — SUCCESS ;
+- CI Workflow Efficiency Policy run `34707890521` — SUCCESS.
+
+Les commits postérieurs au product tree ne modifient que tests/audits/contrats historiques ; ils ne changent pas le runtime HOME certifié.
+
+### Comparaison + score visuel
+
+**Score HOME V1 : 9,1 / 10.**
+
+Justification :
+
+- hiérarchie search-first nettement renforcée ;
+- hauteur totale réduite de 22 à 40 % selon viewport ;
+- aucune perte des invariants L0 ;
+- aucun overflow ou finding automatisé ;
+- cohérence desktop/tablette/mobile acquise.
+
+**Réserve mineure non bloquante :** à 390 px, la bottom-nav mobile peut visuellement empiéter sur le bas du premier viewport et réduire la respiration autour du troisième signal du trust-strip. Ce point appartient au prochain standard navigation/mobile P2 et ne justifie pas de rouvrir HOME V1.
+
+**Conclusion P1 : CLOSED.** Aucun futur polish HOME ne peut modifier les décisions L0 ci-dessus sans procédure d’override explicite.
 
 ---
 
@@ -225,12 +315,12 @@ Le gate autoritaire n’est pas encore dans `main`; sa preuve réelle `BLOCK →
 - [x] guard local + tests ;
 - [x] workflow CI anti-dérive ;
 - [x] règle validation propriétaire → L0 ;
-- [x] self-check Constitution vert sur HEAD de preuve P1 ;
+- [x] self-check Constitution vert sur HEAD courant avant closeout P1 ;
 - [ ] configurer Environment `product-standard-approval` — human/admin gate ;
 - [ ] prouver BLOCK / APPROVE / nouveau HEAD ;
 - [ ] protéger `main` avec le check requis — human/admin gate.
 
-### P1 — HOME STANDARD V1 — CERTIFICATION EN COURS
+### P1 — HOME STANDARD V1 — CLOSED
 
 - [x] audit code HOME ;
 - [x] benchmark structurel international ;
@@ -240,17 +330,19 @@ Le gate autoritaire n’est pas encore dans `main`; sa preuve réelle `BLOCK →
 - [x] comparaison ;
 - [x] accord explicite propriétaire ;
 - [x] promotion des décisions en L0 ;
-- [x] implémentation HOME V1 préparée ;
-- [ ] AFTER 390 / 768 / 1280 ;
-- [ ] tests + score visuel ;
-- [ ] closeout P1.
+- [x] implémentation HOME V1 ;
+- [x] AFTER 390 / 768 / 1280 ;
+- [x] tests + score visuel ;
+- [x] migration des HVR historiques ;
+- [x] closeout P1.
 
 ### P2 — INFORMATION ARCHITECTURE V1 — EN COURS
 
 - [x] inventaire machine-readable majeur ;
 - [x] classification primary / secondary / SEO / utility / legacy / internal ;
 - [x] doublons/legacy structurants identifiés ;
-- [ ] audit complet des callers/liens legacy ;
+- [x] divergence des taxonomies header desktop/search/mobile identifiée ;
+- [ ] audit exhaustif des callers/liens legacy ;
 - [ ] décision finale `/quartiers/[...]/[...]`, `/promoteurs`, namespace `/projets/[slug]`, `/onboarding` ;
 - [ ] navigation desktop/mobile unique ;
 - [ ] accord explicite ;
@@ -306,18 +398,19 @@ Le gate autoritaire n’est pas encore dans `main`; sa preuve réelle `BLOCK →
 - branche : `chore/product-constitution-v1` ;
 - PR : `#1030` — draft ;
 - base : `main@df8b8d9a493553d5fa39ea8b0fa0ee789cf71ee2` ;
-- HEAD preuve BEFORE/candidate : `6a98a89ed6546d277fe2b4f778b0e6873e5b3cd8` ;
-- BEFORE : `34700265162` ✅ ;
-- candidate : `34700265148` ✅ ;
-- Constitution : `34700265182` ✅ ;
-- Efficiency : `34700265219` ✅ ;
+- HOME product tree certifié : `19d8da53b1d4b40ce8a19676d009af62f60f012d` ;
+- HEAD tests/audits avant closeout canonique : `c66bd487d81b4705f7bb781b8d4c5a8ab9a4b64b` ;
+- AFTER exact : `34702315678` ✅ ;
+- HVR-4 : `34707890534` ✅ ;
+- HVR-6 : `34707890542` ✅ ;
+- Constitution : `34707890481` ✅ ;
 - Vercel : 0 ;
 - DB : 0 write.
 
 ## 11. NEXT EXACT
 
-1. Commit atomique HOME V1 + manifest v0.4 + guard renforcé + workflow AFTER.
-2. Vérifier une fois CI ; si échec, diagnostiquer/corriger.
-3. Récupérer AFTER 390 / 768 / 1280 et comparer au BEFORE.
-4. Scorer HOME V1 et fermer P1 si toutes les preuves sont acquises.
-5. Continuer P2 pendant toute CI indépendante.
+1. Vérifier le Product Constitution Self Check déclenché par ce closeout canonique.
+2. Ne plus modifier HOME V1 hors override L0 explicite.
+3. Continuer P2 IA : produire le paquet de décisions architecture/navigation à faire valider par le propriétaire.
+4. P0 reste bloqué sur les actions admin humaines GitHub : Environment `product-standard-approval`, preuve post-merge du gate et protection `main`.
+5. Aucun déploiement Vercel sans autorisation explicite.
