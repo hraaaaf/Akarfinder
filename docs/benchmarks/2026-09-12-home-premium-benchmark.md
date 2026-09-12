@@ -148,27 +148,43 @@ Decision status: REVIEW.
 
 ## Measurement gate before implementation
 
-Required BEFORE evidence:
+Required evidence:
 - 390 × 844
 - 768 × 1024
 - 1280 × 900
-- same HEAD
+- BEFORE and candidate on the same exact HEAD
 - deterministic GitHub Actions mode
+- local **Next production build** (`npm run build` + `npm run start`), never `next dev`
 - exact H1 present
 - no horizontal overflow
+- no Vercel deployment
+- no DB write
 
-Capture workflow:
+Reason for production-build requirement: an initial dev-server capture exposed a Next development issue badge caused by deliberately absent DB secrets. That run is retained as diagnostic evidence but rejected as the canonical visual baseline.
+
+BEFORE workflow:
 `.github/workflows/p1-home-before-visual-baseline.yml`
 
-Capture script:
+BEFORE capture script:
 `scripts/audits/p1-home-before-visual.mjs`
+
+Candidate mockup route:
+`/visual-qa/p1-home-candidate`
+
+Candidate workflow:
+`.github/workflows/p1-home-candidate-visual.yml`
+
+Candidate capture script:
+`scripts/audits/p1-home-candidate-visual.mjs`
+
+Both heavy workflows include a latest-commit scope gate so unrelated PR commits skip build/Chromium work.
 
 ## Next decision package
 
-After BEFORE evidence is acquired:
+After clean same-HEAD evidence is acquired:
 
 1. show BEFORE captures;
-2. produce one AkarFinder-specific mockup/reference, not a clone;
+2. show the AkarFinder-specific candidate mockup;
 3. compare current vs candidate section-by-section;
 4. obtain explicit owner validation;
 5. promote every validated decision automatically to L0 on its exact scope;
