@@ -5,16 +5,18 @@ const baseUrl = process.env.BASE_URL || "http://127.0.0.1:3205";
 const outDir = process.env.AUDIT_OUTPUT_DIR || "data/audits/carte-lot8-multicity";
 await mkdir(outDir, { recursive: true });
 
+// Run the requested Fès / iPhone 14 Pro Max proof first so a diagnostic capture
+// is still preserved if a later certification assertion fails.
 const cities = [
+  { slug: "fes", districtSlug: "ville-nouvelle", city: "Fès", district: "Ville Nouvelle" },
   { slug: "casablanca", districtSlug: "maarif", city: "Casablanca", district: "Maârif" },
   { slug: "marrakech", districtSlug: "gueliz", city: "Marrakech", district: "Guéliz" },
   { slug: "tanger", districtSlug: "malabata", city: "Tanger", district: "Malabata" },
   { slug: "agadir", districtSlug: "founty", city: "Agadir", district: "Founty" },
-  { slug: "fes", districtSlug: "ville-nouvelle", city: "Fès", district: "Ville Nouvelle" },
 ];
 const viewports = [
-  { name: "mobile", width: 390, height: 844 },
   { name: "iphone14promax", width: 430, height: 932, onlyCity: "fes" },
+  { name: "mobile", width: 390, height: 844 },
   { name: "desktop", width: 1280, height: 900 },
 ];
 
@@ -104,6 +106,10 @@ try {
         const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
         if (overflow > 1) throw new Error(`${cityCase.slug}/${viewport.name}: horizontal overflow ${overflow}`);
 
+        // Preserve the actual rendered viewport before contract assertions so CI failures
+        // remain visually diagnosable instead of uploading a nearly-empty artifact.
+        await page.screenshot({ path: `${outDir}/${cityCase.slug}-${cityCase.districtSlug}-${viewport.width}x${viewport.height}.png`, fullPage: false });
+
         if (viewport.width <= 767) {
           if (panelBox.height > 230) throw new Error(`${cityCase.slug}/${viewport.name}: mobile decision sheet too tall ${JSON.stringify(panelBox)}`);
           if (panelBox.y < viewport.height * 0.5) throw new Error(`${cityCase.slug}/${viewport.name}: insufficient visible map band ${JSON.stringify(panelBox)}`);
@@ -112,7 +118,6 @@ try {
 
         if (pageErrors.length) throw new Error(`${cityCase.slug}/${viewport.name}: browser page errors ${JSON.stringify(pageErrors)}`);
 
-        await page.screenshot({ path: `${outDir}/${cityCase.slug}-${cityCase.districtSlug}-${viewport.width}x${viewport.height}.png`, fullPage: false });
         report.cases.push({
           city: cityCase.city,
           district: cityCase.district,
