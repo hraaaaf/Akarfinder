@@ -123,14 +123,24 @@ test("owner approval contract uses a dedicated GitHub environment", () => {
   assert.equal(actualManifest.owner_approval?.require_manifest_update, true);
 });
 
-test("owner override requires both canonical and manifest updates", () => {
+test("owner override requires both canonical and manifest content updates", () => {
   const both = [
-    "docs/AKARFINDER_PRODUCT_CONSTITUTION_CANONICAL.md",
-    "config/product-constitution.json",
+    { filename: "docs/AKARFINDER_PRODUCT_CONSTITUTION_CANONICAL.md", changes: 2 },
+    { filename: "config/product-constitution.json", changes: 1 },
   ];
   assert.equal(overrideDocumentationIsComplete(both, manifest), true);
   assert.equal(
-    overrideDocumentationIsComplete(["docs/AKARFINDER_PRODUCT_CONSTITUTION_CANONICAL.md"], manifest),
+    overrideDocumentationIsComplete([
+      { filename: "docs/AKARFINDER_PRODUCT_CONSTITUTION_CANONICAL.md", changes: 2 },
+    ], manifest),
     false,
   );
+});
+
+test("owner override rejects path-only or mode-only documentation changes", () => {
+  const modeOnly = [
+    { filename: "docs/AKARFINDER_PRODUCT_CONSTITUTION_CANONICAL.md", changes: 0 },
+    { filename: "config/product-constitution.json", changes: 0 },
+  ];
+  assert.equal(overrideDocumentationIsComplete(modeOnly, manifest), false);
 });
