@@ -46,7 +46,7 @@ export function SearchViewSwitcher({
               data-search-mobile-view-mode-button={mode}
               onClick={() => onChange(mode)}
               aria-pressed={active}
-              className={`${styles.option} ${active ? styles.active : ""} min-h-10 min-w-[74px] rounded-full px-3 py-2 text-[12px] font-extrabold transition ${
+              className={`${styles.option} ${active ? styles.active : ""} h-12 min-w-[74px] rounded-full px-3 py-2 text-[12px] font-extrabold transition ${
                 active
                   ? "bg-primary text-primary-foreground shadow-sm"
                   : "text-foreground/65 hover:bg-surface-muted hover:text-foreground"
