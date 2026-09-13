@@ -43,7 +43,9 @@ export function QuickFilters({ filters, cities, propertyTypes, onChange, onReset
   );
 
   const activeCount =
+    (filters.transactionType !== "all" ? 1 : 0) +
     (filters.city !== "all" ? 1 : 0) +
+    (filters.neighborhood && filters.neighborhood !== "all" ? 1 : 0) +
     (filters.minBudget ? 1 : 0) +
     (filters.maxBudget ? 1 : 0) +
     (filters.minSurface ? 1 : 0) +
