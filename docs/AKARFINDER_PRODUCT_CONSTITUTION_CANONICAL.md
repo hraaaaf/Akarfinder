@@ -1,6 +1,6 @@
 # AKARFINDER — PRODUCT CONSTITUTION / CANONICAL
 
-**Version : 0.5 — 2026-09-12**  
+**Version : 0.6 — 2026-09-13**  
 **Statut : ACTIVE / EN CONSTRUCTION — seuls les périmètres explicitement validés sont `L0 / LOCKED`.**
 
 > Source canonique pour l’architecture produit, les standards de pages et les règles anti-dérive d’AkarFinder. `docs/ROADMAP.md` reste la source globale de vérité pour l’avancement data/produit.
@@ -61,13 +61,18 @@ Contenu dynamique, SEO rédactionnel non structurel, données, instrumentation e
 
 ---
 
-## 4. ARCHITECTURE PRODUIT — CANDIDATE V0.2
+## 4. INFORMATION ARCHITECTURE V1 — OWNER APPROVED / L0
 
-**Statut : REVIEW.** Aucun freeze global IA n’est encore accordé.
+**Validation explicite propriétaire : 2026-09-13.**  
+Le message `Je valide p2 tel que proposé !` vaut validation du périmètre exact ci-dessous.
 
-Inventaire machine-readable : `config/product-route-inventory.json`.
+### Goal
 
-### Navigation primaire candidate
+Faire converger l’architecture visible vers une seule taxonomie primaire stable, attribuer clairement chaque route à son univers produit, supprimer le doublon quartier public sans casser les parcours legacy et empêcher tout futur polish de recréer des navigations concurrentes.
+
+### Navigation primaire L0
+
+Ordre exact :
 
 1. Acheter
 2. Louer
@@ -76,48 +81,96 @@ Inventaire machine-readable : `config/product-route-inventory.json`.
 5. Vendre
 6. Pro
 
-### Rôles vérifiés
+Source unique : `lib/product-navigation.ts`.
+
+### Rôles L0 exacts
 
 - `/` : moteur d’entrée + preuve de valeur + accès aux parcours majeurs ;
-- `/search` : moteur unique de résultats, filtres et comparaison ;
-- `/listings/[id]` : détail interne seulement si la politique source l’autorise ;
+- `/search` : moteur universel de résultats, filtres et comparaison ; **ce n’est pas un pilier primaire** ;
 - `/acheter`, `/louer`, `/neuf` : hubs d’intention ;
-- `/map` : Vivre ici / intelligence géographique ;
+- `/map` : univers `Vivre ici` / intelligence géographique ;
 - `/vendre` : parcours vendeur ;
 - `/pro` : hub professionnels ;
-- `/mon-projet` : parcours projet canonique ;
-- `/immobilier` + ville/quartier/intention : couche géographique/SEO canonique.
+- `/mon-projet` et `/favorites` : utilitaires, pas piliers primaires ;
+- `/immobilier/[city]/[district]` : route quartier canonique ;
+- `/listings/[id]` : détail interne seulement si la politique source l’autorise.
 
-### Navigation actuelle — dette vérifiée P2
+### Bottom-nav mobile — couche utilitaire L0
 
-`components/layout/SiteHeader.tsx` possède encore plusieurs taxonomies concurrentes :
+La bottom-nav n’est pas une seconde taxonomie primaire. Elle expose exactement :
 
-- `primaryNav` : Acheter / Louer / Neuf / Recherche ;
-- `searchPrimaryNav` : Acheter / Louer / Neuf / Agences / Mon Projet ;
-- `secondaryNav` : Carte / Mon Projet / Agences / Promoteurs ;
-- `mobileNav` : Recherche / Acheter / Louer / Vendre / Pro.
+1. `/search` — Explorer
+2. `/favorites` — Favoris
+3. `/map` — Vivre ici
+4. `/vendre` — Vendre
+5. `/mon-projet` — Mon Projet
 
-Le prochain standard IA doit converger vers une taxonomie primaire unique desktop/search/mobile. Aucun changement de navigation n’est implicitement autorisé par le freeze HOME V1.
+`/alerts` n’est pas promu tant que les notifications automatiques ne sont pas actives.
 
-### Legacy vérifié
+### Route quartier canonique
+
+- `/quartiers` reste redirigé vers `/immobilier` ;
+- `/quartiers/[citySlug]/[neighborhoodSlug]` effectue désormais une redirection permanente vers `/immobilier/[city]/[district]` ;
+- `/immobilier/[city]/[district]` est l’unique route quartier publique canonique.
+
+### Pro / Neuf — ownership L0, namespace conservé
+
+- `/promoteurs` appartient conceptuellement à **Pro** ; aucune migration d’URL immédiate sans plan SEO/backlinks ;
+- `/professionnels/[slug]` = détail public professionnel, pas hub ;
+- `/projets/[slug]` appartient conceptuellement à **Neuf** ; son namespace actuel reste conservé tant qu’aucune migration SEO/backlinks n’est validée ;
+- `/pro/analytics`, `/pro/alerts` = internes/noindex.
+
+### Legacy conservé intentionnellement
 
 - `/compagnon` → `/mon-projet` ;
 - `/profil-recherche` → `/mon-projet` ;
-- `/onboarding` = compatibilité legacy ;
-- `/quartiers` → `/immobilier` ;
-- doublon restant à arbitrer : `/quartiers/[city]/[quartier]` vs `/immobilier/[city]/[district]`.
+- `/onboarding` = compatibilité legacy.
 
-### Pro / secondaire
+Ils ne doivent être supprimés qu’après audit exhaustif fiable de leurs callers. La recherche de code distante n’ayant pas fourni cette exhaustivité, P2 **ne les supprime pas**.
 
-- `/pro/agences` sous Pro ;
-- `/promoteurs` appartient fonctionnellement à Pro mais URL à arbitrer ;
-- `/professionnels/[slug]` = détail public, pas hub ;
-- `/projets/[slug]` = détail programme neuf, pas hub ;
-- `/pro/analytics`, `/pro/alerts` = internes/noindex ;
-- `/alerts` ne doit pas être promu comme pilier tant que les notifications automatiques ne sont pas actives ;
-- `/investir`, `/credit`, `/mre`, `/compare`, `/favorites` = secondaires.
+### Machine contract
 
-**Limite d’audit :** la recherche de code distante n’a pas fourni un inventaire exhaustif fiable des callers legacy. Les callers déjà vérifiés restent valides ; l’exhaustivité doit être obtenue par un audit repo/local ou un index GitHub fiable avant suppression de routes.
+`config/product-constitution.json` v0.6.0 verrouille `product.information-architecture.v1` :
+
+- ordre des 6 piliers ;
+- `/search`, Favoris et Mon Projet en utilitaires ;
+- `SiteHeader` alimenté par `PRODUCT_PRIMARY_NAV` ;
+- absence des anciennes taxonomies `searchPrimaryNav`, `secondaryNav`, `mobileNav` ;
+- bottom-nav alimentée par `PRODUCT_MOBILE_BOTTOM_NAV` ;
+- absence d’Alertes dans la bottom-nav ;
+- redirection permanente `/quartiers/[city]/[quartier]` vers `/immobilier/[city]/[district]`.
+
+### Preuve BEFORE / AFTER
+
+BEFORE IA :
+- run `34709783962` — SUCCESS ;
+- product HEAD `6bc7946bde7f4ff4e82cc77b86e705a36ff031a8` ;
+- artifact `10302971503` ;
+- digest `sha256:1b00114246c2c54736e0e96a0d4895559b446fce4cd6b95a1389bf58d62f359b` ;
+- 15 routes × 3 viewports ; 50 captures ; 0 finding.
+
+AFTER IA product tree :
+- product HEAD `13150e1ccb3068270b55b5dfb830ba777e50ca70` ;
+- run `34756822484` — SUCCESS ;
+- artifact `10317087695` ;
+- digest `sha256:3da155e3db4d28f33145e030a2771dd0ea3666d76bfb35c6aa5ef7d0412f40eb` ;
+- 15 routes × 3 viewports ; 50 captures attendues / 50 produites ; `findingCount = 0`.
+
+Comparaison observée :
+- HOME reste visuellement stable, conformément à son freeze P1 ;
+- SEARCH mobile passe d’une taxonomie partielle/concurrente à la taxonomie primaire L0 complète ;
+- la bottom-nav cesse de promouvoir `Alertes` et devient une couche utilitaire cohérente ;
+- aucun élargissement du périmètre graphique hors IA.
+
+**Score visuel/structurel P2 : 9,3 / 10.**
+
+Réserve mineure non bloquante : la bottom-nav demeure dense à 390 px, mais reste lisible, sans overflow et cohérente avec le rôle utilitaire validé.
+
+### Convergence des contrats historiques
+
+Les anciens tests/audits défendaient encore la bottom-nav `Carte + Alertes` et une ancienne forme inline de navigation. Ils sont migrés vers la source canonique P2 sans supprimer les contrôles de géométrie, responsive, blur, overflow, active-state ou accessibilité.
+
+**Conclusion P2 : propriétaire approuvé et implémenté ; clôture technique conditionnée uniquement aux derniers gates CI du HEAD de closeout.**
 
 ---
 
@@ -186,7 +239,7 @@ Header/footer existent autour de cette séquence mais ne sont pas figés par P1.
 
 ### Machine contract
 
-`config/product-constitution.json` v0.4.0 verrouille :
+`config/product-constitution.json` verrouille :
 
 - H1 et photos hero ;
 - mode `search-only-v1` ;
@@ -262,7 +315,7 @@ Justification :
 - aucun overflow ou finding automatisé ;
 - cohérence desktop/tablette/mobile acquise.
 
-**Réserve mineure non bloquante :** à 390 px, la bottom-nav mobile peut visuellement empiéter sur le bas du premier viewport et réduire la respiration autour du troisième signal du trust-strip. Ce point appartient au prochain standard navigation/mobile P2 et ne justifie pas de rouvrir HOME V1.
+**Réserve mineure non bloquante :** à 390 px, la bottom-nav mobile peut visuellement empiéter sur le bas du premier viewport et réduire la respiration autour du troisième signal du trust-strip. Ce point appartient au standard navigation/mobile P2 et ne justifie pas de rouvrir HOME V1.
 
 **Conclusion P1 : CLOSED.** Aucun futur polish HOME ne peut modifier les décisions L0 ci-dessus sans procédure d’override explicite.
 
@@ -315,7 +368,7 @@ Le gate autoritaire n’est pas encore dans `main`; sa preuve réelle `BLOCK →
 - [x] guard local + tests ;
 - [x] workflow CI anti-dérive ;
 - [x] règle validation propriétaire → L0 ;
-- [x] self-check Constitution vert sur HEAD courant avant closeout P1 ;
+- [x] self-check Constitution vert sur HEAD de closeout P1 ;
 - [ ] configurer Environment `product-standard-approval` — human/admin gate ;
 - [ ] prouver BLOCK / APPROVE / nouveau HEAD ;
 - [ ] protéger `main` avec le check requis — human/admin gate.
@@ -336,18 +389,23 @@ Le gate autoritaire n’est pas encore dans `main`; sa preuve réelle `BLOCK →
 - [x] migration des HVR historiques ;
 - [x] closeout P1.
 
-### P2 — INFORMATION ARCHITECTURE V1 — EN COURS
+### P2 — INFORMATION ARCHITECTURE V1 — CLOSEOUT CI
 
 - [x] inventaire machine-readable majeur ;
 - [x] classification primary / secondary / SEO / utility / legacy / internal ;
 - [x] doublons/legacy structurants identifiés ;
 - [x] divergence des taxonomies header desktop/search/mobile identifiée ;
-- [ ] audit exhaustif des callers/liens legacy ;
-- [ ] décision finale `/quartiers/[...]/[...]`, `/promoteurs`, namespace `/projets/[slug]`, `/onboarding` ;
-- [ ] navigation desktop/mobile unique ;
-- [ ] accord explicite ;
-- [ ] promotion L0 ;
-- [ ] freeze IA V1 + CI.
+- [x] décision route quartier canonique ;
+- [x] ownership conceptuel `/promoteurs` → Pro et `/projets/[slug]` → Neuf ;
+- [x] décision de conservation des routes legacy jusqu’à audit exhaustif ;
+- [x] navigation desktop/search/mobile unique ;
+- [x] accord explicite propriétaire ;
+- [x] promotion L0 ;
+- [x] BEFORE / AFTER 15 routes × 3 viewports ;
+- [x] score visuel/structurel 9,3/10 ;
+- [x] manifeste IA v0.6.0 ;
+- [ ] derniers gates runtime bottom-nav verts sur HEAD final ;
+- [ ] closeout PR / merge si gouvernance P0 le permet.
 
 ### P3 — SEARCH STANDARD V1
 
@@ -395,22 +453,24 @@ Le gate autoritaire n’est pas encore dans `main`; sa preuve réelle `BLOCK →
 ## 10. ÉTAT DE CHANTIER
 
 - repo : `hraaaaf/Akarfinder` ;
-- branche : `chore/product-constitution-v1` ;
-- PR : `#1030` — draft ;
-- base : `main@df8b8d9a493553d5fa39ea8b0fa0ee789cf71ee2` ;
-- HOME product tree certifié : `19d8da53b1d4b40ce8a19676d009af62f60f012d` ;
-- HEAD tests/audits avant closeout canonique : `c66bd487d81b4705f7bb781b8d4c5a8ab9a4b64b` ;
-- AFTER exact : `34702315678` ✅ ;
-- HVR-4 : `34707890534` ✅ ;
-- HVR-6 : `34707890542` ✅ ;
-- Constitution : `34707890481` ✅ ;
+- branche : `audit/p2-ia-screens-20260912` ;
+- PR : `#1031` ;
+- P1 HOME product tree certifié : `19d8da53b1d4b40ce8a19676d009af62f60f012d` ;
+- P2 IA product tree certifié visuellement : `13150e1ccb3068270b55b5dfb830ba777e50ca70` ;
+- P2 BEFORE : `34709783962` ✅ ;
+- P2 AFTER : `34756822484` ✅ ;
+- P2 AFTER artifact : `10317087695` ;
+- Product Constitution Self Check sur le closeout précédent : `34757721781` ✅ ;
+- Phase 1 P1 Search Truth : `34757721919` ✅ ;
+- Phase 1 P2 Residual Closure : `34757721892` ✅ ;
 - Vercel : 0 ;
 - DB : 0 write.
 
 ## 11. NEXT EXACT
 
-1. Vérifier le Product Constitution Self Check déclenché par ce closeout canonique.
-2. Ne plus modifier HOME V1 hors override L0 explicite.
-3. Continuer P2 IA : produire le paquet de décisions architecture/navigation à faire valider par le propriétaire.
+1. Vérifier une fois les deux certifications runtime bottom-nav après migration de leurs audits.
+2. Si vertes, marquer P2 CLOSED et mettre à jour la PR #1031 avec les preuves finales.
+3. Ne plus modifier l’IA V1 hors override L0 explicite.
 4. P0 reste bloqué sur les actions admin humaines GitHub : Environment `product-standard-approval`, preuve post-merge du gate et protection `main`.
-5. Aucun déploiement Vercel sans autorisation explicite.
+5. Ne pas merger si ces conditions rendent l’intégration du gate non sûre.
+6. Aucun déploiement Vercel sans autorisation explicite.
