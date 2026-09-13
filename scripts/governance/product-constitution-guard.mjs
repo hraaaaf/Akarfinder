@@ -135,8 +135,22 @@ export function collectInvariantViolations(manifest, candidateRoot) {
 }
 
 export function overrideDocumentationIsComplete(changedFiles, manifest) {
-  const changed = new Set(changedFiles);
-  return changed.has(manifest.canonical_file) && changed.has(manifest.manifest_file);
+  const fileMap = new Map(
+    changedFiles.map((file) =>
+      typeof file === "string"
+        ? [file, { filename: file, changes: 1 }]
+        : [file.filename, file],
+    ),
+  );
+
+  for (const requiredPath of [manifest.canonical_file, manifest.manifest_file]) {
+    const file = fileMap.get(requiredPath);
+    if (!file) return false;
+    const changes = Number(file.changes ?? 0);
+    if (!Number.isFinite(changes) || changes <= 0) return false;
+  }
+
+  return true;
 }
 
 function printViolations(violations) {
@@ -191,15 +205,14 @@ async function validateOverrideDocumentation({ manifest, token, repository, prNu
   }
 
   const files = await fetchAllPages(`${prUrl}/files`, token);
-  const changedFiles = files.map((file) => file.filename);
-  const docsComplete = overrideDocumentationIsComplete(changedFiles, manifest);
+  const docsComplete = overrideDocumentationIsComplete(files, manifest);
 
   return {
     ok: docsComplete,
     reasons: docsComplete
       ? []
-      : [`standard override must update both ${manifest.canonical_file} and ${manifest.manifest_file}`],
-    changedFiles,
+      : [`standard override must update content in both ${manifest.canonical_file} and ${manifest.manifest_file}`],
+    changedFiles: files.map((file) => file.filename),
   };
 }
 
