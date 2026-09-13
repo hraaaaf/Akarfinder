@@ -1,192 +1,87 @@
 # AKARFINDER — P1 HOME PREMIUM BENCHMARK
 
 Date: 2026-09-12  
-Status: REVIEW — benchmark only, no new visual decision is LOCKED by this document.  
+Status: FINAL — HOME V1 benchmark implemented, owner-approved and promoted to L0.  
 Canonical: `docs/AKARFINDER_PRODUCT_CONSTITUTION_CANONICAL.md`
 
 ## Goal
 
-Refine AkarFinder HOME into a premium, search-first real-estate engine without changing the already LOCKED positioning:
+Refine AkarFinder HOME into a premium, search-first real-estate engine without changing the LOCKED positioning:
 
 > **1er moteur de recherche immobilier au Maroc**
 
-## Success
+## Final owner-approved HOME V1 contract
 
-A HOME candidate is acceptable only if it:
+1. Exact H1 remains `1er moteur de recherche immobilier au Maroc`.
+2. Search dominates the hero; no competing intelligence panel.
+3. Existing approved hero imagery remains.
+4. Trust strip sits immediately below the hero.
+5. `Vivre ici` comes immediately after the trust strip.
+6. HOME V1 does not render `HomeListingsSection`; any future listing block requires compliant real imagery and a new L0 approval.
+7. Popular cities remain compact and secondary.
+8. The page ends with exactly three actions: `Préparer mon projet`, `Vendre / Estimer`, `Agences & promoteurs`.
+9. No HOME CTA points to legacy `/compagnon`.
+10. Header/footer were excluded from the P1 freeze and handed to P2 Information Architecture.
 
-1. keeps search as the unmistakable first action;
-2. reduces visual competition around the hero;
-3. exposes AkarFinder intelligence after the search rather than before it;
-4. uses real, trustworthy content rather than decorative filler;
-5. gives `Vivre ici` a clear differentiated role;
-6. stays restrained, fast and legible on 390 / 768 / 1280;
-7. can be converted into measurable L0 invariants after owner validation.
+Final HOME sequence:
 
-## Evidence set
+`Hero → Trust strip → Vivre ici → Villes populaires → 3 actions`
 
-### Real-estate leaders
+## Reference set used
 
-- Zillow — search-first residential discovery; broad journey remains secondary to the initial search.
-- Compass — premium editorial restraint; strong whitespace, restrained hierarchy, one dominant property-discovery entry point.
-- Redfin — intent-driven navigation around buy / sell / rent and a central search journey.
-- idealista — simple intent tabs and search dominance; services stay secondary.
-- Rightmove — stable intent architecture; search is the main entry point, with market/services around it.
-- Realtor.com — central discovery plus explicit next-step utilities, without turning the hero into a feature catalogue.
-- Property Finder — strong search + later tools/insights, new projects and market context.
-- Bayut — search supports Buy/Rent, AI, Ready/Off-plan and exposes map/valuation/agent tools after the core search action.
+Real-estate leaders reviewed: Zillow, Compass, Redfin, idealista, Rightmove, Realtor.com, Property Finder and Bayut.
 
-### UX/reference tools
+Transferable conclusions retained:
+- search-first hierarchy;
+- restrained hero;
+- intelligence after search rather than beside it;
+- geographic discovery early but subordinate to search;
+- no decorative listings block without trustworthy inventory media;
+- compact city discovery;
+- distinct end-of-page next actions.
 
-- Baymard — evidence source for search/filter usability; use to reject fashionable patterns that increase friction.
-- Mobbin — reference library for real product screens and interaction patterns.
-- Page Flows — reference library for full user flows rather than isolated screenshots.
-- 21st.dev — implementation/prototyping accelerator; useful to generate alternative component directions, never treated as UX authority.
+## Rejected patterns
 
-### Regression tools
+- hero density copied from marketplaces with broader product scope;
+- cinematic effects that delay search;
+- AI badges used as decoration;
+- generic or pseudo-real listing imagery presented as premium inventory;
+- visual polish that reopens an existing L0 invariant without owner approval.
 
-- Percy — page-level cross-browser visual diff candidate.
-- Chromatic — component/story-level visual baseline candidate if Storybook becomes part of the stack.
+## Verified implementation evidence
 
-## Transferable patterns
+Canonical product tree:
+`19d8da53b1d4b40ce8a19676d009af62f60f012d`
 
-### P1-A — HERO must breathe
+AFTER visual certification:
+- run: `34702315678` — SUCCESS
+- artifact: `10300675974`
+- artifact digest: `sha256:79dc9193a96ca7321251f737bf182de505be36da0f85bb967a71e59ecd72e673`
+- viewports: 390 / 768 / 1280
+- finding count: 0
+- failed responses: 0
+- console errors: 0
+- exact H1 count: 1
+- trust strip count: 1
+- `Vivre ici` count: 1
+- compact cities count: 1
+- HOME listings count: 0
+- end-action count: 3
+- legacy `/compagnon` links: 0
+- competing intelligence panel count: 0
+- horizontal overflow: 0
 
-Observed pattern: premium leaders do not ask the hero to explain the whole company.
+Measured body-height reduction versus clean BEFORE:
+- 390: `4489 → 3432` = **-23.5%**
+- 768: `4983 → 3013` = **-39.5%**
+- 1280: `3171 → 2471` = **-22.1%**
 
-Candidate for AkarFinder:
-- keep exact LOCKED H1;
-- keep Acheter / Louer / Neuf intent tabs;
-- make the search field the largest interactive object;
-- no adjacent feature panel competing with search;
-- no second primary CTA in the same visual hierarchy.
+Final visual score: **9.1/10**.
 
-Decision status: REVIEW.
+Minor reserve recorded, non-blocking: on 390 px, the legacy fixed mobile bottom navigation could reduce first-viewport breathing. Ownership of that issue moved to P2 navigation/mobile and does not reopen HOME V1.
 
-### P1-B — Intelligence belongs immediately after the search
+## Governance
 
-Property Finder and Bayut prove that advanced tools can strengthen the product without polluting the first action.
+This benchmark is no longer a proposal. Its exact owner-approved HOME V1 scope is L0/LOCKED through the Product Constitution. Any future change to those invariants requires the explicit L0 override process.
 
-Candidate for AkarFinder:
-- move `AkarFinder Intelligence` out of the hero;
-- replace it with a compact trust/intelligence strip directly below search;
-- possible signals: `Multi-source`, `Sources visibles`, `Marché & quartiers`.
-
-Decision status: REVIEW.
-
-### P1-C — Vivre ici should be early and distinctive
-
-AkarFinder has a differentiated MapLibre neighborhood/decision experience already validated separately.
-
-Candidate:
-- surface `Vivre ici` directly after the trust strip;
-- reuse the already validated MapLibre visual standard exactly;
-- do not create a decorative HOME-specific map variant.
-
-Decision status: REVIEW pending exact integration and owner approval.
-
-### P1-D — Listings must earn their place
-
-Current HOME cards can fall back to generic property-type artwork labelled `Illustration`.
-
-Candidate:
-- show a premium listings section only when compliant real imagery and sufficient property data exist;
-- otherwise use a restrained search CTA or hide the section;
-- never fake a premium marketplace by enlarging generic artwork.
-
-Decision status: REVIEW.
-
-### P1-E — Cities should orient, not dominate
-
-Candidate:
-- keep popular-city discovery;
-- reduce oversized city-card footprint;
-- prefer a compact, high-signal geographic entry layer.
-
-Decision status: REVIEW.
-
-### P1-F — End the page with three distinct next actions
-
-Candidate:
-1. Préparer mon projet
-2. Vendre / Estimer
-3. Professionnels
-
-Do not repeat `Rechercher un bien` after the page already began with the main search engine.
-
-Decision status: REVIEW.
-
-## Candidate HOME sequence
-
-1. Header
-2. Hero LOCKED H1 + intent tabs + dominant natural-language search
-3. Trust / intelligence strip
-4. Vivre ici preview using validated MapLibre standard
-5. Qualified listings only
-6. Compact popular cities
-7. Three next actions
-8. Footer
-
-## Premium visual rules — candidate
-
-- hierarchy before decoration;
-- large whitespace only where it clarifies priority;
-- one primary action per viewport zone;
-- restrained shadows and border effects;
-- no gratuitous gradients or animation;
-- motion only when it communicates state/location/continuity;
-- consistent radius/spacing/type scale instead of bespoke component styling;
-- real imagery or intentionally abstract system visuals, never pseudo-real filler;
-- mobile receives a deliberate composition, not a collapsed desktop page.
-
-## What NOT to copy
-
-- Bayut/Property Finder density in the hero: too much for AkarFinder's simpler search-engine positioning.
-- luxury-site cinematic effects that delay search.
-- AI badges merely for signalling sophistication.
-- 21st.dev components copied without fitting AkarFinder tokens and information hierarchy.
-- any visual polish that changes an existing L0 invariant without explicit owner approval.
-
-## Measurement gate before implementation
-
-Required evidence:
-- 390 × 844
-- 768 × 1024
-- 1280 × 900
-- BEFORE and candidate on the same exact HEAD
-- deterministic GitHub Actions mode
-- local **Next production build** (`npm run build` + `npm run start`), never `next dev`
-- exact H1 present
-- no horizontal overflow
-- no Vercel deployment
-- no DB write
-
-Reason for production-build requirement: an initial dev-server capture exposed a Next development issue badge caused by deliberately absent DB secrets. That run is retained as diagnostic evidence but rejected as the canonical visual baseline.
-
-BEFORE workflow:
-`.github/workflows/p1-home-before-visual-baseline.yml`
-
-BEFORE capture script:
-`scripts/audits/p1-home-before-visual.mjs`
-
-Candidate mockup route:
-`/visual-qa/p1-home-candidate`
-
-Candidate workflow:
-`.github/workflows/p1-home-candidate-visual.yml`
-
-Candidate capture script:
-`scripts/audits/p1-home-candidate-visual.mjs`
-
-Both heavy workflows include a latest-commit scope gate so unrelated PR commits skip build/Chromium work.
-
-## Next decision package
-
-After clean same-HEAD evidence is acquired:
-
-1. show BEFORE captures;
-2. show the AkarFinder-specific candidate mockup;
-3. compare current vs candidate section-by-section;
-4. obtain explicit owner validation;
-5. promote every validated decision automatically to L0 on its exact scope;
-6. only then implement HOME changes;
-7. capture AFTER at the same viewports and score against the approved target.
+No Vercel deployment and no DB write were part of this benchmark closeout.
