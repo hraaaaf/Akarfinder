@@ -1,6 +1,6 @@
 # AKARFINDER — PRODUCT CONSTITUTION / CANONICAL
 
-**Version : 0.6 — 2026-09-13**  
+**Version : 0.7 — 2026-09-13**  
 **Statut : ACTIVE / EN CONSTRUCTION — seuls les périmètres explicitement validés sont `L0 / LOCKED`.**
 
 > Source canonique pour l’architecture produit, les standards de pages et les règles anti-dérive d’AkarFinder. `docs/ROADMAP.md` reste la source globale de vérité pour l’avancement data/produit.
@@ -61,7 +61,7 @@ Contenu dynamique, SEO rédactionnel non structurel, données, instrumentation e
 
 ---
 
-## 4. INFORMATION ARCHITECTURE V1 — OWNER APPROVED / L0
+## 4. INFORMATION ARCHITECTURE V1 — CLOSED / OWNER APPROVED / L0
 
 **Validation explicite propriétaire : 2026-09-13.**  
 Le message `Je valide p2 tel que proposé !` vaut validation du périmètre exact ci-dessous.
@@ -170,7 +170,16 @@ Réserve mineure non bloquante : la bottom-nav demeure dense à 390 px, mais res
 
 Les anciens tests/audits défendaient encore la bottom-nav `Carte + Alertes` et une ancienne forme inline de navigation. Ils sont migrés vers la source canonique P2 sans supprimer les contrôles de géométrie, responsive, blur, overflow, active-state ou accessibilité.
 
-**Conclusion P2 : propriétaire approuvé et implémenté ; clôture technique conditionnée uniquement aux derniers gates CI du HEAD de closeout.**
+### Closeout final P2
+
+- HEAD final P2 synchronisé avec `main` : `9d7f14be1f8abea51df598c1dcd1d055fa2ce25e` ;
+- Product Constitution Gate : run `34769526198` — SUCCESS ;
+- PR `#1031` mergée ;
+- merge commit `main` : `cc748ec5eb24f422216cb1261e4c01977e7f25d0` ;
+- aucun déploiement Vercel ;
+- aucune écriture DB.
+
+**Conclusion P2 : CLOSED.** Aucun futur polish ne peut modifier l’IA V1 ci-dessus hors procédure d’override L0.
 
 ---
 
@@ -331,7 +340,7 @@ Handover dédié : `docs/handovers/2026-09-11-vivre-ici-maplibre-handover.md`.
 
 ---
 
-## 7. PROTOCOLE D’APPROBATION L0
+## 7. PROTOCOLE D’APPROBATION L0 — CLOSED / PROUVÉ
 
 Propriétaire : `hraaaaf`.
 
@@ -343,24 +352,33 @@ Pour une PR qui modifie un L0 :
 4. approbation explicite propriétaire sur le HEAD exact ;
 5. tout nouveau HEAD invalide l’approbation précédente.
 
-Implémentation cible :
+Implémentation :
 
 - manifeste : `config/product-constitution.json` ;
 - guard : `scripts/governance/product-constitution-guard.mjs` ;
 - tests : `scripts/governance/product-constitution-guard.test.mjs` ;
 - self-check : `.github/workflows/product-constitution-self-check.yml` ;
 - gate autoritaire : `.github/workflows/product-constitution-gate.yml` ;
-- Environment GitHub cible : `product-standard-approval`, reviewer requis `hraaaaf`.
+- Environment GitHub : `product-standard-approval`, reviewer requis `hraaaaf` ;
+- ruleset `AkarFinder Main Protection` actif sur la branche par défaut ;
+- check requis : `gate — GitHub Actions` ;
+- bypass ruleset : aucun.
 
-### Limite actuelle
+### Preuve réelle
 
-Le gate autoritaire n’est pas encore dans `main`; sa preuve réelle `BLOCK → APPROVE → nouveau HEAD re-BLOCK` doit être faite après intégration du gate et configuration de l’Environment.
+- écriture directe sur `main` refusée par GitHub : PR requise + check `gate` attendu ;
+- PR jetable `#1034`, HEAD `8a90d630…` : Product Constitution Gate run `34767709482` bloqué sur `owner_approval` jusqu’à approbation humaine ;
+- après approbation propriétaire : `owner_approval` + `gate` SUCCESS ;
+- nouveau HEAD `6c070ef89cf90752767e42fc5a493757cfd5e344` : nouveau gate `34768126888` repassé en WAITING ;
+- PR de test fermée sans merge.
+
+**Conclusion P0 : CLOSED.** Le verrou L0 est effectif et lié au HEAD exact.
 
 ---
 
 ## 8. ROADMAP
 
-### P0 — Fondation de gouvernance — EN COURS
+### P0 — Fondation de gouvernance — CLOSED
 
 - [x] audit architecture initiale ;
 - [x] benchmark international initial ;
@@ -368,10 +386,10 @@ Le gate autoritaire n’est pas encore dans `main`; sa preuve réelle `BLOCK →
 - [x] guard local + tests ;
 - [x] workflow CI anti-dérive ;
 - [x] règle validation propriétaire → L0 ;
-- [x] self-check Constitution vert sur HEAD de closeout P1 ;
-- [ ] configurer Environment `product-standard-approval` — human/admin gate ;
-- [ ] prouver BLOCK / APPROVE / nouveau HEAD ;
-- [ ] protéger `main` avec le check requis — human/admin gate.
+- [x] self-check Constitution vert ;
+- [x] Environment `product-standard-approval` configuré ;
+- [x] preuve BLOCK / APPROVE / nouveau HEAD re-BLOCK ;
+- [x] `main` protégé avec le check requis `gate`.
 
 ### P1 — HOME STANDARD V1 — CLOSED
 
@@ -389,7 +407,7 @@ Le gate autoritaire n’est pas encore dans `main`; sa preuve réelle `BLOCK →
 - [x] migration des HVR historiques ;
 - [x] closeout P1.
 
-### P2 — INFORMATION ARCHITECTURE V1 — CLOSEOUT CI
+### P2 — INFORMATION ARCHITECTURE V1 — CLOSED
 
 - [x] inventaire machine-readable majeur ;
 - [x] classification primary / secondary / SEO / utility / legacy / internal ;
@@ -404,15 +422,20 @@ Le gate autoritaire n’est pas encore dans `main`; sa preuve réelle `BLOCK →
 - [x] BEFORE / AFTER 15 routes × 3 viewports ;
 - [x] score visuel/structurel 9,3/10 ;
 - [x] manifeste IA v0.6.0 ;
-- [ ] derniers gates runtime bottom-nav verts sur HEAD final ;
-- [ ] closeout PR / merge si gouvernance P0 le permet.
+- [x] derniers gates runtime bottom-nav verts sur HEAD final ;
+- [x] PR `#1031` mergée après Product Constitution Gate vert.
 
-### P3 — SEARCH STANDARD V1
+### P3 — SEARCH STANDARD V1 — EN COURS
 
-- [ ] audit /search ;
+- [x] audit code initial `/search` ;
+- [x] benchmark international initial Redfin / Rightmove / idealista / Zillow ;
+- [ ] BEFORE `/search` 390 / 768 / 1280 ;
+- [ ] confirmer les anomalies code-level dans le navigateur réel ;
 - [ ] freeze layout/filtres/cards/map bridge/continuity ;
 - [ ] tests responsive ;
 - [ ] accord + L0.
+
+Audit courant : `docs/audits/2026-09-13-p3-search-standard-audit.md`.
 
 ### P4 — VIVRE ICI / MAP STANDARD V1
 
@@ -431,11 +454,11 @@ Le gate autoritaire n’est pas encore dans `main`; sa preuve réelle `BLOCK →
 
 ### P6 — HARDENING
 
-- [ ] ruleset/branch protection ;
-- [ ] checks requis ;
-- [ ] tests de contournement ;
+- [ ] ruleset/branch protection final multi-standards ;
+- [ ] checks requis finaux ;
+- [ ] tests de contournement finaux ;
 - [ ] documentation agent ;
-- [ ] closeout canonique.
+- [ ] closeout canonique global.
 
 ---
 
@@ -453,24 +476,26 @@ Le gate autoritaire n’est pas encore dans `main`; sa preuve réelle `BLOCK →
 ## 10. ÉTAT DE CHANTIER
 
 - repo : `hraaaaf/Akarfinder` ;
-- branche : `audit/p2-ia-screens-20260912` ;
-- PR : `#1031` ;
+- branche produit intégrée : `main` ;
+- HEAD `main` après P2 : `cc748ec5eb24f422216cb1261e4c01977e7f25d0` ;
+- PR P2 : `#1031` — MERGED ;
 - P1 HOME product tree certifié : `19d8da53b1d4b40ce8a19676d009af62f60f012d` ;
 - P2 IA product tree certifié visuellement : `13150e1ccb3068270b55b5dfb830ba777e50ca70` ;
-- P2 BEFORE : `34709783962` ✅ ;
-- P2 AFTER : `34756822484` ✅ ;
-- P2 AFTER artifact : `10317087695` ;
-- Product Constitution Self Check sur le closeout précédent : `34757721781` ✅ ;
-- Phase 1 P1 Search Truth : `34757721919` ✅ ;
-- Phase 1 P2 Residual Closure : `34757721892` ✅ ;
-- Vercel : 0 ;
+- P2 final HEAD : `9d7f14be1f8abea51df598c1dcd1d055fa2ce25e` ;
+- P2 Product Constitution Gate : `34769526198` ✅ ;
+- P2 merge commit : `cc748ec5eb24f422216cb1261e4c01977e7f25d0` ;
+- P0 owner-approval proof : `34767709482` ✅ après approbation ;
+- P0 new-HEAD re-BLOCK : `34768126888` ✅ WAITING observé ;
+- P3 branche audit : `audit/p3-search-standard-20260913` ;
+- P3 audit initial : `docs/audits/2026-09-13-p3-search-standard-audit.md` ;
+- Vercel : 0 action ;
 - DB : 0 write.
 
 ## 11. NEXT EXACT
 
-1. Vérifier une fois les deux certifications runtime bottom-nav après migration de leurs audits.
-2. Si vertes, marquer P2 CLOSED et mettre à jour la PR #1031 avec les preuves finales.
-3. Ne plus modifier l’IA V1 hors override L0 explicite.
-4. P0 reste bloqué sur les actions admin humaines GitHub : Environment `product-standard-approval`, preuve post-merge du gate et protection `main`.
-5. Ne pas merger si ces conditions rendent l’intégration du gate non sûre.
+1. Produire les captures BEFORE `/search` aux viewports 390 / 768 / 1280 sur un état de recherche stable.
+2. Vérifier visuellement le contrôle `list / split / map` mobile et les feedbacks de filtres actifs.
+3. Vérifier read-only la cohérence `total / overlap` entre lane interne et gateway.
+4. À partir des preuves, proposer la liste exacte des invariants P3 à valider ; aucun freeze avant accord propriétaire.
+5. Si changement UI retenu : mockup/référence → implémentation → AFTER mêmes viewports → comparaison/tests → score.
 6. Aucun déploiement Vercel sans autorisation explicite.
