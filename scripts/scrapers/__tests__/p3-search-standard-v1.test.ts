@@ -8,6 +8,7 @@ const source = (path: string) => readFileSync(resolve(ROOT, path), "utf8");
 
 const switcher = source("components/search/SearchViewSwitcher.tsx");
 const filters = source("components/search/QuickFilters.tsx");
+const intelligence = source("components/search/SearchPriceExplorerDock.tsx");
 
 test("P3 mobile exposes a real Liste/Carte control", () => {
   assert.match(switcher, /const MOBILE_VIEW_ORDER: readonly SearchViewMode\[\] = \["list", "map"\]/);
@@ -41,4 +42,10 @@ test("P3 active filter count reflects every visible search dimension", () => {
   ]) {
     assert.ok(filters.includes(expected), `missing active filter dimension: ${expected}`);
   }
+});
+
+test("P3 keeps neighborhood intelligence secondary to actual visible results", () => {
+  assert.match(intelligence, /visibleListings\.length === 0/);
+  assert.match(intelligence, /return null/);
+  assert.match(intelligence, /data-search-secondary-intelligence/);
 });
