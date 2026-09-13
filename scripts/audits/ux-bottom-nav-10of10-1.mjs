@@ -10,8 +10,8 @@ fs.mkdirSync(outDir, { recursive: true });
 const expected = [
   ["/search", "Explorer"],
   ["/favorites", "Favoris"],
-  ["/map", "Carte"],
-  ["/alerts", "Alertes"],
+  ["/map", "Vivre ici"],
+  ["/vendre", "Vendre"],
   ["/mon-projet", "Mon Projet"],
 ];
 const hrefMatches = (actual, wanted) => actual === wanted || (wanted === "/map" && actual?.startsWith("/map?"));
@@ -64,12 +64,12 @@ try {
       if (!item) local.push(`missing ${href}`);
       else if (item.label !== label) local.push(`${href} label=${item.label}`);
     }
-    if (metrics.items.some((item) => item.href === "/vendre" || item.href === "/contact")) local.push("obsolete destination present");
+    if (metrics.items.some((item) => item.href === "/alerts" || item.href === "/contact")) local.push("obsolete destination present");
     const active = metrics.items.find((item) => item.current === "page");
     if (metrics.activeCount !== 1 || active?.href !== "/search") local.push(`search active=${metrics.activeCount}:${active?.href ?? "none"}`);
     if (metrics.overflowX > 1) local.push(`overflowX=${metrics.overflowX}`);
 
-    for (const [route, expectedHref] of [["/favorites", "/favorites"], ["/map", "/map"], ["/alerts", "/alerts"], ["/mon-projet", "/mon-projet"], ["/acheter", "/search"]]) {
+    for (const [route, expectedHref] of [["/favorites", "/favorites"], ["/map", "/map"], ["/vendre", "/vendre"], ["/mon-projet", "/mon-projet"], ["/acheter", "/search"]]) {
       const routeResponse = await page.goto(`${baseUrl}${route}`, { waitUntil: "domcontentloaded", timeout: 60_000 });
       if (!routeResponse || routeResponse.status() >= 400) { local.push(`${route} returned ${routeResponse?.status() ?? "no response"}`); continue; }
       const routeNav = page.locator('[data-premium-bottomnav="ux-premium-bottomnav-glass-1"]');
@@ -107,8 +107,8 @@ try {
   await browser.close();
 }
 
-const report = { lot: "UX-BOTTOM-NAV-10OF10-1", target: "canonical-mockup-premium-glass", variant, baseUrl, generatedAt: new Date().toISOString(), score: failures.length === 0 ? 10 : Math.max(0, 10 - Math.min(10, failures.length)), failures, results };
+const report = { lot: "UX-BOTTOM-NAV-10OF10-1", target: "p2-ia-v1-premium-glass", variant, baseUrl, generatedAt: new Date().toISOString(), score: failures.length === 0 ? 10 : Math.max(0, 10 - Math.min(10, failures.length)), failures, results };
 fs.writeFileSync(path.join(outDir, "report.json"), JSON.stringify(report, null, 2));
 console.log(JSON.stringify(report, null, 2));
 if (failures.length > 0) process.exit(1);
-console.log("UX-BOTTOM-NAV-10OF10-1 canonical premium glass certification passed at 10/10.");
+console.log("UX-BOTTOM-NAV-10OF10-1 P2 IA premium glass certification passed at 10/10.");

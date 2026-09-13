@@ -186,7 +186,7 @@ describe("CARTE-QUARTIER-P1A.2 — structured district Search contract", () => {
     const routing = source("lib/odm/odm-public-routing.ts");
     const api = source("app/api/search/route.ts");
     assert.ok(routing.includes("export function supportsOdmPublicSearchQuery"));
-    assert.ok(routing.includes("return query.offset === undefined && !query.district?.trim()"));
+    assert.ok(routing.includes("return (query.offset === undefined || query.offset === 0) && !query.district?.trim()"));
     assert.ok(routing.includes("odmCapable && shouldServeOdmPublicCanary"));
     assert.ok(api.includes("if (!supportsOdmPublicSearchQuery(query)) return"));
   });

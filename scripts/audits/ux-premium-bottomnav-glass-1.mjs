@@ -14,8 +14,8 @@ const viewports = [
 const expectedDestinations = [
   ["/search", "Explorer"],
   ["/favorites", "Favoris"],
-  ["/map", "Carte"],
-  ["/alerts", "Alertes"],
+  ["/map", "Vivre ici"],
+  ["/vendre", "Vendre"],
   ["/mon-projet", "Mon Projet"],
 ];
 const hrefMatches = (actual, expected) => actual === expected || (expected === "/map" && actual?.startsWith("/map?"));
@@ -64,7 +64,7 @@ for (const v of viewports) {
       if (!item) failures.push(`${v.name}: missing ${href}`);
       else if (item.label !== label) failures.push(`${v.name}: ${href} label ${item.label}`);
     }
-    for (const forbidden of ["/vendre", "/contact"]) {
+    for (const forbidden of ["/alerts", "/contact"]) {
       if (metrics.items.some((item) => item.href === forbidden)) failures.push(`${v.name}: obsolete ${forbidden}`);
     }
     const activeItem = metrics.items.find((item) => item.current === "page");
@@ -77,7 +77,7 @@ for (const v of viewports) {
 }
 
 await browser.close();
-const report = { lot: "UX-PREMIUM-BOTTOMNAV-GLASS-1", target: "canonical-mockup", variant, score: failures.length === 0 ? 10 : Math.max(0, 10 - failures.length), pass: failures.length === 0, failures, results };
+const report = { lot: "UX-PREMIUM-BOTTOMNAV-GLASS-1", target: "p2-ia-v1", variant, score: failures.length === 0 ? 10 : Math.max(0, 10 - failures.length), pass: failures.length === 0, failures, results };
 await fs.writeFile(path.join(outDir, "report.json"), JSON.stringify(report, null, 2));
 console.log(JSON.stringify(report, null, 2));
 if (failures.length) process.exit(1);
