@@ -15,6 +15,7 @@ test("P3 mobile exposes a real Liste/Carte control", () => {
   assert.match(switcher, /data-search-mobile-view-select/);
   assert.match(switcher, /flex min-w-0 rounded-full[^\n]+sm:hidden/);
   assert.match(switcher, /data-search-mobile-view-mode-button=\{mode\}/);
+  assert.match(switcher, /h-12 min-w-\[74px\]/);
   assert.doesNotMatch(switcher, /h-12 hidden sm:hidden/);
 });
 
@@ -42,6 +43,12 @@ test("P3 active filter count reflects every visible search dimension", () => {
   ]) {
     assert.ok(filters.includes(expected), `missing active filter dimension: ${expected}`);
   }
+});
+
+test("P3 surfaces the active minimum budget and lets the user clear it", () => {
+  assert.match(filters, /data-search-active-min-budget/);
+  assert.match(filters, /Min \{Number\(filters\.minBudget\)\.toLocaleString\("fr-FR"\)\} DH/);
+  assert.match(filters, /onChange\(\{ \.\.\.filters, minBudget: "" \}\)/);
 });
 
 test("P3 keeps neighborhood intelligence secondary to actual visible results", () => {
