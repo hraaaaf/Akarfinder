@@ -96,8 +96,8 @@
 
 /* P3 runtime contract: the search field and filter trigger keep their certified
  * touch heights even when legacy search styles are loaded in later CSS chunks. */
-:global([data-premium-searchbar="ux-premium-searchbar-1"] .premium-search-input),
-:global([data-premium-searchbar="ux-premium-searchbar-1"] .premium-filter-trigger) {
+:global(body):has(.root) :global([data-premium-searchbar="ux-premium-searchbar-1"] .premium-search-input),
+:global(body):has(.root) :global([data-premium-searchbar="ux-premium-searchbar-1"] .premium-filter-trigger) {
   height: 56px !important;
 }
 
@@ -163,8 +163,8 @@
 }
 
 @media (min-width: 1024px) {
-  :global([data-premium-searchbar="ux-premium-searchbar-1"] .premium-search-input),
-  :global([data-premium-searchbar="ux-premium-searchbar-1"] .premium-filter-trigger) {
+  :global(body):has(.root) :global([data-premium-searchbar="ux-premium-searchbar-1"] .premium-search-input),
+  :global(body):has(.root) :global([data-premium-searchbar="ux-premium-searchbar-1"] .premium-filter-trigger) {
     height: 52px !important;
   }
 }
