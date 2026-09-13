@@ -129,6 +129,20 @@ export function QuickFilters({ filters, cities, propertyTypes, onChange, onReset
         </button>
       </div>
 
+      {filters.minBudget ? (
+        <div data-search-active-min-budget className="flex items-center gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <button
+            type="button"
+            onClick={() => onChange({ ...filters, minBudget: "" })}
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border/20 bg-surface px-2.5 py-1 text-[11px] font-bold text-foreground/75 transition hover:border-bronze-500/35 hover:text-foreground"
+            aria-label="Retirer le budget minimum"
+          >
+            Min {Number(filters.minBudget).toLocaleString("fr-FR")} DH
+            <X size={10} strokeWidth={2.6} aria-hidden="true" />
+          </button>
+        </div>
+      ) : null}
+
       <div id="advanced-search-filters" data-search-advanced-filters className={`${showFilters ? "sm:block" : "sm:hidden"} hidden ${ui.surface} p-3`}>
         <div className="mb-3">{compactTransactionSelector}</div>
         <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-5">{advancedFields}</div>
