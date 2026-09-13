@@ -7,16 +7,19 @@ const ROOT = process.cwd();
 const source = (path: string) => readFileSync(resolve(ROOT, path), "utf8");
 
 const switcher = source("components/search/SearchViewSwitcher.tsx");
+const switcherStyles = source("components/search/SearchViewSwitcher.module.css");
 const filters = source("components/search/QuickFilters.tsx");
 const intelligence = source("components/search/SearchPriceExplorerDock.tsx");
 
-test("P3 mobile exposes a real Liste/Carte control", () => {
+test("P3 mobile exposes exactly the Liste/Carte control", () => {
   assert.match(switcher, /const MOBILE_VIEW_ORDER: readonly SearchViewMode\[\] = \["list", "map"\]/);
   assert.match(switcher, /data-search-mobile-view-select/);
-  assert.match(switcher, /flex min-w-0 rounded-full[^\n]+sm:hidden/);
+  assert.match(switcher, /styles\.mobileSegmented/);
   assert.match(switcher, /data-search-mobile-view-mode-button=\{mode\}/);
-  assert.match(switcher, /h-12 min-w-\[74px\]/);
-  assert.doesNotMatch(switcher, /h-12 hidden sm:hidden/);
+  assert.match(switcherStyles, /\.mobileSegmented\s*\{[\s\S]*display: none !important/);
+  assert.match(switcherStyles, /@media \(max-width: 639px\)[\s\S]*\.mobileSegmented\s*\{[\s\S]*display: flex !important/);
+  assert.match(switcherStyles, /\.desktopSegmented\s*\{[\s\S]*display: none !important/);
+  assert.match(switcherStyles, /\.mobileSegmented \.option\s*\{[\s\S]*min-height: 48px !important/);
 });
 
 test("P3 prevents the desktop split state from leaking into the mobile layout", () => {
@@ -28,7 +31,13 @@ test("P3 prevents the desktop split state from leaking into the mobile layout", 
 test("P3 keeps Liste/Split/Carte available on tablet and desktop", () => {
   assert.match(switcher, /SEARCH_VIEW_ORDER\.map/);
   assert.match(switcher, /data-search-desktop-view-switcher/);
-  assert.match(switcher, /hidden min-w-0 rounded-full[^\n]+sm:flex/);
+  assert.match(switcher, /styles\.desktopSegmented/);
+  assert.match(switcherStyles, /\.desktopSegmented\s*\{[\s\S]*display: flex !important/);
+});
+
+test("P3 preserves certified search-control heights", () => {
+  assert.match(switcherStyles, /premium-search-input[\s\S]*premium-filter-trigger[\s\S]*height: 56px !important/);
+  assert.match(switcherStyles, /@media \(min-width: 1024px\)[\s\S]*height: 52px !important/);
 });
 
 test("P3 active filter count reflects every visible search dimension", () => {
@@ -52,7 +61,7 @@ test("P3 surfaces the active minimum budget and lets the user clear it", () => {
 });
 
 test("P3 keeps neighborhood intelligence secondary to actual visible results", () => {
-  assert.match(intelligence, /visibleListings\.length === 0/);
-  assert.match(intelligence, /return null/);
+  assert.match(intelligence, /if \(!hasUsefulContent\) return null/);
+  assert.match(intelligence, /if \(visibleListings\.length === 0\) return null/);
   assert.match(intelligence, /data-search-secondary-intelligence/);
 });

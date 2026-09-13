@@ -31,7 +31,7 @@ export function SearchViewSwitcher({
     <div className={`${styles.root} min-w-0 ${className}`} data-results-toolbar-view-control>
       <div
         data-search-mobile-view-select
-        className={`${styles.segmented} flex min-w-0 rounded-full border border-border/20 bg-surface p-1 sm:hidden dark:border-white/12 dark:bg-white/[0.06]`}
+        className={`${styles.segmented} ${styles.mobileSegmented} min-w-0 rounded-full border border-border/20 bg-surface p-1 dark:border-white/12 dark:bg-white/[0.06]`}
         role="group"
         aria-label="Mode d’affichage des résultats"
       >
@@ -46,7 +46,7 @@ export function SearchViewSwitcher({
               data-search-mobile-view-mode-button={mode}
               onClick={() => onChange(mode)}
               aria-pressed={active}
-              className={`${styles.option} ${active ? styles.active : ""} h-12 min-w-[74px] rounded-full px-3 py-2 text-[12px] font-extrabold transition ${
+              className={`${styles.option} ${active ? styles.active : ""} min-w-[74px] rounded-full px-3 py-2 text-[12px] font-extrabold transition ${
                 active
                   ? "bg-primary text-primary-foreground shadow-sm"
                   : "text-foreground/65 hover:bg-surface-muted hover:text-foreground"
@@ -60,7 +60,7 @@ export function SearchViewSwitcher({
 
       <div
         data-search-desktop-view-switcher
-        className={`${styles.segmented} hidden min-w-0 rounded-full border border-border/20 bg-surface p-1 sm:flex dark:border-white/12 dark:bg-white/[0.06]`}
+        className={`${styles.segmented} ${styles.desktopSegmented} min-w-0 rounded-full border border-border/20 bg-surface p-1 dark:border-white/12 dark:bg-white/[0.06]`}
         role="group"
         aria-label="Mode d’affichage des résultats"
       >

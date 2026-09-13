@@ -9,7 +9,6 @@
 }
 
 .segmented {
-  display: flex !important;
   width: 100%;
   min-width: 0;
   min-height: 40px;
@@ -22,6 +21,14 @@
   background: rgb(244 247 251) !important;
   box-shadow: inset 0 0 0 1px rgb(221 231 242);
   color-scheme: light;
+}
+
+.mobileSegmented {
+  display: none !important;
+}
+
+.desktopSegmented {
+  display: flex !important;
 }
 
 .option {
@@ -87,16 +94,37 @@
   color-scheme: light;
 }
 
+/* P3 runtime contract: the search field and filter trigger keep their certified
+ * touch heights even when legacy search styles are loaded in later CSS chunks. */
+:global([data-premium-searchbar="ux-premium-searchbar-1"] .premium-search-input),
+:global([data-premium-searchbar="ux-premium-searchbar-1"] .premium-filter-trigger) {
+  height: 56px !important;
+}
+
 @media (max-width: 639px) {
   .root {
-    display: none;
+    display: block;
+    width: 150px;
+  }
+
+  .mobileSegmented {
+    display: flex !important;
+    min-height: 48px;
+  }
+
+  .desktopSegmented {
+    display: none !important;
+  }
+
+  .mobileSegmented .option {
+    min-height: 48px !important;
   }
 
   :global([data-search-results-toolbar]):has(.root) {
     display: flex !important;
     align-items: center !important;
     justify-content: space-between !important;
-    gap: 10px !important;
+    gap: 8px !important;
     padding-top: 0 !important;
     padding-bottom: 0 !important;
   }
@@ -120,16 +148,23 @@
     display: flex !important;
     width: auto;
     flex: 0 0 auto;
-    gap: 0 !important;
+    gap: 4px !important;
   }
 
   :global([data-search-results-toolbar]):has(.root) :global([data-search-sort-select]) {
-    width: 124px !important;
-    max-width: 124px !important;
+    width: 116px !important;
+    max-width: 116px !important;
     height: 44px !important;
     border-radius: 9999px !important;
-    padding-left: 12px !important;
-    padding-right: 28px !important;
+    padding-left: 10px !important;
+    padding-right: 24px !important;
     font-size: 12px !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  :global([data-premium-searchbar="ux-premium-searchbar-1"] .premium-search-input),
+  :global([data-premium-searchbar="ux-premium-searchbar-1"] .premium-filter-trigger) {
+    height: 52px !important;
   }
 }
