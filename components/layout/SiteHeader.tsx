@@ -7,6 +7,7 @@ import { Heart, Menu, UserRound, X } from "lucide-react";
 import { Container } from "@/components/ui/Container";
 import { useFavoriteSelection } from "@/components/favorites/useFavoriteSelection";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { PRODUCT_PRIMARY_NAV, isPrimaryProductPath } from "@/lib/product-navigation";
 
 type SiteHeaderProps = {
   variant?: "light" | "dark" | "transparent";
@@ -14,36 +15,6 @@ type SiteHeaderProps = {
   fluid?: boolean;
   searchMode?: boolean;
 };
-
-const primaryNav = [
-  { href: "/acheter", text: "Acheter" },
-  { href: "/louer", text: "Louer" },
-  { href: "/neuf", text: "Neuf" },
-  { href: "/search", text: "Recherche" },
-] as const;
-
-const searchPrimaryNav = [
-  { href: "/acheter", text: "Acheter" },
-  { href: "/louer", text: "Louer" },
-  { href: "/neuf", text: "Neuf" },
-  { href: "/pro/agences", text: "Agences" },
-  { href: "/mon-projet", text: "Mon Projet" },
-] as const;
-
-const secondaryNav = [
-  { href: "/map", text: "Carte" },
-  { href: "/mon-projet", text: "Mon Projet" },
-  { href: "/pro/agences", text: "Agences" },
-  { href: "/promoteurs", text: "Promoteurs" },
-] as const;
-
-const mobileNav = [
-  { href: "/search", label: "Recherche" },
-  { href: "/acheter", label: "Acheter" },
-  { href: "/louer", label: "Louer" },
-  { href: "/vendre", label: "Vendre" },
-  { href: "/pro", label: "Pro" },
-] as const;
 
 const professionalAudience = "agences et promoteurs";
 
@@ -71,11 +42,46 @@ export function SiteHeader({
 
   useEffect(() => setMenuOpen(false), [pathname]);
 
+  const renderMobileMenu = (dark = false) =>
+    menuOpen ? (
+      <nav
+        aria-label="Navigation mobile principale"
+        data-product-primary-nav="p2-ia-v1-mobile"
+        className={dark
+          ? "border-t border-white/8 bg-[#071B33] px-4 py-3 lg:hidden"
+          : "border-t border-slate-200 bg-white px-4 py-3 lg:hidden"}
+      >
+        <div className="grid grid-cols-2 gap-2">
+          {PRODUCT_PRIMARY_NAV.map((item) => {
+            const active = isPrimaryProductPath(pathname, item.href);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-label={item.href === "/pro" ? `Espace Pro — ${professionalAudience}` : undefined}
+                aria-current={active ? "page" : undefined}
+                className={`min-h-11 rounded-xl border px-3 py-3 text-[13px] font-bold transition ${
+                  active
+                    ? "border-[#0B63CE] bg-[#0B63CE] text-white"
+                    : dark
+                      ? "border-white/10 bg-white/[0.045] text-white/75 hover:border-[#0B63CE]/40 hover:text-white"
+                      : "border-slate-200 bg-white text-slate-700 hover:border-[#0B63CE]/40 hover:text-[#0B2545]"
+                }`}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
+    ) : null;
+
   if (searchMode) {
     return (
       <header
         data-search-global-header="exact-white"
         data-premium-search-header="ux-premium-header-1"
+        data-product-ia="p2-ia-v1"
         className="sticky top-0 z-30 border-b border-slate-200/70 bg-white text-slate-900 shadow-[0_1px_12px_rgba(11,37,69,0.035)]"
       >
         <Container fluid={fluid} className="relative h-[67px] !px-4 sm:!px-6 lg:h-[63px] lg:!px-6">
@@ -89,54 +95,31 @@ export function SiteHeader({
             >
               {menuOpen ? <X size={23} strokeWidth={1.8} /> : <Menu size={23} strokeWidth={1.8} />}
             </button>
-
-            <Link href="/" className="mx-auto flex items-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0B63CE]/30" aria-label="AkarFinder - accueil">
-              <img
-                src="/brand/logo-v2/logo-header-light.png"
-                alt="AkarFinder"
-                width={142}
-                height={35}
-                className="h-[29px] w-auto"
-              />
+            <Link href="/" className="mx-auto flex items-center rounded-md" aria-label="AkarFinder - accueil">
+              <img src="/brand/logo-v2/logo-header-light.png" alt="AkarFinder" width={142} height={35} className="h-[29px] w-auto" />
             </Link>
-
-            <Link
-              href="/mon-projet"
-              aria-label="Mon Projet"
-              className="grid h-11 w-11 place-items-center rounded-full text-[#0B2545] transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0B63CE]/30"
-            >
+            <Link href="/mon-projet" aria-label="Mon Projet" className="grid h-11 w-11 place-items-center rounded-full text-[#0B2545] transition hover:bg-slate-100">
               <UserRound size={23} strokeWidth={1.8} />
             </Link>
           </div>
 
-          <div className="hidden h-full items-center justify-between gap-8 lg:flex">
-            <div className="flex min-w-0 items-center gap-10">
-              <Link href="/" className="flex shrink-0 items-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0B63CE]/30" aria-label="AkarFinder - accueil">
-                <img
-                  src="/brand/logo-v2/logo-header-light.png"
-                  alt="AkarFinder"
-                  width={150}
-                  height={37}
-                  className="h-[31px] w-auto"
-                />
+          <div className="hidden h-full items-center justify-between gap-6 lg:flex">
+            <div className="flex min-w-0 items-center gap-7">
+              <Link href="/" className="flex shrink-0 items-center rounded-md" aria-label="AkarFinder - accueil">
+                <img src="/brand/logo-v2/logo-header-light.png" alt="AkarFinder" width={150} height={37} className="h-[31px] w-auto" />
               </Link>
-
-              <nav aria-label="Navigation principale">
-                <ul className="flex h-[63px] items-center gap-7">
-                  {searchPrimaryNav.map((item) => {
-                    const isActive = pathname.startsWith(item.href);
+              <nav aria-label="Navigation principale" data-product-primary-nav="p2-ia-v1-desktop">
+                <ul className="flex h-[63px] items-center gap-5 xl:gap-7">
+                  {PRODUCT_PRIMARY_NAV.map((item) => {
+                    const active = isPrimaryProductPath(pathname, item.href);
                     return (
                       <li key={item.href} className="h-full">
                         <Link
                           href={item.href}
-                          aria-current={isActive ? "page" : undefined}
-                          className={`relative flex h-full items-center px-0.5 text-[13px] font-semibold transition ${
-                            isActive
-                              ? "text-[#0B2545] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[#0B63CE]"
-                              : "text-slate-700 hover:text-[#0B2545]"
-                          }`}
+                          aria-current={active ? "page" : undefined}
+                          className={`relative flex h-full items-center px-0.5 text-[13px] font-semibold transition ${active ? "text-[#0B2545] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[#0B63CE]" : "text-slate-700 hover:text-[#0B2545]"}`}
                         >
-                          {item.text}
+                          {item.label}
                         </Link>
                       </li>
                     );
@@ -144,77 +127,28 @@ export function SiteHeader({
                 </ul>
               </nav>
             </div>
-
             <div className="flex shrink-0 items-center gap-2">
-              <Link
-                href="/favorites"
-                aria-label={favoriteCount > 0 ? `Mes favoris (${favoriteCount})` : "Mes favoris"}
-                className="relative flex h-10 items-center gap-2 rounded-lg px-3 text-[13px] font-semibold text-slate-700 transition hover:bg-slate-100 hover:text-[#0B2545]"
-              >
+              <Link href="/favorites" aria-label={favoriteCount > 0 ? `Mes favoris (${favoriteCount})` : "Mes favoris"} className="relative flex h-10 items-center gap-2 rounded-lg px-3 text-[13px] font-semibold text-slate-700 transition hover:bg-slate-100 hover:text-[#0B2545]">
                 <Heart size={18} fill={favoriteCount > 0 ? "currentColor" : "none"} />
                 <span>Favoris</span>
-                {favoriteCount > 0 ? (
-                  <span className="absolute right-0 top-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#0B63CE] px-1 text-[9px] font-extrabold text-white">
-                    {favoriteCount > 9 ? "9+" : favoriteCount}
-                  </span>
-                ) : null}
+                {favoriteCount > 0 ? <span className="absolute right-0 top-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#0B63CE] px-1 text-[9px] font-extrabold text-white">{favoriteCount > 9 ? "9+" : favoriteCount}</span> : null}
               </Link>
-
-              <Link
-                href="/vendre"
-                className="rounded-lg border border-[#0B2545]/25 bg-white px-4 py-2.5 text-[12.5px] font-bold text-[#0B2545] transition hover:border-[#0B63CE]/45 hover:bg-slate-50"
-              >
-                Publier
-              </Link>
-
-              <Link
-                href="/mon-projet"
-                aria-label="Mon Projet"
-                className="grid h-10 w-10 place-items-center rounded-full text-[#0B2545] transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0B63CE]/30"
-              >
+              <Link href="/mon-projet" aria-label="Mon Projet" className="grid h-10 w-10 place-items-center rounded-full text-[#0B2545] transition hover:bg-slate-100">
                 <UserRound size={21} strokeWidth={1.8} />
               </Link>
             </div>
           </div>
         </Container>
-
-        {menuOpen ? (
-          <nav aria-label="Navigation mobile principale" className="border-t border-slate-200 bg-white px-4 py-3 lg:hidden">
-            <div className="grid grid-cols-2 gap-2">
-              {mobileNav.map((item) => {
-                const isActive =
-                  item.href === "/pro"
-                    ? pathname.startsWith("/pro") || pathname.startsWith("/promoteurs")
-                    : pathname.startsWith(item.href);
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    aria-label={item.href === "/pro" ? `Espace Pro — ${professionalAudience}` : undefined}
-                    aria-current={isActive ? "page" : undefined}
-                    className={`min-h-11 rounded-xl border px-3 py-3 text-[13px] font-bold transition ${
-                      isActive
-                        ? "border-[#0B63CE] bg-[#0B63CE] text-white"
-                        : "border-slate-200 bg-white text-slate-700 hover:border-[#0B63CE]/40 hover:text-[#0B2545]"
-                    }`}
-                  >
-                    {item.label}
-                  </Link>
-                );
-              })}
-            </div>
-          </nav>
-        ) : null}
+        {renderMobileMenu(false)}
       </header>
     );
   }
 
   const transparentActive = isTransparent && !scrolled;
   const darkSurface = isDark || (isTransparent && scrolled);
-
-  const linkClass = (isActive: boolean) =>
+  const linkClass = (active: boolean) =>
     `relative rounded-full ${compact ? "px-1.5 py-1 text-[12.5px]" : "px-2 py-1.5 text-[13.5px]"} font-semibold transition ${
-      isActive
+      active
         ? darkSurface || transparentActive
           ? "text-white after:absolute after:bottom-0 after:left-2 after:right-2 after:h-0.5 after:rounded-full after:bg-bronze-400"
           : "text-slate-900 after:absolute after:bottom-0 after:left-2 after:right-2 after:h-0.5 after:rounded-full after:bg-[#0B63CE]"
@@ -226,9 +160,8 @@ export function SiteHeader({
   return (
     <header
       data-search-global-header={compact ? "compact" : undefined}
-      className={`z-50 border-b transition-all duration-300 ${
-        isTransparent ? "fixed left-0 right-0 top-0" : "sticky top-0 z-30"
-      } ${
+      data-product-ia="p2-ia-v1"
+      className={`z-50 border-b transition-all duration-300 ${isTransparent ? "fixed left-0 right-0 top-0" : "sticky top-0 z-30"} ${
         transparentActive
           ? "border-transparent bg-transparent text-white"
           : darkSurface
@@ -236,62 +169,29 @@ export function SiteHeader({
             : "border-slate-200/80 bg-white text-slate-900 shadow-[0_1px_4px_rgba(15,23,42,0.05)] backdrop-blur"
       }`}
     >
-      <Container
-        fluid={fluid}
-        className={`flex items-center justify-between gap-3 ${compact ? "py-1.5 sm:py-2" : "py-2.5 sm:py-3"}`}
-      >
+      <Container fluid={fluid} className={`flex items-center justify-between gap-3 ${compact ? "py-1.5 sm:py-2" : "py-2.5 sm:py-3"}`}>
         <Link href="/" className="flex min-w-0 items-center" aria-label="AkarFinder - accueil">
-          {darkSurface || transparentActive ? (
-            <img
-              src="/brand/logo-v2/logo-header-dark.png"
-              alt="AkarFinder"
-              width={132}
-              height={33}
-              className={compact ? "h-[23px] w-auto sm:h-[28px]" : "h-[25px] w-auto sm:h-[34px]"}
-            />
-          ) : (
-            <img
-              src="/brand/logo-v2/logo-header-light.png"
-              alt="AkarFinder"
-              width={132}
-              height={33}
-              className={compact ? "h-[23px] w-auto sm:h-[28px]" : "h-[25px] w-auto sm:h-[34px]"}
-            />
-          )}
+          <img
+            src={darkSurface || transparentActive ? "/brand/logo-v2/logo-header-dark.png" : "/brand/logo-v2/logo-header-light.png"}
+            alt="AkarFinder"
+            width={132}
+            height={33}
+            className={compact ? "h-[23px] w-auto sm:h-[28px]" : "h-[25px] w-auto sm:h-[34px]"}
+          />
         </Link>
 
-        <nav aria-label="Navigation principale" className="hidden lg:block">
-          <ul className={`flex items-center ${compact ? "gap-2.5 xl:gap-3.5" : "gap-4"}`}>
-            {primaryNav.map((item) => {
-              const isActive = pathname.startsWith(item.href);
+        <nav aria-label="Navigation principale" className="hidden lg:block" data-product-primary-nav="p2-ia-v1-desktop">
+          <ul className={`flex items-center ${compact ? "gap-1.5 xl:gap-2.5" : "gap-2.5 xl:gap-4"}`}>
+            {PRODUCT_PRIMARY_NAV.map((item) => {
+              const active = isPrimaryProductPath(pathname, item.href);
               return (
                 <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    aria-current={isActive ? "page" : undefined}
-                    className={linkClass(isActive)}
-                  >
-                    {item.text}
+                  <Link href={item.href} aria-current={active ? "page" : undefined} className={linkClass(active)}>
+                    {item.label}
                   </Link>
                 </li>
               );
             })}
-            <li className="group relative">
-              <button type="button" className={linkClass(false)} aria-haspopup="menu">
-                Plus
-              </button>
-              <div className="invisible absolute right-0 top-full z-50 mt-2 w-48 translate-y-1 rounded-2xl border border-border/15 bg-card p-2 opacity-0 shadow-xl transition group-hover:visible group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:opacity-100 dark:border-white/10 dark:bg-[#0A213D]">
-                {secondaryNav.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className="block rounded-xl px-3 py-2.5 text-[13px] font-semibold text-foreground/75 transition hover:bg-surface hover:text-foreground dark:text-white/75 dark:hover:bg-white/8 dark:hover:text-white"
-                  >
-                    {item.text}
-                  </Link>
-                ))}
-              </div>
-            </li>
           </ul>
         </nav>
 
@@ -300,89 +200,34 @@ export function SiteHeader({
           <Link
             href="/favorites"
             aria-label={favoriteCount > 0 ? `Mes favoris (${favoriteCount})` : "Mes favoris"}
-            className={`relative hidden h-9 w-9 items-center justify-center rounded-full transition sm:flex ${
-              darkSurface || transparentActive
-                ? "text-white/70 hover:bg-white/10 hover:text-white"
-                : "text-slate-500 hover:bg-red-50 hover:text-red-500"
-            }`}
+            className={`relative hidden h-9 w-9 items-center justify-center rounded-full transition sm:flex ${darkSurface || transparentActive ? "text-white/70 hover:bg-white/10 hover:text-white" : "text-slate-500 hover:bg-red-50 hover:text-red-500"}`}
           >
             <Heart size={18} fill={favoriteCount > 0 ? "currentColor" : "none"} />
-            {favoriteCount > 0 ? (
-              <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-extrabold text-white">
-                {favoriteCount > 9 ? "9+" : favoriteCount}
-              </span>
-            ) : null}
+            {favoriteCount > 0 ? <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-extrabold text-white">{favoriteCount > 9 ? "9+" : favoriteCount}</span> : null}
           </Link>
-
-          <Link
-            href="/vendre"
-            className={`hidden rounded-xl border px-3.5 py-2 text-[12.5px] font-bold transition md:block ${
-              darkSurface || transparentActive
-                ? "border-white/18 bg-white/6 text-white hover:bg-white/12"
-                : "border-slate-200 bg-white text-slate-700 hover:border-[#0B63CE]/35 hover:text-slate-900"
-            }`}
-          >
-            Publier
-          </Link>
-
           <Link
             href="/mon-projet"
             aria-current={pathname.startsWith("/mon-projet") ? "page" : undefined}
-            className={
-              compact
-                ? darkSurface || transparentActive
-                  ? "rounded-lg border border-white/15 bg-white/[0.08] px-3 py-1.5 text-[11.5px] font-bold text-white transition hover:bg-white/[0.14] sm:px-3.5 sm:text-[12.5px]"
-                  : "rounded-lg border border-[#0B63CE]/20 bg-[#0B63CE]/[0.06] px-3 py-1.5 text-[11.5px] font-bold text-[#0B63CE] transition hover:bg-[#0B63CE]/[0.10] sm:px-3.5 sm:text-[12.5px]"
-                : "rounded-xl bg-[#0B63CE] px-3 py-2 text-[11.5px] font-bold text-white shadow-[0_4px_14px_rgba(11,99,206,0.24)] transition hover:bg-[#084BA8] sm:px-4 sm:text-[13px]"
-            }
+            className={compact
+              ? darkSurface || transparentActive
+                ? "rounded-lg border border-white/15 bg-white/[0.08] px-3 py-1.5 text-[11.5px] font-bold text-white transition hover:bg-white/[0.14] sm:px-3.5 sm:text-[12.5px]"
+                : "rounded-lg border border-[#0B63CE]/20 bg-[#0B63CE]/[0.06] px-3 py-1.5 text-[11.5px] font-bold text-[#0B63CE] transition hover:bg-[#0B63CE]/[0.10] sm:px-3.5 sm:text-[12.5px]"
+              : "rounded-xl bg-[#0B63CE] px-3 py-2 text-[11.5px] font-bold text-white shadow-[0_4px_14px_rgba(11,99,206,0.24)] transition hover:bg-[#084BA8] sm:px-4 sm:text-[13px]"}
           >
             Mon Projet
           </Link>
-
           <button
             type="button"
             aria-label={menuOpen ? "Fermer le menu" : "Ouvrir le menu"}
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen((open) => !open)}
-            className={`grid h-9 w-9 place-items-center rounded-full lg:hidden ${
-              darkSurface || transparentActive ? "text-white hover:bg-white/10" : "text-slate-700 hover:bg-slate-100"
-            }`}
+            className={`grid h-9 w-9 place-items-center rounded-full lg:hidden ${darkSurface || transparentActive ? "text-white hover:bg-white/10" : "text-slate-700 hover:bg-slate-100"}`}
           >
             {menuOpen ? <X size={19} /> : <Menu size={19} />}
           </button>
         </div>
       </Container>
-
-      {menuOpen ? (
-        <nav
-          aria-label="Navigation mobile principale"
-          className="border-t border-border/10 bg-card px-4 py-3 dark:border-white/8 dark:bg-[#071B33] lg:hidden"
-        >
-          <div className="grid grid-cols-2 gap-2">
-            {mobileNav.map((item) => {
-              const isActive =
-                item.href === "/pro"
-                  ? pathname.startsWith("/pro") || pathname.startsWith("/promoteurs")
-                  : pathname.startsWith(item.href);
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  aria-label={item.href === "/pro" ? `Espace Pro — ${professionalAudience}` : undefined}
-                  aria-current={isActive ? "page" : undefined}
-                  className={`min-h-10 rounded-xl border px-3 py-3 text-[13px] font-bold transition ${
-                    isActive
-                      ? "border-[#0B63CE] bg-[#0B63CE] text-white"
-                      : "border-border/15 bg-surface text-foreground/75 hover:border-[#0B63CE]/40 hover:text-foreground dark:border-white/10 dark:bg-white/[0.045] dark:text-white/75"
-                  }`}
-                >
-                  {item.label}
-                </Link>
-              );
-            })}
-          </div>
-        </nav>
-      ) : null}
+      {renderMobileMenu(darkSurface || transparentActive)}
     </header>
   );
 }
