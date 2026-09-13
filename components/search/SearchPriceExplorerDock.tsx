@@ -72,10 +72,14 @@ export function SearchPriceExplorerDock() {
     context.heatmap.status === "available" ||
     context.similarNeighborhoods.status === "available";
 
-  if (!hasUsefulContent) return null;
+  // P3: market intelligence stays secondary to actual search results.
+  // When the result surface has no visible cards, avoid replacing the empty
+  // state with several screens of contextual panels that cannot help compare
+  // an available property set.
+  if (!hasUsefulContent || visibleListings.length === 0) return null;
 
   return (
-    <section className="mx-auto max-w-[1480px] px-4 pt-5 sm:px-6" aria-label="Explorateur local synchronisé">
+    <section data-search-secondary-intelligence className="mx-auto max-w-[1480px] px-4 pt-5 sm:px-6" aria-label="Explorateur local synchronisé">
       <div className="hidden" aria-hidden="true">
         <CityNeighborhoodExplorerPanel model={context.explorer} />
         <CertifiedLocalHeatmapPanel model={context.heatmap} />
