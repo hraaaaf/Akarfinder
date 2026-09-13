@@ -1,241 +1,165 @@
-# AKARFINDER — P3 SEARCH STANDARD V1 — AUDIT
+# AKARFINDER — P3 SEARCH STANDARD V1 — AUDIT / IMPLEMENTATION
 
 **Date:** 2026-09-13  
-**Statut:** AUDIT / NON LOCKED  
-**Base:** `main@cc748ec5eb24f422216cb1261e4c01977e7f25d0`
+**Statut:** IMPLEMENTATION AUTORISÉE / AFTER REQUIS AVANT FREEZE L0  
+**Base:** `main@cc748ec5eb24f422216cb1261e4c01977e7f25d0`  
+**Branche:** `audit/p3-search-standard-20260913`  
+**PR:** `#1035`
 
 ## Goal
 
-Définir le standard durable de `/search` avant tout nouveau polish, sans rouvrir P1 HOME ni P2 IA.
+Définir puis prouver un standard durable de `/search` centré sur les résultats, sans rouvrir P1 HOME ni P2 IA.
 
 ### Succès observable
 
-- structure runtime réelle de `/search` inventoriée ;
-- dettes/ambiguïtés UX séparées des invariants solides ;
-- benchmark international recoupé ;
-- proposition P3 explicite prête à être soumise au propriétaire ;
-- aucune décision P3 promue L0 avant accord explicite.
-
-### Preuve attendue
-
-Code `main` + captures BEFORE 390/768/1280 + benchmark externe + tests responsive + accord propriétaire sur le périmètre exact.
+- recherche, filtres, résultats et carte forment la couche primaire ;
+- mobile expose toujours `Liste / Carte` ;
+- tablette/desktop conservent `Liste / Mixte / Carte` ;
+- filtres actifs ont un feedback cohérent ;
+- l’intelligence quartier/marché reste secondaire aux résultats ;
+- continuité Search ↔ Map ↔ Detail préservée ;
+- AFTER 390 / 768 / 1280 sans overflow ni régression ;
+- aucun nouveau standard P3 déclaré L0 sans preuve AFTER + accord propriétaire sur le périmètre exact.
 
 ---
 
-## 1. Runtime actuel vérifié
+## 1. BEFORE — PREUVE RÉELLE
 
-### Page `/search`
+Run : `34783010840` — **SUCCESS**  
+HEAD : `d0f45c119b2abf10a7d9abdc2cdc5c0f3149eed3`  
+Artifact : `10325676726` — `p3-search-before-34783010840`  
+Digest : `sha256:6163177f001324c24875eb663b8b0376b8ca42bd871482f10e4ccfa5a418ec10`
 
-`app/search/page.tsx` :
+Viewports :
 
-- route dynamique (`force-dynamic`) ;
-- canonical `/search`, `robots.index=false`, `follow=true` ;
-- 24 résultats/page ;
-- initial search server-side ;
-- `SiteHeader searchMode` ;
-- `SearchMapNavigationBridge` ;
-- `SearchPersonalizationControl` ;
-- `PropertySelectionProvider` + compare + quick preview ;
-- `LightZillowSearchShell` ;
-- `SearchPriceExplorerDock` ;
-- `FinderLauncher` ;
-- footer search.
+- 390 × 844 ;
+- 768 × 1024 ;
+- 1280 × 900.
 
-La page est donc déjà un **moteur de résultats multi-outils**, pas un simple listing.
+### Constats vérifiés
 
-### Shell principal
+1. **390 px : contrôle de vue absent.** Le défaut code `hidden sm:hidden` est confirmé visuellement.
+2. **768 / 1280 : contrôle de vue présent.**
+3. Aucun overflow horizontal observé.
+4. Les filtres primaires sont visibles.
+5. Le compteur de filtres et les chips ne représentent pas exactement toutes les dimensions actives.
+6. Le scénario BEFORE peut afficher un compteur de résultats tout en laissant les panneaux d’intelligence quartier/marché dominer la suite de page lorsque les cartes visibles sont absentes.
+7. `/api/geo/casablanca-arrondissements?canary=1` peut répondre 404 dans le scénario d’audit ; ce comportement vient du gate canary existant et ne doit pas être transformé en 200 artificiel sans vérifier son contrat.
 
-`LightZillowSearchShell` porte :
+---
 
-- filtres + URL canonique de session ;
-- tri ;
-- pagination ;
-- vues `split/list/map` ;
-- résultats internes ;
-- résultats indexés gateway ;
-- carte ;
+## 2. RUNTIME / DETTES STRUCTURELLES
+
+`/search` combine déjà :
+
+- SSR initial + pagination ;
+- lane `/api/search` ;
+- lane `/api/search/gateway` ;
+- filtres + URL canonique ;
+- liste / mixte / carte ;
+- compare + quick preview ;
 - personnalisation Mon Projet ;
-- compare ;
-- continuité retour listing/search/map.
+- continuité Search ↔ Map ↔ Detail ;
+- intelligence prix/quartier en aval.
 
-### Filtres
+Dettes identifiées :
 
-`QuickFilters` contient :
-
-- recherche texte dominante ;
-- chips rapides `Tous / À vendre / À louer / Prix / Filtres` ;
-- panneau avancé desktop ;
-- bottom-sheet mobile ;
-- transaction, ville, budget min/max, surface min, type de bien ;
-- sélecteur visuel du type de bien.
+- contrôle mobile de vue historiquement masqué ;
+- feedback incomplet de certains filtres actifs ;
+- deux lanes de résultats dont la sémantique de total/overlap reste à auditer séparément ;
+- `SearchMapNavigationBridge` basé sur `MutationObserver`, fonctionnel mais couplé au DOM ;
+- empilement de plusieurs générations CSS ;
+- trop de surfaces secondaires capables de concurrencer les résultats.
 
 ---
 
-## 2. Points solides à préserver comme candidats P3
+## 3. BENCHMARK / PRINCIPE RETENU
 
-> **Candidats seulement. Pas L0 avant validation propriétaire.**
+Benchmark initial : Redfin / Rightmove / idealista / Zillow.
 
-1. `/search` reste le moteur universel P2, pas un nouveau pilier primaire.
-2. Recherche + filtres restent immédiatement accessibles au-dessus des résultats.
-3. Les filtres importants sont reflétés dans l’URL pour partage/retour/navigation.
-4. Le résultat conserve une continuité liste ↔ détail ↔ carte.
-5. La carte est un mode de consultation du même état de recherche, pas une recherche parallèle divergente.
-6. Mobile utilise un sheet de filtres dédié plutôt qu’un formulaire desktop compressé.
-7. Les cartes gardent accès à la source/provenance et aux mécanismes de comparaison existants.
+Convergence utile :
 
----
+- carte et liste partagent le même état de recherche ;
+- filtres essentiels visibles, avancés dans un panneau ;
+- changement de vue disponible sans casser la requête ;
+- résultats restent visuellement prioritaires ;
+- continuité de zone/filtres lors du passage carte ↔ liste.
 
-## 3. Dettes / risques trouvés dans le code
-
-### A. Contrôle de vue mobile probablement invisible — priorité haute
-
-`SearchViewSwitcher.tsx` donne au `<select data-search-mobile-view-select>` les classes `hidden sm:hidden`.
-
-Au niveau du code Tailwind, cela le masque à toutes les tailles. Le switcher desktop est lui-même `hidden ... sm:flex`.
-
-**Risque :** aucun contrôle visible `liste / split / carte` sous `sm`, alors que le shell démarre en `split`.
-
-**Statut :** anomalie code-level forte, à confirmer par capture BEFORE 390 avant correction.
-
-### B. Compteur de filtres incomplet
-
-`QuickFilters.activeCount` compte ville, budgets, surface et type de bien, mais pas notamment la transaction active. D’autres états existent dans `ListingFiltersState` (`mreOnly`, reliability/package score dans le shell) sans présence claire dans le compteur/chips courant.
-
-**Risque :** l’utilisateur peut avoir une recherche réellement filtrée sans feedback équivalent dans le badge de filtres.
-
-### C. État URL incomplet selon les filtres runtime
-
-`buildBrowserSearchUrl` persiste q/city/district/transaction/property type/budget/surface/sort/page/project, mais certains états runtime ne sont pas persistés dans cette fonction.
-
-**Risque :** partage/back/refresh pouvant ne pas reproduire exactement un état avancé si ces filtres sont activables ailleurs.
-
-### D. Deux lanes de résultats à clarifier
-
-Le shell utilise simultanément :
-
-- `/api/search` pour `listings` ;
-- `/api/search/gateway` pour `gatewayResults` sur la page 1.
-
-`totalResultCount` prend le maximum de plusieurs compteurs et le rendu juxtapose les deux familles.
-
-**Risque à vérifier :** sémantique du total, overlap cross-lane et perception d’une seule liste continue.
-
-Aucune conclusion de doublon réel n’est déclarée sans test de données.
-
-### E. Bridge carte/détail par MutationObserver
-
-`SearchMapNavigationBridge` réécrit les `href` de tous les liens `/map` et `/listings/` trouvés dans le DOM via `MutationObserver`.
-
-**Avantage :** continuité centralisée aujourd’hui.  
-**Dette :** couplage implicite et global, fragile face à de nouveaux composants/liens.
-
-À conserver fonctionnellement en P3, mais l’implémentation peut rester L1 tant que le contrat de continuité est testé.
-
-### F. Empilement CSS historique
-
-`app/search/page.tsx` importe actuellement plusieurs feuilles de polish spécialisées (`search-density`, `search-controls-10of10`, premium card/grid/density, convergence L2, P4 map shell, property-type visuals/target art...).
-
-**Risque :** la page possède plusieurs générations de standards visuels superposés. P3 doit figer un contrat visible unique avant tout nouveau polish.
-
-### G. Densité fonctionnelle élevée
-
-Compare dock + quick preview + personalization + price explorer + FinderLauncher + map + gateway + tri + filtres vivent sur la même surface.
-
-**Risque UX :** valeur forte, mais priorité visuelle potentiellement diluée. P3 doit distinguer :
-
-- couche primaire : chercher / filtrer / lire / comparer / carte ;
-- couche secondaire : personnalisation, price explorer, Mon Projet ;
-- utilitaires contextuels : quick preview, compare dock.
+Le benchmark n’impose pas de recopier leurs identités visuelles. AkarFinder conserve ses standards P1/P2.
 
 ---
 
-## 4. Benchmark international recoupé
+## 4. MOCKUP P3 V2 / SCORE
 
-### Redfin
+Le mockup V1 était visuellement fort mais réinventait des éléments P2 L0. Il n’est donc pas une cible littérale.
 
-Référence : recherche par ville/quartier/ZIP, résultats centrés sur la carte, zoom dynamique, dessin de zone, filtres au-dessus des résultats et sauvegarde de recherche.
+Le **P3 V2 exécutable** correspond au concept du mockup V2 avec corrections obligatoires :
 
-**Leçon pour AkarFinder :** état recherche + carte doivent rester une seule expérience continue.
+- header P2 L0 conservé exactement ;
+- bottom-nav P2 L0 conservée exactement ;
+- pas de grand hero photo sur `/search` ;
+- résultats + carte deviennent la priorité ;
+- mobile : `Liste / Carte` ;
+- tablette/desktop : `Liste / Mixte / Carte` ;
+- intelligence quartier/marché après la surface de résultats ;
+- filtres actifs compréhensibles et persistants ;
+- continuité Search ↔ Map préservée.
 
-### Rightmove
+**Score cible exécutable : 9,6 / 10.**
 
-Référence : recherche initiale simple, filtre tray sur la page de résultats, tri près du premier résultat, bascule map/list, filtres avancés regroupés.
-
-**Leçon :** ne pas afficher tous les filtres en permanence ; garder les critères essentiels visibles et le reste dans un panneau clair.
-
-### idealista
-
-Référence 2026 : sélection de plusieurs zones depuis home/listing/map, ajout/retrait immédiat, résultat unique mis à jour en temps réel.
-
-**Leçon :** la géographie doit être modifiable sans casser la recherche en cours. Multi-zone est une piste future, pas un prérequis P3 V1.
-
-### Zillow
-
-Référence : map/list, draw search, filtres prix/chambres/surface/type, recherche multi-zone et recherche naturelle ; possibilité de sauvegarder la recherche.
-
-**Leçon :** la valeur du moteur vient de la combinaison `intention + zone + filtres + carte + continuité`, pas d’une accumulation de widgets.
+L’autorisation propriétaire était conditionnelle : `si ça dépasse 9.5 commence le code`. Le seuil est dépassé, donc **l’implémentation est autorisée**. Cette autorisation ne vaut pas encore certification visuelle finale : le freeze L0 P3 reste conditionné à l’AFTER et à la validation du périmètre exact.
 
 ---
 
-## 5. Proposition de standard P3 à soumettre
+## 5. IMPLEMENTATION EN COURS
 
-### Couche primaire proposée
+### Fait
 
-`Search bar → quick filters → résultat count + tri + view → list/map → cards`
+- `SearchViewSwitcher.tsx`
+  - mobile `Liste / Carte` réellement visible ;
+  - mobile normalise `split` vers `list` ;
+  - tablette/desktop conservent les trois modes ;
+  - cibles tactiles mobile `h-12`.
+- `QuickFilters.tsx`
+  - compteur actif couvre transaction, ville, quartier, budget min/max, surface et type.
+- `SearchPriceExplorerDock.tsx`
+  - les panneaux d’intelligence restent secondaires ;
+  - ils ne remplacent plus un état sans cartes visibles par plusieurs écrans de contenu annexe.
+- contrat P3 : `scripts/scrapers/__tests__/p3-search-standard-v1.test.ts`.
+- workflow : `.github/workflows/p3-search-standard-v1.yml`.
 
-### Vues
+### Preuves CI déjà obtenues
 
-- desktop ≥ 1024 : `split` par défaut ; `list` et `map` disponibles ;
-- tablette : décision après BEFORE 768 ;
-- mobile : **list par défaut**, bouton carte explicite et toujours accessible ; pas de split compressé.
+Sur le HEAD précédent `26dbac261d04cef3eb76d8a2a34eb657b478f3ab` :
 
-### Filtres
+- `P3 Search Standard V1` run `34787376848` — **SUCCESS** ;
+- un ancien gate mobile a détecté l’absence de classe `h-12` ; correction appliquée au HEAD suivant.
 
-Toujours visibles :
+Sur le HEAD `697429cc8ead979fead22ede992a77afad38b7f8` :
 
-- texte/localisation ;
-- transaction ;
-- prix ;
-- type ;
-- bouton Filtres.
+- `P3 Search Standard V1` run `34787502406` — **SUCCESS** ;
+- `UX P1 Mobile Decision Ergonomics` run `34787502437` — **SUCCESS** ;
+- `Product Constitution Self Check` run `34787502384` — **SUCCESS** ;
+- `UX Gate 0 Contracts` run `34787502392` — **SUCCESS** ;
+- `Phase 1 P1 Final Sweep Gate` run `34787502427` — **SUCCESS** ;
+- `Phase 1 P1 Search Truth Gate` run `34787502415` — **SUCCESS** ;
+- `CI Workflow Efficiency Policy` run `34787502394` — **SUCCESS**.
 
-Dans le sheet/panneau :
-
-- ville/quartier ;
-- surface ;
-- critères avancés réellement supportés par l’API.
-
-Règle proposée : **tout filtre actif doit être visible dans un chip/compteur et reproductible via URL ou session canonique documentée.**
-
-### Cards
-
-Garder une hiérarchie stable :
-
-`photo → prix → localisation → type/surface/pièces → confiance/source → actions`
-
-Pas de nouveau redesign P3 sans BEFORE/mockup/AFTER.
-
-### Carte / continuité
-
-Contrat proposé :
-
-- mêmes filtres et même zone entre list/map ;
-- retour d’un détail restaure recherche + scroll/session ;
-- `project_id` préservé ;
-- aucun lien carte ne repart vers un état vierge.
+D’autres workflows sont encore en cours sur ce HEAD ; ils ne bloquent pas le travail indépendant.
 
 ---
 
-## 6. Décision / ordre d’exécution
+## 6. RESTE À PROUVER
 
-1. Capturer BEFORE `/search` en 390 / 768 / 1280 sur un jeu de données stable.
-2. Vérifier le défaut du view switcher mobile dans le navigateur réel.
-3. Mesurer l’état des filtres URL/chips et la cohérence du compteur.
-4. Vérifier overlap/total entre lane interne et gateway sans écriture DB.
-5. Produire un mockup P3 uniquement si le BEFORE confirme un besoin visuel.
-6. Présenter au propriétaire la liste exacte des invariants à promouvoir L0.
-7. Après accord seulement : implémentation → AFTER mêmes viewports → tests → score → manifeste/CI.
+1. Capturer AFTER aux mêmes viewports 390 / 768 / 1280.
+2. Montrer les captures au propriétaire.
+3. Comparer BEFORE / AFTER et scorer le résultat observé, pas le mockup.
+4. Vérifier que le budget minimum actif possède un feedback visuel cohérent dans l’état final.
+5. Auditer read-only la sémantique `total / overlap` entre lane interne et gateway sans écriture DB.
+6. Ne toucher au contrat 404 du canary géo qu’après preuve qu’il s’agit d’un défaut utilisateur réel et non du comportement attendu du feature gate.
+7. Après preuve AFTER + validation propriétaire : promouvoir le périmètre exact P3 en L0/manifeste puis passer le Product Constitution Gate sur le HEAD exact.
 
-## État
+## Deployment / DB
 
-P3 est **ouvert en audit uniquement**. Aucun nouveau standard P3 n’est L0 à ce stade.
+- Vercel : **0 action** ;
+- DB : **0 write**.
