@@ -38,11 +38,13 @@ describe("Phase 1 P2 — residual UX closure", () => {
 
   it("makes one canonical Pro entry discoverable on mobile and all professional paths discoverable in the footer", () => {
     const header = source("components/layout/SiteHeader.tsx");
+    const navigation = source("lib/product-navigation.ts");
     const footer = source("components/landing/SiteFooter.tsx");
 
-    assert.ok(header.includes('{ href: "/pro", label: "Pro"'));
+    assert.ok(header.includes("PRODUCT_PRIMARY_NAV"));
     assert.ok(header.includes("agences et promoteurs"));
-    assert.ok(header.includes('pathname.startsWith("/promoteurs")'));
+    assert.ok(navigation.includes('{ href: "/pro", label: "Pro" }'));
+    assert.ok(navigation.includes('pathname.startsWith("/promoteurs")'));
 
     assert.ok(footer.includes("Professionnels"));
     assert.ok(footer.includes('{ label: "AkarFinder Pro", href: "/pro" }'));
