@@ -7,10 +7,10 @@ const ROOT = process.cwd();
 const source = (path: string) => readFileSync(resolve(ROOT, path), "utf8");
 
 const nav = source("components/layout/MobileBottomNav.tsx");
+const navigation = source("lib/product-navigation.ts");
 const designSystem = source("components/ui/design-system.ts");
 const layout = source("app/layout.tsx");
 const secondaryShell = source("components/layout/SecondaryPageShell.tsx");
-const alerts = source("app/alerts/page.tsx");
 
 test("UX-BOTTOM-NAV remains the one global mobile navigation", () => {
   assert.match(layout, /import \{ MobileBottomNav \} from "@\/components\/layout\/MobileBottomNav"/);
@@ -22,7 +22,7 @@ test("UX-BOTTOM-NAV remains the one global mobile navigation", () => {
 });
 
 test("UX-BOTTOM-NAV uses the canonical floating AkarFinder glass language", () => {
-  assert.match(nav, /data-mobile-bottom-nav="exact-light-blue"/);
+  assert.match(nav, /data-mobile-bottom-nav="p2-ia-v1"/);
   assert.match(nav, /data-premium-bottomnav="ux-premium-bottomnav-glass-1"/);
   assert.match(nav, /data-theme="light"/);
   assert.match(nav, /ui\.surfaceGlass/);
@@ -37,21 +37,19 @@ test("UX-BOTTOM-NAV uses the canonical floating AkarFinder glass language", () =
   assert.doesNotMatch(designSystem, /#F97316|249,115,22|orange|bronze/i);
 });
 
-test("UX-BOTTOM-NAV exposes the five canonical destinations", () => {
+test("UX-BOTTOM-NAV exposes the five approved utility destinations", () => {
   for (const [href, label] of [
     ["/search", "Explorer"],
     ["/favorites", "Favoris"],
-    ["/map", "Carte"],
-    ["/alerts", "Alertes"],
+    ["/map", "Vivre ici"],
+    ["/vendre", "Vendre"],
     ["/mon-projet", "Mon Projet"],
   ]) {
-    assert.ok(nav.includes(`href: "${href}"`), `missing ${href}`);
-    assert.ok(nav.includes(`label: "${label}"`), `missing ${label}`);
+    assert.ok(navigation.includes(`href: "${href}"`), `missing ${href}`);
+    assert.ok(navigation.includes(`label: "${label}"`), `missing ${label}`);
   }
-  assert.doesNotMatch(nav, /href: "\/vendre"|label: "Publier"/);
+  assert.doesNotMatch(navigation, /href: "\/alerts"|label: "Alertes"/);
   assert.doesNotMatch(nav, /href: "\/contact"|label: "Contact"/);
-  const explorerBlock = nav.slice(nav.indexOf('href: "/search"'), nav.indexOf('href: "/favorites"'));
-  assert.doesNotMatch(explorerBlock, /"\/map"/);
 });
 
 test("UX-BOTTOM-NAV derives active state accessibly", () => {
@@ -64,13 +62,11 @@ test("UX-BOTTOM-NAV derives active state accessibly", () => {
   assert.match(nav, /focus-visible:ring-2/);
 });
 
-test("UX-BOTTOM-NAV keeps touch, floating geometry and truthful Alerts explicit", () => {
+test("UX-BOTTOM-NAV keeps touch and floating geometry explicit", () => {
   assert.match(nav, /h-\[66px\]/);
   assert.match(nav, /left-\[10px\]/);
   assert.match(nav, /right-\[10px\]/);
   assert.match(nav, /bottom-\[calc\(8px\+env\(safe-area-inset-bottom\)\)\]/);
   assert.match(nav, /min-h-11/);
   assert.match(layout, /pb-\[calc\(64px\+env\(safe-area-inset-bottom\)\)\] md:pb-0/);
-  assert.match(alerts, /Les notifications automatiques ne sont pas encore activées/);
-  assert.match(alerts, /href="\/mon-projet"/);
 });
