@@ -31,7 +31,7 @@ export function SearchViewSwitcher({
     <div className={`${styles.root} min-w-0 ${className}`} data-results-toolbar-view-control>
       <div
         data-search-mobile-view-select
-        className={`${styles.segmented} ${styles.mobileSegmented} min-w-0 rounded-full border border-border/20 bg-surface p-1 dark:border-white/12 dark:bg-white/[0.06]`}
+        className={`${styles.segmented} ${styles.mobileSegmented} min-w-0 rounded-full border border-border/20 bg-surface p-1 sm:hidden dark:border-white/12 dark:bg-white/[0.06]`}
         role="group"
         aria-label="Mode d’affichage des résultats"
       >
