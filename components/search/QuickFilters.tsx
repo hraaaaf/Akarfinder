@@ -108,22 +108,22 @@ export function QuickFilters({ filters, cities, propertyTypes, onChange, onReset
       </div>
 
       <div data-premium-quickfilters-row role="group" aria-label="Filtres rapides" className="premium-quickfilters-row">
-        <button type="button" data-quickfilter="all" aria-pressed={filters.transactionType === "all"} onClick={() => setTransaction("all")} className="premium-quickfilter-chip min-h-11">
+        <button type="button" data-quickfilter="all" aria-pressed={filters.transactionType === "all"} onClick={() => setTransaction("all")} className="premium-quickfilter-chip !min-h-11">
           <Home size={17} strokeWidth={2.1} aria-hidden="true" />
           <span>Tous</span>
         </button>
-        <button type="button" data-quickfilter="buy" aria-pressed={filters.transactionType === "buy"} onClick={() => setTransaction("buy")} className="premium-quickfilter-chip min-h-11">
+        <button type="button" data-quickfilter="buy" aria-pressed={filters.transactionType === "buy"} onClick={() => setTransaction("buy")} className="premium-quickfilter-chip !min-h-11">
           <Tag size={17} strokeWidth={2.1} aria-hidden="true" />
           <span>À vendre</span>
         </button>
-        <button type="button" data-quickfilter="rent" aria-pressed={filters.transactionType === "rent"} onClick={() => setTransaction("rent")} className="premium-quickfilter-chip min-h-11">
+        <button type="button" data-quickfilter="rent" aria-pressed={filters.transactionType === "rent"} onClick={() => setTransaction("rent")} className="premium-quickfilter-chip !min-h-11">
           <KeyRound size={17} strokeWidth={2.1} aria-hidden="true" />
           <span>À louer</span>
         </button>
-        <button type="button" data-quickfilter="price" aria-expanded={showFilters} onClick={() => setShowFilters(true)} className="premium-quickfilter-chip min-h-11">
+        <button type="button" data-quickfilter="price" aria-expanded={showFilters} onClick={() => setShowFilters(true)} className="premium-quickfilter-chip !min-h-11">
           <span>Prix</span><ChevronDown size={14} strokeWidth={2.4} aria-hidden="true" />
         </button>
-        <button type="button" data-quickfilter="filters" aria-expanded={showFilters} onClick={() => setShowFilters(true)} className="premium-quickfilter-chip min-h-11">
+        <button type="button" data-quickfilter="filters" aria-expanded={showFilters} onClick={() => setShowFilters(true)} className="premium-quickfilter-chip !min-h-11">
           <span>Filtres</span><ChevronDown size={14} strokeWidth={2.4} aria-hidden="true" />
           {activeCount > 0 ? <span className="premium-quickfilter-count">{activeCount}</span> : null}
         </button>
