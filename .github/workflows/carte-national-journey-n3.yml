@@ -20,6 +20,28 @@ on:
       - "lib/map/national-territory-data/**"
       - "scripts/audits/carte-national-journey-n3.mjs"
       - ".github/workflows/carte-national-journey-n3.yml"
+  push:
+    branches:
+      - docs/3-vivre-ici-akarfinder
+    paths:
+      - "app/api/geo/national-territories/**"
+      - "app/map/**"
+      - "app/search/**"
+      - "components/map/MapLibreNeighborhood3D.tsx"
+      - "components/map/NationalMapRouter.tsx"
+      - "components/map/NationalTerritoryExperience.tsx"
+      - "components/map/NationalNeighborhoodOverlay.tsx"
+      - "components/map/NationalNeighborhoodOverlayBridge.tsx"
+      - "components/map/P4MapDecisionRail.tsx"
+      - "components/map/PremiumInteractiveMap.tsx"
+      - "components/map/PremiumInteractiveMapBridge.tsx"
+      - "components/search/**"
+      - "lib/map/canonical-neighborhood-data.ts"
+      - "lib/map/national-territory-runtime.server.ts"
+      - "lib/map/national-territory-data/**"
+      - "scripts/audits/carte-national-journey-n3.mjs"
+      - ".github/workflows/carte-national-journey-n3.yml"
+  workflow_dispatch:
 
 permissions:
   contents: read
