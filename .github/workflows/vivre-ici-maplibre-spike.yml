@@ -6,15 +6,13 @@ on:
       - spike/vivre-ici-maplibre-morocco
     paths:
       - 'app/map/page.tsx'
+      - 'app/map/premium-interactive-map-fixes.css'
       - 'components/map/PremiumInteractiveMap.tsx'
       - 'scripts/vivre-ici-maplibre-spike-capture.mjs'
       - 'package.json'
       - 'package-lock.json'
       - '.github/workflows/vivre-ici-maplibre-spike.yml'
   workflow_dispatch:
-
-permissions:
-  contents: write
 
 jobs:
   capture:
@@ -30,18 +28,6 @@ jobs:
           node-version: 22
           cache: npm
 
-      - name: Bootstrap premium map dependencies
-        run: |
-          npm install --save-exact d3-geo@3 d3-selection@3 d3-zoom@3 topojson-client@3 framer-motion@12
-          npm install --save-dev --save-exact @types/d3-geo @types/d3-selection @types/d3-zoom @types/topojson-client @types/topojson-specification @types/geojson
-          if ! git diff --quiet -- package.json package-lock.json; then
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add package.json package-lock.json
-            git commit -m "chore(map): lock premium map dependencies [skip ci]"
-            git push origin "HEAD:${GITHUB_REF_NAME}"
-          fi
-
       - name: Install dependencies
         run: npm ci
 
@@ -54,13 +40,13 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Capture premium map
+      - name: Capture premium map final gate
         run: node scripts/vivre-ici-maplibre-spike-capture.mjs
 
       - name: Upload visual artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: vivre-ici-premium-map
+          name: vivre-ici-premium-map-final
           path: artifacts/vivre-ici-maplibre-spike
           if-no-files-found: error

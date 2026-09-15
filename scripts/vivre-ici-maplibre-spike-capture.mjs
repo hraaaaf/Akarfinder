@@ -7,9 +7,11 @@ const outDir = 'artifacts/vivre-ici-maplibre-spike';
 const baseUrl = 'http://127.0.0.1:3000';
 const viewports = [
   { name: '390x844', width: 390, height: 844 },
-  { name: '834x1194', width: 834, height: 1194 },
+  { name: '768x900', width: 768, height: 900 },
+  { name: '1280x900', width: 1280, height: 900 },
   { name: '1440x900', width: 1440, height: 900 },
 ];
+const isSupabaseUrl = (url) => /supabase\.co|\/rest\/v1(?:\/|\?|$)|\/rpc(?:\/|\?|$)/i.test(url);
 
 await fs.rm(outDir, { recursive: true, force: true });
 await fs.mkdir(outDir, { recursive: true });
@@ -49,12 +51,17 @@ try {
     const context = await browser.newContext({ viewport: { width: vp.width, height: vp.height }, colorScheme: 'light' });
     const page = await context.newPage();
     const failedRequests = [];
+    const supabaseRequests = [];
+    page.on('request', (request) => {
+      if (isSupabaseUrl(request.url())) supabaseRequests.push({ method: request.method(), url: request.url() });
+    });
     page.on('requestfailed', (request) => failedRequests.push({ url: request.url(), error: request.failure()?.errorText ?? 'unknown' }));
 
     const response = await page.goto(`${baseUrl}/map`, { waitUntil: 'domcontentloaded', timeout: 60000 });
     const shell = page.locator('[data-premium-map]');
     await shell.waitFor({ state: 'visible', timeout: 15000 });
     await page.waitForFunction(() => document.querySelector('[data-premium-map]')?.getAttribute('data-topology-state') !== 'loading', null, { timeout: 30000 });
+    await page.evaluate(() => window.scrollTo(0, 0));
 
     const topologyState = await shell.getAttribute('data-topology-state');
     const dbMode = await shell.getAttribute('data-db-mode');
@@ -70,6 +77,7 @@ try {
     const casablancaButton = page.locator('[data-city-list-slug="casablanca"]');
     await casablancaButton.waitFor({ state: 'visible' });
     const cityListCount = await page.locator('[data-city-list-slug]').count();
+    await page.evaluate(() => window.scrollTo(0, 0));
 
     const regionFile = path.join(outDir, `premium-map-region-casablanca-settat-${vp.name}.png`);
     await page.screenshot({ path: regionFile, fullPage: false, animations: 'disabled' });
@@ -81,6 +89,9 @@ try {
     const explorerHref = await explorer.getAttribute('href');
     const selectedHref = await page.locator('[data-explorer-selected]').getAttribute('href');
     const quartierCards = await page.locator('[data-explorer-link]').count();
+    const inactivePolygonFill = await page.locator('[data-neighborhood-schematic] polygon').nth(1).evaluate((node) => getComputedStyle(node).fill);
+    const schematicPrimaryTextFill = await page.locator('[data-neighborhood-schematic] text').first().evaluate((node) => getComputedStyle(node).fill);
+    await page.evaluate(() => window.scrollTo(0, 0));
 
     const cityFile = path.join(outDir, `premium-map-city-casablanca-${vp.name}.png`);
     await page.screenshot({ path: cityFile, fullPage: false, animations: 'disabled' });
@@ -100,6 +111,10 @@ try {
       explorerHref,
       selectedHref,
       horizontalOverflow,
+      inactivePolygonFill,
+      schematicPrimaryTextFill,
+      supabaseRequestCount: supabaseRequests.length,
+      supabaseRequests,
       failedRequests: failedRequests.filter(({ url }) => /geoboundaries|githubusercontent/i.test(url)),
       screenshots: files,
       screenshotBytes,
@@ -107,31 +122,40 @@ try {
     await context.close();
   }
 
-  const darkContext = await browser.newContext({ viewport: { width: 1440, height: 900 }, colorScheme: 'dark' });
+  const darkContext = await browser.newContext({ viewport: { width: 1280, height: 900 }, colorScheme: 'dark' });
   const darkPage = await darkContext.newPage();
-  await darkPage.addInitScript(() => localStorage.setItem('theme', 'dark'));
+  const darkSupabaseRequests = [];
+  darkPage.on('request', (request) => {
+    if (isSupabaseUrl(request.url())) darkSupabaseRequests.push({ method: request.method(), url: request.url() });
+  });
+  await darkPage.addInitScript(() => localStorage.setItem('akarfinder-theme', 'dark'));
   await darkPage.goto(`${baseUrl}/map`, { waitUntil: 'domcontentloaded', timeout: 60000 });
   await darkPage.locator('[data-premium-map]').waitFor({ state: 'visible' });
   await darkPage.waitForFunction(() => document.querySelector('[data-premium-map]')?.getAttribute('data-topology-state') === 'ready', null, { timeout: 30000 });
-  const darkFile = path.join(outDir, 'premium-map-national-dark-1440x900.png');
+  await darkPage.evaluate(() => window.scrollTo(0, 0));
+  const darkFile = path.join(outDir, 'premium-map-national-dark-1280x900.png');
   await darkPage.screenshot({ path: darkFile, fullPage: false, animations: 'disabled' });
   const darkTheme = await darkPage.evaluate(() => document.documentElement.dataset.theme ?? null);
+  const darkEyebrowColor = await darkPage.locator('[data-map-side-panel] p').first().evaluate((node) => getComputedStyle(node).color);
   await darkContext.close();
 
   const summary = {
     generatedAt: new Date().toISOString(),
-    mode: 'premium-map-three-level-mock-only',
+    mode: 'premium-map-three-level-mock-only-final-gate',
     route: '/map',
     zeroDbWritesByScript: true,
-    zeroSupabaseRequestsExpected: true,
     zeroDeploymentActionsByScript: true,
     darkTheme,
+    darkEyebrowColor,
+    darkSupabaseRequestCount: darkSupabaseRequests.length,
+    darkSupabaseRequests,
     darkScreenshot: darkFile,
     results,
   };
   await fs.writeFile(path.join(outDir, 'summary.json'), JSON.stringify(summary, null, 2));
   console.log(JSON.stringify(summary, null, 2));
 
+  const badPaint = (value) => !value || value === 'none' || /rgba?\(0,\s*0,\s*0(?:,\s*1)?\)/.test(value);
   const invalid = results.some((item) =>
     !item.httpStatus || item.httpStatus >= 400
     || item.topologyState !== 'ready'
@@ -143,10 +167,13 @@ try {
     || item.explorerHref !== '/immobilier/casablanca/maarif'
     || item.selectedHref !== '/immobilier/casablanca/maarif'
     || item.horizontalOverflow > 1
+    || item.supabaseRequestCount !== 0
+    || badPaint(item.inactivePolygonFill)
+    || badPaint(item.schematicPrimaryTextFill)
     || item.failedRequests.length > 0
     || Object.values(item.screenshotBytes).some((bytes) => bytes < 20000)
   );
-  if (invalid || darkTheme !== 'dark') process.exitCode = 2;
+  if (invalid || darkTheme !== 'dark' || darkSupabaseRequests.length !== 0 || darkEyebrowColor === 'rgb(7, 27, 51)') process.exitCode = 2;
 } finally {
   await browser?.close();
   server.kill('SIGTERM');
