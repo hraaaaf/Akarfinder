@@ -1,0 +1,152 @@
+/* VIVRE ICI — N3 MapLibre premium theme bridge, 2026-09-15
+ * Presentation only: no data, routing or geometry changes.
+ * Keeps MapLibre as the N3 engine while aligning its visual language with the
+ * premium national map: #071B33 anchor + blue / blue-grey scale.
+ */
+
+/* The old mobile MapLibre fullscreen rule hides the global header for every
+ * /map variant. Premium national exploration keeps the real AkarFinder shell. */
+@media (max-width: 1023px) {
+  [data-vivre-ici-page]:has([data-premium-map]) [data-search-global-header="exact-white"] {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+}
+
+/* N3 must remain visibly mounted after the Premium → district handoff. */
+[data-vivre-ici-page] [data-maplibre-spike][data-maplibre-city][data-maplibre-district] {
+  display: grid !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  min-height: calc(100svh - 64px) !important;
+  background: #e8eef5 !important;
+  color: #071b33 !important;
+}
+
+/* Cool the imagery and all MapLibre-rendered overlays into the same family. */
+[data-vivre-ici-page] [data-maplibre-spike] .maplibre-spike-canvas canvas {
+  filter: saturate(.72) contrast(1.035) brightness(.95) hue-rotate(18deg) !important;
+}
+
+[data-vivre-ici-page] [data-maplibre-spike] .maplibre-spike-map-grade {
+  background:
+    radial-gradient(circle at 18% 10%, rgb(96 165 250 / .15), transparent 34%),
+    radial-gradient(circle at 74% 78%, rgb(110 141 164 / .10), transparent 42%),
+    linear-gradient(180deg, rgb(7 27 51 / .11), transparent 32%, rgb(7 27 51 / .08)) !important;
+  mix-blend-mode: multiply !important;
+}
+
+[data-vivre-ici-page] [data-maplibre-spike] .maplibre-spike-neighborhood-label {
+  filter: drop-shadow(0 8px 20px rgb(7 27 51 / .28)) !important;
+}
+
+[data-vivre-ici-page] [data-maplibre-spike] .maplibre-spike-neighborhood-label span {
+  border-color: rgb(255 255 255 / .72) !important;
+  background: rgb(7 27 51 / .94) !important;
+  color: #fff !important;
+}
+
+[data-vivre-ici-page] [data-maplibre-spike] .maplibre-spike-neighborhood-label i {
+  background: #0b63ce !important;
+  box-shadow: 0 0 0 4px rgb(96 165 250 / .28) !important;
+}
+
+[data-vivre-ici-page] [data-maplibre-spike] .maplibre-spike-brand,
+[data-vivre-ici-page] [data-maplibre-spike] .maplibre-spike-search,
+[data-vivre-ici-page] [data-maplibre-spike] .maplibre-spike-mode,
+[data-vivre-ici-page] [data-maplibre-spike] .maplibre-spike-view-chips span,
+[data-vivre-ici-page] [data-maplibre-spike] .maplibre-spike-filters button,
+[data-vivre-ici-page] [data-maplibre-spike] .maplibre-spike-controls button,
+[data-vivre-ici-page] [data-maplibre-spike] .maplibre-spike-controls > span,
+[data-vivre-ici-page] [data-maplibre-spike] .maplibre-spike-map-note {
+  border-color: rgb(207 220 235 / .92) !important;
+  background: rgb(255 255 255 / .91) !important;
+  color: #071b33 !important;
+  box-shadow: 0 10px 30px rgb(7 27 51 / .14) !important;
+}
+
+[data-vivre-ici-page] [data-maplibre-spike] .maplibre-spike-brand b,
+[data-vivre-ici-page] [data-maplibre-spike] .maplibre-spike-mode strong,
+[data-vivre-ici-page] [data-maplibre-spike] .maplibre-spike-view-chips span.active,
+[data-vivre-ici-page] [data-maplibre-spike] .maplibre-spike-filters button.active,
+[data-vivre-ici-page] [data-maplibre-spike] .maplibre-spike-controls .maplibre-spike-control-primary {
+  background: #071b33 !important;
+  color: #fff !important;
+  box-shadow: 0 6px 18px rgb(7 27 51 / .22) !important;
+}
+
+[data-vivre-ici-page] [data-maplibre-spike] .maplibre-spike-search strong,
+[data-vivre-ici-page] [data-maplibre-spike] .maplibre-spike-map-note strong {
+  color: #071b33 !important;
+}
+
+[data-vivre-ici-page] [data-maplibre-spike] .maplibre-spike-search span,
+[data-vivre-ici-page] [data-maplibre-spike] .maplibre-spike-map-note-copy,
+[data-vivre-ici-page] [data-maplibre-spike] .maplibre-spike-map-note-status {
+  color: #52657a !important;
+}
+
+[data-vivre-ici-page] [data-maplibre-spike] .maplibre-spike-map-note-kicker {
+  color: #0b63ce !important;
+}
+
+[data-vivre-ici-page] [data-maplibre-spike] .maplibre-spike-poi-label span {
+  border-color: rgb(207 220 235 / .92) !important;
+  background: rgb(255 255 255 / .92) !important;
+  color: #173653 !important;
+  box-shadow: 0 8px 22px rgb(7 27 51 / .14) !important;
+}
+
+/* Keep the decision rail in the same visual system when N3 reserves it. */
+[data-vivre-ici-page] [data-p4-map-decision-rail] {
+  border-color: rgb(207 220 235 / .86) !important;
+}
+
+[data-vivre-ici-page] [data-p4-map-decision-rail] .p4-premium-kicker,
+[data-vivre-ici-page] [data-p4-map-decision-rail] .p4-premium-local-guide-heading p {
+  color: #0b63ce !important;
+}
+
+[data-vivre-ici-page] [data-p4-map-decision-rail] .p4-premium-actions > a:first-child {
+  background: #071b33 !important;
+  color: #fff !important;
+  box-shadow: 0 12px 26px rgb(7 27 51 / .20) !important;
+}
+
+[data-theme="dark"] [data-vivre-ici-page] [data-maplibre-spike][data-maplibre-city][data-maplibre-district] {
+  background: #06162d !important;
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] [data-vivre-ici-page] [data-maplibre-spike] .maplibre-spike-brand,
+[data-theme="dark"] [data-vivre-ici-page] [data-maplibre-spike] .maplibre-spike-search,
+[data-theme="dark"] [data-vivre-ici-page] [data-maplibre-spike] .maplibre-spike-mode,
+[data-theme="dark"] [data-vivre-ici-page] [data-maplibre-spike] .maplibre-spike-view-chips span,
+[data-theme="dark"] [data-vivre-ici-page] [data-maplibre-spike] .maplibre-spike-filters button,
+[data-theme="dark"] [data-vivre-ici-page] [data-maplibre-spike] .maplibre-spike-controls button,
+[data-theme="dark"] [data-vivre-ici-page] [data-maplibre-spike] .maplibre-spike-controls > span,
+[data-theme="dark"] [data-vivre-ici-page] [data-maplibre-spike] .maplibre-spike-map-note {
+  border-color: rgb(53 86 125 / .78) !important;
+  background: rgb(8 31 61 / .91) !important;
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] [data-vivre-ici-page] [data-maplibre-spike] .maplibre-spike-brand b,
+[data-theme="dark"] [data-vivre-ici-page] [data-maplibre-spike] .maplibre-spike-mode strong,
+[data-theme="dark"] [data-vivre-ici-page] [data-maplibre-spike] .maplibre-spike-view-chips span.active,
+[data-theme="dark"] [data-vivre-ici-page] [data-maplibre-spike] .maplibre-spike-filters button.active,
+[data-theme="dark"] [data-vivre-ici-page] [data-maplibre-spike] .maplibre-spike-controls .maplibre-spike-control-primary {
+  background: #0b63ce !important;
+}
+
+[data-theme="dark"] [data-vivre-ici-page] [data-maplibre-spike] .maplibre-spike-search strong,
+[data-theme="dark"] [data-vivre-ici-page] [data-maplibre-spike] .maplibre-spike-map-note strong {
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] [data-vivre-ici-page] [data-maplibre-spike] .maplibre-spike-search span,
+[data-theme="dark"] [data-vivre-ici-page] [data-maplibre-spike] .maplibre-spike-map-note-copy,
+[data-theme="dark"] [data-vivre-ici-page] [data-maplibre-spike] .maplibre-spike-map-note-status {
+  color: #b8c7d9 !important;
+}
