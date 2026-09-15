@@ -1,6 +1,6 @@
 /* Premium /map visual token bridge.
  * PremiumInteractiveMap consumes the existing AkarFinder RGB-triplet semantic
- * tokens. Inline CSS variables are intentionally corrected here as rgb(var()).
+ * tokens. Inline CSS variables are corrected here as rgb(var()).
  * No product/data logic lives in this file.
  */
 
@@ -10,22 +10,26 @@
   overflow-x: clip;
 }
 
-[data-premium-map] [style*="color: var(--text-secondary)"] {
+[data-premium-map] [style*="--text-secondary"] {
   color: rgb(var(--text-secondary)) !important;
 }
 
+[data-premium-map] [style*="background:var(--surface)"],
 [data-premium-map] [style*="background: var(--surface)"] {
   background: rgb(var(--surface)) !important;
 }
 
+[data-premium-map] [style*="background:var(--background)"],
 [data-premium-map] [style*="background: var(--background)"] {
   background: rgb(var(--background)) !important;
 }
 
+[data-premium-map] [style*="border-color:var(--border)"],
 [data-premium-map] [style*="border-color: var(--border)"] {
   border-color: rgb(var(--border)) !important;
 }
 
+[data-premium-map] [style*="border-color:var(--border-dark)"],
 [data-premium-map] [style*="border-color: var(--border-dark)"] {
   border-color: rgb(var(--border-strong)) !important;
 }
@@ -60,8 +64,9 @@
   stroke: rgb(var(--border-strong)) !important;
 }
 
-/* Hard-coded brand navy is the light anchor; dark mode uses the existing
+/* Hard-coded brand navy is the light anchor; dark mode uses the site's
  * semantic accent for legible micro-labels and selected schematic areas. */
+[data-theme="dark"] [data-premium-map] [style*="color:rgb(7, 27, 51)"],
 [data-theme="dark"] [data-premium-map] [style*="color: rgb(7, 27, 51)"],
 [data-theme="dark"] [data-premium-map] [style*="color:#071B33"],
 [data-theme="dark"] [data-premium-map] [style*="color: #071B33"] {
