@@ -7,6 +7,7 @@ on:
       - "components/search/SearchViewSwitcher.tsx"
       - "components/search/QuickFilters.tsx"
       - "components/search/SearchPriceExplorerDock.tsx"
+      - "app/search/search-premium-card-density.css"
       - "scripts/scrapers/__tests__/p3-search-standard-v1.test.ts"
       - ".github/workflows/p3-search-standard-v1.yml"
   workflow_dispatch:
