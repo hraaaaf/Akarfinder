@@ -8,6 +8,7 @@ on:
       - 'app/map/page.tsx'
       - 'app/map/premium-interactive-map-fixes.css'
       - 'components/map/PremiumInteractiveMap.tsx'
+      - 'components/map/PremiumInteractiveMapBridge.tsx'
       - 'scripts/vivre-ici-premium-interactive-capture.mjs'
       - 'package.json'
       - 'package-lock.json'
