@@ -385,7 +385,6 @@ Le gate autoritaire n’est pas encore dans `main`; sa preuve réelle `BLOCK →
 
 - [x] audit architecture initiale ;
 - [x] benchmark international initial ;
-- [x] benchmark premium ciblé ;
 - [x] canonique + manifeste ;
 - [x] guard local + tests ;
 - [x] workflow CI anti-dérive ;
