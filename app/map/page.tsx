@@ -3,7 +3,7 @@ import { SiteFooter } from "@/components/landing/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { NationalMapRouter } from "@/components/map/NationalMapRouter";
 import { P4MapDecisionRail } from "@/components/map/P4MapDecisionRail";
-import { PremiumInteractiveMap } from "@/components/map/PremiumInteractiveMap";
+import { PremiumInteractiveMapBridge } from "@/components/map/PremiumInteractiveMapBridge";
 import { parseMapNavigationState } from "@/lib/map/map-navigation-state";
 import "./mockup-convergence-l2.css";
 import "./p4-map-shell.css";
@@ -51,7 +51,7 @@ export default async function MapPage({ searchParams }: MapPageProps) {
       <SiteHeader searchMode fluid />
 
       {usePremiumNationalExplore ? (
-        <PremiumInteractiveMap />
+        <PremiumInteractiveMapBridge />
       ) : (
         <>
           <div className="flex-1" data-p4-map-layout>
