@@ -9,7 +9,7 @@ const viewports = [
   { name: "390", width: 390, height: 844, mobile: true },
   { name: "1280", width: 1280, height: 900, mobile: false },
 ];
-
+const expectedDistrictHref = "/map?city=casablanca&district=maarif&layer=explore";
 const report = { ok: false, cases: [], failure: null };
 
 const nationalResponse = await fetch(`${baseUrl}/api/geo/national-territories`);
@@ -30,7 +30,7 @@ async function waitForNationalView(page, view) {
   }, view, { timeout: 30000 });
 }
 
-async function selectCasablancaFromNationalMap(page) {
+async function selectCasablancaFromLegacyNationalMap(page) {
   const clickPoint = await page.evaluate(({ lng, lat }) => {
     const map = window.__AKARFINDER_NATIONAL_MAP__;
     if (!map?.isStyleLoaded()) throw new Error("national map not ready");
@@ -40,7 +40,6 @@ async function selectCasablancaFromNationalMap(page) {
   }, casablanca.center);
 
   await page.mouse.click(clickPoint.x, clickPoint.y);
-
   const preview = page.locator('[data-akarfinder-city-preview="casablanca"]');
   const outcome = await Promise.race([
     page.waitForURL((url) => url.pathname === "/map" && url.searchParams.get("city") === "casablanca", { timeout: 10000 }).then(() => "city"),
@@ -49,17 +48,51 @@ async function selectCasablancaFromNationalMap(page) {
 
   if (outcome === "preview") {
     const alreadySelected = new URL(page.url());
-    if (alreadySelected.pathname === "/map" && alreadySelected.searchParams.get("city") === "casablanca") return;
-
-    try {
+    if (alreadySelected.pathname !== "/map" || alreadySelected.searchParams.get("city") !== "casablanca") {
       await preview.getByRole("button", { name: /Explorer Casablanca/i }).click({ timeout: 10000 });
-    } catch (error) {
-      const afterRace = new URL(page.url());
-      if (afterRace.pathname !== "/map" || afterRace.searchParams.get("city") !== "casablanca") throw error;
+      await page.waitForURL((url) => url.pathname === "/map" && url.searchParams.get("city") === "casablanca", { timeout: 10000 });
     }
-
-    await page.waitForURL((url) => url.pathname === "/map" && url.searchParams.get("city") === "casablanca", { timeout: 10000 });
   }
+
+  await waitForNationalView(page, "city");
+  const neighborhoodOverlay = page.locator('[data-akarfinder-national-neighborhood-overlay][data-city="casablanca"]');
+  await neighborhoodOverlay.waitFor({ state: "attached", timeout: 20000 });
+  const input = page.getByRole("textbox", { name: "Rechercher un quartier à Casablanca" });
+  await input.waitFor({ state: "visible", timeout: 10000 });
+  await input.fill("Maârif");
+  const suggestion = page.locator('[data-akarfinder-neighborhood-suggestion="maarif"]');
+  await suggestion.waitFor({ state: "visible", timeout: 5000 });
+  await suggestion.click();
+}
+
+async function enterMaarifFromRoot(page) {
+  await page.goto(`${baseUrl}/map?layer=explore`, { waitUntil: "domcontentloaded", timeout: 30000 });
+  await page.waitForFunction(() => Boolean(
+    document.querySelector("[data-premium-map]") || document.querySelector("[data-akarfinder-national-map]"),
+  ), null, { timeout: 30000 });
+
+  if (await page.locator("[data-premium-map]").count()) {
+    await page.waitForFunction(() => document.querySelector("[data-premium-map]")?.getAttribute("data-topology-state") === "ready", null, { timeout: 30000 });
+    await page.locator('[data-region-list-slug="casablanca-settat"]').click();
+    await page.waitForFunction(() => document.querySelector("[data-premium-map]")?.getAttribute("data-map-level") === "region");
+    await page.locator('[data-city-list-slug="casablanca"]').click();
+    await page.waitForFunction(() => document.querySelector("[data-premium-map]")?.getAttribute("data-map-level") === "city");
+    const explorer = page.locator('[data-explorer-link="maarif"]');
+    await explorer.waitFor({ state: "visible", timeout: 10000 });
+    await page.waitForFunction((expected) => document.querySelector('[data-explorer-link="maarif"]')?.getAttribute("href") === expected, expectedDistrictHref, { timeout: 5000 });
+    const href = await explorer.getAttribute("href");
+    if (href !== expectedDistrictHref) throw new Error(`premium N3 href invalid ${href}`);
+    await Promise.all([
+      page.waitForURL((url) => url.pathname === "/map" && url.searchParams.get("city") === "casablanca" && url.searchParams.get("district") === "maarif" && url.searchParams.get("layer") === "explore", { timeout: 15000 }),
+      explorer.click(),
+    ]);
+    return "premium";
+  }
+
+  await waitForNationalView(page, "morocco");
+  await selectCasablancaFromLegacyNationalMap(page);
+  await page.waitForURL((url) => url.pathname === "/map" && url.searchParams.get("city") === "casablanca" && url.searchParams.get("district") === "maarif", { timeout: 10000 });
+  return "legacy";
 }
 
 const browser = await chromium.launch({ headless: true });
@@ -97,21 +130,7 @@ try {
     page.on("pageerror", (error) => pageErrors.push(String(error)));
 
     try {
-      await page.goto(`${baseUrl}/map?layer=explore`, { waitUntil: "domcontentloaded", timeout: 30000 });
-      await waitForNationalView(page, "morocco");
-      await selectCasablancaFromNationalMap(page);
-      await waitForNationalView(page, "city");
-
-      const neighborhoodOverlay = page.locator('[data-akarfinder-national-neighborhood-overlay][data-city="casablanca"]');
-      await neighborhoodOverlay.waitFor({ state: "attached", timeout: 20000 });
-      const input = page.getByRole("textbox", { name: "Rechercher un quartier à Casablanca" });
-      await input.waitFor({ state: "visible", timeout: 10000 });
-      await input.fill("Maârif");
-      const suggestion = page.locator('[data-akarfinder-neighborhood-suggestion="maarif"]');
-      await suggestion.waitFor({ state: "visible", timeout: 5000 });
-      await suggestion.click();
-
-      await page.waitForURL((url) => url.pathname === "/map" && url.searchParams.get("city") === "casablanca" && url.searchParams.get("district") === "maarif", { timeout: 10000 });
+      const entryMode = await enterMaarifFromRoot(page);
       const maplibre = page.locator('[data-maplibre-spike][data-maplibre-city="casablanca"][data-maplibre-district="maarif"]');
       await maplibre.waitFor({ state: "visible", timeout: 15000 });
       await page.waitForFunction(() => {
@@ -142,7 +161,7 @@ try {
 
       report.cases.push({
         viewport: viewport.name,
-        nationalView: true,
+        entryMode,
         citySelection: "casablanca",
         districtSelection: "maarif",
         maplibreReady: true,
