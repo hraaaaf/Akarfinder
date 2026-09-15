@@ -1,6 +1,6 @@
 # AKARFINDER — PRODUCT CONSTITUTION / CANONICAL
 
-**Version : 0.6 — 2026-09-13**  
+**Version : 0.7 — 2026-09-15**  
 **Statut : ACTIVE / EN CONSTRUCTION — seuls les périmètres explicitement validés sont `L0 / LOCKED`.**
 
 > Source canonique pour l’architecture produit, les standards de pages et les règles anti-dérive d’AkarFinder. `docs/ROADMAP.md` reste la source globale de vérité pour l’avancement data/produit.
@@ -231,6 +231,27 @@ Hauteurs mesurées avant implémentation :
 9. Aucun CTA HOME ne doit revenir vers le legacy `/compagnon`.
 10. Header et footer sont hors freeze P1. Leur architecture reste gouvernée par P2.
 
+### Extension HOME micro-preuves V1.1 — OWNER APPROVED / L0
+
+**Validation explicite propriétaire : 2026-09-15.**  
+Le message `ajoute les au L0 et fais moi un moke de ce que tu comptes en faire !` vaut validation des trois décisions exactes ci-dessous.
+
+11. Le hero conserve sa structure et sa hauteur actuelles, mais peut afficher **jusqu’à 3 exemples de recherches** immédiatement sous le moteur. Ces exemples servent uniquement à démontrer la compréhension de requêtes naturelles et doivent déclencher une recherche correspondante ; ils ne créent aucune nouvelle navigation primaire.
+12. La signature exacte **`Comparez avant de contacter.`** devient une micro-signature HOME L0. Elle doit rester secondaire par rapport au H1 et au moteur ; elle ne justifie pas une nouvelle section autonome.
+13. Le trust-strip existant peut exposer **jusqu’à 3 preuves chiffrées vérifiées et maintenues à jour** à la place ou en complément de ses signaux qualitatifs. Aucun nombre ne peut être affiché s’il n’est pas issu d’une donnée observable et suffisamment fraîche. En cas d’indisponibilité ou de doute, le composant doit revenir à une formulation qualitative plutôt que d’afficher un chiffre figé ou décoratif.
+
+Contraintes L0 de cette extension :
+
+- aucune nouvelle section HOME ;
+- ordre global inchangé : `Hero → Trust strip → Vivre ici → Villes populaires → 3 actions` ;
+- aucun retour du bloc `DataProofBlock`, du long `WhySection`, d’un bloc MRE autonome ou d’un CTA final additionnel ;
+- les exemples de recherche restent compacts et non dominants ;
+- les preuves chiffrées restent intégrées au trust-strip et ne transforment pas la HOME en dashboard ;
+- le wording, le spacing fin, le responsive et la micro-interaction restent L1 tant que le mockup et l’AFTER n’ont pas été certifiés.
+
+**État d’implémentation : APPROUVÉ L0 / MOCKUP À CERTIFIER / RUNTIME NON MODIFIÉ.**  
+Le manifeste machine n’est pas encore étendu à ces trois invariants, car cela ferait volontairement échouer la HOME actuelle avant implémentation. Il devra être mis à jour dans le même lot que l’implémentation et l’AFTER.
+
 ### Ordre L0
 
 `Hero → Trust strip → Vivre ici → Villes populaires → 3 actions`
@@ -364,6 +385,7 @@ Le gate autoritaire n’est pas encore dans `main`; sa preuve réelle `BLOCK →
 
 - [x] audit architecture initiale ;
 - [x] benchmark international initial ;
+- [x] benchmark premium ciblé ;
 - [x] canonique + manifeste ;
 - [x] guard local + tests ;
 - [x] workflow CI anti-dérive ;
@@ -387,7 +409,10 @@ Le gate autoritaire n’est pas encore dans `main`; sa preuve réelle `BLOCK →
 - [x] AFTER 390 / 768 / 1280 ;
 - [x] tests + score visuel ;
 - [x] migration des HVR historiques ;
-- [x] closeout P1.
+- [x] closeout P1 ;
+- [x] extension L0 V1.1 approuvée : exemples de recherche + micro-signature + preuves chiffrées vérifiées ;
+- [ ] mockup V1.1 certifié ;
+- [ ] implémentation + manifeste + AFTER V1.1.
 
 ### P2 — INFORMATION ARCHITECTURE V1 — CLOSEOUT CI
 
