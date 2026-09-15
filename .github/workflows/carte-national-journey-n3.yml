@@ -12,6 +12,8 @@ on:
       - "components/map/NationalNeighborhoodOverlay.tsx"
       - "components/map/NationalNeighborhoodOverlayBridge.tsx"
       - "components/map/P4MapDecisionRail.tsx"
+      - "components/map/PremiumInteractiveMap.tsx"
+      - "components/map/PremiumInteractiveMapBridge.tsx"
       - "components/search/**"
       - "lib/map/canonical-neighborhood-data.ts"
       - "lib/map/national-territory-runtime.server.ts"
@@ -43,7 +45,7 @@ jobs:
         run: |
           changed="$(git diff --name-only HEAD^ HEAD)"
           printf '%s\n' "$changed"
-          if printf '%s\n' "$changed" | grep -Eq '^(app/api/geo/national-territories/|app/map/|app/search/|components/map/(MapLibreNeighborhood3D|NationalMapRouter|NationalTerritoryExperience|NationalNeighborhoodOverlay|NationalNeighborhoodOverlayBridge|P4MapDecisionRail)\.tsx$|components/search/|lib/map/(canonical-neighborhood-data\.ts|national-territory-runtime\.server\.ts|national-territory-data/)|scripts/audits/carte-national-journey-n3\.mjs$|\.github/workflows/carte-national-journey-n3\.yml$)'; then
+          if printf '%s\n' "$changed" | grep -Eq '^(app/api/geo/national-territories/|app/map/|app/search/|components/map/(MapLibreNeighborhood3D|NationalMapRouter|NationalTerritoryExperience|NationalNeighborhoodOverlay|NationalNeighborhoodOverlayBridge|P4MapDecisionRail|PremiumInteractiveMap|PremiumInteractiveMapBridge)\.tsx$|components/search/|lib/map/(canonical-neighborhood-data\.ts|national-territory-runtime\.server\.ts|national-territory-data/)|scripts/audits/carte-national-journey-n3\.mjs$|\.github/workflows/carte-national-journey-n3\.yml$)'; then
             echo "run_heavy=true" >> "$GITHUB_OUTPUT"
           else
             echo "run_heavy=false" >> "$GITHUB_OUTPUT"
