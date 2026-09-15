@@ -37,6 +37,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # Runtime CSS can change the certified QuickFilters geometry, so it is part of P3 AFTER scope.
           changed="$(git diff --name-only HEAD^ HEAD || true)"
           run=false
           while IFS= read -r file; do
