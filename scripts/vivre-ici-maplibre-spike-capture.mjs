@@ -12,6 +12,11 @@ const viewports = [
   { name: '1440x900', width: 1440, height: 900 },
 ];
 const isSupabaseUrl = (url) => /supabase\.co|\/rest\/v1(?:\/|\?|$)|\/rpc(?:\/|\?|$)/i.test(url);
+const snapTop = (page) => page.evaluate(() => {
+  document.documentElement.style.scrollBehavior = 'auto';
+  document.body.style.scrollBehavior = 'auto';
+  window.scrollTo(0, 0);
+});
 
 await fs.rm(outDir, { recursive: true, force: true });
 await fs.mkdir(outDir, { recursive: true });
@@ -61,12 +66,15 @@ try {
     const shell = page.locator('[data-premium-map]');
     await shell.waitFor({ state: 'visible', timeout: 15000 });
     await page.waitForFunction(() => document.querySelector('[data-premium-map]')?.getAttribute('data-topology-state') !== 'loading', null, { timeout: 30000 });
-    await page.evaluate(() => window.scrollTo(0, 0));
+    await snapTop(page);
 
     const topologyState = await shell.getAttribute('data-topology-state');
     const dbMode = await shell.getAttribute('data-db-mode');
     const regionCount = await page.locator('[data-region-slug]').count();
     const regionListCount = await page.locator('[data-region-list-slug]').count();
+    const siteHeaderCount = await page.locator('[data-search-global-header]').count();
+    const headerLogoCount = await page.locator('[data-search-global-header] img[alt="AkarFinder"]').count();
+    const pageTitle = await page.title();
     const horizontalOverflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
 
     const nationalFile = path.join(outDir, `premium-map-national-${vp.name}.png`);
@@ -77,7 +85,7 @@ try {
     const casablancaButton = page.locator('[data-city-list-slug="casablanca"]');
     await casablancaButton.waitFor({ state: 'visible' });
     const cityListCount = await page.locator('[data-city-list-slug]').count();
-    await page.evaluate(() => window.scrollTo(0, 0));
+    await snapTop(page);
 
     const regionFile = path.join(outDir, `premium-map-region-casablanca-settat-${vp.name}.png`);
     await page.screenshot({ path: regionFile, fullPage: false, animations: 'disabled' });
@@ -91,7 +99,7 @@ try {
     const quartierCards = await page.locator('[data-explorer-link]').count();
     const inactivePolygonFill = await page.locator('[data-neighborhood-schematic] polygon').nth(1).evaluate((node) => getComputedStyle(node).fill);
     const schematicPrimaryTextFill = await page.locator('[data-neighborhood-schematic] text').first().evaluate((node) => getComputedStyle(node).fill);
-    await page.evaluate(() => window.scrollTo(0, 0));
+    await snapTop(page);
 
     const cityFile = path.join(outDir, `premium-map-city-casablanca-${vp.name}.png`);
     await page.screenshot({ path: cityFile, fullPage: false, animations: 'disabled' });
@@ -106,6 +114,9 @@ try {
       dbMode,
       regionCount,
       regionListCount,
+      siteHeaderCount,
+      headerLogoCount,
+      pageTitle,
       cityListCount,
       quartierCards,
       explorerHref,
@@ -132,11 +143,12 @@ try {
   await darkPage.goto(`${baseUrl}/map`, { waitUntil: 'domcontentloaded', timeout: 60000 });
   await darkPage.locator('[data-premium-map]').waitFor({ state: 'visible' });
   await darkPage.waitForFunction(() => document.querySelector('[data-premium-map]')?.getAttribute('data-topology-state') === 'ready', null, { timeout: 30000 });
-  await darkPage.evaluate(() => window.scrollTo(0, 0));
+  await snapTop(darkPage);
   const darkFile = path.join(outDir, 'premium-map-national-dark-1280x900.png');
   await darkPage.screenshot({ path: darkFile, fullPage: false, animations: 'disabled' });
   const darkTheme = await darkPage.evaluate(() => document.documentElement.dataset.theme ?? null);
   const darkEyebrowColor = await darkPage.locator('[data-map-side-panel] p').first().evaluate((node) => getComputedStyle(node).color);
+  const darkHeaderLogoCount = await darkPage.locator('[data-search-global-header] img[alt="AkarFinder"]').count();
   await darkContext.close();
 
   const summary = {
@@ -147,6 +159,7 @@ try {
     zeroDeploymentActionsByScript: true,
     darkTheme,
     darkEyebrowColor,
+    darkHeaderLogoCount,
     darkSupabaseRequestCount: darkSupabaseRequests.length,
     darkSupabaseRequests,
     darkScreenshot: darkFile,
@@ -162,6 +175,9 @@ try {
     || item.dbMode !== 'mock-only'
     || item.regionCount !== 12
     || item.regionListCount !== 12
+    || item.siteHeaderCount !== 1
+    || item.headerLogoCount < 1
+    || !item.pageTitle.includes('Vivre ici au Maroc')
     || item.cityListCount < 1
     || item.quartierCards !== 10
     || item.explorerHref !== '/immobilier/casablanca/maarif'
@@ -173,7 +189,7 @@ try {
     || item.failedRequests.length > 0
     || Object.values(item.screenshotBytes).some((bytes) => bytes < 20000)
   );
-  if (invalid || darkTheme !== 'dark' || darkSupabaseRequests.length !== 0 || darkEyebrowColor === 'rgb(7, 27, 51)') process.exitCode = 2;
+  if (invalid || darkTheme !== 'dark' || darkHeaderLogoCount < 1 || darkSupabaseRequests.length !== 0 || darkEyebrowColor === 'rgb(7, 27, 51)') process.exitCode = 2;
 } finally {
   await browser?.close();
   server.kill('SIGTERM');
