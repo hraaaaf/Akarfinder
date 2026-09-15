@@ -66,9 +66,8 @@ try {
     await page.evaluate(() => window.scrollTo(0, 0));
 
     const header = page.locator('[data-search-global-header]');
-    const logo = header.locator('img[alt="AkarFinder"]').first();
     const headerVisible = await header.isVisible();
-    const logoVisible = await logo.isVisible();
+    const logoVisible = (await header.locator('img[alt="AkarFinder"]:visible').count()) > 0;
     const headerBox = await header.boundingBox();
     const premiumFile = path.join(outDir, `map-after-premium-national-${vp.name}.png`);
     await page.screenshot({ path: premiumFile, fullPage: false, animations: 'disabled' });
