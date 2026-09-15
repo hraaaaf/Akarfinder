@@ -5,21 +5,15 @@ import path from 'node:path';
 
 const outDir = 'artifacts/vivre-ici-maplibre-spike';
 const baseUrl = 'http://127.0.0.1:3000';
-const route = '/map';
-const minMapScreenshotBytes = 20000;
-const mobileViewports = [
+const viewports = [
   { name: '390x844', width: 390, height: 844 },
-  { name: '430x932', width: 430, height: 932 },
-  { name: '768x900', width: 768, height: 900 },
-];
-const desktopViewport = { name: '1280x900', width: 1280, height: 900 };
-const locales = [
-  { key: 'casablanca-maarif', city: 'casablanca', district: 'maarif', minDesktopBuildings: 50, viewports: [...mobileViewports, desktopViewport] },
-  { key: 'rabat-agdal', city: 'rabat', district: 'agdal', minDesktopBuildings: 20, viewports: [desktopViewport] },
-  { key: 'marrakech-gueliz', city: 'marrakech', district: 'gueliz', minDesktopBuildings: 20, viewports: [desktopViewport] },
+  { name: '834x1194', width: 834, height: 1194 },
+  { name: '1440x900', width: 1440, height: 900 },
 ];
 
+await fs.rm(outDir, { recursive: true, force: true });
 await fs.mkdir(outDir, { recursive: true });
+
 const server = spawn(process.execPath, ['node_modules/next/dist/bin/next', 'start', '-H', '127.0.0.1', '-p', '3000'], {
   env: { ...process.env, NODE_ENV: 'production' },
   stdio: ['ignore', 'pipe', 'pipe'],
@@ -51,123 +45,108 @@ try {
   browser = await chromium.launch({ headless: true });
   const results = [];
 
-  for (const locale of locales) {
-    for (const vp of locale.viewports) {
-      const context = await browser.newContext({ viewport: { width: vp.width, height: vp.height } });
-      const page = await context.newPage();
-      const failedRequests = [];
-      const failedResponses = [];
+  for (const vp of viewports) {
+    const context = await browser.newContext({ viewport: { width: vp.width, height: vp.height }, colorScheme: 'light' });
+    const page = await context.newPage();
+    const failedRequests = [];
+    page.on('requestfailed', (request) => failedRequests.push({ url: request.url(), error: request.failure()?.errorText ?? 'unknown' }));
 
-      page.on('requestfailed', (request) => {
-        const url = request.url();
-        if (/tiles\.openfreemap\.org|server\.arcgisonline\.com/i.test(url)) {
-          failedRequests.push({ url, error: request.failure()?.errorText ?? 'unknown' });
-        }
-      });
-      page.on('response', (response) => {
-        const url = response.url();
-        if (/tiles\.openfreemap\.org|server\.arcgisonline\.com/i.test(url) && response.status() >= 400) {
-          failedResponses.push({ url, status: response.status() });
-        }
-      });
+    const response = await page.goto(`${baseUrl}/map`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+    const shell = page.locator('[data-premium-map]');
+    await shell.waitFor({ state: 'visible', timeout: 15000 });
+    await page.waitForFunction(() => document.querySelector('[data-premium-map]')?.getAttribute('data-topology-state') !== 'loading', null, { timeout: 30000 });
 
-      const query = new URLSearchParams({ city: locale.city, district: locale.district, layer: 'explore' });
-      const response = await page.goto(`${baseUrl}${route}?${query}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
-      const shellLocator = page.locator('[data-maplibre-spike]');
-      await shellLocator.waitFor({ state: 'visible', timeout: 15000 });
-      await page.waitForFunction(() => {
-        const shell = document.querySelector('[data-maplibre-spike]');
-        return shell?.getAttribute('data-maplibre-ready') === 'true'
-          && shell?.getAttribute('data-maplibre-render-state') === 'ready';
-      }, null, { timeout: 30000 }).catch(() => {});
+    const topologyState = await shell.getAttribute('data-topology-state');
+    const dbMode = await shell.getAttribute('data-db-mode');
+    const regionCount = await page.locator('[data-region-slug]').count();
+    const regionListCount = await page.locator('[data-region-list-slug]').count();
+    const horizontalOverflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
 
-      if (vp.width >= 1024) {
-        await page.waitForFunction(() => {
-          const shell = document.querySelector('[data-maplibre-spike]');
-          return shell?.getAttribute('data-maplibre-source-state') === 'available';
-        }, null, { timeout: 45000 }).catch(() => {});
-      }
+    const nationalFile = path.join(outDir, `premium-map-national-${vp.name}.png`);
+    await page.screenshot({ path: nationalFile, fullPage: false, animations: 'disabled' });
 
-      await page.waitForTimeout(2500);
+    await page.locator('[data-region-list-slug="casablanca-settat"]').click();
+    await page.waitForFunction(() => document.querySelector('[data-premium-map]')?.getAttribute('data-map-level') === 'region');
+    const casablancaButton = page.locator('[data-city-list-slug="casablanca"]');
+    await casablancaButton.waitFor({ state: 'visible' });
+    const cityListCount = await page.locator('[data-city-list-slug]').count();
 
-      const file = path.join(outDir, `maplibre-integrated-${locale.key}-${vp.name}.png`);
-      const mapFile = path.join(outDir, `maplibre-integrated-map-${locale.key}-${vp.name}.png`);
-      const mapLocator = page.locator('[data-maplibre-map-surface]');
-      const mapBox = await mapLocator.boundingBox();
-      if (!mapBox || mapBox.width < 1 || mapBox.height < 1) throw new Error(`MapLibre map surface has no stable bounding box at ${locale.key}/${vp.name}`);
-      const clip = {
-        x: Math.max(0, mapBox.x), y: Math.max(0, mapBox.y),
-        width: Math.min(mapBox.width, vp.width - Math.max(0, mapBox.x)),
-        height: Math.min(mapBox.height, vp.height - Math.max(0, mapBox.y)),
-      };
-      await page.screenshot({ path: mapFile, clip, animations: 'disabled' });
-      await page.waitForTimeout(600);
-      await page.screenshot({ path: file, fullPage: false, animations: 'disabled' });
+    const regionFile = path.join(outDir, `premium-map-region-casablanca-settat-${vp.name}.png`);
+    await page.screenshot({ path: regionFile, fullPage: false, animations: 'disabled' });
 
-      const mapStat = await fs.stat(mapFile);
-      const shell = await shellLocator.boundingBox().catch(() => null);
-      const canvasCount = await page.locator('.maplibre-spike-map canvas').count();
-      const readyState = await shellLocator.getAttribute('data-maplibre-ready');
-      const renderState = await shellLocator.getAttribute('data-maplibre-render-state');
-      const sourceState = await shellLocator.getAttribute('data-maplibre-source-state');
-      const buildingsSource = await shellLocator.getAttribute('data-maplibre-source');
-      const buildingsCount = Number(await shellLocator.getAttribute('data-maplibre-building-count') ?? '0');
-      const contextState = await shellLocator.getAttribute('data-maplibre-context-state');
-      const anchorCount = Number(await shellLocator.getAttribute('data-maplibre-anchor-count') ?? '0');
-      const renderedCity = await shellLocator.getAttribute('data-maplibre-city');
-      const renderedDistrict = await shellLocator.getAttribute('data-maplibre-district');
-      const hasVivreIciPage = await page.locator('[data-vivre-ici-page]').count();
-      const hasDecisionRail = await page.locator('[data-p4-map-layout]').count();
+    await casablancaButton.click();
+    await page.waitForFunction(() => document.querySelector('[data-premium-map]')?.getAttribute('data-map-level') === 'city');
+    await page.locator('[data-neighborhood-schematic]').waitFor({ state: 'visible' });
+    const explorer = page.locator('[data-explorer-link="maarif"]');
+    const explorerHref = await explorer.getAttribute('href');
+    const selectedHref = await page.locator('[data-explorer-selected]').getAttribute('href');
+    const quartierCards = await page.locator('[data-explorer-link]').count();
 
-      results.push({
-        locale: { key: locale.key, city: locale.city, district: locale.district, minDesktopBuildings: locale.minDesktopBuildings },
-        viewport: vp,
-        httpStatus: response?.status() ?? null,
-        readyState, renderState, sourceState, buildingsSource, buildingsCount, contextState, anchorCount,
-        renderedCity, renderedDistrict, canvasCount, shell, mapScreenshotBytes: mapStat.size,
-        hasVivreIciPage, hasDecisionRail,
-        failedRequests, failedResponses,
-        requiredFailedRequests: failedRequests,
-        requiredFailedResponses: failedResponses,
-        screenshot: file, mapScreenshot: mapFile,
-      });
-      await context.close();
-    }
+    const cityFile = path.join(outDir, `premium-map-city-casablanca-${vp.name}.png`);
+    await page.screenshot({ path: cityFile, fullPage: false, animations: 'disabled' });
+
+    const files = [nationalFile, regionFile, cityFile];
+    const screenshotBytes = Object.fromEntries(await Promise.all(files.map(async (file) => [path.basename(file), (await fs.stat(file)).size])));
+
+    results.push({
+      viewport: vp,
+      httpStatus: response?.status() ?? null,
+      topologyState,
+      dbMode,
+      regionCount,
+      regionListCount,
+      cityListCount,
+      quartierCards,
+      explorerHref,
+      selectedHref,
+      horizontalOverflow,
+      failedRequests: failedRequests.filter(({ url }) => /geoboundaries|githubusercontent/i.test(url)),
+      screenshots: files,
+      screenshotBytes,
+    });
+    await context.close();
   }
+
+  const darkContext = await browser.newContext({ viewport: { width: 1440, height: 900 }, colorScheme: 'dark' });
+  const darkPage = await darkContext.newPage();
+  await darkPage.addInitScript(() => localStorage.setItem('theme', 'dark'));
+  await darkPage.goto(`${baseUrl}/map`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+  await darkPage.locator('[data-premium-map]').waitFor({ state: 'visible' });
+  await darkPage.waitForFunction(() => document.querySelector('[data-premium-map]')?.getAttribute('data-topology-state') === 'ready', null, { timeout: 30000 });
+  const darkFile = path.join(outDir, 'premium-map-national-dark-1440x900.png');
+  await darkPage.screenshot({ path: darkFile, fullPage: false, animations: 'disabled' });
+  const darkTheme = await darkPage.evaluate(() => document.documentElement.dataset.theme ?? null);
+  await darkContext.close();
 
   const summary = {
     generatedAt: new Date().toISOString(),
-    mode: 'maplibre-morocco-3d-integrated-map',
-    route,
+    mode: 'premium-map-three-level-mock-only',
+    route: '/map',
     zeroDbWritesByScript: true,
+    zeroSupabaseRequestsExpected: true,
     zeroDeploymentActionsByScript: true,
-    usesLocalNeighborhoodBuildingAsset: false,
-    vectorBuildingSource: 'https://tiles.openfreemap.org/planet',
-    minMapScreenshotBytes,
-    locales: locales.map(({ key, city, district, minDesktopBuildings }) => ({ key, city, district, minDesktopBuildings })),
+    darkTheme,
+    darkScreenshot: darkFile,
     results,
   };
   await fs.writeFile(path.join(outDir, 'summary.json'), JSON.stringify(summary, null, 2));
   console.log(JSON.stringify(summary, null, 2));
 
-  if (results.some((r) =>
-    !r.httpStatus || r.httpStatus >= 400
-    || r.readyState !== 'true'
-    || r.renderState !== 'ready'
-    || r.contextState !== 'ready'
-    || r.anchorCount < 1
-    || r.canvasCount < 1
-    || r.mapScreenshotBytes < minMapScreenshotBytes
-    || r.hasVivreIciPage !== 1
-    || r.hasDecisionRail !== 1
-    || r.renderedCity !== r.locale.city
-    || r.renderedDistrict !== r.locale.district
-    || r.requiredFailedRequests.length > 0
-    || r.requiredFailedResponses.length > 0
-    || (r.viewport.width >= 1024 && r.sourceState !== 'available')
-    || (r.viewport.width >= 1024 && r.buildingsSource !== 'openfreemap-vector')
-    || (r.viewport.width >= 1024 && r.buildingsCount < r.locale.minDesktopBuildings)
-  )) process.exitCode = 2;
+  const invalid = results.some((item) =>
+    !item.httpStatus || item.httpStatus >= 400
+    || item.topologyState !== 'ready'
+    || item.dbMode !== 'mock-only'
+    || item.regionCount !== 12
+    || item.regionListCount !== 12
+    || item.cityListCount < 1
+    || item.quartierCards !== 10
+    || item.explorerHref !== '/immobilier/casablanca/maarif'
+    || item.selectedHref !== '/immobilier/casablanca/maarif'
+    || item.horizontalOverflow > 1
+    || item.failedRequests.length > 0
+    || Object.values(item.screenshotBytes).some((bytes) => bytes < 20000)
+  );
+  if (invalid || darkTheme !== 'dark') process.exitCode = 2;
 } finally {
   await browser?.close();
   server.kill('SIGTERM');

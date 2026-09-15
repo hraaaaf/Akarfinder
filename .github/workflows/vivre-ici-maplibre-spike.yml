@@ -1,23 +1,20 @@
-name: Vivre Ici MapLibre Morocco Spike
+name: Vivre Ici Premium Map
 
 on:
   push:
     branches:
       - spike/vivre-ici-maplibre-morocco
     paths:
-      - 'app/map/maplibre-spike/**'
       - 'app/map/page.tsx'
-      - 'app/map/premium-lot8.css'
-      - 'components/map/MapLibreMaarifSpike.tsx'
-      - 'components/map/MapLibreNeighborhood3D.tsx'
-      - 'components/map/NationalMapRouter.tsx'
-      - 'components/map/MaarifTargetRail.tsx'
-      - 'components/map/P4MapDecisionRail.tsx'
+      - 'components/map/PremiumInteractiveMap.tsx'
       - 'scripts/vivre-ici-maplibre-spike-capture.mjs'
+      - 'package.json'
+      - 'package-lock.json'
       - '.github/workflows/vivre-ici-maplibre-spike.yml'
-      - 'lib/geo/casablanca-neighborhood-geometry-shadow.ts'
-      - 'lib/map/canonical-neighborhood-data.ts'
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   capture:
@@ -33,6 +30,18 @@ jobs:
           node-version: 22
           cache: npm
 
+      - name: Bootstrap premium map dependencies
+        run: |
+          npm install --save-exact d3-geo@3 d3-selection@3 d3-zoom@3 topojson-client@3 framer-motion@12
+          npm install --save-dev --save-exact @types/d3-geo @types/d3-selection @types/d3-zoom @types/topojson-client @types/topojson-specification @types/geojson
+          if ! git diff --quiet -- package.json package-lock.json; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add package.json package-lock.json
+            git commit -m "chore(map): lock premium map dependencies [skip ci]"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          fi
+
       - name: Install dependencies
         run: npm ci
 
@@ -45,13 +54,13 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Capture MapLibre Morocco spike
+      - name: Capture premium map
         run: node scripts/vivre-ici-maplibre-spike-capture.mjs
 
       - name: Upload visual artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: vivre-ici-maplibre-spike
+          name: vivre-ici-premium-map
           path: artifacts/vivre-ici-maplibre-spike
           if-no-files-found: error
