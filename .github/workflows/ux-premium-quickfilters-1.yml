@@ -5,6 +5,7 @@ on:
     paths:
       - "components/search/QuickFilters.tsx"
       - "app/search/search-controls-10of10.css"
+      - "app/search/search-premium-card-density.css"
       - "scripts/audits/ux-premium-searchbar-1.mjs"
       - "scripts/audits/ux-premium-quickfilters-1.mjs"
       - "scripts/scrapers/__tests__/ux-premium-searchbar-1.test.ts"
