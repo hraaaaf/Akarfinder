@@ -19,6 +19,7 @@ import "./clinical-final.css";
 import "./clinical-recovery.css";
 import "./clinical-sheet-guard.css";
 import "./premium-interactive-map-fixes.css";
+import "./n3-premium-theme.css";
 
 export const dynamic = "force-dynamic";
 
