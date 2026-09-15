@@ -3,6 +3,7 @@ import { SiteFooter } from "@/components/landing/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { NationalMapRouter } from "@/components/map/NationalMapRouter";
 import { P4MapDecisionRail } from "@/components/map/P4MapDecisionRail";
+import { PremiumInteractiveMap } from "@/components/map/PremiumInteractiveMap";
 import { parseMapNavigationState } from "@/lib/map/map-navigation-state";
 import "./mockup-convergence-l2.css";
 import "./p4-map-shell.css";
@@ -17,6 +18,7 @@ import "./target-alignment.css";
 import "./clinical-final.css";
 import "./clinical-recovery.css";
 import "./clinical-sheet-guard.css";
+import "./premium-interactive-map-fixes.css";
 
 export const dynamic = "force-dynamic";
 
@@ -38,41 +40,53 @@ function firstParam(value: string | string[] | undefined): string {
 export default async function MapPage({ searchParams }: MapPageProps) {
   const params = searchParams ? await searchParams : {};
   const initialState = parseMapNavigationState(params);
-  const hasNeighborhoodSelection = Boolean(
-    firstParam(params.city).trim() && firstParam(params.district).trim(),
-  );
+  const city = firstParam(params.city).trim();
+  const district = firstParam(params.district).trim();
+  const layer = firstParam(params.layer).trim() || "explore";
+  const hasNeighborhoodSelection = Boolean(city && district);
+  const usePremiumNationalExplore = !city && !district && layer === "explore";
 
   return (
-    <main className="flex min-h-[100svh] flex-col bg-[#F8FAFC] text-[#0B1F3A]" data-vivre-ici-page>
+    <div className="flex min-h-[100svh] flex-col bg-[#F8FAFC] text-[#0B1F3A]" data-vivre-ici-page>
       <SiteHeader searchMode fluid />
-      <div className="flex-1" data-p4-map-layout>
-        <div data-p4-map-canvas>
-          <NationalMapRouter initialState={initialState} />
-        </div>
-        <P4MapDecisionRail />
-      </div>
-      {!hasNeighborhoodSelection ? (
-        <section className="vivre-ici-target-outro" aria-label="Découvrir les quartiers autrement">
-          <div>
-            <strong>Découvrez les quartiers autrement</strong>
-            <span>Explorez, comparez, vivez mieux avec AkarFinder.</span>
+
+      {usePremiumNationalExplore ? (
+        <PremiumInteractiveMap />
+      ) : (
+        <>
+          <div className="flex-1" data-p4-map-layout>
+            <div data-p4-map-canvas>
+              <NationalMapRouter initialState={initialState} />
+            </div>
+            <P4MapDecisionRail />
           </div>
-          <p>Des lieux. Des vies. Des projets.</p>
-        </section>
-      ) : null}
-      {hasNeighborhoodSelection ? (
-        <style>{`
-          [data-vivre-ici-page] .maplibre-spike-shell {
-            grid-template-rows: minmax(0, 1fr) !important;
-          }
-          [data-vivre-ici-page] .maplibre-spike-outro {
-            display: none !important;
-          }
-        `}</style>
-      ) : null}
+
+          {!hasNeighborhoodSelection ? (
+            <section className="vivre-ici-target-outro" aria-label="Découvrir les quartiers autrement">
+              <div>
+                <strong>Découvrez les quartiers autrement</strong>
+                <span>Explorez, comparez, vivez mieux avec AkarFinder.</span>
+              </div>
+              <p>Des lieux. Des vies. Des projets.</p>
+            </section>
+          ) : null}
+
+          {hasNeighborhoodSelection ? (
+            <style>{`
+              [data-vivre-ici-page] .maplibre-spike-shell {
+                grid-template-rows: minmax(0, 1fr) !important;
+              }
+              [data-vivre-ici-page] .maplibre-spike-outro {
+                display: none !important;
+              }
+            `}</style>
+          ) : null}
+        </>
+      )}
+
       <div className="l2-secondary-footer">
         <SiteFooter />
       </div>
-    </main>
+    </div>
   );
 }
