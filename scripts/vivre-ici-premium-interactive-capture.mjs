@@ -11,6 +11,7 @@ const viewports = [
   { name: '1280x900', width: 1280, height: 900 },
   { name: '1440x900', width: 1440, height: 900 },
 ];
+const expectedMaarifHref = '/map?city=casablanca&district=maarif&layer=explore';
 const isSupabaseUrl = (url) => /supabase\.co|\/rest\/v1(?:\/|\?|$)|\/rpc(?:\/|\?|$)/i.test(url);
 const snapTop = (page) => page.evaluate(() => {
   document.documentElement.style.scrollBehavior = 'auto';
@@ -70,6 +71,7 @@ try {
 
     const topologyState = await shell.getAttribute('data-topology-state');
     const dbMode = await shell.getAttribute('data-db-mode');
+    const bridgeMode = await page.locator('[data-premium-map-bridge="n3"]').count();
     const regionCount = await page.locator('[data-region-slug]').count();
     const regionListCount = await page.locator('[data-region-list-slug]').count();
     const siteHeaderCount = await page.locator('[data-search-global-header]').count();
@@ -94,6 +96,7 @@ try {
     await page.waitForFunction(() => document.querySelector('[data-premium-map]')?.getAttribute('data-map-level') === 'city');
     await page.locator('[data-neighborhood-schematic]').waitFor({ state: 'visible' });
     const explorer = page.locator('[data-explorer-link="maarif"]');
+    await page.waitForFunction((expected) => document.querySelector('[data-explorer-link="maarif"]')?.getAttribute('href') === expected, expectedMaarifHref, { timeout: 5000 });
     const explorerHref = await explorer.getAttribute('href');
     const selectedHref = await page.locator('[data-explorer-selected]').getAttribute('href');
     const quartierCards = await page.locator('[data-explorer-link]').count();
@@ -112,6 +115,7 @@ try {
       httpStatus: response?.status() ?? null,
       topologyState,
       dbMode,
+      bridgeMode,
       regionCount,
       regionListCount,
       siteHeaderCount,
@@ -153,7 +157,7 @@ try {
 
   const summary = {
     generatedAt: new Date().toISOString(),
-    mode: 'premium-map-three-level-mock-only-final-gate',
+    mode: 'premium-map-three-level-mock-only-n3-bridge-gate',
     route: '/map',
     zeroDbWritesByScript: true,
     zeroDeploymentActionsByScript: true,
@@ -173,6 +177,7 @@ try {
     !item.httpStatus || item.httpStatus >= 400
     || item.topologyState !== 'ready'
     || item.dbMode !== 'mock-only'
+    || item.bridgeMode !== 1
     || item.regionCount !== 12
     || item.regionListCount !== 12
     || item.siteHeaderCount !== 1
@@ -180,8 +185,8 @@ try {
     || !item.pageTitle.includes('Vivre ici au Maroc')
     || item.cityListCount < 1
     || item.quartierCards !== 10
-    || item.explorerHref !== '/immobilier/casablanca/maarif'
-    || item.selectedHref !== '/immobilier/casablanca/maarif'
+    || item.explorerHref !== expectedMaarifHref
+    || item.selectedHref !== expectedMaarifHref
     || item.horizontalOverflow > 1
     || item.supabaseRequestCount !== 0
     || badPaint(item.inactivePolygonFill)
