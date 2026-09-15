@@ -7,6 +7,7 @@ on:
       - "components/search/SearchViewSwitcher.tsx"
       - "components/search/QuickFilters.tsx"
       - "components/search/SearchPriceExplorerDock.tsx"
+      - "app/search/search-premium-card-density.css"
       - "scripts/audits/p3-search-after-audit.mjs"
       - ".github/workflows/p3-search-after-audit.yml"
   workflow_dispatch:
@@ -40,7 +41,7 @@ jobs:
           run=false
           while IFS= read -r file; do
             case "$file" in
-              components/search/SearchViewSwitcher.tsx|components/search/QuickFilters.tsx|components/search/SearchPriceExplorerDock.tsx|scripts/audits/p3-search-after-audit.mjs|.github/workflows/p3-search-after-audit.yml)
+              components/search/SearchViewSwitcher.tsx|components/search/QuickFilters.tsx|components/search/SearchPriceExplorerDock.tsx|app/search/search-premium-card-density.css|scripts/audits/p3-search-after-audit.mjs|.github/workflows/p3-search-after-audit.yml)
                 run=true
                 ;;
             esac
