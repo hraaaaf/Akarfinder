@@ -1,3 +1,4 @@
+// VIVRE-ICI-TERRITORY-DICTIONARY-LOT1 — priority/zoom contract layered over canonical geo identity
 import type { CanonicalCitySlug } from "./geo-entity-registry";
 
 export type TerritoryEntityType = "city" | "district" | "landmark";
