@@ -1,4 +1,5 @@
 name: Carte National Journey N3 Certification
+# integration-certification-trigger
 
 on:
   pull_request:
@@ -22,7 +23,7 @@ on:
       - ".github/workflows/carte-national-journey-n3.yml"
   push:
     branches:
-      - docs/3-vivre-ici-akarfinder
+      - integration/vivre-ici-main-2026-09-17
     paths:
       - "app/api/geo/national-territories/**"
       - "app/map/**"
