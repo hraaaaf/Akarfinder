@@ -76,6 +76,30 @@
   outline-offset: 2px;
 }
 
+/* Reliability statements must read as two discrete facts, never as a fused
+ * sentence when the zero-state lede is removed. */
+[data-vivre-ici-page] [data-p4-map-decision-rail] .p4-premium-proofline {
+  display: flex !important;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px !important;
+  margin-top: 8px;
+}
+
+[data-vivre-ici-page] [data-p4-map-decision-rail] .p4-premium-proofline span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  border: 1px solid rgb(220 228 239 / .9);
+  border-radius: 999px;
+  background: rgb(248 250 252 / .88);
+  padding: 4px 8px;
+  color: #52657a;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
 /* When the context explicitly reports zero public anchors, remove decorative
  * zero cards rather than turning absence into pseudo-information. */
 [data-p4-map-layout]:has([data-maplibre-anchor-count="0"]) [data-p4-map-decision-rail] .p4-premium-lede,
@@ -118,6 +142,7 @@
   }
 
   [data-p4-map-layout]:has([data-maplibre-spike][data-maplibre-district]) [data-p4-map-decision-rail] .p4-premium-context-location,
+  [data-p4-map-layout]:has([data-maplibre-spike][data-maplibre-district]) [data-p4-map-decision-rail] .p4-premium-proofline,
   [data-p4-map-layout]:has([data-maplibre-spike][data-maplibre-district]) [data-p4-map-decision-rail] .p4-premium-tabs,
   [data-p4-map-layout]:has([data-maplibre-spike][data-maplibre-district]) [data-p4-map-decision-rail] .p4-premium-market-card,
   [data-p4-map-layout]:has([data-maplibre-spike][data-maplibre-district]) [data-p4-map-decision-rail] .p4-premium-secondary-action {
@@ -128,12 +153,6 @@
     margin-top: 2px !important;
     font-size: 22px !important;
     line-height: 1.02 !important;
-  }
-
-  [data-p4-map-layout]:has([data-maplibre-spike][data-maplibre-district]) [data-p4-map-decision-rail] .p4-premium-proofline {
-    margin-top: 7px !important;
-    gap: 5px !important;
-    font-size: 8px !important;
   }
 
   [data-p4-map-layout]:has([data-maplibre-spike][data-maplibre-district]) [data-p4-map-decision-rail] .p4-premium-actions {
@@ -150,4 +169,10 @@
   background: rgb(8 31 61 / .94);
   color: #f8fafc;
   box-shadow: 0 12px 30px rgb(0 0 0 / .28);
+}
+
+[data-theme="dark"] [data-vivre-ici-page] [data-p4-map-decision-rail] .p4-premium-proofline span {
+  border-color: rgb(53 86 125 / .72);
+  background: rgb(8 31 61 / .78);
+  color: #b8c7d9;
 }
