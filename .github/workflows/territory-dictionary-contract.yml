@@ -21,7 +21,9 @@ on:
       - "scripts/scrapers/__tests__/territory-local-visibility.test.ts"
       - "scripts/scrapers/__tests__/territory-label-stability.test.ts"
       - "scripts/scrapers/__tests__/territory-catalog.test.ts"
+      - "scripts/scrapers/__tests__/territory-map-integration.test.ts"
       - "package.json"
+      - "components/map/PremiumInteractiveMap.tsx"
       - ".github/workflows/territory-dictionary-contract.yml"
 
 permissions:
