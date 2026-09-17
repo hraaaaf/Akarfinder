@@ -64,6 +64,7 @@ export type LandmarkCategory =
   | "hospital"
   | "major_road"
   | "civic"
+  | "business"
   | "other";
 
 export type LandmarkTerritoryEntity = TerritoryBase & {
