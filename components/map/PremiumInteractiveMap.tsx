@@ -449,7 +449,7 @@ export function PremiumInteractiveMap() {
   }, [level, nationalCityRenderItems]);
 
   useEffect(() => {
-    if (!svgRef.current) return;
+    if (!projection || !svgRef.current) return;
     const svg = select(svgRef.current);
     const behavior = zoom<SVGSVGElement, unknown>()
       .scaleExtent([1, 7.4])
@@ -464,7 +464,7 @@ export function PremiumInteractiveMap() {
       svg.on(".zoom", null);
       zoomBehaviorRef.current = null;
     };
-  }, []);
+  }, [projection]);
 
   const applyCamera = useCallback((next: ZoomTransform) => {
     if (!svgRef.current || !zoomBehaviorRef.current) return;
