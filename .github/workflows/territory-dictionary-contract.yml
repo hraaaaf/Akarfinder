@@ -1,0 +1,28 @@
+name: Territory Dictionary Contract
+
+on:
+  push:
+    branches:
+      - feat/vivre-ici-territory-dictionary
+    paths:
+      - "lib/geo/territory-dictionary.ts"
+      - "scripts/scrapers/__tests__/territory-dictionary-contract.test.ts"
+      - "package.json"
+      - ".github/workflows/territory-dictionary-contract.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  territory-dictionary-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - run: npm run test:territory-dictionary
+      - run: npx tsc --noEmit
