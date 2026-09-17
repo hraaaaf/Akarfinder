@@ -78,7 +78,7 @@ try {
     const premiumFile = path.join(outDir, `map-after-premium-national-${vp.name}.png`);
     await page.screenshot({ path: premiumFile, fullPage: false, animations: 'disabled' });
 
-    const zoomIn = page.getByRole('button', { name: 'Zoomer' });
+    const zoomIn = page.locator('[data-premium-map] section[aria-label="Carte interactive du Maroc"] button[aria-label="Zoomer"]').first();
     for (let index = 0; index < 6; index += 1) {
       await zoomIn.click();
       await page.waitForTimeout(120);
