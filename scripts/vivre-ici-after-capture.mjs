@@ -70,8 +70,26 @@ try {
     const headerVisible = await header.isVisible();
     const logoVisible = (await header.locator('img[alt="AkarFinder"]:visible').count()) > 0;
     const headerBox = await header.boundingBox();
+    const initialCitySlugs = await page.locator('[data-national-city-label]').evaluateAll((nodes) =>
+      nodes.map((node) => node.getAttribute('data-national-city-label')).filter(Boolean)
+    );
+    const initialTerritoryZoom = Number(await premium.getAttribute('data-national-territory-zoom') ?? '0');
+
     const premiumFile = path.join(outDir, `map-after-premium-national-${vp.name}.png`);
     await page.screenshot({ path: premiumFile, fullPage: false, animations: 'disabled' });
+
+    const zoomIn = page.getByRole('button', { name: 'Zoomer' });
+    for (let index = 0; index < 6; index += 1) {
+      await zoomIn.click();
+      await page.waitForTimeout(120);
+    }
+    await page.waitForTimeout(350);
+    const zoomedCitySlugs = await page.locator('[data-national-city-label]').evaluateAll((nodes) =>
+      nodes.map((node) => node.getAttribute('data-national-city-label')).filter(Boolean)
+    );
+    const zoomedTerritoryZoom = Number(await premium.getAttribute('data-national-territory-zoom') ?? '0');
+    const premiumZoomedFile = path.join(outDir, `map-after-premium-national-zoomed-${vp.name}.png`);
+    await page.screenshot({ path: premiumZoomedFile, fullPage: false, animations: 'disabled' });
 
     results.push({
       scenario: 'premium-national',
@@ -82,6 +100,14 @@ try {
       dbMode: await premium.getAttribute('data-db-mode'),
       regionCount: await page.locator('[data-region-slug]').count(),
       regionListCount: await page.locator('[data-region-list-slug]').count(),
+      initialCityLabelCount: initialCitySlugs.length,
+      initialCitySlugs,
+      initialTerritoryZoom,
+      zoomedCityLabelCount: zoomedCitySlugs.length,
+      zoomedCitySlugs,
+      zoomedTerritoryZoom,
+      zoomedScreenshot: premiumZoomedFile,
+      zoomedScreenshotBytes: (await fs.stat(premiumZoomedFile)).size,
       headerVisible,
       logoVisible,
       headerHeight: headerBox?.height ?? 0,
@@ -181,6 +207,13 @@ try {
     || r.dbMode !== 'mock-only'
     || r.regionCount !== 12
     || r.regionListCount !== 12
+    || r.initialCityLabelCount < 4
+    || !['casablanca','rabat','marrakech','tanger'].every((slug) => r.initialCitySlugs.includes(slug))
+    || r.zoomedCityLabelCount <= r.initialCityLabelCount
+    || !r.zoomedCitySlugs.includes('kenitra')
+    || !r.zoomedCitySlugs.includes('mohammedia')
+    || r.zoomedTerritoryZoom <= r.initialTerritoryZoom
+    || r.zoomedScreenshotBytes < 30000
     || !r.headerVisible
     || !r.logoVisible
     || r.headerHeight <= 0
