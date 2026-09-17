@@ -1,0 +1,88 @@
+name: Vivre Ici AFTER Certification
+
+on:
+  push:
+    branches:
+      - docs/3-vivre-ici-akarfinder
+    paths:
+      - 'app/map/**'
+      - 'components/map/**'
+      - 'lib/map/**'
+      - 'components/layout/MobileBottomNav.tsx'
+      - 'components/layout/SiteHeader.tsx'
+      - 'scripts/vivre-ici-after-capture.mjs'
+      - 'scripts/audits/ux-bottom-nav-10of10-1.mjs'
+      - 'scripts/scrapers/__tests__/ux-bottom-nav-10of10-1.test.ts'
+      - 'scripts/scrapers/__tests__/ux-premium-bottomnav-glass-1.test.ts'
+      - '.github/workflows/vivre-ici-after.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED: 'false'
+
+jobs:
+  certify-after:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Vivre ici navigation contracts
+        run: npx tsx --test scripts/scrapers/__tests__/ux-bottom-nav-10of10-1.test.ts scripts/scrapers/__tests__/ux-premium-bottomnav-glass-1.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Capture branch-local AFTER v2
+        run: node scripts/vivre-ici-after-capture.mjs
+      - name: Verify AFTER v2 proof
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const s = JSON.parse(fs.readFileSync('artifacts/vivre-ici-after/summary.json','utf8'));
+          if (s.mode !== 'branch-local-after-v2') throw new Error(`wrong mode: ${s.mode}`);
+          if (s.anchor !== '#071B33') throw new Error(`wrong anchor: ${s.anchor}`);
+          if (s.zeroDbWritesByScript !== true) throw new Error('write safety not proven');
+          if (s.zeroDeploymentActionsByScript !== true) throw new Error('deployment safety not proven');
+          if (s.results.length !== 8) throw new Error(`expected 8 proofs, got ${s.results.length}`);
+          const premium = s.results.filter((r) => r.scenario === 'premium-national');
+          const n3 = s.results.filter((r) => r.scenario === 'n3-casablanca-maarif');
+          if (premium.length !== 4 || n3.length !== 4) throw new Error(`wrong scenario split ${premium.length}/${n3.length}`);
+          for (const r of premium) {
+            if (!r.headerVisible || !r.logoVisible || r.headerHeight <= 0) throw new Error(`premium header invisible ${r.viewport.name}`);
+            if (r.topologyState !== 'ready' || r.dbMode !== 'mock-only') throw new Error(`premium state invalid ${r.viewport.name}`);
+            if (r.regionCount !== 12 || r.regionListCount !== 12) throw new Error(`premium regions invalid ${r.viewport.name}`);
+          }
+          for (const r of n3) {
+            if (r.maplibreReady !== 'true' || r.renderState !== 'ready' || r.sourceState !== 'available') throw new Error(`N3 not ready ${r.viewport.name}`);
+            if (r.source !== 'openfreemap-vector' || r.buildingCount < 1) throw new Error(`N3 source/buildings invalid ${r.viewport.name}`);
+            if (!r.decisionRailVisible) throw new Error(`N3 rail hidden ${r.viewport.name}`);
+            if (!r.canvasFilter?.includes('hue-rotate(18deg)')) throw new Error(`N3 premium grade missing ${r.viewport.name}: ${r.canvasFilter}`);
+            if (r.labelBackground !== 'rgba(7, 27, 51, 0.94)' || r.labelColor !== 'rgb(255, 255, 255)') throw new Error(`N3 label palette wrong ${r.viewport.name}`);
+            if (r.primaryActionBackground !== 'rgb(7, 27, 51)') throw new Error(`N3 CTA palette wrong ${r.viewport.name}`);
+          }
+          for (const r of s.results) {
+            if (!r.httpStatus || r.httpStatus >= 400) throw new Error(`bad HTTP ${r.scenario}/${r.viewport.name}`);
+            if (r.horizontalOverflow > 1) throw new Error(`overflow ${r.scenario}/${r.viewport.name}: ${r.horizontalOverflow}`);
+            if (r.supabaseRequestCount !== 0) throw new Error(`external Supabase request ${r.scenario}/${r.viewport.name}`);
+            if (r.pageErrors.length) throw new Error(`page errors ${r.scenario}/${r.viewport.name}: ${JSON.stringify(r.pageErrors)}`);
+            if (!fs.existsSync(r.screenshot) || r.screenshotBytes < 30000) throw new Error(`missing/weak screenshot ${r.scenario}/${r.viewport.name}`);
+          }
+          console.log(JSON.stringify(s,null,2));
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: vivre-ici-after
+          path: artifacts/vivre-ici-after/
+          if-no-files-found: error
+          retention-days: 30

@@ -1,0 +1,39 @@
+/* VIVRE ICI — recovery guard after mobile AFTER harness found the MapLibre canvas hidden.
+   Visual/layout only. Restores the previously certified viewport envelope while keeping the TARGET recovery styling. */
+
+@media (max-width: 767px) {
+  /* Keep the proven global header/layout envelope. Hiding the header and stretching
+     the map to 100svh collapsed the rendered MapLibre surface in the browser gate. */
+  [data-search-global-header] {
+    display: block !important;
+  }
+
+  [data-p4-map-layout] {
+    height: calc(100svh - 64px) !important;
+    min-height: calc(100svh - 64px) !important;
+  }
+
+  [data-p4-map-canvas],
+  [data-p4-map-canvas] > div,
+  [data-p4-map-canvas] .maplibre-spike-shell,
+  [data-p4-map-canvas] .maplibre-spike-map,
+  [data-p4-map-canvas] .maplibre-spike-canvas,
+  [data-p4-map-canvas] .maplibregl-map,
+  [data-p4-map-canvas] .maplibregl-canvas-container {
+    min-height: 0 !important;
+  }
+
+  [data-p4-map-canvas] .maplibre-spike-shell,
+  [data-p4-map-canvas] .maplibre-spike-map,
+  [data-p4-map-canvas] .maplibre-spike-canvas,
+  [data-p4-map-canvas] .maplibregl-map,
+  [data-p4-map-canvas] .maplibregl-canvas-container {
+    height: 100% !important;
+  }
+
+  [data-p4-map-canvas] .maplibregl-canvas {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+}

@@ -35,7 +35,7 @@ type LoadState = "idle" | "loading" | "ready" | "unavailable";
 
 const PLACEMENT_CLASS: Record<Placement, string> = {
   market: "left-3 top-[278px] md:left-4 md:top-[216px]",
-  national: "left-3 top-[252px] lg:left-4 lg:top-[228px]",
+  national: "left-3 top-[116px] lg:left-[250px] lg:top-[92px]",
   generic: "left-3 top-[154px] lg:left-4 lg:top-[112px]",
 };
 
@@ -256,21 +256,21 @@ export function NeighborhoodContextPoiOverlay({
             Repères indisponibles
           </div>
         ) : (
-          <div className="grid gap-1.5">
+          <div className={placement === "national" ? "flex max-w-[calc(100vw-24px)] items-center gap-1.5 overflow-x-auto" : "grid gap-1.5"}>
             <button
               type="button"
               aria-pressed={enabled}
               onClick={() => setEnabled((value) => !value)}
-              className={`inline-flex min-h-11 w-max items-center gap-2 rounded-full border px-3.5 text-[10.5px] font-extrabold shadow-[0_10px_28px_rgba(15,35,66,0.14)] backdrop-blur-xl transition focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 ${enabled ? "border-brand-primary bg-brand-primary text-white" : "border-white/80 bg-white/94 text-[#0B1F3A] dark:border-white/10 dark:bg-[#0A1A2F]/94 dark:text-white"}`}
+              className={`inline-flex min-h-10 w-max shrink-0 items-center gap-2 rounded-full border px-3 text-[10px] font-extrabold shadow-[0_10px_28px_rgba(15,35,66,0.12)] backdrop-blur-xl transition focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 ${enabled ? "border-brand-primary bg-brand-primary text-white" : "border-white/80 bg-white/94 text-[#0B1F3A] dark:border-white/10 dark:bg-[#0A1A2F]/94 dark:text-white"}`}
               data-neighborhood-context-poi-toggle
             >
-              <MapPin size={14} aria-hidden="true" />
+              <MapPin size={13} aria-hidden="true" />
               Repères · {context.anchor_count}
             </button>
 
             {enabled && filters.length > 1 ? (
               <div
-                className="flex max-w-[min(720px,calc(100vw-24px))] gap-1 overflow-x-auto rounded-[16px] border border-white/80 bg-white/94 p-1 shadow-[0_10px_28px_rgba(15,35,66,0.12)] backdrop-blur-xl dark:border-white/10 dark:bg-[#0A1A2F]/94"
+                className="flex max-w-[min(720px,calc(100vw-24px))] shrink-0 gap-1 overflow-x-auto rounded-full border border-white/80 bg-white/94 p-1 shadow-[0_10px_28px_rgba(15,35,66,0.10)] backdrop-blur-xl dark:border-white/10 dark:bg-[#0A1A2F]/94"
                 data-neighborhood-context-poi-filters
               >
                 {filters.map((candidate) => {
@@ -282,7 +282,7 @@ export function NeighborhoodContextPoiOverlay({
                       type="button"
                       aria-pressed={active}
                       onClick={() => setFilter(candidate)}
-                      className={`min-h-11 shrink-0 rounded-xl px-3 text-[10px] font-extrabold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary ${active ? "bg-brand-primary text-white" : "text-slate-600 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-white/10"}`}
+                      className={`min-h-9 shrink-0 rounded-full px-3 text-[9.5px] font-extrabold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary ${active ? "bg-brand-primary text-white" : "text-slate-600 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-white/10"}`}
                       data-neighborhood-context-poi-filter={candidate}
                     >
                       {meta.label}

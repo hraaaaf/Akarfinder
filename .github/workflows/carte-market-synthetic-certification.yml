@@ -1,0 +1,83 @@
+name: Carte Market Synthetic Certification
+
+on:
+  pull_request:
+    paths:
+      - "app/map/**"
+      - "components/map/**"
+      - "lib/geo/rabat-market-zones-geojson.ts"
+      - "lib/map/city-market-intelligence.ts"
+      - "lib/map/city-market-intelligence-payload.ts"
+      - "lib/map/intelligence-payload.ts"
+      - "lib/map/intelligence-scale.ts"
+      - "scripts/audits/carte-market-synthetic-certification.ts"
+      - ".github/workflows/carte-market-synthetic-certification.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: carte-market-synthetic-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  certify-synthetic-market-ui:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      BASE_URL: http://127.0.0.1:3214
+      AUDIT_OUTPUT_DIR: data/audits/carte-market-synthetic
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Latest-commit scope check
+        id: scope
+        shell: bash
+        run: |
+          changed="$(git diff --name-only HEAD^ HEAD)"
+          printf '%s\n' "$changed"
+          if printf '%s\n' "$changed" | grep -Eq '^(app/map/|components/map/|lib/geo/rabat-market-zones-geojson\.ts$|lib/map/(city-market-intelligence|city-market-intelligence-payload|intelligence-payload|intelligence-scale)\.ts$|scripts/audits/carte-market-synthetic-certification\.ts$|\.github/workflows/carte-market-synthetic-certification\.yml$)'; then
+            echo "run_heavy=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run_heavy=false" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/setup-node@v4
+        if: steps.scope.outputs.run_heavy == 'true'
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        if: steps.scope.outputs.run_heavy == 'true'
+        run: npm ci
+      - name: TypeScript
+        if: steps.scope.outputs.run_heavy == 'true'
+        run: npx tsc --noEmit
+      - name: Production build
+        if: steps.scope.outputs.run_heavy == 'true'
+        run: npm run build
+      - name: Install Chromium
+        if: steps.scope.outputs.run_heavy == 'true'
+        run: npx playwright install --with-deps chromium
+      - name: Start production server
+        if: steps.scope.outputs.run_heavy == 'true'
+        shell: bash
+        run: |
+          npm run start -- -p 3214 > /tmp/carte-market-synthetic.log 2>&1 &
+          for attempt in {1..60}; do
+            if curl -fsS 'http://127.0.0.1:3214/map?city=rabat' >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/carte-market-synthetic.log
+          exit 1
+      - name: Synthetic market UI certification
+        if: steps.scope.outputs.run_heavy == 'true'
+        run: npx tsx scripts/audits/carte-market-synthetic-certification.ts
+      - name: Upload synthetic evidence
+        if: always() && steps.scope.outputs.run_heavy == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: carte-market-synthetic-${{ github.run_id }}
+          path: data/audits/carte-market-synthetic
+          if-no-files-found: error
+          retention-days: 30

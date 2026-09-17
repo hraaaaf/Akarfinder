@@ -1,0 +1,53 @@
+name: Vivre Ici Premium Interactive Integration
+
+on:
+  push:
+    branches:
+      - docs/3-vivre-ici-akarfinder
+    paths:
+      - 'app/map/page.tsx'
+      - 'app/map/premium-interactive-map-fixes.css'
+      - 'components/map/PremiumInteractiveMap.tsx'
+      - 'components/map/PremiumInteractiveMapBridge.tsx'
+      - 'scripts/vivre-ici-premium-interactive-capture.mjs'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/vivre-ici-premium-interactive.yml'
+  workflow_dispatch:
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Build
+        run: npm run build
+
+      - name: Capture integrated premium map
+        run: node scripts/vivre-ici-premium-interactive-capture.mjs
+
+      - name: Upload visual artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vivre-ici-premium-interactive-integration
+          path: artifacts/vivre-ici-maplibre-spike
+          if-no-files-found: error
