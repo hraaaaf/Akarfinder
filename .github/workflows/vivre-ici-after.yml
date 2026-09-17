@@ -3,7 +3,7 @@ name: Vivre Ici AFTER Certification
 on:
   push:
     branches:
-      - docs/3-vivre-ici-akarfinder
+      - integration/vivre-ici-main-2026-09-17
     paths:
       - 'app/map/**'
       - 'components/map/**'
