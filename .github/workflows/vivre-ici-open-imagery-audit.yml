@@ -1,0 +1,35 @@
+name: Vivre Ici Open Imagery Audit
+
+on:
+  push:
+    branches:
+      - spike/vivre-ici-cesium-target
+    paths:
+      - 'scripts/vivre-ici-open-imagery-audit.py'
+      - '.github/workflows/vivre-ici-open-imagery-audit.yml'
+      - 'data/geo/casablanca-arrondissements-osm.json'
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Audit OpenAerialMap coverage
+        run: python scripts/vivre-ici-open-imagery-audit.py
+
+      - name: Upload audit artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vivre-ici-open-imagery-audit
+          path: artifacts/vivre-ici-open-imagery-audit
+          if-no-files-found: error

@@ -1,0 +1,491 @@
+/* VIVRE ICI — TARGET recovery after mobile visual review.
+   Presentation only: preserve all data, routing, geometry and truth contracts.
+   The selected-neighborhood circle remains an indicative sourced center, never a claimed boundary. */
+
+/* Give the satellite enough depth to read as a product canvas, not a raw tile dump. */
+[data-p4-map-canvas] .maplibre-spike-canvas canvas {
+  filter: saturate(.92) contrast(1.015) brightness(.985) !important;
+}
+
+[data-p4-map-canvas] .maplibre-spike-map-grade {
+  background:
+    linear-gradient(180deg, rgb(8 45 53 / .10) 0%, transparent 24%, transparent 72%, rgb(7 42 43 / .08) 100%) !important;
+  mix-blend-mode: multiply !important;
+}
+
+@media (max-width: 1023px) {
+  /* Map chrome: one compact, useful row. */
+  [data-p4-map-canvas] .maplibre-spike-map-chrome {
+    left: 12px !important;
+    right: 12px !important;
+    top: max(10px, env(safe-area-inset-top)) !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    align-items: center !important;
+    gap: 8px !important;
+  }
+
+  [data-p4-map-canvas] .maplibre-spike-brand {
+    display: none !important;
+  }
+
+  [data-p4-map-canvas] .maplibre-spike-search {
+    width: 100% !important;
+    min-height: 42px !important;
+    padding-inline: 13px !important;
+    border: 1px solid rgb(255 255 255 / .88) !important;
+    border-radius: 15px !important;
+    background: rgb(255 255 255 / .92) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(1.04) !important;
+    backdrop-filter: blur(18px) saturate(1.04) !important;
+    box-shadow: 0 8px 24px rgb(8 39 43 / .14) !important;
+  }
+
+  [data-p4-map-canvas] .maplibre-spike-search strong {
+    color: #15383a !important;
+    font-size: 12px !important;
+    font-weight: 850 !important;
+  }
+
+  [data-p4-map-canvas] .maplibre-spike-search span {
+    display: inline !important;
+    color: #7a8786 !important;
+    font-size: 9px !important;
+  }
+
+  [data-p4-map-canvas] .maplibre-spike-mode {
+    display: flex !important;
+    min-height: 42px !important;
+    padding: 3px !important;
+    border: 1px solid rgb(255 255 255 / .88) !important;
+    border-radius: 15px !important;
+    background: rgb(255 255 255 / .92) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(1.04) !important;
+    backdrop-filter: blur(18px) saturate(1.04) !important;
+    box-shadow: 0 8px 24px rgb(8 39 43 / .14) !important;
+  }
+
+  [data-p4-map-canvas] .maplibre-spike-mode span,
+  [data-p4-map-canvas] .maplibre-spike-mode strong {
+    min-width: 38px !important;
+    min-height: 34px !important;
+    border-radius: 11px !important;
+    font-size: 9px !important;
+  }
+
+  [data-p4-map-canvas] .maplibre-spike-mode span {
+    font-size: 0 !important;
+  }
+
+  [data-p4-map-canvas] .maplibre-spike-mode span::after {
+    content: "2D" !important;
+    font-size: 9px !important;
+  }
+
+  [data-p4-map-canvas] .maplibre-spike-mode strong {
+    background: #075f60 !important;
+    color: #fff !important;
+  }
+
+  /* Satellite / Quartiers are descriptive, not fake toggles. The functional POI filters carry the interaction. */
+  [data-p4-map-canvas] .maplibre-spike-view-chips {
+    display: none !important;
+  }
+
+  [data-p4-map-canvas] .maplibre-spike-filters {
+    left: 12px !important;
+    right: 12px !important;
+    top: calc(max(10px, env(safe-area-inset-top)) + 50px) !important;
+    display: flex !important;
+    gap: 7px !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    padding: 2px 0 7px !important;
+    scrollbar-width: none !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  [data-p4-map-canvas] .maplibre-spike-filters::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  [data-p4-map-canvas] .maplibre-spike-filters button,
+  [data-p4-map-canvas] .maplibre-spike-filters button:first-child,
+  [data-p4-map-canvas] .maplibre-spike-filters button:first-child.active {
+    display: flex !important;
+    min-height: 31px !important;
+    flex: 0 0 auto !important;
+    align-items: center !important;
+    padding: 0 11px !important;
+    border: 1px solid rgb(255 255 255 / .86) !important;
+    border-radius: 12px !important;
+    background: rgb(255 255 255 / .90) !important;
+    -webkit-backdrop-filter: blur(14px) saturate(1.04) !important;
+    backdrop-filter: blur(14px) saturate(1.04) !important;
+    box-shadow: 0 6px 18px rgb(8 39 43 / .11) !important;
+    color: #294645 !important;
+    font-size: 8.8px !important;
+    font-weight: 800 !important;
+  }
+
+  [data-p4-map-canvas] .maplibre-spike-filters button.active,
+  [data-p4-map-canvas] .maplibre-spike-filters button:first-child.active {
+    border-color: rgb(8 105 102 / .78) !important;
+    background: #076d69 !important;
+    color: #fff !important;
+    box-shadow: 0 7px 17px rgb(2 87 84 / .17) !important;
+  }
+
+  /* Keep controls useful and visually subordinate to the neighborhood card. */
+  [data-p4-map-canvas] .maplibre-spike-controls {
+    top: auto !important;
+    right: 12px !important;
+    bottom: calc(34svh + 74px) !important;
+    transform: none !important;
+    gap: 7px !important;
+  }
+
+  [data-p4-map-canvas] .maplibre-spike-controls > :nth-child(2),
+  [data-p4-map-canvas] .maplibre-spike-controls > :nth-child(3) {
+    display: none !important;
+  }
+
+  [data-p4-map-canvas] .maplibre-spike-controls button,
+  [data-p4-map-canvas] .maplibre-spike-controls > span {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 999px !important;
+    background: rgb(255 255 255 / .94) !important;
+    box-shadow: 0 8px 22px rgb(8 39 43 / .14) !important;
+  }
+
+  [data-p4-map-canvas] .maplibre-spike-controls .maplibre-spike-control-primary {
+    background: #076d69 !important;
+    color: #fff !important;
+  }
+
+  [data-p4-map-canvas] .maplibre-spike-map-note {
+    display: none !important;
+  }
+
+  [data-p4-map-canvas] .maplibre-spike-neighborhood-label {
+    gap: 5px !important;
+    filter: drop-shadow(0 6px 14px rgb(0 42 43 / .18)) !important;
+  }
+
+  [data-p4-map-canvas] .maplibre-spike-neighborhood-label span {
+    padding: 7px 10px !important;
+    border: 1px solid rgb(255 255 255 / .62) !important;
+    border-radius: 10px !important;
+    background: rgb(3 104 100 / .93) !important;
+    font-size: 9.5px !important;
+  }
+
+  [data-p4-map-canvas] .maplibre-spike-poi-label span {
+    max-width: 180px !important;
+    padding: 6px 9px !important;
+    border-radius: 10px !important;
+    background: rgb(255 255 255 / .92) !important;
+    font-size: 8.5px !important;
+    box-shadow: 0 6px 16px rgb(8 39 43 / .12) !important;
+  }
+
+  /* Restore the actual product value hidden by the previous micro-sheet. */
+  .p4-map-decision-rail {
+    inset-inline: 10px !important;
+    bottom: calc(66px + env(safe-area-inset-bottom)) !important;
+    max-height: min(34svh, 316px) !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    padding: 14px 14px 13px !important;
+    border: 1px solid rgb(229 236 236 / .96) !important;
+    border-radius: 23px 23px 18px 18px !important;
+    background: rgb(255 255 255 / .965) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(1.03) !important;
+    backdrop-filter: blur(20px) saturate(1.03) !important;
+    box-shadow: 0 -8px 30px rgb(8 39 43 / .15) !important;
+  }
+
+  .p4-sheet-handle {
+    width: 36px !important;
+    height: 4px !important;
+    margin: -3px auto 8px !important;
+    background: #c1cccf !important;
+  }
+
+  .p4-premium-context-header {
+    display: block !important;
+  }
+
+  .p4-premium-kicker {
+    display: block !important;
+    margin: 0 !important;
+    color: #667a7b !important;
+    font-size: 8.5px !important;
+    font-weight: 800 !important;
+    letter-spacing: .01em !important;
+    text-transform: uppercase !important;
+  }
+
+  .p4-premium-context-header h2 {
+    display: block !important;
+    margin: 3px 0 0 !important;
+    color: #132f35 !important;
+    font-size: 24px !important;
+    line-height: 1 !important;
+    letter-spacing: -.045em !important;
+  }
+
+  .p4-premium-context-location {
+    display: none !important;
+  }
+
+  .p4-premium-lede {
+    display: -webkit-box !important;
+    margin: 7px 0 0 !important;
+    overflow: hidden !important;
+    color: #536566 !important;
+    font-size: 9.7px !important;
+    line-height: 1.38 !important;
+    -webkit-box-orient: vertical !important;
+    -webkit-line-clamp: 2 !important;
+  }
+
+  .p4-premium-proofline,
+  .p4-premium-tabs,
+  .p4-premium-category-line,
+  .p4-premium-market-card,
+  .p4-premium-secondary-action {
+    display: none !important;
+  }
+
+  .p4-premium-signal-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+    margin-top: 10px !important;
+  }
+
+  .p4-premium-signal-grid > div {
+    display: grid !important;
+    min-height: 62px !important;
+    grid-template-columns: auto 1fr !important;
+    grid-template-rows: auto auto !important;
+    align-content: center !important;
+    column-gap: 6px !important;
+    row-gap: 2px !important;
+    padding: 8px 7px !important;
+    border: 1px solid #e7eded !important;
+    border-radius: 13px !important;
+    background: #f9fbfb !important;
+    box-shadow: none !important;
+  }
+
+  .p4-premium-signal-grid > div > svg {
+    grid-row: 1 / span 2 !important;
+    align-self: center !important;
+    width: 14px !important;
+    color: #087873 !important;
+  }
+
+  .p4-premium-signal-grid strong {
+    min-width: 0 !important;
+    color: #17383a !important;
+    font-size: 10px !important;
+    line-height: 1.05 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .p4-premium-signal-grid span {
+    min-width: 0 !important;
+    color: #6d7b7c !important;
+    font-size: 7.4px !important;
+    line-height: 1.2 !important;
+    white-space: normal !important;
+  }
+
+  .p4-premium-local-guide {
+    display: block !important;
+    margin-top: 10px !important;
+    padding-top: 9px !important;
+    border-top: 1px solid #e7eded !important;
+  }
+
+  .p4-premium-local-guide-heading {
+    display: flex !important;
+    align-items: end !important;
+    justify-content: space-between !important;
+    gap: 10px !important;
+  }
+
+  .p4-premium-local-guide-heading p {
+    margin: 0 !important;
+    color: #087873 !important;
+    font-size: 7.8px !important;
+    font-weight: 850 !important;
+    text-transform: uppercase !important;
+  }
+
+  .p4-premium-local-guide-heading h3 {
+    margin-top: 2px !important;
+    color: #243d40 !important;
+    font-size: 10px !important;
+    line-height: 1.15 !important;
+  }
+
+  .p4-premium-local-guide-heading > span {
+    color: #607476 !important;
+    font-size: 9px !important;
+    font-weight: 800 !important;
+  }
+
+  .p4-premium-local-guide-list {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+    margin-top: 7px !important;
+  }
+
+  .p4-premium-local-guide-list article {
+    min-width: 0 !important;
+    padding: 7px 8px !important;
+    border: 1px solid #e7eded !important;
+    border-radius: 11px !important;
+    background: #fbfcfc !important;
+  }
+
+  .p4-premium-local-guide-list article:nth-child(n + 3) {
+    display: none !important;
+  }
+
+  .p4-premium-local-guide-list article > span {
+    display: block !important;
+    color: #087873 !important;
+    font-size: 7px !important;
+    font-weight: 800 !important;
+  }
+
+  .p4-premium-local-guide-list article > strong {
+    display: block !important;
+    margin-top: 2px !important;
+    color: #263e40 !important;
+    font-size: 8.5px !important;
+    line-height: 1.15 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .p4-premium-local-guide-list article > small,
+  .p4-premium-local-guide-source {
+    display: none !important;
+  }
+
+  .p4-premium-actions {
+    margin-top: 10px !important;
+  }
+
+  .p4-premium-primary-action {
+    display: flex !important;
+    min-height: 42px !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 7px !important;
+    padding: 0 13px !important;
+    border-radius: 13px !important;
+    background: #087873 !important;
+    color: #fff !important;
+    font-size: 10px !important;
+    font-weight: 850 !important;
+    line-height: 1.15 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    box-shadow: 0 8px 18px rgb(5 96 93 / .16) !important;
+  }
+}
+
+/* The locked target uses a quiet system bar. On /map, the global nav must not compete with the selected-neighborhood sheet. */
+@media (max-width: 767px) {
+  [data-search-global-header] {
+    display: none !important;
+  }
+
+  [data-p4-map-layout] {
+    height: 100svh !important;
+    min-height: 100svh !important;
+  }
+
+  [data-p4-map-canvas] .maplibre-spike-shell {
+    height: 100% !important;
+  }
+
+  [data-mobile-bottom-nav] {
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    border-radius: 0 !important;
+    border-right: 0 !important;
+    border-bottom: 0 !important;
+    border-left: 0 !important;
+    background: rgb(255 255 255 / .95) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(1.02) !important;
+    backdrop-filter: blur(18px) saturate(1.02) !important;
+    box-shadow: 0 -1px 18px rgb(11 37 69 / .09) !important;
+  }
+
+  [data-mobile-bottom-nav] > div {
+    height: 62px !important;
+    padding-top: 3px !important;
+    padding-bottom: 3px !important;
+  }
+
+  [data-mobile-bottom-nav-item] {
+    min-height: 40px !important;
+    border-radius: 11px !important;
+    font-size: 8.6px !important;
+  }
+
+  [data-mobile-bottom-nav-icon] {
+    height: 24px !important;
+  }
+}
+
+@media (max-width: 430px) {
+  [data-p4-map-canvas] .maplibre-spike-search span {
+    display: none !important;
+  }
+
+  [data-p4-map-canvas] .maplibre-spike-mode span,
+  [data-p4-map-canvas] .maplibre-spike-mode strong {
+    min-width: 36px !important;
+  }
+
+  .p4-map-decision-rail {
+    max-height: min(34svh, 308px) !important;
+  }
+
+  .p4-premium-context-header h2 {
+    font-size: 23px !important;
+  }
+
+  .p4-premium-primary-action {
+    font-size: 9.7px !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  /* Desktop keeps the certified split layout; only align materials and hierarchy. */
+  .p4-map-decision-rail {
+    background: #f8faf9 !important;
+    border-left-color: #e1e8e8 !important;
+  }
+
+  .p4-premium-primary-action {
+    border-radius: 13px !important;
+    background: #087873 !important;
+    box-shadow: 0 10px 22px rgb(5 96 93 / .15) !important;
+  }
+}

@@ -1,0 +1,72 @@
+name: Vivre Ici Expert UXUI Visual Pass
+
+on:
+  push:
+    branches:
+      - spike/vivre-ici-cesium-target
+    paths:
+      - '.github/workflows/vivre-ici-expert-uxui-pass.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: spike/vivre-ici-cesium-target
+
+      - name: Apply reviewed visual pass
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          replacements = {
+              Path('components/map/CesiumTargetLens.tsx'): [
+                  ('layer.brightness = 1.3;', 'layer.brightness = 1.38;'),
+                  ('layer.contrast = 0.96;', 'layer.contrast = 0.9;'),
+                  ('layer.saturation = 1.05;', 'layer.saturation = 1.0;'),
+                  ('layer.gamma = 1.1;', 'layer.gamma = 1.16;'),
+                  ('this.frustum.fov = Cesium.Math.toRadians(39);', 'this.frustum.fov = Cesium.Math.toRadians(36);'),
+                  ('Cesium.Math.toRadians(-24),', 'Cesium.Math.toRadians(-20),'),
+                  ('            7200,', '            6750,'),
+                  ('          height: 43% !important;', '          height: 51% !important;'),
+              ],
+              Path('components/map/cesium-overture-buildings.ts'): [
+                  (
+                      'function buildingColor(Cesium: any, height: number, precisionCode: 0 | 1, kindCode: 0 | 1) {\n  const exact = precisionCode === 0;\n  const part = kindCode === 1;\n  if (height >= 36) return Cesium.Color.fromCssColorString(part ? "#b7783f" : exact ? "#c78a4d" : "#caa06e");\n  if (height >= 24) return Cesium.Color.fromCssColorString(part ? "#c89158" : exact ? "#d4a36b" : "#d6b789");\n  if (height >= 14) return Cesium.Color.fromCssColorString(part ? "#d8ae79" : exact ? "#e0bc8b" : "#dfc8a5");\n  return Cesium.Color.fromCssColorString(part ? "#e4c79f" : exact ? "#ecd4b5" : "#e8dac7");\n}',
+                      'function buildingColor(Cesium: any, height: number, precisionCode: 0 | 1, kindCode: 0 | 1) {\n  const exact = precisionCode === 0;\n  const part = kindCode === 1;\n  if (height >= 36) return Cesium.Color.fromCssColorString(part ? "#b7a38a" : exact ? "#c8b69d" : "#d0c3b2");\n  if (height >= 24) return Cesium.Color.fromCssColorString(part ? "#c8b59d" : exact ? "#d8c7af" : "#ddd2c2");\n  if (height >= 14) return Cesium.Color.fromCssColorString(part ? "#d8c7b0" : exact ? "#e5d7c2" : "#e9dfd1");\n  return Cesium.Color.fromCssColorString(part ? "#e4d6c4" : exact ? "#eee3d4" : "#f0e9df");\n}'
+                  ),
+                  ('Cesium.Color.fromCssColorString("#6d5139").withAlpha(height >= 30 ? 0.72 : 0.42)', 'Cesium.Color.fromCssColorString("#756a61").withAlpha(height >= 30 ? 0.66 : 0.36)'),
+                  ('if (Cesium.SunLight) scene.light = new Cesium.SunLight({ intensity: 2.15 });', 'if (Cesium.SunLight) scene.light = new Cesium.SunLight({ intensity: 2.55 });\n    if (scene.postProcessStages?.fxaa) scene.postProcessStages.fxaa.enabled = true;\n    scene.highDynamicRange = true;'),
+              ],
+          }
+
+          for path, pairs in replacements.items():
+              text = path.read_text(encoding='utf-8')
+              for old, new in pairs:
+                  if old not in text:
+                      raise SystemExit(f'Expected source fragment missing in {path}: {old[:100]!r}')
+                  text = text.replace(old, new, 1)
+              path.write_text(text, encoding='utf-8')
+          PY
+
+          git diff --check
+
+      - name: Commit reviewed visual pass
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add components/map/CesiumTargetLens.tsx components/map/cesium-overture-buildings.ts
+          if git diff --cached --quiet; then
+            echo 'No visual changes to commit.'
+            exit 0
+          fi
+          git commit -m 'feat(vivre-ici): apply expert UXUI daylight and 3D pass'
+          git push origin HEAD:spike/vivre-ici-cesium-target

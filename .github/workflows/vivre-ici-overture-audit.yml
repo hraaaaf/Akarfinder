@@ -1,0 +1,71 @@
+name: Vivre Ici Overture 3D Audit
+
+on:
+  push:
+    branches:
+      - spike/vivre-ici-cesium-target
+    paths:
+      - 'scripts/vivre-ici-overture-audit.py'
+      - '.github/workflows/vivre-ici-overture-audit.yml'
+      - 'data/geo/casablanca-arrondissements-osm.json'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Overture client
+        run: pip install --disable-pip-version-check overturemaps
+
+      - name: Audit TARGET camera 3D coverage
+        run: |
+          python - <<'PY'
+          import importlib.util
+          from pathlib import Path
+
+          script = Path('scripts/vivre-ici-overture-audit.py')
+          spec = importlib.util.spec_from_file_location('vivre_ici_overture_audit', script)
+          module = importlib.util.module_from_spec(spec)
+          assert spec and spec.loader
+          spec.loader.exec_module(module)
+
+          # Widen the non-administrative context envelope so the oblique TARGET
+          # camera does not expose a hard 3D-data edge across Ain Diab / Anfa.
+          module.PAD_WEST = 0.075
+          module.PAD_EAST = 0.050
+          module.PAD_SOUTH = 0.035
+          module.PAD_NORTH = 0.050
+          module.main()
+          PY
+
+      - name: Commit compact runtime bundle
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/data/vivre-ici/maarif-overture-3d.compact.json
+          if git diff --cached --quiet; then
+            echo "Runtime bundle unchanged"
+            exit 0
+          fi
+          git commit -m "data(vivre-ici): materialize Overture 3D bundle"
+          git push
+
+      - name: Upload audit artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vivre-ici-overture-audit
+          path: artifacts/vivre-ici-overture-audit
+          if-no-files-found: error

@@ -1,0 +1,93 @@
+/* Premium /map visual token bridge.
+ * PremiumInteractiveMap consumes the existing AkarFinder RGB-triplet semantic
+ * tokens. Inline CSS variables are corrected here as rgb(var()).
+ * No product/data logic lives in this file.
+ */
+
+[data-premium-map] {
+  background: rgb(var(--background)) !important;
+  color: rgb(var(--foreground)) !important;
+  overflow-x: clip;
+}
+
+[data-premium-map] [style*="--text-secondary"] {
+  color: rgb(var(--text-secondary)) !important;
+}
+
+[data-premium-map] [style*="background:var(--surface)"],
+[data-premium-map] [style*="background: var(--surface)"] {
+  background: rgb(var(--surface)) !important;
+}
+
+[data-premium-map] [style*="background:var(--background)"],
+[data-premium-map] [style*="background: var(--background)"] {
+  background: rgb(var(--background)) !important;
+}
+
+[data-premium-map] [style*="border-color:var(--border)"],
+[data-premium-map] [style*="border-color: var(--border)"] {
+  border-color: rgb(var(--border)) !important;
+}
+
+[data-premium-map] [style*="border-color:var(--border-dark)"],
+[data-premium-map] [style*="border-color: var(--border-dark)"] {
+  border-color: rgb(var(--border-strong)) !important;
+}
+
+[data-premium-map] [style*="color-mix(in srgb, var(--surface) 88%"] {
+  background: color-mix(in srgb, rgb(var(--surface)) 88%, transparent) !important;
+}
+
+[data-premium-map] [style*="color-mix(in srgb, var(--surface) 72%"] {
+  background: color-mix(in srgb, rgb(var(--surface)) 72%, transparent) !important;
+}
+
+[data-premium-map] [style*="color-mix(in srgb, #071B33 12%"] {
+  background: color-mix(in srgb, #071B33 12%, rgb(var(--surface))) !important;
+}
+
+[data-premium-map] [style*="color-mix(in srgb, #071B33 6%"] {
+  background: color-mix(in srgb, #071B33 6%, rgb(var(--surface))) !important;
+}
+
+/* SVG presentation attributes do not accept an RGB-triplet token by itself. */
+[data-neighborhood-schematic] text[fill="var(--text-primary)"] {
+  fill: rgb(var(--text-primary)) !important;
+}
+
+[data-neighborhood-schematic] text[fill="var(--text-secondary)"] {
+  fill: rgb(var(--text-secondary)) !important;
+}
+
+[data-neighborhood-schematic] polygon[fill^="color-mix"] {
+  fill: rgb(var(--bg-elevated)) !important;
+  stroke: rgb(var(--border-strong)) !important;
+}
+
+/* Hard-coded brand navy is the light anchor; dark mode uses the site's
+ * semantic accent for legible micro-labels and selected schematic areas. */
+[data-theme="dark"] [data-premium-map] [style*="color:rgb(7, 27, 51)"],
+[data-theme="dark"] [data-premium-map] [style*="color: rgb(7, 27, 51)"],
+[data-theme="dark"] [data-premium-map] [style*="color:#071B33"],
+[data-theme="dark"] [data-premium-map] [style*="color: #071B33"] {
+  color: rgb(var(--brand-primary)) !important;
+}
+
+[data-theme="dark"] [data-neighborhood-schematic] polygon[fill="#071B33"] {
+  fill: rgb(var(--brand-primary)) !important;
+  stroke: rgb(var(--brand-primary-hover)) !important;
+}
+
+[data-theme="dark"] [data-premium-map] [style*="color-mix(in srgb, #071B33 12%"] {
+  background: color-mix(in srgb, rgb(var(--brand-primary)) 16%, rgb(var(--surface))) !important;
+}
+
+[data-theme="dark"] [data-premium-map] [style*="color-mix(in srgb, #071B33 6%"] {
+  background: color-mix(in srgb, rgb(var(--brand-primary)) 9%, rgb(var(--surface))) !important;
+}
+
+@media (max-width: 639px) {
+  [data-premium-map] [data-map-side-panel] {
+    scroll-margin-top: 12px;
+  }
+}
