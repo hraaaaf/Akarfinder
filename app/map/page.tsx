@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { NationalMapRouter } from "@/components/map/NationalMapRouter";
@@ -20,6 +21,7 @@ import "./clinical-recovery.css";
 import "./clinical-sheet-guard.css";
 import "./premium-interactive-map-fixes.css";
 import "./n3-premium-theme.css";
+import "./ux-convergence-l9.css";
 
 export const dynamic = "force-dynamic";
 
@@ -58,6 +60,17 @@ export default async function MapPage({ searchParams }: MapPageProps) {
           <div className="flex-1" data-p4-map-layout>
             <div data-p4-map-canvas>
               <NationalMapRouter initialState={initialState} />
+              {hasNeighborhoodSelection ? (
+                <Link
+                  href="/map?layer=explore"
+                  className="vivre-ici-territory-back"
+                  aria-label="Retour à la carte du Maroc"
+                  data-vivre-ici-territory-back
+                >
+                  <span aria-hidden="true">←</span>
+                  Maroc
+                </Link>
+              ) : null}
             </div>
             <P4MapDecisionRail />
           </div>

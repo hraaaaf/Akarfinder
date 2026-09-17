@@ -1,0 +1,153 @@
+/* VIVRE ICI — UX convergence L9
+ * Presentation only: national framing + N3 hierarchy/compactness.
+ * No data, DB, routing or map-source mutation.
+ */
+
+/* National: make the territorial object dominate the canvas instead of floating
+ * in excess whitespace. The internal D3 camera remains untouched. */
+[data-vivre-ici-page] [data-premium-map][data-map-level="national"] [data-region-map-svg] {
+  transform: scale(1.2);
+  transform-origin: 52% 56%;
+}
+
+@media (min-width: 1280px) {
+  [data-vivre-ici-page] [data-premium-map] .grid:has(> [data-map-side-panel]) {
+    grid-template-columns: minmax(0, 1fr) 340px !important;
+  }
+
+  [data-vivre-ici-page] [data-premium-map][data-map-level="national"] [data-region-map-svg] {
+    transform: scale(1.24);
+    transform-origin: 53% 56%;
+  }
+
+  [data-vivre-ici-page] [data-premium-map][data-map-level="national"] [data-map-side-panel] {
+    padding: 18px !important;
+  }
+
+  [data-vivre-ici-page] [data-premium-map][data-map-level="national"] [data-map-side-panel] [data-region-list-slug] {
+    min-height: 46px !important;
+  }
+}
+
+@media (max-width: 767px) {
+  [data-vivre-ici-page] [data-premium-map][data-map-level="national"] [data-region-map-svg] {
+    transform: scale(1.48);
+    transform-origin: 53% 57%;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1279px) {
+  [data-vivre-ici-page] [data-premium-map][data-map-level="national"] [data-region-map-svg] {
+    transform: scale(1.34);
+    transform-origin: 53% 56%;
+  }
+}
+
+/* N3: a territorial escape hatch must stay obvious after Premium → district. */
+[data-vivre-ici-page] .vivre-ici-territory-back {
+  position: absolute;
+  left: 18px;
+  top: 118px;
+  z-index: 52;
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid rgb(207 220 235 / .9);
+  border-radius: 999px;
+  background: rgb(255 255 255 / .94);
+  padding: 7px 12px;
+  color: #071b33;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .04em;
+  box-shadow: 0 10px 28px rgb(7 27 51 / .16);
+  backdrop-filter: blur(14px);
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+[data-vivre-ici-page] .vivre-ici-territory-back:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 34px rgb(7 27 51 / .2);
+}
+
+[data-vivre-ici-page] .vivre-ici-territory-back:focus-visible {
+  outline: 3px solid rgb(11 99 206 / .32);
+  outline-offset: 2px;
+}
+
+/* When the context explicitly reports zero public anchors, remove decorative
+ * zero cards rather than turning absence into pseudo-information. */
+[data-p4-map-layout]:has([data-maplibre-anchor-count="0"]) [data-p4-map-decision-rail] .p4-premium-lede,
+[data-p4-map-layout]:has([data-maplibre-anchor-count="0"]) [data-p4-map-decision-rail] .p4-premium-signal-grid {
+  display: none !important;
+}
+
+@media (min-width: 1024px) {
+  [data-p4-map-layout]:has([data-maplibre-spike][data-maplibre-district]) [data-p4-map-decision-rail] {
+    padding: 18px !important;
+  }
+
+  [data-p4-map-layout]:has([data-maplibre-anchor-count="0"]) [data-p4-map-decision-rail] .p4-premium-tabs {
+    margin-top: 14px !important;
+  }
+
+  [data-p4-map-layout]:has([data-maplibre-anchor-count="0"]) [data-p4-map-decision-rail] .p4-premium-market-card {
+    margin-top: 14px !important;
+  }
+}
+
+@media (max-width: 767px) {
+  [data-vivre-ici-page] .vivre-ici-territory-back {
+    left: 12px;
+    top: 101px;
+    min-height: 32px;
+    padding: 6px 10px;
+    font-size: 9px;
+  }
+
+  /* Mobile N3 is map-first: title + reliability contract + real action.
+   * Secondary navigation and market absence copy remain available on desktop. */
+  [data-p4-map-layout]:has([data-maplibre-spike][data-maplibre-district]) [data-p4-map-decision-rail] {
+    max-height: 176px !important;
+    padding: 13px 14px 14px !important;
+  }
+
+  [data-p4-map-layout]:has([data-maplibre-spike][data-maplibre-district]) [data-p4-map-decision-rail] .p4-sheet-handle {
+    margin-bottom: 7px !important;
+  }
+
+  [data-p4-map-layout]:has([data-maplibre-spike][data-maplibre-district]) [data-p4-map-decision-rail] .p4-premium-context-location,
+  [data-p4-map-layout]:has([data-maplibre-spike][data-maplibre-district]) [data-p4-map-decision-rail] .p4-premium-tabs,
+  [data-p4-map-layout]:has([data-maplibre-spike][data-maplibre-district]) [data-p4-map-decision-rail] .p4-premium-market-card,
+  [data-p4-map-layout]:has([data-maplibre-spike][data-maplibre-district]) [data-p4-map-decision-rail] .p4-premium-secondary-action {
+    display: none !important;
+  }
+
+  [data-p4-map-layout]:has([data-maplibre-spike][data-maplibre-district]) [data-p4-map-decision-rail] .p4-premium-context-header h2 {
+    margin-top: 2px !important;
+    font-size: 22px !important;
+    line-height: 1.02 !important;
+  }
+
+  [data-p4-map-layout]:has([data-maplibre-spike][data-maplibre-district]) [data-p4-map-decision-rail] .p4-premium-proofline {
+    margin-top: 7px !important;
+    gap: 5px !important;
+    font-size: 8px !important;
+  }
+
+  [data-p4-map-layout]:has([data-maplibre-spike][data-maplibre-district]) [data-p4-map-decision-rail] .p4-premium-actions {
+    margin-top: 9px !important;
+  }
+
+  [data-p4-map-layout]:has([data-maplibre-spike][data-maplibre-district]) [data-p4-map-decision-rail] .p4-premium-primary-action {
+    min-height: 42px !important;
+  }
+}
+
+[data-theme="dark"] [data-vivre-ici-page] .vivre-ici-territory-back {
+  border-color: rgb(53 86 125 / .8);
+  background: rgb(8 31 61 / .94);
+  color: #f8fafc;
+  box-shadow: 0 12px 30px rgb(0 0 0 / .28);
+}

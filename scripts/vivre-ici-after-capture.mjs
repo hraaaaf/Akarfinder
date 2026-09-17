@@ -7,6 +7,7 @@ const outDir = 'artifacts/vivre-ici-after';
 const baseUrl = 'http://127.0.0.1:3000';
 const n3Route = '/map?city=casablanca&district=maarif&layer=explore';
 const expectedSearchHref = '/search?city=Casablanca&district=Ma%C3%A2rif';
+const expectedTerritoryBackHref = '/map?layer=explore';
 const viewports = [
   { name: '390x844', width: 390, height: 844 },
   { name: '430x932', width: 430, height: 932 },
@@ -107,6 +108,11 @@ try {
     await rail.waitFor({ state: 'visible', timeout: 15000 });
     const handoff = rail.getByRole('link', { name: /Voir les biens disponibles à Maârif/i });
     const searchHref = await handoff.getAttribute('href');
+    const territoryBack = page.getByRole('link', { name: 'Retour à la carte du Maroc' });
+    await territoryBack.waitFor({ state: 'visible', timeout: 10000 });
+    const territoryBackHref = await territoryBack.getAttribute('href');
+    const anchorCount = Number(await maplibre.getAttribute('data-maplibre-anchor-count') ?? '-1');
+    const signalGridVisible = await rail.locator('.p4-premium-signal-grid').isVisible();
     await page.evaluate(() => window.scrollTo(0, 0));
     await page.waitForTimeout(500);
 
@@ -141,8 +147,12 @@ try {
       sourceState: await maplibre.getAttribute('data-maplibre-source-state'),
       source: await maplibre.getAttribute('data-maplibre-source'),
       buildingCount: Number(await maplibre.getAttribute('data-maplibre-building-count') ?? '0'),
+      anchorCount,
       decisionRailVisible: await rail.isVisible(),
+      signalGridVisible,
       searchHref,
+      territoryBackVisible: await territoryBack.isVisible(),
+      territoryBackHref,
       ...computed,
       supabaseRequestCount: supabaseRequests.length,
       pageErrors,
@@ -188,6 +198,9 @@ try {
     || r.buildingCount < 1
     || !r.decisionRailVisible
     || r.searchHref !== expectedSearchHref
+    || !r.territoryBackVisible
+    || r.territoryBackHref !== expectedTerritoryBackHref
+    || (r.anchorCount === 0 && r.signalGridVisible)
     || r.shellDisplay === 'none'
     || r.shellVisibility !== 'visible'
     || Number(r.shellOpacity) <= 0
