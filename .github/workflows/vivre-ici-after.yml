@@ -1,10 +1,9 @@
 name: Vivre Ici AFTER Certification
-# integration-certification-trigger
 
 on:
   push:
     branches:
-      - integration/vivre-ici-main-2026-09-17
+      - docs/3-vivre-ici-akarfinder
     paths:
       - 'app/map/**'
       - 'components/map/**'
