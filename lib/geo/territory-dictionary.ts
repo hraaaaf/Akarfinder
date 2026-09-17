@@ -122,10 +122,6 @@ export function validateTerritoryEntity(entity: TerritoryEntity): TerritoryValid
     issues.push({ entityId: entity.id, field: "visibility.maxZoom", message: "maxZoom must be >= minZoom and <= 24" });
   }
 
-  if (entity.type === "city" && entity.parentId !== null) {
-    issues.push({ entityId: entity.id, field: "parentId", message: "city parentId must be null" });
-  }
-
   if (entity.type === "district" && !entity.parentId.startsWith("city_")) {
     issues.push({ entityId: entity.id, field: "parentId", message: "district parentId must reference a city entity" });
   }
