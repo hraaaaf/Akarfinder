@@ -17,7 +17,7 @@ export type TerritoryCityCoverage = {
 export function getTerritoryCityCoverage(citySlug: CanonicalCitySlug): TerritoryCityCoverage {
   const districts = GEO_NEIGHBORHOODS.filter((district) => district.city_slug === citySlug);
   const landmarks = VERIFIED_LANDMARKS.filter((entry) => entry.entity.citySlug === citySlug);
-  const coveredDistrictIds = new Set(landmarks.map((entry) => entry.entity.parentId));
+  const coveredDistrictIds = new Set<string>(landmarks.map((entry) => entry.entity.parentId));
   const coveredCount = districts.filter((district) => coveredDistrictIds.has(district.id)).length;
 
   return {
