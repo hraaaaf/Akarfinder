@@ -6,7 +6,9 @@ on:
       - feat/vivre-ici-territory-dictionary
     paths:
       - "lib/geo/territory-dictionary.ts"
+      - "lib/geo/territory-city-priorities.ts"
       - "scripts/scrapers/__tests__/territory-dictionary-contract.test.ts"
+      - "scripts/scrapers/__tests__/territory-city-priorities.test.ts"
       - "package.json"
       - ".github/workflows/territory-dictionary-contract.yml"
 
