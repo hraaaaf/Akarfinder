@@ -12,6 +12,7 @@ on:
       - "lib/geo/territory-national-visibility.ts"
       - "lib/geo/territory-local-visibility.ts"
       - "lib/geo/territory-label-stability.ts"
+      - "lib/geo/territory-catalog.ts"
       - "scripts/scrapers/__tests__/territory-dictionary-contract.test.ts"
       - "scripts/scrapers/__tests__/territory-city-priorities.test.ts"
       - "scripts/scrapers/__tests__/territory-district-priorities.test.ts"
@@ -19,6 +20,7 @@ on:
       - "scripts/scrapers/__tests__/territory-national-visibility.test.ts"
       - "scripts/scrapers/__tests__/territory-local-visibility.test.ts"
       - "scripts/scrapers/__tests__/territory-label-stability.test.ts"
+      - "scripts/scrapers/__tests__/territory-catalog.test.ts"
       - "package.json"
       - ".github/workflows/territory-dictionary-contract.yml"
 
