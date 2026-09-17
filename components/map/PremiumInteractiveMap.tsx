@@ -349,6 +349,52 @@ export function PremiumInteractiveMap() {
     [nationalTerritoryZoom],
   );
 
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const load = async () => {
+      for (const url of TOPOLOGY_URLS) {
+        try {
+          const response = await fetch(url, { signal: controller.signal, cache: "force-cache" });
+          if (!response.ok) continue;
+          const raw = await response.text();
+          if (raw.startsWith("version https://git-lfs.github.com/spec")) continue;
+          const topology = JSON.parse(raw) as Topology<Objects<RegionFeatureProperties>>;
+          const topologyObject = Object.values(topology.objects)[0];
+          if (!topologyObject) continue;
+          const decoded = topojsonFeature(topology, topologyObject);
+          const collection = decoded.type === "FeatureCollection"
+            ? (decoded as FeatureCollection<Geometry, RegionFeatureProperties>)
+            : ({ type: "FeatureCollection", features: [decoded] } as FeatureCollection<Geometry, RegionFeatureProperties>);
+          if (collection.features.length !== 12) continue;
+          setRegionFeatures(collection.features);
+          setTopologySource(url);
+          setTopologyState("ready");
+          return;
+        } catch (error) {
+          if ((error as Error).name === "AbortError") return;
+        }
+      }
+      setTopologyState("error");
+    };
+    void load();
+    return () => controller.abort();
+  }, []);
+
+  const projection = useMemo(() => {
+    if (!regionFeatures.length) return null;
+    const collection: FeatureCollection<Geometry, RegionFeatureProperties> = {
+      type: "FeatureCollection",
+      features: regionFeatures,
+    };
+    return geoMercator().fitExtent(
+      [[42, 34], [MAP_WIDTH - 42, MAP_HEIGHT - 34]],
+      collection,
+    );
+  }, [regionFeatures]);
+
+  const pathGenerator = useMemo(() => (projection ? geoPath(projection) : null), [projection]);
+
   const nationalCityRenderItems = useMemo(() => {
     if (!projection) return [];
     const priorityBySlug = new Map(nationalPriority.map((item) => [item.citySlug, item]));
@@ -401,51 +447,6 @@ export function PremiumInteractiveMap() {
       nationalCityRenderItems.map((item) => item.city.slug),
     );
   }, [level, nationalCityRenderItems]);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    const load = async () => {
-      for (const url of TOPOLOGY_URLS) {
-        try {
-          const response = await fetch(url, { signal: controller.signal, cache: "force-cache" });
-          if (!response.ok) continue;
-          const raw = await response.text();
-          if (raw.startsWith("version https://git-lfs.github.com/spec")) continue;
-          const topology = JSON.parse(raw) as Topology<Objects<RegionFeatureProperties>>;
-          const topologyObject = Object.values(topology.objects)[0];
-          if (!topologyObject) continue;
-          const decoded = topojsonFeature(topology, topologyObject);
-          const collection = decoded.type === "FeatureCollection"
-            ? (decoded as FeatureCollection<Geometry, RegionFeatureProperties>)
-            : ({ type: "FeatureCollection", features: [decoded] } as FeatureCollection<Geometry, RegionFeatureProperties>);
-          if (collection.features.length !== 12) continue;
-          setRegionFeatures(collection.features);
-          setTopologySource(url);
-          setTopologyState("ready");
-          return;
-        } catch (error) {
-          if ((error as Error).name === "AbortError") return;
-        }
-      }
-      setTopologyState("error");
-    };
-    void load();
-    return () => controller.abort();
-  }, []);
-
-  const projection = useMemo(() => {
-    if (!regionFeatures.length) return null;
-    const collection: FeatureCollection<Geometry, RegionFeatureProperties> = {
-      type: "FeatureCollection",
-      features: regionFeatures,
-    };
-    return geoMercator().fitExtent(
-      [[42, 34], [MAP_WIDTH - 42, MAP_HEIGHT - 34]],
-      collection,
-    );
-  }, [regionFeatures]);
-
-  const pathGenerator = useMemo(() => (projection ? geoPath(projection) : null), [projection]);
 
   useEffect(() => {
     if (!svgRef.current) return;
