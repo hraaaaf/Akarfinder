@@ -25,3 +25,8 @@ test("national labels remain separate from region-level city markers", () => {
   assert.match(source, /level === "national" && nationalCityRenderItems\.map/);
   assert.match(source, /level !== "national" && selectedRegion && selectedRegion\.cities\.map/);
 });
+
+test("national zoom attaches only after the projected SVG exists", () => {
+  assert.match(source, /if \(!projection \|\| !svgRef\.current\) return;/);
+  assert.match(source, /\}, \[projection\]\);/);
+});
