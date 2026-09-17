@@ -100,6 +100,67 @@ export const VERIFIED_LANDMARKS: readonly VerifiedLandmarkEntry[] = [
     verificationNote: "Official mall + official Marrakech guide + OSM-backed point support identity, Hivernage association and coordinates.",
     verifiedAt: "2026-09-18",
   },
+  {
+    entity: {
+      id: "landmark_fes_el_bali_bab_bou_jeloud",
+      type: "landmark",
+      citySlug: "fes",
+      districtSlug: "fes-el-bali",
+      landmarkSlug: "bab-bou-jeloud",
+      canonicalName: "Bab Bou Jeloud",
+      aliases: ["Bab Boujloud", "Porte Bleue"],
+      category: "heritage",
+      parentId: "district_fes_el_bali",
+      importance: {
+        score: 100,
+        tier: "flagship",
+        basis: ["product_priority", "orientation_value"],
+      },
+      visibility: { minZoom: 13.4, retainPriority: true },
+      coordinates: {
+        lat: 34.0617,
+        lng: -4.98402,
+        precision: "verified_landmark_point",
+      },
+    },
+    sourceRefs: [
+      "https://www.wikidata.org/wiki/Q2881543",
+      "https://mapcarta.com/W574667510",
+    ],
+    verificationNote: "Wikidata identifies Bab Bou Jeloud as part of the Medina of Fez; the independent OSM-backed point agrees on the gate coordinate.",
+    verifiedAt: "2026-09-18",
+  },
+  {
+    entity: {
+      id: "landmark_agadir_talborjt_mosquee_mohamed_v",
+      type: "landmark",
+      citySlug: "agadir",
+      districtSlug: "talborjt",
+      landmarkSlug: "mosquee-mohamed-v",
+      canonicalName: "Mosquée Mohamed V",
+      aliases: ["Mosque Mohammed V", "Mosquée Mohammed V"],
+      category: "worship",
+      parentId: "district_agadir_talborjt",
+      importance: {
+        score: 98,
+        tier: "flagship",
+        basis: ["product_priority", "orientation_value"],
+      },
+      visibility: { minZoom: 13.5, retainPriority: true },
+      coordinates: {
+        lat: 30.42215,
+        lng: -9.59252,
+        precision: "verified_landmark_point",
+      },
+    },
+    sourceRefs: [
+      "https://agadirmonuments.com/agadir-monuments-la-mosquee-mohamed-v/",
+      "https://www.barcelo.com/guia-turismo/fr/maroc/agadir/a-voir-et-a-faire/mosquees-agadir/",
+      "https://mapcarta.com/29431532",
+    ],
+    verificationNote: "Two independent descriptive sources place the mosque in Nouveau Talborjt; the OSM-backed point provides the verified coordinate.",
+    verifiedAt: "2026-09-18",
+  },
 ];
 
 const CANONICAL_DISTRICT_IDS = new Set(GEO_NEIGHBORHOODS.map((district) => district.id));

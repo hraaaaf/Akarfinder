@@ -24,11 +24,13 @@ test("every verified landmark has a validated point and at least two evidence re
   }
 });
 
-test("seed covers three flagship city/district paths", () => {
+test("verified registry covers five flagship city/district paths", () => {
   assert.deepEqual(
     VERIFIED_LANDMARKS.map(({ entity }) => [entity.citySlug, entity.districtSlug]).sort(),
     [
+      ["agadir", "talborjt"],
       ["casablanca", "finance-city"],
+      ["fes", "fes-el-bali"],
       ["marrakech", "hivernage"],
       ["rabat", "agdal"],
     ].sort(),
