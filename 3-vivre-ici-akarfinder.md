@@ -304,11 +304,19 @@ Cette formule est une direction produit ; le contrat LOT 1 doit rester assez sta
 
 ## 12. NEXT EXACT
 
-**Closeout Territory Dictionary.**
+**Closeout PR #1038.**
 
-Couverture landmarks : 23/23 quartiers canoniques. Contract + Visual Certification verts sur le HEAD produit final. Mettre la PR #1038 en état de revue après cohérence documentaire ; aucun Vercel et aucune écriture Supabase.
+LOT4 est certifié à 23/23 quartiers canoniques sur le HEAD produit `7251abf030eb5d08f96a899a4a8d3585657b411a`.
 
----
+Preuves finales LOT4 :
+- Territory Dictionary Contract : run `35353870995` ✅
+- Territory Dictionary Visual Certification : run `35353871008` ✅
+- couverture landmarks : 23/23 quartiers canoniques
+- enrichment queue : vide
+- aucune écriture Supabase
+- aucun déploiement Vercel
+
+Next : cohérence canonique + PR ready. Merge uniquement sur instruction explicite.
 
 ## 13. REPRISE
 
