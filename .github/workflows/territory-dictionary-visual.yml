@@ -3,7 +3,7 @@ name: Territory Dictionary Visual Certification
 on:
   push:
     branches:
-      - feat/vivre-ici-territory-dictionary
+      - polish/vivre-ici-national-map
     paths:
       - "components/map/PremiumInteractiveMap.tsx"
       - "lib/geo/territory-*.ts"
