@@ -87,23 +87,30 @@ try {
     const zoomedCitySlugs = await page.locator('[data-national-city-label]').evaluateAll((nodes) =>
       nodes.map((node) => node.getAttribute('data-national-city-label')).filter(Boolean)
     );
-    const zoomedVisibleCitySlugs = await page.locator('[data-national-city-label]').evaluateAll((nodes) =>
-      nodes
+    const zoomedVisibleCitySlugs = await page.locator('[data-national-city-label]').evaluateAll((nodes) => {
+      const section = document.querySelector('[data-premium-map] section[aria-label="Carte interactive du Maroc"]');
+      const sectionRect = section?.getBoundingClientRect();
+      const safeTop = (sectionRect?.top ?? 0) + 58;
+      const safeLeft = (sectionRect?.left ?? 0) + 4;
+      const safeRight = (sectionRect?.right ?? window.innerWidth) - 4;
+      const safeBottom = (sectionRect?.bottom ?? window.innerHeight) - 4;
+      return nodes
         .filter((node) => {
-          const rect = node.getBoundingClientRect();
+          const rect = node.querySelector('rect')?.getBoundingClientRect();
           const style = getComputedStyle(node);
-          return rect.width > 2
+          return Boolean(rect)
+            && rect.width > 2
             && rect.height > 2
-            && rect.right > 0
-            && rect.bottom > 0
-            && rect.left < window.innerWidth
-            && rect.top < window.innerHeight
+            && rect.left >= safeLeft
+            && rect.top >= safeTop
+            && rect.right <= safeRight
+            && rect.bottom <= safeBottom
             && style.visibility !== 'hidden'
             && style.display !== 'none';
         })
         .map((node) => node.getAttribute('data-national-city-label'))
-        .filter(Boolean)
-    );
+        .filter(Boolean);
+    });
     const zoomedTerritoryZoom = Number(await premium.getAttribute('data-national-territory-zoom') ?? '0');
     const zoomedCityLabelOverlapCount = await page.locator('[data-national-city-label]').evaluateAll((nodes) => {
       const rects = nodes
@@ -263,6 +270,7 @@ try {
     || !r.zoomedCitySlugs.includes('mohammedia')
     || !r.zoomedVisibleCitySlugs.includes('kenitra')
     || !r.zoomedVisibleCitySlugs.includes('mohammedia')
+    || r.zoomedVisibleCitySlugs.length !== r.zoomedCityLabelCount
     || r.zoomedTerritoryZoom <= r.initialTerritoryZoom
     || r.zoomedVisibleRegionCount < 1
     || r.zoomedCityLabelOverlapCount !== 0

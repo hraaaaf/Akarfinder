@@ -59,6 +59,9 @@ jobs:
             if (!r.zoomedVisibleCitySlugs.includes('kenitra') || !r.zoomedVisibleCitySlugs.includes('mohammedia')) {
               throw new Error(`secondary city reveal not visible on ${r.viewport.name}: ${r.zoomedVisibleCitySlugs.join(',')}`);
             }
+            if (r.zoomedVisibleCitySlugs.length !== r.zoomedCityLabelCount) {
+              throw new Error(`zoomed city pill clipped by map chrome on ${r.viewport.name}: ${r.zoomedVisibleCitySlugs.length}/${r.zoomedCityLabelCount}`);
+            }
             if (r.horizontalOverflow > 1 || r.supabaseRequestCount !== 0 || r.pageErrors.length) {
               throw new Error(`unsafe visual proof on ${r.viewport.name}`);
             }

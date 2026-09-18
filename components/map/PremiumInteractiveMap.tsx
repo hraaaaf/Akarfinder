@@ -67,6 +67,7 @@ type TooltipState = { title: string; subtitle?: string; x: number; y: number } |
 
 const MAP_WIDTH = 980;
 const MAP_HEIGHT = 680;
+const NATIONAL_ZOOM_ANCHOR: [number, number] = [MAP_WIDTH * 0.53, MAP_HEIGHT * 0.3];
 const NAVY = "#071B33";
 const TOPOLOGY_URLS = [
   "https://media.githubusercontent.com/media/wmgeolab/geoBoundaries/9469f09592ced973a3448cf66b6100b741b64c0d/releaseData/gbOpen/MAR/ADM1/geoBoundaries-MAR-ADM1.topojson",
@@ -536,7 +537,7 @@ export function PremiumInteractiveMap() {
     select(svgRef.current).call(
       zoomBehaviorRef.current.scaleBy,
       factor,
-      [MAP_WIDTH / 2, MAP_HEIGHT / 2],
+      NATIONAL_ZOOM_ANCHOR,
     );
   }, []);
 
