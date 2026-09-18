@@ -1,0 +1,31 @@
+{
+  "source": "avito",
+  "control_surface": "kaynly",
+  "captured_on": "2026-09-04",
+  "scope": "bounded public control sample; not a freshness-certified denominator",
+  "kaynly_page": "https://kaynly.com/vente/tifelt/appartements",
+  "sample_size": 12,
+  "exact_id_public_search_hits": 0,
+  "exact_id_public_search_coverage_ratio": 0,
+  "notes": [
+    "Avito outbound URLs were exposed by a public Kaynly result page.",
+    "Each sampled outbound URL ends in _{numericSourceId}.htm.",
+    "Exact-ID public web search returned no Avito result for the 12 sampled IDs during this bounded check.",
+    "This does not prove the IDs are absent from every search engine or public web index.",
+    "The Avito-advertised sitemap remains the preferred native discovery lane and must be qualified separately."
+  ],
+  "records": [
+    {"source_id":"57875516","url":"https://www.avito.ma/fr/tifelt/appartements/Appartement_%C3%A0_vendre_22_millions_57875516.htm"},
+    {"source_id":"56777033","url":"https://www.avito.ma/fr/tifelt/appartements/Appartement_%C3%A0_vendre_77_m%C2%B2_%C3%A0_Tifelt_56777033.htm"},
+    {"source_id":"57980066","url":"https://www.avito.ma/fr/tifelt/appartements/Appartement_%C3%A0_vendre_ville_de_Tifelt_57980066.htm"},
+    {"source_id":"55221675","url":"https://www.avito.ma/fr/tifelt/appartements/appartement_a_vendre_dans_l_immeuble_de_BIM_dalia_55221675.htm"},
+    {"source_id":"56107349","url":"https://www.avito.ma/fr/tifelt/appartements/Appartements_modernes_%C3%A0_Tifelt__conditions_de_soutien_disponibles_56107349.htm"},
+    {"source_id":"55818998","url":"https://www.avito.ma/fr/tifelt/appartements/Sous_sol_de_110_m%C3%A8tres_%C3%A0_vendre_55818998.htm"},
+    {"source_id":"57804311","url":"https://www.avito.ma/fr/tifelt/appartements/Appartements_%C3%A0_vendre_lotissement_Takkadoum_Tiflet_57804311.htm"},
+    {"source_id":"57841791","url":"https://www.avito.ma/fr/tifelt/appartements/Appartement_2%C3%A8me_%C3%A9tage_57841791.htm"},
+    {"source_id":"57530092","url":"https://www.avito.ma/fr/tifelt/appartements/Appartement_%C3%A0_vendre_de_108_m%C2%B2_57530092.htm"},
+    {"source_id":"57415455","url":"https://www.avito.ma/fr/tifelt/appartements/Appartement_%C3%A0_vendre_83_m%C2%B2_%C3%A0_Tifelt_57415455.htm"},
+    {"source_id":"57670239","url":"https://www.avito.ma/fr/tifelt/appartements/Appartement_en_rez_de_chauss%C3%A9e_de_117_m%C2%B2_titr%C3%A9_57670239.htm"},
+    {"source_id":"56932715","url":"https://www.avito.ma/fr/tifelt/appartements/Tadlaoui_Promo_56932715.htm"}
+  ]
+}

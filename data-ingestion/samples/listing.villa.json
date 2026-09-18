@@ -1,0 +1,22 @@
+{
+  "akar_id": null,
+  "source": {"name":"fixture","source_id":"fixture-villa-001","url":"https://example.com/listing/fixture-villa-001","first_seen_at":"2026-09-03T16:10:00Z","last_seen_at":"2026-09-03T16:10:00Z","scraped_at":"2026-09-03T16:10:00Z","content_hash":"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"},
+  "status":"active",
+  "transaction":"sale",
+  "property_type":"villa",
+  "title":"Villa à vendre à Californie",
+  "description":"Fixture villa pour validation du contrat de collecte.",
+  "price":{"amount":7200000,"currency":"MAD","period":"total","on_request":false},
+  "surface":{"total_m2":520,"habitable_m2":360,"built_m2":380,"land_m2":520},
+  "rooms":8,
+  "bedrooms":5,
+  "bathrooms":4,
+  "floor":null,
+  "location":{"country":"Morocco","region":"Casablanca-Settat","city":"Casablanca","district":"Californie","address_text":"Californie, Casablanca","latitude":null,"longitude":null,"precision":"neighborhood_centroid"},
+  "features":["garden","pool","garage"],
+  "images":[],
+  "seller":{"name":"Agence Démo","type":"agency","source_profile_url":null},
+  "provenance":{"source_type":"portal","source_listing_url":"https://example.com/listing/fixture-villa-001","retrieval_method":"crawl"},
+  "quality":{"score":90,"warnings":[]},
+  "raw":{"fixture":true}
+}

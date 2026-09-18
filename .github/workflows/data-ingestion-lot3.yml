@@ -1,0 +1,61 @@
+name: Data Ingestion Lot 3 Extractor Gate
+
+on:
+  pull_request:
+    paths:
+      - "data-ingestion/**"
+      - "scripts/mubawab-extractor-live-proof.ts"
+      - "scripts/mubawab-extractor-sample-20.ts"
+      - "scripts/scrapers/__tests__/mubawab-extractor-v3.test.ts"
+      - "scripts/scrapers/__tests__/mubawab-extractor-long-description.test.ts"
+      - ".github/workflows/data-ingestion-lot3.yml"
+
+jobs:
+  test-extractor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx tsx --test scripts/scrapers/__tests__/mubawab-extractor-v3.test.ts scripts/scrapers/__tests__/mubawab-extractor-long-description.test.ts
+
+  live-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Extract one /a/ and one /pa/ listing read-only
+        run: npx tsx scripts/mubawab-extractor-live-proof.ts
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mubawab-lot3-live-proof
+          path: data-ingestion/runs/mubawab/lot3-live-proof/
+          if-no-files-found: error
+
+  sample-20:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Build controlled representative sample read-only
+        run: npx tsx scripts/mubawab-extractor-sample-20.ts
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mubawab-lot3-sample-20
+          path: data-ingestion/runs/mubawab/lot3-sample-20/
+          if-no-files-found: error

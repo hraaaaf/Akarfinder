@@ -1,0 +1,170 @@
+name: Data Ingestion Lot 9 Coverage Proof Gate
+
+on:
+  pull_request:
+    paths:
+      - "lib/property-schema/core.ts"
+      - "lib/property-schema/adapters.ts"
+      - "data-ingestion/collection-adapter.ts"
+      - "data-ingestion/sources/mubawab/config.json"
+      - "data-ingestion/sources/mubawab/discovery.ts"
+      - "data-ingestion/sources/mubawab/full-coverage.ts"
+      - "data-ingestion/sources/mubawab/full-coverage-runner.ts"
+      - "data-ingestion/sources/mubawab/full-coverage-state.ts"
+      - "data-ingestion/sources/mubawab/full-coverage-campaign.ts"
+      - "data-ingestion/sources/mubawab/live-campaign-policy.ts"
+      - "data-ingestion/sources/mubawab/catalog-inventory.ts"
+      - "data-ingestion/sources/mubawab/catalog-overlap.ts"
+      - "data-ingestion/sources/mubawab/catalog-coverage-campaign.ts"
+      - "data-ingestion/sources/mubawab/coverage-proof.ts"
+      - "data-ingestion/sources/mubawab/coverage-dimensions.ts"
+      - "data-ingestion/sources/mubawab/geo-hierarchy.ts"
+      - "data-ingestion/sources/mubawab/reachability-proof.ts"
+      - "data-ingestion/sources/mubawab/residual-classifier.ts"
+      - "data-ingestion/sources/mubawab/listing-card-signals.ts"
+      - "data-ingestion/sources/mubawab/ambiguity-resolution.ts"
+      - "data-ingestion/canonical.md"
+      - "data-ingestion/HANDOVER.md"
+      - "data-ingestion/MUBAWAB_PHASE0_COVERAGE_PROOF.md"
+      - "scripts/scrapers/utils/fetch-html.ts"
+      - "scripts/mubawab-phase0-dimension-probe.ts"
+      - "scripts/mubawab-phase0-reachability-probe.ts"
+      - "scripts/mubawab-phase0-residual-classifier.ts"
+      - "scripts/mubawab-phase0-residual-card-probe.ts"
+      - "scripts/mubawab-phase0-residual-detail-probe.ts"
+      - "scripts/mubawab-phase0-public-index-probe.ts"
+      - "scripts/scrapers/__tests__/mubawab-discovery-v2.test.ts"
+      - "scripts/scrapers/__tests__/data-ingestion-lot9-full-coverage-planner.test.ts"
+      - "scripts/scrapers/__tests__/data-ingestion-lot9-catalog-coverage-campaign.test.ts"
+      - "scripts/scrapers/__tests__/data-ingestion-lot9-catalog-inventory.test.ts"
+      - "scripts/scrapers/__tests__/data-ingestion-lot9-catalog-overlap.test.ts"
+      - "scripts/scrapers/__tests__/data-ingestion-lot9-phase0-coverage-proof.test.ts"
+      - "scripts/scrapers/__tests__/data-ingestion-lot9-phase0-dimensions.test.ts"
+      - "scripts/scrapers/__tests__/data-ingestion-lot9-phase0-geo-hierarchy.test.ts"
+      - "scripts/scrapers/__tests__/data-ingestion-lot9-phase0-reachability.test.ts"
+      - "scripts/scrapers/__tests__/data-ingestion-lot9-phase0-residual-classifier.test.ts"
+      - "scripts/scrapers/__tests__/data-ingestion-lot9-phase0-card-signals.test.ts"
+      - "scripts/scrapers/__tests__/data-ingestion-lot9-phase0-ambiguity-resolution.test.ts"
+      - "scripts/scrapers/__tests__/data-ingestion-offer-scope.test.ts"
+      - "scripts/scrapers/__tests__/robots-policy.test.ts"
+      - ".github/workflows/data-ingestion-lot9-full-coverage.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  coverage-proof:
+    runs-on: macos-14
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Restore historical 31,731-ID Mubawab union
+        uses: actions/download-artifact@v4
+        with:
+          name: lot9-office-catalog-campaign-proof
+          path: data-ingestion/runs/mubawab/lot9-office-catalog-campaign
+          github-token: ${{ github.token }}
+          run-id: 33906589600
+      - name: Prove robots wildcard/query compliance before any live probe
+        run: npx tsx --test scripts/scrapers/__tests__/robots-policy.test.ts
+      - name: Prove canonical room-scoped offer semantics
+        run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-offer-scope.test.ts
+      - name: Prove Mubawab discovery regression remains green
+        run: npx tsx --test scripts/scrapers/__tests__/mubawab-discovery-v2.test.ts
+      - name: Prove Lot 9 deterministic full coverage partition planner
+        run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-full-coverage-planner.test.ts
+      - name: Prove Lot 9 persistent catalog coverage semantics
+        run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-catalog-coverage-campaign.test.ts
+      - name: Prove Lot 9 catalog inventory semantics
+        run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-catalog-inventory.test.ts
+      - name: Prove Lot 9 catalog overlap semantics
+        run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-catalog-overlap.test.ts
+      - name: Prove Lot 9 Phase 0 coverage registry and Full Harvest block
+        run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-phase0-coverage-proof.test.ts
+      - name: Prove Lot 9 Phase 0 dimension extraction semantics
+        run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-phase0-dimensions.test.ts
+      - name: Prove Lot 9 Phase 0 geo hierarchy count semantics
+        run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-phase0-geo-hierarchy.test.ts
+      - name: Prove Lot 9 Phase 0 reachability semantics
+        run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-phase0-reachability.test.ts
+      - name: Prove Lot 9 Phase 0 residual classification semantics
+        run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-phase0-residual-classifier.test.ts
+      - name: Prove Lot 9 Phase 0 card signal and ambiguity semantics
+        run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-phase0-card-signals.test.ts
+      - name: Prove detail-before-human ambiguity resolution semantics
+        run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lot9-phase0-ambiguity-resolution.test.ts
+      - name: Probe standard public indexes for an authorized traversal mechanism
+        run: npx tsx scripts/mubawab-phase0-public-index-probe.ts
+      - name: Upload Lot 9 Phase 0 public index proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lot9-phase0-public-index-proof
+          path: data-ingestion/runs/mubawab/phase0-public-index-probe/
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Run bounded Lot 9 Phase 0 dimension probe
+        run: npx tsx scripts/mubawab-phase0-dimension-probe.ts
+      - name: Upload Lot 9 Phase 0 dimension proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lot9-phase0-dimension-proof
+          path: data-ingestion/runs/mubawab/phase0-dimension-probe/
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Run bounded Lot 9 Phase 0 reachability probe
+        run: npx tsx scripts/mubawab-phase0-reachability-probe.ts
+      - name: Upload Lot 9 Phase 0 reachability proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lot9-phase0-reachability-proof
+          path: data-ingestion/runs/mubawab/phase0-reachability-probe/
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Classify reachability residuals against historical union
+        run: npx tsx scripts/mubawab-phase0-residual-classifier.ts
+      - name: Upload Lot 9 Phase 0 residual classification proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lot9-phase0-residual-classification-proof
+          path: data-ingestion/runs/mubawab/phase0-residual-classification/
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Prepare page-level evidence for residual ambiguity resolution
+        run: npx tsx scripts/mubawab-phase0-residual-card-probe.ts
+      - name: Upload Lot 9 Phase 0 residual card proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lot9-phase0-residual-card-proof
+          path: data-ingestion/runs/mubawab/phase0-residual-card-probe/
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Resolve up to five ambiguous residuals from robots-allowed detail pages
+        env:
+          MAX_DETAIL_LOOKUPS: "5"
+        run: npx tsx scripts/mubawab-phase0-residual-detail-probe.ts
+      - name: Upload Lot 9 Phase 0 residual detail proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lot9-phase0-residual-detail-proof
+          path: data-ingestion/runs/mubawab/phase0-residual-detail-probe/
+          if-no-files-found: warn
+          retention-days: 7
+
+      # Phase 0 rule: no broad live harvest in this gate.
+      # Only bounded, robots-allowed public probes may run.
+      # Standard sitemap/index candidates are probed only as normal public discovery endpoints.
+      # At most five robots-allowed detail pages may be inspected per run, solely to resolve genuine card ambiguities.
+      # Colon pagination (:p:N) is not permitted while matching robots Disallow: /*:.

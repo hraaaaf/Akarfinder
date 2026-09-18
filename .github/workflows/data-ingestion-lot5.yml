@@ -1,0 +1,32 @@
+name: Data Ingestion Lot 5 Lifecycle Gate
+
+on:
+  pull_request:
+    paths:
+      - "data-ingestion/lifecycle.ts"
+      - "data-ingestion/LOT5_STATUS.md"
+      - "scripts/data-ingestion-lifecycle-proof.ts"
+      - "scripts/scrapers/__tests__/data-ingestion-lifecycle.test.ts"
+      - ".github/workflows/data-ingestion-lot5.yml"
+
+jobs:
+  lifecycle-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Run lifecycle unit tests
+        run: npx tsx --test scripts/scrapers/__tests__/data-ingestion-lifecycle.test.ts
+      - name: Build successive-run proof
+        run: npx tsx scripts/data-ingestion-lifecycle-proof.ts
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: data-ingestion-lot5-lifecycle-proof
+          path: data-ingestion/runs/lot5-lifecycle-proof/
+          if-no-files-found: error

@@ -1,0 +1,20 @@
+{
+  "source": "mubawab",
+  "lot": 6,
+  "updated_at": "2026-09-03T22:32:00+01:00",
+  "adjudications": [
+    {
+      "source_id": "8192907",
+      "canonical_url": "https://www.mubawab.ma/fr/a/8192907/superbe-villa-paranfa",
+      "decision": "sale",
+      "basis": "human_confirmed",
+      "evidence": {
+        "property_type": "villa",
+        "discovery_context": "villa_sale",
+        "price_mad": 24000000,
+        "explicit_detail_transaction": false
+      },
+      "note": "User confirmed the listing is clearly a sale; do not generalize a global villa threshold from this single case yet."
+    }
+  ]
+}

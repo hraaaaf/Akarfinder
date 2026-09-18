@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://akarfinder.ma/schemas/run-manifest.schema.json",
+  "title": "AkarFinder Ingestion Run Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "run_id",
+    "source",
+    "started_at",
+    "completed_at",
+    "status",
+    "pages_discovered",
+    "pages_processed",
+    "listings_discovered",
+    "listings_fetched",
+    "listings_normalized",
+    "listings_rejected",
+    "duplicates",
+    "errors"
+  ],
+  "properties": {
+    "run_id": { "type": "string", "minLength": 1 },
+    "source": { "type": "string", "minLength": 1, "pattern": "^[a-z0-9][a-z0-9_-]*$" },
+    "started_at": { "type": "string", "format": "date-time" },
+    "completed_at": { "type": ["string", "null"], "format": "date-time" },
+    "status": { "type": "string", "enum": ["running", "completed", "partial", "failed", "cancelled"] },
+    "pages_discovered": { "type": "integer", "minimum": 0 },
+    "pages_processed": { "type": "integer", "minimum": 0 },
+    "listings_discovered": { "type": "integer", "minimum": 0 },
+    "listings_fetched": { "type": "integer", "minimum": 0 },
+    "listings_normalized": { "type": "integer", "minimum": 0 },
+    "listings_rejected": { "type": "integer", "minimum": 0 },
+    "duplicates": { "type": "integer", "minimum": 0 },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["stage", "message"],
+        "properties": {
+          "stage": { "type": "string", "minLength": 1 },
+          "url": { "type": ["string", "null"], "format": "uri" },
+          "source_id": { "type": ["string", "null"] },
+          "message": { "type": "string", "minLength": 1 },
+          "retryable": { "type": "boolean", "default": false }
+        }
+      }
+    }
+  }
+}

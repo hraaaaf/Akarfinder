@@ -1,0 +1,31 @@
+{
+  "source": "avito",
+  "probe": "advertised_root_sitemap",
+  "observed_at": "2026-09-04T21:17:47Z",
+  "execution_environment": "github_actions_ubuntu_24_04_westus",
+  "sitemap_url": "https://www.avito.ma/sitemap.xml",
+  "user_agent": "AkarFinderCoverageBot/0.1 (+https://akarfinder.vercel.app)",
+  "request_budget": 1,
+  "http_status": 403,
+  "ok": false,
+  "content_type": "text/html; charset=UTF-8",
+  "response_bytes": 5585,
+  "xml_structure": "unknown",
+  "loc_count": 0,
+  "control_ids_checked": [
+    "57875516",
+    "56777033",
+    "57980066",
+    "58413694"
+  ],
+  "matched_control_ids": [],
+  "decision": "BLOCK_NATIVE_SITEMAP_LANE",
+  "decision_reason": "The advertised root sitemap returned HTTP 403 to the identifiable AkarFinder coverage bot from the bounded GitHub-hosted probe. Per project policy, do not retry through evasion, alternate identities, proxy rotation or access-control bypass.",
+  "provenance": {
+    "workflow": ".github/workflows/data-ingestion-avito-sitemap-probe.yml",
+    "probe_script": "scripts/scrapers/avito-sitemap-probe.mjs",
+    "workflow_run_id": 33920333307,
+    "job_id": 101176939140,
+    "commit": "08b4941d5c752fae21aba863c8045cff0aa0cc3b"
+  }
+}
