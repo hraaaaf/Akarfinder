@@ -343,7 +343,7 @@ export function PremiumInteractiveMap() {
     [regions],
   );
 
-  const nationalTerritoryZoom = 4.2 + Math.max(0, camera.k - 1) * 1.8;
+  const nationalTerritoryZoom = 4.2 + Math.max(0, camera.k - 1) * 4;
   const nationalPriority = useMemo(
     () => selectNationalCityVisibility({ zoom: nationalTerritoryZoom, maxLabels: 19 }),
     [nationalTerritoryZoom],
@@ -405,7 +405,7 @@ export function PremiumInteractiveMap() {
 
       const labelWidth = Math.max(68, city.name.length * 7 + 30);
       const direction = city.slug === "casablanca" || city.slug === "agadir" || city.slug === "rabat" ? -1 : 1;
-      const labelYOffset = city.slug === "rabat" ? -24 : 0;
+      const labelYOffset = city.slug === "rabat" ? -24 : city.slug === "mohammedia" ? 28 : 0;
       const screenX = camera.x + point[0] * camera.k;
       const screenY = camera.y + point[1] * camera.k;
       const labelCenterX = screenX + direction * (labelWidth / 2 + 17);
@@ -430,7 +430,7 @@ export function PremiumInteractiveMap() {
       }];
     });
 
-    const capacity = camera.k < 1.2 ? 6 : camera.k < 1.45 ? 7 : 8;
+    const capacity = camera.k < 1.1 ? 6 : camera.k < 1.2 ? 7 : 8;
     const selected = selectStableTerritoryLabels({
       candidates: candidateMeta.map((item) => item.collision),
       maxLabels: capacity,

@@ -55,6 +55,9 @@ jobs:
             if (!r.zoomedCitySlugs.includes('kenitra') || !r.zoomedCitySlugs.includes('mohammedia')) {
               throw new Error(`secondary city reveal incomplete on ${r.viewport.name}: ${r.zoomedCitySlugs.join(',')}`);
             }
+            if (!r.zoomedVisibleCitySlugs.includes('kenitra') || !r.zoomedVisibleCitySlugs.includes('mohammedia')) {
+              throw new Error(`secondary city reveal not visible on ${r.viewport.name}: ${r.zoomedVisibleCitySlugs.join(',')}`);
+            }
             if (r.horizontalOverflow > 1 || r.supabaseRequestCount !== 0 || r.pageErrors.length) {
               throw new Error(`unsafe visual proof on ${r.viewport.name}`);
             }

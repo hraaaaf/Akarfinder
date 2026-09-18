@@ -79,13 +79,30 @@ try {
     await page.screenshot({ path: premiumFile, fullPage: false, animations: 'disabled' });
 
     const zoomIn = page.locator('[data-premium-map] section[aria-label="Carte interactive du Maroc"] button[aria-label="Zoomer"]').first();
-    for (let index = 0; index < 2; index += 1) {
+    for (let index = 0; index < 1; index += 1) {
       await zoomIn.click();
-      await page.waitForTimeout(160);
+      await page.waitForTimeout(220);
     }
     await page.waitForTimeout(350);
     const zoomedCitySlugs = await page.locator('[data-national-city-label]').evaluateAll((nodes) =>
       nodes.map((node) => node.getAttribute('data-national-city-label')).filter(Boolean)
+    );
+    const zoomedVisibleCitySlugs = await page.locator('[data-national-city-label]').evaluateAll((nodes) =>
+      nodes
+        .filter((node) => {
+          const rect = node.getBoundingClientRect();
+          const style = getComputedStyle(node);
+          return rect.width > 2
+            && rect.height > 2
+            && rect.right > 0
+            && rect.bottom > 0
+            && rect.left < window.innerWidth
+            && rect.top < window.innerHeight
+            && style.visibility !== 'hidden'
+            && style.display !== 'none';
+        })
+        .map((node) => node.getAttribute('data-national-city-label'))
+        .filter(Boolean)
     );
     const zoomedTerritoryZoom = Number(await premium.getAttribute('data-national-territory-zoom') ?? '0');
     const zoomedVisibleRegionCount = await page.locator('[data-region-slug]').evaluateAll((nodes) =>
@@ -119,6 +136,7 @@ try {
       initialTerritoryZoom,
       zoomedCityLabelCount: zoomedCitySlugs.length,
       zoomedCitySlugs,
+      zoomedVisibleCitySlugs,
       zoomedTerritoryZoom,
       zoomedVisibleRegionCount,
       zoomedScreenshot: premiumZoomedFile,
@@ -227,6 +245,8 @@ try {
     || r.zoomedCityLabelCount <= r.initialCityLabelCount
     || !r.zoomedCitySlugs.includes('kenitra')
     || !r.zoomedCitySlugs.includes('mohammedia')
+    || !r.zoomedVisibleCitySlugs.includes('kenitra')
+    || !r.zoomedVisibleCitySlugs.includes('mohammedia')
     || r.zoomedTerritoryZoom <= r.initialTerritoryZoom
     || r.zoomedVisibleRegionCount < 1
     || r.zoomedScreenshotBytes < 30000

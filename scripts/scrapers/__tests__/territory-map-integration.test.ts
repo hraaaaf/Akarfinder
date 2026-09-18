@@ -46,10 +46,14 @@ test("national geometry uses the same native SVG transform model as D3", () => {
   assert.doesNotMatch(source, /animate=\{\{ x: camera\.x, y: camera\.y, scale: camera\.k \}\}/);
 });
 
-test("semantic national zoom reveals secondary cities before deep physical zoom", () => {
-  assert.match(source, /const nationalTerritoryZoom = 4\.2 \+ Math\.max\(0, camera\.k - 1\) \* 1\.8;/);
+test("semantic national zoom reveals secondary cities after one moderate zoom step", () => {
+  assert.match(source, /const nationalTerritoryZoom = 4\.2 \+ Math\.max\(0, camera\.k - 1\) \* 4;/);
 });
 
-test("national label capacity grows with moderate physical zoom", () => {
-  assert.match(source, /const capacity = camera\.k < 1\.2 \? 6 : camera\.k < 1\.45 \? 7 : 8;/);
+test("national label capacity reaches eight at one moderate zoom step", () => {
+  assert.match(source, /const capacity = camera\.k < 1\.1 \? 6 : camera\.k < 1\.2 \? 7 : 8;/);
+});
+
+test("Mohammedia gets a collision offset between Casablanca and Rabat", () => {
+  assert.match(source, /city\.slug === "mohammedia" \? 28 : 0/);
 });
