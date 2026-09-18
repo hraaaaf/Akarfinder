@@ -320,6 +320,8 @@ Next : cohérence canonique + PR ready. Merge uniquement sur instruction explici
 
 ## 13. REPRISE
 
-Lire ce fichier puis `docs/handovers/2026-09-17-vivre-ici-pr1025-main-integration-handover.md`. Re-vérifier `main`, la branche Territory Dictionary et Supabase avant toute écriture.
+Lire d’abord `docs/handovers/2026-09-18-vivre-ici-territory-dictionary-handover.md` — handover canonique de la phase Territory Dictionary 53/53 — puis ce fichier. Re-vérifier `main`, la branche Territory Dictionary, PR #1038 et CI avant toute écriture.
+
+Le handover historique `docs/handovers/2026-09-17-vivre-ici-pr1025-main-integration-handover.md` reste utile uniquement pour l’historique d’intégration #1037.
 
 `3-vivre-ici-akarfinder.md — Vivre Ici AkarFinder — Territory Dictionary 53/53 pts`
