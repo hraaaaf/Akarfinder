@@ -7,6 +7,7 @@ import {
   getVerifiedLandmarksForDistrict,
 } from "../../../lib/geo/territory-landmark-registry";
 import { validateTerritoryEntity } from "../../../lib/geo/territory-dictionary";
+import { scoreLandmarkNotoriety } from "../../../lib/geo/territory-landmark-notoriety";
 
 const districtIds = new Set(GEO_NEIGHBORHOODS.map((district) => district.id));
 
@@ -26,7 +27,9 @@ test("every verified landmark has a validated point and at least two evidence re
 
 test("verified registry covers the certified city/district paths", () => {
   assert.deepEqual(
-    VERIFIED_LANDMARKS.map(({ entity }) => [entity.citySlug, entity.districtSlug]).sort(),
+    Array.from(new Set(VERIFIED_LANDMARKS.map(({ entity }) => `${entity.citySlug}::${entity.districtSlug}`)))
+      .map((value) => value.split("::"))
+      .sort(),
     [
       ["agadir", "founty"],
       ["agadir", "talborjt"],
@@ -57,11 +60,41 @@ test("verified registry covers the certified city/district paths", () => {
 
 test("district lookup never leaks landmarks from another district", () => {
   const agdal = getVerifiedLandmarksForDistrict("district_rabat_agdal");
-  assert.equal(agdal.length, 1);
-  assert.equal(agdal[0]?.entity.id, "landmark_rabat_agdal_station");
+  assert.equal(agdal.length, 2);
+  assert.ok(agdal.some(({ entity }) => entity.id === "landmark_rabat_agdal_station"));
+  assert.ok(agdal.some(({ entity }) => entity.id === "landmark_rabat_agdal_bnrm"));
 
   const maarif = getVerifiedLandmarksForDistrict("district_casablanca_maarif");
-  assert.equal(maarif.length, 1);
-  assert.equal(maarif[0]?.entity.id, "landmark_casablanca_maarif_twin_center");
+  assert.equal(maarif.length, 2);
+  assert.ok(maarif.some(({ entity }) => entity.id === "landmark_casablanca_maarif_twin_center"));
+  assert.ok(maarif.some(({ entity }) => entity.id === "landmark_casablanca_maarif_stade_mohammed_v"));
   assert.deepEqual(getVerifiedLandmarksForDistrict("district_missing"), []);
+});
+
+
+test("bootstrap seed establishes a substantial landmark baseline", () => {
+  assert.ok(VERIFIED_LANDMARKS.length >= 37, `expected >=37 verified landmarks, got ${VERIFIED_LANDMARKS.length}`);
+  assert.equal(new Set(VERIFIED_LANDMARKS.map(({ entity }) => entity.id)).size, VERIFIED_LANDMARKS.length);
+});
+
+test("landmark notoriety scoring applies confidence gate and weighted tiers", () => {
+  assert.deepEqual(
+    scoreLandmarkNotoriety({
+      publicRecognition: 96,
+      orientationValue: 94,
+      visualSingularity: 90,
+      confidence: 95,
+    }),
+    { score: 94, tier: "iconic", eligible: true, confidence: 95 },
+  );
+
+  assert.deepEqual(
+    scoreLandmarkNotoriety({
+      publicRecognition: 95,
+      orientationValue: 95,
+      visualSingularity: 95,
+      confidence: 79,
+    }),
+    { score: 0, tier: "reject", eligible: false, confidence: 79 },
+  );
 });
