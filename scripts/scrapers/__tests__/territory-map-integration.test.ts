@@ -68,3 +68,7 @@ test("Kénitra uses a two-axis callout instead of vertical-only nudging", () => 
   assert.match(source, /const labelXOffset = city\.slug === "kenitra" \? -34 : 0;/);
   assert.match(source, /labelCenterX = screenX \+ direction \* \(labelWidth \/ 2 \+ 17\) \+ labelXOffset/);
 });
+
+test("national zoom anchor protects northern flagship labels", () => {
+  assert.match(source, /const NATIONAL_ZOOM_ANCHOR: \[number, number\] = \[MAP_WIDTH \* 0\.53, MAP_HEIGHT \* 0\.15\];/);
+});
