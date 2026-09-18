@@ -430,7 +430,7 @@ export function PremiumInteractiveMap() {
       }];
     });
 
-    const capacity = camera.k < 2.2 ? 6 : camera.k < 3.3 ? 7 : 8;
+    const capacity = camera.k < 1.2 ? 6 : camera.k < 1.45 ? 7 : 8;
     const selected = selectStableTerritoryLabels({
       candidates: candidateMeta.map((item) => item.collision),
       maxLabels: capacity,
