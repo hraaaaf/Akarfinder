@@ -30,13 +30,8 @@ test("Casablanca coverage is complete after the final landmark batch", () => {
   assert.deepEqual(casa.missingLandmarkDistrictIds, []);
 });
 
-test("enrichment queue includes only canonical cities with uncovered districts", () => {
-  const queue = getCitiesNeedingLandmarkEnrichment().map((entry) => entry.citySlug);
-  assert.ok(queue.includes("casablanca"));
-  assert.ok(!queue.includes("tanger"));
-  assert.ok(!queue.includes("rabat"));
-  assert.ok(!queue.includes("fes"));
-  assert.ok(!queue.includes("agadir"));
+test("enrichment queue is empty when all canonical districts are covered", () => {
+  assert.deepEqual(getCitiesNeedingLandmarkEnrichment(), []);
 });
 
 test("Rabat, Tanger and Fes are fully covered after certified batch three", () => {
