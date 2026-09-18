@@ -405,7 +405,7 @@ export function PremiumInteractiveMap() {
 
       const labelWidth = Math.max(68, city.name.length * 7 + 30);
       const direction = city.slug === "casablanca" || city.slug === "agadir" || city.slug === "rabat" || city.slug === "kenitra" ? -1 : 1;
-      const labelYOffset = city.slug === "rabat" ? -24 : city.slug === "kenitra" ? -34 : city.slug === "mohammedia" ? 28 : 0;
+      const labelYOffset = city.slug === "rabat" ? -24 : city.slug === "kenitra" ? -42 : city.slug === "mohammedia" ? 28 : 0;
       const screenX = camera.x + point[0] * camera.k;
       const screenY = camera.y + point[1] * camera.k;
       const labelCenterX = screenX + direction * (labelWidth / 2 + 17);

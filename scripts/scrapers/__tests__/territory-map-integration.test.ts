@@ -58,7 +58,7 @@ test("Mohammedia gets a collision offset between Casablanca and Rabat", () => {
   assert.match(source, /city\.slug === "mohammedia" \? 28 : 0/);
 });
 
-test("Kénitra keeps a dedicated top-left label offset in the Rabat-Fes cluster", () => {
-  assert.match(source, /city\.slug === "kenitra" \? -34/);
+test("Kénitra keeps a dedicated top-left label offset with collision padding clearance", () => {
+  assert.match(source, /city\.slug === "kenitra" \? -42/);
   assert.match(source, /city\.slug === "rabat" \|\| city\.slug === "kenitra" \? -1 : 1/);
 });
