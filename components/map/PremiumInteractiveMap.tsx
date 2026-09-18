@@ -343,7 +343,7 @@ export function PremiumInteractiveMap() {
     [regions],
   );
 
-  const nationalTerritoryZoom = 4.2 + Math.max(0, camera.k - 1) * 4;
+  const nationalTerritoryZoom = 4.2 + Math.max(0, camera.k - 1) * 6;
   const nationalPriority = useMemo(
     () => selectNationalCityVisibility({ zoom: nationalTerritoryZoom, maxLabels: 19 }),
     [nationalTerritoryZoom],

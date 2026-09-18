@@ -47,7 +47,7 @@ test("national geometry uses the same native SVG transform model as D3", () => {
 });
 
 test("semantic national zoom reveals secondary cities after one moderate zoom step", () => {
-  assert.match(source, /const nationalTerritoryZoom = 4\.2 \+ Math\.max\(0, camera\.k - 1\) \* 4;/);
+  assert.match(source, /const nationalTerritoryZoom = 4\.2 \+ Math\.max\(0, camera\.k - 1\) \* 6;/);
 });
 
 test("national label capacity reaches eight at one moderate zoom step", () => {
