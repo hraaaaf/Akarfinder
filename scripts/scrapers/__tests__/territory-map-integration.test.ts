@@ -32,7 +32,7 @@ test("national zoom attaches only after the projected SVG exists", () => {
 });
 
 test("Rabat keeps a dedicated national label offset to coexist with Casablanca and Fes", () => {
-  assert.match(source, /const labelYOffset = city\.slug === "rabat" \? -24 : city\.slug === "mohammedia" \? 28 : 0;/);
+  assert.match(source, /city\.slug === "rabat" \? -24/);
   assert.match(source, /y: screenY \+ labelYOffset/);
 });
 
@@ -56,4 +56,9 @@ test("national label capacity reaches eight at one moderate zoom step", () => {
 
 test("Mohammedia gets a collision offset between Casablanca and Rabat", () => {
   assert.match(source, /city\.slug === "mohammedia" \? 28 : 0/);
+});
+
+test("Kénitra keeps a dedicated top-left label offset in the Rabat-Fes cluster", () => {
+  assert.match(source, /city\.slug === "kenitra" \? -34/);
+  assert.match(source, /city\.slug === "rabat" \|\| city\.slug === "kenitra" \? -1 : 1/);
 });
