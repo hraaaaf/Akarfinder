@@ -37,6 +37,11 @@ test("verified registry covers the certified city/district paths", () => {
       ["marrakech", "gueliz"],
       ["marrakech", "hivernage"],
       ["rabat", "agdal"],
+      ["rabat", "hassan"],
+      ["rabat", "hay-riad"],
+      ["rabat", "souissi"],
+      ["tanger", "malabata"],
+      ["tanger", "marchan"],
     ].sort(),
   );
 });
