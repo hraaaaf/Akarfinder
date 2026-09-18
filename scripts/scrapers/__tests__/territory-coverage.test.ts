@@ -13,13 +13,13 @@ test("coverage report exposes every canonical city without pretending completion
   assert.ok(report.every((entry) => entry.landmarkCoverageRatio >= 0 && entry.landmarkCoverageRatio <= 1));
 });
 
-test("five cities currently have at least one verified landmark", () => {
+test("six cities currently have at least one verified landmark", () => {
   const covered = getTerritoryCoverageReport()
     .filter((entry) => entry.verifiedLandmarkCount > 0)
     .map((entry) => entry.citySlug)
     .sort();
 
-  assert.deepEqual(covered, ["agadir", "casablanca", "fes", "marrakech", "rabat"].sort());
+  assert.deepEqual(covered, ["agadir", "casablanca", "fes", "marrakech", "rabat", "tanger"].sort());
 });
 
 test("Casablanca coverage remains explicitly partial", () => {
@@ -37,7 +37,6 @@ test("enrichment queue includes only canonical cities with uncovered districts",
   assert.ok(queue.includes("casablanca"));
   assert.ok(queue.includes("tanger"));
   assert.ok(queue.includes("rabat"));
-  assert.ok(queue.includes("tanger"));
   assert.ok(!queue.includes("agadir"));
 });
 
