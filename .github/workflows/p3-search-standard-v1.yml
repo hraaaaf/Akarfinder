@@ -1,0 +1,42 @@
+name: P3 Search Standard V1
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "components/search/SearchViewSwitcher.tsx"
+      - "components/search/QuickFilters.tsx"
+      - "components/search/SearchPriceExplorerDock.tsx"
+      - "app/search/search-premium-card-density.css"
+      - "scripts/scrapers/__tests__/p3-search-standard-v1.test.ts"
+      - ".github/workflows/p3-search-standard-v1.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    name: P3 responsive search controls
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: P3 contract tests
+        run: node --test scripts/scrapers/__tests__/p3-search-standard-v1.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
