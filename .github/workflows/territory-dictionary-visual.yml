@@ -52,6 +52,7 @@ jobs:
             }
             if (r.zoomedCityLabelCount <= r.initialCityLabelCount) throw new Error(`no progressive reveal on ${r.viewport.name}`);
             if (r.zoomedVisibleRegionCount < 1) throw new Error(`zoomed map escaped viewport on ${r.viewport.name}`);
+            if (r.zoomedCityLabelOverlapCount !== 0) throw new Error(`zoomed city labels overlap on ${r.viewport.name}: ${r.zoomedCityLabelOverlapCount}`);
             if (!r.zoomedCitySlugs.includes('kenitra') || !r.zoomedCitySlugs.includes('mohammedia')) {
               throw new Error(`secondary city reveal incomplete on ${r.viewport.name}: ${r.zoomedCitySlugs.join(',')}`);
             }

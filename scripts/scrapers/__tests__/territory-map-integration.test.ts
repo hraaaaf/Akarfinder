@@ -59,6 +59,11 @@ test("Mohammedia gets a collision offset between Casablanca and Rabat", () => {
 });
 
 test("Kénitra keeps a dedicated top-left label offset with collision padding clearance", () => {
-  assert.match(source, /city\.slug === "kenitra" \? -42/);
+  assert.match(source, /city\.slug === "kenitra" \? -52/);
   assert.match(source, /city\.slug === "rabat" \|\| city\.slug === "kenitra" \? -1 : 1/);
+});
+
+test("Kénitra uses a two-axis callout instead of vertical-only nudging", () => {
+  assert.match(source, /const labelXOffset = city\.slug === "kenitra" \? -34 : 0;/);
+  assert.match(source, /labelCenterX = screenX \+ direction \* \(labelWidth \/ 2 \+ 17\) \+ labelXOffset/);
 });

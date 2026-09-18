@@ -105,6 +105,21 @@ try {
         .filter(Boolean)
     );
     const zoomedTerritoryZoom = Number(await premium.getAttribute('data-national-territory-zoom') ?? '0');
+    const zoomedCityLabelOverlapCount = await page.locator('[data-national-city-label]').evaluateAll((nodes) => {
+      const rects = nodes
+        .map((node) => node.querySelector('rect')?.getBoundingClientRect())
+        .filter(Boolean)
+        .map((rect) => ({ left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom }));
+      let overlaps = 0;
+      for (let i = 0; i < rects.length; i += 1) {
+        for (let j = i + 1; j < rects.length; j += 1) {
+          const a = rects[i];
+          const b = rects[j];
+          if (!(a.right <= b.left || a.left >= b.right || a.bottom <= b.top || a.top >= b.bottom)) overlaps += 1;
+        }
+      }
+      return overlaps;
+    });
     const zoomedVisibleRegionCount = await page.locator('[data-region-slug]').evaluateAll((nodes) =>
       nodes.filter((node) => {
         const rect = node.getBoundingClientRect();
@@ -138,6 +153,7 @@ try {
       zoomedCitySlugs,
       zoomedVisibleCitySlugs,
       zoomedTerritoryZoom,
+      zoomedCityLabelOverlapCount,
       zoomedVisibleRegionCount,
       zoomedScreenshot: premiumZoomedFile,
       zoomedScreenshotBytes: (await fs.stat(premiumZoomedFile)).size,
@@ -249,6 +265,7 @@ try {
     || !r.zoomedVisibleCitySlugs.includes('mohammedia')
     || r.zoomedTerritoryZoom <= r.initialTerritoryZoom
     || r.zoomedVisibleRegionCount < 1
+    || r.zoomedCityLabelOverlapCount !== 0
     || r.zoomedScreenshotBytes < 30000
     || !r.headerVisible
     || !r.logoVisible

@@ -405,10 +405,11 @@ export function PremiumInteractiveMap() {
 
       const labelWidth = Math.max(68, city.name.length * 7 + 30);
       const direction = city.slug === "casablanca" || city.slug === "agadir" || city.slug === "rabat" || city.slug === "kenitra" ? -1 : 1;
-      const labelYOffset = city.slug === "rabat" ? -24 : city.slug === "kenitra" ? -42 : city.slug === "mohammedia" ? 28 : 0;
+      const labelXOffset = city.slug === "kenitra" ? -34 : 0;
+      const labelYOffset = city.slug === "rabat" ? -24 : city.slug === "kenitra" ? -52 : city.slug === "mohammedia" ? 28 : 0;
       const screenX = camera.x + point[0] * camera.k;
       const screenY = camera.y + point[1] * camera.k;
-      const labelCenterX = screenX + direction * (labelWidth / 2 + 17);
+      const labelCenterX = screenX + direction * (labelWidth / 2 + 17) + labelXOffset;
 
       return [{
         city,
@@ -417,6 +418,7 @@ export function PremiumInteractiveMap() {
         point,
         labelWidth,
         direction,
+        labelXOffset,
         labelYOffset,
         collision: {
           id: city.slug,
@@ -678,9 +680,11 @@ export function PremiumInteractiveMap() {
                     );
                   })}
 
-                  {level === "national" && nationalCityRenderItems.map(({ city, point, labelWidth, direction, labelYOffset, priority }) => {
-                    const labelX = direction > 0 ? 13 / camera.k : -(labelWidth + 13) / camera.k;
-                    const textX = direction > 0 ? 24 / camera.k : -(labelWidth + 2) / camera.k;
+                  {level === "national" && nationalCityRenderItems.map(({ city, point, labelWidth, direction, labelXOffset, labelYOffset, priority }) => {
+                    const baseLabelX = direction > 0 ? 13 : -(labelWidth + 13);
+                    const baseTextX = direction > 0 ? 24 : -(labelWidth + 2);
+                    const labelX = (baseLabelX + labelXOffset) / camera.k;
+                    const textX = (baseTextX + labelXOffset) / camera.k;
                     const labelY = labelYOffset / camera.k;
                     return (
                       <g
