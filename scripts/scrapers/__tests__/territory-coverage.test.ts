@@ -35,19 +35,25 @@ test("Casablanca coverage remains explicitly partial", () => {
 test("enrichment queue includes only canonical cities with uncovered districts", () => {
   const queue = getCitiesNeedingLandmarkEnrichment().map((entry) => entry.citySlug);
   assert.ok(queue.includes("casablanca"));
-  assert.ok(queue.includes("tanger"));
-  assert.ok(queue.includes("rabat"));
+  assert.ok(!queue.includes("tanger"));
+  assert.ok(!queue.includes("rabat"));
+  assert.ok(!queue.includes("fes"));
   assert.ok(!queue.includes("agadir"));
 });
 
-test("Rabat and Tanger enrichment remain partial after certified batch two", () => {
+test("Rabat, Tanger and Fes are fully covered after certified batch three", () => {
   const rabat = getTerritoryCityCoverage("rabat");
   assert.equal(rabat.canonicalDistrictCount, 5);
-  assert.equal(rabat.districtsWithVerifiedLandmark, 4);
-  assert.deepEqual(rabat.missingLandmarkDistrictIds, ["district_rabat_ocean"]);
+  assert.equal(rabat.districtsWithVerifiedLandmark, 5);
+  assert.deepEqual(rabat.missingLandmarkDistrictIds, []);
 
   const tanger = getTerritoryCityCoverage("tanger");
   assert.equal(tanger.canonicalDistrictCount, 3);
-  assert.equal(tanger.districtsWithVerifiedLandmark, 2);
-  assert.deepEqual(tanger.missingLandmarkDistrictIds, ["district_tanger_ville_nouvelle"]);
+  assert.equal(tanger.districtsWithVerifiedLandmark, 3);
+  assert.deepEqual(tanger.missingLandmarkDistrictIds, []);
+
+  const fes = getTerritoryCityCoverage("fes");
+  assert.equal(fes.canonicalDistrictCount, 2);
+  assert.equal(fes.districtsWithVerifiedLandmark, 2);
+  assert.deepEqual(fes.missingLandmarkDistrictIds, []);
 });

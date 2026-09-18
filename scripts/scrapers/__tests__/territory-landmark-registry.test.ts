@@ -34,14 +34,17 @@ test("verified registry covers the certified city/district paths", () => {
       ["casablanca", "finance-city"],
       ["casablanca", "maarif"],
       ["fes", "fes-el-bali"],
+      ["fes", "ville-nouvelle"],
       ["marrakech", "gueliz"],
       ["marrakech", "hivernage"],
       ["rabat", "agdal"],
       ["rabat", "hassan"],
       ["rabat", "hay-riad"],
       ["rabat", "souissi"],
+      ["rabat", "ocean"],
       ["tanger", "malabata"],
       ["tanger", "marchan"],
+      ["tanger", "ville-nouvelle"],
     ].sort(),
   );
 });

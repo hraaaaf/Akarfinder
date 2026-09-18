@@ -439,6 +439,100 @@ export const VERIFIED_LANDMARKS: readonly VerifiedLandmarkEntry[] = [
     verifiedAt: "2026-09-18",
   },
 
+  {
+    entity: {
+      id: "landmark_rabat_ocean_place_de_russie",
+      type: "landmark",
+      citySlug: "rabat",
+      districtSlug: "ocean",
+      landmarkSlug: "place-de-russie",
+      canonicalName: "Place de Russie",
+      aliases: ["Place de la Russie"],
+      category: "transport",
+      parentId: "district_rabat_ocean",
+      importance: {
+        score: 88,
+        tier: "major",
+        basis: ["orientation_value", "product_priority"],
+      },
+      visibility: { minZoom: 13.9, retainPriority: false },
+      coordinates: {
+        lat: 34.01881,
+        lng: -6.85002,
+        precision: "verified_landmark_point",
+      },
+    },
+    sourceRefs: [
+      "https://www.toutrabat.com/fr/quartiers/ocean",
+      "https://fr.le360.ma/societe/rabat-voici-a-quoi-ressemble-le-nouveau-parking-souterrain-au-quartier-de-locean_HCXXDRDCU5CXBDYV5TIGZLGXXU/",
+      "https://mapcarta.com/fr/N4592889801",
+    ],
+    verificationNote: "Two independent Rabat sources explicitly tie Place de Russie to Quartier Océan; OSM-backed mapping supplies the point.",
+    verifiedAt: "2026-09-18",
+  },
+  {
+    entity: {
+      id: "landmark_tanger_ville_nouvelle_terrasse_paresseux",
+      type: "landmark",
+      citySlug: "tanger",
+      districtSlug: "ville-nouvelle",
+      landmarkSlug: "terrasse-des-paresseux",
+      canonicalName: "Terrasse des Paresseux",
+      aliases: ["Place Faro", "Sour Al Maâazine"],
+      category: "other",
+      parentId: "district_tanger_ville_nouvelle",
+      importance: {
+        score: 97,
+        tier: "flagship",
+        basis: ["product_priority", "orientation_value", "urban_prominence"],
+      },
+      visibility: { minZoom: 13.5, retainPriority: true },
+      coordinates: {
+        lat: 35.78086,
+        lng: -5.81179,
+        precision: "verified_landmark_point",
+      },
+    },
+    sourceRefs: [
+      "https://aut.gov.ma/patrimoine/",
+      "https://www.visitmorocco.com/sites/default/files/atoms/files/Tanger%20FR.pdf",
+      "https://mapcarta.com/fr/N7264187086",
+    ],
+    verificationNote: "Tangier Urban Agency and ONMT identify Boulevard Pasteur / Place Faro as the spine of the Ville Nouvelle; OSM-backed mapping supplies the viewpoint coordinate.",
+    verifiedAt: "2026-09-18",
+  },
+  {
+    entity: {
+      id: "landmark_fes_ville_nouvelle_place_florence",
+      type: "landmark",
+      citySlug: "fes",
+      districtSlug: "ville-nouvelle",
+      landmarkSlug: "place-florence",
+      canonicalName: "Place Florence",
+      aliases: ["Place de Florence", "Place Lyautey"],
+      category: "park",
+      parentId: "district_fes_ville_nouvelle",
+      importance: {
+        score: 94,
+        tier: "major",
+        basis: ["product_priority", "orientation_value"],
+      },
+      visibility: { minZoom: 13.6, retainPriority: true },
+      coordinates: {
+        lat: 34.04211,
+        lng: -4.99994,
+        precision: "verified_landmark_point",
+      },
+    },
+    sourceRefs: [
+      "https://fesparkings.ma/",
+      "https://fliphtml5.com/bvhkj/uuiu/Plan_de_d%C3%A9placement_urbains_de_la_ville_de_F%C3%A8s/",
+      "https://mapcarta.com/fr/W174481108",
+    ],
+    verificationNote: "The municipality-linked parking operator and the Fès urban mobility plan identify Place Florence in the Ville Nouvelle network; OSM-backed mapping supplies the point.",
+    verifiedAt: "2026-09-18",
+  },
+
 ];
 
 const CANONICAL_DISTRICT_IDS = new Set(GEO_NEIGHBORHOODS.map((district) => district.id));
