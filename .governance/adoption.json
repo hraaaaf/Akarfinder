@@ -1,0 +1,12 @@
+{
+  "schema_version": "1.0",
+  "repository": "hraaaaf/Akarfinder",
+  "doctrine": {
+    "version": "1.0.0",
+    "commit_sha": "4c0ed295cc095fc5e7f9d0ddde3b1af95ac8dba9"
+  },
+  "adopted_at": "2026-09-18",
+  "local_governance": [],
+  "exceptions": [],
+  "notes": "Central doctrine is the repository baseline. No existing repository-local governance entrypoint was identified during the pre-adoption inspection; future project-specific rules may tighten but not silently weaken this pin."
+}
