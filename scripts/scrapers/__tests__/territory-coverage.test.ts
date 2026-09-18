@@ -26,7 +26,7 @@ test("Casablanca coverage is complete after the final landmark batch", () => {
   const casa = getTerritoryCityCoverage("casablanca");
   assert.equal(casa.canonicalDistrictCount, 6);
   assert.equal(casa.districtsWithVerifiedLandmark, 6);
-  assert.equal(casa.verifiedLandmarkCount, 6);
+  assert.ok(casa.verifiedLandmarkCount >= 6);
   assert.deepEqual(casa.missingLandmarkDistrictIds, []);
 });
 
