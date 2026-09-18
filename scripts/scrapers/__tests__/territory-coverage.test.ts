@@ -32,9 +32,10 @@ test("Casablanca coverage remains explicitly partial", () => {
   assert.ok(casa.missingLandmarkDistrictIds.includes("district_casablanca_racine"));
 });
 
-test("enrichment queue includes canonical cities with uncovered districts", () => {
+test("enrichment queue includes only canonical cities with uncovered districts", () => {
   const queue = getCitiesNeedingLandmarkEnrichment().map((entry) => entry.citySlug);
   assert.ok(queue.includes("casablanca"));
   assert.ok(queue.includes("tanger"));
-  assert.ok(queue.includes("agadir"));
+  assert.ok(queue.includes("rabat"));
+  assert.ok(!queue.includes("agadir"));
 });
