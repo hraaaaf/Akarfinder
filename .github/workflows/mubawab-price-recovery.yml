@@ -1,0 +1,62 @@
+name: Mubawab price recovery
+
+on:
+  push:
+    branches:
+      - feat/mubawab-full-enumeration
+    paths:
+      - '.github/workflows/mubawab-price-recovery.yml'
+      - 'scripts/acquisition/mubawab-price-recovery.mjs'
+      - 'scripts/acquisition/__tests__/mubawab-price-recovery.test.mjs'
+      - 'supabase/migrations/20260905194500_preserve_known_prices_from_openserp_null_regression.sql'
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --ignore-scripts
+      - name: Test recovery parser
+        run: node --test scripts/acquisition/__tests__/mubawab-price-recovery.test.mjs
+      - name: Restore certified Mubawab shard evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/part1 artifacts/part2 artifacts/part3
+          download_artifact() {
+            local id="$1" dest="$2"
+            curl --fail --silent --show-error --location \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/${{ github.repository }}/actions/artifacts/${id}/zip" \
+              -o "/tmp/${id}.zip"
+            unzip -q "/tmp/${id}.zip" -d "$dest"
+          }
+          download_artifact 9967776380 artifacts/part1
+          download_artifact 9968679191 artifacts/part2
+          download_artifact 9969651653 artifacts/part3
+          test -f artifacts/part1/report.json
+          test -f artifacts/part2/report.json
+          test -f artifacts/part3/report.json
+      - name: Recover current prices from robots-safe shards
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          MUBAWAB_REPORT_FILES: artifacts/part1/report.json,artifacts/part2/report.json,artifacts/part3/report.json
+          MUBAWAB_REQUEST_DELAY_MS: '2750'
+        run: node scripts/acquisition/mubawab-price-recovery.mjs
+      - name: Upload recovery proof
+        uses: actions/upload-artifact@v4
+        with:
+          name: mubawab-price-recovery
+          path: artifacts/mubawab-price-recovery/
+          retention-days: 14

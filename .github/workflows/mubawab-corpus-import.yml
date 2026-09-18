@@ -1,0 +1,84 @@
+name: Mubawab corpus import
+
+on:
+  push:
+    branches:
+      - feat/mubawab-full-enumeration
+    paths:
+      - '.github/workflows/mubawab-corpus-import.yml'
+      - 'scripts/acquisition/mubawab-corpus-import.mjs'
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Restore Mubawab evidence artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/mubawab-historical artifacts/mubawab-part1 artifacts/mubawab-part2 artifacts/mubawab-current
+          download_artifact() {
+            local id="$1" dest="$2"
+            curl --fail --silent --show-error --location \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/${{ github.repository }}/actions/artifacts/${id}/zip" \
+              -o "/tmp/${id}.zip"
+            unzip -q "/tmp/${id}.zip" -d "$dest"
+          }
+          download_artifact 9949834432 artifacts/mubawab-historical
+          download_artifact 9967776380 artifacts/mubawab-part1
+          download_artifact 9968679191 artifacts/mubawab-part2
+          download_artifact 9969651653 artifacts/mubawab-current
+          test -f artifacts/mubawab-historical/state.json
+          test -f artifacts/mubawab-current/listing-ids.txt
+
+      - name: Import deduplicated Mubawab corpus
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          MUBAWAB_HISTORICAL_STATE: artifacts/mubawab-historical/state.json
+          MUBAWAB_CURRENT_IDS: artifacts/mubawab-current/listing-ids.txt
+          MUBAWAB_URL_FILES: artifacts/mubawab-part1/listing-urls.txt,artifacts/mubawab-part2/listing-urls.txt,artifacts/mubawab-current/listing-urls.txt
+        run: |
+          test -n "$SUPABASE_URL"
+          test -n "$SUPABASE_SERVICE_ROLE_KEY"
+          node scripts/acquisition/mubawab-corpus-import.mjs
+
+      - name: Verify corpus counts
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          node - <<'NODE'
+          const base = process.env.SUPABASE_URL.replace(/\/$/, '');
+          const headers = {
+            apikey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+            authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
+          };
+          async function count(filter='') {
+            const r = await fetch(`${base}/rest/v1/mubawab_listing_corpus_v1?select=source_listing_id${filter}`, {
+              headers: { ...headers, prefer: 'count=exact', range: '0-0' },
+            });
+            if (!r.ok) throw new Error(`count failed ${r.status}: ${await r.text()}`);
+            return Number((r.headers.get('content-range') || '').split('/')[1]);
+          }
+          const total = await count();
+          const current = await count('&evidence_status=eq.current_verified');
+          const historical = await count('&evidence_status=eq.historical_unverified');
+          console.log({ total, current, historical });
+          if (total !== 37420 || current !== 18445 || historical !== 18975) {
+            throw new Error(`corpus count mismatch total=${total} current=${current} historical=${historical}`);
+          }
+          NODE

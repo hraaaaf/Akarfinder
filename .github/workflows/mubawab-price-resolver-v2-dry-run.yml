@@ -1,0 +1,48 @@
+name: Mubawab price resolver v2 dry-run
+
+on:
+  push:
+    branches: [feat/mubawab-full-enumeration]
+    paths:
+      - 'scripts/acquisition/mubawab-price-resolver-v2.mjs'
+      - 'scripts/acquisition/mubawab-price-resolver-v2.test.mjs'
+      - '.github/workflows/mubawab-price-resolver-v2-dry-run.yml'
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  dry-run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Run resolver unit tests
+        run: node scripts/acquisition/mubawab-price-resolver-v2.test.mjs
+      - name: Restore P2.3 certified card artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p artifacts/p2p3/lane0 artifacts/p2p3/lane1 artifacts/p2p3/lane2 artifacts/p2p3/lane3
+          gh run download 33990932869 -n mubawab-card-lane-0 -D artifacts/p2p3/lane0
+          gh run download 33990932869 -n mubawab-card-lane-1 -D artifacts/p2p3/lane1
+          gh run download 33990932869 -n mubawab-card-lane-2 -D artifacts/p2p3/lane2
+          gh run download 33990932869 -n mubawab-card-lane-3 -D artifacts/p2p3/lane3
+      - name: Resolve ambiguous primary card prices
+        run: |
+          node scripts/acquisition/mubawab-price-resolver-v2.mjs \
+            artifacts/p2p3/lane0/lane-0.json \
+            artifacts/p2p3/lane1/lane-1.json \
+            artifacts/p2p3/lane2/lane-2.json \
+            artifacts/p2p3/lane3/lane-3.json
+          node -e "const r=require('./artifacts/mubawab-price-resolver-v2/report.json'); if(r.targetAmbiguousIdCount!==952||r.resolvedCount!==944||r.unresolvedCount!==8) process.exit(2)"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mubawab-price-resolver-v2-dry-run
+          path: artifacts/mubawab-price-resolver-v2
+          retention-days: 90

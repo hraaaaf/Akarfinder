@@ -1,0 +1,42 @@
+name: Mubawab surface diagnostic
+
+on:
+  push:
+    branches: [feat/mubawab-full-enumeration]
+    paths:
+      - 'scripts/acquisition/mubawab-surface-diagnostic.mjs'
+      - '.github/workflows/mubawab-surface-diagnostic.yml'
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci --ignore-scripts
+      - name: Restore certified Mubawab shard evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p artifacts/shards
+          for id in 9967776380 9968679191 9969651653; do
+            gh api repos/${{ github.repository }}/actions/artifacts/$id/zip > artifacts/shards/$id.zip
+            unzip -q -o artifacts/shards/$id.zip -d artifacts/shards/$id
+          done
+          find artifacts/shards -name report.json -print | sort | paste -sd, - > artifacts/shards/report-files.txt
+      - name: Diagnose surface misses
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          MUBAWAB_REQUEST_DELAY_MS: '2750'
+        run: |
+          export MUBAWAB_REPORT_FILES="$(cat artifacts/shards/report-files.txt)"
+          node scripts/acquisition/mubawab-surface-diagnostic.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mubawab-surface-diagnostic
+          path: artifacts/mubawab-surface-diagnostic
+          retention-days: 14
