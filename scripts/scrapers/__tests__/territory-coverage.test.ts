@@ -13,23 +13,21 @@ test("coverage report exposes every canonical city without pretending completion
   assert.ok(report.every((entry) => entry.landmarkCoverageRatio >= 0 && entry.landmarkCoverageRatio <= 1));
 });
 
-test("six cities currently have at least one verified landmark", () => {
+test("eight cities currently have at least one verified landmark", () => {
   const covered = getTerritoryCoverageReport()
     .filter((entry) => entry.verifiedLandmarkCount > 0)
     .map((entry) => entry.citySlug)
     .sort();
 
-  assert.deepEqual(covered, ["agadir", "casablanca", "fes", "marrakech", "rabat", "tanger"].sort());
+  assert.deepEqual(covered, ["agadir", "casablanca", "fes", "kenitra", "marrakech", "mohammedia", "rabat", "tanger"].sort());
 });
 
 test("Casablanca coverage remains explicitly partial", () => {
   const casa = getTerritoryCityCoverage("casablanca");
   assert.equal(casa.canonicalDistrictCount, 6);
-  assert.equal(casa.districtsWithVerifiedLandmark, 3);
-  assert.equal(casa.verifiedLandmarkCount, 3);
-  assert.ok(!casa.missingLandmarkDistrictIds.includes("district_casablanca_maarif"));
-  assert.ok(!casa.missingLandmarkDistrictIds.includes("district_casablanca_ain_diab"));
-  assert.ok(casa.missingLandmarkDistrictIds.includes("district_casablanca_racine"));
+  assert.equal(casa.districtsWithVerifiedLandmark, 5);
+  assert.equal(casa.verifiedLandmarkCount, 5);
+  assert.deepEqual(casa.missingLandmarkDistrictIds, ["district_casablanca_racine"]);
 });
 
 test("enrichment queue includes only canonical cities with uncovered districts", () => {
@@ -56,4 +54,17 @@ test("Rabat, Tanger and Fes are fully covered after certified batch three", () =
   assert.equal(fes.canonicalDistrictCount, 2);
   assert.equal(fes.districtsWithVerifiedLandmark, 2);
   assert.deepEqual(fes.missingLandmarkDistrictIds, []);
+});
+
+test("batch four leaves only Racine and Route de l'Ourika uncovered", () => {
+  const missing = getTerritoryCoverageReport()
+    .flatMap((entry) => entry.missingLandmarkDistrictIds)
+    .sort();
+
+  assert.deepEqual(missing, [
+    "district_casablanca_racine",
+    "district_marrakech_ourika",
+  ]);
+  assert.deepEqual(getTerritoryCityCoverage("kenitra").missingLandmarkDistrictIds, []);
+  assert.deepEqual(getTerritoryCityCoverage("mohammedia").missingLandmarkDistrictIds, []);
 });

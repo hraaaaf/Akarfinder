@@ -533,6 +533,131 @@ export const VERIFIED_LANDMARKS: readonly VerifiedLandmarkEntry[] = [
     verifiedAt: "2026-09-18",
   },
 
+  {
+    entity: {
+      id: "landmark_casablanca_bourgogne_casa_bourgogne_post",
+      type: "landmark",
+      citySlug: "casablanca",
+      districtSlug: "bourgogne",
+      landmarkSlug: "casa-bourgogne-poste",
+      canonicalName: "Poste Casa Bourgogne",
+      aliases: ["Casa Bourgogne", "Barid Al-Maghrib Poste Casa Bourgogne"],
+      category: "civic",
+      parentId: "district_casablanca_bourgogne",
+      importance: {
+        score: 82,
+        tier: "regional",
+        basis: ["orientation_value", "product_priority"],
+      },
+      visibility: { minZoom: 14.0, retainPriority: false },
+      coordinates: {
+        lat: 33.59505,
+        lng: -7.63734,
+        precision: "verified_landmark_point",
+      },
+    },
+    sourceRefs: [
+      "https://www.city-info.ma/casablanca/fr/org/3001320205/3181/",
+      "https://www.telecontact.ma/barid-al-maghrib-poste-casa-bourgogne/poste/casablanca/2121435",
+      "https://mapcarta.com/fr/N2907752040",
+    ],
+    verificationNote: "Two Moroccan directory sources identify the Barid Al-Maghrib branch explicitly in Quartier Bourgogne; OSM-backed mapping supplies the point.",
+    verifiedAt: "2026-09-18",
+  },
+  {
+    entity: {
+      id: "landmark_casablanca_bouskoura_forest",
+      type: "landmark",
+      citySlug: "casablanca",
+      districtSlug: "bouskoura",
+      landmarkSlug: "foret-de-bouskoura",
+      canonicalName: "Forêt de Bouskoura",
+      aliases: ["Bouskoura Forest"],
+      category: "park",
+      parentId: "district_casablanca_bouskoura",
+      importance: {
+        score: 96,
+        tier: "flagship",
+        basis: ["product_priority", "orientation_value", "urban_prominence"],
+      },
+      visibility: { minZoom: 13.5, retainPriority: true },
+      coordinates: {
+        lat: 33.459,
+        lng: -7.5918,
+        precision: "verified_landmark_point",
+      },
+    },
+    sourceRefs: [
+      "https://visitcasablanca.ma/en/pois/foret-bouskoura/",
+      "https://wecasablanca.ma/en/discover/visit-casablanca",
+      "https://mapcarta.com/fr/W35157794",
+    ],
+    verificationNote: "Casablanca tourism sources identify the Bouskoura forest as the major peri-urban Bouskoura landmark; OSM-backed mapping supplies the forest point.",
+    verifiedAt: "2026-09-18",
+  },
+  {
+    entity: {
+      id: "landmark_kenitra_centre_ville_kenitra_center",
+      type: "landmark",
+      citySlug: "kenitra",
+      districtSlug: "centre-ville",
+      landmarkSlug: "kenitra-center",
+      canonicalName: "Kénitra Center",
+      aliases: ["Kenitra Center Mall"],
+      category: "retail",
+      parentId: "district_kenitra_centre_ville",
+      importance: {
+        score: 92,
+        tier: "major",
+        basis: ["product_priority", "orientation_value"],
+      },
+      visibility: { minZoom: 13.7, retainPriority: true },
+      coordinates: {
+        lat: 34.26698,
+        lng: -6.56446,
+        precision: "verified_landmark_point",
+      },
+    },
+    sourceRefs: [
+      "https://www.visitrabat.com/lieux/kenitra-center/",
+      "https://mapcarta.com/fr/W1280364121",
+      "https://www.hespress.com/%D8%AD%D8%A7%D8%AA%D9%85-%D8%B9%D9%85%D9%88%D8%B1-%D9%8A%D8%AD%D9%8A%D9%8A-%D8%AD%D9%81%D9%84-%D8%A7%D9%81%D8%AA%D8%AA%D8%A7%D8%AD-%D8%A7%D9%84%D9%82%D9%86%D9%8A%D8%B7%D8%B1%D8%A9-%D8%B3%D8%A7-545046.html",
+    ],
+    verificationNote: "Visit Rabat and independent reporting place Kénitra Center in the heart of Kénitra; OSM-backed mapping supplies the point.",
+    verifiedAt: "2026-09-18",
+  },
+  {
+    entity: {
+      id: "landmark_mohammedia_centre_parc_villes_jumelees",
+      type: "landmark",
+      citySlug: "mohammedia",
+      districtSlug: "centre",
+      landmarkSlug: "parc-des-villes-jumelees",
+      canonicalName: "Parc des Villes Jumelées",
+      aliases: ["Parc de Mohammedia"],
+      category: "park",
+      parentId: "district_mohammedia_centre",
+      importance: {
+        score: 92,
+        tier: "major",
+        basis: ["product_priority", "orientation_value"],
+      },
+      visibility: { minZoom: 13.7, retainPriority: true },
+      coordinates: {
+        lat: 33.70575,
+        lng: -7.39766,
+        precision: "verified_landmark_point",
+      },
+    },
+    sourceRefs: [
+      "https://letouriste.ma/mohammedia-la-cite-des-fleurs-et-des-sports-elegants/",
+      "https://aujourdhui.ma/culture/premiere-edition-de-mohammediart-les-acteurs-culturels-et-associatifs-investissent-lespace-vert-68755",
+      "https://mapcarta.com/fr/W571799684",
+    ],
+    verificationNote: "Independent Moroccan sources identify Parc des Villes Jumelées as a central Mohammedia landmark; OSM-backed mapping supplies the point.",
+    verifiedAt: "2026-09-18",
+  },
+
 ];
 
 const CANONICAL_DISTRICT_IDS = new Set(GEO_NEIGHBORHOODS.map((district) => district.id));
