@@ -20,6 +20,9 @@ import { feature as topojsonFeature } from "topojson-client";
 import type { Feature, FeatureCollection, Geometry } from "geojson";
 import type { Topology, Objects } from "topojson-specification";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { CanonicalCitySlug } from "@/lib/geo/geo-entity-registry";
+import { selectNationalCityVisibility } from "@/lib/geo/territory-national-visibility";
+import { selectStableTerritoryLabels } from "@/lib/geo/territory-label-stability";
 
 interface QuartierStats {
   priceRepere?: number;
@@ -64,6 +67,7 @@ type TooltipState = { title: string; subtitle?: string; x: number; y: number } |
 
 const MAP_WIDTH = 980;
 const MAP_HEIGHT = 680;
+const NATIONAL_ZOOM_ANCHOR: [number, number] = [MAP_WIDTH * 0.53, MAP_HEIGHT * 0.05];
 const NAVY = "#071B33";
 const TOPOLOGY_URLS = [
   "https://media.githubusercontent.com/media/wmgeolab/geoBoundaries/9469f09592ced973a3448cf66b6100b741b64c0d/releaseData/gbOpen/MAR/ADM1/geoBoundaries-MAR-ADM1.topojson",
@@ -320,6 +324,7 @@ export function PremiumInteractiveMap() {
   const [camera, setCamera] = useState<Camera>({ x: 0, y: 0, k: 1 });
   const svgRef = useRef<SVGSVGElement | null>(null);
   const zoomBehaviorRef = useRef<ZoomBehavior<SVGSVGElement, unknown> | null>(null);
+  const previousNationalCityLabelsRef = useRef<Set<string>>(new Set());
 
   const selectedRegion = useMemo(
     () => regions.find((region) => region.slug === selectedRegionSlug) ?? null,
@@ -333,6 +338,18 @@ export function PremiumInteractiveMap() {
     () => selectedCity?.quartiers.find((quartier) => quartier.slug === selectedQuartierSlug) ?? null,
     [selectedCity, selectedQuartierSlug],
   );
+
+  const mappedCities = useMemo(
+    () => regions.flatMap((region) => region.cities.map((city) => ({ city, regionSlug: region.slug }))),
+    [regions],
+  );
+
+  const nationalTerritoryZoom = 4.2 + Math.max(0, camera.k - 1) * 6;
+  const nationalPriority = useMemo(
+    () => selectNationalCityVisibility({ zoom: nationalTerritoryZoom, maxLabels: 19 }),
+    [nationalTerritoryZoom],
+  );
+
 
   useEffect(() => {
     const controller = new AbortController();
@@ -379,8 +396,65 @@ export function PremiumInteractiveMap() {
 
   const pathGenerator = useMemo(() => (projection ? geoPath(projection) : null), [projection]);
 
+  const nationalCityRenderItems = useMemo(() => {
+    if (!projection) return [];
+    const priorityBySlug = new Map(nationalPriority.map((item) => [item.citySlug, item]));
+    const candidateMeta = mappedCities.flatMap(({ city, regionSlug }) => {
+      const priority = priorityBySlug.get(city.slug as CanonicalCitySlug);
+      const point = projection(city.coordinates);
+      if (!priority || !point) return [];
+
+      const labelWidth = Math.max(68, city.name.length * 7 + 30);
+      const direction = city.slug === "casablanca" || city.slug === "agadir" || city.slug === "rabat" || city.slug === "kenitra" ? -1 : 1;
+      const labelXOffset = city.slug === "kenitra" ? -34 : 0;
+      const labelYOffset = city.slug === "rabat" ? -24 : city.slug === "kenitra" ? -52 : city.slug === "mohammedia" ? 28 : city.slug === "tanger" ? 34 : 0;
+      const screenX = camera.x + point[0] * camera.k;
+      const screenY = camera.y + point[1] * camera.k;
+      const labelCenterX = screenX + direction * (labelWidth / 2 + 17) + labelXOffset;
+
+      return [{
+        city,
+        regionSlug,
+        priority,
+        point,
+        labelWidth,
+        direction,
+        labelXOffset,
+        labelYOffset,
+        collision: {
+          id: city.slug,
+          x: labelCenterX,
+          y: screenY + labelYOffset,
+          width: labelWidth,
+          height: 28,
+          visibilityScore: priority.visibilityScore,
+          retainPriority: priority.retained,
+        },
+      }];
+    });
+
+    const capacity = camera.k < 1.1 ? 6 : camera.k < 1.2 ? 7 : 8;
+    const selected = selectStableTerritoryLabels({
+      candidates: candidateMeta.map((item) => item.collision),
+      maxLabels: capacity,
+      previousVisibleIds: previousNationalCityLabelsRef.current,
+      paddingPx: 4,
+      hysteresisBonus: 4,
+    });
+    const selectedIds = new Set(selected.map((item) => item.id));
+
+    return candidateMeta.filter((item) => selectedIds.has(item.city.slug));
+  }, [camera.k, camera.x, camera.y, mappedCities, nationalPriority, projection]);
+
   useEffect(() => {
-    if (!svgRef.current) return;
+    if (level !== "national") return;
+    previousNationalCityLabelsRef.current = new Set(
+      nationalCityRenderItems.map((item) => item.city.slug),
+    );
+  }, [level, nationalCityRenderItems]);
+
+  useEffect(() => {
+    if (!projection || !svgRef.current) return;
     const svg = select(svgRef.current);
     const behavior = zoom<SVGSVGElement, unknown>()
       .scaleExtent([1, 7.4])
@@ -395,7 +469,7 @@ export function PremiumInteractiveMap() {
       svg.on(".zoom", null);
       zoomBehaviorRef.current = null;
     };
-  }, []);
+  }, [projection]);
 
   const applyCamera = useCallback((next: ZoomTransform) => {
     if (!svgRef.current || !zoomBehaviorRef.current) return;
@@ -441,12 +515,14 @@ export function PremiumInteractiveMap() {
   }, [focusRegion]);
 
   const selectCity = useCallback((city: City) => {
+    const parentRegion = regions.find((region) => region.cities.some((candidate) => candidate.slug === city.slug));
     setLevel("city");
+    setSelectedRegionSlug(parentRegion?.slug ?? null);
     setSelectedCitySlug(city.slug);
     setSelectedQuartierSlug(city.quartiers[0]?.slug ?? null);
     setTooltip(null);
     focusCity(city);
-  }, [focusCity]);
+  }, [focusCity, regions]);
 
   const backToRegion = useCallback(() => {
     if (!selectedRegion) return goNational();
@@ -458,7 +534,11 @@ export function PremiumInteractiveMap() {
 
   const zoomBy = useCallback((factor: number) => {
     if (!svgRef.current || !zoomBehaviorRef.current) return;
-    select(svgRef.current).call(zoomBehaviorRef.current.scaleBy, factor);
+    select(svgRef.current).call(
+      zoomBehaviorRef.current.scaleBy,
+      factor,
+      NATIONAL_ZOOM_ANCHOR,
+    );
   }, []);
 
   const displayRegionFeatures = useMemo(
@@ -487,6 +567,8 @@ export function PremiumInteractiveMap() {
       data-map-level={level}
       data-topology-state={topologyState}
       data-db-mode="mock-only"
+      data-national-territory-zoom={nationalTerritoryZoom.toFixed(2)}
+      data-national-city-label-count={level === "national" ? nationalCityRenderItems.length : 0}
     >
       <div className="mx-auto max-w-[1600px]">
         <header className="mb-4 flex flex-col gap-3 md:mb-5 md:flex-row md:items-end md:justify-between">
@@ -557,11 +639,7 @@ export function PremiumInteractiveMap() {
                 <defs>
                   <filter id="region-shadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="5" stdDeviation="7" floodColor="#071B33" floodOpacity="0.18" /></filter>
                 </defs>
-                <motion.g
-                  animate={{ x: camera.x, y: camera.y, scale: camera.k }}
-                  transition={{ type: "spring", stiffness: 155, damping: 26, mass: 0.72 }}
-                  style={{ transformOrigin: "0 0" }}
-                >
+                <g transform={`translate(${camera.x} ${camera.y}) scale(${camera.k})`}>
                   {displayRegionFeatures.map(({ regionFeature, slug }) => {
                     const region = regions.find((item) => item.slug === slug);
                     if (!region) return null;
@@ -603,6 +681,60 @@ export function PremiumInteractiveMap() {
                     );
                   })}
 
+                  {level === "national" && nationalCityRenderItems.map(({ city, point, labelWidth, direction, labelXOffset, labelYOffset, priority }) => {
+                    const baseLabelX = direction > 0 ? 13 : -(labelWidth + 13);
+                    const baseTextX = direction > 0 ? 24 : -(labelWidth + 2);
+                    const labelX = (baseLabelX + labelXOffset) / camera.k;
+                    const textX = (baseTextX + labelXOffset) / camera.k;
+                    const labelY = labelYOffset / camera.k;
+                    return (
+                      <g
+                        key={city.slug}
+                        transform={`translate(${point[0]} ${point[1]})`}
+                        className="cursor-pointer"
+                        role="button"
+                        tabIndex={0}
+                        aria-label={`Explorer ${city.name}`}
+                        data-city-slug={city.slug}
+                        data-national-city-label={city.slug}
+                        data-national-city-importance={priority.importanceScore}
+                        onClick={(event) => { event.stopPropagation(); selectCity(city); }}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault();
+                            selectCity(city);
+                          }
+                        }}
+                        onPointerMove={(event) => setTooltip({ title: city.name, subtitle: "Ville prioritaire", x: event.clientX, y: event.clientY })}
+                        onPointerLeave={() => setTooltip(null)}
+                      >
+                        <circle r={12 / camera.k} fill="rgba(255,255,255,0.96)" stroke={NAVY} strokeWidth={2 / camera.k} vectorEffect="non-scaling-stroke" />
+                        <circle r={4.4 / camera.k} fill={NAVY} />
+                        <rect
+                          x={labelX}
+                          y={labelY - 13 / camera.k}
+                          width={labelWidth / camera.k}
+                          height={26 / camera.k}
+                          rx={13 / camera.k}
+                          fill="rgba(255,255,255,0.96)"
+                          stroke="rgba(7,27,51,0.22)"
+                          strokeWidth={1 / camera.k}
+                          vectorEffect="non-scaling-stroke"
+                        />
+                        <text
+                          x={textX}
+                          y={labelY + 4 / camera.k}
+                          fill={NAVY}
+                          fontSize={11 / camera.k}
+                          fontWeight={900}
+                          pointerEvents="none"
+                        >
+                          {city.name}
+                        </text>
+                      </g>
+                    );
+                  })}
+
                   {level !== "national" && selectedRegion && selectedRegion.cities.map((city) => {
                     const point = projection(city.coordinates);
                     if (!point) return null;
@@ -630,7 +762,7 @@ export function PremiumInteractiveMap() {
                       </g>
                     );
                   })}
-                </motion.g>
+                </g>
               </svg>
             ) : null}
 

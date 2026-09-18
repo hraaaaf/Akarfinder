@@ -1,0 +1,77 @@
+name: Territory Dictionary Visual Certification
+
+on:
+  push:
+    branches:
+      - feat/vivre-ici-territory-dictionary
+    paths:
+      - "components/map/PremiumInteractiveMap.tsx"
+      - "lib/geo/territory-*.ts"
+      - "scripts/vivre-ici-after-capture.mjs"
+      - "scripts/scrapers/__tests__/territory-*.test.ts"
+      - ".github/workflows/territory-dictionary-visual.yml"
+      - "package.json"
+
+permissions:
+  contents: read
+
+env:
+  NEXT_PUBLIC_SEARCH_GATEWAY_ENABLED: "false"
+
+jobs:
+  certify-territory-visual:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci
+      - name: Territory contracts
+        run: npm run test:territory-dictionary
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Capture national priority AFTER
+        run: node scripts/vivre-ici-after-capture.mjs
+      - name: Verify territory proof
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const s = JSON.parse(fs.readFileSync('artifacts/vivre-ici-after/summary.json','utf8'));
+          const premium = s.results.filter((r) => r.scenario === 'premium-national');
+          if (premium.length !== 4) throw new Error(`expected 4 premium proofs, got ${premium.length}`);
+          for (const r of premium) {
+            for (const slug of ['casablanca','rabat','marrakech','tanger','agadir','fes']) {
+              if (!r.initialCitySlugs.includes(slug)) throw new Error(`missing flagship ${slug} on ${r.viewport.name}`);
+            }
+            if (r.zoomedCityLabelCount <= r.initialCityLabelCount) throw new Error(`no progressive reveal on ${r.viewport.name}`);
+            if (r.zoomedVisibleRegionCount < 1) throw new Error(`zoomed map escaped viewport on ${r.viewport.name}`);
+            if (r.zoomedCityLabelOverlapCount !== 0) throw new Error(`zoomed city labels overlap on ${r.viewport.name}: ${r.zoomedCityLabelOverlapCount}`);
+            if (!r.zoomedCitySlugs.includes('kenitra') || !r.zoomedCitySlugs.includes('mohammedia')) {
+              throw new Error(`secondary city reveal incomplete on ${r.viewport.name}: ${r.zoomedCitySlugs.join(',')}`);
+            }
+            if (!r.zoomedVisibleCitySlugs.includes('kenitra') || !r.zoomedVisibleCitySlugs.includes('mohammedia')) {
+              throw new Error(`secondary city reveal not visible on ${r.viewport.name}: ${r.zoomedVisibleCitySlugs.join(',')}`);
+            }
+            if (r.zoomedVisibleCitySlugs.length !== r.zoomedCityLabelCount) {
+              throw new Error(`zoomed city pill clipped by map chrome on ${r.viewport.name}: ${r.zoomedVisibleCitySlugs.length}/${r.zoomedCityLabelCount}`);
+            }
+            if (r.horizontalOverflow > 1 || r.supabaseRequestCount !== 0 || r.pageErrors.length) {
+              throw new Error(`unsafe visual proof on ${r.viewport.name}`);
+            }
+          }
+          console.log(JSON.stringify(premium, null, 2));
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: territory-dictionary-after
+          path: artifacts/vivre-ici-after/
+          if-no-files-found: error
+          retention-days: 30

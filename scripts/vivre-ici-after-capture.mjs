@@ -70,8 +70,79 @@ try {
     const headerVisible = await header.isVisible();
     const logoVisible = (await header.locator('img[alt="AkarFinder"]:visible').count()) > 0;
     const headerBox = await header.boundingBox();
+    const initialCitySlugs = await page.locator('[data-national-city-label]').evaluateAll((nodes) =>
+      nodes.map((node) => node.getAttribute('data-national-city-label')).filter(Boolean)
+    );
+    const initialTerritoryZoom = Number(await premium.getAttribute('data-national-territory-zoom') ?? '0');
+
     const premiumFile = path.join(outDir, `map-after-premium-national-${vp.name}.png`);
     await page.screenshot({ path: premiumFile, fullPage: false, animations: 'disabled' });
+
+    const zoomIn = page.locator('[data-premium-map] section[aria-label="Carte interactive du Maroc"] button[aria-label="Zoomer"]').first();
+    for (let index = 0; index < 1; index += 1) {
+      await zoomIn.click();
+      await page.waitForTimeout(220);
+    }
+    await page.waitForTimeout(350);
+    const zoomedCitySlugs = await page.locator('[data-national-city-label]').evaluateAll((nodes) =>
+      nodes.map((node) => node.getAttribute('data-national-city-label')).filter(Boolean)
+    );
+    const zoomedVisibleCitySlugs = await page.locator('[data-national-city-label]').evaluateAll((nodes) => {
+      const section = document.querySelector('[data-premium-map] section[aria-label="Carte interactive du Maroc"]');
+      const sectionRect = section?.getBoundingClientRect();
+      const safeTop = (sectionRect?.top ?? 0) + 58;
+      const safeLeft = (sectionRect?.left ?? 0) + 4;
+      const safeRight = (sectionRect?.right ?? window.innerWidth) - 4;
+      const safeBottom = (sectionRect?.bottom ?? window.innerHeight) - 4;
+      return nodes
+        .filter((node) => {
+          const rect = node.querySelector('rect')?.getBoundingClientRect();
+          const style = getComputedStyle(node);
+          return Boolean(rect)
+            && rect.width > 2
+            && rect.height > 2
+            && rect.left >= safeLeft
+            && rect.top >= safeTop
+            && rect.right <= safeRight
+            && rect.bottom <= safeBottom
+            && style.visibility !== 'hidden'
+            && style.display !== 'none';
+        })
+        .map((node) => node.getAttribute('data-national-city-label'))
+        .filter(Boolean);
+    });
+    const zoomedTerritoryZoom = Number(await premium.getAttribute('data-national-territory-zoom') ?? '0');
+    const zoomedCityLabelOverlapCount = await page.locator('[data-national-city-label]').evaluateAll((nodes) => {
+      const rects = nodes
+        .map((node) => node.querySelector('rect')?.getBoundingClientRect())
+        .filter(Boolean)
+        .map((rect) => ({ left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom }));
+      let overlaps = 0;
+      for (let i = 0; i < rects.length; i += 1) {
+        for (let j = i + 1; j < rects.length; j += 1) {
+          const a = rects[i];
+          const b = rects[j];
+          if (!(a.right <= b.left || a.left >= b.right || a.bottom <= b.top || a.top >= b.bottom)) overlaps += 1;
+        }
+      }
+      return overlaps;
+    });
+    const zoomedVisibleRegionCount = await page.locator('[data-region-slug]').evaluateAll((nodes) =>
+      nodes.filter((node) => {
+        const rect = node.getBoundingClientRect();
+        const style = getComputedStyle(node);
+        return rect.width > 2
+          && rect.height > 2
+          && rect.right > 0
+          && rect.bottom > 0
+          && rect.left < window.innerWidth
+          && rect.top < window.innerHeight
+          && style.visibility !== 'hidden'
+          && style.display !== 'none';
+      }).length
+    );
+    const premiumZoomedFile = path.join(outDir, `map-after-premium-national-zoomed-${vp.name}.png`);
+    await page.screenshot({ path: premiumZoomedFile, fullPage: false, animations: 'disabled' });
 
     results.push({
       scenario: 'premium-national',
@@ -82,6 +153,17 @@ try {
       dbMode: await premium.getAttribute('data-db-mode'),
       regionCount: await page.locator('[data-region-slug]').count(),
       regionListCount: await page.locator('[data-region-list-slug]').count(),
+      initialCityLabelCount: initialCitySlugs.length,
+      initialCitySlugs,
+      initialTerritoryZoom,
+      zoomedCityLabelCount: zoomedCitySlugs.length,
+      zoomedCitySlugs,
+      zoomedVisibleCitySlugs,
+      zoomedTerritoryZoom,
+      zoomedCityLabelOverlapCount,
+      zoomedVisibleRegionCount,
+      zoomedScreenshot: premiumZoomedFile,
+      zoomedScreenshotBytes: (await fs.stat(premiumZoomedFile)).size,
       headerVisible,
       logoVisible,
       headerHeight: headerBox?.height ?? 0,
@@ -181,6 +263,18 @@ try {
     || r.dbMode !== 'mock-only'
     || r.regionCount !== 12
     || r.regionListCount !== 12
+    || r.initialCityLabelCount < 4
+    || !['casablanca','rabat','marrakech','tanger','agadir','fes'].every((slug) => r.initialCitySlugs.includes(slug))
+    || r.zoomedCityLabelCount <= r.initialCityLabelCount
+    || !r.zoomedCitySlugs.includes('kenitra')
+    || !r.zoomedCitySlugs.includes('mohammedia')
+    || !r.zoomedVisibleCitySlugs.includes('kenitra')
+    || !r.zoomedVisibleCitySlugs.includes('mohammedia')
+    || r.zoomedVisibleCitySlugs.length !== r.zoomedCityLabelCount
+    || r.zoomedTerritoryZoom <= r.initialTerritoryZoom
+    || r.zoomedVisibleRegionCount < 1
+    || r.zoomedCityLabelOverlapCount !== 0
+    || r.zoomedScreenshotBytes < 30000
     || !r.headerVisible
     || !r.logoVisible
     || r.headerHeight <= 0

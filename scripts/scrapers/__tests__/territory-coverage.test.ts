@@ -1,0 +1,64 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+
+import {
+  getCitiesNeedingLandmarkEnrichment,
+  getTerritoryCityCoverage,
+  getTerritoryCoverageReport,
+} from "../../../lib/geo/territory-coverage";
+
+test("coverage report exposes every canonical city without pretending completion", () => {
+  const report = getTerritoryCoverageReport();
+  assert.equal(report.length, 19);
+  assert.ok(report.every((entry) => entry.landmarkCoverageRatio >= 0 && entry.landmarkCoverageRatio <= 1));
+});
+
+test("eight cities currently have at least one verified landmark", () => {
+  const covered = getTerritoryCoverageReport()
+    .filter((entry) => entry.verifiedLandmarkCount > 0)
+    .map((entry) => entry.citySlug)
+    .sort();
+
+  assert.deepEqual(covered, ["agadir", "casablanca", "fes", "kenitra", "marrakech", "mohammedia", "rabat", "tanger"].sort());
+});
+
+test("Casablanca coverage is complete after the final landmark batch", () => {
+  const casa = getTerritoryCityCoverage("casablanca");
+  assert.equal(casa.canonicalDistrictCount, 6);
+  assert.equal(casa.districtsWithVerifiedLandmark, 6);
+  assert.equal(casa.verifiedLandmarkCount, 6);
+  assert.deepEqual(casa.missingLandmarkDistrictIds, []);
+});
+
+test("enrichment queue is empty when all canonical districts are covered", () => {
+  assert.deepEqual(getCitiesNeedingLandmarkEnrichment(), []);
+});
+
+test("Rabat, Tanger and Fes are fully covered after certified batch three", () => {
+  const rabat = getTerritoryCityCoverage("rabat");
+  assert.equal(rabat.canonicalDistrictCount, 5);
+  assert.equal(rabat.districtsWithVerifiedLandmark, 5);
+  assert.deepEqual(rabat.missingLandmarkDistrictIds, []);
+
+  const tanger = getTerritoryCityCoverage("tanger");
+  assert.equal(tanger.canonicalDistrictCount, 3);
+  assert.equal(tanger.districtsWithVerifiedLandmark, 3);
+  assert.deepEqual(tanger.missingLandmarkDistrictIds, []);
+
+  const fes = getTerritoryCityCoverage("fes");
+  assert.equal(fes.canonicalDistrictCount, 2);
+  assert.equal(fes.districtsWithVerifiedLandmark, 2);
+  assert.deepEqual(fes.missingLandmarkDistrictIds, []);
+});
+
+test("final landmark batch covers all canonical districts", () => {
+  const missing = getTerritoryCoverageReport()
+    .flatMap((entry) => entry.missingLandmarkDistrictIds)
+    .sort();
+
+  assert.deepEqual(missing, []);
+  assert.equal(
+    getTerritoryCoverageReport().reduce((total, entry) => total + entry.districtsWithVerifiedLandmark, 0),
+    23,
+  );
+});

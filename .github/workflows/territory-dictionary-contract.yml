@@ -1,0 +1,46 @@
+name: Territory Dictionary Contract
+
+on:
+  push:
+    branches:
+      - feat/vivre-ici-territory-dictionary
+    paths:
+      - "lib/geo/territory-dictionary.ts"
+      - "lib/geo/territory-city-priorities.ts"
+      - "lib/geo/territory-district-priorities.ts"
+      - "lib/geo/territory-landmark-registry.ts"
+      - "lib/geo/territory-national-visibility.ts"
+      - "lib/geo/territory-local-visibility.ts"
+      - "lib/geo/territory-label-stability.ts"
+      - "lib/geo/territory-catalog.ts"
+      - "lib/geo/territory-coverage.ts"
+      - "scripts/scrapers/__tests__/territory-dictionary-contract.test.ts"
+      - "scripts/scrapers/__tests__/territory-city-priorities.test.ts"
+      - "scripts/scrapers/__tests__/territory-district-priorities.test.ts"
+      - "scripts/scrapers/__tests__/territory-landmark-registry.test.ts"
+      - "scripts/scrapers/__tests__/territory-national-visibility.test.ts"
+      - "scripts/scrapers/__tests__/territory-local-visibility.test.ts"
+      - "scripts/scrapers/__tests__/territory-label-stability.test.ts"
+      - "scripts/scrapers/__tests__/territory-catalog.test.ts"
+      - "scripts/scrapers/__tests__/territory-coverage.test.ts"
+      - "scripts/scrapers/__tests__/territory-map-integration.test.ts"
+      - "package.json"
+      - "components/map/PremiumInteractiveMap.tsx"
+      - ".github/workflows/territory-dictionary-contract.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  territory-dictionary-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - run: npm run test:territory-dictionary
+      - run: npx tsc --noEmit

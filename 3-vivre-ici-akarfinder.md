@@ -1,19 +1,19 @@
 # 3 — Vivre Ici AkarFinder
 
-**Statut : ACTIVE — INTÉGRATION CURRENT MAIN CERTIFIÉE / UX L9 PROUVÉE / N3 PROUVÉ / LIVE DATA BLOQUÉ PAR SUPABASE / HUMAN MERGE GATE**  
-**Dernière mise à jour : 2026-09-17**  
+**Statut : ACTIVE — PR #1037 MERGÉE / TERRITORY DICTIONARY PHASE ACTIVE / UX L9 PROUVÉE / N3 PROUVÉ / LIVE DATA BLOQUÉ PAR SUPABASE**  
+**Dernière mise à jour : 2026-09-18**  
 **Repo : `hraaaaf/Akarfinder`**  
-**Branche active : `integration/vivre-ici-main-2026-09-17`**  
-**PR d’intégration : `#1037` DRAFT / `mergeable=true` / NON MERGÉE**  
+**Branche active : `feat/vivre-ici-territory-dictionary`**  
+**PR d’intégration : `#1037` MERGÉE dans `main`**  
 **PR historique source : `#1025` OPEN / `mergeable=false` / `72` fichiers / `247` commits — ne pas merger directement**  
-**Main de base vérifié : `8578f7a492980dcac35e7a094383c70411ca44c5`**  
+**Main courant de reprise : `256fb9a00a22f240ba7684a99dff3a5619b6ad56` — merge commit PR #1037**  
 **HEAD source historique : `75d28ef7652bda9a59b0ed1ac5a0a81d418d0aee`**  
 **HEAD produit source L9 certifié : `f1f4d35ecdd0a5a6b83df1dc945e2d291e9b2533`**  
 **Commit transplant produit : `0c84954d1c2ce53938677e9cb2b89e9241c52260`**  
 **HEAD exact de certification intégration : `f5d5bce0edac47021953cd7cb091fc60fde52cdd`**  
 **Commit restauration triggers / arbre produit final : `33e30f72b6c26e02a60f460d6fad73856c717599`**  
 **Arbre produit final : `b04bc649746b5b2a3733e058af0ca59df8dc2930`**  
-**Avancement canonique : `92 %` — conservé tant que Supabase live + merge gate restent ouverts.**  
+**Phase intégration historique : closeout merge atteint. Territory Dictionary : `53 / 53 pts` prouvés.**  
 **Vercel : aucun déploiement sans autorisation explicite d’Achraf.**
 
 ---
@@ -34,7 +34,7 @@ Réintégrer Vivre Ici `/map` sur le `main` courant sans régresser le shell/nav
 - arrêt au human merge gate.
 
 ### État
-**Intégration/UI : PROUVÉE. PR #1037 : DRAFT, merge non autorisé. Live data : NON CERTIFIABLE tant que Supabase reste restreint.**
+**Intégration/UI : PROUVÉE et mergée via PR #1037. Nouvelle phase active : lecture territoriale progressive Maroc → ville → quartier → repère. Live data : NON CERTIFIABLE tant que Supabase reste restreint.**
 
 ---
 
@@ -161,17 +161,121 @@ La lane synthétique et les preuves locales/intégration ne remplacent pas la v�
 
 ## 9. GATES OUVERTS
 
-1. **PR #1037 DRAFT / human merge gate** — merge explicitement non autorisé à ce stade.
-2. **Supabase egress** — live data non certifiable.
-3. **Provider imagerie** — licence/support/attribution prod à verrouiller.
-4. **Sécurité npm/Next** — lot séparé ; pas de `npm audit fix --force` aveugle.
-5. **Vercel** — aucun deployment sans autorisation explicite.
+1. **Supabase egress** — live data non certifiable.
+2. **Provider imagerie** — licence/support/attribution prod à verrouiller.
+3. **Sécurité npm/Next** — lot séparé ; pas de `npm audit fix --force` aveugle.
+4. **Vercel** — aucun deployment sans autorisation explicite.
+5. **Territory Dictionary** — nouvelle phase active ; données de priorité éditoriale séparées de la vérité géographique canonique.
 
-PR #1025 reste historique/source, dirty et non mergeable ; ne pas l’utiliser comme véhicule de merge.
+PR #1025 reste historique/source. PR #1037 est mergée ; merge commit `256fb9a00a22f240ba7684a99dff3a5619b6ad56`.
 
 ---
 
-## 10. ROADMAP / CLOSEOUT
+## 10. ROADMAP — TERRITORY DICTIONARY / PROGRESSIVE MAP EXPLORATION
+
+### Goal global
+
+Construire un moteur déterministe de lecture territoriale qui hiérarchise ce que la carte montre selon le niveau de zoom :
+
+`Maroc → villes → quartiers → repères`.
+
+Une entité plus importante apparaît plus tôt et garde la priorité d'affichage sur les entités moins importantes. À mesure que l'utilisateur zoome, la densité augmente progressivement sans perdre les villes/quartiers/repères phares.
+
+### Règle d'architecture
+
+La vérité d'identité reste dans les registres géographiques existants (`geo-entity-registry.ts`, dictionnaires/centroïdes validés). La nouvelle couche ajoute uniquement :
+
+- importance éditoriale ;
+- hiérarchie parent/enfant ;
+- politique de visibilité par zoom ;
+- catégorie de repère ;
+- priorité de collision/rétention.
+
+Elle ne doit pas créer une seconde source de vérité géographique ni transformer un centroïde approximatif en position exacte.
+
+### Lots / effort
+
+- [x] **LOT 1 — Canonical Territory Dictionary contract — 3 pts ✅**  
+  Schéma unique `city | district | landmark`, importance, parentage, coordonnées/précision, zoom policy, validateurs et fixtures contractuelles Casablanca/Rabat/Marrakech.
+
+- [x] **LOT 2 — National city dictionary + importance hierarchy — 5 pts ✅**  
+  Hiérarchiser les villes marocaines : villes phares d'abord, puis grandes villes régionales, villes secondaires et locales. Les villes phares gardent la priorité pendant le zoom.
+
+- [x] **LOT 3 — District dictionary by city — 8 pts ✅**  
+  Dictionnaire des quartiers par ville avec `importanceScore` éditorial, aliases et rattachement aux entités canoniques existantes.
+
+- [x] **LOT 4 — Landmark dictionary by district — 8 pts ✅**  
+  Repères utiles à l'orientation par quartier : patrimoine, gare, parc, plage, centre commercial, université, hôpital, grand axe, etc. Importance hiérarchisée et source/validation explicites.
+
+- [x] **LOT 5 — National zoom visibility engine — 8 pts ✅**  
+  Zoom faible : villes phares. Zoom intermédiaire : villes régionales. Zoom supérieur : villes secondaires/locales. Priorité persistante aux villes phares + gestion de collision.
+
+- [x] **LOT 6 — Local City → District → Landmark engine — 8 pts ✅**  
+  Dans chaque ville : quartiers majeurs puis secondaires ; dans chaque quartier : repères majeurs puis secondaires. Aucun repère local ne doit masquer une entité phare.
+
+- [x] **LOT 7 — Collision / density / visual stability — 5 pts ✅**  
+  Limites de densité, hysteresis de zoom, stabilité des labels et priorité déterministe pour éviter chevauchement/clignotement.
+
+- [x] **LOT 8 — Progressive data enrichment — 5 pts ✅**  
+  Ajouter de nouvelles villes/quartiers/repères par données seulement, sans modifier le moteur.
+
+- [x] **LOT 9 — Final map certification — 3 pts ✅**  
+  BEFORE/AFTER mêmes viewports, parcours Maroc → ville → quartier → repère, retour national, tests MapLibre et score visuel.
+
+**Effort total : 53 pts.**  
+**Progression prouvée : 53 / 53 pts. Les 23/23 quartiers canoniques ont au moins un landmark vérifié.**
+
+### Certification LOT9 — 2026-09-18
+
+- HEAD produit certifié : `ad65a371a027ce2fe53c73cdf838d63c201dae25`
+- Territory Dictionary Contract : run `35348279560` ✅
+- Territory Dictionary Visual Certification : run `35348279557` ✅
+- artifact : `10547579617`
+- digest : `sha256:670ca0b80662816140df5ec608f87d9d4dc9ea94eb5d4f557a46b497a2fbcabc`
+- 4 viewports : `390×844 / 430×932 / 768×900 / 1280×900`
+- national initial : 6 flagship visibles — Tanger, Fès, Rabat, Casablanca, Marrakech, Agadir
+- zoom national : 8/8 villes réellement visibles — + Kénitra + Mohammedia
+- collision : 0 overlap sur les 4 viewports
+- horizontal overflow : 0
+- Supabase requests : 0
+- page errors : 0
+- régions visibles après zoom : 12/12 sur 390, 430 et 768 ; 11/12 sur 1280
+- N3 Casablanca → Maârif reste vert dans le même artifact
+- aucune écriture DB ; aucun déploiement Vercel
+
+LOT9 est fermé sur preuve réelle et inspection visuelle. Le score visuel global antérieur reste `9,2/10` ; aucun score supérieur n’est revendiqué sans revue dédiée.
+
+### Certification LOT4 finale — 2026-09-18
+
+- HEAD produit certifié : `7251abf030eb5d08f96a899a4a8d3585657b411a`
+- couverture : 23/23 quartiers canoniques avec au moins un landmark vérifié
+- Territory Dictionary Contract : run `35353870995` ✅
+- Territory Dictionary Visual Certification : run `35353871008` ✅
+- file d’enrichissement : vide
+- aucun déploiement Vercel ; aucune écriture Supabase
+
+
+
+### Formule de départ
+
+`visibilityScore = importance × zoomRelevance × collisionPriority`
+
+Cette formule est une direction produit ; le contrat LOT 1 doit rester assez stable pour permettre d'ajuster le moteur sans réécrire les dictionnaires.
+
+### Succès global
+
+- hiérarchie compréhensible au premier regard ;
+- villes phares visibles avant les villes secondaires ;
+- densité croissante avec le zoom ;
+- priorité conservée aux entités phares ;
+- quartiers puis repères révélés progressivement ;
+- aucune fausse précision géographique ;
+- aucune dépendance obligatoire à Supabase pour le dictionnaire statique ;
+- moteur extensible par données.
+
+---
+
+## 11. CLOSEOUT INTÉGRATION #1037
 
 - [x] TARGET LOCK + SHA revérifié
 - [x] truth gate fail-closed
@@ -179,37 +283,45 @@ PR #1025 reste historique/source, dirty et non mergeable ; ne pas l’utiliser c
 - [x] N2 + N3 certifiés
 - [x] Synthetic Market séparé et certifié
 - [x] UX L9 source certifiée
-- [x] main re-vérifié
-- [x] intersection PR/main recalculée live
-- [x] transplant ciblé sur branche sûre
+- [x] transplant ciblé sur current main
 - [x] shell/navigation main préservé
 - [x] TypeScript + build intégration verts
 - [x] AFTER 4 viewports + N3 exact-HEAD verts
 - [x] BEFORE ↔ AFTER ↔ TARGET inspectés
 - [x] triggers CI temporaires restaurés
-- [x] PR #1037 DRAFT créée, mergeable, non mergée
-- [x] canonique + handovers cohérents
-- [ ] **human merge gate PR #1037**
-- [ ] merge autorisé + post-merge checks
+- [x] PR #1037 mergée
+- [x] main post-merge = `256fb9a00a22f240ba7684a99dff3a5619b6ad56`
 - [ ] restaurer Supabase + rerun live ciblé
 - [ ] sécurité Next/npm
 - [ ] provider/licence/attribution
 - [ ] Vercel uniquement avec autorisation explicite
 
----
+### Anomalie post-merge connue
 
-## 11. NEXT EXACT
-
-**STOP AU HUMAN MERGE GATE.**
-
-Prochaine action uniquement après autorisation explicite : merger **PR #1037** dans `main`, puis exécuter les checks post-merge et mettre à jour ce canonique.
-
-Supabase et Vercel restent deux gates séparés : restauration/reruns live pour Supabase ; aucun Vercel sans autorisation spécifique.
+`UI All Pages Baseline` run `35284093140` échoue sur le test statique `scripts/__tests__/mon-projet-naming-convergence.test.ts` : il cherche encore les labels directement dans `SiteHeader.tsx` / `MobileBottomNav.tsx` alors que la navigation courante est centralisée dans `lib/product-navigation.ts`. Aucun correctif direct sur `main` n'est autorisé dans cette phase sans branche dédiée.
 
 ---
 
-## 12. REPRISE
+## 12. NEXT EXACT
 
-Lire ce fichier puis `docs/handovers/2026-09-17-vivre-ici-pr1025-main-integration-handover.md`, puis re-vérifier `main`, PR #1037 HEAD/CI et Supabase avant toute écriture.
+**Closeout PR #1038.**
 
-`3-vivre-ici-akarfinder.md — Vivre Ici AkarFinder — 92 %`
+LOT4 est certifié à 23/23 quartiers canoniques sur le HEAD produit `7251abf030eb5d08f96a899a4a8d3585657b411a`.
+
+Preuves finales LOT4 :
+- Territory Dictionary Contract : run `35353870995` ✅
+- Territory Dictionary Visual Certification : run `35353871008` ✅
+- couverture landmarks : 23/23 quartiers canoniques
+- enrichment queue : vide
+- aucune écriture Supabase
+- aucun déploiement Vercel
+
+Next : cohérence canonique + PR ready. Merge uniquement sur instruction explicite.
+
+## 13. REPRISE
+
+Lire d’abord `docs/handovers/2026-09-18-vivre-ici-territory-dictionary-handover.md` — handover canonique de la phase Territory Dictionary 53/53 — puis ce fichier. Re-vérifier `main`, la branche Territory Dictionary, PR #1038 et CI avant toute écriture.
+
+Le handover historique `docs/handovers/2026-09-17-vivre-ici-pr1025-main-integration-handover.md` reste utile uniquement pour l’historique d’intégration #1037.
+
+`3-vivre-ici-akarfinder.md — Vivre Ici AkarFinder — Territory Dictionary 53/53 pts`
