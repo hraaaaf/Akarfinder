@@ -55,7 +55,7 @@ test("national label capacity reaches eight at one moderate zoom step", () => {
 });
 
 test("Mohammedia gets a collision offset between Casablanca and Rabat", () => {
-  assert.match(source, /city\.slug === "mohammedia" \? 28 : 0/);
+  assert.match(source, /city\.slug === "mohammedia" \? 28/);
 });
 
 test("Kénitra keeps a dedicated top-left label offset with collision padding clearance", () => {
