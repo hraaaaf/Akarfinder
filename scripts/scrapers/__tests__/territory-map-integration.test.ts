@@ -32,7 +32,7 @@ test("national zoom attaches only after the projected SVG exists", () => {
 });
 
 test("Rabat keeps a dedicated national label offset to coexist with Casablanca and Fes", () => {
-  assert.match(source, /const labelYOffset = city\.slug === "rabat" \? -24 : 0;/);
+  assert.match(source, /const labelYOffset = city\.slug === "rabat" \? -24 : city\.slug === "mohammedia" \? 28 : 0;/);
   assert.match(source, /y: screenY \+ labelYOffset/);
 });
 
