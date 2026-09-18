@@ -405,6 +405,7 @@ export function PremiumInteractiveMap() {
 
       const labelWidth = Math.max(68, city.name.length * 7 + 30);
       const direction = city.slug === "casablanca" || city.slug === "agadir" || city.slug === "rabat" ? -1 : 1;
+      const labelYOffset = city.slug === "rabat" ? -24 : 0;
       const screenX = camera.x + point[0] * camera.k;
       const screenY = camera.y + point[1] * camera.k;
       const labelCenterX = screenX + direction * (labelWidth / 2 + 17);
@@ -416,10 +417,11 @@ export function PremiumInteractiveMap() {
         point,
         labelWidth,
         direction,
+        labelYOffset,
         collision: {
           id: city.slug,
           x: labelCenterX,
-          y: screenY,
+          y: screenY + labelYOffset,
           width: labelWidth,
           height: 28,
           visibilityScore: priority.visibilityScore,
@@ -676,9 +678,10 @@ export function PremiumInteractiveMap() {
                     );
                   })}
 
-                  {level === "national" && nationalCityRenderItems.map(({ city, point, labelWidth, direction, priority }) => {
+                  {level === "national" && nationalCityRenderItems.map(({ city, point, labelWidth, direction, labelYOffset, priority }) => {
                     const labelX = direction > 0 ? 13 / camera.k : -(labelWidth + 13) / camera.k;
                     const textX = direction > 0 ? 24 / camera.k : -(labelWidth + 2) / camera.k;
+                    const labelY = labelYOffset / camera.k;
                     return (
                       <g
                         key={city.slug}
@@ -704,7 +707,7 @@ export function PremiumInteractiveMap() {
                         <circle r={4.4 / camera.k} fill={NAVY} />
                         <rect
                           x={labelX}
-                          y={-13 / camera.k}
+                          y={labelY - 13 / camera.k}
                           width={labelWidth / camera.k}
                           height={26 / camera.k}
                           rx={13 / camera.k}
@@ -715,7 +718,7 @@ export function PremiumInteractiveMap() {
                         />
                         <text
                           x={textX}
-                          y={4 / camera.k}
+                          y={labelY + 4 / camera.k}
                           fill={NAVY}
                           fontSize={11 / camera.k}
                           fontWeight={900}
