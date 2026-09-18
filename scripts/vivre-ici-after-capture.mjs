@@ -79,9 +79,9 @@ try {
     await page.screenshot({ path: premiumFile, fullPage: false, animations: 'disabled' });
 
     const zoomIn = page.locator('[data-premium-map] section[aria-label="Carte interactive du Maroc"] button[aria-label="Zoomer"]').first();
-    for (let index = 0; index < 6; index += 1) {
+    for (let index = 0; index < 2; index += 1) {
       await zoomIn.click();
-      await page.waitForTimeout(120);
+      await page.waitForTimeout(160);
     }
     await page.waitForTimeout(350);
     const zoomedCitySlugs = await page.locator('[data-national-city-label]').evaluateAll((nodes) =>

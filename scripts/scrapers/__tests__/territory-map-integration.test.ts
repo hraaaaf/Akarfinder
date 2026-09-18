@@ -45,3 +45,7 @@ test("national geometry uses the same native SVG transform model as D3", () => {
   assert.match(source, /<g transform=\{\`translate\(\$\{camera\.x\} \$\{camera\.y\}\) scale\(\$\{camera\.k\}\)\`\}>/);
   assert.doesNotMatch(source, /animate=\{\{ x: camera\.x, y: camera\.y, scale: camera\.k \}\}/);
 });
+
+test("semantic national zoom reveals secondary cities before deep physical zoom", () => {
+  assert.match(source, /const nationalTerritoryZoom = 4\.2 \+ Math\.max\(0, camera\.k - 1\) \* 1\.8;/);
+});
