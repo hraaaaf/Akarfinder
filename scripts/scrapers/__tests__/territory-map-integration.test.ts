@@ -69,5 +69,5 @@ test("Kénitra uses a two-axis callout instead of vertical-only nudging", () => 
 });
 
 test("national zoom anchor protects northern flagship labels", () => {
-  assert.match(source, /const NATIONAL_ZOOM_ANCHOR: \[number, number\] = \[MAP_WIDTH \* 0\.53, MAP_HEIGHT \* 0\.15\];/);
+  assert.match(source, /const NATIONAL_ZOOM_ANCHOR: \[number, number\] = \[MAP_WIDTH \* 0\.53, MAP_HEIGHT \* 0\.05\];/);
 });
