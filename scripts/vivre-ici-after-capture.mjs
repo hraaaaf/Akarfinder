@@ -88,6 +88,20 @@ try {
       nodes.map((node) => node.getAttribute('data-national-city-label')).filter(Boolean)
     );
     const zoomedTerritoryZoom = Number(await premium.getAttribute('data-national-territory-zoom') ?? '0');
+    const zoomedVisibleRegionCount = await page.locator('[data-region-slug]').evaluateAll((nodes) =>
+      nodes.filter((node) => {
+        const rect = node.getBoundingClientRect();
+        const style = getComputedStyle(node);
+        return rect.width > 2
+          && rect.height > 2
+          && rect.right > 0
+          && rect.bottom > 0
+          && rect.left < window.innerWidth
+          && rect.top < window.innerHeight
+          && style.visibility !== 'hidden'
+          && style.display !== 'none';
+      }).length
+    );
     const premiumZoomedFile = path.join(outDir, `map-after-premium-national-zoomed-${vp.name}.png`);
     await page.screenshot({ path: premiumZoomedFile, fullPage: false, animations: 'disabled' });
 
@@ -106,6 +120,7 @@ try {
       zoomedCityLabelCount: zoomedCitySlugs.length,
       zoomedCitySlugs,
       zoomedTerritoryZoom,
+      zoomedVisibleRegionCount,
       zoomedScreenshot: premiumZoomedFile,
       zoomedScreenshotBytes: (await fs.stat(premiumZoomedFile)).size,
       headerVisible,
@@ -213,6 +228,7 @@ try {
     || !r.zoomedCitySlugs.includes('kenitra')
     || !r.zoomedCitySlugs.includes('mohammedia')
     || r.zoomedTerritoryZoom <= r.initialTerritoryZoom
+    || r.zoomedVisibleRegionCount < 1
     || r.zoomedScreenshotBytes < 30000
     || !r.headerVisible
     || !r.logoVisible
