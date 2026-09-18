@@ -658,6 +658,69 @@ export const VERIFIED_LANDMARKS: readonly VerifiedLandmarkEntry[] = [
     verifiedAt: "2026-09-18",
   },
 
+  {
+    entity: {
+      id: "landmark_casablanca_racine_institut_juan_ramon_jimenez",
+      type: "landmark",
+      citySlug: "casablanca",
+      districtSlug: "racine",
+      landmarkSlug: "institut-juan-ramon-jimenez",
+      canonicalName: "Institut Espagnol Juan Ramón Jiménez",
+      aliases: ["Instituto Español Juan Ramón Jiménez", "École Juan Ramon Jimenez"],
+      category: "other",
+      parentId: "district_casablanca_racine",
+      importance: {
+        score: 88,
+        tier: "major",
+        basis: ["orientation_value", "product_priority"],
+      },
+      visibility: { minZoom: 13.9, retainPriority: false },
+      coordinates: {
+        lat: 33.58953,
+        lng: -7.6415,
+        precision: "verified_landmark_point",
+      },
+    },
+    sourceRefs: [
+      "https://www.educacionfpydeportes.gob.es/marruecos/oficinas-y-centros/centros-docentes/centros-docentes.html",
+      "https://casainvest.ma/sites/default/files/Guidedelinvestisseur2022.pdf",
+      "https://mapcarta.com/W1308527857",
+    ],
+    verificationNote: "Spanish Ministry confirms the 192 Bd d’Anfa address; the Casablanca-Settat CRI investment guide explicitly identifies the school at that address in Racine; OSM-backed mapping supplies the point.",
+    verifiedAt: "2026-09-18",
+  },
+  {
+    entity: {
+      id: "landmark_marrakech_ourika_palmgolf",
+      type: "landmark",
+      citySlug: "marrakech",
+      districtSlug: "route-de-lourika",
+      landmarkSlug: "palmgolf-marrakech-ourika",
+      canonicalName: "PalmGolf Marrakech Ourika",
+      aliases: ["PalmGolf Ourika"],
+      category: "other",
+      parentId: "district_marrakech_ourika",
+      importance: {
+        score: 90,
+        tier: "major",
+        basis: ["orientation_value", "product_priority"],
+      },
+      visibility: { minZoom: 13.9, retainPriority: false },
+      coordinates: {
+        lat: 31.506329,
+        lng: -7.957627,
+        precision: "verified_landmark_point",
+      },
+    },
+    sourceRefs: [
+      "https://frmg.ma/palmgolf-marrakech-ourika/",
+      "https://www.visitmorocco.com/sites/default/files/atoms/files/Golf%20In%20Morocco%20Brochure.pdf",
+      "https://www.where2golf.com/morocco/palmgolf-marrakech-ourika/",
+    ],
+    verificationNote: "FRMG and ONMT both identify PalmGolf Marrakech Ourika at Km 12 on Route de l’Ourika; an independent golf mapping source supplies the course point.",
+    verifiedAt: "2026-09-18",
+  },
+
 ];
 
 const CANONICAL_DISTRICT_IDS = new Set(GEO_NEIGHBORHOODS.map((district) => district.id));

@@ -22,12 +22,12 @@ test("eight cities currently have at least one verified landmark", () => {
   assert.deepEqual(covered, ["agadir", "casablanca", "fes", "kenitra", "marrakech", "mohammedia", "rabat", "tanger"].sort());
 });
 
-test("Casablanca coverage remains explicitly partial", () => {
+test("Casablanca coverage is complete after the final landmark batch", () => {
   const casa = getTerritoryCityCoverage("casablanca");
   assert.equal(casa.canonicalDistrictCount, 6);
-  assert.equal(casa.districtsWithVerifiedLandmark, 5);
-  assert.equal(casa.verifiedLandmarkCount, 5);
-  assert.deepEqual(casa.missingLandmarkDistrictIds, ["district_casablanca_racine"]);
+  assert.equal(casa.districtsWithVerifiedLandmark, 6);
+  assert.equal(casa.verifiedLandmarkCount, 6);
+  assert.deepEqual(casa.missingLandmarkDistrictIds, []);
 });
 
 test("enrichment queue includes only canonical cities with uncovered districts", () => {
@@ -56,15 +56,14 @@ test("Rabat, Tanger and Fes are fully covered after certified batch three", () =
   assert.deepEqual(fes.missingLandmarkDistrictIds, []);
 });
 
-test("batch four leaves only Racine and Route de l'Ourika uncovered", () => {
+test("final landmark batch covers all canonical districts", () => {
   const missing = getTerritoryCoverageReport()
     .flatMap((entry) => entry.missingLandmarkDistrictIds)
     .sort();
 
-  assert.deepEqual(missing, [
-    "district_casablanca_racine",
-    "district_marrakech_ourika",
-  ]);
-  assert.deepEqual(getTerritoryCityCoverage("kenitra").missingLandmarkDistrictIds, []);
-  assert.deepEqual(getTerritoryCityCoverage("mohammedia").missingLandmarkDistrictIds, []);
+  assert.deepEqual(missing, []);
+  assert.equal(
+    getTerritoryCoverageReport().reduce((total, entry) => total + entry.districtsWithVerifiedLandmark, 0),
+    23,
+  );
 });
