@@ -531,14 +531,12 @@ export function PremiumInteractiveMap() {
 
   const zoomBy = useCallback((factor: number) => {
     if (!svgRef.current || !zoomBehaviorRef.current) return;
-    const nextK = Math.min(7.4, Math.max(1, camera.k * factor));
-    const scale = nextK / camera.k;
-    const centerX = MAP_WIDTH / 2;
-    const centerY = MAP_HEIGHT / 2;
-    const nextX = centerX - (centerX - camera.x) * scale;
-    const nextY = centerY - (centerY - camera.y) * scale;
-    applyCamera(zoomIdentity.translate(nextX, nextY).scale(nextK));
-  }, [applyCamera, camera.k, camera.x, camera.y]);
+    select(svgRef.current).call(
+      zoomBehaviorRef.current.scaleBy,
+      factor,
+      [MAP_WIDTH / 2, MAP_HEIGHT / 2],
+    );
+  }, []);
 
   const displayRegionFeatures = useMemo(
     () => regionFeatures

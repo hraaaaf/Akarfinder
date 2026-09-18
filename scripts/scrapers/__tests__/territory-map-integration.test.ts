@@ -36,9 +36,7 @@ test("Rabat keeps a dedicated national label offset to coexist with Casablanca a
   assert.match(source, /y: screenY \+ labelYOffset/);
 });
 
-test("national zoom stays centered around the map viewport", () => {
-  assert.match(source, /const nextK = Math\.min\(7\.4, Math\.max\(1, camera\.k \* factor\)\);/);
-  assert.match(source, /const nextX = centerX - \(centerX - camera\.x\) \* scale;/);
-  assert.match(source, /const nextY = centerY - \(centerY - camera\.y\) \* scale;/);
-  assert.match(source, /applyCamera\(zoomIdentity\.translate\(nextX, nextY\)\.scale\(nextK\)\);/);
+test("national zoom uses the D3 behavior around the explicit map center", () => {
+  assert.match(source, /zoomBehaviorRef\.current\.scaleBy,/);
+  assert.match(source, /\[MAP_WIDTH \/ 2, MAP_HEIGHT \/ 2\],/);
 });
