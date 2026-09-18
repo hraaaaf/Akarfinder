@@ -3,7 +3,7 @@ name: Territory Dictionary Contract
 on:
   push:
     branches:
-      - feat/vivre-ici-territory-dictionary
+      - feat/vivre-ici-landmark-seed-base
     paths:
       - "lib/geo/territory-dictionary.ts"
       - "lib/geo/territory-city-priorities.ts"
