@@ -40,3 +40,8 @@ test("national zoom uses the D3 behavior around the explicit map center", () => 
   assert.match(source, /zoomBehaviorRef\.current\.scaleBy,/);
   assert.match(source, /\[MAP_WIDTH \/ 2, MAP_HEIGHT \/ 2\],/);
 });
+
+test("national geometry uses the same native SVG transform model as D3", () => {
+  assert.match(source, /<g transform=\{\`translate\(\$\{camera\.x\} \$\{camera\.y\}\) scale\(\$\{camera\.k\}\)\`\}>/);
+  assert.doesNotMatch(source, /animate=\{\{ x: camera\.x, y: camera\.y, scale: camera\.k \}\}/);
+});

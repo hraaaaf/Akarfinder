@@ -636,11 +636,7 @@ export function PremiumInteractiveMap() {
                 <defs>
                   <filter id="region-shadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="5" stdDeviation="7" floodColor="#071B33" floodOpacity="0.18" /></filter>
                 </defs>
-                <motion.g
-                  animate={{ x: camera.x, y: camera.y, scale: camera.k }}
-                  transition={{ type: "spring", stiffness: 155, damping: 26, mass: 0.72 }}
-                  style={{ transformOrigin: "0 0" }}
-                >
+                <g transform={`translate(${camera.x} ${camera.y}) scale(${camera.k})`}>
                   {displayRegionFeatures.map(({ regionFeature, slug }) => {
                     const region = regions.find((item) => item.slug === slug);
                     if (!region) return null;
@@ -761,7 +757,7 @@ export function PremiumInteractiveMap() {
                       </g>
                     );
                   })}
-                </motion.g>
+                </g>
               </svg>
             ) : null}
 
