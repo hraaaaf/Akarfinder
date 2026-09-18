@@ -591,7 +591,7 @@ export function PremiumInteractiveMap() {
 
         <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_390px]">
           <section
-            className="relative min-h-[560px] overflow-hidden rounded-[26px] border shadow-[0_24px_70px_rgba(7,27,51,0.12)] sm:min-h-[650px]"
+            className="relative min-h-[560px] overflow-hidden rounded-[26px] border shadow-[0_28px_76px_rgba(7,27,51,0.10)] sm:min-h-[650px]"
             style={{ borderColor: "var(--border)", background: "var(--surface)" }}
             aria-label="Carte interactive du Maroc"
           >
@@ -708,25 +708,39 @@ export function PremiumInteractiveMap() {
                         onPointerMove={(event) => setTooltip({ title: city.name, subtitle: "Ville prioritaire", x: event.clientX, y: event.clientY })}
                         onPointerLeave={() => setTooltip(null)}
                       >
-                        <circle r={12 / camera.k} fill="rgba(255,255,255,0.96)" stroke={NAVY} strokeWidth={2 / camera.k} vectorEffect="non-scaling-stroke" />
-                        <circle r={4.4 / camera.k} fill={NAVY} />
-                        <rect
-                          x={labelX}
-                          y={labelY - 13 / camera.k}
-                          width={labelWidth / camera.k}
-                          height={26 / camera.k}
-                          rx={13 / camera.k}
-                          fill="rgba(255,255,255,0.96)"
-                          stroke="rgba(7,27,51,0.22)"
+                        <circle
+                          r={(priority.importanceScore >= 90 ? 10.5 : 8.5) / camera.k}
+                          fill="rgba(255,255,255,0.88)"
+                          stroke="rgba(7,27,51,0.18)"
                           strokeWidth={1 / camera.k}
                           vectorEffect="non-scaling-stroke"
                         />
+                        <circle
+                          r={(priority.importanceScore >= 90 ? 4.6 : 3.7) / camera.k}
+                          fill={NAVY}
+                          stroke="rgba(255,255,255,0.98)"
+                          strokeWidth={1.5 / camera.k}
+                          vectorEffect="non-scaling-stroke"
+                        />
+                        <rect
+                          x={labelX}
+                          y={labelY - 12 / camera.k}
+                          width={labelWidth / camera.k}
+                          height={24 / camera.k}
+                          rx={9 / camera.k}
+                          fill="rgba(255,255,255,0.92)"
+                          stroke="rgba(7,27,51,0.12)"
+                          strokeWidth={0.8 / camera.k}
+                          vectorEffect="non-scaling-stroke"
+                          style={{ filter: "drop-shadow(0 3px 7px rgba(7,27,51,0.10))" }}
+                        />
                         <text
                           x={textX}
-                          y={labelY + 4 / camera.k}
+                          y={labelY + 3.7 / camera.k}
                           fill={NAVY}
-                          fontSize={11 / camera.k}
-                          fontWeight={900}
+                          fontSize={(priority.importanceScore >= 90 ? 11.2 : 10.5) / camera.k}
+                          fontWeight={priority.importanceScore >= 90 ? 850 : 760}
+                          letterSpacing={priority.importanceScore >= 90 ? "-0.01em" : "0"}
                           pointerEvents="none"
                         >
                           {city.name}
@@ -820,7 +834,7 @@ export function PremiumInteractiveMap() {
             </div>
           </section>
 
-          <aside className="rounded-[26px] border p-4 shadow-[0_20px_55px_rgba(7,27,51,0.08)] sm:p-5" style={{ borderColor: "var(--border)", background: "var(--surface)" }} aria-label="Détails territoriaux" data-map-side-panel>
+          <aside className="rounded-[26px] border p-4 shadow-[0_18px_48px_rgba(7,27,51,0.065)] sm:p-5" style={{ borderColor: "var(--border)", background: "var(--surface)" }} aria-label="Détails territoriaux" data-map-side-panel>
             <AnimatePresence mode="wait">
               {level === "national" ? (
                 <motion.div key="national" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -8 }}>
