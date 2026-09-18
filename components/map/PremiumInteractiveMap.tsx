@@ -687,6 +687,7 @@ export function PremiumInteractiveMap() {
                     const labelX = (baseLabelX + labelXOffset) / camera.k;
                     const textX = (baseTextX + labelXOffset) / camera.k;
                     const labelY = labelYOffset / camera.k;
+                    const isPrimaryCity = city.slug === "casablanca";
                     return (
                       <g
                         key={city.slug}
@@ -708,39 +709,41 @@ export function PremiumInteractiveMap() {
                         onPointerMove={(event) => setTooltip({ title: city.name, subtitle: "Ville prioritaire", x: event.clientX, y: event.clientY })}
                         onPointerLeave={() => setTooltip(null)}
                       >
+                        {isPrimaryCity ? (
+                          <circle
+                            r={10.5 / camera.k}
+                            fill="rgba(255,255,255,0.78)"
+                            stroke="rgba(7,27,51,0.18)"
+                            strokeWidth={1 / camera.k}
+                            vectorEffect="non-scaling-stroke"
+                          />
+                        ) : null}
                         <circle
-                          r={(priority.importanceScore >= 90 ? 10.5 : 8.5) / camera.k}
-                          fill="rgba(255,255,255,0.88)"
-                          stroke="rgba(7,27,51,0.18)"
-                          strokeWidth={1 / camera.k}
-                          vectorEffect="non-scaling-stroke"
-                        />
-                        <circle
-                          r={(priority.importanceScore >= 90 ? 4.6 : 3.7) / camera.k}
+                          r={(isPrimaryCity ? 4.8 : 3.5) / camera.k}
                           fill={NAVY}
                           stroke="rgba(255,255,255,0.98)"
-                          strokeWidth={1.5 / camera.k}
+                          strokeWidth={(isPrimaryCity ? 1.7 : 1.25) / camera.k}
                           vectorEffect="non-scaling-stroke"
                         />
                         <rect
                           x={labelX}
-                          y={labelY - 12 / camera.k}
+                          y={labelY - (isPrimaryCity ? 11.5 : 10) / camera.k}
                           width={labelWidth / camera.k}
-                          height={24 / camera.k}
-                          rx={9 / camera.k}
-                          fill="rgba(255,255,255,0.92)"
-                          stroke="rgba(7,27,51,0.12)"
-                          strokeWidth={0.8 / camera.k}
+                          height={(isPrimaryCity ? 23 : 20) / camera.k}
+                          rx={(isPrimaryCity ? 8 : 5) / camera.k}
+                          fill={isPrimaryCity ? "rgba(255,255,255,0.94)" : "rgba(255,255,255,0.78)"}
+                          stroke={isPrimaryCity ? "rgba(7,27,51,0.12)" : "rgba(7,27,51,0.07)"}
+                          strokeWidth={(isPrimaryCity ? 0.8 : 0.55) / camera.k}
                           vectorEffect="non-scaling-stroke"
-                          style={{ filter: "drop-shadow(0 3px 7px rgba(7,27,51,0.10))" }}
+                          style={{ filter: isPrimaryCity ? "drop-shadow(0 4px 10px rgba(7,27,51,0.10))" : "drop-shadow(0 2px 5px rgba(7,27,51,0.06))" }}
                         />
                         <text
                           x={textX}
-                          y={labelY + 3.7 / camera.k}
+                          y={labelY + (isPrimaryCity ? 3.7 : 3.25) / camera.k}
                           fill={NAVY}
-                          fontSize={(priority.importanceScore >= 90 ? 11.2 : 10.5) / camera.k}
-                          fontWeight={priority.importanceScore >= 90 ? 850 : 760}
-                          letterSpacing={priority.importanceScore >= 90 ? "-0.01em" : "0"}
+                          fontSize={(isPrimaryCity ? 11.4 : 10.1) / camera.k}
+                          fontWeight={isPrimaryCity ? 850 : 720}
+                          letterSpacing={isPrimaryCity ? "-0.015em" : "0.005em"}
                           pointerEvents="none"
                         >
                           {city.name}
