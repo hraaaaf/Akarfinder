@@ -1,7 +1,7 @@
 # 3 — Vivre Ici AkarFinder
 
 **Statut : ACTIVE — PR #1037 MERGÉE / TERRITORY DICTIONARY PHASE ACTIVE / UX L9 PROUVÉE / N3 PROUVÉ / LIVE DATA BLOQUÉ PAR SUPABASE**  
-**Dernière mise à jour : 2026-09-17**  
+**Dernière mise à jour : 2026-09-18**  
 **Repo : `hraaaaf/Akarfinder`**  
 **Branche active : `feat/vivre-ici-territory-dictionary`**  
 **PR d’intégration : `#1037` MERGÉE dans `main`**  
@@ -13,7 +13,7 @@
 **HEAD exact de certification intégration : `f5d5bce0edac47021953cd7cb091fc60fde52cdd`**  
 **Commit restauration triggers / arbre produit final : `33e30f72b6c26e02a60f460d6fad73856c717599`**  
 **Arbre produit final : `b04bc649746b5b2a3733e058af0ca59df8dc2930`**  
-**Phase intégration historique : closeout merge atteint. Nouvelle phase Territory Dictionary : `0 / 53 pts` au démarrage.**  
+**Phase intégration historique : closeout merge atteint. Territory Dictionary : `45 / 53 pts` prouvés ; LOT4 landmarks reste incomplet.**  
 **Vercel : aucun déploiement sans autorisation explicite d’Achraf.**
 
 ---
@@ -195,35 +195,56 @@ Elle ne doit pas créer une seconde source de vérité géographique ni transfor
 
 ### Lots / effort
 
-- [ ] **LOT 1 — Canonical Territory Dictionary contract — 3 pts 🟡**  
+- [x] **LOT 1 — Canonical Territory Dictionary contract — 3 pts ✅**  
   Schéma unique `city | district | landmark`, importance, parentage, coordonnées/précision, zoom policy, validateurs et fixtures contractuelles Casablanca/Rabat/Marrakech.
 
-- [ ] **LOT 2 — National city dictionary + importance hierarchy — 5 pts 🟡**  
+- [x] **LOT 2 — National city dictionary + importance hierarchy — 5 pts ✅**  
   Hiérarchiser les villes marocaines : villes phares d'abord, puis grandes villes régionales, villes secondaires et locales. Les villes phares gardent la priorité pendant le zoom.
 
-- [ ] **LOT 3 — District dictionary by city — 8 pts 🔴**  
+- [x] **LOT 3 — District dictionary by city — 8 pts ✅**  
   Dictionnaire des quartiers par ville avec `importanceScore` éditorial, aliases et rattachement aux entités canoniques existantes.
 
-- [ ] **LOT 4 — Landmark dictionary by district — 8 pts 🔴**  
+- [ ] **LOT 4 — Landmark dictionary by district — 8 pts 🔴 — PARTIEL**  
   Repères utiles à l'orientation par quartier : patrimoine, gare, parc, plage, centre commercial, université, hôpital, grand axe, etc. Importance hiérarchisée et source/validation explicites.
 
-- [ ] **LOT 5 — National zoom visibility engine — 8 pts 🔴**  
+- [x] **LOT 5 — National zoom visibility engine — 8 pts ✅**  
   Zoom faible : villes phares. Zoom intermédiaire : villes régionales. Zoom supérieur : villes secondaires/locales. Priorité persistante aux villes phares + gestion de collision.
 
-- [ ] **LOT 6 — Local City → District → Landmark engine — 8 pts 🔴**  
+- [x] **LOT 6 — Local City → District → Landmark engine — 8 pts ✅**  
   Dans chaque ville : quartiers majeurs puis secondaires ; dans chaque quartier : repères majeurs puis secondaires. Aucun repère local ne doit masquer une entité phare.
 
-- [ ] **LOT 7 — Collision / density / visual stability — 5 pts 🟡**  
+- [x] **LOT 7 — Collision / density / visual stability — 5 pts ✅**  
   Limites de densité, hysteresis de zoom, stabilité des labels et priorité déterministe pour éviter chevauchement/clignotement.
 
-- [ ] **LOT 8 — Progressive data enrichment — 5 pts 🟡**  
+- [x] **LOT 8 — Progressive data enrichment — 5 pts ✅**  
   Ajouter de nouvelles villes/quartiers/repères par données seulement, sans modifier le moteur.
 
-- [ ] **LOT 9 — Final map certification — 3 pts 🟡**  
+- [x] **LOT 9 — Final map certification — 3 pts ✅**  
   BEFORE/AFTER mêmes viewports, parcours Maroc → ville → quartier → repère, retour national, tests MapLibre et score visuel.
 
 **Effort total : 53 pts.**  
-**Progression au démarrage : 0 / 53 pts.**
+**Progression prouvée : 45 / 53 pts. LOT4 n’est pas crédité tant que la couverture landmarks n’est pas suffisante.**
+
+### Certification LOT9 — 2026-09-18
+
+- HEAD produit certifié : `ad65a371a027ce2fe53c73cdf838d63c201dae25`
+- Territory Dictionary Contract : run `35348279560` ✅
+- Territory Dictionary Visual Certification : run `35348279557` ✅
+- artifact : `10547579617`
+- digest : `sha256:670ca0b80662816140df5ec608f87d9d4dc9ea94eb5d4f557a46b497a2fbcabc`
+- 4 viewports : `390×844 / 430×932 / 768×900 / 1280×900`
+- national initial : 6 flagship visibles — Tanger, Fès, Rabat, Casablanca, Marrakech, Agadir
+- zoom national : 8/8 villes réellement visibles — + Kénitra + Mohammedia
+- collision : 0 overlap sur les 4 viewports
+- horizontal overflow : 0
+- Supabase requests : 0
+- page errors : 0
+- régions visibles après zoom : 12/12 sur 390, 430 et 768 ; 11/12 sur 1280
+- N3 Casablanca → Maârif reste vert dans le même artifact
+- aucune écriture DB ; aucun déploiement Vercel
+
+LOT9 est fermé sur preuve réelle et inspection visuelle. Le score visuel global antérieur reste `9,2/10` ; aucun score supérieur n’est revendiqué sans revue dédiée.
+
 
 ### Formule de départ
 
@@ -273,16 +294,18 @@ Cette formule est une direction produit ; le contrat LOT 1 doit rester assez sta
 
 ## 12. NEXT EXACT
 
-**LOT 1 — Canonical Territory Dictionary contract.**
+**LOT 4 — compléter le landmark dictionary vérifié.**
 
-Créer le contrat TypeScript au-dessus des entités géographiques canoniques existantes, ajouter les validateurs + fixtures contractuelles Casablanca/Rabat/Marrakech, puis certifier le lot avant toute modification UI.
+État actuel : 5 landmarks vérifiés couvrent 5/23 quartiers canoniques. Ajouter uniquement des repères dont identité, rattachement quartier et coordonnées sont suffisamment sourcés ; ne jamais remplir un quartier par approximation.
+
+Priorité immédiate : Maârif, Aïn Diab, Hay Riad, Souissi, Guéliz, Malabata, Founty, puis les autres quartiers canoniques manquants.
 
 Aucun Vercel. Aucune écriture Supabase.
 
 ---
 
-## 12. REPRISE
+## 13. REPRISE
 
 Lire ce fichier puis `docs/handovers/2026-09-17-vivre-ici-pr1025-main-integration-handover.md`. Re-vérifier `main`, la branche Territory Dictionary et Supabase avant toute écriture.
 
-`3-vivre-ici-akarfinder.md — Vivre Ici AkarFinder — Territory Dictionary 0/53 pts`
+`3-vivre-ici-akarfinder.md — Vivre Ici AkarFinder — Territory Dictionary 45/53 pts`
