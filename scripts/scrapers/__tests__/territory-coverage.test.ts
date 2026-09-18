@@ -25,9 +25,11 @@ test("five cities currently have at least one verified landmark", () => {
 test("Casablanca coverage remains explicitly partial", () => {
   const casa = getTerritoryCityCoverage("casablanca");
   assert.equal(casa.canonicalDistrictCount, 6);
-  assert.equal(casa.districtsWithVerifiedLandmark, 1);
-  assert.equal(casa.verifiedLandmarkCount, 1);
-  assert.ok(casa.missingLandmarkDistrictIds.includes("district_casablanca_maarif"));
+  assert.equal(casa.districtsWithVerifiedLandmark, 3);
+  assert.equal(casa.verifiedLandmarkCount, 3);
+  assert.ok(!casa.missingLandmarkDistrictIds.includes("district_casablanca_maarif"));
+  assert.ok(!casa.missingLandmarkDistrictIds.includes("district_casablanca_ain_diab"));
+  assert.ok(casa.missingLandmarkDistrictIds.includes("district_casablanca_racine"));
 });
 
 test("enrichment queue includes canonical cities with uncovered districts", () => {

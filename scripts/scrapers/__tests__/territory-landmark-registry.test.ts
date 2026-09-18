@@ -24,13 +24,17 @@ test("every verified landmark has a validated point and at least two evidence re
   }
 });
 
-test("verified registry covers five flagship city/district paths", () => {
+test("verified registry covers the certified city/district paths", () => {
   assert.deepEqual(
     VERIFIED_LANDMARKS.map(({ entity }) => [entity.citySlug, entity.districtSlug]).sort(),
     [
+      ["agadir", "founty"],
       ["agadir", "talborjt"],
+      ["casablanca", "ain-diab"],
       ["casablanca", "finance-city"],
+      ["casablanca", "maarif"],
       ["fes", "fes-el-bali"],
+      ["marrakech", "gueliz"],
       ["marrakech", "hivernage"],
       ["rabat", "agdal"],
     ].sort(),
@@ -42,6 +46,8 @@ test("district lookup never leaks landmarks from another district", () => {
   assert.equal(agdal.length, 1);
   assert.equal(agdal[0]?.entity.id, "landmark_rabat_agdal_station");
 
-  assert.deepEqual(getVerifiedLandmarksForDistrict("district_casablanca_maarif"), []);
+  const maarif = getVerifiedLandmarksForDistrict("district_casablanca_maarif");
+  assert.equal(maarif.length, 1);
+  assert.equal(maarif[0]?.entity.id, "landmark_casablanca_maarif_twin_center");
   assert.deepEqual(getVerifiedLandmarksForDistrict("district_missing"), []);
 });
