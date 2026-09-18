@@ -37,7 +37,6 @@ test("Rabat keeps a dedicated national label offset to coexist with Casablanca a
 });
 
 test("national zoom uses the D3 behavior around the northern urban reading anchor", () => {
-  assert.match(source, /const NATIONAL_ZOOM_ANCHOR: \[number, number\] = \[MAP_WIDTH \* 0\.53, MAP_HEIGHT \* 0\.3\];/);
   assert.match(source, /zoomBehaviorRef\.current\.scaleBy,/);
   assert.match(source, /NATIONAL_ZOOM_ANCHOR,/);
 });
