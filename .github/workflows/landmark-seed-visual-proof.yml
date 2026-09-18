@@ -1,0 +1,46 @@
+name: Landmark Seed Visual Proof
+
+on:
+  push:
+    branches:
+      - proof/landmark-seed-visual
+    paths:
+      - "app/visual-qa/landmark-seed/page.tsx"
+      - "scripts/audits/landmark-seed-visual.mjs"
+      - ".github/workflows/landmark-seed-visual-proof.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - name: Start app
+        shell: bash
+        run: |
+          npm run start -- -p 3218 > /tmp/landmark-seed.log 2>&1 &
+          curl --retry 90 --retry-delay 1 --retry-connrefused -fsS http://127.0.0.1:3218/visual-qa/landmark-seed >/dev/null || { cat /tmp/landmark-seed.log; exit 1; }
+      - name: Capture
+        env:
+          BASE_URL: http://127.0.0.1:3218
+          AUDIT_OUTPUT_DIR: artifacts/landmark-seed-visual
+        run: node scripts/audits/landmark-seed-visual.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: landmark-seed-visual-proof
+          path: artifacts/landmark-seed-visual
+          if-no-files-found: error
+          retention-days: 30
