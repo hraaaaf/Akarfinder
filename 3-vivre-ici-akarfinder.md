@@ -13,7 +13,7 @@
 **HEAD exact de certification intégration : `f5d5bce0edac47021953cd7cb091fc60fde52cdd`**  
 **Commit restauration triggers / arbre produit final : `33e30f72b6c26e02a60f460d6fad73856c717599`**  
 **Arbre produit final : `b04bc649746b5b2a3733e058af0ca59df8dc2930`**  
-**Phase intégration historique : closeout merge atteint. Territory Dictionary : `45 / 53 pts` prouvés ; LOT4 landmarks reste incomplet.**  
+**Phase intégration historique : closeout merge atteint. Territory Dictionary : `53 / 53 pts` prouvés.**  
 **Vercel : aucun déploiement sans autorisation explicite d’Achraf.**
 
 ---
@@ -204,7 +204,7 @@ Elle ne doit pas créer une seconde source de vérité géographique ni transfor
 - [x] **LOT 3 — District dictionary by city — 8 pts ✅**  
   Dictionnaire des quartiers par ville avec `importanceScore` éditorial, aliases et rattachement aux entités canoniques existantes.
 
-- [ ] **LOT 4 — Landmark dictionary by district — 8 pts 🔴 — PARTIEL**  
+- [x] **LOT 4 — Landmark dictionary by district — 8 pts ✅**  
   Repères utiles à l'orientation par quartier : patrimoine, gare, parc, plage, centre commercial, université, hôpital, grand axe, etc. Importance hiérarchisée et source/validation explicites.
 
 - [x] **LOT 5 — National zoom visibility engine — 8 pts ✅**  
@@ -223,7 +223,7 @@ Elle ne doit pas créer une seconde source de vérité géographique ni transfor
   BEFORE/AFTER mêmes viewports, parcours Maroc → ville → quartier → repère, retour national, tests MapLibre et score visuel.
 
 **Effort total : 53 pts.**  
-**Progression prouvée : 45 / 53 pts. LOT4 n’est pas crédité tant que la couverture landmarks n’est pas suffisante.**
+**Progression prouvée : 53 / 53 pts. Les 23/23 quartiers canoniques ont au moins un landmark vérifié.**
 
 ### Certification LOT9 — 2026-09-18
 
@@ -244,6 +244,16 @@ Elle ne doit pas créer une seconde source de vérité géographique ni transfor
 - aucune écriture DB ; aucun déploiement Vercel
 
 LOT9 est fermé sur preuve réelle et inspection visuelle. Le score visuel global antérieur reste `9,2/10` ; aucun score supérieur n’est revendiqué sans revue dédiée.
+
+### Certification LOT4 finale — 2026-09-18
+
+- HEAD produit certifié : `7251abf030eb5d08f96a899a4a8d3585657b411a`
+- couverture : 23/23 quartiers canoniques avec au moins un landmark vérifié
+- Territory Dictionary Contract : run `35353870995` ✅
+- Territory Dictionary Visual Certification : run `35353871008` ✅
+- file d’enrichissement : vide
+- aucun déploiement Vercel ; aucune écriture Supabase
+
 
 
 ### Formule de départ
@@ -294,13 +304,9 @@ Cette formule est une direction produit ; le contrat LOT 1 doit rester assez sta
 
 ## 12. NEXT EXACT
 
-**LOT 4 — compléter le landmark dictionary vérifié.**
+**Closeout Territory Dictionary.**
 
-État actuel : 5 landmarks vérifiés couvrent 5/23 quartiers canoniques. Ajouter uniquement des repères dont identité, rattachement quartier et coordonnées sont suffisamment sourcés ; ne jamais remplir un quartier par approximation.
-
-Priorité immédiate : Maârif, Aïn Diab, Hay Riad, Souissi, Guéliz, Malabata, Founty, puis les autres quartiers canoniques manquants.
-
-Aucun Vercel. Aucune écriture Supabase.
+Couverture landmarks : 23/23 quartiers canoniques. Contract + Visual Certification verts sur le HEAD produit final. Mettre la PR #1038 en état de revue après cohérence documentaire ; aucun Vercel et aucune écriture Supabase.
 
 ---
 
@@ -308,4 +314,4 @@ Aucun Vercel. Aucune écriture Supabase.
 
 Lire ce fichier puis `docs/handovers/2026-09-17-vivre-ici-pr1025-main-integration-handover.md`. Re-vérifier `main`, la branche Territory Dictionary et Supabase avant toute écriture.
 
-`3-vivre-ici-akarfinder.md — Vivre Ici AkarFinder — Territory Dictionary 45/53 pts`
+`3-vivre-ici-akarfinder.md — Vivre Ici AkarFinder — Territory Dictionary 53/53 pts`
