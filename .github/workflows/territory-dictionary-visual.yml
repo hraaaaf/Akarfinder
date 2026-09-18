@@ -47,7 +47,7 @@ jobs:
           const premium = s.results.filter((r) => r.scenario === 'premium-national');
           if (premium.length !== 4) throw new Error(`expected 4 premium proofs, got ${premium.length}`);
           for (const r of premium) {
-            for (const slug of ['casablanca','rabat','marrakech','tanger']) {
+            for (const slug of ['casablanca','rabat','marrakech','tanger','agadir','fes']) {
               if (!r.initialCitySlugs.includes(slug)) throw new Error(`missing flagship ${slug} on ${r.viewport.name}`);
             }
             if (r.zoomedCityLabelCount <= r.initialCityLabelCount) throw new Error(`no progressive reveal on ${r.viewport.name}`);

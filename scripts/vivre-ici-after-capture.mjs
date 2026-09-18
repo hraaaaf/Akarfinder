@@ -208,7 +208,7 @@ try {
     || r.regionCount !== 12
     || r.regionListCount !== 12
     || r.initialCityLabelCount < 4
-    || !['casablanca','rabat','marrakech','tanger'].every((slug) => r.initialCitySlugs.includes(slug))
+    || !['casablanca','rabat','marrakech','tanger','agadir','fes'].every((slug) => r.initialCitySlugs.includes(slug))
     || r.zoomedCityLabelCount <= r.initialCityLabelCount
     || !r.zoomedCitySlugs.includes('kenitra')
     || !r.zoomedCitySlugs.includes('mohammedia')
