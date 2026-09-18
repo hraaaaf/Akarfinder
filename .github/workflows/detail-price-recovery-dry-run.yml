@@ -1,0 +1,49 @@
+name: AkarFinder - Detail Price Recovery Dry Run
+on:
+  push:
+    branches: [fix/agenz-mubawab-price-recovery]
+    paths:
+      - 'scripts/price-recovery/**'
+      - '.github/workflows/detail-price-recovery-dry-run.yml'
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: 'Max rows per source'
+        required: false
+        default: '300'
+permissions:
+  contents: read
+jobs:
+  price-recovery:
+    runs-on: ubuntu-latest
+    env:
+      PRICE_RECOVERY_OUT: .tmp/price-recovery
+      PRICE_RECOVERY_LIMIT: ${{ inputs.limit || '300' }}
+      PRICE_RECOVERY_CONCURRENCY: '6'
+      PRICE_RECOVERY_FALLBACK_MANIFEST: scripts/price-recovery/fallback-mubawab-unavailable-seedonly-industrial-003.json
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Unit tests
+        run: npx tsx --test scripts/price-recovery/__tests__/*.test.ts
+      - name: TypeScript check
+        run: npx tsc --noEmit
+      - name: Read-only safe Mubawab detail price recovery
+        run: npx tsx scripts/price-recovery/run-mubawab-price-recovery-safe.ts
+      - name: Verify no-write contract
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const p=JSON.parse(fs.readFileSync('.tmp/price-recovery/summary.json','utf8'));
+          if(p.readOnly!==true||p.databaseWrites!==0) throw new Error('readonly invariant failed');
+          if(p.requested<1) throw new Error('no rows audited');
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: detail-price-recovery-proof
+          path: .tmp/price-recovery/
+          retention-days: 30
