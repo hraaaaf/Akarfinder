@@ -90,6 +90,7 @@ export const GEO_NEIGHBORHOODS: CanonicalNeighborhoodEntity[] = [
   { id: "district_marrakech_gueliz", slug: "gueliz", canonical_name: "Guéliz", aliases: ["Gueliz"], city_slug: "marrakech", validation_status: "validated", seo_eligible: true, map_eligible: true },
   { id: "district_marrakech_hivernage", slug: "hivernage", canonical_name: "Hivernage", aliases: ["L'Hivernage"], city_slug: "marrakech", validation_status: "validated", seo_eligible: true, map_eligible: true },
   { id: "district_marrakech_ourika", slug: "route-de-lourika", canonical_name: "Route de l'Ourika", aliases: ["Ourika", "Route Ourika"], city_slug: "marrakech", validation_status: "validated", seo_eligible: false, map_eligible: true },
+  { id: "district_marrakech_ouahat_sidi_brahim", slug: "ouahat-sidi-brahim", canonical_name: "Ouahat Sidi Brahim", aliases: [], city_slug: "marrakech", validation_status: "validated", seo_eligible: false, map_eligible: true },
 
   // Tanger
   { id: "district_tanger_malabata", slug: "malabata", canonical_name: "Malabata", aliases: [], city_slug: "tanger", validation_status: "validated", seo_eligible: true, map_eligible: true },
