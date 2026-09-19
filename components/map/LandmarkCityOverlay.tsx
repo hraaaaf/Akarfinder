@@ -78,8 +78,7 @@ export function LandmarkCityOverlay({ map, mapReady, citySlug }: Props) {
         const reserved: LandmarkReservedRect[] = [];
         if (width >= 1024) {
           reserved.push(
-            { x: 10, y: 10, width: Math.min(440, width * 0.38), height: 150 },
-            { x: width - 390, y: 12, width: 374, height: Math.max(420, height - 36) },
+            { x: 10, y: 10, width: Math.min(440, width * 0.42), height: 150 },
             { x: 0, y: height - 44, width, height: 44 },
           );
         } else if (width >= 640) {
@@ -202,7 +201,7 @@ export function LandmarkCityOverlay({ map, mapReady, citySlug }: Props) {
       </div>
 
       <aside
-        className="absolute right-4 top-4 z-[19] hidden w-[360px] rounded-[24px] border border-white/80 bg-white/[0.96] p-4 shadow-[0_22px_55px_rgba(7,27,51,0.14)] backdrop-blur-xl lg:block"
+        className="absolute right-3 top-3 z-[19] hidden w-[364px] rounded-[24px] border border-white/85 bg-white/[0.98] p-4 shadow-[0_18px_48px_rgba(7,27,51,0.11)] backdrop-blur-xl lg:block"
         aria-label="Repères de la ville"
         data-landmark-sidebar
       >
@@ -231,7 +230,7 @@ export function LandmarkCityOverlay({ map, mapReady, citySlug }: Props) {
                 className={visible ? "flex items-center gap-2.5 rounded-2xl border border-[#DCE8F5] bg-white p-2" : "flex items-center gap-2.5 rounded-2xl border border-slate-100 bg-slate-50/70 p-2 opacity-55"}
                 data-landmark-sidebar-item={entry.entity.landmarkSlug}
               >
-                <div className="h-11 w-16 shrink-0 overflow-hidden rounded-xl bg-[#F7FAFF]">
+                <div className="h-12 w-[72px] shrink-0 overflow-hidden rounded-xl bg-[#F7FAFF]">
                   <LandmarkArtwork artworkKey={presentation.artworkKey} className="h-full w-full" decorative />
                 </div>
                 <div className="min-w-0 flex-1">
