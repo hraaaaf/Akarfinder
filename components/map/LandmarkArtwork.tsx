@@ -194,6 +194,22 @@ function BouskouraForest() {
 }
 
 
+function ParcSindibad() {
+  return (
+    <>
+      <path d="M54 151C80 128 108 116 140 113C177 109 218 120 266 151Z" fill="#E8F6EC" />
+      <path d="M82 151V93C82 77 95 64 111 64C127 64 140 77 140 93C140 109 127 122 111 122C95 122 82 109 82 93" fill="none" stroke={RED} strokeWidth="5" />
+      <path d="M83 93L139 93M111 65V121" stroke="#F6C743" strokeWidth="2.4" />
+      <path d="M166 151V84M166 84L207 151M166 84L126 151" fill="none" stroke={NAVY} strokeWidth="3" strokeLinecap="round" />
+      <path d="M143 102H190L182 113H151Z" fill="#80C6E9" stroke={NAVY} strokeWidth="1.7" />
+      <path d="M214 151V108C214 99 221 92 230 92C239 92 246 99 246 108V151" fill={CREAM} stroke={NAVY} strokeWidth="2" />
+      <path d="M207 108H253" stroke={BLUE} strokeWidth="4" strokeLinecap="round" />
+      <Palm x={58} y={111} scale={0.5} />
+      <path d="M48 151H270" stroke={GREEN_DARK} strokeWidth="2" />
+    </>
+  );
+}
+
 function ParcVillesJumelees() {
   return (
     <>
@@ -239,6 +255,7 @@ export function LandmarkArtwork({ artworkKey, className = "", decorative = false
     case "institut-juan-ramon-jimenez": scene = <Instituto />; break;
     case "foret-de-bouskoura": scene = <BouskouraForest />; break;
     case "parc-des-villes-jumelees": scene = <ParcVillesJumelees />; break;
+    case "parc-sindibad": scene = <ParcSindibad />; break;
     default: scene = <Generic keyName={artworkKey} />; break;
   }
 
