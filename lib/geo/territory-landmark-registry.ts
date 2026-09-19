@@ -1044,6 +1044,38 @@ export const VERIFIED_LANDMARKS: readonly VerifiedLandmarkEntry[] = [
 
   { entity: { id: "landmark_rabat_ocean_phare_rabat", type: "landmark", citySlug: "rabat", districtSlug: "ocean", landmarkSlug: "phare-rabat", canonicalName: "Phare de Rabat", aliases: ["Phare de Borj Sirat"], category: "heritage", parentId: "district_rabat_ocean", importance: { score: 92, tier: "major", basis: ["orientation_value","urban_prominence"] }, visibility: { minZoom: 14.5, retainPriority: false }, coordinates: { lat: 34.03140, lng: -6.84440, precision: "verified_landmark_point" } }, sourceRefs: ["https://www.wikidata.org/wiki/Q3378343","https://fr.aroundus.com/p/8473939-phare-de-rabat","https://commons.wikimedia.org/wiki/Category:Rabat_Lighthouse"], verificationNote: "Factory re-verification 2026-09-19: identity, Borj Sirat context and point independently corroborated; source reliability retained at 84/100.", verifiedAt: "2026-09-19" },
 
+  {
+    entity: {
+      id: "landmark_mohammedia_centre_parc_villes_jumelees",
+      type: "landmark",
+      citySlug: "mohammedia",
+      districtSlug: "centre",
+      landmarkSlug: "parc-des-villes-jumelees",
+      canonicalName: "Parc des Villes Jumelées",
+      aliases: ["Parc des villes jumelées", "Parc Mohammedia"],
+      category: "park",
+      parentId: "district_mohammedia_centre",
+      importance: {
+        score: 89,
+        tier: "major",
+        basis: ["orientation_value", "urban_prominence", "product_priority"],
+      },
+      visibility: { minZoom: 13.8, retainPriority: true },
+      coordinates: {
+        lat: 33.70575,
+        lng: -7.39766,
+        precision: "verified_landmark_point",
+      },
+    },
+    sourceRefs: [
+      "https://www.collectivites-territoriales.gov.ma/sites/default/files/pnct/2021-06/Lettre%20des%20Collectivit%C3%A9s%20Locales%20N%C2%B0%209%20Fran%C3%A7ais.pdf",
+      "https://mapcarta.com/fr/W571799684",
+      "https://commons.wikimedia.org/wiki/File:Le_parc_des_villes_jumel%C3%A9es_Mohammedia.jpg",
+    ],
+    verificationNote: "DGCT inventory explicitly lists Villes Jumelées under Mohammedia; OSM-backed mapping independently fixes the park at 33.70575,-7.39766; Wikimedia provides visual corroboration. AkarFinder notoriety 89/100 = public visibility 17 + orientation 19 + local anchoring 18 + visual singularity 16 + source reliability 19.",
+    verifiedAt: "2026-09-19",
+  },
+
 ];
 
 const CANONICAL_DISTRICT_IDS = new Set(GEO_NEIGHBORHOODS.map((district) => district.id));
