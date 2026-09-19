@@ -52,8 +52,8 @@ export function layoutLandmarkCards({
 }): LandmarkPlaced[] {
   const mobile = viewportWidth < 640;
   const tablet = viewportWidth >= 640 && viewportWidth < 1024;
-  const width = mobile ? 136 : tablet ? 150 : 170;
-  const height = mobile ? 52 : 60;
+  const width = mobile ? 158 : tablet ? 164 : 178;
+  const height = mobile ? 56 : 62;
 
   const offsets: Array<[number, number]> = [
     [16, -height - 10],
