@@ -361,9 +361,16 @@ export function NationalTerritoryExperience({ selectedCitySlug, onSelectCity, on
 
   const searchHref = payload?.view === "city" ? `/search?city=${encodeURIComponent(payload.place.name)}` : "/search";
 
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    const frame = requestAnimationFrame(() => map.resize());
+    return () => cancelAnimationFrame(frame);
+  }, [payload?.view]);
+
   return (
     <div className="relative h-[calc(100svh-64px)] min-h-[520px] overflow-hidden bg-[#EDF3F7] dark:bg-[#071426]" data-akarfinder-national-map data-akarfinder-national-view={payload?.view ?? "loading"}>
-      <div ref={mapContainerRef} className="absolute inset-0" />
+      <div ref={mapContainerRef} className={payload?.view === "city" ? "absolute inset-y-0 left-0 right-0 lg:right-[388px]" : "absolute inset-0"} />
 
       {payload?.view === "city" ? (
         <LandmarkCityOverlay
