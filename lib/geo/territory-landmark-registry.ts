@@ -653,8 +653,10 @@ export const VERIFIED_LANDMARKS: readonly VerifiedLandmarkEntry[] = [
       "https://letouriste.ma/mohammedia-la-cite-des-fleurs-et-des-sports-elegants/",
       "https://aujourdhui.ma/culture/premiere-edition-de-mohammediart-les-acteurs-culturels-et-associatifs-investissent-lespace-vert-68755",
       "https://mapcarta.com/fr/W571799684",
+      "https://www.collectivites-territoriales.gov.ma/sites/default/files/pnct/2021-06/Lettre%20des%20Collectivit%C3%A9s%20Locales%20N%C2%B0%209%20Fran%C3%A7ais.pdf",
+      "https://commons.wikimedia.org/wiki/File:Le_parc_des_villes_jumel%C3%A9es_Mohammedia.jpg",
     ],
-    verificationNote: "Independent Moroccan sources identify Parc des Villes Jumelées as a central Mohammedia landmark; OSM-backed mapping supplies the point.",
+    verificationNote: "Independent Moroccan sources identify Parc des Villes Jumelées as a central Mohammedia landmark; OSM-backed mapping supplies the point. Factory re-verification 2026-09-19 adds DGCT primary-source corroboration and Wikimedia visual evidence without changing the canonical point or existing 92/100 importance.",
     verifiedAt: "2026-09-18",
   },
 
@@ -1043,6 +1045,7 @@ export const VERIFIED_LANDMARKS: readonly VerifiedLandmarkEntry[] = [
   { entity: { id: "landmark_rabat_ocean_musee_national_photographie", type: "landmark", citySlug: "rabat", districtSlug: "ocean", landmarkSlug: "musee-national-photographie", canonicalName: "Musée National de la Photographie", aliases: ["Fort Rottembourg"], category: "heritage", parentId: "district_rabat_ocean", importance: { score: 93, tier: "major", basis: ["orientation_value","urban_prominence"] }, visibility: { minZoom: 13.6, retainPriority: true }, coordinates: { lat: 34.02499, lng: -6.85099, precision: "verified_landmark_point" } }, sourceRefs: ["https://www.fnm.ma/museums/36","https://www.visitrabat.com/lieux/musee-national-de-la-photographie/","https://mapcarta.com/W564924293"], verificationNote: "FNM primary + Visit Rabat + OSM-backed fort point.", verifiedAt: "2026-09-19" },
 
   { entity: { id: "landmark_rabat_ocean_phare_rabat", type: "landmark", citySlug: "rabat", districtSlug: "ocean", landmarkSlug: "phare-rabat", canonicalName: "Phare de Rabat", aliases: ["Phare de Borj Sirat"], category: "heritage", parentId: "district_rabat_ocean", importance: { score: 92, tier: "major", basis: ["orientation_value","urban_prominence"] }, visibility: { minZoom: 14.5, retainPriority: false }, coordinates: { lat: 34.03140, lng: -6.84440, precision: "verified_landmark_point" } }, sourceRefs: ["https://www.wikidata.org/wiki/Q3378343","https://fr.aroundus.com/p/8473939-phare-de-rabat","https://commons.wikimedia.org/wiki/Category:Rabat_Lighthouse"], verificationNote: "Factory re-verification 2026-09-19: identity, Borj Sirat context and point independently corroborated; source reliability retained at 84/100.", verifiedAt: "2026-09-19" },
+
 
 ];
 

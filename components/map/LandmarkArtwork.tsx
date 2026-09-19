@@ -193,6 +193,27 @@ function BouskouraForest() {
   );
 }
 
+
+function ParcVillesJumelees() {
+  return (
+    <>
+      <path d="M58 151C83 126 111 112 143 108C180 103 217 116 262 151Z" fill="#E8F6EC" />
+      <path d="M77 151C99 132 123 122 151 119C183 116 211 125 243 145" fill="none" stroke="#F3DFC0" strokeWidth="9" strokeLinecap="round" />
+      <Palm x={82} y={101} scale={0.62} />
+      <Palm x={238} y={101} scale={0.62} />
+      <g fill={GREEN}>
+        <circle cx="122" cy="116" r="17" /><circle cx="155" cy="108" r="20" /><circle cx="192" cy="116" r="17" />
+      </g>
+      <g stroke={NAVY} strokeWidth="2" strokeLinecap="round">
+        <path d="M107 151V129M205 151V129" />
+        <path d="M98 129H116M196 129H214" />
+      </g>
+      <path d="M132 151V135H188V151" fill="#FFFFFF" stroke={NAVY} strokeWidth="1.8" />
+      <path d="M144 135V124H176V135" fill={CREAM} stroke={NAVY} strokeWidth="1.6" />
+    </>
+  );
+}
+
 function Generic({ keyName }: { keyName: string }) {
   const isGreen = keyName === "park";
   const accent = isGreen ? GREEN : BLUE;
@@ -217,6 +238,7 @@ export function LandmarkArtwork({ artworkKey, className = "", decorative = false
     case "lycee-lyautey": scene = <LyceeLyautey />; break;
     case "institut-juan-ramon-jimenez": scene = <Instituto />; break;
     case "foret-de-bouskoura": scene = <BouskouraForest />; break;
+    case "parc-des-villes-jumelees": scene = <ParcVillesJumelees />; break;
     default: scene = <Generic keyName={artworkKey} />; break;
   }
 

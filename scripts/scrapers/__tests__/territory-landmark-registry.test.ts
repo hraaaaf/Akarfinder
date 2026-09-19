@@ -79,6 +79,15 @@ test("bootstrap seed establishes a substantial landmark baseline", () => {
   assert.equal(new Set(VERIFIED_LANDMARKS.map(({ entity }) => entity.id)).size, VERIFIED_LANDMARKS.length);
 });
 
+test("Mohammedia twin-cities park resolves to its dedicated signage artwork", () => {
+  const entry = VERIFIED_LANDMARKS.find(
+    (candidate) => candidate.entity.id === "landmark_mohammedia_centre_parc_villes_jumelees",
+  );
+  assert.ok(entry);
+  assert.equal(getLandmarkPresentation(entry).artworkKey, "parc-des-villes-jumelees");
+  assert.equal(getLandmarkPresentation(entry).tierLabel, "Majeur");
+});
+
 test("landmark notoriety scoring applies confidence gate and weighted tiers", () => {
   assert.deepEqual(
     scoreLandmarkNotoriety({
