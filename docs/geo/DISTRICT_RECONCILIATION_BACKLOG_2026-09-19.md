@@ -34,7 +34,7 @@ Statuses:
 | Oasis | VALIDATE_CANDIDATE |
 | Palmier | VALIDATE_CANDIDATE |
 | CIL | VALIDATE_CANDIDATE |
-| Beauséjour | VALIDATE_CANDIDATE |
+| Beauséjour | VALIDATED_MAP |
 | Derb Ghallef | VALIDATE_CANDIDATE |
 | Belvédère | VALIDATE_CANDIDATE |
 | Ain Sebaa | AMBIGUOUS |
@@ -127,5 +127,19 @@ Evidence:
 - Google Maps places Stade Larbi Zaouli on Boulevard de la Grande Ceinture; Casablanca City lists an arrondissement annex on the same boulevard in Hay Mohammadi.
 
 Decision: **VALIDATED / map eligible**, SEO remains disabled. Alias `Hay Al Mohammadi` is accepted. This promotion is intentionally narrow: it unlocks territorial map attachment without changing SEO or ingestion/business data.
+
+Guardrails: 0 Supabase, 0 ranking, 0 deploy, 0 merge.
+
+
+## Promotion pass 3 — Casablanca / Beauséjour — 2026-09-19
+
+Promoted canonical map entity: `district_casablanca_beausejour`.
+
+Evidence for the stadium-driven scope:
+- Independent Moroccan stadium reporting explicitly places Stade Père Jégo in quartier Beauséjour.
+- Current transit/map evidence places the stadium at the Beauséjour stop/sector and mapped point around 33.55744,-7.65149.
+- Conflicting broad labels (Oasis / Hay Hassani sector) are treated as surrounding/administrative context, not as permission to attach Père Jégo to an existing unrelated canonical district.
+
+Decision: **VALIDATED / map eligible / SEO disabled**. The entity is promoted narrowly to support verified territorial navigation and stadium attachment; no business-data inference is authorized.
 
 Guardrails: 0 Supabase, 0 ranking, 0 deploy, 0 merge.
