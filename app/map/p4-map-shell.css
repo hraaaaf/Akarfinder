@@ -123,6 +123,17 @@
 
   [data-p4-map-layout][data-landmark-city-overview="true"] {
     grid-template-columns: minmax(0, 1fr);
+    width: 100%;
+    max-width: none;
+    margin-inline: 0;
+    justify-self: stretch;
+  }
+
+  [data-p4-map-layout][data-landmark-city-overview="true"] [data-p4-map-canvas],
+  [data-p4-map-layout][data-landmark-city-overview="true"] [data-vivre-ici-map-shell],
+  [data-p4-map-layout][data-landmark-city-overview="true"] [data-akarfinder-national-map] {
+    width: 100%;
+    max-width: none;
   }
 
   [data-p4-map-canvas] {
