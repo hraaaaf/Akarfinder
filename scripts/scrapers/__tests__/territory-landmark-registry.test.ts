@@ -166,3 +166,26 @@ test("landmark card layout rejects overlaps and reserved UI zones", () => {
     }
   }
 });
+
+
+test("landmark card displacement stays visually tethered to its GPS pin", () => {
+  const casa = VERIFIED_LANDMARKS.filter((entry) => entry.entity.citySlug === "casablanca");
+  const anchors = selectLandmarksForCityView(casa, 11.4, 1280).map((entry, index) => ({
+    entry,
+    x: 240 + (index % 4) * 170,
+    y: 220 + Math.floor(index / 4) * 150,
+  }));
+  const placed = layoutLandmarkCards({
+    anchors,
+    viewportWidth: 1280,
+    viewportHeight: 900,
+    reserved: [{ x: 892, y: 0, width: 388, height: 900 }],
+  });
+
+  for (const item of placed) {
+    const nearestX = Math.max(item.cardX, Math.min(item.cardX + item.width, item.x));
+    const nearestY = Math.max(item.cardY, Math.min(item.cardY + item.height, item.y));
+    const distance = Math.hypot(nearestX - item.x, nearestY - item.y);
+    assert.ok(distance <= 20, `${item.entry.entity.id} displaced ${distance.toFixed(1)}px`);
+  }
+});
