@@ -5,6 +5,7 @@ import { VERIFIED_LANDMARKS } from "../../../lib/geo/territory-landmark-registry
 import {
   LANDMARK_THEME_LABELS_FR,
   getLandmarkThemeTags,
+  selectThemeDiverseLandmarks,
 } from "../../../lib/geo/territory-landmark-themes";
 
 test("every verified landmark resolves to at least one editorial theme", () => {
@@ -44,4 +45,28 @@ test("technical category stays separate from editorial theme", () => {
 
   assert.equal(stadium.category, "sports");
   assert.deepEqual(getLandmarkThemeTags(stadium), ["stadiums"]);
+});
+
+
+test("theme diversity keeps the higher-priority first candidate per district/theme", () => {
+  const byId = new Map(VERIFIED_LANDMARKS.map((entry) => [entry.entity.id, entry]));
+  const tower = byId.get("landmark_rabat_hassan_tour_hassan")!;
+  const mausoleum = byId.get("landmark_rabat_hassan_mausolee_mohammed_v")!;
+  const station = byId.get("landmark_rabat_agdal_station")!;
+
+  const selected = selectThemeDiverseLandmarks([tower, mausoleum, station], 1);
+
+  assert.deepEqual(
+    selected.map((entry) => entry.entity.id),
+    ["landmark_rabat_hassan_tour_hassan", "landmark_rabat_agdal_station"],
+  );
+});
+
+test("theme diversity is scoped per district and fails closed for invalid capacity", () => {
+  const byId = new Map(VERIFIED_LANDMARKS.map((entry) => [entry.entity.id, entry]));
+  const tower = byId.get("landmark_rabat_hassan_tour_hassan")!;
+  const necropolis = byId.get("landmark_tanger_marchan_necropole_hafa")!;
+
+  assert.equal(selectThemeDiverseLandmarks([tower, necropolis], 1).length, 2);
+  assert.deepEqual(selectThemeDiverseLandmarks([tower], 0), []);
 });
