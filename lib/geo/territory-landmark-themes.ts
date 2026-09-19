@@ -76,3 +76,30 @@ export function getLandmarkThemeLabelsFr(
 ): string[] {
   return getLandmarkThemeTags(landmark).map((theme) => LANDMARK_THEME_LABELS_FR[theme]);
 }
+
+
+export function selectThemeDiverseLandmarks<
+  T extends { entity: LandmarkTerritoryEntity },
+>(
+  entries: readonly T[],
+  maxPerThemePerDistrict = 1,
+): T[] {
+  if (!Number.isInteger(maxPerThemePerDistrict) || maxPerThemePerDistrict <= 0) return [];
+
+  const counts = new Map<string, number>();
+  const selected: T[] = [];
+
+  for (const entry of entries) {
+    const themes = getLandmarkThemeTags(entry.entity);
+    const keys = themes.map((theme) => `${entry.entity.parentId}::${theme}`);
+
+    if (keys.some((key) => (counts.get(key) ?? 0) >= maxPerThemePerDistrict)) {
+      continue;
+    }
+
+    selected.push(entry);
+    for (const key of keys) counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+
+  return selected;
+}
