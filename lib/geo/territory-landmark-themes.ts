@@ -24,6 +24,7 @@ export const LANDMARK_THEME_LABELS_FR: Record<LandmarkThemeTag, string> = {
 };
 
 const CATEGORY_DEFAULT_THEMES: Record<LandmarkCategory, readonly LandmarkThemeTag[]> = {
+  sports: ["stadiums"],
   heritage: ["historic-monuments"],
   transport: ["stations-hubs"],
   park: ["parks-gardens"],
