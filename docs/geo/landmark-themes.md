@@ -32,4 +32,8 @@ quality and map value.
 - Resolver + labels + explicit overrides: `lib/geo/territory-landmark-themes.ts`
 - Contract tests: `scripts/scrapers/__tests__/territory-landmark-themes.test.ts`
 
-This first implementation intentionally does not alter runtime map selection yet.
+Runtime integration:
+- below local zoom 14.5, selection keeps at most one visible landmark per theme and district;
+- candidates are already ordered by retainPriority then importance, so the stronger landmark wins the theme slot;
+- from zoom 14.5 upward, the theme quota is released and the existing deterministic collision engine decides whether multiple same-theme landmarks can coexist;
+- GPS coordinates are never changed to satisfy thematic diversity.
