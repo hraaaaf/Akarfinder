@@ -67,6 +67,9 @@ const TARGET_PRESENTATION: Record<string, LandmarkPresentation> = {
     revealZoom: 11.15,
     visualPriority: 83,
   },
+  "landmark_rabat_souissi_marche_dar_essalam": {
+    artworkKey: "marche-dar-essalam", tier: "major", tierLabel: "Majeur", revealZoom: 11.0, visualPriority: 94,
+  },
   "landmark_casablanca_ain_diab_parc_sindibad": {
     artworkKey: "parc-sindibad",
     tier: "major",
