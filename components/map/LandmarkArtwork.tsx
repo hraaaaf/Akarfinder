@@ -25,8 +25,18 @@ function Frame({ children, label, decorative, className = "" }: { children: Reac
       aria-label={decorative ? undefined : label}
     >
       <rect width="320" height="190" rx="26" fill="#FFFFFF" />
-      <circle cx="236" cy="44" r="58" fill={SKY} opacity=".72" />
-      <ellipse cx="160" cy="159" rx="122" ry="17" fill="#F4F8FC" />
+      <path d="M0 0H320V118C265 100 226 105 181 115C129 127 74 126 0 104Z" fill="#F5FAFF" />
+      <circle cx="247" cy="42" r="54" fill={SKY} opacity=".78" />
+      <circle cx="266" cy="34" r="21" fill="#FFF4D6" opacity=".9" />
+      <g fill="#D9E8F3" opacity=".52">
+        <rect x="22" y="83" width="20" height="54" rx="3" />
+        <rect x="46" y="68" width="28" height="69" rx="3" />
+        <rect x="79" y="91" width="17" height="46" rx="3" />
+        <rect x="231" y="88" width="22" height="49" rx="3" />
+        <rect x="258" y="72" width="31" height="65" rx="3" />
+      </g>
+      <ellipse cx="160" cy="160" rx="128" ry="20" fill="#F1F6FA" />
+      <path d="M36 158C90 145 126 151 160 148C203 144 239 146 286 158" fill="none" stroke="#D7E4ED" strokeWidth="3" strokeLinecap="round" opacity=".8" />
       {children}
     </svg>
   );
