@@ -67,6 +67,13 @@ const TARGET_PRESENTATION: Record<string, LandmarkPresentation> = {
     revealZoom: 11.15,
     visualPriority: 83,
   },
+  "landmark_mohammedia_centre_parc_villes_jumelees": {
+    artworkKey: "parc-des-villes-jumelees",
+    tier: "major",
+    tierLabel: "Majeur",
+    revealZoom: 11.0,
+    visualPriority: 89,
+  },
   "landmark_casablanca_bourgogne_casa_bourgogne_post": {
     artworkKey: "civic-building",
     tier: "contextual",
