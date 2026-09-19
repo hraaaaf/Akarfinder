@@ -88,19 +88,23 @@ export const GEO_NEIGHBORHOODS: CanonicalNeighborhoodEntity[] = [
   { id: "district_marrakech_gueliz", slug: "gueliz", canonical_name: "Guéliz", aliases: ["Gueliz"], city_slug: "marrakech", validation_status: "validated", seo_eligible: true, map_eligible: true },
   { id: "district_marrakech_hivernage", slug: "hivernage", canonical_name: "Hivernage", aliases: ["L'Hivernage"], city_slug: "marrakech", validation_status: "validated", seo_eligible: true, map_eligible: true },
   { id: "district_marrakech_ourika", slug: "route-de-lourika", canonical_name: "Route de l'Ourika", aliases: ["Ourika", "Route Ourika"], city_slug: "marrakech", validation_status: "validated", seo_eligible: false, map_eligible: true },
+  { id: "district_marrakech_ouahat_sidi_brahim", slug: "ouahat-sidi-brahim", canonical_name: "Ouahat Sidi Brahim", aliases: ["Ouahat Sidi Brahim", "Palmeraie nord"], city_slug: "marrakech", validation_status: "validated", seo_eligible: false, map_eligible: true },
 
   // Tanger
   { id: "district_tanger_malabata", slug: "malabata", canonical_name: "Malabata", aliases: [], city_slug: "tanger", validation_status: "validated", seo_eligible: true, map_eligible: true },
   { id: "district_tanger_ville_nouvelle", slug: "ville-nouvelle", canonical_name: "Ville Nouvelle", aliases: ["Ville nouvelle"], city_slug: "tanger", validation_status: "validated", seo_eligible: false, map_eligible: true },
   { id: "district_tanger_marchan", slug: "marchan", canonical_name: "Marchan", aliases: ["Marshan"], city_slug: "tanger", validation_status: "validated", seo_eligible: false, map_eligible: false },
+  { id: "district_tanger_ziaten", slug: "ziaten", canonical_name: "Ziaten", aliases: ["Village sportif de Ziaten"], city_slug: "tanger", validation_status: "validated", seo_eligible: false, map_eligible: true },
 
   // Agadir
   { id: "district_agadir_founty", slug: "founty", canonical_name: "Founty", aliases: [], city_slug: "agadir", validation_status: "validated", seo_eligible: true, map_eligible: true },
   { id: "district_agadir_talborjt", slug: "talborjt", canonical_name: "Talborjt", aliases: ["Quartier Talborjt"], city_slug: "agadir", validation_status: "validated", seo_eligible: false, map_eligible: true },
+  { id: "district_agadir_adrar", slug: "adrar", canonical_name: "Adrar", aliases: ["Quartier Adrar"], city_slug: "agadir", validation_status: "validated", seo_eligible: false, map_eligible: true },
 
   // Map-only canonical entities: validated for map/navigation, not auto-indexed for SEO.
   { id: "district_fes_ville_nouvelle", slug: "ville-nouvelle", canonical_name: "Ville Nouvelle", aliases: [], city_slug: "fes", validation_status: "validated", seo_eligible: false, map_eligible: true },
   { id: "district_fes_el_bali", slug: "fes-el-bali", canonical_name: "Fès el-Bali", aliases: ["Fes el-Bali", "Fes el Bali"], city_slug: "fes", validation_status: "validated", seo_eligible: false, map_eligible: true },
+  { id: "district_fes_route_sefrou", slug: "route-de-sefrou", canonical_name: "Route de Sefrou", aliases: ["Route Sefrou", "N8 sud"], city_slug: "fes", validation_status: "validated", seo_eligible: false, map_eligible: true },
   { id: "district_kenitra_centre_ville", slug: "centre-ville", canonical_name: "Centre-ville", aliases: ["Centre ville"], city_slug: "kenitra", validation_status: "validated", seo_eligible: false, map_eligible: true },
   { id: "district_mohammedia_centre", slug: "centre", canonical_name: "Centre", aliases: ["Centre-ville", "Centre ville"], city_slug: "mohammedia", validation_status: "validated", seo_eligible: false, map_eligible: true },
 ];
