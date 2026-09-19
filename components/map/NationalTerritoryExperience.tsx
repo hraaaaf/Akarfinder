@@ -5,6 +5,7 @@ import { ArrowLeft, MapPin, Search } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Map as MapLibreMap, MapMouseEvent } from "maplibre-gl";
 import { useTheme } from "@/components/theme/ThemeProvider";
+import { LandmarkCityOverlay } from "@/components/map/LandmarkCityOverlay";
 import { applyAkarFinderBasemapTreatment } from "@/lib/map/akarfinder-territorial-style";
 
 const LIGHT_TILE_STYLE = "https://tiles.openfreemap.org/styles/liberty";
@@ -363,6 +364,14 @@ export function NationalTerritoryExperience({ selectedCitySlug, onSelectCity, on
   return (
     <div className="relative h-[calc(100svh-64px)] min-h-[520px] overflow-hidden bg-[#EDF3F7] dark:bg-[#071426]" data-akarfinder-national-map data-akarfinder-national-view={payload?.view ?? "loading"}>
       <div ref={mapContainerRef} className="absolute inset-0" />
+
+      {payload?.view === "city" ? (
+        <LandmarkCityOverlay
+          map={mapRef.current}
+          mapReady={mapReady}
+          citySlug={payload.place.slug}
+        />
+      ) : null}
 
       <section className="absolute inset-x-3 top-3 z-20 rounded-[22px] border border-white/80 bg-white/[0.94] p-3 shadow-[0_18px_50px_rgba(15,35,66,0.14)] backdrop-blur-xl dark:border-white/10 dark:bg-[#0A1A2F]/[0.94] sm:left-4 sm:right-auto sm:top-4 sm:w-[min(430px,calc(100vw-32px))]" aria-label="Navigation territoriale nationale">
         <div className="flex items-start gap-3">
