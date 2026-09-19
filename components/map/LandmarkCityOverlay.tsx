@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { Map as MapLibreMap } from "maplibre-gl";
 import { LandmarkArtwork } from "@/components/map/LandmarkArtwork";
+import { GEO_NEIGHBORHOODS } from "@/lib/geo/geo-entity-registry";
 import {
   getLandmarkPresentation,
   selectLandmarksForCityView,
@@ -26,6 +27,11 @@ type Props = {
 function cityEntries(citySlug: string | null): VerifiedLandmarkEntry[] {
   if (!citySlug) return [];
   return VERIFIED_LANDMARKS.filter((entry) => entry.entity.citySlug === citySlug);
+}
+
+function districtLabel(entry: VerifiedLandmarkEntry): string {
+  return GEO_NEIGHBORHOODS.find((district) => district.id === entry.entity.parentId)?.canonical_name
+    ?? entry.entity.districtSlug.replace(/-/g, " ");
 }
 
 function lineGeometry(placed: LandmarkPlaced) {
@@ -186,7 +192,7 @@ export function LandmarkCityOverlay({ map, mapReady, citySlug }: Props) {
                     {item.entry.entity.canonicalName}
                   </p>
                   <p className="mt-0.5 truncate text-[8px] font-bold text-slate-500">
-                    {item.entry.entity.districtSlug.replace(/-/g, " ")}
+                    {districtLabel(item.entry)}
                   </p>
                 </div>
               </div>
@@ -230,7 +236,7 @@ export function LandmarkCityOverlay({ map, mapReady, citySlug }: Props) {
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-[10.5px] font-black text-[#071B33]">{entry.entity.canonicalName}</p>
-                  <p className="mt-0.5 truncate text-[8.5px] font-bold text-slate-500">{entry.entity.districtSlug.replace(/-/g, " ")}</p>
+                  <p className="mt-0.5 truncate text-[8.5px] font-bold text-slate-500">{districtLabel(entry)}</p>
                 </div>
                 <span
                   className={
