@@ -218,3 +218,27 @@ test("nearby landmark pins suppress the lower-priority card until zoom separates
   });
   assert.equal(separated.length, 2);
 });
+
+
+test("Casablanca signage TARGET uses eight dedicated non-generic artworks", () => {
+  const expected = new Map([
+    ["landmark_casablanca_maarif_twin_center", "twin-center"],
+    ["landmark_casablanca_maarif_stade_mohammed_v", "stade-mohammed-v"],
+    ["landmark_casablanca_ain_diab_morocco_mall", "morocco-mall"],
+    ["landmark_casablanca_finance_city_cfc_tower", "cfc-first-tower"],
+    ["landmark_casablanca_finance_city_anfa_park", "anfa-park"],
+    ["landmark_casablanca_bourgogne_lycee_lyautey", "lycee-lyautey"],
+    ["landmark_casablanca_racine_institut_juan_ramon_jimenez", "institut-juan-ramon-jimenez"],
+    ["landmark_casablanca_bouskoura_forest", "foret-de-bouskoura"],
+  ]);
+
+  const resolved = new Set<string>();
+  for (const [id, artworkKey] of expected) {
+    const entry = VERIFIED_LANDMARKS.find((candidate) => candidate.entity.id === id);
+    assert.ok(entry, id);
+    assert.equal(getLandmarkPresentation(entry).artworkKey, artworkKey, id);
+    resolved.add(artworkKey);
+  }
+
+  assert.equal(resolved.size, 8, "TARGET artworks must remain visually distinct");
+});
