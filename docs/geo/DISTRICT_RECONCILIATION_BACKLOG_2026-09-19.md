@@ -114,3 +114,18 @@ Statuses:
 3. Resolve alias cases first: `Agadir Sonaba ↔ Founty`, `Fès Medina ↔ Fès el-Bali`, and `Tanger Centre-ville ↔ Ville Nouvelle`.
 4. Keep axes out of the neighborhood registry.
 5. For each promoted entity, add regression tests proving one canonical identity and alias resolution.
+
+
+## Promotion pass 2 — Casablanca / Hay Mohammadi — 2026-09-19
+
+Promoted canonical entity: `district_casablanca_hay_mohammadi`.
+
+Evidence:
+- Casablanca City official Hay Mohammadi portal defines Hay Mohammadi as an industrial/residential neighborhood in north-east Casablanca and as an arrondissement in the Aïn Sebaâ–Hay Mohammadi prefecture.
+- Casablanca City publishes the arrondissement limits (Aïn Sebaâ north/east, Roches Noires west, Sidi Moumen south), removing the previous scope ambiguity for the map identity.
+- CAF explicitly places Stade Larbi Zaouli in Hay Mohammadi.
+- Google Maps places Stade Larbi Zaouli on Boulevard de la Grande Ceinture; Casablanca City lists an arrondissement annex on the same boulevard in Hay Mohammadi.
+
+Decision: **VALIDATED / map eligible**, SEO remains disabled. Alias `Hay Al Mohammadi` is accepted. This promotion is intentionally narrow: it unlocks territorial map attachment without changing SEO or ingestion/business data.
+
+Guardrails: 0 Supabase, 0 ranking, 0 deploy, 0 merge.
