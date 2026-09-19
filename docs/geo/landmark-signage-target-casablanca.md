@@ -6,11 +6,19 @@ Scope: Vivre Ici / Visual Landmark Dictionary / Casablanca
 
 ## Durable visual source
 
-- File: `AKARFINDER_VIVRE_ICI_LANDMARK_SIGNAL_TARGET_CASABLANCA_2026-09-19.png`
+### Current canonical target — V2
+- File: `AKARFINDER_VIVRE_ICI_LANDMARK_SIGNAL_TARGET_CASABLANCA_V2_2026-09-19.png`
 - Dimensions: 1448 × 1086
+- SHA-256: `a4a10347aee85341d971040baa1b5afb3d85460d3208c79b7b614329b4ca5c98`
+- Google Drive ID: `10q6MdevKYec8PE297NRa6L210nhCUwNQ`
+- Google Drive URL: https://drive.google.com/file/d/10q6MdevKYec8PE297NRa6L210nhCUwNQ/view?usp=drivesdk
+- Drive size verified: 1,746,099 bytes
+
+### Superseded target — V1
+- File: `AKARFINDER_VIVRE_ICI_LANDMARK_SIGNAL_TARGET_CASABLANCA_2026-09-19.png`
 - SHA-256: `6af2f518102e4e4372f69db0c38bb89ef365b37184f81339a459777feb6be177`
 - Google Drive ID: `1RfeNGDAJ8nN25FmKZaE1o73pTFj0IZ5f`
-- Google Drive URL: https://drive.google.com/file/d/1RfeNGDAJ8nN25FmKZaE1o73pTFj0IZ5f/view?usp=drivesdk
+- Status: superseded as fidelity target; retained for history.
 
 ## Visual contract
 
@@ -37,10 +45,11 @@ Landmarks use an AkarFinder urban-signage language, not generic UI icons.
 
 ## Implementation branch
 
-- PR: #1044
-- Branch: `feat/vivre-ici-landmark-consolidated`
-- First signage artwork commit: `81aaa8c30d7597a06f380bc855dc9ece282c3fde`
-- Dedicated artwork contract test commit: `643d2ea188fd2afdc6bd457c2c7923cc804bfeb2`
+- Consolidated baseline: PR #1044 merged into the seed lineage.
+- Current stacked base: PR #1046 / `factory/landmarks-casa-ain-diab-sindibad-20260919`.
+- V2 branch: `polish/vivre-ici-landmark-signal-v2`.
+- V2 artwork commit: `b466abb434f821a823a4aecb23c342ed62a993a8`.
+- Scope: artwork fidelity only; localization contract remains frozen.
 
 ## Success proof required
 

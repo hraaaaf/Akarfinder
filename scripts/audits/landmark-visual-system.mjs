@@ -92,6 +92,10 @@ for (const [name, width, height] of views) {
 
     const sidebar = document.querySelector("[data-landmark-sidebar]");
     const rail = document.querySelector("[data-landmark-mobile-rail]");
+    const cityLayout = document.querySelector('[data-p4-map-layout][data-landmark-city-overview="true"]');
+    const nationalMap = document.querySelector("[data-akarfinder-national-map]");
+    const cityLayoutRect = cityLayout?.getBoundingClientRect();
+    const nationalMapRect = nationalMap?.getBoundingClientRect();
     return {
       cards,
       pins,
@@ -104,6 +108,9 @@ for (const [name, width, height] of views) {
       sidebarVisible: Boolean(sidebar && getComputedStyle(sidebar).display !== "none"),
       mobileRailVisible: Boolean(rail && getComputedStyle(rail).display !== "none"),
       horizontalOverflow: Math.max(0, document.documentElement.scrollWidth - window.innerWidth),
+      cityLayoutWidth: cityLayoutRect?.width ?? 0,
+      nationalMapWidth: nationalMapRect?.width ?? 0,
+      nationalMapViewportRatio: nationalMapRect ? nationalMapRect.width / window.innerWidth : 0,
     };
   });
 
@@ -127,6 +134,9 @@ const failures = report.flatMap((entry) => {
   const minPinSpacing = entry.width < 640 ? 86 : entry.width < 1024 ? 98 : 112;
   if (entry.metrics.minPinDistance !== null && entry.metrics.minPinDistance < minPinSpacing - 2) {
     items.push(entry.name + ":pin-spacing=" + entry.metrics.minPinDistance.toFixed(1));
+  }
+  if (entry.width >= 1024 && entry.metrics.nationalMapViewportRatio < 0.9) {
+    items.push(entry.name + ":desktop-width-ratio=" + entry.metrics.nationalMapViewportRatio.toFixed(3));
   }
   if (entry.width >= 1024 && !entry.metrics.sidebarVisible) items.push(entry.name + ":sidebar-missing");
   if (entry.width < 1024 && !entry.metrics.mobileRailVisible) items.push(entry.name + ":mobile-rail-missing");

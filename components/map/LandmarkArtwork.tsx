@@ -69,20 +69,21 @@ function TwinCenter() {
 function StadeMohammedV() {
   return (
     <>
-      <g fill="none" stroke={NAVY} strokeLinecap="round" strokeLinejoin="round">
-        <path d="M72 119C72 86 112 66 160 66C208 66 248 86 248 119V137C248 153 209 162 160 162C111 162 72 153 72 137Z" fill="#F4F8FC" strokeWidth="2.4" />
-        <ellipse cx="160" cy="117" rx="70" ry="31" fill="#FFFFFF" stroke={BLUE} strokeWidth="2.4" />
-        <ellipse cx="160" cy="117" rx="50" ry="20" fill="#DFF1E5" stroke={GREEN_DARK} strokeWidth="1.8" />
-        <path d="M86 101C110 89 133 84 160 84C187 84 210 89 234 101M84 136C110 148 135 153 160 153C185 153 210 148 236 136" strokeOpacity=".35" strokeWidth="4" />
-      </g>
-      <path d="M160 97V137M110 117H210" stroke="#FFFFFF" strokeWidth="1.7" />
-      <g stroke={NAVY} strokeWidth="2.2" strokeLinecap="round">
-        <path d="M79 96V51M241 96V51" />
-        <path d="M68 51H90M230 51H252" />
+      <path d="M66 151V119C66 88 106 68 160 68C214 68 254 88 254 119V151Z" fill="#F6F9FC" stroke={NAVY} strokeWidth="2.5" />
+      <path d="M77 120C77 95 111 80 160 80C209 80 243 95 243 120" fill="none" stroke={BLUE} strokeWidth="5" strokeLinecap="round" />
+      <path d="M87 122C87 103 116 92 160 92C204 92 233 103 233 122V144H87Z" fill="#FFFFFF" stroke={NAVY} strokeWidth="1.8" />
+      <ellipse cx="160" cy="124" rx="49" ry="18" fill="#DFF1E5" stroke={GREEN_DARK} strokeWidth="1.7" />
+      <path d="M111 124H209M160 106V142" stroke="#FFFFFF" strokeWidth="1.6" />
+      <path d="M97 108C112 100 131 96 160 96C189 96 208 100 223 108" fill="none" stroke="#9FC8F8" strokeWidth="5" strokeLinecap="round" />
+      <path d="M118 139H202" stroke={BLUE} strokeWidth="3.2" strokeLinecap="round" />
+      <rect x="117" y="136" width="86" height="15" rx="5" fill="#FFFFFF" stroke={NAVY} strokeWidth="1.4" />
+      <text x="160" y="146.5" textAnchor="middle" fill={NAVY} fontSize="7.2" fontWeight="900" letterSpacing=".35">STADE MOHAMMED V</text>
+      <g stroke={NAVY} strokeWidth="2.4" strokeLinecap="round">
+        <path d="M81 102V49M239 102V49" />
+        <path d="M69 49H93M227 49H251" />
       </g>
       <g fill={BLUE}>
-        <circle cx="72" cy="51" r="3" /><circle cx="79" cy="51" r="3" /><circle cx="86" cy="51" r="3" />
-        <circle cx="234" cy="51" r="3" /><circle cx="241" cy="51" r="3" /><circle cx="248" cy="51" r="3" />
+        {[73,81,89,231,239,247].map((x) => <circle key={x} cx={x} cy="49" r="3" />)}
       </g>
     </>
   );
@@ -91,15 +92,17 @@ function StadeMohammedV() {
 function MoroccoMall() {
   return (
     <>
-      <Palm x={68} y={105} scale={0.72} />
-      <Palm x={252} y={105} scale={0.72} />
-      <path d="M82 151V91C82 78 93 69 107 69H213C227 69 238 78 238 91V151Z" fill={CREAM} stroke={NAVY} strokeWidth="2.3" />
-      <path d="M98 91H222" stroke={GOLD} strokeWidth="5" strokeLinecap="round" />
-      <path d="M107 151V114H213V151" fill="#EEF6FF" stroke={NAVY} strokeWidth="1.8" />
-      <path d="M137 151V122C137 105 147 95 160 95C173 95 183 105 183 122V151" fill="#FFFFFF" stroke={NAVY} strokeWidth="1.8" />
-      <path d="M122 114V151M198 114V151" stroke={BLUE} strokeOpacity=".42" />
-      <rect x="118" y="72" width="84" height="18" rx="5" fill="#FFFFFF" stroke={BLUE} strokeWidth="1.4" />
-      <text x="160" y="84.5" textAnchor="middle" fill={NAVY} fontSize="8.8" fontWeight="900" letterSpacing=".5">MOROCCO MALL</text>
+      <Palm x={62} y={108} scale={0.68} />
+      <Palm x={258} y={108} scale={0.68} />
+      <path d="M72 151V106L103 79H217L248 106V151Z" fill={CREAM} stroke={NAVY} strokeWidth="2.4" strokeLinejoin="round" />
+      <path d="M98 151V99L122 78H198L222 99V151Z" fill="#E7F3FF" stroke={BLUE} strokeWidth="2.1" strokeLinejoin="round" />
+      <path d="M126 151V105H194V151" fill="#CFE7FF" stroke={NAVY} strokeWidth="1.5" />
+      <path d="M160 105V151M137 105V151M183 105V151" stroke="#FFFFFF" strokeWidth="2.1" opacity=".95" />
+      <path d="M105 79H215" stroke={GOLD} strokeWidth="5" strokeLinecap="round" />
+      <rect x="111" y="83" width="98" height="21" rx="5" fill="#FFFFFF" stroke={BLUE} strokeWidth="1.4" />
+      <text x="160" y="96.5" textAnchor="middle" fill={NAVY} fontSize="8.6" fontWeight="900" letterSpacing=".4">MOROCCO MALL</text>
+      <path d="M82 151H238" stroke={NAVY} strokeWidth="2" strokeLinecap="round" />
+      <circle cx="97" cy="139" r="6" fill={GREEN} /><circle cx="223" cy="139" r="6" fill={GREEN} />
     </>
   );
 }
@@ -142,17 +145,18 @@ function AnfaPark() {
 function LyceeLyautey() {
   return (
     <>
-      <path d="M65 151V97H255V151Z" fill={CREAM} stroke={NAVY} strokeWidth="2.3" />
-      <path d="M91 97V79H229V97M121 79V65H199V79" fill="#F1DFC4" stroke={NAVY} strokeWidth="1.7" />
-      <path d="M146 151V112H174V151" fill="#FFFFFF" stroke={NAVY} strokeWidth="1.7" />
-      {[83,109,193,219].map((x) => <rect key={x} x={x} y="112" width="17" height="22" rx="3" fill="#DCEBFF" stroke={BLUE} strokeWidth="1.2" />)}
-      <path d="M160 65V44" stroke={NAVY} strokeWidth="2" />
-      <path d="M160 44L184 49L160 57Z" fill={RED} stroke={RED} strokeLinejoin="round" />
-      <path d="M54 151H266" stroke={NAVY} strokeWidth="2.2" />
-      <Palm x={52} y={115} scale={0.56} />
-      <Palm x={268} y={115} scale={0.56} />
-      <rect x="139" y="82" width="42" height="11" rx="4" fill={NAVY} opacity=".94" />
-      <text x="160" y="90" textAnchor="middle" fill="#FFFFFF" fontSize="6.8" fontWeight="900">LYAUTÉE</text>
+      <path d="M58 151V103H262V151Z" fill={CREAM} stroke={NAVY} strokeWidth="2.3" />
+      <path d="M85 103V82H235V103M116 82V66H204V82" fill="#EFD8B8" stroke={NAVY} strokeWidth="1.8" />
+      <path d="M141 151V111H179V151" fill="#FFFFFF" stroke={NAVY} strokeWidth="1.8" />
+      <path d="M151 111V151M169 111V151" stroke={BLUE} strokeOpacity=".35" />
+      {[76,101,219,244].map((x) => <rect key={x} x={x} y="116" width="16" height="21" rx="2.5" fill="#DCEBFF" stroke={BLUE} strokeWidth="1.2" />)}
+      <path d="M126 82H194" stroke={GOLD} strokeWidth="4" strokeLinecap="round" />
+      <rect x="133" y="84" width="54" height="13" rx="4" fill={NAVY} />
+      <text x="160" y="93.5" textAnchor="middle" fill="#FFFFFF" fontSize="7" fontWeight="900">LYCÉE LYAUTEY</text>
+      <path d="M160 66V43" stroke={NAVY} strokeWidth="2" />
+      <path d="M160 43L183 48L160 56Z" fill={RED} stroke={RED} />
+      <Palm x={48} y={114} scale={0.53} /><Palm x={272} y={114} scale={0.53} />
+      <path d="M46 151H274" stroke={NAVY} strokeWidth="2.2" />
     </>
   );
 }
@@ -160,18 +164,19 @@ function LyceeLyautey() {
 function Instituto() {
   return (
     <>
-      <path d="M70 151V101H250V151Z" fill="#FFF9EF" stroke={NAVY} strokeWidth="2.3" />
-      <path d="M102 101V84H218V101" fill="#F0DDC0" stroke={NAVY} strokeWidth="1.6" />
-      <path d="M137 101V66H183V101" fill="#F6E7D0" stroke={NAVY} strokeWidth="1.8" />
-      <path d="M145 66V55H175V66" fill={CREAM} stroke={NAVY} strokeWidth="1.6" />
-      <circle cx="160" cy="76" r="7" fill="#FFFFFF" stroke={BLUE} strokeWidth="1.5" />
-      <path d="M160 72V76L164 79" stroke={NAVY} strokeWidth="1.4" strokeLinecap="round" />
-      {[88,111,196,219].map((x) => <path key={x} d={"M" + x + " 151V119C" + x + " 111 " + (x+6) + " 107 " + (x+12) + " 107C" + (x+18) + " 107 " + (x+24) + " 111 " + (x+24) + " 119V151"} fill="#FFFFFF" stroke={NAVY} strokeWidth="1.35" />)}
-      <path d="M149 151V119H171V151" fill="#EAF3FF" stroke={NAVY} strokeWidth="1.5" />
-      <path d="M110 84V56" stroke={NAVY} strokeWidth="2" />
-      <path d="M111 57H139V69H111Z" fill="#F6C743" stroke={RED} strokeWidth="1.2" />
-      <path d="M111 57H139M111 69H139" stroke={RED} strokeWidth="3" />
-      <path d="M58 151H262" stroke={NAVY} strokeWidth="2.2" />
+      <path d="M72 151V108H248V151Z" fill="#FFF9EF" stroke={NAVY} strokeWidth="2.3" />
+      <path d="M96 108V91H224V108" fill="#F0DDC0" stroke={NAVY} strokeWidth="1.7" />
+      <path d="M129 108V69H191V108" fill="#F8E7CD" stroke={NAVY} strokeWidth="1.9" />
+      <path d="M140 69V55H180V69" fill="#FFFFFF" stroke={NAVY} strokeWidth="1.5" />
+      <circle cx="160" cy="82" r="8" fill="#FFFFFF" stroke={BLUE} strokeWidth="1.5" />
+      <path d="M160 77V82L165 85" stroke={NAVY} strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M86 151V122C86 113 93 108 101 108C109 108 116 113 116 122V151M204 151V122C204 113 211 108 219 108C227 108 234 113 234 122V151" fill="#FFFFFF" stroke={NAVY} strokeWidth="1.4" />
+      <path d="M147 151V118H173V151" fill="#EAF3FF" stroke={NAVY} strokeWidth="1.5" />
+      <path d="M117 91V55" stroke={NAVY} strokeWidth="2" />
+      <path d="M118 57H147V69H118Z" fill="#F6C743" stroke={RED} strokeWidth="1" />
+      <path d="M118 60H147M118 66H147" stroke={RED} strokeWidth="2.2" />
+      <Palm x={56} y={115} scale={0.52} /><Palm x={264} y={115} scale={0.52} />
+      <path d="M53 151H267" stroke={NAVY} strokeWidth="2.2" />
     </>
   );
 }
@@ -179,20 +184,22 @@ function Instituto() {
 function BouskouraForest() {
   return (
     <>
-      <path d="M55 151C78 127 105 112 137 106C171 100 209 110 265 151Z" fill="#E8F6EC" />
-      {[74,101,130,160,192,221,248].map((x, i) => (
-        <g key={x} transform={"translate(" + x + " " + (73 + (i % 3) * 8) + ")"}>
-          <rect x="-3" y="41" width="6" height="39" rx="2" fill="#79593A" />
-          <path d="M0 0L-21 39H21Z" fill={i % 2 ? GREEN_DARK : GREEN} />
-          <path d="M0 17L-18 50H18Z" fill={i % 2 ? "#398357" : "#56A76D"} />
+      <path d="M49 151C76 126 106 111 139 106C176 100 216 113 271 151Z" fill="#E8F6EC" />
+      {[67,94,124,157,190,220,250].map((x, i) => (
+        <g key={x} transform={"translate(" + x + " " + (70 + (i % 3) * 7) + ")"}>
+          <rect x="-3" y="43" width="6" height="39" rx="2" fill="#79593A" />
+          <path d="M0 0L-22 40H22Z" fill={i % 2 ? GREEN_DARK : GREEN} />
+          <path d="M0 18L-19 53H19Z" fill={i % 2 ? "#398357" : "#56A76D"} />
         </g>
       ))}
-      <path d="M137 151C142 133 151 120 164 112C178 121 188 134 194 151" fill="none" stroke="#D8BC8B" strokeWidth="11" strokeLinecap="round" />
-      <path d="M137 151C142 133 151 120 164 112C178 121 188 134 194 151" fill="none" stroke="#F5E7CB" strokeWidth="5" strokeLinecap="round" />
+      <path d="M133 151C139 133 149 121 163 113C177 122 188 135 194 151" fill="none" stroke="#D8BC8B" strokeWidth="10" strokeLinecap="round" />
+      <path d="M133 151C139 133 149 121 163 113C177 122 188 135 194 151" fill="none" stroke="#F5E7CB" strokeWidth="4" strokeLinecap="round" />
+      <rect x="119" y="126" width="82" height="24" rx="5" fill="#E7D7B9" stroke={NAVY} strokeWidth="1.5" />
+      <text x="160" y="136.5" textAnchor="middle" fill={NAVY} fontSize="7.4" fontWeight="900">FORÊT</text>
+      <text x="160" y="145.5" textAnchor="middle" fill={NAVY} fontSize="6.8" fontWeight="800">DE BOUSKOURA</text>
     </>
   );
 }
-
 
 function ParcSindibad() {
   return (
