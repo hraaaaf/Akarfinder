@@ -1,0 +1,33 @@
+name: Landmark Themes Contract
+
+on:
+  push:
+    branches:
+      - feat/vivre-ici-landmark-themes
+    paths:
+      - "lib/geo/territory-dictionary.ts"
+      - "lib/geo/territory-landmark-themes.ts"
+      - "lib/geo/territory-landmark-registry.ts"
+      - "scripts/scrapers/__tests__/territory-landmark-themes.test.ts"
+      - "scripts/scrapers/__tests__/territory-landmark-registry.test.ts"
+      - "package.json"
+      - ".github/workflows/landmark-themes-contract.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  landmark-themes-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - name: Territory Dictionary contract
+        run: npm run test:territory-dictionary
+      - name: TypeScript
+        run: npx tsc --noEmit

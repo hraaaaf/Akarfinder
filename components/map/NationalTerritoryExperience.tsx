@@ -5,6 +5,7 @@ import { ArrowLeft, MapPin, Search } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Map as MapLibreMap, MapMouseEvent } from "maplibre-gl";
 import { useTheme } from "@/components/theme/ThemeProvider";
+import { LandmarkCityOverlay } from "@/components/map/LandmarkCityOverlay";
 import { applyAkarFinderBasemapTreatment } from "@/lib/map/akarfinder-territorial-style";
 
 const LIGHT_TILE_STYLE = "https://tiles.openfreemap.org/styles/liberty";
@@ -212,13 +213,13 @@ export function NationalTerritoryExperience({ selectedCitySlug, onSelectCity, on
       id: BOUNDARY_FILL,
       type: "fill",
       source: BOUNDARY_SOURCE,
-      paint: { "fill-color": ACCENT, "fill-opacity": payload.view === "city" ? 0.13 : 0.018 },
+      paint: { "fill-color": ACCENT, "fill-opacity": payload.view === "city" ? 0.045 : 0.018 },
     });
     map.addLayer({
       id: BOUNDARY_LINE,
       type: "line",
       source: BOUNDARY_SOURCE,
-      paint: { "line-color": ACCENT, "line-opacity": payload.view === "city" ? 0.9 : 0.22, "line-width": payload.view === "city" ? 2.4 : 0.7 },
+      paint: { "line-color": ACCENT, "line-opacity": payload.view === "city" ? 0.58 : 0.22, "line-width": payload.view === "city" ? 1.7 : 0.7 },
     });
     map.addLayer({
       id: ACTIVE_FILL,
@@ -360,9 +361,24 @@ export function NationalTerritoryExperience({ selectedCitySlug, onSelectCity, on
 
   const searchHref = payload?.view === "city" ? `/search?city=${encodeURIComponent(payload.place.name)}` : "/search";
 
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    const frame = requestAnimationFrame(() => map.resize());
+    return () => cancelAnimationFrame(frame);
+  }, [payload?.view]);
+
   return (
     <div className="relative h-[calc(100svh-64px)] min-h-[520px] overflow-hidden bg-[#EDF3F7] dark:bg-[#071426]" data-akarfinder-national-map data-akarfinder-national-view={payload?.view ?? "loading"}>
-      <div ref={mapContainerRef} className="absolute inset-0" />
+      <div ref={mapContainerRef} className={payload?.view === "city" ? "absolute inset-y-0 left-0 right-0 lg:right-[388px]" : "absolute inset-0"} />
+
+      {payload?.view === "city" ? (
+        <LandmarkCityOverlay
+          map={mapRef.current}
+          mapReady={mapReady}
+          citySlug={payload.place.slug}
+        />
+      ) : null}
 
       <section className="absolute inset-x-3 top-3 z-20 rounded-[22px] border border-white/80 bg-white/[0.94] p-3 shadow-[0_18px_50px_rgba(15,35,66,0.14)] backdrop-blur-xl dark:border-white/10 dark:bg-[#0A1A2F]/[0.94] sm:left-4 sm:right-auto sm:top-4 sm:w-[min(430px,calc(100vw-32px))]" aria-label="Navigation territoriale nationale">
         <div className="flex items-start gap-3">

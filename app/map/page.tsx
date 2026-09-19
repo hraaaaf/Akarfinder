@@ -47,6 +47,7 @@ export default async function MapPage({ searchParams }: MapPageProps) {
   const district = firstParam(params.district).trim();
   const layer = firstParam(params.layer).trim() || "explore";
   const hasNeighborhoodSelection = Boolean(city && district);
+  const landmarkCityOverview = Boolean(city && !district && layer === "explore");
   const usePremiumNationalExplore = !city && !district && layer === "explore";
 
   return (
@@ -57,7 +58,7 @@ export default async function MapPage({ searchParams }: MapPageProps) {
         <PremiumInteractiveMapBridge />
       ) : (
         <>
-          <div className="flex-1" data-p4-map-layout>
+          <div className="flex-1" data-p4-map-layout data-landmark-city-overview={landmarkCityOverview ? "true" : undefined}>
             <div data-p4-map-canvas>
               <NationalMapRouter initialState={initialState} />
               {hasNeighborhoodSelection ? (
@@ -72,7 +73,7 @@ export default async function MapPage({ searchParams }: MapPageProps) {
                 </Link>
               ) : null}
             </div>
-            <P4MapDecisionRail />
+            {city && !district && layer === "explore" ? null : <P4MapDecisionRail />}
           </div>
 
           {!hasNeighborhoodSelection ? (

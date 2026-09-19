@@ -1,0 +1,73 @@
+name: Landmark Visual System Certification
+
+on:
+  pull_request:
+    paths:
+      - "app/map/page.tsx"
+      - "app/map/p4-map-shell.css"
+      - "components/map/LandmarkArtwork.tsx"
+      - "components/map/LandmarkCityOverlay.tsx"
+      - "components/map/NationalTerritoryExperience.tsx"
+      - "lib/geo/territory-landmark-layout.ts"
+      - "lib/geo/territory-landmark-presentation.ts"
+      - "lib/geo/territory-landmark-registry.ts"
+      - "scripts/audits/landmark-visual-system.mjs"
+      - "scripts/scrapers/__tests__/territory-landmark-registry.test.ts"
+      - ".github/workflows/landmark-visual-system.yml"
+  push:
+    branches:
+      - feat/vivre-ici-landmark-visual-system
+    paths:
+      - "app/map/page.tsx"
+      - "app/map/p4-map-shell.css"
+      - "components/map/LandmarkArtwork.tsx"
+      - "components/map/LandmarkCityOverlay.tsx"
+      - "components/map/NationalTerritoryExperience.tsx"
+      - "lib/geo/territory-landmark-layout.ts"
+      - "lib/geo/territory-landmark-presentation.ts"
+      - "lib/geo/territory-landmark-registry.ts"
+      - "scripts/audits/landmark-visual-system.mjs"
+      - "scripts/scrapers/__tests__/territory-landmark-registry.test.ts"
+      - ".github/workflows/landmark-visual-system.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Territory tests
+        run: npm run test:territory-dictionary
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Build
+        run: npm run build
+      - name: Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Start app
+        shell: bash
+        run: |
+          npm run start -- -p 3218 > /tmp/landmark-visual.log 2>&1 &
+          curl --retry 90 --retry-delay 1 --retry-connrefused -fsS "http://127.0.0.1:3218/map?city=casablanca&layer=explore" >/dev/null || { cat /tmp/landmark-visual.log; exit 1; }
+      - name: Capture and certify
+        env:
+          BASE_URL: http://127.0.0.1:3218
+          AUDIT_OUTPUT_DIR: artifacts/landmark-visual-system
+        run: node scripts/audits/landmark-visual-system.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: landmark-visual-system-${{ github.run_id }}
+          path: artifacts/landmark-visual-system
+          if-no-files-found: error
+          retention-days: 30
