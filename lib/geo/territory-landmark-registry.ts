@@ -721,6 +721,38 @@ export const VERIFIED_LANDMARKS: readonly VerifiedLandmarkEntry[] = [
     verifiedAt: "2026-09-18",
   },
 
+  {
+    entity: {
+      id: "landmark_casablanca_maarif_complexe_mohammed_v",
+      type: "landmark",
+      citySlug: "casablanca",
+      districtSlug: "maarif",
+      landmarkSlug: "complexe-mohammed-v",
+      canonicalName: "Complexe Sportif Mohammed V",
+      aliases: ["Stade Mohammed V", "Donor"],
+      category: "stadium",
+      parentId: "district_casablanca_maarif",
+      importance: {
+        score: 100,
+        tier: "flagship",
+        basis: ["product_priority", "orientation_value", "urban_prominence"],
+      },
+      visibility: { minZoom: 13.2, retainPriority: true },
+      coordinates: {
+        lat: 33.58287,
+        lng: -7.64682,
+        precision: "verified_landmark_point",
+      },
+    },
+    sourceRefs: [
+      "https://www.sonarges.ma/infrastructures/complexe-sportif-mohamed-v/",
+      "https://www.casablancacity.ma/fr/article/193/annexes-du-complexe-sportif-mohamed-v",
+      "https://www.google.com/maps/search/Stade%20Mohamed%20V",
+    ],
+    verificationNote: "SONARGES and Casablanca City independently place the complex in Maârif; Google Maps confirms the mapped stadium point. Stadium pass LOT01 deliberately does not infer any other stadium-to-district attachment.",
+    verifiedAt: "2026-09-19",
+  },
+
 ];
 
 const CANONICAL_DISTRICT_IDS = new Set(GEO_NEIGHBORHOODS.map((district) => district.id));
