@@ -721,6 +721,18 @@ export const VERIFIED_LANDMARKS: readonly VerifiedLandmarkEntry[] = [
     verifiedAt: "2026-09-18",
   },
 
+  {
+    entity: {
+      id: "landmark_marrakech_ouahat_sidi_brahim_grand_stade", type: "landmark", citySlug: "marrakech", districtSlug: "ouahat-sidi-brahim", landmarkSlug: "grand-stade-de-marrakech", canonicalName: "Grand Stade de Marrakech", aliases: ["Stade de Marrakech"], category: "other", parentId: "district_marrakech_ouahat_sidi_brahim",
+      importance: { score: 97, tier: "flagship", basis: ["product_priority", "orientation_value", "urban_prominence"] },
+      visibility: { minZoom: 13.3, retainPriority: true },
+      coordinates: { lat: 31.7069, lng: -7.9806, precision: "verified_landmark_point" },
+    },
+    sourceRefs: ["https://site2.sonarges.ma/notre-reseau/","https://maps.apple.com/place?place-id=I855FC5A6F3343853"],
+    verificationNote: "SONARGES lists Grand Stade de Marrakech at Ouahat Sidi Brahim; independent Apple Maps also addresses the stadium in Ouahat Sidi Brahim. The map point is retained as the stadium landmark point.",
+    verifiedAt: "2026-09-19",
+  },
+
 ];
 
 const CANONICAL_DISTRICT_IDS = new Set(GEO_NEIGHBORHOODS.map((district) => district.id));
