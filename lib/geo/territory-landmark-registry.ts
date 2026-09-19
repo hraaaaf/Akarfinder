@@ -256,6 +256,38 @@ export const VERIFIED_LANDMARKS: readonly VerifiedLandmarkEntry[] = [
   },
   {
     entity: {
+      id: "landmark_casablanca_ain_diab_parc_sindibad",
+      type: "landmark",
+      citySlug: "casablanca",
+      districtSlug: "ain-diab",
+      landmarkSlug: "parc-sindibad",
+      canonicalName: "Parc Sindibad",
+      aliases: ["Sindibad Parc", "Parc Sindibad by Walibi"],
+      category: "park",
+      parentId: "district_casablanca_ain_diab",
+      importance: {
+        score: 93,
+        tier: "major",
+        basis: ["orientation_value", "urban_prominence", "product_priority"],
+      },
+      visibility: { minZoom: 13.7, retainPriority: true },
+      coordinates: {
+        lat: 33.58093,
+        lng: -7.69242,
+        precision: "verified_landmark_point",
+      },
+    },
+    sourceRefs: [
+      "https://www.parcsindibad.ma/contact",
+      "https://visitcasablanca.ma/",
+      "https://mapcarta.com/N12618877348",
+    ],
+    verificationNote: "Factory 2026-09-19: official Parc Sindibad contact fixes the site on Boulevard de l'Océan Atlantique; Visit Casablanca independently identifies Parc Sindibad as a city attraction; OSM-backed mapping fixes the point at 33.58093,-7.69242. AkarFinder notoriety 93/100 = public visibility 19 + orientation 19 + local anchoring 19 + visual singularity 18 + source reliability 18.",
+    verifiedAt: "2026-09-19",
+  },
+
+  {
+    entity: {
       id: "landmark_agadir_founty_sofitel_thalassa",
       type: "landmark",
       citySlug: "agadir",

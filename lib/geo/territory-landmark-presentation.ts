@@ -67,6 +67,13 @@ const TARGET_PRESENTATION: Record<string, LandmarkPresentation> = {
     revealZoom: 11.15,
     visualPriority: 83,
   },
+  "landmark_casablanca_ain_diab_parc_sindibad": {
+    artworkKey: "parc-sindibad",
+    tier: "major",
+    tierLabel: "Majeur",
+    revealZoom: 10.9,
+    visualPriority: 93,
+  },
   "landmark_mohammedia_centre_parc_villes_jumelees": {
     artworkKey: "parc-des-villes-jumelees",
     tier: "major",
