@@ -55,15 +55,15 @@ export function layoutLandmarkCards({
   const width = mobile ? 158 : tablet ? 170 : 194;
   const height = mobile ? 56 : 62;
 
+  const near = mobile ? 10 : 12;
+  const side = mobile ? 14 : 16;
   const offsets: Array<[number, number]> = [
-    [16, -height - 10],
-    [-width - 16, -height - 10],
-    [16, 10],
-    [-width - 16, 10],
-    [-width / 2, -height - 20],
-    [-width / 2, 20],
-    [28, -height / 2],
-    [-width - 28, -height / 2],
+    [side, -height - near],
+    [-width - side, -height - near],
+    [side, near],
+    [-width - side, near],
+    [-width / 2, -height - near - 4],
+    [-width / 2, near + 4],
   ];
 
   const placed: LandmarkPlaced[] = [];
