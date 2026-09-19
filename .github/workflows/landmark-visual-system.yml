@@ -3,6 +3,10 @@ name: Landmark Visual System Certification
 on:
   pull_request:
     paths:
+      - "app/map/page.tsx"
+      - "app/map/p4-map-shell.css"
+      - "app/map/page.tsx"
+      - "app/map/p4-map-shell.css"
       - "components/map/LandmarkArtwork.tsx"
       - "components/map/LandmarkCityOverlay.tsx"
       - "components/map/NationalTerritoryExperience.tsx"
