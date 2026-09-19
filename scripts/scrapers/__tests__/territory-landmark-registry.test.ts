@@ -104,6 +104,13 @@ test("Souissi Dar Essalam resolves to dedicated signage artwork", () => {
   assert.equal(getLandmarkPresentation(entry).tierLabel, "Majeur");
 });
 
+test("Mohammedia Stade El Bachir resolves to dedicated stadium artwork", () => {
+  const entry = VERIFIED_LANDMARKS.find((candidate) => candidate.entity.id === "landmark_mohammedia_centre_stade_el_bachir");
+  assert.ok(entry);
+  assert.equal(getLandmarkPresentation(entry).artworkKey, "stade-el-bachir");
+  assert.equal(getLandmarkPresentation(entry).tierLabel, "Emblématique");
+});
+
 test("landmark notoriety scoring applies confidence gate and weighted tiers", () => {
   assert.deepEqual(
     scoreLandmarkNotoriety({
