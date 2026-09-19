@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 240" role="img" aria-labelledby="title desc">
+  <title id="title">Phare de Rabat — AkarFinder landmark target</title>
+  <desc id="desc">Simplified semi-figurative Rabat lighthouse standing on the ochre Borj Sirat platform above the Atlantic.</desc>
+  <path d="M38 181c42-11 78-9 111-3 35 6 74 8 133-3v33H38z" fill="#D9C2A0"/>
+  <path d="M31 210c45-8 77-6 111 0 43 8 84 7 147-3" fill="none" stroke="#6F8D91" stroke-width="6" stroke-linecap="round"/>
+  <path d="M51 225c38-6 69-4 101 1 38 6 76 5 127-2" fill="none" stroke="#91A9AA" stroke-width="4" stroke-linecap="round"/>
+  <path d="M83 177h154l-13-29H96z" fill="#B9865E"/>
+  <path d="M103 148h114v-17H103z" fill="#C89970"/>
+  <path d="M139 132l8-91h29l8 91z" fill="#F1EEE6"/>
+  <path d="M146 77h31" stroke="#D7D1C5" stroke-width="3"/>
+  <path d="M144 42h35l-4-12h-27z" fill="#465052"/>
+  <path d="M150 30h23v-13h-23z" fill="#7B9292"/>
+  <path d="M147 17h29l-5-7h-19z" fill="#465052"/>
+  <path d="M134 132h55" stroke="#8E6C50" stroke-width="5" stroke-linecap="round"/>
+  <path d="M154 132v-24c0-8 14-8 14 0v24" fill="#9C7658"/>
+  <path d="M95 148l18-14h19v14M188 148v-14h19l17 14" fill="none" stroke="#9C7658" stroke-width="5" stroke-linejoin="round"/>
+</svg>
