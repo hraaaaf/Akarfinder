@@ -97,6 +97,13 @@ test("Ain Diab Sindibad resolves to dedicated signage artwork", () => {
   assert.equal(getLandmarkPresentation(entry).tierLabel, "Majeur");
 });
 
+test("Souissi Dar Essalam resolves to dedicated signage artwork", () => {
+  const entry = VERIFIED_LANDMARKS.find((candidate) => candidate.entity.id === "landmark_rabat_souissi_marche_dar_essalam");
+  assert.ok(entry);
+  assert.equal(getLandmarkPresentation(entry).artworkKey, "marche-dar-essalam");
+  assert.equal(getLandmarkPresentation(entry).tierLabel, "Majeur");
+});
+
 test("landmark notoriety scoring applies confidence gate and weighted tiers", () => {
   assert.deepEqual(
     scoreLandmarkNotoriety({
