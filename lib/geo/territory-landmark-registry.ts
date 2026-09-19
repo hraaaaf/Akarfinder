@@ -721,6 +721,39 @@ export const VERIFIED_LANDMARKS: readonly VerifiedLandmarkEntry[] = [
     verifiedAt: "2026-09-18",
   },
 
+  {
+    entity: {
+      id: "landmark_casablanca_hay_mohammadi_stade_larbi_zaouli",
+      type: "landmark",
+      citySlug: "casablanca",
+      districtSlug: "hay-mohammadi",
+      landmarkSlug: "stade-larbi-zaouli",
+      canonicalName: "Stade Larbi Zaouli",
+      aliases: ["Complexe Larbi Zaouli"],
+      category: "other",
+      parentId: "district_casablanca_hay_mohammadi",
+      importance: {
+        score: 96,
+        tier: "flagship",
+        basis: ["product_priority", "orientation_value", "urban_prominence"],
+      },
+      visibility: { minZoom: 13.4, retainPriority: true },
+      coordinates: {
+        lat: 33.59738,
+        lng: -7.5465,
+        precision: "verified_landmark_point",
+      },
+    },
+    sourceRefs: [
+      "https://www.cafonline.com/fr/coupe-dafrique-des-nations-feminine/stadiums/",
+      "https://www.cafonline.com/fr/coupe-dafrique-des-nations-feminine/infos/j-13-avant-la-can-feminine-les-stades-de-la-can-feminine-2024/",
+      "https://mapcarta.com/fr/W38751488",
+      "https://www.wikidata.org/wiki/Q3495693",
+    ],
+    verificationNote: "CAF explicitly places Stade Larbi Zaouli in Hay Mohammadi; independent OSM-backed mapping identifies the stadium footprint at 33.59738,-7.5465, with Wikidata providing a corroborating stadium coordinate.",
+    verifiedAt: "2026-09-19",
+  },
+
 ];
 
 const CANONICAL_DISTRICT_IDS = new Set(GEO_NEIGHBORHOODS.map((district) => district.id));
