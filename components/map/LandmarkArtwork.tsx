@@ -194,6 +194,21 @@ function BouskouraForest() {
 }
 
 
+function StadeElBachir() {
+  return (
+    <>
+      <ellipse cx="160" cy="124" rx="104" ry="35" fill="#EAF3FF" stroke={NAVY} strokeWidth="2.5" />
+      <ellipse cx="160" cy="124" rx="78" ry="23" fill="#64A96F" stroke={GREEN_DARK} strokeWidth="2" />
+      <path d="M59 119L77 87H243L261 119" fill={CREAM} stroke={NAVY} strokeWidth="2.2" strokeLinejoin="round" />
+      <path d="M80 88C106 73 214 73 240 88" fill="none" stroke={RED} strokeWidth="4" strokeLinecap="round" />
+      {[91,119,147,175,203,231].map((x)=><path key={x} d={"M"+x+" 88V111"} stroke={BLUE} strokeWidth="2" />)}
+      <path d="M123 125H197M160 103V145" stroke="#FFFFFF" strokeWidth="1.5" opacity=".95" />
+      <circle cx="160" cy="124" r="6" fill="none" stroke="#FFFFFF" strokeWidth="1.5" />
+      <path d="M54 151H266" stroke={NAVY} strokeWidth="2.2" />
+    </>
+  );
+}
+
 function MarcheDarEssalam() {
   return (
     <>
@@ -272,6 +287,7 @@ export function LandmarkArtwork({ artworkKey, className = "", decorative = false
     case "parc-des-villes-jumelees": scene = <ParcVillesJumelees />; break;
     case "parc-sindibad": scene = <ParcSindibad />; break;
     case "marche-dar-essalam": scene = <MarcheDarEssalam />; break;
+    case "stade-el-bachir": scene = <StadeElBachir />; break;
     default: scene = <Generic keyName={artworkKey} />; break;
   }
 

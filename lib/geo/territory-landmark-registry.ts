@@ -684,6 +684,30 @@ export const VERIFIED_LANDMARKS: readonly VerifiedLandmarkEntry[] = [
   },
   {
     entity: {
+      id: "landmark_mohammedia_centre_stade_el_bachir",
+      type: "landmark",
+      citySlug: "mohammedia",
+      districtSlug: "centre",
+      landmarkSlug: "stade-el-bachir",
+      canonicalName: "Stade El Bachir",
+      aliases: ["Stade Bachir", "Stade Municipal de Mohammédia"],
+      category: "sports",
+      parentId: "district_mohammedia_centre",
+      importance: { score: 96, tier: "flagship", basis: ["orientation_value", "urban_prominence", "product_priority"] },
+      visibility: { minZoom: 13.4, retainPriority: true },
+      coordinates: { lat: 33.69537, lng: -7.399188, precision: "verified_landmark_point" },
+    },
+    sourceRefs: [
+      "https://frmf.ma/fr/articles/%D8%A7%D9%84%D9%85%D9%86%D8%AA%D8%AE%D8%A8-%D8%A7%D9%84%D9%88%D8%B7%D9%86%D9%8A-%D9%84%D8%A3%D9%82%D9%84-%D9%85%D9%86-17-%D8%B3%D9%86%D8%A9-%D9%8A%D8%AA%D9%88%D8%AC-%D8%A8%D9%83%D8%A3%D8%B3-%D8%A5",
+      "https://www.wikidata.org/wiki/Q3495534",
+      "https://commons.wikimedia.org/wiki/File:Stade_El_Bachir_a_mohammedia.jpg",
+    ],
+    verificationNote: "Football-stadium factory 2026-09-19: FRMF primary evidence identifies Stade El Bachir in Mohammedia and records the 2025 U17 AFCON final there; independent geodata and Wikimedia imagery corroborate identity and point. AkarFinder notoriety 96/100 = visibility 20 + orientation 20 + local anchoring 20 + visual singularity 18 + source reliability 18.",
+    verifiedAt: "2026-09-19",
+  },
+
+  {
+    entity: {
       id: "landmark_mohammedia_centre_parc_villes_jumelees",
       type: "landmark",
       citySlug: "mohammedia",
