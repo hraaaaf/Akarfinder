@@ -139,8 +139,9 @@ export function LandmarkCityOverlay({ map, mapReady, citySlug }: Props) {
                 x2={line.x2}
                 y2={line.y2}
                 stroke="#071B33"
-                strokeOpacity=".28"
-                strokeWidth="1.2"
+                strokeOpacity=".48"
+                strokeWidth="1.7"
+                strokeLinecap="round"
                 vectorEffect="non-scaling-stroke"
               />
             );
@@ -151,27 +152,30 @@ export function LandmarkCityOverlay({ map, mapReady, citySlug }: Props) {
           const presentation = getLandmarkPresentation(item.entry);
           const iconic = presentation.tier === "iconic";
           return (
-            <div
-              key={item.entry.entity.id}
-              className="absolute"
-              style={{
-                left: item.cardX,
-                top: item.cardY,
-                width: item.width,
-                height: item.height,
-              }}
-              data-landmark-card={item.entry.entity.landmarkSlug}
-              data-landmark-tier={presentation.tier}
-            >
+            <div key={item.entry.entity.id}>
               <span
-                className="absolute z-10 rounded-full border-[3px] border-white bg-[#071B33] shadow-[0_2px_8px_rgba(7,27,51,0.18)]"
+                className="absolute z-[21] rounded-full border-[4px] border-white bg-[#071B33] shadow-[0_0_0_5px_rgba(11,99,206,0.18),0_3px_10px_rgba(7,27,51,0.24)]"
                 style={{
-                  left: item.x - item.cardX - (iconic ? 6 : 5),
-                  top: item.y - item.cardY - (iconic ? 6 : 5),
-                  width: iconic ? 12 : 10,
-                  height: iconic ? 12 : 10,
+                  left: item.x,
+                  top: item.y,
+                  width: iconic ? 17 : 15,
+                  height: iconic ? 17 : 15,
+                  transform: "translate(-50%, -50%)",
                 }}
+                data-landmark-pin={item.entry.entity.landmarkSlug}
+                aria-hidden="true"
               />
+              <div
+                className="absolute"
+                style={{
+                  left: item.cardX,
+                  top: item.cardY,
+                  width: item.width,
+                  height: item.height,
+                }}
+                data-landmark-card={item.entry.entity.landmarkSlug}
+                data-landmark-tier={presentation.tier}
+              >
               <div
                 className={
                   iconic
@@ -194,6 +198,7 @@ export function LandmarkCityOverlay({ map, mapReady, citySlug }: Props) {
                     {districtLabel(item.entry)}
                   </p>
                 </div>
+              </div>
               </div>
             </div>
           );
