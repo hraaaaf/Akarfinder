@@ -139,11 +139,15 @@ section[aria-label="Navigation territoriale nationale"] :is(
 }
 
 @media (min-width: 1024px) {
-  [data-p4-map-layout] {
+  [data-p4-map-layout]:not([data-landmark-city-overview="true"]) {
     grid-template-columns: minmax(0, 1fr) 360px !important;
   }
 
-  [data-p4-map-layout]:has([data-akarfinder-market-intelligence-map]) {
+  [data-p4-map-layout][data-landmark-city-overview="true"] {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  [data-p4-map-layout]:has([data-akarfinder-market-intelligence-map]):not([data-landmark-city-overview="true"]) {
     grid-template-columns: minmax(0, 1fr) 360px !important;
   }
 
