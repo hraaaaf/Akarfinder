@@ -194,6 +194,21 @@ function BouskouraForest() {
 }
 
 
+function MarcheDarEssalam() {
+  return (
+    <>
+      <path d="M55 151V105L91 83H229L265 105V151Z" fill={CREAM} stroke={NAVY} strokeWidth="2.2" />
+      <path d="M70 105C101 78 219 78 250 105" fill="none" stroke={GREEN} strokeWidth="7" strokeLinecap="round" />
+      {[93,126,160,194,227].map((x) => <path key={x} d={"M"+x+" 151V104"} stroke="#FFFFFF" strokeWidth="12" opacity=".92" />)}
+      {[93,126,160,194,227].map((x) => <path key={"b"+x} d={"M"+x+" 151V104"} stroke={BLUE} strokeWidth="1.2" opacity=".75" />)}
+      <path d="M130 151V123H190V151" fill="#EAF3FF" stroke={NAVY} strokeWidth="1.7" />
+      <circle cx="160" cy="101" r="12" fill="#FFFFFF" stroke={GREEN_DARK} strokeWidth="2" />
+      <path d="M153 101C157 95 163 95 167 101C163 107 157 107 153 101Z" fill={GREEN} />
+      <Palm x={49} y={113} scale={0.48} /><Palm x={271} y={113} scale={0.48} />
+    </>
+  );
+}
+
 function ParcSindibad() {
   return (
     <>
@@ -256,6 +271,7 @@ export function LandmarkArtwork({ artworkKey, className = "", decorative = false
     case "foret-de-bouskoura": scene = <BouskouraForest />; break;
     case "parc-des-villes-jumelees": scene = <ParcVillesJumelees />; break;
     case "parc-sindibad": scene = <ParcSindibad />; break;
+    case "marche-dar-essalam": scene = <MarcheDarEssalam />; break;
     default: scene = <Generic keyName={artworkKey} />; break;
   }
 
