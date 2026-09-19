@@ -189,3 +189,32 @@ test("landmark card displacement stays visually tethered to its GPS pin", () => 
     assert.ok(distance <= 20, `${item.entry.entity.id} displaced ${distance.toFixed(1)}px`);
   }
 });
+
+
+test("nearby landmark pins suppress the lower-priority card until zoom separates them", () => {
+  const twin = VERIFIED_LANDMARKS.find((entry) => entry.entity.id === "landmark_casablanca_maarif_twin_center");
+  const stade = VERIFIED_LANDMARKS.find((entry) => entry.entity.id === "landmark_casablanca_maarif_stade_mohammed_v");
+  assert.ok(twin);
+  assert.ok(stade);
+
+  const crowded = layoutLandmarkCards({
+    anchors: [
+      { entry: twin, x: 500, y: 360 },
+      { entry: stade, x: 565, y: 386 },
+    ],
+    viewportWidth: 1280,
+    viewportHeight: 900,
+  });
+  assert.equal(crowded.length, 1);
+  assert.equal(crowded[0].entry.entity.id, twin.entity.id);
+
+  const separated = layoutLandmarkCards({
+    anchors: [
+      { entry: twin, x: 430, y: 330 },
+      { entry: stade, x: 590, y: 410 },
+    ],
+    viewportWidth: 1280,
+    viewportHeight: 900,
+  });
+  assert.equal(separated.length, 2);
+});
