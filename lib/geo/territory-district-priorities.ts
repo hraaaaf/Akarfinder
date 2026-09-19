@@ -39,19 +39,23 @@ export const DISTRICT_PRIORITY_OVERRIDES: Readonly<Record<string, DistrictPriori
   district_marrakech_gueliz: { score: 100, tier: "flagship", minZoom: 9.4, retainPriority: true },
   district_marrakech_hivernage: { score: 97, tier: "flagship", minZoom: 9.6, retainPriority: true },
   district_marrakech_ourika: { score: 82, tier: "regional", minZoom: 10.6, retainPriority: false },
+  district_marrakech_ouahat_sidi_brahim: { score: 80, tier: "regional", minZoom: 10.8, retainPriority: false },
 
   // Tanger
   district_tanger_malabata: { score: 97, tier: "flagship", minZoom: 9.6, retainPriority: true },
   district_tanger_ville_nouvelle: { score: 90, tier: "major", minZoom: 10.0, retainPriority: true },
   district_tanger_marchan: { score: 86, tier: "major", minZoom: 10.3, retainPriority: false },
+  district_tanger_ziaten: { score: 84, tier: "regional", minZoom: 10.5, retainPriority: true },
 
   // Agadir
   district_agadir_founty: { score: 97, tier: "flagship", minZoom: 9.6, retainPriority: true },
   district_agadir_talborjt: { score: 88, tier: "major", minZoom: 10.2, retainPriority: false },
+  district_agadir_adrar: { score: 86, tier: "major", minZoom: 10.3, retainPriority: true },
 
   // Fès
   district_fes_el_bali: { score: 100, tier: "flagship", minZoom: 9.4, retainPriority: true },
   district_fes_ville_nouvelle: { score: 88, tier: "major", minZoom: 10.2, retainPriority: false },
+  district_fes_route_sefrou: { score: 84, tier: "regional", minZoom: 10.5, retainPriority: true },
 
   // Kénitra / Mohammedia
   district_kenitra_centre_ville: { score: 90, tier: "major", minZoom: 10.0, retainPriority: true },
