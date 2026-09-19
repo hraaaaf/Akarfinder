@@ -54,7 +54,26 @@ export type DistrictTerritoryEntity = TerritoryBase & {
   parentId: `city_${string}`;
 };
 
+export type LandmarkThemeTag =
+  | "stadiums"
+  | "parks-gardens"
+  | "historic-monuments"
+  | "stations-hubs"
+  | "squares-esplanades"
+  | "shopping-centers"
+  | "iconic-cafes"
+  | "education"
+  | "museums-culture"
+  | "beaches-corniches"
+  | "lighthouses-forts-ramparts"
+  | "religious"
+  | "business-towers"
+  | "healthcare"
+  | "major-roads"
+  | "other-local-anchor";
+
 export type LandmarkCategory =
+  | "sports"
   | "heritage"
   | "transport"
   | "park"
@@ -74,6 +93,7 @@ export type LandmarkTerritoryEntity = TerritoryBase & {
   districtSlug: string;
   landmarkSlug: string;
   category: LandmarkCategory;
+  themeTags?: LandmarkThemeTag[];
   parentId: `district_${string}`;
 };
 
@@ -130,6 +150,15 @@ export function validateTerritoryEntity(entity: TerritoryEntity): TerritoryValid
 
   if (entity.type === "landmark" && !entity.parentId.startsWith("district_")) {
     issues.push({ entityId: entity.id, field: "parentId", message: "landmark parentId must reference a district entity" });
+  }
+
+  if (entity.type === "landmark" && entity.themeTags) {
+    if (entity.themeTags.length === 0) {
+      issues.push({ entityId: entity.id, field: "themeTags", message: "themeTags must not be empty when provided" });
+    }
+    if (new Set(entity.themeTags).size !== entity.themeTags.length) {
+      issues.push({ entityId: entity.id, field: "themeTags", message: "themeTags must not contain duplicates" });
+    }
   }
 
   if (entity.coordinates) {

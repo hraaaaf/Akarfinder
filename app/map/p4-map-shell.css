@@ -121,6 +121,10 @@
     grid-template-columns: minmax(0, 3fr) minmax(360px, 2fr);
   }
 
+  [data-p4-map-layout][data-landmark-city-overview="true"] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   [data-p4-map-canvas] {
     grid-column: 1;
   }

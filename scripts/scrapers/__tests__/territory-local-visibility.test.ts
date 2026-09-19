@@ -80,3 +80,31 @@ test("label capacities fail closed without cross-city leakage", () => {
   assert.ok(noLandmarks.districts.length > 0);
   assert.deepEqual(noLandmarks.landmarks, []);
 });
+
+
+test("theme diversity suppresses same-theme district duplicates at overview zoom and releases them deeper", () => {
+  const overview = selectLocalTerritoryVisibility({
+    citySlug: "rabat",
+    zoom: 14,
+    maxDistrictLabels: 6,
+    maxLandmarkLabels: 20,
+  });
+  const deep = selectLocalTerritoryVisibility({
+    citySlug: "rabat",
+    zoom: 15,
+    maxDistrictLabels: 6,
+    maxLandmarkLabels: 20,
+  });
+
+  const hassanIdsAtOverview = overview.landmarks
+    .filter(({ entity }) => entity.parentId === "district_rabat_hassan")
+    .map(({ entity }) => entity.id);
+  const hassanIdsDeep = deep.landmarks
+    .filter(({ entity }) => entity.parentId === "district_rabat_hassan")
+    .map(({ entity }) => entity.id);
+
+  assert.ok(hassanIdsAtOverview.includes("landmark_rabat_hassan_tour_hassan"));
+  assert.ok(!hassanIdsAtOverview.includes("landmark_rabat_hassan_mausolee_mohammed_v"));
+  assert.ok(hassanIdsDeep.includes("landmark_rabat_hassan_tour_hassan"));
+  assert.ok(hassanIdsDeep.includes("landmark_rabat_hassan_mausolee_mohammed_v"));
+});
