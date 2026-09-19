@@ -88,6 +88,15 @@ test("Mohammedia twin-cities park resolves to its dedicated signage artwork", ()
   assert.equal(getLandmarkPresentation(entry).tierLabel, "Majeur");
 });
 
+test("Ain Diab Sindibad resolves to dedicated signage artwork", () => {
+  const entry = VERIFIED_LANDMARKS.find(
+    (candidate) => candidate.entity.id === "landmark_casablanca_ain_diab_parc_sindibad",
+  );
+  assert.ok(entry);
+  assert.equal(getLandmarkPresentation(entry).artworkKey, "parc-sindibad");
+  assert.equal(getLandmarkPresentation(entry).tierLabel, "Majeur");
+});
+
 test("landmark notoriety scoring applies confidence gate and weighted tiers", () => {
   assert.deepEqual(
     scoreLandmarkNotoriety({
