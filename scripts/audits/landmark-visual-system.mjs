@@ -51,6 +51,30 @@ for (const [name, width, height] of views) {
         height: rect.height,
       };
     });
+    const pins = [...document.querySelectorAll("[data-landmark-pin]")].map((element) => {
+      const rect = element.getBoundingClientRect();
+      return {
+        id: element.getAttribute("data-landmark-pin"),
+        x: rect.x + rect.width / 2,
+        y: rect.y + rect.height / 2,
+      };
+    });
+    const tetherDistances = cards.map((card) => {
+      const pin = pins.find((candidate) => candidate.id === card.id);
+      if (!pin) return { id: card.id, distance: Infinity };
+      const nearestX = Math.max(card.x, Math.min(card.x + card.width, pin.x));
+      const nearestY = Math.max(card.y, Math.min(card.y + card.height, pin.y));
+      return { id: card.id, distance: Math.hypot(nearestX - pin.x, nearestY - pin.y) };
+    });
+    let minPinDistance = Infinity;
+    for (let i = 0; i < pins.length; i += 1) {
+      for (let j = i + 1; j < pins.length; j += 1) {
+        minPinDistance = Math.min(
+          minPinDistance,
+          Math.hypot(pins[i].x - pins[j].x, pins[i].y - pins[j].y),
+        );
+      }
+    }
 
     let overlaps = 0;
     for (let i = 0; i < cards.length; i += 1) {
@@ -70,6 +94,12 @@ for (const [name, width, height] of views) {
     const rail = document.querySelector("[data-landmark-mobile-rail]");
     return {
       cards,
+      pins,
+      tetherDistances,
+      maxTetherDistance: tetherDistances.length
+        ? Math.max(...tetherDistances.map((item) => item.distance))
+        : 0,
+      minPinDistance: Number.isFinite(minPinDistance) ? minPinDistance : null,
       overlaps,
       sidebarVisible: Boolean(sidebar && getComputedStyle(sidebar).display !== "none"),
       mobileRailVisible: Boolean(rail && getComputedStyle(rail).display !== "none"),
@@ -93,6 +123,11 @@ const failures = report.flatMap((entry) => {
   if (entry.pageErrors.length) items.push(entry.name + ":pageErrors");
   if (entry.metrics.overlaps > 0) items.push(entry.name + ":overlaps=" + entry.metrics.overlaps);
   if (entry.metrics.horizontalOverflow > 1) items.push(entry.name + ":overflow=" + entry.metrics.horizontalOverflow);
+  if (entry.metrics.maxTetherDistance > 22) items.push(entry.name + ":tether=" + entry.metrics.maxTetherDistance.toFixed(1));
+  const minPinSpacing = entry.width < 640 ? 86 : entry.width < 1024 ? 98 : 112;
+  if (entry.metrics.minPinDistance !== null && entry.metrics.minPinDistance < minPinSpacing - 2) {
+    items.push(entry.name + ":pin-spacing=" + entry.metrics.minPinDistance.toFixed(1));
+  }
   if (entry.width >= 1024 && !entry.metrics.sidebarVisible) items.push(entry.name + ":sidebar-missing");
   if (entry.width < 1024 && !entry.metrics.mobileRailVisible) items.push(entry.name + ":mobile-rail-missing");
   return items;
