@@ -73,6 +73,7 @@ export type LandmarkThemeTag =
   | "other-local-anchor";
 
 export type LandmarkCategory =
+  | "sports"
   | "heritage"
   | "transport"
   | "park"
