@@ -72,7 +72,7 @@ export default async function MapPage({ searchParams }: MapPageProps) {
                 </Link>
               ) : null}
             </div>
-            <P4MapDecisionRail />
+            {city && !district && layer === "explore" ? null : <P4MapDecisionRail />}
           </div>
 
           {!hasNeighborhoodSelection ? (
