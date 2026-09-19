@@ -67,6 +67,9 @@ const TARGET_PRESENTATION: Record<string, LandmarkPresentation> = {
     revealZoom: 11.15,
     visualPriority: 83,
   },
+  "landmark_mohammedia_centre_stade_el_bachir": {
+    artworkKey: "stade-el-bachir", tier: "flagship", tierLabel: "Emblématique", revealZoom: 10.7, visualPriority: 96,
+  },
   "landmark_rabat_souissi_marche_dar_essalam": {
     artworkKey: "marche-dar-essalam", tier: "major", tierLabel: "Majeur", revealZoom: 11.0, visualPriority: 94,
   },
