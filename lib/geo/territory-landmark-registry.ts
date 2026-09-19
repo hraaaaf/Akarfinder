@@ -319,6 +319,30 @@ export const VERIFIED_LANDMARKS: readonly VerifiedLandmarkEntry[] = [
 
   {
     entity: {
+      id: "landmark_rabat_souissi_marche_dar_essalam",
+      type: "landmark",
+      citySlug: "rabat",
+      districtSlug: "souissi",
+      landmarkSlug: "marche-dar-essalam",
+      canonicalName: "Le Marché Dar Essalam",
+      aliases: ["Marché Dar Essalam"],
+      category: "retail",
+      parentId: "district_rabat_souissi",
+      importance: { score: 94, tier: "major", basis: ["orientation_value", "urban_prominence", "product_priority"] },
+      visibility: { minZoom: 13.7, retainPriority: true },
+      coordinates: { lat: 33.94933, lng: -6.83349, precision: "verified_landmark_point" },
+    },
+    sourceRefs: [
+      "https://lemarchedaressalam.ma/le-marche/",
+      "https://mapcarta.com/fr/W1556665469",
+      "https://www.visitrabat.com/",
+    ],
+    verificationNote: "Factory 2026-09-19: official site fixes the address at angle rue Sahel / avenue du 10 Mars 1982, Souissi and documents its orangeraie-inspired architecture; independent OSM-backed mapping fixes the building point. AkarFinder notoriety 94/100 = visibility 19 + orientation 19 + local anchoring 20 + visual singularity 18 + source reliability 18.",
+    verifiedAt: "2026-09-19",
+  },
+
+  {
+    entity: {
       id: "landmark_rabat_souissi_mega_mall",
       type: "landmark",
       citySlug: "rabat",
