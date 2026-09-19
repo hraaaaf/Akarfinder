@@ -213,13 +213,13 @@ export function NationalTerritoryExperience({ selectedCitySlug, onSelectCity, on
       id: BOUNDARY_FILL,
       type: "fill",
       source: BOUNDARY_SOURCE,
-      paint: { "fill-color": ACCENT, "fill-opacity": payload.view === "city" ? 0.13 : 0.018 },
+      paint: { "fill-color": ACCENT, "fill-opacity": payload.view === "city" ? 0.045 : 0.018 },
     });
     map.addLayer({
       id: BOUNDARY_LINE,
       type: "line",
       source: BOUNDARY_SOURCE,
-      paint: { "line-color": ACCENT, "line-opacity": payload.view === "city" ? 0.9 : 0.22, "line-width": payload.view === "city" ? 2.4 : 0.7 },
+      paint: { "line-color": ACCENT, "line-opacity": payload.view === "city" ? 0.58 : 0.22, "line-width": payload.view === "city" ? 1.7 : 0.7 },
     });
     map.addLayer({
       id: ACTIVE_FILL,
