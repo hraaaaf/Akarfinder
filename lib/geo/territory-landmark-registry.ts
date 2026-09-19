@@ -721,6 +721,31 @@ export const VERIFIED_LANDMARKS: readonly VerifiedLandmarkEntry[] = [
     verifiedAt: "2026-09-18",
   },
 
+  {
+    entity: {
+      id: "landmark_casablanca_beausejour_stade_pere_jego",
+      type: "landmark",
+      citySlug: "casablanca",
+      districtSlug: "beausejour",
+      landmarkSlug: "stade-pere-jego",
+      canonicalName: "Stade Père Jégo",
+      aliases: ["Stade Pere Jego"],
+      category: "other",
+      parentId: "district_casablanca_beausejour",
+      importance: { score: 91, tier: "major", basis: ["orientation_value", "urban_prominence", "product_priority"] },
+      visibility: { minZoom: 13.7, retainPriority: true },
+      coordinates: { lat: 33.557436, lng: -7.651486, precision: "verified_landmark_point" },
+    },
+    sourceRefs: [
+      "https://www.cafonline.com/fr/coupe-dafrique-des-nations-feminine/stadiums/",
+      "https://lionsdelatlas.ma/casablancal-histoire-des-stades/",
+      "https://www.waze.com/fr/live-map/directions/ma/casablanca-settat/casablanca/stade-pere-jego?to=place.ChIJTfJtBystpg0RETFRgN8X9XM",
+      "https://fr.wikipedia.org/wiki/Stade_P%C3%A8re-J%C3%A9go",
+    ],
+    verificationNote: "CAF confirms the active Casablanca stadium; independent Moroccan stadium reporting explicitly places Père Jégo in Beauséjour; Waze and published mapped coordinates corroborate the stadium location. Broad Oasis/Hay-Hassani labels are not used as the canonical parent.",
+    verifiedAt: "2026-09-19",
+  },
+
 ];
 
 const CANONICAL_DISTRICT_IDS = new Set(GEO_NEIGHBORHOODS.map((district) => district.id));
