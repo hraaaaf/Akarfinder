@@ -24,9 +24,34 @@ type Props = {
   citySlug: string | null;
 };
 
+const CASABLANCA_SIGNAL_TARGET_IDS = new Set([
+  "landmark_casablanca_maarif_twin_center",
+  "landmark_casablanca_maarif_stade_mohammed_v",
+  "landmark_casablanca_ain_diab_morocco_mall",
+  "landmark_casablanca_finance_city_cfc_tower",
+  "landmark_casablanca_finance_city_anfa_park",
+  "landmark_casablanca_bourgogne_lycee_lyautey",
+  "landmark_casablanca_racine_institut_juan_ramon_jimenez",
+  "landmark_casablanca_bouskoura_forest",
+]);
+
 function cityEntries(citySlug: string | null): VerifiedLandmarkEntry[] {
   if (!citySlug) return [];
   return VERIFIED_LANDMARKS.filter((entry) => entry.entity.citySlug === citySlug);
+}
+
+function sidebarEntries(entries: readonly VerifiedLandmarkEntry[], citySlug: string): VerifiedLandmarkEntry[] {
+  const scoped = citySlug === "casablanca"
+    ? entries.filter((entry) => CASABLANCA_SIGNAL_TARGET_IDS.has(entry.entity.id))
+    : [...entries];
+
+  return scoped
+    .sort((a, b) => {
+      const pa = getLandmarkPresentation(a);
+      const pb = getLandmarkPresentation(b);
+      return pb.visualPriority - pa.visualPriority;
+    })
+    .slice(0, citySlug === "casablanca" ? 8 : 10);
 }
 
 function districtLabel(entry: VerifiedLandmarkEntry): string {
@@ -117,13 +142,7 @@ export function LandmarkCityOverlay({ map, mapReady, citySlug }: Props) {
 
   if (!citySlug || entries.length === 0) return null;
 
-  const sortedEntries = [...entries]
-    .sort((a, b) => {
-      const pa = getLandmarkPresentation(a);
-      const pb = getLandmarkPresentation(b);
-      return pb.visualPriority - pa.visualPriority;
-    })
-    .slice(0, citySlug === "casablanca" ? 8 : 10);
+  const sortedEntries = sidebarEntries(entries, citySlug);
 
   return (
     <>
