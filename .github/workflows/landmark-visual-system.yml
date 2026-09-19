@@ -5,8 +5,6 @@ on:
     paths:
       - "app/map/page.tsx"
       - "app/map/p4-map-shell.css"
-      - "app/map/page.tsx"
-      - "app/map/p4-map-shell.css"
       - "components/map/LandmarkArtwork.tsx"
       - "components/map/LandmarkCityOverlay.tsx"
       - "components/map/NationalTerritoryExperience.tsx"
@@ -20,6 +18,8 @@ on:
     branches:
       - feat/vivre-ici-landmark-visual-system
     paths:
+      - "app/map/page.tsx"
+      - "app/map/p4-map-shell.css"
       - "components/map/LandmarkArtwork.tsx"
       - "components/map/LandmarkCityOverlay.tsx"
       - "components/map/NationalTerritoryExperience.tsx"
