@@ -208,11 +208,11 @@ function selectedDistrictCenter(map: MapLibreMap, districtSlug: string | null): 
 
 export function National3DBuildingsLayer({ citySlug, districtSlug }: Props) {
   const eligible = citySlug === "casablanca";
-  const [enabled, setEnabled] = useState(eligible);
+  const [enabled, setEnabled] = useState(eligible && Boolean(districtSlug));
 
   useEffect(() => {
-    setEnabled(eligible);
-  }, [eligible]);
+    setEnabled(eligible && Boolean(districtSlug));
+  }, [districtSlug, eligible]);
 
   useEffect(() => {
     if (!eligible) return;
