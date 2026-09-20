@@ -85,6 +85,7 @@ export const GEO_NEIGHBORHOODS: CanonicalNeighborhoodEntity[] = [
   { id: "district_rabat_hay_riad", slug: "hay-riad", canonical_name: "Hay Riad", aliases: ["Hay Ryad", "Riad"], city_slug: "rabat", validation_status: "validated", seo_eligible: true, map_eligible: true },
   { id: "district_rabat_hassan", slug: "hassan", canonical_name: "Hassan", aliases: [], city_slug: "rabat", validation_status: "validated", seo_eligible: false, map_eligible: true },
   { id: "district_rabat_ocean", slug: "ocean", canonical_name: "Océan", aliases: ["Ocean"], city_slug: "rabat", validation_status: "validated", seo_eligible: false, map_eligible: false },
+  { id: "district_rabat_les_orangers", slug: "les-orangers", canonical_name: "Les Orangers", aliases: ["Quartier Les Orangers", "Quartier des Orangers", "Orangers"], city_slug: "rabat", validation_status: "validated", seo_eligible: false, map_eligible: true },
 
   // Marrakech
   { id: "district_marrakech_gueliz", slug: "gueliz", canonical_name: "Guéliz", aliases: ["Gueliz"], city_slug: "marrakech", validation_status: "validated", seo_eligible: true, map_eligible: true },
