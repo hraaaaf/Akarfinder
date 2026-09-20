@@ -143,3 +143,17 @@ Evidence for the stadium-driven scope:
 Decision: **VALIDATED / map eligible / SEO disabled**. The entity is promoted narrowly to support verified territorial navigation and stadium attachment; no business-data inference is authorized.
 
 Guardrails: 0 Supabase, 0 ranking, 0 deploy, 0 merge.
+
+
+## Promotion pass 5 — Rabat / Akkari — 2026-09-20
+
+Promoted canonical map entity: `district_rabat_akkari`.
+
+Evidence:
+- Agence Urbaine de Rabat-Salé explicitly identifies Akkari as a Rabat quartier in its urban-renovation program for the quartiers Océan et Akkari, arrondissement Hassan, ville de Rabat.
+- Barid Al-Maghrib's official postal directory lists `RABAT QUARTIER AKKARI 10050`.
+- REDAL independently publishes multiple Rabat addresses explicitly ending in `Akkari`, confirming current address usage.
+
+Decision: **VALIDATED / map eligible / SEO disabled**. Alias `Aakari` is accepted for observed spelling variation. No landmark is attached by this promotion.
+
+Guardrails: 0 Supabase, 0 ranking, 0 deploy, 0 merge.
