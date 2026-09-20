@@ -17,29 +17,47 @@ def main():
     ap=argparse.ArgumentParser()
     ap.add_argument("--pbf", required=True)
     ap.add_argument("--name", action="append", required=True)
+    ap.add_argument("--contains", action="append", default=[])
     ap.add_argument("--out", required=True)
     args=ap.parse_args()
 
     import osmium
     wanted={norm(x):x for x in args.name}
+    contains=[norm(x) for x in args.contains]
     rows=[]
 
     class H(osmium.SimpleHandler):
         def way(self,w):
             tags=dict(w.tags)
-            candidates=[tags.get("name"),tags.get("name:fr")]
+            candidates=[
+                tags.get("name"), tags.get("name:fr"),
+                tags.get("old_name"), tags.get("old_name:fr"),
+                tags.get("alt_name")
+            ]
             matched=None
-            for c in candidates:
-                if norm(c) in wanted:
-                    matched=wanted[norm(c)]
+            match_mode="exact"
+            for candidate in candidates:
+                if norm(candidate) in wanted:
+                    matched=wanted[norm(candidate)]
                     break
+            if not matched and contains:
+                normalized_candidates=[norm(x) for x in candidates if x]
+                for term in contains:
+                    if any(term in x for x in normalized_candidates):
+                        matched=term
+                        match_mode="contains"
+                        break
             if not matched: return
             rows.append({
                 "query": matched,
+                "match_mode": match_mode,
                 "osm_type":"way",
                 "osm_id":w.id,
                 "name":tags.get("name"),
                 "name:fr":tags.get("name:fr"),
+                "old_name":tags.get("old_name"),
+                "old_name:fr":tags.get("old_name:fr"),
+                "alt_name":tags.get("alt_name"),
                 "highway":tags.get("highway"),
                 "ref":tags.get("ref"),
                 "oneway":tags.get("oneway"),
@@ -54,10 +72,24 @@ def main():
     summary={}
     for q in args.name:
         summary[q]=sum(1 for r in rows if r["query"]==q)
+    contains_summary={}
+    for q in args.contains:
+        nq=norm(q)
+        contains_summary[q]=sum(1 for r in rows if r["query"]==nq and r["match_mode"]=="contains")
     with open(args.out,"w",encoding="utf-8") as f:
-        json.dump({"queries":args.name,"counts":summary,"matches":rows},f,ensure_ascii=False,indent=2)
+        json.dump({
+            "queries":args.name,
+            "contains_queries":args.contains,
+            "counts":summary,
+            "contains_counts":contains_summary,
+            "matches":rows
+        },f,ensure_ascii=False,indent=2)
         f.write("\n")
-    print(json.dumps({"counts":summary,"total":len(rows)},ensure_ascii=False,indent=2))
+    print(json.dumps({
+        "counts":summary,
+        "contains_counts":contains_summary,
+        "total":len(rows)
+    },ensure_ascii=False,indent=2))
 
 if __name__=="__main__":
     main()
