@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 220" role="img" aria-labelledby="title desc">
+  <title id="title">Stade Mohammed V — AkarFinder landmark</title>
+  <desc id="desc">Illustration semi-figurative du Stade Mohammed V à Maârif, avec cuvette ovale, gradins rouges, toiture claire et mâts d’éclairage.</desc>
+  <rect width="320" height="220" rx="28" fill="#F7FAFD"/>
+  <ellipse cx="160" cy="186" rx="120" ry="13" fill="#DCE5EF"/>
+  <path d="M46 122 Q160 76 274 122 L257 168 Q160 190 63 168 Z" fill="#0B1F3A"/>
+  <path d="M59 121 Q160 88 261 121 L248 151 Q160 169 72 151 Z" fill="#F3F6F9"/>
+  <path d="M73 126 Q160 101 247 126 L238 145 Q160 159 82 145 Z" fill="#C9252C"/>
+  <path d="M93 129 Q160 112 227 129 L220 140 Q160 151 100 140 Z" fill="#FFFFFF"/>
+  <ellipse cx="160" cy="145" rx="58" ry="19" fill="#7CB25B"/>
+  <ellipse cx="160" cy="145" rx="44" ry="13" fill="#6AA14A"/>
+  <path d="M80 102 L88 45 M240 102 L232 45" stroke="#7E8DA0" stroke-width="4" stroke-linecap="round"/>
+  <path d="M72 45 H104 M216 45 H248" stroke="#7E8DA0" stroke-width="5" stroke-linecap="round"/>
+  <path d="M51 171 Q160 195 269 171" fill="none" stroke="#1769E0" stroke-width="5" stroke-linecap="round" opacity=".75"/>
+  <path d="M110 116 Q160 98 210 116" fill="none" stroke="#E6EBF1" stroke-width="6" stroke-linecap="round"/>
+</svg>
