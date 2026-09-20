@@ -31,7 +31,7 @@ test("builds Morocco-scoped Nominatim boundary lookup", () => {
 test("normalizes polygon boundary and derives relation area id", () => {
   const boundary = normalizeNominatimBoundary({
     osm_type: "relation", osm_id: 123, display_name: "District, Morocco", importance: 0.5,
-    geojson: { type: "Polygon", coordinates: [[[0,0],[10,0],[10,10],[0,10],[0,0]]] },
+    geojson: { type: "Polygon" as const, coordinates: [[[0,0],[10,0],[10,10],[0,10],[0,0]]] },
   });
   assert.ok(boundary);
   assert.equal(overpassAreaId(boundary.osmType, boundary.osmId), 3600000123);
