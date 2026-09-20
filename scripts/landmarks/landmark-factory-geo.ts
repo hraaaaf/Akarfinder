@@ -161,3 +161,34 @@ export function dedupePoiCandidates(candidates: readonly PoiCandidate[], nearMet
 export function rankDistrictsForDiscovery(limit = 10) {
   return canonicalDistrictDensity().slice(0, Math.max(0, limit));
 }
+
+
+export type LandmarkHeuristicScore = {
+  sourceConfidence: number;
+  publicVisibility: number;
+  orientationValue: number;
+  visualDistinctiveness: number;
+  total: number;
+};
+
+const HIGH_SIGNAL_TAGS = ["historic", "tourism", "leisure", "man_made", "shop", "amenity"] as const;
+
+export function scorePoiHeuristic(candidate: PoiCandidate): LandmarkHeuristicScore {
+  const tags = candidate.tags;
+  const tagged = HIGH_SIGNAL_TAGS.filter((key) => Boolean(tags[key])).length;
+  const wikipediaSignal = tags.wikipedia || tags.wikidata ? 1 : 0;
+  const websiteSignal = tags.website || tags["contact:website"] ? 1 : 0;
+  const publicVisibility = Math.min(20, 8 + tagged * 3 + wikipediaSignal * 4);
+  const orientationValue = Math.min(20, 8 + (tags.historic ? 4 : 0) + (tags.leisure === "stadium" ? 5 : 0) + (tags.man_made === "tower" ? 4 : 0) + (tags.shop === "mall" ? 3 : 0));
+  const visualDistinctiveness = Math.min(20, 7 + (tags.historic ? 4 : 0) + (tags.man_made ? 4 : 0) + (tags.leisure === "stadium" ? 4 : 0) + (tags.tourism === "attraction" ? 3 : 0));
+  const sourceConfidence = Math.min(20, 8 + wikipediaSignal * 5 + websiteSignal * 3 + (candidate.osmType !== "node" ? 2 : 0));
+  return { sourceConfidence, publicVisibility, orientationValue, visualDistinctiveness, total: sourceConfidence + publicVisibility + orientationValue + visualDistinctiveness };
+}
+
+export function shortlistPoiCandidates(candidates: readonly PoiCandidate[], minimumHeuristic = 50): Array<PoiCandidate & { heuristic: LandmarkHeuristicScore }> {
+  return dedupePoiCandidates(candidates)
+    .filter((candidate) => !isDuplicateCandidate(candidate))
+    .map((candidate) => ({ ...candidate, heuristic: scorePoiHeuristic(candidate) }))
+    .filter(({ heuristic }) => heuristic.total >= minimumHeuristic)
+    .sort((a, b) => b.heuristic.total - a.heuristic.total || a.name.localeCompare(b.name));
+}
