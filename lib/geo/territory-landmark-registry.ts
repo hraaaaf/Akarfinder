@@ -721,6 +721,30 @@ export const VERIFIED_LANDMARKS: readonly VerifiedLandmarkEntry[] = [
     verifiedAt: "2026-09-18",
   },
 
+  {
+    entity: {
+      id: "landmark_rabat_souissi_complexe_moulay_abdellah",
+      type: "landmark",
+      citySlug: "rabat",
+      districtSlug: "souissi",
+      landmarkSlug: "complexe-moulay-abdellah",
+      canonicalName: "Complexe Sportif Prince Moulay Abdellah",
+      aliases: ["Complexe Moulay Abdellah", "Stade Prince Moulay Abdellah"],
+      category: "sports",
+      parentId: "district_rabat_souissi",
+      importance: { score: 99, tier: "flagship", basis: ["product_priority", "orientation_value", "urban_prominence"] },
+      visibility: { minZoom: 13.2, retainPriority: true },
+      coordinates: { lat: 33.95979, lng: -6.88906, precision: "verified_landmark_point" },
+    },
+    sourceRefs: [
+      "https://www.sonarges.ma/infrastructures/complexe-moulay-abdellah/",
+      "https://mapcarta.com/W1368373354",
+      "https://www.reuters.com/sports/soccer/nine-stadiums-chosen-next-africa-cup-nations-finals-morocco-2025-01-27/",
+    ],
+    verificationNote: "SONARGES explicitly places the complex in Rabat's Souissi district; OSM-backed mapping supplies the verified point; Reuters corroborates its national/international event prominence.",
+    verifiedAt: "2026-09-20",
+  },
+
 ];
 
 const CANONICAL_DISTRICT_IDS = new Set(GEO_NEIGHBORHOODS.map((district) => district.id));

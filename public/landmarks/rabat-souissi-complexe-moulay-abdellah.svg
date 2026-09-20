@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 220" role="img" aria-labelledby="title desc">
+  <title id="title">Complexe Sportif Prince Moulay Abdellah — AkarFinder landmark</title>
+  <desc id="desc">Semi-figurative simplified stadium scene with a low bowl and a champagne triangular facade.</desc>
+  <rect width="320" height="220" rx="28" fill="#F7FAFD"/>
+  <ellipse cx="160" cy="184" rx="118" ry="14" fill="#DCE5EF"/>
+  <path d="M45 118 Q160 73 275 118 L258 166 Q160 190 62 166 Z" fill="#071B33"/>
+  <path d="M58 118 Q160 84 262 118 L249 151 Q160 169 71 151 Z" fill="#E4C895"/>
+  <path d="M76 120 L95 151 L113 109 L132 157 L151 101 L170 158 L190 107 L210 152 L229 115 L246 149" fill="none" stroke="#B88B45" stroke-width="8" stroke-linejoin="round"/>
+  <path d="M91 121 Q160 98 229 121 L218 139 Q160 151 102 139 Z" fill="#F6E7C8"/>
+  <path d="M122 139 Q160 129 198 139 L193 163 Q160 170 127 163 Z" fill="#0B1F3A"/>
+  <path d="M56 171 Q160 194 264 171" fill="none" stroke="#1769E0" stroke-width="5" stroke-linecap="round" opacity=".8"/>
+</svg>

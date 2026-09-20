@@ -47,6 +47,7 @@ test("verified registry covers the certified city/district paths", () => {
       ["rabat", "hassan"],
       ["rabat", "hay-riad"],
       ["rabat", "souissi"],
+      ["rabat", "souissi"],
       ["rabat", "ocean"],
       ["tanger", "malabata"],
       ["tanger", "marchan"],
@@ -63,5 +64,12 @@ test("district lookup never leaks landmarks from another district", () => {
   const maarif = getVerifiedLandmarksForDistrict("district_casablanca_maarif");
   assert.equal(maarif.length, 1);
   assert.equal(maarif[0]?.entity.id, "landmark_casablanca_maarif_twin_center");
+  const souissi = getVerifiedLandmarksForDistrict("district_rabat_souissi");
+  assert.equal(souissi.length, 2);
+  assert.deepEqual(souissi.map(({ entity }) => entity.id), [
+    "landmark_rabat_souissi_complexe_moulay_abdellah",
+    "landmark_rabat_souissi_mega_mall",
+  ]);
+
   assert.deepEqual(getVerifiedLandmarksForDistrict("district_missing"), []);
 });
