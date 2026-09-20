@@ -46,9 +46,10 @@ def main():
                 "version":w.version,
                 "timestamp":str(w.timestamp),
                 "node_refs":[n.ref for n in w.nodes],
+                "coordinates":[[n.lon, n.lat] for n in w.nodes if n.location.valid()],
             })
 
-    H().apply_file(args.pbf, locations=False)
+    H().apply_file(args.pbf, locations=True)
     rows.sort(key=lambda r:(norm(r["query"]), r["osm_id"]))
     summary={}
     for q in args.name:
