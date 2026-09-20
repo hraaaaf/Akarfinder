@@ -44,6 +44,14 @@ jobs:
             --bbox=-7.80,33.40,-7.40,33.75 \
             --out artifacts/casablanca-poi.jsonl
           wc -l artifacts/casablanca-poi.jsonl
+      - name: Run Maârif point-in-polygon shortlist
+        run: |
+          npx tsx scripts/landmarks/discover-district-from-artifacts.ts \
+            --boundary artifacts/casablanca-maarif-relation-2801474.geojson \
+            --poi-jsonl artifacts/casablanca-poi.jsonl \
+            --district-id district_casablanca_maarif \
+            --out artifacts/casablanca-maarif-shortlist.json
+          cat artifacts/casablanca-maarif-shortlist.json
       - name: Build deterministic summary
         run: |
           python - <<'PY'
