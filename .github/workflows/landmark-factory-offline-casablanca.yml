@@ -32,6 +32,20 @@ jobs:
             --out artifacts/bouskoura-boundary-relations.json
           cat artifacts/bouskoura-boundary-relations.json
 
+      - name: Materialize Bouskoura administrative boundary relation 2522564
+        run: |
+          mkdir -p artifacts
+          python scripts/landmarks/materialize-osm-relation.py \
+            --pbf /tmp/morocco-latest.osm.pbf \
+            --relation-id 2522564 \
+            --out artifacts/bouskoura-relation-2522564.geojson
+          npx tsx scripts/landmarks/validate-materialized-boundary.ts \
+            --input artifacts/bouskoura-relation-2522564.geojson \
+            --city-id city_bouskoura \
+            --neighborhood-id district_casablanca_bouskoura \
+            --display-name "Bouskoura" \
+            | tee artifacts/bouskoura-relation-2522564-validation.json
+
       - name: Materialize Maârif administrative boundary relation 2801474
         run: |
           mkdir -p artifacts
