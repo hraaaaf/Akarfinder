@@ -23,6 +23,44 @@ jobs:
           curl --fail --location --retry 3 --output /tmp/morocco-latest.osm.pbf \
             https://download.geofabrik.de/africa/morocco-latest.osm.pbf
           ls -lh /tmp/morocco-latest.osm.pbf
+      - name: Discover authoritative Racine boundary streets
+        run: |
+          mkdir -p artifacts
+          python scripts/landmarks/find-osm-named-ways.py \
+            --pbf /tmp/morocco-latest.osm.pbf \
+            --name "Boulevard Racine" \
+            --name "Boulevard d'Anfa" \
+            --name "Boulevard Abdelkrim Al Khattabi" \
+            --name "Avenue Temera" \
+            --name "Boulevard de la Lybie" \
+            --name "Boulevard du Phare" \
+            --name "Boulevard Abdellatif Ben Kaddour" \
+            --name "Boulevard Mohamed Zerktouni" \
+            --out artifacts/racine-boundary-ways.json
+          cat artifacts/racine-boundary-ways.json
+
+      - name: Discover authoritative Bourgogne boundary streets
+        run: |
+          mkdir -p artifacts
+          python scripts/landmarks/find-osm-named-ways.py \
+            --pbf /tmp/morocco-latest.osm.pbf \
+            --name "Boulevard de la Corniche" \
+            --name "Boulevard Abdellatif Ben Kaddour" \
+            --name "Avenue du Phare" \
+            --name "Boulevard Mohamed Zerktouni" \
+            --out artifacts/bourgogne-boundary-ways.json
+          cat artifacts/bourgogne-boundary-ways.json
+
+      - name: Discover authoritative Aïn Diab boundary streets
+        run: |
+          mkdir -p artifacts
+          python scripts/landmarks/find-osm-named-ways.py \
+            --pbf /tmp/morocco-latest.osm.pbf \
+            --name "Boulevard de l'Océan Atlantique" \
+            --name "Boulevard de la Corniche" \
+            --out artifacts/ain-diab-boundary-ways.json
+          cat artifacts/ain-diab-boundary-ways.json
+
       - name: Discover exact Bourgogne boundary relations
         run: |
           mkdir -p artifacts
