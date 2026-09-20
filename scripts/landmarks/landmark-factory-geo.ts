@@ -76,3 +76,88 @@ export function canonicalDistrictDensity(): Array<{ districtId: string; city: st
 export function isDuplicateCandidate(candidate: PoiCandidate, keys = existingLandmarkKeys()): boolean {
   return keys.has(candidate.name.trim().toLowerCase());
 }
+
+
+export type GeoJsonGeometry =
+  | { type: "Polygon"; coordinates: number[][][] }
+  | { type: "MultiPolygon"; coordinates: number[][][][] };
+
+export type DistrictBoundaryCandidate = {
+  osmType: "node" | "way" | "relation";
+  osmId: number;
+  displayName: string;
+  geometry: GeoJsonGeometry;
+  importance: number;
+};
+
+export function buildNominatimDistrictSearchUrl(city: string, district: string): string {
+  const q = encodeURIComponent(`${district}, ${city}, Morocco`);
+  return `https://nominatim.openstreetmap.org/search?q=${q}&format=jsonv2&countrycodes=ma&addressdetails=1&polygon_geojson=1&limit=5`;
+}
+
+export function normalizeNominatimBoundary(raw: any): DistrictBoundaryCandidate | null {
+  const geometry = raw?.geojson;
+  if (!geometry || !["Polygon", "MultiPolygon"].includes(geometry.type)) return null;
+  const osmType = raw?.osm_type;
+  if (!["node", "way", "relation"].includes(osmType) || !Number.isFinite(Number(raw?.osm_id))) return null;
+  return {
+    osmType,
+    osmId: Number(raw.osm_id),
+    displayName: String(raw.display_name ?? ""),
+    geometry,
+    importance: Number(raw.importance ?? 0),
+  };
+}
+
+export function toMultiPolygon(geometry: GeoJsonGeometry): MultiPolygon {
+  return geometry.type === "Polygon"
+    ? [geometry.coordinates as unknown as Polygon]
+    : geometry.coordinates as unknown as MultiPolygon;
+}
+
+export function overpassAreaId(osmType: DistrictBoundaryCandidate["osmType"], osmId: number): number | null {
+  if (osmType === "relation") return 3_600_000_000 + osmId;
+  if (osmType === "way") return 2_400_000_000 + osmId;
+  return null;
+}
+
+export function assignCandidatesToBoundary(candidates: readonly PoiCandidate[], boundary: GeoJsonGeometry): PoiCandidate[] {
+  const geometry = toMultiPolygon(boundary);
+  return candidates.filter((candidate) => pointInMultiPolygon([candidate.lng, candidate.lat], geometry));
+}
+
+function normalizeCandidateText(value: string): string {
+  return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+export function haversineMeters(a: LonLat, b: LonLat): number {
+  const r = 6_371_000;
+  const toRad = (v: number) => v * Math.PI / 180;
+  const dLat = toRad(b[1] - a[1]);
+  const dLng = toRad(b[0] - a[0]);
+  const lat1 = toRad(a[1]);
+  const lat2 = toRad(b[1]);
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
+  return 2 * r * Math.asin(Math.sqrt(h));
+}
+
+export function candidateDedupKey(candidate: PoiCandidate): string {
+  return normalizeCandidateText(candidate.name);
+}
+
+export function dedupePoiCandidates(candidates: readonly PoiCandidate[], nearMeters = 35): PoiCandidate[] {
+  const retained: PoiCandidate[] = [];
+  for (const candidate of candidates) {
+    const key = candidateDedupKey(candidate);
+    const duplicate = retained.some((prior) => {
+      if (candidateDedupKey(prior) !== key) return false;
+      return haversineMeters([prior.lng, prior.lat], [candidate.lng, candidate.lat]) <= nearMeters;
+    });
+    if (!duplicate) retained.push(candidate);
+  }
+  return retained;
+}
+
+export function rankDistrictsForDiscovery(limit = 10) {
+  return canonicalDistrictDensity().slice(0, Math.max(0, limit));
+}
