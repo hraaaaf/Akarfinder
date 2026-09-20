@@ -34,3 +34,16 @@ Each promoted landmark still needs independent primary/secondary editorial sourc
 
 ## Non-goals
 No Supabase writes. No listing/business mutation. No ranking changes. No production runtime dependency on Nominatim or Overpass. No automatic merge/deploy.
+
+
+## Offline source selected
+Geofabrik publishes a Morocco-wide `morocco-latest.osm.pbf` suitable for Osmium and related tooling. The discovery path therefore has a concrete bulk-safe source without calling Nominatim/Overpass in application runtime.
+
+Offline extractor:
+- `scripts/landmarks/extract-osm-pbf.py`
+- reads a local Morocco PBF;
+- limits work to a caller-supplied Casablanca bbox;
+- emits only named high-signal POI nodes as JSONL;
+- intentionally refuses to invent centroids for ways/relations. A later area/centroid pass must compute those from geometry.
+
+The PBF itself is **not committed** to Git. Evidence derived from it must record the source URL/date and OSM object IDs.
