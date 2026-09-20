@@ -90,3 +90,13 @@ test("district discovery normalizes, spatially filters and shortlists in one det
   const result = buildDistrictDiscoveryResult(district, boundary, raw, 55);
   assert.deepEqual(result.candidates.map(x => x.name), ["Strong"]);
 });
+
+
+test("all canonical neighborhoods are map eligible for national Landmark Factory coverage", async () => {
+  const { GEO_NEIGHBORHOODS } = await import("../../lib/geo/geo-entity-registry");
+  assert.ok(GEO_NEIGHBORHOODS.length > 0);
+  assert.deepEqual(
+    GEO_NEIGHBORHOODS.filter((district) => !district.map_eligible).map((district) => district.id),
+    [],
+  );
+});
