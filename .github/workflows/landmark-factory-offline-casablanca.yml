@@ -36,6 +36,11 @@ jobs:
             --name "Boulevard du Phare" \
             --name "Boulevard Abdellatif Ben Kaddour" \
             --name "Boulevard Mohamed Zerktouni" \
+            --contains "Racine" \
+            --contains "Temera" \
+            --contains "Libye" \
+            --contains "Lybie" \
+            --contains "Phare" \
             --out artifacts/racine-boundary-ways.json
           cat artifacts/racine-boundary-ways.json
 
@@ -47,7 +52,10 @@ jobs:
             --name "Boulevard de la Corniche" \
             --name "Boulevard Abdellatif Ben Kaddour" \
             --name "Avenue du Phare" \
+            --name "Avenue Docteur Mohamed Sijelmassi" \
             --name "Boulevard Mohamed Zerktouni" \
+            --contains "Phare" \
+            --contains "Sijelmassi" \
             --out artifacts/bourgogne-boundary-ways.json
           cat artifacts/bourgogne-boundary-ways.json
 
