@@ -2,10 +2,6 @@ name: Landmark Factory Offline Casablanca
 
 on:
   pull_request:
-    paths:
-      - "scripts/landmarks/**"
-      - "docs/geo/landmark-factory/**"
-      - ".github/workflows/landmark-factory-offline-casablanca.yml"
   workflow_dispatch:
 
 permissions:
