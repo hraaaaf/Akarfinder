@@ -23,6 +23,33 @@ jobs:
           curl --fail --location --retry 3 --output /tmp/morocco-latest.osm.pbf \
             https://download.geofabrik.de/africa/morocco-latest.osm.pbf
           ls -lh /tmp/morocco-latest.osm.pbf
+      - name: Discover exact Bourgogne boundary relations
+        run: |
+          mkdir -p artifacts
+          python scripts/landmarks/find-osm-boundary-relations.py \
+            --pbf /tmp/morocco-latest.osm.pbf \
+            --name "Bourgogne" \
+            --out artifacts/bourgogne-boundary-relations.json
+          cat artifacts/bourgogne-boundary-relations.json
+
+      - name: Discover exact Aïn Diab boundary relations
+        run: |
+          mkdir -p artifacts
+          python scripts/landmarks/find-osm-boundary-relations.py \
+            --pbf /tmp/morocco-latest.osm.pbf \
+            --name "Aïn Diab" \
+            --out artifacts/ain-diab-boundary-relations.json
+          cat artifacts/ain-diab-boundary-relations.json
+
+      - name: Discover exact Casablanca Finance City boundary relations
+        run: |
+          mkdir -p artifacts
+          python scripts/landmarks/find-osm-boundary-relations.py \
+            --pbf /tmp/morocco-latest.osm.pbf \
+            --name "Casablanca Finance City" \
+            --out artifacts/cfc-boundary-relations.json
+          cat artifacts/cfc-boundary-relations.json
+
       - name: Discover exact Racine boundary relations
         run: |
           mkdir -p artifacts
