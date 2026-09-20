@@ -143,3 +143,17 @@ Evidence for the stadium-driven scope:
 Decision: **VALIDATED / map eligible / SEO disabled**. The entity is promoted narrowly to support verified territorial navigation and stadium attachment; no business-data inference is authorized.
 
 Guardrails: 0 Supabase, 0 ranking, 0 deploy, 0 merge.
+
+
+## Promotion pass 6 — Rabat / Les Orangers — 2026-09-20
+
+Promoted canonical map entity: `district_rabat_les_orangers`.
+
+Evidence:
+- Poste Maroc / codepostal.ma lists `RABAT QUARTIER LES ORANGERS 10060` and its official postal directory separately lists `QUARTIER LES ORANGERS 10060`.
+- Ministry of Health physician registry contains a Rabat address explicitly written `Quartier les Orangers Rue El Kindy`.
+- Independent Rabat sources distinguish Les Orangers as a central/old Rabat neighborhood and separate it from Diour Jamaa despite the shared 10060 postal code.
+
+Decision: **VALIDATED / map eligible / SEO disabled**. Accepted aliases: `Quartier Les Orangers`, `Quartier des Orangers`, `Orangers`. No landmark attached in this pass.
+
+Guardrails: 0 Supabase, 0 ranking, 0 deploy, 0 merge.
