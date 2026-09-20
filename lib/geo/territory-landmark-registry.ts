@@ -472,6 +472,38 @@ export const VERIFIED_LANDMARKS: readonly VerifiedLandmarkEntry[] = [
   },
   {
     entity: {
+      id: "landmark_rabat_ocean_musee_national_photographie",
+      type: "landmark",
+      citySlug: "rabat",
+      districtSlug: "ocean",
+      landmarkSlug: "musee-national-photographie",
+      canonicalName: "Musée National de la Photographie — Fort Rottembourg",
+      aliases: ["Musée National de la Photographie", "Fort Rottembourg", "Fort Hervé", "Borj El Kebir"],
+      category: "heritage",
+      parentId: "district_rabat_ocean",
+      importance: {
+        score: 98,
+        tier: "flagship",
+        basis: ["product_priority", "orientation_value", "urban_prominence"],
+      },
+      visibility: { minZoom: 13.4, retainPriority: true },
+      coordinates: {
+        lat: 34.02569,
+        lng: -6.85019,
+        precision: "verified_landmark_point",
+      },
+    },
+    sourceRefs: [
+      "https://www.fnm.ma/museums/36",
+      "https://rabatsites.ma/tour-item/musee-national-de-la-photographie/",
+      "https://www.visitrabat.com/lieux/musee-national-de-la-photographie/",
+      "https://fr.le360.ma/culture/video-rabat-linauguration-du-premier-musee-national-de-la-photographie-comme-si-vous-y-etiez-206656/",
+    ],
+    verificationNote: "FNM identifies the museum at Fort Rottembourg; Rabat heritage inventory and independent Rabat sources tie the fort to Quartier Océan; the retained point is the verified public entrance/location point.",
+    verifiedAt: "2026-09-20",
+  },
+  {
+    entity: {
       id: "landmark_tanger_ville_nouvelle_terrasse_paresseux",
       type: "landmark",
       citySlug: "tanger",
