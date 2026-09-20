@@ -71,6 +71,7 @@ export const GEO_CITIES: CanonicalCityEntity[] = [
 export const GEO_NEIGHBORHOODS: CanonicalNeighborhoodEntity[] = [
   // Casablanca
   { id: "district_casablanca_maarif", slug: "maarif", canonical_name: "Maârif", aliases: ["Maarif"], city_slug: "casablanca", validation_status: "validated", seo_eligible: true, map_eligible: true },
+  { id: "district_casablanca_gauthier", slug: "gauthier", canonical_name: "Gauthier", aliases: ["Quartier Gauthier"], city_slug: "casablanca", validation_status: "validated", seo_eligible: false, map_eligible: true },
   { id: "district_casablanca_racine", slug: "racine", canonical_name: "Racine", aliases: [], city_slug: "casablanca", validation_status: "validated", seo_eligible: true, map_eligible: false },
   { id: "district_casablanca_ain_diab", slug: "ain-diab", canonical_name: "Aïn Diab", aliases: ["Ain Diab"], city_slug: "casablanca", validation_status: "validated", seo_eligible: true, map_eligible: false },
   { id: "district_casablanca_bourgogne", slug: "bourgogne", canonical_name: "Bourgogne", aliases: [], city_slug: "casablanca", validation_status: "validated", seo_eligible: true, map_eligible: false },
