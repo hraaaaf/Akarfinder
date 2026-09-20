@@ -48,6 +48,7 @@ test("verified registry covers the certified city/district paths", () => {
       ["rabat", "hay-riad"],
       ["rabat", "souissi"],
       ["rabat", "ocean"],
+      ["rabat", "ocean"],
       ["tanger", "malabata"],
       ["tanger", "marchan"],
       ["tanger", "ville-nouvelle"],
@@ -63,5 +64,9 @@ test("district lookup never leaks landmarks from another district", () => {
   const maarif = getVerifiedLandmarksForDistrict("district_casablanca_maarif");
   assert.equal(maarif.length, 1);
   assert.equal(maarif[0]?.entity.id, "landmark_casablanca_maarif_twin_center");
+  const ocean = getVerifiedLandmarksForDistrict("district_rabat_ocean");
+  assert.equal(ocean.length, 2);
+  assert.equal(ocean[0]?.entity.id, "landmark_rabat_ocean_musee_national_photographie");
+  assert.equal(ocean[1]?.entity.id, "landmark_rabat_ocean_place_de_russie");
   assert.deepEqual(getVerifiedLandmarksForDistrict("district_missing"), []);
 });
