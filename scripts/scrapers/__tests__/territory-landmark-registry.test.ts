@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import fs from "node:fs";
 
 import { GEO_NEIGHBORHOODS } from "../../../lib/geo/geo-entity-registry";
 import {
@@ -68,6 +69,14 @@ test("district lookup never leaks landmarks from another district", () => {
       ["landmark_casablanca_maarif_stade_mohammed_v", 99],
       ["landmark_casablanca_maarif_twin_center", 98],
     ],
+  );
+  assert.deepEqual(
+    maarif[0]?.entity.coordinates,
+    { lat: 33.58285065, lng: -7.6468283, precision: "verified_landmark_point" },
+  );
+  assert.equal(
+    fs.existsSync("public/landmarks/casablanca-maarif-stade-mohammed-v.svg"),
+    true,
   );
   assert.deepEqual(getVerifiedLandmarksForDistrict("district_missing"), []);
 });
