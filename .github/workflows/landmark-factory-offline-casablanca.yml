@@ -17,12 +17,25 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install pyosmium
-        run: python -m pip install --disable-pip-version-check osmium
+        run: python -m pip install --disable-pip-version-check osmium shapely
       - name: Download current Morocco OSM PBF
         run: |
           curl --fail --location --retry 3 --output /tmp/morocco-latest.osm.pbf \
             https://download.geofabrik.de/africa/morocco-latest.osm.pbf
           ls -lh /tmp/morocco-latest.osm.pbf
+      - name: Materialize Maârif administrative boundary relation 2801474
+        run: |
+          mkdir -p artifacts
+          python scripts/landmarks/materialize-osm-relation.py \
+            --pbf /tmp/morocco-latest.osm.pbf \
+            --relation-id 2801474 \
+            --out artifacts/casablanca-maarif-relation-2801474.geojson
+          npx tsx scripts/landmarks/validate-materialized-boundary.ts \
+            --input artifacts/casablanca-maarif-relation-2801474.geojson \
+            --city-id city_casablanca \
+            --neighborhood-id district_casablanca_maarif \
+            --display-name "Maârif" \
+            | tee artifacts/casablanca-maarif-relation-2801474-validation.json
       - name: Extract Casablanca high-signal POI nodes
         run: |
           mkdir -p artifacts
