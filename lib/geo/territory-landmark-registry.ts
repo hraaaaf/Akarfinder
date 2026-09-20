@@ -721,6 +721,30 @@ export const VERIFIED_LANDMARKS: readonly VerifiedLandmarkEntry[] = [
     verifiedAt: "2026-09-18",
   },
 
+  {
+    entity: {
+      id: "landmark_tanger_marchan_phoenician_tombs",
+      type: "landmark",
+      citySlug: "tanger",
+      districtSlug: "marchan",
+      landmarkSlug: "tombes-pheniciennes",
+      canonicalName: "Tombes phéniciennes de Tanger",
+      aliases: ["Tombes phéniciennes", "Phoenician Tombs", "Nécropole punico-lybienne du Marshan"],
+      category: "heritage",
+      parentId: "district_tanger_marchan",
+      importance: { score: 97, tier: "flagship", basis: ["product_priority", "orientation_value", "urban_prominence"] },
+      visibility: { minZoom: 13.5, retainPriority: true },
+      coordinates: { lat: 35.790869, lng: -5.820036, precision: "verified_landmark_point" },
+    },
+    sourceRefs: [
+      "https://www.communes-maroc.com/fr/commune/tanger/place/view/tanger-necropole-punico-lybienne",
+      "https://fr.le360.ma/societe/tanger-des-tombes-millenaires-transformees-en-depotoir_GZJVNF56VRGG5BUQZTPGXBL5Z4/",
+      "https://lematin.ma/journal/2018/tanger-bus-touristique-lance-circuits-faire-decouvrir-ville/298819.html",
+    ],
+    verificationNote: "Municipal territorial source explicitly places the necropolis in quartier Marshan and publishes the point; Le360 independently confirms Marshan; Le Matin documents it on Tangier's municipal tourist circuit.",
+    verifiedAt: "2026-09-20",
+  },
+
 ];
 
 const CANONICAL_DISTRICT_IDS = new Set(GEO_NEIGHBORHOODS.map((district) => district.id));

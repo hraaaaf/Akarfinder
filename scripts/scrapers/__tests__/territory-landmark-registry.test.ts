@@ -50,6 +50,7 @@ test("verified registry covers the certified city/district paths", () => {
       ["rabat", "ocean"],
       ["tanger", "malabata"],
       ["tanger", "marchan"],
+      ["tanger", "marchan"],
       ["tanger", "ville-nouvelle"],
     ].sort(),
   );
@@ -63,5 +64,12 @@ test("district lookup never leaks landmarks from another district", () => {
   const maarif = getVerifiedLandmarksForDistrict("district_casablanca_maarif");
   assert.equal(maarif.length, 1);
   assert.equal(maarif[0]?.entity.id, "landmark_casablanca_maarif_twin_center");
+  const marchan = getVerifiedLandmarksForDistrict("district_tanger_marchan");
+  assert.equal(marchan.length, 2);
+  assert.deepEqual(marchan.map(({ entity }) => entity.id), [
+    "landmark_tanger_marchan_phoenician_tombs",
+    "landmark_tanger_marchan_cafe_hafa",
+  ]);
+
   assert.deepEqual(getVerifiedLandmarksForDistrict("district_missing"), []);
 });
