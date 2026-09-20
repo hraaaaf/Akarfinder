@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { assignCandidatesToBoundary, buildNominatimDistrictSearchUrl, canonicalDistrictDensity, dedupePoiCandidates, normalizeNominatimBoundary, normalizeOsmElement, overpassAreaId, pointInPolygon, rankDistrictsForDiscovery, shortlistPoiCandidates } from "../landmark-factory-geo";
+import { assignCandidatesToBoundary, buildNominatimDistrictSearchUrl, canonicalDistrictDensity, dedupePoiCandidates, normalizeNominatimBoundary, normalizeOsmElement, overpassAreaId, pointInPolygon, rankDistrictsForDiscovery, rankCityDistrictsForDiscovery, shortlistPoiCandidates, buildDistrictDiscoveryResult } from "../landmark-factory-geo";
 
 test("point-in-polygon assigns only actual contained points", () => {
   const square = [[[0,0],[10,0],[10,10],[0,10],[0,0]]] as const;
@@ -70,4 +70,23 @@ test("shortlist ranks high-signal POIs and rejects weak noise", () => {
   const shortlist = shortlistPoiCandidates(candidates, 55);
   assert.deepEqual(shortlist.map(x => x.name), ["Historic Stadium"]);
   assert.equal(shortlist[0].heuristic.total >= 55, true);
+});
+
+
+test("Casablanca batch stays city-scoped and density ordered", () => {
+  const batch = rankCityDistrictsForDiscovery("casablanca", 100);
+  assert.equal(batch.length > 0, true);
+  assert.equal(batch.every((x) => x.city === "casablanca"), true);
+  assert.equal(batch.every((x,i) => i === 0 || batch[i-1].count <= x.count), true);
+});
+
+test("district discovery normalizes, spatially filters and shortlists in one deterministic pass", () => {
+  const district = { districtId:"district_test", city:"casablanca", district:"Test", count:0 };
+  const boundary = { type:"Polygon" as const, coordinates:[[[0,0],[10,0],[10,10],[0,10],[0,0]]] };
+  const raw = [
+    { type:"relation", id:1, center:{lat:5,lon:5}, tags:{name:"Strong", historic:"yes", leisure:"stadium", wikidata:"Q1", website:"https://example.test"} },
+    { type:"node", id:2, lat:5, lon:15, tags:{name:"Outside", historic:"yes", wikidata:"Q2"} },
+  ];
+  const result = buildDistrictDiscoveryResult(district, boundary, raw, 55);
+  assert.deepEqual(result.candidates.map(x => x.name), ["Strong"]);
 });
