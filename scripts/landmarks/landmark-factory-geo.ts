@@ -162,6 +162,12 @@ export function rankDistrictsForDiscovery(limit = 10) {
   return canonicalDistrictDensity().slice(0, Math.max(0, limit));
 }
 
+export function rankCityDistrictsForDiscovery(citySlug: string, limit = 50) {
+  return canonicalDistrictDensity()
+    .filter((district) => district.city === citySlug)
+    .slice(0, Math.max(0, limit));
+}
+
 
 export type LandmarkHeuristicScore = {
   sourceConfidence: number;
@@ -191,4 +197,58 @@ export function shortlistPoiCandidates(candidates: readonly PoiCandidate[], mini
     .map((candidate) => ({ ...candidate, heuristic: scorePoiHeuristic(candidate) }))
     .filter(({ heuristic }) => heuristic.total >= minimumHeuristic)
     .sort((a, b) => b.heuristic.total - a.heuristic.total || a.name.localeCompare(b.name));
+}
+
+
+export type BoundaryCacheRecord = {
+  districtId: string;
+  citySlug: string;
+  canonicalName: string;
+  source: "osm-nominatim";
+  sourceOsmType: DistrictBoundaryCandidate["osmType"];
+  sourceOsmId: number;
+  fetchedAt: string;
+  geometry: GeoJsonGeometry;
+};
+
+export function boundaryCacheRecord(
+  district: { districtId: string; city: string; district: string },
+  boundary: DistrictBoundaryCandidate,
+  fetchedAt: string,
+): BoundaryCacheRecord {
+  return {
+    districtId: district.districtId,
+    citySlug: district.city,
+    canonicalName: district.district,
+    source: "osm-nominatim",
+    sourceOsmType: boundary.osmType,
+    sourceOsmId: boundary.osmId,
+    fetchedAt,
+    geometry: boundary.geometry,
+  };
+}
+
+export type DistrictDiscoveryResult = {
+  districtId: string;
+  city: string;
+  district: string;
+  currentLandmarks: number;
+  candidates: Array<PoiCandidate & { heuristic: LandmarkHeuristicScore }>;
+};
+
+export function buildDistrictDiscoveryResult(
+  district: { districtId: string; city: string; district: string; count: number },
+  boundary: GeoJsonGeometry,
+  rawOsmElements: readonly any[],
+  minimumHeuristic = 50,
+): DistrictDiscoveryResult {
+  const normalized = rawOsmElements.map(normalizeOsmElement).filter((candidate): candidate is PoiCandidate => Boolean(candidate));
+  const inside = assignCandidatesToBoundary(normalized, boundary);
+  return {
+    districtId: district.districtId,
+    city: district.city,
+    district: district.district,
+    currentLandmarks: district.count,
+    candidates: shortlistPoiCandidates(inside, minimumHeuristic),
+  };
 }
