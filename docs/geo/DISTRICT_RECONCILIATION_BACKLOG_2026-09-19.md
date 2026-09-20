@@ -143,3 +143,17 @@ Evidence for the stadium-driven scope:
 Decision: **VALIDATED / map eligible / SEO disabled**. The entity is promoted narrowly to support verified territorial navigation and stadium attachment; no business-data inference is authorized.
 
 Guardrails: 0 Supabase, 0 ranking, 0 deploy, 0 merge.
+
+
+## Promotion pass 9 — Casablanca / Gauthier — 2026-09-20
+
+Promoted canonical map entity: `district_casablanca_gauthier`.
+
+Evidence:
+- Casablanca urban/address usage consistently identifies Gauthier as a distinct central neighborhood identity; it is not treated as an alias of Maârif or Racine.
+- Independent contemporary mapping and city/neighborhood references converge on Gauthier in central Casablanca.
+- Promotion remains map-only pending any future SEO-specific territorial certification.
+
+Decision: **VALIDATED / map eligible / SEO disabled**. Alias: `Quartier Gauthier`. No landmark attached.
+
+Guardrails: 0 Supabase, 0 ranking, 0 deploy, 0 merge.
