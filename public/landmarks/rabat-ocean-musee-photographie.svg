@@ -1,0 +1,17 @@
+<svg width="240" height="160" viewBox="0 0 240 160" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Musée National de la Photographie — Fort Rottembourg</title>
+  <desc id="desc">Illustration semi-figurative simplifiée du fort côtier de Rabat.</desc>
+  <rect width="240" height="160" rx="20" fill="#F7FAFD"/>
+  <path d="M18 123C53 115 78 119 111 113C145 107 178 111 222 101V139H18V123Z" fill="#DCECF1"/>
+  <path d="M18 131C59 125 92 129 126 123C160 117 193 120 222 114" stroke="#6AA9B7" stroke-width="3" stroke-linecap="round"/>
+  <path d="M47 69L59 57H181L193 69V124H47V69Z" fill="#D8C39B" stroke="#071B33" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M59 57V45H78V57M162 57V45H181V57" stroke="#071B33" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M78 57V49H96V57M144 57V49H162V57" stroke="#071B33" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M98 124V88C98 76 108 67 120 67C132 67 142 76 142 88V124" fill="#F7FAFD" stroke="#071B33" stroke-width="3"/>
+  <path d="M106 124V91C106 83 112 77 120 77C128 77 134 83 134 91V124" fill="#B79B6A"/>
+  <path d="M63 83H87V101H63V83ZM153 83H177V101H153V83Z" fill="#F7FAFD" stroke="#071B33" stroke-width="3"/>
+  <path d="M36 112L62 106M204 112L178 106" stroke="#071B33" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="34" cy="112" r="5" fill="#B79B6A" stroke="#071B33" stroke-width="2"/>
+  <circle cx="206" cy="112" r="5" fill="#B79B6A" stroke="#071B33" stroke-width="2"/>
+  <path d="M28 34C53 25 79 27 102 33" stroke="#6AA9B7" stroke-width="3" stroke-linecap="round" opacity=".7"/>
+</svg>
