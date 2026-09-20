@@ -170,7 +170,7 @@ export const VERIFIED_LANDMARKS: readonly VerifiedLandmarkEntry[] = [
       landmarkSlug: "stade-mohammed-v",
       canonicalName: "Stade Mohammed V",
       aliases: ["Complexe Sportif Mohammed V", "Complexe Mohammed V", "Donor"],
-      category: "sport",
+      category: "sports",
       parentId: "district_casablanca_maarif",
       importance: {
         score: 99,
