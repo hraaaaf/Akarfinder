@@ -61,7 +61,13 @@ test("district lookup never leaks landmarks from another district", () => {
   assert.equal(agdal[0]?.entity.id, "landmark_rabat_agdal_station");
 
   const maarif = getVerifiedLandmarksForDistrict("district_casablanca_maarif");
-  assert.equal(maarif.length, 1);
-  assert.equal(maarif[0]?.entity.id, "landmark_casablanca_maarif_twin_center");
+  assert.equal(maarif.length, 2);
+  assert.deepEqual(
+    maarif.map(({ entity }) => [entity.id, entity.importance.score]),
+    [
+      ["landmark_casablanca_maarif_stade_mohammed_v", 99],
+      ["landmark_casablanca_maarif_twin_center", 98],
+    ],
+  );
   assert.deepEqual(getVerifiedLandmarksForDistrict("district_missing"), []);
 });
