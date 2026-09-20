@@ -1,0 +1,57 @@
+name: Landmark Factory Offline Casablanca
+
+on:
+  pull_request:
+    paths:
+      - "scripts/landmarks/**"
+      - "docs/geo/landmark-factory/**"
+      - ".github/workflows/landmark-factory-offline-casablanca.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  extract-casablanca:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pyosmium
+        run: python -m pip install --disable-pip-version-check osmium
+      - name: Download current Morocco OSM PBF
+        run: |
+          curl --fail --location --retry 3 --output /tmp/morocco-latest.osm.pbf \
+            https://download.geofabrik.de/africa/morocco-latest.osm.pbf
+          ls -lh /tmp/morocco-latest.osm.pbf
+      - name: Extract Casablanca high-signal POI nodes
+        run: |
+          mkdir -p artifacts
+          python scripts/landmarks/extract-osm-pbf.py \
+            --pbf /tmp/morocco-latest.osm.pbf \
+            --bbox=-7.80,33.40,-7.40,33.75 \
+            --out artifacts/casablanca-poi.jsonl
+          wc -l artifacts/casablanca-poi.jsonl
+      - name: Build deterministic summary
+        run: |
+          python - <<'PY'
+          import json, collections
+          p="artifacts/casablanca-poi.jsonl"
+          rows=[json.loads(x) for x in open(p,encoding="utf-8") if x.strip()]
+          cats=collections.Counter()
+          for r in rows:
+            t=r["tags"]
+            for k in ("historic","tourism","leisure","amenity","shop","man_made"):
+              if k in t: cats[f"{k}={t[k]}"] += 1
+          out={"count":len(rows),"top_categories":cats.most_common(30),"sample":[{"id":r["id"],"name":r["tags"].get("name") or r["tags"].get("name:fr") or r["tags"].get("name:ar"),"lat":r["lat"],"lon":r["lon"]} for r in rows[:50]]}
+          open("artifacts/casablanca-summary.json","w",encoding="utf-8").write(json.dumps(out,ensure_ascii=False,indent=2))
+          print(json.dumps(out,ensure_ascii=False,indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: landmark-factory-casablanca-offline
+          path: artifacts/
+          retention-days: 7
