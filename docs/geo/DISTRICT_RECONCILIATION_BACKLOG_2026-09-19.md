@@ -143,3 +143,17 @@ Evidence for the stadium-driven scope:
 Decision: **VALIDATED / map eligible / SEO disabled**. The entity is promoted narrowly to support verified territorial navigation and stadium attachment; no business-data inference is authorized.
 
 Guardrails: 0 Supabase, 0 ranking, 0 deploy, 0 merge.
+
+
+## Promotion pass 8 — Rabat / Aviation — 2026-09-20
+
+Promoted canonical map entity: `district_rabat_aviation`.
+
+Evidence:
+- Morocco Ministry of Industry and Commerce publishes its Rabat delegation address as `21, Boulevard Doukkala, Quartier Aviation, Rabat`.
+- AEFE directory independently lists École Albert-Camus at `Rue Al Maârif, Quartier Aviation, 10105 Rabat`.
+- Current independent real-estate/map usage consistently exposes `Aviation - Mabella, Rabat`; this supports the neighborhood identity but does not prove Mabella is a strict alias, so the combined label is accepted only as a search alias.
+
+Decision: **VALIDATED / map eligible / SEO disabled**. Aliases: `Quartier Aviation`, `Aviation - Mabella`. No landmark attached.
+
+Guardrails: 0 Supabase, 0 ranking, 0 deploy, 0 merge.
