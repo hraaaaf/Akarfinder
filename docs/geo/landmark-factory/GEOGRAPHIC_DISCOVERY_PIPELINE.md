@@ -25,3 +25,19 @@ No Supabase. No listing/business data. No search ranking changes. No automatic m
 - scripts/landmarks/landmark-factory-geo.test.ts
 
 The core currently provides deterministic point-in-polygon, OSM normalization, Overpass query generation, anti-duplicate keys and canonical density ordering. Boundary acquisition/cache and batch scoring are the next layer.
+
+
+## Phase 2 implemented — boundary + shortlist primitives
+The pipeline now also includes:
+- Morocco-scoped Nominatim boundary URL generation with polygon_geojson=1.
+- Polygon/MultiPolygon normalization.
+- OSM relation/way → Overpass area-id conversion where supported.
+- Independent point-in-polygon reassignment after Overpass discovery.
+- Haversine + normalized-name near-duplicate collapse.
+- Least-enriched district batching.
+- Conservative OSM-tag heuristic shortlist.
+
+The heuristic is deliberately **not** the final AkarFinder score. It only reduces the candidate pool. Promotion still requires the normal independent-source review and confidence gate.
+
+### Acquisition policy
+Do not hammer public Nominatim/Overpass endpoints. Boundary and POI acquisition is an authoring batch, should identify requests appropriately, respect provider usage policies, and cache evidence locally/repo-side before review. Production runtime must not call these endpoints.
