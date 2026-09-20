@@ -5,7 +5,7 @@ Authoring-only helper. Reads a local Geofabrik/BBBike .osm.pbf and emits named,
 high-signal POIs inside a caller-supplied bbox. It never writes Supabase and is
 not imported by application runtime.
 
-Requires: pip install osmium
+Requires: pip install osmium\n\nNodes are emitted directly. Ways are emitted from a second pass using a\nNodeLocationsForWays location index and a deterministic bbox centroid of their\nvalid node geometry. Relations are still omitted until a proper multipolygon\nassembler is added; no synthetic relation coordinate is invented.
 Usage:
   python scripts/landmarks/extract-osm-pbf.py \
     --pbf /path/morocco-latest.osm.pbf \
@@ -65,9 +65,16 @@ def main():
                 self.emit(n, "node", n.location.lon, n.location.lat)
 
         def way(self, w):
-            # Ways/relations need an area centroid pass; intentionally skipped here
-            # rather than inventing a coordinate. Nodes are immediately usable.
-            return
+            tags = dict(w.tags)
+            name = tags.get("name") or tags.get("name:fr") or tags.get("name:ar")
+            if not name or not high_signal(tags):
+                return
+            points = [(n.lon, n.lat) for n in w.nodes if n.location.valid()]
+            if not points:
+                return
+            lon = (min(x for x, _ in points) + max(x for x, _ in points)) / 2
+            lat = (min(y for _, y in points) + max(y for _, y in points)) / 2
+            self.emit(w, "way", lon, lat)
 
     with open(args.out, "w", encoding="utf-8") as output:
         Handler(output).apply_file(args.pbf, locations=True)
