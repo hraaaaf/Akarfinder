@@ -23,6 +23,15 @@ jobs:
           curl --fail --location --retry 3 --output /tmp/morocco-latest.osm.pbf \
             https://download.geofabrik.de/africa/morocco-latest.osm.pbf
           ls -lh /tmp/morocco-latest.osm.pbf
+      - name: Discover exact Bouskoura boundary relations
+        run: |
+          mkdir -p artifacts
+          python scripts/landmarks/find-osm-boundary-relations.py \
+            --pbf /tmp/morocco-latest.osm.pbf \
+            --name "Bouskoura" \
+            --out artifacts/bouskoura-boundary-relations.json
+          cat artifacts/bouskoura-boundary-relations.json
+
       - name: Materialize Maârif administrative boundary relation 2801474
         run: |
           mkdir -p artifacts
