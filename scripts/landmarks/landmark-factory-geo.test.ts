@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { assignCandidatesToBoundary, buildNominatimDistrictSearchUrl, canonicalDistrictDensity, dedupePoiCandidates, normalizeNominatimBoundary, normalizeOsmElement, overpassAreaId, pointInPolygon, rankDistrictsForDiscovery } from "../landmark-factory-geo";
+import { assignCandidatesToBoundary, buildNominatimDistrictSearchUrl, canonicalDistrictDensity, dedupePoiCandidates, normalizeNominatimBoundary, normalizeOsmElement, overpassAreaId, pointInPolygon, rankDistrictsForDiscovery, shortlistPoiCandidates } from "../landmark-factory-geo";
 
 test("point-in-polygon assigns only actual contained points", () => {
   const square = [[[0,0],[10,0],[10,10],[0,10],[0,0]]] as const;
@@ -59,4 +59,15 @@ test("discovery prioritizes least-enriched canonical districts", () => {
   const batch = rankDistrictsForDiscovery(5);
   assert.equal(batch.length, 5);
   assert.equal(batch.every((x,i) => i === 0 || batch[i-1].count <= x.count), true);
+});
+
+
+test("shortlist ranks high-signal POIs and rejects weak noise", () => {
+  const candidates = [
+    { osmType:"relation" as const, osmId:10, name:"Historic Stadium", lat:33.5, lng:-7.6, tags:{ historic:"yes", leisure:"stadium", wikidata:"Q1", website:"https://example.test" } },
+    { osmType:"node" as const, osmId:11, name:"Tiny Shop", lat:33.6, lng:-7.7, tags:{ shop:"convenience" } },
+  ];
+  const shortlist = shortlistPoiCandidates(candidates, 55);
+  assert.deepEqual(shortlist.map(x => x.name), ["Historic Stadium"]);
+  assert.equal(shortlist[0].heuristic.total >= 55, true);
 });
