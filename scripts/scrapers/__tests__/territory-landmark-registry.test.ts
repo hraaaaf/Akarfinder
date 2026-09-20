@@ -68,5 +68,34 @@ test("district lookup never leaks landmarks from another district", () => {
   assert.equal(ocean.length, 2);
   assert.equal(ocean[0]?.entity.id, "landmark_rabat_ocean_musee_national_photographie");
   assert.equal(ocean[1]?.entity.id, "landmark_rabat_ocean_place_de_russie");
+  const museum = ocean[0]?.entity;
+  assert.ok(museum);
+  assert.equal(museum.landmarkSlug, "musee-national-photographie");
+  assert.equal(museum.canonicalName, "Musée National de la Photographie — Fort Rottembourg");
+  assert.deepEqual(museum.coordinates, {
+    lat: 34.02569,
+    lng: -6.85019,
+    precision: "verified_landmark_point",
+  });
+  assert.deepEqual(museum.importance, {
+    score: 98,
+    tier: "flagship",
+    basis: ["product_priority", "orientation_value", "urban_prominence"],
+  });
+  assert.deepEqual(museum.visibility, { minZoom: 13.4, retainPriority: true });
+
+  assert.equal(
+    VERIFIED_LANDMARKS.filter(({ entity }) => entity.id === museum.id).length,
+    1,
+    "museum landmark id must be unique",
+  );
+  assert.equal(
+    VERIFIED_LANDMARKS.filter(
+      ({ entity }) =>
+        entity.parentId === museum.parentId && entity.landmarkSlug === museum.landmarkSlug,
+    ).length,
+    1,
+    "museum landmark slug must be unique inside Rabat/Océan",
+  );
   assert.deepEqual(getVerifiedLandmarksForDistrict("district_missing"), []);
 });
