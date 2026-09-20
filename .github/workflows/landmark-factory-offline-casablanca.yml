@@ -67,6 +67,15 @@ jobs:
             --bbox=-7.80,33.40,-7.40,33.75 \
             --out artifacts/casablanca-poi.jsonl
           wc -l artifacts/casablanca-poi.jsonl
+      - name: Run Bouskoura point-in-polygon shortlist
+        run: |
+          npx tsx scripts/landmarks/discover-district-from-artifacts.ts \
+            --boundary artifacts/bouskoura-relation-2522564.geojson \
+            --poi-jsonl artifacts/casablanca-poi.jsonl \
+            --district-id district_casablanca_bouskoura \
+            --out artifacts/bouskoura-shortlist.json
+          cat artifacts/bouskoura-shortlist.json
+
       - name: Run Maârif point-in-polygon shortlist
         run: |
           npx tsx scripts/landmarks/discover-district-from-artifacts.ts \
