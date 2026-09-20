@@ -52,8 +52,9 @@ export function buildOverpassPoiQuery(areaId: number): string {
     '["amenity"~"place_of_worship|theatre|arts_centre|university|hospital|marketplace"]',
     '["shop"="mall"]',
     '["man_made"~"tower|lighthouse"]',
-  ].join("");
-  return `[out:json][timeout:45];area(${areaId})->.district;(nwr(area.district)${filters};);out center tags;`;
+  ];
+  const clauses = filters.map((filter) => `nwr(area.district)${filter};`).join("");
+  return `[out:json][timeout:45];area(${areaId})->.district;(${clauses});out center tags;`;
 }
 
 export function existingLandmarkKeys(): Set<string> {
