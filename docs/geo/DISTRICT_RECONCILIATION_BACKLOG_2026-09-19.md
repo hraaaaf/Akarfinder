@@ -143,3 +143,17 @@ Evidence for the stadium-driven scope:
 Decision: **VALIDATED / map eligible / SEO disabled**. The entity is promoted narrowly to support verified territorial navigation and stadium attachment; no business-data inference is authorized.
 
 Guardrails: 0 Supabase, 0 ranking, 0 deploy, 0 merge.
+
+
+## Promotion pass 4 — Rabat / Yacoub El Mansour — 2026-09-20
+
+Promoted canonical map entity: `district_rabat_yacoub_el_mansour`.
+
+Evidence:
+- HCP Rabat regional methodology explicitly lists Yacoub El Mansour among the quartiers of Rabat (Zone 2 with Akkari and Agdal).
+- HCP Morocco address references independently use `RABAT EL MANSOUR — 14, Bd El Kifah - Yacoub El Mansour` and `Rabat Yacoub El Mansour Secteur`.
+- OSM/GeoNames-derived mapping independently resolves Yacoub El Mansour as a Rabat suburb/locality around 33.98953,-6.88112.
+
+Decision: **VALIDATED / map eligible / SEO disabled**. Aliases `Yacoub Al Mansour` and `Yaacoub El Mansour` are accepted. This is a neighborhood identity promotion only; it does not attach any landmark or mutate business data.
+
+Guardrails: 0 Supabase, 0 ranking, 0 deploy, 0 merge.
