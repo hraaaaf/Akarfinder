@@ -143,3 +143,19 @@ Evidence for the stadium-driven scope:
 Decision: **VALIDATED / map eligible / SEO disabled**. The entity is promoted narrowly to support verified territorial navigation and stadium attachment; no business-data inference is authorized.
 
 Guardrails: 0 Supabase, 0 ranking, 0 deploy, 0 merge.
+
+
+## Promotion pass 7 — Rabat / Médina — 2026-09-20
+
+Promoted canonical map entity: `district_rabat_medina`.
+
+Evidence:
+- UNESCO describes the Médina de Rabat as a distinct 91 ha urban component with explicit boundaries: Atlantic/cemetery north, Andalusian wall south, Bouregreg east, Almohad rampart west.
+- Rabat Région Patrimoine Historique lists `MÉDINA DE RABAT` and `QASBA DES OUDAÏAS` as separate components.
+- Fondation pour la Sauvegarde du Patrimoine Culturel de Rabat independently gives the Medina as a ~90 ha historic fabric with the same boundary logic.
+
+Scope decision: **Médina ≠ Qasba des Oudaïas**. Hassan is arrondissement context in UNESCO material, not an equivalent canonical neighborhood identity.
+
+Decision: **VALIDATED / map eligible / SEO disabled**. Aliases: `Medina`, `Médina de Rabat`, `Medina de Rabat`. No landmark attached.
+
+Guardrails: 0 Supabase, 0 ranking, 0 deploy, 0 merge.
