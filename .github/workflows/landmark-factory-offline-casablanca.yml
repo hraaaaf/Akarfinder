@@ -105,6 +105,38 @@ jobs:
             --join-meters 12 \
             --out artifacts/bourgogne-axis-components.json
 
+      - name: Rank Bourgogne boundary component combinations
+        run: |
+          python scripts/landmarks/rank-boundary-component-combinations.py \
+            --ways artifacts/bourgogne-boundary-ways.json \
+            --components artifacts/bourgogne-axis-components.json \
+            --axis "north_corniche=Boulevard de la Corniche" \
+            --axis "south_benkaddour=Boulevard Abdellatif Ben Kaddour" \
+            --axis "west_phare=Avenue du Phare|sijelmassi" \
+            --axis "east_zerktouni=Boulevard Mohamed Zerktouni" \
+            --top 5 \
+            --snap-meters 12 \
+            --target-hectares 109 \
+            --out artifacts/bourgogne-component-ranking.json
+
+      - name: Rank Racine boundary component combinations
+        run: |
+          python scripts/landmarks/rank-boundary-component-combinations.py \
+            --ways artifacts/racine-boundary-ways.json \
+            --components artifacts/racine-axis-components.json \
+            --axis "north=racine" \
+            --axis "south_anfa=Boulevard d'Anfa" \
+            --axis "south_khattabi=abdelkrim el khattabi|khattabi" \
+            --axis "west_temara=temara" \
+            --axis "west_lybie=lybie" \
+            --axis "east_phare=phare" \
+            --axis "east_benkaddour=Boulevard Abdellatif Ben Kaddour" \
+            --axis "east_zerktouni=Boulevard Mohamed Zerktouni" \
+            --top 3 \
+            --snap-meters 12 \
+            --target-hectares 143 \
+            --out artifacts/racine-component-ranking.json
+
       - name: Extract Aïn Diab coastline near authoritative roads
         run: |
           python scripts/landmarks/extract-osm-coastline-near-roads.py \
