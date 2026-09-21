@@ -111,6 +111,40 @@ jobs:
             --out artifacts/racine-authoritative-boundary.geojson
           cat artifacts/racine-authoritative-boundary.geojson
 
+      - name: Snap-polygonize Aïn Diab authoritative boundary
+        continue-on-error: true
+        run: |
+          python scripts/landmarks/polygonize-authoritative-boundary-snapped.py \
+            --linework artifacts/ain-diab-boundary-ways.json \
+            --linework artifacts/ain-diab-coastline.json \
+            --territory "Aïn Diab" \
+            --target-hectares 200 \
+            --snap-meters 12 \
+            --tolerance-pct 25 \
+            --out artifacts/ain-diab-authoritative-boundary-snapped.geojson
+
+      - name: Snap-polygonize Bourgogne authoritative boundary
+        continue-on-error: true
+        run: |
+          python scripts/landmarks/polygonize-authoritative-boundary-snapped.py \
+            --linework artifacts/bourgogne-boundary-ways.json \
+            --territory "Bourgogne 2" \
+            --target-hectares 109 \
+            --snap-meters 12 \
+            --tolerance-pct 25 \
+            --out artifacts/bourgogne-authoritative-boundary-snapped.geojson
+
+      - name: Snap-polygonize Racine authoritative boundary
+        continue-on-error: true
+        run: |
+          python scripts/landmarks/polygonize-authoritative-boundary-snapped.py \
+            --linework artifacts/racine-boundary-ways.json \
+            --territory "Racine" \
+            --target-hectares 143 \
+            --snap-meters 12 \
+            --tolerance-pct 25 \
+            --out artifacts/racine-authoritative-boundary-snapped.geojson
+
       - name: Discover exact Bourgogne boundary relations
         run: |
           mkdir -p artifacts
