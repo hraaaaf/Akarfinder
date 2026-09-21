@@ -29,6 +29,8 @@ def main():
     class H(osmium.SimpleHandler):
         def way(self,w):
             tags=dict(w.tags)
+            if not tags.get("highway"):
+                return
             candidates=[
                 tags.get("name"), tags.get("name:fr"),
                 tags.get("old_name"), tags.get("old_name:fr"),
