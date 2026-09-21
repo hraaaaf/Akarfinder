@@ -150,6 +150,13 @@ jobs:
             --target-hectares 109 \
             --out artifacts/bourgogne-trimmed-cycle-ranking.json
 
+      - name: Inspect Bourgogne west-axis gap highways
+        run: |
+          python scripts/landmarks/list-highways-in-bbox.py \
+            --pbf /tmp/morocco-latest.osm.pbf \
+            --bbox=-7.6515,33.5990,-7.6460,33.6027 \
+            --out artifacts/bourgogne-west-gap-highways.json
+
       - name: Extract Aïn Diab coastline near authoritative roads
         run: |
           python scripts/landmarks/extract-osm-coastline-near-roads.py \
