@@ -41,7 +41,7 @@ jobs:
             --contains "Libye" \
             --contains "Lybie" \
             --contains "Phare" \
-            --bbox "-7.75,33.50,-7.55,33.67" \
+            --bbox=-7.75,33.50,-7.55,33.67 \
             --out artifacts/racine-boundary-ways.json
           cat artifacts/racine-boundary-ways.json
 
@@ -57,7 +57,7 @@ jobs:
             --name "Boulevard Mohamed Zerktouni" \
             --contains "Phare" \
             --contains "Sijelmassi" \
-            --bbox "-7.75,33.50,-7.55,33.67" \
+            --bbox=-7.75,33.50,-7.55,33.67 \
             --out artifacts/bourgogne-boundary-ways.json
           cat artifacts/bourgogne-boundary-ways.json
 
@@ -68,7 +68,7 @@ jobs:
             --pbf /tmp/morocco-latest.osm.pbf \
             --name "Boulevard de l'Océan Atlantique" \
             --name "Boulevard de la Corniche" \
-            --bbox "-7.75,33.50,-7.55,33.67" \
+            --bbox=-7.75,33.50,-7.55,33.67 \
             --out artifacts/ain-diab-boundary-ways.json
           cat artifacts/ain-diab-boundary-ways.json
 
