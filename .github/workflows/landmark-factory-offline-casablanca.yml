@@ -374,6 +374,16 @@ jobs:
             --district-id district_casablanca_maarif \
             --out artifacts/casablanca-maarif-shortlist.json
           cat artifacts/casablanca-maarif-shortlist.json
+      - name: Inspect public Yakeey map data
+        continue-on-error: true
+        run: |
+          python scripts/landmarks/inspect-yakeey-public-map.py \
+            --url "https://yakeey.com/fr-ma/referentiel-de-prix-immobilier/casablanca/racine" \
+            --url "https://yakeey.com/fr-ma/referentiel-de-prix-immobilier/casablanca/bourgogne-(anfa)" \
+            --url "https://yakeey.com/fr-ma/referentiel-de-prix-immobilier/casablanca/ain-diab" \
+            --url "https://yakeey.com/fr-ma/referentiel-de-prix-immobilier/casablanca/casablanca-finance-city" \
+            --out artifacts/yakeey-public-map-inspection.json
+
       - name: Build deterministic summary
         run: |
           python - <<'PY'
