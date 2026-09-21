@@ -277,6 +277,24 @@ jobs:
             --out artifacts/ain-diab-boundary-relations.json
           cat artifacts/ain-diab-boundary-relations.json
 
+      - name: Discover AUC urbanism ArcGIS services for Casa-Anfa/CFC
+        continue-on-error: true
+        run: |
+          curl --fail --location --retry 3 \
+            "https://carto.auc.ma/server/rest/services/DOCUMENTS_URBANISME?f=pjson" \
+            -o artifacts/auc-documents-urbanisme-services.json
+          python - <<'PY'
+          import json
+          p="artifacts/auc-documents-urbanisme-services.json"
+          d=json.load(open(p,encoding="utf-8"))
+          rows=[]
+          for s in d.get("services",[]):
+              name=s.get("name","")
+              if any(k in name.casefold() for k in ["hassani","anfa","casablanca"]):
+                  rows.append(s)
+          print(json.dumps(rows,ensure_ascii=False,indent=2))
+          PY
+
       - name: Discover exact Casablanca Finance City boundary relations
         run: |
           mkdir -p artifacts
