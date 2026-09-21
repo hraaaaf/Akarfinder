@@ -20,8 +20,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Install pyosmium
-        run: python -m pip install --disable-pip-version-check osmium
+      - name: Install pyosmium + shapely
+        run: python -m pip install --disable-pip-version-check osmium shapely
       - name: Download current Morocco OSM PBF
         run: |
           curl --fail --location --retry 3 --output /tmp/morocco-latest.osm.pbf \
