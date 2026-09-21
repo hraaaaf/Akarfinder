@@ -44,18 +44,9 @@ def main():
         def way(self,w):
             tags=dict(w.tags); q=matched(tags)
             if not q: return
-            coords=[]
-            try:
-                for nd in w.nodes:
-                    if nd.location.valid(): coords.append((float(nd.location.lon),float(nd.location.lat)))
-            except Exception:
-                return
-            if not coords: return
-            lon=sum(x for x,y in coords)/len(coords); lat=sum(y for x,y in coords)/len(coords)
-            if not (minlon<=lon<=maxlon and minlat<=lat<=maxlat): return
             rows.append({
                 "query_names":q,"osm_type":"way","osm_id":w.id,
-                "lon":lon,"lat":lat,"name":tags.get("name"),
+                "lon":None,"lat":None,"name":tags.get("name"),
                 "name:fr":tags.get("name:fr"),"name:ar":tags.get("name:ar"),
                 "place":tags.get("place"),"boundary":tags.get("boundary"),
                 "admin_level":tags.get("admin_level"),"wikidata":tags.get("wikidata"),
@@ -73,7 +64,7 @@ def main():
                 "wikipedia":tags.get("wikipedia"),"version":r.version,"timestamp":str(r.timestamp)
             })
 
-    Handler().apply_file(args.pbf,locations=True)
+    Handler().apply_file(args.pbf,locations=False)
     rows.sort(key=lambda x:(x["query_names"][0],x["osm_type"],x["osm_id"]))
     out={
         "mode":"product-place-anchor-discovery",

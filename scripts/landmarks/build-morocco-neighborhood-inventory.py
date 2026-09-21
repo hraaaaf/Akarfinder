@@ -97,25 +97,16 @@ def main():
             tags=dict(w.tags)
             if not (tags.get("place") in PRODUCT_PLACE_VALUES or (tags.get("boundary")=="administrative" and tags.get("admin_level"))):
                 return
-            coords=[]
-            try:
-                for nd in w.nodes:
-                    if nd.location.valid():
-                        coords.append((float(nd.location.lon),float(nd.location.lat)))
-            except Exception:
-                coords=[]
-            lon=lat=None
-            if coords:
-                lon=sum(x for x,y in coords)/len(coords)
-                lat=sum(y for x,y in coords)/len(coords)
-            add_record("way",w.id,tags,w.version,w.timestamp,lon,lat)
+            # Preserve named way candidates without inventing a centroid.
+            # Geometry-bearing ways/relations are resolved later by dedicated gates.
+            add_record("way",w.id,tags,w.version,w.timestamp,None,None)
 
         def relation(self,r):
             tags=dict(r.tags)
             if tags.get("place") in PRODUCT_PLACE_VALUES or (tags.get("boundary")=="administrative" and tags.get("admin_level")):
                 add_record("relation",r.id,tags,r.version,r.timestamp)
 
-    H().apply_file(args.pbf,locations=True)
+    H().apply_file(args.pbf,locations=False)
 
     centers.sort(key=lambda x:((x.get("name") or "").casefold(),x["osm_id"]))
     candidates.sort(key=lambda x:((x.get("name") or x.get("name:fr") or x.get("name:ar") or "").casefold(),x["osm_type"],x["osm_id"]))
