@@ -377,6 +377,10 @@ jobs:
             --url "https://yakeey.com/fr-ma/referentiel-de-prix-immobilier/casablanca/casablanca-finance-city" \
             --out artifacts/yakeey-public-map-inspection.json
 
+      - name: Build fail-closed evidence verdict
+        run: |
+          python scripts/landmarks/build-evidence-verdict.py
+
       - name: Build deterministic summary
         run: |
           python - <<'PY'
