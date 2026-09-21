@@ -18,12 +18,19 @@ def main():
     ap.add_argument("--pbf", required=True)
     ap.add_argument("--name", action="append", required=True)
     ap.add_argument("--contains", action="append", default=[])
+    ap.add_argument("--bbox", help="minlon,minlat,maxlon,maxlat")
     ap.add_argument("--out", required=True)
     args=ap.parse_args()
 
     import osmium
     wanted={norm(x):x for x in args.name}
     contains=[norm(x) for x in args.contains]
+    bbox=None
+    if args.bbox:
+        parts=[float(x) for x in args.bbox.split(",")]
+        if len(parts)!=4:
+            raise SystemExit("--bbox must be minlon,minlat,maxlon,maxlat")
+        bbox=parts
     rows=[]
 
     class H(osmium.SimpleHandler):
@@ -50,6 +57,11 @@ def main():
                         match_mode="contains"
                         break
             if not matched: return
+            coordinates=[[n.lon, n.lat] for n in w.nodes if n.location.valid()]
+            if bbox:
+                minlon,minlat,maxlon,maxlat=bbox
+                if not any(minlon <= lon <= maxlon and minlat <= lat <= maxlat for lon,lat in coordinates):
+                    return
             rows.append({
                 "query": matched,
                 "match_mode": match_mode,
@@ -66,7 +78,7 @@ def main():
                 "version":w.version,
                 "timestamp":str(w.timestamp),
                 "node_refs":[n.ref for n in w.nodes],
-                "coordinates":[[n.lon, n.lat] for n in w.nodes if n.location.valid()],
+                "coordinates":coordinates,
             })
 
     H().apply_file(args.pbf, locations=True)
@@ -82,8 +94,10 @@ def main():
         json.dump({
             "queries":args.name,
             "contains_queries":args.contains,
+            "bbox":bbox,
             "counts":summary,
             "contains_counts":contains_summary,
+        "bbox":bbox,
             "matches":rows
         },f,ensure_ascii=False,indent=2)
         f.write("\n")
