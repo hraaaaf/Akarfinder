@@ -66,3 +66,21 @@ Next safe path:
 2. cross-check neighborhood adjacency with Google Maps;
 3. materialize candidate boundaries on OSM roads only when enough independent evidence supports the edge;
 4. keep candidate polygons SHADOW until visual + topological + neighborhood-membership tests pass.
+
+
+## CFC / Casa-Anfa official geometry track
+
+The official AUC Hay Hassani e-documents page links to:
+- AUC e-documents record: `https://www.auc.ma/e-services-2/e-documents/?IdP=1068`
+- official ArcGIS Web App item: `7466d12c067b4274996707e1170b0aef`
+- Hay Hassani planning sheets published by AUC.
+
+The official plan legend distinguishes the regulatory boundary of the urban pole **Casablanca-Anfa**. This is authoritative urban-planning evidence, but it is **not automatically the exact current real-estate product boundary of Casablanca Finance City**.
+
+Authoring rule:
+1. inspect the public ArcGIS item metadata/data read-only;
+2. record any publicly exposed service/layer URLs with provenance;
+3. materialize the Casa-Anfa planning geometry only if the public ArcGIS resource exposes a reusable geometry;
+4. keep the product entity `Casablanca Finance City` separate from the Casa-Anfa planning sector;
+5. only derive a CFC product polygon if independent modern-product evidence supports its edges;
+6. no auth/anti-bot bypass and no copied third-party geometry without provenance/licence clarity.
