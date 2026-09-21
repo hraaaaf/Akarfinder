@@ -137,6 +137,17 @@ jobs:
             --target-hectares 143 \
             --out artifacts/racine-component-ranking.json
 
+      - name: Rank Bourgogne trimmed boundary cycles
+        run: |
+          python scripts/landmarks/rank-trimmed-boundary-cycles.py \
+            --ways artifacts/bourgogne-boundary-ways.json \
+            --components artifacts/bourgogne-axis-components.json \
+            --order "north_corniche,east_zerktouni,south_benkaddour,west_phare" \
+            --top 5 \
+            --max-gap-m 12 \
+            --target-hectares 109 \
+            --out artifacts/bourgogne-trimmed-cycle-ranking.json
+
       - name: Extract Aïn Diab coastline near authoritative roads
         run: |
           python scripts/landmarks/extract-osm-coastline-near-roads.py \
