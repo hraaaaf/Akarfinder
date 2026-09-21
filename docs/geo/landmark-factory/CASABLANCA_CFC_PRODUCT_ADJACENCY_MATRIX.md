@@ -64,3 +64,15 @@ Secondary public orientation:
 - Turning OSM place nodes into radius/buffer polygons.
 - Inferring a shared CFC/CIL/Ferme Bretonne/Beauséjour polygon from Yakeey search results.
 - Copying hidden/private Google/Yakeey geometry or bypassing anti-bot/auth controls.
+
+
+## Exact-head OSM findings — 2026-09-21
+
+Run `35663073082` on PR head `0990b7f09fef89d059c4f3c4766e5e05b2d8b9d0` archived exact-name anchors:
+
+- **CFC** — node `12223124337`, `place=neighbourhood`; no same-name administrative relation found in this probe.
+- **Ferme Bretonne** — node `6037675578`, `place=neighbourhood`; no same-name administrative relation found in this probe.
+- **CIL** — node `12189837248`, `place=quarter`, plus administrative relation `18099040`, `admin_level=11`.
+- **Beauséjour** — node `12206926143`, `place=quarter`, plus administrative relation `18099071`, `admin_level=11`.
+
+The two admin-level 11 relations are now eligible for **reference-only SHADOW materialization**. They are not automatically the modern real-estate product boundaries. CFC and Ferme Bretonne remain anchor-only at this stage.

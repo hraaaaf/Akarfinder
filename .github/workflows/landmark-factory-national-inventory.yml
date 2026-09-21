@@ -45,7 +45,11 @@ jobs:
           assert d["counts"]["administrative_reference_count"] > 0
           assert all(x.get("status") == "DISCOVERY_ONLY" for x in d["product_candidates"])
           assert all(
-              x.get("locality_hint") is None or x["locality_hint"].get("status") == "HINT_ONLY"
+              x.get("urban_locality_hint") is None or x["urban_locality_hint"].get("status") == "HINT_ONLY"
+              for x in d["product_candidates"]
+          )
+          assert all(
+              x.get("nearest_settlement_hint") is None or x["nearest_settlement_hint"].get("status") == "HINT_ONLY"
               for x in d["product_candidates"]
           )
           print(json.dumps(d["counts"], ensure_ascii=False, indent=2))

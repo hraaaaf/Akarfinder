@@ -328,6 +328,34 @@ jobs:
             --out artifacts/bouskoura-boundary-relations.json
           cat artifacts/bouskoura-boundary-relations.json
 
+      - name: Materialize CIL administrative reference relation 18099040
+        run: |
+          mkdir -p artifacts
+          python scripts/landmarks/materialize-osm-relation.py \
+            --pbf /tmp/morocco-latest.osm.pbf \
+            --relation-id 18099040 \
+            --out artifacts/casablanca-cil-relation-18099040.geojson
+          npx tsx scripts/landmarks/validate-materialized-boundary.ts \
+            --input artifacts/casablanca-cil-relation-18099040.geojson \
+            --city-id city_casablanca \
+            --neighborhood-id candidate_casablanca_cil \
+            --display-name "CIL" \
+            | tee artifacts/casablanca-cil-relation-18099040-validation.json
+
+      - name: Materialize Beausejour administrative reference relation 18099071
+        run: |
+          mkdir -p artifacts
+          python scripts/landmarks/materialize-osm-relation.py \
+            --pbf /tmp/morocco-latest.osm.pbf \
+            --relation-id 18099071 \
+            --out artifacts/casablanca-beausejour-relation-18099071.geojson
+          npx tsx scripts/landmarks/validate-materialized-boundary.ts \
+            --input artifacts/casablanca-beausejour-relation-18099071.geojson \
+            --city-id city_casablanca \
+            --neighborhood-id candidate_casablanca_beausejour \
+            --display-name "Beauséjour" \
+            | tee artifacts/casablanca-beausejour-relation-18099071-validation.json
+
       - name: Materialize Bouskoura administrative boundary relation 2522564
         run: |
           mkdir -p artifacts

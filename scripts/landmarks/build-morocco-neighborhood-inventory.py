@@ -16,7 +16,7 @@ import os
 from collections import Counter, defaultdict
 
 PRODUCT_PLACE_VALUES={"neighbourhood","quarter","suburb","city_district"}
-LOCALITY_PLACE_VALUES={"city","town","municipality","village"}
+LOCALITY_PLACE_VALUES={"city","town","municipality","village"}\nURBAN_LOCALITY_PLACE_VALUES={"city","town","municipality"}
 
 def haversine_km(lat1, lon1, lat2, lon2):
     r=6371.0088
@@ -112,31 +112,39 @@ def main():
     candidates.sort(key=lambda x:((x.get("name") or x.get("name:fr") or x.get("name:ar") or "").casefold(),x["osm_type"],x["osm_id"]))
     admin_refs.sort(key=lambda x:((x.get("name") or x.get("name:fr") or x.get("name:ar") or "").casefold(),x["osm_type"],x["osm_id"]))
 
+    urban_centers=[c for c in centers if c.get("place") in URBAN_LOCALITY_PLACE_VALUES]
     for row in candidates:
-        row["locality_hint"]=None
-        if row.get("lat") is None or row.get("lon") is None or not centers:
+        row["nearest_settlement_hint"]=None
+        row["urban_locality_hint"]=None
+        if row.get("lat") is None or row.get("lon") is None:
             continue
-        nearest=None
-        for center in centers:
-            d=haversine_km(row["lat"],row["lon"],center["lat"],center["lon"])
-            if nearest is None or d<nearest[0]:
-                nearest=(d,center)
-        if nearest and nearest[0] <= args.max_locality_hint_km:
-            d,center=nearest
-            row["locality_hint"]={
-                "status":"HINT_ONLY",
-                "method":"nearest_named_osm_settlement_node",
-                "distance_km":round(d,3),
-                "name":center.get("name") or center.get("name:fr") or center.get("name:ar"),
-                "place":center.get("place"),
-                "osm_type":"node",
-                "osm_id":center["osm_id"],
-            }
+
+        def nearest_hint(pool, method):
+            nearest=None
+            for center in pool:
+                d=haversine_km(row["lat"],row["lon"],center["lat"],center["lon"])
+                if nearest is None or d<nearest[0]:
+                    nearest=(d,center)
+            if nearest and nearest[0] <= args.max_locality_hint_km:
+                d,center=nearest
+                return {
+                    "status":"HINT_ONLY",
+                    "method":method,
+                    "distance_km":round(d,3),
+                    "name":center.get("name") or center.get("name:fr") or center.get("name:ar"),
+                    "place":center.get("place"),
+                    "osm_type":"node",
+                    "osm_id":center["osm_id"],
+                }
+            return None
+
+        row["nearest_settlement_hint"]=nearest_hint(centers,"nearest_named_osm_settlement_node")
+        row["urban_locality_hint"]=nearest_hint(urban_centers,"nearest_named_osm_urban_center")
 
     backlog=defaultdict(list)
     unassigned=[]
     for row in candidates:
-        hint=row.get("locality_hint")
+        hint=row.get("urban_locality_hint")
         if hint:
             key=f'{hint["place"]}:{hint["osm_id"]}'
             backlog[key].append(row)
@@ -144,7 +152,7 @@ def main():
             unassigned.append(row)
 
     backlog_summary=[]
-    center_by_key={f'{c["place"]}:{c["osm_id"]}':c for c in centers}
+    center_by_key={f'{c["place"]}:{c["osm_id"]}':c for c in urban_centers}
     for key,rows in backlog.items():
         center=center_by_key[key]
         backlog_summary.append({
@@ -164,11 +172,13 @@ def main():
         "product_candidates_by_place":dict(Counter(r.get("place") or "(none)" for r in candidates)),
         "product_candidates_by_osm_type":dict(Counter(r["osm_type"] for r in candidates)),
         "product_candidates_with_coordinates":sum(1 for r in candidates if r.get("lat") is not None and r.get("lon") is not None),
-        "product_candidates_with_locality_hint":sum(1 for r in candidates if r.get("locality_hint")),
-        "product_candidates_unassigned":len(unassigned),
+        "product_candidates_with_urban_locality_hint":sum(1 for r in candidates if r.get("urban_locality_hint")),
+        "product_candidates_with_nearest_settlement_hint":sum(1 for r in candidates if r.get("nearest_settlement_hint")),
+        "product_candidates_unassigned_to_urban_locality":len(unassigned),
         "administrative_reference_count":len(admin_refs),
-        "urban_center_count":len(centers),
-        "backlog_locality_count":len(backlog_summary),
+        "settlement_center_count":len(centers),
+        "urban_center_count":len(urban_centers),
+        "backlog_urban_locality_count":len(backlog_summary),
     }
 
     payload={
@@ -180,13 +190,13 @@ def main():
         "guardrails":[
             "Product candidates are discovery labels, not certified real-estate product neighborhoods.",
             "Administrative references are not automatically equivalent to modern product geography.",
-            "Nearest-locality assignments are HINT_ONLY and must not be used as certified city membership.",
+            "Urban-locality and nearest-settlement assignments are HINT_ONLY and must not be used as certified city membership.",
             "OSM labels and geometry are discovery/materialization evidence, not product truth.",
             "No item may be promoted to a product polygon without independent corroboration, topology checks, membership checks, and review.",
             "Historical/urban-planning sectors must remain distinct from modern product geography unless evidence proves equivalence."
         ],
         "backlog_by_locality":backlog_summary,
-        "unassigned_product_candidates":unassigned,
+        "unassigned_to_urban_locality":unassigned,
         "product_candidates":candidates,
         "administrative_references":admin_refs,
         "urban_centers":centers,
