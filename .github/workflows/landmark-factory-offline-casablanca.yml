@@ -36,6 +36,8 @@ jobs:
             --name "Boulevard du Phare" \
             --name "Boulevard Abdellatif Ben Kaddour" \
             --name "Boulevard Mohamed Zerktouni" \
+            --name "Boulevard Al Massira Al Khadra" \
+            --contains "Massira" \
             --contains "Racine" \
             --contains "Temera" \
             --contains "Temara" \
@@ -82,6 +84,17 @@ jobs:
             --bbox=-7.75,33.50,-7.55,33.67 \
             --out artifacts/ain-diab-boundary-ways.json
           cat artifacts/ain-diab-boundary-ways.json
+
+      - name: Build modern Racine product boundary candidate
+        continue-on-error: true
+        run: |
+          python scripts/landmarks/polygonize-authoritative-boundary-snapped.py \
+            --linework artifacts/racine-boundary-ways.json \
+            --territory "Racine modern product" \
+            --target-hectares 60 \
+            --snap-meters 12 \
+            --tolerance-pct 100 \
+            --out artifacts/racine-modern-product-candidate.geojson
 
       - name: Diagnose Racine boundary axis components
         run: |
