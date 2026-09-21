@@ -79,6 +79,32 @@ jobs:
             --out artifacts/ain-diab-boundary-ways.json
           cat artifacts/ain-diab-boundary-ways.json
 
+      - name: Diagnose Racine boundary axis components
+        run: |
+          python scripts/landmarks/diagnose-boundary-axis-components.py \
+            --input artifacts/racine-boundary-ways.json \
+            --axis "north=racine" \
+            --axis "south_anfa=Boulevard d'Anfa" \
+            --axis "south_khattabi=abdelkrim el khattabi|khattabi" \
+            --axis "west_temara=temara" \
+            --axis "west_lybie=lybie" \
+            --axis "east_phare=phare" \
+            --axis "east_benkaddour=Boulevard Abdellatif Ben Kaddour" \
+            --axis "east_zerktouni=Boulevard Mohamed Zerktouni" \
+            --join-meters 12 \
+            --out artifacts/racine-axis-components.json
+
+      - name: Diagnose Bourgogne boundary axis components
+        run: |
+          python scripts/landmarks/diagnose-boundary-axis-components.py \
+            --input artifacts/bourgogne-boundary-ways.json \
+            --axis "north_corniche=Boulevard de la Corniche" \
+            --axis "south_benkaddour=Boulevard Abdellatif Ben Kaddour" \
+            --axis "west_phare=Avenue du Phare|sijelmassi" \
+            --axis "east_zerktouni=Boulevard Mohamed Zerktouni" \
+            --join-meters 12 \
+            --out artifacts/bourgogne-axis-components.json
+
       - name: Extract Aïn Diab coastline near authoritative roads
         run: |
           python scripts/landmarks/extract-osm-coastline-near-roads.py \
