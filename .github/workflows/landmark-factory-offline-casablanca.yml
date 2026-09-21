@@ -69,6 +69,45 @@ jobs:
             --out artifacts/ain-diab-boundary-ways.json
           cat artifacts/ain-diab-boundary-ways.json
 
+      - name: Extract Aïn Diab coastline near authoritative roads
+        run: |
+          python scripts/landmarks/extract-osm-coastline-near-roads.py \
+            --pbf /tmp/morocco-latest.osm.pbf \
+            --roads artifacts/ain-diab-boundary-ways.json \
+            --out artifacts/ain-diab-coastline.json
+          cat artifacts/ain-diab-coastline.json
+
+      - name: Polygonize Aïn Diab authoritative boundary
+        run: |
+          python scripts/landmarks/polygonize-authoritative-boundary.py \
+            --linework artifacts/ain-diab-boundary-ways.json \
+            --linework artifacts/ain-diab-coastline.json \
+            --territory "Aïn Diab" \
+            --target-hectares 200 \
+            --tolerance-pct 25 \
+            --out artifacts/ain-diab-authoritative-boundary.geojson
+          cat artifacts/ain-diab-authoritative-boundary.geojson
+
+      - name: Polygonize Bourgogne authoritative boundary
+        run: |
+          python scripts/landmarks/polygonize-authoritative-boundary.py \
+            --linework artifacts/bourgogne-boundary-ways.json \
+            --territory "Bourgogne 2" \
+            --target-hectares 109 \
+            --tolerance-pct 25 \
+            --out artifacts/bourgogne-authoritative-boundary.geojson
+          cat artifacts/bourgogne-authoritative-boundary.geojson
+
+      - name: Polygonize Racine authoritative boundary
+        run: |
+          python scripts/landmarks/polygonize-authoritative-boundary.py \
+            --linework artifacts/racine-boundary-ways.json \
+            --territory "Racine" \
+            --target-hectares 143 \
+            --tolerance-pct 25 \
+            --out artifacts/racine-authoritative-boundary.geojson
+          cat artifacts/racine-authoritative-boundary.geojson
+
       - name: Discover exact Bourgogne boundary relations
         run: |
           mkdir -p artifacts
