@@ -64,6 +64,8 @@ jobs:
             --name "Boulevard Mohamed Zerktouni" \
             --contains "Phare" \
             --contains "Sijelmassi" \
+            --name "Avenue Mehdi Ben Barka" \
+            --contains "Mehdi Ben Barka" \
             --bbox=-7.75,33.50,-7.55,33.67 \
             --out artifacts/bourgogne-boundary-ways.json
           cat artifacts/bourgogne-boundary-ways.json
@@ -100,7 +102,7 @@ jobs:
             --input artifacts/bourgogne-boundary-ways.json \
             --axis "north_corniche=Boulevard de la Corniche" \
             --axis "south_benkaddour=Boulevard Abdellatif Ben Kaddour" \
-            --axis "west_phare=Avenue du Phare|sijelmassi" \
+            --axis "west_phare=Avenue du Phare|sijelmassi|Avenue Mehdi Ben Barka|mehdi ben barka" \
             --axis "east_zerktouni=Boulevard Mohamed Zerktouni" \
             --join-meters 12 \
             --out artifacts/bourgogne-axis-components.json
@@ -112,7 +114,7 @@ jobs:
             --components artifacts/bourgogne-axis-components.json \
             --axis "north_corniche=Boulevard de la Corniche" \
             --axis "south_benkaddour=Boulevard Abdellatif Ben Kaddour" \
-            --axis "west_phare=Avenue du Phare|sijelmassi" \
+            --axis "west_phare=Avenue du Phare|sijelmassi|Avenue Mehdi Ben Barka|mehdi ben barka" \
             --axis "east_zerktouni=Boulevard Mohamed Zerktouni" \
             --top 5 \
             --snap-meters 12 \
