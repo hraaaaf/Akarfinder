@@ -20,18 +20,32 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Install pyosmium
-        run: python -m pip install --disable-pip-version-check osmium
+      - name: Install native Osmium filter + pyosmium
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends osmium-tool
+          python -m pip install --disable-pip-version-check osmium
       - name: Download current Morocco OSM PBF
         run: |
           curl --fail --location --retry 3 --output /tmp/morocco-latest.osm.pbf \
             https://download.geofabrik.de/africa/morocco-latest.osm.pbf
           ls -lh /tmp/morocco-latest.osm.pbf
+      - name: Filter Morocco PBF to Landmark Factory scope
+        run: |
+          osmium tags-filter -R \
+            -o /tmp/morocco-landmark-scope.osm.pbf \
+            /tmp/morocco-latest.osm.pbf \
+            n/place=neighbourhood,quarter,suburb,city_district,city,town,municipality,village \
+            wr/place=neighbourhood,quarter,suburb,city_district \
+            wr/boundary=administrative
+          ls -lh /tmp/morocco-landmark-scope.osm.pbf
+          osmium fileinfo -e /tmp/morocco-landmark-scope.osm.pbf
+
       - name: Build national neighborhood discovery backlog
         run: |
           mkdir -p artifacts
           python scripts/landmarks/build-morocco-neighborhood-inventory.py \
-            --pbf /tmp/morocco-latest.osm.pbf \
+            --pbf /tmp/morocco-landmark-scope.osm.pbf \
             --out artifacts/morocco-neighborhood-discovery-inventory.json
       - name: Assert fail-closed national inventory semantics
         run: |
