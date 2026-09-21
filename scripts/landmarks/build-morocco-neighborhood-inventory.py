@@ -16,7 +16,8 @@ import os
 from collections import Counter, defaultdict
 
 PRODUCT_PLACE_VALUES={"neighbourhood","quarter","suburb","city_district"}
-LOCALITY_PLACE_VALUES={"city","town","municipality","village"}\nURBAN_LOCALITY_PLACE_VALUES={"city","town","municipality"}
+LOCALITY_PLACE_VALUES={"city","town","municipality","village"}
+URBAN_LOCALITY_PLACE_VALUES={"city","town","municipality"}
 
 def haversine_km(lat1, lon1, lat2, lon2):
     r=6371.0088
