@@ -78,6 +78,7 @@ jobs:
           cat artifacts/ain-diab-coastline.json
 
       - name: Polygonize Aïn Diab authoritative boundary
+        continue-on-error: true
         run: |
           python scripts/landmarks/polygonize-authoritative-boundary.py \
             --linework artifacts/ain-diab-boundary-ways.json \
@@ -89,6 +90,7 @@ jobs:
           cat artifacts/ain-diab-authoritative-boundary.geojson
 
       - name: Polygonize Bourgogne authoritative boundary
+        continue-on-error: true
         run: |
           python scripts/landmarks/polygonize-authoritative-boundary.py \
             --linework artifacts/bourgogne-boundary-ways.json \
@@ -99,6 +101,7 @@ jobs:
           cat artifacts/bourgogne-authoritative-boundary.geojson
 
       - name: Polygonize Racine authoritative boundary
+        continue-on-error: true
         run: |
           python scripts/landmarks/polygonize-authoritative-boundary.py \
             --linework artifacts/racine-boundary-ways.json \
