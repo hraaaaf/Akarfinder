@@ -288,6 +288,19 @@ jobs:
             --out artifacts/auc-hay-hassani-arcgis-item.json
           cat artifacts/auc-hay-hassani-arcgis-item.json
 
+      - name: Discover modern CFC product place anchors
+        run: |
+          python scripts/landmarks/find-osm-place-anchors.py \
+            --pbf /tmp/morocco-latest.osm.pbf \
+            --name "Casablanca Finance City" \
+            --name "CIL" \
+            --name "Ferme Bretonne" \
+            --name "Beauséjour" \
+            --name "Beausejour" \
+            --bbox=-7.72,33.52,-7.60,33.60 \
+            --out artifacts/cfc-product-place-anchors.json
+          cat artifacts/cfc-product-place-anchors.json
+
       - name: Discover exact Casablanca Finance City boundary relations
         run: |
           mkdir -p artifacts
