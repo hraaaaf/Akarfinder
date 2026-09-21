@@ -93,6 +93,18 @@ The workflow `Landmark Factory National Neighborhood Inventory` downloads the sa
 
 The resulting artifact is **discovery only**. It is the queue, not the truth.
 
+### National inventory v2
+
+The first national run exposed an important distinction: the raw OSM scan contained **5,125 named objects**, but only **1,915** were neighborhood-like product candidates (`quarter`, `neighbourhood`, `suburb`). **3,210** were administrative boundary references.
+
+Schema v2 therefore separates:
+- `product_candidates` — the actual neighborhood discovery queue;
+- `administrative_references` — useful official/admin geometry references, never product truth by default;
+- `urban_centers` — named OSM settlement nodes;
+- `backlog_by_locality` — a nearest-settlement grouping marked strictly `HINT_ONLY`.
+
+Nearest-settlement grouping exists only to operationalize the national backlog. It is not certified city membership and cannot activate a neighborhood or geometry.
+
 ## Definition of done
 
 Morocco coverage is not complete when every label has a polygon.

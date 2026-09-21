@@ -27,13 +27,30 @@ jobs:
           curl --fail --location --retry 3 --output /tmp/morocco-latest.osm.pbf \
             https://download.geofabrik.de/africa/morocco-latest.osm.pbf
           ls -lh /tmp/morocco-latest.osm.pbf
-      - name: Build national neighborhood discovery inventory
+      - name: Build national neighborhood discovery backlog
         run: |
           mkdir -p artifacts
           python scripts/landmarks/build-morocco-neighborhood-inventory.py \
             --pbf /tmp/morocco-latest.osm.pbf \
             --out artifacts/morocco-neighborhood-discovery-inventory.json
-      - name: Upload discovery inventory
+      - name: Assert fail-closed national inventory semantics
+        run: |
+          python - <<'PY'
+          import json, os
+          p="artifacts/morocco-neighborhood-discovery-inventory.json"
+          d=json.load(open(p,encoding="utf-8"))
+          assert d["schema_version"] == 2
+          assert d["source_control"]["pr_head_sha"]
+          assert d["counts"]["product_candidate_count"] > 0
+          assert d["counts"]["administrative_reference_count"] > 0
+          assert all(x.get("status") == "DISCOVERY_ONLY" for x in d["product_candidates"])
+          assert all(
+              x.get("locality_hint") is None or x["locality_hint"].get("status") == "HINT_ONLY"
+              for x in d["product_candidates"]
+          )
+          print(json.dumps(d["counts"], ensure_ascii=False, indent=2))
+          PY
+      - name: Upload discovery backlog
         uses: actions/upload-artifact@v4
         with:
           name: landmark-factory-morocco-neighborhood-inventory
