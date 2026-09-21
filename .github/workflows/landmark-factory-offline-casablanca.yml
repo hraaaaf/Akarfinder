@@ -159,6 +159,14 @@ jobs:
             --bbox=-7.6515,33.5990,-7.6460,33.6027 \
             --out artifacts/bourgogne-west-gap-highways.json
 
+      - name: Diagnose Racine axis adjacency graph
+        run: |
+          python scripts/landmarks/diagnose-boundary-axis-adjacency.py \
+            --ways artifacts/racine-boundary-ways.json \
+            --components artifacts/racine-axis-components.json \
+            --top 3 \
+            --out artifacts/racine-axis-adjacency.json
+
       - name: Extract Aïn Diab coastline near authoritative roads
         run: |
           python scripts/landmarks/extract-osm-coastline-near-roads.py \
@@ -166,6 +174,13 @@ jobs:
             --roads artifacts/ain-diab-boundary-ways.json \
             --out artifacts/ain-diab-coastline.json
           cat artifacts/ain-diab-coastline.json
+
+      - name: Diagnose Aïn Diab route-coastline gaps
+        run: |
+          python scripts/landmarks/diagnose-linework-gaps.py \
+            --linework artifacts/ain-diab-boundary-ways.json \
+            --linework artifacts/ain-diab-coastline.json \
+            --out artifacts/ain-diab-linework-gaps.json
 
       - name: Polygonize Aïn Diab authoritative boundary
         continue-on-error: true
