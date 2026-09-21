@@ -38,6 +38,13 @@ jobs:
             --name "Boulevard Mohamed Zerktouni" \
             --contains "Racine" \
             --contains "Temera" \
+            --contains "Temara" \
+            --contains "Témara" \
+            --contains "Abdelkrim Al Khattabi" \
+            --contains "Abdelkrim El Khattabi" \
+            --contains "Abdelkrim Al Khettabi" \
+            --contains "Khattabi" \
+            --contains "Khettabi" \
             --contains "Libye" \
             --contains "Lybie" \
             --contains "Phare" \
