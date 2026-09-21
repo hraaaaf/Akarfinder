@@ -86,15 +86,11 @@ jobs:
           cat artifacts/ain-diab-boundary-ways.json
 
       - name: Build modern Racine product boundary candidate
-        continue-on-error: true
         run: |
-          python scripts/landmarks/polygonize-authoritative-boundary-snapped.py \
+          python scripts/landmarks/polygonize-product-boundary-candidate.py \
             --linework artifacts/racine-boundary-ways.json \
             --territory "Racine modern product" \
-            --target-hectares 60 \
-            --snap-meters 12 \
-            --tolerance-pct 100 \
-            --out artifacts/racine-modern-product-candidate.geojson
+            --out artifacts/racine-modern-product-candidate.json
 
       - name: Diagnose Racine boundary axis components
         run: |
