@@ -25,7 +25,7 @@ def main():
     args=ap.parse_args()
 
     from shapely.geometry import LineString
-    from shapely.ops import unary_union, polygonize
+    from shapely.ops import unary_union, polygonize, polygonize_full
 
     lines=[]
     provenance=[]
@@ -48,8 +48,17 @@ def main():
 
     merged=unary_union(lines)
     polys=list(polygonize(merged))
+    full_polys, cuts, dangles, invalids = polygonize_full(merged)
+    diagnostics={
+      "line_count":len(lines),
+      "polygon_count":len(polys),
+      "cut_count":len(getattr(cuts,"geoms",[])),
+      "dangle_count":len(getattr(dangles,"geoms",[])),
+      "invalid_count":len(getattr(invalids,"geoms",[])),
+    }
+    print(json.dumps({"diagnostics":diagnostics},ensure_ascii=False))
     if not polys:
-        raise SystemExit("polygonize produced no closed faces")
+        raise SystemExit("polygonize produced no closed faces; diagnostics="+json.dumps(diagnostics))
 
     target=args.target_hectares
     ranked=[]
@@ -74,6 +83,7 @@ def main():
         "area_delta_pct":round(delta,2),
         "candidate_face_count":len(polys),
         "source_line_count":len(lines),
+        "diagnostics":diagnostics,
         "provenance":provenance
       },
       "geometry":{
