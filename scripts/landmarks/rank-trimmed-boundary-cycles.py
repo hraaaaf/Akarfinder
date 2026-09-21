@@ -52,7 +52,11 @@ def main():
             if cs and len(cs)>=2:
                 lines.append(LineString([project_xy(x,y,lat0) for x,y in cs]))
         if not lines: return None
-        merged=linemerge(unary_union(lines))
+        unioned=unary_union(lines)
+        if unioned.geom_type=="LineString":
+            merged=unioned
+        else:
+            merged=linemerge(unioned)
         geoms=list(getattr(merged,"geoms",[merged]))
         geoms=[g for g in geoms if g.geom_type=="LineString" and g.length>0]
         if not geoms: return None
