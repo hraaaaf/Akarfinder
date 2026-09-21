@@ -47,9 +47,26 @@ authoritative_outputs=[
 ]
 present_authoritative=[name for name in authoritative_outputs if (ART/name).exists()]
 
+def source_control_context():
+    github_context_sha=os.environ.get("GITHUB_SHA")
+    pr_head_sha=None
+    event_path=os.environ.get("GITHUB_EVENT_PATH")
+    if event_path:
+        try:
+            event=json.loads(Path(event_path).read_text(encoding="utf-8"))
+            pr_head_sha=((event.get("pull_request") or {}).get("head") or {}).get("sha")
+        except Exception:
+            pass
+    return {
+        "pr_head_sha":pr_head_sha or github_context_sha,
+        "github_context_sha":github_context_sha,
+        "event_name":os.environ.get("GITHUB_EVENT_NAME"),
+        "ref":os.environ.get("GITHUB_REF"),
+    }
+
 manifest={
-    "schema_version":1,
-    "head_sha":os.environ.get("GITHUB_SHA"),
+    "schema_version":2,
+    "source_control":source_control_context(),
     "run_id":os.environ.get("GITHUB_RUN_ID"),
     "policy":{
         "auc_role":"urban-planning/historical truth",
