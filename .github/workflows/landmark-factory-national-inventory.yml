@@ -1,0 +1,41 @@
+name: Landmark Factory National Neighborhood Inventory
+
+on:
+  pull_request:
+    paths:
+      - "scripts/landmarks/build-morocco-neighborhood-inventory.py"
+      - ".github/workflows/landmark-factory-national-inventory.yml"
+      - "docs/geo/landmark-factory/MOROCCO_NATIONAL_NEIGHBORHOOD_FACTORY.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pyosmium
+        run: python -m pip install --disable-pip-version-check osmium
+      - name: Download current Morocco OSM PBF
+        run: |
+          curl --fail --location --retry 3 --output /tmp/morocco-latest.osm.pbf \
+            https://download.geofabrik.de/africa/morocco-latest.osm.pbf
+          ls -lh /tmp/morocco-latest.osm.pbf
+      - name: Build national neighborhood discovery inventory
+        run: |
+          mkdir -p artifacts
+          python scripts/landmarks/build-morocco-neighborhood-inventory.py \
+            --pbf /tmp/morocco-latest.osm.pbf \
+            --out artifacts/morocco-neighborhood-discovery-inventory.json
+      - name: Upload discovery inventory
+        uses: actions/upload-artifact@v4
+        with:
+          name: landmark-factory-morocco-neighborhood-inventory
+          path: artifacts/morocco-neighborhood-discovery-inventory.json
+          if-no-files-found: error
