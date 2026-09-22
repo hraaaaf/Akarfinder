@@ -179,8 +179,8 @@ export function PremiumInteractiveMap() {
 
   const nationalTerritoryZoom = 4.2 + Math.max(0, camera.k - 1) * 6;
   const nationalPriority = useMemo(
-    () => selectNationalCityVisibility({ zoom: nationalTerritoryZoom, maxLabels: 19 }),
-    [nationalTerritoryZoom],
+    () => selectNationalCityVisibility({ zoom: 7, maxLabels: 8 }),
+    [],
   );
 
 
@@ -266,7 +266,7 @@ export function PremiumInteractiveMap() {
       }];
     });
 
-    const capacity = camera.k < 1.1 ? 6 : camera.k < 1.2 ? 7 : 8;
+    const capacity = 8;
     const selected = selectStableTerritoryLabels({
       candidates: candidateMeta.map((item) => item.collision),
       maxLabels: capacity,
@@ -339,13 +339,8 @@ export function PremiumInteractiveMap() {
   }, [applyCamera]);
 
   const selectRegion = useCallback((slug: string) => {
-    setLevel("region");
-    setSelectedRegionSlug(slug);
-    setSelectedCitySlug(null);
-    setSelectedQuartierSlug(null);
-    setTooltip(null);
-    focusRegion(slug);
-  }, [focusRegion]);
+    window.location.assign(`/map?region=${encodeURIComponent(slug)}&layer=explore`);
+  }, []);
 
   const selectCity = useCallback((city: City) => {
     const parentRegion = regions.find((region) => region.cities.some((candidate) => candidate.slug === city.slug));
@@ -412,13 +407,13 @@ export function PremiumInteractiveMap() {
             </div>
             <h1 className="text-[26px] font-black tracking-[-0.045em] sm:text-[32px] lg:text-[38px]">Où vivre au Maroc ?</h1>
             <p className="mt-1 max-w-2xl text-[12px] font-medium sm:text-[13px]" style={{ color: "var(--text-secondary)" }}>
-              Explorez le territoire par région, ville puis quartier. Les identités et repères affichés proviennent des registres canoniques AkarFinder.
+              Explorez le territoire par région, ville puis quartier. La vue Pays montre les 8 hubs verrouillés ; les niveaux suivants utilisent le runtime canonique fail-closed.
             </p>
           </div>
           <div className="flex flex-wrap gap-2 text-[10px] font-extrabold uppercase tracking-[0.08em]" style={{ color: "var(--text-secondary)" }}>
             <span className="rounded-full border px-3 py-2" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>12 régions</span>
-            <span className="rounded-full border px-3 py-2" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>{cityCount} villes indexées</span>
-            <span className="rounded-full border px-3 py-2" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>{quartierCount} quartiers</span>
+            <span className="rounded-full border px-3 py-2" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>8 villes majeures</span>
+            <span className="rounded-full border px-3 py-2" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>navigation fail-closed</span>
           </div>
         </header>
 
@@ -514,7 +509,7 @@ export function PremiumInteractiveMap() {
                     );
                   })}
 
-                  {level === "national" && nationalCityRenderItems.map(({ city, point, labelWidth, direction, labelXOffset, labelYOffset, priority }) => {
+                  {level === "national" && nationalCityRenderItems.map(({ city, regionSlug, point, labelWidth, direction, labelXOffset, labelYOffset, priority }) => {
                     const baseLabelX = direction > 0 ? 13 : -(labelWidth + 13);
                     const baseTextX = direction > 0 ? 24 : -(labelWidth + 2);
                     const labelX = (baseLabelX + labelXOffset) / camera.k;
@@ -531,14 +526,14 @@ export function PremiumInteractiveMap() {
                         data-city-slug={city.slug}
                         data-national-city-label={city.slug}
                         data-national-city-importance={priority.importanceScore}
-                        onClick={(event) => { event.stopPropagation(); selectCity(city); }}
+                        onClick={(event) => { event.stopPropagation(); selectRegion(regionSlug); }}
                         onKeyDown={(event) => {
                           if (event.key === "Enter" || event.key === " ") {
                             event.preventDefault();
-                            selectCity(city);
+                            selectRegion(regionSlug);
                           }
                         }}
-                        onPointerMove={(event) => setTooltip({ title: city.name, subtitle: "Ville prioritaire", x: event.clientX, y: event.clientY })}
+                        onPointerMove={(event) => setTooltip({ title: city.name, subtitle: "Ouvrir sa région", x: event.clientX, y: event.clientY })}
                         onPointerLeave={() => setTooltip(null)}
                       >
                         <circle r={12 / camera.k} fill="rgba(255,255,255,0.96)" stroke={NAVY} strokeWidth={2 / camera.k} vectorEffect="non-scaling-stroke" />
@@ -678,7 +673,7 @@ export function PremiumInteractiveMap() {
                     {regions.map((region, index) => (
                       <button key={region.slug} type="button" onClick={() => selectRegion(region.slug)} className="flex min-h-[52px] items-center gap-3 rounded-2xl border px-3 text-left transition-transform hover:-translate-y-0.5" style={{ borderColor: "var(--border)", background: "var(--background)" }} data-region-list-slug={region.slug}>
                         <span className="h-8 w-2 rounded-full" style={{ background: REGION_TONES[index] }} />
-                        <span className="min-w-0 flex-1"><span className="block truncate text-[11.5px] font-black">{region.name}</span><span className="mt-0.5 block text-[9.5px] font-semibold" style={{ color: "var(--text-secondary)" }}>{region.cities.length ? `${region.cities.length} ville${region.cities.length > 1 ? "s" : ""} indexée${region.cities.length > 1 ? "s" : ""}` : "à explorer"}</span></span>
+                        <span className="min-w-0 flex-1"><span className="block truncate text-[11.5px] font-black">{region.name}</span><span className="mt-0.5 block text-[9.5px] font-semibold" style={{ color: "var(--text-secondary)" }}>Explorer la région</span></span>
                         <ChevronRight size={14} aria-hidden="true" />
                       </button>
                     ))}
