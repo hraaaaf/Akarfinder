@@ -752,6 +752,97 @@ export const VERIFIED_LANDMARKS: readonly VerifiedLandmarkEntry[] = [
     verifiedAt: "2026-09-18",
   },
 
+
+  {
+    entity: {
+      id: "landmark_meknes_ancienne_medina_bab_mansour",
+      type: "landmark",
+      citySlug: "meknes",
+      districtSlug: "ancienne-medina",
+      landmarkSlug: "bab-mansour",
+      canonicalName: "Bab Mansour",
+      aliases: ["Bab Mansour el Aleuj", "Bab el-Mansour"],
+      category: "heritage",
+      parentId: "district_meknes_ancienne_medina",
+      importance: {
+        score: 100,
+        tier: "flagship",
+        basis: ["product_priority", "orientation_value", "urban_prominence"],
+      },
+      visibility: { minZoom: 13.3, retainPriority: true },
+      coordinates: {
+        lat: 33.89258,
+        lng: -5.56464,
+        precision: "verified_landmark_point",
+      },
+    },
+    sourceRefs: [
+      "https://www.visitmorocco.com/fr/voyage/meknes",
+      "https://mapcarta.com/fr/35844436",
+    ],
+    verificationNote: "ONMT explicitly identifies Bab Mansour as the gate giving access to the Meknès medina; OSM-backed Mapcarta supplies the verified point.",
+    verifiedAt: "2026-09-22",
+  },
+  {
+    entity: {
+      id: "landmark_tetouan_medina_bab_el_okla",
+      type: "landmark",
+      citySlug: "tetouan",
+      districtSlug: "medina",
+      landmarkSlug: "bab-el-okla",
+      canonicalName: "Bab El Oqla",
+      aliases: ["Bab El-Okla", "Bab El Oqla"],
+      category: "heritage",
+      parentId: "district_tetouan_medina",
+      importance: {
+        score: 99,
+        tier: "flagship",
+        basis: ["product_priority", "orientation_value", "urban_prominence"],
+      },
+      visibility: { minZoom: 13.4, retainPriority: true },
+      coordinates: {
+        lat: 35.57066,
+        lng: -5.36362,
+        precision: "verified_landmark_point",
+      },
+    },
+    sourceRefs: [
+      "https://www.visitmorocco.com/sites/default/files/atoms/files/Tetouan%20ESP.pdf",
+      "https://mapcarta.com/fr/N4026734005",
+    ],
+    verificationNote: "ONMT lists Bab El Oqla among the seven historic gates of the Tétouan medina; OSM-backed Mapcarta supplies the verified point.",
+    verifiedAt: "2026-09-22",
+  },
+  {
+    entity: {
+      id: "landmark_essaouira_medina_skala_de_la_ville",
+      type: "landmark",
+      citySlug: "essaouira",
+      districtSlug: "medina",
+      landmarkSlug: "skala-de-la-ville",
+      canonicalName: "Skala de la Ville",
+      aliases: ["Sqala de la Kasbah", "Skala"],
+      category: "heritage",
+      parentId: "district_essaouira_medina",
+      importance: {
+        score: 99,
+        tier: "flagship",
+        basis: ["product_priority", "orientation_value", "urban_prominence"],
+      },
+      visibility: { minZoom: 13.4, retainPriority: true },
+      coordinates: {
+        lat: 31.5148025,
+        lng: -9.7722691,
+        precision: "verified_landmark_point",
+      },
+    },
+    sourceRefs: [
+      "https://whc.unesco.org/fr/list/753",
+      "https://www.google.com/maps/place/Skala+de+la+Ville/",
+    ],
+    verificationNote: "UNESCO certifies the fortified medina fabric of Essaouira; the Skala is on the medina rampart and Google Maps supplies the public point.",
+    verifiedAt: "2026-09-22",
+  },
 ];
 
 const CANONICAL_DISTRICT_IDS = new Set(GEO_NEIGHBORHOODS.map((district) => district.id));
