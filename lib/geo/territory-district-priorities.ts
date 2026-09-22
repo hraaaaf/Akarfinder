@@ -27,6 +27,9 @@ export const DISTRICT_PRIORITY_OVERRIDES: Readonly<Record<string, DistrictPriori
   district_casablanca_finance_city: { score: 91, tier: "major", minZoom: 9.8, retainPriority: true },
   district_casablanca_bourgogne: { score: 86, tier: "major", minZoom: 10.2, retainPriority: false },
   district_casablanca_bouskoura: { score: 78, tier: "regional", minZoom: 10.8, retainPriority: false },
+  district_casablanca_hay_hassani: { score: 72, tier: "local", minZoom: 11.2, retainPriority: false },
+  district_casablanca_sidi_maarouf: { score: 74, tier: "local", minZoom: 11.1, retainPriority: false },
+  district_casablanca_californie: { score: 76, tier: "local", minZoom: 11.0, retainPriority: false },
 
   // Rabat
   district_rabat_agdal: { score: 100, tier: "flagship", minZoom: 9.4, retainPriority: true },
