@@ -138,8 +138,11 @@ try {
         return shell?.getAttribute("data-maplibre-render-state") === "ready";
       }, null, { timeout: 25000 });
 
-      const rail = page.locator("[data-p4-map-decision-rail]");
+      const rail = page.locator("[data-maarif-target-rail]");
       await rail.waitFor({ state: "visible", timeout: 10000 });
+      if (await page.locator("[data-p4-map-decision-rail]").count() !== 0) {
+        throw new Error("duplicate P4 decision rail must be absent on Maârif TARGET");
+      }
       const handoff = rail.getByRole("link", { name: /Voir les biens disponibles à Maârif/i });
       const href = await handoff.getAttribute("href");
       if (!href) throw new Error("search handoff href missing");
