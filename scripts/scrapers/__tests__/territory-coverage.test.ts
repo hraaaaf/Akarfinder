@@ -30,8 +30,7 @@ test("Casablanca coverage reports the three newly canonical districts still awai
   assert.deepEqual(
     casa.missingLandmarkDistrictIds.sort(),
     [
-      "district_casablanca_californie",
-      "district_casablanca_hay_hassani",
+        "district_casablanca_hay_hassani",
       "district_casablanca_sidi_maarouf",
     ].sort(),
   );
@@ -44,10 +43,8 @@ const OPEN_LANDMARK_GAPS = {
     "district_casablanca_sidi_maarouf",
   ],
   sale: [
-    "district_sale_bettana",
     "district_sale_hssaine",
     "district_sale_laayayda",
-    "district_sale_tabriquet",
   ],
   temara: [
     "district_temara_hay_al_maghreb_al_arabi",
@@ -122,6 +119,6 @@ test("coverage remains fail-closed for every canonical district without verified
   assert.deepEqual(missing, expected);
   assert.equal(
     getTerritoryCoverageReport().reduce((total, entry) => total + entry.districtsWithVerifiedLandmark, 0),
-    32,
+    35,
   );
 });
