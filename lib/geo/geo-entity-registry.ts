@@ -135,6 +135,22 @@ export const GEO_NEIGHBORHOODS: CanonicalNeighborhoodEntity[] = [
   { id: "district_oujda_hay_al_andalous", slug: "hay-al-andalous", canonical_name: "Hay Al Andalous", aliases: ["Hay Andalous"], city_slug: "oujda", validation_status: "validated", seo_eligible: false, map_eligible: true },
   { id: "district_oujda_hay_el_qods", slug: "hay-el-qods", canonical_name: "Hay El Qods", aliases: ["Hay Qods", "Hay Al Qods"], city_slug: "oujda", validation_status: "validated", seo_eligible: false, map_eligible: true },
 
+  // El Jadida — identity-only product geography. DGI zones are not product boundaries.
+  { id: "district_el_jadida_hay_salam", slug: "hay-salam", canonical_name: "Hay Salam", aliases: ["Hay Essalam"], city_slug: "el-jadida", validation_status: "validated", seo_eligible: false, map_eligible: true },
+  { id: "district_el_jadida_najd", slug: "najd", canonical_name: "Najd", aliases: ["Hay Najd"], city_slug: "el-jadida", validation_status: "validated", seo_eligible: false, map_eligible: true },
+  { id: "district_el_jadida_plateau", slug: "plateau", canonical_name: "Plateau", aliases: [], city_slug: "el-jadida", validation_status: "validated", seo_eligible: false, map_eligible: true },
+  { id: "district_el_jadida_sidi_moussa", slug: "sidi-moussa", canonical_name: "Sidi Moussa", aliases: [], city_slug: "el-jadida", validation_status: "validated", seo_eligible: false, map_eligible: true },
+  { id: "district_el_jadida_al_boustane", slug: "al-boustane", canonical_name: "Al Boustane", aliases: ["El Boustane"], city_slug: "el-jadida", validation_status: "validated", seo_eligible: false, map_eligible: true },
+
+  // Nador — identity-only product geography.
+  { id: "district_nador_oulad_mimoun", slug: "oulad-mimoun", canonical_name: "Oulad Mimoun", aliases: ["Ouled Mimoun"], city_slug: "nador", validation_status: "validated", seo_eligible: false, map_eligible: true },
+  { id: "district_nador_hay_al_matar", slug: "hay-al-matar", canonical_name: "Hay Al Matar", aliases: ["Quartier Al Matar"], city_slug: "nador", validation_status: "validated", seo_eligible: false, map_eligible: true },
+  { id: "district_nador_hay_aarid", slug: "hay-aarid", canonical_name: "Hay Aarid", aliases: ["Arrid", "Arred"], city_slug: "nador", validation_status: "validated", seo_eligible: false, map_eligible: true },
+
+  // Essaouira — identity-only product geography. UNESCO heritage geometry is not a product boundary.
+  { id: "district_essaouira_medina", slug: "medina", canonical_name: "Médina", aliases: ["Medina"], city_slug: "essaouira", validation_status: "validated", seo_eligible: false, map_eligible: true },
+  { id: "district_essaouira_kasbah", slug: "kasbah", canonical_name: "Kasbah", aliases: ["Kasba"], city_slug: "essaouira", validation_status: "validated", seo_eligible: false, map_eligible: true },
+
   // Map-only canonical entities: validated for map/navigation, not auto-indexed for SEO.
   { id: "district_fes_ville_nouvelle", slug: "ville-nouvelle", canonical_name: "Ville Nouvelle", aliases: [], city_slug: "fes", validation_status: "validated", seo_eligible: false, map_eligible: true },
   { id: "district_fes_el_bali", slug: "fes-el-bali", canonical_name: "Fès el-Bali", aliases: ["Fes el-Bali", "Fes el Bali"], city_slug: "fes", validation_status: "validated", seo_eligible: false, map_eligible: true },
