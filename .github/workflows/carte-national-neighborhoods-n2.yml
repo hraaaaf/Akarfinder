@@ -9,6 +9,7 @@ on:
       - "components/map/NationalTerritoryExperience.tsx"
       - "components/map/NationalNeighborhoodOverlay.tsx"
       - "components/map/NationalNeighborhoodOverlayBridge.tsx"
+      - "components/map/MaarifTargetRail.tsx"
       - "lib/map/national-territory-runtime.server.ts"
       - "lib/map/national-territory-data/neighborhoods-n2-*.ts"
       - "scripts/audits/carte-national-neighborhoods-n2.mjs"
