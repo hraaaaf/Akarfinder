@@ -151,6 +151,13 @@ export const GEO_NEIGHBORHOODS: CanonicalNeighborhoodEntity[] = [
   { id: "district_essaouira_medina", slug: "medina", canonical_name: "Médina", aliases: ["Medina"], city_slug: "essaouira", validation_status: "validated", seo_eligible: false, map_eligible: true },
   { id: "district_essaouira_kasbah", slug: "kasbah", canonical_name: "Kasbah", aliases: ["Kasba"], city_slug: "essaouira", validation_status: "validated", seo_eligible: false, map_eligible: true },
 
+  // Bouznika — identity-only product geography. DGI zones are not product boundaries.
+  { id: "district_bouznika_hay_salim", slug: "hay-salim", canonical_name: "Hay Salim", aliases: ["Lot Salim"], city_slug: "bouznika", validation_status: "validated", seo_eligible: false, map_eligible: true },
+  { id: "district_bouznika_hay_ghita", slug: "hay-ghita", canonical_name: "Hay Ghita", aliases: ["Lot Ghita"], city_slug: "bouznika", validation_status: "validated", seo_eligible: false, map_eligible: true },
+  { id: "district_bouznika_hay_riad", slug: "hay-riad", canonical_name: "Hay Riad", aliases: ["Hay Ryad"], city_slug: "bouznika", validation_status: "validated", seo_eligible: false, map_eligible: true },
+  { id: "district_bouznika_al_wouroud", slug: "al-wouroud", canonical_name: "Al Wouroud", aliases: ["El Wouroud", "Lot El Woroud"], city_slug: "bouznika", validation_status: "validated", seo_eligible: false, map_eligible: true },
+  { id: "district_bouznika_hay_amal", slug: "hay-amal", canonical_name: "Hay Amal", aliases: ["Hay El Amal"], city_slug: "bouznika", validation_status: "validated", seo_eligible: false, map_eligible: true },
+
   // Map-only canonical entities: validated for map/navigation, not auto-indexed for SEO.
   { id: "district_fes_ville_nouvelle", slug: "ville-nouvelle", canonical_name: "Ville Nouvelle", aliases: [], city_slug: "fes", validation_status: "validated", seo_eligible: false, map_eligible: true },
   { id: "district_fes_el_bali", slug: "fes-el-bali", canonical_name: "Fès el-Bali", aliases: ["Fes el-Bali", "Fes el Bali"], city_slug: "fes", validation_status: "validated", seo_eligible: false, map_eligible: true },
