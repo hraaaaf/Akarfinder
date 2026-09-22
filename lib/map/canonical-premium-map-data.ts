@@ -9,6 +9,12 @@ export type PremiumMapQuartier = {
   name: string;
   slug: string;
   canonicalId: string;
+  mapAnchor?: {
+    coordinates: [number, number];
+    landmarkId: string;
+    landmarkName: string;
+    evidenceRole: "VERIFIED_LANDMARK_ANCHOR_ONLY";
+  };
   priority: {
     score: number;
     tier: "flagship" | "major" | "regional" | "local";
@@ -65,16 +71,26 @@ function canonicalQuartiers(citySlug: CanonicalCitySlug): PremiumMapQuartier[] {
     )
     .map((district) => {
       const priority = getDistrictPriority(district);
+      const landmarks = getVerifiedLandmarksForDistrict(district.id);
+      const anchor = landmarks[0]?.entity.coordinates;
       return {
-      name: district.canonical_name,
-      slug: district.slug,
-      canonicalId: district.id,
-      priority: { score: priority.score, tier: priority.tier },
-      stats: {
-        landmarksVerified: getVerifiedLandmarksForDistrict(district.id).length,
-        status: "disponible" as const,
-      },
-    };
+        name: district.canonical_name,
+        slug: district.slug,
+        canonicalId: district.id,
+        mapAnchor: anchor
+          ? {
+              coordinates: [anchor.lng, anchor.lat] as [number, number],
+              landmarkId: landmarks[0]!.entity.id,
+              landmarkName: landmarks[0]!.entity.canonicalName,
+              evidenceRole: "VERIFIED_LANDMARK_ANCHOR_ONLY" as const,
+            }
+          : undefined,
+        priority: { score: priority.score, tier: priority.tier },
+        stats: {
+          landmarksVerified: landmarks.length,
+          status: "disponible" as const,
+        },
+      };
     })
     .sort((a, b) => b.priority.score - a.priority.score || a.name.localeCompare(b.name, "fr"));
 }
@@ -125,6 +141,12 @@ export const CANONICAL_PREMIUM_MAP_SUMMARY = {
   countryHubCount: 8,
   canonicalNeighborhoodCount: GEO_NEIGHBORHOODS.filter(
     (district) => district.validation_status === "validated" && district.map_eligible,
+  ).length,
+  anchoredNeighborhoodCount: GEO_NEIGHBORHOODS.filter(
+    (district) =>
+      district.validation_status === "validated" &&
+      district.map_eligible &&
+      getVerifiedLandmarksForDistrict(district.id)[0]?.entity.coordinates,
   ).length,
   syntheticPriceCount: 0,
 } as const;
