@@ -38,6 +38,13 @@ export const DISTRICT_PRIORITY_OVERRIDES: Readonly<Record<string, DistrictPriori
   district_rabat_hassan: { score: 90, tier: "major", minZoom: 10.0, retainPriority: true },
   district_rabat_ocean: { score: 82, tier: "regional", minZoom: 10.5, retainPriority: false },
 
+  // Salé — editorial reveal only; not a ranking of neighborhood quality.
+  district_sale_bab_lamrissa: { score: 92, tier: "major", minZoom: 9.9, retainPriority: true },
+  district_sale_tabriquet: { score: 90, tier: "major", minZoom: 10.0, retainPriority: true },
+  district_sale_bettana: { score: 88, tier: "major", minZoom: 10.2, retainPriority: false },
+  district_sale_laayayda: { score: 80, tier: "regional", minZoom: 10.7, retainPriority: false },
+  district_sale_hssaine: { score: 80, tier: "regional", minZoom: 10.7, retainPriority: false },
+
   // Marrakech
   district_marrakech_gueliz: { score: 100, tier: "flagship", minZoom: 9.4, retainPriority: true },
   district_marrakech_hivernage: { score: 97, tier: "flagship", minZoom: 9.6, retainPriority: true },
