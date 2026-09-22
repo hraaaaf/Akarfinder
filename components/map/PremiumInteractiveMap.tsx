@@ -139,17 +139,6 @@ function featureSlug(feature: RegionFeature, regions: Region[]) {
   return REGION_ALIASES[normalizeName(rawName)] ?? null;
 }
 
-function neighborhoodPolygon(index: number) {
-  const column = index % 3;
-  const row = Math.floor(index / 3);
-  const x = 84 + column * 275 + (row % 2) * 18;
-  const y = 130 + row * 126;
-  const width = 246;
-  const height = 103;
-  const notch = 18 + ((index * 7) % 24);
-  return `${x},${y + 10} ${x + width - notch},${y} ${x + width},${y + height - 20} ${x + width - 20},${y + height} ${x + 14},${y + height - 7} ${x},${y + 28}`;
-}
-
 function readablePrice(value?: number) {
   return value ? `${value.toLocaleString("fr-FR")} DH/m²` : "non disponible";
 }
@@ -410,7 +399,7 @@ export function PremiumInteractiveMap() {
       data-premium-map
       data-map-level={level}
       data-topology-state={topologyState}
-      data-db-mode="mock-only"
+      data-db-mode="canonical-registry"
       data-national-territory-zoom={nationalTerritoryZoom.toFixed(2)}
       data-national-city-label-count={level === "national" ? nationalCityRenderItems.length : 0}
     >
@@ -423,7 +412,7 @@ export function PremiumInteractiveMap() {
             </div>
             <h1 className="text-[26px] font-black tracking-[-0.045em] sm:text-[32px] lg:text-[38px]">Où vivre au Maroc ?</h1>
             <p className="mt-1 max-w-2xl text-[12px] font-medium sm:text-[13px]" style={{ color: "var(--text-secondary)" }}>
-              Explorez le territoire par région, ville puis quartier. Les repères affichés dans ce prototype sont des données mock isolées.
+              Explorez le territoire par région, ville puis quartier. Les identités et repères affichés proviennent des registres canoniques AkarFinder.
             </p>
           </div>
           <div className="flex flex-wrap gap-2 text-[10px] font-extrabold uppercase tracking-[0.08em]" style={{ color: "var(--text-secondary)" }}>
@@ -614,40 +603,54 @@ export function PremiumInteractiveMap() {
               {level === "city" && selectedCity ? (
                 <motion.div
                   key={selectedCity.slug}
-                  initial={{ opacity: 0, scale: 0.96 }}
+                  initial={{ opacity: 0, scale: 0.98 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.97 }}
-                  transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
-                  className="absolute inset-x-3 bottom-3 top-[66px] z-10 overflow-hidden rounded-[22px] border backdrop-blur-md sm:inset-x-5 sm:bottom-5"
-                  style={{ borderColor: "var(--border)", background: "color-mix(in srgb, var(--surface) 72%, transparent)" }}
-                  data-neighborhood-schematic
+                  exit={{ opacity: 0, scale: 0.98 }}
+                  transition={{ duration: 0.28 }}
+                  className="absolute inset-x-3 bottom-3 top-[66px] z-10 overflow-auto rounded-[22px] border p-5 backdrop-blur-md sm:inset-x-5 sm:bottom-5 sm:p-7"
+                  style={{ borderColor: "var(--border)", background: "color-mix(in srgb, var(--surface) 92%, transparent)" }}
+                  data-neighborhood-canonical-index
                 >
-                  <svg viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`} className="h-full w-full" aria-label={`Quartiers schématiques de ${selectedCity.name}`}>
-                    <text x="64" y="74" fill="var(--text-primary)" fontSize="25" fontWeight="900">{selectedCity.name}</text>
-                    <text x="64" y="101" fill="var(--text-secondary)" fontSize="12" fontWeight="700">Frontières de quartiers stylisées · non cadastrales</text>
-                    {selectedCity.quartiers.map((quartier, index) => {
-                      const active = quartier.slug === selectedQuartierSlug;
-                      const column = index % 3;
-                      const row = Math.floor(index / 3);
-                      const labelX = 84 + column * 275 + (row % 2) * 18 + 18;
-                      const labelY = 130 + row * 126 + 55;
-                      return (
-                        <g key={quartier.slug} role="button" tabIndex={0} className="cursor-pointer outline-none" aria-label={`Sélectionner ${quartier.name}`} onClick={() => setSelectedQuartierSlug(quartier.slug)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setSelectedQuartierSlug(quartier.slug); } }}>
-                          <motion.polygon
-                            points={neighborhoodPolygon(index)}
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ delay: Math.min(index * 0.035, 0.25), duration: 0.32 }}
-                            fill={active ? NAVY : "color-mix(in srgb, #6E8DA4 35%, var(--surface))"}
-                            stroke={active ? NAVY : "var(--border-dark)"}
-                            strokeWidth={active ? 3 : 1.5}
-                            style={{ transformOrigin: `${labelX}px ${labelY}px` }}
-                          />
-                          <text x={labelX} y={labelY} fill={active ? "white" : "var(--text-primary)"} fontSize="13" fontWeight="850" pointerEvents="none">{quartier.name}</text>
-                        </g>
-                      );
-                    })}
-                  </svg>
+                  <div className="mx-auto max-w-[860px]">
+                    <p className="text-[9px] font-black uppercase tracking-[0.15em]" style={{ color: NAVY }}>Ville · quartiers canoniques</p>
+                    <h2 className="mt-1 text-[28px] font-black tracking-[-0.04em]">{selectedCity.name}</h2>
+                    <p className="mt-2 max-w-2xl text-[11px] font-semibold leading-5" style={{ color: "var(--text-secondary)" }}>
+                      Aucun polygone de quartier n’est inventé. Les limites seront affichées uniquement lorsqu’une géométrie produit aura été sourcée, revue et certifiée.
+                    </p>
+
+                    <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                      {selectedCity.quartiers.map((quartier, index) => {
+                        const active = quartier.slug === selectedQuartierSlug;
+                        return (
+                          <button
+                            key={quartier.slug}
+                            type="button"
+                            onClick={() => setSelectedQuartierSlug(quartier.slug)}
+                            className="min-h-[118px] rounded-[20px] border p-4 text-left transition hover:-translate-y-0.5"
+                            style={{
+                              borderColor: active ? NAVY : "var(--border)",
+                              background: active ? "color-mix(in srgb, #071B33 7%, var(--surface))" : "var(--background)",
+                              boxShadow: active ? "0 14px 34px rgba(7,27,51,.10)" : "none",
+                            }}
+                            data-canonical-neighborhood={quartier.slug}
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-[10px] font-black text-white" style={{ background: NAVY }}>
+                                {index + 1}
+                              </span>
+                              <span className="rounded-full border px-2 py-1 text-[8px] font-black uppercase tracking-[0.08em]" style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}>
+                                Canonique
+                              </span>
+                            </div>
+                            <strong className="mt-4 block text-[15px] font-black">{quartier.name}</strong>
+                            <span className="mt-1 block text-[9.5px] font-semibold" style={{ color: "var(--text-secondary)" }}>
+                              {quartier.stats.landmarksVerified} repère{quartier.stats.landmarksVerified === 1 ? "" : "s"} vérifié{quartier.stats.landmarksVerified === 1 ? "" : "s"} · frontière non revendiquée
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
                 </motion.div>
               ) : null}
             </AnimatePresence>
@@ -660,7 +663,7 @@ export function PremiumInteractiveMap() {
             ) : null}
 
             <div className="pointer-events-none absolute bottom-3 left-3 z-20 max-w-[70%] rounded-full border px-3 py-1.5 text-[8.5px] font-bold backdrop-blur" style={{ borderColor: "var(--border)", background: "color-mix(in srgb, var(--surface) 88%, transparent)", color: "var(--text-secondary)" }}>
-              Contours régionaux : geoBoundaries / OSM · 12 ADM1 · navigation prototype
+              Contours régionaux : geoBoundaries · 12 ADM1 · quartiers sans frontière synthétique
             </div>
           </section>
 
@@ -688,7 +691,7 @@ export function PremiumInteractiveMap() {
                   <button type="button" onClick={goNational} className="mb-4 inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.12em]" style={{ color: NAVY }}><ArrowLeft size={14} /> Maroc</button>
                   <p className="text-[10px] font-black uppercase tracking-[0.14em]" style={{ color: NAVY }}>Région</p>
                   <h2 className="mt-2 text-[22px] font-black tracking-[-0.035em]">{selectedRegion.name}</h2>
-                  <p className="mt-2 text-[11px] font-medium leading-5" style={{ color: "var(--text-secondary)" }}>{selectedRegion.cities.length ? "Choisissez une ville pour descendre au niveau quartier." : "Aucune ville indexée dans cette région pour ce prototype. Le niveau national reste accessible."}</p>
+                  <p className="mt-2 text-[11px] font-medium leading-5" style={{ color: "var(--text-secondary)" }}>{selectedRegion.cities.length ? "Choisissez une ville pour descendre au niveau quartier." : "Aucune ville-pôle publiée dans cette région pour le niveau Pays. Le niveau national reste accessible."}</p>
                   <div className="mt-5 space-y-2">
                     {selectedRegion.cities.map((city) => (
                       <button key={city.slug} type="button" onClick={() => selectCity(city)} className="flex w-full items-center gap-3 rounded-2xl border p-3.5 text-left transition-transform hover:-translate-y-0.5" style={{ borderColor: "var(--border)", background: "var(--background)" }} data-city-list-slug={city.slug}>
