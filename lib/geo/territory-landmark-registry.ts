@@ -1411,6 +1411,51 @@ export const VERIFIED_LANDMARKS: readonly VerifiedLandmarkEntry[] = [
     verificationNote: "Yakeey exposes Al Boustane in the El Jadida product taxonomy; OSM-backed Mapcarta identifies the namesake mosque and supplies the verified point.",
     verifiedAt: "2026-09-22",
   },
+
+  {
+    entity: {
+      id: "landmark_casablanca_hay_hassani_polyclinique_cnss",
+      type: "landmark",
+      citySlug: "casablanca",
+      districtSlug: "hay-hassani",
+      landmarkSlug: "polyclinique-cnss-hay-hassani",
+      canonicalName: "Polyclinique CNSS Hay Hassani",
+      aliases: ["مصحة الضمان الإجتماعي الحي الحسني"],
+      category: "hospital",
+      parentId: "district_casablanca_hay_hassani",
+      importance: { score: 94, tier: "major", basis: ["orientation_value", "product_priority", "urban_prominence"] },
+      visibility: { minZoom: 13.6, retainPriority: true },
+      coordinates: { lat: 33.56699, lng: -7.66859, precision: "verified_landmark_point" },
+    },
+    sourceRefs: [
+      "https://auc.ma/wp-content/uploads/2020/05/pla_compressed.pdf",
+      "https://mapcarta.com/W521476354",
+    ],
+    verificationNote: "AUC certifies Hay Hassani identity; OSM-backed Mapcarta identifies the CNSS polyclinic explicitly as Hay Hassani and supplies the verified point.",
+    verifiedAt: "2026-09-22",
+  },
+  {
+    entity: {
+      id: "landmark_casablanca_sidi_maarouf_groupe_scolaire",
+      type: "landmark",
+      citySlug: "casablanca",
+      districtSlug: "sidi-maarouf",
+      landmarkSlug: "groupe-scolaire-sidi-maarouf",
+      canonicalName: "Groupe Scolaire Sidi Maârouf",
+      aliases: ["Groupe Scolaire Sidi Maarouf"],
+      category: "other",
+      parentId: "district_casablanca_sidi_maarouf",
+      importance: { score: 92, tier: "major", basis: ["orientation_value", "product_priority"] },
+      visibility: { minZoom: 13.7, retainPriority: true },
+      coordinates: { lat: 33.52013, lng: -7.64999, precision: "verified_landmark_point" },
+    },
+    sourceRefs: [
+      "https://auc.ma/wp-content/uploads/2020/05/RAPPORT-JUSTIFICATIF-AINCHOCK.pdf",
+      "https://mapcarta.com/fr/N4720321094",
+    ],
+    verificationNote: "AUC explicitly certifies the Sidi Maârouf identity; OSM-backed Mapcarta identifies Groupe Scolaire Sidi Maârouf and supplies the verified point.",
+    verifiedAt: "2026-09-22",
+  },
 ];
 
 const CANONICAL_DISTRICT_IDS = new Set(GEO_NEIGHBORHOODS.map((district) => district.id));
