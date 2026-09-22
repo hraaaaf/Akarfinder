@@ -84,6 +84,22 @@ export const DISTRICT_PRIORITY_OVERRIDES: Readonly<Record<string, DistrictPriori
   district_oujda_hay_al_andalous: { score: 84, tier: "regional", minZoom: 10.4, retainPriority: false },
   district_oujda_hay_boudir: { score: 82, tier: "regional", minZoom: 10.5, retainPriority: false },
 
+  // El Jadida
+  district_el_jadida_hay_salam: { score: 92, tier: "major", minZoom: 9.9, retainPriority: true },
+  district_el_jadida_plateau: { score: 90, tier: "major", minZoom: 10.0, retainPriority: true },
+  district_el_jadida_najd: { score: 86, tier: "major", minZoom: 10.2, retainPriority: false },
+  district_el_jadida_sidi_moussa: { score: 84, tier: "regional", minZoom: 10.4, retainPriority: false },
+  district_el_jadida_al_boustane: { score: 82, tier: "regional", minZoom: 10.5, retainPriority: false },
+
+  // Nador
+  district_nador_hay_al_matar: { score: 90, tier: "major", minZoom: 10.0, retainPriority: true },
+  district_nador_oulad_mimoun: { score: 88, tier: "major", minZoom: 10.2, retainPriority: false },
+  district_nador_hay_aarid: { score: 84, tier: "regional", minZoom: 10.4, retainPriority: false },
+
+  // Essaouira
+  district_essaouira_medina: { score: 100, tier: "flagship", minZoom: 9.4, retainPriority: true },
+  district_essaouira_kasbah: { score: 96, tier: "flagship", minZoom: 9.6, retainPriority: true },
+
   // Fès
   district_fes_el_bali: { score: 100, tier: "flagship", minZoom: 9.4, retainPriority: true },
   district_fes_ville_nouvelle: { score: 88, tier: "major", minZoom: 10.2, retainPriority: false },
