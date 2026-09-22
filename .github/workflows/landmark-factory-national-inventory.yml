@@ -7,6 +7,10 @@ on:
       - "scripts/landmarks/assign-morocco-admin-containment.py"
       - "scripts/landmarks/crosswalk-national-canonical-neighborhoods.ts"
       - "scripts/landmarks/build-national-rollout-plan.ts"
+      - "scripts/landmarks/build-rabat-landmark-bridge.ts"
+      - "lib/geo/rabat-locality-registry.ts"
+      - "lib/geo/rabat-locality-geometry-registry.ts"
+      - "lib/geo/rabat-locality-publication-readiness.ts"
       - "lib/geo/geo-entity-registry.ts"
       - ".github/workflows/landmark-factory-national-inventory.yml"
       - "docs/geo/landmark-factory/MOROCCO_NATIONAL_NEIGHBORHOOD_FACTORY.md"
@@ -79,6 +83,13 @@ jobs:
             --out artifacts/morocco-landmark-factory-rollout-plan.json
           cat artifacts/morocco-landmark-factory-rollout-plan.json
 
+      - name: Build Rabat national-registry bridge
+        run: |
+          npx --yes tsx@4.22.4 scripts/landmarks/build-rabat-landmark-bridge.ts \
+            --crosswalk artifacts/morocco-canonical-neighborhood-crosswalk.json \
+            --out artifacts/rabat-landmark-factory-bridge.json
+          cat artifacts/rabat-landmark-factory-bridge.json
+
       - name: Assert fail-closed national inventory semantics
         run: |
           python - <<'PY'
@@ -114,6 +125,11 @@ jobs:
           assert r["activation_allowed"] is False
           assert r["geometry_promotion_allowed"] is False
           assert r["summary"]["city_count"] > 0
+          b=json.load(open("artifacts/rabat-landmark-factory-bridge.json",encoding="utf-8"))
+          assert b["evidence_role"] == "RABAT_LANDMARK_BRIDGE_ONLY"
+          assert b["activation_allowed"] is False
+          assert b["product_boundary_promotion_allowed"] is False
+          assert b["summary"]["canonical_rabat_count"] > 0
           PY
       - name: Upload discovery backlog
         uses: actions/upload-artifact@v4
@@ -123,4 +139,5 @@ jobs:
             artifacts/morocco-neighborhood-discovery-inventory.json
             artifacts/morocco-canonical-neighborhood-crosswalk.json
             artifacts/morocco-landmark-factory-rollout-plan.json
+            artifacts/rabat-landmark-factory-bridge.json
           if-no-files-found: error

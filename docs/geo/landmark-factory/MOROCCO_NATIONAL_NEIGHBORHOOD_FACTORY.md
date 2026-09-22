@@ -159,3 +159,15 @@ Execution states are deterministic evidence states, not subjective scores:
 5. `DISCOVERY_ONLY` — discovery candidates exist but no canonical neighborhood is currently registered for that city.
 
 The rollout plan never mutates `GEO_CITIES` or `GEO_NEIGHBORHOODS`, never activates map/SEO eligibility, and never promotes geometry.
+
+
+### Rabat bridge: stronger registry evidence vs national OSM discovery
+
+Rabat predates the national Landmark Factory and already has a structured locality registry, geometry certification layer and publication-readiness layer. The national pipeline must therefore **bridge**, not replace, that system.
+
+The generated `rabat-landmark-factory-bridge.json` enforces:
+- a national `NO_OSM_CANDIDATE_MATCH` cannot demote a Rabat locality whose taxonomy is already certified by stronger registry evidence;
+- legacy `point_proxy` geometry is not a product boundary;
+- C8 analytical market-zone polygons are `officialBoundary=false` and therefore reference-only for Landmark Factory;
+- legacy map/public eligibility does not imply Landmark Factory boundary certification;
+- no bridge output can activate or promote geometry.
