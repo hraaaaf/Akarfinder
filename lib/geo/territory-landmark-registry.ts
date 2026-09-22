@@ -874,6 +874,37 @@ export const VERIFIED_LANDMARKS: readonly VerifiedLandmarkEntry[] = [
     verificationNote: "Visit Rabat identifies Bab el-Mrissa as an emblematic gate of Salé; Wikidata supplies the public coordinate and the same heritage identity.",
     verifiedAt: "2026-09-22",
   },
+
+  {
+    entity: {
+      id: "landmark_el_jadida_hay_salam_mosquee_hay_essalam",
+      type: "landmark",
+      citySlug: "el-jadida",
+      districtSlug: "hay-salam",
+      landmarkSlug: "mosquee-hay-essalam",
+      canonicalName: "Mosquée Hay Essalam",
+      aliases: ["Mosquée Hay Salam"],
+      category: "civic",
+      parentId: "district_el_jadida_hay_salam",
+      importance: {
+        score: 88,
+        tier: "major",
+        basis: ["orientation_value", "product_priority"],
+      },
+      visibility: { minZoom: 13.9, retainPriority: false },
+      coordinates: {
+        lat: 33.22411,
+        lng: -8.49621,
+        precision: "verified_landmark_point",
+      },
+    },
+    sourceRefs: [
+      "https://yakeey.com/fr-ma/referentiel-de-prix-immobilier/el-jadida/hay-salam",
+      "https://mapcarta.com/fr/W322208263",
+    ],
+    verificationNote: "Yakeey independently certifies Hay Salam as a current El Jadida product neighborhood; OSM-backed Mapcarta names Mosquée Hay Essalam in that local cluster and supplies the verified point.",
+    verifiedAt: "2026-09-22",
+  },
 ];
 
 const CANONICAL_DISTRICT_IDS = new Set(GEO_NEIGHBORHOODS.map((district) => district.id));
