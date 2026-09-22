@@ -126,11 +126,17 @@ export async function GET(request: NextRequest) {
 
   const neighborhoods = getNationalNeighborhoodsForPlace(place);
   const centeredNeighborhoodCount = neighborhoods.filter((item) => item.center).length;
+  const canonicalCity = GEO_CITIES.find((candidate) => candidate.slug === place.slug);
+  const cityRegion = canonicalCity ? getMoroccoRegion(CANONICAL_CITY_REGION[canonicalCity.slug]) : null;
 
   return NextResponse.json({
     status: "ok",
     view: "city",
-    place,
+    place: {
+      ...place,
+      region: cityRegion ? { slug: cityRegion.slug, name: cityRegion.canonical_name } : null,
+      product: getNationalCountryHubPolicy(place.slug),
+    },
     boundary: cityBoundary(place.slug),
     neighborhoods,
     certifiedNeighborhoodBoundaries: { type: "FeatureCollection", features: [] },
