@@ -45,7 +45,7 @@ type City = {
   name: string;
   slug: string;
   signature?: string;
-  coordinates: [number, number];
+  coordinates?: [number, number];
   quartiers: Quartier[];
 };
 
@@ -178,7 +178,7 @@ export function PremiumInteractiveMap() {
   );
 
   const mappedCities = useMemo(
-    () => regions.flatMap((region) => region.cities.map((city) => ({ city, regionSlug: region.slug }))),
+    () => regions.flatMap((region) => region.cities.filter((city) => Boolean(city.coordinates)).map((city) => ({ city, regionSlug: region.slug }))),
     [regions],
   );
 
@@ -328,7 +328,7 @@ export function PremiumInteractiveMap() {
   }, [applyCamera, pathGenerator, regionFeatures, regions]);
 
   const focusCity = useCallback((city: City) => {
-    if (!projection) return;
+    if (!projection || !city.coordinates) return;
     const point = projection(city.coordinates);
     if (!point) return;
     const scale = 6.2;
@@ -574,6 +574,7 @@ export function PremiumInteractiveMap() {
                   })}
 
                   {level === "region" && selectedRegion && selectedRegion.regionalCities.map((city) => {
+                    if (!city.coordinates) return null;
                     const point = projection(city.coordinates);
                     if (!point) return null;
                     const isCountryHub = selectedRegion.cities.some((candidate) => candidate.slug === city.slug);
@@ -767,9 +768,14 @@ export function PremiumInteractiveMap() {
                           <ChevronRight size={15} />
                         </button>
                       ) : (
-                        <div key={city.slug} className="flex w-full items-center gap-3 rounded-2xl border p-3.5" style={{ borderColor: "var(--border)", background: "color-mix(in srgb, var(--background) 84%, var(--surface))" }} data-region-center-slug={city.slug}>
+                        <div key={city.slug} className="flex w-full items-center gap-3 rounded-2xl border p-3.5" style={{ borderColor: "var(--border)", background: "color-mix(in srgb, var(--background) 84%, var(--surface))" }} data-region-center-slug={city.slug} data-region-center-mapped={city.coordinates ? "true" : "false"}>
                           <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border" style={{ borderColor: "var(--border-dark)", color: NAVY, background: "var(--surface)" }}><MapPin size={15} /></span>
-                          <span className="min-w-0 flex-1"><span className="block text-[12px] font-black">{city.name}</span><span className="mt-0.5 block truncate text-[9px] font-semibold" style={{ color: "var(--text-secondary)" }}>Pôle régional canonique</span></span>
+                          <span className="min-w-0 flex-1">
+                            <span className="block text-[12px] font-black">{city.name}</span>
+                            <span className="mt-0.5 block truncate text-[9px] font-semibold" style={{ color: "var(--text-secondary)" }}>
+                              {city.coordinates ? "Pôle régional canonique · repère cartographique" : "Pôle régional canonique · repère cartographique en attente"}
+                            </span>
+                          </span>
                         </div>
                       );
                     })}
