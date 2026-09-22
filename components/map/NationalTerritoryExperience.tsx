@@ -31,6 +31,7 @@ type NationalCity = {
   confidence: "official_hcp" | "osm_open_map";
   population: number | null;
   neighborhoodCount: number;
+  product?: { descriptor: string; order: number } | null;
 };
 
 type MoroccoPayload = {
@@ -38,7 +39,16 @@ type MoroccoPayload = {
   view: "morocco";
   places: NationalCity[];
   boundaries: GeoJSON.FeatureCollection;
-  meta: { cityCount: number; boundaryCount: number; neighborhoodCount: number };
+  meta: {
+    cityCount: number;
+    boundaryCount: number;
+    neighborhoodCount: number;
+    countryHubCount?: number;
+    canonicalCityCount?: number;
+    regionCount?: number;
+    sourceCityCount?: number;
+    displayPolicy?: string;
+  };
 };
 
 type CityPayload = {
@@ -372,15 +382,17 @@ export function NationalTerritoryExperience({ selectedCitySlug, onSelectCity, on
             </button>
           ) : null}
           <div className="min-w-0 flex-1">
-            <p className="text-[9px] font-extrabold uppercase tracking-[0.16em] text-brand-primary">Vivre ici · territoire</p>
-            <h1 className="mt-0.5 truncate text-[16px] font-extrabold tracking-[-0.025em] text-foreground">
-              {payload?.view === "city" ? `Vivre à ${payload.place.name}` : "Où vivre au Maroc ?"}
+            <p className="text-[9px] font-extrabold uppercase tracking-[0.20em] text-brand-primary">
+              {payload?.view === "city" ? "Vivre ici · ville" : "MAROC"}
+            </p>
+            <h1 className="mt-0.5 truncate text-[16px] font-extrabold tracking-[-0.025em] text-foreground sm:text-[20px]">
+              {payload?.view === "city" ? `Vivre à ${payload.place.name}` : "Carte Pays — Maroc"}
             </h1>
             <p className="mt-1 text-[10.5px] font-semibold leading-4 text-muted-foreground">
               {payload?.view === "city"
                 ? `${payload.place.neighborhoodCount.toLocaleString("fr-FR")} quartiers répertoriés · repères de vie locale selon disponibilité`
                 : payload?.view === "morocco"
-                  ? `${payload.meta.cityCount} villes / localités cartographiées · ${payload.meta.boundaryCount} contours qualifiés`
+                  ? "Marchés immobiliers structurants · petites localités regroupées sous les villes-pôles."
                   : "Chargement du registre territorial…"}
             </p>
           </div>
@@ -396,6 +408,65 @@ export function NationalTerritoryExperience({ selectedCitySlug, onSelectCity, on
           </p>
         )}
       </section>
+
+      {payload?.view === "morocco" ? (
+        <aside
+          className="absolute right-4 top-4 z-20 hidden w-[360px] rounded-[24px] border border-white/80 bg-white/[0.96] p-4 shadow-[0_20px_60px_rgba(15,35,66,0.16)] backdrop-blur-xl dark:border-white/10 dark:bg-[#0A1A2F]/[0.96] lg:block"
+          aria-label="Villes majeures du Maroc"
+          data-akarfinder-country-target-rail
+        >
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-[9px] font-extrabold uppercase tracking-[0.16em] text-brand-primary">Carte nationale</p>
+              <h2 className="mt-1 text-[18px] font-extrabold tracking-[-0.03em] text-foreground">Villes majeures</h2>
+            </div>
+            <span className="rounded-full bg-brand-primary-soft px-2.5 py-1 text-[9px] font-extrabold text-brand-primary">
+              {payload.meta.countryHubCount ?? payload.places.length} marchés
+            </span>
+          </div>
+
+          <div className="mt-3 divide-y divide-border/70">
+            {payload.places.map((place, index) => (
+              <button
+                key={place.slug}
+                type="button"
+                onClick={() => enterCity(place.slug)}
+                onMouseEnter={() => setHoverSlug(place.slug)}
+                onMouseLeave={() => setHoverSlug(null)}
+                className="flex w-full items-center gap-3 px-1 py-2.5 text-left transition hover:bg-brand-primary-soft/70"
+                data-akarfinder-country-hub={place.slug}
+              >
+                <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full border-4 border-white bg-brand-primary text-[9px] font-extrabold text-white shadow-sm dark:border-[#0A1A2F]">
+                  {index + 1}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <strong className="block truncate text-[11.5px] font-extrabold text-foreground">{place.name}</strong>
+                  <span className="block truncate text-[9px] font-semibold text-muted-foreground">
+                    {place.product?.descriptor ?? "Marché territorial"}
+                  </span>
+                </span>
+                <span className="shrink-0 text-right">
+                  <strong className="block text-[10px] font-extrabold text-foreground">
+                    {place.neighborhoodCount.toLocaleString("fr-FR")}
+                  </strong>
+                  <span className="block text-[8px] font-semibold text-muted-foreground">repères</span>
+                </span>
+              </button>
+            ))}
+          </div>
+
+          <div className="mt-3 rounded-[18px] border border-brand-primary/10 bg-brand-primary-soft/70 p-3">
+            <p className="text-[10px] font-extrabold text-brand-primary">Règle de structure</p>
+            <p className="mt-1 text-[9.5px] font-semibold leading-4 text-muted-foreground">
+              Villages, douars et petites localités restent hors du bruit de la carte Pays. Leur rattachement aux villes-pôles est une relation de données fail-closed, jamais une frontière inventée.
+            </p>
+          </div>
+          <div className="mt-2 flex items-center justify-between rounded-[16px] bg-emerald-50 px-3 py-2.5 text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-200">
+            <span className="text-[9.5px] font-extrabold">12 régions · {payload.meta.canonicalCityCount ?? "—"} villes canoniques</span>
+            <span className="text-[9px] font-bold">AkarFinder</span>
+          </div>
+        </aside>
+      ) : null}
 
       {previewPlace && payload?.view === "morocco" ? (
         <aside className="absolute inset-x-3 bottom-[84px] z-20 rounded-[22px] border border-white/[0.85] bg-white/[0.96] p-3.5 shadow-[0_18px_48px_rgba(15,35,66,0.18)] backdrop-blur-xl dark:border-white/10 dark:bg-[#0A1A2F]/[0.96] sm:inset-x-auto sm:bottom-5 sm:left-4 sm:w-[330px]" aria-label={`Ville sélectionnée ${previewPlace.name}`} data-akarfinder-city-preview={previewPlace.slug}>
