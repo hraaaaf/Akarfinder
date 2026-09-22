@@ -161,3 +161,17 @@ test("national boundary readiness explicitly classifies all 63 canonical distric
   assert.equal(new Set(NATIONAL_NEIGHBORHOOD_BOUNDARY_READINESS.map((entry) => entry.districtId)).size, 63);
   assert.ok(NATIONAL_NEIGHBORHOOD_BOUNDARY_READINESS.every((entry) => entry.publicationAllowed === false));
 });
+
+
+test("city API serves the canonical 63-neighborhood read model while keeping N2 as discovery input", () => {
+  const route = fs.readFileSync("app/api/geo/national-territories/route.ts", "utf8");
+  const runtime = fs.readFileSync("lib/map/national-territory-runtime.server.ts", "utf8");
+
+  assert.match(route, /getCanonicalNationalNeighborhoodsForPlace/);
+  assert.match(route, /canonicalNeighborhoodReadModel: true/);
+  assert.match(route, /discoveryNeighborhoodCount: discoveryNeighborhoods\.length/);
+  assert.match(runtime, /publicationStatus: "canonical_product_identity"/);
+  assert.match(runtime, /"verified_landmark_anchor"/);
+  assert.match(runtime, /GEO_NEIGHBORHOODS/);
+  assert.match(runtime, /getVerifiedLandmarksForDistrict/);
+});
