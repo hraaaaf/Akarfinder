@@ -94,6 +94,7 @@ test("Maârif target uses verified landmark registry and validated artwork", () 
   const rail = fs.readFileSync("components/map/MaarifTargetRail.tsx", "utf8");
   const endpoint = fs.readFileSync("app/api/geo/verified-landmarks/route.ts", "utf8");
   const artwork = fs.readFileSync("components/map/LandmarkArtwork.tsx", "utf8");
+  const neighborhoodMap = fs.readFileSync("components/map/MapLibreNeighborhood3D.tsx", "utf8");
 
   assert.match(page, /hasMaarifTargetSelection/);
   assert.match(page, /<MaarifTargetRail \/>/);
@@ -105,6 +106,9 @@ test("Maârif target uses verified landmark registry and validated artwork", () 
   assert.match(endpoint, /boundary_claim: false/);
   assert.match(artwork, /case "twin-center"/);
   assert.match(artwork, /case "stade-mohammed-v"/);
+  assert.match(neighborhoodMap, /\/api\/geo\/verified-landmarks/);
+  assert.match(neighborhoodMap, /data-maplibre-verified-landmark-count/);
+  assert.match(neighborhoodMap, /data-map-verified-landmark/);
 });
 
 test("GOAL contract forbids synthetic region and neighborhood geometry", () => {
