@@ -16,6 +16,7 @@ type Candidate = {
   "name:ar"?: string | null;
   alt_name?: string | null;
   official_name?: string | null;
+  place?: string | null;
   admin_level_8_containment?: {
     status: "HINT_ONLY";
     ambiguous: boolean;
