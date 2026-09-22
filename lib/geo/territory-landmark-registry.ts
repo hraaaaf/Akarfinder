@@ -1298,6 +1298,51 @@ export const VERIFIED_LANDMARKS: readonly VerifiedLandmarkEntry[] = [
     verificationNote: "Yakeey exposes Sidi Moussa as a current El Jadida product neighborhood; OSM-backed Mapcarta identifies École Sidi Moussa and supplies the verified point.",
     verifiedAt: "2026-09-22",
   },
+
+  {
+    entity: {
+      id: "landmark_oujda_hay_el_qods_ecole",
+      type: "landmark",
+      citySlug: "oujda",
+      districtSlug: "hay-el-qods",
+      landmarkSlug: "ecole-al-qods",
+      canonicalName: "École Al Qods",
+      aliases: [],
+      category: "other",
+      parentId: "district_oujda_hay_el_qods",
+      importance: { score: 90, tier: "major", basis: ["orientation_value", "product_priority"] },
+      visibility: { minZoom: 13.8, retainPriority: true },
+      coordinates: { lat: 34.65606, lng: -1.89364, precision: "verified_landmark_point" },
+    },
+    sourceRefs: [
+      "https://yakeey.com/fr-ma/referentiel-de-prix-immobilier/oujda",
+      "https://mapcarta.com/W357503007",
+    ],
+    verificationNote: "Yakeey exposes Hay El Qods in the Oujda product taxonomy; OSM-backed Mapcarta identifies École Al Qods in Oujda and supplies the verified point.",
+    verifiedAt: "2026-09-22",
+  },
+  {
+    entity: {
+      id: "landmark_oujda_hay_al_massira_lycee",
+      type: "landmark",
+      citySlug: "oujda",
+      districtSlug: "hay-al-massira",
+      landmarkSlug: "lycee-al-massira",
+      canonicalName: "Lycée Al Massira",
+      aliases: [],
+      category: "other",
+      parentId: "district_oujda_hay_al_massira",
+      importance: { score: 90, tier: "major", basis: ["orientation_value", "product_priority"] },
+      visibility: { minZoom: 13.8, retainPriority: true },
+      coordinates: { lat: 34.67426, lng: -1.91623, precision: "verified_landmark_point" },
+    },
+    sourceRefs: [
+      "https://yakeey.com/fr-ma/referentiel-de-prix-immobilier/oujda",
+      "https://mapcarta.com/W290069065",
+    ],
+    verificationNote: "Yakeey exposes Hay Al Massira in the Oujda product taxonomy; OSM-backed Mapcarta identifies Lycée Al Massira in Oujda and supplies the verified point.",
+    verifiedAt: "2026-09-22",
+  },
 ];
 
 const CANONICAL_DISTRICT_IDS = new Set(GEO_NEIGHBORHOODS.map((district) => district.id));
