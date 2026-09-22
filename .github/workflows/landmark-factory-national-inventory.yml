@@ -18,6 +18,12 @@ on:
       - "lib/geo/morocco-region-registry.ts"
       - ".github/workflows/landmark-factory-national-inventory.yml"
       - "docs/geo/landmark-factory/MOROCCO_NATIONAL_NEIGHBORHOOD_FACTORY.md"
+      - "scripts/scrapers/__tests__/national-map-goal-contract.test.ts"
+      - "lib/map/national-map-product-policy.ts"
+      - "lib/geo/casablanca-target-neighborhood-readiness.ts"
+      - "app/api/geo/national-territories/route.ts"
+      - "components/map/NationalMapRouter.tsx"
+      - "components/map/NationalTerritoryExperience.tsx"
   workflow_dispatch:
 
 permissions:
@@ -125,6 +131,10 @@ jobs:
             --crosswalk artifacts/morocco-canonical-neighborhood-crosswalk.json \
             --out artifacts/rabat-landmark-factory-bridge.json
           cat artifacts/rabat-landmark-factory-bridge.json
+
+      - name: Assert locked national map GOAL contracts
+        run: |
+          npx --yes tsx@4.22.4 --test scripts/scrapers/__tests__/national-map-goal-contract.test.ts
 
       - name: Assert fail-closed national inventory semantics
         run: |
