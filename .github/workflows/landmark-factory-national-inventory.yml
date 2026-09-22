@@ -177,7 +177,7 @@ jobs:
           assert u["geometry_promotion_allowed"] is False
           assert u["summary"]["region_count"] == 12
           assert u["summary"]["canonical_city_hub_count"] == 19
-          assert u["summary"]["canonical_neighborhood_count"] == 23
+          assert u["summary"]["canonical_neighborhood_count"] == 26
           a=json.load(open("artifacts/morocco-locality-city-attachments.json",encoding="utf-8"))
           assert a["evidence_role"] == "LOCALITY_TO_CITY_ATTACHMENT_ROUTING_ONLY"
           assert a["activation_allowed"] is False
