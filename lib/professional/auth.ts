@@ -1,5 +1,5 @@
 import type { NextRequest } from "next/server";
-import { getSupabaseServerClient } from "@/lib/db/supabase-client";
+import { getSupabaseAuthClient } from "@/lib/db/supabase-client";
 
 export type ProfessionalAuthIdentity = {
   user_id: string;
@@ -21,7 +21,7 @@ export async function authenticateProfessionalRequest(
   const token = readBearerToken(request);
   if (!token) return null;
 
-  const supabase = getSupabaseServerClient();
+  const supabase = getSupabaseAuthClient();
   const { data, error } = await supabase.auth.getUser(token);
   if (error || !data.user) return null;
 

@@ -1,23 +1,18 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { authenticateProfessionalRequest } from "@/lib/professional/auth";
-import { resolveProfessionalIdentityForUser } from "@/lib/professional/identity-repository";
+import { resolveProfessionalServerContext } from "@/lib/professional/server-context";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   try {
-    const identity = await authenticateProfessionalRequest(request);
-    if (!identity) {
+    const preferredOrganizationId = request.nextUrl.searchParams.get("organization_id");
+    const serverContext = await resolveProfessionalServerContext(request, preferredOrganizationId);
+    if (!serverContext) {
       return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
     }
 
-    const preferredOrganizationId = request.nextUrl.searchParams.get("organization_id");
-    const resolution = await resolveProfessionalIdentityForUser(
-      identity.user_id,
-      preferredOrganizationId,
-    );
-
+    const { identity, resolution } = serverContext;
     return NextResponse.json({
       user: { id: identity.user_id, email: identity.email },
       active_organization_id: resolution.active_context?.organization.id ?? null,
@@ -29,6 +24,7 @@ export async function GET(request: NextRequest) {
         workspace_status: context.workspace_status,
         has_active_owner: context.has_active_owner,
         permissions: context.permissions,
+        capabilities: context.capabilities,
         is_active: context.organization.id === resolution.active_context?.organization.id,
       })),
     });
