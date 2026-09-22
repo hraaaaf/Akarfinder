@@ -88,6 +88,25 @@ test("premium entry uses canonical data and no synthetic neighborhood geometry",
   assert.match(page, /!region && !city && !district/);
 });
 
+test("Maârif target uses verified landmark registry and validated artwork", () => {
+  const page = fs.readFileSync("app/map/page.tsx", "utf8");
+  const router = fs.readFileSync("components/map/NationalMapRouter.tsx", "utf8");
+  const rail = fs.readFileSync("components/map/MaarifTargetRail.tsx", "utf8");
+  const endpoint = fs.readFileSync("app/api/geo/verified-landmarks/route.ts", "utf8");
+  const artwork = fs.readFileSync("components/map/LandmarkArtwork.tsx", "utf8");
+
+  assert.match(page, /hasMaarifTargetSelection/);
+  assert.match(page, /<MaarifTargetRail \/>/);
+  assert.match(router, /reserveRail=\{isMaarifReference\}/);
+  assert.match(rail, /\/api\/geo\/verified-landmarks\?city=casablanca&district=maarif/);
+  assert.match(rail, /LandmarkArtwork/);
+  assert.match(endpoint, /getVerifiedLandmarksForDistrict/);
+  assert.match(endpoint, /points_only: true/);
+  assert.match(endpoint, /boundary_claim: false/);
+  assert.match(artwork, /case "twin-center"/);
+  assert.match(artwork, /case "stade-mohammed-v"/);
+});
+
 test("GOAL contract forbids synthetic region and neighborhood geometry", () => {
   const api = fs.readFileSync("app/api/geo/national-territories/route.ts", "utf8");
   const readiness = fs.readFileSync("lib/geo/casablanca-target-neighborhood-readiness.ts", "utf8");
