@@ -4,6 +4,7 @@ import {
   NATIONAL_TERRITORY_META,
   NATIONAL_TERRITORY_PLACES,
   getNationalNeighborhoodsForPlace,
+  getCanonicalNationalNeighborhoodsForPlace,
   getNationalTerritoryPlace,
 } from "@/lib/map/national-territory-runtime.server";
 import { NATIONAL_COUNTRY_HUBS, getNationalCountryHubPolicy } from "@/lib/map/national-map-product-policy";
@@ -137,7 +138,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ status: "not_found", city }, { status: 404, headers: territoryHeaders() });
   }
 
-  const neighborhoods = getNationalNeighborhoodsForPlace(place);
+  const discoveryNeighborhoods = getNationalNeighborhoodsForPlace(place);
+  const neighborhoods = getCanonicalNationalNeighborhoodsForPlace(place);
   const centeredNeighborhoodCount = neighborhoods.filter((item) => item.center).length;
   const canonicalCity = GEO_CITIES.find((candidate) => candidate.slug === place.slug);
   const cityRegion = canonicalCity ? getMoroccoRegion(CANONICAL_CITY_REGION[canonicalCity.slug]) : null;
@@ -158,6 +160,8 @@ export async function GET(request: NextRequest) {
       centeredNeighborhoodCount,
       certifiedNeighborhoodBoundaryCount: 0,
       sourceCatalogNeighborhoodCount: place.neighborhoodCount,
+      discoveryNeighborhoodCount: discoveryNeighborhoods.length,
+      canonicalNeighborhoodReadModel: true,
     },
   }, { headers: territoryHeaders() });
 }
