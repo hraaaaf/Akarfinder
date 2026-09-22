@@ -1456,6 +1456,29 @@ export const VERIFIED_LANDMARKS: readonly VerifiedLandmarkEntry[] = [
     verificationNote: "AUC explicitly certifies the Sidi Maârouf identity; OSM-backed Mapcarta identifies Groupe Scolaire Sidi Maârouf and supplies the verified point.",
     verifiedAt: "2026-09-22",
   },
+
+  {
+    entity: {
+      id: "landmark_sale_hssaine_poste",
+      type: "landmark",
+      citySlug: "sale",
+      districtSlug: "hssaine",
+      landmarkSlug: "sale-hssaine-poste",
+      canonicalName: "Salé Hssaine",
+      aliases: ["Poste Maroc Salé Hssaine"],
+      category: "civic",
+      parentId: "district_sale_hssaine",
+      importance: { score: 90, tier: "major", basis: ["orientation_value", "product_priority"] },
+      visibility: { minZoom: 13.8, retainPriority: true },
+      coordinates: { lat: 34.01832, lng: -6.76313, precision: "verified_landmark_point" },
+    },
+    sourceRefs: [
+      "https://aurs.org.ma/fr/news/mise-en-ligne-du-plan-damenagement-homologue-de-hssaine/",
+      "https://mapcarta.com/N2907763137",
+    ],
+    verificationNote: "AURS certifies Hssaine as a Salé planning sector; OSM-backed Mapcarta identifies the Poste Maroc office Salé Hssaine and supplies the verified point.",
+    verifiedAt: "2026-09-22",
+  },
 ];
 
 const CANONICAL_DISTRICT_IDS = new Set(GEO_NEIGHBORHOODS.map((district) => district.id));
