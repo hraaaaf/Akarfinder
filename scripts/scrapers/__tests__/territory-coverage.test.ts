@@ -13,13 +13,13 @@ test("coverage report exposes every canonical city without pretending completion
   assert.ok(report.every((entry) => entry.landmarkCoverageRatio >= 0 && entry.landmarkCoverageRatio <= 1));
 });
 
-test("thirteen cities currently have at least one verified landmark", () => {
+test("fourteen cities currently have at least one verified landmark", () => {
   const covered = getTerritoryCoverageReport()
     .filter((entry) => entry.verifiedLandmarkCount > 0)
     .map((entry) => entry.citySlug)
     .sort();
 
-  assert.deepEqual(covered, ["agadir", "casablanca", "el-jadida", "essaouira", "fes", "kenitra", "marrakech", "meknes", "mohammedia", "rabat", "sale", "tanger", "tetouan"].sort());
+  assert.deepEqual(covered, ["agadir", "casablanca", "el-jadida", "essaouira", "fes", "kenitra", "marrakech", "meknes", "mohammedia", "nador", "rabat", "sale", "tanger", "tetouan"].sort());
 });
 
 test("Casablanca coverage reports the three newly canonical districts still awaiting landmark evidence", () => {
@@ -81,7 +81,6 @@ const OPEN_LANDMARK_GAPS = {
   nador: [
     "district_nador_hay_aarid",
     "district_nador_hay_al_matar",
-    "district_nador_oulad_mimoun",
   ],
   essaouira: [
     "district_essaouira_kasbah",
@@ -126,6 +125,6 @@ test("coverage remains fail-closed for every canonical district without verified
   assert.deepEqual(missing, expected);
   assert.equal(
     getTerritoryCoverageReport().reduce((total, entry) => total + entry.districtsWithVerifiedLandmark, 0),
-    28,
+    29,
   );
 });
