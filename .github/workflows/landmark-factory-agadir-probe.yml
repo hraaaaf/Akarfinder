@@ -22,8 +22,11 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install pyosmium
-        run: python -m pip install --disable-pip-version-check osmium
+      - name: Install native Osmium filter + pyosmium
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends osmium-tool
+          python -m pip install --disable-pip-version-check osmium
 
       - name: Download current Morocco OSM PBF
         run: |
@@ -31,11 +34,25 @@ jobs:
             https://download.geofabrik.de/africa/morocco-latest.osm.pbf
           ls -lh /tmp/morocco-latest.osm.pbf
 
+      - name: Prefilter exact Agadir product labels
+        run: |
+          osmium tags-filter -R \
+            -o /tmp/agadir-product-labels.osm.pbf \
+            /tmp/morocco-latest.osm.pbf \
+            'nwr/name:fr=Founty' \
+            'nwr/name:fr=Talborjt' \
+            'nwr/name:fr=Haut Founty' \
+            'nwr/name=Founty' \
+            'nwr/name=Talborjt' \
+            'nwr/name=Haut Founty'
+          ls -lh /tmp/agadir-product-labels.osm.pbf
+          osmium fileinfo -e /tmp/agadir-product-labels.osm.pbf
+
       - name: Discover Agadir canonical and adjacent product anchors
         run: |
           mkdir -p artifacts
           python scripts/landmarks/find-osm-place-anchors.py \
-            --pbf /tmp/morocco-latest.osm.pbf \
+            --pbf /tmp/agadir-product-labels.osm.pbf \
             --bbox=-10.20,29.90,-8.80,31.00 \
             --name "Founty" \
             --name "Talborjt" \
@@ -46,7 +63,7 @@ jobs:
       - name: Discover exact Founty boundary relations
         run: |
           python scripts/landmarks/find-osm-boundary-relations.py \
-            --pbf /tmp/morocco-latest.osm.pbf \
+            --pbf /tmp/agadir-product-labels.osm.pbf \
             --name "Founty" \
             --out artifacts/agadir-founty-boundary-relations.json
           cat artifacts/agadir-founty-boundary-relations.json
@@ -54,7 +71,7 @@ jobs:
       - name: Discover exact Talborjt boundary relations
         run: |
           python scripts/landmarks/find-osm-boundary-relations.py \
-            --pbf /tmp/morocco-latest.osm.pbf \
+            --pbf /tmp/agadir-product-labels.osm.pbf \
             --name "Talborjt" \
             --out artifacts/agadir-talborjt-boundary-relations.json
           cat artifacts/agadir-talborjt-boundary-relations.json
@@ -62,7 +79,7 @@ jobs:
       - name: Discover exact Haut Founty boundary relations
         run: |
           python scripts/landmarks/find-osm-boundary-relations.py \
-            --pbf /tmp/morocco-latest.osm.pbf \
+            --pbf /tmp/agadir-product-labels.osm.pbf \
             --name "Haut Founty" \
             --out artifacts/agadir-haut-founty-boundary-relations.json
           cat artifacts/agadir-haut-founty-boundary-relations.json
