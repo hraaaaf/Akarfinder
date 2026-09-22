@@ -89,6 +89,13 @@ export const GEO_NEIGHBORHOODS: CanonicalNeighborhoodEntity[] = [
   { id: "district_rabat_hassan", slug: "hassan", canonical_name: "Hassan", aliases: [], city_slug: "rabat", validation_status: "validated", seo_eligible: false, map_eligible: true },
   { id: "district_rabat_ocean", slug: "ocean", canonical_name: "Océan", aliases: ["Ocean"], city_slug: "rabat", validation_status: "validated", seo_eligible: false, map_eligible: true },
 
+  // Salé — identity-only product geography. Official PA/arrondissement geometry is not a product boundary.
+  { id: "district_sale_bab_lamrissa", slug: "bab-lamrissa", canonical_name: "Bab Lamrissa", aliases: ["Bab Lemrissa"], city_slug: "sale", validation_status: "validated", seo_eligible: false, map_eligible: true },
+  { id: "district_sale_tabriquet", slug: "tabriquet", canonical_name: "Tabriquet", aliases: [], city_slug: "sale", validation_status: "validated", seo_eligible: false, map_eligible: true },
+  { id: "district_sale_bettana", slug: "bettana", canonical_name: "Bettana", aliases: [], city_slug: "sale", validation_status: "validated", seo_eligible: false, map_eligible: true },
+  { id: "district_sale_laayayda", slug: "laayayda", canonical_name: "Laayayda", aliases: ["Layayda"], city_slug: "sale", validation_status: "validated", seo_eligible: false, map_eligible: true },
+  { id: "district_sale_hssaine", slug: "hssaine", canonical_name: "Hssaine", aliases: ["Hssain", "Hssaïne"], city_slug: "sale", validation_status: "validated", seo_eligible: false, map_eligible: true },
+
   // Marrakech
   { id: "district_marrakech_gueliz", slug: "gueliz", canonical_name: "Guéliz", aliases: ["Gueliz"], city_slug: "marrakech", validation_status: "validated", seo_eligible: true, map_eligible: true },
   { id: "district_marrakech_hivernage", slug: "hivernage", canonical_name: "Hivernage", aliases: ["L'Hivernage"], city_slug: "marrakech", validation_status: "validated", seo_eligible: true, map_eligible: true },
