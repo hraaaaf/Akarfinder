@@ -2,7 +2,8 @@ import { writeFile, mkdir } from "node:fs/promises";
 
 const pages = [
   { id: "anfa", url: "https://www.auc.ma/e-services-2/e-documents/?IdP=1095" },
-  { id: "maarif", url: "https://www.auc.ma/e-services-2/e-documents/?IdP=1075" },
+  { id: "ain-chock", url: "https://www.auc.ma/e-services-2/e-documents/?IdP=1075" },
+  { id: "hay-hassani", url: "https://www.auc.ma/e-services-2/e-documents/?IdP=1068" },
 ];
 
 async function fetchText(url) {
