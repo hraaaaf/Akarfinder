@@ -81,11 +81,6 @@ test("Sale canonical identities are fail-closed until landmark evidence is added
       "district_sale_hssaine",
       "district_sale_laayayda",
       "district_sale_tabriquet",
-      "district_temara_hay_al_maghreb_al_arabi",
-      "district_temara_hay_al_wifaq",
-      "district_temara_ibnou_rochd",
-      "district_temara_massira_1",
-      "district_temara_oulad_mtaa",
     ].sort(),
   );
 });
@@ -123,6 +118,11 @@ test("coverage remains fail-closed for canonical districts without verified land
       "district_sale_hssaine",
       "district_sale_laayayda",
       "district_sale_tabriquet",
+      "district_temara_hay_al_maghreb_al_arabi",
+      "district_temara_hay_al_wifaq",
+      "district_temara_ibnou_rochd",
+      "district_temara_massira_1",
+      "district_temara_oulad_mtaa",
     ].sort(),
   );
   assert.equal(
