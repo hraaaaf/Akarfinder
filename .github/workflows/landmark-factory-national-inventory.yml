@@ -195,5 +195,7 @@ jobs:
             artifacts/morocco-canonical-neighborhood-crosswalk.json
             artifacts/morocco-landmark-factory-rollout-plan.json
             artifacts/morocco-national-useful-map-inventory.json
+            artifacts/morocco-locality-region-inventory.json
+            artifacts/morocco-locality-city-attachments.json
             artifacts/rabat-landmark-factory-bridge.json
           if-no-files-found: error
