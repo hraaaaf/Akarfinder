@@ -1,0 +1,161 @@
+name: Landmark Factory Marrakech Product Geography Probe
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/landmark-factory-marrakech-probe.yml"
+      - "scripts/landmarks/find-osm-boundary-relations.py"
+      - "scripts/landmarks/find-osm-place-anchors.py"
+      - "docs/geo/landmark-factory/MARRAKECH_PRODUCT_GEOGRAPHY_EVIDENCE.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install native Osmium filter + pyosmium
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends osmium-tool
+          python -m pip install --disable-pip-version-check osmium
+
+      - name: Download current Morocco OSM PBF
+        run: |
+          curl --fail --location --retry 3 --output /tmp/morocco-latest.osm.pbf \
+            https://download.geofabrik.de/africa/morocco-latest.osm.pbf
+          ls -lh /tmp/morocco-latest.osm.pbf
+
+      - name: Prefilter Marrakech canonical and corridor labels
+        run: |
+          osmium tags-filter -R \
+            -o /tmp/marrakech-product-labels.osm.pbf \
+            /tmp/morocco-latest.osm.pbf \
+            'nwr/name=Guéliz' \
+            'nwr/name=Gueliz' \
+            'nwr/name:fr=Guéliz' \
+            'nwr/name:fr=Gueliz' \
+            'nwr/name=Hivernage' \
+            "nwr/name=L'Hivernage" \
+            'nwr/name:fr=Hivernage' \
+            "nwr/name:fr=L'Hivernage" \
+            "nwr/name=Route de l'Ourika" \
+            "nwr/name=Route d'Ourika" \
+            'nwr/name=Route Ourika' \
+            "nwr/name:fr=Route de l'Ourika" \
+            "nwr/name:fr=Route d'Ourika" \
+            'nwr/name:fr=Route Ourika'
+          ls -lh /tmp/marrakech-product-labels.osm.pbf
+          osmium fileinfo -e /tmp/marrakech-product-labels.osm.pbf
+
+      - name: Discover Marrakech product anchors and corridor features
+        run: |
+          mkdir -p artifacts
+          python scripts/landmarks/find-osm-place-anchors.py \
+            --pbf /tmp/marrakech-product-labels.osm.pbf \
+            --bbox=-8.30,30.90,-7.30,31.90 \
+            --name "Guéliz" \
+            --name "Gueliz" \
+            --name "Hivernage" \
+            --name "L'Hivernage" \
+            --name "Route de l'Ourika" \
+            --name "Route d'Ourika" \
+            --name "Route Ourika" \
+            --out artifacts/marrakech-product-features.json
+          cat artifacts/marrakech-product-features.json
+
+      - name: Discover exact Gueliz and Hivernage boundary relations
+        run: |
+          python scripts/landmarks/find-osm-boundary-relations.py \
+            --pbf /tmp/marrakech-product-labels.osm.pbf \
+            --name "Guéliz" \
+            --out artifacts/marrakech-gueliz-boundary-relations.json
+          python scripts/landmarks/find-osm-boundary-relations.py \
+            --pbf /tmp/marrakech-product-labels.osm.pbf \
+            --name "Hivernage" \
+            --out artifacts/marrakech-hivernage-boundary-relations.json
+          python scripts/landmarks/find-osm-boundary-relations.py \
+            --pbf /tmp/marrakech-product-labels.osm.pbf \
+            --name "L'Hivernage" \
+            --out artifacts/marrakech-l-hivernage-boundary-relations.json
+          cat artifacts/marrakech-*-boundary-relations.json
+
+      - name: Build fail-closed Marrakech verdict
+        env:
+          EXPECTED_PR_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+
+          def read(name):
+              return json.loads(Path(name).read_text(encoding="utf-8"))
+
+          features=read("artifacts/marrakech-product-features.json").get("matches",[])
+          route_queries={"Route de l'Ourika","Route d'Ourika","Route Ourika"}
+          route_matches=[
+              x for x in features
+              if x.get("osm_type")=="way" and any(q in route_queries for q in x.get("query_names",[]))
+          ]
+          gueliz=[x for x in features if any(q in {"Guéliz","Gueliz"} for q in x.get("query_names",[]))]
+          hivernage=[x for x in features if any(q in {"Hivernage","L'Hivernage"} for q in x.get("query_names",[])]
+
+          rel=[]
+          for name in [
+              "artifacts/marrakech-gueliz-boundary-relations.json",
+              "artifacts/marrakech-hivernage-boundary-relations.json",
+              "artifacts/marrakech-l-hivernage-boundary-relations.json",
+          ]:
+              rel.extend(read(name).get("matches",[]))
+          seen=set()
+          rel=[r for r in rel if not (r["osm_id"] in seen or seen.add(r["osm_id"]))]
+
+          verdict={
+              "schema_version":1,
+              "source_control":{
+                  "pr_head_sha":os.environ.get("EXPECTED_PR_HEAD") or os.environ.get("GITHUB_SHA"),
+                  "github_context_sha":os.environ.get("GITHUB_SHA"),
+              },
+              "city":"Marrakech",
+              "canonical_neighborhoods":["Guéliz","Hivernage","Route de l'Ourika"],
+              "evidence_role":"DISCOVERY_PROBE_ONLY",
+              "semantic_diagnostics":{
+                  "gueliz":"NEIGHBORHOOD_PRODUCT_ZONE",
+                  "hivernage":"NEIGHBORHOOD_PRODUCT_ZONE",
+                  "route_de_lourika":"LINEAR_CORRIDOR_EVIDENCE" if route_matches else "CORRIDOR_PRODUCT_ZONE_NO_EXACT_OSM_WAY",
+              },
+              "counts":{
+                  "gueliz_feature_matches":len(gueliz),
+                  "hivernage_feature_matches":len(hivernage),
+                  "route_ourika_way_matches":len(route_matches),
+                  "boundary_relation_matches":len(rel),
+              },
+              "boundary_relation_matches":rel,
+              "route_ourika_way_matches":route_matches,
+              "promotion":{
+                  "allowed":False,
+                  "verdict":"NO_PRODUCT_BOUNDARY_CLAIM",
+                  "reason":"Route de l'Ourika may be a corridor-shaped product zone; a road centerline cannot be inflated into a product polygon without independent boundary evidence.",
+              },
+          }
+          Path("artifacts/marrakech-product-geography-verdict.json").write_text(
+              json.dumps(verdict,ensure_ascii=False,indent=2)+"\n",encoding="utf-8"
+          )
+          print(json.dumps(verdict,ensure_ascii=False,indent=2))
+          assert verdict["promotion"]["allowed"] is False
+          PY
+
+      - name: Upload Marrakech evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: landmark-factory-marrakech-product-geography-probe
+          path: artifacts/
+          if-no-files-found: error
