@@ -20,13 +20,13 @@ export const CASABLANCA_TARGET_BOUNDARY_EVIDENCE: readonly CasablancaTargetBound
   {
     slug: "maarif",
     canonicalName: "Maârif",
-    evidenceStatus: "OFFICIAL_GRAPHIC_BOUNDARY_CANDIDATE",
+    evidenceStatus: "OFFICIAL_GRAPHIC_EVIDENCE_RASTER_ONLY",
     publicationAllowed: false,
     sourceAuthority: "Agence Urbaine de Casablanca",
     sourceKind: "PA_STATUS",
     sourceRef: "https://www.auc.ma/gestion-planification-urbaine/plans-damenagement/etat-davancement-des-pa/",
     evidenceNote:
-      "AUC reports the Maârif plan public inquiry closed on 2025-10-10. The planning document is an official geometry candidate, but no neighborhood product polygon has been digitally extracted and certified.",
+      "AUC Maârif planning material is official and the sector limits are documented. The official 1:5000 plan was inspected and is raster-only (2 image pages, no vector sheets), so direct geometry extraction is unavailable. No neighborhood product polygon is published.",
   },
   {
     slug: "racine",
