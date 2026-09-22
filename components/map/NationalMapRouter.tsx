@@ -76,7 +76,6 @@ export function NationalMapRouter({ initialState }: Props) {
   const selectRegion = useCallback((slug: string) => {
     const next = new URLSearchParams(params.toString());
     next.set("region", slug);
-    next.delete("region");
     next.delete("city");
     next.delete("district");
     next.set("layer", MAP_LAYER_EXPLORE);
@@ -102,6 +101,7 @@ export function NationalMapRouter({ initialState }: Props) {
 
   const backToMorocco = useCallback(() => {
     const next = new URLSearchParams(params.toString());
+    next.delete("region");
     next.delete("city");
     next.delete("district");
     next.set("layer", MAP_LAYER_EXPLORE);
