@@ -1,0 +1,149 @@
+name: Landmark Factory Rabat Ocean Probe
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/landmark-factory-rabat-ocean-probe.yml"
+      - "scripts/landmarks/find-osm-boundary-relations.py"
+      - "scripts/landmarks/find-osm-place-anchors.py"
+      - "docs/geo/landmark-factory/RABAT_OCEAN_LANDMARK_EVIDENCE.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install native Osmium filter + pyosmium
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends osmium-tool
+          python -m pip install --disable-pip-version-check osmium
+
+      - name: Download current Morocco OSM PBF
+        run: |
+          curl --fail --location --retry 3 --output /tmp/morocco-latest.osm.pbf \
+            https://download.geofabrik.de/africa/morocco-latest.osm.pbf
+          ls -lh /tmp/morocco-latest.osm.pbf
+
+      - name: Extract Rabat window
+        run: |
+          osmium extract \
+            -b -6.95,33.90,-6.70,34.10 \
+            -o /tmp/rabat-area.osm.pbf \
+            /tmp/morocco-latest.osm.pbf
+          ls -lh /tmp/rabat-area.osm.pbf
+
+      - name: Prefilter Ocean aliases
+        run: |
+          osmium tags-filter -R \
+            -o /tmp/rabat-ocean-labels.osm.pbf \
+            /tmp/rabat-area.osm.pbf \
+            'nwr/name=Océan' \
+            'nwr/name=Ocean' \
+            "nwr/name=L'Ocean" \
+            "nwr/name=L'Océan" \
+            'nwr/name:fr=Océan' \
+            'nwr/name:fr=Ocean' \
+            "nwr/name:fr=L'Ocean" \
+            "nwr/name:fr=L'Océan"
+          ls -lh /tmp/rabat-ocean-labels.osm.pbf
+          osmium fileinfo -e /tmp/rabat-ocean-labels.osm.pbf
+
+      - name: Discover Rabat Ocean anchors
+        run: |
+          mkdir -p artifacts
+          python scripts/landmarks/find-osm-place-anchors.py \
+            --pbf /tmp/rabat-ocean-labels.osm.pbf \
+            --bbox=-6.95,33.90,-6.70,34.10 \
+            --name "Océan" \
+            --name "Ocean" \
+            --name "L'Ocean" \
+            --name "L'Océan" \
+            --out artifacts/rabat-ocean-place-anchors.json
+          cat artifacts/rabat-ocean-place-anchors.json
+
+      - name: Discover exact Rabat Ocean boundary relations
+        run: |
+          python scripts/landmarks/find-osm-boundary-relations.py \
+            --pbf /tmp/rabat-ocean-labels.osm.pbf \
+            --name "Océan" \
+            --out artifacts/rabat-ocean-boundary-relations.json
+          python scripts/landmarks/find-osm-boundary-relations.py \
+            --pbf /tmp/rabat-ocean-labels.osm.pbf \
+            --name "Ocean" \
+            --out artifacts/rabat-ocean-ascii-boundary-relations.json
+          python scripts/landmarks/find-osm-boundary-relations.py \
+            --pbf /tmp/rabat-ocean-labels.osm.pbf \
+            --name "L'Ocean" \
+            --out artifacts/rabat-l-ocean-boundary-relations.json
+          cat artifacts/rabat-*-boundary-relations.json
+
+      - name: Build fail-closed Ocean verdict
+        env:
+          EXPECTED_PR_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+
+          def read(name):
+              return json.loads(Path(name).read_text(encoding="utf-8"))
+
+          anchors=read("artifacts/rabat-ocean-place-anchors.json")
+          files=[
+              "artifacts/rabat-ocean-boundary-relations.json",
+              "artifacts/rabat-ocean-ascii-boundary-relations.json",
+              "artifacts/rabat-l-ocean-boundary-relations.json",
+          ]
+          rel=[]
+          for file in files:
+              rel.extend(read(file).get("matches",[]))
+          seen=set()
+          rel=[r for r in rel if not (r["osm_id"] in seen or seen.add(r["osm_id"]))]
+
+          verdict={
+              "schema_version":1,
+              "source_control":{
+                  "pr_head_sha":os.environ.get("EXPECTED_PR_HEAD") or os.environ.get("GITHUB_SHA"),
+                  "github_context_sha":os.environ.get("GITHUB_SHA"),
+              },
+              "city":"Rabat",
+              "canonical_neighborhood":"Océan",
+              "canonical_aliases":["Ocean"],
+              "registry_taxonomy_status":"certified",
+              "pre_probe_landmark_factory_state":"GEOMETRY_HOLD",
+              "evidence_role":"GEOMETRY_DISCOVERY_PROBE_ONLY",
+              "promotion":{
+                  "allowed":False,
+                  "verdict":"GEOMETRY_HOLD",
+                  "reason":"Taxonomy is certified, but product-boundary geometry remains unproven unless a defensible same-city contour is independently corroborated.",
+              },
+              "counts":{
+                  "anchor_matches":len(anchors.get("matches",[])),
+                  "boundary_relation_matches":len(rel),
+              },
+              "relation_matches":rel,
+          }
+          Path("artifacts/rabat-ocean-landmark-verdict.json").write_text(
+              json.dumps(verdict,ensure_ascii=False,indent=2)+"\n",encoding="utf-8"
+          )
+          print(json.dumps(verdict,ensure_ascii=False,indent=2))
+          assert verdict["promotion"]["allowed"] is False
+          assert verdict["promotion"]["verdict"] == "GEOMETRY_HOLD"
+          PY
+
+      - name: Upload Ocean evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: landmark-factory-rabat-ocean-probe
+          path: artifacts/
+          if-no-files-found: error
