@@ -50,6 +50,7 @@ type Region = {
   slug: string;
   iso: `MA-${string}`;
   cities: City[];
+  regionalCities: City[];
 };
 
 type RegionFeatureProperties = {
@@ -568,30 +569,63 @@ export function PremiumInteractiveMap() {
                     );
                   })}
 
-                  {level !== "national" && selectedRegion && selectedRegion.cities.map((city) => {
+                  {level === "region" && selectedRegion && selectedRegion.regionalCities.map((city) => {
                     const point = projection(city.coordinates);
                     if (!point) return null;
+                    const isCountryHub = selectedRegion.cities.some((candidate) => candidate.slug === city.slug);
+                    const labelWidth = Math.max(62, city.name.length * 6.2 + 26);
                     return (
                       <g
                         key={city.slug}
                         transform={`translate(${point[0]} ${point[1]})`}
-                        className="cursor-pointer"
-                        role="button"
-                        tabIndex={0}
-                        aria-label={`Explorer ${city.name}`}
+                        className={isCountryHub ? "cursor-pointer" : "cursor-default"}
+                        role={isCountryHub ? "button" : undefined}
+                        tabIndex={isCountryHub ? 0 : -1}
+                        aria-label={isCountryHub ? `Explorer ${city.name}` : `${city.name}, pôle régional canonique`}
                         data-city-slug={city.slug}
-                        onClick={(event) => { event.stopPropagation(); selectCity(city); }}
+                        data-region-polarity={isCountryHub ? "country-hub" : "regional-center"}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          if (isCountryHub) selectCity(city);
+                        }}
                         onKeyDown={(event) => {
+                          if (!isCountryHub) return;
                           if (event.key === "Enter" || event.key === " ") {
                             event.preventDefault();
                             selectCity(city);
                           }
                         }}
-                        onPointerMove={(event) => setTooltip({ title: city.name, subtitle: city.signature ?? selectedRegion.name, x: event.clientX, y: event.clientY })}
+                        onPointerMove={(event) => setTooltip({
+                          title: city.name,
+                          subtitle: isCountryHub ? (city.signature ?? "Hub pays") : "Pôle régional canonique",
+                          x: event.clientX,
+                          y: event.clientY,
+                        })}
                         onPointerLeave={() => setTooltip(null)}
                       >
-                        <circle r={14 / camera.k} fill="rgba(255,255,255,0.95)" stroke={NAVY} strokeWidth={2.2 / camera.k} vectorEffect="non-scaling-stroke" />
-                        <circle r={5.2 / camera.k} fill={NAVY} />
+                        <circle r={(isCountryHub ? 14 : 10) / camera.k} fill="rgba(255,255,255,0.96)" stroke={NAVY} strokeWidth={(isCountryHub ? 2.2 : 1.4) / camera.k} vectorEffect="non-scaling-stroke" />
+                        <circle r={(isCountryHub ? 5.2 : 3.5) / camera.k} fill={NAVY} opacity={isCountryHub ? 1 : 0.72} />
+                        <rect
+                          x={14 / camera.k}
+                          y={-11 / camera.k}
+                          width={labelWidth / camera.k}
+                          height={22 / camera.k}
+                          rx={11 / camera.k}
+                          fill="rgba(255,255,255,0.93)"
+                          stroke="rgba(7,27,51,0.16)"
+                          strokeWidth={0.8 / camera.k}
+                          vectorEffect="non-scaling-stroke"
+                        />
+                        <text
+                          x={23 / camera.k}
+                          y={3.5 / camera.k}
+                          fill={NAVY}
+                          fontSize={(isCountryHub ? 10.5 : 9.5) / camera.k}
+                          fontWeight={isCountryHub ? 900 : 750}
+                          pointerEvents="none"
+                        >
+                          {city.name}
+                        </text>
                       </g>
                     );
                   })}
@@ -615,10 +649,17 @@ export function PremiumInteractiveMap() {
                     <p className="text-[9px] font-black uppercase tracking-[0.15em]" style={{ color: NAVY }}>Ville · quartiers canoniques</p>
                     <h2 className="mt-1 text-[28px] font-black tracking-[-0.04em]">{selectedCity.name}</h2>
                     <p className="mt-2 max-w-2xl text-[11px] font-semibold leading-5" style={{ color: "var(--text-secondary)" }}>
-                      Aucun polygone de quartier n’est inventé. Les limites seront affichées uniquement lorsqu’une géométrie produit aura été sourcée, revue et certifiée.
+                      Lecture territoriale canonique, non géométrique : aucun polygone de quartier n’est inventé. Les limites seront affichées uniquement lorsqu’une géométrie produit aura été sourcée, revue et certifiée.
                     </p>
 
-                    <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    <div className="mt-5 flex flex-wrap items-center gap-2 text-[8.5px] font-black uppercase tracking-[0.08em]" style={{ color: "var(--text-secondary)" }}>
+                      <span className="rounded-full border px-2.5 py-1.5" style={{ borderColor: "var(--border)", background: "var(--background)" }}>{selectedCity.quartiers.length} quartiers canoniques</span>
+                      <span className="rounded-full border px-2.5 py-1.5" style={{ borderColor: "var(--border)", background: "var(--background)" }}>index territorial · non géométrique</span>
+                    </div>
+
+                    <div className="relative mt-5 overflow-hidden rounded-[22px] border p-3 sm:p-4" style={{ borderColor: "var(--border)", background: "linear-gradient(180deg, color-mix(in srgb, var(--background) 88%, white), var(--surface))" }} data-city-territorial-index>
+                      <div className="pointer-events-none absolute inset-0 opacity-[0.28]" style={{ backgroundImage: "linear-gradient(rgba(7,27,51,.08) 1px, transparent 1px), linear-gradient(90deg, rgba(7,27,51,.08) 1px, transparent 1px)", backgroundSize: "28px 28px" }} />
+                      <div className="relative grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                       {selectedCity.quartiers.map((quartier, index) => {
                         const active = quartier.slug === selectedQuartierSlug;
                         return (
@@ -649,6 +690,7 @@ export function PremiumInteractiveMap() {
                           </button>
                         );
                       })}
+                      </div>
                     </div>
                   </div>
                 </motion.div>
@@ -691,15 +733,35 @@ export function PremiumInteractiveMap() {
                   <button type="button" onClick={goNational} className="mb-4 inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.12em]" style={{ color: NAVY }}><ArrowLeft size={14} /> Maroc</button>
                   <p className="text-[10px] font-black uppercase tracking-[0.14em]" style={{ color: NAVY }}>Région</p>
                   <h2 className="mt-2 text-[22px] font-black tracking-[-0.035em]">{selectedRegion.name}</h2>
-                  <p className="mt-2 text-[11px] font-medium leading-5" style={{ color: "var(--text-secondary)" }}>{selectedRegion.cities.length ? "Choisissez une ville pour descendre au niveau quartier." : "Aucune ville-pôle publiée dans cette région pour le niveau Pays. Le niveau national reste accessible."}</p>
-                  <div className="mt-5 space-y-2">
-                    {selectedRegion.cities.map((city) => (
-                      <button key={city.slug} type="button" onClick={() => selectCity(city)} className="flex w-full items-center gap-3 rounded-2xl border p-3.5 text-left transition-transform hover:-translate-y-0.5" style={{ borderColor: "var(--border)", background: "var(--background)" }} data-city-list-slug={city.slug}>
-                        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-white" style={{ background: NAVY }}><MapPin size={17} /></span>
-                        <span className="min-w-0 flex-1"><span className="block text-[13px] font-black">{city.name}</span><span className="mt-0.5 block truncate text-[9.5px] font-semibold" style={{ color: "var(--text-secondary)" }}>{city.signature ?? selectedRegion.name} · {city.quartiers.length} quartiers</span></span>
-                        <ChevronRight size={15} />
-                      </button>
-                    ))}
+                  <p className="mt-2 text-[11px] font-medium leading-5" style={{ color: "var(--text-secondary)" }}>
+                    {selectedRegion.regionalCities.length ? "Lecture par polarités canoniques : les hubs pays restent navigables, les autres centres structurent la région sans inventer de territoire." : "Aucune polarité canonique publiée dans cette région."}
+                  </p>
+                  <div className="mt-4 grid grid-cols-2 gap-2">
+                    <div className="rounded-2xl border p-3" style={{ borderColor: "var(--border)", background: "var(--background)" }}>
+                      <p className="text-[8.5px] font-black uppercase tracking-[0.1em]" style={{ color: "var(--text-secondary)" }}>polarités</p>
+                      <p className="mt-1 text-[18px] font-black">{selectedRegion.regionalCities.length}</p>
+                    </div>
+                    <div className="rounded-2xl border p-3" style={{ borderColor: "var(--border)", background: "var(--background)" }}>
+                      <p className="text-[8.5px] font-black uppercase tracking-[0.1em]" style={{ color: "var(--text-secondary)" }}>hubs pays</p>
+                      <p className="mt-1 text-[18px] font-black">{selectedRegion.cities.length}</p>
+                    </div>
+                  </div>
+                  <div className="mt-4 space-y-2">
+                    {selectedRegion.regionalCities.map((city) => {
+                      const isCountryHub = selectedRegion.cities.some((candidate) => candidate.slug === city.slug);
+                      return isCountryHub ? (
+                        <button key={city.slug} type="button" onClick={() => selectCity(city)} className="flex w-full items-center gap-3 rounded-2xl border p-3.5 text-left transition-transform hover:-translate-y-0.5" style={{ borderColor: "var(--border)", background: "var(--background)" }} data-city-list-slug={city.slug}>
+                          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-white" style={{ background: NAVY }}><MapPin size={17} /></span>
+                          <span className="min-w-0 flex-1"><span className="block text-[13px] font-black">{city.name}</span><span className="mt-0.5 block truncate text-[9.5px] font-semibold" style={{ color: "var(--text-secondary)" }}>{city.signature ?? "Hub pays"} · {city.quartiers.length} quartiers</span></span>
+                          <ChevronRight size={15} />
+                        </button>
+                      ) : (
+                        <div key={city.slug} className="flex w-full items-center gap-3 rounded-2xl border p-3.5" style={{ borderColor: "var(--border)", background: "color-mix(in srgb, var(--background) 84%, var(--surface))" }} data-region-center-slug={city.slug}>
+                          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border" style={{ borderColor: "var(--border-dark)", color: NAVY, background: "var(--surface)" }}><MapPin size={15} /></span>
+                          <span className="min-w-0 flex-1"><span className="block text-[12px] font-black">{city.name}</span><span className="mt-0.5 block truncate text-[9px] font-semibold" style={{ color: "var(--text-secondary)" }}>Pôle régional canonique</span></span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </motion.div>
               ) : null}
