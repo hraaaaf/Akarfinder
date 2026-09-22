@@ -2,12 +2,17 @@ import { GEO_CITIES, GEO_NEIGHBORHOODS, type CanonicalCitySlug } from "@/lib/geo
 import { CANONICAL_CITY_REGION, MOROCCO_REGIONS, type MoroccoRegionSlug } from "@/lib/geo/morocco-region-registry";
 import { CITY_CENTROIDS } from "@/lib/geo/morocco-centroids";
 import { getVerifiedLandmarksForDistrict } from "@/lib/geo/territory-landmark-registry";
+import { getDistrictPriority } from "@/lib/geo/territory-district-priorities";
 import { getNationalCountryHubPolicy, isNationalCountryHub } from "@/lib/map/national-map-product-policy";
 
 export type PremiumMapQuartier = {
   name: string;
   slug: string;
   canonicalId: string;
+  priority: {
+    score: number;
+    tier: "flagship" | "major" | "regional" | "local";
+  };
   stats: {
     priceRepere?: number;
     landmarksVerified: number;
@@ -58,15 +63,20 @@ function canonicalQuartiers(citySlug: CanonicalCitySlug): PremiumMapQuartier[] {
       district.validation_status === "validated" &&
       district.map_eligible,
     )
-    .map((district) => ({
+    .map((district) => {
+      const priority = getDistrictPriority(district);
+      return {
       name: district.canonical_name,
       slug: district.slug,
       canonicalId: district.id,
+      priority: { score: priority.score, tier: priority.tier },
       stats: {
         landmarksVerified: getVerifiedLandmarksForDistrict(district.id).length,
         status: "disponible" as const,
       },
-    }));
+    };
+    })
+    .sort((a, b) => b.priority.score - a.priority.score || a.name.localeCompare(b.name, "fr"));
 }
 
 export function buildCanonicalPremiumMapData(): PremiumMapRegion[] {
