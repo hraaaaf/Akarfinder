@@ -339,8 +339,13 @@ export function PremiumInteractiveMap() {
   }, [applyCamera]);
 
   const selectRegion = useCallback((slug: string) => {
-    window.location.assign(`/map?region=${encodeURIComponent(slug)}&layer=explore`);
-  }, []);
+    setLevel("region");
+    setSelectedRegionSlug(slug);
+    setSelectedCitySlug(null);
+    setSelectedQuartierSlug(null);
+    setTooltip(null);
+    focusRegion(slug);
+  }, [focusRegion]);
 
   const selectCity = useCallback((city: City) => {
     const parentRegion = regions.find((region) => region.cities.some((candidate) => candidate.slug === city.slug));
@@ -713,7 +718,7 @@ export function PremiumInteractiveMap() {
                         <div className="rounded-xl border p-2.5" style={{ borderColor: "var(--border)", background: "var(--surface)" }}><p className="text-[8.5px] font-black uppercase tracking-[0.1em]" style={{ color: "var(--text-secondary)" }}>repère prix</p><p className="mt-1 text-[11px] font-black">{readablePrice(selectedQuartier.stats.priceRepere)}</p></div>
                         <div className="rounded-xl border p-2.5" style={{ borderColor: "var(--border)", background: "var(--surface)" }}><p className="text-[8.5px] font-black uppercase tracking-[0.1em]" style={{ color: "var(--text-secondary)" }}>repère vérifié</p><p className="mt-1 flex items-center gap-1.5 text-[11px] font-black"><CheckCircle2 size={13} style={{ color: NAVY }} /> {selectedQuartier.stats.landmarksVerified}</p></div>
                       </div>
-                      <Link href={`/immobilier/${selectedCity.slug}/${selectedQuartier.slug}`} className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl px-4 text-[11px] font-black text-white" style={{ background: NAVY }} data-explorer-selected>Explorer <ChevronRight size={14} /></Link>
+                      <Link href={`/map?region=${selectedRegion.slug}&city=${selectedCity.slug}&district=${selectedQuartier.slug}&layer=explore`} className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl px-4 text-[11px] font-black text-white" style={{ background: NAVY }} data-explorer-selected>Explorer <ChevronRight size={14} /></Link>
                     </div>
                   ) : null}
 
@@ -721,7 +726,7 @@ export function PremiumInteractiveMap() {
                     {selectedCity.quartiers.map((quartier) => (
                       <div key={quartier.slug} className="flex items-center gap-2 rounded-2xl border p-2.5" style={{ borderColor: quartier.slug === selectedQuartierSlug ? NAVY : "var(--border)", background: quartier.slug === selectedQuartierSlug ? "color-mix(in srgb, #071B33 6%, var(--surface))" : "var(--surface)" }}>
                         <button type="button" onClick={() => setSelectedQuartierSlug(quartier.slug)} className="min-w-0 flex-1 text-left"><span className="block truncate text-[11px] font-black">{quartier.name}</span><span className="mt-0.5 block text-[9px] font-semibold" style={{ color: "var(--text-secondary)" }}>{readablePrice(quartier.stats.priceRepere)} · {quartier.stats.landmarksVerified} repère{quartier.stats.landmarksVerified > 1 ? "s" : ""} vérifié{quartier.stats.landmarksVerified > 1 ? "s" : ""}</span></button>
-                        <Link href={`/immobilier/${selectedCity.slug}/${quartier.slug}`} className="inline-flex min-h-9 shrink-0 items-center gap-1 rounded-xl border px-2.5 text-[9.5px] font-black" style={{ borderColor: "var(--border-dark)", color: NAVY, background: "var(--background)" }} data-explorer-link={quartier.slug}>Explorer <ChevronRight size={12} /></Link>
+                        <Link href={`/map?region=${selectedRegion.slug}&city=${selectedCity.slug}&district=${quartier.slug}&layer=explore`} className="inline-flex min-h-9 shrink-0 items-center gap-1 rounded-xl border px-2.5 text-[9.5px] font-black" style={{ borderColor: "var(--border-dark)", color: NAVY, background: "var(--background)" }} data-explorer-link={quartier.slug}>Explorer <ChevronRight size={12} /></Link>
                       </div>
                     ))}
                   </div>

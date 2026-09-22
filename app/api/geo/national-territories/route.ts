@@ -7,7 +7,8 @@ import {
   getNationalTerritoryPlace,
 } from "@/lib/map/national-territory-runtime.server";
 import { NATIONAL_COUNTRY_HUBS, getNationalCountryHubPolicy } from "@/lib/map/national-map-product-policy";
-import { GEO_CITIES } from "@/lib/geo/geo-entity-registry";
+import { GEO_CITIES, GEO_NEIGHBORHOODS } from "@/lib/geo/geo-entity-registry";
+import { CITY_CENTROIDS } from "@/lib/geo/morocco-centroids";
 import { CANONICAL_CITY_REGION, MOROCCO_REGIONS, getMoroccoRegion } from "@/lib/geo/morocco-region-registry";
 
 export const runtime = "nodejs";
@@ -35,18 +36,30 @@ export async function GET(request: NextRequest) {
   const city = request.nextUrl.searchParams.get("city")?.trim().toLowerCase() ?? null;
   const region = request.nextUrl.searchParams.get("region")?.trim().toLowerCase() ?? null;
   if (!city && !region) {
-    const countryHubOrder = new Map(NATIONAL_COUNTRY_HUBS.map((hub) => [hub.slug, hub.order] as const));
-    const places = NATIONAL_TERRITORY_PLACES
-      .filter((place) => countryHubOrder.has(place.slug as never))
-      .map((place) => ({
-        ...place,
+    const places = NATIONAL_COUNTRY_HUBS.map((hub) => {
+      const canonical = GEO_CITIES.find((city) => city.slug === hub.slug);
+      if (!canonical) throw new Error(`Missing canonical country hub ${hub.slug}`);
+      const runtimePlace = getNationalTerritoryPlace(hub.slug);
+      const fallbackCenter = CITY_CENTROIDS[hub.slug] ?? null;
+      const regionSlug = CANONICAL_CITY_REGION[canonical.slug];
+      return {
+        ...(runtimePlace ?? {
+          slug: canonical.slug,
+          name: canonical.canonical_name,
+          center: fallbackCenter ? { lng: fallbackCenter.lng, lat: fallbackCenter.lat } : null,
+          boundaryRelationId: null,
+          confidence: "osm_open_map" as const,
+          population: null,
+          neighborhoodCount: GEO_NEIGHBORHOODS.filter((district) => district.city_slug === canonical.slug).length,
+        }),
         region: {
-          slug: CANONICAL_CITY_REGION[place.slug as keyof typeof CANONICAL_CITY_REGION],
-          name: getMoroccoRegion(CANONICAL_CITY_REGION[place.slug as keyof typeof CANONICAL_CITY_REGION]).canonical_name,
+          slug: regionSlug,
+          name: getMoroccoRegion(regionSlug).canonical_name,
         },
-        product: getNationalCountryHubPolicy(place.slug),
-      }))
-      .sort((a, b) => (countryHubOrder.get(a.slug as never) ?? 999) - (countryHubOrder.get(b.slug as never) ?? 999));
+        product: getNationalCountryHubPolicy(canonical.slug),
+        countryHubSource: runtimePlace ? "territory_runtime" : "canonical_centroid_fallback",
+      };
+    });
     const allowed = new Set(places.map((place) => place.slug));
     const boundaries: GeoJSON.FeatureCollection = {
       type: "FeatureCollection",
