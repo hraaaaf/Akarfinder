@@ -41,7 +41,6 @@ const OPEN_LANDMARK_GAPS = {
     "district_casablanca_sidi_maarouf",
   ],
   sale: [
-    "district_sale_laayayda",
   ],
   temara: [
     "district_temara_oulad_mtaa",
@@ -103,6 +102,6 @@ test("coverage remains fail-closed for every canonical district without verified
   assert.deepEqual(missing, expected);
   assert.equal(
     getTerritoryCoverageReport().reduce((total, entry) => total + entry.districtsWithVerifiedLandmark, 0),
-    51,
+    52,
   );
 });
