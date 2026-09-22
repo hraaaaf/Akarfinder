@@ -106,7 +106,7 @@ jobs:
               if x.get("osm_type")=="way" and any(q in route_queries for q in x.get("query_names",[]))
           ]
           gueliz=[x for x in features if any(q in {"Guéliz","Gueliz"} for q in x.get("query_names",[]))]
-          hivernage=[x for x in features if any(q in {"Hivernage","L'Hivernage"} for q in x.get("query_names",[])]
+          hivernage=[x for x in features if any(q in {"Hivernage","L'Hivernage"} for q in x.get("query_names",[]))]
 
           rel=[]
           for name in [
