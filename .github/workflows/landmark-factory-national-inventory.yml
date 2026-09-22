@@ -8,11 +8,14 @@ on:
       - "scripts/landmarks/crosswalk-national-canonical-neighborhoods.ts"
       - "scripts/landmarks/build-national-rollout-plan.ts"
       - "scripts/landmarks/build-national-useful-inventory.ts"
+      - "scripts/landmarks/build-locality-city-attachments.ts"
+      - "scripts/landmarks/assign-morocco-locality-region.py"
       - "scripts/landmarks/build-rabat-landmark-bridge.ts"
       - "lib/geo/rabat-locality-registry.ts"
       - "lib/geo/rabat-locality-geometry-registry.ts"
       - "lib/geo/rabat-locality-publication-readiness.ts"
       - "lib/geo/geo-entity-registry.ts"
+      - "lib/geo/morocco-region-registry.ts"
       - ".github/workflows/landmark-factory-national-inventory.yml"
       - "docs/geo/landmark-factory/MOROCCO_NATIONAL_NEIGHBORHOOD_FACTORY.md"
   workflow_dispatch:
@@ -59,6 +62,15 @@ jobs:
           ls -lh /tmp/morocco-admin8.osm.pbf
           osmium fileinfo -e /tmp/morocco-admin8.osm.pbf
 
+      - name: Filter admin-level-4 region geometry
+        run: |
+          osmium tags-filter \
+            -o /tmp/morocco-admin4.osm.pbf \
+            /tmp/morocco-latest.osm.pbf \
+            wr/admin_level=4
+          ls -lh /tmp/morocco-admin4.osm.pbf
+          osmium fileinfo -e /tmp/morocco-admin4.osm.pbf
+
       - name: Build national neighborhood discovery backlog
         run: |
           mkdir -p artifacts
@@ -91,6 +103,21 @@ jobs:
             --crosswalk artifacts/morocco-canonical-neighborhood-crosswalk.json \
             --out artifacts/morocco-national-useful-map-inventory.json
           cat artifacts/morocco-national-useful-map-inventory.json
+
+      - name: Route locality centers through canonical regions
+        run: |
+          python scripts/landmarks/assign-morocco-locality-region.py \
+            --inventory artifacts/morocco-neighborhood-discovery-inventory.json \
+            --region-pbf /tmp/morocco-admin4.osm.pbf \
+            --out artifacts/morocco-locality-region-inventory.json
+
+      - name: Build fail-closed locality to city attachments
+        run: |
+          npx --yes tsx@4.22.4 scripts/landmarks/build-locality-city-attachments.ts \
+            --inventory artifacts/morocco-locality-region-inventory.json \
+            --out artifacts/morocco-locality-city-attachments.json \
+            --max-attachment-km 50
+          cat artifacts/morocco-locality-city-attachments.json
 
       - name: Build Rabat national-registry bridge
         run: |
@@ -141,6 +168,13 @@ jobs:
           assert u["summary"]["region_count"] == 12
           assert u["summary"]["canonical_city_hub_count"] == 19
           assert u["summary"]["canonical_neighborhood_count"] == 23
+          a=json.load(open("artifacts/morocco-locality-city-attachments.json",encoding="utf-8"))
+          assert a["evidence_role"] == "LOCALITY_TO_CITY_ATTACHMENT_ROUTING_ONLY"
+          assert a["activation_allowed"] is False
+          assert a["geometry_promotion_allowed"] is False
+          assert a["attachment_semantics"] == "HINT_ONLY_DATA_RELATIONSHIP"
+          assert all(x["geometry_claim"] == "NONE" for x in a["attachments"])
+          assert all(x["map_policy"] == "DO_NOT_RENDER_AS_INDEPENDENT_COUNTRY_LABEL" for x in a["attachments"])
           assert all(
               x["map_policy"] == "DO_NOT_RENDER_AS_INDEPENDENT_COUNTRY_LABEL"
               for h in u["city_hubs"]
