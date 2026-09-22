@@ -936,6 +936,97 @@ export const VERIFIED_LANDMARKS: readonly VerifiedLandmarkEntry[] = [
     verificationNote: "Yakeey certifies Oulad Mimoun as a current Nador product neighborhood; OSM-backed Mapcarta identifies Souk Oulad Mimoun in Nador and supplies the verified point.",
     verifiedAt: "2026-09-22",
   },
+
+  {
+    entity: {
+      id: "landmark_temara_massira_1_grands_taxis",
+      type: "landmark",
+      citySlug: "temara",
+      districtSlug: "massira-1",
+      landmarkSlug: "station-grands-taxis-massira-1",
+      canonicalName: "Station Grands Taxis Massira 1",
+      aliases: ["Station Grands Taxis Massira I"],
+      category: "transport",
+      parentId: "district_temara_massira_1",
+      importance: {
+        score: 88,
+        tier: "major",
+        basis: ["orientation_value", "product_priority"],
+      },
+      visibility: { minZoom: 13.9, retainPriority: false },
+      coordinates: {
+        lat: 33.92957,
+        lng: -6.90182,
+        precision: "verified_landmark_point",
+      },
+    },
+    sourceRefs: [
+      "https://yakeey.com/fr-ma/referentiel-de-prix-immobilier/temara/massira-i",
+      "https://mapcarta.com/fr/W1248306544",
+    ],
+    verificationNote: "Yakeey certifies Massira I as a current Témara product neighborhood; OSM-backed Mapcarta identifies Station Grands Taxis Massira 1 in Témara and supplies the verified point.",
+    verifiedAt: "2026-09-22",
+  },
+  {
+    entity: {
+      id: "landmark_meknes_zitoune_poste",
+      type: "landmark",
+      citySlug: "meknes",
+      districtSlug: "zitoune",
+      landmarkSlug: "meknes-zitoun-poste",
+      canonicalName: "Meknes Zitoun",
+      aliases: ["Poste Meknes Zitoun", "Meknes Zitoune"],
+      category: "civic",
+      parentId: "district_meknes_zitoune",
+      importance: {
+        score: 88,
+        tier: "major",
+        basis: ["orientation_value", "product_priority"],
+      },
+      visibility: { minZoom: 13.9, retainPriority: false },
+      coordinates: {
+        lat: 33.86895,
+        lng: -5.54706,
+        precision: "verified_landmark_point",
+      },
+    },
+    sourceRefs: [
+      "https://yakeey.com/fr-ma/achat/appartement/meknes/zitoune",
+      "https://mapcarta.com/fr/N2907762512",
+    ],
+    verificationNote: "Yakeey independently uses Zitoune as a Meknès product neighborhood; OSM-backed Mapcarta identifies the Barid Al-Maghrib office Meknes Zitoun and supplies the verified point.",
+    verifiedAt: "2026-09-22",
+  },
+  {
+    entity: {
+      id: "landmark_meknes_marjane_supermarket",
+      type: "landmark",
+      citySlug: "meknes",
+      districtSlug: "marjane",
+      landmarkSlug: "marjane-supermarket",
+      canonicalName: "Marjane Meknès",
+      aliases: ["Marjane"],
+      category: "retail",
+      parentId: "district_meknes_marjane",
+      importance: {
+        score: 90,
+        tier: "major",
+        basis: ["orientation_value", "product_priority"],
+      },
+      visibility: { minZoom: 13.8, retainPriority: true },
+      coordinates: {
+        lat: 33.90206,
+        lng: -5.53684,
+        precision: "verified_landmark_point",
+      },
+    },
+    sourceRefs: [
+      "https://yakeey.com/fr-ma/referentiel-de-prix-immobilier/meknes/marjane",
+      "https://mapcarta.com/fr/W736832215",
+    ],
+    verificationNote: "Yakeey certifies Marjane as a current Meknès product neighborhood; OSM-backed Mapcarta identifies the named Marjane supermarket in Meknès and supplies the verified point.",
+    verifiedAt: "2026-09-22",
+  },
 ];
 
 const CANONICAL_DISTRICT_IDS = new Set(GEO_NEIGHBORHOODS.map((district) => district.id));
