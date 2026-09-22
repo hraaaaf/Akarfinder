@@ -17,7 +17,7 @@ test("national city labels expose stable QA hooks and importance", () => {
 });
 
 test("direct national city selection restores the canonical parent region state", () => {
-  assert.match(source, /regions\.find\(\(region\) => region\.cities\.some/);
+  assert.match(source, /regions\.find\(\(region\) => region\.regionalCities\.some/);
   assert.match(source, /setSelectedRegionSlug\(parentRegion\?\.slug \?\? null\)/);
 });
 
@@ -76,4 +76,20 @@ test("national zoom anchor protects northern flagship labels", () => {
 
 test("Tanger keeps a downward callout clearance at moderate zoom", () => {
   assert.match(source, /city\.slug === "tanger" \? 34 : 0/);
+});
+
+
+test("all regional canonical cities remain interactive and drill down to city level", () => {
+  assert.match(source, /selectedRegion\.regionalCities\.map/);
+  assert.match(source, /role="button"/);
+  assert.match(source, /selectCity\(city\)/);
+  assert.doesNotMatch(source, /if \(isCountryHub\) selectCity\(city\)/);
+});
+
+test("city view exposes verified neighborhood anchors without claiming boundaries", () => {
+  assert.match(source, /data-neighborhood-anchor=/);
+  assert.match(source, /data-neighborhood-anchor-evidence=/);
+  assert.match(source, /VERIFIED_LANDMARK_ANCHOR_ONLY/);
+  assert.match(source, /pas une frontière/);
+  assert.match(source, /ancrages vérifiés/);
 });
