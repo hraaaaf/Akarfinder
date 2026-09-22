@@ -7,6 +7,7 @@ on:
       - "scripts/landmarks/assign-morocco-admin-containment.py"
       - "scripts/landmarks/crosswalk-national-canonical-neighborhoods.ts"
       - "scripts/landmarks/build-national-rollout-plan.ts"
+      - "scripts/landmarks/build-national-useful-inventory.ts"
       - "scripts/landmarks/build-rabat-landmark-bridge.ts"
       - "lib/geo/rabat-locality-registry.ts"
       - "lib/geo/rabat-locality-geometry-registry.ts"
@@ -83,6 +84,14 @@ jobs:
             --out artifacts/morocco-landmark-factory-rollout-plan.json
           cat artifacts/morocco-landmark-factory-rollout-plan.json
 
+      - name: Build national useful map inventory
+        run: |
+          npx --yes tsx@4.22.4 scripts/landmarks/build-national-useful-inventory.ts \
+            --inventory artifacts/morocco-neighborhood-discovery-inventory.json \
+            --crosswalk artifacts/morocco-canonical-neighborhood-crosswalk.json \
+            --out artifacts/morocco-national-useful-map-inventory.json
+          cat artifacts/morocco-national-useful-map-inventory.json
+
       - name: Build Rabat national-registry bridge
         run: |
           npx --yes tsx@4.22.4 scripts/landmarks/build-rabat-landmark-bridge.ts \
@@ -125,6 +134,18 @@ jobs:
           assert r["activation_allowed"] is False
           assert r["geometry_promotion_allowed"] is False
           assert r["summary"]["city_count"] > 0
+          u=json.load(open("artifacts/morocco-national-useful-map-inventory.json",encoding="utf-8"))
+          assert u["evidence_role"] == "NATIONAL_USEFUL_INVENTORY_ONLY"
+          assert u["activation_allowed"] is False
+          assert u["geometry_promotion_allowed"] is False
+          assert u["summary"]["region_count"] == 12
+          assert u["summary"]["canonical_city_hub_count"] == 19
+          assert u["summary"]["canonical_neighborhood_count"] == 23
+          assert all(
+              x["map_policy"] == "DO_NOT_RENDER_AS_INDEPENDENT_COUNTRY_LABEL"
+              for h in u["city_hubs"]
+              for x in h["locality_attachment_candidates"]
+          )
           b=json.load(open("artifacts/rabat-landmark-factory-bridge.json",encoding="utf-8"))
           assert b["evidence_role"] == "RABAT_LANDMARK_BRIDGE_ONLY"
           assert b["activation_allowed"] is False
@@ -139,5 +160,6 @@ jobs:
             artifacts/morocco-neighborhood-discovery-inventory.json
             artifacts/morocco-canonical-neighborhood-crosswalk.json
             artifacts/morocco-landmark-factory-rollout-plan.json
+            artifacts/morocco-national-useful-map-inventory.json
             artifacts/rabat-landmark-factory-bridge.json
           if-no-files-found: error
