@@ -54,15 +54,11 @@ const OPEN_LANDMARK_GAPS = {
   "el-jadida": [
   ],
   nador: [
-    "district_nador_hay_aarid",
   ],
   essaouira: [
   ],
   bouznika: [
-    "district_bouznika_al_wouroud",
-    "district_bouznika_hay_amal",
     "district_bouznika_hay_ghita",
-    "district_bouznika_hay_salim",
   ],
 } as const;
 
@@ -97,6 +93,6 @@ test("coverage remains fail-closed for every canonical district without verified
   assert.deepEqual(missing, expected);
   assert.equal(
     getTerritoryCoverageReport().reduce((total, entry) => total + entry.districtsWithVerifiedLandmark, 0),
-    57,
+    61,
   );
 });
