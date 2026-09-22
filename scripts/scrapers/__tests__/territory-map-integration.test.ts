@@ -50,8 +50,9 @@ test("semantic national zoom reveals secondary cities after one moderate zoom st
   assert.match(source, /const nationalTerritoryZoom = 4\.2 \+ Math\.max\(0, camera\.k - 1\) \* 6;/);
 });
 
-test("national label capacity reaches eight at one moderate zoom step", () => {
-  assert.match(source, /const capacity = camera\.k < 1\.1 \? 6 : camera\.k < 1\.2 \? 7 : 8;/);
+test("national label capacity is locked to the eight canonical country hubs", () => {
+  assert.match(source, /const capacity = 8;/);
+  assert.doesNotMatch(source, /camera\.k < 1\.1 \? 6 : camera\.k < 1\.2 \? 7 : 8/);
 });
 
 test("Mohammedia gets a collision offset between Casablanca and Rabat", () => {
