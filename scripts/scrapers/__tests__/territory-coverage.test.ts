@@ -13,13 +13,13 @@ test("coverage report exposes every canonical city without pretending completion
   assert.ok(report.every((entry) => entry.landmarkCoverageRatio >= 0 && entry.landmarkCoverageRatio <= 1));
 });
 
-test("eight cities currently have at least one verified landmark", () => {
+test("eleven cities currently have at least one verified landmark", () => {
   const covered = getTerritoryCoverageReport()
     .filter((entry) => entry.verifiedLandmarkCount > 0)
     .map((entry) => entry.citySlug)
     .sort();
 
-  assert.deepEqual(covered, ["agadir", "casablanca", "fes", "kenitra", "marrakech", "mohammedia", "rabat", "tanger"].sort());
+  assert.deepEqual(covered, ["agadir", "casablanca", "essaouira", "fes", "kenitra", "marrakech", "meknes", "mohammedia", "rabat", "tanger", "tetouan"].sort());
 });
 
 test("Casablanca coverage reports the three newly canonical districts still awaiting landmark evidence", () => {
@@ -58,7 +58,6 @@ const OPEN_LANDMARK_GAPS = {
     "district_temara_oulad_mtaa",
   ],
   meknes: [
-    "district_meknes_ancienne_medina",
     "district_meknes_hamria",
     "district_meknes_marjane",
     "district_meknes_ryad",
@@ -66,7 +65,6 @@ const OPEN_LANDMARK_GAPS = {
   ],
   tetouan: [
     "district_tetouan_ensanche",
-    "district_tetouan_medina",
   ],
   oujda: [
     "district_oujda_centre_ville",
@@ -89,7 +87,6 @@ const OPEN_LANDMARK_GAPS = {
   ],
   essaouira: [
     "district_essaouira_kasbah",
-    "district_essaouira_medina",
   ],
   bouznika: [
     "district_bouznika_al_wouroud",
@@ -131,6 +128,6 @@ test("coverage remains fail-closed for every canonical district without verified
   assert.deepEqual(missing, expected);
   assert.equal(
     getTerritoryCoverageReport().reduce((total, entry) => total + entry.districtsWithVerifiedLandmark, 0),
-    23,
+    26,
   );
 });
