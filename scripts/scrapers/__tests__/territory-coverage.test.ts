@@ -53,7 +53,6 @@ const OPEN_LANDMARK_GAPS = {
     "district_meknes_hamria",
   ],
   tetouan: [
-    "district_tetouan_ensanche",
   ],
   oujda: [
     "district_oujda_centre_ville",
@@ -114,6 +113,6 @@ test("coverage remains fail-closed for every canonical district without verified
   assert.deepEqual(missing, expected);
   assert.equal(
     getTerritoryCoverageReport().reduce((total, entry) => total + entry.districtsWithVerifiedLandmark, 0),
-    40,
+    41,
   );
 });
