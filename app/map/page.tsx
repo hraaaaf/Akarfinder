@@ -5,6 +5,7 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { NationalMapRouter } from "@/components/map/NationalMapRouter";
 import { P4MapDecisionRail } from "@/components/map/P4MapDecisionRail";
 import { PremiumInteractiveMapBridge } from "@/components/map/PremiumInteractiveMapBridge";
+import { MaarifTargetRail } from "@/components/map/MaarifTargetRail";
 import { parseMapNavigationState } from "@/lib/map/map-navigation-state";
 import "./mockup-convergence-l2.css";
 import "./p4-map-shell.css";
@@ -48,6 +49,7 @@ export default async function MapPage({ searchParams }: MapPageProps) {
   const district = firstParam(params.district).trim();
   const layer = firstParam(params.layer).trim() || "explore";
   const hasNeighborhoodSelection = Boolean(city && district);
+  const hasMaarifTargetSelection = city === "casablanca" && district === "maarif" && layer === "explore";
   const usePremiumNationalExplore = !region && !city && !district && layer === "explore";
 
   return (
@@ -61,6 +63,7 @@ export default async function MapPage({ searchParams }: MapPageProps) {
           <div className="flex-1" data-p4-map-layout>
             <div data-p4-map-canvas>
               <NationalMapRouter initialState={initialState} />
+              {hasMaarifTargetSelection ? <MaarifTargetRail /> : null}
               {hasNeighborhoodSelection ? (
                 <Link
                   href="/map?layer=explore"
