@@ -96,6 +96,13 @@ export const GEO_NEIGHBORHOODS: CanonicalNeighborhoodEntity[] = [
   { id: "district_sale_laayayda", slug: "laayayda", canonical_name: "Laayayda", aliases: ["Layayda"], city_slug: "sale", validation_status: "validated", seo_eligible: false, map_eligible: true },
   { id: "district_sale_hssaine", slug: "hssaine", canonical_name: "Hssaine", aliases: ["Hssain", "Hssaïne"], city_slug: "sale", validation_status: "validated", seo_eligible: false, map_eligible: true },
 
+  // Témara — identity-only product geography. No tax/planning zone is treated as a product boundary.
+  { id: "district_temara_hay_al_wifaq", slug: "hay-al-wifaq", canonical_name: "Hay Al Wifaq", aliases: ["Al Wifaq", "El Wifaq", "Wifak"], city_slug: "temara", validation_status: "validated", seo_eligible: false, map_eligible: true },
+  { id: "district_temara_ibnou_rochd", slug: "ibnou-rochd", canonical_name: "Ibnou Rochd", aliases: ["Ibn Rochd", "Ibn Roched"], city_slug: "temara", validation_status: "validated", seo_eligible: false, map_eligible: true },
+  { id: "district_temara_massira_1", slug: "massira-1", canonical_name: "Massira I", aliases: ["Massira 1", "Al Massira I"], city_slug: "temara", validation_status: "validated", seo_eligible: false, map_eligible: true },
+  { id: "district_temara_hay_al_maghreb_al_arabi", slug: "hay-al-maghreb-al-arabi", canonical_name: "Hay Al Maghreb Al Arabi", aliases: ["Maghreb Al Arabi", "Hay Maghrib Al Arabi"], city_slug: "temara", validation_status: "validated", seo_eligible: false, map_eligible: true },
+  { id: "district_temara_oulad_mtaa", slug: "oulad-mtaa", canonical_name: "Oulad Mtaa", aliases: ["Oulad Mtâa", "Ouled Mtaa", "Ouled Metaâ"], city_slug: "temara", validation_status: "validated", seo_eligible: false, map_eligible: true },
+
   // Marrakech
   { id: "district_marrakech_gueliz", slug: "gueliz", canonical_name: "Guéliz", aliases: ["Gueliz"], city_slug: "marrakech", validation_status: "validated", seo_eligible: true, map_eligible: true },
   { id: "district_marrakech_hivernage", slug: "hivernage", canonical_name: "Hivernage", aliases: ["L'Hivernage"], city_slug: "marrakech", validation_status: "validated", seo_eligible: true, map_eligible: true },
