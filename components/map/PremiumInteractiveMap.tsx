@@ -692,7 +692,7 @@ export function PremiumInteractiveMap() {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.98 }}
                   transition={{ duration: 0.28 }}
-                  className="absolute inset-x-3 bottom-3 top-[66px] z-10 overflow-auto rounded-[22px] border p-5 backdrop-blur-md sm:inset-x-5 sm:bottom-5 sm:p-7"
+                  className="absolute inset-x-3 bottom-3 top-[42%] z-10 overflow-auto rounded-[22px] border p-5 backdrop-blur-md sm:bottom-5 sm:left-auto sm:right-5 sm:top-[78px] sm:w-[min(54%,620px)] sm:p-7"
                   style={{ borderColor: "var(--border)", background: "color-mix(in srgb, var(--surface) 92%, transparent)" }}
                   data-neighborhood-canonical-index
                 >
@@ -700,12 +700,12 @@ export function PremiumInteractiveMap() {
                     <p className="text-[9px] font-black uppercase tracking-[0.15em]" style={{ color: NAVY }}>Ville · quartiers canoniques</p>
                     <h2 className="mt-1 text-[28px] font-black tracking-[-0.04em]">{selectedCity.name}</h2>
                     <p className="mt-2 max-w-2xl text-[11px] font-semibold leading-5" style={{ color: "var(--text-secondary)" }}>
-                      Lecture territoriale canonique, non géométrique : aucun polygone de quartier n’est inventé. Les limites seront affichées uniquement lorsqu’une géométrie produit aura été sourcée, revue et certifiée.
+                      Lecture territoriale canonique : chaque quartier est positionné par un repère landmark vérifié. Ces points servent d’ancrage cartographique uniquement ; aucune frontière de quartier n’est inventée.
                     </p>
 
                     <div className="mt-5 flex flex-wrap items-center gap-2 text-[8.5px] font-black uppercase tracking-[0.08em]" style={{ color: "var(--text-secondary)" }}>
                       <span className="rounded-full border px-2.5 py-1.5" style={{ borderColor: "var(--border)", background: "var(--background)" }}>{selectedCity.quartiers.length} quartiers canoniques</span>
-                      <span className="rounded-full border px-2.5 py-1.5" style={{ borderColor: "var(--border)", background: "var(--background)" }}>index territorial · non géométrique</span>
+                      <span className="rounded-full border px-2.5 py-1.5" style={{ borderColor: "var(--border)", background: "var(--background)" }}>{selectedCity.quartiers.filter((quartier) => quartier.mapAnchor).length}/{selectedCity.quartiers.length} ancrages vérifiés</span>
                       <span className="rounded-full border px-2.5 py-1.5" style={{ borderColor: "var(--border)", background: "var(--background)" }}>hiérarchie éditoriale certifiée</span>
                     </div>
 
