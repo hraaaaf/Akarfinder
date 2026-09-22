@@ -64,13 +64,13 @@ export const CASABLANCA_TARGET_BOUNDARY_EVIDENCE: readonly CasablancaTargetBound
   {
     slug: "hay-hassani",
     canonicalName: "Hay Hassani",
-    evidenceStatus: "OFFICIAL_GRAPHIC_BOUNDARY_CANDIDATE",
+    evidenceStatus: "OFFICIAL_GRAPHIC_EVIDENCE_RASTER_ONLY",
     publicationAllowed: false,
     sourceAuthority: "Agence Urbaine de Casablanca",
     sourceKind: "PA",
     sourceRef: "https://auc.ma/wp-content/uploads/2020/05/pla_compressed.pdf",
     evidenceNote:
-      "Official approved Hay Hassani development plan contains an arrondissement perimeter. This is an administrative planning boundary and must not be silently equated with a modern product-neighborhood boundary.",
+      "Official approved Hay Hassani development plan contains an arrondissement perimeter. The official 1:5000 planning sheets were inspected and are raster-only (4 image pages, no vector sheets), so direct geometry extraction is unavailable. This administrative planning boundary must not be silently equated with a modern product-neighborhood boundary.",
   },
   {
     slug: "sidi-maarouf",
@@ -81,7 +81,7 @@ export const CASABLANCA_TARGET_BOUNDARY_EVIDENCE: readonly CasablancaTargetBound
     sourceKind: "PA_REPORT",
     sourceRef: "https://auc.ma/wp-content/uploads/2020/05/RAPPORT-JUSTIFICATIF-AINCHOCK.pdf",
     evidenceNote:
-      "AUC Ain Chock report explicitly references the former Sidi Maarouf planning area and projected dense development. Identity is official; a certified modern product boundary is not yet available.",
+      "AUC Ain Chock report explicitly references the former Sidi Maarouf planning area and projected dense development. The official Ain Chock ensemble plan is raster-only, so no direct boundary extraction is available. Identity is official; a certified modern product boundary is not yet available.",
   },
   {
     slug: "finance-city",
@@ -92,7 +92,7 @@ export const CASABLANCA_TARGET_BOUNDARY_EVIDENCE: readonly CasablancaTargetBound
     sourceKind: "PA_REPORT",
     sourceRef: "https://auc.ma/wp-content/uploads/2020/05/Rapport_justificatif_HAY-HASSANI.pdf",
     evidenceNote:
-      "AUC planning documents identify the Casablanca-Anfa urban pole underlying the CFC area. CFC product boundary is not automatically the same as the planning pole boundary.",
+      "AUC planning documents identify the Casablanca-Anfa urban pole underlying the CFC area. The nearby Hay Hassani official planning sheets are raster-only, and CFC product boundary is not automatically the same as the planning pole boundary.",
   },
   {
     slug: "californie",
@@ -103,7 +103,7 @@ export const CASABLANCA_TARGET_BOUNDARY_EVIDENCE: readonly CasablancaTargetBound
     sourceKind: "PA_REPORT",
     sourceRef: "https://auc.ma/wp-content/uploads/2020/05/RAPPORT-JUSTIFICATIF-AINCHOCK.pdf",
     evidenceNote:
-      "AUC Ain Chock report explicitly names Californie and its continuation toward Bouskoura. Identity is official; no product polygon is promoted without a certified graphic boundary.",
+      "AUC Ain Chock report explicitly names Californie and its continuation toward Bouskoura. The official Ain Chock ensemble plan is raster-only, so no direct boundary extraction is available. Identity is official; no product polygon is promoted without a certified graphic boundary.",
   },
 ] as const;
 
