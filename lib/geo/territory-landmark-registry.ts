@@ -843,6 +843,37 @@ export const VERIFIED_LANDMARKS: readonly VerifiedLandmarkEntry[] = [
     verificationNote: "UNESCO certifies the fortified medina fabric of Essaouira; the Skala is on the medina rampart and Google Maps supplies the public point.",
     verifiedAt: "2026-09-22",
   },
+
+  {
+    entity: {
+      id: "landmark_sale_bab_lamrissa_bab_el_mrissa",
+      type: "landmark",
+      citySlug: "sale",
+      districtSlug: "bab-lamrissa",
+      landmarkSlug: "bab-el-mrissa",
+      canonicalName: "Bab el-Mrissa",
+      aliases: ["Bab Lamrissa", "Bab al-Mrissa", "Bab Mrissa"],
+      category: "heritage",
+      parentId: "district_sale_bab_lamrissa",
+      importance: {
+        score: 99,
+        tier: "flagship",
+        basis: ["product_priority", "orientation_value", "urban_prominence"],
+      },
+      visibility: { minZoom: 13.4, retainPriority: true },
+      coordinates: {
+        lat: 34.032708,
+        lng: -6.820187,
+        precision: "verified_landmark_point",
+      },
+    },
+    sourceRefs: [
+      "https://www.visitrabat.com/lieux/bab-el-mrissa/",
+      "https://www.wikidata.org/wiki/Q2389277",
+    ],
+    verificationNote: "Visit Rabat identifies Bab el-Mrissa as an emblematic gate of Salé; Wikidata supplies the public coordinate and the same heritage identity.",
+    verifiedAt: "2026-09-22",
+  },
 ];
 
 const CANONICAL_DISTRICT_IDS = new Set(GEO_NEIGHBORHOODS.map((district) => district.id));
