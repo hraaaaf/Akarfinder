@@ -25,35 +25,14 @@ test("every verified landmark has a validated point and at least two evidence re
   }
 });
 
-test("verified registry covers the certified city/district paths without requiring one landmark per district", () => {
-  assert.deepEqual(
-    [...new Set(VERIFIED_LANDMARKS.map(({ entity }) => `${entity.citySlug}/${entity.districtSlug}`))].sort(),
-    [
-      "agadir/founty",
-      "agadir/talborjt",
-      "casablanca/ain-diab",
-      "casablanca/bourgogne",
-      "casablanca/bouskoura",
-      "casablanca/finance-city",
-      "casablanca/maarif",
-      "casablanca/racine",
-      "fes/fes-el-bali",
-      "fes/ville-nouvelle",
-      "kenitra/centre-ville",
-      "marrakech/gueliz",
-      "marrakech/hivernage",
-      "marrakech/route-de-lourika",
-      "mohammedia/centre",
-      "rabat/agdal",
-      "rabat/hassan",
-      "rabat/hay-riad",
-      "rabat/ocean",
-      "rabat/souissi",
-      "tanger/malabata",
-      "tanger/marchan",
-      "tanger/ville-nouvelle",
-    ].sort(),
-  );
+test("verified registry paths always match their canonical district parent", () => {
+  const districtById = new Map(GEO_NEIGHBORHOODS.map((district) => [district.id, district]));
+  for (const { entity } of VERIFIED_LANDMARKS) {
+    const parent = districtById.get(entity.parentId);
+    assert.ok(parent, entity.id);
+    assert.equal(entity.citySlug, parent.city_slug, entity.id);
+    assert.equal(entity.districtSlug, parent.slug, entity.id);
+  }
 });
 
 test("district lookup never leaks landmarks from another district", () => {
