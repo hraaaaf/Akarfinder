@@ -238,6 +238,7 @@ export function PremiumInteractiveMap() {
     if (!projection) return [];
     const priorityBySlug = new Map(nationalPriority.map((item) => [item.citySlug, item]));
     const candidateMeta = mappedCities.flatMap(({ city, regionSlug }) => {
+      if (!city.coordinates) return [];
       const priority = priorityBySlug.get(city.slug as CanonicalCitySlug);
       const point = projection(city.coordinates);
       if (!priority || !point) return [];
