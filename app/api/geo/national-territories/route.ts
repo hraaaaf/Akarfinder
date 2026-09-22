@@ -8,7 +8,7 @@ import {
 } from "@/lib/map/national-territory-runtime.server";
 import { NATIONAL_COUNTRY_HUBS, getNationalCountryHubPolicy } from "@/lib/map/national-map-product-policy";
 import { GEO_CITIES } from "@/lib/geo/geo-entity-registry";
-import { MOROCCO_REGIONS } from "@/lib/geo/morocco-region-registry";
+import { CANONICAL_CITY_REGION, MOROCCO_REGIONS, getMoroccoRegion } from "@/lib/geo/morocco-region-registry";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -33,12 +33,17 @@ function cityBoundary(slug: string): GeoJSON.FeatureCollection {
 
 export async function GET(request: NextRequest) {
   const city = request.nextUrl.searchParams.get("city")?.trim().toLowerCase() ?? null;
-  if (!city) {
+  const region = request.nextUrl.searchParams.get("region")?.trim().toLowerCase() ?? null;
+  if (!city && !region) {
     const countryHubOrder = new Map(NATIONAL_COUNTRY_HUBS.map((hub) => [hub.slug, hub.order] as const));
     const places = NATIONAL_TERRITORY_PLACES
       .filter((place) => countryHubOrder.has(place.slug as never))
       .map((place) => ({
         ...place,
+        region: {
+          slug: CANONICAL_CITY_REGION[place.slug as keyof typeof CANONICAL_CITY_REGION],
+          name: getMoroccoRegion(CANONICAL_CITY_REGION[place.slug as keyof typeof CANONICAL_CITY_REGION]).canonical_name,
+        },
         product: getNationalCountryHubPolicy(place.slug),
       }))
       .sort((a, b) => (countryHubOrder.get(a.slug as never) ?? 999) - (countryHubOrder.get(b.slug as never) ?? 999));
@@ -64,6 +69,52 @@ export async function GET(request: NextRequest) {
         regionCount: MOROCCO_REGIONS.length,
         sourceCityCount: NATIONAL_TERRITORY_PLACES.length,
         displayPolicy: "COUNTRY_HUBS_ONLY",
+      },
+    }, { headers: territoryHeaders() });
+  }
+
+  if (!city && region) {
+    const regionEntity = MOROCCO_REGIONS.find((candidate) => candidate.slug === region);
+    if (!regionEntity) {
+      return NextResponse.json({ status: "not_found", region }, { status: 404, headers: territoryHeaders() });
+    }
+    const citySlugs = GEO_CITIES
+      .filter((candidate) => CANONICAL_CITY_REGION[candidate.slug] === regionEntity.slug)
+      .map((candidate) => candidate.slug);
+    const places = citySlugs
+      .map((slug) => getNationalTerritoryPlace(slug))
+      .filter((place): place is NonNullable<typeof place> => Boolean(place))
+      .map((place) => ({
+        ...place,
+        region: {
+          slug: regionEntity.slug,
+          name: regionEntity.canonical_name,
+        },
+        product: getNationalCountryHubPolicy(place.slug),
+      }));
+    const allowed = new Set(places.map((place) => place.slug));
+    const boundaries: GeoJSON.FeatureCollection = {
+      type: "FeatureCollection",
+      features: NATIONAL_TERRITORY_BOUNDARIES.features.filter((feature) => {
+        const slug = feature.properties?.slug;
+        return typeof slug === "string" && allowed.has(slug);
+      }),
+    };
+    return NextResponse.json({
+      status: "ok",
+      view: "region",
+      region: {
+        slug: regionEntity.slug,
+        name: regionEntity.canonical_name,
+        geometryStatus: "not_published",
+      },
+      places,
+      boundaries,
+      meta: {
+        cityCount: places.length,
+        boundaryCount: boundaries.features.length,
+        regionGeometryPublicationCount: 0,
+        displayPolicy: "CANONICAL_REGION_CITY_HUBS",
       },
     }, { headers: territoryHeaders() });
   }
