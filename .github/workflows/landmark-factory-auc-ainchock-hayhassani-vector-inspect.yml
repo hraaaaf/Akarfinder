@@ -28,12 +28,40 @@ jobs:
       - name: Download official AUC planning sheets
         run: |
           mkdir -p artifacts/auc-vector
-          curl --fail --location --retry 3 --user-agent "Mozilla/5.0 AkarFinder-Landmark-Factory/1.0" \
+          UA="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/140 Safari/537.36"
+          curl --fail --location --retry 3 --user-agent "$UA" \
+            --cookie-jar artifacts/auc-vector/auc.cookies \
+            -o artifacts/auc-vector/ain-chock-source.html \
+            "https://www.auc.ma/e-services-2/e-documents/?IdP=1075"
+          curl --fail --location --retry 3 --user-agent "$UA" \
+            --cookie artifacts/auc-vector/auc.cookies \
+            --referer "https://www.auc.ma/e-services-2/e-documents/?IdP=1075" \
+            -D artifacts/auc-vector/ain-chock.headers \
             -o artifacts/auc-vector/ain-chock.pdf \
             https://www.auc.ma/wp-content/uploads/2020/05/PLANCHE-D-ENSEMBLE.pdf
-          curl --fail --location --retry 3 --user-agent "Mozilla/5.0 AkarFinder-Landmark-Factory/1.0" \
+
+          curl --fail --location --retry 3 --user-agent "$UA" \
+            --cookie-jar artifacts/auc-vector/auc.cookies \
+            -o artifacts/auc-vector/hay-hassani-source.html \
+            "https://www.auc.ma/e-services-2/e-documents/?IdP=1068"
+          curl --fail --location --retry 3 --user-agent "$UA" \
+            --cookie artifacts/auc-vector/auc.cookies \
+            --referer "https://www.auc.ma/e-services-2/e-documents/?IdP=1068" \
+            -D artifacts/auc-vector/hay-hassani.headers \
             -o artifacts/auc-vector/hay-hassani.pdf \
             https://www.auc.ma/wp-content/uploads/2020/05/planches-pa-hay-hassani-5000eme.pdf
+
+          python - <<'PY'
+          from pathlib import Path
+          for name in ("ain-chock","hay-hassani"):
+              p=Path(f"artifacts/auc-vector/{name}.pdf")
+              sig=p.read_bytes()[:5]
+              print(name, "bytes=", p.stat().st_size, "signature=", sig)
+              if sig != b"%PDF-":
+                  print(Path(f"artifacts/auc-vector/{name}.headers").read_text(errors="ignore"))
+                  print(p.read_text(errors="ignore")[:800])
+                  raise SystemExit(f"{name}: official link did not return a PDF")
+          PY
 
       - name: Inspect PDF structure
         run: |
