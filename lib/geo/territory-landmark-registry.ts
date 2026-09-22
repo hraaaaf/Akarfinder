@@ -905,6 +905,37 @@ export const VERIFIED_LANDMARKS: readonly VerifiedLandmarkEntry[] = [
     verificationNote: "Yakeey independently certifies Hay Salam as a current El Jadida product neighborhood; OSM-backed Mapcarta names Mosquée Hay Essalam in that local cluster and supplies the verified point.",
     verifiedAt: "2026-09-22",
   },
+
+  {
+    entity: {
+      id: "landmark_nador_oulad_mimoun_souk_oulad_mimoun",
+      type: "landmark",
+      citySlug: "nador",
+      districtSlug: "oulad-mimoun",
+      landmarkSlug: "souk-oulad-mimoun",
+      canonicalName: "Souk Oulad Mimoun",
+      aliases: ["Zoco Ulad Mimun"],
+      category: "retail",
+      parentId: "district_nador_oulad_mimoun",
+      importance: {
+        score: 94,
+        tier: "major",
+        basis: ["orientation_value", "product_priority", "urban_prominence"],
+      },
+      visibility: { minZoom: 13.6, retainPriority: true },
+      coordinates: {
+        lat: 35.1709,
+        lng: -2.93614,
+        precision: "verified_landmark_point",
+      },
+    },
+    sourceRefs: [
+      "https://yakeey.com/fr-ma/referentiel-de-prix-immobilier/nador/oulad-mimoun",
+      "https://mapcarta.com/fr/W319499748",
+    ],
+    verificationNote: "Yakeey certifies Oulad Mimoun as a current Nador product neighborhood; OSM-backed Mapcarta identifies Souk Oulad Mimoun in Nador and supplies the verified point.",
+    verifiedAt: "2026-09-22",
+  },
 ];
 
 const CANONICAL_DISTRICT_IDS = new Set(GEO_NEIGHBORHOODS.map((district) => district.id));
