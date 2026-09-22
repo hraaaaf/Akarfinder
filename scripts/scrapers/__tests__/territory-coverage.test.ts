@@ -91,6 +91,13 @@ const OPEN_LANDMARK_GAPS = {
     "district_essaouira_kasbah",
     "district_essaouira_medina",
   ],
+  bouznika: [
+    "district_bouznika_al_wouroud",
+    "district_bouznika_hay_amal",
+    "district_bouznika_hay_ghita",
+    "district_bouznika_hay_riad",
+    "district_bouznika_hay_salim",
+  ],
 } as const;
 
 test("enrichment queue exposes every currently open canonical city", () => {
