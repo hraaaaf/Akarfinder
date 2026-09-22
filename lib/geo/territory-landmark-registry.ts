@@ -1253,6 +1253,51 @@ export const VERIFIED_LANDMARKS: readonly VerifiedLandmarkEntry[] = [
     verificationNote: "The church is explicitly described as being in the Ensanche of Tétouan; OSM-backed Mapcarta supplies the verified point.",
     verifiedAt: "2026-09-22",
   },
+
+  {
+    entity: {
+      id: "landmark_el_jadida_najd_lycee",
+      type: "landmark",
+      citySlug: "el-jadida",
+      districtSlug: "najd",
+      landmarkSlug: "lycee-najd",
+      canonicalName: "Lycée Najd",
+      aliases: [],
+      category: "other",
+      parentId: "district_el_jadida_najd",
+      importance: { score: 88, tier: "major", basis: ["orientation_value", "product_priority"] },
+      visibility: { minZoom: 13.9, retainPriority: false },
+      coordinates: { lat: 33.22247, lng: -8.50718, precision: "verified_landmark_point" },
+    },
+    sourceRefs: [
+      "https://yakeey.com/fr-ma/referentiel-de-prix-immobilier/el-jadida",
+      "https://mapcarta.com/W1228540379",
+    ],
+    verificationNote: "Yakeey exposes Najd as a current El Jadida product neighborhood; OSM-backed Mapcarta identifies Lycée Najd and supplies the verified point.",
+    verifiedAt: "2026-09-22",
+  },
+  {
+    entity: {
+      id: "landmark_el_jadida_sidi_moussa_ecole",
+      type: "landmark",
+      citySlug: "el-jadida",
+      districtSlug: "sidi-moussa",
+      landmarkSlug: "ecole-sidi-moussa",
+      canonicalName: "École Sidi Moussa",
+      aliases: [],
+      category: "other",
+      parentId: "district_el_jadida_sidi_moussa",
+      importance: { score: 88, tier: "major", basis: ["orientation_value", "product_priority"] },
+      visibility: { minZoom: 13.9, retainPriority: false },
+      coordinates: { lat: 33.23415, lng: -8.49482, precision: "verified_landmark_point" },
+    },
+    sourceRefs: [
+      "https://yakeey.com/fr-ma/referentiel-de-prix-immobilier/el-jadida",
+      "https://mapcarta.com/W320833378",
+    ],
+    verificationNote: "Yakeey exposes Sidi Moussa as a current El Jadida product neighborhood; OSM-backed Mapcarta identifies École Sidi Moussa and supplies the verified point.",
+    verifiedAt: "2026-09-22",
+  },
 ];
 
 const CANONICAL_DISTRICT_IDS = new Set(GEO_NEIGHBORHOODS.map((district) => district.id));
