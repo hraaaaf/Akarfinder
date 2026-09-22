@@ -403,11 +403,11 @@ export function NationalTerritoryExperience({
       map.off("click", handleClick);
       map.getCanvas().removeEventListener("mouseleave", handleMapLeave);
     };
-  }, [enterCity, mapReady, payload, theme]);
+  }, [enterCity, mapReady, onSelectRegion, payload, theme]);
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !mapReady || !payload || payload.view !== "morocco") return;
+    if (!map || !mapReady || !payload || payload.view === "city") return;
     const active = previewSlug ?? hoverSlug;
     const filter = active ? ["==", ["get", "slug"], active] : emptyFilter();
     for (const layer of [ACTIVE_FILL, ACTIVE_LINE, ACTIVE_POINT]) {
@@ -490,7 +490,9 @@ export function NationalTerritoryExperience({
               <button
                 key={place.slug}
                 type="button"
-                onClick={() => enterCity(place.slug)}
+                onClick={() => {
+                  if (place.region?.slug) onSelectRegion(place.region.slug);
+                }}
                 onMouseEnter={() => setHoverSlug(place.slug)}
                 onMouseLeave={() => setHoverSlug(null)}
                 className="flex w-full items-center gap-3 px-1 py-2.5 text-left transition hover:bg-brand-primary-soft/70"
@@ -592,7 +594,9 @@ export function NationalTerritoryExperience({
             }}
             className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-brand-primary px-4 text-[11.5px] font-extrabold text-white shadow-accent"
           >
-            {payload?.view === "morocco" ? `Explorer la région de ${previewPlace.name}` : `Explorer ${previewPlace.name}`}
+            {payload?.view === "morocco"
+              ? `Explorer ${previewPlace.region?.name ?? "la région"}`
+              : `Explorer ${previewPlace.name}`}
           </button>
         </aside>
       ) : null}
