@@ -144,3 +144,18 @@ Other states are preserved explicitly:
 - `NO_OSM_CANDIDATE_MATCH`
 
 The crosswalk is `CANDIDATE_CROSSWALK_ONLY`: it cannot add registry entries, activate map/SEO eligibility, or promote geometry.
+
+
+### National rollout plan
+
+The workflow now emits `morocco-landmark-factory-rollout-plan.json` from the certified canonical crosswalk.
+
+Execution states are deterministic evidence states, not subjective scores:
+
+1. `REFERENCE_IMPLEMENTATION` — Casablanca only; finish and preserve the reference doctrine.
+2. `CANONICAL_MATCHED` — all currently canonical neighborhoods in the city have exact discovery matches; independent product evidence is still required.
+3. `MIXED_CANONICAL_EVIDENCE` — some canonical neighborhoods match and some remain unresolved.
+4. `CANONICAL_GAP_REVIEW` — canonical neighborhoods exist but have no exact same-city OSM discovery match.
+5. `DISCOVERY_ONLY` — discovery candidates exist but no canonical neighborhood is currently registered for that city.
+
+The rollout plan never mutates `GEO_CITIES` or `GEO_NEIGHBORHOODS`, never activates map/SEO eligibility, and never promotes geometry.
