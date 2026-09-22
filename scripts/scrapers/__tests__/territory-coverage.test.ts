@@ -22,16 +22,27 @@ test("eight cities currently have at least one verified landmark", () => {
   assert.deepEqual(covered, ["agadir", "casablanca", "fes", "kenitra", "marrakech", "mohammedia", "rabat", "tanger"].sort());
 });
 
-test("Casablanca coverage is complete after the final landmark batch", () => {
+test("Casablanca coverage reports the three newly canonical districts still awaiting landmark evidence", () => {
   const casa = getTerritoryCityCoverage("casablanca");
-  assert.equal(casa.canonicalDistrictCount, 6);
+  assert.equal(casa.canonicalDistrictCount, 9);
   assert.equal(casa.districtsWithVerifiedLandmark, 6);
-  assert.equal(casa.verifiedLandmarkCount, 6);
-  assert.deepEqual(casa.missingLandmarkDistrictIds, []);
+  assert.equal(casa.verifiedLandmarkCount, 7);
+  assert.deepEqual(
+    casa.missingLandmarkDistrictIds.sort(),
+    [
+      "district_casablanca_californie",
+      "district_casablanca_hay_hassani",
+      "district_casablanca_sidi_maarouf",
+    ].sort(),
+  );
 });
 
-test("enrichment queue is empty when all canonical districts are covered", () => {
-  assert.deepEqual(getCitiesNeedingLandmarkEnrichment(), []);
+test("enrichment queue keeps Casablanca open while three canonical districts lack landmark evidence", () => {
+  const queue = getCitiesNeedingLandmarkEnrichment();
+  assert.equal(queue.length, 1);
+  assert.equal(queue[0]?.citySlug, "casablanca");
+  assert.equal(queue[0]?.canonicalDistrictCount, 9);
+  assert.equal(queue[0]?.districtsWithVerifiedLandmark, 6);
 });
 
 test("Rabat, Tanger and Fes are fully covered after certified batch three", () => {
@@ -51,12 +62,19 @@ test("Rabat, Tanger and Fes are fully covered after certified batch three", () =
   assert.deepEqual(fes.missingLandmarkDistrictIds, []);
 });
 
-test("final landmark batch covers all canonical districts", () => {
+test("coverage remains fail-closed for canonical districts without verified landmark evidence", () => {
   const missing = getTerritoryCoverageReport()
     .flatMap((entry) => entry.missingLandmarkDistrictIds)
     .sort();
 
-  assert.deepEqual(missing, []);
+  assert.deepEqual(
+    missing,
+    [
+      "district_casablanca_californie",
+      "district_casablanca_hay_hassani",
+      "district_casablanca_sidi_maarouf",
+    ].sort(),
+  );
   assert.equal(
     getTerritoryCoverageReport().reduce((total, entry) => total + entry.districtsWithVerifiedLandmark, 0),
     23,
