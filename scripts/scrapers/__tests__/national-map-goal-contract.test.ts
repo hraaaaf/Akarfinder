@@ -12,6 +12,7 @@ import {
   CASABLANCA_TARGET_NEIGHBORHOOD_READINESS,
   CASABLANCA_TARGET_NEIGHBORHOOD_READINESS_SUMMARY,
 } from "../../../lib/geo/casablanca-target-neighborhood-readiness";
+import { CANONICAL_PREMIUM_MAP_SUMMARY, buildCanonicalPremiumMapData } from "../../../lib/map/canonical-premium-map-data";
 
 test("GOAL national map keeps exactly 12 canonical regions", () => {
   assert.equal(MOROCCO_REGIONS.length, 12);
@@ -64,6 +65,27 @@ test("navigation source preserves Pays -> Région -> Ville -> Quartier hierarchy
   assert.match(api, /displayPolicy: "CANONICAL_REGION_CITY_HUBS"/);
   assert.match(api, /regionGeometryPublicationCount: 0/);
   assert.match(api, /geometryStatus: "not_published"/);
+});
+
+test("premium entry uses canonical data and no synthetic neighborhood geometry", () => {
+  const regions = buildCanonicalPremiumMapData();
+  const premium = fs.readFileSync("components/map/PremiumInteractiveMap.tsx", "utf8");
+  const page = fs.readFileSync("app/map/page.tsx", "utf8");
+
+  assert.equal(CANONICAL_PREMIUM_MAP_SUMMARY.regionCount, 12);
+  assert.equal(CANONICAL_PREMIUM_MAP_SUMMARY.countryHubCount, 8);
+  assert.equal(CANONICAL_PREMIUM_MAP_SUMMARY.syntheticPriceCount, 0);
+  assert.equal(regions.reduce((sum, region) => sum + region.cities.length, 0), 8);
+
+  assert.match(premium, /buildCanonicalPremiumMapData/);
+  assert.match(premium, /data-db-mode="canonical-registry"/);
+  assert.match(premium, /data-neighborhood-canonical-index/);
+  assert.doesNotMatch(premium, /function neighborhoodPolygon/);
+  assert.doesNotMatch(premium, /data-db-mode="mock-only"/);
+  assert.doesNotMatch(premium, /Frontières de quartiers stylisées/);
+
+  assert.match(page, /const region = firstParam\(params\.region\)/);
+  assert.match(page, /!region && !city && !district/);
 });
 
 test("GOAL contract forbids synthetic region and neighborhood geometry", () => {
