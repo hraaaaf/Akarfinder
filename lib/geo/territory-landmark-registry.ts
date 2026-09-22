@@ -1502,6 +1502,52 @@ export const VERIFIED_LANDMARKS: readonly VerifiedLandmarkEntry[] = [
     verificationNote: "AURS certifies Laayayda as a Salé planning sector; OSM-backed Mapcarta identifies the Barid Al-Maghrib office Sale Layayda and supplies the verified point.",
     verifiedAt: "2026-09-22",
   },
+
+  {
+    entity: {
+      id: "landmark_oujda_hay_boudir_place_boudir",
+      type: "landmark",
+      citySlug: "oujda",
+      districtSlug: "hay-boudir",
+      landmarkSlug: "place-boudir",
+      canonicalName: "Place Boudir",
+      aliases: [],
+      category: "park",
+      parentId: "district_oujda_hay_boudir",
+      importance: { score: 90, tier: "major", basis: ["orientation_value", "product_priority"] },
+      visibility: { minZoom: 13.8, retainPriority: true },
+      coordinates: { lat: 34.68812, lng: -1.90712, precision: "verified_landmark_point" },
+    },
+    sourceRefs: [
+      "https://yakeey.com/fr-ma/referentiel-de-prix-immobilier/oujda",
+      "https://mapcarta.com/W291664329",
+    ],
+    verificationNote: "Yakeey exposes Hay Boudir in the Oujda product taxonomy; OSM-backed Mapcarta identifies Place Boudir in Oujda and supplies the verified point.",
+    verifiedAt: "2026-09-22",
+  },
+  {
+    entity: {
+      id: "landmark_oujda_centre_ville_gare",
+      type: "landmark",
+      citySlug: "oujda",
+      districtSlug: "centre-ville",
+      landmarkSlug: "gare-d-oujda",
+      canonicalName: "Gare d’Oujda",
+      aliases: ["Oujda Railway Station"],
+      category: "transport",
+      parentId: "district_oujda_centre_ville",
+      importance: { score: 96, tier: "flagship", basis: ["orientation_value", "product_priority", "urban_prominence"] },
+      visibility: { minZoom: 13.5, retainPriority: true },
+      coordinates: { lat: 34.68151, lng: -1.92401, precision: "verified_landmark_point" },
+    },
+    sourceRefs: [
+      "https://yakeey.com/fr-ma/referentiel-de-prix-immobilier/oujda",
+      "https://mapcarta.com/fr/Oujda",
+      "https://mapcarta.com/N12173815230",
+    ],
+    verificationNote: "Yakeey exposes Centre Ville in the Oujda product taxonomy; Mapcarta’s Oujda description explicitly places the railway station in centre-ville and the OSM-backed station page supplies the verified point.",
+    verifiedAt: "2026-09-22",
+  },
 ];
 
 const CANONICAL_DISTRICT_IDS = new Set(GEO_NEIGHBORHOODS.map((district) => district.id));
