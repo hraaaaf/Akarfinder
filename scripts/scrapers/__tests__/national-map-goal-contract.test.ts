@@ -77,6 +77,8 @@ test("premium entry uses canonical data and no synthetic neighborhood geometry",
   assert.equal(CANONICAL_PREMIUM_MAP_SUMMARY.regionCount, 12);
   assert.equal(CANONICAL_PREMIUM_MAP_SUMMARY.countryHubCount, 8);
   assert.equal(CANONICAL_PREMIUM_MAP_SUMMARY.syntheticPriceCount, 0);
+  assert.equal(CANONICAL_PREMIUM_MAP_SUMMARY.anchoredNeighborhoodCount, CANONICAL_PREMIUM_MAP_SUMMARY.canonicalNeighborhoodCount);
+  assert.equal(CANONICAL_PREMIUM_MAP_SUMMARY.anchoredNeighborhoodCount, 63);
   assert.equal(regions.reduce((sum, region) => sum + region.cities.length, 0), 8);
 
   assert.match(premium, /buildCanonicalPremiumMapData/);
@@ -127,4 +129,20 @@ test("GOAL contract forbids synthetic region and neighborhood geometry", () => {
   const readiness = fs.readFileSync("lib/geo/casablanca-target-neighborhood-readiness.ts", "utf8");
   assert.doesNotMatch(api, /voronoi|turf\.buffer|midpoint/i);
   assert.match(readiness, /geometryPublicationAllowed: false/);
+});
+
+
+test("all 19 canonical cities are navigable through regionalCities and every district has a verified map anchor", () => {
+  const regions = buildCanonicalPremiumMapData();
+  const regionalCities = regions.flatMap((region) => region.regionalCities);
+  assert.equal(regionalCities.length, 19);
+  assert.equal(new Set(regionalCities.map((city) => city.slug)).size, 19);
+
+  const districts = regionalCities.flatMap((city) => city.quartiers);
+  assert.equal(districts.length, 63);
+  assert.ok(districts.every((district) => district.mapAnchor?.evidenceRole === "VERIFIED_LANDMARK_ANCHOR_ONLY"));
+
+  const premium = fs.readFileSync("components/map/PremiumInteractiveMap.tsx", "utf8");
+  assert.match(premium, /selectedRegion\?\.regionalCities\.find/);
+  assert.match(premium, /region\.regionalCities\.some/);
 });
