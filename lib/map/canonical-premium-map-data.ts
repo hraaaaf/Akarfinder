@@ -24,7 +24,7 @@ export type PremiumMapCity = {
   name: string;
   slug: CanonicalCitySlug;
   signature?: string;
-  coordinates: [number, number];
+  coordinates?: [number, number];
   quartiers: PremiumMapQuartier[];
 };
 
@@ -87,17 +87,13 @@ export function buildCanonicalPremiumMapData(): PremiumMapRegion[] {
   return MOROCCO_REGIONS.map((region) => {
     const regionalCities = GEO_CITIES
       .filter((city) => CANONICAL_CITY_REGION[city.slug] === region.slug)
-      .flatMap((city): PremiumMapCity[] => {
-        const coordinates = cityPoint(city.slug);
-        if (!coordinates) return [];
-        return [{
-          name: city.canonical_name,
-          slug: city.slug,
-          signature: getNationalCountryHubPolicy(city.slug)?.descriptor,
-          coordinates,
-          quartiers: canonicalQuartiers(city.slug),
-        }];
-      })
+      .map((city): PremiumMapCity => ({
+        name: city.canonical_name,
+        slug: city.slug,
+        signature: getNationalCountryHubPolicy(city.slug)?.descriptor,
+        coordinates: cityPoint(city.slug) ?? undefined,
+        quartiers: canonicalQuartiers(city.slug),
+      }))
       .sort((a, b) => {
         const aHub = countryHubSlugs.has(a.slug) ? 0 : 1;
         const bHub = countryHubSlugs.has(b.slug) ? 0 : 1;
@@ -106,7 +102,9 @@ export function buildCanonicalPremiumMapData(): PremiumMapRegion[] {
       });
 
     const cities = regionalCities
-      .filter((city) => countryHubSlugs.has(city.slug))
+      .filter((city): city is PremiumMapCity & { coordinates: [number, number] } =>
+        countryHubSlugs.has(city.slug) && Boolean(city.coordinates),
+      )
       .sort((a, b) =>
         (getNationalCountryHubPolicy(a.slug)?.order ?? 999) -
         (getNationalCountryHubPolicy(b.slug)?.order ?? 999),
