@@ -6,6 +6,11 @@ import {
   normalizeGeoText,
   type CanonicalCitySlug,
 } from "../../lib/geo/geo-entity-registry";
+import {
+  CANONICAL_CITY_REGION,
+  MOROCCO_REGIONS,
+  getMoroccoRegion,
+} from "../../lib/geo/morocco-region-registry";
 
 type LocalityCenter = {
   osm_id: number;
@@ -44,57 +49,6 @@ type Crosswalk = {
   evidence_role: string;
   activation_allowed: boolean;
   geometry_promotion_allowed: boolean;
-};
-
-type RegionSlug =
-  | "tanger-tetouan-al-hoceima"
-  | "oriental"
-  | "fes-meknes"
-  | "rabat-sale-kenitra"
-  | "beni-mellal-khenifra"
-  | "casablanca-settat"
-  | "marrakech-safi"
-  | "draa-tafilalet"
-  | "souss-massa"
-  | "guelmim-oued-noun"
-  | "laayoune-sakia-el-hamra"
-  | "dakhla-oued-ed-dahab";
-
-const REGIONS: Record<RegionSlug, string> = {
-  "tanger-tetouan-al-hoceima": "Tanger-Tétouan-Al Hoceïma",
-  oriental: "Oriental",
-  "fes-meknes": "Fès-Meknès",
-  "rabat-sale-kenitra": "Rabat-Salé-Kénitra",
-  "beni-mellal-khenifra": "Béni Mellal-Khénifra",
-  "casablanca-settat": "Casablanca-Settat",
-  "marrakech-safi": "Marrakech-Safi",
-  "draa-tafilalet": "Drâa-Tafilalet",
-  "souss-massa": "Souss-Massa",
-  "guelmim-oued-noun": "Guelmim-Oued Noun",
-  "laayoune-sakia-el-hamra": "Laâyoune-Sakia El Hamra",
-  "dakhla-oued-ed-dahab": "Dakhla-Oued Ed-Dahab",
-};
-
-const CITY_REGION: Record<CanonicalCitySlug, RegionSlug> = {
-  casablanca: "casablanca-settat",
-  rabat: "rabat-sale-kenitra",
-  marrakech: "marrakech-safi",
-  tanger: "tanger-tetouan-al-hoceima",
-  agadir: "souss-massa",
-  fes: "fes-meknes",
-  kenitra: "rabat-sale-kenitra",
-  mohammedia: "casablanca-settat",
-  sale: "rabat-sale-kenitra",
-  temara: "rabat-sale-kenitra",
-  meknes: "fes-meknes",
-  tetouan: "tanger-tetouan-al-hoceima",
-  oujda: "oriental",
-  "el-jadida": "casablanca-settat",
-  nador: "oriental",
-  essaouira: "marrakech-safi",
-  bouskoura: "casablanca-settat",
-  bouznika: "casablanca-settat",
-  azrou: "fes-meknes",
 };
 
 function arg(name: string): string {
@@ -139,7 +93,7 @@ const centerClassifications = inventory.urban_centers.map((center) => {
       place: center.place ?? null,
       role: "CANONICAL_CITY_HUB" as const,
       city_slug: citySlug,
-      region_slug: CITY_REGION[citySlug],
+      region_slug: CANONICAL_CITY_REGION[citySlug],
       publication: "VERIFIED_CANONICAL_IDENTITY" as const,
     };
   }
@@ -171,8 +125,8 @@ const hubs = GEO_CITIES.map((city) => {
   });
 
   return {
-    region_slug: CITY_REGION[city.slug],
-    region_name: REGIONS[CITY_REGION[city.slug]],
+    region_slug: CANONICAL_CITY_REGION[city.slug],
+    region_name: REGIONS[CANONICAL_CITY_REGION[city.slug]],
     city: {
       id: city.id,
       slug: city.slug,
@@ -203,12 +157,12 @@ const hubs = GEO_CITIES.map((city) => {
   };
 });
 
-const regions = Object.entries(REGIONS).map(([slug, name]) => ({
-  slug,
-  canonical_name: name,
+const regions = MOROCCO_REGIONS.map((region) => ({
+  slug: region.slug,
+  canonical_name: region.canonical_name,
   source: "HCP_12_REGION_FRAMEWORK",
   city_hubs: hubs
-    .filter((hub) => hub.region_slug === slug)
+    .filter((hub) => hub.region_slug === region.slug)
     .map((hub) => hub.city.slug),
 }));
 
