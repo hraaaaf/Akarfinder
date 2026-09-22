@@ -1343,6 +1343,29 @@ export const VERIFIED_LANDMARKS: readonly VerifiedLandmarkEntry[] = [
     verificationNote: "Yakeey exposes Hay Al Massira in the Oujda product taxonomy; OSM-backed Mapcarta identifies Lycée Al Massira in Oujda and supplies the verified point.",
     verifiedAt: "2026-09-22",
   },
+
+  {
+    entity: {
+      id: "landmark_oujda_hay_al_andalous_jardin",
+      type: "landmark",
+      citySlug: "oujda",
+      districtSlug: "hay-al-andalous",
+      landmarkSlug: "jardin-al-andalouss",
+      canonicalName: "Jardin Al Andalouss",
+      aliases: ["Jardin Al Andalous"],
+      category: "park",
+      parentId: "district_oujda_hay_al_andalous",
+      importance: { score: 92, tier: "major", basis: ["orientation_value", "product_priority"] },
+      visibility: { minZoom: 13.7, retainPriority: true },
+      coordinates: { lat: 34.65676, lng: -1.88488, precision: "verified_landmark_point" },
+    },
+    sourceRefs: [
+      "https://yakeey.com/fr-ma/referentiel-de-prix-immobilier/oujda",
+      "https://mapcarta.com/W1281328873",
+    ],
+    verificationNote: "Yakeey exposes Hay Al Andalous in the Oujda product taxonomy; OSM-backed Mapcarta identifies Jardin Al Andalouss in the same Oujda cluster and supplies the verified point.",
+    verifiedAt: "2026-09-22",
+  },
 ];
 
 const CANONICAL_DISTRICT_IDS = new Set(GEO_NEIGHBORHOODS.map((district) => district.id));
