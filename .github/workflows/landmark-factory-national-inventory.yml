@@ -10,6 +10,7 @@ on:
       - "scripts/landmarks/build-national-useful-inventory.ts"
       - "scripts/landmarks/build-locality-city-attachments.ts"
       - "scripts/landmarks/assign-morocco-locality-region.py"
+      - "scripts/landmarks/build-morocco-region-boundaries.py"
       - "scripts/landmarks/build-rabat-landmark-bridge.ts"
       - "lib/geo/rabat-locality-registry.ts"
       - "lib/geo/rabat-locality-geometry-registry.ts"
@@ -80,6 +81,24 @@ jobs:
             wr/admin_level=4
           ls -lh /tmp/morocco-admin4.osm.pbf
           osmium fileinfo -e /tmp/morocco-admin4.osm.pbf
+
+      - name: Build canonical Morocco region boundaries
+        run: |
+          mkdir -p artifacts
+          python scripts/landmarks/build-morocco-region-boundaries.py \
+            --pbf /tmp/morocco-admin4.osm.pbf \
+            --out artifacts/morocco-canonical-region-boundaries.geojson
+          python - <<'PY'
+          import json
+          p=json.load(open("artifacts/morocco-canonical-region-boundaries.geojson",encoding="utf-8"))
+          assert p["type"] == "FeatureCollection"
+          assert len(p["features"]) == 12
+          assert p["akarfinder"]["evidence_role"] == "CANONICAL_REGION_BOUNDARY_CANDIDATES"
+          assert p["akarfinder"]["activation_allowed"] is False
+          assert p["akarfinder"]["product_boundary_promotion_allowed"] is False
+          assert all(f["properties"]["admin_level"] == "4" for f in p["features"])
+          assert all(f["properties"]["geometry_claim"] == "ADMINISTRATIVE_REGION_ONLY" for f in p["features"])
+          PY
 
       - name: Build national neighborhood discovery backlog
         run: |
