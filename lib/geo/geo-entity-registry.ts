@@ -117,6 +117,24 @@ export const GEO_NEIGHBORHOODS: CanonicalNeighborhoodEntity[] = [
   { id: "district_agadir_founty", slug: "founty", canonical_name: "Founty", aliases: [], city_slug: "agadir", validation_status: "validated", seo_eligible: true, map_eligible: true },
   { id: "district_agadir_talborjt", slug: "talborjt", canonical_name: "Talborjt", aliases: ["Quartier Talborjt"], city_slug: "agadir", validation_status: "validated", seo_eligible: false, map_eligible: true },
 
+  // Meknès — identity-only product geography. No DGI zone is a product boundary.
+  { id: "district_meknes_ancienne_medina", slug: "ancienne-medina", canonical_name: "Ancienne Médina", aliases: ["Ancienne Medina", "Medina"], city_slug: "meknes", validation_status: "validated", seo_eligible: false, map_eligible: true },
+  { id: "district_meknes_hamria", slug: "hamria", canonical_name: "Hamria", aliases: ["Hamria Centre"], city_slug: "meknes", validation_status: "validated", seo_eligible: false, map_eligible: true },
+  { id: "district_meknes_marjane", slug: "marjane", canonical_name: "Marjane", aliases: [], city_slug: "meknes", validation_status: "validated", seo_eligible: false, map_eligible: true },
+  { id: "district_meknes_ryad", slug: "ryad", canonical_name: "Ryad", aliases: ["Riad"], city_slug: "meknes", validation_status: "validated", seo_eligible: false, map_eligible: true },
+  { id: "district_meknes_zitoune", slug: "zitoune", canonical_name: "Zitoune", aliases: [], city_slug: "meknes", validation_status: "validated", seo_eligible: false, map_eligible: true },
+
+  // Tétouan — identity-only product geography. UNESCO heritage geometry is not a product boundary.
+  { id: "district_tetouan_medina", slug: "medina", canonical_name: "Médina", aliases: ["Medina"], city_slug: "tetouan", validation_status: "validated", seo_eligible: false, map_eligible: true },
+  { id: "district_tetouan_ensanche", slug: "ensanche", canonical_name: "Ensanche", aliases: ["El Ensanche"], city_slug: "tetouan", validation_status: "validated", seo_eligible: false, map_eligible: true },
+
+  // Oujda — identity-only product geography. No tax/planning zone is a product boundary.
+  { id: "district_oujda_centre_ville", slug: "centre-ville", canonical_name: "Centre Ville", aliases: ["Centre-ville"], city_slug: "oujda", validation_status: "validated", seo_eligible: false, map_eligible: true },
+  { id: "district_oujda_hay_al_massira", slug: "hay-al-massira", canonical_name: "Hay Al Massira", aliases: ["Hay Massira"], city_slug: "oujda", validation_status: "validated", seo_eligible: false, map_eligible: true },
+  { id: "district_oujda_hay_boudir", slug: "hay-boudir", canonical_name: "Hay Boudir", aliases: ["Boudir"], city_slug: "oujda", validation_status: "validated", seo_eligible: false, map_eligible: true },
+  { id: "district_oujda_hay_al_andalous", slug: "hay-al-andalous", canonical_name: "Hay Al Andalous", aliases: ["Hay Andalous"], city_slug: "oujda", validation_status: "validated", seo_eligible: false, map_eligible: true },
+  { id: "district_oujda_hay_el_qods", slug: "hay-el-qods", canonical_name: "Hay El Qods", aliases: ["Hay Qods", "Hay Al Qods"], city_slug: "oujda", validation_status: "validated", seo_eligible: false, map_eligible: true },
+
   // Map-only canonical entities: validated for map/navigation, not auto-indexed for SEO.
   { id: "district_fes_ville_nouvelle", slug: "ville-nouvelle", canonical_name: "Ville Nouvelle", aliases: [], city_slug: "fes", validation_status: "validated", seo_eligible: false, map_eligible: true },
   { id: "district_fes_el_bali", slug: "fes-el-bali", canonical_name: "Fès el-Bali", aliases: ["Fes el-Bali", "Fes el Bali"], city_slug: "fes", validation_status: "validated", seo_eligible: false, map_eligible: true },
