@@ -132,6 +132,7 @@ export function NationalMapRouter({ initialState }: Props) {
         districtLabel={selectedNeighborhood.neighborhood}
         center={[selectedNeighborhood.lng, selectedNeighborhood.lat]}
         desktopCameraOffset={isMaarifReference ? [-0.0055, 0.0090] : [0, 0]}
+        reserveRail={isMaarifReference}
       />
     );
   }
