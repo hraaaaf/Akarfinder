@@ -154,6 +154,7 @@ export function NationalMapRouter({ initialState }: Props) {
         selectedCitySlug={selectedCitySlug}
         onSelectRegion={selectRegion}
         onSelectCity={selectCity}
+        onSelectDistrict={selectDistrict}
         onBackToRegion={backToRegion}
         onBackToMorocco={backToMorocco}
       />
