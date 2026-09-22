@@ -1479,6 +1479,29 @@ export const VERIFIED_LANDMARKS: readonly VerifiedLandmarkEntry[] = [
     verificationNote: "AURS certifies Hssaine as a Salé planning sector; OSM-backed Mapcarta identifies the Poste Maroc office Salé Hssaine and supplies the verified point.",
     verifiedAt: "2026-09-22",
   },
+
+  {
+    entity: {
+      id: "landmark_sale_laayayda_poste",
+      type: "landmark",
+      citySlug: "sale",
+      districtSlug: "laayayda",
+      landmarkSlug: "sale-layayda-poste",
+      canonicalName: "Sale Layayda",
+      aliases: ["la poste de Laayayda"],
+      category: "civic",
+      parentId: "district_sale_laayayda",
+      importance: { score: 90, tier: "major", basis: ["orientation_value", "product_priority"] },
+      visibility: { minZoom: 13.8, retainPriority: true },
+      coordinates: { lat: 34.06204, lng: -6.7727, precision: "verified_landmark_point" },
+    },
+    sourceRefs: [
+      "https://aurs.org.ma/fr/news/mise-en-ligne-du-plan-damenagement-de-laayayda-sale/",
+      "https://mapcarta.com/N2907756732",
+    ],
+    verificationNote: "AURS certifies Laayayda as a Salé planning sector; OSM-backed Mapcarta identifies the Barid Al-Maghrib office Sale Layayda and supplies the verified point.",
+    verifiedAt: "2026-09-22",
+  },
 ];
 
 const CANONICAL_DISTRICT_IDS = new Set(GEO_NEIGHBORHOODS.map((district) => district.id));
