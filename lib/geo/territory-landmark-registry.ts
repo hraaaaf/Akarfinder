@@ -1027,6 +1027,97 @@ export const VERIFIED_LANDMARKS: readonly VerifiedLandmarkEntry[] = [
     verificationNote: "Yakeey certifies Marjane as a current Meknès product neighborhood; OSM-backed Mapcarta identifies the named Marjane supermarket in Meknès and supplies the verified point.",
     verifiedAt: "2026-09-22",
   },
+
+  {
+    entity: {
+      id: "landmark_casablanca_californie_casablanca_american_school",
+      type: "landmark",
+      citySlug: "casablanca",
+      districtSlug: "californie",
+      landmarkSlug: "casablanca-american-school",
+      canonicalName: "Casablanca American School",
+      aliases: ["CAS"],
+      category: "other",
+      parentId: "district_casablanca_californie",
+      importance: {
+        score: 92,
+        tier: "major",
+        basis: ["orientation_value", "product_priority"],
+      },
+      visibility: { minZoom: 13.7, retainPriority: true },
+      coordinates: {
+        lat: 33.53687,
+        lng: -7.62943,
+        precision: "verified_landmark_point",
+      },
+    },
+    sourceRefs: [
+      "https://www.cas.ac.ma/",
+      "https://mapcarta.com/W1364770546",
+    ],
+    verificationNote: "Casablanca American School gives its address explicitly as Quartier Californie; OSM-backed Mapcarta supplies the verified school point.",
+    verifiedAt: "2026-09-22",
+  },
+  {
+    entity: {
+      id: "landmark_sale_tabriquet_gare_sale_tabriquet",
+      type: "landmark",
+      citySlug: "sale",
+      districtSlug: "tabriquet",
+      landmarkSlug: "gare-sale-tabriquet",
+      canonicalName: "Gare de Salé-Tabriquet",
+      aliases: ["Salé-Tabriquet railway station"],
+      category: "transport",
+      parentId: "district_sale_tabriquet",
+      importance: {
+        score: 96,
+        tier: "flagship",
+        basis: ["orientation_value", "product_priority", "urban_prominence"],
+      },
+      visibility: { minZoom: 13.5, retainPriority: true },
+      coordinates: {
+        lat: 34.0534,
+        lng: -6.8087,
+        precision: "verified_landmark_point",
+      },
+    },
+    sourceRefs: [
+      "https://aurs.org.ma/fr/news/mise-en-ligne-du-plan-damenagement-homologue-de-tabriquet-sale/",
+      "https://mapcarta.com/N2622485570",
+    ],
+    verificationNote: "AURS certifies Tabriquet as a Salé planning sector; OSM-backed Mapcarta explicitly identifies Salé-Tabriquet railway station in the district and supplies the public point context.",
+    verifiedAt: "2026-09-22",
+  },
+  {
+    entity: {
+      id: "landmark_sale_bettana_tram_bettana",
+      type: "landmark",
+      citySlug: "sale",
+      districtSlug: "bettana",
+      landmarkSlug: "station-tram-bettana",
+      canonicalName: "Station Tram Bettana",
+      aliases: ["Bettana Tram Stop"],
+      category: "transport",
+      parentId: "district_sale_bettana",
+      importance: {
+        score: 94,
+        tier: "major",
+        basis: ["orientation_value", "product_priority"],
+      },
+      visibility: { minZoom: 13.6, retainPriority: true },
+      coordinates: {
+        lat: 34.035,
+        lng: -6.80668,
+        precision: "verified_landmark_point",
+      },
+    },
+    sourceRefs: [
+      "https://aurs.org.ma/fr/news/lagence-urbaine-de-rabat-sale-met-en-ligne-le-plan-damenagement-homologue-de-bettana/",
+      "https://mapcarta.com/fr/N4592889793",
+    ],
+    verificationNote: "AURS certifies Bettana as a Salé planning sector; OSM-backed Mapcarta identifies the Bettana tram stop and supplies the verified point.",
+    verifiedAt: "2026-09-22",
+  },
 ];
 
 const CANONICAL_DISTRICT_IDS = new Set(GEO_NEIGHBORHOODS.map((district) => district.id));
