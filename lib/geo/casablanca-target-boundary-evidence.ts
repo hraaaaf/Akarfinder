@@ -1,6 +1,7 @@
 export type CasablancaTargetBoundaryEvidenceStatus =
   | "OFFICIAL_GRAPHIC_BOUNDARY_CANDIDATE"
   | "OFFICIAL_SECTOR_IDENTITY_WITH_TEXTUAL_LIMITS"
+  | "OFFICIAL_GRAPHIC_EVIDENCE_RASTER_ONLY"
   | "OFFICIAL_IDENTITY_ONLY"
   | "HOLD_NO_PRODUCT_BOUNDARY";
 
@@ -30,35 +31,35 @@ export const CASABLANCA_TARGET_BOUNDARY_EVIDENCE: readonly CasablancaTargetBound
   {
     slug: "racine",
     canonicalName: "Racine",
-    evidenceStatus: "OFFICIAL_SECTOR_IDENTITY_WITH_TEXTUAL_LIMITS",
+    evidenceStatus: "OFFICIAL_GRAPHIC_EVIDENCE_RASTER_ONLY",
     publicationAllowed: false,
     sourceAuthority: "Agence Urbaine de Casablanca",
     sourceKind: "PA_REPORT",
     sourceRef: "https://auc.ma/wp-content/uploads/2020/05/RAPPORT-JUSTIFICATIF-ANFA.pdf",
     evidenceNote:
-      "AUC Anfa report explicitly lists Racine as one of seven Anfa sectors. Publication remains blocked until the official graphic sector geometry is extracted and independently verified.",
+      "AUC Anfa report explicitly lists Racine as one of seven Anfa sectors. The official PA-ANFA-5000-0 plan was inspected and is raster-only (page images, no vector paths/text), so direct geometry extraction is not available. Publication remains blocked.",
   },
   {
     slug: "bourgogne",
     canonicalName: "Bourgogne",
-    evidenceStatus: "OFFICIAL_SECTOR_IDENTITY_WITH_TEXTUAL_LIMITS",
+    evidenceStatus: "OFFICIAL_GRAPHIC_EVIDENCE_RASTER_ONLY",
     publicationAllowed: false,
     sourceAuthority: "Agence Urbaine de Casablanca",
     sourceKind: "PA_REPORT",
     sourceRef: "https://auc.ma/wp-content/uploads/2020/05/RAPPORT-JUSTIFICATIF-ANFA.pdf",
     evidenceNote:
-      "AUC identifies Bourgogne 2 as an Anfa sector and provides explicit road limits. Sidi Belyout planning documentation also says Bourgogne is graphically materialized. No road-loop polygon may be reconstructed manually.",
+      "AUC identifies Bourgogne 2 as an Anfa sector and provides explicit road limits. The official PA-ANFA-5000-0 plan is raster-only, so the graphic boundary cannot be extracted directly. No road-loop polygon may be reconstructed manually.",
   },
   {
     slug: "ain-diab",
     canonicalName: "Aïn Diab",
-    evidenceStatus: "OFFICIAL_SECTOR_IDENTITY_WITH_TEXTUAL_LIMITS",
+    evidenceStatus: "OFFICIAL_GRAPHIC_EVIDENCE_RASTER_ONLY",
     publicationAllowed: false,
     sourceAuthority: "Agence Urbaine de Casablanca",
     sourceKind: "PA_REPORT",
     sourceRef: "https://auc.ma/wp-content/uploads/2020/05/RAPPORT-JUSTIFICATIF-ANFA.pdf",
     evidenceNote:
-      "AUC Anfa report explicitly lists Aïn Diab as one of the official Anfa sectors. Geometry publication remains blocked pending extraction from the official planning graphic.",
+      "AUC Anfa report explicitly lists Aïn Diab as one of the official Anfa sectors. The official PA-ANFA-5000-0 plan is raster-only, so the graphic boundary cannot be extracted directly. Geometry publication remains blocked.",
   },
   {
     slug: "hay-hassani",
@@ -113,6 +114,9 @@ export const CASABLANCA_TARGET_BOUNDARY_EVIDENCE_SUMMARY = {
   ).length,
   officialSectorIdentityCount: CASABLANCA_TARGET_BOUNDARY_EVIDENCE.filter(
     (item) => item.evidenceStatus === "OFFICIAL_SECTOR_IDENTITY_WITH_TEXTUAL_LIMITS",
+  ).length,
+  officialRasterGraphicEvidenceCount: CASABLANCA_TARGET_BOUNDARY_EVIDENCE.filter(
+    (item) => item.evidenceStatus === "OFFICIAL_GRAPHIC_EVIDENCE_RASTER_ONLY",
   ).length,
   officialIdentityOnlyCount: CASABLANCA_TARGET_BOUNDARY_EVIDENCE.filter(
     (item) => item.evidenceStatus === "OFFICIAL_IDENTITY_ONLY",
