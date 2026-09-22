@@ -169,7 +169,7 @@ export function PremiumInteractiveMap() {
     [regions, selectedRegionSlug],
   );
   const selectedCity = useMemo(
-    () => selectedRegion?.cities.find((city) => city.slug === selectedCitySlug) ?? null,
+    () => selectedRegion?.regionalCities.find((city) => city.slug === selectedCitySlug) ?? null,
     [selectedCitySlug, selectedRegion],
   );
   const selectedQuartier = useMemo(
@@ -354,7 +354,7 @@ export function PremiumInteractiveMap() {
   }, [focusRegion]);
 
   const selectCity = useCallback((city: City) => {
-    const parentRegion = regions.find((region) => region.cities.some((candidate) => candidate.slug === city.slug));
+    const parentRegion = regions.find((region) => region.regionalCities.some((candidate) => candidate.slug === city.slug));
     setLevel("city");
     setSelectedRegionSlug(parentRegion?.slug ?? null);
     setSelectedCitySlug(city.slug);
