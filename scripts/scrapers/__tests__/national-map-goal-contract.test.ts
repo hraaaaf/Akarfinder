@@ -13,6 +13,7 @@ import {
   CASABLANCA_TARGET_NEIGHBORHOOD_READINESS_SUMMARY,
 } from "../../../lib/geo/casablanca-target-neighborhood-readiness";
 import { CANONICAL_PREMIUM_MAP_SUMMARY, buildCanonicalPremiumMapData } from "../../../lib/map/canonical-premium-map-data";
+import { CASABLANCA_TARGET_BOUNDARY_EVIDENCE, CASABLANCA_TARGET_BOUNDARY_EVIDENCE_SUMMARY } from "../../../lib/geo/casablanca-target-boundary-evidence";
 
 test("GOAL national map keeps exactly 12 canonical regions", () => {
   assert.equal(MOROCCO_REGIONS.length, 12);
@@ -110,6 +111,18 @@ test("Maârif target uses verified landmark registry and validated artwork", () 
   assert.match(neighborhoodMap, /\/api\/geo\/verified-landmarks/);
   assert.match(neighborhoodMap, /data-maplibre-verified-landmark-count/);
   assert.match(neighborhoodMap, /data-map-verified-landmark/);
+});
+
+test("Casablanca TARGET boundary evidence stays sourced and fail-closed", () => {
+  assert.equal(CASABLANCA_TARGET_BOUNDARY_EVIDENCE.length, 8);
+  assert.equal(CASABLANCA_TARGET_BOUNDARY_EVIDENCE_SUMMARY.targetCount, 8);
+  assert.equal(CASABLANCA_TARGET_BOUNDARY_EVIDENCE_SUMMARY.publishedProductBoundaryCount, 0);
+  assert.ok(CASABLANCA_TARGET_BOUNDARY_EVIDENCE.every((item) => item.publicationAllowed === false));
+  assert.ok(CASABLANCA_TARGET_BOUNDARY_EVIDENCE.every((item) => item.sourceAuthority === "Agence Urbaine de Casablanca"));
+  assert.equal(
+    CASABLANCA_TARGET_BOUNDARY_EVIDENCE.filter((item) => item.evidenceStatus === "OFFICIAL_SECTOR_IDENTITY_WITH_TEXTUAL_LIMITS").length,
+    3,
+  );
 });
 
 test("GOAL contract forbids synthetic region and neighborhood geometry", () => {
