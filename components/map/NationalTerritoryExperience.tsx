@@ -22,6 +22,10 @@ const ACTIVE_LINE = "akarfinder-national-city-active-line";
 const CITY_HITS = "akarfinder-national-city-hits";
 const CITY_LABELS = "akarfinder-national-city-labels";
 const ACTIVE_POINT = "akarfinder-national-city-active-point";
+const NEIGHBORHOOD_SOURCE = "akarfinder-canonical-neighborhood-anchors";
+const NEIGHBORHOOD_HITS = "akarfinder-canonical-neighborhood-hits";
+const NEIGHBORHOOD_POINTS = "akarfinder-canonical-neighborhood-points";
+const NEIGHBORHOOD_LABELS = "akarfinder-canonical-neighborhood-labels";
 
 type NationalCity = {
   slug: string;
@@ -71,7 +75,21 @@ type CityPayload = {
   view: "city";
   place: NationalCity;
   boundary: GeoJSON.FeatureCollection;
-  meta: { neighborhoodCount: number };
+  neighborhoods: Array<{
+    slug: string;
+    name: string;
+    center: { lng: number; lat: number } | null;
+    sourceKinds: string[];
+    boundaryStatus: "not_claimed";
+    publicationStatus: "canonical_product_identity";
+  }>;
+  certifiedNeighborhoodBoundaries: GeoJSON.FeatureCollection;
+  meta: {
+    neighborhoodCount: number;
+    centeredNeighborhoodCount: number;
+    certifiedNeighborhoodBoundaryCount: number;
+    canonicalNeighborhoodReadModel?: boolean;
+  };
 };
 
 type Payload = MoroccoPayload | RegionPayload | CityPayload;
@@ -81,6 +99,7 @@ type Props = {
   selectedCitySlug: string | null;
   onSelectRegion: (slug: string) => void;
   onSelectCity: (slug: string) => void;
+  onSelectDistrict: (slug: string) => void;
   onBackToRegion: () => void;
   onBackToMorocco: () => void;
 };
@@ -134,11 +153,29 @@ function cityPoints(places: NationalCity[]): GeoJSON.FeatureCollection {
   };
 }
 
+function neighborhoodPoints(neighborhoods: CityPayload["neighborhoods"]): GeoJSON.FeatureCollection {
+  return {
+    type: "FeatureCollection",
+    features: neighborhoods.flatMap((neighborhood) => neighborhood.center ? [{
+      type: "Feature" as const,
+      id: neighborhood.slug,
+      properties: {
+        slug: neighborhood.slug,
+        name: neighborhood.name,
+        evidence: neighborhood.sourceKinds.includes("verified_landmark_anchor")
+          ? "VERIFIED_LANDMARK_ANCHOR_ONLY"
+          : "CANONICAL_IDENTITY_ONLY",
+      },
+      geometry: { type: "Point" as const, coordinates: [neighborhood.center.lng, neighborhood.center.lat] },
+    }] : []),
+  };
+}
+
 function removeNationalLayers(map: MapLibreMap) {
-  for (const id of [ACTIVE_POINT, CITY_LABELS, CITY_HITS, ACTIVE_LINE, ACTIVE_FILL, BOUNDARY_LINE, BOUNDARY_FILL]) {
+  for (const id of [NEIGHBORHOOD_LABELS, NEIGHBORHOOD_POINTS, NEIGHBORHOOD_HITS, ACTIVE_POINT, CITY_LABELS, CITY_HITS, ACTIVE_LINE, ACTIVE_FILL, BOUNDARY_LINE, BOUNDARY_FILL]) {
     if (map.getLayer(id)) map.removeLayer(id);
   }
-  for (const id of [CITY_SOURCE, BOUNDARY_SOURCE]) {
+  for (const id of [NEIGHBORHOOD_SOURCE, CITY_SOURCE, BOUNDARY_SOURCE]) {
     if (map.getSource(id)) map.removeSource(id);
   }
 }
@@ -148,6 +185,7 @@ export function NationalTerritoryExperience({
   selectedCitySlug,
   onSelectRegion,
   onSelectCity,
+  onSelectDistrict,
   onBackToRegion,
   onBackToMorocco,
 }: Props) {
@@ -302,6 +340,51 @@ export function NationalTerritoryExperience({
       paint: { "text-color": theme === "dark" ? "#E8F2FF" : "#123250", "text-halo-color": theme === "dark" ? "#071426" : "#FFFFFF", "text-halo-width": 1.7 },
     });
 
+    if (payload.view === "city") {
+      const neighborhoods = neighborhoodPoints(payload.neighborhoods);
+      map.addSource(NEIGHBORHOOD_SOURCE, { type: "geojson", data: neighborhoods });
+      map.addLayer({
+        id: NEIGHBORHOOD_HITS,
+        type: "circle",
+        source: NEIGHBORHOOD_SOURCE,
+        paint: {
+          "circle-radius": ["interpolate", ["linear"], ["zoom"], 9, 13, 13, 20],
+          "circle-color": ACCENT,
+          "circle-opacity": 0.01,
+        },
+      });
+      map.addLayer({
+        id: NEIGHBORHOOD_POINTS,
+        type: "circle",
+        source: NEIGHBORHOOD_SOURCE,
+        paint: {
+          "circle-radius": ["interpolate", ["linear"], ["zoom"], 9, 4.5, 13, 7],
+          "circle-color": ACCENT,
+          "circle-opacity": 0.92,
+          "circle-stroke-color": "#FFFFFF",
+          "circle-stroke-width": 1.8,
+        },
+      });
+      map.addLayer({
+        id: NEIGHBORHOOD_LABELS,
+        type: "symbol",
+        source: NEIGHBORHOOD_SOURCE,
+        layout: {
+          "text-field": ["get", "name"],
+          "text-size": ["interpolate", ["linear"], ["zoom"], 9, 10, 13, 12.5],
+          "text-offset": [0, 1.15],
+          "text-anchor": "top",
+          "text-allow-overlap": false,
+          "text-ignore-placement": false,
+        },
+        paint: {
+          "text-color": theme === "dark" ? "#E8F2FF" : "#123250",
+          "text-halo-color": theme === "dark" ? "#071426" : "#FFFFFF",
+          "text-halo-width": 1.5,
+        },
+      });
+    }
+
     const setActive = (slug: string | null) => {
       const filter = slug ? ["==", ["get", "slug"], slug] : emptyFilter();
       if (map.getLayer(ACTIVE_FILL)) map.setFilter(ACTIVE_FILL, filter as never);
@@ -332,14 +415,23 @@ export function NationalTerritoryExperience({
     };
 
     const handleMove = (event: MapMouseEvent) => {
-      if (payload.view === "city") return;
+      if (payload.view === "city") {
+        const neighborhood = map.queryRenderedFeatures(event.point, { layers: [NEIGHBORHOOD_HITS] })[0];
+        map.getCanvas().style.cursor = neighborhood ? "pointer" : "";
+        return;
+      }
       const slug = renderedSlug(event);
       setHoverSlug(slug);
       setActive(slug ?? previewSlugRef.current);
       map.getCanvas().style.cursor = slug ? "pointer" : "";
     };
     const handleClick = (event: MapMouseEvent) => {
-      if (payload.view === "city") return;
+      if (payload.view === "city") {
+        const neighborhood = map.queryRenderedFeatures(event.point, { layers: [NEIGHBORHOOD_HITS] })[0];
+        const slug = neighborhood?.properties?.slug;
+        if (typeof slug === "string") onSelectDistrict(slug);
+        return;
+      }
       const slug = renderedSlug(event);
       if (!slug) return;
       const touchLike = navigator.maxTouchPoints > 0 || window.matchMedia("(pointer: coarse)").matches;
@@ -357,7 +449,10 @@ export function NationalTerritoryExperience({
       enterCity(slug);
     };
     const handleMapLeave = () => {
-      if (payload.view === "city") return;
+      if (payload.view === "city") {
+        map.getCanvas().style.cursor = "";
+        return;
+      }
       setHoverSlug(null);
       setActive(previewSlugRef.current);
       map.getCanvas().style.cursor = "";
@@ -390,9 +485,10 @@ export function NationalTerritoryExperience({
       }
     } else {
       setActive(payload.place.slug);
-      const bounds = boundsForGeoJSON(payload.boundary);
+      const anchorBounds = boundsForGeoJSON(neighborhoodPoints(payload.neighborhoods));
+      const bounds = anchorBounds ?? boundsForGeoJSON(payload.boundary);
       if (bounds) {
-        map.fitBounds(bounds, { padding: { top: 125, right: 40, bottom: 135, left: 40 }, duration: 750, maxZoom: 10.5 });
+        map.fitBounds(bounds, { padding: { top: 125, right: 40, bottom: 135, left: 40 }, duration: 750, maxZoom: 12.5 });
       } else if (payload.place.center) {
         map.flyTo({ center: [payload.place.center.lng, payload.place.center.lat], zoom: 10, duration: 750 });
       }
@@ -403,7 +499,7 @@ export function NationalTerritoryExperience({
       map.off("click", handleClick);
       map.getCanvas().removeEventListener("mouseleave", handleMapLeave);
     };
-  }, [enterCity, mapReady, onSelectRegion, payload, theme]);
+  }, [enterCity, mapReady, onSelectDistrict, onSelectRegion, payload, theme]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -448,7 +544,7 @@ export function NationalTerritoryExperience({
             </h1>
             <p className="mt-1 text-[10.5px] font-semibold leading-4 text-muted-foreground">
               {payload?.view === "city"
-                ? `${payload.place.neighborhoodCount.toLocaleString("fr-FR")} quartiers répertoriés · repères de vie locale selon disponibilité`
+                ? `${payload.meta.neighborhoodCount.toLocaleString("fr-FR")} quartiers canoniques · ${payload.meta.centeredNeighborhoodCount.toLocaleString("fr-FR")} ancrages vérifiés`
                 : payload?.view === "region"
                   ? "Villes, polarités et rattachements · géométrie régionale non publiée tant qu'elle n'est pas certifiée."
                   : payload?.view === "morocco"
