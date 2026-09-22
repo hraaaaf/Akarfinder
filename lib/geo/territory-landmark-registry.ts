@@ -1207,6 +1207,29 @@ export const VERIFIED_LANDMARKS: readonly VerifiedLandmarkEntry[] = [
     verificationNote: "Yakeey exposes Hay Riad in the Bouznika product taxonomy; OSM-backed Mapcarta identifies the Barid Al-Maghrib office Bouznika Hay Riad and supplies the verified point.",
     verifiedAt: "2026-09-22",
   },
+
+  {
+    entity: {
+      id: "landmark_meknes_ryad_mosquee_riad",
+      type: "landmark",
+      citySlug: "meknes",
+      districtSlug: "ryad",
+      landmarkSlug: "mosquee-riad",
+      canonicalName: "Mosquée Riad",
+      aliases: ["مسجد الرياض"],
+      category: "civic",
+      parentId: "district_meknes_ryad",
+      importance: { score: 90, tier: "major", basis: ["orientation_value", "product_priority"] },
+      visibility: { minZoom: 13.8, retainPriority: true },
+      coordinates: { lat: 33.888, lng: -5.57023, precision: "verified_landmark_point" },
+    },
+    sourceRefs: [
+      "https://yakeey.com/fr-ma/referentiel-de-prix-immobilier/meknes",
+      "https://mapcarta.com/fr/W327204960",
+    ],
+    verificationNote: "Yakeey exposes Ryad as a current Meknès product neighborhood; OSM-backed Mapcarta identifies the namesake Mosquée Riad and supplies the verified point.",
+    verifiedAt: "2026-09-22",
+  },
 ];
 
 const CANONICAL_DISTRICT_IDS = new Set(GEO_NEIGHBORHOODS.map((district) => district.id));
