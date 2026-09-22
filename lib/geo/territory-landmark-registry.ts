@@ -1706,6 +1706,53 @@ export const VERIFIED_LANDMARKS: readonly VerifiedLandmarkEntry[] = [
     verificationNote: "Yakeey exposes Hay Amal in the Bouznika product taxonomy; two public location sources independently identify Pharmacie Al Amal in Bouznika at the same local point. It is deliberately scored as a local landmark.",
     verifiedAt: "2026-09-22",
   },
+
+  {
+    entity: {
+      id: "landmark_temara_oulad_mtaa_institut_benhamza",
+      type: "landmark",
+      citySlug: "temara",
+      districtSlug: "oulad-mtaa",
+      landmarkSlug: "institut-benhamza",
+      canonicalName: "Institut Benhamza Privé",
+      aliases: ["Institut Privé Benhamza"],
+      category: "other",
+      parentId: "district_temara_oulad_mtaa",
+      importance: { score: 90, tier: "major", basis: ["orientation_value", "product_priority"] },
+      visibility: { minZoom: 13.8, retainPriority: true },
+      coordinates: { lat: 33.91719818, lng: -6.92379999, precision: "verified_landmark_point" },
+    },
+    sourceRefs: [
+      "https://www.annuaire-gratuit.ma/ecoles-privees/institut-benhamza-s232544.html",
+      "https://www.waze.com/fr/live-map/directions/ma/rabat-sale-kenitra/rabat/institut-benhamza-prive?to=place.ChIJzdUWXMASpw0RNk_InH5SZvQ",
+      "https://www.charika.ma/societe-institut-benhamza-prive-177257",
+    ],
+    verificationNote: "Multiple public sources independently place Institut Benhamza at Lot/Riyad Oulad Mtaa in Témara; Annuaire Gratuit supplies the public GPS point used here.",
+    verifiedAt: "2026-09-22",
+  },
+  {
+    entity: {
+      id: "landmark_bouznika_hay_ghita_jnane_al_adarissa",
+      type: "landmark",
+      citySlug: "bouznika",
+      districtSlug: "hay-ghita",
+      landmarkSlug: "ecole-jnane-al-adarissa",
+      canonicalName: "École Jnane Al Adarissa",
+      aliases: ["Etablissement Jnane Al Adarissa Privé"],
+      category: "other",
+      parentId: "district_bouznika_hay_ghita",
+      importance: { score: 88, tier: "major", basis: ["orientation_value", "product_priority"] },
+      visibility: { minZoom: 13.9, retainPriority: false },
+      coordinates: { lat: 33.7748143, lng: -7.162021, precision: "verified_landmark_point" },
+    },
+    sourceRefs: [
+      "https://www.marocetude.com/adresse/annuaire/ecole-jnane-al-adarissa-bouznika/",
+      "https://www.annuaire-gratuit.ma/ecoles-privees/etablissement-jnane-al-adarissa-prive-s233715.html",
+      "https://ma.linkedin.com/company/etablissement-jnane-al-adarissa-priv%C3%A9",
+    ],
+    verificationNote: "Independent public sources explicitly place École Jnane Al Adarissa in Lotissement Ghita, Bouznika; MarocEtude supplies the public GPS point and the school’s own LinkedIn location corroborates Lotissement Ghita.",
+    verifiedAt: "2026-09-22",
+  },
 ];
 
 const CANONICAL_DISTRICT_IDS = new Set(GEO_NEIGHBORHOODS.map((district) => district.id));
