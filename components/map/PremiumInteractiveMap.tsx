@@ -23,6 +23,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CanonicalCitySlug } from "@/lib/geo/geo-entity-registry";
 import { selectNationalCityVisibility } from "@/lib/geo/territory-national-visibility";
 import { selectStableTerritoryLabels } from "@/lib/geo/territory-label-stability";
+import { buildCanonicalPremiumMapData } from "@/lib/map/canonical-premium-map-data";
 
 interface QuartierStats {
   priceRepere?: number;
@@ -121,164 +122,7 @@ const REGION_ALIASES: Record<string, string> = {
 
 function useMapData() {
   return useMemo<Region[]>(
-    () => [
-      {
-        name: "Tanger-Tétouan-Al Hoceïma",
-        slug: "tanger-tetouan-al-hoceima",
-        iso: "MA-01",
-        cities: [
-          {
-            name: "Tanger",
-            slug: "tanger",
-            signature: "Maritime & Industrie",
-            coordinates: [-5.8128, 35.7595],
-            quartiers: [
-              // MOCK — statistiques de démonstration uniquement, aucune lecture Supabase.
-              { name: "Malabata", slug: "malabata", stats: { priceRepere: 15400, landmarksVerified: 9, status: "disponible" } },
-              { name: "Iberia", slug: "iberia", stats: { priceRepere: 17100, landmarksVerified: 7, status: "disponible" } },
-              { name: "Centre-ville", slug: "centre-ville-tanger", stats: { priceRepere: 13200, landmarksVerified: 11, status: "disponible" } },
-              { name: "Médina", slug: "medina-tanger", stats: { landmarksVerified: 5, status: "indisponible" } },
-              { name: "Charf", slug: "charf", stats: { priceRepere: 11800, landmarksVerified: 6, status: "disponible" } },
-            ],
-          },
-        ],
-      },
-      { name: "L’Oriental", slug: "oriental", iso: "MA-02", cities: [] },
-      {
-        name: "Fès-Meknès",
-        slug: "fes-meknes",
-        iso: "MA-03",
-        cities: [
-          {
-            name: "Fès",
-            slug: "fes",
-            signature: "Artisanat & Culture",
-            coordinates: [-5.0033, 34.0331],
-            quartiers: [
-              { name: "Ville Nouvelle", slug: "ville-nouvelle-fes", stats: { priceRepere: 9700, landmarksVerified: 10, status: "disponible" } },
-              { name: "Médina", slug: "medina-fes", stats: { landmarksVerified: 13, status: "indisponible" } },
-              { name: "Route Immouzer", slug: "route-immouzer", stats: { priceRepere: 10400, landmarksVerified: 6, status: "disponible" } },
-              { name: "Agdal", slug: "agdal-fes", stats: { priceRepere: 8900, landmarksVerified: 5, status: "disponible" } },
-              { name: "Narjiss", slug: "narjiss", stats: { priceRepere: 8300, landmarksVerified: 4, status: "disponible" } },
-            ],
-          },
-        ],
-      },
-      {
-        name: "Rabat-Salé-Kénitra",
-        slug: "rabat-sale-kenitra",
-        iso: "MA-04",
-        cities: [
-          {
-            name: "Rabat",
-            slug: "rabat",
-            signature: "Capitale & Administration",
-            coordinates: [-6.8498, 34.0209],
-            quartiers: [
-              { name: "Agdal", slug: "agdal", stats: { priceRepere: 18400, landmarksVerified: 14, status: "disponible" } },
-              { name: "Hay Riad", slug: "hay-riad", stats: { priceRepere: 21300, landmarksVerified: 12, status: "disponible" } },
-              { name: "Souissi", slug: "souissi", stats: { priceRepere: 23600, landmarksVerified: 8, status: "disponible" } },
-              { name: "Hassan", slug: "hassan", stats: { priceRepere: 16600, landmarksVerified: 10, status: "disponible" } },
-              { name: "Océan", slug: "ocean", stats: { priceRepere: 14200, landmarksVerified: 9, status: "disponible" } },
-              { name: "Médina", slug: "medina-rabat", stats: { landmarksVerified: 11, status: "indisponible" } },
-            ],
-          },
-          {
-            name: "Kénitra",
-            slug: "kenitra",
-            coordinates: [-6.5802, 34.261],
-            quartiers: [
-              { name: "Centre-ville", slug: "centre-ville-kenitra", stats: { priceRepere: 9300, landmarksVerified: 8, status: "disponible" } },
-              { name: "Bir Rami", slug: "bir-rami", stats: { priceRepere: 10100, landmarksVerified: 5, status: "disponible" } },
-              { name: "Ouled Oujih", slug: "ouled-oujih", stats: { priceRepere: 7600, landmarksVerified: 4, status: "disponible" } },
-              { name: "Maamora", slug: "maamora-kenitra", stats: { landmarksVerified: 5, status: "indisponible" } },
-            ],
-          },
-        ],
-      },
-      { name: "Béni Mellal-Khénifra", slug: "beni-mellal-khenifra", iso: "MA-05", cities: [] },
-      {
-        name: "Casablanca-Settat",
-        slug: "casablanca-settat",
-        iso: "MA-06",
-        cities: [
-          {
-            name: "Casablanca",
-            slug: "casablanca",
-            signature: "Économique & Affaires",
-            coordinates: [-7.5898, 33.5731],
-            quartiers: [
-              { name: "Maârif", slug: "maarif", stats: { priceRepere: 17600, landmarksVerified: 15, status: "disponible" } },
-              { name: "Aïn Diab", slug: "ain-diab", stats: { priceRepere: 26800, landmarksVerified: 12, status: "disponible" } },
-              { name: "Gauthier", slug: "gauthier", stats: { priceRepere: 20500, landmarksVerified: 13, status: "disponible" } },
-              { name: "Racine", slug: "racine", stats: { priceRepere: 22400, landmarksVerified: 10, status: "disponible" } },
-              { name: "Californie", slug: "californie", stats: { priceRepere: 19700, landmarksVerified: 7, status: "disponible" } },
-              { name: "Anfa", slug: "anfa", stats: { priceRepere: 27900, landmarksVerified: 9, status: "disponible" } },
-              { name: "Sidi Maârouf", slug: "sidi-maarouf", stats: { priceRepere: 13100, landmarksVerified: 6, status: "disponible" } },
-              { name: "Bourgogne", slug: "bourgogne", stats: { priceRepere: 18100, landmarksVerified: 11, status: "disponible" } },
-              { name: "Oasis", slug: "oasis", stats: { priceRepere: 18900, landmarksVerified: 8, status: "disponible" } },
-              { name: "Palmier", slug: "palmier", stats: { landmarksVerified: 6, status: "indisponible" } },
-            ],
-          },
-          {
-            name: "Mohammedia",
-            slug: "mohammedia",
-            coordinates: [-7.3844, 33.6861],
-            quartiers: [
-              { name: "Corniche", slug: "corniche-mohammedia", stats: { priceRepere: 13900, landmarksVerified: 7, status: "disponible" } },
-              { name: "Centre-ville", slug: "centre-ville-mohammedia", stats: { priceRepere: 11600, landmarksVerified: 8, status: "disponible" } },
-              { name: "Manesman", slug: "manesman", stats: { priceRepere: 12800, landmarksVerified: 5, status: "disponible" } },
-              { name: "Parc", slug: "parc-mohammedia", stats: { landmarksVerified: 4, status: "indisponible" } },
-            ],
-          },
-        ],
-      },
-      {
-        name: "Marrakech-Safi",
-        slug: "marrakech-safi",
-        iso: "MA-07",
-        cities: [
-          {
-            name: "Marrakech",
-            slug: "marrakech",
-            signature: "Tourisme & Patrimoine",
-            coordinates: [-7.9811, 31.6295],
-            quartiers: [
-              { name: "Guéliz", slug: "gueliz", stats: { priceRepere: 18900, landmarksVerified: 15, status: "disponible" } },
-              { name: "Hivernage", slug: "hivernage", stats: { priceRepere: 22600, landmarksVerified: 10, status: "disponible" } },
-              { name: "Palmeraie", slug: "palmeraie", stats: { priceRepere: 20400, landmarksVerified: 8, status: "disponible" } },
-              { name: "Médina", slug: "medina-marrakech", stats: { landmarksVerified: 17, status: "indisponible" } },
-              { name: "Targa", slug: "targa", stats: { priceRepere: 14200, landmarksVerified: 6, status: "disponible" } },
-              { name: "Sidi Ghanem", slug: "sidi-ghanem", stats: { priceRepere: 11200, landmarksVerified: 5, status: "disponible" } },
-            ],
-          },
-        ],
-      },
-      { name: "Drâa-Tafilalet", slug: "draa-tafilalet", iso: "MA-08", cities: [] },
-      {
-        name: "Souss-Massa",
-        slug: "souss-massa",
-        iso: "MA-09",
-        cities: [
-          {
-            name: "Agadir",
-            slug: "agadir",
-            signature: "Littoral & Qualité de vie",
-            coordinates: [-9.5981, 30.4278],
-            quartiers: [
-              { name: "Founty", slug: "founty", stats: { priceRepere: 16700, landmarksVerified: 9, status: "disponible" } },
-              { name: "Talborjt", slug: "talborjt", stats: { priceRepere: 12100, landmarksVerified: 11, status: "disponible" } },
-              { name: "Hay Mohammadi", slug: "hay-mohammadi", stats: { priceRepere: 10800, landmarksVerified: 7, status: "disponible" } },
-              { name: "Sonaba", slug: "sonaba", stats: { priceRepere: 17800, landmarksVerified: 6, status: "disponible" } },
-              { name: "Centre-ville", slug: "centre-ville-agadir", stats: { landmarksVerified: 10, status: "indisponible" } },
-            ],
-          },
-        ],
-      },
-      { name: "Guelmim-Oued Noun", slug: "guelmim-oued-noun", iso: "MA-10", cities: [] },
-      { name: "Laâyoune-Sakia El Hamra", slug: "laayoune-sakia-el-hamra", iso: "MA-11", cities: [] },
-      { name: "Dakhla-Oued Ed-Dahab", slug: "dakhla-oued-ed-dahab", iso: "MA-12", cities: [] },
-    ],
+    () => buildCanonicalPremiumMapData(),
     [],
   );
 }
@@ -890,7 +734,7 @@ export function PremiumInteractiveMap() {
         </div>
 
         <footer className="mt-3 flex flex-wrap items-center justify-between gap-2 px-1 text-[9px] font-semibold" style={{ color: "var(--text-secondary)" }}>
-          <span className="inline-flex items-center gap-1.5"><Building2 size={12} /> Aucun appel Supabase · aucune écriture DB · mock isolé dans useMapData()</span>
+          <span className="inline-flex items-center gap-1.5"><Building2 size={12} /> Registres canoniques AkarFinder · aucun prix synthétique · aucune écriture DB</span>
           <span>{topologySource ? "TopoJSON ADM1 chargé" : "TopoJSON ADM1 en attente"}</span>
         </footer>
       </div>
