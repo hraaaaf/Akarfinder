@@ -42,6 +42,7 @@ test("country level exposes only the eight locked product hubs", () => {
 test("Casablanca TARGET neighborhoods remain fail-closed until product boundaries are certified", () => {
   assert.equal(CASABLANCA_TARGET_NEIGHBORHOOD_READINESS.length, 8);
   assert.equal(CASABLANCA_TARGET_NEIGHBORHOOD_READINESS_SUMMARY.targetNeighborhoodCount, 8);
+  assert.equal(CASABLANCA_TARGET_NEIGHBORHOOD_READINESS_SUMMARY.canonicalIdentityCount, 8);
   assert.equal(CASABLANCA_TARGET_NEIGHBORHOOD_READINESS_SUMMARY.publishedProductBoundaryCount, 0);
   assert.ok(CASABLANCA_TARGET_NEIGHBORHOOD_READINESS.every((item) => item.geometryPublicationAllowed === false));
 });
