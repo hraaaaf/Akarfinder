@@ -100,6 +100,13 @@ export const DISTRICT_PRIORITY_OVERRIDES: Readonly<Record<string, DistrictPriori
   district_essaouira_medina: { score: 100, tier: "flagship", minZoom: 9.4, retainPriority: true },
   district_essaouira_kasbah: { score: 96, tier: "flagship", minZoom: 9.6, retainPriority: true },
 
+  // Bouznika
+  district_bouznika_hay_salim: { score: 88, tier: "major", minZoom: 10.1, retainPriority: true },
+  district_bouznika_hay_riad: { score: 86, tier: "major", minZoom: 10.2, retainPriority: false },
+  district_bouznika_al_wouroud: { score: 84, tier: "regional", minZoom: 10.4, retainPriority: false },
+  district_bouznika_hay_amal: { score: 82, tier: "regional", minZoom: 10.5, retainPriority: false },
+  district_bouznika_hay_ghita: { score: 80, tier: "regional", minZoom: 10.7, retainPriority: false },
+
   // Fès
   district_fes_el_bali: { score: 100, tier: "flagship", minZoom: 9.4, retainPriority: true },
   district_fes_ville_nouvelle: { score: 88, tier: "major", minZoom: 10.2, retainPriority: false },
