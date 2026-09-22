@@ -75,6 +75,22 @@ const OPEN_LANDMARK_GAPS = {
     "district_oujda_hay_boudir",
     "district_oujda_hay_el_qods",
   ],
+  "el-jadida": [
+    "district_el_jadida_al_boustane",
+    "district_el_jadida_hay_salam",
+    "district_el_jadida_najd",
+    "district_el_jadida_plateau",
+    "district_el_jadida_sidi_moussa",
+  ],
+  nador: [
+    "district_nador_hay_aarid",
+    "district_nador_hay_al_matar",
+    "district_nador_oulad_mimoun",
+  ],
+  essaouira: [
+    "district_essaouira_kasbah",
+    "district_essaouira_medina",
+  ],
 } as const;
 
 test("enrichment queue exposes every currently open canonical city", () => {
