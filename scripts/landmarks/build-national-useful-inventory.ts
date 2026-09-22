@@ -126,7 +126,7 @@ const hubs = GEO_CITIES.map((city) => {
 
   return {
     region_slug: CANONICAL_CITY_REGION[city.slug],
-    region_name: REGIONS[CANONICAL_CITY_REGION[city.slug]],
+    region_name: getMoroccoRegion(CANONICAL_CITY_REGION[city.slug]).canonical_name,
     city: {
       id: city.id,
       slug: city.slug,
