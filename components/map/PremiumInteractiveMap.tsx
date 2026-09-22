@@ -34,6 +34,12 @@ interface QuartierStats {
 type Quartier = {
   name: string;
   slug: string;
+  mapAnchor?: {
+    coordinates: [number, number];
+    landmarkId: string;
+    landmarkName: string;
+    evidenceRole: "VERIFIED_LANDMARK_ANCHOR_ONLY";
+  };
   priority: {
     score: number;
     tier: "flagship" | "major" | "regional" | "local";
@@ -584,18 +590,17 @@ export function PremiumInteractiveMap() {
                       <g
                         key={city.slug}
                         transform={`translate(${point[0]} ${point[1]})`}
-                        className={isCountryHub ? "cursor-pointer" : "cursor-default"}
-                        role={isCountryHub ? "button" : undefined}
-                        tabIndex={isCountryHub ? 0 : -1}
-                        aria-label={isCountryHub ? `Explorer ${city.name}` : `${city.name}, pôle régional canonique`}
+                        className="cursor-pointer"
+                        role="button"
+                        tabIndex={0}
+                        aria-label={`Explorer ${city.name}`}
                         data-city-slug={city.slug}
                         data-region-polarity={isCountryHub ? "country-hub" : "regional-center"}
                         onClick={(event) => {
                           event.stopPropagation();
-                          if (isCountryHub) selectCity(city);
+                          selectCity(city);
                         }}
                         onKeyDown={(event) => {
-                          if (!isCountryHub) return;
                           if (event.key === "Enter" || event.key === " ") {
                             event.preventDefault();
                             selectCity(city);
@@ -603,7 +608,7 @@ export function PremiumInteractiveMap() {
                         }}
                         onPointerMove={(event) => setTooltip({
                           title: city.name,
-                          subtitle: isCountryHub ? (city.signature ?? "Hub pays") : "Pôle régional canonique",
+                          subtitle: isCountryHub ? (city.signature ?? "Hub pays") : "Pôle régional canonique · explorer",
                           x: event.clientX,
                           y: event.clientY,
                         })}
@@ -635,6 +640,46 @@ export function PremiumInteractiveMap() {
                       </g>
                     );
                   })}
+
+                  {level === "city" && selectedCity && selectedCity.quartiers.map((quartier) => {
+                    if (!quartier.mapAnchor) return null;
+                    const point = projection(quartier.mapAnchor.coordinates);
+                    if (!point) return null;
+                    const active = quartier.slug === selectedQuartierSlug;
+                    return (
+                      <g
+                        key={quartier.slug}
+                        transform={`translate(${point[0]} ${point[1]})`}
+                        className="cursor-pointer"
+                        role="button"
+                        tabIndex={0}
+                        aria-label={`Sélectionner le quartier ${quartier.name}`}
+                        data-neighborhood-anchor={quartier.slug}
+                        data-neighborhood-anchor-evidence={quartier.mapAnchor.evidenceRole}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          setSelectedQuartierSlug(quartier.slug);
+                        }}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault();
+                            setSelectedQuartierSlug(quartier.slug);
+                          }
+                        }}
+                        onPointerMove={(event) => setTooltip({
+                          title: quartier.name,
+                          subtitle: `Ancrage vérifié · ${quartier.mapAnchor?.landmarkName ?? "repère certifié"} · pas une frontière`,
+                          x: event.clientX,
+                          y: event.clientY,
+                        })}
+                        onPointerLeave={() => setTooltip(null)}
+                      >
+                        <circle r={(active ? 12 : 8) / camera.k} fill="rgba(255,255,255,0.98)" stroke={NAVY} strokeWidth={(active ? 2.2 : 1.5) / camera.k} vectorEffect="non-scaling-stroke" />
+                        <circle r={(active ? 4.5 : 3) / camera.k} fill={NAVY} />
+                      </g>
+                    );
+                  })}
+
                 </g>
               </svg>
             ) : null}
