@@ -1230,6 +1230,29 @@ export const VERIFIED_LANDMARKS: readonly VerifiedLandmarkEntry[] = [
     verificationNote: "Yakeey exposes Ryad as a current Meknès product neighborhood; OSM-backed Mapcarta identifies the namesake Mosquée Riad and supplies the verified point.",
     verifiedAt: "2026-09-22",
   },
+
+  {
+    entity: {
+      id: "landmark_tetouan_ensanche_notre_dame_victoires",
+      type: "landmark",
+      citySlug: "tetouan",
+      districtSlug: "ensanche",
+      landmarkSlug: "notre-dame-des-victoires",
+      canonicalName: "Église Notre-Dame-des-Victoires",
+      aliases: ["Church of Our Lady of Victory", "Iglesia de Nuestra Señora de las Victorias"],
+      category: "heritage",
+      parentId: "district_tetouan_ensanche",
+      importance: { score: 96, tier: "flagship", basis: ["orientation_value", "product_priority", "urban_prominence"] },
+      visibility: { minZoom: 13.5, retainPriority: true },
+      coordinates: { lat: 35.57004, lng: -5.37508, precision: "verified_landmark_point" },
+    },
+    sourceRefs: [
+      "https://fr.wikipedia.org/wiki/%C3%89glise_Notre-Dame-des-Victoires_de_T%C3%A9touan",
+      "https://mapcarta.com/W1207894170",
+    ],
+    verificationNote: "The church is explicitly described as being in the Ensanche of Tétouan; OSM-backed Mapcarta supplies the verified point.",
+    verifiedAt: "2026-09-22",
+  },
 ];
 
 const CANONICAL_DISTRICT_IDS = new Set(GEO_NEIGHBORHOODS.map((district) => district.id));
