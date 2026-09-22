@@ -21,9 +21,10 @@ test("direct national city selection restores the canonical parent region state"
   assert.match(source, /setSelectedRegionSlug\(parentRegion\?\.slug \?\? null\)/);
 });
 
-test("national labels remain separate from region-level city markers", () => {
+test("national labels remain separate from region-level regional polarity markers", () => {
   assert.match(source, /level === "national" && nationalCityRenderItems\.map/);
-  assert.match(source, /level !== "national" && selectedRegion && selectedRegion\.cities\.map/);
+  assert.match(source, /level === "region" && selectedRegion && selectedRegion\.regionalCities\.map/);
+  assert.match(source, /data-region-polarity=/);
 });
 
 test("national zoom attaches only after the projected SVG exists", () => {
