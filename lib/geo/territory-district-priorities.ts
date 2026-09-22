@@ -66,6 +66,24 @@ export const DISTRICT_PRIORITY_OVERRIDES: Readonly<Record<string, DistrictPriori
   district_agadir_founty: { score: 97, tier: "flagship", minZoom: 9.6, retainPriority: true },
   district_agadir_talborjt: { score: 88, tier: "major", minZoom: 10.2, retainPriority: false },
 
+  // Meknès
+  district_meknes_hamria: { score: 96, tier: "flagship", minZoom: 9.6, retainPriority: true },
+  district_meknes_ancienne_medina: { score: 94, tier: "major", minZoom: 9.8, retainPriority: true },
+  district_meknes_marjane: { score: 90, tier: "major", minZoom: 10.0, retainPriority: true },
+  district_meknes_ryad: { score: 84, tier: "regional", minZoom: 10.4, retainPriority: false },
+  district_meknes_zitoune: { score: 82, tier: "regional", minZoom: 10.5, retainPriority: false },
+
+  // Tétouan
+  district_tetouan_medina: { score: 100, tier: "flagship", minZoom: 9.4, retainPriority: true },
+  district_tetouan_ensanche: { score: 96, tier: "flagship", minZoom: 9.6, retainPriority: true },
+
+  // Oujda
+  district_oujda_centre_ville: { score: 96, tier: "flagship", minZoom: 9.6, retainPriority: true },
+  district_oujda_hay_el_qods: { score: 90, tier: "major", minZoom: 10.0, retainPriority: true },
+  district_oujda_hay_al_massira: { score: 88, tier: "major", minZoom: 10.2, retainPriority: false },
+  district_oujda_hay_al_andalous: { score: 84, tier: "regional", minZoom: 10.4, retainPriority: false },
+  district_oujda_hay_boudir: { score: 82, tier: "regional", minZoom: 10.5, retainPriority: false },
+
   // Fès
   district_fes_el_bali: { score: 100, tier: "flagship", minZoom: 9.4, retainPriority: true },
   district_fes_ville_nouvelle: { score: 88, tier: "major", minZoom: 10.2, retainPriority: false },
