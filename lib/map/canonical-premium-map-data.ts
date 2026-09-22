@@ -28,6 +28,7 @@ export type PremiumMapRegion = {
   slug: MoroccoRegionSlug;
   iso: `MA-${string}`;
   cities: PremiumMapCity[];
+  regionalCities: PremiumMapCity[];
 };
 
 const REGION_ISO: Readonly<Record<MoroccoRegionSlug, `MA-${string}`>> = {
@@ -74,8 +75,8 @@ export function buildCanonicalPremiumMapData(): PremiumMapRegion[] {
   );
 
   return MOROCCO_REGIONS.map((region) => {
-    const cities = GEO_CITIES
-      .filter((city) => countryHubSlugs.has(city.slug) && CANONICAL_CITY_REGION[city.slug] === region.slug)
+    const regionalCities = GEO_CITIES
+      .filter((city) => CANONICAL_CITY_REGION[city.slug] === region.slug)
       .flatMap((city): PremiumMapCity[] => {
         const coordinates = cityPoint(city.slug);
         if (!coordinates) return [];
@@ -87,6 +88,15 @@ export function buildCanonicalPremiumMapData(): PremiumMapRegion[] {
           quartiers: canonicalQuartiers(city.slug),
         }];
       })
+      .sort((a, b) => {
+        const aHub = countryHubSlugs.has(a.slug) ? 0 : 1;
+        const bHub = countryHubSlugs.has(b.slug) ? 0 : 1;
+        if (aHub !== bHub) return aHub - bHub;
+        return a.name.localeCompare(b.name, "fr");
+      });
+
+    const cities = regionalCities
+      .filter((city) => countryHubSlugs.has(city.slug))
       .sort((a, b) =>
         (getNationalCountryHubPolicy(a.slug)?.order ?? 999) -
         (getNationalCountryHubPolicy(b.slug)?.order ?? 999),
@@ -97,6 +107,7 @@ export function buildCanonicalPremiumMapData(): PremiumMapRegion[] {
       slug: region.slug,
       iso: REGION_ISO[region.slug],
       cities,
+      regionalCities,
     };
   });
 }
