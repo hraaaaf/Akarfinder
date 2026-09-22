@@ -37,12 +37,15 @@ test("Casablanca coverage reports the three newly canonical districts still awai
   );
 });
 
-test("enrichment queue keeps Casablanca open while three canonical districts lack landmark evidence", () => {
+test("enrichment queue keeps Casablanca and Sale open while canonical districts lack landmark evidence", () => {
   const queue = getCitiesNeedingLandmarkEnrichment();
-  assert.equal(queue.length, 1);
-  assert.equal(queue[0]?.citySlug, "casablanca");
-  assert.equal(queue[0]?.canonicalDistrictCount, 9);
-  assert.equal(queue[0]?.districtsWithVerifiedLandmark, 6);
+  assert.deepEqual(queue.map((entry) => entry.citySlug).sort(), ["casablanca", "sale"]);
+  const casa = queue.find((entry) => entry.citySlug === "casablanca");
+  const sale = queue.find((entry) => entry.citySlug === "sale");
+  assert.equal(casa?.canonicalDistrictCount, 9);
+  assert.equal(casa?.districtsWithVerifiedLandmark, 6);
+  assert.equal(sale?.canonicalDistrictCount, 5);
+  assert.equal(sale?.districtsWithVerifiedLandmark, 0);
 });
 
 test("Rabat, Tanger and Fes are fully covered after certified batch three", () => {
@@ -62,6 +65,23 @@ test("Rabat, Tanger and Fes are fully covered after certified batch three", () =
   assert.deepEqual(fes.missingLandmarkDistrictIds, []);
 });
 
+test("Sale canonical identities are fail-closed until landmark evidence is added", () => {
+  const sale = getTerritoryCityCoverage("sale");
+  assert.equal(sale.canonicalDistrictCount, 5);
+  assert.equal(sale.districtsWithVerifiedLandmark, 0);
+  assert.equal(sale.verifiedLandmarkCount, 0);
+  assert.deepEqual(
+    sale.missingLandmarkDistrictIds.sort(),
+    [
+      "district_sale_bab_lamrissa",
+      "district_sale_bettana",
+      "district_sale_hssaine",
+      "district_sale_laayayda",
+      "district_sale_tabriquet",
+    ].sort(),
+  );
+});
+
 test("coverage remains fail-closed for canonical districts without verified landmark evidence", () => {
   const missing = getTerritoryCoverageReport()
     .flatMap((entry) => entry.missingLandmarkDistrictIds)
@@ -73,6 +93,11 @@ test("coverage remains fail-closed for canonical districts without verified land
       "district_casablanca_californie",
       "district_casablanca_hay_hassani",
       "district_casablanca_sidi_maarouf",
+      "district_sale_bab_lamrissa",
+      "district_sale_bettana",
+      "district_sale_hssaine",
+      "district_sale_laayayda",
+      "district_sale_tabriquet",
     ].sort(),
   );
   assert.equal(
