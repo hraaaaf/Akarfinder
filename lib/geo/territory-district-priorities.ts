@@ -45,6 +45,13 @@ export const DISTRICT_PRIORITY_OVERRIDES: Readonly<Record<string, DistrictPriori
   district_sale_laayayda: { score: 80, tier: "regional", minZoom: 10.7, retainPriority: false },
   district_sale_hssaine: { score: 80, tier: "regional", minZoom: 10.7, retainPriority: false },
 
+  // Témara — editorial reveal only; identity is canonical, boundary is unpublished.
+  district_temara_hay_al_wifaq: { score: 92, tier: "major", minZoom: 9.9, retainPriority: true },
+  district_temara_oulad_mtaa: { score: 90, tier: "major", minZoom: 10.0, retainPriority: true },
+  district_temara_massira_1: { score: 86, tier: "major", minZoom: 10.2, retainPriority: false },
+  district_temara_ibnou_rochd: { score: 84, tier: "regional", minZoom: 10.4, retainPriority: false },
+  district_temara_hay_al_maghreb_al_arabi: { score: 82, tier: "regional", minZoom: 10.5, retainPriority: false },
+
   // Marrakech
   district_marrakech_gueliz: { score: 100, tier: "flagship", minZoom: 9.4, retainPriority: true },
   district_marrakech_hivernage: { score: 97, tier: "flagship", minZoom: 9.6, retainPriority: true },
