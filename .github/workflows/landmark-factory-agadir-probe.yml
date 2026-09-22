@@ -1,0 +1,128 @@
+name: Landmark Factory Agadir Product Geography Probe
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/landmark-factory-agadir-probe.yml"
+      - "scripts/landmarks/find-osm-boundary-relations.py"
+      - "scripts/landmarks/find-osm-place-anchors.py"
+      - "docs/geo/landmark-factory/AGADIR_PRODUCT_GEOGRAPHY_EVIDENCE.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pyosmium
+        run: python -m pip install --disable-pip-version-check osmium
+
+      - name: Download current Morocco OSM PBF
+        run: |
+          curl --fail --location --retry 3 --output /tmp/morocco-latest.osm.pbf \
+            https://download.geofabrik.de/africa/morocco-latest.osm.pbf
+          ls -lh /tmp/morocco-latest.osm.pbf
+
+      - name: Discover Agadir canonical and adjacent product anchors
+        run: |
+          mkdir -p artifacts
+          python scripts/landmarks/find-osm-place-anchors.py \
+            --pbf /tmp/morocco-latest.osm.pbf \
+            --bbox=-10.20,29.90,-8.80,31.00 \
+            --name "Founty" \
+            --name "Talborjt" \
+            --name "Haut Founty" \
+            --out artifacts/agadir-product-place-anchors.json
+          cat artifacts/agadir-product-place-anchors.json
+
+      - name: Discover exact Founty boundary relations
+        run: |
+          python scripts/landmarks/find-osm-boundary-relations.py \
+            --pbf /tmp/morocco-latest.osm.pbf \
+            --name "Founty" \
+            --out artifacts/agadir-founty-boundary-relations.json
+          cat artifacts/agadir-founty-boundary-relations.json
+
+      - name: Discover exact Talborjt boundary relations
+        run: |
+          python scripts/landmarks/find-osm-boundary-relations.py \
+            --pbf /tmp/morocco-latest.osm.pbf \
+            --name "Talborjt" \
+            --out artifacts/agadir-talborjt-boundary-relations.json
+          cat artifacts/agadir-talborjt-boundary-relations.json
+
+      - name: Discover exact Haut Founty boundary relations
+        run: |
+          python scripts/landmarks/find-osm-boundary-relations.py \
+            --pbf /tmp/morocco-latest.osm.pbf \
+            --name "Haut Founty" \
+            --out artifacts/agadir-haut-founty-boundary-relations.json
+          cat artifacts/agadir-haut-founty-boundary-relations.json
+
+      - name: Build fail-closed Agadir probe verdict
+        env:
+          EXPECTED_PR_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+
+          def read(name):
+              return json.loads(Path(name).read_text(encoding="utf-8"))
+
+          anchors=read("artifacts/agadir-product-place-anchors.json")
+          founty=read("artifacts/agadir-founty-boundary-relations.json")
+          talborjt=read("artifacts/agadir-talborjt-boundary-relations.json")
+          haut=read("artifacts/agadir-haut-founty-boundary-relations.json")
+
+          verdict={
+              "schema_version":1,
+              "source_control":{
+                  "pr_head_sha":os.environ.get("EXPECTED_PR_HEAD") or os.environ.get("GITHUB_SHA"),
+                  "github_context_sha":os.environ.get("GITHUB_SHA"),
+              },
+              "city":"Agadir",
+              "canonical_neighborhoods":["Founty","Talborjt"],
+              "adjacent_product_taxonomy":["Haut Founty"],
+              "evidence_role":"DISCOVERY_PROBE_ONLY",
+              "anchors_are_product_boundaries":False,
+              "exact_relations_are_product_boundaries":False,
+              "promotion":{
+                  "allowed":False,
+                  "verdict":"NO_PRODUCT_BOUNDARY_CLAIM",
+                  "reason":"Exact OSM names/relations are discovery evidence only until independent modern product geography corroborates the contour.",
+              },
+              "counts":{
+                  "anchor_matches":len(anchors.get("matches",[])),
+                  "founty_boundary_relation_matches":len(founty.get("matches",[])),
+                  "talborjt_boundary_relation_matches":len(talborjt.get("matches",[])),
+                  "haut_founty_boundary_relation_matches":len(haut.get("matches",[])),
+              },
+          }
+          Path("artifacts/agadir-product-geography-verdict.json").write_text(
+              json.dumps(verdict,ensure_ascii=False,indent=2)+"\n",encoding="utf-8"
+          )
+          print(json.dumps(verdict,ensure_ascii=False,indent=2))
+          assert verdict["promotion"]["allowed"] is False
+          assert verdict["evidence_role"] == "DISCOVERY_PROBE_ONLY"
+          PY
+
+      - name: Upload Agadir discovery evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: landmark-factory-agadir-product-geography-probe
+          path: |
+            artifacts/agadir-product-place-anchors.json
+            artifacts/agadir-founty-boundary-relations.json
+            artifacts/agadir-talborjt-boundary-relations.json
+            artifacts/agadir-haut-founty-boundary-relations.json
+            artifacts/agadir-product-geography-verdict.json
+          if-no-files-found: error
