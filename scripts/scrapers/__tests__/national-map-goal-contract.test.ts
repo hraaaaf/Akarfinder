@@ -14,6 +14,10 @@ import {
 } from "../../../lib/geo/casablanca-target-neighborhood-readiness";
 import { CANONICAL_PREMIUM_MAP_SUMMARY, buildCanonicalPremiumMapData } from "../../../lib/map/canonical-premium-map-data";
 import { CASABLANCA_TARGET_BOUNDARY_EVIDENCE, CASABLANCA_TARGET_BOUNDARY_EVIDENCE_SUMMARY } from "../../../lib/geo/casablanca-target-boundary-evidence";
+import {
+  NATIONAL_NEIGHBORHOOD_BOUNDARY_READINESS,
+  NATIONAL_NEIGHBORHOOD_BOUNDARY_SUMMARY,
+} from "../../../lib/geo/national-neighborhood-boundary-readiness";
 
 test("GOAL national map keeps exactly 12 canonical regions", () => {
   assert.equal(MOROCCO_REGIONS.length, 12);
@@ -145,4 +149,15 @@ test("all 19 canonical cities are navigable through regionalCities and every dis
   const premium = fs.readFileSync("components/map/PremiumInteractiveMap.tsx", "utf8");
   assert.match(premium, /selectedRegion\?\.regionalCities\.find/);
   assert.match(premium, /region\.regionalCities\.some/);
+});
+
+
+test("national boundary readiness explicitly classifies all 63 canonical districts without synthetic polygons", () => {
+  assert.equal(NATIONAL_NEIGHBORHOOD_BOUNDARY_SUMMARY.canonicalNeighborhoodCount, 63);
+  assert.equal(NATIONAL_NEIGHBORHOOD_BOUNDARY_SUMMARY.explicitStatusCount, 63);
+  assert.equal(NATIONAL_NEIGHBORHOOD_BOUNDARY_SUMMARY.syntheticBoundaryCount, 0);
+  assert.equal(NATIONAL_NEIGHBORHOOD_BOUNDARY_SUMMARY.unpublishedCount, 63);
+  assert.equal(NATIONAL_NEIGHBORHOOD_BOUNDARY_SUMMARY.publishedProductBoundaryCount, 0);
+  assert.equal(new Set(NATIONAL_NEIGHBORHOOD_BOUNDARY_READINESS.map((entry) => entry.districtId)).size, 63);
+  assert.ok(NATIONAL_NEIGHBORHOOD_BOUNDARY_READINESS.every((entry) => entry.publicationAllowed === false));
 });
