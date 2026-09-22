@@ -39,13 +39,16 @@ test("Casablanca coverage reports the three newly canonical districts still awai
 
 test("enrichment queue keeps Casablanca and Sale open while canonical districts lack landmark evidence", () => {
   const queue = getCitiesNeedingLandmarkEnrichment();
-  assert.deepEqual(queue.map((entry) => entry.citySlug).sort(), ["casablanca", "sale"]);
+  assert.deepEqual(queue.map((entry) => entry.citySlug).sort(), ["casablanca", "sale", "temara"]);
   const casa = queue.find((entry) => entry.citySlug === "casablanca");
   const sale = queue.find((entry) => entry.citySlug === "sale");
+  const temara = queue.find((entry) => entry.citySlug === "temara");
   assert.equal(casa?.canonicalDistrictCount, 9);
   assert.equal(casa?.districtsWithVerifiedLandmark, 6);
   assert.equal(sale?.canonicalDistrictCount, 5);
   assert.equal(sale?.districtsWithVerifiedLandmark, 0);
+  assert.equal(temara?.canonicalDistrictCount, 5);
+  assert.equal(temara?.districtsWithVerifiedLandmark, 0);
 });
 
 test("Rabat, Tanger and Fes are fully covered after certified batch three", () => {
@@ -78,6 +81,28 @@ test("Sale canonical identities are fail-closed until landmark evidence is added
       "district_sale_hssaine",
       "district_sale_laayayda",
       "district_sale_tabriquet",
+      "district_temara_hay_al_maghreb_al_arabi",
+      "district_temara_hay_al_wifaq",
+      "district_temara_ibnou_rochd",
+      "district_temara_massira_1",
+      "district_temara_oulad_mtaa",
+    ].sort(),
+  );
+});
+
+test("Temara canonical identities are fail-closed until landmark evidence is added", () => {
+  const temara = getTerritoryCityCoverage("temara");
+  assert.equal(temara.canonicalDistrictCount, 5);
+  assert.equal(temara.districtsWithVerifiedLandmark, 0);
+  assert.equal(temara.verifiedLandmarkCount, 0);
+  assert.deepEqual(
+    temara.missingLandmarkDistrictIds.sort(),
+    [
+      "district_temara_hay_al_maghreb_al_arabi",
+      "district_temara_hay_al_wifaq",
+      "district_temara_ibnou_rochd",
+      "district_temara_massira_1",
+      "district_temara_oulad_mtaa",
     ].sort(),
   );
 });
