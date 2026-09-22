@@ -1366,6 +1366,51 @@ export const VERIFIED_LANDMARKS: readonly VerifiedLandmarkEntry[] = [
     verificationNote: "Yakeey exposes Hay Al Andalous in the Oujda product taxonomy; OSM-backed Mapcarta identifies Jardin Al Andalouss in the same Oujda cluster and supplies the verified point.",
     verifiedAt: "2026-09-22",
   },
+
+  {
+    entity: {
+      id: "landmark_nador_hay_al_matar_clinique",
+      type: "landmark",
+      citySlug: "nador",
+      districtSlug: "hay-al-matar",
+      landmarkSlug: "clinique-al-matar",
+      canonicalName: "Clinique Al Matar",
+      aliases: [],
+      category: "hospital",
+      parentId: "district_nador_hay_al_matar",
+      importance: { score: 90, tier: "major", basis: ["orientation_value", "product_priority"] },
+      visibility: { minZoom: 13.8, retainPriority: true },
+      coordinates: { lat: 35.15136, lng: -2.92683, precision: "verified_landmark_point" },
+    },
+    sourceRefs: [
+      "https://yakeey.com/fr-ma/referentiel-de-prix-immobilier/nador",
+      "https://mapcarta.com/W1093259574",
+    ],
+    verificationNote: "Yakeey exposes Hay Al Matar in the Nador product taxonomy; OSM-backed Mapcarta identifies Clinique Al Matar in the same local cluster and supplies the verified point.",
+    verifiedAt: "2026-09-22",
+  },
+  {
+    entity: {
+      id: "landmark_el_jadida_al_boustane_mosquee",
+      type: "landmark",
+      citySlug: "el-jadida",
+      districtSlug: "al-boustane",
+      landmarkSlug: "mosquee-el-boustane",
+      canonicalName: "Mosquée El Boustane",
+      aliases: ["El Boustane"],
+      category: "worship",
+      parentId: "district_el_jadida_al_boustane",
+      importance: { score: 88, tier: "major", basis: ["orientation_value", "product_priority"] },
+      visibility: { minZoom: 13.9, retainPriority: false },
+      coordinates: { lat: 33.23194, lng: -8.48379, precision: "verified_landmark_point" },
+    },
+    sourceRefs: [
+      "https://yakeey.com/fr-ma/referentiel-de-prix-immobilier/el-jadida",
+      "https://mapcarta.com/W1233914038",
+    ],
+    verificationNote: "Yakeey exposes Al Boustane in the El Jadida product taxonomy; OSM-backed Mapcarta identifies the namesake mosque and supplies the verified point.",
+    verifiedAt: "2026-09-22",
+  },
 ];
 
 const CANONICAL_DISTRICT_IDS = new Set(GEO_NEIGHBORHOODS.map((district) => district.id));
