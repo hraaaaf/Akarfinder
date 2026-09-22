@@ -1,0 +1,74 @@
+name: Carte National Final R8
+
+on:
+  pull_request:
+    paths:
+      - "app/map/**"
+      - "app/api/geo/**"
+      - "components/map/**"
+      - "lib/geo/**"
+      - "lib/map/**"
+      - "scripts/audits/carte-four-level-responsive-r7.mjs"
+      - "scripts/scrapers/__tests__/national-map-goal-contract.test.ts"
+      - ".github/workflows/carte-national-final-r8.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  certify-national-final-r8:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    env:
+      BASE_URL: http://127.0.0.1:3218
+      AUDIT_OUTPUT_DIR: data/audits/carte-national-final-r8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+
+      - name: TypeScript exact-head
+        run: npx tsc --noEmit
+
+      - name: National map goal contract
+        run: npx tsx --test scripts/scrapers/__tests__/national-map-goal-contract.test.ts
+
+      - name: Territory dictionary contracts
+        run: npm run test:territory-dictionary
+
+      - name: Production build
+        run: npm run build
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Start production server
+        shell: bash
+        run: |
+          npm run start -- -p 3218 > /tmp/carte-national-final-r8.log 2>&1 &
+          for attempt in {1..60}; do
+            if curl -fsS 'http://127.0.0.1:3218/map?layer=explore' >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/carte-national-final-r8.log
+          exit 1
+
+      - name: Four-level responsive exact-head recertification
+        run: node scripts/audits/carte-four-level-responsive-r7.mjs
+
+      - name: Upload R8 evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: carte-national-final-r8-${{ github.run_id }}
+          path: data/audits/carte-national-final-r8
+          if-no-files-found: warn
+          retention-days: 30
