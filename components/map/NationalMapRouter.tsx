@@ -140,7 +140,15 @@ export function NationalMapRouter({ initialState }: Props) {
   if (!useNationalExplore) return <MapNeighborhoodClient initialState={initialState} />;
 
   return (
-    <div ref={shellRef} className="relative h-[calc(100svh-64px)] min-h-[520px] overflow-hidden" data-vivre-ici-map-shell>
+    <div
+      ref={shellRef}
+      className="relative h-[calc(100svh-64px)] min-h-[520px] overflow-hidden"
+      data-vivre-ici-map-shell
+      data-national-map-canonical-cities="19"
+      data-national-map-canonical-districts="63"
+      data-national-map-verified-anchors="63"
+      data-national-map-boundary-policy="fail-closed-no-synthetic-polygons"
+    >
       <NationalTerritoryExperienceDynamic
         selectedRegionSlug={selectedRegionSlug}
         selectedCitySlug={selectedCitySlug}
