@@ -31,6 +31,7 @@ type NationalCity = {
   confidence: "official_hcp" | "osm_open_map";
   population: number | null;
   neighborhoodCount: number;
+  region?: { slug: string; name: string } | null;
   product?: { descriptor: string; order: number } | null;
 };
 
@@ -51,6 +52,20 @@ type MoroccoPayload = {
   };
 };
 
+type RegionPayload = {
+  status: "ok";
+  view: "region";
+  region: { slug: string; name: string; geometryStatus: "not_published" };
+  places: NationalCity[];
+  boundaries: GeoJSON.FeatureCollection;
+  meta: {
+    cityCount: number;
+    boundaryCount: number;
+    regionGeometryPublicationCount: number;
+    displayPolicy: string;
+  };
+};
+
 type CityPayload = {
   status: "ok";
   view: "city";
@@ -59,11 +74,14 @@ type CityPayload = {
   meta: { neighborhoodCount: number };
 };
 
-type Payload = MoroccoPayload | CityPayload;
+type Payload = MoroccoPayload | RegionPayload | CityPayload;
 
 type Props = {
+  selectedRegionSlug: string | null;
   selectedCitySlug: string | null;
+  onSelectRegion: (slug: string) => void;
   onSelectCity: (slug: string) => void;
+  onBackToRegion: () => void;
   onBackToMorocco: () => void;
 };
 
@@ -125,7 +143,14 @@ function removeNationalLayers(map: MapLibreMap) {
   }
 }
 
-export function NationalTerritoryExperience({ selectedCitySlug, onSelectCity, onBackToMorocco }: Props) {
+export function NationalTerritoryExperience({
+  selectedRegionSlug,
+  selectedCitySlug,
+  onSelectRegion,
+  onSelectCity,
+  onBackToRegion,
+  onBackToMorocco,
+}: Props) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
   const [mapReady, setMapReady] = useState(false);
@@ -139,7 +164,11 @@ export function NationalTerritoryExperience({ selectedCitySlug, onSelectCity, on
   useEffect(() => {
     const controller = new AbortController();
     setLoadError(false);
-    const query = selectedCitySlug ? `?city=${encodeURIComponent(selectedCitySlug)}` : "";
+    const query = selectedCitySlug
+      ? `?city=${encodeURIComponent(selectedCitySlug)}`
+      : selectedRegionSlug
+        ? `?region=${encodeURIComponent(selectedRegionSlug)}`
+        : "";
     void fetch(`/api/geo/national-territories${query}`, { cache: "no-store", signal: controller.signal })
       .then(async (response) => {
         if (!response.ok) throw new Error(`territory ${response.status}`);
@@ -150,7 +179,7 @@ export function NationalTerritoryExperience({ selectedCitySlug, onSelectCity, on
         if (error?.name !== "AbortError") setLoadError(true);
       });
     return () => controller.abort();
-  }, [selectedCitySlug]);
+  }, [selectedCitySlug, selectedRegionSlug]);
 
   useEffect(() => {
     if (!mapContainerRef.current) return;
@@ -211,8 +240,8 @@ export function NationalTerritoryExperience({ selectedCitySlug, onSelectCity, on
     if (!map || !mapReady || !payload) return;
     removeNationalLayers(map);
 
-    const boundaries = payload.view === "morocco" ? payload.boundaries : payload.boundary;
-    const places = payload.view === "morocco" ? payload.places : [payload.place];
+    const boundaries = payload.view === "city" ? payload.boundary : payload.boundaries;
+    const places = payload.view === "city" ? [payload.place] : payload.places;
     const points = cityPoints(places);
 
     map.addSource(BOUNDARY_SOURCE, { type: "geojson", data: boundaries });
@@ -281,7 +310,7 @@ export function NationalTerritoryExperience({ selectedCitySlug, onSelectCity, on
     };
 
     const renderedSlug = (event: MapMouseEvent) => {
-      if (payload.view === "morocco") {
+      if (payload.view !== "city") {
         let nearestSlug: string | null = null;
         let nearestDistance = Infinity;
         for (const place of payload.places) {
@@ -303,14 +332,14 @@ export function NationalTerritoryExperience({ selectedCitySlug, onSelectCity, on
     };
 
     const handleMove = (event: MapMouseEvent) => {
-      if (payload.view !== "morocco") return;
+      if (payload.view === "city") return;
       const slug = renderedSlug(event);
       setHoverSlug(slug);
       setActive(slug ?? previewSlugRef.current);
       map.getCanvas().style.cursor = slug ? "pointer" : "";
     };
     const handleClick = (event: MapMouseEvent) => {
-      if (payload.view !== "morocco") return;
+      if (payload.view === "city") return;
       const slug = renderedSlug(event);
       if (!slug) return;
       const touchLike = navigator.maxTouchPoints > 0 || window.matchMedia("(pointer: coarse)").matches;
@@ -320,10 +349,15 @@ export function NationalTerritoryExperience({ selectedCitySlug, onSelectCity, on
         setActive(slug);
         return;
       }
+      if (payload.view === "morocco") {
+        const place = payload.places.find((candidate) => candidate.slug === slug);
+        if (place?.region?.slug) onSelectRegion(place.region.slug);
+        return;
+      }
       enterCity(slug);
     };
     const handleMapLeave = () => {
-      if (payload.view !== "morocco") return;
+      if (payload.view === "city") return;
       setHoverSlug(null);
       setActive(previewSlugRef.current);
       map.getCanvas().style.cursor = "";
@@ -335,6 +369,25 @@ export function NationalTerritoryExperience({ selectedCitySlug, onSelectCity, on
 
     if (payload.view === "morocco") {
       map.easeTo({ center: MOROCCO_CENTER, zoom: MOROCCO_ZOOM, duration: 650 });
+    } else if (payload.view === "region") {
+      const bounds = boundsForGeoJSON(payload.boundaries);
+      if (bounds) {
+        map.fitBounds(bounds, { padding: { top: 130, right: 390, bottom: 90, left: 40 }, duration: 750, maxZoom: 8.5 });
+      } else {
+        const centered = payload.places.filter((place) => place.center);
+        if (centered.length) {
+          const points: GeoJSON.FeatureCollection = {
+            type: "FeatureCollection",
+            features: centered.map((place) => ({
+              type: "Feature",
+              properties: {},
+              geometry: { type: "Point", coordinates: [place.center!.lng, place.center!.lat] },
+            })),
+          };
+          const pointBounds = boundsForGeoJSON(points);
+          if (pointBounds) map.fitBounds(pointBounds, { padding: 100, duration: 750, maxZoom: 8.5 });
+        }
+      }
     } else {
       setActive(payload.place.slug);
       const bounds = boundsForGeoJSON(payload.boundary);
@@ -363,12 +416,13 @@ export function NationalTerritoryExperience({ selectedCitySlug, onSelectCity, on
   }, [hoverSlug, mapReady, payload, previewSlug]);
 
   const previewPlace = useMemo(() => {
-    if (!payload || payload.view !== "morocco") return null;
+    if (!payload || payload.view === "city") return null;
     const slug = previewSlug ?? hoverSlug;
     return slug ? payload.places.find((place) => place.slug === slug) ?? null : null;
   }, [hoverSlug, payload, previewSlug]);
 
   const searchHref = payload?.view === "city" ? `/search?city=${encodeURIComponent(payload.place.name)}` : "/search";
+  const backAction = payload?.view === "city" && selectedRegionSlug ? onBackToRegion : onBackToMorocco;
 
   return (
     <div className="relative h-[calc(100svh-64px)] min-h-[520px] overflow-hidden bg-[#EDF3F7] dark:bg-[#071426]" data-akarfinder-national-map data-akarfinder-national-view={payload?.view ?? "loading"}>
@@ -376,24 +430,30 @@ export function NationalTerritoryExperience({ selectedCitySlug, onSelectCity, on
 
       <section className="absolute inset-x-3 top-3 z-20 rounded-[22px] border border-white/80 bg-white/[0.94] p-3 shadow-[0_18px_50px_rgba(15,35,66,0.14)] backdrop-blur-xl dark:border-white/10 dark:bg-[#0A1A2F]/[0.94] sm:left-4 sm:right-auto sm:top-4 sm:w-[min(430px,calc(100vw-32px))]" aria-label="Navigation territoriale nationale">
         <div className="flex items-start gap-3">
-          {payload?.view === "city" ? (
-            <button type="button" onClick={onBackToMorocco} className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-border bg-surface text-brand-primary" aria-label="Revenir à la carte du Maroc">
+          {payload?.view === "city" || payload?.view === "region" ? (
+            <button type="button" onClick={backAction} className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-border bg-surface text-brand-primary" aria-label={payload?.view === "city" && selectedRegionSlug ? "Revenir à la région" : "Revenir à la carte du Maroc"}>
               <ArrowLeft size={16} aria-hidden="true" />
             </button>
           ) : null}
           <div className="min-w-0 flex-1">
             <p className="text-[9px] font-extrabold uppercase tracking-[0.20em] text-brand-primary">
-              {payload?.view === "city" ? "Vivre ici · ville" : "MAROC"}
+              {payload?.view === "city" ? "Vivre ici · ville" : payload?.view === "region" ? "RÉGION" : "MAROC"}
             </p>
             <h1 className="mt-0.5 truncate text-[16px] font-extrabold tracking-[-0.025em] text-foreground sm:text-[20px]">
-              {payload?.view === "city" ? `Vivre à ${payload.place.name}` : "Carte Pays — Maroc"}
+              {payload?.view === "city"
+                ? `Vivre à ${payload.place.name}`
+                : payload?.view === "region"
+                  ? `Carte Région — ${payload.region.name}`
+                  : "Carte Pays — Maroc"}
             </h1>
             <p className="mt-1 text-[10.5px] font-semibold leading-4 text-muted-foreground">
               {payload?.view === "city"
                 ? `${payload.place.neighborhoodCount.toLocaleString("fr-FR")} quartiers répertoriés · repères de vie locale selon disponibilité`
-                : payload?.view === "morocco"
-                  ? "Marchés immobiliers structurants · petites localités regroupées sous les villes-pôles."
-                  : "Chargement du registre territorial…"}
+                : payload?.view === "region"
+                  ? "Villes, polarités et rattachements · géométrie régionale non publiée tant qu'elle n'est pas certifiée."
+                  : payload?.view === "morocco"
+                    ? "Marchés immobiliers structurants · petites localités regroupées sous les villes-pôles."
+                    : "Chargement du registre territorial…"}
             </p>
           </div>
         </div>
@@ -468,13 +528,71 @@ export function NationalTerritoryExperience({ selectedCitySlug, onSelectCity, on
         </aside>
       ) : null}
 
-      {previewPlace && payload?.view === "morocco" ? (
+      {payload?.view === "region" ? (
+        <aside
+          className="absolute right-4 top-4 z-20 hidden w-[360px] rounded-[24px] border border-white/80 bg-white/[0.96] p-4 shadow-[0_20px_60px_rgba(15,35,66,0.16)] backdrop-blur-xl dark:border-white/10 dark:bg-[#0A1A2F]/[0.96] lg:block"
+          aria-label={`Villes structurantes de ${payload.region.name}`}
+          data-akarfinder-region-target-rail
+        >
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-[9px] font-extrabold uppercase tracking-[0.16em] text-brand-primary">Région</p>
+              <h2 className="mt-1 text-[18px] font-extrabold tracking-[-0.03em] text-foreground">Villes structurantes</h2>
+            </div>
+            <span className="rounded-full bg-brand-primary-soft px-2.5 py-1 text-[9px] font-extrabold text-brand-primary">
+              {payload.meta.cityCount} villes
+            </span>
+          </div>
+          <div className="mt-3 divide-y divide-border/70">
+            {payload.places.map((place, index) => (
+              <button
+                key={place.slug}
+                type="button"
+                onClick={() => enterCity(place.slug)}
+                onMouseEnter={() => setHoverSlug(place.slug)}
+                onMouseLeave={() => setHoverSlug(null)}
+                className="flex w-full items-center gap-3 px-1 py-2.5 text-left transition hover:bg-brand-primary-soft/70"
+                data-akarfinder-region-city={place.slug}
+              >
+                <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full border-4 border-white bg-brand-primary text-[9px] font-extrabold text-white shadow-sm dark:border-[#0A1A2F]">
+                  {index + 1}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <strong className="block truncate text-[11.5px] font-extrabold text-foreground">{place.name}</strong>
+                  <span className="block truncate text-[9px] font-semibold text-muted-foreground">
+                    {place.product?.descriptor ?? "Ville structurante"}
+                  </span>
+                </span>
+                <span className="shrink-0 text-right">
+                  <strong className="block text-[10px] font-extrabold text-foreground">{place.neighborhoodCount.toLocaleString("fr-FR")}</strong>
+                  <span className="block text-[8px] font-semibold text-muted-foreground">repères</span>
+                </span>
+              </button>
+            ))}
+          </div>
+          <div className="mt-3 rounded-[18px] border border-amber-200 bg-amber-50/90 p-3 dark:border-amber-900/50 dark:bg-amber-950/20">
+            <p className="text-[10px] font-extrabold text-amber-800 dark:text-amber-200">Géométrie fail-closed</p>
+            <p className="mt-1 text-[9.5px] font-semibold leading-4 text-amber-700 dark:text-amber-300">
+              Le niveau Région est navigable sans fabriquer de polygone régional. Le contour régional sera publié seulement après matérialisation et certification admin4.
+            </p>
+          </div>
+        </aside>
+      ) : null}
+
+      {previewPlace && payload?.view !== "city" ? (
         <aside className="absolute inset-x-3 bottom-[84px] z-20 rounded-[22px] border border-white/[0.85] bg-white/[0.96] p-3.5 shadow-[0_18px_48px_rgba(15,35,66,0.18)] backdrop-blur-xl dark:border-white/10 dark:bg-[#0A1A2F]/[0.96] sm:inset-x-auto sm:bottom-5 sm:left-4 sm:w-[330px]" aria-label={`Ville sélectionnée ${previewPlace.name}`} data-akarfinder-city-preview={previewPlace.slug}>
           <p className="flex items-center gap-1.5 text-[9px] font-extrabold uppercase tracking-[0.14em] text-brand-primary"><MapPin size={11} aria-hidden="true" />Ville sélectionnée</p>
           <h2 className="mt-1 text-[20px] font-extrabold tracking-[-0.03em] text-foreground">{previewPlace.name}</h2>
           <p className="mt-1 text-[10.5px] font-semibold text-muted-foreground">{previewPlace.neighborhoodCount.toLocaleString("fr-FR")} quartiers / labels répertoriés{previewPlace.boundaryRelationId ? " · contour disponible" : " · repère ponctuel"}</p>
-          <button type="button" onClick={() => enterCity(previewPlace.slug)} className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-brand-primary px-4 text-[11.5px] font-extrabold text-white shadow-accent">
-            Explorer {previewPlace.name}
+          <button
+            type="button"
+            onClick={() => {
+              if (payload?.view === "morocco" && previewPlace.region?.slug) onSelectRegion(previewPlace.region.slug);
+              else enterCity(previewPlace.slug);
+            }}
+            className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-brand-primary px-4 text-[11.5px] font-extrabold text-white shadow-accent"
+          >
+            {payload?.view === "morocco" ? `Explorer la région de ${previewPlace.name}` : `Explorer ${previewPlace.name}`}
           </button>
         </aside>
       ) : null}
