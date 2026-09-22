@@ -1,0 +1,43 @@
+name: Landmark Factory AUC Official Plan Links
+
+on:
+  pull_request:
+    paths:
+      - "scripts/landmarks/probe-auc-official-plan-links.mjs"
+      - ".github/workflows/landmark-factory-auc-official-plan-links.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Probe official AUC planning document links
+        run: |
+          node scripts/landmarks/probe-auc-official-plan-links.mjs
+
+      - name: Assert discovery-only semantics
+        run: |
+          node - <<'NODE'
+          const p = require("./artifacts/auc-official-plan-links.json");
+          if (p.evidence_role !== "AUC_OFFICIAL_PLAN_LINK_DISCOVERY_ONLY") throw new Error("bad role");
+          if (p.activation_allowed !== false || p.geometry_promotion_allowed !== false) throw new Error("fail-closed broken");
+          if (!Array.isArray(p.pages) || p.pages.length !== 2) throw new Error("pages missing");
+          console.log(JSON.stringify(p.pages.map(x => ({id:x.id,status:x.status,challenge:x.challenge_detected,pdf:x.all_pdf_links.length})), null, 2));
+          NODE
+
+      - name: Upload probe artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: landmark-factory-auc-official-plan-links
+          path: artifacts/auc-official-plan-links.json
+          if-no-files-found: error
