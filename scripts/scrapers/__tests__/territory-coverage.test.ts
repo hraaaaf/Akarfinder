@@ -13,7 +13,7 @@ test("coverage report exposes every canonical city without pretending completion
   assert.ok(report.every((entry) => entry.landmarkCoverageRatio >= 0 && entry.landmarkCoverageRatio <= 1));
 });
 
-test("sixteen cities currently have at least one verified landmark", () => {
+test("seventeen cities currently have at least one verified landmark", () => {
   const covered = getTerritoryCoverageReport()
     .filter((entry) => entry.verifiedLandmarkCount > 0)
     .map((entry) => entry.citySlug)
@@ -43,7 +43,6 @@ const OPEN_LANDMARK_GAPS = {
   sale: [
   ],
   temara: [
-    "district_temara_oulad_mtaa",
   ],
   meknes: [
   ],
@@ -58,16 +57,11 @@ const OPEN_LANDMARK_GAPS = {
   essaouira: [
   ],
   bouznika: [
-    "district_bouznika_hay_ghita",
   ],
 } as const;
 
-test("enrichment queue exposes every currently open canonical city", () => {
-  const queue = getCitiesNeedingLandmarkEnrichment();
-  assert.deepEqual(
-    queue.map((entry) => entry.citySlug).sort(),
-    Object.keys(OPEN_LANDMARK_GAPS).sort(),
-  );
+test("enrichment queue is empty at full canonical-district landmark coverage", () => {
+  assert.deepEqual(getCitiesNeedingLandmarkEnrichment(), []);
 });
 
 test("Rabat, Tanger and Fes are fully covered after certified batch three", () => {
@@ -93,6 +87,6 @@ test("coverage remains fail-closed for every canonical district without verified
   assert.deepEqual(missing, expected);
   assert.equal(
     getTerritoryCoverageReport().reduce((total, entry) => total + entry.districtsWithVerifiedLandmark, 0),
-    61,
+    63,
   );
 });
