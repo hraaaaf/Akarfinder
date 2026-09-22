@@ -24,7 +24,7 @@ jobs:
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends osmium-tool
-          python -m pip install --disable-pip-version-check osmium
+          python -m pip install --disable-pip-version-check osmium shapely
       - name: Download current Morocco OSM PBF
         run: |
           curl --fail --location --retry 3 --output /tmp/morocco-latest.osm.pbf \
@@ -41,22 +41,41 @@ jobs:
           ls -lh /tmp/morocco-landmark-scope.osm.pbf
           osmium fileinfo -e /tmp/morocco-landmark-scope.osm.pbf
 
+      - name: Filter admin-level-8 containment geometry
+        run: |
+          osmium tags-filter \
+            -o /tmp/morocco-admin8.osm.pbf \
+            /tmp/morocco-latest.osm.pbf \
+            wr/admin_level=8
+          ls -lh /tmp/morocco-admin8.osm.pbf
+          osmium fileinfo -e /tmp/morocco-admin8.osm.pbf
+
       - name: Build national neighborhood discovery backlog
         run: |
           mkdir -p artifacts
           python scripts/landmarks/build-morocco-neighborhood-inventory.py \
             --pbf /tmp/morocco-landmark-scope.osm.pbf \
+            --out artifacts/morocco-neighborhood-discovery-inventory-v2.json
+          python scripts/landmarks/assign-morocco-admin-containment.py \
+            --inventory artifacts/morocco-neighborhood-discovery-inventory-v2.json \
+            --admin-pbf /tmp/morocco-admin8.osm.pbf \
             --out artifacts/morocco-neighborhood-discovery-inventory.json
+
       - name: Assert fail-closed national inventory semantics
         run: |
           python - <<'PY'
           import json, os
           p="artifacts/morocco-neighborhood-discovery-inventory.json"
           d=json.load(open(p,encoding="utf-8"))
-          assert d["schema_version"] == 2
+          assert d["schema_version"] == 3
           assert d["source_control"]["pr_head_sha"]
           assert d["counts"]["product_candidate_count"] > 0
           assert d["counts"]["administrative_reference_count"] > 0
+          assert d["counts"]["product_candidates_admin8_unique"] > 0
+          assert all(
+              x.get("admin_level_8_containment") is None or x["admin_level_8_containment"].get("status") == "HINT_ONLY"
+              for x in d["product_candidates"]
+          )
           assert all(x.get("status") == "DISCOVERY_ONLY" for x in d["product_candidates"])
           assert all(
               x.get("urban_locality_hint") is None or x["urban_locality_hint"].get("status") == "HINT_ONLY"

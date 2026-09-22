@@ -114,3 +114,17 @@ It is complete when every relevant neighborhood is either:
 - explicitly classified HOLD / unresolved with the missing evidence recorded.
 
 Unknown is preferable to fabricated.
+
+
+### Administrative containment routing
+
+The nearest-settlement backlog is not authoritative enough for national rollout: large catchments can assign many candidates to the wrong city merely because its settlement node is nearest.
+
+Schema v3 therefore adds an independent routing layer:
+- extract reusable OSM `admin_level=8` administrative geometries;
+- point-in-polygon each coordinate-bearing product candidate;
+- group only unique containments into `backlog_by_admin_level_8`;
+- mark every containment `HINT_ONLY`;
+- preserve ambiguous/uncontained cases instead of forcing assignment.
+
+This routing is stronger than nearest-center distance for operational batching, but still does **not** make an administrative boundary equal to a modern real-estate product neighborhood.
