@@ -66,6 +66,8 @@ try {
       // REGION
       await page.locator('[data-region-list-slug="casablanca-settat"]').click();
       await page.waitForFunction(() => document.querySelector("[data-premium-map]")?.getAttribute("data-map-level") === "region", null, { timeout: 10000 });
+      const sidePanel = page.locator("[data-map-side-panel]");
+      await sidePanel.getByRole("heading", { name: "Casablanca-Settat", exact: true }).waitFor({ state: "visible", timeout: 10000 });
       const backToCountry = page.getByRole("button", { name: /^Maroc$/i });
       await backToCountry.first().waitFor({ state: "visible", timeout: 10000 });
       const casablancaEntry = page.locator('[data-city-list-slug="casablanca"]');
@@ -79,6 +81,7 @@ try {
       // CITY
       await casablancaEntry.first().click();
       await page.waitForFunction(() => document.querySelector("[data-premium-map]")?.getAttribute("data-map-level") === "city", null, { timeout: 10000 });
+      await sidePanel.getByRole("heading", { name: "Casablanca", exact: true }).waitFor({ state: "visible", timeout: 10000 });
       await page.locator("[data-neighborhood-canonical-index]").waitFor({ state: "visible", timeout: 10000 });
       const maarifCard = page.locator('[data-canonical-neighborhood="maarif"]');
       await maarifCard.waitFor({ state: "visible", timeout: 10000 });
