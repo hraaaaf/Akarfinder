@@ -34,6 +34,10 @@ interface QuartierStats {
 type Quartier = {
   name: string;
   slug: string;
+  priority: {
+    score: number;
+    tier: "flagship" | "major" | "regional" | "local";
+  };
   stats: QuartierStats;
 };
 
@@ -655,6 +659,7 @@ export function PremiumInteractiveMap() {
                     <div className="mt-5 flex flex-wrap items-center gap-2 text-[8.5px] font-black uppercase tracking-[0.08em]" style={{ color: "var(--text-secondary)" }}>
                       <span className="rounded-full border px-2.5 py-1.5" style={{ borderColor: "var(--border)", background: "var(--background)" }}>{selectedCity.quartiers.length} quartiers canoniques</span>
                       <span className="rounded-full border px-2.5 py-1.5" style={{ borderColor: "var(--border)", background: "var(--background)" }}>index territorial · non géométrique</span>
+                      <span className="rounded-full border px-2.5 py-1.5" style={{ borderColor: "var(--border)", background: "var(--background)" }}>hiérarchie éditoriale certifiée</span>
                     </div>
 
                     <div className="relative mt-5 overflow-hidden rounded-[22px] border p-3 sm:p-4" style={{ borderColor: "var(--border)", background: "linear-gradient(180deg, color-mix(in srgb, var(--background) 88%, white), var(--surface))" }} data-city-territorial-index>
@@ -680,12 +685,18 @@ export function PremiumInteractiveMap() {
                                 {index + 1}
                               </span>
                               <span className="rounded-full border px-2 py-1 text-[8px] font-black uppercase tracking-[0.08em]" style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}>
-                                Canonique
+                                {quartier.priority.tier === "flagship" ? "Pôle fort" : quartier.priority.tier === "major" ? "Pôle majeur" : quartier.priority.tier === "regional" ? "Pôle régional" : "Pôle local"}
                               </span>
                             </div>
                             <strong className="mt-4 block text-[15px] font-black">{quartier.name}</strong>
-                            <span className="mt-1 block text-[9.5px] font-semibold" style={{ color: "var(--text-secondary)" }}>
-                              {quartier.stats.landmarksVerified} repère{quartier.stats.landmarksVerified === 1 ? "" : "s"} vérifié{quartier.stats.landmarksVerified === 1 ? "" : "s"} · frontière non revendiquée
+                            <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[8.5px] font-bold" style={{ color: "var(--text-secondary)" }}>
+                              <span className="rounded-full border px-2 py-1" style={{ borderColor: "var(--border)" }}>priorité {quartier.priority.score}/100</span>
+                              <span className="rounded-full border px-2 py-1" style={{ borderColor: "var(--border)" }}>
+                                {quartier.stats.landmarksVerified} repère{quartier.stats.landmarksVerified === 1 ? "" : "s"} vérifié{quartier.stats.landmarksVerified === 1 ? "" : "s"}
+                              </span>
+                            </div>
+                            <span className="mt-2 block text-[9px] font-semibold" style={{ color: "var(--text-secondary)" }}>
+                              Position visuelle non géographique · frontière non revendiquée
                             </span>
                           </button>
                         );
