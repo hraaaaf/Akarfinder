@@ -30,9 +30,7 @@ test("Casablanca coverage reports the three newly canonical districts still awai
   assert.deepEqual(
     casa.missingLandmarkDistrictIds.sort(),
     [
-        "district_casablanca_hay_hassani",
-      "district_casablanca_sidi_maarouf",
-    ].sort(),
+          ].sort(),
   );
 });
 
@@ -106,6 +104,6 @@ test("coverage remains fail-closed for every canonical district without verified
   assert.deepEqual(missing, expected);
   assert.equal(
     getTerritoryCoverageReport().reduce((total, entry) => total + entry.districtsWithVerifiedLandmark, 0),
-    48,
+    50,
   );
 });
