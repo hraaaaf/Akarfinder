@@ -4,6 +4,9 @@ on:
   pull_request:
     paths:
       - "scripts/landmarks/build-morocco-neighborhood-inventory.py"
+      - "scripts/landmarks/assign-morocco-admin-containment.py"
+      - "scripts/landmarks/crosswalk-national-canonical-neighborhoods.ts"
+      - "lib/geo/geo-entity-registry.ts"
       - ".github/workflows/landmark-factory-national-inventory.yml"
       - "docs/geo/landmark-factory/MOROCCO_NATIONAL_NEIGHBORHOOD_FACTORY.md"
   workflow_dispatch:
@@ -61,6 +64,13 @@ jobs:
             --admin-pbf /tmp/morocco-admin8.osm.pbf \
             --out artifacts/morocco-neighborhood-discovery-inventory.json
 
+      - name: Crosswalk discovery candidates to canonical registry
+        run: |
+          npx --yes tsx@4.22.4 scripts/landmarks/crosswalk-national-canonical-neighborhoods.ts \
+            --inventory artifacts/morocco-neighborhood-discovery-inventory.json \
+            --out artifacts/morocco-canonical-neighborhood-crosswalk.json
+          cat artifacts/morocco-canonical-neighborhood-crosswalk.json
+
       - name: Assert fail-closed national inventory semantics
         run: |
           python - <<'PY'
@@ -86,10 +96,17 @@ jobs:
               for x in d["product_candidates"]
           )
           print(json.dumps(d["counts"], ensure_ascii=False, indent=2))
+          x=json.load(open("artifacts/morocco-canonical-neighborhood-crosswalk.json",encoding="utf-8"))
+          assert x["evidence_role"] == "CANDIDATE_CROSSWALK_ONLY"
+          assert x["activation_allowed"] is False
+          assert x["geometry_promotion_allowed"] is False
+          assert x["summary"]["canonical_neighborhood_count"] > 0
           PY
       - name: Upload discovery backlog
         uses: actions/upload-artifact@v4
         with:
           name: landmark-factory-morocco-neighborhood-inventory
-          path: artifacts/morocco-neighborhood-discovery-inventory.json
+          path: |
+            artifacts/morocco-neighborhood-discovery-inventory.json
+            artifacts/morocco-canonical-neighborhood-crosswalk.json
           if-no-files-found: error

@@ -128,3 +128,19 @@ Schema v3 therefore adds an independent routing layer:
 - preserve ambiguous/uncontained cases instead of forcing assignment.
 
 This routing is stronger than nearest-center distance for operational batching, but still does **not** make an administrative boundary equal to a modern real-estate product neighborhood.
+
+
+### Canonical registry crosswalk
+
+National discovery must not create a second geographic taxonomy. The workflow therefore emits a fail-closed crosswalk against `GEO_CITIES/GEO_NEIGHBORHOODS`.
+
+A canonical neighborhood can receive `CANDIDATE_EXACT_MATCH` only when:
+1. its OSM discovery name exactly matches the canonical name, slug or an accepted alias after normalization; and
+2. its unique `admin_level=8` containment maps to the same canonical city.
+
+Other states are preserved explicitly:
+- `AMBIGUOUS_CANDIDATE_MATCH`
+- `CITY_SCOPE_MISMATCH`
+- `NO_OSM_CANDIDATE_MATCH`
+
+The crosswalk is `CANDIDATE_CROSSWALK_ONLY`: it cannot add registry entries, activate map/SEO eligibility, or promote geometry.
