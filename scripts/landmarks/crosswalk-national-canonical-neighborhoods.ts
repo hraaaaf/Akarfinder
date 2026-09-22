@@ -110,18 +110,22 @@ const rows = GEO_NEIGHBORHOODS.map((neighborhood) => {
 
   let status:
     | "CANDIDATE_EXACT_MATCH"
+    | "MULTI_SCALE_OSM_MATCH"
     | "AMBIGUOUS_CANDIDATE_MATCH"
-    | "CITY_SCOPE_MISMATCH"
+    | "OUT_OF_CITY_NAME_COLLISION"
     | "NO_OSM_CANDIDATE_MATCH";
 
   if (sameCity.length === 1) status = "CANDIDATE_EXACT_MATCH";
-  else if (sameCity.length > 1) status = "AMBIGUOUS_CANDIDATE_MATCH";
-  else if (outsideCity.length > 0) status = "CITY_SCOPE_MISMATCH";
+  else if (sameCity.length > 1) {
+    const scales = new Set(sameCity.map(({ candidate }) => candidate.place ?? "(none)"));
+    status = scales.size > 1 ? "MULTI_SCALE_OSM_MATCH" : "AMBIGUOUS_CANDIDATE_MATCH";
+  } else if (outsideCity.length > 0) status = "OUT_OF_CITY_NAME_COLLISION";
   else status = "NO_OSM_CANDIDATE_MATCH";
 
   const serialize = ({ candidate, cityMatches }: (typeof candidateContext)[number]) => ({
     osm_type: candidate.osm_type,
     osm_id: candidate.osm_id,
+    place: candidate.place ?? null,
     names: names(candidate),
     admin8_city_matches: cityMatches.map((c) => ({ slug: c.slug, canonical_name: c.canonical_name })),
     admin8_containment: candidate.admin_level_8_containment ?? null,
@@ -146,16 +150,35 @@ const rows = GEO_NEIGHBORHOODS.map((neighborhood) => {
 const summary = {
   canonical_neighborhood_count: rows.length,
   exact_match_count: rows.filter((r) => r.status === "CANDIDATE_EXACT_MATCH").length,
+  multi_scale_match_count: rows.filter((r) => r.status === "MULTI_SCALE_OSM_MATCH").length,
   ambiguous_match_count: rows.filter((r) => r.status === "AMBIGUOUS_CANDIDATE_MATCH").length,
-  city_scope_mismatch_count: rows.filter((r) => r.status === "CITY_SCOPE_MISMATCH").length,
+  out_of_city_name_collision_count: rows.filter((r) => r.status === "OUT_OF_CITY_NAME_COLLISION").length,
   no_osm_candidate_match_count: rows.filter((r) => r.status === "NO_OSM_CANDIDATE_MATCH").length,
   candidates_with_unique_known_canonical_city: candidateContext.filter((x) => x.cityMatches.length === 1).length,
   candidates_with_ambiguous_known_canonical_city: candidateContext.filter((x) => x.cityMatches.length > 1).length,
   candidates_without_known_canonical_city: candidateContext.filter((x) => x.cityMatches.length === 0).length,
 };
 
+const candidateCountsByCanonicalCity = GEO_CITIES
+  .map((city) => ({
+    city_slug: city.slug,
+    canonical_name: city.canonical_name,
+    candidate_count: candidateContext.filter(
+      ({ cityMatches }) => cityMatches.length === 1 && cityMatches[0].slug === city.slug,
+    ).length,
+    canonical_neighborhood_count: rows.filter((r) => r.canonical.city_slug === city.slug).length,
+    exact_match_count: rows.filter(
+      (r) => r.canonical.city_slug === city.slug && r.status === "CANDIDATE_EXACT_MATCH",
+    ).length,
+    unresolved_canonical_count: rows.filter(
+      (r) => r.canonical.city_slug === city.slug && r.status !== "CANDIDATE_EXACT_MATCH",
+    ).length,
+  }))
+  .filter((x) => x.candidate_count > 0 || x.canonical_neighborhood_count > 0)
+  .sort((a, b) => b.candidate_count - a.candidate_count || a.canonical_name.localeCompare(b.canonical_name, "fr"));
+
 const output = {
-  schema_version: 1,
+  schema_version: 2,
   source_inventory: {
     schema_version: inventory.schema_version,
     source_control: inventory.source_control ?? null,
@@ -166,10 +189,12 @@ const output = {
   guardrails: [
     "Exact OSM name/alias + unique known admin8 city is only a candidate crosswalk, not taxonomy certification.",
     "No registry entity is added, removed, activated, or geometry-promoted by this artifact.",
-    "CITY_SCOPE_MISMATCH is preserved for manual/product-geography review instead of force-fitting city scope.",
+    "MULTI_SCALE_OSM_MATCH preserves same-name OSM objects at different place scales instead of choosing one automatically.",
+    "OUT_OF_CITY_NAME_COLLISION records generic same-name labels outside the canonical city without implying a city-scope error.",
     "OSM micro-zones remain discovery candidates until independent modern real-estate evidence supports them.",
   ],
   summary,
+  candidate_counts_by_canonical_city: candidateCountsByCanonicalCity,
   rows,
 };
 
