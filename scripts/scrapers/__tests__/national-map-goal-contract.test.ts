@@ -119,10 +119,7 @@ test("Casablanca TARGET boundary evidence stays sourced and fail-closed", () => 
   assert.equal(CASABLANCA_TARGET_BOUNDARY_EVIDENCE_SUMMARY.publishedProductBoundaryCount, 0);
   assert.ok(CASABLANCA_TARGET_BOUNDARY_EVIDENCE.every((item) => item.publicationAllowed === false));
   assert.ok(CASABLANCA_TARGET_BOUNDARY_EVIDENCE.every((item) => item.sourceAuthority === "Agence Urbaine de Casablanca"));
-  assert.equal(
-    CASABLANCA_TARGET_BOUNDARY_EVIDENCE.filter((item) => item.evidenceStatus === "OFFICIAL_SECTOR_IDENTITY_WITH_TEXTUAL_LIMITS").length,
-    3,
-  );
+  assert.equal(CASABLANCA_TARGET_BOUNDARY_EVIDENCE_SUMMARY.officialRasterGraphicEvidenceCount, 3);
 });
 
 test("GOAL contract forbids synthetic region and neighborhood geometry", () => {
