@@ -19,46 +19,18 @@ test("seventeen cities currently have at least one verified landmark", () => {
     .map((entry) => entry.citySlug)
     .sort();
 
-  assert.deepEqual(covered, ["agadir", "bouznika", "casablanca", "el-jadida", "essaouira", "fes", "kenitra", "marrakech", "meknes", "mohammedia", "nador", "rabat", "sale", "tanger", "temara", "tetouan"].sort());
+  assert.deepEqual(covered, ["agadir", "bouznika", "casablanca", "el-jadida", "essaouira", "fes", "kenitra", "marrakech", "meknes", "mohammedia", "nador", "oujda", "rabat", "sale", "tanger", "temara", "tetouan"].sort());
 });
 
-test("Casablanca coverage reports the three newly canonical districts still awaiting landmark evidence", () => {
+test("Casablanca is fully landmark-covered across its nine canonical districts", () => {
   const casa = getTerritoryCityCoverage("casablanca");
   assert.equal(casa.canonicalDistrictCount, 9);
-  assert.equal(casa.districtsWithVerifiedLandmark, 6);
-  assert.equal(casa.verifiedLandmarkCount, 7);
-  assert.deepEqual(
-    casa.missingLandmarkDistrictIds.sort(),
-    [
-          ].sort(),
-  );
+  assert.equal(casa.districtsWithVerifiedLandmark, 9);
+  assert.ok(casa.verifiedLandmarkCount >= 10);
+  assert.deepEqual(casa.missingLandmarkDistrictIds, []);
 });
 
-const OPEN_LANDMARK_GAPS = {
-  casablanca: [
-    "district_casablanca_californie",
-    "district_casablanca_hay_hassani",
-    "district_casablanca_sidi_maarouf",
-  ],
-  sale: [
-  ],
-  temara: [
-  ],
-  meknes: [
-  ],
-  tetouan: [
-  ],
-  oujda: [
-  ],
-  "el-jadida": [
-  ],
-  nador: [
-  ],
-  essaouira: [
-  ],
-  bouznika: [
-  ],
-} as const;
+const OPEN_LANDMARK_GAPS = {} as const;
 
 test("enrichment queue is empty at full canonical-district landmark coverage", () => {
   assert.deepEqual(getCitiesNeedingLandmarkEnrichment(), []);
@@ -71,10 +43,11 @@ test("Rabat, Tanger and Fes are fully covered after certified batch three", () =
   }
 });
 
-test("new national identity batches remain fail-closed until landmark evidence is added", () => {
-  for (const [city, expectedMissing] of Object.entries(OPEN_LANDMARK_GAPS)) {
-    const coverage = getTerritoryCityCoverage(city as Parameters<typeof getTerritoryCityCoverage>[0]);
-    assert.deepEqual(coverage.missingLandmarkDistrictIds.sort(), [...expectedMissing].sort());
+test("every canonical district with product depth now has landmark evidence", () => {
+  for (const coverage of getTerritoryCoverageReport()) {
+    if (coverage.canonicalDistrictCount === 0) continue;
+    assert.equal(coverage.landmarkCoverageRatio, 1, coverage.citySlug);
+    assert.deepEqual(coverage.missingLandmarkDistrictIds, [], coverage.citySlug);
   }
 });
 
