@@ -43,11 +43,12 @@ function firstParam(value: string | string[] | undefined): string {
 export default async function MapPage({ searchParams }: MapPageProps) {
   const params = searchParams ? await searchParams : {};
   const initialState = parseMapNavigationState(params);
+  const region = firstParam(params.region).trim();
   const city = firstParam(params.city).trim();
   const district = firstParam(params.district).trim();
   const layer = firstParam(params.layer).trim() || "explore";
   const hasNeighborhoodSelection = Boolean(city && district);
-  const usePremiumNationalExplore = !city && !district && layer === "explore";
+  const usePremiumNationalExplore = !region && !city && !district && layer === "explore";
 
   return (
     <div className="flex min-h-[100svh] flex-col bg-[#F8FAFC] text-[#0B1F3A]" data-vivre-ici-page>
