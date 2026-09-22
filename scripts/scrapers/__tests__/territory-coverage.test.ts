@@ -56,7 +56,6 @@ const OPEN_LANDMARK_GAPS = {
   ],
   oujda: [
     "district_oujda_centre_ville",
-    "district_oujda_hay_al_andalous",
     "district_oujda_hay_boudir",
   ],
   "el-jadida": [
@@ -109,6 +108,6 @@ test("coverage remains fail-closed for every canonical district without verified
   assert.deepEqual(missing, expected);
   assert.equal(
     getTerritoryCoverageReport().reduce((total, entry) => total + entry.districtsWithVerifiedLandmark, 0),
-    45,
+    46,
   );
 });
