@@ -28,14 +28,18 @@ export async function GET(request: Request) {
     );
   }
 
-  const landmarks = getVerifiedLandmarksForDistrict(canonical.id).map((entry) => ({
+  const landmarks = getVerifiedLandmarksForDistrict(canonical.id)
+    .filter((entry) => Boolean(entry.entity.coordinates))
+    .map((entry) => {
+      const coordinates = entry.entity.coordinates!;
+      return ({
     id: entry.entity.id,
     slug: entry.entity.landmarkSlug,
     name: entry.entity.canonicalName,
     category: entry.entity.category,
-    latitude: entry.entity.coordinates.lat,
-    longitude: entry.entity.coordinates.lng,
-    precision: entry.entity.coordinates.precision,
+    latitude: coordinates.lat,
+    longitude: coordinates.lng,
+    precision: coordinates.precision,
     importance: {
       score: entry.entity.importance.score,
       tier: entry.entity.importance.tier,
@@ -43,7 +47,8 @@ export async function GET(request: Request) {
     source_refs: entry.sourceRefs,
     verified_at: entry.verifiedAt,
     artwork_key: entry.entity.landmarkSlug,
-  }));
+      });
+    });
 
   return Response.json(
     {

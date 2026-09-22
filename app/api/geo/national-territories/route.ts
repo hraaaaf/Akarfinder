@@ -119,7 +119,7 @@ export async function GET(request: NextRequest) {
     }, { headers: territoryHeaders() });
   }
 
-  const place = getNationalTerritoryPlace(city);
+  const place = getNationalTerritoryPlace(city ?? "");
   if (!place) {
     return NextResponse.json({ status: "not_found", city }, { status: 404, headers: territoryHeaders() });
   }
