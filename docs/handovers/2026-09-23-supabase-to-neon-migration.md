@@ -330,3 +330,29 @@ Urgent PR: #1084
   - CI: `fa23b6858f935d2b0fece9d94663296ee1f29f10`
   - matrix: `9b980c8950a650c0c40ed72657c0caf8f78b4f7b`
 - No Vercel deploy, no provider switch, no Neon write.
+
+## Map Market Intelligence provider-aware read port — 2026-09-23
+- Added shared provider-aware DB reader: `lib/map/market-intelligence-db-read.ts`.
+- `city-market-intelligence-live.ts` and `rabat-market-intelligence-live.ts` no longer import the Supabase client directly.
+- Neon reads cover validated geo entities, bounded geo-resolution events, Thin Index documents and source seeds with parameterized SQL and existing safety bounds preserved.
+- Initial mechanical substitution defect in the city reader was detected before validation claim and corrected immediately; helper functions were restored and stale `readByIds/db` references removed.
+- Added offline tests for SQL parameterization, identifier safety and direct-Supabase-import removal.
+- Added validation-only PG17 portability probe for:
+  - `geo_entities`
+  - `geo_resolution_events`
+  - `thin_index_search_documents`
+  - `source_offer_seeds`
+- Commits:
+  - provider reader: `b8443eda13440fc68b6381b4119e353c1305810b`
+  - ID comparison fix: `f1c4ca5ef6c07f73df987a3e2cd187ac2b5ac441`
+  - city route initial: `449a92ecf52a619b6910b112a726a19ab863d215`
+  - city repair: `a38131e377695d5f213eb6b629ebe5a69ca73e8f`
+  - helper restore: `5f2a74378e1e5da161053a962505c4e2e8f4d8f9`
+  - Rabat route: `951b2b7213939db815d2cb24e8c1d7d6fd0ad81f`
+  - tests: `649100d794466adc3d06e5e6a7e41d6607d43779`
+  - CI read validation: `d43846d1bef499d68370c377462b7ce45fd9877e`
+  - portability probe: `39e6f33b19bb462c39bd3360dba0be2b9ef2691a`
+  - probe guard: `d11a31e04df7b2d115c868c8f15162e697ef9174`
+  - CI portability wiring: `846acff438eb3e2dd36f95d7689b9f9d8de5d5c5`
+  - matrix: `5c9d5e6585c083e4361cbbebf62c4c116b3101df`
+- No Vercel deploy, no provider switch, no Neon write.
