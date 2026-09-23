@@ -24,6 +24,21 @@ import {
 
 const MAX_TARGET_EVENTS = 5000;
 
+function newer(a: any, b: any): boolean {
+  if (!b) return true;
+  if (String(a.created_at) !== String(b.created_at)) {
+    return String(a.created_at) > String(b.created_at);
+  }
+  return String(a.id) > String(b.id);
+}
+
+function normalizeTransaction(value: unknown): MarketTransaction | null {
+  const normalized = String(value ?? "").trim().toLowerCase();
+  if (["sale", "buy", "new", "achat", "vente"].includes(normalized)) return "sale";
+  if (["rent", "location", "louer"].includes(normalized)) return "rent";
+  return null;
+}
+
 function areaForDistrict(
   citySlug: string,
   districtSlug: string,
