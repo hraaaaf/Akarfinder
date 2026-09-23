@@ -3,6 +3,7 @@ import test from "node:test";
 
 import {
   queryNeonListings,
+  queryNeonStructuredDistrictTotal,
   type NeonQueryExecutor,
 } from "../../../lib/db/neon-listings.js";
 
@@ -167,4 +168,43 @@ test("Neon listing read path preserves verified Market Index source resolution",
     if (previousFlag == null) delete process.env.MARKET_INDEX_READ_ENABLED;
     else process.env.MARKET_INDEX_READ_ENABLED = previousFlag;
   }
+});
+
+test("Neon district total preserves structured filters and city aliases", async () => {
+  const calls: Array<{ text: string; params: readonly unknown[] }> = [];
+  const executor: NeonQueryExecutor = {
+    async query<T>(text: string, params: readonly unknown[] = []): Promise<T[]> {
+      calls.push({ text, params });
+      return [{ total: 7 }] as unknown as T[];
+    },
+  };
+
+  const total = await queryNeonStructuredDistrictTotal(
+    {
+      cityVariants: ["Temara", "Témara"],
+      district: "Harhoura",
+      property_type: "Appartement",
+      transaction_type: "achat",
+      min_price: 500000,
+      max_surface: 150,
+    },
+    executor,
+  );
+
+  assert.equal(total, 7);
+  assert.equal(calls.length, 1);
+  assert.match(calls[0].text, /pl\.district = \$1/);
+  assert.match(calls[0].text, /pl\.city = ANY\(\$2::text\[\]\)/);
+  assert.match(calls[0].text, /pl\.property_type = \$3/);
+  assert.match(calls[0].text, /pl\.transaction_type = \$4/);
+  assert.match(calls[0].text, /pl\.price_mad >= \$5/);
+  assert.match(calls[0].text, /pl\.surface_m2 <= \$6/);
+  assert.deepEqual(calls[0].params, [
+    "Harhoura",
+    ["Temara", "Témara"],
+    "apartment",
+    "sale",
+    500000,
+    150,
+  ]);
 });
