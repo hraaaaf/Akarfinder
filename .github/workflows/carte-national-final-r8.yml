@@ -10,6 +10,7 @@ on:
       - "lib/map/**"
       - "scripts/audits/carte-four-level-responsive-r7.mjs"
       - "scripts/scrapers/__tests__/national-map-goal-contract.test.ts"
+      - "scripts/scrapers/__tests__/national-map-completeness-certification.test.ts"
       - ".github/workflows/carte-national-final-r8.yml"
   workflow_dispatch:
 
@@ -40,6 +41,9 @@ jobs:
 
       - name: National map goal contract
         run: npx tsx --test scripts/scrapers/__tests__/national-map-goal-contract.test.ts
+
+      - name: National completeness certification
+        run: npx tsx --test scripts/scrapers/__tests__/national-map-completeness-certification.test.ts
 
       - name: Territory dictionary contracts
         run: npm run test:territory-dictionary
