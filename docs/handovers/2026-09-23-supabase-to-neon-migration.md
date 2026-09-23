@@ -356,3 +356,25 @@ Urgent PR: #1084
   - CI portability wiring: `846acff438eb3e2dd36f95d7689b9f9d8de5d5c5`
   - matrix: `5c9d5e6585c083e4361cbbebf62c4c116b3101df`
 - No Vercel deploy, no provider switch, no Neon write.
+
+## ANN-L9 + owner detail + hidden read cleanup — 2026-09-23
+- ANN-L9 observed-price history now has a Neon read repository over the same verified Market Index + observation dataset as ANN-L8; no new DB portability set is required.
+- Owner listing detail row now routes by DB provider and normalizes PostgreSQL numeric fields.
+- Owner media remains temporarily on Supabase Storage, but Storage access is now explicitly fail-closed to an empty gallery when unavailable; owner detail is not taken down by a paused/missing Storage service.
+- Search Gateway cache is an explicit no-op in Neon mode.
+- Legacy Public Index POC is an explicit no-op in Neon mode.
+- Commits:
+  - ANN-L9 Neon repository: `fde44bc8b3abbaf5aba325a82bfe0cfacc6db897`
+  - ANN-L9 runtime route: `bad4e63707ac05de3a6efec158076d2f813c8c6f`
+  - ANN-L9 test: `312fd07e545151ccc351d7e72a8732f9d783057e`
+  - owner media fail-closed: `8fc57d0f127881df3cd3025817a2b76001a3c31c`
+  - owner detail provider route: `cf29bb66e6ec72f19b351cab469f1de135b7e240`
+  - owner numeric normalization: `65a1c7bc5336646cf57b8f69bd809d371165e831`
+  - owner detail/media guard: `c550f05d030d3d3ba80ee3709de8034f0b14b986`
+  - Search Gateway cache bypass: `d042c1c37a12c6071343f74f21afbdaef9258f45`
+  - legacy Public Index bypass: `64e86d123148803162648e4e82e2bda7abec989c`
+  - hidden-read guard: `3baa2e2613881ecc0213a403ff0d400890966a68`
+  - CI: `13cc061a28262ba4432a8ca80ea7e97f77ef2c6c`
+  - matrix: `d3f7295f64df8df8aa1895bd8dc7fd132d0eda25`
+- GitHub code-search connector returned no results for the global `getSupabaseServerClient` scan, so no unsupported claim of exhaustive repo-wide removal is made. Known public read paths identified in this chantier are now handled; Auth/Storage/write paths remain intentionally separate.
+- No Vercel deploy, no provider switch, no Neon write.
