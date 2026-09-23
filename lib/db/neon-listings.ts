@@ -281,7 +281,7 @@ export async function queryNeonStructuredDistrictTotal(
   const params: unknown[] = [];
   const add = (sql: string, value: unknown) => {
     params.push(value);
-    conditions.push(sql.replace("?", `${params.length}`));
+    conditions.push(sql.replace("?", "$" + params.length));
   };
 
   add("pl.district = ?", filter.district);
