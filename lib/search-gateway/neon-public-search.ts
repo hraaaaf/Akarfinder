@@ -178,3 +178,216 @@ policy_scoped as (
     and d.seed_provider in ('public_sitemap', 'commoncrawl_cdx', 'serper_search')
     and d.freshness_status = 'fresh_confirmed'
     and nullif(btrim(d.canonical_url), '') is not null
+),
+base as (
+  select
+    ps.*,
+    coalesce((
+      select min(e.business_lane)
+      from public.listing_sources ls
+      join public.professional_listing_ownership po
+        on po.property_listing_id = ls.property_listing_id
+       and po.status = 'verified'
+      join public.search_business_entitlements e
+        on e.organization_id = po.organization_id
+       and e.active
+       and (e.starts_at is null or e.starts_at <= now())
+       and (e.ends_at is null or e.ends_at > now())
+      where ls.is_active
+        and (ls.listing_url = ps.canonical_url or ls.source_url = ps.canonical_url)
+    ), 3)::smallint as business_lane,
+    0.12::real as freshness_boost,
+    (
+      (case when ps.normalized_city is not null then 0.015 else 0 end)
+      + (case when ps.normalized_property_type is not null then 0.02 else 0 end)
+      + (case when ps.normalized_intent is not null then 0.015 else 0 end)
+      + (case when ps.rich_content_allowed and ps.normalized_price_mad is not null then 0.06 else 0 end)
+      + (case when ps.rich_content_allowed and ps.normalized_surface_m2 is not null then 0.04 else 0 end)
+    )::real as completeness_boost
+  from policy_scoped ps
+  cross join queries q
+  where (ps.rich_content_allowed or ps.external_minimal_allowed)
+    and (
+      q.q_ts is null
+      or (ps.rich_content_allowed and ps.search_vector @@ q.q_ts)
+      or (ps.external_minimal_allowed and ps.minimal_search_vector @@ q.q_ts)
+    )
+    and (q.canonical_city is null or ps.normalized_city = q.canonical_city)
+    and (q.canonical_property_type is null or ps.normalized_property_type = q.canonical_property_type)
+    and (q.canonical_intent is null or ps.normalized_intent = q.canonical_intent)
+    and (
+      (
+        ps.rich_content_allowed
+        and ($5::numeric is null or ps.normalized_price_mad >= $5::numeric)
+        and ($6::numeric is null or ps.normalized_price_mad <= $6::numeric)
+        and ($7::numeric is null or ps.normalized_surface_m2 >= $7::numeric)
+        and ($8::numeric is null or ps.normalized_surface_m2 <= $8::numeric)
+      )
+      or (
+        ps.external_minimal_allowed
+        and $5::numeric is null
+        and $6::numeric is null
+        and $7::numeric is null
+        and $8::numeric is null
+      )
+    )
+),
+exact_dedup as (
+  select *
+  from (
+    select
+      b.*,
+      row_number() over (
+        partition by lower(b.canonical_url)
+        order by b.business_lane asc,
+                 coalesce(b.quality_score, 0) desc,
+                 b.updated_at desc,
+                 b.seed_id desc
+      ) as url_rank
+    from base b
+  ) x
+  where x.url_rank = 1
+),
+scored as (
+  select
+    d.*,
+    (
+      (case
+        when q.q_ts is null then 0::real
+        when d.rich_content_allowed then ts_rank_cd(d.search_vector, q.q_ts, 32)
+        else ts_rank_cd(d.minimal_search_vector, q.q_ts, 32)
+      end)
+      + (case when d.rich_content_allowed then coalesce(d.ranking_quality_boost, 0::real) else 0::real end)
+      + d.freshness_boost
+      + d.completeness_boost
+      + case when d.display_eligibility = 'eligible_primary' then 0.04::real else 0::real end
+    )::real as base_score,
+    row_number() over (
+      partition by d.business_lane, d.source_domain
+      order by
+        (
+          (case
+            when q.q_ts is null then 0::real
+            when d.rich_content_allowed then ts_rank_cd(d.search_vector, q.q_ts, 32)
+            else ts_rank_cd(d.minimal_search_vector, q.q_ts, 32)
+          end)
+          + (case when d.rich_content_allowed then coalesce(d.ranking_quality_boost, 0::real) else 0::real end)
+          + d.freshness_boost
+          + d.completeness_boost
+        ) desc,
+        d.updated_at desc,
+        d.seed_id desc
+    ) as source_position
+  from exact_dedup d
+  cross join queries q
+),
+ranked as (
+  select
+    s.*,
+    greatest(
+      0::real,
+      s.base_score - least(0.12::real, greatest(0, s.source_position - 1)::real * 0.006::real)
+    )::real as final_score
+  from scored s
+),
+counted as (
+  select r.*, count(*) over () as total_count
+  from ranked r
+),
+page as (
+  select c.*
+  from counted c
+  where $10::smallint is null
+     or c.business_lane > $10::smallint
+     or (c.business_lane = $10::smallint and $11::real is not null and c.final_score < $11::real)
+     or (
+       c.business_lane = $10::smallint
+       and $11::real is not null
+       and c.final_score = $11::real
+       and $12::timestamptz is not null
+       and c.updated_at < $12::timestamptz
+     )
+     or (
+       c.business_lane = $10::smallint
+       and $11::real is not null
+       and c.final_score = $11::real
+       and $12::timestamptz is not null
+       and c.updated_at = $12::timestamptz
+       and $13::uuid is not null
+       and c.seed_id < $13::uuid
+     )
+  order by c.business_lane asc, c.final_score desc, c.updated_at desc, c.seed_id desc
+  limit (select result_limit from queries)
+)
+select
+  row_page.seed_id as representation_id,
+  row_page.canonical_url,
+  row_page.source_domain,
+  row_page.seed_provider,
+  row_page.freshness_status,
+  case
+    when row_page.rich_content_allowed then row_page.title
+    else concat_ws(
+      ' · ',
+      'Annonce immobilière',
+      case row_page.normalized_intent
+        when 'rent' then 'Location'
+        when 'buy' then 'Vente'
+        when 'new' then 'Neuf'
+        else null
+      end,
+      nullif(initcap(replace(coalesce(row_page.normalized_property_type, ''), '_', ' ')), ''),
+      nullif(initcap(coalesce(row_page.normalized_city, '')), '')
+    )
+  end as title,
+  case when row_page.rich_content_allowed then row_page.snippet else null::text end as snippet,
+  row_page.normalized_city,
+  row_page.normalized_property_type,
+  row_page.normalized_intent,
+  case when row_page.rich_content_allowed then row_page.normalized_price_mad else null::numeric end as normalized_price_mad,
+  case when row_page.rich_content_allowed then row_page.normalized_surface_m2 else null::numeric end as normalized_surface_m2,
+  case when row_page.rich_content_allowed then row_page.price_per_m2_mad else null::numeric end as price_per_m2_mad,
+  case when row_page.rich_content_allowed then row_page.quality_tier else null::text end as quality_tier,
+  case when row_page.rich_content_allowed then row_page.quality_score else null::smallint end as quality_score,
+  row_page.display_eligibility,
+  case when row_page.rich_content_allowed then row_page.display_eligibility_reason else 'external_minimal_index'::text end as display_eligibility_reason,
+  case when row_page.rich_content_allowed then row_page.ranking_quality_boost else 0::real end as ranking_quality_boost,
+  row_page.updated_at,
+  row_page.business_lane as lane_weight,
+  row_page.final_score as ranking_score,
+  row_page.total_count
+from page row_page
+`;
+
+export async function queryNeonPublicSearch(
+  input: NeonPublicSearchInput,
+  executor: NeonQueryExecutor = neonExecutor,
+): Promise<NeonPublicSearchRow[]> {
+  const rows = await executor.query<NeonPublicSearchRow>(SQL, [
+    input.q?.trim() || null,
+    normalizeCity(input.city),
+    normalizePropertyType(input.propertyType),
+    normalizeIntent(input.intent),
+    bounded(input.minPrice),
+    bounded(input.maxPrice),
+    bounded(input.minSurface),
+    bounded(input.maxSurface),
+    Math.max(1, Math.min(Math.trunc(input.limit), 101)),
+    input.afterLane ?? null,
+    input.afterRank ?? null,
+    input.afterUpdatedAt ?? null,
+    input.afterRepresentationId ?? null,
+  ]);
+
+  return rows.map((row) => ({
+    ...row,
+    normalized_price_mad: row.normalized_price_mad == null ? null : asNumber(row.normalized_price_mad),
+    normalized_surface_m2: row.normalized_surface_m2 == null ? null : asNumber(row.normalized_surface_m2),
+    price_per_m2_mad: row.price_per_m2_mad == null ? null : asNumber(row.price_per_m2_mad),
+    quality_score: row.quality_score == null ? null : asNumber(row.quality_score),
+    ranking_quality_boost: row.ranking_quality_boost == null ? null : asNumber(row.ranking_quality_boost),
+    lane_weight: asNumber(row.lane_weight),
+    ranking_score: asNumber(row.ranking_score),
+    total_count: asNumber(row.total_count),
+  }));
+}
