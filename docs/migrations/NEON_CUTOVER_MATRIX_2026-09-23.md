@@ -22,7 +22,7 @@ No step in this document authorizes a Vercel deployment or Supabase deletion.
 | Public listing reads | `property_listings`, `listing_sources` | PostgreSQL core | DB-first |
 | Market Index reads | `property_clusters`, `property_cluster_members` | PostgreSQL core | DB-first |
 | Structured district totals | `property_listings` exact-count filters | PostgreSQL core | provider-aware Neon path added |
-| ODM public search | `search_public_representations_v2` + thin-index/policy tables/functions | PostgreSQL + Supabase RPC coupling | block full cutover until ported |
+| ODM public search | `thin_index_search_documents`, `source_policy_registry`, business-lane tables | PostgreSQL read model; Supabase RPC removed on Neon provider branch | runtime port prepared; DB portability gate still required |
 | Owner public search | `search_owner_public_representations_v1` + owner projection | PostgreSQL + Supabase RPC/Auth coupling | defer/port explicitly |
 | Search Gateway cache | `search_gateway_cache` | PostgreSQL cache, Supabase client coupling | non-critical adapter required |
 | Consumer auth | Supabase Auth sessions/users | Supabase-specific | defer + adapter |
@@ -151,3 +151,27 @@ This gap is now closed on the migration branch:
   surface filter parameterization.
 
 This is a parity fix only. It does not activate Neon in production.
+
+## ODM runtime port — prepared, not activated
+
+The migration branch now contains a provider-aware Neon implementation of the
+current M7 public ODM read contract:
+
+- `lib/search-gateway/neon-public-search.ts`;
+- `lib/search-gateway/public-search-cursor.ts` routes to it only when
+  `DATABASE_PROVIDER=neon`;
+- Supabase continues to use the existing RPC path unchanged.
+
+The Neon SQL preserves the current serving invariants verified from migration
+history: fresh LISTING-only rows, source-policy authorization and expiry,
+rich-content/canonical-link separation, structured-filter privacy boundary,
+business lanes, canonical URL dedupe, source-diversity penalty and keyset cursor
+ordering.
+
+This closes the **runtime RPC coupling** in code, not the **data migration**
+gate. Production activation remains blocked until the five candidate ODM tables
+pass the validation-only PostgreSQL 17 portability probe and their data parity
+is proven.
+
+Cursor signing is also provider-safe: Neon requires an explicit
+`SEARCH_CURSOR_SECRET`; it cannot inherit `SUPABASE_SERVICE_ROLE_KEY`.
