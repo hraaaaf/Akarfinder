@@ -68,6 +68,13 @@ jobs:
             if(item.highZoomTileCount<2) throw new Error(`viewport ${name} (${width}px) lacks real basemap proof`);
           }
           NODE
+      - name: Capture production server diagnostics
+        if: failure()
+        shell: bash
+        run: |
+          mkdir -p data/audits/carte-lot9-market-modes
+          cp /tmp/carte-lot9.log data/audits/carte-lot9-market-modes/server.log || true
+
       - name: Upload Lot 9 exact-head proof
         if: always()
         uses: actions/upload-artifact@v4
