@@ -12,10 +12,14 @@ on:
       - "scripts/scrapers/__tests__/neon-db-provider.test.ts"
       - "scripts/scrapers/__tests__/neon-listings.test.ts"
       - "scripts/scrapers/__tests__/neon-core-db-migration-guard.test.ts"
+      - "scripts/scrapers/__tests__/neon-odm-portability-guard.test.ts"
+      - "scripts/scrapers/__tests__/odm-09b-public-search-contract.test.ts"
       - "package.json"
       - "package-lock.json"
       - ".github/workflows/neon-runtime-read-path.yml"
       - ".github/workflows/neon-core-db-migration.yml"
+      - ".github/workflows/neon-odm-portability-probe.yml"
+      - "lib/search-gateway/public-search-cursor.ts"
 
 permissions:
   contents: read
@@ -36,7 +40,7 @@ jobs:
         run: npm ci
 
       - name: Neon migration and provider unit tests
-        run: npx tsx --test scripts/scrapers/__tests__/neon-db-provider.test.ts scripts/scrapers/__tests__/neon-listings.test.ts scripts/scrapers/__tests__/neon-core-db-migration-guard.test.ts
+        run: npx tsx --test scripts/scrapers/__tests__/neon-db-provider.test.ts scripts/scrapers/__tests__/neon-listings.test.ts scripts/scrapers/__tests__/neon-core-db-migration-guard.test.ts scripts/scrapers/__tests__/neon-odm-portability-guard.test.ts scripts/scrapers/__tests__/odm-09b-public-search-contract.test.ts
 
       - name: TypeScript
         run: npx tsc --noEmit
