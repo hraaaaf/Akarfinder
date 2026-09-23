@@ -76,3 +76,25 @@ Fix/reconnect Neon project access, then run a single read-only inventory: projec
 - Vercel deployment: explicit authorization required.
 - Supabase project deletion: explicit authorization required.
 - Any destructive Neon branch/database/storage operation: explicit authorization required.
+
+
+## Runtime coupling inventory — first pass
+Observed runtime / operational paths coupled to Supabase or its PostgREST semantics:
+- `lib/db/supabase-client.ts`
+- `lib/db/supabase-listings.ts`
+- `lib/observation-ledger/supabase-observation-ledger.ts`
+- `lib/property-intelligence/supabase-backfill-adapter.ts`
+- `lib/public-property-index/supabase-index-store.ts`
+- `lib/search-gateway-cache/supabase-cache-store.ts`
+- `lib/seed-freshness/supabase-retry.ts`
+- `lib/openserp-ingestion/*` including state repositories, lock and writer paths
+- `app/api/internal/cron/openserp-ingestion/route.ts`
+- `.github/workflows/openserp-ingestion-cron.yml`
+- `scripts/acquisition/*-supabase-shard-runner.mjs`
+- `scripts/check-supabase.ts`
+- `scripts/sync-supabase.ts`
+- Supabase Edge Functions under `supabase/functions/*`
+- legacy SQL files under `db/supabase-*.sql`
+- the full `supabase/migrations/*` chain, which must be classified into portable Postgres SQL vs Supabase-only constructs.
+
+This inventory is not yet a claim that every listed path is active in production. It is the migration review surface.
