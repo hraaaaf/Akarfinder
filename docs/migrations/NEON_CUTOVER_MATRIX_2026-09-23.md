@@ -274,3 +274,33 @@ A validation-only PG17 portability probe covers the candidate data closure:
 
 A clean restore failure remains a blocker/evidence signal; no target write is
 performed by the probe.
+
+## ANN-L9 history + owner detail + hidden-read cleanup
+
+### ANN-L9 observed price history
+
+A Neon repository now reads the same verified-cluster / source-offer /
+observation dataset as ANN-L8. No additional migration dataset is introduced:
+the ANN-L8 comparables portability probe already contains every ANN-L9 table.
+
+### Owner listing detail
+
+The owner detail row is provider-aware and can read
+`owner_listing_representations` from Neon. Media remains temporarily on
+Supabase Storage during the hybrid phase. Storage lookup/signing is now
+explicitly fail-closed to an empty gallery so temporary Storage unavailability
+does not take down the owner detail page.
+
+This does not migrate seller uploads or object storage.
+
+### Hidden Supabase reads
+
+When `DATABASE_PROVIDER=neon`:
+
+- Search Gateway cache returns an explicit no-op store instead of touching
+  Supabase;
+- the legacy Public Index POC returns an explicit no-op store instead of
+  touching Supabase.
+
+These are non-critical read helpers and are intentionally not allowed to keep a
+hidden Supabase DB dependency during cutover.
