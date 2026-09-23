@@ -15,6 +15,7 @@ import {
 } from "@/lib/market-index/market-index-read-service";
 import type { ReadCandidateSource } from "@/lib/market-index/market-index-read-adapter";
 import { neonExecutor, type NeonQueryExecutor } from "./neon-client";
+export type { NeonQueryExecutor } from "./neon-client";
 
 type NeonSourceRow = {
   id: number;
@@ -259,6 +260,55 @@ export async function queryNeonListings(
     ),
     total: Number(countRows[0]?.total ?? 0),
   };
+}
+
+export type NeonStructuredDistrictCountFilter = {
+  cityVariants: string[];
+  district: string;
+  property_type?: string;
+  transaction_type?: string;
+  min_price?: number;
+  max_price?: number;
+  min_surface?: number;
+  max_surface?: number;
+};
+
+export async function queryNeonStructuredDistrictTotal(
+  filter: NeonStructuredDistrictCountFilter,
+  executor: NeonQueryExecutor = neonExecutor,
+): Promise<number> {
+  const conditions: string[] = [];
+  const params: unknown[] = [];
+  const add = (sql: string, value: unknown) => {
+    params.push(value);
+    conditions.push(sql.replace("?", `${params.length}`));
+  };
+
+  add("pl.district = ?", filter.district);
+
+  if (filter.cityVariants.length === 1) {
+    add("pl.city = ?", filter.cityVariants[0]);
+  } else if (filter.cityVariants.length > 1) {
+    params.push(filter.cityVariants);
+    conditions.push(`pl.city = ANY(${params.length}::text[])`);
+  }
+
+  const propertyType = normalizePropertyType(filter.property_type);
+  const transactionType = normalizeTransactionType(filter.transaction_type);
+  if (propertyType) add("pl.property_type = ?", propertyType);
+  if (transactionType) add("pl.transaction_type = ?", transactionType);
+  if (filter.min_price != null) add("pl.price_mad >= ?", filter.min_price);
+  if (filter.max_price != null) add("pl.price_mad <= ?", filter.max_price);
+  if (filter.min_surface != null) add("pl.surface_m2 >= ?", filter.min_surface);
+  if (filter.max_surface != null) add("pl.surface_m2 <= ?", filter.max_surface);
+
+  const rows = await executor.query<{ total: number }>(
+    `SELECT COUNT(*)::int AS total
+     FROM property_listings pl
+     WHERE ${conditions.join(" AND ")}`,
+    params,
+  );
+  return Number(rows[0]?.total ?? 0);
 }
 
 export async function queryNeonListingById(
