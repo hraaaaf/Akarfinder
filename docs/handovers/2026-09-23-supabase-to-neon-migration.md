@@ -169,3 +169,12 @@ Urgent PR: #1084
   - Phase 1 P2 Residual Closure Gate → success
   - CI Workflow Efficiency Policy → success
 - #1084 is therefore not merge-ready yet; the two failures need diagnosis in the next work window before merge.
+
+
+## Fresh-window update — 2026-09-23
+- Neon MCP retest: same `project_id` validation contradiction. This connector path is abandoned for the migration.
+- #1084 failures diagnosed and corrected: governance now recognizes the explicit migration-freeze state, and sitemap PR validation no longer performs a live Supabase read.
+- #1084 current HEAD: `b4d014b16790203ca3c25c511b64f62b3cc4ac6e`; exact-head CI was queued at last check.
+- Direct fallback prepared on #1082: `.github/workflows/neon-direct-db-read-only-probe.yml`, manual-only and read-only, using PostgreSQL 17 tooling. Current #1082 HEAD before this documentation update: `ffc2ccfc08f8e1d7534b39c02d160447cfa2a116`.
+- Local runtime has no PostgreSQL client tools and no target DB URL injected, so no direct target query has been claimed from this runtime.
+- Next exact: continue runtime inventory; configure the direct target connection outside the repo; run the manual smoke probe, then inventory; merge #1084 only after exact-head checks are green.
