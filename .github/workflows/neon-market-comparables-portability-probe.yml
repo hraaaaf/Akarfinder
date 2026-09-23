@@ -1,0 +1,120 @@
+name: Neon Market Comparables Portability Probe
+
+# SUPABASE-TO-NEON-MIGRATION-20260923
+# Validation-only. Proves ANN-L8 Market Comparables relational data restores on
+# vanilla PostgreSQL 17 before any target import is considered.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: neon-market-comparables-portability-probe
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      SOURCE_URL: ${{ secrets.SUPABASE_DATABASE_URL_DIRECT }}
+      PG_IMAGE: postgres:17
+
+    steps:
+      - name: Validate source secret
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${SOURCE_URL:-}" ]; then
+            echo "::error::Missing SUPABASE_DATABASE_URL_DIRECT"
+            exit 1
+          fi
+
+      - name: Export Market Comparables dependency closure
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --rm \
+            -e SOURCE_URL="$SOURCE_URL" \
+            -v "$RUNNER_TEMP:/work" \
+            "$PG_IMAGE" \
+            sh -lc 'pg_dump "$SOURCE_URL" -Fc --no-owner --no-acl \
+              --table=public.property_listings \
+              --table=public.listing_sources \
+              --table=public.property_clusters \
+              --table=public.property_cluster_members \
+              --table=public.source_offer_observations \
+              -f /work/akarfinder-market-comparables.dump'
+
+      - name: Start clean PostgreSQL 17 scratch database
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run -d --rm \
+            --name akarfinder-comparables-pg17-scratch \
+            -e POSTGRES_PASSWORD=akarfinder-comparables-scratch \
+            -e POSTGRES_DB=akarfinder_comparables_scratch \
+            -p 55435:5432 \
+            "$PG_IMAGE"
+          for attempt in $(seq 1 30); do
+            if docker exec akarfinder-comparables-pg17-scratch pg_isready -U postgres -d akarfinder_comparables_scratch >/dev/null 2>&1; then
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "::error::Scratch PostgreSQL did not become ready"
+          exit 1
+
+      - name: Prove Market Comparables tables are dependency-closed
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --rm \
+            --network host \
+            -v "$RUNNER_TEMP:/work" \
+            "$PG_IMAGE" \
+            pg_restore \
+              --exit-on-error \
+              --single-transaction \
+              --no-owner \
+              --no-acl \
+              -d postgresql://postgres:akarfinder-comparables-scratch@127.0.0.1:55435/akarfinder_comparables_scratch \
+              /work/akarfinder-market-comparables.dump
+
+      - name: Verify source and scratch Market Comparables content parity
+        shell: bash
+        run: |
+          set -euo pipefail
+          tables="property_listings listing_sources property_clusters property_cluster_members source_offer_observations"
+          for table in $tables; do
+            digest_sql="select md5(coalesce(string_agg(row_hash, '' order by row_hash), '')) from (select md5(row_to_json(t)::text) as row_hash from public.$table t) q;"
+
+            source_count=$(docker run --rm -e SOURCE_URL="$SOURCE_URL" "$PG_IMAGE" \
+              sh -lc "psql \"\$SOURCE_URL\" -X -qAt -v ON_ERROR_STOP=1 -c 'select count(*) from public.$table'")
+            scratch_count=$(docker exec akarfinder-comparables-pg17-scratch \
+              psql -U postgres -d akarfinder_comparables_scratch -X -qAt -v ON_ERROR_STOP=1 \
+              -c "select count(*) from public.$table")
+
+            source_digest=$(docker run --rm -e SOURCE_URL="$SOURCE_URL" -e DIGEST_SQL="$digest_sql" "$PG_IMAGE" \
+              sh -lc 'psql "$SOURCE_URL" -X -qAt -v ON_ERROR_STOP=1 -c "$DIGEST_SQL"')
+            scratch_digest=$(docker exec akarfinder-comparables-pg17-scratch \
+              psql -U postgres -d akarfinder_comparables_scratch -X -qAt -v ON_ERROR_STOP=1 \
+              -c "$digest_sql")
+
+            echo "$table source_count=$source_count scratch_count=$scratch_count source_digest=$source_digest scratch_digest=$scratch_digest"
+            if [ "$source_count" != "$scratch_count" ]; then
+              echo "::error::$table row-count mismatch source=$source_count scratch=$scratch_count"
+              exit 1
+            fi
+            if [ "$source_digest" != "$scratch_digest" ]; then
+              echo "::error::$table content digest mismatch source=$source_digest scratch=$scratch_digest"
+              exit 1
+            fi
+          done
+
+      - name: Stop scratch database
+        if: always()
+        shell: bash
+        run: docker rm -f akarfinder-comparables-pg17-scratch >/dev/null 2>&1 || true
