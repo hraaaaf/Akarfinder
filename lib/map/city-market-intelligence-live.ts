@@ -22,7 +22,9 @@ import {
   type ObservedMarketListing,
 } from "@/lib/map/city-market-intelligence";
 
-const MAX_TARGET_EVENTS = 5000;\n\nfunction areaForDistrict(
+const MAX_TARGET_EVENTS = 5000;
+
+function areaForDistrict(
   citySlug: string,
   districtSlug: string,
   canonicalNeighborhoodId: string,
@@ -113,8 +115,7 @@ export async function readCityMarketIntelligenceMetrics(
       .map((row: any) => String(row.source_record_id))
       .filter((value: string) => value.length > 0),
   )];
-  const allCandidateEvents = await readByIds(
-    db,
+  const allCandidateEvents = await readMarketRowsByIds(
     "geo_resolution_events",
     "id,source_record_type,source_record_id,resolution_status,resolved_city_id,resolved_neighborhood_id,created_at",
     "source_record_id",
@@ -135,15 +136,13 @@ export async function readCityMarketIntelligenceMetrics(
   );
   const currentSeedIds = currentEvents.map((event: any) => String(event.source_record_id));
 
-  const docsRows = await readByIds(
-    db,
+  const docsRows = await readMarketRowsByIds(
     "thin_index_search_documents",
     "seed_id,canonical_url,vertical_classification,document_kind,display_eligibility,normalized_intent,normalized_price_mad,normalized_surface_m2,normalized_price_m2,freshness_status,updated_at",
     "seed_id",
     currentSeedIds,
   );
-  const seedRows = await readByIds(
-    db,
+  const seedRows = await readMarketRowsByIds(
     "source_offer_seeds",
     "id,source_domain",
     "id",
