@@ -93,14 +93,24 @@ test("#21 wave planner covers every V2 query exactly once", () => {
   assert.ok(waves[0].cities.length >= 10, "first wave should be geographically diversified");
 });
 
-test("#21 scheduled GitHub ingestion materializes and passes V2 to the existing orchestrator", () => {
+test("#21 GitHub ingestion materializes V2 and respects the migration freeze", () => {
   const entry = readFileSync(join(process.cwd(), "scripts/openserp/run-ingestion-github-actions.ts"), "utf8");
   const workflow = readFileSync(join(process.cwd(), ".github/workflows/openserp-github-native-ingestion.yml"), "utf8");
+  const migrationFreeze = workflow.includes("MIGRATION FREEZE");
+
   assert.ok(entry.includes("buildQueryUniverseV2"));
   assert.ok(entry.includes("universePath: scale.path"));
   assert.ok(entry.includes("tmpdir()"));
-  assert.ok(workflow.includes('cron: "*/10 * * * *"'));
   assert.ok(workflow.includes("run-ingestion-github-actions.ts"));
+
+  if (migrationFreeze) {
+    const onBlock = workflow.match(/(?:^|\n)on:\n([\s\S]*?)(?:\npermissions:)/)?.[1] ?? "";
+    assert.ok(onBlock.includes("workflow_dispatch:"));
+    assert.equal(/^\s*schedule\s*:/m.test(onBlock), false);
+    assert.equal(workflow.includes('cron: "*/10 * * * *"'), false);
+  } else {
+    assert.ok(workflow.includes('cron: "*/10 * * * *"'));
+  }
 });
 
 test("#21 V2 activation does not add filesystem writes to the Vercel serverless orchestrator", () => {
