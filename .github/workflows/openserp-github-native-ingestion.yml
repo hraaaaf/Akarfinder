@@ -176,8 +176,9 @@ jobs:
           set -e
           T0=$(date +%s%3N)
           if [ "${{ github.event_name }}" = "schedule" ]; then
-            MODE="cron"
-            WAVES=$(npx tsx scripts/openserp/resolve-campaign-wave-count.ts)
+            MODE="dry-run"
+            WAVES=1
+            echo "::notice::DATA CLEAN rebuild gate active: scheduled acquisition is forced read-only until snapshot BEFORE is certified."
           else
             MODE="${{ inputs.mode }}"
             WAVES=1
@@ -204,7 +205,10 @@ jobs:
         run: |
           set -e
           T0=$(date +%s%3N)
-          if [ "${{ github.event_name }}" = "schedule" ] || [ "${{ inputs.mode }}" = "cron" ]; then
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            SEED_MODE="dry-run"
+            echo "::notice::DATA CLEAN rebuild gate active: scheduled seed confirmation is forced read-only until snapshot BEFORE is certified."
+          elif [ "${{ inputs.mode }}" = "cron" ]; then
             SEED_MODE="apply"
           else
             SEED_MODE="dry-run"
