@@ -1,0 +1,62 @@
+name: Neon Direct DB Read-Only Probe
+
+# SUPABASE-TO-NEON-MIGRATION-20260923
+# Manual-only escape hatch when the Neon MCP wrapper cannot inject project_id.
+# This workflow is intentionally read-only and requires an unpooled/direct Neon
+# connection string stored as the repository secret NEON_DATABASE_URL_DIRECT.
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Read-only action"
+        required: true
+        default: "smoke"
+        type: choice
+        options:
+          - smoke
+          - inventory
+
+permissions:
+  contents: read
+
+concurrency:
+  group: neon-direct-db-read-only-probe
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      NEON_DATABASE_URL_DIRECT: ${{ secrets.NEON_DATABASE_URL_DIRECT }}
+
+    steps:
+      - name: Validate direct connection secret
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${NEON_DATABASE_URL_DIRECT:-}" ]; then
+            echo "::error::Missing repository secret NEON_DATABASE_URL_DIRECT"
+            exit 1
+          fi
+          case "$NEON_DATABASE_URL_DIRECT" in
+            *-pooler.*)
+              echo "::error::NEON_DATABASE_URL_DIRECT points to a pooled endpoint; use Neon direct/unpooled connection for migration tooling"
+              exit 1
+              ;;
+          esac
+
+      - name: Read-only target smoke
+        if: inputs.mode == 'smoke'
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --rm             -e DATABASE_URL="$NEON_DATABASE_URL_DIRECT"             postgres:17             sh -lc 'psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -qAt -c "select current_database(), current_user, current_setting('\''server_version_num'\'');"'
+
+      - name: Read-only target inventory
+        if: inputs.mode == 'inventory'
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --rm             -e DATABASE_URL="$NEON_DATABASE_URL_DIRECT"             postgres:17             sh -lc 'psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -P pager=off -c "select table_schema, table_name from information_schema.tables where table_schema not in ('\''pg_catalog'\'', '\''information_schema'\'') order by table_schema, table_name;"'
