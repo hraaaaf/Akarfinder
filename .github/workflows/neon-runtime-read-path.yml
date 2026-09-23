@@ -27,6 +27,9 @@ on:
       - "scripts/scrapers/__tests__/neon-owner-listing-search.test.ts"
       - ".github/workflows/neon-owner-read-portability-probe.yml"
       - "scripts/scrapers/__tests__/neon-owner-read-portability-guard.test.ts"
+      - "lib/property-detail/neon-market-comparables-repository.ts"
+      - "lib/property-detail/market-comparables-runtime.ts"
+      - "scripts/scrapers/__tests__/neon-market-comparables.test.ts"
 
 permissions:
   contents: read
@@ -47,7 +50,7 @@ jobs:
         run: npm ci
 
       - name: Neon migration and provider unit tests
-        run: npx tsx --test scripts/scrapers/__tests__/neon-db-provider.test.ts scripts/scrapers/__tests__/neon-listings.test.ts scripts/scrapers/__tests__/neon-core-db-migration-guard.test.ts scripts/scrapers/__tests__/neon-odm-portability-guard.test.ts scripts/scrapers/__tests__/neon-public-search.test.ts scripts/scrapers/__tests__/neon-owner-listing-search.test.ts scripts/scrapers/__tests__/neon-owner-read-portability-guard.test.ts scripts/scrapers/__tests__/odm-09b-public-search-contract.test.ts
+        run: npx tsx --test scripts/scrapers/__tests__/neon-db-provider.test.ts scripts/scrapers/__tests__/neon-listings.test.ts scripts/scrapers/__tests__/neon-core-db-migration-guard.test.ts scripts/scrapers/__tests__/neon-odm-portability-guard.test.ts scripts/scrapers/__tests__/neon-public-search.test.ts scripts/scrapers/__tests__/neon-owner-listing-search.test.ts scripts/scrapers/__tests__/neon-owner-read-portability-guard.test.ts scripts/scrapers/__tests__/neon-market-comparables.test.ts scripts/scrapers/__tests__/odm-09b-public-search-contract.test.ts
 
       - name: TypeScript
         run: npx tsc --noEmit
