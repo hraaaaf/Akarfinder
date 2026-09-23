@@ -246,3 +246,31 @@ relational closure on vanilla PostgreSQL 17:
 - `source_offer_observations`
 
 No Neon apply is authorized by this probe.
+
+## Map Market Intelligence — provider-aware read path
+
+The City and Rabat live market-intelligence readers no longer import the
+Supabase client directly. They now share:
+
+`lib/map/market-intelligence-db-read.ts`
+
+That provider-aware reader covers:
+
+- validated city rows from `geo_entities`;
+- validated neighborhood rows;
+- resolved `geo_resolution_events`;
+- bounded ID reads from `thin_index_search_documents` and
+  `source_offer_seeds`.
+
+Neon reads are parameterized and preserve the existing hard row bounds.
+Supabase remains unchanged outside Neon mode.
+
+A validation-only PG17 portability probe covers the candidate data closure:
+
+- `geo_entities`
+- `geo_resolution_events`
+- `thin_index_search_documents`
+- `source_offer_seeds`
+
+A clean restore failure remains a blocker/evidence signal; no target write is
+performed by the probe.
