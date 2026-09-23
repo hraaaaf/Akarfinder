@@ -1,3 +1,4 @@
+import { getDbProvider } from "@/lib/db/provider";
 import { getSupabaseServerClient } from "@/lib/db/supabase-client";
 import { searchPublicPropertyIndex } from "./fts-search";
 import { normalizePublicPropertyIndexRecord } from "./normalize-index-record";
@@ -188,6 +189,10 @@ export function createPublicPropertyIndexStore(options?: {
   const fixtureMode = env.PUBLIC_INDEX_POC_USE_FIXTURES === "true" || !isSupabaseConfigured(env);
   if (fixtureMode && seedRecords.length > 0) {
     return new InMemoryPublicPropertyIndexStore([...seedRecords]);
+  }
+
+  if (getDbProvider(env) === "neon") {
+    return new NoopPublicPropertyIndexStore("neon_public_index_not_migrated");
   }
 
   if (!isSupabaseConfigured(env)) {
