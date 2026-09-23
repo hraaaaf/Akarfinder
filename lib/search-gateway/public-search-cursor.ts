@@ -171,25 +171,45 @@ function mapAndDiversifyWithinBusinessLanes(rows: PublicSearchRpcRow[]): SearchG
 export async function searchPublicRepresentations(input: PublicSearchInput): Promise<PublicSearchPage> {
   const cursor = decodePublicSearchCursor(input.cursor);
   const pageSize = Math.max(1, Math.min(Math.trunc(input.limit ?? DEFAULT_PAGE_SIZE), MAX_PAGE_SIZE));
-  const supabase = getSupabaseServerClient();
-  const { data, error } = await supabase.rpc("search_public_representations_v2", {
-    p_query: input.q?.trim() || null,
-    p_city: input.city?.trim() || null,
-    p_property_type: input.propertyType?.trim() || null,
-    p_intent: input.intent?.trim() || null,
-    p_min_price: boundedOptionalNumber(input.minPrice),
-    p_max_price: boundedOptionalNumber(input.maxPrice),
-    p_min_surface: boundedOptionalNumber(input.minSurface),
-    p_max_surface: boundedOptionalNumber(input.maxSurface),
-    p_limit: pageSize + 1,
-    p_after_lane: cursor?.lane ?? null,
-    p_after_rank: cursor?.rank ?? null,
-    p_after_updated_at: cursor?.updatedAt ?? null,
-    p_after_representation_id: cursor?.representationId ?? null,
-  });
-  if (error) throw new Error(`public_search_rpc_v2_failed:${error.message}`);
 
-  const rows = (data ?? []) as PublicSearchRpcRow[];
+  let rows: PublicSearchRpcRow[];
+  if (getDbProvider() === "neon") {
+    const { queryNeonPublicSearch } = await import("@/lib/search-gateway/neon-public-search");
+    rows = await queryNeonPublicSearch({
+      q: input.q,
+      city: input.city,
+      propertyType: input.propertyType,
+      intent: input.intent,
+      minPrice: boundedOptionalNumber(input.minPrice) ?? undefined,
+      maxPrice: boundedOptionalNumber(input.maxPrice) ?? undefined,
+      minSurface: boundedOptionalNumber(input.minSurface) ?? undefined,
+      maxSurface: boundedOptionalNumber(input.maxSurface) ?? undefined,
+      limit: pageSize + 1,
+      afterLane: cursor?.lane ?? null,
+      afterRank: cursor?.rank ?? null,
+      afterUpdatedAt: cursor?.updatedAt ?? null,
+      afterRepresentationId: cursor?.representationId ?? null,
+    }) as PublicSearchRpcRow[];
+  } else {
+    const supabase = getSupabaseServerClient();
+    const { data, error } = await supabase.rpc("search_public_representations_v2", {
+      p_query: input.q?.trim() || null,
+      p_city: input.city?.trim() || null,
+      p_property_type: input.propertyType?.trim() || null,
+      p_intent: input.intent?.trim() || null,
+      p_min_price: boundedOptionalNumber(input.minPrice),
+      p_max_price: boundedOptionalNumber(input.maxPrice),
+      p_min_surface: boundedOptionalNumber(input.minSurface),
+      p_max_surface: boundedOptionalNumber(input.maxSurface),
+      p_limit: pageSize + 1,
+      p_after_lane: cursor?.lane ?? null,
+      p_after_rank: cursor?.rank ?? null,
+      p_after_updated_at: cursor?.updatedAt ?? null,
+      p_after_representation_id: cursor?.representationId ?? null,
+    });
+    if (error) throw new Error(`public_search_rpc_v2_failed:${error.message}`);
+    rows = (data ?? []) as PublicSearchRpcRow[];
+  }
   const hasMore = rows.length > pageSize;
   const pageRows = rows.slice(0, pageSize);
   const tail = pageRows.at(-1);
