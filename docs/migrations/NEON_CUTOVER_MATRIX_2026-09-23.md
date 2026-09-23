@@ -196,3 +196,26 @@ during a hybrid phase.
 The `owner_listing_representations` DDL has foreign keys to seller draft and
 publication tables, so its vanilla-PostgreSQL dependency closure must be proven
 before adding it to any Neon apply allowlist.
+
+## Owner read portability closure
+
+The owner public Search relational read model has a narrower dependency chain
+than the full seller subsystem:
+
+- `buyer_leads`
+- `seller_property_drafts`
+- `seller_listing_publications`
+- `owner_listing_representations`
+
+Repository DDL shows no direct `auth.users` or `storage.*` foreign key in that
+four-table read closure. Storage remains isolated in
+`seller_property_draft_photos` + the `seller-property-drafts` bucket and is
+excluded from this gate.
+
+A dedicated validation-only probe now dumps exactly these four tables and
+restores them into clean PostgreSQL 17:
+
+`.github/workflows/neon-owner-read-portability-probe.yml`
+
+It proves both dependency closure and source→scratch count/content-digest parity.
+This does not authorize moving seller writes, Auth or Storage.
