@@ -4,19 +4,16 @@ name: OpenSERP Native Ingestion (GitHub-hosted)
 # MASS-ACQUISITION-CAMPAIGN-V2
 # SEED-LISTING-MASS-CONVERSION-V1
 #
-# The canonical */10 schedule remains the wake-up trigger. GitHub documents
-# that schedules can be delayed/dropped, so scheduled runs compute a bounded
-# catch-up wave count from the age of the last real engine success: normally 1
-# wave, up to 4 only after a real scheduling/engine gap. Containers are reused
-# across waves. Existing DB lock, engine budget/backoff and 3 write flags remain
-# authoritative. Manual dispatch is always one wave and defaults to dry-run.
+# 2026-09-23 MIGRATION FREEZE: unattended ingestion is disabled while AkarFinder
+# migrates its database from Supabase to Neon. Keep manual dispatch only; do not
+# restore a schedule until the Neon write path and quotas are explicitly verified.
+# Existing DB lock, engine budget/backoff and write flags remain authoritative.
+# Manual dispatch is always one wave and defaults to dry-run.
 # After the normal acquisition campaign, the same ephemeral SearXNG/Yandex
 # container confirms a bounded balanced batch of seed_only URLs by exact
 # canonical match; no source listing page is fetched.
 
 on:
-  schedule:
-    - cron: "*/10 * * * *"
   workflow_dispatch:
     inputs:
       mode:
