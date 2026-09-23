@@ -73,10 +73,10 @@ jobs:
           docker run --rm \
             -e SOURCE_URL="$SOURCE_URL" \
             -e TABLE_ARGS="$table_args" \
+            -e PROBE_NAME="$PROBE_NAME" \
             -v "$RUNNER_TEMP:/work" \
             "$PG_IMAGE" \
-            sh -lc 'set -eu; pg_dump "$SOURCE_URL" -Fc --no-owner --no-acl $TABLE_ARGS -f "/work/$PROBE_NAME.dump"' \
-            --env PROBE_NAME="$PROBE_NAME"
+            sh -lc 'set -eu; pg_dump "$SOURCE_URL" -Fc --no-owner --no-acl $TABLE_ARGS -f "/work/$PROBE_NAME.dump"'
 
       - name: Start clean PostgreSQL 17 scratch database
         shell: bash
