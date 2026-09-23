@@ -290,3 +290,21 @@ Urgent PR: #1084
   - matrix: `81b72c5f84eab702ed31f2cd46947508bb70fcb7`
 - Boundary: seller projection/write flow still uses Supabase. `owner_listing_representations` also references seller draft/publication tables, so its target-schema portability is not yet proven.
 - No Vercel deploy, no provider switch, no Neon write.
+
+## Owner read portability closure — 2026-09-23
+- DDL chain verified for public owner Search:
+  - `buyer_leads`
+  - `seller_property_drafts`
+  - `seller_listing_publications`
+  - `owner_listing_representations`
+- No direct `auth.users` or `storage.*` dependency appears in this four-table read closure.
+- Storage remains isolated in `seller_property_draft_photos` + Supabase Storage bucket and is excluded.
+- Added manual validation-only workflow `.github/workflows/neon-owner-read-portability-probe.yml`: PG17 dump → clean PG17 restore → row count + deterministic content digest parity.
+- Added static guard and wired it into Neon CI.
+- Commits:
+  - workflow: `82dc7ca1d9d65a641c7a79b5471f822f33658813`
+  - guard: `57bd4331a600250f4509fa4fbb912ab8682896fb`
+  - CI: `5f788470bdf456c4e958733e0b36991b493561e8`
+  - matrix: `42c8345dc7bbedb0cca765cc0ef6c15639fd16e2`
+- This does not authorize seller-write/Auth/Storage migration.
+- No Vercel deploy, no provider switch, no Neon write.
