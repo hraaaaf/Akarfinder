@@ -19,39 +19,46 @@ export function isSafeOwnerMediaStoragePath(draftId: string, storagePath: unknow
 
 export async function queryOwnerListingMedia(
   draftId: string,
-  supabase: SupabaseClient = getSupabaseServerClient(),
+  supabase?: SupabaseClient,
 ): Promise<string[]> {
   if (!/^[0-9a-f-]{36}$/i.test(draftId)) return [];
 
-  const { data, error } = await supabase
-    .from("seller_property_draft_photos")
-    .select("storage_path, position")
-    .eq("draft_id", draftId)
-    .eq("upload_status", "uploaded")
-    .order("position", { ascending: true })
-    .limit(SELLER_PHOTO_MAX_COUNT);
+  try {
+    const client = supabase ?? getSupabaseServerClient();
+    const { data, error } = await client
+      .from("seller_property_draft_photos")
+      .select("storage_path, position")
+      .eq("draft_id", draftId)
+      .eq("upload_status", "uploaded")
+      .order("position", { ascending: true })
+      .limit(SELLER_PHOTO_MAX_COUNT);
 
-  if (error || !data?.length) return [];
+    if (error || !data?.length) return [];
 
-  const rows = data as OwnerPhotoRow[];
-  const paths = rows
-    .map((row) => row.storage_path)
-    .filter((value): value is string => isSafeOwnerMediaStoragePath(draftId, value));
-  if (paths.length === 0) return [];
+    const rows = data as OwnerPhotoRow[];
+    const paths = rows
+      .map((row) => row.storage_path)
+      .filter((value): value is string => isSafeOwnerMediaStoragePath(draftId, value));
+    if (paths.length === 0) return [];
 
-  const { data: signed, error: signingError } = await supabase.storage
-    .from(SELLER_PHOTO_BUCKET)
-    .createSignedUrls(paths, OWNER_LISTING_MEDIA_SIGNED_URL_TTL_SECONDS);
-  if (signingError || !signed) return [];
+    const { data: signed, error: signingError } = await client.storage
+      .from(SELLER_PHOTO_BUCKET)
+      .createSignedUrls(paths, OWNER_LISTING_MEDIA_SIGNED_URL_TTL_SECONDS);
+    if (signingError || !signed) return [];
 
-  return signed.flatMap((item) => {
-    const value = item.signedUrl;
-    if (typeof value !== "string") return [];
-    try {
-      const parsed = new URL(value);
-      return parsed.protocol === "https:" || parsed.protocol === "http:" ? [value] : [];
-    } catch {
-      return [];
-    }
-  });
+    return signed.flatMap((item) => {
+      const value = item.signedUrl;
+      if (typeof value !== "string") return [];
+      try {
+        const parsed = new URL(value);
+        return parsed.protocol === "https:" || parsed.protocol === "http:" ? [value] : [];
+      } catch {
+        return [];
+      }
+    });
+  } catch {
+    // During the DB-first Neon phase, Supabase Storage may be paused or absent.
+    // Media must degrade to an empty gallery instead of taking down owner detail.
+    return [];
+  }
 }
