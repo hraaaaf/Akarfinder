@@ -95,12 +95,15 @@ try {
       await page.locator(".maplibregl-canvas").waitFor({ state: "visible", timeout: 10000 });
       await realTilesReady;
       await page.waitForFunction(() => document.querySelectorAll('[data-akarfinder-intelligence-mode]').length === 3, null, { timeout: 10000 });
-      await page.waitForFunction(() => document.querySelector('[data-akarfinder-intelligence-legend="price"]'), null, { timeout: 10000 });
-      await waitForSettledLegend(page, "price");
 
+      // Diagnose the data contract before waiting on UI state so a backend/provider
+      // failure is reported directly instead of surfacing as an opaque legend timeout.
       const pricePayload = await requireApiMode(page, "price");
       const densityPayload = await requireApiMode(page, "density");
       const listingsPayload = await requireApiMode(page, "listings");
+
+      await page.waitForFunction(() => document.querySelector('[data-akarfinder-intelligence-legend="price"]'), null, { timeout: 10000 });
+      await waitForSettledLegend(page, "price");
       const maarifListings = listingsPayload.districts.find((row) => row.districtSlug === "maarif");
       if (maarifListings?.metricValue == null) throw new Error("listings: Maârif must expose a factual listing count");
       const expectedListingsCount = Math.round(maarifListings.metricValue).toLocaleString("fr-FR");
