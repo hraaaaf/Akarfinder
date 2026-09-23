@@ -24,6 +24,24 @@ type OwnerListingDetailRow = {
   updated_at: string;
 };
 
+function nullableNumber(value: unknown): number | null {
+  if (value == null) return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function normalizedOwnerDetailRow(row: OwnerListingDetailRow): OwnerListingDetailRow {
+  return {
+    ...row,
+    normalized_price_mad: nullableNumber(row.normalized_price_mad),
+    normalized_surface_m2: nullableNumber(row.normalized_surface_m2),
+    price_per_m2_mad: nullableNumber(row.price_per_m2_mad),
+    bedrooms_count: nullableNumber(row.bedrooms_count),
+    photo_count: nullableNumber(row.photo_count) ?? 0,
+    quality_score: nullableNumber(row.quality_score) ?? 0,
+  };
+}
+
 async function readOwnerListingDetailRow(representationId: string): Promise<{
   row: OwnerListingDetailRow | null;
   supabase?: ReturnType<typeof getSupabaseServerClient>;
@@ -42,7 +60,7 @@ async function readOwnerListingDetailRow(representationId: string): Promise<{
        LIMIT 1`,
       [representationId, ["eligible_primary", "eligible_secondary"]],
     );
-    return { row: rows[0] ?? null };
+    return { row: rows[0] ? normalizedOwnerDetailRow(rows[0]) : null };
   }
 
   const supabase = getSupabaseServerClient();
@@ -54,7 +72,7 @@ async function readOwnerListingDetailRow(representationId: string): Promise<{
     .in("display_eligibility", ["eligible_primary", "eligible_secondary"])
     .single();
   if (error || !data) return { row: null, supabase };
-  return { row: data as OwnerListingDetailRow, supabase };
+  return { row: normalizedOwnerDetailRow(data as OwnerListingDetailRow), supabase };
 }
 
 function propertyType(value: string | null): ListingPropertyType {
