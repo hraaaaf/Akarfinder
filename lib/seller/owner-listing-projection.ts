@@ -1,3 +1,4 @@
+import { getDbProvider } from "@/lib/db/provider";
 import { getSupabaseServerClient } from "@/lib/db/supabase-client";
 import type { SearchGatewayNormalizedResult } from "@/lib/search-gateway/search-gateway-types";
 
@@ -53,21 +54,26 @@ export async function searchOwnerListings(input: OwnerListingSearchInput): Promi
 }> {
   if (!ownerListingsSearchEnabled()) return { results: [], totalCount: 0 };
 
-  const supabase = getSupabaseServerClient();
-  const { data, error } = await supabase.rpc("search_owner_public_representations_v1", {
-    p_query: input.q?.trim() || null,
-    p_city: input.city?.trim() || null,
-    p_property_type: input.propertyType?.trim() || null,
-    p_intent: input.intent?.trim() || null,
-    p_min_price: bounded(input.minPrice),
-    p_max_price: bounded(input.maxPrice),
-    p_min_surface: bounded(input.minSurface),
-    p_max_surface: bounded(input.maxSurface),
-    p_limit: Math.max(1, Math.min(Math.trunc(input.limit ?? 20), 50)),
-  });
-  if (error) throw new Error(`owner_listing_search_failed:${error.message}`);
-
-  const rows = (data ?? []) as OwnerSearchRow[];
+  let rows: OwnerSearchRow[];
+  if (getDbProvider() === "neon") {
+    const { queryNeonOwnerListings } = await import("@/lib/seller/neon-owner-listing-search");
+    rows = await queryNeonOwnerListings(input) as OwnerSearchRow[];
+  } else {
+    const supabase = getSupabaseServerClient();
+    const { data, error } = await supabase.rpc("search_owner_public_representations_v1", {
+      p_query: input.q?.trim() || null,
+      p_city: input.city?.trim() || null,
+      p_property_type: input.propertyType?.trim() || null,
+      p_intent: input.intent?.trim() || null,
+      p_min_price: bounded(input.minPrice),
+      p_max_price: bounded(input.maxPrice),
+      p_min_surface: bounded(input.minSurface),
+      p_max_surface: bounded(input.maxSurface),
+      p_limit: Math.max(1, Math.min(Math.trunc(input.limit ?? 20), 50)),
+    });
+    if (error) throw new Error(`owner_listing_search_failed:${error.message}`);
+    rows = (data ?? []) as OwnerSearchRow[];
+  }
   return {
     totalCount: Number(rows[0]?.total_count ?? 0),
     results: rows.map((row) => ({
