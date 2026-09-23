@@ -75,10 +75,11 @@ test("catch-up policy stays cheap when healthy and scales only after real gaps",
   assert.equal(resolveCampaignWaveCount(null, now), 4);
 });
 
-test("campaign workflow preserves canonical 10-minute trigger and resolves adaptive waves", () => {
+test("campaign workflow preserves canonical 10-minute trigger while DATA CLEAN freeze forces scheduled dry-run", () => {
   const workflow = readFileSync(".github/workflows/openserp-github-native-ingestion.yml", "utf8");
   assert.match(workflow, /cron: "\*\/10 \* \* \* \*"/);
-  assert.match(workflow, /resolve-campaign-wave-count\.ts/);
+  assert.match(workflow, /MODE="dry-run"/);
+  assert.match(workflow, /DATA CLEAN rebuild gate active: scheduled acquisition is forced read-only/);
   assert.match(workflow, /timeout-minutes: 30/);
   assert.match(workflow, /group: openserp-native-ingestion-production/);
 });
