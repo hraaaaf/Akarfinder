@@ -1,3 +1,4 @@
+import { getDbProvider } from "@/lib/db/provider";
 import { getSupabaseServerClient } from "@/lib/db/supabase-client";
 import { computeAgeSeconds, isFreshEntry, isStaleEligibleEntry } from "./cache-store";
 import { NoopSearchGatewayCacheStore } from "./noop-cache-store";
@@ -123,6 +124,9 @@ export class SupabaseSearchGatewayCacheStore implements SearchGatewayCacheStore 
 
 export function createSearchGatewayCacheStore(): SearchGatewayCacheStore {
   try {
+    if (getDbProvider() === "neon") {
+      return new NoopSearchGatewayCacheStore("neon_cache_not_migrated");
+    }
     if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
       return new NoopSearchGatewayCacheStore("supabase_not_configured");
     }
