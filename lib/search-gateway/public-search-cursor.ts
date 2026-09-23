@@ -1,6 +1,7 @@
 import { Buffer } from "node:buffer";
 import { createHash, timingSafeEqual } from "node:crypto";
 
+import { getDbProvider } from "@/lib/db/provider";
 import { getSupabaseServerClient } from "@/lib/db/supabase-client";
 import { diversifySearchGatewayResults } from "@/lib/search-gateway/search-gateway-diversify";
 import { mapSeedToThinIndexResult } from "@/lib/search-gateway/seed-thin-index";
@@ -65,7 +66,14 @@ type PublicSearchRpcRow = {
 };
 
 function cursorSecret(): string {
-  return process.env.SEARCH_CURSOR_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+  const explicit = process.env.SEARCH_CURSOR_SECRET?.trim();
+  if (explicit) return explicit;
+
+  // Supabase historically doubled as the cursor-signing secret. Once the DB
+  // provider is Neon, accepting that fallback would keep an undeclared runtime
+  // dependency on the retired Supabase service-role credential.
+  if (getDbProvider() === "neon") return "";
+  return process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 }
 
 function signature(payload: string): string {
