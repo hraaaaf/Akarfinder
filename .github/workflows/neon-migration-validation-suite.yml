@@ -1,0 +1,150 @@
+name: Neon Migration Validation Suite
+
+# SUPABASE-TO-NEON-MIGRATION-20260923
+# Single manual entrypoint for all source -> clean PostgreSQL 17 portability
+# probes. Validation-only: never connects to Neon and never writes source.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: neon-migration-validation-suite
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    name: Validate ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: core
+            tables: "property_listings listing_sources property_clusters property_cluster_members"
+          - name: odm-public-search
+            tables: "thin_index_search_documents source_policy_registry listing_sources professional_listing_ownership search_business_entitlements"
+          - name: owner-read
+            tables: "buyer_leads seller_property_drafts seller_listing_publications owner_listing_representations"
+          - name: market-comparables-history
+            tables: "property_listings listing_sources property_clusters property_cluster_members source_offer_observations"
+          - name: map-market-intelligence
+            tables: "geo_entities geo_resolution_events thin_index_search_documents source_offer_seeds"
+
+    env:
+      SOURCE_URL: ${{ secrets.SUPABASE_DATABASE_URL_DIRECT }}
+      PG_IMAGE: postgres:17
+      TABLES: ${{ matrix.tables }}
+      PROBE_NAME: ${{ matrix.name }}
+
+    steps:
+      - name: Validate source secret
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${SOURCE_URL:-}" ]; then
+            echo "::error::Missing SUPABASE_DATABASE_URL_DIRECT"
+            exit 1
+          fi
+
+      - name: Build selected table arguments
+        shell: bash
+        run: |
+          set -euo pipefail
+          : > "$RUNNER_TEMP/table-args.txt"
+          for table in $TABLES; do
+            case "$table" in
+              *[!a-z0-9_]*|'')
+                echo "::error::Unsafe table token: $table"
+                exit 1
+                ;;
+            esac
+            printf '%s\n' "--table=public.$table" >> "$RUNNER_TEMP/table-args.txt"
+          done
+
+      - name: Export selected dataset with PostgreSQL 17
+        shell: bash
+        run: |
+          set -euo pipefail
+          table_args="$(tr '\n' ' ' < "$RUNNER_TEMP/table-args.txt")"
+          docker run --rm \
+            -e SOURCE_URL="$SOURCE_URL" \
+            -e TABLE_ARGS="$table_args" \
+            -v "$RUNNER_TEMP:/work" \
+            "$PG_IMAGE" \
+            sh -lc 'set -eu; pg_dump "$SOURCE_URL" -Fc --no-owner --no-acl $TABLE_ARGS -f "/work/$PROBE_NAME.dump"' \
+            --env PROBE_NAME="$PROBE_NAME"
+
+      - name: Start clean PostgreSQL 17 scratch database
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run -d --rm \
+            --name akarfinder-neon-validation-scratch \
+            -e POSTGRES_PASSWORD=akarfinder-validation-scratch \
+            -e POSTGRES_DB=akarfinder_validation_scratch \
+            -p 55437:5432 \
+            "$PG_IMAGE"
+          for attempt in $(seq 1 30); do
+            if docker exec akarfinder-neon-validation-scratch pg_isready -U postgres -d akarfinder_validation_scratch >/dev/null 2>&1; then
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "::error::Scratch PostgreSQL did not become ready"
+          exit 1
+
+      - name: Prove dependency closure on vanilla PostgreSQL 17
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --rm \
+            --network host \
+            -v "$RUNNER_TEMP:/work" \
+            "$PG_IMAGE" \
+            pg_restore \
+              --exit-on-error \
+              --single-transaction \
+              --no-owner \
+              --no-acl \
+              -d postgresql://postgres:akarfinder-validation-scratch@127.0.0.1:55437/akarfinder_validation_scratch \
+              "/work/$PROBE_NAME.dump"
+
+      - name: Verify source and scratch content parity
+        shell: bash
+        run: |
+          set -euo pipefail
+          for table in $TABLES; do
+            digest_sql="select md5(coalesce(string_agg(row_hash, '' order by row_hash), '')) from (select md5(row_to_json(t)::text) as row_hash from public.$table t) q;"
+
+            source_count=$(docker run --rm -e SOURCE_URL="$SOURCE_URL" "$PG_IMAGE" \
+              sh -lc "psql \"\$SOURCE_URL\" -X -qAt -v ON_ERROR_STOP=1 -c 'select count(*) from public.$table'")
+            scratch_count=$(docker exec akarfinder-neon-validation-scratch \
+              psql -U postgres -d akarfinder_validation_scratch -X -qAt -v ON_ERROR_STOP=1 \
+              -c "select count(*) from public.$table")
+
+            source_digest=$(docker run --rm -e SOURCE_URL="$SOURCE_URL" -e DIGEST_SQL="$digest_sql" "$PG_IMAGE" \
+              sh -lc 'psql "$SOURCE_URL" -X -qAt -v ON_ERROR_STOP=1 -c "$DIGEST_SQL"')
+            scratch_digest=$(docker exec akarfinder-neon-validation-scratch \
+              psql -U postgres -d akarfinder_validation_scratch -X -qAt -v ON_ERROR_STOP=1 \
+              -c "$digest_sql")
+
+            echo "$PROBE_NAME $table source_count=$source_count scratch_count=$scratch_count source_digest=$source_digest scratch_digest=$scratch_digest"
+
+            if [ "$source_count" != "$scratch_count" ]; then
+              echo "::error::$PROBE_NAME/$table row-count mismatch source=$source_count scratch=$scratch_count"
+              exit 1
+            fi
+            if [ "$source_digest" != "$scratch_digest" ]; then
+              echo "::error::$PROBE_NAME/$table content digest mismatch source=$source_digest scratch=$scratch_digest"
+              exit 1
+            fi
+          done
+
+      - name: Stop scratch database
+        if: always()
+        shell: bash
+        run: docker rm -f akarfinder-neon-validation-scratch >/dev/null 2>&1 || true
