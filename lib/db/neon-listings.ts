@@ -290,7 +290,7 @@ export async function queryNeonStructuredDistrictTotal(
     add("pl.city = ?", filter.cityVariants[0]);
   } else if (filter.cityVariants.length > 1) {
     params.push(filter.cityVariants);
-    conditions.push(`pl.city = ANY(${params.length}::text[])`);
+    conditions.push("pl.city = ANY($" + params.length + "::text[])");
   }
 
   const propertyType = normalizePropertyType(filter.property_type);
