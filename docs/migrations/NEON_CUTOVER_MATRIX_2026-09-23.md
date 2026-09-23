@@ -219,3 +219,30 @@ restores them into clean PostgreSQL 17:
 
 It proves both dependency closure and source→scratch count/content-digest parity.
 This does not authorize moving seller writes, Auth or Storage.
+
+## ANN-L8 Market Comparables — Neon read path
+
+The migration branch now contains a Neon repository for the certified Market
+Comparables read model:
+
+- `lib/property-detail/neon-market-comparables-repository.ts`;
+- runtime selection in `market-comparables-runtime.ts`;
+- Supabase path remains unchanged when the provider is not Neon.
+
+The read contract is preserved: bounded candidate listings, verified cluster
+origins only, cluster members, source attribution, latest factual observation,
+and the existing certification layer remains responsible for freshness/sample/
+surface-delta rules.
+
+Additional data dependency: `source_offer_observations`.
+
+A separate validation-only portability probe now proves the exact ANN-L8
+relational closure on vanilla PostgreSQL 17:
+
+- `property_listings`
+- `listing_sources`
+- `property_clusters`
+- `property_cluster_members`
+- `source_offer_observations`
+
+No Neon apply is authorized by this probe.
