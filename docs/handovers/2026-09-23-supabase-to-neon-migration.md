@@ -308,3 +308,25 @@ Urgent PR: #1084
   - matrix: `42c8345dc7bbedb0cca765cc0ef6c15639fd16e2`
 - This does not authorize seller-write/Auth/Storage migration.
 - No Vercel deploy, no provider switch, no Neon write.
+
+## ANN-L8 Market Comparables read port — 2026-09-23
+- Added `lib/property-detail/neon-market-comparables-repository.ts`.
+- `market-comparables-runtime.ts` now routes the read repository by `DATABASE_PROVIDER`; Supabase behavior is unchanged outside Neon mode.
+- Preserved ANN-L8 evidence contract: bounded candidates, verified clusters only, cluster memberships, source attribution and factual observation reads; existing certification logic remains authoritative for sample/freshness/surface gates.
+- Added offline parity tests.
+- Added validation-only PG17 portability probe for:
+  - `property_listings`
+  - `listing_sources`
+  - `property_clusters`
+  - `property_cluster_members`
+  - `source_offer_observations`
+- Probe requires count + deterministic content digest parity and never connects to Neon.
+- Commits:
+  - Neon repository: `1706946ce7174538c746c17ae48f14a2b6436ebc`
+  - runtime routing: `62fb41af3e23580ac67342ac6f7e16f259817c6f`
+  - tests: `74addc9f0a8f916afb48fafaf0b76b05ff9638ae`
+  - probe: `f6740c7972a7ea861ef909f1b24d7a591ceb4bb7`
+  - probe guard: `778acecef82a71fd23f3d99c6970c99ccd3356ba`
+  - CI: `fa23b6858f935d2b0fece9d94663296ee1f29f10`
+  - matrix: `9b980c8950a650c0c40ed72657c0caf8f78b4f7b`
+- No Vercel deploy, no provider switch, no Neon write.
