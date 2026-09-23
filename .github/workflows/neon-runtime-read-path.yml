@@ -1,0 +1,39 @@
+name: Neon Runtime Read Path Validation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "lib/db/provider.ts"
+      - "lib/db/index.ts"
+      - "lib/db/neon-client.ts"
+      - "lib/db/neon-listings.ts"
+      - "scripts/scrapers/__tests__/neon-db-provider.test.ts"
+      - "scripts/scrapers/__tests__/neon-listings.test.ts"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/neon-runtime-read-path.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Neon provider unit tests
+        run: npx tsx --test scripts/scrapers/__tests__/neon-db-provider.test.ts scripts/scrapers/__tests__/neon-listings.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
