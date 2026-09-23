@@ -1,4 +1,5 @@
 import type { Listing } from "@/lib/listings/types";
+import { getDbProvider } from "@/lib/db/provider";
 import { getSupabaseServerClient } from "@/lib/db/supabase-client";
 import { isMarketIndexReadEnabled } from "@/lib/market-index/market-index-feature-flags";
 import { SupabaseMarketComparableCandidateRepository } from "@/lib/property-detail/market-comparables-repository";
@@ -21,7 +22,10 @@ export async function buildMarketComparablesRuntime(
   }
 
   try {
-    const repository = new SupabaseMarketComparableCandidateRepository(getSupabaseServerClient());
+    const repository = getDbProvider(env) === "neon"
+      ? new (await import("@/lib/property-detail/neon-market-comparables-repository"))
+          .NeonMarketComparableCandidateRepository()
+      : new SupabaseMarketComparableCandidateRepository(getSupabaseServerClient());
     return await buildMarketComparablesForListing(listing, repository, options);
   } catch (error) {
     options.onError?.(error);
