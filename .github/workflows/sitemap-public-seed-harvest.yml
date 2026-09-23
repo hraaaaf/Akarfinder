@@ -5,20 +5,14 @@ name: Public Sitemap Seed Harvest
 # P0-SITEMAP-KEYSET-PAGINATION
 # Free acquisition lane: robots.txt -> explicitly declared sitemap files ->
 # strict listing URL patterns -> source_offer_seeds only. No listing page fetch,
-# no paid API, no public listing write. Scheduled/push runs require the same
-# three production write gates; manual dispatch defaults to dry-run.
+# no paid API, no public listing write.
+# 2026-09-23 MIGRATION FREEZE: all unattended schedule/push execution is disabled
+# while AkarFinder migrates Supabase -> Neon. Pull-request validation is static
+# and must not touch the paused/restricted Supabase project. Explicit manual
+# dispatch remains available and defaults to dry-run.
 
 on:
-  schedule:
-    - cron: "23 */6 * * *"
   pull_request:
-    branches: [main]
-    paths:
-      - ".github/workflows/sitemap-public-seed-harvest.yml"
-      - "scripts/openserp/reconcile-commoncrawl-seed-freshness.ts"
-      - "lib/seed-freshness/keyset-pagination.ts"
-      - "scripts/scrapers/__tests__/seed-freshness-keyset-pagination.test.ts"
-  push:
     branches: [main]
     paths:
       - ".github/workflows/sitemap-public-seed-harvest.yml"
@@ -66,13 +60,6 @@ jobs:
       - name: TypeScript
         run: npx tsc --noEmit
 
-      - name: Exact-head live keyset dry run
-        if: github.event_name == 'pull_request'
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-        run: npx tsx scripts/openserp/reconcile-commoncrawl-seed-freshness.ts
-
       - name: Harvest robots-declared public sitemaps
         if: github.event_name != 'pull_request'
         env:
@@ -83,11 +70,7 @@ jobs:
           OPENSERP_INGESTION_CRON_ENABLED: ${{ secrets.OPENSERP_INGESTION_CRON_ENABLED }}
         run: |
           set -e
-          if [ "${{ github.event_name }}" = "schedule" ] || [ "${{ github.event_name }}" = "push" ]; then
-            MODE="apply"
-          else
-            MODE="${{ inputs.mode }}"
-          fi
+          MODE="${{ inputs.mode }}"
           if [ "$MODE" = "apply" ]; then
             npx tsx scripts/openserp/sitemap-registry-mass-harvest.ts --apply
             npx tsx scripts/openserp/reconcile-commoncrawl-seed-freshness.ts --apply
