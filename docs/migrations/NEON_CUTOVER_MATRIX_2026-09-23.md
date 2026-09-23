@@ -23,7 +23,7 @@ No step in this document authorizes a Vercel deployment or Supabase deletion.
 | Market Index reads | `property_clusters`, `property_cluster_members` | PostgreSQL core | DB-first |
 | Structured district totals | `property_listings` exact-count filters | PostgreSQL core | provider-aware Neon path added |
 | ODM public search | `thin_index_search_documents`, `source_policy_registry`, business-lane tables | PostgreSQL read model; Supabase RPC removed on Neon provider branch | runtime port prepared; DB portability gate still required |
-| Owner public search | `search_owner_public_representations_v1` + owner projection | PostgreSQL + Supabase RPC/Auth coupling | defer/port explicitly |
+| Owner public search | `owner_listing_representations` | PostgreSQL read model | Neon read port prepared; table portability still unproven |
 | Search Gateway cache | `search_gateway_cache` | PostgreSQL cache, Supabase client coupling | non-critical adapter required |
 | Consumer auth | Supabase Auth sessions/users | Supabase-specific | defer + adapter |
 | Professional auth | Supabase Auth + `app_metadata.akarfinder_staff` | Supabase-specific | defer + adapter |
@@ -175,3 +175,24 @@ is proven.
 
 Cursor signing is also provider-safe: Neon requires an explicit
 `SEARCH_CURSOR_SECRET`; it cannot inherit `SUPABASE_SERVICE_ROLE_KEY`.
+
+## Owner public Search — read port only
+
+The public owner-listing Search read has a Neon provider path:
+
+- `lib/seller/neon-owner-listing-search.ts`;
+- `searchOwnerListings()` routes by `DATABASE_PROVIDER`;
+- the existing `OWNER_LISTINGS_PUBLIC_SEARCH_ENABLED` gate remains authoritative.
+
+The query preserves the current owner Search eligibility contract:
+`live` lifecycle, `fresh_confirmed`, primary/secondary eligibility, structured
+price/surface filters, owner text search, quality ordering and bounded limits.
+
+This does **not** migrate the seller write lifecycle. In particular,
+`syncOwnerListingProjection()`, seller drafts/publications, Auth and Storage
+remain on the Supabase track until separately migrated or intentionally retained
+during a hybrid phase.
+
+The `owner_listing_representations` DDL has foreign keys to seller draft and
+publication tables, so its vanilla-PostgreSQL dependency closure must be proven
+before adding it to any Neon apply allowlist.
