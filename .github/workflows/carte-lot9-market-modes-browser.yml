@@ -13,6 +13,10 @@ on:
       - "scripts/audits/carte-lot9-market-modes-browser.mjs"
       - ".github/workflows/carte-lot9-market-modes-browser.yml"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
@@ -27,6 +31,10 @@ jobs:
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Latest-commit scope check
+        run: git diff --name-only HEAD^ HEAD
       - uses: actions/setup-node@v4
         with:
           node-version: 24
