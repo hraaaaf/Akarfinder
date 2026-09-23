@@ -210,3 +210,16 @@ Urgent PR: #1084
   - GitHub secret `NEON_DATABASE_URL_DIRECT` (needed only for apply; validate uses source only)
   - manually dispatch `Neon Core DB Migration` with mode `validate`.
 - No Vercel deployment, no Neon write, no Supabase deletion.
+
+## Content-integrity gate update — 2026-09-23
+- Core migration validation was strengthened beyond row counts.
+- `.github/workflows/neon-core-db-migration.yml` now computes a deterministic per-table content digest using canonical row JSON hashes sorted before aggregation.
+- Validation requires both count parity and content-digest parity for source → scratch.
+- Apply requires both count parity and content-digest parity for source → Neon.
+- This closes the prior false-positive case where equal row counts could hide changed/missing content.
+- Static guard updated in `scripts/scrapers/__tests__/neon-core-db-migration-guard.test.ts`.
+- Commits:
+  - workflow: `47d07b000ec0dd681b617de76f450ca06fd2431d`
+  - guard: `59a4b27dda1d99b2344dcc9051cd60da39610723`
+- #1084 exact-head checks remain queued; no new failure evidence.
+- No Neon write, no Vercel deployment, no Supabase deletion.
