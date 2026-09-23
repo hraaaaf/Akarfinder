@@ -82,6 +82,7 @@ jobs:
           set -euo pipefail
           docker run --rm \
             --network host \
+            -e PGPASSWORD=akarfinder-scratch \
             -v "$RUNNER_TEMP:/work" \
             "$PG_IMAGE" \
             pg_restore \
@@ -89,7 +90,7 @@ jobs:
               --single-transaction \
               --no-owner \
               --no-acl \
-              -d postgresql://postgres:akarfinder-scratch@127.0.0.1:55432/akarfinder_scratch \
+              -h 127.0.0.1 -p 55432 -U postgres -d akarfinder_scratch \
               /work/akarfinder-core.dump
 
       - name: Verify source and scratch content parity
