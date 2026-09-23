@@ -276,3 +276,17 @@ Urgent PR: #1084
   - matrix: `47b9df086068264b311e84cad395b0ff466b1671`
 - Important boundary: code-side Supabase RPC coupling is closed for ODM when Neon is selected, but production activation is still blocked until the five-table ODM dataset passes the PG17 portability probe and data parity is proven.
 - No Vercel deploy, no provider switch, no Neon write.
+
+## Owner public Search read port — 2026-09-23
+- Added `lib/seller/neon-owner-listing-search.ts` with a direct Neon read equivalent of `search_owner_public_representations_v1`.
+- `searchOwnerListings()` now routes by `DATABASE_PROVIDER`; the existing `OWNER_LISTINGS_PUBLIC_SEARCH_ENABLED` flag remains unchanged.
+- Preserved owner Search eligibility, structured filters, text matching, quality ordering and numeric normalization.
+- Added offline parity coverage and Neon CI wiring.
+- Commits:
+  - Neon owner query: `6cc416bd1250c17e9e486dc7abcbc799ff3597bd`
+  - provider routing: `139af73b295266c573ad4478d863a7938fe94160`
+  - tests: `1f1d6b7c9a1309f7ca9f674b07f6254c9438248c`
+  - CI: `d12f9e4a21aafbb9d7b59f47af1a32ba9069bf85`
+  - matrix: `81b72c5f84eab702ed31f2cd46947508bb70fcb7`
+- Boundary: seller projection/write flow still uses Supabase. `owner_listing_representations` also references seller draft/publication tables, so its target-schema portability is not yet proven.
+- No Vercel deploy, no provider switch, no Neon write.
