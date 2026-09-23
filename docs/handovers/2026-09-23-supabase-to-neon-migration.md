@@ -457,3 +457,18 @@ Urgent PR: #1084
 - New #1084 HEAD: `6e4a82b775b66aebdd750c060074505b3a145a05`.
 - No merge claimed until exact-head checks are green.
 - No Vercel deploy, no Neon write, no Supabase deletion.
+
+## Freeze merged + Neon patch regression recovery — 2026-09-23
+- PR #1084 reached 9/9 exact-head green on `14580b5f519b4a5571dae9a3b703d8afd3f78f73`.
+- PR #1084 merged successfully:
+  - merge commit `449967402ac5d9f626f94f7aea5a394a812d4f00`.
+- First post-merge check had no workflow runs materialized yet; no post-merge green claim is made.
+- On PR #1082, a large red wave was traced to two regressions introduced by the preceding patch, not to the broader product:
+  1. `lib/search-gateway/neon-public-search.ts` had been accidentally truncated while editing the intent alias, producing TS1160 / unterminated template literal.
+  2. `lib/db/neon-listings.ts` generated numeric placeholders without the required `$`, producing SQL like `pl.city = 1`.
+- Recovery:
+  - restored `neon-public-search.ts` from last known-good commit `7bb82d441d139a30e8564f1f808720e8758a70ac`, then applied only `achat -> sale`; commit `64b53ad91d4d6c044cfb274e92f0abcb6ae5b520`.
+  - restored PostgreSQL parameter markers using explicit string construction; commit `6f9e4a95e31a4060c0e2b4e17f033a4746cddcca`.
+- New #1082 exact-head runs were not yet materialized at first check.
+- Supabase live map read failure remains externally proven as `exceed_egress_quota`.
+- No Vercel deploy, no Neon write, no Supabase deletion.
