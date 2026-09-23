@@ -436,3 +436,24 @@ Urgent PR: #1084
   - `35886227374` Public Sitemap Seed Harvest
 - No merge is claimed until these exact-head checks are green.
 - No Vercel deploy, no Neon write, no Supabase deletion.
+
+## CI convergence snapshot — 2026-09-23 evening
+### PR #1082 map-browser diagnostic hardening
+- Exact-head browser failure `35886367781` was not a TypeScript/build failure:
+  - TypeScript ✅
+  - production build ✅
+  - browser certification ❌ on a 15s `price` legend settle timeout.
+- The audit previously waited for UI settlement before checking the backing market-intelligence API, masking backend/provider failures as opaque UI timeouts.
+- Diagnostic hardening applied on #1082:
+  - `0c736bd9cd441f0bd089b8c0ac548f3f227ac0bb`: check API modes before waiting for legend settlement;
+  - `6a30af091a3be731e279a8bf780be50070cef589`: preserve production server log in the exact-head browser artifact on failure.
+- No claim yet that the root product defect is fixed; next exact-head run must expose the real API/server cause if it still fails.
+
+### PR #1084 freeze convergence
+- HEAD `5734fa9f...` reached 8/9 green.
+- Remaining failure: `Canonical Baseline Validation` run `35886227237`.
+- Root cause from logs: `free-mass-acquisition-acceleration-v1.test.ts` still required historical OpenSERP (10m) and sitemap (6h) schedules during intentional MIGRATION FREEZE.
+- Test made freeze-aware while preserving normal non-freeze contracts.
+- New #1084 HEAD: `6e4a82b775b66aebdd750c060074505b3a145a05`.
+- No merge claimed until exact-head checks are green.
+- No Vercel deploy, no Neon write, no Supabase deletion.
