@@ -110,8 +110,12 @@ jobs:
         if: github.event_name != 'pull_request'
         shell: bash
         run: |
-          if [ "${{ github.event_name }}" = "schedule" ] || [ "${{ github.event_name }}" = "push" ]; then
-            echo "CC_APPLY=1" >> "$GITHUB_ENV"
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            echo "CC_APPLY=0" >> "$GITHUB_ENV"
+            echo "::notice::DATA CLEAN rebuild gate active: scheduled Common Crawl import is forced read-only until snapshot BEFORE is certified."
+          elif [ "${{ github.event_name }}" = "push" ]; then
+            echo "CC_APPLY=0" >> "$GITHUB_ENV"
+            echo "::notice::DATA CLEAN rebuild gate active: push-triggered Common Crawl import is forced read-only until snapshot BEFORE is certified."
           elif [ "${{ inputs.mode }}" = "apply" ]; then
             echo "CC_APPLY=1" >> "$GITHUB_ENV"
           else
