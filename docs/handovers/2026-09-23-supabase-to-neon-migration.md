@@ -188,3 +188,25 @@ Urgent PR: #1084
 - Dedicated offline CI: `.github/workflows/neon-runtime-read-path.yml` runs npm ci, Neon provider/listing tests and TypeScript without contacting Neon/Supabase.
 - Current runtime-read-path HEAD: `376a6f3999178d4bd84483d95333b45ec88e47fb`.
 - Nothing has been deployed and `DATABASE_PROVIDER` has not been switched.
+
+
+## DB-first migration guard update — 2026-09-23
+- Current PR #1082 HEAD before this documentation update: `a63e5b0cef25e9d347f5a97af169db4828974cf1`.
+- Core migration workflow exists: `.github/workflows/neon-core-db-migration.yml`.
+- It is manual-only and defaults to `validate`.
+- Approved DB-first table allowlist is exactly:
+  - `public.property_listings`
+  - `public.listing_sources`
+  - `public.property_clusters`
+  - `public.property_cluster_members`
+- Validation restores the selected archive into clean PostgreSQL 17 before any target write and compares source/scratch row counts.
+- Apply mode requires `NEON_DATABASE_URL_DIRECT`, rejects pooled target endpoints, refuses to proceed if any core target table already exists, and uses no `--clean` / no target drop.
+- Added static guard: `scripts/scrapers/__tests__/neon-core-db-migration-guard.test.ts`.
+- Neon runtime CI now includes this migration safety guard in addition to provider/listing/TypeScript validation.
+- #1084 remains queued on GitHub Actions; no new failure evidence was observed.
+- Real core validation cannot be executed from this ChatGPT runtime because GitHub workflow dispatch is not exposed by the connected GitHub tool and database secrets are not accessible here.
+- Human execution gate for the real validate run:
+  - GitHub secret `SUPABASE_DATABASE_URL_DIRECT`
+  - GitHub secret `NEON_DATABASE_URL_DIRECT` (needed only for apply; validate uses source only)
+  - manually dispatch `Neon Core DB Migration` with mode `validate`.
+- No Vercel deployment, no Neon write, no Supabase deletion.
