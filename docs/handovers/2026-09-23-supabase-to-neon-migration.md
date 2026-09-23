@@ -223,3 +223,17 @@ Urgent PR: #1084
   - guard: `59a4b27dda1d99b2344dcc9051cd60da39610723`
 - #1084 exact-head checks remain queued; no new failure evidence.
 - No Neon write, no Vercel deployment, no Supabase deletion.
+
+## District parity + ODM blocker update — 2026-09-23
+- Found and fixed a Neon parity bug in district searches: the exact district total helper was Supabase-only, so Neon could return district rows with a city-wide total.
+- Added `queryNeonStructuredDistrictTotal()` with parameterized district/city-alias/property/transaction/price/surface filters.
+- `queryStructuredDistrictTotal()` now routes exact-count reads by provider.
+- Offline coverage added for city aliases and structured filters.
+- Commits:
+  - Neon exact-count implementation: `bad74579a1d5dca241c1136033fea07a50bdb1c0`
+  - provider routing: `49b2dcfafc82e8501120c17b474640555a77b2e9`
+  - test: `61fea2c5dc2fc38e29987e17a4d19855cd63ec2d`
+  - matrix update: `899ba95a8da60fbe79b14c6a4b036d5ea24fb6e2`
+- Full read cutover is still blocked by the ODM lane: `search_public_representations_v2` and owner public search still call Supabase RPCs.
+- Search Gateway cache remains Supabase-client coupled but is non-critical and can be adapted separately.
+- No production provider switch, no Neon write, no Vercel deployment.
