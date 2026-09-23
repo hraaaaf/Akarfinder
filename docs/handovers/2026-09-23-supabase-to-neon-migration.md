@@ -178,3 +178,13 @@ Urgent PR: #1084
 - Direct fallback prepared on #1082: `.github/workflows/neon-direct-db-read-only-probe.yml`, manual-only and read-only, using PostgreSQL 17 tooling. Current #1082 HEAD before this documentation update: `ffc2ccfc08f8e1d7534b39c02d160447cfa2a116`.
 - Local runtime has no PostgreSQL client tools and no target DB URL injected, so no direct target query has been claimed from this runtime.
 - Next exact: continue runtime inventory; configure the direct target connection outside the repo; run the manual smoke probe, then inventory; merge #1084 only after exact-head checks are green.
+
+
+## Runtime read-path update — 2026-09-23
+- Neon runtime driver pinned to `@neondatabase/serverless@^1.1.0`; runtime connection variable is `NEON_DATABASE_URL`.
+- `DATABASE_PROVIDER=neon` is explicit and fail-closed: missing Neon config or Neon read failure does not silently fall back to stale SQLite.
+- Public listing read path ported in `lib/db/neon-listings.ts` with parameterized SQL, JSONB/BOOLEAN normalization, list/getById/stats contracts, and preserved listing-source selection.
+- Market Index read parity ported via `lib/market-index/neon-market-index-read-repository.ts`. Schema types were checked against canonical migrations: `property_clusters.id uuid`, `legacy_property_listing_id bigint`, `property_cluster_members.property_cluster_id uuid`, `source_offer_id bigint`.
+- Dedicated offline CI: `.github/workflows/neon-runtime-read-path.yml` runs npm ci, Neon provider/listing tests and TypeScript without contacting Neon/Supabase.
+- Current runtime-read-path HEAD: `376a6f3999178d4bd84483d95333b45ec88e47fb`.
+- Nothing has been deployed and `DATABASE_PROVIDER` has not been switched.
