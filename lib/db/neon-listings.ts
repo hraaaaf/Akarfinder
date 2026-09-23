@@ -1,6 +1,6 @@
 // Server-only Neon equivalents of the public listing read path.
-// This file is intentionally read-only. It does not migrate schema/data and
-// it is not activated unless DATABASE_PROVIDER=neon is explicitly selected.
+// This file is intentionally read-only and is activated only when
+// DATABASE_PROVIDER=neon is explicitly selected.
 import type {
   DbListingRow,
   DbListingsQuery,
@@ -8,7 +8,23 @@ import type {
   DbStats,
 } from "@/lib/listings/db-listings";
 import { isMarketIndexReadEnabled } from "@/lib/market-index/market-index-feature-flags";
+import { NeonMarketIndexReadRepository } from "@/lib/market-index/neon-market-index-read-repository";
+import {
+  resolveSourcesForListings,
+  logMarketIndexReadMetrics,
+} from "@/lib/market-index/market-index-read-service";
+import type { ReadCandidateSource } from "@/lib/market-index/market-index-read-adapter";
 import { neonExecutor, type NeonQueryExecutor } from "./neon-client";
+
+type NeonSourceRow = {
+  id: number;
+  origin_type: string | null;
+  source_name: string;
+  listing_url: string;
+  source_url: string | null;
+  is_active: boolean;
+  first_seen_at: string;
+};
 
 type NeonListingRow = Omit<
   DbListingRow,
@@ -20,6 +36,10 @@ type NeonListingRow = Omit<
   | "has_moroccan_living_room"
   | "has_european_living_room"
   | "has_equipped_kitchen"
+  | "source_name"
+  | "listing_url"
+  | "source_url"
+  | "origin_type"
 > & {
   field_confidence: unknown;
   reliability_reasons: unknown;
@@ -29,6 +49,7 @@ type NeonListingRow = Omit<
   has_moroccan_living_room: boolean | null;
   has_european_living_room: boolean | null;
   has_equipped_kitchen: boolean | null;
+  listing_sources?: NeonSourceRow[] | null;
 };
 
 function jsonToString(value: unknown): string | null {
@@ -40,18 +61,95 @@ function boolToSqlite(value: boolean | null): number {
   return value === true ? 1 : 0;
 }
 
-function mapToDbRow(row: NeonListingRow): DbListingRow {
+function mapToDbRow(
+  row: NeonListingRow,
+  resolvedSource?: ReadCandidateSource | null,
+): DbListingRow {
+  const {
+    listing_sources: listingSources,
+    field_confidence: fieldConfidence,
+    reliability_reasons: reliabilityReasons,
+    premium_features: premiumFeatures,
+    has_pool: hasPool,
+    has_concierge: hasConcierge,
+    has_moroccan_living_room: hasMoroccanLivingRoom,
+    has_european_living_room: hasEuropeanLivingRoom,
+    has_equipped_kitchen: hasEquippedKitchen,
+    ...base
+  } = row;
+
+  const sources = listingSources ?? [];
+  const activeSource =
+    resolvedSource !== undefined
+      ? resolvedSource
+      : sources.find((source) => source.is_active) ?? sources[0] ?? null;
+
   return {
-    ...row,
-    field_confidence: jsonToString(row.field_confidence),
-    reliability_reasons: jsonToString(row.reliability_reasons),
-    premium_features: jsonToString(row.premium_features),
-    has_pool: boolToSqlite(row.has_pool),
-    has_concierge: boolToSqlite(row.has_concierge),
-    has_moroccan_living_room: boolToSqlite(row.has_moroccan_living_room),
-    has_european_living_room: boolToSqlite(row.has_european_living_room),
-    has_equipped_kitchen: boolToSqlite(row.has_equipped_kitchen),
+    ...base,
+    field_confidence: jsonToString(fieldConfidence),
+    reliability_reasons: jsonToString(reliabilityReasons),
+    premium_features: jsonToString(premiumFeatures),
+    has_pool: boolToSqlite(hasPool),
+    has_concierge: boolToSqlite(hasConcierge),
+    has_moroccan_living_room: boolToSqlite(hasMoroccanLivingRoom),
+    has_european_living_room: boolToSqlite(hasEuropeanLivingRoom),
+    has_equipped_kitchen: boolToSqlite(hasEquippedKitchen),
+    source_name: activeSource?.source_name ?? null,
+    listing_url: activeSource?.listing_url ?? null,
+    source_url: activeSource?.source_url ?? null,
+    origin_type: activeSource?.origin_type ?? null,
   };
+}
+
+function toReadCandidateSources(
+  sources: NeonSourceRow[] | null | undefined,
+): ReadCandidateSource[] {
+  return (sources ?? []).map((source) => ({
+    id: source.id,
+    source_name: source.source_name,
+    listing_url: source.listing_url,
+    source_url: source.source_url,
+    is_active: source.is_active,
+    origin_type: source.origin_type,
+  }));
+}
+
+async function resolveSingleListingSource(
+  row: NeonListingRow,
+  executor: NeonQueryExecutor,
+): Promise<ReadCandidateSource | null | undefined> {
+  if (!isMarketIndexReadEnabled()) return undefined;
+
+  const repository = new NeonMarketIndexReadRepository(executor);
+  const { picks, metrics } = await resolveSourcesForListings(repository, [
+    { id: row.id, sources: toReadCandidateSources(row.listing_sources) },
+  ]);
+  logMarketIndexReadMetrics(metrics);
+
+  const outcome = picks.get(row.id);
+  return outcome?.usedMarketIndex ? outcome.source : undefined;
+}
+
+async function resolveBatchListingSources(
+  rows: NeonListingRow[],
+  executor: NeonQueryExecutor,
+): Promise<Map<number, ReadCandidateSource | null>> {
+  const result = new Map<number, ReadCandidateSource | null>();
+  if (!isMarketIndexReadEnabled() || rows.length === 0) return result;
+
+  const repository = new NeonMarketIndexReadRepository(executor);
+  const listings = rows.map((row) => ({
+    id: row.id,
+    sources: toReadCandidateSources(row.listing_sources),
+  }));
+  const { picks, metrics } = await resolveSourcesForListings(repository, listings);
+  logMarketIndexReadMetrics(metrics);
+
+  for (const [listingId, outcome] of picks) {
+    if (outcome.usedMarketIndex) result.set(listingId, outcome.source);
+  }
+
+  return result;
 }
 
 function normalizePropertyType(value?: string): string | undefined {
@@ -108,38 +206,33 @@ function buildWhere(query: DbListingsQuery): WhereParts {
 const LISTING_SELECT = `
   SELECT
     pl.*,
-    source_pick.source_name,
-    source_pick.listing_url,
-    source_pick.source_url,
-    source_pick.origin_type
+    source_bundle.listing_sources
   FROM property_listings pl
   LEFT JOIN LATERAL (
-    SELECT
-      ls.source_name,
-      ls.listing_url,
-      ls.source_url,
-      ls.origin_type
+    SELECT COALESCE(
+      jsonb_agg(
+        jsonb_build_object(
+          'id', ls.id,
+          'origin_type', ls.origin_type,
+          'source_name', ls.source_name,
+          'listing_url', ls.listing_url,
+          'source_url', ls.source_url,
+          'is_active', ls.is_active,
+          'first_seen_at', ls.first_seen_at
+        )
+        ORDER BY ls.first_seen_at ASC
+      ),
+      '[]'::jsonb
+    ) AS listing_sources
     FROM listing_sources ls
     WHERE ls.property_listing_id = pl.id
-    ORDER BY ls.is_active DESC, ls.first_seen_at ASC
-    LIMIT 1
-  ) source_pick ON TRUE
+  ) source_bundle ON TRUE
 `;
-
-function assertSupportedReadFlags(): void {
-  if (isMarketIndexReadEnabled()) {
-    throw new Error(
-      "[neon-listings] MARKET_INDEX_READ_ENABLED must remain false until the Neon Market Index repository is ported",
-    );
-  }
-}
 
 export async function queryNeonListings(
   query: DbListingsQuery = {},
   executor: NeonQueryExecutor = neonExecutor,
 ): Promise<DbListingsResult> {
-  assertSupportedReadFlags();
-
   const limit = Math.min(Math.max(query.limit ?? 50, 1), 500);
   const offset = Math.max(query.offset ?? 0, 0);
   const where = buildWhere(query);
@@ -159,8 +252,11 @@ export async function queryNeonListings(
     [...where.params, limit, offset],
   );
 
+  const resolvedByListingId = await resolveBatchListingSources(rows, executor);
   return {
-    listings: rows.map(mapToDbRow),
+    listings: rows.map((row) =>
+      mapToDbRow(row, resolvedByListingId.get(row.id)),
+    ),
     total: Number(countRows[0]?.total ?? 0),
   };
 }
@@ -169,8 +265,6 @@ export async function queryNeonListingById(
   id: number,
   executor: NeonQueryExecutor = neonExecutor,
 ): Promise<DbListingRow | null> {
-  assertSupportedReadFlags();
-
   const rows = await executor.query<NeonListingRow>(
     `${LISTING_SELECT}
      WHERE pl.id = $1
@@ -178,7 +272,11 @@ export async function queryNeonListingById(
     [id],
   );
 
-  return rows[0] ? mapToDbRow(rows[0]) : null;
+  const row = rows[0];
+  if (!row) return null;
+
+  const resolvedSource = await resolveSingleListingSource(row, executor);
+  return mapToDbRow(row, resolvedSource);
 }
 
 type AvgRow = {
@@ -193,8 +291,6 @@ type DuplicateRow = {
 export async function queryNeonStats(
   executor: NeonQueryExecutor = neonExecutor,
 ): Promise<DbStats> {
-  assertSupportedReadFlags();
-
   const [totalRows, avgRows, duplicateRows] = await Promise.all([
     executor.query<{ total: number }>(
       "SELECT COUNT(*)::int AS total FROM property_listings",
