@@ -414,3 +414,25 @@ Urgent PR: #1084
   1. ensure GitHub Actions repository secret `SUPABASE_DATABASE_URL_DIRECT` exists;
   2. manually run **Neon Migration Validation Suite** once.
 - No Vercel deploy, no production provider switch, no Neon write, no Supabase deletion.
+
+## Freeze PR #1084 correction snapshot — 2026-09-23
+- Previous #1084 exact-head `b4d014b1...` produced one real failure:
+  - `Canonical Baseline Validation` run `35867070620`.
+- Root cause from job logs: `data-mass-acquisition-query-universe-v2.test.ts` still asserted the historical OpenSERP cron `*/10 * * * *`, conflicting with the intentional `MIGRATION FREEZE`.
+- Test corrected on #1084:
+  - freeze mode requires `workflow_dispatch`;
+  - freeze mode forbids `schedule` and the */10 cron;
+  - non-freeze mode still requires the historical cron contract.
+- New #1084 HEAD: `5734fa9fcd1660a94d6b5cbfe3f5e270754e16bf`.
+- New exact-head runs are materialized and currently queued:
+  - `35886227385` Canonical Baseline Compile Validation
+  - `35886227295` Phase 1 P1 Final Sweep Gate
+  - `35886226935` Phase 1 P2 Residual Closure Gate
+  - `35886226964` UX Gate 0 Contracts
+  - `35886227219` Phase 1 P0 Closure Gate
+  - `35886227150` OpenSERP P0 Atomic Upsert Gate
+  - `35886227237` Canonical Baseline Validation
+  - `35886227154` CI Workflow Efficiency Policy
+  - `35886227374` Public Sitemap Seed Harvest
+- No merge is claimed until these exact-head checks are green.
+- No Vercel deploy, no Neon write, no Supabase deletion.
