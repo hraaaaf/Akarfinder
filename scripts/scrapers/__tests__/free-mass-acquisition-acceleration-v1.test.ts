@@ -70,11 +70,23 @@ test("only exact-domain URLs matching audited listing patterns become sitemap se
   assert.equal(rows[0].fresh_last_seen_at, null);
 });
 
-test("free acceleration keeps OpenSERP at 10 minutes and sitemap lane separate at 6 hours", () => {
+test("free acceleration respects migration freeze while preserving normal schedules", () => {
   const openserpWorkflow = readFileSync(join(process.cwd(), ".github/workflows/openserp-github-native-ingestion.yml"), "utf8");
   const sitemapWorkflow = readFileSync(join(process.cwd(), ".github/workflows/sitemap-public-seed-harvest.yml"), "utf8");
-  assert.match(openserpWorkflow, /cron:\s*["']\*\/10 \* \* \* \*["']/);
-  assert.match(sitemapWorkflow, /cron:\s*["']23 \*\/6 \* \* \*["']/);
+  const migrationFreeze = openserpWorkflow.includes("MIGRATION FREEZE") || sitemapWorkflow.includes("MIGRATION FREEZE");
+
+  if (migrationFreeze) {
+    for (const workflow of [openserpWorkflow, sitemapWorkflow]) {
+      const onBlock = workflow.match(/(?:^|\n)on:\n([\s\S]*?)(?:\npermissions:)/)?.[1] ?? "";
+      assert.ok(onBlock.includes("workflow_dispatch:"));
+      assert.equal(/^\s*schedule\s*:/m.test(onBlock), false);
+    }
+    assert.equal(/cron:\s*["']\*\/10 \* \* \* \*["']/.test(openserpWorkflow), false);
+    assert.equal(/cron:\s*["']23 \*\/6 \* \* \*["']/.test(sitemapWorkflow), false);
+  } else {
+    assert.match(openserpWorkflow, /cron:\s*["']\*\/10 \* \* \* \*["']/);
+    assert.match(sitemapWorkflow, /cron:\s*["']23 \*\/6 \* \* \*["']/);
+  }
 });
 
 test("sitemap lane has no public listing write and no arbitrary listing-page fetch path", () => {
