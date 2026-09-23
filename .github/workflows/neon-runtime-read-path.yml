@@ -44,6 +44,9 @@ on:
       - "lib/seller/owner-listing-detail.ts"
       - "lib/seller/owner-listing-media.ts"
       - "scripts/scrapers/__tests__/neon-owner-detail-media.test.ts"
+      - "lib/search-gateway-cache/supabase-cache-store.ts"
+      - "lib/public-property-index/supabase-index-store.ts"
+      - "scripts/scrapers/__tests__/neon-supabase-hidden-read-guards.test.ts"
 
 permissions:
   contents: read
@@ -64,7 +67,7 @@ jobs:
         run: npm ci
 
       - name: Neon migration and provider unit tests
-        run: npx tsx --test scripts/scrapers/__tests__/neon-db-provider.test.ts scripts/scrapers/__tests__/neon-listings.test.ts scripts/scrapers/__tests__/neon-core-db-migration-guard.test.ts scripts/scrapers/__tests__/neon-odm-portability-guard.test.ts scripts/scrapers/__tests__/neon-public-search.test.ts scripts/scrapers/__tests__/neon-owner-listing-search.test.ts scripts/scrapers/__tests__/neon-owner-read-portability-guard.test.ts scripts/scrapers/__tests__/neon-market-comparables.test.ts scripts/scrapers/__tests__/neon-market-comparables-portability-guard.test.ts scripts/scrapers/__tests__/neon-market-intelligence-read.test.ts scripts/scrapers/__tests__/neon-market-intelligence-portability-guard.test.ts scripts/scrapers/__tests__/neon-akar-estimate-history.test.ts scripts/scrapers/__tests__/neon-owner-detail-media.test.ts scripts/scrapers/__tests__/odm-09b-public-search-contract.test.ts
+        run: npx tsx --test scripts/scrapers/__tests__/neon-db-provider.test.ts scripts/scrapers/__tests__/neon-listings.test.ts scripts/scrapers/__tests__/neon-core-db-migration-guard.test.ts scripts/scrapers/__tests__/neon-odm-portability-guard.test.ts scripts/scrapers/__tests__/neon-public-search.test.ts scripts/scrapers/__tests__/neon-owner-listing-search.test.ts scripts/scrapers/__tests__/neon-owner-read-portability-guard.test.ts scripts/scrapers/__tests__/neon-market-comparables.test.ts scripts/scrapers/__tests__/neon-market-comparables-portability-guard.test.ts scripts/scrapers/__tests__/neon-market-intelligence-read.test.ts scripts/scrapers/__tests__/neon-market-intelligence-portability-guard.test.ts scripts/scrapers/__tests__/neon-akar-estimate-history.test.ts scripts/scrapers/__tests__/neon-owner-detail-media.test.ts scripts/scrapers/__tests__/neon-supabase-hidden-read-guards.test.ts scripts/scrapers/__tests__/odm-09b-public-search-contract.test.ts
 
       - name: TypeScript
         run: npx tsc --noEmit
