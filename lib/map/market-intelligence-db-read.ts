@@ -56,7 +56,7 @@ export async function readMarketRowsByIds(
       .join(", ");
     const rows: any[] = [];
     for (const batch of chunks(ids)) {
-      const sql = `SELECT ${columns} FROM public.${tableName} WHERE ${keyName} = ANY($1::text[])`;
+      const sql = `SELECT ${columns} FROM public.${tableName} WHERE ${keyName}::text = ANY($1::text[])`;
       rows.push(...await executor.query<any>(sql, [batch]));
     }
     return rows;
