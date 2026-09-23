@@ -69,6 +69,9 @@ on:
 permissions:
   contents: read
 
+env:
+  DATA_CLEAN_SNAPSHOT_FREEZE: "true"
+
 concurrency:
   group: commoncrawl-mass-seed-harvest
   cancel-in-progress: false
@@ -100,7 +103,7 @@ jobs:
           scripts/data-mass/__tests__/source-factory-m3-access-policy.test.ts
 
       - name: Read-only live Source Registry projection on PR
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && env.DATA_CLEAN_SNAPSHOT_FREEZE != 'true'
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
@@ -184,7 +187,7 @@ jobs:
         run: npx tsx scripts/openserp/report-commoncrawl-seed-provenance.ts
 
       - name: Upload final harvest and P0.1 policy proof artifacts
-        if: always()
+        if: always() && (github.event_name != 'pull_request' || env.DATA_CLEAN_SNAPSHOT_FREEZE != 'true')
         uses: actions/upload-artifact@v4
         with:
           name: commoncrawl-registry-mass-seeds
