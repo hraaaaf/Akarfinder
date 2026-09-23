@@ -183,7 +183,7 @@ function buildWhere(query: DbListingsQuery): WhereParts {
   const params: unknown[] = [];
   const add = (sql: string, value: unknown) => {
     params.push(value);
-    conditions.push(sql.replace("?", () => `${params.length}`));
+    conditions.push(sql.replace("?", () => "$" + params.length));
   };
 
   const propertyType = normalizePropertyType(query.property_type);
