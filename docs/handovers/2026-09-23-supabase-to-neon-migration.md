@@ -98,3 +98,26 @@ Observed runtime / operational paths coupled to Supabase or its PostgREST semant
 - the full `supabase/migrations/*` chain, which must be classified into portable Postgres SQL vs Supabase-only constructs.
 
 This inventory is not yet a claim that every listed path is active in production. It is the migration review surface.
+
+
+## Confirmed migration mechanics (Neon official docs)
+- Database transfer path: `pg_dump -Fc` from Supabase using a **direct/unpooled** connection, then `pg_restore --no-owner --no-acl` into Neon.
+- Target Neon Postgres should match the Supabase major version. Supabase source is PostgreSQL 17, so Neon target must be PostgreSQL 17.
+- Auth compatibility exists via `@neondatabase/neon-js` + `SupabaseAuthAdapter`, but existing password-based Supabase users cannot be directly migrated because password hashes are incompatible. Existing OAuth users are a different case and must be inventoried before cutover.
+- Neon Data API keeps `.from()` / filter / RPC query ergonomics, but backend privileged paths must not be made public by granting broad anonymous access merely to emulate the Supabase service-role key.
+- Storage is not optional in this migration:
+  - public bucket `neighborhood-visuals`
+  - seller bucket `seller-property-drafts`
+  - seller upload route currently uses `supabase.storage` plus `seller_property_draft_photos`
+  Neon Object Storage can replace this only after target project/region capability is verified.
+
+## Emergency automation freeze
+Two unattended GitHub workflows were confirmed to hit Supabase automatically:
+- `.github/workflows/openserp-github-native-ingestion.yml` — schedule `*/10 * * * *`
+- `.github/workflows/sitemap-public-seed-harvest.yml` — schedule `23 */6 * * *` and push auto-apply
+
+Urgent PR: #1084
+- head: `497c5c344c264f3631c79140bcd6e84ada788259`
+- OpenSERP exact-head check: no schedule; manual dispatch retained
+- Sitemap exact-head check: no schedule; no push auto-apply; PR validation + manual dispatch retained
+- Merge currently blocked only by required status check `gate`; CI has been launched.
