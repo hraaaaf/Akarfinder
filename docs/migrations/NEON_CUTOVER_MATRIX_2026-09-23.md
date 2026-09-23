@@ -21,6 +21,10 @@ No step in this document authorizes a Vercel deployment or Supabase deletion.
 | --- | --- | --- | --- |
 | Public listing reads | `property_listings`, `listing_sources` | PostgreSQL core | DB-first |
 | Market Index reads | `property_clusters`, `property_cluster_members` | PostgreSQL core | DB-first |
+| Structured district totals | `property_listings` exact-count filters | PostgreSQL core | provider-aware Neon path added |
+| ODM public search | `search_public_representations_v2` + thin-index/policy tables/functions | PostgreSQL + Supabase RPC coupling | block full cutover until ported |
+| Owner public search | `search_owner_public_representations_v1` + owner projection | PostgreSQL + Supabase RPC/Auth coupling | defer/port explicitly |
+| Search Gateway cache | `search_gateway_cache` | PostgreSQL cache, Supabase client coupling | non-critical adapter required |
 | Consumer auth | Supabase Auth sessions/users | Supabase-specific | defer + adapter |
 | Professional auth | Supabase Auth + `app_metadata.akarfinder_staff` | Supabase-specific | defer + adapter |
 | Professional ownership | public tables with FKs to `auth.users` + `auth.uid()` policies | coupled | defer until Auth mapping |
@@ -130,3 +134,20 @@ path is verified.
 9. Human gate: Vercel environment switch/deployment.
 10. Post-cutover verification.
 11. Only after proven stability: retire remaining Supabase dependencies.
+
+## Runtime parity finding — district totals
+
+The legacy search path used a Supabase-only exact count for district searches.
+Without a Neon equivalent, `DATABASE_PROVIDER=neon` would keep listing rows on
+Neon but could report a city-wide total for a district query.
+
+This gap is now closed on the migration branch:
+
+- `queryNeonStructuredDistrictTotal()` performs the same structured filters
+  with parameterized SQL;
+- city aliases are handled through a parameterized `ANY(text[])` condition;
+- `queryStructuredDistrictTotal()` routes by DB provider;
+- offline coverage verifies district, alias, property/transaction and price/
+  surface filter parameterization.
+
+This is a parity fix only. It does not activate Neon in production.
