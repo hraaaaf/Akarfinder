@@ -75,12 +75,22 @@ test("catch-up policy stays cheap when healthy and scales only after real gaps",
   assert.equal(resolveCampaignWaveCount(null, now), 4);
 });
 
-test("campaign workflow preserves canonical 10-minute trigger and resolves adaptive waves", () => {
+test("campaign workflow preserves normal cadence or explicit migration freeze", () => {
   const workflow = readFileSync(".github/workflows/openserp-github-native-ingestion.yml", "utf8");
-  assert.match(workflow, /cron: "\*\/10 \* \* \* \*"/);
+  const migrationFreeze = workflow.includes("MIGRATION FREEZE");
+
   assert.match(workflow, /resolve-campaign-wave-count\.ts/);
   assert.match(workflow, /timeout-minutes: 30/);
   assert.match(workflow, /group: openserp-native-ingestion-production/);
+
+  if (migrationFreeze) {
+    const onBlock = workflow.match(/(?:^|\n)on:\n([\s\S]*?)(?:\npermissions:)/)?.[1] ?? "";
+    assert.ok(onBlock.includes("workflow_dispatch:"));
+    assert.equal(/^\s*schedule\s*:/m.test(onBlock), false);
+    assert.equal(/cron: "\*\/10 \* \* \* \*"/.test(workflow), false);
+  } else {
+    assert.match(workflow, /cron: "\*\/10 \* \* \* \*"/);
+  }
 });
 
 test("GitHub mass entrypoint enables 50-result pages and at most three pages", () => {
