@@ -392,3 +392,25 @@ Urgent PR: #1084
 - Neon apply remains separately gated by `NEON_DATABASE_URL_DIRECT` plus proven empty target + source/scratch parity + exact-head CI.
 - No Vercel deploy, no production provider switch, no Neon write, no Supabase deletion.
 - Next exact after human gate: run the PG17 validation-only probes; if any restore fails, classify/fix the first missing dependency; if all pass, prepare/import only the proven portable datasets into the empty Neon target and verify source↔Neon count/content parity.
+
+## Single-entry PG17 validation gate — 2026-09-23
+- Added one manual workflow entrypoint: `.github/workflows/neon-migration-validation-suite.yml`.
+- A single `workflow_dispatch` now launches five independent validation jobs with `fail-fast: false`:
+  1. core listings/Market Index;
+  2. ODM public Search;
+  3. owner-read relational closure;
+  4. ANN-L8/ANN-L9 comparables/history;
+  5. Map Market Intelligence.
+- Each job performs source dump → clean PostgreSQL 17 restore → row-count parity → deterministic content-digest parity.
+- The suite never references a Neon URL and never writes the source.
+- Initial implementation defect in Docker env injection for `PROBE_NAME` was detected before execution and fixed.
+- Static guard added and wired into Neon CI.
+- Commits:
+  - suite: `059cd0dbf5b6ff86c23ff909b015473f6952b10b`
+  - env fix: `85c29f3cbe43c7d23eb3ea21d613be8babb6a15f`
+  - suite guard: `bfdbf6c02c2a976ba7518d6817450c1f3cddfd96`
+  - CI wiring: `2535b0bfd2ef826e0a53b58112090f9cee3dd1f6`
+- Human-side action is now minimal:
+  1. ensure GitHub Actions repository secret `SUPABASE_DATABASE_URL_DIRECT` exists;
+  2. manually run **Neon Migration Validation Suite** once.
+- No Vercel deploy, no production provider switch, no Neon write, no Supabase deletion.
