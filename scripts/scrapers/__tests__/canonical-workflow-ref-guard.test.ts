@@ -10,6 +10,7 @@ import { join } from "node:path";
 const WORKFLOW_DIR = join(process.cwd(), ".github", "workflows");
 const NATIVE_INGESTION = "openserp-github-native-ingestion.yml";
 const LEGACY_VERCEL_CRON = "openserp-ingestion-cron.yml";
+const MIGRATION_FREEZE_MARKER = "MIGRATION FREEZE";
 
 function workflowFiles(): string[] {
   return readdirSync(WORKFLOW_DIR)
@@ -27,6 +28,10 @@ function loadOnBlock(content: string): string {
   return match![1];
 }
 
+function migrationFreezeEnabled(content: string): boolean {
+  return content.includes(MIGRATION_FREEZE_MARKER);
+}
+
 test("workflows never hardcode moving fix/feat/poc checkout refs", () => {
   const violations: string[] = [];
   for (const name of workflowFiles()) {
@@ -36,11 +41,18 @@ test("workflows never hardcode moving fix/feat/poc checkout refs", () => {
   assert.deepEqual(violations, [], `cross-branch workflow refs are forbidden: ${violations.join(", ")}`);
 });
 
-test("native OpenSERP ingestion is the scheduled ingestion producer", () => {
+test("native OpenSERP ingestion schedule matches explicit migration freeze state", () => {
   const content = readWorkflow(NATIVE_INGESTION);
   const onBlock = loadOnBlock(content);
-  assert.match(onBlock, /^\s*schedule\s*:/m, `${NATIVE_INGESTION} must keep its schedule trigger`);
-  assert.match(onBlock, /^\s*-\s*cron:\s*["']?\*\/10 \* \* \* \*["']?\s*$/m, `${NATIVE_INGESTION} must keep the 10-minute cron expression`);
+
+  if (migrationFreezeEnabled(content)) {
+    assert.ok(!/^\s*schedule\s*:/m.test(onBlock), `${NATIVE_INGESTION} must not schedule ingestion during migration freeze`);
+    assert.match(onBlock, /^\s*workflow_dispatch\s*:/m, `${NATIVE_INGESTION} must remain manually dispatchable during migration freeze`);
+    return;
+  }
+
+  assert.match(onBlock, /^\s*schedule\s*:/m, `${NATIVE_INGESTION} must keep its schedule trigger outside migration freeze`);
+  assert.match(onBlock, /^\s*-\s*cron:\s*["']?\*\/10 \* \* \* \*["']?\s*$/m, `${NATIVE_INGESTION} must keep the 10-minute cron expression outside migration freeze`);
 });
 
 test("legacy Vercel OpenSERP cron remains manual-only", () => {
@@ -50,20 +62,23 @@ test("legacy Vercel OpenSERP cron remains manual-only", () => {
   assert.match(onBlock, /^\s*workflow_dispatch\s*:/m, `${LEGACY_VERCEL_CRON} must remain manually dispatchable`);
 });
 
-test("only one OpenSERP ingestion workflow carries an active schedule", () => {
+test("OpenSERP scheduled producer count matches explicit migration freeze state", () => {
+  const nativeContent = readWorkflow(NATIVE_INGESTION);
   const scheduledIngestionWorkflows = workflowFiles().filter((name) => {
     const content = readWorkflow(name);
     if (!/openserp|ingestion/i.test(`${name}\n${content.slice(0, 500)}`)) return false;
     return /^\s*schedule\s*:/m.test(loadOnBlock(content));
   });
+
+  const expected = migrationFreezeEnabled(nativeContent) ? [] : [NATIVE_INGESTION];
   assert.deepEqual(
     scheduledIngestionWorkflows,
-    [NATIVE_INGESTION],
-    `expected exactly one scheduled OpenSERP ingestion producer, found: ${scheduledIngestionWorkflows.join(", ")}`,
+    expected,
+    `scheduled OpenSERP ingestion producers do not match migration freeze state: ${scheduledIngestionWorkflows.join(", ")}`,
   );
 });
 
-test("scheduled native ingestion checkout follows the triggering ref", () => {
+test("native ingestion checkout follows the triggering ref", () => {
   const content = readWorkflow(NATIVE_INGESTION);
   assert.match(content, /uses:\s*actions\/checkout@v4/, "native ingestion must checkout repository content");
   assert.ok(!/^\s*ref\s*:/m.test(content), "native ingestion checkout must not override the triggering ref");
