@@ -261,3 +261,18 @@ Urgent PR: #1084
   - static guard: `61e1c760d289fd7d3945e78142ca753e083e2118`
   - CI wiring: `3dbab3a1cbd7982ed511673eaca282a53c0f801e`
 - No Vercel deploy, no provider switch, no Neon write, no Supabase deletion.
+
+## Provider-aware ODM runtime port — 2026-09-23
+- Added `lib/search-gateway/neon-public-search.ts`: direct Neon PostgreSQL implementation of the current M7 `search_public_representations_v2` read contract.
+- Preserved verified invariants: LISTING-only, `fresh_confirmed`, policy authorization/display/machine/ingestion gates, effective/expiry windows, rich-content vs canonical-link-only separation, price/surface privacy boundary, verified professional business lanes, URL dedupe, source diversity penalty, and keyset cursor ordering.
+- `lib/search-gateway/public-search-cursor.ts` now routes ODM reads by `DATABASE_PROVIDER`: Neon uses direct PostgreSQL, Supabase retains the existing RPC path.
+- Added offline parity tests in `scripts/scrapers/__tests__/neon-public-search.test.ts` and wired them into the Neon CI.
+- Cutover matrix updated.
+- Commits:
+  - Neon ODM query: `2263bc5e7311b6de0a0aae72ce40888441bc4430`
+  - provider routing: `a8bc8612b8181e2d3fafdde903c04a167dd83159`
+  - parity tests: `e31a732fcabe9f660374bf4ef85da37898b53007`
+  - CI wiring: `4187b92be33d88f93b4b6669bde3ca43102958f5`
+  - matrix: `47b9df086068264b311e84cad395b0ff466b1671`
+- Important boundary: code-side Supabase RPC coupling is closed for ODM when Neon is selected, but production activation is still blocked until the five-table ODM dataset passes the PG17 portability probe and data parity is proven.
+- No Vercel deploy, no provider switch, no Neon write.
