@@ -378,3 +378,17 @@ Urgent PR: #1084
   - matrix: `d3f7295f64df8df8aa1895bd8dc7fd132d0eda25`
 - GitHub code-search connector returned no results for the global `getSupabaseServerClient` scan, so no unsupported claim of exhaustive repo-wide removal is made. Known public read paths identified in this chantier are now handled; Auth/Storage/write paths remain intentionally separate.
 - No Vercel deploy, no provider switch, no Neon write.
+
+## External gate / closeout snapshot — 2026-09-23
+- Current migration PR #1082 exact HEAD: `167e9263f113aef4e6a71db2716da9feac20d142`.
+- PR #1082 remains DRAFT and mergeable; body refreshed to the current migration strategy and safety gates.
+- Exact-head CI is queued across the migration branch, including `Neon Runtime Read Path Validation` run `35883936403`; no red exact-head signal exists at this snapshot.
+- Freeze PR #1084 exact HEAD remains `b4d014b16790203ca3c25c511b64f62b3cc4ac6e`; its 9 exact-head runs remain queued, so no merge is claimed.
+- GitHub connector available in this session does not expose `workflow_dispatch`.
+- GitHub connector also exposes no repository-secret listing/management action.
+- Real validation-only PG17 probes therefore require a human-side repository configuration/action:
+  1. ensure `SUPABASE_DATABASE_URL_DIRECT` exists as a GitHub Actions repository secret;
+  2. manually dispatch the validation-only probes.
+- Neon apply remains separately gated by `NEON_DATABASE_URL_DIRECT` plus proven empty target + source/scratch parity + exact-head CI.
+- No Vercel deploy, no production provider switch, no Neon write, no Supabase deletion.
+- Next exact after human gate: run the PG17 validation-only probes; if any restore fails, classify/fix the first missing dependency; if all pass, prepare/import only the proven portable datasets into the empty Neon target and verify source↔Neon count/content parity.
