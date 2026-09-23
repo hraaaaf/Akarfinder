@@ -1,4 +1,9 @@
-import { getSupabaseServerClient } from "@/lib/db/supabase-client";
+import {
+  readMarketRowsByIds,
+  readResolvedNeighborhoodEvents,
+  readValidatedCityRows,
+  readValidatedNeighborhoodRows,
+} from "@/lib/map/market-intelligence-db-read";
 import {
   GEO_NEIGHBORHOODS,
   resolveCityEntity,
@@ -17,60 +22,7 @@ import {
   type ObservedMarketListing,
 } from "@/lib/map/city-market-intelligence";
 
-const CHUNK_SIZE = 100;
-const MAX_TARGET_EVENTS = 5000;
-
-function chunks<T>(values: readonly T[], size = CHUNK_SIZE): T[][] {
-  const output: T[][] = [];
-  for (let index = 0; index < values.length; index += size) {
-    output.push(values.slice(index, index + size) as T[]);
-  }
-  return output;
-}
-
-function errorDetails(error: any): string {
-  return JSON.stringify({
-    message: error?.message,
-    code: error?.code,
-    details: error?.details,
-    hint: error?.hint,
-    status: error?.status,
-  });
-}
-
-function newer(a: any, b: any): boolean {
-  if (!b) return true;
-  if (String(a.created_at) !== String(b.created_at)) {
-    return String(a.created_at) > String(b.created_at);
-  }
-  return String(a.id) > String(b.id);
-}
-
-function normalizeTransaction(value: unknown): MarketTransaction | null {
-  const normalized = String(value ?? "").trim().toLowerCase();
-  if (["sale", "buy", "new", "achat", "vente"].includes(normalized)) return "sale";
-  if (["rent", "location", "louer"].includes(normalized)) return "rent";
-  return null;
-}
-
-async function readByIds(
-  db: any,
-  table: string,
-  select: string,
-  key: string,
-  ids: readonly string[],
-): Promise<any[]> {
-  if (!ids.length) return [];
-  const rows: any[] = [];
-  for (const batch of chunks(ids)) {
-    const { data, error } = await db.from(table).select(select).in(key, batch);
-    if (error) throw new Error(`market intelligence ${table} bounded read failed: ${errorDetails(error)}`);
-    rows.push(...(data ?? []));
-  }
-  return rows;
-}
-
-function areaForDistrict(
+const MAX_TARGET_EVENTS = 5000;\n\nfunction areaForDistrict(
   citySlug: string,
   districtSlug: string,
   canonicalNeighborhoodId: string,
@@ -134,31 +86,14 @@ export async function readCityMarketIntelligenceMetrics(
   const canonicalTargets = buildCanonicalTargets(city.slug);
   if (!canonicalTargets.length) return [];
 
-  const db: any = getSupabaseServerClient();
-  const { data: cityRows, error: cityError } = await db
-    .from("geo_entities")
-    .select("id,slug,entity_type,validation_status")
-    .eq("entity_type", "city")
-    .eq("slug", city.slug)
-    .eq("validation_status", "validated")
-    .limit(2);
-  if (cityError) throw new Error(`market intelligence city read failed: ${errorDetails(cityError)}`);
+  const cityRows = await readValidatedCityRows(city.slug);
   if ((cityRows ?? []).length !== 1) {
     throw new Error(`market intelligence expected one validated city ${city.slug}, got ${(cityRows ?? []).length}`);
   }
   const runtimeCityId = String(cityRows[0].id);
 
   const targetSlugs = canonicalTargets.map((target) => target.slug);
-  const { data: neighborhoodRows, error: neighborhoodError } = await db
-    .from("geo_entities")
-    .select("id,slug,parent_id,entity_type,validation_status")
-    .eq("entity_type", "neighborhood")
-    .eq("parent_id", runtimeCityId)
-    .eq("validation_status", "validated")
-    .in("slug", targetSlugs);
-  if (neighborhoodError) {
-    throw new Error(`market intelligence neighborhood read failed: ${errorDetails(neighborhoodError)}`);
-  }
+  const neighborhoodRows = await readValidatedNeighborhoodRows(runtimeCityId, targetSlugs);
 
   const runtimeNeighborhoodById = new Map<string, string>(
     (neighborhoodRows ?? []).map((row: any): [string, string] => [String(row.id), String(row.slug)]),
@@ -168,20 +103,9 @@ export async function readCityMarketIntelligenceMetrics(
   );
   const runtimeNeighborhoodIds = [...runtimeNeighborhoodById.keys()];
 
-  let targetEvents: any[] = [];
-  if (runtimeNeighborhoodIds.length) {
-    const { data, error } = await db
-      .from("geo_resolution_events")
-      .select("id,source_record_type,source_record_id,resolution_status,resolved_city_id,resolved_neighborhood_id,created_at")
-      .eq("source_record_type", "source_offer_seed")
-      .eq("resolution_status", "resolved")
-      .in("resolved_neighborhood_id", runtimeNeighborhoodIds)
-      .range(0, MAX_TARGET_EVENTS - 1);
-    if (error) throw new Error(`market intelligence resolution event read failed: ${errorDetails(error)}`);
-    targetEvents = data ?? [];
-    if (targetEvents.length >= MAX_TARGET_EVENTS) {
-      throw new Error(`market intelligence safety bound reached for ${city.slug}`);
-    }
+  const targetEvents = await readResolvedNeighborhoodEvents(runtimeNeighborhoodIds, MAX_TARGET_EVENTS);
+  if (targetEvents.length >= MAX_TARGET_EVENTS) {
+    throw new Error(`market intelligence safety bound reached for ${city.slug}`);
   }
 
   const candidateSeedIds = [...new Set<string>(
