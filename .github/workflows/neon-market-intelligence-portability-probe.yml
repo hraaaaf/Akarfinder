@@ -1,0 +1,119 @@
+name: Neon Market Intelligence Portability Probe
+
+# SUPABASE-TO-NEON-MIGRATION-20260923
+# Validation-only. Proves the public Map Market Intelligence read dataset can
+# restore on vanilla PostgreSQL 17 before any target import is considered.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: neon-market-intelligence-portability-probe
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      SOURCE_URL: ${{ secrets.SUPABASE_DATABASE_URL_DIRECT }}
+      PG_IMAGE: postgres:17
+
+    steps:
+      - name: Validate source secret
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${SOURCE_URL:-}" ]; then
+            echo "::error::Missing SUPABASE_DATABASE_URL_DIRECT"
+            exit 1
+          fi
+
+      - name: Export Market Intelligence dependency candidates
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --rm \
+            -e SOURCE_URL="$SOURCE_URL" \
+            -v "$RUNNER_TEMP:/work" \
+            "$PG_IMAGE" \
+            sh -lc 'pg_dump "$SOURCE_URL" -Fc --no-owner --no-acl \
+              --table=public.geo_entities \
+              --table=public.geo_resolution_events \
+              --table=public.thin_index_search_documents \
+              --table=public.source_offer_seeds \
+              -f /work/akarfinder-market-intelligence.dump'
+
+      - name: Start clean PostgreSQL 17 scratch database
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run -d --rm \
+            --name akarfinder-market-intel-pg17-scratch \
+            -e POSTGRES_PASSWORD=akarfinder-market-intel-scratch \
+            -e POSTGRES_DB=akarfinder_market_intel_scratch \
+            -p 55436:5432 \
+            "$PG_IMAGE"
+          for attempt in $(seq 1 30); do
+            if docker exec akarfinder-market-intel-pg17-scratch pg_isready -U postgres -d akarfinder_market_intel_scratch >/dev/null 2>&1; then
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "::error::Scratch PostgreSQL did not become ready"
+          exit 1
+
+      - name: Prove Market Intelligence tables are dependency-closed
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --rm \
+            --network host \
+            -v "$RUNNER_TEMP:/work" \
+            "$PG_IMAGE" \
+            pg_restore \
+              --exit-on-error \
+              --single-transaction \
+              --no-owner \
+              --no-acl \
+              -d postgresql://postgres:akarfinder-market-intel-scratch@127.0.0.1:55436/akarfinder_market_intel_scratch \
+              /work/akarfinder-market-intelligence.dump
+
+      - name: Verify source and scratch Market Intelligence content parity
+        shell: bash
+        run: |
+          set -euo pipefail
+          tables="geo_entities geo_resolution_events thin_index_search_documents source_offer_seeds"
+          for table in $tables; do
+            digest_sql="select md5(coalesce(string_agg(row_hash, '' order by row_hash), '')) from (select md5(row_to_json(t)::text) as row_hash from public.$table t) q;"
+
+            source_count=$(docker run --rm -e SOURCE_URL="$SOURCE_URL" "$PG_IMAGE" \
+              sh -lc "psql \"\$SOURCE_URL\" -X -qAt -v ON_ERROR_STOP=1 -c 'select count(*) from public.$table'")
+            scratch_count=$(docker exec akarfinder-market-intel-pg17-scratch \
+              psql -U postgres -d akarfinder_market_intel_scratch -X -qAt -v ON_ERROR_STOP=1 \
+              -c "select count(*) from public.$table")
+
+            source_digest=$(docker run --rm -e SOURCE_URL="$SOURCE_URL" -e DIGEST_SQL="$digest_sql" "$PG_IMAGE" \
+              sh -lc 'psql "$SOURCE_URL" -X -qAt -v ON_ERROR_STOP=1 -c "$DIGEST_SQL"')
+            scratch_digest=$(docker exec akarfinder-market-intel-pg17-scratch \
+              psql -U postgres -d akarfinder_market_intel_scratch -X -qAt -v ON_ERROR_STOP=1 \
+              -c "$digest_sql")
+
+            echo "$table source_count=$source_count scratch_count=$scratch_count source_digest=$source_digest scratch_digest=$scratch_digest"
+            if [ "$source_count" != "$scratch_count" ]; then
+              echo "::error::$table row-count mismatch source=$source_count scratch=$scratch_count"
+              exit 1
+            fi
+            if [ "$source_digest" != "$scratch_digest" ]; then
+              echo "::error::$table content digest mismatch source=$source_digest scratch=$scratch_digest"
+              exit 1
+            fi
+          done
+
+      - name: Stop scratch database
+        if: always()
+        shell: bash
+        run: docker rm -f akarfinder-market-intel-pg17-scratch >/dev/null 2>&1 || true
