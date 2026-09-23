@@ -237,3 +237,27 @@ Urgent PR: #1084
 - Full read cutover is still blocked by the ODM lane: `search_public_representations_v2` and owner public search still call Supabase RPCs.
 - Search Gateway cache remains Supabase-client coupled but is non-critical and can be adapted separately.
 - No production provider switch, no Neon write, no Vercel deployment.
+
+## ODM portability gate — 2026-09-23
+- Reconstructed the current public ODM serving contract from migration history, including M7 policy guard/recovery, M5 fresh-only hardening, and M7 policy-expiry hardening.
+- Current runtime `search_public_representations_v2` depends on:
+  - `thin_index_search_documents`
+  - `source_policy_registry`
+  - `listing_sources`
+  - `professional_listing_ownership`
+  - `search_business_entitlements`
+  - portable ODM04 normalizers.
+- The serving contract also enforces policy windows, rich-content vs canonical-link-only separation, business lanes, exact URL dedupe, source diversity, and deterministic cursor ordering. These invariants must not be dropped in the Neon port.
+- ODM04 normalization portability verified from repo: the authoritative portable alias migration uses built-in `translate()`, not an external unaccent dependency.
+- Added validation-only workflow `.github/workflows/neon-odm-portability-probe.yml` to dump those five candidate tables and restore them into clean PostgreSQL 17 with count + deterministic content-digest parity. It never connects to Neon.
+- This probe is intentionally separate from the 4-table core apply allowlist because `professional_listing_ownership` may pull Auth-linked DDL dependencies. A failing scratch restore is treated as evidence, not bypassed.
+- Added static guard `scripts/scrapers/__tests__/neon-odm-portability-guard.test.ts` and wired it into Neon CI.
+- Cursor cutover hardened: when `DATABASE_PROVIDER=neon`, `SEARCH_CURSOR_SECRET` is mandatory; the legacy `SUPABASE_SERVICE_ROLE_KEY` fallback is no longer accepted.
+- Commits:
+  - cursor decoupling: `6dd8be27b4b050a3658c80f119e303c421968660`
+  - cursor test: `fe5eed621b78d40ecf6760bfc666e466bdf98a99`
+  - ODM gate doc: `979b2328e3951bf3f28b37ce3a9d52446c03da44`
+  - portability workflow: `b14765281512db2316acfd9c1c57cb72299b4bf1`
+  - static guard: `61e1c760d289fd7d3945e78142ca753e083e2118`
+  - CI wiring: `3dbab3a1cbd7982ed511673eaca282a53c0f801e`
+- No Vercel deploy, no provider switch, no Neon write, no Supabase deletion.
