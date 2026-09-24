@@ -29,9 +29,12 @@ export type EvidenceChannel = "commoncrawl_deep" | "public_sitemap" | "search_ap
 
 export type OfflineCandidate = {
   canonical_url: string;
+  canonical_aliases: string[];
   source_domain: string;
+  source_identity_key: string;
   evidence_channels: EvidenceChannel[];
   evidence_count: number;
+  alias_count: number;
   evidence: Record<string, unknown>;
   title: string | null;
   snippet: string | null;
@@ -107,6 +110,75 @@ function validListingUrl(url: string, registry: SourceDomainRegistry): { canonic
   return { canonical, domain };
 }
 
+function sourceIdentityKey(domain: string, canonicalUrl: string): string {
+  const pathname = decodeURIComponent(new URL(canonicalUrl).pathname).toLowerCase().replace(/\/+$/, "");
+
+  const id = (pattern: RegExp, prefix = "id"): string | null => {
+    const match = pathname.match(pattern);
+    return match?.[1] ? `${domain}:${prefix}:${match[1].toLowerCase()}` : null;
+  };
+
+  if (domain === "sarout.ma") return id(/\/annonce\/(\d+)(?:\/|$)/) ?? `${domain}:url:${pathname}`;
+  if (domain === "marocannonces.com") return id(/\/annonce\/(\d+)(?:\/|$)/) ?? `${domain}:url:${pathname}`;
+  if (domain === "barnes-marrakech.com") return id(/\/(\d+)$/) ?? `${domain}:url:${pathname}`;
+  if (domain === "sarouty.ma") return id(/-(\d+)(?:\.html)?$/) ?? `${domain}:url:${pathname}`;
+  if (domain === "agenz.ma") return id(/\/(\d+)$/) ?? `${domain}:url:${pathname}`;
+  if (domain === "avito.ma") return id(/_(\d{7,})\.htm$/) ?? `${domain}:url:${pathname}`;
+  if (domain === "1immo.ma") return id(/-(\d+)$/) ?? `${domain}:url:${pathname}`;
+  if (domain === "kawtarimmobilier.com") return id(/ref-(\d+)\.html$/i, "ref") ?? `${domain}:url:${pathname}`;
+  if (domain === "mouldar.com") return id(/\/([a-f0-9]{6,})$/i, "hex") ?? `${domain}:url:${pathname}`;
+  if (domain === "masaken.ma") return id(/\/(\d+)$/) ?? `${domain}:url:${pathname}`;
+  if (domain === "soukimmobilier.com") return id(/\/(\d+)$/) ?? `${domain}:url:${pathname}`;
+
+  if (domain === "mubawab.ma") {
+    const match = pathname.match(/\/(a|pa)\/(\d+)/);
+    if (match) return `${domain}:${match[1]}:${match[2]}`;
+  }
+
+  if (domain === "aykana.ma") {
+    const match = pathname.match(/ref[-\s]*(\d+)/i);
+    if (match) return `${domain}:ref:${match[1]}`;
+  }
+
+  if (domain === "promoimmomarrakech.com") {
+    const match = pathname.match(/\/produit\/([^/]+)\//);
+    if (match) return `${domain}:code:${match[1].replace(/\s+/g, "")}`;
+  }
+
+  if (domain === "marrakechrealty.com") {
+    const normalized = pathname
+      .replace(/^\/en\/rentals\//, "/rent/")
+      .replace(/^\/en\/sale\//, "/sale/")
+      .replace(/^\/location\//, "/rent/")
+      .replace(/^\/vente\//, "/sale/");
+    return `${domain}:path:${normalized}`;
+  }
+
+  if (domain === "atlasimmobilier.com") {
+    return `${domain}:path:${pathname.replace(/^\/en\//, "/")}`;
+  }
+
+  return `${domain}:url:${pathname}`;
+}
+
+const SHORT_STAY_PATH_TOKENS = [
+  "location-de-vacances",
+  "par-jour",
+  "par-journee",
+  "par-nuit",
+  "vacance",
+  "vacances",
+  "journalier",
+  "journaliere",
+  "saisonnier",
+  "saisonniere",
+] as const;
+
+function isExplicitShortStayRoute(canonicalUrl: string): boolean {
+  const pathname = decodeURIComponent(new URL(canonicalUrl).pathname).toLowerCase();
+  return SHORT_STAY_PATH_TOKENS.some((token) => pathname.includes(token));
+}
+
 function latestIso(values: Array<string | null | undefined>): string | null {
   const valid = values.filter((value): value is string => Boolean(value) && Number.isFinite(new Date(value!).getTime()));
   if (valid.length === 0) return null;
@@ -119,11 +191,19 @@ export function mergeOfflineArtifacts(input: {
   serperRows?: Record<string, unknown>[];
   restored?: Set<string>;
   registry: SourceDomainRegistry;
-}): { rows: OfflineCandidate[]; rejected: Record<string, number>; excludedRestored: number } {
+}): { rows: OfflineCandidate[]; rejected: Record<string, number>; excludedRestored: number; sourceIdentityCollapses: number } {
   const restored = input.restored ?? new Set<string>();
+  const restoredIdentities = new Set<string>();
+  for (const canonical of restored) {
+    const domain = extractDomain(canonical);
+    if (domain) restoredIdentities.add(sourceIdentityKey(domain, canonical));
+  }
+
   const candidates = new Map<string, {
     canonical_url: string;
+    aliases: Set<string>;
     source_domain: string;
+    source_identity_key: string;
     channels: Set<EvidenceChannel>;
     evidence: Record<string, unknown>;
     title: string | null;
@@ -133,6 +213,7 @@ export function mergeOfflineArtifacts(input: {
   }>();
   const rejected: Record<string, number> = {};
   let excludedRestored = 0;
+  let sourceIdentityCollapses = 0;
 
   const reject = (reason: string) => { rejected[reason] = (rejected[reason] ?? 0) + 1; };
 
@@ -144,11 +225,19 @@ export function mergeOfflineArtifacts(input: {
   ) => {
     const valid = validListingUrl(rawUrl, input.registry);
     if (!valid) { reject("not_approved_individual_listing_url"); return; }
-    if (restored.has(valid.canonical)) { excludedRestored += 1; return; }
+    if (isExplicitShortStayRoute(valid.canonical)) { reject("explicit_short_stay_route"); return; }
 
-    const existing = candidates.get(valid.canonical) ?? {
+    const identity = sourceIdentityKey(valid.domain, valid.canonical);
+    if (restored.has(valid.canonical) || restoredIdentities.has(identity)) {
+      excludedRestored += 1;
+      return;
+    }
+
+    const existing = candidates.get(identity) ?? {
       canonical_url: valid.canonical,
+      aliases: new Set<string>(),
       source_domain: valid.domain,
+      source_identity_key: identity,
       channels: new Set<EvidenceChannel>(),
       evidence: {},
       title: null,
@@ -156,13 +245,22 @@ export function mergeOfflineArtifacts(input: {
       discovery_status: null,
       observed: [],
     };
+
+    if (!existing.aliases.has(valid.canonical) && existing.aliases.size > 0) sourceIdentityCollapses += 1;
+    existing.aliases.add(valid.canonical);
+    if (valid.canonical.localeCompare(existing.canonical_url) < 0) existing.canonical_url = valid.canonical;
     existing.channels.add(channel);
-    existing.evidence[channel] = evidence;
+
+    const currentEvidence = existing.evidence[channel];
+    if (currentEvidence === undefined) existing.evidence[channel] = evidence;
+    else if (Array.isArray(currentEvidence)) currentEvidence.push(evidence);
+    else existing.evidence[channel] = [currentEvidence, evidence];
+
     if (typeof extras.title === "string" && extras.title.trim()) existing.title = extras.title.trim();
     if (typeof extras.snippet === "string" && extras.snippet.trim()) existing.snippet = extras.snippet.trim();
     if (typeof extras.discovery_status === "string") existing.discovery_status = extras.discovery_status;
     if (typeof extras.observed_at === "string") existing.observed.push(extras.observed_at);
-    candidates.set(valid.canonical, existing);
+    candidates.set(identity, existing);
   };
 
   for (const raw of input.commoncrawlUrls ?? []) {
@@ -198,11 +296,15 @@ export function mergeOfflineArtifacts(input: {
       : hasSitemap ? "current_url_only"
       : "historical_only";
 
+    const aliases = [...row.aliases].sort();
     return {
       canonical_url: row.canonical_url,
+      canonical_aliases: aliases,
       source_domain: row.source_domain,
+      source_identity_key: row.source_identity_key,
       evidence_channels: channels,
       evidence_count: channels.length,
+      alias_count: aliases.length,
       evidence: row.evidence,
       title: row.title,
       snippet: row.snippet,
@@ -210,9 +312,9 @@ export function mergeOfflineArtifacts(input: {
       observed_at: latestIso(row.observed),
       recovery_status: recoveryStatus,
     };
-  }).sort((a, b) => a.canonical_url.localeCompare(b.canonical_url));
+  }).sort((a, b) => a.source_identity_key.localeCompare(b.source_identity_key));
 
-  return { rows, rejected, excludedRestored };
+  return { rows, rejected, excludedRestored, sourceIdentityCollapses };
 }
 
 async function main() {
@@ -242,6 +344,7 @@ async function main() {
     mode: "offline_recovery_reservoir",
     unique_structural_candidates: merged.rows.length,
     excluded_restored_urls: merged.excludedRestored,
+    source_identity_aliases_collapsed: merged.sourceIdentityCollapses,
     rejected: merged.rejected,
     by_status: byStatus,
     by_domain: Object.fromEntries(Object.entries(byDomain).sort((a, b) => b[1] - a[1])),

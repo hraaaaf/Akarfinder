@@ -153,3 +153,13 @@ Run 36059028153 / artifact 10833423663 proved:
 - aykana.ma: 507.
 
 This is discovery capacity, not yet 58,236 approved listings.
+
+## Source-aware identity audit
+
+The first sitemap artifact proved why URL-count targets are unsafe:
+- raw qualified URLs: 58,236;
+- `sarout.ma`: 44,130 URLs but exactly 22,065 numeric listing IDs (FR + AR aliases);
+- source-aware identity rules therefore collapse locale/route aliases before counting toward the 200k target;
+- explicit short-stay/vacation routes are rejected at the offline merge gate.
+
+A local audit of artifact 10833423663 produced ~33,750 source-identity candidates after source-aware alias collapse and explicit short-stay route rejection. This is a structural estimate from the artifact, not yet a freshness-approved inventory.

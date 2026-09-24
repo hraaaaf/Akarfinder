@@ -64,3 +64,66 @@ test("merges channels, dedupes canonical URLs and excludes restored URLs", () =>
   const three = result.rows.find((row) => row.canonical_url === "https://example.ma/annonce/3");
   assert.equal(three?.recovery_status, "current_url_only");
 });
+
+
+test("source identity dedupe collapses locale aliases and rejects explicit short-stay routes", () => {
+  const saroutRegistry: SourceDomainRegistry = {
+    registry_version: "test",
+    generated_at: "2026-09-24T00:00:00Z",
+    note: "fixture",
+    domains: [{
+      domain: "sarout.ma",
+      status: "approved_discovery",
+      listing_url_patterns: ["^/(?:fr|ar)/annonce/\\d+/[^/]+/?$"],
+      blocked_url_patterns: [],
+      source_type: "fixture",
+      external_web_result: true,
+      compliance_note: "fixture",
+      reviewed_at: "2026-09-24",
+      coverage_cities: null,
+    }],
+  };
+
+  const result = mergeOfflineArtifacts({
+    sitemapRows: [
+      { canonical_url: "https://sarout.ma/fr/annonce/723/appartement-189-m2-en-vente-casablanca", observed_at: "2026-09-24T20:00:00Z" },
+      { canonical_url: "https://sarout.ma/ar/annonce/723/appartement-189-m2-en-vente-casablanca", observed_at: "2026-09-24T20:00:00Z" },
+      { canonical_url: "https://sarout.ma/fr/annonce/724/appartement-location-par-jour-casablanca", observed_at: "2026-09-24T20:00:00Z" },
+    ],
+    registry: saroutRegistry,
+  });
+
+  assert.equal(result.rows.length, 1);
+  assert.equal(result.rows[0]?.source_identity_key, "sarout.ma:id:723");
+  assert.equal(result.rows[0]?.alias_count, 2);
+  assert.equal(result.sourceIdentityCollapses, 1);
+  assert.equal(result.rejected.explicit_short_stay_route, 1);
+});
+
+test("restored source identity excludes alternate locale URL too", () => {
+  const saroutRegistry: SourceDomainRegistry = {
+    registry_version: "test",
+    generated_at: "2026-09-24T00:00:00Z",
+    note: "fixture",
+    domains: [{
+      domain: "sarout.ma",
+      status: "approved_discovery",
+      listing_url_patterns: ["^/(?:fr|ar)/annonce/\\d+/[^/]+/?$"],
+      blocked_url_patterns: [],
+      source_type: "fixture",
+      external_web_result: true,
+      compliance_note: "fixture",
+      reviewed_at: "2026-09-24",
+      coverage_cities: null,
+    }],
+  };
+
+  const result = mergeOfflineArtifacts({
+    commoncrawlUrls: ["https://sarout.ma/ar/annonce/900/appartement-rabat"],
+    restored: new Set(["https://sarout.ma/fr/annonce/900/appartement-rabat"]),
+    registry: saroutRegistry,
+  });
+
+  assert.equal(result.rows.length, 0);
+  assert.equal(result.excludedRestored, 1);
+});
