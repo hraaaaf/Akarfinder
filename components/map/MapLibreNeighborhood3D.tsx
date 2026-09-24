@@ -49,6 +49,7 @@ export type MapLibreNeighborhood3DProps = {
 };
 
 const OPENFREEMAP_VECTOR = "https://tiles.openfreemap.org/planet";
+const TARGET_IMAGERY_TILES = "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
 const OPENFREEMAP_STYLE = "https://tiles.openfreemap.org/styles/liberty";
 const RTL_TEXT_PLUGIN_URL = "https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0.3.0/dist/mapbox-gl-rtl-text.js";
 let rtlTextPluginPromise: Promise<void> | null = null;
@@ -242,6 +243,28 @@ export function MapLibreNeighborhood3D({
         map.once("load", () => {
           if (disposed) return;
           try {
+            if (isMaarifTargetPilot && targetComposition === "context" && !map.getSource("akarfinder-target-imagery")) {
+              map.addSource("akarfinder-target-imagery", {
+                type: "raster",
+                tiles: [TARGET_IMAGERY_TILES],
+                tileSize: 256,
+                maxzoom: 19,
+                attribution: "Imagery © Esri",
+              });
+              const firstSymbolLayer = (map.getStyle().layers ?? []).find((layer: any) => layer.type === "symbol")?.id;
+              map.addLayer({
+                id: "akarfinder-target-imagery",
+                type: "raster",
+                source: "akarfinder-target-imagery",
+                paint: {
+                  "raster-opacity": 0.68,
+                  "raster-saturation": -0.16,
+                  "raster-contrast": 0.04,
+                  "raster-brightness-min": 0.08,
+                  "raster-brightness-max": 0.96,
+                },
+              } as any, firstSymbolLayer);
+            }
             if (!map.getSource("akarfinder-openfreemap")) {
               map.addSource("akarfinder-openfreemap", {
                 type: "vector",
@@ -420,6 +443,9 @@ export function MapLibreNeighborhood3D({
       <div className="maplibre-spike-map" data-maplibre-map-surface>
         <div className="maplibre-spike-canvas" ref={mapRef} />
         <div className="maplibre-spike-map-grade" aria-hidden="true" />
+        {isMaarifTargetPilot && targetComposition === "context" ? (
+          <div className="maplibre-spike-attribution">Imagery © Esri · Map © OpenStreetMap contributors</div>
+        ) : null}
         <div className="maplibre-spike-dom-labels" aria-hidden="true">
           {centerPoint?.visible && (
             <div className="maplibre-spike-neighborhood-label" style={{ left: centerPoint.x, top: centerPoint.y }}>
