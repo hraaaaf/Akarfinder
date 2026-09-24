@@ -23,6 +23,7 @@ on:
       - "scripts/scrapers/__tests__/ha-evidence-bundle-guard.test.ts"
       - "scripts/ha-dr/evaluate-ha-evidence.ts"
       - "scripts/ha-dr/certify-ha-evidence-bundle.ts"
+      - "scripts/ha-dr/certify-ha-evidence-file.ts"
       - "scripts/scrapers/__tests__/ha-evidence-evaluator.test.ts"
       - "scripts/scrapers/__tests__/ha-evidence-certification.test.ts"
       - ".github/workflows/ha-baseline-parity-proof.yml"
