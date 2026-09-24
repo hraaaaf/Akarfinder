@@ -24,6 +24,7 @@ import "./premium-interactive-map-fixes.css";
 import "./n3-premium-theme.css";
 import "./quartier-target-couche1.css";
 import "./ux-convergence-l9.css";
+import "./quartier-target-couche2.css";
 
 export const dynamic = "force-dynamic";
 
@@ -53,7 +54,7 @@ export default async function MapPage({ searchParams }: MapPageProps) {
   const isMaarifTargetPilot = city.toLowerCase() === "casablanca" && district.toLowerCase() === "maarif";
   const targetPilotLandmarkIds = new Set([
     "landmark_casablanca_maarif_twin_center",
-    "landmark_casablanca_racine_institut_juan_ramon_jimenez",
+    "landmark_casablanca_maarif_stade_mohammed_v",
   ]);
   const targetPilotLandmarks = isMaarifTargetPilot
     ? VERIFIED_LANDMARKS.flatMap((entry) => {

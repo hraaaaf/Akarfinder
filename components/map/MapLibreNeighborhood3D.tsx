@@ -398,6 +398,7 @@ export function MapLibreNeighborhood3D({
       data-maplibre-city={citySlug}
       data-maplibre-district={districtSlug}
       data-maplibre-boundary-status={boundaryGeometry ? "shadow-reference" : "center-only"}
+      data-maplibre-boundary-semantic={isMaarifTargetPilot && boundaryGeometry ? "administrative-arrondissement" : boundaryGeometry ? "boundary-reference" : "none"}
       data-maplibre-rtl-status={rtlStatus}
       data-maplibre-reserve-rail={reserveRail ? "true" : "false"}
       data-akar-quartier-target={isMaarifTargetPilot ? "maarif-couche1" : undefined}
@@ -453,6 +454,12 @@ export function MapLibreNeighborhood3D({
         {categories.map((category) => <button key={category} className={activeCategory === category ? "active" : ""} onClick={() => setActiveCategory(category)}>{CATEGORY_META[category].label}</button>)}
       </div>
 
+      {isMaarifTargetPilot && boundaryGeometry ? (
+        <div className="maplibre-spike-boundary-badge" aria-label="Nature du contour affiché">
+          Contour administratif
+        </div>
+      ) : null}
+
       <div className="maplibre-spike-controls" aria-label="Contrôles de la carte">
         <button type="button" className="maplibre-spike-control-primary" onClick={restoreCamera} aria-label="Recentrer sur le quartier"><LocateFixed size={18} /></button>
         <button type="button" onClick={() => changeZoom(0.75)} aria-label="Zoomer"><Plus size={19} /></button>
@@ -464,7 +471,7 @@ export function MapLibreNeighborhood3D({
         <span className="maplibre-spike-map-note-kicker">Quartier · {cityLabel}</span>
         <strong>{districtLabel}</strong>
         <span className="maplibre-spike-map-note-copy">
-          {boundaryGeometry ? "Limite OSM de référence · validation production en attente." : "Repère central sourcé · périmètre non revendiqué."}
+          {boundaryGeometry ? (isMaarifTargetPilot ? "Arrondissement Maârif · repère administratif." : "Limite OSM de référence · validation production en attente.") : "Repère central sourcé · périmètre non revendiqué."}
         </span>
         <span className="maplibre-spike-map-note-status">{buildingCount > 0 ? `${buildingCount} volumes 3D visibles` : "Chargement du relief urbain…"}</span>
       </div>

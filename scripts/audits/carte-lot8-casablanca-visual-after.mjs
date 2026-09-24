@@ -66,6 +66,15 @@ try {
       }, null, { timeout: 20000 });
       const rtlStatus = await maplibre.getAttribute("data-maplibre-rtl-status");
       if (rtlStatus !== "loaded") throw new Error(`${viewport.name}: MapLibre RTL shaping not loaded (${rtlStatus})`);
+      const boundarySemantic = await maplibre.getAttribute("data-maplibre-boundary-semantic");
+      if (boundarySemantic !== "administrative-arrondissement") throw new Error(`${viewport.name}: Maârif boundary semantic mismatch (${boundarySemantic})`);
+      const boundaryDisclosure = await page.locator(".maplibre-spike-map-note-copy").textContent();
+      if (!boundaryDisclosure?.includes("Arrondissement Maârif")) throw new Error(`${viewport.name}: arrondissement disclosure missing`);
+      const boundaryBadge = page.locator(".maplibre-spike-boundary-badge");
+      await boundaryBadge.waitFor({ state: "visible", timeout: 5000 });
+      if ((await boundaryBadge.textContent())?.trim() !== "Contour administratif") {
+        throw new Error(`${viewport.name}: visible administrative contour badge mismatch`);
+      }
       await highZoomTilesReady;
 
       const rail = page.locator("[data-p4-map-decision-rail]");
@@ -125,7 +134,69 @@ try {
       if (overflow > 1) throw new Error(`${viewport.name}: horizontal overflow ${overflow}`);
       if (diagnostics.pageErrors.length) throw new Error(`${viewport.name}: browser page errors ${JSON.stringify(diagnostics.pageErrors)}`);
       await page.screenshot({ path: `${outDir}/casablanca-maarif-${viewport.width}x${viewport.height}.png`, fullPage: false });
-      report.cases.push({ viewport: viewport.name, searchHref, panelBox, layoutDiagnostics, overflow, mapRendered: true, rtlStatus, highZoomTileCount, diagnostics });
+
+      const contextResponse = await page.request.get(`${baseUrl}/api/geo/neighborhood-context?city=casablanca&district=maarif`);
+      if (!contextResponse.ok()) throw new Error(`${viewport.name}: local context API returned ${contextResponse.status()}`);
+      const contextBody = await contextResponse.json();
+      const localContext = contextBody?.context;
+      if (contextBody?.status !== "ok" || !localContext) throw new Error(`${viewport.name}: local context payload unavailable`);
+      if (localContext.source?.mode !== "maarif-couche2-osm-refresh") throw new Error(`${viewport.name}: wrong local context source ${localContext.source?.mode}`);
+      if (localContext.anchor_count !== 4) throw new Error(`${viewport.name}: expected 4 local anchors, got ${localContext.anchor_count}`);
+      const expectedLocalNames = [
+        "Université Mundiapolis",
+        "Marché Central du Maârif",
+        "Clinique Badr مصحة بدر",
+        "Parc du Vélodrome",
+      ];
+      if (JSON.stringify(localContext.anchors.map((anchor) => anchor.name)) !== JSON.stringify(expectedLocalNames)) {
+        throw new Error(`${viewport.name}: local anchor order/content mismatch ${JSON.stringify(localContext.anchors.map((anchor) => anchor.name))}`);
+      }
+      if (localContext.anchors.some((anchor) => anchor.territorial_wording === "Dans le quartier")) {
+        throw new Error(`${viewport.name}: false inside-neighborhood wording detected`);
+      }
+
+      const localTab = rail.getByRole("button", { name: "Vie locale", exact: true });
+      await localTab.click();
+      await page.waitForFunction(() => document.querySelector("[data-p4-map-decision-rail]")?.getAttribute("data-vivre-ici-tab") === "local");
+      const localGuide = rail.locator("[data-couche2-local-guide]");
+      await localGuide.waitFor({ state: "visible", timeout: 5000 });
+      const renderedLocalNames = await localGuide.locator(".p4-premium-local-guide-list article > strong").allTextContents();
+      if (JSON.stringify(renderedLocalNames.map((value) => value.trim())) !== JSON.stringify(expectedLocalNames)) {
+        throw new Error(`${viewport.name}: rendered local anchors mismatch ${JSON.stringify(renderedLocalNames)}`);
+      }
+      const renderedWordings = await localGuide.locator(".p4-premium-local-guide-list article > small").allTextContents();
+      if (renderedWordings.length !== 4 || renderedWordings.some((value) => value.trim() !== "Autour du repère quartier")) {
+        throw new Error(`${viewport.name}: rendered local wording mismatch ${JSON.stringify(renderedWordings)}`);
+      }
+      const localPanelBox = await rail.boundingBox();
+      if (!localPanelBox) throw new Error(`${viewport.name}: local-life rail has no bounding box`);
+      if (localPanelBox.x < -1 || localPanelBox.x + localPanelBox.width > viewport.width + 1 || localPanelBox.y < -1 || localPanelBox.y + localPanelBox.height > viewport.height + 1) {
+        throw new Error(`${viewport.name}: local-life rail escapes viewport ${JSON.stringify(localPanelBox)}`);
+      }
+      const localOverflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+      if (localOverflow > 1) throw new Error(`${viewport.name}: local-life horizontal overflow ${localOverflow}`);
+      await page.screenshot({ path: `${outDir}/casablanca-maarif-local-${viewport.width}x${viewport.height}.png`, fullPage: false });
+
+      report.cases.push({
+        viewport: viewport.name,
+        searchHref,
+        panelBox,
+        localPanelBox,
+        layoutDiagnostics,
+        overflow,
+        localOverflow,
+        mapRendered: true,
+        rtlStatus,
+        boundarySemantic,
+        boundaryDisclosure,
+        boundaryBadge: "Contour administratif",
+        localContextSource: localContext.source.mode,
+        localAnchorCount: localContext.anchor_count,
+        localAnchorNames: expectedLocalNames,
+        localTerritorialWording: "Autour du repère quartier",
+        highZoomTileCount,
+        diagnostics,
+      });
     } finally {
       clearTimeout(tileGateTimeout);
       await page.close();
