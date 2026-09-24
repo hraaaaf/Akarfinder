@@ -2,7 +2,7 @@ name: Neon Runtime Read Path Validation
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, infra/neon-migration-20260923]
     paths:
       - "lib/db/provider.ts"
       - "lib/db/ha-writer-state.ts"
