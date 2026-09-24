@@ -71,8 +71,14 @@ jobs:
             updated_at timestamptz not null
           );
           alter table public.akarfinder_ha_replication_canary replica identity default;
+          create role ha_app_writer nologin;
+          grant usage on schema public to ha_app_writer;
+          grant select on public.akarfinder_ha_replication_canary to ha_app_writer;
           SQL
           done
+
+          docker exec "$SOURCE" psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
+            -c "grant insert, update, delete on public.akarfinder_ha_replication_canary to ha_app_writer;"
 
       - name: Establish forward Supabase-sim to Neon-sim replication
         shell: bash
@@ -93,7 +99,8 @@ jobs:
           row_id="aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
           source_commit_start="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
-          docker exec "$SOURCE" psql -U postgres -d postgres -v ON_ERROR_STOP=1             -c "insert into public.akarfinder_ha_replication_canary
+          docker exec "$SOURCE" psql -U postgres -d postgres -v ON_ERROR_STOP=1             -c "set role ha_app_writer;
+                insert into public.akarfinder_ha_replication_canary
                 (id, probe_run_id, payload, version, created_at, updated_at)
                 values
                 ('$row_id','$probe_run_id','forward-v1',1,clock_timestamp(),clock_timestamp());"
@@ -105,7 +112,8 @@ jobs:
             sleep 1
           done
 
-          docker exec "$SOURCE" psql -U postgres -d postgres -v ON_ERROR_STOP=1             -c "update public.akarfinder_ha_replication_canary
+          docker exec "$SOURCE" psql -U postgres -d postgres -v ON_ERROR_STOP=1             -c "set role ha_app_writer;
+                update public.akarfinder_ha_replication_canary
                 set payload='forward-v2', version=2, updated_at=clock_timestamp()
                 where id='$row_id';"
 
@@ -116,7 +124,8 @@ jobs:
             sleep 1
           done
 
-          docker exec "$SOURCE" psql -U postgres -d postgres -v ON_ERROR_STOP=1             -c "delete from public.akarfinder_ha_replication_canary where id='$row_id';"
+          docker exec "$SOURCE" psql -U postgres -d postgres -v ON_ERROR_STOP=1             -c "set role ha_app_writer;
+                delete from public.akarfinder_ha_replication_canary where id='$row_id';"
 
           for attempt in $(seq 1 30); do
             count="$(docker exec "$TARGET" psql -U postgres -d postgres -X -qAt               -c "select count(*) from public.akarfinder_ha_replication_canary where id='$row_id';")"
@@ -128,6 +137,47 @@ jobs:
           source_commit_end="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
           source_lsn="$(docker exec "$SOURCE" psql -U postgres -d postgres -X -qAt -c "select pg_current_wal_lsn();")"
           printf 'FORWARD_START=%s\nFORWARD_END=%s\nFORWARD_END_LSN=%s\n'             "$source_commit_start" "$source_commit_end" "$source_lsn" >> "$RUNNER_TEMP/ha.env"
+
+      - name: Fence Supabase-sim and promote Neon-sim writer
+        shell: bash
+        run: |
+          set -euo pipefail
+          probe_run_id="33333333-3333-4333-8333-333333333333"
+          source_probe_id="cccccccc-cccc-4ccc-8ccc-cccccccccccc"
+          target_probe_id="dddddddd-dddd-4ddd-8ddd-dddddddddddd"
+
+          docker exec "$SOURCE" psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
+            -c "revoke insert, update, delete on public.akarfinder_ha_replication_canary from ha_app_writer;"
+
+          if docker exec "$SOURCE" psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
+            -c "set role ha_app_writer;
+                insert into public.akarfinder_ha_replication_canary
+                (id, probe_run_id, payload, version, created_at, updated_at)
+                values ('$source_probe_id','$probe_run_id','must-fail-source',1,clock_timestamp(),clock_timestamp());"
+          then
+            echo "::error::source app writer remained writable during FAILOVER_PREP"
+            exit 1
+          fi
+
+          if docker exec "$TARGET" psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
+            -c "set role ha_app_writer;
+                insert into public.akarfinder_ha_replication_canary
+                (id, probe_run_id, payload, version, created_at, updated_at)
+                values ('$target_probe_id','$probe_run_id','must-fail-target',1,clock_timestamp(),clock_timestamp());"
+          then
+            echo "::error::target app writer was writable before promotion"
+            exit 1
+          fi
+
+          docker exec "$TARGET" psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
+            -c "grant insert, update, delete on public.akarfinder_ha_replication_canary to ha_app_writer;"
+
+          docker exec "$TARGET" psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
+            -c "set role ha_app_writer;
+                insert into public.akarfinder_ha_replication_canary
+                (id, probe_run_id, payload, version, created_at, updated_at)
+                values ('$target_probe_id','$probe_run_id','target-writer-preflight',1,clock_timestamp(),clock_timestamp());
+                delete from public.akarfinder_ha_replication_canary where id='$target_probe_id';"
 
       - name: Establish reverse Neon-sim to Supabase-sim replication with origin filter
         shell: bash
@@ -209,6 +259,67 @@ jobs:
 
           printf 'FAILOVER_DECISION_AT=%s\nSERVICE_RESTORED_AT=%s\nREVERSE_START_LSN=%s\nREVERSE_TARGET_LSN=%s\nREVERSE_FINAL_LSN=%s\n'             "$failover_decision_at" "$service_restored_at" "$reverse_start_lsn" "$reverse_target_lsn" "$reverse_final_lsn"             >> "$RUNNER_TEMP/ha.env"
 
+      - name: Freeze Neon-sim and fail back to Supabase-sim writer
+        shell: bash
+        run: |
+          set -euo pipefail
+          probe_run_id="44444444-4444-4444-8444-444444444444"
+          row_id="eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee"
+
+          docker exec "$TARGET" psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
+            -c "revoke insert, update, delete on public.akarfinder_ha_replication_canary from ha_app_writer;"
+
+          for node in "$SOURCE" "$TARGET"; do
+            if docker exec "$node" psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
+              -c "set role ha_app_writer;
+                  insert into public.akarfinder_ha_replication_canary
+                  (id, probe_run_id, payload, version, created_at, updated_at)
+                  values ('$row_id','$probe_run_id','must-fail-freeze',1,clock_timestamp(),clock_timestamp());"
+            then
+              echo "::error::$node app writer remained writable during FAILBACK_FREEZE"
+              exit 1
+            fi
+          done
+
+          docker exec "$SOURCE" psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
+            -c "grant insert, update, delete on public.akarfinder_ha_replication_canary to ha_app_writer;"
+
+          docker exec "$SOURCE" psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
+            -c "set role ha_app_writer;
+                insert into public.akarfinder_ha_replication_canary
+                (id, probe_run_id, payload, version, created_at, updated_at)
+                values ('$row_id','$probe_run_id','source-restored',1,clock_timestamp(),clock_timestamp());"
+
+          for attempt in $(seq 1 30); do
+            value="$(docker exec "$TARGET" psql -U postgres -d postgres -X -qAt \
+              -c "select payload from public.akarfinder_ha_replication_canary where id='$row_id';")"
+            [ "$value" = "source-restored" ] && break
+            [ "$attempt" -eq 30 ] && { echo "::error::post-failback forward INSERT did not replicate"; exit 1; }
+            sleep 1
+          done
+
+          docker exec "$SOURCE" psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
+            -c "set role ha_app_writer;
+                delete from public.akarfinder_ha_replication_canary where id='$row_id';"
+
+          for attempt in $(seq 1 30); do
+            remaining="$(docker exec "$TARGET" psql -U postgres -d postgres -X -qAt \
+              -c "select count(*) from public.akarfinder_ha_replication_canary where id='$row_id';")"
+            [ "$remaining" = "0" ] && break
+            [ "$attempt" -eq 30 ] && { echo "::error::post-failback forward DELETE did not replicate"; exit 1; }
+            sleep 1
+          done
+
+          if docker exec "$TARGET" psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
+            -c "set role ha_app_writer;
+                insert into public.akarfinder_ha_replication_canary
+                (id, probe_run_id, payload, version, created_at, updated_at)
+                values ('$row_id','$probe_run_id','must-fail-target-after-failback',1,clock_timestamp(),clock_timestamp());"
+          then
+            echo "::error::target app writer became writable after failback"
+            exit 1
+          fi
+
       - name: Verify subscriptions remain healthy
         shell: bash
         run: |
@@ -238,7 +349,11 @@ jobs:
               reverse_insert_update_delete: "PASS",
               anti_loop_count_proof: "PASS",
               cleanup: "PASS",
-              single_writer_contract: "SIMULATED",
+              single_writer_contract: "DB_ROLE_FENCING_SIMULATED",
+              failover_no_write_window: "PASS",
+              target_writer_promotion: "PASS",
+              failback_freeze: "PASS",
+              source_writer_restore: "PASS",
               positions: {
                 forward_end_lsn: $forward_end_lsn,
                 reverse_start_lsn: $reverse_start_lsn,
