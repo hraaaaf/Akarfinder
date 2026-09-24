@@ -42,3 +42,30 @@ test("HA runbook fails safe on unproven replication-origin behavior", () => {
   assert.match(runbook, /rebaseline/i);
   assert.match(runbook, /if origin behavior is uncertain/i);
 });
+
+
+test("HA runbook freezes SQL probes during planned restore", () => {
+  assert.match(runbook, /do not probe the database while the operator has declared it paused/);
+  assert.match(runbook, /resume SQL checks only after an explicit human signal that the restore is complete/);
+  assert.match(runbook, /R0 — minimal health/);
+  assert.match(runbook, /do not retry-loop/);
+});
+
+test("HA runbook uses a read-only gated post-restore sequence", () => {
+  assert.match(runbook, /R1 — recovery-state sanity/);
+  assert.match(runbook, /pg_is_in_recovery\(\)/);
+  assert.match(runbook, /transaction_read_only/);
+  assert.match(runbook, /R2 — read-only HA capability inventory/);
+  assert.match(runbook, /R3 — restore drift assessment/);
+  assert.match(runbook, /R4 — source portability suite/);
+  assert.match(runbook, /require 5\/5 green/);
+  assert.match(runbook, /R5 — target\/baseline decision/);
+  assert.match(runbook, /ambiguous restore\/delta boundary defaults to rebaseline/);
+});
+
+test("restore recovery mode authorizes no production mutation by itself", () => {
+  assert.match(
+    runbook,
+    /No production write, canary schema application, publication\/subscription mutation, provider switch or Vercel change is authorized by recovery-mode completion alone/,
+  );
+});
