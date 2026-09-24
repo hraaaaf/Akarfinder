@@ -151,3 +151,13 @@ test("NOT_RUN template can never certify", () => {
   assert.match(result.blockers.join("\n"), /evidence_status_not_pass:NOT_RUN/);
   assert.match(result.blockers.join("\n"), /application_commit_missing_or_invalid/);
 });
+
+
+test("duplicate approved table is a hard failure", () => {
+  const bundle = passBundle();
+  bundle.approved_tables.push("property_listings");
+
+  const result = certifyHaEvidenceBundle(bundle);
+  assert.equal(result.verdict, "FAIL");
+  assert.match(result.failures.join("\n"), /approved_table_duplicated:property_listings/);
+});
