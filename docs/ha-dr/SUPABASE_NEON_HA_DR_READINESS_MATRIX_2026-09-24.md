@@ -170,7 +170,7 @@ Prove INSERT/UPDATE/DELETE propagation and measure forward lag.
 
 ### Status
 
-`PREPARED / NOT EXECUTED`
+`HA05-A PROVED / HA05-B PROVIDER REHEARSAL NOT EXECUTED`
 
 ### Human gate
 
@@ -211,11 +211,21 @@ Prove legal failover with no split-brain.
 
 ### Evidence-quality note
 
-The first green artifact used GitHub's synthetic pull-request execution SHA in `application_commit` and second-resolution failover timing. The current branch corrects this to the PR head SHA plus millisecond RTO. HA05-A behavior is therefore **proved**, while final certification evidence remains pending the corrected exact-head rerun.
+The first green artifact had two evidence-quality defects (synthetic GitHub execution SHA in `application_commit`, second-resolution timing). Both were corrected and re-run.
+
+Exact-head proof:
+- run `35995118188` → SUCCESS;
+- artifact `10806265846`;
+- artifact digest `sha256:ec92b74afbf27a8f951737c80596843a70afa28d93d06841ec42db9c9ad925e3`;
+- `application_commit = 8cbd3a6ea042639515798b8e6631cab10a69b48a`;
+- `github_execution_sha = fdaba48cf2d162ee3ceff8eebc6a9e8f267a694b`;
+- isolated failover decision → target writer promotion = `390 ms`;
+- verdict = `ISOLATED_REHEARSAL_PASS`.
+
+HA05-A isolated PostgreSQL 17 rehearsal evidence is therefore **PROVED**. This is not provider-specific or production certification.
 
 ### Missing proof
 
-- corrected exact-head HA05-A artifact with PR head SHA + millisecond RTO;
 - writer fencing behavior on the real application routing layer;
 - Neon promotion smoke proof;
 - incident write boundary;
