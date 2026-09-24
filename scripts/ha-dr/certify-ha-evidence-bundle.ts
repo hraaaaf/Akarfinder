@@ -18,6 +18,8 @@ export type HaDeclaredVerdict =
   | "BLOCKED";
 
 export type HaEvidenceBundleForCertification = HaEvidenceInput & {
+  schema_version: "1.0";
+  run_id: string;
   status: HaEvidenceStatus;
   application_commit: string | null;
   database_schema_fingerprint: string | null;
@@ -53,6 +55,14 @@ export function certifyHaEvidenceBundle(
   const evaluated = evaluateHaEvidence(bundle);
   const blockers = [...evaluated.blockers];
   const failures = [...evaluated.failures];
+
+  if (bundle.schema_version !== "1.0") {
+    failures.push("unsupported_schema_version");
+  }
+
+  if (bundle.run_id.trim().length === 0) {
+    blockers.push("run_id_missing");
+  }
 
   if (
     !nonEmpty(bundle.application_commit) ||
