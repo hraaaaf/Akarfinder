@@ -1,0 +1,134 @@
+name: Landmark Factory Tanger Product Geography Probe
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/landmark-factory-tanger-probe.yml"
+      - "scripts/landmarks/find-osm-boundary-relations.py"
+      - "scripts/landmarks/find-osm-place-anchors.py"
+      - "docs/geo/landmark-factory/TANGER_PRODUCT_GEOGRAPHY_EVIDENCE.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install native Osmium filter + pyosmium
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends osmium-tool
+          python -m pip install --disable-pip-version-check osmium
+
+      - name: Download current Morocco OSM PBF
+        run: |
+          curl --fail --location --retry 3 --output /tmp/morocco-latest.osm.pbf \
+            https://download.geofabrik.de/africa/morocco-latest.osm.pbf
+
+      - name: Extract Tanger area
+        run: |
+          osmium extract \
+            -b -6.15,35.55,-5.55,36.05 \
+            -o /tmp/tanger-area.osm.pbf \
+            /tmp/morocco-latest.osm.pbf
+
+      - name: Prefilter Tanger product labels
+        run: |
+          osmium tags-filter -R \
+            -o /tmp/tanger-product-labels.osm.pbf \
+            /tmp/tanger-area.osm.pbf \
+            'nwr/name=Malabata' \
+            'nwr/name:fr=Malabata' \
+            'nwr/name=Ville Nouvelle' \
+            'nwr/name:fr=Ville Nouvelle' \
+            'nwr/name=La Nouvelle Ville Ibn Batouta' \
+            'nwr/name:fr=La Nouvelle Ville Ibn Batouta' \
+            'nwr/name=Marshan' \
+            'nwr/name:fr=Marshan'
+          ls -lh /tmp/tanger-product-labels.osm.pbf
+
+      - name: Discover Tanger product anchors
+        run: |
+          mkdir -p artifacts
+          python scripts/landmarks/find-osm-place-anchors.py \
+            --pbf /tmp/tanger-product-labels.osm.pbf \
+            --bbox=-6.15,35.55,-5.55,36.05 \
+            --name "Malabata" \
+            --name "Ville Nouvelle" \
+            --name "La Nouvelle Ville Ibn Batouta" \
+            --name "Marshan" \
+            --out artifacts/tanger-product-place-anchors.json
+          cat artifacts/tanger-product-place-anchors.json
+
+      - name: Discover exact Tanger boundary relations
+        run: |
+          for name in "Malabata" "Ville Nouvelle" "La Nouvelle Ville Ibn Batouta"; do
+            slug=$(echo "$name" | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | tr -cd '[:alnum:]-')
+            python scripts/landmarks/find-osm-boundary-relations.py \
+              --pbf /tmp/tanger-product-labels.osm.pbf \
+              --name "$name" \
+              --out "artifacts/tanger-${slug}-boundary-relations.json"
+          done
+          cat artifacts/tanger-*-boundary-relations.json
+
+      - name: Build fail-closed Tanger verdict
+        env:
+          EXPECTED_PR_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          anchors=json.loads(Path("artifacts/tanger-product-place-anchors.json").read_text(encoding="utf-8"))
+          files=list(Path("artifacts").glob("tanger-*-boundary-relations.json"))
+          rels=[]
+          for p in files:
+              rels.extend(json.loads(p.read_text(encoding="utf-8")).get("matches",[]))
+          seen=set(); rels=[r for r in rels if not (r["osm_id"] in seen or seen.add(r["osm_id"]))]
+          verdict={
+            "schema_version":1,
+            "source_control":{
+              "pr_head_sha":os.environ.get("EXPECTED_PR_HEAD") or os.environ.get("GITHUB_SHA"),
+              "github_context_sha":os.environ.get("GITHUB_SHA"),
+            },
+            "city":"Tanger",
+            "canonical_neighborhoods":["Marchan","Malabata","Ville Nouvelle"],
+            "evidence_role":"DISCOVERY_PROBE_ONLY",
+            "semantic_diagnostics":{
+              "malabata":"PRODUCT_TAXONOMY_SUPPORTED",
+              "ville_nouvelle":"SCOPE_AMBIGUOUS_DO_NOT_EQUATE_WITH_IBN_BATOUTA",
+              "marchan":"REFERENCE_EXACT_MATCH",
+            },
+            "promotion":{
+              "allowed":False,
+              "verdict":"NO_PRODUCT_BOUNDARY_CLAIM",
+            },
+            "counts":{
+              "anchor_matches":len(anchors.get("matches",[])),
+              "boundary_relation_matches":len(rels),
+            },
+            "relation_matches":rels,
+          }
+          Path("artifacts/tanger-product-geography-verdict.json").write_text(
+            json.dumps(verdict,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
+          print(json.dumps(verdict,ensure_ascii=False,indent=2))
+          assert verdict["promotion"]["allowed"] is False
+          PY
+
+      - name: Upload Tanger discovery evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: landmark-factory-tanger-product-geography-probe
+          path: artifacts/
+          if-no-files-found: error

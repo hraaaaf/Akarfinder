@@ -71,18 +71,23 @@ export const GEO_CITIES: CanonicalCityEntity[] = [
 export const GEO_NEIGHBORHOODS: CanonicalNeighborhoodEntity[] = [
   // Casablanca
   { id: "district_casablanca_maarif", slug: "maarif", canonical_name: "Maârif", aliases: ["Maarif"], city_slug: "casablanca", validation_status: "validated", seo_eligible: true, map_eligible: true },
-  { id: "district_casablanca_racine", slug: "racine", canonical_name: "Racine", aliases: [], city_slug: "casablanca", validation_status: "validated", seo_eligible: true, map_eligible: false },
-  { id: "district_casablanca_ain_diab", slug: "ain-diab", canonical_name: "Aïn Diab", aliases: ["Ain Diab"], city_slug: "casablanca", validation_status: "validated", seo_eligible: true, map_eligible: false },
-  { id: "district_casablanca_bourgogne", slug: "bourgogne", canonical_name: "Bourgogne", aliases: [], city_slug: "casablanca", validation_status: "validated", seo_eligible: true, map_eligible: false },
+  { id: "district_casablanca_racine", slug: "racine", canonical_name: "Racine", aliases: [], city_slug: "casablanca", validation_status: "validated", seo_eligible: true, map_eligible: true },
+  { id: "district_casablanca_ain_diab", slug: "ain-diab", canonical_name: "Aïn Diab", aliases: ["Ain Diab"], city_slug: "casablanca", validation_status: "validated", seo_eligible: true, map_eligible: true },
+  { id: "district_casablanca_bourgogne", slug: "bourgogne", canonical_name: "Bourgogne", aliases: [], city_slug: "casablanca", validation_status: "validated", seo_eligible: true, map_eligible: true },
   { id: "district_casablanca_finance_city", slug: "finance-city", canonical_name: "Casablanca Finance City", aliases: ["Finance City", "CFC"], city_slug: "casablanca", validation_status: "validated", seo_eligible: false, map_eligible: true },
+  // Official Casablanca sources identify Hay Hassani as an arrondissement and Sidi Maârouf / Californie as named Ain Chock zones.
+  // Identity only: no product boundary is implied by these registry entries.
+  { id: "district_casablanca_hay_hassani", slug: "hay-hassani", canonical_name: "Hay Hassani", aliases: ["Hay El Hassani"], city_slug: "casablanca", validation_status: "validated", seo_eligible: false, map_eligible: true },
+  { id: "district_casablanca_sidi_maarouf", slug: "sidi-maarouf", canonical_name: "Sidi Maârouf", aliases: ["Sidi Maarouf"], city_slug: "casablanca", validation_status: "validated", seo_eligible: false, map_eligible: true },
+  { id: "district_casablanca_californie", slug: "californie", canonical_name: "Californie", aliases: ["California"], city_slug: "casablanca", validation_status: "validated", seo_eligible: false, map_eligible: true },
   { id: "district_casablanca_bouskoura", slug: "bouskoura", canonical_name: "Bouskoura", aliases: [], city_slug: "casablanca", validation_status: "validated", seo_eligible: false, map_eligible: true },
 
   // Rabat
   { id: "district_rabat_agdal", slug: "agdal", canonical_name: "Agdal", aliases: [], city_slug: "rabat", validation_status: "validated", seo_eligible: true, map_eligible: true },
-  { id: "district_rabat_souissi", slug: "souissi", canonical_name: "Souissi", aliases: [], city_slug: "rabat", validation_status: "validated", seo_eligible: true, map_eligible: false },
+  { id: "district_rabat_souissi", slug: "souissi", canonical_name: "Souissi", aliases: [], city_slug: "rabat", validation_status: "validated", seo_eligible: true, map_eligible: true },
   { id: "district_rabat_hay_riad", slug: "hay-riad", canonical_name: "Hay Riad", aliases: ["Hay Ryad", "Riad"], city_slug: "rabat", validation_status: "validated", seo_eligible: true, map_eligible: true },
   { id: "district_rabat_hassan", slug: "hassan", canonical_name: "Hassan", aliases: [], city_slug: "rabat", validation_status: "validated", seo_eligible: false, map_eligible: true },
-  { id: "district_rabat_ocean", slug: "ocean", canonical_name: "Océan", aliases: ["Ocean"], city_slug: "rabat", validation_status: "validated", seo_eligible: false, map_eligible: false },
+  { id: "district_rabat_ocean", slug: "ocean", canonical_name: "Océan", aliases: ["Ocean"], city_slug: "rabat", validation_status: "validated", seo_eligible: false, map_eligible: true },
 
   // Marrakech
   { id: "district_marrakech_gueliz", slug: "gueliz", canonical_name: "Guéliz", aliases: ["Gueliz"], city_slug: "marrakech", validation_status: "validated", seo_eligible: true, map_eligible: true },
@@ -92,7 +97,7 @@ export const GEO_NEIGHBORHOODS: CanonicalNeighborhoodEntity[] = [
   // Tanger
   { id: "district_tanger_malabata", slug: "malabata", canonical_name: "Malabata", aliases: [], city_slug: "tanger", validation_status: "validated", seo_eligible: true, map_eligible: true },
   { id: "district_tanger_ville_nouvelle", slug: "ville-nouvelle", canonical_name: "Ville Nouvelle", aliases: ["Ville nouvelle"], city_slug: "tanger", validation_status: "validated", seo_eligible: false, map_eligible: true },
-  { id: "district_tanger_marchan", slug: "marchan", canonical_name: "Marchan", aliases: ["Marshan"], city_slug: "tanger", validation_status: "validated", seo_eligible: false, map_eligible: false },
+  { id: "district_tanger_marchan", slug: "marchan", canonical_name: "Marchan", aliases: ["Marshan"], city_slug: "tanger", validation_status: "validated", seo_eligible: false, map_eligible: true },
 
   // Agadir
   { id: "district_agadir_founty", slug: "founty", canonical_name: "Founty", aliases: [], city_slug: "agadir", validation_status: "validated", seo_eligible: true, map_eligible: true },

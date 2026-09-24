@@ -9,7 +9,7 @@ const viewports = [
   { name: "390", width: 390, height: 844, mobile: true },
   { name: "1280", width: 1280, height: 900, mobile: false },
 ];
-const expectedDistrictHref = "/map?city=casablanca&district=maarif&layer=explore";
+const expectedDistrictHref = "/map?region=casablanca-settat&city=casablanca&district=maarif&layer=explore";
 const report = { ok: false, cases: [], failure: null };
 
 const nationalResponse = await fetch(`${baseUrl}/api/geo/national-territories`);
@@ -83,7 +83,7 @@ async function enterMaarifFromRoot(page) {
     const href = await explorer.getAttribute("href");
     if (href !== expectedDistrictHref) throw new Error(`premium N3 href invalid ${href}`);
     await Promise.all([
-      page.waitForURL((url) => url.pathname === "/map" && url.searchParams.get("city") === "casablanca" && url.searchParams.get("district") === "maarif" && url.searchParams.get("layer") === "explore", { timeout: 15000 }),
+      page.waitForURL((url) => url.pathname === "/map" && url.searchParams.get("region") === "casablanca-settat" && url.searchParams.get("city") === "casablanca" && url.searchParams.get("district") === "maarif" && url.searchParams.get("layer") === "explore", { timeout: 15000 }),
       explorer.click(),
     ]);
     return "premium";
@@ -138,8 +138,11 @@ try {
         return shell?.getAttribute("data-maplibre-render-state") === "ready";
       }, null, { timeout: 25000 });
 
-      const rail = page.locator("[data-p4-map-decision-rail]");
+      const rail = page.locator("[data-maarif-target-rail]");
       await rail.waitFor({ state: "visible", timeout: 10000 });
+      if (await page.locator("[data-p4-map-decision-rail]").count() !== 0) {
+        throw new Error("duplicate P4 decision rail must be absent on Maârif TARGET");
+      }
       const handoff = rail.getByRole("link", { name: /Voir les biens disponibles à Maârif/i });
       const href = await handoff.getAttribute("href");
       if (!href) throw new Error("search handoff href missing");

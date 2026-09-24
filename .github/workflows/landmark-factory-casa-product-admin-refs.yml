@@ -1,0 +1,113 @@
+name: Landmark Factory Casablanca Product Admin Refs
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/landmark-factory-casa-product-admin-refs.yml"
+      - "scripts/landmarks/materialize-osm-relation.py"
+      - "scripts/landmarks/validate-materialized-boundary.ts"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-admin-refs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pyosmium + shapely
+        run: python -m pip install --disable-pip-version-check osmium shapely
+      - name: Download current Morocco OSM PBF
+        run: |
+          curl --fail --location --retry 3 --output /tmp/morocco-latest.osm.pbf \
+            https://download.geofabrik.de/africa/morocco-latest.osm.pbf
+          ls -lh /tmp/morocco-latest.osm.pbf
+
+      - name: Materialize CIL administrative reference
+        run: |
+          mkdir -p artifacts
+          python scripts/landmarks/materialize-osm-relation.py \
+            --pbf /tmp/morocco-latest.osm.pbf \
+            --relation-id 18099040 \
+            --out artifacts/casablanca-cil-relation-18099040.geojson
+          npx tsx scripts/landmarks/validate-materialized-boundary.ts \
+            --input artifacts/casablanca-cil-relation-18099040.geojson \
+            --city-id city_casablanca \
+            --neighborhood-id candidate_casablanca_cil \
+            --display-name "CIL" \
+            | tee artifacts/casablanca-cil-relation-18099040-validation.json
+
+      - name: Materialize Beausejour administrative reference
+        run: |
+          python scripts/landmarks/materialize-osm-relation.py \
+            --pbf /tmp/morocco-latest.osm.pbf \
+            --relation-id 18099071 \
+            --out artifacts/casablanca-beausejour-relation-18099071.geojson
+          npx tsx scripts/landmarks/validate-materialized-boundary.ts \
+            --input artifacts/casablanca-beausejour-relation-18099071.geojson \
+            --city-id city_casablanca \
+            --neighborhood-id candidate_casablanca_beausejour \
+            --display-name "Beauséjour" \
+            | tee artifacts/casablanca-beausejour-relation-18099071-validation.json
+
+      - name: Build reference-only verdict
+        env:
+          EXPECTED_PR_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+
+          def load(name):
+              return json.loads(Path(name).read_text(encoding="utf-8"))
+
+          cil=load("artifacts/casablanca-cil-relation-18099040-validation.json")
+          beau=load("artifacts/casablanca-beausejour-relation-18099071-validation.json")
+          payload={
+              "schema_version":1,
+              "source_control":{
+                  "pr_head_sha":os.environ.get("EXPECTED_PR_HEAD") or os.environ.get("GITHUB_SHA"),
+                  "github_context_sha":os.environ.get("GITHUB_SHA"),
+              },
+              "evidence_role":"administrative_reference_only",
+              "product_boundary_claim":"none",
+              "relations":{
+                  "CIL":{"osm_relation":18099040,"validation":cil},
+                  "Beausejour":{"osm_relation":18099071,"validation":beau},
+              },
+              "promotion":{
+                  "allowed":False,
+                  "verdict":"SHADOW_REFERENCE_ONLY",
+                  "reason":"Valid OSM administrative geometry is not automatically equivalent to modern real-estate product geography.",
+              },
+          }
+          Path("artifacts/casa-product-admin-ref-verdict.json").write_text(
+              json.dumps(payload,ensure_ascii=False,indent=2)+"\n",encoding="utf-8"
+          )
+          assert cil.get("ok") is True
+          assert beau.get("ok") is True
+          assert cil.get("publicationStatus") == "shadow"
+          assert beau.get("publicationStatus") == "shadow"
+          print(json.dumps(payload,ensure_ascii=False,indent=2))
+          PY
+
+      - name: Upload admin reference evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: landmark-factory-casa-product-admin-refs
+          path: |
+            artifacts/casablanca-cil-relation-18099040.geojson
+            artifacts/casablanca-cil-relation-18099040-validation.json
+            artifacts/casablanca-beausejour-relation-18099071.geojson
+            artifacts/casablanca-beausejour-relation-18099071-validation.json
+            artifacts/casa-product-admin-ref-verdict.json
+          if-no-files-found: error

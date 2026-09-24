@@ -163,6 +163,37 @@ export const VERIFIED_LANDMARKS: readonly VerifiedLandmarkEntry[] = [
   },
   {
     entity: {
+      id: "landmark_casablanca_maarif_stade_mohammed_v",
+      type: "landmark",
+      citySlug: "casablanca",
+      districtSlug: "maarif",
+      landmarkSlug: "stade-mohammed-v",
+      canonicalName: "Stade Mohammed V",
+      aliases: ["Complexe Sportif Mohammed V", "Complexe Mohammed V", "Donor"],
+      category: "sports",
+      parentId: "district_casablanca_maarif",
+      importance: {
+        score: 99,
+        tier: "flagship",
+        basis: ["product_priority", "orientation_value"],
+      },
+      visibility: { minZoom: 13.2, retainPriority: true },
+      coordinates: {
+        lat: 33.58285065,
+        lng: -7.6468283,
+        precision: "verified_landmark_point",
+      },
+    },
+    sourceRefs: [
+      "https://www.sonarges.ma/infrastructures/complexe-sportif-mohamed-v/",
+      "https://www.casablancacity.ma/fr/article/193/annexes-du-complexe-sportif-mohamed-v",
+      "https://www.openstreetmap.org/way/1349843482",
+    ],
+    verificationNote: "SONARGES and CasablancaCity independently place Complexe Mohammed V in Maârif; the immutable point comes from the verified OSM stadium way retained by the Landmark Factory PIP batch.",
+    verifiedAt: "2026-09-20",
+  },
+  {
+    entity: {
       id: "landmark_casablanca_maarif_twin_center",
       type: "landmark",
       citySlug: "casablanca",

@@ -66,15 +66,22 @@ try {
       }, null, { timeout: 20000 });
       await highZoomTilesReady;
 
-      const rail = page.locator("[data-p4-map-decision-rail]");
+      const rail = page.locator("[data-maarif-target-rail]");
       await rail.waitFor({ state: "visible", timeout: 10000 });
       await page.waitForTimeout(500);
+
+      if (await page.locator("[data-p4-map-decision-rail]").count() !== 0) {
+        throw new Error(`${viewport.name}: duplicate P4 decision rail must be absent on Maârif TARGET`);
+      }
+      if (await page.locator("[data-maarif-target-rail]").count() !== 1) {
+        throw new Error(`${viewport.name}: expected exactly one Maârif target rail`);
+      }
 
       const panelBox = await rail.boundingBox();
       if (!panelBox) throw new Error(`${viewport.name}: Vivre Ici rail has no bounding box`);
       const layoutDiagnostics = await page.evaluate(() => {
         const layout = document.querySelector("[data-p4-map-layout]");
-        const railElement = document.querySelector("[data-p4-map-decision-rail]");
+        const railElement = document.querySelector("[data-maarif-target-rail]");
         const maplibreElement = document.querySelector("[data-maplibre-spike]");
         const layoutStyle = layout ? getComputedStyle(layout) : null;
         const railStyle = railElement ? getComputedStyle(railElement) : null;
@@ -109,9 +116,10 @@ try {
       });
       console.log(`${viewport.name}: layout diagnostics ${JSON.stringify(layoutDiagnostics)}`);
       if (panelBox.x < -1 || panelBox.x + panelBox.width > viewport.width + 1 || panelBox.y < -1 || panelBox.y + panelBox.height > viewport.height + 1) {
-        throw new Error(`${viewport.name}: Vivre Ici rail escapes viewport ${JSON.stringify({ panelBox, layoutDiagnostics })}`);
+        throw new Error(`${viewport.name}: Maârif target rail escapes viewport ${JSON.stringify({ panelBox, layoutDiagnostics })}`);
       }
       if (await rail.getByRole("heading", { name: "Maârif", exact: true }).count() !== 1) throw new Error(`${viewport.name}: Maârif heading missing`);
+      if (await page.getByRole("heading", { name: "Maârif", exact: true }).count() !== 1) throw new Error(`${viewport.name}: duplicate Maârif heading detected`);
       const searchLink = rail.getByRole("link", { name: /Voir les biens disponibles à Maârif/i });
       const searchHref = await searchLink.getAttribute("href");
       if (!searchHref) throw new Error(`${viewport.name}: Search handoff missing`);

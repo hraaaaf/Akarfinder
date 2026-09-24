@@ -1,0 +1,38 @@
+name: Landmark Factory AUC CFC Probe
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  auc-cfc-probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Inspect official AUC Hay Hassani ArcGIS item
+        continue-on-error: true
+        run: |
+          mkdir -p artifacts
+          python scripts/landmarks/inspect-auc-arcgis-item.py \
+            --portal "https://carto.auc.ma/portal" \
+            --item-id "7466d12c067b4274996707e1170b0aef" \
+            --official-page "https://www.auc.ma/e-services-2/e-documents/?IdP=1068" \
+            --timeout 12 \
+            --out artifacts/auc-hay-hassani-arcgis-item.json
+          cat artifacts/auc-hay-hassani-arcgis-item.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: landmark-factory-auc-cfc-probe
+          path: artifacts/
+          retention-days: 7
