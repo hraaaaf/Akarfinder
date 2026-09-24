@@ -284,6 +284,50 @@ If no-loop behavior cannot be proven:
 
 This rebaseline is slower but safer than an unproven bidirectional topology.
 
+## Repository evidence and live capability probe
+
+The existing migration work already separates the database portability closures:
+
+- core listings / Market Index;
+- ODM public search;
+- owner-read relational closure;
+- ANN-L8/L9 comparables/history;
+- Map Market Intelligence.
+
+This is useful scope evidence, but it does **not** prove live replication readiness.
+
+In particular, the repository alone does not prove the current production values for:
+
+- `wal_level`;
+- replication-role capability;
+- slot/sender limits;
+- table `REPLICA IDENTITY`;
+- exact primary keys;
+- identity/sequence-backed columns;
+- existing replication slots/subscriptions.
+
+A read-only inventory is therefore prepared at:
+
+`scripts/ha-dr/logical-replication-capability-inventory.sql`
+
+Properties:
+
+- starts `BEGIN TRANSACTION READ ONLY`;
+- performs no DDL or DML;
+- covers all 16 current candidate HA tables;
+- inspects PostgreSQL replication settings and current-user replication capability;
+- inventories replica identity and primary keys;
+- inventories sequence/identity-backed columns and public sequences;
+- inventories existing replication slots and subscriptions.
+
+Static guard:
+
+`scripts/scrapers/__tests__/ha-replication-capability-inventory.test.ts`
+
+Isolated local proof on 2026-09-24: **4/4 PASS**.
+
+This probe must be run on the actual Supabase and Neon databases before HA-02 is certified. Until then, sequence/replica-identity readiness remains explicitly **unproven**.
+
 ## DDL strategy
 
 Logical replication does not replicate DDL.
