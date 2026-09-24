@@ -268,3 +268,13 @@
     pointer-events: auto !important;
   }
 }
+
+
+/* Couche 2 tablet local-life rail — restore room for the re-enabled guide. */
+@media (min-width: 768px) and (max-width: 1023px) {
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]):has([data-maplibre-spike][data-maplibre-district="maarif"])
+    [data-p4-map-decision-rail][data-vivre-ici-tab="local"] {
+    max-height: min(54svh, 460px) !important;
+    overflow-y: auto !important;
+  }
+}
