@@ -147,7 +147,7 @@ function focusNeighborhoodMap(
   const contextual = composition === "context";
   map.easeTo({
     center: targetCenter,
-    zoom: contextual ? (desktop ? 12.82 : 13.45) : (desktop ? 13.55 : 13.8),
+    zoom: contextual ? (desktop ? 12.82 : 13.05) : (desktop ? 13.55 : 13.8),
     pitch: contextual ? (desktop ? 6 : 0) : (desktop ? 18 : 8),
     bearing: 0,
     duration,
@@ -230,7 +230,7 @@ export function MapLibreNeighborhood3D({
         map = new maplibregl.Map({
           container: mapRef.current,
           center: targetCenter,
-          zoom: contextual ? (desktop ? 12.82 : 13.45) : (desktop ? 13.55 : 13.8),
+          zoom: contextual ? (desktop ? 12.82 : 13.05) : (desktop ? 13.55 : 13.8),
           pitch: contextual ? (desktop ? 6 : 0) : (desktop ? 18 : 8),
           bearing: 0,
           attributionControl: false,
