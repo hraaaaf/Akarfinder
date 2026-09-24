@@ -257,3 +257,30 @@
     transform: translate(-10px, -14px);
   }
 }
+
+
+/* Pass 6 — sourced target context labels. Point labels only; never boundaries. */
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-target-context-label {
+  position: absolute;
+  z-index: 4;
+  transform: translate(-50%, -50%);
+  color: #173f73;
+  font-size: 12px;
+  font-weight: 820;
+  letter-spacing: -.015em;
+  line-height: 1;
+  white-space: nowrap;
+  text-shadow:
+    0 1px 0 rgb(255 255 255 / .98),
+    1px 0 0 rgb(255 255 255 / .98),
+    -1px 0 0 rgb(255 255 255 / .98),
+    0 -1px 0 rgb(255 255 255 / .98),
+    0 2px 8px rgb(25 59 92 / .14);
+}
+
+@media (max-width: 767px) {
+  [data-akar-quartier-target="maarif-couche1"] .maplibre-spike-target-context-label {
+    font-size: 9px;
+    opacity: .84;
+  }
+}
