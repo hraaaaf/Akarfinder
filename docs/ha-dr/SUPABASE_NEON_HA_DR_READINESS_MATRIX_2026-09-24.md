@@ -158,19 +158,23 @@ Prove INSERT/UPDATE/DELETE propagation and measure forward lag.
 ### Proved
 
 - repository migration exists only;
-- no canary DB object or mutation has been executed.
+- no provider canary DB object or mutation has been executed;
+- isolated PG17 resilience run `36005375751` completed SUCCESS on exact implementation HEAD `33c586e1accb78afaf6482e0552778949ed6f6be`;
+- artifact `10810640827`, digest `sha256:342230feba634ef58a32034bd82d6b40da2158b173997ee8de6e6450d847a0a8`;
+- forward subscription disable preserved stale target state;
+- after re-enable, forward INSERT/UPDATE/DELETE catch-up passed;
+- forward pause/catch-up LSNs were captured.
 
 ### Missing proof
 
-- canary schema applied to both databases;
-- forward logical replication active;
-- INSERT/UPDATE/DELETE observed on target;
-- interruption/restart catch-up proof;
-- measured forward RPO proxy.
+- canary schema applied to both provider databases;
+- forward logical replication active on exact providers;
+- INSERT/UPDATE/DELETE observed on provider target;
+- measured provider forward RPO proxy.
 
 ### Status
 
-`HA05-A PROVED / HA05-B PROVIDER REHEARSAL NOT EXECUTED`
+`HA04-A ISOLATED RESILIENCE PROVED / HA04-B PROVIDER SYNC NOT EXECUTED`
 
 ### Human gate
 
@@ -234,7 +238,7 @@ HA05-A isolated PostgreSQL 17 rehearsal evidence is therefore **PROVED**. Curren
 
 ### Status
 
-`PREPARED / NOT EXECUTED`
+`HA05-A PROVED / HA05-B PROVIDER REHEARSAL NOT EXECUTED`
 
 ### Human gate
 
@@ -260,21 +264,26 @@ Reconcile Neon incident writes back to Supabase and restore Supabase as sole wri
 
 ### Proved
 
-No reverse replication has been created or run.
+- no reverse replication has been created or run on live providers;
+- isolated PG17 resilience run `36005375751` completed SUCCESS on exact implementation HEAD `33c586e1accb78afaf6482e0552778949ed6f6be`;
+- reverse subscription disable preserved stale source state;
+- after re-enable, reverse INSERT/UPDATE/DELETE catch-up passed;
+- `origin=none` anti-loop / duplicate-conflict proof passed;
+- subscription workers healthy after recovery;
+- reverse pause/catch-up LSNs were captured.
 
 ### Missing proof
 
 - Neon→Supabase provider capabilities;
-- exact origin semantics;
-- reverse-delta rehearsal;
-- anti-loop proof;
+- exact provider origin semantics;
+- provider reverse-delta rehearsal;
 - sequence repair proof;
-- final parity;
+- final provider parity;
 - failback RTO.
 
 ### Status
 
-`PREPARED / NOT EXECUTED`
+`HA06-A ISOLATED RESILIENCE PROVED / PROVIDER FAILBACK NOT EXECUTED`
 
 ### Human gate
 
@@ -297,12 +306,14 @@ Provide an operator-safe, auditable procedure for failover/failback.
 
 ### Proved
 
-Repository documentation and static contracts exist.
+- repository documentation and static contracts exist;
+- isolated HA05-A exact-head rehearsal is green;
+- isolated HA04-A/HA06-A resilience rehearsal is green with artifact evidence;
+- Neon Runtime and Efficiency guards were green on implementation HEAD `33c586e1accb78afaf6482e0552778949ed6f6be`.
 
 ### Missing proof
 
-- CI exact-head green;
-- non-production rehearsal results;
+- current branch exact-head green after final documentation closeout;
 - exact operator commands tested against actual providers;
 - measured thresholds and final runbook revision.
 
