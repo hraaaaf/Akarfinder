@@ -39,6 +39,7 @@
       "delete_parity": null,
       "timestamp_version_parity": null,
       "schema_fingerprint_match": null,
+      "foreign_key_consistency": null,
       "replica_identity": null,
       "sequence_safe": null,
       "pass": null
