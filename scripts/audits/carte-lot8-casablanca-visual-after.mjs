@@ -70,6 +70,11 @@ try {
       if (boundarySemantic !== "administrative-arrondissement") throw new Error(`${viewport.name}: Maârif boundary semantic mismatch (${boundarySemantic})`);
       const boundaryDisclosure = await page.locator(".maplibre-spike-map-note-copy").textContent();
       if (!boundaryDisclosure?.includes("Arrondissement Maârif")) throw new Error(`${viewport.name}: arrondissement disclosure missing`);
+      const boundaryBadge = page.locator(".maplibre-spike-boundary-badge");
+      await boundaryBadge.waitFor({ state: "visible", timeout: 5000 });
+      if ((await boundaryBadge.textContent())?.trim() !== "Contour administratif") {
+        throw new Error(`${viewport.name}: visible administrative contour badge mismatch`);
+      }
       await highZoomTilesReady;
 
       const rail = page.locator("[data-p4-map-decision-rail]");
@@ -129,7 +134,7 @@ try {
       if (overflow > 1) throw new Error(`${viewport.name}: horizontal overflow ${overflow}`);
       if (diagnostics.pageErrors.length) throw new Error(`${viewport.name}: browser page errors ${JSON.stringify(diagnostics.pageErrors)}`);
       await page.screenshot({ path: `${outDir}/casablanca-maarif-${viewport.width}x${viewport.height}.png`, fullPage: false });
-      report.cases.push({ viewport: viewport.name, searchHref, panelBox, layoutDiagnostics, overflow, mapRendered: true, rtlStatus, boundarySemantic, boundaryDisclosure, highZoomTileCount, diagnostics });
+      report.cases.push({ viewport: viewport.name, searchHref, panelBox, layoutDiagnostics, overflow, mapRendered: true, rtlStatus, boundarySemantic, boundaryDisclosure, boundaryBadge: "Contour administratif", highZoomTileCount, diagnostics });
     } finally {
       clearTimeout(tileGateTimeout);
       await page.close();
