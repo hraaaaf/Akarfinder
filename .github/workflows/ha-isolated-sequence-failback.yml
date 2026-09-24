@@ -245,7 +245,8 @@ jobs:
           source_distinct="$(printf '%s' "$source_metrics" | cut -d'|' -f2)"
           [ "$source_count" = "$source_distinct" ] || { echo "::error::duplicate primary identifiers detected"; exit 1; }
 
-          printf 'FINAL_PARITY_METRICS=%s\n' "$source_metrics" >> "$RUNNER_TEMP/ha-sequence.env"
+          final_parity_metrics_b64="$(printf '%s' "$source_metrics" | base64 -w0)"
+          printf 'FINAL_PARITY_METRICS_B64=%s\n' "$final_parity_metrics_b64" >> "$RUNNER_TEMP/ha-sequence.env"
 
       - name: Promote source writer and prove first generated ID collision-free
         shell: bash
@@ -291,6 +292,7 @@ jobs:
           set -a
           . "$RUNNER_TEMP/ha-sequence.env"
           set +a
+          FINAL_PARITY_METRICS="$(printf '%s' "$FINAL_PARITY_METRICS_B64" | base64 -d)"
 
           jq -n \
             --arg application_commit "$REHEARSAL_HEAD_SHA" \
