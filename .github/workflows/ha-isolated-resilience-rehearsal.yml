@@ -104,7 +104,7 @@ jobs:
             -c "alter subscription ha_resilience_forward_sub disable;"
           forward_pause_lsn="$(docker exec "$SOURCE" psql -U postgres -d postgres -X -qAt -c "select pg_current_wal_lsn();")"
 
-          docker exec "$SOURCE" psql -U postgres -d postgres -v ON_ERROR_STOP=1 <<SQL
+          docker exec -i "$SOURCE" psql -U postgres -d postgres -v ON_ERROR_STOP=1 <<SQL
           insert into public.akarfinder_ha_resilience_canary values
             ('$insert_id','forward-insert-v1',1,clock_timestamp());
           update public.akarfinder_ha_resilience_canary
@@ -161,7 +161,7 @@ jobs:
             -c "alter subscription ha_resilience_reverse_sub disable;"
           reverse_pause_lsn="$(docker exec "$TARGET" psql -U postgres -d postgres -X -qAt -c "select pg_current_wal_lsn();")"
 
-          docker exec "$TARGET" psql -U postgres -d postgres -v ON_ERROR_STOP=1 <<SQL
+          docker exec -i "$TARGET" psql -U postgres -d postgres -v ON_ERROR_STOP=1 <<SQL
           insert into public.akarfinder_ha_resilience_canary values
             ('$insert_id','reverse-insert-v1',1,clock_timestamp());
           update public.akarfinder_ha_resilience_canary
