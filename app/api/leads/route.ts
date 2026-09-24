@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { getSupabaseServerClient } from "@/lib/db/supabase-client";
+import { assertHaSupabaseWriteAllowed } from "@/lib/db/ha-write-policy";
 import { validateLeadPayload, extractLeadPayload, normalizePhone } from "@/lib/leads/validate";
 import {
   LEAD_RATE_LIMIT_RETRY_AFTER_SECONDS,
@@ -152,6 +153,7 @@ export async function POST(request: NextRequest) {
   };
 
   try {
+    assertHaSupabaseWriteAllowed();
     const supabase = getSupabaseServerClient();
     const cutoff = leadRateLimitCutoff();
     const { count: recentLeadCount, error: rateLimitError } = await supabase
