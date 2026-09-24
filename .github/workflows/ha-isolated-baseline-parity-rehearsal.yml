@@ -201,6 +201,169 @@ jobs:
             sql_value "$1" "select relreplident from pg_class where oid='public.$2'::regclass;"
           }
 
+          fk_violation_count() {
+            local node="$1"
+            local table="$2"
+            local fk_queries
+            local constraint
+            local query
+            local count
+            local total=0
+
+            fk_queries="$(docker exec -i "$node" psql -U postgres -d postgres -X -qAt -v ON_ERROR_STOP=1 -v table_name="$table" -f - < scripts/ha-dr/fk-consistency-query-generator.sql)"
+
+            while IFS=          assert_table_equal() {
+            local table="$1"
+            [ "$(count_value "$SOURCE" "$table")" = "$(count_value "$TARGET" "$table")" ] || { echo "::error::$table count parity failed"; exit 1; }
+            [ "$(pk_digest "$SOURCE" "$table")" = "$(pk_digest "$TARGET" "$table")" ] || { echo "::error::$table PK parity failed"; exit 1; }
+            [ "$(content_digest "$SOURCE" "$table")" = "$(content_digest "$TARGET" "$table")" ] || { echo "::error::$table content parity failed"; exit 1; }
+            [ "$(schema_hash "$SOURCE" "$table")" = "$(schema_hash "$TARGET" "$table")" ] || { echo "::error::$table schema parity failed"; exit 1; }
+            [ "$(repl_ident "$SOURCE" "$table")" = "$(repl_ident "$TARGET" "$table")" ] || { echo "::error::$table replica identity parity failed"; exit 1; }
+            [ "$(sequence_json "$SOURCE" "$table")" = "$(sequence_json "$TARGET" "$table")" ] || { echo "::error::$table sequence metadata parity failed"; exit 1; }
+            [ "$(fk_violation_count "$SOURCE" "$table")" = "0" ] || { echo "::error::$table source FK consistency failed"; exit 1; }
+            [ "$(fk_violation_count "$TARGET" "$table")" = "0" ] || { echo "::error::$table target FK consistency failed"; exit 1; }
+          }
+
+          for table in ha_baseline_parent ha_baseline_child; do
+            assert_table_equal "$table"
+          done
+
+          # Count divergence detector.
+          docker exec "$TARGET" psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
+            -c "insert into public.ha_baseline_child values (30,1,'count-extra',1,'2026-09-24T00:00:00Z');"
+          [ "$(count_value "$SOURCE" ha_baseline_child)" != "$(count_value "$TARGET" ha_baseline_child)" ] || {
+            echo "::error::count mismatch detector failed"; exit 1;
+          }
+          docker exec "$TARGET" psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
+            -c "delete from public.ha_baseline_child where id=30;"
+
+          # Content divergence detector with same count and PK set.
+          docker exec "$TARGET" psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
+            -c "update public.ha_baseline_child set payload='content-divergence' where id=10;"
+          [ "$(content_digest "$SOURCE" ha_baseline_child)" != "$(content_digest "$TARGET" ha_baseline_child)" ] || {
+            echo "::error::content digest mismatch detector failed"; exit 1;
+          }
+          docker exec "$TARGET" psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
+            -c "update public.ha_baseline_child set payload='child-10' where id=10;"
+
+          # PK-set divergence detector with same row count.
+          docker exec "$TARGET" psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
+            -c "delete from public.ha_baseline_child where id=20;
+                insert into public.ha_baseline_child values (21,2,'child-20',1,'2026-09-24T00:00:00Z');"
+          [ "$(count_value "$SOURCE" ha_baseline_child)" = "$(count_value "$TARGET" ha_baseline_child)" ] || {
+            echo "::error::PK detector setup did not preserve count"; exit 1;
+          }
+          [ "$(pk_digest "$SOURCE" ha_baseline_child)" != "$(pk_digest "$TARGET" ha_baseline_child)" ] || {
+            echo "::error::PK-set mismatch detector failed"; exit 1;
+          }
+          docker exec "$TARGET" psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
+            -c "delete from public.ha_baseline_child where id=21;
+                insert into public.ha_baseline_child values (20,2,'child-20',1,'2026-09-24T00:00:00Z');"
+
+          # Schema fingerprint divergence detector.
+          docker exec "$TARGET" psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
+            -c "alter table public.ha_baseline_child add column unexpected_note text;"
+          [ "$(schema_hash "$SOURCE" ha_baseline_child)" != "$(schema_hash "$TARGET" ha_baseline_child)" ] || {
+            echo "::error::schema fingerprint mismatch detector failed"; exit 1;
+          }
+          docker exec "$TARGET" psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
+            -c "alter table public.ha_baseline_child drop column unexpected_note;"
+
+          # Replica identity divergence detector.
+          docker exec "$TARGET" psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
+            -c "alter table public.ha_baseline_child replica identity full;"
+          [ "$(repl_ident "$SOURCE" ha_baseline_child)" != "$(repl_ident "$TARGET" ha_baseline_child)" ] || {
+            echo "::error::replica identity mismatch detector failed"; exit 1;
+          }
+          docker exec "$TARGET" psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
+            -c "alter table public.ha_baseline_child replica identity default;"
+
+          # Sequence metadata/state divergence detector.
+          docker exec "$TARGET" psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
+            -c "alter sequence public.ha_baseline_parent_id_seq increment by 2;"
+          [ "$(sequence_json "$SOURCE" ha_baseline_parent)" != "$(sequence_json "$TARGET" ha_baseline_parent)" ] || {
+            echo "::error::sequence metadata mismatch detector failed"; exit 1;
+          }
+          docker exec "$TARGET" psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
+            -c "alter sequence public.ha_baseline_parent_id_seq increment by 1;"
+
+          # Foreign-key data consistency divergence detector.
+          docker exec "$TARGET" psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
+            -c "set session_replication_role=replica;
+                insert into public.ha_baseline_child values (30,999,'fk-orphan',1,'2026-09-24T00:00:00Z');
+                set session_replication_role=origin;"
+          [ "$(fk_violation_count "$TARGET" ha_baseline_child)" = "1" ] || {
+            echo "::error::foreign-key consistency detector failed"; exit 1;
+          }
+          docker exec "$TARGET" psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
+            -c "delete from public.ha_baseline_child where id=30;"
+
+          for table in ha_baseline_parent ha_baseline_child; do
+            assert_table_equal "$table"
+          done
+
+          jq -n \
+            --arg application_commit "$REHEARSAL_HEAD_SHA" \
+            --arg github_execution_sha "$GITHUB_SHA" \
+            '{
+              schema_version: "1.0",
+              rehearsal: "HA03A_ISOLATED_BASELINE_PARITY_PG17",
+              provider_specific_certification: false,
+              application_commit: $application_commit,
+              github_execution_sha: $github_execution_sha,
+              exact_baseline_parity: "PASS",
+              count_mismatch_detector: "PASS",
+              pk_set_mismatch_detector: "PASS",
+              content_digest_mismatch_detector: "PASS",
+              schema_fingerprint_mismatch_detector: "PASS",
+              replica_identity_mismatch_detector: "PASS",
+              sequence_metadata_state_mismatch_detector: "PASS",
+              foreign_key_consistency_detector: "PASS",
+              final_restored_parity: "PASS",
+              secrets_redacted: true,
+              verdict: "ISOLATED_BASELINE_PARITY_PASS",
+              limitations: [
+                "Does not prove live Supabase to Neon baseline parity.",
+                "Does not certify provider sequence collision safety.",
+                "Generic FK consistency collector is rehearsed offline but provider data remains unproved.",
+                "Does not mutate production or provider databases."
+              ]
+            }' > "$RUNNER_TEMP/HA_ISOLATED_BASELINE_PARITY.json"
+
+      - name: Guard artifact against secret leakage
+        shell: bash
+        run: |
+          set -euo pipefail
+          artifact="$RUNNER_TEMP/HA_ISOLATED_BASELINE_PARITY.json"
+          test -s "$artifact"
+          if grep -Eiq 'postgres(ql)?://|password|SUPABASE_DATABASE_URL|NEON_DATABASE_URL|service_role' "$artifact"; then
+            echo "::error::Secret-like material detected in baseline parity artifact"
+            exit 1
+          fi
+
+      - name: Upload baseline parity proof
+        uses: actions/upload-artifact@v4
+        with:
+          name: ha-isolated-baseline-parity-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ${{ runner.temp }}/HA_ISOLATED_BASELINE_PARITY.json
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Stop isolated nodes
+        if: always()
+        shell: bash
+        run: |
+          docker rm -f "$SOURCE" "$TARGET" >/dev/null 2>&1 || true
+          docker network rm "$NETWORK" >/dev/null 2>&1 || true
+\t' read -r constraint query; do
+              [ -z "$constraint" ] && continue
+              count="$(sql_value "$node" "$query")"
+              total="$((total + count))"
+            done <<< "$fk_queries"
+
+            printf '%s' "$total"
+          }
+
           assert_table_equal() {
             local table="$1"
             [ "$(count_value "$SOURCE" "$table")" = "$(count_value "$TARGET" "$table")" ] || { echo "::error::$table count parity failed"; exit 1; }
