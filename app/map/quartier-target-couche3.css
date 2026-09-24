@@ -122,3 +122,22 @@
     font-size: 7.75px;
   }
 }
+
+
+/* Couche 3 cartographic declutter — retain exact POI point, collapse only colliding text. */
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-poi-label[data-label-collapsed="true"] {
+  gap: 0;
+  transform: translate(-50%, -50%);
+}
+
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-poi-label[data-label-collapsed="true"] > span {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  [data-akar-quartier-target="maarif-couche1"] .maplibre-spike-controls {
+    top: 112px !important;
+    bottom: auto !important;
+    transform: none !important;
+  }
+}

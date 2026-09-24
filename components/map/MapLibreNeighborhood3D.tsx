@@ -432,7 +432,24 @@ export function MapLibreNeighborhood3D({
             if (!screen?.visible) return null;
             const meta = CATEGORY_META[anchor.category] ?? CATEGORY_META.other;
             const arabic = isArabicText(anchor.name);
-            return <div key={anchor.poi_id} className="maplibre-spike-poi-label" style={{ left: screen.x, top: screen.y }}><span lang={arabic ? "ar" : undefined} dir={arabic ? "rtl" : "auto"}>{anchor.name}</span><i style={{ background: meta.color }} /></div>;
+            const protectedPoints = [
+              centerPoint,
+              ...targetPilotLandmarks.map((landmark) => screenPoints[`target:${landmark.id}`]),
+            ].filter((point): point is ScreenPoint => Boolean(point?.visible));
+            const collapseLabel = isMaarifTargetPilot && protectedPoints.some((point) =>
+              Math.abs(point.x - screen.x) < 110 && Math.abs(point.y - screen.y) < 30
+            );
+            return (
+              <div
+                key={anchor.poi_id}
+                className="maplibre-spike-poi-label"
+                data-label-collapsed={collapseLabel ? "true" : "false"}
+                style={{ left: screen.x, top: screen.y }}
+              >
+                <span lang={arabic ? "ar" : undefined} dir={arabic ? "rtl" : "auto"}>{anchor.name}</span>
+                <i style={{ background: meta.color }} />
+              </div>
+            );
           })}
           {targetPilotLandmarks.map((landmark) => {
             const screen = screenPoints[`target:${landmark.id}`];
