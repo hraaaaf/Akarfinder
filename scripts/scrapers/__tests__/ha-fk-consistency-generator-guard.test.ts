@@ -28,7 +28,7 @@ test("FK consistency generator supports composite keys and exact FK operators", 
   assert.match(sql, /unnest\(fk\.conkey\) with ordinality/);
   assert.match(sql, /unnest\(fk\.confkey\) with ordinality/);
   assert.match(sql, /unnest\(fk\.conpfeqop\) with ordinality/);
-  assert.match(sql, /OPERATOR\(%I\.%I\)/);
+  assert.match(sql, /OPERATOR\(%I\.%s\)/);
 });
 
 test("FK consistency generator handles MATCH SIMPLE and MATCH FULL", () => {
