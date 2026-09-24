@@ -50,6 +50,7 @@ export type MapLibreNeighborhood3DProps = {
 
 const OPENFREEMAP_VECTOR = "https://tiles.openfreemap.org/planet";
 const OPENFREEMAP_STYLE = "https://tiles.openfreemap.org/styles/liberty";
+const OPENFREEMAP_TARGET_STYLE = "https://tiles.openfreemap.org/styles/bright";
 const RTL_TEXT_PLUGIN_URL = "https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0.3.0/dist/mapbox-gl-rtl-text.js";
 let rtlTextPluginPromise: Promise<void> | null = null;
 
@@ -147,7 +148,7 @@ function focusNeighborhoodMap(
   const contextual = composition === "context";
   map.easeTo({
     center: targetCenter,
-    zoom: contextual ? (desktop ? 13.10 : 13.05) : (desktop ? 13.55 : 13.8),
+    zoom: contextual ? (desktop ? 13.24 : 13.05) : (desktop ? 13.55 : 13.8),
     pitch: contextual ? 0 : (desktop ? 18 : 8),
     bearing: 0,
     duration,
@@ -230,12 +231,14 @@ export function MapLibreNeighborhood3D({
         map = new maplibregl.Map({
           container: mapRef.current,
           center: targetCenter,
-          zoom: contextual ? (desktop ? 13.10 : 13.05) : (desktop ? 13.55 : 13.8),
+          zoom: contextual ? (desktop ? 13.24 : 13.05) : (desktop ? 13.55 : 13.8),
           pitch: contextual ? 0 : (desktop ? 18 : 8),
           bearing: 0,
           attributionControl: false,
           canvasContextAttributes: { antialias: true },
-          style: OPENFREEMAP_STYLE,
+          style: isMaarifTargetPilot && targetComposition === "context"
+            ? OPENFREEMAP_TARGET_STYLE
+            : OPENFREEMAP_STYLE,
         } as any);
         mapInstanceRef.current = map;
 
@@ -264,10 +267,8 @@ export function MapLibreNeighborhood3D({
                     map.setPaintProperty(layer.id, "fill-opacity", 0.48);
                   }
                   if (layer.type === "symbol" && /(neighbour|neighborhood|suburb|quarter|district|place)/.test(id)) {
-                    map.setPaintProperty(layer.id, "text-opacity", 0.88);
-                    map.setPaintProperty(layer.id, "text-color", "#35577b");
-                    map.setPaintProperty(layer.id, "text-halo-color", "#f8fbfd");
-                    map.setPaintProperty(layer.id, "text-halo-width", 1.15);
+                    map.setPaintProperty(layer.id, "text-opacity", 0);
+                    map.setPaintProperty(layer.id, "icon-opacity", 0);
                   }
                   if (layer.type === "symbol" && /(poi|housenumber|transit)/.test(id)) {
                     map.setPaintProperty(layer.id, "text-opacity", 0.30);
@@ -284,6 +285,32 @@ export function MapLibreNeighborhood3D({
                 url: OPENFREEMAP_VECTOR,
                 attribution: "© OpenStreetMap contributors · OpenFreeMap",
               });
+            }
+            if (isMaarifTargetPilot && targetComposition === "context" && !map.getLayer("akarfinder-target-neighborhood-labels")) {
+              map.addLayer({
+                id: "akarfinder-target-neighborhood-labels",
+                type: "symbol",
+                source: "akarfinder-openfreemap",
+                "source-layer": "place",
+                minzoom: 11.5,
+                maxzoom: 15.5,
+                filter: ["match", ["get", "class"], ["suburb", "neighbourhood", "quarter"], true, false],
+                layout: {
+                  "text-field": ["coalesce", ["get", "name:latin"], ["get", "name"]],
+                  "text-size": ["interpolate", ["linear"], ["zoom"], 11.5, 11, 13.5, 14, 15.5, 16],
+                  "text-letter-spacing": 0.01,
+                  "text-max-width": 8,
+                  "text-allow-overlap": false,
+                  "text-ignore-placement": false,
+                  "text-padding": 10,
+                },
+                paint: {
+                  "text-color": "#173f73",
+                  "text-halo-color": "rgba(255,255,255,0.94)",
+                  "text-halo-width": 1.5,
+                  "text-halo-blur": 0.35,
+                },
+              } as any);
             }
             map.addLayer({
               id: "3d-buildings",
@@ -529,11 +556,6 @@ export function MapLibreNeighborhood3D({
         {categories.map((category) => <button key={category} className={activeCategory === category ? "active" : ""} onClick={() => setActiveCategory(category)}>{CATEGORY_META[category].label}</button>)}
       </div>
 
-      {isMaarifTargetPilot && boundaryGeometry ? (
-        <div className="maplibre-spike-boundary-badge" aria-label="Nature du contour affiché">
-          Contour administratif
-        </div>
-      ) : null}
 
       <div className="maplibre-spike-controls" aria-label="Contrôles de la carte">
         <button type="button" className="maplibre-spike-control-primary" onClick={restoreCamera} aria-label="Recentrer sur le quartier"><LocateFixed size={18} /></button>
