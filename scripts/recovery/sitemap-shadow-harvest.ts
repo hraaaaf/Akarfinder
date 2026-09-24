@@ -18,8 +18,8 @@ import { extractDomain } from "@/lib/openserp-ingestion/utils";
 const USER_AGENT = "AkarFinder-Recovery-Sitemap-Shadow/1.0";
 const REQUEST_TIMEOUT_MS = 12_000;
 const REQUEST_PACING_MS = 400;
-const MAX_SITEMAP_FILES_PER_DOMAIN = 80;
-const MAX_URLS_PER_DOMAIN = 150_000;
+const MAX_SITEMAP_FILES_PER_DOMAIN = 200;
+const MAX_URLS_PER_DOMAIN = 300_000;
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));

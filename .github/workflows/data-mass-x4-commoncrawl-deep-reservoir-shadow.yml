@@ -5,6 +5,9 @@ on:
       - "data/data-mass-x4/**"
       - "docs/data/DATA-MASS-X4-COMMONCRAWL-DEEP-RESERVOIR.md"
       - ".github/workflows/data-mass-x4-commoncrawl-deep-reservoir-shadow.yml"
+      - "data/recovery/offline-200k-source-overlay.json"
+      - "scripts/recovery/apply-source-overlay.ts"
+      - "scripts/scrapers/__tests__/recovery-200k-source-patterns.test.ts"
 permissions:
   contents: read
 jobs:
@@ -19,15 +22,17 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Enforce read-only contract
-        run: node -e "const c=require('./data/data-mass-x4/commoncrawl-deep-reservoir-contract.json');if(c.mode!=='shadow_read_only'||c.commonCrawlIndexes!==15||!c.metadataOnly||c.warcDownloads||c.sourcePageFetches||c.databaseAccess||c.databaseWrites||c.registryWrites||c.searchActivations||c.permissionsInferred)process.exit(1)"
+        run: node -e "const c=require('./data/data-mass-x4/commoncrawl-deep-reservoir-contract.json');if(c.mode!=='shadow_read_only'||c.commonCrawlIndexes!==21||!c.metadataOnly||c.warcDownloads||c.sourcePageFetches||c.databaseAccess||c.databaseWrites||c.registryWrites||c.searchActivations||c.permissionsInferred)process.exit(1)"
+      - name: Apply recovery-only source overlay to runner checkout
+        run: npx tsx scripts/recovery/apply-source-overlay.ts
       - name: Verify high-volume recovery source patterns
         run: npx tsx --test scripts/scrapers/__tests__/recovery-200k-source-patterns.test.ts
       - name: Confirm Common Crawl index API
         run: curl -fsS -m 20 -o /dev/null https://index.commoncrawl.org/collinfo.json
-      - name: Harvest 15-index reservoir metadata only
+      - name: Harvest 21-index reservoir metadata only
         run: |
           mkdir -p data/audits/raw-results
-          npx tsx scripts/openserp/commoncrawl-reservoir-harvest.ts "CC-MAIN-2026-39,CC-MAIN-2026-25,CC-MAIN-2026-21,CC-MAIN-2026-17,CC-MAIN-2026-13,CC-MAIN-2026-09,CC-MAIN-2026-05,CC-MAIN-2025-51,CC-MAIN-2025-43,CC-MAIN-2025-30,CC-MAIN-2025-26,CC-MAIN-2025-18,CC-MAIN-2025-13,CC-MAIN-2025-08,CC-MAIN-2025-05" | tee data/audits/raw-results/mass-x4-summary.log
+          npx tsx scripts/openserp/commoncrawl-reservoir-harvest.ts "CC-MAIN-2026-39,CC-MAIN-2026-34,CC-MAIN-2026-30,CC-MAIN-2026-25,CC-MAIN-2026-21,CC-MAIN-2026-17,CC-MAIN-2026-12,CC-MAIN-2026-08,CC-MAIN-2026-04,CC-MAIN-2025-51,CC-MAIN-2025-47,CC-MAIN-2025-43,CC-MAIN-2025-38,CC-MAIN-2025-33,CC-MAIN-2025-30,CC-MAIN-2025-26,CC-MAIN-2025-21,CC-MAIN-2025-18,CC-MAIN-2025-13,CC-MAIN-2025-08,CC-MAIN-2025-05" | tee data/audits/raw-results/mass-x4-summary.log
       - name: Verify artifact exists
         run: test -s data/audits/raw-results/commoncrawl-reservoir-canonical-urls.txt && grep -q 'RESERVOIR SUMMARY' data/audits/raw-results/mass-x4-summary.log
       - uses: actions/upload-artifact@v4

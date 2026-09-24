@@ -15,15 +15,9 @@ Because structural, freshness and duplicate filters will remove a material share
 
 The survival rate is not assumed; it must be measured from artifacts.
 
-## Current public market evidence
+## Capacity evidence rule
 
-Recent public pages expose large pools before dedupe:
-- Mubawab: ~107k listed properties.
-- Sarout.ma: ~18k–22k verified listings.
-- MarocAnnonces: ~18k sale + ~22k rental listings.
-- Sarouty: ~3k sale + ~3.3k rental listings.
-
-These counts overlap and are not treated as unique inventory proof.
+Public portal counts are orientation only, never inventory proof. Capacity is measured from generated artifacts. The 200k target is accepted only if the offline funnel itself proves >=200,000 unique post-filter candidates.
 
 ## Acquisition lanes
 
@@ -39,9 +33,10 @@ Metadata-only CDX index harvesting:
 - per-domain counts + artifact hash
 
 Recovery expansion:
-- 15 indexes total
-- adds CC-MAIN-2026-39 to the previously certified 14-index reservoir
-- adds current high-volume detail patterns for marocannonces.com and sarout.ma
+- 21 official Common Crawl indexes across 2025–2026
+- 9 indexes from 2026: 39, 34, 30, 25, 21, 17, 12, 08, 04
+- 12 indexes from 2025: 51, 47, 43, 38, 33, 30, 26, 21, 18, 13, 08, 05
+- high-volume recovery-only patterns for marocannonces.com and sarout.ma are injected at runtime from a dedicated overlay; the canonical production registry is unchanged
 
 ### Lane B — robots-declared public sitemaps
 
@@ -110,6 +105,6 @@ Collection routes stay blocked.
 - Neon writes: 0
 - Supabase writes: 0
 - no Vercel deployment
-- no direct source scraping beyond robots-declared sitemap lane
+- no direct source listing-page scraping in mass lanes; sitemap lane is limited to robots.txt plus same-domain sitemap URLs explicitly declared there
 - no robots bypass
 - no seed-only URL becomes a public listing

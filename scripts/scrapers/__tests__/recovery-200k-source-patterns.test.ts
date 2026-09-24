@@ -1,56 +1,54 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { classifyHarvestResult } from "@/lib/serper-mass-harvest/core";
-import type { HarvestQuery } from "@/lib/serper-mass-harvest/types";
+import overlayJson from "@/data/recovery/offline-200k-source-overlay.json";
 
-const query: HarvestQuery = {
-  id: "recovery-200k",
-  phase: "discovery",
-  source_id: "long_tail",
-  query: "immobilier maroc",
-  city: "Casablanca",
-  property_type: "appartement",
-  intent: "sale",
+type PatternEntry = string | { pattern: string; case_insensitive?: boolean };
+type Entry = {
+  domain: string;
+  listing_url_patterns: PatternEntry[];
+  blocked_url_patterns: PatternEntry[];
 };
 
-test("MarocAnnonces direct detail route is accepted", () => {
-  const result = classifyHarvestResult({
-    query,
-    canonicalUrl: "https://marocannonces.com/categorie/315/Appartements/annonce/7564632/Appartement-a-vendre-a-sidi-maarouf.html",
-    title: "Appartement a vendre à sidi maarouf",
-    snippet: "Appartement 87 m² 2 chambres Casablanca",
-  });
-  assert.equal(result.status, "accepted");
-  assert.ok(result.reasons.includes("registry_individual_listing_pattern"));
+const entries = (overlayJson as { domains: Entry[] }).domains;
+
+function get(domain: string): Entry {
+  const entry = entries.find((row) => row.domain === domain);
+  assert.ok(entry, `missing recovery overlay entry: ${domain}`);
+  return entry;
+}
+
+function compile(entry: PatternEntry): RegExp {
+  return typeof entry === "string"
+    ? new RegExp(entry)
+    : new RegExp(entry.pattern, entry.case_insensitive ? "i" : undefined);
+}
+
+function matches(patterns: PatternEntry[], pathname: string): boolean {
+  return patterns.some((pattern) => compile(pattern).test(pathname));
+}
+
+test("MarocAnnonces recovery pattern admits detail and rejects collection routes", () => {
+  const entry = get("marocannonces.com");
+  const positive = "/categorie/315/Appartements/annonce/7564632/Appartement-a-vendre-a-sidi-maarouf.html";
+  const negative = "/categorie/315/Vente-immobilier/Appartements/379.html";
+  assert.equal(matches(entry.listing_url_patterns, positive), true);
+  assert.equal(matches(entry.listing_url_patterns, negative), false);
+  assert.equal(matches(entry.blocked_url_patterns, negative), true);
 });
 
-test("MarocAnnonces category route remains rejected", () => {
-  const result = classifyHarvestResult({
-    query,
-    canonicalUrl: "https://marocannonces.com/categorie/315/Vente-immobilier/Appartements/379.html",
-    title: "Vente immobilier Appartements",
-    snippet: "Annonces immobilières au Maroc",
-  });
-  assert.equal(result.status, "rejected");
+test("Sarout.ma recovery pattern admits detail and rejects collection routes", () => {
+  const entry = get("sarout.ma");
+  const positive = "/fr/annonce/723/appartement-189-m2-en-vente-casablanca";
+  const negative = "/fr/annonces";
+  assert.equal(matches(entry.listing_url_patterns, positive), true);
+  assert.equal(matches(entry.listing_url_patterns, negative), false);
+  assert.equal(matches(entry.blocked_url_patterns, negative), true);
 });
 
-test("Sarout.ma direct detail route is accepted", () => {
-  const result = classifyHarvestResult({
-    query,
-    canonicalUrl: "https://sarout.ma/fr/annonce/723/appartement-189-m2-en-vente-casablanca",
-    title: "Appartement 189 m2 en vente à Casablanca",
-    snippet: "Appartement 189 m² 1 690 000 DH",
-  });
-  assert.equal(result.status, "accepted");
-  assert.ok(result.reasons.includes("registry_individual_listing_pattern"));
-});
-
-test("Sarout.ma collection route remains rejected", () => {
-  const result = classifyHarvestResult({
-    query,
-    canonicalUrl: "https://sarout.ma/fr/annonces",
-    title: "Annonces immobilières au Maroc",
-    snippet: "Des milliers d'annonces vente location",
-  });
-  assert.equal(result.status, "rejected");
+test("recovery overlay is discovery-only and structurally bounded", () => {
+  assert.deepEqual(entries.map((entry) => entry.domain).sort(), ["marocannonces.com", "sarout.ma"]);
+  for (const entry of entries) {
+    assert.ok(entry.listing_url_patterns.length > 0);
+    assert.ok(entry.blocked_url_patterns.length > 0);
+  }
 });

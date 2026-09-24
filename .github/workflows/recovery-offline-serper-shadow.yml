@@ -58,6 +58,9 @@ jobs:
         shell: bash
         run: test -n "$SEARCH_API_KEY" || { echo "SEARCH_API_KEY missing"; exit 2; }
 
+      - name: Apply recovery-only source overlay to runner checkout
+        run: npx tsx scripts/recovery/apply-source-overlay.ts
+
       - name: Run search shadow harvest with zero DB access
         run: npx tsx scripts/recovery/serper-shadow-harvest.ts
 

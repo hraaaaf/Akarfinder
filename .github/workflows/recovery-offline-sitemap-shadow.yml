@@ -6,7 +6,8 @@ on:
     paths:
       - ".github/workflows/recovery-offline-sitemap-shadow.yml"
       - "scripts/recovery/sitemap-shadow-harvest.ts"
-      - "data/openserp/source-domain-registry.json"
+      - "data/recovery/offline-200k-source-overlay.json"
+      - "scripts/recovery/apply-source-overlay.ts"
       - "lib/acquisition-scale-v1/sitemap-mass-seeds.ts"
   workflow_dispatch:
 
@@ -33,6 +34,9 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Apply recovery-only source overlay to runner checkout
+        run: npx tsx scripts/recovery/apply-source-overlay.ts
 
       - name: TypeScript
         run: npx tsc --noEmit
