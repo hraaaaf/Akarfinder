@@ -243,3 +243,17 @@
     font-size: 6.5px;
   }
 }
+
+
+/* Pass 5 — label hierarchy: move only the Park cartouche, never its sourced point. */
+[data-akar-quartier-target="maarif-couche1"]
+  .maplibre-spike-poi-label[data-poi-category="green_sport"][data-label-collapsed="false"] > span {
+  transform: translate(-18px, -18px);
+}
+
+@media (max-width: 767px) {
+  [data-akar-quartier-target="maarif-couche1"]
+    .maplibre-spike-poi-label[data-poi-category="green_sport"][data-label-collapsed="false"] > span {
+    transform: translate(-10px, -14px);
+  }
+}

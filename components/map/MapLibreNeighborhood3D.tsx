@@ -327,9 +327,9 @@ export function MapLibreNeighborhood3D({
                   "text-size": ["interpolate", ["linear"], ["zoom"], 11.5, 11, 13.5, 14, 15.5, 16],
                   "text-letter-spacing": 0.01,
                   "text-max-width": 8,
-                  "text-allow-overlap": false,
-                  "text-ignore-placement": false,
-                  "text-padding": 5,
+                  "text-allow-overlap": true,
+                  "text-ignore-placement": true,
+                  "text-padding": 2,
                 },
                 paint: {
                   "text-color": "#173f73",
@@ -604,14 +604,20 @@ export function MapLibreNeighborhood3D({
               centerPoint,
               ...targetPilotLandmarks.map((landmark) => screenPoints[`target:${landmark.id}`]),
             ].filter((point): point is ScreenPoint => Boolean(point?.visible));
-            const collapseLabel = isMaarifTargetPilot && protectedPoints.some((point) =>
+            const overviewSecondary = isMaarifTargetPilot
+              && activeCategory === "all"
+              && anchor.category !== "green_sport"
+              && anchor.category !== "education";
+            const protectedCollision = anchor.category !== "green_sport" && protectedPoints.some((point) =>
               Math.abs(point.x - screen.x) < 110 && Math.abs(point.y - screen.y) < 30
             );
+            const collapseLabel = overviewSecondary || (isMaarifTargetPilot && protectedCollision);
             return (
               <div
                 key={anchor.poi_id}
                 className="maplibre-spike-poi-label"
                 data-label-collapsed={collapseLabel ? "true" : "false"}
+                data-poi-category={anchor.category}
                 style={{ left: screen.x, top: screen.y }}
               >
                 <span lang={arabic ? "ar" : undefined} dir={arabic ? "rtl" : "auto"}>{anchor.name}</span>
