@@ -39,7 +39,7 @@ export type MapLibreNeighborhood3DProps = {
 };
 
 const OPENFREEMAP_VECTOR = "https://tiles.openfreemap.org/planet";
-const ESRI_IMAGERY_TILES = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
+const OPENFREEMAP_STYLE = "https://tiles.openfreemap.org/styles/liberty";
 const FOCUS_SOURCE_ID = "akarfinder-neighborhood-focus";
 const FOCUS_GLOW_LAYER_ID = "akarfinder-neighborhood-focus-glow";
 const FOCUS_RING_LAYER_ID = "akarfinder-neighborhood-focus-ring";
@@ -84,9 +84,9 @@ export function MapLibreNeighborhood3D({
       : center;
     map.easeTo({
       center: targetCenter,
-      zoom: desktop ? 14.05 : 14.45,
-      pitch: desktop ? 52 : 44,
-      bearing: desktop ? -27 : -18,
+      zoom: desktop ? 13.55 : 13.8,
+      pitch: desktop ? 18 : 8,
+      bearing: 0,
       duration: 650,
     });
   };
@@ -128,62 +128,40 @@ export function MapLibreNeighborhood3D({
         map = new maplibregl.Map({
           container: mapRef.current,
           center: targetCenter,
-          zoom: desktop ? 14.05 : 14.45,
-          pitch: desktop ? 52 : 44,
-          bearing: desktop ? -27 : -18,
+          zoom: desktop ? 13.55 : 13.8,
+          pitch: desktop ? 18 : 8,
+          bearing: 0,
           attributionControl: false,
           canvasContextAttributes: { antialias: true },
-          style: {
-            version: 8,
-            sources: {
-              imagery: {
-                type: "raster",
-                tiles: [ESRI_IMAGERY_TILES],
-                tileSize: 256,
-                attribution: "Tiles © Esri",
-                maxzoom: 19,
-              },
-              openfreemap: {
-                type: "vector",
-                url: OPENFREEMAP_VECTOR,
-                attribution: "© OpenStreetMap contributors · OpenFreeMap",
-              },
-            },
-            layers: [
-              { id: "background", type: "background", paint: { "background-color": "#dce8e5" } },
-              {
-                id: "imagery", type: "raster", source: "imagery",
-                paint: {
-                  "raster-brightness-min": 0.14,
-                  "raster-brightness-max": 0.94,
-                  "raster-contrast": 0.08,
-                  "raster-saturation": -0.02,
-                  "raster-opacity": 0.98,
-                },
-              },
-            ],
-          } as any,
+          style: OPENFREEMAP_STYLE,
         } as any);
         mapInstanceRef.current = map;
 
         map.once("load", () => {
           if (disposed) return;
           try {
+            if (!map.getSource("akarfinder-openfreemap")) {
+              map.addSource("akarfinder-openfreemap", {
+                type: "vector",
+                url: OPENFREEMAP_VECTOR,
+                attribution: "© OpenStreetMap contributors · OpenFreeMap",
+              });
+            }
             map.addLayer({
               id: "3d-buildings",
-              source: "openfreemap",
+              source: "akarfinder-openfreemap",
               "source-layer": "building",
               type: "fill-extrusion",
-              minzoom: 13.5,
+              minzoom: 14.8,
               filter: ["!=", ["get", "hide_3d"], true],
               paint: {
                 "fill-extrusion-color": [
                   "interpolate", ["linear"], ["coalesce", ["get", "render_height"], 0],
-                  0, "#e6dfd2", 10, "#d8cbb8", 24, "#c8b29a", 55, "#aa8e77", 120, "#826c5d",
+                  0, "#edf1f4", 10, "#e4e9ed", 24, "#d9e1e6", 55, "#ccd7df", 120, "#b8c6d1",
                 ],
                 "fill-extrusion-height": ["coalesce", ["get", "render_height"], 0],
                 "fill-extrusion-base": ["coalesce", ["get", "render_min_height"], 0],
-                "fill-extrusion-opacity": 0.72,
+                "fill-extrusion-opacity": 0.28,
                 "fill-extrusion-vertical-gradient": true,
               },
             } as any);
@@ -337,11 +315,11 @@ export function MapLibreNeighborhood3D({
       <div className="maplibre-spike-map-chrome">
         <div className="maplibre-spike-brand"><b>AF</b><span>AkarFinder</span></div>
         <div className="maplibre-spike-search"><Search size={17} aria-hidden="true" /><strong>{cityLabel}</strong><span>Quartiers et adresses</span></div>
-        <div className="maplibre-spike-mode"><span>Satellite</span><strong>3D</strong></div>
+        <div className="maplibre-spike-mode"><span>2D</span><strong>3D</strong></div>
       </div>
 
       <div className="maplibre-spike-view-chips" aria-label="Mode cartographique">
-        <span className="active">Satellite</span>
+        <span className="active">Plan</span>
         <span>Quartiers</span>
       </div>
 
