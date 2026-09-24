@@ -78,9 +78,9 @@ jobs:
           grant select on public.akarfinder_ha_sequence_canary to ha_seq_writer;
           insert into public.akarfinder_ha_sequence_canary (id,payload,version,updated_at)
           overriding system value values
-            (1,'baseline-1',1,clock_timestamp()),
-            (2,'baseline-2',1,clock_timestamp()),
-            (3,'baseline-3',1,clock_timestamp());
+            (1,'baseline-1',1,'2026-09-24T00:00:00Z'::timestamptz),
+            (2,'baseline-2',1,'2026-09-24T00:00:00Z'::timestamptz),
+            (3,'baseline-3',1,'2026-09-24T00:00:00Z'::timestamptz);
           select setval('public.akarfinder_ha_sequence_canary_id_seq', 3, true);
           SQL
           done
@@ -138,6 +138,7 @@ jobs:
         run: |
           set -euo pipefail
           freeze_at="$(date -u +%Y-%m-%dT%H:%M:%S.%3NZ)"
+          freeze_epoch_ms="$(date +%s%3N)"
           docker exec "$TARGET" psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
             -c "revoke insert, update, delete on public.akarfinder_ha_sequence_canary from ha_seq_writer;
                 revoke usage on sequence public.akarfinder_ha_sequence_canary_id_seq from ha_seq_writer;"
@@ -153,7 +154,7 @@ jobs:
             fi
           done
 
-          printf 'FAILBACK_FREEZE_AT=%s\n' "$freeze_at" >> "$RUNNER_TEMP/ha-sequence.env"
+          printf 'FAILBACK_FREEZE_AT=%s\nFAILBACK_FREEZE_EPOCH_MS=%s\n' "$freeze_at" "$freeze_epoch_ms" >> "$RUNNER_TEMP/ha-sequence.env"
 
       - name: Prove pre-repair sequence collision risk
         shell: bash
@@ -226,7 +227,10 @@ jobs:
           metrics_sql="select count(*)::text
             ||'|'||count(distinct id)::text
             ||'|'||md5(coalesce(string_agg(id::text,',' order by id),''))
-            ||'|'||md5(coalesce(string_agg(id::text||'~'||payload||'~'||version::text,'|' order by id),''))
+            ||'|'||md5(coalesce(string_agg(
+              id::text||'~'||payload||'~'||version::text||'~'||to_char(updated_at at time zone 'UTC','YYYY-MM-DD"T"HH24:MI:SS.MS'),
+              '|' order by id
+            ),''))
             from public.akarfinder_ha_sequence_canary;"
 
           source_metrics="$(docker exec "$SOURCE" psql -U postgres -d postgres -X -qAt -c "$metrics_sql")"
@@ -272,7 +276,10 @@ jobs:
           fi
 
           restored_at="$(date -u +%Y-%m-%dT%H:%M:%S.%3NZ)"
-          printf 'POST_FAILBACK_GENERATED_ID=%s\nSERVICE_RESTORED_AT=%s\n' "$generated_id" "$restored_at" >> "$RUNNER_TEMP/ha-sequence.env"
+          restored_epoch_ms="$(date +%s%3N)"
+          failback_rto_ms="$((restored_epoch_ms - FAILBACK_FREEZE_EPOCH_MS))"
+          printf 'POST_FAILBACK_GENERATED_ID=%s\nSERVICE_RESTORED_AT=%s\nOBSERVED_FAILBACK_RTO_MS=%s\n' \
+            "$generated_id" "$restored_at" "$failback_rto_ms" >> "$RUNNER_TEMP/ha-sequence.env"
 
       - name: Create sequence failback artifact
         shell: bash
@@ -299,6 +306,7 @@ jobs:
             --arg source_post_next "$SOURCE_POST_NEXT" \
             --arg final_parity_metrics "$FINAL_PARITY_METRICS" \
             --arg post_failback_generated_id "$POST_FAILBACK_GENERATED_ID" \
+            --argjson observed_failback_rto_ms "$OBSERVED_FAILBACK_RTO_MS" \
             '{
               schema_version: "1.0",
               rehearsal: "HA06B_ISOLATED_SEQUENCE_FAILBACK_PG17",
@@ -330,7 +338,8 @@ jobs:
               parity_metrics: $final_parity_metrics,
               timings: {
                 failback_freeze_at: $freeze_at,
-                source_service_restored_at: $restored_at
+                source_service_restored_at: $restored_at,
+                observed_failback_rto_ms: $observed_failback_rto_ms
               },
               conflicts: 0,
               duplicates: 0,
