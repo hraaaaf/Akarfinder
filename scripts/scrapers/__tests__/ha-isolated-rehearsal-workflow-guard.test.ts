@@ -74,3 +74,21 @@ test("isolated HA rehearsal simulates application writer fencing", () => {
   assert.match(workflow, /failover_no_write_window: "PASS"/);
   assert.match(workflow, /failback_freeze: "PASS"/);
 });
+
+
+test("reverse incident mutations use the fenced application writer", () => {
+  const reverse = workflow
+    .split("- name: Prove reverse incident delta and no replay loop")[1]
+    ?.split("- name: Freeze Neon-sim and fail back to Supabase-sim writer")[0] ?? "";
+  assert.match(reverse, /set role ha_app_writer;\s*insert into public\.akarfinder_ha_replication_canary/);
+  assert.match(reverse, /set role ha_app_writer;\s*update public\.akarfinder_ha_replication_canary/);
+  assert.match(reverse, /set role ha_app_writer;\s*delete from public\.akarfinder_ha_replication_canary/);
+});
+
+test("isolated HA rehearsal measures the simulated failover transition at promotion time", () => {
+  assert.match(workflow, /failover_decision_at=/);
+  assert.match(workflow, /target_writer_promoted_at=/);
+  assert.match(workflow, /isolated_failover_rto_seconds=/);
+  assert.match(workflow, /isolated_failover_rto_seconds: \$isolated_failover_rto_seconds/);
+  assert.doesNotMatch(workflow, /service_restored_at/);
+});
