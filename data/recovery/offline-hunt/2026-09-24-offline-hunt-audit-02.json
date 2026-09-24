@@ -1,0 +1,39 @@
+{
+  "generated_at": "2026-09-24",
+  "doctrine": "offline_first_no_db_writes",
+  "batches": 8,
+  "totals": {
+    "candidates": 48,
+    "unique_canonical_urls": 48,
+    "candidate_pass": 42,
+    "quarantine": 6,
+    "exact_url_duplicates": 0,
+    "overlaps_with_restored_177": 0,
+    "simple_fingerprint_collisions": 0
+  },
+  "sources": {
+    "agenz.ma": 1,
+    "mouldar.com": 25,
+    "mubawab.ma": 19,
+    "sarouty.ma": 3
+  },
+  "cities": {
+    "Agadir": 2,
+    "Asilah": 1,
+    "Casablanca": 14,
+    "El Jadida": 1,
+    "Kénitra": 4,
+    "Marrakech": 2,
+    "Meknes": 5,
+    "Mohammedia": 4,
+    "Rabat": 7,
+    "Tanger": 8
+  },
+  "hard_invariants": {
+    "db_writes": 0,
+    "neon_writes": 0,
+    "production_writes": 0,
+    "approved_for_import_rows": 0
+  },
+  "next_gate": "continue_offline_discovery_then_merge_with_cc21_artifact_and_repeat_dedupe_quality_audit"
+}
