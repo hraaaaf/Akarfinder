@@ -2,7 +2,7 @@ import {
   getHaWriter,
   type HaWriter,
   type HaWriterState,
-} from "./ha-writer-state.js";
+} from "./ha-writer-state";
 
 const HA_WRITER_STATES = new Set<HaWriterState>([
   "SUPABASE_PRIMARY",
