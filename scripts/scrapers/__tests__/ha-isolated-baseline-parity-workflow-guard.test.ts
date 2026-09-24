@@ -37,6 +37,7 @@ test("HA03-A detects structural and replica identity divergence", () => {
   assert.match(workflow, /pg_get_constraintdef/);
   assert.match(workflow, /pg_indexes/);
   assert.match(workflow, /relrowsecurity/);
+  assert.match(workflow, /relreplident::text/);
   assert.match(workflow, /schema_fingerprint_mismatch_detector: "PASS"/);
   assert.match(workflow, /replica_identity_mismatch_detector: "PASS"/);
 });
