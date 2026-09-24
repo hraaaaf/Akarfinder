@@ -1,0 +1,55 @@
+{
+  "schema_version": "1.0",
+  "run_id": "SYNTHETIC-CI-PASS-NOT-EVIDENCE",
+  "phase": "BASELINE",
+  "status": "PASS",
+  "application_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "database_schema_fingerprint": "synthetic-schema-fingerprint",
+  "approved_tables": [
+    "synthetic_table"
+  ],
+  "writer_state": "SUPABASE_PRIMARY",
+  "single_writer_proven": true,
+  "positions": {
+    "forward_start_lsn": null,
+    "forward_end_lsn": null,
+    "incident_start_lsn": null,
+    "reverse_start_lsn": null,
+    "reverse_target_lsn": null,
+    "reverse_final_lsn": null
+  },
+  "timings": {
+    "failover_decision_at": null,
+    "neon_service_restored_at": null,
+    "failback_freeze_at": null,
+    "supabase_service_restored_at": null,
+    "observed_rpo_seconds": null,
+    "observed_failover_rto_seconds": null,
+    "observed_failback_rto_seconds": null
+  },
+  "table_evidence": [
+    {
+      "table": "synthetic_table",
+      "source_count": 2,
+      "target_count": 2,
+      "source_pk_digest": "synthetic-pk",
+      "target_pk_digest": "synthetic-pk",
+      "source_content_digest": "synthetic-content",
+      "target_content_digest": "synthetic-content",
+      "delete_parity": true,
+      "timestamp_version_parity": true,
+      "schema_fingerprint_match": true,
+      "foreign_key_consistency": true,
+      "replica_identity": "default",
+      "sequence_safe": true,
+      "pass": true
+    }
+  ],
+  "conflicts": 0,
+  "duplicates": 0,
+  "secrets_redacted": true,
+  "verdict": "PASS",
+  "notes": [
+    "SYNTHETIC CI FIXTURE ONLY. THIS FILE IS NOT PROVIDER OR REHEARSAL EVIDENCE."
+  ]
+}
