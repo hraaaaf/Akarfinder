@@ -66,6 +66,58 @@ Do not begin HA activation unless all are true:
 
 If any precondition is false, use incident containment rather than database failover.
 
+
+## 0A. Planned Supabase pause / restore recovery mode
+
+This mode applies when Supabase is intentionally paused for maintenance or restore.
+
+Hard rule:
+
+- do not probe the database while the operator has declared it paused;
+- do not infer recovery from provider control-plane status;
+- resume SQL checks only after an explicit human signal that the restore is complete.
+
+After the restore-complete signal, use this exact read-only sequence:
+
+1. **R0 — minimal health**
+   - run one `SELECT 1`;
+   - if it fails, stop immediately;
+   - do not retry-loop.
+
+2. **R1 — recovery-state sanity**
+   - verify SQL is reachable;
+   - record `pg_is_in_recovery()`;
+   - record `transaction_read_only`;
+   - record database/user/server version;
+   - if the database is still in recovery/read-only unexpectedly, remain BLOCKED.
+
+3. **R2 — read-only HA capability inventory**
+   - PostgreSQL version;
+   - `wal_level`;
+   - replication privileges/settings;
+   - slots/subscriptions;
+   - PKs;
+   - replica identity;
+   - identity/sequence inventory;
+   - schema fingerprint inputs.
+
+4. **R3 — restore drift assessment**
+   - record the operator-selected restore point if known;
+   - compare restored schema fingerprint with the expected application schema;
+   - identify whether any data window may have been rolled back by the restore;
+   - do not assume the pre-pause replication boundary is still valid.
+
+5. **R4 — source portability suite**
+   - run the source → clean PostgreSQL 17 validation suite;
+   - require 5/5 green before HA-03 baseline/import work resumes.
+
+6. **R5 — target/baseline decision**
+   - inspect Neon target state read-only;
+   - decide whether the old baseline is still usable or a rebaseline is mandatory;
+   - any ambiguous restore/delta boundary defaults to rebaseline.
+
+No production write, canary schema application, publication/subscription mutation, provider switch or Vercel change is authorized by recovery-mode completion alone.
+
 ## 1. Incident detection
 
 Goal: decide whether the database failure crosses the failover threshold.
@@ -354,7 +406,8 @@ Each command must be tested in a non-production rehearsal and must not print sec
 
 As of 2026-09-24:
 
-- Supabase SELECT 1 still fails with 57P03 / Hot standby mode is disabled.
-- HA-01 remains blocked.
+- Supabase is intentionally paused by the operator pending restore.
+- No SQL probe is authorized until the operator explicitly signals that restore is complete.
+- HA-01 remains blocked until recovery-mode R0 succeeds.
 - PR #1087 contains the HA/DR design and offline single-writer guards.
 - No production deployment, provider switch or DB write is authorized by this file.
