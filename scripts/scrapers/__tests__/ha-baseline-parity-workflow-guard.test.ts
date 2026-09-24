@@ -70,13 +70,18 @@ test("HA baseline parity proves count PK content schema and replica identity par
   assert.match(workflow, /relrowsecurity/);
   assert.match(workflow, /replica identity mismatch/);
   assert.match(workflow, /sequence\/identity metadata mismatch/);
+  assert.match(workflow, /pg_sequences/);
+  assert.match(workflow, /increment_by/);
+  assert.match(workflow, /cache_size/);
+  assert.match(workflow, /last_value/);
 });
 
 test("HA baseline artifact cannot claim full HA certification", () => {
   assert.match(workflow, /status: "PARITY_PASS"/);
   assert.match(workflow, /certification: "NOT_CERTIFIED"/);
   assert.match(workflow, /does not prove application single-writer fencing/i);
-  assert.match(workflow, /Does not prove delete propagation, sequence collision safety, RPO or RTO/);
+  assert.match(workflow, /Captures sequence metadata\/state including last_value but does not prove future collision safety or is_called semantics/);
+  assert.match(workflow, /Does not prove delete propagation, RPO or RTO/);
 });
 
 test("HA baseline artifact has an explicit secret-leak guard", () => {
