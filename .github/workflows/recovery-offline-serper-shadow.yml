@@ -1,0 +1,82 @@
+name: Recovery Offline Serper Shadow
+
+on:
+  workflow_dispatch:
+    inputs:
+      max_queries:
+        description: "Maximum Serper queries (paid API usage)"
+        required: true
+        default: "100"
+        type: choice
+        options:
+          - "100"
+          - "500"
+          - "1000"
+          - "1900"
+      confirm_paid_api:
+        description: "Type YES to authorize paid search API usage"
+        required: true
+        default: "NO"
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: recovery-offline-serper-shadow
+  cancel-in-progress: false
+
+jobs:
+  serper-shadow:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      SEARCH_API_KEY: ${{ secrets.SEARCH_API_KEY }}
+      SERPER_SHADOW_MAX_QUERIES: ${{ inputs.max_queries }}
+    steps:
+      - name: Require explicit paid-API authorization
+        shell: bash
+        run: |
+          test "${{ inputs.confirm_paid_api }}" = "YES" || {
+            echo "Paid API usage not authorized; refusing to run."
+            exit 2
+          }
+
+      - name: Checkout recovery ref
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate API key without printing it
+        shell: bash
+        run: test -n "$SEARCH_API_KEY" || { echo "SEARCH_API_KEY missing"; exit 2; }
+
+      - name: Run search shadow harvest with zero DB access
+        run: npx tsx scripts/recovery/serper-shadow-harvest.ts
+
+      - name: Enforce zero-DB artifact contract
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const p = 'data/audits/raw-results/recovery-serper-shadow-summary.json';
+          const s = JSON.parse(fs.readFileSync(p, 'utf8'));
+          if (s.mode !== 'shadow_read_only') process.exit(1);
+          if (s.database_access !== 0 || s.database_writes !== 0) process.exit(1);
+          NODE
+
+      - name: Upload offline search evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: recovery-offline-serper-shadow
+          path: |
+            data/audits/raw-results/recovery-serper-shadow-candidates.jsonl
+            data/audits/raw-results/recovery-serper-shadow-summary.json
+          retention-days: 14
