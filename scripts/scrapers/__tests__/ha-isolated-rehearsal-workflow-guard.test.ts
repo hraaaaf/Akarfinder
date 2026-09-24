@@ -93,8 +93,8 @@ test("reverse incident mutations use the fenced application writer", () => {
 test("isolated HA rehearsal measures the simulated failover transition at promotion time", () => {
   assert.match(workflow, /failover_decision_at=/);
   assert.match(workflow, /target_writer_promoted_at=/);
-  assert.match(workflow, /isolated_failover_rto_ms=\/);
-  assert.match(workflow, /isolated_failover_rto_ms: \\$isolated_failover_rto_ms\/);
+  assert.match(workflow, /isolated_failover_rto_ms=/);
+  assert.match(workflow, /isolated_failover_rto_ms: \$isolated_failover_rto_ms/);
   assert.doesNotMatch(workflow, /service_restored_at/);
 });
 
