@@ -1,4 +1,5 @@
 import { getDbProvider } from "@/lib/db/provider";
+import { assertHaSupabaseWriteAllowed } from "@/lib/db/ha-write-policy";
 import { getSupabaseServerClient } from "@/lib/db/supabase-client";
 import type { SearchGatewayNormalizedResult } from "@/lib/search-gateway/search-gateway-types";
 
@@ -42,6 +43,7 @@ export function ownerListingsSearchEnabled(env: NodeJS.ProcessEnv = process.env)
 }
 
 export async function syncOwnerListingProjection(draftId: string): Promise<string | null> {
+  assertHaSupabaseWriteAllowed();
   const supabase = getSupabaseServerClient();
   const { data, error } = await supabase.rpc("sync_owner_listing_representation_v1", { p_draft_id: draftId });
   if (error) throw new Error(`owner_listing_projection_failed:${error.message}`);
