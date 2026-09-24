@@ -29,6 +29,7 @@ jobs:
       NETWORK: akarfinder-ha-isolated
       SOURCE: akarfinder-ha-supabase-sim
       TARGET: akarfinder-ha-neon-sim
+      REHEARSAL_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
 
     steps:
       - uses: actions/checkout@v4
@@ -145,8 +146,8 @@ jobs:
           probe_run_id="33333333-3333-4333-8333-333333333333"
           source_probe_id="cccccccc-cccc-4ccc-8ccc-cccccccccccc"
           target_probe_id="dddddddd-dddd-4ddd-8ddd-dddddddddddd"
-          failover_decision_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-          failover_decision_epoch="$(date +%s)"
+          failover_decision_at="$(date -u +%Y-%m-%dT%H:%M:%S.%3NZ)"
+          failover_decision_epoch_ms="$(date +%s%3N)"
 
           docker exec "$SOURCE" psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
             -c "revoke insert, update, delete on public.akarfinder_ha_replication_canary from ha_app_writer;"
@@ -181,11 +182,11 @@ jobs:
                 values ('$target_probe_id','$probe_run_id','target-writer-preflight',1,clock_timestamp(),clock_timestamp());
                 delete from public.akarfinder_ha_replication_canary where id='$target_probe_id';"
 
-          target_writer_promoted_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-          target_writer_promoted_epoch="$(date +%s)"
-          isolated_failover_rto_seconds="$((target_writer_promoted_epoch - failover_decision_epoch))"
-          printf 'FAILOVER_DECISION_AT=%s\nTARGET_WRITER_PROMOTED_AT=%s\nISOLATED_FAILOVER_RTO_SECONDS=%s\n' \
-            "$failover_decision_at" "$target_writer_promoted_at" "$isolated_failover_rto_seconds" \
+          target_writer_promoted_at="$(date -u +%Y-%m-%dT%H:%M:%S.%3NZ)"
+          target_writer_promoted_epoch_ms="$(date +%s%3N)"
+          isolated_failover_rto_ms="$((target_writer_promoted_epoch_ms - failover_decision_epoch_ms))"
+          printf 'FAILOVER_DECISION_AT=%s\nTARGET_WRITER_PROMOTED_AT=%s\nISOLATED_FAILOVER_RTO_MS=%s\n' \
+            "$failover_decision_at" "$target_writer_promoted_at" "$isolated_failover_rto_ms" \
             >> "$RUNNER_TEMP/ha.env"
 
       - name: Establish reverse Neon-sim to Supabase-sim replication with origin filter
@@ -348,11 +349,12 @@ jobs:
           . "$RUNNER_TEMP/ha.env"
           set +a
 
-          jq -n             --arg schema_version "1.0"             --arg application_commit "$GITHUB_SHA"             --arg forward_end_lsn "$FORWARD_END_LSN"             --arg reverse_start_lsn "$REVERSE_START_LSN"             --arg reverse_target_lsn "$REVERSE_TARGET_LSN"             --arg reverse_final_lsn "$REVERSE_FINAL_LSN"             --arg failover_decision_at "$FAILOVER_DECISION_AT"             --arg target_writer_promoted_at "$TARGET_WRITER_PROMOTED_AT"             --argjson isolated_failover_rto_seconds "$ISOLATED_FAILOVER_RTO_SECONDS"             '{
+          jq -n             --arg schema_version "1.0"             --arg application_commit "$REHEARSAL_HEAD_SHA"             --arg github_execution_sha "$GITHUB_SHA"             --arg forward_end_lsn "$FORWARD_END_LSN"             --arg reverse_start_lsn "$REVERSE_START_LSN"             --arg reverse_target_lsn "$REVERSE_TARGET_LSN"             --arg reverse_final_lsn "$REVERSE_FINAL_LSN"             --arg failover_decision_at "$FAILOVER_DECISION_AT"             --arg target_writer_promoted_at "$TARGET_WRITER_PROMOTED_AT"             --argjson isolated_failover_rto_ms "$ISOLATED_FAILOVER_RTO_MS"             '{
               schema_version: $schema_version,
               rehearsal: "HA05-A_ISOLATED_PG17",
               provider_specific_certification: false,
               application_commit: $application_commit,
+              github_execution_sha: $github_execution_sha,
               topology: "two_disposable_postgresql_17_nodes",
               origin_filter: "none",
               copy_data: false,
@@ -374,7 +376,7 @@ jobs:
               timings: {
                 failover_decision_at: $failover_decision_at,
                 target_writer_promoted_at: $target_writer_promoted_at,
-                isolated_failover_rto_seconds: $isolated_failover_rto_seconds
+                isolated_failover_rto_ms: $isolated_failover_rto_ms
               },
               secrets_redacted: true,
               verdict: "ISOLATED_REHEARSAL_PASS",
