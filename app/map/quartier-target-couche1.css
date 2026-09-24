@@ -388,3 +388,18 @@
     width: auto;
   }
 }
+
+
+/* Step 7 corrective pass — keep long landmark labels inside small viewports. */
+@media (max-width: 767px) {
+  [data-akar-quartier-target="maarif-couche1"] .maplibre-spike-target-landmark-label {
+    max-width: 168px;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.15;
+  }
+
+  [data-akar-quartier-target="maarif-couche1"] .maplibre-spike-target-landmark-label[data-landmark-tier="regional"] {
+    display: none;
+  }
+}
