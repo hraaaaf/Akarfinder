@@ -7,6 +7,11 @@ const workflow = readFileSync(
   "utf8",
 );
 
+const inventorySql = readFileSync(
+  new URL("../../../scripts/ha-dr/logical-replication-capability-inventory.sql", import.meta.url),
+  "utf8",
+);
+
 test("HA capability inventory workflow is manual-only", () => {
   assert.match(workflow, /workflow_dispatch:/);
   assert.doesNotMatch(workflow, /\npull_request:/);
@@ -40,4 +45,21 @@ test("HA capability inventory guards artifacts against secrets", () => {
   assert.match(workflow, /service_role/);
   assert.match(workflow, /SUPABASE_DATABASE_URL/);
   assert.match(workflow, /NEON_DATABASE_URL/);
+});
+
+
+test("HA capability inventory captures recovery and sequence state", () => {
+  assert.match(inventorySql, /pg_is_in_recovery\(\)/);
+  assert.match(inventorySql, /transaction_read_only/);
+  assert.match(inventorySql, /hot_standby/);
+  assert.match(inventorySql, /wal_level/);
+  assert.match(inventorySql, /pg_replication_slots/);
+  assert.match(inventorySql, /pg_subscription/);
+  assert.match(inventorySql, /last_value/);
+});
+
+test("HA capability inventory SQL remains explicitly read-only", () => {
+  assert.match(inventorySql, /BEGIN TRANSACTION READ ONLY/);
+  assert.match(inventorySql, /COMMIT/);
+  assert.doesNotMatch(inventorySql, /\b(insert|update|delete|truncate|alter|drop|create)\b/i);
 });
