@@ -9,6 +9,7 @@ import {
 } from "@/lib/neighborhood-context/read-model";
 
 const NOW = new Date("2026-08-24T20:50:00.000Z");
+const MAARIF_COUCHE2_NOW = new Date("2026-09-24T12:00:00.000Z");
 
 describe("Neighborhood Context L3 — read model", () => {
   it("builds one deterministic read model for each pilot", () => {
@@ -30,6 +31,33 @@ describe("Neighborhood Context L3 — read model", () => {
     assert.equal(byId.get("district_fes_ville_nouvelle")?.coverage_status, "unavailable");
   });
 
+  it("uses the fresh Maârif Couche 2 source without claiming inside-neighborhood truth", () => {
+    const maarif = getNeighborhoodContextReadModelBySlugs("casablanca", "maarif", MAARIF_COUCHE2_NOW);
+    assert.ok(maarif);
+    assert.equal(maarif.source.mode, "maarif-couche2-osm-refresh");
+    assert.equal(maarif.source.provider_id, "landmark-factory-casablanca-20260920");
+    assert.equal(maarif.source.certified_run_id, 35523711412);
+    assert.equal(maarif.coverage_status, "partial");
+    assert.equal(maarif.anchor_count, 4);
+    assert.deepEqual(
+      maarif.categories,
+      ["education", "green_sport", "groceries", "health"],
+    );
+    assert.deepEqual(
+      maarif.anchors.map((anchor) => anchor.name),
+      [
+        "Université Mundiapolis",
+        "Marché Central du Maârif",
+        "Clinique Badr مصحة بدر",
+        "Parc du Vélodrome",
+      ],
+    );
+    assert.equal(maarif.anchors.every((item) => item.relation === "near_certified_reference"), true);
+    assert.equal(maarif.anchors.every((item) => item.territorial_wording === "Autour du repère quartier"), true);
+    assert.equal(maarif.anchors.some((item) => item.territorial_wording === "Dans le quartier"), false);
+    assert.deepEqual(validateNeighborhoodContextReadModel(maarif), []);
+  });
+
   it("keeps canonical POI identity and complete provenance", () => {
     const agdal = getNeighborhoodContextReadModelBySlugs("rabat", "agdal", NOW);
     assert.ok(agdal);
@@ -42,7 +70,7 @@ describe("Neighborhood Context L3 — read model", () => {
   });
 
   it("fails freshness closed once the certified runtime seed expires", () => {
-    const future = new Date("2026-10-01T00:00:00.000Z");
+    const future = new Date("2026-11-01T00:00:00.000Z");
     const catalog = buildNeighborhoodContextRuntimeCatalog(future);
     assert.equal(catalog.every((entry) => entry.anchor_count === 0), true);
     assert.equal(catalog.every((entry) => entry.coverage_status === "unavailable"), true);
