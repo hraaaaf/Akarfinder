@@ -5,26 +5,33 @@
 import { createHash } from "node:crypto";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { buildBulkHarvestQueries } from "@/lib/serper-mass-harvest/bulk-plan";
+import { buildRecoverySerperQueries } from "./recovery-serper-plan";
 import { normalizeHarvestResults } from "@/lib/serper-mass-harvest/core";
 import type { HarvestRawResult } from "@/lib/serper-mass-harvest/types";
 
-const RESULTS_PER_QUERY = 10;
 const PROVIDER_TIMEOUT_MS = 12_000;
 const DEFAULT_MAX_QUERIES = 100;
+const DEFAULT_RESULTS_PER_PAGE = 100;
+const DEFAULT_PAGES_PER_QUERY = 1;
 
-function boundedMaxQueries(raw: string | undefined): number {
-  const value = Number(raw ?? DEFAULT_MAX_QUERIES);
-  if (!Number.isInteger(value) || value < 1 || value > 1900) {
-    throw new Error("SERPER_SHADOW_MAX_QUERIES must be an integer between 1 and 1900");
+function boundedInt(raw:string|undefined, fallback:number, min:number, max:number, name:string):number {
+  const value=Number(raw ?? fallback);
+  if(!Number.isInteger(value) || value<min || value>max) {
+    throw new Error(`${name} must be an integer between ${min} and ${max}`);
   }
   return value;
+}
+
+function boundedMaxQueries(raw:string|undefined):number {
+  return boundedInt(raw,DEFAULT_MAX_QUERIES,1,1900,"SERPER_SHADOW_MAX_QUERIES");
 }
 
 async function fetchSerper(input: {
   endpoint: string;
   apiKey: string;
   query: string;
+  page: number;
+  num: number;
 }): Promise<HarvestRawResult[]> {
   const endpointUrl = new URL(input.endpoint);
   const nativeSerper = endpointUrl.hostname === "google.serper.dev";
@@ -36,10 +43,10 @@ async function fetchSerper(input: {
           "Content-Type": "application/json",
           "User-Agent": "AkarFinder Recovery Serper Shadow",
         },
-        body: JSON.stringify({ q: input.query, num: RESULTS_PER_QUERY, gl: "ma", hl: "fr" }),
+        body: JSON.stringify({ q: input.query, num: input.num, page: input.page, gl: "ma", hl: "fr" }),
         signal: AbortSignal.timeout(PROVIDER_TIMEOUT_MS),
       })
-    : await fetch(`${input.endpoint}?q=${encodeURIComponent(input.query)}&num=${RESULTS_PER_QUERY}`, {
+    : await fetch(`${input.endpoint}?q=${encodeURIComponent(input.query)}&num=${input.num}&page=${input.page}`, {
         method: "GET",
         headers: {
           "X-API-KEY": input.apiKey,
@@ -53,7 +60,7 @@ async function fetchSerper(input: {
   }
   if (!response.ok) throw new Error(`provider HTTP ${response.status}`);
   const data = await response.json() as { organic?: HarvestRawResult[]; results?: HarvestRawResult[] };
-  return (data.organic ?? data.results ?? []).slice(0, RESULTS_PER_QUERY);
+  return (data.organic ?? data.results ?? []).slice(0, input.num);
 }
 
 async function main() {
@@ -63,9 +70,11 @@ async function main() {
     ?? process.env.SEARCH_API_ENDPOINT
     ?? "https://google.serper.dev/search";
   const maxQueries = boundedMaxQueries(process.env.SERPER_SHADOW_MAX_QUERIES);
+  const resultsPerPage = boundedInt(process.env.SERPER_SHADOW_RESULTS_PER_PAGE,DEFAULT_RESULTS_PER_PAGE,10,100,"SERPER_SHADOW_RESULTS_PER_PAGE");
+  const pagesPerQuery = boundedInt(process.env.SERPER_SHADOW_PAGES_PER_QUERY,DEFAULT_PAGES_PER_QUERY,1,5,"SERPER_SHADOW_PAGES_PER_QUERY");
 
   const observedAt = new Date().toISOString();
-  const queries = buildBulkHarvestQueries().slice(0, maxQueries);
+  const queries = buildRecoverySerperQueries().slice(0, maxQueries);
   const byUrl = new Map<string, Record<string, unknown>>();
   const perQuery: Array<Record<string, unknown>> = [];
   let rawResults = 0;
@@ -74,9 +83,14 @@ async function main() {
 
   for (const [index, query] of queries.entries()) {
     try {
-      const raw = await fetchSerper({ endpoint, apiKey, query: query.query });
+      const raw: HarvestRawResult[] = [];
+      for (let page = 1; page <= pagesPerQuery; page += 1) {
+        const pageRows = await fetchSerper({ endpoint, apiKey, query: query.query, page, num: resultsPerPage });
+        raw.push(...pageRows);
+        callsSucceeded += 1;
+        if (pageRows.length < resultsPerPage) break;
+      }
       rawResults += raw.length;
-      callsSucceeded += 1;
       const observations = normalizeHarvestResults(query, raw);
 
       for (const obs of observations) {
@@ -145,6 +159,10 @@ async function main() {
     mode: "shadow_read_only",
     observed_at: observedAt,
     planned_queries: maxQueries,
+    results_per_page: resultsPerPage,
+    pages_per_query: pagesPerQuery,
+    theoretical_max_api_calls: maxQueries * pagesPerQuery,
+    theoretical_max_result_slots: maxQueries * pagesPerQuery * resultsPerPage,
     calls_succeeded: callsSucceeded,
     calls_failed: callsFailed,
     raw_results: rawResults,

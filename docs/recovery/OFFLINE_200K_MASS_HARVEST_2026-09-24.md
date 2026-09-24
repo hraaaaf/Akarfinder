@@ -175,3 +175,20 @@ Independent audit of artifact 10833423663:
 - resulting structural estimate: **33,657 unique candidate listings**.
 
 This remains pre-freshness/pre-content validation and is not an import count.
+
+## Paid fresh-search accelerator (prepared, not authorized)
+
+Recovery Serper is redesigned around the recovery/canonical discovery cohort only.
+
+Prepared plan:
+- 1,900 unique source-focused queries;
+- configurable 10–100 results/page;
+- configurable 1–5 pages/query;
+- explicit paid-API human gate remains mandatory;
+- JSONL artifact only, zero DB writes.
+
+At 100 results/page:
+- 1 page = theoretical 190,000 result slots / max 1,900 API calls;
+- 2 pages = theoretical 380,000 result slots / max 3,800 API calls.
+
+These are ceilings, not unique-listing guarantees. No paid run may start without explicit approval.

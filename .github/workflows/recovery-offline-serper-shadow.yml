@@ -13,6 +13,24 @@ on:
           - "500"
           - "1000"
           - "1900"
+      pages_per_query:
+        description: "Pages per query; each page consumes another API call"
+        required: true
+        default: "1"
+        type: choice
+        options:
+          - "1"
+          - "2"
+          - "3"
+      results_per_page:
+        description: "Requested results per Serper page"
+        required: true
+        default: "100"
+        type: choice
+        options:
+          - "25"
+          - "50"
+          - "100"
       confirm_paid_api:
         description: "Type YES to authorize paid search API usage"
         required: true
@@ -33,6 +51,8 @@ jobs:
     env:
       SEARCH_API_KEY: ${{ secrets.SEARCH_API_KEY }}
       SERPER_SHADOW_MAX_QUERIES: ${{ inputs.max_queries }}
+      SERPER_SHADOW_PAGES_PER_QUERY: ${{ inputs.pages_per_query }}
+      SERPER_SHADOW_RESULTS_PER_PAGE: ${{ inputs.results_per_page }}
     steps:
       - name: Require explicit paid-API authorization
         shell: bash
