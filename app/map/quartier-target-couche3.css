@@ -213,3 +213,33 @@
   background: rgb(255 255 255 / .60);
   color: rgb(30 56 85 / .70);
 }
+
+
+/* Pass 3 truth disclosure — visible but subordinate to the mockup composition. */
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-boundary-badge {
+  position: absolute;
+  z-index: 14;
+  left: 22px;
+  bottom: 82px;
+  padding: 5px 8px;
+  border: 1px solid rgb(198 216 235 / .72);
+  border-radius: 999px;
+  background: rgb(255 255 255 / .74);
+  color: #667b91;
+  box-shadow: 0 4px 12px rgb(7 27 51 / .05);
+  backdrop-filter: blur(8px);
+  font-size: 7px;
+  font-weight: 760;
+  line-height: 1;
+  opacity: .72;
+  pointer-events: none;
+}
+
+@media (max-width: 1023px) {
+  [data-akar-quartier-target="maarif-couche1"] .maplibre-spike-boundary-badge {
+    left: 12px;
+    top: 112px;
+    bottom: auto;
+    font-size: 6.5px;
+  }
+}
