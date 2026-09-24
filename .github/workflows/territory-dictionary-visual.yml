@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - feat/vivre-ici-territory-dictionary
-      - fix/akar-map-final-integration-20260924
     paths:
       - "components/map/PremiumInteractiveMap.tsx"
       - "lib/geo/territory-*.ts"
