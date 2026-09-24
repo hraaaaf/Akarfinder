@@ -108,3 +108,19 @@ Collection routes stay blocked.
 - no direct source listing-page scraping in mass lanes; sitemap lane is limited to robots.txt plus same-domain sitemap URLs explicitly declared there
 - no robots bypass
 - no seed-only URL becomes a public listing
+
+## Offline merge gate
+
+The three discovery lanes are merged only into an offline JSONL reservoir:
+- exact canonical URL dedupe;
+- canonical registry + recovery-overlay pattern revalidation;
+- exact exclusion of the previously restored 177 OpenSERP URLs;
+- evidence channel aggregation.
+
+Recovery statuses:
+- `historical_only`: Common Crawl only;
+- `current_url_only`: current robots-declared sitemap observation only;
+- `search_observed`: accepted current search-API observation only;
+- `reobserved`: at least two independent discovery channels.
+
+None of these statuses equals `approved_for_import`. The merge summary hard-codes `approved_for_import_rows: 0`.

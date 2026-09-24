@@ -8,6 +8,8 @@ on:
       - "data/recovery/offline-200k-source-overlay.json"
       - "scripts/recovery/apply-source-overlay.ts"
       - "scripts/scrapers/__tests__/recovery-200k-source-patterns.test.ts"
+      - "scripts/recovery/build-offline-200k-reservoir.ts"
+      - "scripts/recovery/__tests__/offline-200k-reservoir.test.ts"
 permissions:
   contents: read
 jobs:
@@ -26,7 +28,7 @@ jobs:
       - name: Apply recovery-only source overlay to runner checkout
         run: npx tsx scripts/recovery/apply-source-overlay.ts
       - name: Verify high-volume recovery source patterns
-        run: npx tsx --test scripts/scrapers/__tests__/recovery-200k-source-patterns.test.ts
+        run: npx tsx --test scripts/scrapers/__tests__/recovery-200k-source-patterns.test.ts scripts/recovery/__tests__/offline-200k-reservoir.test.ts
       - name: Confirm Common Crawl index API
         run: curl -fsS -m 20 -o /dev/null https://index.commoncrawl.org/collinfo.json
       - name: Harvest 21-index reservoir metadata only

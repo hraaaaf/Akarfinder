@@ -64,6 +64,7 @@ async function main() {
     ?? "https://google.serper.dev/search";
   const maxQueries = boundedMaxQueries(process.env.SERPER_SHADOW_MAX_QUERIES);
 
+  const observedAt = new Date().toISOString();
   const queries = buildBulkHarvestQueries().slice(0, maxQueries);
   const byUrl = new Map<string, Record<string, unknown>>();
   const perQuery: Array<Record<string, unknown>> = [];
@@ -88,6 +89,7 @@ async function main() {
           observed_snippet: obs.snippet,
           discovery_status: obs.discovery_status,
           eligibility_reasons: obs.eligibility_reasons,
+          observed_at: observedAt,
         };
 
         if (existing) {
@@ -104,6 +106,7 @@ async function main() {
             title: obs.title,
             snippet: obs.snippet,
             search_evidence: [evidence],
+            observed_at: observedAt,
           });
         }
       }
@@ -140,6 +143,7 @@ async function main() {
 
   const summary = {
     mode: "shadow_read_only",
+    observed_at: observedAt,
     planned_queries: maxQueries,
     calls_succeeded: callsSucceeded,
     calls_failed: callsFailed,
