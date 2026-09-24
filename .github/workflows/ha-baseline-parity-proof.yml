@@ -124,7 +124,7 @@ jobs:
               union all
 
               select
-                'table_flags:' || c.relreplident || ':' ||
+                'table_flags:' || c.relreplident::text || ':' ||
                 c.relrowsecurity::text || ':' ||
                 c.relforcerowsecurity::text
               from pg_class c
