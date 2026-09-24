@@ -6,6 +6,7 @@ import { NationalMapRouter } from "@/components/map/NationalMapRouter";
 import { P4MapDecisionRail } from "@/components/map/P4MapDecisionRail";
 import { PremiumInteractiveMapBridge } from "@/components/map/PremiumInteractiveMapBridge";
 import { parseMapNavigationState } from "@/lib/map/map-navigation-state";
+import { VERIFIED_LANDMARKS } from "@/lib/geo/territory-landmark-registry";
 import "./mockup-convergence-l2.css";
 import "./p4-map-shell.css";
 import "./market-convergence-correction.css";
@@ -49,6 +50,23 @@ export default async function MapPage({ searchParams }: MapPageProps) {
   const layer = firstParam(params.layer).trim() || "explore";
   const hasNeighborhoodSelection = Boolean(city && district);
   const usePremiumNationalExplore = !city && !district && layer === "explore";
+  const isMaarifTargetPilot = city.toLowerCase() === "casablanca" && district.toLowerCase() === "maarif";
+  const targetPilotLandmarkIds = new Set([
+    "landmark_casablanca_maarif_twin_center",
+    "landmark_casablanca_bourgogne_casa_bourgogne_post",
+    "landmark_casablanca_racine_institut_juan_ramon_jimenez",
+  ]);
+  const targetPilotLandmarks = isMaarifTargetPilot
+    ? VERIFIED_LANDMARKS
+        .filter((entry) => targetPilotLandmarkIds.has(entry.entity.id))
+        .map((entry) => ({
+          id: entry.entity.id,
+          name: entry.entity.canonicalName,
+          latitude: entry.entity.coordinates.lat,
+          longitude: entry.entity.coordinates.lng,
+          tier: entry.entity.importance.tier,
+        }))
+    : [];
 
   return (
     <div className="flex min-h-[100svh] flex-col bg-[#F8FAFC] text-[#0B1F3A]" data-vivre-ici-page>
@@ -60,7 +78,7 @@ export default async function MapPage({ searchParams }: MapPageProps) {
         <>
           <div className="flex-1" data-p4-map-layout>
             <div data-p4-map-canvas>
-              <NationalMapRouter initialState={initialState} />
+              <NationalMapRouter initialState={initialState} targetPilotLandmarks={targetPilotLandmarks} />
               {hasNeighborhoodSelection ? (
                 <Link
                   href="/map?layer=explore"
