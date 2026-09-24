@@ -1,0 +1,54 @@
+{
+  "schema_version": "1.0",
+  "run_id": "TEMPLATE-NOT-RUN",
+  "phase": "BASELINE",
+  "status": "NOT_RUN",
+  "application_commit": null,
+  "database_schema_fingerprint": null,
+  "approved_tables": [
+    "property_listings"
+  ],
+  "writer_state": "SUPABASE_PRIMARY",
+  "single_writer_proven": null,
+  "positions": {
+    "forward_start_lsn": null,
+    "forward_end_lsn": null,
+    "incident_start_lsn": null,
+    "reverse_start_lsn": null,
+    "reverse_target_lsn": null,
+    "reverse_final_lsn": null
+  },
+  "timings": {
+    "failover_decision_at": null,
+    "neon_service_restored_at": null,
+    "failback_freeze_at": null,
+    "supabase_service_restored_at": null,
+    "observed_rpo_seconds": null,
+    "observed_failover_rto_seconds": null,
+    "observed_failback_rto_seconds": null
+  },
+  "table_evidence": [
+    {
+      "table": "property_listings",
+      "source_count": null,
+      "target_count": null,
+      "source_pk_digest": null,
+      "target_pk_digest": null,
+      "source_content_digest": null,
+      "target_content_digest": null,
+      "delete_parity": null,
+      "timestamp_version_parity": null,
+      "schema_fingerprint_match": null,
+      "replica_identity": null,
+      "sequence_safe": null,
+      "pass": null
+    }
+  ],
+  "conflicts": null,
+  "duplicates": null,
+  "secrets_redacted": true,
+  "verdict": "NOT_RUN",
+  "notes": [
+    "Template only. This file is not evidence of a completed rehearsal."
+  ]
+}
