@@ -1,0 +1,227 @@
+name: HA Baseline Parity Proof
+
+# AKARFINDER-HA-DR-20260924
+# Manual, read-only source↔target parity proof. No import, no restore, no provider switch.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ha-baseline-parity-proof
+  cancel-in-progress: false
+
+jobs:
+  baseline-parity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      SOURCE_URL: ${{ secrets.SUPABASE_DATABASE_URL_DIRECT }}
+      TARGET_URL: ${{ secrets.NEON_DATABASE_URL_DIRECT }}
+      PG_IMAGE: postgres:17
+      TABLES: >-
+        property_listings
+        listing_sources
+        property_clusters
+        property_cluster_members
+        thin_index_search_documents
+        source_policy_registry
+        professional_listing_ownership
+        search_business_entitlements
+        buyer_leads
+        seller_property_drafts
+        seller_listing_publications
+        owner_listing_representations
+        source_offer_observations
+        geo_entities
+        geo_resolution_events
+        source_offer_seeds
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate direct read-only connection secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          for pair in SOURCE_URL TARGET_URL; do
+            value="${!pair:-}"
+            if [ -z "$value" ]; then
+              echo "::error::Missing $pair"
+              exit 1
+            fi
+            case "$value" in
+              *pooler*)
+                echo "::error::$pair must be a direct/unpooled PostgreSQL URL"
+                exit 1
+                ;;
+            esac
+          done
+
+      - name: Prove source and target are readable
+        shell: bash
+        run: |
+          set -euo pipefail
+          for pair in SOURCE_URL TARGET_URL; do
+            value="${!pair}"
+            docker run --rm -e DB_URL="$value" "$PG_IMAGE"               sh -lc 'psql "$DB_URL" -X -qAt -v ON_ERROR_STOP=1 -c "begin transaction read only; select 1; commit;"'               >/dev/null
+          done
+
+      - name: Build parity evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          out="$RUNNER_TEMP/ha-baseline-parity.jsonl"
+          : > "$out"
+          overall_source_schema=""
+          overall_target_schema=""
+
+          sql_value() {
+            local db_url="$1"
+            local sql="$2"
+            docker run --rm -e DB_URL="$db_url" -e SQL="$sql" "$PG_IMAGE"               sh -lc 'psql "$DB_URL" -X -qAt -v ON_ERROR_STOP=1 -c "$SQL"'
+          }
+
+          schema_hash() {
+            local db_url="$1"
+            local table="$2"
+            docker run --rm -e DB_URL="$db_url" -e TABLE="$table" "$PG_IMAGE"               sh -lc '
+                set -eu
+                pg_dump "$DB_URL" --schema-only --no-owner --no-acl --table="public.$TABLE"                   | sed -E "/^--/d; /^\\\\(un)?restrict /d; /^[[:space:]]*$/d"                   | sha256sum | awk "{print \\$1}"
+              '
+          }
+
+          for table in $TABLES; do
+            case "$table" in
+              *[!a-z0-9_]*|'')
+                echo "::error::Unsafe table token: $table"
+                exit 1
+                ;;
+            esac
+
+            count_sql="select count(*) from public.$table;"
+            content_sql="select md5(coalesce(string_agg(row_hash, '' order by row_hash), '')) from (select md5(row_to_json(t)::text) as row_hash from public.$table t) q;"
+            pk_cols_sql="select string_agg(quote_ident(a.attname), ', ' order by k.ord) from pg_index i join lateral unnest(i.indkey) with ordinality k(attnum,ord) on true join pg_attribute a on a.attrelid=i.indrelid and a.attnum=k.attnum where i.indrelid='public.$table'::regclass and i.indisprimary;"
+            repl_sql="select relreplident from pg_class where oid='public.$table'::regclass;"
+
+            source_count="$(sql_value "$SOURCE_URL" "$count_sql")"
+            target_count="$(sql_value "$TARGET_URL" "$count_sql")"
+            source_digest="$(sql_value "$SOURCE_URL" "$content_sql")"
+            target_digest="$(sql_value "$TARGET_URL" "$content_sql")"
+            source_pk_cols="$(sql_value "$SOURCE_URL" "$pk_cols_sql")"
+            target_pk_cols="$(sql_value "$TARGET_URL" "$pk_cols_sql")"
+            source_repl="$(sql_value "$SOURCE_URL" "$repl_sql")"
+            target_repl="$(sql_value "$TARGET_URL" "$repl_sql")"
+
+            if [ -z "$source_pk_cols" ] || [ -z "$target_pk_cols" ]; then
+              echo "::error::$table has no provable primary key on source or target"
+              exit 1
+            fi
+            if [ "$source_pk_cols" != "$target_pk_cols" ]; then
+              echo "::error::$table primary-key columns differ"
+              exit 1
+            fi
+
+            pk_digest_sql="select md5(coalesce(string_agg(row_hash, '' order by row_hash), '')) from (select md5(row_to_json(q)::text) as row_hash from (select $source_pk_cols from public.$table) q) x;"
+            source_pk_digest="$(sql_value "$SOURCE_URL" "$pk_digest_sql")"
+            target_pk_digest="$(sql_value "$TARGET_URL" "$pk_digest_sql")"
+
+            source_schema="$(schema_hash "$SOURCE_URL" "$table")"
+            target_schema="$(schema_hash "$TARGET_URL" "$table")"
+
+            if [ "$source_count" != "$target_count" ]; then
+              echo "::error::$table row-count mismatch source=$source_count target=$target_count"
+              exit 1
+            fi
+            if [ "$source_digest" != "$target_digest" ]; then
+              echo "::error::$table content-digest mismatch"
+              exit 1
+            fi
+            if [ "$source_pk_digest" != "$target_pk_digest" ]; then
+              echo "::error::$table PK-set digest mismatch"
+              exit 1
+            fi
+            if [ "$source_schema" != "$target_schema" ]; then
+              echo "::error::$table schema fingerprint mismatch"
+              exit 1
+            fi
+            if [ "$source_repl" != "$target_repl" ]; then
+              echo "::error::$table replica identity mismatch source=$source_repl target=$target_repl"
+              exit 1
+            fi
+
+            sequence_sql="select coalesce(json_agg(x order by x.column_name)::text,'[]') from (
+              select c.column_name,
+                     c.is_identity,
+                     c.identity_generation,
+                     c.column_default,
+                     pg_get_serial_sequence('public.$table', c.column_name) as sequence_name
+              from information_schema.columns c
+              where c.table_schema='public'
+                and c.table_name='$table'
+                and (c.is_identity='YES' or c.column_default like 'nextval(%')
+            ) x;"
+            source_sequences="$(sql_value "$SOURCE_URL" "$sequence_sql")"
+            target_sequences="$(sql_value "$TARGET_URL" "$sequence_sql")"
+
+            if [ "$source_sequences" != "$target_sequences" ]; then
+              echo "::error::$table sequence/identity metadata mismatch"
+              exit 1
+            fi
+
+            jq -n               --arg table "$table"               --argjson source_count "$source_count"               --argjson target_count "$target_count"               --arg source_pk_digest "$source_pk_digest"               --arg target_pk_digest "$target_pk_digest"               --arg source_content_digest "$source_digest"               --arg target_content_digest "$target_digest"               --arg source_schema_fingerprint "$source_schema"               --arg target_schema_fingerprint "$target_schema"               --arg source_replica_identity "$source_repl"               --arg target_replica_identity "$target_repl"               --argjson source_sequence_metadata "$source_sequences"               --argjson target_sequence_metadata "$target_sequences"               '{
+                table: $table,
+                source_count: $source_count,
+                target_count: $target_count,
+                source_pk_digest: $source_pk_digest,
+                target_pk_digest: $target_pk_digest,
+                source_content_digest: $source_content_digest,
+                target_content_digest: $target_content_digest,
+                source_schema_fingerprint: $source_schema_fingerprint,
+                target_schema_fingerprint: $target_schema_fingerprint,
+                source_replica_identity: $source_replica_identity,
+                target_replica_identity: $target_replica_identity,
+                source_sequence_metadata: $source_sequence_metadata,
+                target_sequence_metadata: $target_sequence_metadata,
+                parity: true
+              }' >> "$out"
+
+            overall_source_schema="$overall_source_schema|$table:$source_schema"
+            overall_target_schema="$overall_target_schema|$table:$target_schema"
+          done
+
+          source_bundle_fingerprint="$(printf '%s' "$overall_source_schema" | sha256sum | awk '{print $1}')"
+          target_bundle_fingerprint="$(printf '%s' "$overall_target_schema" | sha256sum | awk '{print $1}')"
+
+          jq -s             --arg application_commit "$GITHUB_SHA"             --arg source_bundle_fingerprint "$source_bundle_fingerprint"             --arg target_bundle_fingerprint "$target_bundle_fingerprint"             '{
+              schema_version: "1.0",
+              phase: "BASELINE",
+              status: "PASS",
+              application_commit: $application_commit,
+              source_schema_bundle_fingerprint: $source_bundle_fingerprint,
+              target_schema_bundle_fingerprint: $target_bundle_fingerprint,
+              tables: .,
+              secrets_redacted: true,
+              verdict: "PASS"
+            }' "$out" > "$RUNNER_TEMP/HA_BASELINE_PARITY.json"
+
+      - name: Guard artifact against secret leakage
+        shell: bash
+        run: |
+          set -euo pipefail
+          artifact="$RUNNER_TEMP/HA_BASELINE_PARITY.json"
+          if grep -Eiq 'postgres(ql)?://|service_role|password|SUPABASE_DATABASE_URL|NEON_DATABASE_URL' "$artifact"; then
+            echo "::error::Secret-like material detected in HA baseline artifact"
+            exit 1
+          fi
+
+      - name: Upload baseline parity proof
+        uses: actions/upload-artifact@v4
+        with:
+          name: ha-baseline-parity-${{ github.sha }}
+          path: ${{ runner.temp }}/HA_BASELINE_PARITY.json
+          if-no-files-found: error
+          retention-days: 30
