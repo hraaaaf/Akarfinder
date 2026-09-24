@@ -49,6 +49,22 @@ Allowed writer mapping:
 Direct SUPABASE_PRIMARY → NEON_PRIMARY is forbidden.
 Direct NEON_PRIMARY → SUPABASE_PRIMARY is forbidden.
 
+
+### Application control variables
+
+Current branch contract:
+
+- `HA_WRITER_STATE` controls application write authority.
+- `DATABASE_PROVIDER` controls read routing and must not be treated as write authority.
+
+Before any future production transition, prove the deployed application reports the intended `HA_WRITER_STATE` and that all known runtime write surfaces pass the HA write fence.
+
+Changing `HA_WRITER_STATE` in production may require an application environment/deployment action. This runbook does **not** authorize a Vercel production change.
+
+The current implementation defaults an absent `HA_WRITER_STATE` to `SUPABASE_PRIMARY` for backward compatibility before HA activation. An explicit invalid state fails closed.
+
+Do not set `NEON_PRIMARY` in production until the required Neon business-write implementations have themselves been proven; fencing Supabase is necessary but not sufficient for a usable failover.
+
 ## 0. Preconditions
 
 Do not begin HA activation unless all are true:
@@ -147,8 +163,8 @@ Goal: remove write authority before changing writer.
 
 Actions:
 
-1. Set HA control state to FAILOVER_PREP.
-2. Fence all application writes to Supabase.
+1. Set the approved application HA control state to `FAILOVER_PREP`.
+2. Verify the runtime write fence rejects Supabase data-plane mutations before any writer transfer.
 3. Confirm both writers are disabled.
 4. Record last known forward replication position.
 5. Confirm Neon schema version matches the application version.
@@ -170,8 +186,8 @@ Goal: make Neon the sole writer.
 Actions:
 
 1. Verify FAILOVER_PREP preconditions again.
-2. Enable Neon writer.
-3. Set state to NEON_PRIMARY.
+2. Verify the required Neon write path is implemented and independently proven.
+3. Set the approved application state to `NEON_PRIMARY` and enable Neon write authority.
 4. Verify Supabase application writer remains disabled.
 5. Run minimal read/write smoke test on Neon using non-production test data or an approved test record.
 6. Start incident-window delta tracking.
