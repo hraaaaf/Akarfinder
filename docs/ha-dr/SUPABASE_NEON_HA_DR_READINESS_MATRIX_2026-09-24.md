@@ -213,7 +213,7 @@ Prove legal failover with no split-brain.
 
 The first green artifact had two evidence-quality defects (synthetic GitHub execution SHA in `application_commit`, second-resolution timing). Both were corrected and re-run.
 
-Exact-head proof:
+Implementation-head proof:
 - run `35995118188` → SUCCESS;
 - artifact `10806265846`;
 - artifact digest `sha256:ec92b74afbf27a8f951737c80596843a70afa28d93d06841ec42db9c9ad925e3`;
@@ -222,7 +222,7 @@ Exact-head proof:
 - isolated failover decision → target writer promotion = `390 ms`;
 - verdict = `ISOLATED_REHEARSAL_PASS`.
 
-HA05-A isolated PostgreSQL 17 rehearsal evidence is therefore **PROVED**. This is not provider-specific or production certification.
+HA05-A isolated PostgreSQL 17 rehearsal evidence is therefore **PROVED**. Current branch HEAD is a docs-only descendant of the proved implementation commit; no rehearsal code changed after the artifact. This is not provider-specific or production certification.
 
 ### Missing proof
 
