@@ -17,6 +17,7 @@ export type HaTableEvidence = {
   delete_parity: boolean | null;
   timestamp_version_parity: boolean | null;
   schema_fingerprint_match: boolean | null;
+  foreign_key_consistency: boolean | null;
   replica_identity: string | null;
   sequence_safe: boolean | null;
   pass: boolean | null;
@@ -164,6 +165,14 @@ export function evaluateHaEvidence(
       table.schema_fingerprint_match,
       `${prefix}:schema_fingerprint_missing`,
       `${prefix}:schema_fingerprint_mismatch`,
+      blockers,
+      failures,
+    );
+
+    triState(
+      table.foreign_key_consistency,
+      `${prefix}:foreign_key_consistency_missing`,
+      `${prefix}:foreign_key_consistency_failed`,
       blockers,
       failures,
     );
