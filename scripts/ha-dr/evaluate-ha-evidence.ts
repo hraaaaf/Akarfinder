@@ -6,6 +6,13 @@ export type HaEvidencePhase =
   | "REVERSE_DELTA"
   | "FAILBACK";
 
+export type HaWriterState =
+  | "SUPABASE_PRIMARY"
+  | "FAILOVER_PREP"
+  | "NEON_PRIMARY"
+  | "FAILBACK_SYNC"
+  | "FAILBACK_FREEZE";
+
 export type HaTableEvidence = {
   table: string;
   source_count: number | null;
@@ -25,6 +32,7 @@ export type HaTableEvidence = {
 
 export type HaEvidenceInput = {
   phase: HaEvidencePhase;
+  writer_state: HaWriterState;
   single_writer_proven: boolean | null;
   positions: {
     forward_start_lsn: string | null;
@@ -89,6 +97,20 @@ export function evaluateHaEvidence(
 ): HaEvidenceEvaluation {
   const blockers: string[] = [];
   const failures: string[] = [];
+
+  const expectedWriterState: Record<HaEvidencePhase, HaWriterState> = {
+    BASELINE: "SUPABASE_PRIMARY",
+    FORWARD_SYNC: "SUPABASE_PRIMARY",
+    FAILOVER: "NEON_PRIMARY",
+    REVERSE_DELTA: "FAILBACK_SYNC",
+    FAILBACK: "SUPABASE_PRIMARY",
+  };
+
+  if (evidence.writer_state !== expectedWriterState[evidence.phase]) {
+    failures.push(
+      `writer_state_mismatch:${evidence.phase}:${evidence.writer_state}:expected_${expectedWriterState[evidence.phase]}`,
+    );
+  }
 
   triState(
     evidence.single_writer_proven,
