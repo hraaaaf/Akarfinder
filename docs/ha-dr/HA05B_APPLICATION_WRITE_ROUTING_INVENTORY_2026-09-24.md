@@ -36,22 +36,44 @@ until an approved runtime write set is implemented and proved on Neon.
 
 ## Current audited Supabase write surfaces
 
-The runtime audit currently identifies these mutation-bearing files:
+The combined static audits currently identify these mutation-bearing files:
 
-- `app/api/alerts/route.ts`
+### User conversion / seller
+
+- `app/api/leads/route.ts`
 - `app/api/leads/[id]/route.ts`
 - `app/api/visit-requests/route.ts`
+- `app/api/alerts/route.ts`
+- `app/api/seller-drafts/[draftId]/publication/route.ts`
+- `app/api/seller-drafts/[draftId]/review/route.ts`
+- `app/api/seller-drafts/[draftId]/photos/route.ts`
+- `lib/seller/owner-listing-projection.ts`
+
+### Professional / commercial
+
+- `lib/professional/repository.ts`
+- `lib/professional/commercial-repository.ts`
+- `lib/professional/profile-service.ts`
+- `lib/professional/identity-repository.ts`
+
+### Ingestion / indexing / recrawl
+
 - `lib/data-mass/trusted-seed-listing-materialization.ts`
 - `lib/openserp-ingestion/national-writer.ts`
 - `lib/openserp-ingestion/pipeline.ts`
 - `lib/openserp-ingestion/state/engine-budget-state-repository.ts`
 - `lib/openserp-ingestion/state/query-rotation-state-repository.ts`
 - `lib/openserp-ingestion/state/ingestion-run-lock-repository.ts`
-- `lib/professional/profile-service.ts`
-- `lib/professional/identity-repository.ts`
-- `lib/property-intelligence/store.ts`
 - `lib/recrawl/connected-autonomous-microbatch.ts`
 - `lib/serper-mass-harvest/runner.ts`
+
+### Auxiliary state / product intelligence
+
+- `lib/tracking/log-event.ts`
+- `lib/search-gateway-cache/supabase-cache-store.ts`
+- `lib/public-property-index/supabase-index-store.ts`
+- `lib/observation-ledger/supabase-observation-ledger.ts`
+- `lib/property-intelligence/store.ts`
 - `lib/user-continuity/service.ts`
 
 Each current Supabase mutation surface must remain fenced. New mutation surfaces must be detected by CI and added to this inventory.
