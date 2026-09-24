@@ -4,16 +4,22 @@
   "note": "approved_discovery seed set = the 13 domains already used to publish real, live-validated OpenSERP listings in Production during OPENSERP-TO-SUPABASE-FIRST-WRITE-1 / OPENSERP-FIRST-WRITE-EXECUTE-1 (lib/openserp-ingestion/first-write.ts ALLOWED_PUBLIC_SOURCE_DOMAINS), cross-checked against classify.ts DOMAIN_RULES. blocked = domains with explicit reject-all or discovery-only-forever rules in classify.ts. Every other domain defaults to unclassified and cannot produce a public listing until reviewed and added here.",
   "domains": [
     {
-      "domain": "1immo.ma",
+      "domain": "mubawab.ma",
       "status": "approved_discovery",
       "listing_url_patterns": [
-        "^/[^/]+-\\d+$"
+        "/(?:fr|en)/is/",
+        "/(?:fr|en)/a/\\d+/",
+        "/acheter/[^/]+-\\d+(?:\\.html)?$"
       ],
-      "blocked_url_patterns": [],
-      "source_type": "agency_portal",
+      "blocked_url_patterns": [
+        "/(?:fr|en)?/?(?:sd|cd|sc)/",
+        "/immobilier-a-(?:vendre|louer)\\b",
+        "/appartements-a-(?:vendre|louer)\\b"
+      ],
+      "source_type": "portal_aggregator",
       "external_web_result": true,
-      "compliance_note": "Already live in Production via first-write pilot. 2026-08-24 route refresh keeps the strong terminal numeric listing id while allowing percent-encoded Arabic and tilde-prefixed detail slugs; multi-segment /s/... collection/search routes remain structurally excluded.",
-      "reviewed_at": "2026-08-24",
+      "compliance_note": "Public search-result pages only, discovery-only. Already live in Production via first-write pilot.",
+      "reviewed_at": "2026-07-17",
       "coverage_cities": null
     },
     {
@@ -32,20 +38,22 @@
       "coverage_cities": null
     },
     {
-      "domain": "atlasimmobilier.com",
+      "domain": "sarouty.ma",
       "status": "approved_discovery",
       "listing_url_patterns": [
-        "^/(?:en/)?p/[^/]+/?$"
+        "^/(?:fr|en|ar)/plp/[^/]+/[^/]+-\\d+\\.html$",
+        "/plp/acheter/.+-\\d+(?:\\.html)?$",
+        "/acheter/[a-z0-9-]+-\\d+(?:\\.html)?$"
       ],
-      "blocked_url_patterns": [],
-      "source_type": "agency_site",
+      "blocked_url_patterns": [
+        "/acheter/[^/]+/[^/]+/(?:appartements|villas|proprietes|immobilier-neuf).*",
+        "/louer/[^/]+/(?:appartements-a-louer|proprietes-a-louer).*$"
+      ],
+      "source_type": "portal_aggregator",
       "external_web_result": true,
-      "compliance_note": "Added following COMMONCRAWL-SOURCE-INTELLIGENCE-TOP11-AUDIT-1 (classe A, score 80/100). Pattern deliberately scoped to the /p/ namespace only -- /li/ (category/tag), /q/ (quarter/area index), and /feature/ (blog-style listing highlight) paths are structurally excluded, not merely absent from the sample. Not yet bulk-seeded, no query-universe change.",
-      "reviewed_at": "2026-07-20",
-      "coverage_cities": [
-        "Marrakech",
-        "Essaouira"
-      ]
+      "compliance_note": "Already live in Production via first-write pilot. 2026-07-24 route refresh adds the current locale-prefixed individual property shape /{fr|en|ar}/plp/{transaction}/{slug}-{numericId}.html, observed on live public Sarouty property detail pages; category/search pages remain structurally excluded by requiring exactly two segments after /plp/ and a terminal numeric listing id.",
+      "reviewed_at": "2026-07-24",
+      "coverage_cities": null
     },
     {
       "domain": "avito.ma",
@@ -65,21 +73,17 @@
       "coverage_cities": null
     },
     {
-      "domain": "aykana.ma",
+      "domain": "1immo.ma",
       "status": "approved_discovery",
       "listing_url_patterns": [
-        "^/property/[^/]+$"
+        "^/[^/]+-\\d+$"
       ],
-      "blocked_url_patterns": [
-        "^/property-type/"
-      ],
-      "source_type": "agency_site",
+      "blocked_url_patterns": [],
+      "source_type": "agency_portal",
       "external_web_result": true,
-      "compliance_note": "Added following AKARFINDER-100K-ROADMAP-AUTONOMOUS-GOAL-1 #7/10 Source Discovery Atlas. Found via discovery_candidates organic surfacing (not yet in query universe). Pattern proven against real positive examples (/property/vente-bureau-en-exclusivite-rabat-hay-riad-ref-3966, /property/location-local-commercial-dexception-rabat-aviation-ref-4058, /property/location-bureau-rabat-locean-ref -- the last has no trailing numeric ref, so the pattern deliberately does not require one) and real negative examples (/property-type/local-commercial-2 is the category-listing equivalent, structurally excluded by requiring the literal /property/ segment, not /property-type/ -- same word-boundary discipline as the earlier mobilier/immobilier fix this session). Not bulk-seeded, no query-universe change.",
-      "reviewed_at": "2026-07-21",
-      "coverage_cities": [
-        "Rabat"
-      ]
+      "compliance_note": "Already live in Production via first-write pilot. 2026-08-24 route refresh keeps the strong terminal numeric listing id while allowing percent-encoded Arabic and tilde-prefixed detail slugs; multi-segment /s/... collection/search routes remain structurally excluded.",
+      "reviewed_at": "2026-08-24",
+      "coverage_cities": null
     },
     {
       "domain": "barnes-marrakech.com",
@@ -95,47 +99,6 @@
       "coverage_cities": [
         "Marrakech"
       ]
-    },
-    {
-      "domain": "daragadir.com",
-      "status": "approved_discovery",
-      "listing_url_patterns": [
-        "^/annonces/annonces-immobilieres/(?:vente|location|location-de-vacances)/[^/]+/[^/]+\\.html$"
-      ],
-      "blocked_url_patterns": [],
-      "source_type": "classifieds_marketplace",
-      "external_web_result": true,
-      "compliance_note": "Added following COMMONCRAWL-SOURCE-INTELLIGENCE-TOP11-AUDIT-1 (classe A, score 84/100). No strong individual-listing identifier (no numeric ID/ref/UUID) -- the pattern is structural only (path depth + .html suffix), same caution level as marocannonces.com. Not yet bulk-seeded, no query-universe change.",
-      "reviewed_at": "2026-07-20",
-      "coverage_cities": [
-        "Agadir"
-      ]
-    },
-    {
-      "domain": "immo.mitula.ma",
-      "status": "blocked",
-      "listing_url_patterns": [],
-      "blocked_url_patterns": [
-        ".*"
-      ],
-      "source_type": "meta_search_aggregator",
-      "external_web_result": false,
-      "compliance_note": "classify.ts DOMAIN_RULES forceDiscovery on every path -- meta-search results, never an individual listing page. Blocked explicitly rather than left implicit.",
-      "reviewed_at": "2026-07-17",
-      "coverage_cities": null
-    },
-    {
-      "domain": "immobilier.trovit.ma",
-      "status": "blocked",
-      "listing_url_patterns": [],
-      "blocked_url_patterns": [
-        ".*"
-      ],
-      "source_type": "meta_search_aggregator",
-      "external_web_result": false,
-      "compliance_note": "classify.ts DOMAIN_RULES forceDiscovery on every path -- meta-search results, never an individual listing page. Blocked explicitly rather than left implicit.",
-      "reviewed_at": "2026-07-17",
-      "coverage_cities": null
     },
     {
       "domain": "kawtarimmobilier.com",
@@ -156,6 +119,24 @@
       ]
     },
     {
+      "domain": "mouldar.com",
+      "status": "approved_discovery",
+      "listing_url_patterns": [
+        {
+          "pattern": "/(?:fr|en)/(?:rent|achat|buy|louer|location)/.+/[a-f0-9]{6,}$",
+          "case_insensitive": true
+        }
+      ],
+      "blocked_url_patterns": [
+        "/(?:fr|en)/(?:achat|location|rent|buy)/[^/]+/[^/]+/[^/]+$"
+      ],
+      "source_type": "agency_portal",
+      "external_web_result": true,
+      "compliance_note": "Already live in Production via first-write pilot.",
+      "reviewed_at": "2026-07-17",
+      "coverage_cities": null
+    },
+    {
       "domain": "limmobiliersansfrontieres.com",
       "status": "approved_discovery",
       "listing_url_patterns": [
@@ -170,6 +151,39 @@
         "Marrakech",
         "Meknès"
       ]
+    },
+    {
+      "domain": "marrakechrealty.com",
+      "status": "approved_discovery",
+      "listing_url_patterns": [
+        "^/(?:vente|location)/[^/]+$",
+        "^/en/(?:sale|rentals)/[^/]+$"
+      ],
+      "blocked_url_patterns": [],
+      "source_type": "agency_site",
+      "external_web_result": true,
+      "compliance_note": "Already live in Production via first-write pilot. 2026-08-24 route refresh replaces the obsolete /property/ shape with verified FR /vente|location/<slug> and EN /sale|rentals/<slug> detail namespaces; one-segment category routes such as /vente-villa and /location-villa remain excluded.",
+      "reviewed_at": "2026-08-24",
+      "coverage_cities": [
+        "Marrakech",
+        "Casablanca"
+      ]
+    },
+    {
+      "domain": "marocannonces.com",
+      "status": "approved_discovery",
+      "listing_url_patterns": [
+        "^/categorie/\\d+/[^/]+/annonce/\\d+/[^/]+\\.html$"
+      ],
+      "blocked_url_patterns": [
+        "^/maroc/.+-b\\d+-t\\d+\\.html(?:\\?.*)?$",
+        "^/categorie/\\d+/[^/]+(?:/[^/]+)?(?:/\\d+)?\\.html$"
+      ],
+      "source_type": "classifieds_marketplace",
+      "external_web_result": true,
+      "compliance_note": "2026-09-24 recovery review proved current individual listing detail shape /categorie/<categoryId>/<type>/annonce/<numericId>/<slug>.html against live indexed detail evidence. Category/search routes remain structurally excluded. External-index/search discovery only; no source-page bulk fetch is authorized by this registry entry.",
+      "reviewed_at": "2026-09-24",
+      "coverage_cities": null
     },
     {
       "domain": "logic-immo.com",
@@ -194,117 +208,6 @@
       "coverage_cities": null
     },
     {
-      "domain": "marocannonces.com",
-      "status": "approved_discovery",
-      "listing_url_patterns": [
-        "^/categorie/\\d+/[^/]+/annonce/\\d+/[^/]+\\.html$"
-      ],
-      "blocked_url_patterns": [
-        "^/maroc/.+-b\\d+-t\\d+\\.html(?:\\?.*)?$",
-        "^/categorie/\\d+/[^/]+(?:/[^/]+)?(?:/\\d+)?\\.html$"
-      ],
-      "source_type": "classifieds_marketplace",
-      "external_web_result": true,
-      "compliance_note": "2026-09-24 recovery review proved current individual listing detail shape /categorie/<categoryId>/<type>/annonce/<numericId>/<slug>.html against live indexed detail evidence. Category/search routes remain structurally excluded. External-index/search discovery only; no source-page bulk fetch is authorized by this registry entry.",
-      "reviewed_at": "2026-09-24",
-      "coverage_cities": null
-    },
-    {
-      "domain": "marrakechrealty.com",
-      "status": "approved_discovery",
-      "listing_url_patterns": [
-        "^/(?:vente|location)/[^/]+$",
-        "^/en/(?:sale|rentals)/[^/]+$"
-      ],
-      "blocked_url_patterns": [],
-      "source_type": "agency_site",
-      "external_web_result": true,
-      "compliance_note": "Already live in Production via first-write pilot. 2026-08-24 route refresh replaces the obsolete /property/ shape with verified FR /vente|location/<slug> and EN /sale|rentals/<slug> detail namespaces; one-segment category routes such as /vente-villa and /location-villa remain excluded.",
-      "reviewed_at": "2026-08-24",
-      "coverage_cities": [
-        "Marrakech",
-        "Casablanca"
-      ]
-    },
-    {
-      "domain": "masaken.ma",
-      "status": "approved_discovery",
-      "listing_url_patterns": [
-        "^/(?:fr|en)/immobilier-maroc/[a-z-]+/\\d+$"
-      ],
-      "blocked_url_patterns": [],
-      "source_type": "portal_aggregator",
-      "external_web_result": true,
-      "compliance_note": "Added following COMMONCRAWL-SOURCE-INTELLIGENCE-TOP11-AUDIT-1 (classe A, score 82/100). Pattern deliberately scoped to /immobilier-maroc/ only to exclude Arabic price-filter URLs (segment equivalent to /السعر/<number>) that would otherwise superficially resemble a numeric-ID listing path. Not yet bulk-seeded, no query-universe change.",
-      "reviewed_at": "2026-07-20",
-      "coverage_cities": null
-    },
-    {
-      "domain": "mouldar.com",
-      "status": "approved_discovery",
-      "listing_url_patterns": [
-        {
-          "pattern": "/(?:fr|en)/(?:rent|achat|buy|louer|location)/.+/[a-f0-9]{6,}$",
-          "case_insensitive": true
-        }
-      ],
-      "blocked_url_patterns": [
-        "/(?:fr|en)/(?:achat|location|rent|buy)/[^/]+/[^/]+/[^/]+$"
-      ],
-      "source_type": "agency_portal",
-      "external_web_result": true,
-      "compliance_note": "Already live in Production via first-write pilot.",
-      "reviewed_at": "2026-07-17",
-      "coverage_cities": null
-    },
-    {
-      "domain": "mubawab.ma",
-      "status": "approved_discovery",
-      "listing_url_patterns": [
-        "/(?:fr|en)/is/",
-        "/(?:fr|en)/a/\\d+/",
-        "/acheter/[^/]+-\\d+(?:\\.html)?$"
-      ],
-      "blocked_url_patterns": [
-        "/(?:fr|en)?/?(?:sd|cd|sc)/",
-        "/immobilier-a-(?:vendre|louer)\\b",
-        "/appartements-a-(?:vendre|louer)\\b"
-      ],
-      "source_type": "portal_aggregator",
-      "external_web_result": true,
-      "compliance_note": "Public search-result pages only, discovery-only. Already live in Production via first-write pilot.",
-      "reviewed_at": "2026-07-17",
-      "coverage_cities": null
-    },
-    {
-      "domain": "nuroa.ma",
-      "status": "blocked",
-      "listing_url_patterns": [],
-      "blocked_url_patterns": [
-        ".*"
-      ],
-      "source_type": "meta_search_aggregator",
-      "external_web_result": false,
-      "compliance_note": "classify.ts DOMAIN_RULES forceDiscovery on every path -- meta-search results, never an individual listing page. Blocked explicitly rather than left implicit.",
-      "reviewed_at": "2026-07-17",
-      "coverage_cities": null
-    },
-    {
-      "domain": "promoimmomarrakech.com",
-      "status": "approved_discovery",
-      "listing_url_patterns": [
-        "^/produit/[^/]+/[^/]+\\.html$"
-      ],
-      "blocked_url_patterns": [],
-      "source_type": "agency_site",
-      "external_web_result": true,
-      "compliance_note": "Added following AKARFINDER-100K-ROADMAP-AUTONOMOUS-GOAL-1 #7/10 Source Discovery Atlas. Found via discovery_candidates organic surfacing. Pattern proven against real positive examples (/produit/vlc-296/villa-location-sjour-marrakech-route-fes.html, /produit/avm-64/appartement-vente-marrakech-hivernage.html, /produit/bv-65-2/bureau-vente-marrakech-gueliz.html) and real negative examples (/vente-terrain-gueliz-marrakech.html and /location/ferme/marrakech are both top-level category pages with no /produit/ prefix at all, structurally excluded). Not bulk-seeded, no query-universe change.",
-      "reviewed_at": "2026-07-21",
-      "coverage_cities": [
-        "Marrakech"
-      ]
-    },
-    {
       "domain": "sarout.ma",
       "status": "approved_discovery",
       "listing_url_patterns": [
@@ -322,24 +225,6 @@
       "coverage_cities": null
     },
     {
-      "domain": "sarouty.ma",
-      "status": "approved_discovery",
-      "listing_url_patterns": [
-        "^/(?:fr|en|ar)/plp/[^/]+/[^/]+-\\d+\\.html$",
-        "/plp/acheter/.+-\\d+(?:\\.html)?$",
-        "/acheter/[a-z0-9-]+-\\d+(?:\\.html)?$"
-      ],
-      "blocked_url_patterns": [
-        "/acheter/[^/]+/[^/]+/(?:appartements|villas|proprietes|immobilier-neuf).*",
-        "/louer/[^/]+/(?:appartements-a-louer|proprietes-a-louer).*$"
-      ],
-      "source_type": "portal_aggregator",
-      "external_web_result": true,
-      "compliance_note": "Already live in Production via first-write pilot. 2026-07-24 route refresh adds the current locale-prefixed individual property shape /{fr|en|ar}/plp/{transaction}/{slug}-{numericId}.html, observed on live public Sarouty property detail pages; category/search pages remain structurally excluded by requiring exactly two segments after /plp/ and a terminal numeric listing id.",
-      "reviewed_at": "2026-07-24",
-      "coverage_cities": null
-    },
-    {
       "domain": "soukimmobilier.com",
       "status": "approved_discovery",
       "listing_url_patterns": [
@@ -353,6 +238,50 @@
       "coverage_cities": null
     },
     {
+      "domain": "daragadir.com",
+      "status": "approved_discovery",
+      "listing_url_patterns": [
+        "^/annonces/annonces-immobilieres/(?:vente|location|location-de-vacances)/[^/]+/[^/]+\\.html$"
+      ],
+      "blocked_url_patterns": [],
+      "source_type": "classifieds_marketplace",
+      "external_web_result": true,
+      "compliance_note": "Added following COMMONCRAWL-SOURCE-INTELLIGENCE-TOP11-AUDIT-1 (classe A, score 84/100). No strong individual-listing identifier (no numeric ID/ref/UUID) -- the pattern is structural only (path depth + .html suffix), same caution level as marocannonces.com. Not yet bulk-seeded, no query-universe change.",
+      "reviewed_at": "2026-07-20",
+      "coverage_cities": [
+        "Agadir"
+      ]
+    },
+    {
+      "domain": "masaken.ma",
+      "status": "approved_discovery",
+      "listing_url_patterns": [
+        "^/(?:fr|en)/immobilier-maroc/[a-z-]+/\\d+$"
+      ],
+      "blocked_url_patterns": [],
+      "source_type": "portal_aggregator",
+      "external_web_result": true,
+      "compliance_note": "Added following COMMONCRAWL-SOURCE-INTELLIGENCE-TOP11-AUDIT-1 (classe A, score 82/100). Pattern deliberately scoped to /immobilier-maroc/ only to exclude Arabic price-filter URLs (segment equivalent to /السعر/<number>) that would otherwise superficially resemble a numeric-ID listing path. Not yet bulk-seeded, no query-universe change.",
+      "reviewed_at": "2026-07-20",
+      "coverage_cities": null
+    },
+    {
+      "domain": "atlasimmobilier.com",
+      "status": "approved_discovery",
+      "listing_url_patterns": [
+        "^/(?:en/)?p/[^/]+/?$"
+      ],
+      "blocked_url_patterns": [],
+      "source_type": "agency_site",
+      "external_web_result": true,
+      "compliance_note": "Added following COMMONCRAWL-SOURCE-INTELLIGENCE-TOP11-AUDIT-1 (classe A, score 80/100). Pattern deliberately scoped to the /p/ namespace only -- /li/ (category/tag), /q/ (quarter/area index), and /feature/ (blog-style listing highlight) paths are structurally excluded, not merely absent from the sample. Not yet bulk-seeded, no query-universe change.",
+      "reviewed_at": "2026-07-20",
+      "coverage_cities": [
+        "Marrakech",
+        "Essaouira"
+      ]
+    },
+    {
       "domain": "yakeey.com",
       "status": "blocked",
       "listing_url_patterns": [],
@@ -364,6 +293,77 @@
       "compliance_note": "classify.ts DOMAIN_RULES forceReject on every path (all results rejected regardless of content). Not in ALLOWED_PUBLIC_SOURCE_DOMAINS.",
       "reviewed_at": "2026-07-17",
       "coverage_cities": null
+    },
+    {
+      "domain": "immobilier.trovit.ma",
+      "status": "blocked",
+      "listing_url_patterns": [],
+      "blocked_url_patterns": [
+        ".*"
+      ],
+      "source_type": "meta_search_aggregator",
+      "external_web_result": false,
+      "compliance_note": "classify.ts DOMAIN_RULES forceDiscovery on every path -- meta-search results, never an individual listing page. Blocked explicitly rather than left implicit.",
+      "reviewed_at": "2026-07-17",
+      "coverage_cities": null
+    },
+    {
+      "domain": "nuroa.ma",
+      "status": "blocked",
+      "listing_url_patterns": [],
+      "blocked_url_patterns": [
+        ".*"
+      ],
+      "source_type": "meta_search_aggregator",
+      "external_web_result": false,
+      "compliance_note": "classify.ts DOMAIN_RULES forceDiscovery on every path -- meta-search results, never an individual listing page. Blocked explicitly rather than left implicit.",
+      "reviewed_at": "2026-07-17",
+      "coverage_cities": null
+    },
+    {
+      "domain": "immo.mitula.ma",
+      "status": "blocked",
+      "listing_url_patterns": [],
+      "blocked_url_patterns": [
+        ".*"
+      ],
+      "source_type": "meta_search_aggregator",
+      "external_web_result": false,
+      "compliance_note": "classify.ts DOMAIN_RULES forceDiscovery on every path -- meta-search results, never an individual listing page. Blocked explicitly rather than left implicit.",
+      "reviewed_at": "2026-07-17",
+      "coverage_cities": null
+    },
+    {
+      "domain": "aykana.ma",
+      "status": "approved_discovery",
+      "listing_url_patterns": [
+        "^/property/[^/]+$"
+      ],
+      "blocked_url_patterns": [
+        "^/property-type/"
+      ],
+      "source_type": "agency_site",
+      "external_web_result": true,
+      "compliance_note": "Added following AKARFINDER-100K-ROADMAP-AUTONOMOUS-GOAL-1 #7/10 Source Discovery Atlas. Found via discovery_candidates organic surfacing (not yet in query universe). Pattern proven against real positive examples (/property/vente-bureau-en-exclusivite-rabat-hay-riad-ref-3966, /property/location-local-commercial-dexception-rabat-aviation-ref-4058, /property/location-bureau-rabat-locean-ref -- the last has no trailing numeric ref, so the pattern deliberately does not require one) and real negative examples (/property-type/local-commercial-2 is the category-listing equivalent, structurally excluded by requiring the literal /property/ segment, not /property-type/ -- same word-boundary discipline as the earlier mobilier/immobilier fix this session). Not bulk-seeded, no query-universe change.",
+      "reviewed_at": "2026-07-21",
+      "coverage_cities": [
+        "Rabat"
+      ]
+    },
+    {
+      "domain": "promoimmomarrakech.com",
+      "status": "approved_discovery",
+      "listing_url_patterns": [
+        "^/produit/[^/]+/[^/]+\\.html$"
+      ],
+      "blocked_url_patterns": [],
+      "source_type": "agency_site",
+      "external_web_result": true,
+      "compliance_note": "Added following AKARFINDER-100K-ROADMAP-AUTONOMOUS-GOAL-1 #7/10 Source Discovery Atlas. Found via discovery_candidates organic surfacing. Pattern proven against real positive examples (/produit/vlc-296/villa-location-sjour-marrakech-route-fes.html, /produit/avm-64/appartement-vente-marrakech-hivernage.html, /produit/bv-65-2/bureau-vente-marrakech-gueliz.html) and real negative examples (/vente-terrain-gueliz-marrakech.html and /location/ferme/marrakech are both top-level category pages with no /produit/ prefix at all, structurally excluded). Not bulk-seeded, no query-universe change.",
+      "reviewed_at": "2026-07-21",
+      "coverage_cities": [
+        "Marrakech"
+      ]
     }
   ]
 }
