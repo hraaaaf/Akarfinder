@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { MapNeighborhoodClient } from "@/components/map/MapNeighborhoodClient";
-import { MapLibreNeighborhood3D } from "@/components/map/MapLibreNeighborhood3D";
+import { MapLibreNeighborhood3D, type TargetPilotLandmark } from "@/components/map/MapLibreNeighborhood3D";
 import { National3DBuildingsLayer } from "@/components/map/National3DBuildingsLayer";
 import { NationalNeighborhoodOverlayBridge } from "@/components/map/NationalNeighborhoodOverlayBridge";
 import { getNeighborhoodBySlug } from "@/lib/map/canonical-neighborhood-data";
@@ -17,7 +17,7 @@ const NationalTerritoryExperienceDynamic = dynamic(
   { ssr: false },
 );
 
-type Props = { initialState: MapNavigationState };
+type Props = { initialState: MapNavigationState; targetPilotLandmarks?: readonly TargetPilotLandmark[] };
 
 type NationalMapWindow = Window & {
   __AKARFINDER_NATIONAL_MAP__?: { resize: () => void };
@@ -29,7 +29,7 @@ function safeSlug(value: string | null): string | null {
   return slug && slug.length <= 90 ? slug : null;
 }
 
-export function NationalMapRouter({ initialState }: Props) {
+export function NationalMapRouter({ initialState, targetPilotLandmarks = [] }: Props) {
   const router = useRouter();
   const params = useSearchParams();
   const shellRef = useRef<HTMLDivElement>(null);
@@ -109,6 +109,7 @@ export function NationalMapRouter({ initialState }: Props) {
         center={[selectedNeighborhood.lng, selectedNeighborhood.lat]}
         boundaryGeometry={isMaarifReference ? MAARIF_TARGET_PILOT_BOUNDARY.geometry : null}
         desktopCameraOffset={isMaarifReference ? [-0.0055, 0.0090] : [0, 0]}
+        targetPilotLandmarks={isMaarifReference ? targetPilotLandmarks : []}
       />
     );
   }
