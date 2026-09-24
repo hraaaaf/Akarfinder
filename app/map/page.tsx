@@ -53,7 +53,6 @@ export default async function MapPage({ searchParams }: MapPageProps) {
   const isMaarifTargetPilot = city.toLowerCase() === "casablanca" && district.toLowerCase() === "maarif";
   const targetPilotLandmarkIds = new Set([
     "landmark_casablanca_maarif_twin_center",
-    "landmark_casablanca_bourgogne_casa_bourgogne_post",
     "landmark_casablanca_racine_institut_juan_ramon_jimenez",
   ]);
   const targetPilotLandmarks = isMaarifTargetPilot
