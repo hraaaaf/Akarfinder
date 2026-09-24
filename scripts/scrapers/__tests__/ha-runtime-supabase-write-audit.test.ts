@@ -25,7 +25,17 @@ test("runtime Supabase mutations are HA-fenced", () => {
       source.includes(".supabase") ||
       /Supabase[A-Za-z]*Client/.test(source);
 
-    const hasMutation = /\.(insert|update|upsert|delete)\s*\(/.test(source);
+    const hasTableMutation =
+      /\.from\([^)]*\)[\s\S]{0,600}?\.(insert|update|upsert|delete)\s*\(/.test(source);
+
+    const rpcNames = [...source.matchAll(/\.rpc\(\s*["'`]([^"'`]+)["'`]/g)].map(
+      (match) => match[1],
+    );
+    const hasMutatingRpc = rpcNames.some(
+      (name) => !/^(search|get|read|list|find|fetch)_/i.test(name),
+    );
+
+    const hasMutation = hasTableMutation || hasMutatingRpc;
 
     if (
       hasSupabaseSurface &&
