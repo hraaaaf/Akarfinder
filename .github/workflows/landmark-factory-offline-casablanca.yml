@@ -1,0 +1,448 @@
+name: Landmark Factory Offline Casablanca
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  extract-casablanca:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pyosmium
+        run: python -m pip install --disable-pip-version-check osmium shapely
+      - name: Download current Morocco OSM PBF
+        run: |
+          curl --fail --location --retry 3 --output /tmp/morocco-latest.osm.pbf \
+            https://download.geofabrik.de/africa/morocco-latest.osm.pbf
+          ls -lh /tmp/morocco-latest.osm.pbf
+      - name: Discover authoritative Racine boundary streets
+        run: |
+          mkdir -p artifacts
+          python scripts/landmarks/find-osm-named-ways.py \
+            --pbf /tmp/morocco-latest.osm.pbf \
+            --name "Boulevard Racine" \
+            --name "Boulevard d'Anfa" \
+            --name "Boulevard Abdelkrim Al Khattabi" \
+            --name "Avenue Temera" \
+            --name "Boulevard de la Lybie" \
+            --name "Boulevard du Phare" \
+            --name "Boulevard Abdellatif Ben Kaddour" \
+            --name "Boulevard Mohamed Zerktouni" \
+            --name "Boulevard Al Massira Al Khadra" \
+            --contains "Massira" \
+            --contains "Racine" \
+            --contains "Temera" \
+            --contains "Temara" \
+            --contains "Témara" \
+            --contains "Abdelkrim Al Khattabi" \
+            --contains "Abdelkrim El Khattabi" \
+            --contains "Abdelkrim Al Khettabi" \
+            --contains "Khattabi" \
+            --contains "Khettabi" \
+            --contains "Libye" \
+            --contains "Lybie" \
+            --contains "Phare" \
+            --bbox=-7.75,33.50,-7.55,33.67 \
+            --out artifacts/racine-boundary-ways.json
+          cat artifacts/racine-boundary-ways.json
+
+      - name: Discover authoritative Bourgogne boundary streets
+        run: |
+          mkdir -p artifacts
+          python scripts/landmarks/find-osm-named-ways.py \
+            --pbf /tmp/morocco-latest.osm.pbf \
+            --name "Boulevard de la Corniche" \
+            --name "Boulevard Abdellatif Ben Kaddour" \
+            --name "Avenue du Phare" \
+            --name "Avenue Docteur Mohamed Sijelmassi" \
+            --name "Boulevard Mohamed Zerktouni" \
+            --contains "Phare" \
+            --contains "Sijelmassi" \
+            --name "Avenue Mehdi Ben Barka" \
+            --contains "Mehdi Ben Barka" \
+            --name "Avenue Tan Tan" \
+            --contains "Tan Tan" \
+            --bbox=-7.75,33.50,-7.55,33.67 \
+            --out artifacts/bourgogne-boundary-ways.json
+          cat artifacts/bourgogne-boundary-ways.json
+
+      - name: Discover authoritative Aïn Diab boundary streets
+        run: |
+          mkdir -p artifacts
+          python scripts/landmarks/find-osm-named-ways.py \
+            --pbf /tmp/morocco-latest.osm.pbf \
+            --name "Boulevard de l'Océan Atlantique" \
+            --name "Boulevard de la Corniche" \
+            --bbox=-7.75,33.50,-7.55,33.67 \
+            --out artifacts/ain-diab-boundary-ways.json
+          cat artifacts/ain-diab-boundary-ways.json
+
+      - name: Build modern Racine product boundary candidate
+        run: |
+          python scripts/landmarks/polygonize-product-boundary-candidate.py \
+            --linework artifacts/racine-boundary-ways.json \
+            --territory "Racine modern product" \
+            --out artifacts/racine-modern-product-candidate.json
+
+      - name: Diagnose Racine boundary axis components
+        run: |
+          python scripts/landmarks/diagnose-boundary-axis-components.py \
+            --input artifacts/racine-boundary-ways.json \
+            --axis "north=racine" \
+            --axis "south_anfa=Boulevard d'Anfa" \
+            --axis "south_khattabi=abdelkrim el khattabi|khattabi" \
+            --axis "west_temara=temara" \
+            --axis "west_lybie=lybie" \
+            --axis "east_phare=phare" \
+            --axis "east_benkaddour=Boulevard Abdellatif Ben Kaddour" \
+            --axis "east_zerktouni=Boulevard Mohamed Zerktouni" \
+            --join-meters 12 \
+            --out artifacts/racine-axis-components.json
+
+      - name: Diagnose Bourgogne boundary axis components
+        run: |
+          python scripts/landmarks/diagnose-boundary-axis-components.py \
+            --input artifacts/bourgogne-boundary-ways.json \
+            --axis "north_corniche=Boulevard de la Corniche" \
+            --axis "south_benkaddour=Boulevard Abdellatif Ben Kaddour" \
+            --axis "west_phare=Avenue du Phare|sijelmassi|Avenue Mehdi Ben Barka|mehdi ben barka|Avenue Tan Tan|tan tan" \
+            --axis "east_zerktouni=Boulevard Mohamed Zerktouni" \
+            --join-meters 12 \
+            --out artifacts/bourgogne-axis-components.json
+
+      - name: Rank Bourgogne boundary component combinations
+        run: |
+          python scripts/landmarks/rank-boundary-component-combinations.py \
+            --ways artifacts/bourgogne-boundary-ways.json \
+            --components artifacts/bourgogne-axis-components.json \
+            --axis "north_corniche=Boulevard de la Corniche" \
+            --axis "south_benkaddour=Boulevard Abdellatif Ben Kaddour" \
+            --axis "west_phare=Avenue du Phare|sijelmassi|Avenue Mehdi Ben Barka|mehdi ben barka|Avenue Tan Tan|tan tan" \
+            --axis "east_zerktouni=Boulevard Mohamed Zerktouni" \
+            --top 5 \
+            --snap-meters 12 \
+            --target-hectares 109 \
+            --out artifacts/bourgogne-component-ranking.json
+
+      - name: Rank Racine boundary component combinations
+        run: |
+          python scripts/landmarks/rank-boundary-component-combinations.py \
+            --ways artifacts/racine-boundary-ways.json \
+            --components artifacts/racine-axis-components.json \
+            --axis "north=racine" \
+            --axis "south_anfa=Boulevard d'Anfa" \
+            --axis "south_khattabi=abdelkrim el khattabi|khattabi" \
+            --axis "west_temara=temara" \
+            --axis "west_lybie=lybie" \
+            --axis "east_phare=phare" \
+            --axis "east_benkaddour=Boulevard Abdellatif Ben Kaddour" \
+            --axis "east_zerktouni=Boulevard Mohamed Zerktouni" \
+            --top 3 \
+            --snap-meters 12 \
+            --target-hectares 143 \
+            --out artifacts/racine-component-ranking.json
+
+      - name: Rank Bourgogne trimmed boundary cycles
+        run: |
+          python scripts/landmarks/rank-trimmed-boundary-cycles.py \
+            --ways artifacts/bourgogne-boundary-ways.json \
+            --components artifacts/bourgogne-axis-components.json \
+            --order "north_corniche,east_zerktouni,south_benkaddour,west_phare" \
+            --top 5 \
+            --max-gap-m 12 \
+            --target-hectares 109 \
+            --out artifacts/bourgogne-trimmed-cycle-ranking.json
+
+      - name: Inspect Bourgogne west-axis gap highways
+        run: |
+          python scripts/landmarks/list-highways-in-bbox.py \
+            --pbf /tmp/morocco-latest.osm.pbf \
+            --bbox=-7.6515,33.5990,-7.6460,33.6027 \
+            --out artifacts/bourgogne-west-gap-highways.json
+
+      - name: Diagnose Racine axis adjacency graph
+        run: |
+          python scripts/landmarks/diagnose-boundary-axis-adjacency.py \
+            --ways artifacts/racine-boundary-ways.json \
+            --components artifacts/racine-axis-components.json \
+            --top 3 \
+            --out artifacts/racine-axis-adjacency.json
+
+      - name: Extract Aïn Diab coastline near authoritative roads
+        run: |
+          python scripts/landmarks/extract-osm-coastline-near-roads.py \
+            --pbf /tmp/morocco-latest.osm.pbf \
+            --roads artifacts/ain-diab-boundary-ways.json \
+            --out artifacts/ain-diab-coastline.json
+          cat artifacts/ain-diab-coastline.json
+
+      - name: Diagnose Aïn Diab route-coastline gaps
+        run: |
+          python scripts/landmarks/diagnose-linework-gaps.py \
+            --linework artifacts/ain-diab-boundary-ways.json \
+            --linework artifacts/ain-diab-coastline.json \
+            --out artifacts/ain-diab-linework-gaps.json
+
+      - name: Polygonize Aïn Diab authoritative boundary
+        continue-on-error: true
+        run: |
+          python scripts/landmarks/polygonize-authoritative-boundary.py \
+            --linework artifacts/ain-diab-boundary-ways.json \
+            --linework artifacts/ain-diab-coastline.json \
+            --territory "Aïn Diab" \
+            --target-hectares 200 \
+            --tolerance-pct 25 \
+            --out artifacts/ain-diab-authoritative-boundary.geojson
+          cat artifacts/ain-diab-authoritative-boundary.geojson
+
+      - name: Polygonize Bourgogne authoritative boundary
+        continue-on-error: true
+        run: |
+          python scripts/landmarks/polygonize-authoritative-boundary.py \
+            --linework artifacts/bourgogne-boundary-ways.json \
+            --territory "Bourgogne 2" \
+            --target-hectares 109 \
+            --tolerance-pct 25 \
+            --out artifacts/bourgogne-authoritative-boundary.geojson
+          cat artifacts/bourgogne-authoritative-boundary.geojson
+
+      - name: Polygonize Racine authoritative boundary
+        continue-on-error: true
+        run: |
+          python scripts/landmarks/polygonize-authoritative-boundary.py \
+            --linework artifacts/racine-boundary-ways.json \
+            --territory "Racine" \
+            --target-hectares 143 \
+            --tolerance-pct 25 \
+            --out artifacts/racine-authoritative-boundary.geojson
+          cat artifacts/racine-authoritative-boundary.geojson
+
+      - name: Snap-polygonize Aïn Diab authoritative boundary
+        continue-on-error: true
+        run: |
+          python scripts/landmarks/polygonize-authoritative-boundary-snapped.py \
+            --linework artifacts/ain-diab-boundary-ways.json \
+            --linework artifacts/ain-diab-coastline.json \
+            --territory "Aïn Diab" \
+            --target-hectares 200 \
+            --snap-meters 12 \
+            --tolerance-pct 25 \
+            --out artifacts/ain-diab-authoritative-boundary-snapped.geojson
+
+      - name: Snap-polygonize Bourgogne authoritative boundary
+        continue-on-error: true
+        run: |
+          python scripts/landmarks/polygonize-authoritative-boundary-snapped.py \
+            --linework artifacts/bourgogne-boundary-ways.json \
+            --territory "Bourgogne 2" \
+            --target-hectares 109 \
+            --snap-meters 12 \
+            --tolerance-pct 25 \
+            --out artifacts/bourgogne-authoritative-boundary-snapped.geojson
+
+      - name: Snap-polygonize Racine authoritative boundary
+        continue-on-error: true
+        run: |
+          python scripts/landmarks/polygonize-authoritative-boundary-snapped.py \
+            --linework artifacts/racine-boundary-ways.json \
+            --territory "Racine" \
+            --target-hectares 143 \
+            --snap-meters 12 \
+            --tolerance-pct 25 \
+            --out artifacts/racine-authoritative-boundary-snapped.geojson
+
+      - name: Discover exact Bourgogne boundary relations
+        run: |
+          mkdir -p artifacts
+          python scripts/landmarks/find-osm-boundary-relations.py \
+            --pbf /tmp/morocco-latest.osm.pbf \
+            --name "Bourgogne" \
+            --out artifacts/bourgogne-boundary-relations.json
+          cat artifacts/bourgogne-boundary-relations.json
+
+      - name: Discover exact Aïn Diab boundary relations
+        run: |
+          mkdir -p artifacts
+          python scripts/landmarks/find-osm-boundary-relations.py \
+            --pbf /tmp/morocco-latest.osm.pbf \
+            --name "Aïn Diab" \
+            --out artifacts/ain-diab-boundary-relations.json
+          cat artifacts/ain-diab-boundary-relations.json
+
+      - name: Discover official AUC Hay Hassani ArcGIS item for Casa-Anfa/CFC
+        continue-on-error: true
+        run: |
+          python scripts/landmarks/inspect-auc-arcgis-item.py \
+            --portal "https://carto.auc.ma/portal" \
+            --item-id "7466d12c067b4274996707e1170b0aef" \
+            --official-page "https://www.auc.ma/e-services-2/e-documents/?IdP=1068" \
+            --timeout 12 \
+            --out artifacts/auc-hay-hassani-arcgis-item.json
+          cat artifacts/auc-hay-hassani-arcgis-item.json
+
+      - name: Discover modern CFC product place anchors
+        run: |
+          python scripts/landmarks/find-osm-place-anchors.py \
+            --pbf /tmp/morocco-latest.osm.pbf \
+            --name "Casablanca Finance City" \
+            --name "CIL" \
+            --name "Ferme Bretonne" \
+            --name "Beauséjour" \
+            --name "Beausejour" \
+            --bbox=-7.72,33.52,-7.60,33.60 \
+            --out artifacts/cfc-product-place-anchors.json
+          cat artifacts/cfc-product-place-anchors.json
+
+      - name: Discover exact Casablanca Finance City boundary relations
+        run: |
+          mkdir -p artifacts
+          python scripts/landmarks/find-osm-boundary-relations.py \
+            --pbf /tmp/morocco-latest.osm.pbf \
+            --name "Casablanca Finance City" \
+            --out artifacts/cfc-boundary-relations.json
+          cat artifacts/cfc-boundary-relations.json
+
+      - name: Discover exact Racine boundary relations
+        run: |
+          mkdir -p artifacts
+          python scripts/landmarks/find-osm-boundary-relations.py \
+            --pbf /tmp/morocco-latest.osm.pbf \
+            --name "Racine" \
+            --out artifacts/racine-boundary-relations.json
+          cat artifacts/racine-boundary-relations.json
+
+      - name: Discover exact Bouskoura boundary relations
+        run: |
+          mkdir -p artifacts
+          python scripts/landmarks/find-osm-boundary-relations.py \
+            --pbf /tmp/morocco-latest.osm.pbf \
+            --name "Bouskoura" \
+            --out artifacts/bouskoura-boundary-relations.json
+          cat artifacts/bouskoura-boundary-relations.json
+
+      - name: Materialize CIL administrative reference relation 18099040
+        run: |
+          mkdir -p artifacts
+          python scripts/landmarks/materialize-osm-relation.py \
+            --pbf /tmp/morocco-latest.osm.pbf \
+            --relation-id 18099040 \
+            --out artifacts/casablanca-cil-relation-18099040.geojson
+          npx tsx scripts/landmarks/validate-materialized-boundary.ts \
+            --input artifacts/casablanca-cil-relation-18099040.geojson \
+            --city-id city_casablanca \
+            --neighborhood-id candidate_casablanca_cil \
+            --display-name "CIL" \
+            | tee artifacts/casablanca-cil-relation-18099040-validation.json
+
+      - name: Materialize Beausejour administrative reference relation 18099071
+        run: |
+          mkdir -p artifacts
+          python scripts/landmarks/materialize-osm-relation.py \
+            --pbf /tmp/morocco-latest.osm.pbf \
+            --relation-id 18099071 \
+            --out artifacts/casablanca-beausejour-relation-18099071.geojson
+          npx tsx scripts/landmarks/validate-materialized-boundary.ts \
+            --input artifacts/casablanca-beausejour-relation-18099071.geojson \
+            --city-id city_casablanca \
+            --neighborhood-id candidate_casablanca_beausejour \
+            --display-name "Beauséjour" \
+            | tee artifacts/casablanca-beausejour-relation-18099071-validation.json
+
+      - name: Materialize Bouskoura administrative boundary relation 2522564
+        run: |
+          mkdir -p artifacts
+          python scripts/landmarks/materialize-osm-relation.py \
+            --pbf /tmp/morocco-latest.osm.pbf \
+            --relation-id 2522564 \
+            --out artifacts/bouskoura-relation-2522564.geojson
+          npx tsx scripts/landmarks/validate-materialized-boundary.ts \
+            --input artifacts/bouskoura-relation-2522564.geojson \
+            --city-id city_bouskoura \
+            --neighborhood-id district_casablanca_bouskoura \
+            --display-name "Bouskoura" \
+            | tee artifacts/bouskoura-relation-2522564-validation.json
+
+      - name: Materialize Maârif administrative boundary relation 2801474
+        run: |
+          mkdir -p artifacts
+          python scripts/landmarks/materialize-osm-relation.py \
+            --pbf /tmp/morocco-latest.osm.pbf \
+            --relation-id 2801474 \
+            --out artifacts/casablanca-maarif-relation-2801474.geojson
+          npx tsx scripts/landmarks/validate-materialized-boundary.ts \
+            --input artifacts/casablanca-maarif-relation-2801474.geojson \
+            --city-id city_casablanca \
+            --neighborhood-id district_casablanca_maarif \
+            --display-name "Maârif" \
+            | tee artifacts/casablanca-maarif-relation-2801474-validation.json
+      - name: Extract Casablanca high-signal POI nodes
+        run: |
+          mkdir -p artifacts
+          python scripts/landmarks/extract-osm-pbf.py \
+            --pbf /tmp/morocco-latest.osm.pbf \
+            --bbox=-7.80,33.40,-7.40,33.75 \
+            --out artifacts/casablanca-poi.jsonl
+          wc -l artifacts/casablanca-poi.jsonl
+      - name: Run Bouskoura point-in-polygon shortlist
+        run: |
+          npx tsx scripts/landmarks/discover-district-from-artifacts.ts \
+            --boundary artifacts/bouskoura-relation-2522564.geojson \
+            --poi-jsonl artifacts/casablanca-poi.jsonl \
+            --district-id district_casablanca_bouskoura \
+            --out artifacts/bouskoura-shortlist.json
+          cat artifacts/bouskoura-shortlist.json
+
+      - name: Run Maârif point-in-polygon shortlist
+        run: |
+          npx tsx scripts/landmarks/discover-district-from-artifacts.ts \
+            --boundary artifacts/casablanca-maarif-relation-2801474.geojson \
+            --poi-jsonl artifacts/casablanca-poi.jsonl \
+            --district-id district_casablanca_maarif \
+            --out artifacts/casablanca-maarif-shortlist.json
+          cat artifacts/casablanca-maarif-shortlist.json
+      - name: Inspect public Yakeey map data
+        continue-on-error: true
+        run: |
+          python scripts/landmarks/inspect-yakeey-public-map.py \
+            --url "https://yakeey.com/fr-ma/referentiel-de-prix-immobilier/casablanca/racine" \
+            --url "https://yakeey.com/fr-ma/referentiel-de-prix-immobilier/casablanca/bourgogne-(anfa)" \
+            --url "https://yakeey.com/fr-ma/referentiel-de-prix-immobilier/casablanca/ain-diab" \
+            --url "https://yakeey.com/fr-ma/referentiel-de-prix-immobilier/casablanca/casablanca-finance-city" \
+            --out artifacts/yakeey-public-map-inspection.json
+
+      - name: Build fail-closed evidence verdict
+        run: |
+          python scripts/landmarks/build-evidence-verdict.py
+
+      - name: Build deterministic summary
+        run: |
+          python - <<'PY'
+          import json, collections
+          p="artifacts/casablanca-poi.jsonl"
+          rows=[json.loads(x) for x in open(p,encoding="utf-8") if x.strip()]
+          cats=collections.Counter()
+          for r in rows:
+            t=r["tags"]
+            for k in ("historic","tourism","leisure","amenity","shop","man_made"):
+              if k in t: cats[f"{k}={t[k]}"] += 1
+          out={"count":len(rows),"top_categories":cats.most_common(30),"sample":[{"id":r["id"],"name":r["tags"].get("name") or r["tags"].get("name:fr") or r["tags"].get("name:ar"),"lat":r["lat"],"lon":r["lon"]} for r in rows[:50]]}
+          open("artifacts/casablanca-summary.json","w",encoding="utf-8").write(json.dumps(out,ensure_ascii=False,indent=2))
+          print(json.dumps(out,ensure_ascii=False,indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: landmark-factory-casablanca-offline
+          path: artifacts/
+          retention-days: 7

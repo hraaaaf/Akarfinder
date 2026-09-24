@@ -36,6 +36,7 @@ test("deep zoom reveals a verified landmark only after its parent district is vi
     [
       "landmark_casablanca_ain_diab_morocco_mall",
       "landmark_casablanca_bouskoura_forest",
+      "landmark_casablanca_maarif_stade_mohammed_v",
       "landmark_casablanca_maarif_twin_center",
     ].sort(),
   );
@@ -43,6 +44,7 @@ test("deep zoom reveals a verified landmark only after its parent district is vi
   assert.ok(deep.landmarks.some((entry) => entry.entity.id === "landmark_casablanca_finance_city_cfc_tower"));
   assert.ok(deep.landmarks.some((entry) => entry.entity.id === "landmark_casablanca_ain_diab_morocco_mall"));
   assert.ok(deep.landmarks.some((entry) => entry.entity.id === "landmark_casablanca_maarif_twin_center"));
+  assert.ok(deep.landmarks.some((entry) => entry.entity.id === "landmark_casablanca_maarif_stade_mohammed_v"));
 });
 
 test("Rabat and Marrakech expose their verified flagship anchors at deep zoom", () => {

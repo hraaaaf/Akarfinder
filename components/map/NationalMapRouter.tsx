@@ -33,8 +33,10 @@ export function NationalMapRouter({ initialState }: Props) {
   const params = useSearchParams();
   const shellRef = useRef<HTMLDivElement>(null);
   const rawCity = params.get("city");
+  const rawRegion = params.get("region");
   const rawLayer = params.get("layer") ?? MAP_LAYER_EXPLORE;
   const selectedCitySlug = useMemo(() => safeSlug(rawCity), [rawCity]);
+  const selectedRegionSlug = useMemo(() => safeSlug(rawRegion), [rawRegion]);
   const selectedDistrictSlug = useMemo(() => safeSlug(params.get("district")), [params]);
   const selectedNeighborhood = useMemo(
     () => selectedCitySlug && selectedDistrictSlug
@@ -71,6 +73,15 @@ export function NationalMapRouter({ initialState }: Props) {
     };
   }, [useNationalExplore]);
 
+  const selectRegion = useCallback((slug: string) => {
+    const next = new URLSearchParams(params.toString());
+    next.set("region", slug);
+    next.delete("city");
+    next.delete("district");
+    next.set("layer", MAP_LAYER_EXPLORE);
+    router.push(`/map?${next.toString()}`, { scroll: false });
+  }, [params, router]);
+
   const selectCity = useCallback((slug: string) => {
     const next = new URLSearchParams(params.toString());
     next.set("city", slug);
@@ -90,11 +101,25 @@ export function NationalMapRouter({ initialState }: Props) {
 
   const backToMorocco = useCallback(() => {
     const next = new URLSearchParams(params.toString());
+    next.delete("region");
     next.delete("city");
     next.delete("district");
     next.set("layer", MAP_LAYER_EXPLORE);
     router.push(`/map?${next.toString()}`, { scroll: false });
   }, [params, router]);
+
+  const backToRegion = useCallback(() => {
+    if (!selectedRegionSlug) {
+      backToMorocco();
+      return;
+    }
+    const next = new URLSearchParams(params.toString());
+    next.delete("city");
+    next.delete("district");
+    next.set("region", selectedRegionSlug);
+    next.set("layer", MAP_LAYER_EXPLORE);
+    router.push(`/map?${next.toString()}`, { scroll: false });
+  }, [backToMorocco, params, router, selectedRegionSlug]);
 
   if (useMapLibreNeighborhood && selectedNeighborhood) {
     const isMaarifReference = selectedNeighborhood.citySlug === "casablanca"
@@ -107,6 +132,7 @@ export function NationalMapRouter({ initialState }: Props) {
         districtLabel={selectedNeighborhood.neighborhood}
         center={[selectedNeighborhood.lng, selectedNeighborhood.lat]}
         desktopCameraOffset={isMaarifReference ? [-0.0055, 0.0090] : [0, 0]}
+        reserveRail={isMaarifReference}
       />
     );
   }
@@ -114,10 +140,22 @@ export function NationalMapRouter({ initialState }: Props) {
   if (!useNationalExplore) return <MapNeighborhoodClient initialState={initialState} />;
 
   return (
-    <div ref={shellRef} className="relative h-[calc(100svh-64px)] min-h-[520px] overflow-hidden" data-vivre-ici-map-shell>
+    <div
+      ref={shellRef}
+      className="relative h-[calc(100svh-64px)] min-h-[520px] overflow-hidden"
+      data-vivre-ici-map-shell
+      data-national-map-canonical-cities="19"
+      data-national-map-canonical-districts="63"
+      data-national-map-verified-anchors="63"
+      data-national-map-boundary-policy="fail-closed-no-synthetic-polygons"
+    >
       <NationalTerritoryExperienceDynamic
+        selectedRegionSlug={selectedRegionSlug}
         selectedCitySlug={selectedCitySlug}
+        onSelectRegion={selectRegion}
         onSelectCity={selectCity}
+        onSelectDistrict={selectDistrict}
+        onBackToRegion={backToRegion}
         onBackToMorocco={backToMorocco}
       />
       <National3DBuildingsLayer citySlug={selectedCitySlug} districtSlug={selectedDistrictSlug} />

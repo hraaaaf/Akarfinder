@@ -1,0 +1,46 @@
+name: Landmark Factory AUC ArcGIS Probe
+
+on:
+  pull_request:
+    paths:
+      - "scripts/landmarks/probe-auc-arcgis.mjs"
+      - ".github/workflows/landmark-factory-auc-arcgis-probe.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Probe public AUC ArcGIS portal
+        run: |
+          mkdir -p artifacts
+          node scripts/landmarks/probe-auc-arcgis.mjs
+          cat artifacts/auc-arcgis-probe.json
+
+      - name: Assert fail-closed discovery semantics
+        run: |
+          node - <<'NODE'
+          const p = require("./artifacts/auc-arcgis-probe.json");
+          if (p.evidence_role !== "AUC_PUBLIC_ARCGIS_DISCOVERY_ONLY") throw new Error("bad evidence role");
+          if (p.activation_allowed !== false) throw new Error("activation must remain false");
+          if (p.geometry_promotion_allowed !== false) throw new Error("geometry promotion must remain false");
+          if (!Array.isArray(p.items)) throw new Error("items missing");
+          console.log(JSON.stringify(p.summary, null, 2));
+          NODE
+
+      - name: Upload AUC ArcGIS discovery artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: landmark-factory-auc-arcgis-probe
+          path: artifacts/auc-arcgis-probe.json
+          if-no-files-found: error

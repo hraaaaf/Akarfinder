@@ -1,0 +1,56 @@
+name: Carte Four-Level Responsive R7
+
+on:
+  pull_request:
+    paths:
+      - "app/map/**"
+      - "components/map/**"
+      - "lib/map/**"
+      - "scripts/audits/carte-four-level-responsive-r7.mjs"
+      - ".github/workflows/carte-four-level-responsive-r7.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  certify-four-level-responsive-r7:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      BASE_URL: http://127.0.0.1:3217
+      AUDIT_OUTPUT_DIR: data/audits/carte-four-level-responsive-r7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - name: Start production server
+        shell: bash
+        run: |
+          npm run start -- -p 3217 > /tmp/carte-four-level-r7.log 2>&1 &
+          for attempt in {1..60}; do
+            if curl -fsS 'http://127.0.0.1:3217/map?layer=explore' >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/carte-four-level-r7.log
+          exit 1
+      - name: Four-level responsive certification
+        run: node scripts/audits/carte-four-level-responsive-r7.mjs
+      - name: Upload R7 evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: carte-four-level-responsive-r7-${{ github.run_id }}
+          path: data/audits/carte-four-level-responsive-r7
+          if-no-files-found: error
+          retention-days: 30

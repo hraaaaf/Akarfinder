@@ -1,0 +1,234 @@
+name: Landmark Factory National Neighborhood Inventory
+
+on:
+  pull_request:
+    paths:
+      - "scripts/landmarks/build-morocco-neighborhood-inventory.py"
+      - "scripts/landmarks/assign-morocco-admin-containment.py"
+      - "scripts/landmarks/crosswalk-national-canonical-neighborhoods.ts"
+      - "scripts/landmarks/build-national-rollout-plan.ts"
+      - "scripts/landmarks/build-national-useful-inventory.ts"
+      - "scripts/landmarks/build-locality-city-attachments.ts"
+      - "scripts/landmarks/assign-morocco-locality-region.py"
+      - "scripts/landmarks/build-morocco-region-boundaries.py"
+      - "scripts/landmarks/build-rabat-landmark-bridge.ts"
+      - "lib/geo/rabat-locality-registry.ts"
+      - "lib/geo/rabat-locality-geometry-registry.ts"
+      - "lib/geo/rabat-locality-publication-readiness.ts"
+      - "lib/geo/geo-entity-registry.ts"
+      - "lib/geo/morocco-region-registry.ts"
+      - ".github/workflows/landmark-factory-national-inventory.yml"
+      - "docs/geo/landmark-factory/MOROCCO_NATIONAL_NEIGHBORHOOD_FACTORY.md"
+      - "scripts/scrapers/__tests__/national-map-goal-contract.test.ts"
+      - "lib/map/national-map-product-policy.ts"
+      - "lib/geo/casablanca-target-neighborhood-readiness.ts"
+      - "app/api/geo/national-territories/route.ts"
+      - "components/map/NationalMapRouter.tsx"
+      - "components/map/NationalTerritoryExperience.tsx"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install native Osmium filter + pyosmium
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends osmium-tool
+          python -m pip install --disable-pip-version-check osmium shapely
+      - name: Download current Morocco OSM PBF
+        run: |
+          curl --fail --location --retry 3 --output /tmp/morocco-latest.osm.pbf \
+            https://download.geofabrik.de/africa/morocco-latest.osm.pbf
+          ls -lh /tmp/morocco-latest.osm.pbf
+      - name: Filter Morocco PBF to Landmark Factory scope
+        run: |
+          osmium tags-filter -R \
+            -o /tmp/morocco-landmark-scope.osm.pbf \
+            /tmp/morocco-latest.osm.pbf \
+            n/place=neighbourhood,quarter,suburb,city_district,city,town,municipality,village \
+            wr/place=neighbourhood,quarter,suburb,city_district \
+            wr/boundary=administrative
+          ls -lh /tmp/morocco-landmark-scope.osm.pbf
+          osmium fileinfo -e /tmp/morocco-landmark-scope.osm.pbf
+
+      - name: Filter admin-level-8 containment geometry
+        run: |
+          osmium tags-filter \
+            -o /tmp/morocco-admin8.osm.pbf \
+            /tmp/morocco-latest.osm.pbf \
+            wr/admin_level=8
+          ls -lh /tmp/morocco-admin8.osm.pbf
+          osmium fileinfo -e /tmp/morocco-admin8.osm.pbf
+
+      - name: Filter admin-level-4 region geometry
+        run: |
+          osmium tags-filter \
+            -o /tmp/morocco-admin4.osm.pbf \
+            /tmp/morocco-latest.osm.pbf \
+            wr/admin_level=4
+          ls -lh /tmp/morocco-admin4.osm.pbf
+          osmium fileinfo -e /tmp/morocco-admin4.osm.pbf
+
+      - name: Build canonical Morocco region boundaries
+        run: |
+          mkdir -p artifacts
+          python scripts/landmarks/build-morocco-region-boundaries.py \
+            --pbf /tmp/morocco-admin4.osm.pbf \
+            --out artifacts/morocco-canonical-region-boundaries.geojson
+          python - <<'PY'
+          import json
+          p=json.load(open("artifacts/morocco-canonical-region-boundaries.geojson",encoding="utf-8"))
+          assert p["type"] == "FeatureCollection"
+          assert len(p["features"]) == 12
+          assert p["akarfinder"]["evidence_role"] == "CANONICAL_REGION_BOUNDARY_CANDIDATES"
+          assert p["akarfinder"]["activation_allowed"] is False
+          assert p["akarfinder"]["product_boundary_promotion_allowed"] is False
+          assert all(f["properties"]["admin_level"] == "4" for f in p["features"])
+          assert all(f["properties"]["geometry_claim"] == "ADMINISTRATIVE_REGION_ONLY" for f in p["features"])
+          PY
+
+      - name: Build national neighborhood discovery backlog
+        run: |
+          mkdir -p artifacts
+          python scripts/landmarks/build-morocco-neighborhood-inventory.py \
+            --pbf /tmp/morocco-landmark-scope.osm.pbf \
+            --out artifacts/morocco-neighborhood-discovery-inventory-v2.json
+          python scripts/landmarks/assign-morocco-admin-containment.py \
+            --inventory artifacts/morocco-neighborhood-discovery-inventory-v2.json \
+            --admin-pbf /tmp/morocco-admin8.osm.pbf \
+            --out artifacts/morocco-neighborhood-discovery-inventory.json
+
+      - name: Crosswalk discovery candidates to canonical registry
+        run: |
+          npx --yes tsx@4.22.4 scripts/landmarks/crosswalk-national-canonical-neighborhoods.ts \
+            --inventory artifacts/morocco-neighborhood-discovery-inventory.json \
+            --out artifacts/morocco-canonical-neighborhood-crosswalk.json
+          cat artifacts/morocco-canonical-neighborhood-crosswalk.json
+
+      - name: Build fail-closed national rollout plan
+        run: |
+          npx --yes tsx@4.22.4 scripts/landmarks/build-national-rollout-plan.ts \
+            --crosswalk artifacts/morocco-canonical-neighborhood-crosswalk.json \
+            --out artifacts/morocco-landmark-factory-rollout-plan.json
+          cat artifacts/morocco-landmark-factory-rollout-plan.json
+
+      - name: Build national useful map inventory
+        run: |
+          npx --yes tsx@4.22.4 scripts/landmarks/build-national-useful-inventory.ts \
+            --inventory artifacts/morocco-neighborhood-discovery-inventory.json \
+            --crosswalk artifacts/morocco-canonical-neighborhood-crosswalk.json \
+            --out artifacts/morocco-national-useful-map-inventory.json
+          cat artifacts/morocco-national-useful-map-inventory.json
+
+      - name: Route locality centers through canonical regions
+        run: |
+          python scripts/landmarks/assign-morocco-locality-region.py \
+            --inventory artifacts/morocco-neighborhood-discovery-inventory.json \
+            --region-pbf /tmp/morocco-admin4.osm.pbf \
+            --out artifacts/morocco-locality-region-inventory.json
+
+      - name: Build fail-closed locality to city attachments
+        run: |
+          npx --yes tsx@4.22.4 scripts/landmarks/build-locality-city-attachments.ts \
+            --inventory artifacts/morocco-locality-region-inventory.json \
+            --out artifacts/morocco-locality-city-attachments.json \
+            --max-attachment-km 50
+          cat artifacts/morocco-locality-city-attachments.json
+
+      - name: Build Rabat national-registry bridge
+        run: |
+          npx --yes tsx@4.22.4 scripts/landmarks/build-rabat-landmark-bridge.ts \
+            --crosswalk artifacts/morocco-canonical-neighborhood-crosswalk.json \
+            --out artifacts/rabat-landmark-factory-bridge.json
+          cat artifacts/rabat-landmark-factory-bridge.json
+
+      - name: Assert locked national map GOAL contracts
+        run: |
+          npx --yes tsx@4.22.4 --test scripts/scrapers/__tests__/national-map-goal-contract.test.ts
+
+      - name: Assert fail-closed national inventory semantics
+        run: |
+          python - <<'PY'
+          import json, os
+          p="artifacts/morocco-neighborhood-discovery-inventory.json"
+          d=json.load(open(p,encoding="utf-8"))
+          assert d["schema_version"] == 3
+          assert d["source_control"]["pr_head_sha"]
+          assert d["counts"]["product_candidate_count"] > 0
+          assert d["counts"]["administrative_reference_count"] > 0
+          assert d["counts"]["product_candidates_admin8_unique"] > 0
+          assert all(
+              x.get("admin_level_8_containment") is None or x["admin_level_8_containment"].get("status") == "HINT_ONLY"
+              for x in d["product_candidates"]
+          )
+          assert all(x.get("status") == "DISCOVERY_ONLY" for x in d["product_candidates"])
+          assert all(
+              x.get("urban_locality_hint") is None or x["urban_locality_hint"].get("status") == "HINT_ONLY"
+              for x in d["product_candidates"]
+          )
+          assert all(
+              x.get("nearest_settlement_hint") is None or x["nearest_settlement_hint"].get("status") == "HINT_ONLY"
+              for x in d["product_candidates"]
+          )
+          print(json.dumps(d["counts"], ensure_ascii=False, indent=2))
+          x=json.load(open("artifacts/morocco-canonical-neighborhood-crosswalk.json",encoding="utf-8"))
+          assert x["evidence_role"] == "CANDIDATE_CROSSWALK_ONLY"
+          assert x["activation_allowed"] is False
+          assert x["geometry_promotion_allowed"] is False
+          assert x["summary"]["canonical_neighborhood_count"] > 0
+          r=json.load(open("artifacts/morocco-landmark-factory-rollout-plan.json",encoding="utf-8"))
+          assert r["evidence_role"] == "ROLLOUT_PLAN_ONLY"
+          assert r["activation_allowed"] is False
+          assert r["geometry_promotion_allowed"] is False
+          assert r["summary"]["city_count"] > 0
+          u=json.load(open("artifacts/morocco-national-useful-map-inventory.json",encoding="utf-8"))
+          assert u["evidence_role"] == "NATIONAL_USEFUL_INVENTORY_ONLY"
+          assert u["activation_allowed"] is False
+          assert u["geometry_promotion_allowed"] is False
+          assert u["summary"]["region_count"] == 12
+          assert u["summary"]["canonical_city_hub_count"] == 19
+          assert u["summary"]["canonical_neighborhood_count"] == 26
+          a=json.load(open("artifacts/morocco-locality-city-attachments.json",encoding="utf-8"))
+          assert a["evidence_role"] == "LOCALITY_TO_CITY_ATTACHMENT_ROUTING_ONLY"
+          assert a["activation_allowed"] is False
+          assert a["geometry_promotion_allowed"] is False
+          assert a["attachment_semantics"] == "HINT_ONLY_DATA_RELATIONSHIP"
+          assert all(x["geometry_claim"] == "NONE" for x in a["attachments"])
+          assert all(x["map_policy"] == "DO_NOT_RENDER_AS_INDEPENDENT_COUNTRY_LABEL" for x in a["attachments"])
+          assert all(
+              x["map_policy"] == "DO_NOT_RENDER_AS_INDEPENDENT_COUNTRY_LABEL"
+              for h in u["city_hubs"]
+              for x in h["locality_attachment_candidates"]
+          )
+          b=json.load(open("artifacts/rabat-landmark-factory-bridge.json",encoding="utf-8"))
+          assert b["evidence_role"] == "RABAT_LANDMARK_BRIDGE_ONLY"
+          assert b["activation_allowed"] is False
+          assert b["product_boundary_promotion_allowed"] is False
+          assert b["summary"]["canonical_rabat_count"] > 0
+          PY
+      - name: Upload discovery backlog
+        uses: actions/upload-artifact@v4
+        with:
+          name: landmark-factory-morocco-neighborhood-inventory
+          path: |
+            artifacts/morocco-neighborhood-discovery-inventory.json
+            artifacts/morocco-canonical-neighborhood-crosswalk.json
+            artifacts/morocco-landmark-factory-rollout-plan.json
+            artifacts/morocco-national-useful-map-inventory.json
+            artifacts/morocco-locality-region-inventory.json
+            artifacts/morocco-locality-city-attachments.json
+            artifacts/rabat-landmark-factory-bridge.json
+          if-no-files-found: error

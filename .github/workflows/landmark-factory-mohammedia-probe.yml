@@ -1,0 +1,155 @@
+name: Landmark Factory Mohammedia Centre Probe
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/landmark-factory-mohammedia-probe.yml"
+      - "scripts/landmarks/find-osm-boundary-relations.py"
+      - "scripts/landmarks/find-osm-place-anchors.py"
+      - "docs/geo/landmark-factory/MOHAMMEDIA_PRODUCT_GEOGRAPHY_EVIDENCE.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install native Osmium filter + pyosmium
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends osmium-tool
+          python -m pip install --disable-pip-version-check osmium
+
+      - name: Download current Morocco OSM PBF
+        run: |
+          curl --fail --location --retry 3 --output /tmp/morocco-latest.osm.pbf \
+            https://download.geofabrik.de/africa/morocco-latest.osm.pbf
+          ls -lh /tmp/morocco-latest.osm.pbf
+
+      - name: Extract Mohammedia area
+        run: |
+          osmium extract \
+            -b -7.55,33.60,-7.25,33.80 \
+            -o /tmp/mohammedia-area.osm.pbf \
+            /tmp/morocco-latest.osm.pbf
+          ls -lh /tmp/mohammedia-area.osm.pbf
+
+      - name: Prefilter Centre aliases
+        run: |
+          osmium tags-filter -R \
+            -o /tmp/mohammedia-centre-labels.osm.pbf \
+            /tmp/mohammedia-area.osm.pbf \
+            'nwr/name=Centre' \
+            'nwr/name=Centre Ville' \
+            'nwr/name=Centre-ville' \
+            'nwr/name=Centre-Ville' \
+            'nwr/name:fr=Centre' \
+            'nwr/name:fr=Centre Ville' \
+            'nwr/name:fr=Centre-ville' \
+            'nwr/name:fr=Centre-Ville'
+          ls -lh /tmp/mohammedia-centre-labels.osm.pbf
+          osmium fileinfo -e /tmp/mohammedia-centre-labels.osm.pbf
+
+      - name: Discover Mohammedia Centre anchors
+        run: |
+          mkdir -p artifacts
+          python scripts/landmarks/find-osm-place-anchors.py \
+            --pbf /tmp/mohammedia-centre-labels.osm.pbf \
+            --bbox=-7.55,33.60,-7.25,33.80 \
+            --name "Centre" \
+            --name "Centre Ville" \
+            --name "Centre-ville" \
+            --name "Centre-Ville" \
+            --out artifacts/mohammedia-centre-place-anchors.json
+          cat artifacts/mohammedia-centre-place-anchors.json
+
+      - name: Discover exact Mohammedia Centre boundary relations
+        run: |
+          python scripts/landmarks/find-osm-boundary-relations.py \
+            --pbf /tmp/mohammedia-centre-labels.osm.pbf \
+            --name "Centre" \
+            --out artifacts/mohammedia-centre-boundary-relations.json
+          python scripts/landmarks/find-osm-boundary-relations.py \
+            --pbf /tmp/mohammedia-centre-labels.osm.pbf \
+            --name "Centre Ville" \
+            --out artifacts/mohammedia-centre-ville-boundary-relations.json
+          python scripts/landmarks/find-osm-boundary-relations.py \
+            --pbf /tmp/mohammedia-centre-labels.osm.pbf \
+            --name "Centre-ville" \
+            --out artifacts/mohammedia-centre-hyphen-boundary-relations.json
+          cat artifacts/mohammedia-*-boundary-relations.json
+
+      - name: Build fail-closed Mohammedia verdict
+        env:
+          EXPECTED_PR_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+
+          def read(name):
+              return json.loads(Path(name).read_text(encoding="utf-8"))
+
+          anchors=read("artifacts/mohammedia-centre-place-anchors.json")
+          rel_files=[
+              "artifacts/mohammedia-centre-boundary-relations.json",
+              "artifacts/mohammedia-centre-ville-boundary-relations.json",
+              "artifacts/mohammedia-centre-hyphen-boundary-relations.json",
+          ]
+          relation_matches=[]
+          for file in rel_files:
+              relation_matches.extend(read(file).get("matches",[]))
+
+          # Deduplicate exact relation ids if aliases hit the same object.
+          seen=set()
+          relation_matches=[r for r in relation_matches if not (r["osm_id"] in seen or seen.add(r["osm_id"]))]
+
+          verdict={
+              "schema_version":1,
+              "source_control":{
+                  "pr_head_sha":os.environ.get("EXPECTED_PR_HEAD") or os.environ.get("GITHUB_SHA"),
+                  "github_context_sha":os.environ.get("GITHUB_SHA"),
+              },
+              "city":"Mohammedia",
+              "canonical_neighborhood":"Centre",
+              "canonical_aliases":["Centre-ville","Centre ville"],
+              "evidence_role":"DISCOVERY_PROBE_ONLY",
+              "anchors_are_product_boundaries":False,
+              "exact_relations_are_product_boundaries":False,
+              "promotion":{
+                  "allowed":False,
+                  "verdict":"NO_PRODUCT_BOUNDARY_CLAIM",
+                  "reason":"Centre labels are generic; same-city anchors/relations require explicit city scoping and independent product-geography corroboration.",
+              },
+              "counts":{
+                  "anchor_matches":len(anchors.get("matches",[])),
+                  "boundary_relation_matches":len(relation_matches),
+              },
+              "relation_matches":relation_matches,
+          }
+          Path("artifacts/mohammedia-product-geography-verdict.json").write_text(
+              json.dumps(verdict,ensure_ascii=False,indent=2)+"\n",encoding="utf-8"
+          )
+          print(json.dumps(verdict,ensure_ascii=False,indent=2))
+          assert verdict["promotion"]["allowed"] is False
+          assert verdict["evidence_role"] == "DISCOVERY_PROBE_ONLY"
+          PY
+
+      - name: Upload Mohammedia discovery evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: landmark-factory-mohammedia-product-geography-probe
+          path: artifacts/
+          if-no-files-found: error

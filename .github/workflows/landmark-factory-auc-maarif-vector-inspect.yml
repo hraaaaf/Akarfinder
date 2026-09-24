@@ -1,0 +1,101 @@
+name: Landmark Factory AUC Maarif Vector Inspect
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/landmark-factory-auc-maarif-vector-inspect.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install PDF inspection tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends poppler-utils
+
+      - name: Download official AUC Maârif plan
+        run: |
+          mkdir -p artifacts/maarif-vector
+          UA="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/140 Safari/537.36"
+          curl --fail --location --retry 3 --user-agent "$UA" \
+            --cookie-jar artifacts/maarif-vector/auc.cookies \
+            -o artifacts/maarif-vector/maarif-source.html \
+            "https://www.auc.ma/e-services-2/e-documents/?IdP=1085"
+          curl --fail --location --retry 3 --user-agent "$UA" \
+            --cookie artifacts/maarif-vector/auc.cookies \
+            --referer "https://www.auc.ma/e-services-2/e-documents/?IdP=1085" \
+            -D artifacts/maarif-vector/maarif.headers \
+            -o artifacts/maarif-vector/maarif.pdf \
+            "https://auc.ma/wp-content/uploads/2020/05/Pa-MAARIF-006-5000-0.pdf"
+          python - <<'PY'
+          from pathlib import Path
+          p=Path("artifacts/maarif-vector/maarif.pdf")
+          sig=p.read_bytes()[:5]
+          print("maarif bytes=",p.stat().st_size,"signature=",sig)
+          if sig != b"%PDF-":
+              print(Path("artifacts/maarif-vector/maarif.headers").read_text(errors="ignore"))
+              print(p.read_text(errors="ignore")[:800])
+              raise SystemExit("official Maârif link did not return a PDF")
+          PY
+
+      - name: Inspect PDF structure
+        run: |
+          python - <<'PY'
+          import json, subprocess, re
+          from pathlib import Path
+          pdf=Path("artifacts/maarif-vector/maarif.pdf")
+          info=subprocess.check_output(["pdfinfo",str(pdf)],text=True,errors="ignore")
+          m=re.search(r"Pages:\s+(\d+)",info)
+          pages=int(m.group(1)) if m else 0
+          images=subprocess.check_output(["pdfimages","-list",str(pdf)],text=True,errors="ignore")
+          fonts=subprocess.check_output(["pdffonts",str(pdf)],text=True,errors="ignore")
+          doc={"bytes":pdf.stat().st_size,"pages":pages,"sheets":[]}
+          for p in range(1,pages+1):
+              svg=Path(f"artifacts/maarif-vector/maarif-{p}.svg")
+              subprocess.run(["pdftocairo","-f",str(p),"-l",str(p),"-svg",str(pdf),str(svg)],check=True)
+              s=svg.read_text(encoding="utf-8",errors="ignore")
+              doc["sheets"].append({
+                  "page":p,
+                  "bytes":svg.stat().st_size,
+                  "path_count":len(re.findall(r"<path\b",s)),
+                  "image_count":len(re.findall(r"<image\b",s)),
+                  "text_count":len(re.findall(r"<text\b",s)),
+                  "dasharray_count":len(re.findall(r"stroke-dasharray",s)),
+              })
+          doc["vector_sheet_count"]=sum(1 for x in doc["sheets"] if x["path_count"]>100)
+          doc["raster_only"]=doc["vector_sheet_count"]==0
+          payload={
+              "schema_version":1,
+              "evidence_role":"AUC_MAARIF_VECTOR_INSPECTION_ONLY",
+              "activation_allowed":False,
+              "geometry_promotion_allowed":False,
+              "source_url":"https://auc.ma/wp-content/uploads/2020/05/Pa-MAARIF-006-5000-0.pdf",
+              "document":doc,
+              "guardrails":[
+                  "Vector presence does not certify a product-neighborhood boundary.",
+                  "Raster-only plans remain official graphic evidence but non-extractable for direct polygon publication.",
+                  "No manual tracing, OCR polygonization, road-loop inference or synthetic closure is allowed."
+              ]
+          }
+          Path("artifacts/maarif-vector/vector-summary.json").write_text(json.dumps(payload,indent=2)+"\n",encoding="utf-8")
+          print(json.dumps(payload,indent=2))
+          PY
+
+      - name: Upload inspection evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: landmark-factory-auc-maarif-vector-inspect
+          path: artifacts/maarif-vector/
+          if-no-files-found: error

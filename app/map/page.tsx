@@ -5,6 +5,7 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { NationalMapRouter } from "@/components/map/NationalMapRouter";
 import { P4MapDecisionRail } from "@/components/map/P4MapDecisionRail";
 import { PremiumInteractiveMapBridge } from "@/components/map/PremiumInteractiveMapBridge";
+import { MaarifTargetRail } from "@/components/map/MaarifTargetRail";
 import { parseMapNavigationState } from "@/lib/map/map-navigation-state";
 import "./mockup-convergence-l2.css";
 import "./p4-map-shell.css";
@@ -43,11 +44,13 @@ function firstParam(value: string | string[] | undefined): string {
 export default async function MapPage({ searchParams }: MapPageProps) {
   const params = searchParams ? await searchParams : {};
   const initialState = parseMapNavigationState(params);
+  const region = firstParam(params.region).trim();
   const city = firstParam(params.city).trim();
   const district = firstParam(params.district).trim();
   const layer = firstParam(params.layer).trim() || "explore";
   const hasNeighborhoodSelection = Boolean(city && district);
-  const usePremiumNationalExplore = !city && !district && layer === "explore";
+  const hasMaarifTargetSelection = city === "casablanca" && district === "maarif" && layer === "explore";
+  const usePremiumNationalExplore = !region && !city && !district && layer === "explore";
 
   return (
     <div className="flex min-h-[100svh] flex-col bg-[#F8FAFC] text-[#0B1F3A]" data-vivre-ici-page>
@@ -60,6 +63,7 @@ export default async function MapPage({ searchParams }: MapPageProps) {
           <div className="flex-1" data-p4-map-layout>
             <div data-p4-map-canvas>
               <NationalMapRouter initialState={initialState} />
+              {hasMaarifTargetSelection ? <MaarifTargetRail /> : null}
               {hasNeighborhoodSelection ? (
                 <Link
                   href="/map?layer=explore"
@@ -72,7 +76,7 @@ export default async function MapPage({ searchParams }: MapPageProps) {
                 </Link>
               ) : null}
             </div>
-            <P4MapDecisionRail />
+            {!hasMaarifTargetSelection ? <P4MapDecisionRail /> : null}
           </div>
 
           {!hasNeighborhoodSelection ? (

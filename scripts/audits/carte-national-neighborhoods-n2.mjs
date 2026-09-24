@@ -118,8 +118,9 @@ try {
         const shell = document.querySelector('[data-maplibre-spike][data-maplibre-city="casablanca"][data-maplibre-district="maarif"]');
         return shell?.getAttribute("data-maplibre-render-state") === "ready";
       }, null, { timeout: 20000 });
-      const rail = page.locator('[data-p4-map-decision-rail]');
+      const rail = page.locator('[data-maarif-target-rail]');
       await rail.waitFor({ state: "visible", timeout: 10000 });
+      if (await page.locator('[data-p4-map-decision-rail]').count() !== 0) throw new Error("obsolete P4 decision rail must be absent");
       const activeHref = await rail.getByRole("link", { name: /Voir les biens disponibles à Maârif/i }).getAttribute("href");
       if (!activeHref?.includes("city=Casablanca") || !activeHref.includes("district=Ma%C3%A2rif")) throw new Error(`Maârif Search handoff ${activeHref}`);
       overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);

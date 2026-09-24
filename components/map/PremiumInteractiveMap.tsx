@@ -23,6 +23,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CanonicalCitySlug } from "@/lib/geo/geo-entity-registry";
 import { selectNationalCityVisibility } from "@/lib/geo/territory-national-visibility";
 import { selectStableTerritoryLabels } from "@/lib/geo/territory-label-stability";
+import { buildCanonicalPremiumMapData } from "@/lib/map/canonical-premium-map-data";
 
 interface QuartierStats {
   priceRepere?: number;
@@ -33,6 +34,16 @@ interface QuartierStats {
 type Quartier = {
   name: string;
   slug: string;
+  mapAnchor?: {
+    coordinates: [number, number];
+    landmarkId: string;
+    landmarkName: string;
+    evidenceRole: "VERIFIED_LANDMARK_ANCHOR_ONLY";
+  };
+  priority: {
+    score: number;
+    tier: "flagship" | "major" | "regional" | "local";
+  };
   stats: QuartierStats;
 };
 
@@ -40,7 +51,7 @@ type City = {
   name: string;
   slug: string;
   signature?: string;
-  coordinates: [number, number];
+  coordinates?: [number, number];
   quartiers: Quartier[];
 };
 
@@ -49,6 +60,7 @@ type Region = {
   slug: string;
   iso: `MA-${string}`;
   cities: City[];
+  regionalCities: City[];
 };
 
 type RegionFeatureProperties = {
@@ -121,164 +133,7 @@ const REGION_ALIASES: Record<string, string> = {
 
 function useMapData() {
   return useMemo<Region[]>(
-    () => [
-      {
-        name: "Tanger-Tétouan-Al Hoceïma",
-        slug: "tanger-tetouan-al-hoceima",
-        iso: "MA-01",
-        cities: [
-          {
-            name: "Tanger",
-            slug: "tanger",
-            signature: "Maritime & Industrie",
-            coordinates: [-5.8128, 35.7595],
-            quartiers: [
-              // MOCK — statistiques de démonstration uniquement, aucune lecture Supabase.
-              { name: "Malabata", slug: "malabata", stats: { priceRepere: 15400, landmarksVerified: 9, status: "disponible" } },
-              { name: "Iberia", slug: "iberia", stats: { priceRepere: 17100, landmarksVerified: 7, status: "disponible" } },
-              { name: "Centre-ville", slug: "centre-ville-tanger", stats: { priceRepere: 13200, landmarksVerified: 11, status: "disponible" } },
-              { name: "Médina", slug: "medina-tanger", stats: { landmarksVerified: 5, status: "indisponible" } },
-              { name: "Charf", slug: "charf", stats: { priceRepere: 11800, landmarksVerified: 6, status: "disponible" } },
-            ],
-          },
-        ],
-      },
-      { name: "L’Oriental", slug: "oriental", iso: "MA-02", cities: [] },
-      {
-        name: "Fès-Meknès",
-        slug: "fes-meknes",
-        iso: "MA-03",
-        cities: [
-          {
-            name: "Fès",
-            slug: "fes",
-            signature: "Artisanat & Culture",
-            coordinates: [-5.0033, 34.0331],
-            quartiers: [
-              { name: "Ville Nouvelle", slug: "ville-nouvelle-fes", stats: { priceRepere: 9700, landmarksVerified: 10, status: "disponible" } },
-              { name: "Médina", slug: "medina-fes", stats: { landmarksVerified: 13, status: "indisponible" } },
-              { name: "Route Immouzer", slug: "route-immouzer", stats: { priceRepere: 10400, landmarksVerified: 6, status: "disponible" } },
-              { name: "Agdal", slug: "agdal-fes", stats: { priceRepere: 8900, landmarksVerified: 5, status: "disponible" } },
-              { name: "Narjiss", slug: "narjiss", stats: { priceRepere: 8300, landmarksVerified: 4, status: "disponible" } },
-            ],
-          },
-        ],
-      },
-      {
-        name: "Rabat-Salé-Kénitra",
-        slug: "rabat-sale-kenitra",
-        iso: "MA-04",
-        cities: [
-          {
-            name: "Rabat",
-            slug: "rabat",
-            signature: "Capitale & Administration",
-            coordinates: [-6.8498, 34.0209],
-            quartiers: [
-              { name: "Agdal", slug: "agdal", stats: { priceRepere: 18400, landmarksVerified: 14, status: "disponible" } },
-              { name: "Hay Riad", slug: "hay-riad", stats: { priceRepere: 21300, landmarksVerified: 12, status: "disponible" } },
-              { name: "Souissi", slug: "souissi", stats: { priceRepere: 23600, landmarksVerified: 8, status: "disponible" } },
-              { name: "Hassan", slug: "hassan", stats: { priceRepere: 16600, landmarksVerified: 10, status: "disponible" } },
-              { name: "Océan", slug: "ocean", stats: { priceRepere: 14200, landmarksVerified: 9, status: "disponible" } },
-              { name: "Médina", slug: "medina-rabat", stats: { landmarksVerified: 11, status: "indisponible" } },
-            ],
-          },
-          {
-            name: "Kénitra",
-            slug: "kenitra",
-            coordinates: [-6.5802, 34.261],
-            quartiers: [
-              { name: "Centre-ville", slug: "centre-ville-kenitra", stats: { priceRepere: 9300, landmarksVerified: 8, status: "disponible" } },
-              { name: "Bir Rami", slug: "bir-rami", stats: { priceRepere: 10100, landmarksVerified: 5, status: "disponible" } },
-              { name: "Ouled Oujih", slug: "ouled-oujih", stats: { priceRepere: 7600, landmarksVerified: 4, status: "disponible" } },
-              { name: "Maamora", slug: "maamora-kenitra", stats: { landmarksVerified: 5, status: "indisponible" } },
-            ],
-          },
-        ],
-      },
-      { name: "Béni Mellal-Khénifra", slug: "beni-mellal-khenifra", iso: "MA-05", cities: [] },
-      {
-        name: "Casablanca-Settat",
-        slug: "casablanca-settat",
-        iso: "MA-06",
-        cities: [
-          {
-            name: "Casablanca",
-            slug: "casablanca",
-            signature: "Économique & Affaires",
-            coordinates: [-7.5898, 33.5731],
-            quartiers: [
-              { name: "Maârif", slug: "maarif", stats: { priceRepere: 17600, landmarksVerified: 15, status: "disponible" } },
-              { name: "Aïn Diab", slug: "ain-diab", stats: { priceRepere: 26800, landmarksVerified: 12, status: "disponible" } },
-              { name: "Gauthier", slug: "gauthier", stats: { priceRepere: 20500, landmarksVerified: 13, status: "disponible" } },
-              { name: "Racine", slug: "racine", stats: { priceRepere: 22400, landmarksVerified: 10, status: "disponible" } },
-              { name: "Californie", slug: "californie", stats: { priceRepere: 19700, landmarksVerified: 7, status: "disponible" } },
-              { name: "Anfa", slug: "anfa", stats: { priceRepere: 27900, landmarksVerified: 9, status: "disponible" } },
-              { name: "Sidi Maârouf", slug: "sidi-maarouf", stats: { priceRepere: 13100, landmarksVerified: 6, status: "disponible" } },
-              { name: "Bourgogne", slug: "bourgogne", stats: { priceRepere: 18100, landmarksVerified: 11, status: "disponible" } },
-              { name: "Oasis", slug: "oasis", stats: { priceRepere: 18900, landmarksVerified: 8, status: "disponible" } },
-              { name: "Palmier", slug: "palmier", stats: { landmarksVerified: 6, status: "indisponible" } },
-            ],
-          },
-          {
-            name: "Mohammedia",
-            slug: "mohammedia",
-            coordinates: [-7.3844, 33.6861],
-            quartiers: [
-              { name: "Corniche", slug: "corniche-mohammedia", stats: { priceRepere: 13900, landmarksVerified: 7, status: "disponible" } },
-              { name: "Centre-ville", slug: "centre-ville-mohammedia", stats: { priceRepere: 11600, landmarksVerified: 8, status: "disponible" } },
-              { name: "Manesman", slug: "manesman", stats: { priceRepere: 12800, landmarksVerified: 5, status: "disponible" } },
-              { name: "Parc", slug: "parc-mohammedia", stats: { landmarksVerified: 4, status: "indisponible" } },
-            ],
-          },
-        ],
-      },
-      {
-        name: "Marrakech-Safi",
-        slug: "marrakech-safi",
-        iso: "MA-07",
-        cities: [
-          {
-            name: "Marrakech",
-            slug: "marrakech",
-            signature: "Tourisme & Patrimoine",
-            coordinates: [-7.9811, 31.6295],
-            quartiers: [
-              { name: "Guéliz", slug: "gueliz", stats: { priceRepere: 18900, landmarksVerified: 15, status: "disponible" } },
-              { name: "Hivernage", slug: "hivernage", stats: { priceRepere: 22600, landmarksVerified: 10, status: "disponible" } },
-              { name: "Palmeraie", slug: "palmeraie", stats: { priceRepere: 20400, landmarksVerified: 8, status: "disponible" } },
-              { name: "Médina", slug: "medina-marrakech", stats: { landmarksVerified: 17, status: "indisponible" } },
-              { name: "Targa", slug: "targa", stats: { priceRepere: 14200, landmarksVerified: 6, status: "disponible" } },
-              { name: "Sidi Ghanem", slug: "sidi-ghanem", stats: { priceRepere: 11200, landmarksVerified: 5, status: "disponible" } },
-            ],
-          },
-        ],
-      },
-      { name: "Drâa-Tafilalet", slug: "draa-tafilalet", iso: "MA-08", cities: [] },
-      {
-        name: "Souss-Massa",
-        slug: "souss-massa",
-        iso: "MA-09",
-        cities: [
-          {
-            name: "Agadir",
-            slug: "agadir",
-            signature: "Littoral & Qualité de vie",
-            coordinates: [-9.5981, 30.4278],
-            quartiers: [
-              { name: "Founty", slug: "founty", stats: { priceRepere: 16700, landmarksVerified: 9, status: "disponible" } },
-              { name: "Talborjt", slug: "talborjt", stats: { priceRepere: 12100, landmarksVerified: 11, status: "disponible" } },
-              { name: "Hay Mohammadi", slug: "hay-mohammadi", stats: { priceRepere: 10800, landmarksVerified: 7, status: "disponible" } },
-              { name: "Sonaba", slug: "sonaba", stats: { priceRepere: 17800, landmarksVerified: 6, status: "disponible" } },
-              { name: "Centre-ville", slug: "centre-ville-agadir", stats: { landmarksVerified: 10, status: "indisponible" } },
-            ],
-          },
-        ],
-      },
-      { name: "Guelmim-Oued Noun", slug: "guelmim-oued-noun", iso: "MA-10", cities: [] },
-      { name: "Laâyoune-Sakia El Hamra", slug: "laayoune-sakia-el-hamra", iso: "MA-11", cities: [] },
-      { name: "Dakhla-Oued Ed-Dahab", slug: "dakhla-oued-ed-dahab", iso: "MA-12", cities: [] },
-    ],
+    () => buildCanonicalPremiumMapData(),
     [],
   );
 }
@@ -293,17 +148,6 @@ function featureSlug(feature: RegionFeature, regions: Region[]) {
   }
   const rawName = properties.shapeName ?? properties.NAME_1 ?? properties.name ?? "";
   return REGION_ALIASES[normalizeName(rawName)] ?? null;
-}
-
-function neighborhoodPolygon(index: number) {
-  const column = index % 3;
-  const row = Math.floor(index / 3);
-  const x = 84 + column * 275 + (row % 2) * 18;
-  const y = 130 + row * 126;
-  const width = 246;
-  const height = 103;
-  const notch = 18 + ((index * 7) % 24);
-  return `${x},${y + 10} ${x + width - notch},${y} ${x + width},${y + height - 20} ${x + width - 20},${y + height} ${x + 14},${y + height - 7} ${x},${y + 28}`;
 }
 
 function readablePrice(value?: number) {
@@ -331,7 +175,7 @@ export function PremiumInteractiveMap() {
     [regions, selectedRegionSlug],
   );
   const selectedCity = useMemo(
-    () => selectedRegion?.cities.find((city) => city.slug === selectedCitySlug) ?? null,
+    () => selectedRegion?.regionalCities.find((city) => city.slug === selectedCitySlug) ?? null,
     [selectedCitySlug, selectedRegion],
   );
   const selectedQuartier = useMemo(
@@ -340,14 +184,14 @@ export function PremiumInteractiveMap() {
   );
 
   const mappedCities = useMemo(
-    () => regions.flatMap((region) => region.cities.map((city) => ({ city, regionSlug: region.slug }))),
+    () => regions.flatMap((region) => region.cities.filter((city) => Boolean(city.coordinates)).map((city) => ({ city, regionSlug: region.slug }))),
     [regions],
   );
 
   const nationalTerritoryZoom = 4.2 + Math.max(0, camera.k - 1) * 6;
   const nationalPriority = useMemo(
-    () => selectNationalCityVisibility({ zoom: nationalTerritoryZoom, maxLabels: 19 }),
-    [nationalTerritoryZoom],
+    () => selectNationalCityVisibility({ zoom: 7, maxLabels: 8 }),
+    [],
   );
 
 
@@ -400,6 +244,7 @@ export function PremiumInteractiveMap() {
     if (!projection) return [];
     const priorityBySlug = new Map(nationalPriority.map((item) => [item.citySlug, item]));
     const candidateMeta = mappedCities.flatMap(({ city, regionSlug }) => {
+      if (!city.coordinates) return [];
       const priority = priorityBySlug.get(city.slug as CanonicalCitySlug);
       const point = projection(city.coordinates);
       if (!priority || !point) return [];
@@ -433,7 +278,7 @@ export function PremiumInteractiveMap() {
       }];
     });
 
-    const capacity = camera.k < 1.1 ? 6 : camera.k < 1.2 ? 7 : 8;
+    const capacity = 8;
     const selected = selectStableTerritoryLabels({
       candidates: candidateMeta.map((item) => item.collision),
       maxLabels: capacity,
@@ -490,7 +335,7 @@ export function PremiumInteractiveMap() {
   }, [applyCamera, pathGenerator, regionFeatures, regions]);
 
   const focusCity = useCallback((city: City) => {
-    if (!projection) return;
+    if (!projection || !city.coordinates) return;
     const point = projection(city.coordinates);
     if (!point) return;
     const scale = 6.2;
@@ -515,7 +360,7 @@ export function PremiumInteractiveMap() {
   }, [focusRegion]);
 
   const selectCity = useCallback((city: City) => {
-    const parentRegion = regions.find((region) => region.cities.some((candidate) => candidate.slug === city.slug));
+    const parentRegion = regions.find((region) => region.regionalCities.some((candidate) => candidate.slug === city.slug));
     setLevel("city");
     setSelectedRegionSlug(parentRegion?.slug ?? null);
     setSelectedCitySlug(city.slug);
@@ -566,7 +411,7 @@ export function PremiumInteractiveMap() {
       data-premium-map
       data-map-level={level}
       data-topology-state={topologyState}
-      data-db-mode="mock-only"
+      data-db-mode="canonical-registry"
       data-national-territory-zoom={nationalTerritoryZoom.toFixed(2)}
       data-national-city-label-count={level === "national" ? nationalCityRenderItems.length : 0}
     >
@@ -579,13 +424,13 @@ export function PremiumInteractiveMap() {
             </div>
             <h1 className="text-[26px] font-black tracking-[-0.045em] sm:text-[32px] lg:text-[38px]">Où vivre au Maroc ?</h1>
             <p className="mt-1 max-w-2xl text-[12px] font-medium sm:text-[13px]" style={{ color: "var(--text-secondary)" }}>
-              Explorez le territoire par région, ville puis quartier. Les repères affichés dans ce prototype sont des données mock isolées.
+              Explorez le territoire par région, ville puis quartier. La vue Pays montre les 8 hubs verrouillés ; les niveaux suivants utilisent le runtime canonique fail-closed.
             </p>
           </div>
           <div className="flex flex-wrap gap-2 text-[10px] font-extrabold uppercase tracking-[0.08em]" style={{ color: "var(--text-secondary)" }}>
             <span className="rounded-full border px-3 py-2" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>12 régions</span>
-            <span className="rounded-full border px-3 py-2" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>{cityCount} villes indexées</span>
-            <span className="rounded-full border px-3 py-2" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>{quartierCount} quartiers</span>
+            <span className="rounded-full border px-3 py-2" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>8 villes majeures</span>
+            <span className="rounded-full border px-3 py-2" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>navigation fail-closed</span>
           </div>
         </header>
 
@@ -681,7 +526,7 @@ export function PremiumInteractiveMap() {
                     );
                   })}
 
-                  {level === "national" && nationalCityRenderItems.map(({ city, point, labelWidth, direction, labelXOffset, labelYOffset, priority }) => {
+                  {level === "national" && nationalCityRenderItems.map(({ city, regionSlug, point, labelWidth, direction, labelXOffset, labelYOffset, priority }) => {
                     const baseLabelX = direction > 0 ? 13 : -(labelWidth + 13);
                     const baseTextX = direction > 0 ? 24 : -(labelWidth + 2);
                     const labelX = (baseLabelX + labelXOffset) / camera.k;
@@ -698,14 +543,14 @@ export function PremiumInteractiveMap() {
                         data-city-slug={city.slug}
                         data-national-city-label={city.slug}
                         data-national-city-importance={priority.importanceScore}
-                        onClick={(event) => { event.stopPropagation(); selectCity(city); }}
+                        onClick={(event) => { event.stopPropagation(); selectRegion(regionSlug); }}
                         onKeyDown={(event) => {
                           if (event.key === "Enter" || event.key === " ") {
                             event.preventDefault();
-                            selectCity(city);
+                            selectRegion(regionSlug);
                           }
                         }}
-                        onPointerMove={(event) => setTooltip({ title: city.name, subtitle: "Ville prioritaire", x: event.clientX, y: event.clientY })}
+                        onPointerMove={(event) => setTooltip({ title: city.name, subtitle: "Ouvrir sa région", x: event.clientX, y: event.clientY })}
                         onPointerLeave={() => setTooltip(null)}
                       >
                         <circle r={12 / camera.k} fill="rgba(255,255,255,0.96)" stroke={NAVY} strokeWidth={2 / camera.k} vectorEffect="non-scaling-stroke" />
@@ -735,9 +580,12 @@ export function PremiumInteractiveMap() {
                     );
                   })}
 
-                  {level !== "national" && selectedRegion && selectedRegion.cities.map((city) => {
+                  {level === "region" && selectedRegion && selectedRegion.regionalCities.map((city) => {
+                    if (!city.coordinates) return null;
                     const point = projection(city.coordinates);
                     if (!point) return null;
+                    const isCountryHub = selectedRegion.cities.some((candidate) => candidate.slug === city.slug);
+                    const labelWidth = Math.max(62, city.name.length * 6.2 + 26);
                     return (
                       <g
                         key={city.slug}
@@ -747,21 +595,91 @@ export function PremiumInteractiveMap() {
                         tabIndex={0}
                         aria-label={`Explorer ${city.name}`}
                         data-city-slug={city.slug}
-                        onClick={(event) => { event.stopPropagation(); selectCity(city); }}
+                        data-region-polarity={isCountryHub ? "country-hub" : "regional-center"}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          selectCity(city);
+                        }}
                         onKeyDown={(event) => {
                           if (event.key === "Enter" || event.key === " ") {
                             event.preventDefault();
                             selectCity(city);
                           }
                         }}
-                        onPointerMove={(event) => setTooltip({ title: city.name, subtitle: city.signature ?? selectedRegion.name, x: event.clientX, y: event.clientY })}
+                        onPointerMove={(event) => setTooltip({
+                          title: city.name,
+                          subtitle: isCountryHub ? (city.signature ?? "Hub pays") : "Pôle régional canonique · explorer",
+                          x: event.clientX,
+                          y: event.clientY,
+                        })}
                         onPointerLeave={() => setTooltip(null)}
                       >
-                        <circle r={14 / camera.k} fill="rgba(255,255,255,0.95)" stroke={NAVY} strokeWidth={2.2 / camera.k} vectorEffect="non-scaling-stroke" />
-                        <circle r={5.2 / camera.k} fill={NAVY} />
+                        <circle r={(isCountryHub ? 14 : 10) / camera.k} fill="rgba(255,255,255,0.96)" stroke={NAVY} strokeWidth={(isCountryHub ? 2.2 : 1.4) / camera.k} vectorEffect="non-scaling-stroke" />
+                        <circle r={(isCountryHub ? 5.2 : 3.5) / camera.k} fill={NAVY} opacity={isCountryHub ? 1 : 0.72} />
+                        <rect
+                          x={14 / camera.k}
+                          y={-11 / camera.k}
+                          width={labelWidth / camera.k}
+                          height={22 / camera.k}
+                          rx={11 / camera.k}
+                          fill="rgba(255,255,255,0.93)"
+                          stroke="rgba(7,27,51,0.16)"
+                          strokeWidth={0.8 / camera.k}
+                          vectorEffect="non-scaling-stroke"
+                        />
+                        <text
+                          x={23 / camera.k}
+                          y={3.5 / camera.k}
+                          fill={NAVY}
+                          fontSize={(isCountryHub ? 10.5 : 9.5) / camera.k}
+                          fontWeight={isCountryHub ? 900 : 750}
+                          pointerEvents="none"
+                        >
+                          {city.name}
+                        </text>
                       </g>
                     );
                   })}
+
+                  {level === "city" && selectedCity && selectedCity.quartiers.map((quartier) => {
+                    if (!quartier.mapAnchor) return null;
+                    const point = projection(quartier.mapAnchor.coordinates);
+                    if (!point) return null;
+                    const active = quartier.slug === selectedQuartierSlug;
+                    return (
+                      <g
+                        key={quartier.slug}
+                        transform={`translate(${point[0]} ${point[1]})`}
+                        className="cursor-pointer"
+                        role="button"
+                        tabIndex={0}
+                        aria-label={`Sélectionner le quartier ${quartier.name}`}
+                        data-neighborhood-anchor={quartier.slug}
+                        data-neighborhood-anchor-evidence={quartier.mapAnchor.evidenceRole}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          setSelectedQuartierSlug(quartier.slug);
+                        }}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault();
+                            setSelectedQuartierSlug(quartier.slug);
+                          }
+                        }}
+                        onPointerMove={(event) => setTooltip({
+                          title: quartier.name,
+                          subtitle: `Ancrage vérifié · ${quartier.mapAnchor?.landmarkName ?? "repère certifié"} · pas une frontière`,
+                          x: event.clientX,
+                          y: event.clientY,
+                        })}
+                        onPointerLeave={() => setTooltip(null)}
+                      >
+                        <circle r={(active ? 12 : 8) / camera.k} fill="rgba(255,255,255,0.98)" stroke={NAVY} strokeWidth={(active ? 2.2 : 1.5) / camera.k} vectorEffect="non-scaling-stroke" />
+                        <circle r={(active ? 4.5 : 3) / camera.k} fill={NAVY} />
+                      </g>
+                    );
+                  })}
+
                 </g>
               </svg>
             ) : null}
@@ -770,40 +688,69 @@ export function PremiumInteractiveMap() {
               {level === "city" && selectedCity ? (
                 <motion.div
                   key={selectedCity.slug}
-                  initial={{ opacity: 0, scale: 0.96 }}
+                  initial={{ opacity: 0, scale: 0.98 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.97 }}
-                  transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
-                  className="absolute inset-x-3 bottom-3 top-[66px] z-10 overflow-hidden rounded-[22px] border backdrop-blur-md sm:inset-x-5 sm:bottom-5"
-                  style={{ borderColor: "var(--border)", background: "color-mix(in srgb, var(--surface) 72%, transparent)" }}
-                  data-neighborhood-schematic
+                  exit={{ opacity: 0, scale: 0.98 }}
+                  transition={{ duration: 0.28 }}
+                  className="absolute inset-x-3 bottom-3 top-[42%] z-10 overflow-auto rounded-[22px] border p-5 backdrop-blur-md sm:bottom-5 sm:left-auto sm:right-5 sm:top-[78px] sm:w-[min(54%,620px)] sm:p-7"
+                  style={{ borderColor: "var(--border)", background: "color-mix(in srgb, var(--surface) 92%, transparent)" }}
+                  data-neighborhood-canonical-index
                 >
-                  <svg viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`} className="h-full w-full" aria-label={`Quartiers schématiques de ${selectedCity.name}`}>
-                    <text x="64" y="74" fill="var(--text-primary)" fontSize="25" fontWeight="900">{selectedCity.name}</text>
-                    <text x="64" y="101" fill="var(--text-secondary)" fontSize="12" fontWeight="700">Frontières de quartiers stylisées · non cadastrales</text>
-                    {selectedCity.quartiers.map((quartier, index) => {
-                      const active = quartier.slug === selectedQuartierSlug;
-                      const column = index % 3;
-                      const row = Math.floor(index / 3);
-                      const labelX = 84 + column * 275 + (row % 2) * 18 + 18;
-                      const labelY = 130 + row * 126 + 55;
-                      return (
-                        <g key={quartier.slug} role="button" tabIndex={0} className="cursor-pointer outline-none" aria-label={`Sélectionner ${quartier.name}`} onClick={() => setSelectedQuartierSlug(quartier.slug)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setSelectedQuartierSlug(quartier.slug); } }}>
-                          <motion.polygon
-                            points={neighborhoodPolygon(index)}
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ delay: Math.min(index * 0.035, 0.25), duration: 0.32 }}
-                            fill={active ? NAVY : "color-mix(in srgb, #6E8DA4 35%, var(--surface))"}
-                            stroke={active ? NAVY : "var(--border-dark)"}
-                            strokeWidth={active ? 3 : 1.5}
-                            style={{ transformOrigin: `${labelX}px ${labelY}px` }}
-                          />
-                          <text x={labelX} y={labelY} fill={active ? "white" : "var(--text-primary)"} fontSize="13" fontWeight="850" pointerEvents="none">{quartier.name}</text>
-                        </g>
-                      );
-                    })}
-                  </svg>
+                  <div className="mx-auto max-w-[860px]">
+                    <p className="text-[9px] font-black uppercase tracking-[0.15em]" style={{ color: NAVY }}>Ville · quartiers canoniques</p>
+                    <h2 className="mt-1 text-[28px] font-black tracking-[-0.04em]">{selectedCity.name}</h2>
+                    <p className="mt-2 max-w-2xl text-[11px] font-semibold leading-5" style={{ color: "var(--text-secondary)" }}>
+                      Lecture territoriale canonique : chaque quartier est positionné par un repère landmark vérifié. Ces points servent d’ancrage cartographique uniquement ; aucune frontière de quartier n’est inventée.
+                    </p>
+
+                    <div className="mt-5 flex flex-wrap items-center gap-2 text-[8.5px] font-black uppercase tracking-[0.08em]" style={{ color: "var(--text-secondary)" }}>
+                      <span className="rounded-full border px-2.5 py-1.5" style={{ borderColor: "var(--border)", background: "var(--background)" }}>{selectedCity.quartiers.length} quartiers canoniques</span>
+                      <span className="rounded-full border px-2.5 py-1.5" style={{ borderColor: "var(--border)", background: "var(--background)" }}>{selectedCity.quartiers.filter((quartier) => quartier.mapAnchor).length}/{selectedCity.quartiers.length} ancrages vérifiés</span>
+                      <span className="rounded-full border px-2.5 py-1.5" style={{ borderColor: "var(--border)", background: "var(--background)" }}>hiérarchie éditoriale certifiée</span>
+                    </div>
+
+                    <div className="relative mt-5 overflow-hidden rounded-[22px] border p-3 sm:p-4" style={{ borderColor: "var(--border)", background: "linear-gradient(180deg, color-mix(in srgb, var(--background) 88%, white), var(--surface))" }} data-city-territorial-index>
+                      <div className="pointer-events-none absolute inset-0 opacity-[0.28]" style={{ backgroundImage: "linear-gradient(rgba(7,27,51,.08) 1px, transparent 1px), linear-gradient(90deg, rgba(7,27,51,.08) 1px, transparent 1px)", backgroundSize: "28px 28px" }} />
+                      <div className="relative grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                      {selectedCity.quartiers.map((quartier, index) => {
+                        const active = quartier.slug === selectedQuartierSlug;
+                        return (
+                          <button
+                            key={quartier.slug}
+                            type="button"
+                            onClick={() => setSelectedQuartierSlug(quartier.slug)}
+                            className="min-h-[118px] rounded-[20px] border p-4 text-left transition hover:-translate-y-0.5"
+                            style={{
+                              borderColor: active ? NAVY : "var(--border)",
+                              background: active ? "color-mix(in srgb, #071B33 7%, var(--surface))" : "var(--background)",
+                              boxShadow: active ? "0 14px 34px rgba(7,27,51,.10)" : "none",
+                            }}
+                            data-canonical-neighborhood={quartier.slug}
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-[10px] font-black text-white" style={{ background: NAVY }}>
+                                {index + 1}
+                              </span>
+                              <span className="rounded-full border px-2 py-1 text-[8px] font-black uppercase tracking-[0.08em]" style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}>
+                                {quartier.priority.tier === "flagship" ? "Pôle fort" : quartier.priority.tier === "major" ? "Pôle majeur" : quartier.priority.tier === "regional" ? "Pôle régional" : "Pôle local"}
+                              </span>
+                            </div>
+                            <strong className="mt-4 block text-[15px] font-black">{quartier.name}</strong>
+                            <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[8.5px] font-bold" style={{ color: "var(--text-secondary)" }}>
+                              <span className="rounded-full border px-2 py-1" style={{ borderColor: "var(--border)" }}>priorité {quartier.priority.score}/100</span>
+                              <span className="rounded-full border px-2 py-1" style={{ borderColor: "var(--border)" }}>
+                                {quartier.stats.landmarksVerified} repère{quartier.stats.landmarksVerified === 1 ? "" : "s"} vérifié{quartier.stats.landmarksVerified === 1 ? "" : "s"}
+                              </span>
+                            </div>
+                            <span className="mt-2 block text-[9px] font-semibold" style={{ color: "var(--text-secondary)" }}>
+                              Position visuelle non géographique · frontière non revendiquée
+                            </span>
+                          </button>
+                        );
+                      })}
+                      </div>
+                    </div>
+                  </div>
                 </motion.div>
               ) : null}
             </AnimatePresence>
@@ -816,7 +763,7 @@ export function PremiumInteractiveMap() {
             ) : null}
 
             <div className="pointer-events-none absolute bottom-3 left-3 z-20 max-w-[70%] rounded-full border px-3 py-1.5 text-[8.5px] font-bold backdrop-blur" style={{ borderColor: "var(--border)", background: "color-mix(in srgb, var(--surface) 88%, transparent)", color: "var(--text-secondary)" }}>
-              Contours régionaux : geoBoundaries / OSM · 12 ADM1 · navigation prototype
+              Contours régionaux : geoBoundaries · 12 ADM1 · quartiers sans frontière synthétique
             </div>
           </section>
 
@@ -831,7 +778,7 @@ export function PremiumInteractiveMap() {
                     {regions.map((region, index) => (
                       <button key={region.slug} type="button" onClick={() => selectRegion(region.slug)} className="flex min-h-[52px] items-center gap-3 rounded-2xl border px-3 text-left transition-transform hover:-translate-y-0.5" style={{ borderColor: "var(--border)", background: "var(--background)" }} data-region-list-slug={region.slug}>
                         <span className="h-8 w-2 rounded-full" style={{ background: REGION_TONES[index] }} />
-                        <span className="min-w-0 flex-1"><span className="block truncate text-[11.5px] font-black">{region.name}</span><span className="mt-0.5 block text-[9.5px] font-semibold" style={{ color: "var(--text-secondary)" }}>{region.cities.length ? `${region.cities.length} ville${region.cities.length > 1 ? "s" : ""} indexée${region.cities.length > 1 ? "s" : ""}` : "à explorer"}</span></span>
+                        <span className="min-w-0 flex-1"><span className="block truncate text-[11.5px] font-black">{region.name}</span><span className="mt-0.5 block text-[9.5px] font-semibold" style={{ color: "var(--text-secondary)" }}>Explorer la région</span></span>
                         <ChevronRight size={14} aria-hidden="true" />
                       </button>
                     ))}
@@ -844,15 +791,40 @@ export function PremiumInteractiveMap() {
                   <button type="button" onClick={goNational} className="mb-4 inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.12em]" style={{ color: NAVY }}><ArrowLeft size={14} /> Maroc</button>
                   <p className="text-[10px] font-black uppercase tracking-[0.14em]" style={{ color: NAVY }}>Région</p>
                   <h2 className="mt-2 text-[22px] font-black tracking-[-0.035em]">{selectedRegion.name}</h2>
-                  <p className="mt-2 text-[11px] font-medium leading-5" style={{ color: "var(--text-secondary)" }}>{selectedRegion.cities.length ? "Choisissez une ville pour descendre au niveau quartier." : "Aucune ville indexée dans cette région pour ce prototype. Le niveau national reste accessible."}</p>
-                  <div className="mt-5 space-y-2">
-                    {selectedRegion.cities.map((city) => (
-                      <button key={city.slug} type="button" onClick={() => selectCity(city)} className="flex w-full items-center gap-3 rounded-2xl border p-3.5 text-left transition-transform hover:-translate-y-0.5" style={{ borderColor: "var(--border)", background: "var(--background)" }} data-city-list-slug={city.slug}>
-                        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-white" style={{ background: NAVY }}><MapPin size={17} /></span>
-                        <span className="min-w-0 flex-1"><span className="block text-[13px] font-black">{city.name}</span><span className="mt-0.5 block truncate text-[9.5px] font-semibold" style={{ color: "var(--text-secondary)" }}>{city.signature ?? selectedRegion.name} · {city.quartiers.length} quartiers</span></span>
-                        <ChevronRight size={15} />
-                      </button>
-                    ))}
+                  <p className="mt-2 text-[11px] font-medium leading-5" style={{ color: "var(--text-secondary)" }}>
+                    {selectedRegion.regionalCities.length ? "Lecture par polarités canoniques : les hubs pays restent navigables, les autres centres structurent la région sans inventer de territoire." : "Aucune polarité canonique publiée dans cette région."}
+                  </p>
+                  <div className="mt-4 grid grid-cols-2 gap-2">
+                    <div className="rounded-2xl border p-3" style={{ borderColor: "var(--border)", background: "var(--background)" }}>
+                      <p className="text-[8.5px] font-black uppercase tracking-[0.1em]" style={{ color: "var(--text-secondary)" }}>polarités</p>
+                      <p className="mt-1 text-[18px] font-black">{selectedRegion.regionalCities.length}</p>
+                    </div>
+                    <div className="rounded-2xl border p-3" style={{ borderColor: "var(--border)", background: "var(--background)" }}>
+                      <p className="text-[8.5px] font-black uppercase tracking-[0.1em]" style={{ color: "var(--text-secondary)" }}>hubs pays</p>
+                      <p className="mt-1 text-[18px] font-black">{selectedRegion.cities.length}</p>
+                    </div>
+                  </div>
+                  <div className="mt-4 space-y-2">
+                    {selectedRegion.regionalCities.map((city) => {
+                      const isCountryHub = selectedRegion.cities.some((candidate) => candidate.slug === city.slug);
+                      return isCountryHub ? (
+                        <button key={city.slug} type="button" onClick={() => selectCity(city)} className="flex w-full items-center gap-3 rounded-2xl border p-3.5 text-left transition-transform hover:-translate-y-0.5" style={{ borderColor: "var(--border)", background: "var(--background)" }} data-city-list-slug={city.slug}>
+                          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-white" style={{ background: NAVY }}><MapPin size={17} /></span>
+                          <span className="min-w-0 flex-1"><span className="block text-[13px] font-black">{city.name}</span><span className="mt-0.5 block truncate text-[9.5px] font-semibold" style={{ color: "var(--text-secondary)" }}>{city.signature ?? "Hub pays"} · {city.quartiers.length} quartiers</span></span>
+                          <ChevronRight size={15} />
+                        </button>
+                      ) : (
+                        <div key={city.slug} className="flex w-full items-center gap-3 rounded-2xl border p-3.5" style={{ borderColor: "var(--border)", background: "color-mix(in srgb, var(--background) 84%, var(--surface))" }} data-region-center-slug={city.slug} data-region-center-mapped={city.coordinates ? "true" : "false"}>
+                          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border" style={{ borderColor: "var(--border-dark)", color: NAVY, background: "var(--surface)" }}><MapPin size={15} /></span>
+                          <span className="min-w-0 flex-1">
+                            <span className="block text-[12px] font-black">{city.name}</span>
+                            <span className="mt-0.5 block truncate text-[9px] font-semibold" style={{ color: "var(--text-secondary)" }}>
+                              {city.coordinates ? "Pôle régional canonique · repère cartographique" : "Pôle régional canonique · repère cartographique en attente"}
+                            </span>
+                          </span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </motion.div>
               ) : null}
@@ -871,7 +843,7 @@ export function PremiumInteractiveMap() {
                         <div className="rounded-xl border p-2.5" style={{ borderColor: "var(--border)", background: "var(--surface)" }}><p className="text-[8.5px] font-black uppercase tracking-[0.1em]" style={{ color: "var(--text-secondary)" }}>repère prix</p><p className="mt-1 text-[11px] font-black">{readablePrice(selectedQuartier.stats.priceRepere)}</p></div>
                         <div className="rounded-xl border p-2.5" style={{ borderColor: "var(--border)", background: "var(--surface)" }}><p className="text-[8.5px] font-black uppercase tracking-[0.1em]" style={{ color: "var(--text-secondary)" }}>repère vérifié</p><p className="mt-1 flex items-center gap-1.5 text-[11px] font-black"><CheckCircle2 size={13} style={{ color: NAVY }} /> {selectedQuartier.stats.landmarksVerified}</p></div>
                       </div>
-                      <Link href={`/immobilier/${selectedCity.slug}/${selectedQuartier.slug}`} className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl px-4 text-[11px] font-black text-white" style={{ background: NAVY }} data-explorer-selected>Explorer <ChevronRight size={14} /></Link>
+                      <Link href={`/map?region=${selectedRegion.slug}&city=${selectedCity.slug}&district=${selectedQuartier.slug}&layer=explore`} className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl px-4 text-[11px] font-black text-white" style={{ background: NAVY }} data-explorer-selected>Explorer <ChevronRight size={14} /></Link>
                     </div>
                   ) : null}
 
@@ -879,7 +851,7 @@ export function PremiumInteractiveMap() {
                     {selectedCity.quartiers.map((quartier) => (
                       <div key={quartier.slug} className="flex items-center gap-2 rounded-2xl border p-2.5" style={{ borderColor: quartier.slug === selectedQuartierSlug ? NAVY : "var(--border)", background: quartier.slug === selectedQuartierSlug ? "color-mix(in srgb, #071B33 6%, var(--surface))" : "var(--surface)" }}>
                         <button type="button" onClick={() => setSelectedQuartierSlug(quartier.slug)} className="min-w-0 flex-1 text-left"><span className="block truncate text-[11px] font-black">{quartier.name}</span><span className="mt-0.5 block text-[9px] font-semibold" style={{ color: "var(--text-secondary)" }}>{readablePrice(quartier.stats.priceRepere)} · {quartier.stats.landmarksVerified} repère{quartier.stats.landmarksVerified > 1 ? "s" : ""} vérifié{quartier.stats.landmarksVerified > 1 ? "s" : ""}</span></button>
-                        <Link href={`/immobilier/${selectedCity.slug}/${quartier.slug}`} className="inline-flex min-h-9 shrink-0 items-center gap-1 rounded-xl border px-2.5 text-[9.5px] font-black" style={{ borderColor: "var(--border-dark)", color: NAVY, background: "var(--background)" }} data-explorer-link={quartier.slug}>Explorer <ChevronRight size={12} /></Link>
+                        <Link href={`/map?region=${selectedRegion.slug}&city=${selectedCity.slug}&district=${quartier.slug}&layer=explore`} className="inline-flex min-h-9 shrink-0 items-center gap-1 rounded-xl border px-2.5 text-[9.5px] font-black" style={{ borderColor: "var(--border-dark)", color: NAVY, background: "var(--background)" }} data-explorer-link={quartier.slug}>Explorer <ChevronRight size={12} /></Link>
                       </div>
                     ))}
                   </div>
@@ -890,7 +862,7 @@ export function PremiumInteractiveMap() {
         </div>
 
         <footer className="mt-3 flex flex-wrap items-center justify-between gap-2 px-1 text-[9px] font-semibold" style={{ color: "var(--text-secondary)" }}>
-          <span className="inline-flex items-center gap-1.5"><Building2 size={12} /> Aucun appel Supabase · aucune écriture DB · mock isolé dans useMapData()</span>
+          <span className="inline-flex items-center gap-1.5"><Building2 size={12} /> Registres canoniques AkarFinder · aucun prix synthétique · aucune écriture DB</span>
           <span>{topologySource ? "TopoJSON ADM1 chargé" : "TopoJSON ADM1 en attente"}</span>
         </footer>
       </div>

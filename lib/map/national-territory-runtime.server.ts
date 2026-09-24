@@ -16,6 +16,8 @@ import neighborhoods4 from "@/lib/map/national-territory-data/neighborhoods-n2-4
 import neighborhoods5 from "@/lib/map/national-territory-data/neighborhoods-n2-5";
 import neighborhoods6 from "@/lib/map/national-territory-data/neighborhoods-n2-6";
 import neighborhoods7 from "@/lib/map/national-territory-data/neighborhoods-n2-7";
+import { GEO_NEIGHBORHOODS } from "@/lib/geo/geo-entity-registry";
+import { getVerifiedLandmarksForDistrict } from "@/lib/geo/territory-landmark-registry";
 
 // N2 is derived from the validated V5 source artifact (run 32634250993).
 // It promotes sourced neighborhood/locality labels and point repères only.
@@ -35,9 +37,14 @@ export type NationalTerritoryNeighborhood = {
   slug: string;
   name: string;
   center: { lng: number; lat: number } | null;
-  sourceKinds: Array<"barid_postal_neighborhood" | "osm_neighborhood_label">;
+  sourceKinds: Array<
+    "barid_postal_neighborhood"
+    | "osm_neighborhood_label"
+    | "canonical_product_identity"
+    | "verified_landmark_anchor"
+  >;
   boundaryStatus: "not_claimed";
-  publicationStatus: "label_candidate";
+  publicationStatus: "label_candidate" | "canonical_product_identity";
 };
 
 type PackedNeighborhood = [name: string, lng: number | null, lat: number | null, sourceFlag: number];
@@ -124,4 +131,28 @@ export function getNationalTerritoryPlace(slug: string) {
 
 export function getNationalNeighborhoodsForPlace(place: NationalTerritoryPlace) {
   return NATIONAL_NEIGHBORHOODS_BY_PARENT[parentKey(place.name)] ?? [];
+}
+
+
+export function getCanonicalNationalNeighborhoodsForPlace(place: NationalTerritoryPlace): NationalTerritoryNeighborhood[] {
+  return GEO_NEIGHBORHOODS
+    .filter(
+      (district) =>
+        district.city_slug === place.slug &&
+        district.validation_status === "validated" &&
+        district.map_eligible,
+    )
+    .map((district) => {
+      const anchor = getVerifiedLandmarksForDistrict(district.id)[0]?.entity.coordinates ?? null;
+      return {
+        slug: district.slug,
+        name: district.canonical_name,
+        center: anchor ? { lng: anchor.lng, lat: anchor.lat } : null,
+        sourceKinds: anchor
+          ? ["canonical_product_identity", "verified_landmark_anchor"] as NationalTerritoryNeighborhood["sourceKinds"]
+          : ["canonical_product_identity"] as NationalTerritoryNeighborhood["sourceKinds"],
+        boundaryStatus: "not_claimed" as const,
+        publicationStatus: "canonical_product_identity" as const,
+      };
+    });
 }

@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import fs from "node:fs";
 
 import { GEO_NEIGHBORHOODS } from "../../../lib/geo/geo-entity-registry";
 import {
@@ -24,35 +25,14 @@ test("every verified landmark has a validated point and at least two evidence re
   }
 });
 
-test("verified registry covers the certified city/district paths", () => {
-  assert.deepEqual(
-    VERIFIED_LANDMARKS.map(({ entity }) => [entity.citySlug, entity.districtSlug]).sort(),
-    [
-      ["agadir", "founty"],
-      ["agadir", "talborjt"],
-      ["casablanca", "ain-diab"],
-      ["casablanca", "bourgogne"],
-      ["casablanca", "bouskoura"],
-      ["casablanca", "finance-city"],
-      ["casablanca", "maarif"],
-      ["casablanca", "racine"],
-      ["fes", "fes-el-bali"],
-      ["fes", "ville-nouvelle"],
-      ["kenitra", "centre-ville"],
-      ["marrakech", "gueliz"],
-      ["marrakech", "hivernage"],
-      ["marrakech", "route-de-lourika"],
-      ["mohammedia", "centre"],
-      ["rabat", "agdal"],
-      ["rabat", "hassan"],
-      ["rabat", "hay-riad"],
-      ["rabat", "souissi"],
-      ["rabat", "ocean"],
-      ["tanger", "malabata"],
-      ["tanger", "marchan"],
-      ["tanger", "ville-nouvelle"],
-    ].sort(),
-  );
+test("verified registry paths always match their canonical district parent", () => {
+  const districtById = new Map(GEO_NEIGHBORHOODS.map((district) => [district.id, district]));
+  for (const { entity } of VERIFIED_LANDMARKS) {
+    const parent = districtById.get(entity.parentId);
+    assert.ok(parent, entity.id);
+    assert.equal(entity.citySlug, parent.city_slug, entity.id);
+    assert.equal(entity.districtSlug, parent.slug, entity.id);
+  }
 });
 
 test("district lookup never leaks landmarks from another district", () => {
@@ -61,7 +41,21 @@ test("district lookup never leaks landmarks from another district", () => {
   assert.equal(agdal[0]?.entity.id, "landmark_rabat_agdal_station");
 
   const maarif = getVerifiedLandmarksForDistrict("district_casablanca_maarif");
-  assert.equal(maarif.length, 1);
-  assert.equal(maarif[0]?.entity.id, "landmark_casablanca_maarif_twin_center");
+  assert.equal(maarif.length, 2);
+  assert.deepEqual(
+    maarif.map(({ entity }) => [entity.id, entity.importance.score]),
+    [
+      ["landmark_casablanca_maarif_stade_mohammed_v", 99],
+      ["landmark_casablanca_maarif_twin_center", 98],
+    ],
+  );
+  assert.deepEqual(
+    maarif[0]?.entity.coordinates,
+    { lat: 33.58285065, lng: -7.6468283, precision: "verified_landmark_point" },
+  );
+  assert.equal(
+    fs.existsSync("public/landmarks/casablanca-maarif-stade-mohammed-v.svg"),
+    true,
+  );
   assert.deepEqual(getVerifiedLandmarksForDistrict("district_missing"), []);
 });

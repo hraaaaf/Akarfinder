@@ -30,6 +30,15 @@ export const CITY_CENTROIDS: Record<string, GeoPoint> = {
   kénitra:      { lat: 34.2610, lng: -6.5802 },
   mohammedia:   { lat: 33.6866, lng: -7.3833 },
   "el jadida":  { lat: 33.2316, lng: -8.5007 },
+  sale:          { lat: 34.04528, lng: -6.81778 },
+  temara:        { lat: 33.926697, lng: -6.91216 },
+  tetouan:       { lat: 35.5670, lng: -5.3670 },
+  oujda:         { lat: 34.686667, lng: -1.911389 },
+  nador:         { lat: 35.178333, lng: -2.930833 },
+  essaouira:     { lat: 31.51306, lng: -9.76972 },
+  bouskoura:     { lat: 33.448889, lng: -7.648611 },
+  bouznika:      { lat: 33.789722, lng: -7.1575 },
+  azrou:         { lat: 33.433333, lng: -5.216667 },
 };
 
 // ─── Neighborhood centroids ────────────────────────────────────────────────────

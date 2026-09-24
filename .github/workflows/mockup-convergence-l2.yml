@@ -8,6 +8,10 @@ on:
       - "scripts/scrapers/__tests__/mockup-convergence-l2-search-map.test.ts"
       - ".github/workflows/mockup-convergence-l2.yml"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   contracts:
     runs-on: ubuntu-latest
