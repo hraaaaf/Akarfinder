@@ -38,6 +38,7 @@ function baseEvidence(phase: HaEvidenceInput["phase"]): HaEvidenceInput {
         delete_parity: true,
         timestamp_version_parity: true,
         schema_fingerprint_match: true,
+        foreign_key_consistency: true,
         replica_identity: "default",
         sequence_safe: true,
         pass: true,
@@ -145,4 +146,23 @@ test("sequence collision risk is a hard failure", () => {
   const result = evaluateHaEvidence(evidence);
   assert.equal(result.verdict, "FAIL");
   assert.match(result.failures.join("\n"), /sequence_safety_failed/);
+});
+
+
+test("foreign-key inconsistency is a hard failure", () => {
+  const evidence = baseEvidence("BASELINE");
+  evidence.table_evidence[0].foreign_key_consistency = false;
+
+  const result = evaluateHaEvidence(evidence);
+  assert.equal(result.verdict, "FAIL");
+  assert.match(result.failures.join("\n"), /foreign_key_consistency_failed/);
+});
+
+test("missing foreign-key consistency blocks certification", () => {
+  const evidence = baseEvidence("BASELINE");
+  evidence.table_evidence[0].foreign_key_consistency = null;
+
+  const result = evaluateHaEvidence(evidence);
+  assert.equal(result.verdict, "BLOCKED");
+  assert.match(result.blockers.join("\n"), /foreign_key_consistency_missing/);
 });
