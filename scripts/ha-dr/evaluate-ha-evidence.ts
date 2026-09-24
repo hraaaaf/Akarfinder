@@ -1,4 +1,10 @@
 export type HaEvidenceVerdict = "PASS" | "FAIL" | "BLOCKED";
+export type HaEvidencePhase =
+  | "BASELINE"
+  | "FORWARD_SYNC"
+  | "FAILOVER"
+  | "REVERSE_DELTA"
+  | "FAILBACK";
 
 export type HaTableEvidence = {
   table: string;
@@ -17,7 +23,16 @@ export type HaTableEvidence = {
 };
 
 export type HaEvidenceInput = {
+  phase: HaEvidencePhase;
   single_writer_proven: boolean | null;
+  positions: {
+    forward_start_lsn: string | null;
+    forward_end_lsn: string | null;
+    incident_start_lsn: string | null;
+    reverse_start_lsn: string | null;
+    reverse_target_lsn: string | null;
+    reverse_final_lsn: string | null;
+  };
   table_evidence: HaTableEvidence[];
   conflicts: number | null;
   duplicates: number | null;
@@ -48,6 +63,24 @@ function triState(
 ): void {
   if (value === null) blockers.push(missingReason);
   else if (value === false) failures.push(falseReason);
+}
+
+function requirePosition(
+  value: string | null,
+  reason: string,
+  blockers: string[],
+): void {
+  if (!isNonEmpty(value)) blockers.push(reason);
+}
+
+function requireTiming(
+  value: number | null,
+  reason: string,
+  blockers: string[],
+): void {
+  if (value === null || !Number.isFinite(value) || value < 0) {
+    blockers.push(reason);
+  }
 }
 
 export function evaluateHaEvidence(
@@ -156,12 +189,96 @@ export function evaluateHaEvidence(
     );
   }
 
-  if (
-    evidence.timings.observed_rpo_seconds === null ||
-    evidence.timings.observed_failover_rto_seconds === null ||
-    evidence.timings.observed_failback_rto_seconds === null
-  ) {
-    blockers.push("rpo_rto_measurements_missing");
+  if (evidence.phase === "FORWARD_SYNC") {
+    requirePosition(
+      evidence.positions.forward_start_lsn,
+      "forward_start_lsn_missing",
+      blockers,
+    );
+    requirePosition(
+      evidence.positions.forward_end_lsn,
+      "forward_end_lsn_missing",
+      blockers,
+    );
+    requireTiming(
+      evidence.timings.observed_rpo_seconds,
+      "observed_rpo_missing",
+      blockers,
+    );
+  }
+
+  if (evidence.phase === "FAILOVER") {
+    requirePosition(
+      evidence.positions.forward_end_lsn,
+      "forward_end_lsn_missing",
+      blockers,
+    );
+    requirePosition(
+      evidence.positions.incident_start_lsn,
+      "incident_start_lsn_missing",
+      blockers,
+    );
+    requireTiming(
+      evidence.timings.observed_rpo_seconds,
+      "observed_rpo_missing",
+      blockers,
+    );
+    requireTiming(
+      evidence.timings.observed_failover_rto_seconds,
+      "observed_failover_rto_missing",
+      blockers,
+    );
+  }
+
+  if (evidence.phase === "REVERSE_DELTA") {
+    requirePosition(
+      evidence.positions.incident_start_lsn,
+      "incident_start_lsn_missing",
+      blockers,
+    );
+    requirePosition(
+      evidence.positions.reverse_start_lsn,
+      "reverse_start_lsn_missing",
+      blockers,
+    );
+    requirePosition(
+      evidence.positions.reverse_target_lsn,
+      "reverse_target_lsn_missing",
+      blockers,
+    );
+  }
+
+  if (evidence.phase === "FAILBACK") {
+    requirePosition(
+      evidence.positions.reverse_start_lsn,
+      "reverse_start_lsn_missing",
+      blockers,
+    );
+    requirePosition(
+      evidence.positions.reverse_target_lsn,
+      "reverse_target_lsn_missing",
+      blockers,
+    );
+    requirePosition(
+      evidence.positions.reverse_final_lsn,
+      "reverse_final_lsn_missing",
+      blockers,
+    );
+    requireTiming(
+      evidence.timings.observed_rpo_seconds,
+      "observed_rpo_missing",
+      blockers,
+    );
+    requireTiming(
+      evidence.timings.observed_failover_rto_seconds,
+      "observed_failover_rto_missing",
+      blockers,
+    );
+    requireTiming(
+      evidence.timings.observed_failback_rto_seconds,
+      "observed_failback_rto_missing",
+      blockers,
+    );
   }
 
   return {
