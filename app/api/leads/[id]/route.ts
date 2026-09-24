@@ -5,6 +5,7 @@
 
 import { type NextRequest, NextResponse } from "next/server";
 import { getSupabaseServerClient } from "@/lib/db/supabase-client";
+import { assertHaSupabaseWriteAllowed } from "@/lib/db/ha-write-policy";
 import {
   validateLeadAdminToken,
   validateLeadStatusUpdate,
@@ -132,6 +133,7 @@ export async function PATCH(
 
   // 5. Supabase update
   try {
+    assertHaSupabaseWriteAllowed();
     const supabase = getSupabaseServerClient();
     const { data, error } = await supabase
       .from("buyer_leads")
