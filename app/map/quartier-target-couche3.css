@@ -310,3 +310,9 @@
     0 -1px 0 rgb(255 255 255 / 1),
     0 2px 7px rgb(25 59 92 / .10);
 }
+
+
+/* Cartographic Style Pass 5 — last-mile density. */
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-map-grade {
+  opacity: .96 !important;
+}

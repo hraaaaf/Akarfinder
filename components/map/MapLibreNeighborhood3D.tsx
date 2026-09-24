@@ -369,7 +369,7 @@ export function MapLibreNeighborhood3D({
                     "industrial", "#ece9e3",
                     "#f2f0eb"
                   ],
-                  "fill-opacity": 0.82,
+                  "fill-opacity": 0.90,
                 },
               } as any);
 
@@ -407,13 +407,13 @@ export function MapLibreNeighborhood3D({
                 paint: {
                   "fill-color": [
                     "interpolate", ["linear"], ["coalesce", ["get", "render_height"], 0],
-                    0, "#dfdcd5",
-                    12, "#d6d3cd",
-                    28, "#cbc9c5",
-                    60, "#bec3c2"
+                    0, "#ddd9d2",
+                    12, "#d3d0c9",
+                    28, "#c7c6c1",
+                    60, "#bbc0bf"
                   ],
-                  "fill-opacity": ["interpolate", ["linear"], ["zoom"], 12.2, 0.76, 14.5, 0.95],
-                  "fill-outline-color": "#b4bbb7",
+                  "fill-opacity": ["interpolate", ["linear"], ["zoom"], 12.2, 0.80, 14.5, 0.96],
+                  "fill-outline-color": "#b0b7b3",
                 },
               } as any);
 
@@ -485,18 +485,21 @@ export function MapLibreNeighborhood3D({
                 filter: ["!", ["match", ["get", "class"], ["rail", "transit", "ferry"], true, false]],
                 layout: {
                   "symbol-placement": "line",
-                  "symbol-spacing": 320,
+                  "symbol-spacing": 220,
                   "text-field": ["coalesce", ["get", "name:latin"], ["get", "name"]],
-                  "text-size": ["interpolate", ["linear"], ["zoom"], 12.2, 8.5, 14, 10.8],
-                  "text-letter-spacing": 0.012,
-                  "text-max-angle": 24,
-                  "text-padding": 2,
+                  "text-size": ["interpolate", ["linear"], ["zoom"], 12.2, 8.4, 14, 10.6],
+                  "text-letter-spacing": 0.01,
+                  "text-max-angle": 22,
+                  "text-padding": 1,
+                  "text-allow-overlap": true,
+                  "text-ignore-placement": true,
                 },
                 paint: {
-                  "text-color": "#4a5561",
-                  "text-halo-color": "rgba(255,255,255,0.92)",
-                  "text-halo-width": 1.2,
-                  "text-halo-blur": 0.25,
+                  "text-color": "#5a626a",
+                  "text-opacity": 0.72,
+                  "text-halo-color": "rgba(255,255,255,0.94)",
+                  "text-halo-width": 1.15,
+                  "text-halo-blur": 0.18,
                 },
               } as any);
 
