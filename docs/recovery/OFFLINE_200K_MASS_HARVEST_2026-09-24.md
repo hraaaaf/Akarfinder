@@ -163,3 +163,15 @@ The first sitemap artifact proved why URL-count targets are unsafe:
 - explicit short-stay/vacation routes are rejected at the offline merge gate.
 
 A local audit of artifact 10833423663 produced ~33,750 source-identity candidates after source-aware alias collapse and explicit short-stay route rejection. This is a structural estimate from the artifact, not yet a freshness-approved inventory.
+
+### Sitemap structural quality correction
+
+Independent audit of artifact 10833423663:
+- 58,236 qualified URLs;
+- 35,794 source-listing identities before scope/status filtering;
+- 22,442 URL aliases collapsed;
+- 2,044 explicit short-stay identities rejected;
+- 93 explicit sold/archived identities rejected;
+- resulting structural estimate: **33,657 unique candidate listings**.
+
+This remains pre-freshness/pre-content validation and is not an import count.

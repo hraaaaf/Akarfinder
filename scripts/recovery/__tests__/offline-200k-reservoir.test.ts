@@ -127,3 +127,34 @@ test("restored source identity excludes alternate locale URL too", () => {
   assert.equal(result.rows.length, 0);
   assert.equal(result.excludedRestored, 1);
 });
+
+
+test("explicit sold/archive route is rejected before the 200k count", () => {
+  const atlasRegistry: SourceDomainRegistry = {
+    registry_version: "test",
+    generated_at: "2026-09-24T00:00:00Z",
+    note: "fixture",
+    domains: [{
+      domain: "atlasimmobilier.com",
+      status: "approved_discovery",
+      listing_url_patterns: ["^/(?:en/)?p/[^/]+/?$"],
+      blocked_url_patterns: [],
+      source_type: "fixture",
+      external_web_result: true,
+      compliance_note: "fixture",
+      reviewed_at: "2026-09-24",
+      coverage_cities: null,
+    }],
+  };
+
+  const result = mergeOfflineArtifacts({
+    sitemapRows: [
+      { canonical_url: "https://atlasimmobilier.com/en/p/apartment-sold-in-gueliz", observed_at: "2026-09-24T20:00:00Z" },
+      { canonical_url: "https://atlasimmobilier.com/en/p/apartment-for-sale-in-gueliz", observed_at: "2026-09-24T20:00:00Z" },
+    ],
+    registry: atlasRegistry,
+  });
+
+  assert.equal(result.rows.length, 1);
+  assert.equal(result.rejected.explicit_inactive_route, 1);
+});

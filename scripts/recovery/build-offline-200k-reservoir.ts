@@ -111,7 +111,9 @@ function validListingUrl(url: string, registry: SourceDomainRegistry): { canonic
 }
 
 function sourceIdentityKey(domain: string, canonicalUrl: string): string {
-  const pathname = decodeURIComponent(new URL(canonicalUrl).pathname).toLowerCase().replace(/\/+$/, "");
+  let rawPath = new URL(canonicalUrl).pathname;
+  try { rawPath = decodeURIComponent(rawPath); } catch { /* keep encoded path */ }
+  const pathname = rawPath.toLowerCase().replace(/\/+$/, "");
 
   const id = (pattern: RegExp, prefix = "id"): string | null => {
     const match = pathname.match(pattern);
@@ -174,9 +176,23 @@ const SHORT_STAY_PATH_TOKENS = [
   "saisonniere",
 ] as const;
 
+function normalizedPath(canonicalUrl: string): string {
+  let pathname = new URL(canonicalUrl).pathname;
+  try { pathname = decodeURIComponent(pathname); } catch { /* keep encoded path */ }
+  return pathname
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
 function isExplicitShortStayRoute(canonicalUrl: string): boolean {
-  const pathname = decodeURIComponent(new URL(canonicalUrl).pathname).toLowerCase();
+  const pathname = normalizedPath(canonicalUrl);
   return SHORT_STAY_PATH_TOKENS.some((token) => pathname.includes(token));
+}
+
+function isExplicitInactiveRoute(canonicalUrl: string): boolean {
+  const pathname = normalizedPath(canonicalUrl);
+  return /(^|[-_/])(sold|vendu|vendue|reserved|reservee|indisponible|archive|archived)([-_/]|$)/.test(pathname);
 }
 
 function latestIso(values: Array<string | null | undefined>): string | null {
@@ -226,6 +242,7 @@ export function mergeOfflineArtifacts(input: {
     const valid = validListingUrl(rawUrl, input.registry);
     if (!valid) { reject("not_approved_individual_listing_url"); return; }
     if (isExplicitShortStayRoute(valid.canonical)) { reject("explicit_short_stay_route"); return; }
+    if (isExplicitInactiveRoute(valid.canonical)) { reject("explicit_inactive_route"); return; }
 
     const identity = sourceIdentityKey(valid.domain, valid.canonical);
     if (restored.has(valid.canonical) || restoredIdentities.has(identity)) {
