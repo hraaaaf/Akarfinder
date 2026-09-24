@@ -198,8 +198,23 @@ jobs:
                      c.is_identity,
                      c.identity_generation,
                      c.column_default,
-                     pg_get_serial_sequence('public.$table', c.column_name) as sequence_name
+                     pg_get_serial_sequence('public.$table', c.column_name) as sequence_name,
+                     s.data_type::text as sequence_data_type,
+                     s.start_value,
+                     s.min_value,
+                     s.max_value,
+                     s.increment_by,
+                     s.cycle,
+                     s.cache_size,
+                     s.last_value
               from information_schema.columns c
+              left join pg_class seq_class
+                on seq_class.oid = to_regclass(pg_get_serial_sequence('public.$table', c.column_name))
+              left join pg_namespace seq_ns
+                on seq_ns.oid = seq_class.relnamespace
+              left join pg_sequences s
+                on s.schemaname = seq_ns.nspname
+               and s.sequencename = seq_class.relname
               where c.table_schema='public'
                 and c.table_name='$table'
                 and (c.is_identity='YES' or c.column_default like 'nextval(%')
@@ -248,7 +263,8 @@ jobs:
               certification: "NOT_CERTIFIED",
               notes: [
                 "Parity proof only: does not prove application single-writer fencing.",
-                "Does not prove delete propagation, sequence collision safety, RPO or RTO.",
+                "Captures sequence metadata/state including last_value but does not prove future collision safety or is_called semantics.",
+                "Does not prove delete propagation, RPO or RTO.",
                 "Full HA certification requires the HA_DR_EVIDENCE v1 contract and rehearsals."
               ]
             }' "$out" > "$RUNNER_TEMP/HA_BASELINE_PARITY.json"
