@@ -23,8 +23,8 @@ import "./clinical-sheet-guard.css";
 import "./premium-interactive-map-fixes.css";
 import "./n3-premium-theme.css";
 import "./quartier-target-couche1.css";
-import "./quartier-target-couche2.css";
 import "./ux-convergence-l9.css";
+import "./quartier-target-couche2.css";
 
 export const dynamic = "force-dynamic";
 
