@@ -66,6 +66,10 @@ try {
       }, null, { timeout: 20000 });
       const rtlStatus = await maplibre.getAttribute("data-maplibre-rtl-status");
       if (rtlStatus !== "loaded") throw new Error(`${viewport.name}: MapLibre RTL shaping not loaded (${rtlStatus})`);
+      const boundarySemantic = await maplibre.getAttribute("data-maplibre-boundary-semantic");
+      if (boundarySemantic !== "administrative-arrondissement") throw new Error(`${viewport.name}: Maârif boundary semantic mismatch (${boundarySemantic})`);
+      const boundaryDisclosure = await page.locator(".maplibre-spike-map-note-copy").textContent();
+      if (!boundaryDisclosure?.includes("Arrondissement Maârif")) throw new Error(`${viewport.name}: arrondissement disclosure missing`);
       await highZoomTilesReady;
 
       const rail = page.locator("[data-p4-map-decision-rail]");
@@ -125,7 +129,7 @@ try {
       if (overflow > 1) throw new Error(`${viewport.name}: horizontal overflow ${overflow}`);
       if (diagnostics.pageErrors.length) throw new Error(`${viewport.name}: browser page errors ${JSON.stringify(diagnostics.pageErrors)}`);
       await page.screenshot({ path: `${outDir}/casablanca-maarif-${viewport.width}x${viewport.height}.png`, fullPage: false });
-      report.cases.push({ viewport: viewport.name, searchHref, panelBox, layoutDiagnostics, overflow, mapRendered: true, rtlStatus, highZoomTileCount, diagnostics });
+      report.cases.push({ viewport: viewport.name, searchHref, panelBox, layoutDiagnostics, overflow, mapRendered: true, rtlStatus, boundarySemantic, boundaryDisclosure, highZoomTileCount, diagnostics });
     } finally {
       clearTimeout(tileGateTimeout);
       await page.close();
