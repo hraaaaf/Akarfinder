@@ -4,7 +4,7 @@
 
 [data-akar-quartier-target="maarif-couche1"][data-maplibre-camera-policy="contextual-center"]
   .maplibre-spike-canvas canvas {
-  filter: saturate(.58) contrast(.88) brightness(1.12) !important;
+  filter: saturate(.72) contrast(.91) brightness(1.075) !important;
 }
 
 [data-akar-quartier-target="maarif-couche1"][data-maplibre-camera-policy="contextual-center"]
@@ -185,5 +185,20 @@
 @media (min-width: 1024px) {
   [data-akar-quartier-target="maarif-couche1"] .maplibre-spike-map-note {
     box-shadow: 0 12px 32px rgb(7 27 51 / .11);
+  }
+}
+
+
+/* Pass 2 truth-safe — contextual focus is visual emphasis, never a claimed boundary. */
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-focus-semantic="context-focus-not-boundary"]
+  .maplibre-spike-neighborhood-label {
+  box-shadow: 0 12px 30px rgb(7 27 51 / .18);
+}
+
+@media (min-width: 1024px) {
+  [data-akar-quartier-target="maarif-couche1"][data-maplibre-focus-semantic="context-focus-not-boundary"]
+    .maplibre-spike-neighborhood-label {
+    min-height: 36px;
+    padding-inline: 16px;
   }
 }

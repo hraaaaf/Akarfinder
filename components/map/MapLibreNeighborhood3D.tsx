@@ -147,7 +147,7 @@ function focusNeighborhoodMap(
   const contextual = composition === "context";
   map.easeTo({
     center: targetCenter,
-    zoom: contextual ? (desktop ? 12.82 : 13.05) : (desktop ? 13.55 : 13.8),
+    zoom: contextual ? (desktop ? 13.10 : 13.05) : (desktop ? 13.55 : 13.8),
     pitch: contextual ? 0 : (desktop ? 18 : 8),
     bearing: 0,
     duration,
@@ -230,7 +230,7 @@ export function MapLibreNeighborhood3D({
         map = new maplibregl.Map({
           container: mapRef.current,
           center: targetCenter,
-          zoom: contextual ? (desktop ? 12.82 : 13.05) : (desktop ? 13.55 : 13.8),
+          zoom: contextual ? (desktop ? 13.10 : 13.05) : (desktop ? 13.55 : 13.8),
           pitch: contextual ? 0 : (desktop ? 18 : 8),
           bearing: 0,
           attributionControl: false,
@@ -250,18 +250,28 @@ export function MapLibreNeighborhood3D({
                     map.setPaintProperty(layer.id, "background-color", "#f6f8f7");
                   }
                   if (layer.type === "fill" && /(water|ocean|sea)/.test(id)) {
-                    map.setPaintProperty(layer.id, "fill-color", "#b9dcf5");
-                    map.setPaintProperty(layer.id, "fill-opacity", 0.96);
+                    map.setPaintProperty(layer.id, "fill-color", "#68add8");
+                    map.setPaintProperty(layer.id, "fill-opacity", 0.98);
+                  }
+                  if (layer.type === "line" && /(coast|shore|water)/.test(id)) {
+                    map.setPaintProperty(layer.id, "line-color", "#4e94c2");
+                    map.setPaintProperty(layer.id, "line-opacity", 0.42);
                   }
                   if (layer.type === "line" && /(road|street|highway|motorway|trunk|primary|secondary|tertiary)/.test(id)) {
-                    map.setPaintProperty(layer.id, "line-opacity", 0.62);
+                    map.setPaintProperty(layer.id, "line-opacity", 0.58);
                   }
                   if (layer.type === "fill" && /building/.test(id)) {
-                    map.setPaintProperty(layer.id, "fill-opacity", 0.52);
+                    map.setPaintProperty(layer.id, "fill-opacity", 0.48);
+                  }
+                  if (layer.type === "symbol" && /(neighbour|neighborhood|suburb|quarter|district|place)/.test(id)) {
+                    map.setPaintProperty(layer.id, "text-opacity", 0.88);
+                    map.setPaintProperty(layer.id, "text-color", "#35577b");
+                    map.setPaintProperty(layer.id, "text-halo-color", "#f8fbfd");
+                    map.setPaintProperty(layer.id, "text-halo-width", 1.15);
                   }
                   if (layer.type === "symbol" && /(poi|housenumber|transit)/.test(id)) {
-                    map.setPaintProperty(layer.id, "text-opacity", 0.46);
-                    map.setPaintProperty(layer.id, "icon-opacity", 0.28);
+                    map.setPaintProperty(layer.id, "text-opacity", 0.30);
+                    map.setPaintProperty(layer.id, "icon-opacity", 0.20);
                   }
                 } catch {
                   // Style-layer capabilities vary; keep the base style when a paint property is unsupported.
@@ -298,7 +308,11 @@ export function MapLibreNeighborhood3D({
               type: "geojson",
               data: {
                 type: "Feature",
-                properties: { district: districtLabel, boundaryStatus: boundaryGeometry ? "provided" : "center-only" },
+                properties: {
+                  district: districtLabel,
+                  boundaryStatus: boundaryGeometry ? "provided" : "center-only",
+                  focusSemantic: isMaarifTargetPilot ? "context-focus-not-boundary" : "district-focus",
+                },
                 geometry: { type: "Point", coordinates: center },
               },
             });
@@ -307,12 +321,12 @@ export function MapLibreNeighborhood3D({
               type: "circle",
               source: FOCUS_SOURCE_ID,
               paint: {
-                "circle-radius": desktop ? 84 : 68,
-                "circle-color": "#12a9a1",
-                "circle-opacity": 0.13,
-                "circle-stroke-color": "#8ff8ee",
-                "circle-stroke-width": 1.5,
-                "circle-stroke-opacity": 0.56,
+                "circle-radius": isMaarifTargetPilot ? (desktop ? 148 : 92) : (desktop ? 84 : 68),
+                "circle-color": isMaarifTargetPilot ? "#6eb6e8" : "#12a9a1",
+                "circle-opacity": isMaarifTargetPilot ? 0.085 : 0.13,
+                "circle-stroke-color": isMaarifTargetPilot ? "#9fd3f3" : "#8ff8ee",
+                "circle-stroke-width": isMaarifTargetPilot ? 1.2 : 1.5,
+                "circle-stroke-opacity": isMaarifTargetPilot ? 0.34 : 0.56,
               },
             });
             map.addLayer({
@@ -439,6 +453,7 @@ export function MapLibreNeighborhood3D({
       data-maplibre-boundary-status={boundaryGeometry ? "shadow-reference" : "center-only"}
       data-maplibre-boundary-semantic={isMaarifTargetPilot && boundaryGeometry ? "administrative-arrondissement" : boundaryGeometry ? "boundary-reference" : "none"}
       data-maplibre-camera-policy={targetComposition === "context" ? "contextual-center" : "boundary-fit"}
+      data-maplibre-focus-semantic={isMaarifTargetPilot ? "context-focus-not-boundary" : "district-focus"}
       data-maplibre-rtl-status={rtlStatus}
       data-maplibre-reserve-rail={reserveRail ? "true" : "false"}
       data-akar-quartier-target={isMaarifTargetPilot ? "maarif-couche1" : undefined}
