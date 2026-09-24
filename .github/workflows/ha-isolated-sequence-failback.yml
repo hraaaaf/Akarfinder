@@ -251,6 +251,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          set -a
+          . "$RUNNER_TEMP/ha-sequence.env"
+          set +a
           docker exec "$SOURCE" psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
             -c "grant insert, update, delete on public.akarfinder_ha_sequence_canary to ha_seq_writer;
                 grant usage, select on sequence public.akarfinder_ha_sequence_canary_id_seq to ha_seq_writer;"
