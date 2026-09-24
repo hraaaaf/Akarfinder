@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import {
@@ -131,4 +132,22 @@ test("missing run id blocks certification", () => {
   assert.equal(result.verdict, "FAIL");
   assert.match(result.blockers.join("\n"), /run_id_missing/);
   assert.match(result.failures.join("\n"), /status_pass_with_blocked_evidence/);
+});
+
+
+test("NOT_RUN template can never certify", () => {
+  const template = JSON.parse(
+    readFileSync(
+      new URL(
+        "../../../docs/ha-dr/templates/HA_DR_EVIDENCE.template.json",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
+  ) as HaEvidenceBundleForCertification;
+
+  const result = certifyHaEvidenceBundle(template);
+  assert.equal(result.verdict, "BLOCKED");
+  assert.match(result.blockers.join("\n"), /evidence_status_not_pass:NOT_RUN/);
+  assert.match(result.blockers.join("\n"), /application_commit_missing_or_invalid/);
 });
