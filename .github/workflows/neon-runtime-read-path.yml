@@ -24,6 +24,7 @@ on:
       - "scripts/ha-dr/evaluate-ha-evidence.ts"
       - "scripts/ha-dr/certify-ha-evidence-bundle.ts"
       - "scripts/ha-dr/certify-ha-evidence-file.ts"
+      - "scripts/ha-dr/fixtures/HA_DR_EVIDENCE.synthetic-pass.json"
       - "scripts/ha-dr/fk-consistency-query-generator.sql"
       - "scripts/scrapers/__tests__/ha-fk-consistency-generator-guard.test.ts"
       - "scripts/scrapers/__tests__/ha-evidence-evaluator.test.ts"
@@ -114,6 +115,27 @@ jobs:
 
       - name: Neon migration and provider unit tests
         run: npx tsx --test scripts/scrapers/__tests__/neon-db-provider.test.ts scripts/scrapers/__tests__/ha-writer-state.test.ts scripts/scrapers/__tests__/ha-replication-capability-inventory.test.ts scripts/scrapers/__tests__/ha-operator-runbook-guard.test.ts scripts/scrapers/__tests__/ha-parity-rpo-rto-spec-guard.test.ts scripts/scrapers/__tests__/ha-evidence-bundle-guard.test.ts scripts/scrapers/__tests__/ha-evidence-evaluator.test.ts scripts/scrapers/__tests__/ha-evidence-certification.test.ts scripts/scrapers/__tests__/ha-fk-consistency-generator-guard.test.ts scripts/scrapers/__tests__/ha-baseline-parity-workflow-guard.test.ts scripts/scrapers/__tests__/ha-replication-canary-migration-guard.test.ts scripts/scrapers/__tests__/ha04-continuous-sync-contract-guard.test.ts scripts/scrapers/__tests__/ha05-failover-contract-guard.test.ts scripts/scrapers/__tests__/ha06-failback-contract-guard.test.ts scripts/scrapers/__tests__/ha-readiness-matrix-guard.test.ts scripts/scrapers/__tests__/ha-capability-inventory-workflow-guard.test.ts scripts/scrapers/__tests__/ha-isolated-rehearsal-workflow-guard.test.ts scripts/scrapers/__tests__/ha-isolated-resilience-workflow-guard.test.ts scripts/scrapers/__tests__/ha-isolated-sequence-failback-workflow-guard.test.ts scripts/scrapers/__tests__/ha-isolated-baseline-parity-workflow-guard.test.ts scripts/scrapers/__tests__/neon-listings.test.ts scripts/scrapers/__tests__/neon-core-db-migration-guard.test.ts scripts/scrapers/__tests__/neon-odm-portability-guard.test.ts scripts/scrapers/__tests__/neon-public-search.test.ts scripts/scrapers/__tests__/neon-owner-listing-search.test.ts scripts/scrapers/__tests__/neon-owner-read-portability-guard.test.ts scripts/scrapers/__tests__/neon-market-comparables.test.ts scripts/scrapers/__tests__/neon-market-comparables-portability-guard.test.ts scripts/scrapers/__tests__/neon-market-intelligence-read.test.ts scripts/scrapers/__tests__/neon-market-intelligence-portability-guard.test.ts scripts/scrapers/__tests__/neon-akar-estimate-history.test.ts scripts/scrapers/__tests__/neon-owner-detail-media.test.ts scripts/scrapers/__tests__/neon-supabase-hidden-read-guards.test.ts scripts/scrapers/__tests__/neon-migration-validation-suite-guard.test.ts scripts/scrapers/__tests__/odm-09b-public-search-contract.test.ts
+
+      - name: HA evidence certification CLI dry-run
+        shell: bash
+        run: |
+          set -euo pipefail
+          pass_out="$RUNNER_TEMP/ha-cert-pass.json"
+          blocked_out="$RUNNER_TEMP/ha-cert-blocked.json"
+
+          npx tsx scripts/ha-dr/certify-ha-evidence-file.ts             scripts/ha-dr/fixtures/HA_DR_EVIDENCE.synthetic-pass.json             > "$pass_out"
+          jq -e '.verdict == "PASS"' "$pass_out" >/dev/null
+
+          set +e
+          npx tsx scripts/ha-dr/certify-ha-evidence-file.ts             docs/ha-dr/templates/HA_DR_EVIDENCE.template.json             > "$blocked_out"
+          blocked_code=$?
+          set -e
+
+          [ "$blocked_code" -eq 2 ] || {
+            echo "::error::Expected NOT_RUN template to exit 2/BLOCKED, got $blocked_code"
+            exit 1
+          }
+          jq -e '.verdict == "BLOCKED"' "$blocked_out" >/dev/null
 
       - name: TypeScript
         run: npx tsc --noEmit
