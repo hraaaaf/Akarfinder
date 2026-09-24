@@ -72,3 +72,13 @@ test("HA03-A cancels obsolete PR runs", () => {
   assert.match(workflow, /cancel-in-progress: true/);
   assert.match(workflow, /ha-isolated-baseline-parity-\$\{\{/);
 });
+
+
+test("HA03-A detects FK data inconsistency with the shared generator", () => {
+  assert.match(workflow, /fk-consistency-query-generator\.sql/);
+  assert.match(workflow, /fk_violation_count/);
+  assert.match(workflow, /session_replication_role=replica/);
+  assert.match(workflow, /parent_id bigint not null references public\.ha_baseline_parent\(id\)/);
+  assert.match(workflow, /foreign-key consistency detector failed/);
+  assert.match(workflow, /foreign_key_consistency_detector: "PASS"/);
+});
