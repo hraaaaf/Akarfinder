@@ -64,7 +64,7 @@ agg as (
     ) as all_null,
     string_agg(
       format(
-        'c.%I OPERATOR(%I.%I) p.%I',
+        'c.%I OPERATOR(%I.%s) p.%I',
         child_column,
         operator_schema,
         operator_name,
