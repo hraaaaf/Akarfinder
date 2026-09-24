@@ -356,6 +356,24 @@ export function MapLibreNeighborhood3D({
               } as any);
 
               map.addLayer({
+                id: "akarfinder-target-landuse-urban",
+                type: "fill",
+                source,
+                "source-layer": "landuse",
+                filter: ["match", ["get", "class"], ["residential", "commercial", "retail", "industrial"], true, false],
+                paint: {
+                  "fill-color": [
+                    "match", ["get", "class"],
+                    "commercial", "#eeeae4",
+                    "retail", "#f0ebe5",
+                    "industrial", "#ece9e3",
+                    "#f2f0eb"
+                  ],
+                  "fill-opacity": 0.82,
+                },
+              } as any);
+
+              map.addLayer({
                 id: "akarfinder-target-landcover-green",
                 type: "fill",
                 source,
@@ -389,13 +407,13 @@ export function MapLibreNeighborhood3D({
                 paint: {
                   "fill-color": [
                     "interpolate", ["linear"], ["coalesce", ["get", "render_height"], 0],
-                    0, "#e3e0d9",
-                    12, "#dbd8d1",
-                    28, "#d0cfca",
-                    60, "#c4c8c7"
+                    0, "#dfdcd5",
+                    12, "#d6d3cd",
+                    28, "#cbc9c5",
+                    60, "#bec3c2"
                   ],
-                  "fill-opacity": ["interpolate", ["linear"], ["zoom"], 12.2, 0.72, 14.5, 0.93],
-                  "fill-outline-color": "#bcc2bf",
+                  "fill-opacity": ["interpolate", ["linear"], ["zoom"], 12.2, 0.76, 14.5, 0.95],
+                  "fill-outline-color": "#b4bbb7",
                 },
               } as any);
 
@@ -423,8 +441,8 @@ export function MapLibreNeighborhood3D({
                   "line-opacity": 0.97,
                   "line-width": [
                     "interpolate", ["linear"], ["zoom"],
-                    11, ["match", ["get", "class"], "motorway", 3.2, "trunk", 3.0, "primary", 2.7, "secondary", 2.3, "tertiary", 1.9, 1.25],
-                    15, ["match", ["get", "class"], "motorway", 14, "trunk", 12, "primary", 10, "secondary", 8, "tertiary", 6.4, "minor", 4.2, 2.8]
+                    11, ["match", ["get", "class"], "motorway", 3.5, "trunk", 3.2, "primary", 3.0, "secondary", 2.5, "tertiary", 2.0, 1.3],
+                    15, ["match", ["get", "class"], "motorway", 15.2, "trunk", 13, "primary", 11.2, "secondary", 8.8, "tertiary", 6.8, "minor", 4.3, 2.8]
                   ],
                 },
               } as any);
@@ -452,8 +470,8 @@ export function MapLibreNeighborhood3D({
                   "line-opacity": 0.99,
                   "line-width": [
                     "interpolate", ["linear"], ["zoom"],
-                    11, ["match", ["get", "class"], "motorway", 2.5, "trunk", 2.3, "primary", 2.0, "secondary", 1.7, "tertiary", 1.35, 0.85],
-                    15, ["match", ["get", "class"], "motorway", 12.2, "trunk", 10.4, "primary", 8.5, "secondary", 6.6, "tertiary", 5.0, "minor", 3.0, 1.8]
+                    11, ["match", ["get", "class"], "motorway", 2.7, "trunk", 2.5, "primary", 2.2, "secondary", 1.85, "tertiary", 1.45, 0.9],
+                    15, ["match", ["get", "class"], "motorway", 13.2, "trunk", 11.2, "primary", 9.3, "secondary", 7.2, "tertiary", 5.4, "minor", 3.1, 1.9]
                   ],
                 },
               } as any);
@@ -464,6 +482,7 @@ export function MapLibreNeighborhood3D({
                 source,
                 "source-layer": "transportation_name",
                 minzoom: 12.2,
+                filter: ["!", ["match", ["get", "class"], ["rail", "transit", "ferry"], true, false]],
                 layout: {
                   "symbol-placement": "line",
                   "symbol-spacing": 320,

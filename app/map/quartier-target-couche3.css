@@ -289,7 +289,7 @@
 /* Cartographic Style Pass 1 — AkarFinder target drawing language. */
 [data-akar-quartier-target="maarif-couche1"][data-maplibre-camera-policy="contextual-center"]
   .maplibre-spike-canvas canvas {
-  filter: saturate(.82) contrast(.985) brightness(.995) !important;
+  filter: saturate(.84) contrast(1.005) brightness(.99) !important;
 }
 
 [data-akar-quartier-target="maarif-couche1"] .maplibre-spike-map-grade {
