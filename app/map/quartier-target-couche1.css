@@ -152,3 +152,49 @@
     display: none !important;
   }
 }
+
+
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-target-landmark-label {
+  position: absolute;
+  z-index: 12;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  transform: translate(-50%, -50%);
+  min-height: 30px;
+  max-width: 220px;
+  padding: 6px 10px 6px 7px;
+  border: 1px solid rgb(207 220 235 / .96);
+  border-radius: 999px;
+  background: rgb(255 255 255 / .96);
+  color: #173653;
+  box-shadow: 0 8px 20px rgb(7 27 51 / .13);
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-target-landmark-label i {
+  width: 10px;
+  height: 10px;
+  flex: 0 0 auto;
+  border: 2px solid #fff;
+  border-radius: 999px;
+  background: #5f7894;
+  box-shadow: 0 0 0 2px rgb(7 27 51 / .10);
+}
+
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-target-landmark-label[data-landmark-tier="flagship"] {
+  color: #071b33;
+  font-size: 10.5px;
+  font-weight: 900;
+  box-shadow: 0 10px 24px rgb(7 27 51 / .16);
+}
+
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-target-landmark-label[data-landmark-tier="flagship"] i {
+  width: 12px;
+  height: 12px;
+  background: #0b63ce;
+}
