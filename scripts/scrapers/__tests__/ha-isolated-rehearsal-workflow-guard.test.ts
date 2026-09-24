@@ -7,10 +7,12 @@ const workflow = readFileSync(
   "utf8",
 );
 
-test("isolated HA rehearsal is manual-only and provider-secret free", () => {
+test("isolated HA rehearsal is constrained to manual or HA PR execution and provider-secret free", () => {
   assert.match(workflow, /workflow_dispatch:/);
+  assert.match(workflow, /pull_request:/);
+  assert.match(workflow, /infra\/neon-migration-20260923/);
+  assert.match(workflow, /ha-isolated-rehearsal\.yml/);
   assert.doesNotMatch(workflow, /\npush:/);
-  assert.doesNotMatch(workflow, /\npull_request:/);
   assert.doesNotMatch(workflow, /SUPABASE_DATABASE_URL_DIRECT/);
   assert.doesNotMatch(workflow, /NEON_DATABASE_URL_DIRECT/);
 });
