@@ -74,6 +74,7 @@ export function MapLibreNeighborhood3D({
   const [activeCategory, setActiveCategory] = useState<LivingHereCategory | "all">("all");
   const [screenPoints, setScreenPoints] = useState<Record<string, ScreenPoint>>({});
   const [centerPoint, setCenterPoint] = useState<ScreenPoint | null>(null);
+  const isMaarifTargetPilot = citySlug === "casablanca" && districtSlug === "maarif";
 
   const restoreCamera = () => {
     const map = mapInstanceRef.current;
@@ -292,6 +293,7 @@ export function MapLibreNeighborhood3D({
       data-maplibre-district={districtSlug}
       data-maplibre-boundary-status={boundaryGeometry ? "shadow-reference" : "center-only"}
       data-maplibre-reserve-rail={reserveRail ? "true" : "false"}
+      data-akar-quartier-target={isMaarifTargetPilot ? "maarif-couche1" : undefined}
     >
       <div className="maplibre-spike-map" data-maplibre-map-surface>
         <div className="maplibre-spike-canvas" ref={mapRef} />
