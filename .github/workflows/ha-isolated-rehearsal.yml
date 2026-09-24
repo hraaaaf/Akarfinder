@@ -5,6 +5,12 @@ name: HA Isolated Logical Replication Rehearsal
 
 on:
   workflow_dispatch:
+  pull_request:
+    branches:
+      - infra/neon-migration-20260923
+    paths:
+      - ".github/workflows/ha-isolated-rehearsal.yml"
+      - "scripts/scrapers/__tests__/ha-isolated-rehearsal-workflow-guard.test.ts"
 
 permissions:
   contents: read
