@@ -438,12 +438,12 @@ export function MapLibreNeighborhood3D({
                 },
               } as any);
             }
-            if (!(isMaarifTargetPilot && targetComposition === "context")) map.addLayer({
+            map.addLayer({
               id: "3d-buildings",
               source: "akarfinder-openfreemap",
               "source-layer": "building",
               type: "fill-extrusion",
-              minzoom: 14.8,
+              minzoom: isMaarifTargetPilot && targetComposition === "context" ? 24 : 14.8,
               filter: ["!=", ["get", "hide_3d"], true],
               paint: {
                 "fill-extrusion-color": [
@@ -452,7 +452,7 @@ export function MapLibreNeighborhood3D({
                 ],
                 "fill-extrusion-height": ["coalesce", ["get", "render_height"], 0],
                 "fill-extrusion-base": ["coalesce", ["get", "render_min_height"], 0],
-                "fill-extrusion-opacity": 0.28,
+                "fill-extrusion-opacity": isMaarifTargetPilot && targetComposition === "context" ? 0 : 0.28,
                 "fill-extrusion-vertical-gradient": true,
               },
             } as any);
