@@ -472,3 +472,15 @@ Urgent PR: #1084
 - New #1082 exact-head runs were not yet materialized at first check.
 - Supabase live map read failure remains externally proven as `exceed_egress_quota`.
 - No Vercel deploy, no Neon write, no Supabase deletion.
+
+## PG17 dispatch — missing source secret gate — 2026-09-24
+- Workflow registration blocker resolved via PR #1085, merged as `b0ec9d6a5526bd60c14653a5679b88e2e6d7194d`.
+- Manual source-only validation run created successfully:
+  - run `35969875172`
+  - migration SHA `d794616471e77b98e9c7b6138060d69ad49b0b95`
+  - five expected matrix jobs created.
+- All five jobs failed immediately at `Validate source secret`, before export/database access.
+- Exact observable cause: `Missing SUPABASE_DATABASE_URL_DIRECT`.
+- No Neon write, no deploy, no merge of PR #1082.
+- Human/security gate: provision repository Actions secret `SUPABASE_DATABASE_URL_DIRECT` using the direct/unpooled Supabase PostgreSQL URI without exposing it in chat/logs.
+- After secret provisioning: rerun the validation suite once; do not change code or bypass the guard.
