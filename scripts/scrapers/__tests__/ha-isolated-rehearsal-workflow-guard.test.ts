@@ -105,3 +105,14 @@ test("HA CI cancels obsolete runs for the current PR", () => {
   assert.match(neonRuntimeWorkflow, /cancel-in-progress: true/);
   assert.match(neonRuntimeWorkflow, /neon-runtime-read-path-\$\{\{/);
 });
+
+
+test("isolated HA artifact records the PR head SHA and millisecond RTO", () => {
+  assert.match(workflow, /REHEARSAL_HEAD_SHA: \$\{\{ github\.event\.pull_request\.head\.sha \|\| github\.sha \}\}/);
+  assert.match(workflow, /application_commit: \$application_commit/);
+  assert.match(workflow, /github_execution_sha: \$github_execution_sha/);
+  assert.match(workflow, /failover_decision_epoch_ms/);
+  assert.match(workflow, /target_writer_promoted_epoch_ms/);
+  assert.match(workflow, /isolated_failover_rto_ms/);
+  assert.doesNotMatch(workflow, /isolated_failover_rto_seconds/);
+});
