@@ -208,11 +208,11 @@ export function MapLibreNeighborhood3D({
               });
               map.addLayer({
                 id: "neighborhood-boundary-fill", type: "fill", source: "neighborhood-boundary",
-                paint: { "fill-color": "#0aa39a", "fill-opacity": 0.09 },
+                paint: { "fill-color": "#69A7E8", "fill-opacity": 0.18 },
               });
               map.addLayer({
                 id: "neighborhood-boundary-line", type: "line", source: "neighborhood-boundary",
-                paint: { "line-color": "#8ff8ee", "line-width": 2.2, "line-opacity": 0.88 },
+                paint: { "line-color": "#071B33", "line-width": 3.2, "line-opacity": 0.96 },
               });
             }
           } catch (error) {
@@ -290,7 +290,7 @@ export function MapLibreNeighborhood3D({
       data-maplibre-anchor-count={context?.anchor_count ?? 0}
       data-maplibre-city={citySlug}
       data-maplibre-district={districtSlug}
-      data-maplibre-boundary-status={boundaryGeometry ? "provided" : "center-only"}
+      data-maplibre-boundary-status={boundaryGeometry ? "shadow-reference" : "center-only"}
       data-maplibre-reserve-rail={reserveRail ? "true" : "false"}
     >
       <div className="maplibre-spike-map" data-maplibre-map-surface>
@@ -339,7 +339,7 @@ export function MapLibreNeighborhood3D({
         <span className="maplibre-spike-map-note-kicker">Quartier · {cityLabel}</span>
         <strong>{districtLabel}</strong>
         <span className="maplibre-spike-map-note-copy">
-          {boundaryGeometry ? "Périmètre qualifié affiché." : "Repère central sourcé · périmètre non revendiqué."}
+          {boundaryGeometry ? "Limite OSM de référence · validation production en attente." : "Repère central sourcé · périmètre non revendiqué."}
         </span>
         <span className="maplibre-spike-map-note-status">{buildingCount > 0 ? `${buildingCount} volumes 3D visibles` : "Chargement du relief urbain…"}</span>
       </div>
