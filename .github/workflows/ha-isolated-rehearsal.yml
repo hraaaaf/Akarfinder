@@ -16,8 +16,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: ha-isolated-logical-replication-rehearsal
-  cancel-in-progress: false
+  group: ha-isolated-logical-replication-rehearsal-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   rehearse:
