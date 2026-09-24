@@ -182,3 +182,39 @@
     display: none !important;
   }
 }
+
+
+/* Couche 2 hotfix — keep the mobile tabs actionable inside the bounded rail. */
+@media (max-width: 767px) {
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]) .p4-premium-lede,
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]) .p4-premium-proofline {
+    display: none !important;
+  }
+
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]) .p4-premium-context-header h2 {
+    margin-top: 1px !important;
+    font-size: 28px !important;
+    line-height: 1 !important;
+  }
+
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]) .p4-premium-context-location {
+    margin-top: 4px !important;
+    font-size: 10px !important;
+  }
+
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]) .p4-premium-tabs {
+    margin-top: 7px !important;
+  }
+
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"])
+    [data-p4-map-decision-rail][data-vivre-ici-tab="overview"]
+    .p4-premium-market-card {
+    display: none !important;
+  }
+
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"])
+    [data-p4-map-decision-rail][data-vivre-ici-tab="overview"]
+    .p4-premium-actions {
+    margin-top: 9px !important;
+  }
+}
