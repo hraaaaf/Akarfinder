@@ -27,6 +27,14 @@ type BoundaryGeometry = {
   coordinates: unknown;
 };
 
+export type TargetPilotLandmark = {
+  id: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  tier: "flagship" | "major" | "regional" | "local" | string;
+};
+
 export type MapLibreNeighborhood3DProps = {
   citySlug: string;
   cityLabel: string;
@@ -36,10 +44,34 @@ export type MapLibreNeighborhood3DProps = {
   boundaryGeometry?: BoundaryGeometry | null;
   desktopCameraOffset?: MutablePosition;
   reserveRail?: boolean;
+  targetPilotLandmarks?: readonly TargetPilotLandmark[];
 };
 
 const OPENFREEMAP_VECTOR = "https://tiles.openfreemap.org/planet";
-const ESRI_IMAGERY_TILES = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
+const OPENFREEMAP_STYLE = "https://tiles.openfreemap.org/styles/liberty";
+const RTL_TEXT_PLUGIN_URL = "https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0.3.0/dist/mapbox-gl-rtl-text.js";
+let rtlTextPluginPromise: Promise<void> | null = null;
+
+function isArabicText(value: string): boolean {
+  return /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/.test(value);
+}
+
+async function ensureMapLibreRtlText(maplibregl: any): Promise<"loaded" | "error"> {
+  try {
+    const status = typeof maplibregl.getRTLTextPluginStatus === "function"
+      ? maplibregl.getRTLTextPluginStatus()
+      : "unavailable";
+    if (status === "loaded") return "loaded";
+    if (!rtlTextPluginPromise) {
+      rtlTextPluginPromise = Promise.resolve(maplibregl.setRTLTextPlugin(RTL_TEXT_PLUGIN_URL, false));
+    }
+    await rtlTextPluginPromise;
+    return maplibregl.getRTLTextPluginStatus?.() === "loaded" ? "loaded" : "error";
+  } catch (error) {
+    console.error("[vivre-ici-maplibre-rtl] plugin failed", error);
+    return "error";
+  }
+}
 const FOCUS_SOURCE_ID = "akarfinder-neighborhood-focus";
 const FOCUS_GLOW_LAYER_ID = "akarfinder-neighborhood-focus-glow";
 const FOCUS_RING_LAYER_ID = "akarfinder-neighborhood-focus-ring";
@@ -53,6 +85,72 @@ const CATEGORY_META: Record<LivingHereCategory, { label: string; color: string }
   coast: { label: "Côte", color: "#3b82c4" }, other: { label: "Autres", color: "#6b7280" },
 };
 
+function collectBoundaryPositions(value: unknown, output: MutablePosition[]): void {
+  if (!Array.isArray(value)) return;
+  if (
+    value.length >= 2
+    && typeof value[0] === "number"
+    && Number.isFinite(value[0])
+    && typeof value[1] === "number"
+    && Number.isFinite(value[1])
+  ) {
+    output.push([value[0], value[1]]);
+    return;
+  }
+  for (const item of value) collectBoundaryPositions(item, output);
+}
+
+function getBoundaryBounds(geometry: BoundaryGeometry | null): [MutablePosition, MutablePosition] | null {
+  if (!geometry) return null;
+  const positions: MutablePosition[] = [];
+  collectBoundaryPositions(geometry.coordinates, positions);
+  if (!positions.length) return null;
+  let minLng = positions[0][0];
+  let maxLng = positions[0][0];
+  let minLat = positions[0][1];
+  let maxLat = positions[0][1];
+  for (const [lng, lat] of positions.slice(1)) {
+    minLng = Math.min(minLng, lng);
+    maxLng = Math.max(maxLng, lng);
+    minLat = Math.min(minLat, lat);
+    maxLat = Math.max(maxLat, lat);
+  }
+  return [[minLng, minLat], [maxLng, maxLat]];
+}
+
+function focusNeighborhoodMap(
+  map: any,
+  geometry: BoundaryGeometry | null,
+  center: MutablePosition,
+  desktopCameraOffset: MutablePosition,
+  desktop: boolean,
+  duration: number,
+): void {
+  const bounds = getBoundaryBounds(geometry);
+  if (bounds) {
+    map.fitBounds(bounds, {
+      padding: desktop
+        ? { top: 108, right: 82, bottom: 76, left: 82 }
+        : { top: 126, right: 26, bottom: 190, left: 26 },
+      maxZoom: desktop ? 14.25 : 14.2,
+      pitch: desktop ? 8 : 0,
+      bearing: 0,
+      duration,
+    });
+    return;
+  }
+  const targetCenter: MutablePosition = desktop
+    ? [center[0] + desktopCameraOffset[0], center[1] + desktopCameraOffset[1]]
+    : center;
+  map.easeTo({
+    center: targetCenter,
+    zoom: desktop ? 13.55 : 13.8,
+    pitch: desktop ? 18 : 8,
+    bearing: 0,
+    duration,
+  });
+}
+
 export function MapLibreNeighborhood3D({
   citySlug,
   cityLabel,
@@ -62,6 +160,7 @@ export function MapLibreNeighborhood3D({
   boundaryGeometry = null,
   desktopCameraOffset = [0, 0],
   reserveRail = false,
+  targetPilotLandmarks = [],
 }: MapLibreNeighborhood3DProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
@@ -74,21 +173,13 @@ export function MapLibreNeighborhood3D({
   const [activeCategory, setActiveCategory] = useState<LivingHereCategory | "all">("all");
   const [screenPoints, setScreenPoints] = useState<Record<string, ScreenPoint>>({});
   const [centerPoint, setCenterPoint] = useState<ScreenPoint | null>(null);
+  const [rtlStatus, setRtlStatus] = useState<"loading" | "loaded" | "error">("loading");
+  const isMaarifTargetPilot = citySlug === "casablanca" && districtSlug === "maarif";
 
   const restoreCamera = () => {
     const map = mapInstanceRef.current;
     if (!map) return;
-    const desktop = window.innerWidth >= 1024;
-    const targetCenter: MutablePosition = desktop
-      ? [center[0] + desktopCameraOffset[0], center[1] + desktopCameraOffset[1]]
-      : center;
-    map.easeTo({
-      center: targetCenter,
-      zoom: desktop ? 14.05 : 14.45,
-      pitch: desktop ? 52 : 44,
-      bearing: desktop ? -27 : -18,
-      duration: 650,
-    });
+    focusNeighborhoodMap(map, boundaryGeometry, center, desktopCameraOffset, window.innerWidth >= 1024, 650);
   };
 
   const changeZoom = (delta: number) => {
@@ -119,8 +210,14 @@ export function MapLibreNeighborhood3D({
     let map: any = null;
 
     void import("maplibre-gl")
-      .then((maplibregl) => {
+      .then(async (maplibregl) => {
+        const rtl = await ensureMapLibreRtlText(maplibregl);
         if (disposed || !mapRef.current) return;
+        setRtlStatus(rtl);
+        if (rtl !== "loaded") {
+          setRenderState("error");
+          return;
+        }
         const desktop = window.innerWidth >= 1024;
         const targetCenter: MutablePosition = desktop
           ? [center[0] + desktopCameraOffset[0], center[1] + desktopCameraOffset[1]]
@@ -128,62 +225,40 @@ export function MapLibreNeighborhood3D({
         map = new maplibregl.Map({
           container: mapRef.current,
           center: targetCenter,
-          zoom: desktop ? 14.05 : 14.45,
-          pitch: desktop ? 52 : 44,
-          bearing: desktop ? -27 : -18,
+          zoom: desktop ? 13.55 : 13.8,
+          pitch: desktop ? 18 : 8,
+          bearing: 0,
           attributionControl: false,
           canvasContextAttributes: { antialias: true },
-          style: {
-            version: 8,
-            sources: {
-              imagery: {
-                type: "raster",
-                tiles: [ESRI_IMAGERY_TILES],
-                tileSize: 256,
-                attribution: "Tiles © Esri",
-                maxzoom: 19,
-              },
-              openfreemap: {
-                type: "vector",
-                url: OPENFREEMAP_VECTOR,
-                attribution: "© OpenStreetMap contributors · OpenFreeMap",
-              },
-            },
-            layers: [
-              { id: "background", type: "background", paint: { "background-color": "#dce8e5" } },
-              {
-                id: "imagery", type: "raster", source: "imagery",
-                paint: {
-                  "raster-brightness-min": 0.14,
-                  "raster-brightness-max": 0.94,
-                  "raster-contrast": 0.08,
-                  "raster-saturation": -0.02,
-                  "raster-opacity": 0.98,
-                },
-              },
-            ],
-          } as any,
+          style: OPENFREEMAP_STYLE,
         } as any);
         mapInstanceRef.current = map;
 
         map.once("load", () => {
           if (disposed) return;
           try {
+            if (!map.getSource("akarfinder-openfreemap")) {
+              map.addSource("akarfinder-openfreemap", {
+                type: "vector",
+                url: OPENFREEMAP_VECTOR,
+                attribution: "© OpenStreetMap contributors · OpenFreeMap",
+              });
+            }
             map.addLayer({
               id: "3d-buildings",
-              source: "openfreemap",
+              source: "akarfinder-openfreemap",
               "source-layer": "building",
               type: "fill-extrusion",
-              minzoom: 13.5,
+              minzoom: 14.8,
               filter: ["!=", ["get", "hide_3d"], true],
               paint: {
                 "fill-extrusion-color": [
                   "interpolate", ["linear"], ["coalesce", ["get", "render_height"], 0],
-                  0, "#e6dfd2", 10, "#d8cbb8", 24, "#c8b29a", 55, "#aa8e77", 120, "#826c5d",
+                  0, "#edf1f4", 10, "#e4e9ed", 24, "#d9e1e6", 55, "#ccd7df", 120, "#b8c6d1",
                 ],
                 "fill-extrusion-height": ["coalesce", ["get", "render_height"], 0],
                 "fill-extrusion-base": ["coalesce", ["get", "render_min_height"], 0],
-                "fill-extrusion-opacity": 0.72,
+                "fill-extrusion-opacity": 0.28,
                 "fill-extrusion-vertical-gradient": true,
               },
             } as any);
@@ -230,13 +305,16 @@ export function MapLibreNeighborhood3D({
               });
               map.addLayer({
                 id: "neighborhood-boundary-fill", type: "fill", source: "neighborhood-boundary",
-                paint: { "fill-color": "#0aa39a", "fill-opacity": 0.09 },
+                paint: { "fill-color": "#69A7E8", "fill-opacity": 0.18 },
               });
               map.addLayer({
                 id: "neighborhood-boundary-line", type: "line", source: "neighborhood-boundary",
-                paint: { "line-color": "#8ff8ee", "line-width": 2.2, "line-opacity": 0.88 },
+                paint: { "line-color": "#071B33", "line-width": 3.2, "line-opacity": 0.96 },
               });
             }
+            window.requestAnimationFrame(() => {
+              if (!disposed) focusNeighborhoodMap(map, boundaryGeometry, center, desktopCameraOffset, desktop, 0);
+            });
           } catch (error) {
             console.error("[vivre-ici-maplibre-national] layer setup failed", error);
             setSourceState("unavailable");
@@ -283,6 +361,13 @@ export function MapLibreNeighborhood3D({
           visible: point.x > -100 && point.x < canvas.clientWidth + 100 && point.y > -80 && point.y < canvas.clientHeight + 80,
         };
       }
+      for (const landmark of targetPilotLandmarks) {
+        const point = map.project([landmark.longitude, landmark.latitude]);
+        next[`target:${landmark.id}`] = {
+          x: point.x, y: point.y,
+          visible: point.x > -120 && point.x < canvas.clientWidth + 120 && point.y > -100 && point.y < canvas.clientHeight + 100,
+        };
+      }
       const cp = map.project(center);
       setCenterPoint({ x: cp.x, y: cp.y, visible: cp.x > -60 && cp.x < canvas.clientWidth + 60 && cp.y > -60 && cp.y < canvas.clientHeight + 60 });
       setScreenPoints(next);
@@ -294,7 +379,7 @@ export function MapLibreNeighborhood3D({
       map.off("move", updatePositions);
       map.off("resize", updatePositions);
     };
-  }, [context, ready, center[0], center[1]]);
+  }, [context, ready, center[0], center[1], targetPilotLandmarks]);
 
   const categories = context?.categories.filter((category) => Boolean(CATEGORY_META[category])) ?? [];
   const visibleAnchors = context?.anchors.filter((anchor) => activeCategory === "all" || anchor.category === activeCategory) ?? [];
@@ -312,8 +397,11 @@ export function MapLibreNeighborhood3D({
       data-maplibre-anchor-count={context?.anchor_count ?? 0}
       data-maplibre-city={citySlug}
       data-maplibre-district={districtSlug}
-      data-maplibre-boundary-status={boundaryGeometry ? "provided" : "center-only"}
+      data-maplibre-boundary-status={boundaryGeometry ? "shadow-reference" : "center-only"}
+      data-maplibre-boundary-semantic={isMaarifTargetPilot && boundaryGeometry ? "administrative-arrondissement" : boundaryGeometry ? "boundary-reference" : "none"}
+      data-maplibre-rtl-status={rtlStatus}
       data-maplibre-reserve-rail={reserveRail ? "true" : "false"}
+      data-akar-quartier-target={isMaarifTargetPilot ? "maarif-couche1" : undefined}
     >
       <div className="maplibre-spike-map" data-maplibre-map-surface>
         <div className="maplibre-spike-canvas" ref={mapRef} />
@@ -329,7 +417,23 @@ export function MapLibreNeighborhood3D({
             const screen = screenPoints[anchor.poi_id];
             if (!screen?.visible) return null;
             const meta = CATEGORY_META[anchor.category] ?? CATEGORY_META.other;
-            return <div key={anchor.poi_id} className="maplibre-spike-poi-label" style={{ left: screen.x, top: screen.y }}><span>{anchor.name}</span><i style={{ background: meta.color }} /></div>;
+            const arabic = isArabicText(anchor.name);
+            return <div key={anchor.poi_id} className="maplibre-spike-poi-label" style={{ left: screen.x, top: screen.y }}><span lang={arabic ? "ar" : undefined} dir={arabic ? "rtl" : "auto"}>{anchor.name}</span><i style={{ background: meta.color }} /></div>;
+          })}
+          {targetPilotLandmarks.map((landmark) => {
+            const screen = screenPoints[`target:${landmark.id}`];
+            if (!screen?.visible) return null;
+            return (
+              <div
+                key={landmark.id}
+                className="maplibre-spike-target-landmark-label"
+                data-landmark-tier={landmark.tier}
+                style={{ left: screen.x, top: screen.y }}
+              >
+                <i aria-hidden="true" />
+                <span lang={isArabicText(landmark.name) ? "ar" : undefined} dir={isArabicText(landmark.name) ? "rtl" : "auto"}>{landmark.name}</span>
+              </div>
+            );
           })}
         </div>
       </div>
@@ -337,11 +441,11 @@ export function MapLibreNeighborhood3D({
       <div className="maplibre-spike-map-chrome">
         <div className="maplibre-spike-brand"><b>AF</b><span>AkarFinder</span></div>
         <div className="maplibre-spike-search"><Search size={17} aria-hidden="true" /><strong>{cityLabel}</strong><span>Quartiers et adresses</span></div>
-        <div className="maplibre-spike-mode"><span>Satellite</span><strong>3D</strong></div>
+        <div className="maplibre-spike-mode"><span>2D</span><strong>3D</strong></div>
       </div>
 
       <div className="maplibre-spike-view-chips" aria-label="Mode cartographique">
-        <span className="active">Satellite</span>
+        <span className="active">Plan</span>
         <span>Quartiers</span>
       </div>
 
@@ -349,6 +453,12 @@ export function MapLibreNeighborhood3D({
         <button className={activeCategory === "all" ? "active" : ""} onClick={() => setActiveCategory("all")}>Repères</button>
         {categories.map((category) => <button key={category} className={activeCategory === category ? "active" : ""} onClick={() => setActiveCategory(category)}>{CATEGORY_META[category].label}</button>)}
       </div>
+
+      {isMaarifTargetPilot && boundaryGeometry ? (
+        <div className="maplibre-spike-boundary-badge" aria-label="Nature du contour affiché">
+          Contour administratif
+        </div>
+      ) : null}
 
       <div className="maplibre-spike-controls" aria-label="Contrôles de la carte">
         <button type="button" className="maplibre-spike-control-primary" onClick={restoreCamera} aria-label="Recentrer sur le quartier"><LocateFixed size={18} /></button>
@@ -361,7 +471,7 @@ export function MapLibreNeighborhood3D({
         <span className="maplibre-spike-map-note-kicker">Quartier · {cityLabel}</span>
         <strong>{districtLabel}</strong>
         <span className="maplibre-spike-map-note-copy">
-          {boundaryGeometry ? "Périmètre qualifié affiché." : "Repère central sourcé · périmètre non revendiqué."}
+          {boundaryGeometry ? (isMaarifTargetPilot ? "Arrondissement Maârif · repère administratif." : "Limite OSM de référence · validation production en attente.") : "Repère central sourcé · périmètre non revendiqué."}
         </span>
         <span className="maplibre-spike-map-note-status">{buildingCount > 0 ? `${buildingCount} volumes 3D visibles` : "Chargement du relief urbain…"}</span>
       </div>

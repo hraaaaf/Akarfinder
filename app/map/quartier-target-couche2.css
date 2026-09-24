@@ -1,0 +1,280 @@
+/* AKAR-MAP-QUARTIER-TARGET — Couche 2 — Maârif
+ * Truth-semantic additions only. Shell remains Couche 1.
+ */
+
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-boundary-badge {
+  position: absolute;
+  z-index: 14;
+  left: 112px;
+  top: 88px;
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 13px;
+  border: 1px solid rgb(207 220 235 / .96);
+  border-radius: 12px;
+  background: rgb(255 255 255 / .96);
+  color: #52657a;
+  box-shadow: 0 8px 20px rgb(7 27 51 / .10);
+  backdrop-filter: blur(14px);
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: .02em;
+  pointer-events: none;
+}
+
+@media (max-width: 1023px) {
+  [data-akar-quartier-target="maarif-couche1"] .maplibre-spike-boundary-badge {
+    left: 94px;
+    top: 66px;
+    min-height: 36px;
+    max-width: 148px;
+    padding: 0 10px;
+    border-radius: 11px;
+    font-size: 8.5px;
+    line-height: 1.15;
+    text-align: center;
+  }
+}
+
+
+/* Couche 2 — interactive local-life panel, scoped to the Maârif pilot. */
+[data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]) .p4-premium-tabs button {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+[data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"])
+  [data-p4-map-decision-rail][data-vivre-ici-tab="local"]
+  .p4-premium-signal-grid {
+  display: grid !important;
+}
+
+[data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"])
+  [data-p4-map-decision-rail][data-vivre-ici-tab="local"]
+  .p4-premium-category-line {
+  display: block !important;
+  margin-top: 10px;
+  color: #708196;
+  font-size: 9px;
+  font-weight: 750;
+  line-height: 1.4;
+}
+
+[data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"])
+  [data-p4-map-decision-rail][data-vivre-ici-tab="local"]
+  .p4-premium-local-guide[data-couche2-local-guide] {
+  display: block !important;
+  margin-top: 12px;
+  padding-top: 0;
+  border-top: 0;
+}
+
+[data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"])
+  [data-p4-map-decision-rail][data-vivre-ici-tab="local"]
+  .p4-premium-local-guide-list {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+}
+
+[data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"])
+  [data-p4-map-decision-rail][data-vivre-ici-tab="local"]
+  .p4-premium-local-guide-list article {
+  display: block !important;
+  min-width: 0;
+  border: 1px solid #e1e8f0 !important;
+  border-radius: 14px !important;
+  background: #fbfdff !important;
+  padding: 10px !important;
+}
+
+[data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"])
+  [data-p4-map-decision-rail][data-vivre-ici-tab="local"]
+  .p4-premium-local-guide-list article > strong {
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  line-height: 1.25 !important;
+}
+
+[data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"])
+  [data-p4-map-decision-rail][data-vivre-ici-tab="local"]
+  .p4-premium-local-guide-list article > small {
+  display: block !important;
+  margin-top: 5px;
+  color: #7b8b9d;
+  font-size: 8px;
+  line-height: 1.25;
+  white-space: normal !important;
+}
+
+[data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"])
+  [data-p4-map-decision-rail][data-vivre-ici-tab="local"]
+  .p4-premium-local-guide-source {
+  display: block !important;
+  margin-top: 10px;
+  color: #8795a6;
+  font-size: 8px;
+  line-height: 1.4;
+}
+
+.p4-premium-local-guide-empty {
+  margin-top: 14px;
+  color: #7b8b9d;
+  font-size: 10px;
+}
+
+@media (max-width: 767px) {
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]) .p4-map-decision-rail {
+    max-height: 214px !important;
+  }
+
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]) .p4-premium-tabs {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0 !important;
+    margin-top: 8px !important;
+  }
+
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]) .p4-premium-tabs > a,
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]) .p4-premium-tabs > span {
+    display: none !important;
+  }
+
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"])
+    [data-p4-map-decision-rail][data-vivre-ici-tab="local"] {
+    max-height: min(54svh, 460px) !important;
+    overflow-y: auto !important;
+  }
+
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"])
+    [data-p4-map-decision-rail][data-vivre-ici-tab="local"]
+    .p4-premium-signal-grid {
+    display: none !important;
+  }
+
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"])
+    [data-p4-map-decision-rail][data-vivre-ici-tab="local"]
+    .p4-premium-category-line {
+    display: none !important;
+  }
+
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"])
+    [data-p4-map-decision-rail][data-vivre-ici-tab="local"]
+    .p4-premium-local-guide-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"])
+    [data-p4-map-decision-rail][data-vivre-ici-tab="local"]
+    .p4-premium-local-guide-list article {
+    padding: 8px !important;
+  }
+
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"])
+    [data-p4-map-decision-rail][data-vivre-ici-tab="local"]
+    .p4-premium-local-guide-source {
+    display: none !important;
+  }
+}
+
+
+/* Couche 2 hotfix — keep the mobile tabs actionable inside the bounded rail. */
+@media (max-width: 767px) {
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]) .p4-premium-lede,
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]) .p4-premium-proofline {
+    display: none !important;
+  }
+
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]) .p4-premium-context-header h2 {
+    margin-top: 1px !important;
+    font-size: 28px !important;
+    line-height: 1 !important;
+  }
+
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]) .p4-premium-context-location {
+    margin-top: 4px !important;
+    font-size: 10px !important;
+  }
+
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]) .p4-premium-tabs {
+    margin-top: 7px !important;
+  }
+
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"])
+    [data-p4-map-decision-rail][data-vivre-ici-tab="overview"]
+    .p4-premium-market-card {
+    display: none !important;
+  }
+
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"])
+    [data-p4-map-decision-rail][data-vivre-ici-tab="overview"]
+    .p4-premium-actions {
+    margin-top: 9px !important;
+  }
+}
+
+
+/* Final Couche 2 specificity guard — restore tabs hidden by legacy mobile convergence rules. */
+@media (max-width: 767px) {
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]):has([data-maplibre-spike][data-maplibre-district="maarif"])
+    [data-p4-map-decision-rail]
+    .p4-premium-tabs {
+    display: grid !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: auto !important;
+  }
+
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]):has([data-maplibre-spike][data-maplibre-district="maarif"])
+    [data-p4-map-decision-rail]
+    .p4-premium-tabs > button {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+}
+
+
+/* Couche 2 tablet guard — target-alignment hides all secondary tabs through 1023px. */
+@media (min-width: 768px) and (max-width: 1023px) {
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]):has([data-maplibre-spike][data-maplibre-district="maarif"])
+    [data-p4-map-decision-rail]
+    .p4-premium-tabs {
+    display: grid !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: auto !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 0 !important;
+    margin-top: 8px !important;
+  }
+
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]):has([data-maplibre-spike][data-maplibre-district="maarif"])
+    [data-p4-map-decision-rail]
+    .p4-premium-tabs > button,
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]):has([data-maplibre-spike][data-maplibre-district="maarif"])
+    [data-p4-map-decision-rail]
+    .p4-premium-tabs > a {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+}
+
+
+/* Couche 2 tablet local-life rail — restore room for the re-enabled guide. */
+@media (min-width: 768px) and (max-width: 1023px) {
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]):has([data-maplibre-spike][data-maplibre-district="maarif"])
+    [data-p4-map-decision-rail][data-vivre-ici-tab="local"] {
+    max-height: min(54svh, 460px) !important;
+    overflow-y: auto !important;
+  }
+}
