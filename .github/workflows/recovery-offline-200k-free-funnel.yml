@@ -13,6 +13,8 @@ on:
       - "scripts/recovery/sitemap-shadow-harvest.ts"
       - "scripts/recovery/build-offline-200k-reservoir.ts"
       - "scripts/recovery/__tests__/offline-200k-reservoir.test.ts"
+      - "scripts/recovery/recovery-serper-plan.ts"
+      - "scripts/recovery/__tests__/recovery-serper-plan.test.ts"
       - "scripts/scrapers/__tests__/recovery-200k-source-patterns.test.ts"
       - "docs/recovery/OFFLINE_200K_MASS_HARVEST_2026-09-24.md"
   workflow_dispatch:
@@ -49,6 +51,7 @@ jobs:
           npx tsx --test
           scripts/scrapers/__tests__/recovery-200k-source-patterns.test.ts
           scripts/recovery/__tests__/offline-200k-reservoir.test.ts
+          scripts/recovery/__tests__/recovery-serper-plan.test.ts
 
       - name: TypeScript
         run: npx tsc --noEmit
