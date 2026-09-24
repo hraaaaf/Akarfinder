@@ -17,6 +17,7 @@
 // budget-aware refusal, structured instrumentation).
 
 import { getSupabaseServerClient } from "@/lib/db/supabase-client";
+import { assertHaSupabaseWriteAllowed } from "@/lib/db/ha-write-policy";
 import { withDbTimeout } from "./db-call-guard";
 import type { OpenSerpEngineName, DbCallContext } from "./query-rotation-state-repository";
 
@@ -71,6 +72,7 @@ export async function loadEngineBudgetStates(
 export async function upsertEngineBudgetStates(states: EngineBudgetDbState[], runId: string, ctx: DbCallContext = {}): Promise<void> {
   if (states.length === 0) return;
 
+  assertHaSupabaseWriteAllowed();
   const supabase = getSupabaseServerClient();
   const now = new Date().toISOString();
   const rows = states.map((state) => ({
