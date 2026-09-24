@@ -69,3 +69,12 @@ test("restore recovery mode authorizes no production mutation by itself", () => 
     /No production write, canary schema application, publication\/subscription mutation, provider switch or Vercel change is authorized by recovery-mode completion alone/,
   );
 });
+
+
+test("HA runbook enforces explicit read-provider coherence", () => {
+  assert.match(runbook, /SUPABASE_PRIMARY.*requires the application read provider to be Supabase/s);
+  assert.match(runbook, /NEON_PRIMARY.*FAILBACK_SYNC.*FAILBACK_FREEZE.*require the application read provider to be Neon/s);
+  assert.match(runbook, /FAILOVER_PREP.*permits either read provider/s);
+  assert.match(runbook, /writer\/read-provider mismatch fails closed/);
+  assert.match(runbook, /Legacy\/provider-migration read modes remain unchanged while `HA_WRITER_STATE` is unset/);
+});
