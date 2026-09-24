@@ -31,92 +31,129 @@ export type HaEvidenceInput = {
 
 export type HaEvidenceEvaluation = {
   verdict: HaEvidenceVerdict;
-  reasons: string[];
+  blockers: string[];
+  failures: string[];
 };
 
 function isNonEmpty(value: string | null): value is string {
   return typeof value === "string" && value.length > 0;
 }
 
+function triState(
+  value: boolean | null,
+  missingReason: string,
+  falseReason: string,
+  blockers: string[],
+  failures: string[],
+): void {
+  if (value === null) blockers.push(missingReason);
+  else if (value === false) failures.push(falseReason);
+}
+
 export function evaluateHaEvidence(
   evidence: HaEvidenceInput,
 ): HaEvidenceEvaluation {
-  const reasons: string[] = [];
+  const blockers: string[] = [];
+  const failures: string[] = [];
 
-  if (evidence.single_writer_proven !== true) {
-    reasons.push("single_writer_not_proven");
-  }
+  triState(
+    evidence.single_writer_proven,
+    "single_writer_proof_missing",
+    "single_writer_violation",
+    blockers,
+    failures,
+  );
 
   if (evidence.secrets_redacted !== true) {
-    reasons.push("secrets_not_redacted");
+    failures.push("secrets_not_redacted");
   }
 
   if (evidence.conflicts === null) {
-    reasons.push("conflict_count_missing");
+    blockers.push("conflict_count_missing");
   } else if (evidence.conflicts !== 0) {
-    reasons.push("conflicts_detected");
+    failures.push("conflicts_detected");
   }
 
   if (evidence.duplicates === null) {
-    reasons.push("duplicate_count_missing");
+    blockers.push("duplicate_count_missing");
   } else if (evidence.duplicates !== 0) {
-    reasons.push("duplicates_detected");
+    failures.push("duplicates_detected");
+  }
+
+  if (evidence.table_evidence.length === 0) {
+    blockers.push("table_evidence_empty");
   }
 
   for (const table of evidence.table_evidence) {
     const prefix = `table:${table.table}`;
 
-    if (
-      table.source_count === null ||
-      table.target_count === null ||
-      table.source_count !== table.target_count
-    ) {
-      reasons.push(`${prefix}:count_mismatch_or_missing`);
+    if (table.source_count === null || table.target_count === null) {
+      blockers.push(`${prefix}:count_missing`);
+    } else if (table.source_count !== table.target_count) {
+      failures.push(`${prefix}:count_mismatch`);
     }
 
     if (
       !isNonEmpty(table.source_pk_digest) ||
-      !isNonEmpty(table.target_pk_digest) ||
-      table.source_pk_digest !== table.target_pk_digest
+      !isNonEmpty(table.target_pk_digest)
     ) {
-      reasons.push(`${prefix}:pk_digest_mismatch_or_missing`);
+      blockers.push(`${prefix}:pk_digest_missing`);
+    } else if (table.source_pk_digest !== table.target_pk_digest) {
+      failures.push(`${prefix}:pk_digest_mismatch`);
     }
 
     if (
       !isNonEmpty(table.source_content_digest) ||
-      !isNonEmpty(table.target_content_digest) ||
-      table.source_content_digest !== table.target_content_digest
+      !isNonEmpty(table.target_content_digest)
     ) {
-      reasons.push(`${prefix}:content_digest_mismatch_or_missing`);
+      blockers.push(`${prefix}:content_digest_missing`);
+    } else if (table.source_content_digest !== table.target_content_digest) {
+      failures.push(`${prefix}:content_digest_mismatch`);
     }
 
-    if (table.delete_parity !== true) {
-      reasons.push(`${prefix}:delete_parity_not_proven`);
-    }
+    triState(
+      table.delete_parity,
+      `${prefix}:delete_parity_missing`,
+      `${prefix}:delete_parity_failed`,
+      blockers,
+      failures,
+    );
 
-    if (table.timestamp_version_parity !== true) {
-      reasons.push(`${prefix}:timestamp_version_parity_not_proven`);
-    }
+    triState(
+      table.timestamp_version_parity,
+      `${prefix}:timestamp_version_parity_missing`,
+      `${prefix}:timestamp_version_parity_failed`,
+      blockers,
+      failures,
+    );
 
-    if (table.schema_fingerprint_match !== true) {
-      reasons.push(`${prefix}:schema_fingerprint_mismatch_or_missing`);
-    }
+    triState(
+      table.schema_fingerprint_match,
+      `${prefix}:schema_fingerprint_missing`,
+      `${prefix}:schema_fingerprint_mismatch`,
+      blockers,
+      failures,
+    );
 
     if (!isNonEmpty(table.replica_identity)) {
-      reasons.push(`${prefix}:replica_identity_missing`);
+      blockers.push(`${prefix}:replica_identity_missing`);
     }
 
-    if (table.sequence_safe !== true) {
-      reasons.push(`${prefix}:sequence_safety_not_proven`);
-    }
+    triState(
+      table.sequence_safe,
+      `${prefix}:sequence_safety_missing`,
+      `${prefix}:sequence_safety_failed`,
+      blockers,
+      failures,
+    );
 
-    if (table.pass !== true) {
-      reasons.push(`${prefix}:table_not_marked_pass`);
-    }
-  }
-
-  if (evidence.table_evidence.length === 0) {
-    reasons.push("table_evidence_empty");
+    triState(
+      table.pass,
+      `${prefix}:table_verdict_missing`,
+      `${prefix}:table_failed`,
+      blockers,
+      failures,
+    );
   }
 
   if (
@@ -124,11 +161,17 @@ export function evaluateHaEvidence(
     evidence.timings.observed_failover_rto_seconds === null ||
     evidence.timings.observed_failback_rto_seconds === null
   ) {
-    reasons.push("rpo_rto_measurements_missing");
+    blockers.push("rpo_rto_measurements_missing");
   }
 
   return {
-    verdict: reasons.length === 0 ? "PASS" : "FAIL",
-    reasons,
+    verdict:
+      failures.length > 0
+        ? "FAIL"
+        : blockers.length > 0
+          ? "BLOCKED"
+          : "PASS",
+    blockers,
+    failures,
   };
 }
