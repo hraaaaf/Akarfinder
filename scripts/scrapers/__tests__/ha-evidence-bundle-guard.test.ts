@@ -49,6 +49,7 @@ test("HA table evidence requires parity dimensions beyond row counts", () => {
     "delete_parity",
     "timestamp_version_parity",
     "schema_fingerprint_match",
+    "foreign_key_consistency",
     "replica_identity",
     "sequence_safe",
     "pass",
