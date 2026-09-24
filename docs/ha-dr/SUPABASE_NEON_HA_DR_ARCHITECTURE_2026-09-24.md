@@ -38,20 +38,14 @@ This architecture is not certified until all of the following are demonstrated:
 
 Project: `AqarFinder` / `kusfiyimwvxblvsrhaes`.
 
-Control plane currently reports `ACTIVE_HEALTHY`, but this is not sufficient to declare the database recovered.
-
-The authoritative HA-01 probe on 2026-09-24 still fails:
-
-```text
-57P03: the database system is not accepting connections
-DETAIL: Hot standby mode is disabled.
-```
+The operator has intentionally paused Supabase pending a restore.
 
 Therefore:
 
-- HA-01 remains blocked on source recovery.
-- No repeated polling should be performed.
-- No baseline export or replication setup can be certified yet.
+- no SQL probe is authorized until the operator explicitly signals restore complete;
+- HA-01 remains blocked in `OPERATOR PAUSED / RESTORE PENDING`;
+- the previous `57P03 / Hot standby mode is disabled` result is historical context only;
+- no baseline export or replication setup can be certified yet.
 
 ### Migration PR
 
@@ -177,6 +171,34 @@ The application/operations layer must expose an explicit state, conceptually:
 A transition must be transactional from the operator's perspective: the next writer is never enabled until the previous writer is fenced.
 
 The concrete storage of this state is an implementation detail for a later lot; it must not depend solely on the database being failed over.
+
+
+### Application write authority in the current branch
+
+The current repository implementation uses an explicit application control variable:
+
+- `HA_WRITER_STATE` — authoritative write state;
+- `DATABASE_PROVIDER` — read-path/provider selection only.
+
+Rules:
+
+1. `DATABASE_PROVIDER` must never implicitly promote a writer.
+2. If `HA_WRITER_STATE` is absent, the backward-compatible pre-activation default is `SUPABASE_PRIMARY`.
+3. If an explicit `HA_WRITER_STATE` value is invalid, application write authorization fails closed.
+4. `FAILOVER_PREP` and `FAILBACK_FREEZE` reject all PostgreSQL data-plane writes.
+5. `NEON_PRIMARY` and `FAILBACK_SYNC` reject Supabase data-plane writes.
+6. `SUPABASE_PRIMARY` rejects Neon data-plane writes.
+7. Auth and Storage remain separate failure domains; the DB write fence must not globally disable those services.
+
+Concrete guard:
+
+`lib/db/ha-write-policy.ts`
+
+Critical runtime Supabase mutation paths are being wired to `assertHaSupabaseWriteAllowed()` and protected by a repository-wide static mutation audit.
+
+Important limitation:
+
+The guard proves that known Supabase write paths can be fenced. It does **not** yet prove that every required business write has a working Neon implementation. Therefore `NEON_PRIMARY` is not production-certifiable merely because Supabase writes are blocked.
 
 ## NORMAL — Supabase → Neon
 
@@ -518,14 +540,9 @@ Document exact operator commands, state transitions, kill switch, monitoring, an
 
 ## Current blocker
 
-`HA-01` remains blocked by Supabase recovery:
+`HA-01` is currently blocked by an intentional operator pause pending restore.
 
-```text
-57P03: the database system is not accepting connections
-DETAIL: Hot standby mode is disabled.
-```
-
-No further source polling is required in this lot.
+No source SQL polling is allowed until the operator explicitly signals restore complete.
 
 ## Next exact
 
