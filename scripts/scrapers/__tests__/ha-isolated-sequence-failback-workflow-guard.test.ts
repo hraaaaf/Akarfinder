@@ -83,3 +83,12 @@ test("HA06-B cancels obsolete PR runs", () => {
   assert.match(workflow, /cancel-in-progress: true/);
   assert.match(workflow, /ha-isolated-sequence-failback-\$\{\{/);
 });
+
+
+test("HA06-B reloads freeze timing before promotion", () => {
+  const promotion = workflow
+    .split("- name: Promote source writer and prove first generated ID collision-free")[1]
+    ?.split("- name: Create sequence failback artifact")[0] ?? "";
+  assert.match(promotion, /\. "\$RUNNER_TEMP\/ha-sequence\.env"/);
+  assert.match(promotion, /FAILBACK_FREEZE_EPOCH_MS/);
+});
