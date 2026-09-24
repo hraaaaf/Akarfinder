@@ -134,6 +134,190 @@ jobs:
             sql_value "$db_url" "$schema_sql"
           }
 
+          fk_consistency() {
+            local db_url="$1"
+            local table="$2"
+            local fk_queries
+            local constraint
+            local query
+            local count
+
+            fk_queries="$(docker run --rm \
+              -e DB_URL="$db_url" \
+              -e TABLE_NAME="$table" \
+              -v "$GITHUB_WORKSPACE/scripts/ha-dr:/ha-dr:ro" \
+              "$PG_IMAGE" \
+              sh -lc 'psql "$DB_URL" -X -qAt -v ON_ERROR_STOP=1 -v table_name="$TABLE_NAME" -f /ha-dr/fk-consistency-query-generator.sql')"
+
+            while IFS=            case "$table" in
+              *[!a-z0-9_]*|'')
+                echo "::error::Unsafe table token: $table"
+                exit 1
+                ;;
+            esac
+
+            count_sql="select count(*) from public.$table;"
+            content_sql="select md5(coalesce(string_agg(row_hash, '' order by row_hash), '')) from (select md5(row_to_json(t)::text) as row_hash from public.$table t) q;"
+            pk_cols_sql="select string_agg(quote_ident(a.attname), ', ' order by k.ord) from pg_index i join lateral unnest(i.indkey) with ordinality k(attnum,ord) on true join pg_attribute a on a.attrelid=i.indrelid and a.attnum=k.attnum where i.indrelid='public.$table'::regclass and i.indisprimary;"
+            repl_sql="select relreplident from pg_class where oid='public.$table'::regclass;"
+
+            source_count="$(sql_value "$SOURCE_URL" "$count_sql")"
+            target_count="$(sql_value "$TARGET_URL" "$count_sql")"
+            source_digest="$(sql_value "$SOURCE_URL" "$content_sql")"
+            target_digest="$(sql_value "$TARGET_URL" "$content_sql")"
+            source_pk_cols="$(sql_value "$SOURCE_URL" "$pk_cols_sql")"
+            target_pk_cols="$(sql_value "$TARGET_URL" "$pk_cols_sql")"
+            source_repl="$(sql_value "$SOURCE_URL" "$repl_sql")"
+            target_repl="$(sql_value "$TARGET_URL" "$repl_sql")"
+
+            if [ -z "$source_pk_cols" ] || [ -z "$target_pk_cols" ]; then
+              echo "::error::$table has no provable primary key on source or target"
+              exit 1
+            fi
+            if [ "$source_pk_cols" != "$target_pk_cols" ]; then
+              echo "::error::$table primary-key columns differ"
+              exit 1
+            fi
+
+            pk_digest_sql="select md5(coalesce(string_agg(row_hash, '' order by row_hash), '')) from (select md5(row_to_json(q)::text) as row_hash from (select $source_pk_cols from public.$table) q) x;"
+            source_pk_digest="$(sql_value "$SOURCE_URL" "$pk_digest_sql")"
+            target_pk_digest="$(sql_value "$TARGET_URL" "$pk_digest_sql")"
+
+            source_schema="$(schema_hash "$SOURCE_URL" "$table")"
+            target_schema="$(schema_hash "$TARGET_URL" "$table")"
+
+            if [ "$source_count" != "$target_count" ]; then
+              echo "::error::$table row-count mismatch source=$source_count target=$target_count"
+              exit 1
+            fi
+            if [ "$source_digest" != "$target_digest" ]; then
+              echo "::error::$table content-digest mismatch"
+              exit 1
+            fi
+            if [ "$source_pk_digest" != "$target_pk_digest" ]; then
+              echo "::error::$table PK-set digest mismatch"
+              exit 1
+            fi
+            if [ "$source_schema" != "$target_schema" ]; then
+              echo "::error::$table schema fingerprint mismatch"
+              exit 1
+            fi
+            if [ "$source_repl" != "$target_repl" ]; then
+              echo "::error::$table replica identity mismatch source=$source_repl target=$target_repl"
+              exit 1
+            fi
+
+            sequence_sql="select coalesce(json_agg(x order by x.column_name)::text,'[]') from (
+              select c.column_name,
+                     c.is_identity,
+                     c.identity_generation,
+                     c.column_default,
+                     pg_get_serial_sequence('public.$table', c.column_name) as sequence_name,
+                     s.data_type::text as sequence_data_type,
+                     s.start_value,
+                     s.min_value,
+                     s.max_value,
+                     s.increment_by,
+                     s.cycle,
+                     s.cache_size,
+                     s.last_value
+              from information_schema.columns c
+              left join pg_class seq_class
+                on seq_class.oid = to_regclass(pg_get_serial_sequence('public.$table', c.column_name))
+              left join pg_namespace seq_ns
+                on seq_ns.oid = seq_class.relnamespace
+              left join pg_sequences s
+                on s.schemaname = seq_ns.nspname
+               and s.sequencename = seq_class.relname
+              where c.table_schema='public'
+                and c.table_name='$table'
+                and (c.is_identity='YES' or c.column_default like 'nextval(%')
+            ) x;"
+            source_sequences="$(sql_value "$SOURCE_URL" "$sequence_sql")"
+            target_sequences="$(sql_value "$TARGET_URL" "$sequence_sql")"
+            source_fk_consistency="$(fk_consistency "$SOURCE_URL" "$table")"
+            target_fk_consistency="$(fk_consistency "$TARGET_URL" "$table")"
+
+            if [ "$source_sequences" != "$target_sequences" ]; then
+              echo "::error::$table sequence/identity metadata mismatch"
+              exit 1
+            fi
+
+            jq -n               --arg table "$table"               --argjson source_count "$source_count"               --argjson target_count "$target_count"               --arg source_pk_digest "$source_pk_digest"               --arg target_pk_digest "$target_pk_digest"               --arg source_content_digest "$source_digest"               --arg target_content_digest "$target_digest"               --arg source_schema_fingerprint "$source_schema"               --arg target_schema_fingerprint "$target_schema"               --arg source_replica_identity "$source_repl"               --arg target_replica_identity "$target_repl"               --argjson source_sequence_metadata "$source_sequences"               --argjson target_sequence_metadata "$target_sequences"               '{
+                table: $table,
+                source_count: $source_count,
+                target_count: $target_count,
+                source_pk_digest: $source_pk_digest,
+                target_pk_digest: $target_pk_digest,
+                source_content_digest: $source_content_digest,
+                target_content_digest: $target_content_digest,
+                source_schema_fingerprint: $source_schema_fingerprint,
+                target_schema_fingerprint: $target_schema_fingerprint,
+                source_replica_identity: $source_replica_identity,
+                target_replica_identity: $target_replica_identity,
+                source_sequence_metadata: $source_sequence_metadata,
+                target_sequence_metadata: $target_sequence_metadata,
+                source_foreign_key_consistency: true,
+                target_foreign_key_consistency: true,
+                foreign_key_consistency: true,
+                parity: true
+              }' >> "$out"
+
+            overall_source_schema="$overall_source_schema|$table:$source_schema"
+            overall_target_schema="$overall_target_schema|$table:$target_schema"
+          done
+
+          source_bundle_fingerprint="$(printf '%s' "$overall_source_schema" | sha256sum | awk '{print $1}')"
+          target_bundle_fingerprint="$(printf '%s' "$overall_target_schema" | sha256sum | awk '{print $1}')"
+
+          jq -s             --arg application_commit "$GITHUB_SHA"             --arg source_bundle_fingerprint "$source_bundle_fingerprint"             --arg target_bundle_fingerprint "$target_bundle_fingerprint"             '{
+              schema_version: "1.0",
+              phase: "BASELINE",
+              status: "PARITY_PASS",
+              application_commit: $application_commit,
+              source_schema_bundle_fingerprint: $source_bundle_fingerprint,
+              target_schema_bundle_fingerprint: $target_bundle_fingerprint,
+              tables: .,
+              secrets_redacted: true,
+              certification: "NOT_CERTIFIED",
+              notes: [
+                "Parity proof includes read-only foreign-key data consistency checks for FKs owned by approved public tables.",
+                "Parity proof only: does not prove application single-writer fencing.",
+                "Captures sequence metadata/state including last_value but does not prove future collision safety or is_called semantics.",
+                "Does not prove delete propagation, RPO or RTO.",
+                "Full HA certification requires the HA_DR_EVIDENCE v1 contract and rehearsals."
+              ]
+            }' "$out" > "$RUNNER_TEMP/HA_BASELINE_PARITY.json"
+
+      - name: Guard artifact against secret leakage
+        shell: bash
+        run: |
+          set -euo pipefail
+          artifact="$RUNNER_TEMP/HA_BASELINE_PARITY.json"
+          if grep -Eiq 'postgres(ql)?://|service_role|password|SUPABASE_DATABASE_URL|NEON_DATABASE_URL' "$artifact"; then
+            echo "::error::Secret-like material detected in HA baseline artifact"
+            exit 1
+          fi
+
+      - name: Upload baseline parity proof
+        uses: actions/upload-artifact@v4
+        with:
+          name: ha-baseline-parity-${{ github.sha }}
+          path: ${{ runner.temp }}/HA_BASELINE_PARITY.json
+          if-no-files-found: error
+          retention-days: 30
+\t' read -r constraint query; do
+              [ -z "$constraint" ] && continue
+              count="$(sql_value "$db_url" "$query")"
+              if [ "$count" != "0" ]; then
+                echo "::error::$table foreign-key consistency failed constraint=$constraint violations=$count" >&2
+                return 1
+              fi
+            done <<< "$fk_queries"
+
+            printf 'true'
+          }
+
           for table in $TABLES; do
             case "$table" in
               *[!a-z0-9_]*|'')
