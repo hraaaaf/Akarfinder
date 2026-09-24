@@ -53,13 +53,14 @@ test("HA05-B inventory covers every audited runtime Supabase mutation surface", 
     .sort();
 
   assert.ok(writers.length > 0, "expected at least one audited runtime writer");
-  for (const writer of writers) {
-    assert.match(
-      inventory,
-      new RegExp(escapeRegExp(writer)),
-      `missing routing inventory entry: ${writer}`,
-    );
-  }
+  const missing = writers.filter(
+    (writer) => !new RegExp(escapeRegExp(writer)).test(inventory),
+  );
+  assert.deepEqual(
+    missing,
+    [],
+    `missing routing inventory entries:\n${missing.join("\n")}`,
+  );
 });
 
 test("HA05-B inventory never claims current Neon write readiness", () => {
