@@ -316,3 +316,10 @@
 [data-akar-quartier-target="maarif-couche1"] .maplibre-spike-map-grade {
   opacity: .96 !important;
 }
+
+
+/* Cartographic Style Pass 6 — shoreline + road micro-detail. */
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-camera-policy="contextual-center"]
+  .maplibre-spike-canvas canvas {
+  filter: saturate(.82) contrast(.975) brightness(1.018) !important;
+}

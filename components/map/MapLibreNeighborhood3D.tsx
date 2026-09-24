@@ -325,18 +325,21 @@ export function MapLibreNeighborhood3D({
               const source = "akarfinder-openfreemap";
 
               if (!map.hasImage("akarfinder-water-texture")) {
-                const size = 64;
+                const size = 96;
                 const data = new Uint8Array(size * size * 4);
                 for (let y = 0; y < size; y += 1) {
                   for (let x = 0; x < size; x += 1) {
                     const index = (y * size + x) * 4;
-                    const waveA = Math.sin((x * 0.29) + (y * 0.17)) * 3.2;
-                    const waveB = Math.cos((x * 0.11) - (y * 0.23)) * 2.2;
-                    const grain = (((x * 17 + y * 31 + (x * y * 7)) % 19) - 9) * 0.32;
-                    const delta = waveA + waveB + grain;
-                    data[index] = 70 + Math.round(delta * 0.85);
-                    data[index + 1] = 146 + Math.round(delta * 0.72);
-                    data[index + 2] = 190 + Math.round(delta * 0.64);
+                    const waveA = Math.sin((x * 0.105) + (y * 0.037)) * 4.4;
+                    const waveB = Math.cos((x * 0.052) - (y * 0.081)) * 2.8;
+                    const waveC = Math.sin((x * 0.021) + (y * 0.129)) * 1.7;
+                    const foamBand = Math.sin((x * 0.17) + (y * 0.058)) + Math.cos((x * 0.061) - (y * 0.113));
+                    const foamLift = foamBand > 1.62 ? 5.5 : foamBand > 1.38 ? 2.8 : 0;
+                    const grain = ((((x * 13) + (y * 29) + ((x * y) % 23)) % 17) - 8) * 0.16;
+                    const delta = waveA + waveB + waveC + foamLift + grain;
+                    data[index] = 62 + Math.round(delta * 0.74);
+                    data[index + 1] = 142 + Math.round(delta * 0.66);
+                    data[index + 2] = 185 + Math.round(delta * 0.60);
                     data[index + 3] = 255;
                   }
                 }
@@ -432,10 +435,10 @@ export function MapLibreNeighborhood3D({
                 paint: {
                   "line-color": [
                     "match", ["get", "class"],
-                    "motorway", "#c9b897",
-                    "trunk", "#cdc0a7",
-                    "primary", "#c9c5ba",
-                    "secondary", "#cdd1cd",
+                    "motorway", "#c8c0b2",
+                    "trunk", "#cbc5b9",
+                    "primary", "#c8c9c5",
+                    "secondary", "#cdd1ce",
                     "#d2d6d3"
                   ],
                   "line-opacity": 0.97,
@@ -460,10 +463,10 @@ export function MapLibreNeighborhood3D({
                 paint: {
                   "line-color": [
                     "match", ["get", "class"],
-                    "motorway", "#e6d2ad",
-                    "trunk", "#ecdbbb",
-                    "primary", "#f2e5cd",
-                    "secondary", "#f7f0e1",
+                    "motorway", "#e7ddca",
+                    "trunk", "#ece4d4",
+                    "primary", "#f0ece4",
+                    "secondary", "#f5f2eb",
                     "tertiary", "#fbfaf5",
                     "#ffffff"
                   ],
@@ -495,11 +498,24 @@ export function MapLibreNeighborhood3D({
                   "text-ignore-placement": true,
                 },
                 paint: {
-                  "text-color": "#5a626a",
-                  "text-opacity": 0.72,
-                  "text-halo-color": "rgba(255,255,255,0.94)",
-                  "text-halo-width": 1.15,
-                  "text-halo-blur": 0.18,
+                  "text-color": "#46525d",
+                  "text-opacity": 0.82,
+                  "text-halo-color": "rgba(255,255,255,0.96)",
+                  "text-halo-width": 1.25,
+                  "text-halo-blur": 0.16,
+                },
+              } as any);
+
+              map.addLayer({
+                id: "akarfinder-target-coastline-foam-wide",
+                type: "line",
+                source,
+                "source-layer": "water",
+                paint: {
+                  "line-color": "#ffffff",
+                  "line-opacity": 0.48,
+                  "line-width": ["interpolate", ["linear"], ["zoom"], 11, 3.8, 14, 7.2],
+                  "line-blur": 1.35,
                 },
               } as any);
 
@@ -509,9 +525,10 @@ export function MapLibreNeighborhood3D({
                 source,
                 "source-layer": "water",
                 paint: {
-                  "line-color": "#f9fbfb",
-                  "line-opacity": 0.92,
-                  "line-width": ["interpolate", ["linear"], ["zoom"], 11, 1.0, 14, 2.4],
+                  "line-color": "#f9fcff",
+                  "line-opacity": 0.94,
+                  "line-width": ["interpolate", ["linear"], ["zoom"], 11, 1.25, 14, 2.8],
+                  "line-blur": 0.2,
                 },
               } as any);
             }
