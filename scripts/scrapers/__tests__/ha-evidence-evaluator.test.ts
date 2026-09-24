@@ -7,8 +7,17 @@ import {
 } from "../../ha-dr/evaluate-ha-evidence.js";
 
 function baseEvidence(phase: HaEvidenceInput["phase"]): HaEvidenceInput {
+  const writerByPhase: Record<HaEvidenceInput["phase"], HaEvidenceInput["writer_state"]> = {
+    BASELINE: "SUPABASE_PRIMARY",
+    FORWARD_SYNC: "SUPABASE_PRIMARY",
+    FAILOVER: "NEON_PRIMARY",
+    REVERSE_DELTA: "FAILBACK_SYNC",
+    FAILBACK: "SUPABASE_PRIMARY",
+  };
+
   return {
     phase,
+    writer_state: writerByPhase[phase],
     single_writer_proven: true,
     conflicts: 0,
     duplicates: 0,
@@ -165,4 +174,14 @@ test("missing foreign-key consistency blocks certification", () => {
   const result = evaluateHaEvidence(evidence);
   assert.equal(result.verdict, "BLOCKED");
   assert.match(result.blockers.join("\n"), /foreign_key_consistency_missing/);
+});
+
+
+test("writer-state mismatch is a hard failure", () => {
+  const evidence = baseEvidence("FAILBACK");
+  evidence.writer_state = "NEON_PRIMARY";
+
+  const result = evaluateHaEvidence(evidence);
+  assert.equal(result.verdict, "FAIL");
+  assert.match(result.failures.join("\n"), /writer_state_mismatch:FAILBACK:NEON_PRIMARY:expected_SUPABASE_PRIMARY/);
 });
