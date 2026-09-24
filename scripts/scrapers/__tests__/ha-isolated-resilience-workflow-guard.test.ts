@@ -62,3 +62,9 @@ test("resilience workflow cancels obsolete PR runs", () => {
   assert.match(workflow, /cancel-in-progress: true/);
   assert.match(workflow, /ha-isolated-resilience-\$\{\{/);
 });
+
+
+test("resilience rehearsal feeds mutation heredocs through docker stdin", () => {
+  assert.match(workflow, /docker exec -i "\$SOURCE" psql[\s\S]*<<SQL/);
+  assert.match(workflow, /docker exec -i "\$TARGET" psql[\s\S]*<<SQL/);
+});
