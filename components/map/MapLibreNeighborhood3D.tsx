@@ -77,6 +77,9 @@ async function ensureMapLibreRtlText(maplibregl: any): Promise<"loaded" | "error
 const FOCUS_SOURCE_ID = "akarfinder-neighborhood-focus";
 const FOCUS_GLOW_LAYER_ID = "akarfinder-neighborhood-focus-glow";
 const FOCUS_RING_LAYER_ID = "akarfinder-neighborhood-focus-ring";
+const CONTEXT_FOOTPRINT_SOURCE_ID = "akarfinder-target-context-footprint";
+const CONTEXT_FOOTPRINT_FILL_LAYER_ID = "akarfinder-target-context-footprint-fill";
+const CONTEXT_FOOTPRINT_LINE_LAYER_ID = "akarfinder-target-context-footprint-line";
 
 const CATEGORY_META: Record<LivingHereCategory, { label: string; color: string }> = {
   education: { label: "Écoles", color: "#2f80ed" }, groceries: { label: "Courses", color: "#7b61ff" },
@@ -118,6 +121,31 @@ function getBoundaryBounds(geometry: BoundaryGeometry | null): [MutablePosition,
     maxLat = Math.max(maxLat, lat);
   }
   return [[minLng, minLat], [maxLng, maxLat]];
+}
+
+function buildVerifiedPointHull(points: MutablePosition[]): MutablePosition[] | null {
+  const unique = Array.from(
+    new Map(points.map(([lng, lat]) => [`${lng.toFixed(7)}:${lat.toFixed(7)}`, [lng, lat] as MutablePosition])).values(),
+  ).sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+  if (unique.length < 3) return null;
+
+  const cross = (o: MutablePosition, a: MutablePosition, b: MutablePosition) =>
+    (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+
+  const lower: MutablePosition[] = [];
+  for (const point of unique) {
+    while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], point) <= 0) lower.pop();
+    lower.push(point);
+  }
+
+  const upper: MutablePosition[] = [];
+  for (const point of [...unique].reverse()) {
+    while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], point) <= 0) upper.pop();
+    upper.push(point);
+  }
+
+  const hull = [...lower.slice(0, -1), ...upper.slice(0, -1)];
+  return hull.length >= 3 ? [...hull, hull[0]] : null;
 }
 
 function focusNeighborhoodMap(
@@ -267,8 +295,7 @@ export function MapLibreNeighborhood3D({
                     map.setPaintProperty(layer.id, "fill-opacity", 0.48);
                   }
                   if (layer.type === "symbol" && /(neighbour|neighborhood|suburb|quarter|district|place)/.test(id)) {
-                    map.setPaintProperty(layer.id, "text-opacity", 0);
-                    map.setPaintProperty(layer.id, "icon-opacity", 0);
+                    map.setLayoutProperty(layer.id, "visibility", "none");
                   }
                   if (layer.type === "symbol" && /(poi|housenumber|transit)/.test(id)) {
                     map.setPaintProperty(layer.id, "text-opacity", 0.30);
@@ -302,7 +329,7 @@ export function MapLibreNeighborhood3D({
                   "text-max-width": 8,
                   "text-allow-overlap": false,
                   "text-ignore-placement": false,
-                  "text-padding": 10,
+                  "text-padding": 5,
                 },
                 paint: {
                   "text-color": "#173f73",
@@ -348,12 +375,12 @@ export function MapLibreNeighborhood3D({
               type: "circle",
               source: FOCUS_SOURCE_ID,
               paint: {
-                "circle-radius": isMaarifTargetPilot ? (desktop ? 148 : 92) : (desktop ? 84 : 68),
+                "circle-radius": isMaarifTargetPilot ? (desktop ? 112 : 76) : (desktop ? 84 : 68),
                 "circle-color": isMaarifTargetPilot ? "#6eb6e8" : "#12a9a1",
-                "circle-opacity": isMaarifTargetPilot ? 0.085 : 0.13,
+                "circle-opacity": isMaarifTargetPilot ? 0.022 : 0.13,
                 "circle-stroke-color": isMaarifTargetPilot ? "#9fd3f3" : "#8ff8ee",
-                "circle-stroke-width": isMaarifTargetPilot ? 1.2 : 1.5,
-                "circle-stroke-opacity": isMaarifTargetPilot ? 0.34 : 0.56,
+                "circle-stroke-width": isMaarifTargetPilot ? 0.8 : 1.5,
+                "circle-stroke-opacity": isMaarifTargetPilot ? 0.12 : 0.56,
               },
             });
             map.addLayer({
@@ -430,6 +457,75 @@ export function MapLibreNeighborhood3D({
 
   useEffect(() => {
     const map = mapInstanceRef.current;
+    if (
+      !map
+      || !ready
+      || !isMaarifTargetPilot
+      || targetComposition !== "context"
+      || !context?.anchors?.length
+    ) return;
+
+    const verifiedPoints: MutablePosition[] = [
+      center,
+      ...context.anchors.map((anchor) => [anchor.longitude, anchor.latitude] as MutablePosition),
+      ...targetPilotLandmarks.map((landmark) => [landmark.longitude, landmark.latitude] as MutablePosition),
+    ];
+    const hull = buildVerifiedPointHull(verifiedPoints);
+    if (!hull) return;
+
+    const data = {
+      type: "Feature",
+      properties: {
+        semantic: "verified-anchor-hull",
+        boundaryClaim: false,
+        sourcePointCount: verifiedPoints.length,
+      },
+      geometry: { type: "Polygon", coordinates: [hull] },
+    };
+
+    const source = map.getSource(CONTEXT_FOOTPRINT_SOURCE_ID);
+    if (source?.setData) {
+      source.setData(data as any);
+      return;
+    }
+
+    try {
+      map.addSource(CONTEXT_FOOTPRINT_SOURCE_ID, { type: "geojson", data } as any);
+      map.addLayer({
+        id: CONTEXT_FOOTPRINT_FILL_LAYER_ID,
+        type: "fill",
+        source: CONTEXT_FOOTPRINT_SOURCE_ID,
+        paint: {
+          "fill-color": "#77b8e8",
+          "fill-opacity": 0.22,
+        },
+      } as any, FOCUS_GLOW_LAYER_ID);
+      map.addLayer({
+        id: CONTEXT_FOOTPRINT_LINE_LAYER_ID,
+        type: "line",
+        source: CONTEXT_FOOTPRINT_SOURCE_ID,
+        paint: {
+          "line-color": "#0b2b50",
+          "line-width": 2.4,
+          "line-opacity": 0.86,
+          "line-blur": 0.08,
+        },
+      } as any, FOCUS_GLOW_LAYER_ID);
+    } catch (error) {
+      console.error("[vivre-ici-maplibre-context-footprint] setup failed", error);
+    }
+  }, [
+    context,
+    ready,
+    isMaarifTargetPilot,
+    targetComposition,
+    center[0],
+    center[1],
+    targetPilotLandmarks,
+  ]);
+
+  useEffect(() => {
+    const map = mapInstanceRef.current;
     if (!map || !ready) return;
     const updatePositions = () => {
       const next: Record<string, ScreenPoint> = {};
@@ -481,6 +577,7 @@ export function MapLibreNeighborhood3D({
       data-maplibre-boundary-semantic={isMaarifTargetPilot && boundaryGeometry ? "administrative-arrondissement" : boundaryGeometry ? "boundary-reference" : "none"}
       data-maplibre-camera-policy={targetComposition === "context" ? "contextual-center" : "boundary-fit"}
       data-maplibre-focus-semantic={isMaarifTargetPilot ? "context-focus-not-boundary" : "district-focus"}
+      data-maplibre-context-footprint={isMaarifTargetPilot && context?.anchors?.length ? "verified-anchor-hull" : "none"}
       data-maplibre-rtl-status={rtlStatus}
       data-maplibre-reserve-rail={reserveRail ? "true" : "false"}
       data-akar-quartier-target={isMaarifTargetPilot ? "maarif-couche1" : undefined}
@@ -574,7 +671,7 @@ export function MapLibreNeighborhood3D({
         <span className="maplibre-spike-map-note-kicker">Quartier · {cityLabel}</span>
         <strong>{districtLabel}</strong>
         <span className="maplibre-spike-map-note-copy">
-          {boundaryGeometry ? (isMaarifTargetPilot ? "Arrondissement Maârif · repère administratif." : "Limite OSM de référence · validation production en attente.") : "Repère central sourcé · périmètre non revendiqué."}
+          {boundaryGeometry ? (isMaarifTargetPilot ? "Arrondissement Maârif · repère administratif. Zone bleue : enveloppe de repères vérifiés, non frontière." : "Limite OSM de référence · validation production en attente.") : "Repère central sourcé · périmètre non revendiqué."}
         </span>
         <span className="maplibre-spike-map-note-status">{buildingCount > 0 ? `${buildingCount} volumes 3D visibles` : "Chargement du relief urbain…"}</span>
       </div>
