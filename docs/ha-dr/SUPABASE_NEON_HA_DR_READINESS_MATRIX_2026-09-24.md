@@ -217,16 +217,17 @@ Prove legal failover with no split-brain.
 
 The first green artifact had two evidence-quality defects (synthetic GitHub execution SHA in `application_commit`, second-resolution timing). Both were corrected and re-run.
 
-Implementation-head proof:
-- run `35995118188` → SUCCESS;
-- artifact `10806265846`;
-- artifact digest `sha256:ec92b74afbf27a8f951737c80596843a70afa28d93d06841ec42db9c9ad925e3`;
-- `application_commit = 8cbd3a6ea042639515798b8e6631cab10a69b48a`;
-- `github_execution_sha = fdaba48cf2d162ee3ceff8eebc6a9e8f267a694b`;
-- isolated failover decision → target writer promotion = `390 ms`;
-- verdict = `ISOLATED_REHEARSAL_PASS`.
+Latest fully green implementation-head proof:
+- run `36008017163` → SUCCESS;
+- artifact `10811507019`;
+- artifact digest `sha256:dec81e0eabe5d93aae63ddad245ca2a0a0dfae25108d3cfce7e28729241f8f37`;
+- `application_commit = ec99cd402d434520fab3911c6b4844c3b21ee705`;
+- `github_execution_sha = 7ccfaf1c4f526a35b75f89483b27d61f207210a9`;
+- isolated failover decision → target writer promotion = `387 ms`;
+- verdict = `ISOLATED_REHEARSAL_PASS`;
+- same implementation head also had Neon Runtime, Efficiency and HA04-A/HA06-A resilience checks green.
 
-HA05-A isolated PostgreSQL 17 rehearsal evidence is therefore **PROVED**. Current branch HEAD is a docs-only descendant of the proved implementation commit; no rehearsal code changed after the artifact. This is not provider-specific or production certification.
+HA05-A isolated PostgreSQL 17 rehearsal evidence is therefore **PROVED** on the latest fully green implementation head. This is not provider-specific or production certification.
 
 ### Missing proof
 
