@@ -20,8 +20,12 @@ test("HA evidence schema requires integrity, writer, LSN and timing evidence", (
   const required = new Set(schema.required as string[]);
 
   for (const key of [
+    "schema_version",
+    "run_id",
+    "status",
     "application_commit",
     "database_schema_fingerprint",
+    "approved_tables",
     "writer_state",
     "single_writer_proven",
     "positions",
