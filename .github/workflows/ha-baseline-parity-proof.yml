@@ -199,13 +199,18 @@ jobs:
           jq -s             --arg application_commit "$GITHUB_SHA"             --arg source_bundle_fingerprint "$source_bundle_fingerprint"             --arg target_bundle_fingerprint "$target_bundle_fingerprint"             '{
               schema_version: "1.0",
               phase: "BASELINE",
-              status: "PASS",
+              status: "PARITY_PASS",
               application_commit: $application_commit,
               source_schema_bundle_fingerprint: $source_bundle_fingerprint,
               target_schema_bundle_fingerprint: $target_bundle_fingerprint,
               tables: .,
               secrets_redacted: true,
-              verdict: "PASS"
+              certification: "NOT_CERTIFIED",
+              notes: [
+                "Parity proof only: does not prove application single-writer fencing.",
+                "Does not prove delete propagation, sequence collision safety, RPO or RTO.",
+                "Full HA certification requires the HA_DR_EVIDENCE v1 contract and rehearsals."
+              ]
             }' "$out" > "$RUNNER_TEMP/HA_BASELINE_PARITY.json"
 
       - name: Guard artifact against secret leakage
