@@ -1,0 +1,55 @@
+name: Recovery Offline Sitemap Shadow
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: recovery-offline-sitemap-shadow
+  cancel-in-progress: false
+
+jobs:
+  sitemap-shadow:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout recovery ref
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Harvest only robots-declared public sitemaps
+        run: npx tsx scripts/recovery/sitemap-shadow-harvest.ts
+
+      - name: Enforce zero-DB artifact contract
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const p = 'data/audits/raw-results/recovery-sitemap-shadow-summary.json';
+          const s = JSON.parse(fs.readFileSync(p, 'utf8'));
+          if (s.mode !== 'shadow_read_only') process.exit(1);
+          if (s.database_access !== 0 || s.database_writes !== 0) process.exit(1);
+          if (s.listing_page_fetches !== 0 || s.robots_declared_sitemaps_only !== true) process.exit(1);
+          NODE
+
+      - name: Upload offline sitemap evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: recovery-offline-sitemap-shadow
+          path: |
+            data/audits/raw-results/recovery-sitemap-shadow-candidates.jsonl
+            data/audits/raw-results/recovery-sitemap-shadow-summary.json
+          retention-days: 14
