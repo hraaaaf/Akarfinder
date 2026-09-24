@@ -13,6 +13,7 @@ const HA_WRITER_STATES = new Set<HaWriterState>([
 ]);
 
 export type HaApplicationWriteTarget = Exclude<HaWriter, "none">;
+export type HaApplicationReadProvider = "sqlite" | "supabase" | "neon";
 
 export function getHaWriterState(
   env: NodeJS.ProcessEnv = process.env,
@@ -57,4 +58,38 @@ export function assertHaNeonWriteAllowed(
   env: NodeJS.ProcessEnv = process.env,
 ): void {
   assertHaApplicationWriteTarget("neon", env);
+}
+
+
+export function assertHaReadProviderCoherent(
+  provider: HaApplicationReadProvider,
+  env: NodeJS.ProcessEnv = process.env,
+): void {
+  const raw = env.HA_WRITER_STATE?.trim();
+
+  // HA is opt-in. Preserve the legacy/provider-migration read modes until an
+  // operator explicitly activates the HA state machine.
+  if (!raw) return;
+
+  const state = getHaWriterState(env);
+
+  if (state === "SUPABASE_PRIMARY" && provider !== "supabase") {
+    throw new Error(
+      `HA read provider mismatch for ${state}: expected supabase, got ${provider}`,
+    );
+  }
+
+  if (
+    (state === "NEON_PRIMARY" ||
+      state === "FAILBACK_SYNC" ||
+      state === "FAILBACK_FREEZE") &&
+    provider !== "neon"
+  ) {
+    throw new Error(
+      `HA read provider mismatch for ${state}: expected neon, got ${provider}`,
+    );
+  }
+
+  // FAILOVER_PREP intentionally permits either provider while writes are
+  // fenced and the operator establishes the incident read path.
 }
