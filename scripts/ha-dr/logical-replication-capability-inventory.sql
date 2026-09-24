@@ -6,6 +6,9 @@ SELECT
   current_database() AS database_name,
   current_user AS current_user,
   current_setting('server_version') AS server_version,
+  pg_is_in_recovery() AS is_in_recovery,
+  current_setting('transaction_read_only') AS transaction_read_only,
+  current_setting('hot_standby', true) AS hot_standby,
   current_setting('wal_level') AS wal_level,
   current_setting('max_replication_slots') AS max_replication_slots,
   current_setting('max_wal_senders') AS max_wal_senders,
@@ -137,7 +140,8 @@ SELECT
   max_value,
   increment_by,
   cycle,
-  cache_size
+  cache_size,
+  last_value
 FROM pg_sequences
 WHERE schemaname = 'public'
 ORDER BY sequencename;
