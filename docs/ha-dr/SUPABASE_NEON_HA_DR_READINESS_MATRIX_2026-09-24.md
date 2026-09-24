@@ -205,12 +205,18 @@ Prove legal failover with no split-brain.
 ### Proved
 
 - isolated rehearsal workflow + static guard exist in the HA branch;
-- live provider simulation remains unproved until the isolated workflow completes green.
+- run `35993759291` completed green on disposable PostgreSQL 17 nodes;
+- forward INSERT/UPDATE/DELETE, reverse INSERT/UPDATE/DELETE, anti-loop count proof, cleanup, DB-role writer fencing, failover no-write window, target promotion, failback freeze and source-writer restore all passed;
+- artifact `10805453500` was produced with secret redaction and explicit provider/prod limitations.
+
+### Evidence-quality note
+
+The first green artifact used GitHub's synthetic pull-request execution SHA in `application_commit` and second-resolution failover timing. The current branch corrects this to the PR head SHA plus millisecond RTO. HA05-A behavior is therefore **proved**, while final certification evidence remains pending the corrected exact-head rerun.
 
 ### Missing proof
 
-- HA05-A isolated rehearsal green artifact;
-- writer fencing behavior on application routing;
+- corrected exact-head HA05-A artifact with PR head SHA + millisecond RTO;
+- writer fencing behavior on the real application routing layer;
 - Neon promotion smoke proof;
 - incident write boundary;
 - observed failover RTO;
