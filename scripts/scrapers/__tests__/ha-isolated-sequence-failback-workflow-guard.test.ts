@@ -92,3 +92,11 @@ test("HA06-B reloads freeze timing before promotion", () => {
   assert.match(promotion, /\. "\$RUNNER_TEMP\/ha-sequence\.env"/);
   assert.match(promotion, /FAILBACK_FREEZE_EPOCH_MS/);
 });
+
+
+test("HA06-B encodes parity metrics across workflow steps", () => {
+  assert.match(workflow, /FINAL_PARITY_METRICS_B64/);
+  assert.match(workflow, /base64 -w0/);
+  assert.match(workflow, /base64 -d/);
+  assert.doesNotMatch(workflow, /FINAL_PARITY_METRICS=%s/);
+});
