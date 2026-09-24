@@ -8,6 +8,8 @@ import {
 
 function passBundle(): HaEvidenceBundleForCertification {
   return {
+    schema_version: "1.0",
+    run_id: "TEST-FAILBACK-001",
     phase: "FAILBACK",
     writer_state: "SUPABASE_PRIMARY",
     status: "PASS",
@@ -118,4 +120,15 @@ test("BLOCKED status remains blocked rather than certifying", () => {
   const result = certifyHaEvidenceBundle(bundle);
   assert.equal(result.verdict, "BLOCKED");
   assert.match(result.blockers.join("\n"), /evidence_status_not_pass:BLOCKED/);
+});
+
+
+test("missing run id blocks certification", () => {
+  const bundle = passBundle();
+  bundle.run_id = "";
+
+  const result = certifyHaEvidenceBundle(bundle);
+  assert.equal(result.verdict, "FAIL");
+  assert.match(result.blockers.join("\n"), /run_id_missing/);
+  assert.match(result.failures.join("\n"), /status_pass_with_blocked_evidence/);
 });
