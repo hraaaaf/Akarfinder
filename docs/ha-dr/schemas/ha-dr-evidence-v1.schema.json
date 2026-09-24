@@ -109,6 +109,7 @@
           "delete_parity",
           "timestamp_version_parity",
           "schema_fingerprint_match",
+          "foreign_key_consistency",
           "replica_identity",
           "sequence_safe",
           "pass"
@@ -124,6 +125,7 @@
           "delete_parity": { "type": ["boolean", "null"] },
           "timestamp_version_parity": { "type": ["boolean", "null"] },
           "schema_fingerprint_match": { "type": ["boolean", "null"] },
+          "foreign_key_consistency": { "type": ["boolean", "null"] },
           "replica_identity": { "type": ["string", "null"] },
           "sequence_safe": { "type": ["boolean", "null"] },
           "pass": { "type": ["boolean", "null"] }
