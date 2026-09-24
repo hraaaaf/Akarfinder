@@ -298,3 +298,15 @@
   mix-blend-mode: normal !important;
   opacity: 1 !important;
 }
+
+
+/* Cartographic Style Pass 2 — micro-detail tuning. */
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-target-context-label {
+  color: #193f73;
+  text-shadow:
+    0 1px 0 rgb(255 255 255 / 1),
+    1px 0 0 rgb(255 255 255 / 1),
+    -1px 0 0 rgb(255 255 255 / 1),
+    0 -1px 0 rgb(255 255 255 / 1),
+    0 2px 7px rgb(25 59 92 / .10);
+}

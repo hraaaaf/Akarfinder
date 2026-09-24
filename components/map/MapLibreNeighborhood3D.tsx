@@ -324,14 +324,30 @@ export function MapLibreNeighborhood3D({
             if (isMaarifTargetPilot && targetComposition === "context") {
               const source = "akarfinder-openfreemap";
 
+              if (!map.hasImage("akarfinder-water-texture")) {
+                const size = 32;
+                const data = new Uint8Array(size * size * 4);
+                for (let y = 0; y < size; y += 1) {
+                  for (let x = 0; x < size; x += 1) {
+                    const index = (y * size + x) * 4;
+                    const wave = Math.sin((x + y * 0.65) * 0.72) * 4 + Math.sin((x * 0.22) - (y * 0.9)) * 2;
+                    data[index] = 77 + Math.round(wave);
+                    data[index + 1] = 153 + Math.round(wave * 0.8);
+                    data[index + 2] = 196 + Math.round(wave * 0.7);
+                    data[index + 3] = 255;
+                  }
+                }
+                map.addImage("akarfinder-water-texture", { width: size, height: size, data }, { pixelRatio: 2 });
+              }
+
               map.addLayer({
                 id: "akarfinder-target-water",
                 type: "fill",
                 source,
                 "source-layer": "water",
                 paint: {
-                  "fill-color": "#5fa7cc",
-                  "fill-opacity": 0.96,
+                  "fill-pattern": "akarfinder-water-texture",
+                  "fill-opacity": 0.97,
                   "fill-antialias": true,
                 },
               } as any);
@@ -343,8 +359,8 @@ export function MapLibreNeighborhood3D({
                 "source-layer": "landcover",
                 filter: ["match", ["get", "class"], ["grass", "wood"], true, false],
                 paint: {
-                  "fill-color": ["match", ["get", "class"], "wood", "#a8c88d", "#c4dca8"],
-                  "fill-opacity": 0.74,
+                  "fill-color": ["match", ["get", "class"], "wood", "#94bb7e", "#b5d694"],
+                  "fill-opacity": 0.80,
                 },
               } as any);
 
@@ -355,9 +371,9 @@ export function MapLibreNeighborhood3D({
                 "source-layer": "landuse",
                 filter: ["match", ["get", "class"], ["park", "cemetery", "grass", "recreation_ground"], true, false],
                 paint: {
-                  "fill-color": "#b9d79e",
-                  "fill-opacity": 0.74,
-                  "fill-outline-color": "#a7c38f",
+                  "fill-color": "#acd08d",
+                  "fill-opacity": 0.82,
+                  "fill-outline-color": "#94ba79",
                 },
               } as any);
 
@@ -368,9 +384,15 @@ export function MapLibreNeighborhood3D({
                 "source-layer": "building",
                 minzoom: 12.2,
                 paint: {
-                  "fill-color": "#e1e5e2",
-                  "fill-opacity": ["interpolate", ["linear"], ["zoom"], 12.2, 0.55, 14.5, 0.84],
-                  "fill-outline-color": "#cbd2d0",
+                  "fill-color": [
+                    "interpolate", ["linear"], ["coalesce", ["get", "render_height"], 0],
+                    0, "#e9e6df",
+                    12, "#e2dfd8",
+                    28, "#d8d7d2",
+                    60, "#ced1d0"
+                  ],
+                  "fill-opacity": ["interpolate", ["linear"], ["zoom"], 12.2, 0.64, 14.5, 0.90],
+                  "fill-outline-color": "#c8cdca",
                 },
               } as any);
 
@@ -387,8 +409,15 @@ export function MapLibreNeighborhood3D({
                   "line-join": "round",
                 },
                 paint: {
-                  "line-color": "#cfd5d2",
-                  "line-opacity": 0.95,
+                  "line-color": [
+                    "match", ["get", "class"],
+                    "motorway", "#d3c5aa",
+                    "trunk", "#d5cab5",
+                    "primary", "#d4d0c5",
+                    "secondary", "#d5d8d4",
+                    "#d9ddda"
+                  ],
+                  "line-opacity": 0.97,
                   "line-width": [
                     "interpolate", ["linear"], ["zoom"],
                     11, ["match", ["get", "class"], "motorway", 3.2, "trunk", 3.0, "primary", 2.7, "secondary", 2.3, "tertiary", 1.9, 1.25],
@@ -410,11 +439,11 @@ export function MapLibreNeighborhood3D({
                 paint: {
                   "line-color": [
                     "match", ["get", "class"],
-                    "motorway", "#efe2c7",
-                    "trunk", "#f1e7d1",
-                    "primary", "#f4ecda",
-                    "secondary", "#f7f3e9",
-                    "tertiary", "#fbfaf5",
+                    "motorway", "#ead8b7",
+                    "trunk", "#efe0c2",
+                    "primary", "#f3e8d2",
+                    "secondary", "#f7f1e4",
+                    "tertiary", "#fbfaf6",
                     "#ffffff"
                   ],
                   "line-opacity": 0.99,
@@ -423,6 +452,29 @@ export function MapLibreNeighborhood3D({
                     11, ["match", ["get", "class"], "motorway", 2.5, "trunk", 2.3, "primary", 2.0, "secondary", 1.7, "tertiary", 1.35, 0.85],
                     15, ["match", ["get", "class"], "motorway", 12.2, "trunk", 10.4, "primary", 8.5, "secondary", 6.6, "tertiary", 5.0, "minor", 3.0, 1.8]
                   ],
+                },
+              } as any);
+
+              map.addLayer({
+                id: "akarfinder-target-road-labels",
+                type: "symbol",
+                source,
+                "source-layer": "transportation_name",
+                minzoom: 12,
+                filter: ["match", ["get", "class"], ["motorway", "trunk", "primary", "secondary", "tertiary"], true, false],
+                layout: {
+                  "symbol-placement": "line",
+                  "text-field": ["coalesce", ["get", "name:latin"], ["get", "name"]],
+                  "text-size": ["interpolate", ["linear"], ["zoom"], 12, 9, 14, 11.5],
+                  "text-letter-spacing": 0.015,
+                  "text-max-angle": 28,
+                  "text-padding": 2,
+                },
+                paint: {
+                  "text-color": "#4a5561",
+                  "text-halo-color": "rgba(255,255,255,0.92)",
+                  "text-halo-width": 1.2,
+                  "text-halo-blur": 0.25,
                 },
               } as any);
 
