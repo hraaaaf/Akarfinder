@@ -7,6 +7,11 @@ const workflow = readFileSync(
   "utf8",
 );
 
+const neonRuntimeWorkflow = readFileSync(
+  new URL("../../../.github/workflows/neon-runtime-read-path.yml", import.meta.url),
+  "utf8",
+);
+
 test("isolated HA rehearsal is constrained to manual or HA PR execution and provider-secret free", () => {
   assert.match(workflow, /workflow_dispatch:/);
   assert.match(workflow, /pull_request:/);
@@ -91,4 +96,12 @@ test("isolated HA rehearsal measures the simulated failover transition at promot
   assert.match(workflow, /isolated_failover_rto_seconds=/);
   assert.match(workflow, /isolated_failover_rto_seconds: \$isolated_failover_rto_seconds/);
   assert.doesNotMatch(workflow, /service_restored_at/);
+});
+
+
+test("HA CI cancels obsolete runs for the current PR", () => {
+  assert.match(workflow, /cancel-in-progress: true/);
+  assert.match(workflow, /ha-isolated-logical-replication-rehearsal-\$\{\{/);
+  assert.match(neonRuntimeWorkflow, /cancel-in-progress: true/);
+  assert.match(neonRuntimeWorkflow, /neon-runtime-read-path-\$\{\{/);
 });
