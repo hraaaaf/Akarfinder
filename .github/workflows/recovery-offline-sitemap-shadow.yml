@@ -1,14 +1,6 @@
 name: Recovery Offline Sitemap Shadow
 
 on:
-  pull_request:
-    branches: [main]
-    paths:
-      - ".github/workflows/recovery-offline-sitemap-shadow.yml"
-      - "scripts/recovery/sitemap-shadow-harvest.ts"
-      - "data/recovery/offline-200k-source-overlay.json"
-      - "scripts/recovery/apply-source-overlay.ts"
-      - "lib/acquisition-scale-v1/sitemap-mass-seeds.ts"
   workflow_dispatch:
 
 permissions:

@@ -1,15 +1,8 @@
 name: DATA MASS-X4 Common Crawl Deep Reservoir Shadow
+
 on:
-  pull_request:
-    paths:
-      - "data/data-mass-x4/**"
-      - "docs/data/DATA-MASS-X4-COMMONCRAWL-DEEP-RESERVOIR.md"
-      - ".github/workflows/data-mass-x4-commoncrawl-deep-reservoir-shadow.yml"
-      - "data/recovery/offline-200k-source-overlay.json"
-      - "scripts/recovery/apply-source-overlay.ts"
-      - "scripts/scrapers/__tests__/recovery-200k-source-patterns.test.ts"
-      - "scripts/recovery/build-offline-200k-reservoir.ts"
-      - "scripts/recovery/__tests__/offline-200k-reservoir.test.ts"
+  workflow_dispatch:
+
 permissions:
   contents: read
 jobs:

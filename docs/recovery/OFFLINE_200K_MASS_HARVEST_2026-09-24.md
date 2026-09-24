@@ -124,3 +124,32 @@ Recovery statuses:
 - `reobserved`: at least two independent discovery channels.
 
 None of these statuses equals `approved_for_import`. The merge summary hard-codes `approved_for_import_rows: 0`.
+
+## Free funnel benchmark
+
+A single canonical benchmark workflow now combines the free lanes:
+1. 21-index Common Crawl metadata harvest;
+2. robots-declared sitemap harvest;
+3. exact canonical merge/dedupe;
+4. exclusion of the restored 177 manifest;
+5. evidence-status summary;
+6. one artifact, zero DB writes.
+
+The component Common Crawl and sitemap workflows are manual-only on this recovery branch to avoid duplicate heavy PR runs.
+
+### First measured sitemap capacity
+
+Run 36059028153 / artifact 10833423663 proved:
+- 58,236 unique qualified listing URLs;
+- 0 DB access/write;
+- 0 listing-page fetches;
+- sarout.ma: 44,130;
+- daragadir.com: 5,749;
+- promoimmomarrakech.com: 3,181;
+- marrakechrealty.com: 2,008;
+- limmobiliersansfrontieres.com: 1,365;
+- atlasimmobilier.com: 728;
+- barnes-marrakech.com: 568;
+- aykana.ma: 507.
+
+This is discovery capacity, not yet 58,236 approved listings.
