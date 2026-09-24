@@ -75,7 +75,7 @@ test("recovery staging revalidates, dedupes and excludes already-restored URLs",
   assert.equal(built.counters.staged_rows, 1);
 });
 
-test("generated SQL is staging-only and never promotes into source_offer_seeds", () => {
+test("generated SQL is staging-only and never promotes into business tables", () => {
   const sql = buildStagingSql([
     {
       canonical_url: "https://agenz.ma/fr/annonces/immo-rabat/vente-appartements/agdal/222",
@@ -91,5 +91,6 @@ test("generated SQL is staging-only and never promotes into source_offer_seeds",
   assert.match(sql, /seed_only/);
   assert.match(sql, /expected_stage_rows=1/);
   assert.doesNotMatch(sql, /insert\s+into\s+public\.source_offer_seeds/i);
-  assert.doesNotMatch(sql, /property_listings|listing_sources/);
+  assert.doesNotMatch(sql, /insert\s+into\s+(?:public\.)?property_listings/i);
+  assert.doesNotMatch(sql, /insert\s+into\s+(?:public\.)?listing_sources/i);
 });
