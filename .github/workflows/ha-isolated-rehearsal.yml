@@ -61,7 +61,7 @@ jobs:
         run: |
           set -euo pipefail
           for node in "$SOURCE" "$TARGET"; do
-            docker exec "$node" psql -U postgres -d postgres -v ON_ERROR_STOP=1 <<'SQL'
+            docker exec -i "$node" psql -U postgres -d postgres -v ON_ERROR_STOP=1 <<'SQL'
           create table public.akarfinder_ha_replication_canary (
             id uuid primary key,
             probe_run_id uuid not null,
