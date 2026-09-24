@@ -62,6 +62,72 @@ const CATEGORY_META: Record<LivingHereCategory, { label: string; color: string }
   coast: { label: "Côte", color: "#3b82c4" }, other: { label: "Autres", color: "#6b7280" },
 };
 
+function collectBoundaryPositions(value: unknown, output: MutablePosition[]): void {
+  if (!Array.isArray(value)) return;
+  if (
+    value.length >= 2
+    && typeof value[0] === "number"
+    && Number.isFinite(value[0])
+    && typeof value[1] === "number"
+    && Number.isFinite(value[1])
+  ) {
+    output.push([value[0], value[1]]);
+    return;
+  }
+  for (const item of value) collectBoundaryPositions(item, output);
+}
+
+function getBoundaryBounds(geometry: BoundaryGeometry | null): [MutablePosition, MutablePosition] | null {
+  if (!geometry) return null;
+  const positions: MutablePosition[] = [];
+  collectBoundaryPositions(geometry.coordinates, positions);
+  if (!positions.length) return null;
+  let minLng = positions[0][0];
+  let maxLng = positions[0][0];
+  let minLat = positions[0][1];
+  let maxLat = positions[0][1];
+  for (const [lng, lat] of positions.slice(1)) {
+    minLng = Math.min(minLng, lng);
+    maxLng = Math.max(maxLng, lng);
+    minLat = Math.min(minLat, lat);
+    maxLat = Math.max(maxLat, lat);
+  }
+  return [[minLng, minLat], [maxLng, maxLat]];
+}
+
+function focusNeighborhoodMap(
+  map: any,
+  geometry: BoundaryGeometry | null,
+  center: MutablePosition,
+  desktopCameraOffset: MutablePosition,
+  desktop: boolean,
+  duration: number,
+): void {
+  const bounds = getBoundaryBounds(geometry);
+  if (bounds) {
+    map.fitBounds(bounds, {
+      padding: desktop
+        ? { top: 108, right: 82, bottom: 76, left: 82 }
+        : { top: 126, right: 26, bottom: 190, left: 26 },
+      maxZoom: desktop ? 14.25 : 14.2,
+      pitch: desktop ? 8 : 0,
+      bearing: 0,
+      duration,
+    });
+    return;
+  }
+  const targetCenter: MutablePosition = desktop
+    ? [center[0] + desktopCameraOffset[0], center[1] + desktopCameraOffset[1]]
+    : center;
+  map.easeTo({
+    center: targetCenter,
+    zoom: desktop ? 13.55 : 13.8,
+    pitch: desktop ? 18 : 8,
+    bearing: 0,
+    duration,
+  });
+}
+
 export function MapLibreNeighborhood3D({
   citySlug,
   cityLabel,
@@ -89,17 +155,7 @@ export function MapLibreNeighborhood3D({
   const restoreCamera = () => {
     const map = mapInstanceRef.current;
     if (!map) return;
-    const desktop = window.innerWidth >= 1024;
-    const targetCenter: MutablePosition = desktop
-      ? [center[0] + desktopCameraOffset[0], center[1] + desktopCameraOffset[1]]
-      : center;
-    map.easeTo({
-      center: targetCenter,
-      zoom: desktop ? 13.55 : 13.8,
-      pitch: desktop ? 18 : 8,
-      bearing: 0,
-      duration: 650,
-    });
+    focusNeighborhoodMap(map, boundaryGeometry, center, desktopCameraOffset, window.innerWidth >= 1024, 650);
   };
 
   const changeZoom = (delta: number) => {
@@ -226,6 +282,9 @@ export function MapLibreNeighborhood3D({
                 paint: { "line-color": "#071B33", "line-width": 3.2, "line-opacity": 0.96 },
               });
             }
+            window.requestAnimationFrame(() => {
+              if (!disposed) focusNeighborhoodMap(map, boundaryGeometry, center, desktopCameraOffset, desktop, 0);
+            });
           } catch (error) {
             console.error("[vivre-ici-maplibre-national] layer setup failed", error);
             setSourceState("unavailable");
