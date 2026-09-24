@@ -1,0 +1,38 @@
+/* AKAR-MAP-QUARTIER-TARGET — Couche 2 — Maârif
+ * Truth-semantic additions only. Shell remains Couche 1.
+ */
+
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-boundary-badge {
+  position: absolute;
+  z-index: 14;
+  left: 112px;
+  top: 88px;
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 13px;
+  border: 1px solid rgb(207 220 235 / .96);
+  border-radius: 12px;
+  background: rgb(255 255 255 / .96);
+  color: #52657a;
+  box-shadow: 0 8px 20px rgb(7 27 51 / .10);
+  backdrop-filter: blur(14px);
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: .02em;
+  pointer-events: none;
+}
+
+@media (max-width: 1023px) {
+  [data-akar-quartier-target="maarif-couche1"] .maplibre-spike-boundary-badge {
+    left: 94px;
+    top: 66px;
+    min-height: 36px;
+    max-width: 148px;
+    padding: 0 10px;
+    border-radius: 11px;
+    font-size: 8.5px;
+    line-height: 1.15;
+    text-align: center;
+  }
+}
