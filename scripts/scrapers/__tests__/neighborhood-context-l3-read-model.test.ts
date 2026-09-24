@@ -23,7 +23,7 @@ describe("Neighborhood Context L3 — read model", () => {
   it("preserves the expected pilot coverage without fabricating missing context", () => {
     const catalog = buildNeighborhoodContextRuntimeCatalog(NOW);
     const byId = new Map(catalog.map((entry) => [entry.canonical_neighborhood_id, entry]));
-    assert.equal(byId.get("district_rabat_agdal")?.coverage_status, "covered");
+    assert.equal(byId.get("district_rabat_agdal")?.coverage_status, "partial");
     assert.equal(byId.get("district_casablanca_maarif")?.coverage_status, "insufficient");
     assert.equal(byId.get("district_marrakech_gueliz")?.coverage_status, "insufficient");
     assert.equal(byId.get("district_tanger_malabata")?.coverage_status, "partial");
@@ -61,7 +61,7 @@ describe("Neighborhood Context L3 — read model", () => {
   it("keeps canonical POI identity and complete provenance", () => {
     const agdal = getNeighborhoodContextReadModelBySlugs("rabat", "agdal", NOW);
     assert.ok(agdal);
-    assert.equal(agdal.anchor_count, 5);
+    assert.equal(agdal.anchor_count, 4);
     assert.equal(agdal.anchors.every((anchor) => anchor.poi_id.startsWith("osm:")), true);
     assert.equal(agdal.anchors.every((anchor) => anchor.source_id === "openstreetmap"), true);
     assert.equal(agdal.anchors.every((anchor) => anchor.freshness_status === "fresh"), true);
@@ -89,14 +89,42 @@ describe("Neighborhood Context L3 — API", () => {
     assert.equal(response.status, 404);
   });
 
-  it("returns a bounded truth-safe read model for Rabat/Agdal", async () => {
+  it("fails current Rabat/Agdal context closed after ANN-L5 freshness expiry", async () => {
     const response = await GET(new Request("http://localhost/api/geo/neighborhood-context?city=rabat&district=agdal"));
     assert.equal(response.status, 200);
     assert.match(response.headers.get("cache-control") ?? "", /s-maxage=300/);
     assert.equal(response.headers.get("x-akarfinder-context-source"), "ann-l5-certified-seed");
-    const body = await response.json() as { status: string; context: { canonical_neighborhood_id: string; anchor_count: number } };
+    const body = await response.json() as {
+      status: string;
+      context: { canonical_neighborhood_id: string; anchor_count: number; coverage_status: string };
+    };
     assert.equal(body.status, "ok");
     assert.equal(body.context.canonical_neighborhood_id, "district_rabat_agdal");
-    assert.equal(body.context.anchor_count, 5);
+    assert.equal(body.context.anchor_count, 0);
+    assert.equal(body.context.coverage_status, "unavailable");
+  });
+
+  it("returns the current fresh Maârif Couche 2 context with its real source header", async () => {
+    const response = await GET(new Request("http://localhost/api/geo/neighborhood-context?city=casablanca&district=maarif"));
+    assert.equal(response.status, 200);
+    assert.match(response.headers.get("cache-control") ?? "", /s-maxage=300/);
+    assert.equal(response.headers.get("x-akarfinder-context-source"), "maarif-couche2-osm-refresh");
+    const body = await response.json() as {
+      status: string;
+      context: {
+        canonical_neighborhood_id: string;
+        anchor_count: number;
+        coverage_status: string;
+        source: { mode: string; certified_run_id: number };
+        anchors: Array<{ territorial_wording: string }>;
+      };
+    };
+    assert.equal(body.status, "ok");
+    assert.equal(body.context.canonical_neighborhood_id, "district_casablanca_maarif");
+    assert.equal(body.context.anchor_count, 4);
+    assert.equal(body.context.coverage_status, "partial");
+    assert.equal(body.context.source.mode, "maarif-couche2-osm-refresh");
+    assert.equal(body.context.source.certified_run_id, 35523711412);
+    assert.equal(body.context.anchors.every((anchor) => anchor.territorial_wording === "Autour du repère quartier"), true);
   });
 });
