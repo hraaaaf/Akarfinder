@@ -240,3 +240,31 @@
     pointer-events: auto !important;
   }
 }
+
+
+/* Couche 2 tablet guard — target-alignment hides all secondary tabs through 1023px. */
+@media (min-width: 768px) and (max-width: 1023px) {
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]):has([data-maplibre-spike][data-maplibre-district="maarif"])
+    [data-p4-map-decision-rail]
+    .p4-premium-tabs {
+    display: grid !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: auto !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 0 !important;
+    margin-top: 8px !important;
+  }
+
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]):has([data-maplibre-spike][data-maplibre-district="maarif"])
+    [data-p4-map-decision-rail]
+    .p4-premium-tabs > button,
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]):has([data-maplibre-spike][data-maplibre-district="maarif"])
+    [data-p4-map-decision-rail]
+    .p4-premium-tabs > a {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+}
