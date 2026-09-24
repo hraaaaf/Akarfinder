@@ -27,6 +27,14 @@ type BoundaryGeometry = {
   coordinates: unknown;
 };
 
+export type TargetPilotLandmark = {
+  id: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  tier: "flagship" | "major" | "regional" | "local" | string;
+};
+
 export type MapLibreNeighborhood3DProps = {
   citySlug: string;
   cityLabel: string;
@@ -36,6 +44,7 @@ export type MapLibreNeighborhood3DProps = {
   boundaryGeometry?: BoundaryGeometry | null;
   desktopCameraOffset?: MutablePosition;
   reserveRail?: boolean;
+  targetPilotLandmarks?: readonly TargetPilotLandmark[];
 };
 
 const OPENFREEMAP_VECTOR = "https://tiles.openfreemap.org/planet";
@@ -62,6 +71,7 @@ export function MapLibreNeighborhood3D({
   boundaryGeometry = null,
   desktopCameraOffset = [0, 0],
   reserveRail = false,
+  targetPilotLandmarks = [],
 }: MapLibreNeighborhood3DProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
@@ -262,6 +272,13 @@ export function MapLibreNeighborhood3D({
           visible: point.x > -100 && point.x < canvas.clientWidth + 100 && point.y > -80 && point.y < canvas.clientHeight + 80,
         };
       }
+      for (const landmark of targetPilotLandmarks) {
+        const point = map.project([landmark.longitude, landmark.latitude]);
+        next[`target:${landmark.id}`] = {
+          x: point.x, y: point.y,
+          visible: point.x > -120 && point.x < canvas.clientWidth + 120 && point.y > -100 && point.y < canvas.clientHeight + 100,
+        };
+      }
       const cp = map.project(center);
       setCenterPoint({ x: cp.x, y: cp.y, visible: cp.x > -60 && cp.x < canvas.clientWidth + 60 && cp.y > -60 && cp.y < canvas.clientHeight + 60 });
       setScreenPoints(next);
@@ -273,7 +290,7 @@ export function MapLibreNeighborhood3D({
       map.off("move", updatePositions);
       map.off("resize", updatePositions);
     };
-  }, [context, ready, center[0], center[1]]);
+  }, [context, ready, center[0], center[1], targetPilotLandmarks]);
 
   const categories = context?.categories.filter((category) => Boolean(CATEGORY_META[category])) ?? [];
   const visibleAnchors = context?.anchors.filter((anchor) => activeCategory === "all" || anchor.category === activeCategory) ?? [];
@@ -310,6 +327,21 @@ export function MapLibreNeighborhood3D({
             if (!screen?.visible) return null;
             const meta = CATEGORY_META[anchor.category] ?? CATEGORY_META.other;
             return <div key={anchor.poi_id} className="maplibre-spike-poi-label" style={{ left: screen.x, top: screen.y }}><span>{anchor.name}</span><i style={{ background: meta.color }} /></div>;
+          })}
+          {targetPilotLandmarks.map((landmark) => {
+            const screen = screenPoints[`target:${landmark.id}`];
+            if (!screen?.visible) return null;
+            return (
+              <div
+                key={landmark.id}
+                className="maplibre-spike-target-landmark-label"
+                data-landmark-tier={landmark.tier}
+                style={{ left: screen.x, top: screen.y }}
+              >
+                <i aria-hidden="true" />
+                <span>{landmark.name}</span>
+              </div>
+            );
           })}
         </div>
       </div>
