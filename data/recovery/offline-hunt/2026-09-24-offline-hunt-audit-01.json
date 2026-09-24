@@ -1,0 +1,51 @@
+{
+  "generated_at": "2026-09-24",
+  "doctrine": "offline_first_no_db_writes",
+  "inputs": [
+    "data/recovery/offline-hunt/2026-09-24-web-candidates-batch-01.jsonl",
+    "data/recovery/offline-hunt/2026-09-24-web-candidates-batch-02.jsonl",
+    "data/recovery/offline-hunt/2026-09-24-web-candidates-batch-03.jsonl",
+    "data/recovery/offline-hunt/2026-09-24-web-candidates-batch-04.jsonl"
+  ],
+  "totals": {
+    "candidates": 23,
+    "unique_canonical_urls": 23,
+    "candidate_pass": 20,
+    "quarantine": 3,
+    "exact_url_duplicates": 0,
+    "overlaps_with_restored_177": 0,
+    "simple_fingerprint_collisions": 0
+  },
+  "sources": {
+    "mouldar.com": 11,
+    "mubawab.ma": 8,
+    "sarouty.ma": 3,
+    "agenz.ma": 1
+  },
+  "cities": {
+    "Casablanca": 14,
+    "Rabat": 7,
+    "Marrakech": 2
+  },
+  "simple_fingerprint_fields": [
+    "city",
+    "district",
+    "property_type",
+    "transaction_type",
+    "price_mad",
+    "surface_m2",
+    "bedrooms_count"
+  ],
+  "hard_invariants": {
+    "db_writes": 0,
+    "neon_writes": 0,
+    "production_writes": 0,
+    "approved_for_import_rows": 0
+  },
+  "quarantine_rationale": [
+    "Mubawab Bournazil/Hay Almassira location contradiction",
+    "Mouldar Racine conflicting price evidence 13000 vs 1300 MAD",
+    "Agenz Souissi complete detail but freshness evidence is 2 months old"
+  ],
+  "next_gate": "expand_multi_source_hunt_then_repeat_dedupe_and_quality_audit_before_any_approved_for_import_artifact"
+}
