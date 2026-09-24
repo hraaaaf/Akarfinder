@@ -49,6 +49,29 @@ export type MapLibreNeighborhood3DProps = {
 
 const OPENFREEMAP_VECTOR = "https://tiles.openfreemap.org/planet";
 const OPENFREEMAP_STYLE = "https://tiles.openfreemap.org/styles/liberty";
+const RTL_TEXT_PLUGIN_URL = "https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0.3.0/dist/mapbox-gl-rtl-text.js";
+let rtlTextPluginPromise: Promise<void> | null = null;
+
+function isArabicText(value: string): boolean {
+  return /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/.test(value);
+}
+
+async function ensureMapLibreRtlText(maplibregl: any): Promise<"loaded" | "error"> {
+  try {
+    const status = typeof maplibregl.getRTLTextPluginStatus === "function"
+      ? maplibregl.getRTLTextPluginStatus()
+      : "unavailable";
+    if (status === "loaded") return "loaded";
+    if (!rtlTextPluginPromise) {
+      rtlTextPluginPromise = Promise.resolve(maplibregl.setRTLTextPlugin(RTL_TEXT_PLUGIN_URL, false));
+    }
+    await rtlTextPluginPromise;
+    return maplibregl.getRTLTextPluginStatus?.() === "loaded" ? "loaded" : "error";
+  } catch (error) {
+    console.error("[vivre-ici-maplibre-rtl] plugin failed", error);
+    return "error";
+  }
+}
 const FOCUS_SOURCE_ID = "akarfinder-neighborhood-focus";
 const FOCUS_GLOW_LAYER_ID = "akarfinder-neighborhood-focus-glow";
 const FOCUS_RING_LAYER_ID = "akarfinder-neighborhood-focus-ring";
@@ -150,6 +173,7 @@ export function MapLibreNeighborhood3D({
   const [activeCategory, setActiveCategory] = useState<LivingHereCategory | "all">("all");
   const [screenPoints, setScreenPoints] = useState<Record<string, ScreenPoint>>({});
   const [centerPoint, setCenterPoint] = useState<ScreenPoint | null>(null);
+  const [rtlStatus, setRtlStatus] = useState<"loading" | "loaded" | "error">("loading");
   const isMaarifTargetPilot = citySlug === "casablanca" && districtSlug === "maarif";
 
   const restoreCamera = () => {
@@ -186,8 +210,14 @@ export function MapLibreNeighborhood3D({
     let map: any = null;
 
     void import("maplibre-gl")
-      .then((maplibregl) => {
+      .then(async (maplibregl) => {
+        const rtl = await ensureMapLibreRtlText(maplibregl);
         if (disposed || !mapRef.current) return;
+        setRtlStatus(rtl);
+        if (rtl !== "loaded") {
+          setRenderState("error");
+          return;
+        }
         const desktop = window.innerWidth >= 1024;
         const targetCenter: MutablePosition = desktop
           ? [center[0] + desktopCameraOffset[0], center[1] + desktopCameraOffset[1]]
@@ -368,6 +398,7 @@ export function MapLibreNeighborhood3D({
       data-maplibre-city={citySlug}
       data-maplibre-district={districtSlug}
       data-maplibre-boundary-status={boundaryGeometry ? "shadow-reference" : "center-only"}
+      data-maplibre-rtl-status={rtlStatus}
       data-maplibre-reserve-rail={reserveRail ? "true" : "false"}
       data-akar-quartier-target={isMaarifTargetPilot ? "maarif-couche1" : undefined}
     >
@@ -385,7 +416,8 @@ export function MapLibreNeighborhood3D({
             const screen = screenPoints[anchor.poi_id];
             if (!screen?.visible) return null;
             const meta = CATEGORY_META[anchor.category] ?? CATEGORY_META.other;
-            return <div key={anchor.poi_id} className="maplibre-spike-poi-label" style={{ left: screen.x, top: screen.y }}><span>{anchor.name}</span><i style={{ background: meta.color }} /></div>;
+            const arabic = isArabicText(anchor.name);
+            return <div key={anchor.poi_id} className="maplibre-spike-poi-label" style={{ left: screen.x, top: screen.y }}><span lang={arabic ? "ar" : undefined} dir={arabic ? "rtl" : "auto"}>{anchor.name}</span><i style={{ background: meta.color }} /></div>;
           })}
           {targetPilotLandmarks.map((landmark) => {
             const screen = screenPoints[`target:${landmark.id}`];
@@ -398,7 +430,7 @@ export function MapLibreNeighborhood3D({
                 style={{ left: screen.x, top: screen.y }}
               >
                 <i aria-hidden="true" />
-                <span>{landmark.name}</span>
+                <span lang={isArabicText(landmark.name) ? "ar" : undefined} dir={isArabicText(landmark.name) ? "rtl" : "auto"}>{landmark.name}</span>
               </div>
             );
           })}
