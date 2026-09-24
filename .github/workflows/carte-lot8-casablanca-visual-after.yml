@@ -5,6 +5,10 @@ on:
     paths:
       - "components/map/MapNeighborhoodClient.tsx"
       - "components/map/MapNeighborhoodExperience.tsx"
+      - "components/map/P4MapDecisionRail.tsx"
+      - "lib/neighborhood-context/**"
+      - "scripts/scrapers/__tests__/neighborhood-context-l3-read-model.test.ts"
+      - "scripts/scrapers/__tests__/territory-landmark-registry.test.ts"
       - "app/map/**"
       - "scripts/audits/carte-lot8-casablanca-visual-after.mjs"
       - ".github/workflows/carte-lot8-casablanca-visual-after.yml"
@@ -26,6 +30,13 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      - name: Maârif truth contracts
+        run: >-
+          npx tsx --test
+          scripts/scrapers/__tests__/neighborhood-context-l3-read-model.test.ts
+          scripts/scrapers/__tests__/territory-landmark-registry.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
       - name: Production build
