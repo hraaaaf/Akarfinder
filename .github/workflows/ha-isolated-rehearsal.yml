@@ -1,0 +1,280 @@
+name: HA Isolated Logical Replication Rehearsal
+
+# AKARFINDER-HA-DR-20260924
+# Manual-only. Two disposable PostgreSQL 17 nodes. No provider secret, no production DB.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ha-isolated-logical-replication-rehearsal
+  cancel-in-progress: false
+
+jobs:
+  rehearse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PG_IMAGE: postgres:17
+      PG_PASSWORD: akarfinder-ha-isolated-only
+      NETWORK: akarfinder-ha-isolated
+      SOURCE: akarfinder-ha-supabase-sim
+      TARGET: akarfinder-ha-neon-sim
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Start isolated PostgreSQL 17 nodes
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker network create "$NETWORK"
+
+          for node in "$SOURCE" "$TARGET"; do
+            docker run -d --rm               --name "$node"               --network "$NETWORK"               -e POSTGRES_PASSWORD="$PG_PASSWORD"               -e POSTGRES_DB=postgres               "$PG_IMAGE"               postgres                 -c wal_level=logical                 -c max_replication_slots=10                 -c max_wal_senders=10                 -c max_logical_replication_workers=10
+          done
+
+          for node in "$SOURCE" "$TARGET"; do
+            for attempt in $(seq 1 30); do
+              if docker exec "$node" pg_isready -U postgres -d postgres >/dev/null 2>&1; then
+                break
+              fi
+              if [ "$attempt" -eq 30 ]; then
+                echo "::error::$node did not become ready"
+                exit 1
+              fi
+              sleep 1
+            done
+          done
+
+      - name: Create matching canary schema
+        shell: bash
+        run: |
+          set -euo pipefail
+          for node in "$SOURCE" "$TARGET"; do
+            docker exec "$node" psql -U postgres -d postgres -v ON_ERROR_STOP=1 <<'SQL'
+          create table public.akarfinder_ha_replication_canary (
+            id uuid primary key,
+            probe_run_id uuid not null,
+            payload text not null,
+            version integer not null check (version >= 1),
+            created_at timestamptz not null,
+            updated_at timestamptz not null
+          );
+          alter table public.akarfinder_ha_replication_canary replica identity default;
+          SQL
+          done
+
+      - name: Establish forward Supabase-sim to Neon-sim replication
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker exec "$SOURCE" psql -U postgres -d postgres -v ON_ERROR_STOP=1             -c "create publication ha_forward_pub for table public.akarfinder_ha_replication_canary;"
+
+          docker exec "$TARGET" psql -U postgres -d postgres -v ON_ERROR_STOP=1             -c "create subscription ha_forward_sub
+                connection 'host=$SOURCE port=5432 dbname=postgres user=postgres password=$PG_PASSWORD sslmode=disable'
+                publication ha_forward_pub
+                with (copy_data=false, origin=none);"
+
+      - name: Prove forward INSERT UPDATE DELETE
+        shell: bash
+        run: |
+          set -euo pipefail
+          probe_run_id="11111111-1111-4111-8111-111111111111"
+          row_id="aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+          source_commit_start="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+          docker exec "$SOURCE" psql -U postgres -d postgres -v ON_ERROR_STOP=1             -c "insert into public.akarfinder_ha_replication_canary
+                (id, probe_run_id, payload, version, created_at, updated_at)
+                values
+                ('$row_id','$probe_run_id','forward-v1',1,clock_timestamp(),clock_timestamp());"
+
+          for attempt in $(seq 1 30); do
+            value="$(docker exec "$TARGET" psql -U postgres -d postgres -X -qAt               -c "select payload||':'||version from public.akarfinder_ha_replication_canary where id='$row_id';")"
+            [ "$value" = "forward-v1:1" ] && break
+            [ "$attempt" -eq 30 ] && { echo "::error::forward INSERT did not replicate"; exit 1; }
+            sleep 1
+          done
+
+          docker exec "$SOURCE" psql -U postgres -d postgres -v ON_ERROR_STOP=1             -c "update public.akarfinder_ha_replication_canary
+                set payload='forward-v2', version=2, updated_at=clock_timestamp()
+                where id='$row_id';"
+
+          for attempt in $(seq 1 30); do
+            value="$(docker exec "$TARGET" psql -U postgres -d postgres -X -qAt               -c "select payload||':'||version from public.akarfinder_ha_replication_canary where id='$row_id';")"
+            [ "$value" = "forward-v2:2" ] && break
+            [ "$attempt" -eq 30 ] && { echo "::error::forward UPDATE did not replicate"; exit 1; }
+            sleep 1
+          done
+
+          docker exec "$SOURCE" psql -U postgres -d postgres -v ON_ERROR_STOP=1             -c "delete from public.akarfinder_ha_replication_canary where id='$row_id';"
+
+          for attempt in $(seq 1 30); do
+            count="$(docker exec "$TARGET" psql -U postgres -d postgres -X -qAt               -c "select count(*) from public.akarfinder_ha_replication_canary where id='$row_id';")"
+            [ "$count" = "0" ] && break
+            [ "$attempt" -eq 30 ] && { echo "::error::forward DELETE did not replicate"; exit 1; }
+            sleep 1
+          done
+
+          source_commit_end="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          source_lsn="$(docker exec "$SOURCE" psql -U postgres -d postgres -X -qAt -c "select pg_current_wal_lsn();")"
+          printf 'FORWARD_START=%s\nFORWARD_END=%s\nFORWARD_END_LSN=%s\n'             "$source_commit_start" "$source_commit_end" "$source_lsn" >> "$RUNNER_TEMP/ha.env"
+
+      - name: Establish reverse Neon-sim to Supabase-sim replication with origin filter
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker exec "$TARGET" psql -U postgres -d postgres -v ON_ERROR_STOP=1             -c "create publication ha_reverse_pub for table public.akarfinder_ha_replication_canary;"
+
+          docker exec "$SOURCE" psql -U postgres -d postgres -v ON_ERROR_STOP=1             -c "create subscription ha_reverse_sub
+                connection 'host=$TARGET port=5432 dbname=postgres user=postgres password=$PG_PASSWORD sslmode=disable'
+                publication ha_reverse_pub
+                with (copy_data=false, origin=none);"
+
+          suborigin="$(docker exec "$SOURCE" psql -U postgres -d postgres -X -qAt             -c "select suborigin from pg_subscription where subname='ha_reverse_sub';")"
+          if [ "$suborigin" != "none" ]; then
+            echo "::error::reverse subscription origin filter is not none"
+            exit 1
+          fi
+
+      - name: Prove reverse incident delta and no replay loop
+        shell: bash
+        run: |
+          set -euo pipefail
+          probe_run_id="22222222-2222-4222-8222-222222222222"
+          row_id="bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"
+          failover_decision_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          reverse_start_lsn="$(docker exec "$TARGET" psql -U postgres -d postgres -X -qAt -c "select pg_current_wal_lsn();")"
+
+          docker exec "$TARGET" psql -U postgres -d postgres -v ON_ERROR_STOP=1             -c "insert into public.akarfinder_ha_replication_canary
+                (id, probe_run_id, payload, version, created_at, updated_at)
+                values
+                ('$row_id','$probe_run_id','incident-v1',1,clock_timestamp(),clock_timestamp());"
+
+          for attempt in $(seq 1 30); do
+            value="$(docker exec "$SOURCE" psql -U postgres -d postgres -X -qAt               -c "select payload||':'||version from public.akarfinder_ha_replication_canary where id='$row_id';")"
+            [ "$value" = "incident-v1:1" ] && break
+            [ "$attempt" -eq 30 ] && { echo "::error::reverse INSERT did not replicate"; exit 1; }
+            sleep 1
+          done
+
+          # If origin filtering fails, the reverse-applied row on SOURCE can loop
+          # through the forward subscription and produce a conflict or worker error.
+          sleep 2
+          source_count="$(docker exec "$SOURCE" psql -U postgres -d postgres -X -qAt             -c "select count(*) from public.akarfinder_ha_replication_canary where id='$row_id';")"
+          target_count="$(docker exec "$TARGET" psql -U postgres -d postgres -X -qAt             -c "select count(*) from public.akarfinder_ha_replication_canary where id='$row_id';")"
+          [ "$source_count" = "1" ] && [ "$target_count" = "1" ] || {
+            echo "::error::anti-loop count proof failed source=$source_count target=$target_count"
+            exit 1
+          }
+
+          docker exec "$TARGET" psql -U postgres -d postgres -v ON_ERROR_STOP=1             -c "update public.akarfinder_ha_replication_canary
+                set payload='incident-v2', version=2, updated_at=clock_timestamp()
+                where id='$row_id';"
+
+          for attempt in $(seq 1 30); do
+            value="$(docker exec "$SOURCE" psql -U postgres -d postgres -X -qAt               -c "select payload||':'||version from public.akarfinder_ha_replication_canary where id='$row_id';")"
+            [ "$value" = "incident-v2:2" ] && break
+            [ "$attempt" -eq 30 ] && { echo "::error::reverse UPDATE did not replicate"; exit 1; }
+            sleep 1
+          done
+
+          reverse_target_lsn="$(docker exec "$TARGET" psql -U postgres -d postgres -X -qAt -c "select pg_current_wal_lsn();")"
+
+          docker exec "$TARGET" psql -U postgres -d postgres -v ON_ERROR_STOP=1             -c "delete from public.akarfinder_ha_replication_canary where id='$row_id';"
+
+          for attempt in $(seq 1 30); do
+            count="$(docker exec "$SOURCE" psql -U postgres -d postgres -X -qAt               -c "select count(*) from public.akarfinder_ha_replication_canary where id='$row_id';")"
+            [ "$count" = "0" ] && break
+            [ "$attempt" -eq 30 ] && { echo "::error::reverse DELETE did not replicate"; exit 1; }
+            sleep 1
+          done
+
+          for node in "$SOURCE" "$TARGET"; do
+            remaining="$(docker exec "$node" psql -U postgres -d postgres -X -qAt               -c "select count(*) from public.akarfinder_ha_replication_canary where probe_run_id='$probe_run_id';")"
+            [ "$remaining" = "0" ] || { echo "::error::cleanup failed on $node"; exit 1; }
+          done
+
+          reverse_final_lsn="$(docker exec "$TARGET" psql -U postgres -d postgres -X -qAt -c "select pg_current_wal_lsn();")"
+          service_restored_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+          printf 'FAILOVER_DECISION_AT=%s\nSERVICE_RESTORED_AT=%s\nREVERSE_START_LSN=%s\nREVERSE_TARGET_LSN=%s\nREVERSE_FINAL_LSN=%s\n'             "$failover_decision_at" "$service_restored_at" "$reverse_start_lsn" "$reverse_target_lsn" "$reverse_final_lsn"             >> "$RUNNER_TEMP/ha.env"
+
+      - name: Verify subscriptions remain healthy
+        shell: bash
+        run: |
+          set -euo pipefail
+          source_pid="$(docker exec "$SOURCE" psql -U postgres -d postgres -X -qAt             -c "select coalesce(pid::text,'') from pg_stat_subscription where subname='ha_reverse_sub';")"
+          target_pid="$(docker exec "$TARGET" psql -U postgres -d postgres -X -qAt             -c "select coalesce(pid::text,'') from pg_stat_subscription where subname='ha_forward_sub';")"
+          [ -n "$source_pid" ] || { echo "::error::reverse subscription worker unhealthy"; exit 1; }
+          [ -n "$target_pid" ] || { echo "::error::forward subscription worker unhealthy"; exit 1; }
+
+      - name: Create isolated rehearsal artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          set -a
+          . "$RUNNER_TEMP/ha.env"
+          set +a
+
+          jq -n             --arg schema_version "1.0"             --arg application_commit "$GITHUB_SHA"             --arg forward_end_lsn "$FORWARD_END_LSN"             --arg reverse_start_lsn "$REVERSE_START_LSN"             --arg reverse_target_lsn "$REVERSE_TARGET_LSN"             --arg reverse_final_lsn "$REVERSE_FINAL_LSN"             --arg failover_decision_at "$FAILOVER_DECISION_AT"             --arg service_restored_at "$SERVICE_RESTORED_AT"             '{
+              schema_version: $schema_version,
+              rehearsal: "HA05-A_ISOLATED_PG17",
+              provider_specific_certification: false,
+              application_commit: $application_commit,
+              topology: "two_disposable_postgresql_17_nodes",
+              origin_filter: "none",
+              copy_data: false,
+              forward_insert_update_delete: "PASS",
+              reverse_insert_update_delete: "PASS",
+              anti_loop_count_proof: "PASS",
+              cleanup: "PASS",
+              single_writer_contract: "SIMULATED",
+              positions: {
+                forward_end_lsn: $forward_end_lsn,
+                reverse_start_lsn: $reverse_start_lsn,
+                reverse_target_lsn: $reverse_target_lsn,
+                reverse_final_lsn: $reverse_final_lsn
+              },
+              timings: {
+                failover_decision_at: $failover_decision_at,
+                service_restored_at: $service_restored_at
+              },
+              secrets_redacted: true,
+              verdict: "ISOLATED_REHEARSAL_PASS",
+              limitations: [
+                "Does not prove Supabase or Neon provider privileges.",
+                "Does not prove provider-specific origin behavior.",
+                "Does not prove production routing or Vercel switching.",
+                "Does not certify production RPO/RTO."
+              ]
+            }' > "$RUNNER_TEMP/HA_ISOLATED_REHEARSAL.json"
+
+      - name: Guard artifact against secret leakage
+        shell: bash
+        run: |
+          set -euo pipefail
+          artifact="$RUNNER_TEMP/HA_ISOLATED_REHEARSAL.json"
+          test -s "$artifact"
+          if grep -Eiq 'postgres(ql)?://|password|SUPABASE_DATABASE_URL|NEON_DATABASE_URL|service_role' "$artifact"; then
+            echo "::error::Secret-like material detected in isolated HA rehearsal artifact"
+            exit 1
+          fi
+
+      - name: Upload isolated rehearsal proof
+        uses: actions/upload-artifact@v4
+        with:
+          name: ha-isolated-rehearsal-${{ github.sha }}
+          path: ${{ runner.temp }}/HA_ISOLATED_REHEARSAL.json
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Stop isolated nodes
+        if: always()
+        shell: bash
+        run: |
+          docker rm -f "$SOURCE" "$TARGET" >/dev/null 2>&1 || true
+          docker network rm "$NETWORK" >/dev/null 2>&1 || true
