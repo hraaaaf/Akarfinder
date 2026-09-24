@@ -332,14 +332,17 @@ After import, run full read-only parity proof.
 
 Only after L5 may HA-04 mutation rehearsal be considered.
 
-## Current CI
+## CI status source of truth
 
-Exact-head CI for the HA overlay was in progress at the last check:
+Do not freeze an ephemeral CI state in this canonical file.
 
-- Neon Runtime Read Path Validation
-- CI Workflow Efficiency Policy
+For the current exact-head status, read:
 
-CI in progress does not stop independent work.
+1. GitHub PR #1087;
+2. the exact-head workflow runs;
+3. the AkarFinder Notion command center.
+
+Certification requires the relevant exact-head checks to be green. A queued or in-progress CI does not stop independent work.
 
 ## Current production mutations
 
