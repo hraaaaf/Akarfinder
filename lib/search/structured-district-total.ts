@@ -1,4 +1,4 @@
-import { getDbProvider, isSupabaseConfigured } from "@/lib/db/provider";
+import { getDbProvider, isNeonConfigured, isSupabaseConfigured } from "@/lib/db/provider";
 import { getSupabaseServerClient } from "@/lib/db/supabase-client";
 import {
   canonicalizeGeoPair,
@@ -68,7 +68,15 @@ export async function queryStructuredDistrictTotal(
 ): Promise<number | null> {
   const filter = buildStructuredDistrictCountFilter(query);
   if (!filter) return null;
-  if (getDbProvider() !== "supabase" || !isSupabaseConfigured()) return null;
+
+  const provider = getDbProvider();
+  if (provider === "neon") {
+    if (!isNeonConfigured()) return null;
+    const { queryNeonStructuredDistrictTotal } = await import("@/lib/db/neon-listings");
+    return queryNeonStructuredDistrictTotal(filter);
+  }
+
+  if (provider !== "supabase" || !isSupabaseConfigured()) return null;
 
   const supabase = getSupabaseServerClient();
   let q = supabase

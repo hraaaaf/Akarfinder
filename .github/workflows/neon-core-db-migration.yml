@@ -1,0 +1,206 @@
+name: Neon Core DB Migration
+
+# SUPABASE-TO-NEON-MIGRATION-20260923
+# Manual-only. Validate always restores the selected source dump into an
+# ephemeral PostgreSQL 17 instance before any optional target write.
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "validate performs no Neon write; apply imports only after all validation gates pass"
+        required: true
+        default: "validate"
+        type: choice
+        options:
+          - validate
+          - apply
+
+permissions:
+  contents: read
+
+concurrency:
+  group: neon-core-db-migration
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      SOURCE_URL: ${{ secrets.SUPABASE_DATABASE_URL_DIRECT }}
+      TARGET_URL: ${{ secrets.NEON_DATABASE_URL_DIRECT }}
+      PG_IMAGE: postgres:17
+
+    steps:
+      - name: Validate source secret
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${SOURCE_URL:-}" ]; then
+            echo "::error::Missing SUPABASE_DATABASE_URL_DIRECT"
+            exit 1
+          fi
+
+      - name: Export selected core tables with PostgreSQL 17
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --rm \
+            -e SOURCE_URL="$SOURCE_URL" \
+            -v "$RUNNER_TEMP:/work" \
+            "$PG_IMAGE" \
+            sh -lc 'pg_dump "$SOURCE_URL" -Fc --no-owner --no-acl \
+              --table=public.property_listings \
+              --table=public.listing_sources \
+              --table=public.property_clusters \
+              --table=public.property_cluster_members \
+              -f /work/akarfinder-core.dump'
+
+      - name: Start clean PostgreSQL 17 scratch database
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run -d --rm \
+            --name akarfinder-pg17-scratch \
+            -e POSTGRES_PASSWORD=akarfinder-scratch \
+            -e POSTGRES_DB=akarfinder_scratch \
+            -p 55432:5432 \
+            "$PG_IMAGE"
+          for attempt in $(seq 1 30); do
+            if docker exec akarfinder-pg17-scratch pg_isready -U postgres -d akarfinder_scratch >/dev/null 2>&1; then
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "::error::Scratch PostgreSQL did not become ready"
+          exit 1
+
+      - name: Prove selected dump is dependency-closed on vanilla PG17
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --rm \
+            --network host \
+            -e PGPASSWORD=akarfinder-scratch \
+            -v "$RUNNER_TEMP:/work" \
+            "$PG_IMAGE" \
+            pg_restore \
+              --exit-on-error \
+              --single-transaction \
+              --no-owner \
+              --no-acl \
+              -h 127.0.0.1 -p 55432 -U postgres -d akarfinder_scratch \
+              /work/akarfinder-core.dump
+
+      - name: Verify source and scratch content parity
+        shell: bash
+        run: |
+          set -euo pipefail
+          tables="property_listings listing_sources property_clusters property_cluster_members"
+          for table in $tables; do
+            digest_sql="select md5(coalesce(string_agg(row_hash, '' order by row_hash), '')) from (select md5(row_to_json(t)::text) as row_hash from public.$table t) q;"
+
+            source_count=$(docker run --rm -e SOURCE_URL="$SOURCE_URL" "$PG_IMAGE" \
+              sh -lc "psql \"\$SOURCE_URL\" -X -qAt -v ON_ERROR_STOP=1 -c 'select count(*) from public.$table'")
+            scratch_count=$(docker exec akarfinder-pg17-scratch \
+              psql -U postgres -d akarfinder_scratch -X -qAt -v ON_ERROR_STOP=1 \
+              -c "select count(*) from public.$table")
+
+            source_digest=$(docker run --rm -e SOURCE_URL="$SOURCE_URL" -e DIGEST_SQL="$digest_sql" "$PG_IMAGE" \
+              sh -lc 'psql "$SOURCE_URL" -X -qAt -v ON_ERROR_STOP=1 -c "$DIGEST_SQL"')
+            scratch_digest=$(docker exec akarfinder-pg17-scratch \
+              psql -U postgres -d akarfinder_scratch -X -qAt -v ON_ERROR_STOP=1 \
+              -c "$digest_sql")
+
+            echo "$table source_count=$source_count scratch_count=$scratch_count source_digest=$source_digest scratch_digest=$scratch_digest"
+            if [ "$source_count" != "$scratch_count" ]; then
+              echo "::error::$table row-count mismatch source=$source_count scratch=$scratch_count"
+              exit 1
+            fi
+            if [ "$source_digest" != "$scratch_digest" ]; then
+              echo "::error::$table content digest mismatch source=$source_digest scratch=$scratch_digest"
+              exit 1
+            fi
+          done
+
+      - name: Validate apply target secret
+        if: inputs.mode == 'apply'
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${TARGET_URL:-}" ]; then
+            echo "::error::Missing NEON_DATABASE_URL_DIRECT"
+            exit 1
+          fi
+          case "$TARGET_URL" in
+            *-pooler.*)
+              echo "::error::NEON_DATABASE_URL_DIRECT must be an unpooled/direct Neon connection"
+              exit 1
+              ;;
+          esac
+
+      - name: Fail closed if target core tables already exist
+        if: inputs.mode == 'apply'
+        shell: bash
+        run: |
+          set -euo pipefail
+          existing=$(docker run --rm -e TARGET_URL="$TARGET_URL" "$PG_IMAGE" sh -lc \
+            'psql "$TARGET_URL" -X -qAt -v ON_ERROR_STOP=1 -c "select count(*) from information_schema.tables where table_schema = '''public''' and table_name in ('''property_listings''','''listing_sources''','''property_clusters''','''property_cluster_members''');"')
+          echo "target_existing_core_tables=$existing"
+          if [ "$existing" != "0" ]; then
+            echo "::error::Target already contains one or more core tables; refusing implicit overwrite"
+            exit 1
+          fi
+
+      - name: Apply selected core dump to Neon
+        if: inputs.mode == 'apply'
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --rm \
+            -e TARGET_URL="$TARGET_URL" \
+            -v "$RUNNER_TEMP:/work" \
+            "$PG_IMAGE" \
+            sh -lc 'pg_restore \
+              --exit-on-error \
+              --single-transaction \
+              --no-owner \
+              --no-acl \
+              -d "$TARGET_URL" \
+              /work/akarfinder-core.dump'
+
+      - name: Verify source and Neon content parity
+        if: inputs.mode == 'apply'
+        shell: bash
+        run: |
+          set -euo pipefail
+          tables="property_listings listing_sources property_clusters property_cluster_members"
+          for table in $tables; do
+            digest_sql="select md5(coalesce(string_agg(row_hash, '' order by row_hash), '')) from (select md5(row_to_json(t)::text) as row_hash from public.$table t) q;"
+
+            source_count=$(docker run --rm -e SOURCE_URL="$SOURCE_URL" "$PG_IMAGE" \
+              sh -lc "psql \"\$SOURCE_URL\" -X -qAt -v ON_ERROR_STOP=1 -c 'select count(*) from public.$table'")
+            target_count=$(docker run --rm -e TARGET_URL="$TARGET_URL" "$PG_IMAGE" \
+              sh -lc "psql \"\$TARGET_URL\" -X -qAt -v ON_ERROR_STOP=1 -c 'select count(*) from public.$table'")
+
+            source_digest=$(docker run --rm -e SOURCE_URL="$SOURCE_URL" -e DIGEST_SQL="$digest_sql" "$PG_IMAGE" \
+              sh -lc 'psql "$SOURCE_URL" -X -qAt -v ON_ERROR_STOP=1 -c "$DIGEST_SQL"')
+            target_digest=$(docker run --rm -e TARGET_URL="$TARGET_URL" -e DIGEST_SQL="$digest_sql" "$PG_IMAGE" \
+              sh -lc 'psql "$TARGET_URL" -X -qAt -v ON_ERROR_STOP=1 -c "$DIGEST_SQL"')
+
+            echo "$table source_count=$source_count target_count=$target_count source_digest=$source_digest target_digest=$target_digest"
+            if [ "$source_count" != "$target_count" ]; then
+              echo "::error::$table row-count mismatch source=$source_count target=$target_count"
+              exit 1
+            fi
+            if [ "$source_digest" != "$target_digest" ]; then
+              echo "::error::$table content digest mismatch source=$source_digest target=$target_digest"
+              exit 1
+            fi
+          done
+
+      - name: Stop scratch database
+        if: always()
+        shell: bash
+        run: docker rm -f akarfinder-pg17-scratch >/dev/null 2>&1 || true

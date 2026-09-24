@@ -1,6 +1,79 @@
+import { getDbProvider } from "@/lib/db/provider";
+import { neonExecutor } from "@/lib/db/neon-client";
 import { getSupabaseServerClient } from "@/lib/db/supabase-client";
 import type { Listing, ListingPropertyType } from "@/lib/listings/types";
 import { queryOwnerListingMedia } from "@/lib/seller/owner-listing-media";
+
+type OwnerListingDetailRow = {
+  id: string;
+  draft_id: string;
+  normalized_city: string | null;
+  normalized_neighborhood: string | null;
+  normalized_property_type: string | null;
+  normalized_price_mad: number | null;
+  normalized_surface_m2: number | null;
+  price_per_m2_mad: number | null;
+  bedrooms_count: number | null;
+  condition_label: string | null;
+  photo_count: number;
+  quality_score: number;
+  display_eligibility: string;
+  display_eligibility_reason: string | null;
+  lifecycle_status: string;
+  provenance_label: string;
+  updated_at: string;
+};
+
+function nullableNumber(value: unknown): number | null {
+  if (value == null) return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function normalizedOwnerDetailRow(row: OwnerListingDetailRow): OwnerListingDetailRow {
+  return {
+    ...row,
+    normalized_price_mad: nullableNumber(row.normalized_price_mad),
+    normalized_surface_m2: nullableNumber(row.normalized_surface_m2),
+    price_per_m2_mad: nullableNumber(row.price_per_m2_mad),
+    bedrooms_count: nullableNumber(row.bedrooms_count),
+    photo_count: nullableNumber(row.photo_count) ?? 0,
+    quality_score: nullableNumber(row.quality_score) ?? 0,
+  };
+}
+
+async function readOwnerListingDetailRow(representationId: string): Promise<{
+  row: OwnerListingDetailRow | null;
+  supabase?: ReturnType<typeof getSupabaseServerClient>;
+}> {
+  if (getDbProvider() === "neon") {
+    const rows = await neonExecutor.query<OwnerListingDetailRow>(
+      `SELECT id, draft_id, normalized_city, normalized_neighborhood,
+              normalized_property_type, normalized_price_mad, normalized_surface_m2,
+              price_per_m2_mad, bedrooms_count, condition_label, photo_count,
+              quality_score, display_eligibility, display_eligibility_reason,
+              lifecycle_status, provenance_label, updated_at
+       FROM public.owner_listing_representations
+       WHERE id = $1::uuid
+         AND lifecycle_status = 'live'
+         AND display_eligibility = ANY($2::text[])
+       LIMIT 1`,
+      [representationId, ["eligible_primary", "eligible_secondary"]],
+    );
+    return { row: rows[0] ? normalizedOwnerDetailRow(rows[0]) : null };
+  }
+
+  const supabase = getSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("owner_listing_representations")
+    .select("id, draft_id, normalized_city, normalized_neighborhood, normalized_property_type, normalized_price_mad, normalized_surface_m2, price_per_m2_mad, bedrooms_count, condition_label, photo_count, quality_score, display_eligibility, display_eligibility_reason, lifecycle_status, provenance_label, updated_at")
+    .eq("id", representationId)
+    .eq("lifecycle_status", "live")
+    .in("display_eligibility", ["eligible_primary", "eligible_secondary"])
+    .single();
+  if (error || !data) return { row: null, supabase };
+  return { row: normalizedOwnerDetailRow(data as OwnerListingDetailRow), supabase };
+}
 
 function propertyType(value: string | null): ListingPropertyType {
   switch (value) {
@@ -16,16 +89,8 @@ function propertyType(value: string | null): ListingPropertyType {
 
 export async function queryOwnerListingDetail(representationId: string): Promise<Listing | null> {
   if (!/^[0-9a-f-]{36}$/i.test(representationId)) return null;
-  const supabase = getSupabaseServerClient();
-  const { data, error } = await supabase
-    .from("owner_listing_representations")
-    .select("id, draft_id, normalized_city, normalized_neighborhood, normalized_property_type, normalized_price_mad, normalized_surface_m2, price_per_m2_mad, bedrooms_count, condition_label, photo_count, quality_score, display_eligibility, display_eligibility_reason, lifecycle_status, provenance_label, updated_at")
-    .eq("id", representationId)
-    .eq("lifecycle_status", "live")
-    .in("display_eligibility", ["eligible_primary", "eligible_secondary"])
-    .single();
-
-  if (error || !data) return null;
+  const { row: data, supabase } = await readOwnerListingDetailRow(representationId);
+  if (!data) return null;
 
   const mediaUrls = await queryOwnerListingMedia(data.draft_id, supabase);
   const mainImageUrl = mediaUrls[0];

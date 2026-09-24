@@ -13,6 +13,10 @@ on:
       - "scripts/audits/carte-lot9-market-modes-browser.mjs"
       - ".github/workflows/carte-lot9-market-modes-browser.yml"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
@@ -27,6 +31,10 @@ jobs:
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Latest-commit scope check
+        run: git diff --name-only HEAD^ HEAD
       - uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -68,6 +76,13 @@ jobs:
             if(item.highZoomTileCount<2) throw new Error(`viewport ${name} (${width}px) lacks real basemap proof`);
           }
           NODE
+      - name: Capture production server diagnostics
+        if: failure()
+        shell: bash
+        run: |
+          mkdir -p data/audits/carte-lot9-market-modes
+          cp /tmp/carte-lot9.log data/audits/carte-lot9-market-modes/server.log || true
+
       - name: Upload Lot 9 exact-head proof
         if: always()
         uses: actions/upload-artifact@v4

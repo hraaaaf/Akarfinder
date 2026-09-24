@@ -1,0 +1,486 @@
+# AkarFinder — Supabase → Neon migration — Handover
+
+Date: 2026-09-23
+
+## Goal
+Move AkarFinder off the overloaded Supabase project onto Neon without losing data, silently changing behavior, or deploying to Vercel before explicit authorization.
+
+## Success
+- Supabase production project is no longer generating load.
+- Neon target is inspected and reachable.
+- Current Supabase schema/data are preserved or exported before any irreversible cutover.
+- AkarFinder supports `DATABASE_PROVIDER=neon` through the existing DB abstraction.
+- Read paths, writes, jobs, migrations, auth/storage dependencies and scheduled ingestion are mapped and migrated.
+- Tests/build pass on the migration branch.
+- No Vercel deployment occurs without explicit human approval.
+
+## Current verified state
+
+### Supabase
+- Project: `AqarFinder`
+- Project ref: `kusfiyimwvxblvsrhaes`
+- Plan: Free
+- Pause request accepted: `{"success":true}`
+- Latest observed status after request: `PAUSING`
+- Previous incident evidence:
+  - `SELECT 1` failed with `Connection terminated due to connection timeout`
+  - Dashboard showed quota exhausted
+  - memory commitment ~1.64 GB near ~1.65 GB limit
+  - swap ~92%
+  - CPU >100%
+- 0 Supabase branches.
+- 1 Edge Function `neighborhood-visual-p0-7-ingest`, already fail-closed with `INGESTION_ENABLED = false`.
+
+### Repository
+- Repo: `hraaaaf/Akarfinder`
+- Base at migration start: `main@aa91e48724b1878f0225d31f061fbbc55a289c6e`
+- Migration branch: `infra/neon-migration-20260923`
+- Draft PR: #1082
+- Verified PR head before this handover update: `e78dbc8a2de3d787077ff0ec0285f422f5b0d28a`
+- Existing DB abstraction:
+  - `lib/db/provider.ts` supports only `sqlite | supabase`
+  - `lib/db/index.ts` routes primary listing reads to SQLite or Supabase
+  - `lib/db/supabase-client.ts`
+  - `lib/db/supabase-listings.ts`
+- Repo contains many Supabase-coupled paths beyond the main listing read path, including ingestion state, search cache, observation ledger, public property index, property intelligence and numerous SQL migrations/workflows.
+
+## Neon target — identifiers now known
+The user created the Neon target project.
+
+Verified identifiers supplied from the Neon console/snippet:
+- Project ID: `ancient-violet-43534870`
+- Branch ID: `br-frosty-glitter-b2762sv1`
+- Database: `AkarFinder`
+- Role: `neondb_owner`
+- Region/host family: `eu-central-1`
+- Endpoint host prefix: `ep-red-leaf-b2w913ul`
+- Connection shown by Neon is pooled.
+
+Important:
+- Do not copy the database secret into repo/docs.
+- Rotate the database password before production cutover because it was pasted into the ChatGPT conversation during setup.
+
+## Neon connector blocker — still active after project creation
+Fresh verification after the user created and reconfigured the Neon project still fails.
+
+Observed connector behavior:
+- `describe_project({})` → backend error: missing `project_id`
+- `get_branch({branch_id:"br-frosty-glitter-b2762sv1"})` → backend error: missing `project_id`
+- `run_sql({branch_id:"br-frosty-glitter-b2762sv1", database_name:"AkarFinder", sql:"select 1 as ok;"})` → backend error: missing `project_id`
+- When `project_id:"ancient-violet-43534870"` is passed explicitly, the exposed ChatGPT tool schema rejects it as an unexpected property.
+
+Conclusion limited to proof:
+- The Neon project exists and its IDs are known.
+- The current ChatGPT↔Neon MCP wrapper is internally inconsistent for project scoping in this conversation.
+- `SELECT 1` has NOT executed successfully yet.
+- No Neon schema/data inventory has been performed yet.
+
+A fresh ChatGPT window is the next intended recovery path so the project-scoped MCP connection can initialize cleanly.
+
+## Migration rule
+Do not destroy Supabase data. Pausing is reversible. Do not delete the Supabase project until Neon parity and a verified backup/export exist.
+
+## Migration sequence
+1. Reopen in a fresh conversation with the project-scoped Neon connection.
+2. Verify Neon access with one read-only chain:
+   - project
+   - branch
+   - databases
+   - `SELECT 1`
+3. Inspect tables/schema/storage/auth/Data API capabilities.
+4. Finish Supabase pause verification.
+5. Create a direct, non-pooled migration path for schema/data import.
+6. Export Supabase schema + data when source access is available.
+7. Apply schema to a Neon temporary/dev branch first.
+8. Validate row counts, constraints, functions/views/triggers and critical queries.
+9. Add `neon` to the repo DB provider abstraction.
+10. Port primary reads first.
+11. Port writes/jobs/state stores and remove Supabase-specific PostgREST assumptions.
+12. Port or replace Supabase Storage/Auth dependencies only where actually used.
+13. Run targeted tests + full build + migration parity checks.
+14. Open/review migration PR and merge only after evidence.
+15. Vercel environment switch/deploy requires explicit user authorization.
+16. After production parity: keep Supabase paused for rollback window, then decide deletion separately.
+
+## Immediate next exact
+Open a fresh ChatGPT conversation, load this handover first, verify repo/PR state, then test Neon with:
+- Project ID `ancient-violet-43534870`
+- Branch ID `br-frosty-glitter-b2762sv1`
+- DB `AkarFinder`
+- read-only `SELECT 1`
+
+If the fresh window still returns the same `project_id missing` contradiction, stop retrying the same connector path and switch strategy to a direct migration/runtime connection path rather than more MCP retries.
+
+## Human gates
+- Vercel deployment: explicit authorization required.
+- Supabase project deletion: explicit authorization required.
+- Any destructive Neon branch/database/storage operation: explicit authorization required.
+
+## Runtime coupling inventory — first pass
+Observed runtime / operational paths coupled to Supabase or its PostgREST semantics:
+- `lib/db/supabase-client.ts`
+- `lib/db/supabase-listings.ts`
+- `lib/observation-ledger/supabase-observation-ledger.ts`
+- `lib/property-intelligence/supabase-backfill-adapter.ts`
+- `lib/public-property-index/supabase-index-store.ts`
+- `lib/search-gateway-cache/supabase-cache-store.ts`
+- `lib/seed-freshness/supabase-retry.ts`
+- `lib/openserp-ingestion/*` including state repositories, lock and writer paths
+- `app/api/internal/cron/openserp-ingestion/route.ts`
+- `.github/workflows/openserp-ingestion-cron.yml`
+- `scripts/acquisition/*-supabase-shard-runner.mjs`
+- `scripts/check-supabase.ts`
+- `scripts/sync-supabase.ts`
+- Supabase Edge Functions under `supabase/functions/*`
+- legacy SQL files under `db/supabase-*.sql`
+- the full `supabase/migrations/*` chain, which must be classified into portable Postgres SQL vs Supabase-only constructs.
+
+This inventory is not yet a claim that every listed path is active in production. It is the migration review surface.
+
+## Confirmed migration mechanics (Neon official docs)
+- Database transfer path: `pg_dump -Fc` from Supabase using a **direct/unpooled** connection, then `pg_restore --no-owner --no-acl` into Neon.
+- Target Neon Postgres should match the Supabase major version. Supabase source is PostgreSQL 17, so Neon target must be PostgreSQL 17.
+- Auth compatibility exists via `@neondatabase/neon-js` + `SupabaseAuthAdapter`, but existing password-based Supabase users cannot be directly migrated because password hashes are incompatible. Existing OAuth users are a different case and must be inventoried before cutover.
+- Neon Data API keeps `.from()` / filter / RPC query ergonomics, but backend privileged paths must not be made public by granting broad anonymous access merely to emulate the Supabase service-role key.
+- Storage is not optional in this migration:
+  - public bucket `neighborhood-visuals`
+  - seller bucket `seller-property-drafts`
+  - seller upload route currently uses `supabase.storage` plus `seller_property_draft_photos`
+  Neon Object Storage can replace this only after target project/region capability is verified.
+
+## Emergency automation freeze
+Two unattended GitHub workflows were confirmed to hit Supabase automatically:
+- `.github/workflows/openserp-github-native-ingestion.yml` — schedule `*/10 * * * *`
+- `.github/workflows/sitemap-public-seed-harvest.yml` — schedule `23 */6 * * *` and push auto-apply
+
+Urgent PR: #1084
+- head: `497c5c344c264f3631c79140bcd6e84ada788259`
+- OpenSERP exact-head check: no schedule; manual dispatch retained
+- Sitemap exact-head check: no schedule; no push auto-apply; PR validation + manual dispatch retained
+- PR currently open, mergeable, not merged.
+- Latest exact-head CI observed:
+  - Canonical Baseline Validation #35848651759 → failure
+  - Public Sitemap Seed Harvest #35848651718 → failure
+  - OpenSERP P0 Atomic Upsert Gate → success
+  - Phase 1 P1 Final Sweep Gate → success
+  - UX Gate 0 Contracts → success
+  - Canonical Baseline Compile Validation → success
+  - Phase 1 P0 Closure Gate → success
+  - Phase 1 P2 Residual Closure Gate → success
+  - CI Workflow Efficiency Policy → success
+- #1084 is therefore not merge-ready yet; the two failures need diagnosis in the next work window before merge.
+
+
+## Fresh-window update — 2026-09-23
+- Neon MCP retest: same `project_id` validation contradiction. This connector path is abandoned for the migration.
+- #1084 failures diagnosed and corrected: governance now recognizes the explicit migration-freeze state, and sitemap PR validation no longer performs a live Supabase read.
+- #1084 current HEAD: `b4d014b16790203ca3c25c511b64f62b3cc4ac6e`; exact-head CI was queued at last check.
+- Direct fallback prepared on #1082: `.github/workflows/neon-direct-db-read-only-probe.yml`, manual-only and read-only, using PostgreSQL 17 tooling. Current #1082 HEAD before this documentation update: `ffc2ccfc08f8e1d7534b39c02d160447cfa2a116`.
+- Local runtime has no PostgreSQL client tools and no target DB URL injected, so no direct target query has been claimed from this runtime.
+- Next exact: continue runtime inventory; configure the direct target connection outside the repo; run the manual smoke probe, then inventory; merge #1084 only after exact-head checks are green.
+
+
+## Runtime read-path update — 2026-09-23
+- Neon runtime driver pinned to `@neondatabase/serverless@^1.1.0`; runtime connection variable is `NEON_DATABASE_URL`.
+- `DATABASE_PROVIDER=neon` is explicit and fail-closed: missing Neon config or Neon read failure does not silently fall back to stale SQLite.
+- Public listing read path ported in `lib/db/neon-listings.ts` with parameterized SQL, JSONB/BOOLEAN normalization, list/getById/stats contracts, and preserved listing-source selection.
+- Market Index read parity ported via `lib/market-index/neon-market-index-read-repository.ts`. Schema types were checked against canonical migrations: `property_clusters.id uuid`, `legacy_property_listing_id bigint`, `property_cluster_members.property_cluster_id uuid`, `source_offer_id bigint`.
+- Dedicated offline CI: `.github/workflows/neon-runtime-read-path.yml` runs npm ci, Neon provider/listing tests and TypeScript without contacting Neon/Supabase.
+- Current runtime-read-path HEAD: `376a6f3999178d4bd84483d95333b45ec88e47fb`.
+- Nothing has been deployed and `DATABASE_PROVIDER` has not been switched.
+
+
+## DB-first migration guard update — 2026-09-23
+- Current PR #1082 HEAD before this documentation update: `a63e5b0cef25e9d347f5a97af169db4828974cf1`.
+- Core migration workflow exists: `.github/workflows/neon-core-db-migration.yml`.
+- It is manual-only and defaults to `validate`.
+- Approved DB-first table allowlist is exactly:
+  - `public.property_listings`
+  - `public.listing_sources`
+  - `public.property_clusters`
+  - `public.property_cluster_members`
+- Validation restores the selected archive into clean PostgreSQL 17 before any target write and compares source/scratch row counts.
+- Apply mode requires `NEON_DATABASE_URL_DIRECT`, rejects pooled target endpoints, refuses to proceed if any core target table already exists, and uses no `--clean` / no target drop.
+- Added static guard: `scripts/scrapers/__tests__/neon-core-db-migration-guard.test.ts`.
+- Neon runtime CI now includes this migration safety guard in addition to provider/listing/TypeScript validation.
+- #1084 remains queued on GitHub Actions; no new failure evidence was observed.
+- Real core validation cannot be executed from this ChatGPT runtime because GitHub workflow dispatch is not exposed by the connected GitHub tool and database secrets are not accessible here.
+- Human execution gate for the real validate run:
+  - GitHub secret `SUPABASE_DATABASE_URL_DIRECT`
+  - GitHub secret `NEON_DATABASE_URL_DIRECT` (needed only for apply; validate uses source only)
+  - manually dispatch `Neon Core DB Migration` with mode `validate`.
+- No Vercel deployment, no Neon write, no Supabase deletion.
+
+## Content-integrity gate update — 2026-09-23
+- Core migration validation was strengthened beyond row counts.
+- `.github/workflows/neon-core-db-migration.yml` now computes a deterministic per-table content digest using canonical row JSON hashes sorted before aggregation.
+- Validation requires both count parity and content-digest parity for source → scratch.
+- Apply requires both count parity and content-digest parity for source → Neon.
+- This closes the prior false-positive case where equal row counts could hide changed/missing content.
+- Static guard updated in `scripts/scrapers/__tests__/neon-core-db-migration-guard.test.ts`.
+- Commits:
+  - workflow: `47d07b000ec0dd681b617de76f450ca06fd2431d`
+  - guard: `59a4b27dda1d99b2344dcc9051cd60da39610723`
+- #1084 exact-head checks remain queued; no new failure evidence.
+- No Neon write, no Vercel deployment, no Supabase deletion.
+
+## District parity + ODM blocker update — 2026-09-23
+- Found and fixed a Neon parity bug in district searches: the exact district total helper was Supabase-only, so Neon could return district rows with a city-wide total.
+- Added `queryNeonStructuredDistrictTotal()` with parameterized district/city-alias/property/transaction/price/surface filters.
+- `queryStructuredDistrictTotal()` now routes exact-count reads by provider.
+- Offline coverage added for city aliases and structured filters.
+- Commits:
+  - Neon exact-count implementation: `bad74579a1d5dca241c1136033fea07a50bdb1c0`
+  - provider routing: `49b2dcfafc82e8501120c17b474640555a77b2e9`
+  - test: `61fea2c5dc2fc38e29987e17a4d19855cd63ec2d`
+  - matrix update: `899ba95a8da60fbe79b14c6a4b036d5ea24fb6e2`
+- Full read cutover is still blocked by the ODM lane: `search_public_representations_v2` and owner public search still call Supabase RPCs.
+- Search Gateway cache remains Supabase-client coupled but is non-critical and can be adapted separately.
+- No production provider switch, no Neon write, no Vercel deployment.
+
+## ODM portability gate — 2026-09-23
+- Reconstructed the current public ODM serving contract from migration history, including M7 policy guard/recovery, M5 fresh-only hardening, and M7 policy-expiry hardening.
+- Current runtime `search_public_representations_v2` depends on:
+  - `thin_index_search_documents`
+  - `source_policy_registry`
+  - `listing_sources`
+  - `professional_listing_ownership`
+  - `search_business_entitlements`
+  - portable ODM04 normalizers.
+- The serving contract also enforces policy windows, rich-content vs canonical-link-only separation, business lanes, exact URL dedupe, source diversity, and deterministic cursor ordering. These invariants must not be dropped in the Neon port.
+- ODM04 normalization portability verified from repo: the authoritative portable alias migration uses built-in `translate()`, not an external unaccent dependency.
+- Added validation-only workflow `.github/workflows/neon-odm-portability-probe.yml` to dump those five candidate tables and restore them into clean PostgreSQL 17 with count + deterministic content-digest parity. It never connects to Neon.
+- This probe is intentionally separate from the 4-table core apply allowlist because `professional_listing_ownership` may pull Auth-linked DDL dependencies. A failing scratch restore is treated as evidence, not bypassed.
+- Added static guard `scripts/scrapers/__tests__/neon-odm-portability-guard.test.ts` and wired it into Neon CI.
+- Cursor cutover hardened: when `DATABASE_PROVIDER=neon`, `SEARCH_CURSOR_SECRET` is mandatory; the legacy `SUPABASE_SERVICE_ROLE_KEY` fallback is no longer accepted.
+- Commits:
+  - cursor decoupling: `6dd8be27b4b050a3658c80f119e303c421968660`
+  - cursor test: `fe5eed621b78d40ecf6760bfc666e466bdf98a99`
+  - ODM gate doc: `979b2328e3951bf3f28b37ce3a9d52446c03da44`
+  - portability workflow: `b14765281512db2316acfd9c1c57cb72299b4bf1`
+  - static guard: `61e1c760d289fd7d3945e78142ca753e083e2118`
+  - CI wiring: `3dbab3a1cbd7982ed511673eaca282a53c0f801e`
+- No Vercel deploy, no provider switch, no Neon write, no Supabase deletion.
+
+## Provider-aware ODM runtime port — 2026-09-23
+- Added `lib/search-gateway/neon-public-search.ts`: direct Neon PostgreSQL implementation of the current M7 `search_public_representations_v2` read contract.
+- Preserved verified invariants: LISTING-only, `fresh_confirmed`, policy authorization/display/machine/ingestion gates, effective/expiry windows, rich-content vs canonical-link-only separation, price/surface privacy boundary, verified professional business lanes, URL dedupe, source diversity penalty, and keyset cursor ordering.
+- `lib/search-gateway/public-search-cursor.ts` now routes ODM reads by `DATABASE_PROVIDER`: Neon uses direct PostgreSQL, Supabase retains the existing RPC path.
+- Added offline parity tests in `scripts/scrapers/__tests__/neon-public-search.test.ts` and wired them into the Neon CI.
+- Cutover matrix updated.
+- Commits:
+  - Neon ODM query: `2263bc5e7311b6de0a0aae72ce40888441bc4430`
+  - provider routing: `a8bc8612b8181e2d3fafdde903c04a167dd83159`
+  - parity tests: `e31a732fcabe9f660374bf4ef85da37898b53007`
+  - CI wiring: `4187b92be33d88f93b4b6669bde3ca43102958f5`
+  - matrix: `47b9df086068264b311e84cad395b0ff466b1671`
+- Important boundary: code-side Supabase RPC coupling is closed for ODM when Neon is selected, but production activation is still blocked until the five-table ODM dataset passes the PG17 portability probe and data parity is proven.
+- No Vercel deploy, no provider switch, no Neon write.
+
+## Owner public Search read port — 2026-09-23
+- Added `lib/seller/neon-owner-listing-search.ts` with a direct Neon read equivalent of `search_owner_public_representations_v1`.
+- `searchOwnerListings()` now routes by `DATABASE_PROVIDER`; the existing `OWNER_LISTINGS_PUBLIC_SEARCH_ENABLED` flag remains unchanged.
+- Preserved owner Search eligibility, structured filters, text matching, quality ordering and numeric normalization.
+- Added offline parity coverage and Neon CI wiring.
+- Commits:
+  - Neon owner query: `6cc416bd1250c17e9e486dc7abcbc799ff3597bd`
+  - provider routing: `139af73b295266c573ad4478d863a7938fe94160`
+  - tests: `1f1d6b7c9a1309f7ca9f674b07f6254c9438248c`
+  - CI: `d12f9e4a21aafbb9d7b59f47af1a32ba9069bf85`
+  - matrix: `81b72c5f84eab702ed31f2cd46947508bb70fcb7`
+- Boundary: seller projection/write flow still uses Supabase. `owner_listing_representations` also references seller draft/publication tables, so its target-schema portability is not yet proven.
+- No Vercel deploy, no provider switch, no Neon write.
+
+## Owner read portability closure — 2026-09-23
+- DDL chain verified for public owner Search:
+  - `buyer_leads`
+  - `seller_property_drafts`
+  - `seller_listing_publications`
+  - `owner_listing_representations`
+- No direct `auth.users` or `storage.*` dependency appears in this four-table read closure.
+- Storage remains isolated in `seller_property_draft_photos` + Supabase Storage bucket and is excluded.
+- Added manual validation-only workflow `.github/workflows/neon-owner-read-portability-probe.yml`: PG17 dump → clean PG17 restore → row count + deterministic content digest parity.
+- Added static guard and wired it into Neon CI.
+- Commits:
+  - workflow: `82dc7ca1d9d65a641c7a79b5471f822f33658813`
+  - guard: `57bd4331a600250f4509fa4fbb912ab8682896fb`
+  - CI: `5f788470bdf456c4e958733e0b36991b493561e8`
+  - matrix: `42c8345dc7bbedb0cca765cc0ef6c15639fd16e2`
+- This does not authorize seller-write/Auth/Storage migration.
+- No Vercel deploy, no provider switch, no Neon write.
+
+## ANN-L8 Market Comparables read port — 2026-09-23
+- Added `lib/property-detail/neon-market-comparables-repository.ts`.
+- `market-comparables-runtime.ts` now routes the read repository by `DATABASE_PROVIDER`; Supabase behavior is unchanged outside Neon mode.
+- Preserved ANN-L8 evidence contract: bounded candidates, verified clusters only, cluster memberships, source attribution and factual observation reads; existing certification logic remains authoritative for sample/freshness/surface gates.
+- Added offline parity tests.
+- Added validation-only PG17 portability probe for:
+  - `property_listings`
+  - `listing_sources`
+  - `property_clusters`
+  - `property_cluster_members`
+  - `source_offer_observations`
+- Probe requires count + deterministic content digest parity and never connects to Neon.
+- Commits:
+  - Neon repository: `1706946ce7174538c746c17ae48f14a2b6436ebc`
+  - runtime routing: `62fb41af3e23580ac67342ac6f7e16f259817c6f`
+  - tests: `74addc9f0a8f916afb48fafaf0b76b05ff9638ae`
+  - probe: `f6740c7972a7ea861ef909f1b24d7a591ceb4bb7`
+  - probe guard: `778acecef82a71fd23f3d99c6970c99ccd3356ba`
+  - CI: `fa23b6858f935d2b0fece9d94663296ee1f29f10`
+  - matrix: `9b980c8950a650c0c40ed72657c0caf8f78b4f7b`
+- No Vercel deploy, no provider switch, no Neon write.
+
+## Map Market Intelligence provider-aware read port — 2026-09-23
+- Added shared provider-aware DB reader: `lib/map/market-intelligence-db-read.ts`.
+- `city-market-intelligence-live.ts` and `rabat-market-intelligence-live.ts` no longer import the Supabase client directly.
+- Neon reads cover validated geo entities, bounded geo-resolution events, Thin Index documents and source seeds with parameterized SQL and existing safety bounds preserved.
+- Initial mechanical substitution defect in the city reader was detected before validation claim and corrected immediately; helper functions were restored and stale `readByIds/db` references removed.
+- Added offline tests for SQL parameterization, identifier safety and direct-Supabase-import removal.
+- Added validation-only PG17 portability probe for:
+  - `geo_entities`
+  - `geo_resolution_events`
+  - `thin_index_search_documents`
+  - `source_offer_seeds`
+- Commits:
+  - provider reader: `b8443eda13440fc68b6381b4119e353c1305810b`
+  - ID comparison fix: `f1c4ca5ef6c07f73df987a3e2cd187ac2b5ac441`
+  - city route initial: `449a92ecf52a619b6910b112a726a19ab863d215`
+  - city repair: `a38131e377695d5f213eb6b629ebe5a69ca73e8f`
+  - helper restore: `5f2a74378e1e5da161053a962505c4e2e8f4d8f9`
+  - Rabat route: `951b2b7213939db815d2cb24e8c1d7d6fd0ad81f`
+  - tests: `649100d794466adc3d06e5e6a7e41d6607d43779`
+  - CI read validation: `d43846d1bef499d68370c377462b7ce45fd9877e`
+  - portability probe: `39e6f33b19bb462c39bd3360dba0be2b9ef2691a`
+  - probe guard: `d11a31e04df7b2d115c868c8f15162e697ef9174`
+  - CI portability wiring: `846acff438eb3e2dd36f95d7689b9f9d8de5d5c5`
+  - matrix: `5c9d5e6585c083e4361cbbebf62c4c116b3101df`
+- No Vercel deploy, no provider switch, no Neon write.
+
+## ANN-L9 + owner detail + hidden read cleanup — 2026-09-23
+- ANN-L9 observed-price history now has a Neon read repository over the same verified Market Index + observation dataset as ANN-L8; no new DB portability set is required.
+- Owner listing detail row now routes by DB provider and normalizes PostgreSQL numeric fields.
+- Owner media remains temporarily on Supabase Storage, but Storage access is now explicitly fail-closed to an empty gallery when unavailable; owner detail is not taken down by a paused/missing Storage service.
+- Search Gateway cache is an explicit no-op in Neon mode.
+- Legacy Public Index POC is an explicit no-op in Neon mode.
+- Commits:
+  - ANN-L9 Neon repository: `fde44bc8b3abbaf5aba325a82bfe0cfacc6db897`
+  - ANN-L9 runtime route: `bad4e63707ac05de3a6efec158076d2f813c8c6f`
+  - ANN-L9 test: `312fd07e545151ccc351d7e72a8732f9d783057e`
+  - owner media fail-closed: `8fc57d0f127881df3cd3025817a2b76001a3c31c`
+  - owner detail provider route: `cf29bb66e6ec72f19b351cab469f1de135b7e240`
+  - owner numeric normalization: `65a1c7bc5336646cf57b8f69bd809d371165e831`
+  - owner detail/media guard: `c550f05d030d3d3ba80ee3709de8034f0b14b986`
+  - Search Gateway cache bypass: `d042c1c37a12c6071343f74f21afbdaef9258f45`
+  - legacy Public Index bypass: `64e86d123148803162648e4e82e2bda7abec989c`
+  - hidden-read guard: `3baa2e2613881ecc0213a403ff0d400890966a68`
+  - CI: `13cc061a28262ba4432a8ca80ea7e97f77ef2c6c`
+  - matrix: `d3f7295f64df8df8aa1895bd8dc7fd132d0eda25`
+- GitHub code-search connector returned no results for the global `getSupabaseServerClient` scan, so no unsupported claim of exhaustive repo-wide removal is made. Known public read paths identified in this chantier are now handled; Auth/Storage/write paths remain intentionally separate.
+- No Vercel deploy, no provider switch, no Neon write.
+
+## External gate / closeout snapshot — 2026-09-23
+- Current migration PR #1082 exact HEAD: `167e9263f113aef4e6a71db2716da9feac20d142`.
+- PR #1082 remains DRAFT and mergeable; body refreshed to the current migration strategy and safety gates.
+- Exact-head CI is queued across the migration branch, including `Neon Runtime Read Path Validation` run `35883936403`; no red exact-head signal exists at this snapshot.
+- Freeze PR #1084 exact HEAD remains `b4d014b16790203ca3c25c511b64f62b3cc4ac6e`; its 9 exact-head runs remain queued, so no merge is claimed.
+- GitHub connector available in this session does not expose `workflow_dispatch`.
+- GitHub connector also exposes no repository-secret listing/management action.
+- Real validation-only PG17 probes therefore require a human-side repository configuration/action:
+  1. ensure `SUPABASE_DATABASE_URL_DIRECT` exists as a GitHub Actions repository secret;
+  2. manually dispatch the validation-only probes.
+- Neon apply remains separately gated by `NEON_DATABASE_URL_DIRECT` plus proven empty target + source/scratch parity + exact-head CI.
+- No Vercel deploy, no production provider switch, no Neon write, no Supabase deletion.
+- Next exact after human gate: run the PG17 validation-only probes; if any restore fails, classify/fix the first missing dependency; if all pass, prepare/import only the proven portable datasets into the empty Neon target and verify source↔Neon count/content parity.
+
+## Single-entry PG17 validation gate — 2026-09-23
+- Added one manual workflow entrypoint: `.github/workflows/neon-migration-validation-suite.yml`.
+- A single `workflow_dispatch` now launches five independent validation jobs with `fail-fast: false`:
+  1. core listings/Market Index;
+  2. ODM public Search;
+  3. owner-read relational closure;
+  4. ANN-L8/ANN-L9 comparables/history;
+  5. Map Market Intelligence.
+- Each job performs source dump → clean PostgreSQL 17 restore → row-count parity → deterministic content-digest parity.
+- The suite never references a Neon URL and never writes the source.
+- Initial implementation defect in Docker env injection for `PROBE_NAME` was detected before execution and fixed.
+- Static guard added and wired into Neon CI.
+- Commits:
+  - suite: `059cd0dbf5b6ff86c23ff909b015473f6952b10b`
+  - env fix: `85c29f3cbe43c7d23eb3ea21d613be8babb6a15f`
+  - suite guard: `bfdbf6c02c2a976ba7518d6817450c1f3cddfd96`
+  - CI wiring: `2535b0bfd2ef826e0a53b58112090f9cee3dd1f6`
+- Human-side action is now minimal:
+  1. ensure GitHub Actions repository secret `SUPABASE_DATABASE_URL_DIRECT` exists;
+  2. manually run **Neon Migration Validation Suite** once.
+- No Vercel deploy, no production provider switch, no Neon write, no Supabase deletion.
+
+## Freeze PR #1084 correction snapshot — 2026-09-23
+- Previous #1084 exact-head `b4d014b1...` produced one real failure:
+  - `Canonical Baseline Validation` run `35867070620`.
+- Root cause from job logs: `data-mass-acquisition-query-universe-v2.test.ts` still asserted the historical OpenSERP cron `*/10 * * * *`, conflicting with the intentional `MIGRATION FREEZE`.
+- Test corrected on #1084:
+  - freeze mode requires `workflow_dispatch`;
+  - freeze mode forbids `schedule` and the */10 cron;
+  - non-freeze mode still requires the historical cron contract.
+- New #1084 HEAD: `5734fa9fcd1660a94d6b5cbfe3f5e270754e16bf`.
+- New exact-head runs are materialized and currently queued:
+  - `35886227385` Canonical Baseline Compile Validation
+  - `35886227295` Phase 1 P1 Final Sweep Gate
+  - `35886226935` Phase 1 P2 Residual Closure Gate
+  - `35886226964` UX Gate 0 Contracts
+  - `35886227219` Phase 1 P0 Closure Gate
+  - `35886227150` OpenSERP P0 Atomic Upsert Gate
+  - `35886227237` Canonical Baseline Validation
+  - `35886227154` CI Workflow Efficiency Policy
+  - `35886227374` Public Sitemap Seed Harvest
+- No merge is claimed until these exact-head checks are green.
+- No Vercel deploy, no Neon write, no Supabase deletion.
+
+## CI convergence snapshot — 2026-09-23 evening
+### PR #1082 map-browser diagnostic hardening
+- Exact-head browser failure `35886367781` was not a TypeScript/build failure:
+  - TypeScript ✅
+  - production build ✅
+  - browser certification ❌ on a 15s `price` legend settle timeout.
+- The audit previously waited for UI settlement before checking the backing market-intelligence API, masking backend/provider failures as opaque UI timeouts.
+- Diagnostic hardening applied on #1082:
+  - `0c736bd9cd441f0bd089b8c0ac548f3f227ac0bb`: check API modes before waiting for legend settlement;
+  - `6a30af091a3be731e279a8bf780be50070cef589`: preserve production server log in the exact-head browser artifact on failure.
+- No claim yet that the root product defect is fixed; next exact-head run must expose the real API/server cause if it still fails.
+
+### PR #1084 freeze convergence
+- HEAD `5734fa9f...` reached 8/9 green.
+- Remaining failure: `Canonical Baseline Validation` run `35886227237`.
+- Root cause from logs: `free-mass-acquisition-acceleration-v1.test.ts` still required historical OpenSERP (10m) and sitemap (6h) schedules during intentional MIGRATION FREEZE.
+- Test made freeze-aware while preserving normal non-freeze contracts.
+- New #1084 HEAD: `6e4a82b775b66aebdd750c060074505b3a145a05`.
+- No merge claimed until exact-head checks are green.
+- No Vercel deploy, no Neon write, no Supabase deletion.
+
+## Freeze merged + Neon patch regression recovery — 2026-09-23
+- PR #1084 reached 9/9 exact-head green on `14580b5f519b4a5571dae9a3b703d8afd3f78f73`.
+- PR #1084 merged successfully:
+  - merge commit `449967402ac5d9f626f94f7aea5a394a812d4f00`.
+- First post-merge check had no workflow runs materialized yet; no post-merge green claim is made.
+- On PR #1082, a large red wave was traced to two regressions introduced by the preceding patch, not to the broader product:
+  1. `lib/search-gateway/neon-public-search.ts` had been accidentally truncated while editing the intent alias, producing TS1160 / unterminated template literal.
+  2. `lib/db/neon-listings.ts` generated numeric placeholders without the required `$`, producing SQL like `pl.city = 1`.
+- Recovery:
+  - restored `neon-public-search.ts` from last known-good commit `7bb82d441d139a30e8564f1f808720e8758a70ac`, then applied only `achat -> sale`; commit `64b53ad91d4d6c044cfb274e92f0abcb6ae5b520`.
+  - restored PostgreSQL parameter markers using explicit string construction; commit `6f9e4a95e31a4060c0e2b4e17f033a4746cddcca`.
+- New #1082 exact-head runs were not yet materialized at first check.
+- Supabase live map read failure remains externally proven as `exceed_egress_quota`.
+- No Vercel deploy, no Neon write, no Supabase deletion.
+
+## PG17 dispatch — missing source secret gate — 2026-09-24
+- Workflow registration blocker resolved via PR #1085, merged as `b0ec9d6a5526bd60c14653a5679b88e2e6d7194d`.
+- Manual source-only validation run created successfully:
+  - run `35969875172`
+  - migration SHA `d794616471e77b98e9c7b6138060d69ad49b0b95`
+  - five expected matrix jobs created.
+- All five jobs failed immediately at `Validate source secret`, before export/database access.
+- Exact observable cause: `Missing SUPABASE_DATABASE_URL_DIRECT`.
+- No Neon write, no deploy, no merge of PR #1082.
+- Human/security gate: provision repository Actions secret `SUPABASE_DATABASE_URL_DIRECT` using the direct/unpooled Supabase PostgreSQL URI without exposing it in chat/logs.
+- After secret provisioning: rerun the validation suite once; do not change code or bypass the guard.

@@ -1,11 +1,15 @@
-import { getSupabaseServerClient } from "@/lib/db/supabase-client";
+import {
+  readMarketRowsByIds,
+  readResolvedNeighborhoodEvents,
+  readValidatedCityRows,
+  readValidatedNeighborhoodRows,
+} from "@/lib/map/market-intelligence-db-read";
 import { RABAT_MARKET_ZONES_SHADOW } from "@/lib/geo/rabat-market-zones-shadow";
 import { buildMarketZoneMetricRow } from "@/lib/map/rabat-market-zone-metrics";
 import { evaluateMetricReliability } from "@/lib/map/market-metric-reliability";
 import type { IntelligenceMetricInput } from "@/lib/map/intelligence-payload";
 
 const TARGETS = ["agdal", "hay-riad", "souissi", "hassan"] as const;
-const CHUNK_SIZE = 100;
 const MAX_TARGET_EVENTS = 1000;
 
 const ZONE_BY_NEIGHBORHOOD: ReadonlyMap<string, string> = new Map<string, string>([
@@ -14,22 +18,6 @@ const ZONE_BY_NEIGHBORHOOD: ReadonlyMap<string, string> = new Map<string, string
   ["souissi", "market_zone_rabat_souissi"],
   ["hassan", "market_zone_rabat_centre"],
 ]);
-
-function chunks<T>(values: readonly T[], size = CHUNK_SIZE): T[][] {
-  const output: T[][] = [];
-  for (let index = 0; index < values.length; index += size) output.push(values.slice(index, index + size) as T[]);
-  return output;
-}
-
-function errorDetails(error: any): string {
-  return JSON.stringify({
-    message: error?.message,
-    code: error?.code,
-    details: error?.details,
-    hint: error?.hint,
-    status: error?.status,
-  });
-}
 
 function newer(a: any, b: any): boolean {
   if (!b) return true;
@@ -44,50 +32,17 @@ function normalizeTransaction(value: unknown): "sale" | "rent" | null {
   return null;
 }
 
-async function readByIds(
-  db: any,
-  table: string,
-  select: string,
-  key: string,
-  ids: readonly string[],
-): Promise<any[]> {
-  if (!ids.length) return [];
-  const rows: any[] = [];
-  for (const batch of chunks(ids)) {
-    const { data, error } = await db.from(table).select(select).in(key, batch);
-    if (error) throw new Error(`C3 ${table} bounded read failed: ${errorDetails(error)}`);
-    rows.push(...(data ?? []));
-  }
-  return rows;
-}
-
 function canonicalDedupKey(row: any): string {
   const canonical = String(row.canonical_url ?? "").trim().toLowerCase().replace(/\/+$/, "");
   return canonical || `seed:${row.seed_id}`;
 }
 
 export async function readRabatMarketIntelligenceMetrics(): Promise<readonly IntelligenceMetricInput[]> {
-  const db: any = getSupabaseServerClient();
-
-  const { data: cityRows, error: cityError } = await db
-    .from("geo_entities")
-    .select("id,slug,entity_type,validation_status")
-    .eq("entity_type", "city")
-    .eq("slug", "rabat")
-    .eq("validation_status", "validated")
-    .limit(2);
-  if (cityError) throw new Error(`C3 Rabat city read failed: ${errorDetails(cityError)}`);
+  const cityRows = await readValidatedCityRows("rabat");
   if ((cityRows ?? []).length !== 1) throw new Error(`C3 expected exactly one validated Rabat city, got ${(cityRows ?? []).length}`);
   const rabatCityId = String(cityRows[0].id);
 
-  const { data: neighborhoodRows, error: neighborhoodError } = await db
-    .from("geo_entities")
-    .select("id,slug,parent_id,entity_type,validation_status")
-    .eq("entity_type", "neighborhood")
-    .eq("parent_id", rabatCityId)
-    .eq("validation_status", "validated")
-    .in("slug", [...TARGETS]);
-  if (neighborhoodError) throw new Error(`C3 neighborhoods read failed: ${errorDetails(neighborhoodError)}`);
+  const neighborhoodRows = await readValidatedNeighborhoodRows(rabatCityId, TARGETS);
 
   const neighborhoodById = new Map<string, string>(
     (neighborhoodRows ?? []).map((row: any): [string, string] => [String(row.id), String(row.slug)]),
@@ -96,21 +51,13 @@ export async function readRabatMarketIntelligenceMetrics(): Promise<readonly Int
   for (const slug of TARGETS) if (!foundSlugs.has(slug)) throw new Error(`C3 missing validated Rabat neighborhood: ${slug}`);
   const targetNeighborhoodIds: string[] = [...neighborhoodById.keys()];
 
-  const { data: targetEvents, error: targetEventsError } = await db
-    .from("geo_resolution_events")
-    .select("id,source_record_type,source_record_id,resolution_status,resolved_city_id,resolved_neighborhood_id,created_at")
-    .eq("source_record_type", "source_offer_seed")
-    .eq("resolution_status", "resolved")
-    .in("resolved_neighborhood_id", targetNeighborhoodIds)
-    .range(0, MAX_TARGET_EVENTS - 1);
-  if (targetEventsError) throw new Error(`C3 target resolution event read failed: ${errorDetails(targetEventsError)}`);
-  if ((targetEvents ?? []).length >= MAX_TARGET_EVENTS) throw new Error("C3 target resolution event safety bound reached");
+  const targetEvents = await readResolvedNeighborhoodEvents(targetNeighborhoodIds, MAX_TARGET_EVENTS);
+  if (targetEvents.length >= MAX_TARGET_EVENTS) throw new Error("C3 target resolution event safety bound reached");
 
   const candidateSeedIds: string[] = [...new Set<string>(
-    (targetEvents ?? []).map((row: any) => String(row.source_record_id)).filter((value: string) => value.length > 0),
+    targetEvents.map((row: any) => String(row.source_record_id)).filter((value: string) => value.length > 0),
   )];
-  const allCandidateEvents = await readByIds(
-    db,
+  const allCandidateEvents = await readMarketRowsByIds(
     "geo_resolution_events",
     "id,source_record_type,source_record_id,resolution_status,resolved_city_id,resolved_neighborhood_id,created_at",
     "source_record_id",
@@ -131,14 +78,13 @@ export async function readRabatMarketIntelligenceMetrics(): Promise<readonly Int
   );
   const currentSeedIds: string[] = currentEvents.map((event: any) => String(event.source_record_id));
 
-  const docsRows = await readByIds(
-    db,
+  const docsRows = await readMarketRowsByIds(
     "thin_index_search_documents",
     "seed_id,canonical_url,vertical_classification,document_kind,display_eligibility,normalized_intent,normalized_price_mad,normalized_surface_m2,normalized_price_m2,freshness_status,updated_at",
     "seed_id",
     currentSeedIds,
   );
-  const seedRows = await readByIds(db, "source_offer_seeds", "id,source_domain", "id", currentSeedIds);
+  const seedRows = await readMarketRowsByIds("source_offer_seeds", "id,source_domain", "id", currentSeedIds);
   const docs = new Map<string, any>(docsRows.map((row: any): [string, any] => [String(row.seed_id), row]));
   const seeds = new Map<string, any>(seedRows.map((row: any): [string, any] => [String(row.id), row]));
 

@@ -1,0 +1,306 @@
+# Supabase → Neon cutover matrix — 2026-09-23
+
+## Goal
+
+Move AkarFinder's database read path to Neon without treating Supabase-specific Auth,
+Storage, roles, or policies as portable PostgreSQL by accident.
+
+Success for the DB-first lot means:
+
+1. the minimum public listing read dataset can be exported from the source;
+2. the selected dump restores cleanly into vanilla PostgreSQL 17;
+3. row counts match source → scratch → Neon for the selected tables;
+4. AkarFinder's Neon read-path tests pass;
+5. production is **not** switched until the separate Vercel human gate.
+
+No step in this document authorizes a Vercel deployment or Supabase deletion.
+
+## Verified classification
+
+| Area | Current dependency | Classification | Cutover treatment |
+| --- | --- | --- | --- |
+| Public listing reads | `property_listings`, `listing_sources` | PostgreSQL core | DB-first |
+| Market Index reads | `property_clusters`, `property_cluster_members` | PostgreSQL core | DB-first |
+| Structured district totals | `property_listings` exact-count filters | PostgreSQL core | provider-aware Neon path added |
+| ODM public search | `thin_index_search_documents`, `source_policy_registry`, business-lane tables | PostgreSQL read model; Supabase RPC removed on Neon provider branch | runtime port prepared; DB portability gate still required |
+| Owner public search | `owner_listing_representations` | PostgreSQL read model | Neon read port prepared; table portability still unproven |
+| Search Gateway cache | `search_gateway_cache` | PostgreSQL cache, Supabase client coupling | non-critical adapter required |
+| Consumer auth | Supabase Auth sessions/users | Supabase-specific | defer + adapter |
+| Professional auth | Supabase Auth + `app_metadata.akarfinder_staff` | Supabase-specific | defer + adapter |
+| Professional ownership | public tables with FKs to `auth.users` + `auth.uid()` policies | coupled | defer until Auth mapping |
+| Seller drafts/photos | public tables + Supabase Storage | coupled | defer until DB + object storage adapter |
+| Seller media bytes | bucket `seller-property-drafts` | object storage | separate storage migration |
+| Neighborhood media | bucket `neighborhood-visuals` | object storage | separate storage migration |
+| Supabase roles | `anon`, `authenticated`, `service_role` grants/revokes | Supabase-specific | do not assume portable |
+| Supabase Storage catalog | `storage.buckets` | Supabase-specific | never replay blindly on Neon |
+
+## Evidence from repository migrations
+
+The repository contains direct Supabase coupling that makes a monolithic
+`pg_dump --schema=public` restore unsafe:
+
+- `20260721231500_professional_auth_ownership_profiles_v1.sql`
+  references `auth.users(id)` and uses `auth.uid()` in policies.
+- `20260806090000_b3_5_1_professional_identity.sql`
+  directly queries `auth.users`.
+- multiple migrations grant/revoke `anon`, `authenticated`, and
+  `service_role`.
+- `20260805153000_seller_secure_photo_upload_v1.sql` and
+  `20260811211500_neighborhood_visual_p0_7_storage_bucket.sql`
+  write to `storage.buckets`.
+
+Therefore the first target is deliberately narrower than "all public schema".
+
+## DB-first core candidate
+
+Initial candidate tables:
+
+- `public.property_listings`
+- `public.listing_sources`
+- `public.property_clusters`
+- `public.property_cluster_members`
+
+This list is a **candidate**, not an assertion that all dependencies are closed.
+
+The migration workflow must prove closure by restoring the selected archive
+into a clean PostgreSQL 17 scratch database. If restore fails because a
+referenced object is missing, expand the candidate set deliberately and rerun.
+Do not bypass the scratch restore.
+
+## Direct connection contract
+
+Use separate secrets:
+
+- `SUPABASE_DATABASE_URL_DIRECT` — source, migration tooling only.
+- `NEON_DATABASE_URL_DIRECT` — target, migration tooling only.
+- `NEON_DATABASE_URL` — pooled/serverless runtime application URL.
+
+Migration URLs must not be committed. Production runtime must never use the
+direct migration URL.
+
+## Core migration gate
+
+Workflow: `.github/workflows/neon-core-db-migration.yml`
+
+Default mode is `validate`.
+
+### validate
+
+1. fail if source direct URL is missing;
+2. create a custom-format PG17 dump for the four candidate tables;
+3. restore into a clean PostgreSQL 17 scratch database;
+4. compare source and scratch row counts for every selected table;
+5. stop on the first schema/dependency/count error;
+6. perform **no Neon write**.
+
+### apply
+
+All `validate` gates still run first, then:
+
+1. require `NEON_DATABASE_URL_DIRECT`;
+2. fail closed if any selected target table already exists;
+3. restore with `--single-transaction --exit-on-error --no-owner --no-acl`;
+4. compare source and Neon row counts;
+5. fail if any count differs.
+
+No `--clean`, no target drop, no source write.
+
+## Auth migration status
+
+Current Neon Auth is Managed Better Auth, not the Stack Auth implementation used
+by Neon's March 2025 Supabase migration article.
+
+Current evidence supports two distinct facts:
+
+- `@neondatabase/auth` provides a Supabase-compatible adapter for application
+  API migration;
+- Better Auth itself documents Supabase/bcrypt migration.
+
+What is **not yet proven** is a supported Managed Neon Auth mechanism for
+importing the existing Supabase password hashes while preserving login
+continuity. Do not run a password migration until that exact managed-service
+path is verified.
+
+## Cutover sequence
+
+1. Freeze write-heavy Supabase automation (#1084).
+2. Validate selected core dump against vanilla PG17.
+3. Apply core dump to empty Neon target.
+4. Validate counts + Neon read-path behavior.
+5. Port remaining server-side DB writers/readers required for production.
+6. Migrate Auth with a verified Managed Neon Auth identity strategy.
+7. Migrate both object-storage buckets and signed-URL paths.
+8. Run parity tests.
+9. Human gate: Vercel environment switch/deployment.
+10. Post-cutover verification.
+11. Only after proven stability: retire remaining Supabase dependencies.
+
+## Runtime parity finding — district totals
+
+The legacy search path used a Supabase-only exact count for district searches.
+Without a Neon equivalent, `DATABASE_PROVIDER=neon` would keep listing rows on
+Neon but could report a city-wide total for a district query.
+
+This gap is now closed on the migration branch:
+
+- `queryNeonStructuredDistrictTotal()` performs the same structured filters
+  with parameterized SQL;
+- city aliases are handled through a parameterized `ANY(text[])` condition;
+- `queryStructuredDistrictTotal()` routes by DB provider;
+- offline coverage verifies district, alias, property/transaction and price/
+  surface filter parameterization.
+
+This is a parity fix only. It does not activate Neon in production.
+
+## ODM runtime port — prepared, not activated
+
+The migration branch now contains a provider-aware Neon implementation of the
+current M7 public ODM read contract:
+
+- `lib/search-gateway/neon-public-search.ts`;
+- `lib/search-gateway/public-search-cursor.ts` routes to it only when
+  `DATABASE_PROVIDER=neon`;
+- Supabase continues to use the existing RPC path unchanged.
+
+The Neon SQL preserves the current serving invariants verified from migration
+history: fresh LISTING-only rows, source-policy authorization and expiry,
+rich-content/canonical-link separation, structured-filter privacy boundary,
+business lanes, canonical URL dedupe, source-diversity penalty and keyset cursor
+ordering.
+
+This closes the **runtime RPC coupling** in code, not the **data migration**
+gate. Production activation remains blocked until the five candidate ODM tables
+pass the validation-only PostgreSQL 17 portability probe and their data parity
+is proven.
+
+Cursor signing is also provider-safe: Neon requires an explicit
+`SEARCH_CURSOR_SECRET`; it cannot inherit `SUPABASE_SERVICE_ROLE_KEY`.
+
+## Owner public Search — read port only
+
+The public owner-listing Search read has a Neon provider path:
+
+- `lib/seller/neon-owner-listing-search.ts`;
+- `searchOwnerListings()` routes by `DATABASE_PROVIDER`;
+- the existing `OWNER_LISTINGS_PUBLIC_SEARCH_ENABLED` gate remains authoritative.
+
+The query preserves the current owner Search eligibility contract:
+`live` lifecycle, `fresh_confirmed`, primary/secondary eligibility, structured
+price/surface filters, owner text search, quality ordering and bounded limits.
+
+This does **not** migrate the seller write lifecycle. In particular,
+`syncOwnerListingProjection()`, seller drafts/publications, Auth and Storage
+remain on the Supabase track until separately migrated or intentionally retained
+during a hybrid phase.
+
+The `owner_listing_representations` DDL has foreign keys to seller draft and
+publication tables, so its vanilla-PostgreSQL dependency closure must be proven
+before adding it to any Neon apply allowlist.
+
+## Owner read portability closure
+
+The owner public Search relational read model has a narrower dependency chain
+than the full seller subsystem:
+
+- `buyer_leads`
+- `seller_property_drafts`
+- `seller_listing_publications`
+- `owner_listing_representations`
+
+Repository DDL shows no direct `auth.users` or `storage.*` foreign key in that
+four-table read closure. Storage remains isolated in
+`seller_property_draft_photos` + the `seller-property-drafts` bucket and is
+excluded from this gate.
+
+A dedicated validation-only probe now dumps exactly these four tables and
+restores them into clean PostgreSQL 17:
+
+`.github/workflows/neon-owner-read-portability-probe.yml`
+
+It proves both dependency closure and source→scratch count/content-digest parity.
+This does not authorize moving seller writes, Auth or Storage.
+
+## ANN-L8 Market Comparables — Neon read path
+
+The migration branch now contains a Neon repository for the certified Market
+Comparables read model:
+
+- `lib/property-detail/neon-market-comparables-repository.ts`;
+- runtime selection in `market-comparables-runtime.ts`;
+- Supabase path remains unchanged when the provider is not Neon.
+
+The read contract is preserved: bounded candidate listings, verified cluster
+origins only, cluster members, source attribution, latest factual observation,
+and the existing certification layer remains responsible for freshness/sample/
+surface-delta rules.
+
+Additional data dependency: `source_offer_observations`.
+
+A separate validation-only portability probe now proves the exact ANN-L8
+relational closure on vanilla PostgreSQL 17:
+
+- `property_listings`
+- `listing_sources`
+- `property_clusters`
+- `property_cluster_members`
+- `source_offer_observations`
+
+No Neon apply is authorized by this probe.
+
+## Map Market Intelligence — provider-aware read path
+
+The City and Rabat live market-intelligence readers no longer import the
+Supabase client directly. They now share:
+
+`lib/map/market-intelligence-db-read.ts`
+
+That provider-aware reader covers:
+
+- validated city rows from `geo_entities`;
+- validated neighborhood rows;
+- resolved `geo_resolution_events`;
+- bounded ID reads from `thin_index_search_documents` and
+  `source_offer_seeds`.
+
+Neon reads are parameterized and preserve the existing hard row bounds.
+Supabase remains unchanged outside Neon mode.
+
+A validation-only PG17 portability probe covers the candidate data closure:
+
+- `geo_entities`
+- `geo_resolution_events`
+- `thin_index_search_documents`
+- `source_offer_seeds`
+
+A clean restore failure remains a blocker/evidence signal; no target write is
+performed by the probe.
+
+## ANN-L9 history + owner detail + hidden-read cleanup
+
+### ANN-L9 observed price history
+
+A Neon repository now reads the same verified-cluster / source-offer /
+observation dataset as ANN-L8. No additional migration dataset is introduced:
+the ANN-L8 comparables portability probe already contains every ANN-L9 table.
+
+### Owner listing detail
+
+The owner detail row is provider-aware and can read
+`owner_listing_representations` from Neon. Media remains temporarily on
+Supabase Storage during the hybrid phase. Storage lookup/signing is now
+explicitly fail-closed to an empty gallery so temporary Storage unavailability
+does not take down the owner detail page.
+
+This does not migrate seller uploads or object storage.
+
+### Hidden Supabase reads
+
+When `DATABASE_PROVIDER=neon`:
+
+- Search Gateway cache returns an explicit no-op store instead of touching
+  Supabase;
+- the legacy Public Index POC returns an explicit no-op store instead of
+  touching Supabase.
+
+These are non-critical read helpers and are intentionally not allowed to keep a
+hidden Supabase DB dependency during cutover.

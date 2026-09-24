@@ -86,3 +86,33 @@ test("price and surface filters are applied inside the RPC", () => {
     assert.ok(migration.includes(token), `missing structured filter: ${token}`);
   }
 });
+
+test("Neon cursor signing requires an explicit SEARCH_CURSOR_SECRET", () => {
+  const previousProvider = process.env.DATABASE_PROVIDER;
+  const previousCursorSecret = process.env.SEARCH_CURSOR_SECRET;
+  const previousSupabaseSecret = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  process.env.DATABASE_PROVIDER = "neon";
+  delete process.env.SEARCH_CURSOR_SECRET;
+  process.env.SUPABASE_SERVICE_ROLE_KEY = "legacy-supabase-secret-must-not-sign-neon-cursors";
+
+  try {
+    assert.throws(
+      () => encodePublicSearchCursor({
+        v: 2,
+        lane: 0,
+        rank: 1,
+        updatedAt: "2026-09-23T00:00:00.000Z",
+        representationId: "00000000-0000-0000-0000-000000000001",
+      }),
+      /search_cursor_secret_missing/,
+    );
+  } finally {
+    if (previousProvider == null) delete process.env.DATABASE_PROVIDER;
+    else process.env.DATABASE_PROVIDER = previousProvider;
+    if (previousCursorSecret == null) delete process.env.SEARCH_CURSOR_SECRET;
+    else process.env.SEARCH_CURSOR_SECRET = previousCursorSecret;
+    if (previousSupabaseSecret == null) delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+    else process.env.SUPABASE_SERVICE_ROLE_KEY = previousSupabaseSecret;
+  }
+});

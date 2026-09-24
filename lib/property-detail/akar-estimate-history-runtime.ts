@@ -1,4 +1,5 @@
 import type { Listing } from "@/lib/listings/types";
+import { getDbProvider } from "@/lib/db/provider";
 import { getSupabaseServerClient } from "@/lib/db/supabase-client";
 import { isMarketIndexReadEnabled } from "@/lib/market-index/market-index-feature-flags";
 import {
@@ -26,7 +27,10 @@ export async function buildAkarEstimateHistoryRuntime(
   if (!isMarketIndexReadEnabled(env)) return unavailable;
 
   try {
-    const repository = new SupabaseObservedPriceHistoryRepository(getSupabaseServerClient());
+    const repository = getDbProvider(env) === "neon"
+      ? new (await import("@/lib/property-detail/neon-akar-estimate-history-repository"))
+          .NeonObservedPriceHistoryRepository()
+      : new SupabaseObservedPriceHistoryRepository(getSupabaseServerClient());
     return {
       history: await repository.findForListingId(listing.id),
       // ANN-L9 deliberately stays fail-closed until a calibrated model artifact
