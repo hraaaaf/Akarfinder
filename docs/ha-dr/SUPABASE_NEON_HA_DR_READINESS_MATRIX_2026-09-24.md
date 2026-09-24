@@ -15,14 +15,16 @@ A prepared artifact must never be presented as a live HA capability.
 
 ## Current verified blocker
 
-Supabase SQL remains unavailable:
+Supabase is intentionally **PAUSED by the operator pending restore**.
 
-```text
-57P03: the database system is not accepting connections
-DETAIL: Hot standby mode is disabled.
-```
+Rules while paused:
 
-Control-plane health is not sufficient.
+- do not probe SQL;
+- do not infer readiness from provider control-plane status;
+- do not run capability inventory, migration validation, baseline parity or any provider mutation;
+- resume the live path only after an explicit operator signal that restore is complete.
+
+The last pre-pause SQL symptom was `57P03 / Hot standby mode is disabled`, but it is historical context, not the current health claim.
 
 ## HA-01 — Source recovery + PG17 validation suite
 
@@ -42,7 +44,7 @@ Supabase accepts SQL and the source portability validation suite reaches 5/5 gre
 - workflow exists;
 - previous dispatch produced all 5 expected jobs;
 - all 5 stopped at the source-secret gate in the prior window;
-- current direct SQL probe still returns 57P03.
+- last pre-pause direct SQL probe returned `57P03 / Hot standby mode is disabled`.
 
 ### Missing proof
 
@@ -52,16 +54,17 @@ Supabase accepts SQL and the source portability validation suite reaches 5/5 gre
 
 ### Status
 
-`BLOCKED`
+`BLOCKED — OPERATOR PAUSED / RESTORE PENDING`
 
 ### Next exact
 
-At the next justified source-health checkpoint:
+Only after the operator explicitly signals restore complete:
 
 1. run one `SELECT 1`;
-2. if green, run read-only capability inventory;
-3. dispatch the PG17 validation suite once;
-4. diagnose only the first real failure if not green.
+2. if green, record recovery/read-only state;
+3. run read-only capability inventory;
+4. dispatch the PG17 validation suite once;
+5. diagnose only the first real failure if not green.
 
 ## HA-02 — Architecture / replication design
 
@@ -110,13 +113,14 @@ Prove approved HA datasets are equal before continuous replication/failover test
 ### Prepared
 
 - manual read-only baseline parity workflow;
+- isolated HA03-A baseline parity detector rehearsal;
 - 16-table candidate set;
 - count parity;
 - PK-set digest parity;
 - content digest parity;
 - schema fingerprint;
 - replica identity;
-- sequence/identity metadata comparison;
+- sequence/identity metadata + state comparison (including increment/cache/last_value);
 - secret leakage guard;
 - artifact explicitly marked `NOT_CERTIFIED`.
 
@@ -254,6 +258,7 @@ Reconcile Neon incident writes back to Supabase and restore Supabase as sole wri
 ### Prepared
 
 - reverse-delta/failback contract;
+- isolated HA06-B sequence/identity failback reconciliation rehearsal;
 - legal path:
   `NEON_PRIMARY → FAILBACK_SYNC → FAILBACK_FREEZE → SUPABASE_PRIMARY`;
 - origin-filter proof requirement;
@@ -298,10 +303,12 @@ Provide an operator-safe, auditable procedure for failover/failback.
 
 ### Prepared
 
-- operator runbook v0;
+- operator runbook v0 with planned pause/restore recovery mode;
 - static runbook guard;
 - state-machine guard;
-- evidence schema;
+- evidence schema with foreign-key consistency requirement;
+- phase-aware evidence evaluator with writer-state invariants;
+- offline evidence certification wrapper + CLI;
 - readiness matrix;
 - stop/rollback conditions.
 
@@ -324,7 +331,9 @@ Provide an operator-safe, auditable procedure for failover/failback.
 
 ## First live gate sequence
 
-When Supabase next returns SQL:
+**Frozen while Supabase is operator-paused.**
+
+After an explicit restore-complete signal:
 
 ### Gate L1 — minimal health
 
