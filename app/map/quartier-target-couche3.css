@@ -4,14 +4,15 @@
 
 [data-akar-quartier-target="maarif-couche1"][data-maplibre-camera-policy="contextual-center"]
   .maplibre-spike-canvas canvas {
-  filter: saturate(.72) contrast(.94) brightness(1.055) !important;
+  filter: saturate(.58) contrast(.88) brightness(1.12) !important;
 }
 
 [data-akar-quartier-target="maarif-couche1"][data-maplibre-camera-policy="contextual-center"]
   .maplibre-spike-map-grade {
   background:
-    linear-gradient(180deg, rgb(221 242 255 / .14), rgb(255 255 255 / .02) 44%, rgb(7 27 51 / .018)),
-    radial-gradient(circle at 52% 42%, rgb(255 255 255 / .10), transparent 58%) !important;
+    linear-gradient(180deg, rgb(235 247 255 / .18), rgb(255 255 255 / .04) 42%, rgb(255 255 255 / .08)),
+    radial-gradient(circle at 52% 42%, rgb(255 255 255 / .16), transparent 62%) !important;
+  mix-blend-mode: screen !important;
 }
 
 [data-akar-quartier-target="maarif-couche1"] .maplibre-spike-neighborhood-label {
@@ -143,7 +144,7 @@
 }
 
 
-/* Couche 3 hybrid target — visible attribution for the pilot imagery layer. */
+/* Couche 3 mockup-fidelity vector pass — visible base-map attribution. */
 [data-akar-quartier-target="maarif-couche1"] .maplibre-spike-attribution {
   position: absolute;
   z-index: 16;
@@ -167,5 +168,22 @@
     bottom: 10px;
     left: 22px;
     font-size: 7px;
+  }
+}
+
+
+/* Mockup fidelity pass — lighter vector hierarchy, less chrome noise. */
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-target-landmark-label,
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-poi-label > span {
+  box-shadow: 0 5px 14px rgb(7 27 51 / .07);
+}
+
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-boundary-badge {
+  opacity: .78;
+}
+
+@media (min-width: 1024px) {
+  [data-akar-quartier-target="maarif-couche1"] .maplibre-spike-map-note {
+    box-shadow: 0 12px 32px rgb(7 27 51 / .11);
   }
 }

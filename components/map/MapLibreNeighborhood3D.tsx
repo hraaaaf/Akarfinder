@@ -49,7 +49,6 @@ export type MapLibreNeighborhood3DProps = {
 };
 
 const OPENFREEMAP_VECTOR = "https://tiles.openfreemap.org/planet";
-const TARGET_IMAGERY_TILES = "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
 const OPENFREEMAP_STYLE = "https://tiles.openfreemap.org/styles/liberty";
 const RTL_TEXT_PLUGIN_URL = "https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0.3.0/dist/mapbox-gl-rtl-text.js";
 let rtlTextPluginPromise: Promise<void> | null = null;
@@ -149,7 +148,7 @@ function focusNeighborhoodMap(
   map.easeTo({
     center: targetCenter,
     zoom: contextual ? (desktop ? 12.82 : 13.05) : (desktop ? 13.55 : 13.8),
-    pitch: contextual ? (desktop ? 6 : 0) : (desktop ? 18 : 8),
+    pitch: contextual ? 0 : (desktop ? 18 : 8),
     bearing: 0,
     duration,
   });
@@ -232,7 +231,7 @@ export function MapLibreNeighborhood3D({
           container: mapRef.current,
           center: targetCenter,
           zoom: contextual ? (desktop ? 12.82 : 13.05) : (desktop ? 13.55 : 13.8),
-          pitch: contextual ? (desktop ? 6 : 0) : (desktop ? 18 : 8),
+          pitch: contextual ? 0 : (desktop ? 18 : 8),
           bearing: 0,
           attributionControl: false,
           canvasContextAttributes: { antialias: true },
@@ -243,27 +242,31 @@ export function MapLibreNeighborhood3D({
         map.once("load", () => {
           if (disposed) return;
           try {
-            if (isMaarifTargetPilot && targetComposition === "context" && !map.getSource("akarfinder-target-imagery")) {
-              map.addSource("akarfinder-target-imagery", {
-                type: "raster",
-                tiles: [TARGET_IMAGERY_TILES],
-                tileSize: 256,
-                maxzoom: 19,
-                attribution: "Imagery © Esri",
-              });
-              const firstSymbolLayer = (map.getStyle().layers ?? []).find((layer: any) => layer.type === "symbol")?.id;
-              map.addLayer({
-                id: "akarfinder-target-imagery",
-                type: "raster",
-                source: "akarfinder-target-imagery",
-                paint: {
-                  "raster-opacity": 0.68,
-                  "raster-saturation": -0.16,
-                  "raster-contrast": 0.04,
-                  "raster-brightness-min": 0.08,
-                  "raster-brightness-max": 0.96,
-                },
-              } as any, firstSymbolLayer);
+            if (isMaarifTargetPilot && targetComposition === "context") {
+              for (const layer of map.getStyle().layers ?? []) {
+                const id = String(layer.id ?? "").toLowerCase();
+                try {
+                  if (layer.type === "background") {
+                    map.setPaintProperty(layer.id, "background-color", "#f6f8f7");
+                  }
+                  if (layer.type === "fill" && /(water|ocean|sea)/.test(id)) {
+                    map.setPaintProperty(layer.id, "fill-color", "#b9dcf5");
+                    map.setPaintProperty(layer.id, "fill-opacity", 0.96);
+                  }
+                  if (layer.type === "line" && /(road|street|highway|motorway|trunk|primary|secondary|tertiary)/.test(id)) {
+                    map.setPaintProperty(layer.id, "line-opacity", 0.62);
+                  }
+                  if (layer.type === "fill" && /building/.test(id)) {
+                    map.setPaintProperty(layer.id, "fill-opacity", 0.52);
+                  }
+                  if (layer.type === "symbol" && /(poi|housenumber|transit)/.test(id)) {
+                    map.setPaintProperty(layer.id, "text-opacity", 0.46);
+                    map.setPaintProperty(layer.id, "icon-opacity", 0.28);
+                  }
+                } catch {
+                  // Style-layer capabilities vary; keep the base style when a paint property is unsupported.
+                }
+              }
             }
             if (!map.getSource("akarfinder-openfreemap")) {
               map.addSource("akarfinder-openfreemap", {
@@ -334,17 +337,17 @@ export function MapLibreNeighborhood3D({
               map.addLayer({
                 id: "neighborhood-boundary-fill", type: "fill", source: "neighborhood-boundary",
                 paint: {
-                  "fill-color": isMaarifTargetPilot ? "#4f8fd2" : "#69A7E8",
-                  "fill-opacity": isMaarifTargetPilot ? 0.10 : 0.18,
+                  "fill-color": isMaarifTargetPilot ? "#6da7de" : "#69A7E8",
+                  "fill-opacity": isMaarifTargetPilot ? 0.035 : 0.18,
                 },
               });
               map.addLayer({
                 id: "neighborhood-boundary-line", type: "line", source: "neighborhood-boundary",
                 paint: {
-                  "line-color": isMaarifTargetPilot ? "#173f68" : "#071B33",
-                  "line-width": isMaarifTargetPilot ? 2.15 : 3.2,
-                  "line-opacity": isMaarifTargetPilot ? 0.78 : 0.96,
-                  "line-blur": isMaarifTargetPilot ? 0.15 : 0,
+                  "line-color": isMaarifTargetPilot ? "#5f88b2" : "#071B33",
+                  "line-width": isMaarifTargetPilot ? 1.35 : 3.2,
+                  "line-opacity": isMaarifTargetPilot ? 0.44 : 0.96,
+                  "line-blur": isMaarifTargetPilot ? 0.1 : 0,
                 },
               });
             }
@@ -444,7 +447,7 @@ export function MapLibreNeighborhood3D({
         <div className="maplibre-spike-canvas" ref={mapRef} />
         <div className="maplibre-spike-map-grade" aria-hidden="true" />
         {isMaarifTargetPilot && targetComposition === "context" ? (
-          <div className="maplibre-spike-attribution">Imagery © Esri · Map © OpenStreetMap contributors</div>
+          <div className="maplibre-spike-attribution">Map © OpenStreetMap contributors · OpenFreeMap</div>
         ) : null}
         <div className="maplibre-spike-dom-labels" aria-hidden="true">
           {centerPoint?.visible && (
