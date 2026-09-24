@@ -8,6 +8,7 @@ import { MapLibreNeighborhood3D } from "@/components/map/MapLibreNeighborhood3D"
 import { National3DBuildingsLayer } from "@/components/map/National3DBuildingsLayer";
 import { NationalNeighborhoodOverlayBridge } from "@/components/map/NationalNeighborhoodOverlayBridge";
 import { getNeighborhoodBySlug } from "@/lib/map/canonical-neighborhood-data";
+import { MAARIF_TARGET_PILOT_BOUNDARY } from "@/lib/geo/maarif-target-pilot-boundary";
 import { getPremiumMarketIntelligenceProvider } from "@/lib/map/premium-map-city-registry";
 import { MAP_LAYER_EXPLORE, type MapNavigationState } from "@/lib/map/map-navigation-state";
 
@@ -106,6 +107,7 @@ export function NationalMapRouter({ initialState }: Props) {
         districtSlug={selectedNeighborhood.neighborhoodSlug}
         districtLabel={selectedNeighborhood.neighborhood}
         center={[selectedNeighborhood.lng, selectedNeighborhood.lat]}
+        boundaryGeometry={isMaarifReference ? MAARIF_TARGET_PILOT_BOUNDARY.geometry : null}
         desktopCameraOffset={isMaarifReference ? [-0.0055, 0.0090] : [0, 0]}
       />
     );
