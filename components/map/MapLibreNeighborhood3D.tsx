@@ -325,15 +325,18 @@ export function MapLibreNeighborhood3D({
               const source = "akarfinder-openfreemap";
 
               if (!map.hasImage("akarfinder-water-texture")) {
-                const size = 32;
+                const size = 64;
                 const data = new Uint8Array(size * size * 4);
                 for (let y = 0; y < size; y += 1) {
                   for (let x = 0; x < size; x += 1) {
                     const index = (y * size + x) * 4;
-                    const wave = Math.sin((x + y * 0.65) * 0.72) * 4 + Math.sin((x * 0.22) - (y * 0.9)) * 2;
-                    data[index] = 77 + Math.round(wave);
-                    data[index + 1] = 153 + Math.round(wave * 0.8);
-                    data[index + 2] = 196 + Math.round(wave * 0.7);
+                    const waveA = Math.sin((x * 0.29) + (y * 0.17)) * 3.2;
+                    const waveB = Math.cos((x * 0.11) - (y * 0.23)) * 2.2;
+                    const grain = (((x * 17 + y * 31 + (x * y * 7)) % 19) - 9) * 0.32;
+                    const delta = waveA + waveB + grain;
+                    data[index] = 70 + Math.round(delta * 0.85);
+                    data[index + 1] = 146 + Math.round(delta * 0.72);
+                    data[index + 2] = 190 + Math.round(delta * 0.64);
                     data[index + 3] = 255;
                   }
                 }
@@ -386,13 +389,13 @@ export function MapLibreNeighborhood3D({
                 paint: {
                   "fill-color": [
                     "interpolate", ["linear"], ["coalesce", ["get", "render_height"], 0],
-                    0, "#e9e6df",
-                    12, "#e2dfd8",
-                    28, "#d8d7d2",
-                    60, "#ced1d0"
+                    0, "#e3e0d9",
+                    12, "#dbd8d1",
+                    28, "#d0cfca",
+                    60, "#c4c8c7"
                   ],
-                  "fill-opacity": ["interpolate", ["linear"], ["zoom"], 12.2, 0.64, 14.5, 0.90],
-                  "fill-outline-color": "#c8cdca",
+                  "fill-opacity": ["interpolate", ["linear"], ["zoom"], 12.2, 0.72, 14.5, 0.93],
+                  "fill-outline-color": "#bcc2bf",
                 },
               } as any);
 
@@ -411,11 +414,11 @@ export function MapLibreNeighborhood3D({
                 paint: {
                   "line-color": [
                     "match", ["get", "class"],
-                    "motorway", "#d3c5aa",
-                    "trunk", "#d5cab5",
-                    "primary", "#d4d0c5",
-                    "secondary", "#d5d8d4",
-                    "#d9ddda"
+                    "motorway", "#c9b897",
+                    "trunk", "#cdc0a7",
+                    "primary", "#c9c5ba",
+                    "secondary", "#cdd1cd",
+                    "#d2d6d3"
                   ],
                   "line-opacity": 0.97,
                   "line-width": [
@@ -439,11 +442,11 @@ export function MapLibreNeighborhood3D({
                 paint: {
                   "line-color": [
                     "match", ["get", "class"],
-                    "motorway", "#ead8b7",
-                    "trunk", "#efe0c2",
-                    "primary", "#f3e8d2",
-                    "secondary", "#f7f1e4",
-                    "tertiary", "#fbfaf6",
+                    "motorway", "#e6d2ad",
+                    "trunk", "#ecdbbb",
+                    "primary", "#f2e5cd",
+                    "secondary", "#f7f0e1",
+                    "tertiary", "#fbfaf5",
                     "#ffffff"
                   ],
                   "line-opacity": 0.99,
@@ -460,14 +463,14 @@ export function MapLibreNeighborhood3D({
                 type: "symbol",
                 source,
                 "source-layer": "transportation_name",
-                minzoom: 12,
-                filter: ["match", ["get", "class"], ["motorway", "trunk", "primary", "secondary", "tertiary"], true, false],
+                minzoom: 12.2,
                 layout: {
                   "symbol-placement": "line",
+                  "symbol-spacing": 320,
                   "text-field": ["coalesce", ["get", "name:latin"], ["get", "name"]],
-                  "text-size": ["interpolate", ["linear"], ["zoom"], 12, 9, 14, 11.5],
-                  "text-letter-spacing": 0.015,
-                  "text-max-angle": 28,
+                  "text-size": ["interpolate", ["linear"], ["zoom"], 12.2, 8.5, 14, 10.8],
+                  "text-letter-spacing": 0.012,
+                  "text-max-angle": 24,
                   "text-padding": 2,
                 },
                 paint: {
