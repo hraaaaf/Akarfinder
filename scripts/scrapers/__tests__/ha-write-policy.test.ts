@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   assertHaApplicationWriteTarget,
   assertHaNeonWriteAllowed,
+  assertHaReadProviderCoherent,
   assertHaSupabaseWriteAllowed,
   getHaWriterState,
 } from "../../../lib/db/ha-write-policy.js";
@@ -64,4 +65,49 @@ test("Supabase primary rejects Neon writes", () => {
       }),
     /HA write target mismatch/,
   );
+});
+
+
+test("legacy mode leaves read-provider migration choices untouched", () => {
+  for (const provider of ["sqlite", "supabase", "neon"] as const) {
+    assert.doesNotThrow(() => assertHaReadProviderCoherent(provider, {}));
+  }
+});
+
+test("explicit HA state enforces coherent read provider", () => {
+  assert.doesNotThrow(() =>
+    assertHaReadProviderCoherent("supabase", {
+      HA_WRITER_STATE: "SUPABASE_PRIMARY",
+    }),
+  );
+  assert.throws(
+    () =>
+      assertHaReadProviderCoherent("neon", {
+        HA_WRITER_STATE: "SUPABASE_PRIMARY",
+      }),
+    /HA read provider mismatch/,
+  );
+
+  for (const state of ["NEON_PRIMARY", "FAILBACK_SYNC", "FAILBACK_FREEZE"] as const) {
+    assert.doesNotThrow(() =>
+      assertHaReadProviderCoherent("neon", { HA_WRITER_STATE: state }),
+    );
+    assert.throws(
+      () =>
+        assertHaReadProviderCoherent("supabase", {
+          HA_WRITER_STATE: state,
+        }),
+      /HA read provider mismatch/,
+    );
+  }
+});
+
+test("FAILOVER_PREP allows read-path establishment while writes remain fenced", () => {
+  for (const provider of ["supabase", "neon"] as const) {
+    assert.doesNotThrow(() =>
+      assertHaReadProviderCoherent(provider, {
+        HA_WRITER_STATE: "FAILOVER_PREP",
+      }),
+    );
+  }
 });
