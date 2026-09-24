@@ -189,6 +189,10 @@ Prove legal failover with no split-brain.
 ### Prepared
 
 - isolated rehearsal first;
+- isolated two-node PostgreSQL 17 logical-replication workflow;
+- forward + reverse canary INSERT/UPDATE/DELETE;
+- `copy_data=false` + `origin=none` anti-loop rehearsal;
+- explicit artifact limitation: no provider-specific certification;
 - production rehearsal gate;
 - legal state path:
   `SUPABASE_PRIMARY → FAILOVER_PREP → NEON_PRIMARY`;
@@ -200,12 +204,13 @@ Prove legal failover with no split-brain.
 
 ### Proved
 
-No simulation has run.
+- isolated rehearsal workflow + static guard exist in the HA branch;
+- live provider simulation remains unproved until the isolated workflow completes green.
 
 ### Missing proof
 
-- HA05-A isolated rehearsal;
-- writer fencing behavior;
+- HA05-A isolated rehearsal green artifact;
+- writer fencing behavior on application routing;
 - Neon promotion smoke proof;
 - incident write boundary;
 - observed failover RTO;
