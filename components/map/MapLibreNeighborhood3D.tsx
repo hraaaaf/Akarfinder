@@ -295,19 +295,11 @@ export function MapLibreNeighborhood3D({
                   if (layer.type === "background") {
                     map.setPaintProperty(layer.id, "background-color", "#f6f8f7");
                   }
-                  if (layer.type === "fill" && /(water|ocean|sea)/.test(id)) {
-                    map.setPaintProperty(layer.id, "fill-color", "#68add8");
-                    map.setPaintProperty(layer.id, "fill-opacity", 0.98);
-                  }
-                  if (layer.type === "line" && /(coast|shore|water)/.test(id)) {
-                    map.setPaintProperty(layer.id, "line-color", "#4e94c2");
-                    map.setPaintProperty(layer.id, "line-opacity", 0.42);
-                  }
-                  if (layer.type === "line" && /(road|street|highway|motorway|trunk|primary|secondary|tertiary)/.test(id)) {
-                    map.setPaintProperty(layer.id, "line-opacity", 0.58);
-                  }
-                  if (layer.type === "fill" && /building/.test(id)) {
-                    map.setPaintProperty(layer.id, "fill-opacity", 0.48);
+                  if (
+                    (layer.type === "fill" && /(water|ocean|sea|building|park|landuse|landcover)/.test(id))
+                    || (layer.type === "line" && /(coast|shore|water|road|street|highway|motorway|trunk|primary|secondary|tertiary)/.test(id))
+                  ) {
+                    map.setLayoutProperty(layer.id, "visibility", "none");
                   }
                   if (layer.type === "symbol" && /(neighbour|neighborhood|suburb|quarter|district|place)/.test(id)) {
                     map.setLayoutProperty(layer.id, "visibility", "none");
@@ -328,7 +320,125 @@ export function MapLibreNeighborhood3D({
                 attribution: "© OpenStreetMap contributors · OpenFreeMap",
               });
             }
-            map.addLayer({
+
+            if (isMaarifTargetPilot && targetComposition === "context") {
+              const source = "akarfinder-openfreemap";
+
+              map.addLayer({
+                id: "akarfinder-target-water",
+                type: "fill",
+                source,
+                "source-layer": "water",
+                paint: {
+                  "fill-color": "#5fa7cc",
+                  "fill-opacity": 0.96,
+                  "fill-antialias": true,
+                },
+              } as any);
+
+              map.addLayer({
+                id: "akarfinder-target-landcover-green",
+                type: "fill",
+                source,
+                "source-layer": "landcover",
+                filter: ["match", ["get", "class"], ["grass", "wood"], true, false],
+                paint: {
+                  "fill-color": ["match", ["get", "class"], "wood", "#a8c88d", "#c4dca8"],
+                  "fill-opacity": 0.74,
+                },
+              } as any);
+
+              map.addLayer({
+                id: "akarfinder-target-landuse-green",
+                type: "fill",
+                source,
+                "source-layer": "landuse",
+                filter: ["match", ["get", "class"], ["park", "cemetery", "grass", "recreation_ground"], true, false],
+                paint: {
+                  "fill-color": "#b9d79e",
+                  "fill-opacity": 0.74,
+                  "fill-outline-color": "#a7c38f",
+                },
+              } as any);
+
+              map.addLayer({
+                id: "akarfinder-target-buildings",
+                type: "fill",
+                source,
+                "source-layer": "building",
+                minzoom: 12.2,
+                paint: {
+                  "fill-color": "#e1e5e2",
+                  "fill-opacity": ["interpolate", ["linear"], ["zoom"], 12.2, 0.55, 14.5, 0.84],
+                  "fill-outline-color": "#cbd2d0",
+                },
+              } as any);
+
+              const roadFilter = ["match", ["get", "class"], ["motorway", "trunk", "primary", "secondary", "tertiary", "minor", "service"], true, false];
+
+              map.addLayer({
+                id: "akarfinder-target-road-casing",
+                type: "line",
+                source,
+                "source-layer": "transportation",
+                filter: roadFilter,
+                layout: {
+                  "line-cap": "round",
+                  "line-join": "round",
+                },
+                paint: {
+                  "line-color": "#cfd5d2",
+                  "line-opacity": 0.95,
+                  "line-width": [
+                    "interpolate", ["linear"], ["zoom"],
+                    11, ["match", ["get", "class"], "motorway", 3.2, "trunk", 3.0, "primary", 2.7, "secondary", 2.3, "tertiary", 1.9, 1.25],
+                    15, ["match", ["get", "class"], "motorway", 14, "trunk", 12, "primary", 10, "secondary", 8, "tertiary", 6.4, "minor", 4.2, 2.8]
+                  ],
+                },
+              } as any);
+
+              map.addLayer({
+                id: "akarfinder-target-road-fill",
+                type: "line",
+                source,
+                "source-layer": "transportation",
+                filter: roadFilter,
+                layout: {
+                  "line-cap": "round",
+                  "line-join": "round",
+                },
+                paint: {
+                  "line-color": [
+                    "match", ["get", "class"],
+                    "motorway", "#efe2c7",
+                    "trunk", "#f1e7d1",
+                    "primary", "#f4ecda",
+                    "secondary", "#f7f3e9",
+                    "tertiary", "#fbfaf5",
+                    "#ffffff"
+                  ],
+                  "line-opacity": 0.99,
+                  "line-width": [
+                    "interpolate", ["linear"], ["zoom"],
+                    11, ["match", ["get", "class"], "motorway", 2.5, "trunk", 2.3, "primary", 2.0, "secondary", 1.7, "tertiary", 1.35, 0.85],
+                    15, ["match", ["get", "class"], "motorway", 12.2, "trunk", 10.4, "primary", 8.5, "secondary", 6.6, "tertiary", 5.0, "minor", 3.0, 1.8]
+                  ],
+                },
+              } as any);
+
+              map.addLayer({
+                id: "akarfinder-target-coastline",
+                type: "line",
+                source,
+                "source-layer": "water",
+                paint: {
+                  "line-color": "#f9fbfb",
+                  "line-opacity": 0.92,
+                  "line-width": ["interpolate", ["linear"], ["zoom"], 11, 1.0, 14, 2.4],
+                },
+              } as any);
+            }
+            if (!(isMaarifTargetPilot && targetComposition === "context")) map.addLayer({
               id: "3d-buildings",
               source: "akarfinder-openfreemap",
               "source-layer": "building",

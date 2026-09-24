@@ -284,3 +284,17 @@
     opacity: .84;
   }
 }
+
+
+/* Cartographic Style Pass 1 — AkarFinder target drawing language. */
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-camera-policy="contextual-center"]
+  .maplibre-spike-canvas canvas {
+  filter: saturate(.78) contrast(.965) brightness(1.025) !important;
+}
+
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-map-grade {
+  background:
+    linear-gradient(180deg, rgb(47 122 163 / .05), transparent 22%, rgb(255 255 255 / .025) 68%, rgb(220 226 220 / .08)) !important;
+  mix-blend-mode: normal !important;
+  opacity: 1 !important;
+}
