@@ -403,3 +403,24 @@
     display: none;
   }
 }
+
+
+/* HOTFIX RTL/ARABE — preserve Arabic shaping in DOM labels. */
+[data-akar-quartier-target="maarif-couche1"] [lang="ar"] {
+  direction: rtl;
+  unicode-bidi: isolate;
+  letter-spacing: 0 !important;
+  word-spacing: normal;
+  font-family: "Noto Sans Arabic", "Geeza Pro", "Segoe UI", Tahoma, Arial, sans-serif;
+  font-kerning: normal;
+  font-variant-ligatures: normal;
+  text-rendering: optimizeLegibility;
+}
+
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-poi-label [lang="ar"],
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-target-landmark-label [lang="ar"] {
+  white-space: normal;
+  overflow-wrap: normal;
+  word-break: normal;
+  text-overflow: clip;
+}
