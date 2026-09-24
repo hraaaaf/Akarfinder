@@ -24,6 +24,10 @@ test("isolated HA rehearsal uses two disposable PostgreSQL 17 nodes", () => {
   assert.match(workflow, /docker network create/);
 });
 
+test("isolated HA rehearsal feeds heredoc SQL through docker stdin", () => {
+  assert.match(workflow, /docker exec -i "\$node" psql/);
+});
+
 test("isolated HA rehearsal mutates canary only", () => {
   assert.match(workflow, /akarfinder_ha_replication_canary/);
   assert.doesNotMatch(workflow, /property_listings|buyer_leads|seller_property_drafts|thin_index_search_documents/);
