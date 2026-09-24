@@ -454,6 +454,12 @@ export function MapLibreNeighborhood3D({
         {categories.map((category) => <button key={category} className={activeCategory === category ? "active" : ""} onClick={() => setActiveCategory(category)}>{CATEGORY_META[category].label}</button>)}
       </div>
 
+      {isMaarifTargetPilot && boundaryGeometry ? (
+        <div className="maplibre-spike-boundary-badge" aria-label="Nature du contour affiché">
+          Contour administratif
+        </div>
+      ) : null}
+
       <div className="maplibre-spike-controls" aria-label="Contrôles de la carte">
         <button type="button" className="maplibre-spike-control-primary" onClick={restoreCamera} aria-label="Recentrer sur le quartier"><LocateFixed size={18} /></button>
         <button type="button" onClick={() => changeZoom(0.75)} aria-label="Zoomer"><Plus size={19} /></button>
