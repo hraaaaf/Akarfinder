@@ -60,3 +60,17 @@ test("isolated HA rehearsal has a secret leakage guard", () => {
   assert.match(workflow, /Guard artifact against secret leakage/);
   assert.match(workflow, /Secret-like material detected/);
 });
+
+
+test("isolated HA rehearsal simulates application writer fencing", () => {
+  assert.match(workflow, /create role ha_app_writer nologin/);
+  assert.match(workflow, /revoke insert, update, delete .* from ha_app_writer/);
+  assert.match(workflow, /grant insert, update, delete .* to ha_app_writer/);
+  assert.match(workflow, /source app writer remained writable during FAILOVER_PREP/);
+  assert.match(workflow, /target app writer was writable before promotion/);
+  assert.match(workflow, /app writer remained writable during FAILBACK_FREEZE/);
+  assert.match(workflow, /target app writer became writable after failback/);
+  assert.match(workflow, /single_writer_contract: "DB_ROLE_FENCING_SIMULATED"/);
+  assert.match(workflow, /failover_no_write_window: "PASS"/);
+  assert.match(workflow, /failback_freeze: "PASS"/);
+});
