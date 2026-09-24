@@ -1,0 +1,143 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://akarfinder.ma/schemas/ha-dr-evidence-v1.json",
+  "title": "AkarFinder HA/DR Evidence Bundle v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_id",
+    "phase",
+    "status",
+    "application_commit",
+    "database_schema_fingerprint",
+    "approved_tables",
+    "writer_state",
+    "single_writer_proven",
+    "positions",
+    "timings",
+    "table_evidence",
+    "conflicts",
+    "duplicates",
+    "secrets_redacted",
+    "verdict"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "run_id": { "type": "string", "minLength": 1 },
+    "phase": {
+      "enum": ["BASELINE", "FORWARD_SYNC", "FAILOVER", "REVERSE_DELTA", "FAILBACK"]
+    },
+    "status": { "enum": ["NOT_RUN", "RUNNING", "PASS", "FAIL", "BLOCKED"] },
+    "application_commit": {
+      "type": ["string", "null"],
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "database_schema_fingerprint": { "type": ["string", "null"], "minLength": 1 },
+    "approved_tables": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "writer_state": {
+      "enum": [
+        "SUPABASE_PRIMARY",
+        "FAILOVER_PREP",
+        "NEON_PRIMARY",
+        "FAILBACK_SYNC",
+        "FAILBACK_FREEZE"
+      ]
+    },
+    "single_writer_proven": { "type": ["boolean", "null"] },
+    "positions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "forward_start_lsn",
+        "forward_end_lsn",
+        "incident_start_lsn",
+        "reverse_start_lsn",
+        "reverse_target_lsn",
+        "reverse_final_lsn"
+      ],
+      "properties": {
+        "forward_start_lsn": { "type": ["string", "null"] },
+        "forward_end_lsn": { "type": ["string", "null"] },
+        "incident_start_lsn": { "type": ["string", "null"] },
+        "reverse_start_lsn": { "type": ["string", "null"] },
+        "reverse_target_lsn": { "type": ["string", "null"] },
+        "reverse_final_lsn": { "type": ["string", "null"] }
+      }
+    },
+    "timings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "failover_decision_at",
+        "neon_service_restored_at",
+        "failback_freeze_at",
+        "supabase_service_restored_at",
+        "observed_rpo_seconds",
+        "observed_failover_rto_seconds",
+        "observed_failback_rto_seconds"
+      ],
+      "properties": {
+        "failover_decision_at": { "type": ["string", "null"], "format": "date-time" },
+        "neon_service_restored_at": { "type": ["string", "null"], "format": "date-time" },
+        "failback_freeze_at": { "type": ["string", "null"], "format": "date-time" },
+        "supabase_service_restored_at": { "type": ["string", "null"], "format": "date-time" },
+        "observed_rpo_seconds": { "type": ["number", "null"], "minimum": 0 },
+        "observed_failover_rto_seconds": { "type": ["number", "null"], "minimum": 0 },
+        "observed_failback_rto_seconds": { "type": ["number", "null"], "minimum": 0 }
+      }
+    },
+    "table_evidence": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "table",
+          "source_count",
+          "target_count",
+          "source_pk_digest",
+          "target_pk_digest",
+          "source_content_digest",
+          "target_content_digest",
+          "delete_parity",
+          "timestamp_version_parity",
+          "schema_fingerprint_match",
+          "foreign_key_consistency",
+          "replica_identity",
+          "sequence_safe",
+          "pass"
+        ],
+        "properties": {
+          "table": { "type": "string", "minLength": 1 },
+          "source_count": { "type": ["integer", "null"], "minimum": 0 },
+          "target_count": { "type": ["integer", "null"], "minimum": 0 },
+          "source_pk_digest": { "type": ["string", "null"] },
+          "target_pk_digest": { "type": ["string", "null"] },
+          "source_content_digest": { "type": ["string", "null"] },
+          "target_content_digest": { "type": ["string", "null"] },
+          "delete_parity": { "type": ["boolean", "null"] },
+          "timestamp_version_parity": { "type": ["boolean", "null"] },
+          "schema_fingerprint_match": { "type": ["boolean", "null"] },
+          "foreign_key_consistency": { "type": ["boolean", "null"] },
+          "replica_identity": { "type": ["string", "null"] },
+          "sequence_safe": { "type": ["boolean", "null"] },
+          "pass": { "type": ["boolean", "null"] }
+        }
+      }
+    },
+    "conflicts": { "type": ["integer", "null"], "minimum": 0 },
+    "duplicates": { "type": ["integer", "null"], "minimum": 0 },
+    "secrets_redacted": { "type": "boolean" },
+    "verdict": {
+      "enum": ["NOT_RUN", "PASS", "FAIL", "BLOCKED"]
+    },
+    "notes": { "type": "array", "items": { "type": "string" } }
+  }
+}

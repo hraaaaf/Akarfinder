@@ -4,6 +4,7 @@
 
 import { type NextRequest, NextResponse } from "next/server";
 import { getSupabaseServerClient } from "@/lib/db/supabase-client";
+import { assertHaSupabaseWriteAllowed } from "@/lib/db/ha-write-policy";
 import { logConversionEvent } from "@/lib/tracking/log-event";
 
 export const runtime = "nodejs";
@@ -71,6 +72,7 @@ export async function POST(request: NextRequest) {
   };
 
   try {
+    assertHaSupabaseWriteAllowed();
     const supabase = getSupabaseServerClient();
     const { data, error } = await supabase
       .from("saved_alerts")

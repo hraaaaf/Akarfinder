@@ -1,3 +1,4 @@
+import { assertHaSupabaseWriteAllowed } from "../db/ha-write-policy.js";
 import type { Observation } from "../market-index/market-index-types.js";
 import {
   deriveObservationLedger,
@@ -140,6 +141,7 @@ export async function persistObservationLedgerEvent(
   event: ObservationLedgerEvent,
   snapshot: string,
 ): Promise<void> {
+  assertHaSupabaseWriteAllowed();
   const response = await client.rpc("persist_observation_ledger_event", {
     p_event_key: event.event_key,
     p_source_offer_id: event.source_offer_id,

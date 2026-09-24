@@ -2,14 +2,76 @@ name: Neon Runtime Read Path Validation
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, infra/neon-migration-20260923]
     paths:
       - "lib/db/provider.ts"
+      - "lib/db/ha-writer-state.ts"
+      - "lib/db/ha-write-policy.ts"
+      - "app/api/leads/route.ts"
+      - "app/api/seller-drafts/[draftId]/publication/route.ts"
+      - "app/api/seller-drafts/[draftId]/review/route.ts"
+      - "app/api/seller-drafts/[draftId]/photos/route.ts"
+      - "lib/seller/owner-listing-projection.ts"
+      - "lib/professional/repository.ts"
+      - "lib/professional/commercial-repository.ts"
+      - "lib/tracking/log-event.ts"
+      - "lib/search-gateway-cache/supabase-cache-store.ts"
+      - "lib/public-property-index/supabase-index-store.ts"
+      - "lib/observation-ledger/supabase-observation-ledger.ts"
+      - "scripts/scrapers/__tests__/ha-write-policy.test.ts"
+      - "scripts/scrapers/__tests__/ha-application-write-surface-guard.test.ts"
+      - "scripts/scrapers/__tests__/ha-runtime-supabase-write-audit.test.ts"
+      - "docs/ha-dr/HA05B_APPLICATION_WRITE_ROUTING_INVENTORY_2026-09-24.md"
+      - "docs/ha-dr/HA05B_INCIDENT_WRITE_SET_CONTRACT_2026-09-24.md"
+      - "scripts/scrapers/__tests__/ha-runtime-write-routing-inventory.test.ts"
+      - "scripts/scrapers/__tests__/ha05b-incident-write-set-contract-guard.test.ts"
       - "lib/db/index.ts"
       - "lib/db/neon-client.ts"
       - "lib/db/neon-listings.ts"
       - "lib/market-index/neon-market-index-read-repository.ts"
       - "scripts/scrapers/__tests__/neon-db-provider.test.ts"
+      - "scripts/scrapers/__tests__/ha-writer-state.test.ts"
+      - "scripts/ha-dr/logical-replication-capability-inventory.sql"
+      - "scripts/scrapers/__tests__/ha-replication-capability-inventory.test.ts"
+      - "docs/ha-dr/SUPABASE_NEON_HA_DR_OPERATOR_RUNBOOK_2026-09-24.md"
+      - "scripts/scrapers/__tests__/ha-operator-runbook-guard.test.ts"
+      - "docs/ha-dr/SUPABASE_NEON_HA_DR_PARITY_RPO_RTO_SPEC_2026-09-24.md"
+      - "scripts/scrapers/__tests__/ha-parity-rpo-rto-spec-guard.test.ts"
+      - "docs/ha-dr/schemas/ha-dr-evidence-v1.schema.json"
+      - "docs/ha-dr/templates/HA_DR_EVIDENCE.template.json"
+      - "scripts/scrapers/__tests__/ha-evidence-bundle-guard.test.ts"
+      - "scripts/ha-dr/evaluate-ha-evidence.ts"
+      - "scripts/ha-dr/certify-ha-evidence-bundle.ts"
+      - "scripts/ha-dr/certify-ha-evidence-file.ts"
+      - "scripts/ha-dr/certify-ha-rehearsal-set.ts"
+      - "scripts/scrapers/__tests__/ha-rehearsal-set-certification.test.ts"
+      - "scripts/ha-dr/fixtures/HA_DR_EVIDENCE.synthetic-pass.json"
+      - "scripts/ha-dr/fk-consistency-query-generator.sql"
+      - "scripts/scrapers/__tests__/ha-fk-consistency-generator-guard.test.ts"
+      - "scripts/scrapers/__tests__/ha-evidence-evaluator.test.ts"
+      - "scripts/scrapers/__tests__/ha-evidence-certification.test.ts"
+      - ".github/workflows/ha-baseline-parity-proof.yml"
+      - "scripts/scrapers/__tests__/ha-baseline-parity-workflow-guard.test.ts"
+      - "supabase/migrations/20260924110000_akarfinder_ha_replication_canary_v1.sql"
+      - "scripts/scrapers/__tests__/ha-replication-canary-migration-guard.test.ts"
+      - "docs/ha-dr/HA04_CONTINUOUS_SYNC_REHEARSAL_CONTRACT_2026-09-24.md"
+      - "scripts/scrapers/__tests__/ha04-continuous-sync-contract-guard.test.ts"
+      - "docs/ha-dr/HA05_FAILOVER_SIMULATION_CONTRACT_2026-09-24.md"
+      - "scripts/scrapers/__tests__/ha05-failover-contract-guard.test.ts"
+      - "docs/ha-dr/HA06_REVERSE_DELTA_FAILBACK_CONTRACT_2026-09-24.md"
+      - "scripts/scrapers/__tests__/ha06-failback-contract-guard.test.ts"
+      - "docs/ha-dr/SUPABASE_NEON_HA_DR_READINESS_MATRIX_2026-09-24.md"
+      - "scripts/scrapers/__tests__/ha-readiness-matrix-guard.test.ts"
+      - ".github/workflows/ha-capability-inventory.yml"
+      - "scripts/scrapers/__tests__/ha-capability-inventory-workflow-guard.test.ts"
+      - ".github/workflows/ha-isolated-rehearsal.yml"
+      - "scripts/scrapers/__tests__/ha-isolated-rehearsal-workflow-guard.test.ts"
+      - ".github/workflows/ha-isolated-resilience-rehearsal.yml"
+      - "scripts/scrapers/__tests__/ha-isolated-resilience-workflow-guard.test.ts"
+      - ".github/workflows/ha-isolated-sequence-failback.yml"
+      - "scripts/scrapers/__tests__/ha-isolated-sequence-failback-workflow-guard.test.ts"
+      - ".github/workflows/ha-isolated-baseline-parity-rehearsal.yml"
+      - "scripts/scrapers/__tests__/ha-isolated-baseline-parity-workflow-guard.test.ts"
       - "scripts/scrapers/__tests__/neon-listings.test.ts"
       - "scripts/scrapers/__tests__/neon-core-db-migration-guard.test.ts"
       - "scripts/scrapers/__tests__/neon-odm-portability-guard.test.ts"
@@ -53,6 +115,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: neon-runtime-read-path-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   validate:
     runs-on: ubuntu-latest
@@ -69,7 +135,28 @@ jobs:
         run: npm ci
 
       - name: Neon migration and provider unit tests
-        run: npx tsx --test scripts/scrapers/__tests__/neon-db-provider.test.ts scripts/scrapers/__tests__/neon-listings.test.ts scripts/scrapers/__tests__/neon-core-db-migration-guard.test.ts scripts/scrapers/__tests__/neon-odm-portability-guard.test.ts scripts/scrapers/__tests__/neon-public-search.test.ts scripts/scrapers/__tests__/neon-owner-listing-search.test.ts scripts/scrapers/__tests__/neon-owner-read-portability-guard.test.ts scripts/scrapers/__tests__/neon-market-comparables.test.ts scripts/scrapers/__tests__/neon-market-comparables-portability-guard.test.ts scripts/scrapers/__tests__/neon-market-intelligence-read.test.ts scripts/scrapers/__tests__/neon-market-intelligence-portability-guard.test.ts scripts/scrapers/__tests__/neon-akar-estimate-history.test.ts scripts/scrapers/__tests__/neon-owner-detail-media.test.ts scripts/scrapers/__tests__/neon-supabase-hidden-read-guards.test.ts scripts/scrapers/__tests__/neon-migration-validation-suite-guard.test.ts scripts/scrapers/__tests__/odm-09b-public-search-contract.test.ts
+        run: npx tsx --test scripts/scrapers/__tests__/neon-db-provider.test.ts scripts/scrapers/__tests__/ha-writer-state.test.ts scripts/scrapers/__tests__/ha-replication-capability-inventory.test.ts scripts/scrapers/__tests__/ha-operator-runbook-guard.test.ts scripts/scrapers/__tests__/ha-parity-rpo-rto-spec-guard.test.ts scripts/scrapers/__tests__/ha-evidence-bundle-guard.test.ts scripts/scrapers/__tests__/ha-evidence-evaluator.test.ts scripts/scrapers/__tests__/ha-evidence-certification.test.ts scripts/scrapers/__tests__/ha-rehearsal-set-certification.test.ts scripts/scrapers/__tests__/ha-fk-consistency-generator-guard.test.ts scripts/scrapers/__tests__/ha-baseline-parity-workflow-guard.test.ts scripts/scrapers/__tests__/ha-replication-canary-migration-guard.test.ts scripts/scrapers/__tests__/ha04-continuous-sync-contract-guard.test.ts scripts/scrapers/__tests__/ha05-failover-contract-guard.test.ts scripts/scrapers/__tests__/ha06-failback-contract-guard.test.ts scripts/scrapers/__tests__/ha-readiness-matrix-guard.test.ts scripts/scrapers/__tests__/ha-capability-inventory-workflow-guard.test.ts scripts/scrapers/__tests__/ha-isolated-rehearsal-workflow-guard.test.ts scripts/scrapers/__tests__/ha-isolated-resilience-workflow-guard.test.ts scripts/scrapers/__tests__/ha-isolated-sequence-failback-workflow-guard.test.ts scripts/scrapers/__tests__/ha-isolated-baseline-parity-workflow-guard.test.ts scripts/scrapers/__tests__/ha-write-policy.test.ts scripts/scrapers/__tests__/ha-application-write-surface-guard.test.ts scripts/scrapers/__tests__/ha-runtime-supabase-write-audit.test.ts scripts/scrapers/__tests__/ha-runtime-write-routing-inventory.test.ts scripts/scrapers/__tests__/ha05b-incident-write-set-contract-guard.test.ts scripts/scrapers/__tests__/neon-listings.test.ts scripts/scrapers/__tests__/neon-core-db-migration-guard.test.ts scripts/scrapers/__tests__/neon-odm-portability-guard.test.ts scripts/scrapers/__tests__/neon-public-search.test.ts scripts/scrapers/__tests__/neon-owner-listing-search.test.ts scripts/scrapers/__tests__/neon-owner-read-portability-guard.test.ts scripts/scrapers/__tests__/neon-market-comparables.test.ts scripts/scrapers/__tests__/neon-market-comparables-portability-guard.test.ts scripts/scrapers/__tests__/neon-market-intelligence-read.test.ts scripts/scrapers/__tests__/neon-market-intelligence-portability-guard.test.ts scripts/scrapers/__tests__/neon-akar-estimate-history.test.ts scripts/scrapers/__tests__/neon-owner-detail-media.test.ts scripts/scrapers/__tests__/neon-supabase-hidden-read-guards.test.ts scripts/scrapers/__tests__/neon-migration-validation-suite-guard.test.ts scripts/scrapers/__tests__/odm-09b-public-search-contract.test.ts
+
+      - name: HA evidence certification CLI dry-run
+        shell: bash
+        run: |
+          set -euo pipefail
+          pass_out="$RUNNER_TEMP/ha-cert-pass.json"
+          blocked_out="$RUNNER_TEMP/ha-cert-blocked.json"
+
+          npx tsx scripts/ha-dr/certify-ha-evidence-file.ts             scripts/ha-dr/fixtures/HA_DR_EVIDENCE.synthetic-pass.json             > "$pass_out"
+          jq -e '.verdict == "PASS"' "$pass_out" >/dev/null
+
+          set +e
+          npx tsx scripts/ha-dr/certify-ha-evidence-file.ts             docs/ha-dr/templates/HA_DR_EVIDENCE.template.json             > "$blocked_out"
+          blocked_code=$?
+          set -e
+
+          [ "$blocked_code" -eq 2 ] || {
+            echo "::error::Expected NOT_RUN template to exit 2/BLOCKED, got $blocked_code"
+            exit 1
+          }
+          jq -e '.verdict == "BLOCKED"' "$blocked_out" >/dev/null
 
       - name: TypeScript
         run: npx tsc --noEmit

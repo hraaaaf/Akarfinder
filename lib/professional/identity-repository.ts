@@ -1,4 +1,5 @@
 import { getSupabaseServerClient } from "@/lib/db/supabase-client";
+import { assertHaSupabaseWriteAllowed } from "@/lib/db/ha-write-policy";
 import { capabilitiesForRole, permissionsForRole } from "./permissions";
 import { resolveActiveProfessionalContext, workspaceStatusFromValidation } from "./identity";
 import type {
@@ -51,6 +52,7 @@ export async function resolveProfessionalIdentityForUser(userId: string, preferr
 }
 
 export async function convertProfessionalActivationToOrganization(input: ConvertProfessionalActivationInput): Promise<ConvertProfessionalActivationResult> {
+  assertHaSupabaseWriteAllowed();
   const supabase = getSupabaseServerClient();
   const { data, error } = await supabase.rpc("convert_professional_activation_request", {
     p_activation_request_id: input.activation_request_id,

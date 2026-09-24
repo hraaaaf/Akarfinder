@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { getSupabaseServerClient } from "@/lib/db/supabase-client";
+import { assertHaSupabaseWriteAllowed } from "@/lib/db/ha-write-policy";
 import { buildAdaptiveQueries, buildInitialHarvestPlan, HARVEST_HARD_CAP, selectRefreshQueries, ADAPTIVE_QUERY_BUDGET } from "./planner";
 import { normalizeHarvestResults } from "./core";
 import type {
@@ -161,6 +162,7 @@ async function persistObservations(input: {
   existingFirstSeen: ReadonlyMap<string, string>;
 }): Promise<number> {
   if (input.observations.length === 0) return 0;
+  assertHaSupabaseWriteAllowed();
   const supabase = getSupabaseServerClient();
   const now = new Date().toISOString();
   const rows = input.observations.map((observation) => {

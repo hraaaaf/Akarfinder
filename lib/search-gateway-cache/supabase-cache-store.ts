@@ -1,4 +1,5 @@
 import { getDbProvider } from "@/lib/db/provider";
+import { assertHaSupabaseWriteAllowed } from "@/lib/db/ha-write-policy";
 import { getSupabaseServerClient } from "@/lib/db/supabase-client";
 import { computeAgeSeconds, isFreshEntry, isStaleEligibleEntry } from "./cache-store";
 import { NoopSearchGatewayCacheStore } from "./noop-cache-store";
@@ -94,6 +95,7 @@ export class SupabaseSearchGatewayCacheStore implements SearchGatewayCacheStore 
 
   async write(entry: SearchGatewayCacheEntry): Promise<void> {
     try {
+      assertHaSupabaseWriteAllowed();
       const { error } = await this.client.from(this.tableName).upsert(entry);
       if (error && !isMissingTableError(error)) {
         console.error("[search-gateway-cache] write failed:", error.message);
@@ -105,6 +107,7 @@ export class SupabaseSearchGatewayCacheStore implements SearchGatewayCacheStore 
 
   async recordHit(entry: SearchGatewayCacheEntry, hitAt = new Date()): Promise<void> {
     try {
+      assertHaSupabaseWriteAllowed();
       const { error } = await this.client
         .from(this.tableName)
         .update({

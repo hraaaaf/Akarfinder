@@ -1,4 +1,5 @@
 import { getSupabaseServerClient } from "@/lib/db/supabase-client";
+import { assertHaSupabaseWriteAllowed } from "@/lib/db/ha-write-policy";
 import { requireProfessionalPermission } from "./repository";
 import type { ProfessionalOrganization } from "./types";
 import type { UpdateProfessionalProfileInput } from "./validation";
@@ -11,6 +12,7 @@ export async function updateProfessionalOrganizationProfile(
   const context = await requireProfessionalPermission(userId, organizationId, "organization.manage");
   if (!context) return null;
 
+  assertHaSupabaseWriteAllowed();
   const supabase = getSupabaseServerClient();
   const { data, error } = await supabase
     .from("professional_organizations")
