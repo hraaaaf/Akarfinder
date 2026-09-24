@@ -49,6 +49,19 @@ Allowed writer mapping:
 Direct SUPABASE_PRIMARY → NEON_PRIMARY is forbidden.
 Direct NEON_PRIMARY → SUPABASE_PRIMARY is forbidden.
 
+### Explicit HA read-provider coherence
+
+Once `HA_WRITER_STATE` is explicitly activated:
+
+- `SUPABASE_PRIMARY` requires the application read provider to be Supabase;
+- `NEON_PRIMARY`, `FAILBACK_SYNC` and `FAILBACK_FREEZE` require the application read provider to be Neon;
+- `FAILOVER_PREP` permits either read provider while all writes remain fenced and the operator establishes the incident path;
+- any other writer/read-provider mismatch fails closed.
+
+Legacy/provider-migration read modes remain unchanged while `HA_WRITER_STATE` is unset.
+
+Changing production routing/environment remains behind the explicit Vercel deployment/provider-switch human gate.
+
 
 ### Application control variables
 
