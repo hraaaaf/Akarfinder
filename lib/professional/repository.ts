@@ -1,4 +1,5 @@
 import { getSupabaseServerClient } from "@/lib/db/supabase-client";
+import { assertHaSupabaseWriteAllowed } from "@/lib/db/ha-write-policy";
 import {
   normalizeInternalNotes,
   validateLeadStatusUpdate,
@@ -46,6 +47,7 @@ export async function createProfessionalOrganizationWithOwner(
   userId: string,
   input: CreateProfessionalOrganizationInput,
 ): Promise<ProfessionalMembershipContext> {
+  assertHaSupabaseWriteAllowed();
   const supabase = getSupabaseServerClient();
   const now = new Date().toISOString();
   const { data: organizationRow, error: organizationError } = await supabase
@@ -122,6 +124,7 @@ export async function addProfessionalMember(
   targetUserId: string,
   role: ProfessionalMembershipRole,
 ): Promise<ProfessionalMembership | null> {
+  assertHaSupabaseWriteAllowed();
   const context = await requireProfessionalPermission(actorUserId, organizationId, "members.manage");
   if (!context) return null;
   if (role === "owner" && context.membership.role !== "owner") {
@@ -151,6 +154,7 @@ export async function claimProfessionalListingOwnership(
   organizationId: string,
   propertyListingId: number,
 ): Promise<ProfessionalListingOwnership | null> {
+  assertHaSupabaseWriteAllowed();
   const context = await requireProfessionalPermission(userId, organizationId, "listings.manage");
   if (!context) return null;
 
@@ -249,6 +253,7 @@ export async function updateAssignedProfessionalLead(
   leadId: string,
   patch: { status?: unknown; internal_notes?: unknown },
 ): Promise<Record<string, unknown> | null> {
+  assertHaSupabaseWriteAllowed();
   const context = await requireProfessionalPermission(userId, organizationId, "leads.manage");
   if (!context) return null;
 
