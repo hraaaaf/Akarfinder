@@ -218,3 +218,25 @@
     margin-top: 9px !important;
   }
 }
+
+
+/* Final Couche 2 specificity guard — restore tabs hidden by legacy mobile convergence rules. */
+@media (max-width: 767px) {
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]):has([data-maplibre-spike][data-maplibre-district="maarif"])
+    [data-p4-map-decision-rail]
+    .p4-premium-tabs {
+    display: grid !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: auto !important;
+  }
+
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]):has([data-maplibre-spike][data-maplibre-district="maarif"])
+    [data-p4-map-decision-rail]
+    .p4-premium-tabs > button {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+}
