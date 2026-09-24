@@ -57,15 +57,18 @@ export default async function MapPage({ searchParams }: MapPageProps) {
     "landmark_casablanca_racine_institut_juan_ramon_jimenez",
   ]);
   const targetPilotLandmarks = isMaarifTargetPilot
-    ? VERIFIED_LANDMARKS
-        .filter((entry) => targetPilotLandmarkIds.has(entry.entity.id))
-        .map((entry) => ({
+    ? VERIFIED_LANDMARKS.flatMap((entry) => {
+        if (!targetPilotLandmarkIds.has(entry.entity.id)) return [];
+        const coordinates = entry.entity.coordinates;
+        if (!coordinates) return [];
+        return [{
           id: entry.entity.id,
           name: entry.entity.canonicalName,
-          latitude: entry.entity.coordinates.lat,
-          longitude: entry.entity.coordinates.lng,
+          latitude: coordinates.lat,
+          longitude: coordinates.lng,
           tier: entry.entity.importance.tier,
-        }))
+        }];
+      })
     : [];
 
   return (
