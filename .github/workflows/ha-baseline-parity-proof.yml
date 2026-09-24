@@ -88,10 +88,50 @@ jobs:
           schema_hash() {
             local db_url="$1"
             local table="$2"
-            docker run --rm -e DB_URL="$db_url" -e TABLE="$table" "$PG_IMAGE"               sh -lc '
-                set -eu
-                pg_dump "$DB_URL" --schema-only --no-owner --no-acl --table="public.$TABLE"                   | sed -E "/^--/d; /^\\\\(un)?restrict /d; /^[[:space:]]*$/d"                   | sha256sum | awk "{print \\$1}"
-              '
+            local schema_sql
+            schema_sql="with parts as (
+              select
+                'column:' || lpad(c.ordinal_position::text, 5, '0') || ':' ||
+                c.column_name || ':' ||
+                c.data_type || ':' ||
+                coalesce(c.udt_schema, '') || ':' ||
+                coalesce(c.udt_name, '') || ':' ||
+                c.is_nullable || ':' ||
+                coalesce(c.column_default, '') || ':' ||
+                c.is_identity || ':' ||
+                coalesce(c.identity_generation, '') || ':' ||
+                c.is_generated || ':' ||
+                coalesce(c.generation_expression, '') || ':' ||
+                coalesce(c.collation_name, '') as part
+              from information_schema.columns c
+              where c.table_schema='public' and c.table_name='$table'
+
+              union all
+
+              select
+                'constraint:' || con.conname || ':' ||
+                pg_get_constraintdef(con.oid, true)
+              from pg_constraint con
+              where con.conrelid='public.$table'::regclass
+
+              union all
+
+              select
+                'index:' || i.indexname || ':' || i.indexdef
+              from pg_indexes i
+              where i.schemaname='public' and i.tablename='$table'
+
+              union all
+
+              select
+                'table_flags:' || c.relreplident || ':' ||
+                c.relrowsecurity::text || ':' ||
+                c.relforcerowsecurity::text
+              from pg_class c
+              where c.oid='public.$table'::regclass
+            )
+            select md5(coalesce(string_agg(part, E'\\n' order by part), '')) from parts;"
+            sql_value "$db_url" "$schema_sql"
           }
 
           for table in $TABLES; do
