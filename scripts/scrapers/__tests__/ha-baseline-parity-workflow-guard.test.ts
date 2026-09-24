@@ -64,6 +64,10 @@ test("HA baseline parity proves count PK content schema and replica identity par
   assert.match(workflow, /PK-set digest mismatch/);
   assert.match(workflow, /content-digest mismatch/);
   assert.match(workflow, /schema fingerprint mismatch/);
+  assert.match(workflow, /information_schema\.columns/);
+  assert.match(workflow, /pg_get_constraintdef/);
+  assert.match(workflow, /pg_indexes/);
+  assert.match(workflow, /relrowsecurity/);
   assert.match(workflow, /replica identity mismatch/);
   assert.match(workflow, /sequence\/identity metadata mismatch/);
 });
