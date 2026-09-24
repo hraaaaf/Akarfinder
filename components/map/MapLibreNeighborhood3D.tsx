@@ -43,6 +43,7 @@ export type MapLibreNeighborhood3DProps = {
   center: MutablePosition;
   boundaryGeometry?: BoundaryGeometry | null;
   desktopCameraOffset?: MutablePosition;
+  targetComposition?: "boundary" | "context";
   reserveRail?: boolean;
   targetPilotLandmarks?: readonly TargetPilotLandmark[];
 };
@@ -123,11 +124,12 @@ function focusNeighborhoodMap(
   geometry: BoundaryGeometry | null,
   center: MutablePosition,
   desktopCameraOffset: MutablePosition,
+  composition: "boundary" | "context",
   desktop: boolean,
   duration: number,
 ): void {
   const bounds = getBoundaryBounds(geometry);
-  if (bounds) {
+  if (bounds && composition === "boundary") {
     map.fitBounds(bounds, {
       padding: desktop
         ? { top: 108, right: 82, bottom: 76, left: 82 }
@@ -142,10 +144,11 @@ function focusNeighborhoodMap(
   const targetCenter: MutablePosition = desktop
     ? [center[0] + desktopCameraOffset[0], center[1] + desktopCameraOffset[1]]
     : center;
+  const contextual = composition === "context";
   map.easeTo({
     center: targetCenter,
-    zoom: desktop ? 13.55 : 13.8,
-    pitch: desktop ? 18 : 8,
+    zoom: contextual ? (desktop ? 12.82 : 13.45) : (desktop ? 13.55 : 13.8),
+    pitch: contextual ? (desktop ? 6 : 0) : (desktop ? 18 : 8),
     bearing: 0,
     duration,
   });
@@ -159,6 +162,7 @@ export function MapLibreNeighborhood3D({
   center,
   boundaryGeometry = null,
   desktopCameraOffset = [0, 0],
+  targetComposition = "boundary",
   reserveRail = false,
   targetPilotLandmarks = [],
 }: MapLibreNeighborhood3DProps) {
@@ -179,7 +183,7 @@ export function MapLibreNeighborhood3D({
   const restoreCamera = () => {
     const map = mapInstanceRef.current;
     if (!map) return;
-    focusNeighborhoodMap(map, boundaryGeometry, center, desktopCameraOffset, window.innerWidth >= 1024, 650);
+    focusNeighborhoodMap(map, boundaryGeometry, center, desktopCameraOffset, targetComposition, window.innerWidth >= 1024, 650);
   };
 
   const changeZoom = (delta: number) => {
@@ -222,11 +226,12 @@ export function MapLibreNeighborhood3D({
         const targetCenter: MutablePosition = desktop
           ? [center[0] + desktopCameraOffset[0], center[1] + desktopCameraOffset[1]]
           : center;
+        const contextual = targetComposition === "context";
         map = new maplibregl.Map({
           container: mapRef.current,
           center: targetCenter,
-          zoom: desktop ? 13.55 : 13.8,
-          pitch: desktop ? 18 : 8,
+          zoom: contextual ? (desktop ? 12.82 : 13.45) : (desktop ? 13.55 : 13.8),
+          pitch: contextual ? (desktop ? 6 : 0) : (desktop ? 18 : 8),
           bearing: 0,
           attributionControl: false,
           canvasContextAttributes: { antialias: true },
@@ -305,15 +310,23 @@ export function MapLibreNeighborhood3D({
               });
               map.addLayer({
                 id: "neighborhood-boundary-fill", type: "fill", source: "neighborhood-boundary",
-                paint: { "fill-color": "#69A7E8", "fill-opacity": 0.18 },
+                paint: {
+                  "fill-color": isMaarifTargetPilot ? "#4f8fd2" : "#69A7E8",
+                  "fill-opacity": isMaarifTargetPilot ? 0.10 : 0.18,
+                },
               });
               map.addLayer({
                 id: "neighborhood-boundary-line", type: "line", source: "neighborhood-boundary",
-                paint: { "line-color": "#071B33", "line-width": 3.2, "line-opacity": 0.96 },
+                paint: {
+                  "line-color": isMaarifTargetPilot ? "#173f68" : "#071B33",
+                  "line-width": isMaarifTargetPilot ? 2.15 : 3.2,
+                  "line-opacity": isMaarifTargetPilot ? 0.78 : 0.96,
+                  "line-blur": isMaarifTargetPilot ? 0.15 : 0,
+                },
               });
             }
             window.requestAnimationFrame(() => {
-              if (!disposed) focusNeighborhoodMap(map, boundaryGeometry, center, desktopCameraOffset, desktop, 0);
+              if (!disposed) focusNeighborhoodMap(map, boundaryGeometry, center, desktopCameraOffset, targetComposition, desktop, 0);
             });
           } catch (error) {
             console.error("[vivre-ici-maplibre-national] layer setup failed", error);
@@ -346,7 +359,7 @@ export function MapLibreNeighborhood3D({
       mapInstanceRef.current = null;
       try { map?.remove(); } catch { /* no-op */ }
     };
-  }, [citySlug, districtSlug, districtLabel, center[0], center[1], desktopCameraOffset[0], desktopCameraOffset[1], boundaryGeometry]);
+  }, [citySlug, districtSlug, districtLabel, center[0], center[1], desktopCameraOffset[0], desktopCameraOffset[1], boundaryGeometry, targetComposition]);
 
   useEffect(() => {
     const map = mapInstanceRef.current;
@@ -399,6 +412,7 @@ export function MapLibreNeighborhood3D({
       data-maplibre-district={districtSlug}
       data-maplibre-boundary-status={boundaryGeometry ? "shadow-reference" : "center-only"}
       data-maplibre-boundary-semantic={isMaarifTargetPilot && boundaryGeometry ? "administrative-arrondissement" : boundaryGeometry ? "boundary-reference" : "none"}
+      data-maplibre-camera-policy={targetComposition === "context" ? "contextual-center" : "boundary-fit"}
       data-maplibre-rtl-status={rtlStatus}
       data-maplibre-reserve-rail={reserveRail ? "true" : "false"}
       data-akar-quartier-target={isMaarifTargetPilot ? "maarif-couche1" : undefined}
