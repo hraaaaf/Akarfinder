@@ -26,6 +26,10 @@ jobs:
           - marocimmo.com
           - sarout.ma
           - marocannonces.com
+          - mubawab.ma
+          - avito.ma
+          - sarouty.ma
+          - soukimmobilier.com
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
