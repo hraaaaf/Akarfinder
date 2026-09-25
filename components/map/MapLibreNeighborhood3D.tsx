@@ -2,6 +2,7 @@
 
 import { Layers3, LocateFixed, Minus, Plus, Search } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { MAARIF_TARGET_CONTEXT_LABELS } from "@/lib/geo/maarif-target-context-labels";
 
 type LivingHereCategory =
   | "education" | "groceries" | "health" | "transport" | "food" | "green_sport"
@@ -43,12 +44,14 @@ export type MapLibreNeighborhood3DProps = {
   center: MutablePosition;
   boundaryGeometry?: BoundaryGeometry | null;
   desktopCameraOffset?: MutablePosition;
+  targetComposition?: "boundary" | "context";
   reserveRail?: boolean;
   targetPilotLandmarks?: readonly TargetPilotLandmark[];
 };
 
 const OPENFREEMAP_VECTOR = "https://tiles.openfreemap.org/planet";
 const OPENFREEMAP_STYLE = "https://tiles.openfreemap.org/styles/liberty";
+const OPENFREEMAP_TARGET_STYLE = "https://tiles.openfreemap.org/styles/bright";
 const RTL_TEXT_PLUGIN_URL = "https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0.3.0/dist/mapbox-gl-rtl-text.js";
 let rtlTextPluginPromise: Promise<void> | null = null;
 
@@ -75,6 +78,9 @@ async function ensureMapLibreRtlText(maplibregl: any): Promise<"loaded" | "error
 const FOCUS_SOURCE_ID = "akarfinder-neighborhood-focus";
 const FOCUS_GLOW_LAYER_ID = "akarfinder-neighborhood-focus-glow";
 const FOCUS_RING_LAYER_ID = "akarfinder-neighborhood-focus-ring";
+const CONTEXT_FOOTPRINT_SOURCE_ID = "akarfinder-target-context-footprint";
+const CONTEXT_FOOTPRINT_FILL_LAYER_ID = "akarfinder-target-context-footprint-fill";
+const CONTEXT_FOOTPRINT_LINE_LAYER_ID = "akarfinder-target-context-footprint-line";
 
 const CATEGORY_META: Record<LivingHereCategory, { label: string; color: string }> = {
   education: { label: "Écoles", color: "#2f80ed" }, groceries: { label: "Courses", color: "#7b61ff" },
@@ -118,16 +124,56 @@ function getBoundaryBounds(geometry: BoundaryGeometry | null): [MutablePosition,
   return [[minLng, minLat], [maxLng, maxLat]];
 }
 
+function buildVerifiedPointHull(points: MutablePosition[]): MutablePosition[] | null {
+  const unique = Array.from(
+    new Map(points.map(([lng, lat]) => [`${lng.toFixed(7)}:${lat.toFixed(7)}`, [lng, lat] as MutablePosition])).values(),
+  ).sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+  if (unique.length < 3) return null;
+
+  const cross = (o: MutablePosition, a: MutablePosition, b: MutablePosition) =>
+    (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+
+  const lower: MutablePosition[] = [];
+  for (const point of unique) {
+    while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], point) <= 0) lower.pop();
+    lower.push(point);
+  }
+
+  const upper: MutablePosition[] = [];
+  for (const point of [...unique].reverse()) {
+    while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], point) <= 0) upper.pop();
+    upper.push(point);
+  }
+
+  const hull = [...lower.slice(0, -1), ...upper.slice(0, -1)];
+  return hull.length >= 3 ? [...hull, hull[0]] : null;
+}
+
+function expandContextHull(hull: MutablePosition[], scale = 1.50): MutablePosition[] {
+  const distinct = hull.slice(0, -1);
+  if (distinct.length < 3) return hull;
+  const centroid: MutablePosition = [
+    distinct.reduce((sum, point) => sum + point[0], 0) / distinct.length,
+    distinct.reduce((sum, point) => sum + point[1], 0) / distinct.length,
+  ];
+  const expanded = distinct.map(([lng, lat]) => [
+    centroid[0] + (lng - centroid[0]) * scale,
+    centroid[1] + (lat - centroid[1]) * scale,
+  ] as MutablePosition);
+  return [...expanded, expanded[0]];
+}
+
 function focusNeighborhoodMap(
   map: any,
   geometry: BoundaryGeometry | null,
   center: MutablePosition,
   desktopCameraOffset: MutablePosition,
+  composition: "boundary" | "context",
   desktop: boolean,
   duration: number,
 ): void {
   const bounds = getBoundaryBounds(geometry);
-  if (bounds) {
+  if (bounds && composition === "boundary") {
     map.fitBounds(bounds, {
       padding: desktop
         ? { top: 108, right: 82, bottom: 76, left: 82 }
@@ -142,10 +188,11 @@ function focusNeighborhoodMap(
   const targetCenter: MutablePosition = desktop
     ? [center[0] + desktopCameraOffset[0], center[1] + desktopCameraOffset[1]]
     : center;
+  const contextual = composition === "context";
   map.easeTo({
     center: targetCenter,
-    zoom: desktop ? 13.55 : 13.8,
-    pitch: desktop ? 18 : 8,
+    zoom: contextual ? (desktop ? 13.28 : 12.92) : (desktop ? 13.55 : 13.8),
+    pitch: contextual ? 0 : (desktop ? 18 : 8),
     bearing: 0,
     duration,
   });
@@ -159,6 +206,7 @@ export function MapLibreNeighborhood3D({
   center,
   boundaryGeometry = null,
   desktopCameraOffset = [0, 0],
+  targetComposition = "boundary",
   reserveRail = false,
   targetPilotLandmarks = [],
 }: MapLibreNeighborhood3DProps) {
@@ -179,7 +227,7 @@ export function MapLibreNeighborhood3D({
   const restoreCamera = () => {
     const map = mapInstanceRef.current;
     if (!map) return;
-    focusNeighborhoodMap(map, boundaryGeometry, center, desktopCameraOffset, window.innerWidth >= 1024, 650);
+    focusNeighborhoodMap(map, boundaryGeometry, center, desktopCameraOffset, targetComposition, window.innerWidth >= 1024, 650);
   };
 
   const changeZoom = (delta: number) => {
@@ -222,21 +270,49 @@ export function MapLibreNeighborhood3D({
         const targetCenter: MutablePosition = desktop
           ? [center[0] + desktopCameraOffset[0], center[1] + desktopCameraOffset[1]]
           : center;
+        const contextual = targetComposition === "context";
         map = new maplibregl.Map({
           container: mapRef.current,
           center: targetCenter,
-          zoom: desktop ? 13.55 : 13.8,
-          pitch: desktop ? 18 : 8,
+          zoom: contextual ? (desktop ? 13.28 : 13.05) : (desktop ? 13.55 : 13.8),
+          pitch: contextual ? 0 : (desktop ? 18 : 8),
           bearing: 0,
           attributionControl: false,
           canvasContextAttributes: { antialias: true },
-          style: OPENFREEMAP_STYLE,
+          style: isMaarifTargetPilot && targetComposition === "context"
+            ? OPENFREEMAP_TARGET_STYLE
+            : OPENFREEMAP_STYLE,
         } as any);
         mapInstanceRef.current = map;
 
         map.once("load", () => {
           if (disposed) return;
           try {
+            if (isMaarifTargetPilot && targetComposition === "context") {
+              for (const layer of map.getStyle().layers ?? []) {
+                const id = String(layer.id ?? "").toLowerCase();
+                try {
+                  if (layer.type === "background") {
+                    map.setPaintProperty(layer.id, "background-color", "#f4f2ed");
+                  }
+                  if (
+                    (layer.type === "fill" && /(water|ocean|sea|building|park|landuse|landcover)/.test(id))
+                    || (layer.type === "line" && /(coast|shore|water|road|street|highway|motorway|trunk|primary|secondary|tertiary)/.test(id))
+                  ) {
+                    map.setLayoutProperty(layer.id, "visibility", "none");
+                  }
+                  if (layer.type === "symbol" && /(neighbour|neighborhood|suburb|quarter|district|place)/.test(id)) {
+                    map.setLayoutProperty(layer.id, "visibility", "none");
+                  }
+                  if (layer.type === "symbol" && /(poi|housenumber|transit)/.test(id)) {
+                    map.setPaintProperty(layer.id, "text-opacity", 0.30);
+                    map.setPaintProperty(layer.id, "icon-opacity", 0.20);
+                  }
+                } catch {
+                  // Style-layer capabilities vary; keep the base style when a paint property is unsupported.
+                }
+              }
+            }
             if (!map.getSource("akarfinder-openfreemap")) {
               map.addSource("akarfinder-openfreemap", {
                 type: "vector",
@@ -244,21 +320,294 @@ export function MapLibreNeighborhood3D({
                 attribution: "© OpenStreetMap contributors · OpenFreeMap",
               });
             }
+
+            if (isMaarifTargetPilot && targetComposition === "context") {
+              const source = "akarfinder-openfreemap";
+
+              if (!map.hasImage("akarfinder-water-texture")) {
+                const size = 96;
+                const tau = Math.PI * 2;
+                const data = new Uint8Array(size * size * 4);
+                for (let y = 0; y < size; y += 1) {
+                  for (let x = 0; x < size; x += 1) {
+                    const index = (y * size + x) * 4;
+                    const nx = x / size;
+                    const ny = y / size;
+                    const waveA = Math.sin(tau * ((2 * nx) + ny)) * 4.0;
+                    const waveB = Math.cos(tau * (nx - (3 * ny))) * 2.5;
+                    const waveC = Math.sin(tau * ((4 * nx) + (2 * ny))) * 1.45;
+                    const foamBand = Math.sin(tau * ((5 * nx) + (2 * ny)))
+                      + Math.cos(tau * ((2 * nx) - (4 * ny)));
+                    const foamLift = foamBand > 1.64 ? 5.0 : foamBand > 1.40 ? 2.5 : 0;
+                    const grain = (
+                      Math.sin(tau * ((11 * nx) + (7 * ny)))
+                      + Math.cos(tau * ((7 * nx) - (13 * ny)))
+                    ) * 0.45;
+                    const delta = waveA + waveB + waveC + foamLift + grain;
+                    data[index] = 62 + Math.round(delta * 0.74);
+                    data[index + 1] = 142 + Math.round(delta * 0.66);
+                    data[index + 2] = 185 + Math.round(delta * 0.60);
+                    data[index + 3] = 255;
+                  }
+                }
+                map.addImage("akarfinder-water-texture", { width: size, height: size, data }, { pixelRatio: 2 });
+              }
+
+              map.addLayer({
+                id: "akarfinder-target-water",
+                type: "fill",
+                source,
+                "source-layer": "water",
+                paint: {
+                  "fill-pattern": "akarfinder-water-texture",
+                  "fill-opacity": 0.97,
+                  "fill-antialias": true,
+                },
+              } as any);
+
+              map.addLayer({
+                id: "akarfinder-target-landuse-urban",
+                type: "fill",
+                source,
+                "source-layer": "landuse",
+                filter: ["match", ["get", "class"], ["residential", "commercial", "retail", "industrial"], true, false],
+                paint: {
+                  "fill-color": [
+                    "match", ["get", "class"],
+                    "commercial", "#eeeae4",
+                    "retail", "#f0ebe5",
+                    "industrial", "#ece9e3",
+                    "#f2f0eb"
+                  ],
+                  "fill-opacity": 0.90,
+                },
+              } as any);
+
+              map.addLayer({
+                id: "akarfinder-target-landcover-green",
+                type: "fill",
+                source,
+                "source-layer": "landcover",
+                filter: ["match", ["get", "class"], ["grass", "wood"], true, false],
+                paint: {
+                  "fill-color": ["match", ["get", "class"], "wood", "#94bb7e", "#b5d694"],
+                  "fill-opacity": 0.80,
+                },
+              } as any);
+
+              map.addLayer({
+                id: "akarfinder-target-landuse-green",
+                type: "fill",
+                source,
+                "source-layer": "landuse",
+                filter: ["match", ["get", "class"], ["park", "cemetery", "grass", "recreation_ground"], true, false],
+                paint: {
+                  "fill-color": "#acd08d",
+                  "fill-opacity": 0.82,
+                  "fill-outline-color": "#94ba79",
+                },
+              } as any);
+
+              map.addLayer({
+                id: "akarfinder-target-buildings",
+                type: "fill",
+                source,
+                "source-layer": "building",
+                minzoom: 12.2,
+                paint: {
+                  "fill-color": [
+                    "interpolate", ["linear"], ["coalesce", ["get", "render_height"], 0],
+                    0, "#ddd9d2",
+                    12, "#d3d0c9",
+                    28, "#c7c6c1",
+                    60, "#bbc0bf"
+                  ],
+                  "fill-opacity": ["interpolate", ["linear"], ["zoom"], 12.2, 0.80, 14.5, 0.96],
+                  "fill-outline-color": "#b0b7b3",
+                },
+              } as any);
+
+              const roadFilter = ["match", ["get", "class"], ["motorway", "trunk", "primary", "secondary", "tertiary", "minor", "service"], true, false];
+
+              map.addLayer({
+                id: "akarfinder-target-road-casing",
+                type: "line",
+                source,
+                "source-layer": "transportation",
+                filter: roadFilter,
+                layout: {
+                  "line-cap": "round",
+                  "line-join": "round",
+                },
+                paint: {
+                  "line-color": [
+                    "match", ["get", "class"],
+                    "motorway", "#c3b9aa",
+                    "trunk", "#c7beb0",
+                    "primary", "#c3c5c1",
+                    "secondary", "#c9ceca",
+                    "#d2d6d3"
+                  ],
+                  "line-opacity": 0.97,
+                  "line-width": [
+                    "interpolate", ["linear"], ["zoom"],
+                    11, ["match", ["get", "class"], "motorway", 3.8, "trunk", 3.45, "primary", 3.25, "secondary", 2.65, "tertiary", 2.0, 1.3],
+                    15, ["match", ["get", "class"], "motorway", 16.0, "trunk", 13.8, "primary", 12.0, "secondary", 9.4, "tertiary", 6.8, "minor", 4.3, 2.8]
+                  ],
+                },
+              } as any);
+
+              map.addLayer({
+                id: "akarfinder-target-road-fill",
+                type: "line",
+                source,
+                "source-layer": "transportation",
+                filter: roadFilter,
+                layout: {
+                  "line-cap": "round",
+                  "line-join": "round",
+                },
+                paint: {
+                  "line-color": [
+                    "match", ["get", "class"],
+                    "motorway", "#e4d7c1",
+                    "trunk", "#e9dfcd",
+                    "primary", "#efe9df",
+                    "secondary", "#f4f0e8",
+                    "tertiary", "#fbfaf5",
+                    "#ffffff"
+                  ],
+                  "line-opacity": 0.99,
+                  "line-width": [
+                    "interpolate", ["linear"], ["zoom"],
+                    11, ["match", ["get", "class"], "motorway", 2.95, "trunk", 2.7, "primary", 2.4, "secondary", 1.95, "tertiary", 1.45, 0.9],
+                    15, ["match", ["get", "class"], "motorway", 13.8, "trunk", 11.8, "primary", 9.9, "secondary", 7.6, "tertiary", 5.4, "minor", 3.1, 1.9]
+                  ],
+                },
+              } as any);
+
+              map.addLayer({
+                id: "akarfinder-target-road-labels-major",
+                type: "symbol",
+                source,
+                "source-layer": "transportation_name",
+                minzoom: 11.8,
+                filter: ["match", ["get", "class"], ["motorway", "trunk", "primary", "secondary"], true, false],
+                layout: {
+                  "symbol-placement": "line",
+                  "symbol-spacing": 260,
+                  "text-field": ["coalesce", ["get", "name:latin"], ["get", "name"]],
+                  "text-size": ["interpolate", ["linear"], ["zoom"], 11.8, 9.8, 14, 12.0],
+                  "text-letter-spacing": 0.012,
+                  "text-max-angle": 20,
+                  "text-padding": 2,
+                  "text-allow-overlap": false,
+                  "text-ignore-placement": false,
+                },
+                paint: {
+                  "text-color": "#3f4b56",
+                  "text-opacity": 0.90,
+                  "text-halo-color": "rgba(255,255,255,0.97)",
+                  "text-halo-width": 1.4,
+                  "text-halo-blur": 0.12,
+                },
+              } as any);
+
+              map.addLayer({
+                id: "akarfinder-target-road-labels-minor",
+                type: "symbol",
+                source,
+                "source-layer": "transportation_name",
+                minzoom: 12.5,
+                filter: ["match", ["get", "class"], ["tertiary", "minor", "service"], true, false],
+                layout: {
+                  "symbol-placement": "line",
+                  "symbol-spacing": 360,
+                  "text-field": ["coalesce", ["get", "name:latin"], ["get", "name"]],
+                  "text-size": ["interpolate", ["linear"], ["zoom"], 12.5, 7.7, 14.5, 9.4],
+                  "text-letter-spacing": 0.008,
+                  "text-max-angle": 24,
+                  "text-padding": 2,
+                  "text-allow-overlap": false,
+                  "text-ignore-placement": false,
+                },
+                paint: {
+                  "text-color": "#616a72",
+                  "text-opacity": 0.62,
+                  "text-halo-color": "rgba(255,255,255,0.94)",
+                  "text-halo-width": 1.0,
+                  "text-halo-blur": 0.14,
+                },
+              } as any);
+
+              map.addLayer({
+                id: "akarfinder-target-coastline-foam-wide",
+                type: "line",
+                source,
+                "source-layer": "water",
+                paint: {
+                  "line-color": "#ffffff",
+                  "line-opacity": 0.36,
+                  "line-width": ["interpolate", ["linear"], ["zoom"], 11, 3.4, 14, 6.4],
+                  "line-blur": 1.55,
+                },
+              } as any);
+
+              map.addLayer({
+                id: "akarfinder-target-coastline-foam-breaks",
+                type: "line",
+                source,
+                "source-layer": "water",
+                layout: {
+                  "line-cap": "round",
+                  "line-join": "round",
+                },
+                paint: {
+                  "line-color": "#ffffff",
+                  "line-opacity": 0.58,
+                  "line-width": ["interpolate", ["linear"], ["zoom"], 11, 1.9, 14, 4.2],
+                  "line-dasharray": [0.34, 0.24, 0.82, 0.38, 0.18, 0.28],
+                  "line-blur": 0.62,
+                },
+              } as any);
+
+              map.addLayer({
+                id: "akarfinder-target-coastline",
+                type: "line",
+                source,
+                "source-layer": "water",
+                paint: {
+                  "line-color": "#f9fcff",
+                  "line-opacity": 0.95,
+                  "line-width": ["interpolate", ["linear"], ["zoom"], 11, 1.3, 14, 2.9],
+                  "line-blur": 0.18,
+                },
+              } as any);
+            }
             map.addLayer({
               id: "3d-buildings",
               source: "akarfinder-openfreemap",
               "source-layer": "building",
               type: "fill-extrusion",
-              minzoom: 14.8,
+              minzoom: isMaarifTargetPilot && targetComposition === "context" ? 24 : 14.8,
               filter: ["!=", ["get", "hide_3d"], true],
               paint: {
-                "fill-extrusion-color": [
-                  "interpolate", ["linear"], ["coalesce", ["get", "render_height"], 0],
-                  0, "#edf1f4", 10, "#e4e9ed", 24, "#d9e1e6", 55, "#ccd7df", 120, "#b8c6d1",
-                ],
-                "fill-extrusion-height": ["coalesce", ["get", "render_height"], 0],
-                "fill-extrusion-base": ["coalesce", ["get", "render_min_height"], 0],
-                "fill-extrusion-opacity": 0.28,
+                "fill-extrusion-color": isMaarifTargetPilot && targetComposition === "context"
+                  ? [
+                    "interpolate", ["linear"], ["coalesce", ["get", "render_height"], 0],
+                    0, "#eeeae3", 10, "#e5dfd6", 24, "#d9d2c8", 55, "#cbc2b6", 120, "#b9aea1",
+                  ]
+                  : [
+                    "interpolate", ["linear"], ["coalesce", ["get", "render_height"], 0],
+                    0, "#edf1f4", 10, "#e4e9ed", 24, "#d9e1e6", 55, "#ccd7df", 120, "#b8c6d1",
+                  ],
+                "fill-extrusion-height": isMaarifTargetPilot && targetComposition === "context"
+                  ? ["*", ["coalesce", ["get", "render_height"], 0], 0.62]
+                  : ["coalesce", ["get", "render_height"], 0],
+                "fill-extrusion-base": isMaarifTargetPilot && targetComposition === "context"
+                  ? ["*", ["coalesce", ["get", "render_min_height"], 0], 0.62]
+                  : ["coalesce", ["get", "render_min_height"], 0],
+                "fill-extrusion-opacity": isMaarifTargetPilot && targetComposition === "context" ? 0 : 0.28,
                 "fill-extrusion-vertical-gradient": true,
               },
             } as any);
@@ -267,7 +616,11 @@ export function MapLibreNeighborhood3D({
               type: "geojson",
               data: {
                 type: "Feature",
-                properties: { district: districtLabel, boundaryStatus: boundaryGeometry ? "provided" : "center-only" },
+                properties: {
+                  district: districtLabel,
+                  boundaryStatus: boundaryGeometry ? "provided" : "center-only",
+                  focusSemantic: isMaarifTargetPilot ? "context-focus-not-boundary" : "district-focus",
+                },
                 geometry: { type: "Point", coordinates: center },
               },
             });
@@ -276,12 +629,12 @@ export function MapLibreNeighborhood3D({
               type: "circle",
               source: FOCUS_SOURCE_ID,
               paint: {
-                "circle-radius": desktop ? 84 : 68,
-                "circle-color": "#12a9a1",
-                "circle-opacity": 0.13,
-                "circle-stroke-color": "#8ff8ee",
-                "circle-stroke-width": 1.5,
-                "circle-stroke-opacity": 0.56,
+                "circle-radius": isMaarifTargetPilot ? (desktop ? 112 : 76) : (desktop ? 84 : 68),
+                "circle-color": isMaarifTargetPilot ? "#6eb6e8" : "#12a9a1",
+                "circle-opacity": isMaarifTargetPilot ? 0.022 : 0.13,
+                "circle-stroke-color": isMaarifTargetPilot ? "#9fd3f3" : "#8ff8ee",
+                "circle-stroke-width": isMaarifTargetPilot ? 0.8 : 1.5,
+                "circle-stroke-opacity": isMaarifTargetPilot ? 0.12 : 0.56,
               },
             });
             map.addLayer({
@@ -305,15 +658,23 @@ export function MapLibreNeighborhood3D({
               });
               map.addLayer({
                 id: "neighborhood-boundary-fill", type: "fill", source: "neighborhood-boundary",
-                paint: { "fill-color": "#69A7E8", "fill-opacity": 0.18 },
+                paint: {
+                  "fill-color": isMaarifTargetPilot ? "#6da7de" : "#69A7E8",
+                  "fill-opacity": isMaarifTargetPilot ? 0.035 : 0.18,
+                },
               });
               map.addLayer({
                 id: "neighborhood-boundary-line", type: "line", source: "neighborhood-boundary",
-                paint: { "line-color": "#071B33", "line-width": 3.2, "line-opacity": 0.96 },
+                paint: {
+                  "line-color": isMaarifTargetPilot ? "#5f88b2" : "#071B33",
+                  "line-width": isMaarifTargetPilot ? 1.35 : 3.2,
+                  "line-opacity": isMaarifTargetPilot ? 0.44 : 0.96,
+                  "line-blur": isMaarifTargetPilot ? 0.1 : 0,
+                },
               });
             }
             window.requestAnimationFrame(() => {
-              if (!disposed) focusNeighborhoodMap(map, boundaryGeometry, center, desktopCameraOffset, desktop, 0);
+              if (!disposed) focusNeighborhoodMap(map, boundaryGeometry, center, desktopCameraOffset, targetComposition, desktop, 0);
             });
           } catch (error) {
             console.error("[vivre-ici-maplibre-national] layer setup failed", error);
@@ -346,7 +707,78 @@ export function MapLibreNeighborhood3D({
       mapInstanceRef.current = null;
       try { map?.remove(); } catch { /* no-op */ }
     };
-  }, [citySlug, districtSlug, districtLabel, center[0], center[1], desktopCameraOffset[0], desktopCameraOffset[1], boundaryGeometry]);
+  }, [citySlug, districtSlug, districtLabel, center[0], center[1], desktopCameraOffset[0], desktopCameraOffset[1], boundaryGeometry, targetComposition]);
+
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (
+      !map
+      || !ready
+      || !isMaarifTargetPilot
+      || targetComposition !== "context"
+      || !context?.anchors?.length
+    ) return;
+
+    const verifiedPoints: MutablePosition[] = [
+      center,
+      ...context.anchors.map((anchor) => [anchor.longitude, anchor.latitude] as MutablePosition),
+      ...targetPilotLandmarks.map((landmark) => [landmark.longitude, landmark.latitude] as MutablePosition),
+    ];
+    const hull = buildVerifiedPointHull(verifiedPoints);
+    if (!hull) return;
+    const contextualEnvelope = expandContextHull(hull, 1.50);
+
+    const data = {
+      type: "Feature",
+      properties: {
+        semantic: "verified-anchor-envelope-buffered",
+        boundaryClaim: false,
+        sourcePointCount: verifiedPoints.length,
+        visualExpansionFactor: 1.50,
+      },
+      geometry: { type: "Polygon", coordinates: [contextualEnvelope] },
+    };
+
+    const source = map.getSource(CONTEXT_FOOTPRINT_SOURCE_ID);
+    if (source?.setData) {
+      source.setData(data as any);
+      return;
+    }
+
+    try {
+      map.addSource(CONTEXT_FOOTPRINT_SOURCE_ID, { type: "geojson", data } as any);
+      map.addLayer({
+        id: CONTEXT_FOOTPRINT_FILL_LAYER_ID,
+        type: "fill",
+        source: CONTEXT_FOOTPRINT_SOURCE_ID,
+        paint: {
+          "fill-color": "#77b8e8",
+          "fill-opacity": 0.22,
+        },
+      } as any, FOCUS_GLOW_LAYER_ID);
+      map.addLayer({
+        id: CONTEXT_FOOTPRINT_LINE_LAYER_ID,
+        type: "line",
+        source: CONTEXT_FOOTPRINT_SOURCE_ID,
+        paint: {
+          "line-color": "#0b2b50",
+          "line-width": 2.4,
+          "line-opacity": 0.86,
+          "line-blur": 0.08,
+        },
+      } as any, FOCUS_GLOW_LAYER_ID);
+    } catch (error) {
+      console.error("[vivre-ici-maplibre-context-footprint] setup failed", error);
+    }
+  }, [
+    context,
+    ready,
+    isMaarifTargetPilot,
+    targetComposition,
+    center[0],
+    center[1],
+    targetPilotLandmarks,
+  ]);
 
   useEffect(() => {
     const map = mapInstanceRef.current;
@@ -368,6 +800,15 @@ export function MapLibreNeighborhood3D({
           visible: point.x > -120 && point.x < canvas.clientWidth + 120 && point.y > -100 && point.y < canvas.clientHeight + 100,
         };
       }
+      if (isMaarifTargetPilot) {
+        for (const label of MAARIF_TARGET_CONTEXT_LABELS) {
+          const point = map.project([label.longitude, label.latitude]);
+          next[`context:${label.id}`] = {
+            x: point.x, y: point.y,
+            visible: point.x > -90 && point.x < canvas.clientWidth + 90 && point.y > -70 && point.y < canvas.clientHeight + 70,
+          };
+        }
+      }
       const cp = map.project(center);
       setCenterPoint({ x: cp.x, y: cp.y, visible: cp.x > -60 && cp.x < canvas.clientWidth + 60 && cp.y > -60 && cp.y < canvas.clientHeight + 60 });
       setScreenPoints(next);
@@ -379,7 +820,7 @@ export function MapLibreNeighborhood3D({
       map.off("move", updatePositions);
       map.off("resize", updatePositions);
     };
-  }, [context, ready, center[0], center[1], targetPilotLandmarks]);
+  }, [context, ready, center[0], center[1], targetPilotLandmarks, isMaarifTargetPilot]);
 
   const categories = context?.categories.filter((category) => Boolean(CATEGORY_META[category])) ?? [];
   const visibleAnchors = context?.anchors.filter((anchor) => activeCategory === "all" || anchor.category === activeCategory) ?? [];
@@ -399,6 +840,10 @@ export function MapLibreNeighborhood3D({
       data-maplibre-district={districtSlug}
       data-maplibre-boundary-status={boundaryGeometry ? "shadow-reference" : "center-only"}
       data-maplibre-boundary-semantic={isMaarifTargetPilot && boundaryGeometry ? "administrative-arrondissement" : boundaryGeometry ? "boundary-reference" : "none"}
+      data-maplibre-camera-policy={targetComposition === "context" ? "contextual-center" : "boundary-fit"}
+      data-maplibre-focus-semantic={isMaarifTargetPilot ? "context-focus-not-boundary" : "district-focus"}
+      data-maplibre-context-footprint={isMaarifTargetPilot && context?.anchors?.length ? "verified-anchor-envelope-buffered" : "none"}
+      data-maplibre-target-context-count={isMaarifTargetPilot ? MAARIF_TARGET_CONTEXT_LABELS.length : 0}
       data-maplibre-rtl-status={rtlStatus}
       data-maplibre-reserve-rail={reserveRail ? "true" : "false"}
       data-akar-quartier-target={isMaarifTargetPilot ? "maarif-couche1" : undefined}
@@ -406,6 +851,9 @@ export function MapLibreNeighborhood3D({
       <div className="maplibre-spike-map" data-maplibre-map-surface>
         <div className="maplibre-spike-canvas" ref={mapRef} />
         <div className="maplibre-spike-map-grade" aria-hidden="true" />
+        {isMaarifTargetPilot && targetComposition === "context" ? (
+          <div className="maplibre-spike-attribution">Map © OpenStreetMap contributors · OpenFreeMap</div>
+        ) : null}
         <div className="maplibre-spike-dom-labels" aria-hidden="true">
           {centerPoint?.visible && (
             <div className="maplibre-spike-neighborhood-label" style={{ left: centerPoint.x, top: centerPoint.y }}>
@@ -413,12 +861,50 @@ export function MapLibreNeighborhood3D({
               <i />
             </div>
           )}
+          {isMaarifTargetPilot ? MAARIF_TARGET_CONTEXT_LABELS.map((label) => {
+            const screen = screenPoints[`context:${label.id}`];
+            if (!screen?.visible) return null;
+            return (
+              <div
+                key={label.id}
+                className="maplibre-spike-target-context-label"
+                data-context-semantic={label.semantic}
+                data-context-source-id={label.id}
+                style={{ left: screen.x, top: screen.y }}
+              >
+                {label.name}
+              </div>
+            );
+          }) : null}
           {visibleAnchors.map((anchor) => {
             const screen = screenPoints[anchor.poi_id];
             if (!screen?.visible) return null;
             const meta = CATEGORY_META[anchor.category] ?? CATEGORY_META.other;
             const arabic = isArabicText(anchor.name);
-            return <div key={anchor.poi_id} className="maplibre-spike-poi-label" style={{ left: screen.x, top: screen.y }}><span lang={arabic ? "ar" : undefined} dir={arabic ? "rtl" : "auto"}>{anchor.name}</span><i style={{ background: meta.color }} /></div>;
+            const protectedPoints = [
+              centerPoint,
+              ...targetPilotLandmarks.map((landmark) => screenPoints[`target:${landmark.id}`]),
+            ].filter((point): point is ScreenPoint => Boolean(point?.visible));
+            const overviewSecondary = isMaarifTargetPilot
+              && activeCategory === "all"
+              && anchor.category !== "green_sport"
+              && anchor.category !== "education";
+            const protectedCollision = anchor.category !== "green_sport" && protectedPoints.some((point) =>
+              Math.abs(point.x - screen.x) < 110 && Math.abs(point.y - screen.y) < 30
+            );
+            const collapseLabel = overviewSecondary || (isMaarifTargetPilot && protectedCollision);
+            return (
+              <div
+                key={anchor.poi_id}
+                className="maplibre-spike-poi-label"
+                data-label-collapsed={collapseLabel ? "true" : "false"}
+                data-poi-category={anchor.category}
+                style={{ left: screen.x, top: screen.y }}
+              >
+                <span lang={arabic ? "ar" : undefined} dir={arabic ? "rtl" : "auto"}>{anchor.name}</span>
+                <i style={{ background: meta.color }} />
+              </div>
+            );
           })}
           {targetPilotLandmarks.map((landmark) => {
             const screen = screenPoints[`target:${landmark.id}`];
@@ -441,7 +927,7 @@ export function MapLibreNeighborhood3D({
       <div className="maplibre-spike-map-chrome">
         <div className="maplibre-spike-brand"><b>AF</b><span>AkarFinder</span></div>
         <div className="maplibre-spike-search"><Search size={17} aria-hidden="true" /><strong>{cityLabel}</strong><span>Quartiers et adresses</span></div>
-        <div className="maplibre-spike-mode"><span>2D</span><strong>3D</strong></div>
+        <div className="maplibre-spike-mode">{isMaarifTargetPilot && targetComposition === "context" ? <><strong>2D</strong><span>3D</span></> : <><span>2D</span><strong>3D</strong></>}</div>
       </div>
 
       <div className="maplibre-spike-view-chips" aria-label="Mode cartographique">
@@ -453,6 +939,7 @@ export function MapLibreNeighborhood3D({
         <button className={activeCategory === "all" ? "active" : ""} onClick={() => setActiveCategory("all")}>Repères</button>
         {categories.map((category) => <button key={category} className={activeCategory === category ? "active" : ""} onClick={() => setActiveCategory(category)}>{CATEGORY_META[category].label}</button>)}
       </div>
+
 
       {isMaarifTargetPilot && boundaryGeometry ? (
         <div className="maplibre-spike-boundary-badge" aria-label="Nature du contour affiché">
@@ -471,7 +958,7 @@ export function MapLibreNeighborhood3D({
         <span className="maplibre-spike-map-note-kicker">Quartier · {cityLabel}</span>
         <strong>{districtLabel}</strong>
         <span className="maplibre-spike-map-note-copy">
-          {boundaryGeometry ? (isMaarifTargetPilot ? "Arrondissement Maârif · repère administratif." : "Limite OSM de référence · validation production en attente.") : "Repère central sourcé · périmètre non revendiqué."}
+          {boundaryGeometry ? (isMaarifTargetPilot ? "Arrondissement Maârif · repère administratif. Zone bleue : emprise visuelle de contexte dérivée des repères vérifiés (+50 %), non frontière." : "Limite OSM de référence · validation production en attente.") : "Repère central sourcé · périmètre non revendiqué."}
         </span>
         <span className="maplibre-spike-map-note-status">{buildingCount > 0 ? `${buildingCount} volumes 3D visibles` : "Chargement du relief urbain…"}</span>
       </div>

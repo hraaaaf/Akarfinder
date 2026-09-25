@@ -1,0 +1,440 @@
+/* AKAR-MAP-QUARTIER-TARGET — Couche 3 — Maârif
+ * Target-composition polish only. Truth semantics remain Couche 2.
+ */
+
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-camera-policy="contextual-center"]
+  .maplibre-spike-canvas canvas {
+  filter: saturate(.90) contrast(.96) brightness(1.035) !important;
+}
+
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-camera-policy="contextual-center"]
+  .maplibre-spike-map-grade {
+  background:
+    linear-gradient(180deg, rgb(235 247 255 / .18), rgb(255 255 255 / .04) 42%, rgb(255 255 255 / .08)),
+    radial-gradient(circle at 52% 42%, rgb(255 255 255 / .16), transparent 62%) !important;
+  mix-blend-mode: screen !important;
+}
+
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-neighborhood-label {
+  z-index: 15;
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 14px;
+  border: 1px solid rgb(255 255 255 / .32);
+  border-radius: 11px;
+  background: rgb(7 27 51 / .96);
+  color: #fff;
+  box-shadow: 0 10px 26px rgb(7 27 51 / .20);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: -.01em;
+}
+
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-neighborhood-label i {
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 8px);
+  width: 15px;
+  height: 15px;
+  transform: translateX(-50%);
+  border: 4px solid #fff;
+  border-radius: 999px;
+  background: #2f80ed;
+  box-shadow: 0 4px 12px rgb(7 27 51 / .22);
+}
+
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-boundary-badge {
+  border-color: rgb(198 216 235 / .90);
+  background: rgb(255 255 255 / .92);
+  color: #61748a;
+  box-shadow: 0 7px 18px rgb(7 27 51 / .08);
+}
+
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-target-landmark-label {
+  border-color: rgb(205 219 235 / .90);
+  background: rgb(255 255 255 / .94);
+  box-shadow: 0 7px 18px rgb(7 27 51 / .10);
+}
+
+@media (min-width: 1024px) {
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]) .p4-premium-proofline span {
+    padding: 6px 11px;
+    font-size: 9.5px;
+  }
+
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]) .p4-premium-tabs > * {
+    font-size: 11.5px;
+  }
+
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]) .p4-premium-market-title {
+    font-size: 14px;
+  }
+
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]) .p4-premium-market-copy {
+    font-size: 10.5px;
+  }
+
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"])
+    [data-p4-map-decision-rail][data-vivre-ici-tab="local"]
+    .p4-premium-local-guide-list article > strong {
+    font-size: 10.5px;
+  }
+
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"])
+    [data-p4-map-decision-rail][data-vivre-ici-tab="local"]
+    .p4-premium-local-guide-list article > small {
+    font-size: 8.5px;
+  }
+}
+
+@media (max-width: 767px) {
+  [data-akar-quartier-target="maarif-couche1"] .maplibre-spike-neighborhood-label {
+    min-height: 30px;
+    padding: 0 11px;
+    font-size: 10px;
+  }
+
+  [data-akar-quartier-target="maarif-couche1"] .maplibre-spike-neighborhood-label i {
+    top: calc(100% + 6px);
+    width: 13px;
+    height: 13px;
+  }
+}
+
+
+/* Couche 3 mobile density guard — keep real labels readable without moving their coordinates. */
+@media (max-width: 430px) {
+  [data-akar-quartier-target="maarif-couche1"] .maplibre-spike-target-landmark-label {
+    max-width: 140px;
+    padding: 5px 8px 5px 6px;
+    font-size: 8.5px;
+    line-height: 1.12;
+  }
+
+  [data-akar-quartier-target="maarif-couche1"] .maplibre-spike-target-landmark-label[data-landmark-tier="flagship"] {
+    font-size: 9px;
+  }
+
+  [data-akar-quartier-target="maarif-couche1"] .maplibre-spike-poi-label span {
+    max-width: 140px;
+    padding: 5px 8px;
+    font-size: 7.75px;
+  }
+}
+
+
+/* Couche 3 cartographic declutter — retain exact POI point, collapse only colliding text. */
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-poi-label[data-label-collapsed="true"] {
+  gap: 0;
+  transform: translate(-50%, -50%);
+}
+
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-poi-label[data-label-collapsed="true"] > span {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  [data-akar-quartier-target="maarif-couche1"] .maplibre-spike-controls {
+    top: 112px !important;
+    bottom: auto !important;
+    transform: none !important;
+  }
+}
+
+
+/* Couche 3 mockup-fidelity vector pass — visible base-map attribution. */
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-attribution {
+  position: absolute;
+  z-index: 16;
+  left: 12px;
+  top: 158px;
+  padding: 4px 6px;
+  border: 1px solid rgb(255 255 255 / .52);
+  border-radius: 7px;
+  background: rgb(255 255 255 / .72);
+  color: rgb(34 55 73 / .74);
+  backdrop-filter: blur(7px);
+  font-size: 6.5px;
+  font-weight: 650;
+  line-height: 1;
+  pointer-events: none;
+}
+
+@media (min-width: 1024px) {
+  [data-akar-quartier-target="maarif-couche1"] .maplibre-spike-attribution {
+    top: auto;
+    bottom: 10px;
+    left: 22px;
+    font-size: 7px;
+  }
+}
+
+
+/* Mockup fidelity pass — lighter vector hierarchy, less chrome noise. */
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-target-landmark-label,
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-poi-label > span {
+  box-shadow: 0 5px 14px rgb(7 27 51 / .07);
+}
+
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-boundary-badge {
+  opacity: .78;
+}
+
+@media (min-width: 1024px) {
+  [data-akar-quartier-target="maarif-couche1"] .maplibre-spike-map-note {
+    box-shadow: 0 12px 32px rgb(7 27 51 / .11);
+  }
+}
+
+
+/* Pass 2 truth-safe — contextual focus is visual emphasis, never a claimed boundary. */
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-focus-semantic="context-focus-not-boundary"]
+  .maplibre-spike-neighborhood-label {
+  box-shadow: 0 12px 30px rgb(7 27 51 / .18);
+}
+
+@media (min-width: 1024px) {
+  [data-akar-quartier-target="maarif-couche1"][data-maplibre-focus-semantic="context-focus-not-boundary"]
+    .maplibre-spike-neighborhood-label {
+    min-height: 36px;
+    padding-inline: 16px;
+  }
+}
+
+
+/* Pass 3 — composition-first target treatment. */
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-map-grade {
+  opacity: .58;
+}
+
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-attribution {
+  background: rgb(255 255 255 / .60);
+  color: rgb(30 56 85 / .70);
+}
+
+
+/* Pass 3 truth disclosure — visible but subordinate to the mockup composition. */
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-boundary-badge {
+  position: absolute;
+  z-index: 14;
+  left: 22px;
+  bottom: 82px;
+  padding: 5px 8px;
+  border: 1px solid rgb(198 216 235 / .72);
+  border-radius: 999px;
+  background: rgb(255 255 255 / .74);
+  color: #667b91;
+  box-shadow: 0 4px 12px rgb(7 27 51 / .05);
+  backdrop-filter: blur(8px);
+  font-size: 7px;
+  font-weight: 760;
+  line-height: 1;
+  opacity: .72;
+  pointer-events: none;
+}
+
+@media (max-width: 1023px) {
+  [data-akar-quartier-target="maarif-couche1"] .maplibre-spike-boundary-badge {
+    left: 12px;
+    top: 112px;
+    bottom: auto;
+    font-size: 6.5px;
+  }
+}
+
+
+/* Pass 5 — label hierarchy: move only the Park cartouche, never its sourced point. */
+[data-akar-quartier-target="maarif-couche1"]
+  .maplibre-spike-poi-label[data-poi-category="green_sport"][data-label-collapsed="false"] > span {
+  transform: translate(-18px, -18px);
+}
+
+@media (max-width: 767px) {
+  [data-akar-quartier-target="maarif-couche1"]
+    .maplibre-spike-poi-label[data-poi-category="green_sport"][data-label-collapsed="false"] > span {
+    transform: translate(-10px, -14px);
+  }
+}
+
+
+/* Pass 6 — sourced target context labels. Point labels only; never boundaries. */
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-target-context-label {
+  position: absolute;
+  z-index: 4;
+  transform: translate(-50%, -50%);
+  color: #173f73;
+  font-size: 12px;
+  font-weight: 820;
+  letter-spacing: -.015em;
+  line-height: 1;
+  white-space: nowrap;
+  text-shadow:
+    0 1px 0 rgb(255 255 255 / .98),
+    1px 0 0 rgb(255 255 255 / .98),
+    -1px 0 0 rgb(255 255 255 / .98),
+    0 -1px 0 rgb(255 255 255 / .98),
+    0 2px 8px rgb(25 59 92 / .14);
+}
+
+@media (max-width: 767px) {
+  [data-akar-quartier-target="maarif-couche1"] .maplibre-spike-target-context-label {
+    font-size: 9px;
+    opacity: .84;
+  }
+}
+
+
+/* Cartographic Style Pass 1 — AkarFinder target drawing language. */
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-camera-policy="contextual-center"]
+  .maplibre-spike-canvas canvas {
+  filter: saturate(.84) contrast(1.005) brightness(.99) !important;
+}
+
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-map-grade {
+  background:
+    linear-gradient(180deg, rgb(47 122 163 / .05), transparent 22%, rgb(255 255 255 / .025) 68%, rgb(220 226 220 / .08)) !important;
+  mix-blend-mode: normal !important;
+  opacity: 1 !important;
+}
+
+
+/* Cartographic Style Pass 2 — micro-detail tuning. */
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-target-context-label {
+  color: #193f73;
+  text-shadow:
+    0 1px 0 rgb(255 255 255 / 1),
+    1px 0 0 rgb(255 255 255 / 1),
+    -1px 0 0 rgb(255 255 255 / 1),
+    0 -1px 0 rgb(255 255 255 / 1),
+    0 2px 7px rgb(25 59 92 / .10);
+}
+
+
+/* Cartographic Style Pass 5 — last-mile density. */
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-map-grade {
+  opacity: .96 !important;
+}
+
+
+/* Cartographic Style Pass 6 — shoreline + road micro-detail. */
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-camera-policy="contextual-center"]
+  .maplibre-spike-canvas canvas {
+  filter: saturate(.82) contrast(.975) brightness(1.018) !important;
+}
+
+
+/* Pixel Geometry Pass 9 — desktop proportions locked to the canonical target. */
+@media (min-width: 1024px) {
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]) {
+    grid-template-columns: minmax(0, 69%) minmax(0, 31%) !important;
+  }
+
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"])
+    [data-p4-map-canvas] .maplibre-spike-search {
+    width: min(595px, 100%) !important;
+  }
+}
+
+
+/* Pixel Geometry Pass 9B — canonical target composition.
+ * Camera-only/layout-only tuning: no territorial or POI geometry changes.
+ */
+@media (min-width: 1024px) {
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]) {
+    grid-template-columns: minmax(0, 71.3%) minmax(0, 28.7%) !important;
+  }
+
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"])
+    .vivre-ici-territory-back {
+    width: fit-content !important;
+    max-width: 92px !important;
+    min-width: 0 !important;
+    padding-inline: 14px !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+  }
+
+  [data-akar-quartier-target="maarif-couche1"] .maplibre-spike-filters {
+    width: fit-content !important;
+    max-width: 96px !important;
+  }
+}
+
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-canvas canvas {
+  filter: saturate(.88) contrast(.96) brightness(1.035) !important;
+}
+
+
+/* Pass 11 — structural cleanup from direct target↔after inspection. */
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-neighborhood-label {
+  min-height: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-neighborhood-label > span {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 14px !important;
+  border: 1px solid rgb(255 255 255 / .32) !important;
+  border-radius: 11px !important;
+  background: rgb(7 27 51 / .96) !important;
+  color: #fff !important;
+  box-shadow: 0 10px 26px rgb(7 27 51 / .20) !important;
+  font-size: 11px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+}
+
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-boundary-badge {
+  top: auto !important;
+  bottom: 82px !important;
+  width: max-content !important;
+  min-height: 0 !important;
+  max-width: 210px !important;
+  padding: 5px 8px !important;
+  line-height: 1 !important;
+  white-space: nowrap;
+}
+
+[data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]) .p4-premium-tabs button {
+  font-family: inherit !important;
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+  line-height: 1.25 !important;
+}
+
+[data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]) .p4-premium-tabs button[aria-current="page"] {
+  font-weight: 850 !important;
+}
+
+@media (max-width: 1023px) {
+  [data-akar-quartier-target="maarif-couche1"] .maplibre-spike-boundary-badge {
+    left: 96px !important;
+    top: 112px !important;
+    bottom: auto !important;
+    max-width: 150px !important;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 767px) {
+  [data-akar-quartier-target="maarif-couche1"] .maplibre-spike-neighborhood-label > span {
+    min-height: 30px;
+    padding-inline: 11px !important;
+    font-size: 10px !important;
+  }
+
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]) .p4-premium-tabs button {
+    font-size: 14px !important;
+  }
+}

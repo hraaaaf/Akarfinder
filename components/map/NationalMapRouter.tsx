@@ -108,7 +108,8 @@ export function NationalMapRouter({ initialState, targetPilotLandmarks = [] }: P
         districtLabel={selectedNeighborhood.neighborhood}
         center={[selectedNeighborhood.lng, selectedNeighborhood.lat]}
         boundaryGeometry={isMaarifReference ? MAARIF_TARGET_PILOT_BOUNDARY.geometry : null}
-        desktopCameraOffset={isMaarifReference ? [-0.0055, 0.0090] : [0, 0]}
+        desktopCameraOffset={isMaarifReference ? [-0.0035, 0.0060] : [0, 0]}
+        targetComposition={isMaarifReference ? "context" : "boundary"}
         targetPilotLandmarks={isMaarifReference ? targetPilotLandmarks : []}
       />
     );
