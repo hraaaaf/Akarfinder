@@ -9,7 +9,10 @@ const indexes = [
 ];
 const sources = [
   {domain:"domio.ma", pattern:/^\/fr\/[^/]+\/(?:vendre|louer)\/[^/]+\/\d+\/[^/]+\/?$/},
-  {domain:"capalmrabat.com", pattern:/^\/biens\/[^/]+\/[^/]+\/[^/?]+\/?$/}
+  {domain:"capalmrabat.com", pattern:/^\/biens\/[^/]+\/[^/]+\/[^/?]+\/?$/},
+  {domain:"immoessaouira.com", pattern:/^\/fr\/(?:achat|location)\/[^/]+\/[^/]+\/[^/]+\/[a-f0-9]{8}\/?$/},
+  {domain:"fadlimmo.com", pattern:/^\/fr\/(?:achat|location)\/[^/]+\/[^/]+\/[^/]+\/[a-f0-9]{8}\/?$/},
+  {domain:"bakimmo.com", pattern:/^\/fr\/(?:achat|location)\/[^/]+\/[^/]+\/[^/]+\/[a-f0-9]{8}\/?$/}
 ];
 
 const sleep=(ms:number)=>new Promise(r=>setTimeout(r,ms));
