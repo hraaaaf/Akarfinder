@@ -33,6 +33,15 @@ const SOURCES = {
   ],
   "soukimmobilier.com": [
     /\/(?:fr|ar)\/[a-z-]+\/[a-z]+\/\d{4,}$/
+  ],
+  "agenz.ma": [
+    /\/(?:fr|en)\/annonces\/.+\/\d+$/
+  ],
+  "masaken.ma": [
+    /^\/(?:fr|en)\/immobilier-maroc\/[a-z-]+\/\d+$/
+  ],
+  "mouldar.com": [
+    /\/(?:fr|en)\/(?:rent|achat|buy|louer|location)\/.+\/[a-f0-9]{6,}$/i
   ]
 } as const;
 
