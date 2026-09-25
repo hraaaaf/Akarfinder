@@ -100,6 +100,14 @@
       "evidence": "2026-09-25 current Sekna site presents itself as a Moroccan marketplace covering 80+ cities with verified listings from owners and certified partner agencies; public pages expose live listing cards and city/neighborhood inventories. Exact individual detail URL pattern not yet proven from indexed evidence.",
       "duplicate_risk": "medium",
       "action": "hold_until_detail_pattern_proven"
+    },
+    {
+      "domain": "immoessaouira.com",
+      "classification": "A_LONG_TAIL_AGENCY",
+      "evidence": "2026-09-25 current direct agency site exposes 166 properties for sale and detail URLs such as /fr/achat/appartement/essaouira/centre-ville/38fba716.",
+      "route_pattern": "^/fr/(?:achat|location)/[^/]+/[^/]+/[^/]+/[a-f0-9]{8}/?$",
+      "duplicate_risk": "low_to_medium",
+      "action": "pattern_proven_recovery_candidate"
     }
   ]
 }
