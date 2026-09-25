@@ -17,7 +17,10 @@ const SOURCES={
   "mubawab.ma":[/\/(?:fr|en)\/is\//,/\/(?:fr|en)\/a\/\d+\//,/\/acheter\/[^/]+-\d+(?:\.html)?$/],
   "avito.ma":[/^\/fr\/[^/]+\/(?:appartements|villas_et_riads|terrains_et_fermes|local|bureaux|maisons_et_villas|autre_immobilier|autres_immobilier|magasins_et_commerces|locations_de_vacances)\/.+_\d{7,}\.htm\/?$/],
   "sarouty.ma":[/^\/(?:fr|en|ar)\/plp\/[^/]+\/[^/]+-\d+\.html$/,/\/plp\/acheter\/.+-\d+(?:\.html)?$/,/\/acheter\/[a-z0-9-]+-\d+(?:\.html)?$/],
-  "soukimmobilier.com":[/\/(?:fr|ar)\/[a-z-]+\/[a-z]+\/\d{4,}$/]
+  "soukimmobilier.com":[/\/(?:fr|ar)\/[a-z-]+\/[a-z]+\/\d{4,}$/],
+  "agenz.ma":[/\/(?:fr|en)\/annonces\/.+\/\d+$/],
+  "masaken.ma":[/^\/(?:fr|en)\/immobilier-maroc\/[a-z-]+\/\d+$/],
+  "mouldar.com":[/\/(?:fr|en)\/(?:rent|achat|buy|louer|location)\/.+\/[a-f0-9]{6,}$/i]
 } as const;
 
 const sleep=(ms:number)=>new Promise(r=>setTimeout(r,ms));
