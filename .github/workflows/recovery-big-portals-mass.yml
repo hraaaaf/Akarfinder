@@ -46,10 +46,13 @@ jobs:
         env:
           BIG_PORTAL_DOMAIN: ${{ matrix.domain }}
         run: |
-          SAFE=$(echo "$BIG_PORTAL_DOMAIN" | sed 's/[^a-zA-Z0-9]/-/g')
-          node -e "const s=require('./data/audits/raw-results/recovery-big-portal-' + process.env.SAFE + '-summary.json'); if(s.database_access||s.database_writes||s.source_page_fetches||s.warc_downloads||s.approved_for_import_rows||s.failed_pages) process.exit(1)" 
-        env:
-          SAFE: ${{ matrix.domain }}
+          node <<'NODE'
+          const domain=process.env.BIG_PORTAL_DOMAIN;
+          const safe=domain.replace(/[^a-z0-9]+/gi,"-");
+          const s=require("./data/audits/raw-results/recovery-big-portal-"+safe+"-summary.json");
+          if(s.database_access||s.database_writes||s.source_page_fetches||s.warc_downloads||s.approved_for_import_rows||s.failed_pages) process.exit(1);
+          console.log(JSON.stringify({domain:s.domain,unique_matching_listing_urls:s.unique_matching_listing_urls,raw_cdx_records:s.raw_cdx_records,pages_reported:s.pages_reported},null,2));
+          NODE
       - uses: actions/upload-artifact@v4
         with:
           name: recovery-big-portal-${{ matrix.domain }}
