@@ -63,6 +63,29 @@
       "evidence": "Current site describes itself as a Nador property platform; terms define partners as real-estate professionals contracted for listing distribution.",
       "duplicate_risk": "medium",
       "action": "hold_no_detail_pattern_proven"
+    },
+    {
+      "domain": "domio.ma",
+      "classification": "A_RECOVERY_DISCOVERY",
+      "evidence": "2026-09-25 current site reports 10,349 listings / 94 agents. Indexed detail links prove /fr/<propertyType>/<vendre|louer>/<city>/<numericId>/<slug>, including Rabat IDs 10149, 9231 and 9203.",
+      "route_pattern": "^/fr/[^/]+/(?:vendre|louer)/[^/]+/\\d+/[^/]+/?$",
+      "duplicate_risk": "medium",
+      "action": "added_to_recovery_overlay"
+    },
+    {
+      "domain": "capalmrabat.com",
+      "classification": "A_LONG_TAIL_AGENCY",
+      "evidence": "2026-09-25 current direct agency site exposes individual detail pages such as /biens/bureau/rabat/location-villa-a-usage-bureau-olm-souissi-rabat/ and /biens/villa/rabat/vente-villa-rabat-mabella/. Villa inventory page reports 197 found; sale-filtered villa page reports 94 found.",
+      "route_pattern": "^/biens/[^/]+/[^/]+/[^/?]+/?$",
+      "duplicate_risk": "low_to_medium",
+      "action": "pattern_proven_recovery_candidate"
+    },
+    {
+      "domain": "immobilier.cari.ma",
+      "classification": "C_META_AGGREGATOR",
+      "evidence": "2026-09-25 current site explicitly says it indexes listings from multiple agencies/sources and search results attribute offers to marocannonces.com, avito.ma and afribaba.com.",
+      "duplicate_risk": "very_high",
+      "action": "exclude_as_independent_source"
     }
   ]
 }
