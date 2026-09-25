@@ -72,7 +72,7 @@ function cityDistrictFromUrl(raw:string){
   if(p[0]==="fr"||p[0]==="ar"||p[0]==="en"){
     if(p[1]==="annonce") return {city:null,district:null};
     if(["location","vente"].includes(p[1])) return {city:p[3]||null,district:p[4]||null};
-    if(["appartement","villa","terrain","bureau","local"].includes(p[1])) return {city:p[3]||null,district:p[4]||null};
+    if(["appartement","villa","terrain","bureau","local"].includes(p[1])) return {city:p[3]||null,district:(p[4] && !/^\\d+$/.test(p[4]))?p[4]:null};
   }
   return {city:null,district:null};
 }
