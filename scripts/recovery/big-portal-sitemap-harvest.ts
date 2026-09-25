@@ -13,7 +13,11 @@ const MAX_URLS=500000;
 const SOURCES={
   "marocimmo.com":[/^\/fr\/(?:vente|location)\/[^/]+\/[^/]+\/[^/]+\/[^/]+\/?$/],
   "sarout.ma":[/^\/(?:fr|ar)\/annonce\/\d+\/[^/]+\/?$/],
-  "marocannonces.com":[/^\/categorie\/\d+\/[^/]+\/annonce\/\d+\/[^/]+\.html$/]
+  "marocannonces.com":[/^\/categorie\/\d+\/[^/]+\/annonce\/\d+\/[^/]+\.html$/],
+  "mubawab.ma":[/\/(?:fr|en)\/is\//,/\/(?:fr|en)\/a\/\d+\//,/\/acheter\/[^/]+-\d+(?:\.html)?$/],
+  "avito.ma":[/^\/fr\/[^/]+\/(?:appartements|villas_et_riads|terrains_et_fermes|local|bureaux|maisons_et_villas|autre_immobilier|autres_immobilier|magasins_et_commerces|locations_de_vacances)\/.+_\d{7,}\.htm\/?$/],
+  "sarouty.ma":[/^\/(?:fr|en|ar)\/plp\/[^/]+\/[^/]+-\d+\.html$/,/\/plp\/acheter\/.+-\d+(?:\.html)?$/,/\/acheter\/[a-z0-9-]+-\d+(?:\.html)?$/],
+  "soukimmobilier.com":[/\/(?:fr|ar)\/[a-z-]+\/[a-z]+\/\d{4,}$/]
 } as const;
 
 const sleep=(ms:number)=>new Promise(r=>setTimeout(r,ms));
