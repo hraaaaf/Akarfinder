@@ -13,8 +13,8 @@ function host(raw:string){try{return new URL(raw).hostname.toLowerCase().replace
 function decodeHtml(s:string){return s.replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">")}
 function meta(html:string,key:string){
   const quoted=key.replace(/[.*+?^$()|[\]\\]/g,"\\$&");
-  const p1=new RegExp('<meta[^>]+(?:property|name)=["\\']'+quoted+'["\\'][^>]+content=["\\']([^"\\']*)["\\']','i');
-  const p2=new RegExp('<meta[^>]+content=["\\']([^"\\']*)["\\'][^>]+(?:property|name)=["\\']'+quoted+'["\\']','i');
+  const p1=new RegExp(`<meta[^>]+(?:property|name)=["']${quoted}["'][^>]+content=["']([^"']*)["']`,"i");
+  const p2=new RegExp(`<meta[^>]+content=["']([^"']*)["'][^>]+(?:property|name)=["']${quoted}["']`,"i");
   const m=html.match(p1)||html.match(p2); return m?.[1]?decodeHtml(m[1].trim()):null;
 }
 function titleTag(html:string){const m=html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);return m?.[1]?decodeHtml(m[1].replace(/\s+/g," ").trim()):null}
