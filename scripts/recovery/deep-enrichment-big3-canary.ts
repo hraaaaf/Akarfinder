@@ -86,7 +86,7 @@ async function main(){
       const decision=robots.ok?robotsDecision(robots.text,new URL(seed.url).pathname):"unknown";
       if(decision!=="allow"){sum.robots_skipped++;results.push({...seed,domain:src.domain,robots_decision:decision,fetch_skipped:true});continue}
       const r=await fetchText(seed.url); if(!r.ok)sum.failed++; else sum.fetched++; if(r.status===200)sum.http_200++;
-      const html=r.text,ld=jsonLd(html),title=meta(html,"og:title")??titleTag(html)??String(first(ld,["name","headline"])??"")||null;
+      const html=r.text,ld=jsonLd(html),title=(meta(html,"og:title")??titleTag(html)??String(first(ld,["name","headline"])??""))||null;
       const description=meta(html,"og:description")??meta(html,"description");
       const combined=[title,description].filter(Boolean).join(" ");
       const urlGeo=cityDistrictFromUrl(r.final_url||seed.url);
