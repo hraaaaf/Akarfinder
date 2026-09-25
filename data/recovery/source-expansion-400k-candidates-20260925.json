@@ -1,0 +1,142 @@
+{
+  "schema_version": "akarfinder-recovery-source-expansion-v1",
+  "generated_at": "2026-09-25",
+  "purpose": "Offline recovery discovery candidates toward ~400k raw reservoir. This file grants no production/publication authorization.",
+  "rules": {
+    "database_access": 0,
+    "database_writes": 0,
+    "source_page_bulk_fetch": false,
+    "approved_for_import_rows": 0,
+    "meta_aggregators_count_as_independent_sources": false,
+    "cross_source_dedup_required": true
+  },
+  "candidates": [
+    {
+      "domain": "sarout.ma",
+      "classification": "A_RECOVERY_DISCOVERY",
+      "evidence": "Current public listings page exposes individual detail URLs shaped /fr/annonce/<numericId>/<slug> and ~18k active listings on the crawled page.",
+      "route_pattern": "^/(?:fr|ar)/annonce/\\d+/[^/]+/?$",
+      "duplicate_risk": "medium",
+      "action": "already_in_recovery_overlay"
+    },
+    {
+      "domain": "marocimmo.com",
+      "classification": "B_QUARANTINE_DISCOVERY",
+      "evidence": "Current public homepage claims 39,000 listings and exposes detail URLs such as /fr/vente/appartement/marrakech/gueliz/<slug> and /fr/location/appartement/marrakech/agdal/<slug>. Homepage also surfaces offers attributed to agencies/platforms already present elsewhere, so cross-source duplicate risk is material.",
+      "route_pattern_hypothesis": "^/fr/(?:vente|location)/[^/]+/[^/]+/[^/]+/[^/]+/?$",
+      "duplicate_risk": "high",
+      "action": "qualify_more_before_overlay"
+    },
+    {
+      "domain": "mon-bien.ma",
+      "classification": "C_META_AGGREGATOR",
+      "evidence": "Site states its market data is based on active listings aggregated from four major portals and deduplicated.",
+      "duplicate_risk": "very_high",
+      "action": "exclude_as_independent_source"
+    },
+    {
+      "domain": "soukimmobilier.com",
+      "classification": "B_QUARANTINE_DISCOVERY",
+      "evidence": "Open-data page reports 44,707 total listings and states data comes from multiple sources including its own platform and partners.",
+      "duplicate_risk": "high",
+      "action": "do_not_count_as_independent_until_proven"
+    },
+    {
+      "domain": "fadlimmo.com",
+      "classification": "A_LONG_TAIL_AGENCY",
+      "evidence": "Current indexed detail page proves /fr/achat/terrain/mehdia/toute-la-ville/6bec88b4; category pages omit the terminal 8-hex identifier. Direct agency inventory.",
+      "duplicate_risk": "low_to_medium",
+      "action": "pattern_proven_recovery_candidate",
+      "route_pattern": "^/fr/(?:achat|location)/[^/]+/[^/]+/[^/]+/[a-f0-9]{8}/?$"
+    },
+    {
+      "domain": "bakimmo.com",
+      "classification": "A_LONG_TAIL_AGENCY",
+      "evidence": "Current indexed detail pages prove /fr/location/appartement/kenitra/centre/c56aa167 and /fr/achat/appartement/kenitra/bir-rami/b1779132; category pages omit the terminal 8-hex identifier. Direct agency inventory.",
+      "duplicate_risk": "low_to_medium",
+      "action": "pattern_proven_recovery_candidate",
+      "route_pattern": "^/fr/(?:achat|location)/[^/]+/[^/]+/[^/]+/[a-f0-9]{8}/?$"
+    },
+    {
+      "domain": "nador.immo",
+      "classification": "B_LOCAL_PLATFORM",
+      "evidence": "Current site describes itself as a Nador property platform; terms define partners as real-estate professionals contracted for listing distribution.",
+      "duplicate_risk": "medium",
+      "action": "hold_no_detail_pattern_proven"
+    },
+    {
+      "domain": "domio.ma",
+      "classification": "A_RECOVERY_DISCOVERY",
+      "evidence": "2026-09-25 current site reports 10,349 listings / 94 agents. Indexed detail links prove /fr/<propertyType>/<vendre|louer>/<city>/<numericId>/<slug>, including Rabat IDs 10149, 9231 and 9203.",
+      "route_pattern": "^/fr/[^/]+/(?:vendre|louer)/[^/]+/\\d+/[^/]+/?$",
+      "duplicate_risk": "medium",
+      "action": "added_to_recovery_overlay"
+    },
+    {
+      "domain": "capalmrabat.com",
+      "classification": "A_LONG_TAIL_AGENCY",
+      "evidence": "2026-09-25 current direct agency site exposes individual detail pages such as /biens/bureau/rabat/location-villa-a-usage-bureau-olm-souissi-rabat/ and /biens/villa/rabat/vente-villa-rabat-mabella/. Villa inventory page reports 197 found; sale-filtered villa page reports 94 found.",
+      "route_pattern": "^/biens/[^/]+/[^/]+/[^/?]+/?$",
+      "duplicate_risk": "low_to_medium",
+      "action": "pattern_proven_recovery_candidate"
+    },
+    {
+      "domain": "immobilier.cari.ma",
+      "classification": "C_META_AGGREGATOR",
+      "evidence": "2026-09-25 current site explicitly says it indexes listings from multiple agencies/sources and search results attribute offers to marocannonces.com, avito.ma and afribaba.com.",
+      "duplicate_risk": "very_high",
+      "action": "exclude_as_independent_source"
+    },
+    {
+      "domain": "dardar.ma",
+      "classification": "B_QUARANTINE_DISCOVERY",
+      "evidence": "2026-09-25 current Dardar listings index exposes 2,578 listings globally; city pages expose counts such as Tanger 262 and Kenitra 11. Site presents itself as a Moroccan video-property marketplace with 34 agents. Individual detail URL pattern not yet proven.",
+      "duplicate_risk": "medium",
+      "action": "hold_until_detail_pattern_proven"
+    },
+    {
+      "domain": "sekna.ma",
+      "classification": "B_QUARANTINE_DISCOVERY",
+      "evidence": "2026-09-25 current Sekna site presents itself as a Moroccan marketplace covering 80+ cities with verified listings from owners and certified partner agencies; public pages expose live listing cards and city/neighborhood inventories. Exact individual detail URL pattern not yet proven from indexed evidence.",
+      "duplicate_risk": "medium",
+      "action": "hold_until_detail_pattern_proven"
+    },
+    {
+      "domain": "immoessaouira.com",
+      "classification": "A_LONG_TAIL_AGENCY",
+      "evidence": "2026-09-25 current direct agency site exposes 166 properties for sale and detail URLs such as /fr/achat/appartement/essaouira/centre-ville/38fba716.",
+      "route_pattern": "^/fr/(?:achat|location)/[^/]+/[^/]+/[^/]+/[a-f0-9]{8}/?$",
+      "duplicate_risk": "low_to_medium",
+      "action": "pattern_proven_recovery_candidate"
+    },
+    {
+      "domain": "maisonessaouira.com",
+      "classification": "B_QUARANTINE_DISCOVERY",
+      "evidence": "2026-09-25 current site identifies itself as a direct Essaouira agency with verified sale inventory and category pages, but indexed evidence does not yet prove a stable individual-detail URL pattern distinct from category/template content.",
+      "duplicate_risk": "low_to_medium",
+      "action": "hold_until_detail_pattern_proven"
+    },
+    {
+      "domain": "essaouira.immo",
+      "classification": "B_QUARANTINE_DISCOVERY",
+      "evidence": "2026-09-25 current Abdo Immobilier site exposes real sale inventory with references such as 2526/2596, but indexed results primarily expose /vente/ category/filter pages; no stable individual-detail URL pattern proven yet.",
+      "duplicate_risk": "low_to_medium",
+      "action": "hold_until_detail_pattern_proven"
+    },
+    {
+      "domain": "archimmomaroc.com",
+      "classification": "A_LONG_TAIL_AGENCY",
+      "evidence": "2026-09-25 direct El Jadida agency since 1999. Current indexed detail pages prove /propriete/<slug>-<10digits>, with available and sold properties; search page exposes 26 matching results in current crawl.",
+      "route_pattern": "^/propriete/[^/?]+-\\d{10}/?$",
+      "duplicate_risk": "low_to_medium",
+      "action": "pattern_proven_recovery_candidate"
+    },
+    {
+      "domain": "proimmobilier.ma",
+      "classification": "B_QUARANTINE_DISCOVERY",
+      "evidence": "2026-09-25 current indexed evidence proves an active real-estate agency/service site, but no sufficiently clear individual listing inventory/detail URL pattern was established from current search evidence.",
+      "duplicate_risk": "low_to_medium",
+      "action": "hold_until_detail_pattern_proven"
+    }
+  ]
+}

@@ -35,6 +35,83 @@
       "compliance_note": "2026-09-24 recovery review: current public index pages expose ~18k-22k verified Moroccan listings, and direct detail URLs use /{locale}/annonce/<numericId>/<slug>. Discovery is approved for external indexes/search. Any live sitemap/source fetch must still pass robots-based fail-closed gates.",
       "reviewed_at": "2026-09-24",
       "coverage_cities": null
+    },
+    {
+      "domain": "domio.ma",
+      "status": "approved_discovery",
+      "listing_url_patterns": [
+        "^/fr/[^/]+/(?:vendre|louer)/[^/]+/\\d+/[^/]+/?$"
+      ],
+      "blocked_url_patterns": [
+        "^/fr/[^/]+/(?:vendre|louer)(?:/[^/]+)?/?$"
+      ],
+      "source_type": "portal_aggregator",
+      "external_web_result": true,
+      "compliance_note": "2026-09-25 recovery review: current Domio index exposes individual detail URLs shaped /fr/<propertyType>/<vendre|louer>/<city>/<numericId>/<slug>, including numeric IDs 10149, 9231 and 9203. Current homepage claims 10,349 listings. Recovery discovery only; no publication/content-reuse authorization implied.",
+      "reviewed_at": "2026-09-25",
+      "coverage_cities": null
+    },
+    {
+      "domain": "capalmrabat.com",
+      "status": "approved_discovery",
+      "listing_url_patterns": [
+        "^/biens/[^/]+/[^/]+/[^/?]+/?$"
+      ],
+      "blocked_url_patterns": [
+        "^/biens/?$",
+        "^/biens/[^/]+/?$",
+        "^/biens/[^/]+/[^/]+/?$"
+      ],
+      "source_type": "direct_agency",
+      "external_web_result": true,
+      "compliance_note": "2026-09-25 recovery canary: 21 Common Crawl indexes yielded 3,417 raw records and 604 unique URLs matching the proven detail pattern /biens/<type>/<city>/<slug>/. Recovery discovery only; no production/publication authorization implied.",
+      "reviewed_at": "2026-09-25",
+      "coverage_cities": [
+        "Rabat"
+      ]
+    },
+    {
+      "domain": "fadlimmo.com",
+      "status": "approved_discovery",
+      "listing_url_patterns": [
+        "^/fr/(?:achat|location)/[^/]+/[^/]+/[^/]+/[a-f0-9]{8}/?$"
+      ],
+      "blocked_url_patterns": [],
+      "source_type": "direct_agency",
+      "external_web_result": true,
+      "compliance_note": "2026-09-25 recovery canary across 21 Common Crawl indexes: 9,143 raw CDX records -> 672 unique URLs matching proven individual-detail pattern. Recovery discovery only; no production/publication authorization implied.",
+      "reviewed_at": "2026-09-25",
+      "coverage_cities": null
+    },
+    {
+      "domain": "bakimmo.com",
+      "status": "approved_discovery",
+      "listing_url_patterns": [
+        "^/fr/(?:achat|location)/[^/]+/[^/]+/[^/]+/[a-f0-9]{8}/?$"
+      ],
+      "blocked_url_patterns": [],
+      "source_type": "direct_agency",
+      "external_web_result": true,
+      "compliance_note": "2026-09-25 recovery canary across 21 Common Crawl indexes: 4,784 raw CDX records -> 152 unique URLs matching proven individual-detail pattern. Recovery discovery only; no production/publication authorization implied.",
+      "reviewed_at": "2026-09-25",
+      "coverage_cities": [
+        "Kenitra"
+      ]
+    },
+    {
+      "domain": "immoessaouira.com",
+      "status": "approved_discovery",
+      "listing_url_patterns": [
+        "^/fr/(?:achat|location)/[^/]+/[^/]+/[^/]+/[a-f0-9]{8}/?$"
+      ],
+      "blocked_url_patterns": [],
+      "source_type": "direct_agency",
+      "external_web_result": true,
+      "compliance_note": "2026-09-25 recovery canary across 21 Common Crawl indexes: 2,787 raw CDX records -> 106 unique URLs matching proven individual-detail pattern. Recovery discovery only; no production/publication authorization implied.",
+      "reviewed_at": "2026-09-25",
+      "coverage_cities": [
+        "Essaouira"
+      ]
     }
   ]
 }
