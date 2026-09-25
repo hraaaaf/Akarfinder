@@ -122,6 +122,21 @@
       "evidence": "2026-09-25 current Abdo Immobilier site exposes real sale inventory with references such as 2526/2596, but indexed results primarily expose /vente/ category/filter pages; no stable individual-detail URL pattern proven yet.",
       "duplicate_risk": "low_to_medium",
       "action": "hold_until_detail_pattern_proven"
+    },
+    {
+      "domain": "archimmomaroc.com",
+      "classification": "A_LONG_TAIL_AGENCY",
+      "evidence": "2026-09-25 direct El Jadida agency since 1999. Current indexed detail pages prove /propriete/<slug>-<10digits>, with available and sold properties; search page exposes 26 matching results in current crawl.",
+      "route_pattern": "^/propriete/[^/?]+-\\d{10}/?$",
+      "duplicate_risk": "low_to_medium",
+      "action": "pattern_proven_recovery_candidate"
+    },
+    {
+      "domain": "proimmobilier.ma",
+      "classification": "B_QUARANTINE_DISCOVERY",
+      "evidence": "2026-09-25 current indexed evidence proves an active real-estate agency/service site, but no sufficiently clear individual listing inventory/detail URL pattern was established from current search evidence.",
+      "duplicate_risk": "low_to_medium",
+      "action": "hold_until_detail_pattern_proven"
     }
   ]
 }
