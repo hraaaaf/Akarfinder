@@ -1,0 +1,57 @@
+name: Recovery Big Portals Sitemap Mass
+
+on:
+  push:
+    branches: ["recovery/big-portals-mass-20260925"]
+    paths:
+      - ".github/workflows/recovery-big-portals-sitemap-mass.yml"
+      - "scripts/recovery/big-portal-sitemap-harvest.ts"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: recovery-big-portals-sitemap-mass
+  cancel-in-progress: true
+
+jobs:
+  sitemap:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        domain:
+          - marocimmo.com
+          - sarout.ma
+          - marocannonces.com
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Harvest robots-declared sitemaps
+        env:
+          BIG_SITEMAP_DOMAIN: ${{ matrix.domain }}
+        run: npx tsx scripts/recovery/big-portal-sitemap-harvest.ts
+      - name: Enforce shadow-only contract
+        env:
+          BIG_SITEMAP_DOMAIN: ${{ matrix.domain }}
+        run: |
+          node <<'NODE'
+          const d=process.env.BIG_SITEMAP_DOMAIN;
+          const safe=d.replace(/[^a-z0-9]+/gi,"-");
+          const s=require("./data/audits/raw-results/recovery-big-sitemap-"+safe+"-summary.json");
+          if(s.database_access||s.database_writes||s.listing_page_fetches||s.approved_for_import_rows||!s.robots_declared_sitemaps_only) process.exit(1);
+          console.log(JSON.stringify(s,null,2));
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: recovery-big-sitemap-${{ matrix.domain }}
+          path: |
+            data/audits/raw-results/recovery-big-sitemap-*.txt
+            data/audits/raw-results/recovery-big-sitemap-*-summary.json
+          retention-days: 30
