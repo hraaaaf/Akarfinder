@@ -1,0 +1,97 @@
+name: Recovery Offline Yandex Sharded Shadow
+
+on:
+  workflow_dispatch:
+    inputs:
+      shard:
+        description: "Shard 0..3; each shard runs 475 recovery queries"
+        required: true
+        default: "0"
+        type: choice
+        options: ["0","1","2","3"]
+      pages:
+        description: "Yandex result pages per query"
+        required: true
+        default: "2"
+        type: choice
+        options: ["1","2","3"]
+
+permissions:
+  contents: read
+
+jobs:
+  yandex-shadow:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+
+      - name: Prepare SearXNG (Yandex only)
+        run: |
+          SECRET=$(openssl rand -hex 32)
+          cat > /tmp/searxng.yml <<YAML
+          use_default_settings: true
+          search:
+            safe_search: 0
+            default_lang: fr
+            formats: [html, json]
+          server:
+            secret_key: "$SECRET"
+            limiter: false
+          outgoing:
+            request_timeout: 8.0
+          engines:
+            - name: yandex
+              engine: yandex
+              disabled: false
+          YAML
+
+      - name: Start SearXNG
+        run: |
+          docker run -d --name searxng -p 8888:8080 -v /tmp/searxng.yml:/etc/searxng/settings.yml:ro searxng/searxng:latest
+          for i in $(seq 1 60); do
+            code=$(curl -s -o /dev/null -w "%{http_code}" "http://127.0.0.1:8888/search?q=test&format=json" || true)
+            [ "$code" = "200" ] && exit 0
+            sleep 2
+          done
+          exit 1
+
+      - name: Resolve shard offset
+        id: shard
+        shell: bash
+        run: |
+          case "${{ inputs.shard }}" in
+            0) echo "offset=0" >> "$GITHUB_OUTPUT" ;;
+            1) echo "offset=475" >> "$GITHUB_OUTPUT" ;;
+            2) echo "offset=950" >> "$GITHUB_OUTPUT" ;;
+            3) echo "offset=1425" >> "$GITHUB_OUTPUT" ;;
+            *) exit 1 ;;
+          esac
+
+      - name: Run bounded recovery shard
+        env:
+          SEARXNG_URL: http://127.0.0.1:8888
+          YANDEX_RECOVERY_OFFSET: "${{ steps.shard.outputs.offset }}"
+          YANDEX_RECOVERY_LIMIT: "475"
+          YANDEX_RECOVERY_PAGES: ${{ inputs.pages }}
+          YANDEX_RECOVERY_OUTPUT: data/audits/raw-results/recovery-yandex-${{ inputs.shard }}.jsonl
+          YANDEX_RECOVERY_SUMMARY: data/audits/raw-results/recovery-yandex-${{ inputs.shard }}-summary.json
+        run: npx tsx scripts/recovery/yandex-shadow-harvest.ts
+
+      - name: Enforce zero-DB contract
+        run: |
+          node -e "const s=require('./data/audits/raw-results/recovery-yandex-${{ inputs.shard }}-summary.json'); if(s.database_access||s.database_writes||s.source_page_fetches||s.approved_for_import_rows) process.exit(1)"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: recovery-yandex-shadow-${{ inputs.shard }}
+          path: data/audits/raw-results/recovery-yandex-${{ inputs.shard }}*
+          retention-days: 30
+
+      - if: always()
+        run: docker rm -f searxng || true

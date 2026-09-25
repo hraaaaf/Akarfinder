@@ -1,0 +1,101 @@
+name: Recovery Offline Yandex 400K Expansion
+
+on:
+  push:
+    branches: ["recovery/offline-yandex-400k-expansion-20260925"]
+    paths:
+      - ".github/workflows/recovery-offline-yandex-400k-expansion.yml"
+      - ".github/workflows/recovery-offline-yandex-shadow.yml"
+      - "scripts/recovery/yandex-shadow-harvest.ts"
+      - "scripts/recovery/recovery-serper-plan.ts"
+  pull_request:
+    branches: [main, "recovery/offline-200k-mass-harvest-20260924"]
+    paths:
+      - ".github/workflows/recovery-offline-yandex-400k-expansion.yml"
+      - ".github/workflows/recovery-offline-yandex-shadow.yml"
+      - "scripts/recovery/yandex-shadow-harvest.ts"
+      - "scripts/recovery/recovery-serper-plan.ts"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: recovery-offline-yandex-400k-expansion-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  yandex-shadow:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - shard: 0
+            offset: 0
+          - shard: 1
+            offset: 475
+          - shard: 2
+            offset: 950
+          - shard: 3
+            offset: 1425
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+
+      - name: Prepare SearXNG (Yandex only)
+        run: |
+          SECRET=$(openssl rand -hex 32)
+          cat > /tmp/searxng.yml <<YAML
+          use_default_settings: true
+          search:
+            safe_search: 0
+            default_lang: fr
+            formats: [html, json]
+          server:
+            secret_key: "$SECRET"
+            limiter: false
+          outgoing:
+            request_timeout: 8.0
+          engines:
+            - name: yandex
+              engine: yandex
+              disabled: false
+          YAML
+
+      - name: Start SearXNG
+        run: |
+          docker run -d --name searxng -p 8888:8080 -v /tmp/searxng.yml:/etc/searxng/settings.yml:ro searxng/searxng:latest
+          for i in $(seq 1 60); do
+            code=$(curl -s -o /dev/null -w "%{http_code}" "http://127.0.0.1:8888/search?q=test&format=json" || true)
+            [ "$code" = "200" ] && exit 0
+            sleep 2
+          done
+          exit 1
+
+      - name: Run bounded recovery shard
+        env:
+          SEARXNG_URL: http://127.0.0.1:8888
+          YANDEX_RECOVERY_OFFSET: "${{ matrix.offset }}"
+          YANDEX_RECOVERY_LIMIT: "475"
+          YANDEX_RECOVERY_PAGES: "2"
+          YANDEX_RECOVERY_OUTPUT: data/audits/raw-results/recovery-yandex-${{ matrix.shard }}.jsonl
+          YANDEX_RECOVERY_SUMMARY: data/audits/raw-results/recovery-yandex-${{ matrix.shard }}-summary.json
+        run: npx tsx scripts/recovery/yandex-shadow-harvest.ts
+
+      - name: Enforce zero-DB contract
+        run: |
+          node -e "const s=require('./data/audits/raw-results/recovery-yandex-${{ matrix.shard }}-summary.json'); if(s.database_access||s.database_writes||s.source_page_fetches||s.approved_for_import_rows) process.exit(1)"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: recovery-yandex-shadow-${{ matrix.shard }}
+          path: data/audits/raw-results/recovery-yandex-${{ matrix.shard }}*
+          retention-days: 30
+
+      - if: always()
+        run: docker rm -f searxng || true
