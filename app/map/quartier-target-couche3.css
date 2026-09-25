@@ -323,3 +323,16 @@
   .maplibre-spike-canvas canvas {
   filter: saturate(.82) contrast(.975) brightness(1.018) !important;
 }
+
+
+/* Pixel Geometry Pass 9 — desktop proportions locked to the canonical target. */
+@media (min-width: 1024px) {
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]) {
+    grid-template-columns: minmax(0, 69%) minmax(0, 31%) !important;
+  }
+
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"])
+    [data-p4-map-canvas] .maplibre-spike-search {
+    width: min(595px, 100%) !important;
+  }
+}
