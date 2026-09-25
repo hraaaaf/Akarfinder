@@ -149,7 +149,7 @@ function buildVerifiedPointHull(points: MutablePosition[]): MutablePosition[] | 
   return hull.length >= 3 ? [...hull, hull[0]] : null;
 }
 
-function expandContextHull(hull: MutablePosition[], scale = 1.22): MutablePosition[] {
+function expandContextHull(hull: MutablePosition[], scale = 1.50): MutablePosition[] {
   const distinct = hull.slice(0, -1);
   if (distinct.length < 3) return hull;
   const centroid: MutablePosition = [
@@ -191,7 +191,7 @@ function focusNeighborhoodMap(
   const contextual = composition === "context";
   map.easeTo({
     center: targetCenter,
-    zoom: contextual ? (desktop ? 13.08 : 13.05) : (desktop ? 13.55 : 13.8),
+    zoom: contextual ? (desktop ? 12.80 : 13.05) : (desktop ? 13.55 : 13.8),
     pitch: contextual ? 0 : (desktop ? 18 : 8),
     bearing: 0,
     duration,
@@ -274,7 +274,7 @@ export function MapLibreNeighborhood3D({
         map = new maplibregl.Map({
           container: mapRef.current,
           center: targetCenter,
-          zoom: contextual ? (desktop ? 13.08 : 13.05) : (desktop ? 13.55 : 13.8),
+          zoom: contextual ? (desktop ? 12.80 : 13.05) : (desktop ? 13.55 : 13.8),
           pitch: contextual ? 0 : (desktop ? 18 : 8),
           bearing: 0,
           attributionControl: false,
@@ -710,7 +710,7 @@ export function MapLibreNeighborhood3D({
     ];
     const hull = buildVerifiedPointHull(verifiedPoints);
     if (!hull) return;
-    const contextualEnvelope = expandContextHull(hull, 1.22);
+    const contextualEnvelope = expandContextHull(hull, 1.50);
 
     const data = {
       type: "Feature",
@@ -718,7 +718,7 @@ export function MapLibreNeighborhood3D({
         semantic: "verified-anchor-envelope-buffered",
         boundaryClaim: false,
         sourcePointCount: verifiedPoints.length,
-        visualExpansionFactor: 1.22,
+        visualExpansionFactor: 1.50,
       },
       geometry: { type: "Polygon", coordinates: [contextualEnvelope] },
     };
@@ -942,7 +942,7 @@ export function MapLibreNeighborhood3D({
         <span className="maplibre-spike-map-note-kicker">Quartier · {cityLabel}</span>
         <strong>{districtLabel}</strong>
         <span className="maplibre-spike-map-note-copy">
-          {boundaryGeometry ? (isMaarifTargetPilot ? "Arrondissement Maârif · repère administratif. Zone bleue : enveloppe visuelle dérivée des repères vérifiés (+22 %), non frontière." : "Limite OSM de référence · validation production en attente.") : "Repère central sourcé · périmètre non revendiqué."}
+          {boundaryGeometry ? (isMaarifTargetPilot ? "Arrondissement Maârif · repère administratif. Zone bleue : emprise visuelle de contexte dérivée des repères vérifiés (+50 %), non frontière." : "Limite OSM de référence · validation production en attente.") : "Repère central sourcé · périmètre non revendiqué."}
         </span>
         <span className="maplibre-spike-map-note-status">{buildingCount > 0 ? `${buildingCount} volumes 3D visibles` : "Chargement du relief urbain…"}</span>
       </div>
