@@ -42,7 +42,7 @@ async function main(){
   const combined=[title,description].filter(Boolean).join(" "),addr=address(ld),geo=urlGeo(r.final_url||url);
   let price=first(ld,["price","lowPrice","highPrice"]);if(price!==null)price=Number(price);if(!Number.isFinite(price as number)||Number(price)<=0)price=textPrice(combined);
   const surface=textSurface(combined),published=first(ld,["datePosted","datePublished","uploadDate","dateModified"]);
-  let city=geo.city,district=geo.district;if(addr){const parts=String(addr).split(",").map(x=>x.trim()).filter(Boolean);if(parts.length)city=city||parts[0]}
+  let city=geo.city,district=geo.district; if(district&&/^\\d+$/.test(district)) district=null;if(addr){const parts=String(addr).split(",").map(x=>x.trim()).filter(Boolean);if(parts.length)city=city||parts[0]}
   const row={url,domain:DOMAIN,source_listing_id:sourceId(url),robots_decision:decision,fetch_skipped:false,http_status:r.status,final_url:r.final_url,title,description,price_mad:price??null,surface_m2:surface,address:addr,published_at:published,city,district,bedrooms_count:bedrooms(combined),jsonld_blocks:ld.length,database_access:0,database_writes:0};
   results.push(row);
   for(const k of ["title","description","price_mad","surface_m2","address","published_at","city","district","bedrooms_count"]){if((row as any)[k]!==null&&(row as any)[k]!==""){const kk=k==="price_mad"?"price":k==="surface_m2"?"surface":k==="bedrooms_count"?"bedrooms":k;summary[kk]++}}
