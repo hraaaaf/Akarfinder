@@ -336,3 +336,34 @@
     width: min(595px, 100%) !important;
   }
 }
+
+
+/* Pixel Geometry Pass 9B — canonical target composition.
+ * Camera-only/layout-only tuning: no territorial or POI geometry changes.
+ */
+@media (min-width: 1024px) {
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]) {
+    grid-template-columns: minmax(0, 71.3%) minmax(0, 28.7%) !important;
+  }
+
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"])
+    .vivre-ici-territory-back {
+    width: fit-content !important;
+    max-width: 92px !important;
+    min-width: 0 !important;
+    padding-inline: 14px !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+  }
+
+  [data-akar-quartier-target="maarif-couche1"] .maplibre-spike-filters {
+    width: fit-content !important;
+    max-width: 96px !important;
+  }
+}
+
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-canvas canvas {
+  filter: saturate(.88) contrast(.96) brightness(1.035) !important;
+}
