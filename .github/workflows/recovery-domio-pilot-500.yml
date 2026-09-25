@@ -1,0 +1,47 @@
+name: Recovery Domio Pilot 500
+
+on:
+  push:
+    branches: ["recovery/big-portals-mass-20260925"]
+    paths:
+      - ".github/workflows/recovery-domio-pilot-500.yml"
+      - "scripts/recovery/domio-pilot-500.ts"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: recovery-domio-pilot-500
+  cancel-in-progress: true
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx tsx scripts/recovery/domio-pilot-500.ts
+      - name: Enforce shadow-only contract
+        run: |
+          node <<'NODE'
+          const s=require("./data/audits/raw-results/domio-pilot-500-summary.json");
+          if(s.database_access||s.database_writes) process.exit(1);
+          if(s.approved < 350) process.exit(1);
+          if(s.quality_min < 80) process.exit(1);
+          if(s.unique_ids !== s.approved || s.unique_urls !== s.approved || s.unique_fingerprints !== s.approved) process.exit(1);
+          console.log(JSON.stringify(s,null,2));
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: domio-pilot-500-certified
+          path: |
+            data/audits/raw-results/domio-pilot-500-approved.jsonl
+            data/audits/raw-results/domio-pilot-500-rejected.jsonl
+            data/audits/raw-results/domio-pilot-500-summary.json
+          retention-days: 30
