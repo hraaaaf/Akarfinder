@@ -1,0 +1,101 @@
+{
+  "schema_version": "akarfinder-enrichment-canary-seeds-v1",
+  "sources": [
+    {
+      "domain": "agenz.ma",
+      "urls": [
+        "https://agenz.ma/en/annonces/immo-agadir/location-appartements/aourir/175715",
+        "https://agenz.ma/fr/annonces/immo-bouskoura/vente-appartements/dar-bouazza/25894441",
+        "https://agenz.ma/fr/annonces/immo-tetouan/vente-terrains/autre/937356"
+      ]
+    },
+    {
+      "domain": "avito.ma",
+      "urls": [
+        "https://avito.ma/fr/2_mars/appartements/107889_Vente_Appt_%C3%A0_Casablanca_Hopitaux_de_273_m%C2%B2_56403983.htm",
+        "https://avito.ma/fr/hay_mohammadi/appartements/appartement_hay_mohammedi_Casablanca__56320208.htm",
+        "https://avito.ma/fr/zone_industrielle_hay_arrahma/local/DEPOT_USINE_4000_m_dont_2700_m_HANGAR_55679136.htm"
+      ]
+    },
+    {
+      "domain": "daragadir.com",
+      "urls": [
+        "https://daragadir.com/annonces/annonces-immobilieres/location-de-vacances/appartements-pour-location-de-vacances-a-agadir/a-louer-a-agadir-appartement-a-5-minutes-de-la-plage-a-pied-4-personnes-350-dh-par-nuit.html",
+        "https://daragadir.com/annonces/annonces-immobilieres/vente/appartements-a-vendre-a-agadir/a-vendre-appartement-de-100-m%C2%B2-a-agadir-founty-7-unites-disponibles.html",
+        "https://daragadir.com/annonces/annonces-immobilieres/vente/villas-et-riads-a-vendre-a-agadir/villas-et-riads-modernes-a-agadir-founty-villa-sonaba-de-710-m%C2%B2-a-12-000-000-dh.html"
+      ]
+    },
+    {
+      "domain": "domio.ma",
+      "urls": [
+        "https://domio.ma/fr/appartement/louer/agadir/10172/appartement-cosy-avec-vue-piscine-hay-mohamadi",
+        "https://domio.ma/fr/appartement/vendre/tetouan/11705/appartement-au-centre-ville-du-tetouan",
+        "https://domio.ma/fr/villa/vendre/tetouan/9847/villa-independante-a-vendre-a-tanger-surface-465m-reference-vtaa1527"
+      ]
+    },
+    {
+      "domain": "marocimmo.com",
+      "urls": [
+        "https://marocimmo.com/fr/location/appartement/agadir/amicales/appartement-independant-au-rez-de-chaussee",
+        "https://marocimmo.com/fr/location/villa/rabat/riyad/villa-avec-piscine-a-louer-a-hay-riad-rabat-2",
+        "https://marocimmo.com/fr/vente/villa/tetouan/wilaya/w-0052-maison-independante-de-274-m-a-tetouan"
+      ]
+    },
+    {
+      "domain": "masaken.ma",
+      "urls": [
+        "https://masaken.ma/en/immobilier-maroc/rental-apartment-agadir/6138",
+        "https://masaken.ma/fr/immobilier-maroc/location-appartement-tanger/5713",
+        "https://masaken.ma/fr/immobilier-maroc/vente-terrain-temara/803"
+      ]
+    },
+    {
+      "domain": "mouldar.com",
+      "urls": [
+        "https://mouldar.com/en/buy/apartment/agadir/centre-ville/f6311897",
+        "https://mouldar.com/en/rent/villa/dar-bouazza/all-the-city/a36208a7",
+        "https://mouldar.com/fr/location/villa/temara/harhoura/f0689c26"
+      ]
+    },
+    {
+      "domain": "mubawab.ma",
+      "urls": [
+        "https://mubawab.ma/en/a/6016722/offices-shops-for-sale-in-quartier-du-parc-area-441-m%C2%B2-caretaker-and-air-conditioning",
+        "https://mubawab.ma/fr/a/8081618/terrain-%C3%A0-vendre-zone-immeuble-%C3%A0-hassan-centre-ville",
+        "https://mubawab.ma/fr/is/villa-vente_agadir_charaf_salle-de-bain"
+      ]
+    },
+    {
+      "domain": "promoimmomarrakech.com",
+      "urls": [
+        "https://promoimmomarrakech.com/produit/%20allm-140/location-appartement-marrakech-gueliz.html",
+        "https://promoimmomarrakech.com/produit/mv-144/vente-magasin-marrakech-gueliz.html",
+        "https://promoimmomarrakech.com/produit/vvv-98/vente-villa-marrakech-targa.html"
+      ]
+    },
+    {
+      "domain": "sarout.ma",
+      "urls": [
+        "https://sarout.ma/ar/annonce/1000/appartement-louer-90-m2",
+        "https://sarout.ma/fr/annonce/1000/appartement-louer-90-m2",
+        "https://sarout.ma/fr/annonce/9998/appartement-320m-vendre-casablanca-racine"
+      ]
+    },
+    {
+      "domain": "sarouty.ma",
+      "urls": [
+        "https://sarouty.ma/acheter/appartement-casablanca-bourgogne-903876",
+        "https://sarouty.ma/plp/acheter/appartement-a-vendre-casablanca-dar-bouazza-812332.html",
+        "https://sarouty.ma/plp/acheter/villa-a-vendre-tetouan-tetouan-869764.html"
+      ]
+    },
+    {
+      "domain": "soukimmobilier.com",
+      "urls": [
+        "https://soukimmobilier.com/fr/agadir-melloul-taroudannt-morocco/villas/100018974",
+        "https://soukimmobilier.com/fr/rabat/appartements/100020542",
+        "https://soukimmobilier.com/fr/zayda/terrains/100018953"
+      ]
+    }
+  ]
+}
