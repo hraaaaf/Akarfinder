@@ -192,7 +192,7 @@ function focusNeighborhoodMap(
   map.easeTo({
     center: targetCenter,
     zoom: contextual ? (desktop ? 12.38 : 12.92) : (desktop ? 13.55 : 13.8),
-    pitch: contextual ? 0 : (desktop ? 18 : 8),
+    pitch: contextual ? (desktop ? 14 : 7) : (desktop ? 18 : 8),
     bearing: 0,
     duration,
   });
@@ -582,16 +582,25 @@ export function MapLibreNeighborhood3D({
               source: "akarfinder-openfreemap",
               "source-layer": "building",
               type: "fill-extrusion",
-              minzoom: isMaarifTargetPilot && targetComposition === "context" ? 24 : 14.8,
+              minzoom: isMaarifTargetPilot && targetComposition === "context" ? 12 : 14.8,
               filter: ["!=", ["get", "hide_3d"], true],
               paint: {
-                "fill-extrusion-color": [
-                  "interpolate", ["linear"], ["coalesce", ["get", "render_height"], 0],
-                  0, "#edf1f4", 10, "#e4e9ed", 24, "#d9e1e6", 55, "#ccd7df", 120, "#b8c6d1",
-                ],
-                "fill-extrusion-height": ["coalesce", ["get", "render_height"], 0],
-                "fill-extrusion-base": ["coalesce", ["get", "render_min_height"], 0],
-                "fill-extrusion-opacity": isMaarifTargetPilot && targetComposition === "context" ? 0 : 0.28,
+                "fill-extrusion-color": isMaarifTargetPilot && targetComposition === "context"
+                  ? [
+                    "interpolate", ["linear"], ["coalesce", ["get", "render_height"], 0],
+                    0, "#eeeae3", 10, "#e5dfd6", 24, "#d9d2c8", 55, "#cbc2b6", 120, "#b9aea1",
+                  ]
+                  : [
+                    "interpolate", ["linear"], ["coalesce", ["get", "render_height"], 0],
+                    0, "#edf1f4", 10, "#e4e9ed", 24, "#d9e1e6", 55, "#ccd7df", 120, "#b8c6d1",
+                  ],
+                "fill-extrusion-height": isMaarifTargetPilot && targetComposition === "context"
+                  ? ["*", ["coalesce", ["get", "render_height"], 0], 0.62]
+                  : ["coalesce", ["get", "render_height"], 0],
+                "fill-extrusion-base": isMaarifTargetPilot && targetComposition === "context"
+                  ? ["*", ["coalesce", ["get", "render_min_height"], 0], 0.62]
+                  : ["coalesce", ["get", "render_min_height"], 0],
+                "fill-extrusion-opacity": isMaarifTargetPilot && targetComposition === "context" ? 0.22 : 0.28,
                 "fill-extrusion-vertical-gradient": true,
               },
             } as any);
