@@ -86,6 +86,20 @@
       "evidence": "2026-09-25 current site explicitly says it indexes listings from multiple agencies/sources and search results attribute offers to marocannonces.com, avito.ma and afribaba.com.",
       "duplicate_risk": "very_high",
       "action": "exclude_as_independent_source"
+    },
+    {
+      "domain": "dardar.ma",
+      "classification": "B_QUARANTINE_DISCOVERY",
+      "evidence": "2026-09-25 current Dardar listings index exposes 2,578 listings globally; city pages expose counts such as Tanger 262 and Kenitra 11. Site presents itself as a Moroccan video-property marketplace with 34 agents. Individual detail URL pattern not yet proven.",
+      "duplicate_risk": "medium",
+      "action": "hold_until_detail_pattern_proven"
+    },
+    {
+      "domain": "sekna.ma",
+      "classification": "B_QUARANTINE_DISCOVERY",
+      "evidence": "2026-09-25 current Sekna site presents itself as a Moroccan marketplace covering 80+ cities with verified listings from owners and certified partner agencies; public pages expose live listing cards and city/neighborhood inventories. Exact individual detail URL pattern not yet proven from indexed evidence.",
+      "duplicate_risk": "medium",
+      "action": "hold_until_detail_pattern_proven"
     }
   ]
 }
