@@ -61,10 +61,22 @@ jobs:
           done
           exit 1
 
+      - name: Resolve shard offset
+        id: shard
+        shell: bash
+        run: |
+          case "${{ inputs.shard }}" in
+            0) echo "offset=0" >> "$GITHUB_OUTPUT" ;;
+            1) echo "offset=475" >> "$GITHUB_OUTPUT" ;;
+            2) echo "offset=950" >> "$GITHUB_OUTPUT" ;;
+            3) echo "offset=1425" >> "$GITHUB_OUTPUT" ;;
+            *) exit 1 ;;
+          esac
+
       - name: Run bounded recovery shard
         env:
           SEARXNG_URL: http://127.0.0.1:8888
-          YANDEX_RECOVERY_OFFSET: ${{ fromJSON(inputs.shard) * 475 }}
+          YANDEX_RECOVERY_OFFSET: "${{ steps.shard.outputs.offset }}"
           YANDEX_RECOVERY_LIMIT: "475"
           YANDEX_RECOVERY_PAGES: ${{ inputs.pages }}
           YANDEX_RECOVERY_OUTPUT: data/audits/raw-results/recovery-yandex-${{ inputs.shard }}.jsonl
