@@ -95,7 +95,7 @@ async function main(){
       if(price!==null)price=Number(price); if(!Number.isFinite(price as number)||Number(price)<=0)price=textPrice(combined);
       const surface=textSurface(combined);
       const published=first(ld,["datePosted","datePublished","uploadDate","dateModified"]);
-      let city=urlGeo.city,district=urlGeo.district;
+      let city=urlGeo.city,district=urlGeo.district; if(district&&/^\\d+$/.test(district)) district=null;
       if(addr){const parts=String(addr).split(",").map(x=>x.trim()).filter(Boolean); if(parts.length)city=city||parts[0]}
       const row={...seed,domain:src.domain,robots_decision:decision,fetch_skipped:false,http_status:r.status,final_url:r.final_url,title,description,price_mad:price??null,surface_m2:surface,address:addr,published_at:published,city,district,bedrooms_count:bedrooms(combined),jsonld_blocks:ld.length,database_access:0,database_writes:0};
       results.push(row);
