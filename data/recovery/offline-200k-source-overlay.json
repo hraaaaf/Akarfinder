@@ -50,6 +50,25 @@
       "compliance_note": "2026-09-25 recovery review: current Domio index exposes individual detail URLs shaped /fr/<propertyType>/<vendre|louer>/<city>/<numericId>/<slug>, including numeric IDs 10149, 9231 and 9203. Current homepage claims 10,349 listings. Recovery discovery only; no publication/content-reuse authorization implied.",
       "reviewed_at": "2026-09-25",
       "coverage_cities": null
+    },
+    {
+      "domain": "capalmrabat.com",
+      "status": "approved_discovery",
+      "listing_url_patterns": [
+        "^/biens/[^/]+/[^/]+/[^/?]+/?$"
+      ],
+      "blocked_url_patterns": [
+        "^/biens/?$",
+        "^/biens/[^/]+/?$",
+        "^/biens/[^/]+/[^/]+/?$"
+      ],
+      "source_type": "direct_agency",
+      "external_web_result": true,
+      "compliance_note": "2026-09-25 recovery canary: 21 Common Crawl indexes yielded 3,417 raw records and 604 unique URLs matching the proven detail pattern /biens/<type>/<city>/<slug>/. Recovery discovery only; no production/publication authorization implied.",
+      "reviewed_at": "2026-09-25",
+      "coverage_cities": [
+        "Rabat"
+      ]
     }
   ]
 }
