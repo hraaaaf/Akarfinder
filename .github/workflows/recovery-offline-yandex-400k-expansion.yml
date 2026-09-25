@@ -2,7 +2,7 @@ name: Recovery Offline Yandex 400K Expansion
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, "recovery/offline-200k-mass-harvest-20260924"]
     paths:
       - ".github/workflows/recovery-offline-yandex-400k-expansion.yml"
       - ".github/workflows/recovery-offline-yandex-shadow.yml"
