@@ -69,6 +69,49 @@
       "coverage_cities": [
         "Rabat"
       ]
+    },
+    {
+      "domain": "fadlimmo.com",
+      "status": "approved_discovery",
+      "listing_url_patterns": [
+        "^/fr/(?:achat|location)/[^/]+/[^/]+/[^/]+/[a-f0-9]{8}/?$"
+      ],
+      "blocked_url_patterns": [],
+      "source_type": "direct_agency",
+      "external_web_result": true,
+      "compliance_note": "2026-09-25 recovery canary across 21 Common Crawl indexes: 9,143 raw CDX records -> 672 unique URLs matching proven individual-detail pattern. Recovery discovery only; no production/publication authorization implied.",
+      "reviewed_at": "2026-09-25",
+      "coverage_cities": null
+    },
+    {
+      "domain": "bakimmo.com",
+      "status": "approved_discovery",
+      "listing_url_patterns": [
+        "^/fr/(?:achat|location)/[^/]+/[^/]+/[^/]+/[a-f0-9]{8}/?$"
+      ],
+      "blocked_url_patterns": [],
+      "source_type": "direct_agency",
+      "external_web_result": true,
+      "compliance_note": "2026-09-25 recovery canary across 21 Common Crawl indexes: 4,784 raw CDX records -> 152 unique URLs matching proven individual-detail pattern. Recovery discovery only; no production/publication authorization implied.",
+      "reviewed_at": "2026-09-25",
+      "coverage_cities": [
+        "Kenitra"
+      ]
+    },
+    {
+      "domain": "immoessaouira.com",
+      "status": "approved_discovery",
+      "listing_url_patterns": [
+        "^/fr/(?:achat|location)/[^/]+/[^/]+/[^/]+/[a-f0-9]{8}/?$"
+      ],
+      "blocked_url_patterns": [],
+      "source_type": "direct_agency",
+      "external_web_result": true,
+      "compliance_note": "2026-09-25 recovery canary across 21 Common Crawl indexes: 2,787 raw CDX records -> 106 unique URLs matching proven individual-detail pattern. Recovery discovery only; no production/publication authorization implied.",
+      "reviewed_at": "2026-09-25",
+      "coverage_cities": [
+        "Essaouira"
+      ]
     }
   ]
 }
