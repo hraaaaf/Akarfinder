@@ -3,6 +3,7 @@ import Link from "next/link";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { NationalMapRouter } from "@/components/map/NationalMapRouter";
+import { MaarifTargetRail } from "@/components/map/MaarifTargetRail";
 import { P4MapDecisionRail } from "@/components/map/P4MapDecisionRail";
 import { PremiumInteractiveMapBridge } from "@/components/map/PremiumInteractiveMapBridge";
 import { parseMapNavigationState } from "@/lib/map/map-navigation-state";
@@ -73,7 +74,7 @@ export default async function MapPage({ searchParams }: MapPageProps) {
     : [];
 
   return (
-    <div className="flex min-h-[100svh] flex-col bg-[#F8FAFC] text-[#0B1F3A]" data-vivre-ici-page>
+    <div className="flex min-h-[100svh] flex-col bg-[#F8FAFC] text-[#0B1F3A]" data-vivre-ici-page data-maarif-rebuild={isMaarifTargetPilot ? "true" : undefined}>
       <SiteHeader searchMode fluid />
 
       {usePremiumNationalExplore ? (
@@ -95,7 +96,7 @@ export default async function MapPage({ searchParams }: MapPageProps) {
                 </Link>
               ) : null}
             </div>
-            <P4MapDecisionRail />
+            {isMaarifTargetPilot ? <MaarifTargetRail /> : <P4MapDecisionRail />}
           </div>
 
           {!hasNeighborhoodSelection ? (
