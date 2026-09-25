@@ -10,15 +10,9 @@ import {
   Trees,
   Users,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
-import { resolveCityEntity, resolveNeighborhoodEntity } from "@/lib/geo/geo-entity-registry";
+import { useEffect, useState } from "react";
 import type { NeighborhoodContextReadModelV1 } from "@/lib/neighborhood-context/read-model";
 import { mapPoiCategoryLabel } from "@/lib/neighborhood-context/map-poi-presentation";
-import {
-  buildMapSearchHref,
-  mapNavigationStateFromUrlSearchParams,
-} from "@/lib/map/map-navigation-state";
 
 const MAARIF_HERO = {
   src: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Parfumerie_jura%2C_Ma%C3%A2rif%2C_Casablanca.jpg/1280px-Parfumerie_jura%2C_Ma%C3%A2rif%2C_Casablanca.jpg",
@@ -34,23 +28,13 @@ type ContextPayload =
 type Tab = "market" | "local" | "mobility";
 
 export function MaarifTargetRail() {
-  const searchParams = useSearchParams();
-  const navigationState = useMemo(
-    () => mapNavigationStateFromUrlSearchParams(new URLSearchParams(searchParams.toString())),
-    [searchParams],
-  );
-  const cityEntity = navigationState.city === "all" ? null : resolveCityEntity(navigationState.city);
-  const districtEntity = cityEntity && navigationState.district
-    ? resolveNeighborhoodEntity(cityEntity.canonical_name, navigationState.district)
-    : null;
-  const searchHref = buildMapSearchHref(navigationState);
+  const searchHref = "/search?city=casablanca&district=maarif";
+  const neighborhoodHref = "/quartiers/casablanca/maarif";
   const [activeTab, setActiveTab] = useState<Tab>("market");
   const [context, setContext] = useState<NeighborhoodContextReadModelV1 | null>(null);
 
   useEffect(() => {
     setContext(null);
-    if (!cityEntity || !districtEntity) return;
-
     const controller = new AbortController();
     void fetch(
       `/api/geo/neighborhood-context?city=${encodeURIComponent(cityEntity.slug)}&district=${encodeURIComponent(districtEntity.slug)}`,
@@ -69,7 +53,7 @@ export function MaarifTargetRail() {
       });
 
     return () => controller.abort();
-  }, [cityEntity?.slug, districtEntity?.slug]);
+  }, []);
 
   const anchors = context?.anchors.slice(0, 4) ?? [];
   const placeCards = anchors.slice(0, 3);
@@ -170,12 +154,10 @@ export function MaarifTargetRail() {
             <span>Voir les biens disponibles à Maârif</span>
             <ArrowRight size={17} aria-hidden="true" />
           </Link>
-          {districtEntity?.seo_eligible && cityEntity ? (
-            <Link href={`/quartiers/${cityEntity.slug}/${districtEntity.slug}`} className="maarif-target-secondary-action">
-              <Building2 size={15} aria-hidden="true" />
-              Voir la fiche quartier
-            </Link>
-          ) : null}
+          <Link href={neighborhoodHref} className="maarif-target-secondary-action">
+            <Building2 size={15} aria-hidden="true" />
+            Voir la fiche quartier
+          </Link>
         </div>
 
         <section className="maarif-target-places" aria-label="Lieux d’intérêt">
