@@ -108,6 +108,20 @@
       "route_pattern": "^/fr/(?:achat|location)/[^/]+/[^/]+/[^/]+/[a-f0-9]{8}/?$",
       "duplicate_risk": "low_to_medium",
       "action": "pattern_proven_recovery_candidate"
+    },
+    {
+      "domain": "maisonessaouira.com",
+      "classification": "B_QUARANTINE_DISCOVERY",
+      "evidence": "2026-09-25 current site identifies itself as a direct Essaouira agency with verified sale inventory and category pages, but indexed evidence does not yet prove a stable individual-detail URL pattern distinct from category/template content.",
+      "duplicate_risk": "low_to_medium",
+      "action": "hold_until_detail_pattern_proven"
+    },
+    {
+      "domain": "essaouira.immo",
+      "classification": "B_QUARANTINE_DISCOVERY",
+      "evidence": "2026-09-25 current Abdo Immobilier site exposes real sale inventory with references such as 2526/2596, but indexed results primarily expose /vente/ category/filter pages; no stable individual-detail URL pattern proven yet.",
+      "duplicate_risk": "low_to_medium",
+      "action": "hold_until_detail_pattern_proven"
     }
   ]
 }
