@@ -192,7 +192,7 @@ function focusNeighborhoodMap(
   map.easeTo({
     center: targetCenter,
     zoom: contextual ? (desktop ? 12.38 : 12.92) : (desktop ? 13.55 : 13.8),
-    pitch: contextual ? (desktop ? 14 : 7) : (desktop ? 18 : 8),
+    pitch: contextual ? 0 : (desktop ? 18 : 8),
     bearing: 0,
     duration,
   });
@@ -326,16 +326,23 @@ export function MapLibreNeighborhood3D({
 
               if (!map.hasImage("akarfinder-water-texture")) {
                 const size = 96;
+                const tau = Math.PI * 2;
                 const data = new Uint8Array(size * size * 4);
                 for (let y = 0; y < size; y += 1) {
                   for (let x = 0; x < size; x += 1) {
                     const index = (y * size + x) * 4;
-                    const waveA = Math.sin((x * 0.105) + (y * 0.037)) * 4.4;
-                    const waveB = Math.cos((x * 0.052) - (y * 0.081)) * 2.8;
-                    const waveC = Math.sin((x * 0.021) + (y * 0.129)) * 1.7;
-                    const foamBand = Math.sin((x * 0.17) + (y * 0.058)) + Math.cos((x * 0.061) - (y * 0.113));
-                    const foamLift = foamBand > 1.62 ? 5.5 : foamBand > 1.38 ? 2.8 : 0;
-                    const grain = ((((x * 13) + (y * 29) + ((x * y) % 23)) % 17) - 8) * 0.16;
+                    const nx = x / size;
+                    const ny = y / size;
+                    const waveA = Math.sin(tau * ((2 * nx) + ny)) * 4.0;
+                    const waveB = Math.cos(tau * (nx - (3 * ny))) * 2.5;
+                    const waveC = Math.sin(tau * ((4 * nx) + (2 * ny))) * 1.45;
+                    const foamBand = Math.sin(tau * ((5 * nx) + (2 * ny)))
+                      + Math.cos(tau * ((2 * nx) - (4 * ny)));
+                    const foamLift = foamBand > 1.64 ? 5.0 : foamBand > 1.40 ? 2.5 : 0;
+                    const grain = (
+                      Math.sin(tau * ((11 * nx) + (7 * ny)))
+                      + Math.cos(tau * ((7 * nx) - (13 * ny)))
+                    ) * 0.45;
                     const delta = waveA + waveB + waveC + foamLift + grain;
                     data[index] = 62 + Math.round(delta * 0.74);
                     data[index + 1] = 142 + Math.round(delta * 0.66);
@@ -582,7 +589,7 @@ export function MapLibreNeighborhood3D({
               source: "akarfinder-openfreemap",
               "source-layer": "building",
               type: "fill-extrusion",
-              minzoom: isMaarifTargetPilot && targetComposition === "context" ? 12 : 14.8,
+              minzoom: isMaarifTargetPilot && targetComposition === "context" ? 24 : 14.8,
               filter: ["!=", ["get", "hide_3d"], true],
               paint: {
                 "fill-extrusion-color": isMaarifTargetPilot && targetComposition === "context"
@@ -600,7 +607,7 @@ export function MapLibreNeighborhood3D({
                 "fill-extrusion-base": isMaarifTargetPilot && targetComposition === "context"
                   ? ["*", ["coalesce", ["get", "render_min_height"], 0], 0.62]
                   : ["coalesce", ["get", "render_min_height"], 0],
-                "fill-extrusion-opacity": isMaarifTargetPilot && targetComposition === "context" ? 0.22 : 0.28,
+                "fill-extrusion-opacity": isMaarifTargetPilot && targetComposition === "context" ? 0 : 0.28,
                 "fill-extrusion-vertical-gradient": true,
               },
             } as any);
@@ -920,7 +927,7 @@ export function MapLibreNeighborhood3D({
       <div className="maplibre-spike-map-chrome">
         <div className="maplibre-spike-brand"><b>AF</b><span>AkarFinder</span></div>
         <div className="maplibre-spike-search"><Search size={17} aria-hidden="true" /><strong>{cityLabel}</strong><span>Quartiers et adresses</span></div>
-        <div className="maplibre-spike-mode"><span>2D</span><strong>3D</strong></div>
+        <div className="maplibre-spike-mode">{isMaarifTargetPilot && targetComposition === "context" ? <><strong>2D</strong><span>3D</span></> : <><span>2D</span><strong>3D</strong></>}</div>
       </div>
 
       <div className="maplibre-spike-view-chips" aria-label="Mode cartographique">
