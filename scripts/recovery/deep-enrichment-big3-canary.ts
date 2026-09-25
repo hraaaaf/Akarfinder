@@ -60,7 +60,7 @@ function textPrice(text:string){
   return vals.length?Math.max(...vals):null;
 }
 function textSurface(text:string){
-  const ms=[...text.matchAll(/([0-9][0-9\s,.]{0,8})\s*m(?:²|2)\b/gi)];
+  const ms=[...text.matchAll(/([0-9][0-9\s,.]{0,8})\s*m(?:²|2)(?![a-z0-9])/gi)];
   const vals=ms.map(m=>cleanNum(m[1])).filter((x):x is number=>x!==null&&x>=5&&x<=100000);
   return vals.length?Math.max(...vals):null;
 }
@@ -72,7 +72,7 @@ function cityDistrictFromUrl(raw:string){
   if(p[0]==="fr"||p[0]==="ar"||p[0]==="en"){
     if(p[1]==="annonce") return {city:null,district:null};
     if(["location","vente"].includes(p[1])) return {city:p[3]||null,district:p[4]||null};
-    if(["appartement","villa","terrain","bureau","local"].includes(p[1])) return {city:p[3]||null,district:(p[4] && !/^\\d+$/.test(p[4]))?p[4]:null};
+    if(["appartement","villa","terrain","bureau","local"].includes(p[1])) return {city:p[3]||null,district:(p[4] && !/^\d+$/.test(p[4]))?p[4]:null};
   }
   return {city:null,district:null};
 }
@@ -95,7 +95,7 @@ async function main(){
       if(price!==null)price=Number(price); if(!Number.isFinite(price as number)||Number(price)<=0)price=textPrice(combined);
       const surface=textSurface(combined);
       const published=first(ld,["datePosted","datePublished","uploadDate","dateModified"]);
-      let city=urlGeo.city,district=urlGeo.district; if(district&&/^\\d+$/.test(district)) district=null;
+      let city=urlGeo.city,district=urlGeo.district; if(district&&/^\d+$/.test(district)) district=null;
       if(addr){const parts=String(addr).split(",").map(x=>x.trim()).filter(Boolean); if(parts.length)city=city||parts[0]}
       const row={...seed,domain:src.domain,robots_decision:decision,fetch_skipped:false,http_status:r.status,final_url:r.final_url,title,description,price_mad:price??null,surface_m2:surface,address:addr,published_at:published,city,district,bedrooms_count:bedrooms(combined),jsonld_blocks:ld.length,database_access:0,database_writes:0};
       results.push(row);
