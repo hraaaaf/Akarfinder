@@ -435,17 +435,17 @@ export function MapLibreNeighborhood3D({
                 paint: {
                   "line-color": [
                     "match", ["get", "class"],
-                    "motorway", "#c8c0b2",
-                    "trunk", "#cbc5b9",
-                    "primary", "#c8c9c5",
-                    "secondary", "#cdd1ce",
+                    "motorway", "#c3b9aa",
+                    "trunk", "#c7beb0",
+                    "primary", "#c3c5c1",
+                    "secondary", "#c9ceca",
                     "#d2d6d3"
                   ],
                   "line-opacity": 0.97,
                   "line-width": [
                     "interpolate", ["linear"], ["zoom"],
-                    11, ["match", ["get", "class"], "motorway", 3.5, "trunk", 3.2, "primary", 3.0, "secondary", 2.5, "tertiary", 2.0, 1.3],
-                    15, ["match", ["get", "class"], "motorway", 15.2, "trunk", 13, "primary", 11.2, "secondary", 8.8, "tertiary", 6.8, "minor", 4.3, 2.8]
+                    11, ["match", ["get", "class"], "motorway", 3.8, "trunk", 3.45, "primary", 3.25, "secondary", 2.65, "tertiary", 2.0, 1.3],
+                    15, ["match", ["get", "class"], "motorway", 16.0, "trunk", 13.8, "primary", 12.0, "secondary", 9.4, "tertiary", 6.8, "minor", 4.3, 2.8]
                   ],
                 },
               } as any);
@@ -463,18 +463,18 @@ export function MapLibreNeighborhood3D({
                 paint: {
                   "line-color": [
                     "match", ["get", "class"],
-                    "motorway", "#e7ddca",
-                    "trunk", "#ece4d4",
-                    "primary", "#f0ece4",
-                    "secondary", "#f5f2eb",
+                    "motorway", "#e4d7c1",
+                    "trunk", "#e9dfcd",
+                    "primary", "#efe9df",
+                    "secondary", "#f4f0e8",
                     "tertiary", "#fbfaf5",
                     "#ffffff"
                   ],
                   "line-opacity": 0.99,
                   "line-width": [
                     "interpolate", ["linear"], ["zoom"],
-                    11, ["match", ["get", "class"], "motorway", 2.7, "trunk", 2.5, "primary", 2.2, "secondary", 1.85, "tertiary", 1.45, 0.9],
-                    15, ["match", ["get", "class"], "motorway", 13.2, "trunk", 11.2, "primary", 9.3, "secondary", 7.2, "tertiary", 5.4, "minor", 3.1, 1.9]
+                    11, ["match", ["get", "class"], "motorway", 2.95, "trunk", 2.7, "primary", 2.4, "secondary", 1.95, "tertiary", 1.45, 0.9],
+                    15, ["match", ["get", "class"], "motorway", 13.8, "trunk", 11.8, "primary", 9.9, "secondary", 7.6, "tertiary", 5.4, "minor", 3.1, 1.9]
                   ],
                 },
               } as any);
@@ -540,9 +540,9 @@ export function MapLibreNeighborhood3D({
                 "source-layer": "water",
                 paint: {
                   "line-color": "#ffffff",
-                  "line-opacity": 0.48,
-                  "line-width": ["interpolate", ["linear"], ["zoom"], 11, 3.8, 14, 7.2],
-                  "line-blur": 1.35,
+                  "line-opacity": 0.36,
+                  "line-width": ["interpolate", ["linear"], ["zoom"], 11, 3.4, 14, 6.4],
+                  "line-blur": 1.55,
                 },
               } as any);
 
@@ -557,10 +557,10 @@ export function MapLibreNeighborhood3D({
                 },
                 paint: {
                   "line-color": "#ffffff",
-                  "line-opacity": 0.72,
-                  "line-width": ["interpolate", ["linear"], ["zoom"], 11, 2.2, 14, 4.8],
-                  "line-dasharray": [0.55, 0.34, 1.15, 0.42],
-                  "line-blur": 0.45,
+                  "line-opacity": 0.58,
+                  "line-width": ["interpolate", ["linear"], ["zoom"], 11, 1.9, 14, 4.2],
+                  "line-dasharray": [0.34, 0.24, 0.82, 0.38, 0.18, 0.28],
+                  "line-blur": 0.62,
                 },
               } as any);
 
