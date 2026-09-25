@@ -12,7 +12,8 @@ const sources = [
   {domain:"capalmrabat.com", pattern:/^\/biens\/[^/]+\/[^/]+\/[^/?]+\/?$/},
   {domain:"immoessaouira.com", pattern:/^\/fr\/(?:achat|location)\/[^/]+\/[^/]+\/[^/]+\/[a-f0-9]{8}\/?$/},
   {domain:"fadlimmo.com", pattern:/^\/fr\/(?:achat|location)\/[^/]+\/[^/]+\/[^/]+\/[a-f0-9]{8}\/?$/},
-  {domain:"bakimmo.com", pattern:/^\/fr\/(?:achat|location)\/[^/]+\/[^/]+\/[^/]+\/[a-f0-9]{8}\/?$/}
+  {domain:"bakimmo.com", pattern:/^\/fr\/(?:achat|location)\/[^/]+\/[^/]+\/[^/]+\/[a-f0-9]{8}\/?$/},
+  {domain:"archimmomaroc.com", pattern:/^\/propriete\/[^/?]+-\d{10}\/?$/}
 ];
 
 const sleep=(ms:number)=>new Promise(r=>setTimeout(r,ms));
