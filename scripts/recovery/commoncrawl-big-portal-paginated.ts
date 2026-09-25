@@ -42,6 +42,15 @@ const SOURCES = {
   ],
   "mouldar.com": [
     /\/(?:fr|en)\/(?:rent|achat|buy|louer|location)\/.+\/[a-f0-9]{6,}$/i
+  ],
+  "daragadir.com": [
+    /^\/annonces\/annonces-immobilieres\/(?:vente|location|location-de-vacances)\/[^/]+\/[^/]+\.html$/
+  ],
+  "1immo.ma": [
+    /^\/[^/]+-\d+$/
+  ],
+  "promoimmomarrakech.com": [
+    /^\/produit\/[^/]+\/[^/]+\.html$/
   ]
 } as const;
 
