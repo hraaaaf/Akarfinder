@@ -293,7 +293,7 @@ export function MapLibreNeighborhood3D({
                 const id = String(layer.id ?? "").toLowerCase();
                 try {
                   if (layer.type === "background") {
-                    map.setPaintProperty(layer.id, "background-color", "#f6f8f7");
+                    map.setPaintProperty(layer.id, "background-color", "#f4f2ed");
                   }
                   if (
                     (layer.type === "fill" && /(water|ocean|sea|building|park|landuse|landcover)/.test(id))
@@ -480,29 +480,56 @@ export function MapLibreNeighborhood3D({
               } as any);
 
               map.addLayer({
-                id: "akarfinder-target-road-labels",
+                id: "akarfinder-target-road-labels-major",
                 type: "symbol",
                 source,
                 "source-layer": "transportation_name",
-                minzoom: 12.2,
-                filter: ["!", ["match", ["get", "class"], ["rail", "transit", "ferry"], true, false]],
+                minzoom: 11.8,
+                filter: ["match", ["get", "class"], ["motorway", "trunk", "primary", "secondary"], true, false],
                 layout: {
                   "symbol-placement": "line",
-                  "symbol-spacing": 220,
+                  "symbol-spacing": 260,
                   "text-field": ["coalesce", ["get", "name:latin"], ["get", "name"]],
-                  "text-size": ["interpolate", ["linear"], ["zoom"], 12.2, 8.4, 14, 10.6],
-                  "text-letter-spacing": 0.01,
-                  "text-max-angle": 22,
-                  "text-padding": 1,
-                  "text-allow-overlap": true,
-                  "text-ignore-placement": true,
+                  "text-size": ["interpolate", ["linear"], ["zoom"], 11.8, 9.8, 14, 12.0],
+                  "text-letter-spacing": 0.012,
+                  "text-max-angle": 20,
+                  "text-padding": 2,
+                  "text-allow-overlap": false,
+                  "text-ignore-placement": false,
                 },
                 paint: {
-                  "text-color": "#46525d",
-                  "text-opacity": 0.82,
-                  "text-halo-color": "rgba(255,255,255,0.96)",
-                  "text-halo-width": 1.25,
-                  "text-halo-blur": 0.16,
+                  "text-color": "#3f4b56",
+                  "text-opacity": 0.90,
+                  "text-halo-color": "rgba(255,255,255,0.97)",
+                  "text-halo-width": 1.4,
+                  "text-halo-blur": 0.12,
+                },
+              } as any);
+
+              map.addLayer({
+                id: "akarfinder-target-road-labels-minor",
+                type: "symbol",
+                source,
+                "source-layer": "transportation_name",
+                minzoom: 12.5,
+                filter: ["match", ["get", "class"], ["tertiary", "minor", "service"], true, false],
+                layout: {
+                  "symbol-placement": "line",
+                  "symbol-spacing": 360,
+                  "text-field": ["coalesce", ["get", "name:latin"], ["get", "name"]],
+                  "text-size": ["interpolate", ["linear"], ["zoom"], 12.5, 7.7, 14.5, 9.4],
+                  "text-letter-spacing": 0.008,
+                  "text-max-angle": 24,
+                  "text-padding": 2,
+                  "text-allow-overlap": false,
+                  "text-ignore-placement": false,
+                },
+                paint: {
+                  "text-color": "#616a72",
+                  "text-opacity": 0.62,
+                  "text-halo-color": "rgba(255,255,255,0.94)",
+                  "text-halo-width": 1.0,
+                  "text-halo-blur": 0.14,
                 },
               } as any);
 
@@ -520,15 +547,33 @@ export function MapLibreNeighborhood3D({
               } as any);
 
               map.addLayer({
+                id: "akarfinder-target-coastline-foam-breaks",
+                type: "line",
+                source,
+                "source-layer": "water",
+                layout: {
+                  "line-cap": "round",
+                  "line-join": "round",
+                },
+                paint: {
+                  "line-color": "#ffffff",
+                  "line-opacity": 0.72,
+                  "line-width": ["interpolate", ["linear"], ["zoom"], 11, 2.2, 14, 4.8],
+                  "line-dasharray": [0.55, 0.34, 1.15, 0.42],
+                  "line-blur": 0.45,
+                },
+              } as any);
+
+              map.addLayer({
                 id: "akarfinder-target-coastline",
                 type: "line",
                 source,
                 "source-layer": "water",
                 paint: {
                   "line-color": "#f9fcff",
-                  "line-opacity": 0.94,
-                  "line-width": ["interpolate", ["linear"], ["zoom"], 11, 1.25, 14, 2.8],
-                  "line-blur": 0.2,
+                  "line-opacity": 0.95,
+                  "line-width": ["interpolate", ["linear"], ["zoom"], 11, 1.3, 14, 2.9],
+                  "line-blur": 0.18,
                 },
               } as any);
             }
