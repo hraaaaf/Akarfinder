@@ -44,23 +44,25 @@
     {
       "domain": "fadlimmo.com",
       "classification": "A_LONG_TAIL_AGENCY",
-      "evidence": "Current site identifies itself as Fadl Immo agency and reports 70 verified properties; direct agency inventory, not a meta-search surface.",
+      "evidence": "Current indexed detail page proves /fr/achat/terrain/mehdia/toute-la-ville/6bec88b4; category pages omit the terminal 8-hex identifier. Direct agency inventory.",
       "duplicate_risk": "low_to_medium",
-      "action": "derive_individual_listing_pattern_before_overlay"
+      "action": "pattern_proven_recovery_candidate",
+      "route_pattern": "^/fr/(?:achat|location)/[^/]+/[^/]+/[^/]+/[a-f0-9]{8}/?$"
     },
     {
       "domain": "bakimmo.com",
       "classification": "A_LONG_TAIL_AGENCY",
-      "evidence": "Current site identifies itself as BAK Immo Services agency and reports 101 verified listings; direct agency inventory.",
+      "evidence": "Current indexed detail pages prove /fr/location/appartement/kenitra/centre/c56aa167 and /fr/achat/appartement/kenitra/bir-rami/b1779132; category pages omit the terminal 8-hex identifier. Direct agency inventory.",
       "duplicate_risk": "low_to_medium",
-      "action": "derive_individual_listing_pattern_before_overlay"
+      "action": "pattern_proven_recovery_candidate",
+      "route_pattern": "^/fr/(?:achat|location)/[^/]+/[^/]+/[^/]+/[a-f0-9]{8}/?$"
     },
     {
       "domain": "nador.immo",
       "classification": "B_LOCAL_PLATFORM",
       "evidence": "Current site describes itself as a Nador property platform; terms define partners as real-estate professionals contracted for listing distribution.",
       "duplicate_risk": "medium",
-      "action": "derive_listing_pattern_and_keep_partner_overlap_quarantine"
+      "action": "hold_no_detail_pattern_proven"
     }
   ]
 }
