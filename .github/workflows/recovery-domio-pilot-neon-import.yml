@@ -1,0 +1,225 @@
+name: Recovery Domio Pilot Neon Import
+
+on:
+  push:
+    branches: ["recovery/big-portals-mass-20260925"]
+    paths:
+      - "data/recovery/domio-pilot-500-import-trigger.json"
+      - ".github/workflows/recovery-domio-pilot-neon-import.yml"
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: recovery-domio-pilot-neon-import
+  cancel-in-progress: false
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      DATABASE_URL: ${{ secrets.NEON_RECOVERY_DATABASE_URL }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Require isolated Neon secret
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${DATABASE_URL:-}" ]; then
+            echo "::error::Missing NEON_RECOVERY_DATABASE_URL"
+            exit 1
+          fi
+
+      - name: Read certified run id
+        id: trigger
+        shell: bash
+        run: |
+          set -euo pipefail
+          run_id=$(node -p "require('./data/recovery/domio-pilot-500-import-trigger.json').certified_run_id")
+          if ! [[ "$run_id" =~ ^[0-9]+$ ]]; then
+            echo "::error::Invalid certified_run_id"
+            exit 1
+          fi
+          echo "run_id=$run_id" >> "$GITHUB_OUTPUT"
+
+      - name: Download certified artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/pilot"
+          gh run download "${{ steps.trigger.outputs.run_id }}"             --repo "${GITHUB_REPOSITORY}"             -n domio-pilot-500-certified             -D "$RUNNER_TEMP/pilot"
+
+      - name: Re-certify artifact before write
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - "$RUNNER_TEMP/pilot/domio-pilot-500-summary.json" "$RUNNER_TEMP/pilot/domio-pilot-500-approved.jsonl" <<'NODE'
+          const fs=require("fs");
+          const [summaryPath,rowsPath]=process.argv.slice(2);
+          const s=JSON.parse(fs.readFileSync(summaryPath,"utf8"));
+          const rows=fs.readFileSync(rowsPath,"utf8").trim().split(/\r?\n/).filter(Boolean).map(JSON.parse);
+          if(s.database_access!==0||s.database_writes!==0) throw new Error("artifact claims DB access/write");
+          if(s.approved<350||rows.length!==s.approved) throw new Error("approval invariant failed");
+          if(s.quality_min<80) throw new Error("quality invariant failed");
+          const ids=new Set(rows.map(r=>r.source_listing_id));
+          const urls=new Set(rows.map(r=>r.listing_url));
+          const fps=new Set(rows.map(r=>r.canonical_fingerprint));
+          if(ids.size!==rows.length||urls.size!==rows.length||fps.size!==rows.length) throw new Error("dedup invariant failed");
+          console.log(JSON.stringify({approved:rows.length,quality_min:s.quality_min,quality_avg:s.quality_avg}));
+          NODE
+
+      - name: Build staging CSV
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - "$RUNNER_TEMP/pilot/domio-pilot-500-approved.jsonl" "$RUNNER_TEMP/pilot/domio-pilot.csv" <<'PY'
+          import csv,json,sys
+          src,out=sys.argv[1:3]
+          fields=[
+            "canonical_fingerprint","source_listing_id","title","price_mad","city","district",
+            "property_type","transaction_type","surface_m2","rooms_count","bedrooms_count","bathrooms_count",
+            "description_snippet","images_count","seller_name","data_completeness_score","field_confidence",
+            "source_name","listing_url","source_url","first_seen_at","last_seen_at","published_at","address"
+          ]
+          with open(out,"w",newline="",encoding="utf-8") as f:
+            w=csv.DictWriter(f,fieldnames=fields)
+            w.writeheader()
+            for line in open(src,encoding="utf-8"):
+              if not line.strip(): continue
+              r=json.loads(line)
+              row={k:r.get(k) for k in fields}
+              row["field_confidence"]=json.dumps(row["field_confidence"],ensure_ascii=False,separators=(",",":"))
+              w.writerow(row)
+          PY
+
+      - name: Import transactionally into isolated Neon
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --rm             -e DATABASE_URL="$DATABASE_URL"             -v "$RUNNER_TEMP/pilot:/pilot"             postgres:17             sh -lc 'psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 <<'"'"'SQL'"'"'
+          BEGIN;
+
+          INSERT INTO scrape_runs (
+            started_at, finished_at, source_file, source_file_hash,
+            sources_attempted, sources_succeeded, total_raw, total_clean,
+            errors_count, quality_report_json
+          )
+          VALUES (
+            now(), now(), '"'"'domio-pilot-500-certified'"'"',
+            md5('"'"'domio-pilot-500-certified-${{ steps.trigger.outputs.run_id }}'"'"'),
+            '"'"'["domio.ma"]'"'"'::jsonb, '"'"'["domio.ma"]'"'"'::jsonb,
+            500, 0, 0,
+            jsonb_build_object('"'"'github_run_id'"'"','"'"'${{ steps.trigger.outputs.run_id }}'"'"','"'"'mode'"'"','"'"'isolated_neon_pilot'"'"')
+          )
+          RETURNING id AS scrape_run_id \gset
+
+          CREATE TEMP TABLE stage_domio (
+            canonical_fingerprint text,
+            source_listing_id text,
+            title text,
+            price_mad integer,
+            city text,
+            district text,
+            property_type text,
+            transaction_type text,
+            surface_m2 integer,
+            rooms_count integer,
+            bedrooms_count integer,
+            bathrooms_count integer,
+            description_snippet text,
+            images_count integer,
+            seller_name text,
+            data_completeness_score integer,
+            field_confidence jsonb,
+            source_name text,
+            listing_url text,
+            source_url text,
+            first_seen_at timestamptz,
+            last_seen_at timestamptz,
+            published_at timestamptz,
+            address text
+          );
+
+          \copy stage_domio FROM '"'"'/pilot/domio-pilot.csv'"'"' WITH (FORMAT csv, HEADER true)
+
+          INSERT INTO raw_listings (scrape_run_id, source_name, source_url, listing_url, raw_json)
+          SELECT
+            :scrape_run_id,
+            source_name,
+            source_url,
+            listing_url,
+            jsonb_build_object(
+              '"'"'source_listing_id'"'"',source_listing_id,
+              '"'"'published_at'"'"',published_at,
+              '"'"'address'"'"',address,
+              '"'"'quality_score'"'"',data_completeness_score
+            )
+          FROM stage_domio
+          ON CONFLICT (scrape_run_id, listing_url) DO NOTHING;
+
+          INSERT INTO property_listings (
+            canonical_fingerprint,title,price_mad,city,district,property_type,transaction_type,
+            surface_m2,rooms_count,bedrooms_count,bathrooms_count,description_snippet,
+            images_count,seller_name,data_completeness_score,field_confidence,updated_at
+          )
+          SELECT
+            canonical_fingerprint,title,price_mad,city,NULLIF(district,'"'"''"'"'),property_type,transaction_type,
+            surface_m2,rooms_count,bedrooms_count,bathrooms_count,description_snippet,
+            images_count,seller_name,data_completeness_score,field_confidence,now()
+          FROM stage_domio
+          ON CONFLICT (canonical_fingerprint) DO UPDATE SET
+            title=EXCLUDED.title,
+            price_mad=EXCLUDED.price_mad,
+            city=EXCLUDED.city,
+            district=EXCLUDED.district,
+            property_type=EXCLUDED.property_type,
+            transaction_type=EXCLUDED.transaction_type,
+            surface_m2=EXCLUDED.surface_m2,
+            bedrooms_count=EXCLUDED.bedrooms_count,
+            description_snippet=EXCLUDED.description_snippet,
+            data_completeness_score=EXCLUDED.data_completeness_score,
+            field_confidence=EXCLUDED.field_confidence,
+            updated_at=now();
+
+          INSERT INTO listing_sources (
+            property_listing_id,source_name,listing_url,source_url,first_seen_at,last_seen_at,is_active
+          )
+          SELECT
+            p.id,s.source_name,s.listing_url,s.source_url,s.first_seen_at,s.last_seen_at,true
+          FROM stage_domio s
+          JOIN property_listings p USING (canonical_fingerprint)
+          ON CONFLICT (listing_url) DO UPDATE SET
+            property_listing_id=EXCLUDED.property_listing_id,
+            source_name=EXCLUDED.source_name,
+            source_url=EXCLUDED.source_url,
+            last_seen_at=EXCLUDED.last_seen_at,
+            is_active=true;
+
+          UPDATE scrape_runs
+          SET total_clean=(SELECT count(*) FROM stage_domio)
+          WHERE id=:scrape_run_id;
+
+          COMMIT;
+
+          SELECT
+            (SELECT count(*) FROM stage_domio) AS staged,
+            (SELECT count(*) FROM property_listings p JOIN stage_domio s USING(canonical_fingerprint)) AS properties_present,
+            (SELECT count(*) FROM listing_sources l JOIN stage_domio s ON s.listing_url=l.listing_url) AS sources_present;
+          SQL'
+
+      - name: Verify imported pilot
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --rm -e DATABASE_URL="$DATABASE_URL" postgres:17             sh -lc 'psql "$DATABASE_URL" -X -qAt -v ON_ERROR_STOP=1 -c "
+              select count(*)
+              from listing_sources ls
+              join property_listings pl on pl.id=ls.property_listing_id
+              where ls.source_name = '"'"'domio.ma'"'"'
+                and pl.data_completeness_score >= 80
+                and ls.is_active is true;
+            "'
