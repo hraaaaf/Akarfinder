@@ -1,0 +1,66 @@
+{
+  "schema_version": "akarfinder-recovery-source-expansion-v1",
+  "generated_at": "2026-09-25",
+  "purpose": "Offline recovery discovery candidates toward ~400k raw reservoir. This file grants no production/publication authorization.",
+  "rules": {
+    "database_access": 0,
+    "database_writes": 0,
+    "source_page_bulk_fetch": false,
+    "approved_for_import_rows": 0,
+    "meta_aggregators_count_as_independent_sources": false,
+    "cross_source_dedup_required": true
+  },
+  "candidates": [
+    {
+      "domain": "sarout.ma",
+      "classification": "A_RECOVERY_DISCOVERY",
+      "evidence": "Current public listings page exposes individual detail URLs shaped /fr/annonce/<numericId>/<slug> and ~18k active listings on the crawled page.",
+      "route_pattern": "^/(?:fr|ar)/annonce/\\d+/[^/]+/?$",
+      "duplicate_risk": "medium",
+      "action": "already_in_recovery_overlay"
+    },
+    {
+      "domain": "marocimmo.com",
+      "classification": "B_QUARANTINE_DISCOVERY",
+      "evidence": "Current public homepage claims 39,000 listings and exposes detail URLs such as /fr/vente/appartement/marrakech/gueliz/<slug> and /fr/location/appartement/marrakech/agdal/<slug>. Homepage also surfaces offers attributed to agencies/platforms already present elsewhere, so cross-source duplicate risk is material.",
+      "route_pattern_hypothesis": "^/fr/(?:vente|location)/[^/]+/[^/]+/[^/]+/[^/]+/?$",
+      "duplicate_risk": "high",
+      "action": "qualify_more_before_overlay"
+    },
+    {
+      "domain": "mon-bien.ma",
+      "classification": "C_META_AGGREGATOR",
+      "evidence": "Site states its market data is based on active listings aggregated from four major portals and deduplicated.",
+      "duplicate_risk": "very_high",
+      "action": "exclude_as_independent_source"
+    },
+    {
+      "domain": "soukimmobilier.com",
+      "classification": "B_QUARANTINE_DISCOVERY",
+      "evidence": "Open-data page reports 44,707 total listings and states data comes from multiple sources including its own platform and partners.",
+      "duplicate_risk": "high",
+      "action": "do_not_count_as_independent_until_proven"
+    },
+    {
+      "domain": "fadlimmo.com",
+      "classification": "A_LONG_TAIL_AGENCY",
+      "evidence": "Current site identifies itself as Fadl Immo agency and reports 70 verified properties; direct agency inventory, not a meta-search surface.",
+      "duplicate_risk": "low_to_medium",
+      "action": "derive_individual_listing_pattern_before_overlay"
+    },
+    {
+      "domain": "bakimmo.com",
+      "classification": "A_LONG_TAIL_AGENCY",
+      "evidence": "Current site identifies itself as BAK Immo Services agency and reports 101 verified listings; direct agency inventory.",
+      "duplicate_risk": "low_to_medium",
+      "action": "derive_individual_listing_pattern_before_overlay"
+    },
+    {
+      "domain": "nador.immo",
+      "classification": "B_LOCAL_PLATFORM",
+      "evidence": "Current site describes itself as a Nador property platform; terms define partners as real-estate professionals contracted for listing distribution.",
+      "duplicate_risk": "medium",
+      "action": "derive_listing_pattern_and_keep_partner_overlap_quarantine"
+    }
+  ]
+}
