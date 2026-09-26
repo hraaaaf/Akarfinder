@@ -125,5 +125,35 @@
       "database_writes": 0,
       "merged_into_canonical_v4_8": false
     }
+  },
+  "review_queue_segmentation": {
+    "scope_lifecycle_medium_or_high": 189940,
+    "no_contradiction_final_review_candidates": 145370,
+    "contradiction_quarantine_candidates": 44570,
+    "lifecycle_low_in_scope": 32419,
+    "approved_for_import_rows": 0,
+    "interpretation": "Final-review candidate is not import approval; contradictions remain quarantined and lifecycle-low requires more evidence."
+  },
+  "review_queue_no_contradiction_by_domain": {
+    "sarout.ma": 43794,
+    "mubawab.ma": 41576,
+    "marocimmo.com": 37268,
+    "avito.ma": 21243,
+    "domio.ma": 1477,
+    "promoimmomarrakech.com": 5,
+    "daragadir.com": 4,
+    "marocannonces.com": 2,
+    "sarouty.ma": 1
+  },
+  "review_queue_contradiction_top_domains": {
+    "mubawab.ma": 23473,
+    "agenz.ma": 5360,
+    "daragadir.com": 4614,
+    "promoimmomarrakech.com": 3185,
+    "masaken.ma": 1698,
+    "mouldar.com": 1516,
+    "avito.ma": 1412,
+    "soukimmobilier.com": 903,
+    "sarouty.ma": 617
   }
 }
