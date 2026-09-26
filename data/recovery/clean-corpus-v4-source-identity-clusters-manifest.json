@@ -1,0 +1,13 @@
+{
+  "schema_version": "akarfinder-v4-source-identity-clusters-2026-09-26",
+  "input_urls": 226286,
+  "source_identities": 191586,
+  "multi_alias_groups": 33644,
+  "aliases_collapsed_without_deletion": 34700,
+  "remaining_source_identity_nodes": 191586,
+  "cross_source_property_clustering_performed": false,
+  "database_access": 0,
+  "database_writes": 0,
+  "approved_for_import_rows": 0,
+  "sha256_gzip": "c5a97793f7b5b7e2c74775284d29698f0f98f4404f592f7428fbe88bae6cf5cb"
+}
