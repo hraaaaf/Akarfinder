@@ -8,10 +8,26 @@ permissions:
 
 jobs:
   recent-cc:
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        domain:
+          - mubawab.ma
+          - domio.ma
+          - agenz.ma
+          - avito.ma
+          - promoimmomarrakech.com
+          - masaken.ma
+          - sarouty.ma
+          - daragadir.com
+          - mouldar.com
+          - soukimmobilier.com
+          - marocannonces.com
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
-      RECENT_CC_DOMAINS: mubawab.ma,domio.ma,agenz.ma,avito.ma,promoimmomarrakech.com,masaken.ma,sarouty.ma,daragadir.com,mouldar.com,soukimmobilier.com,marocannonces.com
+      RECENT_CC_DOMAINS: ${{ matrix.domain }}
       RECENT_CC_INDEXES: CC-MAIN-2026-39,CC-MAIN-2026-34,CC-MAIN-2026-30
     steps:
       - uses: actions/checkout@v4
@@ -27,6 +43,6 @@ jobs:
           node -e 'const m=require("./data/audits/raw-results/recent-cc-recovery/manifest.json"); if(m.database_access!==0||m.database_writes!==0||m.source_page_fetches!==0||m.warc_downloads!==0||m.approved_for_import_rows!==0) process.exit(1)'
       - uses: actions/upload-artifact@v4
         with:
-          name: recovery-recent-cc-evidence
+          name: recovery-recent-cc-evidence-${{ matrix.domain }}
           path: data/audits/raw-results/recent-cc-recovery/
           retention-days: 30
