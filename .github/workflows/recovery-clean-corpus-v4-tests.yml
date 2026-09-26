@@ -1,0 +1,25 @@
+name: Recovery Clean Corpus V4 Tests
+
+on:
+  push:
+    branches: ["recovery/big-portals-mass-20260925"]
+    paths:
+      - "scripts/recovery/merge-clean-corpus-v4-enrichment.ts"
+      - "scripts/recovery/__tests__/clean-corpus-v4-enrichment.test.ts"
+      - ".github/workflows/recovery-clean-corpus-v4-tests.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: npm }
+      - run: npm ci
+      - name: V4 enrichment safety tests
+        run: npx tsx --test scripts/recovery/__tests__/clean-corpus-v4-enrichment.test.ts
