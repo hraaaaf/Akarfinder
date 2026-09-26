@@ -1,5 +1,5 @@
 {
-  "schema_version": "akarfinder-clean-corpus-v4.4-20260926",
+  "schema_version": "akarfinder-clean-corpus-v4.5-20260926",
   "rows": 226286,
   "classification_counts": {
     "KEEP": 225991,
@@ -8,8 +8,8 @@
   },
   "classification_confidence": {
     "high": 21012,
-    "medium": 82256,
-    "low": 123018
+    "medium": 90171,
+    "low": 115103
   },
   "candidate_kind_counts": {
     "detail_confirmed": 101999,
@@ -17,7 +17,7 @@
     "category_or_index": 289
   },
   "thin_category_rows_in_union": 289,
-  "thin_ambiguous_rows_in_union": 9390,
+  "thin_ambiguous_rows_in_union": 9388,
   "deep_observations_by_http": {
     "http_200": 4089,
     "http_0": 12,
@@ -29,7 +29,7 @@
   "database_access": 0,
   "database_writes": 0,
   "drift_vs_historical_v3_rows": 10,
-  "sha256_gzip": "c9dab64e09d5907d63b4228cdc693e3191ff296e0301013896f03b265040e48f",
+  "sha256_gzip": "4947ba3e3f8320cd861e286ae85bbe584e28ce8d3a1ba054cbb02ffbbe95ff60",
   "limitations": [
     "historical V3 zip unavailable",
     "5 manually audited source IDs absent from reconstructed freeze+artifact union; exact original V3 cannot be claimed",
@@ -40,5 +40,12 @@
   "source_identity_clusters": 191586,
   "source_identity_multi_alias_clusters": 33644,
   "urls_in_multi_alias_clusters": 68344,
-  "source_alias_collapses_if_canonicalized": 34700
+  "source_alias_collapses_if_canonicalized": 34700,
+  "thin_ambiguous_low_promoted_to_medium": 7915,
+  "freeze_cluster_carry_forward": {
+    "freeze_clusters_with_v4_members": 4817,
+    "v4_urls_covered": 4818,
+    "complete_cross_source_clusters_with_multiple_v4_urls": 1,
+    "inferred_new_clusters": 0
+  }
 }
