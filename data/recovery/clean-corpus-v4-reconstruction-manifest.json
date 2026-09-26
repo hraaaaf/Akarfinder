@@ -1,5 +1,5 @@
 {
-  "schema_version": "akarfinder-clean-corpus-v4.3-source-identity-20260926",
+  "schema_version": "akarfinder-clean-corpus-v4.4-20260926",
   "rows": 226286,
   "classification_counts": {
     "KEEP": 225991,
@@ -13,9 +13,8 @@
   },
   "candidate_kind_counts": {
     "detail_confirmed": 101999,
-    "detail_likely": 123845,
-    "category_or_index": 289,
-    "unverified_listing_candidate": 153
+    "detail_likely": 123998,
+    "category_or_index": 289
   },
   "thin_category_rows_in_union": 289,
   "thin_ambiguous_rows_in_union": 9390,
@@ -30,13 +29,14 @@
   "database_access": 0,
   "database_writes": 0,
   "drift_vs_historical_v3_rows": 10,
-  "sha256_gzip": "059386822c5f7d01e04193dc8e2a87fbed0504a85291f95cc6a7102a05fc9e18",
+  "sha256_gzip": "c9dab64e09d5907d63b4228cdc693e3191ff296e0301013896f03b265040e48f",
   "limitations": [
     "historical V3 zip unavailable",
     "5 manually audited source IDs absent from reconstructed freeze+artifact union; exact original V3 cannot be claimed",
     "HTTP 503/0 never treated as expiry"
   ],
   "category_rows_promoted_to_non_real_estate_false_positive": 289,
+  "mubawab_unverified_promoted_to_detail_likely": 153,
   "source_identity_clusters": 191586,
   "source_identity_multi_alias_clusters": 33644,
   "urls_in_multi_alias_clusters": 68344,
