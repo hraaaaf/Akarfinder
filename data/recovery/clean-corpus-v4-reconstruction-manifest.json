@@ -57,7 +57,7 @@
     "medium": 188664,
     "low": 33192
   },
-  "next_focus": "33192 KEEP rows with low lifecycle confidence; product scope is now separated from real-estate validity and lifecycle",
+  "next_focus": "32419 KEEP rows that are both lifecycle-low and product-scope-eligible",
   "certified_public_sitemap_cohorts": {
     "observed_date": "2026-09-25",
     "sarout_ma": {
@@ -82,5 +82,20 @@
   "terminal_sold_routes_promoted_to_expired": 39,
   "short_stay_scope_excluded": 3613,
   "artifact_sha256_status": "not_materialized_after_v4.8_rule_change; previous v4.7 sha retained only as base evidence",
-  "base_v4_7_sha256_gzip": "c67c09723081417b9775bff40622409605f05372748b56fd983ff05c29bb57d7"
+  "base_v4_7_sha256_gzip": "c67c09723081417b9775bff40622409605f05372748b56fd983ff05c29bb57d7",
+  "lifecycle_low_in_scope": 32419,
+  "lifecycle_low_out_of_scope_short_stay": 773,
+  "lifecycle_low_in_scope_by_domain": {
+    "mubawab.ma": 16926,
+    "domio.ma": 8830,
+    "agenz.ma": 3987,
+    "avito.ma": 1149,
+    "promoimmomarrakech.com": 526,
+    "masaken.ma": 349,
+    "sarouty.ma": 323,
+    "daragadir.com": 169,
+    "mouldar.com": 125,
+    "soukimmobilier.com": 23,
+    "marocannonces.com": 12
+  }
 }
