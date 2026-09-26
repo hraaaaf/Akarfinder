@@ -61,8 +61,8 @@
     {
       "id": "G11",
       "check": "approved_for_import_rows_explicitly_reviewed",
-      "status": "PENDING",
-      "note": "Conservative candidate cohort built and reviewed mechanically, but approved_for_import remains false pending final gate decision."
+      "status": "PASS",
+      "note": "Explicit human approval received in chat: 'Go import'. Approval payload committed at 9d406ea10b43969bd06812f69c5c2e09b7407867 for exactly 8,367 rows, cohort SHA256 18b810d3eb07e0fb293cc815d6f4c5506126fa1ed3926b6f4fc14abbd67fb695, isolated branch br-cold-mouse-b2a50yaa."
     },
     {
       "id": "G12",
@@ -103,7 +103,7 @@
     "quarantined_cross_source_ambiguity_rows": 21,
     "existing_neon_direct_url_overlap": 0,
     "schema_compatibility_errors": 0,
-    "approved_for_import_rows": 0,
+    "approved_for_import_rows": 8367,
     "target_project": "ancient-violet-43534870",
     "target_branch": "br-cold-mouse-b2a50yaa",
     "target_database": "AkarFinder",
@@ -112,6 +112,13 @@
     "expected_counts_after_controlled_import": {
       "property_listings": 8544,
       "listing_sources": 8544
+    },
+    "approval": {
+      "status": "APPROVED_FOR_CONTROLLED_ISOLATED_IMPORT",
+      "authorization_message": "Go import",
+      "approval_commit": "9d406ea10b43969bd06812f69c5c2e09b7407867",
+      "rows": 8367,
+      "cohort_sha256": "18b810d3eb07e0fb293cc815d6f4c5506126fa1ed3926b6f4fc14abbd67fb695"
     }
   }
 }
