@@ -67,10 +67,11 @@
     {
       "id": "G12",
       "check": "database_import_and_search_smokes",
-      "status": "PENDING"
+      "status": "PASS",
+      "note": "Controlled import completed on isolated Neon branch br-cold-mouse-b2a50yaa. Independent readback: property_listings 8,544 / listing_sources 8,544 / V4.11 sources 8,367 active; 0 orphan properties; 0 duplicate listing URLs; 0 duplicate canonical fingerprints; 0 missing core fields; 0 bad provenance. Search smoke returned valid filtered cohorts across Casablanca, Rabat, Tanger, Bouskoura, Agadir, Marrakech and others."
     }
   ],
-  "hard_rule": "G11 requires explicit human approval before any data write to Neon. Until then selected cohort remains approved_for_import=false. G12 occurs only after controlled isolated-branch import.",
+  "hard_rule": "Selected cohort import is complete and certified on isolated Neon only. This does not authorize promotion to the production branch or Vercel deployment.",
   "current_baseline": {
     "rows": 226286,
     "keep": 225952,
@@ -87,8 +88,14 @@
     "approved_for_import_rows": 0,
     "gzip_sha256": "e7ac4bca2db34ad334ed7234cfb8be93fc9baca68a9694f5024989b5cc2bb953"
   },
-  "database_access": "read_only_neon_schema_and_counts_only",
-  "database_writes": 0,
+  "database_access": "controlled_isolated_neon_import_plus_readback",
+  "database_writes": {
+    "property_listings_inserted": 8367,
+    "listing_sources_inserted": 8367,
+    "total_rows_inserted": 16734,
+    "target_branch": "br-cold-mouse-b2a50yaa",
+    "production_branch_writes": 0
+  },
   "vercel_deployment": false,
   "selected_neon_cohort": {
     "rows": 8367,
@@ -119,6 +126,25 @@
       "approval_commit": "9d406ea10b43969bd06812f69c5c2e09b7407867",
       "rows": 8367,
       "cohort_sha256": "18b810d3eb07e0fb293cc815d6f4c5506126fa1ed3926b6f4fc14abbd67fb695"
+    },
+    "import_result": {
+      "status": "IMPORTED_AND_READBACK_VERIFIED",
+      "property_listings_total": 8544,
+      "listing_sources_total": 8544,
+      "v411_sources": 8367,
+      "v411_active": 8367,
+      "orphan_properties": 0,
+      "duplicate_listing_urls": 0,
+      "duplicate_fingerprints": 0,
+      "missing_core_fields": 0,
+      "bad_provenance": 0,
+      "by_domain": {
+        "domio.ma": 3462,
+        "marocimmo.com": 4473,
+        "sarout.ma": 432
+      },
+      "note": "GitHub workflow run 36278856045 failed before DB access because NEON_RECOVERY_DATABASE_URL was unset. Import was then executed directly through the connected Neon tool on the same isolated branch under the existing user authorization."
     }
-  }
+  },
+  "status": "SELECTED_COHORT_IMPORT_CERTIFIED"
 }
