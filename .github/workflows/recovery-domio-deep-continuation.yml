@@ -8,13 +8,14 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 concurrency:
   group: recovery-domio-deep-continuation
   cancel-in-progress: false
 
 jobs:
-  enrich_1500_2500:
+  enrich_2500_3500_certified:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
@@ -24,42 +25,24 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - name: Harvest Domio detail URLs
-        run: npx tsx scripts/recovery/domio-category-detail-harvest.ts
-      - name: Deep enrich Domio 1500-2500
+      - name: Download certified Domio URL artifact
         env:
-          DEEP_DOMAIN: domio.ma
-          DEEP_URL_FILE: data/audits/raw-results/recovery-domio-category-detail-urls.txt
-          DEEP_OFFSET: "1500"
-          DEEP_LIMIT: "1000"
-        run: npx tsx scripts/recovery/deep-enrichment-source-batch.ts
-      - uses: actions/upload-artifact@v4
-        with:
-          name: domio-deep-1500-2500
-          path: data/audits/raw-results/deep-batch-domio-ma-1500-2500*
-          retention-days: 30
-
-  enrich_2500_3500:
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: npm
-      - run: npm ci
-      - name: Harvest Domio detail URLs
-        run: npx tsx scripts/recovery/domio-category-detail-harvest.ts
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p /tmp/domio-certified
+          gh api repos/${{ github.repository }}/actions/artifacts/10861514122/zip > /tmp/domio-certified.zip
+          unzip -o /tmp/domio-certified.zip -d /tmp/domio-certified
+          test -s /tmp/domio-certified/recovery-domio-category-detail-urls.txt
+          test "$(wc -l < /tmp/domio-certified/recovery-domio-category-detail-urls.txt)" -eq 10347
       - name: Deep enrich Domio 2500-3500
         env:
           DEEP_DOMAIN: domio.ma
-          DEEP_URL_FILE: data/audits/raw-results/recovery-domio-category-detail-urls.txt
+          DEEP_URL_FILE: /tmp/domio-certified/recovery-domio-category-detail-urls.txt
           DEEP_OFFSET: "2500"
           DEEP_LIMIT: "1000"
         run: npx tsx scripts/recovery/deep-enrichment-source-batch.ts
       - uses: actions/upload-artifact@v4
         with:
-          name: domio-deep-2500-3500
+          name: domio-deep-2500-3500-certified
           path: data/audits/raw-results/deep-batch-domio-ma-2500-3500*
           retention-days: 30
