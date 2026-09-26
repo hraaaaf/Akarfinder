@@ -1,0 +1,76 @@
+name: Recovery Mass Wave2
+
+on:
+  push:
+    branches: ["recovery/big-portals-mass-20260925"]
+    paths:
+      - ".github/workflows/recovery-mass-wave2.yml"
+      - "scripts/recovery/commoncrawl-big-portal-paginated.ts"
+      - "scripts/recovery/big-portal-sitemap-harvest.ts"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: recovery-mass-wave2
+  cancel-in-progress: true
+
+jobs:
+  harvest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        domain:
+          - agenz.ma
+          - masaken.ma
+          - mouldar.com
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+
+      - name: Paginated Common Crawl
+        env:
+          BIG_PORTAL_DOMAIN: ${{ matrix.domain }}
+        run: npx tsx scripts/recovery/commoncrawl-big-portal-paginated.ts
+
+      - name: Robots-declared sitemap
+        env:
+          BIG_SITEMAP_DOMAIN: ${{ matrix.domain }}
+        run: npx tsx scripts/recovery/big-portal-sitemap-harvest.ts
+
+      - name: Enforce shadow-only contracts
+        env:
+          DOMAIN: ${{ matrix.domain }}
+        run: |
+          node <<'NODE'
+          const d=process.env.DOMAIN;
+          const safe=d.replace(/[^a-z0-9]+/gi,"-");
+          const cc=require("./data/audits/raw-results/recovery-big-portal-"+safe+"-summary.json");
+          const sm=require("./data/audits/raw-results/recovery-big-sitemap-"+safe+"-summary.json");
+          if(cc.database_access||cc.database_writes||cc.source_page_fetches||cc.warc_downloads||cc.approved_for_import_rows||cc.failed_pages) process.exit(1);
+          if(sm.database_access||sm.database_writes||sm.listing_page_fetches||sm.approved_for_import_rows||!sm.robots_declared_sitemaps_only) process.exit(1);
+          console.log(JSON.stringify({
+            domain:d,
+            commoncrawl_unique:cc.unique_matching_listing_urls,
+            sitemap_unique:sm.unique_matching_listing_urls,
+            commoncrawl_raw:cc.raw_cdx_records,
+            sitemap_raw:sm.raw_urls_seen
+          },null,2));
+          NODE
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: recovery-mass-wave2-${{ matrix.domain }}
+          path: |
+            data/audits/raw-results/recovery-big-portal-*.txt
+            data/audits/raw-results/recovery-big-portal-*-summary.json
+            data/audits/raw-results/recovery-big-sitemap-*.txt
+            data/audits/raw-results/recovery-big-sitemap-*-summary.json
+          retention-days: 30

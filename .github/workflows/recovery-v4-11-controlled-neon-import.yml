@@ -1,0 +1,177 @@
+name: Recovery V4.11 Controlled Neon Import
+
+on:
+  push:
+    branches: ["recovery/big-portals-mass-20260925"]
+    paths:
+      - "data/recovery/v4-11-neon-import-approval.json"
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: recovery-v4-11-controlled-neon-import
+  cancel-in-progress: false
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      DATABASE_URL: ${{ secrets.NEON_RECOVERY_DATABASE_URL }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Require explicit approval payload
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require("fs");
+          const a=JSON.parse(fs.readFileSync("data/recovery/v4-11-neon-import-approval.json","utf8"));
+          if(a.approved!==true) throw new Error("approval not true");
+          if(a.cohort_rows!==8367) throw new Error("cohort_rows");
+          if(a.cohort_sha256!=="18b810d3eb07e0fb293cc815d6f4c5506126fa1ed3926b6f4fc14abbd67fb695") throw new Error("cohort_sha256");
+          if(a.target_branch!=="br-cold-mouse-b2a50yaa") throw new Error("target branch");
+          if(a.target_database!=="AkarFinder") throw new Error("target database");
+          NODE
+          test -n "${DATABASE_URL:-}"
+          python - <<'PY'
+          import os, urllib.parse
+          u=urllib.parse.urlparse(os.environ["DATABASE_URL"])
+          allowed={
+            "ep-falling-unit-b2hper1a.c-6.eu-central-1.aws.neon.tech",
+            "ep-falling-unit-b2hper1a-pooler.c-6.eu-central-1.aws.neon.tech",
+            "ep-falling-unit-b2hper1a-d1j.c-6.eu-central-1.aws.neon.tech",
+            "ep-falling-unit-b2hper1a-d1j-pooler.c-6.eu-central-1.aws.neon.tech",
+          }
+          if u.hostname not in allowed:
+            raise SystemExit(f"refusing unexpected Neon host: {u.hostname}")
+          print("isolated Neon host verified")
+          PY
+
+      - name: Download G6-safe certified cohort
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/g6"
+          gh api repos/${{ github.repository }}/actions/artifacts/10918695596/zip > "$RUNNER_TEMP/g6.zip"
+          unzip -q -o "$RUNNER_TEMP/g6.zip" -d "$RUNNER_TEMP/g6"
+          test -s "$RUNNER_TEMP/g6/clean-corpus-v4.11-neon-g6-safe.jsonl"
+          sha256sum "$RUNNER_TEMP/g6/clean-corpus-v4.11-neon-g6-safe.jsonl" | grep '^18b810d3eb07e0fb293cc815d6f4c5506126fa1ed3926b6f4fc14abbd67fb695 '
+
+      - name: Build staging CSV
+        run: |
+          python - "$RUNNER_TEMP/g6/clean-corpus-v4.11-neon-g6-safe.jsonl" "$RUNNER_TEMP/g6/import.csv" <<'PY'
+          import csv,json,sys
+          src,out=sys.argv[1:3]
+          fields=["canonical_fingerprint","title","price_mad","city","district","property_type","transaction_type","surface_m2","rooms_count","bedrooms_count","bathrooms_count","description_snippet","images_count","seller_name","data_completeness_score","field_confidence","source_name","listing_url","source_url","first_seen_at","last_seen_at","source_listing_id","origin_type","compliance_status","ingestion_run_id","displayed_price","price_currency","price_period","price_status"]
+          rows=[]
+          for line in open(src,encoding="utf-8"):
+            if not line.strip(): continue
+            r=json.loads(line)
+            if r.get("approved_for_import") is not False:
+              raise SystemExit("artifact approval invariant failed")
+            rows.append(r)
+          if len(rows)!=8367: raise SystemExit(f"expected 8367 rows, got {len(rows)}")
+          with open(out,"w",newline="",encoding="utf-8") as f:
+            w=csv.DictWriter(f,fieldnames=fields); w.writeheader()
+            for r in rows:
+              row={k:r.get(k) for k in fields}
+              row["field_confidence"]=json.dumps(row["field_confidence"],ensure_ascii=False,separators=(",",":"))
+              w.writerow(row)
+          PY
+
+      - name: Controlled isolated-branch import
+        run: |
+          set -euo pipefail
+          docker run --rm -e DATABASE_URL="$DATABASE_URL" -v "$RUNNER_TEMP/g6:/g6" postgres:17 sh -lc 'psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 <<'"'"'SQL'"'"'
+          BEGIN;
+
+          CREATE TEMP TABLE stage_v411 (
+            canonical_fingerprint text NOT NULL,
+            title text,
+            price_mad integer,
+            city text,
+            district text,
+            property_type text,
+            transaction_type text,
+            surface_m2 integer,
+            rooms_count integer,
+            bedrooms_count integer,
+            bathrooms_count integer,
+            description_snippet text,
+            images_count integer,
+            seller_name text,
+            data_completeness_score integer,
+            field_confidence jsonb,
+            source_name text NOT NULL,
+            listing_url text NOT NULL,
+            source_url text,
+            first_seen_at timestamptz,
+            last_seen_at timestamptz,
+            source_listing_id text,
+            origin_type text,
+            compliance_status text,
+            ingestion_run_id text,
+            displayed_price numeric,
+            price_currency text,
+            price_period text,
+            price_status text
+          );
+
+          \copy stage_v411 FROM '"'"'/g6/import.csv'"'"' WITH (FORMAT csv, HEADER true)
+
+          DO $$
+          BEGIN
+            IF (SELECT count(*) FROM stage_v411) <> 8367 THEN RAISE EXCEPTION '"'"'stage count mismatch'"'"'; END IF;
+            IF (SELECT count(*) FROM stage_v411 WHERE canonical_fingerprint IS NULL OR listing_url IS NULL OR source_name IS NULL) <> 0 THEN RAISE EXCEPTION '"'"'required nulls'"'"'; END IF;
+            IF (SELECT count(*)-count(DISTINCT canonical_fingerprint) FROM stage_v411) <> 0 THEN RAISE EXCEPTION '"'"'duplicate fingerprints'"'"'; END IF;
+            IF (SELECT count(*)-count(DISTINCT listing_url) FROM stage_v411) <> 0 THEN RAISE EXCEPTION '"'"'duplicate urls'"'"'; END IF;
+          END $$;
+
+          INSERT INTO public.property_listings (
+            canonical_fingerprint,title,price_mad,city,district,property_type,transaction_type,
+            surface_m2,rooms_count,bedrooms_count,bathrooms_count,description_snippet,
+            images_count,seller_name,data_completeness_score,field_confidence,updated_at
+          )
+          SELECT canonical_fingerprint,title,price_mad,city,NULLIF(district,''),property_type,transaction_type,
+                 surface_m2,rooms_count,bedrooms_count,bathrooms_count,description_snippet,
+                 images_count,seller_name,data_completeness_score,field_confidence,now()
+          FROM stage_v411
+          ON CONFLICT (canonical_fingerprint) DO NOTHING;
+
+          INSERT INTO public.listing_sources (
+            property_listing_id,source_name,listing_url,source_url,first_seen_at,last_seen_at,is_active,
+            source_offer_key,origin_type,compliance_status,content_fingerprint,ingestion_run_id,
+            displayed_price,price_currency,price_period,price_status
+          )
+          SELECT p.id,s.source_name,s.listing_url,s.source_url,s.first_seen_at,s.last_seen_at,true,
+                 s.source_listing_id,s.origin_type,s.compliance_status,s.canonical_fingerprint,s.ingestion_run_id,
+                 s.displayed_price,s.price_currency,s.price_period,s.price_status
+          FROM stage_v411 s
+          JOIN public.property_listings p USING (canonical_fingerprint)
+          ON CONFLICT (listing_url) DO NOTHING;
+
+          DO $$
+          BEGIN
+            IF (SELECT count(*) FROM public.property_listings p JOIN stage_v411 s USING(canonical_fingerprint)) <> 8367 THEN RAISE EXCEPTION '"'"'property presence mismatch'"'"'; END IF;
+            IF (SELECT count(*) FROM public.listing_sources l JOIN stage_v411 s ON s.listing_url=l.listing_url) <> 8367 THEN RAISE EXCEPTION '"'"'source presence mismatch'"'"'; END IF;
+          END $$;
+
+          COMMIT;
+
+          SELECT
+            (SELECT count(*) FROM public.property_listings) AS property_listings,
+            (SELECT count(*) FROM public.listing_sources) AS listing_sources,
+            (SELECT count(*) FROM public.listing_sources WHERE ingestion_run_id='"'"'clean-corpus-v4.11'"'"') AS v411_sources;
+          SQL'
+
+      - name: Verify expected isolated counts
+        run: |
+          docker run --rm -e DATABASE_URL="$DATABASE_URL" postgres:17 sh -lc 'psql "$DATABASE_URL" -X -qAt -v ON_ERROR_STOP=1 -c "
+            SELECT
+              (SELECT count(*) FROM public.property_listings),
+              (SELECT count(*) FROM public.listing_sources),
+              (SELECT count(*) FROM public.listing_sources WHERE ingestion_run_id = '"'"'clean-corpus-v4.11'"'"');
+          "'

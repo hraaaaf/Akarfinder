@@ -1,0 +1,1 @@
+activate 2026-09-25 batch 0-500 for sarout.ma, marocimmo.com, domio.ma after final canary 36164009470 success

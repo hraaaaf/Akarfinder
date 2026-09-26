@@ -1,0 +1,1 @@
+activate offsets 500 and 1000, 500 pages each, after 0-500 measured 100% HTTP 200 and avg score uplift 31.0 -> 49.85

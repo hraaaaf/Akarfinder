@@ -1,0 +1,41 @@
+name: Recovery Domio Route Shape Audit
+
+on:
+  push:
+    branches: ["recovery/big-portals-mass-20260925"]
+    paths:
+      - ".github/workflows/recovery-domio-route-shape.yml"
+      - "scripts/recovery/domio-route-shape-audit.ts"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: recovery-domio-route-shape
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx tsx scripts/recovery/domio-route-shape-audit.ts
+      - name: Enforce metadata-only contract
+        run: |
+          node <<'NODE'
+          const s=require("./data/audits/raw-results/recovery-domio-route-shape.json");
+          if(s.database_access||s.database_writes||s.listing_page_fetches) process.exit(1);
+          console.log(JSON.stringify({total_urls:s.total_urls,depth_counts:s.depth_counts,numeric_segment_count:s.numeric_segment_count,hex_segment_count:s.hex_segment_count,depth_ge_5_count:s.depth_ge_5_count},null,2));
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: recovery-domio-route-shape
+          path: data/audits/raw-results/recovery-domio-route-shape.json
+          retention-days: 30

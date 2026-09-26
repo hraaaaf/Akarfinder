@@ -1,0 +1,41 @@
+name: Recovery Wave4 Sitemap Scout
+
+on:
+  push:
+    branches: ["recovery/big-portals-mass-20260925"]
+    paths:
+      - ".github/workflows/recovery-wave4-sitemap-scout.yml"
+      - "scripts/recovery/wave4-sitemap-scout.ts"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: recovery-wave4-sitemap-scout
+  cancel-in-progress: true
+
+jobs:
+  scout:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx tsx scripts/recovery/wave4-sitemap-scout.ts
+      - name: Enforce metadata-only contract
+        run: |
+          node <<'NODE'
+          const s=require("./data/audits/raw-results/recovery-wave4-sitemap-scout.json");
+          if(s.database_access||s.database_writes||s.listing_page_fetches) process.exit(1);
+          console.log(JSON.stringify(s.results,null,2));
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: recovery-wave4-sitemap-scout
+          path: data/audits/raw-results/recovery-wave4-sitemap-scout.json
+          retention-days: 30

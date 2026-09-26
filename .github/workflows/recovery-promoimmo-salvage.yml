@@ -1,0 +1,53 @@
+name: Recovery PromoImmo Salvage
+
+on:
+  push:
+    branches: ["recovery/big-portals-mass-20260925"]
+    paths:
+      - ".github/workflows/recovery-promoimmo-salvage.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: recovery-promoimmo-salvage
+  cancel-in-progress: true
+
+jobs:
+  salvage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Common Crawl partial-safe
+        env:
+          BIG_PORTAL_DOMAIN: promoimmomarrakech.com
+        run: npx tsx scripts/recovery/commoncrawl-big-portal-paginated.ts
+      - name: Sitemap
+        env:
+          BIG_SITEMAP_DOMAIN: promoimmomarrakech.com
+        run: npx tsx scripts/recovery/big-portal-sitemap-harvest.ts
+      - name: Validate safety and report partiality
+        run: |
+          node <<'NODE'
+          const cc=require("./data/audits/raw-results/recovery-big-portal-promoimmomarrakech-com-summary.json");
+          const sm=require("./data/audits/raw-results/recovery-big-sitemap-promoimmomarrakech-com-summary.json");
+          if(cc.database_access||cc.database_writes||cc.source_page_fetches||cc.warc_downloads||cc.approved_for_import_rows) process.exit(1);
+          if(sm.database_access||sm.database_writes||sm.listing_page_fetches||sm.approved_for_import_rows||!sm.robots_declared_sitemaps_only) process.exit(1);
+          console.log(JSON.stringify({status:cc.failed_pages?"partial":"complete",failed_pages:cc.failed_pages,cc_unique:cc.unique_matching_listing_urls,sitemap_unique:sm.unique_matching_listing_urls},null,2));
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: recovery-promoimmo-salvage
+          path: |
+            data/audits/raw-results/recovery-big-portal-promoimmomarrakech-com.txt
+            data/audits/raw-results/recovery-big-portal-promoimmomarrakech-com-summary.json
+            data/audits/raw-results/recovery-big-sitemap-promoimmomarrakech-com.txt
+            data/audits/raw-results/recovery-big-sitemap-promoimmomarrakech-com-summary.json
+          retention-days: 30
