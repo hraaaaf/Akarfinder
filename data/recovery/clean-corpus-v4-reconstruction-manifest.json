@@ -1,5 +1,5 @@
 {
-  "schema_version": "akarfinder-clean-corpus-v4.8-20260926",
+  "schema_version": "akarfinder-clean-corpus-v4.9-20260926",
   "rows": 226286,
   "classification_counts": {
     "KEEP": 225952,
@@ -19,12 +19,12 @@
   "thin_category_rows_in_union": 289,
   "thin_ambiguous_rows_in_union": 9388,
   "deep_observations_by_http": {
-    "http_200": 4089,
-    "http_0": 12,
-    "http_503": 399
+    "http_200": 4492,
+    "http_0": 53,
+    "http_503": 1955
   },
-  "deep_rows_matched_to_union": 4500,
-  "deep_http_200_active_proofs": 4089,
+  "deep_rows_matched_to_union": 6500,
+  "deep_http_200_active_proofs": 4492,
   "approved_for_import_rows": 0,
   "database_access": 0,
   "database_writes": 0,
@@ -53,8 +53,8 @@
     "low": 0
   },
   "lifecycle_confidence_counts": {
-    "high": 4430,
-    "medium": 188664,
+    "high": 4833,
+    "medium": 188261,
     "low": 33192
   },
   "next_focus": "32419 KEEP rows that are both lifecycle-low and product-scope-eligible",
@@ -81,7 +81,7 @@
   },
   "terminal_sold_routes_promoted_to_expired": 39,
   "short_stay_scope_excluded": 3613,
-  "artifact_sha256_status": "not_materialized_after_v4.8_rule_change; previous v4.7 sha retained only as base evidence",
+  "artifact_sha256_status": "canonical metrics updated to v4.9 with exact Sarout deep evidence; corpus gzip still not rematerialized after v4.8/v4.9 rule/evidence changes",
   "base_v4_7_sha256_gzip": "c67c09723081417b9775bff40622409605f05372748b56fd983ff05c29bb57d7",
   "lifecycle_low_in_scope": 32419,
   "lifecycle_low_out_of_scope_short_stay": 773,
@@ -123,7 +123,9 @@
       },
       "database_access": 0,
       "database_writes": 0,
-      "merged_into_canonical_v4_8": false
+      "merged_into_canonical_v4_8": true,
+      "merged_into_canonical_v4_9": true,
+      "merge_note": "403 exact union-matched HTTP 200 rows promoted lifecycle medium→high; HTTP 503/0 remain neutral."
     }
   },
   "review_queue_segmentation": {
