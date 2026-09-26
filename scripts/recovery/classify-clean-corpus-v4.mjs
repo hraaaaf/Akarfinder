@@ -56,6 +56,10 @@ for await (const line of rl) {
     if(r.classification_confidence==='low') r.classification_confidence='medium';
     reasons.add('registry_strong_individual_mubawab_a_numeric_id');
   }
+  if(reasons.has('thin_document_kind:AMBIGUOUS') && r.candidate_kind==='detail_likely' && reasons.has('recovery_source_specific_listing_route') && r.classification_confidence==='low') {
+    r.classification_confidence='medium';
+    reasons.add('source_specific_individual_route_resolves_thin_ambiguity');
+  }
 
   if(sid && manualExpired.has(sid)) { r.classification='EXPIRED'; r.classification_confidence='high'; reasons.clear(); reasons.add('manual_target_detail_redirected_or_unavailable_2026-09-26'); }
   else if(sid && manualNonRealEstate.has(sid)) { r.classification='NON_REAL_ESTATE'; r.classification_confidence='high'; reasons.clear(); reasons.add('manual_non_real_estate_audit_2026-09-26'); }
@@ -75,5 +79,5 @@ for await (const line of rl) {
 }
 gzip.end(); await new Promise((res,rej)=>{sink.on('close',res);sink.on('error',rej)});
 const sha=crypto.createHash('sha256').update(fs.readFileSync(output)).digest('hex');
-const manifest={schema_version:'akarfinder-clean-corpus-v4-classifier-v2',rows,classification_counts:counts,classification_confidence:confidence,candidate_kind_counts:candidateKinds,approved_for_import_rows:0,database_access:0,database_writes:0,sha256_gzip:sha,doctrine:'KEEP by default; only strong evidence can yield EXPIRED/NON_REAL_ESTATE; transient HTTP failures never imply expiry'};
+const manifest={schema_version:'akarfinder-clean-corpus-v4-classifier-v3',rows,classification_counts:counts,classification_confidence:confidence,candidate_kind_counts:candidateKinds,approved_for_import_rows:0,database_access:0,database_writes:0,sha256_gzip:sha,doctrine:'KEEP by default; only strong evidence can yield EXPIRED/NON_REAL_ESTATE; transient HTTP failures never imply expiry'};
 fs.writeFileSync(manifestPath,JSON.stringify(manifest,null,2)+'\n'); console.log(JSON.stringify(manifest,null,2));
