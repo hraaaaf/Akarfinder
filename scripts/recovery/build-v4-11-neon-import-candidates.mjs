@@ -75,7 +75,8 @@ for await(const r of rows()){
     district:r.district??null,
     property_type:m.property_type,
     transaction_type:m.transaction_type,
-    surface_m2:r.surface_m2??null,
+    surface_m2_raw:r.surface_m2??null,
+    surface_m2:r.surface_m2==null?null:Math.round(Number(r.surface_m2)),
     rooms_count:null,
     bedrooms_count:r.bedrooms_count??null,
     bathrooms_count:null,
@@ -87,7 +88,7 @@ for await(const r of rows()){
       canonical_url:1,classification:1,scope:1,http_200:1,title:1,city:1,
       property_type:1,transaction_type:1,published_at:1,
       address:r.address?0.95:0,price_mad:r.price_mad!=null?0.95:0,
-      surface_m2:r.surface_m2!=null?0.9:0,district:r.district?0.9:0,
+      surface_m2:r.surface_m2!=null?0.9:0,surface_m2_transform:r.surface_m2!=null?"rounded_to_nearest_integer_for_neon_schema":null,district:r.district?0.9:0,
       bedrooms_count:r.bedrooms_count!=null?0.9:0
     },
     source_name:r.source_domain,
