@@ -49,7 +49,7 @@ function addSource(row:any,field:string,source:string){
 }
 async function main(){
   const {rows,byUrl}=await readBase(BASE);
-  let observations=0,matched=0,http200=0,filled=0,agreeing=0,conflicts=0,unmatched=0;
+  let observations=0,matched=0,http200=0,filled=0,agreeing=0,conflicts=0,unmatched=0,lifecycleUpgrades=0,lifecycleConflicts=0;
   const byDomain:Record<string,number>={};
   const files=readdirSync(DIR).filter(f=>/^deep-batch-.*\.json$/.test(f)).sort();
   for(const file of files){
@@ -62,7 +62,8 @@ async function main(){
       const row=byUrl.get(u);
       if(!row){unmatched++;continue}
       matched++;
-      if(Number(x.http_status)===200) http200++;
+      const httpStatus=Number(x.http_status);
+      if(httpStatus===200) http200++;
       const source=`deep_public:${String(x.domain||row.source_domain||"unknown")}`;
       byDomain[String(x.domain||row.source_domain||"unknown")]=(byDomain[String(x.domain||row.source_domain||"unknown")]??0)+1;
       row.enrichment_evidence ??=[];
@@ -79,7 +80,22 @@ async function main(){
         if(!row.contradiction_flags.includes(flag)) row.contradiction_flags.push(flag);
         conflicts++;
       }
-      // Safety invariants: enrichment may never promote/import or rewrite classification.
+      row.lifecycle_evidence ??=[];
+      if(!row.lifecycle_evidence.some((e:any)=>e?.source===source&&e?.url===u&&e?.http_status===httpStatus)){
+        row.lifecycle_evidence.push({source,url:u,http_status:Number.isFinite(httpStatus)?httpStatus:null});
+      }
+      if(httpStatus===200){
+        if(row.classification==="KEEP"){
+          if(row.lifecycle_confidence!=="high"){row.lifecycle_confidence="high";lifecycleUpgrades++;}
+          row.classification_reasons ??=[];
+          if(!row.classification_reasons.includes("deep_public_http_200")) row.classification_reasons.push("deep_public_http_200");
+        }else{
+          const flag=`lifecycle_conflict:http_200_vs_${String(row.classification||"unknown")}`;
+          if(!row.contradiction_flags.includes(flag)) row.contradiction_flags.push(flag);
+          lifecycleConflicts++;
+        }
+      }
+      // Safety invariants: enrichment may never promote/import, rewrite classification, or infer expiry from transient failures.
       row.approved_for_import=false;
     }
   }
@@ -88,9 +104,10 @@ async function main(){
   const gz=gzipSync(body,{level:9});
   writeFileSync(OUT,gz);
   const manifest={
-    schema_version:"akarfinder-clean-corpus-v4-enrichment-merge-v1",
+    schema_version:"akarfinder-clean-corpus-v4-enrichment-merge-v2",
     rows:rows.length,files:files.length,observations,matched,unmatched,http_200:http200,
     filled_fields:filled,agreeing_existing_fields:agreeing,contradictions:conflicts,
+    lifecycle_upgrades_to_high:lifecycleUpgrades,lifecycle_conflicts:lifecycleConflicts,
     by_domain:byDomain,
     classifications:Object.fromEntries([...new Set(rows.map(r=>r.classification))].sort().map(k=>[k,rows.filter(r=>r.classification===k).length])),
     approved_for_import_rows:rows.filter(r=>r.approved_for_import===true).length,
