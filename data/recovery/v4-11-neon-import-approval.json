@@ -1,0 +1,21 @@
+{
+  "approved": true,
+  "approved_at": "2026-09-26",
+  "cohort_rows": 8367,
+  "cohort_sha256": "18b810d3eb07e0fb293cc815d6f4c5506126fa1ed3926b6f4fc14abbd67fb695",
+  "source_artifact_id": 10918695596,
+  "target_project": "ancient-violet-43534870",
+  "target_branch": "br-cold-mouse-b2a50yaa",
+  "target_database": "AkarFinder",
+  "expected_pre_import": {
+    "property_listings": 177,
+    "listing_sources": 177,
+    "v411_sources": 0
+  },
+  "expected_post_import": {
+    "property_listings": 8544,
+    "listing_sources": 8544,
+    "v411_sources": 8367
+  },
+  "authorized_by_user_message": "Go import"
+}
