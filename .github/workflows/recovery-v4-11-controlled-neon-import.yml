@@ -37,6 +37,19 @@ jobs:
           if(a.target_database!=="AkarFinder") throw new Error("target database");
           NODE
           test -n "${DATABASE_URL:-}"
+          python - <<'PY'
+          import os, urllib.parse
+          u=urllib.parse.urlparse(os.environ["DATABASE_URL"])
+          allowed={
+            "ep-falling-unit-b2hper1a.c-6.eu-central-1.aws.neon.tech",
+            "ep-falling-unit-b2hper1a-pooler.c-6.eu-central-1.aws.neon.tech",
+            "ep-falling-unit-b2hper1a-d1j.c-6.eu-central-1.aws.neon.tech",
+            "ep-falling-unit-b2hper1a-d1j-pooler.c-6.eu-central-1.aws.neon.tech",
+          }
+          if u.hostname not in allowed:
+            raise SystemExit(f"refusing unexpected Neon host: {u.hostname}")
+          print("isolated Neon host verified")
+          PY
 
       - name: Download G6-safe certified cohort
         run: |
