@@ -54,10 +54,10 @@
   },
   "lifecycle_confidence_counts": {
     "high": 8828,
-    "medium": 184266,
-    "low": 33192
+    "medium": 186261,
+    "low": 31197
   },
-  "next_focus": "32419 KEEP rows that are both lifecycle-low and product-scope-eligible",
+  "next_focus": "30429 KEEP rows that are both lifecycle-low and product-scope-eligible",
   "certified_public_sitemap_cohorts": {
     "observed_date": "2026-09-25",
     "sarout_ma": {
@@ -201,10 +201,10 @@
       "http_0": 0,
       "overlap_with_prior_deep": 5,
       "prior_lifecycle_of_http_200": {
-        "medium": 995,
+        "low": 995,
         "high": 5
       },
-      "merged_effect": "995 lifecycle medium→high; 5 already-high URLs reobserved",
+      "merged_effect": "995 lifecycle low→high; 5 already-high URLs reobserved",
       "enrichment_non_null": {
         "source_listing_id": 1000,
         "title": 1000,
@@ -220,7 +220,9 @@
       "database_access": 0,
       "database_writes": 0,
       "unique_urls": 1000,
-      "unique_new_urls": 995
+      "unique_new_urls": 995,
+      "scope_eligible_new_high": 990,
+      "scope_ineligible_short_stay_new_high": 5
     },
     "domio_2500_3500_20260926": {
       "artifact_id": 10908628378,
@@ -233,9 +235,9 @@
       "http_0": 0,
       "overlap_with_prior_deep": 0,
       "prior_lifecycle_of_http_200": {
-        "medium": 1000
+        "low": 1000
       },
-      "merged_effect": "1000 lifecycle medium→high",
+      "merged_effect": "1000 lifecycle low→high",
       "enrichment_non_null": {
         "source_listing_id": 1000,
         "title": 1000,
@@ -251,7 +253,9 @@
       "source_url_artifact_id": 10861514122,
       "source_url_artifact_expected_rows": 10347,
       "database_access": 0,
-      "database_writes": 0
+      "database_writes": 0,
+      "scope_eligible_new_high": 1000,
+      "scope_ineligible_short_stay_new_high": 0
     }
   },
   "deep_unique_urls": 10495,
@@ -265,5 +269,6 @@
       "1500-2500"
     ],
     "effect": "observation count retained; lifecycle row upgrade counted once"
-  }
+  },
+  "lifecycle_reconciliation_note": "Domio 1500-3500 upgrades originate from lifecycle-low cohort, not medium. 5 duplicated prior-high URLs are reobservations; 5 newly-high URLs are short-stay/out-of-scope."
 }
