@@ -4,7 +4,8 @@ on:
   push:
     branches: ["recovery/big-portals-mass-20260925"]
     paths:
-      - "scripts/recovery/classify-clean-corpus-v4.mjs"\n      - "data/recovery/clean-corpus-v4-reconstruction-manifest.json"
+      - "scripts/recovery/classify-clean-corpus-v4.mjs"
+      - "data/recovery/clean-corpus-v4-reconstruction-manifest.json"
       - "scripts/recovery/__tests__/classify-clean-corpus-v4.test.mjs"
       - "scripts/recovery/merge-clean-corpus-v4-enrichment.ts"
       - "scripts/recovery/deep-enrichment-source-batch.ts"
