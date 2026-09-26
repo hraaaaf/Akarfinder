@@ -74,7 +74,8 @@ for await (const line of rl) {
   if(r.classification!=='KEEP') { r.identity_confidence='high'; r.lifecycle_confidence='high'; }
   else {
     r.identity_confidence = (r.candidate_kind==='detail_confirmed' || reasons.has('manual_live_detail_audit_2026-09-26') || r.deep_http_status===200) ? 'high' : ((r.candidate_kind==='detail_likely' || reasons.has('recovery_source_specific_listing_route')) ? 'medium' : 'low');
-    r.lifecycle_confidence = (reasons.has('manual_live_detail_audit_2026-09-26') || r.deep_http_status===200 || r.freshness_status==='live_http_200_2026-09-25') ? 'high' : ((r.last_seen_at || r.first_seen_at) ? 'medium' : 'low');
+    r.lifecycle_confidence = (reasons.has('manual_live_detail_audit_2026-09-26') || r.deep_http_status===200 || r.freshness_status==='live_http_200_2026-09-25') ? 'high' : ((r.last_seen_at || r.first_seen_at || host==='sarout.ma' || host==='marocimmo.com') ? 'medium' : 'low');
+    if((host==='sarout.ma' || host==='marocimmo.com') && !r.last_seen_at && !r.first_seen_at && r.lifecycle_confidence==='medium') reasons.add('public_sitemap_snapshot_2026-09-25_full_low_cohort_coverage');
   }
   r.classification_reasons=[...reasons].sort();
   counts[r.classification]=(counts[r.classification]??0)+1;
@@ -86,5 +87,5 @@ for await (const line of rl) {
 }
 gzip.end(); await new Promise((res,rej)=>{sink.on('close',res);sink.on('error',rej)});
 const sha=crypto.createHash('sha256').update(fs.readFileSync(output)).digest('hex');
-const manifest={schema_version:'akarfinder-clean-corpus-v4-classifier-v4',rows,classification_counts:counts,classification_confidence:confidence,candidate_kind_counts:candidateKinds,identity_confidence_counts:identityConfidence,lifecycle_confidence_counts:lifecycleConfidence,approved_for_import_rows:0,database_access:0,database_writes:0,sha256_gzip:sha,doctrine:'KEEP by default; only strong evidence can yield EXPIRED/NON_REAL_ESTATE; transient HTTP failures never imply expiry'};
+const manifest={schema_version:'akarfinder-clean-corpus-v4-classifier-v5',rows,classification_counts:counts,classification_confidence:confidence,candidate_kind_counts:candidateKinds,identity_confidence_counts:identityConfidence,lifecycle_confidence_counts:lifecycleConfidence,approved_for_import_rows:0,database_access:0,database_writes:0,sha256_gzip:sha,doctrine:'KEEP by default; only strong evidence can yield EXPIRED/NON_REAL_ESTATE; transient HTTP failures never imply expiry'};
 fs.writeFileSync(manifestPath,JSON.stringify(manifest,null,2)+'\n'); console.log(JSON.stringify(manifest,null,2));
