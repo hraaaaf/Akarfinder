@@ -1,1 +1,2 @@
 activate offsets 500-1500 after batch 0-500 yielded 500/500 HTTP 200 and avg score uplift 26.54 -> 55.36
+rerun-split-1500-3500-2026-09-26
