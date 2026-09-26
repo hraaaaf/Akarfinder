@@ -16,12 +16,13 @@ test("clean corpus v4 classifier is conservative and fail-safe",()=>{
     {canonical_url:"https://example.test/category",candidate_kind:"category_or_index",classification_confidence:"low",classification_reasons:[]},
     {canonical_url:"https://avito.ma/fr/x/local/example_54965575.htm",candidate_kind:"detail_likely",classification_confidence:"low",classification_reasons:[]},
     {canonical_url:"https://example.test/p/503",candidate_kind:"detail_likely",classification_confidence:"low",classification_reasons:[],deep_http_status:503},
-    {canonical_url:"https://example.test/p/200",candidate_kind:"detail_likely",classification_confidence:"low",classification_reasons:[],deep_http_status:200}
+    {canonical_url:"https://example.test/p/200",candidate_kind:"detail_likely",classification_confidence:"low",classification_reasons:[],deep_http_status:200},
+    {canonical_url:"https://agenz.ma/en/annonces/immo-rabat/vente-appartements/agdal/123456",candidate_kind:"detail_likely",classification_confidence:"low",classification_reasons:["thin_document_kind:AMBIGUOUS","recovery_source_specific_listing_route"]}
   ]);
   const run=spawnSync(process.execPath,["scripts/recovery/classify-clean-corpus-v4.mjs","--input",input,"--output",output,"--manifest",manifest],{cwd:process.cwd(),encoding:"utf8"});
   assert.equal(run.status,0,run.stderr||run.stdout);
   const rows=gunzipSync(readFileSync(output)).toString("utf8").trim().split("\n").map(JSON.parse);
-  assert.equal(rows.length,5);
+  assert.equal(rows.length,6);
   assert.equal(rows[0].classification,"KEEP");
   assert.equal(rows[0].candidate_kind,"detail_likely");
   assert.equal(rows[0].approved_for_import,false);
@@ -30,8 +31,11 @@ test("clean corpus v4 classifier is conservative and fail-safe",()=>{
   assert.equal(rows[3].classification,"KEEP");
   assert.equal(rows[4].classification,"KEEP");
   assert.equal(rows[4].classification_confidence,"high");
+  assert.equal(rows[5].classification,"KEEP");
+  assert.equal(rows[5].classification_confidence,"medium");
+  assert.ok(rows[5].classification_reasons.includes("source_specific_individual_route_resolves_thin_ambiguity"));
   const m=JSON.parse(readFileSync(manifest,"utf8"));
-  assert.deepEqual(m.classification_counts,{KEEP:3,EXPIRED:1,NON_REAL_ESTATE:1});
+  assert.deepEqual(m.classification_counts,{KEEP:4,EXPIRED:1,NON_REAL_ESTATE:1});
   assert.equal(m.approved_for_import_rows,0);
   assert.equal(m.database_access,0);
   assert.equal(m.database_writes,0);
