@@ -1,24 +1,43 @@
 {
-  "schema_version": "akarfinder-v4-deep-enrichment-patch-2026-09-26",
-  "input_observations": 4500,
-  "matched_union_urls": 4500,
-  "http_200_enriched": 4089,
-  "non_200_retained_without_expiry_inference": 411,
+  "schema_version": "akarfinder-v4.10-deep-enrichment-manifest-2026-09-26",
+  "input_observations": 8500,
+  "matched_union_urls": 8500,
+  "http_200_enriched": 6492,
+  "non_200_retained_without_expiry_inference": 2008,
   "field_counts": {
-    "title": 4488,
-    "description": 4089,
-    "surface_m2": 1446,
-    "address": 4085,
-    "published_at": 4089,
-    "city": 4086,
+    "title": 8447,
+    "description": 6492,
+    "surface_m2": 2645,
+    "address": 6459,
+    "published_at": 6492,
+    "city": 6460,
     "source_listing_id": 2000,
-    "price_mad": 1482,
-    "district": 3199,
-    "bedrooms_count": 681
+    "price_mad": 1838,
+    "district": 5199,
+    "bedrooms_count": 1066
   },
-  "domains": {"sarout.ma": 500, "marocimmo.com": 2500, "domio.ma": 1500},
+  "domains": {
+    "sarout.ma": 2500,
+    "marocimmo.com": 4500,
+    "domio.ma": 1500
+  },
   "database_access": 0,
   "database_writes": 0,
   "approved_for_import_rows": 0,
-  "sha256_gzip": "688e4fa69e6746568df4febfc8f6c601b3b2d43516fc25fce949eb50e05f731c"
+  "sha256_gzip": null,
+  "sha256_status": "not rematerialized after cumulative V4.10 deep evidence merge",
+  "evidence_artifacts": [
+    {
+      "artifact_id": 10903290401,
+      "domain": "sarout.ma",
+      "batch": "500-2500",
+      "digest": "sha256:9f1ae44ec57a83028282a8e0029efd24235e5b365c58b6c467ca06b2b0b20edc"
+    },
+    {
+      "artifact_id": 10904734124,
+      "domain": "marocimmo.com",
+      "batch": "2500-4500",
+      "digest": "sha256:23157d03fe4b66347481fc9236ebbcf67f5e37d14f4cb39ae74f7ff64e7f8b2f"
+    }
+  ]
 }
