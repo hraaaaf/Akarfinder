@@ -97,5 +97,33 @@
     "mouldar.com": 125,
     "soukimmobilier.com": 23,
     "marocannonces.com": 12
+  },
+  "post_v4_8_pending_deep_evidence": {
+    "sarout_20260926": {
+      "artifact_id": 10903290401,
+      "digest": "sha256:9f1ae44ec57a83028282a8e0029efd24235e5b365c58b6c467ca06b2b0b20edc",
+      "batch": "500-2500",
+      "rows": 2000,
+      "union_matches": 2000,
+      "http_200": 403,
+      "http_503": 1556,
+      "http_0": 41,
+      "prior_lifecycle_of_http_200": {
+        "medium": 403
+      },
+      "eligible_effect_if_merged": "403 lifecycle medium→high",
+      "enrichment_non_null": {
+        "title": 403,
+        "description": 403,
+        "published_at": 403,
+        "address": 374,
+        "city": 374,
+        "price_mad": 347,
+        "surface_m2": 298
+      },
+      "database_access": 0,
+      "database_writes": 0,
+      "merged_into_canonical_v4_8": false
+    }
   }
 }
