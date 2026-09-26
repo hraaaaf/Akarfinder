@@ -6,7 +6,7 @@ import { join } from "node:path";
 import { gzipSync, gunzipSync } from "node:zlib";
 import { spawnSync } from "node:child_process";
 
-const gz=(path,rows)=>writeFileSync(path,gzipSync(Buffer.from(rows.map(r=>JSON.stringify(r)).join("\n")+"\n")));
+const gz=(path,rows)=>writeFileSync(path,gzipSync(Buffer.from(rows.map(r=>JSON.stringify(r)).join("\\n")+"\\n")));
 
 test("clean corpus v4 classifier is conservative and fail-safe",()=>{
   const root=mkdtempSync(join(tmpdir(),"akarfinder-v4-classifier-"));
@@ -25,7 +25,7 @@ test("clean corpus v4 classifier is conservative and fail-safe",()=>{
   ]);
   const run=spawnSync(process.execPath,["scripts/recovery/classify-clean-corpus-v4.mjs","--input",input,"--output",output,"--manifest",manifest],{cwd:process.cwd(),encoding:"utf8"});
   assert.equal(run.status,0,run.stderr||run.stdout);
-  const rows=gunzipSync(readFileSync(output)).toString("utf8").trim().split("\n").map(JSON.parse);
+  const rows=gunzipSync(readFileSync(output)).toString("utf8").trim().split("\\n").map(JSON.parse);
   assert.equal(rows.length,10);
   assert.equal(rows[0].classification,"KEEP");
   assert.equal(rows[0].candidate_kind,"detail_likely");
@@ -55,10 +55,14 @@ test("clean corpus v4 classifier is conservative and fail-safe",()=>{
   assert.equal(rows[9].scope_eligible,true);
   const m=JSON.parse(readFileSync(manifest,"utf8"));
   assert.deepEqual(m.classification_counts,{KEEP:7,EXPIRED:2,NON_REAL_ESTATE:1});
-  assert.equal(m.identity_confidence_counts.medium,6);
-  assert.equal(m.lifecycle_confidence_counts.high,4);\n  assert.equal(m.scope_counts.short_stay,1);\n  assert.equal(m.scope_counts.ineligible,3);
+  assert.deepEqual(m.identity_confidence_counts,{high:4,medium:6,low:0});
+  assert.deepEqual(m.lifecycle_confidence_counts,{high:4,medium:1,low:5});
+  assert.equal(m.scope_counts.short_stay,1);
+  assert.equal(m.scope_counts.ineligible,4);
+  assert.equal(m.scope_counts.eligible,6);
   assert.equal(m.approved_for_import_rows,0);
   assert.equal(m.database_access,0);
   assert.equal(m.database_writes,0);
 });
-\n// V4.8 scope/lifecycle regression gate.\n
+
+// V4.8 scope/lifecycle regression gate.
