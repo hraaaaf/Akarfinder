@@ -1,0 +1,44 @@
+{
+  "schema_version": "akarfinder-clean-corpus-v4.3-source-identity-20260926",
+  "rows": 226286,
+  "classification_counts": {
+    "KEEP": 225991,
+    "EXPIRED": 6,
+    "NON_REAL_ESTATE": 289
+  },
+  "classification_confidence": {
+    "high": 21012,
+    "medium": 82256,
+    "low": 123018
+  },
+  "candidate_kind_counts": {
+    "detail_confirmed": 101999,
+    "detail_likely": 123845,
+    "category_or_index": 289,
+    "unverified_listing_candidate": 153
+  },
+  "thin_category_rows_in_union": 289,
+  "thin_ambiguous_rows_in_union": 9390,
+  "deep_observations_by_http": {
+    "http_200": 4089,
+    "http_0": 12,
+    "http_503": 399
+  },
+  "deep_rows_matched_to_union": 4500,
+  "deep_http_200_active_proofs": 4089,
+  "approved_for_import_rows": 0,
+  "database_access": 0,
+  "database_writes": 0,
+  "drift_vs_historical_v3_rows": 10,
+  "sha256_gzip": "059386822c5f7d01e04193dc8e2a87fbed0504a85291f95cc6a7102a05fc9e18",
+  "limitations": [
+    "historical V3 zip unavailable",
+    "5 manually audited source IDs absent from reconstructed freeze+artifact union; exact original V3 cannot be claimed",
+    "HTTP 503/0 never treated as expiry"
+  ],
+  "category_rows_promoted_to_non_real_estate_false_positive": 289,
+  "source_identity_clusters": 191586,
+  "source_identity_multi_alias_clusters": 33644,
+  "urls_in_multi_alias_clusters": 68344,
+  "source_alias_collapses_if_canonicalized": 34700
+}
