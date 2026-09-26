@@ -81,7 +81,7 @@
   },
   "terminal_sold_routes_promoted_to_expired": 39,
   "short_stay_scope_excluded": 3613,
-  "artifact_sha256_status": "V4.11 final metrics complete with Sarout + MarocImmo + Domio 1500-3500 deep evidence; corpus gzip rematerialization pending",
+  "artifact_sha256_status": "certified V4.11 core rematerialization complete",
   "base_v4_7_sha256_gzip": "c67c09723081417b9775bff40622409605f05372748b56fd983ff05c29bb57d7",
   "lifecycle_low_in_scope": 32419,
   "lifecycle_low_out_of_scope_short_stay": 773,
@@ -270,5 +270,30 @@
     ],
     "effect": "observation count retained; lifecycle row upgrade counted once"
   },
-  "lifecycle_reconciliation_note": "Domio 1500-3500 upgrades originate from lifecycle-low cohort, not medium. 5 duplicated prior-high URLs are reobservations; 5 newly-high URLs are short-stay/out-of-scope."
+  "lifecycle_reconciliation_note": "Domio 1500-3500 upgrades originate from lifecycle-low cohort, not medium. 5 duplicated prior-high URLs are reobservations; 5 newly-high URLs are short-stay/out-of-scope.",
+  "core_rematerialization": {
+    "workflow_run_id": 36259114168,
+    "artifact_id": 10910779576,
+    "artifact_digest": "sha256:63b93f5b27434b545ec9196b571d6bc89b1da5350c6115fdbe977991d1c39c81",
+    "gzip_sha256": "e7ac4bca2db34ad334ed7234cfb8be93fc9baca68a9694f5024989b5cc2bb953",
+    "rows": 226286,
+    "classification_counts": {
+      "KEEP": 225952,
+      "EXPIRED": 45,
+      "NON_REAL_ESTATE": 289
+    },
+    "scope_counts": {
+      "eligible": 222359,
+      "ineligible": 3927,
+      "short_stay": 3613
+    },
+    "deep_observations": 10500,
+    "deep_unique_urls": 10495,
+    "deep_http_200_observations": 8492,
+    "deep_unique_http_200_urls": 8487,
+    "approved_for_import_rows": 0,
+    "database_access": 0,
+    "database_writes": 0,
+    "independently_verified_after_download": true
+  }
 }
