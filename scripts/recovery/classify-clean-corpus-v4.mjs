@@ -21,6 +21,19 @@ function sourceId(url) {
   return null;
 }
 
+function normalizedPath(url) {
+  const u=new URL(url);
+  let p=decodeURIComponent(u.pathname).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+  return p;
+}
+const SHORT_STAY_TOKENS=["location-de-vacances","locations_de_vacances","par-jour","par-journee","par-nuit","vacance","vacances","journalier","journaliere","saisonnier","saisonniere"];
+function isShortStay(url){ const p=normalizedPath(url); return SHORT_STAY_TOKENS.some(t=>p.includes(t)); }
+function isStrongTerminalInactive(url){
+  const u=new URL(url); const host=u.hostname.replace(/^www\./,"").toLowerCase(); const p=normalizedPath(url);
+  if(host!=="atlasimmobilier.com") return false;
+  return /(?:sold-quickly|successfully-sold|sold-by-our-agency|(?:vendu|vendue)-rapidement|vendu-avec-succes|vendue-par-notre-agence)/.test(p);
+}
+
 function sourceIdentityKey(url) {
   const u=new URL(url); const d=u.hostname.replace(/^www\./,'').toLowerCase(); const p=decodeURIComponent(u.pathname).toLowerCase().replace(/\/+$/,'');
   const id=(re,prefix='id')=>{const m=p.match(re);return m?.[1]?`${d}:${prefix}:${m[1].toLowerCase()}`:null};
@@ -40,7 +53,7 @@ function sourceIdentityKey(url) {
   return `${d}:url:${p}`;
 }
 
-const counts={KEEP:0,EXPIRED:0,NON_REAL_ESTATE:0}; const confidence={high:0,medium:0,low:0}; const candidateKinds={}; const identityConfidence={high:0,medium:0,low:0}; const lifecycleConfidence={high:0,medium:0,low:0}; let rows=0;
+const counts={KEEP:0,EXPIRED:0,NON_REAL_ESTATE:0}; const confidence={high:0,medium:0,low:0}; const candidateKinds={}; const identityConfidence={high:0,medium:0,low:0}; const lifecycleConfidence={high:0,medium:0,low:0}; const scopeCounts={eligible:0,ineligible:0,short_stay:0}; let rows=0;
 const inStream=fs.createReadStream(input); const decoded=input.endsWith('.gz')?inStream.pipe(zlib.createGunzip()):inStream;
 const gzip=zlib.createGzip({level:9}); const sink=fs.createWriteStream(output); gzip.pipe(sink);
 const rl=readline.createInterface({input:decoded,crlfDelay:Infinity});
@@ -62,6 +75,7 @@ for await (const line of rl) {
   }
 
   if(sid && manualExpired.has(sid)) { r.classification='EXPIRED'; r.classification_confidence='high'; reasons.clear(); reasons.add('manual_target_detail_redirected_or_unavailable_2026-09-26'); }
+  else if(isStrongTerminalInactive(r.canonical_url)) { r.classification='EXPIRED'; r.classification_confidence='high'; reasons.clear(); reasons.add('source_specific_terminal_sold_route'); }
   else if(sid && manualNonRealEstate.has(sid)) { r.classification='NON_REAL_ESTATE'; r.classification_confidence='high'; reasons.clear(); reasons.add('manual_non_real_estate_audit_2026-09-26'); }
   else if(r.candidate_kind==='category_or_index') { r.classification='NON_REAL_ESTATE'; r.classification_confidence='high'; reasons.add('freeze_document_kind_category_not_individual_listing'); }
   else {
@@ -77,6 +91,13 @@ for await (const line of rl) {
     r.lifecycle_confidence = (reasons.has('manual_live_detail_audit_2026-09-26') || r.deep_http_status===200 || r.freshness_status==='live_http_200_2026-09-25') ? 'high' : ((r.last_seen_at || r.first_seen_at || host==='sarout.ma' || host==='marocimmo.com') ? 'medium' : 'low');
     if((host==='sarout.ma' || host==='marocimmo.com') && !r.last_seen_at && !r.first_seen_at && r.lifecycle_confidence==='medium') reasons.add('public_sitemap_snapshot_2026-09-25_full_low_cohort_coverage');
   }
+  r.scope_exclusion_reasons=[];
+  if(isShortStay(r.canonical_url)) r.scope_exclusion_reasons.push("short_stay_route");
+  if(r.classification==="EXPIRED") r.scope_exclusion_reasons.push("expired");
+  if(r.classification==="NON_REAL_ESTATE") r.scope_exclusion_reasons.push("non_real_estate");
+  r.scope_eligible=r.classification==="KEEP" && r.scope_exclusion_reasons.length===0;
+  if(isShortStay(r.canonical_url)) scopeCounts.short_stay++;
+  scopeCounts[r.scope_eligible?"eligible":"ineligible"]++;
   r.classification_reasons=[...reasons].sort();
   counts[r.classification]=(counts[r.classification]??0)+1;
   confidence[r.classification_confidence]=(confidence[r.classification_confidence]??0)+1;
@@ -87,5 +108,5 @@ for await (const line of rl) {
 }
 gzip.end(); await new Promise((res,rej)=>{sink.on('close',res);sink.on('error',rej)});
 const sha=crypto.createHash('sha256').update(fs.readFileSync(output)).digest('hex');
-const manifest={schema_version:'akarfinder-clean-corpus-v4-classifier-v5',rows,classification_counts:counts,classification_confidence:confidence,candidate_kind_counts:candidateKinds,identity_confidence_counts:identityConfidence,lifecycle_confidence_counts:lifecycleConfidence,approved_for_import_rows:0,database_access:0,database_writes:0,sha256_gzip:sha,doctrine:'KEEP by default; only strong evidence can yield EXPIRED/NON_REAL_ESTATE; transient HTTP failures never imply expiry'};
+const manifest={schema_version:'akarfinder-clean-corpus-v4-classifier-v6',rows,classification_counts:counts,classification_confidence:confidence,candidate_kind_counts:candidateKinds,identity_confidence_counts:identityConfidence,lifecycle_confidence_counts:lifecycleConfidence,scope_counts:scopeCounts,approved_for_import_rows:0,database_access:0,database_writes:0,sha256_gzip:sha,doctrine:'KEEP by default; only strong evidence can yield EXPIRED/NON_REAL_ESTATE; transient HTTP failures never imply expiry'};
 fs.writeFileSync(manifestPath,JSON.stringify(manifest,null,2)+'\n'); console.log(JSON.stringify(manifest,null,2));
