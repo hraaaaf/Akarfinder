@@ -40,7 +40,7 @@ function sourceIdentityKey(url) {
   return `${d}:url:${p}`;
 }
 
-const counts={KEEP:0,EXPIRED:0,NON_REAL_ESTATE:0}; const confidence={high:0,medium:0,low:0}; let rows=0;
+const counts={KEEP:0,EXPIRED:0,NON_REAL_ESTATE:0}; const confidence={high:0,medium:0,low:0}; const candidateKinds={}; let rows=0;
 const inStream=fs.createReadStream(input); const decoded=input.endsWith('.gz')?inStream.pipe(zlib.createGunzip()):inStream;
 const gzip=zlib.createGzip({level:9}); const sink=fs.createWriteStream(output); gzip.pipe(sink);
 const rl=readline.createInterface({input:decoded,crlfDelay:Infinity});
@@ -48,6 +48,15 @@ for await (const line of rl) {
   if(!line.trim()) continue; const r=JSON.parse(line); rows++;
   const reasons=new Set(r.classification_reasons??[]); const sid=sourceId(r.canonical_url);
   r.source_identity_key=sourceIdentityKey(r.canonical_url); r.approved_for_import=false;
+
+  const url=new URL(r.canonical_url);
+  const host=url.hostname.replace(/^www\./,'').toLowerCase();
+  if(r.candidate_kind==='unverified_listing_candidate' && host==='mubawab.ma' && /\/fr\/a\/\d+\//.test(url.pathname)) {
+    r.candidate_kind='detail_likely';
+    if(r.classification_confidence==='low') r.classification_confidence='medium';
+    reasons.add('registry_strong_individual_mubawab_a_numeric_id');
+  }
+
   if(sid && manualExpired.has(sid)) { r.classification='EXPIRED'; r.classification_confidence='high'; reasons.clear(); reasons.add('manual_target_detail_redirected_or_unavailable_2026-09-26'); }
   else if(sid && manualNonRealEstate.has(sid)) { r.classification='NON_REAL_ESTATE'; r.classification_confidence='high'; reasons.clear(); reasons.add('manual_non_real_estate_audit_2026-09-26'); }
   else if(r.candidate_kind==='category_or_index') { r.classification='NON_REAL_ESTATE'; r.classification_confidence='high'; reasons.add('freeze_document_kind_category_not_individual_listing'); }
@@ -57,11 +66,14 @@ for await (const line of rl) {
     if(r.deep_http_status===200 || r.freshness_status==='live_http_200_2026-09-25') { r.classification_confidence='high'; reasons.add('deep_public_http_200_2026-09-25'); }
     reasons.add('keep_by_default_no_strong_expiry_evidence');
   }
+
   r.classification_reasons=[...reasons].sort();
-  counts[r.classification]=(counts[r.classification]??0)+1; confidence[r.classification_confidence]=(confidence[r.classification_confidence]??0)+1;
+  counts[r.classification]=(counts[r.classification]??0)+1;
+  confidence[r.classification_confidence]=(confidence[r.classification_confidence]??0)+1;
+  candidateKinds[r.candidate_kind]=(candidateKinds[r.candidate_kind]??0)+1;
   gzip.write(JSON.stringify(r)+'\n');
 }
 gzip.end(); await new Promise((res,rej)=>{sink.on('close',res);sink.on('error',rej)});
 const sha=crypto.createHash('sha256').update(fs.readFileSync(output)).digest('hex');
-const manifest={schema_version:'akarfinder-clean-corpus-v4-classifier-v1',rows,classification_counts:counts,classification_confidence:confidence,approved_for_import_rows:0,database_access:0,database_writes:0,sha256_gzip:sha,doctrine:'KEEP by default; only strong evidence can yield EXPIRED/NON_REAL_ESTATE; transient HTTP failures never imply expiry'};
+const manifest={schema_version:'akarfinder-clean-corpus-v4-classifier-v2',rows,classification_counts:counts,classification_confidence:confidence,candidate_kind_counts:candidateKinds,approved_for_import_rows:0,database_access:0,database_writes:0,sha256_gzip:sha,doctrine:'KEEP by default; only strong evidence can yield EXPIRED/NON_REAL_ESTATE; transient HTTP failures never imply expiry'};
 fs.writeFileSync(manifestPath,JSON.stringify(manifest,null,2)+'\n'); console.log(JSON.stringify(manifest,null,2));
