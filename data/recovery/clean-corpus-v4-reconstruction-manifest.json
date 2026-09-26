@@ -1,5 +1,5 @@
 {
-  "schema_version": "akarfinder-clean-corpus-v4.9-20260926",
+  "schema_version": "akarfinder-clean-corpus-v4.10-20260926",
   "rows": 226286,
   "classification_counts": {
     "KEEP": 225952,
@@ -19,12 +19,12 @@
   "thin_category_rows_in_union": 289,
   "thin_ambiguous_rows_in_union": 9388,
   "deep_observations_by_http": {
-    "http_200": 4492,
+    "http_200": 6492,
     "http_0": 53,
     "http_503": 1955
   },
-  "deep_rows_matched_to_union": 6500,
-  "deep_http_200_active_proofs": 4492,
+  "deep_rows_matched_to_union": 8500,
+  "deep_http_200_active_proofs": 6492,
   "approved_for_import_rows": 0,
   "database_access": 0,
   "database_writes": 0,
@@ -53,8 +53,8 @@
     "low": 0
   },
   "lifecycle_confidence_counts": {
-    "high": 4833,
-    "medium": 188261,
+    "high": 6833,
+    "medium": 186261,
     "low": 33192
   },
   "next_focus": "32419 KEEP rows that are both lifecycle-low and product-scope-eligible",
@@ -81,7 +81,7 @@
   },
   "terminal_sold_routes_promoted_to_expired": 39,
   "short_stay_scope_excluded": 3613,
-  "artifact_sha256_status": "canonical metrics updated to v4.9 with exact Sarout deep evidence; corpus gzip still not rematerialized after v4.8/v4.9 rule/evidence changes",
+  "artifact_sha256_status": "canonical metrics updated to v4.10 with exact Sarout + MarocImmo deep evidence; corpus gzip still not rematerialized after v4.8-v4.10 changes",
   "base_v4_7_sha256_gzip": "c67c09723081417b9775bff40622409605f05372748b56fd983ff05c29bb57d7",
   "lifecycle_low_in_scope": 32419,
   "lifecycle_low_out_of_scope_short_stay": 773,
@@ -157,5 +157,36 @@
     "avito.ma": 1412,
     "soukimmobilier.com": 903,
     "sarouty.ma": 617
+  },
+  "post_v4_9_deep_evidence": {
+    "marocimmo_20260926": {
+      "artifact_id": 10904734124,
+      "digest": "sha256:23157d03fe4b66347481fc9236ebbcf67f5e37d14f4cb39ae74f7ff64e7f8b2f",
+      "batch": "2500-4500",
+      "rows": 2000,
+      "union_matches": 2000,
+      "http_200": 2000,
+      "http_503": 0,
+      "http_0": 0,
+      "overlap_with_prior_deep": 0,
+      "prior_lifecycle_of_http_200": {
+        "medium": 2000
+      },
+      "merged_effect": "2000 lifecycle medium→high",
+      "enrichment_non_null": {
+        "title": 2000,
+        "description": 2000,
+        "published_at": 2000,
+        "address": 2000,
+        "city": 2000,
+        "district": 2000,
+        "price_mad": 9,
+        "surface_m2": 901,
+        "bedrooms_count": 385
+      },
+      "proof": "clean corpus has exactly 37299 marocimmo.com rows, equal to certified sitemap unique_matching_listing_urls=37299; prior deep manifest covers offsets before 2500 (2500 rows), new batch starts at 2500",
+      "database_access": 0,
+      "database_writes": 0
+    }
   }
 }
