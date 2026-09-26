@@ -61,3 +61,4 @@ test("clean corpus v4 classifier is conservative and fail-safe",()=>{
   assert.equal(m.database_access,0);
   assert.equal(m.database_writes,0);
 });
+\n// V4.8 scope/lifecycle regression gate.\n
