@@ -1,5 +1,5 @@
 {
-  "schema_version": "akarfinder-clean-corpus-v4.11-20260926",
+  "schema_version": "akarfinder-clean-corpus-v4.11-final-20260926",
   "rows": 226286,
   "classification_counts": {
     "KEEP": 225952,
@@ -19,12 +19,12 @@
   "thin_category_rows_in_union": 289,
   "thin_ambiguous_rows_in_union": 9388,
   "deep_observations_by_http": {
-    "http_200": 7492,
+    "http_200": 8492,
     "http_0": 53,
     "http_503": 1955
   },
-  "deep_rows_matched_to_union": 9500,
-  "deep_http_200_active_proofs": 7492,
+  "deep_rows_matched_to_union": 10500,
+  "deep_http_200_active_proofs": 8492,
   "approved_for_import_rows": 0,
   "database_access": 0,
   "database_writes": 0,
@@ -53,8 +53,8 @@
     "low": 0
   },
   "lifecycle_confidence_counts": {
-    "high": 7833,
-    "medium": 185261,
+    "high": 8833,
+    "medium": 184261,
     "low": 33192
   },
   "next_focus": "32419 KEEP rows that are both lifecycle-low and product-scope-eligible",
@@ -81,7 +81,7 @@
   },
   "terminal_sold_routes_promoted_to_expired": 39,
   "short_stay_scope_excluded": 3613,
-  "artifact_sha256_status": "canonical metrics updated to v4.11 with exact Sarout + MarocImmo + Domio 1500-2500 deep evidence; corpus gzip still not rematerialized pending Domio 2500-3500",
+  "artifact_sha256_status": "V4.11 final metrics complete with Sarout + MarocImmo + Domio 1500-3500 deep evidence; corpus gzip rematerialization pending",
   "base_v4_7_sha256_gzip": "c67c09723081417b9775bff40622409605f05372748b56fd983ff05c29bb57d7",
   "lifecycle_low_in_scope": 32419,
   "lifecycle_low_out_of_scope_short_stay": 773,
@@ -216,6 +216,37 @@
         "district": 613,
         "bedrooms_count": 983
       },
+      "database_access": 0,
+      "database_writes": 0
+    },
+    "domio_2500_3500_20260926": {
+      "artifact_id": 10908628378,
+      "digest": "sha256:d1229c0ca4ec74dd5f70b4cfe25d5009759298112cd9ff09964f982dc783ee7f",
+      "batch": "2500-3500",
+      "rows": 1000,
+      "union_matches": 1000,
+      "http_200": 1000,
+      "http_503": 0,
+      "http_0": 0,
+      "overlap_with_prior_deep": 0,
+      "prior_lifecycle_of_http_200": {
+        "medium": 1000
+      },
+      "merged_effect": "1000 lifecycle medium→high",
+      "enrichment_non_null": {
+        "source_listing_id": 1000,
+        "title": 1000,
+        "description": 1000,
+        "price_mad": 970,
+        "surface_m2": 925,
+        "address": 1000,
+        "published_at": 1000,
+        "city": 1000,
+        "district": 488,
+        "bedrooms_count": 940
+      },
+      "source_url_artifact_id": 10861514122,
+      "source_url_artifact_expected_rows": 10347,
       "database_access": 0,
       "database_writes": 0
     }
