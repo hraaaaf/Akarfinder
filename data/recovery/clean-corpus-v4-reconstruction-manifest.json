@@ -1,5 +1,5 @@
 {
-  "schema_version": "akarfinder-clean-corpus-v4.6-20260926",
+  "schema_version": "akarfinder-clean-corpus-v4.7-20260926",
   "rows": 226286,
   "classification_counts": {
     "KEEP": 225991,
@@ -29,7 +29,7 @@
   "database_access": 0,
   "database_writes": 0,
   "drift_vs_historical_v3_rows": 10,
-  "sha256_gzip": "5d39628d85bb2eefb8962dfa02d6e136688e6bb2df9cc75eb02ed3d606c8ad3c",
+  "sha256_gzip": "c67c09723081417b9775bff40622409605f05372748b56fd983ff05c29bb57d7",
   "limitations": [
     "historical V3 zip unavailable",
     "5 manually audited source IDs absent from reconstructed freeze+artifact union; exact original V3 cannot be claimed",
@@ -55,8 +55,24 @@
   },
   "lifecycle_confidence_counts": {
     "high": 4391,
-    "medium": 109863,
-    "low": 112032
+    "medium": 188703,
+    "low": 33192
   },
-  "next_focus": "112032 KEEP rows with low lifecycle confidence; improve freshness/activity evidence without treating absence or transient HTTP errors as expiry"
+  "next_focus": "33192 KEEP rows with low lifecycle confidence after certified sitemap cohort evidence",
+  "certified_public_sitemap_cohorts": {
+    "observed_date": "2026-09-25",
+    "sarout_ma": {
+      "artifact_id": 10860656848,
+      "digest": "sha256:66ebc74d6ce1938770ac7f642da527ebabb3637b52f2bef09909e668fc13ccad",
+      "lifecycle_low_rows_covered": 44040,
+      "coverage": "100%"
+    },
+    "marocimmo_com": {
+      "artifact_id": 10860360457,
+      "digest": "sha256:d94bce73c18b1a99b88f6e1e5c07c0f59e218ca15cf8c3c12467dbd41c9abb59",
+      "lifecycle_low_rows_covered": 34800,
+      "coverage": "100%"
+    }
+  },
+  "lifecycle_low_reduced_by_certified_sitemap_evidence": 78840
 }
