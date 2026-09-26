@@ -1,6 +1,7 @@
 #!/usr/bin/env tsx
 import { readFileSync, mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { jsonLdBedrooms, jsonLdPrice, jsonLdSurface } from "./deep-jsonld-extractors";
 
 const DOMAIN=process.env.DEEP_DOMAIN||"";
 const URL_FILE=process.env.DEEP_URL_FILE||"";
@@ -40,10 +41,10 @@ async function main(){
   const r=await fetchText(url);if(!r.ok)summary.failed++;else summary.fetched++;if(r.status===200)summary.http_200++;
   const html=r.text,ld=jsonLd(html),title=(meta(html,"og:title")??titleTag(html)??String(first(ld,["name","headline"])??""))||null,description=meta(html,"og:description")??meta(html,"description");
   const combined=[title,description].filter(Boolean).join(" "),addr=address(ld),geo=urlGeo(r.final_url||url);
-  let price=first(ld,["price","lowPrice","highPrice"]);if(price!==null)price=Number(price);if(!Number.isFinite(price as number)||Number(price)<=0)price=textPrice(combined);
-  const surface=textSurface(combined),published=first(ld,["datePosted","datePublished","uploadDate","dateModified"]);
+  const price=jsonLdPrice(ld)??textPrice(combined);
+  const surface=jsonLdSurface(ld)??textSurface(combined),published=first(ld,["datePosted","datePublished","uploadDate","dateModified"]);
   let city=geo.city,district=geo.district; if(district&&/^\d+$/.test(district)) district=null;if(addr){const parts=String(addr).split(",").map(x=>x.trim()).filter(Boolean);if(parts.length)city=city||parts[0]}
-  const row={url,domain:DOMAIN,source_listing_id:sourceId(url),robots_decision:decision,fetch_skipped:false,http_status:r.status,final_url:r.final_url,title,description,price_mad:price??null,surface_m2:surface,address:addr,published_at:published,city,district,bedrooms_count:bedrooms(combined),jsonld_blocks:ld.length,database_access:0,database_writes:0};
+  const row={url,domain:DOMAIN,source_listing_id:sourceId(url),robots_decision:decision,fetch_skipped:false,http_status:r.status,final_url:r.final_url,title,description,price_mad:price??null,surface_m2:surface,address:addr,published_at:published,city,district,bedrooms_count:jsonLdBedrooms(ld)??bedrooms(combined),jsonld_blocks:ld.length,database_access:0,database_writes:0};
   results.push(row);
   for(const k of ["title","description","price_mad","surface_m2","address","published_at","city","district","bedrooms_count"]){if((row as any)[k]!==null&&(row as any)[k]!==""){const kk=k==="price_mad"?"price":k==="surface_m2"?"surface":k==="bedrooms_count"?"bedrooms":k;summary[kk]++}}
   await sleep(PACE_MS);
