@@ -6,7 +6,7 @@ import { join } from "node:path";
 import { gzipSync, gunzipSync } from "node:zlib";
 import { spawnSync } from "node:child_process";
 
-const gz=(path,rows)=>writeFileSync(path,gzipSync(Buffer.from(rows.map(r=>JSON.stringify(r)).join("\\n")+"\\n")));
+const gz=(path,rows)=>writeFileSync(path,gzipSync(Buffer.from(rows.map(r=>JSON.stringify(r)).join("\n")+"\n")));
 
 test("clean corpus v4 classifier is conservative and fail-safe",()=>{
   const root=mkdtempSync(join(tmpdir(),"akarfinder-v4-classifier-"));
@@ -25,7 +25,7 @@ test("clean corpus v4 classifier is conservative and fail-safe",()=>{
   ]);
   const run=spawnSync(process.execPath,["scripts/recovery/classify-clean-corpus-v4.mjs","--input",input,"--output",output,"--manifest",manifest],{cwd:process.cwd(),encoding:"utf8"});
   assert.equal(run.status,0,run.stderr||run.stdout);
-  const rows=gunzipSync(readFileSync(output)).toString("utf8").trim().split("\\n").map(JSON.parse);
+  const rows=gunzipSync(readFileSync(output)).toString("utf8").trim().split("\n").map(JSON.parse);
   assert.equal(rows.length,10);
   assert.equal(rows[0].classification,"KEEP");
   assert.equal(rows[0].candidate_kind,"detail_likely");
