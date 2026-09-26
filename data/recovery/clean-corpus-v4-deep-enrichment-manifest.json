@@ -51,5 +51,9 @@
       "batch": "2500-3500",
       "digest": "sha256:d1229c0ca4ec74dd5f70b4cfe25d5009759298112cd9ff09964f982dc783ee7f"
     }
-  ]
+  ],
+  "unique_urls": 10495,
+  "unique_http_200_urls": 8487,
+  "duplicate_observations": 5,
+  "duplicate_observation_note": "5 Domio URLs appear in both 1000-1500 and 1500-2500 batches; observation totals remain 10,500 / 8,492 HTTP200, row-level lifecycle upgrades dedupe to 8,487 unique HTTP200 URLs."
 }
