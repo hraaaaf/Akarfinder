@@ -4,7 +4,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 const INDEXES=(process.env.RECENT_CC_INDEXES??"CC-MAIN-2026-39,CC-MAIN-2026-34,CC-MAIN-2026-30").split(",").map(s=>s.trim()).filter(Boolean);
-const DOMAINS=(process.env.RECENT_CC_DOMAINS??"mubawab.ma,agenz.ma,avito.ma").split(",").map(s=>s.trim()).filter(Boolean);
+const DOMAINS=(process.env.RECENT_CC_DOMAINS??"mubawab.ma,domio.ma,agenz.ma,avito.ma,promoimmomarrakech.com,masaken.ma,sarouty.ma,daragadir.com,mouldar.com,soukimmobilier.com,marocannonces.com").split(",").map(s=>s.trim()).filter(Boolean);
 
 const PATTERNS:Record<string,RegExp[]>={
  "mubawab.ma":[/(?:\/fr|\/en)\/is\//,/(?:\/fr|\/en)\/a\/\d+\//,/\/acheter\/[^/]+-\d+(?:\.html)?$/],
