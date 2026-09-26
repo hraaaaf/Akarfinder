@@ -1,5 +1,5 @@
 {
-  "schema_version": "akarfinder-clean-corpus-v4.5-20260926",
+  "schema_version": "akarfinder-clean-corpus-v4.6-20260926",
   "rows": 226286,
   "classification_counts": {
     "KEEP": 225991,
@@ -29,7 +29,7 @@
   "database_access": 0,
   "database_writes": 0,
   "drift_vs_historical_v3_rows": 10,
-  "sha256_gzip": "4947ba3e3f8320cd861e286ae85bbe584e28ce8d3a1ba054cbb02ffbbe95ff60",
+  "sha256_gzip": "5d39628d85bb2eefb8962dfa02d6e136688e6bb2df9cc75eb02ed3d606c8ad3c",
   "limitations": [
     "historical V3 zip unavailable",
     "5 manually audited source IDs absent from reconstructed freeze+artifact union; exact original V3 cannot be claimed",
@@ -47,5 +47,16 @@
     "v4_urls_covered": 4818,
     "complete_cross_source_clusters_with_multiple_v4_urls": 1,
     "inferred_new_clusters": 0
-  }
+  },
+  "identity_confidence_counts": {
+    "high": 102297,
+    "medium": 123989,
+    "low": 0
+  },
+  "lifecycle_confidence_counts": {
+    "high": 4391,
+    "medium": 109863,
+    "low": 112032
+  },
+  "next_focus": "112032 KEEP rows with low lifecycle confidence; improve freshness/activity evidence without treating absence or transient HTTP errors as expiry"
 }
