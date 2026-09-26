@@ -1,0 +1,62 @@
+name: Recovery Big Portals Mass Harvest
+
+on:
+  push:
+    branches: ["recovery/big-portals-mass-20260925"]
+    paths:
+      - ".github/workflows/recovery-big-portals-mass.yml"
+      - "scripts/recovery/commoncrawl-big-portal-paginated.ts"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: recovery-big-portals-mass
+  cancel-in-progress: true
+
+jobs:
+  harvest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        domain:
+          - mubawab.ma
+          - avito.ma
+          - marocannonces.com
+          - sarout.ma
+          - sarouty.ma
+          - marocimmo.com
+          - soukimmobilier.com
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Harvest paginated Common Crawl reservoir
+        env:
+          BIG_PORTAL_DOMAIN: ${{ matrix.domain }}
+        run: npx tsx scripts/recovery/commoncrawl-big-portal-paginated.ts
+      - name: Enforce shadow-only contract
+        env:
+          BIG_PORTAL_DOMAIN: ${{ matrix.domain }}
+        run: |
+          node <<'NODE'
+          const domain=process.env.BIG_PORTAL_DOMAIN;
+          const safe=domain.replace(/[^a-z0-9]+/gi,"-");
+          const s=require("./data/audits/raw-results/recovery-big-portal-"+safe+"-summary.json");
+          if(s.database_access||s.database_writes||s.source_page_fetches||s.warc_downloads||s.approved_for_import_rows||s.failed_pages) process.exit(1);
+          console.log(JSON.stringify({domain:s.domain,unique_matching_listing_urls:s.unique_matching_listing_urls,raw_cdx_records:s.raw_cdx_records,pages_reported:s.pages_reported},null,2));
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: recovery-big-portal-${{ matrix.domain }}
+          path: |
+            data/audits/raw-results/recovery-big-portal-*.txt
+            data/audits/raw-results/recovery-big-portal-*-summary.json
+          retention-days: 30

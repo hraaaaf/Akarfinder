@@ -1,0 +1,38 @@
+{
+  "schema_version": "akarfinder-clean-corpus-v4-recovery-manifest-2026-09-26",
+  "status": "offline_classification_baseline",
+  "source_freeze": {
+    "workflow_run": 36147511562,
+    "artifact_id": 10869399865,
+    "artifact_digest": "sha256:79fe398c4810e796bf35fbcc9b6200b9667de110cebc3453140cdf8dbab9d6bd",
+    "certified_rows": 806575,
+    "tables": 15
+  },
+  "recovery_artifact_ids": [
+    10843985462,10843921205,10843906211,10843851407,10843389259,10842699709,10842424914,
+    10859073638,10860305595,10860360457,10860217600,10860402491,10860707315,10860722339,
+    10861241549,10861565498,10861514122,10862389317
+  ],
+  "local_reconstruction": {
+    "freeze_eligible_unique": 98666,
+    "recovery_reservoir_unique": 149473,
+    "overlap": 21853,
+    "union_rows": 226286,
+    "classification_counts": {"KEEP": 226202, "EXPIRED": 84},
+    "duplicate_urls": 0,
+    "approved_for_import_rows": 0,
+    "artifact_sha256_gzip": "7d17eceaef04ec01d888c29ad03e47a8262cc97ea5af23203be71c446578dc4f"
+  },
+  "historical_v3_reference": {
+    "reported_union_rows": 226276,
+    "reported_reservoir_unique": 149455,
+    "reported_freeze_keep": 98670,
+    "note": "Historical V3 depended on ephemeral local files. V4 is a fresh durable-input reconstruction; the 10-row delta is explicitly retained instead of silently forcing historical counts."
+  },
+  "safety": {
+    "supabase_reads_after_freeze": 0,
+    "database_writes": 0,
+    "approved_for_import": false,
+    "vercel_deployment": false
+  }
+}

@@ -1,0 +1,1 @@
+activate offsets 1500 and 2000, 500 pages each; prior 1500/1500 pages HTTP 200 with strong field yield

@@ -1,0 +1,24 @@
+{
+  "schema_version": "akarfinder-v4-deep-continuation-v2-plan-2026-09-26",
+  "workflow": "Recovery Big3 Deep Enrichment Continuation V2",
+  "trigger_head": "33f1fba83d5d0cd5269ee46b6ab4f85d3c4689d0",
+  "run_id": 36230115328,
+  "targets": [
+    {"domain":"sarout.ma","offset":500,"limit":2000},
+    {"domain":"marocimmo.com","offset":2500,"limit":2000},
+    {"domain":"domio.ma","offset":1500,"limit":2000}
+  ],
+  "max_target_urls": 6000,
+  "robots_gate": true,
+  "pace_ms": 1200,
+  "database_access": 0,
+  "database_writes": 0,
+  "approved_for_import_rows": 0,
+  "vercel_deployment": false,
+  "acceptance": {
+    "artifacts_required": 3,
+    "merge_only_after_success": true,
+    "non_200_does_not_imply_expired": true,
+    "conflicts_are_flags_not_overwrites": true
+  }
+}

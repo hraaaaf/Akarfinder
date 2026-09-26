@@ -1,0 +1,274 @@
+{
+  "schema_version": "akarfinder-clean-corpus-v4.11-final-20260926",
+  "rows": 226286,
+  "classification_counts": {
+    "KEEP": 225952,
+    "EXPIRED": 45,
+    "NON_REAL_ESTATE": 289
+  },
+  "classification_confidence": {
+    "high": 21051,
+    "medium": 90132,
+    "low": 115103
+  },
+  "candidate_kind_counts": {
+    "detail_confirmed": 101999,
+    "detail_likely": 123998,
+    "category_or_index": 289
+  },
+  "thin_category_rows_in_union": 289,
+  "thin_ambiguous_rows_in_union": 9388,
+  "deep_observations_by_http": {
+    "http_200": 8492,
+    "http_0": 53,
+    "http_503": 1955
+  },
+  "deep_rows_matched_to_union": 10500,
+  "deep_http_200_active_proofs": 8492,
+  "approved_for_import_rows": 0,
+  "database_access": 0,
+  "database_writes": 0,
+  "drift_vs_historical_v3_rows": 10,
+  "limitations": [
+    "historical V3 zip unavailable",
+    "5 manually audited source IDs absent from reconstructed freeze+artifact union; exact original V3 cannot be claimed",
+    "HTTP 503/0 never treated as expiry"
+  ],
+  "category_rows_promoted_to_non_real_estate_false_positive": 289,
+  "mubawab_unverified_promoted_to_detail_likely": 153,
+  "source_identity_clusters": 191586,
+  "source_identity_multi_alias_clusters": 33644,
+  "urls_in_multi_alias_clusters": 68344,
+  "source_alias_collapses_if_canonicalized": 34700,
+  "thin_ambiguous_low_promoted_to_medium": 7915,
+  "freeze_cluster_carry_forward": {
+    "freeze_clusters_with_v4_members": 4817,
+    "v4_urls_covered": 4818,
+    "complete_cross_source_clusters_with_multiple_v4_urls": 1,
+    "inferred_new_clusters": 0
+  },
+  "identity_confidence_counts": {
+    "high": 102297,
+    "medium": 123989,
+    "low": 0
+  },
+  "lifecycle_confidence_counts": {
+    "high": 8828,
+    "medium": 186261,
+    "low": 31197
+  },
+  "next_focus": "30429 KEEP rows that are both lifecycle-low and product-scope-eligible",
+  "certified_public_sitemap_cohorts": {
+    "observed_date": "2026-09-25",
+    "sarout_ma": {
+      "artifact_id": 10860656848,
+      "digest": "sha256:66ebc74d6ce1938770ac7f642da527ebabb3637b52f2bef09909e668fc13ccad",
+      "lifecycle_low_rows_covered": 44040,
+      "coverage": "100%"
+    },
+    "marocimmo_com": {
+      "artifact_id": 10860360457,
+      "digest": "sha256:d94bce73c18b1a99b88f6e1e5c07c0f59e218ca15cf8c3c12467dbd41c9abb59",
+      "lifecycle_low_rows_covered": 34800,
+      "coverage": "100%"
+    }
+  },
+  "lifecycle_low_reduced_by_certified_sitemap_evidence": 78840,
+  "scope_counts": {
+    "eligible": 222359,
+    "ineligible": 3927,
+    "short_stay": 3613
+  },
+  "terminal_sold_routes_promoted_to_expired": 39,
+  "short_stay_scope_excluded": 3613,
+  "artifact_sha256_status": "V4.11 final metrics complete with Sarout + MarocImmo + Domio 1500-3500 deep evidence; corpus gzip rematerialization pending",
+  "base_v4_7_sha256_gzip": "c67c09723081417b9775bff40622409605f05372748b56fd983ff05c29bb57d7",
+  "lifecycle_low_in_scope": 32419,
+  "lifecycle_low_out_of_scope_short_stay": 773,
+  "lifecycle_low_in_scope_by_domain": {
+    "mubawab.ma": 16926,
+    "domio.ma": 8830,
+    "agenz.ma": 3987,
+    "avito.ma": 1149,
+    "promoimmomarrakech.com": 526,
+    "masaken.ma": 349,
+    "sarouty.ma": 323,
+    "daragadir.com": 169,
+    "mouldar.com": 125,
+    "soukimmobilier.com": 23,
+    "marocannonces.com": 12
+  },
+  "post_v4_8_pending_deep_evidence": {
+    "sarout_20260926": {
+      "artifact_id": 10903290401,
+      "digest": "sha256:9f1ae44ec57a83028282a8e0029efd24235e5b365c58b6c467ca06b2b0b20edc",
+      "batch": "500-2500",
+      "rows": 2000,
+      "union_matches": 2000,
+      "http_200": 403,
+      "http_503": 1556,
+      "http_0": 41,
+      "prior_lifecycle_of_http_200": {
+        "medium": 403
+      },
+      "eligible_effect_if_merged": "403 lifecycle medium→high",
+      "enrichment_non_null": {
+        "title": 403,
+        "description": 403,
+        "published_at": 403,
+        "address": 374,
+        "city": 374,
+        "price_mad": 347,
+        "surface_m2": 298
+      },
+      "database_access": 0,
+      "database_writes": 0,
+      "merged_into_canonical_v4_8": true,
+      "merged_into_canonical_v4_9": true,
+      "merge_note": "403 exact union-matched HTTP 200 rows promoted lifecycle medium→high; HTTP 503/0 remain neutral."
+    }
+  },
+  "review_queue_segmentation": {
+    "scope_lifecycle_medium_or_high": 189940,
+    "no_contradiction_final_review_candidates": 145370,
+    "contradiction_quarantine_candidates": 44570,
+    "lifecycle_low_in_scope": 32419,
+    "approved_for_import_rows": 0,
+    "interpretation": "Final-review candidate is not import approval; contradictions remain quarantined and lifecycle-low requires more evidence."
+  },
+  "review_queue_no_contradiction_by_domain": {
+    "sarout.ma": 43794,
+    "mubawab.ma": 41576,
+    "marocimmo.com": 37268,
+    "avito.ma": 21243,
+    "domio.ma": 1477,
+    "promoimmomarrakech.com": 5,
+    "daragadir.com": 4,
+    "marocannonces.com": 2,
+    "sarouty.ma": 1
+  },
+  "review_queue_contradiction_top_domains": {
+    "mubawab.ma": 23473,
+    "agenz.ma": 5360,
+    "daragadir.com": 4614,
+    "promoimmomarrakech.com": 3185,
+    "masaken.ma": 1698,
+    "mouldar.com": 1516,
+    "avito.ma": 1412,
+    "soukimmobilier.com": 903,
+    "sarouty.ma": 617
+  },
+  "post_v4_9_deep_evidence": {
+    "marocimmo_20260926": {
+      "artifact_id": 10904734124,
+      "digest": "sha256:23157d03fe4b66347481fc9236ebbcf67f5e37d14f4cb39ae74f7ff64e7f8b2f",
+      "batch": "2500-4500",
+      "rows": 2000,
+      "union_matches": 2000,
+      "http_200": 2000,
+      "http_503": 0,
+      "http_0": 0,
+      "overlap_with_prior_deep": 0,
+      "prior_lifecycle_of_http_200": {
+        "medium": 2000
+      },
+      "merged_effect": "2000 lifecycle medium→high",
+      "enrichment_non_null": {
+        "title": 2000,
+        "description": 2000,
+        "published_at": 2000,
+        "address": 2000,
+        "city": 2000,
+        "district": 2000,
+        "price_mad": 9,
+        "surface_m2": 901,
+        "bedrooms_count": 385
+      },
+      "proof": "clean corpus has exactly 37299 marocimmo.com rows, equal to certified sitemap unique_matching_listing_urls=37299; prior deep manifest covers offsets before 2500 (2500 rows), new batch starts at 2500",
+      "database_access": 0,
+      "database_writes": 0
+    }
+  },
+  "post_v4_10_deep_evidence": {
+    "domio_1500_2500_20260926": {
+      "artifact_id": 10908485829,
+      "digest": "sha256:f27a684994f1735e7459b29c380fbdeb79c2c92017a4c04f387991fbf325bb82",
+      "batch": "1500-2500",
+      "rows": 1000,
+      "union_matches": 1000,
+      "http_200": 1000,
+      "http_503": 0,
+      "http_0": 0,
+      "overlap_with_prior_deep": 5,
+      "prior_lifecycle_of_http_200": {
+        "low": 995,
+        "high": 5
+      },
+      "merged_effect": "995 lifecycle low→high; 5 already-high URLs reobserved",
+      "enrichment_non_null": {
+        "source_listing_id": 1000,
+        "title": 1000,
+        "description": 1000,
+        "price_mad": 967,
+        "surface_m2": 997,
+        "address": 1000,
+        "published_at": 1000,
+        "city": 1000,
+        "district": 613,
+        "bedrooms_count": 983
+      },
+      "database_access": 0,
+      "database_writes": 0,
+      "unique_urls": 1000,
+      "unique_new_urls": 995,
+      "scope_eligible_new_high": 990,
+      "scope_ineligible_short_stay_new_high": 5
+    },
+    "domio_2500_3500_20260926": {
+      "artifact_id": 10908628378,
+      "digest": "sha256:d1229c0ca4ec74dd5f70b4cfe25d5009759298112cd9ff09964f982dc783ee7f",
+      "batch": "2500-3500",
+      "rows": 1000,
+      "union_matches": 1000,
+      "http_200": 1000,
+      "http_503": 0,
+      "http_0": 0,
+      "overlap_with_prior_deep": 0,
+      "prior_lifecycle_of_http_200": {
+        "low": 1000
+      },
+      "merged_effect": "1000 lifecycle low→high",
+      "enrichment_non_null": {
+        "source_listing_id": 1000,
+        "title": 1000,
+        "description": 1000,
+        "price_mad": 970,
+        "surface_m2": 925,
+        "address": 1000,
+        "published_at": 1000,
+        "city": 1000,
+        "district": 488,
+        "bedrooms_count": 940
+      },
+      "source_url_artifact_id": 10861514122,
+      "source_url_artifact_expected_rows": 10347,
+      "database_access": 0,
+      "database_writes": 0,
+      "scope_eligible_new_high": 1000,
+      "scope_ineligible_short_stay_new_high": 0
+    }
+  },
+  "deep_unique_urls": 10495,
+  "deep_unique_http_200_urls": 8487,
+  "deep_duplicate_observations": 5,
+  "deep_duplicate_detail": {
+    "domain": "domio.ma",
+    "count": 5,
+    "batches": [
+      "1000-1500",
+      "1500-2500"
+    ],
+    "effect": "observation count retained; lifecycle row upgrade counted once"
+  },
+  "lifecycle_reconciliation_note": "Domio 1500-3500 upgrades originate from lifecycle-low cohort, not medium. 5 duplicated prior-high URLs are reobservations; 5 newly-high URLs are short-stay/out-of-scope."
+}

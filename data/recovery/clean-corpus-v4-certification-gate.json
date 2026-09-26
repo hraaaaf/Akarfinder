@@ -1,0 +1,28 @@
+{
+  "schema_version": "akarfinder-clean-corpus-v4-certification-gate-2026-09-26",
+  "goal": "Certify a provenance-preserving clean real-estate corpus before any database import.",
+  "must_pass": [
+    {"id":"G1","check":"durable_inputs_identified_and_digestable","status":"PASS"},
+    {"id":"G2","check":"zero_supabase_reads_after_freeze","status":"PASS"},
+    {"id":"G3","check":"classification_keep_expired_non_real_estate_is_evidence_based","status":"PARTIAL","note":"V4 KEEP/EXPIRED baseline built; source-aware validation must continue as enrichment/freshness evidence arrives."},
+    {"id":"G4","check":"no_low_score_or_missing_price_rejection","status":"PASS"},
+    {"id":"G5","check":"source_identity_aliases_clustered_without_deletion","status":"PASS"},
+    {"id":"G6","check":"cross_source_property_identity_clusters_certified","status":"PENDING"},
+    {"id":"G7","check":"field_provenance_preserved","status":"PARTIAL","note":"V4 enrichment merge contract implemented and tested; full corpus merge pending."},
+    {"id":"G8","check":"contradictions_flagged_not_silently_overwritten","status":"PASS","evidence":"Recovery Clean Corpus V4 Tests 36230268515 SUCCESS"},
+    {"id":"G9","check":"freshness_or_expiry_evidence_qualified_by_source","status":"PENDING"},
+    {"id":"G10","check":"final_counts_and_invariants_readback_offline","status":"PENDING"},
+    {"id":"G11","check":"approved_for_import_rows_explicitly_reviewed","status":"PENDING"},
+    {"id":"G12","check":"database_import_and_search_smokes","status":"PENDING"}
+  ],
+  "hard_rule": "approved_for_import must remain false until G1-G11 pass; G12 occurs only after an explicitly selected import target and controlled import.",
+  "current_baseline": {
+    "rows":226286,
+    "keep":226202,
+    "expired":84,
+    "approved_for_import_rows":0
+  },
+  "database_access":0,
+  "database_writes":0,
+  "vercel_deployment":false
+}

@@ -1,0 +1,48 @@
+{
+  "schema_version": "akarfinder-clean-corpus-v4-distribution-audit-2026-09-26",
+  "rows": 226286,
+  "classification": {"KEEP":226202,"EXPIRED":84},
+  "origin_partition": {
+    "freeze_only": 76813,
+    "recovery_only": 127620,
+    "freeze_and_recovery": 21853
+  },
+  "top_domains": {
+    "mubawab.ma":82796,
+    "sarout.ma":44130,
+    "marocimmo.com":37299,
+    "avito.ma":24532,
+    "domio.ma":10347,
+    "agenz.ma":9347,
+    "daragadir.com":6711,
+    "promoimmomarrakech.com":3716,
+    "masaken.ma":2047,
+    "mouldar.com":1641,
+    "sarouty.ma":944,
+    "soukimmobilier.com":926
+  },
+  "expired_by_domain": {
+    "mubawab.ma":36,
+    "agenz.ma":15,
+    "sarouty.ma":14,
+    "soukimmobilier.com":14,
+    "mouldar.com":3,
+    "1immo.ma":1,
+    "avito.ma":1
+  },
+  "manual_evidence_rows_present": 6,
+  "notable_temporal_conflict": {
+    "source":"avito.ma",
+    "source_listing_id":"54965575",
+    "older_evidence":"source_offer_observation active at 2026-08-05T04:28:53.877+00:00",
+    "newer_evidence":"manual audit 2026-09-26: target detail redirected/unavailable",
+    "classification":"EXPIRED",
+    "rule":"newer direct target evidence outranks older active observation; both are retained"
+  },
+  "safety": {
+    "approved_for_import_rows":0,
+    "database_access":0,
+    "database_writes":0,
+    "vercel_deployment":false
+  }
+}
