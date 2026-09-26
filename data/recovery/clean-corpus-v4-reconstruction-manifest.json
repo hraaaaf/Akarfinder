@@ -53,8 +53,8 @@
     "low": 0
   },
   "lifecycle_confidence_counts": {
-    "high": 8833,
-    "medium": 184261,
+    "high": 8828,
+    "medium": 184266,
     "low": 33192
   },
   "next_focus": "32419 KEEP rows that are both lifecycle-low and product-scope-eligible",
@@ -199,11 +199,12 @@
       "http_200": 1000,
       "http_503": 0,
       "http_0": 0,
-      "overlap_with_prior_deep": 0,
+      "overlap_with_prior_deep": 5,
       "prior_lifecycle_of_http_200": {
-        "medium": 1000
+        "medium": 995,
+        "high": 5
       },
-      "merged_effect": "1000 lifecycle medium→high",
+      "merged_effect": "995 lifecycle medium→high; 5 already-high URLs reobserved",
       "enrichment_non_null": {
         "source_listing_id": 1000,
         "title": 1000,
@@ -217,7 +218,9 @@
         "bedrooms_count": 983
       },
       "database_access": 0,
-      "database_writes": 0
+      "database_writes": 0,
+      "unique_urls": 1000,
+      "unique_new_urls": 995
     },
     "domio_2500_3500_20260926": {
       "artifact_id": 10908628378,
@@ -250,5 +253,17 @@
       "database_access": 0,
       "database_writes": 0
     }
+  },
+  "deep_unique_urls": 10495,
+  "deep_unique_http_200_urls": 8487,
+  "deep_duplicate_observations": 5,
+  "deep_duplicate_detail": {
+    "domain": "domio.ma",
+    "count": 5,
+    "batches": [
+      "1000-1500",
+      "1500-2500"
+    ],
+    "effect": "observation count retained; lifecycle row upgrade counted once"
   }
 }
