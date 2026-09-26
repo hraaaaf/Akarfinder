@@ -67,7 +67,7 @@ for(const name of reservoirFiles){
 const union=new Set([...freezeEligible,...reservoir]);
 const deepByUrl=new Map();
 let deepObservations=0,http200Obs=0,http503Obs=0,http0Obs=0;
-for(const name of fs.readdirSync(deepDir).filter(n=>/^deep-batch-.*\.json$/.test(n)).sort()){
+for(const name of fs.readdirSync(deepDir).filter(n=>/^deep-batch-.*\.json$/.test(n) && !n.endsWith("-summary.json")).sort()){
   const arr=JSON.parse(fs.readFileSync(path.join(deepDir,name),"utf8"));
   if(!Array.isArray(arr)) throw new Error("deep artifact is not array: "+name);
   for(const x of arr){
