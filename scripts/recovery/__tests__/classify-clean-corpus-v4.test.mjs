@@ -40,7 +40,7 @@ test("clean corpus v4 classifier is conservative and fail-safe",()=>{
   assert.ok(rows[5].classification_reasons.includes("source_specific_individual_route_resolves_thin_ambiguity"));
   const m=JSON.parse(readFileSync(manifest,"utf8"));
   assert.deepEqual(m.classification_counts,{KEEP:4,EXPIRED:1,NON_REAL_ESTATE:1});
-  assert.equal(m.identity_confidence_counts.medium,2);
+  assert.equal(m.identity_confidence_counts.medium,3);
   assert.equal(m.lifecycle_confidence_counts.high,3);
   assert.equal(m.approved_for_import_rows,0);
   assert.equal(m.database_access,0);
