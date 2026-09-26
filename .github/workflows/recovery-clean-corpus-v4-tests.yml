@@ -4,6 +4,8 @@ on:
   push:
     branches: ["recovery/big-portals-mass-20260925"]
     paths:
+      - "scripts/recovery/classify-clean-corpus-v4.mjs"
+      - "scripts/recovery/__tests__/classify-clean-corpus-v4.test.mjs"
       - "scripts/recovery/merge-clean-corpus-v4-enrichment.ts"
       - "scripts/recovery/deep-enrichment-source-batch.ts"
       - "scripts/recovery/deep-jsonld-extractors.ts"
@@ -27,4 +29,4 @@ jobs:
         with: { node-version: 24, cache: npm }
       - run: npm ci
       - name: V4 enrichment safety tests
-        run: npx tsx --test scripts/recovery/__tests__/clean-corpus-v4-enrichment.test.ts scripts/recovery/__tests__/deep-jsonld-extractors.test.ts scripts/recovery/__tests__/carry-forward-freeze-clusters-v4.test.ts
+        run: node --test scripts/recovery/__tests__/classify-clean-corpus-v4.test.mjs && npx tsx --test scripts/recovery/__tests__/clean-corpus-v4-enrichment.test.ts scripts/recovery/__tests__/deep-jsonld-extractors.test.ts scripts/recovery/__tests__/carry-forward-freeze-clusters-v4.test.ts
