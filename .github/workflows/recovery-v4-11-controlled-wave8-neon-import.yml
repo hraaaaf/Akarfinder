@@ -12,7 +12,7 @@ permissions:
 
 concurrency:
   group: recovery-v4-11-controlled-wave8-neon-import
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   import:
@@ -91,7 +91,7 @@ jobs:
               quarantinedPriceOverflow++;
             }
           }
-          if(quarantinedPriceOverflow!==1)throw new Error("expected exactly one price overflow quarantine, got "+quarantinedPriceOverflow);
+          if(quarantinedPriceOverflow!==0)throw new Error("artifact must already be int4-safe, got "+quarantinedPriceOverflow+" overflow rows");
           const cols=["canonical_fingerprint","title","price_mad","city","district","property_type","transaction_type","surface_m2","rooms_count","bedrooms_count","bathrooms_count","description_snippet","images_count","seller_name","data_completeness_score","field_confidence","source_name","listing_url","source_url","first_seen_at","last_seen_at","source_offer_key","origin_type","compliance_status","content_fingerprint","ingestion_run_id","displayed_price","price_currency","price_period","price_status"];
           const esc=v=>{if(v===null||v===undefined)return "";const s=typeof v==="object"?JSON.stringify(v):String(v);return /[",\n\r]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s};
           if(rows.length!==38935||rows.some(r=>r.approved_for_import!==false))throw new Error("artifact invariant");
