@@ -3,3 +3,4 @@ rerun-after-identity-normalization-2026-09-27
 strict-strong-evidence-rerun-2026-09-27
 validated-wholesale-replacement-2026-09-27
 rerun-after-identity-quarantine-correction-2026-09-27
+rerun-after-yaml-assertion-fix-2026-09-27
