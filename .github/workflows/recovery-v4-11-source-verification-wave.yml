@@ -1,0 +1,79 @@
+name: Recovery V4.11 Source Verification Wave
+
+on:
+  push:
+    branches: ["recovery/v4-11-pre-db-verification-20260927"]
+    paths:
+      - "data/recovery/v4-11-source-verification-wave.json"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+
+      - name: Load wave config
+        run: |
+          set -euo pipefail
+          node - <<'NODE' >> "$GITHUB_ENV"
+          const c=require("./data/recovery/v4-11-source-verification-wave.json");
+          if(typeof c.domain!=="string"||!c.domain.includes(".")) throw new Error("domain");
+          if(!Number.isInteger(c.offset)||c.offset<0) throw new Error("offset");
+          if(!Number.isInteger(c.limit)||c.limit<1||c.limit>2000) throw new Error("limit");
+          if(!Number.isInteger(c.expected_source_rows)||c.expected_source_rows<1) throw new Error("expected_source_rows");
+          if(c.queue_artifact_id!==10927785295) throw new Error("queue artifact must be certified artifact 10927785295");
+          console.log("DEEP_DOMAIN="+c.domain);
+          console.log("DEEP_OFFSET="+c.offset);
+          console.log("DEEP_LIMIT="+c.limit);
+          console.log("EXPECTED_SOURCE_ROWS="+c.expected_source_rows);
+          console.log("QUEUE_ARTIFACT_ID="+c.queue_artifact_id);
+          NODE
+
+      - name: Download certified unresolved queue
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/queue"
+          gh api "repos/${{ github.repository }}/actions/artifacts/${QUEUE_ARTIFACT_ID}/zip" > "$RUNNER_TEMP/queue.zip"
+          unzip -q -o "$RUNNER_TEMP/queue.zip" -d "$RUNNER_TEMP/queue"
+          QUEUE_FILE="$RUNNER_TEMP/queue/unresolved/${DEEP_DOMAIN}.txt"
+          test -s "$QUEUE_FILE"
+          test "$(wc -l < "$QUEUE_FILE")" = "$EXPECTED_SOURCE_ROWS"
+          echo "DEEP_URL_FILE=$QUEUE_FILE" >> "$GITHUB_ENV"
+
+      - name: Verify bounded source wave read-only
+        run: npx tsx scripts/recovery/deep-enrichment-source-batch.ts
+
+      - name: Assert zero DB access and bounded accounting
+        run: |
+          node - <<'NODE'
+          const fs=require("fs");
+          const d=process.env.DEEP_DOMAIN.replace(/[^a-z0-9]+/gi,"-");
+          const start=Number(process.env.DEEP_OFFSET);
+          const limit=Number(process.env.DEEP_LIMIT);
+          const end=Math.min(start+limit,Number(process.env.EXPECTED_SOURCE_ROWS));
+          const p=`data/audits/raw-results/deep-batch-${d}-${start}-${end}-summary.json`;
+          const s=JSON.parse(fs.readFileSync(p,"utf8"));
+          if(s.database_access!==0||s.database_writes!==0) throw new Error("DB invariant");
+          if(s.input_urls!==end-start) throw new Error("input count");
+          if(s.fetched+s.failed+s.robots_skipped!==s.input_urls) throw new Error("accounting");
+          console.log(JSON.stringify(s,null,2));
+          NODE
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v4.11-source-verification-wave
+          path: data/audits/raw-results/deep-batch-*.json
+          retention-days: 30
