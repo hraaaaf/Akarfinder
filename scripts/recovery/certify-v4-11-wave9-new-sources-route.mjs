@@ -37,7 +37,7 @@ for(const r of rows){
     data_completeness_score:80,
     field_confidence:{certification:"v4.11_wave9_new_sources_route",title:{source:"route"},city:{source:"route"},property_type:{source:"route"},transaction_type:{source:"route"},source_cc_artifact_id:10936353396,cross_source_merge_performed:false},
     source_name:d,listing_url:r.canonical_url,source_url:"https://"+d,first_seen_at:null,last_seen_at:null,
-    source_offer_key:key,origin_type:"commoncrawl_metadata",compliance_status:"recovery_verified_v4_11_wave9_new_sources",
+    source_offer_key:key,origin_type:"legacy_import",compliance_status:"recovery_verified_v4_11_wave9_new_sources",
     content_fingerprint:fp,ingestion_run_id:"clean-corpus-v4.11-wave9-new-sources",displayed_price:null,price_currency:null,price_period:null,price_status:"not_disclosed",approved_for_import:false
   });
 }
