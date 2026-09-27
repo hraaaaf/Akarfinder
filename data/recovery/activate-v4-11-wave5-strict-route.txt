@@ -1,1 +1,2 @@
 trigger-2026-09-27-wave5-strict-route
+rerun-after-promo-exclusion-2026-09-27
