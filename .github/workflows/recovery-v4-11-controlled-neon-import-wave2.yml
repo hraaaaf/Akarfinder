@@ -31,7 +31,7 @@ jobs:
           node - <<'NODE'
           const a=require("./data/recovery/v4-11-wave2-import-approval.json");
           if(a.approved!==true) throw new Error("approval not true");
-          if(a.rows!==17024) throw new Error("rows");
+          if(a.rows!==17022) throw new Error("rows");
           if(!Number.isInteger(a.artifact_id)||a.artifact_id<=0) throw new Error("artifact id");
           if(!/^[0-9a-f]{64}$/.test(a.jsonl_sha256||"")) throw new Error("jsonl sha");
           if(a.target_project!=="ancient-violet-43534870") throw new Error("project");
@@ -63,7 +63,7 @@ jobs:
           EXPECTED_SHA="$(node -p 'require("./data/recovery/v4-11-wave2-import-approval.json").jsonl_sha256')"
           ACTUAL_SHA="$(sha256sum "$RUNNER_TEMP/wave2/db-ready-wave2.jsonl" | awk '{print $1}')"
           test "$ACTUAL_SHA" = "$EXPECTED_SHA"
-          test "$(grep -cve '^$' "$RUNNER_TEMP/wave2/db-ready-wave2.jsonl")" = "17024"
+          test "$(grep -cve '^$' "$RUNNER_TEMP/wave2/db-ready-wave2.jsonl")" = "17022"
 
       - name: Build import CSV
         run: |
@@ -85,7 +85,7 @@ jobs:
               if r.get("approved_for_import") is not False:
                 raise SystemExit("artifact approval invariant")
               rows.append(r)
-          if len(rows)!=17024: raise SystemExit(f"expected 17024 rows, got {len(rows)}")
+          if len(rows)!=17022: raise SystemExit(f"expected 17022 rows, got {len(rows)}")
           with open(out,"w",newline="",encoding="utf-8") as f:
             w=csv.DictWriter(f,fieldnames=fields);w.writeheader()
             for r in rows:
@@ -136,7 +136,7 @@ jobs:
 
           DO $$
           BEGIN
-            IF (SELECT count(*) FROM stage_wave2) <> 17024 THEN
+            IF (SELECT count(*) FROM stage_wave2) <> 17022 THEN
               RAISE EXCEPTION 'stage count mismatch';
             END IF;
             IF (SELECT count(*)-count(DISTINCT listing_url) FROM stage_wave2) <> 0 THEN
