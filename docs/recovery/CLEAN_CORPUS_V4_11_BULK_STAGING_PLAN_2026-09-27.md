@@ -1,3 +1,7 @@
+# SUPERSEDED — no database staging before verification
+
+User decision 2026-09-27: all remaining rows must be verified before any DB transfer. The prior raw_listings staging plan is cancelled. No 213,992-row DB staging is authorized.
+
 # AkarFinder — V4.11 bulk transfer prep — 2026-09-27
 
 ## Goal
@@ -110,9 +114,4 @@ Promotion from `raw_listings` to `property_listings` requires separate cohort-le
 
 ## Next exact
 
-1. obtain a deterministic, independently rechecked bulk artifact;
-2. record artifact ID + artifact digest + payload digest;
-3. create approval payload only after explicit human authorization;
-4. run isolated Neon staging import;
-5. read back 213,992 raw rows and verify product tables unchanged;
-6. then define promotion waves from staged data.
+Build and execute a pre-DB verification campaign. Only rows that pass the verification gate may later be considered for DB import. No raw_listings staging step is allowed before verification.

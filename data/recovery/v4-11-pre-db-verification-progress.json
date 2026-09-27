@@ -1,0 +1,40 @@
+{
+  "schema_version": "akarfinder-v4.11-pre-db-verification-progress-20260927",
+  "remaining_pre_db_rows": 213992,
+  "existence_verified_rows": 82658,
+  "unresolved_existence_rows": 131334,
+  "verified_evidence": {
+    "prior_queue_artifact_id": 10927785295,
+    "prior_verified_rows": 76159,
+    "mubawab_recent_cc_artifact_id": 10927113307,
+    "mubawab_recent_cc_intersection_artifact_id": 10927038861,
+    "mubawab_recent_cc_matched_rows": 6499,
+    "mubawab_recent_cc_still_unresolved": 75476
+  },
+  "unresolved_by_domain": {
+    "mubawab.ma": 75476,
+    "avito.ma": 23804,
+    "agenz.ma": 9347,
+    "domio.ma": 6843,
+    "daragadir.com": 4787,
+    "promoimmomarrakech.com": 3716,
+    "masaken.ma": 2047,
+    "mouldar.com": 1641,
+    "sarouty.ma": 941,
+    "soukimmobilier.com": 926,
+    "limmobiliersansfrontieres.com": 513,
+    "aykana.ma": 474,
+    "atlasimmobilier.com": 362,
+    "1immo.ma": 243,
+    "kawtarimmobilier.com": 140,
+    "marrakechrealty.com": 56,
+    "marocannonces.com": 14,
+    "barnes-marrakech.com": 4
+  },
+  "db_ready_rows_from_remaining": 0,
+  "rule": "Existence verification is necessary but not sufficient. Product-field readiness, identity/contradiction checks, and explicit cohort approval are still required before DB.",
+  "database_access": 0,
+  "database_writes": 0,
+  "production_neon_writes": 0,
+  "vercel_deployment": false
+}
