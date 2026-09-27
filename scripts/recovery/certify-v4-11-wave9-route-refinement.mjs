@@ -114,7 +114,22 @@ function routeFallback(url){
     ["Martil",/\bmartil\b/],["Ifrane",/\bifrane\b/],["Taghazout",/\btaghazout\b/],["Ourika",/\bourika\b/],
     ["Skhirat",/\bskhirat\b/],["Harhoura",/\bharhoura\b/],["Tamesna",/\btamesna\b/],["Khémisset",/\bkhemisset\b/]
   ];
-  const cityHits=[...new Set(cityChecks.filter(([,re])=>re.test(text)).map(([x])=>x))];
+  const routeAlias={
+    "Casablanca":["casablanca","casa"],"Rabat":["rabat"],"Marrakech":["marrakech","marrakesh"],"Tanger":["tanger","tangier"],
+    "Fès":["fes","fez"],"Agadir":["agadir"],"Meknès":["meknes"],"Kénitra":["kenitra"],"Mohammedia":["mohammedia"],"Oujda":["oujda"],
+    "Tétouan":["tetouan"],"Témara":["temara"],"Essaouira":["essaouira"],"Bouskoura":["bouskoura"],"Bouznika":["bouznika"],
+    "El Jadida":["el jadida"],"Dar Bouazza":["dar bouazza"],"Safi":["safi"],"Nador":["nador"],"Dakhla":["dakhla"],"Laâyoune":["laayoune"],
+    "Berrechid":["berrechid"],"Martil":["martil"],"Ifrane":["ifrane"],"Taghazout":["taghazout"],"Ourika":["ourika"],"Skhirat":["skhirat"],
+    "Harhoura":["harhoura"],"Tamesna":["tamesna"],"Khémisset":["khemisset"]
+  };
+  const unsafeCityContext=cityName=>{
+    const route=(routeAlias[cityName]||[]).some(alias=>new RegExp("\\broute\\s+(?:de\\s+|d\\s+|l\\s+)?"+alias.replace(/ /g,"\\s+")+"\\b").test(text));
+    if(route)return true;
+    if(cityName==="El Jadida"&&/\bsala\s+el\s+jadida\b/.test(text))return true;
+    if(cityName==="Dakhla"&&/\b(?:extension|hay)\s+dakhla\b/.test(text))return true;
+    return false;
+  };
+  const cityHits=[...new Set(cityChecks.filter(([,re])=>re.test(text)).map(([x])=>x))].filter(x=>!unsafeCityContext(x));
   if(cityHits.length===1)city=cityHits[0];
 
   let slug=dec(seg.at(-1)||"").replace(/\.html?$/i,"").replace(/_\d{5,}$/,"").replace(/^\d{2,}_/,"").replace(/[_-]+/g," ").replace(/\s+/g," ").trim();
