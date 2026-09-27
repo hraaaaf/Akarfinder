@@ -1,0 +1,22 @@
+{
+  "approved": true,
+  "authorization_message": "Go — continue Wave7 certification → isolated Neon import → readback",
+  "rows": 657,
+  "certification_run_id": 36325998063,
+  "artifact_id": 10934360426,
+  "artifact_digest": "sha256:67c0a2ec79fb1668288e42c858fcf35e95951e8dd9b4b76137a34e6c46b57319",
+  "jsonl_sha256": "db5204d10aeda29b7a9228400cebd024462df2d1bde30fd481c8a7f2b2f60e00",
+  "target_project": "ancient-violet-43534870",
+  "target_branch": "br-cold-mouse-b2a50yaa",
+  "target_database": "AkarFinder",
+  "expected_pre": {
+    "property_listings": 99569,
+    "listing_sources": 99569
+  },
+  "expected_post": {
+    "property_listings": 100226,
+    "listing_sources": 100226
+  },
+  "production_neon_writes_authorized": false,
+  "vercel_deployment_authorized": false
+}
