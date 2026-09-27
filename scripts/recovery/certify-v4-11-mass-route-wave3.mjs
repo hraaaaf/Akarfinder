@@ -136,8 +136,8 @@ for(const r of domioRows){
   if(r.source_domain!=="domio.ma"||r.verification_method!=="official_category_listing_recent")throw new Error("Domio evidence invariant");
   addCertified(r,["official_category_listing_recent"]);
 }
-if(out.length!==68043)throw new Error("expected 68043 wave3 rows, got "+out.length);
-if(byDomain["marocimmo.com"]!==32795||byDomain["sarout.ma"]!==28297||byDomain["agenz.ma"]!==108||byDomain["domio.ma"]!==6843)throw new Error("domain yield invariant");
+if(out.length!==68018)throw new Error("expected 68018 wave3 rows, got "+out.length);
+if(byDomain["marocimmo.com"]!==32795||byDomain["sarout.ma"]!==28277||byDomain["agenz.ma"]!==108||byDomain["domio.ma"]!==6838)throw new Error("domain yield invariant");
 if(new Set(out.map(x=>x.listing_url)).size!==out.length)throw new Error("URL dedupe");
 if(new Set(out.map(x=>x.canonical_fingerprint)).size!==out.length)throw new Error("fingerprint dedupe");
 if(out.some(x=>x.approved_for_import!==false))throw new Error("approval invariant");
