@@ -1,8 +1,8 @@
 {
   "schema_version": "akarfinder-v4.11-pre-db-verification-progress-20260927",
   "remaining_pre_db_rows": 213992,
-  "existence_verified_rows": 164118,
-  "unresolved_existence_rows": 49874,
+  "existence_verified_rows": 170961,
+  "unresolved_existence_rows": 43031,
   "verified_evidence": {
     "reconciled_ledger_artifact_id": 10927761643,
     "reconciled_verified_rows": 163247,
@@ -12,13 +12,16 @@
     "avito_recent_cc_new_matches": 0,
     "mubawab_recent_cc_artifact_id": 10927113307,
     "mubawab_recent_cc_intersection_artifact_id": 10927038861,
-    "mubawab_recent_cc_matched_rows": 6499
+    "mubawab_recent_cc_matched_rows": 6499,
+    "domio_category_artifact_id": 10861514122,
+    "domio_category_intersection_artifact_id": 10927144343,
+    "domio_category_new_matches": 6843
   },
   "unresolved_by_domain": {
     "mubawab.ma": 21616,
     "avito.ma": 1947,
     "agenz.ma": 7169,
-    "domio.ma": 6843,
+    "domio.ma": 0,
     "daragadir.com": 2963,
     "promoimmomarrakech.com": 3705,
     "masaken.ma": 1437,
@@ -38,5 +41,9 @@
   "database_writes": 0,
   "production_neon_writes": 0,
   "vercel_deployment": false,
-  "strict_wave2_candidate_rows_pending_artifact": 13421
+  "strict_wave2_candidate_rows_pending_artifact": 13421,
+  "direct_pilot_findings": {
+    "agenz.ma": "500/500 robots_skipped; external evidence only",
+    "avito.ma": "500/500 HTTP 403 despite robots allow; external evidence only"
+  }
 }
