@@ -1,0 +1,105 @@
+name: Recovery V4.11 Wave6 Freeze Enrichment Certification
+
+on:
+  push:
+    branches: ["recovery/v4-11-freeze-wave6-20260927"]
+    paths:
+      - "data/recovery/activate-v4-11-wave6-freeze-enrichment.txt"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Download certified inputs
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/freeze" "$RUNNER_TEMP/v3" "$RUNNER_TEMP/used/w2" "$RUNNER_TEMP/used/w3" "$RUNNER_TEMP/used/w4b" "$RUNNER_TEMP/used/w5" "$RUNNER_TEMP/used/w5old" data/audits/v4-11-wave6
+
+          gh api repos/${{ github.repository }}/actions/artifacts/10869399865/zip > "$RUNNER_TEMP/freeze.zip"
+          unzip -q -o "$RUNNER_TEMP/freeze.zip" -d "$RUNNER_TEMP/freeze"
+
+          gh api repos/${{ github.repository }}/actions/artifacts/10930659218/zip > "$RUNNER_TEMP/v3.zip"
+          unzip -q -o "$RUNNER_TEMP/v3.zip" -d "$RUNNER_TEMP/v3"
+
+          gh api repos/${{ github.repository }}/actions/artifacts/10927304058/zip > "$RUNNER_TEMP/w2.zip"
+          unzip -q -o "$RUNNER_TEMP/w2.zip" -d "$RUNNER_TEMP/used/w2"
+          cp "$RUNNER_TEMP/used/w2/db-ready-wave2.jsonl" "$RUNNER_TEMP/used/wave2.jsonl"
+
+          gh api repos/${{ github.repository }}/actions/artifacts/10929247398/zip > "$RUNNER_TEMP/w3.zip"
+          unzip -q -o "$RUNNER_TEMP/w3.zip" -d "$RUNNER_TEMP/used/w3"
+          cp "$RUNNER_TEMP/used/w3/db-ready-wave3.jsonl" "$RUNNER_TEMP/used/wave3.jsonl"
+
+          gh api repos/${{ github.repository }}/actions/artifacts/10931027229/zip > "$RUNNER_TEMP/w4b.zip"
+          unzip -q -o "$RUNNER_TEMP/w4b.zip" -d "$RUNNER_TEMP/used/w4b"
+          cp "$RUNNER_TEMP/used/w4b/db-ready-wave4.jsonl" "$RUNNER_TEMP/used/wave4b.jsonl"
+
+          gh api repos/${{ github.repository }}/actions/artifacts/10930564993/zip > "$RUNNER_TEMP/w5.zip"
+          unzip -q -o "$RUNNER_TEMP/w5.zip" -d "$RUNNER_TEMP/used/w5"
+          cp "$RUNNER_TEMP/used/w5/db-ready-wave5.jsonl" "$RUNNER_TEMP/used/wave5.jsonl"
+
+          gh api repos/${{ github.repository }}/actions/artifacts/10931655535/zip > "$RUNNER_TEMP/w5old.zip"
+          unzip -q -o "$RUNNER_TEMP/w5old.zip" -d "$RUNNER_TEMP/used/w5old"
+          cp "$RUNNER_TEMP/used/w5old/db-ready-wave5.jsonl" "$RUNNER_TEMP/used/wave5-old.jsonl"
+
+      - name: Verify immutable source hashes
+        run: |
+          set -euo pipefail
+          echo "20f8bdff68a2bd6d445c1645f7d71b6fd0b14f419a97cc9b96fb4b5cee9361a0  $RUNNER_TEMP/v3/existence-verified-v3.jsonl" | sha256sum -c -
+          echo "3aa9661a0a4e925c8732a1bbefd8b660767166026d764d207aaa02ca675f3a1b  $RUNNER_TEMP/used/wave2.jsonl" | sha256sum -c -
+          echo "d94f3dc1982b50a4853cff996c0ac159a70cf6f0822ca69c9097701779145438  $RUNNER_TEMP/used/wave3.jsonl" | sha256sum -c -
+          echo "e595c9b7025629c1f289f4b5898ac7ec1c540fa720f4cd0ff700292be7be607c  $RUNNER_TEMP/used/wave4b.jsonl" | sha256sum -c -
+          echo "e64b60434771a310b37027521e81b302bd6e00541f537d171be3467a33c8fa69  $RUNNER_TEMP/used/wave5.jsonl" | sha256sum -c -
+          echo "38dd385f3c233dffce6dfce8f3f9b96d06ee763d2288ef04bed905081eb5dbe7  $RUNNER_TEMP/used/wave5-old.jsonl" | sha256sum -c -
+
+          echo "bb9799ca6a237db1de11837c7c6606809a3c669764b0c30f9cf92dcccc7adf6d  $RUNNER_TEMP/freeze/listing_representations.jsonl.gz" | sha256sum -c -
+          echo "2849e79ab96ad644bde7c70ec277abb4a90be95effe53ba0726cdbccac6f8646  $RUNNER_TEMP/freeze/thin_index_search_documents.jsonl.gz" | sha256sum -c -
+          echo "219b8bdfce8bd87eb049d06be42f32c0894850404f2e8d477d1f73a7b5d8cdcd  $RUNNER_TEMP/freeze/minimal_live_search_documents_v1.jsonl.gz" | sha256sum -c -
+          echo "a90d0e5748adbdf881356340dcd1a37c678681ab21b62c625a570af488c8e596  $RUNNER_TEMP/freeze/listing_sources.jsonl.gz" | sha256sum -c -
+          echo "0d623496d393e2adebcbe51be36a4604a006389fad09939161d979eb860e03b7  $RUNNER_TEMP/freeze/property_listings.jsonl.gz" | sha256sum -c -
+
+      - name: Certify freeze enrichment wave6
+        run: |
+          node scripts/recovery/certify-v4-11-wave6-freeze-enrichment.mjs             --ledger "$RUNNER_TEMP/v3/existence-verified-v3.jsonl"             --freeze-dir "$RUNNER_TEMP/freeze"             --used-dir "$RUNNER_TEMP/used"             --out-dir data/audits/v4-11-wave6
+
+      - name: Verify wave6 invariants
+        run: |
+          node - <<'NODE'
+          const fs=require("fs"),crypto=require("crypto");
+          const s=require("./data/audits/v4-11-wave6/summary.json");
+          const b=fs.readFileSync("data/audits/v4-11-wave6/db-ready-wave6.jsonl");
+          const rows=b.toString("utf8").split(/\r?\n/).filter(Boolean).map(JSON.parse);
+          const eq=(a,b,n)=>{if(a!==b)throw new Error(n+": "+a+" != "+b)};
+          eq(s.ledger_rows,180117,"ledger");
+          eq(s.already_certified_rows,87397,"used");
+          eq(s.remaining_verified_rows,92720,"remaining");
+          eq(s.db_ready_rows,3769,"ready");
+          eq(s.identity_ambiguous_groups,0,"identity groups");
+          eq(s.identity_quarantine_rows,0,"identity quarantine");
+          eq(rows.length,3769,"physical");
+          eq(new Set(rows.map(r=>r.listing_url)).size,3769,"urls");
+          eq(new Set(rows.map(r=>r.canonical_fingerprint)).size,3769,"fps");
+          eq(crypto.createHash("sha256").update(b).digest("hex"),s.output_sha256,"sha");
+          eq(s.approved_for_import_rows,0,"approval");
+          eq(s.database_access,0,"db access");
+          eq(s.database_writes,0,"db writes");
+          if(rows.some(r=>r.approved_for_import!==false))throw new Error("approval invariant");
+          NODE
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: clean-corpus-v4.11-db-ready-wave6-freeze-enrichment
+          path: data/audits/v4-11-wave6/
+          retention-days: 30
