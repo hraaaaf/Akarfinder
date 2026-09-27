@@ -1,0 +1,73 @@
+name: Recovery V4.11 Mass Route Wave3 Certification
+
+on:
+  push:
+    branches: ["recovery/v4-11-mass-route-wave3-20260927"]
+    paths:
+      - "data/recovery/activate-v4-11-mass-route-wave3.txt"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Download certified inputs
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/ledger" "$RUNNER_TEMP/wave2" data/audits/v4-11-wave3
+          gh api repos/${{ github.repository }}/actions/artifacts/10927761643/zip > "$RUNNER_TEMP/ledger.zip"
+          unzip -q -o "$RUNNER_TEMP/ledger.zip" -d "$RUNNER_TEMP/ledger"
+          gh api repos/${{ github.repository }}/actions/artifacts/10927304058/zip > "$RUNNER_TEMP/wave2.zip"
+          unzip -q -o "$RUNNER_TEMP/wave2.zip" -d "$RUNNER_TEMP/wave2"
+          test -s "$RUNNER_TEMP/ledger/existence-verified.jsonl"
+          test -s "$RUNNER_TEMP/wave2/db-ready-wave2.jsonl"
+          echo "270579ff59073191eabab74f3a94d4c96d0dd5f8f80418cc918f16dd5867b7a5  $RUNNER_TEMP/ledger/existence-verified.jsonl" | sha256sum -c -
+          echo "3aa9661a0a4e925c8732a1bbefd8b660767166026d764d207aaa02ca675f3a1b  $RUNNER_TEMP/wave2/db-ready-wave2.jsonl" | sha256sum -c -
+
+      - name: Certify mass route wave3
+        run: |
+          node scripts/recovery/certify-v4-11-mass-route-wave3.mjs             --ledger "$RUNNER_TEMP/ledger/existence-verified.jsonl"             --wave2 "$RUNNER_TEMP/wave2/db-ready-wave2.jsonl"             --output data/audits/v4-11-wave3/db-ready-wave3.jsonl             --rejected data/audits/v4-11-wave3/rejected.jsonl             --summary data/audits/v4-11-wave3/summary.json
+
+      - name: Verify wave3 invariants
+        run: |
+          node - <<'NODE'
+          const fs=require("fs"),crypto=require("crypto");
+          const s=JSON.parse(fs.readFileSync("data/audits/v4-11-wave3/summary.json","utf8"));
+          const body=fs.readFileSync("data/audits/v4-11-wave3/db-ready-wave3.jsonl");
+          const rows=body.toString("utf8").split(/\r?\n/).filter(Boolean).map(JSON.parse);
+          const eq=(a,b,n)=>{if(a!==b)throw new Error(n+": "+a+" != "+b)};
+          eq(s.strong_route_db_ready_rows,61200,"rows");
+          eq(s.by_domain["marocimmo.com"],32795,"marocimmo");
+          eq(s.by_domain["sarout.ma"],28297,"sarout");
+          eq(s.by_domain["agenz.ma"],108,"agenz");
+          eq(rows.length,61200,"physical rows");
+          eq(new Set(rows.map(r=>r.listing_url)).size,61200,"unique URLs");
+          eq(new Set(rows.map(r=>r.canonical_fingerprint)).size,61200,"unique fingerprints");
+          eq(crypto.createHash("sha256").update(body).digest("hex"),s.output_sha256,"sha");
+          eq(s.approved_for_import_rows,0,"approval");
+          eq(s.database_access,0,"db access");
+          eq(s.database_writes,0,"db writes");
+          if(rows.some(r=>r.approved_for_import!==false))throw new Error("row approval invariant");
+          console.log(JSON.stringify(s,null,2));
+          NODE
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: clean-corpus-v4.11-db-ready-wave3-mass-route
+          path: |
+            data/audits/v4-11-wave3/db-ready-wave3.jsonl
+            data/audits/v4-11-wave3/rejected.jsonl
+            data/audits/v4-11-wave3/summary.json
+          retention-days: 30
