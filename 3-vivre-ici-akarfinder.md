@@ -1,12 +1,12 @@
 # 3 — Vivre Ici AkarFinder
 
-**Statut : ACTIVE — PR #1037 MERGÉE / TERRITORY DICTIONARY PHASE ACTIVE / UX L9 PROUVÉE / N3 PROUVÉ / LIVE DATA BLOQUÉ PAR SUPABASE**  
-**Dernière mise à jour : 2026-09-18**  
+**Statut : ACTIVE — PR CANONIQUE #1090 / NATIONAL → VILLE → QUARTIER / TARGET RECONCILIATION / MERGE NON AUTORISÉ**  
+**Dernière mise à jour : 2026-09-27**  
 **Repo : `hraaaaf/Akarfinder`**  
-**Branche active : `feat/vivre-ici-territory-dictionary`**  
-**PR d’intégration : `#1037` MERGÉE dans `main`**  
-**PR historique source : `#1025` OPEN / `mergeable=false` / `72` fichiers / `247` commits — ne pas merger directement**  
-**Main courant de reprise : `256fb9a00a22f240ba7684a99dff3a5619b6ad56` — merge commit PR #1037**  
+**Branche active : `feat/akar-map-quartier-target-couche3`**  
+**PR active unique : `#1090` — base `main` — DRAFT**  
+**PR historique source : `#1025` FERMÉE — remplacée par #1037 mergée puis #1090 canonique**  
+**Main courant vérifié : `b0ec9d6a5526bd60c14653a5679b88e2e6d7194d`**  
 **HEAD source historique : `75d28ef7652bda9a59b0ed1ac5a0a81d418d0aee`**  
 **HEAD produit source L9 certifié : `f1f4d35ecdd0a5a6b83df1dc945e2d291e9b2533`**  
 **Commit transplant produit : `0c84954d1c2ce53938677e9cb2b89e9241c52260`**  
@@ -16,7 +16,41 @@
 **Phase intégration historique : closeout merge atteint. Territory Dictionary : `53 / 53 pts` prouvés.**  
 **Vercel : aucun déploiement sans autorisation explicite d’Achraf.**
 
+
 ---
+
+## 0. RÉCONCILIATION SINGLE-PR — 2026-09-27
+
+Décision Product Owner : **un seul chantier / une seule PR active Vivre Ici**.
+
+### PR canonique
+- PR : **#1090** — `feat(vivre-ici): canonical national → city → district TARGET reconciliation`
+- branche : `feat/akar-map-quartier-target-couche3`
+- base : `main@b0ec9d6a5526bd60c14653a5679b88e2e6d7194d`
+- HEAD au moment de la réconciliation : `cb6db945fad03c8ad51869715c5c148f96957be2`
+- scope produit : Maroc 12 régions → ville → quartier → landmarks/MapLibre → Search → convergence TARGET.
+
+### PRs fragmentées fermées comme superseded / archive
+`#1025, #1040, #1041, #1043, #1045, #1046, #1047, #1048, #1049, #1051, #1052, #1054, #1055, #1056, #1060, #1061, #1062, #1063, #1064, #1065, #1066, #1067, #1068, #1069, #1070, #1071, #1072, #1073, #1074, #1075, #1076, #1077, #1078, #1079, #1080, #1086, #1088`.
+
+Leur historique Git est conservé ; aucune branche/commit n'est supprimé. Elles ne doivent plus servir de véhicule de merge produit.
+
+### Sources déjà intégrées / préservées
+- #1037 : fondation nationale + N3, **mergée**.
+- #1089 : sémantique contour administratif Maârif, **mergée**.
+- #1086 + #1088 : états produit repris dans la lignée cumulative de #1090.
+- anciens Landmark Factory lots : archivés comme evidence/R&D ; ne sont plus des PRs de livraison actives.
+
+### Gate courant
+1. remettre #1090 exact-head mergeable proprement sur `main` ;
+2. TypeScript + build ;
+3. captures Maroc + niveaux de zoom `390 / 430 / 768 / 1280` ;
+4. TARGET ↔ AFTER ;
+5. revue expert UX/UI 3D ;
+6. appliquer directives ;
+7. human merge gate ;
+8. aucun Vercel sans autorisation explicite.
+
 
 ## 1. GOAL / SUCCÈS / PREUVE
 
