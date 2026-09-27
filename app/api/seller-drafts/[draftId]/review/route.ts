@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { assertHaSupabaseWriteAllowed } from "@/lib/db/ha-write-policy";
 import { authorizeSellerDraftUpload } from "@/lib/seller/authorize-draft-upload";
 import {
   canReviewerDecide,
@@ -32,6 +33,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 }
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ draftId: string }> }) {
+  assertHaSupabaseWriteAllowed();
   const { draftId } = await params;
   const token = request.headers.get("x-draft-upload-token") ?? "";
   const auth = await authorizeSellerDraftUpload(draftId, token);
@@ -67,6 +69,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 }
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ draftId: string }> }) {
+  assertHaSupabaseWriteAllowed();
   const { draftId } = await params;
   const expectedSecret = process.env.SELLER_REVIEW_SECRET;
   const providedSecret = request.headers.get("x-seller-review-secret");
