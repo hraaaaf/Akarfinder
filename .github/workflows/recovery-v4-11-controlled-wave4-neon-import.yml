@@ -76,7 +76,13 @@ jobs:
           if(rows.some(r=>r.approved_for_import!==false))throw new Error("artifact approval invariant");
           fs.writeFileSync(out,cols.join(",")+"\n"+rows.map(r=>cols.map(k=>esc(r[k])).join(",")).join("\n")+"\n");
           NODE
-          test "$(($(wc -l < "$RUNNER_TEMP/wave4/import.csv")-1))" = "3674"
+          python - "$RUNNER_TEMP/wave4/import.csv" <<'PY'
+          import csv,sys
+          with open(sys.argv[1],newline="",encoding="utf-8") as f:
+              n=sum(1 for _ in csv.DictReader(f))
+          if n!=3674: raise SystemExit(f"CSV logical row count mismatch: {n}")
+          print(f"CSV logical rows verified: {n}")
+          PY
 
       - name: Preflight current DB and overlaps
         run: |
