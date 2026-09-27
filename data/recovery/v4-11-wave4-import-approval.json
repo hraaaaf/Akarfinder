@@ -13,5 +13,6 @@
     "listing_sources": 89979
   },
   "production_neon_writes_authorized": false,
-  "vercel_deployment_authorized": false
+  "vercel_deployment_authorized": false,
+  "retrigger_note": "retry after correcting workflow branch trigger"
 }
