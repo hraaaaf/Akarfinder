@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { assertHaSupabaseWriteAllowed } from "@/lib/db/ha-write-policy";
 import { authorizeSellerDraftUpload } from "@/lib/seller/authorize-draft-upload";
 import { syncOwnerListingProjection } from "@/lib/seller/owner-listing-projection";
 import {
@@ -36,6 +37,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 }
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ draftId: string }> }) {
+  assertHaSupabaseWriteAllowed();
   const { draftId } = await params;
   const token = request.headers.get("x-draft-upload-token") ?? "";
   const auth = await authorizeSellerDraftUpload(draftId, token);
