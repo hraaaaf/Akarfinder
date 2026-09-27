@@ -24,6 +24,7 @@
 
 import { createHash } from "node:crypto";
 import { getSupabaseServerClient } from "@/lib/db/supabase-client";
+import { assertHaSupabaseWriteAllowed } from "@/lib/db/ha-write-policy";
 import { buildOpenSerpPropertyRow } from "./pipeline";
 import type { OpenSerpListingCandidate } from "./types";
 import { classifyPrice } from "@/lib/market-index/market-index-price";
@@ -104,6 +105,7 @@ export async function writeNationalDiscoveryCandidates(input: NationalWriteInput
   rejected: number;
   unclassified: number;
 }> {
+  assertHaSupabaseWriteAllowed();
   const supabase = getSupabaseServerClient();
   const allRows = input.decisions
     .filter((decision) => decision.classified !== null)
@@ -197,6 +199,7 @@ export async function writeNationalDiscoveryCandidates(input: NationalWriteInput
 export async function writeNationalAdmittedListings(input: NationalWriteInput): Promise<
   Omit<NationalWriteResult, "discovery_candidates_written" | "discovery_candidates_accepted" | "discovery_candidates_rejected" | "discovery_candidates_unclassified">
 > {
+  assertHaSupabaseWriteAllowed();
   const supabase = getSupabaseServerClient();
   const admitted = input.decisions.filter((decision) => decision.admitted && decision.classified);
   const writeErrors: Array<{ candidate_url: string; error: string }> = [];
