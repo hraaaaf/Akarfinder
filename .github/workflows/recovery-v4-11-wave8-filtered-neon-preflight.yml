@@ -15,8 +15,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
-      DATABASE_URL: \${{ secrets.NEON_RECOVERY_DATABASE_URL }}
-      GH_TOKEN: \${{ github.token }}
+      DATABASE_URL: ${{ secrets.NEON_RECOVERY_DATABASE_URL }}
+      GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -42,7 +42,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/w8" data/audits/v4-11-wave8-filtered
-          gh api "repos/\${{ github.repository }}/actions/artifacts/10934176431/zip" > "$RUNNER_TEMP/w8.zip"
+          gh api "repos/${{ github.repository }}/actions/artifacts/10934176431/zip" > "$RUNNER_TEMP/w8.zip"
           unzip -q -o "$RUNNER_TEMP/w8.zip" -d "$RUNNER_TEMP/w8"
           echo "85e65311dba66008a02f1c145e1166db26c186029c22cfae1b3628e67074cb31  $RUNNER_TEMP/w8/db-ready-wave8.jsonl" | sha256sum -c -
           test "$(wc -l < "$RUNNER_TEMP/w8/db-ready-wave8.jsonl")" = "39132"
