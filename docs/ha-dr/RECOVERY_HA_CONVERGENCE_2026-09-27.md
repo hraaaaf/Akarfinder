@@ -120,6 +120,18 @@ Three files had diverged from the old HA patch context and were adapted manually
 
 Dynamic CI remains required before this port can be called proved.
 
+## Generic PostgreSQL 17 rehearsal port — current state
+
+Three provider-independent rehearsals from old HA #1087 are now selectively ported onto the Recovery convergence branch:
+
+- `.github/workflows/ha-isolated-rehearsal.yml` — forward/reverse logical replication, anti-loop, writer fencing, failover/failback on two disposable PostgreSQL 17 nodes;
+- `.github/workflows/ha-isolated-resilience-rehearsal.yml` — interruption/catch-up resilience on disposable PostgreSQL 17 nodes;
+- `.github/workflows/ha-isolated-sequence-failback.yml` — sequence/identity failback reconciliation on disposable PostgreSQL 17 nodes.
+
+Their old PR base trigger was adapted from `infra/neon-migration-20260923` to the current Recovery base `recovery/source-expansion-400k-candidates-20260925`. They contain no provider credentials and do not contact Supabase or Neon.
+
+The old `ha-isolated-baseline-parity-rehearsal.yml` was deliberately **not** ported: it depends on old HA baseline/helper assumptions and belongs in the post-restore rebaseline step.
+
 ## Current verification state
 
 Static proof:
@@ -160,8 +172,9 @@ After an explicit restore-complete signal:
 
 ## Next exact
 
-Let the already-triggered repo CI run while completing independent convergence work. Then:
+Obtain current-branch dynamic evidence for the provider-independent fencing and isolated PostgreSQL 17 rehearsals without touching live providers. Then:
 
 - if a relevant check is red: diagnose and fix only the proven defect;
-- if relevant checks are green: record exact run evidence, re-run the runtime mutation inventory against the current branch, and close the provider-independent fencing sub-lot;
-- next lot after that: selectively port the generic isolated PostgreSQL rehearsal/evidence machinery, not the old provider-specific migration layer.
+- if green: record exact run/artifact evidence and close the offline/provider-independent convergence sub-lot;
+- after explicit Supabase restore-complete signal: begin the read-only restored Supabase ↔ certified isolated Neon rebaseline;
+- provider-specific replication/canary work remains blocked until that comparison.
