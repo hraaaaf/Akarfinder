@@ -1,0 +1,17 @@
+{
+  "schema_version": "akarfinder-v4.11-wave9-hardened-reconcile-approval-20260927",
+  "approved": true,
+  "approved_by": "user_explicit_chat_authorization_2026-09-27",
+  "remove_rows": 64,
+  "eligible_add_rows": 12,
+  "preflight_run_id": 36336317768,
+  "preflight_artifact_id": 10936349631,
+  "preflight_artifact_digest": "sha256:4e286bdaef855fd8ef38b2dc01886125a22b2ec7c9e4d38d8896b99fb29d1352",
+  "expected_pre": 141401,
+  "expected_post": 141349,
+  "target_project": "ancient-violet-43534870",
+  "target_branch": "br-cold-mouse-b2a50yaa",
+  "target_database": "AkarFinder",
+  "production_neon_writes_authorized": false,
+  "vercel_deployment_authorized": false
+}
