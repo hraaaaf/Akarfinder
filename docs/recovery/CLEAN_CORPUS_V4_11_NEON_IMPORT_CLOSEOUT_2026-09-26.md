@@ -75,13 +75,7 @@ Pre-import isolated-Neon readback:
 - listing_sources: 177
 - V4.11 sources: 0
 
-The prepared GitHub import workflow run 36278856045 failed before any DB write because the repository secret `NEON_RECOVERY_DATABASE_URL` was unset.
-
-No DB mutation occurred in that failed workflow.
-
-The authorized import was then executed directly through the connected Neon tool against the same isolated branch. The import used idempotent inserts and the G6-safe cohort only.
-
-A first direct fallback attempt committed 2,700 property rows but no sources because sibling data-modifying CTEs do not see each other's table writes in the same PostgreSQL statement snapshot. This was detected immediately by readback. Those 2,700 source rows were repaired, producing 0 orphan properties, and all remaining rows were imported with sequential statements inside transactions.
+GitHub import workflow run 36278856045 attempt 1 failed before DB access because the repository secret `NEON_RECOVERY_DATABASE_URL` was unset. After the secret was added, attempt 2 passed the approval payload, isolated-endpoint guard, artifact download, and staging of all 8,367 rows. The workflow then reported a SQL quoting error in the import step. An independent Neon readback immediately afterward verified the complete selected cohort present and consistent on the isolated branch, so no retry or duplicate import was performed.
 
 ## Final independent readback
 
@@ -129,7 +123,7 @@ Status: SELECTED_COHORT_IMPORT_CERTIFIED.
 
 ## Known follow-up
 
-The GitHub workflow `.github/workflows/recovery-v4-11-controlled-neon-import.yml` requires `NEON_RECOVERY_DATABASE_URL`; that secret is currently absent. Future GitHub-triggered DB imports will fail before DB access until the isolated-branch secret is configured or the automation path is redesigned.
+The GitHub Actions secret `NEON_RECOVERY_DATABASE_URL` is now configured for the isolated Neon branch. Workflow attempt 2 confirmed the secret and endpoint guard worked. The controlled-import workflow still needs its SQL quoting bug corrected before it should be reused; the certified 8,367-row cohort must not be re-imported merely to test that workflow.
 
 ## Next exact
 
