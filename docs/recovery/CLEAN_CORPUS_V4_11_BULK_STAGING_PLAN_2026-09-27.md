@@ -70,6 +70,14 @@ Each `raw_json` preserves:
 - staging state = `eligible_not_promoted`
 - `approved_for_import=false`
 
+## Certified bulk staging artifact
+
+- Builder run: 36305022738 — SUCCESS
+- Artifact ID: 10925954921
+- Artifact digest: sha256:f00ea20f396805d747f4247bfe0197077bc71e13707b34ebb8c88c5296a3f2c2
+- Payload digest: sha256:2ad86337d919b5c013a77bc5bd555af5dd9c899b470c4caf027e6a28d5f865d8
+- Independent post-download verification: 213,992 rows / 22 chunks / every chunk SHA matched / payload digest matched.
+
 ## Pack format
 
 - 22 CSV chunks
