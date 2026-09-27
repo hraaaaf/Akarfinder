@@ -1,0 +1,88 @@
+name: Recovery V4.11 Wave11 Big Portal Route Certification
+
+on:
+  push:
+    branches: ["recovery/v4-11-wave7-cc-freeze-20260927"]
+    paths:
+      - "data/recovery/v4-11-wave11-big-portal-artifacts.json"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Validate manifest
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const m=require("./data/recovery/v4-11-wave11-big-portal-artifacts.json");
+          for(const k of ["sarout","marocannonces","domio"]){
+            const x=m[k];
+            if(!x||!Number.isInteger(x.artifact_id)||x.artifact_id<=0)throw new Error(k+" artifact_id");
+            if(!/^sha256:[0-9a-f]{64}$/.test(x.artifact_digest||""))throw new Error(k+" digest");
+            if(!/^[0-9a-f]{64}$/.test(x.txt_sha256||""))throw new Error(k+" sha");
+          }
+          if(m.database_writes_authorized!==false||m.vercel_deployment_authorized!==false)throw new Error("scope");
+          NODE
+
+      - name: Download immutable reservoir artifacts
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/w11/sarout" "$RUNNER_TEMP/w11/maroc" "$RUNNER_TEMP/w11/domio" data/audits/v4-11-wave11-big-portal
+          node - <<'NODE' > "$RUNNER_TEMP/w11/env"
+          const m=require("./data/recovery/v4-11-wave11-big-portal-artifacts.json");
+          for(const [k,v] of Object.entries(m)) if(v&&typeof v==="object"&&v.artifact_id){
+            console.log(k.toUpperCase()+"_ID="+v.artifact_id);
+            console.log(k.toUpperCase()+"_SHA="+v.txt_sha256);
+          }
+          NODE
+          source "$RUNNER_TEMP/w11/env"
+          gh api "repos/${{ github.repository }}/actions/artifacts/$SAROUT_ID/zip" > "$RUNNER_TEMP/w11/sarout.zip"
+          gh api "repos/${{ github.repository }}/actions/artifacts/$MAROCANNONCES_ID/zip" > "$RUNNER_TEMP/w11/maroc.zip"
+          gh api "repos/${{ github.repository }}/actions/artifacts/$DOMIO_ID/zip" > "$RUNNER_TEMP/w11/domio.zip"
+          unzip -q "$RUNNER_TEMP/w11/sarout.zip" -d "$RUNNER_TEMP/w11/sarout"
+          unzip -q "$RUNNER_TEMP/w11/maroc.zip" -d "$RUNNER_TEMP/w11/maroc"
+          unzip -q "$RUNNER_TEMP/w11/domio.zip" -d "$RUNNER_TEMP/w11/domio"
+          echo "$SAROUT_SHA  $RUNNER_TEMP/w11/sarout/recovery-big-portal-sarout-ma.txt" | sha256sum -c -
+          echo "$MAROCANNONCES_SHA  $RUNNER_TEMP/w11/maroc/recovery-big-portal-marocannonces-com.txt" | sha256sum -c -
+          echo "$DOMIO_SHA  $RUNNER_TEMP/w11/domio/recovery-big-portal-domio-ma.txt" | sha256sum -c -
+
+      - name: Certify strict route evidence
+        run: |
+          node scripts/recovery/certify-v4-11-wave11-big-portal-route.mjs             --sarout "$RUNNER_TEMP/w11/sarout/recovery-big-portal-sarout-ma.txt"             --marocannonces "$RUNNER_TEMP/w11/maroc/recovery-big-portal-marocannonces-com.txt"             --domio "$RUNNER_TEMP/w11/domio/recovery-big-portal-domio-ma.txt"             --out-dir data/audits/v4-11-wave11-big-portal
+
+      - name: Verify offline contract
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require("fs"),crypto=require("crypto");
+          const s=require("./data/audits/v4-11-wave11-big-portal/summary.json");
+          const b=fs.readFileSync("./data/audits/v4-11-wave11-big-portal/db-ready-wave11.jsonl");
+          const rows=b.toString().split(/\r?\n/).filter(Boolean).map(JSON.parse);
+          if(rows.length!==s.db_ready_rows)throw new Error("count");
+          if(new Set(rows.map(r=>r.listing_url)).size!==rows.length)throw new Error("url dup");
+          if(new Set(rows.map(r=>r.canonical_fingerprint)).size!==rows.length)throw new Error("fp dup");
+          if(new Set(rows.map(r=>r.source_name+"|"+r.source_offer_key)).size!==rows.length)throw new Error("id dup");
+          if(rows.some(r=>![r.title,r.city,r.property_type,r.transaction_type].every(v=>v&&String(v).trim())))throw new Error("core");
+          if(rows.some(r=>r.approved_for_import!==false))throw new Error("approval");
+          if(crypto.createHash("sha256").update(b).digest("hex")!==s.output_sha256)throw new Error("sha");
+          if(s.database_access||s.database_writes||s.production_neon_writes||s.approved_for_import_rows||s.vercel_deployment!==false)throw new Error("safety");
+          console.log(JSON.stringify(s,null,2));
+          NODE
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: clean-corpus-v4.11-wave11-big-portal-route
+          path: data/audits/v4-11-wave11-big-portal/
+          retention-days: 30
