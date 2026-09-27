@@ -123,10 +123,10 @@ function routeFallback(url){
     "Harhoura":["harhoura"],"Tamesna":["tamesna"],"Khémisset":["khemisset"]
   };
   const unsafeCityContext=cityName=>{
-    const route=(routeAlias[cityName]||[]).some(alias=>new RegExp("\\broute\\s+(?:de\\s+|d\\s+|l\\s+)?"+alias.replace(/ /g,"\\s+")+"\\b").test(text));
+    const route=(routeAlias[cityName]||[]).some(alias=>new RegExp("\\b(?:route|road)\\s+(?:(?:de|to)\\s+(?:l\\s+)?|d\\s+|l\\s+)?"+alias.replace(/ /g,"\\s+")+"\\b").test(text));
     if(route)return true;
     if(cityName==="El Jadida"&&/\bsala\s+el\s+jadida\b/.test(text))return true;
-    if(cityName==="Dakhla"&&/\b(?:extension|hay)\s+dakhla\b/.test(text))return true;
+    if(cityName==="Dakhla"&&/\b(?:extension|hay|quartier|cite)\s+dakhla\b/.test(text))return true;
     return false;
   };
   const cityHits=[...new Set(cityChecks.filter(([,re])=>re.test(text)).map(([x])=>x))].filter(x=>!unsafeCityContext(x));
