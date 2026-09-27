@@ -18,6 +18,7 @@
 // timeout and budget check.
 
 import { getSupabaseServerClient } from "@/lib/db/supabase-client";
+import { assertHaSupabaseWriteAllowed } from "@/lib/db/ha-write-policy";
 import { withDbTimeout } from "./db-call-guard";
 import type { TimeBudget } from "../time-budget";
 
@@ -134,6 +135,7 @@ export async function loadExecutedQueryStates(ctx: DbCallContext = {}): Promise<
 export async function upsertQueryStates(states: QueryRotationDbState[], runId: string, ctx: DbCallContext = {}): Promise<void> {
   if (states.length === 0) return;
 
+  assertHaSupabaseWriteAllowed();
   const supabase = getSupabaseServerClient();
   const now = new Date().toISOString();
   const rows = states.map((state) => ({
@@ -165,6 +167,7 @@ export async function upsertQueryStates(states: QueryRotationDbState[], runId: s
 // migration step each time. Chunked on both the read and the write side.
 export async function seedMissingQueryStates(definitions: QueryDefinitionForSeed[], ctx: DbCallContext = {}): Promise<{ seeded: number }> {
   if (definitions.length === 0) return { seeded: 0 };
+  assertHaSupabaseWriteAllowed();
 
   const existing = await loadQueryStates(definitions.map((d) => d.query_id), ctx);
   const missing = definitions.filter((d) => !existing.has(d.query_id));
