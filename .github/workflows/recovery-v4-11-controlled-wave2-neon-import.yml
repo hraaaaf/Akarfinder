@@ -84,6 +84,7 @@ jobs:
         run: |
           set -euo pipefail
           cat > "$RUNNER_TEMP/wave2/preflight.sql" <<'SQL'
+          DROP TABLE IF EXISTS stage_wave2;
           CREATE TEMP TABLE stage_wave2 (
             canonical_fingerprint text NOT NULL,
             title text NOT NULL,
@@ -123,6 +124,7 @@ jobs:
             (SELECT count(*) FROM stage_wave2 s JOIN public.property_listings pl ON pl.canonical_fingerprint=s.canonical_fingerprint) AS fingerprint_overlap,
             (SELECT count(*) FROM public.property_listings) AS pre_property,
             (SELECT count(*) FROM public.listing_sources) AS pre_sources;
+          DROP TABLE stage_wave2;
           SQL
           OUT="$(docker run --rm -e DATABASE_URL="$DATABASE_URL" -v "$RUNNER_TEMP/wave2:/wave2" postgres:17 sh -lc 'psql "$DATABASE_URL" -X -qAt -F "|" -v ON_ERROR_STOP=1 -f /wave2/preflight.sql')"
           echo "preflight=$OUT"
@@ -138,6 +140,9 @@ jobs:
         run: |
           set -euo pipefail
           cat > "$RUNNER_TEMP/wave2/import.sql" <<'SQL'
+          DROP TABLE IF EXISTS stage_wave2;
+          DROP TABLE IF EXISTS legacy_overlap;
+          DROP TABLE IF EXISTS stage_new;
           BEGIN;
           CREATE TEMP TABLE stage_wave2 (
             canonical_fingerprint text NOT NULL,title text NOT NULL,price_mad integer,city text NOT NULL,district text,
