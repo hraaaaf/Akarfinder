@@ -1,0 +1,75 @@
+name: Recovery V4.11 PromoImmo Verification Continuation
+
+on:
+  push:
+    branches: ["recovery/v4-11-mass-route-wave3-20260927"]
+    paths:
+      - "data/recovery/activate-v4-11-promo-verification.txt"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  verify:
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        include:
+          - offset: 500
+            limit: 1000
+          - offset: 1500
+            limit: 1000
+          - offset: 2500
+            limit: 1000
+          - offset: 3500
+            limit: 205
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      GH_TOKEN: ${{ github.token }}
+      DEEP_DOMAIN: promoimmomarrakech.com
+      DEEP_OFFSET: ${{ matrix.offset }}
+      DEEP_LIMIT: ${{ matrix.limit }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+
+      - name: Download reconciled unresolved ledger
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/ledger"
+          gh api repos/${{ github.repository }}/actions/artifacts/10927761643/zip > "$RUNNER_TEMP/ledger.zip"
+          unzip -q -o "$RUNNER_TEMP/ledger.zip" -d "$RUNNER_TEMP/ledger"
+          test -s "$RUNNER_TEMP/ledger/unresolved-existence.txt"
+          echo "3049999d9a5d2eefa6e42524b47b3f3d99c45d84b7f37ca28fef3d8886401f1d  $RUNNER_TEMP/ledger/unresolved-existence.txt" | sha256sum -c -
+          echo "DEEP_URL_FILE=$RUNNER_TEMP/ledger/unresolved-existence.txt" >> "$GITHUB_ENV"
+
+      - name: Verify PromoImmo batch read-only
+        run: npx tsx scripts/recovery/deep-enrichment-source-batch.ts
+
+      - name: Assert accounting and DB safety
+        run: |
+          node - <<'NODE'
+          const fs=require("fs");
+          const offset=Number(process.env.DEEP_OFFSET), limit=Number(process.env.DEEP_LIMIT);
+          const end=offset+limit;
+          const p=`data/audits/raw-results/deep-batch-promoimmomarrakech-com-${offset}-${end}-summary.json`;
+          const s=JSON.parse(fs.readFileSync(p,"utf8"));
+          if(s.input_urls!==limit)throw new Error("input");
+          if(s.fetched+s.failed+s.robots_skipped!==limit)throw new Error("accounting");
+          if(s.database_access!==0||s.database_writes!==0)throw new Error("DB invariant");
+          console.log(JSON.stringify(s,null,2));
+          NODE
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v4.11-promo-verification-${{ matrix.offset }}-${{ matrix.limit }}
+          path: data/audits/raw-results/deep-batch-promoimmomarrakech-com-*
+          retention-days: 30
