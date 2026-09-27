@@ -43,8 +43,13 @@ function bump(m,k){m[k]=(m[k]||0)+1}
 const rows=fs.readFileSync(input,"utf8").split(/\r?\n/).filter(Boolean).map(JSON.parse);
 if(rows.length!==17238) throw new Error("expected 17238 pre-identity rows, got "+rows.length);
 
+const strongRows=rows.filter(r=>Array.isArray(r.evidence)&&r.evidence.some(e=>STRONG_EVIDENCE.has(e)));
+const weakEvidenceRows=rows.filter(r=>!Array.isArray(r.evidence)||!r.evidence.some(e=>STRONG_EVIDENCE.has(e)));
+if(strongRows.length!==13517) throw new Error("expected 13517 strong-evidence rows, got "+strongRows.length);
+if(weakEvidenceRows.length!==3721) throw new Error("expected 3721 weak-evidence rows, got "+weakEvidenceRows.length);
+
 const pre=[], rejected=[];
-for(const r of rows){
+for(const r of strongRows){
   const reasons=[];
   const f=r.fields||{};
   const property_type=mapType(f.property_type);
@@ -55,7 +60,6 @@ for(const r of rows){
   const city=normalizeCity(f.city);
   if(!city) reasons.push("missing_city");
   if(!Array.isArray(r.evidence)||r.evidence.length===0) reasons.push("missing_existence_evidence");
-  if(!Array.isArray(r.evidence)||!r.evidence.some(e=>STRONG_EVIDENCE.has(e))) reasons.push("no_strong_existence_evidence");
   if(reasons.length){rejected.push({canonical_url:r.canonical_url,source_domain:r.source_domain,reasons});continue}
   pre.push({...r,normalized:{city,property_type,transaction_type:f.transaction_type,title}});
 }
@@ -148,6 +152,7 @@ const qrows=[];
 for(const r of pre.filter(x=>quarantineUrls.has(x.canonical_url))){
   qrows.push({canonical_url:r.canonical_url,source_domain:r.source_domain,reason:"cross_source_identity_ambiguity"});
 }
+for(const r of weakEvidenceRows)qrows.push({canonical_url:r.canonical_url,source_domain:r.source_domain,reason:"no_strong_existence_evidence"});
 for(const r of rejected)qrows.push({...r,reason:"field_gate"});
 fs.writeFileSync(quarantineOut,qrows.map(x=>JSON.stringify(x)).join("\n")+"\n");
 
