@@ -261,7 +261,7 @@ function buildRow({idKey,url,domain,ccRow,records,core,mode}){
 
 fs.mkdirSync(outDir,{recursive:true});
 
-const ccById=new Map(),ccUrls=new Set();
+const ccById=new Map(),ccUrls=new Set(),rejected=[];\nlet identitylessCcUrls=0;
 for(const [domain,file] of Object.entries(CC_FILES)){
   for(const raw of loadJsonl(path.join(ccDir,domain,file))){
     const url=canon(raw.canonical_url);
@@ -331,7 +331,7 @@ function recordsForId(idKey){
   return out;
 }
 
-const safe=[],rejected=[];
+const safe=[];
 const counters={prior_overlap:0,exact_ready:0,identity_ready:0,exact_identity_conflict:0,identity_conflict:0,missing_core:0};
 const byDomain={};
 for(const [idKey,group] of ccById){
@@ -385,7 +385,7 @@ const summary={
   commoncrawl_artifacts:CC_ARTIFACTS,
   source_freeze_artifact_id:10869399865,
   cc_rows:ccUrls.size,
-  cc_unique_identities:ccById.size,
+  cc_unique_identities:ccById.size,\n  identityless_cc_urls:identitylessCcUrls,
   prior_target_identity_count:usedIds.size,
   prior_target_rows_by_domain:usedRowsByDomain,
   ...counters,
