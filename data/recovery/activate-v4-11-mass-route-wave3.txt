@@ -3,3 +3,4 @@ rerun-after-line-encoding-fix-2026-09-27
 rerun-with-full-domio-evidence-2026-09-27
 rerun-after-domio-arg-wire-fix-2026-09-27
 rerun-strict-68018-2026-09-27
+rerun-after-yield-reconciliation-2026-09-27
