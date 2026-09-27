@@ -1,0 +1,46 @@
+name: Recovery MarocImmo Deep Continuation 2
+
+on:
+  push:
+    branches: ["recovery/big-portals-mass-20260925"]
+    paths:
+      - "data/recovery/activate-marocimmo-deep-continuation-v2.txt"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: recovery-marocimmo-deep-continuation-2
+  cancel-in-progress: false
+
+jobs:
+  enrich:
+    strategy:
+      fail-fast: false
+      matrix:
+        offset: [1500, 2000]
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Harvest MarocImmo sitemap URLs
+        env:
+          BIG_SITEMAP_DOMAIN: marocimmo.com
+        run: npx tsx scripts/recovery/big-portal-sitemap-harvest.ts
+      - name: Deep enrich MarocImmo batch
+        env:
+          DEEP_DOMAIN: marocimmo.com
+          DEEP_URL_FILE: data/audits/raw-results/recovery-big-sitemap-marocimmo-com.txt
+          DEEP_OFFSET: ${{ matrix.offset }}
+          DEEP_LIMIT: "500"
+        run: npx tsx scripts/recovery/deep-enrichment-source-batch.ts
+      - uses: actions/upload-artifact@v4
+        with:
+          name: marocimmo-deep-${{ matrix.offset }}-500-v2
+          path: data/audits/raw-results/deep-batch-marocimmo-com-*
+          retention-days: 30

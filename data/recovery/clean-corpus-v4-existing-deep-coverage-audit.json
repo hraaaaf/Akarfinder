@@ -1,0 +1,20 @@
+{
+  "schema_version": "akarfinder-v4-existing-deep-coverage-audit-2026-09-26",
+  "http_200_rows": 4089,
+  "coverage": {
+    "title": {"count":4089,"pct":100.0},
+    "description": {"count":4089,"pct":100.0},
+    "published_at": {"count":4089,"pct":100.0},
+    "city": {"count":4085,"pct":99.9},
+    "address": {"count":4085,"pct":99.9},
+    "district": {"count":3198,"pct":78.21},
+    "price_mad": {"count":1482,"pct":36.24},
+    "surface_m2": {"count":1446,"pct":35.36},
+    "source_listing_id": {"count":1590,"pct":38.88},
+    "bedrooms_count": {"count":681,"pct":16.65}
+  },
+  "interpretation": "Deep public enrichment is strong for textual/geographic fields, but price/surface remain sparse and require source-aware extraction improvements. Missing values are not rejection criteria.",
+  "database_access": 0,
+  "database_writes": 0,
+  "approved_for_import_rows": 0
+}

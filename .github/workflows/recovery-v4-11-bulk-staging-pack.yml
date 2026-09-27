@@ -1,0 +1,90 @@
+name: Recovery V4.11 Bulk Staging Pack
+
+on:
+  push:
+    branches: ["recovery/v4-11-bulk-transfer-prep-20260927"]
+    paths:
+      - "data/recovery/activate-v4-11-bulk-staging-pack.txt"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Download certified V4.11 inputs
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/core" "$RUNNER_TEMP/g6" data/audits/bulk-v411
+          gh api repos/${{ github.repository }}/actions/artifacts/10910779576/zip > "$RUNNER_TEMP/core.zip"
+          unzip -q -o "$RUNNER_TEMP/core.zip" -d "$RUNNER_TEMP/core"
+          gh api repos/${{ github.repository }}/actions/artifacts/10918695596/zip > "$RUNNER_TEMP/g6.zip"
+          unzip -q -o "$RUNNER_TEMP/g6.zip" -d "$RUNNER_TEMP/g6"
+
+          test -s "$RUNNER_TEMP/core/clean-corpus-v4.11-core.jsonl.gz"
+          test -s "$RUNNER_TEMP/g6/clean-corpus-v4.11-neon-g6-safe.jsonl"
+
+          echo "e7ac4bca2db34ad334ed7234cfb8be93fc9baca68a9694f5024989b5cc2bb953  $RUNNER_TEMP/core/clean-corpus-v4.11-core.jsonl.gz" | sha256sum -c -
+          echo "18b810d3eb07e0fb293cc815d6f4c5506126fa1ed3926b6f4fc14abbd67fb695  $RUNNER_TEMP/g6/clean-corpus-v4.11-neon-g6-safe.jsonl" | sha256sum -c -
+
+      - name: Build 213,992-row staging pack
+        run: |
+          node scripts/recovery/build-v4-11-bulk-staging-pack.mjs \
+            --core "$RUNNER_TEMP/core/clean-corpus-v4.11-core.jsonl.gz" \
+            --imported "$RUNNER_TEMP/g6/clean-corpus-v4.11-neon-g6-safe.jsonl" \
+            --out-dir data/audits/bulk-v411/chunks \
+            --summary data/audits/bulk-v411/manifest.json \
+            --chunk-size 10000
+
+      - name: Verify pack invariants
+        run: |
+          node - <<'NODE'
+          const fs=require("fs"),crypto=require("crypto"),path=require("path");
+          const m=JSON.parse(fs.readFileSync("data/audits/bulk-v411/manifest.json","utf8"));
+          const eq=(a,b,n)=>{if(a!==b)throw new Error(`${n}: ${a} != ${b}`)};
+          const sha=f=>crypto.createHash("sha256").update(fs.readFileSync(f)).digest("hex");
+          eq(m.source_scope_eligible_rows,222359,"eligible");
+          eq(m.already_imported_g6_safe_rows,8367,"imported");
+          eq(m.remaining_rows,213992,"remaining");
+          eq(m.chunks_count,22,"chunks");
+          eq(m.chunks.at(-1).rows,3992,"final chunk");
+          eq(m.deep_evidence.no_deep,211913,"no_deep");
+          eq(m.deep_evidence.http503_only,1948,"503-only");
+          eq(m.deep_evidence.http200,78,"http200");
+          eq(m.deep_evidence.http0_only,53,"http0");
+          eq(m.contradiction_rows,0,"contradictions");
+          eq(m.approved_for_import_rows,0,"approved");
+          eq(m.database_access,0,"db access");
+          eq(m.database_writes,0,"db writes");
+          let rows=0;
+          for(const ch of m.chunks){
+            const fp=path.join("data/audits/bulk-v411/chunks",ch.file);
+            eq(sha(fp),ch.sha256,"chunk sha "+ch.file);
+            const physical=fs.readFileSync(fp,"utf8").split(/\n/).filter(Boolean).length-1;
+            eq(physical,ch.rows,"chunk rows "+ch.file);
+            rows+=physical;
+          }
+          eq(rows,213992,"rechecked rows");
+          const payload=crypto.createHash("sha256").update(m.chunks.map(ch=>ch.sha256).join("\n")).digest("hex");
+          eq(payload,m.payload_digest_sha256,"payload digest");
+          console.log(JSON.stringify(m,null,2));
+          NODE
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: clean-corpus-v4.11-bulk-staging-pack
+          path: |
+            data/audits/bulk-v411/manifest.json
+            data/audits/bulk-v411/chunks/*.csv
+          retention-days: 30

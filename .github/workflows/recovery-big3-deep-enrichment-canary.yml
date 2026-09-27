@@ -1,0 +1,44 @@
+name: Recovery Big3 Deep Enrichment Canary
+
+on:
+  push:
+    branches: ["recovery/big-portals-mass-20260925"]
+    paths:
+      - ".github/workflows/recovery-big3-deep-enrichment-canary.yml"
+      - "scripts/recovery/deep-enrichment-big3-canary.ts"
+      - "data/recovery/deep-enrichment-big3-seeds-v1.json"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: recovery-big3-deep-enrichment-canary
+  cancel-in-progress: true
+
+jobs:
+  canary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx tsx scripts/recovery/deep-enrichment-big3-canary.ts
+      - name: Enforce zero DB
+        run: |
+          node <<'NODE'
+          const s=require("./data/audits/raw-results/deep-enrichment-big3-summary-v1.json");
+          if(s.database_access||s.database_writes) process.exit(1);
+          console.log(JSON.stringify(s,null,2));
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: recovery-big3-deep-enrichment-canary
+          path: |
+            data/audits/raw-results/deep-enrichment-big3-results-v1.json
+            data/audits/raw-results/deep-enrichment-big3-summary-v1.json
+          retention-days: 30

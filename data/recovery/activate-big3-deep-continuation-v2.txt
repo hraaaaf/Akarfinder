@@ -1,0 +1,1 @@
+activate 2026-09-26 bounded deep continuation: sarout 500-2500; marocimmo 2500-4500; domio 1500-3500\n

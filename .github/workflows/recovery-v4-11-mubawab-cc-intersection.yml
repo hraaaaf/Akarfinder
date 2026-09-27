@@ -1,0 +1,57 @@
+name: Recovery V4.11 Mubawab CC Intersection
+
+on:
+  push:
+    branches: ["recovery/v4-11-pre-db-verification-20260927"]
+    paths:
+      - "data/recovery/activate-v4-11-mubawab-cc-intersection.txt"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  intersect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Download queue and recent CC evidence
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/q" "$RUNNER_TEMP/e" data/audits/pre-db-verification/mubawab
+          gh api repos/${{ github.repository }}/actions/artifacts/10927785295/zip > "$RUNNER_TEMP/q.zip"
+          unzip -q -o "$RUNNER_TEMP/q.zip" -d "$RUNNER_TEMP/q"
+          gh api repos/${{ github.repository }}/actions/artifacts/10927113307/zip > "$RUNNER_TEMP/e.zip"
+          unzip -q -o "$RUNNER_TEMP/e.zip" -d "$RUNNER_TEMP/e"
+          test -s "$RUNNER_TEMP/q/unresolved/mubawab.ma.txt"
+          test -s "$RUNNER_TEMP/e/mubawab-ma.jsonl"
+
+      - name: Intersect recent evidence
+        run: |
+          node scripts/recovery/intersect-v4-11-verification-evidence.mjs             --queue "$RUNNER_TEMP/q/unresolved/mubawab.ma.txt"             --evidence "$RUNNER_TEMP/e/mubawab-ma.jsonl"             --matched data/audits/pre-db-verification/mubawab/recent-cc-matched.jsonl             --unresolved data/audits/pre-db-verification/mubawab/still-unresolved.txt             --summary data/audits/pre-db-verification/mubawab/recent-cc-summary.json
+
+      - name: Assert intersection
+        run: |
+          node - <<'NODE'
+          const fs=require("fs");
+          const s=JSON.parse(fs.readFileSync("data/audits/pre-db-verification/mubawab/recent-cc-summary.json","utf8"));
+          if(s.queue_rows!==81975) throw new Error("queue");
+          if(s.matched_rows!==6499) throw new Error("matched");
+          if(s.unresolved_rows!==75476) throw new Error("unresolved");
+          if(s.database_access!==0||s.database_writes!==0||s.approved_for_import_rows!==0) throw new Error("safety");
+          console.log(JSON.stringify(s,null,2));
+          NODE
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v4.11-mubawab-recent-cc-intersection
+          path: data/audits/pre-db-verification/mubawab/
+          retention-days: 30

@@ -1,0 +1,81 @@
+name: Recovery Clean Corpus V4.11 Rematerialize
+
+on:
+  push:
+    branches: ["recovery/big-portals-mass-20260925"]
+    paths:
+      - "data/recovery/activate-v4-11-rematerialize.txt"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: recovery-clean-corpus-v4-11-rematerialize
+  cancel-in-progress: false
+
+jobs:
+  rematerialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Download certified source artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/v411/{freeze,reservoir,deep} data/audits/rematerialized
+          gh api repos/${{ github.repository }}/actions/artifacts/10869399865/zip > /tmp/v411/freeze.zip
+          unzip -q -o /tmp/v411/freeze.zip -d /tmp/v411/freeze
+
+          for id in             10842699709 10843851407 10860656848 10860360457             10860722339 10861514122 10860217600 10861565498             10860402491 10860707315 10843985462 10843921205 10842424914
+          do
+            gh api repos/${{ github.repository }}/actions/artifacts/${id}/zip > /tmp/v411/r-${id}.zip
+            unzip -q -o /tmp/v411/r-${id}.zip -d /tmp/v411/reservoir
+          done
+
+          for id in             10876784617 10903290401             10876973234 10879586543 10878977340 10879909560 10879274538 10904734124             10879170233 10880556160 10908485829 10908628378
+          do
+            gh api repos/${{ github.repository }}/actions/artifacts/${id}/zip > /tmp/v411/d-${id}.zip
+            unzip -q -o /tmp/v411/d-${id}.zip -d /tmp/v411/deep
+          done
+
+      - name: Rematerialize Clean Corpus V4.11 core
+        run: |
+          node scripts/recovery/rematerialize-clean-corpus-v4-11.mjs             --freeze-dir /tmp/v411/freeze             --reservoir-dir /tmp/v411/reservoir             --deep-dir /tmp/v411/deep             --output data/audits/rematerialized/clean-corpus-v4.11-core.jsonl.gz             --manifest data/audits/rematerialized/clean-corpus-v4.11-core-manifest.json
+
+      - name: Verify manifest safety invariants
+        run: |
+          node - <<'NODE'
+          const fs=require("fs");
+          const m=JSON.parse(fs.readFileSync("data/audits/rematerialized/clean-corpus-v4.11-core-manifest.json","utf8"));
+          const must=(v,e,n)=>{if(v!==e)throw new Error(n+": "+v+" != "+e)};
+          must(m.rows,226286,"rows");
+          must(m.classification_counts.KEEP,225952,"KEEP");
+          must(m.classification_counts.EXPIRED,45,"EXPIRED");
+          must(m.classification_counts.NON_REAL_ESTATE,289,"NON_REAL_ESTATE");
+          must(m.scope_counts.eligible,222359,"scope eligible");
+          must(m.scope_counts.ineligible,3927,"scope ineligible");
+          must(m.scope_counts.short_stay,3613,"short stay");
+          must(m.deep_observations,10500,"deep observations");
+          must(m.deep_unique_urls,10495,"deep unique");
+          must(m.deep_http_200_observations,8492,"HTTP200 observations");
+          must(m.deep_unique_http_200_urls,8487,"unique HTTP200");
+          must(m.approved_for_import_rows,0,"approved_for_import");
+          must(m.database_access,0,"database_access");
+          must(m.database_writes,0,"database_writes");
+          console.log(JSON.stringify(m,null,2));
+          NODE
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: clean-corpus-v4.11-core-rematerialized
+          path: |
+            data/audits/rematerialized/clean-corpus-v4.11-core.jsonl.gz
+            data/audits/rematerialized/clean-corpus-v4.11-core-manifest.json
+          retention-days: 30

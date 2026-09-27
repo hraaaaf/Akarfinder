@@ -1,0 +1,150 @@
+{
+  "schema_version": "akarfinder-clean-corpus-v4.11-certification-gate-2026-09-26",
+  "goal": "Certify a provenance-preserving clean real-estate corpus before any database import.",
+  "must_pass": [
+    {
+      "id": "G1",
+      "check": "durable_inputs_identified_and_digestable",
+      "status": "PASS"
+    },
+    {
+      "id": "G2",
+      "check": "zero_supabase_reads_after_freeze",
+      "status": "PASS"
+    },
+    {
+      "id": "G3",
+      "check": "classification_keep_expired_non_real_estate_is_evidence_based",
+      "status": "PASS",
+      "note": "V4.11 classification certified from freeze + durable recovery artifacts + manual evidence; KEEP 225,952 / EXPIRED 45 / NON_REAL_ESTATE 289."
+    },
+    {
+      "id": "G4",
+      "check": "no_low_score_or_missing_price_rejection",
+      "status": "PASS"
+    },
+    {
+      "id": "G5",
+      "check": "source_identity_aliases_clustered_without_deletion",
+      "status": "PASS"
+    },
+    {
+      "id": "G6",
+      "check": "cross_source_property_identity_clusters_certified",
+      "status": "PASS",
+      "note": "Selected Neon cohort: G6 audit run 36278625327 SUCCESS; 0 strong cross-source collision groups; 2 broad ambiguous groups / 21 rows quarantined; 8,367 rows safe; no merge performed."
+    },
+    {
+      "id": "G7",
+      "check": "field_provenance_preserved",
+      "status": "PASS",
+      "note": "Core rematerializer preserves source URL/domain, deep field evidence and contradiction flags; V4 safety tests 36262662757 SUCCESS."
+    },
+    {
+      "id": "G8",
+      "check": "contradictions_flagged_not_silently_overwritten",
+      "status": "PASS",
+      "evidence": "Recovery Clean Corpus V4 Tests 36230268515 SUCCESS"
+    },
+    {
+      "id": "G9",
+      "check": "freshness_or_expiry_evidence_qualified_by_source",
+      "status": "PASS_FOR_SELECTED_COHORT",
+      "note": "Full corpus still has lifecycle-low rows, but selected Neon cohort requires direct HTTP200 + published_at <=365d and passed freshness validation. This status is cohort-scoped, not a claim about all 226,286 rows."
+    },
+    {
+      "id": "G10",
+      "check": "final_counts_and_invariants_readback_offline",
+      "status": "PASS",
+      "note": "Run 36259114168 SUCCESS; artifact 10910779576; 226,286 rows; gzip SHA256 e7ac4bca2db34ad334ed7234cfb8be93fc9baca68a9694f5024989b5cc2bb953; invariants rechecked after download."
+    },
+    {
+      "id": "G11",
+      "check": "approved_for_import_rows_explicitly_reviewed",
+      "status": "PASS",
+      "note": "Explicit human approval received in chat: 'Go import'. Approval payload committed at 9d406ea10b43969bd06812f69c5c2e09b7407867 for exactly 8,367 rows, cohort SHA256 18b810d3eb07e0fb293cc815d6f4c5506126fa1ed3926b6f4fc14abbd67fb695, isolated branch br-cold-mouse-b2a50yaa."
+    },
+    {
+      "id": "G12",
+      "check": "database_import_and_search_smokes",
+      "status": "PASS",
+      "note": "Controlled import completed on isolated Neon branch br-cold-mouse-b2a50yaa. Independent readback: property_listings 8,544 / listing_sources 8,544 / V4.11 sources 8,367 active; 0 orphan properties; 0 duplicate listing URLs; 0 duplicate canonical fingerprints; 0 missing core fields; 0 bad provenance. Search smoke returned valid filtered cohorts across Casablanca, Rabat, Tanger, Bouskoura, Agadir, Marrakech and others."
+    }
+  ],
+  "hard_rule": "Selected cohort import is complete and certified on isolated Neon only. This does not authorize promotion to the production branch or Vercel deployment.",
+  "current_baseline": {
+    "rows": 226286,
+    "keep": 225952,
+    "expired": 45,
+    "non_real_estate": 289,
+    "scope_eligible": 222359,
+    "scope_ineligible": 3927,
+    "short_stay": 3613,
+    "deep_observations": 10500,
+    "deep_unique_urls": 10495,
+    "deep_http_200_observations": 8492,
+    "deep_unique_http_200_urls": 8487,
+    "conservative_neon_candidates": 8388,
+    "approved_for_import_rows": 0,
+    "gzip_sha256": "e7ac4bca2db34ad334ed7234cfb8be93fc9baca68a9694f5024989b5cc2bb953"
+  },
+  "database_access": "controlled_isolated_neon_import_plus_readback",
+  "database_writes": {
+    "property_listings_inserted": 8367,
+    "listing_sources_inserted": 8367,
+    "total_rows_inserted": 16734,
+    "target_branch": "br-cold-mouse-b2a50yaa",
+    "production_branch_writes": 0
+  },
+  "vercel_deployment": false,
+  "selected_neon_cohort": {
+    "rows": 8367,
+    "artifact_id": 10918695596,
+    "artifact_digest": "sha256:3ea1d6571e7c58c5f10fc6daf4cf2fac4ac6ef7db5df0d57f5ef938b876fe055",
+    "jsonl_sha256": "18b810d3eb07e0fb293cc815d6f4c5506126fa1ed3926b6f4fc14abbd67fb695",
+    "by_domain": {
+      "marocimmo.com": 4473,
+      "domio.ma": 3462,
+      "sarout.ma": 432
+    },
+    "quarantined_cross_source_ambiguity_rows": 21,
+    "existing_neon_direct_url_overlap": 0,
+    "schema_compatibility_errors": 0,
+    "approved_for_import_rows": 8367,
+    "target_project": "ancient-violet-43534870",
+    "target_branch": "br-cold-mouse-b2a50yaa",
+    "target_database": "AkarFinder",
+    "existing_property_listings": 177,
+    "existing_listing_sources": 177,
+    "expected_counts_after_controlled_import": {
+      "property_listings": 8544,
+      "listing_sources": 8544
+    },
+    "approval": {
+      "status": "APPROVED_FOR_CONTROLLED_ISOLATED_IMPORT",
+      "authorization_message": "Go import",
+      "approval_commit": "9d406ea10b43969bd06812f69c5c2e09b7407867",
+      "rows": 8367,
+      "cohort_sha256": "18b810d3eb07e0fb293cc815d6f4c5506126fa1ed3926b6f4fc14abbd67fb695"
+    },
+    "import_result": {
+      "status": "IMPORTED_AND_READBACK_VERIFIED",
+      "property_listings_total": 8544,
+      "listing_sources_total": 8544,
+      "v411_sources": 8367,
+      "v411_active": 8367,
+      "orphan_properties": 0,
+      "duplicate_listing_urls": 0,
+      "duplicate_fingerprints": 0,
+      "missing_core_fields": 0,
+      "bad_provenance": 0,
+      "by_domain": {
+        "domio.ma": 3462,
+        "marocimmo.com": 4473,
+        "sarout.ma": 432
+      },
+      "note": "GitHub workflow run 36278856045 attempt 1 failed before DB access because NEON_RECOVERY_DATABASE_URL was unset. After the secret was added, attempt 2 passed approval, endpoint guard, artifact download, and staging, then reported a SQL quoting error in the workflow. Independent Neon readback verified the selected cohort present and consistent on the isolated branch. The cohort was not re-imported after that readback."
+    }
+  },
+  "status": "SELECTED_COHORT_IMPORT_CERTIFIED"
+}

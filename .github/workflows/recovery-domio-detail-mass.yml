@@ -1,0 +1,44 @@
+name: Recovery Domio Detail Mass
+
+on:
+  push:
+    branches: ["recovery/big-portals-mass-20260925"]
+    paths:
+      - ".github/workflows/recovery-domio-detail-mass.yml"
+      - "scripts/recovery/domio-sitemap-detail-mass.ts"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: recovery-domio-detail-mass
+  cancel-in-progress: true
+
+jobs:
+  harvest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx tsx scripts/recovery/domio-sitemap-detail-mass.ts
+      - name: Enforce shadow-only contract
+        run: |
+          node <<'NODE'
+          const s=require("./data/audits/raw-results/recovery-domio-detail-summary.json");
+          if(s.database_access||s.database_writes||s.listing_page_fetches||s.approved_for_import_rows) process.exit(1);
+          console.log(JSON.stringify(s,null,2));
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: recovery-domio-detail-mass
+          path: |
+            data/audits/raw-results/recovery-domio-detail-urls.jsonl
+            data/audits/raw-results/recovery-domio-identities.jsonl
+            data/audits/raw-results/recovery-domio-detail-summary.json
+          retention-days: 30

@@ -1,0 +1,87 @@
+name: Recovery Big3 Deep Enrichment Continuation V2
+
+on:
+  push:
+    branches: ["recovery/big-portals-mass-20260925"]
+    paths:
+      - "data/recovery/activate-big3-deep-continuation-v2.txt"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: recovery-big3-deep-continuation-v2
+  cancel-in-progress: false
+
+jobs:
+  sarout:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: npm }
+      - run: npm ci
+      - name: Harvest Sarout sitemap URLs
+        env: { BIG_SITEMAP_DOMAIN: sarout.ma }
+        run: npx tsx scripts/recovery/big-portal-sitemap-harvest.ts
+      - name: Deep enrich Sarout 500-2500
+        env:
+          DEEP_DOMAIN: sarout.ma
+          DEEP_URL_FILE: data/audits/raw-results/recovery-big-sitemap-sarout-ma.txt
+          DEEP_OFFSET: "500"
+          DEEP_LIMIT: "2000"
+        run: npx tsx scripts/recovery/deep-enrichment-source-batch.ts
+      - uses: actions/upload-artifact@v4
+        with:
+          name: big3-deep-sarout-500-2500
+          path: data/audits/raw-results/deep-batch-sarout-ma-500-2500*
+          retention-days: 30
+
+  marocimmo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: npm }
+      - run: npm ci
+      - name: Harvest MarocImmo sitemap URLs
+        env: { BIG_SITEMAP_DOMAIN: marocimmo.com }
+        run: npx tsx scripts/recovery/big-portal-sitemap-harvest.ts
+      - name: Deep enrich MarocImmo 2500-4500
+        env:
+          DEEP_DOMAIN: marocimmo.com
+          DEEP_URL_FILE: data/audits/raw-results/recovery-big-sitemap-marocimmo-com.txt
+          DEEP_OFFSET: "2500"
+          DEEP_LIMIT: "2000"
+        run: npx tsx scripts/recovery/deep-enrichment-source-batch.ts
+      - uses: actions/upload-artifact@v4
+        with:
+          name: big3-deep-marocimmo-2500-4500
+          path: data/audits/raw-results/deep-batch-marocimmo-com-2500-4500*
+          retention-days: 30
+
+  domio:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: npm }
+      - run: npm ci
+      - name: Harvest Domio detail URLs
+        run: npx tsx scripts/recovery/domio-category-detail-harvest.ts
+      - name: Deep enrich Domio 1500-3500
+        env:
+          DEEP_DOMAIN: domio.ma
+          DEEP_URL_FILE: data/audits/raw-results/recovery-domio-category-detail-urls.txt
+          DEEP_OFFSET: "1500"
+          DEEP_LIMIT: "2000"
+        run: npx tsx scripts/recovery/deep-enrichment-source-batch.ts
+      - uses: actions/upload-artifact@v4
+        with:
+          name: big3-deep-domio-1500-3500
+          path: data/audits/raw-results/deep-batch-domio-ma-1500-3500*
+          retention-days: 30

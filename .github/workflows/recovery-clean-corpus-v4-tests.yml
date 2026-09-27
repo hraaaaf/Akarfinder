@@ -1,0 +1,33 @@
+name: Recovery Clean Corpus V4 Tests
+
+on:
+  push:
+    branches: ["recovery/big-portals-mass-20260925"]
+    paths:
+      - "scripts/recovery/classify-clean-corpus-v4.mjs"
+      - "data/recovery/clean-corpus-v4-reconstruction-manifest.json"
+      - "scripts/recovery/__tests__/classify-clean-corpus-v4.test.mjs"
+      - "scripts/recovery/merge-clean-corpus-v4-enrichment.ts"
+      - "scripts/recovery/deep-enrichment-source-batch.ts"
+      - "scripts/recovery/deep-jsonld-extractors.ts"
+      - "scripts/recovery/__tests__/deep-jsonld-extractors.test.ts"
+      - "scripts/recovery/carry-forward-freeze-clusters-v4.ts"
+      - "scripts/recovery/__tests__/carry-forward-freeze-clusters-v4.test.ts"
+      - "scripts/recovery/__tests__/clean-corpus-v4-enrichment.test.ts"
+      - ".github/workflows/recovery-clean-corpus-v4-tests.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: npm }
+      - run: npm ci
+      - name: V4 enrichment safety tests
+        run: node --test scripts/recovery/__tests__/classify-clean-corpus-v4.test.mjs && npx tsx --test scripts/recovery/__tests__/clean-corpus-v4-enrichment.test.ts scripts/recovery/__tests__/deep-jsonld-extractors.test.ts scripts/recovery/__tests__/carry-forward-freeze-clusters-v4.test.ts

@@ -1,0 +1,56 @@
+name: Recovery Supabase One-Shot Freeze
+
+on:
+  push:
+    branches: ["recovery/big-portals-mass-20260925"]
+    paths:
+      - ".github/workflows/recovery-supabase-freeze.yml"
+      - "scripts/recovery/supabase-freeze-export.ts"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: recovery-supabase-freeze
+  cancel-in-progress: false
+
+jobs:
+  freeze:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      FREEZE_OUT_DIR: .tmp/supabase-freeze
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Export frozen dataset once
+        run: npx tsx scripts/recovery/supabase-freeze-export.ts
+      - name: Verify manifest
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const m=JSON.parse(fs.readFileSync('.tmp/supabase-freeze/manifest.json','utf8'));
+          if(m.read_only!==true||m.database_writes!==0) throw new Error('freeze is not read-only');
+          if(m.total_rows!==806575) throw new Error('unexpected total '+m.total_rows);
+          if(m.table_count!==15) throw new Error('unexpected table count '+m.table_count);
+          for(const t of m.tables){
+            if(t.exported_rows!==t.expected_rows) throw new Error('count drift '+t.table);
+            if(!t.sha256_jsonl||!t.sha256_gzip) throw new Error('missing digest '+t.table);
+          }
+          console.log(JSON.stringify({freeze_verified:true,total_rows:m.total_rows,table_count:m.table_count},null,2));
+          NODE
+      - name: Remove uncompressed copies before upload
+        run: rm -f .tmp/supabase-freeze/*.jsonl
+      - uses: actions/upload-artifact@v4
+        with:
+          name: akarfinder-supabase-freeze-2026-09-25
+          path: .tmp/supabase-freeze/
+          retention-days: 30
+          compression-level: 0

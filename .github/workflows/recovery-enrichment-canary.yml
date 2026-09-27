@@ -1,0 +1,44 @@
+name: Recovery Enrichment Canary
+
+on:
+  push:
+    branches: ["recovery/big-portals-mass-20260925"]
+    paths:
+      - ".github/workflows/recovery-enrichment-canary.yml"
+      - "scripts/recovery/enrichment-canary.ts"
+      - "data/recovery/enrichment-canary-seeds-v1.json"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: recovery-enrichment-canary
+  cancel-in-progress: true
+
+jobs:
+  canary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx tsx scripts/recovery/enrichment-canary.ts
+      - name: Enforce zero-DB contract
+        run: |
+          node <<'NODE'
+          const s=require("./data/audits/raw-results/recovery-enrichment-canary-summary.json");
+          if(s.database_access||s.database_writes) process.exit(1);
+          console.log(JSON.stringify(s,null,2));
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: recovery-enrichment-canary
+          path: |
+            data/audits/raw-results/recovery-enrichment-canary-results.json
+            data/audits/raw-results/recovery-enrichment-canary-summary.json
+          retention-days: 30
