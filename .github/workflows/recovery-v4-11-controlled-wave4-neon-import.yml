@@ -65,17 +65,17 @@ jobs:
       - name: Build import CSV
         run: |
           node - "$RUNNER_TEMP/wave4/db-ready-wave4.jsonl" "$RUNNER_TEMP/wave4/import.csv" <<'NODE'
-          const fs=require("fs"),readline=require("readline");
+          const fs=require("fs");
           const [src,out]=process.argv.slice(2);
           const cols=["canonical_fingerprint","title","price_mad","city","district","property_type","transaction_type","surface_m2","rooms_count","bedrooms_count","bathrooms_count","description_snippet","images_count","seller_name","data_completeness_score","field_confidence","source_name","listing_url","source_url","first_seen_at","last_seen_at","source_offer_key","origin_type","compliance_status","content_fingerprint","ingestion_run_id","displayed_price","price_currency","price_period","price_status"];
           const esc=v=>{if(v===null||v===undefined)return "";const s=typeof v==="object"?JSON.stringify(v):String(v);return /[",\n\r]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s};
-          const ws=fs.createWriteStream(out);ws.write(cols.join(",")+"\n");
-          let n=0;const urls=new Set(),fps=new Set();
-          const rl=readline.createInterface({input:fs.createReadStream(src),crlfDelay:Infinity});
-          rl.on("line",line=>{if(!line.trim())return;const r=JSON.parse(line);if(r.approved_for_import!==false)throw new Error("artifact approval invariant");n++;urls.add(r.listing_url);fps.add(r.canonical_fingerprint);ws.write(cols.map(c=>esc(r[c])).join(",")+"\n")});
-          rl.on("close",()=>{ws.end();if(n!==3674||urls.size!==3674||fps.size!==3674)throw new Error("artifact row/dedupe invariant")});
+          const rows=fs.readFileSync(src,"utf8").split(/\r?\n/).filter(Boolean).map(JSON.parse);
+          if(rows.length!==3674)throw new Error("row count");
+          if(new Set(rows.map(r=>r.listing_url)).size!==3674)throw new Error("url dedupe");
+          if(new Set(rows.map(r=>r.canonical_fingerprint)).size!==3674)throw new Error("fp dedupe");
+          if(rows.some(r=>r.approved_for_import!==false))throw new Error("artifact approval invariant");
+          fs.writeFileSync(out,cols.join(",")+"\n"+rows.map(r=>cols.map(k=>esc(r[k])).join(",")).join("\n")+"\n");
           NODE
-          while [ ! -s "$RUNNER_TEMP/wave4/import.csv" ]; do sleep 1; done
           test "$(($(wc -l < "$RUNNER_TEMP/wave4/import.csv")-1))" = "3674"
 
       - name: Preflight current DB and overlaps
