@@ -96,3 +96,50 @@ Read this file first. Then verify:
 4. no Vercel deployment and no production Neon write authorization has appeared.
 
 If the verified count is still **99,569**, proceed immediately with Wave7 construction. If it changed, reconcile the delta before generating new candidates.
+
+
+## Wave7 closeout — VERIFIED 2026-09-27
+
+Wave7 is now certified and present in the isolated Neon recovery database.
+
+- Certification run: `36325998063` — SUCCESS.
+- Certification artifact: `10934360426`.
+- Artifact digest: `sha256:67c0a2ec79fb1668288e42c858fcf35e95951e8dd9b4b76137a34e6c46b57319`.
+- Certified JSONL SHA-256: `db5204d10aeda29b7a9228400cebd024462df2d1bde30fd481c8a7f2b2f60e00`.
+- Certified rows: **657** = Mubawab 407 + Agenz 248 + Avito 2.
+- Input evidence: 3,147 Common Crawl rows; 63 identityless URLs quarantined; 2,725 stable portal identities.
+- Certification invariants: 657 unique URLs, 657 unique fingerprints, 657 unique portal identities, 0 core gap, no row pre-approved for import.
+- Controlled import run: `36326090825`.
+  - Approval validation: PASS.
+  - Artifact verification: PASS.
+  - CSV/core/identity checks: PASS.
+  - DB preflight: PASS.
+  - Atomic import: PASS.
+  - The run is red only because its nested-shell readback command had a quoting defect after COMMIT; do not reinterpret that red status as a rolled-back import.
+- Independent direct Neon readback after import: **100,226** properties / **100,226** sources / **100,226** unique URLs / **100,226** unique fingerprints; Wave7 = 657; V4.11 = 100,190; legacy = 36; orphan = 0; inactive = 0; property core gaps = 0; source core gaps = 0.
+- Independent GitHub post-import readback: run `36326210818` — SUCCESS.
+- Readback artifact: `10934470283`, digest `sha256:d58150933b528fb3c590c312885621002ab62b7e0121b5963e9cd7a31430590a`.
+
+Current progress: **100,226 / 200,000 = 50.113%**.
+Exact remaining delta: **99,774**.
+
+## Current next wave
+
+Wave8 strict-route salvage is prepared and bound to the exact Wave7 artifact.
+
+- Candidate source: Wave6 rejected corpus + frozen V4.11 data.
+- Safety rule: city comes only from frozen evidence; Mubawab/Avito URL parsing may fill title/property type/transaction only.
+- Portal-identity conflicts are quarantined.
+- First observed certification output: **39,132** candidates = Mubawab 26,523 + Avito 12,609.
+- The first Wave8 run proved the certification logic but failed only because the expected contract was one row too low.
+- Current Wave8 rerun: use the latest exact-input run on this branch; do not import until it is green and its artifact/digest/SHA are independently verified.
+
+## Updated Next exact
+
+1. Complete Wave8 exact certification.
+2. Verify Wave8 artifact, digest, row count, uniqueness and core invariants.
+3. Run a live read-only overlap preflight against isolated Neon.
+4. Only then create an exact Wave8 import approval.
+5. Controlled atomic isolated-Neon import.
+6. Independent readback + ledger update.
+7. Continue subsequent waves until at least 200,000.
