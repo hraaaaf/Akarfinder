@@ -1,0 +1,131 @@
+name: Recovery V4.11 Wave7 CC365 Freeze Certification
+
+on:
+  push:
+    branches: ["recovery/v4-11-wave7-cc-freeze-20260927"]
+    paths:
+      - "data/recovery/activate-v4-11-wave7-cc-freeze.txt"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Download immutable certification inputs
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/freeze" "$RUNNER_TEMP/cc/mubawab.ma" "$RUNNER_TEMP/cc/agenz.ma" "$RUNNER_TEMP/cc/avito.ma" "$RUNNER_TEMP/used" data/audits/v4-11-wave7
+
+          gh api repos/${{ github.repository }}/actions/artifacts/10869399865/zip > "$RUNNER_TEMP/freeze.zip"
+          unzip -q -o "$RUNNER_TEMP/freeze.zip" -d "$RUNNER_TEMP/freeze"
+
+          gh api repos/${{ github.repository }}/actions/artifacts/10930994925/zip > "$RUNNER_TEMP/cc-mubawab.zip"
+          unzip -q -o "$RUNNER_TEMP/cc-mubawab.zip" -d "$RUNNER_TEMP/cc/mubawab.ma"
+          gh api repos/${{ github.repository }}/actions/artifacts/10931955698/zip > "$RUNNER_TEMP/cc-agenz.zip"
+          unzip -q -o "$RUNNER_TEMP/cc-agenz.zip" -d "$RUNNER_TEMP/cc/agenz.ma"
+          gh api repos/${{ github.repository }}/actions/artifacts/10931695755/zip > "$RUNNER_TEMP/cc-avito.zip"
+          unzip -q -o "$RUNNER_TEMP/cc-avito.zip" -d "$RUNNER_TEMP/cc/avito.ma"
+
+          gh api repos/${{ github.repository }}/actions/artifacts/10918695596/zip > "$RUNNER_TEMP/w1.zip"
+          unzip -q -o "$RUNNER_TEMP/w1.zip" -d "$RUNNER_TEMP/w1"
+          cp "$RUNNER_TEMP/w1/clean-corpus-v4.11-neon-g6-safe.jsonl" "$RUNNER_TEMP/used/wave1.jsonl"
+
+          gh api repos/${{ github.repository }}/actions/artifacts/10927304058/zip > "$RUNNER_TEMP/w2.zip"
+          unzip -q -o "$RUNNER_TEMP/w2.zip" -d "$RUNNER_TEMP/w2"
+          cp "$RUNNER_TEMP/w2/db-ready-wave2.jsonl" "$RUNNER_TEMP/used/wave2.jsonl"
+
+          gh api repos/${{ github.repository }}/actions/artifacts/10929247398/zip > "$RUNNER_TEMP/w3.zip"
+          unzip -q -o "$RUNNER_TEMP/w3.zip" -d "$RUNNER_TEMP/w3"
+          cp "$RUNNER_TEMP/w3/db-ready-wave3.jsonl" "$RUNNER_TEMP/used/wave3.jsonl"
+
+          gh api repos/${{ github.repository }}/actions/artifacts/10931027229/zip > "$RUNNER_TEMP/w4b.zip"
+          unzip -q -o "$RUNNER_TEMP/w4b.zip" -d "$RUNNER_TEMP/w4b"
+          cp "$RUNNER_TEMP/w4b/db-ready-wave4.jsonl" "$RUNNER_TEMP/used/wave4b.jsonl"
+
+          gh api repos/${{ github.repository }}/actions/artifacts/10930564993/zip > "$RUNNER_TEMP/w5.zip"
+          unzip -q -o "$RUNNER_TEMP/w5.zip" -d "$RUNNER_TEMP/w5"
+          cp "$RUNNER_TEMP/w5/db-ready-wave5.jsonl" "$RUNNER_TEMP/used/wave5.jsonl"
+
+          gh api repos/${{ github.repository }}/actions/artifacts/10931655535/zip > "$RUNNER_TEMP/w4old.zip"
+          unzip -q -o "$RUNNER_TEMP/w4old.zip" -d "$RUNNER_TEMP/w4old"
+          cp "$RUNNER_TEMP/w4old/db-ready-wave5.jsonl" "$RUNNER_TEMP/used/wave4old.jsonl"
+
+          gh api repos/${{ github.repository }}/actions/artifacts/10932325027/zip > "$RUNNER_TEMP/w6.zip"
+          unzip -q -o "$RUNNER_TEMP/w6.zip" -d "$RUNNER_TEMP/w6"
+          cp "$RUNNER_TEMP/w6/db-ready-wave6.jsonl" "$RUNNER_TEMP/used/wave6.jsonl"
+
+      - name: Verify immutable source hashes
+        run: |
+          set -euo pipefail
+          echo "bb9799ca6a237db1de11837c7c6606809a3c669764b0c30f9cf92dcccc7adf6d  $RUNNER_TEMP/freeze/listing_representations.jsonl.gz" | sha256sum -c -
+          echo "2849e79ab96ad644bde7c70ec277abb4a90be95effe53ba0726cdbccac6f8646  $RUNNER_TEMP/freeze/thin_index_search_documents.jsonl.gz" | sha256sum -c -
+          echo "219b8bdfce8bd87eb049d06be42f32c0894850404f2e8d477d1f73a7b5d8cdcd  $RUNNER_TEMP/freeze/minimal_live_search_documents_v1.jsonl.gz" | sha256sum -c -
+          echo "a90d0e5748adbdf881356340dcd1a37c678681ab21b62c625a570af488c8e596  $RUNNER_TEMP/freeze/listing_sources.jsonl.gz" | sha256sum -c -
+          echo "0d623496d393e2adebcbe51be36a4604a006389fad09939161d979eb860e03b7  $RUNNER_TEMP/freeze/property_listings.jsonl.gz" | sha256sum -c -
+
+          echo "875b7cccf907875bed8e1463929fd84a2a4b38a7fe8373f7e0e70f2b29fb3ba5  $RUNNER_TEMP/cc/mubawab.ma/mubawab-ma.jsonl" | sha256sum -c -
+          echo "6f9c472602488fe42b4ea41dfd7b395266e35252fe1a888bcafd2b7ddfc5f058  $RUNNER_TEMP/cc/agenz.ma/agenz-ma.jsonl" | sha256sum -c -
+          echo "165dae664c585cba935b3da1f716e581c8f77f32cbefb7e72cee8071356b8690  $RUNNER_TEMP/cc/avito.ma/avito-ma.jsonl" | sha256sum -c -
+
+          echo "18b810d3eb07e0fb293cc815d6f4c5506126fa1ed3926b6f4fc14abbd67fb695  $RUNNER_TEMP/used/wave1.jsonl" | sha256sum -c -
+          echo "3aa9661a0a4e925c8732a1bbefd8b660767166026d764d207aaa02ca675f3a1b  $RUNNER_TEMP/used/wave2.jsonl" | sha256sum -c -
+          echo "d94f3dc1982b50a4853cff996c0ac159a70cf6f0822ca69c9097701779145438  $RUNNER_TEMP/used/wave3.jsonl" | sha256sum -c -
+          echo "e595c9b7025629c1f289f4b5898ac7ec1c540fa720f4cd0ff700292be7be607c  $RUNNER_TEMP/used/wave4b.jsonl" | sha256sum -c -
+          echo "e64b60434771a310b37027521e81b302bd6e00541f537d171be3467a33c8fa69  $RUNNER_TEMP/used/wave5.jsonl" | sha256sum -c -
+          echo "38dd385f3c233dffce6dfce8f3f9b96d06ee763d2288ef04bed905081eb5dbe7  $RUNNER_TEMP/used/wave4old.jsonl" | sha256sum -c -
+          echo "6aaf71aa6db38a726f033ec61e2e6640740f336e572e0e7ffcd54711f55cfb1c  $RUNNER_TEMP/used/wave6.jsonl" | sha256sum -c -
+
+      - name: Certify Wave7 from CC365 plus frozen V4.11 data
+        run: |
+          node scripts/recovery/certify-v4-11-wave7-cc-freeze-enrichment.mjs             --cc-dir "$RUNNER_TEMP/cc"             --freeze-dir "$RUNNER_TEMP/freeze"             --used-dir "$RUNNER_TEMP/used"             --out-dir data/audits/v4-11-wave7
+
+      - name: Verify Wave7 invariants
+        run: |
+          node - <<'NODE'
+          const fs=require("fs"),crypto=require("crypto");
+          const s=require("./data/audits/v4-11-wave7/summary.json");
+          const b=fs.readFileSync("data/audits/v4-11-wave7/db-ready-wave7.jsonl");
+          const rows=b.toString("utf8").split(/\r?\n/).filter(Boolean).map(JSON.parse);
+          const eq=(a,b,n)=>{if(a!==b)throw new Error(n+": "+a+" != "+b)};
+          eq(s.cc_rows,3147,"cc rows");
+          eq(s.cc_unique_identities,2725,"cc identities");
+          eq(s.prior_overlap,150,"prior overlap");
+          eq(s.exact_ready,425,"exact ready");
+          eq(s.identity_ready,60,"identity ready");
+          eq(s.exact_identity_conflict,6,"exact conflicts");
+          eq(s.identity_conflict,8,"identity conflicts");
+          eq(s.missing_core,2076,"missing core");
+          eq(s.db_ready_rows,485,"ready");
+          eq(s.by_domain["mubawab.ma"],407,"mubawab");
+          eq(s.by_domain["agenz.ma"],76,"agenz");
+          eq(s.by_domain["avito.ma"],2,"avito");
+          eq(rows.length,485,"physical rows");
+          eq(new Set(rows.map(r=>r.listing_url)).size,485,"URL uniqueness");
+          eq(new Set(rows.map(r=>r.canonical_fingerprint)).size,485,"fingerprint uniqueness");
+          eq(new Set(rows.map(r=>r.source_name+"|"+r.source_offer_key)).size,485,"portal identity uniqueness");
+          eq(crypto.createHash("sha256").update(b).digest("hex"),s.output_sha256,"sha");
+          eq(s.approved_for_import_rows,0,"approval");
+          eq(s.database_access,0,"db access");
+          eq(s.database_writes,0,"db writes");
+          eq(s.production_neon_writes,0,"prod writes");
+          if(s.vercel_deployment!==false)throw new Error("vercel invariant");
+          if(rows.some(r=>r.approved_for_import!==false))throw new Error("row approval invariant");
+          NODE
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: clean-corpus-v4.11-db-ready-wave7-cc365-freeze
+          path: data/audits/v4-11-wave7/
+          retention-days: 30
