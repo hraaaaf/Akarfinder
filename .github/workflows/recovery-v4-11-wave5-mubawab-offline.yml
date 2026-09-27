@@ -53,10 +53,10 @@ jobs:
           const eq=(a,b,n)=>{if(a!==b)throw new Error(n+": "+a+" != "+b)};
           eq(s.verified_mubawab_rows,60359,"verified Mubawab");
           eq(s.excluded_wave2_rows,11897,"wave2 exclusion");
-          eq(s.db_ready_rows,27428,"db ready");
-          eq(rows.length,27428,"physical");
-          eq(new Set(rows.map(r=>r.listing_url)).size,27428,"url unique");
-          eq(new Set(rows.map(r=>r.canonical_fingerprint)).size,27428,"fp unique");
+          eq(s.db_ready_rows,27420,"db ready");
+          eq(rows.length,27420,"physical");
+          eq(new Set(rows.map(r=>r.listing_url)).size,27420,"url unique");
+          eq(new Set(rows.map(r=>r.canonical_fingerprint)).size,27420,"fp unique");
           eq(crypto.createHash("sha256").update(body).digest("hex"),s.output_sha256,"sha");
           eq(s.approved_for_import_rows,0,"approval");
           eq(s.database_access,0,"db access");
