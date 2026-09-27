@@ -7,7 +7,7 @@ const ledger=arg("--ledger"),wave2=arg("--wave2"),wave3=arg("--wave3"),wave4=arg
 if(!ledger||!wave2||!wave3||!wave4||!output||!rejected||!summary)throw new Error("missing args");
 
 const STRONG=new Set(["direct_http200","official_sitemap_recent","commoncrawl_recent","listing_source_active_recent","thin_fresh_confirmed_recent","official_category_listing_recent"]);
-const TARGETS=new Set(["promoimmomarrakech.com","agenz.ma","aykana.ma","daragadir.com","limmobiliersansfrontieres.com","kawtarimmobilier.com","atlasimmobilier.com","1immo.ma"]);
+const TARGETS=new Set(["agenz.ma","aykana.ma","daragadir.com","limmobiliersansfrontieres.com","kawtarimmobilier.com","atlasimmobilier.com","1immo.ma"]);
 const PT_LABEL={apartment:"Appartement",studio:"Studio",villa:"Villa",house:"Maison",land:"Terrain",office:"Bureau",commercial:"Local commercial",riad:"Riad"};
 const TX_LABEL={sale:"à vendre",rent:"à louer"};
 const CITY_ALIASES={agadir:"Agadir",marrakech:"Marrakech",rabat:"Rabat",casablanca:"Casablanca",tanger:"Tanger",fes:"Fès",meknes:"Meknès",kenitra:"Kénitra",sale:"Salé",temara:"Témara",essaouira:"Essaouira",bouznika:"Bouznika","el-jadida":"El Jadida",eljadida:"El Jadida",mohammedia:"Mohammedia",oujda:"Oujda",tetouan:"Tétouan",bouskoura:"Bouskoura","dar-bouazza":"Dar Bouazza",safi:"Safi",nador:"Nador",dakhla:"Dakhla",laayoune:"Laâyoune",berrechid:"Berrechid",martil:"Martil",ifrane:"Ifrane",taghazout:"Taghazout",ourika:"Ourika"};
@@ -49,11 +49,11 @@ for(const r of rows){
  byDomain[r.source_domain]=(byDomain[r.source_domain]||0)+1;
  out.push({canonical_fingerprint:fp(r.canonical_url),title,price_mad:null,city:x.c,district:null,property_type:x.p,transaction_type:x.t,surface_m2:null,rooms_count:null,bedrooms_count:null,bathrooms_count:null,description_snippet:null,images_count:null,seller_name:null,data_completeness_score:80,field_confidence:{certification:"v4.11_wave5_strict_route_v3",existence_evidence:r.evidence,route_mapping:x.m,representation_identity:"source_url_level",cross_source_merge_performed:false},source_name:r.source_domain,listing_url:r.canonical_url,source_url:"https://"+r.source_domain,first_seen_at:null,last_seen_at:null,source_offer_key:null,origin_type:"external_index_seed",compliance_status:"recovery_verified_v4_11_wave5",content_fingerprint:fp(r.canonical_url),ingestion_run_id:"clean-corpus-v4.11-wave5",displayed_price:null,price_currency:null,price_period:null,price_status:"not_disclosed",approved_for_import:false});
 }
-const expected={"promoimmomarrakech.com":3674,"agenz.ma":851,"aykana.ma":100,"daragadir.com":100,"limmobiliersansfrontieres.com":65,"kawtarimmobilier.com":15,"atlasimmobilier.com":14,"1immo.ma":13};
-if(out.length!==4832)throw new Error("expected 4832 got "+out.length);
+const expected={"agenz.ma":851,"aykana.ma":100,"daragadir.com":100,"limmobiliersansfrontieres.com":65,"kawtarimmobilier.com":15,"atlasimmobilier.com":14,"1immo.ma":13};
+if(out.length!==1158)throw new Error("expected 1158 got "+out.length);
 for(const[d,n]of Object.entries(expected))if(byDomain[d]!==n)throw new Error(d+" "+byDomain[d]+" != "+n);
-if(new Set(out.map(x=>x.listing_url)).size!==4832||new Set(out.map(x=>x.canonical_fingerprint)).size!==4832)throw new Error("uniqueness");
+if(new Set(out.map(x=>x.listing_url)).size!==1158||new Set(out.map(x=>x.canonical_fingerprint)).size!==1158)throw new Error("uniqueness");
 const body=out.map(x=>JSON.stringify(x)).join("\n")+"\n",badBody=bad.map(x=>JSON.stringify(x)).join("\n")+(bad.length?"\n":"");
 fs.writeFileSync(output,body);fs.writeFileSync(rejected,badBody);
-const s={schema_version:"akarfinder-v4.11-wave5-strict-route-v3-20260927",db_ready_rows:4832,by_domain:byDomain,rejected_rows:bad.length,source_ledger_artifact_id:10930659218,source_wave2_artifact_id:10927304058,source_wave3_artifact_id:10929247398,source_wave4_artifact_id:10931027229,output_sha256:sha(body),rejected_sha256:sha(badBody),approved_for_import_rows:0,database_access:0,database_writes:0,production_neon_writes:0,vercel_deployment:false};
+const s={schema_version:"akarfinder-v4.11-wave5-strict-route-v3-20260927",db_ready_rows:1158,by_domain:byDomain,rejected_rows:bad.length,source_ledger_artifact_id:10930659218,source_wave2_artifact_id:10927304058,source_wave3_artifact_id:10929247398,source_wave4_artifact_id:10931027229,output_sha256:sha(body),rejected_sha256:sha(badBody),approved_for_import_rows:0,database_access:0,database_writes:0,production_neon_writes:0,vercel_deployment:false};
 fs.writeFileSync(summary,JSON.stringify(s,null,2)+"\n");console.log(JSON.stringify(s,null,2));
