@@ -1,0 +1,23 @@
+{
+  "schema_version": "akarfinder-v4.11-wave9-route-import-approval-20260927",
+  "approved": true,
+  "rows": 2240,
+  "certification_run_id": 36334376237,
+  "filtered_preflight_run_id": 36335572869,
+  "artifact_id": 10936443710,
+  "artifact_digest": "sha256:4ddee9fe88145d7824add811fe142a6b2672e7b2762d809c35ebe1582debd19b",
+  "jsonl_sha256": "2f7dbd6a26cac7776d51d31bdfcc86f6ca401bd026cf3888c19cc001f77dcf25",
+  "target_project": "ancient-violet-43534870",
+  "target_branch": "br-cold-mouse-b2a50yaa",
+  "target_database": "AkarFinder",
+  "expected_pre": {
+    "property_listings": 139161,
+    "listing_sources": 139161
+  },
+  "expected_post": {
+    "property_listings": 141401,
+    "listing_sources": 141401
+  },
+  "production_neon_writes_authorized": false,
+  "vercel_deployment_authorized": false
+}
