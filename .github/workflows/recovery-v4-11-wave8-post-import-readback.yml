@@ -1,0 +1,79 @@
+name: Recovery V4.11 Wave8 Post-Import Readback
+
+on:
+  push:
+    branches: ["recovery/v4-11-wave7-cc-freeze-20260927"]
+    paths:
+      - "data/recovery/activate-v4-11-wave8-post-import-readback.txt"
+
+permissions:
+  contents: read
+
+jobs:
+  readback:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      DATABASE_URL: ${{ secrets.NEON_RECOVERY_DATABASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate isolated Neon target host
+        run: |
+          set -euo pipefail
+          test -n "${DATABASE_URL:-}"
+          python - <<'PY'
+          import os,urllib.parse
+          h=urllib.parse.urlparse(os.environ["DATABASE_URL"]).hostname
+          allowed={
+            "ep-falling-unit-b2hper1a.c-6.eu-central-1.aws.neon.tech",
+            "ep-falling-unit-b2hper1a-pooler.c-6.eu-central-1.aws.neon.tech",
+            "ep-falling-unit-b2hper1a-d1j.c-6.eu-central-1.aws.neon.tech",
+            "ep-falling-unit-b2hper1a-d1j-pooler.c-6.eu-central-1.aws.neon.tech",
+          }
+          if h not in allowed: raise SystemExit("refusing unexpected Neon host")
+          PY
+
+      - name: Independent Wave8 readback
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/readback"
+          cat > "$RUNNER_TEMP/readback/readback.sql" <<'SQL'
+          SELECT
+            (SELECT count(*) FROM public.property_listings),
+            (SELECT count(*) FROM public.listing_sources),
+            (SELECT count(DISTINCT listing_url) FROM public.listing_sources),
+            (SELECT count(DISTINCT canonical_fingerprint) FROM public.property_listings),
+            (SELECT count(*) FROM public.listing_sources WHERE ingestion_run_id='clean-corpus-v4.11-wave8'),
+            (SELECT count(DISTINCT listing_url) FROM public.listing_sources WHERE ingestion_run_id='clean-corpus-v4.11-wave8'),
+            (SELECT count(*) FROM public.listing_sources ls LEFT JOIN public.property_listings pl ON pl.id=ls.property_listing_id WHERE pl.id IS NULL),
+            (SELECT count(*) FROM public.listing_sources WHERE is_active IS NOT TRUE),
+            (SELECT count(*) FROM public.listing_sources WHERE ingestion_run_id LIKE 'clean-corpus-v4.11%'),
+            (SELECT count(*) FROM public.listing_sources WHERE ingestion_run_id NOT LIKE 'clean-corpus-v4.11%' OR ingestion_run_id IS NULL),
+            (SELECT count(*) FROM public.property_listings WHERE canonical_fingerprint IS NULL OR btrim(canonical_fingerprint)='' OR title IS NULL OR btrim(title)='' OR city IS NULL OR btrim(city)='' OR property_type IS NULL OR btrim(property_type)='' OR transaction_type IS NULL OR btrim(transaction_type)=''),
+            (SELECT count(*) FROM public.listing_sources WHERE listing_url IS NULL OR btrim(listing_url)='' OR source_name IS NULL OR btrim(source_name)='');
+          SQL
+          docker run --rm -e DATABASE_URL="$DATABASE_URL" -v "$RUNNER_TEMP/readback:/work" postgres:17 sh -lc 'psql "$DATABASE_URL" -X -qAt -F "|" -v ON_ERROR_STOP=1 -f /work/readback.sql' | tee "$RUNNER_TEMP/readback/result.txt"
+          OUT="$(tail -n1 "$RUNNER_TEMP/readback/result.txt")"
+          IFS='|' read -r PL LS URLS FPS W8 W8URL ORPH INACTIVE V411 LEGACY PGAP SGAP <<< "$OUT"
+          test "$PL" = "139161"
+          test "$LS" = "139161"
+          test "$URLS" = "139161"
+          test "$FPS" = "139161"
+          test "$W8" = "38935"
+          test "$W8URL" = "38935"
+          test "$ORPH" = "0"
+          test "$INACTIVE" = "0"
+          test "$V411" = "139125"
+          test "$LEGACY" = "36"
+          test "$PGAP" = "0"
+          test "$SGAP" = "0"
+          printf '%s\n' "properties=$PL" "sources=$LS" "unique_urls=$URLS" "unique_properties=$FPS" "wave8=$W8" "v411=$V411" "legacy=$LEGACY" "orphans=$ORPH" "inactive=$INACTIVE" "property_core_gaps=$PGAP" "source_core_gaps=$SGAP" > "$RUNNER_TEMP/readback/verified.txt"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v4.11-wave8-post-import-readback
+          path: |
+            ${{ runner.temp }}/readback/result.txt
+            ${{ runner.temp }}/readback/verified.txt
+          retention-days: 30
