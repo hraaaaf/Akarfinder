@@ -44,22 +44,25 @@ jobs:
           NODE
       - name: Read-only DB reconciliation proof
         run: |
+          set -euo pipefail
           cat > "$RUNNER_TEMP/rec/p.sql" <<'SQL'
-          CREATE TEMP TABLE rem(listing_url text,canonical_fingerprint text,source_name text,source_offer_key text);
-          \copy rem FROM '/rec/remove.csv' WITH (FORMAT csv, HEADER true)
-          CREATE TEMP TABLE addset(listing_url text,canonical_fingerprint text,source_name text,source_offer_key text);
-          \copy addset FROM '/rec/add.csv' WITH (FORMAT csv, HEADER true)
+          DROP TABLE IF EXISTS rec_rem_20260927;
+          CREATE TEMP TABLE rec_rem_20260927(listing_url text,canonical_fingerprint text,source_name text,source_offer_key text);
+          \copy rec_rem_20260927 FROM '/rec/remove.csv' WITH (FORMAT csv, HEADER true)
+          DROP TABLE IF EXISTS rec_add_20260927;
+          CREATE TEMP TABLE rec_add_20260927(listing_url text,canonical_fingerprint text,source_name text,source_offer_key text);
+          \copy rec_add_20260927 FROM '/rec/add.csv' WITH (FORMAT csv, HEADER true)
           WITH removed_props AS (
             SELECT ls.property_listing_id
             FROM public.listing_sources ls
-            JOIN rem r ON r.listing_url=ls.listing_url
+            JOIN rec_rem_20260927 r ON r.listing_url=ls.listing_url
             WHERE ls.ingestion_run_id='clean-corpus-v4.11-wave9'
           ),
           remaining_sources AS (
             SELECT ls.*
             FROM public.listing_sources ls
             WHERE NOT EXISTS (
-              SELECT 1 FROM rem r
+              SELECT 1 FROM rec_rem_20260927 r
               WHERE r.listing_url=ls.listing_url
                 AND ls.ingestion_run_id='clean-corpus-v4.11-wave9'
             )
@@ -74,7 +77,7 @@ jobs:
           ),
           eligible_add AS (
             SELECT a.*
-            FROM addset a
+            FROM rec_add_20260927 a
             WHERE NOT EXISTS (SELECT 1 FROM remaining_sources ls WHERE ls.listing_url=a.listing_url)
               AND NOT EXISTS (
                 SELECT 1
@@ -90,11 +93,11 @@ jobs:
           SELECT
             (SELECT count(*) FROM public.property_listings),
             (SELECT count(*) FROM public.listing_sources),
-            (SELECT count(*) FROM rem r JOIN public.listing_sources ls ON ls.listing_url=r.listing_url AND ls.ingestion_run_id='clean-corpus-v4.11-wave9'),
-            (SELECT count(*) FROM addset),
+            (SELECT count(*) FROM rec_rem_20260927 r JOIN public.listing_sources ls ON ls.listing_url=r.listing_url AND ls.ingestion_run_id='clean-corpus-v4.11-wave9'),
+            (SELECT count(*) FROM rec_add_20260927),
             (SELECT count(*) FROM eligible_add),
-            (SELECT count(*) FROM addset a JOIN remaining_sources ls ON ls.listing_url=a.listing_url),
-            (SELECT count(*) FROM addset a JOIN existing_identity e USING(source_name,source_offer_key));
+            (SELECT count(*) FROM rec_add_20260927 a JOIN remaining_sources ls ON ls.listing_url=a.listing_url),
+            (SELECT count(*) FROM rec_add_20260927 a JOIN existing_identity e USING(source_name,source_offer_key));
           SQL
           docker run --rm -e DATABASE_URL="$DATABASE_URL" -v "$RUNNER_TEMP/rec:/rec" postgres:17 sh -lc 'psql "$DATABASE_URL" -X -qAt -F "|" -v ON_ERROR_STOP=1 -f /rec/p.sql' | tee data/audits/v4-11-wave9-hardened-reconcile/preflight.txt
       - uses: actions/upload-artifact@v4
