@@ -24,9 +24,9 @@ jobs:
         run: |
           node - <<'NODE'
           const a=require("./data/recovery/v4-11-wave9-new-sources-import-approval.json");
-          if(a.approved!==true||a.rows!==1287||a.preflight_run_id!==36335634114||a.artifact_id!==10936523776)throw new Error("approval");
-          if(a.jsonl_sha256!=="50284d46c71ece06c6837ae6c37691dd2e18f91fa027a127739ff4cca6d29475")throw new Error("sha");
-          if(a.expected_pre.property_listings!==141401||a.expected_post.property_listings!==142688)throw new Error("counts");
+          if(a.approved!==true||a.rows!==1287||a.preflight_run_id!==36336105902||a.artifact_id!==10937202447)throw new Error("approval");
+          if(a.jsonl_sha256!=="3eb6f6faad6718694312e3ba468596c85553155a90313a8644a1070971c5e2a4")throw new Error("sha");
+          if(a.expected_pre.property_listings!==141349||a.expected_post.property_listings!==142636)throw new Error("counts");
           if(a.production_neon_writes_authorized!==false||a.vercel_deployment_authorized!==false)throw new Error("scope");
           NODE
           python - <<'PY'
@@ -37,9 +37,9 @@ jobs:
       - name: Download certified artifact
         run: |
           mkdir -p "$RUNNER_TEMP/w9n"
-          gh api "repos/${{ github.repository }}/actions/artifacts/10936523776/zip" > "$RUNNER_TEMP/w9n.zip"
+          gh api "repos/${{ github.repository }}/actions/artifacts/10937202447/zip" > "$RUNNER_TEMP/w9n.zip"
           unzip -q "$RUNNER_TEMP/w9n.zip" -d "$RUNNER_TEMP/w9n"
-          echo "50284d46c71ece06c6837ae6c37691dd2e18f91fa027a127739ff4cca6d29475  $RUNNER_TEMP/w9n/db-ready-wave9-new-sources.jsonl" | sha256sum -c -
+          echo "3eb6f6faad6718694312e3ba468596c85553155a90313a8644a1070971c5e2a4  $RUNNER_TEMP/w9n/db-ready-wave9-new-sources.jsonl" | sha256sum -c -
           test "$(wc -l < "$RUNNER_TEMP/w9n/db-ready-wave9-new-sources.jsonl")" = "1287"
       - name: Build CSV
         run: |
@@ -60,8 +60,8 @@ jobs:
           \copy w9_newsrc_import_20260927 FROM '/w9n/import.csv' WITH (FORMAT csv, HEADER true)
           DO $$
           BEGIN
-            IF (SELECT count(*) FROM public.property_listings)<>141401 THEN RAISE EXCEPTION 'pre properties'; END IF;
-            IF (SELECT count(*) FROM public.listing_sources)<>141401 THEN RAISE EXCEPTION 'pre sources'; END IF;
+            IF (SELECT count(*) FROM public.property_listings)<>141349 THEN RAISE EXCEPTION 'pre properties'; END IF;
+            IF (SELECT count(*) FROM public.listing_sources)<>141349 THEN RAISE EXCEPTION 'pre sources'; END IF;
             IF (SELECT count(*) FROM w9_newsrc_import_20260927)<>1287 THEN RAISE EXCEPTION 'stage'; END IF;
             IF EXISTS(SELECT 1 FROM w9_newsrc_import_20260927 s JOIN public.listing_sources ls ON ls.listing_url=s.listing_url) THEN RAISE EXCEPTION 'url overlap'; END IF;
             IF EXISTS(SELECT 1 FROM w9_newsrc_import_20260927 s JOIN public.property_listings pl ON pl.canonical_fingerprint=s.canonical_fingerprint) THEN RAISE EXCEPTION 'fp overlap'; END IF;
@@ -74,8 +74,8 @@ jobs:
           FROM w9_newsrc_import_20260927 s JOIN public.property_listings pl ON pl.canonical_fingerprint=s.canonical_fingerprint;
           DO $$
           BEGIN
-            IF (SELECT count(*) FROM public.property_listings)<>142688 THEN RAISE EXCEPTION 'post properties'; END IF;
-            IF (SELECT count(*) FROM public.listing_sources)<>142688 THEN RAISE EXCEPTION 'post sources'; END IF;
+            IF (SELECT count(*) FROM public.property_listings)<>142636 THEN RAISE EXCEPTION 'post properties'; END IF;
+            IF (SELECT count(*) FROM public.listing_sources)<>142636 THEN RAISE EXCEPTION 'post sources'; END IF;
             IF (SELECT count(*) FROM public.listing_sources WHERE ingestion_run_id='clean-corpus-v4.11-wave9-new-sources')<>1287 THEN RAISE EXCEPTION 'newsrc count'; END IF;
           END $$;
           COMMIT;
@@ -84,7 +84,7 @@ jobs:
       - name: Readback
         run: |
           docker run --rm -e DATABASE_URL="$DATABASE_URL" postgres:17 sh -lc 'psql "$DATABASE_URL" -X -qAt -F "|" -c "SELECT (SELECT count(*) FROM public.property_listings),(SELECT count(*) FROM public.listing_sources),(SELECT count(DISTINCT listing_url) FROM public.listing_sources),(SELECT count(DISTINCT canonical_fingerprint) FROM public.property_listings),(SELECT count(*) FROM public.listing_sources WHERE ingestion_run_id='"'"'clean-corpus-v4.11-wave9-new-sources'"'"'),(SELECT count(*) FROM public.listing_sources ls LEFT JOIN public.property_listings pl ON pl.id=ls.property_listing_id WHERE pl.id IS NULL),(SELECT count(*) FROM public.listing_sources WHERE is_active IS NOT TRUE);"' | tee "$RUNNER_TEMP/w9n/readback.txt"
-          test "$(cat "$RUNNER_TEMP/w9n/readback.txt")" = "142688|142688|142688|142688|1287|0|0"
+          test "$(cat "$RUNNER_TEMP/w9n/readback.txt")" = "142636|142636|142636|142636|1287|0|0"
       - uses: actions/upload-artifact@v4
         with:
           name: v4.11-wave9-new-sources-import-readback
