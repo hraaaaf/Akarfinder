@@ -1,23 +1,15 @@
 {
-  "approved": true,
-  "authorization_message": "Go — continue Wave8 filtered certification → isolated Neon import → independent readback",
-  "rows": 38935,
-  "source_certification_run_id": 36326242303,
+  "schema_version": "akarfinder-v4.11-wave8-import-approval-20260927",
+  "certification_run_id": 36326242303,
   "preflight_run_id": 36334154264,
   "artifact_id": 10936912208,
   "artifact_digest": "sha256:5590d49ae5a4a32e801bff32b61eecd52ada596259bf7fdce3ded037033ca560",
   "jsonl_sha256": "14015ca1163a01902071652ff39b7113cf7ae425cb1c244e6df3add80b3ece17",
-  "target_project": "ancient-violet-43534870",
-  "target_branch": "br-cold-mouse-b2a50yaa",
+  "rows": 38935,
+  "target_project_id": "ancient-violet-43534870",
+  "target_branch_id": "br-cold-mouse-b2a50yaa",
   "target_database": "AkarFinder",
-  "expected_pre": {
-    "property_listings": 100226,
-    "listing_sources": 100226
-  },
-  "expected_post": {
-    "property_listings": 139161,
-    "listing_sources": 139161
-  },
   "production_neon_writes_authorized": false,
-  "vercel_deployment_authorized": false
+  "vercel_deployment_authorized": false,
+  "approved_for_isolated_import": true
 }
