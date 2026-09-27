@@ -6,21 +6,22 @@ Approach then exceed **200,000 certified real-estate listings** in the isolated 
 
 ## Current verified state
 
-Read-only Neon verification executed on project `ancient-violet-43534870`, branch `br-cold-mouse-b2a50yaa`, database `AkarFinder`:
+Read-only Neon verification executed on project `ancient-violet-43534870`, branch `br-cold-mouse-b2a50yaa`, database `AkarFinder` after Wave8:
 
-- `property_listings`: **99,569**
-- `listing_sources`: **99,569**
-- distinct `listing_url`: **99,569**
-- distinct `canonical_fingerprint`: **99,569**
-- V4.11 sources: **99,533**
+- `property_listings`: **139,161**
+- `listing_sources`: **139,161**
+- distinct `listing_url`: **139,161**
+- distinct `canonical_fingerprint`: **139,161**
+- V4.11 sources: **139,125**
 - legacy sources: **36**
+- Wave8 sources: **38,935**
 - orphans: **0**
 - inactive sources: **0**
 - property core gaps: **0**
 - source core gaps: **0**
 
-Progress toward 200k: **49.8%**.
-Exact remaining delta: **100,431** listings.
+Progress toward 200k: **69.5805%**.
+Exact remaining delta: **60,839** listings.
 
 ## Certified V4.11 wave ledger
 
@@ -33,7 +34,9 @@ Exact remaining delta: **100,431** listings.
 | wave4b | 1,126 |
 | wave5 | 1,158 |
 | wave6 | 3,769 |
-| **V4.11 total** | **99,533** |
+| wave7 | 657 |
+| wave8 | 38,935 |
+| **V4.11 total** | **139,125** |
 
 The wave sum exactly matches the V4.11 count currently present in Neon.
 
@@ -143,3 +146,45 @@ Wave8 strict-route salvage is prepared and bound to the exact Wave7 artifact.
 5. Controlled atomic isolated-Neon import.
 6. Independent readback + ledger update.
 7. Continue subsequent waves until at least 200,000.
+
+
+## Wave8 closeout — VERIFIED 2026-09-27
+
+Wave8 is certified, price-safe, imported into isolated Neon, and independently read back.
+
+- Raw Wave8 certification run: `36326242303` — SUCCESS.
+- Raw certified artifact: `10934176431`, digest `sha256:2b3af158bfc4c0f86f0ac7dd7481bfa2d4acd6530f1b869eedcb2ff30c25384b`.
+- Raw candidate rows: **39,132**.
+- Neon overlap diagnosis: **0 URL**, **0 fingerprint**, **197 distinct portal identities** already present = 195 Mubawab + 2 Avito.
+- Final filtered rows: **38,935** = Mubawab **26,328** + Avito **12,607**.
+- One optional price outlier (`99,999,997,952 MAD`) exceeded PostgreSQL int4; it was quarantined to `null/not_disclosed` without altering identity or core fields.
+- Price-safe preflight run: `36334430803` — SUCCESS.
+- Price-safe artifact: `10936503385`, digest `sha256:b9102a4df8bad75fb68ce138d3b9464a03831628902fbffdd188973f5619d5af`.
+- Final JSONL SHA-256: `0f8670915f526ccebfffec7fb83cea78f50f797be85fbb675a400570c3cdf451`.
+- Controlled isolated-Neon import run: `36335262199` — SUCCESS.
+- Import readback artifact: `10935949669`, digest `sha256:92f74d2710d4dd3371b18a59870534ac7c5016aeda1917a216d5be49be209e79`.
+- Independent post-import readback run: `36335376884` — SUCCESS.
+- Independent readback artifact: `10937375236`, digest `sha256:f0cd9b5265b72ae9839d5141d154995db2d72d85bc63bae43b831b2c196929f2`.
+- Final direct Neon invariants: **139,161** properties / **139,161** sources / **139,161** unique URLs / **139,161** unique fingerprints / V4.11 **139,125** / legacy **36** / orphan **0** / inactive **0** / property core gaps **0** / source core gaps **0**.
+- Production Neon writes: **false**. Vercel deployment: **false**.
+
+## Wave9 current checkpoint
+
+Strict route refinement has been hardened against ambiguous `ferme/fermé`, road-name city tokens, `Sala El Jadida`, and Dakhla district ambiguity.
+
+- Hardened certification run: `36334943106` — SUCCESS.
+- Artifact: `10937330001`.
+- Artifact digest: `sha256:31c5e6f5a02fef7733f37eede5e667f5a1f3c5e4b7f13e36af5cd81932d4175b`.
+- JSONL SHA-256: `9baac42bc02b5f0820eac6709a3a3ec5b5e9c9cfea515a8135311fc5fdd56dd6`.
+- Offline certified rows: **2,428** = Mubawab **1,693** + Avito **735**.
+- Internal uniqueness and V4.11 core checks: PASS.
+- Database access/writes during certification: **0 / 0**.
+- Wave9 isolated Neon overlap preflight is the next gate; no Wave9 import is authorized before that proof.
+
+## Updated Next exact — post Wave8
+
+1. Finish Wave9 isolated-Neon preflight against baseline **139,161**.
+2. If zero URL/fingerprint/portal-identity overlap, bind approval to the exact Wave9 artifact.
+3. Controlled atomic isolated-Neon Wave9 import.
+4. Independent readback + ledger/canonical update.
+5. Continue the new-source Common Crawl and Sarout-safe salvage lanes until at least **200,000**.
