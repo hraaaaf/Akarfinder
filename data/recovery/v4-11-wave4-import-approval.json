@@ -20,5 +20,6 @@
     "wave4_sources": 3674
   },
   "production_neon_writes_authorized": false,
-  "vercel_deployment_authorized": false
+  "vercel_deployment_authorized": false,
+  "retrigger_note": "retry after synchronous CSV build fix"
 }
