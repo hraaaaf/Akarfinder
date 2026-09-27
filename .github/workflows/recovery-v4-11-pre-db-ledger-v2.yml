@@ -1,0 +1,69 @@
+name: Recovery V4.11 Pre-DB Ledger V2
+
+on:
+  push:
+    branches: ["recovery/v4-11-mass-route-wave3-20260927"]
+    paths:
+      - "data/recovery/activate-v4-11-pre-db-ledger-v2.txt"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Download certified evidence inputs
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/old" "$RUNNER_TEMP/domio" "$RUNNER_TEMP/agenz" data/audits/pre-db-ledger-v2
+          gh api repos/${{ github.repository }}/actions/artifacts/10927761643/zip > "$RUNNER_TEMP/old.zip"
+          unzip -q -o "$RUNNER_TEMP/old.zip" -d "$RUNNER_TEMP/old"
+          gh api repos/${{ github.repository }}/actions/artifacts/10927144343/zip > "$RUNNER_TEMP/domio.zip"
+          unzip -q -o "$RUNNER_TEMP/domio.zip" -d "$RUNNER_TEMP/domio"
+          gh api repos/${{ github.repository }}/actions/artifacts/10927701179/zip > "$RUNNER_TEMP/agenz.zip"
+          unzip -q -o "$RUNNER_TEMP/agenz.zip" -d "$RUNNER_TEMP/agenz"
+          test -s "$RUNNER_TEMP/old/existence-verified.jsonl"
+          test -s "$RUNNER_TEMP/old/unresolved-existence.txt"
+          test -s "$RUNNER_TEMP/domio/category-matched.jsonl"
+          test -s "$RUNNER_TEMP/agenz/agenz-ma.jsonl"
+          echo "270579ff59073191eabab74f3a94d4c96d0dd5f8f80418cc918f16dd5867b7a5  $RUNNER_TEMP/old/existence-verified.jsonl" | sha256sum -c -
+          echo "3049999d9a5d2eefa6e42524b47b3f3d99c45d84b7f37ca28fef3d8886401f1d  $RUNNER_TEMP/old/unresolved-existence.txt" | sha256sum -c -
+          echo "79ccf4cb0fef9338e182f0ca676834c582e8972e098fd29d9ec251bf4540e5a8  $RUNNER_TEMP/domio/category-matched.jsonl" | sha256sum -c -
+          echo "2e0a7abd596b07602f42f071ff136efc718a8fe0194e11ad1fd1e647d2e98db9  $RUNNER_TEMP/agenz/agenz-ma.jsonl" | sha256sum -c -
+
+      - name: Build v2 ledger
+        run: |
+          node scripts/recovery/build-v4-11-pre-db-ledger-v2.mjs             --verified "$RUNNER_TEMP/old/existence-verified.jsonl"             --unresolved "$RUNNER_TEMP/old/unresolved-existence.txt"             --domio "$RUNNER_TEMP/domio/category-matched.jsonl"             --agenz "$RUNNER_TEMP/agenz/agenz-ma.jsonl"             --out-dir data/audits/pre-db-ledger-v2
+
+      - name: Verify v2 invariants
+        run: |
+          node - <<'NODE'
+          const fs=require("fs");
+          const m=require("./data/audits/pre-db-ledger-v2/manifest.json");
+          if(m.existence_verified_rows!==170961)throw new Error("verified");
+          if(m.unresolved_existence_rows!==43031)throw new Error("unresolved");
+          if(m.additions.domio_official_category!==6843)throw new Error("domio");
+          if(m.additions.agenz_recent_commoncrawl!==871)throw new Error("agenz");
+          if(m.database_access!==0||m.database_writes!==0)throw new Error("db invariant");
+          const vr=fs.readFileSync("data/audits/pre-db-ledger-v2/existence-verified-v2.jsonl","utf8").split(/\r?\n/).filter(Boolean).length;
+          const ur=fs.readFileSync("data/audits/pre-db-ledger-v2/unresolved-existence-v2.txt","utf8").split(/\r?\n/).filter(Boolean).length;
+          if(vr!==170961||ur!==43031)throw new Error("physical counts");
+          console.log(JSON.stringify(m,null,2));
+          NODE
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: clean-corpus-v4.11-pre-db-ledger-v2
+          path: data/audits/pre-db-ledger-v2/
+          retention-days: 30
