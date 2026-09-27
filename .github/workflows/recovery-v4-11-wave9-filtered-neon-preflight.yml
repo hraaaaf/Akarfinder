@@ -45,8 +45,9 @@ jobs:
       - name: Export exact overlap union
         run: |
           cat > "$RUNNER_TEMP/w9/f.sql" <<'SQL'
-          CREATE TEMP TABLE w9(listing_url text,canonical_fingerprint text,source_name text,source_offer_key text);
-          \copy w9 FROM '/w9/c.csv' WITH (FORMAT csv, HEADER true)
+          DROP TABLE IF EXISTS w9_stage_filter_20260927;
+          CREATE TEMP TABLE w9_stage_filter_20260927(listing_url text,canonical_fingerprint text,source_name text,source_offer_key text);
+          \copy w9_stage_filter_20260927 FROM '/w9/c.csv' WITH (FORMAT csv, HEADER true)
           CREATE TEMP TABLE e AS
           SELECT DISTINCT
             listing_url, property_listing_id,
@@ -55,20 +56,21 @@ jobs:
                  WHEN listing_url ~* 'avito\.ma' THEN (regexp_match(listing_url,'_([0-9]+)\.html?$'))[1] END source_offer_key
           FROM public.listing_sources
           WHERE listing_url ~* '(mubawab\.ma|avito\.ma)';
-          CREATE TEMP TABLE bad AS
+          DROP TABLE IF EXISTS w9_bad_filter_20260927;
+          CREATE TEMP TABLE w9_bad_filter_20260927 AS
           SELECT DISTINCT w.listing_url
-          FROM w9 w
+          FROM w9_stage_filter_20260927 w
           LEFT JOIN public.listing_sources ls ON ls.listing_url=w.listing_url
           LEFT JOIN public.property_listings pl ON pl.canonical_fingerprint=w.canonical_fingerprint
           LEFT JOIN e ON e.source_name=w.source_name AND e.source_offer_key=w.source_offer_key
           WHERE ls.listing_url IS NOT NULL OR pl.canonical_fingerprint IS NOT NULL OR e.source_offer_key IS NOT NULL;
-          \copy bad TO '/w9/bad.csv' WITH (FORMAT csv, HEADER true)
+          \copy w9_bad_filter_20260927 TO '/w9/bad.csv' WITH (FORMAT csv, HEADER true)
           SELECT
-            (SELECT count(*) FROM w9),
-            (SELECT count(*) FROM bad),
-            (SELECT count(*) FROM w9 JOIN public.listing_sources ls USING(listing_url)),
-            (SELECT count(*) FROM w9 JOIN public.property_listings pl USING(canonical_fingerprint)),
-            (SELECT count(*) FROM w9 JOIN e USING(source_name,source_offer_key)),
+            (SELECT count(*) FROM w9_stage_filter_20260927),
+            (SELECT count(*) FROM w9_bad_filter_20260927),
+            (SELECT count(*) FROM w9_stage_filter_20260927 JOIN public.listing_sources ls USING(listing_url)),
+            (SELECT count(*) FROM w9_stage_filter_20260927 JOIN public.property_listings pl USING(canonical_fingerprint)),
+            (SELECT count(*) FROM w9_stage_filter_20260927 JOIN e USING(source_name,source_offer_key)),
             (SELECT count(*) FROM public.property_listings),
             (SELECT count(*) FROM public.listing_sources);
           SQL
@@ -95,8 +97,9 @@ jobs:
           const fs=require("fs");const [src,out]=process.argv.slice(2);const rs=fs.readFileSync(src,"utf8").trim().split(/\r?\n/).filter(Boolean).map(JSON.parse);const e=v=>'"'+String(v??"").replace(/"/g,'""')+'"';fs.writeFileSync(out,"listing_url,canonical_fingerprint,source_name,source_offer_key\n"+rs.map(r=>[r.listing_url,r.canonical_fingerprint,r.source_name,r.source_offer_key].map(e).join(",")).join("\n")+"\n");
           NODE
           cat > "$RUNNER_TEMP/w9/p.sql" <<'SQL'
-          CREATE TEMP TABLE k(listing_url text,canonical_fingerprint text,source_name text,source_offer_key text);
-          \copy k FROM '/w9/k.csv' WITH (FORMAT csv, HEADER true)
+          DROP TABLE IF EXISTS w9_kept_filter_20260927;
+          CREATE TEMP TABLE w9_kept_filter_20260927(listing_url text,canonical_fingerprint text,source_name text,source_offer_key text);
+          \copy w9_kept_filter_20260927 FROM '/w9/k.csv' WITH (FORMAT csv, HEADER true)
           WITH e AS (
             SELECT DISTINCT
               CASE WHEN listing_url ~* 'mubawab\.ma' THEN 'mubawab.ma' WHEN listing_url ~* 'avito\.ma' THEN 'avito.ma' END source_name,
@@ -104,7 +107,7 @@ jobs:
                    WHEN listing_url ~* 'avito\.ma' THEN (regexp_match(listing_url,'_([0-9]+)\.html?$'))[1] END source_offer_key
             FROM public.listing_sources WHERE listing_url ~* '(mubawab\.ma|avito\.ma)'
           )
-          SELECT (SELECT count(*) FROM k),(SELECT count(*) FROM k JOIN public.listing_sources ls USING(listing_url)),(SELECT count(*) FROM k JOIN public.property_listings pl USING(canonical_fingerprint)),(SELECT count(*) FROM k JOIN e USING(source_name,source_offer_key)),(SELECT count(*) FROM public.property_listings),(SELECT count(*) FROM public.listing_sources);
+          SELECT (SELECT count(*) FROM w9_kept_filter_20260927),(SELECT count(*) FROM w9_kept_filter_20260927 JOIN public.listing_sources ls USING(listing_url)),(SELECT count(*) FROM w9_kept_filter_20260927 JOIN public.property_listings pl USING(canonical_fingerprint)),(SELECT count(*) FROM w9_kept_filter_20260927 JOIN e USING(source_name,source_offer_key)),(SELECT count(*) FROM public.property_listings),(SELECT count(*) FROM public.listing_sources);
           SQL
           docker run --rm -e DATABASE_URL="$DATABASE_URL" -v "$RUNNER_TEMP/w9:/w9" postgres:17 sh -lc 'psql "$DATABASE_URL" -X -qAt -F "|" -v ON_ERROR_STOP=1 -f /w9/p.sql' | tee data/audits/v4-11-wave9-filtered/preflight.txt
       - uses: actions/upload-artifact@v4
