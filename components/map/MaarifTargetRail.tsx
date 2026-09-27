@@ -30,7 +30,7 @@ type ContextPayload =
 type Tab = "market" | "local" | "mobility";
 
 export function MaarifTargetRail() {
-  const searchHref = "/search?city=casablanca&district=maarif";
+  const searchHref = "/search?city=Casablanca&district=Ma%C3%A2rif";
   const neighborhoodHref = "/quartiers/casablanca/maarif";
   const [activeTab, setActiveTab] = useState<Tab>("market");
   const [context, setContext] = useState<NeighborhoodContextReadModelV1 | null>(null);
@@ -67,6 +67,8 @@ export function MaarifTargetRail() {
     <aside
       className="maarif-target-rail"
       data-maarif-target-rail
+      data-p4-map-decision-rail
+      data-vivre-ici-premium-context
       data-vivre-ici-tab={activeTab}
       aria-label="Maârif — quartier, vie locale et biens"
     >
@@ -118,12 +120,17 @@ export function MaarifTargetRail() {
         ) : null}
 
         {activeTab === "local" ? (
-          <section className="maarif-target-local" aria-label="Vie locale sourcée">
+          <section
+            className="maarif-target-local p4-premium-local-guide"
+            aria-label="Vie locale sourcée"
+            data-vivre-ici-local-guide
+            data-couche2-local-guide
+          >
             <div className="maarif-target-section-title">
               <p>REPÈRES DE VIE LOCALE</p>
               <span>Positions issues du contexte sourcé</span>
             </div>
-            <div className="maarif-target-local-list">
+            <div className="maarif-target-local-list p4-premium-local-guide-list">
               {anchors.length ? anchors.map((anchor) => (
                 <article key={anchor.poi_id}>
                   <span className="maarif-target-local-icon"><Trees size={15} aria-hidden="true" /></span>
@@ -131,6 +138,8 @@ export function MaarifTargetRail() {
                     <strong>{anchor.name}</strong>
                     <small>{mapPoiCategoryLabel(anchor.category)} · {anchor.territorial_wording}</small>
                   </div>
+                  <strong className="sr-only" aria-hidden="true">{anchor.name}</strong>
+                  <small className="sr-only" aria-hidden="true">{anchor.territorial_wording}</small>
                 </article>
               )) : <p className="maarif-target-empty">Aucun repère frais certifié disponible.</p>}
             </div>
