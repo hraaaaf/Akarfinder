@@ -24,7 +24,7 @@ jobs:
         run: |
           node - <<'NODE'
           const a=require("./data/recovery/v4-11-wave9-new-sources-import-approval.json");
-          if(a.approved!==true||a.rows!==1287||a.preflight_run_id!==36336105902||a.artifact_id!==10937202447)throw new Error("approval");
+          if(a.approved!==true||a.rows!==1287||a.preflight_run_id!==36340880049||a.artifact_id!==10937202447)throw new Error("approval");
           if(a.jsonl_sha256!=="3eb6f6faad6718694312e3ba468596c85553155a90313a8644a1070971c5e2a4")throw new Error("sha");
           if(a.expected_pre.property_listings!==141349||a.expected_post.property_listings!==142636)throw new Error("counts");
           if(a.production_neon_writes_authorized!==false||a.vercel_deployment_authorized!==false)throw new Error("scope");
