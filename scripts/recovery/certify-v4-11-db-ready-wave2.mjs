@@ -8,7 +8,14 @@ if(!input||!output||!quarantineOut||!summaryOut) throw new Error("missing args")
 
 const CERTIFIED_AT="2026-09-27T08:40:00Z";
 const ALLOWED=new Set(["apartment","land","villa","commercial","office","house","riad","studio"]);
-const PT_MAP={office_commercial:"office",farm:"land"};\nconst STRONG_EVIDENCE=new Set(["direct_http200","official_sitemap_recent","commoncrawl_recent","listing_source_active_recent","thin_fresh_confirmed_recent"]);
+const PT_MAP={office_commercial:"office",farm:"land"};
+const STRONG_EVIDENCE=new Set([
+  "direct_http200",
+  "official_sitemap_recent",
+  "commoncrawl_recent",
+  "listing_source_active_recent",
+  "thin_fresh_confirmed_recent",
+]);
 
 function fp(url){return crypto.createHash("sha256").update("representation|"+url).digest("hex")}
 function sha(file){return crypto.createHash("sha256").update(fs.readFileSync(file)).digest("hex")}
@@ -24,7 +31,7 @@ const CITY_ALIASES={
   "mohammedia":"Mohammedia","oujda":"Oujda","tetouan":"Tétouan","tétouan":"Tétouan",
   "eljadida":"El Jadida","el jadida":"El Jadida","el-jadida":"El Jadida",
   "sale":"Salé","salé":"Salé","temara":"Témara","témara":"Témara",
-  "beni-mellal":"Béni Mellal","béni-mellal":"Béni Mellal","beni mellal":"Béni Mellal","béni mellal":"Béni Mellal"
+  "beni-mellal":"Béni Mellal","béni-mellal":"Béni Mellal","beni mellal":"Béni Mellal","béni mellal":"Béni Mellal",
 };
 function normalizeCity(raw){
   const decoded=decodeSafe(String(raw??"")).trim();
@@ -59,15 +66,13 @@ for(const r of strongRows){
   if(title.length<12) reasons.push("weak_title");
   const city=normalizeCity(f.city);
   if(!city) reasons.push("missing_city");
-  if(!Array.isArray(r.evidence)||r.evidence.length===0) reasons.push("missing_existence_evidence");
   if(reasons.length){rejected.push({canonical_url:r.canonical_url,source_domain:r.source_domain,reasons});continue}
   pre.push({...r,normalized:{city,property_type,transaction_type:f.transaction_type,title}});
 }
-if(rejected.filter(x=>x.reasons.includes("unsupported_or_unknown_property_type")).length!==8) throw new Error("expected 8 unsupported types");
+if(rejected.filter(x=>x.reasons.includes("unsupported_or_unknown_property_type")).length!==1) throw new Error("expected 1 unsupported type in strong-evidence rows");
 if(rejected.filter(x=>x.reasons.includes("weak_title")).length!==40) throw new Error("expected 40 weak titles");
-if(pre.length!==17190) throw new Error("expected 17190 after field gates, got "+pre.length);
+if(pre.length!==13476) throw new Error("expected 13476 after strong-evidence + field gates, got "+pre.length);
 
-const sigFields=["city","property_type","transaction_type","price_mad","surface_m2"];
 const groups=new Map();
 for(const r of pre){
   const f=r.fields||{};
@@ -94,12 +99,7 @@ for(const r of safe){
   const surface=surfaceRaw==null?null:Math.round(Number(surfaceRaw));
   if(price!==null&&!Number.isSafeInteger(price)) throw new Error("invalid price "+r.canonical_url);
   if(surface!==null&&!Number.isSafeInteger(surface)) throw new Error("invalid surface "+r.canonical_url);
-  const score=80
-    +(price!==null?5:0)
-    +(surface!==null?5:0)
-    +(f.district?3:0)
-    +(f.bedrooms_count!=null?3:0)
-    +(f.description_snippet?4:0);
+  const score=80+(price!==null?5:0)+(surface!==null?5:0)+(f.district?3:0)+(f.bedrooms_count!=null?3:0)+(f.description_snippet?4:0);
   out.push({
     canonical_fingerprint:fp(r.canonical_url),
     title:r.normalized.title,
@@ -126,7 +126,7 @@ for(const r of safe){
       property_type_source_value:f.property_type,
       property_type_normalized_value:r.normalized.property_type,
       price_mad_raw:priceRaw,
-      surface_m2_raw:surfaceRaw
+      surface_m2_raw:surfaceRaw,
     },
     source_name:r.source_domain,
     listing_url:r.canonical_url,
@@ -142,18 +142,16 @@ for(const r of safe){
     price_currency:price!==null?"MAD":null,
     price_period:null,
     price_status:price!==null?"valid":"not_disclosed",
-    approved_for_import:false
+    approved_for_import:false,
   });
 }
 if(new Set(out.map(x=>x.canonical_fingerprint)).size!==out.length) throw new Error("fingerprint duplicate");
 fs.writeFileSync(output,out.map(x=>JSON.stringify(x)).join("\n")+"\n");
 
 const qrows=[];
-for(const r of pre.filter(x=>quarantineUrls.has(x.canonical_url))){
-  qrows.push({canonical_url:r.canonical_url,source_domain:r.source_domain,reason:"cross_source_identity_ambiguity"});
-}
-for(const r of weakEvidenceRows)qrows.push({canonical_url:r.canonical_url,source_domain:r.source_domain,reason:"no_strong_existence_evidence"});
-for(const r of rejected)qrows.push({...r,reason:"field_gate"});
+for(const r of weakEvidenceRows) qrows.push({canonical_url:r.canonical_url,source_domain:r.source_domain,reason:"no_strong_existence_evidence"});
+for(const r of pre.filter(x=>quarantineUrls.has(x.canonical_url))) qrows.push({canonical_url:r.canonical_url,source_domain:r.source_domain,reason:"cross_source_identity_ambiguity"});
+for(const r of rejected) qrows.push({...r,reason:"field_gate"});
 fs.writeFileSync(quarantineOut,qrows.map(x=>JSON.stringify(x)).join("\n")+"\n");
 
 const byDomain=out.reduce((m,r)=>(bump(m,r.source_name),m),{});
@@ -161,12 +159,14 @@ const byType=out.reduce((m,r)=>(bump(m,r.property_type),m),{});
 const summary={
   schema_version:"akarfinder-v4.11-db-ready-wave2-20260927",
   input_pre_identity_rows:17238,
-  field_gate_pass_rows:17190,
-  rejected_unknown_type_rows:8,
+  strong_evidence_rows:13517,
+  field_gate_pass_rows:13476,
+  rejected_no_strong_evidence_rows:3721,
+  rejected_unknown_type_rows:1,
   rejected_weak_title_rows:40,
-  identity_ambiguous_groups:67,
-  identity_quarantine_rows:168,
-  db_ready_rows:17022,
+  identity_ambiguous_groups:26,
+  identity_quarantine_rows:55,
+  db_ready_rows:13421,
   by_domain:byDomain,
   by_property_type:byType,
   approved_for_import_rows:0,
@@ -176,7 +176,7 @@ const summary={
   quarantine_sha256:sha(quarantineOut),
   certification_time:CERTIFIED_AT,
   database_access:0,database_writes:0,production_neon_writes:0,vercel_deployment:false,
-  rule:"Only strong existence evidence + core product fields + supported normalized taxonomy + no contradiction + conservative cross-source identity-safe rows qualify. Internal recent representation/minimal-live evidence alone is insufficient."
+  rule:"Only strong existence evidence + core product fields + supported normalized taxonomy + no contradiction + conservative cross-source identity-safe rows qualify. Internal recent representation/minimal-live evidence alone is insufficient.",
 };
 fs.writeFileSync(summaryOut,JSON.stringify(summary,null,2)+"\n");
 console.log(JSON.stringify(summary,null,2));
