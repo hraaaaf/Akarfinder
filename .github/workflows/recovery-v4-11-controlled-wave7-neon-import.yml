@@ -33,7 +33,7 @@ jobs:
           test -n "${DATABASE_URL:-}"
           node - <<'NODE'
           const a=require("./data/recovery/v4-11-wave7-import-approval.json");
-          if(a.approved!==true||a.rows!==485)throw new Error("approval");
+          if(a.approved!==true||a.rows!==657)throw new Error("approval");
           if(!Number.isInteger(a.artifact_id)||a.artifact_id<=0)throw new Error("artifact");
           if(!/^sha256:[0-9a-f]{64}$/.test(a.artifact_digest||""))throw new Error("artifact digest");
           if(!/^[0-9a-f]{64}$/.test(a.jsonl_sha256||""))throw new Error("jsonl sha");
@@ -62,7 +62,7 @@ jobs:
           gh api "repos/${{ github.repository }}/actions/artifacts/$ARTIFACT_ID/zip" > "$RUNNER_TEMP/w7.zip"
           unzip -q -o "$RUNNER_TEMP/w7.zip" -d "$RUNNER_TEMP/w7"
           echo "$EXPECTED_SHA  $RUNNER_TEMP/w7/db-ready-wave7.jsonl" | sha256sum -c -
-          test "$(wc -l < "$RUNNER_TEMP/w7/db-ready-wave7.jsonl")" = "485"
+          test "$(wc -l < "$RUNNER_TEMP/w7/db-ready-wave7.jsonl")" = "657"
 
       - name: Build import CSV
         run: |
@@ -72,9 +72,9 @@ jobs:
           const rows=fs.readFileSync(src,"utf8").split(/\r?\n/).filter(Boolean).map(JSON.parse);
           const cols=["canonical_fingerprint","title","price_mad","city","district","property_type","transaction_type","surface_m2","rooms_count","bedrooms_count","bathrooms_count","description_snippet","images_count","seller_name","data_completeness_score","field_confidence","source_name","listing_url","source_url","first_seen_at","last_seen_at","source_offer_key","origin_type","compliance_status","content_fingerprint","ingestion_run_id","displayed_price","price_currency","price_period","price_status"];
           const esc=v=>{if(v===null||v===undefined)return "";const s=typeof v==="object"?JSON.stringify(v):String(v);return /[",\n\r]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s};
-          if(rows.length!==485||rows.some(r=>r.approved_for_import!==false))throw new Error("artifact invariant");
-          if(new Set(rows.map(r=>r.listing_url)).size!==485||new Set(rows.map(r=>r.canonical_fingerprint)).size!==485)throw new Error("dedupe invariant");
-          if(new Set(rows.map(r=>r.source_name+"|"+r.source_offer_key)).size!==485)throw new Error("portal identity invariant");
+          if(rows.length!==657||rows.some(r=>r.approved_for_import!==false))throw new Error("artifact invariant");
+          if(new Set(rows.map(r=>r.listing_url)).size!==657||new Set(rows.map(r=>r.canonical_fingerprint)).size!==657)throw new Error("dedupe invariant");
+          if(new Set(rows.map(r=>r.source_name+"|"+r.source_offer_key)).size!==657)throw new Error("portal identity invariant");
           if(rows.some(r=>![r.title,r.city,r.property_type,r.transaction_type].every(x=>x!=null&&String(x).trim()!=="")))throw new Error("core invariant");
           fs.writeFileSync(out,cols.join(",")+"\n"+rows.map(r=>cols.map(c=>esc(r[c])).join(",")).join("\n")+"\n");
           NODE
@@ -125,7 +125,7 @@ jobs:
           docker run --rm -e DATABASE_URL="$DATABASE_URL" -v "$RUNNER_TEMP/w7:/w7" postgres:17 sh -lc 'psql "$DATABASE_URL" -X -qAt -F "|" -v ON_ERROR_STOP=1 -f /w7/preflight.sql' | tee "$RUNNER_TEMP/w7/preflight.out"
           LAST="$(grep -E '^[0-9]+\|' "$RUNNER_TEMP/w7/preflight.out" | tail -n1)"
           IFS='|' read -r STAGED URL_OVERLAP FP_OVERLAP ID_OVERLAP PRE_PL PRE_LS PRE_W7 <<< "$LAST"
-          test "$STAGED" = "485"
+          test "$STAGED" = "657"
           test "$URL_OVERLAP" = "0"
           test "$FP_OVERLAP" = "0"
           test "$ID_OVERLAP" = "0"
@@ -152,7 +152,7 @@ jobs:
 
           DO $$
           BEGIN
-            IF (SELECT count(*) FROM stage_w7) <> 485 THEN RAISE EXCEPTION 'stage count mismatch'; END IF;
+            IF (SELECT count(*) FROM stage_w7) <> 657 THEN RAISE EXCEPTION 'stage count mismatch'; END IF;
             IF EXISTS (SELECT 1 FROM stage_w7 s JOIN public.listing_sources ls ON ls.listing_url=s.listing_url)
               THEN RAISE EXCEPTION 'unexpected URL overlap'; END IF;
             IF EXISTS (SELECT 1 FROM stage_w7 s JOIN public.property_listings pl ON pl.canonical_fingerprint=s.canonical_fingerprint)
@@ -178,9 +178,9 @@ jobs:
 
           DO $$
           BEGIN
-            IF (SELECT count(*) FROM public.property_listings) <> 100054 THEN RAISE EXCEPTION 'property total mismatch'; END IF;
-            IF (SELECT count(*) FROM public.listing_sources) <> 100054 THEN RAISE EXCEPTION 'source total mismatch'; END IF;
-            IF (SELECT count(*) FROM public.listing_sources WHERE ingestion_run_id='clean-corpus-v4.11-wave7') <> 485
+            IF (SELECT count(*) FROM public.property_listings) <> 100226 THEN RAISE EXCEPTION 'property total mismatch'; END IF;
+            IF (SELECT count(*) FROM public.listing_sources) <> 100226 THEN RAISE EXCEPTION 'source total mismatch'; END IF;
+            IF (SELECT count(*) FROM public.listing_sources WHERE ingestion_run_id='clean-corpus-v4.11-wave7') <> 657
               THEN RAISE EXCEPTION 'wave7 count mismatch'; END IF;
           END $$;
           COMMIT;
@@ -207,15 +207,15 @@ jobs:
           "'")"
           echo "$OUT"
           IFS='|' read -r PL LS URLS FPS W7 W7URL ORPH INACTIVE V411 LEGACY PGAP SGAP <<< "$OUT"
-          test "$PL" = "100054"
-          test "$LS" = "100054"
-          test "$URLS" = "100054"
-          test "$FPS" = "100054"
-          test "$W7" = "485"
-          test "$W7URL" = "485"
+          test "$PL" = "100226"
+          test "$LS" = "100226"
+          test "$URLS" = "100226"
+          test "$FPS" = "100226"
+          test "$W7" = "657"
+          test "$W7URL" = "657"
           test "$ORPH" = "0"
           test "$INACTIVE" = "0"
-          test "$V411" = "100018"
+          test "$V411" = "100190"
           test "$LEGACY" = "36"
           test "$PGAP" = "0"
           test "$SGAP" = "0"
