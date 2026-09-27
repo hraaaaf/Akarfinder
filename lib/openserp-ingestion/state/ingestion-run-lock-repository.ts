@@ -13,6 +13,7 @@
 // refusal, structured instrumentation.
 
 import { getSupabaseServerClient } from "@/lib/db/supabase-client";
+import { assertHaSupabaseWriteAllowed } from "@/lib/db/ha-write-policy";
 import { withDbTimeout } from "./db-call-guard";
 import type { DbCallContext } from "./query-rotation-state-repository";
 
@@ -23,6 +24,7 @@ export type AcquireLockResult =
   | { acquired: false; reason: "LOCK_HELD_BY_ANOTHER_OWNER"; currentOwnerId: string; currentExpiresAt: string };
 
 export async function acquireIngestionRunLock(ownerId: string, leaseSeconds: number, ctx: DbCallContext = {}): Promise<AcquireLockResult> {
+  assertHaSupabaseWriteAllowed();
   const supabase = getSupabaseServerClient();
   const row = await withDbTimeout({
     callName: "acquire_ingestion_run_lock",
@@ -62,6 +64,7 @@ export async function acquireIngestionRunLock(ownerId: string, leaseSeconds: num
 // times out or the budget refuses it, the lease's own expiry remains the
 // final safety net -- the caller treats release as best-effort.
 export async function releaseIngestionRunLock(ownerId: string, ctx: DbCallContext = {}): Promise<boolean> {
+  assertHaSupabaseWriteAllowed();
   const supabase = getSupabaseServerClient();
   const result = await withDbTimeout({
     callName: "release_ingestion_run_lock",

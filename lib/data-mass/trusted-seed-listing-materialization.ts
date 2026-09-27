@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { getSupabaseServerClient } from "@/lib/db/supabase-client";
+import { assertHaSupabaseWriteAllowed } from "@/lib/db/ha-write-policy";
 import {
   getDomainEntry,
   getListingUrlPatterns,
@@ -182,6 +183,7 @@ export async function materializeTrustedSeedListings(input: {
   skippedExistingUrls: number;
   errors: Array<{ canonicalUrl: string; error: string }>;
 }> {
+  assertHaSupabaseWriteAllowed();
   const db = getSupabaseServerClient();
   const admitted = input.decisions.filter((decision) => decision.admitted);
   const urls = [...new Set(admitted.map((decision) => decision.input.canonicalUrl))];

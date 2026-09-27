@@ -1,4 +1,5 @@
 import { getSupabaseServerClient } from "@/lib/db/supabase-client";
+import { assertHaSupabaseWriteAllowed } from "@/lib/db/ha-write-policy";
 
 export type ContinuityAction =
   | { action: "create_project"; name: string; profile?: unknown; companion_session?: unknown }
@@ -123,6 +124,7 @@ async function ensureOwnedProject(userId: string, projectId: string | null | und
 }
 
 export async function executeContinuityAction(userId: string, action: ContinuityAction) {
+  assertHaSupabaseWriteAllowed();
   const db = getSupabaseServerClient();
   if ("project_id" in action && !(await ensureOwnedProject(userId, action.project_id))) throw new Error("PROJECT_NOT_OWNED");
 

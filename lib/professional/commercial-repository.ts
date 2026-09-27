@@ -1,4 +1,5 @@
 import { getSupabaseServerClient } from "@/lib/db/supabase-client";
+import { assertHaSupabaseWriteAllowed } from "@/lib/db/ha-write-policy";
 import type { CanonicalPropertyType } from "@/lib/property-schema/core";
 import { requireProfessionalPermission } from "./repository";
 import {
@@ -88,6 +89,7 @@ export async function createPartnerPropertySubmission(
   organizationId: string,
   input: { property_type: CanonicalPropertyType; transaction_type: "sale" | "rent" },
 ): Promise<PartnerPropertySubmissionRow | null> {
+  assertHaSupabaseWriteAllowed();
   const context = await requireDraftAccess(userId, organizationId);
   if (!context) return null;
   const now = new Date().toISOString();
@@ -123,6 +125,7 @@ export async function savePartnerPropertySubmission(
   submissionId: string,
   input: { declared_facts: PartnerDeclaredFacts; current_step: PartnerOnboardingStep },
 ): Promise<PartnerPropertySubmissionRow | null> {
+  assertHaSupabaseWriteAllowed();
   const context = await requireDraftAccess(userId, organizationId);
   if (!context) return null;
   const supabase = getSupabaseServerClient();
@@ -162,6 +165,7 @@ export async function savePartnerPropertySubmission(
 }
 
 export async function submitPartnerPropertyForReview(userId: string, organizationId: string, submissionId: string) {
+  assertHaSupabaseWriteAllowed();
   const context = await requireDraftAccess(userId, organizationId);
   if (!context) return null;
   const supabase = getSupabaseServerClient();
@@ -219,6 +223,7 @@ export async function reviewPartnerPropertySubmissionByStaff(
   decision: "approved" | "rejected",
   rejectionReason?: string | null,
 ) {
+  assertHaSupabaseWriteAllowed();
   const now = new Date().toISOString();
   const { data, error } = await getSupabaseServerClient()
     .from("professional_property_submissions")
@@ -247,6 +252,7 @@ export async function setProfessionalActivationByStaff(
     commercial_tier?: "none" | "partner" | "gold" | "premium";
   },
 ) {
+  assertHaSupabaseWriteAllowed();
   const { data, error } = await getSupabaseServerClient()
     .from("professional_organizations")
     .update({
@@ -291,6 +297,7 @@ export async function createPartnerMedia(
     attribution?: string | null;
   },
 ) {
+  assertHaSupabaseWriteAllowed();
   const context = await requireDraftAccess(userId, organizationId);
   if (!context) return null;
   if (!!input.submission_id === !!input.project_id) throw new Error("MEDIA_OWNER_REQUIRED");

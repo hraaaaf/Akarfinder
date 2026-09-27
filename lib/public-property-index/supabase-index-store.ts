@@ -1,3 +1,4 @@
+import { assertHaSupabaseWriteAllowed } from "@/lib/db/ha-write-policy";
 import { getSupabaseServerClient } from "@/lib/db/supabase-client";
 import { searchPublicPropertyIndex } from "./fts-search";
 import { normalizePublicPropertyIndexRecord } from "./normalize-index-record";
@@ -121,6 +122,7 @@ export class SupabasePublicPropertyIndexStore implements PublicPropertyIndexStor
 
   async upsert(records: PublicPropertyIndexRecord[]): Promise<void> {
     try {
+      assertHaSupabaseWriteAllowed();
       const now = new Date().toISOString();
       const mergedRecords: PublicPropertyIndexRecord[] = [];
 

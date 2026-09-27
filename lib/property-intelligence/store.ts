@@ -1,3 +1,4 @@
+import { assertHaSupabaseWriteAllowed } from "@/lib/db/ha-write-policy";
 import type { ExtractedFeature } from "./rule-engine";
 import { getFeatureDefinition, isValidFeatureValue, type FeatureKey } from "./feature-registry";
 
@@ -63,6 +64,7 @@ export class PropertyIntelligenceStore {
   constructor(private readonly client: SupabaseStoreClient) {}
 
   async persistFeature(input: PersistFeatureInput): Promise<string> {
+    assertHaSupabaseWriteAllowed();
     validatePersistFeatureInput(input);
     const publicationEligible = computePublicationEligibility(input.feature);
     const { data, error } = await this.client.rpc("persist_property_intelligence_feature", {

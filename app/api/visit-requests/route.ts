@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { getListingById } from "@/lib/listings/utils";
 import { getSupabaseServerClient } from "@/lib/db/supabase-client";
+import { assertHaSupabaseWriteAllowed } from "@/lib/db/ha-write-policy";
 import { queryListingById } from "@/lib/db/index";
 import { mapDbRowToListing } from "@/lib/listings/map-db-listing";
 import {
@@ -52,6 +53,7 @@ export async function POST(request: NextRequest) {
   );
 
   try {
+    assertHaSupabaseWriteAllowed();
     const supabase = getSupabaseServerClient();
     const { data, error } = await supabase
       .from("buyer_leads")

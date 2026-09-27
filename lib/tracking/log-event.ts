@@ -3,6 +3,7 @@
 // on log en console et on continue — les formulaires ne doivent pas être bloqués.
 
 import { getSupabaseServerClient } from "@/lib/db/supabase-client";
+import { assertHaSupabaseWriteAllowed } from "@/lib/db/ha-write-policy";
 import { isConversionEvent, type ConversionEventInput } from "./types";
 
 export async function logConversionEvent(
@@ -11,6 +12,7 @@ export async function logConversionEvent(
 ): Promise<void> {
   try {
     if (!isConversionEvent(input.event_name)) return;
+    assertHaSupabaseWriteAllowed();
     const supabase = getSupabaseServerClient();
     const { error } = await supabase.from("conversion_events").insert({
       event_name: input.event_name,
