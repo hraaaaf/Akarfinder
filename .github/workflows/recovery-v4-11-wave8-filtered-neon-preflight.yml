@@ -134,6 +134,19 @@ jobs:
           };
           const overlaps=new Set(fs.readFileSync(csv,"utf8").split(/\r?\n/).filter(Boolean).slice(1).map(x=>parse(x).join("|")));
           const kept=rows.filter(r=>!overlaps.has(r.source_name+"|"+r.source_offer_key));
+          let quarantinedPriceOutliers=0;
+          for(const r of kept){
+            if(r.price_mad!=null && (!Number.isSafeInteger(r.price_mad) || r.price_mad<0 || r.price_mad>2147483647)){
+              r.field_confidence=r.field_confidence||{};
+              r.field_confidence.price_mad={source:"outlier_quarantined",raw:r.price_mad};
+              r.price_mad=null;
+              r.displayed_price=null;
+              r.price_currency=null;
+              r.price_status="not_disclosed";
+              quarantinedPriceOutliers++;
+            }
+          }
+          if(quarantinedPriceOutliers!==1)throw new Error("price outlier count "+quarantinedPriceOutliers);
           if(overlaps.size!==197)throw new Error("overlap count "+overlaps.size);
           if(kept.length!==38935)throw new Error("kept count "+kept.length);
           if(new Set(kept.map(r=>r.listing_url)).size!==kept.length)throw new Error("url duplicate");
@@ -148,6 +161,7 @@ jobs:
             source_wave8_artifact_id:10934176431,
             source_rows:39132,
             removed_distinct_identity_overlaps:197,
+            quarantined_int4_price_outliers:quarantinedPriceOutliers,
             db_ready_rows:kept.length,
             by_domain:byDomain,
             output_sha256:crypto.createHash("sha256").update(body).digest("hex"),
