@@ -72,7 +72,7 @@ jobs:
           const ws=fs.createWriteStream(out);ws.write(cols.join(",")+"\n");
           let n=0;const urls=new Set(),fps=new Set();
           const rl=readline.createInterface({input:fs.createReadStream(src),crlfDelay:Infinity});
-          rl.on("line",line=>{if(!line.trim())return;const r=JSON.parse(line);if(r.approved_for_import!==false)throw new Error("artifact approval invariant");n++;urls.add(r.listing_url);fps.add(r.canonical_fingerprint);ws.write(cols.map(c=>esc(r[c])).join(",")+"\n")});
+          rl.on("line",line=>{if(!line.trim())return;const r=JSON.parse(line);if(r.approved_for_import!==false)throw new Error("artifact approval invariant");r.ingestion_run_id="clean-corpus-v4.11-wave4b";n++;urls.add(r.listing_url);fps.add(r.canonical_fingerprint);ws.write(cols.map(c=>esc(r[c])).join(",")+"\n")});
           rl.on("close",()=>{ws.end();if(n!==1126||urls.size!==1126||fps.size!==1126)throw new Error("artifact row/dedupe invariant")});
           NODE
           while [ ! -s "$RUNNER_TEMP/wave4/import.csv" ]; do sleep 1; done
@@ -99,15 +99,15 @@ jobs:
             (SELECT count(*) FROM stage_wave4 s JOIN public.property_listings pl ON pl.canonical_fingerprint=s.canonical_fingerprint),
             (SELECT count(*) FROM public.property_listings),
             (SELECT count(*) FROM public.listing_sources),
-            (SELECT count(*) FROM public.listing_sources WHERE ingestion_run_id='clean-corpus-v4.11-wave4');
+            (SELECT count(*) FROM public.listing_sources WHERE ingestion_run_id='clean-corpus-v4.11-wave4b');
           DROP TABLE stage_wave4;
           SQL
           docker run --rm -e DATABASE_URL="$DATABASE_URL" -v "$RUNNER_TEMP/wave4:/wave4" postgres:17             sh -lc 'psql "$DATABASE_URL" -X -qAt -F "|" -v ON_ERROR_STOP=1 -f /wave4/preflight.sql' | tee "$RUNNER_TEMP/wave4/preflight.out"
           LAST="$(grep -E '^[0-9]+\|' "$RUNNER_TEMP/wave4/preflight.out" | tail -n1)"
           IFS='|' read -r STAGED URL_OVERLAP FP_OVERLAP PRE_PL PRE_LS PRE_W3 <<< "$LAST"
           test "$STAGED" = "1126"
-          test "$PRE_PL" = "89979"
-          test "$PRE_LS" = "89979"
+          test "$PRE_PL" = "93653"
+          test "$PRE_LS" = "93653"
           test "$PRE_W3" = "0"
           echo "URL_OVERLAP=$URL_OVERLAP" >> "$GITHUB_ENV"
           echo "FP_OVERLAP=$FP_OVERLAP" >> "$GITHUB_ENV"
@@ -200,10 +200,10 @@ jobs:
           DECLARE overlap_count bigint; expected_total bigint;
           BEGIN
             SELECT count(*) INTO overlap_count FROM legacy_overlap_w3;
-            expected_total := 89979 + 1126 - overlap_count;
+            expected_total := 93653 + 1126 - overlap_count;
             IF (SELECT count(*) FROM public.property_listings) <> expected_total THEN RAISE EXCEPTION 'property total mismatch'; END IF;
             IF (SELECT count(*) FROM public.listing_sources) <> expected_total THEN RAISE EXCEPTION 'source total mismatch'; END IF;
-            IF (SELECT count(*) FROM public.listing_sources WHERE ingestion_run_id='clean-corpus-v4.11-wave4') <> 1126
+            IF (SELECT count(*) FROM public.listing_sources WHERE ingestion_run_id='clean-corpus-v4.11-wave4b') <> 1126
               THEN RAISE EXCEPTION 'wave4 source count mismatch'; END IF;
             IF (
               SELECT count(*) FROM stage_wave4 s
