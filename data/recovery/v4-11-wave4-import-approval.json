@@ -21,5 +21,5 @@
   },
   "production_neon_writes_authorized": false,
   "vercel_deployment_authorized": false,
-  "retrigger_note": "retry after synchronous CSV build fix"
+  "retrigger_note": "retry after logical CSV row-count fix"
 }
