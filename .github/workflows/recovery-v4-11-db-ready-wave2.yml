@@ -46,9 +46,9 @@ jobs:
           eq(s.field_gate_pass_rows,17190,"field pass");
           eq(s.rejected_unknown_type_rows,8,"unknown type");
           eq(s.rejected_weak_title_rows,40,"weak title");
-          eq(s.identity_ambiguous_groups,66,"ambiguous groups");
-          eq(s.identity_quarantine_rows,166,"identity quarantine");
-          eq(s.db_ready_rows,17024,"db ready");
+          eq(s.identity_ambiguous_groups,67,"ambiguous groups");
+          eq(s.identity_quarantine_rows,168,"identity quarantine");
+          eq(s.db_ready_rows,17022,"db ready");
           eq(s.approved_for_import_rows,0,"approval");
           eq(s.database_access,0,"db access");
           eq(s.database_writes,0,"db writes");
@@ -56,9 +56,9 @@ jobs:
           const sha=crypto.createHash("sha256").update(body).digest("hex");
           eq(sha,s.output_sha256,"output sha");
           const rows=body.toString("utf8").split(/\r?\n/).filter(Boolean).map(JSON.parse);
-          eq(rows.length,17024,"physical rows");
-          eq(new Set(rows.map(r=>r.listing_url)).size,17024,"unique urls");
-          eq(new Set(rows.map(r=>r.canonical_fingerprint)).size,17024,"unique fingerprints");
+          eq(rows.length,17022,"physical rows");
+          eq(new Set(rows.map(r=>r.listing_url)).size,17022,"unique urls");
+          eq(new Set(rows.map(r=>r.canonical_fingerprint)).size,17022,"unique fingerprints");
           if(rows.some(r=>r.approved_for_import!==false))throw new Error("approval invariant");
           console.log(JSON.stringify(s,null,2));
           NODE
