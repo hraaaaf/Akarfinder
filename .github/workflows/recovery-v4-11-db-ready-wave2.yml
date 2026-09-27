@@ -43,12 +43,12 @@ jobs:
           const s=JSON.parse(fs.readFileSync("data/audits/v4-11-wave2/summary.json","utf8"));
           const eq=(a,b,n)=>{if(a!==b)throw new Error(n+": "+a+" != "+b)};
           eq(s.input_pre_identity_rows,17238,"input");
-          eq(s.field_gate_pass_rows,17190,"field pass");
-          eq(s.rejected_unknown_type_rows,8,"unknown type");
+          eq(s.strong_evidence_rows,13517,"strong evidence");\n          eq(s.field_gate_pass_rows,13476,"field pass");\n          eq(s.rejected_no_strong_evidence_rows,3721,"weak evidence");
+          eq(s.rejected_unknown_type_rows,1,"unknown type");
           eq(s.rejected_weak_title_rows,40,"weak title");
-          eq(s.identity_ambiguous_groups,67,"ambiguous groups");
-          eq(s.identity_quarantine_rows,168,"identity quarantine");
-          eq(s.db_ready_rows,17022,"db ready");
+          eq(s.identity_ambiguous_groups,26,"ambiguous groups");
+          eq(s.identity_quarantine_rows,55,"identity quarantine");
+          eq(s.db_ready_rows,13421,"db ready");
           eq(s.approved_for_import_rows,0,"approval");
           eq(s.database_access,0,"db access");
           eq(s.database_writes,0,"db writes");
@@ -56,9 +56,9 @@ jobs:
           const sha=crypto.createHash("sha256").update(body).digest("hex");
           eq(sha,s.output_sha256,"output sha");
           const rows=body.toString("utf8").split(/\r?\n/).filter(Boolean).map(JSON.parse);
-          eq(rows.length,17022,"physical rows");
-          eq(new Set(rows.map(r=>r.listing_url)).size,17022,"unique urls");
-          eq(new Set(rows.map(r=>r.canonical_fingerprint)).size,17022,"unique fingerprints");
+          eq(rows.length,13421,"physical rows");
+          eq(new Set(rows.map(r=>r.listing_url)).size,13421,"unique urls");
+          eq(new Set(rows.map(r=>r.canonical_fingerprint)).size,13421,"unique fingerprints");
           if(rows.some(r=>r.approved_for_import!==false))throw new Error("approval invariant");
           console.log(JSON.stringify(s,null,2));
           NODE
