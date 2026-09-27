@@ -96,7 +96,7 @@ function routeFallback(url){
     ["apartment",/\b(appartements?|apartments?|appart|appt|flat|duplex)\b/],
     ["villa",/\bvillas?\b/],
     ["house",/\b(maisons?|houses?|housing)\b/],
-    ["land",/\b(terrains?|land|plot|parcelle|ferme|farm)\b/],
+    ["land",/\b(terrains?|land|plot|parcelle)\b/],
     ["office",/\b(bureaux?|offices?)\b/],
     ["commercial",/\b(local commercial|locaux|local|commercial|shops?|magasins?|commerce)\b/],
     ["riad",/\briads?\b/]
