@@ -1,0 +1,46 @@
+name: Recovery V4.11 Wave9 New Sources Route Certification
+on:
+  push:
+    branches: ["recovery/v4-11-wave7-cc-freeze-20260927"]
+    paths: ["data/recovery/activate-v4-11-wave9-new-sources-cert.txt"]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: 24}
+      - name: Download CC artifact
+        run: |
+          mkdir -p "$RUNNER_TEMP/w9cc" data/audits/v4-11-wave9-new-sources
+          gh api "repos/${{ github.repository }}/actions/artifacts/10936353396/zip" > "$RUNNER_TEMP/w9cc.zip"
+          unzip -q "$RUNNER_TEMP/w9cc.zip" -d "$RUNNER_TEMP/w9cc"
+          echo "36ef1d9b90939101a68a2a80d3d975f7ecbe4a74ff1631353fb7debdb5f60174  $RUNNER_TEMP/w9cc/recovery-new-sources-commoncrawl.jsonl" | sha256sum -c -
+      - name: Certify routes
+        run: node scripts/recovery/certify-v4-11-wave9-new-sources-route.mjs "$RUNNER_TEMP/w9cc/recovery-new-sources-commoncrawl.jsonl" data/audits/v4-11-wave9-new-sources
+      - name: Verify contract
+        run: |
+          node - <<'NODE'
+          const fs=require("fs"),crypto=require("crypto"),s=require("./data/audits/v4-11-wave9-new-sources/summary.json");
+          const b=fs.readFileSync("./data/audits/v4-11-wave9-new-sources/db-ready-wave9-new-sources.jsonl");
+          const r=b.toString().split(/\r?\n/).filter(Boolean).map(JSON.parse);
+          if(r.length!==s.db_ready_rows||!r.length)throw new Error("count");
+          if(new Set(r.map(x=>x.listing_url)).size!==r.length)throw new Error("url");
+          if(new Set(r.map(x=>x.canonical_fingerprint)).size!==r.length)throw new Error("fp");
+          if(new Set(r.map(x=>x.source_name+"|"+x.source_offer_key)).size!==r.length)throw new Error("id");
+          if(r.some(x=>![x.title,x.city,x.property_type,x.transaction_type].every(Boolean)))throw new Error("core");
+          if(crypto.createHash("sha256").update(b).digest("hex")!==s.output_sha256)throw new Error("sha");
+          if(s.database_access||s.database_writes||s.production_neon_writes||s.approved_for_import_rows||s.vercel_deployment!==false)throw new Error("safety");
+          console.log(JSON.stringify(s,null,2));
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: clean-corpus-v4.11-wave9-new-sources-route
+          path: data/audits/v4-11-wave9-new-sources/
+          retention-days: 30
