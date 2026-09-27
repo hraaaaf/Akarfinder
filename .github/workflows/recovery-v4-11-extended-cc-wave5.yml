@@ -1,0 +1,41 @@
+name: Recovery V4.11 Extended Recent Common Crawl Wave5
+
+on:
+  push:
+    branches: ["recovery/v4-11-cc-wave5-20260927"]
+    paths:
+      - "data/recovery/activate-v4-11-cc-wave5.txt"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  recent-cc:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    env:
+      RECENT_CC_DOMAINS: mubawab.ma,agenz.ma,avito.ma
+      RECENT_CC_INDEXES: CC-MAIN-2026-39,CC-MAIN-2026-34,CC-MAIN-2026-30,CC-MAIN-2026-26,CC-MAIN-2026-22
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Collect extended recent Common Crawl metadata
+        run: npx tsx scripts/recovery/commoncrawl-recent-evidence.ts
+      - name: Safety contract
+        run: |
+          node - <<'NODE'
+          const m=require("./data/audits/raw-results/recent-cc-recovery/manifest.json");
+          if(m.database_access!==0||m.database_writes!==0||m.source_page_fetches!==0||m.warc_downloads!==0||m.approved_for_import_rows!==0)throw new Error("safety invariant");
+          if(m.domains.length!==3)throw new Error("domain count");
+          console.log(JSON.stringify(m,null,2));
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v4.11-extended-recent-cc-wave5
+          path: data/audits/raw-results/recent-cc-recovery/
+          retention-days: 30
