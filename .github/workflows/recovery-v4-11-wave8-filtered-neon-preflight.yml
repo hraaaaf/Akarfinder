@@ -128,9 +128,9 @@ jobs:
           const [src,csv,out]=process.argv.slice(2);
           const rows=fs.readFileSync(src,"utf8").split(/\r?\n/).filter(Boolean).map(JSON.parse);
           const parse=line=>{
-            const m=line.match(/^"((?:[^"]|"")*)","((?:[^"]|"")*)"$/);
-            if(!m)throw new Error("bad overlap csv");
-            return m.slice(1).map(x=>x.replace(/""/g,'"'));
+            const parts=line.split(",");
+            if(parts.length!==2||!parts[0]||!parts[1])throw new Error("bad overlap csv");
+            return parts;
           };
           const overlaps=new Set(fs.readFileSync(csv,"utf8").split(/\r?\n/).filter(Boolean).slice(1).map(x=>parse(x).join("|")));
           const kept=rows.filter(r=>!overlaps.has(r.source_name+"|"+r.source_offer_key));
