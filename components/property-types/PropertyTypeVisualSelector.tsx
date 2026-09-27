@@ -4,6 +4,7 @@ import { Check } from "lucide-react";
 import { PropertyTypeArtwork } from "@/components/property-types/PropertyTypeArtwork";
 import type { ListingPropertyType } from "@/lib/listings/types";
 import { OPTION_A_PROPERTY_TYPES } from "@/lib/property-types/presentation";
+import { getIndexedPropertyTypeVisual } from "@/lib/ux/indexed-property-type-visual";
 
 type PropertyTypeVisualSelectorProps = {
   value: "all" | ListingPropertyType | "";
@@ -49,6 +50,17 @@ export function PropertyTypeVisualSelector({
       >
         {OPTION_A_PROPERTY_TYPES.map((item) => {
           const active = value === item.value;
+          const visual = getIndexedPropertyTypeVisual(item.value);
+          const targetStyle = visual.targetAsset
+            ? {
+                backgroundColor: "#fff",
+                backgroundImage: `url("${visual.targetAsset}")`,
+                backgroundPosition: "center 58%",
+                backgroundRepeat: "no-repeat",
+                backgroundSize: "100% auto",
+              }
+            : { backgroundColor: visual.wash };
+
           return (
             <button
               key={item.value}
@@ -56,23 +68,37 @@ export function PropertyTypeVisualSelector({
               onClick={() => onChange(item.value)}
               aria-pressed={active}
               title={item.description}
+              data-property-visual-family={visual.key}
               className={`group relative min-w-[126px] snap-start overflow-hidden rounded-2xl border bg-white p-2 text-left shadow-[0_10px_30px_rgba(7,27,60,0.07)] transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_14px_34px_rgba(11,99,206,0.13)] motion-reduce:transform-none sm:min-w-[142px] ${
-                active
-                  ? "border-[#0B63CE] ring-2 ring-[#0B63CE]/15"
-                  : "border-[#DCE8F5] hover:border-[#8ABCF3] dark:border-white/10"
+                active ? "" : "border-[#DCE8F5] hover:border-[#8ABCF3] dark:border-white/10"
               }`}
+              style={
+                active
+                  ? {
+                      borderColor: visual.accent,
+                      boxShadow: `0 0 0 2px ${visual.accent}20, 0 10px 30px rgba(7,27,60,0.07)`,
+                    }
+                  : undefined
+              }
             >
-              <div className="aspect-[16/10] overflow-hidden rounded-xl bg-[#F7FAFF]">
-                <PropertyTypeArtwork kind={item.value} className="h-full w-full" decorative />
+              <div
+                className="aspect-[16/10] overflow-hidden rounded-xl border border-slate-100"
+                style={targetStyle}
+                aria-hidden="true"
+              >
+                {visual.targetAsset ? null : (
+                  <PropertyTypeArtwork kind={item.value} className="h-full w-full" decorative />
+                )}
               </div>
               <div className="flex items-center justify-between gap-2 px-1 pb-0.5 pt-2">
                 <span className="text-[11.5px] font-extrabold text-[#0B1F3A]">{item.label}</span>
                 <span
-                  className={`grid h-6 w-6 shrink-0 place-items-center rounded-lg transition ${
+                  className="grid h-6 w-6 shrink-0 place-items-center rounded-lg transition"
+                  style={
                     active
-                      ? "bg-[#0B63CE] text-white"
-                      : "bg-[#EEF6FF] text-[#0B63CE] group-hover:bg-[#0B63CE] group-hover:text-white"
-                  }`}
+                      ? { backgroundColor: visual.accent, color: "#fff" }
+                      : { backgroundColor: visual.wash, color: visual.foreground }
+                  }
                   aria-hidden="true"
                 >
                   {active ? <Check size={13} strokeWidth={3} /> : "→"}
