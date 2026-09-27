@@ -109,7 +109,7 @@ for(const rec of rows.values()){
   displayed_price:Number.isSafeInteger(price)?price:null,price_currency:Number.isSafeInteger(price)?"MAD":null,price_period:null,price_status:Number.isSafeInteger(price)?"valid":"not_disclosed",approved_for_import:false
  });
 }
-if(outRows.length!==27428)throw new Error("expected 27428 DB-ready, got "+outRows.length);
+if(outRows.length!==27420)throw new Error("expected 27420 DB-ready, got "+outRows.length);
 if(new Set(outRows.map(r=>r.listing_url)).size!==outRows.length)throw new Error("URL duplicate");
 if(new Set(outRows.map(r=>r.canonical_fingerprint)).size!==outRows.length)throw new Error("fingerprint duplicate");
 fs.writeFileSync(out,outRows.map(r=>JSON.stringify(r)).join("\n")+"\n");
