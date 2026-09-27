@@ -27,9 +27,9 @@ jobs:
       - name: Download certified artifact
         run: |
           mkdir -p "$RUNNER_TEMP/w9n" data/audits/v4-11-wave9-new-sources-neon
-          gh api "repos/${{ github.repository }}/actions/artifacts/10936523776/zip" > "$RUNNER_TEMP/w9n.zip"
+          gh api "repos/${{ github.repository }}/actions/artifacts/10937202447/zip" > "$RUNNER_TEMP/w9n.zip"
           unzip -q "$RUNNER_TEMP/w9n.zip" -d "$RUNNER_TEMP/w9n"
-          echo "50284d46c71ece06c6837ae6c37691dd2e18f91fa027a127739ff4cca6d29475  $RUNNER_TEMP/w9n/db-ready-wave9-new-sources.jsonl" | sha256sum -c -
+          echo "3eb6f6faad6718694312e3ba468596c85553155a90313a8644a1070971c5e2a4  $RUNNER_TEMP/w9n/db-ready-wave9-new-sources.jsonl" | sha256sum -c -
           test "$(wc -l < "$RUNNER_TEMP/w9n/db-ready-wave9-new-sources.jsonl")" = "1287"
       - name: Build CSV
         run: |
