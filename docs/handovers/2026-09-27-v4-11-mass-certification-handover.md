@@ -251,3 +251,50 @@ Neon project usage check before reconciliation reported `data_transfer_bytes=0` 
 ### Next exact after reconciliation
 
 Re-run the exact 1,287-row origin-safe Wave9 new-source Neon preflight against baseline **141,349**. If 0 URL / 0 fingerprint / 0 source identity overlap, bind a fresh approval to that exact run/artifact, controlled-import into isolated Neon, then perform an independent readback before updating the cumulative ledger.
+
+
+## Wave9 closeout — VERIFIED 2026-09-27
+
+Wave9 is closed after hardened reconciliation and the origin-safe new-source import.
+
+### Final Wave9 route lane
+- Hardened reconciliation run: `36340131390` — SUCCESS.
+- Readback artifact: `10938009412`, digest `sha256:d9e8c2ab5814e057989a27b53ff89d984b6efeb877bc30446fb7e66762e586e6`.
+- Final Wave9 route rows in Neon: **2,188**.
+- Exact correction applied: **64 obsolete rows removed + 12 hardened missing rows inserted**.
+
+### Wave9 new-source lane
+- Origin-safe certification run: `36335996025` — SUCCESS.
+- Certified artifact: `10937202447`, digest `sha256:711526a027529879ed89ee86c8bcae802907212016a0a20312956d324384bf05`.
+- Certified JSONL SHA-256: `3eb6f6faad6718694312e3ba468596c85553155a90313a8644a1070971c5e2a4`.
+- Certified rows: **1,287** = Fadlimmo 544 + Cap Al Rabat 503 + Bakimmo 137 + ImmoEssaouira 103.
+- Post-reconcile Neon preflight run: `36340880049` — SUCCESS.
+- Preflight artifact: `10938862509`, digest `sha256:09d83602075aec2f75fedf842b50c50b090fb7a526c3ea3c99d9e6f824c729ab`.
+- Exact preflight result: **1287 | 0 URL overlap | 0 fingerprint overlap | 0 identity overlap | 141349 | 141349**.
+- Controlled import run: `36340984148` — SUCCESS.
+- Import readback artifact: `10938608461`, digest `sha256:0c5299f970beb0ba36515dd6acb9e7ad8e33d9ce842383bb95d7feba194792e8`.
+- Independent post-import readback run: `36341043736` — SUCCESS.
+- Independent readback artifact: `10939031754`, digest `sha256:764cc22cf6c4c7a80eb00e1d525751b10c3b28b18ec98f4e3872fdc2251e5463`.
+
+### Current authoritative isolated-Neon state
+- property_listings: **142,636**
+- listing_sources: **142,636**
+- unique listing_url: **142,636**
+- unique canonical_fingerprint: **142,636**
+- V4.11 sources: **142,600**
+- legacy sources: **36**
+- Wave9 route: **2,188**
+- Wave9 new sources: **1,287**
+- orphans: **0**
+- inactive: **0**
+- property core gaps: **0**
+- source core gaps: **0**
+- progress to 200k: **71.318%**
+- exact remaining delta: **57,364**
+
+Current V4.11 ledger total is **142,600**. Wave9 contributed **3,475** net certified rows = 2,188 route + 1,287 new sources.
+
+Neon usage was rechecked after the Wave9 mutations: project record still reports `data_transfer_bytes=0` for 2026-09-01 → 2026-10-01; available API does not expose a numeric egress quota in this project record.
+
+### Next exact
+Start Wave10 offline from the remaining strict rejects/new-source residue. Current known residue from the new-source route lane: **286** rows = 132 unsupported Archimmo + 91 core incomplete + 58 ambiguous transaction + 5 identity conflicts. Do not weaken V4.11; enrich or quarantine, then repeat certification → overlap preflight → approval → isolated import → independent readback.
