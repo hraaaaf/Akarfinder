@@ -43,7 +43,9 @@ jobs:
           const s=JSON.parse(fs.readFileSync("data/audits/v4-11-wave2/summary.json","utf8"));
           const eq=(a,b,n)=>{if(a!==b)throw new Error(n+": "+a+" != "+b)};
           eq(s.input_pre_identity_rows,17238,"input");
-          eq(s.strong_evidence_rows,13517,"strong evidence");\n          eq(s.field_gate_pass_rows,13476,"field pass");\n          eq(s.rejected_no_strong_evidence_rows,3721,"weak evidence");
+          eq(s.strong_evidence_rows,13517,"strong evidence");
+          eq(s.field_gate_pass_rows,13476,"field pass");
+          eq(s.rejected_no_strong_evidence_rows,3721,"weak evidence");
           eq(s.rejected_unknown_type_rows,1,"unknown type");
           eq(s.rejected_weak_title_rows,40,"weak title");
           eq(s.identity_ambiguous_groups,26,"ambiguous groups");
