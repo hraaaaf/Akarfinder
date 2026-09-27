@@ -262,7 +262,7 @@ function buildRow({idKey,url,domain,ccRow,records,core,mode}){
 fs.mkdirSync(outDir,{recursive:true});
 
 const ccById=new Map(),ccUrls=new Set(),rejected=[];
-let identitylessCcUrls=0;
+let identitylessCcUrls=0,ccInputRows=0;
 for(const [domain,file] of Object.entries(CC_FILES)){
   for(const raw of loadJsonl(path.join(ccDir,domain,file))){
     const url=canon(raw.canonical_url);
