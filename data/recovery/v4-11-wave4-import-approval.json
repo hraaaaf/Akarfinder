@@ -1,0 +1,17 @@
+{
+  "approved": true,
+  "authorization_message": "On balance les certifiés et on vérifie les non certifiés",
+  "rows": 1126,
+  "artifact_id": 10931027229,
+  "artifact_digest": "sha256:60c34862d3d05dfeec9efcf166c78fd3869d1f7af5ec7ae92d9b25896ba46027",
+  "jsonl_sha256": "e595c9b7025629c1f289f4b5898ac7ec1c540fa720f4cd0ff700292be7be607c",
+  "target_project": "ancient-violet-43534870",
+  "target_branch": "br-cold-mouse-b2a50yaa",
+  "target_database": "AkarFinder",
+  "expected_pre": {
+    "property_listings": 89979,
+    "listing_sources": 89979
+  },
+  "production_neon_writes_authorized": false,
+  "vercel_deployment_authorized": false
+}
