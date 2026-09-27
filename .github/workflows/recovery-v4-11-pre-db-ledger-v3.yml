@@ -1,0 +1,99 @@
+name: Recovery V4.11 Pre-DB Ledger V3
+
+on:
+  push:
+    branches: ["recovery/v4-11-mass-route-wave3-20260927"]
+    paths:
+      - "data/recovery/activate-v4-11-pre-db-ledger-v3.txt"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Download ledger v2 and new evidence
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/v2" "$RUNNER_TEMP/evidence" data/audits/pre-db-v3
+          gh api repos/${{ github.repository }}/actions/artifacts/10929097436/zip > "$RUNNER_TEMP/v2.zip"
+          unzip -q -o "$RUNNER_TEMP/v2.zip" -d "$RUNNER_TEMP/v2"
+          echo "0e5273aa6a4394118a274e44ea0047dd762b9d2aaf895f555c62ca03424fb708  $RUNNER_TEMP/v2/existence-verified-v2.jsonl" | sha256sum -c -
+          echo "347efa2e4696c9913bf7660d0c179fc8be1d68d5eb067f8850e60e2fe30be4f5  $RUNNER_TEMP/v2/unresolved-existence-v2.txt" | sha256sum -c -
+          mkdir -p "$RUNNER_TEMP/evidence/0"
+          gh api repos/${{ github.repository }}/actions/artifacts/10931326918/zip > "$RUNNER_TEMP/evidence/0.zip"
+          unzip -q -o "$RUNNER_TEMP/evidence/0.zip" -d "$RUNNER_TEMP/evidence/0"
+          mkdir -p "$RUNNER_TEMP/evidence/1"
+          gh api repos/${{ github.repository }}/actions/artifacts/10931177380/zip > "$RUNNER_TEMP/evidence/1.zip"
+          unzip -q -o "$RUNNER_TEMP/evidence/1.zip" -d "$RUNNER_TEMP/evidence/1"
+          mkdir -p "$RUNNER_TEMP/evidence/2"
+          gh api repos/${{ github.repository }}/actions/artifacts/10930224414/zip > "$RUNNER_TEMP/evidence/2.zip"
+          unzip -q -o "$RUNNER_TEMP/evidence/2.zip" -d "$RUNNER_TEMP/evidence/2"
+          mkdir -p "$RUNNER_TEMP/evidence/3"
+          gh api repos/${{ github.repository }}/actions/artifacts/10927254534/zip > "$RUNNER_TEMP/evidence/3.zip"
+          unzip -q -o "$RUNNER_TEMP/evidence/3.zip" -d "$RUNNER_TEMP/evidence/3"
+          mkdir -p "$RUNNER_TEMP/evidence/4"
+          gh api repos/${{ github.repository }}/actions/artifacts/10929845570/zip > "$RUNNER_TEMP/evidence/4.zip"
+          unzip -q -o "$RUNNER_TEMP/evidence/4.zip" -d "$RUNNER_TEMP/evidence/4"
+          mkdir -p "$RUNNER_TEMP/evidence/5"
+          gh api repos/${{ github.repository }}/actions/artifacts/10929394293/zip > "$RUNNER_TEMP/evidence/5.zip"
+          unzip -q -o "$RUNNER_TEMP/evidence/5.zip" -d "$RUNNER_TEMP/evidence/5"
+          mkdir -p "$RUNNER_TEMP/evidence/6"
+          gh api repos/${{ github.repository }}/actions/artifacts/10929664106/zip > "$RUNNER_TEMP/evidence/6.zip"
+          unzip -q -o "$RUNNER_TEMP/evidence/6.zip" -d "$RUNNER_TEMP/evidence/6"
+          mkdir -p "$RUNNER_TEMP/evidence/7"
+          gh api repos/${{ github.repository }}/actions/artifacts/10929652367/zip > "$RUNNER_TEMP/evidence/7.zip"
+          unzip -q -o "$RUNNER_TEMP/evidence/7.zip" -d "$RUNNER_TEMP/evidence/7"
+          mkdir -p "$RUNNER_TEMP/evidence/8"
+          gh api repos/${{ github.repository }}/actions/artifacts/10928857195/zip > "$RUNNER_TEMP/evidence/8.zip"
+          unzip -q -o "$RUNNER_TEMP/evidence/8.zip" -d "$RUNNER_TEMP/evidence/8"
+          mkdir -p "$RUNNER_TEMP/evidence/9"
+          gh api repos/${{ github.repository }}/actions/artifacts/10929452472/zip > "$RUNNER_TEMP/evidence/9.zip"
+          unzip -q -o "$RUNNER_TEMP/evidence/9.zip" -d "$RUNNER_TEMP/evidence/9"
+          mkdir -p "$RUNNER_TEMP/evidence/10"
+          gh api repos/${{ github.repository }}/actions/artifacts/10929645172/zip > "$RUNNER_TEMP/evidence/10.zip"
+          unzip -q -o "$RUNNER_TEMP/evidence/10.zip" -d "$RUNNER_TEMP/evidence/10"
+          mkdir -p "$RUNNER_TEMP/evidence/11"
+          gh api repos/${{ github.repository }}/actions/artifacts/10929665047/zip > "$RUNNER_TEMP/evidence/11.zip"
+          unzip -q -o "$RUNNER_TEMP/evidence/11.zip" -d "$RUNNER_TEMP/evidence/11"
+          mkdir -p "$RUNNER_TEMP/evidence/12"
+          gh api repos/${{ github.repository }}/actions/artifacts/10929615744/zip > "$RUNNER_TEMP/evidence/12.zip"
+          unzip -q -o "$RUNNER_TEMP/evidence/12.zip" -d "$RUNNER_TEMP/evidence/12"
+          mkdir -p "$RUNNER_TEMP/evidence/13"
+          gh api repos/${{ github.repository }}/actions/artifacts/10928913991/zip > "$RUNNER_TEMP/evidence/13.zip"
+          unzip -q -o "$RUNNER_TEMP/evidence/13.zip" -d "$RUNNER_TEMP/evidence/13"
+
+      - name: Build ledger v3
+        run: |
+          node scripts/recovery/build-v4-11-pre-db-ledger-v3.mjs             --verified "$RUNNER_TEMP/v2/existence-verified-v2.jsonl"             --unresolved "$RUNNER_TEMP/v2/unresolved-existence-v2.txt"             --evidence-root "$RUNNER_TEMP/evidence"             --out-dir data/audits/pre-db-v3
+
+      - name: Verify invariants
+        run: |
+          node - <<'NODE'
+          const m=require("./data/audits/pre-db-v3/manifest.json");
+          const eq=(a,b,n)=>{if(a!==b)throw new Error(n+": "+a+" != "+b)};
+          eq(m.base_verified_rows,170961,"base");
+          eq(m.additions_rows,9156,"additions");
+          eq(m.additions_by_method.commoncrawl_recent,4977,"cc");
+          eq(m.additions_by_method.direct_http200,4179,"http200");
+          eq(m.existence_verified_rows,180117,"verified");
+          eq(m.unresolved_existence_rows,33875,"unresolved");
+          eq(m.database_access,0,"db access");
+          eq(m.database_writes,0,"db writes");
+          NODE
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: clean-corpus-v4.11-pre-db-ledger-v3
+          path: data/audits/pre-db-v3/
+          retention-days: 30
