@@ -27,6 +27,7 @@ const cityChecks=[
 
 const safe=[], rejected=[];
 for(const r of rows){
+  if(!r.canonical_url||!r.source_domain){rejected.push({...r,wave10_reason:"prior_identity_conflict_quarantine"});continue}
   const u=new URL(r.canonical_url),d=r.source_domain,p=u.pathname.split("/").filter(Boolean).map(dec);
   let tx=null,pt=null,city=null,t=null,key=null;
 
