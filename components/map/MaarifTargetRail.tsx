@@ -1,5 +1,7 @@
 "use client";
 
+// Canonical Vivre Ici reconciliation trigger: #1090 owns the Maârif rail.
+
 import Link from "next/link";
 import {
   ArrowRight,
