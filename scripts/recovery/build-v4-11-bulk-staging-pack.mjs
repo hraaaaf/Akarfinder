@@ -45,15 +45,15 @@ if(importedUrls.size!==8367) throw new Error("expected 8367 imported URLs");
 fs.mkdirSync(outDir,{recursive:true});
 for(const n of fs.readdirSync(outDir)) fs.rmSync(path.join(outDir,n),{recursive:true,force:true});
 
-let writer=null, chunkRows=0, total=0, chunkIndex=0;
+let fd=null, chunkRows=0, total=0, chunkIndex=0;
 let currentFile=null, firstUrl=null, lastUrl=null;
 const chunks=[], byDomain={}, deepEvidence={}, fieldTiers={};
 let contradictionRows=0, approvedRows=0;
 
 function closeChunk(){
-  if(!writer) return;
-  writer.end();
-  writer=null;
+  if(fd===null) return;
+  fs.closeSync(fd);
+  fd=null;
   const full=path.join(outDir,currentFile);
   chunks.push({
     file:currentFile,
@@ -68,15 +68,15 @@ function closeChunk(){
 function openChunk(){
   currentFile=`bulk-v4.11-remaining-${String(chunkIndex).padStart(3,"0")}.csv`;
   chunkIndex++;
-  writer=fs.createWriteStream(path.join(outDir,currentFile),{encoding:"utf8"});
-  writer.write("source_name,source_url,listing_url,raw_json\n");
+  fd=fs.openSync(path.join(outDir,currentFile),"w");
+  fs.writeSync(fd,"source_name,source_url,listing_url,raw_json\n","utf8");
 }
 
 for await(const r of gzJsonl(core)){
   if(r.scope_eligible!==true) continue;
   if(importedUrls.has(r.canonical_url)) continue;
 
-  if(!writer || chunkRows>=chunkSize){ closeChunk(); openChunk(); }
+  if(fd===null || chunkRows>=chunkSize){ closeChunk(); openChunk(); }
 
   const statuses=Array.isArray(r.deep_http_statuses)?r.deep_http_statuses:[];
   const evidence=statuses.includes(200)?"http200":statuses.includes(503)?"http503_only":statuses.includes(0)?"http0_only":"no_deep";
@@ -106,7 +106,7 @@ for await(const r of gzJsonl(core)){
     csvCell(r.canonical_url),
     csvCell(JSON.stringify(payload))
   ].join(",")+"\n";
-  writer.write(line);
+  fs.writeSync(fd,line,"utf8");
   if(firstUrl===null) firstUrl=r.canonical_url;
   lastUrl=r.canonical_url;
   chunkRows++; total++;
