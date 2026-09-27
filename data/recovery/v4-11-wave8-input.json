@@ -3,11 +3,12 @@
   "wave7_artifact_id": 10934360426,
   "wave7_artifact_digest": "sha256:67c0a2ec79fb1668288e42c858fcf35e95951e8dd9b4b76137a34e6c46b57319",
   "wave7_jsonl_sha256": "db5204d10aeda29b7a9228400cebd024462df2d1bde30fd481c8a7f2b2f60e00",
-  "expected_rows": 39131,
+  "expected_rows": 39132,
   "expected_by_domain": {
-    "mubawab.ma": 26522,
+    "mubawab.ma": 26523,
     "avito.ma": 12609
   },
   "production_neon_writes_authorized": false,
-  "vercel_deployment_authorized": false
+  "vercel_deployment_authorized": false,
+  "observed_from_run_id": 36326119614
 }
