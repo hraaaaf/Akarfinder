@@ -4,10 +4,12 @@ on:
   pull_request:
     paths:
       - "app/search/page.tsx"
+      - "components/property-types/PropertyTypeVisualSelector.tsx"
       - "components/search/IndexedPropertyTypeArtwork.tsx"
       - "components/search/SearchListingCardDark.tsx"
       - "lib/ux/indexed-property-type-visual.ts"
       - "scripts/audits/search-property-type-visuals-1.mjs"
+      - "scripts/audits/visual-harmonization-property-types.mjs"
       - "scripts/scrapers/__tests__/indexed-property-type-visual.test.ts"
       - "AKARFINDER_SEARCH_PROPERTY_TYPE_VISUALS_CANONICAL.md"
       - ".github/workflows/search-property-type-visuals-1.yml"
@@ -39,7 +41,7 @@ jobs:
             exit 0
           fi
           git diff --name-only HEAD^ HEAD > /tmp/changed.txt
-          if grep -Eq '^(app/search/page\.tsx$|components/search/(IndexedPropertyTypeArtwork|SearchListingCardDark)\.tsx$|lib/ux/indexed-property-type-visual\.ts$|scripts/audits/search-property-type-visuals-1\.mjs$|scripts/scrapers/__tests__/indexed-property-type-visual\.test\.ts$|AKARFINDER_SEARCH_PROPERTY_TYPE_VISUALS_CANONICAL\.md$)' /tmp/changed.txt; then
+          if grep -Eq '^(app/search/page\.tsx$|components/property-types/PropertyTypeVisualSelector\.tsx$|components/search/(IndexedPropertyTypeArtwork|SearchListingCardDark)\.tsx$|lib/ux/indexed-property-type-visual\.ts$|scripts/audits/(search-property-type-visuals-1|visual-harmonization-property-types)\.mjs$|scripts/scrapers/__tests__/indexed-property-type-visual\.test\.ts$|AKARFINDER_SEARCH_PROPERTY_TYPE_VISUALS_CANONICAL\.md$|\.github/workflows/search-property-type-visuals-1\.yml$)' /tmp/changed.txt; then
             echo "relevant=true" >> "$GITHUB_OUTPUT"
           else
             echo "relevant=false" >> "$GITHUB_OUTPUT"
@@ -81,10 +83,18 @@ jobs:
         env:
           BASE_URL: http://127.0.0.1:3141
         run: node scripts/audits/search-property-type-visuals-1.mjs
+      - name: Harmonized selector visual proof
+        env:
+          BASE_URL: http://127.0.0.1:3141
+          AUDIT_MODE: after
+          AUDIT_OUTPUT_DIR: artifacts/visual-harmonization-property-types/after
+        run: node scripts/audits/visual-harmonization-property-types.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: search-property-type-visuals-1-proof
-          path: data/audits/search-property-type-visuals-1
+          path: |
+            data/audits/search-property-type-visuals-1
+            artifacts/visual-harmonization-property-types
           if-no-files-found: warn
-          retention-days: 14
+          retention-days: 30
