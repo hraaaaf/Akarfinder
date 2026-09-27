@@ -1,0 +1,75 @@
+name: Recovery V4.11 Wave5 Mubawab Offline Certification
+
+on:
+  push:
+    branches: ["recovery/v4-11-wave5-mubawab-offline-20260927"]
+    paths:
+      - "data/recovery/activate-v4-11-wave5-mubawab.txt"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Download certified inputs
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/ledger" "$RUNNER_TEMP/freeze" "$RUNNER_TEMP/wave2" data/audits/v4-11-wave5
+          gh api repos/${{ github.repository }}/actions/artifacts/10929097436/zip > "$RUNNER_TEMP/ledger.zip"
+          unzip -q -o "$RUNNER_TEMP/ledger.zip" -d "$RUNNER_TEMP/ledger"
+          gh api repos/${{ github.repository }}/actions/artifacts/10869399865/zip > "$RUNNER_TEMP/freeze.zip"
+          unzip -q -o "$RUNNER_TEMP/freeze.zip" -d "$RUNNER_TEMP/freeze"
+          gh api repos/${{ github.repository }}/actions/artifacts/10927304058/zip > "$RUNNER_TEMP/wave2.zip"
+          unzip -q -o "$RUNNER_TEMP/wave2.zip" -d "$RUNNER_TEMP/wave2"
+          test -s "$RUNNER_TEMP/ledger/existence-verified-v2.jsonl"
+          test -s "$RUNNER_TEMP/freeze/minimal_live_search_documents_v1.jsonl.gz"
+          test -s "$RUNNER_TEMP/freeze/thin_index_search_documents.jsonl.gz"
+          test -s "$RUNNER_TEMP/freeze/listing_representations.jsonl.gz"
+          test -s "$RUNNER_TEMP/wave2/db-ready-wave2.jsonl"
+
+      - name: Certify Mubawab offline wave5
+        run: |
+          node scripts/recovery/certify-v4-11-wave5-mubawab-offline.mjs             --ledger "$RUNNER_TEMP/ledger/existence-verified-v2.jsonl"             --freeze-dir "$RUNNER_TEMP/freeze"             --wave2 "$RUNNER_TEMP/wave2/db-ready-wave2.jsonl"             --output data/audits/v4-11-wave5/db-ready-wave5.jsonl             --rejects data/audits/v4-11-wave5/rejects.jsonl             --summary data/audits/v4-11-wave5/summary.json
+
+      - name: Verify invariants
+        run: |
+          node - <<'NODE'
+          const fs=require("fs"),crypto=require("crypto");
+          const s=JSON.parse(fs.readFileSync("data/audits/v4-11-wave5/summary.json","utf8"));
+          const body=fs.readFileSync("data/audits/v4-11-wave5/db-ready-wave5.jsonl");
+          const rows=body.toString("utf8").split(/\r?\n/).filter(Boolean).map(JSON.parse);
+          const eq=(a,b,n)=>{if(a!==b)throw new Error(n+": "+a+" != "+b)};
+          eq(s.verified_mubawab_rows,60359,"verified Mubawab");
+          eq(s.excluded_wave2_rows,11897,"wave2 exclusion");
+          eq(s.db_ready_rows,27428,"db ready");
+          eq(rows.length,27428,"physical");
+          eq(new Set(rows.map(r=>r.listing_url)).size,27428,"url unique");
+          eq(new Set(rows.map(r=>r.canonical_fingerprint)).size,27428,"fp unique");
+          eq(crypto.createHash("sha256").update(body).digest("hex"),s.output_sha256,"sha");
+          eq(s.approved_for_import_rows,0,"approval");
+          eq(s.database_access,0,"db access");
+          eq(s.database_writes,0,"db writes");
+          if(rows.some(r=>r.approved_for_import!==false))throw new Error("approval invariant");
+          console.log(JSON.stringify(s,null,2));
+          NODE
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: clean-corpus-v4.11-db-ready-wave5-mubawab
+          path: |
+            data/audits/v4-11-wave5/db-ready-wave5.jsonl
+            data/audits/v4-11-wave5/rejects.jsonl
+            data/audits/v4-11-wave5/summary.json
+          retention-days: 30
