@@ -3,8 +3,8 @@ import fs from "node:fs";
 import crypto from "node:crypto";
 
 function arg(n){const i=process.argv.indexOf(n);return i>=0?process.argv[i+1]:null}
-const ledger=arg("--ledger"), wave2=arg("--wave2"), output=arg("--output"), rejectedOut=arg("--rejected"), summaryOut=arg("--summary");
-if(!ledger||!wave2||!output||!rejectedOut||!summaryOut) throw new Error("missing args");
+const ledger=arg("--ledger"), wave2=arg("--wave2"), domioMatched=arg("--domio-matched"), output=arg("--output"), rejectedOut=arg("--rejected"), summaryOut=arg("--summary");
+if(!ledger||!wave2||!domioMatched||!output||!rejectedOut||!summaryOut) throw new Error("missing args");
 
 const STRONG=new Set(["direct_http200","official_sitemap_recent","commoncrawl_recent","listing_source_active_recent","thin_fresh_confirmed_recent"]);
 const TARGETS=new Set(["marocimmo.com","sarout.ma","agenz.ma"]);
@@ -92,6 +92,11 @@ function parse(url,domain){
     city=structuredCity(n[2].slice(5));
     district=structuredCity(seg[4]);
     method="structured_route_agenz";
+  }else if(domain==="domio.ma"&&seg.length>=6&&["fr","en","ar"].includes(n[0])){
+    property_type=ptype(n[1]);
+    transaction_type=transaction(n[2]);
+    city=structuredCity(seg[3]);
+    method="structured_route_domio";
   }else if(domain==="sarout.ma"){
     transaction_type=transaction(p);
     property_type=ptype(p);
@@ -110,35 +115,34 @@ const wave2Urls=new Set(fs.readFileSync(wave2,"utf8").split(/\r?\n/).filter(Bool
 if(wave2Urls.size!==13421)throw new Error("wave2 URL set mismatch");
 const sourceRows=fs.readFileSync(ledger,"utf8").split(/\r?\n/).filter(Boolean).map(JSON.parse);
 const out=[],rejects=[];const byDomain={},rejectReasons={};
+function addCertified(r,evidence){
+  if(wave2Urls.has(r.canonical_url))return;
+  const m=parse(r.canonical_url,r.source_domain);
+  if(m.reason){rejects.push({canonical_url:r.canonical_url,source_domain:r.source_domain,reason:m.reason});rejectReasons[m.reason]=(rejectReasons[m.reason]||0)+1;return}
+  const title=sourceTitle(r.canonical_url,m.property_type,m.transaction_type,m.city,m.district);
+  if(title.length<12){rejects.push({canonical_url:r.canonical_url,source_domain:r.source_domain,reason:"weak_route_title"});rejectReasons.weak_route_title=(rejectReasons.weak_route_title||0)+1;return}
+  byDomain[r.source_domain]=(byDomain[r.source_domain]||0)+1;
+  out.push({canonical_fingerprint:fp(r.canonical_url),title,price_mad:null,city:m.city,district:m.district,property_type:m.property_type,transaction_type:m.transaction_type,surface_m2:null,rooms_count:null,bedrooms_count:null,bathrooms_count:null,description_snippet:null,images_count:null,seller_name:null,data_completeness_score:80,field_confidence:{certification:"v4.11_wave3_mass_route_verified",existence_evidence:evidence,route_mapping:m.method,representation_identity:"source_url_level",cross_source_merge_performed:false},source_name:r.source_domain,listing_url:r.canonical_url,source_url:"https://"+r.source_domain,first_seen_at:null,last_seen_at:null,source_offer_key:null,origin_type:"external_index_seed",compliance_status:"recovery_verified_v4_11_wave3",content_fingerprint:fp(r.canonical_url),ingestion_run_id:"clean-corpus-v4.11-wave3",displayed_price:null,price_currency:null,price_period:null,price_status:"not_disclosed",approved_for_import:false});
+}
 for(const r of sourceRows){
   if(!TARGETS.has(r.source_domain))continue;
-  if(wave2Urls.has(r.canonical_url))continue;
   if(!Array.isArray(r.evidence)||!r.evidence.some(e=>STRONG.has(e))){rejects.push({canonical_url:r.canonical_url,source_domain:r.source_domain,reason:"no_strong_evidence"});continue}
-  const m=parse(r.canonical_url,r.source_domain);
-  if(m.reason){rejects.push({canonical_url:r.canonical_url,source_domain:r.source_domain,reason:m.reason});rejectReasons[m.reason]=(rejectReasons[m.reason]||0)+1;continue}
-  const title=sourceTitle(r.canonical_url,m.property_type,m.transaction_type,m.city,m.district);
-  if(title.length<12){rejects.push({canonical_url:r.canonical_url,source_domain:r.source_domain,reason:"weak_route_title"});rejectReasons.weak_route_title=(rejectReasons.weak_route_title||0)+1;continue}
-  byDomain[r.source_domain]=(byDomain[r.source_domain]||0)+1;
-  out.push({
-    canonical_fingerprint:fp(r.canonical_url),title,price_mad:null,city:m.city,district:m.district,
-    property_type:m.property_type,transaction_type:m.transaction_type,surface_m2:null,rooms_count:null,
-    bedrooms_count:null,bathrooms_count:null,description_snippet:null,images_count:null,seller_name:null,
-    data_completeness_score:80,
-    field_confidence:{certification:"v4.11_wave3_mass_route_verified",existence_evidence:r.evidence,route_mapping:m.method,representation_identity:"source_url_level",cross_source_merge_performed:false},
-    source_name:r.source_domain,listing_url:r.canonical_url,source_url:"https://"+r.source_domain,
-    first_seen_at:null,last_seen_at:null,source_offer_key:null,origin_type:"external_index_seed",
-    compliance_status:"recovery_verified_v4_11_wave3",content_fingerprint:fp(r.canonical_url),
-    ingestion_run_id:"clean-corpus-v4.11-wave3",displayed_price:null,price_currency:null,price_period:null,
-    price_status:"not_disclosed",approved_for_import:false
-  });
+  addCertified(r,r.evidence);
 }
-if(out.length!==61200)throw new Error("expected 61200 wave3 rows, got "+out.length);
-if(byDomain["marocimmo.com"]!==32795||byDomain["sarout.ma"]!==28297||byDomain["agenz.ma"]!==108)throw new Error("domain yield invariant");
+const domioRows=fs.readFileSync(domioMatched,"utf8").split(/\r?\n/).filter(Boolean).map(JSON.parse);
+if(domioRows.length!==6843)throw new Error("expected 6843 Domio evidence rows, got "+domioRows.length);
+if(new Set(domioRows.map(r=>r.canonical_url)).size!==6843)throw new Error("Domio evidence URL duplicate");
+for(const r of domioRows){
+  if(r.source_domain!=="domio.ma"||r.verification_method!=="official_category_listing_recent")throw new Error("Domio evidence invariant");
+  addCertified(r,["official_category_listing_recent"]);
+}
+if(out.length!==68043)throw new Error("expected 68043 wave3 rows, got "+out.length);
+if(byDomain["marocimmo.com"]!==32795||byDomain["sarout.ma"]!==28297||byDomain["agenz.ma"]!==108||byDomain["domio.ma"]!==6843)throw new Error("domain yield invariant");
 if(new Set(out.map(x=>x.listing_url)).size!==out.length)throw new Error("URL dedupe");
 if(new Set(out.map(x=>x.canonical_fingerprint)).size!==out.length)throw new Error("fingerprint dedupe");
 if(out.some(x=>x.approved_for_import!==false))throw new Error("approval invariant");
 fs.writeFileSync(output,out.map(x=>JSON.stringify(x)).join("\n")+"\n");
 fs.writeFileSync(rejectedOut,rejects.map(x=>JSON.stringify(x)).join("\n")+(rejects.length?"\n":""));
-const summary={schema_version:"akarfinder-v4.11-wave3-mass-route-certification-20260927",strong_route_db_ready_rows:out.length,by_domain:byDomain,rejected_rows:rejects.length,rejected_reason_counts:rejectReasons,excluded_wave2_rows:wave2Urls.size,source_ledger_artifact_id:10927761643,source_wave2_artifact_id:10927304058,output_sha256:sha(output),rejected_sha256:sha(rejectedOut),approved_for_import_rows:0,database_access:0,database_writes:0,production_neon_writes:0,vercel_deployment:false,certification_time:CERTIFIED_AT,doctrine:["strong existence evidence only","source-structured deterministic route/slug mapping","no inferred price/surface","ambiguous Sarout city tokens rejected","representation-level identity; no cross-source merge"]};
+const summary={schema_version:"akarfinder-v4.11-wave3-mass-route-certification-20260927",strong_route_db_ready_rows:out.length,by_domain:byDomain,rejected_rows:rejects.length,rejected_reason_counts:rejectReasons,excluded_wave2_rows:wave2Urls.size,source_ledger_artifact_id:10927761643,source_wave2_artifact_id:10927304058,source_domio_evidence_artifact_id:10927144343,output_sha256:sha(output),rejected_sha256:sha(rejectedOut),approved_for_import_rows:0,database_access:0,database_writes:0,production_neon_writes:0,vercel_deployment:false,certification_time:CERTIFIED_AT,doctrine:["strong existence evidence only","source-structured deterministic route/slug mapping","no inferred price/surface","ambiguous Sarout city tokens rejected","representation-level identity; no cross-source merge"]};
 fs.writeFileSync(summaryOut,JSON.stringify(summary,null,2)+"\n");
 console.log(JSON.stringify(summary,null,2));
