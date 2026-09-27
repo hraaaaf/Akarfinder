@@ -49,11 +49,11 @@ jobs:
           const m=require("./data/audits/pre-db-ledger-v3/manifest.json");
           const eq=(a,b,n)=>{if(a!==b)throw new Error(n+": "+a+" != "+b)};
           eq(m.previous_verified_rows,170961,"v2");
-          eq(m.direct_http200_additions,7644,"additions");
-          eq(m.existence_verified_rows,178605,"verified");
-          eq(m.unresolved_existence_rows,35387,"unresolved");
-          eq(m.total_eligible_including_wave1,186972,"total verified");
-          eq(m.gap_to_200k_including_wave1,13028,"gap");
+          eq(m.direct_http200_additions,7744,"additions");
+          eq(m.existence_verified_rows,178705,"verified");
+          eq(m.unresolved_existence_rows,35287,"unresolved");
+          eq(m.total_eligible_including_wave1,187072,"total verified");
+          eq(m.gap_to_200k_including_wave1,12928,"gap");
           eq(m.database_access,0,"db access");
           eq(m.database_writes,0,"db writes");
           console.log(JSON.stringify(m,null,2));
