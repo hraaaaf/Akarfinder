@@ -1,0 +1,66 @@
+name: Recovery V4.11 Pre-DB Ledger V3
+
+on:
+  push:
+    branches: ["recovery/v4-11-ledger-v3-20260927"]
+    paths:
+      - "data/recovery/activate-v4-11-pre-db-ledger-v3.txt"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Download ledger V2 and direct evidence artifacts
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/v2" "$RUNNER_TEMP/evidence" data/audits/pre-db-ledger-v3
+          gh api repos/${{ github.repository }}/actions/artifacts/10929097436/zip > "$RUNNER_TEMP/v2.zip"
+          unzip -q -o "$RUNNER_TEMP/v2.zip" -d "$RUNNER_TEMP/v2"
+          test -s "$RUNNER_TEMP/v2/existence-verified-v2.jsonl"
+          test -s "$RUNNER_TEMP/v2/unresolved-existence-v2.txt"
+
+          for id in             10927254534 10929845570 10929394293 10929664106 10929652367             10928857195 10929974835 10930337638 10930771752 10930457550 10930876866 10930162859             10929645172 10930856956             10929665047 10930597362             10929452472 10930901211             10930856286 10930302060
+          do
+            mkdir -p "$RUNNER_TEMP/evidence/$id"
+            gh api "repos/${{ github.repository }}/actions/artifacts/$id/zip" > "$RUNNER_TEMP/evidence/$id.zip"
+            unzip -q -o "$RUNNER_TEMP/evidence/$id.zip" -d "$RUNNER_TEMP/evidence/$id"
+          done
+
+      - name: Build ledger V3
+        run: |
+          node scripts/recovery/build-v4-11-pre-db-ledger-v3.mjs             --verified "$RUNNER_TEMP/v2/existence-verified-v2.jsonl"             --unresolved "$RUNNER_TEMP/v2/unresolved-existence-v2.txt"             --evidence-dir "$RUNNER_TEMP/evidence"             --out-dir data/audits/pre-db-ledger-v3
+
+      - name: Verify ledger invariants
+        run: |
+          node - <<'NODE'
+          const m=require("./data/audits/pre-db-ledger-v3/manifest.json");
+          const eq=(a,b,n)=>{if(a!==b)throw new Error(n+": "+a+" != "+b)};
+          eq(m.previous_verified_rows,170961,"v2");
+          eq(m.direct_http200_additions,7644,"additions");
+          eq(m.existence_verified_rows,178605,"verified");
+          eq(m.unresolved_existence_rows,35387,"unresolved");
+          eq(m.total_eligible_including_wave1,186972,"total verified");
+          eq(m.gap_to_200k_including_wave1,13028,"gap");
+          eq(m.database_access,0,"db access");
+          eq(m.database_writes,0,"db writes");
+          console.log(JSON.stringify(m,null,2));
+          NODE
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: clean-corpus-v4.11-pre-db-ledger-v3
+          path: data/audits/pre-db-ledger-v3/
+          retention-days: 30
