@@ -9,6 +9,9 @@ const INDEXES = [
 ] as const;
 
 const SOURCES = {
+  "domio.ma": [
+    /^\/fr\/[^/]+\/(?:vendre|louer)\/[^/]+\/\d+\/[^/]+\/?$/
+  ],
   "mubawab.ma": [
     /\/(?:fr|en)\/is\//,
     /\/(?:fr|en)\/a\/\d+\//,
