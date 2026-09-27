@@ -143,7 +143,7 @@
         "marocimmo.com": 4473,
         "sarout.ma": 432
       },
-      "note": "GitHub workflow run 36278856045 failed before DB access because NEON_RECOVERY_DATABASE_URL was unset. Import was then executed directly through the connected Neon tool on the same isolated branch under the existing user authorization."
+      "note": "GitHub workflow run 36278856045 attempt 1 failed before DB access because NEON_RECOVERY_DATABASE_URL was unset. After the secret was added, attempt 2 passed approval, endpoint guard, artifact download, and staging, then reported a SQL quoting error in the workflow. Independent Neon readback verified the selected cohort present and consistent on the isolated branch. The cohort was not re-imported after that readback."
     }
   },
   "status": "SELECTED_COHORT_IMPORT_CERTIFIED"
