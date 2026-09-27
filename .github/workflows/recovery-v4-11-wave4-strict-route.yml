@@ -1,0 +1,70 @@
+name: Recovery V4.11 Wave4 Strict Route Certification
+
+on:
+  push:
+    branches: ["recovery/v4-11-mass-route-wave3-20260927"]
+    paths:
+      - "data/recovery/activate-v4-11-wave4-strict-route.txt"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Download certified inputs
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/v2" "$RUNNER_TEMP/w2" "$RUNNER_TEMP/w3" data/audits/v4-11-wave4
+          gh api repos/${{ github.repository }}/actions/artifacts/10929097436/zip > "$RUNNER_TEMP/v2.zip"
+          unzip -q -o "$RUNNER_TEMP/v2.zip" -d "$RUNNER_TEMP/v2"
+          gh api repos/${{ github.repository }}/actions/artifacts/10927304058/zip > "$RUNNER_TEMP/w2.zip"
+          unzip -q -o "$RUNNER_TEMP/w2.zip" -d "$RUNNER_TEMP/w2"
+          gh api repos/${{ github.repository }}/actions/artifacts/10929247398/zip > "$RUNNER_TEMP/w3.zip"
+          unzip -q -o "$RUNNER_TEMP/w3.zip" -d "$RUNNER_TEMP/w3"
+          echo "0e5273aa6a4394118a274e44ea0047dd762b9d2aaf895f555c62ca03424fb708  $RUNNER_TEMP/v2/existence-verified-v2.jsonl" | sha256sum -c -
+          echo "3aa9661a0a4e925c8732a1bbefd8b660767166026d764d207aaa02ca675f3a1b  $RUNNER_TEMP/w2/db-ready-wave2.jsonl" | sha256sum -c -
+          echo "d94f3dc1982b50a4853cff996c0ac159a70cf6f0822ca69c9097701779145438  $RUNNER_TEMP/w3/db-ready-wave3.jsonl" | sha256sum -c -
+
+      - name: Certify wave4
+        run: |
+          node scripts/recovery/certify-v4-11-wave4-strict-route.mjs             --ledger "$RUNNER_TEMP/v2/existence-verified-v2.jsonl"             --wave2 "$RUNNER_TEMP/w2/db-ready-wave2.jsonl"             --wave3 "$RUNNER_TEMP/w3/db-ready-wave3.jsonl"             --output data/audits/v4-11-wave4/db-ready-wave4.jsonl             --rejected data/audits/v4-11-wave4/rejected.jsonl             --summary data/audits/v4-11-wave4/summary.json
+
+      - name: Verify invariants
+        run: |
+          node - <<'NODE'
+          const fs=require("fs"),crypto=require("crypto");
+          const s=require("./data/audits/v4-11-wave4/summary.json");
+          const b=fs.readFileSync("data/audits/v4-11-wave4/db-ready-wave4.jsonl");
+          const rows=b.toString("utf8").split(/\r?\n/).filter(Boolean).map(JSON.parse);
+          const eq=(a,b,n)=>{if(a!==b)throw new Error(n+": "+a+" != "+b)};
+          eq(s.db_ready_rows,1126,"rows");
+          eq(s.by_domain["agenz.ma"],868,"agenz");
+          eq(s.by_domain["limmobiliersansfrontieres.com"],221,"lisf");
+          eq(s.by_domain["kawtarimmobilier.com"],28,"kawtar");
+          eq(s.by_domain["masaken.ma"],9,"masaken");
+          eq(rows.length,1126,"physical");
+          eq(new Set(rows.map(r=>r.listing_url)).size,1126,"urls");
+          eq(new Set(rows.map(r=>r.canonical_fingerprint)).size,1126,"fps");
+          eq(crypto.createHash("sha256").update(b).digest("hex"),s.output_sha256,"sha");
+          eq(s.approved_for_import_rows,0,"approval");
+          eq(s.database_access,0,"db access");
+          eq(s.database_writes,0,"db writes");
+          NODE
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: clean-corpus-v4.11-db-ready-wave4-strict-route
+          path: data/audits/v4-11-wave4/
+          retention-days: 30
