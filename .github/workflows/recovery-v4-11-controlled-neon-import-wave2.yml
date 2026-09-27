@@ -150,15 +150,60 @@ jobs:
             END IF;
           END $$;
 
+          CREATE TEMP TABLE wave2_conflicts AS
+          SELECT
+            s.listing_url,
+            s.canonical_fingerprint AS staged_fingerprint,
+            ls.id AS existing_source_id,
+            pl_by_url.canonical_fingerprint AS fingerprint_at_existing_url,
+            pl_by_fp.id AS existing_property_by_fingerprint
+          FROM stage_wave2 s
+          LEFT JOIN public.listing_sources ls ON ls.listing_url=s.listing_url
+          LEFT JOIN public.property_listings pl_by_url ON pl_by_url.id=ls.property_listing_id
+          LEFT JOIN public.property_listings pl_by_fp ON pl_by_fp.canonical_fingerprint=s.canonical_fingerprint
+          WHERE
+            (ls.id IS NOT NULL AND pl_by_url.canonical_fingerprint IS DISTINCT FROM s.canonical_fingerprint)
+            OR
+            (pl_by_fp.id IS NOT NULL AND (ls.id IS NULL OR pl_by_url.id IS DISTINCT FROM pl_by_fp.id));
+
+          DO $
+          BEGIN
+            IF (SELECT count(*) FROM wave2_conflicts) <> 0 THEN
+              RAISE EXCEPTION 'asymmetric legacy URL/fingerprint conflict: % rows',
+                (SELECT count(*) FROM wave2_conflicts);
+            END IF;
+          END $;
+
           CREATE TEMP TABLE wave2_new AS
           SELECT s.*
           FROM stage_wave2 s
           WHERE NOT EXISTS (
+            SELECT 1
+            FROM public.listing_sources ls
+            JOIN public.property_listings pl ON pl.id=ls.property_listing_id
+            WHERE ls.listing_url=s.listing_url
+              AND pl.canonical_fingerprint=s.canonical_fingerprint
+          )
+          AND NOT EXISTS (
             SELECT 1 FROM public.listing_sources ls WHERE ls.listing_url=s.listing_url
           )
           AND NOT EXISTS (
             SELECT 1 FROM public.property_listings pl WHERE pl.canonical_fingerprint=s.canonical_fingerprint
           );
+
+          CREATE TEMP TABLE wave2_exact_existing AS
+          SELECT s.*
+          FROM stage_wave2 s
+          JOIN public.listing_sources ls ON ls.listing_url=s.listing_url
+          JOIN public.property_listings pl ON pl.id=ls.property_listing_id
+          WHERE pl.canonical_fingerprint=s.canonical_fingerprint;
+
+          DO $
+          BEGIN
+            IF (SELECT count(*) FROM wave2_new) + (SELECT count(*) FROM wave2_exact_existing) <> 13421 THEN
+              RAISE EXCEPTION 'candidate partition mismatch';
+            END IF;
+          END $;
 
           INSERT INTO public.property_listings (
             canonical_fingerprint,title,price_mad,city,district,property_type,transaction_type,
@@ -207,7 +252,8 @@ jobs:
           SELECT
             (SELECT count(*) FROM stage_wave2) AS candidate_rows,
             (SELECT count(*) FROM wave2_new) AS inserted_or_present_new_rows,
-            (SELECT count(*) FROM stage_wave2 s WHERE EXISTS (SELECT 1 FROM public.listing_sources ls WHERE ls.listing_url=s.listing_url AND ls.ingestion_run_id IS DISTINCT FROM 'clean-corpus-v4.11-wave2')) AS preexisting_url_rows;
+            (SELECT count(*) FROM wave2_exact_existing) AS exact_preexisting_rows,
+            (SELECT count(*) FROM wave2_conflicts) AS asymmetric_conflicts;
 
           COMMIT;
           SQL
