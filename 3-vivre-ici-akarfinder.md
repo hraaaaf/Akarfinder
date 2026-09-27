@@ -27,11 +27,11 @@ Décision Product Owner : **un seul chantier / une seule PR active Vivre Ici**.
 - PR : **#1090** — `feat(vivre-ici): canonical national → city → district TARGET reconciliation`
 - branche : `feat/akar-map-quartier-target-couche3`
 - base : `main@b0ec9d6a5526bd60c14653a5679b88e2e6d7194d`
-- HEAD au moment de la réconciliation : `cb6db945fad03c8ad51869715c5c148f96957be2`
+- HEAD courant après réconciliation #1096 : `25fa8ab9cc02171b7cfb01fd3d712fc5bd307a51`
 - scope produit : Maroc 12 régions → ville → quartier → landmarks/MapLibre → Search → convergence TARGET.
 
 ### PRs fragmentées fermées comme superseded / archive
-`#1025, #1040, #1041, #1043, #1045, #1046, #1047, #1048, #1049, #1051, #1052, #1054, #1055, #1056, #1060, #1061, #1062, #1063, #1064, #1065, #1066, #1067, #1068, #1069, #1070, #1071, #1072, #1073, #1074, #1075, #1076, #1077, #1078, #1079, #1080, #1086, #1088`.
+`#1025, #1040, #1041, #1043, #1045, #1046, #1047, #1048, #1049, #1051, #1052, #1054, #1055, #1056, #1060, #1061, #1062, #1063, #1064, #1065, #1066, #1067, #1068, #1069, #1070, #1071, #1072, #1073, #1074, #1075, #1076, #1077, #1078, #1079, #1080, #1086, #1088, #1096`.
 
 Leur historique Git est conservé ; aucune branche/commit n'est supprimé. Elles ne doivent plus servir de véhicule de merge produit.
 
