@@ -1,0 +1,24 @@
+{
+  "approved": true,
+  "authorization_message": "On balance les certifiés et on vérifie les non certifiés",
+  "rows": 1158,
+  "artifact_id": 10931655535,
+  "selected_sha256": "e64b60434771a310b37027521e81b302bd6e00541f537d171be3467a33c8fa69",
+  "excluded_source": "promoimmomarrakech.com",
+  "excluded_already_imported_rows": 3674,
+  "target_project": "ancient-violet-43534870",
+  "target_branch": "br-cold-mouse-b2a50yaa",
+  "target_database": "AkarFinder",
+  "expected_pre": {
+    "property_listings": 94779,
+    "listing_sources": 94779,
+    "wave4b_sources": 1126
+  },
+  "expected_post": {
+    "property_listings": 95937,
+    "listing_sources": 95937,
+    "wave5_sources": 1158
+  },
+  "production_neon_writes_authorized": false,
+  "vercel_deployment_authorized": false
+}
