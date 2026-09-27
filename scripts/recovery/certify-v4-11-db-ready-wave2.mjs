@@ -8,7 +8,7 @@ if(!input||!output||!quarantineOut||!summaryOut) throw new Error("missing args")
 
 const CERTIFIED_AT="2026-09-27T08:40:00Z";
 const ALLOWED=new Set(["apartment","land","villa","commercial","office","house","riad","studio"]);
-const PT_MAP={office_commercial:"office",farm:"land"};
+const PT_MAP={office_commercial:"office",farm:"land"};\nconst STRONG_EVIDENCE=new Set(["direct_http200","official_sitemap_recent","commoncrawl_recent","listing_source_active_recent","thin_fresh_confirmed_recent"]);
 
 function fp(url){return crypto.createHash("sha256").update("representation|"+url).digest("hex")}
 function sha(file){return crypto.createHash("sha256").update(fs.readFileSync(file)).digest("hex")}
@@ -55,6 +55,7 @@ for(const r of rows){
   const city=normalizeCity(f.city);
   if(!city) reasons.push("missing_city");
   if(!Array.isArray(r.evidence)||r.evidence.length===0) reasons.push("missing_existence_evidence");
+  if(!Array.isArray(r.evidence)||!r.evidence.some(e=>STRONG_EVIDENCE.has(e))) reasons.push("no_strong_existence_evidence");
   if(reasons.length){rejected.push({canonical_url:r.canonical_url,source_domain:r.source_domain,reasons});continue}
   pre.push({...r,normalized:{city,property_type,transaction_type:f.transaction_type,title}});
 }
@@ -72,13 +73,13 @@ for(const r of pre){
   const a=groups.get(key)||[]; a.push(r); groups.set(key,a);
 }
 const ambiguous=[...groups.entries()].filter(([,g])=>g.length>1&&new Set(g.map(x=>x.source_domain)).size>1);
-if(ambiguous.length!==67) throw new Error("expected 67 ambiguous groups, got "+ambiguous.length);
+if(ambiguous.length!==26) throw new Error("expected 26 ambiguous groups, got "+ambiguous.length);
 const quarantineUrls=new Set();
 for(const [,g] of ambiguous) for(const r of g) quarantineUrls.add(r.canonical_url);
-if(quarantineUrls.size!==168) throw new Error("expected 168 identity-quarantine rows, got "+quarantineUrls.size);
+if(quarantineUrls.size!==55) throw new Error("expected 55 identity-quarantine rows, got "+quarantineUrls.size);
 
 const safe=pre.filter(r=>!quarantineUrls.has(r.canonical_url));
-if(safe.length!==17022) throw new Error("expected 17022 DB-ready rows, got "+safe.length);
+if(safe.length!==13421) throw new Error("expected 13421 DB-ready rows, got "+safe.length);
 if(new Set(safe.map(r=>r.canonical_url)).size!==safe.length) throw new Error("duplicate canonical URLs");
 
 const out=[];
@@ -170,7 +171,7 @@ const summary={
   quarantine_sha256:sha(quarantineOut),
   certification_time:CERTIFIED_AT,
   database_access:0,database_writes:0,production_neon_writes:0,vercel_deployment:false,
-  rule:"Only existence-verified + core product fields + supported normalized taxonomy + no contradiction + conservative cross-source identity-safe rows qualify."
+  rule:"Only strong existence evidence + core product fields + supported normalized taxonomy + no contradiction + conservative cross-source identity-safe rows qualify. Internal recent representation/minimal-live evidence alone is insufficient."
 };
 fs.writeFileSync(summaryOut,JSON.stringify(summary,null,2)+"\n");
 console.log(JSON.stringify(summary,null,2));
