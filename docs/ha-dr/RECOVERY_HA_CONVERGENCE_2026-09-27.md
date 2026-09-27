@@ -1,7 +1,7 @@
 # AkarFinder — Recovery + HA Convergence
 
 Date: 2026-09-27  
-Status: IN PROGRESS / OFFLINE CONVERGENCE
+Status: OFFLINE / PROVIDER-INDEPENDENT CONVERGENCE VERIFIED
 
 ## Goal
 
@@ -142,11 +142,15 @@ Static proof:
 - provider/live access during this lot: 0;
 - Vercel deployment: 0.
 
-Dynamic proof:
+Dynamic proof on HEAD `0e6584a6d9d2d329443ac730a08811945ae732fa`:
 
-- repo workflow lanes triggered by the convergence pushes;
-- relevant runs were queued at the last checkpoint;
-- no green dynamic certification is claimed yet.
+- HA Isolated Replication Resilience Rehearsal — run 36318212649 — SUCCESS;
+- HA Isolated Sequence Failback Reconciliation — run 36318212605 — SUCCESS;
+- HA Isolated Logical Replication Rehearsal — run 36318212688 — SUCCESS;
+- CI Workflow Efficiency Policy — run 36318212664 — SUCCESS;
+- DATA P0 Owner Listing Integration — run 36318212595 — SUCCESS.
+
+The provider-independent/offline HA convergence sub-lot is therefore verified. This does **not** certify live Supabase↔Neon HA or authorize provider mutation/cutover.
 
 ## Post-restore sequence
 
@@ -172,9 +176,13 @@ After an explicit restore-complete signal:
 
 ## Next exact
 
-Obtain current-branch dynamic evidence for the provider-independent fencing and isolated PostgreSQL 17 rehearsals without touching live providers. Then:
+Wait only for the explicit Supabase restore-complete signal before any provider access. Once received:
 
-- if a relevant check is red: diagnose and fix only the proven defect;
-- if green: record exact run/artifact evidence and close the offline/provider-independent convergence sub-lot;
-- after explicit Supabase restore-complete signal: begin the read-only restored Supabase ↔ certified isolated Neon rebaseline;
-- provider-specific replication/canary work remains blocked until that comparison.
+1. minimal read-only Supabase health check;
+2. restored Supabase inventory;
+3. certified isolated Neon read-only inventory;
+4. exact parity/rebaseline comparison;
+5. decide provider-specific HA delta;
+6. prepare provider-specific rehearsal/canary only from current evidence.
+
+No Vercel deployment or production cutover is authorized.
