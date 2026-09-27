@@ -9,10 +9,11 @@
   "target_branch": "br-cold-mouse-b2a50yaa",
   "target_database": "AkarFinder",
   "expected_pre": {
-    "property_listings": 89979,
-    "listing_sources": 89979
+    "property_listings": 93653,
+    "listing_sources": 93653
   },
   "production_neon_writes_authorized": false,
   "vercel_deployment_authorized": false,
-  "retrigger_note": "retry after correcting workflow branch trigger"
+  "retrigger_note": "rebased after verified existing Promo wave4 import",
+  "ingestion_run_id": "clean-corpus-v4.11-wave4b"
 }
