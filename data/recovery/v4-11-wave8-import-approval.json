@@ -19,5 +19,8 @@
     "listing_sources": 139161
   },
   "production_neon_writes_authorized": false,
-  "vercel_deployment_authorized": false
+  "vercel_deployment_authorized": false,
+  "retry_reason": "First import attempt rolled back before inserts: one optional price_mad exceeded PostgreSQL int4. Import projection now deterministically quarantines exactly one overflow price to null.",
+  "retry_after_run_id": 36334283909,
+  "retry_authorized": true
 }
