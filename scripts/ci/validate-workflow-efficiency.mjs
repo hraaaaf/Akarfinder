@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 
 const base = process.env.CI_DIFF_BASE || "HEAD^";
 const head = process.env.CI_DIFF_HEAD || "HEAD";
