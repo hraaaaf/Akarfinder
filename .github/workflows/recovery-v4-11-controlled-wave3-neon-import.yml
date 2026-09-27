@@ -154,7 +154,7 @@ jobs:
             IF EXISTS (
               SELECT 1 FROM stage_wave3 s
               JOIN public.property_listings p ON p.canonical_fingerprint=s.canonical_fingerprint
-              LEFT JOIN legacy_overlap_w3 o ON o.canonical_url IS NOT NULL
+              LEFT JOIN legacy_overlap_w3 o ON o.listing_url=s.listing_url
               WHERE o.listing_url IS NULL
             ) THEN RAISE EXCEPTION 'unexpected fingerprint-only overlap'; END IF;
           END $$;
