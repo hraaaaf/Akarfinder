@@ -67,18 +67,18 @@ jobs:
           FROM public.listing_sources
           WHERE listing_url ~* '(mubawab\.ma|avito\.ma)';
 
-          CREATE TEMP TABLE overlaps AS
+          CREATE TEMP TABLE overlap_ids AS
           SELECT DISTINCT s.source_name,s.source_offer_key
           FROM stage_ids s JOIN existing_identity e
             ON e.source_name=s.source_name AND e.source_offer_key=s.source_offer_key
           WHERE s.source_offer_key IS NOT NULL;
 
-          \copy overlaps TO '/w8/identity-overlaps.csv' WITH (FORMAT csv, HEADER true)
+          \copy overlap_ids TO '/w8/identity-overlaps.csv' WITH (FORMAT csv, HEADER true)
           SELECT
             (SELECT count(*) FROM stage_ids),
-            (SELECT count(*) FROM overlaps),
-            (SELECT count(*) FROM overlaps WHERE source_name='mubawab.ma'),
-            (SELECT count(*) FROM overlaps WHERE source_name='avito.ma'),
+            (SELECT count(*) FROM overlap_ids),
+            (SELECT count(*) FROM overlap_ids WHERE source_name='mubawab.ma'),
+            (SELECT count(*) FROM overlap_ids WHERE source_name='avito.ma'),
             (SELECT count(*) FROM public.property_listings),
             (SELECT count(*) FROM public.listing_sources);
           SQL
