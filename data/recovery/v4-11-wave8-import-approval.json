@@ -22,5 +22,6 @@
   "vercel_deployment_authorized": false,
   "retry_reason": "Supersede regex-heavy stale runs with recertified price-safe artifact and precomputed identity guard.",
   "retry_after_run_id": 36334283909,
-  "retry_authorized": true
+  "retry_authorized": true,
+  "launch_generation": "optimized-clean-v1"
 }
