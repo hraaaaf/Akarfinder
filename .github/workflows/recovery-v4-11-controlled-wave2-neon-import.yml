@@ -129,7 +129,7 @@ jobs:
           LAST="$(echo "$OUT" | tail -n1)"
           IFS='|' read -r STAGED URL_OVERLAP FP_OVERLAP PRE_PL PRE_LS <<< "$LAST"
           test "$STAGED" = "13421"
-          test "$URL_OVERLAP" = "0"
+          test "$URL_OVERLAP" = "4"
           test "$FP_OVERLAP" = "0"
           test "$PRE_PL" = "8544"
           test "$PRE_LS" = "8544"
@@ -140,75 +140,100 @@ jobs:
           cat > "$RUNNER_TEMP/wave2/import.sql" <<'SQL'
           BEGIN;
           CREATE TEMP TABLE stage_wave2 (
-            canonical_fingerprint text NOT NULL,
-            title text NOT NULL,
-            price_mad integer,
-            city text NOT NULL,
-            district text,
-            property_type text NOT NULL,
-            transaction_type text NOT NULL,
-            surface_m2 integer,
-            rooms_count integer,
-            bedrooms_count integer,
-            bathrooms_count integer,
-            description_snippet text,
-            images_count integer,
-            seller_name text,
-            data_completeness_score integer,
-            field_confidence jsonb,
-            source_name text NOT NULL,
-            listing_url text NOT NULL,
-            source_url text,
-            first_seen_at timestamptz,
-            last_seen_at timestamptz,
-            source_offer_key text,
-            origin_type text,
-            compliance_status text,
-            content_fingerprint text,
-            ingestion_run_id text,
-            displayed_price numeric,
-            price_currency text,
-            price_period text,
-            price_status text
+            canonical_fingerprint text NOT NULL,title text NOT NULL,price_mad integer,city text NOT NULL,district text,
+            property_type text NOT NULL,transaction_type text NOT NULL,surface_m2 integer,rooms_count integer,
+            bedrooms_count integer,bathrooms_count integer,description_snippet text,images_count integer,seller_name text,
+            data_completeness_score integer,field_confidence jsonb,source_name text NOT NULL,listing_url text NOT NULL,
+            source_url text,first_seen_at timestamptz,last_seen_at timestamptz,source_offer_key text,origin_type text,
+            compliance_status text,content_fingerprint text,ingestion_run_id text,displayed_price numeric,
+            price_currency text,price_period text,price_status text
           ) ON COMMIT DROP;
           \copy stage_wave2 FROM '/wave2/stage.csv' WITH (FORMAT csv, HEADER true)
 
+          CREATE TEMP TABLE legacy_overlap AS
+          SELECT s.*,ls.id AS existing_source_id,ls.property_listing_id AS existing_property_id
+          FROM stage_wave2 s
+          JOIN public.listing_sources ls ON ls.listing_url=s.listing_url;
+
+          DO $$
+          BEGIN
+            IF (SELECT count(*) FROM legacy_overlap) <> 4 THEN RAISE EXCEPTION 'legacy overlap count mismatch'; END IF;
+            IF EXISTS (
+              SELECT 1 FROM legacy_overlap o
+              WHERE (SELECT count(*) FROM public.listing_sources x WHERE x.property_listing_id=o.existing_property_id) <> 1
+            ) THEN RAISE EXCEPTION 'legacy overlap property has multiple sources'; END IF;
+            IF EXISTS (
+              SELECT 1 FROM legacy_overlap o
+              JOIN public.property_listings p ON p.id=o.existing_property_id
+              WHERE EXISTS (
+                SELECT 1 FROM public.property_listings q
+                WHERE q.canonical_fingerprint=o.canonical_fingerprint AND q.id<>p.id
+              )
+            ) THEN RAISE EXCEPTION 'target fingerprint already belongs to another property'; END IF;
+          END $$;
+
+          UPDATE public.property_listings p SET
+            canonical_fingerprint=o.canonical_fingerprint,title=o.title,price_mad=o.price_mad,city=o.city,
+            district=o.district,property_type=o.property_type,transaction_type=o.transaction_type,
+            surface_m2=o.surface_m2,rooms_count=o.rooms_count,bedrooms_count=o.bedrooms_count,
+            bathrooms_count=o.bathrooms_count,description_snippet=o.description_snippet,images_count=o.images_count,
+            seller_name=o.seller_name,data_completeness_score=o.data_completeness_score,
+            field_confidence=o.field_confidence,updated_at=now()
+          FROM legacy_overlap o
+          WHERE p.id=o.existing_property_id;
+
+          UPDATE public.listing_sources ls SET
+            source_name=o.source_name,source_url=o.source_url,first_seen_at=o.first_seen_at,last_seen_at=o.last_seen_at,
+            is_active=true,source_offer_key=o.source_offer_key,origin_type=o.origin_type,
+            compliance_status=o.compliance_status,content_fingerprint=o.content_fingerprint,
+            ingestion_run_id=o.ingestion_run_id,displayed_price=o.displayed_price,price_currency=o.price_currency,
+            price_period=o.price_period,price_status=o.price_status
+          FROM legacy_overlap o
+          WHERE ls.id=o.existing_source_id;
+
+          CREATE TEMP TABLE stage_new AS
+          SELECT s.* FROM stage_wave2 s
+          WHERE NOT EXISTS (SELECT 1 FROM legacy_overlap o WHERE o.listing_url=s.listing_url);
+
+          DO $$ BEGIN
+            IF (SELECT count(*) FROM stage_new) <> 13417 THEN RAISE EXCEPTION 'new-row count mismatch'; END IF;
+          END $$;
+
           INSERT INTO public.property_listings (
-            canonical_fingerprint,title,price_mad,city,district,property_type,transaction_type,
-            surface_m2,rooms_count,bedrooms_count,bathrooms_count,description_snippet,
-            images_count,seller_name,data_completeness_score,field_confidence
+            canonical_fingerprint,title,price_mad,city,district,property_type,transaction_type,surface_m2,rooms_count,
+            bedrooms_count,bathrooms_count,description_snippet,images_count,seller_name,data_completeness_score,field_confidence
           )
-          SELECT canonical_fingerprint,title,price_mad,city,district,property_type,transaction_type,
-                 surface_m2,rooms_count,bedrooms_count,bathrooms_count,description_snippet,
-                 images_count,seller_name,data_completeness_score,field_confidence
-          FROM stage_wave2;
+          SELECT canonical_fingerprint,title,price_mad,city,district,property_type,transaction_type,surface_m2,rooms_count,
+                 bedrooms_count,bathrooms_count,description_snippet,images_count,seller_name,data_completeness_score,field_confidence
+          FROM stage_new;
 
           INSERT INTO public.listing_sources (
-            property_listing_id,source_name,listing_url,source_url,first_seen_at,last_seen_at,is_active,
-            source_offer_key,origin_type,compliance_status,content_fingerprint,ingestion_run_id,
-            displayed_price,price_currency,price_period,price_status
+            property_listing_id,source_name,listing_url,source_url,first_seen_at,last_seen_at,is_active,source_offer_key,
+            origin_type,compliance_status,content_fingerprint,ingestion_run_id,displayed_price,price_currency,price_period,price_status
           )
-          SELECT pl.id,s.source_name,s.listing_url,s.source_url,s.first_seen_at,s.last_seen_at,true,
-                 s.source_offer_key,s.origin_type,s.compliance_status,s.content_fingerprint,s.ingestion_run_id,
-                 s.displayed_price,s.price_currency,s.price_period,s.price_status
-          FROM stage_wave2 s
+          SELECT pl.id,s.source_name,s.listing_url,s.source_url,s.first_seen_at,s.last_seen_at,true,s.source_offer_key,
+                 s.origin_type,s.compliance_status,s.content_fingerprint,s.ingestion_run_id,s.displayed_price,
+                 s.price_currency,s.price_period,s.price_status
+          FROM stage_new s
           JOIN public.property_listings pl ON pl.canonical_fingerprint=s.canonical_fingerprint;
 
           DO $$
           BEGIN
+            IF (SELECT count(*) FROM public.property_listings) <> 21961 THEN RAISE EXCEPTION 'property post count mismatch'; END IF;
+            IF (SELECT count(*) FROM public.listing_sources) <> 21961 THEN RAISE EXCEPTION 'source post count mismatch'; END IF;
             IF (SELECT count(*) FROM public.listing_sources WHERE ingestion_run_id='clean-corpus-v4.11-wave2') <> 13421
-              THEN RAISE EXCEPTION 'wave2 source count mismatch';
-            END IF;
-            IF (SELECT count(*) FROM public.property_listings) <> 21965
-              THEN RAISE EXCEPTION 'property_listings post count mismatch';
-            END IF;
-            IF (SELECT count(*) FROM public.listing_sources) <> 21965
-              THEN RAISE EXCEPTION 'listing_sources post count mismatch';
-            END IF;
+              THEN RAISE EXCEPTION 'wave2 source count mismatch'; END IF;
+            IF (
+              SELECT count(*) FROM stage_wave2 s
+              JOIN public.listing_sources ls ON ls.listing_url=s.listing_url
+              JOIN public.property_listings pl ON pl.id=ls.property_listing_id
+              WHERE pl.canonical_fingerprint=s.canonical_fingerprint
+            ) <> 13421 THEN RAISE EXCEPTION 'wave2 certified presence mismatch'; END IF;
           END $$;
           COMMIT;
           SQL
-          docker run --rm -e DATABASE_URL="$DATABASE_URL" -v "$RUNNER_TEMP/wave2:/wave2" postgres:17             sh -lc 'psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f /wave2/import.sql'
+          docker run --rm -e DATABASE_URL="$DATABASE_URL" -v "$RUNNER_TEMP/wave2:/wave2" postgres:17 \
+            sh -lc 'psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f /wave2/import.sql'
 
       - name: Independent readback
         run: |
