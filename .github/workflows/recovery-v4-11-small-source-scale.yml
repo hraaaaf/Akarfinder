@@ -1,0 +1,83 @@
+name: Recovery V4.11 Small Sources Full Verification
+
+on:
+  push:
+    branches: ["recovery/v4-11-small-source-scale-20260927"]
+    paths:
+      - "data/recovery/activate-v4-11-small-source-scale.txt"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { domain: daragadir.com, offset: 100, limit: 500, expected: 2963 }
+          - { domain: daragadir.com, offset: 600, limit: 500, expected: 2963 }
+          - { domain: daragadir.com, offset: 1100, limit: 500, expected: 2963 }
+          - { domain: daragadir.com, offset: 1600, limit: 500, expected: 2963 }
+          - { domain: daragadir.com, offset: 2100, limit: 500, expected: 2963 }
+          - { domain: daragadir.com, offset: 2600, limit: 363, expected: 2963 }
+          - { domain: atlasimmobilier.com, offset: 100, limit: 261, expected: 361 }
+          - { domain: aykana.ma, offset: 100, limit: 299, expected: 399 }
+          - { domain: limmobiliersansfrontieres.com, offset: 100, limit: 142, expected: 242 }
+          - { domain: 1immo.ma, offset: 0, limit: 69, expected: 69 }
+          - { domain: kawtarimmobilier.com, offset: 0, limit: 29, expected: 29 }
+
+    env:
+      GH_TOKEN: ${{ github.token }}
+      DEEP_DOMAIN: ${{ matrix.domain }}
+      DEEP_OFFSET: ${{ matrix.offset }}
+      DEEP_LIMIT: ${{ matrix.limit }}
+      EXPECTED_SOURCE_ROWS: ${{ matrix.expected }}
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+
+      - name: Download ledger v2
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/v2"
+          gh api repos/${{ github.repository }}/actions/artifacts/10929097436/zip > "$RUNNER_TEMP/v2.zip"
+          unzip -q -o "$RUNNER_TEMP/v2.zip" -d "$RUNNER_TEMP/v2"
+          test -s "$RUNNER_TEMP/v2/unresolved-existence-v2.txt"
+          COUNT="$(grep -E "https://(www\.)?${DEEP_DOMAIN//./\.}/" "$RUNNER_TEMP/v2/unresolved-existence-v2.txt" | wc -l | tr -d ' ')"
+          test "$COUNT" = "$EXPECTED_SOURCE_ROWS"
+          echo "DEEP_URL_FILE=$RUNNER_TEMP/v2/unresolved-existence-v2.txt" >> "$GITHUB_ENV"
+
+      - name: Verify source wave read-only
+        run: npx tsx scripts/recovery/deep-enrichment-source-batch.ts
+
+      - name: Assert safety
+        run: |
+          node - <<'NODE'
+          const fs=require("fs");
+          const d=process.env.DEEP_DOMAIN.replace(/[^a-z0-9]+/gi,"-");
+          const start=Number(process.env.DEEP_OFFSET);
+          const limit=Number(process.env.DEEP_LIMIT);
+          const end=start+limit;
+          const p=`data/audits/raw-results/deep-batch-${d}-${start}-${end}-summary.json`;
+          const s=JSON.parse(fs.readFileSync(p,"utf8"));
+          if(s.input_urls!==limit) throw new Error("input count");
+          if(s.fetched+s.failed+s.robots_skipped!==limit) throw new Error("accounting");
+          if(s.database_access!==0||s.database_writes!==0) throw new Error("DB invariant");
+          console.log(JSON.stringify(s,null,2));
+          NODE
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v4.11-scale-${{ matrix.domain }}-${{ matrix.offset }}-${{ matrix.limit }}
+          path: data/audits/raw-results/deep-batch-*.json
+          retention-days: 30
