@@ -18,7 +18,7 @@ for(const r of rows){
   const u=new URL(r.canonical_url),d=r.source_domain,p=u.pathname.split("/").filter(Boolean);
   let tx=null,pt=null,city=null,t=null,key=null;
   if(["fadlimmo.com","bakimmo.com","immoessaouira.com"].includes(d)){
-    if(p.length<7||p[0]!=="fr"||!txMap[p[1]]){rejected.push({...r,reason:"route_contract"});continue}
+    if(p.length<6||p[0]!=="fr"||!txMap[p[1]]){rejected.push({...r,reason:"route_contract"});continue}
     tx=txMap[p[1]]; pt=ptMap[p[2]]||null; city=normCity(p[3]); key=p.at(-1); t=title(p[2]+" "+p[1]+" "+p[3]+" "+p[4]);
   } else if(d==="capalmrabat.com"){
     if(p.length<4||p[0]!=="biens"){rejected.push({...r,reason:"route_contract"});continue}
