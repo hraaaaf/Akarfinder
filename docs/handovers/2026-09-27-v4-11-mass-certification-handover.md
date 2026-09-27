@@ -298,3 +298,31 @@ Neon usage was rechecked after the Wave9 mutations: project record still reports
 
 ### Next exact
 Start Wave10 offline from the remaining strict rejects/new-source residue. Current known residue from the new-source route lane: **286** rows = 132 unsupported Archimmo + 91 core incomplete + 58 ambiguous transaction + 5 identity conflicts. Do not weaken V4.11; enrich or quarantine, then repeat certification → overlap preflight → approval → isolated import → independent readback.
+
+
+## Wave10 closeout — VERIFIED 2026-09-27
+
+Wave10 strict route residue is closed on isolated Neon.
+
+- Source residue input: **286** rows from the Wave9 new-source rejected set.
+- Offline strict certification run: `36341259465` — SUCCESS.
+- Certification artifact: `10939012202`, digest `sha256:7ed4d0f858c8af7ae29ec9a760faf097da7894dbed13eee711a9dfea33aca548`.
+- Certified strict rows before Neon filtering: **97**.
+- Exact Neon overlap found: **1 identity** already present = `fadlimmo.com|d99515fb`.
+- Filtered preflight run: `36341461469` — SUCCESS.
+- Filtered artifact: `10938549384`, digest `sha256:c12000bbc52ab472a85c31bcc35ffbe62e0b4c8cdb36b7d6810cd06bd08c0ce4`.
+- Filtered JSONL SHA-256: `99cc1c88ac17d10dc3ee0bbef58e86b399f563df5a96735848f6a00c13e30bbc`.
+- Final preflight result: **96 | 0 URL overlap | 0 fingerprint overlap | 0 identity overlap | 142636 | 142636**.
+- Controlled import run: `36341529713` — SUCCESS.
+- Direct isolated-Neon readback after import: **142,732** properties / **142,732** sources / **142,732** unique URLs / **142,732** unique fingerprints.
+- Wave10 rows: **96**.
+- V4.11 rows: **142,696**.
+- Legacy rows: **36**.
+- Orphans: **0**. Inactive: **0**. Property core gaps: **0**. Source core gaps: **0**.
+- Progress to 200k: **71.366%**.
+- Exact remaining delta: **57,268**.
+
+Independent Wave10 readback workflow is running as a second proof; direct Neon verification already confirms the full invariant set.
+
+### Next exact
+Open Wave11 on the **188** strict rejects remaining after Wave10. Keep the 5 prior identity conflicts quarantined. Recover only deterministic evidence paths; no V4.11 weakening. Repeat offline certification → exact Neon overlap preflight → isolated import → independent readback.
