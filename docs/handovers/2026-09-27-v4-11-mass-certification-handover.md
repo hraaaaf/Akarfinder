@@ -188,3 +188,43 @@ Strict route refinement has been hardened against ambiguous `ferme/fermé`, road
 3. Controlled atomic isolated-Neon Wave9 import.
 4. Independent readback + ledger/canonical update.
 5. Continue the new-source Common Crawl and Sarout-safe salvage lanes until at least **200,000**.
+
+
+## Wave9 reconciliation gate — OPEN 2026-09-27
+
+A later hardened Wave9 route certification superseded the earlier route candidate used by the first Wave9 route import.
+
+Verified facts:
+
+- Earlier filtered Wave9 route import: **2,240** rows, run `36335713081` — SUCCESS.
+- Isolated Neon after that import: **141,401** properties / **141,401** sources.
+- Hardened Wave9 certification: run `36334943106` — SUCCESS.
+- Hardened artifact: `10937330001`.
+- Hardened artifact digest: `sha256:31c5e6f5a02fef7733f37eede5e667f5a1f3c5e4b7f13e36af5cd81932d4175b`.
+- Hardened JSONL SHA-256: `9baac42bc02b5f0820eac6709a3a3ec5b5e9c9cfea515a8135311fc5fdd56dd6`.
+- Hardened route rows: **2,428**.
+- Cross-artifact comparison: **2,176 identical URLs**, **64 imported-only URLs**, **252 hardened-only URLs**.
+- Of the 64 imported-only rows, **63 portal identities are absent from the hardened candidate** and one shared identity (`mubawab.ma|8282268`) changes from a bad route-derived Casablanca representation to the hardened Marrakech representation.
+- Read-only reconciliation preflight run `36335956059` proved all **64** targeted imported rows are currently present.
+- A second post-removal simulation is required to determine the exact hardened additions that remain truly missing before any destructive correction.
+- No destructive reconciliation has been authorized or executed yet.
+
+Wave9 new-source lane:
+
+- Common Crawl discovery: **1,582** structural URLs.
+- Origin-safe certification run `36335996025` — SUCCESS.
+- Origin-safe artifact: `10937202447`, digest `sha256:711526a027529879ed89ee86c8bcae802907212016a0a20312956d324384bf05`.
+- Certified new-source rows: **1,287** = Fadlimmo 544 + Cap Al Rabat 503 + Bakimmo 137 + ImmoEssaouira 103.
+- Previous import attempt `36335798193` rolled back before COMMIT because the prior artifact used an invalid `origin_type`; **0 new-source rows were committed**.
+- The certifier now emits DB-valid `origin_type=legacy_import`.
+- Exact-artifact Neon preflight is being rerun before any new-source import.
+
+### Next exact
+
+1. Finish hardened reconciliation post-removal simulation.
+2. If exact, obtain explicit human approval for the destructive isolated-Neon correction of the **64** targeted Wave9-route rows.
+3. Execute one atomic reconcile transaction and independent readback.
+4. Re-run/bind the origin-safe 1,287-row new-source preflight against the reconciled baseline.
+5. Controlled new-source import only if 0/0/0 overlap.
+6. Continue recovery waves to >=200k.
+
