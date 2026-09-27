@@ -152,14 +152,35 @@ Dynamic proof on HEAD `0e6584a6d9d2d329443ac730a08811945ae732fa`:
 
 The provider-independent/offline HA convergence sub-lot is therefore verified. This does **not** certify live Supabase↔Neon HA or authorize provider mutation/cutover.
 
+
+## Supabase egress / recovered-data boundary — verified 2026-09-27
+
+To avoid paying Supabase egress twice, the already-certified Recovery corpus is treated as immutable recovery evidence and must not be re-read from Supabase.
+
+Verified reusable freeze:
+- Clean Corpus V4.11: 226,286 rows;
+- rematerialization run 36259114168 — SUCCESS;
+- artifact 10910779576;
+- artifact digest sha256:63b93f5b27434b545ec9196b571d6bc89b1da5350c6115fdbe977991d1c39c81;
+- core gzip SHA256 e7ac4bca2db34ad334ed7234cfb8be93fc9baca68a9694f5024989b5cc2bb953;
+- post-freeze Supabase reads recorded by the V4.11 closeout: 0.
+
+Important boundary: this proves the recovered/listing corpus freeze, not a byte-for-byte export of every Supabase table. Historical PR #1081 states the mandatory full BEFORE snapshot was still blocked by PostgreSQL recovery, and PR #1083 only defined its protocol; neither is merged. Therefore no full-DB-export claim is made without a separate artifact.
+
+Operational rule:
+- never rescan/re-export the 226,286-row V4.11 corpus from Supabase;
+- use existing certified artifacts for listing recovery and comparison;
+- after restore, any Supabase read must be narrowly scoped to metadata or a specifically proven missing auxiliary table/delta;
+- no full-table listing scan unless the existing artifact is independently proven unusable.
+
 ## Post-restore sequence
 
 After an explicit restore-complete signal:
 
-1. one minimal source health/read-only sanity check;
-2. read-only restored Supabase inventory;
-3. read-only certified Neon inventory;
-4. compare schemas, counts, PK sets, content fingerprints, FK integrity, replica identity and sequence state;
+1. one minimal source health/read-only sanity check only if restore completion must be verified;
+2. use the certified V4.11 artifact as the listing-data baseline — do not re-export/re-scan its 226,286 rows;
+3. inspect only schema/catalog metadata and specifically missing auxiliary-table evidence from restored Supabase;
+4. use the certified isolated Neon evidence/artifacts for the imported cohort; compare from existing evidence first;
 5. decide whether the certified Neon cohort is a reusable baseline or a new baseline is required;
 6. only then prepare provider-specific replication/canary work;
 7. only after provider mutation rehearsal may incident write routing be considered;
