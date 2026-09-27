@@ -1,0 +1,93 @@
+name: Visual Harmonization Property Types
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "components/property-types/PropertyTypeVisualSelector.tsx"
+      - "lib/ux/indexed-property-type-visual.ts"
+      - "scripts/scrapers/__tests__/property-type-visual-option-a.test.ts"
+      - "scripts/audits/visual-harmonization-property-types.mjs"
+      - ".github/workflows/visual-harmonization-property-types.yml"
+
+concurrency:
+  group: visual-harmonization-property-types-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  before-after:
+    name: BEFORE ↔ AFTER 390 / 768 / 1280
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+
+      - name: Preserve audit script
+        run: cp scripts/audits/visual-harmonization-property-types.mjs /tmp/visual-harmonization-property-types.mjs
+
+      - name: BEFORE — checkout base and build
+        shell: bash
+        run: |
+          git checkout "${{ github.event.pull_request.base.sha }}"
+          rm -rf .next
+          npm run build
+          npm run start -- -p 3226 > /tmp/vh-before.log 2>&1 &
+          echo $! > /tmp/vh-before.pid
+          curl --retry 90 --retry-delay 1 --retry-connrefused -fsS http://127.0.0.1:3226/ >/dev/null || { cat /tmp/vh-before.log; exit 1; }
+
+      - name: BEFORE — capture
+        env:
+          BASE_URL: http://127.0.0.1:3226
+          AUDIT_MODE: before
+          AUDIT_OUTPUT_DIR: artifacts/visual-harmonization-property-types/before
+        run: node /tmp/visual-harmonization-property-types.mjs
+
+      - name: Stop BEFORE server
+        if: always()
+        run: kill "$(cat /tmp/vh-before.pid)" 2>/dev/null || true
+
+      - name: AFTER — checkout head and validate
+        shell: bash
+        run: |
+          git checkout "${{ github.event.pull_request.head.sha }}"
+          rm -rf .next
+          node --test --experimental-strip-types scripts/scrapers/__tests__/property-type-visual-option-a.test.ts
+          npx tsx --test scripts/scrapers/__tests__/indexed-property-type-visual.test.ts
+          npx tsc --noEmit
+          npm run build
+          npm run start -- -p 3227 > /tmp/vh-after.log 2>&1 &
+          echo $! > /tmp/vh-after.pid
+          curl --retry 90 --retry-delay 1 --retry-connrefused -fsS http://127.0.0.1:3227/ >/dev/null || { cat /tmp/vh-after.log; exit 1; }
+
+      - name: AFTER — capture + contract
+        env:
+          BASE_URL: http://127.0.0.1:3227
+          AUDIT_MODE: after
+          AUDIT_OUTPUT_DIR: artifacts/visual-harmonization-property-types/after
+        run: node scripts/audits/visual-harmonization-property-types.mjs
+
+      - name: Stop AFTER server
+        if: always()
+        run: kill "$(cat /tmp/vh-after.pid)" 2>/dev/null || true
+
+      - name: Upload BEFORE ↔ AFTER evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-harmonization-property-types-${{ github.run_id }}
+          path: artifacts/visual-harmonization-property-types
+          if-no-files-found: error
+          retention-days: 30
