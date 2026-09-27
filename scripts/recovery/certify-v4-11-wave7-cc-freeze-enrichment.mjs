@@ -385,6 +385,7 @@ const summary={
   schema_version:"akarfinder-v4.11-wave7-commoncrawl365-freeze-enrichment-20260927",
   commoncrawl_artifacts:CC_ARTIFACTS,
   source_freeze_artifact_id:10869399865,
+  cc_input_rows:ccUrls.size+identitylessCcUrls,
   cc_rows:ccUrls.size,
   cc_unique_identities:ccById.size,
   identityless_cc_urls:identitylessCcUrls,
