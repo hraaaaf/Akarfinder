@@ -2,7 +2,7 @@ name: Recovery V4.11 Controlled Wave4 Neon Import
 
 on:
   push:
-    branches: ["recovery/v4-11-mass-route-wave4-20260927"]
+    branches: ["recovery/v4-11-mass-route-wave3-20260927"]
     paths:
       - "data/recovery/v4-11-wave4-import-approval.json"
 
