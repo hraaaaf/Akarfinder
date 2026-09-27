@@ -1,0 +1,27 @@
+{
+  "approved": true,
+  "authorization_message": "On balance les certifiés et on vérifie les non certifiés",
+  "rows": 68018,
+  "artifact_id": 10929247398,
+  "artifact_digest": "sha256:679e9faf9b361d8b82c29b711a80c14c9e1b9992d2f204ada53c15ddd9ff0e4c",
+  "jsonl_sha256": "d94f3dc1982b50a4853cff996c0ac159a70cf6f0822ca69c9097701779145438",
+  "target_project": "ancient-violet-43534870",
+  "target_branch": "br-cold-mouse-b2a50yaa",
+  "target_database": "AkarFinder",
+  "expected_pre": {
+    "property_listings": 21961,
+    "listing_sources": 21961,
+    "wave1_sources": 8367,
+    "wave2_sources": 13421,
+    "wave3_sources": 0
+  },
+  "cohort_by_domain": {
+    "marocimmo.com": 32795,
+    "sarout.ma": 28277,
+    "domio.ma": 6838,
+    "agenz.ma": 108
+  },
+  "note": "Exact certified wave3 cohort only. Dynamic legacy-URL overlap repair is allowed only when the existing property has exactly one source and the target representation fingerprint is not owned by another property. Any ambiguous overlap aborts the transaction.",
+  "production_neon_writes_authorized": false,
+  "vercel_deployment_authorized": false
+}
