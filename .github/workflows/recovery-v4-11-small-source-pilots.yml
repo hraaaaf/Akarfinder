@@ -1,0 +1,102 @@
+name: Recovery V4.11 Small Sources Verification Pilots
+
+on:
+  push:
+    branches: ["recovery/v4-11-mass-route-wave3-20260927"]
+    paths:
+      - "data/recovery/activate-v4-11-small-source-pilots.txt"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  verify:
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        include:
+          - domain: daragadir.com
+            rows: 2963
+            limit: 100
+          - domain: masaken.ma
+            rows: 1437
+            limit: 100
+          - domain: mouldar.com
+            rows: 1316
+            limit: 100
+          - domain: sarouty.ma
+            rows: 880
+            limit: 100
+          - domain: soukimmobilier.com
+            rows: 886
+            limit: 100
+          - domain: limmobiliersansfrontieres.com
+            rows: 242
+            limit: 100
+          - domain: aykana.ma
+            rows: 399
+            limit: 100
+          - domain: atlasimmobilier.com
+            rows: 361
+            limit: 100
+          - domain: 1immo.ma
+            rows: 69
+            limit: 69
+          - domain: kawtarimmobilier.com
+            rows: 29
+            limit: 29
+          - domain: marocannonces.com
+            rows: 12
+            limit: 12
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      GH_TOKEN: ${{ github.token }}
+      DEEP_DOMAIN: ${{ matrix.domain }}
+      DEEP_OFFSET: "0"
+      DEEP_LIMIT: ${{ matrix.limit }}
+      EXPECTED_SOURCE_ROWS: ${{ matrix.rows }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+
+      - name: Download ledger v2
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/v2"
+          gh api repos/${{ github.repository }}/actions/artifacts/10929097436/zip > "$RUNNER_TEMP/v2.zip"
+          unzip -q -o "$RUNNER_TEMP/v2.zip" -d "$RUNNER_TEMP/v2"
+          test -s "$RUNNER_TEMP/v2/unresolved-existence-v2.txt"
+          COUNT="$(grep -E "https://(www\.)?${DEEP_DOMAIN//./\.}/" "$RUNNER_TEMP/v2/unresolved-existence-v2.txt" | wc -l | tr -d ' ')"
+          test "$COUNT" = "$EXPECTED_SOURCE_ROWS"
+          echo "DEEP_URL_FILE=$RUNNER_TEMP/v2/unresolved-existence-v2.txt" >> "$GITHUB_ENV"
+
+      - name: Read-only source pilot
+        run: npx tsx scripts/recovery/deep-enrichment-source-batch.ts
+
+      - name: Assert safety
+        run: |
+          node - <<'NODE'
+          const fs=require("fs");
+          const d=process.env.DEEP_DOMAIN.replace(/[^a-z0-9]+/gi,"-");
+          const limit=Number(process.env.DEEP_LIMIT);
+          const p=`data/audits/raw-results/deep-batch-${d}-0-${limit}-summary.json`;
+          const s=JSON.parse(fs.readFileSync(p,"utf8"));
+          if(s.input_urls!==limit)throw new Error("input");
+          if(s.fetched+s.failed+s.robots_skipped!==limit)throw new Error("accounting");
+          if(s.database_access!==0||s.database_writes!==0)throw new Error("DB invariant");
+          console.log(JSON.stringify(s,null,2));
+          NODE
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v4.11-small-pilot-${{ matrix.domain }}
+          path: data/audits/raw-results/deep-batch-*.json
+          retention-days: 30
