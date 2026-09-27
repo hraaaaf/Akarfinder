@@ -1,0 +1,230 @@
+name: Recovery V4.11 Controlled Wave3 Neon Import
+
+on:
+  push:
+    branches: ["recovery/v4-11-mass-route-wave3-20260927"]
+    paths:
+      - "data/recovery/v4-11-wave3-import-approval.json"
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: recovery-v4-11-controlled-wave3-neon-import
+  cancel-in-progress: false
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      DATABASE_URL: ${{ secrets.NEON_RECOVERY_DATABASE_URL }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Validate approval and isolated target
+        run: |
+          set -euo pipefail
+          test -n "${DATABASE_URL:-}"
+          node - <<'NODE'
+          const a=require("./data/recovery/v4-11-wave3-import-approval.json");
+          if(a.approved!==true)throw new Error("approval");
+          if(a.rows!==68018)throw new Error("rows");
+          if(a.artifact_id!==10929247398)throw new Error("artifact");
+          if(a.jsonl_sha256!=="d94f3dc1982b50a4853cff996c0ac159a70cf6f0822ca69c9097701779145438")throw new Error("sha");
+          if(a.target_project!=="ancient-violet-43534870"||a.target_branch!=="br-cold-mouse-b2a50yaa"||a.target_database!=="AkarFinder")throw new Error("target");
+          NODE
+          python - <<'PY'
+          import os,urllib.parse
+          h=urllib.parse.urlparse(os.environ["DATABASE_URL"]).hostname
+          allowed={
+            "ep-falling-unit-b2hper1a.c-6.eu-central-1.aws.neon.tech",
+            "ep-falling-unit-b2hper1a-pooler.c-6.eu-central-1.aws.neon.tech",
+            "ep-falling-unit-b2hper1a-d1j.c-6.eu-central-1.aws.neon.tech",
+            "ep-falling-unit-b2hper1a-d1j-pooler.c-6.eu-central-1.aws.neon.tech",
+          }
+          if h not in allowed: raise SystemExit("refusing unexpected Neon host: "+str(h))
+          print("isolated Neon host verified")
+          PY
+
+      - name: Download and verify wave3 artifact
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/wave3"
+          gh api repos/${{ github.repository }}/actions/artifacts/10929247398/zip > "$RUNNER_TEMP/wave3.zip"
+          unzip -q -o "$RUNNER_TEMP/wave3.zip" -d "$RUNNER_TEMP/wave3"
+          test -s "$RUNNER_TEMP/wave3/db-ready-wave3.jsonl"
+          echo "d94f3dc1982b50a4853cff996c0ac159a70cf6f0822ca69c9097701779145438  $RUNNER_TEMP/wave3/db-ready-wave3.jsonl" | sha256sum -c -
+          test "$(wc -l < "$RUNNER_TEMP/wave3/db-ready-wave3.jsonl")" = "68018"
+
+      - name: Build import CSV
+        run: |
+          node - "$RUNNER_TEMP/wave3/db-ready-wave3.jsonl" "$RUNNER_TEMP/wave3/import.csv" <<'NODE'
+          const fs=require("fs"),readline=require("readline");
+          const [src,out]=process.argv.slice(2);
+          const cols=["canonical_fingerprint","title","price_mad","city","district","property_type","transaction_type","surface_m2","rooms_count","bedrooms_count","bathrooms_count","description_snippet","images_count","seller_name","data_completeness_score","field_confidence","source_name","listing_url","source_url","first_seen_at","last_seen_at","source_offer_key","origin_type","compliance_status","content_fingerprint","ingestion_run_id","displayed_price","price_currency","price_period","price_status"];
+          const esc=v=>{if(v===null||v===undefined)return "";const s=typeof v==="object"?JSON.stringify(v):String(v);return /[",\n\r]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s};
+          const ws=fs.createWriteStream(out);ws.write(cols.join(",")+"\n");
+          let n=0;const urls=new Set(),fps=new Set();
+          const rl=readline.createInterface({input:fs.createReadStream(src),crlfDelay:Infinity});
+          rl.on("line",line=>{if(!line.trim())return;const r=JSON.parse(line);if(r.approved_for_import!==false)throw new Error("artifact approval invariant");n++;urls.add(r.listing_url);fps.add(r.canonical_fingerprint);ws.write(cols.map(c=>esc(r[c])).join(",")+"\n")});
+          rl.on("close",()=>{ws.end();if(n!==68018||urls.size!==68018||fps.size!==68018)throw new Error("artifact row/dedupe invariant")});
+          NODE
+          while [ ! -s "$RUNNER_TEMP/wave3/import.csv" ]; do sleep 1; done
+          test "$(($(wc -l < "$RUNNER_TEMP/wave3/import.csv")-1))" = "68018"
+
+      - name: Preflight current DB and overlaps
+        run: |
+          set -euo pipefail
+          cat > "$RUNNER_TEMP/wave3/preflight.sql" <<'SQL'
+          DROP TABLE IF EXISTS stage_wave3;
+          CREATE TEMP TABLE stage_wave3 (
+            canonical_fingerprint text NOT NULL,title text NOT NULL,price_mad integer,city text NOT NULL,district text,
+            property_type text NOT NULL,transaction_type text NOT NULL,surface_m2 integer,rooms_count integer,
+            bedrooms_count integer,bathrooms_count integer,description_snippet text,images_count integer,seller_name text,
+            data_completeness_score integer,field_confidence jsonb,source_name text NOT NULL,listing_url text NOT NULL,
+            source_url text,first_seen_at timestamptz,last_seen_at timestamptz,source_offer_key text,origin_type text,
+            compliance_status text,content_fingerprint text,ingestion_run_id text,displayed_price numeric,
+            price_currency text,price_period text,price_status text
+          );
+          \copy stage_wave3 FROM '/wave3/import.csv' WITH (FORMAT csv, HEADER true)
+          SELECT
+            (SELECT count(*) FROM stage_wave3),
+            (SELECT count(*) FROM stage_wave3 s JOIN public.listing_sources ls ON ls.listing_url=s.listing_url),
+            (SELECT count(*) FROM stage_wave3 s JOIN public.property_listings pl ON pl.canonical_fingerprint=s.canonical_fingerprint),
+            (SELECT count(*) FROM public.property_listings),
+            (SELECT count(*) FROM public.listing_sources),
+            (SELECT count(*) FROM public.listing_sources WHERE ingestion_run_id='clean-corpus-v4.11-wave3');
+          DROP TABLE stage_wave3;
+          SQL
+          docker run --rm -e DATABASE_URL="$DATABASE_URL" -v "$RUNNER_TEMP/wave3:/wave3" postgres:17             sh -lc 'psql "$DATABASE_URL" -X -qAt -F "|" -v ON_ERROR_STOP=1 -f /wave3/preflight.sql' | tee "$RUNNER_TEMP/wave3/preflight.out"
+          LAST="$(grep -E '^[0-9]+\|' "$RUNNER_TEMP/wave3/preflight.out" | tail -n1)"
+          IFS='|' read -r STAGED URL_OVERLAP FP_OVERLAP PRE_PL PRE_LS PRE_W3 <<< "$LAST"
+          test "$STAGED" = "68018"
+          test "$PRE_PL" = "21961"
+          test "$PRE_LS" = "21961"
+          test "$PRE_W3" = "0"
+          echo "URL_OVERLAP=$URL_OVERLAP" >> "$GITHUB_ENV"
+          echo "FP_OVERLAP=$FP_OVERLAP" >> "$GITHUB_ENV"
+          echo "wave3 preflight overlaps: url=$URL_OVERLAP fp=$FP_OVERLAP"
+
+      - name: Controlled atomic import
+        run: |
+          set -euo pipefail
+          cat > "$RUNNER_TEMP/wave3/import.sql" <<'SQL'
+          DROP TABLE IF EXISTS stage_wave3;
+          DROP TABLE IF EXISTS legacy_overlap_w3;
+          DROP TABLE IF EXISTS stage_new_w3;
+          BEGIN;
+          CREATE TEMP TABLE stage_wave3 (
+            canonical_fingerprint text NOT NULL,title text NOT NULL,price_mad integer,city text NOT NULL,district text,
+            property_type text NOT NULL,transaction_type text NOT NULL,surface_m2 integer,rooms_count integer,
+            bedrooms_count integer,bathrooms_count integer,description_snippet text,images_count integer,seller_name text,
+            data_completeness_score integer,field_confidence jsonb,source_name text NOT NULL,listing_url text NOT NULL,
+            source_url text,first_seen_at timestamptz,last_seen_at timestamptz,source_offer_key text,origin_type text,
+            compliance_status text,content_fingerprint text,ingestion_run_id text,displayed_price numeric,
+            price_currency text,price_period text,price_status text
+          ) ON COMMIT DROP;
+          \copy stage_wave3 FROM '/wave3/import.csv' WITH (FORMAT csv, HEADER true)
+
+          CREATE TEMP TABLE legacy_overlap_w3 AS
+          SELECT s.*,ls.id AS existing_source_id,ls.property_listing_id AS existing_property_id
+          FROM stage_wave3 s
+          JOIN public.listing_sources ls ON ls.listing_url=s.listing_url;
+
+          DO $$
+          BEGIN
+            IF EXISTS (
+              SELECT 1 FROM legacy_overlap_w3 o
+              WHERE (SELECT count(*) FROM public.listing_sources x WHERE x.property_listing_id=o.existing_property_id) <> 1
+            ) THEN RAISE EXCEPTION 'legacy overlap property has multiple sources'; END IF;
+            IF EXISTS (
+              SELECT 1 FROM legacy_overlap_w3 o
+              JOIN public.property_listings p ON p.id=o.existing_property_id
+              WHERE EXISTS (
+                SELECT 1 FROM public.property_listings q
+                WHERE q.canonical_fingerprint=o.canonical_fingerprint AND q.id<>p.id
+              )
+            ) THEN RAISE EXCEPTION 'target fingerprint already belongs to another property'; END IF;
+            IF EXISTS (
+              SELECT 1 FROM stage_wave3 s
+              JOIN public.property_listings p ON p.canonical_fingerprint=s.canonical_fingerprint
+              LEFT JOIN legacy_overlap_w3 o ON o.canonical_url IS NOT NULL
+              WHERE o.listing_url IS NULL
+            ) THEN RAISE EXCEPTION 'unexpected fingerprint-only overlap'; END IF;
+          END $$;
+
+          UPDATE public.property_listings p SET
+            canonical_fingerprint=o.canonical_fingerprint,title=o.title,price_mad=o.price_mad,city=o.city,
+            district=o.district,property_type=o.property_type,transaction_type=o.transaction_type,surface_m2=o.surface_m2,
+            rooms_count=o.rooms_count,bedrooms_count=o.bedrooms_count,bathrooms_count=o.bathrooms_count,
+            description_snippet=o.description_snippet,images_count=o.images_count,seller_name=o.seller_name,
+            data_completeness_score=o.data_completeness_score,field_confidence=o.field_confidence,updated_at=now()
+          FROM legacy_overlap_w3 o WHERE p.id=o.existing_property_id;
+
+          UPDATE public.listing_sources ls SET
+            source_name=o.source_name,source_url=o.source_url,first_seen_at=o.first_seen_at,last_seen_at=o.last_seen_at,is_active=true,
+            source_offer_key=o.source_offer_key,origin_type=o.origin_type,compliance_status=o.compliance_status,
+            content_fingerprint=o.content_fingerprint,ingestion_run_id=o.ingestion_run_id,displayed_price=o.displayed_price,
+            price_currency=o.price_currency,price_period=o.price_period,price_status=o.price_status
+          FROM legacy_overlap_w3 o WHERE ls.id=o.existing_source_id;
+
+          CREATE TEMP TABLE stage_new_w3 AS
+          SELECT s.* FROM stage_wave3 s
+          WHERE NOT EXISTS (SELECT 1 FROM legacy_overlap_w3 o WHERE o.listing_url=s.listing_url);
+
+          INSERT INTO public.property_listings (
+            canonical_fingerprint,title,price_mad,city,district,property_type,transaction_type,surface_m2,rooms_count,
+            bedrooms_count,bathrooms_count,description_snippet,images_count,seller_name,data_completeness_score,field_confidence
+          )
+          SELECT canonical_fingerprint,title,price_mad,city,district,property_type,transaction_type,surface_m2,rooms_count,
+                 bedrooms_count,bathrooms_count,description_snippet,images_count,seller_name,data_completeness_score,field_confidence
+          FROM stage_new_w3;
+
+          INSERT INTO public.listing_sources (
+            property_listing_id,source_name,listing_url,source_url,first_seen_at,last_seen_at,is_active,source_offer_key,
+            origin_type,compliance_status,content_fingerprint,ingestion_run_id,displayed_price,price_currency,price_period,price_status
+          )
+          SELECT pl.id,s.source_name,s.listing_url,s.source_url,s.first_seen_at,s.last_seen_at,true,s.source_offer_key,
+                 s.origin_type,s.compliance_status,s.content_fingerprint,s.ingestion_run_id,s.displayed_price,
+                 s.price_currency,s.price_period,s.price_status
+          FROM stage_new_w3 s
+          JOIN public.property_listings pl ON pl.canonical_fingerprint=s.canonical_fingerprint;
+
+          DO $$
+          DECLARE overlap_count bigint; expected_total bigint;
+          BEGIN
+            SELECT count(*) INTO overlap_count FROM legacy_overlap_w3;
+            expected_total := 21961 + 68018 - overlap_count;
+            IF (SELECT count(*) FROM public.property_listings) <> expected_total THEN RAISE EXCEPTION 'property total mismatch'; END IF;
+            IF (SELECT count(*) FROM public.listing_sources) <> expected_total THEN RAISE EXCEPTION 'source total mismatch'; END IF;
+            IF (SELECT count(*) FROM public.listing_sources WHERE ingestion_run_id='clean-corpus-v4.11-wave3') <> 68018
+              THEN RAISE EXCEPTION 'wave3 source count mismatch'; END IF;
+            IF (
+              SELECT count(*) FROM stage_wave3 s
+              JOIN public.listing_sources ls ON ls.listing_url=s.listing_url
+              JOIN public.property_listings pl ON pl.id=ls.property_listing_id
+              WHERE pl.canonical_fingerprint=s.canonical_fingerprint
+            ) <> 68018 THEN RAISE EXCEPTION 'wave3 certified presence mismatch'; END IF;
+          END $$;
+          COMMIT;
+          SQL
+          docker run --rm -e DATABASE_URL="$DATABASE_URL" -v "$RUNNER_TEMP/wave3:/wave3" postgres:17             sh -lc 'psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f /wave3/import.sql'
+
+      - name: Readback
+        run: |
+          docker run --rm -e DATABASE_URL="$DATABASE_URL" postgres:17 sh -lc 'psql "$DATABASE_URL" -X -qAt -F "|" -v ON_ERROR_STOP=1 -c "
+            SELECT
+              (SELECT count(*) FROM public.property_listings),
+              (SELECT count(*) FROM public.listing_sources),
+              (SELECT count(*) FROM public.listing_sources WHERE ingestion_run_id='"'"'clean-corpus-v4.11'"'"'),
+              (SELECT count(*) FROM public.listing_sources WHERE ingestion_run_id='"'"'clean-corpus-v4.11-wave2'"'"'),
+              (SELECT count(*) FROM public.listing_sources WHERE ingestion_run_id='"'"'clean-corpus-v4.11-wave3'"'"'),
+              (SELECT count(DISTINCT listing_url) FROM public.listing_sources WHERE ingestion_run_id='"'"'clean-corpus-v4.11-wave3'"'"'),
+              (SELECT count(*) FROM public.listing_sources ls LEFT JOIN public.property_listings pl ON pl.id=ls.property_listing_id WHERE pl.id IS NULL);
+          "'
