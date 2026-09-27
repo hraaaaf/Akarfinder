@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { assertHaSupabaseWriteAllowed } from "@/lib/db/ha-write-policy";
 
 import { fetchAuthorizedSource, MUBAWAB_CONTROLLED_POLICY } from "./authorized-source-adapter.js";
 import {
@@ -47,6 +48,7 @@ export function createConnectedMicrobatchRepository(
 ): AutonomousMicrobatchRepository {
   return {
     async claimDue(input) {
+      assertHaSupabaseWriteAllowed();
       const { data, error } = await dependencies.supabase.rpc("claim_due_recrawl_jobs_for_source_v1", {
         p_worker_id: input.worker_id,
         p_source_key: input.source_key,
@@ -57,6 +59,7 @@ export function createConnectedMicrobatchRepository(
       return requireData(data, error, "claim_due_recrawl_jobs_for_source_v1") as ClaimedRecrawl[];
     },
     async releaseClaim(input) {
+      assertHaSupabaseWriteAllowed();
       const { data, error } = await dependencies.supabase.rpc("release_recrawl_claim", {
         p_source_offer_id: input.job.source_offer_id,
         p_lease_token: input.job.lease_token,
@@ -124,6 +127,7 @@ export function createConnectedMicrobatchExecutor(
         .update(`${job.source_offer_id}:${job.lease_token}:${observation.contentFingerprint}`)
         .digest("hex");
 
+      assertHaSupabaseWriteAllowed();
       const { data, error } = await dependencies.supabase.rpc("commit_transactional_recrawl_observation_v1", {
         p_attempt_key: attemptKey,
         p_source_offer_id: job.source_offer_id,
