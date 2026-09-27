@@ -1,0 +1,113 @@
+name: Recovery V4.11 Wave9 Neon Preflight
+
+on:
+  push:
+    branches: ["recovery/v4-11-wave7-cc-freeze-20260927"]
+    paths:
+      - "data/recovery/activate-v4-11-wave9-neon-preflight.txt"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      DATABASE_URL: ${{ secrets.NEON_RECOVERY_DATABASE_URL }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Validate isolated target
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import os,urllib.parse
+          h=urllib.parse.urlparse(os.environ["DATABASE_URL"]).hostname
+          allowed={
+            "ep-falling-unit-b2hper1a.c-6.eu-central-1.aws.neon.tech",
+            "ep-falling-unit-b2hper1a-pooler.c-6.eu-central-1.aws.neon.tech",
+            "ep-falling-unit-b2hper1a-d1j.c-6.eu-central-1.aws.neon.tech",
+            "ep-falling-unit-b2hper1a-d1j-pooler.c-6.eu-central-1.aws.neon.tech",
+          }
+          if h not in allowed: raise SystemExit("refusing unexpected Neon host")
+          PY
+
+      - name: Download immutable Wave9 artifact
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/w9"
+          META="$(gh api "repos/${{ github.repository }}/actions/artifacts/10937330001")"
+          test "$(printf '%s' "$META" | jq -r .digest)" = "sha256:31c5e6f5a02fef7733f37eede5e667f5a1f3c5e4b7f13e36af5cd81932d4175b"
+          gh api "repos/${{ github.repository }}/actions/artifacts/10937330001/zip" > "$RUNNER_TEMP/w9.zip"
+          unzip -q -o "$RUNNER_TEMP/w9.zip" -d "$RUNNER_TEMP/w9"
+          echo "9baac42bc02b5f0820eac6709a3a3ec5b5e9c9cfea515a8135311fc5fdd56dd6  $RUNNER_TEMP/w9/db-ready-wave9.jsonl" | sha256sum -c -
+          test "$(wc -l < "$RUNNER_TEMP/w9/db-ready-wave9.jsonl")" = "2428"
+
+      - name: Build preflight CSV
+        run: |
+          node - "$RUNNER_TEMP/w9/db-ready-wave9.jsonl" "$RUNNER_TEMP/w9/preflight.csv" <<'NODE'
+          const fs=require("fs");
+          const [src,out]=process.argv.slice(2);
+          const rows=fs.readFileSync(src,"utf8").split(/\r?\n/).filter(Boolean).map(JSON.parse);
+          if(rows.length!==2428)throw new Error("row count");
+          if(new Set(rows.map(r=>r.listing_url)).size!==rows.length)throw new Error("url duplicate");
+          if(new Set(rows.map(r=>r.canonical_fingerprint)).size!==rows.length)throw new Error("fp duplicate");
+          if(new Set(rows.map(r=>r.source_name+"|"+r.source_offer_key)).size!==rows.length)throw new Error("identity duplicate");
+          const esc=v=>'"'+String(v??"").replace(/"/g,'""')+'"';
+          fs.writeFileSync(out,"listing_url,canonical_fingerprint,source_name,source_offer_key\n"+
+            rows.map(r=>[r.listing_url,r.canonical_fingerprint,r.source_name,r.source_offer_key].map(esc).join(",")).join("\n")+"\n");
+          NODE
+
+      - name: Compare Wave9 against isolated Neon
+        run: |
+          set -euo pipefail
+          cat > "$RUNNER_TEMP/w9/preflight.sql" <<'SQL'
+          CREATE TEMP TABLE stage_w9 (
+            listing_url text NOT NULL,
+            canonical_fingerprint text NOT NULL,
+            source_name text NOT NULL,
+            source_offer_key text NOT NULL
+          );
+          \copy stage_w9 FROM '/w9/preflight.csv' WITH (FORMAT csv, HEADER true)
+
+          CREATE TEMP TABLE existing_identity_w9 AS
+          SELECT DISTINCT
+            CASE
+              WHEN listing_url ~* 'mubawab\.ma' THEN 'mubawab.ma'
+              WHEN listing_url ~* 'avito\.ma' THEN 'avito.ma'
+              ELSE NULL
+            END AS source_name,
+            CASE
+              WHEN listing_url ~* 'mubawab\.ma' THEN (regexp_match(listing_url, '/(a|pa)/([0-9]+)(/|$)'))[2]
+              WHEN listing_url ~* 'avito\.ma' THEN (regexp_match(listing_url, '_([0-9]+)\.html?$'))[1]
+              ELSE NULL
+            END AS source_offer_key
+          FROM public.listing_sources
+          WHERE listing_url ~* '(mubawab\.ma|avito\.ma)';
+          CREATE INDEX ON existing_identity_w9(source_name,source_offer_key);
+
+          SELECT
+            (SELECT count(*) FROM stage_w9),
+            (SELECT count(*) FROM stage_w9 s JOIN public.listing_sources ls ON ls.listing_url=s.listing_url),
+            (SELECT count(*) FROM stage_w9 s JOIN public.property_listings pl ON pl.canonical_fingerprint=s.canonical_fingerprint),
+            (SELECT count(*) FROM stage_w9 s JOIN existing_identity_w9 e ON e.source_name=s.source_name AND e.source_offer_key=s.source_offer_key),
+            (SELECT count(*) FROM public.property_listings),
+            (SELECT count(*) FROM public.listing_sources),
+            (SELECT count(*) FROM public.listing_sources WHERE ingestion_run_id='clean-corpus-v4.11-wave9'),
+            (SELECT count(*) FROM public.listing_sources ls LEFT JOIN public.property_listings pl ON pl.id=ls.property_listing_id WHERE pl.id IS NULL);
+          SQL
+          docker run --rm -e DATABASE_URL="$DATABASE_URL" -v "$RUNNER_TEMP/w9:/w9" postgres:17 sh -lc 'psql "$DATABASE_URL" -X -qAt -F "|" -v ON_ERROR_STOP=1 -f /w9/preflight.sql' | tee "$RUNNER_TEMP/w9/preflight-result.txt"
+          OUT="$(grep -E '^[0-9]+\|' "$RUNNER_TEMP/w9/preflight-result.txt" | tail -n1)"
+          test "$OUT" = "2428|0|0|0|139161|139161|0|0"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v4.11-wave9-neon-preflight
+          path: ${{ runner.temp }}/w9/preflight-result.txt
+          retention-days: 30
