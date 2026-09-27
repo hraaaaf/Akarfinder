@@ -1,6 +1,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { getSupabaseServerClient } from "@/lib/db/supabase-client";
+import { assertHaSupabaseWriteAllowed } from "@/lib/db/ha-write-policy";
 import { classifyOpenSerpResult } from "./classify";
 import { runOpenSerpLiveQuery } from "./openserp-live";
 import type {
@@ -647,6 +648,7 @@ export async function writeOpenSerpCandidatesToSupabase(
   await writeJson(join(runDir, "write-manifest.json"), writeManifest);
   await writeJson(join(runDir, "rollback-manifest.json"), rollbackManifest);
 
+  assertHaSupabaseWriteAllowed();
   const supabase = getSupabaseServerClient();
   const propertyIdByFingerprint = new Map<number | string, number>();
   const batchSize = Math.max(1, Math.min(options.batchSize, 25));
@@ -790,6 +792,7 @@ export async function runPostWriteIdempotenceCheck(
 export async function rollbackOpenSerpRun(
   rollbackManifestPath: string,
 ): Promise<void> {
+  assertHaSupabaseWriteAllowed();
   const manifest = JSON.parse(await readFile(rollbackManifestPath, "utf8")) as OpenSerpRollbackManifest;
   const supabase = getSupabaseServerClient();
 
