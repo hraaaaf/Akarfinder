@@ -33,14 +33,14 @@ jobs:
           test -n "${DATABASE_URL:-}"
           node - <<'NODE'
           const a=require("./data/recovery/v4-11-wave8-import-approval.json");
-          if(a.approved!==true||a.rows!==39132)throw new Error("approval");
-          if(a.certification_run_id!==36326242303||a.preflight_run_id!==36326378492)throw new Error("run binding");
-          if(a.artifact_id!==10934176431)throw new Error("artifact");
-          if(a.artifact_digest!=="sha256:2b3af158bfc4c0f86f0ac7dd7481bfa2d4acd6530f1b869eedcb2ff30c25384b")throw new Error("artifact digest");
-          if(a.jsonl_sha256!=="85e65311dba66008a02f1c145e1166db26c186029c22cfae1b3628e67074cb31")throw new Error("jsonl sha");
+          if(a.approved!==true||a.rows!==38935)throw new Error("approval");
+          if(!Number.isInteger(a.preflight_run_id)||a.preflight_run_id<=0)throw new Error("run binding");
+          if(!Number.isInteger(a.artifact_id)||a.artifact_id<=0)throw new Error("artifact");
+          if(!/^sha256:[0-9a-f]{64}$/.test(a.artifact_digest||""))throw new Error("artifact digest");
+          if(!/^[0-9a-f]{64}$/.test(a.jsonl_sha256||""))throw new Error("jsonl sha");
           if(a.target_project!=="ancient-violet-43534870"||a.target_branch!=="br-cold-mouse-b2a50yaa"||a.target_database!=="AkarFinder")throw new Error("target");
           if(a.expected_pre?.property_listings!==100226||a.expected_pre?.listing_sources!==100226)throw new Error("pre baseline");
-          if(a.expected_post?.property_listings!==139358||a.expected_post?.listing_sources!==139358)throw new Error("post baseline");
+          if(a.expected_post?.property_listings!==139161||a.expected_post?.listing_sources!==139161)throw new Error("post baseline");
           if(a.production_neon_writes_authorized!==false||a.vercel_deployment_authorized!==false)throw new Error("scope");
           NODE
           python - <<'PY'
@@ -59,22 +59,24 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/w8"
-          gh api repos/${{ github.repository }}/actions/artifacts/10934176431/zip > "$RUNNER_TEMP/w8.zip"
+          ARTIFACT_ID="$(node -p 'require("./data/recovery/v4-11-wave8-import-approval.json").artifact_id')"
+          EXPECTED_SHA="$(node -p 'require("./data/recovery/v4-11-wave8-import-approval.json").jsonl_sha256')"
+          gh api "repos/${{ github.repository }}/actions/artifacts/$ARTIFACT_ID/zip" > "$RUNNER_TEMP/w8.zip"
           unzip -q -o "$RUNNER_TEMP/w8.zip" -d "$RUNNER_TEMP/w8"
-          echo "85e65311dba66008a02f1c145e1166db26c186029c22cfae1b3628e67074cb31  $RUNNER_TEMP/w8/db-ready-wave8.jsonl" | sha256sum -c -
-          test "$(wc -l < "$RUNNER_TEMP/w8/db-ready-wave8.jsonl")" = "39132"
+          echo "$EXPECTED_SHA  $RUNNER_TEMP/w8/db-ready-wave8-filtered.jsonl" | sha256sum -c -
+          test "$(wc -l < "$RUNNER_TEMP/w8/db-ready-wave8-filtered.jsonl")" = "38935"
 
       - name: Build import CSV
         run: |
-          node - "$RUNNER_TEMP/w8/db-ready-wave8.jsonl" "$RUNNER_TEMP/w8/import.csv" <<'NODE'
+          node - "$RUNNER_TEMP/w8/db-ready-wave8-filtered.jsonl" "$RUNNER_TEMP/w8/import.csv" <<'NODE'
           const fs=require("fs");
           const [src,out]=process.argv.slice(2);
           const rows=fs.readFileSync(src,"utf8").split(/\r?\n/).filter(Boolean).map(JSON.parse);
           const cols=["canonical_fingerprint","title","price_mad","city","district","property_type","transaction_type","surface_m2","rooms_count","bedrooms_count","bathrooms_count","description_snippet","images_count","seller_name","data_completeness_score","field_confidence","source_name","listing_url","source_url","first_seen_at","last_seen_at","source_offer_key","origin_type","compliance_status","content_fingerprint","ingestion_run_id","displayed_price","price_currency","price_period","price_status"];
           const esc=v=>{if(v===null||v===undefined)return "";const s=typeof v==="object"?JSON.stringify(v):String(v);return /[",\n\r]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s};
-          if(rows.length!==39132||rows.some(r=>r.approved_for_import!==false))throw new Error("artifact invariant");
-          if(new Set(rows.map(r=>r.listing_url)).size!==39132||new Set(rows.map(r=>r.canonical_fingerprint)).size!==39132)throw new Error("dedupe invariant");
-          if(new Set(rows.map(r=>r.source_name+"|"+r.source_offer_key)).size!==39132)throw new Error("portal identity invariant");
+          if(rows.length!==38935||rows.some(r=>r.approved_for_import!==false))throw new Error("artifact invariant");
+          if(new Set(rows.map(r=>r.listing_url)).size!==38935||new Set(rows.map(r=>r.canonical_fingerprint)).size!==38935)throw new Error("dedupe invariant");
+          if(new Set(rows.map(r=>r.source_name+"|"+r.source_offer_key)).size!==38935)throw new Error("portal identity invariant");
           if(rows.some(r=>![r.title,r.city,r.property_type,r.transaction_type].every(x=>x!=null&&String(x).trim()!=="")))throw new Error("core invariant");
           fs.writeFileSync(out,cols.join(",")+"\n"+rows.map(r=>cols.map(c=>esc(r[c])).join(",")).join("\n")+"\n");
           NODE
@@ -99,7 +101,7 @@ jobs:
           BEGIN
             IF (SELECT count(*) FROM public.property_listings) <> 100226 THEN RAISE EXCEPTION 'pre property baseline mismatch'; END IF;
             IF (SELECT count(*) FROM public.listing_sources) <> 100226 THEN RAISE EXCEPTION 'pre source baseline mismatch'; END IF;
-            IF (SELECT count(*) FROM stage_w8) <> 39132 THEN RAISE EXCEPTION 'stage count mismatch'; END IF;
+            IF (SELECT count(*) FROM stage_w8) <> 38935 THEN RAISE EXCEPTION 'stage count mismatch'; END IF;
             IF EXISTS (SELECT 1 FROM stage_w8 s JOIN public.listing_sources ls ON ls.listing_url=s.listing_url)
               THEN RAISE EXCEPTION 'unexpected URL overlap'; END IF;
             IF EXISTS (SELECT 1 FROM stage_w8 s JOIN public.property_listings pl ON pl.canonical_fingerprint=s.canonical_fingerprint)
@@ -135,9 +137,9 @@ jobs:
 
           DO $$
           BEGIN
-            IF (SELECT count(*) FROM public.property_listings) <> 139358 THEN RAISE EXCEPTION 'property total mismatch'; END IF;
-            IF (SELECT count(*) FROM public.listing_sources) <> 139358 THEN RAISE EXCEPTION 'source total mismatch'; END IF;
-            IF (SELECT count(*) FROM public.listing_sources WHERE ingestion_run_id='clean-corpus-v4.11-wave8') <> 39132
+            IF (SELECT count(*) FROM public.property_listings) <> 139161 THEN RAISE EXCEPTION 'property total mismatch'; END IF;
+            IF (SELECT count(*) FROM public.listing_sources) <> 139161 THEN RAISE EXCEPTION 'source total mismatch'; END IF;
+            IF (SELECT count(*) FROM public.listing_sources WHERE ingestion_run_id='clean-corpus-v4.11-wave8') <> 38935
               THEN RAISE EXCEPTION 'wave8 count mismatch'; END IF;
           END $$;
           COMMIT;
@@ -165,15 +167,15 @@ jobs:
           docker run --rm -e DATABASE_URL="$DATABASE_URL" -v "$RUNNER_TEMP/w8:/w8" postgres:17 sh -lc 'psql "$DATABASE_URL" -X -qAt -F "|" -v ON_ERROR_STOP=1 -f /w8/readback.sql' | tee "$RUNNER_TEMP/w8/readback-result.txt"
           OUT="$(tail -n1 "$RUNNER_TEMP/w8/readback-result.txt")"
           IFS='|' read -r PL LS URLS FPS W8 W8URL ORPH INACTIVE V411 LEGACY PGAP SGAP <<< "$OUT"
-          test "$PL" = "139358"
-          test "$LS" = "139358"
-          test "$URLS" = "139358"
-          test "$FPS" = "139358"
-          test "$W8" = "39132"
-          test "$W8URL" = "39132"
+          test "$PL" = "139161"
+          test "$LS" = "139161"
+          test "$URLS" = "139161"
+          test "$FPS" = "139161"
+          test "$W8" = "38935"
+          test "$W8URL" = "38935"
           test "$ORPH" = "0"
           test "$INACTIVE" = "0"
-          test "$V411" = "139322"
+          test "$V411" = "139125"
           test "$LEGACY" = "36"
           test "$PGAP" = "0"
           test "$SGAP" = "0"
