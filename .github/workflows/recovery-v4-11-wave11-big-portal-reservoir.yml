@@ -1,0 +1,47 @@
+name: Recovery V4.11 Wave11 Big Portal Reservoir
+
+on:
+  push:
+    branches: ["recovery/v4-11-wave7-cc-freeze-20260927"]
+    paths:
+      - "data/recovery/activate-v4-11-wave11-big-portal-reservoir.txt"
+
+permissions:
+  contents: read
+
+jobs:
+  reservoir:
+    strategy:
+      fail-fast: false
+      matrix:
+        domain: ["sarout.ma","marocannonces.com","domio.ma"]
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      BIG_PORTAL_DOMAIN: ${{ matrix.domain }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Harvest paginated Common Crawl reservoir
+        run: npx tsx scripts/recovery/commoncrawl-big-portal-paginated.ts
+      - name: Enforce zero-write contract
+        run: |
+          node - <<'NODE'
+          const fs=require("fs");
+          const safe=process.env.BIG_PORTAL_DOMAIN.replace(/[^a-z0-9]+/gi,"-");
+          const s=require("./data/audits/raw-results/recovery-big-portal-"+safe+"-summary.json");
+          if(s.database_access||s.database_writes||s.source_page_fetches||s.warc_downloads||s.approved_for_import_rows)throw new Error("safety");
+          if(s.indexes!==21)throw new Error("index count");
+          console.log(JSON.stringify(s,null,2));
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wave11-big-portal-${{ matrix.domain }}
+          path: |
+            data/audits/raw-results/recovery-big-portal-*.txt
+            data/audits/raw-results/recovery-big-portal-*-summary.json
+          retention-days: 30
