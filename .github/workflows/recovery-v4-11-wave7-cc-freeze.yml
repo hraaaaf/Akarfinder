@@ -100,7 +100,9 @@ jobs:
           const rows=b.toString("utf8").split(/\r?\n/).filter(Boolean).map(JSON.parse);
           const eq=(a,b,n)=>{if(a!==b)throw new Error(n+": "+a+" != "+b)};
           eq(s.cc_rows,3147,"cc rows");
-          eq(s.cc_unique_identities,2725,"cc identities");\n          eq(s.identityless_cc_urls,63,"identityless CC URLs");
+          eq(s.cc_stable_identity_urls,3084,"stable identity URLs");
+          eq(s.cc_unique_identities,2725,"cc identities");
+          eq(s.identityless_cc_urls,63,"identityless CC URLs");
           eq(s.prior_overlap,150,"prior overlap");
           eq(s.exact_ready,425,"exact ready");
           eq(s.identity_ready,60,"identity ready");
