@@ -20,5 +20,6 @@
   "production_neon_writes_authorized": false,
   "vercel_deployment_authorized": false,
   "legacy_url_repairs": 4,
-  "note": "Preflight found exactly 4 certified URLs already present in legacy rows. Authorized scope is unchanged: repair those 4 legacy representations with certified wave2 data and insert the remaining 13,417 as new rows."
+  "note": "Preflight found exactly 4 certified URLs already present in legacy rows. Authorized scope is unchanged: repair those 4 legacy representations with certified wave2 data and insert the remaining 13,417 as new rows.",
+  "retry_note": "Retry after explicit temp-table cleanup for Neon pooled connections; authorized cohort and target unchanged."
 }
