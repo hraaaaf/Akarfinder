@@ -1,0 +1,17 @@
+{
+  "schema_version": "akarfinder-v4.11-wave10-route-residue-import-approval-20260927",
+  "approved": true,
+  "rows": 96,
+  "certification_run_id": 36341259465,
+  "preflight_run_id": 36341461469,
+  "artifact_id": 10938549384,
+  "artifact_digest": "sha256:c12000bbc52ab472a85c31bcc35ffbe62e0b4c8cdb36b7d6810cd06bd08c0ce4",
+  "jsonl_sha256": "99cc1c88ac17d10dc3ee0bbef58e86b399f563df5a96735848f6a00c13e30bbc",
+  "target_project": "ancient-violet-43534870",
+  "target_branch": "br-cold-mouse-b2a50yaa",
+  "target_database": "AkarFinder",
+  "expected_pre": 142636,
+  "expected_post": 142732,
+  "production_neon_writes_authorized": false,
+  "vercel_deployment_authorized": false
+}
