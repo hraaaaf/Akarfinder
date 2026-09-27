@@ -72,6 +72,26 @@ jobs:
           const fs=require("fs");
           const [src,out]=process.argv.slice(2);
           const rows=fs.readFileSync(src,"utf8").split(/\r?\n/).filter(Boolean).map(JSON.parse);
+          const INT4_MIN=-2147483648,INT4_MAX=2147483647;
+          const intFields=["surface_m2","rooms_count","bedrooms_count","bathrooms_count","images_count","data_completeness_score"];
+          let quarantinedPriceOverflow=0;
+          for(const r of rows){
+            for(const f of intFields){
+              const v=r[f];
+              if(v!=null&&(!Number.isInteger(v)||v<INT4_MIN||v>INT4_MAX))throw new Error("unsafe int4 "+f+" "+v);
+            }
+            if(r.price_mad!=null&&(r.price_mad<INT4_MIN||r.price_mad>INT4_MAX)){
+              const original=r.price_mad;
+              r.price_mad=null;
+              r.displayed_price=null;
+              r.price_currency=null;
+              r.price_status="not_disclosed";
+              if(Number.isInteger(r.data_completeness_score))r.data_completeness_score=Math.max(0,r.data_completeness_score-5);
+              r.field_confidence={...(r.field_confidence||{}),price_mad:{...((r.field_confidence||{}).price_mad||{}),normalized:null,import_normalization:"quarantined_int4_overflow",original_numeric:original}};
+              quarantinedPriceOverflow++;
+            }
+          }
+          if(quarantinedPriceOverflow!==1)throw new Error("expected exactly one price overflow quarantine, got "+quarantinedPriceOverflow);
           const cols=["canonical_fingerprint","title","price_mad","city","district","property_type","transaction_type","surface_m2","rooms_count","bedrooms_count","bathrooms_count","description_snippet","images_count","seller_name","data_completeness_score","field_confidence","source_name","listing_url","source_url","first_seen_at","last_seen_at","source_offer_key","origin_type","compliance_status","content_fingerprint","ingestion_run_id","displayed_price","price_currency","price_period","price_status"];
           const esc=v=>{if(v===null||v===undefined)return "";const s=typeof v==="object"?JSON.stringify(v):String(v);return /[",\n\r]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s};
           if(rows.length!==38935||rows.some(r=>r.approved_for_import!==false))throw new Error("artifact invariant");
