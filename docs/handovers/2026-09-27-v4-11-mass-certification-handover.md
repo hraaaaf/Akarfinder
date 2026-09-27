@@ -228,3 +228,26 @@ Wave9 new-source lane:
 5. Controlled new-source import only if 0/0/0 overlap.
 6. Continue recovery waves to >=200k.
 
+
+
+## Wave9 hardened reconciliation — VERIFIED 2026-09-27
+
+The 64-row Wave9 route correction is closed on isolated Neon.
+
+- Explicit user authorization recorded before destructive correction.
+- Fail-closed reconciliation preflight: run `36336317768` — SUCCESS.
+- Preflight artifact: `10936349631`, digest `sha256:4e286bdaef855fd8ef38b2dc01886125a22b2ec7c9e4d38d8896b99fb29d1352`.
+- Atomic reconciliation run: `36340131390` — SUCCESS.
+- Reconciliation readback artifact: `10938009412`, digest `sha256:d9e8c2ab5814e057989a27b53ff89d984b6efeb877bc30446fb7e66762e586e6`.
+- Mutation: exactly **64** obsolete Wave9-route rows removed and exactly **12** hardened missing rows inserted.
+- Isolated Neon direct readback after COMMIT: **141,349** properties / **141,349** sources / **141,349** unique URLs / **141,349** unique fingerprints.
+- Wave9 route rows after reconciliation: **2,188**.
+- Wave9 new-source rows: **0** at this checkpoint.
+- Orphans: **0**. Inactive: **0**. Property core gaps: **0**. Source core gaps: **0**.
+- Production Neon writes: **false**. Vercel deployment: **false**.
+
+Neon project usage check before reconciliation reported `data_transfer_bytes=0` for consumption period 2026-09-01 → 2026-10-01. The available project record did not expose a numeric data-transfer quota.
+
+### Next exact after reconciliation
+
+Re-run the exact 1,287-row origin-safe Wave9 new-source Neon preflight against baseline **141,349**. If 0 URL / 0 fingerprint / 0 source identity overlap, bind a fresh approval to that exact run/artifact, controlled-import into isolated Neon, then perform an independent readback before updating the cumulative ledger.
