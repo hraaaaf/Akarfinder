@@ -48,7 +48,7 @@ for(const file of walk(evidenceDir).filter(f=>f.endsWith(".json")&&!f.endsWith("
     byDomain[domain]=(byDomain[domain]||0)+1;
   }
 }
-if(additions.length!==7644)throw new Error("expected additions 7644, got "+additions.length);
+if(additions.length!==7744)throw new Error("expected additions 7744, got "+additions.length);
 const expected={
  "promoimmomarrakech.com":3705,
  "daragadir.com":2963,
@@ -62,8 +62,8 @@ for(const [d,n] of Object.entries(expected))if(byDomain[d]!==n)throw new Error(d
 
 const v3=[...verified,...additions].sort((a,b)=>a.canonical_url.localeCompare(b.canonical_url));
 const u3=[...unresolvedSet].sort();
-if(v3.length!==178605)throw new Error("verified v3 "+v3.length);
-if(u3.length!==35387)throw new Error("unresolved v3 "+u3.length);
+if(v3.length!==178705)throw new Error("verified v3 "+v3.length);
+if(u3.length!==35287)throw new Error("unresolved v3 "+u3.length);
 const vb=v3.map(r=>JSON.stringify(r)).join("\n")+"\n",ub=u3.join("\n")+"\n";
 fs.writeFileSync(path.join(outDir,"existence-verified-v3.jsonl"),vb);
 fs.writeFileSync(path.join(outDir,"unresolved-existence-v3.txt"),ub);
