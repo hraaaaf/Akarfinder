@@ -42,7 +42,7 @@ jobs:
 
       - name: Certify mass route wave3
         run: |
-          node scripts/recovery/certify-v4-11-mass-route-wave3.mjs             --ledger "$RUNNER_TEMP/ledger/existence-verified.jsonl"             --wave2 "$RUNNER_TEMP/wave2/db-ready-wave2.jsonl"             --output data/audits/v4-11-wave3/db-ready-wave3.jsonl             --rejected data/audits/v4-11-wave3/rejected.jsonl             --summary data/audits/v4-11-wave3/summary.json
+          node scripts/recovery/certify-v4-11-mass-route-wave3.mjs --ledger "$RUNNER_TEMP/ledger/existence-verified.jsonl" --wave2 "$RUNNER_TEMP/wave2/db-ready-wave2.jsonl" --domio-matched "$RUNNER_TEMP/domio/category-matched.jsonl" --output data/audits/v4-11-wave3/db-ready-wave3.jsonl --rejected data/audits/v4-11-wave3/rejected.jsonl --summary data/audits/v4-11-wave3/summary.json
 
       - name: Verify wave3 invariants
         run: |
