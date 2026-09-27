@@ -43,7 +43,7 @@ export function GoogleLikeHero() {
             id="home-hero-title"
             className="mt-4 max-w-[980px] text-[2.45rem] font-extrabold leading-[1.01] tracking-[-0.055em] text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.34)] sm:text-[3.6rem] lg:text-[4.3rem]"
           >
-            1er moteur de recherche immobilier au Maroc
+            TEST P0 — dérive L0 volontaire
           </h1>
 
           <p className="mt-4 max-w-[720px] text-[14px] font-medium leading-6 text-white/90 sm:text-[16px] sm:leading-7">
