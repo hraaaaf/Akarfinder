@@ -1,0 +1,174 @@
+name: Recovery V4.11 Wave9 Hardened Reconciliation
+
+on:
+  push:
+    branches: ["recovery/v4-11-wave7-cc-freeze-20260927"]
+    paths: ["data/recovery/v4-11-wave9-hardened-reconcile-approval.json"]
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: recovery-v4-11-wave9-hardened-reconcile
+  cancel-in-progress: false
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      DATABASE_URL: ${{ secrets.NEON_RECOVERY_DATABASE_URL }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: 24}
+
+      - name: Validate explicit approval and target
+        run: |
+          node - <<'NODE'
+          const a=require("./data/recovery/v4-11-wave9-hardened-reconcile-approval.json");
+          if(a.approved!==true)throw new Error("approval");
+          if(a.remove_rows!==64||a.eligible_add_rows!==12)throw new Error("counts");
+          if(a.preflight_run_id!==36336317768||a.preflight_artifact_id!==10936349631)throw new Error("preflight binding");
+          if(a.preflight_artifact_digest!=="sha256:4e286bdaef855fd8ef38b2dc01886125a22b2ec7c9e4d38d8896b99fb29d1352")throw new Error("digest");
+          if(a.expected_pre!==141401||a.expected_post!==141349)throw new Error("baseline");
+          if(a.target_project!=="ancient-violet-43534870"||a.target_branch!=="br-cold-mouse-b2a50yaa"||a.target_database!=="AkarFinder")throw new Error("target");
+          if(a.production_neon_writes_authorized!==false||a.vercel_deployment_authorized!==false)throw new Error("scope");
+          NODE
+          python - <<'PY'
+          import os,urllib.parse
+          h=urllib.parse.urlparse(os.environ["DATABASE_URL"]).hostname
+          if h not in {"ep-falling-unit-b2hper1a.c-6.eu-central-1.aws.neon.tech","ep-falling-unit-b2hper1a-pooler.c-6.eu-central-1.aws.neon.tech","ep-falling-unit-b2hper1a-d1j.c-6.eu-central-1.aws.neon.tech","ep-falling-unit-b2hper1a-d1j-pooler.c-6.eu-central-1.aws.neon.tech"}: raise SystemExit("unexpected host")
+          PY
+
+      - name: Download immutable old and hardened artifacts
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/rec"
+          gh api "repos/${{ github.repository }}/actions/artifacts/10936443710/zip" > "$RUNNER_TEMP/old.zip"
+          unzip -q "$RUNNER_TEMP/old.zip" -d "$RUNNER_TEMP/rec/old"
+          gh api "repos/${{ github.repository }}/actions/artifacts/10937330001/zip" > "$RUNNER_TEMP/hard.zip"
+          unzip -q "$RUNNER_TEMP/hard.zip" -d "$RUNNER_TEMP/rec/hard"
+          echo "2f7dbd6a26cac7776d51d31bdfcc86f6ca401bd026cf3888c19cc001f77dcf25  $RUNNER_TEMP/rec/old/db-ready-wave9-filtered.jsonl" | sha256sum -c -
+          echo "9baac42bc02b5f0820eac6709a3a3ec5b5e9c9cfea515a8135311fc5fdd56dd6  $RUNNER_TEMP/rec/hard/db-ready-wave9.jsonl" | sha256sum -c -
+
+      - name: Build exact reconciliation CSVs
+        run: |
+          node - "$RUNNER_TEMP/rec/old/db-ready-wave9-filtered.jsonl" "$RUNNER_TEMP/rec/hard/db-ready-wave9.jsonl" "$RUNNER_TEMP/rec" <<'NODE'
+          const fs=require("fs");const [op,hp,out]=process.argv.slice(2);
+          const load=p=>fs.readFileSync(p,"utf8").split(/\r?\n/).filter(Boolean).map(JSON.parse);
+          const old=load(op),hard=load(hp),H=new Set(hard.map(r=>r.listing_url)),O=new Set(old.map(r=>r.listing_url));
+          const rem=old.filter(r=>!H.has(r.listing_url)), add=hard.filter(r=>!O.has(r.listing_url));
+          if(rem.length!==64||add.length!==252)throw new Error("set sizes");
+          const e=v=>{if(v==null)return "";const s=typeof v==="object"?JSON.stringify(v):String(v);return /[",\n\r]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s};
+          fs.writeFileSync(out+"/remove.csv","listing_url,canonical_fingerprint,source_name,source_offer_key\n"+rem.map(r=>[r.listing_url,r.canonical_fingerprint,r.source_name,r.source_offer_key].map(e).join(",")).join("\n")+"\n");
+          const cols=["canonical_fingerprint","title","price_mad","city","district","property_type","transaction_type","surface_m2","rooms_count","bedrooms_count","bathrooms_count","description_snippet","images_count","seller_name","data_completeness_score","field_confidence","source_name","listing_url","source_url","first_seen_at","last_seen_at","source_offer_key","origin_type","compliance_status","content_fingerprint","ingestion_run_id","displayed_price","price_currency","price_period","price_status"];
+          fs.writeFileSync(out+"/add.csv",cols.join(",")+"\n"+add.map(r=>cols.map(c=>e(r[c])).join(",")).join("\n")+"\n");
+          NODE
+
+      - name: Atomic targeted reconcile
+        run: |
+          set -euo pipefail
+          cat > "$RUNNER_TEMP/rec/reconcile.sql" <<'SQL'
+          BEGIN;
+
+          CREATE TEMP TABLE rec_remove_20260927(
+            listing_url text,canonical_fingerprint text,source_name text,source_offer_key text
+          ) ON COMMIT DROP;
+          \copy rec_remove_20260927 FROM '/rec/remove.csv' WITH (FORMAT csv, HEADER true)
+
+          CREATE TEMP TABLE rec_add_20260927(
+            canonical_fingerprint text NOT NULL,title text NOT NULL,price_mad integer,city text NOT NULL,district text,
+            property_type text NOT NULL,transaction_type text NOT NULL,surface_m2 integer,rooms_count integer,bedrooms_count integer,bathrooms_count integer,
+            description_snippet text,images_count integer,seller_name text,data_completeness_score integer,field_confidence jsonb,
+            source_name text NOT NULL,listing_url text NOT NULL,source_url text,first_seen_at timestamptz,last_seen_at timestamptz,source_offer_key text NOT NULL,
+            origin_type text,compliance_status text,content_fingerprint text,ingestion_run_id text,displayed_price numeric,price_currency text,price_period text,price_status text
+          ) ON COMMIT DROP;
+          \copy rec_add_20260927 FROM '/rec/add.csv' WITH (FORMAT csv, HEADER true)
+
+          DO $$
+          BEGIN
+            IF (SELECT count(*) FROM public.property_listings)<>141401 THEN RAISE EXCEPTION 'pre properties'; END IF;
+            IF (SELECT count(*) FROM public.listing_sources)<>141401 THEN RAISE EXCEPTION 'pre sources'; END IF;
+            IF (SELECT count(*) FROM rec_remove_20260927)<>64 THEN RAISE EXCEPTION 'remove stage'; END IF;
+            IF (SELECT count(*) FROM rec_add_20260927)<>252 THEN RAISE EXCEPTION 'add stage'; END IF;
+            IF (SELECT count(*) FROM rec_remove_20260927 r JOIN public.listing_sources ls ON ls.listing_url=r.listing_url AND ls.ingestion_run_id='clean-corpus-v4.11-wave9')<>64 THEN RAISE EXCEPTION 'remove target mismatch'; END IF;
+          END $$;
+
+          CREATE TEMP TABLE rec_removed_props_20260927 AS
+          SELECT ls.property_listing_id
+          FROM public.listing_sources ls
+          JOIN rec_remove_20260927 r ON r.listing_url=ls.listing_url
+          WHERE ls.ingestion_run_id='clean-corpus-v4.11-wave9';
+
+          DELETE FROM public.listing_sources ls
+          USING rec_remove_20260927 r
+          WHERE ls.listing_url=r.listing_url
+            AND ls.ingestion_run_id='clean-corpus-v4.11-wave9';
+
+          DELETE FROM public.property_listings pl
+          USING rec_removed_props_20260927 rp
+          WHERE pl.id=rp.property_listing_id
+            AND NOT EXISTS (SELECT 1 FROM public.listing_sources ls WHERE ls.property_listing_id=pl.id);
+
+          CREATE TEMP TABLE rec_eligible_20260927 AS
+          SELECT a.*
+          FROM rec_add_20260927 a
+          WHERE NOT EXISTS (SELECT 1 FROM public.listing_sources ls WHERE ls.listing_url=a.listing_url)
+            AND NOT EXISTS (SELECT 1 FROM public.property_listings pl WHERE pl.canonical_fingerprint=a.canonical_fingerprint)
+            AND NOT EXISTS (
+              SELECT 1 FROM public.listing_sources ls
+              WHERE (
+                a.source_name='mubawab.ma' AND ls.listing_url ~* 'mubawab\.ma'
+                AND (regexp_match(ls.listing_url,'/(a|pa)/([0-9]+)(/|$)'))[2]=a.source_offer_key
+              ) OR (
+                a.source_name='avito.ma' AND ls.listing_url ~* 'avito\.ma'
+                AND (regexp_match(ls.listing_url,'_([0-9]+)\.html?$'))[1]=a.source_offer_key
+              )
+            );
+
+          DO $$
+          BEGIN
+            IF (SELECT count(*) FROM rec_eligible_20260927)<>12 THEN RAISE EXCEPTION 'eligible add mismatch'; END IF;
+          END $$;
+
+          INSERT INTO public.property_listings(
+            canonical_fingerprint,title,price_mad,city,district,property_type,transaction_type,surface_m2,rooms_count,bedrooms_count,bathrooms_count,
+            description_snippet,images_count,seller_name,data_completeness_score,field_confidence
+          )
+          SELECT canonical_fingerprint,title,price_mad,city,district,property_type,transaction_type,surface_m2,rooms_count,bedrooms_count,bathrooms_count,
+                 description_snippet,images_count,seller_name,data_completeness_score,field_confidence
+          FROM rec_eligible_20260927;
+
+          INSERT INTO public.listing_sources(
+            property_listing_id,source_name,listing_url,source_url,first_seen_at,last_seen_at,is_active,source_offer_key,
+            origin_type,compliance_status,content_fingerprint,ingestion_run_id,displayed_price,price_currency,price_period,price_status
+          )
+          SELECT pl.id,a.source_name,a.listing_url,a.source_url,a.first_seen_at,a.last_seen_at,true,a.source_offer_key,
+                 a.origin_type,a.compliance_status,a.content_fingerprint,a.ingestion_run_id,a.displayed_price,a.price_currency,a.price_period,a.price_status
+          FROM rec_eligible_20260927 a
+          JOIN public.property_listings pl ON pl.canonical_fingerprint=a.canonical_fingerprint;
+
+          DO $$
+          BEGIN
+            IF (SELECT count(*) FROM public.property_listings)<>141349 THEN RAISE EXCEPTION 'post properties'; END IF;
+            IF (SELECT count(*) FROM public.listing_sources)<>141349 THEN RAISE EXCEPTION 'post sources'; END IF;
+            IF (SELECT count(*) FROM public.listing_sources ls LEFT JOIN public.property_listings pl ON pl.id=ls.property_listing_id WHERE pl.id IS NULL)<>0 THEN RAISE EXCEPTION 'orphans'; END IF;
+          END $$;
+
+          COMMIT;
+          SQL
+          docker run --rm -e DATABASE_URL="$DATABASE_URL" -v "$RUNNER_TEMP/rec:/rec" postgres:17 sh -lc 'psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f /rec/reconcile.sql'
+
+      - name: Independent reconciliation readback
+        run: |
+          docker run --rm -e DATABASE_URL="$DATABASE_URL" postgres:17 sh -lc 'psql "$DATABASE_URL" -X -qAt -F "|" -c "SELECT (SELECT count(*) FROM public.property_listings),(SELECT count(*) FROM public.listing_sources),(SELECT count(DISTINCT listing_url) FROM public.listing_sources),(SELECT count(DISTINCT canonical_fingerprint) FROM public.property_listings),(SELECT count(*) FROM public.listing_sources WHERE ingestion_run_id='"'"'clean-corpus-v4.11-wave9'"'"'),(SELECT count(*) FROM public.listing_sources ls LEFT JOIN public.property_listings pl ON pl.id=ls.property_listing_id WHERE pl.id IS NULL),(SELECT count(*) FROM public.listing_sources WHERE is_active IS NOT TRUE);"' | tee "$RUNNER_TEMP/rec/readback.txt"
+          test "$(cat "$RUNNER_TEMP/rec/readback.txt")" = "141349|141349|141349|141349|2188|0|0"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v4.11-wave9-hardened-reconcile-readback
+          path: ${{ runner.temp }}/rec/readback.txt
+          retention-days: 30
