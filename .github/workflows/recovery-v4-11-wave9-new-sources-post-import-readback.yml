@@ -1,0 +1,54 @@
+name: Recovery V4.11 Wave9 New Sources Post-Import Readback
+
+on:
+  push:
+    branches: ["recovery/v4-11-wave7-cc-freeze-20260927"]
+    paths:
+      - "data/recovery/activate-v4-11-wave9-new-sources-readback.txt"
+
+permissions:
+  contents: read
+
+jobs:
+  readback:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      DATABASE_URL: ${{ secrets.NEON_RECOVERY_DATABASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate target and independent readback
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import os,urllib.parse
+          h=urllib.parse.urlparse(os.environ["DATABASE_URL"]).hostname
+          allowed={
+            "ep-falling-unit-b2hper1a.c-6.eu-central-1.aws.neon.tech",
+            "ep-falling-unit-b2hper1a-pooler.c-6.eu-central-1.aws.neon.tech",
+            "ep-falling-unit-b2hper1a-d1j.c-6.eu-central-1.aws.neon.tech",
+            "ep-falling-unit-b2hper1a-d1j-pooler.c-6.eu-central-1.aws.neon.tech",
+          }
+          if h not in allowed: raise SystemExit("unexpected host")
+          PY
+          mkdir -p "$RUNNER_TEMP/rb"
+          cat > "$RUNNER_TEMP/rb/q.sql" <<'SQL'
+          SELECT
+            (SELECT count(*) FROM public.property_listings),
+            (SELECT count(*) FROM public.listing_sources),
+            (SELECT count(DISTINCT listing_url) FROM public.listing_sources),
+            (SELECT count(DISTINCT canonical_fingerprint) FROM public.property_listings),
+            (SELECT count(*) FROM public.listing_sources WHERE ingestion_run_id='clean-corpus-v4.11-wave9'),
+            (SELECT count(*) FROM public.listing_sources WHERE ingestion_run_id='clean-corpus-v4.11-wave9-new-sources'),
+            (SELECT count(*) FROM public.listing_sources ls LEFT JOIN public.property_listings pl ON pl.id=ls.property_listing_id WHERE pl.id IS NULL),
+            (SELECT count(*) FROM public.listing_sources WHERE is_active IS NOT TRUE),
+            (SELECT count(*) FROM public.property_listings WHERE canonical_fingerprint IS NULL OR btrim(canonical_fingerprint)='' OR title IS NULL OR btrim(title)='' OR city IS NULL OR btrim(city)='' OR property_type IS NULL OR btrim(property_type)='' OR transaction_type IS NULL OR btrim(transaction_type)=''),
+            (SELECT count(*) FROM public.listing_sources WHERE listing_url IS NULL OR btrim(listing_url)='' OR source_name IS NULL OR btrim(source_name)='');
+          SQL
+          docker run --rm -e DATABASE_URL="$DATABASE_URL" -v "$RUNNER_TEMP/rb:/rb" postgres:17 sh -lc 'psql "$DATABASE_URL" -X -qAt -F "|" -v ON_ERROR_STOP=1 -f /rb/q.sql' | tee "$RUNNER_TEMP/rb/result.txt"
+          test "$(cat "$RUNNER_TEMP/rb/result.txt")" = "142636|142636|142636|142636|2188|1287|0|0|0|0"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v4.11-wave9-new-sources-post-import-readback
+          path: ${{ runner.temp }}/rb/result.txt
+          retention-days: 30
