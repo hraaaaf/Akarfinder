@@ -30,5 +30,6 @@ jobs:
           scripts/scrapers/__tests__/ha-writer-state.test.ts
           scripts/scrapers/__tests__/ha-write-policy.test.ts
           scripts/scrapers/__tests__/ha-runtime-supabase-write-audit.test.ts
+          scripts/scrapers/__tests__/ha-application-write-surface-guard.test.ts
       - name: TypeScript
         run: npx tsc --noEmit
