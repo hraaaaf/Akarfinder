@@ -1,0 +1,73 @@
+name: Recovery V4.11 DB-ready Wave2 Certification
+
+on:
+  push:
+    branches: ["recovery/v4-11-certified-import-wave2-20260927"]
+    paths:
+      - "data/recovery/activate-v4-11-db-ready-wave2.txt"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Download reconciled pre-DB ledger
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/ledger" data/audits/v4-11-wave2
+          gh api repos/${{ github.repository }}/actions/artifacts/10927761643/zip > "$RUNNER_TEMP/ledger.zip"
+          unzip -q -o "$RUNNER_TEMP/ledger.zip" -d "$RUNNER_TEMP/ledger"
+          test -s "$RUNNER_TEMP/ledger/field-ready-pre-identity.jsonl"
+          echo "e7b17c8858f0f233fe64d9811a3deec476bb3f4e9728d4530c08efad6b95197c  $RUNNER_TEMP/ledger/field-ready-pre-identity.jsonl" | sha256sum -c -
+
+      - name: Certify DB-ready wave2
+        run: |
+          node scripts/recovery/certify-v4-11-db-ready-wave2.mjs             --input "$RUNNER_TEMP/ledger/field-ready-pre-identity.jsonl"             --output data/audits/v4-11-wave2/db-ready-wave2.jsonl             --quarantine-output data/audits/v4-11-wave2/quarantine.jsonl             --summary data/audits/v4-11-wave2/summary.json
+
+      - name: Verify wave2 invariants
+        run: |
+          node - <<'NODE'
+          const fs=require("fs"),crypto=require("crypto");
+          const s=JSON.parse(fs.readFileSync("data/audits/v4-11-wave2/summary.json","utf8"));
+          const eq=(a,b,n)=>{if(a!==b)throw new Error(n+": "+a+" != "+b)};
+          eq(s.input_pre_identity_rows,17238,"input");
+          eq(s.field_gate_pass_rows,17190,"field pass");
+          eq(s.rejected_unknown_type_rows,8,"unknown type");
+          eq(s.rejected_weak_title_rows,40,"weak title");
+          eq(s.identity_ambiguous_groups,66,"ambiguous groups");
+          eq(s.identity_quarantine_rows,166,"identity quarantine");
+          eq(s.db_ready_rows,17024,"db ready");
+          eq(s.approved_for_import_rows,0,"approval");
+          eq(s.database_access,0,"db access");
+          eq(s.database_writes,0,"db writes");
+          const body=fs.readFileSync("data/audits/v4-11-wave2/db-ready-wave2.jsonl");
+          const sha=crypto.createHash("sha256").update(body).digest("hex");
+          eq(sha,s.output_sha256,"output sha");
+          const rows=body.toString("utf8").split(/\r?\n/).filter(Boolean).map(JSON.parse);
+          eq(rows.length,17024,"physical rows");
+          eq(new Set(rows.map(r=>r.listing_url)).size,17024,"unique urls");
+          eq(new Set(rows.map(r=>r.canonical_fingerprint)).size,17024,"unique fingerprints");
+          if(rows.some(r=>r.approved_for_import!==false))throw new Error("approval invariant");
+          console.log(JSON.stringify(s,null,2));
+          NODE
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: clean-corpus-v4.11-db-ready-wave2
+          path: |
+            data/audits/v4-11-wave2/db-ready-wave2.jsonl
+            data/audits/v4-11-wave2/quarantine.jsonl
+            data/audits/v4-11-wave2/summary.json
+          retention-days: 30
