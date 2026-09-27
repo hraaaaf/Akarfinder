@@ -53,6 +53,8 @@ test("Search property selector reuses the same locked TARGET family as indexed r
   assert.match(selector, /getIndexedPropertyTypeVisual/);
   assert.match(selector, /visual\.targetAsset/);
   assert.match(selector, /data-property-visual-family/);
+  assert.match(quickFilters, /visualVariant="search-target"/);
+  assert.doesNotMatch(sellerForm, /visualVariant="search-target"/);
   for (const asset of [
     "/visuals/property-types/target/apartment.svg",
     "/visuals/property-types/target/villa.svg",

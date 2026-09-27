@@ -70,12 +70,16 @@ try {
             )
           : [];
 
-        if (mode === "after") {
+        if (mode === "after" && route.openFilters) {
           if (harmonizedCardCount !== 6) localFindings.push(`HARMONIZED_CARD_COUNT_${harmonizedCardCount}`);
           if (premiumImageCount !== 0) localFindings.push(`LEGACY_PREMIUM_SELECTOR_IMAGES_${premiumImageCount}`);
           if (backgrounds.some((value) => !value.includes("/visuals/property-types/target/"))) {
             localFindings.push("NON_TARGET_SELECTOR_ASSET");
           }
+        }
+        if (mode === "after" && !route.openFilters) {
+          if (harmonizedCardCount !== 0) localFindings.push(`SELLER_TARGET_ART_LEAK_${harmonizedCardCount}`);
+          if (premiumImageCount < 5) localFindings.push(`SELLER_OPTION_A_IMAGES_${premiumImageCount}`);
         }
 
         const screenshot = `${route.name}-${viewport.name}.png`;
