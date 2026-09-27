@@ -148,7 +148,7 @@
 
   [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"])
     [data-p4-map-decision-rail][data-vivre-ici-tab="local"] {
-    max-height: min(54svh, 460px) !important;
+    max-height: min(44svh, 420px) !important;
     overflow-y: auto !important;
   }
 
@@ -274,7 +274,7 @@
 @media (min-width: 768px) and (max-width: 1023px) {
   [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]):has([data-maplibre-spike][data-maplibre-district="maarif"])
     [data-p4-map-decision-rail][data-vivre-ici-tab="local"] {
-    max-height: min(54svh, 460px) !important;
+    max-height: min(44svh, 420px) !important;
     overflow-y: auto !important;
   }
 }
