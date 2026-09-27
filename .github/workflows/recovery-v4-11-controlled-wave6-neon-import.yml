@@ -1,0 +1,217 @@
+name: Recovery V4.11 Controlled Wave6 Neon Import
+
+on:
+  push:
+    branches: ["recovery/v4-11-freeze-wave6-20260927"]
+    paths:
+      - "data/recovery/v4-11-wave6-import-approval.json"
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: recovery-v4-11-controlled-wave6-neon-import
+  cancel-in-progress: false
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    env:
+      DATABASE_URL: ${{ secrets.NEON_RECOVERY_DATABASE_URL }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Validate approval and isolated target
+        run: |
+          set -euo pipefail
+          test -n "${DATABASE_URL:-}"
+          node - <<'NODE'
+          const a=require("./data/recovery/v4-11-wave6-import-approval.json");
+          if(a.approved!==true||a.rows!==3769||a.artifact_id!==10932325027)throw new Error("approval");
+          if(a.jsonl_sha256!=="6aaf71aa6db38a726f033ec61e2e6640740f336e572e0e7ffcd54711f55cfb1c")throw new Error("sha");
+          if(a.target_project!=="ancient-violet-43534870"||a.target_branch!=="br-cold-mouse-b2a50yaa"||a.target_database!=="AkarFinder")throw new Error("target");
+          NODE
+          python - <<'PY'
+          import os,urllib.parse
+          h=urllib.parse.urlparse(os.environ["DATABASE_URL"]).hostname
+          allowed={
+            "ep-falling-unit-b2hper1a.c-6.eu-central-1.aws.neon.tech",
+            "ep-falling-unit-b2hper1a-pooler.c-6.eu-central-1.aws.neon.tech",
+            "ep-falling-unit-b2hper1a-d1j.c-6.eu-central-1.aws.neon.tech",
+            "ep-falling-unit-b2hper1a-d1j-pooler.c-6.eu-central-1.aws.neon.tech",
+          }
+          if h not in allowed: raise SystemExit("refusing unexpected Neon host")
+          PY
+
+      - name: Download and verify certified artifact
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/w6"
+          gh api repos/${{ github.repository }}/actions/artifacts/10932325027/zip > "$RUNNER_TEMP/w6.zip"
+          unzip -q -o "$RUNNER_TEMP/w6.zip" -d "$RUNNER_TEMP/w6"
+          echo "6aaf71aa6db38a726f033ec61e2e6640740f336e572e0e7ffcd54711f55cfb1c  $RUNNER_TEMP/w6/db-ready-wave6.jsonl" | sha256sum -c -
+          test "$(wc -l < "$RUNNER_TEMP/w6/db-ready-wave6.jsonl")" = "3769"
+
+      - name: Build import CSV
+        run: |
+          node - "$RUNNER_TEMP/w6/db-ready-wave6.jsonl" "$RUNNER_TEMP/w6/import.csv" <<'NODE'
+          const fs=require("fs");
+          const [src,out]=process.argv.slice(2);
+          const rows=fs.readFileSync(src,"utf8").split(/\r?\n/).filter(Boolean).map(JSON.parse);
+          const cols=["canonical_fingerprint","title","price_mad","city","district","property_type","transaction_type","surface_m2","rooms_count","bedrooms_count","bathrooms_count","description_snippet","images_count","seller_name","data_completeness_score","field_confidence","source_name","listing_url","source_url","first_seen_at","last_seen_at","source_offer_key","origin_type","compliance_status","content_fingerprint","ingestion_run_id","displayed_price","price_currency","price_period","price_status"];
+          const esc=v=>{if(v===null||v===undefined)return "";const s=typeof v==="object"?JSON.stringify(v):String(v);return /[",\n\r]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s};
+          if(rows.length!==3769||rows.some(r=>r.approved_for_import!==false))throw new Error("artifact invariant");
+          if(new Set(rows.map(r=>r.listing_url)).size!==3769||new Set(rows.map(r=>r.canonical_fingerprint)).size!==3769)throw new Error("dedupe invariant");
+          fs.writeFileSync(out,cols.join(",")+"\n"+rows.map(r=>cols.map(c=>esc(r[c])).join(",")).join("\n")+"\n");
+          NODE
+
+      - name: Preflight current DB and overlaps
+        run: |
+          set -euo pipefail
+          cat > "$RUNNER_TEMP/w6/preflight.sql" <<'SQL'
+          DROP TABLE IF EXISTS stage_w6;
+          CREATE TEMP TABLE stage_w6 (
+            canonical_fingerprint text NOT NULL,title text NOT NULL,price_mad integer,city text NOT NULL,district text,
+            property_type text NOT NULL,transaction_type text NOT NULL,surface_m2 integer,rooms_count integer,
+            bedrooms_count integer,bathrooms_count integer,description_snippet text,images_count integer,seller_name text,
+            data_completeness_score integer,field_confidence jsonb,source_name text NOT NULL,listing_url text NOT NULL,
+            source_url text,first_seen_at timestamptz,last_seen_at timestamptz,source_offer_key text,origin_type text,
+            compliance_status text,content_fingerprint text,ingestion_run_id text,displayed_price numeric,
+            price_currency text,price_period text,price_status text
+          );
+          \copy stage_w6 FROM '/w6/import.csv' WITH (FORMAT csv, HEADER true)
+          SELECT
+            (SELECT count(*) FROM stage_w6),
+            (SELECT count(*) FROM stage_w6 s JOIN public.listing_sources ls ON ls.listing_url=s.listing_url),
+            (SELECT count(*) FROM stage_w6 s JOIN public.property_listings pl ON pl.canonical_fingerprint=s.canonical_fingerprint),
+            (SELECT count(*) FROM public.property_listings),
+            (SELECT count(*) FROM public.listing_sources),
+            (SELECT count(*) FROM public.listing_sources WHERE ingestion_run_id='clean-corpus-v4.11-wave6');
+          DROP TABLE stage_w6;
+          SQL
+          docker run --rm -e DATABASE_URL="$DATABASE_URL" -v "$RUNNER_TEMP/w6:/w6" postgres:17 sh -lc 'psql "$DATABASE_URL" -X -qAt -F "|" -v ON_ERROR_STOP=1 -f /w6/preflight.sql' | tee "$RUNNER_TEMP/w6/preflight.out"
+          LAST="$(grep -E '^[0-9]+\|' "$RUNNER_TEMP/w6/preflight.out" | tail -n1)"
+          IFS='|' read -r STAGED URL_OVERLAP FP_OVERLAP PRE_PL PRE_LS PRE_W6 <<< "$LAST"
+          test "$STAGED" = "3769"
+          test "$PRE_PL" = "95937"
+          test "$PRE_LS" = "95937"
+          test "$PRE_W6" = "0"
+          echo "wave6 preflight overlaps: url=$URL_OVERLAP fp=$FP_OVERLAP"
+
+      - name: Controlled atomic import
+        run: |
+          set -euo pipefail
+          cat > "$RUNNER_TEMP/w6/import.sql" <<'SQL'
+          DROP TABLE IF EXISTS stage_w6;
+          DROP TABLE IF EXISTS legacy_overlap_w6;
+          DROP TABLE IF EXISTS stage_new_w6;
+          BEGIN;
+          CREATE TEMP TABLE stage_w6 (
+            canonical_fingerprint text NOT NULL,title text NOT NULL,price_mad integer,city text NOT NULL,district text,
+            property_type text NOT NULL,transaction_type text NOT NULL,surface_m2 integer,rooms_count integer,
+            bedrooms_count integer,bathrooms_count integer,description_snippet text,images_count integer,seller_name text,
+            data_completeness_score integer,field_confidence jsonb,source_name text NOT NULL,listing_url text NOT NULL,
+            source_url text,first_seen_at timestamptz,last_seen_at timestamptz,source_offer_key text,origin_type text,
+            compliance_status text,content_fingerprint text,ingestion_run_id text,displayed_price numeric,
+            price_currency text,price_period text,price_status text
+          ) ON COMMIT DROP;
+          \copy stage_w6 FROM '/w6/import.csv' WITH (FORMAT csv, HEADER true)
+
+          CREATE TEMP TABLE legacy_overlap_w6 AS
+          SELECT s.*,ls.id AS existing_source_id,ls.property_listing_id AS existing_property_id
+          FROM stage_w6 s JOIN public.listing_sources ls ON ls.listing_url=s.listing_url;
+
+          DO $$
+          BEGIN
+            IF EXISTS (
+              SELECT 1 FROM legacy_overlap_w6 o
+              WHERE (SELECT count(*) FROM public.listing_sources x WHERE x.property_listing_id=o.existing_property_id) <> 1
+            ) THEN RAISE EXCEPTION 'overlap property has multiple sources'; END IF;
+            IF EXISTS (
+              SELECT 1 FROM legacy_overlap_w6 o
+              JOIN public.property_listings p ON p.id=o.existing_property_id
+              WHERE EXISTS (
+                SELECT 1 FROM public.property_listings q
+                WHERE q.canonical_fingerprint=o.canonical_fingerprint AND q.id<>p.id
+              )
+            ) THEN RAISE EXCEPTION 'target fingerprint belongs to another property'; END IF;
+            IF EXISTS (
+              SELECT 1 FROM stage_w6 s
+              JOIN public.property_listings p ON p.canonical_fingerprint=s.canonical_fingerprint
+              LEFT JOIN legacy_overlap_w6 o ON o.listing_url=s.listing_url
+              WHERE o.listing_url IS NULL
+            ) THEN RAISE EXCEPTION 'unexpected fingerprint-only overlap'; END IF;
+          END $$;
+
+          UPDATE public.property_listings p SET
+            canonical_fingerprint=o.canonical_fingerprint,title=o.title,price_mad=o.price_mad,city=o.city,
+            district=o.district,property_type=o.property_type,transaction_type=o.transaction_type,surface_m2=o.surface_m2,
+            rooms_count=o.rooms_count,bedrooms_count=o.bedrooms_count,bathrooms_count=o.bathrooms_count,
+            description_snippet=o.description_snippet,images_count=o.images_count,seller_name=o.seller_name,
+            data_completeness_score=o.data_completeness_score,field_confidence=o.field_confidence,updated_at=now()
+          FROM legacy_overlap_w6 o WHERE p.id=o.existing_property_id;
+
+          UPDATE public.listing_sources ls SET
+            source_name=o.source_name,source_url=o.source_url,first_seen_at=o.first_seen_at,last_seen_at=o.last_seen_at,
+            is_active=true,source_offer_key=o.source_offer_key,origin_type=o.origin_type,compliance_status=o.compliance_status,
+            content_fingerprint=o.content_fingerprint,ingestion_run_id=o.ingestion_run_id,displayed_price=o.displayed_price,
+            price_currency=o.price_currency,price_period=o.price_period,price_status=o.price_status
+          FROM legacy_overlap_w6 o WHERE ls.id=o.existing_source_id;
+
+          CREATE TEMP TABLE stage_new_w6 AS
+          SELECT s.* FROM stage_w6 s
+          WHERE NOT EXISTS (SELECT 1 FROM legacy_overlap_w6 o WHERE o.listing_url=s.listing_url);
+
+          INSERT INTO public.property_listings (
+            canonical_fingerprint,title,price_mad,city,district,property_type,transaction_type,surface_m2,rooms_count,
+            bedrooms_count,bathrooms_count,description_snippet,images_count,seller_name,data_completeness_score,field_confidence
+          )
+          SELECT canonical_fingerprint,title,price_mad,city,district,property_type,transaction_type,surface_m2,rooms_count,
+                 bedrooms_count,bathrooms_count,description_snippet,images_count,seller_name,data_completeness_score,field_confidence
+          FROM stage_new_w6;
+
+          INSERT INTO public.listing_sources (
+            property_listing_id,source_name,listing_url,source_url,first_seen_at,last_seen_at,is_active,source_offer_key,
+            origin_type,compliance_status,content_fingerprint,ingestion_run_id,displayed_price,price_currency,price_period,price_status
+          )
+          SELECT pl.id,s.source_name,s.listing_url,s.source_url,s.first_seen_at,s.last_seen_at,true,s.source_offer_key,
+                 s.origin_type,s.compliance_status,s.content_fingerprint,s.ingestion_run_id,s.displayed_price,
+                 s.price_currency,s.price_period,s.price_status
+          FROM stage_new_w6 s JOIN public.property_listings pl ON pl.canonical_fingerprint=s.canonical_fingerprint;
+
+          DO $$
+          DECLARE overlap_count bigint; expected_total bigint;
+          BEGIN
+            SELECT count(*) INTO overlap_count FROM legacy_overlap_w6;
+            expected_total := 95937 + 3769 - overlap_count;
+            IF (SELECT count(*) FROM public.property_listings) <> expected_total THEN RAISE EXCEPTION 'property total mismatch'; END IF;
+            IF (SELECT count(*) FROM public.listing_sources) <> expected_total THEN RAISE EXCEPTION 'source total mismatch'; END IF;
+            IF (SELECT count(*) FROM public.listing_sources WHERE ingestion_run_id='clean-corpus-v4.11-wave6') <> 3769
+              THEN RAISE EXCEPTION 'wave6 count mismatch'; END IF;
+            IF (
+              SELECT count(*) FROM stage_w6 s
+              JOIN public.listing_sources ls ON ls.listing_url=s.listing_url
+              JOIN public.property_listings pl ON pl.id=ls.property_listing_id
+              WHERE pl.canonical_fingerprint=s.canonical_fingerprint
+            ) <> 3769 THEN RAISE EXCEPTION 'wave6 presence mismatch'; END IF;
+          END $$;
+          COMMIT;
+          SQL
+          docker run --rm -e DATABASE_URL="$DATABASE_URL" -v "$RUNNER_TEMP/w6:/w6" postgres:17 sh -lc 'psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f /w6/import.sql'
+
+      - name: Independent readback
+        run: |
+          docker run --rm -e DATABASE_URL="$DATABASE_URL" postgres:17 sh -lc 'psql "$DATABASE_URL" -X -qAt -F "|" -v ON_ERROR_STOP=1 -c "
+            SELECT
+              (SELECT count(*) FROM public.property_listings),
+              (SELECT count(*) FROM public.listing_sources),
+              (SELECT count(*) FROM public.listing_sources WHERE ingestion_run_id='"'"'clean-corpus-v4.11-wave6'"'"'),
+              (SELECT count(DISTINCT listing_url) FROM public.listing_sources WHERE ingestion_run_id='"'"'clean-corpus-v4.11-wave6'"'"'),
+              (SELECT count(*) FROM public.listing_sources ls LEFT JOIN public.property_listings pl ON pl.id=ls.property_listing_id WHERE pl.id IS NULL);
+          "'
