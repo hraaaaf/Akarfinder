@@ -41,18 +41,29 @@ for(const r of rows){
     content_fingerprint:fp,ingestion_run_id:"clean-corpus-v4.11-wave9-new-sources",displayed_price:null,price_currency:null,price_period:null,price_status:"not_disclosed",approved_for_import:false
   });
 }
-const ids=new Set();
-for(const r of safe){const k=r.source_name+"|"+r.source_offer_key;if(ids.has(k))throw new Error("identity duplicate");ids.add(k)}
-if(new Set(safe.map(r=>r.listing_url)).size!==safe.length)throw new Error("url duplicate");
-if(new Set(safe.map(r=>r.canonical_fingerprint)).size!==safe.length)throw new Error("fp duplicate");
-const body=safe.map(JSON.stringify).join("\n")+(safe.length?"\n":"");
+const byIdentity=new Map(), identityConflicts=[];
+for(const r of safe){
+  const k=r.source_name+"|"+r.source_offer_key;
+  const prev=byIdentity.get(k);
+  if(!prev){byIdentity.set(k,r);continue}
+  const a=JSON.stringify([prev.city,prev.property_type,prev.transaction_type]);
+  const b=JSON.stringify([r.city,r.property_type,r.transaction_type]);
+  if(a!==b){identityConflicts.push({identity:k,urls:[prev.listing_url,r.listing_url],cores:[JSON.parse(a),JSON.parse(b)]});byIdentity.delete(k);continue}
+  if(r.listing_url.length<prev.listing_url.length || (r.listing_url.length===prev.listing_url.length && r.listing_url.localeCompare(prev.listing_url)<0)) byIdentity.set(k,r);
+}
+const deduped=[...byIdentity.values()];
+for(const x of identityConflicts)rejected.push({reason:"identity_core_conflict",...x});
+if(new Set(deduped.map(r=>r.listing_url)).size!==deduped.length)throw new Error("url duplicate");
+if(new Set(deduped.map(r=>r.canonical_fingerprint)).size!==deduped.length)throw new Error("fp duplicate");
+if(new Set(deduped.map(r=>r.source_name+"|"+r.source_offer_key)).size!==deduped.length)throw new Error("identity duplicate");
+const body=deduped.map(JSON.stringify).join("\n")+(deduped.length?"\n":"");
 const rej=rejected.map(JSON.stringify).join("\n")+(rejected.length?"\n":"");
 fs.writeFileSync(outDir+"/db-ready-wave9-new-sources.jsonl",body);
 fs.writeFileSync(outDir+"/rejected.jsonl",rej);
-const byDomain={};for(const r of safe)byDomain[r.source_name]=(byDomain[r.source_name]||0)+1;
+const byDomain={};for(const r of deduped)byDomain[r.source_name]=(byDomain[r.source_name]||0)+1;
 fs.writeFileSync(outDir+"/summary.json",JSON.stringify({
  schema_version:"akarfinder-v4.11-wave9-new-sources-route-20260927",
- input_rows:rows.length,db_ready_rows:safe.length,rejected_rows:rejected.length,by_domain:byDomain,
+ input_rows:rows.length,pre_identity_rows:safe.length,identity_collapsed_rows:safe.length-deduped.length-identityConflicts.length,identity_conflicts:identityConflicts.length,db_ready_rows:deduped.length,rejected_rows:rejected.length,by_domain:byDomain,
  output_sha256:sha(body),database_access:0,database_writes:0,production_neon_writes:0,approved_for_import_rows:0,vercel_deployment:false
 },null,2)+"\n");
 console.log(JSON.stringify({ready:safe.length,rejected:rejected.length,byDomain},null,2));
