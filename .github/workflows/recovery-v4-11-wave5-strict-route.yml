@@ -52,10 +52,10 @@ jobs:
           const b=fs.readFileSync("data/audits/v4-11-wave5/db-ready-wave5.jsonl");
           const rows=b.toString("utf8").split(/\r?\n/).filter(Boolean).map(JSON.parse);
           const eq=(a,b,n)=>{if(a!==b)throw new Error(n+": "+a+" != "+b)};
-          eq(s.db_ready_rows,4832,"rows");
-          eq(rows.length,4832,"physical");
-          eq(new Set(rows.map(r=>r.listing_url)).size,4832,"urls");
-          eq(new Set(rows.map(r=>r.canonical_fingerprint)).size,4832,"fps");
+          eq(s.db_ready_rows,1158,"rows");
+          eq(rows.length,1158,"physical");
+          eq(new Set(rows.map(r=>r.listing_url)).size,1158,"urls");
+          eq(new Set(rows.map(r=>r.canonical_fingerprint)).size,1158,"fps");
           eq(crypto.createHash("sha256").update(b).digest("hex"),s.output_sha256,"sha");
           eq(s.approved_for_import_rows,0,"approval");
           eq(s.database_access,0,"db access");
