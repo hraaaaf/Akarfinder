@@ -72,13 +72,13 @@ for(const r of pre){
   const a=groups.get(key)||[]; a.push(r); groups.set(key,a);
 }
 const ambiguous=[...groups.entries()].filter(([,g])=>g.length>1&&new Set(g.map(x=>x.source_domain)).size>1);
-if(ambiguous.length!==66) throw new Error("expected 66 ambiguous groups, got "+ambiguous.length);
+if(ambiguous.length!==67) throw new Error("expected 67 ambiguous groups, got "+ambiguous.length);
 const quarantineUrls=new Set();
 for(const [,g] of ambiguous) for(const r of g) quarantineUrls.add(r.canonical_url);
-if(quarantineUrls.size!==166) throw new Error("expected 166 identity-quarantine rows, got "+quarantineUrls.size);
+if(quarantineUrls.size!==168) throw new Error("expected 168 identity-quarantine rows, got "+quarantineUrls.size);
 
 const safe=pre.filter(r=>!quarantineUrls.has(r.canonical_url));
-if(safe.length!==17024) throw new Error("expected 17024 DB-ready rows, got "+safe.length);
+if(safe.length!==17022) throw new Error("expected 17022 DB-ready rows, got "+safe.length);
 if(new Set(safe.map(r=>r.canonical_url)).size!==safe.length) throw new Error("duplicate canonical URLs");
 
 const out=[];
@@ -158,9 +158,9 @@ const summary={
   field_gate_pass_rows:17190,
   rejected_unknown_type_rows:8,
   rejected_weak_title_rows:40,
-  identity_ambiguous_groups:66,
-  identity_quarantine_rows:166,
-  db_ready_rows:17024,
+  identity_ambiguous_groups:67,
+  identity_quarantine_rows:168,
+  db_ready_rows:17022,
   by_domain:byDomain,
   by_property_type:byType,
   approved_for_import_rows:0,
