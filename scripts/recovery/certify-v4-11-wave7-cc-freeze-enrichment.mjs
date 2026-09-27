@@ -261,12 +261,13 @@ function buildRow({idKey,url,domain,ccRow,records,core,mode}){
 
 fs.mkdirSync(outDir,{recursive:true});
 
-const ccById=new Map(),ccUrls=new Set(),rejected=[];\nlet identitylessCcUrls=0;
+const ccById=new Map(),ccUrls=new Set(),rejected=[];
+let identitylessCcUrls=0;
 for(const [domain,file] of Object.entries(CC_FILES)){
   for(const raw of loadJsonl(path.join(ccDir,domain,file))){
     const url=canon(raw.canonical_url);
     const idKey=identity(url,domain);
-    if(!idKey)throw new Error("missing portal identity: "+url);
+    if(!idKey){identitylessCcUrls++;rejected.push({canonical_url:url,domain,reason:"missing_stable_portal_identity"});continue}
     if(ccUrls.has(url))throw new Error("duplicate CC URL: "+url);
     ccUrls.add(url);
     pushMap(ccById,idKey,{...raw,canonical_url:url,source_domain:domain,idKey});
@@ -385,7 +386,8 @@ const summary={
   commoncrawl_artifacts:CC_ARTIFACTS,
   source_freeze_artifact_id:10869399865,
   cc_rows:ccUrls.size,
-  cc_unique_identities:ccById.size,\n  identityless_cc_urls:identitylessCcUrls,
+  cc_unique_identities:ccById.size,
+  identityless_cc_urls:identitylessCcUrls,
   prior_target_identity_count:usedIds.size,
   prior_target_rows_by_domain:usedRowsByDomain,
   ...counters,
