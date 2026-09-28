@@ -1,0 +1,45 @@
+name: Recovery V4.11 Wave13 Route Shape Discovery
+
+on:
+  push:
+    branches: ["recovery/v4-11-wave7-cc-freeze-20260927"]
+    paths:
+      - "data/recovery/activate-v4-11-wave13-route-shape-discovery.txt"
+
+permissions:
+  contents: read
+
+jobs:
+  discover:
+    strategy:
+      fail-fast: false
+      matrix:
+        domain: ["dardar.ma","sekna.ma","nador.immo","maisonessaouira.com","essaouira.immo","proimmobilier.ma"]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      ROUTE_DISCOVERY_DOMAIN: ${{ matrix.domain }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Common Crawl route-shape discovery
+        run: npx tsx scripts/recovery/commoncrawl-route-shape-discovery.ts
+      - name: Enforce zero-write contract
+        run: |
+          node - <<'NODE'
+          const fs=require("fs");
+          const safe=process.env.ROUTE_DISCOVERY_DOMAIN.replace(/[^a-z0-9]+/gi,"-");
+          const s=JSON.parse(fs.readFileSync("data/audits/raw-results/route-discovery-"+safe+"-summary.json","utf8"));
+          if(s.database_access||s.database_writes||s.source_page_fetches||s.warc_downloads||s.approved_for_import_rows)throw new Error("safety");
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wave13-route-shape-${{ matrix.domain }}
+          path: |
+            data/audits/raw-results/route-discovery-*-samples.txt
+            data/audits/raw-results/route-discovery-*-summary.json
+          retention-days: 30
