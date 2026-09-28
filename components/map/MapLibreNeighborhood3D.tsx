@@ -712,6 +712,31 @@ export function MapLibreNeighborhood3D({
   }, [citySlug, districtSlug, districtLabel, center[0], center[1], desktopCameraOffset[0], desktopCameraOffset[1], boundaryGeometry, targetComposition, districtTone]);
 
   useEffect(() => {
+    const element = mapRef.current;
+    const map = mapInstanceRef.current;
+    if (!element || !map || !ready) return;
+
+    let frame = 0;
+    const syncSize = () => {
+      window.cancelAnimationFrame(frame);
+      frame = window.requestAnimationFrame(() => {
+        try { map.resize(); } catch { /* map may be disposing */ }
+      });
+    };
+
+    const observer = typeof ResizeObserver !== "undefined" ? new ResizeObserver(syncSize) : null;
+    observer?.observe(element);
+    window.addEventListener("resize", syncSize);
+    syncSize();
+
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener("resize", syncSize);
+      window.cancelAnimationFrame(frame);
+    };
+  }, [ready]);
+
+  useEffect(() => {
     const map = mapInstanceRef.current;
     if (
       !map
