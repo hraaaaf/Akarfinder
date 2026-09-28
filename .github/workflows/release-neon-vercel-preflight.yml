@@ -1,0 +1,34 @@
+name: Release Neon Vercel Preflight
+
+on:
+  push:
+    branches: ["release/neon-recovery-live-20260928"]
+    paths:
+      - "data/release/activate-vercel-preflight.txt"
+
+permissions:
+  contents: read
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Validate deploy credential
+        run: |
+          set -euo pipefail
+          test -n "$VERCEL_TOKEN"
+      - name: Link known project locally
+        run: |
+          mkdir -p .vercel
+          cat > .vercel/project.json <<'JSON'
+          {"orgId":"team_NNhXPDOIfjGNBcn253btpyk0","projectId":"prj_RCs2Ku5vex9cpABWnwaCjbuKrhhc"}
+          JSON
+      - name: Read production environment metadata
+        run: npx --yes vercel@latest env ls production --token="$VERCEL_TOKEN" --scope="achraf-benmoussa-s-projects"

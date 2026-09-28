@@ -185,13 +185,11 @@ export async function querySupabaseListingById(
     .limit(1)
     .single();
 
-  if (error || !data) {
-    if (error?.code !== "PGRST116") {
-      // PGRST116 = row not found — not an error worth logging
-      console.error("[supabase-listings] getById error:", error?.message);
-    }
-    return null;
+  if (error) {
+    if (error.code === "PGRST116") return null;
+    throw new Error(`[supabase-listings] getById failed: ${error.message}`);
   }
+  if (!data) return null;
 
   const typedRow = data as SupabaseListingRow;
   const resolvedSource = await resolveSingleListingSource(typedRow);
@@ -270,8 +268,7 @@ export async function querySupabaseListings(
   const { data, count, error } = await q;
 
   if (error) {
-    console.error("[supabase-listings] query error:", error.message);
-    return { listings: [], total: 0 };
+    throw new Error(`[supabase-listings] query failed: ${error.message}`);
   }
 
   const rows = (data ?? []) as SupabaseListingRow[];
@@ -340,6 +337,16 @@ export async function querySupabaseStats(): Promise<DbStats> {
       .not("duplicate_group_id", "is", null)
       .limit(5000),
   ]);
+
+  if (totalRes.error) {
+    throw new Error(`[supabase-listings] stats count failed: ${totalRes.error.message}`);
+  }
+  if (avgRes.error) {
+    throw new Error(`[supabase-listings] stats averages failed: ${avgRes.error.message}`);
+  }
+  if (dupRes.error) {
+    throw new Error(`[supabase-listings] stats duplicates failed: ${dupRes.error.message}`);
+  }
 
   const rows = avgRes.data ?? [];
   const avg_completeness =

@@ -1,0 +1,1 @@
+recertify Neon primary + Supabase backup architecture

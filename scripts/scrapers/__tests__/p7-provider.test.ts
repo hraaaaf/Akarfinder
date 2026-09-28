@@ -63,9 +63,18 @@ describe("P7 — DB provider detection", () => {
     });
   });
 
-  test("unknown value falls back to sqlite", () => {
+  test("returns neon when DATABASE_PROVIDER=neon", () => {
+    withEnv({ DATABASE_PROVIDER: "neon" }, () => {
+      assert.equal(getDbProvider(), "neon");
+    });
+  });
+
+  test("unsupported provider fails closed", () => {
     withEnv({ DATABASE_PROVIDER: "postgres" }, () => {
-      assert.equal(getDbProvider(), "sqlite");
+      assert.throws(
+        () => getDbProvider(),
+        /unsupported DATABASE_PROVIDER="postgres"/
+      );
     });
   });
 });
@@ -112,7 +121,7 @@ describe("P7 — Supabase configuration detection", () => {
 });
 
 describe("P7 — Fallback logic", () => {
-  test("when DATABASE_PROVIDER=supabase but env missing, stays on sqlite path", () => {
+  test("when DATABASE_PROVIDER=supabase but env missing, remains explicitly unconfigured", () => {
     withEnv(
       {
         DATABASE_PROVIDER: "supabase",
@@ -122,10 +131,10 @@ describe("P7 — Fallback logic", () => {
       () => {
         const provider = getDbProvider();
         const configured = isSupabaseConfigured();
-        // Routing: provider=supabase but !configured → lib/db/index.ts uses SQLite
+        // Fail-closed routing: an explicitly selected but unconfigured provider
+        // must not be silently reinterpreted as SQLite.
         assert.equal(provider, "supabase");
         assert.equal(configured, false);
-        // The useSupabase() function = provider === "supabase" && configured => false
         const useSupabase = provider === "supabase" && configured;
         assert.equal(useSupabase, false);
       }

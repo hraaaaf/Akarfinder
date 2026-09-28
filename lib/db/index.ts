@@ -1,22 +1,31 @@
-// Unified DB access layer — routes to SQLite or Supabase based on DATABASE_PROVIDER.
-//
-// IMPORTANT: db-listings (which imports node:sqlite) is loaded via dynamic import
-// so that node:sqlite is never resolved in Supabase mode. This makes the Supabase
-// path safe on Vercel even when running Node.js 20 (which lacks node:sqlite).
+// Unified DB access layer with explicit primary -> backup failover.
+// Production must declare both DATABASE_PROVIDER and, when desired,
+// DATABASE_BACKUP_PROVIDER. We never silently reinterpret an operational
+// provider failure as an empty database.
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import type {
   DbListingsQuery,
   DbListingsResult,
   DbStats,
+  DbListingRow,
 } from "@/lib/listings/db-listings";
-import type { DbListingRow } from "@/lib/listings/db-listings";
 import {
   querySupabaseListings,
   querySupabaseListingById,
   querySupabaseStats,
 } from "./supabase-listings";
-import { getDbProvider, isSupabaseConfigured } from "./provider";
+import {
+  getDbProviderChain,
+  isSupabaseConfigured,
+  isNeonConfigured,
+  type DbProvider,
+} from "./provider";
+import {
+  queryNeonListings,
+  queryNeonListingById,
+  queryNeonStats,
+} from "./neon-listings";
 
 export type { DbListingsQuery, DbListingsResult, DbStats, DbListingRow };
 
@@ -25,49 +34,93 @@ const SQLITE_DB_PATH = join(
   "scripts/scrapers/output/akarfinder.db"
 );
 
-function useSupabase(): boolean {
-  return getDbProvider() === "supabase" && isSupabaseConfigured();
+function providerConfigured(provider: DbProvider): boolean {
+  if (provider === "neon") return isNeonConfigured();
+  if (provider === "supabase") return isSupabaseConfigured();
+  return existsSync(SQLITE_DB_PATH);
 }
 
-// Logs the active DB provider — visible in Vercel Functions logs to diagnose
-// silent fallback to SQLite (which returns 0 rows on Vercel where the DB file
-// is absent).
-function logProvider(via: "supabase" | "sqlite" | "sqlite_fallback") {
-  const configured = isSupabaseConfigured();
-  const provider = getDbProvider();
-  console.log(`[db] provider=${provider} supabase_configured=${configured} via=${via}`);
+function logAttempt(provider: DbProvider, role: "primary" | "backup") {
+  console.log(
+    `[db] role=${role} provider=${provider} configured=${providerConfigured(provider)}`
+  );
+}
+
+async function sqliteListings(query: DbListingsQuery) {
+  const { queryDbListings } = await import("@/lib/listings/db-listings");
+  return queryDbListings(query);
+}
+
+async function sqliteStats() {
+  const { queryDbStats } = await import("@/lib/listings/db-listings");
+  return queryDbStats();
+}
+
+async function sqliteListingById(id: string) {
+  const { getDbListingById } = await import("@/lib/listings/db-listings");
+  return getDbListingById(id);
 }
 
 export async function queryListings(
   query: DbListingsQuery = {}
 ): Promise<DbListingsResult> {
-  if (useSupabase()) {
-    logProvider("supabase");
-    try {
-      const result = await querySupabaseListings(query);
-      console.log(`[db] supabase returned ${result.listings.length}/${result.total} rows`);
-      return result;
-    } catch (err) {
-      console.error("[db] Supabase query failed, falling back to SQLite:", err);
+  const chain = getDbProviderChain();
+  let lastError: unknown = null;
+
+  for (let i = 0; i < chain.length; i++) {
+    const provider = chain[i];
+    const role = i === 0 ? "primary" : "backup";
+    logAttempt(provider, role);
+
+    if (!providerConfigured(provider)) {
+      lastError = new Error(`[db] ${provider} is not configured`);
+      console.error(lastError);
+      continue;
     }
-  } else {
-    logProvider("sqlite");
+
+    try {
+      if (provider === "neon") return await queryNeonListings(query);
+      if (provider === "supabase") return await querySupabaseListings(query);
+      return await sqliteListings(query);
+    } catch (error) {
+      lastError = error;
+      console.error(`[db] ${provider} listings failed; trying next provider`, error);
+    }
   }
-  // Dynamic import: node:sqlite only loaded when this code path executes.
-  const { queryDbListings } = await import("@/lib/listings/db-listings");
-  return queryDbListings(query);
+
+  throw lastError instanceof Error
+    ? lastError
+    : new Error("[db] no configured listing provider available");
 }
 
 export async function queryStats(): Promise<DbStats> {
-  if (useSupabase()) {
+  const chain = getDbProviderChain();
+  let lastError: unknown = null;
+
+  for (let i = 0; i < chain.length; i++) {
+    const provider = chain[i];
+    const role = i === 0 ? "primary" : "backup";
+    logAttempt(provider, role);
+
+    if (!providerConfigured(provider)) {
+      lastError = new Error(`[db] ${provider} is not configured`);
+      console.error(lastError);
+      continue;
+    }
+
     try {
-      return await querySupabaseStats();
-    } catch (err) {
-      console.error("[db] Supabase stats failed, falling back to SQLite:", err);
+      if (provider === "neon") return await queryNeonStats();
+      if (provider === "supabase") return await querySupabaseStats();
+      return await sqliteStats();
+    } catch (error) {
+      lastError = error;
+      console.error(`[db] ${provider} stats failed; trying next provider`, error);
     }
   }
-  const { queryDbStats } = await import("@/lib/listings/db-listings");
-  return queryDbStats();
+
+  throw lastError instanceof Error
+    ? lastError
+    : new Error("[db] no configured stats provider available");
 }
 
 export async function queryListingById(
@@ -76,19 +129,35 @@ export async function queryListingById(
   const numericId = Number(id);
   if (!Number.isInteger(numericId) || numericId <= 0) return null;
 
-  if (useSupabase()) {
+  const chain = getDbProviderChain();
+  let lastError: unknown = null;
+
+  for (let i = 0; i < chain.length; i++) {
+    const provider = chain[i];
+    const role = i === 0 ? "primary" : "backup";
+    logAttempt(provider, role);
+
+    if (!providerConfigured(provider)) {
+      lastError = new Error(`[db] ${provider} is not configured`);
+      console.error(lastError);
+      continue;
+    }
+
     try {
-      return await querySupabaseListingById(numericId);
-    } catch (err) {
-      console.error("[db] Supabase getById failed, falling back to SQLite:", err);
+      if (provider === "neon") return await queryNeonListingById(numericId);
+      if (provider === "supabase") return await querySupabaseListingById(numericId);
+      return await sqliteListingById(id);
+    } catch (error) {
+      lastError = error;
+      console.error(`[db] ${provider} getById failed; trying next provider`, error);
     }
   }
-  const { getDbListingById } = await import("@/lib/listings/db-listings");
-  return getDbListingById(id);
+
+  throw lastError instanceof Error
+    ? lastError
+    : new Error("[db] no configured detail provider available");
 }
 
-// Synchronous — safe because in Supabase mode we never touch the file system.
 export function isAvailable(): boolean {
-  if (getDbProvider() === "supabase") return isSupabaseConfigured();
-  return existsSync(SQLITE_DB_PATH);
+  return getDbProviderChain().some(providerConfigured);
 }
