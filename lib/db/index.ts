@@ -16,7 +16,8 @@ import {
   querySupabaseListingById,
   querySupabaseStats,
 } from "./supabase-listings";
-import { getDbProvider, isSupabaseConfigured } from "./provider";
+import { getDbProvider, isSupabaseConfigured, isNeonConfigured } from "./provider";
+import { queryNeonListings, queryNeonListingById, queryNeonStats } from "./neon-listings";
 
 export type { DbListingsQuery, DbListingsResult, DbStats, DbListingRow };
 
@@ -28,11 +29,14 @@ const SQLITE_DB_PATH = join(
 function useSupabase(): boolean {
   return getDbProvider() === "supabase" && isSupabaseConfigured();
 }
+function useNeon(): boolean {
+  return getDbProvider() === "neon" && isNeonConfigured();
+}
 
 // Logs the active DB provider — visible in Vercel Functions logs to diagnose
 // silent fallback to SQLite (which returns 0 rows on Vercel where the DB file
 // is absent).
-function logProvider(via: "supabase" | "sqlite" | "sqlite_fallback") {
+function logProvider(via: "supabase" | "neon" | "sqlite" | "sqlite_fallback") {
   const configured = isSupabaseConfigured();
   const provider = getDbProvider();
   console.log(`[db] provider=${provider} supabase_configured=${configured} via=${via}`);
@@ -41,6 +45,16 @@ function logProvider(via: "supabase" | "sqlite" | "sqlite_fallback") {
 export async function queryListings(
   query: DbListingsQuery = {}
 ): Promise<DbListingsResult> {
+  if (useNeon()) {
+    logProvider("neon");
+    try {
+      const result = await queryNeonListings(query);
+      console.log(`[db] neon returned ${result.listings.length}/${result.total} rows`);
+      return result;
+    } catch (err) {
+      console.error("[db] Neon query failed, falling back:", err);
+    }
+  }
   if (useSupabase()) {
     logProvider("supabase");
     try {
@@ -50,15 +64,21 @@ export async function queryListings(
     } catch (err) {
       console.error("[db] Supabase query failed, falling back to SQLite:", err);
     }
-  } else {
-    logProvider("sqlite");
   }
+  logProvider("sqlite");
   // Dynamic import: node:sqlite only loaded when this code path executes.
   const { queryDbListings } = await import("@/lib/listings/db-listings");
   return queryDbListings(query);
 }
 
 export async function queryStats(): Promise<DbStats> {
+  if (useNeon()) {
+    try {
+      return await queryNeonStats();
+    } catch (err) {
+      console.error("[db] Neon stats failed, falling back:", err);
+    }
+  }
   if (useSupabase()) {
     try {
       return await querySupabaseStats();
@@ -76,6 +96,14 @@ export async function queryListingById(
   const numericId = Number(id);
   if (!Number.isInteger(numericId) || numericId <= 0) return null;
 
+  if (useNeon()) {
+    try {
+      return await queryNeonListingById(numericId);
+    } catch (err) {
+      console.error("[db] Neon getById failed, falling back:", err);
+    }
+  }
+
   if (useSupabase()) {
     try {
       return await querySupabaseListingById(numericId);
@@ -89,6 +117,7 @@ export async function queryListingById(
 
 // Synchronous — safe because in Supabase mode we never touch the file system.
 export function isAvailable(): boolean {
+  if (getDbProvider() === "neon") return isNeonConfigured();
   if (getDbProvider() === "supabase") return isSupabaseConfigured();
   return existsSync(SQLITE_DB_PATH);
 }
