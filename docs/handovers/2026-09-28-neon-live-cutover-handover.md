@@ -246,3 +246,20 @@ Next exact:
 3. Prove `/api/stats = 151900` and one real listing.
 4. Inspect Preview runtime logs.
 5. Stop at explicit production deployment authorization.
+
+
+## Preview redeploy proof — 2026-09-28
+
+- Preview configuration update: verified.
+- New Vercel deployment: `dpl_7H5ifiFxH4wvyc4CqpvWCx8JL8Pi`.
+- URL: `https://akarfinder-lkft0ooix-achraf-benmoussa-s-projects.vercel.app`.
+- Deployment target: `null` = Preview.
+- Source branch: `release/neon-recovery-live-20260928`.
+- Source product commit: `0c8c19fd93e06284b8fc02df16ad3dbf52b6743d`.
+- State at first direct check: `BUILDING`.
+- Production deployment: none.
+
+Next exact:
+1. Check this deployment again only after independent work.
+2. If READY, verify `/api/stats`, `/api/listings?limit=1`, and Preview runtime logs.
+3. Stop before any production deployment and request explicit authorization.
