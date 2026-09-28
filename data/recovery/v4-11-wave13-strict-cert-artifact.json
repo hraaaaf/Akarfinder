@@ -7,5 +7,6 @@
   "rows": 2968,
   "expected_pre": 149939,
   "database_writes_authorized": false,
-  "vercel_deployment_authorized": false
+  "vercel_deployment_authorized": false,
+  "preflight_workflow_commit": "81c387da03a5ecf135069717a1bf801e0066de72"
 }
