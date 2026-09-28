@@ -46,52 +46,48 @@ jobs:
 
           jq -r 'if type=="array" then map({id,key,type,target,gitBranch}) else {id,key,type,target,gitBranch} end' /tmp/vercel-env.json
 
-      - name: Assert source deployment is Preview
+      - name: Create exact-head Preview from Git source
+        id: deploy
         shell: bash
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
           set -euo pipefail
-          code="$(curl -sS -o /tmp/source-deployment.json -w '%{http_code}'             "https://api.vercel.com/v13/deployments/dpl_DgbWQGRaTnxNDZUGYPdHstpQrMJN?teamId=team_NNhXPDOIfjGNBcn253btpyk0"             -H "Authorization: Bearer $VERCEL_TOKEN")"
-          test "$code" -ge 200
-          test "$code" -lt 300
-          target="$(jq -r '.target // "preview"' /tmp/source-deployment.json)"
-          if [ "$target" != "preview" ]; then
-            echo "Refusing redeploy: source target is $target"
-            exit 1
-          fi
-          jq -r '{id,name,target,readyState,url}' /tmp/source-deployment.json
+          body="$(jq -nc             --arg ref "$GITHUB_REF_NAME"             --arg sha "$GITHUB_SHA"             '{
+              name:"akarfinder",
+              project:"prj_RCs2Ku5vex9cpABWnwaCjbuKrhhc",
+              gitSource:{
+                type:"github",
+                org:"hraaaaf",
+                repo:"Akarfinder",
+                ref:$ref,
+                sha:$sha
+              }
+            }')"
 
-      - name: Redeploy certified source as Preview via REST API
-        id: redeploy
-        shell: bash
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-        run: |
-          set -euo pipefail
-          body="$(jq -nc '{
-            name:"akarfinder",
-            project:"prj_RCs2Ku5vex9cpABWnwaCjbuKrhhc",
-            deploymentId:"dpl_DgbWQGRaTnxNDZUGYPdHstpQrMJN"
-          }')"
-
-          code="$(curl -sS -o /tmp/redeploy.json -w '%{http_code}'             -X POST             "https://api.vercel.com/v13/deployments?forceNew=1&teamId=team_NNhXPDOIfjGNBcn253btpyk0"             -H "Authorization: Bearer $VERCEL_TOKEN"             -H "Content-Type: application/json"             --data "$body")"
+          code="$(curl -sS -o /tmp/deploy.json -w '%{http_code}'             -X POST             "https://api.vercel.com/v13/deployments?forceNew=1&teamId=team_NNhXPDOIfjGNBcn253btpyk0"             -H "Authorization: Bearer $VERCEL_TOKEN"             -H "Content-Type: application/json"             --data "$body")"
 
           if [ "$code" -lt 200 ] || [ "$code" -ge 300 ]; then
-            echo "Vercel Preview redeploy failed with HTTP $code"
-            jq -r '{error, message}' /tmp/redeploy.json
+            echo "Vercel exact-head Preview creation failed with HTTP $code"
+            jq -r '{error, message}' /tmp/deploy.json
             exit 1
           fi
 
-          target="$(jq -r '.target // "preview"' /tmp/redeploy.json)"
+          target="$(jq -r '.target // "preview"' /tmp/deploy.json)"
           if [ "$target" != "preview" ]; then
-            echo "Unexpected deployment target: $target"
+            echo "Refusing unexpected deployment target: $target"
             exit 1
           fi
 
-          id="$(jq -r '.id' /tmp/redeploy.json)"
-          url="$(jq -r '.url' /tmp/redeploy.json)"
-          state="$(jq -r '.readyState // .status' /tmp/redeploy.json)"
+          response_sha="$(jq -r '.meta.githubCommitSha // empty' /tmp/deploy.json)"
+          if [ -n "$response_sha" ] && [ "$response_sha" != "$GITHUB_SHA" ]; then
+            echo "Exact-head mismatch: expected $GITHUB_SHA got $response_sha"
+            exit 1
+          fi
+
+          id="$(jq -r '.id' /tmp/deploy.json)"
+          url="$(jq -r '.url' /tmp/deploy.json)"
+          state="$(jq -r '.readyState // .status' /tmp/deploy.json)"
           test -n "$id"
           test "$id" != "null"
           test -n "$url"
@@ -101,17 +97,17 @@ jobs:
           echo "preview_url=https://$url" >> "$GITHUB_OUTPUT"
           echo "ready_state=$state" >> "$GITHUB_OUTPUT"
           {
+            echo "Exact HEAD: $GITHUB_SHA"
             echo "Preview deployment: $id"
             echo "Preview URL: https://$url"
             echo "Initial state: $state"
             echo "Target: preview"
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Report Preview creation
+      - name: Assert non-production intent
         shell: bash
         run: |
           set -euo pipefail
-          echo "Created Preview deployment without production target."
-          echo "Deployment: ${{ steps.redeploy.outputs.deployment_id }}"
-          echo "URL: ${{ steps.redeploy.outputs.preview_url }}"
-          echo "Initial state: ${{ steps.redeploy.outputs.ready_state }}"
+          echo "Created exact-head Preview deployment only."
+          echo "Deployment: ${{ steps.deploy.outputs.deployment_id }}"
+          echo "URL: ${{ steps.deploy.outputs.preview_url }}"
