@@ -92,6 +92,43 @@ function mutedLayerPaint(theme: string | undefined) {
   };
 }
 
+export function applyAkarFinderMoroccoBasemapTreatment(map: MapLibreMap): void {
+  for (const layer of map.getStyle().layers ?? []) {
+    const id = layer.id.toLowerCase();
+    try {
+      if (layer.type === "background") {
+        map.setPaintProperty(layer.id, "background-color", AKARFINDER_MOROCCO_MAP_NAVY);
+      } else if (layer.type === "fill" && /(water|ocean|river|lake)/.test(id)) {
+        map.setPaintProperty(layer.id, "fill-color", AKARFINDER_MOROCCO_TERRITORY_TONES[1]);
+        map.setPaintProperty(layer.id, "fill-opacity", 0.94);
+      } else if (layer.type === "fill" && /(park|landcover|landuse)/.test(id)) {
+        map.setPaintProperty(layer.id, "fill-color", AKARFINDER_MOROCCO_TERRITORY_TONES[3]);
+        map.setPaintProperty(layer.id, "fill-opacity", 0.52);
+      } else if (layer.type === "fill" && /building/.test(id)) {
+        map.setPaintProperty(layer.id, "fill-color", AKARFINDER_MOROCCO_TERRITORY_TONES[5]);
+        map.setPaintProperty(layer.id, "fill-opacity", 0.48);
+      } else if (layer.type === "line" && /(motorway|trunk|primary)/.test(id)) {
+        map.setPaintProperty(layer.id, "line-color", AKARFINDER_MOROCCO_TERRITORY_TONES[9]);
+        map.setPaintProperty(layer.id, "line-opacity", 0.68);
+      } else if (layer.type === "line" && /(road|street|highway)/.test(id)) {
+        map.setPaintProperty(layer.id, "line-color", AKARFINDER_MOROCCO_TERRITORY_TONES[7]);
+        map.setPaintProperty(layer.id, "line-opacity", 0.50);
+      } else if (layer.type === "symbol") {
+        map.setPaintProperty(layer.id, "text-color", "#DCEAF0");
+        map.setPaintProperty(layer.id, "text-opacity", 0.76);
+        if (map.getPaintProperty(layer.id, "icon-opacity") !== undefined) {
+          map.setPaintProperty(layer.id, "icon-opacity", 0.54);
+        }
+        if (map.getPaintProperty(layer.id, "text-halo-color") !== undefined) {
+          map.setPaintProperty(layer.id, "text-halo-color", AKARFINDER_MOROCCO_MAP_NAVY);
+        }
+      }
+    } catch {
+      // Third-party styles do not expose identical paint properties on every layer.
+    }
+  }
+}
+
 export function applyAkarFinderBasemapTreatment(map: MapLibreMap, theme?: string): void {
   const palette = mutedLayerPaint(theme);
   for (const layer of map.getStyle().layers ?? []) {
