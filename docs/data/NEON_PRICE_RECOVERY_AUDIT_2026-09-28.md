@@ -98,3 +98,39 @@ A regex-only repair can safely recover a first tranche of about **238** rows fro
 
 Reusable SQL:
 `scripts/data/neon-price-recovery-audit.sql`
+
+
+## Additional finding — existing non-NULL price corruption
+
+The audit also found that some existing non-NULL `price_mad` values are inconsistent with explicit price evidence in their own title/snippet.
+
+Comparable strict-evidence sample by source:
+- masaken.ma: 40 comparable, 25 mismatches (**62.5%**)
+- mubawab.ma: 137 comparable, 14 mismatches (**10.2%**)
+- 1immo.ma: 79 comparable, 8 mismatches (**10.1%**)
+- agenz.ma: 651 comparable, 8 mismatches (**1.2%**)
+- avito.ma: 319 comparable, 4 mismatches (**1.3%**)
+- mouldar.com: 47 comparable, 2 mismatches (**4.3%**)
+- domio.ma: 109 comparable, 1 mismatch (**0.9%**)
+
+This is not yet an estimate of whole-source corruption because only rows with one strict explicit amount are comparable. It is direct evidence that `price_mad IS NOT NULL` cannot automatically be treated as certified truth.
+
+### Masaken parser root cause
+
+Historical code in `price-extraction-v5-structured-cohort-audit.ts` parsed `price_raw` by deleting every non-digit character from the entire block. This can concatenate unrelated digits.
+
+Observed Neon mismatch pattern:
+- explicit `6 000 DH` -> stored `26 000`
+- explicit `1 700 DH` -> stored `21 700`
+- explicit `580 000 DH` -> stored `2 580 000`
+- explicit `1 260 000 DH` -> stored `21 260 000`
+
+Among the 25 strict Masaken mismatches, **23** exactly match the pattern `stored = "2" + explicit_amount`.
+
+The branch therefore includes a parser fix:
+- extract only numeric amounts immediately coupled to MAD/DH/DHS/dirham;
+- reject blocks containing multiple distinct explicit currency amounts;
+- preserve sale/rent lower-bound guards;
+- add regression tests for leading unrelated digits and ambiguous multi-price blocks.
+
+No Neon write is included in this branch.
