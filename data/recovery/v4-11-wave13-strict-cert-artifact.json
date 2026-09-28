@@ -1,0 +1,11 @@
+{
+  "schema_version": "akarfinder-v4.11-wave13-strict-cert-artifact-20260928",
+  "certification_run_id": 36419048044,
+  "artifact_id": 10968851094,
+  "artifact_digest": "sha256:101111b469f075812e4d1f7149aa9d7c79078c64d9168d456e3d2cb4564a0b2a",
+  "jsonl_sha256": "ffbee63fefd6343cde056640758966c2d6751ff0aeac28df5ab15a7e894b103a",
+  "rows": 2968,
+  "expected_pre": 149939,
+  "database_writes_authorized": false,
+  "vercel_deployment_authorized": false
+}
