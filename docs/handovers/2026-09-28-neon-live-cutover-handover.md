@@ -204,3 +204,24 @@ Supabase has RLS-disabled tables flagged by the connector:
 - `minimal_live_search_documents_v1`
 
 Do not auto-enable RLS without policy design. Handle as a separate security lot after Neon cutover.
+
+
+## Execution update — 2026-09-28
+
+The previous manual blocker is now superseded for the release preview.
+
+- PR #1103 HEAD before preview-fix commit: `0bea4385cd612e0291f3bcd64813d9f89f95b091`.
+- Temporary preview-only workflow added in commit `f1b85af89c3d1ac6a2365abb1670ff8dc9faef8f`.
+- GitHub run `36475341286` → **SUCCESS**.
+- The workflow used existing encrypted repository secrets and did not expose the Neon connection string.
+- Vercel update scope: `target=["preview"]` and `gitBranch=release/neon-recovery-live-20260928`.
+- Production was not modified and no production deployment was performed.
+- This canonical-doc update intentionally creates a fresh branch commit after the env correction so the next Vercel preview is built with the corrected branch-specific Preview configuration.
+
+Next exact:
+1. Identify the fresh Vercel preview for this new HEAD.
+2. Verify deployment = READY.
+3. Verify `/api/stats` = **151900**.
+4. Verify `/api/listings?limit=1` returns a real listing.
+5. Inspect runtime logs for Neon errors.
+6. Stop at the explicit production deployment gate.
