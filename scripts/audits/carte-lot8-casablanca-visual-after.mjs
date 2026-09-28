@@ -72,8 +72,8 @@ try {
       if (!boundaryDisclosure?.includes("Arrondissement Maârif")) throw new Error(`${viewport.name}: arrondissement disclosure missing`);
       const boundaryBadge = page.locator(".maplibre-spike-boundary-badge");
       await boundaryBadge.waitFor({ state: "visible", timeout: 5000 });
-      if ((await boundaryBadge.textContent())?.trim() !== "Contour administratif") {
-        throw new Error(`${viewport.name}: visible administrative contour badge mismatch`);
+      if ((await boundaryBadge.textContent())?.trim() !== "Zone indicative") {
+        throw new Error(`${viewport.name}: visible indicative-zone badge mismatch`);
       }
       await highZoomTilesReady;
 
@@ -202,7 +202,7 @@ try {
         rtlStatus,
         boundarySemantic,
         boundaryDisclosure,
-        boundaryBadge: "Contour administratif",
+        boundaryBadge: "Zone indicative",
         localContextSource: localContext.source.mode,
         localAnchorCount: localContext.anchor_count,
         localAnchorNames: expectedLocalNames,

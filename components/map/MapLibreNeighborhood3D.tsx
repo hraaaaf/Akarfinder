@@ -998,8 +998,8 @@ export function MapLibreNeighborhood3D({
 
 
       {isMaarifTargetPilot && boundaryGeometry ? (
-        <div className="maplibre-spike-boundary-badge" aria-label="Nature du contour affiché">
-          Contour administratif
+        <div className="maplibre-spike-boundary-badge" aria-label="Zone de contexte indicative, pas une frontière de quartier">
+          Zone indicative
         </div>
       ) : null}
 
