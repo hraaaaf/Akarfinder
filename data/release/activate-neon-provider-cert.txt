@@ -1,1 +1,1 @@
-recertify Neon provider at current release HEAD after lockfile push fix
+recertify Neon primary + Supabase backup architecture
