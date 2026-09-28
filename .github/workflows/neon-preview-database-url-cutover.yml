@@ -72,8 +72,7 @@ jobs:
           body="$(jq -nc '{
             name:"akarfinder",
             project:"prj_RCs2Ku5vex9cpABWnwaCjbuKrhhc",
-            deploymentId:"dpl_DgbWQGRaTnxNDZUGYPdHstpQrMJN",
-            target:null
+            deploymentId:"dpl_DgbWQGRaTnxNDZUGYPdHstpQrMJN"
           }')"
 
           code="$(curl -sS -o /tmp/redeploy.json -w '%{http_code}'             -X POST             "https://api.vercel.com/v13/deployments?forceNew=1&teamId=team_NNhXPDOIfjGNBcn253btpyk0"             -H "Authorization: Bearer $VERCEL_TOKEN"             -H "Content-Type: application/json"             --data "$body")"
