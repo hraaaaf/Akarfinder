@@ -49,6 +49,7 @@ jobs:
           node - "$RUNNER_TEMP/merge/recovery-identities.jsonl" data/audits/v4-11-prod-merge-preflight <<'NODE'
           const fs=require("fs");
           const {createClient}=require("@supabase/supabase-js");
+          async function main(){
           const [src,outDir]=process.argv.slice(2);
           const sb=createClient(process.env.SUPABASE_URL,process.env.SUPABASE_SERVICE_ROLE_KEY,{auth:{persistSession:false,autoRefreshToken:false}});
           const recovery=fs.readFileSync(src,"utf8").trim().split(/\n/).filter(Boolean).map(JSON.parse);
@@ -78,6 +79,8 @@ jobs:
           fs.writeFileSync(outDir+"/summary.json",JSON.stringify(summary,null,2)+"\n");
           fs.writeFileSync(outDir+"/candidate-identities.jsonl",candidate.map(JSON.stringify).join("\n")+(candidate.length?"\n":""));
           console.log(JSON.stringify(summary,null,2));
+          }
+          main().catch(e=>{console.error(e);process.exit(1)});
           NODE
 
       - uses: actions/upload-artifact@v4
