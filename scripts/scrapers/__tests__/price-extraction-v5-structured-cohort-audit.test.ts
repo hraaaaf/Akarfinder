@@ -36,3 +36,33 @@ test("per-m2 price is rejected", () => {
   const html = page("https://mubawab.ma/fr/a/8322921/nouveau-slug", '<div class="price">8 500 DH / m²</div>');
   assert.equal(auditStructuredCohortHtml(html, base).amount, null);
 });
+
+test("structured price ignores unrelated leading digits instead of concatenating them", () => {
+  const html = page(
+    "https://mubawab.ma/fr/a/8322921/nouveau-slug",
+    '<div class="price">2 chambres · 6 000 DH</div>',
+  );
+  assert.equal(auditStructuredCohortHtml(html, base).amount, 6000);
+});
+
+test("structured price fails closed when one price block contains multiple distinct MAD amounts", () => {
+  const html = page(
+    "https://mubawab.ma/fr/a/8322921/nouveau-slug",
+    '<div class="price">Loyer 6 000 DH · caution 12 000 DH</div>',
+  );
+  assert.equal(auditStructuredCohortHtml(html, base).amount, null);
+});
+
+test("structured price accepts compact and dashed currency forms without digit concatenation", () => {
+  const compact = page(
+    "https://mubawab.ma/fr/a/8322921/nouveau-slug",
+    '<div class="price">Loyer 1450000 Dhs</div>',
+  );
+  assert.equal(auditStructuredCohortHtml(compact, { ...base, normalized_intent: "sale" }).amount, 1_450_000);
+
+  const dashed = page(
+    "https://mubawab.ma/fr/a/8322921/nouveau-slug",
+    '<div class="price">Prix 3 050 000 - DH</div>',
+  );
+  assert.equal(auditStructuredCohortHtml(dashed, { ...base, normalized_intent: "sale" }).amount, 3_050_000);
+});
