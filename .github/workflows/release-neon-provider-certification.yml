@@ -1,0 +1,54 @@
+name: Release Neon Provider Certification
+
+on:
+  push:
+    branches: ["release/neon-recovery-live-20260928"]
+    paths:
+      - "data/release/activate-neon-provider-cert.txt"
+
+permissions:
+  contents: write
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      DATABASE_PROVIDER: neon
+      DATABASE_URL: ${{ secrets.NEON_RECOVERY_DATABASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Refresh lockfile
+        run: npm install --package-lock-only --ignore-scripts
+      - name: Install
+        run: npm ci
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Targeted DB/API tests
+        run: npx tsx --test scripts/scrapers/__tests__/api.test.ts scripts/scrapers/__tests__/p9-search.test.ts scripts/scrapers/__tests__/map-db-listing-null-price.test.ts
+      - name: Build
+        run: npm run build
+      - name: Neon smoke
+        run: |
+          node - <<'NODE'
+          const { neon }=require("@neondatabase/serverless");
+          (async()=>{
+            const sql=neon(process.env.DATABASE_URL);
+            const r=await sql`select (select count(*)::int from property_listings) properties,(select count(*)::int from listing_sources) sources`;
+            if(r[0].properties!==151900||r[0].sources!==151900)throw new Error(JSON.stringify(r[0]));
+            console.log(JSON.stringify(r[0]));
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+      - name: Commit lockfile
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- package-lock.json; then exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package-lock.json
+          git commit -m "build: lock Neon serverless driver"
+          git push
