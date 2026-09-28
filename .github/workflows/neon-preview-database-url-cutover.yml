@@ -46,28 +46,73 @@ jobs:
 
           jq -r 'if type=="array" then map({id,key,type,target,gitBranch}) else {id,key,type,target,gitBranch} end' /tmp/vercel-env.json
 
-      - name: Checkout release HEAD
-        uses: actions/checkout@v4
-
-      - name: Deploy Preview only
-        id: deploy
+      - name: Assert source deployment is Preview
         shell: bash
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: team_NNhXPDOIfjGNBcn253btpyk0
-          VERCEL_PROJECT_ID: prj_RCs2Ku5vex9cpABWnwaCjbuKrhhc
         run: |
           set -euo pipefail
-          test -n "$VERCEL_TOKEN"
-          npx --yes vercel@54.18.7 deploy             --yes             --force             --token "$VERCEL_TOKEN"             -T "$VERCEL_ORG_ID"             --project "$VERCEL_PROJECT_ID"             2>&1 | tee /tmp/vercel-deploy.log
-          url="$(grep -Eo 'https://[^[:space:]]+\.vercel\.app' /tmp/vercel-deploy.log | tail -n 1)"
-          test -n "$url"
-          echo "preview_url=$url" >> "$GITHUB_OUTPUT"
-          echo "Preview URL: $url" >> "$GITHUB_STEP_SUMMARY"
+          code="$(curl -sS -o /tmp/source-deployment.json -w '%{http_code}'             "https://api.vercel.com/v13/deployments/dpl_DgbWQGRaTnxNDZUGYPdHstpQrMJN?teamId=team_NNhXPDOIfjGNBcn253btpyk0"             -H "Authorization: Bearer $VERCEL_TOKEN")"
+          test "$code" -ge 200
+          test "$code" -lt 300
+          target="$(jq -r '.target // "preview"' /tmp/source-deployment.json)"
+          if [ "$target" != "preview" ]; then
+            echo "Refusing redeploy: source target is $target"
+            exit 1
+          fi
+          jq -r '{id,name,target,readyState,url}' /tmp/source-deployment.json
 
-      - name: Assert non-production deployment intent
+      - name: Redeploy certified source as Preview via REST API
+        id: redeploy
+        shell: bash
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          set -euo pipefail
+          body="$(jq -nc '{
+            name:"akarfinder",
+            project:"prj_RCs2Ku5vex9cpABWnwaCjbuKrhhc",
+            deploymentId:"dpl_DgbWQGRaTnxNDZUGYPdHstpQrMJN",
+            target:null
+          }')"
+
+          code="$(curl -sS -o /tmp/redeploy.json -w '%{http_code}'             -X POST             "https://api.vercel.com/v13/deployments?forceNew=1&teamId=team_NNhXPDOIfjGNBcn253btpyk0"             -H "Authorization: Bearer $VERCEL_TOKEN"             -H "Content-Type: application/json"             --data "$body")"
+
+          if [ "$code" -lt 200 ] || [ "$code" -ge 300 ]; then
+            echo "Vercel Preview redeploy failed with HTTP $code"
+            jq -r '{error, message}' /tmp/redeploy.json
+            exit 1
+          fi
+
+          target="$(jq -r '.target // "preview"' /tmp/redeploy.json)"
+          if [ "$target" != "preview" ]; then
+            echo "Unexpected deployment target: $target"
+            exit 1
+          fi
+
+          id="$(jq -r '.id' /tmp/redeploy.json)"
+          url="$(jq -r '.url' /tmp/redeploy.json)"
+          state="$(jq -r '.readyState // .status' /tmp/redeploy.json)"
+          test -n "$id"
+          test "$id" != "null"
+          test -n "$url"
+          test "$url" != "null"
+
+          echo "deployment_id=$id" >> "$GITHUB_OUTPUT"
+          echo "preview_url=https://$url" >> "$GITHUB_OUTPUT"
+          echo "ready_state=$state" >> "$GITHUB_OUTPUT"
+          {
+            echo "Preview deployment: $id"
+            echo "Preview URL: https://$url"
+            echo "Initial state: $state"
+            echo "Target: preview"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Report Preview creation
         shell: bash
         run: |
           set -euo pipefail
-          echo "Preview deployment completed without --prod."
-          echo "URL: ${{ steps.deploy.outputs.preview_url }}"
+          echo "Created Preview deployment without production target."
+          echo "Deployment: ${{ steps.redeploy.outputs.deployment_id }}"
+          echo "URL: ${{ steps.redeploy.outputs.preview_url }}"
+          echo "Initial state: ${{ steps.redeploy.outputs.ready_state }}"
