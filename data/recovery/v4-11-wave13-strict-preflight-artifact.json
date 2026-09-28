@@ -1,0 +1,13 @@
+{
+  "schema_version": "akarfinder-v4.11-wave13-strict-preflight-artifact-20260928",
+  "cert_artifact_id": 10968851094,
+  "cert_artifact_digest": "sha256:101111b469f075812e4d1f7149aa9d7c79078c64d9168d456e3d2cb4564a0b2a",
+  "cert_jsonl_sha256": "ffbee63fefd6343cde056640758966c2d6751ff0aeac28df5ab15a7e894b103a",
+  "preflight_run_id": 36421088963,
+  "preflight_artifact_id": 10968904731,
+  "preflight_artifact_digest": "sha256:b8d25441529fd59eabc6f60b27ae186b56e27136a8d879b6ac1073009df2a7c8",
+  "source_rows": 2968,
+  "expected_pre": 149939,
+  "database_writes_authorized": false,
+  "vercel_deployment_authorized": false
+}
