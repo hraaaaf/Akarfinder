@@ -804,10 +804,10 @@ export function MapLibreNeighborhood3D({
         type: "line",
         source: CONTEXT_FOOTPRINT_SOURCE_ID,
         paint: {
-          "line-color": "#d7edf4",
+          "line-color": AKARFINDER_MOROCCO_MAP_NAVY,
           "line-width": 9,
-          "line-opacity": 0.58,
-          "line-blur": 3.5,
+          "line-opacity": 0.72,
+          "line-blur": 1.2,
         },
       } as any, FOCUS_GLOW_LAYER_ID);
       map.addLayer({
@@ -815,9 +815,9 @@ export function MapLibreNeighborhood3D({
         type: "line",
         source: CONTEXT_FOOTPRINT_SOURCE_ID,
         paint: {
-          "line-color": AKARFINDER_MOROCCO_MAP_NAVY,
-          "line-width": 2.8,
-          "line-opacity": 0.94,
+          "line-color": "#D8F0ED",
+          "line-width": 3.2,
+          "line-opacity": 0.96,
           "line-blur": 0,
         },
       } as any, FOCUS_GLOW_LAYER_ID);
