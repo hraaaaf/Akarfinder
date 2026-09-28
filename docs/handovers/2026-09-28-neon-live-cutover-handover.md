@@ -225,3 +225,24 @@ Next exact:
 4. Verify `/api/listings?limit=1` returns a real listing.
 5. Inspect runtime logs for Neon errors.
 6. Stop at the explicit production deployment gate.
+
+
+## Execution update — explicit Preview deploy retry
+
+- Preview env upsert run `36475341286` remains **SUCCESS**.
+- OLD Preview BEFORE rechecked at 19:56 UTC:
+  - `/api/stats` → HTTP 503, `total_listings=0`;
+  - `/api/listings?limit=1` → HTTP 500, `source=neon`, 0 listing.
+- Explicit Preview deploy run `36475600860` failed only at Vercel CLI project retrieval. Secret validation, Preview DATABASE_URL upsert and checkout were all SUCCESS.
+- Exact CLI error: `Could not retrieve Project Settings`.
+- Corrective commit: `acdc590a1595dbcc1d9129b047493f70dc58b83a`.
+- Correction: explicit Vercel team + project scope; deployment command remains Preview-only and contains no `--prod`.
+- Retry run: `36475737422` — queued at last observation.
+- Production unchanged; no production deployment performed.
+
+Next exact:
+1. Read retry run `36475737422` once when necessary.
+2. If green, identify the resulting Preview and verify READY.
+3. Prove `/api/stats = 151900` and one real listing.
+4. Inspect Preview runtime logs.
+5. Stop at explicit production deployment authorization.
