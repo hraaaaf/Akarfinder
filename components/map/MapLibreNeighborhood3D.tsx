@@ -295,7 +295,7 @@ export function MapLibreNeighborhood3D({
                 const id = String(layer.id ?? "").toLowerCase();
                 try {
                   if (layer.type === "background") {
-                    map.setPaintProperty(layer.id, "background-color", "#f4f2ed");
+                    map.setPaintProperty(layer.id, "background-color", AKARFINDER_MOROCCO_MAP_NAVY);
                   }
                   if (
                     (layer.type === "fill" && /(water|ocean|sea|building|park|landuse|landcover)/.test(id))
@@ -346,9 +346,9 @@ export function MapLibreNeighborhood3D({
                       + Math.cos(tau * ((7 * nx) - (13 * ny)))
                     ) * 0.45;
                     const delta = waveA + waveB + waveC + foamLift + grain;
-                    data[index] = 62 + Math.round(delta * 0.74);
-                    data[index + 1] = 142 + Math.round(delta * 0.66);
-                    data[index + 2] = 185 + Math.round(delta * 0.60);
+                    data[index] = 32 + Math.round(delta * 0.42);
+                    data[index + 1] = 81 + Math.round(delta * 0.48);
+                    data[index + 2] = 107 + Math.round(delta * 0.52);
                     data[index + 3] = 255;
                   }
                 }
@@ -376,10 +376,10 @@ export function MapLibreNeighborhood3D({
                 paint: {
                   "fill-color": [
                     "match", ["get", "class"],
-                    "commercial", "#eeeae4",
-                    "retail", "#f0ebe5",
-                    "industrial", "#ece9e3",
-                    "#f2f0eb"
+                    "commercial", "#18435F",
+                    "retail", "#20516B",
+                    "industrial", "#113653",
+                    "#0B2847"
                   ],
                   "fill-opacity": 0.90,
                 },
@@ -392,7 +392,7 @@ export function MapLibreNeighborhood3D({
                 "source-layer": "landcover",
                 filter: ["match", ["get", "class"], ["grass", "wood"], true, false],
                 paint: {
-                  "fill-color": ["match", ["get", "class"], "wood", "#94bb7e", "#b5d694"],
+                  "fill-color": ["match", ["get", "class"], "wood", "#477C8D", "#376D82"],
                   "fill-opacity": 0.80,
                 },
               } as any);
@@ -404,9 +404,9 @@ export function MapLibreNeighborhood3D({
                 "source-layer": "landuse",
                 filter: ["match", ["get", "class"], ["park", "cemetery", "grass", "recreation_ground"], true, false],
                 paint: {
-                  "fill-color": "#acd08d",
+                  "fill-color": "#376D82",
                   "fill-opacity": 0.82,
-                  "fill-outline-color": "#94ba79",
+                  "fill-outline-color": "#588A98",
                 },
               } as any);
 
@@ -419,13 +419,13 @@ export function MapLibreNeighborhood3D({
                 paint: {
                   "fill-color": [
                     "interpolate", ["linear"], ["coalesce", ["get", "render_height"], 0],
-                    0, "#ddd9d2",
-                    12, "#d3d0c9",
-                    28, "#c7c6c1",
-                    60, "#bbc0bf"
+                    0, "#20516B",
+                    12, "#2A5F77",
+                    28, "#376D82",
+                    60, "#477C8D"
                   ],
                   "fill-opacity": ["interpolate", ["linear"], ["zoom"], 12.2, 0.80, 14.5, 0.96],
-                  "fill-outline-color": "#b0b7b3",
+                  "fill-outline-color": "#588A98",
                 },
               } as any);
 
@@ -444,11 +444,11 @@ export function MapLibreNeighborhood3D({
                 paint: {
                   "line-color": [
                     "match", ["get", "class"],
-                    "motorway", "#c3b9aa",
-                    "trunk", "#c7beb0",
-                    "primary", "#c3c5c1",
-                    "secondary", "#c9ceca",
-                    "#d2d6d3"
+                    "motorway", "#376D82",
+                    "trunk", "#376D82",
+                    "primary", "#2A5F77",
+                    "secondary", "#2A5F77",
+                    "#20516B"
                   ],
                   "line-opacity": 0.97,
                   "line-width": [
@@ -472,12 +472,12 @@ export function MapLibreNeighborhood3D({
                 paint: {
                   "line-color": [
                     "match", ["get", "class"],
-                    "motorway", "#e4d7c1",
-                    "trunk", "#e9dfcd",
-                    "primary", "#efe9df",
-                    "secondary", "#f4f0e8",
-                    "tertiary", "#fbfaf5",
-                    "#ffffff"
+                    "motorway", "#ADC6C7",
+                    "trunk", "#96B7BB",
+                    "primary", "#80A8AF",
+                    "secondary", "#6B99A4",
+                    "tertiary", "#588A98",
+                    "#477C8D"
                   ],
                   "line-opacity": 0.99,
                   "line-width": [
@@ -507,9 +507,9 @@ export function MapLibreNeighborhood3D({
                   "text-ignore-placement": false,
                 },
                 paint: {
-                  "text-color": "#3f4b56",
+                  "text-color": "#DCEAF0",
                   "text-opacity": 0.90,
-                  "text-halo-color": "rgba(255,255,255,0.97)",
+                  "text-halo-color": "rgba(7,27,51,0.96)",
                   "text-halo-width": 1.4,
                   "text-halo-blur": 0.12,
                 },
@@ -534,9 +534,9 @@ export function MapLibreNeighborhood3D({
                   "text-ignore-placement": false,
                 },
                 paint: {
-                  "text-color": "#616a72",
+                  "text-color": "#B9CED8",
                   "text-opacity": 0.62,
-                  "text-halo-color": "rgba(255,255,255,0.94)",
+                  "text-halo-color": "rgba(7,27,51,0.94)",
                   "text-halo-width": 1.0,
                   "text-halo-blur": 0.14,
                 },
@@ -548,7 +548,7 @@ export function MapLibreNeighborhood3D({
                 source,
                 "source-layer": "water",
                 paint: {
-                  "line-color": "#ffffff",
+                  "line-color": "#477C8D",
                   "line-opacity": 0.36,
                   "line-width": ["interpolate", ["linear"], ["zoom"], 11, 3.4, 14, 6.4],
                   "line-blur": 1.55,
@@ -565,7 +565,7 @@ export function MapLibreNeighborhood3D({
                   "line-join": "round",
                 },
                 paint: {
-                  "line-color": "#ffffff",
+                  "line-color": "#477C8D",
                   "line-opacity": 0.58,
                   "line-width": ["interpolate", ["linear"], ["zoom"], 11, 1.9, 14, 4.2],
                   "line-dasharray": [0.34, 0.24, 0.82, 0.38, 0.18, 0.28],
@@ -579,7 +579,7 @@ export function MapLibreNeighborhood3D({
                 source,
                 "source-layer": "water",
                 paint: {
-                  "line-color": "#f9fcff",
+                  "line-color": "#ADC6C7",
                   "line-opacity": 0.95,
                   "line-width": ["interpolate", ["linear"], ["zoom"], 11, 1.3, 14, 2.9],
                   "line-blur": 0.18,
@@ -647,7 +647,7 @@ export function MapLibreNeighborhood3D({
                 "circle-radius": 10,
                 "circle-color": AKARFINDER_MOROCCO_MAP_NAVY,
                 "circle-opacity": 0.96,
-                "circle-stroke-color": "#ffffff",
+                "circle-stroke-color": "#477C8D",
                 "circle-stroke-width": 4,
                 "circle-stroke-opacity": 0.98,
               },
