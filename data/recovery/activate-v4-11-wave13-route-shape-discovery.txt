@@ -1,1 +1,1 @@
-trigger Wave13 route-shape discovery after Wave12 closeout
+retry Wave13 route-shape discovery after async-main fix 1666408162a7c248fdc6ec616a0a58222b1d5a83
