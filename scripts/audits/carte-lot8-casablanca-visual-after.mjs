@@ -86,6 +86,7 @@ try {
       const layoutDiagnostics = await page.evaluate(() => {
         const layout = document.querySelector("[data-p4-map-layout]");
         const railElement = document.querySelector("[data-p4-map-decision-rail]");
+        const mapCanvasElement = document.querySelector("[data-p4-map-canvas]");
         const maplibreElement = document.querySelector("[data-maplibre-spike]");
         const layoutStyle = layout ? getComputedStyle(layout) : null;
         const railStyle = railElement ? getComputedStyle(railElement) : null;
@@ -95,6 +96,8 @@ try {
           visualViewportHeight: window.visualViewport?.height ?? null,
           maplibrePresent: Boolean(maplibreElement),
           layoutRect: rect(layout),
+          mapCanvasRect: rect(mapCanvasElement),
+          maplibreRect: rect(maplibreElement),
           railRect: rect(railElement),
           layout: layoutStyle ? {
             display: layoutStyle.display,
@@ -121,6 +124,14 @@ try {
       console.log(`${viewport.name}: layout diagnostics ${JSON.stringify(layoutDiagnostics)}`);
       if (panelBox.x < -1 || panelBox.x + panelBox.width > viewport.width + 1 || panelBox.y < -1 || panelBox.y + panelBox.height > viewport.height + 1) {
         throw new Error(`${viewport.name}: Vivre Ici rail escapes viewport ${JSON.stringify({ panelBox, layoutDiagnostics })}`);
+      }
+      if (
+        viewport.width <= 1023
+        && layoutDiagnostics.mapCanvasRect
+        && layoutDiagnostics.maplibreRect
+        && Math.abs(layoutDiagnostics.mapCanvasRect.height - layoutDiagnostics.maplibreRect.height) > 2
+      ) {
+        throw new Error(`${viewport.name}: MapLibre shell height diverges from responsive canvas ${JSON.stringify(layoutDiagnostics)}`);
       }
       if (await rail.getByRole("heading", { name: "Maârif", exact: true }).count() !== 1) throw new Error(`${viewport.name}: Maârif heading missing`);
       const searchLink = rail.getByRole("link", { name: /Voir les biens disponibles à Maârif/i });
