@@ -1,0 +1,9 @@
+{
+  "schema_version": "akarfinder-v4.11-wave12-major-portals-preflight-artifact-20260928",
+  "artifact_id": 10963485199,
+  "artifact_digest": "sha256:bbc6653f67afaca2f02c08c78f52b404484eaa62626cb9ba6c6527167c326646",
+  "source_preflight_run_id": 36407464440,
+  "source_rows": 10867,
+  "observed": "10867|3051|3051|2276|142732|142732",
+  "database_writes_authorized": false
+}
