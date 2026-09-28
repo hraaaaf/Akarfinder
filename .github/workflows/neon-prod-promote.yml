@@ -10,21 +10,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Deploy exact checkout to Production via REST files
+      - name: Deploy exact checkout to Production via Vercel hash upload
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
           set -euo pipefail
           python3 - <<'PY'
-          import os,json,base64,subprocess
+          import os, json, hashlib, subprocess
           paths=subprocess.check_output(["git","ls-files","-z"]).split(b"\0")
           files=[]
+          by_sha={}
           for raw in paths:
               if not raw: continue
               p=raw.decode()
-              if p.startswith(".git/"): continue
+              if p.startswith(".github/") or p.startswith("docs/") or p.lower().endswith(".md"):
+                  continue
               data=open(p,"rb").read()
-              files.append({"file":p,"data":base64.b64encode(data).decode(),"encoding":"base64"})
+              sha=hashlib.sha1(data).hexdigest()
+              size=len(data)
+              files.append({"file":p,"sha":sha,"size":size})
+              by_sha.setdefault(sha,p)
           payload={
             "name":"akarfinder",
             "project":"prj_RCs2Ku5vex9cpABWnwaCjbuKrhhc",
@@ -39,11 +44,65 @@ jobs:
             }
           }
           open("/tmp/payload.json","w").write(json.dumps(payload,separators=(",",":")))
-          print("files",len(files),"bytes",os.path.getsize("/tmp/payload.json"))
+          open("/tmp/by_sha.json","w").write(json.dumps(by_sha))
+          print("manifest_files",len(files),"manifest_bytes",os.path.getsize("/tmp/payload.json"))
           PY
-          code=$(curl -sS -o /tmp/deploy -w "%{http_code}" -X POST \
-            -H "Authorization: Bearer $VERCEL_TOKEN" -H "Content-Type: application/json" \
-            "https://api.vercel.com/v13/deployments?teamId=team_NNhXPDOIfjGNBcn253btpyk0" \
-            --data-binary @/tmp/payload.json)
+
+          create() {
+            curl -sS -o /tmp/deploy -w "%{http_code}" -X POST \
+              -H "Authorization: Bearer $VERCEL_TOKEN" \
+              -H "Content-Type: application/json" \
+              "https://api.vercel.com/v13/deployments?teamId=team_NNhXPDOIfjGNBcn253btpyk0" \
+              --data-binary @/tmp/payload.json
+          }
+
+          code=$(create)
           cat /tmp/deploy | jq -c '{id,url,target,readyState,error}'
+
+          if [ "$code" != "200" ] && [ "$code" != "201" ]; then
+            err=$(jq -r '.error.code // empty' /tmp/deploy)
+            test "$err" = "missing_files"
+            jq -r '.error.missing[]' /tmp/deploy > /tmp/missing.txt
+            count=$(wc -l < /tmp/missing.txt | tr -d ' ')
+            echo "missing_blobs=$count"
+            python3 - <<'PY'
+          import os, json, pathlib, urllib.request, concurrent.futures
+          token=os.environ["VERCEL_TOKEN"]
+          by_sha=json.load(open("/tmp/by_sha.json"))
+          missing=[x.strip() for x in open("/tmp/missing.txt") if x.strip()]
+          url="https://api.vercel.com/v2/files?teamId=team_NNhXPDOIfjGNBcn253btpyk0"
+
+          def upload(sha):
+              p=by_sha.get(sha)
+              if not p:
+                  raise RuntimeError(f"Missing local path for digest {sha}")
+              data=pathlib.Path(p).read_bytes()
+              req=urllib.request.Request(
+                  url,data=data,method="POST",
+                  headers={
+                    "Authorization":f"Bearer {token}",
+                    "Content-Type":"application/octet-stream",
+                    "Content-Length":str(len(data)),
+                    "x-vercel-digest":sha,
+                  })
+              try:
+                  with urllib.request.urlopen(req,timeout=120) as r:
+                      if r.status not in (200,201):
+                          raise RuntimeError(f"{sha} {p} HTTP {r.status}")
+              except Exception as e:
+                  raise RuntimeError(f"upload failed {sha} {p}: {e}") from e
+              return sha
+
+          with concurrent.futures.ThreadPoolExecutor(max_workers=12) as ex:
+              done=0
+              for _ in ex.map(upload, missing):
+                  done+=1
+                  if done % 100 == 0 or done == len(missing):
+                      print(f"uploaded={done}/{len(missing)}")
+          PY
+            code=$(create)
+            cat /tmp/deploy | jq -c '{id,url,target,readyState,error}'
+          fi
+
           test "$code" = "200" -o "$code" = "201"
+          jq -e '.id and .url' /tmp/deploy >/dev/null
