@@ -333,3 +333,35 @@ Next exact:
 5. Verify runtime logs stay Neon with no provider errors.
 6. Do NOT deploy production without explicit user authorization.
 7. Before merge, remove/retire the temporary cutover workflow and recertify the final PR head.
+
+
+## Pre-production gate — 2026-09-28
+
+Verified Preview product proof:
+- deployment: `dpl_FCrVEz1B3eeTC2p4Hah9H6oZR44w`
+- alias: `https://akarfinder-git-release-neon-a33cbf-achraf-benmoussa-s-projects.vercel.app`
+- target: Preview
+- product SHA: `fdf768ed44d4e3bc4ea7f5f7c6ec38330fd337e5`
+- READY
+- `/api/stats` → HTTP 200, `total_listings=151900`
+- `/api/listings?limit=1` → HTTP 200, one real listing, `source=neon`, public total `36`
+- returned listing is policy-bounded `external_web_result` / `limited_preview` / `view_original` / `production_allowed=true`
+- aggregated runtime errors returned only the old broken Preview deployment `dpl_DgbWQGRaTnxNDZUGYPdHstpQrMJN`; detailed log retrieval timed out and is not claimed as proof.
+
+CI:
+- HEAD `cea009781941cd6a62adcc94d658a312ab3e88a4`: 11/11 observed workflows SUCCESS, including Canonical Baseline Validation, API regression, TypeScript and Production build.
+- temporary cutover workflow removed in `6383077d8bbcfb6da388d4e75797f2c03d0db283`.
+- diff from Preview product SHA to cleanup HEAD touches only:
+  - deleted temporary cutover workflow
+  - this handover
+  - provider contract test
+- no runtime app/lib file differs from the proven Preview product SHA.
+
+Production:
+- NOT deployed.
+- explicit user authorization is required before any Vercel production deployment.
+
+Next exact:
+1. Finish cleanup-HEAD CI evidence.
+2. If green, stop at production human gate.
+3. On explicit production authorization: deploy/promote production, verify live stats/listing/search, then merge PR #1103 and perform post-merge closeout.
