@@ -41,8 +41,8 @@ test("missing backup preserves single-provider behavior", () => {
   assert.deepEqual(getDbProviderChain(), ["supabase"]);
 });
 
-test("invalid primary remains fail-closed to historical sqlite default", () => {
+test("invalid primary configuration fails closed", () => {
   process.env.DATABASE_PROVIDER = "unexpected";
   process.env.DATABASE_BACKUP_PROVIDER = "supabase";
-  assert.deepEqual(getDbProviderChain(), ["sqlite", "supabase"]);
+  assert.throws(() => getDbProviderChain(), /unsupported DATABASE_PROVIDER/);
 });
