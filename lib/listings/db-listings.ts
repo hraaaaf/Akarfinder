@@ -71,6 +71,9 @@ export type DbListingsQuery = {
   min_surface?: number;
   max_surface?: number;
   bedrooms?: number;
+  // Internal server-side hint: restrict DB pagination to rows that may reach
+  // a public search surface. The application guard remains the final authority.
+  public_search_only?: boolean;
   limit?: number;
   offset?: number;
 };
