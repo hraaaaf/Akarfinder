@@ -22,6 +22,7 @@ import type { Topology, Objects } from "topojson-specification";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CanonicalCitySlug } from "@/lib/geo/geo-entity-registry";
 import { selectNationalCityVisibility } from "@/lib/geo/territory-national-visibility";
+import { AKARFINDER_MOROCCO_MAP_NAVY, AKARFINDER_MOROCCO_TERRITORY_TONES } from "@/lib/map/akarfinder-territorial-style";
 import { selectStableTerritoryLabels } from "@/lib/geo/territory-label-stability";
 
 interface QuartierStats {
@@ -68,26 +69,13 @@ type TooltipState = { title: string; subtitle?: string; x: number; y: number } |
 const MAP_WIDTH = 980;
 const MAP_HEIGHT = 680;
 const NATIONAL_ZOOM_ANCHOR: [number, number] = [MAP_WIDTH * 0.53, MAP_HEIGHT * 0.05];
-const NAVY = "#071B33";
+const NAVY = AKARFINDER_MOROCCO_MAP_NAVY;
 const TOPOLOGY_URLS = [
   "https://media.githubusercontent.com/media/wmgeolab/geoBoundaries/9469f09592ced973a3448cf66b6100b741b64c0d/releaseData/gbOpen/MAR/ADM1/geoBoundaries-MAR-ADM1.topojson",
   "https://www.geoboundaries.org/data/geoBoundaries-2_0_0/MAR/ADM1/geoBoundaries-2_0_0-MAR-ADM1.topojson",
 ] as const;
 
-const REGION_TONES = [
-  "#0B2847",
-  "#113653",
-  "#18435F",
-  "#20516B",
-  "#2A5F77",
-  "#376D82",
-  "#477C8D",
-  "#588A98",
-  "#6B99A4",
-  "#80A8AF",
-  "#96B7BB",
-  "#ADC6C7",
-] as const;
+const REGION_TONES = AKARFINDER_MOROCCO_TERRITORY_TONES;
 
 const normalizeName = (value: string) =>
   value
