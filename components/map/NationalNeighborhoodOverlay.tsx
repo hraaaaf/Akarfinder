@@ -167,6 +167,22 @@ export function NationalNeighborhoodOverlay({
     if (!map || !mapReady) return;
     removeLayers(map);
 
+    const basemapSymbolSnapshots = new Map<string, { textOpacity: unknown; iconOpacity: unknown }>();
+    if (citySlug === "casablanca" && administrativeAtlas) {
+      for (const layer of map.getStyle().layers ?? []) {
+        if (layer.type !== "symbol" || layer.id.startsWith("akarfinder-")) continue;
+        try {
+          const textOpacity = map.getPaintProperty(layer.id, "text-opacity");
+          const iconOpacity = map.getPaintProperty(layer.id, "icon-opacity");
+          basemapSymbolSnapshots.set(layer.id, { textOpacity, iconOpacity });
+          if (layer.layout?.["text-field"] !== undefined) map.setPaintProperty(layer.id, "text-opacity", 0.10);
+          if (layer.layout?.["icon-image"] !== undefined) map.setPaintProperty(layer.id, "icon-opacity", 0.02);
+        } catch {
+          // Third-party symbol layers may expose different paint contracts.
+        }
+      }
+    }
+
     if (administrativeAtlas) {
       const atlasData: GeoJSON.FeatureCollection = {
         type: "FeatureCollection",
@@ -227,8 +243,8 @@ export function NationalNeighborhoodOverlay({
         minzoom: 8.5,
         layout: {
           "text-field": ["get", "displayName"],
-          "text-size": ["interpolate", ["linear"], ["zoom"], 8.5, 10.5, 11.5, 13.5],
-          "text-letter-spacing": 0.03,
+          "text-size": ["interpolate", ["linear"], ["zoom"], 8.5, 12.5, 10.5, 15.5, 12, 17],
+          "text-letter-spacing": 0.045,
           "text-allow-overlap": false,
           "text-ignore-placement": false,
         },
@@ -252,6 +268,7 @@ export function NationalNeighborhoodOverlay({
       id: DOTS,
       type: "circle",
       source: SOURCE,
+      minzoom: citySlug === "casablanca" ? 11.8 : 0,
       paint: {
         "circle-radius": ["interpolate", ["linear"], ["zoom"], 8, 2.5, 12, 4.5],
         "circle-color": ACCENT,
@@ -279,7 +296,7 @@ export function NationalNeighborhoodOverlay({
       id: LABELS,
       type: "symbol",
       source: SOURCE,
-      minzoom: 9,
+      minzoom: citySlug === "casablanca" ? 11.3 : 9,
       layout: {
         "text-field": ["get", "name"],
         "text-size": ["interpolate", ["linear"], ["zoom"], 9, 9, 12, 11.5, 15, 13],
@@ -322,6 +339,7 @@ export function NationalNeighborhoodOverlay({
       };
     };
     const renderedSlug = (event: MapMouseEvent) => {
+      if (citySlug === "casablanca" && map.getZoom() < 11.3) return null;
       let nearestSlug: string | null = null;
       let nearestDistance = Infinity;
       for (const item of neighborhoods) {
@@ -380,6 +398,15 @@ export function NationalNeighborhoodOverlay({
       map.off("mousemove", onMove);
       map.off("click", onClick);
       map.getCanvas().removeEventListener("mouseleave", onLeave);
+      for (const [layerId, snapshot] of basemapSymbolSnapshots) {
+        if (!map.getLayer(layerId)) continue;
+        try {
+          map.setPaintProperty(layerId, "text-opacity", (snapshot.textOpacity ?? null) as never);
+          map.setPaintProperty(layerId, "icon-opacity", (snapshot.iconOpacity ?? null) as never);
+        } catch {
+          // Style teardown can remove properties before cleanup.
+        }
+      }
       if (map.getStyle()) removeLayers(map);
     };
   }, [administrativeAtlas, citySlug, map, mapReady, neighborhoods, onSelectDistrict, selectedAdministrative, theme]);
