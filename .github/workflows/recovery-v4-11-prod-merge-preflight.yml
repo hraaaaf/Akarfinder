@@ -1,0 +1,87 @@
+name: Recovery V4.11 Production Merge Preflight
+
+on:
+  push:
+    branches: ["recovery/v4-11-wave7-cc-freeze-20260927"]
+    paths:
+      - "data/recovery/activate-v4-11-prod-merge-preflight.txt"
+
+permissions:
+  contents: read
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      NEON_DATABASE_URL: ${{ secrets.NEON_RECOVERY_DATABASE_URL }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+
+      - name: Validate targets
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import os,urllib.parse
+          h=urllib.parse.urlparse(os.environ["NEON_DATABASE_URL"]).hostname
+          allowed={"ep-falling-unit-b2hper1a.c-6.eu-central-1.aws.neon.tech","ep-falling-unit-b2hper1a-pooler.c-6.eu-central-1.aws.neon.tech","ep-falling-unit-b2hper1a-d1j.c-6.eu-central-1.aws.neon.tech","ep-falling-unit-b2hper1a-d1j-pooler.c-6.eu-central-1.aws.neon.tech"}
+          if h not in allowed: raise SystemExit("unexpected Neon host")
+          if urllib.parse.urlparse(os.environ["SUPABASE_URL"]).hostname!="kusfiyimwvxblvsrhaes.supabase.co":
+              raise SystemExit("unexpected Supabase project")
+          PY
+
+      - name: Export recovery identity set
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/merge" data/audits/v4-11-prod-merge-preflight
+          docker run --rm -e DATABASE_URL="$NEON_DATABASE_URL" postgres:17 sh -lc 'psql "$DATABASE_URL" -X -qAt -v ON_ERROR_STOP=1 -c "select json_build_object('"'"'fp'"'"',pl.canonical_fingerprint,'"'"'url'"'"',ls.listing_url,'"'"'source_name'"'"',ls.source_name,'"'"'source_offer_key'"'"',ls.source_offer_key)::text from public.property_listings pl join public.listing_sources ls on ls.property_listing_id=pl.id order by pl.id;"' > "$RUNNER_TEMP/merge/recovery-identities.jsonl"
+          test "$(wc -l < "$RUNNER_TEMP/merge/recovery-identities.jsonl")" = "151900"
+
+      - name: Compare against production Supabase
+        run: |
+          node - "$RUNNER_TEMP/merge/recovery-identities.jsonl" data/audits/v4-11-prod-merge-preflight <<'NODE'
+          const fs=require("fs");
+          const {createClient}=require("@supabase/supabase-js");
+          const [src,outDir]=process.argv.slice(2);
+          const sb=createClient(process.env.SUPABASE_URL,process.env.SUPABASE_SERVICE_ROLE_KEY,{auth:{persistSession:false,autoRefreshToken:false}});
+          const recovery=fs.readFileSync(src,"utf8").trim().split(/\n/).filter(Boolean).map(JSON.parse);
+          const prodFp=new Set(),prodUrls=new Set(); let properties=0,sources=0;
+          async function page(table,cols,onRow){
+            const size=1000;
+            for(let from=0;;from+=size){
+              const {data,error}=await sb.from(table).select(cols).range(from,from+size-1).order("id",{ascending:true});
+              if(error)throw error;
+              for(const r of data||[])onRow(r);
+              if(!data||data.length<size)break;
+            }
+          }
+          await page("property_listings","id,canonical_fingerprint",r=>{properties++;prodFp.add(r.canonical_fingerprint)});
+          await page("listing_sources","id,listing_url",r=>{sources++;prodUrls.add(r.listing_url)});
+          if(properties!==19616||sources!==19621)throw new Error("production baseline drift "+properties+"/"+sources);
+          let exactBoth=0,fpOnly=0,urlOnly=0,newRows=0;
+          const candidate=[];
+          for(const r of recovery){
+            const f=prodFp.has(r.fp),u=prodUrls.has(r.url);
+            if(f&&u){exactBoth++;continue}
+            if(f){fpOnly++;continue}
+            if(u){urlOnly++;continue}
+            newRows++;candidate.push(r);
+          }
+          const summary={schema_version:"akarfinder-v4.11-prod-merge-preflight-20260928",recovery_rows:recovery.length,production_properties:properties,production_sources:sources,overlap_exact_both:exactBoth,overlap_fingerprint_only:fpOnly,overlap_url_only:urlOnly,merge_candidates:newRows,expected_post_properties:properties+newRows,expected_post_sources:sources+newRows,database_writes:0,vercel_deployment:false};
+          fs.writeFileSync(outDir+"/summary.json",JSON.stringify(summary,null,2)+"\n");
+          fs.writeFileSync(outDir+"/candidate-identities.jsonl",candidate.map(JSON.stringify).join("\n")+(candidate.length?"\n":""));
+          console.log(JSON.stringify(summary,null,2));
+          NODE
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v4.11-prod-merge-preflight
+          path: data/audits/v4-11-prod-merge-preflight/
+          retention-days: 30
