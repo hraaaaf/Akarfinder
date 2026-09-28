@@ -5,7 +5,7 @@ import { ArrowLeft, MapPin, Search } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Map as MapLibreMap, MapMouseEvent } from "maplibre-gl";
 import { useTheme } from "@/components/theme/ThemeProvider";
-import { applyAkarFinderBasemapTreatment } from "@/lib/map/akarfinder-territorial-style";
+import { AKARFINDER_MOROCCO_MAP_NAVY, applyAkarFinderBasemapTreatment, territoryToneForKey } from "@/lib/map/akarfinder-territorial-style";
 
 const LIGHT_TILE_STYLE = "https://tiles.openfreemap.org/styles/liberty";
 const DARK_TILE_STYLE = "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json";
@@ -204,6 +204,8 @@ export function NationalTerritoryExperience({ selectedCitySlug, onSelectCity, on
     const boundaries = payload.view === "morocco" ? payload.boundaries : payload.boundary;
     const places = payload.view === "morocco" ? payload.places : [payload.place];
     const points = cityPoints(places);
+    const territoryTone = payload.view === "city" ? territoryToneForKey(payload.place.slug) : ACCENT;
+    const territoryLine = payload.view === "city" ? AKARFINDER_MOROCCO_MAP_NAVY : ACCENT;
 
     map.addSource(BOUNDARY_SOURCE, { type: "geojson", data: boundaries });
     map.addSource(CITY_SOURCE, { type: "geojson", data: points });
@@ -212,27 +214,27 @@ export function NationalTerritoryExperience({ selectedCitySlug, onSelectCity, on
       id: BOUNDARY_FILL,
       type: "fill",
       source: BOUNDARY_SOURCE,
-      paint: { "fill-color": ACCENT, "fill-opacity": payload.view === "city" ? 0.13 : 0.018 },
+      paint: { "fill-color": territoryTone, "fill-opacity": payload.view === "city" ? 0.22 : 0.018 },
     });
     map.addLayer({
       id: BOUNDARY_LINE,
       type: "line",
       source: BOUNDARY_SOURCE,
-      paint: { "line-color": ACCENT, "line-opacity": payload.view === "city" ? 0.9 : 0.22, "line-width": payload.view === "city" ? 2.4 : 0.7 },
+      paint: { "line-color": territoryLine, "line-opacity": payload.view === "city" ? 0.92 : 0.22, "line-width": payload.view === "city" ? 2.4 : 0.7 },
     });
     map.addLayer({
       id: ACTIVE_FILL,
       type: "fill",
       source: BOUNDARY_SOURCE,
       filter: emptyFilter() as never,
-      paint: { "fill-color": ACCENT, "fill-opacity": 0.2 },
+      paint: { "fill-color": territoryTone, "fill-opacity": 0.26 },
     });
     map.addLayer({
       id: ACTIVE_LINE,
       type: "line",
       source: BOUNDARY_SOURCE,
       filter: emptyFilter() as never,
-      paint: { "line-color": ACCENT, "line-opacity": 1, "line-width": 2.8 },
+      paint: { "line-color": territoryLine, "line-opacity": 1, "line-width": 2.8 },
     });
     map.addLayer({
       id: CITY_HITS,
@@ -245,7 +247,7 @@ export function NationalTerritoryExperience({ selectedCitySlug, onSelectCity, on
       type: "circle",
       source: CITY_SOURCE,
       filter: emptyFilter() as never,
-      paint: { "circle-radius": 8, "circle-color": ACCENT, "circle-opacity": 0.2, "circle-stroke-color": ACCENT, "circle-stroke-width": 2 },
+      paint: { "circle-radius": 8, "circle-color": territoryTone, "circle-opacity": 0.3, "circle-stroke-color": territoryLine, "circle-stroke-width": 2 },
     });
     map.addLayer({
       id: CITY_LABELS,
