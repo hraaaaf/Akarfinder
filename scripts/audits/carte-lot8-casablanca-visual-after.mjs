@@ -88,6 +88,7 @@ try {
         const railElement = document.querySelector("[data-p4-map-decision-rail]");
         const mapCanvasElement = document.querySelector("[data-p4-map-canvas]");
         const maplibreElement = document.querySelector("[data-maplibre-spike]");
+        const maplibreStyle = maplibreElement ? getComputedStyle(maplibreElement) : null;
         const layoutStyle = layout ? getComputedStyle(layout) : null;
         const railStyle = railElement ? getComputedStyle(railElement) : null;
         const rect = (element) => element ? (() => { const r = element.getBoundingClientRect(); return { x: r.x, y: r.y, width: r.width, height: r.height, bottom: r.bottom }; })() : null;
@@ -98,6 +99,7 @@ try {
           layoutRect: rect(layout),
           mapCanvasRect: rect(mapCanvasElement),
           maplibreRect: rect(maplibreElement),
+          maplibreComputed: maplibreStyle ? { height: maplibreStyle.height, minHeight: maplibreStyle.minHeight, maxHeight: maplibreStyle.maxHeight, display: maplibreStyle.display } : null,
           railRect: rect(railElement),
           layout: layoutStyle ? {
             display: layoutStyle.display,
