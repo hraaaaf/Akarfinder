@@ -328,23 +328,33 @@ Independent Wave10 readback run: `36351412096` — SUCCESS. Independent readback
 Open Wave11 on the **188** strict rejects remaining after Wave10. Keep the 5 prior identity conflicts quarantined. Recover only deterministic evidence paths; no V4.11 weakening. Repeat offline certification → exact Neon overlap preflight → isolated import → independent readback.
 
 
-## Wave12 major portals checkpoint — 2026-09-28
+## Wave12 major portals closeout — VERIFIED 2026-09-28
 
-Wave12 targets the largest Common Crawl reservoirs with strict route-only evidence.
+Wave12 is certified, overlap-filtered, imported into isolated Neon, and independently read back.
 
 - Broad reservoir benchmark run: `36361501389` — SUCCESS.
-- Raw reservoirs: Mubawab **32,774**, Agenz **7,885**; other supported domains remain separate.
-- Strict Wave12 certification run: `36407286352` — SUCCESS.
+- Raw reservoirs: Mubawab **32,774**, Agenz **7,885**.
+- Strict certification run: `36407286352` — SUCCESS.
 - Certification artifact: `10963070895`, digest `sha256:e0313d39975d4a37981f8ad86f7c7201172041b9007538d5fe11a9954408311d`.
 - Certified JSONL SHA-256: `4927313e876a5365c6c216dca3cfd37f438a6eeee9809ed0cb520c1a00c448cc`.
 - Strict candidates: **10,867** = Mubawab **5,923** + Agenz **4,944**.
-- Certification DB access/writes: **0 / 0**.
-- Isolated-Neon overlap preflight run: `36407464440` — SUCCESS.
-- Preflight artifact: `10963485199`, digest `sha256:bbc6653f67afaca2f02c08c78f52b404484eaa62626cb9ba6c6527167c326646`.
-- Exact preflight result: **10,867 | 3,051 URL overlaps | 3,051 fingerprint overlaps | 2,276 identity overlaps | 142,732 | 142,732**.
-- Exact overlap filtering is running; no Wave12 DB write has occurred.
-- Local independent reproduction predicts **7,207** rows after removing the exact overlap sets, but this is not yet canonical until the GitHub filter run reproduces it.
+- Initial isolated-Neon overlap preflight run: `36407464440` — SUCCESS.
+- Exact initial preflight: **10,867 | 3,051 URL overlaps | 3,051 fingerprint overlaps | 2,276 identity overlaps | 142,732 | 142,732**.
+- Exact overlap filter run: `36407892061` — SUCCESS.
+- Filtered rows: **7,207** = Mubawab **3,668** + Agenz **3,539**.
+- Filtered artifact: `10963776557`, digest `sha256:106b31519e95ddfeceafbe7a76434fbc67b8f2a86f8e8ee56d49fe1fc6c555bf`.
+- Filtered JSONL SHA-256: `b905bde380a96522a3f1300b0db076208953e23fb08c49d33c97cc827abd606d`.
+- Final zero-overlap preflight run: `36409402298` — SUCCESS.
+- Final preflight result: **7,207 | 0 URL overlap | 0 fingerprint overlap | 0 identity overlap | 142,732 | 142,732**.
+- Controlled isolated-Neon import run: `36414521010` — SUCCESS.
+- Import readback artifact: `10966457646`, digest `sha256:2effc58173e1733ebe77feda1ccc819643020432da6deff2ba7522096eb0bc10`.
+- Immediate readback: **149,939 | 149,939 | 149,939 | 149,939 | 7,207 | 0 | 0**.
+- Independent post-import readback run: `36414643571` — SUCCESS.
+- Independent readback artifact: `10966143073`, digest `sha256:fc4735fe16aa3408c7de498f624398ea14eaec136897dca16f259ba3e548d1ae`.
+- Independent invariant result: **149,939 properties | 149,939 sources | 149,939 unique URLs | 149,939 unique fingerprints | Wave12 7,207 | orphan 0 | inactive 0 | property core gaps 0 | source core gaps 0**.
 - Production Neon writes: **false**. Vercel deployment: **false**.
+- Progress to 200k: **74.9695%**.
+- Exact remaining delta: **50,061**.
 
 ### Next exact
-Finish the GitHub exact-overlap filter. Bind its artifact/digest/SHA, then require a fresh isolated-Neon **0 URL / 0 fingerprint / 0 identity** preflight before any controlled import.
+Open Wave13 from the remaining broad-reservoir URLs already discovered (DarAgadir, Masaken, Avito, Mouldar, PromoImmoMarrakech, Sarouty), preserving strict deterministic route evidence. In parallel, inspect the rejected Mubawab/Agenz route families for a safe Wave12b salvage lane without source-page scraping.
