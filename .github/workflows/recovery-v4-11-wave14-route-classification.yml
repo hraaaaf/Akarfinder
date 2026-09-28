@@ -1,0 +1,51 @@
+name: Recovery V4.11 Wave14 Major Portal Route Classification
+
+on:
+  push:
+    branches: ["recovery/v4-11-wave7-cc-freeze-20260927"]
+    paths:
+      - "data/recovery/activate-v4-11-wave14-route-classification.txt"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  classify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Download immutable Wave11 major-portal artifacts
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/w14/mub" "$RUNNER_TEMP/w14/ag" data/audits/v4-11-wave14-route-classification
+          gh api "repos/${{ github.repository }}/actions/artifacts/10946401197/zip" > "$RUNNER_TEMP/w14/mub.zip"
+          unzip -q "$RUNNER_TEMP/w14/mub.zip" -d "$RUNNER_TEMP/w14/mub"
+          gh api "repos/${{ github.repository }}/actions/artifacts/10945814080/zip" > "$RUNNER_TEMP/w14/ag.zip"
+          unzip -q "$RUNNER_TEMP/w14/ag.zip" -d "$RUNNER_TEMP/w14/ag"
+          MUB=$(find "$RUNNER_TEMP/w14/mub" -name '*.txt' -type f | head -n1)
+          AG=$(find "$RUNNER_TEMP/w14/ag" -name '*.txt' -type f | head -n1)
+          echo "89ab4c71b65d6ce99c112576d7220973ea84ba53a3f3a443dd79b54d8e02db33  $MUB" | sha256sum -c -
+          echo "02b0840dfe8900a28ae25c205b8f5fcb59c529e7deac7eb9a41857648c9b05b4  $AG" | sha256sum -c -
+          echo "MUB=$MUB" >> "$GITHUB_ENV"
+          echo "AG=$AG" >> "$GITHUB_ENV"
+      - name: Classify route families offline
+        run: |
+          node scripts/recovery/classify-v4-11-wave14-major-portal-routes.mjs --mubawab "$MUB" --agenz "$AG" --out-dir data/audits/v4-11-wave14-route-classification
+      - name: Enforce zero-write contract
+        run: |
+          node - <<'NODE'
+          const s=require("./data/audits/v4-11-wave14-route-classification/summary.json");
+          if(s.database_access||s.database_writes||s.source_page_fetches||s.warc_downloads||s.approved_for_import_rows||s.vercel_deployment)throw new Error("safety");
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v4.11-wave14-major-portal-route-classification
+          path: data/audits/v4-11-wave14-route-classification/
+          retention-days: 30
