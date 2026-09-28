@@ -1,5 +1,6 @@
 import { neon } from "@neondatabase/serverless";
 import type { DbListingRow, DbListingsQuery, DbListingsResult, DbStats } from "@/lib/listings/db-listings";
+import { getSourcesByType } from "@/lib/sources/source-access-registry";
 
 function getSql() {
   const url = process.env.DATABASE_URL;
@@ -48,6 +49,36 @@ function mapRow(r:any): DbListingRow {
     source_url:r.source_url??null, origin_type:r.origin_type??null,
   };
 }
+const STRUCTURED_PUBLIC_SOURCE_NAMES = [
+  ...new Set([
+    ...getSourcesByType("first_party"),
+    ...getSourcesByType("partner_authorized"),
+  ]),
+];
+
+function addPublicSearchCandidateClause(conditions:string[],params:any[]){
+  const structuredSourceParams = STRUCTURED_PUBLIC_SOURCE_NAMES.map((sourceName) => {
+    params.push(sourceName);
+    return "$" + params.length;
+  });
+
+  conditions.push(`(
+    (
+      (pl.field_confidence->>'provider' = 'openserp'
+        OR pl.field_confidence->>'acquisition_provider' = 'openserp')
+      AND pl.field_confidence->>'publication_lane' = 'external_web_result'
+      AND pl.field_confidence->>'classification_lane' = 'individual_listing'
+    )
+    OR EXISTS (
+      SELECT 1
+      FROM listing_sources ls_candidate
+      WHERE ls_candidate.property_listing_id = pl.id
+        AND ls_candidate.is_active IS TRUE
+        AND lower(trim(ls_candidate.source_name)) IN (${structuredSourceParams.join(",")})
+    )
+  )`);
+}
+
 function buildWhere(q:DbListingsQuery){
   const c:string[]=[]; const p:any[]=[]; const add=(sql:string,v:any)=>{p.push(v);c.push(sql.replace("?", "$"+p.length));};
   const pt=normalizePropertyType(q.property_type), tt=normalizeTransactionType(q.transaction_type);
@@ -55,6 +86,7 @@ function buildWhere(q:DbListingsQuery){
   if(q.min_price!=null)add("pl.price_mad >= ?",q.min_price); if(q.max_price!=null)add("pl.price_mad <= ?",q.max_price);
   if(q.min_surface!=null)add("pl.surface_m2 >= ?",q.min_surface); if(q.max_surface!=null)add("pl.surface_m2 <= ?",q.max_surface);
   if(q.bedrooms!=null)add("pl.bedrooms_count = ?",q.bedrooms);
+  if(q.public_search_only)addPublicSearchCandidateClause(c,p);
   return {where:c.length?"WHERE "+c.join(" AND "):"",params:p};
 }
 export async function queryNeonListings(q:DbListingsQuery={}):Promise<DbListingsResult>{
