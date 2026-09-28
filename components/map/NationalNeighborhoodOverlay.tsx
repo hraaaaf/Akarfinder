@@ -11,6 +11,12 @@ const HITS = "akarfinder-national-neighborhood-hits";
 const DOTS = "akarfinder-national-neighborhood-dots";
 const ACTIVE = "akarfinder-national-neighborhood-active";
 const LABELS = "akarfinder-national-neighborhood-labels";
+const ATLAS_SOURCE = "akarfinder-casablanca-arrondissement-atlas";
+const ATLAS_FILL = "akarfinder-casablanca-arrondissement-fill";
+const ATLAS_LINE = "akarfinder-casablanca-arrondissement-line";
+const ATLAS_LABELS = "akarfinder-casablanca-arrondissement-labels";
+const ATLAS_ACTIVE_FILL = "akarfinder-casablanca-arrondissement-active-fill";
+const ATLAS_ACTIVE_LINE = "akarfinder-casablanca-arrondissement-active-line";
 const ACCENT = "#0B63CE";
 const CASABLANCA_FEATURED_SLUGS = ["maarif", "racine", "bourgogne", "ain-diab", "californie", "sidi-belyout"];
 
@@ -22,6 +28,20 @@ export type NationalNeighborhood = {
   boundaryStatus: "not_claimed";
   publicationStatus: "label_candidate";
 };
+
+type AdministrativeAtlasFeature = GeoJSON.Feature<GeoJSON.Polygon | GeoJSON.MultiPolygon, {
+  neighborhoodCanonicalId: string;
+  displayName: string;
+  sourceEntityId: number;
+  attribution: string;
+  publicationStatus: "shadow";
+  reviewed: false;
+}>;
+
+type AdministrativeAtlasCollection = GeoJSON.FeatureCollection<
+  GeoJSON.Polygon | GeoJSON.MultiPolygon,
+  AdministrativeAtlasFeature["properties"]
+>;
 
 type Props = {
   map: MapLibreMap | null;
@@ -53,8 +73,11 @@ function emptyFilter(): unknown[] {
 }
 
 function removeLayers(map: MapLibreMap) {
-  for (const id of [LABELS, ACTIVE, DOTS, HITS]) if (map.getLayer(id)) map.removeLayer(id);
+  for (const id of [LABELS, ACTIVE, DOTS, HITS, ATLAS_ACTIVE_LINE, ATLAS_ACTIVE_FILL, ATLAS_LABELS, ATLAS_LINE, ATLAS_FILL]) {
+    if (map.getLayer(id)) map.removeLayer(id);
+  }
   if (map.getSource(SOURCE)) map.removeSource(SOURCE);
+  if (map.getSource(ATLAS_SOURCE)) map.removeSource(ATLAS_SOURCE);
 }
 
 function normalizedSearchText(value: string) {
@@ -85,6 +108,8 @@ export function NationalNeighborhoodOverlay({
   const [hoverSlug, setHoverSlug] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [directoryExpanded, setDirectoryExpanded] = useState(false);
+  const [administrativeAtlas, setAdministrativeAtlas] = useState<AdministrativeAtlasCollection | null>(null);
+  const [selectedAdministrative, setSelectedAdministrative] = useState<AdministrativeAtlasFeature["properties"] | null>(null);
   const selectedRef = useRef<string | null>(null);
 
   useEffect(() => { selectedRef.current = selectedSlug; }, [selectedSlug]);
@@ -92,6 +117,30 @@ export function NationalNeighborhoodOverlay({
     setHoverSlug(null);
     setQuery("");
     setDirectoryExpanded(false);
+    setSelectedAdministrative(null);
+  }, [citySlug]);
+
+  useEffect(() => {
+    if (citySlug !== "casablanca") {
+      setAdministrativeAtlas(null);
+      return;
+    }
+    const controller = new AbortController();
+    void fetch("/api/geo/casablanca-arrondissements?atlas=shadow-preview", { cache: "no-store", signal: controller.signal })
+      .then(async (response) => {
+        if (!response.ok) return null;
+        const payload = await response.json() as AdministrativeAtlasCollection;
+        const valid = payload?.features?.length === 16
+          && payload.features.every((feature) => feature.properties?.publicationStatus === "shadow" && feature.properties?.reviewed === false);
+        return valid ? payload : null;
+      })
+      .then((payload) => {
+        if (!controller.signal.aborted) setAdministrativeAtlas(payload);
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setAdministrativeAtlas(null);
+      });
+    return () => controller.abort();
   }, [citySlug]);
 
   const bySlug = useMemo(() => new Map(neighborhoods.map((item) => [item.slug, item] as const)), [neighborhoods]);
@@ -117,6 +166,81 @@ export function NationalNeighborhoodOverlay({
   useEffect(() => {
     if (!map || !mapReady) return;
     removeLayers(map);
+
+    if (administrativeAtlas) {
+      const atlasData: GeoJSON.FeatureCollection = {
+        type: "FeatureCollection",
+        features: administrativeAtlas.features.map((feature) => ({
+          ...feature,
+          properties: {
+            ...feature.properties,
+            slug: feature.properties.neighborhoodCanonicalId,
+            tone: territoryLightToneForKey(feature.properties.neighborhoodCanonicalId),
+          },
+        })),
+      };
+      map.addSource(ATLAS_SOURCE, { type: "geojson", data: atlasData });
+      map.addLayer({
+        id: ATLAS_FILL,
+        type: "fill",
+        source: ATLAS_SOURCE,
+        paint: {
+          "fill-color": ["get", "tone"],
+          "fill-opacity": theme === "dark" ? 0.26 : 0.22,
+        },
+      });
+      map.addLayer({
+        id: ATLAS_LINE,
+        type: "line",
+        source: ATLAS_SOURCE,
+        paint: {
+          "line-color": theme === "dark" ? "#ADC6C7" : "#123250",
+          "line-opacity": 0.88,
+          "line-width": ["interpolate", ["linear"], ["zoom"], 9, 1.05, 11, 1.7],
+        },
+      });
+      map.addLayer({
+        id: ATLAS_ACTIVE_FILL,
+        type: "fill",
+        source: ATLAS_SOURCE,
+        filter: ["==", ["get", "slug"], "__none__"] as never,
+        paint: {
+          "fill-color": ["get", "tone"],
+          "fill-opacity": 0.46,
+        },
+      });
+      map.addLayer({
+        id: ATLAS_ACTIVE_LINE,
+        type: "line",
+        source: ATLAS_SOURCE,
+        filter: ["==", ["get", "slug"], "__none__"] as never,
+        paint: {
+          "line-color": theme === "dark" ? "#E8F2FF" : AKARFINDER_MOROCCO_MAP_NAVY,
+          "line-opacity": 1,
+          "line-width": 2.8,
+        },
+      });
+      map.addLayer({
+        id: ATLAS_LABELS,
+        type: "symbol",
+        source: ATLAS_SOURCE,
+        minzoom: 8.5,
+        layout: {
+          "text-field": ["get", "displayName"],
+          "text-size": ["interpolate", ["linear"], ["zoom"], 8.5, 10.5, 11.5, 13.5],
+          "text-letter-spacing": 0.03,
+          "text-allow-overlap": false,
+          "text-ignore-placement": false,
+        },
+        paint: {
+          "text-color": theme === "dark" ? "#F4FAFF" : "#123250",
+          "text-halo-color": theme === "dark" ? "#071426" : "#F7FBFD",
+          "text-halo-width": 1.8,
+          "text-opacity": 0.98,
+        },
+      });
+    }
+
     map.addSource(SOURCE, { type: "geojson", data: pointCollection(neighborhoods) });
     map.addLayer({
       id: HITS,
@@ -131,7 +255,9 @@ export function NationalNeighborhoodOverlay({
       paint: {
         "circle-radius": ["interpolate", ["linear"], ["zoom"], 8, 2.5, 12, 4.5],
         "circle-color": ACCENT,
-        "circle-opacity": 0.92,
+        "circle-opacity": citySlug === "casablanca"
+          ? ["interpolate", ["linear"], ["zoom"], 9, 0.10, 10.5, 0.16, 12.2, 0.72]
+          : 0.92,
         "circle-stroke-color": theme === "dark" ? "#071426" : "#FFFFFF",
         "circle-stroke-width": 1.4,
       },
@@ -167,11 +293,33 @@ export function NationalNeighborhoodOverlay({
         "text-color": theme === "dark" ? "#E8F2FF" : "#123250",
         "text-halo-color": theme === "dark" ? "#071426" : "#FFFFFF",
         "text-halo-width": 1.8,
+        "text-opacity": citySlug === "casablanca"
+          ? ["interpolate", ["linear"], ["zoom"], 9, 0.16, 10.5, 0.28, 12.2, 0.78]
+          : 1,
       },
     });
 
     const setActive = (slug: string | null) => {
       if (map.getLayer(ACTIVE)) map.setFilter(ACTIVE, (slug ? ["==", ["get", "slug"], slug] : emptyFilter()) as never);
+    };
+    const setAtlasActive = (slug: string | null) => {
+      const filter = (slug ? ["==", ["get", "slug"], slug] : ["==", ["get", "slug"], "__none__"]) as never;
+      if (map.getLayer(ATLAS_ACTIVE_FILL)) map.setFilter(ATLAS_ACTIVE_FILL, filter);
+      if (map.getLayer(ATLAS_ACTIVE_LINE)) map.setFilter(ATLAS_ACTIVE_LINE, filter);
+    };
+    const renderedAdministrative = (event: MapMouseEvent) => {
+      if (!map.getLayer(ATLAS_FILL)) return null;
+      const feature = map.queryRenderedFeatures(event.point, { layers: [ATLAS_FILL] })[0];
+      if (!feature?.properties || typeof feature.properties.slug !== "string") return null;
+      return {
+        slug: feature.properties.slug as string,
+        displayName: String(feature.properties.displayName ?? feature.properties.slug),
+        sourceEntityId: Number(feature.properties.sourceEntityId ?? 0),
+        attribution: String(feature.properties.attribution ?? "© OpenStreetMap contributors"),
+        publicationStatus: "shadow" as const,
+        reviewed: false as const,
+        neighborhoodCanonicalId: feature.properties.slug as string,
+      };
     };
     const renderedSlug = (event: MapMouseEvent) => {
       let nearestSlug: string | null = null;
@@ -194,21 +342,34 @@ export function NationalNeighborhoodOverlay({
     };
     const onMove = (event: MapMouseEvent) => {
       const slug = renderedSlug(event);
+      const administrative = slug ? null : renderedAdministrative(event);
       setHoverSlug(slug);
       setActive(slug ?? selectedRef.current);
-      map.getCanvas().style.cursor = slug ? "pointer" : "";
+      setAtlasActive(administrative?.slug ?? selectedAdministrative?.neighborhoodCanonicalId ?? null);
+      map.getCanvas().style.cursor = slug || administrative ? "pointer" : "";
     };
     const onClick = (event: MapMouseEvent) => {
       const slug = renderedSlug(event);
-      if (!slug) return;
-      selectedRef.current = slug;
-      setSelectedSlug(slug);
-      setActive(slug);
-      onSelectDistrict?.(slug);
+      if (slug) {
+        setSelectedAdministrative(null);
+        selectedRef.current = slug;
+        setSelectedSlug(slug);
+        setActive(slug);
+        onSelectDistrict?.(slug);
+        return;
+      }
+      const administrative = renderedAdministrative(event);
+      if (!administrative) return;
+      setSelectedSlug(null);
+      selectedRef.current = null;
+      setActive(null);
+      setSelectedAdministrative(administrative);
+      setAtlasActive(administrative.slug);
     };
     const onLeave = () => {
       setHoverSlug(null);
       setActive(selectedRef.current);
+      setAtlasActive(selectedAdministrative?.neighborhoodCanonicalId ?? null);
       map.getCanvas().style.cursor = "";
     };
 
@@ -221,7 +382,7 @@ export function NationalNeighborhoodOverlay({
       map.getCanvas().removeEventListener("mouseleave", onLeave);
       if (map.getStyle()) removeLayers(map);
     };
-  }, [map, mapReady, neighborhoods, onSelectDistrict, theme]);
+  }, [administrativeAtlas, citySlug, map, mapReady, neighborhoods, onSelectDistrict, selectedAdministrative, theme]);
 
   useEffect(() => {
     if (!map || !mapReady || !map.getLayer(ACTIVE)) return;
@@ -240,7 +401,13 @@ export function NationalNeighborhoodOverlay({
   };
 
   return (
-    <div className="pointer-events-none absolute inset-0 z-20" data-akarfinder-national-neighborhood-overlay data-city={citySlug}>
+    <div
+      className="pointer-events-none absolute inset-0 z-20"
+      data-akarfinder-national-neighborhood-overlay
+      data-city={citySlug}
+      data-akarfinder-admin-atlas-count={administrativeAtlas?.features.length ?? 0}
+      data-akarfinder-admin-atlas-status={administrativeAtlas ? "shadow-preview" : "unavailable"}
+    >
       <div className="pointer-events-auto absolute left-3 right-3 top-[172px] lg:left-auto lg:right-4 lg:top-4 lg:w-[340px]">
         <div className="relative rounded-[18px] border border-white/80 bg-white/95 p-2.5 shadow-[0_14px_38px_rgba(15,35,66,0.14)] backdrop-blur-xl dark:border-white/10 dark:bg-[#0A1A2F]/95">
           <label className="sr-only" htmlFor={`neighborhood-search-${citySlug}`}>Rechercher un quartier à {cityName}</label>
@@ -304,8 +471,26 @@ export function NationalNeighborhoodOverlay({
       </div>
 
       <div className="pointer-events-none absolute bottom-[72px] left-3 rounded-full border border-white/80 bg-white/88 px-2.5 py-1 text-[8.5px] font-bold text-slate-500 shadow-sm backdrop-blur dark:border-white/10 dark:bg-[#0A1A2F]/88 dark:text-slate-300 sm:bottom-4 sm:left-auto sm:right-4">
-        {centeredNeighborhoodCount.toLocaleString("fr-FR")} repères · {certifiedNeighborhoodBoundaryCount} contour quartier publié
+        {administrativeAtlas ? "16 arrondissements · " : ""}{centeredNeighborhoodCount.toLocaleString("fr-FR")} repères · {certifiedNeighborhoodBoundaryCount} contour quartier publié
       </div>
+
+      {selectedAdministrative && !selected ? (
+        <aside
+          className="pointer-events-auto absolute inset-x-3 bottom-[220px] rounded-[22px] border border-white/85 bg-white/96 p-3.5 shadow-[0_18px_48px_rgba(15,35,66,0.18)] backdrop-blur-xl dark:border-white/10 dark:bg-[#0A1A2F]/96 sm:inset-x-auto sm:bottom-4 sm:left-4 sm:w-[350px]"
+          data-akarfinder-administrative-preview={selectedAdministrative.neighborhoodCanonicalId}
+          aria-label={`Arrondissement administratif sélectionné ${selectedAdministrative.displayName}`}
+        >
+          <p className="flex items-center gap-1.5 text-[9px] font-extrabold uppercase tracking-[0.14em] text-brand-primary"><Layers3 size={11} aria-hidden="true" />Atlas Casablanca · preview</p>
+          <h2 className="mt-1 text-[22px] font-extrabold tracking-[-0.035em] text-foreground">{selectedAdministrative.displayName}</h2>
+          <p className="mt-1 text-[10.5px] font-semibold leading-4 text-muted-foreground">
+            Contour administratif OSM · utilisé comme squelette territorial preview. Il ne représente pas un contour de quartier certifié.
+          </p>
+          <div className="mt-3 flex items-center justify-between rounded-xl border border-border bg-surface-subtle px-3 py-2 text-[9.5px] font-bold text-muted-foreground">
+            <span>Relation OSM {selectedAdministrative.sourceEntityId}</span>
+            <span>ODbL · shadow</span>
+          </div>
+        </aside>
+      ) : null}
 
       {selected ? (
         <aside

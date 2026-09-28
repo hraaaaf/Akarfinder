@@ -20,6 +20,20 @@ function readCookie(request: Request, name: string): string | null {
 }
 
 export async function GET(request: Request) {
+  const url = new URL(request.url);
+  const shadowAtlasRequested = url.searchParams.get("atlas") === "shadow-preview";
+  const isVercelProduction = process.env.VERCEL_ENV === "production";
+
+  if (shadowAtlasRequested && !isVercelProduction) {
+    return Response.json(casablancaGeometryCollection, {
+      headers: {
+        "Cache-Control": "private, no-store",
+        "X-AkarFinder-Geometry-Status": "shadow-preview-non-production",
+        "X-AkarFinder-Attribution": "OpenStreetMap contributors",
+      },
+    });
+  }
+
   const existingSession = readCookie(request, SESSION_COOKIE);
   const stableKey = existingSession ?? randomUUID();
   const decision = decideCasablancaGeometryCanary(readCasablancaGeometryCanaryConfig(), stableKey);

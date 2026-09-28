@@ -24,7 +24,14 @@ async function waitForNationalOverlay(page) {
   await page.locator('[data-akarfinder-national-neighborhood-overlay][data-city="casablanca"]').waitFor({ state: "attached", timeout: 20000 });
   await page.waitForFunction(() => {
     const map = window.__AKARFINDER_NATIONAL_MAP__;
-    return Boolean(map?.isStyleLoaded()) && Boolean(map?.getSource("akarfinder-national-neighborhood-points")) && Boolean(map?.getLayer("akarfinder-national-neighborhood-labels")) && Boolean(map?.getLayer("akarfinder-national-neighborhood-dots"));
+    return Boolean(map?.isStyleLoaded())
+      && Boolean(map?.getSource("akarfinder-national-neighborhood-points"))
+      && Boolean(map?.getLayer("akarfinder-national-neighborhood-labels"))
+      && Boolean(map?.getLayer("akarfinder-national-neighborhood-dots"))
+      && Boolean(map?.getSource("akarfinder-casablanca-arrondissement-atlas"))
+      && Boolean(map?.getLayer("akarfinder-casablanca-arrondissement-fill"))
+      && Boolean(map?.getLayer("akarfinder-casablanca-arrondissement-line"))
+      && Boolean(map?.getLayer("akarfinder-casablanca-arrondissement-labels"));
   }, null, { timeout: 20000 });
   await page.waitForFunction(() => {
     const map = window.__AKARFINDER_NATIONAL_MAP__;
@@ -93,12 +100,21 @@ try {
           labels: Boolean(map?.getLayer("akarfinder-national-neighborhood-labels")),
           dots: Boolean(map?.getLayer("akarfinder-national-neighborhood-dots")),
           fakeFill: Boolean(map?.getLayer("akarfinder-national-neighborhood-fill")),
+          administrativeAtlasSource: Boolean(map?.getSource("akarfinder-casablanca-arrondissement-atlas")),
+          administrativeAtlasFill: Boolean(map?.getLayer("akarfinder-casablanca-arrondissement-fill")),
+          administrativeAtlasLine: Boolean(map?.getLayer("akarfinder-casablanca-arrondissement-line")),
+          administrativeAtlasLabels: Boolean(map?.getLayer("akarfinder-casablanca-arrondissement-labels")),
+          administrativeAtlasCount: Number(document.querySelector('[data-akarfinder-national-neighborhood-overlay]')?.getAttribute('data-akarfinder-admin-atlas-count') ?? 0),
+          administrativeAtlasStatus: document.querySelector('[data-akarfinder-national-neighborhood-overlay]')?.getAttribute('data-akarfinder-admin-atlas-status'),
           renderedNeighborhoodFeatureCount: rendered.filter((feature) => feature.layer.id === "akarfinder-national-neighborhood-dots").length,
           basemapLayerCount: layers.filter((layer) => !layer.id.startsWith("akarfinder-")).length,
           renderedBasemapFeatureCount: rendered.filter((feature) => !feature.layer.id.startsWith("akarfinder-")).length,
         };
       });
       if (!layerState.sourceExists || !layerState.labels || !layerState.dots || layerState.renderedNeighborhoodFeatureCount < 1 || layerState.fakeFill) throw new Error(`neighborhood map layers invalid ${JSON.stringify(layerState)}`);
+      if (!layerState.administrativeAtlasSource || !layerState.administrativeAtlasFill || !layerState.administrativeAtlasLine || !layerState.administrativeAtlasLabels || layerState.administrativeAtlasCount !== 16 || layerState.administrativeAtlasStatus !== "shadow-preview") {
+        throw new Error(`Casablanca administrative atlas missing ${JSON.stringify(layerState)}`);
+      }
       if (layerState.basemapLayerCount < 20 || layerState.renderedBasemapFeatureCount < 20) throw new Error(`real basemap missing ${JSON.stringify(layerState)}`);
 
       let overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
