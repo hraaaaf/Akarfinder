@@ -15,7 +15,10 @@ jobs:
     timeout-minutes: 35
     env:
       DATABASE_PROVIDER: neon
+      DATABASE_BACKUP_PROVIDER: supabase
       DATABASE_URL: ${{ secrets.NEON_RECOVERY_DATABASE_URL }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -29,7 +32,7 @@ jobs:
       - name: TypeScript
         run: npx tsc --noEmit
       - name: Targeted DB/API tests
-        run: npx tsx --test scripts/scrapers/__tests__/api.test.ts scripts/scrapers/__tests__/p9-search.test.ts scripts/scrapers/__tests__/map-db-listing-null-price.test.ts
+        run: npx tsx --test scripts/scrapers/__tests__/db-provider-failover.test.ts scripts/scrapers/__tests__/api.test.ts scripts/scrapers/__tests__/p9-search.test.ts scripts/scrapers/__tests__/map-db-listing-null-price.test.ts
       - name: Build
         run: npm run build
       - name: Neon smoke
@@ -37,6 +40,7 @@ jobs:
           node - <<'NODE'
           const { neon }=require("@neondatabase/serverless");
           (async()=>{
+            if(process.env.DATABASE_PROVIDER!=="neon"||process.env.DATABASE_BACKUP_PROVIDER!=="supabase")throw new Error("provider chain env drift");
             const sql=neon(process.env.DATABASE_URL);
             const r=await sql`select (select count(*)::int from property_listings) properties,(select count(*)::int from listing_sources) sources`;
             if(r[0].properties!==151900||r[0].sources!==151900)throw new Error(JSON.stringify(r[0]));
