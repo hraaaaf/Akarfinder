@@ -2,7 +2,7 @@
   "schema_version": "akarfinder-v4.11-wave12-major-portals-filtered-artifact-20260928",
   "artifact_id": 10963776557,
   "artifact_digest": "sha256:106b31519e95ddfeceafbe7a76434fbc67b8f2a86f8e8ee56d49fe1fc6c555bf",
-  "jsonl_sha256": "8a754c4135e413c5fce74cb93d08fa91f3840028cb9d6cfa2858f71767fc2a48",
+  "jsonl_sha256": "b905bde380a96522a3f1300b0db076208953e23fb08c49d33c97cc827abd606d",
   "rows": 7207,
   "expected_pre": 142732,
   "expected_post": 149939,
