@@ -1,1 +1,1 @@
-retry Wave13 route-shape discovery after async-main fix 1666408162a7c248fdc6ec616a0a58222b1d5a83
+retry Wave13 after resilient Common Crawl index handling 0ab2b62b01ef4481977dfc86a1241d4d4d14ea2b
