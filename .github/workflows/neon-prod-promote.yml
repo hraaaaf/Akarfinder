@@ -1,4 +1,4 @@
-name: Neon production env audit
+name: Neon production cutover
 on:
   push:
     branches: [release/neon-recovery-live-20260928]
@@ -6,14 +6,30 @@ on:
 permissions:
   contents: read
 jobs:
-  audit:
+  cutover:
     runs-on: ubuntu-latest
     steps:
-      - name: Audit DATABASE_URL targets without exposing values
+      - name: Set Production DATABASE_URL to validated Neon secret
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          NEON_DATABASE_URL: ${{ secrets.NEON_RECOVERY_DATABASE_URL }}
+        run: |
+          set -euo pipefail
+          test -n "$VERCEL_TOKEN" && test -n "$NEON_DATABASE_URL"
+          code=$(curl -sS -o /tmp/envresp -w "%{http_code}" -X PATCH \
+            -H "Authorization: Bearer $VERCEL_TOKEN" -H "Content-Type: application/json" \
+            "https://api.vercel.com/v9/projects/prj_RCs2Ku5vex9cpABWnwaCjbuKrhhc/env/vwiL3UlQSlicoHN1?teamId=team_NNhXPDOIfjGNBcn253btpyk0" \
+            --data "$(jq -nc --arg v "$NEON_DATABASE_URL" '{value:$v,target:["production","preview"],type:"sensitive"}')")
+          jq -c '{id,key,target,type}' /tmp/envresp
+          test "$code" = "200"
+      - name: Deploy proven product SHA to Production
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
           set -euo pipefail
-          curl -fsS -H "Authorization: Bearer $VERCEL_TOKEN" \
-            "https://api.vercel.com/v9/projects/prj_RCs2Ku5vex9cpABWnwaCjbuKrhhc/env?teamId=team_NNhXPDOIfjGNBcn253btpyk0" \
-            | jq -c '[.envs[] | select(.key=="DATABASE_URL") | {id,key,target,type,gitBranch}]'
+          payload=$(jq -nc '{name:"akarfinder",project:"prj_RCs2Ku5vex9cpABWnwaCjbuKrhhc",target:"production",gitSource:{type:"github",repoId:1043264095,ref:"release/neon-recovery-live-20260928",sha:"fdf768ed44d4e3bc4ea7f5f7c6ec38330fd337e5"}}')
+          code=$(curl -sS -o /tmp/deploy -w "%{http_code}" -X POST \
+            -H "Authorization: Bearer $VERCEL_TOKEN" -H "Content-Type: application/json" \
+            "https://api.vercel.com/v13/deployments?teamId=team_NNhXPDOIfjGNBcn253btpyk0" --data "$payload")
+          jq -c '{id,url,target,readyState,error}' /tmp/deploy
+          test "$code" = "200" -o "$code" = "201"
