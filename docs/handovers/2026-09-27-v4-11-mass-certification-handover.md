@@ -389,3 +389,32 @@ Wave13 is certified, exact-overlap filtered, imported into isolated Neon, and in
 
 ### Next exact
 Open Wave14 on the rejected Mubawab/Agenz route families from Wave12, starting with immutable-artifact route classification only. Goal: recover deterministic detail-route variants without source-page scraping or weakening V4.11, then repeat certification → exact overlap → controlled isolated import → independent readback.
+
+
+## Production cutover checkpoint — 2026-09-28
+
+The certified recovery corpus is **151,900**, but it is **not yet live** on the public site.
+
+Verified production facts:
+- Vercel project: `akarfinder` / `prj_RCs2Ku5vex9cpABWnwaCjbuKrhhc`.
+- Current public `/api/stats`: **0 listings**.
+- Supabase production project: `kusfiyimwvxblvsrhaes` (`AqarFinder`).
+- Direct SQL production state: **19,616 properties / 19,621 sources / 19,616 unique fingerprints / 19,621 unique URLs / 0 orphans / 1,189 inactive sources**.
+- Supabase Data API is currently restricted with `exceed_db_size_quota`; no production merge was executed.
+- Financial upgrade/spend-cap change was not performed.
+
+Chosen release path:
+- A focused branch based on `main`: `release/neon-recovery-live-20260928`.
+- PR: **#1103** — Neon read provider only; no bulk recovery-branch merge.
+- Neon provider code passed TypeScript, targeted DB/API tests, Next build, and exact Neon smoke **151,900 / 151,900** in run `36438854073`; that run was red only because its generated lockfile push raced a newer branch commit.
+- Recertification run: `36439594737`.
+- Vercel GitHub secret `VERCEL_TOKEN` exists but the CLI rejects it with `User not found (404)`; connected Vercel deployment action is unavailable. No Vercel release was performed.
+
+### Production Next exact
+1. Complete recertification + coherent package lock on PR #1103.
+2. Refresh the Vercel deploy credential (or configure production envs in Vercel UI): `DATABASE_PROVIDER=neon` and server-only `DATABASE_URL=<certified recovery Neon connection>`.
+3. Deploy preview from PR #1103.
+4. Require preview `/api/stats.total_listings = 151900` + listing/search smoke.
+5. Promote/deploy production.
+6. Require public `https://akarfinder.vercel.app/api/stats` = **151900** and post-deploy error scan.
+7. Merge PR #1103 / post-merge closeout only after live proof.
