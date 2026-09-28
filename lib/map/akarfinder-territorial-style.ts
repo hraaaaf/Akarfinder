@@ -23,6 +23,31 @@ export const AKARFINDER_TERRITORIAL_PALETTE = [
   "#BFDDE4",
 ] as const;
 
+export const AKARFINDER_MOROCCO_MAP_NAVY = "#071B33";
+
+export const AKARFINDER_MOROCCO_TERRITORY_TONES = [
+  "#0B2847",
+  "#113653",
+  "#18435F",
+  "#20516B",
+  "#2A5F77",
+  "#376D82",
+  "#477C8D",
+  "#588A98",
+  "#6B99A4",
+  "#80A8AF",
+  "#96B7BB",
+  "#ADC6C7",
+] as const;
+
+export function territoryToneForKey(key: string): string {
+  let hash = 0;
+  for (const character of key.trim().toLowerCase()) {
+    hash = (hash * 31 + character.charCodeAt(0)) >>> 0;
+  }
+  return AKARFINDER_MOROCCO_TERRITORY_TONES[hash % AKARFINDER_MOROCCO_TERRITORY_TONES.length];
+}
+
 const LIGHT_BASEMAP_BACKGROUND = "#EDF3F7";
 const DARK_BASEMAP_BACKGROUND = "#071426";
 const DEFAULT_NEUTRAL_HEATMAP = "#D8E1E8";
