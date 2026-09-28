@@ -86,20 +86,20 @@ jobs:
             origin_type text,compliance_status text,content_fingerprint text,ingestion_run_id text,displayed_price numeric,price_currency text,price_period text,price_status text
           ) ON COMMIT DROP;
           \copy w12_import FROM '/w12/import.csv' WITH (FORMAT csv, HEADER true)
-          SELECT CASE WHEN (SELECT count(*) FROM public.property_listings)=:pre THEN 1 ELSE 1/0 END;
-          SELECT CASE WHEN (SELECT count(*) FROM public.listing_sources)=:pre THEN 1 ELSE 1/0 END;
-          SELECT CASE WHEN (SELECT count(*) FROM w12_import)=:rows THEN 1 ELSE 1/0 END;
-          SELECT CASE WHEN EXISTS(SELECT 1 FROM w12_import s JOIN public.listing_sources ls ON ls.listing_url=s.listing_url) THEN 1/0 ELSE 1 END;
-          SELECT CASE WHEN EXISTS(SELECT 1 FROM w12_import s JOIN public.property_listings pl ON pl.canonical_fingerprint=s.canonical_fingerprint) THEN 1/0 ELSE 1 END;
-          SELECT CASE WHEN EXISTS(SELECT 1 FROM w12_import s JOIN public.listing_sources ls ON ls.source_name=s.source_name AND ls.source_offer_key=s.source_offer_key) THEN 1/0 ELSE 1 END;
+          SELECT 1 / (((SELECT count(*) FROM public.property_listings)=:pre)::int);
+          SELECT 1 / (((SELECT count(*) FROM public.listing_sources)=:pre)::int);
+          SELECT 1 / (((SELECT count(*) FROM w12_import)=:rows)::int);
+          SELECT 1 / ((NOT EXISTS(SELECT 1 FROM w12_import s JOIN public.listing_sources ls ON ls.listing_url=s.listing_url))::int);
+          SELECT 1 / ((NOT EXISTS(SELECT 1 FROM w12_import s JOIN public.property_listings pl ON pl.canonical_fingerprint=s.canonical_fingerprint))::int);
+          SELECT 1 / ((NOT EXISTS(SELECT 1 FROM w12_import s JOIN public.listing_sources ls ON ls.source_name=s.source_name AND ls.source_offer_key=s.source_offer_key))::int);
           INSERT INTO public.property_listings(canonical_fingerprint,title,price_mad,city,district,property_type,transaction_type,surface_m2,rooms_count,bedrooms_count,bathrooms_count,description_snippet,images_count,seller_name,data_completeness_score,field_confidence)
           SELECT canonical_fingerprint,title,price_mad,city,district,property_type,transaction_type,surface_m2,rooms_count,bedrooms_count,bathrooms_count,description_snippet,images_count,seller_name,data_completeness_score,field_confidence FROM w12_import;
           INSERT INTO public.listing_sources(property_listing_id,source_name,listing_url,source_url,first_seen_at,last_seen_at,is_active,source_offer_key,origin_type,compliance_status,content_fingerprint,ingestion_run_id,displayed_price,price_currency,price_period,price_status)
           SELECT pl.id,s.source_name,s.listing_url,s.source_url,s.first_seen_at,s.last_seen_at,true,s.source_offer_key,s.origin_type,s.compliance_status,s.content_fingerprint,s.ingestion_run_id,s.displayed_price,s.price_currency,s.price_period,s.price_status
           FROM w12_import s JOIN public.property_listings pl ON pl.canonical_fingerprint=s.canonical_fingerprint;
-          SELECT CASE WHEN (SELECT count(*) FROM public.property_listings)=:post THEN 1 ELSE 1/0 END;
-          SELECT CASE WHEN (SELECT count(*) FROM public.listing_sources)=:post THEN 1 ELSE 1/0 END;
-          SELECT CASE WHEN (SELECT count(*) FROM public.listing_sources WHERE ingestion_run_id='clean-corpus-v4.11-wave12-major-portals')=:rows THEN 1 ELSE 1/0 END;
+          SELECT 1 / (((SELECT count(*) FROM public.property_listings)=:post)::int);
+          SELECT 1 / (((SELECT count(*) FROM public.listing_sources)=:post)::int);
+          SELECT 1 / (((SELECT count(*) FROM public.listing_sources WHERE ingestion_run_id='clean-corpus-v4.11-wave12-major-portals')=:rows)::int);
           COMMIT;
           SQL
           docker run --rm -e DATABASE_URL="$DATABASE_URL" -v "$RUNNER_TEMP/w12:/w12" postgres:17 sh -lc "psql \"\$DATABASE_URL\" -X -v ON_ERROR_STOP=1 -v pre=$PRE -v post=$POST -v rows=$ROWS -f /w12/import.sql"
