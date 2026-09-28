@@ -1,0 +1,16 @@
+{
+  "schema_version": "akarfinder-v4.11-wave13-strict-route-import-approval-20260928",
+  "approved": true,
+  "rows": 1961,
+  "artifact_id": 10970967090,
+  "jsonl_sha256": "80eb719859d962001553be0baed150eb7f2772bcfbb497495066eaf928d4f0f9",
+  "preflight_run_id": 36428060742,
+  "preflight_artifact_id": 10972042268,
+  "expected_pre": 149939,
+  "expected_post": 151900,
+  "target_project": "ancient-violet-43534870",
+  "target_branch": "br-cold-mouse-b2a50yaa",
+  "target_database": "AkarFinder",
+  "production_neon_writes_authorized": false,
+  "vercel_deployment_authorized": false
+}
