@@ -41,7 +41,8 @@ PR canonique :
 - titre : `feat(vivre-ici): canonical national → city → district TARGET reconciliation`
 - branche : `feat/akar-map-quartier-target-couche3`
 - base : `main@b0ec9d6a5526bd60c14653a5679b88e2e6d7194d`
-- HEAD vérifié : `7e8b9c50390a493e763ddf0d6d5540a25419f040`
+- HEAD produit vérifié : `7e8b9c50390a493e763ddf0d6d5540a25419f040`
+- le HEAD de branche est ensuite avancé par le commit docs du présent handover ; le revérifier à la reprise
 - état : OPEN / DRAFT
 - mergeable : true
 - mergeable_state : unstable
@@ -69,7 +70,7 @@ Le fichier canonique `3-vivre-ici-akarfinder.md` a été mis à jour sur la bran
 
 ## ÉTAT CI EXACT-HEAD
 
-HEAD : `7e8b9c50390a493e763ddf0d6d5540a25419f040`
+HEAD produit certifié pour les runs ci-dessous : `7e8b9c50390a493e763ddf0d6d5540a25419f040`
 
 Verts :
 - `Canonical Baseline Compile Validation` — run **36360416576** ✅
