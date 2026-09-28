@@ -251,6 +251,9 @@ export function MaarifTargetRail() {
           .maarif-target-copy{font-size:11px}
           .maarif-target-stat-grid strong{font-size:18px}
         }
+        @media(min-width:561px) and (max-width:1023px){
+          .maarif-target-rail{height:44svh;max-height:44svh;overflow-y:auto;overscroll-behavior:contain}
+        }
         @media(max-width:560px){
           [data-maarif-rebuild="true"] [data-p4-map-canvas]{height:54svh!important;min-height:420px!important}
           .maarif-target-hero{height:128px;margin:10px 10px 0}
