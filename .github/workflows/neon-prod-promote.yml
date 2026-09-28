@@ -1,4 +1,4 @@
-name: Neon cutover promote proven preview
+name: Neon production env audit
 on:
   push:
     branches: [release/neon-recovery-live-20260928]
@@ -6,17 +6,14 @@ on:
 permissions:
   contents: read
 jobs:
-  promote:
+  audit:
     runs-on: ubuntu-latest
     steps:
-      - name: Promote proven Preview artifact to Production
+      - name: Audit DATABASE_URL targets without exposing values
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
           set -euo pipefail
-          test -n "$VERCEL_TOKEN"
-          code=$(curl -sS -o /tmp/resp -w "%{http_code}" -X POST \
-            -H "Authorization: Bearer $VERCEL_TOKEN" \
-            "https://api.vercel.com/v10/projects/prj_RCs2Ku5vex9cpABWnwaCjbuKrhhc/promote/dpl_FCrVEz1B3eeTC2p4Hah9H6oZR44w?teamId=team_NNhXPDOIfjGNBcn253btpyk0")
-          cat /tmp/resp
-          test "$code" = "201" -o "$code" = "202"
+          curl -fsS -H "Authorization: Bearer $VERCEL_TOKEN" \
+            "https://api.vercel.com/v9/projects/prj_RCs2Ku5vex9cpABWnwaCjbuKrhhc/env?teamId=team_NNhXPDOIfjGNBcn253btpyk0" \
+            | jq -c '[.envs[] | select(.key=="DATABASE_URL") | {id,key,target,type,gitBranch}]'
