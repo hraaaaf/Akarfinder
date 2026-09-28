@@ -3,6 +3,7 @@
 import { Layers3, LocateFixed, Minus, Plus, Search } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { MAARIF_TARGET_CONTEXT_LABELS } from "@/lib/geo/maarif-target-context-labels";
+import { AKARFINDER_MOROCCO_MAP_NAVY, territoryLightToneForKey } from "@/lib/map/akarfinder-territorial-style";
 
 type LivingHereCategory =
   | "education" | "groceries" | "health" | "transport" | "food" | "green_sport"
@@ -223,6 +224,7 @@ export function MapLibreNeighborhood3D({
   const [centerPoint, setCenterPoint] = useState<ScreenPoint | null>(null);
   const [rtlStatus, setRtlStatus] = useState<"loading" | "loaded" | "error">("loading");
   const isMaarifTargetPilot = citySlug === "casablanca" && districtSlug === "maarif";
+  const districtTone = territoryLightToneForKey(districtSlug);
 
   const restoreCamera = () => {
     const map = mapInstanceRef.current;
@@ -630,9 +632,9 @@ export function MapLibreNeighborhood3D({
               source: FOCUS_SOURCE_ID,
               paint: {
                 "circle-radius": isMaarifTargetPilot ? (desktop ? 112 : 76) : (desktop ? 84 : 68),
-                "circle-color": isMaarifTargetPilot ? "#6eb6e8" : "#12a9a1",
+                "circle-color": districtTone,
                 "circle-opacity": isMaarifTargetPilot ? 0.022 : 0.13,
-                "circle-stroke-color": isMaarifTargetPilot ? "#9fd3f3" : "#8ff8ee",
+                "circle-stroke-color": AKARFINDER_MOROCCO_MAP_NAVY,
                 "circle-stroke-width": isMaarifTargetPilot ? 0.8 : 1.5,
                 "circle-stroke-opacity": isMaarifTargetPilot ? 0.12 : 0.56,
               },
@@ -643,7 +645,7 @@ export function MapLibreNeighborhood3D({
               source: FOCUS_SOURCE_ID,
               paint: {
                 "circle-radius": 10,
-                "circle-color": "#087b78",
+                "circle-color": AKARFINDER_MOROCCO_MAP_NAVY,
                 "circle-opacity": 0.96,
                 "circle-stroke-color": "#ffffff",
                 "circle-stroke-width": 4,
@@ -659,14 +661,14 @@ export function MapLibreNeighborhood3D({
               map.addLayer({
                 id: "neighborhood-boundary-fill", type: "fill", source: "neighborhood-boundary",
                 paint: {
-                  "fill-color": isMaarifTargetPilot ? "#6da7de" : "#69A7E8",
+                  "fill-color": districtTone,
                   "fill-opacity": isMaarifTargetPilot ? 0.035 : 0.18,
                 },
               });
               map.addLayer({
                 id: "neighborhood-boundary-line", type: "line", source: "neighborhood-boundary",
                 paint: {
-                  "line-color": isMaarifTargetPilot ? "#5f88b2" : "#071B33",
+                  "line-color": AKARFINDER_MOROCCO_MAP_NAVY,
                   "line-width": isMaarifTargetPilot ? 1.35 : 3.2,
                   "line-opacity": isMaarifTargetPilot ? 0.44 : 0.96,
                   "line-blur": isMaarifTargetPilot ? 0.1 : 0,
@@ -707,7 +709,7 @@ export function MapLibreNeighborhood3D({
       mapInstanceRef.current = null;
       try { map?.remove(); } catch { /* no-op */ }
     };
-  }, [citySlug, districtSlug, districtLabel, center[0], center[1], desktopCameraOffset[0], desktopCameraOffset[1], boundaryGeometry, targetComposition]);
+  }, [citySlug, districtSlug, districtLabel, center[0], center[1], desktopCameraOffset[0], desktopCameraOffset[1], boundaryGeometry, targetComposition, districtTone]);
 
   useEffect(() => {
     const map = mapInstanceRef.current;
@@ -752,7 +754,7 @@ export function MapLibreNeighborhood3D({
         type: "fill",
         source: CONTEXT_FOOTPRINT_SOURCE_ID,
         paint: {
-          "fill-color": "#77b8e8",
+          "fill-color": districtTone,
           "fill-opacity": 0.22,
         },
       } as any, FOCUS_GLOW_LAYER_ID);
@@ -761,7 +763,7 @@ export function MapLibreNeighborhood3D({
         type: "line",
         source: CONTEXT_FOOTPRINT_SOURCE_ID,
         paint: {
-          "line-color": "#0b2b50",
+          "line-color": AKARFINDER_MOROCCO_MAP_NAVY,
           "line-width": 2.4,
           "line-opacity": 0.86,
           "line-blur": 0.08,
@@ -778,6 +780,7 @@ export function MapLibreNeighborhood3D({
     center[0],
     center[1],
     targetPilotLandmarks,
+    districtTone,
   ]);
 
   useEffect(() => {
