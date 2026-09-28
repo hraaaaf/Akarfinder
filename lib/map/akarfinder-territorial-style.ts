@@ -48,6 +48,15 @@ export function territoryToneForKey(key: string): string {
   return AKARFINDER_MOROCCO_TERRITORY_TONES[hash % AKARFINDER_MOROCCO_TERRITORY_TONES.length];
 }
 
+export function territoryLightToneForKey(key: string): string {
+  const lightTones = AKARFINDER_MOROCCO_TERRITORY_TONES.slice(6);
+  let hash = 0;
+  for (const character of key.trim().toLowerCase()) {
+    hash = (hash * 31 + character.charCodeAt(0)) >>> 0;
+  }
+  return lightTones[hash % lightTones.length];
+}
+
 const LIGHT_BASEMAP_BACKGROUND = "#EDF3F7";
 const DARK_BASEMAP_BACKGROUND = "#071426";
 const DEFAULT_NEUTRAL_HEATMAP = "#D8E1E8";
