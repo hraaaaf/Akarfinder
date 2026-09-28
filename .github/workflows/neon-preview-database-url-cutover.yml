@@ -1,0 +1,47 @@
+name: Neon Preview DATABASE_URL Cutover
+
+on:
+  push:
+    branches:
+      - release/neon-recovery-live-20260928
+    paths:
+      - .github/workflows/neon-preview-database-url-cutover.yml
+
+jobs:
+  cutover-preview:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Validate required secrets
+        shell: bash
+        env:
+          DATABASE_URL: ${{ secrets.NEON_RECOVERY_DATABASE_URL }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          set -euo pipefail
+          test -n "$DATABASE_URL"
+          test -n "$VERCEL_TOKEN"
+          case "$DATABASE_URL" in
+            postgres://*|postgresql://*) ;;
+            *) echo "NEON_RECOVERY_DATABASE_URL is not a PostgreSQL URL"; exit 1 ;;
+          esac
+
+      - name: Upsert branch-specific Preview DATABASE_URL
+        shell: bash
+        env:
+          DATABASE_URL: ${{ secrets.NEON_RECOVERY_DATABASE_URL }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          set -euo pipefail
+          body="$(jq -nc --arg value "$DATABASE_URL" --arg branch "$GITHUB_REF_NAME"             '{key:"DATABASE_URL",value:$value,type:"encrypted",target:["preview"],gitBranch:$branch,comment:"AkarFinder Neon preview cutover 2026-09-28"}')"
+
+          code="$(curl -sS -o /tmp/vercel-env.json -w '%{http_code}'             -X POST             "https://api.vercel.com/v10/projects/prj_RCs2Ku5vex9cpABWnwaCjbuKrhhc/env?upsert=true&teamId=team_NNhXPDOIfjGNBcn253btpyk0"             -H "Authorization: Bearer $VERCEL_TOKEN"             -H "Content-Type: application/json"             --data "$body")"
+
+          if [ "$code" -lt 200 ] || [ "$code" -ge 300 ]; then
+            echo "Vercel env upsert failed with HTTP $code"
+            jq -r '{error, message}' /tmp/vercel-env.json
+            exit 1
+          fi
+
+          jq -r '{id, key, type, target, gitBranch}' /tmp/vercel-env.json
