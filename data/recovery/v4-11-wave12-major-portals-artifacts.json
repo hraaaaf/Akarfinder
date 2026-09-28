@@ -1,0 +1,15 @@
+{
+  "schema_version": "akarfinder-v4.11-wave12-major-portals-artifacts-20260928",
+  "mubawab": {
+    "artifact_id": 10946401197,
+    "artifact_digest": "sha256:3272584504c2fa9017a4f98bd9d628c1c41754585d7ffd1eb5fd4cef0e2d5c2d",
+    "txt_sha256": "89ab4c71b65d6ce99c112576d7220973ea84ba53a3f3a443dd79b54d8e02db33"
+  },
+  "agenz": {
+    "artifact_id": 10945814080,
+    "artifact_digest": "sha256:74a84f1b435edc2abeba05ffbed03a24adf8da809eecafc604631eb8a2397a75",
+    "txt_sha256": "02b0840dfe8900a28ae25c205b8f5fcb59c529e7deac7eb9a41857648c9b05b4"
+  },
+  "database_writes_authorized": false,
+  "vercel_deployment_authorized": false
+}
