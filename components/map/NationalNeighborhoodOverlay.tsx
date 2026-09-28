@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Layers3, MapPin, Search, ShieldCheck, Trees, X } from "lucide-react";
+import { ChevronDown, Layers3, MapPin, Search, ShieldCheck, Trees, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Map as MapLibreMap, MapMouseEvent } from "maplibre-gl";
 import { AKARFINDER_MOROCCO_MAP_NAVY, territoryLightToneForKey } from "@/lib/map/akarfinder-territorial-style";
@@ -12,6 +12,7 @@ const DOTS = "akarfinder-national-neighborhood-dots";
 const ACTIVE = "akarfinder-national-neighborhood-active";
 const LABELS = "akarfinder-national-neighborhood-labels";
 const ACCENT = "#0B63CE";
+const CASABLANCA_FEATURED_SLUGS = ["maarif", "racine", "bourgogne", "ain-diab", "californie", "sidi-belyout"];
 
 export type NationalNeighborhood = {
   slug: string;
@@ -83,12 +84,14 @@ export function NationalNeighborhoodOverlay({
   const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
   const [hoverSlug, setHoverSlug] = useState<string | null>(null);
   const [query, setQuery] = useState("");
+  const [directoryExpanded, setDirectoryExpanded] = useState(false);
   const selectedRef = useRef<string | null>(null);
 
   useEffect(() => { selectedRef.current = selectedSlug; }, [selectedSlug]);
   useEffect(() => {
     setHoverSlug(null);
     setQuery("");
+    setDirectoryExpanded(false);
   }, [citySlug]);
 
   const bySlug = useMemo(() => new Map(neighborhoods.map((item) => [item.slug, item] as const)), [neighborhoods]);
@@ -103,6 +106,13 @@ export function NationalNeighborhoodOverlay({
     if (needle.length < 2) return [];
     return neighborhoods.filter((item) => normalizedSearchText(item.name).includes(needle)).slice(0, 6);
   }, [neighborhoods, query]);
+  const featured = useMemo(() => {
+    if (citySlug !== "casablanca") return neighborhoods.filter((item) => item.center && item.sourceKinds.length).slice(0, 6);
+    return CASABLANCA_FEATURED_SLUGS.flatMap((slug) => {
+      const item = bySlug.get(slug);
+      return item?.center && item.sourceKinds.length ? [item] : [];
+    });
+  }, [bySlug, citySlug, neighborhoods]);
 
   useEffect(() => {
     if (!map || !mapReady) return;
@@ -246,6 +256,34 @@ export function NationalNeighborhoodOverlay({
             />
             {query ? <button type="button" onClick={() => setQuery("")} aria-label="Effacer la recherche" className="grid h-7 w-7 place-items-center rounded-lg text-muted-foreground hover:bg-muted"><X size={13} /></button> : null}
           </div>
+          {query.trim().length < 2 && featured.length ? (
+            <div className="mt-2 border-t border-border pt-2" data-akarfinder-neighborhood-directory>
+              <button
+                type="button"
+                aria-expanded={directoryExpanded}
+                onClick={() => setDirectoryExpanded((value) => !value)}
+                className="flex w-full items-center justify-between gap-2 px-1 text-left text-[10px] font-extrabold text-brand-primary"
+              >
+                <span>Explorer les quartiers</span>
+                <ChevronDown size={14} aria-hidden="true" className={directoryExpanded ? "rotate-180" : ""} />
+              </button>
+              <div className="mt-2 grid grid-cols-2 gap-1.5">
+                {featured.slice(0, directoryExpanded ? 6 : 4).map((item) => (
+                  <button
+                    key={item.slug}
+                    type="button"
+                    data-akarfinder-featured-neighborhood={item.slug}
+                    onClick={() => chooseSuggestion(item)}
+                    className="flex min-h-9 min-w-0 items-center gap-1.5 rounded-xl border border-[#dce8f2] bg-[#f5f9fc] px-2 text-left text-[10px] font-bold text-[#123250] hover:border-[#8bb6d4] hover:bg-[#e9f3f9] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary dark:border-white/15 dark:bg-white/5 dark:text-white"
+                  >
+                    <MapPin size={11} className="shrink-0 text-brand-primary" aria-hidden="true" />
+                    <span className="truncate">{item.name}</span>
+                  </button>
+                ))}
+              </div>
+              {directoryExpanded ? <p className="mt-2 px-1 text-[9px] leading-3.5 text-muted-foreground">Repères sourcés, sans limites de quartier vérifiées. Recherchez un nom pour parcourir le catalogue.</p> : null}
+            </div>
+          ) : null}
           {suggestions.length ? (
             <div className="mt-2 max-h-48 overflow-auto border-t border-border pt-1.5">
               {suggestions.map((item) => (

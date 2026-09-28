@@ -103,7 +103,19 @@ try {
 
       let overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
       if (overflow > 1) throw new Error(`horizontal overflow ${overflow}`);
+      const featuredMaarif = page.locator('[data-akarfinder-featured-neighborhood="maarif"]');
+      await featuredMaarif.waitFor({ state: "visible", timeout: 5000 });
       await page.screenshot({ path: `${outDir}/casablanca-neighborhoods-${viewport.name}-after.png`, fullPage: false });
+
+      const directory = page.locator('[data-akarfinder-neighborhood-directory]');
+      await directory.getByRole("button", { name: "Explorer les quartiers" }).click();
+      if (await directory.getByRole("button", { name: "Explorer les quartiers" }).getAttribute("aria-expanded") !== "true") throw new Error("directory did not expand");
+      await page.screenshot({ path: `${outDir}/casablanca-directory-${viewport.name}-after.png`, fullPage: false });
+      await featuredMaarif.click();
+      await page.waitForURL((url) => url.searchParams.get("district") === "maarif", { timeout: 10000 });
+
+      await page.goto(cityUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
+      await waitForNationalOverlay(page);
 
       const mappedInput = page.getByRole("textbox", { name: "Rechercher un quartier à Casablanca" });
       await mappedInput.fill("Maârif");
@@ -142,7 +154,7 @@ try {
       await page.screenshot({ path: `${outDir}/postal-maarif-${viewport.name}-after.png`, fullPage: false });
 
       if (pageErrors.length) throw new Error(`browser page errors ${JSON.stringify(pageErrors)}`);
-      report.cases.push({ viewport: viewport.name, overflow, layerState, mappedSelection: "maplibre", noCenterFallback: true, searchHandoff: true });
+      report.cases.push({ viewport: viewport.name, overflow, layerState, featuredSelection: true, mappedSelection: "maplibre", noCenterFallback: true, searchHandoff: true });
     } catch (error) {
       report.failure = { viewport: viewport.name, error: String(error) };
       throw error;

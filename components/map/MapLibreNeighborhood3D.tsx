@@ -81,6 +81,7 @@ const FOCUS_GLOW_LAYER_ID = "akarfinder-neighborhood-focus-glow";
 const FOCUS_RING_LAYER_ID = "akarfinder-neighborhood-focus-ring";
 const CONTEXT_FOOTPRINT_SOURCE_ID = "akarfinder-target-context-footprint";
 const CONTEXT_FOOTPRINT_FILL_LAYER_ID = "akarfinder-target-context-footprint-fill";
+const CONTEXT_FOOTPRINT_HALO_LAYER_ID = "akarfinder-target-context-footprint-halo";
 const CONTEXT_FOOTPRINT_LINE_LAYER_ID = "akarfinder-target-context-footprint-line";
 
 const CATEGORY_META: Record<LivingHereCategory, { label: string; color: string }> = {
@@ -419,13 +420,13 @@ export function MapLibreNeighborhood3D({
                 paint: {
                   "fill-color": [
                     "interpolate", ["linear"], ["coalesce", ["get", "render_height"], 0],
-                    0, "#20516B",
-                    12, "#2A5F77",
-                    28, "#376D82",
-                    60, "#477C8D"
+                    0, "#7799a5",
+                    12, "#86a5ae",
+                    28, "#96b0b6",
+                    60, "#a7bdc0"
                   ],
-                  "fill-opacity": ["interpolate", ["linear"], ["zoom"], 12.2, 0.80, 14.5, 0.96],
-                  "fill-outline-color": "#588A98",
+                  "fill-opacity": ["interpolate", ["linear"], ["zoom"], 12.2, 0.46, 14.5, 0.66],
+                  "fill-outline-color": "#9bb4bc",
                 },
               } as any);
 
@@ -799,14 +800,25 @@ export function MapLibreNeighborhood3D({
         },
       } as any, FOCUS_GLOW_LAYER_ID);
       map.addLayer({
+        id: CONTEXT_FOOTPRINT_HALO_LAYER_ID,
+        type: "line",
+        source: CONTEXT_FOOTPRINT_SOURCE_ID,
+        paint: {
+          "line-color": "#d7edf4",
+          "line-width": 9,
+          "line-opacity": 0.58,
+          "line-blur": 3.5,
+        },
+      } as any, FOCUS_GLOW_LAYER_ID);
+      map.addLayer({
         id: CONTEXT_FOOTPRINT_LINE_LAYER_ID,
         type: "line",
         source: CONTEXT_FOOTPRINT_SOURCE_ID,
         paint: {
           "line-color": AKARFINDER_MOROCCO_MAP_NAVY,
-          "line-width": 2.4,
-          "line-opacity": 0.86,
-          "line-blur": 0.08,
+          "line-width": 2.8,
+          "line-opacity": 0.94,
+          "line-blur": 0,
         },
       } as any, FOCUS_GLOW_LAYER_ID);
     } catch (error) {
