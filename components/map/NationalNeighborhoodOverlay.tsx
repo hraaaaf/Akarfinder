@@ -130,10 +130,10 @@ export function NationalNeighborhoodOverlay({
       source: SOURCE,
       paint: {
         "circle-radius": ["interpolate", ["linear"], ["zoom"], 8, 2.5, 12, 4.5],
-        "circle-color": ["get", "tone"],
+        "circle-color": ACCENT,
         "circle-opacity": 0.92,
         "circle-stroke-color": theme === "dark" ? "#071426" : "#FFFFFF",
-        "circle-stroke-width": 1.2,
+        "circle-stroke-width": 1.4,
       },
     });
     map.addLayer({
