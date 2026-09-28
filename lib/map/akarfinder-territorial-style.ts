@@ -23,11 +23,11 @@ export const AKARFINDER_TERRITORIAL_PALETTE = [
   "#BFDDE4",
 ] as const;
 
-export const AKARFINDER_MOROCCO_MAP_NAVY = "#071B33";
+export const AKARFINDER_MOROCCO_MAP_NAVY = "#123250";
 
 export const AKARFINDER_MOROCCO_TERRITORY_TONES = [
-  "#0B2847",
-  "#113653",
+  "#20516B",
+  "#2A5F77",
   "#18435F",
   "#20516B",
   "#2A5F77",

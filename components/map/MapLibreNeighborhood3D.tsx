@@ -378,8 +378,8 @@ export function MapLibreNeighborhood3D({
                     "match", ["get", "class"],
                     "commercial", "#18435F",
                     "retail", "#20516B",
-                    "industrial", "#113653",
-                    "#0B2847"
+                    "industrial", "#2A5F77",
+                    "#20516B"
                   ],
                   "fill-opacity": 0.90,
                 },
