@@ -19,7 +19,9 @@ async function main(){
   const seen=new Set<string>();const perIndex:any[]=[];let rawTotal=0,failed=0;
   for(const index of INDEXES){
     const qi=new URLSearchParams({url:domain,matchType:"domain",showNumPages:"true",pageSize:String(PAGE_SIZE)});
-    const ir=await fetchText(`${base(index)}?${qi}`); if(ir.status===404){perIndex.push({index,pages:0,raw:0});continue}
+    let ir:Response;
+    try{ir=await fetchText(`${base(index)}?${qi}`)}catch{failed++;perIndex.push({index,pages:0,raw:0,failed_index:true});continue}
+    if(ir.status===404){perIndex.push({index,pages:0,raw:0});continue}
     const info:any=await ir.json();const pages=Math.min(Number(info.pages||0),MAX_PAGES);let raw=0;
     for(let page=0;page<pages;page++){
       const q=new URLSearchParams({url:domain,matchType:"domain",output:"json",fl:"url",pageSize:String(PAGE_SIZE),page:String(page)});
