@@ -41,5 +41,6 @@
   },
   "total_rows": 7765,
   "database_writes_authorized": false,
-  "vercel_deployment_authorized": false
+  "vercel_deployment_authorized": false,
+  "certifier_commit": "e6fe409f2e3843fb42788157d78dcfba867b35fb"
 }
