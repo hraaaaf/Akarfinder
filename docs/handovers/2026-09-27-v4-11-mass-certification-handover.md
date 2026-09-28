@@ -418,3 +418,25 @@ Chosen release path:
 5. Promote/deploy production.
 6. Require public `https://akarfinder.vercel.app/api/stats` = **151900** and post-deploy error scan.
 7. Merge PR #1103 / post-merge closeout only after live proof.
+
+
+## DB provider architecture decision — 2026-09-28
+
+Production read architecture is now explicitly defined as:
+- **Primary:** Neon (`DATABASE_PROVIDER=neon`)
+- **Backup:** Supabase (`DATABASE_BACKUP_PROVIDER=supabase`)
+- **Local/dev only:** SQLite when explicitly selected
+
+Implementation is isolated in PR **#1103** on `release/neon-recovery-live-20260928`.
+
+Failover contract:
+- Neon success => Supabase is not queried.
+- Neon operational failure => Supabase is attempted.
+- Legitimate empty result / not-found does not trigger backup.
+- Provider misconfiguration fails closed; no silent SQLite fallback in production.
+- Supabase operational failures now throw to the router instead of being converted into fake empty results.
+
+Backup readiness caveat:
+- Supabase currently contains about **19.6k** production rows and its Data API is restricted by `exceed_db_size_quota`.
+- Therefore the failover path is implemented, but Supabase is **not yet certified as a healthy/parity backup** for the 151,900-row Neon corpus.
+- Do not claim backup readiness until Supabase service is restored and a parity/synchronization gate is green.
