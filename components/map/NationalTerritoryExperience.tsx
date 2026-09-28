@@ -5,7 +5,7 @@ import { ArrowLeft, MapPin, Search } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Map as MapLibreMap, MapMouseEvent } from "maplibre-gl";
 import { useTheme } from "@/components/theme/ThemeProvider";
-import { AKARFINDER_MOROCCO_MAP_NAVY, applyAkarFinderBasemapTreatment, territoryToneForKey } from "@/lib/map/akarfinder-territorial-style";
+import { AKARFINDER_MOROCCO_MAP_NAVY, applyAkarFinderMoroccoBasemapTreatment, territoryToneForKey } from "@/lib/map/akarfinder-territorial-style";
 
 const LIGHT_TILE_STYLE = "https://tiles.openfreemap.org/styles/liberty";
 const DARK_TILE_STYLE = "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json";
@@ -161,7 +161,7 @@ export function NationalTerritoryExperience({ selectedCitySlug, onSelectCity, on
       instance.addControl(new NavigationControl({ showCompass: false }), "bottom-right");
       instance.once("style.load", () => {
         if (!instance || cancelled) return;
-        applyAkarFinderBasemapTreatment(instance, document.documentElement.dataset.theme);
+        applyAkarFinderMoroccoBasemapTreatment(instance);
         setMapReady(true);
         (window as unknown as { __AKARFINDER_NATIONAL_MAP__?: MapLibreMap }).__AKARFINDER_NATIONAL_MAP__ = instance;
       });
@@ -183,7 +183,7 @@ export function NationalTerritoryExperience({ selectedCitySlug, onSelectCity, on
     setMapReady(false);
     map.setStyle(styleForTheme(theme));
     map.once("style.load", () => {
-      applyAkarFinderBasemapTreatment(map, theme);
+      applyAkarFinderMoroccoBasemapTreatment(map);
       setMapReady(true);
     });
   }, [theme]);
