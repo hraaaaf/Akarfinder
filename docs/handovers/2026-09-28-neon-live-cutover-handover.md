@@ -365,3 +365,42 @@ Next exact:
 1. Finish cleanup-HEAD CI evidence.
 2. If green, stop at production human gate.
 3. On explicit production authorization: deploy/promote production, verify live stats/listing/search, then merge PR #1103 and perform post-merge closeout.
+
+
+## Production cutover proof — 2026-09-28
+
+Production authorization was explicitly granted by the user.
+
+Final production deployment:
+- deployment: `dpl_GNWENKKJ8QriW5m8XCxW3jvX4EKp`
+- target: `production`
+- READY
+- deployed release SHA: `6f334fdea411a1d1fb765a5ade77ed3ab700d3b4`
+- source branch metadata: `release/neon-recovery-live-20260928`
+- production aliases include `https://akarfinder.vercel.app`
+- deploy workflow run: `36487372140` → SUCCESS
+- deployment method: Vercel REST hash-upload protocol; 2215 missing blobs uploaded, then manifest deployment created successfully.
+- temporary production-deploy workflow removed immediately after proof in commit `66cff3acc32d90893de3757f149c39169b9cc443`.
+
+BEFORE production:
+- deployment: `dpl_4uz5CpyigCDj6VRJ2UtSggXUTD9H`
+- `/api/stats` → `total_listings=0`
+- `/api/listings?limit=1` → `total=0`, `source=sqlite`
+
+AFTER production:
+- `/api/stats` → HTTP 200, `total_listings=151900`
+- `/api/listings?limit=1` → HTTP 200, one real listing, `source=neon`, public total `36`
+- first returned listing: id `165`, Barnes-marrakech, lane `external_web_result`, `display_depth=limited_preview`, `primary_cta=view_original`, `production_allowed=true`.
+
+Important interpretation:
+- Neon corpus total = `151900`.
+- This does NOT mean 151900 rows are publicly publishable.
+- Current policy-compliant public subset = `36`.
+- No publication-policy relaxation was performed.
+
+Next exact:
+1. Commit this canonical closeout update.
+2. Sync Notion.
+3. Verify cleanup HEAD CI.
+4. Mark PR #1103 ready and merge only if required checks are green.
+5. Verify post-merge production remains READY and Neon-backed.
