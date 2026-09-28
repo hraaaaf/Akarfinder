@@ -358,3 +358,34 @@ Wave12 is certified, overlap-filtered, imported into isolated Neon, and independ
 
 ### Next exact
 Open Wave13 from the remaining broad-reservoir URLs already discovered (DarAgadir, Masaken, Avito, Mouldar, PromoImmoMarrakech, Sarouty), preserving strict deterministic route evidence. In parallel, inspect the rejected Mubawab/Agenz route families for a safe Wave12b salvage lane without source-page scraping.
+
+
+## Wave13 strict multi-source closeout — VERIFIED 2026-09-28
+
+Wave13 is certified, exact-overlap filtered, imported into isolated Neon, and independently read back.
+
+- Raw immutable reservoir: **7,765** URLs = DarAgadir 1,962 + Masaken 1,631 + Avito 1,230 + Mouldar 1,112 + PromoImmoMarrakech 952 + Sarouty 878.
+- Strict certification run: `36419048044` — SUCCESS.
+- Certification artifact: `10968851094`, digest `sha256:101111b469f075812e4d1f7149aa9d7c79078c64d9168d456e3d2cb4564a0b2a`.
+- Certified JSONL SHA-256: `ffbee63fefd6343cde056640758966c2d6751ff0aeac28df5ab15a7e894b103a`.
+- Strict candidates: **2,968** = Masaken 1,237 + Mouldar 806 + PromoImmoMarrakech 822 + Avito 86 + Sarouty 17; DarAgadir 0 under strict rules.
+- Initial Neon preflight run: `36421088963` — SUCCESS.
+- Exact initial preflight: **2,968 | 1,005 URL overlaps | 1,005 fingerprint overlaps | 5 identity overlaps | 149,939 | 149,939**.
+- Exact overlap filter run: `36424668309` — SUCCESS.
+- Filtered rows: **1,961** = Masaken 1,067 + Mouldar 798 + Avito 79 + Sarouty 17.
+- Filtered artifact: `10970967090`, digest `sha256:f6d53416b4d142478ccae36d966d582a3aa72abdc16b2ff581322993ec86c039`.
+- Filtered JSONL SHA-256: `80eb719859d962001553be0baed150eb7f2772bcfbb497495066eaf928d4f0f9`.
+- Final zero-overlap preflight run: `36428060742` — SUCCESS.
+- Final preflight result: **1,961 | 0 URL overlap | 0 fingerprint overlap | 0 identity overlap | 149,939 | 149,939**.
+- Controlled isolated-Neon import run: `36429593541` — SUCCESS.
+- Immediate readback: **151,900 | 151,900 | 151,900 | 151,900 | 1,961 | 0 | 0**.
+- Import readback artifact: `10972559931`, digest `sha256:2126fcf125e132cca695dc59be5966d31044d1ff7cba6d05960b61c3ac80c6c5`.
+- Independent post-import readback run: `36429999380` — SUCCESS.
+- Independent readback artifact: `10973042867`, digest `sha256:c2300d9c8566d5355a4c3dd6ce2c434e5213acaf416b5eec784eb9931ece176d`.
+- Independent invariant result: **151,900 properties | 151,900 sources | 151,900 unique URLs | 151,900 unique fingerprints | Wave13 1,961 | orphan 0 | inactive 0 | property core gaps 0 | source core gaps 0**.
+- Production Neon writes: **false**. Vercel deployment: **false**.
+- Progress to 200k: **75.95%**.
+- Exact remaining delta: **48,100**.
+
+### Next exact
+Open Wave14 on the rejected Mubawab/Agenz route families from Wave12, starting with immutable-artifact route classification only. Goal: recover deterministic detail-route variants without source-page scraping or weakening V4.11, then repeat certification → exact overlap → controlled isolated import → independent readback.
