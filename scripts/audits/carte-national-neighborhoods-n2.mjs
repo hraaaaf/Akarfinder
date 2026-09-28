@@ -38,8 +38,9 @@ async function waitForNationalOverlay(page) {
     if (!map?.isStyleLoaded() || map.isMoving()) return false;
     const baseLayers = (map.getStyle().layers ?? []).filter((layer) => !layer.id.startsWith("akarfinder-"));
     const renderedBaseFeatures = map.queryRenderedFeatures().filter((feature) => !feature.layer.id.startsWith("akarfinder-"));
-    const renderedDots = map.queryRenderedFeatures().filter((feature) => feature.layer.id === "akarfinder-national-neighborhood-dots");
-    return baseLayers.length >= 20 && renderedBaseFeatures.length >= 20 && renderedDots.length >= 1;
+    const renderedAtlasFills = map.queryRenderedFeatures().filter((feature) => feature.layer.id === "akarfinder-casablanca-arrondissement-fill");
+    const renderedAtlasLabels = map.queryRenderedFeatures().filter((feature) => feature.layer.id === "akarfinder-casablanca-arrondissement-labels");
+    return baseLayers.length >= 20 && renderedBaseFeatures.length >= 20 && renderedAtlasFills.length >= 1 && renderedAtlasLabels.length >= 1;
   }, null, { timeout: 15000 });
 }
 
@@ -107,12 +108,15 @@ try {
           administrativeAtlasCount: Number(document.querySelector('[data-akarfinder-national-neighborhood-overlay]')?.getAttribute('data-akarfinder-admin-atlas-count') ?? 0),
           administrativeAtlasStatus: document.querySelector('[data-akarfinder-national-neighborhood-overlay]')?.getAttribute('data-akarfinder-admin-atlas-status'),
           renderedNeighborhoodFeatureCount: rendered.filter((feature) => feature.layer.id === "akarfinder-national-neighborhood-dots").length,
+          renderedAdministrativeFillCount: rendered.filter((feature) => feature.layer.id === "akarfinder-casablanca-arrondissement-fill").length,
+          renderedAdministrativeLabelCount: rendered.filter((feature) => feature.layer.id === "akarfinder-casablanca-arrondissement-labels").length,
           basemapLayerCount: layers.filter((layer) => !layer.id.startsWith("akarfinder-")).length,
           renderedBasemapFeatureCount: rendered.filter((feature) => !feature.layer.id.startsWith("akarfinder-")).length,
         };
       });
-      if (!layerState.sourceExists || !layerState.labels || !layerState.dots || layerState.renderedNeighborhoodFeatureCount < 1 || layerState.fakeFill) throw new Error(`neighborhood map layers invalid ${JSON.stringify(layerState)}`);
-      if (!layerState.administrativeAtlasSource || !layerState.administrativeAtlasFill || !layerState.administrativeAtlasLine || !layerState.administrativeAtlasLabels || layerState.administrativeAtlasCount !== 16 || layerState.administrativeAtlasStatus !== "shadow-preview") {
+      if (!layerState.sourceExists || !layerState.labels || !layerState.dots || layerState.fakeFill) throw new Error(`neighborhood map layers invalid ${JSON.stringify(layerState)}`);
+      if (layerState.renderedNeighborhoodFeatureCount !== 0) throw new Error(`city atlas must not render neighborhood dot cloud ${JSON.stringify(layerState)}`);
+      if (!layerState.administrativeAtlasSource || !layerState.administrativeAtlasFill || !layerState.administrativeAtlasLine || !layerState.administrativeAtlasLabels || layerState.administrativeAtlasCount !== 16 || layerState.administrativeAtlasStatus !== "shadow-preview" || layerState.renderedAdministrativeFillCount < 1 || layerState.renderedAdministrativeLabelCount < 1) {
         throw new Error(`Casablanca administrative atlas missing ${JSON.stringify(layerState)}`);
       }
       if (layerState.basemapLayerCount < 20 || layerState.renderedBasemapFeatureCount < 20) throw new Error(`real basemap missing ${JSON.stringify(layerState)}`);
