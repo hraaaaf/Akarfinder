@@ -44,27 +44,22 @@ jobs:
             exit 1
           fi
 
-          jq -r '{id, key, type, target, gitBranch}' /tmp/vercel-env.json
+          jq -r 'if type=="array" then map({id,key,type,target,gitBranch}) else {id,key,type,target,gitBranch} end' /tmp/vercel-env.json
 
       - name: Checkout release HEAD
         uses: actions/checkout@v4
-
-      - name: Link exact Vercel project
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p .vercel
-          printf '%s\n' '{"orgId":"team_NNhXPDOIfjGNBcn253btpyk0","projectId":"prj_RCs2Ku5vex9cpABWnwaCjbuKrhhc"}' > .vercel/project.json
 
       - name: Deploy Preview only
         id: deploy
         shell: bash
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: team_NNhXPDOIfjGNBcn253btpyk0
+          VERCEL_PROJECT_ID: prj_RCs2Ku5vex9cpABWnwaCjbuKrhhc
         run: |
           set -euo pipefail
           test -n "$VERCEL_TOKEN"
-          npx --yes vercel@54.18.7 deploy --yes --force --token "$VERCEL_TOKEN" 2>&1 | tee /tmp/vercel-deploy.log
+          npx --yes vercel@54.18.7 deploy             --yes             --force             --token "$VERCEL_TOKEN"             -T "$VERCEL_ORG_ID"             --project "$VERCEL_PROJECT_ID"             2>&1 | tee /tmp/vercel-deploy.log
           url="$(grep -Eo 'https://[^[:space:]]+\.vercel\.app' /tmp/vercel-deploy.log | tail -n 1)"
           test -n "$url"
           echo "preview_url=$url" >> "$GITHUB_OUTPUT"
