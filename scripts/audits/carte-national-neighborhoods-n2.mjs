@@ -119,13 +119,14 @@ try {
 
       let overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
       if (overflow > 1) throw new Error(`horizontal overflow ${overflow}`);
-      const featuredMaarif = page.locator('[data-akarfinder-featured-neighborhood="maarif"]');
-      await featuredMaarif.waitFor({ state: "visible", timeout: 5000 });
+      const directory = page.locator('[data-akarfinder-neighborhood-directory]');
+      if (await directory.getByRole("button", { name: "Explorer les quartiers" }).getAttribute("aria-expanded") !== "false") throw new Error("directory must start collapsed");
       await page.screenshot({ path: `${outDir}/casablanca-neighborhoods-${viewport.name}-after.png`, fullPage: false });
 
-      const directory = page.locator('[data-akarfinder-neighborhood-directory]');
       await directory.getByRole("button", { name: "Explorer les quartiers" }).click();
       if (await directory.getByRole("button", { name: "Explorer les quartiers" }).getAttribute("aria-expanded") !== "true") throw new Error("directory did not expand");
+      const featuredMaarif = page.locator('[data-akarfinder-featured-neighborhood="maarif"]');
+      await featuredMaarif.waitFor({ state: "visible", timeout: 5000 });
       await page.screenshot({ path: `${outDir}/casablanca-directory-${viewport.name}-after.png`, fullPage: false });
       await featuredMaarif.click();
       await page.waitForURL((url) => url.searchParams.get("district") === "maarif", { timeout: 10000 });

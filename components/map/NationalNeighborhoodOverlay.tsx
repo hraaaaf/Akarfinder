@@ -186,7 +186,7 @@ export function NationalNeighborhoodOverlay({
         source: ATLAS_SOURCE,
         paint: {
           "fill-color": ["get", "tone"],
-          "fill-opacity": theme === "dark" ? 0.26 : 0.22,
+          "fill-opacity": theme === "dark" ? 0.34 : 0.30,
         },
       });
       map.addLayer({
@@ -256,7 +256,7 @@ export function NationalNeighborhoodOverlay({
         "circle-radius": ["interpolate", ["linear"], ["zoom"], 8, 2.5, 12, 4.5],
         "circle-color": ACCENT,
         "circle-opacity": citySlug === "casablanca"
-          ? ["interpolate", ["linear"], ["zoom"], 9, 0.10, 10.5, 0.16, 12.2, 0.72]
+          ? ["interpolate", ["linear"], ["zoom"], 8.5, 0, 10.8, 0.03, 11.8, 0.22, 13, 0.70]
           : 0.92,
         "circle-stroke-color": theme === "dark" ? "#071426" : "#FFFFFF",
         "circle-stroke-width": 1.4,
@@ -294,7 +294,7 @@ export function NationalNeighborhoodOverlay({
         "text-halo-color": theme === "dark" ? "#071426" : "#FFFFFF",
         "text-halo-width": 1.8,
         "text-opacity": citySlug === "casablanca"
-          ? ["interpolate", ["linear"], ["zoom"], 9, 0.16, 10.5, 0.28, 12.2, 0.78]
+          ? ["interpolate", ["linear"], ["zoom"], 8.5, 0.05, 10.8, 0.12, 11.8, 0.42, 13, 0.82]
           : 1,
       },
     });
@@ -434,21 +434,25 @@ export function NationalNeighborhoodOverlay({
                 <span>Explorer les quartiers</span>
                 <ChevronDown size={14} aria-hidden="true" className={directoryExpanded ? "rotate-180" : ""} />
               </button>
-              <div className="mt-2 grid grid-cols-2 gap-1.5">
-                {featured.slice(0, directoryExpanded ? 6 : 4).map((item) => (
-                  <button
-                    key={item.slug}
-                    type="button"
-                    data-akarfinder-featured-neighborhood={item.slug}
-                    onClick={() => chooseSuggestion(item)}
-                    className="flex min-h-9 min-w-0 items-center gap-1.5 rounded-xl border border-[#dce8f2] bg-[#f5f9fc] px-2 text-left text-[10px] font-bold text-[#123250] hover:border-[#8bb6d4] hover:bg-[#e9f3f9] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary dark:border-white/15 dark:bg-white/5 dark:text-white"
-                  >
-                    <MapPin size={11} className="shrink-0 text-brand-primary" aria-hidden="true" />
-                    <span className="truncate">{item.name}</span>
-                  </button>
-                ))}
-              </div>
-              {directoryExpanded ? <p className="mt-2 px-1 text-[9px] leading-3.5 text-muted-foreground">Repères sourcés, sans limites de quartier vérifiées. Recherchez un nom pour parcourir le catalogue.</p> : null}
+              {directoryExpanded ? (
+                <>
+                  <div className="mt-2 grid grid-cols-2 gap-1.5">
+                    {featured.slice(0, 6).map((item) => (
+                      <button
+                        key={item.slug}
+                        type="button"
+                        data-akarfinder-featured-neighborhood={item.slug}
+                        onClick={() => chooseSuggestion(item)}
+                        className="flex min-h-9 min-w-0 items-center gap-1.5 rounded-xl border border-[#dce8f2] bg-[#f5f9fc] px-2 text-left text-[10px] font-bold text-[#123250] hover:border-[#8bb6d4] hover:bg-[#e9f3f9] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary dark:border-white/15 dark:bg-white/5 dark:text-white"
+                      >
+                        <MapPin size={11} className="shrink-0 text-brand-primary" aria-hidden="true" />
+                        <span className="truncate">{item.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                  <p className="mt-2 px-1 text-[9px] leading-3.5 text-muted-foreground">Repères sourcés, sans limites de quartier vérifiées. Recherchez un nom pour parcourir le catalogue.</p>
+                </>
+              ) : null}
             </div>
           ) : null}
           {suggestions.length ? (
