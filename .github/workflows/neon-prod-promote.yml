@@ -10,12 +10,40 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Deploy checked-out exact HEAD to Production
+      - name: Deploy exact checkout to Production via REST files
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
           set -euo pipefail
-          npm install --global vercel@latest
-          vercel pull --yes --environment=production --token="$VERCEL_TOKEN" --scope="achraf-benmoussa-s-projects"
-          url=$(vercel deploy --prod --yes --token="$VERCEL_TOKEN" --scope="achraf-benmoussa-s-projects")
-          echo "DEPLOYMENT_URL=$url"
+          python3 - <<'PY'
+          import os,json,base64,subprocess
+          paths=subprocess.check_output(["git","ls-files","-z"]).split(b"\0")
+          files=[]
+          for raw in paths:
+              if not raw: continue
+              p=raw.decode()
+              if p.startswith(".git/"): continue
+              data=open(p,"rb").read()
+              files.append({"file":p,"data":base64.b64encode(data).decode(),"encoding":"base64"})
+          payload={
+            "name":"akarfinder",
+            "project":"prj_RCs2Ku5vex9cpABWnwaCjbuKrhhc",
+            "target":"production",
+            "files":files,
+            "gitMetadata":{
+              "remoteUrl":"https://github.com/hraaaaf/Akarfinder",
+              "commitRef":"release/neon-recovery-live-20260928",
+              "commitSha":os.environ["GITHUB_SHA"],
+              "commitMessage":"Neon production cutover exact checkout",
+              "dirty":False,"ci":True,"ciType":"github-actions"
+            }
+          }
+          open("/tmp/payload.json","w").write(json.dumps(payload,separators=(",",":")))
+          print("files",len(files),"bytes",os.path.getsize("/tmp/payload.json"))
+          PY
+          code=$(curl -sS -o /tmp/deploy -w "%{http_code}" -X POST \
+            -H "Authorization: Bearer $VERCEL_TOKEN" -H "Content-Type: application/json" \
+            "https://api.vercel.com/v13/deployments?teamId=team_NNhXPDOIfjGNBcn253btpyk0" \
+            --data-binary @/tmp/payload.json)
+          cat /tmp/deploy | jq -c '{id,url,target,readyState,error}'
+          test "$code" = "200" -o "$code" = "201"
