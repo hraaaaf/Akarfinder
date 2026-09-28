@@ -22,7 +22,7 @@ import type { Topology, Objects } from "topojson-specification";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CanonicalCitySlug } from "@/lib/geo/geo-entity-registry";
 import { selectNationalCityVisibility } from "@/lib/geo/territory-national-visibility";
-import { AKARFINDER_MOROCCO_MAP_NAVY, AKARFINDER_MOROCCO_TERRITORY_TONES } from "@/lib/map/akarfinder-territorial-style";
+import { AKARFINDER_MOROCCO_MAP_NAVY, AKARFINDER_MOROCCO_TERRITORY_TONES, territoryLightToneForKey, territoryToneForKey } from "@/lib/map/akarfinder-territorial-style";
 import { selectStableTerritoryLabels } from "@/lib/geo/territory-label-stability";
 
 interface QuartierStats {
@@ -763,7 +763,7 @@ export function PremiumInteractiveMap() {
                         onPointerLeave={() => setTooltip(null)}
                       >
                         <circle r={14 / camera.k} fill="rgba(255,255,255,0.95)" stroke={NAVY} strokeWidth={2.2 / camera.k} vectorEffect="non-scaling-stroke" />
-                        <circle r={5.2 / camera.k} fill={NAVY} />
+                        <circle r={5.2 / camera.k} fill={territoryToneForKey(city.slug)} />
                       </g>
                     );
                   })}
@@ -799,9 +799,10 @@ export function PremiumInteractiveMap() {
                             initial={{ opacity: 0, scale: 0.9 }}
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ delay: Math.min(index * 0.035, 0.25), duration: 0.32 }}
-                            fill={active ? NAVY : "color-mix(in srgb, #6E8DA4 35%, var(--surface))"}
-                            stroke={active ? NAVY : "var(--border-dark)"}
-                            strokeWidth={active ? 3 : 1.5}
+                            fill={active ? NAVY : territoryLightToneForKey(quartier.slug)}
+                            fillOpacity={active ? 1 : 0.84}
+                            stroke={active ? NAVY : "rgba(255,255,255,0.92)"}
+                            strokeWidth={active ? 3 : 1.8}
                             style={{ transformOrigin: `${labelX}px ${labelY}px` }}
                           />
                           <text x={labelX} y={labelY} fill={active ? "white" : "var(--text-primary)"} fontSize="13" fontWeight="850" pointerEvents="none">{quartier.name}</text>
