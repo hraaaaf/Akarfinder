@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Layers3, MapPin, Search, ShieldCheck, Trees, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Map as MapLibreMap, MapMouseEvent } from "maplibre-gl";
+import { AKARFINDER_MOROCCO_MAP_NAVY, territoryLightToneForKey } from "@/lib/map/akarfinder-territorial-style";
 
 const SOURCE = "akarfinder-national-neighborhood-points";
 const HITS = "akarfinder-national-neighborhood-hits";
@@ -40,7 +41,7 @@ function pointCollection(neighborhoods: NationalNeighborhood[]): GeoJSON.Feature
     features: neighborhoods.flatMap((item) => item.center ? [{
       type: "Feature" as const,
       id: item.slug,
-      properties: { slug: item.slug, name: item.name },
+      properties: { slug: item.slug, name: item.name, tone: territoryLightToneForKey(item.slug) },
       geometry: { type: "Point" as const, coordinates: [item.center.lng, item.center.lat] },
     }] : []),
   };
@@ -119,8 +120,8 @@ export function NationalNeighborhoodOverlay({
       source: SOURCE,
       paint: {
         "circle-radius": ["interpolate", ["linear"], ["zoom"], 8, 2.5, 12, 4.5],
-        "circle-color": ACCENT,
-        "circle-opacity": 0.82,
+        "circle-color": ["get", "tone"],
+        "circle-opacity": 0.92,
         "circle-stroke-color": theme === "dark" ? "#071426" : "#FFFFFF",
         "circle-stroke-width": 1.2,
       },
@@ -132,9 +133,9 @@ export function NationalNeighborhoodOverlay({
       filter: emptyFilter() as never,
       paint: {
         "circle-radius": 10,
-        "circle-color": ACCENT,
-        "circle-opacity": 0.16,
-        "circle-stroke-color": ACCENT,
+        "circle-color": ["get", "tone"],
+        "circle-opacity": 0.34,
+        "circle-stroke-color": AKARFINDER_MOROCCO_MAP_NAVY,
         "circle-stroke-width": 2.4,
       },
     });
