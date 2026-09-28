@@ -306,7 +306,7 @@ Wave10 strict route residue is closed on isolated Neon.
 
 - Source residue input: **286** rows from the Wave9 new-source rejected set.
 - Offline strict certification run: `36341259465` — SUCCESS.
-- Certification artifact: `10939012202`, digest `sha256:7ed4d0f858c8af7ae29ec9a760faf097da7894dbed13eee711a9dfea33aca548`.
+- Certification artifact: `10939012202`, digest `sha256:8c3f280cd02a1f2e45c3d06c4607ec54222491c7d409f7b28a29b6932f0bb3d2`.
 - Certified strict rows before Neon filtering: **97**.
 - Exact Neon overlap found: **1 identity** already present = `fadlimmo.com|d99515fb`.
 - Filtered preflight run: `36341461469` — SUCCESS.
@@ -322,7 +322,7 @@ Wave10 strict route residue is closed on isolated Neon.
 - Progress to 200k: **71.366%**.
 - Exact remaining delta: **57,268**.
 
-Independent Wave10 readback workflow is running as a second proof; direct Neon verification already confirms the full invariant set.
+Independent Wave10 readback run: `36351412096` — SUCCESS. Independent readback artifact: `10942915388`, digest `sha256:efc9ac1a3e16a2569aa084109c9c66ff16e10a26f5c90570318e90e019798c07`. Direct Neon verification and independent workflow now both confirm the full invariant set.
 
 ### Next exact
 Open Wave11 on the **188** strict rejects remaining after Wave10. Keep the 5 prior identity conflicts quarantined. Recover only deterministic evidence paths; no V4.11 weakening. Repeat offline certification → exact Neon overlap preflight → isolated import → independent readback.
