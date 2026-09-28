@@ -12,5 +12,6 @@
   "target_branch": "br-cold-mouse-b2a50yaa",
   "target_database": "AkarFinder",
   "production_neon_writes_authorized": false,
-  "vercel_deployment_authorized": false
+  "vercel_deployment_authorized": false,
+  "retry_after_guard_fix": "ab86d6000f5d2db7ef6f3a8019575dfbc4edfa3c"
 }
