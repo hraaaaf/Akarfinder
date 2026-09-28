@@ -438,3 +438,20 @@
     font-size: 14px !important;
   }
 }
+
+/* Responsive geometry lock — Maârif target shell must match the P4 map canvas.
+ * This stylesheet is loaded after component/global map styles, so it owns the final cascade.
+ */
+@media (max-width: 1023px) {
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"])
+    [data-p4-map-canvas] > [data-akar-quartier-target="maarif-couche1"] {
+    height: 56svh !important;
+  }
+}
+
+@media (max-width: 560px) {
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"])
+    [data-p4-map-canvas] > [data-akar-quartier-target="maarif-couche1"] {
+    height: 54svh !important;
+  }
+}
