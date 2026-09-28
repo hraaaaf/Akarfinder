@@ -36,6 +36,9 @@ export async function GET(request: NextRequest) {
     min_surface: parseNumberParam(searchParams.get("min_surface")),
     max_surface: parseNumberParam(searchParams.get("max_surface")),
     bedrooms: parseNumberParam(searchParams.get("bedrooms")),
+    // The DB may preselect rows that can plausibly reach this public surface,
+    // but canPublishDbRowToPublicSearchSurface below remains the final gate.
+    public_search_only: true,
     limit: parseNumberParam(searchParams.get("limit")) ?? 50,
     offset: parseNumberParam(searchParams.get("offset")) ?? 0,
   };
