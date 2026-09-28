@@ -1,361 +1,761 @@
 # 3 — Vivre Ici AkarFinder
 
-**Statut : ACTIVE — PR CANONIQUE #1090 / NATIONAL → VILLE → QUARTIER / TARGET RECONCILIATION / MERGE NON AUTORISÉ**  
-**Dernière mise à jour : 2026-09-27**  
+**Statut : ACTIVE — ROADMAP CANONIQUE V2 / PR #1090 DRAFT / HUMAN VISUAL GATE REJECTED**  
+**Dernière mise à jour : 2026-09-28**  
 **Repo : `hraaaaf/Akarfinder`**  
 **Branche active : `feat/akar-map-quartier-target-couche3`**  
-**PR active unique : `#1090` — base `main` — DRAFT**  
-**PR historique source : `#1025` FERMÉE — remplacée par #1037 mergée puis #1090 canonique**  
-**Main courant vérifié : `b0ec9d6a5526bd60c14653a5679b88e2e6d7194d`**  
-**HEAD source historique : `75d28ef7652bda9a59b0ed1ac5a0a81d418d0aee`**  
-**HEAD produit source L9 certifié : `f1f4d35ecdd0a5a6b83df1dc945e2d291e9b2533`**  
-**Commit transplant produit : `0c84954d1c2ce53938677e9cb2b89e9241c52260`**  
-**HEAD exact de certification intégration : `f5d5bce0edac47021953cd7cb091fc60fde52cdd`**  
-**Commit restauration triggers / arbre produit final : `33e30f72b6c26e02a60f460d6fad73856c717599`**  
-**Arbre produit final : `b04bc649746b5b2a3733e058af0ca59df8dc2930`**  
-**Phase intégration historique : closeout merge atteint. Territory Dictionary : `53 / 53 pts` prouvés.**  
+**PR canonique : #1090 — base `main` — DRAFT**  
+**HEAD produit de départ de cette roadmap : `02b9c7f9e7961e1b22ffc1c5a4ddcd2dcdd3ef7d`**  
+**Score visuel humain actuel : 3/10 — TARGET non atteint**  
+**Merge : NON AUTORISÉ**  
 **Vercel : aucun déploiement sans autorisation explicite d’Achraf.**
-
 
 ---
 
-## 0. RÉCONCILIATION SINGLE-PR — 2026-09-27
+## 0. DÉCISION PRODUIT — RESET VIVRE ICI
 
-Décision Product Owner : **un seul chantier / une seule PR active Vivre Ici**.
+La phase précédente a prouvé que le shell, le responsive, MapLibre, la navigation et plusieurs truth gates peuvent être techniquement propres sans atteindre le niveau visuel recherché.
 
-### PR canonique
-- PR : **#1090** — `feat(vivre-ici): canonical national → city → district TARGET reconciliation`
-- branche : `feat/akar-map-quartier-target-couche3`
-- base : `main@b0ec9d6a5526bd60c14653a5679b88e2e6d7194d`
-- HEAD courant après réconciliation #1096 : `25fa8ab9cc02171b7cfb01fd3d712fc5bd307a51`
-- scope produit : Maroc 12 régions → ville → quartier → landmarks/MapLibre → Search → convergence TARGET.
+Le verdict humain sur le HEAD `02b9c7f9…` est **3/10**.
 
-### PRs fragmentées fermées comme superseded / archive
-`#1025, #1040, #1041, #1043, #1045, #1046, #1047, #1048, #1049, #1051, #1052, #1054, #1055, #1056, #1060, #1061, #1062, #1063, #1064, #1065, #1066, #1067, #1068, #1069, #1070, #1071, #1072, #1073, #1074, #1075, #1076, #1077, #1078, #1079, #1080, #1086, #1088, #1096`.
+La nouvelle direction n’est donc pas un polish du rendu actuel. Elle devient un **Living Atlas immobilier progressif**, avec une hiérarchie cartographique claire :
 
-Leur historique Git est conservé ; aucune branche/commit n'est supprimé. Elles ne doivent plus servir de véhicule de merge produit.
+`Maroc → Ville/Atlas → Arrondissement → Quartier → Urban Grain 3D → POI/Landmarks → Bien/Search`
 
-### Sources déjà intégrées / préservées
-- #1037 : fondation nationale + N3, **mergée**.
-- #1089 : sémantique contour administratif Maârif, **mergée**.
-- #1086 + #1088 : états produit repris dans la lignée cumulative de #1090.
-- anciens Landmark Factory lots : archivés comme evidence/R&D ; ne sont plus des PRs de livraison actives.
+### Principe central
 
-### Gate courant
-1. remettre #1090 exact-head mergeable proprement sur `main` ;
-2. TypeScript + build ;
-3. captures Maroc + niveaux de zoom `390 / 430 / 768 / 1280` ;
-4. TARGET ↔ AFTER ;
-5. revue expert UX/UI 3D ;
-6. appliquer directives ;
-7. human merge gate ;
-8. aucun Vercel sans autorisation explicite.
+Chaque niveau de zoom change de langage visuel et d’information.
 
+- faible zoom = territoire ;
+- zoom ville = grandes surfaces administratives + labels structurants ;
+- zoom local = quartier + grain urbain ;
+- zoom fin = bâtiments/repères ;
+- immobilier = seulement quand la précision source est suffisante.
+
+La carte ne doit plus ressembler à un nuage de points ou à un outil SIG générique.
+
+---
 
 ## 1. GOAL / SUCCÈS / PREUVE
 
 ### Goal
-Réintégrer Vivre Ici `/map` sur le `main` courant sans régresser le shell/navigation, tout en conservant national → ville → quartier → MapLibre 3D → Search, les truth gates fail-closed et aucune fausse précision immobilière.
+
+Construire une carte immobilière territoriale premium, différenciante et truth-safe, qui permette de comprendre une ville avant de chercher un bien.
 
 ### Succès observable
-- delta produit basé directement sur le `main` courant ;
-- shell/navigation récent préservé ;
-- TypeScript + build + contrats navigation verts ;
-- AFTER national + N3 vert sur `390×844 / 430×932 / 768×900 / 1280×900` ;
-- N3 national → Casablanca → Maârif → Search vert ;
-- 0 requête Supabase dans le harness AFTER, 0 write DB, 0 deployment action ;
-- BEFORE ↔ AFTER ↔ TARGET inspectés ;
-- arrêt au human merge gate.
 
-### État
-**Intégration/UI : PROUVÉE et mergée via PR #1037. Nouvelle phase active : lecture territoriale progressive Maroc → ville → quartier → repère. Live data : NON CERTIFIABLE tant que Supabase reste restreint.**
+- la hiérarchie `Maroc → ville → arrondissement → quartier → bâtiment → bien` se comprend sans explication ;
+- chaque couche possède un TARGET visuel et un contrat de vérité ;
+- la ville ne repose plus sur un nuage de points dominant ;
+- les limites affichées correspondent exactement à leur statut réel ;
+- la 3D utilise des footprints/hauteurs/étages sourcés quand disponibles ;
+- les POI utilisent un langage iconographique AkarFinder cohérent ;
+- les photos apparaissent dans les fiches contextuelles, pas comme bruit permanent sur la carte ;
+- aucun pin immobilier exact n’est inventé ;
+- 390×844 / 430×932 / 768×900 / 1280×900 validés ;
+- revue visuelle indépendante + human gate avant merge.
 
----
+### Preuve
 
-## 2. TARGET LOCK
+Pour chaque couche :
 
-- fichier : `AKARFINDER_VIVRE_ICI_TARGET_FREEZE_2026-09-06.png`
-- Drive ID : `1nt6ouxqGp-z6cHnj5A3iQHmw8I_YnGFL`
-- dimensions revérifiées : `1536 × 1024`
-- SHA-256 revérifié : `c552bc2d4ef669394694f71027c9852a6c56d155b7853a27f2e9e672942637c8`
-- score visuel interne après intégration : **9,2/10** ; `≥9,8` non certifié.
+1. BEFORE ;
+2. TARGET écrit + référence visuelle ;
+3. implémentation ;
+4. AFTER aux mêmes viewports ;
+5. tests/cartographie truth-safe ;
+6. comparaison TARGET ↔ AFTER ;
+7. score visuel strict ;
+8. correction jusqu’au seuil du lot.
 
-Le TARGET n’autorise jamais à inventer photo, prix, météo, score, proximité, distance, position ou donnée immobilière.
-
----
-
-## 3. ARCHITECTURE À PRÉSERVER
-
-- `/map` = fondation Vivre Ici ;
-- MapLibre 3D réutilisable par ville/quartier ;
-- bâtiments vectoriels OpenFreeMap ;
-- `city + district + layer=explore` → MapLibre local ;
-- fallback national truth-safe ;
-- C7 marché séparé, `layer=price|density|listings` ;
-- truth gate géographique fail-closed ; aucun faux pin immobilier ;
-- Esri imagery = prototype tant que licence/support/attribution prod ne sont pas verrouillés ;
-- aucune donnée synthétique en DB.
+CI verte seule n’est jamais une preuve de convergence visuelle.
 
 ---
 
-## 4. PREUVES HISTORIQUES UTILES
+## 2. DOCTRINE CARTOGRAPHIQUE
 
-- N2 fallback national : run `34585399296` ✅
-- N3 historiques : `34619850294` ✅ / `34624935625` ✅
-- Synthetic Market final : run `34624935672` ✅, artifact `10273807531`, digest `sha256:17a13f57cbb314e413dd873192c23c0a896400d4c94b186a563826ea5f5b64b4`
-- UX L9 source AFTER : run `35271588119` ✅ sur `f1f4d35e…`, artifact `10519291559`, digest `sha256:4e280feee73a0881b2bcb565f98fdf031d44d637781b5722e2c90f93281fc5e8`
-- UX L9 source N3 : run `35271588076` ✅
-- BEFORE visuel durable : run `34977355451`, artifact `10399777496`
+### 2.1 Vérité géographique
 
-Piège : le BEFORE historique utilise lui-même des noms `map-after-*`. Toujours distinguer par run + artifact ID.
+Quatre statuts visuels maximum :
 
----
+- **CERTIFIÉ** : géométrie revue et publiable → trait continu net ;
+- **ADMINISTRATIF** : géométrie administrative sourcée → style distinct + disclosure ;
+- **INDICATIF** : emprise dérivée / contexte → halo ou liseré diffus, jamais présenté comme frontière ;
+- **REPÈRE** : centroïde/label uniquement → aucun polygone.
 
-## 5. INTÉGRATION CURRENT MAIN — 2026-09-17
+### 2.2 Vérité bâtiment
 
-Base historique PR #1025 : `b8c89681358e93ec254016bcca9b78f4717ea8de`.
+Trois niveaux :
 
-Main actuel vérifié avant et après intégration : `8578f7a492980dcac35e7a094383c70411ca44c5`.
+- **A — hauteur métrique sourcée** : extrusion réelle ;
+- **B — nombre d’étages sourcé** : extrusion dérivée, marquée comme dérivée ;
+- **C — footprint seulement** : bâtiment plat / pseudo-profondeur visuelle non métrique.
 
-### Intersection live réelle : 5 fichiers
-1. `components/layout/MobileBottomNav.tsx`
-2. `scripts/audits/ux-bottom-nav-10of10-1.mjs`
-3. `scripts/audits/ux-premium-bottomnav-glass-1.mjs`
-4. `scripts/scrapers/__tests__/ux-bottom-nav-10of10-1.test.ts`
-5. `scripts/scrapers/__tests__/ux-premium-bottomnav-glass-1.test.ts`
+Aucune hauteur arbitraire n’est présentée comme réelle.
 
-**Décision : contrat `main` conservé sur ces 5 fichiers.** Navigation actuelle : `PRODUCT_MOBILE_BOTTOM_NAV`, `/map → Vivre ici`, cinq destinations approuvées, glass contract courant.
+### 2.3 Vérité immobilière
 
-### Transplant
-- PR source : `72` chemins ;
-- overlaps conservés main : `5` ;
-- docs différés au closeout : `3` ;
-- produit/harness transplanté initialement : **64 chemins** ;
-- commit : `0c84954d1c2ce53938677e9cb2b89e9241c52260` ;
-- parent direct : `8578f7a492980dcac35e7a094383c70411ca44c5`.
-
-Le diff `main → 0c84954d…` contient exactement ces 64 chemins et aucun overlap.
+- pin exact seulement si coordonnées du bien réellement vérifiées ;
+- sinon zone/cluster/CTA Search ;
+- aucune fausse précision pour “faire riche”.
 
 ---
 
-## 6. CERTIFICATION INTÉGRATION EXACT-HEAD
+## 3. SOURCES / BENCHMARKS À CONSERVER
 
-Le connecteur ne permettant pas `workflow_dispatch`, les deux workflows ont été temporairement autorisés sur la branche d’intégration uniquement. Aucun code produit n’a changé pour cela.
+### Overture Maps — bâtiments
 
-HEAD commun de certification : `f5d5bce0edac47021953cd7cb091fc60fde52cdd`.
+Overture fournit des footprints de bâtiments et, selon les objets, `height`, `num_floors`, `min_height`, ainsi que des `building_part` permettant des formes 3D plus détaillées.
 
-### AFTER
-Run `35282869300` — **SUCCESS**  
-Artifact `10523630593`  
-Digest `sha256:c4d0fe087d7194bb5554c109f87d5d9750ffd088d9f2edf94a4a0bc15822a4fb`
+Références :
+- https://docs.overturemaps.org/schema/reference/buildings/building/
+- https://docs.overturemaps.org/schema/reference/buildings/building_part/
 
-Preuves : navigation contracts, `npm ci`, TypeScript, production build, Chromium/capture et validator verts. 8/8 scénarios : HTTP 200, overflow 0, Supabase 0, page errors 0. National : 12 régions. N3 : MapLibre ready, OpenFreeMap vector, 52–77 bâtiments selon viewport, faux signal grid masqué si `anchorCount=0`, retour Maroc et CTA Search exacts. `zeroDbWritesByScript=true`, `zeroDeploymentActionsByScript=true`.
+### MapLibre GL JS — rendu 3D
 
-### N3
-Run `35282869261` — **SUCCESS**  
-Artifact `10523455762`  
-Digest `sha256:700a62489b3943345ca505829e11e92801a4a0420cf232d9fe9a7e351432eb4b`
+MapLibre sait afficher les bâtiments en `fill-extrusion` et peut intégrer des couches 3D supplémentaires.
 
-`report.json`: `ok=true`; 390 + 1280, Casablanca → Maârif, MapLibre ready, Search rendu, handoff `/search?city=Casablanca&district=Ma%C3%A2rif`, overflow 0.
+Référence :
+- https://maplibre.org/maplibre-gl-js/docs/examples/
 
-### Triggers restaurés
-Commit `33e30f72b6c26e02a60f460d6fad73856c717599` restaure l’arbre produit final `b04bc649746b5b2a3733e058af0ca59df8dc2930`.
+### OpenStreetMap — Simple 3D Buildings
 
-Blobs workflows source rétablis :
-- AFTER `32e06198cc44267c47628768d3b9fb17b754c369`
-- N3 `62cf743d21457b30d61bcbf7354a615a6b7f2556`
+OSM supporte notamment `height`, `building:levels`, `min_height`, `building:part`, roof/material/color.
 
-Aucun code produit n’a changé après le HEAD certifié ; seulement les triggers puis les docs de closeout.
+Référence :
+- https://wiki.openstreetmap.org/wiki/Simple_3D_Buildings
 
----
+### Mapbox Standard — benchmark visuel uniquement
 
-## 7. VISUEL
+Benchmark pour hiérarchie cartographique premium : bâtiments extrudés, landmarks 3D, éclairage, POI, végétation, terrain.
 
-Comparaison réelle effectuée contre BEFORE `34977355451 / 10399777496` aux mêmes viewports et contre le TARGET LOCK SHA vérifié.
+Référence :
+- https://docs.mapbox.com/map-styles/guides/standard-styles/
 
-Constat :
-- national : territoire nettement plus dominant aux 4 viewports ;
-- N3 mobile : plus map-first ;
-- faux `0 repères / 0 catégories / Exact` supprimés lorsqu’ils ne sont pas prouvés ;
-- `← Maroc` visible ;
-- shell `main` préservé (`Vendre` au lieu de l’ancien `Alertes`) ;
-- desktop reste moins riche/contextuel que le TARGET.
-
-**Score maintenu : 9,2/10.**
+AkarFinder ne doit pas copier ce style ; il sert de niveau d’ambition.
 
 ---
 
-## 8. LIVE DATA — SUPABASE
+# 4. TARGETS PAR COUCHE
 
-Blocage externe connu : `exceed_egress_quota` → gates live fail-closed.
+## L0 — MAROC / NATIONAL
 
-La lane synthétique et les preuves locales/intégration ne remplacent pas la vérité live. Ne pas rerun en boucle. Dès restauration : rerun uniquement les gates live échoués.
+### TARGET
 
----
+Une carte territoriale premium, simple et immédiatement lisible.
 
-## 9. GATES OUVERTS
+Visuellement :
+- Maroc dominant ;
+- régions/côtes clairement lisibles ;
+- villes phares seulement au zoom initial ;
+- aucune pollution de POI locaux ;
+- identité AkarFinder bleu/navy ;
+- densité très faible ;
+- progression de zoom naturelle.
 
-1. **Supabase egress** — live data non certifiable.
-2. **Provider imagerie** — licence/support/attribution prod à verrouiller.
-3. **Sécurité npm/Next** — lot séparé ; pas de `npm audit fix --force` aveugle.
-4. **Vercel** — aucun deployment sans autorisation explicite.
-5. **Territory Dictionary** — nouvelle phase active ; données de priorité éditoriale séparées de la vérité géographique canonique.
+### Référence
 
-PR #1025 reste historique/source. PR #1037 est mergée ; merge commit `256fb9a00a22f240ba7684a99dff3a5619b6ad56`.
+Le système visuel national AkarFinder existant reste la référence de thème.
 
----
+### Succès
 
-## 10. ROADMAP — TERRITORY DICTIONARY / PROGRESSIVE MAP EXPLORATION
+- 6–8 villes phares visibles sans collision ;
+- régions lisibles ;
+- retour national évident ;
+- aucun détail local prématuré ;
+- 390/430/768/1280 cohérents.
 
-### Goal global
+### Anti-target
 
-Construire un moteur déterministe de lecture territoriale qui hiérarchise ce que la carte montre selon le niveau de zoom :
-
-`Maroc → villes → quartiers → repères`.
-
-Une entité plus importante apparaît plus tôt et garde la priorité d'affichage sur les entités moins importantes. À mesure que l'utilisateur zoome, la densité augmente progressivement sans perdre les villes/quartiers/repères phares.
-
-### Règle d'architecture
-
-La vérité d'identité reste dans les registres géographiques existants (`geo-entity-registry.ts`, dictionnaires/centroïdes validés). La nouvelle couche ajoute uniquement :
-
-- importance éditoriale ;
-- hiérarchie parent/enfant ;
-- politique de visibilité par zoom ;
-- catégorie de repère ;
-- priorité de collision/rétention.
-
-Elle ne doit pas créer une seconde source de vérité géographique ni transformer un centroïde approximatif en position exacte.
-
-### Lots / effort
-
-- [x] **LOT 1 — Canonical Territory Dictionary contract — 3 pts ✅**  
-  Schéma unique `city | district | landmark`, importance, parentage, coordonnées/précision, zoom policy, validateurs et fixtures contractuelles Casablanca/Rabat/Marrakech.
-
-- [x] **LOT 2 — National city dictionary + importance hierarchy — 5 pts ✅**  
-  Hiérarchiser les villes marocaines : villes phares d'abord, puis grandes villes régionales, villes secondaires et locales. Les villes phares gardent la priorité pendant le zoom.
-
-- [x] **LOT 3 — District dictionary by city — 8 pts ✅**  
-  Dictionnaire des quartiers par ville avec `importanceScore` éditorial, aliases et rattachement aux entités canoniques existantes.
-
-- [x] **LOT 4 — Landmark dictionary by district — 8 pts ✅**  
-  Repères utiles à l'orientation par quartier : patrimoine, gare, parc, plage, centre commercial, université, hôpital, grand axe, etc. Importance hiérarchisée et source/validation explicites.
-
-- [x] **LOT 5 — National zoom visibility engine — 8 pts ✅**  
-  Zoom faible : villes phares. Zoom intermédiaire : villes régionales. Zoom supérieur : villes secondaires/locales. Priorité persistante aux villes phares + gestion de collision.
-
-- [x] **LOT 6 — Local City → District → Landmark engine — 8 pts ✅**  
-  Dans chaque ville : quartiers majeurs puis secondaires ; dans chaque quartier : repères majeurs puis secondaires. Aucun repère local ne doit masquer une entité phare.
-
-- [x] **LOT 7 — Collision / density / visual stability — 5 pts ✅**  
-  Limites de densité, hysteresis de zoom, stabilité des labels et priorité déterministe pour éviter chevauchement/clignotement.
-
-- [x] **LOT 8 — Progressive data enrichment — 5 pts ✅**  
-  Ajouter de nouvelles villes/quartiers/repères par données seulement, sans modifier le moteur.
-
-- [x] **LOT 9 — Final map certification — 3 pts ✅**  
-  BEFORE/AFTER mêmes viewports, parcours Maroc → ville → quartier → repère, retour national, tests MapLibre et score visuel.
-
-**Effort total : 53 pts.**  
-**Progression prouvée : 53 / 53 pts. Les 23/23 quartiers canoniques ont au moins un landmark vérifié.**
-
-### Certification LOT9 — 2026-09-18
-
-- HEAD produit certifié : `ad65a371a027ce2fe53c73cdf838d63c201dae25`
-- Territory Dictionary Contract : run `35348279560` ✅
-- Territory Dictionary Visual Certification : run `35348279557` ✅
-- artifact : `10547579617`
-- digest : `sha256:670ca0b80662816140df5ec608f87d9d4dc9ea94eb5d4f557a46b497a2fbcabc`
-- 4 viewports : `390×844 / 430×932 / 768×900 / 1280×900`
-- national initial : 6 flagship visibles — Tanger, Fès, Rabat, Casablanca, Marrakech, Agadir
-- zoom national : 8/8 villes réellement visibles — + Kénitra + Mohammedia
-- collision : 0 overlap sur les 4 viewports
-- horizontal overflow : 0
-- Supabase requests : 0
-- page errors : 0
-- régions visibles après zoom : 12/12 sur 390, 430 et 768 ; 11/12 sur 1280
-- N3 Casablanca → Maârif reste vert dans le même artifact
-- aucune écriture DB ; aucun déploiement Vercel
-
-LOT9 est fermé sur preuve réelle et inspection visuelle. Le score visuel global antérieur reste `9,2/10` ; aucun score supérieur n’est revendiqué sans revue dédiée.
-
-### Certification LOT4 finale — 2026-09-18
-
-- HEAD produit certifié : `7251abf030eb5d08f96a899a4a8d3585657b411a`
-- couverture : 23/23 quartiers canoniques avec au moins un landmark vérifié
-- Territory Dictionary Contract : run `35353870995` ✅
-- Territory Dictionary Visual Certification : run `35353871008` ✅
-- file d’enrichissement : vide
-- aucun déploiement Vercel ; aucune écriture Supabase
-
-
-
-### Formule de départ
-
-`visibilityScore = importance × zoomRelevance × collisionPriority`
-
-Cette formule est une direction produit ; le contrat LOT 1 doit rester assez stable pour permettre d'ajuster le moteur sans réécrire les dictionnaires.
-
-### Succès global
-
-- hiérarchie compréhensible au premier regard ;
-- villes phares visibles avant les villes secondaires ;
-- densité croissante avec le zoom ;
-- priorité conservée aux entités phares ;
-- quartiers puis repères révélés progressivement ;
-- aucune fausse précision géographique ;
-- aucune dépendance obligatoire à Supabase pour le dictionnaire statique ;
-- moteur extensible par données.
+- nuage de labels ;
+- pin wall ;
+- satellite dominant ;
+- villes secondaires qui masquent les principales.
 
 ---
 
-## 11. CLOSEOUT INTÉGRATION #1037
+## L1 — VILLE / ATLAS CASABLANCA
 
-- [x] TARGET LOCK + SHA revérifié
-- [x] truth gate fail-closed
-- [x] MapLibre national / multi-ville
-- [x] N2 + N3 certifiés
-- [x] Synthetic Market séparé et certifié
-- [x] UX L9 source certifiée
-- [x] transplant ciblé sur current main
-- [x] shell/navigation main préservé
-- [x] TypeScript + build intégration verts
-- [x] AFTER 4 viewports + N3 exact-HEAD verts
-- [x] BEFORE ↔ AFTER ↔ TARGET inspectés
-- [x] triggers CI temporaires restaurés
-- [x] PR #1037 mergée
-- [x] main post-merge = `256fb9a00a22f240ba7684a99dff3a5619b6ad56`
-- [ ] restaurer Supabase + rerun live ciblé
-- [ ] sécurité Next/npm
-- [ ] provider/licence/attribution
-- [ ] Vercel uniquement avec autorisation explicite
+### TARGET
 
-### Anomalie post-merge connue
+**Casablanca doit se lire comme un atlas territorial, pas comme une carte satellite avec points.**
 
-`UI All Pages Baseline` run `35284093140` échoue sur le test statique `scripts/__tests__/mon-projet-naming-convergence.test.ts` : il cherche encore les labels directement dans `SiteHeader.tsx` / `MobileBottomNav.tsx` alors que la navigation courante est centralisée dans `lib/product-navigation.ts`. Aucun correctif direct sur `main` n'est autorisé dans cette phase sans branche dédiée.
+La structure principale est polygonale.
+
+### Géométrie disponible vérifiée
+
+Le repo contient déjà 16 polygones d’arrondissements Casablanca issus de relations OSM :
+
+`data/geo/casablanca-arrondissements-osm.json`
+
+Audit :
+`data/geo/casablanca-arrondissements-osm.audit.json`
+
+État :
+- 16 features ;
+- topologies valides ;
+- statut actuel `shadow` ;
+- `reviewed:false`.
+
+Ils peuvent servir de **squelette preview administratif**, mais ne doivent jamais être présentés comme “16 quartiers certifiés”.
+
+### TARGET visuel
+
+- 16 arrondissements = grandes masses territoriales ;
+- bordures fines premium ;
+- palette ton-sur-ton AkarFinder ;
+- nom de l’arrondissement dans sa surface ;
+- quartiers connus affichés comme labels secondaires à l’intérieur ;
+- hover = élévation visuelle / accent ;
+- click = drill-down ;
+- satellite absent par défaut ou très secondaire ;
+- index latéral compact, jamais dominant.
+
+### Succès
+
+Au premier regard, l’utilisateur doit comprendre :  
+“Casablanca est composée de territoires ; je peux entrer dans l’un d’eux.”
+
+### Anti-target
+
+- 134 points bleus dominants ;
+- gros panneau de recherche couvrant la carte ;
+- 16 arrondissements présentés comme 16 quartiers ;
+- choroplèthe “prix” par défaut.
 
 ---
 
-## 12. NEXT EXACT
+## L2 — ARRONDISSEMENT
 
-**Closeout PR #1038.**
+### TARGET
 
-LOT4 est certifié à 23/23 quartiers canoniques sur le HEAD produit `7251abf030eb5d08f96a899a4a8d3585657b411a`.
+Un territoire administratif clairement focalisé, avec les quartiers/repères qu’il contient.
 
-Preuves finales LOT4 :
-- Territory Dictionary Contract : run `35353870995` ✅
-- Territory Dictionary Visual Certification : run `35353871008` ✅
-- couverture landmarks : 23/23 quartiers canoniques
-- enrichment queue : vide
-- aucune écriture Supabase
-- aucun déploiement Vercel
+Exemple : arrondissement Maârif.
 
-Next : cohérence canonique + PR ready. Merge uniquement sur instruction explicite.
+### Visuel
 
-## 13. REPRISE
+- arrondissement dominant au centre ;
+- voisins atténués ;
+- frontière administrative nette + badge explicite ;
+- quartiers internes affichés uniquement selon statut réel ;
+- axes structurants visibles ;
+- rail/panneau contextuel réduit mais riche ;
+- marché, mobilité, vie locale comme couches secondaires.
 
-Lire d’abord `docs/handovers/2026-09-18-vivre-ici-territory-dictionary-handover.md` — handover canonique de la phase Territory Dictionary 53/53 — puis ce fichier. Re-vérifier `main`, la branche Territory Dictionary, PR #1038 et CI avant toute écriture.
+### Succès
 
-Le handover historique `docs/handovers/2026-09-17-vivre-ici-pr1025-main-integration-handover.md` reste utile uniquement pour l’historique d’intégration #1037.
+L’utilisateur comprend la différence entre :
+- arrondissement ;
+- quartier ;
+- zone indicative ;
+- point de repère.
 
-`3-vivre-ici-akarfinder.md — Vivre Ici AkarFinder — Territory Dictionary 53/53 pts`
+### Anti-target
+
+- frontière administrative vendue comme quartier ;
+- halo flou sans explication ;
+- panneau qui masque le territoire.
+
+---
+
+## L3 — QUARTIER
+
+### TARGET
+
+Le TARGET Maârif existant reste la référence de composition locale :
+
+- carte dominante ;
+- focus territorial évident ;
+- rail premium desktop ;
+- map-first mobile ;
+- POI sobres ;
+- grain urbain riche ;
+- aucune fausse géographie.
+
+Le fichier de contrat existant reste actif :
+
+`docs/handovers/AKARFINDER_MAARIF_TARGET_CONTRACT.md`
+
+### Règles selon vérité disponible
+
+#### Quartier avec contour certifié
+- boundary net ;
+- légère mise en relief ;
+- surface distincte ;
+- voisins secondaires.
+
+#### Quartier sans contour certifié
+- aucun faux polygone ;
+- centroïde + halo indicatif ;
+- wording “zone indicative” ;
+- pas de claim métrique.
+
+### Succès
+
+Le quartier devient la scène principale.  
+Routes, bâtiments et POI restent secondaires.
+
+### Anti-target
+
+- simple OpenFreeMap recoloré ;
+- boundary fantôme ;
+- densité bâtiment illisible ;
+- mer dominante ;
+- quartier perdu dans la ville.
+
+---
+
+## L4 — URBAN GRAIN / BUILDINGS 3D
+
+### TARGET
+
+Créer une vraie sensation de ville en volume, sans inventer la géométrie.
+
+### Source prioritaire à auditer
+
+1. Overture Buildings ;
+2. Overture BuildingParts ;
+3. OSM/OpenFreeMap existant ;
+4. comparaison couverture/qualité avant choix final.
+
+### POC obligatoire
+
+Zone test :
+**Maârif / Twin Center / Parc de la Ligue Arabe**
+
+Mesures à produire avant implémentation large :
+- nombre total de footprints ;
+- % avec `height` ;
+- % avec `num_floors` ;
+- % avec `building_part` ;
+- couverture relative Overture vs OpenFreeMap ;
+- poids tiles / performance.
+
+### Rendu
+
+- vraie hauteur → extrusion ;
+- étages → extrusion dérivée identifiable ;
+- footprint-only → plat / faible pseudo-depth ;
+- bâtiments secondaires plus légers ;
+- landmarks majeurs plus lisibles ;
+- éclairage doux, pas de rendu jeu vidéo.
+
+### Succès
+
+Le quartier doit sembler construit, pas dessiné.
+
+### Gate
+
+Si le POC Maârif n’apporte pas un gain visuel massif, l’approche 3D est rejetée avant généralisation.
+
+---
+
+## L5 — POI / LANDMARKS
+
+### TARGET
+
+Un **langage iconographique AkarFinder propriétaire**.
+
+### Carte
+
+Par défaut : pictogrammes, pas photos.
+
+Familles initiales :
+- éducation ;
+- parc/nature ;
+- santé ;
+- commerce ;
+- café/restauration ;
+- sport ;
+- transport ;
+- culture/patrimoine.
+
+### Landmarks majeurs
+
+Twin Center, Stade Mohammed V, grands parcs, monuments :
+- pictogramme/silhouette spécifique si nécessaire ;
+- modèle 3D uniquement si source fiable et coût justifié.
+
+### Photos
+
+Les vraies photos apparaissent uniquement :
+- au click/tap ;
+- dans la fiche contextuelle ;
+- dans le rail ;
+- dans une story/preview locale.
+
+Jamais en mosaïque permanente sur la carte.
+
+### Succès
+
+Les POI aident à comprendre le quartier sans devenir la carte.
+
+### Anti-target
+
+- dizaines de thumbnails ;
+- icônes multicolores façon Google Maps ;
+- labels qui masquent les bâtiments ;
+- POI non sourcés.
+
+---
+
+## L6 — LIVING CONTEXT
+
+### TARGET
+
+Transformer la carte en outil de décision résidentielle.
+
+Couches contextuelles activables :
+- Vie locale ;
+- Mobilité ;
+- Éducation ;
+- Santé ;
+- Espaces verts ;
+- Marché.
+
+Ces couches ne doivent jamais toutes être actives simultanément.
+
+### Succès
+
+Une seule intention principale à la fois.
+
+Exemple :
+`Vie locale` → POI pertinents + rail adapté + buildings toujours lisibles.
+
+---
+
+## L7 — BIEN / SEARCH HANDOFF
+
+### TARGET
+
+Vivre Ici explique le territoire. Search vend/explore le stock.
+
+### Carte
+
+- pas de pins de biens par défaut dans l’Atlas ;
+- CTA “Voir les biens” ;
+- bascule explicite en mode immobilier ;
+- pins/clusters uniquement quand la précision source le permet.
+
+### Succès
+
+Transition naturelle :
+
+`Comprendre le quartier → Voir les biens disponibles`
+
+---
+
+## L8 — MARKET INTELLIGENCE
+
+### TARGET
+
+Price / density / listings restent une couche d’analyse séparée.
+
+Jamais la couche cartographique principale.
+
+### Succès
+
+- couche activable ;
+- légende claire ;
+- provenance et date visibles ;
+- aucune confusion entre territoire et donnée marché.
+
+---
+
+# 5. ROADMAP D’EXÉCUTION V2
+
+## LOT A — Canon reset + TARGET locks
+
+**Goal**  
+Faire de ce document la source unique de roadmap Vivre Ici.
+
+**Travail**
+- [x] human gate 3/10 enregistré ;
+- [x] architecture par couches définie ;
+- [x] targets L0→L8 définis ;
+- [x] anciennes certifications conservées comme historique, pas comme état visuel courant.
+
+**Succès**
+Aucune équipe/agent ne peut confondre CI verte avec TARGET atteint.
+
+---
+
+## LOT B — Casablanca Geometry Truth
+
+**Goal**  
+Qualifier le squelette territorial de Casablanca.
+
+**Travail**
+- auditer les 16 arrondissements shadow ;
+- vérifier provenance/licence/topologie ;
+- définir wording/style preview ;
+- ne pas les publier comme quartiers ;
+- préparer interaction hover/click.
+
+**Gate**
+16/16 géométries exploitables en preview administrative, ou matrice explicite des exclusions.
+
+---
+
+## LOT C — Casablanca Atlas V1
+
+**Goal**  
+Remplacer la ville “points + index” par une vraie lecture polygonale.
+
+**Travail**
+- surfaces arrondissements ;
+- labels premium ;
+- quartiers secondaires ;
+- index compact ;
+- drill-down ;
+- palette AkarFinder ;
+- pas de satellite dominant.
+
+**TARGET**
+L1.
+
+**Gate**
+Score humain ≥ 7/10 avant de poursuivre le polish local.
+
+---
+
+## LOT D — Arrondissement Drill-down
+
+**Goal**  
+Créer le niveau intermédiaire ville → quartier.
+
+**Travail**
+- focus territoire ;
+- voisins atténués ;
+- quartiers internes ;
+- disclosures de vérité ;
+- navigation retour ville / entrée quartier.
+
+**TARGET**
+L2.
+
+---
+
+## LOT E — Neighborhood Geometry Qualification
+
+**Goal**  
+Distinguer vrais contours quartier des simples labels/centroïdes.
+
+**Travail**
+- registre `certified / administrative / indicative / point-only` ;
+- qualification progressive Casablanca ;
+- aucun faux contour.
+
+**TARGET**
+L3 truth contract.
+
+---
+
+## LOT F — Building Truth Benchmark
+
+**Goal**  
+Décider le moteur 3D à partir de données réelles.
+
+**Travail**
+- extraction bbox Maârif depuis Overture ;
+- comparaison OpenFreeMap/OSM ;
+- métriques footprint / height / floors / parts ;
+- licence/attribution ;
+- performance.
+
+**Gate**
+Décision documentée : Overture / OpenFreeMap / hybride / reject.
+
+---
+
+## LOT G — Maârif Urban Grain POC
+
+**Goal**  
+Produire le premier quartier réellement volumétrique.
+
+**Travail**
+- footprints ;
+- extrusions truth-safe ;
+- hiérarchie bâtiments ;
+- éclairage ;
+- roads simplifiées ;
+- focus quartier ;
+- Twin Center / landmarks.
+
+**TARGET**
+L3 + L4.
+
+**Gate**
+Gain visuel évident vs HEAD `02b9c7f9…`.  
+Si le POC n’est pas spectaculaire, ne pas généraliser.
+
+---
+
+## LOT H — AkarFinder POI Language
+
+**Goal**  
+Créer une iconographie locale cohérente.
+
+**Travail**
+- 8 familles max ;
+- pictogrammes monochromes/duotone ;
+- silhouettes landmarks ;
+- règles collision/zoom ;
+- fiche photo au click.
+
+**TARGET**
+L5.
+
+---
+
+## LOT I — Living Context
+
+**Goal**  
+Transformer l’atlas en outil de décision.
+
+**Travail**
+- Vie locale ;
+- Mobilité ;
+- Éducation ;
+- Santé ;
+- Espaces verts ;
+- Market mode séparé.
+
+**TARGET**
+L6 + L8.
+
+---
+
+## LOT J — Search Handoff
+
+**Goal**  
+Relier compréhension territoriale et stock immobilier.
+
+**Travail**
+- CTA Search ;
+- contexte city/district transmis ;
+- aucun faux pin ;
+- mode biens séparé.
+
+**TARGET**
+L7.
+
+---
+
+## LOT K — Multi-city Scalability
+
+**Goal**  
+Prouver que le système n’est pas Casablanca-only.
+
+**Villes pilotes**
+- Rabat ;
+- Marrakech ;
+- Tanger.
+
+**Gate**
+Même architecture, uniquement données/config spécifiques.
+
+---
+
+## LOT L — Final Certification
+
+**Obligatoire**
+- 390×844 ;
+- 430×932 ;
+- 768×900 ;
+- 1280×900 ;
+- BEFORE/TARGET/AFTER ;
+- exact-head artifact ;
+- truth tests ;
+- performance ;
+- deuxième revue visuelle indépendante ;
+- human gate.
+
+**Merge**
+Seulement après human gate explicite.
+
+**Vercel**
+Seulement après autorisation explicite.
+
+---
+
+# 6. SCOREBOARD VISUEL
+
+| Couche | État actuel | Target minimum lot | Final |
+|---|---:|---:|---:|
+| L0 Maroc | à revalider | 8/10 | ≥9/10 |
+| L1 Ville Atlas | 3/10 | ≥7/10 | ≥9/10 |
+| L2 Arrondissement | non certifié | ≥7/10 | ≥9/10 |
+| L3 Quartier | 3/10 Maârif | ≥7.5/10 | ≥9/10 |
+| L4 Urban Grain 3D | non prouvé | ≥8/10 POC | ≥9/10 |
+| L5 POI | partiel | ≥8/10 | ≥9/10 |
+| L6 Living Context | partiel | ≥8/10 | ≥9/10 |
+| L7 Search handoff | fonctionnel | ≥8/10 | ≥9/10 |
+| L8 Market Intelligence | séparé | ≥8/10 | ≥9/10 |
+
+Aucun score automatique ne remplace le human gate.
+
+---
+
+# 7. ÉTAT FACTUEL AU RESET
+
+## HEAD `02b9c7f9…`
+
+Prouvé :
+- audits navigateur ville N2 et Maârif verts ;
+- TypeScript/build Maârif verts ;
+- responsive sans overflow ;
+- shell MapLibre = canvas parent ;
+- 1 617 noms de quartiers/labels sourcés ;
+- 134 repères positionnés ;
+- 0 contour de quartier publié ;
+- 16 polygones d’arrondissements Casablanca disponibles en shadow ;
+- aucun merge ;
+- aucun déploiement Vercel.
+
+## Human gate
+
+**REJECTED — 3/10**
+
+Motif principal :
+la carte reste trop proche d’un outil cartographique plat / point-cloud et trop éloignée d’un Living Atlas immobilier premium.
+
+---
+
+# 8. HISTORIQUE À NE PAS CONFONDRE AVEC L’ÉTAT COURANT
+
+L’ancienne roadmap Territory Dictionary `53/53 pts` reste historiquement valide pour :
+- dictionnaire ;
+- hiérarchie ;
+- collision ;
+- navigation progressive ;
+- couverture landmarks.
+
+Elle est **SUPERSEDED comme roadmap produit visuelle** par la présente V2.
+
+Les anciennes certifications 9.x ne constituent plus un score visuel courant.
+
+---
+
+# 9. NEXT EXACT
+
+**LOT B — Casablanca Geometry Truth**
+
+1. auditer précisément les 16 arrondissements OSM shadow existants ;
+2. définir leur contrat preview/admin ;
+3. brancher le squelette polygonal dans la vue ville sans les appeler quartiers ;
+4. AFTER 390/430/768/1280 ;
+5. score humain ;
+6. si ≥7/10 → LOT D + LOT F en parallèle ;
+7. sinon corriger la composition Atlas avant toute 3D locale.
+
+En parallèle après le squelette ville :
+**LOT F — benchmark Overture Buildings sur bbox Maârif/Twin Center.**
+
+Aucun nouveau mockup gratuit.  
+Chaque couche possède désormais son TARGET dans ce fichier canonique.
+
+---
+
+`3-vivre-ici-akarfinder.md — Vivre Ici AkarFinder — Living Atlas V2 — ACTIVE`
