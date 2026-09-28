@@ -1,0 +1,45 @@
+{
+  "schema_version": "akarfinder-v4.11-wave13-reservoir-artifacts-20260928",
+  "source_run_id": 36361501389,
+  "sources": {
+    "daragadir.com": {
+      "artifact_id": 10946581271,
+      "artifact_digest": "sha256:5b4e7bbd4457e4a398e63c5ed67b8ec3ec47f1f20c7b4022839867108dafbdfb",
+      "txt_sha256": "750b05942c24e9c81dabd9141c8a7173aa218211462e38206e9ab3b47d364c6a",
+      "rows": 1962
+    },
+    "masaken.ma": {
+      "artifact_id": 10946525041,
+      "artifact_digest": "sha256:e979abb2896bbfe2175b17719e502fcc111c0759f5a4d0790e993ed83e398d54",
+      "txt_sha256": "1707b6fc752be1ce986a297ffe99cc9998f228f9921f38a06bf714c9013e7804",
+      "rows": 1631
+    },
+    "avito.ma": {
+      "artifact_id": 10946272910,
+      "artifact_digest": "sha256:9bc0878f5c605125be1ebaef744386ea398722f23458cbb809d4bb401c3a0f1e",
+      "txt_sha256": "be804e34f7b8280e0986fc0b827fd0dc6162c6c060b67ce4a82c91df180b6ff3",
+      "rows": 1230
+    },
+    "mouldar.com": {
+      "artifact_id": 10946002350,
+      "artifact_digest": "sha256:89cc32e22e23ecb667775317ba6f9d173676d14b0b68b56bfa7d8f25f07fc283",
+      "txt_sha256": "6dbd5a4685a5142ef06b45e328463955ccc49e7c84be40ba317aef6df009544c",
+      "rows": 1112
+    },
+    "promoimmomarrakech.com": {
+      "artifact_id": 10946486096,
+      "artifact_digest": "sha256:037d19bd9e86d7ad74e8a17b5089ff5fba301cd2fdf6bc20225ab068d63608a1",
+      "txt_sha256": "04cfa0d6f1e238f49eaa4c87b224a818709fd8d69e734565280e1138fe1ba51a",
+      "rows": 952
+    },
+    "sarouty.ma": {
+      "artifact_id": 10946176246,
+      "artifact_digest": "sha256:fa54695bfa68b97819a9d0ce43ee6decdcc4145f5faddf7429d1197703f8d5f0",
+      "txt_sha256": "836e901c0d89c99f13187988162bd937cb4a2a252a6ebbbeb8dc96760ec95d0d",
+      "rows": 878
+    }
+  },
+  "total_rows": 7765,
+  "database_writes_authorized": false,
+  "vercel_deployment_authorized": false
+}
