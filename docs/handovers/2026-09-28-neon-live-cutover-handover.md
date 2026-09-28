@@ -263,3 +263,73 @@ Next exact:
 1. Check this deployment again only after independent work.
 2. If READY, verify `/api/stats`, `/api/listings?limit=1`, and Preview runtime logs.
 3. Stop before any production deployment and request explicit authorization.
+
+
+## Runtime cutover diagnosis + policy-safe pagination fix — 2026-09-28
+
+Fresh Neon readback on project `ancient-violet-43534870`, branch `br-cold-mouse-b2a50yaa`, DB `AkarFinder`:
+- `property_listings = 151900`
+- `listing_sources = 151900`
+- unique fingerprints = `151900`
+- unique listing URLs = `151900`
+- inactive sources = `0`
+- orphan sources = `0`
+
+Preview `dpl_7H5ifiFxH4wvyc4CqpvWCx8JL8Pi` reached READY with corrected Preview DATABASE_URL:
+- `/api/stats` → HTTP 200, `total_listings=151900`
+- runtime logs → `provider=neon configured=true`
+- unfiltered `/api/listings?limit=1` → HTTP 200 but `listings=[]`, `total=151900`
+
+Root cause:
+- Neon paginated raw recovery rows before the application publication guard.
+- The first raw rows are recovery/legacy sources that are correctly rejected by the public guard.
+- No first-party or partner-authorized source exists in the current 151900-row corpus.
+- Recovery certification / existence evidence is NOT treated as publication authorization.
+- Existing repository policy remains fail-closed.
+
+Existing policy-compatible public subset:
+- `36` rows have the already-approved persisted OpenSERP metadata contract:
+  - provider/acquisition_provider = `openserp`
+  - publication_lane = `external_web_result`
+  - classification_lane = `individual_listing`
+- source distribution: sarouty 14, mubawab 13, barnes-marrakech 8, mouldar 1
+- required-field gaps among these 36 = 0
+- PII-like rows under the current guard patterns = 0
+- targeted Preview proof (`Marrakech + studio + rent`) returned real listing id `143` from Mouldar with `source_badge=external_web_result`, `primary_cta=view_original`, `production_allowed=true`.
+- Therefore `PERSISTED_OPENSERP_LISTINGS_ENABLED` is active in Preview.
+
+Policy-safe correction:
+- `DbListingsQuery.public_search_only` is an internal server-side hint.
+- Neon preselects only plausible public candidates:
+  - existing OpenSERP metadata contract, OR
+  - first-party / partner-authorized source names read from the canonical source registry.
+- `canPublishDbRowToPublicSearchSurface` remains the final publication authority.
+- No recovery status, domain suffix, robots result or technical certification is promoted into authorization.
+- `/api/stats` remains full-corpus statistics.
+
+Code commits:
+- `ee40a6d2cc3842d4dc8b467bc1d77a93281a736a`
+- `e289424f3ae1d119f3c35d66285ee76721b9967b`
+- `446f2f8f5dd73df32540da601a086308234c79ac`
+
+Exact-head Preview deployment workflow:
+- final HEAD: `fdf768ed44d4e3bc4ea7f5f7c6ec38330fd337e5`
+- workflow creates a Preview directly from `GITHUB_SHA` via Vercel REST `gitSource`
+- request contains no production target
+- response is required to resolve to Preview or the workflow fails
+- run `36477643156` in progress at last observation
+
+PR #1103 at this point:
+- OPEN
+- DRAFT
+- mergeable
+- exact HEAD `fdf768ed44d4e3bc4ea7f5f7c6ec38330fd337e5`
+
+Next exact:
+1. Let exact-head CI / Preview creation run while doing independent work.
+2. Verify exact-head Preview deployment is READY and its Git SHA equals `fdf768ed...`.
+3. Verify `/api/stats = 151900`.
+4. Verify unfiltered `/api/listings?limit=1` returns >= 1 policy-compliant listing.
+5. Verify runtime logs stay Neon with no provider errors.
+6. Do NOT deploy production without explicit user authorization.
+7. Before merge, remove/retire the temporary cutover workflow and recertify the final PR head.
