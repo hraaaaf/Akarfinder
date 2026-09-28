@@ -1,0 +1,77 @@
+name: Recovery V4.11 Wave13 Strict Route Certification
+
+on:
+  push:
+    branches: ["recovery/v4-11-wave7-cc-freeze-20260927"]
+    paths:
+      - "data/recovery/v4-11-wave13-reservoir-artifacts.json"
+      - "scripts/recovery/certify-v4-11-wave13-strict-route.mjs"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Validate immutable manifest
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const m=require("./data/recovery/v4-11-wave13-reservoir-artifacts.json");
+          if(m.total_rows!==7765||m.database_writes_authorized!==false||m.vercel_deployment_authorized!==false)throw new Error("scope");
+          for(const [k,v] of Object.entries(m.sources)){
+            if(!Number.isInteger(v.artifact_id)||v.artifact_id<=0)throw new Error(k+" artifact");
+            if(!/^sha256:[0-9a-f]{64}$/.test(v.artifact_digest||""))throw new Error(k+" digest");
+            if(!/^[0-9a-f]{64}$/.test(v.txt_sha256||""))throw new Error(k+" sha");
+          }
+          NODE
+      - name: Download and verify immutable reservoirs
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/w13" data/audits/v4-11-wave13-strict-route
+          node - <<'NODE' > "$RUNNER_TEMP/w13/download.tsv"
+          const m=require("./data/recovery/v4-11-wave13-reservoir-artifacts.json");
+          for(const [domain,v] of Object.entries(m.sources))console.log([domain,v.artifact_id,v.txt_sha256].join("\t"));
+          NODE
+          while IFS=$'\t' read -r domain id sha; do
+            safe=$(echo "$domain" | sed 's/[^A-Za-z0-9]/-/g')
+            mkdir -p "$RUNNER_TEMP/w13/$safe"
+            gh api "repos/${{ github.repository }}/actions/artifacts/$id/zip" > "$RUNNER_TEMP/w13/$safe.zip"
+            unzip -q "$RUNNER_TEMP/w13/$safe.zip" -d "$RUNNER_TEMP/w13/$safe"
+            txt=$(find "$RUNNER_TEMP/w13/$safe" -name '*.txt' -type f | head -n1)
+            echo "$sha  $txt" | sha256sum -c -
+          done < "$RUNNER_TEMP/w13/download.tsv"
+      - name: Certify strict routes
+        run: |
+          set -euo pipefail
+          f(){ find "$RUNNER_TEMP/w13/$1" -name '*.txt' -type f | head -n1; }
+          node scripts/recovery/certify-v4-11-wave13-strict-route.mjs \
+            --daragadir "$(f daragadir-com)" \
+            --masaken "$(f masaken-ma)" \
+            --avito "$(f avito-ma)" \
+            --mouldar "$(f mouldar-com)" \
+            --promo "$(f promoimmomarrakech-com)" \
+            --sarouty "$(f sarouty-ma)" \
+            --out-dir data/audits/v4-11-wave13-strict-route
+      - name: Enforce zero-write certification contract
+        run: |
+          node - <<'NODE'
+          const s=require("./data/audits/v4-11-wave13-strict-route/summary.json");
+          if(s.database_access||s.database_writes||s.production_neon_writes||s.approved_for_import_rows||s.vercel_deployment)throw new Error("safety");
+          if(s.db_ready_rows<=0)throw new Error("empty");
+          console.log(JSON.stringify(s,null,2));
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: clean-corpus-v4.11-wave13-strict-route
+          path: data/audits/v4-11-wave13-strict-route/
+          retention-days: 30
