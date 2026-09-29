@@ -446,6 +446,7 @@ describe("semantic integrity fail-closed gate", () => {
     assert.equal(
       hasStrongSemanticIntegrityConflict(
         semanticRow({
+          transaction_type: "rent",
           property_type: "apartment",
           title: "Appartement à louer Hay Riad",
           listing_url: "https://avito.ma/fr/hay_riad/appartements/appartement-a-louer",
