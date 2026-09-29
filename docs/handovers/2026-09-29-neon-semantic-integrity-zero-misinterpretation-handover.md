@@ -727,3 +727,36 @@ Masaken conclusion:
 
 NEXT SOURCE:
 Mouldar selected next from freeze (1,641 KEEP+eligible rows) and launched at 300 rows on HEAD `5a5f88db5f4a688d2063cc0391ef475bcc3fb3eb`.
+
+
+## MOULDAR — STOP ON ROBOTS
+
+Run `36632141490` on HEAD `70da58ed144c7d81fb489bac358f99c1d61e30d2`: SUCCESS technically, but business result is a hard STOP.
+Artifact: `11062965385`, digest `sha256:8349acef5b6755a2df5cda8f2808538a1e317c8476532be80cae7f9b2093ce52`.
+
+Results:
+- robots allowed: **0/300**;
+- accessible: 0;
+- source fetches: 0;
+- recovery: 0;
+- Neon access/write: 0/0.
+
+Conclusion: do not pursue live Mouldar recovery unless robots/policy changes. No bypass or workaround is authorized.
+
+## SAROUTY — ACTIVE NEXT SOURCE
+
+Repo source contract verified in `scripts/scrapers/sources/sarouty.ts`:
+- status: `public_html_test`;
+- public real-estate sale listings;
+- no login, no API, no phone/email;
+- default transaction: sale.
+
+Freeze denominator:
+- 941 KEEP+eligible rows;
+- all five core fields NULL.
+
+Parser now uses the repo sale-only contract for Sarouty.
+Workflow HEAD: `071a8809b05bd13ab2684e1bcbd8a184a107934f`.
+Run: `36632352856` — queued at last check; only Sarouty active, all prior source jobs skipped.
+
+Potential next source after Sarouty: `soukimmobilier.com` with 926 KEEP+eligible rows, but no dedicated repo source policy file was found yet. It must remain robots fail-closed and should only launch after the current benchmark slot is free.
