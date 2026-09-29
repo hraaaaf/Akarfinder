@@ -193,18 +193,33 @@ function primaryTitleTransaction(row: DbListingRow): "sale" | "rent" | null {
 }
 
 function primaryTitlePropertyType(row: DbListingRow): string | null {
-  const title = row.title?.toLowerCase() ?? "";
-  const rules: Array<[string, RegExp]> = [
-    ["land", /^(?:terrain|lot de terrain|ferme)\b|\b(?:terrain|lot de terrain|ferme)\s+(?:à|a)\s+(?:vendre|louer)\b/u],
-    ["villa", /^villa\b|\bvilla\s+(?:à|a)\s+(?:vendre|louer)\b/u],
-    ["studio", /^studio\b|\bstudio\s+(?:à|a)\s+(?:vendre|louer)\b/u],
-    ["office", /^(?:bureau|plateau bureau)\b|\b(?:bureau|plateau bureau)\s+(?:à|a)\s+(?:vendre|louer)\b/u],
-    ["commercial", /^(?:local commercial|magasin|commerce)\b|\b(?:local commercial|magasin|commerce)\s+(?:à|a)\s+(?:vendre|louer)\b/u],
-    ["riad", /^riad\s+(?:à|a)\s+(?:vendre|louer)\b/u],
-    ["apartment", /^(?:appartement|appart)\b|\b(?:appartement|appart)\s+(?:à|a)\s+(?:vendre|louer)\b/u],
-    ["house", /^maison\b|\bmaison\s+(?:à|a)\s+(?:vendre|louer)\b/u],
+  const title = row.title?.toLowerCase().trim() ?? "";
+
+  const leading: Array<[string, RegExp]> = [
+    ["land", /^(?:terrain|lot de terrain|ferme)\b/u],
+    ["villa", /^villa\b/u],
+    ["studio", /^studio\b/u],
+    ["office", /^(?:bureau|plateau bureau)\b/u],
+    ["commercial", /^(?:local commercial|magasin|commerce)\b/u],
+    ["riad", /^riad\b/u],
+    ["apartment", /^(?:appartement|appart)\b/u],
+    ["house", /^maison\b/u],
   ];
-  return rules.find(([, re]) => re.test(title))?.[0] ?? null;
+  const leadingType = leading.find(([, re]) => re.test(title))?.[0];
+  if (leadingType) return leadingType;
+
+  const actionRules: Array<[string, RegExp]> = [
+    ["land", /\b(?:terrain|lot de terrain|ferme)\s+(?:à|a)\s+(?:vendre|louer)\b/u],
+    ["villa", /\bvilla\s+(?:à|a)\s+(?:vendre|louer)\b/u],
+    ["studio", /\bstudio\s+(?:à|a)\s+(?:vendre|louer)\b/u],
+    ["office", /\b(?:bureau|plateau bureau)\s+(?:à|a)\s+(?:vendre|louer)\b/u],
+    ["commercial", /\b(?:local commercial|magasin|commerce)\s+(?:à|a)\s+(?:vendre|louer)\b/u],
+    ["riad", /\briad\s+(?:à|a)\s+(?:vendre|louer)\b/u],
+    ["apartment", /\b(?:appartement|appart)\s+(?:à|a)\s+(?:vendre|louer)\b/u],
+    ["house", /\bmaison\s+(?:à|a)\s+(?:vendre|louer)\b/u],
+  ];
+  const candidates = [...new Set(actionRules.filter(([, re]) => re.test(title)).map(([type]) => type))];
+  return candidates.length === 1 ? candidates[0] : null;
 }
 
 function singleExplicitTitleSurfaceM2(row: DbListingRow): number | null {
