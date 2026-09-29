@@ -1,0 +1,41 @@
+name: Neon Semantic JSONL Audit
+
+on:
+  push:
+    branches: [data/neon-price-recovery-audit]
+    paths:
+      - 'scripts/data/export-neon-semantic-jsonl.mjs'
+      - '.github/workflows/neon-semantic-jsonl-audit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      DATABASE_URL: ${{ secrets.NEON_RECOVERY_DATABASE_URL }}
+      OUTPUT_JSONL: neon-semantic-corpus.jsonl
+      OUTPUT_SUMMARY: neon-semantic-corpus-summary.json
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Verify read connection
+        run: test -n "$DATABASE_URL"
+      - name: Export canonical semantic JSONL
+        run: node scripts/data/export-neon-semantic-jsonl.mjs
+      - name: Verify row count
+        run: test "$(wc -l < neon-semantic-corpus.jsonl | tr -d ' ')" = "151900"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: neon-semantic-corpus-jsonl
+          path: |
+            neon-semantic-corpus.jsonl
+            neon-semantic-corpus-summary.json
+          retention-days: 14
