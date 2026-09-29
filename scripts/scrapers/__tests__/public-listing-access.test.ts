@@ -345,6 +345,30 @@ describe("semantic integrity fail-closed gate", () => {
     assert.equal(hasStrongSemanticIntegrityConflict(semanticRow()), false);
   });
 
+  it("rejects bedroom count contradicted by explicit labeled evidence", () => {
+    assert.equal(
+      hasStrongSemanticIntegrityConflict(
+        semanticRow({
+          bedrooms_count: 76,
+          description_snippet: "surface total construit : 276 chambre : 05, salon : 03",
+        }),
+      ),
+      true,
+    );
+  });
+
+  it("accepts a legitimate large bedroom count when explicit evidence agrees", () => {
+    assert.equal(
+      hasStrongSemanticIntegrityConflict(
+        semanticRow({
+          bedrooms_count: 34,
+          description_snippet: "Magnifique propriété avec 34 chambres, jardin et piscine",
+        }),
+      ),
+      false,
+    );
+  });
+
   it("rejects non-monthly rental cadence until price period is modeled", () => {
     assert.equal(
       hasStrongSemanticIntegrityConflict(
