@@ -1,6 +1,7 @@
 import { neon } from "@neondatabase/serverless";
 import type { DbListingRow, DbListingsQuery, DbListingsResult, DbStats } from "@/lib/listings/db-listings";
 import { getSourcesByType } from "@/lib/sources/source-access-registry";
+import { canonicalizeCityName, getCitySearchVariants } from "@/lib/geo/geo-entity-registry";
 
 function getSql() {
   const url = process.env.DATABASE_URL;
@@ -31,7 +32,7 @@ function mapRow(r:any): DbListingRow {
   const b=(v:any)=>v==null?null:(v===true?1:0);
   return {
     id:Number(r.id), canonical_fingerprint:r.canonical_fingerprint, title:r.title, price_mad:r.price_mad==null?null:Number(r.price_mad),
-    city:r.city, district:r.district, property_type:r.property_type, transaction_type:r.transaction_type,
+    city:r.city ? canonicalizeCityName(String(r.city)) : null, district:r.district, property_type:r.property_type, transaction_type:r.transaction_type,
     surface_m2:r.surface_m2==null?null:Number(r.surface_m2), rooms_count:r.rooms_count==null?null:Number(r.rooms_count),
     bedrooms_count:r.bedrooms_count==null?null:Number(r.bedrooms_count), bathrooms_count:r.bathrooms_count==null?null:Number(r.bathrooms_count),
     description_snippet:r.description_snippet, images_count:r.images_count==null?null:Number(r.images_count), thumbnail_url:r.thumbnail_url??null,
@@ -82,7 +83,14 @@ function addPublicSearchCandidateClause(conditions:string[],params:any[]){
 function buildWhere(q:DbListingsQuery){
   const c:string[]=[]; const p:any[]=[]; const add=(sql:string,v:any)=>{p.push(v);c.push(sql.replace("?", "$"+p.length));};
   const pt=normalizePropertyType(q.property_type), tt=normalizeTransactionType(q.transaction_type);
-  if(q.city)add("pl.city = ?",q.city); if(pt)add("pl.property_type = ?",pt); if(tt)add("pl.transaction_type = ?",tt);
+  if(q.city){
+    const variants=getCitySearchVariants(q.city).map((value)=>value.trim().toLowerCase()).filter(Boolean);
+    if(variants.length){
+      const placeholders=variants.map((value)=>{p.push(value);return "$"+p.length;});
+      c.push(`lower(trim(pl.city)) IN (${placeholders.join(",")})`);
+    }
+  }
+  if(pt)add("pl.property_type = ?",pt); if(tt)add("pl.transaction_type = ?",tt);
   if(q.min_price!=null)add("pl.price_mad >= ?",q.min_price); if(q.max_price!=null)add("pl.price_mad <= ?",q.max_price);
   if(q.min_surface!=null)add("pl.surface_m2 >= ?",q.min_surface); if(q.max_surface!=null)add("pl.surface_m2 <= ?",q.max_surface);
   if(q.bedrooms!=null)add("pl.bedrooms_count = ?",q.bedrooms);
