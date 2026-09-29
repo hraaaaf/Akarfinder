@@ -353,6 +353,32 @@ describe("semantic integrity fail-closed gate", () => {
     assert.equal(hasStrongSemanticIntegrityConflict(semanticRow({ surface_m2: 900_000 })), true);
   });
 
+
+  it("rejects surface contradicted by one explicit title surface", () => {
+    assert.equal(
+      hasStrongSemanticIntegrityConflict(
+        semanticRow({
+          title: "Appartement à vendre 128 m² à Casablanca",
+          surface_m2: 1,
+        }),
+      ),
+      true,
+    );
+  });
+
+  it("accepts matching grouped-thousands title surface", () => {
+    assert.equal(
+      hasStrongSemanticIntegrityConflict(
+        semanticRow({
+          title: "Villa à vendre 1 200 m² à Casablanca",
+          property_type: "villa",
+          surface_m2: 1200,
+        }),
+      ),
+      false,
+    );
+  });
+
   it("rejects transaction contradicted by both title and URL", () => {
     assert.equal(
       hasStrongSemanticIntegrityConflict(
