@@ -89,6 +89,93 @@ function hasRequiredPersistedExternalFields(row: DbListingRow): boolean {
   );
 }
 
+const ALLOWED_PROPERTY_TYPES = new Set([
+  "apartment",
+  "villa",
+  "land",
+  "office",
+  "commercial",
+  "house",
+  "studio",
+  "riad",
+]);
+
+function strongTransactionEvidence(row: DbListingRow): "sale" | "rent" | null {
+  const title = row.title?.toLowerCase() ?? "";
+  const url = row.listing_url?.toLowerCase() ?? "";
+
+  const titleSale = /(?:^|\W)(?:vente|vendu|à vendre|a vendre)(?:\W|$)/u.test(title);
+  const urlSale = /\/(?:vente|vendre|achat|buy)(?:\/|[-_])/u.test(url);
+  const titleRent = /(?:^|\W)(?:location|loué|loue|à louer|a louer)(?:\W|$)/u.test(title);
+  const urlRent = /\/(?:location|louer|rent)(?:\/|[-_])/u.test(url);
+
+  if (titleSale && urlSale && !titleRent && !urlRent) return "sale";
+  if (titleRent && urlRent && !titleSale && !urlSale) return "rent";
+  return null;
+}
+
+function strongPropertyTypeEvidence(row: DbListingRow): string | null {
+  const title = row.title?.toLowerCase() ?? "";
+  const url = row.listing_url?.toLowerCase() ?? "";
+
+  const rules: Array<[string, RegExp, RegExp]> = [
+    ["land", /(?:^|\W)(?:terrain|lot de terrain|ferme)(?:\W|$)/u, /\/(?:terrain|terrains)(?:\/|[-_])/u],
+    ["villa", /(?:^|\W)villa(?:\W|$)/u, /\/(?:villa|villas)(?:\/|[-_])/u],
+    ["studio", /(?:^|\W)studio(?:\W|$)/u, /\/(?:studio|studios)(?:\/|[-_])/u],
+    ["office", /(?:^|\W)(?:bureau|plateau bureau)(?:\W|$)/u, /\/(?:bureau|bureaux)(?:\/|[-_])/u],
+    ["commercial", /(?:^|\W)(?:local commercial|commerce|magasin)(?:\W|$)/u, /\/(?:local|locaux|commerce|commercial|magasin)(?:\/|[-_])/u],
+    ["riad", /(?:^|\W)riad(?:\W|$)/u, /\/(?:riad|riads)(?:\/|[-_])/u],
+    ["apartment", /(?:^|\W)(?:appartement|appart)(?:\W|$)/u, /\/(?:appartement|appartements)(?:\/|[-_])/u],
+    ["house", /(?:^|\W)maison(?:\W|$)/u, /\/(?:maison|maisons)(?:\/|[-_])/u],
+  ];
+
+  for (const [type, titleRe, urlRe] of rules) {
+    if (titleRe.test(title) && urlRe.test(url)) return type;
+  }
+  return null;
+}
+
+export function hasStrongSemanticIntegrityConflict(row: DbListingRow): boolean {
+  const tx = row.transaction_type?.trim().toLowerCase() ?? "";
+  const type = row.property_type?.trim().toLowerCase() ?? "";
+
+  if (!["sale", "rent", "new"].includes(tx)) return true;
+  if (!ALLOWED_PROPERTY_TYPES.has(type)) return true;
+
+  const strongTx = strongTransactionEvidence(row);
+  if (strongTx && tx !== strongTx) return true;
+
+  const strongType = strongPropertyTypeEvidence(row);
+  if (
+    strongType &&
+    type !== strongType &&
+    !(strongType === "studio" && type === "apartment") &&
+    !(strongType === "villa" && type === "house") &&
+    !(strongType === "house" && type === "villa") &&
+    !(strongType === "riad" && (type === "house" || type === "villa"))
+  ) {
+    return true;
+  }
+
+  if (row.surface_m2 != null) {
+    if (row.surface_m2 < 8) return true;
+    if (type === "land" && row.surface_m2 > 10_000_000) return true;
+    if (type !== "land" && row.surface_m2 > 10_000) return true;
+  }
+
+  if (row.rooms_count != null && (row.rooms_count < 0 || row.rooms_count > 50)) return true;
+  if (row.bedrooms_count != null && (row.bedrooms_count < 0 || row.bedrooms_count > 30)) return true;
+  if (row.bathrooms_count != null && (row.bathrooms_count < 0 || row.bathrooms_count > 20)) return true;
+
+  if (row.price_mad != null) {
+    if (row.price_mad > 500_000_000) return true;
+    if (tx === "sale" && row.price_mad < 10_000) return true;
+    if (tx === "rent" && row.price_mad < 100) return true;
+  }
+
+  return false;
+}
+
 export function canPublishPersistedExternalListing(
   row: DbListingRow,
   env: NodeJS.ProcessEnv = process.env,
@@ -140,5 +227,6 @@ export function canPublishDbRowToPublicSurface(row: DbListingRow): boolean {
 }
 
 export function canPublishDbRowToPublicSearchSurface(row: DbListingRow): boolean {
+  if (hasStrongSemanticIntegrityConflict(row)) return false;
   return canPublishDbRowToPublicSurface(row) || canPublishPersistedExternalListing(row);
 }
