@@ -1,6 +1,8 @@
 "use client";
 
 export const MAPLIBRE_OVERTURE_SOURCE_ID = "akarfinder-overture-maarif-buildings";
+export const MAPLIBRE_OVERTURE_SHADOW_SOFT_LAYER_ID = "akarfinder-overture-building-shadow-soft";
+export const MAPLIBRE_OVERTURE_SHADOW_CONTACT_LAYER_ID = "akarfinder-overture-building-shadow-contact";
 export const MAPLIBRE_OVERTURE_ESTIMATED_LAYER_ID = "akarfinder-overture-buildings-estimated";
 export const MAPLIBRE_OVERTURE_EXACT_LAYER_ID = "akarfinder-overture-buildings-exact";
 
@@ -130,6 +132,40 @@ export async function installMapLibreOvertureBuildings(
   const before = options.beforeLayerId && map.getLayer(options.beforeLayerId)
     ? options.beforeLayerId
     : undefined;
+
+  // Decorative non-metric shadows from truthful Overture footprints only.
+  // Pixel translations improve grounding/depth without altering claimed geometry or physical height.
+  if (!map.getLayer(MAPLIBRE_OVERTURE_SHADOW_SOFT_LAYER_ID)) {
+    map.addLayer({
+      id: MAPLIBRE_OVERTURE_SHADOW_SOFT_LAYER_ID,
+      type: "fill",
+      source: MAPLIBRE_OVERTURE_SOURCE_ID,
+      minzoom: 12.8,
+      paint: {
+        "fill-color": "#5E5148",
+        "fill-opacity": 0.075,
+        "fill-translate": [6, 9],
+        "fill-translate-anchor": "viewport",
+        "fill-antialias": true,
+      },
+    } as any, before);
+  }
+
+  if (!map.getLayer(MAPLIBRE_OVERTURE_SHADOW_CONTACT_LAYER_ID)) {
+    map.addLayer({
+      id: MAPLIBRE_OVERTURE_SHADOW_CONTACT_LAYER_ID,
+      type: "fill",
+      source: MAPLIBRE_OVERTURE_SOURCE_ID,
+      minzoom: 12.8,
+      paint: {
+        "fill-color": "#443A34",
+        "fill-opacity": 0.105,
+        "fill-translate": [2.5, 4],
+        "fill-translate-anchor": "viewport",
+        "fill-antialias": true,
+      },
+    } as any, before);
+  }
 
   if (!map.getLayer(MAPLIBRE_OVERTURE_ESTIMATED_LAYER_ID)) {
     map.addLayer({
