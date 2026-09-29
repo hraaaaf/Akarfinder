@@ -33,7 +33,7 @@ function oneAny(res,text){const v=[...new Set(res.flatMap(re=>unique(re,text)))]
 function extract(html){
  const text=html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/giu,' ').replace(/<style\b[^>]*>[\s\S]*?<\/style>/giu,' ').replace(/<[^>]+>/g,' ').replace(/&nbsp;|&#160;/g,' ').replace(/\s+/g,' ');
  const prices=unique(amountRe,text).filter(x=>x>=100&&x<=500000000);
- return {price_mad:prices.length===1?prices[0]:null,price_candidates:prices.length,
+ const priceEvidence=[...text.matchAll(amountRe)].slice(0,12).map(m=>({value:Number(m[1].replace(/[^0-9]/g,'')),context:text.slice(Math.max(0,m.index-90),Math.min(text.length,m.index+m[0].length+90))}));\n return {price_mad:prices.length===1?prices[0]:null,price_candidates:prices.length,price_values:prices,price_evidence:priceEvidence,
    surface_m2:one(surfaceRe,text),bedrooms_count:oneAny(patterns.bedrooms,text),
    bathrooms_count:oneAny(patterns.bathrooms,text),rooms_count:oneAny(patterns.rooms,text)};
 }
