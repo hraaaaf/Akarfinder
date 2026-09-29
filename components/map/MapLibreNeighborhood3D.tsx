@@ -669,15 +669,16 @@ export function MapLibreNeighborhood3D({
                 id: "neighborhood-boundary-fill", type: "fill", source: "neighborhood-boundary",
                 paint: {
                   "fill-color": districtTone,
-                  "fill-opacity": isMaarifTargetPilot ? 0.035 : 0.18,
+                  // OSM relation 2801474 is the Maârif administrative arrondissement, not a certified neighborhood boundary.
+                  "fill-opacity": isMaarifTargetPilot ? 0 : 0.18,
                 },
               });
               map.addLayer({
                 id: "neighborhood-boundary-line", type: "line", source: "neighborhood-boundary",
                 paint: {
                   "line-color": AKARFINDER_MOROCCO_MAP_NAVY,
-                  "line-width": isMaarifTargetPilot ? 1.35 : 3.2,
-                  "line-opacity": isMaarifTargetPilot ? 0.44 : 0.96,
+                  "line-width": isMaarifTargetPilot ? 0 : 3.2,
+                  "line-opacity": isMaarifTargetPilot ? 0 : 0.96,
                   "line-blur": isMaarifTargetPilot ? 0.1 : 0,
                 },
               });
