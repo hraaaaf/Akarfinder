@@ -59,6 +59,8 @@ jobs:
             marocimmo-freeze-recovery-benchmark.json
             marocimmo-freeze-recovery-benchmark.jsonl
             marocimmo-freeze-recovery-benchmark-offline-cohort.jsonl
+            marocimmo-freeze-recovery-benchmark-offline-write-safe.jsonl
+            marocimmo-freeze-recovery-benchmark-offline-review.jsonl
           retention-days: 14
 
   sarout-freeze-benchmark:
@@ -102,4 +104,6 @@ jobs:
             sarout-freeze-recovery-benchmark.json
             sarout-freeze-recovery-benchmark.jsonl
             sarout-freeze-recovery-benchmark-offline-cohort.jsonl
+            sarout-freeze-recovery-benchmark-offline-write-safe.jsonl
+            sarout-freeze-recovery-benchmark-offline-review.jsonl
           retention-days: 14
