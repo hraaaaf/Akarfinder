@@ -225,6 +225,11 @@ function singleExplicitTitleSurfaceM2(row: DbListingRow): number | null {
   const values = Array.from(
     title.matchAll(/([0-9]{1,3}(?:[ .,'’][0-9]{3})+|[0-9]{1,7})\s*m(?:²|2)(?=[^0-9]|$)/giu),
   )
+    .filter((match) => {
+      if ((row.property_type ?? "").toLowerCase() === "land") return true;
+      const prefix = title.slice(Math.max(0, (match.index ?? 0) - 28), match.index ?? 0).toLowerCase();
+      return !/(?:terrain|parcelle|lot)\s+(?:de\s+)?$/.test(prefix);
+    })
     .map((match) => Number(match[1].replace(/[^0-9]/g, "")))
     .filter((value) => Number.isFinite(value) && value >= 8 && value <= 10_000_000);
 
@@ -238,7 +243,7 @@ function uniqueExplicitCount(text: string | null | undefined, kind: "bedroom" | 
     kind === "bedroom"
       ? [
           /(?:chambres?|bedrooms?)\s*[:=-]?\s*(\d{1,3})(?!\d)/giu,
-          /(\d{1,3})\s*chambres?/giu,
+          /(\d{1,3})\s*chambres?(?!\s*[:=-])/giu,
         ]
       : kind === "bathroom"
         ? [
