@@ -489,3 +489,27 @@ NEXT EXACT AFTER NEON QUOTA IS RESTORED:
 3. freeze the reversible dry-run mutation payload;
 4. HUMAN GATE before any Neon production write;
 5. after approval, apply only preconditioned deterministic corrections and rerun the full 151,900-row semantic audit.
+
+
+## COURSE CORRECTION — RECOVERY INPUT MUST BE GITHUB FREEZE
+
+The recovery benchmark must not use Neon as its analysis source.
+
+Canonical offline input:
+- GitHub Actions artifact: `10910779576`;
+- file: `clean-corpus-v4.11-core.jsonl.gz`;
+- rows: **226,286**;
+- gzip SHA256: `e7ac4bca2db34ad334ed7234cfb8be93fc9baca68a9694f5024989b5cc2bb953`;
+- manifest invariants: `database_access=0`, `database_writes=0`.
+
+Implementation correction:
+- new script: `scripts/data/github-freeze-recovery-benchmark.mjs`;
+- deterministic source samples are selected directly from the freeze using `source_domain`, `classification=KEEP`, and `scope_eligible=true`;
+- source pages are then fetched read-only under robots.txt controls;
+- Neon is no longer queried by the recovery benchmark;
+- workflow renamed/reworked as `GitHub Freeze Recovery Audit`.
+
+Current implementation HEAD: `0d70c7562c26e674aeb2e9c4ddac772e8e437831`.
+Current run: `36589275434` — in progress at last check.
+
+Neon should only re-enter the path at a later human-gated write/readback step, never as the primary corpus for this offline recovery analysis.
