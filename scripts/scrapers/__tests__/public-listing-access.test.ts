@@ -442,6 +442,32 @@ describe("semantic integrity fail-closed gate", () => {
     );
   });
 
+  it("does not misread Hay Riad as a riad property type", () => {
+    assert.equal(
+      hasStrongSemanticIntegrityConflict(
+        semanticRow({
+          property_type: "apartment",
+          title: "Appartement à louer Hay Riad",
+          listing_url: "https://avito.ma/fr/hay_riad/appartements/appartement-a-louer",
+        }),
+      ),
+      false,
+    );
+  });
+
+  it("does not misread contextual terrain mention as land", () => {
+    assert.equal(
+      hasStrongSemanticIntegrityConflict(
+        semanticRow({
+          property_type: "villa",
+          title: "Villa à vendre sur un terrain de 3 500 m²",
+          listing_url: "https://example.com/vente/villas/villa-a-vendre-sur-terrain",
+        }),
+      ),
+      false,
+    );
+  });
+
   it("rejects property type contradicted by both title and URL", () => {
     assert.equal(
       hasStrongSemanticIntegrityConflict(
