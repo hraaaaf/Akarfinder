@@ -119,14 +119,14 @@ function strongPropertyTypeEvidence(row: DbListingRow): string | null {
   const url = row.listing_url?.toLowerCase() ?? "";
 
   const rules: Array<[string, RegExp, RegExp]> = [
-    ["land", /(?:^|\W)(?:terrain|lot de terrain|ferme)(?:\W|$)/u, /\/(?:terrain|terrains)(?:\/|[-_])/u],
-    ["villa", /(?:^|\W)villa(?:\W|$)/u, /\/(?:villa|villas)(?:\/|[-_])/u],
-    ["studio", /(?:^|\W)studio(?:\W|$)/u, /\/(?:studio|studios)(?:\/|[-_])/u],
-    ["office", /(?:^|\W)(?:bureau|plateau bureau)(?:\W|$)/u, /\/(?:bureau|bureaux)(?:\/|[-_])/u],
-    ["commercial", /(?:^|\W)(?:local commercial|commerce|magasin)(?:\W|$)/u, /\/(?:local|locaux|commerce|commercial|magasin)(?:\/|[-_])/u],
-    ["riad", /(?:^|\W)riad(?:\W|$)/u, /\/(?:riad|riads)(?:\/|[-_])/u],
-    ["apartment", /(?:^|\W)(?:appartement|appart)(?:\W|$)/u, /\/(?:appartement|appartements)(?:\/|[-_])/u],
-    ["house", /(?:^|\W)maison(?:\W|$)/u, /\/(?:maison|maisons)(?:\/|[-_])/u],
+    ["land", /(?:^|\W)(?:terrain|lot de terrain|ferme)(?:\W|$)/u, /(?:/|[-_])(?:terrain|terrains)(?:/|[-_])/u],
+    ["villa", /(?:^|\W)villa(?:\W|$)/u, /(?:/|[-_])(?:villa|villas)(?:/|[-_])/u],
+    ["studio", /(?:^|\W)studio(?:\W|$)/u, /(?:/|[-_])(?:studio|studios)(?:/|[-_])/u],
+    ["office", /(?:^|\W)(?:bureau|plateau bureau)(?:\W|$)/u, /(?:/|[-_])(?:bureau|bureaux)(?:/|[-_])/u],
+    ["commercial", /(?:^|\W)(?:local commercial|commerce|magasin)(?:\W|$)/u, /(?:/|[-_])(?:local|locaux|commerce|commercial|magasin)(?:/|[-_])/u],
+    ["riad", /(?:^|\W)riad(?:\W|$)/u, /(?:/|[-_])(?:riad|riads)(?:/|[-_])/u],
+    ["apartment", /(?:^|\W)(?:appartement|appart)(?:\W|$)/u, /(?:/|[-_])(?:appartement|appartements)(?:/|[-_])/u],
+    ["house", /(?:^|\W)maison(?:\W|$)/u, /(?:/|[-_])(?:maison|maisons)(?:/|[-_])/u],
   ];
 
   for (const [type, titleRe, urlRe] of rules) {
