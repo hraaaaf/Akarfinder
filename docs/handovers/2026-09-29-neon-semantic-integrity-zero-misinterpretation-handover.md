@@ -760,3 +760,33 @@ Workflow HEAD: `071a8809b05bd13ab2684e1bcbd8a184a107934f`.
 Run: `36632352856` — queued at last check; only Sarouty active, all prior source jobs skipped.
 
 Potential next source after Sarouty: `soukimmobilier.com` with 926 KEEP+eligible rows, but no dedicated repo source policy file was found yet. It must remain robots fail-closed and should only launch after the current benchmark slot is free.
+
+
+## SOUKIMMOBILIER — STOP HTTP 403
+
+Run `36633140184` on HEAD `7c840fc7ce266bace3df90c29cdf7d05a3557647`: SUCCESS technically.
+Artifact: `11063801755`, digest `sha256:08ae28b2c7afc059a2f0d4debb16d180fe4298517590c94576748ee5e685d92f`.
+
+Results:
+- robots allowed: 300/300;
+- HTTP status: 403 on 300/300;
+- accessible HTTP 200 pages: 0;
+- recovery: 0;
+- Neon access/write: 0/0.
+
+Conclusion: stop automated Souk recovery; no bypass is authorized.
+
+## L'IMMOBILIER SANS FRONTIÈRES — ACTIVE
+
+Freeze denominator: 513 KEEP+eligible rows.
+Offline URL audit:
+- ~293 explicit sale slugs;
+- 188 explicit rent slugs;
+- 32 without explicit transaction in slug;
+- one identifiable short-stay/nightly slug, excluded from monthly-rent price recovery.
+
+Source-specific classifier now uses only the property slug for transaction evidence and quarantines short-stay routes.
+Workflow HEAD: `3d6d3f03305476f9e3d3bbef17091f731bc99365`.
+Run: `36633833084` — queued at last check; only LSF active, all previous source jobs skipped.
+
+Next prepared source: Aykana (474 KEEP+eligible), with transaction encoded in most `/property/` slugs; atypical variants must be handled source-specifically, not by widening global route matching.
