@@ -344,3 +344,47 @@ NEXT EXACT:
 2. compare URL accessibility, price recovery, ambiguity and secondary-field yield against MarocImmo;
 3. choose source-specific parser/recovery order from measured yield;
 4. keep all recovery outputs as candidates until the production Neon HUMAN GATE.
+
+
+## RECOVERY BENCHMARK OVERRIDE — SAROUT HARDENED
+
+Verified HEAD: `912d661698972cb641ae8189800634438fa41f6e`.
+Run: `36584126990`.
+Sarout benchmark artifact: `11040348832`, digest `sha256:ce9b4e99633020f312f4432052bdbb880e14679ba88dee6a96dfed0a9726b17c`.
+
+Sarout sample:
+- 120 deterministic rows;
+- robots allowed 120/120;
+- accessible 114/120;
+- 118 rows had `price_mad=NULL`; 112 of those were accessible;
+- 88 / 112 accessible missing prices passed the hardened source-specific gates = 78.6%; 88 / 118 across all missing-price sampled rows = 74.6%;
+- accepted candidates match the unique JSON-LD `offers.price` in MAD: 0 mismatches;
+- price rejects among accessible missing-price rows: 8 no_offer, 10 non_monthly, 5 vacation_without_monthly_proof, 1 rent_too_low;
+- sample surface was NULL 120/120; 78 / 114 accessible rows recovered a surface = 68.4%;
+- district recovery remains candidate-only because source locations such as Al Fida are not yet mapped into the AkarFinder geo registry.
+
+Sarout parser contract now:
+- JSON-LD `RealEstateListing` first;
+- never infer listing price or room count from whole-page related-listing cards;
+- price requires one MAD JSON-LD offer plus transaction/cadence gates;
+- explicit vacation/daily/nightly/weekly signals are rejected;
+- mixed cadence fails closed;
+- `floorSize` with `unitCode=MTK` may provide surface;
+- `numberOfBedrooms` and `numberOfBathroomsTotal` are source candidates;
+- `numberOfRooms` is NOT mapped directly because observed Sarout semantics are inconsistent;
+- no production write authorized.
+
+Canonical inspected row Sarout ID 79042:
+- source page: Bureau 100 m² à louer à Casablanca (Al Fida);
+- user inspection: Prix sur demande;
+- safe result: price NULL / stored status not_disclosed, surface 100, bathrooms 1, rooms NULL, bedrooms NULL;
+- unrelated card prices/room counts are excluded.
+
+MarocImmo remains the higher raw price-yield benchmark (112/120 = 93.3%), while Sarout now has stronger source-structured evidence and cadence rejection. Do not scale either to production DB until a bounded candidate-set review and human gate.
+
+NEXT EXACT:
+1. extend benchmark output to include stored bedrooms/bathrooms/rooms so secondary-field recovery rates have exact denominators;
+2. materialize source-specific candidate sets, still read-only;
+3. compare MarocImmo evidence quality against Sarout JSON-LD quality;
+4. prepare bounded reversible migration only after candidate certification;
+5. HUMAN GATE before Neon production write.
