@@ -439,19 +439,14 @@
   }
 }
 
-/* Responsive geometry lock — Maârif target shell must match the P4 map canvas.
- * This stylesheet is loaded after component/global map styles, so it owns the final cascade.
+/* Responsive geometry authority — Maârif keeps a continuous map canvas under the
+ * floating rail. This file loads last, so it must not re-introduce the old stacked
+ * 56/54svh composition.
  */
 @media (max-width: 1023px) {
   [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"])
     [data-p4-map-canvas] > [data-akar-quartier-target="maarif-couche1"] {
-    height: 56svh !important;
-  }
-}
-
-@media (max-width: 560px) {
-  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"])
-    [data-p4-map-canvas] > [data-akar-quartier-target="maarif-couche1"] {
-    height: 54svh !important;
+    height: 100% !important;
+    min-height: 100% !important;
   }
 }
