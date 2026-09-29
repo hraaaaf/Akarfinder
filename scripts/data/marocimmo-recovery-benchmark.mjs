@@ -88,6 +88,39 @@ function htmlToText(html){
     .replace(/<style\b[^>]*>[\s\S]*?<\/style>/giu,' ')
     .replace(/<[^>]+>/g,' ').replace(/&nbsp;|&#160;/g,' ').replace(/\s+/g,' ');
 }
+
+function numericValue(v){
+  const n=Number(v);
+  return Number.isFinite(n)?n:null;
+}
+function cadenceFrom(text,category){
+  const hay=(String(text||"")+" "+String(category||"")).toLowerCase();
+  if(/(?:par\s*jour|journalier|quotidien|journ[ée]e|nuit[ée]?e?|courte\s+dur[ée]e|location\s+vacances|vacances|\bعطلات\b|\bيومي|\bليلة)/iu.test(hay)) {
+    if(/(?:par\s*mois|\/\s*mois|mensuel(?:le)?|loyer\s+mensuel|\bشهري(?:ا|ًا)?\b)/iu.test(hay)) return "monthly";
+    return "non_monthly";
+  }
+  if(/(?:par\s*mois|\/\s*mois|mensuel(?:le)?|loyer\s+mensuel|\bشهري(?:ا|ًا)?\b)/iu.test(hay)) return "monthly";
+  return "unknown";
+}
+function saroutPriceCandidate(listing,text){
+  const offers=Array.isArray(listing?.offers)?listing.offers:[listing?.offers].filter(Boolean);
+  const prices=[...new Set(offers.map(o=>numericValue(o?.price)).filter(v=>v!=null))];
+  const currencies=[...new Set(offers.map(o=>String(o?.priceCurrency||"").toUpperCase()).filter(Boolean))];
+  if(prices.length!==1) return {value:null,reason:prices.length?"multiple_offers":"no_offer",period:"unknown"};
+  if(currencies.length && !currencies.includes("MAD")) return {value:null,reason:"non_mad",period:"unknown"};
+  const value=prices[0];
+  const cat=String(listing?.category||"").toLowerCase();
+  const sale=/vente|بيع/u.test(cat);
+  const rent=/location|إيجار|عطلات/u.test(cat);
+  const period=cadenceFrom(text,cat);
+  if(sale) return value>=10000?{value,reason:null,period:"sale"}:{value:null,reason:"sale_too_low",period:"sale"};
+  if(rent){
+    if(period==="non_monthly") return {value:null,reason:"non_monthly",period};
+    if(/vacances|عطلات/u.test(cat) && period!=="monthly") return {value:null,reason:"vacation_without_monthly_proof",period};
+    return value>=1000?{value,reason:null,period:period==="monthly"?"monthly":"unknown"}:{value:null,reason:"rent_too_low",period};
+  }
+  return {value:null,reason:"unknown_transaction_category",period};
+}
 function saroutMainText(text,title){
   const tl=(title||"").trim();
   const start=tl?text.toLowerCase().indexOf(tl.toLowerCase()):-1;
@@ -116,16 +149,22 @@ function extract(html,title){
     value:Number(m[1].replace(/[^0-9]/g,'')),
     context:text.slice(Math.max(0,(m.index||0)-90),Math.min(text.length,(m.index||0)+m[0].length+90))
   }));
+  const saroutPrice=sourceName==="sarout.ma"?saroutPriceCandidate(listing,text):null;
+  const directSurface=sourceName==="sarout.ma"&&listing?.floorSize?.unitCode==="MTK"?numericValue(listing.floorSize.value):null;
+  const directBedrooms=sourceName==="sarout.ma"?numericValue(listing?.numberOfBedrooms):null;
+  const directBathrooms=sourceName==="sarout.ma"?numericValue(listing?.numberOfBathroomsTotal):null;
   return {
     structured_evidence: structured,
     price_status_candidate:onRequest?"on_request":null,
-    price_mad:!onRequest&&rawPrices.length===1?rawPrices[0]:null,
-    price_candidates:onRequest?0:rawPrices.length,
+    price_mad:sourceName==="sarout.ma"?(saroutPrice?.value??null):(!onRequest&&rawPrices.length===1?rawPrices[0]:null),
+    price_rejection_reason:sourceName==="sarout.ma"?(saroutPrice?.reason??null):null,
+    price_period_candidate:sourceName==="sarout.ma"?(saroutPrice?.period??"unknown"):null,
+    price_candidates:sourceName==="sarout.ma"?(saroutPrice?.value!=null?1:0):(onRequest?0:rawPrices.length),
     ancillary_price_values:onRequest?rawPrices:[],
     price_evidence:evidence,
-    surface_m2:one(surfaceRe,text),
-    bedrooms_count:oneAny(patterns.bedrooms,text),
-    bathrooms_count:oneAny(patterns.bathrooms,text),
+    surface_m2:directSurface??one(surfaceRe,text),
+    bedrooms_count:directBedrooms??oneAny(patterns.bedrooms,text),
+    bathrooms_count:directBathrooms??oneAny(patterns.bathrooms,text),
     rooms_count:oneAny(patterns.rooms,text),
     room_evidence:[...patterns.rooms.flatMap(re=>{re.lastIndex=0;return [...text.matchAll(re)].map(m=>({value:Number(m[1]),context:text.slice(Math.max(0,(m.index||0)-90),Math.min(text.length,(m.index||0)+m[0].length+90))}));})].slice(0,12)
   };
@@ -196,13 +235,14 @@ for(const r of rows){
 const fields=["price_mad","surface_m2","bedrooms_count","bathrooms_count","rooms_count"];
 const summary={source:sourceName,sample_requested:limit,sample_size:results.length,
   robots_allowed:results.filter(x=>x.robots_allowed).length,robots_blocked:results.filter(x=>x.robots_allowed===false).length,
-  accessible:results.filter(x=>x.accessible).length,http_statuses:{},recovered:{},price_on_request:0,ambiguous_price:0,
+  accessible:results.filter(x=>x.accessible).length,http_statuses:{},recovered:{},price_on_request:0,ambiguous_price:0,price_rejections:{},
   note:"Read-only bounded benchmark; robots.txt fail-closed; on-request overrides page-wide monetary noise; extracted values are candidates only and are not written to Neon."};
 for(const x of results){
   const k=String(x.http_status??(x.robots_allowed===false?"robots_blocked":"error"));
   summary.http_statuses[k]=(summary.http_statuses[k]||0)+1;
   if(x.extracted){
     if(x.extracted.price_status_candidate==="on_request") summary.price_on_request++;
+    if(x.extracted.price_rejection_reason) summary.price_rejections[x.extracted.price_rejection_reason]=(summary.price_rejections[x.extracted.price_rejection_reason]||0)+1;
     for(const field of fields) if(x.extracted[field]!=null) summary.recovered[field]=(summary.recovered[field]||0)+1;
     if(x.extracted.price_candidates>1) summary.ambiguous_price++;
   }
