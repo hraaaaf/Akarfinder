@@ -70,6 +70,7 @@ function extract(html,url){
       if(period==="mixed") price_reason="mixed_cadence";
       else if(period==="non_monthly") price_reason="non_monthly";
       else if(/vacances|عطلات/u.test(cat)&&period!=="monthly") price_reason="vacation_without_monthly_proof";
+      else if(period!=="monthly") price_reason="unknown_rental_cadence";
       else if(prices[0]>=1000) price=prices[0]; else price_reason="rent_too_low";
     } else price_reason="unknown_transaction_category";
   }else{
