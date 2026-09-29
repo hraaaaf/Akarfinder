@@ -62,7 +62,8 @@ function extract(html){
     surface_m2:one(surfaceRe,text),
     bedrooms_count:oneAny(patterns.bedrooms,text),
     bathrooms_count:oneAny(patterns.bathrooms,text),
-    rooms_count:oneAny(patterns.rooms,text)
+    rooms_count:oneAny(patterns.rooms,text),
+    room_evidence:[...patterns.rooms.flatMap(re=>{re.lastIndex=0;return [...text.matchAll(re)].map(m=>({value:Number(m[1]),context:text.slice(Math.max(0,(m.index||0)-90),Math.min(text.length,(m.index||0)+m[0].length+90))}));})].slice(0,12)
   };
 }
 
@@ -118,7 +119,11 @@ for(const r of rows){
     const res=await fetch(r.listing_url,{redirect:"follow",signal:AbortSignal.timeout(8000),headers:{"user-agent":USER_AGENT+"/1.0 (+read-only benchmark)","accept":"text/html"}});
     const ct=res.headers.get("content-type")||"";
     const html=res.ok&&ct.includes("text/html")?await res.text():"";
-    results.push({id:r.id,title:r.title,url:r.listing_url,stored:{price_mad:r.price_mad,price_status:r.price_status,surface_m2:r.surface_m2,district:r.district},robots:robots.state,robots_allowed:true,http_status:res.status,accessible:res.ok&&html.length>0,elapsed_ms:Date.now()-started,extracted:html?extract(html):null});
+    const titleSurface=(r.title.match(/\b(\d{2,5})\s*m(?:²|2)?\b/i)||[])[1];
+    const slug=decodeURIComponent(new URL(r.listing_url).pathname).toLowerCase();
+    const slugSurface=(slug.match(/(?:^|[-_/])(\d{2,5})[-_]?m(?:2)?(?:[-_/]|$)/i)||[])[1];
+    const locationTail=(slug.match(/casablanca[-_/]+(.+?)(?:$|[?#])/i)||[])[1]?.replace(/[-_]+/g,' ')||null;
+    results.push({id:r.id,title:r.title,url:r.listing_url,stored:{price_mad:r.price_mad,price_status:r.price_status,surface_m2:r.surface_m2,district:r.district},structural_candidates:{surface_title_m2:titleSurface?Number(titleSurface):null,surface_slug_m2:slugSurface?Number(slugSurface):null,location_slug:locationTail},robots:robots.state,robots_allowed:true,http_status:res.status,accessible:res.ok&&html.length>0,elapsed_ms:Date.now()-started,extracted:html?extract(html):null});
   }catch(e){
     results.push({id:r.id,title:r.title,url:r.listing_url,stored:{price_mad:r.price_mad,price_status:r.price_status,surface_m2:r.surface_m2,district:r.district},robots:robots.state,robots_allowed:true,http_status:null,accessible:false,elapsed_ms:Date.now()-started,error:e?.name||"fetch_error",extracted:null});
   }
