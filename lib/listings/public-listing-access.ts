@@ -168,6 +168,33 @@ function singleExplicitTitleSalePriceMad(row: DbListingRow): number | null {
   return unique.length === 1 ? unique[0] : null;
 }
 
+function uniqueExplicitCount(text: string | null | undefined, kind: "bedroom" | "bathroom" | "room"): number | null {
+  const raw = text ?? "";
+  const patterns =
+    kind === "bedroom"
+      ? [
+          /(?:chambres?|bedrooms?)\s*[:=-]?\s*(\d{1,3})(?!\d)/giu,
+          /(\d{1,3})\s*chambres?/giu,
+        ]
+      : kind === "bathroom"
+        ? [
+            /(?:salle?s?\s*de\s*bain|sdb|bathrooms?)\s*[:=-]?\s*(\d{1,2})(?!\d)/giu,
+            /(\d{1,2})\s*(?:salle?s?\s*de\s*bain|sdb)/giu,
+          ]
+        : [
+            /(?:pi[eè]ces?|rooms?)\s*[:=-]?\s*(\d{1,3})(?!\d)/giu,
+            /(\d{1,3})\s*pi[eè]ces?/giu,
+            /(\d{1,3})\s*rooms?/giu,
+          ];
+
+  const values = patterns.flatMap((pattern) =>
+    Array.from(raw.matchAll(pattern), (match) => Number(match[1])),
+  ).filter((value) => Number.isFinite(value));
+
+  const unique = [...new Set(values)];
+  return unique.length === 1 ? unique[0] : null;
+}
+
 export function hasStrongSemanticIntegrityConflict(row: DbListingRow): boolean {
   const tx = row.transaction_type?.trim().toLowerCase() ?? "";
   const type = row.property_type?.trim().toLowerCase() ?? "";
@@ -199,9 +226,18 @@ export function hasStrongSemanticIntegrityConflict(row: DbListingRow): boolean {
     if (explicitTitleSurface != null && explicitTitleSurface !== row.surface_m2) return true;
   }
 
-  if (row.rooms_count != null && (row.rooms_count < 0 || row.rooms_count > 50)) return true;
-  if (row.bedrooms_count != null && (row.bedrooms_count < 0 || row.bedrooms_count > 30)) return true;
-  if (row.bathrooms_count != null && (row.bathrooms_count < 0 || row.bathrooms_count > 20)) return true;
+  if (row.rooms_count != null && row.rooms_count < 0) return true;
+  if (row.bedrooms_count != null && row.bedrooms_count < 0) return true;
+  if (row.bathrooms_count != null && row.bathrooms_count < 0) return true;
+
+  const evidenceText = `${row.title ?? ""} ${row.description_snippet ?? ""}`;
+  const explicitRooms = uniqueExplicitCount(evidenceText, "room");
+  const explicitBedrooms = uniqueExplicitCount(evidenceText, "bedroom");
+  const explicitBathrooms = uniqueExplicitCount(evidenceText, "bathroom");
+
+  if (row.rooms_count != null && explicitRooms != null && row.rooms_count !== explicitRooms) return true;
+  if (row.bedrooms_count != null && explicitBedrooms != null && row.bedrooms_count !== explicitBedrooms) return true;
+  if (row.bathrooms_count != null && explicitBathrooms != null && row.bathrooms_count !== explicitBathrooms) return true;
 
   if (hasUnsupportedRentalCadence(row)) return true;
 
