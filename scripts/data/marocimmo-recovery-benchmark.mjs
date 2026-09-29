@@ -42,8 +42,22 @@ function htmlToText(html){
     .replace(/<style\b[^>]*>[\s\S]*?<\/style>/giu,' ')
     .replace(/<[^>]+>/g,' ').replace(/&nbsp;|&#160;/g,' ').replace(/\s+/g,' ');
 }
-function extract(html){
-  const text=htmlToText(html);
+function saroutMainText(text,title){
+  const tl=(title||"").trim();
+  const start=tl?text.toLowerCase().indexOf(tl.toLowerCase()):-1;
+  if(start<0) return null;
+  const tail=text.slice(start);
+  const markers=["Annonces similaires","Biens similaires","Voir aussi","Propriétés similaires","Vous pourriez aussi aimer"];
+  let end=tail.length;
+  for(const marker of markers){
+    const i=tail.toLowerCase().indexOf(marker.toLowerCase());
+    if(i>0&&i<end) end=i;
+  }
+  return tail.slice(0,Math.min(end,12000));
+}
+function extract(html,title){
+  const fullText=htmlToText(html);
+  const text=sourceName==="sarout.ma"?(saroutMainText(fullText,title)||""):fullText;
   const onRequest=onRequestRe.test(text);
   onRequestRe.lastIndex=0;
   const rawMatches=[...text.matchAll(amountRe)].slice(0,12);
@@ -123,7 +137,7 @@ for(const r of rows){
     const slug=decodeURIComponent(new URL(r.listing_url).pathname).toLowerCase();
     const slugSurface=(slug.match(/(?:^|[-_/])(\d{2,5})[-_]?m(?:2)?(?:[-_/]|$)/i)||[])[1];
     const locationTail=(slug.match(/casablanca[-_/]+(.+?)(?:$|[?#])/i)||[])[1]?.replace(/[-_]+/g,' ')||null;
-    results.push({id:r.id,title:r.title,url:r.listing_url,stored:{price_mad:r.price_mad,price_status:r.price_status,surface_m2:r.surface_m2,district:r.district},structural_candidates:{surface_title_m2:titleSurface?Number(titleSurface):null,surface_slug_m2:slugSurface?Number(slugSurface):null,location_slug:locationTail},robots:robots.state,robots_allowed:true,http_status:res.status,accessible:res.ok&&html.length>0,elapsed_ms:Date.now()-started,extracted:html?extract(html):null});
+    results.push({id:r.id,title:r.title,url:r.listing_url,stored:{price_mad:r.price_mad,price_status:r.price_status,surface_m2:r.surface_m2,district:r.district},structural_candidates:{surface_title_m2:titleSurface?Number(titleSurface):null,surface_slug_m2:slugSurface?Number(slugSurface):null,location_slug:locationTail},robots:robots.state,robots_allowed:true,http_status:res.status,accessible:res.ok&&html.length>0,elapsed_ms:Date.now()-started,extracted:html?extract(html,r.title):null});
   }catch(e){
     results.push({id:r.id,title:r.title,url:r.listing_url,stored:{price_mad:r.price_mad,price_status:r.price_status,surface_m2:r.surface_m2,district:r.district},robots:robots.state,robots_allowed:true,http_status:null,accessible:false,elapsed_ms:Date.now()-started,error:e?.name||"fetch_error",extracted:null});
   }
