@@ -96,7 +96,7 @@ function extract(html,url){
     let segs=[];
     try{segs=new URL(u).pathname.split("/").filter(Boolean);}catch{}
     if(["fr","en","ar"].includes(segs[0])) segs=segs.slice(1);
-    const routeSegs=segs.slice(0,2);
+    const routeSegs=sourceName==="promoimmomarrakech.com"?segs.slice(0,3):segs.slice(0,2);
     const saleSeg=s=>/^(?:vente|vendre|sale|buy|achat)(?:-|$)/i.test(s||"");
     const rentSeg=s=>/^(?:location|louer|rental|rent)(?:-|$)/i.test(s||"");
     const shortStay=routeSegs.some(s=>/^(?:location|rental|rent)-(?:s[eé]?jour|vacances?|courte[-_]?dur[eé]e)(?:-|$)/i.test(s||""));
