@@ -219,31 +219,6 @@ function singleExplicitTitleSurfaceM2(row: DbListingRow): number | null {
   return unique.length === 1 ? unique[0] : null;
 }
 
-function strongPropertyTypeEvidence(row: DbListingRow): string | null {
-  const title = row.title?.toLowerCase() ?? "";
-  const url = row.listing_url?.toLowerCase() ?? "";
-
-  // Title evidence must identify the advertised asset itself, not merely a
-  // neighborhood ("Hay Riad"), usage ("villa commerciale") or contextual noun
-  // ("villa sur un terrain"). Prefer a type at the beginning of the title or a
-  // type immediately coupled to the transaction action.
-  const rules: Array<[string, RegExp, RegExp]> = [
-    ["land", /^(?:terrain|lot de terrain|ferme)\b|\b(?:terrain|lot de terrain|ferme)\s+(?:à|a)\s+(?:vendre|louer)\b/u, /(?:\/|[-_])(?:terrain|terrains)(?:\/|[-_])/u],
-    ["villa", /^villa\b|\bvilla\s+(?:à|a)\s+(?:vendre|louer)\b/u, /(?:\/|[-_])(?:villa|villas)(?:\/|[-_])/u],
-    ["studio", /^studio\b|\bstudio\s+(?:à|a)\s+(?:vendre|louer)\b/u, /(?:\/|[-_])(?:studio|studios)(?:\/|[-_])/u],
-    ["office", /^(?:bureau|plateau bureau)\b|\b(?:bureau|plateau bureau)\s+(?:à|a)\s+(?:vendre|louer)\b/u, /(?:\/|[-_])(?:bureau|bureaux)(?:\/|[-_])/u],
-    ["commercial", /^(?:local commercial|magasin|commerce)\b|\b(?:local commercial|magasin|commerce)\s+(?:à|a)\s+(?:vendre|louer)\b/u, /(?:\/|[-_])(?:local|locaux|commerce|commercial|magasin)(?:\/|[-_])/u],
-    ["riad", /^riad\s+(?:à|a)\s+(?:vendre|louer)\b/u, /(?:\/|[-_])(?:riad|riads)(?:\/|[-_])/u],
-    ["apartment", /^(?:appartement|appart)\b|\b(?:appartement|appart)\s+(?:à|a)\s+(?:vendre|louer)\b/u, /(?:\/|[-_])(?:appartement|appartements)(?:\/|[-_])/u],
-    ["house", /^maison\b|\bmaison\s+(?:à|a)\s+(?:vendre|louer)\b/u, /(?:\/|[-_])(?:maison|maisons)(?:\/|[-_])/u],
-  ];
-
-  for (const [type, titleRe, urlRe] of rules) {
-    if (titleRe.test(title) && urlRe.test(url)) return type;
-  }
-  return null;
-}
-
 export function hasStrongSemanticIntegrityConflict(row: DbListingRow): boolean {
   const tx = row.transaction_type?.trim().toLowerCase() ?? "";
   const type = row.property_type?.trim().toLowerCase() ?? "";
