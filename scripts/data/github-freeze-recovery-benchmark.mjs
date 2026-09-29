@@ -34,6 +34,16 @@ function unique(re,text){re.lastIndex=0;return [...new Set([...text.matchAll(re)
 function one(re,text){const v=unique(re,text);return v.length===1?v[0]:null;}
 function oneAny(res,text){const v=[...new Set(res.flatMap(re=>unique(re,text)))];return v.length===1?v[0]:null;}
 function htmlToText(html){return html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/giu,' ').replace(/<style\b[^>]*>[\s\S]*?<\/style>/giu,' ').replace(/<[^>]+>/g,' ').replace(/&nbsp;|&#160;/g,' ').replace(/\s+/g,' ');}
+function metaContent(html,key){
+  const tags=html.match(/<meta\b[^>]*>/gi)||[];
+  const target=key.toLowerCase();
+  for(const tag of tags){
+    const name=(tag.match(/\b(?:name|property)\s*=\s*["']([^"']+)["']/i)||[])[1]?.toLowerCase();
+    if(name!==target) continue;
+    return (tag.match(/\bcontent\s*=\s*["']([^"']*)["']/i)||[])[1]||null;
+  }
+  return null;
+}
 function structuredListing(html){
   const nodes=[];
   for(const m of html.matchAll(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)){
@@ -53,9 +63,11 @@ function cadence(text,category){
 }
 function extract(html,url){
   const full=htmlToText(html);
-  const listing=sourceName==="sarout.ma"?structuredListing(html):null;
+  const listing=structuredListing(html);
+  const meta=[metaContent(html,"og:title"),metaContent(html,"og:description"),metaContent(html,"description")].filter(Boolean).join(" ");
   const structuredText=[listing?.name,listing?.description].filter(Boolean).join(" ");
-  const text=structuredText||full;
+  const primaryText=[structuredText,meta].filter(Boolean).join(" ").trim();
+  const text=sourceName==="sarout.ma"?(structuredText||meta||""):(primaryText||"");
   const cat=String(listing?.category||"").toLowerCase();
   let price=null,price_reason=null,price_period=null;
   if(sourceName==="sarout.ma"){
@@ -75,23 +87,44 @@ function extract(html,url){
     } else price_reason="unknown_transaction_category";
   }else{
     const transaction=/\/vente\//i.test(url||"")?"sale":/\/location\//i.test(url||"")?"rent":"unknown";
-    const prices=unique(amountRe,text).filter(x=>x>=100&&x<=500000000);
-    if(prices.length===1){
+    const period=cadence(text,""); price_period=transaction==="sale"?"sale":period;
+    const offers=Array.isArray(listing?.offers)?listing.offers:[listing?.offers].filter(Boolean);
+    const structuredPrices=[...new Set(offers.map(o=>num(o?.price)).filter(v=>v!=null))];
+    const currencies=[...new Set(offers.map(o=>String(o?.priceCurrency||"").toUpperCase()).filter(Boolean))];
+    const textPrices=unique(amountRe,text).filter(x=>x>=100&&x<=500000000);
+    const prices=structuredPrices.length?structuredPrices:textPrices;
+    if(!text) price_reason="no_primary_evidence";
+    else if(prices.length===1){
       const candidate=prices[0];
-      if(transaction==="sale"&&candidate<10000) price_reason="sale_too_low";
+      if(currencies.length&&!currencies.includes("MAD")) price_reason="non_mad";
+      else if(transaction==="sale"&&candidate<10000) price_reason="sale_too_low";
+      else if(transaction==="rent"&&period==="mixed") price_reason="mixed_cadence";
+      else if(transaction==="rent"&&period==="non_monthly") price_reason="non_monthly";
+      else if(transaction==="rent"&&period!=="monthly") price_reason="unknown_rental_cadence";
       else if(transaction==="rent"&&candidate<500) price_reason="rent_too_low";
+      else if(transaction==="unknown") price_reason="unknown_transaction";
       else price=candidate;
-      price_period=transaction;
     } else if(prices.length>1) price_reason="ambiguous";
     else price_reason="no_explicit_price";
   }
+  let price_quality="candidate";
+  if(price!=null){
+    const surface=sourceName==="sarout.ma"&&listing?.floorSize?.unitCode==="MTK"?num(listing.floorSize.value):one(surfaceRe,text);
+    const isSale=price_period==="sale";
+    const isLand=/\/(?:terrain|land)\//i.test(url||"");
+    if(isSale&&surface&&surface>0&&!isLand){
+      const ppm2=price/surface;
+      if(ppm2<500||ppm2>100000){price_reason="sale_price_per_m2_outlier";price_quality="quarantine";price=null;}
+    }
+  }
   return {
-    price_mad:price,price_rejection_reason:price_reason,price_period_candidate:price_period,
+    price_mad:price,price_rejection_reason:price_reason,price_period_candidate:price_period,price_quality,
     surface_m2:sourceName==="sarout.ma"&&listing?.floorSize?.unitCode==="MTK"?num(listing.floorSize.value):one(surfaceRe,text),
     bedrooms_count:sourceName==="sarout.ma"?(num(listing?.numberOfBedrooms)??oneAny(patterns.bedrooms,text)):oneAny(patterns.bedrooms,text),
     bathrooms_count:sourceName==="sarout.ma"?(num(listing?.numberOfBathroomsTotal)??oneAny(patterns.bathrooms,text)):oneAny(patterns.bathrooms,text),
     rooms_count:oneAny(patterns.rooms,text),
-    structured:listing?{name:listing.name??null,category:listing.category??null,offers:listing.offers??null,floorSize:listing.floorSize??null,numberOfBedrooms:listing.numberOfBedrooms??null,numberOfBathroomsTotal:listing.numberOfBathroomsTotal??null}:null
+    evidence_scope: primaryText?"structured_or_meta_primary":"none",
+    structured:listing?{name:listing.name??null,description:listing.description??null,category:listing.category??null,offers:listing.offers??null,floorSize:listing.floorSize??null,numberOfBedrooms:listing.numberOfBedrooms??null,numberOfBathroomsTotal:listing.numberOfBathroomsTotal??null}:null
   };
 }
 const robotsCache=new Map();
@@ -112,8 +145,23 @@ for(const row of sample){
  await sleep(250);
 }
 const fields=["price_mad","surface_m2","bedrooms_count","bathrooms_count","rooms_count"];
-const summary={source:sourceName,freeze_artifact_id:10910779576,freeze_rows:226286,freeze_source_candidates:candidates.length,sample_size:sample.length,robots_allowed:results.filter(x=>x.robots_allowed).length,accessible:results.filter(x=>x.accessible).length,recovered:{},price_rejections:{},database_access:0,database_writes:0,source_site_fetches:results.filter(x=>x.robots_allowed).length};
-for(const x of results){if(!x.extracted)continue;for(const f of fields)if(x.extracted[f]!=null)summary.recovered[f]=(summary.recovered[f]||0)+1;if(x.extracted.price_rejection_reason)summary.price_rejections[x.extracted.price_rejection_reason]=(summary.price_rejections[x.extracted.price_rejection_reason]||0)+1;}
+const summary={source:sourceName,freeze_artifact_id:10910779576,freeze_rows:226286,freeze_source_candidates:candidates.length,sample_size:sample.length,robots_allowed:results.filter(x=>x.robots_allowed).length,accessible:results.filter(x=>x.accessible).length,recovered:{},recovery_from_null:{},validation_matches:{},conflicts:{},price_rejections:{},database_access:0,database_writes:0,source_site_fetches:results.filter(x=>x.robots_allowed).length};
+const cohort=[];
+for(const x of results){
+  if(!x.extracted)continue;
+  for(const f of fields){
+    const ev=x.extracted[f], old=x.freeze?.[f];
+    if(ev==null) continue;
+    summary.recovered[f]=(summary.recovered[f]||0)+1;
+    if(old==null){
+      summary.recovery_from_null[f]=(summary.recovery_from_null[f]||0)+1;
+      cohort.push({url:x.url,source:sourceName,field:f,value:ev,freeze_value:null,evidence_scope:x.extracted.evidence_scope,price_period_candidate:x.extracted.price_period_candidate,structured:x.extracted.structured,mode:"offline_candidate"});
+    } else if(Number(old)===Number(ev)) summary.validation_matches[f]=(summary.validation_matches[f]||0)+1;
+    else summary.conflicts[f]=(summary.conflicts[f]||0)+1;
+  }
+  if(x.extracted.price_rejection_reason) summary.price_rejections[x.extracted.price_rejection_reason]=(summary.price_rejections[x.extracted.price_rejection_reason]||0)+1;
+}
 await writeFile(`${outputPrefix}.json`,JSON.stringify(summary,null,2)+"\n");
 await writeFile(`${outputPrefix}.jsonl`,results.map(x=>JSON.stringify(x)).join("\n")+"\n");
+await writeFile(`${outputPrefix}-offline-cohort.jsonl`,cohort.map(x=>JSON.stringify(x)).join("\n")+"\n");
 console.log(JSON.stringify(summary,null,2));
