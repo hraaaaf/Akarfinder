@@ -6,6 +6,8 @@ import Link from "next/link";
 import {
   ArrowRight,
   BarChart3,
+  ChevronDown,
+  ChevronUp,
   Building2,
   MapPin,
   Search,
@@ -35,6 +37,7 @@ export function MaarifTargetRail() {
   const searchHref = "/search?city=Casablanca&district=Ma%C3%A2rif";
   const neighborhoodHref = "/quartiers/casablanca/maarif";
   const [activeTab, setActiveTab] = useState<Tab>("market");
+  const [sheetExpanded, setSheetExpanded] = useState(false);
   const [context, setContext] = useState<NeighborhoodContextReadModelV1 | null>(null);
 
   useEffect(() => {
@@ -72,8 +75,19 @@ export function MaarifTargetRail() {
       data-p4-map-decision-rail
       data-vivre-ici-premium-context
       data-vivre-ici-tab={activeTab}
+      data-sheet-expanded={sheetExpanded ? "true" : "false"}
       aria-label="Maârif — quartier, vie locale et biens"
     >
+      <button
+        type="button"
+        className="maarif-target-sheet-toggle"
+        aria-expanded={sheetExpanded}
+        aria-label={sheetExpanded ? "Réduire la fiche Maârif" : "Développer la fiche Maârif"}
+        onClick={() => setSheetExpanded((value) => !value)}
+      >
+        <span aria-hidden="true" />
+        {sheetExpanded ? <ChevronDown size={15} aria-hidden="true" /> : <ChevronUp size={15} aria-hidden="true" />}
+      </button>
       <figure className="maarif-target-hero">
         <img src={MAARIF_HERO.src} alt={MAARIF_HERO.alt} />
         <div className="maarif-target-hero-shade" aria-hidden="true" />
@@ -195,6 +209,7 @@ export function MaarifTargetRail() {
 
       <style jsx global>{`
         .maarif-target-rail{grid-column:2;height:100%;min-width:0;overflow-y:auto;background:#fff;border-left:1px solid #e3eaf2;color:#08264d;scrollbar-width:thin}
+        .maarif-target-sheet-toggle{display:none}
         .maarif-target-hero{position:relative;height:178px;margin:0;overflow:hidden;background:#dbe8ee}
         .maarif-target-hero img{display:block;width:100%;height:100%;object-fit:cover;object-position:center 54%}
         .maarif-target-hero-shade{position:absolute;inset:0;background:linear-gradient(180deg,transparent 48%,rgb(4 25 48/.38))}
@@ -249,7 +264,11 @@ export function MaarifTargetRail() {
         @media(max-width:1023px){
           [data-maarif-rebuild="true"] [data-p4-map-layout]{position:relative!important;display:block!important;height:calc(100svh - 64px)!important;min-height:620px!important;overflow:hidden!important;background:#e9e5dc!important}
           [data-maarif-rebuild="true"] [data-p4-map-canvas]{position:absolute!important;inset:0!important;height:100%!important;min-height:0!important}
-          .maarif-target-rail{position:absolute;z-index:24;left:12px;right:12px;bottom:12px;display:block;width:auto;height:min(43svh,390px);max-height:min(43svh,390px);overflow-y:auto;overscroll-behavior:contain;border:1px solid rgb(213 223 233/.92);border-radius:24px;background:rgb(255 255 255/.97);box-shadow:0 22px 60px rgb(6 43 85/.22);backdrop-filter:blur(18px)}
+          .maarif-target-rail{position:absolute;z-index:24;left:12px;right:12px;bottom:12px;display:block;width:auto;height:min(43svh,390px);max-height:min(43svh,390px);overflow-y:auto;overscroll-behavior:contain;border:1px solid rgb(213 223 233/.92);border-radius:24px;background:rgb(255 255 255/.97);box-shadow:0 22px 60px rgb(6 43 85/.22);backdrop-filter:blur(18px);transition:height .28s ease,max-height .28s ease}
+          .maarif-target-rail[data-sheet-expanded="true"]{height:min(72svh,680px);max-height:min(72svh,680px)}
+          .maarif-target-sheet-toggle{position:sticky;top:0;z-index:3;display:flex;width:100%;height:28px;align-items:center;justify-content:center;gap:7px;border:0;background:linear-gradient(180deg,rgb(255 255 255/.99),rgb(255 255 255/.88));color:#59718d;cursor:pointer}
+          .maarif-target-sheet-toggle span{width:38px;height:4px;border-radius:999px;background:#b9c6d2}
+          .maarif-target-sheet-toggle:focus-visible{outline:3px solid rgb(8 116 249/.35);outline-offset:-3px}
           .maarif-target-hero{height:118px;margin:8px 8px 0;border-radius:18px}
           .maarif-target-body{padding:16px 16px 26px}
           .maarif-target-heading h1{font-size:38px}
@@ -259,10 +278,12 @@ export function MaarifTargetRail() {
         }
         @media(min-width:561px) and (max-width:1023px){
           .maarif-target-rail{left:20px;right:20px;bottom:18px;height:min(46svh,420px);max-height:min(46svh,420px)}
+          .maarif-target-rail[data-sheet-expanded="true"]{height:min(70svh,640px);max-height:min(70svh,640px)}
         }
         @media(max-width:560px){
           [data-maarif-rebuild="true"] [data-p4-map-layout]{height:calc(100svh - 64px)!important;min-height:600px!important}
           .maarif-target-rail{left:8px;right:8px;bottom:max(8px,env(safe-area-inset-bottom));height:min(44svh,372px);max-height:min(44svh,372px);border-radius:22px}
+          .maarif-target-rail[data-sheet-expanded="true"]{height:min(74svh,620px);max-height:min(74svh,620px)}
           .maarif-target-hero{height:104px;margin:7px 7px 0}
           .maarif-target-hero figcaption{left:10px;right:10px;font-size:7px}.maarif-target-hero-credit a{padding:4px 6px}
           .maarif-target-body{padding:14px 14px 24px}
@@ -274,6 +295,9 @@ export function MaarifTargetRail() {
           .maarif-target-place-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
           .maarif-target-place-visual{height:60px}
           .maarif-target-primary-action,.maarif-target-secondary-action{min-height:46px}
+        }
+        @media(prefers-reduced-motion:reduce){
+          .maarif-target-rail{transition:none!important}
         }
       `}</style>
     </aside>
