@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      SAMPLE_SIZE: '120'
+      SAMPLE_SIZE: '300'
       SOURCE_NAME: 'marocimmo.com'
       OUTPUT_PREFIX: 'marocimmo-freeze-recovery-benchmark'
       FREEZE_JSONL_GZ: '.tmp/freeze/clean-corpus-v4.11-core.jsonl.gz'
@@ -68,7 +68,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      SAMPLE_SIZE: '120'
+      SAMPLE_SIZE: '300'
       SOURCE_NAME: 'sarout.ma'
       OUTPUT_PREFIX: 'sarout-freeze-recovery-benchmark'
       FREEZE_JSONL_GZ: '.tmp/freeze/clean-corpus-v4.11-core.jsonl.gz'
