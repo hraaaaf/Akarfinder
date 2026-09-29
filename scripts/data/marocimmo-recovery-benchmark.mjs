@@ -253,4 +253,6 @@ for(const x of results){
     if(x.extracted.price_candidates>1) summary.ambiguous_price++;
   }
 }
-await writeFile(`${outputPrefix}.json`,JSON.stringify(summary,null,2)+"\\n");\nawait writeFile(`${outputPrefix}.jsonl`,results.map(x=>JSON.stringify(x)).join("\\n")+"\\n");\nconsole.log(JSON.stringify(summary,null,2));\n
+await writeFile(`${outputPrefix}.json`,JSON.stringify(summary,null,2)+"\\n");
+await writeFile(`${outputPrefix}.jsonl`,results.map(x=>JSON.stringify(x)).join("\\n")+"\\n");
+console.log(JSON.stringify(summary,null,2));
