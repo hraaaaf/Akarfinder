@@ -241,10 +241,10 @@ export function MaarifTargetRail() {
         .maarif-target-empty{margin:0;color:#8191a4;font-size:9px}
         @media(min-width:1024px){[data-maarif-rebuild="true"] [data-p4-map-layout]{grid-template-columns:minmax(0,70.5%) minmax(360px,29.5%)!important}}
         @media(max-width:1023px){
-          [data-maarif-rebuild="true"] [data-p4-map-layout]{display:block!important;height:auto!important;min-height:0!important;overflow:visible!important;background:#fff!important}
-          [data-maarif-rebuild="true"] [data-p4-map-canvas]{height:56svh!important;min-height:430px!important}
-          .maarif-target-rail{position:relative;display:block;width:100%;height:auto;max-height:none;overflow:visible;border-left:0;border-top:1px solid #e1e8f1}
-          .maarif-target-hero{height:150px;margin:12px 12px 0;border-radius:18px}
+          [data-maarif-rebuild="true"] [data-p4-map-layout]{position:relative!important;display:block!important;height:calc(100svh - 64px)!important;min-height:620px!important;overflow:hidden!important;background:#e9e5dc!important}
+          [data-maarif-rebuild="true"] [data-p4-map-canvas]{position:absolute!important;inset:0!important;height:100%!important;min-height:0!important}
+          .maarif-target-rail{position:absolute;z-index:24;left:12px;right:12px;bottom:12px;display:block;width:auto;height:min(43svh,390px);max-height:min(43svh,390px);overflow-y:auto;overscroll-behavior:contain;border:1px solid rgb(213 223 233/.92);border-radius:24px;background:rgb(255 255 255/.97);box-shadow:0 22px 60px rgb(6 43 85/.22);backdrop-filter:blur(18px)}
+          .maarif-target-hero{height:118px;margin:8px 8px 0;border-radius:18px}
           .maarif-target-body{padding:16px 16px 26px}
           .maarif-target-heading h1{font-size:38px}
           .maarif-target-tagline{font-size:15px}
@@ -252,11 +252,12 @@ export function MaarifTargetRail() {
           .maarif-target-stat-grid strong{font-size:18px}
         }
         @media(min-width:561px) and (max-width:1023px){
-          .maarif-target-rail{height:44svh;max-height:44svh;overflow-y:auto;overscroll-behavior:contain}
+          .maarif-target-rail{left:20px;right:20px;bottom:18px;height:min(46svh,420px);max-height:min(46svh,420px)}
         }
         @media(max-width:560px){
-          [data-maarif-rebuild="true"] [data-p4-map-canvas]{height:54svh!important;min-height:420px!important}
-          .maarif-target-hero{height:128px;margin:10px 10px 0}
+          [data-maarif-rebuild="true"] [data-p4-map-layout]{height:calc(100svh - 64px)!important;min-height:600px!important}
+          .maarif-target-rail{left:8px;right:8px;bottom:max(8px,env(safe-area-inset-bottom));height:min(44svh,372px);max-height:min(44svh,372px);border-radius:22px}
+          .maarif-target-hero{height:104px;margin:7px 7px 0}
           .maarif-target-hero figcaption{left:10px;right:10px}.maarif-target-hero figcaption a{display:none}
           .maarif-target-body{padding:14px 14px 24px}
           .maarif-target-heading h1{font-size:36px}
