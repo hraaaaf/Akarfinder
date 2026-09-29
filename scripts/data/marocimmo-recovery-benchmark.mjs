@@ -51,9 +51,37 @@ function metaContent(html,key){
 }
 function structuredEvidence(html){
   const title=(html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)||[])[1]?.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim().slice(0,1200)||null;
-  const ld=[...html.matchAll(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)]
-    .slice(0,6).map(m=>m[1].replace(/\s+/g,' ').trim().slice(0,1800));
-  return {title,og_title:metaContent(html,'og:title'),og_description:metaContent(html,'og:description'),description:metaContent(html,'description'),jsonld:ld};
+  const nodes=[];
+  for(const match of html.matchAll(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)){
+    try{
+      const parsed=JSON.parse(match[1]);
+      const stack=Array.isArray(parsed)?parsed:[parsed];
+      for(const item of stack){
+        if(item && typeof item==="object" && Array.isArray(item["@graph"])) nodes.push(...item["@graph"]);
+        else nodes.push(item);
+      }
+    }catch{}
+  }
+  const listing=nodes.find(node=>{
+    const t=node?.["@type"];
+    return t==="RealEstateListing" || (Array.isArray(t)&&t.includes("RealEstateListing"));
+  })||null;
+  const projected=listing?{
+    type:listing["@type"]??null,
+    name:listing.name??null,
+    description:listing.description??null,
+    url:listing.url??null,
+    datePosted:listing.datePosted??null,
+    dateModified:listing.dateModified??null,
+    category:listing.category??null,
+    address:listing.address??null,
+    offers:listing.offers??null,
+    floorSize:listing.floorSize??null,
+    numberOfRooms:listing.numberOfRooms??null,
+    numberOfBedrooms:listing.numberOfBedrooms??null,
+    numberOfBathroomsTotal:listing.numberOfBathroomsTotal??listing.numberOfBathrooms??null
+  }:null;
+  return {title,og_title:metaContent(html,'og:title'),og_description:metaContent(html,'og:description'),description:metaContent(html,'description'),real_estate_listing:projected};
 }
 function htmlToText(html){
   return html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/giu,' ')
@@ -75,7 +103,10 @@ function saroutMainText(text,title){
 }
 function extract(html,title){
   const fullText=htmlToText(html);
-  const text=sourceName==="sarout.ma"?(saroutMainText(fullText,title)||""):fullText;
+  const structured=sourceName==="sarout.ma"?structuredEvidence(html):null;
+  const listing=structured?.real_estate_listing||null;
+  const structuredText=[listing?.name,listing?.description,structured?.og_title,structured?.og_description,structured?.description].filter(Boolean).join(" ");
+  const text=sourceName==="sarout.ma"?(structuredText||saroutMainText(fullText,title)||""):fullText;
   const onRequest=onRequestRe.test(text);
   onRequestRe.lastIndex=0;
   const rawMatches=[...text.matchAll(amountRe)].slice(0,12);
@@ -86,7 +117,7 @@ function extract(html,title){
     context:text.slice(Math.max(0,(m.index||0)-90),Math.min(text.length,(m.index||0)+m[0].length+90))
   }));
   return {
-    structured_evidence: sourceName==="sarout.ma"?structuredEvidence(html):null,
+    structured_evidence: structured,
     price_status_candidate:onRequest?"on_request":null,
     price_mad:!onRequest&&rawPrices.length===1?rawPrices[0]:null,
     price_candidates:onRequest?0:rawPrices.length,
