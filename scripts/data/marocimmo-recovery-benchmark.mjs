@@ -2,6 +2,8 @@ import { writeFile } from "node:fs/promises";
 import { neon } from "@neondatabase/serverless";
 
 const USER_AGENT="AkarFinderRecoveryAudit";
+const sourceName=(process.env.SOURCE_NAME||"marocimmo.com").toLowerCase();
+const outputPrefix=process.env.OUTPUT_PREFIX||"marocimmo-recovery-benchmark";
 const sql = neon(process.env.DATABASE_URL);
 const limit = Math.max(1, Math.min(300, Number(process.env.SAMPLE_SIZE || 120)));
 const rows = await sql`
@@ -10,7 +12,7 @@ const rows = await sql`
          s.listing_url
   FROM property_listings p
   JOIN listing_sources s ON s.property_listing_id=p.id
-  WHERE lower(s.source_name)='marocimmo.com'
+  WHERE lower(s.source_name)=${sourceName}
     AND (p.price_mad IS NULL OR p.surface_m2 IS NULL OR p.district IS NULL
          OR p.rooms_count IS NULL OR p.bedrooms_count IS NULL OR p.bathrooms_count IS NULL)
     AND s.listing_url IS NOT NULL
@@ -92,12 +94,12 @@ for(const r of rows){
  await sleep(250);
 }
 const fields=["price_mad","surface_m2","bedrooms_count","bathrooms_count","rooms_count"];
-const summary={source:"marocimmo.com",sample_requested:limit,sample_size:results.length,
+const summary={source:sourceName,sample_requested:limit,sample_size:results.length,
  robots_allowed:results.filter(x=>x.robots_allowed).length,robots_blocked:results.filter(x=>x.robots_allowed===false).length,
  accessible:results.filter(x=>x.accessible).length,http_statuses:{},recovered:{},ambiguous_price:0,
  note:"Read-only bounded benchmark; robots.txt fail-closed; extracted values are candidates only and are not written to Neon."};
 for(const x of results){const k=String(x.http_status??(x.robots_allowed===false?"robots_blocked":"error"));summary.http_statuses[k]=(summary.http_statuses[k]||0)+1;
  if(x.extracted){for(const field of fields)if(x.extracted[field]!=null)summary.recovered[field]=(summary.recovered[field]||0)+1;if(x.extracted.price_candidates>1)summary.ambiguous_price++;}}
-await writeFile("marocimmo-recovery-benchmark.json",JSON.stringify(summary,null,2)+"\n");
-await writeFile("marocimmo-recovery-benchmark.jsonl",results.map(x=>JSON.stringify(x)).join("\n")+"\n");
+await writeFile(`${outputPrefix}.json`,JSON.stringify(summary,null,2)+"\n");
+await writeFile(`${outputPrefix}.jsonl`,results.map(x=>JSON.stringify(x)).join("\n")+"\n");
 console.log(JSON.stringify(summary,null,2));
