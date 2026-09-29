@@ -388,3 +388,42 @@ NEXT EXACT:
 3. compare MarocImmo evidence quality against Sarout JSON-LD quality;
 4. prepare bounded reversible migration only after candidate certification;
 5. HUMAN GATE before Neon production write.
+
+
+## RECOVERY BENCHMARK UPDATE — SAROUT FINAL HARDENED
+
+HEAD: `912d661698972cb641ae8189800634438fa41f6e`
+Run: `36584126990` — SUCCESS.
+Exact-head checks: all SUCCESS.
+
+Sarout bounded sample (120):
+- robots allowed: 120/120;
+- accessible HTTP 200: 114/120;
+- network/error: 6;
+- recovered candidate price_mad: 88;
+- recovered surface_m2: 78;
+- recovered bedrooms_count: 41;
+- recovered bathrooms_count: 40;
+- recovered rooms_count: 14;
+- ambiguous_price: 0.
+
+Structured-price rejection reasons:
+- no_offer: 8;
+- non_monthly: 10;
+- vacation_without_monthly_proof: 5;
+- sale_too_low: 1;
+- rent_too_low: 2.
+
+Verified source rules:
+- Sarout price candidates come from JSON-LD `offers.price`, not page-wide monetary regex;
+- non-monthly / short-stay / vacation cadence is rejected unless monthly evidence is explicit and non-conflicting;
+- mixed cadence is fail-closed;
+- Sarout `numberOfRooms` is NOT mapped directly to AkarFinder `rooms_count` because observed semantics are inconsistent;
+- missing structured counts remain NULL;
+- listing 79042 is now recovered safely as surface=100, bathrooms=1, rooms=NULL, price=NULL/no_offer, matching manual inspection “Prix sur demande”.
+
+NEXT EXACT:
+1. audit record-level the 88 accepted Sarout price candidates against transaction/category/cadence evidence;
+2. inspect the 14 text-derived rooms candidates separately;
+3. freeze a write-safe correction cohort only after those audits;
+4. HUMAN GATE before any Neon production mutation.
