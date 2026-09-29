@@ -461,3 +461,31 @@ NEXT EXACT:
 2. verify exact field counts in the generated cohort;
 3. prepare reversible dry-run correction payload only;
 4. HUMAN GATE before any Neon write.
+
+
+## EXTERNAL BLOCKER — NEON QUOTA 2026-09-29
+
+Current code HEAD: `775070535e920252f92a3b8f6cf0ec4ff7aa28ef`.
+Exact workflow run: `36588082597`.
+
+Failure cause is external and identical across DB-dependent jobs:
+`HTTP 402 — Your account or project has exceeded the quota. Upgrade your plan to increase limits.`
+
+Verified before the quota block:
+- syntax check passes;
+- hardened Sarout benchmark on previous validated HEAD: 120 sample / 114 accessible / 88 price candidates after cadence guards;
+- zero-error price cohort from that validated artifact: 62 write-safe (58 sale + 4 explicit monthly rent), 26 unknown-cadence rentals quarantined;
+- 14 room candidates are explicit labeled `X pièces` evidence from the main listing description;
+- no production write performed.
+
+Implemented but not yet re-certified due quota:
+- actual `*-write-safe.jsonl` emission;
+- actual `*-mutation-plan.jsonl` emission;
+- per-field mutation record includes listing id, source, DB field, candidate value, NULL precondition, evidence, confidence, and `dry_run_only` mode.
+
+NEXT EXACT AFTER NEON QUOTA IS RESTORED:
+1. rerun `Neon Semantic JSONL Audit` on current HEAD;
+2. verify artifact files are present and exact counts match the prior audited cohort;
+3. freeze the reversible dry-run mutation payload;
+4. HUMAN GATE before any Neon production write;
+5. after approval, apply only preconditioned deterministic corrections and rerun the full 151,900-row semantic audit.
