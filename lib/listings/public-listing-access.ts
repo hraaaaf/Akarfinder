@@ -127,7 +127,6 @@ function structuralUrlEvidence(row: DbListingRow): { transaction: "sale" | "rent
     return null;
   };
 
-  // Agenz: /annonces/immo-.../vente-appartements/... or location-villas/...
   if (host === "agenz.ma") {
     const route = segments.find((segment) => /^(?:vente|location)-/.test(segment));
     if (route) {
@@ -139,25 +138,21 @@ function structuralUrlEvidence(row: DbListingRow): { transaction: "sale" | "rent
     }
   }
 
-  // MarocImmo: /fr/{vente|location}/{type}/...
   if (host === "marocimmo.com") {
     const i = segments.findIndex((segment) => segment === "vente" || segment === "location");
     if (i >= 0) return { transaction: segments[i] === "vente" ? "sale" : "rent", propertyType: mapType(segments[i + 1]) };
   }
 
-  // Domio: /fr/{type}/{vendre|louer}/{city}/...
   if (host === "domio.ma") {
     const i = segments.findIndex((segment) => segment === "vendre" || segment === "louer");
     if (i > 0) return { transaction: segments[i] === "vendre" ? "sale" : "rent", propertyType: mapType(segments[i - 1]) };
   }
 
-  // Mouldar: /fr/{achat|location}/{type}/...
   if (host === "mouldar.com") {
     const i = segments.findIndex((segment) => segment === "achat" || segment === "location" || segment === "rent");
     if (i >= 0) return { transaction: segments[i] === "achat" ? "sale" : "rent", propertyType: mapType(segments[i + 1]) };
   }
 
-  // Masaken: /fr/immobilier-maroc/{vente|location}-{type}-...
   if (host === "masaken.ma") {
     const route = segments.find((segment) => /^(?:vente|location)-/.test(segment));
     if (route) {
@@ -166,7 +161,6 @@ function structuralUrlEvidence(row: DbListingRow): { transaction: "sale" | "rent
     }
   }
 
-  // Sarouty: /plp/{acheter|louer}/{type}-...
   if (host === "sarouty.ma") {
     const i = segments.findIndex((segment) => segment === "acheter" || segment === "louer");
     if (i >= 0) {
@@ -175,10 +169,14 @@ function structuralUrlEvidence(row: DbListingRow): { transaction: "sale" | "rent
     }
   }
 
-  // Avito has a stable category path segment but no independent transaction segment.
   if (host === "avito.ma") {
-    const type = segments.map(mapType).find(Boolean) ?? null;
-    return { transaction: null, propertyType: type };
+    const categoryIndex = segments.findIndex((segment) =>
+      /^(?:appartements?|maisons?|villas_et_riads|villas?|terrains?|bureaux?|local|locaux|commerce|commercial|magasins?|riads?|studios?)$/.test(segment),
+    );
+    return {
+      transaction: null,
+      propertyType: categoryIndex >= 0 ? mapType(segments[categoryIndex]) : null,
+    };
   }
 
   return { transaction: null, propertyType: null };
@@ -253,9 +251,10 @@ function uniqueExplicitCount(text: string | null | undefined, kind: "bedroom" | 
             /(\d{1,3})\s*rooms?/giu,
           ];
 
-  const values = patterns.flatMap((pattern) =>
-    Array.from(raw.matchAll(pattern), (match) => Number(match[1])),
-  ).filter((value) => Number.isFinite(value));
+  const values = patterns.flatMap((pattern) => {
+    pattern.lastIndex = 0;
+    return Array.from(raw.matchAll(pattern), (match) => Number(match[1]));
+  }).filter((value) => Number.isFinite(value));
 
   const unique = [...new Set(values)];
   return unique.length === 1 ? unique[0] : null;
@@ -365,11 +364,6 @@ export function canPublishPersistedExternalListing(
   return true;
 }
 
-/**
- * Returns true only when the listing's source is first_party or
- * partner_authorized. All other sources remain suppressed from structured
- * public surfaces.
- */
 export function canPublishListingToPublicSurface(listing: Listing): boolean {
   return canPublishStructuredListing(listing.source_name ?? "");
 }
@@ -389,9 +383,6 @@ export function canPublishListingToPublicSearchSurface(listing: Listing): boolea
   );
 }
 
-/**
- * Lightweight structured-only variant for use before mapDbRowToListing.
- */
 export function canPublishDbRowToPublicSurface(row: DbListingRow): boolean {
   return canPublishStructuredListing(row.source_name ?? "");
 }
