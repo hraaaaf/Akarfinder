@@ -38,12 +38,16 @@ function unique(re,text){
 function one(re,text){const v=unique(re,text);return v.length===1?v[0]:null;}
 function oneAny(res,text){const v=[...new Set(res.flatMap(re=>unique(re,text)))];return v.length===1?v[0]:null;}
 function metaContent(html,key){
-  const re1=new RegExp('<meta[^>]+(?:property|name)=["\\']'+key+'["\\'][^>]+content=["\\']([^"\\']*)["\\']','i');
-  const a=re1.exec(html);
-  if(a) return a[1].slice(0,1200);
-  const re2=new RegExp('<meta[^>]+content=["\\']([^"\\']*)["\\'][^>]+(?:property|name)=["\\']'+key+'["\\']','i');
-  const b=re2.exec(html);
-  return b?b[1].slice(0,1200):null;
+  const tags=html.match(/<meta\b[^>]*>/gi)||[];
+  const target=key.toLowerCase();
+  for(const tag of tags){
+    const property=(tag.match(/\bproperty\s*=\s*["']([^"']+)["']/i)||[])[1]?.toLowerCase();
+    const name=(tag.match(/\bname\s*=\s*["']([^"']+)["']/i)||[])[1]?.toLowerCase();
+    if(property!==target && name!==target) continue;
+    const content=(tag.match(/\bcontent\s*=\s*["']([^"']*)["']/i)||[])[1];
+    if(content!=null) return content.slice(0,1200);
+  }
+  return null;
 }
 function structuredEvidence(html){
   const title=(html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)||[])[1]?.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim().slice(0,1200)||null;
