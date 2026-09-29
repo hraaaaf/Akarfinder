@@ -167,7 +167,7 @@ function expandContextHull(hull: MutablePosition[], scale = 1.50): MutablePositi
 
 function contextCameraForViewport(desktop: boolean) {
   return desktop
-    ? { zoom: 13.48, pitch: 44, bearing: -12 }
+    ? { zoom: 13.48, pitch: 38, bearing: -10 }
     : { zoom: 13.18, pitch: 40, bearing: -8 };
 }
 
@@ -313,13 +313,23 @@ export function MapLibreNeighborhood3D({
                   if (layer.type === "background") {
                     map.setPaintProperty(layer.id, "background-color", "#ECE7DD");
                   }
+                  if (layer.type === "fill" && /building/.test(id)) {
+                    map.setPaintProperty(layer.id, "fill-color", "#DED7CC");
+                    map.setPaintProperty(layer.id, "fill-opacity", 0.58);
+                    map.setPaintProperty(layer.id, "fill-outline-color", "#C8BFB2");
+                  }
+                  if (layer.type === "line" && /building/.test(id)) {
+                    map.setPaintProperty(layer.id, "line-color", "#C5BCAE");
+                    map.setPaintProperty(layer.id, "line-opacity", 0.48);
+                    map.setPaintProperty(layer.id, "line-width", 0.7);
+                  }
                   if (
                     (layer.type === "fill" && /(water|ocean|sea|park|landuse|landcover)/.test(id))
                     || (layer.type === "line" && /(coast|shore|water|road|street|highway|motorway|trunk|primary|secondary|tertiary)/.test(id))
                   ) {
                     map.setLayoutProperty(layer.id, "visibility", "none");
                   }
-                  if (layer.type === "symbol" && /(neighbour|neighborhood|suburb|quarter|district|place)/.test(id)) {
+                  if (layer.type === "symbol" && /(neighbour|neighborhood|suburb|quarter|district|place|city|town|village)/.test(id)) {
                     map.setLayoutProperty(layer.id, "visibility", "none");
                   }
                   if (layer.type === "symbol" && /(poi|housenumber|transit)/.test(id)) {
@@ -466,7 +476,7 @@ export function MapLibreNeighborhood3D({
                     "secondary", "#CCC0B0",
                     "#D7CEC1"
                   ],
-                  "line-opacity": 0.38,
+                  "line-opacity": 0.50,
                   "line-width": [
                     "interpolate", ["linear"], ["zoom"],
                     11, ["match", ["get", "class"], "motorway", 2.4, "trunk", 2.2, "primary", 2.0, "secondary", 1.7, "tertiary", 1.3, 0.8],
@@ -495,7 +505,7 @@ export function MapLibreNeighborhood3D({
                     "tertiary", "#EEE8DE",
                     "#E9E3D9"
                   ],
-                  "line-opacity": 0.78,
+                  "line-opacity": 0.92,
                   "line-width": [
                     "interpolate", ["linear"], ["zoom"],
                     11, ["match", ["get", "class"], "motorway", 1.8, "trunk", 1.65, "primary", 1.5, "secondary", 1.2, "tertiary", 0.95, 0.62],
@@ -814,7 +824,7 @@ export function MapLibreNeighborhood3D({
         source: CONTEXT_FOOTPRINT_SOURCE_ID,
         paint: {
           "fill-color": districtTone,
-          "fill-opacity": 0.035,
+          "fill-opacity": 0.012,
         },
       } as any, FOCUS_GLOW_LAYER_ID);
       map.addLayer({
@@ -824,7 +834,7 @@ export function MapLibreNeighborhood3D({
         paint: {
           "line-color": AKARFINDER_MOROCCO_MAP_NAVY,
           "line-width": 3,
-          "line-opacity": 0.10,
+          "line-opacity": 0.04,
           "line-blur": 1.8,
         },
       } as any, FOCUS_GLOW_LAYER_ID);
@@ -835,7 +845,7 @@ export function MapLibreNeighborhood3D({
         paint: {
           "line-color": "#7E98AA",
           "line-width": 1.1,
-          "line-opacity": 0.24,
+          "line-opacity": 0.08,
           "line-dasharray": [1.2, 1.4],
           "line-blur": 0,
         },
