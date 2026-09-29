@@ -225,6 +225,7 @@ export function MapLibreNeighborhood3D({
   const [renderState, setRenderState] = useState<"loading" | "ready" | "error">("loading");
   const [sourceState, setSourceState] = useState<"loading" | "available" | "unavailable">("loading");
   const [buildingCount, setBuildingCount] = useState(0);
+  const [buildingFootprintCount, setBuildingFootprintCount] = useState(0);
   const [contextState, setContextState] = useState<"loading" | "ready" | "unavailable">("loading");
   const [context, setContext] = useState<NeighborhoodContext | null>(null);
   const [activeCategory, setActiveCategory] = useState<LivingHereCategory | "all">("all");
@@ -695,9 +696,13 @@ export function MapLibreNeighborhood3D({
         const evaluate = () => {
           if (disposed || !map?.getLayer("3d-buildings")) return;
           try {
-            const features = map.queryRenderedFeatures(undefined, { layers: ["3d-buildings"] });
-            setBuildingCount(features.length);
-            if (features.length > 0) setSourceState("available");
+            const volumeFeatures = map.queryRenderedFeatures(undefined, { layers: ["3d-buildings"] });
+            const footprintFeatures = map.getLayer("akarfinder-target-buildings")
+              ? map.queryRenderedFeatures(undefined, { layers: ["akarfinder-target-buildings"] })
+              : [];
+            setBuildingCount(volumeFeatures.length);
+            setBuildingFootprintCount(footprintFeatures.length);
+            if (volumeFeatures.length > 0 || footprintFeatures.length > 0) setSourceState("available");
             setReady(true);
             setRenderState("ready");
           } catch {
@@ -897,6 +902,7 @@ export function MapLibreNeighborhood3D({
       data-maplibre-source-state={sourceState}
       data-maplibre-source="openfreemap-vector"
       data-maplibre-building-count={buildingCount}
+      data-maplibre-building-footprint-count={buildingFootprintCount}
       data-maplibre-context-state={contextState}
       data-maplibre-anchor-count={context?.anchor_count ?? 0}
       data-maplibre-city={citySlug}
