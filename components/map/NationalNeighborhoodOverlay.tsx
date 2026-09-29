@@ -43,6 +43,8 @@ type AdministrativeAtlasCollection = GeoJSON.FeatureCollection<
   AdministrativeAtlasFeature["properties"]
 >;
 
+type AtlasPaintSnapshot = { layerId: string; property: "line-opacity"; value: unknown };
+
 type Props = {
   map: MapLibreMap | null;
   mapReady: boolean;
@@ -168,17 +170,24 @@ export function NationalNeighborhoodOverlay({
     removeLayers(map);
 
     const basemapSymbolSnapshots = new Map<string, { textOpacity: unknown; iconOpacity: unknown }>();
+    const basemapRoadSnapshots: AtlasPaintSnapshot[] = [];
     if (citySlug === "casablanca" && administrativeAtlas) {
       for (const layer of map.getStyle().layers ?? []) {
-        if (layer.type !== "symbol" || layer.id.startsWith("akarfinder-")) continue;
+        if (layer.id.startsWith("akarfinder-")) continue;
         try {
-          const textOpacity = map.getPaintProperty(layer.id, "text-opacity");
-          const iconOpacity = map.getPaintProperty(layer.id, "icon-opacity");
-          basemapSymbolSnapshots.set(layer.id, { textOpacity, iconOpacity });
-          if (layer.layout?.["text-field"] !== undefined) map.setPaintProperty(layer.id, "text-opacity", 0.10);
-          if (layer.layout?.["icon-image"] !== undefined) map.setPaintProperty(layer.id, "icon-opacity", 0.02);
+          if (layer.type === "symbol") {
+            const textOpacity = map.getPaintProperty(layer.id, "text-opacity");
+            const iconOpacity = map.getPaintProperty(layer.id, "icon-opacity");
+            basemapSymbolSnapshots.set(layer.id, { textOpacity, iconOpacity });
+            if (layer.layout?.["text-field"] !== undefined) map.setPaintProperty(layer.id, "text-opacity", 0.10);
+            if (layer.layout?.["icon-image"] !== undefined) map.setPaintProperty(layer.id, "icon-opacity", 0.02);
+          } else if (layer.type === "line" && /(motorway|trunk|primary|secondary|road|street|highway)/i.test(layer.id)) {
+            const value = map.getPaintProperty(layer.id, "line-opacity");
+            basemapRoadSnapshots.push({ layerId: layer.id, property: "line-opacity", value });
+            map.setPaintProperty(layer.id, "line-opacity", /(motorway|trunk|primary)/i.test(layer.id) ? 0.28 : 0.14);
+          }
         } catch {
-          // Third-party symbol layers may expose different paint contracts.
+          // Third-party layers may expose different paint contracts.
         }
       }
     }
@@ -403,6 +412,14 @@ export function NationalNeighborhoodOverlay({
         try {
           map.setPaintProperty(layerId, "text-opacity", (snapshot.textOpacity ?? null) as never);
           map.setPaintProperty(layerId, "icon-opacity", (snapshot.iconOpacity ?? null) as never);
+        } catch {
+          // Style teardown can remove properties before cleanup.
+        }
+      }
+      for (const snapshot of basemapRoadSnapshots) {
+        if (!map.getLayer(snapshot.layerId)) continue;
+        try {
+          map.setPaintProperty(snapshot.layerId, snapshot.property, (snapshot.value ?? null) as never);
         } catch {
           // Style teardown can remove properties before cleanup.
         }

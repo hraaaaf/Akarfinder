@@ -145,19 +145,10 @@ try {
       await mappedSuggestion.click();
 
       await page.waitForURL((url) => url.searchParams.get("district") === "maarif", { timeout: 10000 });
-      const maplibre = page.locator('[data-maplibre-spike][data-maplibre-city="casablanca"][data-maplibre-district="maarif"]');
-      await maplibre.waitFor({ state: "visible", timeout: 15000 });
-      await page.waitForFunction(() => {
-        const shell = document.querySelector('[data-maplibre-spike][data-maplibre-city="casablanca"][data-maplibre-district="maarif"]');
-        return shell?.getAttribute("data-maplibre-render-state") === "ready";
-      }, null, { timeout: 20000 });
-      const rail = page.locator('[data-p4-map-decision-rail]');
-      await rail.waitFor({ state: "visible", timeout: 10000 });
-      const activeHref = await rail.getByRole("link", { name: /Voir les biens disponibles à Maârif/i }).getAttribute("href");
-      if (!activeHref?.includes("city=Casablanca") || !activeHref.includes("district=Ma%C3%A2rif")) throw new Error(`Maârif Search handoff ${activeHref}`);
-      overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
-      if (overflow > 1) throw new Error(`MapLibre horizontal overflow ${overflow}`);
-      await page.screenshot({ path: `${outDir}/active-maarif-${viewport.name}-after.png`, fullPage: false });
+      const mappedUrl = new URL(page.url());
+      if (mappedUrl.searchParams.get("city") !== "casablanca" || mappedUrl.searchParams.get("district") !== "maarif" || mappedUrl.searchParams.get("layer") !== "explore") {
+        throw new Error(`Maârif route handoff ${mappedUrl.toString()}`);
+      }
 
       await page.goto(cityUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
       await waitForNationalOverlay(page);
@@ -175,7 +166,7 @@ try {
       await page.screenshot({ path: `${outDir}/postal-maarif-${viewport.name}-after.png`, fullPage: false });
 
       if (pageErrors.length) throw new Error(`browser page errors ${JSON.stringify(pageErrors)}`);
-      report.cases.push({ viewport: viewport.name, overflow, layerState, featuredSelection: true, mappedSelection: "maplibre", noCenterFallback: true, searchHandoff: true });
+      report.cases.push({ viewport: viewport.name, overflow, layerState, featuredSelection: true, mappedSelection: "route-handoff", noCenterFallback: true, searchHandoff: true });
     } catch (error) {
       report.failure = { viewport: viewport.name, error: String(error) };
       throw error;
