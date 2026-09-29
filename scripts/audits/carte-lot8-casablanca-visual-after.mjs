@@ -157,6 +157,45 @@ try {
       if (diagnostics.pageErrors.length) throw new Error(`${viewport.name}: browser page errors ${JSON.stringify(diagnostics.pageErrors)}`);
       await page.screenshot({ path: `${outDir}/casablanca-maarif-${viewport.width}x${viewport.height}.png`, fullPage: false });
 
+      let sheetInteraction = null;
+      if (viewport.width <= 1023) {
+        const sheetToggle = rail.getByRole("button", { name: "Développer la fiche Maârif" });
+        await sheetToggle.waitFor({ state: "visible", timeout: 5000 });
+        if ((await sheetToggle.getAttribute("aria-expanded")) !== "false") {
+          throw new Error(`${viewport.name}: floating sheet must start collapsed`);
+        }
+        const collapsedBox = await rail.boundingBox();
+        if (!collapsedBox) throw new Error(`${viewport.name}: collapsed sheet box missing`);
+        await sheetToggle.click();
+        await page.waitForFunction(
+          () => document.querySelector("[data-maarif-target-rail]")?.getAttribute("data-sheet-expanded") === "true",
+          null,
+          { timeout: 5000 },
+        );
+        await page.waitForTimeout(350);
+        const expandedBox = await rail.boundingBox();
+        if (!expandedBox) throw new Error(`${viewport.name}: expanded sheet box missing`);
+        if (expandedBox.height < collapsedBox.height + 80) {
+          throw new Error(`${viewport.name}: floating sheet did not expand enough ${JSON.stringify({ collapsedBox, expandedBox })}`);
+        }
+        if (expandedBox.y < -1 || expandedBox.y + expandedBox.height > viewport.height + 1) {
+          throw new Error(`${viewport.name}: expanded floating sheet escapes viewport ${JSON.stringify(expandedBox)}`);
+        }
+        await page.screenshot({ path: `${outDir}/casablanca-maarif-expanded-${viewport.width}x${viewport.height}.png`, fullPage: false });
+        const reduceToggle = rail.getByRole("button", { name: "Réduire la fiche Maârif" });
+        await reduceToggle.click();
+        await page.waitForFunction(
+          () => document.querySelector("[data-maarif-target-rail]")?.getAttribute("data-sheet-expanded") === "false",
+          null,
+          { timeout: 5000 },
+        );
+        sheetInteraction = {
+          collapsedHeight: collapsedBox.height,
+          expandedHeight: expandedBox.height,
+          deltaHeight: expandedBox.height - collapsedBox.height,
+        };
+      }
+
       const contextResponse = await page.request.get(`${baseUrl}/api/geo/neighborhood-context?city=casablanca&district=maarif`);
       if (!contextResponse.ok()) throw new Error(`${viewport.name}: local context API returned ${contextResponse.status()}`);
       const contextBody = await contextResponse.json();
@@ -216,6 +255,7 @@ try {
         renderedBuildingFootprints,
         renderedHeightCoveragePct,
         renderedHeightCoverageNote: "ratio of rendered 3D features to rendered 2D building features; viewport-specific, not a unique-building census",
+        sheetInteraction,
         localContextSource: localContext.source.mode,
         localAnchorCount: localContext.anchor_count,
         localAnchorNames: expectedLocalNames,
