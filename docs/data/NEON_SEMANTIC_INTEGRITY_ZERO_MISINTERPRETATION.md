@@ -135,3 +135,37 @@ This prevents `Casablanca` vs `casablanca`, `Fès` vs `Fes`, `Salé` vs `Sale`, 
    - strong integrity conflicts in the certified/public corpus = **0**;
    - every non-certified row is explicitly unknown/quarantined rather than misrepresented;
    - public Search regression tests remain green.
+
+
+## Extended field audit — 2026-09-29
+
+Additional verified findings:
+- `listing_sources.price_period` is NULL for **151,900 / 151,900** rows.
+- priced rental rows: **16,639**.
+- priced rentals with explicit daily/nightly/weekly cadence signal: **29**.
+- priced rentals with explicit monthly signal: **325**.
+- current public subset with unsupported non-monthly cadence: **0**.
+- one-explicit-title sale-price comparable rows: **1,085**; title-vs-stored mismatches: **223**; current public subset conflicts: **0**.
+- one-explicit-title surface conflicts after correcting grouped-thousands parsing: approximately **993** across the audited corpus; current public subset conflicts: **0**.
+- explicit bedroom-count contradictions: **137**.
+- explicit bathroom-count contradictions: **3**.
+- explicit room-count contradictions: **0**.
+- current public subset with any explicit room/bedroom/bathroom contradiction: **0**.
+
+Room-count source concentration:
+- promoimmomarrakech.com: 55 bedroom conflicts
+- mubawab.ma: 20 bedroom + 3 bathroom conflicts
+- masaken.ma: 20 bedroom conflicts
+- mouldar.com: 18 bedroom conflicts
+- avito.ma: 7 bedroom conflicts
+- agenz.ma: 6 bedroom conflicts
+- domio.ma: 5 bedroom conflicts
+- remaining sources: small counts
+
+The earlier raw `bedrooms_count > 30` heuristic is **not** a certification rule. A Domio listing explicitly describes a 34-bedroom property and is therefore not contradictory on that evidence. Certification now compares stored counts against explicit labeled evidence instead of applying an arbitrary maximum.
+
+The current extractor now recognizes both:
+- `5 chambres`
+- `chambre : 05`
+
+This prevents surface/reference digits immediately before a bedroom label from bleeding into the count.
