@@ -450,3 +450,33 @@
     min-height: 100% !important;
   }
 }
+
+
+/* Pass 12 — Maârif floating sheet owns its mobile height.
+ * Legacy N3 applies max-height:176px!important to every district rail; neutralize
+ * it only for this TARGET pilot so collapsed/expanded states remain observable.
+ */
+@media (max-width: 767px) {
+  [data-maarif-rebuild="true"] .maarif-target-rail {
+    height: min(46svh, 420px) !important;
+    max-height: min(46svh, 420px) !important;
+    padding: 0 !important;
+  }
+
+  [data-maarif-rebuild="true"] .maarif-target-rail[data-sheet-expanded="true"] {
+    height: min(70svh, 640px) !important;
+    max-height: min(70svh, 640px) !important;
+  }
+}
+
+@media (max-width: 560px) {
+  [data-maarif-rebuild="true"] .maarif-target-rail {
+    height: min(44svh, 372px) !important;
+    max-height: min(44svh, 372px) !important;
+  }
+
+  [data-maarif-rebuild="true"] .maarif-target-rail[data-sheet-expanded="true"] {
+    height: min(74svh, 620px) !important;
+    max-height: min(74svh, 620px) !important;
+  }
+}
