@@ -174,8 +174,7 @@ function extract(html,title){
 
 const robotsCache=new Map();
 function parseRobots(text){
-  const lines=text.split(/\r?
-/).map(x=>x.replace(/#.*/,'').trim()).filter(Boolean);
+  const lines=text.split(/\r?\n/).map(x=>x.replace(/#.*/,'').trim()).filter(Boolean);
   const groups=[]; let current=null;
   for(const line of lines){
     const i=line.indexOf(':'); if(i<0) continue;
@@ -254,9 +253,4 @@ for(const x of results){
     if(x.extracted.price_candidates>1) summary.ambiguous_price++;
   }
 }
-await writeFile(`${outputPrefix}.json`,JSON.stringify(summary,null,2)+"
-");
-await writeFile(`${outputPrefix}.jsonl`,results.map(x=>JSON.stringify(x)).join("
-")+"
-");
-console.log(JSON.stringify(summary,null,2));
+await writeFile(`${outputPrefix}.json`,JSON.stringify(summary,null,2)+"\\n");\nawait writeFile(`${outputPrefix}.jsonl`,results.map(x=>JSON.stringify(x)).join("\\n")+"\\n");\nconsole.log(JSON.stringify(summary,null,2));\n
