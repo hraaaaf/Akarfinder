@@ -97,9 +97,13 @@ function extract(html,url){
     try{segs=new URL(u).pathname.split("/").filter(Boolean);}catch{}
     if(["fr","en","ar"].includes(segs[0])) segs=segs.slice(1);
     const routeSegs=sourceName==="promoimmomarrakech.com"?segs.slice(0,3):segs.slice(0,2);
-    const saleSeg=s=>/^(?:vente|vendre|sale|buy|achat)(?:-|$)/i.test(s||"");
-    const rentSeg=s=>/^(?:location|louer|rental|rent)(?:-|$)/i.test(s||"");
-    const shortStay=routeSegs.some(s=>/^(?:location|rental|rent)-(?:s[eé]?jour|vacances?|courte[-_]?dur[eé]e)(?:-|$)/i.test(s||""));
+    const saleSeg=s=>sourceName==="promoimmomarrakech.com"
+      ? /(?:^|-)(?:vente|vendre|sale|buy|achat)(?:-|$)/i.test(s||"")
+      : /^(?:vente|vendre|sale|buy|achat)(?:-|$)/i.test(s||"");
+    const rentSeg=s=>sourceName==="promoimmomarrakech.com"
+      ? /(?:^|-)(?:location|louer|rental|rent)(?:-|$)/i.test(s||"")
+      : /^(?:location|louer|rental|rent)(?:-|$)/i.test(s||"");
+    const shortStay=routeSegs.some(s=>/(?:^|-)(?:location|rental|rent)-(?:s[eé]?jour|vacances?|courte[-_]?dur[eé]e)(?:-|$)/i.test(s||""));
     const transaction=routeSegs.some(saleSeg)?"sale":routeSegs.some(rentSeg)?"rent":"unknown";
     const period=cadence(text,""); price_period=transaction==="sale"?"sale":period;
     const offers=Array.isArray(listing?.offers)?listing.offers:[listing?.offers].filter(Boolean);
