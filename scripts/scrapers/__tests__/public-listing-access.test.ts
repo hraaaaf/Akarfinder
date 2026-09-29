@@ -345,6 +345,32 @@ describe("semantic integrity fail-closed gate", () => {
     assert.equal(hasStrongSemanticIntegrityConflict(semanticRow()), false);
   });
 
+  it("rejects non-monthly rental cadence until price period is modeled", () => {
+    assert.equal(
+      hasStrongSemanticIntegrityConflict(
+        semanticRow({
+          transaction_type: "rent",
+          title: "Appartement à louer 800 DH par jour",
+          price_mad: 800,
+          listing_url: "https://mubawab.ma/fr/a/123/appartement-a-louer",
+        }),
+      ),
+      true,
+    );
+  });
+
+  it("rejects sale price contradicted by one explicit title price", () => {
+    assert.equal(
+      hasStrongSemanticIntegrityConflict(
+        semanticRow({
+          title: "Appartement à vendre 1 500 000 DH à Casablanca",
+          price_mad: 1_200_000,
+        }),
+      ),
+      true,
+    );
+  });
+
   it("rejects impossible sale price", () => {
     assert.equal(hasStrongSemanticIntegrityConflict(semanticRow({ price_mad: 9_500 })), true);
   });
