@@ -94,7 +94,7 @@ function extract(html,url){
   }else{
     const u=String(url||"").toLowerCase();
     const shortStay=/location[-_/](?:s[eé]?jour|vacances?|courte[-_]?dur[eé]e)/i.test(u);
-    const transaction=/(?:\/|[-_])(?:vente|vendre)(?:\/|[-_])/i.test(u)?"sale":/(?:\/|[-_])(?:location|louer)(?:\/|[-_])/i.test(u)?"rent":"unknown";
+    const transaction=/(?:\/|[-_])(?:vente|vendre|sale|buy|achat)(?:\/|[-_])/i.test(u)?"sale":/(?:\/|[-_])(?:location|louer|rental|rent)(?:\/|[-_])/i.test(u)?"rent":"unknown";
     const period=cadence(text,""); price_period=transaction==="sale"?"sale":period;
     const offers=Array.isArray(listing?.offers)?listing.offers:[listing?.offers].filter(Boolean);
     const structuredPrices=[...new Set(offers.map(o=>num(o?.price)).filter(v=>v!=null))];
