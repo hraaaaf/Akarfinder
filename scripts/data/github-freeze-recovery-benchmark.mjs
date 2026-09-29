@@ -92,7 +92,9 @@ function extract(html,url){
       else if(prices[0]>=1000) price=prices[0]; else price_reason="rent_too_low";
     } else price_reason="unknown_transaction_category";
   }else{
-    const transaction=/\/(?:vente|vendre)\//i.test(url||"")?"sale":/\/(?:location|louer)\//i.test(url||"")?"rent":"unknown";
+    const u=String(url||"").toLowerCase();
+    const shortStay=/location[-_/](?:s[eé]?jour|vacances?|courte[-_]?dur[eé]e)/i.test(u);
+    const transaction=/(?:\/|[-_])(?:vente|vendre)(?:\/|[-_])/i.test(u)?"sale":/(?:\/|[-_])(?:location|louer)(?:\/|[-_])/i.test(u)?"rent":"unknown";
     const period=cadence(text,""); price_period=transaction==="sale"?"sale":period;
     const offers=Array.isArray(listing?.offers)?listing.offers:[listing?.offers].filter(Boolean);
     const structuredPrices=[...new Set(offers.map(o=>num(o?.price)).filter(v=>v!=null))];
@@ -108,6 +110,7 @@ function extract(html,url){
       const candidate=prices[0];
       if(currencies.length&&!currencies.includes("MAD")) price_reason="non_mad";
       else if(transaction==="sale"&&candidate<10000) price_reason="sale_too_low";
+      else if(transaction==="rent"&&shortStay) price_reason="short_stay_route";
       else if(transaction==="rent"&&period==="mixed") price_reason="mixed_cadence";
       else if(transaction==="rent"&&period==="non_monthly") price_reason="non_monthly";
       else if(transaction==="rent"&&period!=="monthly") price_reason="unknown_rental_cadence";
