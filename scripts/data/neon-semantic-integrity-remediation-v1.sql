@@ -84,21 +84,21 @@ WITH candidates AS (
     p.id,
     p.property_type AS previous_value,
     CASE
-      WHEN lower(coalesce(p.title,'')) ~ '(^|[^a-z])(terrain|lot de terrain|ferme)([^a-z]|$)'
+      WHEN lower(coalesce(p.title,'')) ~ '^(terrain|lot de terrain|ferme)([^a-z]|$)|(^|[^a-z])(terrain|lot de terrain|ferme)[[:space:]]+(à|a)[[:space:]]+(vendre|louer)([^a-z]|$)'
        AND lower(coalesce(s.listing_url,'')) ~ '(/|[-_])(terrain|terrains)(/|[-_])' THEN 'land'
-      WHEN lower(coalesce(p.title,'')) ~ '(^|[^a-z])villa([^a-z]|$)'
+      WHEN lower(coalesce(p.title,'')) ~ '^villa([^a-z]|$)|(^|[^a-z])villa[[:space:]]+(à|a)[[:space:]]+(vendre|louer)([^a-z]|$)'
        AND lower(coalesce(s.listing_url,'')) ~ '(/|[-_])(villa|villas)(/|[-_])' THEN 'villa'
-      WHEN lower(coalesce(p.title,'')) ~ '(^|[^a-z])studio([^a-z]|$)'
+      WHEN lower(coalesce(p.title,'')) ~ '^studio([^a-z]|$)|(^|[^a-z])studio[[:space:]]+(à|a)[[:space:]]+(vendre|louer)([^a-z]|$)'
        AND lower(coalesce(s.listing_url,'')) ~ '(/|[-_])(studio|studios)(/|[-_])' THEN 'studio'
-      WHEN lower(coalesce(p.title,'')) ~ '(^|[^a-z])(bureau|plateau bureau)([^a-z]|$)'
+      WHEN lower(coalesce(p.title,'')) ~ '^(bureau|plateau bureau)([^a-z]|$)|(^|[^a-z])(bureau|plateau bureau)[[:space:]]+(à|a)[[:space:]]+(vendre|louer)([^a-z]|$)'
        AND lower(coalesce(s.listing_url,'')) ~ '(/|[-_])(bureau|bureaux)(/|[-_])' THEN 'office'
-      WHEN lower(coalesce(p.title,'')) ~ '(^|[^a-z])(local commercial|commerce|magasin)([^a-z]|$)'
+      WHEN lower(coalesce(p.title,'')) ~ '^(local commercial|commerce|magasin)([^a-z]|$)|(^|[^a-z])(local commercial|commerce|magasin)[[:space:]]+(à|a)[[:space:]]+(vendre|louer)([^a-z]|$)'
        AND lower(coalesce(s.listing_url,'')) ~ '(/|[-_])(local|locaux|commerce|commercial|magasin)(/|[-_])' THEN 'commercial'
-      WHEN lower(coalesce(p.title,'')) ~ '(^|[^a-z])riad([^a-z]|$)'
+      WHEN lower(coalesce(p.title,'')) ~ '^riad[[:space:]]+(à|a)[[:space:]]+(vendre|louer)([^a-z]|$)'
        AND lower(coalesce(s.listing_url,'')) ~ '(/|[-_])(riad|riads)(/|[-_])' THEN 'riad'
-      WHEN lower(coalesce(p.title,'')) ~ '(^|[^a-z])(appartement|appart)([^a-z]|$)'
+      WHEN lower(coalesce(p.title,'')) ~ '^(appartement|appart)([^a-z]|$)|(^|[^a-z])(appartement|appart)[[:space:]]+(à|a)[[:space:]]+(vendre|louer)([^a-z]|$)'
        AND lower(coalesce(s.listing_url,'')) ~ '(/|[-_])(appartement|appartements)(/|[-_])' THEN 'apartment'
-      WHEN lower(coalesce(p.title,'')) ~ '(^|[^a-z])maison([^a-z]|$)'
+      WHEN lower(coalesce(p.title,'')) ~ '^maison([^a-z]|$)|(^|[^a-z])maison[[:space:]]+(à|a)[[:space:]]+(vendre|louer)([^a-z]|$)'
        AND lower(coalesce(s.listing_url,'')) ~ '(/|[-_])(maison|maisons)(/|[-_])' THEN 'house'
     END AS new_value,
     s.listing_url,
