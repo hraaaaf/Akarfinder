@@ -100,3 +100,31 @@ jobs:
             sarout-recovery-benchmark.json
             sarout-recovery-benchmark.jsonl
           retention-days: 14
+
+  sarout-detail-probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      DATABASE_URL: ${{ secrets.NEON_RECOVERY_DATABASE_URL }}
+      SAMPLE_SIZE: '1'
+      SOURCE_NAME: 'sarout.ma'
+      OUTPUT_PREFIX: 'sarout-detail-probe-79042'
+      TARGET_ID: '79042'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Verify read connection
+        run: test -n "$DATABASE_URL"
+      - name: Probe one Sarout listing with bounded evidence
+        run: node scripts/data/marocimmo-recovery-benchmark.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sarout-detail-probe-79042
+          path: |
+            sarout-detail-probe-79042.json
+            sarout-detail-probe-79042.jsonl
+          retention-days: 14
