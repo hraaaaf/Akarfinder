@@ -92,8 +92,21 @@ try {
       }, null, { timeout: 12000 }).catch(() => {
         throw new Error(`${viewport.name}: no rendered 3D building volumes observed; Maârif depth target is not proven`);
       });
+      const overtureState = await maplibre.getAttribute("data-maplibre-overture-state");
+      const overtureTotalCount = Number(await maplibre.getAttribute("data-maplibre-overture-total-count") ?? 0);
+      const overtureExactCount = Number(await maplibre.getAttribute("data-maplibre-overture-exact-count") ?? 0);
+      const overtureEstimatedCount = Number(await maplibre.getAttribute("data-maplibre-overture-estimated-count") ?? 0);
+      const overtureRelease = await maplibre.getAttribute("data-maplibre-overture-release");
+      if (overtureState !== "available") throw new Error(`${viewport.name}: Overture 3D bundle unavailable (${overtureState})`);
+      if (overtureTotalCount < 4900) throw new Error(`${viewport.name}: Overture bundle unexpectedly sparse (${overtureTotalCount})`);
+      if (overtureExactCount < 770) throw new Error(`${viewport.name}: Overture exact-height coverage regressed (${overtureExactCount})`);
+      if (overtureEstimatedCount < 4140) throw new Error(`${viewport.name}: Overture level-estimated coverage regressed (${overtureEstimatedCount})`);
+
       const renderedBuildingVolumes = Number(await maplibre.getAttribute("data-maplibre-building-count") ?? 0);
       const renderedBuildingFootprints = Number(await maplibre.getAttribute("data-maplibre-building-footprint-count") ?? 0);
+      if (renderedBuildingVolumes < 120) {
+        throw new Error(`${viewport.name}: Overture density target not met (${renderedBuildingVolumes} rendered volumes, need >=120)`);
+      }
       const renderedHeightCoveragePct = renderedBuildingFootprints > 0
         ? Number(((renderedBuildingVolumes / renderedBuildingFootprints) * 100).toFixed(1))
         : null;
@@ -270,6 +283,11 @@ try {
         renderedBuildingVolumes,
         renderedBuildingFootprints,
         renderedHeightCoveragePct,
+        overtureState,
+        overtureTotalCount,
+        overtureExactCount,
+        overtureEstimatedCount,
+        overtureRelease,
         buildingFootprintObservationTimedOut,
         renderedHeightCoverageNote: "ratio of rendered 3D features to rendered 2D building features; viewport-specific, not a unique-building census",
         sheetInteraction,
