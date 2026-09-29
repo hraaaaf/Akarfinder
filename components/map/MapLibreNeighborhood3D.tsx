@@ -321,7 +321,7 @@ export function MapLibreNeighborhood3D({
                 const id = String(layer.id ?? "").toLowerCase();
                 try {
                   if (layer.type === "background") {
-                    map.setPaintProperty(layer.id, "background-color", "#ECE7DD");
+                    map.setPaintProperty(layer.id, "background-color", "#E4DED3");
                   }
                   if ((layer.type === "fill" || layer.type === "line") && /building/.test(id)) {
                     // The target layer below owns building footprints. Hiding duplicate base footprints
@@ -407,10 +407,10 @@ export function MapLibreNeighborhood3D({
                 paint: {
                   "fill-color": [
                     "match", ["get", "class"],
-                    "commercial", "#DDD5C8",
-                    "retail", "#E3DBCF",
-                    "industrial", "#D5CEC4",
-                    "#E8E1D7"
+                    "commercial", "#D1C5B7",
+                    "retail", "#D8CCBF",
+                    "industrial", "#CFC6BB",
+                    "#E2D9CD"
                   ],
                   "fill-opacity": 0.60,
                 },
@@ -423,8 +423,8 @@ export function MapLibreNeighborhood3D({
                 "source-layer": "landcover",
                 filter: ["match", ["get", "class"], ["grass", "wood"], true, false],
                 paint: {
-                  "fill-color": ["match", ["get", "class"], "wood", "#AEC3A8", "#C7D2B9"],
-                  "fill-opacity": 0.72,
+                  "fill-color": ["match", ["get", "class"], "wood", "#91AC93", "#B5C6A8"],
+                  "fill-opacity": 0.76,
                 },
               } as any);
 
@@ -435,9 +435,9 @@ export function MapLibreNeighborhood3D({
                 "source-layer": "landuse",
                 filter: ["match", ["get", "class"], ["park", "cemetery", "grass", "recreation_ground"], true, false],
                 paint: {
-                  "fill-color": "#C4D3B9",
-                  "fill-opacity": 0.76,
-                  "fill-outline-color": "#AABFA3",
+                  "fill-color": "#B3C7A8",
+                  "fill-opacity": 0.80,
+                  "fill-outline-color": "#95AF91",
                 },
               } as any);
 
@@ -503,12 +503,12 @@ export function MapLibreNeighborhood3D({
                 paint: {
                   "line-color": [
                     "match", ["get", "class"],
-                    "motorway", "#FFFDF8",
-                    "trunk", "#FCF8F0",
-                    "primary", "#F8F3EA",
-                    "secondary", "#F4EEE5",
-                    "tertiary", "#EEE8DE",
-                    "#E9E3D9"
+                    "motorway", "#F7F0E6",
+                    "trunk", "#F3EBDD",
+                    "primary", "#EFE7DC",
+                    "secondary", "#E9E0D5",
+                    "tertiary", "#E2D8CC",
+                    "#DCD2C6"
                   ],
                   "line-opacity": 0.82,
                   "line-width": [
