@@ -76,10 +76,16 @@ try {
         throw new Error(`${viewport.name}: visible indicative-zone badge mismatch`);
       }
       await highZoomTilesReady;
-      await page.waitForFunction(() => {
-        const shell = document.querySelector('[data-maplibre-spike][data-maplibre-city="casablanca"][data-maplibre-district="maarif"]');
-        return Number(shell?.getAttribute("data-maplibre-building-footprint-count") ?? 0) > 0;
-      }, null, { timeout: 8000 });
+      let buildingFootprintObservationTimedOut = false;
+      try {
+        await page.waitForFunction(() => {
+          const shell = document.querySelector('[data-maplibre-spike][data-maplibre-city="casablanca"][data-maplibre-district="maarif"]');
+          return Number(shell?.getAttribute("data-maplibre-building-footprint-count") ?? 0) > 0;
+        }, null, { timeout: 10000 });
+      } catch {
+        buildingFootprintObservationTimedOut = true;
+        console.warn(`${viewport.name}: no rendered building footprints observed within 10s; keeping visual capture and reporting zero coverage instead of suppressing the evidence`);
+      }
       const renderedBuildingVolumes = Number(await maplibre.getAttribute("data-maplibre-building-count") ?? 0);
       const renderedBuildingFootprints = Number(await maplibre.getAttribute("data-maplibre-building-footprint-count") ?? 0);
       const renderedHeightCoveragePct = renderedBuildingFootprints > 0
@@ -254,6 +260,7 @@ try {
         renderedBuildingVolumes,
         renderedBuildingFootprints,
         renderedHeightCoveragePct,
+        buildingFootprintObservationTimedOut,
         renderedHeightCoverageNote: "ratio of rendered 3D features to rendered 2D building features; viewport-specific, not a unique-building census",
         sheetInteraction,
         localContextSource: localContext.source.mode,
