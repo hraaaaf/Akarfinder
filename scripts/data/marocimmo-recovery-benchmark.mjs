@@ -90,6 +90,7 @@ function htmlToText(html){
 }
 
 function numericValue(v){
+  if(v==null || v==="") return null;
   const n=Number(v);
   return Number.isFinite(n)?n:null;
 }
