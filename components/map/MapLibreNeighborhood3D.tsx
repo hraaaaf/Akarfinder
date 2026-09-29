@@ -960,6 +960,7 @@ export function MapLibreNeighborhood3D({
       data-maplibre-overture-exact-count={overtureExactCount}
       data-maplibre-overture-estimated-count={overtureEstimatedCount}
       data-maplibre-overture-release={overtureRelease ?? ""}
+      data-maplibre-shadow-policy={isMaarifTargetPilot ? "non-metric-overture-footprints" : "none"}
       data-maplibre-context-state={contextState}
       data-maplibre-anchor-count={context?.anchor_count ?? 0}
       data-maplibre-city={citySlug}
