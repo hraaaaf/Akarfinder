@@ -192,12 +192,6 @@ function primaryTitleTransaction(row: DbListingRow): "sale" | "rent" | null {
   return sale ? "sale" : "rent";
 }
 
-function strongTransactionEvidence(row: DbListingRow): "sale" | "rent" | null {
-  const titleTx = primaryTitleTransaction(row);
-  const urlTx = structuralUrlEvidence(row).transaction;
-  return titleTx && urlTx && titleTx === urlTx ? titleTx : null;
-}
-
 function primaryTitlePropertyType(row: DbListingRow): string | null {
   const title = row.title?.toLowerCase() ?? "";
   const rules: Array<[string, RegExp]> = [
@@ -211,12 +205,6 @@ function primaryTitlePropertyType(row: DbListingRow): string | null {
     ["house", /^maison\b|\bmaison\s+(?:à|a)\s+(?:vendre|louer)\b/u],
   ];
   return rules.find(([, re]) => re.test(title))?.[0] ?? null;
-}
-
-function strongPropertyTypeEvidence(row: DbListingRow): string | null {
-  const titleType = primaryTitlePropertyType(row);
-  const urlType = structuralUrlEvidence(row).propertyType;
-  return titleType && urlType && titleType === urlType ? titleType : null;
 }
 
 function singleExplicitTitleSurfaceM2(row: DbListingRow): number | null {
@@ -263,20 +251,26 @@ export function hasStrongSemanticIntegrityConflict(row: DbListingRow): boolean {
   if (!["sale", "rent", "new"].includes(tx)) return true;
   if (!ALLOWED_PROPERTY_TYPES.has(type)) return true;
 
-  const strongTx = strongTransactionEvidence(row);
-  if (strongTx && tx !== strongTx) return true;
+  const titleTx = primaryTitleTransaction(row);
+  const structuralTx = structuralUrlEvidence(row).transaction;
+  if (titleTx && structuralTx && titleTx !== structuralTx) return true;
+  if (titleTx && tx !== titleTx) return true;
+  if (structuralTx && tx !== structuralTx) return true;
 
-  const strongType = strongPropertyTypeEvidence(row);
-  if (
-    strongType &&
-    type !== strongType &&
-    !(strongType === "studio" && type === "apartment") &&
-    !(strongType === "villa" && type === "house") &&
-    !(strongType === "house" && type === "villa") &&
-    !(strongType === "riad" && (type === "house" || type === "villa"))
-  ) {
-    return true;
-  }
+  const titleType = primaryTitlePropertyType(row);
+  const structuralType = structuralUrlEvidence(row).propertyType;
+  const typeEquivalent = (evidenceType: string | null): boolean =>
+    evidenceType == null ||
+    evidenceType === type ||
+    (evidenceType === "studio" && type === "apartment") ||
+    (evidenceType === "apartment" && type === "studio") ||
+    (evidenceType === "villa" && type === "house") ||
+    (evidenceType === "house" && type === "villa") ||
+    (evidenceType === "riad" && (type === "house" || type === "villa"));
+
+  if (titleType && structuralType && titleType !== structuralType) return true;
+  if (!typeEquivalent(titleType)) return true;
+  if (!typeEquivalent(structuralType)) return true;
 
   if (row.surface_m2 != null) {
     if (row.surface_m2 < 8) return true;
