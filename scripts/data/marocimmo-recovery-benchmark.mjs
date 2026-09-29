@@ -234,11 +234,30 @@ for(const r of rows){
   }
   await sleep(250);
 }
+function auditCandidate(row){
+  const e=row.extracted||{};
+  const out={price:{status:"none",reason:null},surface:{status:"none",reason:null},rooms:{status:"none",reason:null},bedrooms:{status:"none",reason:null},bathrooms:{status:"none",reason:null}};
+  if(row.stored?.price_mad==null && e.price_mad!=null){
+    if(e.price_period_candidate==="sale" || e.price_period_candidate==="monthly") out.price={status:"write_safe",reason:e.price_period_candidate};
+    else out.price={status:"quarantine",reason:e.price_period_candidate||"unknown_cadence"};
+  } else if(row.stored?.price_mad==null && e.price_rejection_reason) out.price={status:"rejected",reason:e.price_rejection_reason};
+
+  if(row.stored?.surface_m2==null && e.surface_m2!=null){
+    const direct=row.extracted?.structured_evidence?.real_estate_listing?.floorSize;
+    out.surface={status:direct?.unitCode==="MTK"?"write_safe":"review",reason:direct?.unitCode==="MTK"?"jsonld_floorSize":"text_evidence"};
+  }
+  if(row.stored?.rooms_count==null && e.rooms_count!=null) out.rooms={status:"write_safe",reason:"explicit_labeled_text"};
+  if(row.stored?.bedrooms_count==null && e.bedrooms_count!=null) out.bedrooms={status:"write_safe",reason:"structured_or_explicit_labeled"};
+  if(row.stored?.bathrooms_count==null && e.bathrooms_count!=null) out.bathrooms={status:"write_safe",reason:"structured_or_explicit_labeled"};
+  return out;
+}
+for(const row of results) row.audit=auditCandidate(row);
+
 const fields=["price_mad","surface_m2","bedrooms_count","bathrooms_count","rooms_count"];
 const summary={source:sourceName,sample_requested:limit,sample_size:results.length,
   robots_allowed:results.filter(x=>x.robots_allowed).length,robots_blocked:results.filter(x=>x.robots_allowed===false).length,
   accessible:results.filter(x=>x.accessible).length,http_statuses:{},recovered:{},missing:{},recovered_missing:{},price_on_request:0,ambiguous_price:0,price_rejections:{},
-  note:"Read-only bounded benchmark; robots.txt fail-closed; on-request overrides page-wide monetary noise; extracted values are candidates only and are not written to Neon."};
+  note:"Read-only bounded benchmark; robots.txt fail-closed; on-request overrides page-wide monetary noise; extracted values are candidates only and are not written to Neon.",write_safe:{},quarantine:{}};
 for(const x of results){
   const k=String(x.http_status??(x.robots_allowed===false?"robots_blocked":"error"));
   summary.http_statuses[k]=(summary.http_statuses[k]||0)+1;
