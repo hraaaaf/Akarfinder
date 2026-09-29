@@ -217,7 +217,7 @@ for(const r of rows){
   const started=Date.now();
   const robots=await robotsFor(r.listing_url);
   if(!robotsAllows(r.listing_url,robots)){
-    results.push({id:r.id,title:r.title,url:r.listing_url,stored:{price_mad:r.price_mad,price_status:r.price_status,surface_m2:r.surface_m2,district:r.district},robots:robots.state,robots_allowed:false,http_status:null,accessible:false,elapsed_ms:Date.now()-started,extracted:null});
+    results.push({id:r.id,title:r.title,url:r.listing_url,stored:{price_mad:r.price_mad,price_status:r.price_status,surface_m2:r.surface_m2,district:r.district,rooms_count:r.rooms_count,bedrooms_count:r.bedrooms_count,bathrooms_count:r.bathrooms_count},robots:robots.state,robots_allowed:false,http_status:null,accessible:false,elapsed_ms:Date.now()-started,extracted:null});
     continue;
   }
   try{
@@ -228,24 +228,23 @@ for(const r of rows){
     const slug=decodeURIComponent(new URL(r.listing_url).pathname).toLowerCase();
     const slugSurface=(slug.match(/(?:^|[-_/])(\d{2,5})[-_]?m(?:2)?(?:[-_/]|$)/i)||[])[1];
     const locationTail=(slug.match(/casablanca[-_/]+(.+?)(?:$|[?#])/i)||[])[1]?.replace(/[-_]+/g,' ')||null;
-    results.push({id:r.id,title:r.title,url:r.listing_url,stored:{price_mad:r.price_mad,price_status:r.price_status,surface_m2:r.surface_m2,district:r.district},structural_candidates:{surface_title_m2:titleSurface?Number(titleSurface):null,surface_slug_m2:slugSurface?Number(slugSurface):null,location_slug:locationTail},robots:robots.state,robots_allowed:true,http_status:res.status,accessible:res.ok&&html.length>0,elapsed_ms:Date.now()-started,extracted:html?extract(html,r.title):null});
+    results.push({id:r.id,title:r.title,url:r.listing_url,stored:{price_mad:r.price_mad,price_status:r.price_status,surface_m2:r.surface_m2,district:r.district,rooms_count:r.rooms_count,bedrooms_count:r.bedrooms_count,bathrooms_count:r.bathrooms_count},structural_candidates:{surface_title_m2:titleSurface?Number(titleSurface):null,surface_slug_m2:slugSurface?Number(slugSurface):null,location_slug:locationTail},robots:robots.state,robots_allowed:true,http_status:res.status,accessible:res.ok&&html.length>0,elapsed_ms:Date.now()-started,extracted:html?extract(html,r.title):null});
   }catch(e){
-    results.push({id:r.id,title:r.title,url:r.listing_url,stored:{price_mad:r.price_mad,price_status:r.price_status,surface_m2:r.surface_m2,district:r.district},robots:robots.state,robots_allowed:true,http_status:null,accessible:false,elapsed_ms:Date.now()-started,error:e?.name||"fetch_error",extracted:null});
+    results.push({id:r.id,title:r.title,url:r.listing_url,stored:{price_mad:r.price_mad,price_status:r.price_status,surface_m2:r.surface_m2,district:r.district,rooms_count:r.rooms_count,bedrooms_count:r.bedrooms_count,bathrooms_count:r.bathrooms_count},robots:robots.state,robots_allowed:true,http_status:null,accessible:false,elapsed_ms:Date.now()-started,error:e?.name||"fetch_error",extracted:null});
   }
   await sleep(250);
 }
 const fields=["price_mad","surface_m2","bedrooms_count","bathrooms_count","rooms_count"];
 const summary={source:sourceName,sample_requested:limit,sample_size:results.length,
   robots_allowed:results.filter(x=>x.robots_allowed).length,robots_blocked:results.filter(x=>x.robots_allowed===false).length,
-  accessible:results.filter(x=>x.accessible).length,http_statuses:{},recovered:{},price_on_request:0,ambiguous_price:0,price_rejections:{},
+  accessible:results.filter(x=>x.accessible).length,http_statuses:{},recovered:{},missing:{},recovered_missing:{},price_on_request:0,ambiguous_price:0,price_rejections:{},
   note:"Read-only bounded benchmark; robots.txt fail-closed; on-request overrides page-wide monetary noise; extracted values are candidates only and are not written to Neon."};
 for(const x of results){
   const k=String(x.http_status??(x.robots_allowed===false?"robots_blocked":"error"));
   summary.http_statuses[k]=(summary.http_statuses[k]||0)+1;
-  if(x.extracted){
-    if(x.extracted.price_status_candidate==="on_request") summary.price_on_request++;
+  for(const field of fields){ if(x.stored?.[field]==null) summary.missing[field]=(summary.missing[field]||0)+1; }\n  if(x.extracted){\n    if(x.extracted.price_status_candidate==="on_request") summary.price_on_request++;
     if(x.extracted.price_rejection_reason) summary.price_rejections[x.extracted.price_rejection_reason]=(summary.price_rejections[x.extracted.price_rejection_reason]||0)+1;
-    for(const field of fields) if(x.extracted[field]!=null) summary.recovered[field]=(summary.recovered[field]||0)+1;
+    for(const field of fields){\n      if(x.extracted[field]!=null) summary.recovered[field]=(summary.recovered[field]||0)+1;\n      if(x.stored?.[field]==null && x.extracted[field]!=null) summary.recovered_missing[field]=(summary.recovered_missing[field]||0)+1;\n    }
     if(x.extracted.price_candidates>1) summary.ambiguous_price++;
   }
 }
