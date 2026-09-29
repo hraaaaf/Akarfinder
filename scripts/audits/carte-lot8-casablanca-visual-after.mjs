@@ -86,6 +86,12 @@ try {
         buildingFootprintObservationTimedOut = true;
         console.warn(`${viewport.name}: no rendered building footprints observed within 10s; keeping visual capture and reporting zero coverage instead of suppressing the evidence`);
       }
+      await page.waitForFunction(() => {
+        const shell = document.querySelector('[data-maplibre-spike][data-maplibre-city="casablanca"][data-maplibre-district="maarif"]');
+        return Number(shell?.getAttribute("data-maplibre-building-count") ?? 0) > 0;
+      }, null, { timeout: 12000 }).catch(() => {
+        throw new Error(`${viewport.name}: no rendered 3D building volumes observed; Maârif depth target is not proven`);
+      });
       const renderedBuildingVolumes = Number(await maplibre.getAttribute("data-maplibre-building-count") ?? 0);
       const renderedBuildingFootprints = Number(await maplibre.getAttribute("data-maplibre-building-footprint-count") ?? 0);
       const renderedHeightCoveragePct = renderedBuildingFootprints > 0
