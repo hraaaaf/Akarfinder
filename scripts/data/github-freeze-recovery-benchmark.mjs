@@ -117,7 +117,7 @@ function extract(html,url){
   if(price!=null){
     const surface=sourceName==="sarout.ma"&&listing?.floorSize?.unitCode==="MTK"?num(listing.floorSize.value):one(surfaceRe,text);
     const isSale=price_period==="sale";
-    const isLand=/\/(?:terrain|land)\//i.test(url||"");
+    const isLand=/(?:^|[\/-])(?:terrain|land)(?:[\/-]|$)/i.test(url||"") || /\b(?:terrain|land)\b/i.test(listing?.name||"") || /أرض/u.test(listing?.name||"");
     if(isSale&&surface&&surface>0&&!isLand){
       const ppm2=price/surface;
       if(ppm2<500||ppm2>100000){price_reason="sale_price_per_m2_outlier";price_quality="quarantine";price=null;}
