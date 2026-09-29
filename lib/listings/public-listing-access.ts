@@ -100,18 +100,123 @@ const ALLOWED_PROPERTY_TYPES = new Set([
   "riad",
 ]);
 
-function strongTransactionEvidence(row: DbListingRow): "sale" | "rent" | null {
+function structuralUrlEvidence(row: DbListingRow): { transaction: "sale" | "rent" | null; propertyType: string | null } {
+  const raw = row.listing_url ?? "";
+  let path = "";
+  try {
+    path = decodeURIComponent(new URL(raw).pathname).toLowerCase();
+  } catch {
+    return { transaction: null, propertyType: null };
+  }
+
+  const segments = path.split("/").filter(Boolean);
+  const host = (() => {
+    try { return new URL(raw).hostname.toLowerCase().replace(/^www\./, ""); } catch { return ""; }
+  })();
+
+  const mapType = (value: string | undefined): string | null => {
+    const v = value ?? "";
+    if (/^appart(?:ement|ements)?$/.test(v)) return "apartment";
+    if (/^studios?$/.test(v)) return "studio";
+    if (/^villas?$/.test(v) || v === "villas_et_riads") return "villa";
+    if (/^maisons?$/.test(v)) return "house";
+    if (/^terrains?$/.test(v)) return "land";
+    if (/^bureaux?$/.test(v)) return "office";
+    if (/^(?:local|locaux|commerce|commercial|magasin)s?$/.test(v) || v === "locaux-magasins") return "commercial";
+    if (/^riads?$/.test(v)) return "riad";
+    return null;
+  };
+
+  // Agenz: /annonces/immo-.../vente-appartements/... or location-villas/...
+  if (host === "agenz.ma") {
+    const route = segments.find((segment) => /^(?:vente|location)-/.test(segment));
+    if (route) {
+      const [tx, ...rest] = route.split("-");
+      return {
+        transaction: tx === "vente" ? "sale" : "rent",
+        propertyType: mapType(rest.join("-")),
+      };
+    }
+  }
+
+  // MarocImmo: /fr/{vente|location}/{type}/...
+  if (host === "marocimmo.com") {
+    const i = segments.findIndex((segment) => segment === "vente" || segment === "location");
+    if (i >= 0) return { transaction: segments[i] === "vente" ? "sale" : "rent", propertyType: mapType(segments[i + 1]) };
+  }
+
+  // Domio: /fr/{type}/{vendre|louer}/{city}/...
+  if (host === "domio.ma") {
+    const i = segments.findIndex((segment) => segment === "vendre" || segment === "louer");
+    if (i > 0) return { transaction: segments[i] === "vendre" ? "sale" : "rent", propertyType: mapType(segments[i - 1]) };
+  }
+
+  // Mouldar: /fr/{achat|location}/{type}/...
+  if (host === "mouldar.com") {
+    const i = segments.findIndex((segment) => segment === "achat" || segment === "location" || segment === "rent");
+    if (i >= 0) return { transaction: segments[i] === "achat" ? "sale" : "rent", propertyType: mapType(segments[i + 1]) };
+  }
+
+  // Masaken: /fr/immobilier-maroc/{vente|location}-{type}-...
+  if (host === "masaken.ma") {
+    const route = segments.find((segment) => /^(?:vente|location)-/.test(segment));
+    if (route) {
+      const parts = route.split("-");
+      return { transaction: parts[0] === "vente" ? "sale" : "rent", propertyType: mapType(parts[1]) };
+    }
+  }
+
+  // Sarouty: /plp/{acheter|louer}/{type}-...
+  if (host === "sarouty.ma") {
+    const i = segments.findIndex((segment) => segment === "acheter" || segment === "louer");
+    if (i >= 0) {
+      const typeToken = (segments[i + 1] ?? "").split("-")[0];
+      return { transaction: segments[i] === "acheter" ? "sale" : "rent", propertyType: mapType(typeToken) };
+    }
+  }
+
+  // Avito has a stable category path segment but no independent transaction segment.
+  if (host === "avito.ma") {
+    const type = segments.map(mapType).find(Boolean) ?? null;
+    return { transaction: null, propertyType: type };
+  }
+
+  return { transaction: null, propertyType: null };
+}
+
+function primaryTitleTransaction(row: DbListingRow): "sale" | "rent" | null {
   const title = row.title?.toLowerCase() ?? "";
-  const url = row.listing_url?.toLowerCase() ?? "";
+  const sale = /(?:^|\W)(?:vente|vendu|à vendre|a vendre)(?:\W|$)/u.test(title);
+  const rent = /(?:^|\W)(?:location|loué|loue|à louer|a louer)(?:\W|$)/u.test(title);
+  if (sale === rent) return null;
+  return sale ? "sale" : "rent";
+}
 
-  const titleSale = /(?:^|\W)(?:vente|vendu|à vendre|a vendre)(?:\W|$)/u.test(title);
-  const urlSale = /\/(?:vente|vendre|achat|buy)(?:\/|[-_])/u.test(url);
-  const titleRent = /(?:^|\W)(?:location|loué|loue|à louer|a louer)(?:\W|$)/u.test(title);
-  const urlRent = /\/(?:location|louer|rent)(?:\/|[-_])/u.test(url);
+function strongTransactionEvidence(row: DbListingRow): "sale" | "rent" | null {
+  const titleTx = primaryTitleTransaction(row);
+  const urlTx = structuralUrlEvidence(row).transaction;
+  return titleTx && urlTx && titleTx === urlTx ? titleTx : null;
+}
 
-  if (titleSale && urlSale && !titleRent && !urlRent) return "sale";
-  if (titleRent && urlRent && !titleSale && !urlSale) return "rent";
-  return null;
+function primaryTitlePropertyType(row: DbListingRow): string | null {
+  const title = row.title?.toLowerCase() ?? "";
+  const rules: Array<[string, RegExp]> = [
+    ["land", /^(?:terrain|lot de terrain|ferme)\b|\b(?:terrain|lot de terrain|ferme)\s+(?:à|a)\s+(?:vendre|louer)\b/u],
+    ["villa", /^villa\b|\bvilla\s+(?:à|a)\s+(?:vendre|louer)\b/u],
+    ["studio", /^studio\b|\bstudio\s+(?:à|a)\s+(?:vendre|louer)\b/u],
+    ["office", /^(?:bureau|plateau bureau)\b|\b(?:bureau|plateau bureau)\s+(?:à|a)\s+(?:vendre|louer)\b/u],
+    ["commercial", /^(?:local commercial|magasin|commerce)\b|\b(?:local commercial|magasin|commerce)\s+(?:à|a)\s+(?:vendre|louer)\b/u],
+    ["riad", /^riad\s+(?:à|a)\s+(?:vendre|louer)\b/u],
+    ["apartment", /^(?:appartement|appart)\b|\b(?:appartement|appart)\s+(?:à|a)\s+(?:vendre|louer)\b/u],
+    ["house", /^maison\b|\bmaison\s+(?:à|a)\s+(?:vendre|louer)\b/u],
+  ];
+  return rules.find(([, re]) => re.test(title))?.[0] ?? null;
+}
+
+function strongPropertyTypeEvidence(row: DbListingRow): string | null {
+  const titleType = primaryTitlePropertyType(row);
+  const urlType = structuralUrlEvidence(row).propertyType;
+  return titleType && urlType && titleType === urlType ? titleType : null;
 }
 
 function singleExplicitTitleSurfaceM2(row: DbListingRow): number | null {
