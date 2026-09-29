@@ -301,6 +301,7 @@ jobs:
           retention-days: 14
 
   mouldar-freeze-benchmark:
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
@@ -344,4 +345,50 @@ jobs:
             mouldar-freeze-recovery-benchmark-offline-cohort.jsonl
             mouldar-freeze-recovery-benchmark-offline-write-safe.jsonl
             mouldar-freeze-recovery-benchmark-offline-review.jsonl
+          retention-days: 14
+
+  sarouty-freeze-benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SAMPLE_SIZE: '300'
+      SOURCE_NAME: 'sarouty.ma'
+      OUTPUT_PREFIX: 'sarouty-freeze-recovery-benchmark'
+      FREEZE_JSONL_GZ: '.tmp/freeze/clean-corpus-v4.11-core.jsonl.gz'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Syntax check
+        run: node --check scripts/data/github-freeze-recovery-benchmark.mjs
+      - name: Fetch canonical GitHub freeze
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/freeze
+          curl --fail --location --retry 3 \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/10910779576/zip" \
+            -o .tmp/freeze.zip
+          unzip -q .tmp/freeze.zip -d .tmp/freeze
+          test "$(jq -r '.rows' .tmp/freeze/clean-corpus-v4.11-core-manifest.json)" = "226286"
+          test "$(jq -r '.database_access' .tmp/freeze/clean-corpus-v4.11-core-manifest.json)" = "0"
+          echo "e7ac4bca2db34ad334ed7234cfb8be93fc9baca68a9694f5024989b5cc2bb953  .tmp/freeze/clean-corpus-v4.11-core.jsonl.gz" | sha256sum -c -
+      - name: Benchmark Sarouty from freeze
+        run: node scripts/data/github-freeze-recovery-benchmark.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sarouty-freeze-recovery-benchmark
+          path: |
+            sarouty-freeze-recovery-benchmark.json
+            sarouty-freeze-recovery-benchmark.jsonl
+            sarouty-freeze-recovery-benchmark-offline-cohort.jsonl
+            sarouty-freeze-recovery-benchmark-offline-write-safe.jsonl
+            sarouty-freeze-recovery-benchmark-offline-review.jsonl
           retention-days: 14
