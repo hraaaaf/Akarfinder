@@ -704,3 +704,26 @@ Workflow HEAD: `4e5e04d44d5f137c8e7b575ff8ecb2d6695fdb87`.
 Run: `36628843782` — queued at last check; only Masaken active, previous source jobs skipped.
 
 If Masaken finishes cleanly, Mouldar is the next prepared source: 1,641 KEEP+eligible rows; its `/achat|buy/` and `/location|rent/` routes are already covered by the parser.
+
+
+## MASAKEN 300 — CERTIFIED
+
+Run `36628843782` on HEAD `4e5e04d44d5f137c8e7b575ff8ecb2d6695fdb87`: SUCCESS.
+Artifact: `11061992267`, digest `sha256:0ade4eea6b6b4a2704c1ff1a55a6684a3b323cb5ec47efc3b7b769d60a48ad01`.
+
+Results:
+- 271/300 accessible;
+- recovery from NULL: price 25, surface 233, bedrooms 92, bathrooms 48, rooms 5;
+- high-confidence: **30 fields** = price 25 + rooms 5;
+- review: **373 fields** = surface 233 + bedrooms 92 + bathrooms 48;
+- price rejections: no explicit price 230, sale-too-low 6, unknown rental cadence 3, sale price/m² outlier 1, ambiguous 4, mixed cadence 1, non-monthly 1;
+- conflicts: 0;
+- Neon access/write: 0/0.
+
+Masaken conclusion:
+- modest strict-price yield;
+- review-heavy textual enrichment;
+- no evidence of systemic semantic conflict on the sample.
+
+NEXT SOURCE:
+Mouldar selected next from freeze (1,641 KEEP+eligible rows) and launched at 300 rows on HEAD `5a5f88db5f4a688d2063cc0391ef475bcc3fb3eb`.
