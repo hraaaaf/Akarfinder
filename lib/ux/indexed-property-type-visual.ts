@@ -13,6 +13,7 @@ export type IndexedPropertyTypeVisual = {
   accent: string;
   foreground: string;
   wash: string;
+  targetAsset: string | null;
 };
 
 const VISUALS: Record<IndexedPropertyVisualKey, IndexedPropertyTypeVisual> = {
@@ -22,6 +23,7 @@ const VISUALS: Record<IndexedPropertyVisualKey, IndexedPropertyTypeVisual> = {
     accent: "#1769E0",
     foreground: "#1769E0",
     wash: "#F6FAFF",
+    targetAsset: "/visuals/property-types/target/apartment.svg",
   },
   villa: {
     key: "villa",
@@ -29,6 +31,7 @@ const VISUALS: Record<IndexedPropertyVisualKey, IndexedPropertyTypeVisual> = {
     accent: "#16843A",
     foreground: "#16843A",
     wash: "#F6FBF7",
+    targetAsset: "/visuals/property-types/target/villa.svg",
   },
   land: {
     key: "land",
@@ -36,6 +39,7 @@ const VISUALS: Record<IndexedPropertyVisualKey, IndexedPropertyTypeVisual> = {
     accent: "#EA6A00",
     foreground: "#EA6A00",
     wash: "#FFF9F4",
+    targetAsset: "/visuals/property-types/target/land.svg",
   },
   office: {
     key: "office",
@@ -43,6 +47,7 @@ const VISUALS: Record<IndexedPropertyVisualKey, IndexedPropertyTypeVisual> = {
     accent: "#7352C7",
     foreground: "#7352C7",
     wash: "#FAF8FF",
+    targetAsset: "/visuals/property-types/target/office.svg",
   },
   commercial: {
     key: "commercial",
@@ -50,6 +55,7 @@ const VISUALS: Record<IndexedPropertyVisualKey, IndexedPropertyTypeVisual> = {
     accent: "#008CA3",
     foreground: "#008CA3",
     wash: "#F4FBFC",
+    targetAsset: "/visuals/property-types/target/commercial.svg",
   },
   riad: {
     key: "riad",
@@ -57,6 +63,7 @@ const VISUALS: Record<IndexedPropertyVisualKey, IndexedPropertyTypeVisual> = {
     accent: "#B98213",
     foreground: "#B98213",
     wash: "#FFFBF3",
+    targetAsset: "/visuals/property-types/target/riad.png",
   },
   unknown: {
     key: "unknown",
@@ -64,6 +71,7 @@ const VISUALS: Record<IndexedPropertyVisualKey, IndexedPropertyTypeVisual> = {
     accent: "#2F63A4",
     foreground: "#2F63A4",
     wash: "#F7FAFD",
+    targetAsset: null,
   },
 };
 

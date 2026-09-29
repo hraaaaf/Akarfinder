@@ -11,6 +11,7 @@ const searchCard = readFileSync("components/search/SearchListingCardDark.tsx", "
 const externalCard = readFileSync("components/search/ExternalIndexedResultCard.tsx", "utf8");
 const sellerPage = readFileSync("components/vendre/VendrePageShell.tsx", "utf8");
 const sellerForm = readFileSync("components/vendre/SellerPropertyDraftForm.tsx", "utf8");
+const indexedVisual = readFileSync("lib/ux/indexed-property-type-visual.ts", "utf8");
 
 const OPTION_A_TYPES = ["Appartement", "Villa", "Terrain", "Studio", "Riad", "Bureau"];
 const EXACT_PREMIUM_ASSETS = [
@@ -46,6 +47,24 @@ test("visual selection remains continuous from intent pages into search", () => 
   assert.match(quickFilters, /propertyType\s*\}/);
   assert.match(selector, /aria-pressed=\{active\}/);
   assert.match(selector, /Tous les biens/);
+});
+
+test("Search property selector reuses the same locked TARGET family as indexed result cards", () => {
+  assert.match(selector, /getIndexedPropertyTypeVisual/);
+  assert.match(selector, /visual\.targetAsset/);
+  assert.match(selector, /data-property-visual-family/);
+  assert.match(quickFilters, /visualVariant="search-target"/);
+  assert.doesNotMatch(sellerForm, /visualVariant="search-target"/);
+  for (const asset of [
+    "/visuals/property-types/target/apartment.svg",
+    "/visuals/property-types/target/villa.svg",
+    "/visuals/property-types/target/land.svg",
+    "/visuals/property-types/target/office.svg",
+    "/visuals/property-types/target/commercial.svg",
+    "/visuals/property-types/target/riad.png",
+  ]) {
+    assert.ok(indexedVisual.includes(asset), `missing harmonized Search TARGET asset: ${asset}`);
+  }
 });
 
 test("listing fallbacks use Option A without replacing authorized real images", () => {
