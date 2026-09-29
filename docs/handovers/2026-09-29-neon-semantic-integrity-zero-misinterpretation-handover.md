@@ -555,3 +555,38 @@ NEXT EXACT:
 2. compare recovery and rejection-rate stability;
 3. if stable, choose bounded source-specific scale strategy;
 4. keep Neon entirely outside analysis until a later explicit HUMAN GATE.
+
+
+## GITHUB FREEZE RECOVERY BENCHMARK 300×2 — STABILITY RESULT
+
+Run `36604769558` on HEAD `a242edaaee5d4373a985415205de0d970ec27491`: SUCCESS.
+
+### MarocImmo — stable
+- 300/300 accessible;
+- recovery-from-NULL: price 140, surface 164, bedrooms 57, bathrooms 4, rooms 17;
+- high-confidence: price 140, rooms 17, bathrooms 4, JSON-LD bedrooms 3;
+- review: surface 164, bedrooms 54;
+- incremental 180 rows: 83 strict prices = 46.1%, vs baseline 57/120 = 47.5%;
+- accessibility increment: 180/180.
+Conclusion: source-specific recovery signal is stable enough for the next controlled step.
+
+### Sarout — parser stable, source availability unstable
+- 189/300 accessible;
+- recovery-from-NULL: price 73, surface 131, bedrooms 61, bathrooms 63, rooms 12;
+- high-confidence: price 73, JSON-LD surface 119, JSON-LD bedrooms 45, JSON-LD bathrooms 60, rooms 12;
+- review: surface 12, bedrooms 16, bathrooms 3;
+- incremental 180 rows: only 71 HTTP 200, 109 HTTP 503;
+- among accessible incremental rows: 29 strict prices / 71 = 40.8%, vs baseline 44/118 = 37.3%.
+Conclusion: extraction remains stable conditional on HTTP 200; direct live-fetch scale is not justified because source availability degrades sharply.
+
+Canonical offline denominators from GitHub freeze:
+- MarocImmo KEEP+eligible: 37,268; price NULL: 37,249; surface NULL: 35,184;
+- Sarout KEEP+eligible: 43,794; price NULL: 43,371; surface NULL: 43,430.
+
+Decision:
+- proceed with controlled next-source benchmark on Domio;
+- do not increase Sarout fetch pressure;
+- keep all analysis GitHub-freeze based; Neon remains outside the analysis path.
+
+Domio 300 benchmark added on HEAD `70b67136d1688f08230fa1a5d19ffbcf664769ee`.
+Run `36606286573` queued at last check.
