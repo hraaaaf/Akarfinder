@@ -4,6 +4,11 @@ import { Layers3, LocateFixed, Minus, Plus, Search } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { MAARIF_TARGET_CONTEXT_LABELS } from "@/lib/geo/maarif-target-context-labels";
 import { AKARFINDER_MOROCCO_MAP_NAVY, territoryLightToneForKey } from "@/lib/map/akarfinder-territorial-style";
+import {
+  installMapLibreOvertureBuildings,
+  MAPLIBRE_OVERTURE_ESTIMATED_LAYER_ID,
+  MAPLIBRE_OVERTURE_EXACT_LAYER_ID,
+} from "@/components/map/maplibre-overture-buildings";
 
 type LivingHereCategory =
   | "education" | "groceries" | "health" | "transport" | "food" | "green_sport"
@@ -226,6 +231,11 @@ export function MapLibreNeighborhood3D({
   const [sourceState, setSourceState] = useState<"loading" | "available" | "unavailable">("loading");
   const [buildingCount, setBuildingCount] = useState(0);
   const [buildingFootprintCount, setBuildingFootprintCount] = useState(0);
+  const [overtureState, setOvertureState] = useState<"idle" | "loading" | "available" | "unavailable">("idle");
+  const [overtureTotalCount, setOvertureTotalCount] = useState(0);
+  const [overtureExactCount, setOvertureExactCount] = useState(0);
+  const [overtureEstimatedCount, setOvertureEstimatedCount] = useState(0);
+  const [overtureRelease, setOvertureRelease] = useState<string | null>(null);
   const [contextState, setContextState] = useState<"loading" | "ready" | "unavailable">("loading");
   const [context, setContext] = useState<NeighborhoodContext | null>(null);
   const [activeCategory, setActiveCategory] = useState<LivingHereCategory | "all">("all");
@@ -697,6 +707,25 @@ export function MapLibreNeighborhood3D({
                 },
               });
             }
+
+            if (isMaarifTargetPilot && targetComposition === "context") {
+              setOvertureState("loading");
+              void installMapLibreOvertureBuildings(map, { beforeLayerId: FOCUS_GLOW_LAYER_ID })
+                .then((result) => {
+                  if (disposed) return;
+                  setOvertureTotalCount(result.total);
+                  setOvertureExactCount(result.exactHeight);
+                  setOvertureEstimatedCount(result.levelEstimated);
+                  setOvertureRelease(result.release);
+                  setOvertureState("available");
+                  setSourceState("available");
+                })
+                .catch((error) => {
+                  console.error("[vivre-ici-maplibre-overture] install failed", error);
+                  if (!disposed) setOvertureState("unavailable");
+                });
+            }
+
             window.requestAnimationFrame(() => {
               if (!disposed) focusNeighborhoodMap(map, boundaryGeometry, center, desktopCameraOffset, targetComposition, desktop, 0);
             });
@@ -707,12 +736,22 @@ export function MapLibreNeighborhood3D({
         });
 
         const evaluate = () => {
-          if (disposed || !map?.getLayer("3d-buildings")) return;
+          if (disposed || !map) return;
           try {
-            const volumeFeatures = map.queryRenderedFeatures(undefined, { layers: ["3d-buildings"] });
-            const footprintFeatures = map.getLayer("akarfinder-target-buildings")
-              ? map.queryRenderedFeatures(undefined, { layers: ["akarfinder-target-buildings"] })
-              : [];
+            const overtureLayers = [
+              MAPLIBRE_OVERTURE_ESTIMATED_LAYER_ID,
+              MAPLIBRE_OVERTURE_EXACT_LAYER_ID,
+            ].filter((layerId) => Boolean(map.getLayer(layerId)));
+            const volumeFeatures = overtureLayers.length
+              ? map.queryRenderedFeatures(undefined, { layers: overtureLayers })
+              : map.getLayer("3d-buildings")
+                ? map.queryRenderedFeatures(undefined, { layers: ["3d-buildings"] })
+                : [];
+            const footprintFeatures = overtureLayers.length
+              ? volumeFeatures
+              : map.getLayer("akarfinder-target-buildings")
+                ? map.queryRenderedFeatures(undefined, { layers: ["akarfinder-target-buildings"] })
+                : [];
             setBuildingCount(volumeFeatures.length);
             setBuildingFootprintCount(footprintFeatures.length);
             if (volumeFeatures.length > 0 || footprintFeatures.length > 0) setSourceState("available");
@@ -916,6 +955,11 @@ export function MapLibreNeighborhood3D({
       data-maplibre-source="openfreemap-vector"
       data-maplibre-building-count={buildingCount}
       data-maplibre-building-footprint-count={buildingFootprintCount}
+      data-maplibre-overture-state={overtureState}
+      data-maplibre-overture-total-count={overtureTotalCount}
+      data-maplibre-overture-exact-count={overtureExactCount}
+      data-maplibre-overture-estimated-count={overtureEstimatedCount}
+      data-maplibre-overture-release={overtureRelease ?? ""}
       data-maplibre-context-state={contextState}
       data-maplibre-anchor-count={context?.anchor_count ?? 0}
       data-maplibre-city={citySlug}
@@ -935,7 +979,9 @@ export function MapLibreNeighborhood3D({
         <div className="maplibre-spike-canvas" ref={mapRef} />
         <div className="maplibre-spike-map-grade" aria-hidden="true" />
         {isMaarifTargetPilot && targetComposition === "context" ? (
-          <div className="maplibre-spike-attribution">Map © OpenStreetMap contributors · OpenFreeMap</div>
+          <div className="maplibre-spike-attribution">
+            Map © OpenStreetMap contributors · OpenFreeMap{overtureState === "available" ? " · 3D © Overture Maps Foundation" : ""}
+          </div>
         ) : null}
         <div className="maplibre-spike-dom-labels" aria-hidden="true">
           {centerPoint?.visible && (
@@ -1043,7 +1089,15 @@ export function MapLibreNeighborhood3D({
         <span className="maplibre-spike-map-note-copy">
           {boundaryGeometry ? (isMaarifTargetPilot ? "Contour administratif : Arrondissement Maârif (OSM). Le halo de contexte est dérivé des repères vérifiés et ne constitue pas une frontière de quartier." : "Limite OSM de référence · validation production en attente.") : "Repère central sourcé · périmètre non revendiqué."}
         </span>
-        <span className="maplibre-spike-map-note-status">{buildingCount > 0 ? `${buildingCount} volumes 3D visibles` : buildingFootprintCount > 0 ? `${buildingFootprintCount} empreintes visibles · hauteur 3D non observée` : "Tissu urbain vectoriel · hauteur 3D non observée"}</span>
+        <span className="maplibre-spike-map-note-status">
+          {overtureState === "available"
+            ? `${buildingCount} volumes Overture visibles · ${overtureExactCount} hauteurs exactes / ${overtureEstimatedCount} estimées depuis les niveaux`
+            : buildingCount > 0
+              ? `${buildingCount} volumes 3D visibles`
+              : buildingFootprintCount > 0
+                ? `${buildingFootprintCount} empreintes visibles · hauteur 3D non observée`
+                : "Tissu urbain vectoriel · hauteur 3D non observée"}
+        </span>
       </div>
 
       <footer className="maplibre-spike-outro"><div><strong>Découvrez les quartiers autrement</strong><span>Un même moteur cartographique, du quartier au Maroc.</span></div><em>Des lieux. Des vies. Des projets.</em></footer>
