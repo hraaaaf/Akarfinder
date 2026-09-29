@@ -130,69 +130,25 @@ function strongPropertyTypeEvidence(row: DbListingRow): string | null {
   const title = row.title?.toLowerCase() ?? "";
   const url = row.listing_url?.toLowerCase() ?? "";
 
+  // Title evidence must identify the advertised asset itself, not merely a
+  // neighborhood ("Hay Riad"), usage ("villa commerciale") or contextual noun
+  // ("villa sur un terrain"). Prefer a type at the beginning of the title or a
+  // type immediately coupled to the transaction action.
   const rules: Array<[string, RegExp, RegExp]> = [
-    ["land", /(?:^|\W)(?:terrain|lot de terrain|ferme)(?:\W|$)/u, /(?:\/|[-_])(?:terrain|terrains)(?:\/|[-_])/u],
-    ["villa", /(?:^|\W)villa(?:\W|$)/u, /(?:\/|[-_])(?:villa|villas)(?:\/|[-_])/u],
-    ["studio", /(?:^|\W)studio(?:\W|$)/u, /(?:\/|[-_])(?:studio|studios)(?:\/|[-_])/u],
-    ["office", /(?:^|\W)(?:bureau|plateau bureau)(?:\W|$)/u, /(?:\/|[-_])(?:bureau|bureaux)(?:\/|[-_])/u],
-    ["commercial", /(?:^|\W)(?:local commercial|commerce|magasin)(?:\W|$)/u, /(?:\/|[-_])(?:local|locaux|commerce|commercial|magasin)(?:\/|[-_])/u],
-    ["riad", /(?:^|\W)riad(?:\W|$)/u, /(?:\/|[-_])(?:riad|riads)(?:\/|[-_])/u],
-    ["apartment", /(?:^|\W)(?:appartement|appart)(?:\W|$)/u, /(?:\/|[-_])(?:appartement|appartements)(?:\/|[-_])/u],
-    ["house", /(?:^|\W)maison(?:\W|$)/u, /(?:\/|[-_])(?:maison|maisons)(?:\/|[-_])/u],
+    ["land", /^(?:terrain|lot de terrain|ferme)\b|\b(?:terrain|lot de terrain|ferme)\s+(?:à|a)\s+(?:vendre|louer)\b/u, /(?:\/|[-_])(?:terrain|terrains)(?:\/|[-_])/u],
+    ["villa", /^villa\b|\bvilla\s+(?:à|a)\s+(?:vendre|louer)\b/u, /(?:\/|[-_])(?:villa|villas)(?:\/|[-_])/u],
+    ["studio", /^studio\b|\bstudio\s+(?:à|a)\s+(?:vendre|louer)\b/u, /(?:\/|[-_])(?:studio|studios)(?:\/|[-_])/u],
+    ["office", /^(?:bureau|plateau bureau)\b|\b(?:bureau|plateau bureau)\s+(?:à|a)\s+(?:vendre|louer)\b/u, /(?:\/|[-_])(?:bureau|bureaux)(?:\/|[-_])/u],
+    ["commercial", /^(?:local commercial|magasin|commerce)\b|\b(?:local commercial|magasin|commerce)\s+(?:à|a)\s+(?:vendre|louer)\b/u, /(?:\/|[-_])(?:local|locaux|commerce|commercial|magasin)(?:\/|[-_])/u],
+    ["riad", /^riad\s+(?:à|a)\s+(?:vendre|louer)\b/u, /(?:\/|[-_])(?:riad|riads)(?:\/|[-_])/u],
+    ["apartment", /^(?:appartement|appart)\b|\b(?:appartement|appart)\s+(?:à|a)\s+(?:vendre|louer)\b/u, /(?:\/|[-_])(?:appartement|appartements)(?:\/|[-_])/u],
+    ["house", /^maison\b|\bmaison\s+(?:à|a)\s+(?:vendre|louer)\b/u, /(?:\/|[-_])(?:maison|maisons)(?:\/|[-_])/u],
   ];
 
   for (const [type, titleRe, urlRe] of rules) {
     if (titleRe.test(title) && urlRe.test(url)) return type;
   }
   return null;
-}
-
-function hasUnsupportedRentalCadence(row: DbListingRow): boolean {
-  if (row.transaction_type?.trim().toLowerCase() !== "rent") return false;
-  const text = `${row.title ?? ""} ${row.description_snippet ?? ""}`.toLowerCase();
-  return /(?:par\s+jour|\/jour|journalier|journali[eè]re|par\s+nuit|nuit[eé]e|par\s+semaine|\/semaine|weekly|daily)/u.test(text);
-}
-
-function singleExplicitTitleSalePriceMad(row: DbListingRow): number | null {
-  if (row.transaction_type?.trim().toLowerCase() !== "sale") return null;
-  const title = row.title ?? "";
-  if (/(?:mad|dhs?|dh|dirhams?)\s*(?:\/|par)\s*m(?:²|2)/iu.test(title)) return null;
-
-  const values = Array.from(
-    title.matchAll(/([0-9]{1,3}(?:[ .,'’][0-9]{3})+|[0-9]{3,10})\s*(?:-\s*)?(?:mad|dhs?|dh|dirhams?)/giu),
-  )
-    .map((match) => Number(match[1].replace(/[^0-9]/g, "")))
-    .filter((value) => Number.isFinite(value) && value >= 10_000 && value <= 500_000_000);
-
-  const unique = [...new Set(values)];
-  return unique.length === 1 ? unique[0] : null;
-}
-
-function uniqueExplicitCount(text: string | null | undefined, kind: "bedroom" | "bathroom" | "room"): number | null {
-  const raw = text ?? "";
-  const patterns =
-    kind === "bedroom"
-      ? [
-          /(?:chambres?|bedrooms?)\s*[:=-]?\s*(\d{1,3})(?!\d)/giu,
-          /(\d{1,3})\s*chambres?/giu,
-        ]
-      : kind === "bathroom"
-        ? [
-            /(?:salle?s?\s*de\s*bain|sdb|bathrooms?)\s*[:=-]?\s*(\d{1,2})(?!\d)/giu,
-            /(\d{1,2})\s*(?:salle?s?\s*de\s*bain|sdb)/giu,
-          ]
-        : [
-            /(?:pi[eè]ces?|rooms?)\s*[:=-]?\s*(\d{1,3})(?!\d)/giu,
-            /(\d{1,3})\s*pi[eè]ces?/giu,
-            /(\d{1,3})\s*rooms?/giu,
-          ];
-
-  const values = patterns.flatMap((pattern) =>
-    Array.from(raw.matchAll(pattern), (match) => Number(match[1])),
-  ).filter((value) => Number.isFinite(value));
-
-  const unique = [...new Set(values)];
-  return unique.length === 1 ? unique[0] : null;
 }
 
 export function hasStrongSemanticIntegrityConflict(row: DbListingRow): boolean {
