@@ -621,3 +621,27 @@ Current workflow: `36618313897` — queued at last check; only Domio job active,
 Offline replay on the prior Domio artifact predicts 17 strict price recoveries after the route fix; this is provisional and MUST NOT be treated as canonical until exact-head CI reproduces it.
 
 Agenz policy gate verified from repo: `scripts/scrapers/sources/agenz.ts` explicitly marks Agenz `partnership_or_csv_import_only`; no automated Agenz fetch benchmark is allowed. Next compatible source after Domio should therefore be selected among robots/policy-compatible sources such as DarAgadir or PromoImmoMarrakech.
+
+
+## DOMIO 300 — CERTIFIED
+
+Run `36618313897` on HEAD `39f343f3b3fb0ee95aa247125a92710f12710e8f`: SUCCESS.
+Artifact: `11057651564`, digest `sha256:8a4f737d2682f1b828fb63e5ff5cf32575c0d8eade4016743bf849cda332a69a`.
+
+Results:
+- 300/300 robots allowed and accessible;
+- recovery from NULL: price 13, surface 234, bedrooms 53, bathrooms 176, rooms 7;
+- high-confidence: **427 fields** = price 13 + JSON-LD surface 232 + JSON-LD bathrooms 175 + explicit rooms 7;
+- review: **56 fields** = bedrooms 53 + surface 2 + bathroom 1;
+- validation matches against already-populated freeze fields: surface 58, bedrooms 26, price 6;
+- conflicts: bedrooms 5 — excluded from any automatic cohort;
+- price rejections: no explicit price 276, sale price/m² outlier 2, unknown rental cadence 2, ambiguous 1;
+- Neon access/write: 0/0.
+
+Domio conclusion:
+- very strong structured recovery for surface and bathrooms;
+- modest but valid price recovery after recognizing `/vendre/` and `/louer/` routes;
+- source remains suitable for controlled offline enrichment.
+
+NEXT SOURCE:
+DarAgadir selected from freeze because it has 4,787 KEEP+eligible rows, all 5 core fields NULL. DarAgadir 300 benchmark launched on HEAD `43b1df71a6c28af627608c4f0ea06ec548a7d329`, run `36627116721` queued at last check.
