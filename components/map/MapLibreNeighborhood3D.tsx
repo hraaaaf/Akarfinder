@@ -167,8 +167,8 @@ function expandContextHull(hull: MutablePosition[], scale = 1.50): MutablePositi
 
 function contextCameraForViewport(desktop: boolean) {
   return desktop
-    ? { zoom: 13.18, pitch: 48, bearing: -15 }
-    : { zoom: 12.94, pitch: 42, bearing: -10 };
+    ? { zoom: 13.48, pitch: 44, bearing: -12 }
+    : { zoom: 13.18, pitch: 40, bearing: -8 };
 }
 
 function focusNeighborhoodMap(
@@ -314,7 +314,7 @@ export function MapLibreNeighborhood3D({
                     map.setPaintProperty(layer.id, "background-color", "#ECE7DD");
                   }
                   if (
-                    (layer.type === "fill" && /(water|ocean|sea|building|park|landuse|landcover)/.test(id))
+                    (layer.type === "fill" && /(water|ocean|sea|park|landuse|landcover)/.test(id))
                     || (layer.type === "line" && /(coast|shore|water|road|street|highway|motorway|trunk|primary|secondary|tertiary)/.test(id))
                   ) {
                     map.setLayoutProperty(layer.id, "visibility", "none");
@@ -440,8 +440,8 @@ export function MapLibreNeighborhood3D({
                     28, "#DDD5C9",
                     60, "#D3CABD"
                   ],
-                  "fill-opacity": ["interpolate", ["linear"], ["zoom"], 12.2, 0.50, 14.5, 0.64],
-                  "fill-outline-color": "#D1C8BB",
+                  "fill-opacity": ["interpolate", ["linear"], ["zoom"], 12.2, 0.28, 14.5, 0.42],
+                  "fill-outline-color": "#C8BFB2",
                 },
               } as any);
 
@@ -675,18 +675,18 @@ export function MapLibreNeighborhood3D({
               map.addLayer({
                 id: "neighborhood-boundary-fill", type: "fill", source: "neighborhood-boundary",
                 paint: {
-                  "fill-color": districtTone,
                   // OSM relation 2801474 is the Maârif administrative arrondissement, not a certified neighborhood boundary.
-                  "fill-opacity": isMaarifTargetPilot ? 0 : 0.18,
+                  "fill-color": isMaarifTargetPilot ? "#4D9BE6" : districtTone,
+                  "fill-opacity": isMaarifTargetPilot ? 0.09 : 0.18,
                 },
               });
               map.addLayer({
                 id: "neighborhood-boundary-line", type: "line", source: "neighborhood-boundary",
                 paint: {
                   "line-color": AKARFINDER_MOROCCO_MAP_NAVY,
-                  "line-width": isMaarifTargetPilot ? 0 : 3.2,
-                  "line-opacity": isMaarifTargetPilot ? 0 : 0.96,
-                  "line-blur": isMaarifTargetPilot ? 0.1 : 0,
+                  "line-width": isMaarifTargetPilot ? 2.6 : 3.2,
+                  "line-opacity": isMaarifTargetPilot ? 0.90 : 0.96,
+                  "line-blur": isMaarifTargetPilot ? 0.15 : 0,
                 },
               });
             }
@@ -814,7 +814,7 @@ export function MapLibreNeighborhood3D({
         source: CONTEXT_FOOTPRINT_SOURCE_ID,
         paint: {
           "fill-color": districtTone,
-          "fill-opacity": 0.10,
+          "fill-opacity": 0.035,
         },
       } as any, FOCUS_GLOW_LAYER_ID);
       map.addLayer({
@@ -823,9 +823,9 @@ export function MapLibreNeighborhood3D({
         source: CONTEXT_FOOTPRINT_SOURCE_ID,
         paint: {
           "line-color": AKARFINDER_MOROCCO_MAP_NAVY,
-          "line-width": 5,
-          "line-opacity": 0.28,
-          "line-blur": 1.1,
+          "line-width": 3,
+          "line-opacity": 0.10,
+          "line-blur": 1.8,
         },
       } as any, FOCUS_GLOW_LAYER_ID);
       map.addLayer({
@@ -833,10 +833,10 @@ export function MapLibreNeighborhood3D({
         type: "line",
         source: CONTEXT_FOOTPRINT_SOURCE_ID,
         paint: {
-          "line-color": "#EEF7F5",
-          "line-width": 1.8,
-          "line-opacity": 0.78,
-          "line-dasharray": [1.4, 1.0],
+          "line-color": "#7E98AA",
+          "line-width": 1.1,
+          "line-opacity": 0.24,
+          "line-dasharray": [1.2, 1.4],
           "line-blur": 0,
         },
       } as any, FOCUS_GLOW_LAYER_ID);
@@ -1018,8 +1018,8 @@ export function MapLibreNeighborhood3D({
 
 
       {isMaarifTargetPilot && boundaryGeometry ? (
-        <div className="maplibre-spike-boundary-badge" aria-label="Zone de contexte indicative, pas une frontière de quartier">
-          Zone indicative
+        <div className="maplibre-spike-boundary-badge" aria-label="Contour administratif de l'arrondissement Maârif">
+          Contour administratif
         </div>
       ) : null}
 
@@ -1034,9 +1034,9 @@ export function MapLibreNeighborhood3D({
         <span className="maplibre-spike-map-note-kicker">Quartier · {cityLabel}</span>
         <strong>{districtLabel}</strong>
         <span className="maplibre-spike-map-note-copy">
-          {boundaryGeometry ? (isMaarifTargetPilot ? "Arrondissement Maârif · repère administratif. Zone bleue : emprise visuelle de contexte dérivée des repères vérifiés (+50 %), non frontière." : "Limite OSM de référence · validation production en attente.") : "Repère central sourcé · périmètre non revendiqué."}
+          {boundaryGeometry ? (isMaarifTargetPilot ? "Contour administratif : Arrondissement Maârif (OSM). Le halo de contexte est dérivé des repères vérifiés et ne constitue pas une frontière de quartier." : "Limite OSM de référence · validation production en attente.") : "Repère central sourcé · périmètre non revendiqué."}
         </span>
-        <span className="maplibre-spike-map-note-status">{buildingCount > 0 ? `${buildingCount} volumes 3D visibles` : "Chargement du relief urbain…"}</span>
+        <span className="maplibre-spike-map-note-status">{buildingCount > 0 ? `${buildingCount} volumes 3D visibles` : buildingFootprintCount > 0 ? `${buildingFootprintCount} empreintes visibles · hauteur 3D non observée` : "Tissu urbain vectoriel · hauteur 3D non observée"}</span>
       </div>
 
       <footer className="maplibre-spike-outro"><div><strong>Découvrez les quartiers autrement</strong><span>Un même moteur cartographique, du quartier au Maroc.</span></div><em>Des lieux. Des vies. Des projets.</em></footer>

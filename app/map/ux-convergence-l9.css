@@ -132,7 +132,7 @@
 
   /* Mobile N3 is map-first: title + reliability contract + real action.
    * Secondary navigation and market absence copy remain available on desktop. */
-  [data-p4-map-layout]:has([data-maplibre-spike][data-maplibre-district]) [data-p4-map-decision-rail] {
+  [data-p4-map-layout]:has([data-maplibre-spike][data-maplibre-district]) [data-p4-map-decision-rail]:not(.maarif-target-rail) {
     max-height: 176px !important;
     padding: 13px 14px 14px !important;
   }
