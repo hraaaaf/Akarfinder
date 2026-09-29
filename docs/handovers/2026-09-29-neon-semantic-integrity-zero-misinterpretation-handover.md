@@ -645,3 +645,27 @@ Domio conclusion:
 
 NEXT SOURCE:
 DarAgadir selected from freeze because it has 4,787 KEEP+eligible rows, all 5 core fields NULL. DarAgadir 300 benchmark launched on HEAD `43b1df71a6c28af627608c4f0ea06ec548a7d329`, run `36627116721` queued at last check.
+
+
+## DARAGADIR 300 — CERTIFIED
+
+Run `36627116721` on HEAD `43b1df71a6c28af627608c4f0ea06ec548a7d329`: SUCCESS.
+Artifact: `11060428898`, digest `sha256:90119419fbbfe9d6e94804ddf62e0d2b2ef734f040afc62cc330dfce04a3b2a2`.
+
+Results:
+- 300/300 robots allowed and accessible;
+- recovery from NULL: price 92, surface 209, rooms 21, bedrooms 70, bathrooms 11;
+- high-confidence: **113 fields** = price 92 + explicit rooms 21;
+- review: **290 fields** = surface 209 + bedrooms 70 + bathrooms 11;
+- strict prices: 88 sale + 4 explicit monthly rent;
+- price distribution: min 3,300 MAD; median 916,250 MAD; max 32,400,000 MAD;
+- price rejections: no explicit price 181, unknown rental cadence 26, sale price/m² outlier 1;
+- conflicts: 0;
+- Neon access/write: 0/0.
+
+DarAgadir conclusion:
+- strong price and rooms recovery;
+- surface/bedrooms/bathrooms remain review because evidence is primary-text rather than sufficiently structured.
+
+NEXT SOURCE:
+PromoImmoMarrakech selected next from freeze and launched at 300 rows on HEAD `d0280be4f2d7c6cebf975ffeff4cf8d9eceaf3d4`, run `36627917092` queued at last check.
