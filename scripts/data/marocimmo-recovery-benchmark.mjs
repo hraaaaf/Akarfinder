@@ -174,7 +174,8 @@ function extract(html,title){
 
 const robotsCache=new Map();
 function parseRobots(text){
-  const lines=text.split(/\r?\n/).map(x=>x.replace(/#.*/,'').trim()).filter(Boolean);
+  const lines=text.split(/\r?
+/).map(x=>x.replace(/#.*/,'').trim()).filter(Boolean);
   const groups=[]; let current=null;
   for(const line of lines){
     const i=line.indexOf(':'); if(i<0) continue;
@@ -242,12 +243,20 @@ const summary={source:sourceName,sample_requested:limit,sample_size:results.leng
 for(const x of results){
   const k=String(x.http_status??(x.robots_allowed===false?"robots_blocked":"error"));
   summary.http_statuses[k]=(summary.http_statuses[k]||0)+1;
-  for(const field of fields){ if(x.stored?.[field]==null) summary.missing[field]=(summary.missing[field]||0)+1; }\n  if(x.extracted){\n    if(x.extracted.price_status_candidate==="on_request") summary.price_on_request++;
+  for(const field of fields){ if(x.stored?.[field]==null) summary.missing[field]=(summary.missing[field]||0)+1; }
+  if(x.extracted){
+    if(x.extracted.price_status_candidate==="on_request") summary.price_on_request++;
     if(x.extracted.price_rejection_reason) summary.price_rejections[x.extracted.price_rejection_reason]=(summary.price_rejections[x.extracted.price_rejection_reason]||0)+1;
-    for(const field of fields){\n      if(x.extracted[field]!=null) summary.recovered[field]=(summary.recovered[field]||0)+1;\n      if(x.stored?.[field]==null && x.extracted[field]!=null) summary.recovered_missing[field]=(summary.recovered_missing[field]||0)+1;\n    }
+    for(const field of fields){
+      if(x.extracted[field]!=null) summary.recovered[field]=(summary.recovered[field]||0)+1;
+      if(x.stored?.[field]==null && x.extracted[field]!=null) summary.recovered_missing[field]=(summary.recovered_missing[field]||0)+1;
+    }
     if(x.extracted.price_candidates>1) summary.ambiguous_price++;
   }
 }
-await writeFile(`${outputPrefix}.json`,JSON.stringify(summary,null,2)+"\n");
-await writeFile(`${outputPrefix}.jsonl`,results.map(x=>JSON.stringify(x)).join("\n")+"\n");
+await writeFile(`${outputPrefix}.json`,JSON.stringify(summary,null,2)+"
+");
+await writeFile(`${outputPrefix}.jsonl`,results.map(x=>JSON.stringify(x)).join("
+")+"
+");
 console.log(JSON.stringify(summary,null,2));
