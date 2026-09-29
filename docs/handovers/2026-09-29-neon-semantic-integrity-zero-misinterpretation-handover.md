@@ -513,3 +513,45 @@ Current implementation HEAD: `0d70c7562c26e674aeb2e9c4ddac772e8e437831`.
 Current run: `36589275434` — in progress at last check.
 
 Neon should only re-enter the path at a later human-gated write/readback step, never as the primary corpus for this offline recovery analysis.
+
+
+## GITHUB FREEZE RECOVERY BENCHMARK 120×2 — CERTIFIED
+
+Canonical HEAD: `a0a3118f25610018675d3b53a3486a0797e56ad3`
+Run: `36604311223` — SUCCESS.
+
+Freeze input:
+- artifact `10910779576`;
+- rows: **226,286**;
+- gzip SHA256 verified in workflow: `e7ac4bca2db34ad334ed7234cfb8be93fc9baca68a9694f5024989b5cc2bb953`;
+- Neon access: **0**;
+- Neon writes: **0**.
+
+### Sarout — 120 deterministic rows
+- accessible: 118/120;
+- recovery from NULL: price 44, surface 83, bedrooms 34, bathrooms 39, rooms 10;
+- high-confidence: **194 fields** = price 44 + JSON-LD surface 76 + JSON-LD bedrooms 25 + JSON-LD bathrooms 39 + explicit primary-text rooms 10;
+- review: **16 fields** = surface text 7 + bedrooms text 9;
+- price rejections: unknown rental cadence 39, vacation-without-monthly-proof 3, sale price/m² outlier 3, sale-too-low 6, no-offer 13, mixed cadence 5, non-monthly 5;
+- artifact: `11049914324`, digest `sha256:faab3e2c409e24d3e8e2513cd82ba9f56cbabd9c517e9db273eb6951d3f02a44`.
+
+### MarocImmo — 120 deterministic rows
+- accessible: 120/120;
+- recovery from NULL: price 57, surface 70, bedrooms 20, bathrooms 2, rooms 10;
+- high-confidence: **70 fields** = price 57 + rooms 10 + JSON-LD bathrooms 2 + JSON-LD bedrooms 1;
+- review: **89 fields** = surface text 70 + bedrooms text 19;
+- price rejections: unknown rental cadence 53, no explicit price 8, non-monthly 1, sale-too-low 1;
+- artifact: `11049644833`, digest `sha256:0202f05fb52474b4eb58592c7f1d3c398d81e45245b6c5be53927197930cd4b6`.
+
+Combined certified benchmark:
+- **264 high-confidence field recoveries**;
+- **105 review field recoveries**;
+- strict price recoveries: **101** = MarocImmo 57 + Sarout 44;
+- no conflicts with already-populated freeze fields in this sample;
+- exact matching validation: 7 MarocImmo surfaces + 1 Sarout surface + 2 MarocImmo bedrooms.
+
+NEXT EXACT:
+1. expand deterministic sample to 300 rows/source using the same rules;
+2. compare recovery and rejection-rate stability;
+3. if stable, choose bounded source-specific scale strategy;
+4. keep Neon entirely outside analysis until a later explicit HUMAN GATE.
