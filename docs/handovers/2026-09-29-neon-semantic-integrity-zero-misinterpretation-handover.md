@@ -427,3 +427,37 @@ NEXT EXACT:
 2. inspect the 14 text-derived rooms candidates separately;
 3. freeze a write-safe correction cohort only after those audits;
 4. HUMAN GATE before any Neon production mutation.
+
+
+## SAROUT RECORD-LEVEL WRITE-SAFE AUDIT
+
+Source artifact: `11040348832` from run `36584126990`.
+
+Price candidates accepted by the hardened parser: 88.
+Zero-error cadence filter:
+- write-safe price candidates: **62**;
+  - sale: **58**;
+  - explicitly monthly rent: **4**;
+- quarantined price candidates with unknown rental cadence: **26**.
+
+Rooms candidates:
+- **14/14** come from explicit labeled `X pièces` evidence in the main listing description after similar-listing isolation;
+- no direct mapping from Sarout JSON-LD `numberOfRooms` is allowed because its semantics are inconsistent with visible “pièces” evidence.
+
+Observed source-quality outlier:
+- Sarout ID `75179`: apartment Marrakech, source JSON-LD + source title both expose **240,000,000 MAD**;
+- this is not an extraction mismatch, but it remains a source-quality signal and is not evidence of an AkarFinder parser error.
+
+Implementation:
+- benchmark now emits per-field audit status and a dedicated `*-write-safe.jsonl` dry-run cohort;
+- workflow publishes these files as artifacts;
+- still read-only; no Neon mutation.
+
+Current HEAD after cohort artifact wiring:
+`3f05626a0e4d95e6b180c64285158b2855521cb5`
+
+NEXT EXACT:
+1. validate the exact-head write-safe artifact;
+2. verify exact field counts in the generated cohort;
+3. prepare reversible dry-run correction payload only;
+4. HUMAN GATE before any Neon write.
