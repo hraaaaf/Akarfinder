@@ -44,7 +44,7 @@ function metaContent(html,key){
   }
   return null;
 }
-function structuredListing(html){
+function structuredListing(html,pageUrl){
   const nodes=[];
   for(const m of html.matchAll(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)){
     try{
@@ -52,7 +52,13 @@ function structuredListing(html){
       for(const item of stack){if(item&&typeof item==="object"&&Array.isArray(item["@graph"])) nodes.push(...item["@graph"]); else nodes.push(item);}
     }catch{}
   }
-  return nodes.find(n=>{const t=n?.["@type"];return t==="RealEstateListing"||(Array.isArray(t)&&t.includes("RealEstateListing"));})||null;
+  const listings=nodes.filter(n=>{const t=n?.["@type"];return t==="RealEstateListing"||(Array.isArray(t)&&t.includes("RealEstateListing"));});
+  const norm=u=>{try{const x=new URL(u);return x.origin+x.pathname.replace(/\/$/,"");}catch{return null;}};
+  const target=norm(pageUrl);
+  const exact=listings.filter(n=>norm(n?.url)===target);
+  if(exact.length===1) return exact[0];
+  if(listings.length===1) return listings[0];
+  return null;
 }
 function num(v){if(v==null||v==="")return null;const n=Number(v);return Number.isFinite(n)?n:null;}
 function cadence(text,category){
@@ -63,7 +69,7 @@ function cadence(text,category){
 }
 function extract(html,url){
   const full=htmlToText(html);
-  const listing=structuredListing(html);
+  const listing=structuredListing(html,url);
   const meta=[metaContent(html,"og:title"),metaContent(html,"og:description"),metaContent(html,"description")].filter(Boolean).join(" ");
   const structuredText=[listing?.name,listing?.description].filter(Boolean).join(" ");
   const primaryText=[structuredText,meta].filter(Boolean).join(" ").trim();
