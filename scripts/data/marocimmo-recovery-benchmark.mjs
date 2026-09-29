@@ -217,7 +217,7 @@ for(const r of rows){
   const started=Date.now();
   const robots=await robotsFor(r.listing_url);
   if(!robotsAllows(r.listing_url,robots)){
-    results.push({id:r.id,title:r.title,url:r.listing_url,stored:{price_mad:r.price_mad,price_status:r.price_status,surface_m2:r.surface_m2,district:r.district,rooms_count:r.rooms_count,bedrooms_count:r.bedrooms_count,bathrooms_count:r.bathrooms_count},robots:robots.state,robots_allowed:false,http_status:null,accessible:false,elapsed_ms:Date.now()-started,extracted:null});
+    results.push({id:r.id,title:r.title,url:r.listing_url,stored:{price_mad:r.price_mad,price_status:r.price_status,surface_m2:r.surface_m2,district:r.district,transaction_type:r.transaction_type,property_type:r.property_type,rooms_count:r.rooms_count,bedrooms_count:r.bedrooms_count,bathrooms_count:r.bathrooms_count},robots:robots.state,robots_allowed:false,http_status:null,accessible:false,elapsed_ms:Date.now()-started,extracted:null});
     continue;
   }
   try{
@@ -228,9 +228,9 @@ for(const r of rows){
     const slug=decodeURIComponent(new URL(r.listing_url).pathname).toLowerCase();
     const slugSurface=(slug.match(/(?:^|[-_/])(\d{2,5})[-_]?m(?:2)?(?:[-_/]|$)/i)||[])[1];
     const locationTail=(slug.match(/casablanca[-_/]+(.+?)(?:$|[?#])/i)||[])[1]?.replace(/[-_]+/g,' ')||null;
-    results.push({id:r.id,title:r.title,url:r.listing_url,stored:{price_mad:r.price_mad,price_status:r.price_status,surface_m2:r.surface_m2,district:r.district,rooms_count:r.rooms_count,bedrooms_count:r.bedrooms_count,bathrooms_count:r.bathrooms_count},structural_candidates:{surface_title_m2:titleSurface?Number(titleSurface):null,surface_slug_m2:slugSurface?Number(slugSurface):null,location_slug:locationTail},robots:robots.state,robots_allowed:true,http_status:res.status,accessible:res.ok&&html.length>0,elapsed_ms:Date.now()-started,extracted:html?extract(html,r.title):null});
+    results.push({id:r.id,title:r.title,url:r.listing_url,stored:{price_mad:r.price_mad,price_status:r.price_status,surface_m2:r.surface_m2,district:r.district,transaction_type:r.transaction_type,property_type:r.property_type,rooms_count:r.rooms_count,bedrooms_count:r.bedrooms_count,bathrooms_count:r.bathrooms_count},structural_candidates:{surface_title_m2:titleSurface?Number(titleSurface):null,surface_slug_m2:slugSurface?Number(slugSurface):null,location_slug:locationTail},robots:robots.state,robots_allowed:true,http_status:res.status,accessible:res.ok&&html.length>0,elapsed_ms:Date.now()-started,extracted:html?extract(html,r.title):null});
   }catch(e){
-    results.push({id:r.id,title:r.title,url:r.listing_url,stored:{price_mad:r.price_mad,price_status:r.price_status,surface_m2:r.surface_m2,district:r.district,rooms_count:r.rooms_count,bedrooms_count:r.bedrooms_count,bathrooms_count:r.bathrooms_count},robots:robots.state,robots_allowed:true,http_status:null,accessible:false,elapsed_ms:Date.now()-started,error:e?.name||"fetch_error",extracted:null});
+    results.push({id:r.id,title:r.title,url:r.listing_url,stored:{price_mad:r.price_mad,price_status:r.price_status,surface_m2:r.surface_m2,district:r.district,transaction_type:r.transaction_type,property_type:r.property_type,rooms_count:r.rooms_count,bedrooms_count:r.bedrooms_count,bathrooms_count:r.bathrooms_count},robots:robots.state,robots_allowed:true,http_status:null,accessible:false,elapsed_ms:Date.now()-started,error:e?.name||"fetch_error",extracted:null});
   }
   await sleep(250);
 }
@@ -271,7 +271,32 @@ for(const x of results){
     }
     if(x.extracted.price_candidates>1) summary.ambiguous_price++;
   }
+  for(const [field,a] of Object.entries(x.audit||{})){
+    if(a.status==="write_safe") summary.write_safe[field]=(summary.write_safe[field]||0)+1;
+    if(a.status==="quarantine") summary.quarantine[field]=(summary.quarantine[field]||0)+1;
+  }
 }
 await writeFile(`${outputPrefix}.json`,JSON.stringify(summary,null,2)+"\\n");
 await writeFile(`${outputPrefix}.jsonl`,results.map(x=>JSON.stringify(x)).join("\\n")+"\\n");
+
+const cohort=results
+  .filter(x=>Object.values(x.audit||{}).some(a=>a.status==="write_safe"))
+  .map(x=>({id:x.id,title:x.title,url:x.url,stored:x.stored,candidates:x.extracted,audit:x.audit}));
+await writeFile(`${outputPrefix}-write-safe.jsonl`,cohort.map(x=>JSON.stringify(x)).join("\\n")+"\\n");
+
+const mutations=[];
+for(const row of cohort){
+  const fields=row.audit||{};
+  const e=row.candidates||{};
+  const push=(auditKey,dbField,value,evidence)=>{
+    if(fields[auditKey]?.status!=="write_safe" || value==null) return;
+    mutations.push({id:row.id,source:sourceName,field:dbField,value,precondition:{field:dbField,equals:null},evidence,confidence:"high",mode:"dry_run_only"});
+  };
+  push("price","price_mad",e.price_mad,{kind:"structured_price",period:e.price_period_candidate,url:row.url});
+  push("surface","surface_m2",e.surface_m2,{kind:fields.surface?.reason,url:row.url});
+  push("rooms","rooms_count",e.rooms_count,{kind:"explicit_labeled_text",matches:e.room_evidence||[],url:row.url});
+  push("bedrooms","bedrooms_count",e.bedrooms_count,{kind:"structured_or_explicit_labeled",url:row.url});
+  push("bathrooms","bathrooms_count",e.bathrooms_count,{kind:"structured_or_explicit_labeled",url:row.url});
+}
+await writeFile(`${outputPrefix}-mutation-plan.jsonl`,mutations.map(x=>JSON.stringify(x)).join("\\n")+"\\n");
 console.log(JSON.stringify(summary,null,2));
