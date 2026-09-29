@@ -65,3 +65,26 @@ describe("field confidence for rooms/bedrooms", () => {
     assert.equal(d._confidence.bedrooms, "missing");
   });
 });
+
+describe("labeled room-count regression", () => {
+  it("parses 'chambre : 05' instead of bleeding from preceding surface digits", () => {
+    const d = extractDetail(
+      html("<p>surface total construit : 276 chambre : 05, salon : 03, salle de bain : 6</p>")
+    );
+    assert.equal(d.bedrooms, 5);
+    assert.equal(d.bathrooms, 6);
+  });
+
+  it("parses 'surface terrain : 250 chambre : 04' as 4 bedrooms", () => {
+    const d = extractDetail(
+      html("<p>Surface habitable : 142m², surface terrain : 250 chambre : 04, Salon : 02, salle de bain : 01</p>")
+    );
+    assert.equal(d.bedrooms, 4);
+    assert.equal(d.bathrooms, 1);
+  });
+
+  it("preserves a legitimate large explicit bedroom count", () => {
+    const d = extractDetail(html("<p>Magnifique propriété avec 34 chambres, jardin et piscine.</p>"));
+    assert.equal(d.bedrooms, 34);
+  });
+});
