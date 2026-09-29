@@ -77,6 +77,7 @@ jobs:
             marocimmo-recovery-benchmark.json
             marocimmo-recovery-benchmark.jsonl
             marocimmo-recovery-benchmark-write-safe.jsonl
+            marocimmo-recovery-benchmark-mutation-plan.jsonl
           retention-days: 14
 
   sarout-benchmark:
@@ -107,6 +108,7 @@ jobs:
             sarout-recovery-benchmark.json
             sarout-recovery-benchmark.jsonl
             sarout-recovery-benchmark-write-safe.jsonl
+            sarout-recovery-benchmark-mutation-plan.jsonl
           retention-days: 14
 
   sarout-detail-probe:
@@ -138,4 +140,5 @@ jobs:
             sarout-detail-probe-79042.json
             sarout-detail-probe-79042.jsonl
             sarout-detail-probe-79042-write-safe.jsonl
+            sarout-detail-probe-79042-mutation-plan.jsonl
           retention-days: 14
