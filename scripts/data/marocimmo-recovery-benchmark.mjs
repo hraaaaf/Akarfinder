@@ -96,11 +96,11 @@ function numericValue(v){
 }
 function cadenceFrom(text,category){
   const hay=(String(text||"")+" "+String(category||"")).toLowerCase();
-  if(/(?:par\s*jour|journalier|quotidien|journ[ée]e|nuit[ée]?e?|courte\s+dur[ée]e|location\s+vacances|vacances|\bعطلات\b|\bيومي|\bليلة)/iu.test(hay)) {
-    if(/(?:par\s*mois|\/\s*mois|mensuel(?:le)?|loyer\s+mensuel|\bشهري(?:ا|ًا)?\b)/iu.test(hay)) return "monthly";
-    return "non_monthly";
-  }
-  if(/(?:par\s*mois|\/\s*mois|mensuel(?:le)?|loyer\s+mensuel|\bشهري(?:ا|ًا)?\b)/iu.test(hay)) return "monthly";
+  const nonMonthly=/(?:par\s*jour|journalier|quotidien|journ[ée]e|nuit[ée]?e?|courte\s+dur[ée]e|location\s+vacances|vacances|\bعطلات\b|\bيومي|\bليلة)/iu.test(hay);
+  const monthly=/(?:par\s*mois|\/\s*mois|mensuel(?:le)?|loyer\s+mensuel|\bشهري(?:ا|ًا)?\b)/iu.test(hay);
+  if(nonMonthly&&monthly) return "mixed";
+  if(nonMonthly) return "non_monthly";
+  if(monthly) return "monthly";
   return "unknown";
 }
 function saroutPriceCandidate(listing,text){
@@ -116,6 +116,7 @@ function saroutPriceCandidate(listing,text){
   const period=cadenceFrom(text,cat);
   if(sale) return value>=10000?{value,reason:null,period:"sale"}:{value:null,reason:"sale_too_low",period:"sale"};
   if(rent){
+    if(period==="mixed") return {value:null,reason:"mixed_cadence",period};
     if(period==="non_monthly") return {value:null,reason:"non_monthly",period};
     if(/vacances|عطلات/u.test(cat) && period!=="monthly") return {value:null,reason:"vacation_without_monthly_proof",period};
     return value>=1000?{value,reason:null,period:period==="monthly"?"monthly":"unknown"}:{value:null,reason:"rent_too_low",period};
