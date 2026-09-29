@@ -51,7 +51,7 @@ function cadence(text,category){
   const mon=/(?:par\s*mois|\/\s*mois|mensuel(?:le)?|loyer\s+mensuel|\bشهري(?:ا|ًا)?\b)/iu.test(s);
   if(non&&mon)return"mixed"; if(non)return"non_monthly"; if(mon)return"monthly"; return"unknown";
 }
-function extract(html){
+function extract(html,url){
   const full=htmlToText(html);
   const listing=sourceName==="sarout.ma"?structuredListing(html):null;
   const structuredText=[listing?.name,listing?.description].filter(Boolean).join(" ");
@@ -73,8 +73,16 @@ function extract(html){
       else if(prices[0]>=1000) price=prices[0]; else price_reason="rent_too_low";
     } else price_reason="unknown_transaction_category";
   }else{
+    const transaction=/\/vente\//i.test(url||"")?"sale":/\/location\//i.test(url||"")?"rent":"unknown";
     const prices=unique(amountRe,text).filter(x=>x>=100&&x<=500000000);
-    if(prices.length===1) price=prices[0]; else if(prices.length>1) price_reason="ambiguous";
+    if(prices.length===1){
+      const candidate=prices[0];
+      if(transaction==="sale"&&candidate<10000) price_reason="sale_too_low";
+      else if(transaction==="rent"&&candidate<500) price_reason="rent_too_low";
+      else price=candidate;
+      price_period=transaction;
+    } else if(prices.length>1) price_reason="ambiguous";
+    else price_reason="no_explicit_price";
   }
   return {
     price_mad:price,price_rejection_reason:price_reason,price_period_candidate:price_period,
@@ -98,7 +106,7 @@ for(const row of sample){
  try{
   const res=await fetch(url,{redirect:"follow",signal:AbortSignal.timeout(8000),headers:{"user-agent":USER_AGENT+"/1.0 (+github-freeze benchmark)","accept":"text/html"}});
   const ct=res.headers.get("content-type")||""; const html=res.ok&&ct.includes("text/html")?await res.text():"";
-  results.push({url,freeze:row,robots_allowed:true,http_status:res.status,accessible:res.ok&&!!html,elapsed_ms:Date.now()-started,extracted:html?extract(html):null});
+  results.push({url,freeze:row,robots_allowed:true,http_status:res.status,accessible:res.ok&&!!html,elapsed_ms:Date.now()-started,extracted:html?extract(html,url):null});
  }catch(e){results.push({url,freeze:row,robots_allowed:true,http_status:null,accessible:false,error:e?.name||"fetch_error",extracted:null});}
  await sleep(250);
 }
