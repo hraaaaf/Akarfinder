@@ -301,6 +301,12 @@ export function MapLibreNeighborhood3D({
           if (disposed) return;
           try {
             if (isMaarifTargetPilot && targetComposition === "context") {
+              map.setLight({
+                anchor: "viewport",
+                color: "#FFF7EA",
+                intensity: 0.72,
+                position: [1.5, 155, 48],
+              });
               for (const layer of map.getStyle().layers ?? []) {
                 const id = String(layer.id ?? "").toLowerCase();
                 try {
