@@ -455,6 +455,19 @@ describe("semantic integrity fail-closed gate", () => {
     );
   });
 
+  it("quarantines mixed property-type title instead of auto-interpreting embedded type", () => {
+    assert.equal(
+      hasStrongSemanticIntegrityConflict(
+        semanticRow({
+          property_type: "apartment",
+          title: "Appartement Villa a vendre a Sidi Maarouf",
+          listing_url: "https://avito.ma/fr/sidi_maarouf/villas_et_riads/Appartement_Villa_a_vendre.htm",
+        }),
+      ),
+      true,
+    );
+  });
+
   it("does not misread contextual terrain mention as land", () => {
     assert.equal(
       hasStrongSemanticIntegrityConflict(
