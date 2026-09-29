@@ -50,6 +50,7 @@ jobs:
           unzip -q .tmp/freeze.zip -d .tmp/freeze
           test "$(jq -r '.rows' .tmp/freeze/clean-corpus-v4.11-core-manifest.json)" = "226286"
           test "$(jq -r '.database_access' .tmp/freeze/clean-corpus-v4.11-core-manifest.json)" = "0"
+          echo "e7ac4bca2db34ad334ed7234cfb8be93fc9baca68a9694f5024989b5cc2bb953  .tmp/freeze/clean-corpus-v4.11-core.jsonl.gz" | sha256sum -c -
       - name: Benchmark MarocImmo from freeze
         run: node scripts/data/github-freeze-recovery-benchmark.mjs
       - uses: actions/upload-artifact@v4
@@ -95,6 +96,7 @@ jobs:
           unzip -q .tmp/freeze.zip -d .tmp/freeze
           test "$(jq -r '.rows' .tmp/freeze/clean-corpus-v4.11-core-manifest.json)" = "226286"
           test "$(jq -r '.database_access' .tmp/freeze/clean-corpus-v4.11-core-manifest.json)" = "0"
+          echo "e7ac4bca2db34ad334ed7234cfb8be93fc9baca68a9694f5024989b5cc2bb953  .tmp/freeze/clean-corpus-v4.11-core.jsonl.gz" | sha256sum -c -
       - name: Benchmark Sarout from freeze
         run: node scripts/data/github-freeze-recovery-benchmark.mjs
       - uses: actions/upload-artifact@v4
