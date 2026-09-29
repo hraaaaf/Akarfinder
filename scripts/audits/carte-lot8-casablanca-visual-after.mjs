@@ -88,6 +88,12 @@ try {
       }
       await page.waitForFunction(() => {
         const shell = document.querySelector('[data-maplibre-spike][data-maplibre-city="casablanca"][data-maplibre-district="maarif"]');
+        return shell?.getAttribute("data-maplibre-overture-state") === "available";
+      }, null, { timeout: 20000 }).catch(() => {
+        throw new Error(`${viewport.name}: Overture 3D bundle did not become available within 20s`);
+      });
+      await page.waitForFunction(() => {
+        const shell = document.querySelector('[data-maplibre-spike][data-maplibre-city="casablanca"][data-maplibre-district="maarif"]');
         return Number(shell?.getAttribute("data-maplibre-building-count") ?? 0) > 0;
       }, null, { timeout: 12000 }).catch(() => {
         throw new Error(`${viewport.name}: no rendered 3D building volumes observed; Maârif depth target is not proven`);
