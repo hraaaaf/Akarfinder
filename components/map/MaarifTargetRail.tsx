@@ -282,7 +282,7 @@ export function MaarifTargetRail() {
         }
         @media(max-width:560px){
           [data-maarif-rebuild="true"] [data-p4-map-layout]{height:calc(100svh - 64px)!important;min-height:600px!important}
-          .maarif-target-rail{left:8px;right:8px;bottom:max(8px,env(safe-area-inset-bottom));height:min(44svh,372px);max-height:min(44svh,372px);border-radius:22px}
+          .maarif-target-rail{left:8px;right:8px;bottom:calc(72px + env(safe-area-inset-bottom));height:min(44svh,372px);max-height:min(44svh,372px);border-radius:22px}
           .maarif-target-rail[data-sheet-expanded="true"]{height:min(74svh,620px);max-height:min(74svh,620px)}
           .maarif-target-hero{height:104px;margin:7px 7px 0}
           .maarif-target-hero figcaption{left:10px;right:10px;font-size:7px}.maarif-target-hero-credit a{padding:4px 6px}
