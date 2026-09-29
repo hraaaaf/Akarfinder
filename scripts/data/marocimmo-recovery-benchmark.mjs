@@ -24,7 +24,7 @@ const rows = await sql`
 `;
 
 const amountRe=/([0-9]{1,3}(?:[ .,'’][0-9]{3})+|[0-9]{4,10})\s*(?:mad|dhs?|dh|dirhams?)/giu;
-const surfaceRe=/([0-9]{1,7})\s*m(?:²|2)\b/giu;
+const surfaceRe=/([0-9]{1,7})\s*m(?:²|2)(?=\s|$|[^\p{L}\p{N}_])/giu;
 const onRequestRe=/\b(?:prix\s+(?:sur|a|à)\s+demande|price\s+on\s+request)\b/iu;
 const patterns={
   bedrooms:[/(?:chambres?|bedrooms?)\s*[:=-]?\s*(\d{1,2})\b/giu,/(\d{1,2})\s*(?:chambres?|bedrooms?)\b/giu],
