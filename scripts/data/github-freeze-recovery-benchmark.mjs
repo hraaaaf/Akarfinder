@@ -104,7 +104,7 @@ function extract(html,url){
       ? /(?:^|-)(?:location|louer|rental|rent)(?:-|$)/i.test(s||"")
       : /^(?:location|louer|rental|rent)(?:-|$)/i.test(s||"");
     const shortStay=routeSegs.some(s=>/(?:^|-)(?:location|rental|rent)-(?:s[eé]?jour|vacances?|courte[-_]?dur[eé]e)(?:-|$)/i.test(s||""));
-    const transaction=routeSegs.some(saleSeg)?"sale":routeSegs.some(rentSeg)?"rent":"unknown";
+    const transaction=sourceName==="sarouty.ma"?"sale":routeSegs.some(saleSeg)?"sale":routeSegs.some(rentSeg)?"rent":"unknown";
     const period=cadence(text,""); price_period=transaction==="sale"?"sale":period;
     const offers=Array.isArray(listing?.offers)?listing.offers:[listing?.offers].filter(Boolean);
     const structuredPrices=[...new Set(offers.map(o=>num(o?.price)).filter(v=>v!=null))];
