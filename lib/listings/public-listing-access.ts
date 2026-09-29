@@ -114,6 +114,18 @@ function strongTransactionEvidence(row: DbListingRow): "sale" | "rent" | null {
   return null;
 }
 
+function singleExplicitTitleSurfaceM2(row: DbListingRow): number | null {
+  const title = row.title ?? "";
+  const values = Array.from(
+    title.matchAll(/([0-9]{1,3}(?:[ .,'’][0-9]{3})+|[0-9]{1,7})\s*m(?:²|2)(?=[^0-9]|$)/giu),
+  )
+    .map((match) => Number(match[1].replace(/[^0-9]/g, "")))
+    .filter((value) => Number.isFinite(value) && value >= 8 && value <= 10_000_000);
+
+  const unique = [...new Set(values)];
+  return unique.length === 1 ? unique[0] : null;
+}
+
 function strongPropertyTypeEvidence(row: DbListingRow): string | null {
   const title = row.title?.toLowerCase() ?? "";
   const url = row.listing_url?.toLowerCase() ?? "";
@@ -161,6 +173,9 @@ export function hasStrongSemanticIntegrityConflict(row: DbListingRow): boolean {
     if (row.surface_m2 < 8) return true;
     if (type === "land" && row.surface_m2 > 10_000_000) return true;
     if (type !== "land" && row.surface_m2 > 10_000) return true;
+
+    const explicitTitleSurface = singleExplicitTitleSurfaceM2(row);
+    if (explicitTitleSurface != null && explicitTitleSurface !== row.surface_m2) return true;
   }
 
   if (row.rooms_count != null && (row.rooms_count < 0 || row.rooms_count > 50)) return true;
