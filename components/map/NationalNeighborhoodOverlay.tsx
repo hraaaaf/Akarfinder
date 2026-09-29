@@ -74,12 +74,39 @@ function emptyFilter(): unknown[] {
   return ["==", ["get", "slug"], "__none__"];
 }
 
-function removeLayers(map: MapLibreMap) {
-  for (const id of [LABELS, ACTIVE, DOTS, HITS, ATLAS_ACTIVE_LINE, ATLAS_ACTIVE_FILL, ATLAS_LABELS, ATLAS_LINE, ATLAS_FILL]) {
-    if (map.getLayer(id)) map.removeLayer(id);
+function hasLiveStyle(map: MapLibreMap | null | undefined): map is MapLibreMap {
+  if (!map) return false;
+  try {
+    return Boolean(map.getStyle());
+  } catch {
+    return false;
   }
-  if (map.getSource(SOURCE)) map.removeSource(SOURCE);
-  if (map.getSource(ATLAS_SOURCE)) map.removeSource(ATLAS_SOURCE);
+}
+
+function hasLayer(map: MapLibreMap | null | undefined, id: string): boolean {
+  if (!hasLiveStyle(map)) return false;
+  try {
+    return Boolean(map.getLayer(id));
+  } catch {
+    return false;
+  }
+}
+
+function removeLayers(map: MapLibreMap | null | undefined) {
+  if (!hasLiveStyle(map)) return;
+  for (const id of [LABELS, ACTIVE, DOTS, HITS, ATLAS_ACTIVE_LINE, ATLAS_ACTIVE_FILL, ATLAS_LABELS, ATLAS_LINE, ATLAS_FILL]) {
+    try {
+      if (hasLayer(map, id)) map.removeLayer(id);
+    } catch {
+      // The MapLibre style can disappear during React cleanup/navigation.
+    }
+  }
+  try {
+    if (map.getSource(SOURCE)) map.removeSource(SOURCE);
+    if (map.getSource(ATLAS_SOURCE)) map.removeSource(ATLAS_SOURCE);
+  } catch {
+    // Ignore teardown races after the style has been detached.
+  }
 }
 
 function normalizedSearchText(value: string) {
@@ -166,7 +193,7 @@ export function NationalNeighborhoodOverlay({
   }, [bySlug, citySlug, neighborhoods]);
 
   useEffect(() => {
-    if (!map || !mapReady) return;
+    if (!map || !mapReady || !hasLiveStyle(map)) return;
     removeLayers(map);
 
     const basemapSymbolSnapshots = new Map<string, { textOpacity: unknown; iconOpacity: unknown }>();
@@ -326,15 +353,15 @@ export function NationalNeighborhoodOverlay({
     });
 
     const setActive = (slug: string | null) => {
-      if (map.getLayer(ACTIVE)) map.setFilter(ACTIVE, (slug ? ["==", ["get", "slug"], slug] : emptyFilter()) as never);
+      if (hasLayer(map, ACTIVE)) map.setFilter(ACTIVE, (slug ? ["==", ["get", "slug"], slug] : emptyFilter()) as never);
     };
     const setAtlasActive = (slug: string | null) => {
       const filter = (slug ? ["==", ["get", "slug"], slug] : ["==", ["get", "slug"], "__none__"]) as never;
-      if (map.getLayer(ATLAS_ACTIVE_FILL)) map.setFilter(ATLAS_ACTIVE_FILL, filter);
-      if (map.getLayer(ATLAS_ACTIVE_LINE)) map.setFilter(ATLAS_ACTIVE_LINE, filter);
+      if (hasLayer(map, ATLAS_ACTIVE_FILL)) map.setFilter(ATLAS_ACTIVE_FILL, filter);
+      if (hasLayer(map, ATLAS_ACTIVE_LINE)) map.setFilter(ATLAS_ACTIVE_LINE, filter);
     };
     const renderedAdministrative = (event: MapMouseEvent) => {
-      if (!map.getLayer(ATLAS_FILL)) return null;
+      if (!hasLayer(map, ATLAS_FILL)) return null;
       const feature = map.queryRenderedFeatures(event.point, { layers: [ATLAS_FILL] })[0];
       if (!feature?.properties || typeof feature.properties.slug !== "string") return null;
       return {
@@ -408,7 +435,7 @@ export function NationalNeighborhoodOverlay({
       map.off("click", onClick);
       map.getCanvas().removeEventListener("mouseleave", onLeave);
       for (const [layerId, snapshot] of basemapSymbolSnapshots) {
-        if (!map.getLayer(layerId)) continue;
+        if (!hasLayer(map, layerId)) continue;
         try {
           map.setPaintProperty(layerId, "text-opacity", (snapshot.textOpacity ?? null) as never);
           map.setPaintProperty(layerId, "icon-opacity", (snapshot.iconOpacity ?? null) as never);
@@ -417,19 +444,19 @@ export function NationalNeighborhoodOverlay({
         }
       }
       for (const snapshot of basemapRoadSnapshots) {
-        if (!map.getLayer(snapshot.layerId)) continue;
+        if (!hasLayer(map, snapshot.layerId)) continue;
         try {
           map.setPaintProperty(snapshot.layerId, snapshot.property, (snapshot.value ?? null) as never);
         } catch {
           // Style teardown can remove properties before cleanup.
         }
       }
-      if (map.getStyle()) removeLayers(map);
+      removeLayers(map);
     };
   }, [administrativeAtlas, citySlug, map, mapReady, neighborhoods, onSelectDistrict, selectedAdministrative, theme]);
 
   useEffect(() => {
-    if (!map || !mapReady || !map.getLayer(ACTIVE)) return;
+    if (!map || !mapReady || !hasLayer(map, ACTIVE)) return;
     const active = hoverSlug ?? selectedSlug;
     map.setFilter(ACTIVE, (active ? ["==", ["get", "slug"], active] : emptyFilter()) as never);
   }, [hoverSlug, map, mapReady, selectedSlug]);
