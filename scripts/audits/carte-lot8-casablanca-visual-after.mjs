@@ -76,6 +76,15 @@ try {
         throw new Error(`${viewport.name}: visible indicative-zone badge mismatch`);
       }
       await highZoomTilesReady;
+      await page.waitForFunction(() => {
+        const shell = document.querySelector('[data-maplibre-spike][data-maplibre-city="casablanca"][data-maplibre-district="maarif"]');
+        return Number(shell?.getAttribute("data-maplibre-building-footprint-count") ?? 0) > 0;
+      }, null, { timeout: 8000 });
+      const renderedBuildingVolumes = Number(await maplibre.getAttribute("data-maplibre-building-count") ?? 0);
+      const renderedBuildingFootprints = Number(await maplibre.getAttribute("data-maplibre-building-footprint-count") ?? 0);
+      const renderedHeightCoveragePct = renderedBuildingFootprints > 0
+        ? Number(((renderedBuildingVolumes / renderedBuildingFootprints) * 100).toFixed(1))
+        : null;
 
       const rail = page.locator("[data-p4-map-decision-rail]");
       await rail.waitFor({ state: "visible", timeout: 10000 });
@@ -203,6 +212,10 @@ try {
         boundarySemantic,
         boundaryDisclosure,
         boundaryBadge: "Zone indicative",
+        renderedBuildingVolumes,
+        renderedBuildingFootprints,
+        renderedHeightCoveragePct,
+        renderedHeightCoverageNote: "ratio of rendered 3D features to rendered 2D building features; viewport-specific, not a unique-building census",
         localContextSource: localContext.source.mode,
         localAnchorCount: localContext.anchor_count,
         localAnchorNames: expectedLocalNames,
