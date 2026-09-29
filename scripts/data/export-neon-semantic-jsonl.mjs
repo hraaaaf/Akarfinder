@@ -103,18 +103,31 @@ function primaryTitleTransaction(r){
   return sale===rent?null:(sale?"sale":"rent");
 }
 function primaryTitleType(r){
-  const t=(r.title??"").toLowerCase();
-  const rules=[
-    ["land",/^(?:terrain|lot de terrain|ferme)\b|\b(?:terrain|lot de terrain|ferme)\s+(?:à|a)\s+(?:vendre|louer)\b/u],
-    ["villa",/^villa\b|\bvilla\s+(?:à|a)\s+(?:vendre|louer)\b/u],
-    ["studio",/^studio\b|\bstudio\s+(?:à|a)\s+(?:vendre|louer)\b/u],
-    ["office",/^(?:bureau|plateau bureau)\b|\b(?:bureau|plateau bureau)\s+(?:à|a)\s+(?:vendre|louer)\b/u],
-    ["commercial",/^(?:local commercial|magasin|commerce)\b|\b(?:local commercial|magasin|commerce)\s+(?:à|a)\s+(?:vendre|louer)\b/u],
-    ["riad",/^riad\s+(?:à|a)\s+(?:vendre|louer)\b/u],
-    ["apartment",/^(?:appartement|appart)\b|\b(?:appartement|appart)\s+(?:à|a)\s+(?:vendre|louer)\b/u],
-    ["house",/^maison\b|\bmaison\s+(?:à|a)\s+(?:vendre|louer)\b/u],
+  const t=(r.title??"").toLowerCase().trim();
+  const leading=[
+    ["land",/^(?:terrain|lot de terrain|ferme)\b/u],
+    ["villa",/^villa\b/u],
+    ["studio",/^studio\b/u],
+    ["office",/^(?:bureau|plateau bureau)\b/u],
+    ["commercial",/^(?:local commercial|magasin|commerce)\b/u],
+    ["riad",/^riad\b/u],
+    ["apartment",/^(?:appartement|appart)\b/u],
+    ["house",/^maison\b/u],
   ];
-  return rules.find(([,re])=>re.test(t))?.[0]??null;
+  const first=leading.find(([,re])=>re.test(t))?.[0];
+  if(first)return first;
+  const action=[
+    ["land",/\b(?:terrain|lot de terrain|ferme)\s+(?:à|a)\s+(?:vendre|louer)\b/u],
+    ["villa",/\bvilla\s+(?:à|a)\s+(?:vendre|louer)\b/u],
+    ["studio",/\bstudio\s+(?:à|a)\s+(?:vendre|louer)\b/u],
+    ["office",/\b(?:bureau|plateau bureau)\s+(?:à|a)\s+(?:vendre|louer)\b/u],
+    ["commercial",/\b(?:local commercial|magasin|commerce)\s+(?:à|a)\s+(?:vendre|louer)\b/u],
+    ["riad",/\briad\s+(?:à|a)\s+(?:vendre|louer)\b/u],
+    ["apartment",/\b(?:appartement|appart)\s+(?:à|a)\s+(?:vendre|louer)\b/u],
+    ["house",/\bmaison\s+(?:à|a)\s+(?:vendre|louer)\b/u],
+  ];
+  const candidates=[...new Set(action.filter(([,re])=>re.test(t)).map(([type])=>type))];
+  return candidates.length===1?candidates[0]:null;
 }
 
 function flags(r) {
