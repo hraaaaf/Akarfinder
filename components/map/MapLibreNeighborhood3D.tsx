@@ -167,8 +167,8 @@ function expandContextHull(hull: MutablePosition[], scale = 1.50): MutablePositi
 
 function contextCameraForViewport(desktop: boolean) {
   return desktop
-    ? { zoom: 13.48, pitch: 38, bearing: -10 }
-    : { zoom: 13.18, pitch: 40, bearing: -8 };
+    ? { zoom: 13.68, pitch: 52, bearing: -16 }
+    : { zoom: 13.28, pitch: 46, bearing: -12 };
 }
 
 function focusNeighborhoodMap(
@@ -303,9 +303,9 @@ export function MapLibreNeighborhood3D({
             if (isMaarifTargetPilot && targetComposition === "context") {
               map.setLight({
                 anchor: "viewport",
-                color: "#FFF7EA",
-                intensity: 0.72,
-                position: [1.5, 155, 48],
+                color: "#FFF2DE",
+                intensity: 0.58,
+                position: [1.8, 145, 38],
               });
               for (const layer of map.getStyle().layers ?? []) {
                 const id = String(layer.id ?? "").toLowerCase();
@@ -313,15 +313,10 @@ export function MapLibreNeighborhood3D({
                   if (layer.type === "background") {
                     map.setPaintProperty(layer.id, "background-color", "#ECE7DD");
                   }
-                  if (layer.type === "fill" && /building/.test(id)) {
-                    map.setPaintProperty(layer.id, "fill-color", "#DED7CC");
-                    map.setPaintProperty(layer.id, "fill-opacity", 0.58);
-                    map.setPaintProperty(layer.id, "fill-outline-color", "#C8BFB2");
-                  }
-                  if (layer.type === "line" && /building/.test(id)) {
-                    map.setPaintProperty(layer.id, "line-color", "#C5BCAE");
-                    map.setPaintProperty(layer.id, "line-opacity", 0.48);
-                    map.setPaintProperty(layer.id, "line-width", 0.7);
+                  if ((layer.type === "fill" || layer.type === "line") && /building/.test(id)) {
+                    // The target layer below owns building footprints. Hiding duplicate base footprints
+                    // keeps real render_height extrusions legible without inventing synthetic heights.
+                    map.setLayoutProperty(layer.id, "visibility", "none");
                   }
                   if (
                     (layer.type === "fill" && /(water|ocean|sea|park|landuse|landcover)/.test(id))
@@ -450,8 +445,8 @@ export function MapLibreNeighborhood3D({
                     28, "#DDD5C9",
                     60, "#D3CABD"
                   ],
-                  "fill-opacity": ["interpolate", ["linear"], ["zoom"], 12.2, 0.28, 14.5, 0.42],
-                  "fill-outline-color": "#C8BFB2",
+                  "fill-opacity": ["interpolate", ["linear"], ["zoom"], 12.2, 0.10, 14.5, 0.20],
+                  "fill-outline-color": "#BEB3A5",
                 },
               } as any);
 
@@ -625,7 +620,7 @@ export function MapLibreNeighborhood3D({
                 "fill-extrusion-color": isMaarifTargetPilot && targetComposition === "context"
                   ? [
                     "interpolate", ["linear"], ["coalesce", ["get", "render_height"], 0],
-                    0, "#F2EDE5", 10, "#E9E2D8", 24, "#DED5C8", 55, "#CFC2B3", 120, "#BFAE9E",
+                    0, "#EEE6DA", 10, "#DFD1C1", 24, "#CFBDA9", 55, "#B9A28B", 120, "#9D846C",
                   ]
                   : [
                     "interpolate", ["linear"], ["coalesce", ["get", "render_height"], 0],
@@ -633,7 +628,7 @@ export function MapLibreNeighborhood3D({
                   ],
                 "fill-extrusion-height": ["coalesce", ["get", "render_height"], 0],
                 "fill-extrusion-base": ["coalesce", ["get", "render_min_height"], 0],
-                "fill-extrusion-opacity": isMaarifTargetPilot && targetComposition === "context" ? 0.68 : 0.28,
+                "fill-extrusion-opacity": isMaarifTargetPilot && targetComposition === "context" ? 0.90 : 0.28,
                 "fill-extrusion-vertical-gradient": true,
               },
             } as any);
@@ -687,16 +682,16 @@ export function MapLibreNeighborhood3D({
                 paint: {
                   // OSM relation 2801474 is the Maârif administrative arrondissement, not a certified neighborhood boundary.
                   "fill-color": isMaarifTargetPilot ? "#4D9BE6" : districtTone,
-                  "fill-opacity": isMaarifTargetPilot ? 0.09 : 0.18,
+                  "fill-opacity": isMaarifTargetPilot ? 0 : 0.18,
                 },
               });
               map.addLayer({
                 id: "neighborhood-boundary-line", type: "line", source: "neighborhood-boundary",
                 paint: {
                   "line-color": AKARFINDER_MOROCCO_MAP_NAVY,
-                  "line-width": isMaarifTargetPilot ? 2.6 : 3.2,
-                  "line-opacity": isMaarifTargetPilot ? 0.90 : 0.96,
-                  "line-blur": isMaarifTargetPilot ? 0.15 : 0,
+                  "line-width": isMaarifTargetPilot ? 0 : 3.2,
+                  "line-opacity": isMaarifTargetPilot ? 0 : 0.96,
+                  "line-blur": 0,
                 },
               });
             }
