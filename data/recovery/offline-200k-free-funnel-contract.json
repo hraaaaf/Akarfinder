@@ -1,0 +1,15 @@
+{
+  "schema_version": "akarfinder-recovery-offline-200k-free-funnel-v1",
+  "mode": "shadow_read_only",
+  "commonCrawlIndexes": 21,
+  "metadataOnly": true,
+  "warcDownloads": false,
+  "sourcePageFetches": false,
+  "databaseAccess": false,
+  "databaseWrites": false,
+  "registryWrites": false,
+  "searchActivations": false,
+  "permissionsInferred": false,
+  "approvedForImportRows": 0,
+  "note": "Recovery-only contract. Does not modify or supersede production acquisition contracts."
+}

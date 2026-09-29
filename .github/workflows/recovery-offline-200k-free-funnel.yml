@@ -1,0 +1,113 @@
+name: Recovery Offline 200K Free Funnel
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/recovery-offline-200k-free-funnel.yml"
+      - "data/recovery/offline-200k-free-funnel-contract.json"
+      - "data/recovery/offline-200k-source-overlay.json"
+      - "scripts/recovery/apply-source-overlay.ts"
+      - "scripts/recovery/sitemap-shadow-harvest.ts"
+      - "scripts/recovery/build-offline-200k-reservoir.ts"
+      - "scripts/recovery/__tests__/offline-200k-reservoir.test.ts"
+      - "scripts/recovery/recovery-serper-plan.ts"
+      - "scripts/recovery/__tests__/recovery-serper-plan.test.ts"
+      - "scripts/scrapers/__tests__/recovery-200k-source-patterns.test.ts"
+      - "docs/recovery/OFFLINE_200K_MASS_HARVEST_2026-09-24.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: recovery-offline-200k-free-funnel
+  cancel-in-progress: true
+
+jobs:
+  free-funnel:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Checkout recovery ref
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Apply recovery-only source overlay
+        run: npx tsx scripts/recovery/apply-source-overlay.ts
+
+      - name: Verify recovery contracts and filters
+        run: >-
+          npx tsx --test
+          scripts/scrapers/__tests__/recovery-200k-source-patterns.test.ts
+          scripts/recovery/__tests__/offline-200k-reservoir.test.ts
+          scripts/recovery/__tests__/recovery-serper-plan.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Enforce Common Crawl read-only contract
+        run: >-
+          node -e "const c=require('./data/recovery/offline-200k-free-funnel-contract.json');
+          if(c.mode!=='shadow_read_only'||c.commonCrawlIndexes!==21||!c.metadataOnly||
+          c.warcDownloads||c.sourcePageFetches||c.databaseAccess||c.databaseWrites||
+          c.registryWrites||c.searchActivations||c.permissionsInferred)process.exit(1)"
+
+      - name: Confirm Common Crawl index API
+        run: curl -fsS -m 20 -o /dev/null https://index.commoncrawl.org/collinfo.json
+
+      - name: Harvest 21-index Common Crawl reservoir
+        run: |
+          mkdir -p data/audits/raw-results
+          npx tsx scripts/openserp/commoncrawl-reservoir-harvest.ts "CC-MAIN-2026-39,CC-MAIN-2026-34,CC-MAIN-2026-30,CC-MAIN-2026-25,CC-MAIN-2026-21,CC-MAIN-2026-17,CC-MAIN-2026-12,CC-MAIN-2026-08,CC-MAIN-2026-04,CC-MAIN-2025-51,CC-MAIN-2025-47,CC-MAIN-2025-43,CC-MAIN-2025-38,CC-MAIN-2025-33,CC-MAIN-2025-30,CC-MAIN-2025-26,CC-MAIN-2025-21,CC-MAIN-2025-18,CC-MAIN-2025-13,CC-MAIN-2025-08,CC-MAIN-2025-05" | tee data/audits/raw-results/recovery-200k-commoncrawl-summary.log
+
+      - name: Harvest robots-declared public sitemaps
+        run: npx tsx scripts/recovery/sitemap-shadow-harvest.ts
+
+      - name: Merge free discovery lanes offline
+        run: |
+          npx tsx scripts/recovery/build-offline-200k-reservoir.ts \
+            --commoncrawl data/audits/raw-results/commoncrawl-reservoir-canonical-urls.txt \
+            --sitemap data/audits/raw-results/recovery-sitemap-shadow-candidates.jsonl \
+            --restored-manifest data/audits/openserp-first-write-production-write-manifest.json \
+            --overlay data/recovery/offline-200k-source-overlay.json \
+            --output data/audits/raw-results/recovery-offline-200k-free-reservoir.jsonl \
+            --summary data/audits/raw-results/recovery-offline-200k-free-summary.json
+
+      - name: Enforce zero-DB and no-import contract
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const s = JSON.parse(fs.readFileSync('data/audits/raw-results/recovery-offline-200k-free-summary.json','utf8'));
+          if (s.database_access !== 0 || s.database_writes !== 0) process.exit(1);
+          if (s.approved_for_import_rows !== 0) process.exit(1);
+          console.log(JSON.stringify({
+            unique_structural_candidates: s.unique_structural_candidates,
+            excluded_restored_urls: s.excluded_restored_urls,
+            by_status: s.by_status,
+            by_domain: s.by_domain,
+            target_reached: s.target_reached
+          }, null, 2));
+          NODE
+
+      - name: Upload free-funnel evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: recovery-offline-200k-free-funnel
+          path: |
+            data/audits/raw-results/commoncrawl-reservoir-canonical-urls.txt
+            data/audits/raw-results/recovery-200k-commoncrawl-summary.log
+            data/audits/raw-results/recovery-sitemap-shadow-candidates.jsonl
+            data/audits/raw-results/recovery-sitemap-shadow-summary.json
+            data/audits/raw-results/recovery-offline-200k-free-reservoir.jsonl
+            data/audits/raw-results/recovery-offline-200k-free-summary.json
+          retention-days: 30
