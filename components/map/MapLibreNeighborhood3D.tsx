@@ -172,8 +172,8 @@ function expandContextHull(hull: MutablePosition[], scale = 1.50): MutablePositi
 
 function contextCameraForViewport(desktop: boolean) {
   return desktop
-    ? { zoom: 14.08, pitch: 52, bearing: -16 }
-    : { zoom: 14.02, pitch: 46, bearing: -12 };
+    ? { zoom: 14.30, pitch: 58, bearing: -24 }
+    : { zoom: 14.16, pitch: 52, bearing: -18 };
 }
 
 function focusNeighborhoodMap(
@@ -313,9 +313,9 @@ export function MapLibreNeighborhood3D({
             if (isMaarifTargetPilot && targetComposition === "context") {
               map.setLight({
                 anchor: "viewport",
-                color: "#FFF2DE",
-                intensity: 0.58,
-                position: [1.8, 145, 38],
+                color: "#FFF0D6",
+                intensity: 0.72,
+                position: [1.35, 205, 26],
               });
               for (const layer of map.getStyle().layers ?? []) {
                 const id = String(layer.id ?? "").toLowerCase();
@@ -412,7 +412,7 @@ export function MapLibreNeighborhood3D({
                     "industrial", "#D5CEC4",
                     "#E8E1D7"
                   ],
-                  "fill-opacity": 0.72,
+                  "fill-opacity": 0.60,
                 },
               } as any);
 
@@ -481,7 +481,7 @@ export function MapLibreNeighborhood3D({
                     "secondary", "#CCC0B0",
                     "#D7CEC1"
                   ],
-                  "line-opacity": 0.50,
+                  "line-opacity": 0.36,
                   "line-width": [
                     "interpolate", ["linear"], ["zoom"],
                     11, ["match", ["get", "class"], "motorway", 2.4, "trunk", 2.2, "primary", 2.0, "secondary", 1.7, "tertiary", 1.3, 0.8],
@@ -510,7 +510,7 @@ export function MapLibreNeighborhood3D({
                     "tertiary", "#EEE8DE",
                     "#E9E3D9"
                   ],
-                  "line-opacity": 0.92,
+                  "line-opacity": 0.82,
                   "line-width": [
                     "interpolate", ["linear"], ["zoom"],
                     11, ["match", ["get", "class"], "motorway", 1.8, "trunk", 1.65, "primary", 1.5, "secondary", 1.2, "tertiary", 0.95, 0.62],
