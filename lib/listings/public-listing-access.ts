@@ -234,6 +234,54 @@ function singleExplicitTitleSurfaceM2(row: DbListingRow): number | null {
   return unique.length === 1 ? unique[0] : null;
 }
 
+function uniqueExplicitCount(text: string | null | undefined, kind: "bedroom" | "bathroom" | "room"): number | null {
+  const raw = text ?? "";
+  const patterns =
+    kind === "bedroom"
+      ? [
+          /(?:chambres?|bedrooms?)\s*[:=-]?\s*(\d{1,3})(?!\d)/giu,
+          /(\d{1,3})\s*chambres?/giu,
+        ]
+      : kind === "bathroom"
+        ? [
+            /(?:salle?s?\s*de\s*bain|sdb|bathrooms?)\s*[:=-]?\s*(\d{1,2})(?!\d)/giu,
+            /(\d{1,2})\s*(?:salle?s?\s*de\s*bain|sdb)/giu,
+          ]
+        : [
+            /(?:pi[eè]ces?|rooms?)\s*[:=-]?\s*(\d{1,3})(?!\d)/giu,
+            /(\d{1,3})\s*pi[eè]ces?/giu,
+            /(\d{1,3})\s*rooms?/giu,
+          ];
+
+  const values = patterns.flatMap((pattern) =>
+    Array.from(raw.matchAll(pattern), (match) => Number(match[1])),
+  ).filter((value) => Number.isFinite(value));
+
+  const unique = [...new Set(values)];
+  return unique.length === 1 ? unique[0] : null;
+}
+
+function hasUnsupportedRentalCadence(row: DbListingRow): boolean {
+  if (row.transaction_type?.trim().toLowerCase() !== "rent") return false;
+  const text = `${row.title ?? ""} ${row.description_snippet ?? ""}`.toLowerCase();
+  return /(?:par\s+jour|\/jour|journalier|journali[eè]re|par\s+nuit|nuit[eé]e|par\s+semaine|\/semaine|weekly|daily)/u.test(text);
+}
+
+function singleExplicitTitleSalePriceMad(row: DbListingRow): number | null {
+  if (row.transaction_type?.trim().toLowerCase() !== "sale") return null;
+  const title = row.title ?? "";
+  if (/(?:mad|dhs?|dh|dirhams?)\s*(?:\/|par)\s*m(?:²|2)/iu.test(title)) return null;
+
+  const values = Array.from(
+    title.matchAll(/([0-9]{1,3}(?:[ .,'’][0-9]{3})+|[0-9]{3,10})\s*(?:-\s*)?(?:mad|dhs?|dh|dirhams?)/giu),
+  )
+    .map((match) => Number(match[1].replace(/[^0-9]/g, "")))
+    .filter((value) => Number.isFinite(value) && value >= 10_000 && value <= 500_000_000);
+
+  const unique = [...new Set(values)];
+  return unique.length === 1 ? unique[0] : null;
+}
+
 export function hasStrongSemanticIntegrityConflict(row: DbListingRow): boolean {
   const tx = row.transaction_type?.trim().toLowerCase() ?? "";
   const type = row.property_type?.trim().toLowerCase() ?? "";
