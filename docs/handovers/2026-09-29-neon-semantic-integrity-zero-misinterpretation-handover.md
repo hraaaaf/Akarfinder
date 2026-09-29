@@ -590,3 +590,34 @@ Decision:
 
 Domio 300 benchmark added on HEAD `70b67136d1688f08230fa1a5d19ffbcf664769ee`.
 Run `36606286573` queued at last check.
+
+
+## DOMIO RECOVERY — ACTIVE BENCHMARK
+
+Source policy / denominator from canonical GitHub freeze:
+- Domio KEEP+eligible: 10,307;
+- price NULL: 7,011;
+- surface NULL: 8,193;
+- bedrooms NULL: 8,282;
+- bathrooms NULL: 10,307;
+- rooms NULL: 10,307.
+
+Initial 300-row Domio benchmark before route fix:
+- 300/300 accessible;
+- high-confidence: JSON-LD surface 232, JSON-LD bathrooms 175, explicit rooms 7;
+- review: bedrooms 53, surface 2, bathroom 1;
+- 5 bedroom conflicts against already-populated freeze values, all kept out of recovery cohort;
+- price extraction was incorrectly near-zero because Domio routes use `/vendre/` and `/louer/`, while the generic parser only recognized `/vente/` and `/location/`.
+
+Fixes now implemented:
+- recognize `/vendre/` and `/louer/` as sale/rent routes;
+- recognize explicit `Mdh` shorthand;
+- keep rental cadence strict;
+- MarocImmo/Sarout jobs are skipped on push during Domio iterations to avoid unnecessary repeat source traffic.
+
+Current HEAD: `39f343f3b3fb0ee95aa247125a92710f12710e8f`.
+Current workflow: `36618313897` — queued at last check; only Domio job active, MarocImmo/Sarout skipped.
+
+Offline replay on the prior Domio artifact predicts 17 strict price recoveries after the route fix; this is provisional and MUST NOT be treated as canonical until exact-head CI reproduces it.
+
+Agenz policy gate verified from repo: `scripts/scrapers/sources/agenz.ts` explicitly marks Agenz `partnership_or_csv_import_only`; no automated Agenz fetch benchmark is allowed. Next compatible source after Domio should therefore be selected among robots/policy-compatible sources such as DarAgadir or PromoImmoMarrakech.
