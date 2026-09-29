@@ -1,0 +1,110 @@
+import { createReadStream } from "node:fs";
+import { writeFile } from "node:fs/promises";
+import { createGunzip } from "node:zlib";
+import readline from "node:readline";
+import crypto from "node:crypto";
+
+const USER_AGENT="AkarFinderRecoveryAudit";
+const sourceName=(process.env.SOURCE_NAME||"marocimmo.com").toLowerCase();
+const inputPath=process.env.FREEZE_JSONL_GZ||".tmp/freeze/clean-corpus-v4.11-core.jsonl.gz";
+const outputPrefix=process.env.OUTPUT_PREFIX||sourceName.replace(/[^a-z0-9]+/g,"-");
+const limit=Math.max(1,Math.min(300,Number(process.env.SAMPLE_SIZE||120)));
+
+function stableRank(url){return crypto.createHash("sha256").update(url).digest("hex");}
+const candidates=[];
+const rl=readline.createInterface({input:createReadStream(inputPath).pipe(createGunzip()),crlfDelay:Infinity});
+for await(const line of rl){
+  if(!line.trim()) continue;
+  const row=JSON.parse(line);
+  if(String(row.source_domain||"").toLowerCase()!==sourceName) continue;
+  if(row.classification!=="KEEP" || row.scope_eligible!==true) continue;
+  candidates.push(row);
+}
+candidates.sort((a,b)=>stableRank(a.canonical_url).localeCompare(stableRank(b.canonical_url)));
+const sample=candidates.slice(0,limit);
+
+const amountRe=/([0-9]{1,3}(?:[ .,'’][0-9]{3})+|[0-9]{4,10})\s*(?:mad|dhs?|dh|dirhams?)/giu;
+const surfaceRe=/([0-9]{1,7})\s*m(?:²|2)(?=\s|$|[^\p{L}\p{N}_])/giu;
+const patterns={
+ bedrooms:[/(?:chambres?|bedrooms?)\s*[:=-]?\s*(\d{1,2})\b/giu,/(\d{1,2})\s*(?:chambres?|bedrooms?)\b/giu],
+ bathrooms:[/(?:salles?\s*de\s*bain|sdb|bathrooms?)\s*[:=-]?\s*(\d{1,2})\b/giu,/(\d{1,2})\s*(?:salles?\s*de\s*bain|sdb|bathrooms?)\b/giu],
+ rooms:[/(?:pi[eè]ces?|rooms?)\s*[:=-]?\s*(\d{1,2})\b/giu,/(\d{1,2})\s*(?:pi[eè]ces?|rooms?)\b/giu],
+};
+function unique(re,text){re.lastIndex=0;return [...new Set([...text.matchAll(re)].map(m=>Number(m[1].replace(/[^0-9]/g,''))).filter(Number.isFinite))];}
+function one(re,text){const v=unique(re,text);return v.length===1?v[0]:null;}
+function oneAny(res,text){const v=[...new Set(res.flatMap(re=>unique(re,text)))];return v.length===1?v[0]:null;}
+function htmlToText(html){return html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/giu,' ').replace(/<style\b[^>]*>[\s\S]*?<\/style>/giu,' ').replace(/<[^>]+>/g,' ').replace(/&nbsp;|&#160;/g,' ').replace(/\s+/g,' ');}
+function structuredListing(html){
+  const nodes=[];
+  for(const m of html.matchAll(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)){
+    try{
+      const p=JSON.parse(m[1]); const stack=Array.isArray(p)?p:[p];
+      for(const item of stack){if(item&&typeof item==="object"&&Array.isArray(item["@graph"])) nodes.push(...item["@graph"]); else nodes.push(item);}
+    }catch{}
+  }
+  return nodes.find(n=>{const t=n?.["@type"];return t==="RealEstateListing"||(Array.isArray(t)&&t.includes("RealEstateListing"));})||null;
+}
+function num(v){if(v==null||v==="")return null;const n=Number(v);return Number.isFinite(n)?n:null;}
+function cadence(text,category){
+  const s=(String(text||"")+" "+String(category||"")).toLowerCase();
+  const non=/(?:par\s*jour|journalier|quotidien|journ[ée]e|nuit[ée]?e?|courte\s+dur[ée]e|location\s+vacances|vacances|\bعطلات\b|\bيومي|\bليلة)/iu.test(s);
+  const mon=/(?:par\s*mois|\/\s*mois|mensuel(?:le)?|loyer\s+mensuel|\bشهري(?:ا|ًا)?\b)/iu.test(s);
+  if(non&&mon)return"mixed"; if(non)return"non_monthly"; if(mon)return"monthly"; return"unknown";
+}
+function extract(html){
+  const full=htmlToText(html);
+  const listing=sourceName==="sarout.ma"?structuredListing(html):null;
+  const structuredText=[listing?.name,listing?.description].filter(Boolean).join(" ");
+  const text=structuredText||full;
+  const cat=String(listing?.category||"").toLowerCase();
+  let price=null,price_reason=null,price_period=null;
+  if(sourceName==="sarout.ma"){
+    const offers=Array.isArray(listing?.offers)?listing.offers:[listing?.offers].filter(Boolean);
+    const prices=[...new Set(offers.map(o=>num(o?.price)).filter(v=>v!=null))];
+    const currencies=[...new Set(offers.map(o=>String(o?.priceCurrency||"").toUpperCase()).filter(Boolean))];
+    const period=cadence(text,cat); price_period=period;
+    if(prices.length!==1) price_reason=prices.length?"multiple_offers":"no_offer";
+    else if(currencies.length&&!currencies.includes("MAD")) price_reason="non_mad";
+    else if(/vente|بيع/u.test(cat)){ if(prices[0]>=10000) price=prices[0]; else price_reason="sale_too_low"; price_period="sale"; }
+    else if(/location|إيجار|عطلات/u.test(cat)){
+      if(period==="mixed") price_reason="mixed_cadence";
+      else if(period==="non_monthly") price_reason="non_monthly";
+      else if(/vacances|عطلات/u.test(cat)&&period!=="monthly") price_reason="vacation_without_monthly_proof";
+      else if(prices[0]>=1000) price=prices[0]; else price_reason="rent_too_low";
+    } else price_reason="unknown_transaction_category";
+  }else{
+    const prices=unique(amountRe,text).filter(x=>x>=100&&x<=500000000);
+    if(prices.length===1) price=prices[0]; else if(prices.length>1) price_reason="ambiguous";
+  }
+  return {
+    price_mad:price,price_rejection_reason:price_reason,price_period_candidate:price_period,
+    surface_m2:sourceName==="sarout.ma"&&listing?.floorSize?.unitCode==="MTK"?num(listing.floorSize.value):one(surfaceRe,text),
+    bedrooms_count:sourceName==="sarout.ma"?(num(listing?.numberOfBedrooms)??oneAny(patterns.bedrooms,text)):oneAny(patterns.bedrooms,text),
+    bathrooms_count:sourceName==="sarout.ma"?(num(listing?.numberOfBathroomsTotal)??oneAny(patterns.bathrooms,text)):oneAny(patterns.bathrooms,text),
+    rooms_count:oneAny(patterns.rooms,text),
+    structured:listing?{name:listing.name??null,category:listing.category??null,offers:listing.offers??null,floorSize:listing.floorSize??null,numberOfBedrooms:listing.numberOfBedrooms??null,numberOfBathroomsTotal:listing.numberOfBathroomsTotal??null}:null
+  };
+}
+const robotsCache=new Map();
+function parseRobots(text){const groups=[];let cur=null;for(const raw of text.split(/\r?\n/)){const line=raw.replace(/#.*/,'').trim();if(!line)continue;const i=line.indexOf(':');if(i<0)continue;const k=line.slice(0,i).trim().toLowerCase(),v=line.slice(i+1).trim();if(k==="user-agent"){if(!cur||cur.rules.length){cur={agents:[],rules:[]};groups.push(cur);}cur.agents.push(v.toLowerCase());}else if(cur&&(k==="allow"||k==="disallow"))cur.rules.push({kind:k,path:v});}return groups;}
+async function robotsFor(url){const origin=new URL(url).origin;if(robotsCache.has(origin))return robotsCache.get(origin);try{const r=await fetch(origin+"/robots.txt",{signal:AbortSignal.timeout(5000),headers:{"user-agent":USER_AGENT+"/1.0"}});const v=r.status===404||r.status===410?{state:"absent",groups:[]}:r.ok?{state:"loaded",groups:parseRobots(await r.text())}:{state:"unknown",groups:[]};robotsCache.set(origin,v);return v;}catch{const v={state:"unknown",groups:[]};robotsCache.set(origin,v);return v;}}
+function allowed(url,r){if(r.state==="absent")return true;if(r.state!=="loaded")return false;const path=new URL(url).pathname||"/";const groups=r.groups.filter(g=>g.agents.includes("*"));if(!groups.length)return true;const m=groups.flatMap(g=>g.rules).filter(x=>x.path&&path.startsWith(x.path)).sort((a,b)=>b.path.length-a.path.length);return !m.length||m[0].kind==="allow";}
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+
+const results=[];
+for(const row of sample){
+ const url=row.canonical_url, started=Date.now(), rob=await robotsFor(url);
+ if(!allowed(url,rob)){results.push({url,freeze:row,robots_allowed:false,accessible:false,extracted:null});continue;}
+ try{
+  const res=await fetch(url,{redirect:"follow",signal:AbortSignal.timeout(8000),headers:{"user-agent":USER_AGENT+"/1.0 (+github-freeze benchmark)","accept":"text/html"}});
+  const ct=res.headers.get("content-type")||""; const html=res.ok&&ct.includes("text/html")?await res.text():"";
+  results.push({url,freeze:row,robots_allowed:true,http_status:res.status,accessible:res.ok&&!!html,elapsed_ms:Date.now()-started,extracted:html?extract(html):null});
+ }catch(e){results.push({url,freeze:row,robots_allowed:true,http_status:null,accessible:false,error:e?.name||"fetch_error",extracted:null});}
+ await sleep(250);
+}
+const fields=["price_mad","surface_m2","bedrooms_count","bathrooms_count","rooms_count"];
+const summary={source:sourceName,freeze_artifact_id:10910779576,freeze_rows:226286,freeze_source_candidates:candidates.length,sample_size:sample.length,robots_allowed:results.filter(x=>x.robots_allowed).length,accessible:results.filter(x=>x.accessible).length,recovered:{},price_rejections:{},database_access:0,database_writes:0,source_site_fetches:results.filter(x=>x.robots_allowed).length};
+for(const x of results){if(!x.extracted)continue;for(const f of fields)if(x.extracted[f]!=null)summary.recovered[f]=(summary.recovered[f]||0)+1;if(x.extracted.price_rejection_reason)summary.price_rejections[x.extracted.price_rejection_reason]=(summary.price_rejections[x.extracted.price_rejection_reason]||0)+1;}
+await writeFile(`${outputPrefix}.json`,JSON.stringify(summary,null,2)+"\n");
+await writeFile(`${outputPrefix}.jsonl`,results.map(x=>JSON.stringify(x)).join("\n")+"\n");
+console.log(JSON.stringify(summary,null,2));
