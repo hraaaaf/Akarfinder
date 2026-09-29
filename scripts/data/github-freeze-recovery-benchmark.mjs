@@ -92,12 +92,16 @@ function extract(html,url){
       else if(prices[0]>=1000) price=prices[0]; else price_reason="rent_too_low";
     } else price_reason="unknown_transaction_category";
   }else{
-    const transaction=/\/vente\//i.test(url||"")?"sale":/\/location\//i.test(url||"")?"rent":"unknown";
+    const transaction=/\/(?:vente|vendre)\//i.test(url||"")?"sale":/\/(?:location|louer)\//i.test(url||"")?"rent":"unknown";
     const period=cadence(text,""); price_period=transaction==="sale"?"sale":period;
     const offers=Array.isArray(listing?.offers)?listing.offers:[listing?.offers].filter(Boolean);
     const structuredPrices=[...new Set(offers.map(o=>num(o?.price)).filter(v=>v!=null))];
     const currencies=[...new Set(offers.map(o=>String(o?.priceCurrency||"").toUpperCase()).filter(Boolean))];
     const textPrices=unique(amountRe,text).filter(x=>x>=100&&x<=500000000);
+    const mdh=[...text.matchAll(/\b(\d{1,3}(?:[.,]\d{1,2})?)\s*M\s*dh\b/giu)]
+      .map(m=>Math.round(Number(m[1].replace(",", "."))*1_000_000))
+      .filter(x=>Number.isFinite(x)&&x>=10000&&x<=500000000);
+    for(const v of mdh) if(!textPrices.includes(v)) textPrices.push(v);
     const prices=structuredPrices.length?structuredPrices:textPrices;
     if(!text) price_reason="no_primary_evidence";
     else if(prices.length===1){
