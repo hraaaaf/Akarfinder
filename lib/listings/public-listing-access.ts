@@ -147,6 +147,27 @@ function strongPropertyTypeEvidence(row: DbListingRow): string | null {
   return null;
 }
 
+function hasUnsupportedRentalCadence(row: DbListingRow): boolean {
+  if (row.transaction_type?.trim().toLowerCase() !== "rent") return false;
+  const text = `${row.title ?? ""} ${row.description_snippet ?? ""}`.toLowerCase();
+  return /(?:par\s+jour|\/jour|journalier|journali[eè]re|par\s+nuit|nuit[eé]e|par\s+semaine|\/semaine|weekly|daily)/u.test(text);
+}
+
+function singleExplicitTitleSalePriceMad(row: DbListingRow): number | null {
+  if (row.transaction_type?.trim().toLowerCase() !== "sale") return null;
+  const title = row.title ?? "";
+  if (/(?:mad|dhs?|dh|dirhams?)\s*(?:\/|par)\s*m(?:²|2)/iu.test(title)) return null;
+
+  const values = Array.from(
+    title.matchAll(/([0-9]{1,3}(?:[ .,'’][0-9]{3})+|[0-9]{3,10})\s*(?:-\s*)?(?:mad|dhs?|dh|dirhams?)/giu),
+  )
+    .map((match) => Number(match[1].replace(/[^0-9]/g, "")))
+    .filter((value) => Number.isFinite(value) && value >= 10_000 && value <= 500_000_000);
+
+  const unique = [...new Set(values)];
+  return unique.length === 1 ? unique[0] : null;
+}
+
 export function hasStrongSemanticIntegrityConflict(row: DbListingRow): boolean {
   const tx = row.transaction_type?.trim().toLowerCase() ?? "";
   const type = row.property_type?.trim().toLowerCase() ?? "";
@@ -182,10 +203,15 @@ export function hasStrongSemanticIntegrityConflict(row: DbListingRow): boolean {
   if (row.bedrooms_count != null && (row.bedrooms_count < 0 || row.bedrooms_count > 30)) return true;
   if (row.bathrooms_count != null && (row.bathrooms_count < 0 || row.bathrooms_count > 20)) return true;
 
+  if (hasUnsupportedRentalCadence(row)) return true;
+
   if (row.price_mad != null) {
     if (row.price_mad > 500_000_000) return true;
     if (tx === "sale" && row.price_mad < 10_000) return true;
     if (tx === "rent" && row.price_mad < 100) return true;
+
+    const explicitTitleSalePrice = singleExplicitTitleSalePriceMad(row);
+    if (explicitTitleSalePrice != null && explicitTitleSalePrice !== row.price_mad) return true;
   }
 
   return false;
