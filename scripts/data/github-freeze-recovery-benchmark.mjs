@@ -125,9 +125,9 @@ function extract(html,url){
   }
   return {
     price_mad:price,price_rejection_reason:price_reason,price_period_candidate:price_period,price_quality,
-    surface_m2:sourceName==="sarout.ma"&&listing?.floorSize?.unitCode==="MTK"?num(listing.floorSize.value):one(surfaceRe,text),
-    bedrooms_count:sourceName==="sarout.ma"?(num(listing?.numberOfBedrooms)??oneAny(patterns.bedrooms,text)):oneAny(patterns.bedrooms,text),
-    bathrooms_count:sourceName==="sarout.ma"?(num(listing?.numberOfBathroomsTotal)??oneAny(patterns.bathrooms,text)):oneAny(patterns.bathrooms,text),
+    surface_m2:listing?.floorSize?.unitCode==="MTK"?(num(listing.floorSize.value)??one(surfaceRe,text)):one(surfaceRe,text),
+    bedrooms_count:num(listing?.numberOfBedrooms)??oneAny(patterns.bedrooms,text),
+    bathrooms_count:num(listing?.numberOfBathroomsTotal)??oneAny(patterns.bathrooms,text),
     rooms_count:oneAny(patterns.rooms,text),
     evidence_scope: primaryText?"structured_or_meta_primary":"none",
     structured:listing?{name:listing.name??null,description:listing.description??null,category:listing.category??null,offers:listing.offers??null,floorSize:listing.floorSize??null,numberOfBedrooms:listing.numberOfBedrooms??null,numberOfBathroomsTotal:listing.numberOfBathroomsTotal??null}:null
@@ -161,7 +161,14 @@ for(const x of results){
     summary.recovered[f]=(summary.recovered[f]||0)+1;
     if(old==null){
       summary.recovery_from_null[f]=(summary.recovery_from_null[f]||0)+1;
-      cohort.push({url:x.url,source:sourceName,field:f,value:ev,freeze_value:null,evidence_scope:x.extracted.evidence_scope,price_period_candidate:x.extracted.price_period_candidate,structured:x.extracted.structured,mode:"offline_candidate"});
+      const st=x.extracted.structured||{};
+      let evidence_method="primary_text_unique", confidence="review";
+      if(f==="price_mad"){evidence_method="structured_or_primary_price_guarded";confidence="high";}
+      else if(f==="surface_m2"&&st.floorSize?.unitCode==="MTK"&&Number(st.floorSize?.value)===Number(ev)){evidence_method="jsonld_floorSize_MTK";confidence="high";}
+      else if(f==="bedrooms_count"&&st.numberOfBedrooms!=null&&Number(st.numberOfBedrooms)===Number(ev)){evidence_method="jsonld_numberOfBedrooms";confidence="high";}
+      else if(f==="bathrooms_count"&&st.numberOfBathroomsTotal!=null&&Number(st.numberOfBathroomsTotal)===Number(ev)){evidence_method="jsonld_numberOfBathroomsTotal";confidence="high";}
+      else if(f==="rooms_count"&&x.extracted.evidence_scope==="structured_or_meta_primary"){evidence_method="explicit_labeled_primary_text";confidence="high";}
+      cohort.push({url:x.url,source:sourceName,field:f,value:ev,freeze_value:null,evidence_scope:x.extracted.evidence_scope,evidence_method,confidence,price_period_candidate:x.extracted.price_period_candidate,mode:confidence==="high"?"offline_write_safe":"offline_review"});
     } else if(Number(old)===Number(ev)) summary.validation_matches[f]=(summary.validation_matches[f]||0)+1;
     else summary.conflicts[f]=(summary.conflicts[f]||0)+1;
   }
@@ -170,4 +177,11 @@ for(const x of results){
 await writeFile(`${outputPrefix}.json`,JSON.stringify(summary,null,2)+"\n");
 await writeFile(`${outputPrefix}.jsonl`,results.map(x=>JSON.stringify(x)).join("\n")+"\n");
 await writeFile(`${outputPrefix}-offline-cohort.jsonl`,cohort.map(x=>JSON.stringify(x)).join("\n")+"\n");
+const writeSafe=cohort.filter(x=>x.confidence==="high");
+const review=cohort.filter(x=>x.confidence!=="high");
+summary.offline_write_safe=Object.fromEntries([...new Set(writeSafe.map(x=>x.field))].map(f=>[f,writeSafe.filter(x=>x.field===f).length]));
+summary.offline_review=Object.fromEntries([...new Set(review.map(x=>x.field))].map(f=>[f,review.filter(x=>x.field===f).length]));
+await writeFile(`${outputPrefix}-offline-write-safe.jsonl`,writeSafe.map(x=>JSON.stringify(x)).join("\n")+"\n");
+await writeFile(`${outputPrefix}-offline-review.jsonl`,review.map(x=>JSON.stringify(x)).join("\n")+"\n");
+await writeFile(`${outputPrefix}.json`,JSON.stringify(summary,null,2)+"\n");
 console.log(JSON.stringify(summary,null,2));
