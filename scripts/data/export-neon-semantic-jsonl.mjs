@@ -28,6 +28,9 @@ const summary = {
     physical_surface: 0,
   },
   certified_no_strong_conflict: 0,
+  public_proxy_total: 0,
+  public_proxy_conflicts: 0,
+  field_status: {},
 };
 
 function uniqueNumbers(matches) {
@@ -178,6 +181,42 @@ function flags(r) {
   return {transaction_conflict,property_type_conflict,surface_title_conflict,sale_title_price_conflict,unsupported_rental_cadence,bedroom_conflict,bathroom_conflict,room_conflict,extreme_price,physical_surface};
 }
 
+function hasFieldEvidence(r, field) {
+  const fc = r.field_confidence && typeof r.field_confidence === "object" ? r.field_confidence : {};
+  const aliases = field === "price_mad" ? ["price_mad","price"] : field === "surface_m2" ? ["surface_m2","surface"] : [field];
+  if (aliases.some((key) => Object.prototype.hasOwnProperty.call(fc,key))) return true;
+  const fs = fc.field_sources && typeof fc.field_sources === "object" ? fc.field_sources : {};
+  if (aliases.some((key) => Object.prototype.hasOwnProperty.call(fs,key))) return true;
+  if (["city","property_type","transaction_type"].includes(field) && (fc.route_mapping || fc.rule || fc.certification)) return true;
+  return false;
+}
+function semanticFieldStatus(r, integrity) {
+  const text = `${r.title ?? ""} ${r.description_snippet ?? ""}`;
+  const counts = {
+    rooms_count: explicitCount(text,"room"),
+    bedrooms_count: explicitCount(text,"bedroom"),
+    bathrooms_count: explicitCount(text,"bathroom"),
+  };
+  const status = (field, value, conflict) => {
+    if (conflict) return "conflict";
+    if (value == null) return "unknown";
+    if (hasFieldEvidence(r,field)) return "evidence_present";
+    return "unverified";
+  };
+  return {
+    city: status("city",r.city,false),
+    district: status("district",r.district,false),
+    property_type: status("property_type",r.property_type,integrity.property_type_conflict),
+    transaction_type: status("transaction_type",r.transaction_type,integrity.transaction_conflict),
+    price_mad: status("price_mad",r.price_mad,integrity.sale_title_price_conflict || integrity.extreme_price || integrity.unsupported_rental_cadence),
+    surface_m2: status("surface_m2",r.surface_m2,integrity.surface_title_conflict || integrity.physical_surface),
+    rooms_count: status("rooms_count",r.rooms_count,integrity.room_conflict),
+    bedrooms_count: status("bedrooms_count",r.bedrooms_count,integrity.bedroom_conflict),
+    bathrooms_count: status("bathrooms_count",r.bathrooms_count,integrity.bathroom_conflict),
+    explicit_counts: counts,
+  };
+}
+
 while (true) {
   const page = await sql`
     SELECT p.id,p.canonical_fingerprint,p.title,p.price_mad,p.city,p.district,
@@ -200,7 +239,16 @@ while (true) {
   for (const r of page) {
     const integrity = flags(r);
     const conflict = Object.values(integrity).some(Boolean);
-    const record = { ...r, semantic_integrity: { strong_conflict: conflict, flags: integrity } };
+    const fieldStatus = semanticFieldStatus(r, integrity);
+    const record = {
+      ...r,
+      semantic_integrity: {
+        strong_conflict: conflict,
+        status: conflict ? "conflict" : "no_strong_conflict",
+        flags: integrity,
+        field_status: fieldStatus,
+      },
+    };
     out.write(JSON.stringify(record) + "\n");
     rows++;
     summary.total++;
@@ -208,6 +256,15 @@ while (true) {
     if (r.surface_m2 == null) summary.surface_null++;
     for (const [k,v] of Object.entries(integrity)) if (v) summary.flags[k]++;
     if (!conflict) summary.certified_no_strong_conflict++;
+    if (r.ingestion_run_id == null) {
+      summary.public_proxy_total++;
+      if (conflict) summary.public_proxy_conflicts++;
+    }
+    for (const [field,state] of Object.entries(fieldStatus)) {
+      if (field === "explicit_counts") continue;
+      summary.field_status[field] ??= {};
+      summary.field_status[field][state] = (summary.field_status[field][state] ?? 0) + 1;
+    }
     lastId = Number(r.id);
   }
   process.stdout.write(`exported=${rows} last_id=${lastId}\n`);
