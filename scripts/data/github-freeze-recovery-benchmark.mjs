@@ -104,7 +104,10 @@ function extract(html,url){
       ? /(?:^|-)(?:location|louer|rental|rent)(?:-|$)/i.test(s||"")
       : /^(?:location|louer|rental|rent)(?:-|$)/i.test(s||"");
     const shortStay=routeSegs.some(s=>/(?:^|-)(?:location|rental|rent)-(?:s[eé]?jour|vacances?|courte[-_]?dur[eé]e)(?:-|$)/i.test(s||""));
-    const transaction=sourceName==="sarouty.ma"?"sale":routeSegs.some(saleSeg)?"sale":routeSegs.some(rentSeg)?"rent":"unknown";
+    const saroutyPath=decodeURIComponent(u);
+    const saroutySale=sourceName==="sarouty.ma" && /(?:\/acheter\/|\/professionnel-acheter\/|\/للبيع\/)/u.test(saroutyPath);
+    const saroutyRent=sourceName==="sarouty.ma" && /(?:\/louer\/|\/professionnel-louer\/|\/للكراء\/)/u.test(saroutyPath);
+    const transaction=saroutySale?"sale":saroutyRent?"rent":routeSegs.some(saleSeg)?"sale":routeSegs.some(rentSeg)?"rent":"unknown";
     const period=cadence(text,""); price_period=transaction==="sale"?"sale":period;
     const offers=Array.isArray(listing?.offers)?listing.offers:[listing?.offers].filter(Boolean);
     const structuredPrices=[...new Set(offers.map(o=>num(o?.price)).filter(v=>v!=null))];
@@ -162,8 +165,8 @@ for(const row of sample){
  if(!allowed(url,rob)){results.push({url,freeze:row,robots_allowed:false,accessible:false,extracted:null});continue;}
  try{
   const res=await fetch(url,{redirect:"follow",signal:AbortSignal.timeout(8000),headers:{"user-agent":USER_AGENT+"/1.0 (+github-freeze benchmark)","accept":"text/html"}});
-  const ct=res.headers.get("content-type")||""; const html=res.ok&&ct.includes("text/html")?await res.text():"";
-  results.push({url,freeze:row,robots_allowed:true,http_status:res.status,accessible:res.ok&&!!html,elapsed_ms:Date.now()-started,extracted:html?extract(html,url):null});
+  const ct=res.headers.get("content-type")||""; const html=res.status===200&&ct.includes("text/html")?await res.text():"";
+  results.push({url,freeze:row,robots_allowed:true,http_status:res.status,accessible:res.status===200&&!!html,elapsed_ms:Date.now()-started,extracted:html?extract(html,url):null});
  }catch(e){results.push({url,freeze:row,robots_allowed:true,http_status:null,accessible:false,error:e?.name||"fetch_error",extracted:null});}
  await sleep(250);
 }
