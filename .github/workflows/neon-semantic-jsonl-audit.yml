@@ -53,6 +53,8 @@ jobs:
     env:
       DATABASE_URL: ${{ secrets.NEON_RECOVERY_DATABASE_URL }}
       SAMPLE_SIZE: '120'
+      SOURCE_NAME: 'marocimmo.com'
+      OUTPUT_PREFIX: 'marocimmo-recovery-benchmark'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -70,4 +72,31 @@ jobs:
           path: |
             marocimmo-recovery-benchmark.json
             marocimmo-recovery-benchmark.jsonl
+          retention-days: 14
+
+  sarout-benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      DATABASE_URL: ${{ secrets.NEON_RECOVERY_DATABASE_URL }}
+      SAMPLE_SIZE: '120'
+      SOURCE_NAME: 'sarout.ma'
+      OUTPUT_PREFIX: 'sarout-recovery-benchmark'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Verify read connection
+        run: test -n "$DATABASE_URL"
+      - name: Run bounded Sarout recovery benchmark
+        run: node scripts/data/marocimmo-recovery-benchmark.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sarout-recovery-benchmark
+          path: |
+            sarout-recovery-benchmark.json
+            sarout-recovery-benchmark.jsonl
           retention-days: 14
