@@ -306,3 +306,41 @@ Unknown/ambiguous must remain unknown/quarantined.
 After CI is green, continue autonomously through deterministic field audits and correction-set preparation.
 Stop only at the human gate before production DB mutation.
 ```
+
+
+## CURRENT OVERRIDE — 2026-09-29 / RECOVERY BENCHMARK
+
+This section supersedes the stale CI/NEXT snapshot above.
+
+Verified semantic baseline:
+- exhaustive corpus artifact: 151,900 / 151,900 rows;
+- public proxy: 36 rows, 0 strong conflicts;
+- Step 1 regression-fix HEAD `0c99d8eba21d9f8a0685c5a43c945fca6397e204`: 10/10 exact-head checks SUCCESS.
+
+Verified MarocImmo recovery benchmark:
+- canonical hardened HEAD: `56586c6241d703e7679a089a28ebd7379fdce17e`;
+- workflow run: `36574099537` — SUCCESS;
+- artifact: `11035354132`;
+- artifact digest: `sha256:a56f986fe8e8744fc60e833a8b036ee550c8eaaea4738c5dd3ab180c36b6cb67`;
+- deterministic sample: 120 rows, all 120 had `price_mad=NULL` in the exhaustive corpus;
+- robots allowed: 120/120; blocked: 0;
+- accessible HTTP 200: 120/120;
+- missing-field candidate recovery: price 112/120 (93.3%), bedrooms 29/118 (24.6%), rooms 9/120 (7.5%), bathrooms 1/120 (0.8%), surface 0/112;
+- 116/120 rows recovered at least one missing field;
+- 151 recovered missing-field slots / 590 missing slots in this generic pass;
+- ambiguous price cases: 1;
+- candidates only: no Neon write.
+
+Current branch HEAD after generalizing the same read-only benchmark to Sarout:
+`8369bbf94f5a6e0121c8ba24516e4b2a85a7ba5b`
+
+Current run:
+- `36574639858` — Neon Semantic JSONL Audit, queued at last check;
+- includes MarocImmo + Sarout bounded benchmark jobs;
+- no production write; robots fail-closed.
+
+NEXT EXACT:
+1. read Sarout benchmark from run `36574639858`;
+2. compare URL accessibility, price recovery, ambiguity and secondary-field yield against MarocImmo;
+3. choose source-specific parser/recovery order from measured yield;
+4. keep all recovery outputs as candidates until the production Neon HUMAN GATE.
