@@ -49,38 +49,99 @@ function explicitCount(text, kind) {
   const unique = [...new Set(vals.filter(Number.isFinite))];
   return unique.length === 1 ? unique[0] : null;
 }
-function strongType(title, sourceUrl) {
-  const t = (title ?? "").toLowerCase();
-  const u = (sourceUrl ?? "").toLowerCase();
-  const rules = [
-    ["land", /^(?:terrain|lot de terrain|ferme)\b|\b(?:terrain|lot de terrain|ferme)\s+(?:à|a)\s+(?:vendre|louer)\b/u, /(?:\/|[-_])(?:terrain|terrains)(?:\/|[-_])/u],
-    ["villa", /^villa\b|\bvilla\s+(?:à|a)\s+(?:vendre|louer)\b/u, /(?:\/|[-_])(?:villa|villas)(?:\/|[-_])/u],
-    ["studio", /^studio\b|\bstudio\s+(?:à|a)\s+(?:vendre|louer)\b/u, /(?:\/|[-_])(?:studio|studios)(?:\/|[-_])/u],
-    ["office", /^(?:bureau|plateau bureau)\b|\b(?:bureau|plateau bureau)\s+(?:à|a)\s+(?:vendre|louer)\b/u, /(?:\/|[-_])(?:bureau|bureaux)(?:\/|[-_])/u],
-    ["commercial", /^(?:local commercial|magasin|commerce)\b|\b(?:local commercial|magasin|commerce)\s+(?:à|a)\s+(?:vendre|louer)\b/u, /(?:\/|[-_])(?:local|locaux|commerce|commercial|magasin)(?:\/|[-_])/u],
-    ["riad", /^riad\s+(?:à|a)\s+(?:vendre|louer)\b/u, /(?:\/|[-_])(?:riad|riads)(?:\/|[-_])/u],
-    ["apartment", /^(?:appartement|appart)\b|\b(?:appartement|appart)\s+(?:à|a)\s+(?:vendre|louer)\b/u, /(?:\/|[-_])(?:appartement|appartements)(?:\/|[-_])/u],
-    ["house", /^maison\b|\bmaison\s+(?:à|a)\s+(?:vendre|louer)\b/u, /(?:\/|[-_])(?:maison|maisons)(?:\/|[-_])/u],
-  ];
-  for (const [type,tr,ur] of rules) if (tr.test(t) && ur.test(u)) return type;
-  return null;
+function structuralUrlEvidence(r) {
+  const raw = r.listing_url ?? "";
+  let url;
+  try { url = new URL(raw); } catch { return {transaction:null,propertyType:null}; }
+  const host = url.hostname.toLowerCase().replace(/^www\./,"");
+  const segments = decodeURIComponent(url.pathname).toLowerCase().split("/").filter(Boolean);
+  const mapType = (value) => {
+    const v = value ?? "";
+    if (/^appart(?:ement|ements)?$/.test(v)) return "apartment";
+    if (/^studios?$/.test(v)) return "studio";
+    if (/^villas?$/.test(v) || v === "villas_et_riads") return "villa";
+    if (/^maisons?$/.test(v)) return "house";
+    if (/^terrains?$/.test(v)) return "land";
+    if (/^bureaux?$/.test(v)) return "office";
+    if (/^(?:local|locaux|commerce|commercial|magasin)s?$/.test(v) || v === "locaux-magasins") return "commercial";
+    if (/^riads?$/.test(v)) return "riad";
+    return null;
+  };
+  if (host === "agenz.ma") {
+    const route=segments.find((x)=>/^(?:vente|location)-/.test(x));
+    if(route){const [tx,...rest]=route.split("-");return {transaction:tx==="vente"?"sale":"rent",propertyType:mapType(rest.join("-"))};}
+  }
+  if(host==="marocimmo.com"){
+    const i=segments.findIndex((x)=>x==="vente"||x==="location");
+    if(i>=0)return {transaction:segments[i]==="vente"?"sale":"rent",propertyType:mapType(segments[i+1])};
+  }
+  if(host==="domio.ma"){
+    const i=segments.findIndex((x)=>x==="vendre"||x==="louer");
+    if(i>0)return {transaction:segments[i]==="vendre"?"sale":"rent",propertyType:mapType(segments[i-1])};
+  }
+  if(host==="mouldar.com"){
+    const i=segments.findIndex((x)=>x==="achat"||x==="location"||x==="rent");
+    if(i>=0)return {transaction:segments[i]==="achat"?"sale":"rent",propertyType:mapType(segments[i+1])};
+  }
+  if(host==="masaken.ma"){
+    const route=segments.find((x)=>/^(?:vente|location)-/.test(x));
+    if(route){const parts=route.split("-");return {transaction:parts[0]==="vente"?"sale":"rent",propertyType:mapType(parts[1])};}
+  }
+  if(host==="sarouty.ma"){
+    const i=segments.findIndex((x)=>x==="acheter"||x==="louer");
+    if(i>=0)return {transaction:segments[i]==="acheter"?"sale":"rent",propertyType:mapType((segments[i+1]??"").split("-")[0])};
+  }
+  if(host==="avito.ma"){
+    return {transaction:null,propertyType:segments.map(mapType).find(Boolean)??null};
+  }
+  return {transaction:null,propertyType:null};
 }
+function primaryTitleTransaction(r){
+  const t=(r.title??"").toLowerCase();
+  const sale=/(?:^|\W)(?:vente|vendu|à vendre|a vendre)(?:\W|$)/u.test(t);
+  const rent=/(?:^|\W)(?:location|loué|loue|à louer|a louer)(?:\W|$)/u.test(t);
+  return sale===rent?null:(sale?"sale":"rent");
+}
+function primaryTitleType(r){
+  const t=(r.title??"").toLowerCase();
+  const rules=[
+    ["land",/^(?:terrain|lot de terrain|ferme)\b|\b(?:terrain|lot de terrain|ferme)\s+(?:à|a)\s+(?:vendre|louer)\b/u],
+    ["villa",/^villa\b|\bvilla\s+(?:à|a)\s+(?:vendre|louer)\b/u],
+    ["studio",/^studio\b|\bstudio\s+(?:à|a)\s+(?:vendre|louer)\b/u],
+    ["office",/^(?:bureau|plateau bureau)\b|\b(?:bureau|plateau bureau)\s+(?:à|a)\s+(?:vendre|louer)\b/u],
+    ["commercial",/^(?:local commercial|magasin|commerce)\b|\b(?:local commercial|magasin|commerce)\s+(?:à|a)\s+(?:vendre|louer)\b/u],
+    ["riad",/^riad\s+(?:à|a)\s+(?:vendre|louer)\b/u],
+    ["apartment",/^(?:appartement|appart)\b|\b(?:appartement|appart)\s+(?:à|a)\s+(?:vendre|louer)\b/u],
+    ["house",/^maison\b|\bmaison\s+(?:à|a)\s+(?:vendre|louer)\b/u],
+  ];
+  return rules.find(([,re])=>re.test(t))?.[0]??null;
+}
+
 function flags(r) {
   const title = r.title ?? "";
   const t = title.toLowerCase();
   const u = (r.listing_url ?? "").toLowerCase();
   const text = `${title} ${r.description_snippet ?? ""}`;
-  const txSale = /(?:^|\W)(?:vente|vendu|à vendre|a vendre)(?:\W|$)/u.test(t) && /\/(?:vente|vendre|achat|buy)(?:\/|[-_])/u.test(u);
-  const txRent = /(?:^|\W)(?:location|loué|loue|à louer|a louer)(?:\W|$)/u.test(t) && /\/(?:location|louer|rent)(?:\/|[-_])/u.test(u);
-  const transaction_conflict = (txSale && r.transaction_type !== "sale") || (txRent && r.transaction_type !== "rent");
+  const titleTx = primaryTitleTransaction(r);
+  const structural = structuralUrlEvidence(r);
+  const transaction_conflict =
+    Boolean(titleTx && structural.transaction && titleTx !== structural.transaction) ||
+    Boolean(titleTx && titleTx !== r.transaction_type) ||
+    Boolean(structural.transaction && structural.transaction !== r.transaction_type);
 
-  const st = strongType(title, r.listing_url);
-  const equivalent =
-    (st === "studio" && r.property_type === "apartment") ||
-    (st === "villa" && r.property_type === "house") ||
-    (st === "house" && r.property_type === "villa") ||
-    (st === "riad" && ["house","villa"].includes(r.property_type));
-  const property_type_conflict = Boolean(st && st !== r.property_type && !equivalent);
+  const titleType = primaryTitleType(r);
+  const equivalent = (evidenceType) =>
+    evidenceType == null ||
+    evidenceType === r.property_type ||
+    (evidenceType === "studio" && r.property_type === "apartment") ||
+    (evidenceType === "apartment" && r.property_type === "studio") ||
+    (evidenceType === "villa" && r.property_type === "house") ||
+    (evidenceType === "house" && r.property_type === "villa") ||
+    (evidenceType === "riad" && ["house","villa"].includes(r.property_type));
+  const property_type_conflict =
+    Boolean(titleType && structural.propertyType && titleType !== structural.propertyType) ||
+    !equivalent(titleType) ||
+    !equivalent(structural.propertyType);
 
   const titleSurface = one(/([0-9]{1,3}(?:[ .,'’][0-9]{3})+|[0-9]{1,7})\s*m(?:²|2)(?=[^0-9]|$)/giu, title);
   const surface_title_conflict = r.surface_m2 != null && titleSurface != null && titleSurface >= 8 && titleSurface <= 10_000_000 && titleSurface !== r.surface_m2;
