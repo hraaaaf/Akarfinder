@@ -652,10 +652,10 @@ export function MapLibreNeighborhood3D({
               paint: {
                 "circle-radius": isMaarifTargetPilot ? (desktop ? 112 : 76) : (desktop ? 84 : 68),
                 "circle-color": districtTone,
-                "circle-opacity": isMaarifTargetPilot ? 0.022 : 0.13,
+                "circle-opacity": isMaarifTargetPilot ? 0.045 : 0.13,
                 "circle-stroke-color": AKARFINDER_MOROCCO_MAP_NAVY,
-                "circle-stroke-width": isMaarifTargetPilot ? 0.8 : 1.5,
-                "circle-stroke-opacity": isMaarifTargetPilot ? 0.12 : 0.56,
+                "circle-stroke-width": isMaarifTargetPilot ? 1.0 : 1.5,
+                "circle-stroke-opacity": isMaarifTargetPilot ? 0.18 : 0.56,
               },
             });
             map.addLayer({
@@ -681,6 +681,7 @@ export function MapLibreNeighborhood3D({
                 id: "neighborhood-boundary-fill", type: "fill", source: "neighborhood-boundary",
                 paint: {
                   // OSM relation 2801474 is the Maârif administrative arrondissement, not a certified neighborhood boundary.
+                  // Keep the area unfilled so the neighborhood focus is never confused with the arrondissement.
                   "fill-color": isMaarifTargetPilot ? "#4D9BE6" : districtTone,
                   "fill-opacity": isMaarifTargetPilot ? 0 : 0.18,
                 },
@@ -689,9 +690,10 @@ export function MapLibreNeighborhood3D({
                 id: "neighborhood-boundary-line", type: "line", source: "neighborhood-boundary",
                 paint: {
                   "line-color": AKARFINDER_MOROCCO_MAP_NAVY,
-                  "line-width": isMaarifTargetPilot ? 0 : 3.2,
-                  "line-opacity": isMaarifTargetPilot ? 0 : 0.96,
-                  "line-blur": 0,
+                  "line-width": isMaarifTargetPilot ? 1.15 : 3.2,
+                  "line-opacity": isMaarifTargetPilot ? 0.24 : 0.96,
+                  "line-blur": isMaarifTargetPilot ? 0.35 : 0,
+                  ...(isMaarifTargetPilot ? { "line-dasharray": [2.2, 1.6] } : {}),
                 },
               });
             }
@@ -819,7 +821,7 @@ export function MapLibreNeighborhood3D({
         source: CONTEXT_FOOTPRINT_SOURCE_ID,
         paint: {
           "fill-color": districtTone,
-          "fill-opacity": 0.012,
+          "fill-opacity": 0.040,
         },
       } as any, FOCUS_GLOW_LAYER_ID);
       map.addLayer({
@@ -828,9 +830,9 @@ export function MapLibreNeighborhood3D({
         source: CONTEXT_FOOTPRINT_SOURCE_ID,
         paint: {
           "line-color": AKARFINDER_MOROCCO_MAP_NAVY,
-          "line-width": 3,
-          "line-opacity": 0.04,
-          "line-blur": 1.8,
+          "line-width": 5.5,
+          "line-opacity": 0.11,
+          "line-blur": 2.8,
         },
       } as any, FOCUS_GLOW_LAYER_ID);
       map.addLayer({
@@ -839,10 +841,10 @@ export function MapLibreNeighborhood3D({
         source: CONTEXT_FOOTPRINT_SOURCE_ID,
         paint: {
           "line-color": "#7E98AA",
-          "line-width": 1.1,
-          "line-opacity": 0.08,
-          "line-dasharray": [1.2, 1.4],
-          "line-blur": 0,
+          "line-width": 1.25,
+          "line-opacity": 0.20,
+          "line-dasharray": [1.2, 1.6],
+          "line-blur": 0.18,
         },
       } as any, FOCUS_GLOW_LAYER_ID);
     } catch (error) {
