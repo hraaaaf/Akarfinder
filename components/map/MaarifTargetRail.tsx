@@ -19,8 +19,10 @@ import { mapPoiCategoryLabel } from "@/lib/neighborhood-context/map-poi-presenta
 const MAARIF_HERO = {
   src: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Parfumerie_jura%2C_Ma%C3%A2rif%2C_Casablanca.jpg/1280px-Parfumerie_jura%2C_Ma%C3%A2rif%2C_Casablanca.jpg",
   alt: "Place publique à Maârif, Casablanca",
-  credit: "Sam Nabi · CC BY-SA 2.0",
+  credit: "Sam Nabi",
   source: "https://commons.wikimedia.org/wiki/File:Parfumerie_jura,_Ma%C3%A2rif,_Casablanca.jpg",
+  license: "CC BY-SA 2.0",
+  licenseUrl: "https://creativecommons.org/licenses/by-sa/2.0/",
 } as const;
 
 type ContextPayload =
@@ -77,7 +79,10 @@ export function MaarifTargetRail() {
         <div className="maarif-target-hero-shade" aria-hidden="true" />
         <figcaption>
           <span>Maârif · Casablanca</span>
-          <a href={MAARIF_HERO.source} target="_blank" rel="noreferrer">{MAARIF_HERO.credit}</a>
+          <span className="maarif-target-hero-credit">
+            <a href={MAARIF_HERO.source} target="_blank" rel="noreferrer">{MAARIF_HERO.credit}</a>
+            <a href={MAARIF_HERO.licenseUrl} target="_blank" rel="noreferrer">{MAARIF_HERO.license}</a>
+          </span>
         </figcaption>
       </figure>
 
@@ -194,7 +199,8 @@ export function MaarifTargetRail() {
         .maarif-target-hero img{display:block;width:100%;height:100%;object-fit:cover;object-position:center 54%}
         .maarif-target-hero-shade{position:absolute;inset:0;background:linear-gradient(180deg,transparent 48%,rgb(4 25 48/.38))}
         .maarif-target-hero figcaption{position:absolute;left:16px;right:16px;bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:8px;color:#fff;font-size:8px;font-weight:700}
-        .maarif-target-hero figcaption span,.maarif-target-hero figcaption a{padding:5px 8px;border-radius:999px;background:rgb(5 28 54/.72);color:#fff;text-decoration:none;backdrop-filter:blur(7px)}
+        .maarif-target-hero figcaption>span,.maarif-target-hero figcaption a{padding:5px 8px;border-radius:999px;background:rgb(5 28 54/.72);color:#fff;text-decoration:none;backdrop-filter:blur(7px)}
+        .maarif-target-hero-credit{display:flex;align-items:center;gap:5px;padding:0!important;background:transparent!important;backdrop-filter:none!important}
         .maarif-target-body{padding:20px 22px 24px}
         .maarif-target-city{display:flex;align-items:center;gap:5px;margin:0 0 8px;color:#1477f8;font-size:12px;font-weight:800}
         .maarif-target-heading h1{margin:0;color:#062b55;font-size:40px;font-weight:820;line-height:.95;letter-spacing:-.045em}
@@ -258,7 +264,7 @@ export function MaarifTargetRail() {
           [data-maarif-rebuild="true"] [data-p4-map-layout]{height:calc(100svh - 64px)!important;min-height:600px!important}
           .maarif-target-rail{left:8px;right:8px;bottom:max(8px,env(safe-area-inset-bottom));height:min(44svh,372px);max-height:min(44svh,372px);border-radius:22px}
           .maarif-target-hero{height:104px;margin:7px 7px 0}
-          .maarif-target-hero figcaption{left:10px;right:10px}.maarif-target-hero figcaption a{display:none}
+          .maarif-target-hero figcaption{left:10px;right:10px;font-size:7px}.maarif-target-hero-credit a{padding:4px 6px}
           .maarif-target-body{padding:14px 14px 24px}
           .maarif-target-heading h1{font-size:36px}
           .maarif-target-tabs button{font-size:10px}
