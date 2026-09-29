@@ -669,3 +669,38 @@ DarAgadir conclusion:
 
 NEXT SOURCE:
 PromoImmoMarrakech selected next from freeze and launched at 300 rows on HEAD `d0280be4f2d7c6cebf975ffeff4cf8d9eceaf3d4`, run `36627917092` queued at last check.
+
+
+## PROMOIMMOMARRAKECH 300 — CERTIFIED
+
+Run `36628042524` on HEAD `045b712a382c6ece431e96486f8457a24722a8e6`: SUCCESS.
+Artifact: `11061995278`, digest `sha256:7caa890c02cc07943f572b49e6c2762acf12bd73d2d87ebd0c355c38ab06925d`.
+
+Results:
+- 300/300 accessible;
+- recovery from NULL: price 2, surface 178, bedrooms 148, bathrooms 141, rooms 36;
+- high-confidence: **38 fields** = rooms 36 + price 2;
+- review: **467 fields** = surface 178 + bedrooms 148 + bathrooms 141;
+- price rejections: no explicit price 297, sale-too-low 1;
+- conflicts: 0;
+- Neon access/write: 0/0.
+
+PromoImmo conclusion:
+- very low price yield;
+- useful only as review-grade textual enrichment for surface/bedrooms/bathrooms plus explicit rooms.
+
+## MASAKEN 300 — ACTIVE
+
+Freeze denominator: 2,047 KEEP+eligible rows, all five core fields NULL.
+Deterministic sample route mix checked offline before execution:
+- 151 French `vente-*`;
+- 45 English `sale-*`;
+- 74 French `location-*`;
+- 30 English `rental-*`;
+- 0 unmatched routes.
+
+Parser route semantics now cover `vente/vendre/sale/buy/achat` and `location/louer/rental/rent`.
+Workflow HEAD: `4e5e04d44d5f137c8e7b575ff8ecb2d6695fdb87`.
+Run: `36628843782` — queued at last check; only Masaken active, previous source jobs skipped.
+
+If Masaken finishes cleanly, Mouldar is the next prepared source: 1,641 KEEP+eligible rows; its `/achat|buy/` and `/location|rent/` routes are already covered by the parser.
