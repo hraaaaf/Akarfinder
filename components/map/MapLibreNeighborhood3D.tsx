@@ -167,8 +167,8 @@ function expandContextHull(hull: MutablePosition[], scale = 1.50): MutablePositi
 
 function contextCameraForViewport(desktop: boolean) {
   return desktop
-    ? { zoom: 13.68, pitch: 52, bearing: -16 }
-    : { zoom: 13.28, pitch: 46, bearing: -12 };
+    ? { zoom: 14.08, pitch: 52, bearing: -16 }
+    : { zoom: 14.02, pitch: 46, bearing: -12 };
 }
 
 function focusNeighborhoodMap(
