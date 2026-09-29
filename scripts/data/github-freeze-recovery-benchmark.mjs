@@ -107,7 +107,9 @@ function extract(html,url){
     const saroutyPath=decodeURIComponent(u);
     const saroutySale=sourceName==="sarouty.ma" && /(?:\/acheter\/|\/professionnel-acheter\/|\/للبيع\/)/u.test(saroutyPath);
     const saroutyRent=sourceName==="sarouty.ma" && /(?:\/louer\/|\/professionnel-louer\/|\/للكراء\/)/u.test(saroutyPath);
-    const transaction=saroutySale?"sale":saroutyRent?"rent":routeSegs.some(saleSeg)?"sale":routeSegs.some(rentSeg)?"rent":"unknown";
+    const soukSale=sourceName==="soukimmobilier.com" && /(?:\b(?:à|a)\s+vendre\b|\bfor\s+sale\b|للبيع)/iu.test(text);
+    const soukRent=sourceName==="soukimmobilier.com" && /(?:\b(?:à|a)\s+louer\b|\bfor\s+rent\b|للكراء)/iu.test(text);
+    const transaction=saroutySale?"sale":saroutyRent?"rent":soukSale?"sale":soukRent?"rent":routeSegs.some(saleSeg)?"sale":routeSegs.some(rentSeg)?"rent":"unknown";
     const period=cadence(text,""); price_period=transaction==="sale"?"sale":period;
     const offers=Array.isArray(listing?.offers)?listing.offers:[listing?.offers].filter(Boolean);
     const structuredPrices=[...new Set(offers.map(o=>num(o?.price)).filter(v=>v!=null))];
