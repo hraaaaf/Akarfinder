@@ -552,16 +552,23 @@ export function extractDetail(html: string): DetailFields {
   // IMPORTANT: bedrooms is only filled from "chambre" text, never from "pièce".
   // rooms is only filled from "pièce/room" text, never from "chambre".
   if (out.bedrooms == null) {
-    const n = matchInt(text, /(\d+)\s*chambre/i);
+    const n =
+      matchInt(text, /(?:chambres?|bedrooms?)\s*[:=-]?\s*(\d{1,3})(?!\d)/i) ??
+      matchInt(text, /(\d{1,3})\s*chambres?/i);
     if (n != null) { out.bedrooms = n; conf.bedrooms = "medium"; }
   }
   if (out.bathrooms == null) {
-    const n = matchInt(text, /(\d+)\s*(?:salle?s?\s*de\s*bain|sdb)/i);
+    const n =
+      matchInt(text, /(?:salle?s?\s*de\s*bain|sdb|bathrooms?)\s*[:=-]?\s*(\d{1,2})(?!\d)/i) ??
+      matchInt(text, /(\d{1,2})\s*(?:salle?s?\s*de\s*bain|sdb)/i);
     if (n != null) { out.bathrooms = n; conf.bathrooms = "medium"; }
   }
   if (out.rooms == null) {
-    // Only match "pièces" or "rooms" — never "chambres"
-    const n = matchInt(text, /(\d+)\s*pi[eè]ce/i) ?? matchInt(text, /(\d+)\s*room/i);
+    // Only match "pièces/rooms" — never "chambres".
+    const n =
+      matchInt(text, /(?:pi[eè]ces?|rooms?)\s*[:=-]?\s*(\d{1,3})(?!\d)/i) ??
+      matchInt(text, /(\d{1,3})\s*pi[eè]ces?/i) ??
+      matchInt(text, /(\d{1,3})\s*rooms?/i);
     if (n != null) { out.rooms = n; conf.rooms = "medium"; }
   }
   if (!out.surface_raw) {
