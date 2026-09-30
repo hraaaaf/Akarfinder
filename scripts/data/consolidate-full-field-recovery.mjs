@@ -67,7 +67,7 @@ function downgradeReason(c){
   if(c.field==="title" && (
     /^(?:404(?:\b|[-_])|accueil\b|acceuil\b|page not found\b|not found\b)/i.test(value) ||
     /^tous\s+les?\s+biens?\s+immobiliers?\b/i.test(value) ||
-    /^agence\s+immobili[eè]re\s+[àa]\b/i.test(value)
+    /^agence\s+immobili[eè]re\s+(?:à|a)(?=\s|$)/i.test(value)
   )) return "generic_or_soft_page_title";
   if((c.field==="title"||c.field==="description") && containsContactPii(value)) return "contact_pii_blocked";
   if(c.field==="city" && /^(?:autre|other|unknown|n\/?a|hay\s+riad)$/i.test(value)) return "invalid_city_placeholder_or_neighborhood";
