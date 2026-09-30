@@ -337,12 +337,12 @@ export function MapLibreNeighborhood3D({
                   ) {
                     map.setLayoutProperty(layer.id, "visibility", "none");
                   }
-                  if (layer.type === "symbol" && /(neighbour|neighborhood|suburb|quarter|district|place|city|town|village)/.test(id)) {
+                  if (layer.type === "symbol") {
+                    // Maârif owns its typographic hierarchy. Suppress all native basemap symbols
+                    // so neighborhood/place/POI labels cannot compete with AkarFinder labels.
+                    // Structural road names are reintroduced below through AkarFinder-controlled
+                    // transportation_name layers with our own typography and collision rules.
                     map.setLayoutProperty(layer.id, "visibility", "none");
-                  }
-                  if (layer.type === "symbol" && /(poi|housenumber|transit)/.test(id)) {
-                    map.setPaintProperty(layer.id, "text-opacity", 0.30);
-                    map.setPaintProperty(layer.id, "icon-opacity", 0.20);
                   }
                 } catch {
                   // Style-layer capabilities vary; keep the base style when a paint property is unsupported.
@@ -1031,6 +1031,7 @@ export function MapLibreNeighborhood3D({
       data-maplibre-context-focus={isMaarifTargetPilot ? "verified-anchor-envelope-not-boundary" : "none"}
       data-maplibre-context-relief={isMaarifTargetPilot ? "raised-indicative-zone" : "none"}
       data-maplibre-quarter-style={isMaarifTargetPilot ? "illustrated-progressive-v1" : "default"}
+      data-maplibre-label-policy={isMaarifTargetPilot ? "akarfinder-owned" : "basemap-default"}
       data-maplibre-boundary-render={isMaarifTargetPilot && boundaryGeometry ? "administrative-relief" : "default"}
       data-maplibre-context-state={contextState}
       data-maplibre-anchor-count={context?.anchor_count ?? 0}
