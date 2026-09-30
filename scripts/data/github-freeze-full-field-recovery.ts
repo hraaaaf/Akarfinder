@@ -6,6 +6,7 @@ import crypto from "node:crypto";
 import { load } from "cheerio";
 import { extractDetail } from "../scrapers/utils/extract.js";
 
+async function main(){
 const USER_AGENT="AkarFinderFullFieldRecovery/1.0";
 const sourceName=(process.env.SOURCE_NAME||"domio.ma").toLowerCase();
 const inputPath=process.env.FREEZE_JSONL_GZ||".tmp/freeze/clean-corpus-v4.11-core.jsonl.gz";
@@ -127,3 +128,7 @@ const summary={
 await writeFile(outputPrefix+".json",JSON.stringify(summary,null,2)+"\n");
 await writeFile(outputPrefix+".jsonl",results.map(x=>JSON.stringify(x)).join("\n")+"\n");
 console.log(JSON.stringify(summary,null,2));
+
+}
+
+main().catch((error)=>{ console.error(error); process.exitCode=1; });
