@@ -1168,3 +1168,23 @@ Key yields: title 300 write-safe; property type 216 write-safe; transaction 83 w
 Audited ranges: surface 5.6..93,000 m2; rooms 1..13; bedrooms 1..13; bathrooms 1..13; plot 40..61,752 m2. All numeric core fields are review-only in this sample; no dangerous auto-write.
 
 Next: 1immo full-field 243 (entire freeze population). Atlas disabled on push; 1immo is the only active full-field source job.
+
+
+## FULL-FIELD RECOVERY — 1IMMO 243 CERTIFIED / KAWTAR 140 ACTIVE
+
+1immo corrected run `36732303494` on HEAD `abcbabb01a7aff5596193193adb8ca8437e1da62`: SUCCESS.
+Artifact `11104979311`, digest `sha256:776a698fe89ec89e77a471f4f568c27d0912e46f8609cfd5ee3daa1503cb94c6`.
+
+Certified 1immo population pass:
+- freeze population/sample 243/243;
+- robots 243/243; HTTP200 186/243;
+- write_safe 754;
+- review 774;
+- contradicted 0;
+- DB access/write 0/0.
+
+Template-noise suppression fired as intended: `terrace_m2=49` occurred 112 times over 186 accessible pages and was removed from the cohort as dominant review template noise. Final terrace_m2 candidates: 0.
+
+Key yields: title 186 write-safe; transaction 138 write-safe; property type 126 write-safe; description 152 write-safe + 34 review; city 152 write-safe; surface 170 review; bedrooms 65 review; bathrooms 32 review; thumbnail 186 review.
+
+Next: final lightweight Kawtar full-field pass on all 140 freeze rows. Previous price recovery had zero yield, but non-price fields remain worth one bounded pass before global consolidation.
