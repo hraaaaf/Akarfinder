@@ -659,7 +659,7 @@ jobs:
           retention-days: 14
 
   recert-promo-generic-title:
-    if: github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
