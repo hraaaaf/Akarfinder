@@ -162,5 +162,22 @@
   "interpretation": {
     "note": "Totals are benchmark-output counts across distinct source cohorts, not production writes and not a count of unique production listings.",
     "next_gate": "Consolidate source-specific offline write-safe cohorts, deduplicate by canonical URL/source identity, run cross-field semantic checks, then present a human gate before any Neon write."
+  },
+  "consolidation": {
+    "run_id": 36683688893,
+    "artifact_id": 11082996843,
+    "digest": "sha256:25509fa488ab3b5b12a28687fda25a1b4a457ecaf5143ce11c05cc89a3f8afc1",
+    "input_write_safe_rows": 1183,
+    "input_review_rows": 2005,
+    "downgraded_rows": 3,
+    "final_write_safe_rows": 1180,
+    "final_review_rows": 2008,
+    "write_safe_duplicate_conflicts": 0,
+    "review_duplicate_conflicts": 0,
+    "write_safe_review_overlap_same_url_field": 0,
+    "semantic_issues": 0,
+    "database_access": 0,
+    "database_writes": 0,
+    "status": "certified"
   }
 }
