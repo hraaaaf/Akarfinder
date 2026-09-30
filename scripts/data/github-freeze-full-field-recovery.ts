@@ -94,6 +94,14 @@ function isGenericListingTitle(title:string|null){
     || /^tous\s+les?\s+biens?\s+immobiliers?\b/i.test(t)
     || /^agence\s+immobili[eè]re\s+[àa]\b/i.test(t);
 }
+function containsContactPii(value:string|null|undefined){
+  const s=(value||"").replace(/\u00a0/g," ");
+  if(!s) return false;
+  return /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i.test(s)
+    || /(?<!\d)(?:\+?212|0)\s*[5-7](?:[\s.\-]?\d){8}(?!\d)/i.test(s)
+    || /\b(?:t[eé]l(?:[eé]phone)?|gsm|whats\s*app)\s*[:\-]?\s*(?:\+?212|0)?\s*[5-7](?:[\s.\-]?\d|\.{2,}){2,}/i.test(s)
+    || /(?:wa\.me|api\.whatsapp\.com)/i.test(s);
+}
 const existingMap:Record<string,string[]>={
   property_type:["property_type"],transaction_type:["transaction_type"],
   title:["title"],description:["description","description_snippet"],city:["city"],district:["district"],
@@ -133,11 +141,11 @@ for(const row of sample){
   const desc=d.description_snippet||meta(html,"description")||meta(html,"og:description")||"";
   const softPage=isSoftPage(title,desc);
   const c:Candidate[]=[];
-  if(!softPage && !isGenericListingTitle(title)) add(c,row,"title",title,"high","meta:og:title",true);
+  if(!softPage && !isGenericListingTitle(title) && !containsContactPii(title)) add(c,row,"title",title,"high","meta:og:title",true);
   if(!softPage) add(c,row,"property_type",detectPropertyType([title,desc].filter(Boolean).join(" ")),"high","explicit:title_or_description_property_type",true);
   add(c,row,"transaction_type",detectTransaction(url,softPage?"":[title,desc].filter(Boolean).join(" ")),"high","explicit:url_or_primary_transaction",true);
   if(!softPage){
-    add(c,row,"description",d.description_snippet,d._confidence.description,"extractDetail:description",d._confidence.description==="high");
+    if(!containsContactPii(d.description_snippet)) add(c,row,"description",d.description_snippet,d._confidence.description,"extractDetail:description",d._confidence.description==="high");
     add(c,row,"city",d.city,d._confidence.city,"extractDetail:city",d._confidence.city==="high");
     add(c,row,"district",d.district,d._confidence.district,"extractDetail:district",d._confidence.district==="high");
   }
