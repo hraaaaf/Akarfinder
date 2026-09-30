@@ -140,7 +140,7 @@ try {
         buildingCount: Number(el.getAttribute("data-maplibre-building-count") ?? 0),
       }));
       if (attrs.polish !== "material-relief-v3") throw new Error(`${viewport.name}: L3 baseline polish mismatch ${attrs.polish}`);
-      if (attrs.streetLanguage !== "architectural-paper-v1") throw new Error(`${viewport.name}: Rue street-language mismatch ${attrs.streetLanguage}`);
+      if (attrs.streetLanguage !== "architectural-paper-v2") throw new Error(`${viewport.name}: Rue street-language mismatch ${attrs.streetLanguage}`);
       if (attrs.buildingCount <= 0) throw new Error(`${viewport.name}: no Overture volumes rendered`);
 
       await page.screenshot({

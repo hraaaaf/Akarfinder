@@ -176,8 +176,8 @@ export async function installMapLibreOvertureBuildings(
       minzoom: 15.2,
       paint: {
         "line-color": "#BEB5AA",
-        "line-opacity": ["interpolate", ["linear"], ["zoom"], 15.2, 0.12, 16.5, 0.26, 18, 0.38],
-        "line-width": ["interpolate", ["linear"], ["zoom"], 15.2, 0.35, 18, 0.68],
+        "line-opacity": ["interpolate", ["linear"], ["zoom"], 15.2, 0.12, 16.5, 0.30, 18, 0.44],
+        "line-width": ["interpolate", ["linear"], ["zoom"], 15.2, 0.35, 18, 0.74],
         "line-blur": 0.08,
       },
     } as any, before);
@@ -193,7 +193,7 @@ export async function installMapLibreOvertureBuildings(
       paint: {
         "fill-extrusion-color": [
           "interpolate", ["linear"], ["get", "height"],
-          3, "#F4F1ED", 12, "#EFECE7", 24, "#E9E5DF", 55, "#E0DBD4", 120, "#D4CDC5",
+          3, "#F4F1ED", 12, "#EEEAE5", 24, "#E7E2DC", 55, "#DDD7D0", 120, "#D0C8BE",
         ],
         "fill-extrusion-height": ["get", "top_height"],
         "fill-extrusion-base": ["get", "min_height"],
@@ -213,7 +213,7 @@ export async function installMapLibreOvertureBuildings(
       paint: {
         "fill-extrusion-color": [
           "interpolate", ["linear"], ["get", "height"],
-          3, "#EEE9E2", 12, "#E5DED6", 24, "#DBD2C8", 55, "#CDC2B7", 120, "#BBAEA1",
+          3, "#EEE9E2", 12, "#E3DCD3", 24, "#D8CEC3", 55, "#C9BDB1", 120, "#B5A596",
         ],
         "fill-extrusion-height": ["get", "top_height"],
         "fill-extrusion-base": ["get", "min_height"],

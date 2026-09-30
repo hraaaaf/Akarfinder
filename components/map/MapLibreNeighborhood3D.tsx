@@ -420,6 +420,26 @@ export function MapLibreNeighborhood3D({
               } as any);
 
               map.addLayer({
+                id: "akarfinder-target-urban-grain",
+                type: "fill",
+                source,
+                "source-layer": "landuse",
+                minzoom: 15.4,
+                filter: ["match", ["get", "class"], ["residential", "commercial", "retail", "industrial"], true, false],
+                paint: {
+                  "fill-color": [
+                    "match", ["get", "class"],
+                    "commercial", "#EBDDCB",
+                    "retail", "#F0E4D6",
+                    "industrial", "#E6E0D8",
+                    "#EFE6D9"
+                  ],
+                  "fill-opacity": ["interpolate", ["linear"], ["zoom"], 15.4, 0.035, 16.5, 0.070, 18, 0.095],
+                  "fill-outline-color": "rgba(190,181,170,0.16)",
+                },
+              } as any);
+
+              map.addLayer({
                 id: "akarfinder-target-landcover-green",
                 type: "fill",
                 source,
@@ -1038,7 +1058,7 @@ export function MapLibreNeighborhood3D({
       data-maplibre-basemap-language={isMaarifTargetPilot ? "voyager-inspired-openfreemap-v1" : "default"}
       data-maplibre-building-language={isMaarifTargetPilot ? "standard-inspired-overture-v1" : "default"}
       data-maplibre-polish={isMaarifTargetPilot ? "material-relief-v3" : "default"}
-      data-maplibre-street-language={isMaarifTargetPilot ? "architectural-paper-v1" : "default"}
+      data-maplibre-street-language={isMaarifTargetPilot ? "architectural-paper-v2" : "default"}
       data-maplibre-label-policy={isMaarifTargetPilot ? "akarfinder-owned" : "basemap-default"}
       data-maplibre-context-label-policy={isMaarifTargetPilot ? "suppressed-at-quarter-zoom" : "default"}
       data-maplibre-boundary-render={isMaarifTargetPilot && boundaryGeometry ? "administrative-relief" : "default"}
