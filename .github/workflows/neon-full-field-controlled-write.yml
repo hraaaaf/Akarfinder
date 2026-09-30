@@ -24,6 +24,7 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Validate control and secret
+        id: control
         shell: bash
         run: |
           set -euo pipefail
@@ -41,6 +42,10 @@ jobs:
           echo "FULL_FIELD_ARTIFACT_ID=$artifact_id" >> "$GITHUB_ENV"
           echo "FULL_FIELD_ARTIFACT_DIGEST=$digest" >> "$GITHUB_ENV"
           echo "APPLY_LIMIT=${apply_limit:-0}" >> "$GITHUB_ENV"
+          echo "mode=$mode" >> "$GITHUB_OUTPUT"
+          echo "artifact_id=$artifact_id" >> "$GITHUB_OUTPUT"
+          echo "artifact_digest=$digest" >> "$GITHUB_OUTPUT"
+          echo "apply_limit=${apply_limit:-0}" >> "$GITHUB_OUTPUT"
       - name: Fetch certified consolidated artifact
         env:
           GH_TOKEN: ${{ github.token }}
@@ -67,7 +72,7 @@ jobs:
           set -euo pipefail
           docker run --rm             -e DATABASE_URL="$DATABASE_URL"             -v "$GITHUB_WORKSPACE:/work"             -w /work             postgres:17             sh -lc 'psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f /work/scripts/data/neon-full-field-write-preflight.sql'
       - name: Apply controlled write
-        if: env.MODE == 'apply'
+        if: steps.control.outputs.mode == 'apply'
         shell: bash
         run: |
           set -euo pipefail
@@ -86,6 +91,6 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: neon-full-field-controlled-write-${{ env.MODE }}
+          name: neon-full-field-controlled-write-${{ steps.control.outputs.mode }}
           path: artifacts/neon-full-field-write/
           retention-days: 30
