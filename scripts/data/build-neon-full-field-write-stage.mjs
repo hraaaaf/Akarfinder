@@ -52,6 +52,7 @@ function assertSafeStageRow(row){
   if(containsContactPii(row.title)||containsContactPii(row.description_snippet)) throw new Error(`contact PII in staged text for ${row.url}`);
   const city=safeString(row.city);
   if(city && /^(?:autre|other|unknown|n\/?a|hay\s+riad)$/i.test(city)) throw new Error(`invalid staged city ${city} for ${row.url}`);
+  if(city && /[\u0600-\u06FF]/.test(city)) throw new Error(`non-canonical Arabic staged city ${city} for ${row.url}`);
   const district=safeString(row.district);
   if(district && /(?:\brez(?:-|\s)?de\s+chauss|\bimmeuble\b|\bimm\s*n?[°o]?\s*\d+|\blocal\s+\d+|\bn[°o]\s*\d+|\bavenue\b|\brue\b|\bboulevard\b)/i.test(district)) throw new Error(`address-like staged district for ${row.url}`);
 }
