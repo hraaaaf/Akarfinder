@@ -13,6 +13,7 @@ permissions:
 
 jobs:
   domio-full-field-100:
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
@@ -53,4 +54,50 @@ jobs:
           path: |
             domio-full-field-100.json
             domio-full-field-100.jsonl
+          retention-days: 14
+
+  marocimmo-full-field-300:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SOURCE_NAME: 'marocimmo.com'
+      SAMPLE_SIZE: '300'
+      FETCH_DELAY_MS: '250'
+      OUTPUT_PREFIX: 'marocimmo-full-field-300'
+      FREEZE_JSONL_GZ: '.tmp/freeze/clean-corpus-v4.11-core.jsonl.gz'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Regression test P8A extraction
+        run: npx tsx --test scripts/scrapers/__tests__/p8a-detail.test.ts
+      - name: Fetch canonical freeze
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/freeze
+          curl --fail --location --retry 3 \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/10910779576/zip" \
+            -o .tmp/freeze.zip
+          unzip -q .tmp/freeze.zip -d .tmp/freeze
+          echo "e7ac4bca2db34ad334ed7234cfb8be93fc9baca68a9694f5024989b5cc2bb953  .tmp/freeze/clean-corpus-v4.11-core.jsonl.gz" | sha256sum -c -
+      - name: Run MarocImmo full-field pilot
+        run: npx tsx scripts/data/github-freeze-full-field-recovery.ts
+      - name: Assert read-only
+        run: |
+          test "$(jq -r '.database_access' marocimmo-full-field-300.json)" = "0"
+          test "$(jq -r '.database_writes' marocimmo-full-field-300.json)" = "0"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: marocimmo-full-field-300
+          path: |
+            marocimmo-full-field-300.json
+            marocimmo-full-field-300.jsonl
           retention-days: 14
