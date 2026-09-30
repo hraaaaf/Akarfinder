@@ -124,7 +124,10 @@ for(const row of sample){
   add(c,row,"description",d.description_snippet,d._confidence.description,"extractDetail:description",d._confidence.description==="high");
   add(c,row,"city",d.city,d._confidence.city,"extractDetail:city",d._confidence.city==="high");
   add(c,row,"district",d.district,d._confidence.district,"extractDetail:district",d._confidence.district==="high");
-  const s=d.surface_raw?.match(/([0-9]+(?:[.,][0-9]+)?)/)?.[1]; add(c,row,"surface_m2",s?Number(s.replace(",",".")):null,d._confidence.surface,"extractDetail:surface",d._confidence.surface==="high");
+  const s=d.surface_raw?.match(/([0-9]+(?:[.,][0-9]+)?)/)?.[1];
+  const surfaceValue=s?Number(s.replace(",",".")):null;
+  const surfaceAuto=d._confidence.surface==="high" && surfaceValue!=null && surfaceValue>=5 && surfaceValue<=100000;
+  add(c,row,"surface_m2",surfaceValue,d._confidence.surface,surfaceValue!=null&&surfaceValue>100000?"extractDetail:surface_extreme_review":"extractDetail:surface",surfaceAuto);
   add(c,row,"rooms_count",d.rooms,d._confidence.rooms,"extractDetail:rooms",d._confidence.rooms==="high");
   add(c,row,"bedrooms_count",d.bedrooms,d._confidence.bedrooms,"extractDetail:bedrooms",d._confidence.bedrooms==="high");
   add(c,row,"bathrooms_count",d.bathrooms,d._confidence.bathrooms,"extractDetail:bathrooms",d._confidence.bathrooms==="high");
