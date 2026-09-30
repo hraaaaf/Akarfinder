@@ -2,8 +2,15 @@ import fs from "node:fs";
 import path from "node:path";
 
 const input=process.env.PASSPORTS_JSONL||process.argv[2]||".tmp/full-field/full-field-passports.jsonl";
-const outputDir=process.env.OUTPUT_DIR||process.argv[3]||"artifacts/neon-full-field-write";
+const summaryPath=process.env.FULL_FIELD_SUMMARY||process.argv[3]||".tmp/full-field/full-field-summary.json";
+const outputDir=process.env.OUTPUT_DIR||process.argv[4]||"artifacts/neon-full-field-write";
 fs.mkdirSync(outputDir,{recursive:true});
+
+const certified=JSON.parse(fs.readFileSync(summaryPath,"utf8"));
+if(certified.schema_version!=="AKARFINDER_FULL_FIELD_PASSPORT_V1") throw new Error("unexpected full-field schema");
+if(Number(certified.duplicate_conflicts)!==0) throw new Error("full-field artifact has duplicate conflicts");
+if((certified.semantic_issues||[]).length!==0) throw new Error("full-field artifact has semantic issues");
+if(Number(certified.database_access)!==0||Number(certified.database_writes)!==0) throw new Error("full-field artifact is not read-only certified");
 
 const columns=[
   "url","title","description_snippet","transaction_type","property_type","city","district",
@@ -21,18 +28,6 @@ const fieldMap={
   bedrooms_count:"bedrooms_count",
   bathrooms_count:"bathrooms_count"
 };
-const expectedByField={
-  title:1936,
-  description_snippet:616,
-  transaction_type:2082,
-  property_type:1677,
-  city:764,
-  district:67,
-  surface_m2:218,
-  rooms_count:177,
-  bedrooms_count:53,
-  bathrooms_count:135
-};
 function csv(v){
   if(v===null||v===undefined) return "";
   const s=String(v);
@@ -40,7 +35,7 @@ function csv(v){
 }
 
 const rows=[];
-const counts=Object.fromEntries(Object.keys(expectedByField).map(k=>[k,0]));
+const counts=Object.fromEntries(Object.values(fieldMap).map(k=>[k,0]));
 let candidateCount=0;
 for(const line of fs.readFileSync(input,"utf8").split(/\r?\n/).filter(Boolean)){
   const p=JSON.parse(line);
@@ -61,10 +56,9 @@ for(const line of fs.readFileSync(input,"utf8").split(/\r?\n/).filter(Boolean)){
 }
 rows.sort((a,b)=>a.url.localeCompare(b.url));
 
-if(rows.length!==2385) throw new Error(`expected 2385 staged URLs, got ${rows.length}`);
-if(candidateCount!==7725) throw new Error(`expected 7725 fields, got ${candidateCount}`);
-for(const [field,expected] of Object.entries(expectedByField)){
-  if(counts[field]!==expected) throw new Error(`${field}: expected ${expected}, got ${counts[field]}`);
+const certifiedWriteSafe=Number(certified.field_state_counts?.recovered_write_safe||0);
+if(candidateCount!==certifiedWriteSafe){
+  throw new Error(`write-safe count mismatch: passports=${candidateCount} summary=${certifiedWriteSafe}`);
 }
 const seen=new Set();
 for(const row of rows){
@@ -72,18 +66,19 @@ for(const row of rows){
   seen.add(row.url);
 }
 
-const csvText=[
-  columns.join(","),
-  ...rows.map(r=>columns.map(c=>csv(r[c])).join(","))
-].join("\n")+"\n";
-fs.writeFileSync(path.join(outputDir,"full-field-write-stage.csv"),csvText);
+fs.writeFileSync(
+  path.join(outputDir,"full-field-write-stage.csv"),
+  [columns.join(","),...rows.map(r=>columns.map(c=>csv(r[c])).join(","))].join("\n")+"\n"
+);
 fs.writeFileSync(path.join(outputDir,"stage-summary.json"),JSON.stringify({
   schema_version:"AKARFINDER_NEON_FULL_FIELD_WRITE_STAGE_V1",
   staged_urls:rows.length,
   staged_fields:candidateCount,
   fields:counts,
-  source_artifact_id:11107346118,
-  source_artifact_digest:"sha256:836f9b40f161294808ce92148d7459f392bae9f6be74eeec556f7c4e3dcf8cf5",
+  source_listing_passports:Number(certified.listing_passports||0),
+  source_unique_urls:Number(certified.unique_urls||0),
+  source_duplicate_conflicts:Number(certified.duplicate_conflicts||0),
+  source_semantic_issues:(certified.semantic_issues||[]).length,
   database_access:0,
   database_writes:0
 },null,2)+"\n");
