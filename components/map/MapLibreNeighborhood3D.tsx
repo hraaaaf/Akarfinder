@@ -900,7 +900,7 @@ export function MapLibreNeighborhood3D({
         source: CONTEXT_FOOTPRINT_SOURCE_ID,
         paint: {
           "fill-color": districtTone,
-          "fill-opacity": 0.068,
+          "fill-opacity": 0.038,
         },
       } as any, FOCUS_GLOW_LAYER_ID);
       map.addLayer({
@@ -909,9 +909,9 @@ export function MapLibreNeighborhood3D({
         source: CONTEXT_FOOTPRINT_SOURCE_ID,
         paint: {
           "line-color": AKARFINDER_MOROCCO_MAP_NAVY,
-          "line-width": 8.0,
-          "line-opacity": 0.15,
-          "line-blur": 4.0,
+          "line-width": 4.5,
+          "line-opacity": 0.065,
+          "line-blur": 5.5,
         },
       } as any, FOCUS_GLOW_LAYER_ID);
       map.addLayer({
@@ -920,10 +920,10 @@ export function MapLibreNeighborhood3D({
         source: CONTEXT_FOOTPRINT_SOURCE_ID,
         paint: {
           "line-color": "#7E98AA",
-          "line-width": 1.35,
-          "line-opacity": 0.28,
-          "line-dasharray": [1.2, 1.6],
-          "line-blur": 0.20,
+          "line-width": 1.0,
+          "line-opacity": 0.12,
+          "line-dasharray": [1.2, 1.8],
+          "line-blur": 0.30,
         },
       } as any, FOCUS_GLOW_LAYER_ID);
     } catch (error) {
