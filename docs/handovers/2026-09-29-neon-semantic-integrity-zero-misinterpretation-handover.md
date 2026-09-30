@@ -1065,3 +1065,33 @@ Availability limitation: 74/300 sample pages were non-HTTP200 in this run; sourc
 Next: PromoImmoMarrakech 300 full-field. Sarout is disabled on push; PromoImmo becomes the only active source job.
 
 DarAgadir note: detail-fetch/content recovery is NOT started because current repo policy states `detail_fetch_policy=legal_review_required` and `content_reuse_policy=unknown`; no bypass.
+
+
+## FULL-FIELD RECOVERY — PROMOIMMO 300 CERTIFIED / MASAKEN 300 ACTIVE
+
+PromoImmoMarrakech run `36702453856` on HEAD `88563faf1a10575997fbc0107e74e3c18d9a7090`: SUCCESS.
+Artifact `11090897044`, digest `sha256:ccc25c33a47423469336f5c7e41fc6ba4c1a3bc4fbc03df1e8c7e4f4009fbca4`.
+
+Certified PromoImmo sample:
+- freeze population 3,716; deterministic sample 300;
+- robots 300/300; HTTP200 300/300;
+- write_safe fields 776;
+- review fields 1,563;
+- contradicted fields 0;
+- DB access/write 0/0.
+
+Key yields:
+- transaction_type 300 write-safe;
+- title 299 write-safe;
+- property_type 177 write-safe;
+- description 293 review;
+- surface 289 review;
+- bedrooms 300 review;
+- rooms 112 review;
+- bathrooms 55 review;
+- thumbnails 300 review;
+- pool 128 review.
+
+Audited ranges: surface 26..46,460 m²; rooms 2..18; bedrooms 0..11; bathrooms 1..5; plot surface 26..2,000 m². Largest total surfaces map to explicit terrain URLs and remain review-only.
+
+Next: Masaken 300 full-field. PromoImmo disabled on push; Masaken becomes the only active source job.
