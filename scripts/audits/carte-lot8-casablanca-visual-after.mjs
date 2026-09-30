@@ -106,12 +106,20 @@ try {
       const shadowPolicy = await maplibre.getAttribute("data-maplibre-shadow-policy");
       const contextFocus = await maplibre.getAttribute("data-maplibre-context-focus");
       const quarterStyle = await maplibre.getAttribute("data-maplibre-quarter-style");
+      const basemapLanguage = await maplibre.getAttribute("data-maplibre-basemap-language");
+      const buildingLanguage = await maplibre.getAttribute("data-maplibre-building-language");
       const boundaryRender = await maplibre.getAttribute("data-maplibre-boundary-render");
       const contextRelief = await maplibre.getAttribute("data-maplibre-context-relief");
       const labelPolicy = await maplibre.getAttribute("data-maplibre-label-policy");
       const contextLabelPolicy = await maplibre.getAttribute("data-maplibre-context-label-policy");
       if (quarterStyle !== "illustrated-progressive-v1") {
         throw new Error(`${viewport.name}: illustrated quarter style contract missing (${quarterStyle})`);
+      }
+      if (basemapLanguage !== "voyager-inspired-openfreemap-v1") {
+        throw new Error(`${viewport.name}: Voyager-inspired basemap language missing (${basemapLanguage})`);
+      }
+      if (buildingLanguage !== "standard-inspired-overture-v1") {
+        throw new Error(`${viewport.name}: Standard-inspired Overture building language missing (${buildingLanguage})`);
       }
       if (boundaryRender !== "administrative-relief") {
         throw new Error(`${viewport.name}: administrative relief contract missing (${boundaryRender})`);
@@ -338,6 +346,8 @@ try {
         shadowPolicy,
         contextFocus,
         quarterStyle,
+        basemapLanguage,
+        buildingLanguage,
         boundaryRender,
         contextRelief,
         labelPolicy,

@@ -526,3 +526,21 @@
     max-height: min(74svh, 620px) !important;
   }
 }
+
+
+/* Pass 14 — CARTO Voyager × Mapbox Standard reference direction.
+ * Runtime remains OpenFreeMap + Overture: this is a visual-language adaptation,
+ * not a third-party basemap/runtime dependency.
+ */
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-basemap-language="voyager-inspired-openfreemap-v1"]
+  .maplibre-spike-canvas canvas {
+  filter: saturate(.97) contrast(.995) brightness(1.012) !important;
+}
+
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-basemap-language="voyager-inspired-openfreemap-v1"]
+  .maplibre-spike-map-grade {
+  background:
+    linear-gradient(180deg, rgb(255 248 237 / .035), transparent 48%, rgb(18 50 80 / .018)) !important;
+  mix-blend-mode: normal !important;
+  opacity: .72 !important;
+}
