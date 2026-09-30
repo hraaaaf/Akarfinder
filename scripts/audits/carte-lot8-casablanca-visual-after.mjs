@@ -267,7 +267,20 @@ try {
         throw new Error(`${viewport.name}: false inside-neighborhood wording detected`);
       }
 
+      if (viewport.width <= 1023) {
+        const collapsedToggle = rail.getByRole("button", { name: "Développer la fiche Maârif" });
+        if (await collapsedToggle.count()) {
+          await collapsedToggle.click();
+          await page.waitForFunction(
+            () => document.querySelector("[data-maarif-target-rail]")?.getAttribute("data-sheet-expanded") === "true",
+            null,
+            { timeout: 5000 },
+          );
+          await page.waitForTimeout(250);
+        }
+      }
       const localTab = rail.getByRole("button", { name: "Vie locale", exact: true });
+      await localTab.waitFor({ state: "visible", timeout: 5000 });
       await localTab.click();
       await page.waitForFunction(() => document.querySelector("[data-p4-map-decision-rail]")?.getAttribute("data-vivre-ici-tab") === "local");
       const localGuide = rail.locator("[data-couche2-local-guide]");
