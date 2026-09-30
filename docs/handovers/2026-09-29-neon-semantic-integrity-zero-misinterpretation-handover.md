@@ -907,3 +907,38 @@ Local preflight expectation — NOT CI-certified yet:
   - Domio commerce price 25,000 MAD with 64 m² = 390.625 MAD/m² → cross-field price quarantine.
 
 Do not present the 1,180 / 2,008 counts as certified until run `36683688893` completes successfully and its artifact is inspected.
+
+
+## MULTI-SOURCE OFFLINE CONSOLIDATION — CERTIFIED
+
+Run `36683688893`: SUCCESS.
+Artifact: `11082996843`.
+Digest: `sha256:25509fa488ab3b5b12a28687fda25a1b4a457ecaf5143ce11c05cc89a3f8afc1`.
+
+Certified consolidation result:
+- input write-safe rows: 1,183;
+- input review rows: 2,005;
+- cross-field downgrades: 3;
+- **final write-safe rows: 1,180**;
+- **final review rows: 2,008**;
+- write-safe duplicate conflicts: 0;
+- review duplicate conflicts: 0;
+- write-safe/review same URL+field overlap: 0;
+- residual semantic issues: 0;
+- database_access: 0;
+- database_writes: 0.
+
+Cross-field downgrades applied and proven in CI:
+1. Domio terrain surface 650,000 m² → review (extreme_surface_over_100000m2_review).
+2. Domio bureau surface 21,342,453 m² → review (extreme_surface_over_100000m2_review).
+3. Domio commerce price 25,000 MAD with 64 m² = 390.625 MAD/m² → price review (cross_field_sale_price_per_m2_outlier).
+
+Canonical consolidation metadata is now recorded in:
+`data/recovery/github-freeze-recovery-certified-source-summary.json`.
+
+### HUMAN GATE
+
+All immediately executable offline recovery work for this certified cohort is complete.
+The next meaningful step would be a controlled Neon write/readback of the **1,180 write-safe field rows**, followed by post-write verification. This is intentionally NOT executed without explicit human authorization.
+
+No Neon read or write has occurred in this recovery path.
