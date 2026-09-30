@@ -105,6 +105,14 @@ try {
       const overtureRelease = await maplibre.getAttribute("data-maplibre-overture-release");
       const shadowPolicy = await maplibre.getAttribute("data-maplibre-shadow-policy");
       const contextFocus = await maplibre.getAttribute("data-maplibre-context-focus");
+      const quarterStyle = await maplibre.getAttribute("data-maplibre-quarter-style");
+      const boundaryRender = await maplibre.getAttribute("data-maplibre-boundary-render");
+      if (quarterStyle !== "illustrated-progressive-v1") {
+        throw new Error(`${viewport.name}: illustrated quarter style contract missing (${quarterStyle})`);
+      }
+      if (boundaryRender !== "administrative-relief") {
+        throw new Error(`${viewport.name}: administrative relief contract missing (${boundaryRender})`);
+      }
       if (shadowPolicy !== "non-metric-overture-footprints") {
         throw new Error(`${viewport.name}: non-metric Overture shadow policy missing (${shadowPolicy})`);
       }
@@ -304,6 +312,8 @@ try {
         overtureRelease,
         shadowPolicy,
         contextFocus,
+        quarterStyle,
+        boundaryRender,
         buildingFootprintObservationTimedOut,
         renderedHeightCoverageNote: "ratio of rendered 3D features to rendered 2D building features; viewport-specific, not a unique-building census",
         sheetInteraction,

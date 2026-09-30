@@ -142,9 +142,9 @@ export async function installMapLibreOvertureBuildings(
       source: MAPLIBRE_OVERTURE_SOURCE_ID,
       minzoom: 12.8,
       paint: {
-        "fill-color": "#4C5660",
-        "fill-opacity": 0.040,
-        "fill-translate": [5, 8],
+        "fill-color": "#123250",
+        "fill-opacity": 0.018,
+        "fill-translate": [3, 5],
         "fill-translate-anchor": "viewport",
         "fill-antialias": true,
       },
@@ -158,9 +158,9 @@ export async function installMapLibreOvertureBuildings(
       source: MAPLIBRE_OVERTURE_SOURCE_ID,
       minzoom: 12.8,
       paint: {
-        "fill-color": "#46515B",
-        "fill-opacity": 0.060,
-        "fill-translate": [2, 3.5],
+        "fill-color": "#20516B",
+        "fill-opacity": 0.026,
+        "fill-translate": [1.5, 2.5],
         "fill-translate-anchor": "viewport",
         "fill-antialias": true,
       },
@@ -177,11 +177,11 @@ export async function installMapLibreOvertureBuildings(
       paint: {
         "fill-extrusion-color": [
           "interpolate", ["linear"], ["get", "height"],
-          3, "#EAE7E1", 12, "#DED8CF", 24, "#CFC6BB", 55, "#B7AA9C", 120, "#95877A",
+          3, "#EDF3F5", 12, "#E8EFF1", 24, "#E1EAED", 55, "#D7E4E8", 120, "#CADBE0",
         ],
         "fill-extrusion-height": ["get", "top_height"],
         "fill-extrusion-base": ["get", "min_height"],
-        "fill-extrusion-opacity": 0.72,
+        "fill-extrusion-opacity": 0.30,
         "fill-extrusion-vertical-gradient": true,
       },
     } as any, before);
@@ -197,11 +197,11 @@ export async function installMapLibreOvertureBuildings(
       paint: {
         "fill-extrusion-color": [
           "interpolate", ["linear"], ["get", "height"],
-          3, "#E5DED6", 12, "#D4C9BE", 24, "#C1B1A3", 55, "#A18D7D", 120, "#806B5C",
+          3, "#EAF1F3", 12, "#E3ECEF", 24, "#DAE7EB", 55, "#CBDDE2", 120, "#B8D0D7",
         ],
         "fill-extrusion-height": ["get", "top_height"],
         "fill-extrusion-base": ["get", "min_height"],
-        "fill-extrusion-opacity": 0.84,
+        "fill-extrusion-opacity": 0.40,
         "fill-extrusion-vertical-gradient": true,
       },
     } as any, before);

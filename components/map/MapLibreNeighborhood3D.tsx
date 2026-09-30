@@ -315,15 +315,15 @@ export function MapLibreNeighborhood3D({
             if (isMaarifTargetPilot && targetComposition === "context") {
               map.setLight({
                 anchor: "viewport",
-                color: "#FFF0D6",
-                intensity: 0.72,
-                position: [1.35, 205, 26],
+                color: "#EAF5F7",
+                intensity: 0.52,
+                position: [1.2, 210, 32],
               });
               for (const layer of map.getStyle().layers ?? []) {
                 const id = String(layer.id ?? "").toLowerCase();
                 try {
                   if (layer.type === "background") {
-                    map.setPaintProperty(layer.id, "background-color", "#E4DED3");
+                    map.setPaintProperty(layer.id, "background-color", "#F4F8FA");
                   }
                   if ((layer.type === "fill" || layer.type === "line") && /building/.test(id)) {
                     // The target layer below owns building footprints. Hiding duplicate base footprints
@@ -379,9 +379,9 @@ export function MapLibreNeighborhood3D({
                       + Math.cos(tau * ((7 * nx) - (13 * ny)))
                     ) * 0.45;
                     const delta = waveA + waveB + waveC + foamLift + grain;
-                    data[index] = 43 + Math.round(delta * 0.38);
-                    data[index + 1] = 126 + Math.round(delta * 0.44);
-                    data[index + 2] = 164 + Math.round(delta * 0.48);
+                    data[index] = 195 + Math.round(delta * 0.26);
+                    data[index + 1] = 221 + Math.round(delta * 0.30);
+                    data[index + 2] = 230 + Math.round(delta * 0.34);
                     data[index + 3] = 255;
                   }
                 }
@@ -409,12 +409,12 @@ export function MapLibreNeighborhood3D({
                 paint: {
                   "fill-color": [
                     "match", ["get", "class"],
-                    "commercial", "#D1C5B7",
-                    "retail", "#D8CCBF",
-                    "industrial", "#CFC6BB",
-                    "#E2D9CD"
+                    "commercial", "#E1ECEF",
+                    "retail", "#E6EFF1",
+                    "industrial", "#DDE8EA",
+                    "#EEF5F7"
                   ],
-                  "fill-opacity": 0.60,
+                  "fill-opacity": 0.54,
                 },
               } as any);
 
@@ -425,8 +425,8 @@ export function MapLibreNeighborhood3D({
                 "source-layer": "landcover",
                 filter: ["match", ["get", "class"], ["grass", "wood"], true, false],
                 paint: {
-                  "fill-color": ["match", ["get", "class"], "wood", "#91AC93", "#B5C6A8"],
-                  "fill-opacity": 0.76,
+                  "fill-color": ["match", ["get", "class"], "wood", "#C6DDD4", "#DCEBE6"],
+                  "fill-opacity": 0.74,
                 },
               } as any);
 
@@ -437,9 +437,9 @@ export function MapLibreNeighborhood3D({
                 "source-layer": "landuse",
                 filter: ["match", ["get", "class"], ["park", "cemetery", "grass", "recreation_ground"], true, false],
                 paint: {
-                  "fill-color": "#B3C7A8",
-                  "fill-opacity": 0.80,
-                  "fill-outline-color": "#95AF91",
+                  "fill-color": "#DCEBE6",
+                  "fill-opacity": 0.78,
+                  "fill-outline-color": "#B8D0C8",
                 },
               } as any);
 
@@ -452,13 +452,13 @@ export function MapLibreNeighborhood3D({
                 paint: {
                   "fill-color": [
                     "interpolate", ["linear"], ["coalesce", ["get", "render_height"], 0],
-                    0, "#E9E3DA",
-                    12, "#E4DDD2",
-                    28, "#DDD5C9",
-                    60, "#D3CABD"
+                    0, "#EDF3F5",
+                    12, "#E8EFF2",
+                    28, "#E2EBEE",
+                    60, "#D8E5E9"
                   ],
-                  "fill-opacity": ["interpolate", ["linear"], ["zoom"], 12.2, 0.10, 14.5, 0.20],
-                  "fill-outline-color": "#BEB3A5",
+                  "fill-opacity": ["interpolate", ["linear"], ["zoom"], 12.2, 0.08, 14.5, 0.14],
+                  "fill-outline-color": "#C6D4D9",
                 },
               } as any);
 
@@ -477,13 +477,13 @@ export function MapLibreNeighborhood3D({
                 paint: {
                   "line-color": [
                     "match", ["get", "class"],
-                    "motorway", "#B9AA98",
-                    "trunk", "#B9AA98",
-                    "primary", "#C3B5A3",
-                    "secondary", "#CCC0B0",
-                    "#D7CEC1"
+                    "motorway", "#759BAA",
+                    "trunk", "#759BAA",
+                    "primary", "#8CA9B4",
+                    "secondary", "#A6BAC2",
+                    "#C5D2D7"
                   ],
-                  "line-opacity": 0.36,
+                  "line-opacity": 0.30,
                   "line-width": [
                     "interpolate", ["linear"], ["zoom"],
                     11, ["match", ["get", "class"], "motorway", 2.4, "trunk", 2.2, "primary", 2.0, "secondary", 1.7, "tertiary", 1.3, 0.8],
@@ -505,14 +505,14 @@ export function MapLibreNeighborhood3D({
                 paint: {
                   "line-color": [
                     "match", ["get", "class"],
-                    "motorway", "#F7F0E6",
-                    "trunk", "#F3EBDD",
-                    "primary", "#EFE7DC",
-                    "secondary", "#E9E0D5",
-                    "tertiary", "#E2D8CC",
-                    "#DCD2C6"
+                    "motorway", "#F8FCFD",
+                    "trunk", "#F6FAFB",
+                    "primary", "#F3F8FA",
+                    "secondary", "#EEF5F7",
+                    "tertiary", "#E9F1F4",
+                    "#E5EDF0"
                   ],
-                  "line-opacity": 0.82,
+                  "line-opacity": 0.88,
                   "line-width": [
                     "interpolate", ["linear"], ["zoom"],
                     11, ["match", ["get", "class"], "motorway", 1.8, "trunk", 1.65, "primary", 1.5, "secondary", 1.2, "tertiary", 0.95, 0.62],
@@ -540,8 +540,8 @@ export function MapLibreNeighborhood3D({
                   "text-ignore-placement": false,
                 },
                 paint: {
-                  "text-color": "#475C70",
-                  "text-opacity": 0.76,
+                  "text-color": "#3F5E70",
+                  "text-opacity": 0.74,
                   "text-halo-color": "rgba(250,247,241,0.96)",
                   "text-halo-width": 1.4,
                   "text-halo-blur": 0.12,
@@ -567,8 +567,8 @@ export function MapLibreNeighborhood3D({
                   "text-ignore-placement": false,
                 },
                 paint: {
-                  "text-color": "#667787",
-                  "text-opacity": 0.48,
+                  "text-color": "#607887",
+                  "text-opacity": 0.42,
                   "text-halo-color": "rgba(250,247,241,0.94)",
                   "text-halo-width": 1.0,
                   "text-halo-blur": 0.14,
@@ -632,7 +632,7 @@ export function MapLibreNeighborhood3D({
                 "fill-extrusion-color": isMaarifTargetPilot && targetComposition === "context"
                   ? [
                     "interpolate", ["linear"], ["coalesce", ["get", "render_height"], 0],
-                    0, "#EEE6DA", 10, "#DFD1C1", 24, "#CFBDA9", 55, "#B9A28B", 120, "#9D846C",
+                    0, "#EDF3F5", 10, "#E7EEF1", 24, "#DEE8EB", 55, "#D2E1E5", 120, "#C2D7DD",
                   ]
                   : [
                     "interpolate", ["linear"], ["coalesce", ["get", "render_height"], 0],
@@ -640,7 +640,7 @@ export function MapLibreNeighborhood3D({
                   ],
                 "fill-extrusion-height": ["coalesce", ["get", "render_height"], 0],
                 "fill-extrusion-base": ["coalesce", ["get", "render_min_height"], 0],
-                "fill-extrusion-opacity": isMaarifTargetPilot && targetComposition === "context" ? 0.90 : 0.28,
+                "fill-extrusion-opacity": isMaarifTargetPilot && targetComposition === "context" ? 0.36 : 0.28,
                 "fill-extrusion-vertical-gradient": true,
               },
             } as any);
@@ -662,12 +662,12 @@ export function MapLibreNeighborhood3D({
               type: "circle",
               source: FOCUS_SOURCE_ID,
               paint: {
-                "circle-radius": isMaarifTargetPilot ? (desktop ? 154 : 108) : (desktop ? 84 : 68),
+                "circle-radius": isMaarifTargetPilot ? (desktop ? 136 : 96) : (desktop ? 84 : 68),
                 "circle-color": districtTone,
-                "circle-opacity": isMaarifTargetPilot ? 0.060 : 0.13,
+                "circle-opacity": isMaarifTargetPilot ? 0.034 : 0.13,
                 "circle-stroke-color": AKARFINDER_MOROCCO_MAP_NAVY,
-                "circle-stroke-width": isMaarifTargetPilot ? 1.15 : 1.5,
-                "circle-stroke-opacity": isMaarifTargetPilot ? 0.24 : 0.56,
+                "circle-stroke-width": isMaarifTargetPilot ? 0.85 : 1.5,
+                "circle-stroke-opacity": isMaarifTargetPilot ? 0.12 : 0.56,
               },
             });
             map.addLayer({
@@ -698,14 +698,27 @@ export function MapLibreNeighborhood3D({
                   "fill-opacity": isMaarifTargetPilot ? 0 : 0.18,
                 },
               });
+              if (isMaarifTargetPilot) {
+                map.addLayer({
+                  id: "neighborhood-boundary-relief",
+                  type: "line",
+                  source: "neighborhood-boundary",
+                  paint: {
+                    "line-color": AKARFINDER_MOROCCO_MAP_NAVY,
+                    "line-width": 7.0,
+                    "line-opacity": 0.13,
+                    "line-blur": 3.0,
+                  },
+                });
+              }
               map.addLayer({
                 id: "neighborhood-boundary-line", type: "line", source: "neighborhood-boundary",
                 paint: {
                   "line-color": AKARFINDER_MOROCCO_MAP_NAVY,
-                  "line-width": isMaarifTargetPilot ? 1.15 : 3.2,
-                  "line-opacity": isMaarifTargetPilot ? 0.24 : 0.96,
-                  "line-blur": isMaarifTargetPilot ? 0.35 : 0,
-                  ...(isMaarifTargetPilot ? { "line-dasharray": [2.2, 1.6] } : {}),
+                  "line-width": isMaarifTargetPilot ? 1.7 : 3.2,
+                  "line-opacity": isMaarifTargetPilot ? 0.68 : 0.96,
+                  "line-blur": isMaarifTargetPilot ? 0.10 : 0,
+                  ...(isMaarifTargetPilot ? { "line-dasharray": [3.0, 1.6] } : {}),
                 },
               });
             }
@@ -889,8 +902,8 @@ export function MapLibreNeighborhood3D({
         type: "fill",
         source: CONTEXT_FOCUS_MASK_SOURCE_ID,
         paint: {
-          "fill-color": "#D9DEE2",
-          "fill-opacity": 0.28,
+          "fill-color": "#EAF0F2",
+          "fill-opacity": 0.18,
           "fill-antialias": true,
         },
       } as any, FOCUS_GLOW_LAYER_ID);
@@ -900,7 +913,7 @@ export function MapLibreNeighborhood3D({
         source: CONTEXT_FOOTPRINT_SOURCE_ID,
         paint: {
           "fill-color": districtTone,
-          "fill-opacity": 0.038,
+          "fill-opacity": 0.026,
         },
       } as any, FOCUS_GLOW_LAYER_ID);
       map.addLayer({
@@ -909,9 +922,9 @@ export function MapLibreNeighborhood3D({
         source: CONTEXT_FOOTPRINT_SOURCE_ID,
         paint: {
           "line-color": AKARFINDER_MOROCCO_MAP_NAVY,
-          "line-width": 4.5,
-          "line-opacity": 0.065,
-          "line-blur": 5.5,
+          "line-width": 4.0,
+          "line-opacity": 0.052,
+          "line-blur": 5.0,
         },
       } as any, FOCUS_GLOW_LAYER_ID);
       map.addLayer({
@@ -919,9 +932,9 @@ export function MapLibreNeighborhood3D({
         type: "line",
         source: CONTEXT_FOOTPRINT_SOURCE_ID,
         paint: {
-          "line-color": "#7E98AA",
-          "line-width": 1.0,
-          "line-opacity": 0.12,
+          "line-color": "#8DA6B3",
+          "line-width": 0.9,
+          "line-opacity": 0.08,
           "line-dasharray": [1.2, 1.8],
           "line-blur": 0.30,
         },
@@ -1002,6 +1015,8 @@ export function MapLibreNeighborhood3D({
       data-maplibre-overture-release={overtureRelease ?? ""}
       data-maplibre-shadow-policy={isMaarifTargetPilot ? "non-metric-overture-footprints" : "none"}
       data-maplibre-context-focus={isMaarifTargetPilot ? "verified-anchor-envelope-not-boundary" : "none"}
+      data-maplibre-quarter-style={isMaarifTargetPilot ? "illustrated-progressive-v1" : "default"}
+      data-maplibre-boundary-render={isMaarifTargetPilot && boundaryGeometry ? "administrative-relief" : "default"}
       data-maplibre-context-state={contextState}
       data-maplibre-anchor-count={context?.anchor_count ?? 0}
       data-maplibre-city={citySlug}
