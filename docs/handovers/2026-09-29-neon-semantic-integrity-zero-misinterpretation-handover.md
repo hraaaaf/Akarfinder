@@ -1188,3 +1188,25 @@ Template-noise suppression fired as intended: `terrace_m2=49` occurred 112 times
 Key yields: title 186 write-safe; transaction 138 write-safe; property type 126 write-safe; description 152 write-safe + 34 review; city 152 write-safe; surface 170 review; bedrooms 65 review; bathrooms 32 review; thumbnail 186 review.
 
 Next: final lightweight Kawtar full-field pass on all 140 freeze rows. Previous price recovery had zero yield, but non-price fields remain worth one bounded pass before global consolidation.
+
+
+## FULL-FIELD RECOVERY — KAWTAR CERTIFIED / GLOBAL CONSOLIDATION GATE
+
+Kawtar run `36733980909` on HEAD `f8c7cf5a1096b122839ce34b271897b543fdb52e`: SUCCESS.
+Artifact `11106271952`, digest `sha256:6fbb5751d725e174221bca87badfec522942958f1b8e95c377c3b413fe010da1`.
+
+Certified Kawtar full-population pass:
+- freeze population/sample 140/140;
+- robots allowed 140/140; HTTP200 111/140;
+- write_safe fields 199;
+- review fields 652;
+- contradicted fields 0;
+- DB access/write 0/0.
+
+Key yields: property_type 89 write-safe; transaction_type 110 write-safe; description 111 review; surface 111 review; bedrooms 110 review; bathrooms 102 review; images 111 review.
+
+Global full-field consolidation is now implemented in `scripts/data/consolidate-full-field-recovery.mjs` with workflow `.github/workflows/github-freeze-full-field-consolidation.yml`.
+It consumes the canonical freeze plus 10 certified full-field artifacts (Domio, MarocImmo, Sarout, PromoImmoMarrakech, Masaken, LSF, Aykana, Atlas, 1immo, Kawtar) and emits per-listing passports with field states: existing / recovered_write_safe / review / contradicted / missing.
+Global gate assertions: duplicate_conflicts=0; semantic_issues=[]; database_access=0; database_writes=0.
+
+Current exact HEAD after consolidation trigger: `6cf4564e79e2b68bbf098c9646071775919266ed`.
