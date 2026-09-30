@@ -23,6 +23,26 @@ type Finding = { route: string; viewport: string; check: string; detail: string 
 async function main() {
   mkdirSync(outputDir, { recursive: true });
   const findings: Finding[] = [];
+
+  try {
+    const nationalApiResponse = await fetch(`${baseUrl}/api/geo/national-territories`);
+    if (!nationalApiResponse.ok) {
+      findings.push({
+        route: "/api/geo/national-territories",
+        viewport: "preflight",
+        check: "national-territories-api",
+        detail: `Unexpected status ${nationalApiResponse.status}`,
+      });
+    }
+  } catch (error) {
+    findings.push({
+      route: "/api/geo/national-territories",
+      viewport: "preflight",
+      check: "national-territories-api",
+      detail: `Request failed: ${String(error)}`,
+    });
+  }
+
   const browser = await chromium.launch({ headless: true });
 
   try {

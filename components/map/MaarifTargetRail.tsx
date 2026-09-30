@@ -282,8 +282,22 @@ export function MaarifTargetRail() {
         }
         @media(max-width:560px){
           [data-maarif-rebuild="true"] [data-p4-map-layout]{height:calc(100svh - 64px)!important;min-height:600px!important}
-          .maarif-target-rail{left:8px;right:8px;bottom:calc(72px + env(safe-area-inset-bottom));height:min(44svh,372px);max-height:min(44svh,372px);border-radius:22px}
+          .maarif-target-rail{left:8px;right:8px;bottom:calc(76px + env(safe-area-inset-bottom));height:min(26svh,218px);max-height:min(26svh,218px);border-radius:22px}
           .maarif-target-rail[data-sheet-expanded="true"]{height:min(74svh,620px);max-height:min(74svh,620px)}
+          .maarif-target-rail:not([data-sheet-expanded="true"]) .maarif-target-hero,
+          .maarif-target-rail:not([data-sheet-expanded="true"]) .maarif-target-copy,
+          .maarif-target-rail:not([data-sheet-expanded="true"]) .maarif-target-tabs,
+          .maarif-target-rail:not([data-sheet-expanded="true"]) .maarif-target-market,
+          .maarif-target-rail:not([data-sheet-expanded="true"]) .maarif-target-local,
+          .maarif-target-rail:not([data-sheet-expanded="true"]) .maarif-target-mobility,
+          .maarif-target-rail:not([data-sheet-expanded="true"]) .maarif-target-places,
+          .maarif-target-rail:not([data-sheet-expanded="true"]) .maarif-target-secondary-action{display:none!important}
+          .maarif-target-rail:not([data-sheet-expanded="true"]) .maarif-target-body{padding:8px 14px 12px}
+          .maarif-target-rail:not([data-sheet-expanded="true"]) .maarif-target-city{margin-bottom:4px;font-size:10px}
+          .maarif-target-rail:not([data-sheet-expanded="true"]) .maarif-target-heading h1{font-size:29px}
+          .maarif-target-rail:not([data-sheet-expanded="true"]) .maarif-target-tagline{margin-top:4px;font-size:11px}
+          .maarif-target-rail:not([data-sheet-expanded="true"]) .maarif-target-actions{margin-top:9px}
+          .maarif-target-rail:not([data-sheet-expanded="true"]) .maarif-target-primary-action{min-height:44px}
           .maarif-target-hero{height:104px;margin:7px 7px 0}
           .maarif-target-hero figcaption{left:10px;right:10px;font-size:7px}.maarif-target-hero-credit a{padding:4px 6px}
           .maarif-target-body{padding:14px 14px 24px}
