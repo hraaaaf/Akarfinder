@@ -1,5 +1,7 @@
 \set ON_ERROR_STOP on
 
+DO $ BEGIN IF current_database() <> 'AkarFinder' THEN RAISE EXCEPTION 'Unexpected database: %', current_database(); END IF; END $;
+
 CREATE TEMP TABLE ff_stage (
   url text PRIMARY KEY,
   title text,
