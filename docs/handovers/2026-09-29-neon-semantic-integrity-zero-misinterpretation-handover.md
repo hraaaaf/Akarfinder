@@ -1031,3 +1031,37 @@ Key field yields:
 Observed ranges audited: surface 5..6,759 m²; bedrooms 1..10; rooms 2..6; bathrooms 1..2. No suspicious extreme remained in the inspected sample.
 
 Next: Sarout 300 full-field on the canonical freeze. MarocImmo disabled on push; Sarout is the only active full-field source job.
+
+
+## FULL-FIELD RECOVERY — SAROUT 300 CERTIFIED / PROMOIMMO 300 ACTIVE
+
+Sarout corrected run `36701726220` on HEAD `9218a3ca4059404f9a4dc53ae1745abc30d1af72`: SUCCESS.
+Artifact `11090975222`, digest `sha256:b2eff408f07806d9d877e4e52ba9ecc6f263f6c0c766681e16436d0865d65e14`.
+
+Certified Sarout sample:
+- freeze population 43,794; deterministic sample 300;
+- robots allowed 300/300; HTTP200 226/300;
+- write_safe fields 1,364;
+- review fields 762;
+- contradicted fields 2 (description only; not overwritten);
+- DB access/write 0/0.
+
+Key field yields:
+- transaction_type 218 write-safe;
+- title 224 write-safe;
+- city 217 write-safe;
+- property_type 110 write-safe;
+- surface_m2 143 write-safe + 69 review;
+- rooms 109 write-safe + 39 review;
+- bedrooms 50 write-safe + 40 review;
+- bathrooms 69 write-safe + 111 review;
+- description 224 write-safe + 2 contradicted;
+- images_count + thumbnail_url 226 review each.
+
+Audited ranges: surface 13..25,000 m²; bedrooms 1..14; rooms 1..12; bathrooms 1..16. Bathroom extremes 15-16 are review-only. Nonpositive surfaces are now omitted as missing.
+
+Availability limitation: 74/300 sample pages were non-HTTP200 in this run; source availability remains a scale constraint and is not treated as parser failure.
+
+Next: PromoImmoMarrakech 300 full-field. Sarout is disabled on push; PromoImmo becomes the only active source job.
+
+DarAgadir note: detail-fetch/content recovery is NOT started because current repo policy states `detail_fetch_policy=legal_review_required` and `content_reuse_policy=unknown`; no bypass.
