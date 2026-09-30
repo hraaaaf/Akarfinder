@@ -455,6 +455,7 @@ jobs:
           retention-days: 14
 
   consolidate-certified-full-field:
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -499,4 +500,78 @@ jobs:
         with:
           name: full-field-recovery-consolidated
           path: data/recovery/full-field-consolidated/
+          retention-days: 14
+
+  recert-softpage-sources:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      FREEZE_JSONL_GZ: '.tmp/freeze/clean-corpus-v4.11-core.jsonl.gz'
+      FETCH_DELAY_MS: '250'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Regression test P8A extraction
+        run: npx tsx --test scripts/scrapers/__tests__/p8a-detail.test.ts
+      - name: Fetch canonical freeze
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/freeze
+          curl --fail --location --retry 3 -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' -H 'X-GitHub-Api-Version: 2022-11-28' "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/10910779576/zip" -o .tmp/freeze.zip
+          unzip -q .tmp/freeze.zip -d .tmp/freeze
+          echo "e7ac4bca2db34ad334ed7234cfb8be93fc9baca68a9694f5024989b5cc2bb953  .tmp/freeze/clean-corpus-v4.11-core.jsonl.gz" | sha256sum -c -
+      - name: Re-certify Aykana
+        env:
+          SOURCE_NAME: 'aykana.ma'
+          SAMPLE_SIZE: '300'
+          OUTPUT_PREFIX: 'aykana-full-field-300-recert'
+        run: npx tsx scripts/data/github-freeze-full-field-recovery.ts
+      - name: Re-certify Atlas
+        env:
+          SOURCE_NAME: 'atlasimmobilier.com'
+          SAMPLE_SIZE: '300'
+          OUTPUT_PREFIX: 'atlas-full-field-300-recert'
+        run: npx tsx scripts/data/github-freeze-full-field-recovery.ts
+      - name: Re-certify Promo
+        env:
+          SOURCE_NAME: 'promoimmomarrakech.com'
+          SAMPLE_SIZE: '300'
+          OUTPUT_PREFIX: 'promo-full-field-300-recert'
+        run: npx tsx scripts/data/github-freeze-full-field-recovery.ts
+      - name: Assert read-only recert
+        run: |
+          set -euo pipefail
+          for f in aykana-full-field-300-recert.json atlas-full-field-300-recert.json promo-full-field-300-recert.json; do
+            test "$(jq -r '.database_access' "$f")" = "0"
+            test "$(jq -r '.database_writes' "$f")" = "0"
+          done
+          test "$(jq -r '.candidates_by_field.city.write_safe // 0' aykana-full-field-300-recert.json)" = "0"
+          test "$(jq -r '.candidates_by_field.district.write_safe // 0' aykana-full-field-300-recert.json)" = "0"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: aykana-full-field-300-recert
+          path: |
+            aykana-full-field-300-recert.json
+            aykana-full-field-300-recert.jsonl
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        with:
+          name: atlas-full-field-300-recert
+          path: |
+            atlas-full-field-300-recert.json
+            atlas-full-field-300-recert.jsonl
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        with:
+          name: promo-full-field-300-recert
+          path: |
+            promo-full-field-300-recert.json
+            promo-full-field-300-recert.jsonl
           retention-days: 14
