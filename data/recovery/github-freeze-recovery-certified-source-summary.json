@@ -11,7 +11,10 @@
       "strict_prices": 140,
       "high_confidence_fields": 164,
       "review_fields": 218,
-      "status": "certified"
+      "status": "certified",
+      "run_id": 36604769558,
+      "artifact_id": 11051495420,
+      "digest": "sha256:c8275f494eb2507143736b155f02edfc1fd12a521de343aba051710d392b7833"
     },
     "sarout.ma": {
       "sample": 300,
@@ -20,7 +23,10 @@
       "high_confidence_fields": 309,
       "review_fields": 31,
       "status": "certified_with_source_availability_limit",
-      "note": "109/180 incremental rows returned HTTP 503"
+      "note": "109/180 incremental rows returned HTTP 503",
+      "run_id": 36604769558,
+      "artifact_id": 11050429262,
+      "digest": "sha256:e94a373f962190e6c4514105f54ff4d444a16de3a31fcd62e355561b775d1fd2"
     },
     "domio.ma": {
       "sample": 300,
@@ -28,7 +34,10 @@
       "strict_prices": 13,
       "high_confidence_fields": 427,
       "review_fields": 56,
-      "status": "certified"
+      "status": "certified",
+      "run_id": 36618313897,
+      "artifact_id": 11057651564,
+      "digest": "sha256:8a4f737d2682f1b828fb63e5ff5cf32575c0d8eade4016743bf849cda332a69a"
     },
     "daragadir.com": {
       "sample": 300,
@@ -36,7 +45,10 @@
       "strict_prices": 92,
       "high_confidence_fields": 113,
       "review_fields": 290,
-      "status": "certified"
+      "status": "certified",
+      "run_id": 36627116721,
+      "artifact_id": 11060428898,
+      "digest": "sha256:90119419fbbfe9d6e94804ddf62e0d2b2ef734f040afc62cc330dfce04a3b2a2"
     },
     "promoimmomarrakech.com": {
       "sample": 300,
@@ -44,7 +56,10 @@
       "strict_prices": 2,
       "high_confidence_fields": 38,
       "review_fields": 467,
-      "status": "certified_low_price_yield"
+      "status": "certified_low_price_yield",
+      "run_id": 36628042524,
+      "artifact_id": 11061995278,
+      "digest": "sha256:7caa890c02cc07943f572b49e6c2762acf12bd73d2d87ebd0c355c38ab06925d"
     },
     "masaken.ma": {
       "sample": 300,
@@ -52,7 +67,10 @@
       "strict_prices": 25,
       "high_confidence_fields": 30,
       "review_fields": 373,
-      "status": "certified_review_heavy"
+      "status": "certified_review_heavy",
+      "run_id": 36628843782,
+      "artifact_id": 11061992267,
+      "digest": "sha256:0ade4eea6b6b4a2704c1ff1a55a6684a3b323cb5ec47efc3b7b769d60a48ad01"
     },
     "limmobiliersansfrontieres.com": {
       "sample": 300,
@@ -60,7 +78,10 @@
       "strict_prices": 10,
       "high_confidence_fields": 10,
       "review_fields": 216,
-      "status": "certified_low_high_confidence_yield"
+      "status": "certified_low_high_confidence_yield",
+      "run_id": 36633833084,
+      "artifact_id": 11064178438,
+      "digest": "sha256:71d4b64e164d9d7f83587a3ece83804716ebc9bb0f7446005a74ebaf2f754946"
     },
     "aykana.ma": {
       "sample": 300,
@@ -68,7 +89,10 @@
       "strict_prices": 21,
       "high_confidence_fields": 21,
       "review_fields": 121,
-      "status": "certified"
+      "status": "certified",
+      "run_id": 36638372510,
+      "artifact_id": 11066080696,
+      "digest": "sha256:34d15ff58dc6ea9f15a1015b22dcc46dca5ce4b3757831bad7f16ff94cb84c61"
     },
     "atlasimmobilier.com": {
       "sample": 300,
@@ -76,7 +100,10 @@
       "strict_prices": 0,
       "high_confidence_fields": 2,
       "review_fields": 183,
-      "status": "certified_review_only"
+      "status": "certified_review_only",
+      "run_id": 36648074141,
+      "artifact_id": 11070130296,
+      "digest": "sha256:96969234ef7430b1e5472b1bb74682eab0fe01cd6c4252c1cd5f3c6b28425cd3"
     },
     "1immo.ma": {
       "sample": 243,
@@ -88,7 +115,10 @@
       "guards": [
         "price_per_m2_unit quarantine",
         "sale >100M MAD source-extreme review"
-      ]
+      ],
+      "run_id": 36649697466,
+      "artifact_id": 11069743607,
+      "digest": "sha256:058394192886bc8b47675e30074213d4bd8aefacb266d84c9d4a6c37acec89dc"
     },
     "kawtarimmobilier.com": {
       "sample": 140,
@@ -96,7 +126,10 @@
       "strict_prices": 0,
       "high_confidence_fields": 0,
       "review_fields": 0,
-      "status": "certified_zero_yield"
+      "status": "certified_zero_yield",
+      "run_id": 36682205119,
+      "artifact_id": 11081679489,
+      "digest": "sha256:bda7a621a490f709e67be98180e4e5aa70c53218ed407cb67c5014bd4690bbd6"
     }
   },
   "stopped_sources": {
