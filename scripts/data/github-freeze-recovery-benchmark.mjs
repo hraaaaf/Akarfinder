@@ -124,7 +124,11 @@ function extract(html,url){
     const immo1Sale=sourceName==="1immo.ma" && /(?:^|[-_/])(?:vente|vendre|a-vendre)(?:[-_/]|$)/iu.test(immo1Path);
     const immo1Rent=sourceName==="1immo.ma" && /(?:^|[-_/])(?:location|louer|a-louer|a-loue)(?:[-_/]|$)/iu.test(immo1Path);
     const immo1Short=sourceName==="1immo.ma" && /(?:nuitee|vacances?|saison|courte[-_]?duree|short\s*stay)/iu.test(immo1Path);
-    const transaction=saroutySale?"sale":saroutyRent?"rent":soukSale?"sale":soukRent?"rent":lsfSale?"sale":lsfRent?"rent":aykanaSale?"sale":aykanaRent?"rent":atlasSale&&!atlasRent?"sale":atlasRent&&!atlasSale?"rent":immo1Sale&&!immo1Rent?"sale":immo1Rent&&!immo1Sale?"rent":routeSegs.some(saleSeg)?"sale":routeSegs.some(rentSeg)?"rent":"unknown";
+    const kawtarPath=decodeURIComponent(u);
+    const kawtarSale=sourceName==="kawtarimmobilier.com" && /(?:^|[-_/])(?:vente|vendre|a-vendre)(?:[-_/]|$)/iu.test(kawtarPath);
+    const kawtarRent=sourceName==="kawtarimmobilier.com" && /(?:^|[-_/])(?:location|louer|a-louer)(?:[-_/]|$)/iu.test(kawtarPath);
+    const kawtarShort=sourceName==="kawtarimmobilier.com" && /(?:nuitee|vacances?|saison|courte[-_]?duree|short\s*stay)/iu.test(kawtarPath);
+    const transaction=saroutySale?"sale":saroutyRent?"rent":soukSale?"sale":soukRent?"rent":lsfSale?"sale":lsfRent?"rent":aykanaSale?"sale":aykanaRent?"rent":atlasSale&&!atlasRent?"sale":atlasRent&&!atlasSale?"rent":immo1Sale&&!immo1Rent?"sale":immo1Rent&&!immo1Sale?"rent":kawtarSale&&!kawtarRent?"sale":kawtarRent&&!kawtarSale?"rent":routeSegs.some(saleSeg)?"sale":routeSegs.some(rentSeg)?"rent":"unknown";
     const period=cadence(text,""); price_period=transaction==="sale"?"sale":period;
     const offers=Array.isArray(listing?.offers)?listing.offers:[listing?.offers].filter(Boolean);
     const structuredPrices=[...new Set(offers.map(o=>num(o?.price)).filter(v=>v!=null))];
@@ -140,7 +144,7 @@ function extract(html,url){
       const candidate=prices[0];
       if(currencies.length&&!currencies.includes("MAD")) price_reason="non_mad";
       else if(transaction==="sale"&&candidate<10000) price_reason="sale_too_low";
-      else if(transaction==="rent"&&(shortStay||lsfShort||aykanaShort||atlasShort||immo1Short)) price_reason="short_stay_route";
+      else if(transaction==="rent"&&(shortStay||lsfShort||aykanaShort||atlasShort||immo1Short||kawtarShort)) price_reason="short_stay_route";
       else if(transaction==="rent"&&period==="mixed") price_reason="mixed_cadence";
       else if(transaction==="rent"&&period==="non_monthly") price_reason="non_monthly";
       else if(transaction==="rent"&&period!=="monthly") price_reason="unknown_rental_cadence";
