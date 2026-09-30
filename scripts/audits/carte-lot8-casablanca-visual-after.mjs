@@ -108,6 +108,7 @@ try {
       const quarterStyle = await maplibre.getAttribute("data-maplibre-quarter-style");
       const boundaryRender = await maplibre.getAttribute("data-maplibre-boundary-render");
       const contextRelief = await maplibre.getAttribute("data-maplibre-context-relief");
+      const labelPolicy = await maplibre.getAttribute("data-maplibre-label-policy");
       if (quarterStyle !== "illustrated-progressive-v1") {
         throw new Error(`${viewport.name}: illustrated quarter style contract missing (${quarterStyle})`);
       }
@@ -116,6 +117,9 @@ try {
       }
       if (contextRelief !== "raised-indicative-zone") {
         throw new Error(`${viewport.name}: raised indicative-zone relief contract missing (${contextRelief})`);
+      }
+      if (labelPolicy !== "akarfinder-owned") {
+        throw new Error(`${viewport.name}: Maârif label ownership contract missing (${labelPolicy})`);
       }
       if (shadowPolicy !== "non-metric-overture-footprints") {
         throw new Error(`${viewport.name}: non-metric Overture shadow policy missing (${shadowPolicy})`);
@@ -332,6 +336,7 @@ try {
         quarterStyle,
         boundaryRender,
         contextRelief,
+        labelPolicy,
         buildingFootprintObservationTimedOut,
         renderedHeightCoverageNote: "ratio of rendered 3D features to rendered 2D building features; viewport-specific, not a unique-building census",
         sheetInteraction,
