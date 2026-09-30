@@ -1095,3 +1095,16 @@ Key yields:
 Audited ranges: surface 26..46,460 m²; rooms 2..18; bedrooms 0..11; bathrooms 1..5; plot surface 26..2,000 m². Largest total surfaces map to explicit terrain URLs and remain review-only.
 
 Next: Masaken 300 full-field. PromoImmo disabled on push; Masaken becomes the only active source job.
+
+
+## FULL-FIELD RECOVERY — MASAKEN 300 CERTIFIED / LSF 300 ACTIVE
+
+Masaken run `36720602165`: SUCCESS. Artifact `11097624372`, digest `sha256:acf8158e30f528afc3416885ef7725abbdf1de9c343a6b7ed5639536f5c6a665`.
+
+Certified sample: population 2,047; sample 300; robots 300; HTTP200 270; HTTP410 30; write_safe 473; review 1,495; contradicted 0; DB 0/0.
+
+Yields: transaction 254 write-safe; property type 219 write-safe; description 270 review; surface 264 review; bedrooms 172 review; bathrooms 215 review; rooms 52 review; condition 207 review; property age 155 review.
+
+Audited ranges: surface 15..100,000 m2; bedrooms 0..11; bathrooms 0..10; rooms 1..10; floors 2..9. Largest surfaces map to terrain URLs and are review-only.
+
+Next: LSF full-field 300. Masaken disabled on push; LSF is the only active full-field job.
