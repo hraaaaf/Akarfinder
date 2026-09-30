@@ -1210,3 +1210,30 @@ It consumes the canonical freeze plus 10 certified full-field artifacts (Domio, 
 Global gate assertions: duplicate_conflicts=0; semantic_issues=[]; database_access=0; database_writes=0.
 
 Current exact HEAD after consolidation trigger: `6cf4564e79e2b68bbf098c9646071775919266ed`.
+
+
+## FULL-FIELD RECOVERY V1 — GLOBAL CONSOLIDATION CERTIFIED
+
+Final CI run `36735192462` on HEAD `d7b9ec200a88adbda26bc8606d94d684bb9751a3`: SUCCESS.
+Artifact `11107346118`, digest `sha256:836f9b40f161294808ce92148d7459f392bae9f6be74eeec556f7c4e3dcf8cf5`.
+
+Final certified summary (`AKARFINDER_FULL_FIELD_PASSPORT_V1`):
+- sources: 10;
+- listing_passports / unique_urls: 2,583 / 2,583;
+- candidate_rows: 20,748;
+- candidate_unique_url_fields: 20,748;
+- duplicate_conflicts: 0;
+- semantic_issues: [];
+- existing fields: 349;
+- recovered_write_safe: 7,725;
+- review: 12,984;
+- contradicted: 0;
+- missing: 51,266;
+- average_completeness_before: 0.0048255074 (~0.48%);
+- average_completeness_after_safe: 0.1116365245 (~11.16%);
+- database_access: 0;
+- database_writes: 0.
+
+This closes the offline/read-only FULL-FIELD RECOVERY V1 certification scope for the ten certified sources. No Neon mutation has occurred.
+
+HUMAN GATE — next action requires explicit authorization before any Neon access/write: controlled write of only `recovered_write_safe` fields, followed by readback and semantic verification. Review/missing fields remain untouched.
