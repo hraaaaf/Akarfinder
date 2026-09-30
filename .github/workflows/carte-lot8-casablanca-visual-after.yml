@@ -7,6 +7,9 @@ on:
       - "components/map/MapNeighborhoodExperience.tsx"
       - "components/map/P4MapDecisionRail.tsx"
       - "components/map/MaarifTargetRail.tsx"
+      - "components/map/MapLibreNeighborhood3D.tsx"
+      - "components/map/maplibre-overture-buildings.ts"
+      - "lib/map/akarfinder-territorial-style.ts"
       - "lib/neighborhood-context/**"
       - "scripts/scrapers/__tests__/neighborhood-context-l3-read-model.test.ts"
       - "scripts/scrapers/__tests__/territory-landmark-registry.test.ts"
@@ -38,7 +41,7 @@ jobs:
         run: |
           changed="$(git diff --name-only HEAD^ HEAD)"
           printf '%s\n' "$changed"
-          if printf '%s\n' "$changed" | grep -Eq '^(components/map/(MapNeighborhoodClient|MapNeighborhoodExperience|P4MapDecisionRail|MaarifTargetRail|MapLibreNeighborhood3D|NationalMapRouter|PremiumInteractiveMap)\.tsx|lib/neighborhood-context/|lib/geo/|app/map/|scripts/audits/carte-lot8-casablanca-visual-after\.mjs|scripts/scrapers/__tests__/(neighborhood-context-l3-read-model|territory-landmark-registry)\.test\.ts|\.github/workflows/carte-lot8-casablanca-visual-after\.yml)'; then
+          if printf '%s\n' "$changed" | grep -Eq '^(components/map/(MapNeighborhoodClient|MapNeighborhoodExperience|P4MapDecisionRail|MaarifTargetRail|MapLibreNeighborhood3D|NationalMapRouter|PremiumInteractiveMap)\.tsx|components/map/maplibre-overture-buildings\.ts|lib/map/akarfinder-territorial-style\.ts|lib/neighborhood-context/|lib/geo/|app/map/|scripts/audits/carte-lot8-casablanca-visual-after\.mjs|scripts/scrapers/__tests__/(neighborhood-context-l3-read-model|territory-landmark-registry)\.test\.ts|\.github/workflows/carte-lot8-casablanca-visual-after\.yml)'; then
             echo "run=true" >> "$GITHUB_OUTPUT"
           else
             echo "run=false" >> "$GITHUB_OUTPUT"
