@@ -13,6 +13,7 @@ const ACTIVE = "akarfinder-national-neighborhood-active";
 const LABELS = "akarfinder-national-neighborhood-labels";
 const ATLAS_SOURCE = "akarfinder-casablanca-arrondissement-atlas";
 const ATLAS_FILL = "akarfinder-casablanca-arrondissement-fill";
+const ATLAS_HALO = "akarfinder-casablanca-arrondissement-halo";
 const ATLAS_LINE = "akarfinder-casablanca-arrondissement-line";
 const ATLAS_LABELS = "akarfinder-casablanca-arrondissement-labels";
 const ATLAS_ACTIVE_FILL = "akarfinder-casablanca-arrondissement-active-fill";
@@ -94,7 +95,7 @@ function hasLayer(map: MapLibreMap | null | undefined, id: string): boolean {
 
 function removeLayers(map: MapLibreMap | null | undefined) {
   if (!hasLiveStyle(map)) return;
-  for (const id of [LABELS, ACTIVE, DOTS, HITS, ATLAS_ACTIVE_LINE, ATLAS_ACTIVE_FILL, ATLAS_LABELS, ATLAS_LINE, ATLAS_FILL]) {
+  for (const id of [LABELS, ACTIVE, DOTS, HITS, ATLAS_ACTIVE_LINE, ATLAS_ACTIVE_FILL, ATLAS_LABELS, ATLAS_LINE, ATLAS_HALO, ATLAS_FILL]) {
     try {
       if (hasLayer(map, id)) map.removeLayer(id);
     } catch {
@@ -211,7 +212,7 @@ export function NationalNeighborhoodOverlay({
           } else if (layer.type === "line" && /(motorway|trunk|primary|secondary|road|street|highway)/i.test(layer.id)) {
             const value = map.getPaintProperty(layer.id, "line-opacity");
             basemapRoadSnapshots.push({ layerId: layer.id, property: "line-opacity", value });
-            map.setPaintProperty(layer.id, "line-opacity", /(motorway|trunk|primary)/i.test(layer.id) ? 0.28 : 0.14);
+            map.setPaintProperty(layer.id, "line-opacity", /(motorway|trunk|primary)/i.test(layer.id) ? 0.46 : 0.20);
           }
         } catch {
           // Third-party layers may expose different paint contracts.
@@ -238,7 +239,18 @@ export function NationalNeighborhoodOverlay({
         source: ATLAS_SOURCE,
         paint: {
           "fill-color": ["get", "tone"],
-          "fill-opacity": theme === "dark" ? 0.34 : 0.30,
+          "fill-opacity": theme === "dark" ? 0.42 : 0.54,
+        },
+      });
+      map.addLayer({
+        id: ATLAS_HALO,
+        type: "line",
+        source: ATLAS_SOURCE,
+        paint: {
+          "line-color": theme === "dark" ? "#ADC6C7" : "#6B99A4",
+          "line-opacity": theme === "dark" ? 0.22 : 0.28,
+          "line-width": ["interpolate", ["linear"], ["zoom"], 8.5, 4.2, 11, 6.2],
+          "line-blur": 2.2,
         },
       });
       map.addLayer({
@@ -248,7 +260,7 @@ export function NationalNeighborhoodOverlay({
         paint: {
           "line-color": theme === "dark" ? "#ADC6C7" : "#123250",
           "line-opacity": 0.88,
-          "line-width": ["interpolate", ["linear"], ["zoom"], 9, 1.05, 11, 1.7],
+          "line-width": ["interpolate", ["linear"], ["zoom"], 8.5, 1.25, 11, 2.15],
         },
       });
       map.addLayer({
