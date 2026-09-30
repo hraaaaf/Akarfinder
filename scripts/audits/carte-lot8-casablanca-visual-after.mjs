@@ -104,8 +104,12 @@ try {
       const overtureEstimatedCount = Number(await maplibre.getAttribute("data-maplibre-overture-estimated-count") ?? 0);
       const overtureRelease = await maplibre.getAttribute("data-maplibre-overture-release");
       const shadowPolicy = await maplibre.getAttribute("data-maplibre-shadow-policy");
+      const contextFocus = await maplibre.getAttribute("data-maplibre-context-focus");
       if (shadowPolicy !== "non-metric-overture-footprints") {
         throw new Error(`${viewport.name}: non-metric Overture shadow policy missing (${shadowPolicy})`);
+      }
+      if (contextFocus !== "verified-anchor-envelope-not-boundary") {
+        throw new Error(`${viewport.name}: Maârif context focus semantic missing (${contextFocus})`);
       }
       if (overtureState !== "available") throw new Error(`${viewport.name}: Overture 3D bundle unavailable (${overtureState})`);
       if (overtureTotalCount < 4900) throw new Error(`${viewport.name}: Overture bundle unexpectedly sparse (${overtureTotalCount})`);
@@ -299,6 +303,7 @@ try {
         overtureEstimatedCount,
         overtureRelease,
         shadowPolicy,
+        contextFocus,
         buildingFootprintObservationTimedOut,
         renderedHeightCoverageNote: "ratio of rendered 3D features to rendered 2D building features; viewport-specific, not a unique-building census",
         sheetInteraction,
