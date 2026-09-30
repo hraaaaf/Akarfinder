@@ -821,3 +821,40 @@ Workflow HEAD: `cd4f3780309e36dd0f83f597c186ef6d3803c2c5`.
 Run: `36649107103` — in progress at last check; previous source jobs skipped.
 
 Next prepared source: Kawtar Immobilier (140 KEEP+eligible), with route semantics fully explicit in the canonical freeze: 121 sale + 19 rent + 0 unknown; 0 short-stay marker.
+
+
+## 1IMMO 243 — CORRECTED AND CERTIFIED
+
+Corrected run `36649697466` on HEAD `68e21d4d6e6b6f416d3c973358cf636dc7f8742c`: SUCCESS.
+Artifact: `11069743607`, digest `sha256:058394192886bc8b47675e30074213d4bd8aefacb266d84c9d4a6c37acec89dc`.
+
+Results:
+- sample: 243/243 (full freeze population for source);
+- robots allowed: 243;
+- HTTP 200 accessible: 201;
+- recovery from NULL: price 67, surface 38, bedrooms 11, bathrooms 1, rooms 2;
+- high-confidence: **69 fields** = price 67 + rooms 2;
+- review: **50 fields** = surface 38 + bedrooms 11 + bathrooms 1;
+- conflicts: 0;
+- Neon access/write: 0/0.
+
+Price rejection/quarantine classes:
+- unknown_transaction 47;
+- unknown_rental_cadence 33;
+- no_explicit_price 48;
+- non_monthly 1;
+- sale_too_low 2;
+- **price_per_m2_unit 1**;
+- **source_extreme_sale_price_review 2**.
+
+Critical semantic fix proven:
+- a source JSON-LD Offer of 14,000 MAD where primary description said explicitly 14,000 DH/m² is now quarantined as `price_per_m2_unit`, not treated as total sale price;
+- 1immo sale prices >100M MAD are quarantined for source-extreme review rather than accepted automatically.
+
+Conclusion: 1immo recovery is certified only after these safeguards.
+
+## KAWTAR 140 — ACTIVE
+
+Canonical freeze audit: 140 KEEP+eligible rows = 121 explicit sale + 19 explicit rent + 0 unknown + 0 short-stay.
+Workflow HEAD: `fe3cef7f6e570202fcad4bbe0a815b08eec9ebd9`.
+Run: `36682205119` queued at last check; 1immo and prior sources disabled/skipped on push.
