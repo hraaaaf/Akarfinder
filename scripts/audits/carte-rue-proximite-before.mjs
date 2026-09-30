@@ -54,13 +54,15 @@ async function recenterTwinCenter(page, viewport) {
     await page.waitForTimeout(450);
   }
 
-  const zoomIn = page.getByRole("button", { name: "Zoomer" });
-  await zoomIn.click();
-  await page.waitForTimeout(250);
-  await zoomIn.click();
-  await page.waitForTimeout(250);
-  await zoomIn.click();
-  await page.waitForTimeout(650);
+  // Use native canvas wheel zoom for the BEFORE baseline. This avoids depending
+  // on viewport-specific control visibility while preserving the real product renderer.
+  await page.mouse.move(desired.x, desired.y);
+  await page.mouse.wheel(0, -620);
+  await page.waitForTimeout(350);
+  await page.mouse.wheel(0, -620);
+  await page.waitForTimeout(350);
+  await page.mouse.wheel(0, -420);
+  await page.waitForTimeout(700);
 
   // One final small correction after zooming.
   const finalLabel = await landmarkBox(page);
