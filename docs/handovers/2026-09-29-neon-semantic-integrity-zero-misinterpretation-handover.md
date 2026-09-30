@@ -1128,3 +1128,23 @@ Key yields: title 299 write-safe; transaction 280 write-safe; property type 234 
 Audited ranges: surface 4..110,000 m2; bedrooms 1..10; rooms 1..23; bathrooms 1..15. High numeric extremes are review-only, never write-safe.
 
 Next: Aykana full-field 300. LSF disabled on push; Aykana is the only active full-field source job.
+
+
+## FULL-FIELD RECOVERY — AYKANA 300 CERTIFIED / ATLAS 300 ACTIVE
+
+Aykana run `36725494949` on HEAD `3ac3a5fb9d1fee19db72bb20ed80aa0e6e648454`: SUCCESS.
+Artifact `11102612060`, digest `sha256:74386cca1198fee420dc034d4ac8eec29a7cd615bdfd03209e5c38e0be734ac3`.
+
+Certified Aykana sample:
+- freeze population 474; deterministic sample 300;
+- robots 300/300; HTTP200 300/300;
+- write_safe fields 883;
+- review fields 1,745;
+- contradicted fields 0;
+- DB access/write 0/0.
+
+Key yields: title 300 write-safe; transaction 299 write-safe; property type 150 write-safe; city 67 write-safe; district 67 write-safe; description 300 review; surface 271 review; bedrooms 207 review; bathrooms 131 review; thumbnail 232 review; equipped kitchen 144 review; pool 92 review.
+
+Audited ranges: surface 1.5..370,000 m2; bedrooms 1..6; bathrooms 1..6; rooms 2..9. Very large surfaces map to explicit terrain URLs and are review-only.
+
+Next: AtlasImmobilier full-field 300. Aykana disabled on push; Atlas is the only active full-field source job.
