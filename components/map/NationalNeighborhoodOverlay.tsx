@@ -242,7 +242,7 @@ export function NationalNeighborhoodOverlay({
         source: ATLAS_SOURCE,
         paint: {
           "fill-color": ["get", "tone"],
-          "fill-opacity": theme === "dark" ? 0.34 : 0.42,
+          "fill-opacity": theme === "dark" ? 0.38 : 0.52,
         },
       });
       map.addLayer({
@@ -251,9 +251,9 @@ export function NationalNeighborhoodOverlay({
         source: ATLAS_SOURCE,
         paint: {
           "line-color": theme === "dark" ? "#6B99A4" : "#6B99A4",
-          "line-opacity": theme === "dark" ? 0.18 : 0.20,
-          "line-width": ["interpolate", ["linear"], ["zoom"], 8.5, 2.8, 11, 3.6],
-          "line-blur": 2.4,
+          "line-opacity": theme === "dark" ? 0.16 : 0.16,
+          "line-width": ["interpolate", ["linear"], ["zoom"], 8.5, 2.5, 11, 3.2],
+          "line-blur": 2.2,
         },
       });
       map.addLayer({
@@ -261,9 +261,9 @@ export function NationalNeighborhoodOverlay({
         type: "line",
         source: ATLAS_SOURCE,
         paint: {
-          "line-color": theme === "dark" ? "#BFDDE4" : "#F8FBFC",
-          "line-opacity": 0.96,
-          "line-width": ["interpolate", ["linear"], ["zoom"], 8.5, 1.05, 11, 1.45],
+          "line-color": theme === "dark" ? "#D9E8EA" : "#FBFDFD",
+          "line-opacity": 0.98,
+          "line-width": ["interpolate", ["linear"], ["zoom"], 8.5, 0.95, 11, 1.25],
         },
       });
       map.addLayer({
@@ -294,7 +294,7 @@ export function NationalNeighborhoodOverlay({
         minzoom: 8.5,
         layout: {
           "text-field": ["get", "displayName"],
-          "text-size": ["interpolate", ["linear"], ["zoom"], 8.5, 10.5, 10.5, 13.25, 12, 15],
+          "text-size": ["interpolate", ["linear"], ["zoom"], 8.5, 9.75, 10.5, 12.5, 12, 14.5],
           "text-letter-spacing": 0.035,
           "text-allow-overlap": false,
           "text-ignore-placement": false,
