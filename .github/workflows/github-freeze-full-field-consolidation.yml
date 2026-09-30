@@ -1,0 +1,59 @@
+name: GitHub Freeze Full Field Consolidation
+
+on:
+  push:
+    branches:
+      - data/neon-price-recovery-audit
+    paths:
+      - 'scripts/data/consolidate-full-field-recovery.mjs'
+      - '.github/workflows/github-freeze-full-field-consolidation.yml'
+  workflow_dispatch:
+
+jobs:
+  consolidate-full-field:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Fetch canonical freeze
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/freeze
+          curl --fail --location --retry 3 -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' -H 'X-GitHub-Api-Version: 2022-11-28' "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/10910779576/zip" -o .tmp/freeze.zip
+          unzip -q .tmp/freeze.zip -d .tmp/freeze
+          echo "e7ac4bca2db34ad334ed7234cfb8be93fc9baca68a9694f5024989b5cc2bb953  .tmp/freeze/clean-corpus-v4.11-core.jsonl.gz" | sha256sum -c -
+      - name: Fetch certified full-field artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/full-field-artifacts
+          for spec in             "11089447063 domio"             "11088759023 marocimmo"             "11090975222 sarout"             "11090897044 promo"             "11097624372 masaken"             "11101293461 lsf"             "11102612060 aykana"             "11105070017 atlas"             "11104979311 oneimmo"             "11106271952 kawtar"
+          do
+            set -- $spec
+            id="$1"
+            name="$2"
+            mkdir -p ".tmp/full-field-artifacts/$name"
+            curl --fail --location --retry 3 -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' -H 'X-GitHub-Api-Version: 2022-11-28' "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/$id/zip" -o ".tmp/$name.zip"
+            unzip -q ".tmp/$name.zip" -d ".tmp/full-field-artifacts/$name"
+          done
+      - name: Consolidate full-field passports
+        run: node scripts/data/consolidate-full-field-recovery.mjs
+      - name: Assert zero conflict and read-only
+        run: |
+          test "$(jq -r '.duplicate_conflicts' data/recovery/full-field-consolidated/full-field-summary.json)" = "0"
+          test "$(jq '.semantic_issues | length' data/recovery/full-field-consolidated/full-field-summary.json)" = "0"
+          test "$(jq -r '.database_access' data/recovery/full-field-consolidated/full-field-summary.json)" = "0"
+          test "$(jq -r '.database_writes' data/recovery/full-field-consolidated/full-field-summary.json)" = "0"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: full-field-recovery-consolidated
+          path: data/recovery/full-field-consolidated/
+          retention-days: 14
