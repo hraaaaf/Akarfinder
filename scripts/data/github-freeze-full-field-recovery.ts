@@ -81,6 +81,19 @@ function meta(html:string,key:string){
   const $=load(html);
   return ($(`meta[property="${key}"]`).attr("content")||$(`meta[name="${key}"]`).attr("content")||"").trim()||null;
 }
+function isSoftPage(title:string|null,desc:string){
+  const t=(title||"").trim().toLowerCase();
+  const d=(desc||"").trim().toLowerCase();
+  return /^(?:404(?:\b|[-_])|accueil\b|acceuil\b|page not found\b|not found\b)/i.test(t)
+    || /retour à l['’]accueil|retour a l['’]accueil|ce bien a été vendu|ce bien a ete vendu/i.test(d);
+}
+function isGenericListingTitle(title:string|null){
+  const t=(title||"").replace(/\s+/g," ").trim();
+  if(!t) return true;
+  return /^(?:404(?:\b|[-_])|accueil\b|acceuil\b|page not found\b|not found\b)/i.test(t)
+    || /^tous\s+les?\s+biens?\s+immobiliers?\b/i.test(t)
+    || /^agence\s+immobili[eè]re\s+[àa]\b/i.test(t);
+}
 const existingMap:Record<string,string[]>={
   property_type:["property_type"],transaction_type:["transaction_type"],
   title:["title"],description:["description","description_snippet"],city:["city"],district:["district"],
@@ -118,13 +131,17 @@ for(const row of sample){
   const d=extractDetail(html);
   const title=meta(html,"og:title");
   const desc=d.description_snippet||meta(html,"description")||meta(html,"og:description")||"";
+  const softPage=isSoftPage(title,desc);
   const c:Candidate[]=[];
-  add(c,row,"title",title,"high","meta:og:title",true);
-  add(c,row,"property_type",detectPropertyType([title,desc].filter(Boolean).join(" ")),"high","explicit:title_or_description_property_type",true);
-  add(c,row,"transaction_type",detectTransaction(url,[title,desc].filter(Boolean).join(" ")),"high","explicit:url_or_primary_transaction",true);
-  add(c,row,"description",d.description_snippet,d._confidence.description,"extractDetail:description",d._confidence.description==="high");
-  add(c,row,"city",d.city,d._confidence.city,"extractDetail:city",d._confidence.city==="high");
-  add(c,row,"district",d.district,d._confidence.district,"extractDetail:district",d._confidence.district==="high");
+  if(!softPage && !isGenericListingTitle(title)) add(c,row,"title",title,"high","meta:og:title",true);
+  if(!softPage) add(c,row,"property_type",detectPropertyType([title,desc].filter(Boolean).join(" ")),"high","explicit:title_or_description_property_type",true);
+  add(c,row,"transaction_type",detectTransaction(url,softPage?"":[title,desc].filter(Boolean).join(" ")),"high","explicit:url_or_primary_transaction",true);
+  if(!softPage){
+    add(c,row,"description",d.description_snippet,d._confidence.description,"extractDetail:description",d._confidence.description==="high");
+    add(c,row,"city",d.city,d._confidence.city,"extractDetail:city",d._confidence.city==="high");
+    add(c,row,"district",d.district,d._confidence.district,"extractDetail:district",d._confidence.district==="high");
+  }
+  if(!softPage){
   const s=d.surface_raw?.match(/([0-9]+(?:[.,][0-9]+)?)/)?.[1];
   const surfaceValue=s?Number(s.replace(",",".")):null;
   const validSurface=surfaceValue!=null && Number.isFinite(surfaceValue) && surfaceValue>0 ? surfaceValue : null;
@@ -137,6 +154,7 @@ for(const row of sample){
   add(c,row,"thumbnail_url",d.thumbnail_url,"review","meta:og:image",false);
   for(const field of ["built_surface_m2","plot_surface_m2","condition","property_age_range","orientation","floor_type","floors_count","garden_m2","terrace_m2","garage_spaces","has_pool","has_concierge","has_equipped_kitchen","has_moroccan_living_room","has_european_living_room"]){
     add(c,row,field,(d as any)[field],"review",`extractDetail:p8a:${field}`,false);
+  }
   }
   rec.candidates=c;
   results.push(rec);
