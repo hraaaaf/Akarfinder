@@ -216,13 +216,13 @@ export function NationalTerritoryExperience({ selectedCitySlug, onSelectCity, on
       id: BOUNDARY_FILL,
       type: "fill",
       source: BOUNDARY_SOURCE,
-      paint: { "fill-color": territoryTone, "fill-opacity": payload.view === "city" ? 0.08 : 0.018 },
+      paint: { "fill-color": territoryTone, "fill-opacity": payload.view === "city" ? 0.025 : 0.018 },
     });
     map.addLayer({
       id: BOUNDARY_LINE,
       type: "line",
       source: BOUNDARY_SOURCE,
-      paint: { "line-color": territoryLine, "line-opacity": payload.view === "city" ? 0.72 : 0.22, "line-width": payload.view === "city" ? 1.8 : 0.7 },
+      paint: { "line-color": territoryLine, "line-opacity": payload.view === "city" ? 0.86 : 0.22, "line-width": payload.view === "city" ? 2.2 : 0.7 },
     });
     map.addLayer({
       id: ACTIVE_FILL,
@@ -333,7 +333,14 @@ export function NationalTerritoryExperience({ selectedCitySlug, onSelectCity, on
       setActive(payload.place.slug);
       const bounds = boundsForGeoJSON(payload.boundary);
       if (bounds) {
-        map.fitBounds(bounds, { padding: { top: 125, right: 40, bottom: 135, left: 40 }, duration: 750, maxZoom: 10.5 });
+        const compactCityViewport = window.matchMedia("(max-width: 639px)").matches;
+        map.fitBounds(bounds, {
+          padding: compactCityViewport
+            ? { top: 150, right: 8, bottom: 105, left: 8 }
+            : { top: 125, right: 32, bottom: 120, left: 32 },
+          duration: 750,
+          maxZoom: compactCityViewport ? 11.35 : 10.65,
+        });
       } else if (payload.place.center) {
         map.flyTo({ center: [payload.place.center.lng, payload.place.center.lat], zoom: 10, duration: 750 });
       }

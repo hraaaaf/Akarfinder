@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ChevronDown, Layers3, MapPin, Search, ShieldCheck, Trees, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Map as MapLibreMap, MapMouseEvent } from "maplibre-gl";
-import { AKARFINDER_MOROCCO_MAP_NAVY, territoryLightToneForKey } from "@/lib/map/akarfinder-territorial-style";
+import { AKARFINDER_MOROCCO_MAP_NAVY, territoryLightToneForKey, territoryToneForKey } from "@/lib/map/akarfinder-territorial-style";
 
 const SOURCE = "akarfinder-national-neighborhood-points";
 const HITS = "akarfinder-national-neighborhood-hits";
@@ -207,12 +207,15 @@ export function NationalNeighborhoodOverlay({
             const textOpacity = map.getPaintProperty(layer.id, "text-opacity");
             const iconOpacity = map.getPaintProperty(layer.id, "icon-opacity");
             basemapSymbolSnapshots.set(layer.id, { textOpacity, iconOpacity });
-            if (layer.layout?.["text-field"] !== undefined) map.setPaintProperty(layer.id, "text-opacity", 0.10);
+            if (layer.layout?.["text-field"] !== undefined) {
+              const roadLabel = /(road|street|highway|transport|motorway|trunk|primary)/i.test(layer.id);
+              map.setPaintProperty(layer.id, "text-opacity", roadLabel ? 0.34 : 0.08);
+            }
             if (layer.layout?.["icon-image"] !== undefined) map.setPaintProperty(layer.id, "icon-opacity", 0.02);
           } else if (layer.type === "line" && /(motorway|trunk|primary|secondary|road|street|highway)/i.test(layer.id)) {
             const value = map.getPaintProperty(layer.id, "line-opacity");
             basemapRoadSnapshots.push({ layerId: layer.id, property: "line-opacity", value });
-            map.setPaintProperty(layer.id, "line-opacity", /(motorway|trunk|primary)/i.test(layer.id) ? 0.46 : 0.20);
+            map.setPaintProperty(layer.id, "line-opacity", /(motorway|trunk|primary)/i.test(layer.id) ? 0.52 : 0.18);
           }
         } catch {
           // Third-party layers may expose different paint contracts.
@@ -228,7 +231,7 @@ export function NationalNeighborhoodOverlay({
           properties: {
             ...feature.properties,
             slug: feature.properties.neighborhoodCanonicalId,
-            tone: territoryLightToneForKey(feature.properties.neighborhoodCanonicalId),
+            tone: territoryToneForKey(feature.properties.neighborhoodCanonicalId),
           },
         })),
       };
@@ -239,7 +242,7 @@ export function NationalNeighborhoodOverlay({
         source: ATLAS_SOURCE,
         paint: {
           "fill-color": ["get", "tone"],
-          "fill-opacity": theme === "dark" ? 0.42 : 0.54,
+          "fill-opacity": theme === "dark" ? 0.34 : 0.42,
         },
       });
       map.addLayer({
@@ -247,10 +250,10 @@ export function NationalNeighborhoodOverlay({
         type: "line",
         source: ATLAS_SOURCE,
         paint: {
-          "line-color": theme === "dark" ? "#ADC6C7" : "#6B99A4",
-          "line-opacity": theme === "dark" ? 0.16 : 0.18,
-          "line-width": ["interpolate", ["linear"], ["zoom"], 8.5, 3.2, 11, 4.4],
-          "line-blur": 2.6,
+          "line-color": theme === "dark" ? "#6B99A4" : "#6B99A4",
+          "line-opacity": theme === "dark" ? 0.18 : 0.20,
+          "line-width": ["interpolate", ["linear"], ["zoom"], 8.5, 2.8, 11, 3.6],
+          "line-blur": 2.4,
         },
       });
       map.addLayer({
@@ -258,9 +261,9 @@ export function NationalNeighborhoodOverlay({
         type: "line",
         source: ATLAS_SOURCE,
         paint: {
-          "line-color": theme === "dark" ? "#ADC6C7" : "#123250",
-          "line-opacity": 0.88,
-          "line-width": ["interpolate", ["linear"], ["zoom"], 8.5, 1.25, 11, 2.15],
+          "line-color": theme === "dark" ? "#BFDDE4" : "#F8FBFC",
+          "line-opacity": 0.96,
+          "line-width": ["interpolate", ["linear"], ["zoom"], 8.5, 1.05, 11, 1.45],
         },
       });
       map.addLayer({
@@ -291,17 +294,17 @@ export function NationalNeighborhoodOverlay({
         minzoom: 8.5,
         layout: {
           "text-field": ["get", "displayName"],
-          "text-size": ["interpolate", ["linear"], ["zoom"], 8.5, 12.5, 10.5, 15.5, 12, 17],
-          "text-letter-spacing": 0.045,
+          "text-size": ["interpolate", ["linear"], ["zoom"], 8.5, 10.5, 10.5, 13.25, 12, 15],
+          "text-letter-spacing": 0.035,
           "text-allow-overlap": false,
           "text-ignore-placement": false,
-          "text-padding": 8,
+          "text-padding": 14,
         },
         paint: {
           "text-color": theme === "dark" ? "#F4FAFF" : "#123250",
           "text-halo-color": theme === "dark" ? "#071426" : "#F7FBFD",
-          "text-halo-width": 1.8,
-          "text-opacity": 0.98,
+          "text-halo-width": 2.6,
+          "text-opacity": 0.96,
         },
       });
     }
