@@ -583,6 +583,7 @@ jobs:
           retention-days: 14
 
   immo1-freeze-benchmark:
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
@@ -629,7 +630,6 @@ jobs:
           retention-days: 14
 
   kawtar-freeze-benchmark:
-    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
