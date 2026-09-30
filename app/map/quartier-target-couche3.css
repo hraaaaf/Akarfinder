@@ -517,7 +517,12 @@
 
 @media (max-width: 560px) {
   [data-maarif-rebuild="true"] .maarif-target-rail {
-    height: min(39svh, 336px) !important;
-    max-height: min(39svh, 336px) !important;
+    height: min(26svh, 218px) !important;
+    max-height: min(26svh, 218px) !important;
+  }
+
+  [data-maarif-rebuild="true"] .maarif-target-rail[data-sheet-expanded="true"] {
+    height: min(74svh, 620px) !important;
+    max-height: min(74svh, 620px) !important;
   }
 }
