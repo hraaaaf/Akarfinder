@@ -47,7 +47,7 @@ function assertSafeStageRow(row){
   if(title && (
     /^(?:404(?:\b|[-_])|accueil\b|acceuil\b|page not found\b|not found\b)/i.test(title)
     || /^tous\s+les?\s+biens?\s+immobiliers?\b/i.test(title)
-    || /^agence\s+immobili[eè]re\s+[àa]\b/i.test(title)
+    || /^agence\s+immobili[eè]re\s+(?:à|a)(?=\s|$)/i.test(title)
   )) throw new Error(`unsafe generic title for ${row.url}`);
   if(containsContactPii(row.title)||containsContactPii(row.description_snippet)) throw new Error(`contact PII in staged text for ${row.url}`);
   const city=safeString(row.city);
