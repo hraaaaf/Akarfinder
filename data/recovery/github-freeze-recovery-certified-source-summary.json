@@ -1,0 +1,133 @@
+{
+  "generated_from": "GitHub canonical freeze artifact 10910779576",
+  "freeze_rows": 226286,
+  "freeze_sha256": "e7ac4bca2db34ad334ed7234cfb8be93fc9baca68a9694f5024989b5cc2bb953",
+  "database_access": 0,
+  "database_writes": 0,
+  "certified_sources": {
+    "marocimmo.com": {
+      "sample": 300,
+      "accessible": 300,
+      "strict_prices": 140,
+      "high_confidence_fields": 164,
+      "review_fields": 218,
+      "status": "certified"
+    },
+    "sarout.ma": {
+      "sample": 300,
+      "accessible": 189,
+      "strict_prices": 73,
+      "high_confidence_fields": 309,
+      "review_fields": 31,
+      "status": "certified_with_source_availability_limit",
+      "note": "109/180 incremental rows returned HTTP 503"
+    },
+    "domio.ma": {
+      "sample": 300,
+      "accessible": 300,
+      "strict_prices": 13,
+      "high_confidence_fields": 427,
+      "review_fields": 56,
+      "status": "certified"
+    },
+    "daragadir.com": {
+      "sample": 300,
+      "accessible": 300,
+      "strict_prices": 92,
+      "high_confidence_fields": 113,
+      "review_fields": 290,
+      "status": "certified"
+    },
+    "promoimmomarrakech.com": {
+      "sample": 300,
+      "accessible": 300,
+      "strict_prices": 2,
+      "high_confidence_fields": 38,
+      "review_fields": 467,
+      "status": "certified_low_price_yield"
+    },
+    "masaken.ma": {
+      "sample": 300,
+      "accessible": 271,
+      "strict_prices": 25,
+      "high_confidence_fields": 30,
+      "review_fields": 373,
+      "status": "certified_review_heavy"
+    },
+    "limmobiliersansfrontieres.com": {
+      "sample": 300,
+      "accessible": 299,
+      "strict_prices": 10,
+      "high_confidence_fields": 10,
+      "review_fields": 216,
+      "status": "certified_low_high_confidence_yield"
+    },
+    "aykana.ma": {
+      "sample": 300,
+      "accessible": 300,
+      "strict_prices": 21,
+      "high_confidence_fields": 21,
+      "review_fields": 121,
+      "status": "certified"
+    },
+    "atlasimmobilier.com": {
+      "sample": 300,
+      "accessible": 300,
+      "strict_prices": 0,
+      "high_confidence_fields": 2,
+      "review_fields": 183,
+      "status": "certified_review_only"
+    },
+    "1immo.ma": {
+      "sample": 243,
+      "accessible": 201,
+      "strict_prices": 67,
+      "high_confidence_fields": 69,
+      "review_fields": 50,
+      "status": "certified_after_semantic_fix",
+      "guards": [
+        "price_per_m2_unit quarantine",
+        "sale >100M MAD source-extreme review"
+      ]
+    },
+    "kawtarimmobilier.com": {
+      "sample": 140,
+      "accessible": 111,
+      "strict_prices": 0,
+      "high_confidence_fields": 0,
+      "review_fields": 0,
+      "status": "certified_zero_yield"
+    }
+  },
+  "stopped_sources": {
+    "mouldar.com": {
+      "sample": 300,
+      "status": "stop_robots",
+      "robots_allowed": 0,
+      "accessible": 0
+    },
+    "sarouty.ma": {
+      "sample": 300,
+      "status": "stop_http_202_no_certifiable_evidence",
+      "accessible": 0
+    },
+    "soukimmobilier.com": {
+      "sample": 300,
+      "status": "stop_http_403",
+      "accessible": 0
+    },
+    "agenz.ma": {
+      "status": "partnership_or_csv_import_only",
+      "automated_fetch": false
+    }
+  },
+  "totals_across_certified_benchmark_outputs": {
+    "strict_prices": 443,
+    "high_confidence_fields": 1183,
+    "review_fields": 2005
+  },
+  "interpretation": {
+    "note": "Totals are benchmark-output counts across distinct source cohorts, not production writes and not a count of unique production listings.",
+    "next_gate": "Consolidate source-specific offline write-safe cohorts, deduplicate by canonical URL/source identity, run cross-field semantic checks, then present a human gate before any Neon write."
+  }
+}
