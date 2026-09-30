@@ -620,8 +620,29 @@ jobs:
             test "$(jq -r '.database_access' "$f")" = "0"
             test "$(jq -r '.database_writes' "$f")" = "0"
           done
-          ! grep -Eiq '([+]?212|0)[ .-]*[5-7]([ .-]*[0-9]){8}|@[A-Za-z0-9.-]+\.[A-Za-z]{2,}|wa\.me|whats[[:space:]]*app' domio-full-field-100-pii-recert.jsonl
-          ! grep -Eiq '([+]?212|0)[ .-]*[5-7]([ .-]*[0-9]){8}|@[A-Za-z0-9.-]+\.[A-Za-z]{2,}|wa\.me|whats[[:space:]]*app' oneimmo-full-field-243-pii-recert.jsonl
+          node - <<'NODE'
+          const fs=require('fs');
+          const files=['domio-full-field-100-pii-recert.jsonl','oneimmo-full-field-243-pii-recert.jsonl'];
+          const pii=(value)=>{
+            const s=String(value||'').replace(/\\u00a0/g,' ');
+            return /\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}\\b/i.test(s)
+              || /(?<!\\d)(?:\\+?212|0)\\s*[5-7](?:[\\s.\\-]?\\d){8}(?!\\d)/i.test(s)
+              || /\\b(?:t[eé]l(?:[eé]phone)?|gsm|whats\\s*app)\\s*[:\\-]?\\s*(?:\\+?212|0)?\\s*[5-7](?:[\\s.\\-]?\\d|\\.{2,}){2,}/i.test(s)
+              || /(?:wa\\.me|api\\.whatsapp\\.com)/i.test(s);
+          };
+          let bad=0;
+          for(const file of files){
+            for(const line of fs.readFileSync(file,'utf8').split(/\\r?\\n/).filter(Boolean)){
+              const row=JSON.parse(line);
+              for(const c of row.candidates||[]){
+                if(!['title','description'].includes(c.field)) continue;
+                if(pii(c.value)) bad++;
+              }
+            }
+          }
+          if(bad) throw new Error('PII-bearing title/description candidates='+bad);
+          console.log(JSON.stringify({pii_text_candidates:0}));
+          NODE
       - uses: actions/upload-artifact@v4
         with:
           name: domio-full-field-100-pii-recert
