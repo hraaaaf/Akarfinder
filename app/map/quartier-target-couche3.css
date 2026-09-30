@@ -480,3 +480,44 @@
     max-height: min(74svh, 620px) !important;
   }
 }
+
+
+/* Pass 13 — premium hierarchy after exact-head TARGET review.
+ * Focus reads through local contrast, not a cartographic halo.
+ */
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-target-context-label {
+  color: #36516f !important;
+  font-size: 10.5px !important;
+  font-weight: 760 !important;
+  opacity: .78 !important;
+  letter-spacing: -.01em !important;
+  text-shadow:
+    0 1px 0 rgb(255 255 255 / .96),
+    0 2px 6px rgb(25 59 92 / .07) !important;
+}
+
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-target-landmark-label {
+  border-color: rgb(207 219 231 / .82) !important;
+  background: rgb(255 255 255 / .90) !important;
+  box-shadow: 0 8px 20px rgb(7 27 51 / .08) !important;
+  backdrop-filter: blur(10px);
+}
+
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-camera-policy="contextual-center"]
+  .maplibre-spike-canvas canvas {
+  filter: saturate(.90) contrast(1.01) brightness(1.005) !important;
+}
+
+@media (max-width: 767px) {
+  [data-akar-quartier-target="maarif-couche1"] .maplibre-spike-target-context-label {
+    font-size: 8.5px !important;
+    opacity: .62 !important;
+  }
+}
+
+@media (max-width: 560px) {
+  [data-maarif-rebuild="true"] .maarif-target-rail {
+    height: min(39svh, 336px) !important;
+    max-height: min(39svh, 336px) !important;
+  }
+}
