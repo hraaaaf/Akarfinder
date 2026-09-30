@@ -5,7 +5,7 @@ import { ArrowLeft, MapPin, Search } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Map as MapLibreMap, MapMouseEvent } from "maplibre-gl";
 import { useTheme } from "@/components/theme/ThemeProvider";
-import { AKARFINDER_MOROCCO_MAP_NAVY, applyAkarFinderMoroccoBasemapTreatment, territoryToneForKey } from "@/lib/map/akarfinder-territorial-style";
+import { AKARFINDER_MOROCCO_MAP_NAVY, applyAkarFinderCityBasemapTreatment, applyAkarFinderMoroccoBasemapTreatment, territoryToneForKey } from "@/lib/map/akarfinder-territorial-style";
 
 const LIGHT_TILE_STYLE = "https://tiles.openfreemap.org/styles/liberty";
 const DARK_TILE_STYLE = "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json";
@@ -200,6 +200,8 @@ export function NationalTerritoryExperience({ selectedCitySlug, onSelectCity, on
     const map = mapRef.current;
     if (!map || !mapReady || !payload) return;
     removeNationalLayers(map);
+    if (payload.view === "city") applyAkarFinderCityBasemapTreatment(map, theme);
+    else applyAkarFinderMoroccoBasemapTreatment(map);
 
     const boundaries = payload.view === "morocco" ? payload.boundaries : payload.boundary;
     const places = payload.view === "morocco" ? payload.places : [payload.place];
@@ -214,13 +216,13 @@ export function NationalTerritoryExperience({ selectedCitySlug, onSelectCity, on
       id: BOUNDARY_FILL,
       type: "fill",
       source: BOUNDARY_SOURCE,
-      paint: { "fill-color": territoryTone, "fill-opacity": payload.view === "city" ? 0.22 : 0.018 },
+      paint: { "fill-color": territoryTone, "fill-opacity": payload.view === "city" ? 0.08 : 0.018 },
     });
     map.addLayer({
       id: BOUNDARY_LINE,
       type: "line",
       source: BOUNDARY_SOURCE,
-      paint: { "line-color": territoryLine, "line-opacity": payload.view === "city" ? 0.92 : 0.22, "line-width": payload.view === "city" ? 2.4 : 0.7 },
+      paint: { "line-color": territoryLine, "line-opacity": payload.view === "city" ? 0.72 : 0.22, "line-width": payload.view === "city" ? 1.8 : 0.7 },
     });
     map.addLayer({
       id: ACTIVE_FILL,
