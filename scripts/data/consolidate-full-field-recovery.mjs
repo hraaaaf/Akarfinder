@@ -39,16 +39,40 @@ function baseValue(row,field){
 }
 function ck(url,field){ return url+"\u0000"+field; }
 
+function safeString(v){ return typeof v==="string"?v.replace(/\s+/g," ").trim():""; }
+function downgradeReason(c){
+  if(c.state!=="write_safe") return null;
+  const value=safeString(c.value);
+  if(c.field==="title" && (
+    /^(?:404(?:\b|[-_])|accueil\b|acceuil\b|page not found\b|not found\b)/i.test(value) ||
+    /^tous\s+les?\s+biens?\s+immobiliers?\b/i.test(value) ||
+    /^agence\s+immobili[eè]re\s+[àa]\b/i.test(value)
+  )) return "generic_or_soft_page_title";
+  if(c.field==="city" && /^(?:autre|other|unknown|n\/?a|hay\s+riad)$/i.test(value)) return "invalid_city_placeholder_or_neighborhood";
+  if(c.field==="district" && /(?:\brez(?:-|s)?de\s+chauss|\bimmeuble\b|\bimm\s*n?[°o]?\s*\d+|\blocal\s+\d+|\bn[°o]\s*\d+|\bavenue\b|\brue\b|\bboulevard\b)/i.test(value)) return "address_like_value_not_district";
+  return null;
+}
+
 const artifactFiles=walk(inputDir).filter(f=>f.endsWith(".jsonl"));
 if(!artifactFiles.length) throw new Error("No full-field JSONL artifacts found");
 
 const sourceResults=[];
 const candidateRows=[];
+const consolidationDowngrades=[];
 for(const file of artifactFiles){
   for(const line of fs.readFileSync(file,"utf8").split(/\r?\n/).filter(Boolean)){
     const r=JSON.parse(line);
     sourceResults.push(r);
-    for(const c of r.candidates||[]) candidateRows.push({url:r.url,source:r.source,...c});
+    for(const raw of r.candidates||[]){
+      const c={url:r.url,source:r.source,...raw};
+      const reason=downgradeReason(c);
+      if(reason){
+        consolidationDowngrades.push({url:c.url,source:c.source,field:c.field,value:c.value,reason});
+        c.state="review";
+        c.consolidation_reason=reason;
+      }
+      candidateRows.push(c);
+    }
   }
 }
 
@@ -130,6 +154,7 @@ const summary={
   candidate_unique_url_fields:candidateByKey.size,
   duplicate_conflicts:duplicateConflicts.length,
   semantic_issues:semanticIssues,
+  consolidation_downgrades:consolidationDowngrades,
   field_state_counts:stateCounts,
   average_completeness_before:passports.length?completeBefore/passports.length:0,
   average_completeness_after_safe:passports.length?completeAfterSafe/passports.length:0,
