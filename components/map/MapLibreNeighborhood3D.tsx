@@ -85,6 +85,8 @@ const FOCUS_SOURCE_ID = "akarfinder-neighborhood-focus";
 const FOCUS_GLOW_LAYER_ID = "akarfinder-neighborhood-focus-glow";
 const FOCUS_RING_LAYER_ID = "akarfinder-neighborhood-focus-ring";
 const CONTEXT_FOOTPRINT_SOURCE_ID = "akarfinder-target-context-footprint";
+const CONTEXT_FOCUS_MASK_SOURCE_ID = "akarfinder-target-context-focus-mask";
+const CONTEXT_FOCUS_MASK_LAYER_ID = "akarfinder-target-context-focus-mask";
 const CONTEXT_FOOTPRINT_FILL_LAYER_ID = "akarfinder-target-context-footprint-fill";
 const CONTEXT_FOOTPRINT_HALO_LAYER_ID = "akarfinder-target-context-footprint-halo";
 const CONTEXT_FOOTPRINT_LINE_LAYER_ID = "akarfinder-target-context-footprint-line";
@@ -846,14 +848,52 @@ export function MapLibreNeighborhood3D({
       geometry: { type: "Polygon", coordinates: [contextualEnvelope] },
     };
 
+    const lngs = contextualEnvelope.map((point) => point[0]);
+    const lats = contextualEnvelope.map((point) => point[1]);
+    const minLng = Math.min(...lngs) - 0.055;
+    const maxLng = Math.max(...lngs) + 0.055;
+    const minLat = Math.min(...lats) - 0.045;
+    const maxLat = Math.max(...lats) + 0.045;
+    const maskOuter: MutablePosition[] = [
+      [minLng, minLat],
+      [maxLng, minLat],
+      [maxLng, maxLat],
+      [minLng, maxLat],
+      [minLng, minLat],
+    ];
+    const maskData = {
+      type: "Feature",
+      properties: {
+        semantic: "context-focus-mask-not-boundary",
+        boundaryClaim: false,
+      },
+      geometry: {
+        type: "Polygon",
+        coordinates: [maskOuter, [...contextualEnvelope].reverse()],
+      },
+    };
+
     const source = map.getSource(CONTEXT_FOOTPRINT_SOURCE_ID);
-    if (source?.setData) {
+    const maskSource = map.getSource(CONTEXT_FOCUS_MASK_SOURCE_ID);
+    if (source?.setData && maskSource?.setData) {
       source.setData(data as any);
+      maskSource.setData(maskData as any);
       return;
     }
 
     try {
       map.addSource(CONTEXT_FOOTPRINT_SOURCE_ID, { type: "geojson", data } as any);
+      map.addSource(CONTEXT_FOCUS_MASK_SOURCE_ID, { type: "geojson", data: maskData } as any);
+      map.addLayer({
+        id: CONTEXT_FOCUS_MASK_LAYER_ID,
+        type: "fill",
+        source: CONTEXT_FOCUS_MASK_SOURCE_ID,
+        paint: {
+          "fill-color": "#D9DEE2",
+          "fill-opacity": 0.28,
+          "fill-antialias": true,
+        },
+      } as any, FOCUS_GLOW_LAYER_ID);
       map.addLayer({
         id: CONTEXT_FOOTPRINT_FILL_LAYER_ID,
         type: "fill",
@@ -961,6 +1001,7 @@ export function MapLibreNeighborhood3D({
       data-maplibre-overture-estimated-count={overtureEstimatedCount}
       data-maplibre-overture-release={overtureRelease ?? ""}
       data-maplibre-shadow-policy={isMaarifTargetPilot ? "non-metric-overture-footprints" : "none"}
+      data-maplibre-context-focus={isMaarifTargetPilot ? "verified-anchor-envelope-not-boundary" : "none"}
       data-maplibre-context-state={contextState}
       data-maplibre-anchor-count={context?.anchor_count ?? 0}
       data-maplibre-city={citySlug}
