@@ -322,3 +322,29 @@ describe("P8A — defaults", () => {
     assert.deepEqual(d.premium_features, []);
   });
 });
+
+
+describe("P8A — numeric JSON-LD regression guards", () => {
+  test("preserves decimal JSON-LD floorSize without x10 inflation", () => {
+    const html = `<!doctype html><html><head>
+      <script type="application/ld+json">
+        {"@type":"Apartment","floorSize":{"value":"168.0"},"numberOfBedrooms":"3.0","numberOfBathroomsTotal":"2.0"}
+      </script>
+    </head><body><p>Appartement à vendre</p></body></html>`;
+    const d = extractDetail(html);
+    assert.equal(d.surface_raw, "168 m²");
+    assert.equal(d.bedrooms, 3);
+    assert.equal(d.bathrooms, 2);
+  });
+
+  test("rejects implausible structured bedroom and bathroom counts", () => {
+    const html = `<!doctype html><html><head>
+      <script type="application/ld+json">
+        {"@type":"Apartment","numberOfBedrooms":"168","numberOfBathroomsTotal":"99"}
+      </script>
+    </head><body><p>Appartement</p></body></html>`;
+    const d = extractDetail(html);
+    assert.equal(d.bedrooms, null);
+    assert.equal(d.bathrooms, null);
+  });
+});
