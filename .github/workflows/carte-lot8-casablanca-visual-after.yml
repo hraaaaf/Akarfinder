@@ -5,9 +5,21 @@ on:
     paths:
       - "components/map/MapNeighborhoodClient.tsx"
       - "components/map/MapNeighborhoodExperience.tsx"
+      - "components/map/P4MapDecisionRail.tsx"
+      - "components/map/MaarifTargetRail.tsx"
+      - "components/map/MapLibreNeighborhood3D.tsx"
+      - "components/map/maplibre-overture-buildings.ts"
+      - "lib/map/akarfinder-territorial-style.ts"
+      - "lib/neighborhood-context/**"
+      - "scripts/scrapers/__tests__/neighborhood-context-l3-read-model.test.ts"
+      - "scripts/scrapers/__tests__/territory-landmark-registry.test.ts"
       - "app/map/**"
       - "scripts/audits/carte-lot8-casablanca-visual-after.mjs"
       - ".github/workflows/carte-lot8-casablanca-visual-after.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -21,16 +33,43 @@ jobs:
       AUDIT_OUTPUT_DIR: data/audits/carte-lot8-casablanca-after
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Latest-commit scope check
+        id: scope
+        shell: bash
+        run: |
+          changed="$(git diff --name-only HEAD^ HEAD)"
+          printf '%s\n' "$changed"
+          if printf '%s\n' "$changed" | grep -Eq '^(components/map/(MapNeighborhoodClient|MapNeighborhoodExperience|P4MapDecisionRail|MaarifTargetRail|MapLibreNeighborhood3D|NationalMapRouter|PremiumInteractiveMap)\.tsx|components/map/maplibre-overture-buildings\.ts|lib/map/akarfinder-territorial-style\.ts|lib/neighborhood-context/|lib/geo/|app/map/|scripts/audits/carte-lot8-casablanca-visual-after\.mjs|scripts/scrapers/__tests__/(neighborhood-context-l3-read-model|territory-landmark-registry)\.test\.ts|\.github/workflows/carte-lot8-casablanca-visual-after\.yml)'; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          fi
       - uses: actions/setup-node@v4
+        if: steps.scope.outputs.run == 'true'
         with:
           node-version: 24
           cache: npm
       - run: npm ci
+        if: steps.scope.outputs.run == 'true'
+      - name: Maârif truth contracts
+        if: steps.scope.outputs.run == 'true'
+        run: >-
+          npx tsx --test
+          scripts/scrapers/__tests__/neighborhood-context-l3-read-model.test.ts
+          scripts/scrapers/__tests__/territory-landmark-registry.test.ts
+      - name: TypeScript
+        if: steps.scope.outputs.run == 'true'
+        run: npx tsc --noEmit
       - name: Install Chromium
+        if: steps.scope.outputs.run == 'true'
         run: npx playwright install --with-deps chromium
       - name: Production build
+        if: steps.scope.outputs.run == 'true'
         run: npm run build
       - name: Start production server
+        if: steps.scope.outputs.run == 'true'
         shell: bash
         run: |
           npm run start -- -p 3205 > /tmp/carte-lot8-casablanca-after.log 2>&1 &
@@ -41,9 +80,10 @@ jobs:
           cat /tmp/carte-lot8-casablanca-after.log
           exit 1
       - name: Capture Casablanca after
+        if: steps.scope.outputs.run == 'true'
         run: node scripts/audits/carte-lot8-casablanca-visual-after.mjs
       - name: Upload Casablanca after proof
-        if: always()
+        if: always() && steps.scope.outputs.run == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: carte-lot8-casablanca-after-${{ github.run_id }}

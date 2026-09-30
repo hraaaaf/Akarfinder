@@ -7,6 +7,13 @@ import {
   getAnnL5CertifiedSeedPois,
 } from "@/lib/neighborhood-context/certified-seed";
 import {
+  MAARIF_COUCHE2_REFRESH_OBSERVED_AT,
+  MAARIF_COUCHE2_REFRESH_PROVIDER_ID,
+  MAARIF_COUCHE2_REFRESH_RUN_ID,
+  getMaarifCouche2SeedPois,
+  isMaarifCouche2RefreshAvailable,
+} from "@/lib/neighborhood-context/maarif-couche2-seed";
+import {
   selectNeighborhoodAnchors,
   validateNeighborhoodAnchorSelection,
   type NeighborhoodAnchorSelectionStatus,
@@ -18,6 +25,19 @@ import type { NeighborhoodPoiPilotSnapshotV1 } from "@/lib/neighborhood-context/
 
 export const NEIGHBORHOOD_CONTEXT_READ_MODEL_VERSION = "NeighborhoodContextReadModelV1" as const;
 export const NEIGHBORHOOD_CONTEXT_RUNTIME_SOURCE = "ann-l5-certified-seed" as const;
+export const MAARIF_COUCHE2_RUNTIME_SOURCE = "maarif-couche2-osm-refresh" as const;
+
+type NeighborhoodContextRuntimeSourceMode =
+  | typeof NEIGHBORHOOD_CONTEXT_RUNTIME_SOURCE
+  | typeof MAARIF_COUCHE2_RUNTIME_SOURCE;
+
+type NeighborhoodContextRuntimeSource = {
+  mode: NeighborhoodContextRuntimeSourceMode;
+  provider_id: string;
+  certified_run_id: number;
+  observed_at: string;
+  production_provider_claim: false;
+};
 
 export type NeighborhoodContextCoverageStatus = "covered" | "partial" | "insufficient" | "unavailable";
 
@@ -51,13 +71,7 @@ export type NeighborhoodContextReadModelV1 = {
   coverage_status: NeighborhoodContextCoverageStatus;
   selection_status: NeighborhoodAnchorSelectionStatus;
   generated_at: string;
-  source: {
-    mode: typeof NEIGHBORHOOD_CONTEXT_RUNTIME_SOURCE;
-    provider_id: typeof ANN_L5_CERTIFIED_SEED_PROVIDER_ID;
-    certified_run_id: typeof ANN_L5_CERTIFIED_SEED_RUN_ID;
-    observed_at: typeof ANN_L5_CERTIFIED_SEED_OBSERVED_AT;
-    production_provider_claim: false;
-  };
+  source: NeighborhoodContextRuntimeSource;
   anchor_count: number;
   categories: LivingHereCategory[];
   anchors: NeighborhoodContextAnchorReadV1[];
@@ -77,9 +91,36 @@ function geometryFor(city: string, neighborhood: string) {
   ) ?? null;
 }
 
+function runtimeSourceFor(canonicalNeighborhoodId: string, now: Date): NeighborhoodContextRuntimeSource {
+  if (canonicalNeighborhoodId === "district_casablanca_maarif" && isMaarifCouche2RefreshAvailable(now)) {
+    return {
+      mode: MAARIF_COUCHE2_RUNTIME_SOURCE,
+      provider_id: MAARIF_COUCHE2_REFRESH_PROVIDER_ID,
+      certified_run_id: MAARIF_COUCHE2_REFRESH_RUN_ID,
+      observed_at: MAARIF_COUCHE2_REFRESH_OBSERVED_AT,
+      production_provider_claim: false,
+    };
+  }
+  return {
+    mode: NEIGHBORHOOD_CONTEXT_RUNTIME_SOURCE,
+    provider_id: ANN_L5_CERTIFIED_SEED_PROVIDER_ID,
+    certified_run_id: ANN_L5_CERTIFIED_SEED_RUN_ID,
+    observed_at: ANN_L5_CERTIFIED_SEED_OBSERVED_AT,
+    production_provider_claim: false,
+  };
+}
+
+function runtimePoisFor(canonicalNeighborhoodId: string, now: Date): NeighborhoodPoiV1[] {
+  if (canonicalNeighborhoodId === "district_casablanca_maarif" && isMaarifCouche2RefreshAvailable(now)) {
+    return getMaarifCouche2SeedPois(now);
+  }
+  return getAnnL5CertifiedSeedPois(canonicalNeighborhoodId, now);
+}
+
 function pilotSnapshot(
   pilot: ReturnType<typeof getNeighborhoodContextL1Pilots>[number],
   pois: NeighborhoodPoiV1[],
+  source: NeighborhoodContextRuntimeSource,
 ): NeighborhoodPoiPilotSnapshotV1 {
   return {
     canonical_neighborhood_id: pilot.canonical_neighborhood_id,
@@ -89,13 +130,13 @@ function pilotSnapshot(
     query_radius_m: pilot.query_radius_m,
     status: pois.length ? "available" : "insufficient",
     acquisition_mode: pois.length ? "certified_seed" : "none",
-    provider_id: pois.length ? ANN_L5_CERTIFIED_SEED_PROVIDER_ID : null,
-    observed_at: pois.length ? ANN_L5_CERTIFIED_SEED_OBSERVED_AT : null,
+    provider_id: pois.length ? source.provider_id : null,
+    observed_at: pois.length ? source.observed_at : null,
     endpoint_used: null,
     poi_count: pois.length,
     categories: Array.from(new Set(pois.map((poi) => poi.category))).sort(),
     pois,
-    diagnostics: pois.length ? [`Runtime baseline: ANN-L5 run ${ANN_L5_CERTIFIED_SEED_RUN_ID}`] : ["No fresh certified runtime POI"],
+    diagnostics: pois.length ? [`Runtime baseline: ${source.mode} run ${source.certified_run_id}`] : ["No fresh certified runtime POI"],
   };
 }
 
@@ -126,9 +167,10 @@ function anchorRead(anchor: NeighborhoodAnchorV1, poi: NeighborhoodPoiV1): Neigh
 
 export function buildNeighborhoodContextRuntimeCatalog(now = new Date()): NeighborhoodContextReadModelV1[] {
   return getNeighborhoodContextL1Pilots().map((pilot) => {
-    const pois = getAnnL5CertifiedSeedPois(pilot.canonical_neighborhood_id, now)
+    const runtimeSource = runtimeSourceFor(pilot.canonical_neighborhood_id, now);
+    const pois = runtimePoisFor(pilot.canonical_neighborhood_id, now)
       .filter((poi) => poi.status === "active" && poi.freshness_status === "fresh");
-    const snapshot = pilotSnapshot(pilot, pois);
+    const snapshot = pilotSnapshot(pilot, pois, runtimeSource);
     const selection = selectNeighborhoodAnchors(snapshot, { geometry: geometryFor(pilot.city, pilot.neighborhood) });
     const selectionErrors = validateNeighborhoodAnchorSelection(selection);
     if (selectionErrors.length) throw new Error(`Invalid anchor selection ${pilot.canonical_neighborhood_id}: ${selectionErrors.join(",")}`);
@@ -148,13 +190,7 @@ export function buildNeighborhoodContextRuntimeCatalog(now = new Date()): Neighb
       coverage_status: coverageFromSelection(selection.status, anchors.length),
       selection_status: selection.status,
       generated_at: now.toISOString(),
-      source: {
-        mode: NEIGHBORHOOD_CONTEXT_RUNTIME_SOURCE,
-        provider_id: ANN_L5_CERTIFIED_SEED_PROVIDER_ID,
-        certified_run_id: ANN_L5_CERTIFIED_SEED_RUN_ID,
-        observed_at: ANN_L5_CERTIFIED_SEED_OBSERVED_AT,
-        production_provider_claim: false,
-      },
+      source: runtimeSource,
       anchor_count: anchors.length,
       categories: Array.from(new Set(anchors.map((anchor) => anchor.category))).sort(),
       anchors,
