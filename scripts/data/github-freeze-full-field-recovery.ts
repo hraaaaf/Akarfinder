@@ -12,6 +12,7 @@ const sourceName=(process.env.SOURCE_NAME||"domio.ma").toLowerCase();
 const inputPath=process.env.FREEZE_JSONL_GZ||".tmp/freeze/clean-corpus-v4.11-core.jsonl.gz";
 const outputPrefix=process.env.OUTPUT_PREFIX||`full-field-${sourceName.replace(/[^a-z0-9]+/g,"-")}`;
 const limit=Math.max(1,Math.min(300,Number(process.env.SAMPLE_SIZE||100)));
+const fetchDelayMs=Math.max(0,Number(process.env.FETCH_DELAY_MS||250));
 
 type Row=Record<string,any>;
 type Candidate={field:string,value:any,state:"write_safe"|"review"|"missing"|"contradicted";evidence:string;confidence:string};
@@ -139,6 +140,7 @@ for(const row of sample){
   rec.candidates=c;
   for(const x of c){counts[x.field]??={write_safe:0,review:0,contradicted:0};counts[x.field][x.state]=(counts[x.field][x.state]||0)+1;}
   results.push(rec);
+  if(fetchDelayMs>0) await new Promise(resolve=>setTimeout(resolve,fetchDelayMs));
 }
 const summary={
  schema_version:"AKARFINDER_FULL_FIELD_RECOVERY_V1",
