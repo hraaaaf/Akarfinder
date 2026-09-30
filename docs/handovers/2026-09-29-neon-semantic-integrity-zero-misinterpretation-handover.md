@@ -942,3 +942,29 @@ All immediately executable offline recovery work for this certified cohort is co
 The next meaningful step would be a controlled Neon write/readback of the **1,180 write-safe field rows**, followed by post-write verification. This is intentionally NOT executed without explicit human authorization.
 
 No Neon read or write has occurred in this recovery path.
+
+
+## FULL-FIELD RECOVERY V1 — STARTED
+
+Goal: for every recoverable listing, extract every useful canonical field that is actually supported by source evidence, with explicit provenance/confidence and no invented values.
+
+Contract:
+- `data/recovery/full-field-recovery-v1-contract.json`
+- canonical schema source: `lib/property-schema/core.ts`
+- UI field surface: `lib/listings/types.ts`
+- reuse existing tested parser: `scripts/scrapers/utils/extract.ts` (`extractDetail`, including P8A advanced property characteristics)
+
+Rules:
+- each candidate is `write_safe`, `review`, `missing`, `contradicted`, or `blocked`;
+- absence of a boolean feature mention is `missing`, never `false`;
+- no phone/email/WhatsApp/private address extraction;
+- no gallery reuse without permission;
+- no DB access/write;
+- strict price + transaction semantics remain governed by the already certified recovery pipeline, not weakened by this new pass.
+
+Implemented:
+- `scripts/data/github-freeze-full-field-recovery.ts`
+- `.github/workflows/github-freeze-full-field-recovery.yml`
+- first pilot target: Domio 100 deterministic freeze rows.
+
+Pilot intent: stress-test title/description/location/core dimensions + P8A fields (built/land/garden/terrace/garage/floors/condition/age/orientation/floor type/features) before scaling nationally.
