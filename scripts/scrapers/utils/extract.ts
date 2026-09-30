@@ -342,7 +342,13 @@ function numVal(v: any): number | null {
   if (v == null) return null;
   if (typeof v === "number") return Number.isFinite(v) ? v : null;
   if (typeof v === "string") {
-    const n = parseInt(v.replace(/[^\d]/g, ""), 10);
+    const raw = v.trim().replace(/\u00a0/g, " ").replace(/\s+/g, "");
+    if (!raw) return null;
+    let normalized = raw;
+    if (/^\d{1,3}(?:[.]\d{3})+$/.test(raw)) normalized = raw.replace(/\./g, "");
+    else if (/^\d{1,3}(?:,\d{3})+$/.test(raw)) normalized = raw.replace(/,/g, "");
+    else normalized = raw.replace(",", ".");
+    const n = Number(normalized);
     return Number.isFinite(n) ? n : null;
   }
   if (typeof v === "object") return numVal(v.value ?? v["@value"] ?? v.maxValue);
@@ -459,14 +465,14 @@ export function extractDetail(html: string): DetailFields {
 
       // numberOfRooms = total pièces (NOT bedrooms)
       const r = numVal(node.numberOfRooms);
-      if (r != null) { out.rooms = r; conf.rooms = "high"; }
+      if (r != null && r >= 0 && r <= 50) { out.rooms = r; conf.rooms = "high"; }
 
       // numberOfBedrooms = chambres specifically
       const b = numVal(node.numberOfBedrooms ?? node.numberOfBedroomsTotal);
-      if (b != null) { out.bedrooms = b; conf.bedrooms = "high"; }
+      if (b != null && b >= 0 && b <= 20) { out.bedrooms = b; conf.bedrooms = "high"; }
 
       const bths = numVal(node.numberOfBathroomsTotal ?? node.numberOfBathrooms);
-      if (bths != null) { out.bathrooms = bths; conf.bathrooms = "high"; }
+      if (bths != null && bths >= 0 && bths <= 20) { out.bathrooms = bths; conf.bathrooms = "high"; }
 
       const desc = pickString(node, ["description"]);
       if (desc) { out.description_snippet = desc; conf.description = "high"; }
@@ -555,13 +561,13 @@ export function extractDetail(html: string): DetailFields {
     const n =
       matchInt(text, /(?:chambres?|bedrooms?)\s*[:=-]?\s*(\d{1,3})(?!\d)/i) ??
       matchInt(text, /(\d{1,3})\s*chambres?/i);
-    if (n != null) { out.bedrooms = n; conf.bedrooms = "medium"; }
+    if (n != null && n >= 0 && n <= 20) { out.bedrooms = n; conf.bedrooms = "medium"; }
   }
   if (out.bathrooms == null) {
     const n =
       matchInt(text, /(?:salle?s?\s*de\s*bain|sdb|bathrooms?)\s*[:=-]?\s*(\d{1,2})(?!\d)/i) ??
       matchInt(text, /(\d{1,2})\s*(?:salle?s?\s*de\s*bain|sdb)/i);
-    if (n != null) { out.bathrooms = n; conf.bathrooms = "medium"; }
+    if (n != null && n >= 0 && n <= 20) { out.bathrooms = n; conf.bathrooms = "medium"; }
   }
   if (out.rooms == null) {
     // Only match "pièces/rooms" — never "chambres".
@@ -569,7 +575,7 @@ export function extractDetail(html: string): DetailFields {
       matchInt(text, /(?:pi[eè]ces?|rooms?)\s*[:=-]?\s*(\d{1,3})(?!\d)/i) ??
       matchInt(text, /(\d{1,3})\s*pi[eè]ces?/i) ??
       matchInt(text, /(\d{1,3})\s*rooms?/i);
-    if (n != null) { out.rooms = n; conf.rooms = "medium"; }
+    if (n != null && n >= 0 && n <= 50) { out.rooms = n; conf.rooms = "medium"; }
   }
   if (!out.surface_raw) {
     const m =
