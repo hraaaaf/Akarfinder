@@ -1,6 +1,6 @@
 # AKARFINDER — MAÂRIF REBUILD — TARGET CONTRACT
 
-Status: canonical implementation contract  
+Status: L3 human-gate approved — canonical visual baseline for downstream Rue/Proximité  
 Execution branch: `feat/akar-map-quartier-target-couche3`  
 Parent handover: `docs/handovers/AKARFINDER_MAARIF_REBUILD_START_PROMPT.md`  
 Canonical PR: #1090 (DRAFT)  
@@ -211,3 +211,24 @@ Only after shell evidence is accepted:
 - start LOT C map renderer rewrite
 
 Do not start with another camera-only tweak.
+
+
+## 12. L3 closure — 2026-09-30
+
+Human Gate Product Owner: **APPROVED — Quartier**.
+
+Exact validated HEAD:
+`1af9dd1e5f51c90e528ac68fc1ce7db9434dc0bd`
+
+Validated evidence:
+- Visual AFTER run `36751693759` — SUCCESS
+- artifact `11115097297`
+- digest `sha256:7dc666f7e868342d3bf5b2e3e91e2bd178ad648c12218ed8b56b4e07f1078490`
+- Multi-city `36751694080` — SUCCESS
+- N3 `36751693493` — SUCCESS
+- P1A.6 `36751693563` — SUCCESS
+- 390×844 / 430×932 / 768×900 / 1280×900 generated
+- internal strict visual score retained as `8.8/10`; do not rewrite as 9.x
+
+This contract is now the visual baseline for the next Rue/Proximité layer.
+Material visual changes to L3 require a new human gate.

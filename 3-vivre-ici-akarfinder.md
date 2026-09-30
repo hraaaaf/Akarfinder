@@ -1,12 +1,12 @@
 # 3 — Vivre Ici AkarFinder
 
-**Statut : ACTIVE — ROADMAP CANONIQUE V2 / PR #1090 DRAFT / HUMAN VISUAL GATE REJECTED**  
-**Dernière mise à jour : 2026-09-28**  
+**Statut : ACTIVE — ROADMAP CANONIQUE V2 / PR #1090 DRAFT / L3 QUARTIER HUMAN GATE APPROVED**  
+**Dernière mise à jour : 2026-09-30**  
 **Repo : `hraaaaf/Akarfinder`**  
 **Branche active : `feat/akar-map-quartier-target-couche3`**  
 **PR canonique : #1090 — base `main` — DRAFT**  
 **HEAD produit de départ de cette roadmap : `02b9c7f9e7961e1b22ffc1c5a4ddcd2dcdd3ef7d`**  
-**Score visuel humain actuel : 3/10 — TARGET non atteint**  
+**Score visuel interne L3 actuel : 8.8/10 — Human Gate Quartier APPROVED le 2026-09-30**  
 **Merge : NON AUTORISÉ**  
 **Vercel : aucun déploiement sans autorisation explicite d’Achraf.**
 
@@ -687,8 +687,8 @@ Seulement après autorisation explicite.
 | L0 Maroc | à revalider | 8/10 | ≥9/10 |
 | L1 Ville Atlas | 3/10 | ≥7/10 | ≥9/10 |
 | L2 Arrondissement | non certifié | ≥7/10 | ≥9/10 |
-| L3 Quartier | 3/10 Maârif | ≥7.5/10 | ≥9/10 |
-| L4 Urban Grain 3D | non prouvé | ≥8/10 POC | ≥9/10 |
+| L3 Quartier | **8.8/10 — Human Gate APPROVED** | ≥7.5/10 | Human Gate validé |
+| L4 Urban Grain 3D | **POC Maârif prouvé / intégré à L3** | ≥8/10 POC | poursuivre au niveau Rue/Proximité |
 | L5 POI | partiel | ≥8/10 | ≥9/10 |
 | L6 Living Context | partiel | ≥8/10 | ≥9/10 |
 | L7 Search handoff | fonctionnel | ≥8/10 | ≥9/10 |
@@ -698,7 +698,37 @@ Aucun score automatique ne remplace le human gate.
 
 ---
 
-# 7. ÉTAT FACTUEL AU RESET
+# 7. ÉTAT FACTUEL COURANT
+
+## L3 Quartier Maârif — HUMAN GATE APPROVED
+
+HEAD exact validé : `1af9dd1e5f51c90e528ac68fc1ce7db9434dc0bd`
+
+Preuves :
+- Human Gate explicite Product Owner : **APPROVED — Quartier** le 2026-09-30 ;
+- score visuel interne sévère : **8.8/10** ; ce score n'est pas réécrit en 9.x ;
+- basemap : `voyager-inspired-openfreemap-v1` ;
+- bâtiments : `standard-inspired-overture-v1` ;
+- polish : `material-relief-v3` ;
+- labels : `akarfinder-owned` ;
+- contexte : `raised-indicative-zone`, truth-safe, jamais présenté comme frontière de quartier ;
+- Overture : 4 917 bâtiments chargés ; 772 hauteurs exactes ; 4 145 estimées depuis niveaux ;
+- Visual AFTER : run **36751693759** ✅ ;
+- artifact **11115097297** ;
+- digest `sha256:7dc666f7e868342d3bf5b2e3e91e2bd178ad648c12218ed8b56b4e07f1078490` ;
+- Multi-city **36751694080** ✅ ;
+- N3 **36751693493** ✅ ;
+- P1A.6 **36751693563** ✅ ;
+- 390×844 / 430×932 / 768×900 / 1280×900 : preuves générées ;
+- aucun déploiement Vercel ;
+- PR #1090 reste DRAFT et non mergée.
+
+Décision : **L3 Quartier est fermé visuellement par Human Gate.**
+La suite canonique est **Rue / Proximité**, sans réouvrir la direction visuelle du Quartier sauf régression prouvée.
+
+---
+
+# 7B. ÉTAT FACTUEL AU RESET
 
 ## HEAD `02b9c7f9…`
 
@@ -740,21 +770,41 @@ Les anciennes certifications 9.x ne constituent plus un score visuel courant.
 
 # 9. NEXT EXACT
 
-**LOT B — Casablanca Geometry Truth**
+**RUE / PROXIMITÉ — couche suivante après L3 Quartier**
 
-1. auditer précisément les 16 arrondissements OSM shadow existants ;
-2. définir leur contrat preview/admin ;
-3. brancher le squelette polygonal dans la vue ville sans les appeler quartiers ;
-4. AFTER 390/430/768/1280 ;
-5. score humain ;
-6. si ≥7/10 → LOT D + LOT F en parallèle ;
-7. sinon corriger la composition Atlas avant toute 3D locale.
+Goal :
+faire du zoom fin une lecture locale premium et utile, sans rupture avec le style AkarFinder validé.
 
-En parallèle après le squelette ville :
-**LOT F — benchmark Overture Buildings sur bbox Maârif/Twin Center.**
+Doctrine verrouillée :
+- le zoom ne change pas de style ; il révèle progressivement le style AkarFinder ;
+- fond Voyager-like conservé ;
+- bâtiments Standard-like/Overture conservés ;
+- détail local supérieur : rues secondaires, fronts bâtis, passages, POI utiles, accès piéton/auto selon données disponibles ;
+- composition proche d'un plan architectural premium, mais toujours cartographique et truth-safe ;
+- aucune géométrie, distance, accès ou précision immobilière inventée ;
+- le quartier reste le contexte ; la rue devient la scène.
 
-Aucun nouveau mockup gratuit.  
-Chaque couche possède désormais son TARGET dans ce fichier canonique.
+Succès observable :
+- lecture immédiate de la rue et de son environnement proche ;
+- bâtiments plus fins sans bruit ;
+- hiérarchie claire rue principale / secondaires / POI ;
+- continuité visuelle nette avec le Quartier validé ;
+- 390×844 / 430×932 / 768×900 / 1280×900 ;
+- BEFORE → TARGET/référence → implémentation → AFTER → comparaison → score → human gate.
+
+Preuve de départ :
+L3 Quartier exact-head `1af9dd1e5f51c90e528ac68fc1ce7db9434dc0bd`, artifact `11115097297`.
+
+Next exact :
+1. figer le TARGET Rue/Proximité et ses références ;
+2. choisir une rue/zone pilote Maârif avec données réellement disponibles ;
+3. capturer BEFORE exact-head ;
+4. implémenter sans modifier la direction L3 validée ;
+5. AFTER 4 viewports + truth/performance gates ;
+6. human gate Rue.
+
+Merge #1090 reste NON AUTORISÉ sans validation explicite.
+Aucun Vercel sans autorisation explicite.
 
 ---
 
