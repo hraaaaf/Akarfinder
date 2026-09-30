@@ -248,9 +248,9 @@ export function NationalNeighborhoodOverlay({
         source: ATLAS_SOURCE,
         paint: {
           "line-color": theme === "dark" ? "#ADC6C7" : "#6B99A4",
-          "line-opacity": theme === "dark" ? 0.22 : 0.28,
-          "line-width": ["interpolate", ["linear"], ["zoom"], 8.5, 4.2, 11, 6.2],
-          "line-blur": 2.2,
+          "line-opacity": theme === "dark" ? 0.16 : 0.18,
+          "line-width": ["interpolate", ["linear"], ["zoom"], 8.5, 3.2, 11, 4.4],
+          "line-blur": 2.6,
         },
       });
       map.addLayer({
@@ -295,6 +295,7 @@ export function NationalNeighborhoodOverlay({
           "text-letter-spacing": 0.045,
           "text-allow-overlap": false,
           "text-ignore-placement": false,
+          "text-padding": 8,
         },
         paint: {
           "text-color": theme === "dark" ? "#F4FAFF" : "#123250",
