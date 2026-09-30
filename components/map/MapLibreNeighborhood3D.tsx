@@ -489,7 +489,8 @@ export function MapLibreNeighborhood3D({
                   "line-width": [
                     "interpolate", ["linear"], ["zoom"],
                     11, ["match", ["get", "class"], "motorway", 2.4, "trunk", 2.2, "primary", 2.0, "secondary", 1.7, "tertiary", 1.3, 0.8],
-                    15, ["match", ["get", "class"], "motorway", 9.4, "trunk", 8.3, "primary", 7.4, "secondary", 5.9, "tertiary", 4.15, "minor", 2.55, 1.6]
+                    15, ["match", ["get", "class"], "motorway", 9.4, "trunk", 8.3, "primary", 7.4, "secondary", 5.9, "tertiary", 4.15, "minor", 2.55, 1.6],
+                    18, ["match", ["get", "class"], "motorway", 14.0, "trunk", 12.6, "primary", 11.2, "secondary", 8.8, "tertiary", 6.3, "minor", 4.0, "service", 2.8, 2.2]
                   ],
                 },
               } as any);
@@ -518,7 +519,8 @@ export function MapLibreNeighborhood3D({
                   "line-width": [
                     "interpolate", ["linear"], ["zoom"],
                     11, ["match", ["get", "class"], "motorway", 1.8, "trunk", 1.65, "primary", 1.5, "secondary", 1.2, "tertiary", 0.95, 0.62],
-                    15, ["match", ["get", "class"], "motorway", 7.8, "trunk", 6.9, "primary", 6.1, "secondary", 4.8, "tertiary", 3.35, "minor", 1.95, 1.2]
+                    15, ["match", ["get", "class"], "motorway", 7.8, "trunk", 6.9, "primary", 6.1, "secondary", 4.8, "tertiary", 3.35, "minor", 1.95, 1.2],
+                    18, ["match", ["get", "class"], "motorway", 12.2, "trunk", 10.8, "primary", 9.4, "secondary", 7.2, "tertiary", 5.0, "minor", 3.0, "service", 2.0, 1.55]
                   ],
                 },
               } as any);
@@ -532,9 +534,9 @@ export function MapLibreNeighborhood3D({
                 filter: ["match", ["get", "class"], ["motorway", "trunk", "primary", "secondary"], true, false],
                 layout: {
                   "symbol-placement": "line",
-                  "symbol-spacing": 300,
+                  "symbol-spacing": ["interpolate", ["linear"], ["zoom"], 11.8, 340, 16, 380, 18, 430],
                   "text-field": ["coalesce", ["get", "name:latin"], ["get", "name"]],
-                  "text-size": ["interpolate", ["linear"], ["zoom"], 11.8, 10.1, 14, 12.4],
+                  "text-size": ["interpolate", ["linear"], ["zoom"], 11.8, 10.1, 14, 12.4, 18, 13.6],
                   "text-letter-spacing": 0.012,
                   "text-max-angle": 20,
                   "text-padding": 2,
@@ -559,9 +561,9 @@ export function MapLibreNeighborhood3D({
                 filter: ["match", ["get", "class"], ["tertiary", "minor", "service"], true, false],
                 layout: {
                   "symbol-placement": "line",
-                  "symbol-spacing": 440,
+                  "symbol-spacing": ["interpolate", ["linear"], ["zoom"], 12.5, 460, 16, 360, 18, 300],
                   "text-field": ["coalesce", ["get", "name:latin"], ["get", "name"]],
-                  "text-size": ["interpolate", ["linear"], ["zoom"], 12.5, 7.8, 14.5, 9.5],
+                  "text-size": ["interpolate", ["linear"], ["zoom"], 12.5, 7.8, 14.5, 9.5, 18, 10.8],
                   "text-letter-spacing": 0.008,
                   "text-max-angle": 24,
                   "text-padding": 2,
@@ -1036,6 +1038,7 @@ export function MapLibreNeighborhood3D({
       data-maplibre-basemap-language={isMaarifTargetPilot ? "voyager-inspired-openfreemap-v1" : "default"}
       data-maplibre-building-language={isMaarifTargetPilot ? "standard-inspired-overture-v1" : "default"}
       data-maplibre-polish={isMaarifTargetPilot ? "material-relief-v3" : "default"}
+      data-maplibre-street-language={isMaarifTargetPilot ? "architectural-paper-v1" : "default"}
       data-maplibre-label-policy={isMaarifTargetPilot ? "akarfinder-owned" : "basemap-default"}
       data-maplibre-context-label-policy={isMaarifTargetPilot ? "suppressed-at-quarter-zoom" : "default"}
       data-maplibre-boundary-render={isMaarifTargetPilot && boundaryGeometry ? "administrative-relief" : "default"}

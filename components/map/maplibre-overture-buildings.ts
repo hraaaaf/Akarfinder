@@ -3,6 +3,7 @@
 export const MAPLIBRE_OVERTURE_SOURCE_ID = "akarfinder-overture-maarif-buildings";
 export const MAPLIBRE_OVERTURE_SHADOW_SOFT_LAYER_ID = "akarfinder-overture-building-shadow-soft";
 export const MAPLIBRE_OVERTURE_SHADOW_CONTACT_LAYER_ID = "akarfinder-overture-building-shadow-contact";
+export const MAPLIBRE_OVERTURE_FOOTPRINT_EDGE_LAYER_ID = "akarfinder-overture-building-footprint-edge";
 export const MAPLIBRE_OVERTURE_ESTIMATED_LAYER_ID = "akarfinder-overture-buildings-estimated";
 export const MAPLIBRE_OVERTURE_EXACT_LAYER_ID = "akarfinder-overture-buildings-exact";
 
@@ -167,6 +168,21 @@ export async function installMapLibreOvertureBuildings(
     } as any, before);
   }
 
+  if (!map.getLayer(MAPLIBRE_OVERTURE_FOOTPRINT_EDGE_LAYER_ID)) {
+    map.addLayer({
+      id: MAPLIBRE_OVERTURE_FOOTPRINT_EDGE_LAYER_ID,
+      type: "line",
+      source: MAPLIBRE_OVERTURE_SOURCE_ID,
+      minzoom: 15.2,
+      paint: {
+        "line-color": "#BEB5AA",
+        "line-opacity": ["interpolate", ["linear"], ["zoom"], 15.2, 0.12, 16.5, 0.26, 18, 0.38],
+        "line-width": ["interpolate", ["linear"], ["zoom"], 15.2, 0.35, 18, 0.68],
+        "line-blur": 0.08,
+      },
+    } as any, before);
+  }
+
   if (!map.getLayer(MAPLIBRE_OVERTURE_ESTIMATED_LAYER_ID)) {
     map.addLayer({
       id: MAPLIBRE_OVERTURE_ESTIMATED_LAYER_ID,
@@ -181,7 +197,7 @@ export async function installMapLibreOvertureBuildings(
         ],
         "fill-extrusion-height": ["get", "top_height"],
         "fill-extrusion-base": ["get", "min_height"],
-        "fill-extrusion-opacity": 0.29,
+        "fill-extrusion-opacity": ["interpolate", ["linear"], ["zoom"], 12.8, 0.29, 16, 0.31, 18, 0.33],
         "fill-extrusion-vertical-gradient": true,
       },
     } as any, before);
@@ -201,7 +217,7 @@ export async function installMapLibreOvertureBuildings(
         ],
         "fill-extrusion-height": ["get", "top_height"],
         "fill-extrusion-base": ["get", "min_height"],
-        "fill-extrusion-opacity": 0.40,
+        "fill-extrusion-opacity": ["interpolate", ["linear"], ["zoom"], 12.8, 0.40, 16, 0.42, 18, 0.44],
         "fill-extrusion-vertical-gradient": true,
       },
     } as any, before);
