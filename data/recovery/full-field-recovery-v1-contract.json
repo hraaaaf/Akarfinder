@@ -1,0 +1,86 @@
+{
+  "schema_version": "AKARFINDER_FULL_FIELD_RECOVERY_V1",
+  "mode": "offline_read_only",
+  "canonical_schema_source": "lib/property-schema/core.ts",
+  "listing_ui_source": "lib/listings/types.ts",
+  "evidence_policy": {
+    "high": "structured data or explicit labeled DOM/text with unambiguous semantics",
+    "review": "textual evidence that is useful but insufficient for automatic write",
+    "missing": "no supported evidence",
+    "contradicted": "candidate conflicts with an already populated freeze value or mutually exclusive evidence",
+    "boolean_absence_rule": "absence of a feature mention is missing, never false",
+    "no_pii": true,
+    "no_contact_extraction": true,
+    "no_db_access": true,
+    "no_db_writes": true
+  },
+  "fields": {
+    "identity": [
+      "canonical_url",
+      "source_domain"
+    ],
+    "offer": [
+      "transaction_type",
+      "title",
+      "description",
+      "price_mad",
+      "price_period"
+    ],
+    "classification": [
+      "property_type"
+    ],
+    "location": [
+      "city",
+      "district",
+      "neighborhood"
+    ],
+    "surfaces": [
+      "surface_m2",
+      "built_surface_m2",
+      "plot_surface_m2",
+      "garden_m2",
+      "terrace_m2"
+    ],
+    "layout": [
+      "rooms_count",
+      "bedrooms_count",
+      "bathrooms_count"
+    ],
+    "building": [
+      "floor_number",
+      "floors_count",
+      "orientation",
+      "floor_type",
+      "property_age_range"
+    ],
+    "condition": [
+      "condition"
+    ],
+    "features": [
+      "garage_spaces",
+      "has_pool",
+      "has_concierge",
+      "has_equipped_kitchen",
+      "has_moroccan_living_room",
+      "has_european_living_room"
+    ],
+    "media": [
+      "thumbnail_url",
+      "images_count"
+    ]
+  },
+  "excluded_from_public_recovery": [
+    "phone",
+    "email",
+    "whatsapp",
+    "private_address",
+    "full_gallery_without_permission"
+  ],
+  "output_states": [
+    "write_safe",
+    "review",
+    "missing",
+    "contradicted",
+    "blocked"
+  ]
+}

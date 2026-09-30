@@ -36,6 +36,7 @@ jobs:
       - run: npx tsc --noEmit
 
   production-canary-read-only:
+    if: ${{ github.event_name == 'workflow_dispatch' }}
     needs: certify
     runs-on: ubuntu-latest
     timeout-minutes: 20

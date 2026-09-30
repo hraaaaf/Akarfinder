@@ -11,6 +11,8 @@ import { join } from "node:path";
 import {
   canPublishListingToPublicSurface,
   canPublishDbRowToPublicSurface,
+  canPublishDbRowToPublicSearchSurface,
+  hasStrongSemanticIntegrityConflict,
 } from "../../../lib/listings/public-listing-access.js";
 import { queryDbListings } from "../../../lib/listings/db-listings.js";
 import { mapDbRowToListing } from "../../../lib/listings/map-db-listing.js";
@@ -280,5 +282,226 @@ describe("public listing access — invariants", () => {
         `${s} must be publishable`
       );
     }
+  });
+});
+
+describe("semantic integrity fail-closed gate", () => {
+  function semanticRow(overrides: Partial<DbListingRow> = {}): DbListingRow {
+    return {
+      id: 1,
+      canonical_fingerprint: "x",
+      title: "Appartement à vendre à Casablanca",
+      price_mad: 1_200_000,
+      city: "Casablanca",
+      district: "Maarif",
+      property_type: "apartment",
+      transaction_type: "sale",
+      surface_m2: 100,
+      rooms_count: 4,
+      bedrooms_count: 3,
+      bathrooms_count: 2,
+      description_snippet: "Appartement test",
+      images_count: 1,
+      thumbnail_url: null,
+      seller_name: null,
+      data_completeness_score: 90,
+      field_confidence: JSON.stringify({
+        provider: "openserp",
+        publication_lane: "external_web_result",
+        classification_lane: "individual_listing",
+      }),
+      created_at: "",
+      updated_at: "",
+      duplicate_group_id: null,
+      duplicate_score: null,
+      reliability_score: null,
+      reliability_badge: null,
+      reliability_reasons: null,
+      built_surface_m2: null,
+      plot_surface_m2: null,
+      condition: null,
+      property_age_range: null,
+      orientation: null,
+      floor_type: null,
+      floors_count: null,
+      garden_m2: null,
+      terrace_m2: null,
+      garage_spaces: null,
+      has_pool: 0,
+      has_concierge: 0,
+      has_moroccan_living_room: 0,
+      has_european_living_room: 0,
+      has_equipped_kitchen: 0,
+      premium_features: null,
+      source_name: "mubawab",
+      listing_url: "https://mubawab.ma/fr/a/123/appartement-a-vendre",
+      source_url: "https://mubawab.ma/fr/a/123/appartement-a-vendre",
+      origin_type: null,
+      ...overrides,
+    };
+  }
+
+  it("accepts a coherent listing", () => {
+    assert.equal(hasStrongSemanticIntegrityConflict(semanticRow()), false);
+  });
+
+  it("rejects bedroom count contradicted by explicit labeled evidence", () => {
+    assert.equal(
+      hasStrongSemanticIntegrityConflict(
+        semanticRow({
+          bedrooms_count: 76,
+          description_snippet: "surface total construit : 276 chambre : 05, salon : 03",
+        }),
+      ),
+      true,
+    );
+  });
+
+  it("accepts a legitimate large bedroom count when explicit evidence agrees", () => {
+    assert.equal(
+      hasStrongSemanticIntegrityConflict(
+        semanticRow({
+          bedrooms_count: 34,
+          description_snippet: "Magnifique propriété avec 34 chambres, jardin et piscine",
+        }),
+      ),
+      false,
+    );
+  });
+
+  it("rejects non-monthly rental cadence until price period is modeled", () => {
+    assert.equal(
+      hasStrongSemanticIntegrityConflict(
+        semanticRow({
+          transaction_type: "rent",
+          title: "Appartement à louer 800 DH par jour",
+          price_mad: 800,
+          listing_url: "https://mubawab.ma/fr/a/123/appartement-a-louer",
+        }),
+      ),
+      true,
+    );
+  });
+
+  it("rejects sale price contradicted by one explicit title price", () => {
+    assert.equal(
+      hasStrongSemanticIntegrityConflict(
+        semanticRow({
+          title: "Appartement à vendre 1 500 000 DH à Casablanca",
+          price_mad: 1_200_000,
+        }),
+      ),
+      true,
+    );
+  });
+
+  it("rejects impossible sale price", () => {
+    assert.equal(hasStrongSemanticIntegrityConflict(semanticRow({ price_mad: 9_500 })), true);
+  });
+
+  it("rejects absurd non-land surface", () => {
+    assert.equal(hasStrongSemanticIntegrityConflict(semanticRow({ surface_m2: 900_000 })), true);
+  });
+
+
+  it("rejects surface contradicted by one explicit title surface", () => {
+    assert.equal(
+      hasStrongSemanticIntegrityConflict(
+        semanticRow({
+          title: "Appartement à vendre 128 m² à Casablanca",
+          surface_m2: 1,
+        }),
+      ),
+      true,
+    );
+  });
+
+  it("accepts matching grouped-thousands title surface", () => {
+    assert.equal(
+      hasStrongSemanticIntegrityConflict(
+        semanticRow({
+          title: "Villa à vendre 1 200 m² à Casablanca",
+          property_type: "villa",
+          surface_m2: 1200,
+        }),
+      ),
+      false,
+    );
+  });
+
+  it("rejects transaction contradicted by both title and URL", () => {
+    assert.equal(
+      hasStrongSemanticIntegrityConflict(
+        semanticRow({
+          transaction_type: "rent",
+          title: "Appartement à vendre à Casablanca",
+          listing_url: "https://agenz.ma/fr/annonces/immo-casablanca/vente-appartements/123",
+        }),
+      ),
+      true,
+    );
+  });
+
+  it("does not misread Hay Riad as a riad property type", () => {
+    assert.equal(
+      hasStrongSemanticIntegrityConflict(
+        semanticRow({
+          transaction_type: "rent",
+          property_type: "apartment",
+          title: "Appartement à louer Hay Riad",
+          listing_url: "https://avito.ma/fr/hay_riad/appartements/appartement-a-louer",
+        }),
+      ),
+      false,
+    );
+  });
+
+  it("quarantines mixed property-type title instead of auto-interpreting embedded type", () => {
+    assert.equal(
+      hasStrongSemanticIntegrityConflict(
+        semanticRow({
+          property_type: "apartment",
+          title: "Appartement Villa a vendre a Sidi Maarouf",
+          listing_url: "https://avito.ma/fr/sidi_maarouf/villas_et_riads/Appartement_Villa_a_vendre.htm",
+        }),
+      ),
+      true,
+    );
+  });
+
+  it("does not misread contextual terrain mention as land", () => {
+    assert.equal(
+      hasStrongSemanticIntegrityConflict(
+        semanticRow({
+          property_type: "villa",
+          title: "Villa à vendre sur un terrain de 3 500 m²",
+          listing_url: "https://example.com/vente/villas/villa-a-vendre-sur-terrain",
+        }),
+      ),
+      false,
+    );
+  });
+
+  it("rejects property type contradicted by both title and URL", () => {
+    assert.equal(
+      hasStrongSemanticIntegrityConflict(
+        semanticRow({
+          property_type: "office",
+          title: "Terrain à vendre à Casablanca",
+          listing_url: "https://agenz.ma/fr/annonces/immo-casablanca/vente-terrains/123",
+        }),
+      ),
+      true,
+    );
+  });
+
+  it("public-search guard fails closed on semantic conflict", () => {
+    const env = { ...process.env, PERSISTED_OPENSERP_LISTINGS_ENABLED: "true" };
+    const row = semanticRow({ price_mad: 9_500 });
+    // canPublishDbRowToPublicSearchSurface uses process env for the feature flag,
+    // but the semantic gate runs before source/publication authorization.
+    assert.equal(canPublishDbRowToPublicSearchSurface(row), false);
+    assert.equal(hasStrongSemanticIntegrityConflict(row), true);
+    void env;
   });
 });

@@ -58,12 +58,18 @@ function intent(row: CohortRow): "sale" | "rent" | null {
 
 function amount(raw: string | null, tx: "sale" | "rent" | null): number | null {
   if (!raw || !tx) return null;
-  if (!/(?:\bmad\b|\bdhs?\b|dirhams?)/i.test(raw)) return null;
   if (/(?:\/|par|le)\s*m(?:²|2)(?=\s|$|[^\p{L}\p{N}_])|par[-_ ]?jour|par\s+nuit|nuit[eé]e|journalier|quotidien|prix\s+sur\s+demande/iu.test(raw)) return null;
-  const digits = raw.replace(/([.,])00\b/, "").replace(/[^0-9]/g, "");
-  if (!digits) return null;
-  const n = Number(digits);
-  if (!Number.isFinite(n) || n <= 0 || n > 500_000_000) return null;
+
+  const explicit = Array.from(
+    raw.matchAll(/([0-9]{1,3}(?:[ .,'’][0-9]{3})+|[0-9]{3,10})(?:[.,]00)?\s*(?:-\s*)?(?:mad|dhs?|dh|dirhams?)/gi),
+  )
+    .map((match) => Number(match[1].replace(/[^0-9]/g, "")))
+    .filter((value) => Number.isFinite(value) && value > 0 && value <= 500_000_000);
+
+  const unique = [...new Set(explicit)];
+  if (unique.length !== 1) return null;
+
+  const n = unique[0];
   if (tx === "sale" && n < 10_000) return null;
   if (tx === "rent" && n < 1_000) return null;
   return n;

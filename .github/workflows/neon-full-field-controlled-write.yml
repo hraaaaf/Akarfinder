@@ -1,0 +1,96 @@
+name: Neon Full Field Controlled Write
+
+on:
+  pull_request:
+    paths:
+      - 'data/recovery/activate-neon-full-field-write.txt'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  controlled-write:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DATABASE_URL: ${{ secrets.NEON_RECOVERY_DATABASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Validate control and secret
+        id: control
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${DATABASE_URL:-}" || { echo "::error::Missing NEON_RECOVERY_DATABASE_URL"; exit 1; }
+          test -f data/recovery/activate-neon-full-field-write.txt || { echo "::error::Missing control file"; exit 1; }
+          mode=$(awk -F= '$1=="MODE"{print $2}' data/recovery/activate-neon-full-field-write.txt)
+          artifact_id=$(awk -F= '$1=="ARTIFACT_ID"{print $2}' data/recovery/activate-neon-full-field-write.txt)
+          digest=$(awk -F= '$1=="ARTIFACT_DIGEST"{print $2}' data/recovery/activate-neon-full-field-write.txt)
+          apply_limit=$(awk -F= '$1=="APPLY_LIMIT"{print $2}' data/recovery/activate-neon-full-field-write.txt)
+          case "$mode" in preflight|apply) ;; *) echo "::error::Invalid MODE=$mode"; exit 1;; esac
+          [[ "$artifact_id" =~ ^[0-9]+$ ]] || { echo "::error::Invalid ARTIFACT_ID"; exit 1; }
+          [[ "$digest" =~ ^sha256:[0-9a-f]{64}$ ]] || { echo "::error::Invalid ARTIFACT_DIGEST"; exit 1; }
+          [[ "${apply_limit:-0}" =~ ^[0-9]+$ ]] || { echo "::error::Invalid APPLY_LIMIT"; exit 1; }
+          echo "MODE=$mode" >> "$GITHUB_ENV"
+          echo "FULL_FIELD_ARTIFACT_ID=$artifact_id" >> "$GITHUB_ENV"
+          echo "FULL_FIELD_ARTIFACT_DIGEST=$digest" >> "$GITHUB_ENV"
+          echo "APPLY_LIMIT=${apply_limit:-0}" >> "$GITHUB_ENV"
+          echo "mode=$mode" >> "$GITHUB_OUTPUT"
+          echo "artifact_id=$artifact_id" >> "$GITHUB_OUTPUT"
+          echo "artifact_digest=$digest" >> "$GITHUB_OUTPUT"
+          echo "apply_limit=${apply_limit:-0}" >> "$GITHUB_OUTPUT"
+      - name: Fetch certified consolidated artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/full-field artifacts/neon-full-field-write
+          curl --fail --location --retry 3             -H "Authorization: Bearer $GH_TOKEN"             -H 'Accept: application/vnd.github+json'             -H 'X-GitHub-Api-Version: 2022-11-28'             "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/${FULL_FIELD_ARTIFACT_ID}/zip"             -o .tmp/full-field.zip
+          expected="${FULL_FIELD_ARTIFACT_DIGEST#sha256:}"
+          actual="$(sha256sum .tmp/full-field.zip | awk '{print $1}')"
+          test "$actual" = "$expected" || { echo "::error::Artifact digest mismatch"; exit 1; }
+          unzip -q .tmp/full-field.zip -d .tmp/full-field
+          test -f .tmp/full-field/full-field-summary.json
+          test -f .tmp/full-field/full-field-passports.jsonl
+      - name: Build deterministic DB write stage
+        env:
+          PASSPORTS_JSONL: .tmp/full-field/full-field-passports.jsonl
+          FULL_FIELD_SUMMARY: .tmp/full-field/full-field-summary.json
+          OUTPUT_DIR: artifacts/neon-full-field-write
+        run: node scripts/data/build-neon-full-field-write-stage.mjs
+      - name: Read-only DB preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --rm             -e DATABASE_URL="$DATABASE_URL"             -v "$GITHUB_WORKSPACE:/work"             -w /work             postgres:17             sh -lc 'psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f /work/scripts/data/neon-full-field-write-preflight.sql'
+      - name: Apply controlled write
+        if: steps.control.outputs.mode == 'apply'
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --rm             -e DATABASE_URL="$DATABASE_URL"             -v "$GITHUB_WORKSPACE:/work"             -w /work             postgres:17             sh -lc 'psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -v apply_limit="'$APPLY_LIMIT'" -f /work/scripts/data/neon-full-field-write-apply.sql'
+      - name: Assert result artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s artifacts/neon-full-field-write/stage-summary.json
+          test -s artifacts/neon-full-field-write/preflight-summary.csv
+          if [ "$MODE" = "apply" ]; then
+            test -s artifacts/neon-full-field-write/apply-summary.csv
+            test "$(tail -n +2 artifacts/neon-full-field-write/apply-summary.csv | cut -d, -f6)" = "0"
+            test "$(tail -n +2 artifacts/neon-full-field-write/apply-summary.csv | cut -d, -f7)" = "0"
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: neon-full-field-controlled-write-${{ steps.control.outputs.mode }}
+          path: artifacts/neon-full-field-write/
+          retention-days: 30

@@ -1,0 +1,677 @@
+name: GitHub Freeze Recovery Audit
+
+on:
+  push:
+    branches: [data/neon-price-recovery-audit]
+    paths:
+      - 'scripts/data/github-freeze-recovery-benchmark.mjs'
+      - '.github/workflows/neon-semantic-jsonl-audit.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/data/github-freeze-recovery-benchmark.mjs'
+      - '.github/workflows/neon-semantic-jsonl-audit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  marocimmo-freeze-benchmark:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SAMPLE_SIZE: '300'
+      SOURCE_NAME: 'marocimmo.com'
+      OUTPUT_PREFIX: 'marocimmo-freeze-recovery-benchmark'
+      FREEZE_JSONL_GZ: '.tmp/freeze/clean-corpus-v4.11-core.jsonl.gz'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Syntax check
+        run: node --check scripts/data/github-freeze-recovery-benchmark.mjs
+      - name: Fetch canonical GitHub freeze
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/freeze
+          curl --fail --location --retry 3 \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/10910779576/zip" \
+            -o .tmp/freeze.zip
+          unzip -q .tmp/freeze.zip -d .tmp/freeze
+          test "$(jq -r '.rows' .tmp/freeze/clean-corpus-v4.11-core-manifest.json)" = "226286"
+          test "$(jq -r '.database_access' .tmp/freeze/clean-corpus-v4.11-core-manifest.json)" = "0"
+          echo "e7ac4bca2db34ad334ed7234cfb8be93fc9baca68a9694f5024989b5cc2bb953  .tmp/freeze/clean-corpus-v4.11-core.jsonl.gz" | sha256sum -c -
+      - name: Benchmark MarocImmo from freeze
+        run: node scripts/data/github-freeze-recovery-benchmark.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: marocimmo-freeze-recovery-benchmark
+          path: |
+            marocimmo-freeze-recovery-benchmark.json
+            marocimmo-freeze-recovery-benchmark.jsonl
+            marocimmo-freeze-recovery-benchmark-offline-cohort.jsonl
+            marocimmo-freeze-recovery-benchmark-offline-write-safe.jsonl
+            marocimmo-freeze-recovery-benchmark-offline-review.jsonl
+          retention-days: 14
+
+  sarout-freeze-benchmark:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SAMPLE_SIZE: '300'
+      SOURCE_NAME: 'sarout.ma'
+      OUTPUT_PREFIX: 'sarout-freeze-recovery-benchmark'
+      FREEZE_JSONL_GZ: '.tmp/freeze/clean-corpus-v4.11-core.jsonl.gz'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Syntax check
+        run: node --check scripts/data/github-freeze-recovery-benchmark.mjs
+      - name: Fetch canonical GitHub freeze
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/freeze
+          curl --fail --location --retry 3 \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/10910779576/zip" \
+            -o .tmp/freeze.zip
+          unzip -q .tmp/freeze.zip -d .tmp/freeze
+          test "$(jq -r '.rows' .tmp/freeze/clean-corpus-v4.11-core-manifest.json)" = "226286"
+          test "$(jq -r '.database_access' .tmp/freeze/clean-corpus-v4.11-core-manifest.json)" = "0"
+          echo "e7ac4bca2db34ad334ed7234cfb8be93fc9baca68a9694f5024989b5cc2bb953  .tmp/freeze/clean-corpus-v4.11-core.jsonl.gz" | sha256sum -c -
+      - name: Benchmark Sarout from freeze
+        run: node scripts/data/github-freeze-recovery-benchmark.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sarout-freeze-recovery-benchmark
+          path: |
+            sarout-freeze-recovery-benchmark.json
+            sarout-freeze-recovery-benchmark.jsonl
+            sarout-freeze-recovery-benchmark-offline-cohort.jsonl
+            sarout-freeze-recovery-benchmark-offline-write-safe.jsonl
+            sarout-freeze-recovery-benchmark-offline-review.jsonl
+          retention-days: 14
+
+  domio-freeze-benchmark:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SAMPLE_SIZE: '300'
+      SOURCE_NAME: 'domio.ma'
+      OUTPUT_PREFIX: 'domio-freeze-recovery-benchmark'
+      FREEZE_JSONL_GZ: '.tmp/freeze/clean-corpus-v4.11-core.jsonl.gz'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Syntax check
+        run: node --check scripts/data/github-freeze-recovery-benchmark.mjs
+      - name: Fetch canonical GitHub freeze
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/freeze
+          curl --fail --location --retry 3 \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/10910779576/zip" \
+            -o .tmp/freeze.zip
+          unzip -q .tmp/freeze.zip -d .tmp/freeze
+          test "$(jq -r '.rows' .tmp/freeze/clean-corpus-v4.11-core-manifest.json)" = "226286"
+          test "$(jq -r '.database_access' .tmp/freeze/clean-corpus-v4.11-core-manifest.json)" = "0"
+          echo "e7ac4bca2db34ad334ed7234cfb8be93fc9baca68a9694f5024989b5cc2bb953  .tmp/freeze/clean-corpus-v4.11-core.jsonl.gz" | sha256sum -c -
+      - name: Benchmark Domio from freeze
+        run: node scripts/data/github-freeze-recovery-benchmark.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: domio-freeze-recovery-benchmark
+          path: |
+            domio-freeze-recovery-benchmark.json
+            domio-freeze-recovery-benchmark.jsonl
+            domio-freeze-recovery-benchmark-offline-cohort.jsonl
+            domio-freeze-recovery-benchmark-offline-write-safe.jsonl
+            domio-freeze-recovery-benchmark-offline-review.jsonl
+          retention-days: 14
+
+  daragadir-freeze-benchmark:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SAMPLE_SIZE: '300'
+      SOURCE_NAME: 'daragadir.com'
+      OUTPUT_PREFIX: 'daragadir-freeze-recovery-benchmark'
+      FREEZE_JSONL_GZ: '.tmp/freeze/clean-corpus-v4.11-core.jsonl.gz'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Syntax check
+        run: node --check scripts/data/github-freeze-recovery-benchmark.mjs
+      - name: Fetch canonical GitHub freeze
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/freeze
+          curl --fail --location --retry 3 \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/10910779576/zip" \
+            -o .tmp/freeze.zip
+          unzip -q .tmp/freeze.zip -d .tmp/freeze
+          test "$(jq -r '.rows' .tmp/freeze/clean-corpus-v4.11-core-manifest.json)" = "226286"
+          test "$(jq -r '.database_access' .tmp/freeze/clean-corpus-v4.11-core-manifest.json)" = "0"
+          echo "e7ac4bca2db34ad334ed7234cfb8be93fc9baca68a9694f5024989b5cc2bb953  .tmp/freeze/clean-corpus-v4.11-core.jsonl.gz" | sha256sum -c -
+      - name: Benchmark DarAgadir from freeze
+        run: node scripts/data/github-freeze-recovery-benchmark.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: daragadir-freeze-recovery-benchmark
+          path: |
+            daragadir-freeze-recovery-benchmark.json
+            daragadir-freeze-recovery-benchmark.jsonl
+            daragadir-freeze-recovery-benchmark-offline-cohort.jsonl
+            daragadir-freeze-recovery-benchmark-offline-write-safe.jsonl
+            daragadir-freeze-recovery-benchmark-offline-review.jsonl
+          retention-days: 14
+
+  promoimmomarrakech-freeze-benchmark:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SAMPLE_SIZE: '300'
+      SOURCE_NAME: 'promoimmomarrakech.com'
+      OUTPUT_PREFIX: 'promoimmomarrakech-freeze-recovery-benchmark'
+      FREEZE_JSONL_GZ: '.tmp/freeze/clean-corpus-v4.11-core.jsonl.gz'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Syntax check
+        run: node --check scripts/data/github-freeze-recovery-benchmark.mjs
+      - name: Fetch canonical GitHub freeze
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/freeze
+          curl --fail --location --retry 3 \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/10910779576/zip" \
+            -o .tmp/freeze.zip
+          unzip -q .tmp/freeze.zip -d .tmp/freeze
+          test "$(jq -r '.rows' .tmp/freeze/clean-corpus-v4.11-core-manifest.json)" = "226286"
+          test "$(jq -r '.database_access' .tmp/freeze/clean-corpus-v4.11-core-manifest.json)" = "0"
+          echo "e7ac4bca2db34ad334ed7234cfb8be93fc9baca68a9694f5024989b5cc2bb953  .tmp/freeze/clean-corpus-v4.11-core.jsonl.gz" | sha256sum -c -
+      - name: Benchmark PromoImmoMarrakech from freeze
+        run: node scripts/data/github-freeze-recovery-benchmark.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: promoimmomarrakech-freeze-recovery-benchmark
+          path: |
+            promoimmomarrakech-freeze-recovery-benchmark.json
+            promoimmomarrakech-freeze-recovery-benchmark.jsonl
+            promoimmomarrakech-freeze-recovery-benchmark-offline-cohort.jsonl
+            promoimmomarrakech-freeze-recovery-benchmark-offline-write-safe.jsonl
+            promoimmomarrakech-freeze-recovery-benchmark-offline-review.jsonl
+          retention-days: 14
+
+  masaken-freeze-benchmark:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SAMPLE_SIZE: '300'
+      SOURCE_NAME: 'masaken.ma'
+      OUTPUT_PREFIX: 'masaken-freeze-recovery-benchmark'
+      FREEZE_JSONL_GZ: '.tmp/freeze/clean-corpus-v4.11-core.jsonl.gz'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Syntax check
+        run: node --check scripts/data/github-freeze-recovery-benchmark.mjs
+      - name: Fetch canonical GitHub freeze
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/freeze
+          curl --fail --location --retry 3 \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/10910779576/zip" \
+            -o .tmp/freeze.zip
+          unzip -q .tmp/freeze.zip -d .tmp/freeze
+          test "$(jq -r '.rows' .tmp/freeze/clean-corpus-v4.11-core-manifest.json)" = "226286"
+          test "$(jq -r '.database_access' .tmp/freeze/clean-corpus-v4.11-core-manifest.json)" = "0"
+          echo "e7ac4bca2db34ad334ed7234cfb8be93fc9baca68a9694f5024989b5cc2bb953  .tmp/freeze/clean-corpus-v4.11-core.jsonl.gz" | sha256sum -c -
+      - name: Benchmark Masaken from freeze
+        run: node scripts/data/github-freeze-recovery-benchmark.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: masaken-freeze-recovery-benchmark
+          path: |
+            masaken-freeze-recovery-benchmark.json
+            masaken-freeze-recovery-benchmark.jsonl
+            masaken-freeze-recovery-benchmark-offline-cohort.jsonl
+            masaken-freeze-recovery-benchmark-offline-write-safe.jsonl
+            masaken-freeze-recovery-benchmark-offline-review.jsonl
+          retention-days: 14
+
+  mouldar-freeze-benchmark:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SAMPLE_SIZE: '300'
+      SOURCE_NAME: 'mouldar.com'
+      OUTPUT_PREFIX: 'mouldar-freeze-recovery-benchmark'
+      FREEZE_JSONL_GZ: '.tmp/freeze/clean-corpus-v4.11-core.jsonl.gz'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Syntax check
+        run: node --check scripts/data/github-freeze-recovery-benchmark.mjs
+      - name: Fetch canonical GitHub freeze
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/freeze
+          curl --fail --location --retry 3 \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/10910779576/zip" \
+            -o .tmp/freeze.zip
+          unzip -q .tmp/freeze.zip -d .tmp/freeze
+          test "$(jq -r '.rows' .tmp/freeze/clean-corpus-v4.11-core-manifest.json)" = "226286"
+          test "$(jq -r '.database_access' .tmp/freeze/clean-corpus-v4.11-core-manifest.json)" = "0"
+          echo "e7ac4bca2db34ad334ed7234cfb8be93fc9baca68a9694f5024989b5cc2bb953  .tmp/freeze/clean-corpus-v4.11-core.jsonl.gz" | sha256sum -c -
+      - name: Benchmark Mouldar from freeze
+        run: node scripts/data/github-freeze-recovery-benchmark.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mouldar-freeze-recovery-benchmark
+          path: |
+            mouldar-freeze-recovery-benchmark.json
+            mouldar-freeze-recovery-benchmark.jsonl
+            mouldar-freeze-recovery-benchmark-offline-cohort.jsonl
+            mouldar-freeze-recovery-benchmark-offline-write-safe.jsonl
+            mouldar-freeze-recovery-benchmark-offline-review.jsonl
+          retention-days: 14
+
+  sarouty-freeze-benchmark:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SAMPLE_SIZE: '300'
+      SOURCE_NAME: 'sarouty.ma'
+      OUTPUT_PREFIX: 'sarouty-freeze-recovery-benchmark'
+      FREEZE_JSONL_GZ: '.tmp/freeze/clean-corpus-v4.11-core.jsonl.gz'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Syntax check
+        run: node --check scripts/data/github-freeze-recovery-benchmark.mjs
+      - name: Fetch canonical GitHub freeze
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/freeze
+          curl --fail --location --retry 3 \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/10910779576/zip" \
+            -o .tmp/freeze.zip
+          unzip -q .tmp/freeze.zip -d .tmp/freeze
+          test "$(jq -r '.rows' .tmp/freeze/clean-corpus-v4.11-core-manifest.json)" = "226286"
+          test "$(jq -r '.database_access' .tmp/freeze/clean-corpus-v4.11-core-manifest.json)" = "0"
+          echo "e7ac4bca2db34ad334ed7234cfb8be93fc9baca68a9694f5024989b5cc2bb953  .tmp/freeze/clean-corpus-v4.11-core.jsonl.gz" | sha256sum -c -
+      - name: Benchmark Sarouty from freeze
+        run: node scripts/data/github-freeze-recovery-benchmark.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sarouty-freeze-recovery-benchmark
+          path: |
+            sarouty-freeze-recovery-benchmark.json
+            sarouty-freeze-recovery-benchmark.jsonl
+            sarouty-freeze-recovery-benchmark-offline-cohort.jsonl
+            sarouty-freeze-recovery-benchmark-offline-write-safe.jsonl
+            sarouty-freeze-recovery-benchmark-offline-review.jsonl
+          retention-days: 14
+
+  soukimmobilier-freeze-benchmark:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SAMPLE_SIZE: '300'
+      SOURCE_NAME: 'soukimmobilier.com'
+      OUTPUT_PREFIX: 'soukimmobilier-freeze-recovery-benchmark'
+      FREEZE_JSONL_GZ: '.tmp/freeze/clean-corpus-v4.11-core.jsonl.gz'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Syntax check
+        run: node --check scripts/data/github-freeze-recovery-benchmark.mjs
+      - name: Fetch canonical GitHub freeze
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/freeze
+          curl --fail --location --retry 3 \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/10910779576/zip" \
+            -o .tmp/freeze.zip
+          unzip -q .tmp/freeze.zip -d .tmp/freeze
+          test "$(jq -r '.rows' .tmp/freeze/clean-corpus-v4.11-core-manifest.json)" = "226286"
+          test "$(jq -r '.database_access' .tmp/freeze/clean-corpus-v4.11-core-manifest.json)" = "0"
+          echo "e7ac4bca2db34ad334ed7234cfb8be93fc9baca68a9694f5024989b5cc2bb953  .tmp/freeze/clean-corpus-v4.11-core.jsonl.gz" | sha256sum -c -
+      - name: Benchmark SoukImmobilier from freeze
+        run: node scripts/data/github-freeze-recovery-benchmark.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: soukimmobilier-freeze-recovery-benchmark
+          path: |
+            soukimmobilier-freeze-recovery-benchmark.json
+            soukimmobilier-freeze-recovery-benchmark.jsonl
+            soukimmobilier-freeze-recovery-benchmark-offline-cohort.jsonl
+            soukimmobilier-freeze-recovery-benchmark-offline-write-safe.jsonl
+            soukimmobilier-freeze-recovery-benchmark-offline-review.jsonl
+          retention-days: 14
+
+  lsf-freeze-benchmark:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SAMPLE_SIZE: '300'
+      SOURCE_NAME: 'limmobiliersansfrontieres.com'
+      OUTPUT_PREFIX: 'lsf-freeze-recovery-benchmark'
+      FREEZE_JSONL_GZ: '.tmp/freeze/clean-corpus-v4.11-core.jsonl.gz'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Syntax check
+        run: node --check scripts/data/github-freeze-recovery-benchmark.mjs
+      - name: Fetch canonical GitHub freeze
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/freeze
+          curl --fail --location --retry 3 \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/10910779576/zip" \
+            -o .tmp/freeze.zip
+          unzip -q .tmp/freeze.zip -d .tmp/freeze
+          test "$(jq -r '.rows' .tmp/freeze/clean-corpus-v4.11-core-manifest.json)" = "226286"
+          test "$(jq -r '.database_access' .tmp/freeze/clean-corpus-v4.11-core-manifest.json)" = "0"
+          echo "e7ac4bca2db34ad334ed7234cfb8be93fc9baca68a9694f5024989b5cc2bb953  .tmp/freeze/clean-corpus-v4.11-core.jsonl.gz" | sha256sum -c -
+      - name: Benchmark LSF from freeze
+        run: node scripts/data/github-freeze-recovery-benchmark.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lsf-freeze-recovery-benchmark
+          path: |
+            lsf-freeze-recovery-benchmark.json
+            lsf-freeze-recovery-benchmark.jsonl
+            lsf-freeze-recovery-benchmark-offline-cohort.jsonl
+            lsf-freeze-recovery-benchmark-offline-write-safe.jsonl
+            lsf-freeze-recovery-benchmark-offline-review.jsonl
+          retention-days: 14
+
+  aykana-freeze-benchmark:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SAMPLE_SIZE: '300'
+      SOURCE_NAME: 'aykana.ma'
+      OUTPUT_PREFIX: 'aykana-freeze-recovery-benchmark'
+      FREEZE_JSONL_GZ: '.tmp/freeze/clean-corpus-v4.11-core.jsonl.gz'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Syntax check
+        run: node --check scripts/data/github-freeze-recovery-benchmark.mjs
+      - name: Fetch canonical GitHub freeze
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/freeze
+          curl --fail --location --retry 3 \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/10910779576/zip" \
+            -o .tmp/freeze.zip
+          unzip -q .tmp/freeze.zip -d .tmp/freeze
+          test "$(jq -r '.rows' .tmp/freeze/clean-corpus-v4.11-core-manifest.json)" = "226286"
+          test "$(jq -r '.database_access' .tmp/freeze/clean-corpus-v4.11-core-manifest.json)" = "0"
+          echo "e7ac4bca2db34ad334ed7234cfb8be93fc9baca68a9694f5024989b5cc2bb953  .tmp/freeze/clean-corpus-v4.11-core.jsonl.gz" | sha256sum -c -
+      - name: Benchmark Aykana from freeze
+        run: node scripts/data/github-freeze-recovery-benchmark.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: aykana-freeze-recovery-benchmark
+          path: |
+            aykana-freeze-recovery-benchmark.json
+            aykana-freeze-recovery-benchmark.jsonl
+            aykana-freeze-recovery-benchmark-offline-cohort.jsonl
+            aykana-freeze-recovery-benchmark-offline-write-safe.jsonl
+            aykana-freeze-recovery-benchmark-offline-review.jsonl
+          retention-days: 14
+
+  atlas-freeze-benchmark:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SAMPLE_SIZE: '300'
+      SOURCE_NAME: 'atlasimmobilier.com'
+      OUTPUT_PREFIX: 'atlas-freeze-recovery-benchmark'
+      FREEZE_JSONL_GZ: '.tmp/freeze/clean-corpus-v4.11-core.jsonl.gz'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Syntax check
+        run: node --check scripts/data/github-freeze-recovery-benchmark.mjs
+      - name: Fetch canonical GitHub freeze
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/freeze
+          curl --fail --location --retry 3 \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/10910779576/zip" \
+            -o .tmp/freeze.zip
+          unzip -q .tmp/freeze.zip -d .tmp/freeze
+          test "$(jq -r '.rows' .tmp/freeze/clean-corpus-v4.11-core-manifest.json)" = "226286"
+          test "$(jq -r '.database_access' .tmp/freeze/clean-corpus-v4.11-core-manifest.json)" = "0"
+          echo "e7ac4bca2db34ad334ed7234cfb8be93fc9baca68a9694f5024989b5cc2bb953  .tmp/freeze/clean-corpus-v4.11-core.jsonl.gz" | sha256sum -c -
+      - name: Benchmark Atlas from freeze
+        run: node scripts/data/github-freeze-recovery-benchmark.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: atlas-freeze-recovery-benchmark
+          path: |
+            atlas-freeze-recovery-benchmark.json
+            atlas-freeze-recovery-benchmark.jsonl
+            atlas-freeze-recovery-benchmark-offline-cohort.jsonl
+            atlas-freeze-recovery-benchmark-offline-write-safe.jsonl
+            atlas-freeze-recovery-benchmark-offline-review.jsonl
+          retention-days: 14
+
+  immo1-freeze-benchmark:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SAMPLE_SIZE: '243'
+      SOURCE_NAME: '1immo.ma'
+      OUTPUT_PREFIX: '1immo-freeze-recovery-benchmark'
+      FREEZE_JSONL_GZ: '.tmp/freeze/clean-corpus-v4.11-core.jsonl.gz'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Syntax check
+        run: node --check scripts/data/github-freeze-recovery-benchmark.mjs
+      - name: Fetch canonical GitHub freeze
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/freeze
+          curl --fail --location --retry 3 \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/10910779576/zip" \
+            -o .tmp/freeze.zip
+          unzip -q .tmp/freeze.zip -d .tmp/freeze
+          test "$(jq -r '.rows' .tmp/freeze/clean-corpus-v4.11-core-manifest.json)" = "226286"
+          test "$(jq -r '.database_access' .tmp/freeze/clean-corpus-v4.11-core-manifest.json)" = "0"
+          echo "e7ac4bca2db34ad334ed7234cfb8be93fc9baca68a9694f5024989b5cc2bb953  .tmp/freeze/clean-corpus-v4.11-core.jsonl.gz" | sha256sum -c -
+      - name: Benchmark 1immo from freeze
+        run: node scripts/data/github-freeze-recovery-benchmark.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: 1immo-freeze-recovery-benchmark
+          path: |
+            1immo-freeze-recovery-benchmark.json
+            1immo-freeze-recovery-benchmark.jsonl
+            1immo-freeze-recovery-benchmark-offline-cohort.jsonl
+            1immo-freeze-recovery-benchmark-offline-write-safe.jsonl
+            1immo-freeze-recovery-benchmark-offline-review.jsonl
+          retention-days: 14
+
+  kawtar-freeze-benchmark:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SAMPLE_SIZE: '140'
+      SOURCE_NAME: 'kawtarimmobilier.com'
+      OUTPUT_PREFIX: 'kawtar-freeze-recovery-benchmark'
+      FREEZE_JSONL_GZ: '.tmp/freeze/clean-corpus-v4.11-core.jsonl.gz'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Syntax check
+        run: node --check scripts/data/github-freeze-recovery-benchmark.mjs
+      - name: Fetch canonical GitHub freeze
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/freeze
+          curl --fail --location --retry 3 \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/10910779576/zip" \
+            -o .tmp/freeze.zip
+          unzip -q .tmp/freeze.zip -d .tmp/freeze
+          test "$(jq -r '.rows' .tmp/freeze/clean-corpus-v4.11-core-manifest.json)" = "226286"
+          test "$(jq -r '.database_access' .tmp/freeze/clean-corpus-v4.11-core-manifest.json)" = "0"
+          echo "e7ac4bca2db34ad334ed7234cfb8be93fc9baca68a9694f5024989b5cc2bb953  .tmp/freeze/clean-corpus-v4.11-core.jsonl.gz" | sha256sum -c -
+      - name: Benchmark Kawtar from freeze
+        run: node scripts/data/github-freeze-recovery-benchmark.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kawtar-freeze-recovery-benchmark
+          path: |
+            kawtar-freeze-recovery-benchmark.json
+            kawtar-freeze-recovery-benchmark.jsonl
+            kawtar-freeze-recovery-benchmark-offline-cohort.jsonl
+            kawtar-freeze-recovery-benchmark-offline-write-safe.jsonl
+            kawtar-freeze-recovery-benchmark-offline-review.jsonl
+          retention-days: 14

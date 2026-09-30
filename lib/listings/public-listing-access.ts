@@ -89,6 +89,267 @@ function hasRequiredPersistedExternalFields(row: DbListingRow): boolean {
   );
 }
 
+const ALLOWED_PROPERTY_TYPES = new Set([
+  "apartment",
+  "villa",
+  "land",
+  "office",
+  "commercial",
+  "house",
+  "studio",
+  "riad",
+]);
+
+function structuralUrlEvidence(row: DbListingRow): { transaction: "sale" | "rent" | null; propertyType: string | null } {
+  const raw = row.listing_url ?? "";
+  let path = "";
+  try {
+    path = decodeURIComponent(new URL(raw).pathname).toLowerCase();
+  } catch {
+    return { transaction: null, propertyType: null };
+  }
+
+  const segments = path.split("/").filter(Boolean);
+  const host = (() => {
+    try { return new URL(raw).hostname.toLowerCase().replace(/^www\./, ""); } catch { return ""; }
+  })();
+
+  const mapType = (value: string | undefined): string | null => {
+    const v = value ?? "";
+    if (/^appart(?:ement|ements)?$/.test(v)) return "apartment";
+    if (/^studios?$/.test(v)) return "studio";
+    if (/^villas?$/.test(v) || v === "villas_et_riads") return "villa";
+    if (/^maisons?$/.test(v)) return "house";
+    if (/^terrains?$/.test(v)) return "land";
+    if (/^bureaux?$/.test(v)) return "office";
+    if (/^(?:local|locaux|commerce|commercial|magasin)s?$/.test(v) || v === "locaux-magasins") return "commercial";
+    if (/^riads?$/.test(v)) return "riad";
+    return null;
+  };
+
+  if (host === "agenz.ma") {
+    const route = segments.find((segment) => /^(?:vente|location)-/.test(segment));
+    if (route) {
+      const [tx, ...rest] = route.split("-");
+      return {
+        transaction: tx === "vente" ? "sale" : "rent",
+        propertyType: mapType(rest.join("-")),
+      };
+    }
+  }
+
+  if (host === "marocimmo.com") {
+    const i = segments.findIndex((segment) => segment === "vente" || segment === "location");
+    if (i >= 0) return { transaction: segments[i] === "vente" ? "sale" : "rent", propertyType: mapType(segments[i + 1]) };
+  }
+
+  if (host === "domio.ma") {
+    const i = segments.findIndex((segment) => segment === "vendre" || segment === "louer");
+    if (i > 0) return { transaction: segments[i] === "vendre" ? "sale" : "rent", propertyType: mapType(segments[i - 1]) };
+  }
+
+  if (host === "mouldar.com") {
+    const i = segments.findIndex((segment) => segment === "achat" || segment === "location" || segment === "rent");
+    if (i >= 0) return { transaction: segments[i] === "achat" ? "sale" : "rent", propertyType: mapType(segments[i + 1]) };
+  }
+
+  if (host === "masaken.ma") {
+    const route = segments.find((segment) => /^(?:vente|location)-/.test(segment));
+    if (route) {
+      const parts = route.split("-");
+      return { transaction: parts[0] === "vente" ? "sale" : "rent", propertyType: mapType(parts[1]) };
+    }
+  }
+
+  if (host === "sarouty.ma") {
+    const i = segments.findIndex((segment) => segment === "acheter" || segment === "louer");
+    if (i >= 0) {
+      const typeToken = (segments[i + 1] ?? "").split("-")[0];
+      return { transaction: segments[i] === "acheter" ? "sale" : "rent", propertyType: mapType(typeToken) };
+    }
+  }
+
+  if (host === "avito.ma") {
+    const categoryIndex = segments.findIndex((segment) =>
+      /^(?:appartements?|maisons?|villas_et_riads|villas?|terrains?|bureaux?|local|locaux|commerce|commercial|magasins?|riads?|studios?)$/.test(segment),
+    );
+    return {
+      transaction: null,
+      propertyType: categoryIndex >= 0 ? mapType(segments[categoryIndex]) : null,
+    };
+  }
+
+  return { transaction: null, propertyType: null };
+}
+
+function primaryTitleTransaction(row: DbListingRow): "sale" | "rent" | null {
+  const title = row.title?.toLowerCase() ?? "";
+  const sale = /(?:^|\W)(?:vente|vendu|à vendre|a vendre)(?:\W|$)/u.test(title);
+  const rent = /(?:^|\W)(?:location|loué|loue|à louer|a louer)(?:\W|$)/u.test(title);
+  if (sale === rent) return null;
+  return sale ? "sale" : "rent";
+}
+
+function primaryTitlePropertyType(row: DbListingRow): string | null {
+  const title = row.title?.toLowerCase().trim() ?? "";
+
+  const leading: Array<[string, RegExp]> = [
+    ["land", /^(?:terrain|lot de terrain|ferme)\b/u],
+    ["villa", /^villa\b/u],
+    ["studio", /^studio\b/u],
+    ["office", /^(?:bureau|plateau bureau)\b/u],
+    ["commercial", /^(?:local commercial|magasin|commerce)\b/u],
+    ["riad", /^riad\b/u],
+    ["apartment", /^(?:appartement|appart)\b/u],
+    ["house", /^maison\b/u],
+  ];
+  const leadingType = leading.find(([, re]) => re.test(title))?.[0];
+  if (leadingType) return leadingType;
+
+  const actionRules: Array<[string, RegExp]> = [
+    ["land", /\b(?:terrain|lot de terrain|ferme)\s+(?:à|a)\s+(?:vendre|louer)\b/u],
+    ["villa", /\bvilla\s+(?:à|a)\s+(?:vendre|louer)\b/u],
+    ["studio", /\bstudio\s+(?:à|a)\s+(?:vendre|louer)\b/u],
+    ["office", /\b(?:bureau|plateau bureau)\s+(?:à|a)\s+(?:vendre|louer)\b/u],
+    ["commercial", /\b(?:local commercial|magasin|commerce)\s+(?:à|a)\s+(?:vendre|louer)\b/u],
+    ["riad", /\briad\s+(?:à|a)\s+(?:vendre|louer)\b/u],
+    ["apartment", /\b(?:appartement|appart)\s+(?:à|a)\s+(?:vendre|louer)\b/u],
+    ["house", /\bmaison\s+(?:à|a)\s+(?:vendre|louer)\b/u],
+  ];
+  const candidates = [...new Set(actionRules.filter(([, re]) => re.test(title)).map(([type]) => type))];
+  return candidates.length === 1 ? candidates[0] : null;
+}
+
+function singleExplicitTitleSurfaceM2(row: DbListingRow): number | null {
+  const title = row.title ?? "";
+  const values = Array.from(
+    title.matchAll(/([0-9]{1,3}(?:[ .,'’][0-9]{3})+|[0-9]{1,7})\s*m(?:²|2)(?=[^0-9]|$)/giu),
+  )
+    .filter((match) => {
+      if ((row.property_type ?? "").toLowerCase() === "land") return true;
+      const prefix = title.slice(Math.max(0, (match.index ?? 0) - 28), match.index ?? 0).toLowerCase();
+      return !/(?:terrain|parcelle|lot)\s+(?:de\s+)?$/.test(prefix);
+    })
+    .map((match) => Number(match[1].replace(/[^0-9]/g, "")))
+    .filter((value) => Number.isFinite(value) && value >= 8 && value <= 10_000_000);
+
+  const unique = [...new Set(values)];
+  return unique.length === 1 ? unique[0] : null;
+}
+
+function uniqueExplicitCount(text: string | null | undefined, kind: "bedroom" | "bathroom" | "room"): number | null {
+  const raw = text ?? "";
+  const patterns =
+    kind === "bedroom"
+      ? [
+          /(?:chambres?|bedrooms?)\s*[:=-]?\s*(\d{1,3})(?!\d)/giu,
+          /(\d{1,3})\s*chambres?(?!\s*[:=-])/giu,
+        ]
+      : kind === "bathroom"
+        ? [
+            /(?:salle?s?\s*de\s*bain|sdb|bathrooms?)\s*[:=-]?\s*(\d{1,2})(?!\d)/giu,
+            /(\d{1,2})\s*(?:salle?s?\s*de\s*bain|sdb)/giu,
+          ]
+        : [
+            /(?:pi[eè]ces?|rooms?)\s*[:=-]?\s*(\d{1,3})(?!\d)/giu,
+            /(\d{1,3})\s*pi[eè]ces?/giu,
+            /(\d{1,3})\s*rooms?/giu,
+          ];
+
+  const values = patterns.flatMap((pattern) => {
+    pattern.lastIndex = 0;
+    return Array.from(raw.matchAll(pattern), (match) => Number(match[1]));
+  }).filter((value) => Number.isFinite(value));
+
+  const unique = [...new Set(values)];
+  return unique.length === 1 ? unique[0] : null;
+}
+
+function hasUnsupportedRentalCadence(row: DbListingRow): boolean {
+  if (row.transaction_type?.trim().toLowerCase() !== "rent") return false;
+  const text = `${row.title ?? ""} ${row.description_snippet ?? ""}`.toLowerCase();
+  return /(?:par\s+jour|\/jour|journalier|journali[eè]re|par\s+nuit|nuit[eé]e|par\s+semaine|\/semaine|weekly|daily)/u.test(text);
+}
+
+function singleExplicitTitleSalePriceMad(row: DbListingRow): number | null {
+  if (row.transaction_type?.trim().toLowerCase() !== "sale") return null;
+  const title = row.title ?? "";
+  if (/(?:mad|dhs?|dh|dirhams?)\s*(?:\/|par)\s*m(?:²|2)/iu.test(title)) return null;
+
+  const values = Array.from(
+    title.matchAll(/([0-9]{1,3}(?:[ .,'’][0-9]{3})+|[0-9]{3,10})\s*(?:-\s*)?(?:mad|dhs?|dh|dirhams?)/giu),
+  )
+    .map((match) => Number(match[1].replace(/[^0-9]/g, "")))
+    .filter((value) => Number.isFinite(value) && value >= 10_000 && value <= 500_000_000);
+
+  const unique = [...new Set(values)];
+  return unique.length === 1 ? unique[0] : null;
+}
+
+export function hasStrongSemanticIntegrityConflict(row: DbListingRow): boolean {
+  const tx = row.transaction_type?.trim().toLowerCase() ?? "";
+  const type = row.property_type?.trim().toLowerCase() ?? "";
+
+  if (!["sale", "rent", "new"].includes(tx)) return true;
+  if (!ALLOWED_PROPERTY_TYPES.has(type)) return true;
+
+  const titleTx = primaryTitleTransaction(row);
+  const structuralTx = structuralUrlEvidence(row).transaction;
+  if (titleTx && structuralTx && titleTx !== structuralTx) return true;
+  if (titleTx && tx !== titleTx) return true;
+  if (structuralTx && tx !== structuralTx) return true;
+
+  const titleType = primaryTitlePropertyType(row);
+  const structuralType = structuralUrlEvidence(row).propertyType;
+  const typeEquivalent = (evidenceType: string | null): boolean =>
+    evidenceType == null ||
+    evidenceType === type ||
+    (evidenceType === "studio" && type === "apartment") ||
+    (evidenceType === "apartment" && type === "studio") ||
+    (evidenceType === "villa" && type === "house") ||
+    (evidenceType === "house" && type === "villa") ||
+    (evidenceType === "riad" && (type === "house" || type === "villa"));
+
+  if (titleType && structuralType && titleType !== structuralType) return true;
+  if (!typeEquivalent(titleType)) return true;
+  if (!typeEquivalent(structuralType)) return true;
+
+  if (row.surface_m2 != null) {
+    if (row.surface_m2 < 8) return true;
+    if (type === "land" && row.surface_m2 > 10_000_000) return true;
+    if (type !== "land" && row.surface_m2 > 10_000) return true;
+
+    const explicitTitleSurface = singleExplicitTitleSurfaceM2(row);
+    if (explicitTitleSurface != null && explicitTitleSurface !== row.surface_m2) return true;
+  }
+
+  if (row.rooms_count != null && row.rooms_count < 0) return true;
+  if (row.bedrooms_count != null && row.bedrooms_count < 0) return true;
+  if (row.bathrooms_count != null && row.bathrooms_count < 0) return true;
+
+  const evidenceText = `${row.title ?? ""} ${row.description_snippet ?? ""}`;
+  const explicitRooms = uniqueExplicitCount(evidenceText, "room");
+  const explicitBedrooms = uniqueExplicitCount(evidenceText, "bedroom");
+  const explicitBathrooms = uniqueExplicitCount(evidenceText, "bathroom");
+
+  if (row.rooms_count != null && explicitRooms != null && row.rooms_count !== explicitRooms) return true;
+  if (row.bedrooms_count != null && explicitBedrooms != null && row.bedrooms_count !== explicitBedrooms) return true;
+  if (row.bathrooms_count != null && explicitBathrooms != null && row.bathrooms_count !== explicitBathrooms) return true;
+
+  if (hasUnsupportedRentalCadence(row)) return true;
+
+  if (row.price_mad != null) {
+    if (row.price_mad > 500_000_000) return true;
+    if (tx === "sale" && row.price_mad < 10_000) return true;
+    if (tx === "rent" && row.price_mad < 100) return true;
+
+    const explicitTitleSalePrice = singleExplicitTitleSalePriceMad(row);
+    if (explicitTitleSalePrice != null && explicitTitleSalePrice !== row.price_mad) return true;
+  }
+
+  return false;
+}
+
 export function canPublishPersistedExternalListing(
   row: DbListingRow,
   env: NodeJS.ProcessEnv = process.env,
@@ -108,11 +369,6 @@ export function canPublishPersistedExternalListing(
   return true;
 }
 
-/**
- * Returns true only when the listing's source is first_party or
- * partner_authorized. All other sources remain suppressed from structured
- * public surfaces.
- */
 export function canPublishListingToPublicSurface(listing: Listing): boolean {
   return canPublishStructuredListing(listing.source_name ?? "");
 }
@@ -132,13 +388,11 @@ export function canPublishListingToPublicSearchSurface(listing: Listing): boolea
   );
 }
 
-/**
- * Lightweight structured-only variant for use before mapDbRowToListing.
- */
 export function canPublishDbRowToPublicSurface(row: DbListingRow): boolean {
   return canPublishStructuredListing(row.source_name ?? "");
 }
 
 export function canPublishDbRowToPublicSearchSurface(row: DbListingRow): boolean {
+  if (hasStrongSemanticIntegrityConflict(row)) return false;
   return canPublishDbRowToPublicSurface(row) || canPublishPersistedExternalListing(row);
 }
