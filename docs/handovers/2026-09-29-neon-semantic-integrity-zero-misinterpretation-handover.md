@@ -1108,3 +1108,23 @@ Yields: transaction 254 write-safe; property type 219 write-safe; description 27
 Audited ranges: surface 15..100,000 m2; bedrooms 0..11; bathrooms 0..10; rooms 1..10; floors 2..9. Largest surfaces map to terrain URLs and are review-only.
 
 Next: LSF full-field 300. Masaken disabled on push; LSF is the only active full-field job.
+
+
+## FULL-FIELD RECOVERY — LSF 300 CERTIFIED / AYKANA 300 ACTIVE
+
+LSF run `36722698020` on HEAD `7cc7850cc3d0c1774d525b0ea397bcb36117be62`: SUCCESS.
+Artifact `11101293461`, digest `sha256:caf3e36d4092deaa4f9ed4fe5bbaf38c4db40b254fe146cb5e60640b9757e362`.
+
+Certified LSF sample:
+- freeze population 513; deterministic sample 300;
+- robots 300/300; HTTP200 299/300; HTTP404 1/300;
+- write_safe fields 813;
+- review fields 2,688;
+- contradicted fields 0;
+- DB access/write 0/0.
+
+Key yields: title 299 write-safe; transaction 280 write-safe; property type 234 write-safe; description 299 review; surface 294 review; rooms 207 review; bedrooms 219 review; bathrooms 169 review; images 299 review; thumbnail 298 review; pool 206 review; kitchen 197 review.
+
+Audited ranges: surface 4..110,000 m2; bedrooms 1..10; rooms 1..23; bathrooms 1..15. High numeric extremes are review-only, never write-safe.
+
+Next: Aykana full-field 300. LSF disabled on push; Aykana is the only active full-field source job.
