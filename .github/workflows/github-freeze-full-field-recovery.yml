@@ -27,12 +27,6 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - name: TypeScript smoke
-        run: npx tsx -e "import './scripts/data/github-freeze-full-field-recovery.ts'" || true
-        env:
-          SAMPLE_SIZE: '1'
-          SOURCE_NAME: '__no_such_source__'
-          FREEZE_JSONL_GZ: '.tmp/does-not-exist.gz'
       - name: Fetch canonical freeze
         env:
           GH_TOKEN: ${{ github.token }}
