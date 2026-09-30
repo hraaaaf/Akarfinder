@@ -129,6 +129,56 @@ export function applyAkarFinderMoroccoBasemapTreatment(map: MapLibreMap): void {
   }
 }
 
+export function applyAkarFinderCityBasemapTreatment(map: MapLibreMap, theme?: string): void {
+  const dark = theme === "dark";
+  const palette = {
+    background: dark ? "#0A1A2F" : "#F4F8FA",
+    land: dark ? "#10253A" : "#EEF5F7",
+    water: dark ? "#153A51" : "#D7E9EF",
+    park: dark ? "#183C43" : "#DCEBE6",
+    building: dark ? "#25384A" : "#E5ECEF",
+    road: dark ? "#3B5368" : "#B8C8D0",
+    roadMajor: dark ? "#57748A" : "#7EA6B4",
+    label: dark ? "#B8CAD9" : "#496678",
+    halo: dark ? "#0A1A2F" : "#F7FBFC",
+  };
+
+  for (const layer of map.getStyle().layers ?? []) {
+    const id = layer.id.toLowerCase();
+    try {
+      if (layer.type === "background") {
+        map.setPaintProperty(layer.id, "background-color", palette.background);
+      } else if (layer.type === "fill" && /(water|ocean|river|lake)/.test(id)) {
+        map.setPaintProperty(layer.id, "fill-color", palette.water);
+        map.setPaintProperty(layer.id, "fill-opacity", 0.94);
+      } else if (layer.type === "fill" && /(park|landcover|landuse)/.test(id)) {
+        map.setPaintProperty(layer.id, "fill-color", palette.park);
+        map.setPaintProperty(layer.id, "fill-opacity", 0.72);
+      } else if (layer.type === "fill" && /building/.test(id)) {
+        map.setPaintProperty(layer.id, "fill-color", palette.building);
+        map.setPaintProperty(layer.id, "fill-opacity", dark ? 0.36 : 0.34);
+      } else if (layer.type === "line" && /(motorway|trunk|primary)/.test(id)) {
+        map.setPaintProperty(layer.id, "line-color", palette.roadMajor);
+        map.setPaintProperty(layer.id, "line-opacity", 0.72);
+      } else if (layer.type === "line" && /(road|street|highway)/.test(id)) {
+        map.setPaintProperty(layer.id, "line-color", palette.road);
+        map.setPaintProperty(layer.id, "line-opacity", 0.50);
+      } else if (layer.type === "symbol") {
+        map.setPaintProperty(layer.id, "text-color", palette.label);
+        map.setPaintProperty(layer.id, "text-opacity", 0.62);
+        if (map.getPaintProperty(layer.id, "icon-opacity") !== undefined) {
+          map.setPaintProperty(layer.id, "icon-opacity", 0.30);
+        }
+        if (map.getPaintProperty(layer.id, "text-halo-color") !== undefined) {
+          map.setPaintProperty(layer.id, "text-halo-color", palette.halo);
+        }
+      }
+    } catch {
+      // Third-party styles do not expose identical paint properties on every layer.
+    }
+  }
+}
+
 export function applyAkarFinderBasemapTreatment(map: MapLibreMap, theme?: string): void {
   const palette = mutedLayerPaint(theme);
   for (const layer of map.getStyle().layers ?? []) {
