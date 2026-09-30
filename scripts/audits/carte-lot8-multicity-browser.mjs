@@ -91,7 +91,7 @@ try {
           liveTileProofCases += 1;
         } catch (tileError) {
           basemapEvidence = "external-provider-timeout";
-          console.warn(`${cityCase.slug}/${viewport.name}: ${String(tileError)'}; continuing product/layout assertions and preserving screenshot evidence`);
+          console.warn(`${cityCase.slug}/${viewport.name}: ${String(tileError)}; continuing product/layout assertions and preserving screenshot evidence`);
         }
         await page.waitForTimeout(450);
 
