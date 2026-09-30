@@ -143,7 +143,7 @@ export async function installMapLibreOvertureBuildings(
       minzoom: 12.8,
       paint: {
         "fill-color": "#6D7377",
-        "fill-opacity": 0.030,
+        "fill-opacity": 0.034,
         "fill-translate": [3, 4],
         "fill-translate-anchor": "viewport",
         "fill-antialias": true,
@@ -159,7 +159,7 @@ export async function installMapLibreOvertureBuildings(
       minzoom: 12.8,
       paint: {
         "fill-color": "#7D746B",
-        "fill-opacity": 0.036,
+        "fill-opacity": 0.048,
         "fill-translate": [1.2, 2.0],
         "fill-translate-anchor": "viewport",
         "fill-antialias": true,
@@ -181,7 +181,7 @@ export async function installMapLibreOvertureBuildings(
         ],
         "fill-extrusion-height": ["get", "top_height"],
         "fill-extrusion-base": ["get", "min_height"],
-        "fill-extrusion-opacity": 0.28,
+        "fill-extrusion-opacity": 0.30,
         "fill-extrusion-vertical-gradient": true,
       },
     } as any, before);
@@ -201,7 +201,7 @@ export async function installMapLibreOvertureBuildings(
         ],
         "fill-extrusion-height": ["get", "top_height"],
         "fill-extrusion-base": ["get", "min_height"],
-        "fill-extrusion-opacity": 0.39,
+        "fill-extrusion-opacity": 0.41,
         "fill-extrusion-vertical-gradient": true,
       },
     } as any, before);

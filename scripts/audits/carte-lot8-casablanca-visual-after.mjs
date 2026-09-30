@@ -108,6 +108,7 @@ try {
       const quarterStyle = await maplibre.getAttribute("data-maplibre-quarter-style");
       const basemapLanguage = await maplibre.getAttribute("data-maplibre-basemap-language");
       const buildingLanguage = await maplibre.getAttribute("data-maplibre-building-language");
+      const polish = await maplibre.getAttribute("data-maplibre-polish");
       const boundaryRender = await maplibre.getAttribute("data-maplibre-boundary-render");
       const contextRelief = await maplibre.getAttribute("data-maplibre-context-relief");
       const labelPolicy = await maplibre.getAttribute("data-maplibre-label-policy");
@@ -120,6 +121,9 @@ try {
       }
       if (buildingLanguage !== "standard-inspired-overture-v1") {
         throw new Error(`${viewport.name}: Standard-inspired Overture building language missing (${buildingLanguage})`);
+      }
+      if (polish !== "symbolic-realism-v2") {
+        throw new Error(`${viewport.name}: symbolic realism polish missing (${polish})`);
       }
       if (boundaryRender !== "administrative-relief") {
         throw new Error(`${viewport.name}: administrative relief contract missing (${boundaryRender})`);
@@ -348,6 +352,7 @@ try {
         quarterStyle,
         basemapLanguage,
         buildingLanguage,
+        polish,
         boundaryRender,
         contextRelief,
         labelPolicy,
