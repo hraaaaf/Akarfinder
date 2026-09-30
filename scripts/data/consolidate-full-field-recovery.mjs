@@ -40,6 +40,14 @@ function baseValue(row,field){
 function ck(url,field){ return url+"\u0000"+field; }
 
 function safeString(v){ return typeof v==="string"?v.replace(/\s+/g," ").trim():""; }
+function containsContactPii(value){
+  const s=safeString(value);
+  if(!s) return false;
+  return /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i.test(s)
+    || /(?<!\d)(?:\+?212|0)\s*[5-7](?:[\s.\-]?\d){8}(?!\d)/i.test(s)
+    || /\b(?:t[eé]l(?:[eé]phone)?|gsm|whats\s*app)\s*[:\-]?\s*(?:\+?212|0)?\s*[5-7](?:[\s.\-]?\d|\.{2,}){2,}/i.test(s)
+    || /(?:wa\.me|api\.whatsapp\.com)/i.test(s);
+}
 function downgradeReason(c){
   if(c.state!=="write_safe") return null;
   const value=safeString(c.value);
@@ -48,6 +56,7 @@ function downgradeReason(c){
     /^tous\s+les?\s+biens?\s+immobiliers?\b/i.test(value) ||
     /^agence\s+immobili[eè]re\s+[àa]\b/i.test(value)
   )) return "generic_or_soft_page_title";
+  if((c.field==="title"||c.field==="description") && containsContactPii(value)) return "contact_pii_blocked";
   if(c.field==="city" && /^(?:autre|other|unknown|n\/?a|hay\s+riad)$/i.test(value)) return "invalid_city_placeholder_or_neighborhood";
   if(c.field==="district" && /(?:\brez(?:-|s)?de\s+chauss|\bimmeuble\b|\bimm\s*n?[°o]?\s*\d+|\blocal\s+\d+|\bn[°o]\s*\d+|\bavenue\b|\brue\b|\bboulevard\b)/i.test(value)) return "address_like_value_not_district";
   return null;
