@@ -820,4 +820,4 @@ Offline URL audit:
 Workflow HEAD: `cd4f3780309e36dd0f83f597c186ef6d3803c2c5`.
 Run: `36649107103` — in progress at last check; previous source jobs skipped.
 
-Next prepared source: Kawtar Immobilier (140 KEEP+eligible), with route semantics fully explicit in freeze: 122 sale + 18 rent + 0 unknown.
+Next prepared source: Kawtar Immobilier (140 KEEP+eligible), with route semantics fully explicit in the canonical freeze: 121 sale + 19 rent + 0 unknown; 0 short-stay marker.
