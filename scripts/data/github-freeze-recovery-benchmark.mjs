@@ -156,6 +156,17 @@ function extract(html,url){
   }
   let price_quality="candidate";
   if(price!=null){
+    const explicitPerM2=/(?:dh|mad)\s*\/\s*m(?:2|²)|(?:dh|mad)\s+par\s+m(?:2|²)/iu.test(text);
+    if(sourceName==="1immo.ma" && price_period==="sale" && explicitPerM2){
+      price_reason="price_per_m2_unit";
+      price_quality="quarantine";
+      price=null;
+    }
+    if(sourceName==="1immo.ma" && price_period==="sale" && price!=null && price>100000000){
+      price_reason="source_extreme_sale_price_review";
+      price_quality="quarantine";
+      price=null;
+    }
     const surface=sourceName==="sarout.ma"&&listing?.floorSize?.unitCode==="MTK"?num(listing.floorSize.value):one(surfaceRe,text);
     const isSale=price_period==="sale";
     const isLand=/(?:^|[\/-])(?:terrain|land)(?:[\/-]|$)/i.test(url||"") || /\b(?:terrain|land)\b/i.test(listing?.name||"") || /أرض/u.test(listing?.name||"");
