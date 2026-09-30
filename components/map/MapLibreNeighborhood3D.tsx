@@ -90,6 +90,7 @@ const CONTEXT_FOCUS_MASK_LAYER_ID = "akarfinder-target-context-focus-mask";
 const CONTEXT_FOOTPRINT_FILL_LAYER_ID = "akarfinder-target-context-footprint-fill";
 const CONTEXT_FOOTPRINT_HALO_LAYER_ID = "akarfinder-target-context-footprint-halo";
 const CONTEXT_FOOTPRINT_LINE_LAYER_ID = "akarfinder-target-context-footprint-line";
+const CONTEXT_FOOTPRINT_HIGHLIGHT_LAYER_ID = "akarfinder-target-context-footprint-highlight";
 
 const CATEGORY_META: Record<LivingHereCategory, { label: string; color: string }> = {
   education: { label: "Écoles", color: "#2f80ed" }, groceries: { label: "Courses", color: "#7b61ff" },
@@ -902,8 +903,8 @@ export function MapLibreNeighborhood3D({
         type: "fill",
         source: CONTEXT_FOCUS_MASK_SOURCE_ID,
         paint: {
-          "fill-color": "#EAF0F2",
-          "fill-opacity": 0.18,
+          "fill-color": "#E5EDF1",
+          "fill-opacity": 0.12,
           "fill-antialias": true,
         },
       } as any, FOCUS_GLOW_LAYER_ID);
@@ -913,7 +914,7 @@ export function MapLibreNeighborhood3D({
         source: CONTEXT_FOOTPRINT_SOURCE_ID,
         paint: {
           "fill-color": districtTone,
-          "fill-opacity": 0.026,
+          "fill-opacity": 0.055,
         },
       } as any, FOCUS_GLOW_LAYER_ID);
       map.addLayer({
@@ -922,9 +923,9 @@ export function MapLibreNeighborhood3D({
         source: CONTEXT_FOOTPRINT_SOURCE_ID,
         paint: {
           "line-color": AKARFINDER_MOROCCO_MAP_NAVY,
-          "line-width": 4.0,
-          "line-opacity": 0.052,
-          "line-blur": 5.0,
+          "line-width": 9.0,
+          "line-opacity": 0.11,
+          "line-blur": 4.2,
         },
       } as any, FOCUS_GLOW_LAYER_ID);
       map.addLayer({
@@ -932,11 +933,24 @@ export function MapLibreNeighborhood3D({
         type: "line",
         source: CONTEXT_FOOTPRINT_SOURCE_ID,
         paint: {
-          "line-color": "#8DA6B3",
-          "line-width": 0.9,
-          "line-opacity": 0.08,
-          "line-dasharray": [1.2, 1.8],
-          "line-blur": 0.30,
+          "line-color": "#2A5F77",
+          "line-width": 1.7,
+          "line-opacity": 0.42,
+          "line-dasharray": [2.2, 1.5],
+          "line-blur": 0.10,
+        },
+      } as any, FOCUS_GLOW_LAYER_ID);
+      map.addLayer({
+        id: CONTEXT_FOOTPRINT_HIGHLIGHT_LAYER_ID,
+        type: "line",
+        source: CONTEXT_FOOTPRINT_SOURCE_ID,
+        paint: {
+          "line-color": "#F7FBFC",
+          "line-width": 0.85,
+          "line-opacity": 0.88,
+          "line-dasharray": [2.2, 1.5],
+          "line-offset": -1.35,
+          "line-blur": 0.05,
         },
       } as any, FOCUS_GLOW_LAYER_ID);
     } catch (error) {
@@ -1015,6 +1029,7 @@ export function MapLibreNeighborhood3D({
       data-maplibre-overture-release={overtureRelease ?? ""}
       data-maplibre-shadow-policy={isMaarifTargetPilot ? "non-metric-overture-footprints" : "none"}
       data-maplibre-context-focus={isMaarifTargetPilot ? "verified-anchor-envelope-not-boundary" : "none"}
+      data-maplibre-context-relief={isMaarifTargetPilot ? "raised-indicative-zone" : "none"}
       data-maplibre-quarter-style={isMaarifTargetPilot ? "illustrated-progressive-v1" : "default"}
       data-maplibre-boundary-render={isMaarifTargetPilot && boundaryGeometry ? "administrative-relief" : "default"}
       data-maplibre-context-state={contextState}
