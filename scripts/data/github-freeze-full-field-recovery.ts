@@ -104,7 +104,7 @@ function add(out:Candidate[],row:Row,field:string,value:any,confidence:string,ev
   }
   out.push({field,value,state:auto&&confidence==="high"?"write_safe":"review",evidence,confidence});
 }
-const results:any[]=[]; const counts:any={};
+const results:any[]=[];
 for(const row of sample){
   const url=row.canonical_url; const rec:any={url,source:sourceName,http_status:null,robots_allowed:false,candidates:[]};
   if(!(await canFetch(url))){rec.blocked="robots";results.push(rec);continue;}
@@ -139,16 +139,43 @@ for(const row of sample){
     add(c,row,field,(d as any)[field],"review",`extractDetail:p8a:${field}`,false);
   }
   rec.candidates=c;
-  for(const x of c){counts[x.field]??={write_safe:0,review:0,contradicted:0};counts[x.field][x.state]=(counts[x.field][x.state]||0)+1;}
   results.push(rec);
   if(fetchDelayMs>0) await new Promise(resolve=>setTimeout(resolve,fetchDelayMs));
+}
+
+const accessibleCount=results.filter(x=>x.http_status===200).length;
+const templateNoiseSuppressions:any[]=[];
+const reviewAdvancedFields=new Set(["built_surface_m2","plot_surface_m2","condition","property_age_range","orientation","floor_type","floors_count","garden_m2","terrace_m2","garage_spaces","has_pool","has_concierge","has_equipped_kitchen","has_moroccan_living_room","has_european_living_room"]);
+for(const field of reviewAdvancedFields){
+  const candidates=results.flatMap(r=>r.candidates.filter((x:any)=>x.field===field&&x.state==="review").map((x:any)=>({row:r,candidate:x})));
+  if(candidates.length<25||accessibleCount===0) continue;
+  const frequencies=new Map<string,number>();
+  for(const {candidate} of candidates){
+    const k=JSON.stringify(candidate.value);
+    frequencies.set(k,(frequencies.get(k)||0)+1);
+  }
+  const dominant=[...frequencies.entries()].sort((a,b)=>b[1]-a[1])[0];
+  if(!dominant) continue;
+  const [dominantValue,count]=dominant;
+  if(count/accessibleCount>=0.5){
+    for(const r of results) r.candidates=r.candidates.filter((x:any)=>!(x.field===field&&x.state==="review"&&JSON.stringify(x.value)===dominantValue));
+    templateNoiseSuppressions.push({field,value:JSON.parse(dominantValue),count,accessible_count:accessibleCount,reason:"dominant_review_value_template_noise"});
+  }
+}
+const counts:any={};
+for(const r of results){
+  for(const x of r.candidates){
+    counts[x.field]??={write_safe:0,review:0,contradicted:0};
+    counts[x.field][x.state]=(counts[x.field][x.state]||0)+1;
+  }
 }
 const summary={
  schema_version:"AKARFINDER_FULL_FIELD_RECOVERY_V1",
  source:sourceName,freeze_population:rows.length,sample_size:sample.length,
  robots_allowed:results.filter(x=>x.robots_allowed).length,
- accessible_http_200:results.filter(x=>x.http_status===200).length,
+ accessible_http_200:accessibleCount,
  candidates_by_field:counts,
+ template_noise_suppressions:templateNoiseSuppressions,
  write_safe_fields:results.flatMap(x=>x.candidates).filter((x:any)=>x.state==="write_safe").length,
  review_fields:results.flatMap(x=>x.candidates).filter((x:any)=>x.state==="review").length,
  contradicted_fields:results.flatMap(x=>x.candidates).filter((x:any)=>x.state==="contradicted").length,
