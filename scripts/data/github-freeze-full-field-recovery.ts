@@ -92,7 +92,7 @@ function isGenericListingTitle(title:string|null){
   if(!t) return true;
   return /^(?:404(?:\b|[-_])|accueil\b|acceuil\b|page not found\b|not found\b)/i.test(t)
     || /^tous\s+les?\s+biens?\s+immobiliers?\b/i.test(t)
-    || /^agence\s+immobili[eè]re\s+[àa]\b/i.test(t);
+    || /^agence\s+immobili[eè]re\s+(?:à|a)(?=\s|$)/i.test(t);
 }
 function containsContactPii(value:string|null|undefined){
   const s=(value||"").replace(/\u00a0/g," ");
