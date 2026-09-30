@@ -1001,3 +1001,33 @@ Scale decision:
 - Domio job disabled on push; MarocImmo 300 becomes the only active full-field source job.
 
 Policy note: Mubawab has 81,975 KEEP+eligible rows but is classified `third_party_legacy` by `lib/sources/source-access-registry.ts`; it may be audited offline but must not be newly persisted/published under current doctrine.
+
+
+## FULL-FIELD RECOVERY — MAROCIMMO 300 CERTIFIED / SAROUT 300 ACTIVE
+
+MarocImmo run `36699305181` on HEAD `ffdbf3167b50efe1a5cf3e971c22d1f4e095dffe`: SUCCESS.
+Artifact `11088759023`, digest `sha256:bdbaebc50c9b4819706db317802ca346e5fbf64cd4b1ecd4e6733a5fa4cce229`.
+
+Certified MarocImmo sample:
+- freeze population 37,268; deterministic sample 300;
+- robots 300/300; HTTP200 300/300;
+- write_safe fields 1,118;
+- review fields 1,254;
+- contradicted fields 0;
+- DB access/write 0/0.
+
+Key field yields:
+- transaction_type 300 write-safe;
+- property_type 276 write-safe;
+- title 264 write-safe;
+- city 264 write-safe;
+- description 4 write-safe + 260 review;
+- surface_m2 279 review;
+- bedrooms 3 write-safe + 53 review;
+- rooms 3 write-safe + 17 review;
+- bathrooms 4 write-safe;
+- images_count 300 review; thumbnail_url 300 review.
+
+Observed ranges audited: surface 5..6,759 m²; bedrooms 1..10; rooms 2..6; bathrooms 1..2. No suspicious extreme remained in the inspected sample.
+
+Next: Sarout 300 full-field on the canonical freeze. MarocImmo disabled on push; Sarout is the only active full-field source job.
