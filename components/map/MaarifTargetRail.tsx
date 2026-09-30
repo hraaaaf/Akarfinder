@@ -37,7 +37,7 @@ export function MaarifTargetRail() {
     setContext(null);
     const controller = new AbortController();
     void fetch(
-      `/api/geo/neighborhood-context?city=${encodeURIComponent(cityEntity.slug)}&district=${encodeURIComponent(districtEntity.slug)}`,
+      "/api/geo/neighborhood-context?city=casablanca&district=maarif",
       { credentials: "same-origin", cache: "no-store", signal: controller.signal },
     )
       .then(async (response) => {
