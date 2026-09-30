@@ -905,7 +905,7 @@ export function MapLibreNeighborhood3D({
         source: CONTEXT_FOCUS_MASK_SOURCE_ID,
         paint: {
           "fill-color": AKARFINDER_MOROCCO_MAP_NAVY,
-          "fill-opacity": 0.028,
+          "fill-opacity": 0.020,
           "fill-antialias": true,
         },
       } as any, FOCUS_GLOW_LAYER_ID);
@@ -915,7 +915,7 @@ export function MapLibreNeighborhood3D({
         source: CONTEXT_FOOTPRINT_SOURCE_ID,
         paint: {
           "fill-color": districtTone,
-          "fill-opacity": 0.036,
+          "fill-opacity": 0.028,
         },
       } as any, FOCUS_GLOW_LAYER_ID);
       map.addLayer({
@@ -935,11 +935,10 @@ export function MapLibreNeighborhood3D({
         source: CONTEXT_FOOTPRINT_SOURCE_ID,
         paint: {
           "line-color": AKARFINDER_MOROCCO_MAP_NAVY,
-          "line-width": 2.4,
-          "line-opacity": 0.16,
-          "line-dasharray": [2.2, 1.5],
-          "line-offset": 1.55,
-          "line-blur": 0.38,
+          "line-width": 3.1,
+          "line-opacity": 0.105,
+          "line-offset": 1.8,
+          "line-blur": 0.85,
         },
       } as any, FOCUS_GLOW_LAYER_ID);
       map.addLayer({
@@ -947,11 +946,10 @@ export function MapLibreNeighborhood3D({
         type: "line",
         source: CONTEXT_FOOTPRINT_SOURCE_ID,
         paint: {
-          "line-color": "#2A5F77",
-          "line-width": 1.55,
-          "line-opacity": 0.46,
-          "line-dasharray": [2.2, 1.5],
-          "line-blur": 0.10,
+          "line-color": "#426D7D",
+          "line-width": 1.15,
+          "line-opacity": 0.30,
+          "line-blur": 0.22,
         },
       } as any, FOCUS_GLOW_LAYER_ID);
       map.addLayer({
@@ -959,12 +957,11 @@ export function MapLibreNeighborhood3D({
         type: "line",
         source: CONTEXT_FOOTPRINT_SOURCE_ID,
         paint: {
-          "line-color": "#F7FBFC",
-          "line-width": 0.72,
-          "line-opacity": 0.82,
-          "line-dasharray": [2.2, 1.5],
-          "line-offset": -1.15,
-          "line-blur": 0.05,
+          "line-color": "#FFFFFF",
+          "line-width": 0.90,
+          "line-opacity": 0.54,
+          "line-offset": -1.05,
+          "line-blur": 0.32,
         },
       } as any, FOCUS_GLOW_LAYER_ID);
     } catch (error) {
@@ -1038,7 +1035,7 @@ export function MapLibreNeighborhood3D({
       data-maplibre-quarter-style={isMaarifTargetPilot ? "illustrated-progressive-v1" : "default"}
       data-maplibre-basemap-language={isMaarifTargetPilot ? "voyager-inspired-openfreemap-v1" : "default"}
       data-maplibre-building-language={isMaarifTargetPilot ? "standard-inspired-overture-v1" : "default"}
-      data-maplibre-polish={isMaarifTargetPilot ? "symbolic-realism-v2" : "default"}
+      data-maplibre-polish={isMaarifTargetPilot ? "material-relief-v3" : "default"}
       data-maplibre-label-policy={isMaarifTargetPilot ? "akarfinder-owned" : "basemap-default"}
       data-maplibre-context-label-policy={isMaarifTargetPilot ? "suppressed-at-quarter-zoom" : "default"}
       data-maplibre-boundary-render={isMaarifTargetPilot && boundaryGeometry ? "administrative-relief" : "default"}

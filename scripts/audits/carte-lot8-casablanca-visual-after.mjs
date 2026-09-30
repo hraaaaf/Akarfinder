@@ -122,8 +122,8 @@ try {
       if (buildingLanguage !== "standard-inspired-overture-v1") {
         throw new Error(`${viewport.name}: Standard-inspired Overture building language missing (${buildingLanguage})`);
       }
-      if (polish !== "symbolic-realism-v2") {
-        throw new Error(`${viewport.name}: symbolic realism polish missing (${polish})`);
+      if (polish !== "material-relief-v3") {
+        throw new Error(`${viewport.name}: material/relief polish missing (${polish})`);
       }
       if (boundaryRender !== "administrative-relief") {
         throw new Error(`${viewport.name}: administrative relief contract missing (${boundaryRender})`);
