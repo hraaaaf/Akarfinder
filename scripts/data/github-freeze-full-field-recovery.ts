@@ -56,11 +56,32 @@ async function canFetch(url:string){
   const robots=robotsCache.get(origin);
   return robots!==null && robotsAllowed(robots||"",url);
 }
+
+function detectPropertyType(text:string){
+  const t=text.toLowerCase();
+  const defs:[string,RegExp][]=[
+    ["apartment",/\b(?:appartement|apartment)\b/i],["studio",/\bstudio\b/i],["duplex",/\bduplex\b/i],
+    ["villa",/\bvilla\b/i],["riad",/\briad\b/i],["house",/\b(?:maison|house)\b/i],["land",/\b(?:terrain|land)\b/i],
+    ["office",/\b(?:bureau|office)\b/i],["commercial",/\b(?:local commercial|commerce|commercial)\b/i],
+    ["warehouse",/\b(?:entrep[oô]t|warehouse)\b/i]
+  ];
+  const hits=defs.filter(([,re])=>re.test(t)).map(([v])=>v);
+  return hits.length===1?hits[0]:null;
+}
+function detectTransaction(url:string,text:string){
+  const u=decodeURIComponent(url.toLowerCase());
+  const t=text.toLowerCase();
+  const sale=/(?:\/|\b)(?:vente|vendre|a-vendre|acheter|achat|for-sale)(?:\/|\b|-)/i.test(u)||/\b(?:à|a) vendre\b|\bfor sale\b|للبيع/iu.test(t);
+  const rent=/(?:\/|\b)(?:location|louer|a-louer|rental|for-rent)(?:\/|\b|-)/i.test(u)||/\b(?:à|a) louer\b|\bfor rent\b|للكراء/iu.test(t);
+  return sale&&!rent?"sale":rent&&!sale?"rent":null;
+}
+
 function meta(html:string,key:string){
   const $=load(html);
   return ($(`meta[property="${key}"]`).attr("content")||$(`meta[name="${key}"]`).attr("content")||"").trim()||null;
 }
 const existingMap:Record<string,string[]>={
+  property_type:["property_type"],transaction_type:["transaction_type"],
   title:["title"],description:["description","description_snippet"],city:["city"],district:["district"],
   surface_m2:["surface_m2"],rooms_count:["rooms_count"],bedrooms_count:["bedrooms_count","bedrooms"],bathrooms_count:["bathrooms_count","bathrooms"],
   built_surface_m2:["built_surface_m2"],plot_surface_m2:["plot_surface_m2"],condition:["condition"],property_age_range:["property_age_range"],
@@ -95,8 +116,11 @@ for(const row of sample){
   const html=await response.text();
   const d=extractDetail(html);
   const title=meta(html,"og:title");
+  const desc=d.description_snippet||meta(html,"description")||meta(html,"og:description")||"";
   const c:Candidate[]=[];
   add(c,row,"title",title,"high","meta:og:title",true);
+  add(c,row,"property_type",detectPropertyType([title,desc].filter(Boolean).join(" ")),"high","explicit:title_or_description_property_type",true);
+  add(c,row,"transaction_type",detectTransaction(url,[title,desc].filter(Boolean).join(" ")),"high","explicit:url_or_primary_transaction",true);
   add(c,row,"description",d.description_snippet,d._confidence.description,"extractDetail:description",d._confidence.description==="high");
   add(c,row,"city",d.city,d._confidence.city,"extractDetail:city",d._confidence.city==="high");
   add(c,row,"district",d.district,d._confidence.district,"extractDetail:district",d._confidence.district==="high");
