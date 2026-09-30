@@ -2,7 +2,6 @@
 
 import { Layers3, LocateFixed, Minus, Plus, Search } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { MAARIF_TARGET_CONTEXT_LABELS } from "@/lib/geo/maarif-target-context-labels";
 import { AKARFINDER_MOROCCO_MAP_NAVY, territoryLightToneForKey } from "@/lib/map/akarfinder-territorial-style";
 import {
   installMapLibreOvertureBuildings,
@@ -987,15 +986,6 @@ export function MapLibreNeighborhood3D({
           visible: point.x > -120 && point.x < canvas.clientWidth + 120 && point.y > -100 && point.y < canvas.clientHeight + 100,
         };
       }
-      if (isMaarifTargetPilot) {
-        for (const label of MAARIF_TARGET_CONTEXT_LABELS) {
-          const point = map.project([label.longitude, label.latitude]);
-          next[`context:${label.id}`] = {
-            x: point.x, y: point.y,
-            visible: point.x > -90 && point.x < canvas.clientWidth + 90 && point.y > -70 && point.y < canvas.clientHeight + 70,
-          };
-        }
-      }
       const cp = map.project(center);
       setCenterPoint({ x: cp.x, y: cp.y, visible: cp.x > -60 && cp.x < canvas.clientWidth + 60 && cp.y > -60 && cp.y < canvas.clientHeight + 60 });
       setScreenPoints(next);
@@ -1032,6 +1022,7 @@ export function MapLibreNeighborhood3D({
       data-maplibre-context-relief={isMaarifTargetPilot ? "raised-indicative-zone" : "none"}
       data-maplibre-quarter-style={isMaarifTargetPilot ? "illustrated-progressive-v1" : "default"}
       data-maplibre-label-policy={isMaarifTargetPilot ? "akarfinder-owned" : "basemap-default"}
+      data-maplibre-context-label-policy={isMaarifTargetPilot ? "suppressed-at-quarter-zoom" : "default"}
       data-maplibre-boundary-render={isMaarifTargetPilot && boundaryGeometry ? "administrative-relief" : "default"}
       data-maplibre-context-state={contextState}
       data-maplibre-anchor-count={context?.anchor_count ?? 0}
@@ -1042,7 +1033,7 @@ export function MapLibreNeighborhood3D({
       data-maplibre-camera-policy={targetComposition === "context" ? "contextual-center" : "boundary-fit"}
       data-maplibre-focus-semantic={isMaarifTargetPilot ? "context-focus-not-boundary" : "district-focus"}
       data-maplibre-context-footprint={isMaarifTargetPilot && context?.anchors?.length ? "verified-anchor-envelope-buffered" : "none"}
-      data-maplibre-target-context-count={isMaarifTargetPilot ? MAARIF_TARGET_CONTEXT_LABELS.length : 0}
+      data-maplibre-target-context-count={0}
       data-maplibre-rtl-status={rtlStatus}
       data-maplibre-reserve-rail={reserveRail ? "true" : "false"}
       data-akar-quartier-target={isMaarifTargetPilot ? "maarif-couche1" : undefined}
@@ -1063,21 +1054,6 @@ export function MapLibreNeighborhood3D({
               <i />
             </div>
           )}
-          {isMaarifTargetPilot ? MAARIF_TARGET_CONTEXT_LABELS.map((label) => {
-            const screen = screenPoints[`context:${label.id}`];
-            if (!screen?.visible) return null;
-            return (
-              <div
-                key={label.id}
-                className="maplibre-spike-target-context-label"
-                data-context-semantic={label.semantic}
-                data-context-source-id={label.id}
-                style={{ left: screen.x, top: screen.y }}
-              >
-                {label.name}
-              </div>
-            );
-          }) : null}
           {visibleAnchors.map((anchor) => {
             const screen = screenPoints[anchor.poi_id];
             if (!screen?.visible) return null;
