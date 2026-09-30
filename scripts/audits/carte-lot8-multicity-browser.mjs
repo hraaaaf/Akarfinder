@@ -41,15 +41,24 @@ try {
       let tileGateSettled = false;
       let resolveTiles;
       let rejectTiles;
-      const tilesReady = new Promise((resolve, reject) => {
-        resolveTiles = resolve;
-        rejectTiles = reject;
-      });
-      const tileGateTimeout = setTimeout(() => {
-        if (tileGateSettled) return;
-        tileGateSettled = true;
-        rejectTiles(new Error(`${cityCase.slug}/${viewport.name}: no real high-zoom basemap tiles rendered within 20s`));
-      }, 20000);
+      let tilesReady;
+      let tileGateTimeout;
+
+      const armTileGate = (attempt) => {
+        highZoomTileCount = 0;
+        tileGateSettled = false;
+        tilesReady = new Promise((resolve, reject) => {
+          resolveTiles = resolve;
+          rejectTiles = reject;
+        });
+        tileGateTimeout = setTimeout(() => {
+          if (tileGateSettled) return;
+          tileGateSettled = true;
+          rejectTiles(new Error(`${cityCase.slug}/${viewport.name}: no real high-zoom basemap tiles rendered within 20s (attempt ${attempt}/2)`));
+        }, 20000);
+      };
+
+      armTileGate(1);
 
       page.on("pageerror", (error) => pageErrors.push(String(error)));
       page.on("response", (response) => {
@@ -84,7 +93,30 @@ try {
           { citySlug: cityCase.slug, districtSlug: cityCase.districtSlug },
           { timeout: 20000 },
         );
-        await tilesReady;
+        try {
+          await tilesReady;
+        } catch (firstTileError) {
+          clearTimeout(tileGateTimeout);
+          armTileGate(2);
+          await page.reload({ waitUntil: "domcontentloaded", timeout: 30000 });
+          await maplibre.waitFor({ state: "attached", timeout: 20000 });
+          await mapCanvas.waitFor({ state: "attached", timeout: 10000 });
+          await page.waitForFunction(
+            ({ citySlug, districtSlug }) => {
+              const shell = document.querySelector(`[data-maplibre-spike][data-maplibre-city="${citySlug}"][data-maplibre-district="${districtSlug}"]`);
+              return shell?.getAttribute("data-maplibre-render-state") === "ready";
+            },
+            { citySlug: cityCase.slug, districtSlug: cityCase.districtSlug },
+            { timeout: 20000 },
+          );
+          try {
+            await tilesReady;
+          } catch (secondTileError) {
+            throw new Error(
+              `${cityCase.slug}/${viewport.name}: real high-zoom basemap tile gate failed after one controlled reload; first=${String(firstTileError)}; second=${String(secondTileError)}`,
+            );
+          }
+        }
         await page.waitForTimeout(450);
 
         // Preserve the actual rendered viewport before any visibility/layout assertions.
