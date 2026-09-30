@@ -790,3 +790,34 @@ Workflow HEAD: `3d6d3f03305476f9e3d3bbef17091f731bc99365`.
 Run: `36633833084` — queued at last check; only LSF active, all previous source jobs skipped.
 
 Next prepared source: Aykana (474 KEEP+eligible), with transaction encoded in most `/property/` slugs; atypical variants must be handled source-specifically, not by widening global route matching.
+
+
+## ATLASIMMOBILIER 300 — CERTIFIED
+
+Run `36648074141` on HEAD `2d9fffe375746a5fa0ab81c0b1ab710750651b18`: SUCCESS.
+Artifact: `11070130296`, digest `sha256:96969234ef7430b1e5472b1bb74682eab0fe01cd6c4252c1cd5f3c6b28425cd3`.
+
+Results:
+- 300/300 accessible;
+- recovery from NULL: surface 107, bedrooms 70, bathrooms 6, rooms 2;
+- high-confidence: **2 fields** = rooms 2;
+- review: **183 fields** = surface 107 + bedrooms 70 + bathrooms 6;
+- price recovery: 0;
+- price rejections: no explicit price 296, unknown transaction 4;
+- conflicts: 0;
+- Neon access/write: 0/0.
+
+Conclusion: Atlas is accessible but low-yield for high-confidence recovery; keep only review-grade enrichment plus explicit rooms.
+
+## 1IMMO — ACTIVE
+
+Freeze denominator: 243 KEEP+eligible rows; full-population benchmark launched.
+Offline URL audit:
+- 116 explicit sale routes;
+- 63 explicit rent routes;
+- 64 ambiguous routes kept `unknown`.
+
+Workflow HEAD: `cd4f3780309e36dd0f83f597c186ef6d3803c2c5`.
+Run: `36649107103` — in progress at last check; previous source jobs skipped.
+
+Next prepared source: Kawtar Immobilier (140 KEEP+eligible), with route semantics fully explicit in freeze: 122 sale + 18 rent + 0 unknown.
