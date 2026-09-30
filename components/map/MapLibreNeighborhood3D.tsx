@@ -660,12 +660,12 @@ export function MapLibreNeighborhood3D({
               type: "circle",
               source: FOCUS_SOURCE_ID,
               paint: {
-                "circle-radius": isMaarifTargetPilot ? (desktop ? 112 : 76) : (desktop ? 84 : 68),
+                "circle-radius": isMaarifTargetPilot ? (desktop ? 154 : 108) : (desktop ? 84 : 68),
                 "circle-color": districtTone,
-                "circle-opacity": isMaarifTargetPilot ? 0.045 : 0.13,
+                "circle-opacity": isMaarifTargetPilot ? 0.060 : 0.13,
                 "circle-stroke-color": AKARFINDER_MOROCCO_MAP_NAVY,
-                "circle-stroke-width": isMaarifTargetPilot ? 1.0 : 1.5,
-                "circle-stroke-opacity": isMaarifTargetPilot ? 0.18 : 0.56,
+                "circle-stroke-width": isMaarifTargetPilot ? 1.15 : 1.5,
+                "circle-stroke-opacity": isMaarifTargetPilot ? 0.24 : 0.56,
               },
             });
             map.addLayer({
@@ -860,7 +860,7 @@ export function MapLibreNeighborhood3D({
         source: CONTEXT_FOOTPRINT_SOURCE_ID,
         paint: {
           "fill-color": districtTone,
-          "fill-opacity": 0.040,
+          "fill-opacity": 0.068,
         },
       } as any, FOCUS_GLOW_LAYER_ID);
       map.addLayer({
@@ -869,9 +869,9 @@ export function MapLibreNeighborhood3D({
         source: CONTEXT_FOOTPRINT_SOURCE_ID,
         paint: {
           "line-color": AKARFINDER_MOROCCO_MAP_NAVY,
-          "line-width": 5.5,
-          "line-opacity": 0.11,
-          "line-blur": 2.8,
+          "line-width": 8.0,
+          "line-opacity": 0.15,
+          "line-blur": 4.0,
         },
       } as any, FOCUS_GLOW_LAYER_ID);
       map.addLayer({
@@ -880,10 +880,10 @@ export function MapLibreNeighborhood3D({
         source: CONTEXT_FOOTPRINT_SOURCE_ID,
         paint: {
           "line-color": "#7E98AA",
-          "line-width": 1.25,
-          "line-opacity": 0.20,
+          "line-width": 1.35,
+          "line-opacity": 0.28,
           "line-dasharray": [1.2, 1.6],
-          "line-blur": 0.18,
+          "line-blur": 0.20,
         },
       } as any, FOCUS_GLOW_LAYER_ID);
     } catch (error) {
