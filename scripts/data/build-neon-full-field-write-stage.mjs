@@ -33,6 +33,28 @@ function csv(v){
   const s=String(v);
   return /[",\n\r]/.test(s)?`"${s.replaceAll('"','""')}"`:s;
 }
+function safeString(v){ return typeof v==="string"?v.replace(/\s+/g," ").trim():""; }
+function containsContactPii(value){
+  const s=safeString(value);
+  if(!s) return false;
+  return /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i.test(s)
+    || /(?<!\d)(?:\+?212|0)\s*[5-7](?:[\s.\-]?\d){8}(?!\d)/i.test(s)
+    || /\b(?:t[eé]l(?:[eé]phone)?|gsm|whats\s*app)\s*[:\-]?\s*(?:\+?212|0)?\s*[5-7](?:[\s.\-]?\d|\.{2,}){2,}/i.test(s)
+    || /(?:wa\.me|api\.whatsapp\.com)/i.test(s);
+}
+function assertSafeStageRow(row){
+  const title=safeString(row.title);
+  if(title && (
+    /^(?:404(?:\b|[-_])|accueil\b|acceuil\b|page not found\b|not found\b)/i.test(title)
+    || /^tous\s+les?\s+biens?\s+immobiliers?\b/i.test(title)
+    || /^agence\s+immobili[eè]re\s+[àa]\b/i.test(title)
+  )) throw new Error(`unsafe generic title for ${row.url}`);
+  if(containsContactPii(row.title)||containsContactPii(row.description_snippet)) throw new Error(`contact PII in staged text for ${row.url}`);
+  const city=safeString(row.city);
+  if(city && /^(?:autre|other|unknown|n\/?a|hay\s+riad)$/i.test(city)) throw new Error(`invalid staged city ${city} for ${row.url}`);
+  const district=safeString(row.district);
+  if(district && /(?:\brez(?:-|\s)?de\s+chauss|\bimmeuble\b|\bimm\s*n?[°o]?\s*\d+|\blocal\s+\d+|\bn[°o]\s*\d+|\bavenue\b|\brue\b|\bboulevard\b)/i.test(district)) throw new Error(`address-like staged district for ${row.url}`);
+}
 
 const rows=[];
 const counts=Object.fromEntries(Object.values(fieldMap).map(k=>[k,0]));
@@ -52,7 +74,10 @@ for(const line of fs.readFileSync(input,"utf8").split(/\r?\n/).filter(Boolean)){
     candidateCount++;
     n++;
   }
-  if(n) rows.push(row);
+  if(n){
+    assertSafeStageRow(row);
+    rows.push(row);
+  }
 }
 rows.sort((a,b)=>a.url.localeCompare(b.url));
 
