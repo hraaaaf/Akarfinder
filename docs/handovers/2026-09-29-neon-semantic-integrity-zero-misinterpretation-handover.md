@@ -968,3 +968,36 @@ Implemented:
 - first pilot target: Domio 100 deterministic freeze rows.
 
 Pilot intent: stress-test title/description/location/core dimensions + P8A fields (built/land/garden/terrace/garage/floors/condition/age/orientation/floor type/features) before scaling nationally.
+
+
+## FULL-FIELD RECOVERY — DOMIO 100 CERTIFIED BASELINE / MAROCIMMO 300 ACTIVE
+
+Domio corrected run `36698973902` on HEAD `7860906456ce886cb070edd78a33863919025759`: SUCCESS.
+Artifact `11089447063`, digest `sha256:d1f6ea351797fb85b31f018eeff2f120591ed8a2328d3b025f1bd1927d5e16d3`.
+
+Corrected Domio pilot summary:
+- freeze population 10,307; deterministic sample 100;
+- robots allowed 100/100; HTTP200 100/100;
+- write_safe fields 570;
+- review fields 204;
+- contradicted fields 37;
+- DB access/write 0/0.
+
+Critical regression fixed before certification:
+- JSON-LD numeric strings with decimals no longer inflate by x10 (`168.0` stays 168);
+- structured/text bedrooms and bathrooms are bounded fail-closed (<=20); rooms <=50;
+- extreme core surface >100,000 m² is review, never auto-write.
+
+Corrected observed ranges on the 100 rows:
+- surface_m2 candidates 1.5..13,000; the 1.5 m² case is review, not write-safe;
+- rooms_count 1..8;
+- bedrooms_count 0..7;
+- bathrooms_count 0..6.
+
+Scale decision:
+- MarocImmo selected next: 37,268 KEEP+eligible freeze rows and major missing-field reservoir.
+- Full-field runner now has explicit 250 ms pacing by default.
+- Workflow now runs the P8A regression test before source extraction.
+- Domio job disabled on push; MarocImmo 300 becomes the only active full-field source job.
+
+Policy note: Mubawab has 81,975 KEEP+eligible rows but is classified `third_party_legacy` by `lib/sources/source-access-registry.ts`; it may be audited offline but must not be newly persisted/published under current doctrine.
