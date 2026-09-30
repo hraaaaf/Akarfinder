@@ -577,7 +577,7 @@ jobs:
           retention-days: 14
 
   recert-pii-sources:
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
@@ -656,4 +656,45 @@ jobs:
           path: |
             oneimmo-full-field-243-pii-recert.json
             oneimmo-full-field-243-pii-recert.jsonl
+          retention-days: 14
+
+  recert-promo-generic-title:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      FREEZE_JSONL_GZ: '.tmp/freeze/clean-corpus-v4.11-core.jsonl.gz'
+      FETCH_DELAY_MS: '250'
+      SOURCE_NAME: 'promoimmomarrakech.com'
+      SAMPLE_SIZE: '300'
+      OUTPUT_PREFIX: 'promo-full-field-300-title-recert'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Fetch canonical freeze
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/freeze
+          curl --fail --location --retry 3 -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' -H 'X-GitHub-Api-Version: 2022-11-28' "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/10910779576/zip" -o .tmp/freeze.zip
+          unzip -q .tmp/freeze.zip -d .tmp/freeze
+          echo "e7ac4bca2db34ad334ed7234cfb8be93fc9baca68a9694f5024989b5cc2bb953  .tmp/freeze/clean-corpus-v4.11-core.jsonl.gz" | sha256sum -c -
+      - name: Re-certify Promo generic title guard
+        run: npx tsx scripts/data/github-freeze-full-field-recovery.ts
+      - name: Assert generic title removed and read-only
+        run: |
+          test "$(jq -r '.database_access' promo-full-field-300-title-recert.json)" = "0"
+          test "$(jq -r '.database_writes' promo-full-field-300-title-recert.json)" = "0"
+          ! jq -r 'select(.candidates) | .candidates[] | select(.field=="title" and .state=="write_safe") | .value' promo-full-field-300-title-recert.jsonl | grep -Eix 'Agence immobilière à Marrakech'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: promo-full-field-300-title-recert
+          path: |
+            promo-full-field-300-title-recert.json
+            promo-full-field-300-title-recert.jsonl
           retention-days: 14
