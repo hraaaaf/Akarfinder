@@ -40,6 +40,19 @@ function baseValue(row,field){
 function ck(url,field){ return url+"\u0000"+field; }
 
 function safeString(v){ return typeof v==="string"?v.replace(/\s+/g," ").trim():""; }
+const CITY_CANONICAL_MAP=new Map(Object.entries({
+  "Fes":"Fès","Sale":"Salé","Temara":"Témara","Mohammédia":"Mohammedia",
+  "الدار البيضاء":"Casablanca","مراكش":"Marrakech","الرباط":"Rabat","أكادير":"Agadir",
+  "القنيطرة":"Kénitra","المحمدية":"Mohammedia","بني ملال":"Béni Mellal","بوزنيقة":"Bouznika",
+  "تطوان":"Tétouan","طنجة":"Tanger","فاس":"Fès","مكناس":"Meknès","الحسيمة":"Al Hoceïma"
+}));
+function canonicalizeCandidate(c){
+  if(c.field!=="city"||c.state!=="write_safe") return c;
+  const value=safeString(c.value);
+  const canonical=CITY_CANONICAL_MAP.get(value);
+  if(!canonical||canonical===value) return c;
+  return {...c,value:canonical,normalization:{from:value,to:canonical,reason:"canonical_city_alias"}};
+}
 function containsContactPii(value){
   const s=safeString(value);
   if(!s) return false;
@@ -73,7 +86,8 @@ for(const file of artifactFiles){
     const r=JSON.parse(line);
     sourceResults.push(r);
     for(const raw of r.candidates||[]){
-      const c={url:r.url,source:r.source,...raw};
+      let c={url:r.url,source:r.source,...raw};
+      c=canonicalizeCandidate(c);
       const reason=downgradeReason(c);
       if(reason){
         consolidationDowngrades.push({url:c.url,source:c.source,field:c.field,value:c.value,reason});
