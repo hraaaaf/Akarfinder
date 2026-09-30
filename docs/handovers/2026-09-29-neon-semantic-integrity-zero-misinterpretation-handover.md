@@ -858,3 +858,52 @@ Conclusion: 1immo recovery is certified only after these safeguards.
 Canonical freeze audit: 140 KEEP+eligible rows = 121 explicit sale + 19 explicit rent + 0 unknown + 0 short-stay.
 Workflow HEAD: `fe3cef7f6e570202fcad4bbe0a815b08eec9ebd9`.
 Run: `36682205119` queued at last check; 1immo and prior sources disabled/skipped on push.
+
+
+## KAWTAR 140 — CERTIFIED ZERO-YIELD
+
+Run `36682205119` on HEAD `fe3cef7f6e570202fcad4bbe0a815b08eec9ebd9`: SUCCESS.
+Artifact: `11081679489`, digest `sha256:bda7a621a490f709e67be98180e4e5aa70c53218ed407cb67c5014bd4690bbd6`.
+
+Results:
+- sample: 140/140 (full freeze population for source);
+- robots allowed: 140;
+- HTTP 200 accessible: 111;
+- recovery: 0;
+- price rejection: `no_explicit_price` = 111;
+- conflicts: 0;
+- Neon access/write: 0/0.
+
+Conclusion: Kawtar is certified zero-yield for the current parser/evidence contract. Do not invent enrichment from route-only evidence.
+
+## MULTI-SOURCE OFFLINE CONSOLIDATION — ACTIVE
+
+Canonical source summary created:
+- `data/recovery/github-freeze-recovery-certified-source-summary.json`
+- all certified source artifacts pinned by run id, artifact id and SHA256 digest.
+
+Reproducible consolidation added:
+- `scripts/data/consolidate-freeze-recovery-cohorts.mjs`
+- workflow `GitHub Freeze Recovery Consolidation`
+- run `36683688893` queued at last check.
+
+The consolidation workflow performs **GitHub-artifact-only** work:
+1. download pinned certified artifacts;
+2. verify each artifact SHA256;
+3. merge offline write-safe/review JSONL;
+4. deduplicate by canonical URL + field;
+5. apply cross-field guards;
+6. fail if duplicate conflicts, write-safe/review overlap or residual semantic issues remain;
+7. assert database_access=0 and database_writes=0.
+
+Local preflight expectation — NOT CI-certified yet:
+- write-safe: 1,183 raw → **1,180 final**;
+- review: 2,005 raw → **2,008 final**;
+- duplicate conflicts: 0;
+- write-safe/review overlaps: 0;
+- three cross-field downgrades:
+  - Domio bureau surface 21,342,453 m² → review;
+  - Domio terrain surface 650,000 m² → extreme-surface review;
+  - Domio commerce price 25,000 MAD with 64 m² = 390.625 MAD/m² → cross-field price quarantine.
+
+Do not present the 1,180 / 2,008 counts as certified until run `36683688893` completes successfully and its artifact is inspected.
