@@ -796,8 +796,8 @@ Preuve de départ :
 L3 Quartier exact-head `1af9dd1e5f51c90e528ac68fc1ce7db9434dc0bd`, artifact `11115097297`.
 
 Next exact :
-1. figer le TARGET Rue/Proximité et ses références ;
-2. choisir une rue/zone pilote Maârif avec données réellement disponibles ;
+1. ✅ TARGET Rue/Proximité figé dans `docs/handovers/AKARFINDER_RUE_PROXIMITE_TARGET_CONTRACT.md` ;
+2. ✅ pilote truth-safe retenu : carrefour Twin Center — boulevard Mohamed Zerktouni × boulevard Al Massira Al Khadra ;
 3. capturer BEFORE exact-head ;
 4. implémenter sans modifier la direction L3 validée ;
 5. AFTER 4 viewports + truth/performance gates ;
