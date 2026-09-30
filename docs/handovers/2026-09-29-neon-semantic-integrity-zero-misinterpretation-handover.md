@@ -1148,3 +1148,23 @@ Key yields: title 300 write-safe; transaction 299 write-safe; property type 150 
 Audited ranges: surface 1.5..370,000 m2; bedrooms 1..6; bathrooms 1..6; rooms 2..9. Very large surfaces map to explicit terrain URLs and are review-only.
 
 Next: AtlasImmobilier full-field 300. Aykana disabled on push; Atlas is the only active full-field source job.
+
+
+## FULL-FIELD RECOVERY — ATLAS 300 CERTIFIED / 1IMMO 243 ACTIVE
+
+Atlas run `36728651624` on HEAD `95f6d2ef3f6e60c4d97b438814db3e8e2074f095`: SUCCESS.
+Artifact `11105070017`, digest `sha256:ee7553a90ed6ca0a18e316874347927fa794615bbff84b7cb153e9101c78ca64`.
+
+Certified Atlas sample:
+- freeze population 362; deterministic sample 300;
+- robots 300/300; HTTP200 300/300;
+- write_safe fields 775;
+- review fields 1,847;
+- contradicted fields 0;
+- DB access/write 0/0.
+
+Key yields: title 300 write-safe; property type 216 write-safe; transaction 83 write-safe; description 176 write-safe + 108 review; surface 286 review; rooms 232 review; bedrooms 259 review; bathrooms 206 review; image count + thumbnail 265 review each.
+
+Audited ranges: surface 5.6..93,000 m2; rooms 1..13; bedrooms 1..13; bathrooms 1..13; plot 40..61,752 m2. All numeric core fields are review-only in this sample; no dangerous auto-write.
+
+Next: 1immo full-field 243 (entire freeze population). Atlas disabled on push; 1immo is the only active full-field source job.
