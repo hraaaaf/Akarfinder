@@ -1,0 +1,62 @@
+name: GitHub Freeze Recovery Consolidation
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/data/consolidate-freeze-recovery-cohorts.mjs'
+      - 'data/recovery/github-freeze-recovery-certified-source-summary.json'
+      - '.github/workflows/github-freeze-recovery-consolidation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  consolidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Syntax check
+        run: node --check scripts/data/consolidate-freeze-recovery-cohorts.mjs
+      - name: Fetch pinned certified artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/recovery-artifacts
+          jq -r '.certified_sources | to_entries[] | select(.value.artifact_id != null) | [.key, (.value.artifact_id|tostring), .value.digest] | @tsv' data/recovery/github-freeze-recovery-certified-source-summary.json |
+          while IFS=$'\t' read -r source artifact_id digest; do
+            safe_source="$(printf '%s' "$source" | tr '/:' '__')"
+            dir=".tmp/recovery-artifacts/$safe_source"
+            mkdir -p "$dir"
+            curl --fail --location --retry 3 \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              -H 'Accept: application/vnd.github+json' \
+              -H 'X-GitHub-Api-Version: 2022-11-28' \
+              "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/${artifact_id}/zip" \
+              -o "$dir/artifact.zip"
+            expected="${digest#sha256:}"
+            actual="$(sha256sum "$dir/artifact.zip" | awk '{print $1}')"
+            test "$actual" = "$expected"
+            unzip -q "$dir/artifact.zip" -d "$dir/files"
+          done
+      - name: Consolidate offline cohorts
+        run: |
+          rm -rf .tmp/consolidated
+          INPUT_DIR=.tmp/recovery-artifacts OUTPUT_DIR=.tmp/consolidated node scripts/data/consolidate-freeze-recovery-cohorts.mjs
+      - name: Verify no DB path
+        run: |
+          test "$(jq -r '.database_access' .tmp/consolidated/github-freeze-recovery-consolidation-summary.json)" = "0"
+          test "$(jq -r '.database_writes' .tmp/consolidated/github-freeze-recovery-consolidation-summary.json)" = "0"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: github-freeze-recovery-consolidated
+          path: .tmp/consolidated/
+          retention-days: 14
