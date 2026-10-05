@@ -32,7 +32,7 @@ function present(v){return v!==null&&v!==undefined&&v!=='';}
 function normalize(v){return String(v??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();}
 function titleTransaction(title){
   const t=String(title??'');
-  const sale=t.includes('للبيع')||t.includes(' بيع ');
+  const sale=/للبيع|بيع/u.test(t);
   const rent=t.includes('للإيجار')||t.includes('للايجار')||t.includes('إيجار')||t.includes('ايجار');
   if(sale&&!rent) return 'sale';
   if(rent&&!sale) return 'rent';
