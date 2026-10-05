@@ -1,0 +1,65 @@
+name: GitHub Freeze Parser Readiness V2
+
+on:
+  push:
+    branches:
+      - data/200k-fresh-parser-v2
+    paths:
+      - 'scripts/data/audit-github-freeze-parser-readiness-v2.mjs'
+      - '.github/workflows/github-freeze-parser-readiness-v2.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit-freeze-parser-readiness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Fetch canonical 226286-row freeze
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/freeze
+          curl --fail --location --retry 3 \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/10910779576/zip" \
+            -o .tmp/freeze.zip
+          unzip -q .tmp/freeze.zip -d .tmp/freeze
+          echo "e7ac4bca2db34ad334ed7234cfb8be93fc9baca68a9694f5024989b5cc2bb953  .tmp/freeze/clean-corpus-v4.11-core.jsonl.gz" | sha256sum -c -
+
+      - name: Audit parser readiness offline
+        env:
+          FREEZE_JSONL_GZ: .tmp/freeze/clean-corpus-v4.11-core.jsonl.gz
+          OUTPUT_DIR: data/recovery/parser-readiness-v2
+        run: node scripts/data/audit-github-freeze-parser-readiness-v2.mjs
+
+      - name: Assert freeze integrity and zero conflict
+        run: |
+          set -euo pipefail
+          summary=data/recovery/parser-readiness-v2/parser-readiness-v2-summary.json
+          test "$(jq -r '.total.rows' "$summary")" = "226286"
+          test "$(jq -r '.total.unique_urls' "$summary")" = "226286"
+          test "$(jq -r '.database_access' "$summary")" = "0"
+          test "$(jq -r '.database_writes' "$summary")" = "0"
+          test "$(jq '[.structured_route_conflicts[]] | add' "$summary")" = "0"
+          test "$(jq '[.definite_structured_route_parser_misses[]] | add' "$summary")" = "219381"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: github-freeze-parser-readiness-v2
+          path: data/recovery/parser-readiness-v2/
+          retention-days: 14
