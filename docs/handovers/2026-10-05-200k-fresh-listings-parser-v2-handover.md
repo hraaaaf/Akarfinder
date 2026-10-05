@@ -6,7 +6,7 @@ Date: 2026-10-05
 
 >= **200,000 fresh, unique, exploitable listings**.
 
-Mandatory exploitable fields:
+Mandatory fields:
 
 - canonical source URL
 - city
@@ -14,115 +14,93 @@ Mandatory exploitable fields:
 - price
 - surface
 
-Strict rule: when a mandatory field exists in source evidence but extraction misses it, the state is `parser_miss`, never generic `missing`.
+A source-present field missed by the parser is `parser_miss`, not generic `missing`.
 
-## Raw baseline — verified
+## Canonical freeze
 
-Canonical GitHub freeze:
+Artifact `10910779576`
 
-- artifact: `10910779576`
-- file: `clean-corpus-v4.11-core.jsonl.gz`
-- SHA-256: `e7ac4bca2db34ad334ed7234cfb8be93fc9baca68a9694f5024989b5cc2bb953`
-- rows: **226,286**
-- unique URLs: **226,286**
-- scope eligible: **222,359**
-- KEEP: **225,952**
-- DB access/write: **0/0**
+`clean-corpus-v4.11-core.jsonl.gz`
 
-Existing enrichment:
+SHA-256 `e7ac4bca2db34ad334ed7234cfb8be93fc9baca68a9694f5024989b5cc2bb953`
 
-- deep HTTP 200: **8,487**
-- city: **8,454**
-- district: **6,296**
-- price: **3,770**
-- surface: **4,567**
-- mandatory-complete: **1,191**
+Verified:
 
-To reach 200,000 using this eligible pool alone would require at least **89.94%** of the 222,359 eligible URLs to still be live and exploitable. This survival rate is not yet verified.
+- 226,286 rows
+- 226,286 unique URLs
+- 222,359 scope eligible
+- 225,952 KEEP
+- 8,487 URLs with historical HTTP-200 observation metadata
+- DB access/write 0/0
 
-## Parser-readiness V2 — first offline pass
+Schema correction: this core contains URL/classification/scope/deep-observation metadata, **not city/district/price/surface values**. Previous language calling route candidates `parser_miss` is superseded.
+
+Global strict structured-route evidence:
+
+- city 61,547
+- district 48,023
+- transaction 60,761
+- property type 61,543
+
+State: `recoverable_from_url`, not parser-miss proof.
+
+## Current source lot — Mubawab
+
+Raw URLs: **82,796**
+
+Verified identity reduction:
+
+- detail routes: 81,996
+- non-detail routes: 800
+- unique detail identities: **74,867**
+- duplicate historical URL rows: **7,129**
+- raw overcount: **7,929 / 9.577%**
+- scope-eligible unique live-fetch plan: **74,486**
+
+Unique route identities:
+
+- `a:<id>`: 72,746
+- `pa:<id>`: 2,121
+
+Offline URL parser candidates:
+
+- transaction recoverable 48,739 / conflict 306 / unresolved 25,822
+- property type recoverable 63,013 / conflict 4,532 / unresolved 7,322
+- surface high 10,331 / review 10,160 / conflict 389 / unresolved 53,987
+- city free-slug evidence is review-only
+
+Critical rule: conflicting historical slugs for one source ID never silently resolve to one semantic value.
+
+## Code
 
 Branch: `data/200k-fresh-parser-v2`
 
-Script:
+HEAD will advance as this lot continues.
 
-`scripts/data/audit-github-freeze-parser-readiness-v2.mjs`
+Files:
 
-Workflow:
+- `scripts/data/audit-github-freeze-parser-readiness-v2.mjs`
+- `scripts/data/mubawab-url-parser-v2.mjs`
+- `scripts/data/__tests__/mubawab-url-parser-v2.test.mjs`
+- `scripts/data/mubawab-freeze-adapter-v2.mjs`
+- `scripts/data/mubawab-live-benchmark-v2.mjs`
+- `.github/workflows/github-freeze-parser-readiness-v2.yml`
+- `.github/workflows/mubawab-parser-v2-benchmark.yml`
 
-`.github/workflows/github-freeze-parser-readiness-v2.yml`
+Local parser tests: **6/6 passed**.
 
-Strict structured-route evidence produced:
+## DB discipline
 
-- city candidates: **61,547**
-- district candidates: **48,023**
-- transaction candidates: **60,761**
-- property-type candidates: **61,543**
+No Neon request for analysis reproducible from freeze/artifacts.
 
-Definite parser misses where the freeze field is absent:
+Current phase: GitHub freeze + public source verification only.
 
-- city: **53,553**
-- district: **43,524**
-- transaction_type: **60,761**
-- property_type: **61,543**
-- total field misses: **219,381**
-- conflicts with existing populated values: **0**
-
-No source-site request was required for this pass.
-
-## Largest reservoirs
-
-- Mubawab: **82,796**
-- Sarout: **44,130**
-- MarocImmo: **37,299**
-- Avito: **24,532**
-- Domio: **10,347**
-- Agenz: **9,347**
-
-## Existing deep-snapshot parser signals
-
-Domio, 3,495 HTTP 200:
-- city 100%
-- price 95.11%
-- surface 60.60%
-- district 51.42%
-- mandatory-complete 33.65%
-
-MarocImmo, 4,499 HTTP 200:
-- city 100%
-- district 100%
-- surface 46.34%
-- price 0.42%
-- mandatory-complete 0.33%
-
-Sarout, 493 HTTP 200:
-- city 93.31%
-- price 86.61%
-- surface 73.83%
-- district 0%
-- mandatory-complete 0%
-
-## Free-slug warning
-
-A lexical experiment on Mubawab/Sarout/Avito shows large extraction potential, but free-slug city inference is **not safe enough for automatic write**.
-
-Sarout produced city conflicts against existing enriched values when city names appeared contextually in slugs. Therefore:
-
-- structured route segments may be high confidence;
-- free-slug evidence stays `review` until corroborated;
-- no city may be inferred from an ambiguous district alone.
-
-## Freeze-first / DB discipline
-
-Do not query Neon for work reproducible from GitHub freeze/artifacts.
-
-Neon is reserved for a single live preflight immediately before a future controlled write, followed by explicit human gate.
+No Vercel deployment.
 
 ## Next exact
 
-1. Complete source adapters for the four biggest reservoirs: Mubawab, Sarout, MarocImmo, Avito.
-2. For each URL, emit per-field provenance and states: verified / parser_miss / source_missing / conflict / invalid / review.
-3. Use offline evidence first.
-4. Build deterministic fixtures from frozen URLs and existing deep snapshots.
-5. Only then launch bounded fresh source waves for unresolved mandatory fields and freshness.
-6. Measure unique + fresh + mandatory-complete count against the 200K Goal.
+Run and inspect the deterministic 100-identity Mubawab live benchmark.
+
+If coverage misses current source-visible city/district/price/surface, change the Mubawab detail parser and rerun the bounded benchmark.
+
+Only after parser yield is certified should the Mubawab live refresh scale beyond the benchmark.
