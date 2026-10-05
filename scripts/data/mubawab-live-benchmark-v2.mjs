@@ -92,15 +92,28 @@ function titleLocation(title,fallbackCity){
   tail=tail.split(/\s+-\s+/)[0].trim();
   let city=null,district=null;
   const comma=tail.split(',').map(clean).filter(Boolean);
-  if(comma.length>=2){
+  const normalizedFallback=fallbackCity?normalize(fallbackCity):null;
+  if(comma.length>=2&&fallbackCity){
+    const first=normalize(comma[0]),second=normalize(comma[1]);
+    if(second===normalizedFallback){
+      city=fallbackCity;
+      district=comma[0];
+    }else if(first===normalizedFallback||first.endsWith(' '+normalizedFallback)||first.includes(' '+normalizedFallback+' ')){
+      city=fallbackCity;
+      district=comma[1];
+    }else{
+      city=fallbackCity;
+      district=comma[0];
+    }
+  }else if(comma.length>=2){
     district=comma[0];
     city=comma[1];
   }else{
     district=tail.split(/[.…]/)[0].trim();
     city=fallbackCity||null;
   }
-  if(city&&!plausibleCity(city))city=fallbackCity&&plausibleCity(fallbackCity)?fallbackCity:null;
-  if(!city&&fallbackCity&&plausibleCity(fallbackCity))city=fallbackCity;
+  if(fallbackCity&&plausibleCity(fallbackCity))city=fallbackCity;
+  else if(city&&!plausibleCity(city))city=null;
   district=stripCity(district,city);
   if(!plausibleDistrict(district))district=null;
   return {city,district,evidence:district?['mubawab_meta_title']:city?['mubawab_meta_title_city']:[]};
