@@ -12,6 +12,13 @@ on:
       - 'scripts/data/mubawab-freeze-adapter-v2.mjs'
       - 'scripts/data/mubawab-live-benchmark-v2.mjs'
       - '.github/workflows/mubawab-parser-v2-benchmark.yml'
+  pull_request:
+    paths:
+      - 'scripts/data/mubawab-url-parser-v2.mjs'
+      - 'scripts/data/__tests__/mubawab-url-parser-v2.test.mjs'
+      - 'scripts/data/mubawab-freeze-adapter-v2.mjs'
+      - 'scripts/data/mubawab-live-benchmark-v2.mjs'
+      - '.github/workflows/mubawab-parser-v2-benchmark.yml'
   workflow_dispatch:
 
 permissions:
