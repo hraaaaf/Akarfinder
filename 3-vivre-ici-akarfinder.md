@@ -797,38 +797,34 @@ Les anciennes certifications 9.x ne constituent plus un score visuel courant.
 
 # 9. NEXT EXACT
 
-**RUE / PROXIMITÉ — couche suivante après L3 Quartier**
+**LOT H — AKARFINDER POI LANGUAGE (L5)**
 
 Goal :
-faire du zoom fin une lecture locale premium et utile, sans rupture avec le style AkarFinder validé.
+créer une iconographie locale propriétaire, cohérente et truth-safe.
 
-Doctrine verrouillée :
-- le zoom ne change pas de style ; il révèle progressivement le style AkarFinder ;
-- fond Voyager-like conservé ;
-- bâtiments Standard-like/Overture conservés ;
-- détail local supérieur : rues secondaires, fronts bâtis, passages, POI utiles, accès piéton/auto selon données disponibles ;
-- composition proche d'un plan architectural premium, mais toujours cartographique et truth-safe ;
-- aucune géométrie, distance, accès ou précision immobilière inventée ;
-- le quartier reste le contexte ; la rue devient la scène.
+État d'entrée :
+- L3 Quartier APPROVED ;
+- Rue/Proximité APPROVED provisoire ;
+- photo Maârif remplacée et humainement validée ; preuves CI exact-head en cours ;
+- TARGET LOT H figé dans `docs/handovers/AKARFINDER_POI_LANGUAGE_TARGET_CONTRACT.md` ;
+- BEFORE LOT H lancé avant toute modification visuelle.
 
 Succès observable :
-- lecture immédiate de la rue et de son environnement proche ;
-- bâtiments plus fins sans bruit ;
-- hiérarchie claire rue principale / secondaires / POI ;
-- continuité visuelle nette avec le Quartier validé ;
+- ≤ 8 familles visuelles ;
+- langage monochrome/duotone AkarFinder ;
+- hiérarchie landmark > POI ordinaire ;
+- collisions/zoom maîtrisés ;
+- aucune catégorie/source/coordonnée inventée ;
 - 390×844 / 430×932 / 768×900 / 1280×900 ;
-- BEFORE → TARGET/référence → implémentation → AFTER → comparaison → score → human gate.
-
-Preuve de départ :
-L3 Quartier exact-head `1af9dd1e5f51c90e528ac68fc1ce7db9434dc0bd`, artifact `11115097297`.
+- human gate avant fermeture.
 
 Next exact :
-1. ✅ TARGET Rue/Proximité figé dans `docs/handovers/AKARFINDER_RUE_PROXIMITE_TARGET_CONTRACT.md` ;
-2. ✅ pilote truth-safe retenu : carrefour Twin Center — boulevard Mohamed Zerktouni × boulevard Al Massira Al Khadra ;
-3. capturer BEFORE exact-head ;
-4. implémenter sans modifier la direction L3 validée ;
-5. AFTER 4 viewports + truth/performance gates ;
-6. human gate Rue.
+1. obtenir le BEFORE POI exact-head ;
+2. montrer les captures ;
+3. implémenter le langage POI ;
+4. AFTER exact-head + truth/responsive gates ;
+5. score sévère ;
+6. human gate LOT H.
 
 Merge #1090 reste NON AUTORISÉ sans validation explicite.
 Aucun Vercel sans autorisation explicite.
