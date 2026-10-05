@@ -36,8 +36,8 @@ try {
 
     // Capture one filtered state using a real available category when present.
     const education=page.locator(".maplibre-spike-filters button",{hasText:"Écoles"});
-    if(await education.count()){
-      await education.click();
+    if(await education.count() && await education.first().isVisible()){
+      await education.first().click();
       await page.waitForTimeout(400);
       await page.screenshot({path:`${outDir}/poi-before-education-${viewport.width}x${viewport.height}.png`,fullPage:false});
     }
