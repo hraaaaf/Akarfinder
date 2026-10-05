@@ -68,7 +68,7 @@ function plausibleCity(v){
 }
 function plausibleDistrict(v){
   const n=normalize(v);if(!n||n.length<2||n.length>55)return false;
-  if(/\b(?:appartement|apartment|villa|maison|house|terrain|bureau|office|commerce|commercial|studio|duplex|projet|project|standing|premium|vendre|vente|louer|location|rent|sale|prix|price|surface|area|saisir|consulter|financing|morocco)\b/.test(n))return false;
+  if(/\b(?:appartement|apartment|villa|maison|house|terrain|bureau|office|commerce|commercial|studio|duplex|projet|project|standing|premium|vendre|vente|louer|location|rent|sale|prix|price|surface|area|saisir|consulter|financing|morocco|tf)\b/.test(n))return false;\n  if(/\b(?:en un seul|un seul)\b/.test(n))return false;
   if(/(?:m²|m2|\d{3,})/i.test(v))return false;
   return true;
 }
