@@ -11,6 +11,12 @@ on:
       - 'scripts/data/__tests__/sarout-url-parser-v2.test.mjs'
       - 'scripts/data/sarout-freeze-adapter-v2.mjs'
       - '.github/workflows/sarout-parser-v2-offline.yml'
+  pull_request:
+    paths:
+      - 'scripts/data/sarout-url-parser-v2.mjs'
+      - 'scripts/data/__tests__/sarout-url-parser-v2.test.mjs'
+      - 'scripts/data/sarout-freeze-adapter-v2.mjs'
+      - '.github/workflows/sarout-parser-v2-offline.yml'
   workflow_dispatch:
 
 permissions:
