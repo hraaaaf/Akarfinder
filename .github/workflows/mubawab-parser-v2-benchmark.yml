@@ -1,16 +1,11 @@
 name: Mubawab Parser V2 Benchmark
 
+# Push-only by design: this benchmark must never require opening a PR, because
+# the parent recovery branch contains a separately human-gated Neon workflow.
 on:
   push:
     branches:
       - data/200k-fresh-parser-v2
-    paths:
-      - 'scripts/data/mubawab-url-parser-v2.mjs'
-      - 'scripts/data/__tests__/mubawab-url-parser-v2.test.mjs'
-      - 'scripts/data/mubawab-freeze-adapter-v2.mjs'
-      - 'scripts/data/mubawab-live-benchmark-v2.mjs'
-      - '.github/workflows/mubawab-parser-v2-benchmark.yml'
-  pull_request:
     paths:
       - 'scripts/data/mubawab-url-parser-v2.mjs'
       - 'scripts/data/__tests__/mubawab-url-parser-v2.test.mjs'
