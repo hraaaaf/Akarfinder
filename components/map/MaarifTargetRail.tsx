@@ -19,12 +19,12 @@ import type { NeighborhoodContextReadModelV1 } from "@/lib/neighborhood-context/
 import { mapPoiCategoryLabel } from "@/lib/neighborhood-context/map-poi-presentation";
 
 const MAARIF_HERO = {
-  src: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Parfumerie_jura%2C_Ma%C3%A2rif%2C_Casablanca.jpg/1280px-Parfumerie_jura%2C_Ma%C3%A2rif%2C_Casablanca.jpg",
-  alt: "Place publique à Maârif, Casablanca",
-  credit: "Sam Nabi",
-  source: "https://commons.wikimedia.org/wiki/File:Parfumerie_jura,_Ma%C3%A2rif,_Casablanca.jpg",
-  license: "CC BY-SA 2.0",
-  licenseUrl: "https://creativecommons.org/licenses/by-sa/2.0/",
+  src: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/Ma%C3%A2rif%2C_Morocco_-_panoramio_%282%29.jpg/1280px-Ma%C3%A2rif%2C_Morocco_-_panoramio_%282%29.jpg",
+  alt: "Vue urbaine du quartier Maârif à Casablanca",
+  credit: "karel291",
+  source: "https://commons.wikimedia.org/wiki/File:Ma%C3%A2rif,_Morocco_-_panoramio_(2).jpg",
+  license: "CC BY 3.0",
+  licenseUrl: "https://creativecommons.org/licenses/by/3.0/",
 } as const;
 
 type ContextPayload =
