@@ -4,9 +4,9 @@ Date: 2026-10-05
 
 ## Goal
 
-Reach **>= 200,000 fresh, exploitable listings**.
+Reach **>= 200,000 fresh, unique, exploitable listings**.
 
-An exploitable listing must have, at minimum:
+Minimum exploitable contract:
 
 - canonical source URL
 - city
@@ -14,9 +14,9 @@ An exploitable listing must have, at minimum:
 - price
 - surface
 
-If one of these fields is present in the source but absent after extraction, classify it as a **parser failure**, not as generic missing data.
+Strict rule: if a mandatory field is provably present in current source evidence but extraction misses it, classify it as `parser_miss`, never generic `missing`.
 
-## Canonical raw material
+## Canonical raw material — verified
 
 GitHub artifact: `10910779576`
 
@@ -26,56 +26,36 @@ SHA-256:
 
 `e7ac4bca2db34ad334ed7234cfb8be93fc9baca68a9694f5024989b5cc2bb953`
 
-Verified offline baseline:
+Verified core baseline:
 
 - rows: **226,286**
 - unique canonical URLs: **226,286**
 - KEEP: **225,952**
 - scope eligible: **222,359**
-- deep HTTP 200 snapshots: **8,487**
-- rows already complete for URL + city + district + price + surface: **1,191**
+- EXPIRED classification rows: **45**
+- NON_REAL_ESTATE rows: **289**
+- URLs carrying a historical HTTP-200 observation marker: **8,487**
 - database access: **0**
 - database writes: **0**
 
-The raw pool is therefore large enough in absolute URL count, but the existing enrichment coverage is far below the new Goal.
+Important schema correction:
 
-## Existing field coverage in the raw freeze
+The canonical `core` freeze stores URL identity, classification, scope and deep-observation metadata. It **does not store listing business fields** such as city, district, price or surface. Therefore this freeze alone cannot prove a `parser_miss` for those fields.
 
-- city: **8,454**
-- district: **6,296**
-- price_mad: **3,770**
-- surface_m2: **4,567**
-- title: **8,487**
-- description: **8,487**
-- published_at: **8,487**
+## Recoverable structured-route evidence
 
-Only the deep-observed minority carries enriched fields.
+A strict offline route pass finds source-controlled URL segments that can be retained as recovery evidence without any live request:
 
-## Definite parser misses recoverable from structured URL routes
+- city candidates: **61,547**
+- district candidates: **48,023**
+- transaction_type candidates: **60,761**
+- property_type candidates: **61,543**
 
-A first strict offline route parser was run without source fetches.
+These are **`recoverable_from_url` candidates**, not parser-miss counts.
 
-High-confidence route candidates:
+## Source priority by raw URL volume
 
-- city: **61,547**
-- district: **48,023**
-- transaction_type: **60,761**
-- property_type: **61,543**
-
-Fields absent from the freeze despite explicit structured-route evidence:
-
-- city parser misses: **53,553**
-- district parser misses: **43,524**
-- transaction_type parser misses: **60,761**
-- property_type parser misses: **61,543**
-- total definite structured-route parser misses: **219,381 field values**
-- conflicts against already populated values: **0**
-
-This is the first proven recovery layer and requires no database access and no live-site request.
-
-## Source priority by raw volume
-
-1. `mubawab.ma`: **82,796** rows
+1. `mubawab.ma`: **82,796**
 2. `sarout.ma`: **44,130**
 3. `marocimmo.com`: **37,299**
 4. `avito.ma`: **24,532**
@@ -86,116 +66,122 @@ This is the first proven recovery layer and requires no database access and no l
 9. `masaken.ma`: **2,047**
 10. `mouldar.com`: **1,641**
 
-## Important parser-quality signals from existing deep snapshots
+## Mubawab lot — offline baseline
 
-### Domio
+Raw Mubawab URL rows: **82,796**
 
-Deep HTTP 200: **3,495**
+Identity normalization:
 
-- city: 100%
-- price: 95.11%
-- surface: 60.60%
-- district: 51.42%
-- complete mandatory set: 33.65%
+- detail-route rows (`/a/<id>` or `/pa/<id>`): **81,996**
+- non-detail/search/navigation routes: **800**
+- unique detail identities: **74,867**
+  - individual `a:<id>`: **72,746**
+  - project `pa:<id>`: **2,121**
+- duplicate historical URL rows beyond unique detail identities: **7,129**
+- raw URL overcount versus unique detail identities: **7,929 (9.577%)**
+- scope-eligible deduplicated live-fetch plan: **74,486**
 
-Immediate parser target: district + surface.
+Therefore AkarFinder must count/crawl **Mubawab identity IDs**, not raw historical URLs.
 
-### MarocImmo
+### URL evidence recovered safely
 
-Deep HTTP 200: **4,499**
+Across the 74,867 unique Mubawab detail identities:
 
-- city: 100%
-- district: 100%
-- surface: 46.34%
-- price: **0.42%**
-- complete mandatory set: **0.33%**
+Transaction:
+- recoverable from explicit slug evidence: **48,739**
+- historical conflict: **306**
+- unresolved: **25,822**
 
-Immediate parser target: price first, then surface.
+Property type:
+- recoverable: **63,013**
+- conflict: **4,532**
+- unresolved: **7,322**
 
-### Sarout
+Surface:
+- high-confidence primary-surface candidate: **10,331**
+- review-only candidate: **10,160**
+- conflicting multiple surfaces: **389**
+- unresolved: **53,987**
 
-Deep HTTP 200: **493**
+City tokens from free slugs remain **review evidence only**:
+- one city token: **13,932**
+- multiple/conflicting: **242**
+- none: **60,693**
 
-- city: 93.31%
-- price: 86.61%
-- surface: 73.83%
-- district: **0%**
-- complete mandatory set: 0%
-
-Immediate parser target: district.
+Historical slugs can contradict each other for the same Mubawab ID. No semantic value is silently selected when that happens.
 
 ## Parser V2 doctrine
 
-Extraction order:
+Evidence priority:
 
-1. source-specific structured route
+1. source-specific stable identity / structured route
 2. JSON-LD
 3. embedded application state / public structured payload
-4. labeled DOM
-5. breadcrumb / explicit location hierarchy
-6. constrained text regex
-7. heuristic free-slug parsing only as review evidence
+4. explicit labeled DOM
+5. breadcrumb / location heading consensus
+6. constrained text extraction
+7. free-slug heuristic as review-only unless corroborated
 
-Every field must retain:
+Per-field provenance:
 
 - normalized value
 - raw evidence
-- source mechanism
+- extraction mechanism
 - confidence
-- extraction reason
+- state
 
 States:
 
 - `verified`
+- `recoverable_from_url`
 - `parser_miss`
 - `source_missing`
 - `conflict`
 - `invalid`
 - `review`
+- `unresolved`
 
-Never collapse `parser_miss` into `source_missing`.
+## Freshness
 
-## Freshness rule
+The freeze is discovery/raw material, **not proof that listings are still active**.
 
-The 226,286-row freeze is discovery/raw material, not proof that listings are currently active.
-
-Do not spend database quota to refresh it.
-
-Freshness must be re-established source-side during later source-specific refresh waves, with lifecycle fields such as:
+Freshness must be re-established source-side with:
 
 - first_seen_at
 - last_seen_at
 - last_verified_at
 - active / stale / gone
 
-## Current implementation
+Neon is not required for this phase.
+
+## Implementation
 
 Branch: `data/200k-fresh-parser-v2`
 
-Audit script:
+Global baseline:
+- `scripts/data/audit-github-freeze-parser-readiness-v2.mjs`
+- `.github/workflows/github-freeze-parser-readiness-v2.yml`
 
-`scripts/data/audit-github-freeze-parser-readiness-v2.mjs`
+Mubawab:
+- `scripts/data/mubawab-url-parser-v2.mjs`
+- `scripts/data/__tests__/mubawab-url-parser-v2.test.mjs`
+- `scripts/data/mubawab-freeze-adapter-v2.mjs`
+- `scripts/data/mubawab-live-benchmark-v2.mjs`
+- `.github/workflows/mubawab-parser-v2-benchmark.yml`
 
-CI workflow:
-
-`.github/workflows/github-freeze-parser-readiness-v2.yml`
-
-The workflow downloads only the canonical GitHub freeze, verifies its digest, performs the offline audit and uploads parser-miss artifacts. It does not access Neon.
+Local parser regression result before commit: **6/6 tests pass**.
 
 ## Next exact
 
-Extend the offline parser to the four biggest raw sources in this order:
+Run the bounded **100-identity Mubawab live benchmark**.
 
-1. Mubawab
-2. Sarout
-3. MarocImmo
-4. Avito
+Success evidence required:
 
-For every source:
+- robots policy respected
+- 100 deterministic deduplicated identities attempted
+- current live/stale response distribution measured
+- city/district/price/surface coverage measured
+- any source-present/extractor-missing field classified as `parser_miss`
+- database access/write = 0/0
 
-- derive all high-confidence fields available without a live request
-- classify unresolved mandatory fields
-- build source-specific regression fixtures
-- then perform a bounded fresh source pass only for unresolved freshness / price / surface / district evidence
-
-No Neon access is needed for this phase.
+Then improve the Mubawab detail parser until mandatory-field yield is acceptable before scaling the live refresh.
