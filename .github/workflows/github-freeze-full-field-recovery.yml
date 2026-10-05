@@ -1,0 +1,747 @@
+name: GitHub Freeze Full Field Recovery
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/data/github-freeze-full-field-recovery.ts'
+      - 'data/recovery/full-field-recovery-v1-contract.json'
+      - '.github/workflows/github-freeze-full-field-recovery.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  domio-full-field-100:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SOURCE_NAME: 'domio.ma'
+      SAMPLE_SIZE: '100'
+      OUTPUT_PREFIX: 'domio-full-field-100'
+      FREEZE_JSONL_GZ: '.tmp/freeze/clean-corpus-v4.11-core.jsonl.gz'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Fetch canonical freeze
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/freeze
+          curl --fail --location --retry 3 \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/10910779576/zip" \
+            -o .tmp/freeze.zip
+          unzip -q .tmp/freeze.zip -d .tmp/freeze
+          echo "e7ac4bca2db34ad334ed7234cfb8be93fc9baca68a9694f5024989b5cc2bb953  .tmp/freeze/clean-corpus-v4.11-core.jsonl.gz" | sha256sum -c -
+      - name: Run Domio full-field pilot
+        run: npx tsx scripts/data/github-freeze-full-field-recovery.ts
+      - name: Assert read-only
+        run: |
+          test "$(jq -r '.database_access' domio-full-field-100.json)" = "0"
+          test "$(jq -r '.database_writes' domio-full-field-100.json)" = "0"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: domio-full-field-100
+          path: |
+            domio-full-field-100.json
+            domio-full-field-100.jsonl
+          retention-days: 14
+
+  marocimmo-full-field-300:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SOURCE_NAME: 'marocimmo.com'
+      SAMPLE_SIZE: '300'
+      FETCH_DELAY_MS: '250'
+      OUTPUT_PREFIX: 'marocimmo-full-field-300'
+      FREEZE_JSONL_GZ: '.tmp/freeze/clean-corpus-v4.11-core.jsonl.gz'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Regression test P8A extraction
+        run: npx tsx --test scripts/scrapers/__tests__/p8a-detail.test.ts
+      - name: Fetch canonical freeze
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/freeze
+          curl --fail --location --retry 3 \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/10910779576/zip" \
+            -o .tmp/freeze.zip
+          unzip -q .tmp/freeze.zip -d .tmp/freeze
+          echo "e7ac4bca2db34ad334ed7234cfb8be93fc9baca68a9694f5024989b5cc2bb953  .tmp/freeze/clean-corpus-v4.11-core.jsonl.gz" | sha256sum -c -
+      - name: Run MarocImmo full-field pilot
+        run: npx tsx scripts/data/github-freeze-full-field-recovery.ts
+      - name: Assert read-only
+        run: |
+          test "$(jq -r '.database_access' marocimmo-full-field-300.json)" = "0"
+          test "$(jq -r '.database_writes' marocimmo-full-field-300.json)" = "0"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: marocimmo-full-field-300
+          path: |
+            marocimmo-full-field-300.json
+            marocimmo-full-field-300.jsonl
+          retention-days: 14
+
+  mubawab-full-field-300:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SOURCE_NAME: 'mubawab.ma'
+      SAMPLE_SIZE: '300'
+      FETCH_DELAY_MS: '250'
+      OUTPUT_PREFIX: 'mubawab-full-field-300'
+      FREEZE_JSONL_GZ: '.tmp/freeze/clean-corpus-v4.11-core.jsonl.gz'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Regression test extraction
+        run: npx tsx --test scripts/scrapers/__tests__/p8a-detail.test.ts
+      - name: Fetch canonical freeze
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/freeze
+          curl --fail --location --retry 3 \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/10910779576/zip" \
+            -o .tmp/freeze.zip
+          unzip -q .tmp/freeze.zip -d .tmp/freeze
+          echo "e7ac4bca2db34ad334ed7234cfb8be93fc9baca68a9694f5024989b5cc2bb953  .tmp/freeze/clean-corpus-v4.11-core.jsonl.gz" | sha256sum -c -
+      - name: Run Mubawab full-field pilot
+        run: npx tsx scripts/data/github-freeze-full-field-recovery.ts
+      - name: Assert read-only
+        run: |
+          test "$(jq -r '.database_access' mubawab-full-field-300.json)" = "0"
+          test "$(jq -r '.database_writes' mubawab-full-field-300.json)" = "0"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mubawab-full-field-300
+          path: |
+            mubawab-full-field-300.json
+            mubawab-full-field-300.jsonl
+          retention-days: 14
+
+  sarout-full-field-300:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SOURCE_NAME: 'sarout.ma'
+      SAMPLE_SIZE: '300'
+      FETCH_DELAY_MS: '250'
+      OUTPUT_PREFIX: 'sarout-full-field-300'
+      FREEZE_JSONL_GZ: '.tmp/freeze/clean-corpus-v4.11-core.jsonl.gz'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Regression test P8A extraction
+        run: npx tsx --test scripts/scrapers/__tests__/p8a-detail.test.ts
+      - name: Fetch canonical freeze
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/freeze
+          curl --fail --location --retry 3 \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/10910779576/zip" \
+            -o .tmp/freeze.zip
+          unzip -q .tmp/freeze.zip -d .tmp/freeze
+          echo "e7ac4bca2db34ad334ed7234cfb8be93fc9baca68a9694f5024989b5cc2bb953  .tmp/freeze/clean-corpus-v4.11-core.jsonl.gz" | sha256sum -c -
+      - name: Run Sarout full-field pilot
+        run: npx tsx scripts/data/github-freeze-full-field-recovery.ts
+      - name: Assert read-only
+        run: |
+          test "$(jq -r '.database_access' sarout-full-field-300.json)" = "0"
+          test "$(jq -r '.database_writes' sarout-full-field-300.json)" = "0"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sarout-full-field-300
+          path: |
+            sarout-full-field-300.json
+            sarout-full-field-300.jsonl
+          retention-days: 14
+
+  promo-full-field-300:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SOURCE_NAME: 'promoimmomarrakech.com'
+      SAMPLE_SIZE: '300'
+      FETCH_DELAY_MS: '250'
+      OUTPUT_PREFIX: 'promo-full-field-300'
+      FREEZE_JSONL_GZ: '.tmp/freeze/clean-corpus-v4.11-core.jsonl.gz'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Regression test P8A extraction
+        run: npx tsx --test scripts/scrapers/__tests__/p8a-detail.test.ts
+      - name: Fetch canonical freeze
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/freeze
+          curl --fail --location --retry 3 \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/10910779576/zip" \
+            -o .tmp/freeze.zip
+          unzip -q .tmp/freeze.zip -d .tmp/freeze
+          echo "e7ac4bca2db34ad334ed7234cfb8be93fc9baca68a9694f5024989b5cc2bb953  .tmp/freeze/clean-corpus-v4.11-core.jsonl.gz" | sha256sum -c -
+      - name: Run PromoImmoMarrakech full-field pilot
+        run: npx tsx scripts/data/github-freeze-full-field-recovery.ts
+      - name: Assert read-only
+        run: |
+          test "$(jq -r '.database_access' promo-full-field-300.json)" = "0"
+          test "$(jq -r '.database_writes' promo-full-field-300.json)" = "0"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: promo-full-field-300
+          path: |
+            promo-full-field-300.json
+            promo-full-field-300.jsonl
+          retention-days: 14
+
+  masaken-full-field-300:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SOURCE_NAME: 'masaken.ma'
+      SAMPLE_SIZE: '300'
+      FETCH_DELAY_MS: '250'
+      OUTPUT_PREFIX: 'masaken-full-field-300'
+      FREEZE_JSONL_GZ: '.tmp/freeze/clean-corpus-v4.11-core.jsonl.gz'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Regression test P8A extraction
+        run: npx tsx --test scripts/scrapers/__tests__/p8a-detail.test.ts
+      - name: Fetch canonical freeze
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/freeze
+          curl --fail --location --retry 3 \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/10910779576/zip" \
+            -o .tmp/freeze.zip
+          unzip -q .tmp/freeze.zip -d .tmp/freeze
+          echo "e7ac4bca2db34ad334ed7234cfb8be93fc9baca68a9694f5024989b5cc2bb953  .tmp/freeze/clean-corpus-v4.11-core.jsonl.gz" | sha256sum -c -
+      - name: Run Masaken full-field pilot
+        run: npx tsx scripts/data/github-freeze-full-field-recovery.ts
+      - name: Assert read-only
+        run: |
+          test "$(jq -r '.database_access' masaken-full-field-300.json)" = "0"
+          test "$(jq -r '.database_writes' masaken-full-field-300.json)" = "0"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: masaken-full-field-300
+          path: |
+            masaken-full-field-300.json
+            masaken-full-field-300.jsonl
+          retention-days: 14
+
+  lsf-full-field-300:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SOURCE_NAME: 'limmobiliersansfrontieres.com'
+      SAMPLE_SIZE: '300'
+      FETCH_DELAY_MS: '250'
+      OUTPUT_PREFIX: 'lsf-full-field-300'
+      FREEZE_JSONL_GZ: '.tmp/freeze/clean-corpus-v4.11-core.jsonl.gz'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Regression test P8A extraction
+        run: npx tsx --test scripts/scrapers/__tests__/p8a-detail.test.ts
+      - name: Fetch canonical freeze
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/freeze
+          curl --fail --location --retry 3 -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' -H 'X-GitHub-Api-Version: 2022-11-28' "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/10910779576/zip" -o .tmp/freeze.zip
+          unzip -q .tmp/freeze.zip -d .tmp/freeze
+          echo "e7ac4bca2db34ad334ed7234cfb8be93fc9baca68a9694f5024989b5cc2bb953  .tmp/freeze/clean-corpus-v4.11-core.jsonl.gz" | sha256sum -c -
+      - name: Run LSF full-field pilot
+        run: npx tsx scripts/data/github-freeze-full-field-recovery.ts
+      - name: Assert read-only
+        run: |
+          test "$(jq -r '.database_access' lsf-full-field-300.json)" = "0"
+          test "$(jq -r '.database_writes' lsf-full-field-300.json)" = "0"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lsf-full-field-300
+          path: |
+            lsf-full-field-300.json
+            lsf-full-field-300.jsonl
+          retention-days: 14
+
+  aykana-full-field-300:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SOURCE_NAME: 'aykana.ma'
+      SAMPLE_SIZE: '300'
+      FETCH_DELAY_MS: '250'
+      OUTPUT_PREFIX: 'aykana-full-field-300'
+      FREEZE_JSONL_GZ: '.tmp/freeze/clean-corpus-v4.11-core.jsonl.gz'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Regression test P8A extraction
+        run: npx tsx --test scripts/scrapers/__tests__/p8a-detail.test.ts
+      - name: Fetch canonical freeze
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/freeze
+          curl --fail --location --retry 3 -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' -H 'X-GitHub-Api-Version: 2022-11-28' "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/10910779576/zip" -o .tmp/freeze.zip
+          unzip -q .tmp/freeze.zip -d .tmp/freeze
+          echo "e7ac4bca2db34ad334ed7234cfb8be93fc9baca68a9694f5024989b5cc2bb953  .tmp/freeze/clean-corpus-v4.11-core.jsonl.gz" | sha256sum -c -
+      - name: Run Aykana full-field pilot
+        run: npx tsx scripts/data/github-freeze-full-field-recovery.ts
+      - name: Assert read-only
+        run: |
+          test "$(jq -r '.database_access' aykana-full-field-300.json)" = "0"
+          test "$(jq -r '.database_writes' aykana-full-field-300.json)" = "0"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: aykana-full-field-300
+          path: |
+            aykana-full-field-300.json
+            aykana-full-field-300.jsonl
+          retention-days: 14
+
+  atlas-full-field-300:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SOURCE_NAME: 'atlasimmobilier.com'
+      SAMPLE_SIZE: '300'
+      FETCH_DELAY_MS: '250'
+      OUTPUT_PREFIX: 'atlas-full-field-300'
+      FREEZE_JSONL_GZ: '.tmp/freeze/clean-corpus-v4.11-core.jsonl.gz'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Regression test P8A extraction
+        run: npx tsx --test scripts/scrapers/__tests__/p8a-detail.test.ts
+      - name: Fetch canonical freeze
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/freeze
+          curl --fail --location --retry 3 -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' -H 'X-GitHub-Api-Version: 2022-11-28' "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/10910779576/zip" -o .tmp/freeze.zip
+          unzip -q .tmp/freeze.zip -d .tmp/freeze
+          echo "e7ac4bca2db34ad334ed7234cfb8be93fc9baca68a9694f5024989b5cc2bb953  .tmp/freeze/clean-corpus-v4.11-core.jsonl.gz" | sha256sum -c -
+      - name: Run Atlas full-field pilot
+        run: npx tsx scripts/data/github-freeze-full-field-recovery.ts
+      - name: Assert read-only
+        run: |
+          test "$(jq -r '.database_access' atlas-full-field-300.json)" = "0"
+          test "$(jq -r '.database_writes' atlas-full-field-300.json)" = "0"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: atlas-full-field-300
+          path: |
+            atlas-full-field-300.json
+            atlas-full-field-300.jsonl
+          retention-days: 14
+
+  oneimmo-full-field-243:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SOURCE_NAME: '1immo.ma'
+      SAMPLE_SIZE: '243'
+      FETCH_DELAY_MS: '250'
+      OUTPUT_PREFIX: 'oneimmo-full-field-243'
+      FREEZE_JSONL_GZ: '.tmp/freeze/clean-corpus-v4.11-core.jsonl.gz'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Regression test P8A extraction
+        run: npx tsx --test scripts/scrapers/__tests__/p8a-detail.test.ts
+      - name: Fetch canonical freeze
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/freeze
+          curl --fail --location --retry 3 -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' -H 'X-GitHub-Api-Version: 2022-11-28' "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/10910779576/zip" -o .tmp/freeze.zip
+          unzip -q .tmp/freeze.zip -d .tmp/freeze
+          echo "e7ac4bca2db34ad334ed7234cfb8be93fc9baca68a9694f5024989b5cc2bb953  .tmp/freeze/clean-corpus-v4.11-core.jsonl.gz" | sha256sum -c -
+      - name: Run 1immo full-field pilot
+        run: npx tsx scripts/data/github-freeze-full-field-recovery.ts
+      - name: Assert read-only
+        run: |
+          test "$(jq -r '.database_access' oneimmo-full-field-243.json)" = "0"
+          test "$(jq -r '.database_writes' oneimmo-full-field-243.json)" = "0"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: oneimmo-full-field-243
+          path: |
+            oneimmo-full-field-243.json
+            oneimmo-full-field-243.jsonl
+          retention-days: 14
+
+  kawtar-full-field-140:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SOURCE_NAME: 'kawtarimmobilier.com'
+      SAMPLE_SIZE: '140'
+      FETCH_DELAY_MS: '250'
+      OUTPUT_PREFIX: 'kawtar-full-field-140'
+      FREEZE_JSONL_GZ: '.tmp/freeze/clean-corpus-v4.11-core.jsonl.gz'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Regression test P8A extraction
+        run: npx tsx --test scripts/scrapers/__tests__/p8a-detail.test.ts
+      - name: Fetch canonical freeze
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/freeze
+          curl --fail --location --retry 3 -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' -H 'X-GitHub-Api-Version: 2022-11-28' "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/10910779576/zip" -o .tmp/freeze.zip
+          unzip -q .tmp/freeze.zip -d .tmp/freeze
+          echo "e7ac4bca2db34ad334ed7234cfb8be93fc9baca68a9694f5024989b5cc2bb953  .tmp/freeze/clean-corpus-v4.11-core.jsonl.gz" | sha256sum -c -
+      - name: Run Kawtar full-field pilot
+        run: npx tsx scripts/data/github-freeze-full-field-recovery.ts
+      - name: Assert read-only
+        run: |
+          test "$(jq -r '.database_access' kawtar-full-field-140.json)" = "0"
+          test "$(jq -r '.database_writes' kawtar-full-field-140.json)" = "0"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kawtar-full-field-140
+          path: |
+            kawtar-full-field-140.json
+            kawtar-full-field-140.jsonl
+          retention-days: 14
+
+  consolidate-certified-full-field:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Fetch canonical freeze
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/freeze
+          curl --fail --location --retry 3 -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' -H 'X-GitHub-Api-Version: 2022-11-28' "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/10910779576/zip" -o .tmp/freeze.zip
+          unzip -q .tmp/freeze.zip -d .tmp/freeze
+          echo "e7ac4bca2db34ad334ed7234cfb8be93fc9baca68a9694f5024989b5cc2bb953  .tmp/freeze/clean-corpus-v4.11-core.jsonl.gz" | sha256sum -c -
+      - name: Fetch certified full-field artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/full-field-artifacts
+          for spec in             "11089447063 domio"             "11088759023 marocimmo"             "11090975222 sarout"             "11109911380 promo"             "11097624372 masaken"             "11101293461 lsf"             "11110321276 aykana"             "11110751083 atlas"             "11104979311 oneimmo"             "11106271952 kawtar"
+          do
+            set -- $spec
+            id="$1"; name="$2"
+            mkdir -p ".tmp/full-field-artifacts/$name"
+            curl --fail --location --retry 3 -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' -H 'X-GitHub-Api-Version: 2022-11-28' "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/$id/zip" -o ".tmp/$name.zip"
+            unzip -q ".tmp/$name.zip" -d ".tmp/full-field-artifacts/$name"
+          done
+      - name: Consolidate full-field passports
+        run: node scripts/data/consolidate-full-field-recovery.mjs
+      - name: Assert global integrity and read-only
+        run: |
+          test "$(jq -r '.duplicate_conflicts' data/recovery/full-field-consolidated/full-field-summary.json)" = "0"
+          test "$(jq '.semantic_issues | length' data/recovery/full-field-consolidated/full-field-summary.json)" = "0"
+          test "$(jq -r '.database_access' data/recovery/full-field-consolidated/full-field-summary.json)" = "0"
+          test "$(jq -r '.database_writes' data/recovery/full-field-consolidated/full-field-summary.json)" = "0"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: full-field-recovery-consolidated
+          path: data/recovery/full-field-consolidated/
+          retention-days: 14
+
+  recert-softpage-sources:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      FREEZE_JSONL_GZ: '.tmp/freeze/clean-corpus-v4.11-core.jsonl.gz'
+      FETCH_DELAY_MS: '250'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Regression test P8A extraction
+        run: npx tsx --test scripts/scrapers/__tests__/p8a-detail.test.ts
+      - name: Fetch canonical freeze
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/freeze
+          curl --fail --location --retry 3 -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' -H 'X-GitHub-Api-Version: 2022-11-28' "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/10910779576/zip" -o .tmp/freeze.zip
+          unzip -q .tmp/freeze.zip -d .tmp/freeze
+          echo "e7ac4bca2db34ad334ed7234cfb8be93fc9baca68a9694f5024989b5cc2bb953  .tmp/freeze/clean-corpus-v4.11-core.jsonl.gz" | sha256sum -c -
+      - name: Re-certify Aykana
+        env:
+          SOURCE_NAME: 'aykana.ma'
+          SAMPLE_SIZE: '300'
+          OUTPUT_PREFIX: 'aykana-full-field-300-recert'
+        run: npx tsx scripts/data/github-freeze-full-field-recovery.ts
+      - name: Re-certify Atlas
+        env:
+          SOURCE_NAME: 'atlasimmobilier.com'
+          SAMPLE_SIZE: '300'
+          OUTPUT_PREFIX: 'atlas-full-field-300-recert'
+        run: npx tsx scripts/data/github-freeze-full-field-recovery.ts
+      - name: Re-certify Promo
+        env:
+          SOURCE_NAME: 'promoimmomarrakech.com'
+          SAMPLE_SIZE: '300'
+          OUTPUT_PREFIX: 'promo-full-field-300-recert'
+        run: npx tsx scripts/data/github-freeze-full-field-recovery.ts
+      - name: Assert read-only recert
+        run: |
+          set -euo pipefail
+          for f in aykana-full-field-300-recert.json atlas-full-field-300-recert.json promo-full-field-300-recert.json; do
+            test "$(jq -r '.database_access' "$f")" = "0"
+            test "$(jq -r '.database_writes' "$f")" = "0"
+          done
+          test "$(jq -r '.candidates_by_field.city.write_safe // 0' aykana-full-field-300-recert.json)" = "0"
+          test "$(jq -r '.candidates_by_field.district.write_safe // 0' aykana-full-field-300-recert.json)" = "0"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: aykana-full-field-300-recert
+          path: |
+            aykana-full-field-300-recert.json
+            aykana-full-field-300-recert.jsonl
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        with:
+          name: atlas-full-field-300-recert
+          path: |
+            atlas-full-field-300-recert.json
+            atlas-full-field-300-recert.jsonl
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        with:
+          name: promo-full-field-300-recert
+          path: |
+            promo-full-field-300-recert.json
+            promo-full-field-300-recert.jsonl
+          retention-days: 14
+
+  recert-pii-sources:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      FREEZE_JSONL_GZ: '.tmp/freeze/clean-corpus-v4.11-core.jsonl.gz'
+      FETCH_DELAY_MS: '250'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Regression test P8A extraction
+        run: npx tsx --test scripts/scrapers/__tests__/p8a-detail.test.ts
+      - name: Fetch canonical freeze
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/freeze
+          curl --fail --location --retry 3 -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' -H 'X-GitHub-Api-Version: 2022-11-28' "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/10910779576/zip" -o .tmp/freeze.zip
+          unzip -q .tmp/freeze.zip -d .tmp/freeze
+          echo "e7ac4bca2db34ad334ed7234cfb8be93fc9baca68a9694f5024989b5cc2bb953  .tmp/freeze/clean-corpus-v4.11-core.jsonl.gz" | sha256sum -c -
+      - name: Re-certify Domio PII filter
+        env:
+          SOURCE_NAME: 'domio.ma'
+          SAMPLE_SIZE: '100'
+          OUTPUT_PREFIX: 'domio-full-field-100-pii-recert'
+        run: npx tsx scripts/data/github-freeze-full-field-recovery.ts
+      - name: Re-certify 1immo PII filter
+        env:
+          SOURCE_NAME: '1immo.ma'
+          SAMPLE_SIZE: '243'
+          OUTPUT_PREFIX: 'oneimmo-full-field-243-pii-recert'
+        run: npx tsx scripts/data/github-freeze-full-field-recovery.ts
+      - name: Assert PII blocked and read-only
+        run: |
+          set -euo pipefail
+          for f in domio-full-field-100-pii-recert.json oneimmo-full-field-243-pii-recert.json; do
+            test "$(jq -r '.database_access' "$f")" = "0"
+            test "$(jq -r '.database_writes' "$f")" = "0"
+          done
+          node - <<'NODE'
+          const fs=require('fs');
+          const files=['domio-full-field-100-pii-recert.jsonl','oneimmo-full-field-243-pii-recert.jsonl'];
+          const pii=(value)=>{
+            const s=String(value||'').replace(/\\u00a0/g,' ');
+            return /\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}\\b/i.test(s)
+              || /(?<!\\d)(?:\\+?212|0)\\s*[5-7](?:[\\s.\\-]?\\d){8}(?!\\d)/i.test(s)
+              || /\\b(?:t[eé]l(?:[eé]phone)?|gsm|whats\\s*app)\\s*[:\\-]?\\s*(?:\\+?212|0)?\\s*[5-7](?:[\\s.\\-]?\\d|\\.{2,}){2,}/i.test(s)
+              || /(?:wa\\.me|api\\.whatsapp\\.com)/i.test(s);
+          };
+          let bad=0;
+          for(const file of files){
+            for(const line of fs.readFileSync(file,'utf8').split(/\\r?\\n/).filter(Boolean)){
+              const row=JSON.parse(line);
+              for(const c of row.candidates||[]){
+                if(!['title','description'].includes(c.field)) continue;
+                if(pii(c.value)) bad++;
+              }
+            }
+          }
+          if(bad) throw new Error('PII-bearing title/description candidates='+bad);
+          console.log(JSON.stringify({pii_text_candidates:0}));
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: domio-full-field-100-pii-recert
+          path: |
+            domio-full-field-100-pii-recert.json
+            domio-full-field-100-pii-recert.jsonl
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        with:
+          name: oneimmo-full-field-243-pii-recert
+          path: |
+            oneimmo-full-field-243-pii-recert.json
+            oneimmo-full-field-243-pii-recert.jsonl
+          retention-days: 14
+
+  recert-promo-generic-title:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      FREEZE_JSONL_GZ: '.tmp/freeze/clean-corpus-v4.11-core.jsonl.gz'
+      FETCH_DELAY_MS: '250'
+      SOURCE_NAME: 'promoimmomarrakech.com'
+      SAMPLE_SIZE: '300'
+      OUTPUT_PREFIX: 'promo-full-field-300-title-recert'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Fetch canonical freeze
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/freeze
+          curl --fail --location --retry 3 -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' -H 'X-GitHub-Api-Version: 2022-11-28' "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/10910779576/zip" -o .tmp/freeze.zip
+          unzip -q .tmp/freeze.zip -d .tmp/freeze
+          echo "e7ac4bca2db34ad334ed7234cfb8be93fc9baca68a9694f5024989b5cc2bb953  .tmp/freeze/clean-corpus-v4.11-core.jsonl.gz" | sha256sum -c -
+      - name: Re-certify Promo generic title guard
+        run: npx tsx scripts/data/github-freeze-full-field-recovery.ts
+      - name: Assert generic title removed and read-only
+        run: |
+          test "$(jq -r '.database_access' promo-full-field-300-title-recert.json)" = "0"
+          test "$(jq -r '.database_writes' promo-full-field-300-title-recert.json)" = "0"
+          ! jq -r 'select(.candidates) | .candidates[] | select(.field=="title" and .state=="write_safe") | .value' promo-full-field-300-title-recert.jsonl | grep -Eix 'Agence immobilière à Marrakech'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: promo-full-field-300-title-recert
+          path: |
+            promo-full-field-300-title-recert.json
+            promo-full-field-300-title-recert.jsonl
+          retention-days: 14
