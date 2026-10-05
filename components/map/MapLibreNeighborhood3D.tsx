@@ -1,6 +1,21 @@
 "use client";
 
-import { Layers3, LocateFixed, Minus, Plus, Search } from "lucide-react";
+import {
+  Building2,
+  GraduationCap,
+  HeartPulse,
+  Landmark,
+  Layers3,
+  LocateFixed,
+  Minus,
+  ParkingCircle,
+  Plus,
+  Search,
+  ShoppingBag,
+  TramFront,
+  Trees,
+  UtensilsCrossed,
+} from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { AKARFINDER_MOROCCO_MAP_NAVY, territoryLightToneForKey } from "@/lib/map/akarfinder-territorial-style";
 import {
@@ -92,14 +107,61 @@ const CONTEXT_FOOTPRINT_SHADOW_LAYER_ID = "akarfinder-target-context-footprint-s
 const CONTEXT_FOOTPRINT_LINE_LAYER_ID = "akarfinder-target-context-footprint-line";
 const CONTEXT_FOOTPRINT_HIGHLIGHT_LAYER_ID = "akarfinder-target-context-footprint-highlight";
 
+type PoiVisualFamily =
+  | "education"
+  | "health"
+  | "mobility"
+  | "green-sport"
+  | "food-shopping"
+  | "services"
+  | "culture-worship"
+  | "orientation";
+
+function poiVisualFamily(category: LivingHereCategory): PoiVisualFamily {
+  switch (category) {
+    case "education": return "education";
+    case "health": return "health";
+    case "transport":
+    case "parking": return "mobility";
+    case "green_sport":
+    case "coast": return "green-sport";
+    case "food":
+    case "groceries":
+    case "shopping": return "food-shopping";
+    case "worship": return "culture-worship";
+    case "banking":
+    case "other": return "services";
+  }
+}
+
 const CATEGORY_META: Record<LivingHereCategory, { label: string; color: string }> = {
-  education: { label: "Écoles", color: "#2f80ed" }, groceries: { label: "Courses", color: "#7b61ff" },
-  health: { label: "Santé", color: "#df5a56" }, transport: { label: "Transports", color: "#2979d3" },
-  food: { label: "Cafés & restaurants", color: "#e8872d" }, green_sport: { label: "Parcs & sport", color: "#3c9a63" },
-  worship: { label: "Mosquées", color: "#2b8f7b" }, banking: { label: "Banques", color: "#667085" },
-  parking: { label: "Parking", color: "#4f6f8f" }, shopping: { label: "Shopping", color: "#8b5cf6" },
-  coast: { label: "Côte", color: "#3b82c4" }, other: { label: "Autres", color: "#6b7280" },
+  education: { label: "Écoles", color: "#0B63CE" },
+  groceries: { label: "Courses", color: "#527687" },
+  health: { label: "Santé", color: "#20516B" },
+  transport: { label: "Transports", color: "#123250" },
+  food: { label: "Cafés & restaurants", color: "#527687" },
+  green_sport: { label: "Parcs & sport", color: "#4B746F" },
+  worship: { label: "Mosquées", color: "#355C6F" },
+  banking: { label: "Banques", color: "#61798A" },
+  parking: { label: "Parking", color: "#123250" },
+  shopping: { label: "Shopping", color: "#527687" },
+  coast: { label: "Côte", color: "#4B746F" },
+  other: { label: "Autres", color: "#61798A" },
 };
+
+function PoiFamilyGlyph({ category }: { category: LivingHereCategory }) {
+  const props = { size: 13, strokeWidth: 2.15, "aria-hidden": true as const };
+  switch (poiVisualFamily(category)) {
+    case "education": return <GraduationCap {...props} />;
+    case "health": return <HeartPulse {...props} />;
+    case "mobility": return category === "parking" ? <ParkingCircle {...props} /> : <TramFront {...props} />;
+    case "green-sport": return <Trees {...props} />;
+    case "food-shopping": return category === "food" ? <UtensilsCrossed {...props} /> : <ShoppingBag {...props} />;
+    case "culture-worship": return <Landmark {...props} />;
+    case "services": return <Building2 {...props} />;
+    case "orientation": return <LocateFixed {...props} />;
+  }
+}
 
 function collectBoundaryPositions(value: unknown, output: MutablePosition[]): void {
   if (!Array.isArray(value)) return;
@@ -1060,6 +1122,7 @@ export function MapLibreNeighborhood3D({
       data-maplibre-polish={isMaarifTargetPilot ? "material-relief-v3" : "default"}
       data-maplibre-street-language={isMaarifTargetPilot ? "architectural-paper-v2" : "default"}
       data-maplibre-label-policy={isMaarifTargetPilot ? "akarfinder-owned" : "basemap-default"}
+      data-maplibre-poi-language={isMaarifTargetPilot ? "akarfinder-duotone-v1" : "default"}
       data-maplibre-context-label-policy={isMaarifTargetPilot ? "suppressed-at-quarter-zoom" : "default"}
       data-maplibre-boundary-render={isMaarifTargetPilot && boundaryGeometry ? "administrative-relief" : "default"}
       data-maplibre-context-state={contextState}
@@ -1115,10 +1178,13 @@ export function MapLibreNeighborhood3D({
                 className="maplibre-spike-poi-label"
                 data-label-collapsed={collapseLabel ? "true" : "false"}
                 data-poi-category={anchor.category}
+                data-poi-family={poiVisualFamily(anchor.category)}
                 style={{ left: screen.x, top: screen.y }}
               >
                 <span lang={arabic ? "ar" : undefined} dir={arabic ? "rtl" : "auto"}>{anchor.name}</span>
-                <i style={{ background: meta.color }} />
+                <i className="maplibre-spike-poi-glyph" style={{ color: meta.color }}>
+                  <PoiFamilyGlyph category={anchor.category} />
+                </i>
               </div>
             );
           })}
@@ -1132,7 +1198,7 @@ export function MapLibreNeighborhood3D({
                 data-landmark-tier={landmark.tier}
                 style={{ left: screen.x, top: screen.y }}
               >
-                <i aria-hidden="true" />
+                <i aria-hidden="true"><Landmark size={13} strokeWidth={2.25} /></i>
                 <span lang={isArabicText(landmark.name) ? "ar" : undefined} dir={isArabicText(landmark.name) ? "rtl" : "auto"}>{landmark.name}</span>
               </div>
             );
