@@ -47,12 +47,18 @@ jobs:
           OUTPUT_DIR: data/recovery/parser-readiness-v2
         run: node scripts/data/audit-github-freeze-parser-readiness-v2.mjs
 
-      - name: Assert freeze integrity
+      - name: Assert freeze integrity and optional enrichment
         run: |
           set -euo pipefail
           summary=data/recovery/parser-readiness-v2/parser-readiness-v2-summary.json
           test "$(jq -r '.total.rows' "$summary")" = "226286"
           test "$(jq -r '.total.unique_urls' "$summary")" = "226286"
+          test "$(jq -r '.total.deep_unique_http_200_urls' "$summary")" = "8487"
+          test "$(jq -r '.total.mandatory_complete_rows' "$summary")" = "1191"
+          test "$(jq -r '.existing_field_coverage.city' "$summary")" = "8454"
+          test "$(jq -r '.existing_field_coverage.district' "$summary")" = "6296"
+          test "$(jq -r '.existing_field_coverage.price_mad' "$summary")" = "3770"
+          test "$(jq -r '.existing_field_coverage.surface_m2' "$summary")" = "4567"
           test "$(jq -r '.database_access' "$summary")" = "0"
           test "$(jq -r '.database_writes' "$summary")" = "0"
           test "$(jq -r '.structured_route_recoverable.city' "$summary")" = "61547"
