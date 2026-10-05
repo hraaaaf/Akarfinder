@@ -72,3 +72,23 @@ At street-level zoom, reveal more local structure without changing the AkarFinde
 ## Next exact
 
 Inspect available Maârif street/road source coverage and select the strongest truth-safe pilot for the Rue/Proximité TARGET.
+
+
+## Rue / Proximité closure — 2026-10-05
+
+Human Gate Product Owner: **APPROVED provisionally**.
+
+Validated HEAD:
+`6c08d01974eaf2f5defe8dc5825f5727b871260c`
+
+Evidence:
+- Rue AFTER `36775545052` SUCCESS
+- artifact `11125453378`
+- digest `sha256:6c0284b179e3dacb2c74413e3cbdc0c8d0d1009558a225799ff42e9cc0be3bc5`
+- strict internal score `9.2/10`
+- 4 viewports validated
+- no merge
+- no Vercel
+
+Open visual debt before final Vivre Ici closeout:
+- replace the current Maârif neighborhood photo with a more premium/representative visual.

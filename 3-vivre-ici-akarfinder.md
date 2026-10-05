@@ -1,6 +1,6 @@
 # 3 — Vivre Ici AkarFinder
 
-**Statut : ACTIVE — ROADMAP CANONIQUE V2 / PR #1090 DRAFT / L3 QUARTIER HUMAN GATE APPROVED**  
+**Statut : ACTIVE — ROADMAP CANONIQUE V2 / PR #1090 DRAFT / L3 QUARTIER + RUE HUMAN GATES APPROVED**  
 **Dernière mise à jour : 2026-09-30**  
 **Repo : `hraaaaf/Akarfinder`**  
 **Branche active : `feat/akar-map-quartier-target-couche3`**  
@@ -699,6 +699,33 @@ Aucun score automatique ne remplace le human gate.
 ---
 
 # 7. ÉTAT FACTUEL COURANT
+
+## Rue / Proximité — HUMAN GATE APPROVED
+
+Human Gate Product Owner : **APPROVED — provisoire**, le 2026-10-05.
+
+Exact validated HEAD :
+`6c08d01974eaf2f5defe8dc5825f5727b871260c`
+
+Preuves :
+- score visuel interne sévère : **9.2/10** ;
+- Rue AFTER : run **36775545052** ✅ ;
+- artifact **11125453378** ;
+- digest `sha256:6c0284b179e3dacb2c74413e3cbdc0c8d0d1009558a225799ff42e9cc0be3bc5` ;
+- Multi-city **36775544854** ✅ ;
+- Casablanca Visual **36775545113** ✅ ;
+- N3 **36775544826** ✅ ;
+- P1A.6 **36775544745** ✅ ;
+- 390×844 / 430×932 / 768×900 / 1280×900 validés ;
+- `architectural-paper-v2` ;
+- aucun merge ;
+- aucun déploiement Vercel.
+
+Dette visuelle explicitement ouverte :
+- **remplacer la photo actuelle du quartier Maârif** par une image plus premium et représentative ;
+- cette dette n'annule pas le Human Gate Rue, mais doit être traitée avant le closeout final Vivre Ici.
+
+---
 
 ## L3 Quartier Maârif — HUMAN GATE APPROVED
 
