@@ -21,6 +21,10 @@ if (actualSha !== expectedSha) {
   throw new Error('freeze sha mismatch: ' + actualSha);
 }
 
+function present(value) {
+  return value !== null && value !== undefined && value !== '';
+}
+
 function pathParts(url) {
   try {
     return new URL(url).pathname
@@ -37,12 +41,7 @@ function structuredRouteCandidates(row) {
   const p = pathParts(row.canonical_url);
   const out = {};
 
-  if (
-    source === 'agenz.ma' &&
-    p.length >= 6 &&
-    p[1] === 'annonces' &&
-    p[2].startsWith('immo-')
-  ) {
+  if (source === 'agenz.ma' && p.length >= 6 && p[1] === 'annonces' && p[2].startsWith('immo-')) {
     out.city = p[2].slice(5);
     const split = p[3].indexOf('-');
     if (split > 0) {
@@ -52,45 +51,22 @@ function structuredRouteCandidates(row) {
       if (propertyType) out.property_type = propertyType.replace(/s$/, '');
     }
     if (p[4] && !/^\d+$/.test(p[4])) out.district = p[4];
-  } else if (
-    source === 'marocimmo.com' &&
-    p.length >= 6 &&
-    ['fr', 'en', 'ar'].includes(p[0])
-  ) {
+  } else if (source === 'marocimmo.com' && p.length >= 6 && ['fr', 'en', 'ar'].includes(p[0])) {
     if (['vente', 'location'].includes(p[1])) out.transaction_type = p[1];
     out.property_type = p[2];
     out.city = p[3];
     out.district = p[4];
-  } else if (
-    source === 'domio.ma' &&
-    p.length >= 5 &&
-    ['fr', 'en', 'ar'].includes(p[0])
-  ) {
+  } else if (source === 'domio.ma' && p.length >= 5 && ['fr', 'en', 'ar'].includes(p[0])) {
     out.property_type = p[1];
     if (['louer', 'vendre'].includes(p[2])) out.transaction_type = p[2];
     out.city = p[3];
-  } else if (
-    source === 'mouldar.com' &&
-    p.length >= 6 &&
-    ['fr', 'en', 'ar'].includes(p[0])
-  ) {
-    const tx = {
-      buy: 'sale',
-      achat: 'sale',
-      rent: 'rent',
-      location: 'rent',
-    }[p[1]];
+  } else if (source === 'mouldar.com' && p.length >= 6 && ['fr', 'en', 'ar'].includes(p[0])) {
+    const tx = { buy: 'sale', achat: 'sale', rent: 'rent', location: 'rent' }[p[1]];
     if (tx) out.transaction_type = tx;
     out.property_type = p[2];
     out.city = p[3];
-    if (!['all-the-city', 'toute-la-ville', 'all-city'].includes(p[4])) {
-      out.district = p[4];
-    }
-  } else if (
-    source === 'kawtarimmobilier.com' &&
-    p.length >= 4 &&
-    ['vente', 'location'].includes(p[1])
-  ) {
+    if (!['all-the-city', 'toute-la-ville', 'all-city'].includes(p[4])) out.district = p[4];
+  } else if (source === 'kawtarimmobilier.com' && p.length >= 4 && ['vente', 'location'].includes(p[1])) {
     out.city = p[0];
     out.transaction_type = p[1];
     out.property_type = p[2];
@@ -102,11 +78,7 @@ function structuredRouteCandidates(row) {
   ) {
     out.transaction_type = p[1];
     out.city = p[2];
-  } else if (
-    source === 'masaken.ma' &&
-    p.length >= 4 &&
-    p[1] === 'immobilier-maroc'
-  ) {
+  } else if (source === 'masaken.ma' && p.length >= 4 && p[1] === 'immobilier-maroc') {
     const segment = p[2];
     const transactions = [
       ['vente-', 'sale'],
@@ -118,7 +90,6 @@ function structuredRouteCandidates(row) {
       'appartement','apartment','terrain','land','villa','maison','house',
       'bureau','office','commerce','commercial','riad','ferme','farm',
     ];
-
     for (const [prefix, tx] of transactions) {
       if (!segment.startsWith(prefix)) continue;
       const remainder = segment.slice(prefix.length);
@@ -132,11 +103,7 @@ function structuredRouteCandidates(row) {
       }
       break;
     }
-  } else if (
-    source === 'soukimmobilier.com' &&
-    p.length >= 4 &&
-    ['fr', 'ar', 'en'].includes(p[0])
-  ) {
+  } else if (source === 'soukimmobilier.com' && p.length >= 4 && ['fr', 'ar', 'en'].includes(p[0])) {
     const notCity = ['sale', 'vente', 'location', 'rent', 'buy', 'achat'];
     if (!notCity.includes(p[1]) && !/^\d+$/.test(p[1])) {
       out.city = p[1];
@@ -147,6 +114,12 @@ function structuredRouteCandidates(row) {
   return out;
 }
 
+const trackedFields = [
+  'title','description','published_at','source_listing_id','address',
+  'city','district','price_mad','surface_m2',
+];
+const requiredFields = ['canonical_url','city','district','price_mad','surface_m2'];
+
 const total = {
   rows: 0,
   unique_urls: 0,
@@ -155,8 +128,10 @@ const total = {
   expired: 0,
   non_real_estate: 0,
   deep_unique_http_200_urls: 0,
+  mandatory_complete_rows: 0,
 };
 
+const existingFieldCoverage = Object.fromEntries(trackedFields.map((field) => [field, 0]));
 const source = {};
 const uniqueUrls = new Set();
 const routeCandidateCounts = {
@@ -181,15 +156,17 @@ for await (const line of rl) {
   if (row.classification === 'KEEP') total.keep += 1;
   if (row.classification === 'EXPIRED') total.expired += 1;
   if (row.classification === 'NON_REAL_ESTATE') total.non_real_estate += 1;
-  if ((row.deep_http_statuses || []).includes(200)) {
-    total.deep_unique_http_200_urls += 1;
-  }
+  if ((row.deep_http_statuses || []).includes(200)) total.deep_unique_http_200_urls += 1;
+  if (requiredFields.every((field) => present(row[field]))) total.mandatory_complete_rows += 1;
+  for (const field of trackedFields) if (present(row[field])) existingFieldCoverage[field] += 1;
 
   source[row.source_domain] ||= {
     rows: 0,
     scope_eligible: 0,
     keep: 0,
     deep_http_200_urls: 0,
+    mandatory_complete_rows: 0,
+    existing_field_coverage: Object.fromEntries(trackedFields.map((field) => [field, 0])),
     structured_route_candidates: {},
   };
   const src = source[row.source_domain];
@@ -197,6 +174,8 @@ for await (const line of rl) {
   if (row.scope_eligible) src.scope_eligible += 1;
   if (row.classification === 'KEEP') src.keep += 1;
   if ((row.deep_http_statuses || []).includes(200)) src.deep_http_200_urls += 1;
+  if (requiredFields.every((field) => present(row[field]))) src.mandatory_complete_rows += 1;
+  for (const field of trackedFields) if (present(row[field])) src.existing_field_coverage[field] += 1;
 
   const candidates = structuredRouteCandidates(row);
   for (const [field, value] of Object.entries(candidates)) {
@@ -227,8 +206,9 @@ const summary = {
   database_access: 0,
   database_writes: 0,
   core_schema_note:
-    'The canonical core freeze contains URL/classification/scope/deep-observation metadata, not listing business fields. Route candidates are recoverable evidence, not parser-miss proof.',
+    'The canonical freeze has a universal URL/crawl-evidence core plus optional business-field enrichment on the deep-observed subset. Structured-route candidates outside explicit field evidence are recoverable_from_url, not parser_miss proof.',
   total,
+  existing_field_coverage: existingFieldCoverage,
   structured_route_recoverable: routeCandidateCounts,
   source_priority: sourcePriority,
 };
@@ -245,6 +225,15 @@ fs.writeFileSync(
 
 console.log(JSON.stringify(summary, null, 2));
 
-if (total.rows !== 226286 || total.unique_urls !== 226286) {
+if (
+  total.rows !== 226286 ||
+  total.unique_urls !== 226286 ||
+  total.deep_unique_http_200_urls !== 8487 ||
+  total.mandatory_complete_rows !== 1191 ||
+  existingFieldCoverage.city !== 8454 ||
+  existingFieldCoverage.district !== 6296 ||
+  existingFieldCoverage.price_mad !== 3770 ||
+  existingFieldCoverage.surface_m2 !== 4567
+) {
   process.exitCode = 2;
 }
