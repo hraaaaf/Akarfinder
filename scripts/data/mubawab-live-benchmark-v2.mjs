@@ -73,7 +73,7 @@ function plausibleDistrict(v){
   return true;
 }
 function stripCity(candidate,city){
-  let c=clean(candidate).replace(/^[,.;:–—-]+|[,.;:–—-]+$/g,'');
+  let c=clean(candidate).replace(/^[,.;:–—-]+|[,.;:–—-]+$/g,'').replace(/^(?:à|a|in)\s+/i,'');
   if(!city)return c||null;
   const nc=normalize(c),ncity=normalize(city);
   if(nc===ncity)return null;
