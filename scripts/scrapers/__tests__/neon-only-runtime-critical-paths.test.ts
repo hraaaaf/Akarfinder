@@ -64,6 +64,7 @@ test("SEO inventory gates fail closed before any Supabase call when Neon is prim
   for (const path of [
     "lib/seo/eligibility-read-model.ts",
     "lib/seo/neighborhood-indexability.ts",
+    "lib/seo/market-metric-read-model.ts",
   ]) {
     const source = await readFile(path, "utf8");
     const guard = source.indexOf('getDbProvider() === "neon"');
