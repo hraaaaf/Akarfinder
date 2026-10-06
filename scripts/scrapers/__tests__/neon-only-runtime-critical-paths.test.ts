@@ -47,6 +47,7 @@ test("Market runtime reads the existing Neon listing store, not legacy geo/thin-
   assert.match(helper, /public\.listing_sources/);
   assert.doesNotMatch(cityReader + rabatReader, /geo_entities|geo_resolution_events|thin_index_search_documents|source_offer_seeds/);
   assert.match(helper, /fresh:\s*false/);
+  assert.match(helper, /toISOString\(\)/);
 });
 
 
