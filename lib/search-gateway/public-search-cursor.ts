@@ -161,6 +161,13 @@ function mapAndDiversifyWithinBusinessLanes(rows: PublicSearchRpcRow[]): SearchG
 }
 
 export async function searchPublicRepresentations(input: PublicSearchInput): Promise<PublicSearchPage> {
+  const capability = await queryNeonRows<{ available: boolean }>(
+    "SELECT to_regproc('public.search_public_representations_v2') IS NOT NULL AS available",
+  );
+  if (!capability[0]?.available) {
+    throw new Error("public_search_index_unavailable");
+  }
+
   const cursor = decodePublicSearchCursor(input.cursor);
   const pageSize = Math.max(1, Math.min(Math.trunc(input.limit ?? DEFAULT_PAGE_SIZE), MAX_PAGE_SIZE));
   const rows = await queryNeonRows<PublicSearchRpcRow>(
