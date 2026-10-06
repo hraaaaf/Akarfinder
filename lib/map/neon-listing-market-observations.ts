@@ -26,7 +26,7 @@ type NeonMarketListingRow = {
   transaction_type: string | null;
   price_mad: number | null;
   surface_m2: number | null;
-  updated_at: string | null;
+  updated_at: string | Date | null;
   source_name: string | null;
   listing_url: string | null;
   source_url: string | null;
@@ -45,6 +45,12 @@ function normalizeTransaction(value: unknown): MarketTransaction | null {
   if (["sale", "buy", "new", "achat", "vente"].includes(normalized)) return "sale";
   if (["rent", "location", "louer"].includes(normalized)) return "rent";
   return null;
+}
+
+function normalizedTimestamp(value: string | Date | null): string | null {
+  if (value == null) return null;
+  const date = value instanceof Date ? value : new Date(value);
+  return Number.isNaN(date.getTime()) ? String(value) : date.toISOString();
 }
 
 function sourceDomain(row: NeonMarketListingRow): string {
@@ -185,7 +191,7 @@ export async function readNeonListingMarketObservations(
       districtSlug: district.slug,
       transaction,
       canonicalKey,
-      updatedAt: row.updated_at ? String(row.updated_at) : null,
+      updatedAt: normalizedTimestamp(row.updated_at),
       pricePerM2,
       // property_listings has no certified freshness state. Keep this
       // deliberately unconfirmed rather than inferring freshness from timestamps.
