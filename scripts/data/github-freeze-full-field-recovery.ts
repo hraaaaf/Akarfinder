@@ -6,6 +6,7 @@ import crypto from "node:crypto";
 import { load } from "cheerio";
 import { extractDetail } from "../scrapers/utils/extract.js";
 import { extractStrictDetailPrice } from "../scrapers/price-detail-enrichment-v2.js";
+import { resolveMubawabLocation } from "./mubawab-location-v2.js";
 
 async function main(){
 const USER_AGENT="AkarFinderFullFieldRecovery/1.0";
@@ -150,8 +151,9 @@ for(const row of sample){
     const strictPrice=extractStrictDetailPrice(html,transaction);
     add(c,row,"price_mad",strictPrice,strictPrice!=null?"high":"missing","extractStrictDetailPrice",strictPrice!=null);
     if(!containsContactPii(d.description_snippet)) add(c,row,"description",d.description_snippet,d._confidence.description,"extractDetail:description",d._confidence.description==="high");
-    add(c,row,"city",d.city,d._confidence.city,"extractDetail:city",d._confidence.city==="high");
-    add(c,row,"district",d.district,d._confidence.district,"extractDetail:district",d._confidence.district==="high");
+    const location=sourceName==="mubawab.ma"?resolveMubawabLocation(html,d,title):{city:d.city,district:d.district,confidence:d._confidence.district,evidence:["extractDetail:district"]};
+    add(c,row,"city",location.city,d._confidence.city,"extractDetail:city",d._confidence.city==="high");
+    add(c,row,"district",location.district,location.confidence,location.evidence.join("+")||"extractDetail:district",location.confidence==="high");
   }
   if(!softPage){
   const s=d.surface_raw?.match(/([0-9]+(?:[.,][0-9]+)?)/)?.[1];
