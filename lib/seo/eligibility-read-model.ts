@@ -1,6 +1,7 @@
 // SEO-ELIGIBILITY-READ-MODEL-V1
 // Server-only by contract: uses the Supabase service-role client. Never import from client components.
 
+import { getDbProvider } from "@/lib/db/provider";
 import { getSupabaseServerClient } from "@/lib/db/supabase-client";
 import { getCitySearchVariants } from "@/lib/geo/geo-entity-registry";
 import {
@@ -38,6 +39,7 @@ type SourceEvidenceRow = {
 export async function getSeoInventoryEligibility(scope: SeoInventoryScope): Promise<SeoEligibilityDecision> {
   const cityVariants = getCitySearchVariants(scope.city).filter(Boolean);
   if (cityVariants.length === 0) return unavailableSeoInventoryDecision();
+  if (getDbProvider() === "neon") return unavailableSeoInventoryDecision();
 
   try {
     const supabase = getSupabaseServerClient();
