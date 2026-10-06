@@ -1,4 +1,4 @@
-import { getSupabaseServerClient } from "@/lib/db/supabase-client";
+import { getNeonReadClient } from "@/lib/db/neon-read-client";
 import { RABAT_MARKET_ZONES_SHADOW } from "@/lib/geo/rabat-market-zones-shadow";
 import { buildMarketZoneMetricRow } from "@/lib/map/rabat-market-zone-metrics";
 import { evaluateMetricReliability } from "@/lib/map/market-metric-reliability";
@@ -67,7 +67,7 @@ function canonicalDedupKey(row: any): string {
 }
 
 export async function readRabatMarketIntelligenceMetrics(): Promise<readonly IntelligenceMetricInput[]> {
-  const db: any = getSupabaseServerClient();
+  const db: any = getNeonReadClient();
 
   const { data: cityRows, error: cityError } = await db
     .from("geo_entities")
