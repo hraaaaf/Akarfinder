@@ -7,6 +7,7 @@ import { load } from "cheerio";
 import { extractDetail } from "../scrapers/utils/extract.js";
 import { extractStrictDetailPrice } from "../scrapers/price-detail-enrichment-v2.js";
 import { resolveMubawabLocation } from "./mubawab-location-v2.js";
+import { parseMubawabRoute } from "./mubawab-url-parser-v2.mjs";
 
 async function main(){
 const USER_AGENT="AkarFinderFullFieldRecovery/1.0";
@@ -27,6 +28,7 @@ for await(const line of rl){
   const row=JSON.parse(line);
   if(String(row.source_domain||"").toLowerCase()!==sourceName) continue;
   if(row.classification!=="KEEP"||row.scope_eligible!==true) continue;
+  if(sourceName==="mubawab.ma"&&!parseMubawabRoute(row.canonical_url)) continue;
   rows.push(row);
 }
 rows.sort((a,b)=>rank(a.canonical_url).localeCompare(rank(b.canonical_url)));
