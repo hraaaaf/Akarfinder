@@ -64,11 +64,11 @@ jobs:
           const counts=Object.fromEntries(fields.map(f=>[f,0]));
           let complete=0;
           for(const row of rows){
-            const present=new Set((row.candidates||[]).filter(c=>c.state!=='contradicted' && c.value!==null && c.value!==undefined && c.value!=='').map(c=>c.field));
-            for(const f of fields) if(present.has(f)) counts[f]++;
-            if(fields.every(f=>present.has(f))) complete++;
+            const certified=new Set((row.candidates||[]).filter(c=>c.state==='write_safe' && c.value!==null && c.value!==undefined && c.value!=='').map(c=>c.field));
+            for(const f of fields) if(certified.has(f)) counts[f]++;
+            if(fields.every(f=>certified.has(f))) complete++;
           }
-          const out={sample_size:rows.length,url:rows.length,...counts,five_field_complete:complete,five_field_complete_pct:rows.length?Number((complete*100/rows.length).toFixed(2)):0};
+          const out={schema_version:'AKARFINDER_MUBAWAB_FIVE_FIELD_CERTIFIED_V2',semantics:'write_safe_only',sample_size:rows.length,url:rows.length,...counts,five_field_complete:complete,five_field_complete_pct:rows.length?Number((complete*100/rows.length).toFixed(2)):0};
           fs.writeFileSync('mubawab-five-field-coverage.json',JSON.stringify(out,null,2)+'\n');
           console.log(JSON.stringify(out,null,2));
           NODE
