@@ -8,6 +8,7 @@ const CRITICAL_RUNTIME_FILES = [
   "lib/search-gateway/seed-thin-index.ts",
   "lib/map/city-market-intelligence-live.ts",
   "lib/map/rabat-market-intelligence-live.ts",
+  "lib/seller/owner-listing-projection.ts",
 ] as const;
 
 test("Neon-only critical Search/Market paths do not import or reference Supabase", async () => {
