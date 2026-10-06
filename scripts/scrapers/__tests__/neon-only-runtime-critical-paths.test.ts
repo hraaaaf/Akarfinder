@@ -29,3 +29,9 @@ test("Neon runtime read adapter stays read-only", async () => {
   assert.match(source, /SELECT /);
   assert.doesNotMatch(source, /\b(?:INSERT|UPDATE|DELETE|UPSERT|ALTER|DROP|CREATE)\b/i);
 });
+
+
+test("Neon fallback requests public-only rows", async () => {
+  const source = await readFile("lib/search/database-search.ts", "utf8");
+  assert.ok(source.includes("public_search_only: true"));
+});
