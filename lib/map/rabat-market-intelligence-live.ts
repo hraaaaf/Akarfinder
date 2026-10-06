@@ -1,8 +1,5 @@
 import { RABAT_MARKET_ZONES_SHADOW } from "@/lib/geo/rabat-market-zones-shadow";
-import {
-  dedupeObservedMarketListings,
-  type MarketTransaction,
-} from "@/lib/map/city-market-intelligence";
+import { dedupeObservedMarketListings } from "@/lib/map/city-market-intelligence";
 import { buildMarketZoneMetricRow } from "@/lib/map/rabat-market-zone-metrics";
 import { evaluateMetricReliability } from "@/lib/map/market-metric-reliability";
 import { readNeonListingMarketObservations } from "@/lib/map/neon-listing-market-observations";
@@ -49,7 +46,7 @@ export async function readRabatMarketIntelligenceMetrics(): Promise<readonly Int
     const zone = zoneById.get(zoneId);
     if (!zone) throw new Error(`C3 missing market zone record ${zoneId}`);
 
-    for (const transaction of ["sale", "rent"] as const satisfies readonly MarketTransaction[]) {
+    for (const transaction of ["sale", "rent"] as const) {
       const scoped = rows.filter(
         (row) => row.zoneId === zoneId && row.transaction === transaction,
       );
@@ -79,7 +76,7 @@ export async function readRabatMarketIntelligenceMetrics(): Promise<readonly Int
       output.push({
         ...base,
         priceReliability: reliability.level,
-        freshnessStatus: scoped.length === 0 ? "unconfirmed" : "unconfirmed",
+        freshnessStatus: "unconfirmed",
         snapshotVersion,
       });
     }
