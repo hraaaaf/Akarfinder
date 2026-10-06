@@ -11,7 +11,7 @@ import {
   SEARCH_GATEWAY_CACHE_PROVIDER,
   type SearchGatewayProviderIssueClassification,
 } from "@/lib/search-gateway-cache/types";
-import { createSearchGatewayCacheStore } from "@/lib/search-gateway-cache/supabase-cache-store";
+import { NoopSearchGatewayCacheStore } from "@/lib/search-gateway-cache/noop-cache-store";
 import { searchPublicRepresentations } from "@/lib/search-gateway/public-search-cursor";
 import { runSearchGatewayProviderSearch } from "@/lib/search-gateway/search-gateway-runner";
 import { getEnabledSearchGatewaySources } from "@/lib/search-gateway/search-gateway-sources";
@@ -139,7 +139,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const legacySeedInput = { q: query, city, propertyType, intent, maxResults: limit };
   const searchApiKey = process.env.SEARCH_API_KEY;
   const searchApiEndpoint = process.env.SEARCH_API_ENDPOINT || "https://api.search.com/query";
-  const cacheStore = createSearchGatewayCacheStore();
+  const cacheStore = new NoopSearchGatewayCacheStore("neon_cache_store_pending");
 
   let gatewayResponse: SearchGatewayRouteResponse;
 
