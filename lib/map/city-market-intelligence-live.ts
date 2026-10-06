@@ -1,4 +1,4 @@
-import { getSupabaseServerClient } from "@/lib/db/supabase-client";
+import { getNeonReadClient } from "@/lib/db/neon-read-client";
 import {
   GEO_NEIGHBORHOODS,
   resolveCityEntity,
@@ -134,7 +134,7 @@ export async function readCityMarketIntelligenceMetrics(
   const canonicalTargets = buildCanonicalTargets(city.slug);
   if (!canonicalTargets.length) return [];
 
-  const db: any = getSupabaseServerClient();
+  const db: any = getNeonReadClient();
   const { data: cityRows, error: cityError } = await db
     .from("geo_entities")
     .select("id,slug,entity_type,validation_status")
