@@ -5,6 +5,7 @@ import readline from "node:readline";
 import crypto from "node:crypto";
 import { load } from "cheerio";
 import { extractDetail } from "../scrapers/utils/extract.js";
+import { extractStrictDetailPrice } from "../scrapers/price-detail-enrichment-v2.js";
 
 async function main(){
 const USER_AGENT="AkarFinderFullFieldRecovery/1.0";
@@ -103,7 +104,7 @@ function containsContactPii(value:string|null|undefined){
     || /(?:wa\.me|api\.whatsapp\.com)/i.test(s);
 }
 const existingMap:Record<string,string[]>={
-  property_type:["property_type"],transaction_type:["transaction_type"],
+  property_type:["property_type"],transaction_type:["transaction_type"],price_mad:["normalized_price_mad","price_mad"],
   title:["title"],description:["description","description_snippet"],city:["city"],district:["district"],
   surface_m2:["surface_m2"],rooms_count:["rooms_count"],bedrooms_count:["bedrooms_count","bedrooms"],bathrooms_count:["bathrooms_count","bathrooms"],
   built_surface_m2:["built_surface_m2"],plot_surface_m2:["plot_surface_m2"],condition:["condition"],property_age_range:["property_age_range"],
@@ -145,6 +146,9 @@ for(const row of sample){
   if(!softPage) add(c,row,"property_type",detectPropertyType([title,desc].filter(Boolean).join(" ")),"high","explicit:title_or_description_property_type",true);
   add(c,row,"transaction_type",detectTransaction(url,softPage?"":[title,desc].filter(Boolean).join(" ")),"high","explicit:url_or_primary_transaction",true);
   if(!softPage){
+    const transaction=detectTransaction(url,[title,desc].filter(Boolean).join(" "));
+    const strictPrice=extractStrictDetailPrice(html,transaction);
+    add(c,row,"price_mad",strictPrice,strictPrice!=null?"high":"missing","extractStrictDetailPrice",strictPrice!=null);
     if(!containsContactPii(d.description_snippet)) add(c,row,"description",d.description_snippet,d._confidence.description,"extractDetail:description",d._confidence.description==="high");
     add(c,row,"city",d.city,d._confidence.city,"extractDetail:city",d._confidence.city==="high");
     add(c,row,"district",d.district,d._confidence.district,"extractDetail:district",d._confidence.district==="high");
@@ -206,7 +210,7 @@ const summary={
  review_fields:results.flatMap(x=>x.candidates).filter((x:any)=>x.state==="review").length,
  contradicted_fields:results.flatMap(x=>x.candidates).filter((x:any)=>x.state==="contradicted").length,
  database_access:0,database_writes:0,
- note:"Price and transaction strict recovery remain governed by the certified semantic recovery pipeline; this pass expands non-price canonical fields."
+ note:"Read-only full-field recovery includes strict detail price extraction; certification still requires freshness, all five mandatory fields, provenance validation, and deduplication."
 };
 await writeFile(outputPrefix+".json",JSON.stringify(summary,null,2)+"\n");
 await writeFile(outputPrefix+".jsonl",results.map(x=>JSON.stringify(x)).join("\n")+"\n");
