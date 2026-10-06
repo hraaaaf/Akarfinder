@@ -673,15 +673,15 @@ jobs:
           const fs=require('fs');
           const files=['domio-full-field-100-pii-recert.jsonl','oneimmo-full-field-243-pii-recert.jsonl'];
           const pii=(value)=>{
-            const s=String(value||'').replace(/\\u00a0/g,' ');
-            return /\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}\\b/i.test(s)
-              || /(?<!\\d)(?:\\+?212|0)\\s*[5-7](?:[\\s.\\-]?\\d){8}(?!\\d)/i.test(s)
-              || /\\b(?:t[eé]l(?:[eé]phone)?|gsm|whats\\s*app)\\s*[:\\-]?\\s*(?:\\+?212|0)?\\s*[5-7](?:[\\s.\\-]?\\d|\\.{2,}){2,}/i.test(s)
-              || /(?:wa\\.me|api\\.whatsapp\\.com)/i.test(s);
+            const s=String(value||'').replace(/\u00a0/g,' ');
+            return /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i.test(s)
+              || /(?<!\d)(?:\+?212|0)\s*[5-7](?:[\s.\-]?\d){8}(?!\d)/i.test(s)
+              || /\b(?:t[eé]l(?:[eé]phone)?|gsm|whats\s*app)\s*[:\-]?\s*(?:\+?212|0)?\s*[5-7](?:[\s.\-]?\d|\.{2,}){2,}/i.test(s)
+              || /(?:wa\.me|api\.whatsapp\.com)/i.test(s);
           };
           let bad=0;
           for(const file of files){
-            for(const line of fs.readFileSync(file,'utf8').split(/\\r?\\n/).filter(Boolean)){
+            for(const line of fs.readFileSync(file,'utf8').split(/\r?\n/).filter(Boolean)){
               const row=JSON.parse(line);
               for(const c of row.candidates||[]){
                 if(!['title','description'].includes(c.field)) continue;
