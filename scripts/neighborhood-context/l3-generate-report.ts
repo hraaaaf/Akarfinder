@@ -22,13 +22,34 @@ async function main() {
     total_anchors: models.reduce((sum, model) => sum + model.anchor_count, 0),
     unique_pois: new Set(models.flatMap((model) => model.anchors.map((anchor) => anchor.poi_id))).size,
   };
+  const maarif = models.find((model) => model.canonical_neighborhood_id === "district_casablanca_maarif");
+  const expiredLegacyModels = models.filter((model) => model.canonical_neighborhood_id !== "district_casablanca_maarif");
+  const sourceModes = Array.from(new Set(models.map((model) => model.source.mode))).sort();
+  const truthGate = {
+    maarif_source_current: maarif?.source.mode === "maarif-couche2-osm-refresh",
+    maarif_partial_four: maarif?.coverage_status === "partial" && maarif.anchor_count === 4,
+    maarif_truth_safe_wording: Boolean(
+      maarif?.anchors.every((anchor) =>
+        anchor.relation === "near_certified_reference"
+        && anchor.territorial_wording === "Autour du repère quartier",
+      ),
+    ),
+    legacy_expired_fail_closed: expiredLegacyModels.every((model) =>
+      model.anchor_count === 0 && model.coverage_status === "unavailable",
+    ),
+  };
   const report = {
     schema: "NEIGHBORHOOD_CONTEXT_L3_READ_MODEL_REPORT_V1",
     generated_at: now.toISOString(),
-    ok: findings.length === 0 && models.length === 6 && summary.total_anchors >= 5,
-    source_mode: "ann-l5-certified-seed",
+    ok:
+      findings.length === 0
+      && models.length === 6
+      && Object.values(truthGate).every(Boolean),
+    source_mode: sourceModes.length === 1 ? sourceModes[0] : "mixed-versioned-runtime-sources",
+    source_modes: sourceModes,
     network_in_render_path: false,
     summary,
+    truth_gate: truthGate,
     findings,
     models,
   };

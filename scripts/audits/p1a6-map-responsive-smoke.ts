@@ -23,6 +23,26 @@ type Finding = { route: string; viewport: string; check: string; detail: string 
 async function main() {
   mkdirSync(outputDir, { recursive: true });
   const findings: Finding[] = [];
+
+  try {
+    const nationalApiResponse = await fetch(`${baseUrl}/api/geo/national-territories`);
+    if (!nationalApiResponse.ok) {
+      findings.push({
+        route: "/api/geo/national-territories",
+        viewport: "preflight",
+        check: "national-territories-api",
+        detail: `Unexpected status ${nationalApiResponse.status}`,
+      });
+    }
+  } catch (error) {
+    findings.push({
+      route: "/api/geo/national-territories",
+      viewport: "preflight",
+      check: "national-territories-api",
+      detail: `Request failed: ${String(error)}`,
+    });
+  }
+
   const browser = await chromium.launch({ headless: true });
 
   try {
@@ -34,21 +54,17 @@ async function main() {
         const pageErrors: string[] = [];
         page.on("pageerror", (error) => pageErrors.push(String(error)));
 
-        let nationalResponseStatus: number | null = null;
-        page.on("response", (response) => {
-          const url = new URL(response.url());
-          if (url.pathname === "/api/geo/national-territories") nationalResponseStatus = response.status();
-        });
-
         const response = await page.goto(`${baseUrl}${route.path}`, { waitUntil: "domcontentloaded", timeout: 45_000 });
         if (!response || response.status() >= 500) {
           findings.push({ route: route.path, viewport: viewport.label, check: "http-status", detail: `Unexpected status ${response?.status() ?? "none"}` });
         }
 
-        try {
-          await page.locator(".maplibregl-canvas").waitFor({ state: "visible", timeout: 20_000 });
-        } catch {
-          findings.push({ route: route.path, viewport: viewport.label, check: "map-canvas", detail: "MapLibre canvas missing" });
+        if (route.experience !== "national") {
+          try {
+            await page.locator(".maplibregl-canvas").waitFor({ state: "visible", timeout: 20_000 });
+          } catch {
+            findings.push({ route: route.path, viewport: viewport.label, check: "map-canvas", detail: "MapLibre canvas missing" });
+          }
         }
 
         const documentWidth = await page.locator("html").evaluate((element) => element.scrollWidth);
@@ -57,13 +73,23 @@ async function main() {
         }
 
         if (route.experience === "national") {
+          const premiumBridge = page.locator('[data-premium-map-bridge="n3"]');
+          const territorySvg = page.locator("[data-region-map-svg]");
           try {
-            await page.waitForFunction(() => Boolean((window as typeof window & { __AKARFINDER_NATIONAL_MAP__?: unknown }).__AKARFINDER_NATIONAL_MAP__), null, { timeout: 15_000 });
+            await premiumBridge.waitFor({ state: "visible", timeout: 15_000 });
+            await territorySvg.waitFor({ state: "visible", timeout: 20_000 });
+            await page.waitForFunction(
+              () => document.querySelector("[data-premium-map]")?.getAttribute("data-topology-state") === "ready",
+              null,
+              { timeout: 20_000 },
+            );
           } catch {
-            findings.push({ route: route.path, viewport: viewport.label, check: "national-map", detail: "National map runtime marker missing" });
-          }
-          if (nationalResponseStatus !== 200) {
-            findings.push({ route: route.path, viewport: viewport.label, check: "national-territories", detail: `National territories response ${nationalResponseStatus ?? "missing"}` });
+            findings.push({
+              route: route.path,
+              viewport: viewport.label,
+              check: "premium-national-map",
+              detail: "Premium national bridge/SVG missing or topology not ready",
+            });
           }
         } else if (route.experience === "intelligence") {
           const intelligenceMap = page.locator('[data-akarfinder-market-intelligence-map]');

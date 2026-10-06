@@ -5,6 +5,9 @@ on:
     paths:
       - "components/map/MapNeighborhoodClient.tsx"
       - "components/map/MapNeighborhoodExperience.tsx"
+      - "components/map/MapLibreNeighborhood3D.tsx"
+      - "components/map/maplibre-overture-buildings.ts"
+      - "lib/map/akarfinder-territorial-style.ts"
       - "components/map/TerritorialExplorer.tsx"
       - "components/map/MapLegend.tsx"
       - "lib/map/**"
