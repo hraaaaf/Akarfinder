@@ -10,6 +10,7 @@ on:
       - "lib/map/city-market-intelligence-live.ts"
       - "lib/map/rabat-market-intelligence-live.ts"
       - "lib/seller/owner-listing-projection.ts"
+      - "lib/odm/odm-shadow-telemetry-store.ts"
       - "scripts/scrapers/__tests__/neon-only-runtime-critical-paths.test.ts"
       - ".github/workflows/neon-only-runtime-p0.yml"
 
