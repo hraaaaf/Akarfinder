@@ -58,3 +58,18 @@ test("Search Gateway treats an absent Neon ODM index as a capability state", asy
   assert.match(cursor, /public_search_index_unavailable/);
   assert.match(route, /message === "public_search_index_unavailable"/);
 });
+
+
+test("SEO inventory gates fail closed before any Supabase call when Neon is primary", async () => {
+  for (const path of [
+    "lib/seo/eligibility-read-model.ts",
+    "lib/seo/neighborhood-indexability.ts",
+  ]) {
+    const source = await readFile(path, "utf8");
+    const guard = source.indexOf('getDbProvider() === "neon"');
+    const client = source.indexOf("getSupabaseServerClient()");
+    assert.ok(guard >= 0, `${path} must detect Neon provider`);
+    assert.ok(client >= 0, `${path} must retain the legacy Supabase branch`);
+    assert.ok(guard < client, `${path} must fail closed before constructing a Supabase client`);
+  }
+});
