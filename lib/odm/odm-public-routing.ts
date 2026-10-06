@@ -192,25 +192,32 @@ export async function routePublicSearch(
       }));
       return { result, lane: "odm" };
     } catch (error) {
-      dependencies.logWarn(failureMetric({
-        surface: input.surface,
-        stage: "odm",
-        stableKey: input.stableKey,
-        env: dependencies.env,
-        durationMs: dependencies.now() - startedAt,
-        error,
-      }));
+      const odmUnavailable =
+        error instanceof Error && error.message === "public_search_index_unavailable";
+
+      if (!odmUnavailable) {
+        dependencies.logWarn(failureMetric({
+          surface: input.surface,
+          stage: "odm",
+          stableKey: input.stableKey,
+          env: dependencies.env,
+          durationMs: dependencies.now() - startedAt,
+          error,
+        }));
+      }
 
       try {
         const result = await dependencies.searchLegacy(legacyQuery);
-        dependencies.logWarn(completionMetric({
+        const metric = completionMetric({
           surface: input.surface,
           lane: "legacy_fallback",
           stableKey: input.stableKey,
           env: dependencies.env,
           durationMs: dependencies.now() - startedAt,
           result,
-        }));
+        });
+        if (odmUnavailable) dependencies.logInfo(metric);
+        else dependencies.logWarn(metric);
         return { result, lane: "legacy_fallback" };
       } catch (legacyError) {
         dependencies.logWarn(failureMetric({
