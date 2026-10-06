@@ -48,3 +48,12 @@ test("Market runtime reads the existing Neon listing store, not legacy geo/thin-
   assert.doesNotMatch(cityReader + rabatReader, /geo_entities|geo_resolution_events|thin_index_search_documents|source_offer_seeds/);
   assert.match(helper, /fresh:\s*false/);
 });
+
+
+test("Search Gateway treats an absent Neon ODM index as a capability state", async () => {
+  const cursor = await readFile("lib/search-gateway/public-search-cursor.ts", "utf8");
+  const route = await readFile("app/api/search/gateway/route.ts", "utf8");
+  assert.match(cursor, /to_regproc\('public\.search_public_representations_v2'\)/);
+  assert.match(cursor, /public_search_index_unavailable/);
+  assert.match(route, /message === "public_search_index_unavailable"/);
+});
