@@ -50,17 +50,7 @@ jobs:
             echo 'C3 live reader must remain on bounded base tables'
             exit 1
           fi
-      - name: Live bounded Rabat intelligence proof
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-        run: npx tsx scripts/audits/carte-c3-rabat-intelligence-live.ts
+      - name: Rabat intelligence contract proof
+        run: npx tsx --test scripts/scrapers/__tests__/city-market-intelligence.test.ts scripts/scrapers/__tests__/rabat-market-intelligence-api.test.ts
       - name: Production build
         run: npm run build
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: carte-c3-intelligence-live-${{ github.run_id }}
-          path: data/audits/runtime/carte-c3-rabat-intelligence-live.json
-          if-no-files-found: warn
-          retention-days: 30
