@@ -10,6 +10,7 @@ const CRITICAL_RUNTIME_FILES = [
   "lib/map/rabat-market-intelligence-live.ts",
   "lib/seller/owner-listing-projection.ts",
   "lib/odm/odm-shadow-telemetry-store.ts",
+  "lib/search/structured-district-total.ts",
 ] as const;
 
 test("Neon-only critical Search/Market paths do not import or reference Supabase", async () => {
