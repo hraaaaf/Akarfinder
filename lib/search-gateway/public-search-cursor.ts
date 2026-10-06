@@ -1,7 +1,7 @@
 import { Buffer } from "node:buffer";
 import { createHash, timingSafeEqual } from "node:crypto";
 
-import { getSupabaseServerClient } from "@/lib/db/supabase-client";
+import { queryNeonRows } from "@/lib/db/neon-read-client";
 import { diversifySearchGatewayResults } from "@/lib/search-gateway/search-gateway-diversify";
 import { mapSeedToThinIndexResult } from "@/lib/search-gateway/seed-thin-index";
 import type { SearchGatewayNormalizedResult } from "@/lib/search-gateway/search-gateway-types";
@@ -65,7 +65,7 @@ type PublicSearchRpcRow = {
 };
 
 function cursorSecret(): string {
-  return process.env.SEARCH_CURSOR_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+  return process.env.SEARCH_CURSOR_SECRET || process.env.DATABASE_URL || "";
 }
 
 function signature(payload: string): string {
@@ -163,25 +163,28 @@ function mapAndDiversifyWithinBusinessLanes(rows: PublicSearchRpcRow[]): SearchG
 export async function searchPublicRepresentations(input: PublicSearchInput): Promise<PublicSearchPage> {
   const cursor = decodePublicSearchCursor(input.cursor);
   const pageSize = Math.max(1, Math.min(Math.trunc(input.limit ?? DEFAULT_PAGE_SIZE), MAX_PAGE_SIZE));
-  const supabase = getSupabaseServerClient();
-  const { data, error } = await supabase.rpc("search_public_representations_v2", {
-    p_query: input.q?.trim() || null,
-    p_city: input.city?.trim() || null,
-    p_property_type: input.propertyType?.trim() || null,
-    p_intent: input.intent?.trim() || null,
-    p_min_price: boundedOptionalNumber(input.minPrice),
-    p_max_price: boundedOptionalNumber(input.maxPrice),
-    p_min_surface: boundedOptionalNumber(input.minSurface),
-    p_max_surface: boundedOptionalNumber(input.maxSurface),
-    p_limit: pageSize + 1,
-    p_after_lane: cursor?.lane ?? null,
-    p_after_rank: cursor?.rank ?? null,
-    p_after_updated_at: cursor?.updatedAt ?? null,
-    p_after_representation_id: cursor?.representationId ?? null,
-  });
-  if (error) throw new Error(`public_search_rpc_v2_failed:${error.message}`);
-
-  const rows = (data ?? []) as PublicSearchRpcRow[];
+  const rows = await queryNeonRows<PublicSearchRpcRow>(
+    `SELECT * FROM public.search_public_representations_v2(
+      $1::text, $2::text, $3::text, $4::text,
+      $5::numeric, $6::numeric, $7::numeric, $8::numeric,
+      $9::integer, $10::smallint, $11::real, $12::timestamptz, $13::uuid
+    )`,
+    [
+      input.q?.trim() || null,
+      input.city?.trim() || null,
+      input.propertyType?.trim() || null,
+      input.intent?.trim() || null,
+      boundedOptionalNumber(input.minPrice),
+      boundedOptionalNumber(input.maxPrice),
+      boundedOptionalNumber(input.minSurface),
+      boundedOptionalNumber(input.maxSurface),
+      pageSize + 1,
+      cursor?.lane ?? null,
+      cursor?.rank ?? null,
+      cursor?.updatedAt ?? null,
+      cursor?.representationId ?? null,
+    ],
+  );
   const hasMore = rows.length > pageSize;
   const pageRows = rows.slice(0, pageSize);
   const tail = pageRows.at(-1);
