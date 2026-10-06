@@ -6,6 +6,9 @@ on:
       - data/200k-fresh-parser-v2
     paths:
       - '.github/workflows/mubawab-200k-certify-one-shot.yml'
+      - 'scripts/data/github-freeze-full-field-recovery.ts'
+      - 'scripts/data/mubawab-location-v2.ts'
+      - 'scripts/data/__tests__/mubawab-location-v2.test.ts'
 
 permissions:
   contents: read
@@ -32,6 +35,7 @@ jobs:
         run: |
           npx tsx --test scripts/scrapers/__tests__/p8a-detail.test.ts
           npx tsx --test scripts/scrapers/__tests__/price-detail-v2-safety.test.ts
+          npx tsx --test scripts/data/__tests__/mubawab-location-v2.test.ts
       - name: Fetch canonical freeze
         env:
           GH_TOKEN: ${{ github.token }}
