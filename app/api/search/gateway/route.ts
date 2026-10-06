@@ -224,10 +224,20 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       next_cursor: indexedPage.next_cursor,
     });
   } catch (error) {
+    const message = error instanceof Error ? error.message : "public_search_unknown_error";
+    if (message === "public_search_index_unavailable") {
+      return NextResponse.json({
+        ...gatewayResponse,
+        total_count: gatewayResponse.results_count,
+        has_more: false,
+        next_cursor: null,
+        public_index_degraded: true,
+      });
+    }
+
     console.error("[api/search/gateway:public-index]", error);
-    // Temporary backward-compatible fallback while environments receive the
-    // additive ODM-09B migration. This path remains capped and must disappear
-    // once the canonical Supabase project is migrated and verified.
+    // Backward-compatible fallback for environments that have a legacy Thin
+    // Index but not the canonical cursor read model.
     const fallback = await appendSeedThinIndexResults(gatewayResponse, legacySeedInput);
     return NextResponse.json({
       ...fallback,
