@@ -216,6 +216,7 @@ export async function searchDatabase(query: SearchQuery = {}): Promise<SearchRes
       max_price: query.max_price,
       min_surface: query.min_surface,
       max_surface: query.max_surface,
+      public_search_only: true,
       limit: DB_SCAN_BATCH_SIZE,
       offset: batchStart,
     });
