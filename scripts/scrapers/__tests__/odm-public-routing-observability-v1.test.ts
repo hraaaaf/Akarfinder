@@ -131,6 +131,34 @@ test("ODM failure is observable and falls back to Legacy without losing completi
   assert.equal(warnings[1].surface, "search_page");
 });
 
+
+test("absent ODM index falls back quietly without a failure warning", async () => {
+  const info: OdmPublicRoutingMetric[] = [];
+  const warnings: OdmPublicRoutingMetric[] = [];
+
+  const routed = await routePublicSearch({
+    stableKey: "odm-index-absent",
+    publicQuery: { city: "Casablanca", limit: 25 },
+    surface: "api_search",
+  }, {
+    env: FULL_CUTOVER_ENV,
+    now: clock(),
+    searchOdm: async () => {
+      throw new Error("public_search_index_unavailable");
+    },
+    searchLegacy: async () => LEGACY_RESULT,
+    logInfo: (metric) => info.push(metric),
+    logWarn: (metric) => warnings.push(metric),
+  });
+
+  assert.equal(routed.lane, "legacy_fallback");
+  assert.equal(warnings.length, 0);
+  assert.equal(info.length, 1);
+  assert.equal(info[0].event, "route_completed");
+  assert.equal(info[0].lane, "legacy_fallback");
+  assert.equal(info[0].surface, "api_search");
+});
+
 test("emergency stop preserves Legacy as the primary rollback path", async () => {
   let odmCalls = 0;
   const info: OdmPublicRoutingMetric[] = [];
