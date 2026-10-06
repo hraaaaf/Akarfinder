@@ -121,7 +121,9 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Regression test extraction
-        run: npx tsx --test scripts/scrapers/__tests__/p8a-detail.test.ts
+        run: |
+          npx tsx --test scripts/scrapers/__tests__/p8a-detail.test.ts
+          npx tsx --test scripts/scrapers/__tests__/price-detail-v2-safety.test.ts
       - name: Fetch canonical freeze
         env:
           GH_TOKEN: ${{ github.token }}
