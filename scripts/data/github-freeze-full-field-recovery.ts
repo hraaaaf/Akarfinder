@@ -9,6 +9,7 @@ import { extractStrictDetailPrice } from "../scrapers/price-detail-enrichment-v2
 import { resolveMubawabLocation } from "./mubawab-location-v2.js";
 import { parseMubawabRoute } from "./mubawab-url-parser-v2.mjs";
 import { extractMubawabStrictSurface } from "./mubawab-strict-surface-v2.js";
+import { extractMubawabStrictSurfaceFromUrl } from "./mubawab-url-surface-v2.js";
 
 async function main(){
 const USER_AGENT="AkarFinderFullFieldRecovery/1.0";
@@ -163,7 +164,9 @@ for(const row of sample){
   const surfaceValue=s?Number(s.replace(",",".")):null;
   const validSurface=surfaceValue!=null && Number.isFinite(surfaceValue) && surfaceValue>0 ? surfaceValue : null;
   const surfaceAuto=d._confidence.surface==="high" && validSurface!=null && validSurface>=5 && validSurface<=100000;
-  const strictSurface=sourceName==="mubawab.ma"?extractMubawabStrictSurface(html):null;
+  const strictDomSurface=sourceName==="mubawab.ma"?extractMubawabStrictSurface(html):null;
+  const strictUrlSurface=sourceName==="mubawab.ma"?extractMubawabStrictSurfaceFromUrl(url):null;
+  const strictSurface=strictDomSurface??strictUrlSurface;
   add(c,row,"surface_m2",strictSurface?.value??validSurface,strictSurface?.confidence??d._confidence.surface,strictSurface?.evidence??(validSurface!=null&&validSurface>100000?"extractDetail:surface_extreme_review":"extractDetail:surface"),!!strictSurface||surfaceAuto);
   add(c,row,"rooms_count",d.rooms,d._confidence.rooms,"extractDetail:rooms",d._confidence.rooms==="high");
   add(c,row,"bedrooms_count",d.bedrooms,d._confidence.bedrooms,"extractDetail:bedrooms",d._confidence.bedrooms==="high");
