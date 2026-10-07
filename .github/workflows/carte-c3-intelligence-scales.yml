@@ -18,6 +18,10 @@ on:
       - "scripts/scrapers/__tests__/market-metric-reliability.test.ts"
       - ".github/workflows/carte-c3-intelligence-scales.yml"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
@@ -29,6 +33,10 @@ jobs:
       DATABASE_PROVIDER: neon
     steps:
       - uses: actions/checkout@v4
+      - name: Latest-commit scope check
+        shell: bash
+        run: |
+          git diff --name-only HEAD^ HEAD
       - uses: actions/setup-node@v4
         with:
           node-version: 24
