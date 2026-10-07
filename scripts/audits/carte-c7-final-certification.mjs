@@ -17,6 +17,7 @@ const modes = [
   { tab: "Annonces", api: "listings" },
 ];
 const validDistricts = new Set(["agdal", "hay-riad", "souissi", "hassan"]);
+const fixtureMode = process.env.MARKET_BROWSER_FIXTURE === "1";
 
 function normalizeSlug(value) {
   return String(value ?? "")
@@ -26,6 +27,82 @@ function normalizeSlug(value) {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
+}
+
+function fixtureRabatPayload(mode) {
+  const zones = [
+    ["agdal", "Agdal", -6.852, 33.996, 15000, 4],
+    ["hay-riad", "Hay Riad", -6.866, 33.958, 16500, 6],
+    ["souissi", "Souissi", -6.830, 33.955, 18000, 8],
+    ["hassan", "Hassan", -6.830, 34.020, 14000, 3],
+  ];
+  const values = zones.map(([, , , , price, listings]) =>
+    mode === "price" ? price : mode === "density" ? listings / 10 : listings
+  );
+  return {
+    type: "FeatureCollection",
+    properties: {
+      mode,
+      transaction: "sale",
+      observedMarketOnly: true,
+      scaleMethod: "snapshot_quantiles_v1",
+      legend: {
+        availableCount: 4,
+        classCount: 3,
+        thresholds: [values[1], values[2]],
+        min: Math.min(...values),
+        max: Math.max(...values),
+        colors: ["#DCFCE7", "#22C55E", "#15803D"],
+        neutralColor: "#E5E7EB",
+      },
+    },
+    features: zones.map(([slug, displayName, lng, lat, price, listings], index) => {
+      const d = 0.008;
+      const metricValue = mode === "price" ? price : mode === "density" ? listings / 10 : listings;
+      return {
+        type: "Feature",
+        id: "fixture_" + slug,
+        properties: {
+          zoneId: "fixture_" + slug,
+          slug,
+          displayName,
+          semanticType: "market_zone",
+          officialBoundary: false,
+          canonicalNeighborhoodIds: ["district_rabat_" + slug.replace(/-/g, "_")],
+          areaKm2: 10,
+          publicationStatus: "canary",
+          mode,
+          transaction: "sale",
+          metricValue,
+          metricUnit: mode === "price" ? "MAD/m²" : mode === "density" ? "annonces/km²" : "annonces",
+          sampleCount: listings,
+          reliability: mode === "price" ? "limited" : null,
+          neutral: false,
+          classIndex: Math.min(index, 2),
+          fillColor: ["#DCFCE7", "#22C55E", "#15803D"][Math.min(index, 2)],
+          freshnessStatus: "unconfirmed",
+          snapshotVersion: "ci-fixture-v1",
+          marketMetrics: {
+            priceMedianMadM2: price,
+            priceSampleCount: listings,
+            priceReliability: "limited",
+            listingCount: listings,
+            listingDensityKm2: listings / 10,
+          },
+        },
+        geometry: {
+          type: "Polygon",
+          coordinates: [[
+            [lng - d, lat - d],
+            [lng + d, lat - d],
+            [lng + d, lat + d],
+            [lng - d, lat + d],
+            [lng - d, lat - d],
+          ]],
+        },
+      };
+    }),
+  };
 }
 
 async function waitForIntelligence(page, mode) {
@@ -77,6 +154,17 @@ const browser = await chromium.launch({ headless: true });
 try {
   for (const viewport of viewports) {
     const page = await browser.newPage({ viewport: { width: viewport.width, height: viewport.height } });
+    if (fixtureMode) {
+      await page.route("**/api/geo/rabat-market-intelligence?**", async (route) => {
+        const url = new URL(route.request().url());
+        const routeMode = url.searchParams.get("mode") || "price";
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify(fixtureRabatPayload(routeMode)),
+        });
+      });
+    }
     const diagnostics = { pageErrors: [], requestFailures: [] };
     page.on("pageerror", (error) => diagnostics.pageErrors.push(String(error)));
     page.on("requestfailed", (request) => {
