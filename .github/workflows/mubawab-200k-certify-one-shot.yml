@@ -11,6 +11,8 @@ on:
       - 'scripts/data/__tests__/mubawab-location-v2.test.ts'
       - 'scripts/data/mubawab-strict-surface-v2.ts'
       - 'scripts/data/__tests__/mubawab-strict-surface-v2.test.ts'
+      - 'scripts/data/mubawab-url-surface-v2.ts'
+      - 'scripts/data/__tests__/mubawab-url-surface-v2.test.ts'
 
 permissions:
   contents: read
@@ -39,6 +41,7 @@ jobs:
           npx tsx --test scripts/scrapers/__tests__/price-detail-v2-safety.test.ts
           npx tsx --test scripts/data/__tests__/mubawab-location-v2.test.ts
           npx tsx --test scripts/data/__tests__/mubawab-strict-surface-v2.test.ts
+          npx tsx --test scripts/data/__tests__/mubawab-url-surface-v2.test.ts
       - name: Fetch canonical freeze
         env:
           GH_TOKEN: ${{ github.token }}
