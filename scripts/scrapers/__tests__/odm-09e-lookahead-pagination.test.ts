@@ -16,12 +16,12 @@ const migration = readFileSync(
 
 test("public API remains capped at 100 while requesting one internal lookahead row", () => {
   assert.match(cursorAdapter, /const MAX_PAGE_SIZE = 100/);
-  assert.match(cursorAdapter, /p_limit: pageSize \+ 1/);
+  assert.match(cursorAdapter, /pageSize \+ 1/);
   assert.match(cursorAdapter, /const hasMore = rows\.length > pageSize/);
   assert.match(cursorAdapter, /rows\.slice\(0, pageSize\)/);
 });
 
-test("Supabase RPC accepts exactly the 101 rows required for a 100-result page", () => {
+test("Legacy migration remains capped at the 101 rows required for a 100-result page", () => {
   assert.match(
     migration,
     /least\(greatest\(coalesce\(p_limit, 50\), 1\), 101\) as result_limit/,
