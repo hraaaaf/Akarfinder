@@ -72,7 +72,7 @@ try {
       if (!boundaryDisclosure?.includes("Arrondissement Maârif")) throw new Error(`${viewport.name}: arrondissement disclosure missing`);
       const boundaryBadge = page.locator(".maplibre-spike-boundary-badge");
       await boundaryBadge.waitFor({ state: "visible", timeout: 5000 });
-      if ((await boundaryBadge.textContent())?.trim() !== "Contour administratif") {
+      if ((await boundaryBadge.textContent())?.trim() !== "Arrondissement · contour OSM") {
         throw new Error(`${viewport.name}: visible administrative-contour badge mismatch`);
       }
       await highZoomTilesReady;
@@ -86,18 +86,12 @@ try {
         buildingFootprintObservationTimedOut = true;
         console.warn(`${viewport.name}: no rendered building footprints observed within 10s; keeping visual capture and reporting zero coverage instead of suppressing the evidence`);
       }
-      await page.waitForFunction(() => {
-        const shell = document.querySelector('[data-maplibre-spike][data-maplibre-city="casablanca"][data-maplibre-district="maarif"]');
-        return shell?.getAttribute("data-maplibre-overture-state") === "available";
-      }, null, { timeout: 20000 }).catch(() => {
-        throw new Error(`${viewport.name}: Overture 3D bundle did not become available within 20s`);
-      });
-      await page.waitForFunction(() => {
-        const shell = document.querySelector('[data-maplibre-spike][data-maplibre-city="casablanca"][data-maplibre-district="maarif"]');
-        return Number(shell?.getAttribute("data-maplibre-building-count") ?? 0) > 0;
-      }, null, { timeout: 12000 }).catch(() => {
-        throw new Error(`${viewport.name}: no rendered 3D building volumes observed; Maârif depth target is not proven`);
-      });
+      // Flat target: no Overture extrusion dependency or volume gate.
+      const cameraMode = await maplibre.getAttribute("data-maplibre-camera-mode");
+      if (cameraMode !== "north-up-flat") throw new Error(`${viewport.name}: flat camera declaration missing (${cameraMode})`);
+      if (await page.locator(".maplibre-spike-mode").count()) {
+        throw new Error(`${viewport.name}: obsolete 2D/3D control still visible`);
+      }
       const overtureState = await maplibre.getAttribute("data-maplibre-overture-state");
       const overtureTotalCount = Number(await maplibre.getAttribute("data-maplibre-overture-total-count") ?? 0);
       const overtureExactCount = Number(await maplibre.getAttribute("data-maplibre-overture-exact-count") ?? 0);
@@ -113,23 +107,23 @@ try {
       const contextRelief = await maplibre.getAttribute("data-maplibre-context-relief");
       const labelPolicy = await maplibre.getAttribute("data-maplibre-label-policy");
       const contextLabelPolicy = await maplibre.getAttribute("data-maplibre-context-label-policy");
-      if (quarterStyle !== "illustrated-progressive-v1") {
-        throw new Error(`${viewport.name}: illustrated quarter style contract missing (${quarterStyle})`);
+      if (quarterStyle !== "flat-living-v02") {
+        throw new Error(`${viewport.name}: flat quarter style contract missing (${quarterStyle})`);
       }
       if (basemapLanguage !== "voyager-inspired-openfreemap-v1") {
         throw new Error(`${viewport.name}: Voyager-inspired basemap language missing (${basemapLanguage})`);
       }
-      if (buildingLanguage !== "standard-inspired-overture-v1") {
-        throw new Error(`${viewport.name}: Standard-inspired Overture building language missing (${buildingLanguage})`);
+      if (buildingLanguage !== "flat-vector-footprints-v02") {
+        throw new Error(`${viewport.name}: flat building language missing (${buildingLanguage})`);
       }
-      if (polish !== "material-relief-v3") {
-        throw new Error(`${viewport.name}: material/relief polish missing (${polish})`);
+      if (polish !== "flat-basemap-v02") {
+        throw new Error(`${viewport.name}: flat polish missing (${polish})`);
       }
-      if (boundaryRender !== "administrative-relief") {
-        throw new Error(`${viewport.name}: administrative relief contract missing (${boundaryRender})`);
+      if (boundaryRender !== "administrative-dashed-flat") {
+        throw new Error(`${viewport.name}: administrative dashed boundary contract missing (${boundaryRender})`);
       }
-      if (contextRelief !== "raised-indicative-zone") {
-        throw new Error(`${viewport.name}: raised indicative-zone relief contract missing (${contextRelief})`);
+      if (contextRelief !== "flat-indicative-zone") {
+        throw new Error(`${viewport.name}: flat indicative-zone contract missing (${contextRelief})`);
       }
       if (labelPolicy !== "akarfinder-owned") {
         throw new Error(`${viewport.name}: Maârif label ownership contract missing (${labelPolicy})`);
@@ -137,25 +131,19 @@ try {
       if (contextLabelPolicy !== "suppressed-at-quarter-zoom") {
         throw new Error(`${viewport.name}: quarter context-label suppression contract missing (${contextLabelPolicy})`);
       }
-      if (shadowPolicy !== "non-metric-overture-footprints") {
-        throw new Error(`${viewport.name}: non-metric Overture shadow policy missing (${shadowPolicy})`);
+      if (shadowPolicy !== "flat-vector-footprints") {
+        throw new Error(`${viewport.name}: flat vector footprint policy missing (${shadowPolicy})`);
       }
       if (contextFocus !== "verified-anchor-envelope-not-boundary") {
         throw new Error(`${viewport.name}: Maârif context focus semantic missing (${contextFocus})`);
       }
-      if (overtureState !== "available") throw new Error(`${viewport.name}: Overture 3D bundle unavailable (${overtureState})`);
-      if (overtureTotalCount < 4900) throw new Error(`${viewport.name}: Overture bundle unexpectedly sparse (${overtureTotalCount})`);
-      if (overtureExactCount < 770) throw new Error(`${viewport.name}: Overture exact-height coverage regressed (${overtureExactCount})`);
-      if (overtureEstimatedCount < 4140) throw new Error(`${viewport.name}: Overture level-estimated coverage regressed (${overtureEstimatedCount})`);
+      if (overtureState !== "idle") throw new Error(`${viewport.name}: 3D bundle activated unexpectedly (${overtureState})`);
 
       const renderedBuildingVolumes = Number(await maplibre.getAttribute("data-maplibre-building-count") ?? 0);
       const renderedBuildingFootprints = Number(await maplibre.getAttribute("data-maplibre-building-footprint-count") ?? 0);
-      if (renderedBuildingVolumes < 120) {
-        throw new Error(`${viewport.name}: Overture density target not met (${renderedBuildingVolumes} rendered volumes, need >=120)`);
-      }
-      const renderedHeightCoveragePct = renderedBuildingFootprints > 0
-        ? Number(((renderedBuildingVolumes / renderedBuildingFootprints) * 100).toFixed(1))
-        : null;
+      if (renderedBuildingVolumes !== 0) throw new Error(`${viewport.name}: non-flat 3D volume instrumentation (${renderedBuildingVolumes})`);
+      if (renderedBuildingFootprints <= 0) throw new Error(`${viewport.name}: no actual rendered 2D building footprints`);
+      const renderedHeightCoveragePct = null;
 
       const rail = page.locator("[data-p4-map-decision-rail]");
       await rail.waitFor({ state: "visible", timeout: 10000 });
@@ -338,7 +326,8 @@ try {
         rtlStatus,
         boundarySemantic,
         boundaryDisclosure,
-        boundaryBadge: "Contour administratif",
+        cameraMode,
+        boundaryBadge: "Arrondissement · contour OSM",
         renderedBuildingVolumes,
         renderedBuildingFootprints,
         renderedHeightCoveragePct,
@@ -358,7 +347,7 @@ try {
         labelPolicy,
         contextLabelPolicy,
         buildingFootprintObservationTimedOut,
-        renderedHeightCoverageNote: "ratio of rendered 3D features to rendered 2D building features; viewport-specific, not a unique-building census",
+        renderedHeightCoverageNote: "not applicable to flat 2D map; true rendered vector building footprints counted",
         sheetInteraction,
         localContextSource: localContext.source.mode,
         localAnchorCount: localContext.anchor_count,
