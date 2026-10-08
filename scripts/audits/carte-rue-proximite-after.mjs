@@ -120,7 +120,7 @@ try {
       await page.waitForFunction(() => {
         const shell = document.querySelector('[data-maplibre-spike][data-maplibre-city="casablanca"][data-maplibre-district="maarif"]');
         return shell?.getAttribute("data-maplibre-render-state") === "ready"
-          && shell?.getAttribute("data-maplibre-overture-state") === "available";
+          && shell?.getAttribute("data-maplibre-camera-mode") === "north-up-flat";
       }, null, { timeout: 30000 });
 
       const camera = await recenterTwinCenter(page, viewport);
@@ -138,10 +138,14 @@ try {
         labelPolicy: el.getAttribute("data-maplibre-label-policy"),
         boundarySemantic: el.getAttribute("data-maplibre-boundary-semantic"),
         buildingCount: Number(el.getAttribute("data-maplibre-building-count") ?? 0),
+        buildingFootprints: Number(el.getAttribute("data-maplibre-building-footprint-count") ?? 0),
+        zoomTier: el.getAttribute("data-maplibre-zoom-tier"),
       }));
-      if (attrs.polish !== "material-relief-v3") throw new Error(`${viewport.name}: L3 baseline polish mismatch ${attrs.polish}`);
+      if (attrs.polish !== "flat-basemap-v02") throw new Error(`${viewport.name}: V0.2 flat polish mismatch ${attrs.polish}`);
       if (attrs.streetLanguage !== "architectural-paper-v2") throw new Error(`${viewport.name}: Rue street-language mismatch ${attrs.streetLanguage}`);
-      if (attrs.buildingCount <= 0) throw new Error(`${viewport.name}: no Overture volumes rendered`);
+      if (attrs.buildingCount !== 0) throw new Error(`${viewport.name}: 3D volumes unexpectedly rendered`);
+      if (attrs.buildingFootprints <= 0) throw new Error(`${viewport.name}: missing real 2D building footprints at street zoom`);
+      if (attrs.zoomTier !== "street") throw new Error(`${viewport.name}: expected street detail zoom tier, observed ${attrs.zoomTier}`);
 
       await page.screenshot({
         path: `${outDir}/twin-center-after-${viewport.width}x${viewport.height}.png`,
