@@ -61,9 +61,9 @@ function fixtureRabatPayload(mode) {
       const metricValue = mode === "price" ? price : mode === "density" ? listings / 10 : listings;
       return {
         type: "Feature",
-        id: "fixture_" + slug,
+        id: slug === "hassan" ? "market_zone_rabat_centre" : "market_zone_rabat_" + slug.replace(/-/g, "_"),
         properties: {
-          zoneId: "fixture_" + slug,
+          zoneId: slug === "hassan" ? "market_zone_rabat_centre" : "market_zone_rabat_" + slug.replace(/-/g, "_"),
           slug,
           displayName,
           semanticType: "market_zone",
