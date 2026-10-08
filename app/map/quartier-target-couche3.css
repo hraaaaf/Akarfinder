@@ -746,3 +746,22 @@
     padding: 3px 5px;
   }
 }
+
+
+/* V0.2 visual correction — keep verified POI and landmark names inside the visible map. */
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-quarter-style="flat-living-v02"]
+  .maplibre-spike-target-landmark-label[data-anchor-edge="right"] {
+  transform: translate(-100%, -50%) !important;
+}
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-quarter-style="flat-living-v02"]
+  .maplibre-spike-target-landmark-label[data-anchor-edge="left"] {
+  transform: translate(0, -50%) !important;
+}
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-poi-language="akarfinder-flat-v02"]
+  .maplibre-spike-poi-label[data-label-collapsed="false"][data-anchor-edge="right"] {
+  transform: translate(-100%, -50%) !important;
+}
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-poi-language="akarfinder-flat-v02"]
+  .maplibre-spike-poi-label[data-label-collapsed="false"][data-anchor-edge="left"] {
+  transform: translate(0, -50%) !important;
+}
