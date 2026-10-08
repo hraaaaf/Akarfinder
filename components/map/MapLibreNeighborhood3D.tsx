@@ -307,6 +307,7 @@ export function MapLibreNeighborhood3D({
   const [context, setContext] = useState<NeighborhoodContext | null>(null);
   const [activeCategory, setActiveCategory] = useState<LivingHereCategory | "all">("all");
   const [zoomTier, setZoomTier] = useState<"overview" | "quarter" | "street">("quarter");
+  const [allContextFocused, setAllContextFocused] = useState(false);
   const [actualCamera, setActualCamera] = useState({ pitch: 0, bearing: 0 });
   const [screenPoints, setScreenPoints] = useState<Record<string, ScreenPoint>>({});
   const [centerPoint, setCenterPoint] = useState<ScreenPoint | null>(null);
@@ -318,6 +319,31 @@ export function MapLibreNeighborhood3D({
     const map = mapInstanceRef.current;
     if (!map) return;
     focusNeighborhoodMap(map, boundaryGeometry, center, desktopCameraOffset, targetComposition, window.innerWidth >= 1024, 650);
+  };
+
+  // V0.3: reframe existing sourced POIs, not a claimed district polygon.
+  // Keep the initial quartier camera; discovery is an explicit user action.
+  const focusAllContextAnchors = () => {
+    setActiveCategory("all");
+    const map = mapInstanceRef.current;
+    const anchors = context?.anchors ?? [];
+    if (!isMaarifTargetPilot || !map || anchors.length === 0) return;
+    const lngs = anchors.map((anchor) => anchor.longitude);
+    const lats = anchors.map((anchor) => anchor.latitude);
+    const desktop = window.innerWidth >= 1024;
+    map.fitBounds([
+      [Math.min(...lngs), Math.min(...lats)],
+      [Math.max(...lngs), Math.max(...lats)],
+    ], {
+      padding: desktop
+        ? { top: 150, right: 74, bottom: 100, left: 74 }
+        : { top: 174, right: 32, bottom: 310, left: 32 },
+      maxZoom: desktop ? 14.65 : 14.45,
+      pitch: 0,
+      bearing: 0,
+      duration: 500,
+    });
+    setAllContextFocused(true);
   };
 
   const changeZoom = (delta: number) => {
@@ -1192,6 +1218,7 @@ export function MapLibreNeighborhood3D({
               ...targetPilotLandmarks.map((landmark) => screenPoints[`target:${landmark.id}`]),
             ].filter((point): point is ScreenPoint => Boolean(point?.visible));
             const overviewSecondary = isMaarifTargetPilot
+               && !allContextFocused
                && zoomTier === "overview"
                && activeCategory === "all"
               && anchor.category !== "green_sport"
@@ -1248,7 +1275,10 @@ export function MapLibreNeighborhood3D({
        </div>
 
       <div className="maplibre-spike-filters" aria-label={`Filtres des repères de ${districtLabel}`}>
-        <button className={activeCategory === "all" ? "active" : ""} onClick={() => setActiveCategory("all")}>Repères</button>
+        <button className={activeCategory === "all" ? "active" : ""} onClick={focusAllContextAnchors} aria-label={isMaarifTargetPilot && context?.anchor_count ? `Repères — cadrer les ${context.anchor_count} lieux sourcés` : "Repères"}>
+          Repères
+          {isMaarifTargetPilot && context?.anchor_count ? <span className="maplibre-spike-filter-count" aria-hidden="true">{context.anchor_count}</span> : null}
+        </button>
         {categories.map((category) => <button key={category} className={activeCategory === category ? "active" : ""} onClick={() => setActiveCategory(category)}>{CATEGORY_META[category].label}</button>)}
       </div>
 
