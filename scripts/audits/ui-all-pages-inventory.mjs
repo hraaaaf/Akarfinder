@@ -109,7 +109,7 @@ const pages = pageFiles.map((sourcePath) => {
     auditMode,
     blocker: dynamicAudit?.blocker ?? staticAudit?.blocker ?? null,
     family: routeFamily(routePattern),
-    expectedFinalPath: staticAudit?.expectedFinalPath ?? null,
+    expectedFinalPath: dynamic ? dynamicAudit?.expectedFinalPath ?? null : staticAudit?.expectedFinalPath ?? null,
     expectedResourceFailures: staticAudit?.expectedResourceFailures ?? [],
     expectedConsoleErrors: staticAudit?.expectedConsoleErrors ?? [],
   };

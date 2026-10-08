@@ -21,6 +21,16 @@ test("all-pages inventory models data-backed, auth and redirect contracts explic
   assert.match(inventory, /\/compagnon[\s\S]*expectedFinalPath: "\/mon-projet"/);
   assert.match(inventory, /\/pro\/leads[\s\S]*expectedFinalPath: "\/pro"/);
   assert.match(inventory, /\/quartiers[\s\S]*expectedFinalPath: "\/immobilier"/);
+  assert.match(
+    inventory,
+    /\["\/quartiers\/\[citySlug\]\/\[neighborhoodSlug\]",\s*\{[^\n]*expectedFinalPath:\s*"\/immobilier\/rabat\/agdal"/,
+    "dynamic neighborhood alias must declare its canonical expected redirect",
+  );
+  assert.match(
+    inventory,
+    /expectedFinalPath:\s*dynamic\s*\?\s*dynamicAudit\?\.expectedFinalPath\s*\?\?\s*null\s*:\s*staticAudit\?\.expectedFinalPath\s*\?\?\s*null/,
+    "inventory must preserve expectedFinalPath for dynamic routes",
+  );
   assert.match(inventory, /\/api\/me\/continuity[\s\S]*status: 401/);
   assert.match(inventory, /\/api\/auth\/session[\s\S]*status: 401/);
 });
