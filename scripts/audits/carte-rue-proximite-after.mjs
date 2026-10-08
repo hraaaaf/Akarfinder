@@ -78,6 +78,17 @@ async function recenterTwinCenter(page, viewport) {
     await page.waitForTimeout(450);
   }
 
+  // Confirm Twin Center really is at the gesture's zoom anchor before changing scale.
+  // MapLibre scrollZoom anchors its geographic point under the cursor during the zoom.
+  const anchorBeforeZoom = await landmarkBox(page);
+  const anchorDeviation = Math.hypot(
+    anchorBeforeZoom.x + anchorBeforeZoom.width / 2 - desired.x,
+    anchorBeforeZoom.y + anchorBeforeZoom.height / 2 - desired.y,
+  );
+  if (anchorDeviation > 28) {
+    throw new Error(`${viewport.name}: Twin Center not reliably positioned before street zoom (${anchorDeviation.toFixed(1)}px)`);
+  }
+
   // Use native canvas wheel zoom for the BEFORE baseline. This avoids depending
   // on viewport-specific control visibility while preserving the real product renderer.
   await page.mouse.move(desired.x, desired.y);
@@ -88,22 +99,9 @@ async function recenterTwinCenter(page, viewport) {
   await page.mouse.wheel(0, -420);
   await page.waitForTimeout(700);
 
-  // One final small correction after zooming.
-  const finalLabel = await landmarkBox(page);
-  const current = { x: finalLabel.x + finalLabel.width / 2, y: finalLabel.y + finalLabel.height / 2 };
-  const dx = desired.x - current.x;
-  const dy = desired.y - current.y;
-  if (Math.abs(dx) >= 8 || Math.abs(dy) >= 8) {
-    const start = {
-      x: canvasBox.x + canvasBox.width * 0.32,
-      y: canvasBox.y + canvasBox.height * 0.30,
-    };
-    await page.mouse.move(start.x, start.y);
-    await page.mouse.down();
-    await page.mouse.move(start.x + dx, start.y + dy, { steps: 10 });
-    await page.mouse.up();
-    await page.waitForTimeout(500);
-  }
+  // Do not require a DOM label after zoom: the product deliberately removes
+  // markers obscured by the top controls/sheet. The verified sourced anchor
+  // was under the cursor before zoom; no geographic pan occurs after this point.
 
   // Wheel gestures may stop at quartier zoom depending on viewport / device scaling.
   // Continue interacting with the real map until its observed street zoom tier is reached.
@@ -122,7 +120,9 @@ async function recenterTwinCenter(page, viewport) {
   return {
     canvasBox,
     desired,
-    twinCenterBox: await landmarkBox(page),
+    twinCenterBoxBeforeZoom: anchorBeforeZoom,
+    anchorDeviationPx: Number(anchorDeviation.toFixed(1)),
+    twinCenterLabelVisibleAtStreet: await page.locator('.maplibre-spike-target-landmark-label').filter({ hasText: "Twin Center" }).first().isVisible().catch(() => false),
     observedTier,
   };
 }
