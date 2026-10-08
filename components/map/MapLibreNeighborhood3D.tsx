@@ -1039,8 +1039,8 @@ export function MapLibreNeighborhood3D({
         source: CONTEXT_FOOTPRINT_SOURCE_ID,
         paint: {
           "line-color": "#20516B",
-           "line-width": 1.7,
-           "line-opacity": 0.42,
+           "line-width": 0.95,
+           "line-opacity": 0.18,
            "line-blur": 0,
         },
       } as any, FOCUS_GLOW_LAYER_ID);
@@ -1207,7 +1207,8 @@ export function MapLibreNeighborhood3D({
                 data-label-collapsed={collapseLabel ? "true" : "false"}
                 data-poi-category={anchor.category}
                 data-poi-family={poiVisualFamily(anchor.category)}
-                style={{ left: screen.x, top: screen.y }}
+                 data-anchor-edge={mapRef.current && screen.x > mapRef.current.clientWidth - 130 ? "right" : mapRef.current && screen.x < 130 ? "left" : "center"}
+                 style={{ left: screen.x, top: screen.y }}
               >
                 <span lang={arabic ? "ar" : undefined} dir={arabic ? "rtl" : "auto"}>{anchor.name}</span>
                 <i className="maplibre-spike-poi-glyph" style={{ color: meta.color }}>
@@ -1224,7 +1225,8 @@ export function MapLibreNeighborhood3D({
                 key={landmark.id}
                 className="maplibre-spike-target-landmark-label"
                 data-landmark-tier={landmark.tier}
-                style={{ left: screen.x, top: screen.y }}
+                 data-anchor-edge={mapRef.current && screen.x > mapRef.current.clientWidth - 130 ? "right" : mapRef.current && screen.x < 130 ? "left" : "center"}
+                 style={{ left: screen.x, top: screen.y }}
               >
                 <i aria-hidden="true"><Landmark size={13} strokeWidth={2.25} /></i>
                 <span lang={isArabicText(landmark.name) ? "ar" : undefined} dir={isArabicText(landmark.name) ? "rtl" : "auto"}>{landmark.name}</span>
