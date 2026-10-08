@@ -850,16 +850,16 @@ export function MapLibreNeighborhood3D({
               MAPLIBRE_OVERTURE_ESTIMATED_LAYER_ID,
               MAPLIBRE_OVERTURE_EXACT_LAYER_ID,
             ].filter((layerId) => Boolean(map.getLayer(layerId)));
-            const volumeFeatures = overtureLayers.length
-              ? map.queryRenderedFeatures(undefined, { layers: overtureLayers })
-              : map.getLayer("3d-buildings")
-                ? map.queryRenderedFeatures(undefined, { layers: ["3d-buildings"] })
-                : [];
-            const footprintFeatures = overtureLayers.length
-              ? volumeFeatures
-              : map.getLayer("akarfinder-target-buildings")
-                ? map.queryRenderedFeatures(undefined, { layers: ["akarfinder-target-buildings"] })
-                : [];
+            const volumeFeatures = isMaarifTargetPilot && targetComposition === "context"
+              ? [] // Hidden extrusion features are not visible 3D volume.
+              : overtureLayers.length
+                ? map.queryRenderedFeatures(undefined, { layers: overtureLayers })
+                : map.getLayer("3d-buildings")
+                  ? map.queryRenderedFeatures(undefined, { layers: ["3d-buildings"] })
+                  : [];
+            const footprintFeatures = map.getLayer("akarfinder-target-buildings")
+              ? map.queryRenderedFeatures(undefined, { layers: ["akarfinder-target-buildings"] })
+              : overtureLayers.length ? volumeFeatures : [];
             setBuildingCount(volumeFeatures.length);
             setBuildingFootprintCount(footprintFeatures.length);
             if (volumeFeatures.length > 0 || footprintFeatures.length > 0) setSourceState("available");
@@ -1130,13 +1130,13 @@ export function MapLibreNeighborhood3D({
       data-maplibre-overture-exact-count={overtureExactCount}
       data-maplibre-overture-estimated-count={overtureEstimatedCount}
       data-maplibre-overture-release={overtureRelease ?? ""}
-      data-maplibre-shadow-policy={isMaarifTargetPilot ? "non-metric-overture-footprints" : "none"}
+      data-maplibre-shadow-policy={isMaarifTargetPilot ? "flat-vector-footprints" : "none"}
       data-maplibre-context-focus={isMaarifTargetPilot ? "verified-anchor-envelope-not-boundary" : "none"}
       data-maplibre-context-relief={isMaarifTargetPilot ? "flat-indicative-zone" : "none"}
       data-maplibre-quarter-style={isMaarifTargetPilot ? "flat-living-v02" : "default"}
       data-maplibre-basemap-language={isMaarifTargetPilot ? "voyager-inspired-openfreemap-v1" : "default"}
-      data-maplibre-building-language={isMaarifTargetPilot ? "standard-inspired-overture-v1" : "default"}
-      data-maplibre-polish={isMaarifTargetPilot ? "material-relief-v3" : "default"}
+      data-maplibre-building-language={isMaarifTargetPilot ? "flat-vector-footprints-v02" : "default"}
+      data-maplibre-polish={isMaarifTargetPilot ? "flat-basemap-v02" : "default"}
       data-maplibre-street-language={isMaarifTargetPilot ? "architectural-paper-v2" : "default"}
       data-maplibre-label-policy={isMaarifTargetPilot ? "akarfinder-owned" : "basemap-default"}
       data-maplibre-poi-language={isMaarifTargetPilot ? "akarfinder-flat-v02" : "default"}
@@ -1149,6 +1149,7 @@ export function MapLibreNeighborhood3D({
       data-maplibre-boundary-status={boundaryGeometry ? "shadow-reference" : "center-only"}
       data-maplibre-boundary-semantic={isMaarifTargetPilot && boundaryGeometry ? "administrative-arrondissement" : boundaryGeometry ? "boundary-reference" : "none"}
       data-maplibre-camera-policy={targetComposition === "context" ? "contextual-center" : "boundary-fit"}
+       data-maplibre-camera-mode={isMaarifTargetPilot ? "north-up-flat" : "default"}
       data-maplibre-focus-semantic={isMaarifTargetPilot ? "context-focus-not-boundary" : "district-focus"}
       data-maplibre-context-footprint={isMaarifTargetPilot && context?.anchors?.length ? "verified-anchor-envelope-buffered" : "none"}
       data-maplibre-target-context-count={0}
