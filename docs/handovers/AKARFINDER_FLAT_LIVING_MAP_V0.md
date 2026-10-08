@@ -176,3 +176,24 @@ Read exact-head CI results, correct failures, retrieve exact-head captures, visu
 
 **Proof pending:** exact-head CI and AFTER screenshot; do not assign upgraded visual score before inspection.
 **Safety:** no Vercel deploy, merge, migration or DB write.
+
+## V0.3 certification — 2026-10-08
+
+### Exact product proof
+- Source HEAD `e0d53ccdb730f88b6484d003dd35a228ed8fa122`.
+- Browser run `37800421050` **success** / artifact `11560780703` (real screenshot and JSON).
+- Source count: 4 authenticated POI anchors on Maârif; initially rendered 2 on both mobile sizes.
+- After explicit `Repères` tap: **4/4 POI present and named** at both 390×844 and 430×932, no clipping failure.
+- At 768×900: 4/4; at 1280×900: 3/4 due to viewport/collision rules, acceptable only for this mobile discovery lot.
+- Casablanca visual AFTER `37800420902` **success** across 4 viewports, camera pitch=0, bearing=0, actual tile loads/footprints.
+- Multicity browser `37800420910` **success**.
+- Visual inspection of `poi-after-all-390x844.png`: **8.1/10 preliminary subjective**; bottom sheet obscures a large fraction of the territory, small labels and clustering remain. Do not claim >=8.5.
+
+### Remaining issues
+- Street After `37800421036` **failed**: under zoom, DOM Twin Center label disappeared (test referenced label even when collision/offscreen removed it).
+- C7 `37800420866` failed on C3 price API HTTP 503 (separate backend problem); Zillow certification also failed and needs independent diagnosis.
+- Test-harness correction `d58d9a9d0dae5c53ea5be57c21bd64342a58f228` confirms Twin Center geographic anchor before real zoom, avoids requiring DOM label after zoom, keeps actual street zoom tier and 2D footprint assertions. Not yet proven by CI.
+- Exact-head renewed screenshots / street test are pending.
+
+### Next exact
+Obtain new exact-head Rue CI result. If green, retrieve its screenshot and confirm scope; if red, diagnose actual failure rather than reducing assertions. Then improve the mobile sheet and POI hierarchy to reach >=8.5/10; compare before/after identical viewports and seek human visual approval. No Vercel deploy, DB write or merge authorized.
