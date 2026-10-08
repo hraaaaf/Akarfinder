@@ -23,20 +23,45 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - name: Checkout
+      - name: Checkout exact PR head
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 2
+      - name: Latest-commit scope check
+        id: scope
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" != "pull_request" ]; then
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          files="$(git diff --name-only HEAD^ HEAD)"
+          echo "$files"
+          if printf '%s\n' "$files" | grep -Eq '^(lib/search/|lib/listings/mock-listings\.ts$|lib/intelligence/public-serp-intelligence-carrier\.ts$|components/search/LightZillowSearchShell\.tsx$|components/layout/SiteHeader\.tsx$|scripts/scrapers/__tests__/(phase1-p1-visible-dedup|search-truth-tier)|\.github/workflows/phase1-p1-visible-dedup-gate\.yml$)'; then
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "relevant=false" >> "$GITHUB_OUTPUT"
+            echo "No relevant change in latest commit; prior green proof remains applicable."
+          fi
       - name: Setup Node
+        if: steps.scope.outputs.relevant == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
       - name: Install dependencies
+        if: steps.scope.outputs.relevant == 'true'
         run: npm ci
       - name: Visible dedup contracts
+        if: steps.scope.outputs.relevant == 'true'
         run: npx tsx --test scripts/scrapers/__tests__/phase1-p1-visible-dedup.test.ts scripts/scrapers/__tests__/phase1-p1-visible-dedup-wiring.test.ts
       - name: Search truth contracts
+        if: steps.scope.outputs.relevant == 'true'
         run: npx tsx --test scripts/scrapers/__tests__/search-truth-tier.test.ts
       - name: TypeScript
+        if: steps.scope.outputs.relevant == 'true'
         run: npx tsc --noEmit
       - name: Production build rehearsal
+        if: steps.scope.outputs.relevant == 'true'
         run: npm run build

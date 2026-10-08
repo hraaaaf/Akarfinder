@@ -5,7 +5,7 @@
 // publication safety, source balancing and dedupe.
 
 import { createHash } from "node:crypto";
-import { getSupabaseServerClient } from "@/lib/db/supabase-client";
+import { queryNeonRows } from "@/lib/db/neon-read-client";
 import { getListingUrlPatterns } from "@/lib/openserp-ingestion/domain-registry";
 import {
   compareThinIndexEligibility,
@@ -314,20 +314,22 @@ function candidateLimit(maxResults: number): number {
 
 export async function searchSeedThinIndexPage(input: SeedThinIndexInput): Promise<SeedThinIndexPage> {
   const maxResults = Math.max(1, Math.min(Math.trunc(input.maxResults ?? 100), 100));
-  const supabase = getSupabaseServerClient();
-  const { data, error } = await supabase.rpc("search_thin_index_v3", {
-    p_query: input.q?.trim() || null,
-    p_city: input.city?.trim() || null,
-    p_property_type: input.propertyType?.trim() || null,
-    p_intent: input.intent?.trim() || null,
-    p_limit: candidateLimit(maxResults),
-    p_after_rank: input.cursor?.rank ?? null,
-    p_after_updated_at: input.cursor?.updatedAt ?? null,
-    p_after_seed_id: input.cursor?.seedId ?? null,
-  });
-  if (error) throw new Error(`thin-index v3 RPC failed: ${error.message}`);
-
-  const rpcRows = (data ?? []) as ThinIndexRpcRow[];
+  const rpcRows = await queryNeonRows<ThinIndexRpcRow>(
+    `SELECT * FROM public.search_thin_index_v3(
+      $1::text, $2::text, $3::text, $4::text,
+      $5::integer, $6::real, $7::timestamptz, $8::uuid
+    )`,
+    [
+      input.q?.trim() || null,
+      input.city?.trim() || null,
+      input.propertyType?.trim() || null,
+      input.intent?.trim() || null,
+      candidateLimit(maxResults),
+      input.cursor?.rank ?? null,
+      input.cursor?.updatedAt ?? null,
+      input.cursor?.seedId ?? null,
+    ],
+  );
   const safeRows = rpcRows
     .map(rpcRowToSeedRow)
     .filter((row) => seedMatchesThinIndexSearch(row, input));
@@ -344,11 +346,16 @@ export async function searchSeedThinIndexPage(input: SeedThinIndexInput): Promis
   }
 
   const urls = preselected.map((row) => row.canonical_url);
-  const existing = await supabase.from("listing_sources").select("listing_url").in("listing_url", urls);
-  if (existing.error) throw new Error(`seed thin index existing-source lookup failed: ${existing.error.message}`);
+  const existing = urls.length
+    ? await queryNeonRows<{ listing_url: string | null }>(
+        `SELECT listing_url FROM public.listing_sources
+         WHERE listing_url IN (${urls.map((_, index) => `${index + 1}`).join(", ")})`,
+        urls,
+      )
+    : [];
   const existingUrls = new Set(
-    (existing.data ?? [])
-      .map((row: { listing_url: string | null }) => row.listing_url)
+    existing
+      .map((row) => row.listing_url)
       .filter((value): value is string => Boolean(value)),
   );
 

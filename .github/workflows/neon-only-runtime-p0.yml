@@ -1,0 +1,35 @@
+name: Neon-only Runtime P0
+
+on:
+  pull_request:
+    paths:
+      - "app/api/search/gateway/route.ts"
+      - "lib/db/neon-read-client.ts"
+      - "lib/search-gateway/public-search-cursor.ts"
+      - "lib/search-gateway/seed-thin-index.ts"
+      - "lib/map/city-market-intelligence-live.ts"
+      - "lib/map/rabat-market-intelligence-live.ts"
+      - "lib/seller/owner-listing-projection.ts"
+      - "lib/odm/odm-shadow-telemetry-store.ts"
+      - "lib/search/structured-district-total.ts"
+      - "scripts/scrapers/__tests__/neon-only-runtime-critical-paths.test.ts"
+      - ".github/workflows/neon-only-runtime-p0.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Neon-only critical path guard
+        run: npx tsx --test scripts/scrapers/__tests__/neon-only-runtime-critical-paths.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit

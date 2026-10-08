@@ -1,6 +1,7 @@
 // SEO-5B CERTIFIED MARKET METRIC READ MODEL
 // Server-only by contract: uses the Supabase service-role client. Never import from client components.
 
+import { getDbProvider } from "@/lib/db/provider";
 import { getSupabaseServerClient } from "@/lib/db/supabase-client";
 import {
   evaluateMarketMetricPublication,
@@ -124,6 +125,8 @@ export function toPublishedMarketMetric(row: MarketMetricRow): PublishedMarketMe
 export async function getPublishedMarketMetrics(
   scope: MarketMetricScope = {},
 ): Promise<PublishedMarketMetric[]> {
+  if (getDbProvider() === "neon") return [];
+
   try {
     const supabase = getSupabaseServerClient();
     let query = supabase

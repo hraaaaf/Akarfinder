@@ -11,7 +11,7 @@ import {
   SEARCH_GATEWAY_CACHE_PROVIDER,
   type SearchGatewayProviderIssueClassification,
 } from "@/lib/search-gateway-cache/types";
-import { createSearchGatewayCacheStore } from "@/lib/search-gateway-cache/supabase-cache-store";
+import { NoopSearchGatewayCacheStore } from "@/lib/search-gateway-cache/noop-cache-store";
 import { searchPublicRepresentations } from "@/lib/search-gateway/public-search-cursor";
 import { runSearchGatewayProviderSearch } from "@/lib/search-gateway/search-gateway-runner";
 import { getEnabledSearchGatewaySources } from "@/lib/search-gateway/search-gateway-sources";
@@ -139,7 +139,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const legacySeedInput = { q: query, city, propertyType, intent, maxResults: limit };
   const searchApiKey = process.env.SEARCH_API_KEY;
   const searchApiEndpoint = process.env.SEARCH_API_ENDPOINT || "https://api.search.com/query";
-  const cacheStore = createSearchGatewayCacheStore();
+  const cacheStore = new NoopSearchGatewayCacheStore("neon_cache_store_pending");
 
   let gatewayResponse: SearchGatewayRouteResponse;
 
@@ -224,10 +224,20 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       next_cursor: indexedPage.next_cursor,
     });
   } catch (error) {
+    const message = error instanceof Error ? error.message : "public_search_unknown_error";
+    if (message === "public_search_index_unavailable") {
+      return NextResponse.json({
+        ...gatewayResponse,
+        total_count: gatewayResponse.results_count,
+        has_more: false,
+        next_cursor: null,
+        public_index_degraded: true,
+      });
+    }
+
     console.error("[api/search/gateway:public-index]", error);
-    // Temporary backward-compatible fallback while environments receive the
-    // additive ODM-09B migration. This path remains capped and must disappear
-    // once the canonical Supabase project is migrated and verified.
+    // Backward-compatible fallback for environments that have a legacy Thin
+    // Index but not the canonical cursor read model.
     const fallback = await appendSeedThinIndexResults(gatewayResponse, legacySeedInput);
     return NextResponse.json({
       ...fallback,

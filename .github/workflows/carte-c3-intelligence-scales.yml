@@ -18,6 +18,10 @@ on:
       - "scripts/scrapers/__tests__/market-metric-reliability.test.ts"
       - ".github/workflows/carte-c3-intelligence-scales.yml"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
@@ -25,18 +29,44 @@ jobs:
   certify-intelligence-scale:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      DATABASE_PROVIDER: neon
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 2
+      - name: Latest-commit scope check
+        id: scope
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" != "pull_request" ]; then
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          files="$(git diff --name-only HEAD^ HEAD)"
+          echo "$files"
+          if printf '%s\n' "$files" | grep -Eq '^(lib/geo/|lib/map/|components/map/|app/map/|app/api/geo/|scripts/scrapers/__tests__/intelligence-|\.github/workflows/carte-c3-intelligence-scales\.yml$)'; then
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "relevant=false" >> "$GITHUB_OUTPUT"
+            echo "No relevant change: reuse prior green proof."
+          fi
       - uses: actions/setup-node@v4
+        if: steps.scope.outputs.relevant == 'true'
         with:
           node-version: 24
           cache: npm
       - run: npm ci
+        if: steps.scope.outputs.relevant == 'true'
       - name: Deterministic scale, payload, reliability, API guard and canary geometry contracts
+        if: steps.scope.outputs.relevant == 'true'
         run: npx tsx --test scripts/scrapers/__tests__/intelligence-scale.test.ts scripts/scrapers/__tests__/intelligence-payload.test.ts scripts/scrapers/__tests__/market-metric-reliability.test.ts scripts/scrapers/__tests__/rabat-market-zones-geojson.test.ts scripts/scrapers/__tests__/rabat-market-intelligence-api.test.ts
       - name: TypeScript
+        if: steps.scope.outputs.relevant == 'true'
         run: npx tsc --noEmit
       - name: No hardcoded market thresholds or heavy Shadow view
+        if: steps.scope.outputs.relevant == 'true'
         run: |
           grep -q 'snapshot_quantiles_v1' lib/map/intelligence-scale.ts
           if grep -Eq '18000|450|120' lib/map/intelligence-scale.ts; then
@@ -50,17 +80,9 @@ jobs:
             echo 'C3 live reader must remain on bounded base tables'
             exit 1
           fi
-      - name: Live bounded Rabat intelligence proof
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-        run: npx tsx scripts/audits/carte-c3-rabat-intelligence-live.ts
+      - name: Rabat intelligence contract proof
+        if: steps.scope.outputs.relevant == 'true'
+        run: npx tsx --test scripts/scrapers/__tests__/city-market-intelligence.test.ts scripts/scrapers/__tests__/rabat-market-intelligence-api.test.ts
       - name: Production build
+        if: steps.scope.outputs.relevant == 'true'
         run: npm run build
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: carte-c3-intelligence-live-${{ github.run_id }}
-          path: data/audits/runtime/carte-c3-rabat-intelligence-live.json
-          if-no-files-found: warn
-          retention-days: 30

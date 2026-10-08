@@ -1,3 +1,4 @@
+import { getDbProvider } from "@/lib/db/provider";
 import { getSupabaseServerClient } from "@/lib/db/supabase-client";
 import {
   evaluateSeoInventoryEvidence,
@@ -32,6 +33,7 @@ export async function getSeoNeighborhoodIndexability(
   const citySlug = scope.citySlug.trim().toLowerCase();
   const neighborhoodSlug = scope.neighborhoodSlug.trim().toLowerCase();
   if (!citySlug || !neighborhoodSlug) return unavailableSeoInventoryDecision();
+  if (getDbProvider() === "neon") return unavailableSeoInventoryDecision();
 
   try {
     const supabase = getSupabaseServerClient();

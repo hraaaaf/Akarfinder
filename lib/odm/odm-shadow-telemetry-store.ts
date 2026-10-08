@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
+import { neon } from "@neondatabase/serverless";
 
 import type { OdmDualReadDivergence } from "@/lib/odm/odm-dual-read-shadow";
 
@@ -45,24 +45,29 @@ export async function persistOdmDualReadMetric(
   metric: OdmDualReadDivergence,
   env: NodeJS.ProcessEnv = process.env,
 ): Promise<OdmShadowTelemetryWriteResult> {
-  const url = env.SUPABASE_URL;
-  const key = env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) {
+  const databaseUrl = env.DATABASE_URL;
+  if (!databaseUrl) {
     console.warn("[odm-shadow-telemetry:disabled]", JSON.stringify({ reason: "missing_configuration" }));
     return { stored: false, reason: "missing_configuration" };
   }
 
-  const supabase = createClient(url, key, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
-  const { error } = await supabase
-    .from(ODM_SHADOW_TELEMETRY_TABLE)
-    .insert(metricToTelemetryRow(metric));
+  const row = metricToTelemetryRow(metric);
+  const columns = Object.keys(row);
+  const values = Object.values(row);
+  const columnSql = columns.map((column) => `"${column}"`).join(", ");
+  const valueSql = values.map((_, index) => `${index + 1}`).join(", ");
 
-  if (error) {
-    console.warn("[odm-shadow-telemetry:error]", JSON.stringify({ code: error.code, message: error.message }));
+  try {
+    const sql = neon(databaseUrl);
+    await sql.query(
+      `INSERT INTO public.${ODM_SHADOW_TELEMETRY_TABLE} (${columnSql}) VALUES (${valueSql})`,
+      values,
+    );
+    return { stored: true };
+  } catch (error) {
+    console.warn("[odm-shadow-telemetry:error]", JSON.stringify({
+      message: error instanceof Error ? error.message : String(error),
+    }));
     return { stored: false, reason: "insert_failed" };
   }
-
-  return { stored: true };
 }

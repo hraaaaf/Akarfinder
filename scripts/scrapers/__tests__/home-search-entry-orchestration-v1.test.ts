@@ -58,4 +58,10 @@ describe("#19G Homepage & Search Entry Orchestration V1", () => {
     assert.ok(wizard.includes("/api/me/continuity"));
     assert.equal(wizard.includes("persona"), false);
   });
+
+  it("does not force-focus the hero search input when switching intent on mobile", () => {
+    const homeSearch = readFileSync(join(process.cwd(), "components/home/HomeSearchBar.tsx"), "utf8");
+    assert.equal(homeSearch.includes("inputRef.current?.focus()"), false);
+    assert.ok(homeSearch.includes("text-[16px] font-semibold"));
+  });
 });

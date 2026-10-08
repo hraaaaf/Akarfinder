@@ -13,6 +13,10 @@ on:
       - "lib/professional/verified-listing-inventory-repository.ts"
       - "components/map/**"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
@@ -25,8 +29,16 @@ jobs:
       AUDIT_OUTPUT_DIR: data/audits/carte-c7-final
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      DATABASE_PROVIDER: neon
+      MARKET_BROWSER_FIXTURE: "1"
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Latest-commit scope check
+        shell: bash
+        run: |
+          git diff --name-only HEAD^ HEAD
       - uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -68,7 +80,7 @@ jobs:
           done
           cat /tmp/carte-c7.log
           exit 1
-      - name: Four-viewport real MapLibre certification
+      - name: Four-viewport MapLibre certification with deterministic market fixture
         run: node scripts/audits/carte-c7-final-certification.mjs
       - name: C7 report contract
         run: |

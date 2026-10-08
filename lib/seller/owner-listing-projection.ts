@@ -1,4 +1,4 @@
-import { getSupabaseServerClient } from "@/lib/db/supabase-client";
+import { queryNeonRows } from "@/lib/db/neon-read-client";
 import type { SearchGatewayNormalizedResult } from "@/lib/search-gateway/search-gateway-types";
 
 export type OwnerListingSearchInput = {
@@ -41,10 +41,11 @@ export function ownerListingsSearchEnabled(env: NodeJS.ProcessEnv = process.env)
 }
 
 export async function syncOwnerListingProjection(draftId: string): Promise<string | null> {
-  const supabase = getSupabaseServerClient();
-  const { data, error } = await supabase.rpc("sync_owner_listing_representation_v1", { p_draft_id: draftId });
-  if (error) throw new Error(`owner_listing_projection_failed:${error.message}`);
-  return typeof data === "string" ? data : null;
+  const rows = await queryNeonRows<{ representation_id: string | null }>(
+    "SELECT public.sync_owner_listing_representation_v1($1::uuid) AS representation_id",
+    [draftId],
+  );
+  return rows[0]?.representation_id ?? null;
 }
 
 export async function searchOwnerListings(input: OwnerListingSearchInput): Promise<{
@@ -53,21 +54,23 @@ export async function searchOwnerListings(input: OwnerListingSearchInput): Promi
 }> {
   if (!ownerListingsSearchEnabled()) return { results: [], totalCount: 0 };
 
-  const supabase = getSupabaseServerClient();
-  const { data, error } = await supabase.rpc("search_owner_public_representations_v1", {
-    p_query: input.q?.trim() || null,
-    p_city: input.city?.trim() || null,
-    p_property_type: input.propertyType?.trim() || null,
-    p_intent: input.intent?.trim() || null,
-    p_min_price: bounded(input.minPrice),
-    p_max_price: bounded(input.maxPrice),
-    p_min_surface: bounded(input.minSurface),
-    p_max_surface: bounded(input.maxSurface),
-    p_limit: Math.max(1, Math.min(Math.trunc(input.limit ?? 20), 50)),
-  });
-  if (error) throw new Error(`owner_listing_search_failed:${error.message}`);
-
-  const rows = (data ?? []) as OwnerSearchRow[];
+  const rows = await queryNeonRows<OwnerSearchRow>(
+    `SELECT * FROM public.search_owner_public_representations_v1(
+      $1::text, $2::text, $3::text, $4::text,
+      $5::numeric, $6::numeric, $7::numeric, $8::numeric, $9::integer
+    )`,
+    [
+      input.q?.trim() || null,
+      input.city?.trim() || null,
+      input.propertyType?.trim() || null,
+      input.intent?.trim() || null,
+      bounded(input.minPrice),
+      bounded(input.maxPrice),
+      bounded(input.minSurface),
+      bounded(input.maxSurface),
+      Math.max(1, Math.min(Math.trunc(input.limit ?? 20), 50)),
+    ],
+  );
   return {
     totalCount: Number(rows[0]?.total_count ?? 0),
     results: rows.map((row) => ({

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 import { track } from "@/lib/tracking/track";
@@ -16,7 +16,6 @@ type Intent = (typeof INTENTS)[number]["type"];
 
 export function HomeSearchBar() {
   const router = useRouter();
-  const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
   const [intent, setIntent] = useState<Intent>("buy");
 
@@ -65,10 +64,7 @@ export function HomeSearchBar() {
               key={item.type}
               type="button"
               aria-pressed={active}
-              onClick={() => {
-                setIntent(item.type);
-                inputRef.current?.focus();
-              }}
+              onClick={() => setIntent(item.type)}
               className={`min-h-10 rounded-[11px] px-3 py-2 text-[12px] font-extrabold transition sm:text-[13px] ${
                 active
                   ? "bg-white text-[#0B2545] shadow-[0_5px_16px_rgba(2,12,27,0.18)]"
@@ -90,14 +86,13 @@ export function HomeSearchBar() {
             aria-hidden="true"
           />
           <input
-            ref={inputRef}
             data-crawl-search-input="home-search"
             type="search"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Ville, quartier ou référence"
             aria-label="Ville, quartier ou référence"
-            className="min-w-0 flex-1 bg-transparent py-4 text-[14px] font-semibold text-[#0B1F3A] outline-none placeholder:font-medium placeholder:text-slate-400 sm:py-[17px] sm:text-[15px]"
+            className="min-w-0 flex-1 bg-transparent py-4 text-[16px] font-semibold text-[#0B1F3A] outline-none placeholder:font-medium placeholder:text-slate-400 sm:py-[17px] sm:text-[15px]"
           />
         </div>
 

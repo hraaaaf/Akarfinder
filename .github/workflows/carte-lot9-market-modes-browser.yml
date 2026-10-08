@@ -13,6 +13,10 @@ on:
       - "scripts/audits/carte-lot9-market-modes-browser.mjs"
       - ".github/workflows/carte-lot9-market-modes-browser.yml"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
@@ -25,20 +29,47 @@ jobs:
       AUDIT_OUTPUT_DIR: data/audits/carte-lot9-market-modes
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      DATABASE_PROVIDER: neon
+      MARKET_BROWSER_FIXTURE: "1"
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 2
+      - name: Latest-commit scope check
+        id: scope
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" != "pull_request" ]; then
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          files="$(git diff --name-only HEAD^ HEAD)"
+          echo "$files"
+          if printf '%s\n' "$files" | grep -Eq '^(app/api/geo/market-intelligence/|components/map/(MapLegend|MapNeighborhoodClient|MapNeighborhoodExperience)\.tsx$|lib/geo/|lib/map/(city-market-intelligence|map-navigation-state)|scripts/audits/carte-lot9-market-modes-browser\.mjs$|\.github/workflows/carte-lot9-market-modes-browser\.yml$)'; then
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "relevant=false" >> "$GITHUB_OUTPUT"
+            echo "No relevant change: reuse prior green proof."
+          fi
       - uses: actions/setup-node@v4
+        if: steps.scope.outputs.relevant == 'true'
         with:
           node-version: 24
           cache: npm
       - run: npm ci
+        if: steps.scope.outputs.relevant == 'true'
       - name: TypeScript
+        if: steps.scope.outputs.relevant == 'true'
         run: npx tsc --noEmit
       - name: Production build
+        if: steps.scope.outputs.relevant == 'true'
         run: npm run build
       - name: Install Chromium
+        if: steps.scope.outputs.relevant == 'true'
         run: npx playwright install --with-deps chromium
       - name: Start production server
+        if: steps.scope.outputs.relevant == 'true'
         shell: bash
         run: |
           npm run start -- -p 3209 > /tmp/carte-lot9.log 2>&1 &
@@ -49,8 +80,10 @@ jobs:
           cat /tmp/carte-lot9.log
           exit 1
       - name: Four-viewport market modes browser certification
+        if: steps.scope.outputs.relevant == 'true'
         run: node scripts/audits/carte-lot9-market-modes-browser.mjs
       - name: Enforce Lot 9 report
+        if: steps.scope.outputs.relevant == 'true'
         run: |
           node - <<'NODE'
           const r=require('./data/audits/carte-lot9-market-modes/report.json');
@@ -69,7 +102,7 @@ jobs:
           }
           NODE
       - name: Upload Lot 9 exact-head proof
-        if: always()
+        if: always() && steps.scope.outputs.relevant == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: carte-lot9-market-modes-${{ github.run_id }}

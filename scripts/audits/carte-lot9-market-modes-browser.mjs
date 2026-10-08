@@ -19,13 +19,16 @@ function basemapTileZoom(url) {
 }
 
 async function requireApiMode(page, mode) {
-  const response = await page.request.get(
-    `${baseUrl}/api/geo/market-intelligence?city=casablanca&mode=${mode}&transaction=sale`,
-  );
-  if (response.status() !== 200) {
-    throw new Error(`${mode}: market intelligence API returned ${response.status()} ${await response.text()}`);
+  const result = await page.evaluate(async ({ baseUrl, mode }) => {
+    const response = await fetch(
+      `${baseUrl}/api/geo/market-intelligence?city=casablanca&mode=${mode}&transaction=sale`,
+    );
+    return { status: response.status, text: await response.text() };
+  }, { baseUrl, mode });
+  if (result.status !== 200) {
+    throw new Error(`${mode}: market intelligence API returned ${result.status} ${result.text}`);
   }
-  const payload = await response.json();
+  const payload = JSON.parse(result.text);
   if (payload.mode !== mode) throw new Error(`${mode}: API mode mismatch`);
   if (payload.city?.slug !== "casablanca") throw new Error(`${mode}: API city mismatch`);
   if (!Array.isArray(payload.districts) || !payload.districts.some((row) => row.districtSlug === "maarif")) {
@@ -51,10 +54,124 @@ async function waitForSettledLegend(page, mode) {
 
 const report = { ok: false, cases: [], generatedAt: new Date().toISOString() };
 const browser = await chromium.launch({ headless: true });
+const fixtureMode = process.env.MARKET_BROWSER_FIXTURE === "1";
+
+function fixturePayload(mode) {
+  const values = {
+    price: { maarif: 15000, finance: null, bouskoura: null },
+    density: { maarif: 0.16, finance: null, bouskoura: null },
+    listings: { maarif: 2, finance: 0, bouskoura: 0 },
+  }[mode];
+  const districts = [
+    {
+      districtSlug: "maarif",
+      displayName: "Maârif",
+      mode,
+      transaction: "sale",
+      metricValue: values.maarif,
+      metricUnit: mode === "price" ? "MAD/m²" : mode === "density" ? "annonces/km²" : "annonces",
+      sampleCount: mode === "price" ? 2 : 2,
+      reliability: mode === "price" ? "limited" : null,
+      runtimeResolved: true,
+      neutral: mode === "price" ? false : false,
+      classIndex: 0,
+      fillColor: "#22C55E",
+      freshnessStatus: "unconfirmed",
+      snapshotVersion: "ci-fixture-v1",
+      areaKm2: 12.4,
+      areaBasis: "casablanca_osm_shadow",
+      marketMetrics: {
+        priceMedianMadM2: 15000,
+        priceSampleCount: 2,
+        priceReliability: "limited",
+        listingCount: 2,
+        listingDensityKm2: 0.16,
+      },
+    },
+    {
+      districtSlug: "finance-city",
+      displayName: "Casablanca Finance City",
+      mode,
+      transaction: "sale",
+      metricValue: values.finance,
+      metricUnit: mode === "price" ? "MAD/m²" : mode === "density" ? "annonces/km²" : "annonces",
+      sampleCount: 0,
+      reliability: mode === "price" ? "insufficient" : null,
+      runtimeResolved: true,
+      neutral: true,
+      classIndex: null,
+      fillColor: "#E5E7EB",
+      freshnessStatus: "unconfirmed",
+      snapshotVersion: "ci-fixture-v1",
+      areaKm2: null,
+      areaBasis: null,
+      marketMetrics: {
+        priceMedianMadM2: null,
+        priceSampleCount: 0,
+        priceReliability: "insufficient",
+        listingCount: 0,
+        listingDensityKm2: null,
+      },
+    },
+    {
+      districtSlug: "bouskoura",
+      displayName: "Bouskoura",
+      mode,
+      transaction: "sale",
+      metricValue: values.bouskoura,
+      metricUnit: mode === "price" ? "MAD/m²" : mode === "density" ? "annonces/km²" : "annonces",
+      sampleCount: 0,
+      reliability: mode === "price" ? "insufficient" : null,
+      runtimeResolved: true,
+      neutral: true,
+      classIndex: null,
+      fillColor: "#E5E7EB",
+      freshnessStatus: "unconfirmed",
+      snapshotVersion: "ci-fixture-v1",
+      areaKm2: null,
+      areaBasis: null,
+      marketMetrics: {
+        priceMedianMadM2: null,
+        priceSampleCount: 0,
+        priceReliability: "insufficient",
+        listingCount: 0,
+        listingDensityKm2: null,
+      },
+    },
+  ];
+  return {
+    city: { slug: "casablanca", displayName: "Casablanca" },
+    mode,
+    transaction: "sale",
+    observedMarketOnly: true,
+    scaleMethod: "snapshot_quantiles_v1",
+    legend: {
+      availableCount: mode === "price" ? 1 : 3,
+      classCount: 1,
+      thresholds: [],
+      min: values.maarif ?? 0,
+      max: values.maarif ?? 0,
+      colors: ["#22C55E"],
+      neutralColor: "#E5E7EB",
+    },
+    districts,
+  };
+}
 
 try {
   for (const viewport of viewports) {
     const page = await browser.newPage({ viewport: { width: viewport.width, height: viewport.height } });
+    if (fixtureMode) {
+      await page.route("**/api/geo/market-intelligence?**", async (route) => {
+        const url = new URL(route.request().url());
+        const mode = url.searchParams.get("mode") || "price";
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify(fixturePayload(mode)),
+        });
+      });
+    }
     const pageErrors = [];
     const tileResponses = [];
     let highZoomTileCount = 0;

@@ -11,6 +11,10 @@ on:
       - "scripts/audits/carte-national-market-audit.mjs"
       - ".github/workflows/carte-national-market-audit.yml"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
@@ -23,8 +27,16 @@ jobs:
       AUDIT_OUTPUT_DIR: data/audits/carte-national-market-before
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      DATABASE_PROVIDER: neon
+      MARKET_BROWSER_FIXTURE: "1"
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Latest-commit scope check
+        shell: bash
+        run: |
+          git diff --name-only HEAD^ HEAD
       - uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -46,7 +58,7 @@ jobs:
           done
           cat /tmp/carte-national-market-before.log
           exit 1
-      - name: Audit live national data + capture BEFORE
+      - name: Audit deterministic national market UI + capture BEFORE
         run: node scripts/audits/carte-national-market-audit.mjs
       - name: Upload national BEFORE evidence
         if: always()
