@@ -798,8 +798,8 @@ export function MapLibreNeighborhood3D({
                   source: "neighborhood-boundary",
                   paint: {
                     "line-color": AKARFINDER_MOROCCO_MAP_NAVY,
-                    "line-width": 5.0,
-                     "line-opacity": 0.12,
+                    "line-width": 2.2,
+                     "line-opacity": 0.06,
                      "line-blur": 1.5,
                   },
                 });
@@ -808,8 +808,8 @@ export function MapLibreNeighborhood3D({
                 id: "neighborhood-boundary-line", type: "line", source: "neighborhood-boundary",
                 paint: {
                   "line-color": AKARFINDER_MOROCCO_MAP_NAVY,
-                  "line-width": isMaarifTargetPilot ? 2.25 : 3.2,
-                   "line-opacity": isMaarifTargetPilot ? 0.84 : 0.96,
+                  "line-width": isMaarifTargetPilot ? 1.4 : 3.2,
+                   "line-opacity": isMaarifTargetPilot ? 0.48 : 0.96,
                    "line-blur": 0,
                    ...(isMaarifTargetPilot ? { "line-dasharray": [2.2, 1.4] } : {}),
                 },
@@ -1016,8 +1016,8 @@ export function MapLibreNeighborhood3D({
         source: CONTEXT_FOOTPRINT_SOURCE_ID,
         paint: {
           "line-color": AKARFINDER_MOROCCO_MAP_NAVY,
-          "line-width": 5.0,
-           "line-opacity": 0.05,
+          "line-width": 3.0,
+           "line-opacity": 0.0,
            "line-blur": 2.0,
         },
       } as any, FOCUS_GLOW_LAYER_ID);
@@ -1027,8 +1027,8 @@ export function MapLibreNeighborhood3D({
         source: CONTEXT_FOOTPRINT_SOURCE_ID,
         paint: {
           "line-color": AKARFINDER_MOROCCO_MAP_NAVY,
-          "line-width": 2.0,
-           "line-opacity": 0.08,
+          "line-width": 1.0,
+           "line-opacity": 0.0,
            "line-offset": 0.9,
            "line-blur": 0.45,
         },
@@ -1039,8 +1039,8 @@ export function MapLibreNeighborhood3D({
         source: CONTEXT_FOOTPRINT_SOURCE_ID,
         paint: {
           "line-color": "#20516B",
-           "line-width": 0.95,
-           "line-opacity": 0.18,
+           "line-width": 0.8,
+           "line-opacity": 0.0,
            "line-blur": 0,
         },
       } as any, FOCUS_GLOW_LAYER_ID);
@@ -1051,7 +1051,7 @@ export function MapLibreNeighborhood3D({
         paint: {
           "line-color": "#FFFFFF",
           "line-width": 0.90,
-          "line-opacity": 0.54,
+          "line-opacity": 0.0,
           "line-offset": -1.05,
           "line-blur": 0.32,
         },
@@ -1088,14 +1088,14 @@ export function MapLibreNeighborhood3D({
         const point = map.project([anchor.longitude, anchor.latitude]);
         next[anchor.poi_id] = {
           x: point.x, y: point.y,
-          visible: point.x > -100 && point.x < canvas.clientWidth + 100 && point.y > -80 && point.y < canvas.clientHeight + 80,
+          visible: point.x >= 16 && point.x <= canvas.clientWidth - 16 && point.y >= 165 && point.y <= canvas.clientHeight - 24,
         };
       }
       for (const landmark of targetPilotLandmarks) {
         const point = map.project([landmark.longitude, landmark.latitude]);
         next[`target:${landmark.id}`] = {
           x: point.x, y: point.y,
-          visible: point.x > -120 && point.x < canvas.clientWidth + 120 && point.y > -100 && point.y < canvas.clientHeight + 100,
+          visible: point.x >= 16 && point.x <= canvas.clientWidth - 16 && point.y >= 165 && point.y <= canvas.clientHeight - 24,
         };
       }
       const cp = map.project(center);
@@ -1207,7 +1207,7 @@ export function MapLibreNeighborhood3D({
                 data-label-collapsed={collapseLabel ? "true" : "false"}
                 data-poi-category={anchor.category}
                 data-poi-family={poiVisualFamily(anchor.category)}
-                 data-anchor-edge={mapRef.current && screen.x > mapRef.current.clientWidth - 130 ? "right" : mapRef.current && screen.x < 130 ? "left" : "center"}
+                 data-anchor-edge={mapRef.current && screen.x > mapRef.current.clientWidth - 230 ? "right" : mapRef.current && screen.x < 110 ? "left" : "center"}
                  style={{ left: screen.x, top: screen.y }}
               >
                 <span lang={arabic ? "ar" : undefined} dir={arabic ? "rtl" : "auto"}>{anchor.name}</span>
@@ -1225,7 +1225,7 @@ export function MapLibreNeighborhood3D({
                 key={landmark.id}
                 className="maplibre-spike-target-landmark-label"
                 data-landmark-tier={landmark.tier}
-                 data-anchor-edge={mapRef.current && screen.x > mapRef.current.clientWidth - 130 ? "right" : mapRef.current && screen.x < 130 ? "left" : "center"}
+                 data-anchor-edge={mapRef.current && screen.x > mapRef.current.clientWidth - 230 ? "right" : mapRef.current && screen.x < 110 ? "left" : "center"}
                  style={{ left: screen.x, top: screen.y }}
               >
                 <i aria-hidden="true"><Landmark size={13} strokeWidth={2.25} /></i>
