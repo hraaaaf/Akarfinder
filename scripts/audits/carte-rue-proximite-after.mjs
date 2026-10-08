@@ -105,10 +105,25 @@ async function recenterTwinCenter(page, viewport) {
     await page.waitForTimeout(500);
   }
 
+  // Wheel gestures may stop at quartier zoom depending on viewport / device scaling.
+  // Continue interacting with the real map until its observed street zoom tier is reached.
+  const shell = page.locator('[data-maplibre-spike][data-maplibre-city="casablanca"][data-maplibre-district="maarif"]');
+  for (let step = 0; step < 6; step += 1) {
+    if ((await shell.getAttribute("data-maplibre-zoom-tier")) === "street") break;
+    await page.mouse.move(desired.x, desired.y);
+    await page.mouse.wheel(0, -360);
+    await page.waitForTimeout(350);
+  }
+  const observedTier = await shell.getAttribute("data-maplibre-zoom-tier");
+  if (observedTier !== "street") {
+    throw new Error(`${viewport.name}: real wheel zoom could not reach street tier (observed ${observedTier})`);
+  }
+
   return {
     canvasBox,
     desired,
     twinCenterBox: await landmarkBox(page),
+    observedTier,
   };
 }
 
