@@ -151,3 +151,28 @@ Deliver the first credible Maârif Flat Living Map rendering: real 2D, navigatio
 
 ### Next exact
 Read exact-head CI results, correct failures, retrieve exact-head captures, visually compare and score; then refine based on visible defects.
+
+## V0.2 visual certification checkpoint — 2026-10-08
+- Product HEAD: `ccd94e7b26d93e803e1a268d85379597d2320d1b`.
+- Casablanca AFTER `37799099028`: **success**, same four target viewports, actual camera pitch/bearing 0/0, real OpenFreeMap tile responses, 59/66/71/61 rendered 2D building footprints (mobile390/mobile430/tablet/desktop).
+- LOT H POI AFTER `37799098816`: **success**, zero clipped POI or landmark labels in four browser viewports. 2 visible POIs at mobile initial cadrage, 3 at desktop. Shows limits of first-on-screen discovery.
+- Rue Proximité AFTER `37799098591`: **success**, 4 viewport street zoom with real gestures, 12 vector footprints, 0 3D volumes.
+- Multi-city Browser `37799098861`: **success**.
+- C7 Final Certification failed on the separate C3 pricing API HTTP 503; not evidence of a Flat Living Map cartographic failure.
+- Visual score by inspection **7.8 / 10**, below target >=8.5. Exact screenshot reviewed.
+- Outstanding visual issue: mobile discoverability of sourced local anchors without obstructing the map.
+
+## V0.3 discovery — implementation / pending proof
+**Goal:** using only the existing Repères filter, let a mobile user reveal the rest of sourced points via one tap, without changing the initial close-neighborhood framing or fabricating a territorial boundary.
+
+**Target UX reference:** initial 390x844 Maârif screenshot retains the discreet top chip; chip shows sourced count (e.g., Repères + 4); tap fits the bounds of actual anchors, with padding avoiding mobile navigation/sheet. Keep full POI icons/names where collision rules allow.
+
+**Implementation:**
+- Reuse existing Repères chip for explicit source-driven `map.fitBounds`.
+- Use coordinates from `context.anchors` only; administrative neighborhood boundary unrelated and unchanged.
+- Set a scoped presentation flag allowing secondary POI names on explicitly requested overview.
+- Add browser test and evidence screenshots `poi-after-all-<width>x<height>.png`.
+- Test requires >=3 visible real POIs on mobile when >=3 source anchors, no source count inflation, and no clipped labels.
+
+**Proof pending:** exact-head CI and AFTER screenshot; do not assign upgraded visual score before inspection.
+**Safety:** no Vercel deploy, merge, migration or DB write.
