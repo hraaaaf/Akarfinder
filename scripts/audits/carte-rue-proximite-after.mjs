@@ -31,6 +31,30 @@ async function recenterTwinCenter(page, viewport) {
   const canvasBox = await canvas.boundingBox();
   if (!canvasBox) throw new Error(`${viewport.name}: canvas missing`);
 
+  // A flat map starts focused on the neighborhood, so Twin Center can legitimately
+  // be outside the initial mobile viewport. Zoom out through real wheel gestures
+  // until its sourced landmark label enters the screen; do not invent a location
+  // or force a MapLibre internal camera state.
+  const twin = page.locator('.maplibre-spike-target-landmark-label').filter({ hasText: "Twin Center" }).first();
+  const inViewport = async () => {
+    if (!(await twin.count())) return false;
+    const box = await twin.boundingBox();
+    if (!box) return false;
+    const cx = box.x + box.width / 2;
+    const cy = box.y + box.height / 2;
+    return cx > 22 && cx < viewport.width - 22 && cy > 130 && cy < Math.min(viewport.height - 125, canvasBox.height - 95);
+  };
+  const zoomOutPoint = {
+    x: canvasBox.x + canvasBox.width * 0.5,
+    y: canvasBox.y + canvasBox.height * 0.43,
+  };
+  for (let step = 0; step < 8 && !(await inViewport()); step += 1) {
+    await page.mouse.move(zoomOutPoint.x, zoomOutPoint.y);
+    await page.mouse.wheel(0, 520);
+    await page.waitForTimeout(350);
+  }
+  if (!(await inViewport())) throw new Error(`${viewport.name}: Twin Center not reachable after real zoom-out gestures`);
+
   const desired = {
     x: canvasBox.x + canvasBox.width * 0.50,
     y: canvasBox.y + canvasBox.height * (viewport.width <= 1023 ? 0.36 : 0.46),
