@@ -369,11 +369,14 @@ export function MapLibreNeighborhood3D({
           bearing: contextual ? contextCamera.bearing : 0,
           attributionControl: false,
           canvasContextAttributes: { antialias: true },
+          dragRotate: !isMaarifTargetPilot,
+          touchPitch: !isMaarifTargetPilot,
           style: isMaarifTargetPilot && targetComposition === "context"
             ? OPENFREEMAP_TARGET_STYLE
             : OPENFREEMAP_STYLE,
         } as any);
         mapInstanceRef.current = map;
+        if (isMaarifTargetPilot) map.touchZoomRotate.disableRotation();
 
         map.once("load", () => {
           if (disposed) return;
