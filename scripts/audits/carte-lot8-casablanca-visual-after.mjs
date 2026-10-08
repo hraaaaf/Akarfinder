@@ -89,6 +89,12 @@ try {
       // Flat target: no Overture extrusion dependency or volume gate.
       const cameraMode = await maplibre.getAttribute("data-maplibre-camera-mode");
       if (cameraMode !== "north-up-flat") throw new Error(`${viewport.name}: flat camera declaration missing (${cameraMode})`);
+      const observedPitch = Number(await maplibre.getAttribute("data-maplibre-actual-pitch"));
+      const observedBearing = Number(await maplibre.getAttribute("data-maplibre-actual-bearing"));
+      if (!Number.isFinite(observedPitch) || !Number.isFinite(observedBearing)
+        || Math.abs(observedPitch) > 0.01 || Math.abs(observedBearing) > 0.01) {
+        throw new Error(`${viewport.name}: observed camera not actually flat/north-up (${observedPitch}, ${observedBearing})`);
+      }
       if (await page.locator(".maplibre-spike-mode").count()) {
         throw new Error(`${viewport.name}: obsolete 2D/3D control still visible`);
       }
@@ -327,6 +333,8 @@ try {
         boundarySemantic,
         boundaryDisclosure,
         cameraMode,
+        observedPitch,
+        observedBearing,
         boundaryBadge: "Arrondissement · contour OSM",
         renderedBuildingVolumes,
         renderedBuildingFootprints,
