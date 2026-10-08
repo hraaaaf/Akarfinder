@@ -120,3 +120,34 @@ Base exact HEAD:
 
 Source PR:
 #1090 — canonical Vivre Ici product PR.
+
+## V0.2 implementation checkpoint — 2026-10-08
+
+### Goal
+Deliver the first credible Maârif Flat Living Map rendering: real 2D, navigation-style roads, understated buildings, parks, sourced icon+name POIs and a truthful administrative outline.
+
+### Implementation (not yet visually certified)
+- Flat north-up camera, drag rotation and touch pitch disabled on Maârif pilot.
+- Overture 3D installation gated off in default flat camera; no visible volume claimed.
+- Better road hierarchy (major streets vs secondary/local), minor road names only at closer zoom.
+- 2D vector footprints lower contrast; parks greener, excluding cemeteries from park treatment.
+- POIs sourced from existing neighborhood anchors only. Zoom tiers: overview up to 4, quartier up to 8, street up to 18. Category filter still supported.
+- AkarFinder flat glyph-plus-name labels, restrained white background and navy/green family colors. Lucide base glyphs are a branded first pass, not a custom proprietary icon library certification.
+- The Maârif administrative OSM line is a stronger dashed outline, explicitly marked as arrondissement (never a certified quartier border).
+- Context envelope remains an indicative hull, not an official boundary.
+- Obsolete decorative 3D choice removed from Maârif UI.
+
+### Regression harness changes
+- Casablanca AFTER requires real OpenFreeMap tiles, 2D footprint observation, no 3D volume, official administrative disclosure and mobile/desktop search handoff.
+- POI AFTER checks branded flat POI contract, glyph coverage and density by zoom tier.
+- Rue AFTER checks flat street-level zoom and actual rendered 2D building footprints.
+- Changes to old Overture-volume assertions are intentional contract migration, not suppression of visual proof.
+
+### Pending proof
+- CI / TypeScript / browser audit exact HEAD.
+- AFTER captures at 390x844, 430x932, 768x900, 1280x900.
+- BEFORE vs AFTER identical viewport comparison, screenshot inspection and scored UX review.
+- Explicit human visual acceptance before merge. No Vercel deploy authorized.
+
+### Next exact
+Read exact-head CI results, correct failures, retrieve exact-head captures, visually compare and score; then refine based on visible defects.
