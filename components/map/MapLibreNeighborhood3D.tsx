@@ -307,6 +307,7 @@ export function MapLibreNeighborhood3D({
   const [context, setContext] = useState<NeighborhoodContext | null>(null);
   const [activeCategory, setActiveCategory] = useState<LivingHereCategory | "all">("all");
   const [zoomTier, setZoomTier] = useState<"overview" | "quarter" | "street">("quarter");
+  const [actualCamera, setActualCamera] = useState({ pitch: 0, bearing: 0 });
   const [screenPoints, setScreenPoints] = useState<Record<string, ScreenPoint>>({});
   const [centerPoint, setCenterPoint] = useState<ScreenPoint | null>(null);
   const [rtlStatus, setRtlStatus] = useState<"loading" | "loaded" | "error">("loading");
@@ -711,7 +712,7 @@ export function MapLibreNeighborhood3D({
                 },
               } as any);
             }
-            map.addLayer({
+            if (!isMaarifTargetPilot || targetComposition !== "context") map.addLayer({
               id: "3d-buildings",
               source: "akarfinder-openfreemap",
               "source-layer": "building",
@@ -1074,6 +1075,11 @@ export function MapLibreNeighborhood3D({
     if (!map || !ready) return;
     const updatePositions = () => {
        const zoom = map.getZoom();
+       const pitch = Math.round(map.getPitch() * 100) / 100;
+       const bearing = Math.round(map.getBearing() * 100) / 100;
+       setActualCamera((previous) =>
+         previous.pitch === pitch && previous.bearing === bearing ? previous : { pitch, bearing },
+       );
        const nextTier = zoom < 14.1 ? "overview" : zoom < 15.7 ? "quarter" : "street";
        setZoomTier((previous) => previous === nextTier ? previous : nextTier);
        const next: Record<string, ScreenPoint> = {};
@@ -1150,6 +1156,8 @@ export function MapLibreNeighborhood3D({
       data-maplibre-boundary-semantic={isMaarifTargetPilot && boundaryGeometry ? "administrative-arrondissement" : boundaryGeometry ? "boundary-reference" : "none"}
       data-maplibre-camera-policy={targetComposition === "context" ? "contextual-center" : "boundary-fit"}
        data-maplibre-camera-mode={isMaarifTargetPilot ? "north-up-flat" : "default"}
+       data-maplibre-actual-pitch={actualCamera.pitch}
+       data-maplibre-actual-bearing={actualCamera.bearing}
       data-maplibre-focus-semantic={isMaarifTargetPilot ? "context-focus-not-boundary" : "district-focus"}
       data-maplibre-context-footprint={isMaarifTargetPilot && context?.anchors?.length ? "verified-anchor-envelope-buffered" : "none"}
       data-maplibre-target-context-count={0}
