@@ -5,6 +5,7 @@ import { test } from "node:test";
 
 const root = process.cwd();
 const header = readFileSync(join(root, "components/layout/SiteHeader.tsx"), "utf8");
+const productNav = readFileSync(join(root, "lib/product-navigation.ts"), "utf8");
 const bottomNav = readFileSync(join(root, "components/layout/MobileBottomNav.tsx"), "utf8");
 const alerts = readFileSync(join(root, "app/alerts/page.tsx"), "utf8");
 const workspace = readFileSync(join(root, "components/account/UserContinuityWorkspace.tsx"), "utf8");
@@ -14,7 +15,8 @@ const legacyProfile = readFileSync(join(root, "app/profil-recherche/page.tsx"), 
 const legacyCompanion = readFileSync(join(root, "app/compagnon/page.tsx"), "utf8");
 
 test("global navigation exposes Mon Projet as the single product name", () => {
-  assert.match(header, /href:\s*["']\/mon-projet["'],\s*text:\s*["']Mon Projet["']/);
+  assert.match(productNav, /project:\s*\{\s*href:\s*["']\/mon-projet["'],\s*label:\s*["']Mon Projet["']/);
+  assert.match(header, /href=["']\/mon-projet["'][^>]*aria-label=["']Mon Projet["']/);
   assert.doesNotMatch(header, /href:\s*["']\/compagnon["']/);
   assert.doesNotMatch(header, /text:\s*["']Conseils["']/);
   assert.doesNotMatch(header, /text:\s*["']Compagnon["']/);
@@ -22,7 +24,8 @@ test("global navigation exposes Mon Projet as the single product name", () => {
 });
 
 test("mobile bottom nav names the destination Mon Projet instead of Compte", () => {
-  assert.match(bottomNav, /href:\s*["']\/mon-projet["'][\s\S]{0,100}?label:\s*["']Mon Projet["']/);
+  assert.match(productNav, /href:\s*["']\/mon-projet["'],\s*label:\s*["']Mon Projet["'],\s*activePrefixes:/);
+  assert.match(bottomNav, /PRODUCT_MOBILE_BOTTOM_NAV/);
   assert.doesNotMatch(bottomNav, /label:\s*["']Compte["']/);
 });
 
