@@ -626,3 +626,123 @@
     height: 21px !important;
   }
 }
+
+
+/* FLAT LIVING MAP V0.2 — Maârif, scoped pilot.
+ * Exact POI positions and sourced categories are unchanged.
+ * Inline marker+name follows zoom tier; no decorative false boundaries.
+ */
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-quarter-style="flat-living-v02"]
+  .maplibre-spike-map-grade {
+  background: linear-gradient(180deg, rgb(255 253 247 / .025), transparent 50%) !important;
+  opacity: .18 !important;
+}
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-quarter-style="flat-living-v02"]
+  .maplibre-spike-canvas canvas {
+  filter: saturate(.92) contrast(1.012) brightness(1.01) !important;
+}
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-quarter-style="flat-living-v02"]
+  .maplibre-spike-map-chrome {
+  grid-template-columns: auto minmax(260px, 580px);
+}
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-poi-language="akarfinder-flat-v02"]
+  .maplibre-spike-poi-label[data-label-collapsed="false"] {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  gap: 5px;
+  transform: translate(-13px, -50%);
+  z-index: 2;
+}
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-poi-language="akarfinder-flat-v02"]
+  .maplibre-spike-poi-label[data-label-collapsed="false"] > span {
+  padding: 4px 6px;
+  max-width: 190px;
+  border: 0 !important;
+  border-radius: 6px;
+  background: rgb(255 255 255 / .72) !important;
+  color: #123250 !important;
+  box-shadow: none !important;
+  backdrop-filter: none;
+  font-size: 10.8px;
+  font-weight: 760;
+  line-height: 1.25;
+  text-shadow: 0 1px 0 #fff;
+}
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-poi-language="akarfinder-flat-v02"]
+  .maplibre-spike-poi-glyph {
+  display: grid !important;
+  flex: 0 0 26px;
+  width: 26px !important;
+  height: 26px !important;
+  place-items: center;
+  border: 1px solid rgb(255 255 255 / .94) !important;
+  border-radius: 8px !important;
+  background: #fff !important;
+  box-shadow: 0 1px 6px rgb(18 50 80 / .15), inset 0 0 0 1px rgb(18 50 80 / .06) !important;
+  color: #123250 !important;
+}
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-poi-language="akarfinder-flat-v02"]
+  .maplibre-spike-poi-label[data-poi-family="green-sport"] .maplibre-spike-poi-glyph {
+  color: #376E59 !important;
+  background: #F3FAF0 !important;
+}
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-poi-language="akarfinder-flat-v02"]
+  .maplibre-spike-poi-label[data-poi-family="mobility"] .maplibre-spike-poi-glyph {
+  color: #20516B !important;
+}
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-poi-language="akarfinder-flat-v02"]
+  .maplibre-spike-poi-label[data-label-collapsed="true"] {
+  transform: translate(-50%, -50%);
+  gap: 0;
+}
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-poi-language="akarfinder-flat-v02"]
+  .maplibre-spike-poi-label[data-label-collapsed="true"] > span {
+  display: none;
+}
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-poi-language="akarfinder-flat-v02"]
+  .maplibre-spike-poi-label[data-label-collapsed="true"] .maplibre-spike-poi-glyph {
+  flex-basis: 22px;
+  width: 22px !important;
+  height: 22px !important;
+  opacity: .9;
+}
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-poi-language="akarfinder-flat-v02"]
+  .maplibre-spike-target-landmark-label {
+  border: 1px solid rgb(181 200 212 / .85) !important;
+  border-radius: 10px !important;
+  background: rgb(255 255 255 / .94) !important;
+  box-shadow: 0 3px 11px rgb(18 50 80 / .11) !important;
+  color: #123250 !important;
+  font-weight: 760;
+}
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-poi-language="akarfinder-flat-v02"]
+  .maplibre-spike-target-landmark-label > i {
+  display: grid !important;
+  place-items: center;
+  width: 24px !important;
+  height: 24px !important;
+  border: 0 !important;
+  border-radius: 7px !important;
+  background: #123250 !important;
+  color: #fff !important;
+  box-shadow: none !important;
+}
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-quarter-style="flat-living-v02"]
+  .maplibre-spike-boundary-badge {
+  opacity: .93;
+  border-color: rgb(18 50 80 / .20);
+  color: #123250;
+}
+@media (max-width: 1023px) {
+  [data-akar-quartier-target="maarif-couche1"][data-maplibre-quarter-style="flat-living-v02"]
+    .maplibre-spike-map-chrome {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  [data-akar-quartier-target="maarif-couche1"][data-maplibre-poi-language="akarfinder-flat-v02"]
+    .maplibre-spike-poi-label[data-label-collapsed="false"] > span {
+    max-width: 134px;
+    font-size: 10px;
+    padding: 3px 5px;
+  }
+}
