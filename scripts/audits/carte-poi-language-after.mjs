@@ -59,6 +59,33 @@ try {
 
     await page.screenshot({path:`${outDir}/poi-after-${viewport.width}x${viewport.height}.png`,fullPage:false});
 
+    // V0.3 — use the existing Repères control to show all sourced places.
+    // This is a real map.fitBounds interaction, not a synthetic screenshot camera.
+    const allRepereButton=page.locator(".maplibre-spike-filters button").first();
+    const repereAccessibility=await allRepereButton.getAttribute("aria-label");
+    const declaredAnchorCount=Number(await shell.getAttribute("data-maplibre-anchor-count") ?? 0);
+    if(declaredAnchorCount>0 && !repereAccessibility?.includes(String(declaredAnchorCount))){
+      throw new Error(`${viewport.name}: Repères control does not disclose sourced anchor count ${declaredAnchorCount}`);
+    }
+    await allRepereButton.click();
+    await page.waitForTimeout(1100);
+    const reframedPoiCount=await page.locator(".maplibre-spike-poi-label").count();
+    const reframedVisibleNames=await page.locator(".maplibre-spike-poi-label[data-label-collapsed='false'] > span").allTextContents();
+    if(viewport.width<=430 && declaredAnchorCount>=3 && reframedPoiCount<3){
+      throw new Error(`${viewport.name}: Repères reframing did not reveal 3 real POIs (${reframedPoiCount}/${declaredAnchorCount})`);
+    }
+    if(reframedPoiCount>declaredAnchorCount) throw new Error(`${viewport.name}: invented POI markers in all-context focus`);
+    const reframedClipping=await page.locator('.maplibre-spike-poi-label[data-label-collapsed="false"], .maplibre-spike-target-landmark-label').evaluateAll(nodes=>{
+      const map=document.querySelector(".maplibre-spike-canvas")?.getBoundingClientRect();
+      if(!map) return ["missing-map"];
+      return nodes.filter(node=>{
+        const b=node.getBoundingClientRect();
+        return b.left<map.left-1 || b.right>map.right+1 || b.top<map.top-1 || b.bottom>map.bottom+1;
+      }).map(node=>node.textContent?.trim().slice(0,90)||"unnamed");
+    });
+    if(reframedClipping.length) throw new Error(`${viewport.name}: reframed POI labels are clipped ${JSON.stringify(reframedClipping)}`);
+    await page.screenshot({path:`${outDir}/poi-after-all-${viewport.width}x${viewport.height}.png`,fullPage:false});
+
     // Capture one filtered state using a real available category when present.
     const education=page.locator(".maplibre-spike-filters button",{hasText:"Écoles"});
     if(await education.count() && await education.first().isVisible()){
@@ -67,7 +94,7 @@ try {
       await page.screenshot({path:`${outDir}/poi-after-education-${viewport.width}x${viewport.height}.png`,fullPage:false});
     }
 
-    report.cases.push({viewport:viewport.name,poiLanguage,rawCategories:rawCategories.map(v=>v.trim()),families,poiCount,glyphCount,landmarkCount,landmarkGlyphCount,visiblePoiLabels,clippedLabels,overflow});
+    report.cases.push({viewport:viewport.name,poiLanguage,rawCategories:rawCategories.map(v=>v.trim()),families,poiCount,glyphCount,landmarkCount,landmarkGlyphCount,visiblePoiLabels,clippedLabels,declaredAnchorCount,repereAccessibility,reframedPoiCount,reframedVisibleNames,reframedClipping,overflow});
     await page.close();
   }
   report.ok=true;
