@@ -39,6 +39,20 @@ try {
     const landmarkGlyphCount=await page.locator(".maplibre-spike-target-landmark-label i svg").count();
     if(landmarkGlyphCount!==landmarkCount) throw new Error(`${viewport.name}: landmark glyph coverage mismatch ${landmarkGlyphCount}/${landmarkCount}`);
     const visiblePoiLabels=await page.locator('.maplibre-spike-poi-label[data-label-collapsed="false"] span').allTextContents();
+
+    // Exact DOM geometry: label and icon must remain within the real map canvas,
+    // rather than being merely present in the document while visibly clipped.
+    const clippedLabels=await page.locator('.maplibre-spike-poi-label[data-label-collapsed="false"], .maplibre-spike-target-landmark-label').evaluateAll(nodes=>{
+      const canvas=document.querySelector(".maplibre-spike-canvas");
+      if(!canvas) return [{label:"missing-canvas"}];
+      const map=canvas.getBoundingClientRect();
+      return nodes.flatMap(node=>{
+        const rect=node.getBoundingClientRect();
+        if(rect.left>=map.left-1 && rect.right<=map.right+1 && rect.top>=map.top-1 && rect.bottom<=map.bottom+1) return [];
+        return [{label:node.textContent?.trim().slice(0,90),left:rect.left,right:rect.right,top:rect.top,bottom:rect.bottom,mapLeft:map.left,mapRight:map.right}];
+      });
+    });
+    if(clippedLabels.length) throw new Error(`${viewport.name}: real POI/landmark clipping ${JSON.stringify(clippedLabels)}`);
     const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
     if(overflow>1) throw new Error(`${viewport.name}: horizontal overflow ${overflow}`);
     if(pageErrors.length) throw new Error(`${viewport.name}: page errors ${JSON.stringify(pageErrors)}`);
@@ -53,7 +67,7 @@ try {
       await page.screenshot({path:`${outDir}/poi-after-education-${viewport.width}x${viewport.height}.png`,fullPage:false});
     }
 
-    report.cases.push({viewport:viewport.name,poiLanguage,rawCategories:rawCategories.map(v=>v.trim()),families,poiCount,glyphCount,landmarkCount,landmarkGlyphCount,visiblePoiLabels,overflow});
+    report.cases.push({viewport:viewport.name,poiLanguage,rawCategories:rawCategories.map(v=>v.trim()),families,poiCount,glyphCount,landmarkCount,landmarkGlyphCount,visiblePoiLabels,clippedLabels,overflow});
     await page.close();
   }
   report.ok=true;
