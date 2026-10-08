@@ -20,7 +20,7 @@ const dynamicAuditByPattern = new Map([
   ["/immobilier/[city]/acheter", { fixtureUrl: "/immobilier/rabat/acheter", auditMode: "render" }],
   ["/immobilier/[city]/louer", { fixtureUrl: "/immobilier/rabat/louer", auditMode: "render" }],
   ["/immobilier/[city]/[district]", { fixtureUrl: "/immobilier/rabat/agdal", auditMode: "render" }],
-  ["/quartiers/[citySlug]/[neighborhoodSlug]", { fixtureUrl: "/quartiers/rabat/agdal", auditMode: "render" }],
+  ["/quartiers/[citySlug]/[neighborhoodSlug]", { fixtureUrl: "/quartiers/rabat/agdal", expectedFinalPath: "/immobilier/rabat/agdal", auditMode: "render" }],
   ["/projets/[slug]", { fixtureUrl: "/projets/residence-demo-akarfinder?preview=demo", auditMode: "render-demo" }],
   ["/promoteurs/[slug]", { fixtureUrl: "/promoteurs/promoteur-demo-akarfinder?preview=demo", auditMode: "render-demo" }],
   ["/professionnels/[slug]", {
