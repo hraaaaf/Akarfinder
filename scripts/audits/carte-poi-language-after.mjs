@@ -25,7 +25,7 @@ try {
     await page.waitForTimeout(900);
 
     const poiLanguage=await shell.getAttribute("data-maplibre-poi-language");
-    if(poiLanguage!=="akarfinder-duotone-v1") throw new Error(`${viewport.name}: POI language contract mismatch ${poiLanguage}`);
+    if(poiLanguage!=="akarfinder-flat-v02") throw new Error(`${viewport.name}: POI language contract mismatch ${poiLanguage}`);
     const rawCategories=await page.locator(".maplibre-spike-filters button").allTextContents();
     const poiCount=await page.locator(".maplibre-spike-poi-label").count();
     const landmarkCount=await page.locator(".maplibre-spike-target-landmark-label").count();
@@ -33,6 +33,9 @@ try {
     if(families.length>8) throw new Error(`${viewport.name}: too many POI visual families ${families.length}`);
     const glyphCount=await page.locator(".maplibre-spike-poi-glyph svg").count();
     if(glyphCount!==poiCount) throw new Error(`${viewport.name}: POI glyph coverage mismatch ${glyphCount}/${poiCount}`);
+    const zoomTier=await shell.getAttribute("data-maplibre-zoom-tier");
+    if(!["overview","quarter","street"].includes(zoomTier)) throw new Error(`${viewport.name}: missing progressive zoom tier (${zoomTier})`);
+    if(zoomTier==="quarter" && poiCount>8) throw new Error(`${viewport.name}: POI density excessive at quartier scale (${poiCount})`);
     const landmarkGlyphCount=await page.locator(".maplibre-spike-target-landmark-label i svg").count();
     if(landmarkGlyphCount!==landmarkCount) throw new Error(`${viewport.name}: landmark glyph coverage mismatch ${landmarkGlyphCount}/${landmarkCount}`);
     const visiblePoiLabels=await page.locator('.maplibre-spike-poi-label[data-label-collapsed="false"] span').allTextContents();
