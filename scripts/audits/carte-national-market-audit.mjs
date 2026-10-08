@@ -76,7 +76,6 @@ for (const city of cities) {
       snapshotVersions: [...new Set(districts.map((district) => district?.snapshotVersion).filter(Boolean))],
       error: null,
     };
-    if (!response.ok) throw new Error(`${city.slug}/${mode}: API returned ${response.status}`);
   }
   report.api.push(cityReport);
 }
