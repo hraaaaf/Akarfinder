@@ -771,3 +771,29 @@
   .maplibre-spike-poi-label[data-label-collapsed="false"][data-anchor-edge="left"] {
   transform: translate(0, -50%) !important;
 }
+
+
+/* FLAT LIVING V0.3 — sourced POI count, no new map chrome.
+ * The existing Repères chip becomes the explicit all-POI reframing action.
+ */
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-quarter-style="flat-living-v02"]
+  .maplibre-spike-filter-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  margin-inline-start: 5px;
+  border-radius: 999px;
+  background: rgb(18 50 80 / .085);
+  color: #123250;
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 800;
+  vertical-align: middle;
+}
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-quarter-style="flat-living-v02"]
+  .maplibre-spike-filters button.active .maplibre-spike-filter-count {
+  color: #123250;
+  background: #fff;
+}
