@@ -10,6 +10,7 @@ import { resolveMubawabLocation } from "./mubawab-location-v2.js";
 import { parseMubawabRoute } from "./mubawab-url-parser-v2.mjs";
 import { extractMubawabStrictSurface } from "./mubawab-strict-surface-v2.js";
 import { extractMubawabStrictSurfaceFromUrl } from "./mubawab-url-surface-v2.js";
+import { probeMubawabSurfaceDom } from "./mubawab-surface-dom-probe-v2.js";
 
 async function main(){
 const USER_AGENT="AkarFinderFullFieldRecovery/1.0";
@@ -132,6 +133,7 @@ function add(out:Candidate[],row:Row,field:string,value:any,confidence:string,ev
   out.push({field,value,state:auto&&confidence==="high"?"write_safe":"review",evidence,confidence});
 }
 const results:any[]=[];
+const surfaceDomProbes:any[]=[];
 for(const row of sample){
   const url=row.canonical_url; const rec:any={url,source:sourceName,http_status:null,robots_allowed:false,candidates:[]};
   if(!(await canFetch(url))){rec.blocked="robots";results.push(rec);continue;}
@@ -142,6 +144,9 @@ for(const row of sample){
   rec.http_status=response.status;
   if(response.status!==200){rec.blocked=`http_${response.status}`;results.push(rec);continue;}
   const html=await response.text();
+  if(sourceName==="mubawab.ma"&&process.env.SURFACE_DOM_PROBE==="1"&&surfaceDomProbes.length<24){
+    surfaceDomProbes.push({url,slug_surface:extractMubawabStrictSurfaceFromUrl(url)?.value??null,...probeMubawabSurfaceDom(html)});
+  }
   const d=extractDetail(html);
   const title=meta(html,"og:title");
   const desc=d.description_snippet||meta(html,"description")||meta(html,"og:description")||"";
@@ -223,6 +228,7 @@ const summary={
 };
 await writeFile(outputPrefix+".json",JSON.stringify(summary,null,2)+"\n");
 await writeFile(outputPrefix+".jsonl",results.map(x=>JSON.stringify(x)).join("\n")+"\n");
+if(process.env.SURFACE_DOM_PROBE==="1") await writeFile(outputPrefix+"-surface-dom-probe.json",JSON.stringify({schema_version:"AKARFINDER_MUBAWAB_SURFACE_DOM_PROBE_V2",sample_size:surfaceDomProbes.length,redacted:true,observations:surfaceDomProbes},null,2)+"\n");
 console.log(JSON.stringify(summary,null,2));
 
 }
