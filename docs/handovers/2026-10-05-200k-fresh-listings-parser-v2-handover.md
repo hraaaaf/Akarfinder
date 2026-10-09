@@ -171,3 +171,19 @@ Goal de ce sous-lot : classer les **208/300 URL HTTP 200 sans identité source p
 - Push commit unique, CI Mubawab ciblée : run 37966914495 (https://github.com/hraaaaf/Akarfinder/actions/runs/37966914495), **in_progress** au contrôle initial. Aucun résultat de redirection anticipé.
 
 **Next exact** : consulter la CI une fois quand un résultat est disponible ; si succès, lire artifact navigation V4 et distinguer les 208 par catégories. Si échec, corriger la cause exacte et relancer une fois ; ensuite analyser l'éventuel vrai signal de disponibilité et la preuve quartier source. Aucun accès DB, écriture, merge ni déploiement Vercel.
+
+
+## Mubawab V4 — redirections classées / 2026-10-09
+
+**Run** [37966914495](https://github.com/hraaaaf/Akarfinder/actions/runs/37966914495) : `completed/success` sur commit `721fe07569add49d107db1158871e34dab6d07f4`, artifact **11634397470**. `mubawab-five-field-300-navigation-diagnostics.json` et le JSONL ont été inspectés en local.
+
+- **300/300** HTTP 200 et `response.redirected=true`; la redirection HTTP n'est donc pas un signal de disparition en soi.
+- Destination `same_detail_identity` **92** ; `locale_other_path` **206** ; `error_or_auth_page` **2** ; le décompte est exhaustif **300**.
+- Les 206 cas `locale_other_path` pointent vers un chemin officiel de Mubawab commençant par une locale, mais **sa structure exacte n'était pas capturée en V4**. Ne pas les classer comme définitivement supprimés.
+- Certification inchangée : identité + fiche principale **92**, ville **92**, quartier **11**, prix **59**, surface **73**, 5/5 **6/300 = 2 %**, conflits surface **19**.
+- Parmi les 300 URL, identifiants ≥8 300 000 : **45** échantillons, **36** fiches principales conservées, **5** complètes 5 champs ; sélection potentiellement utile mais **non représentative de la population** et **non équivalente à fraîcheur**.
+- Les URL archivées n'avaient aucune observation détaillée dans le corpus gelé ; **200k fraîcheur/non-duplication toujours non certifiés**. DB 0/0, pas de Vercel, pas de merge.
+
+**Correctif diagnostic V4.1 poussé** : `scripts/data/mubawab-navigation-v2.mjs` retourne exclusivement une empreinte structurelle de chemin (classe des segments, préfixe de route sur liste fixe) et booléen `requested_id_in_final_path` ; jamais d'URL cible ni de query. Tests pour ID d'origine sur route alternative, ID erroné, route inconnue, confidentialité. `github-freeze-full-field-recovery.ts` agrège les statistiques de classes et présence d'ID, sans modifier le gate de certification. Dernier HEAD produit `839c452662b1dc6a2912a4b17d153c646c5155e5` ; run V4.1 ciblé [37970628173](https://github.com/hraaaaf/Akarfinder/actions/runs/37970628173) vu **queued** initialement ; verdict non encore constaté.
+
+**Next exact** : lire une fois le run **37970628173** ; si vert, interpréter l'artifact `mubawab-five-field-300-navigation-diagnostics.json` (shape, présence de l'ID, route allowlistée). Si la destination possède l'ID et une véritable fiche primaire, ajouter un parseur de route précis après preuve ; sinon mettre ces URLs en quarantine jusqu'à observation directe. Ne pas les compter comme disponibles ni comme supprimées. Puis diagnostic freshness et dedup sur un échantillon réellement récent avant montée en volume.
