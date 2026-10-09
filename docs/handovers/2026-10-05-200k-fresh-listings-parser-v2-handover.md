@@ -187,3 +187,16 @@ Goal de ce sous-lot : classer les **208/300 URL HTTP 200 sans identité source p
 **Correctif diagnostic V4.1 poussé** : `scripts/data/mubawab-navigation-v2.mjs` retourne exclusivement une empreinte structurelle de chemin (classe des segments, préfixe de route sur liste fixe) et booléen `requested_id_in_final_path` ; jamais d'URL cible ni de query. Tests pour ID d'origine sur route alternative, ID erroné, route inconnue, confidentialité. `github-freeze-full-field-recovery.ts` agrège les statistiques de classes et présence d'ID, sans modifier le gate de certification. Dernier HEAD produit `839c452662b1dc6a2912a4b17d153c646c5155e5` ; run V4.1 ciblé [37970628173](https://github.com/hraaaaf/Akarfinder/actions/runs/37970628173) vu **queued** initialement ; verdict non encore constaté.
 
 **Next exact** : lire une fois le run **37970628173** ; si vert, interpréter l'artifact `mubawab-five-field-300-navigation-diagnostics.json` (shape, présence de l'ID, route allowlistée). Si la destination possède l'ID et une véritable fiche primaire, ajouter un parseur de route précis après preuve ; sinon mettre ces URLs en quarantine jusqu'à observation directe. Ne pas les compter comme disponibles ni comme supprimées. Puis diagnostic freshness et dedup sur un échantillon réellement récent avant montée en volume.
+
+
+## Proposition stratégique — 2026-10-09 : pivot freshness-first (NON ADOPTÉ)
+
+Audit direct du gel canonique `10910779576` : 222 359 URLs éligibles, mais seulement 8 487 observées HTTP 200 en profondeur et 1 191 avec tous les champs présents, sans certification actuelle de fraîcheur. **89,94 %** du gel devrait être frais et complet pour atteindre 200k sans nouvelle acquisition, ce qui n'est pas établi.
+
+Indications comparatives non équivalentes aux certifications strictes : **Domio 1 176/3 495** observations HTTP 200 avec les cinq champs (dont seulement **2** publiées dans les 30 derniers jours) ; MarocImmo **15/4 499**, prix seulement 19, quartier 4 499 ; Sarout **0/493**, quartier 0, prix 427, surface 364 ; Mubawab V3 strict **6/300**, sans validation de fraîcheur. Voir le rapport et la méthode dans `docs/data/AKARFINDER_200K_FRESHNESS_FIRST_PIVOT_PROPOSAL_2026-10-09.md` (créé à `45c1f09a492db0331e0b451b9c08d8df42d097e6`).
+
+**Recommandation, non exécution d'une nouvelle acquisition :** arrêter les itérations chronophages sur anciennes URLs Mubawab ; mesurer le rendement frais+5/5+unique de petits lots récents multi-sources autorisés, puis étendre seulement les sources efficaces. En parallèle négocier un flux permanent d'annonces directes autorisées (agences/CRM/portails). Les anciennes dates `published_at` ne prouvent pas seules l'inactivité ; recontrôler à la source.
+
+**Gate stratégique :** adopter explicitement la feuille de route B avant remplacement des campagnes actuelles. Aucune DB, Vercel, merge, campagne massive ou assouplissement 5/5. Dernière V4.1 déjà déclenchée `37970628173` : elle peut fournir son résultat indépendamment.
+
+**Next exact si adoption :** inventaire des workflows multi-sources existants, contrôle robots/conditions, benchmarking léger et comparable sur annonces réellement récentes, avec stricte provenance, déduplication et preuve d'activité.
