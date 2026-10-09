@@ -1,0 +1,47 @@
+name: Mubawab Result Cards First — bounded pilot
+
+on:
+  push:
+    branches:
+      - data/200k-fresh-parser-v2
+    paths:
+      - '.github/workflows/mubawab-result-cards-first-pilot.yml'
+      - 'scripts/data/mubawab-result-cards-v1.mjs'
+      - 'scripts/data/mubawab-result-cards-pilot-v1.mjs'
+      - 'scripts/data/__tests__/mubawab-result-cards-v1.test.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  card-first-3-pages:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      OUTPUT_PREFIX: 'mubawab-card-first-pilot'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Validate isolated card extraction and robots
+        run: node --test scripts/data/__tests__/mubawab-result-cards-v1.test.mjs
+      - name: Bounded public index card pilot — no detail fetch
+        run: node scripts/data/mubawab-result-cards-pilot-v1.mjs
+      - name: Assert no DB and source observation report
+        run: |
+          set -euo pipefail
+          test "$(jq -r '.database_access' mubawab-card-first-pilot.json)" = "0"
+          test "$(jq -r '.database_writes' mubawab-card-first-pilot.json)" = "0"
+          jq -e '.requested_page_count == 3' mubawab-card-first-pilot.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mubawab-card-first-pilot
+          path: |
+            mubawab-card-first-pilot.json
+            mubawab-card-first-pilot.jsonl
+          retention-days: 14
