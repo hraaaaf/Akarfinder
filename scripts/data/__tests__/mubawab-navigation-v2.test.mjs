@@ -64,7 +64,7 @@ test("redirection target includes source id as a path segment on alternate route
  assert.equal(r.final_category,"locale_other_path");
  assert.equal(r.final_requested_id_in_path,true);
  assert.equal(r.final_route_prefix,"b");
- assert.equal(r.final_route_shape,"locale/known_route/requested_id/slug_like");
+ assert.equal(r.final_route_shape,"locale/known_route/requested_id/alpha");
 });
 test("non-detail destination lacking source id does not imply listing deletion",()=>{
  const r=classify(original,"https://mubawab.ma/fr/annonces/recherche-appartements",true);
