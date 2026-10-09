@@ -12,6 +12,7 @@ import { inspectMubawabStrictSurface,hasMubawabPrimaryDetail } from "./mubawab-s
 import { extractMubawabStrictSurfaceFromUrl } from "./mubawab-url-surface-v2.js";
 import { probeMubawabSurfaceDom } from "./mubawab-surface-dom-probe-v2.js";
 import { probeMubawabLocationDom } from "./mubawab-location-dom-probe-v2.js";
+import { extractMubawabCorroboratedDistrict } from "./mubawab-description-district-v2.js";
 
 async function main(){
 const USER_AGENT="AkarFinderFullFieldRecovery/1.0";
@@ -172,7 +173,8 @@ for(const row of sample){
     if(!containsContactPii(d.description_snippet)) add(c,row,"description",d.description_snippet,d._confidence.description,"extractDetail:description",d._confidence.description==="high");
     const location=sourceName==="mubawab.ma"?resolveMubawabLocation(html,d,title):{city:d.city,district:d.district,confidence:d._confidence.district,evidence:["extractDetail:district"]};
     add(c,row,"city",location.city,d._confidence.city,"extractDetail:city",d._confidence.city==="high");
-    add(c,row,"district",location.district,location.confidence,location.evidence.join("+")||"extractDetail:district",location.confidence==="high");
+    const corroboratedDistrict=sourceName==="mubawab.ma"&&rec.primary_detail_verified===true&&!location.district?extractMubawabCorroboratedDistrict(d.description_snippet,url,location.city):null;
+    add(c,row,"district",location.district??corroboratedDistrict?.value,corroboratedDistrict?.confidence??location.confidence,corroboratedDistrict?.evidence??(location.evidence.join("+")||"extractDetail:district"),corroboratedDistrict!==null||location.confidence==="high");
   }
   if(!softPage){
   const s=d.surface_raw?.match(/([0-9]+(?:[.,][0-9]+)?)/)?.[1];
