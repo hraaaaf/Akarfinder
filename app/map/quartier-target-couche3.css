@@ -797,3 +797,58 @@
   color: #123250;
   background: #fff;
 }
+
+
+/* FLAT LIVING V0.4 — the map is primary; the collapsed mobile sheet is a
+ * short, tappable entry into the neighborhood details, not a half-screen card.
+ * The expanded state, CTA, and all sourced market/context content stay intact.
+ */
+@media (max-width: 560px) {
+  [data-maarif-rebuild="true"] .maarif-target-rail:not([data-sheet-expanded="true"]) {
+    height: min(20svh, 176px) !important;
+    max-height: min(20svh, 176px) !important;
+    overflow-y: hidden !important;
+    border-radius: 20px !important;
+    box-shadow: 0 10px 32px rgb(6 43 85 / .16) !important;
+  }
+  [data-maarif-rebuild="true"] .maarif-target-rail:not([data-sheet-expanded="true"])
+    .maarif-target-sheet-toggle {
+    height: 24px !important;
+    min-height: 24px;
+  }
+  [data-maarif-rebuild="true"] .maarif-target-rail:not([data-sheet-expanded="true"])
+    .maarif-target-body {
+    padding: 2px 13px 8px !important;
+  }
+  [data-maarif-rebuild="true"] .maarif-target-rail:not([data-sheet-expanded="true"])
+    .maarif-target-city {
+    margin-bottom: 0 !important;
+    font-size: 9px !important;
+  }
+  [data-maarif-rebuild="true"] .maarif-target-rail:not([data-sheet-expanded="true"])
+    .maarif-target-heading h1 {
+    font-size: 25px !important;
+    line-height: 1.05 !important;
+  }
+  [data-maarif-rebuild="true"] .maarif-target-rail:not([data-sheet-expanded="true"])
+    .maarif-target-tagline {
+    display: none !important;
+  }
+  [data-maarif-rebuild="true"] .maarif-target-rail:not([data-sheet-expanded="true"])
+    .maarif-target-actions {
+    margin-top: 7px !important;
+  }
+  [data-maarif-rebuild="true"] .maarif-target-rail:not([data-sheet-expanded="true"])
+    .maarif-target-primary-action {
+    min-height: 44px !important;
+    font-size: 11px !important;
+  }
+  [data-akar-quartier-target="maarif-couche1"][data-maplibre-poi-language="akarfinder-flat-v02"]
+    .maplibre-spike-poi-label[data-label-collapsed="false"] > span {
+    font-size: 10.5px !important;
+    max-width: 148px !important;
+    color: #123250 !important;
+    background: rgb(255 255 255 / .87) !important;
+    line-height: 1.3 !important;
+  }
+}
