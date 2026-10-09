@@ -17,6 +17,10 @@ import {
   UtensilsCrossed,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+
+// Maârif flat-map brand palette — structural C1/C2, not property-category colors.
+const MAP_BRAND_NAVY = "#071B33";
+const MAP_BRAND_BLUE = "#0B63CE";
 import { AKARFINDER_MOROCCO_MAP_NAVY, territoryLightToneForKey } from "@/lib/map/akarfinder-territorial-style";
 import {
   installMapLibreOvertureBuildings,
@@ -505,12 +509,12 @@ export function MapLibreNeighborhood3D({
                 paint: {
                   "fill-color": [
                     "match", ["get", "class"],
-                    "commercial", "#F0E3D5",
-                    "retail", "#F5EBDF",
-                    "industrial", "#ECE7DF",
-                    "#F3EADC"
+                    "commercial", "#D5E5F7",
+                    "retail", "#E2EDF9",
+                    "industrial", "#DDE5F0",
+                    "#E7EFF8"
                   ],
-                  "fill-opacity": 0.44,
+                  "fill-opacity": 0.57,
                 },
               } as any);
 
@@ -524,13 +528,13 @@ export function MapLibreNeighborhood3D({
                 paint: {
                   "fill-color": [
                     "match", ["get", "class"],
-                    "commercial", "#EBDDCB",
-                    "retail", "#F0E4D6",
-                    "industrial", "#E6E0D8",
-                    "#EFE6D9"
+                    "commercial", "#C9DAEF",
+                    "retail", "#D9E6F5",
+                    "industrial", "#D1DAE8",
+                    "#DBE8F5"
                   ],
-                  "fill-opacity": ["interpolate", ["linear"], ["zoom"], 15.4, 0.035, 16.5, 0.070, 18, 0.095],
-                  "fill-outline-color": "rgba(190,181,170,0.16)",
+                  "fill-opacity": ["interpolate", ["linear"], ["zoom"], 15.4, 0.05, 16.5, 0.085, 18, 0.11],
+                  "fill-outline-color": "rgba(7,27,51,0.10)",
                 },
               } as any);
 
@@ -568,13 +572,13 @@ export function MapLibreNeighborhood3D({
                 paint: {
                   "fill-color": [
                     "interpolate", ["linear"], ["coalesce", ["get", "render_height"], 0],
-                    0, "#F5F2ED",
-                    12, "#F2EEE8",
-                    28, "#EEE9E2",
-                    60, "#E9E3DC"
+                    0, "#D7E3F0",
+                    12, "#CEDDEB",
+                    28, "#C3D3E4",
+                    60, "#B8CADE"
                   ],
-                  "fill-opacity": ["interpolate", ["linear"], ["zoom"], 12.2, 0.07, 14.5, 0.16, 17.5, 0.22],
-                  "fill-outline-color": "#E1DDD6",
+                  "fill-opacity": ["interpolate", ["linear"], ["zoom"], 12.2, 0.10, 14.5, 0.23, 17.5, 0.30],
+                  "fill-outline-color": "#94AAC4",
                 },
               } as any);
 
@@ -593,14 +597,14 @@ export function MapLibreNeighborhood3D({
                 paint: {
                   "line-color": [
                     "match", ["get", "class"],
-                    "motorway", "#E7CC9F",
-                    "trunk", "#E8D7B7",
-                    "primary", "#D9CDBA",
-                    "secondary", "#D9D8D1",
-                    "tertiary", "#E1DED6",
-                    "#ECE8DF"
+                    "motorway", "#7F9FC9",
+                    "trunk", "#91AED2",
+                    "primary", MAP_BRAND_BLUE,
+                    "secondary", "#A9BFD7",
+                    "tertiary", "#C5D4E5",
+                    "#DCE5EF"
                   ],
-                  "line-opacity": ["interpolate", ["linear"], ["zoom"], 11, 0.72, 14.5, 0.92, 17.5, 0.96],
+                  "line-opacity": ["*", ["interpolate", ["linear"], ["zoom"], 11, 0.72, 14.5, 0.92, 17.5, 0.96], ["match", ["get", "class"], "primary", 0.43, 1]],
                   "line-width": [
                     "interpolate", ["linear"], ["zoom"],
                     11, ["match", ["get", "class"], "motorway", 2.4, "trunk", 2.2, "primary", 2.0, "secondary", 1.7, "tertiary", 1.3, 0.8],
@@ -623,9 +627,9 @@ export function MapLibreNeighborhood3D({
                 paint: {
                   "line-color": [
                     "match", ["get", "class"],
-                    "motorway", "#FBE9BF",
-                    "trunk", "#FCF0D5",
-                    "primary", "#FFFCF4",
+                    "motorway", "#EAF2FF",
+                    "trunk", "#F2F7FF",
+                    "primary", "#FAFCFF",
                     "secondary", "#FFFFFF",
                     "tertiary", "#FFFFFF",
                     "#FFFFFF"
@@ -659,8 +663,8 @@ export function MapLibreNeighborhood3D({
                   "text-ignore-placement": false,
                 },
                 paint: {
-                  "text-color": "#505B63",
-                  "text-opacity": 0.88,
+                  "text-color": MAP_BRAND_NAVY,
+                  "text-opacity": 0.83,
                   "text-halo-color": "rgba(251,248,243,0.98)",
                   "text-halo-width": 1.4,
                   "text-halo-blur": 0.12,
@@ -686,8 +690,8 @@ export function MapLibreNeighborhood3D({
                   "text-ignore-placement": false,
                 },
                 paint: {
-                  "text-color": "#666E74",
-                  "text-opacity": 0.66,
+                  "text-color": "#4E6680",
+                  "text-opacity": 0.74,
                   "text-halo-color": "rgba(251,248,243,0.96)",
                   "text-halo-width": 1.0,
                   "text-halo-blur": 0.14,
@@ -1166,6 +1170,7 @@ export function MapLibreNeighborhood3D({
       data-maplibre-context-focus={isMaarifTargetPilot ? "verified-anchor-envelope-not-boundary" : "none"}
       data-maplibre-context-relief={isMaarifTargetPilot ? "flat-indicative-zone" : "none"}
       data-maplibre-quarter-style={isMaarifTargetPilot ? "flat-living-v02" : "default"}
+       data-maplibre-cartographic-palette={isMaarifTargetPilot ? "akarfinder-c1-c2-map-v1" : "default"}
       data-maplibre-basemap-language={isMaarifTargetPilot ? "voyager-inspired-openfreemap-v1" : "default"}
       data-maplibre-building-language={isMaarifTargetPilot ? "flat-vector-footprints-v02" : "default"}
       data-maplibre-polish={isMaarifTargetPilot ? "flat-basemap-v02" : "default"}
