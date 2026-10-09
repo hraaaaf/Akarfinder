@@ -8,7 +8,7 @@ import { extractDetail } from "../scrapers/utils/extract.js";
 import { extractStrictDetailPrice } from "../scrapers/price-detail-enrichment-v2.js";
 import { resolveMubawabLocation } from "./mubawab-location-v2.js";
 import { parseMubawabRoute } from "./mubawab-url-parser-v2.mjs";
-import { extractMubawabStrictSurface } from "./mubawab-strict-surface-v2.js";
+import { extractMubawabStrictSurface,hasMubawabPrimaryDetail } from "./mubawab-strict-surface-v2.js";
 import { extractMubawabStrictSurfaceFromUrl } from "./mubawab-url-surface-v2.js";
 import { probeMubawabSurfaceDom } from "./mubawab-surface-dom-probe-v2.js";
 
@@ -144,6 +144,10 @@ for(const row of sample){
   rec.http_status=response.status;
   if(response.status!==200){rec.blocked=`http_${response.status}`;results.push(rec);continue;}
   const html=await response.text();
+  const originIdentity=sourceName==="mubawab.ma"?parseMubawabRoute(url)?.identity:null;
+  const finalIdentity=sourceName==="mubawab.ma"?parseMubawabRoute(response.url)?.identity:null;
+  rec.source_identity_preserved=sourceName==="mubawab.ma"?!!originIdentity&&originIdentity===finalIdentity:null;
+  rec.primary_detail_verified=sourceName==="mubawab.ma"?rec.source_identity_preserved&&hasMubawabPrimaryDetail(html):null;
   if(sourceName==="mubawab.ma"&&process.env.SURFACE_DOM_PROBE==="1"&&surfaceDomProbes.length<24){
     surfaceDomProbes.push({url,slug_surface:extractMubawabStrictSurfaceFromUrl(url)?.value??null,...probeMubawabSurfaceDom(html)});
   }
@@ -168,11 +172,17 @@ for(const row of sample){
   const s=d.surface_raw?.match(/([0-9]+(?:[.,][0-9]+)?)/)?.[1];
   const surfaceValue=s?Number(s.replace(",",".")):null;
   const validSurface=surfaceValue!=null && Number.isFinite(surfaceValue) && surfaceValue>0 ? surfaceValue : null;
-  const surfaceAuto=d._confidence.surface==="high" && validSurface!=null && validSurface>=5 && validSurface<=100000;
+  const surfaceAuto=d._confidence.surface==="high" && validSurface!=null && validSurface>=5 && validSurface<=100000 && (sourceName!=="mubawab.ma"||rec.primary_detail_verified===true);
   const strictDomSurface=sourceName==="mubawab.ma"?extractMubawabStrictSurface(html):null;
   const strictUrlSurface=sourceName==="mubawab.ma"?extractMubawabStrictSurfaceFromUrl(url):null;
-  const strictSurface=strictDomSurface??strictUrlSurface;
-  add(c,row,"surface_m2",strictSurface?.value??validSurface,strictSurface?.confidence??d._confidence.surface,strictSurface?.evidence??(validSurface!=null&&validSurface>100000?"extractDetail:surface_extreme_review":"extractDetail:surface"),!!strictSurface||surfaceAuto);
+  const evidenceConflict=!!strictDomSurface&&!!strictUrlSurface&&strictDomSurface.value!==strictUrlSurface.value;
+  if(evidenceConflict){
+    add(c,row,"surface_m2",strictDomSurface.value,"review","mubawab_primary_dom_vs_canonical_slug_conflict",false);
+    rec.surface_evidence_conflict=true;
+  }else{
+    const strictSurface=(sourceName!=="mubawab.ma"||rec.primary_detail_verified===true)?(strictDomSurface??strictUrlSurface):null;
+    add(c,row,"surface_m2",strictSurface?.value??validSurface,strictSurface?.confidence??d._confidence.surface,strictSurface?.evidence??(validSurface!=null&&validSurface>100000?"extractDetail:surface_extreme_review":"extractDetail:surface"),!!strictSurface||surfaceAuto);
+  }
   add(c,row,"rooms_count",d.rooms,d._confidence.rooms,"extractDetail:rooms",d._confidence.rooms==="high");
   add(c,row,"bedrooms_count",d.bedrooms,d._confidence.bedrooms,"extractDetail:bedrooms",d._confidence.bedrooms==="high");
   add(c,row,"bathrooms_count",d.bathrooms,d._confidence.bathrooms,"extractDetail:bathrooms",d._confidence.bathrooms==="high");
@@ -218,6 +228,9 @@ const summary={
  source:sourceName,freeze_population:rows.length,sample_size:sample.length,
  robots_allowed:results.filter(x=>x.robots_allowed).length,
  accessible_http_200:accessibleCount,
+ primary_detail_verified:sourceName==="mubawab.ma"?results.filter(r=>r.primary_detail_verified===true).length:null,
+ source_identity_preserved:sourceName==="mubawab.ma"?results.filter(r=>r.source_identity_preserved===true).length:null,
+ surface_evidence_conflicts:results.filter(r=>r.surface_evidence_conflict===true).length,
  candidates_by_field:counts,
  template_noise_suppressions:templateNoiseSuppressions,
  write_safe_fields:results.flatMap(x=>x.candidates).filter((x:any)=>x.state==="write_safe").length,
