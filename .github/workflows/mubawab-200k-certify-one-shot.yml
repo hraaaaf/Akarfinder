@@ -13,6 +13,8 @@ on:
       - 'scripts/data/__tests__/mubawab-strict-surface-v2.test.ts'
       - 'scripts/data/mubawab-url-surface-v2.ts'
       - 'scripts/data/__tests__/mubawab-url-surface-v2.test.ts'
+      - 'scripts/data/mubawab-surface-dom-probe-v2.ts'
+      - 'scripts/data/__tests__/mubawab-surface-dom-probe-v2.test.ts'
 
 permissions:
   contents: read
@@ -26,6 +28,7 @@ jobs:
       SOURCE_NAME: 'mubawab.ma'
       SAMPLE_SIZE: '300'
       FETCH_DELAY_MS: '250'
+      SURFACE_DOM_PROBE: '1'
       OUTPUT_PREFIX: 'mubawab-five-field-300'
       FREEZE_JSONL_GZ: '.tmp/freeze/clean-corpus-v4.11-core.jsonl.gz'
     steps:
@@ -42,6 +45,7 @@ jobs:
           npx tsx --test scripts/data/__tests__/mubawab-location-v2.test.ts
           npx tsx --test scripts/data/__tests__/mubawab-strict-surface-v2.test.ts
           npx tsx --test scripts/data/__tests__/mubawab-url-surface-v2.test.ts
+          npx tsx --test scripts/data/__tests__/mubawab-surface-dom-probe-v2.test.ts
       - name: Fetch canonical freeze
         env:
           GH_TOKEN: ${{ github.token }}
@@ -85,4 +89,5 @@ jobs:
             mubawab-five-field-300.json
             mubawab-five-field-300.jsonl
             mubawab-five-field-coverage.json
+            mubawab-five-field-300-surface-dom-probe.json
           retention-days: 14
