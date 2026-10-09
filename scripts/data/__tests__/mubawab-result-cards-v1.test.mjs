@@ -38,11 +38,17 @@ test("district cannot be inferred from page city alone",()=>{
  assert.equal(r.rows[0].district,null);assert.equal(r.five_field_present,0);
 });
 test("robots wildcard disallow and independent allow are observed",()=>{
- const robots='User-agent: *\nDisallow: /login\nDisallow: /*:\nDisallow: /*?n=1\nAllow: /fr/st/';
+ const robots='User-agent: *\nDisallow: /login\nDisallow: /*:\nDisallow: /*?n=1';
  assert.equal(robotsAllowed(robots,page),true);
  assert.equal(robotsAllowed(robots,page+':p:2'),false);
  assert.equal(robotsAllowed(robots,page+'?n=1'),false);
 });
 test("robots disallow all is respected",()=>{
  assert.equal(robotsAllowed('User-agent: *\nDisallow: /',page),false);
+});
+
+test("longest matching specific robots Allow overrides a broad disallow",()=>{
+ const rules='User-agent: *\nDisallow: /fr/st/\nAllow: /fr/st/casablanca/';
+ assert.equal(robotsAllowed(rules,page),true);
+ assert.equal(robotsAllowed(rules,"https://www.mubawab.ma/fr/st/rabat/appartements-a-vendre"),false);
 });
