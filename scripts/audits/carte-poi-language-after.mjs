@@ -84,10 +84,11 @@ try {
       }).map(node=>node.textContent?.trim().slice(0,90)||"unnamed");
     });
     if(reframedClipping.length) throw new Error(`${viewport.name}: reframed POI labels are clipped ${JSON.stringify(reframedClipping)}`);
-    // V0.4.1: the map's center name must not obscure the sourced park label.
+    // V0.4.2: the map's center name must not obscure the sourced park label
+    // on mobile, tablet or desktop when that real park label is rendered.
     // Check actual rendered rectangles after the same real Repères interaction.
     let parkNeighborhoodOverlap = null;
-    if (viewport.width <= 430) {
+    if (viewport.width <= 430 || viewport.width >= 768) {
       parkNeighborhoodOverlap = await page.evaluate(() => {
         const neighborhood=document.querySelector(".maplibre-spike-neighborhood-label > span");
         const park=document.querySelector('.maplibre-spike-poi-label[data-poi-category="green_sport"][data-label-collapsed="false"] > span');
@@ -98,8 +99,8 @@ try {
         const overlapHeight=Math.max(0,Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top));
         return { overlapWidth, overlapHeight, overlapArea: overlapWidth*overlapHeight };
       });
-      if (parkNeighborhoodOverlap.absent) throw new Error(`${viewport.name}: cannot certify Maârif / park label separation`);
-      if (parkNeighborhoodOverlap.overlapArea > 1) throw new Error(`${viewport.name}: Maârif text overlaps sourced park ${JSON.stringify(parkNeighborhoodOverlap)}`);
+      if (parkNeighborhoodOverlap.absent && viewport.width <= 430) throw new Error(`${viewport.name}: cannot certify Maârif / park label separation`);
+      if (!parkNeighborhoodOverlap.absent && parkNeighborhoodOverlap.overlapArea > 1) throw new Error(`${viewport.name}: Maârif text overlaps sourced park ${JSON.stringify(parkNeighborhoodOverlap)}`);
     }
     await page.screenshot({path:`${outDir}/poi-after-all-${viewport.width}x${viewport.height}.png`,fullPage:false});
 
