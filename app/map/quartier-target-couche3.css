@@ -805,8 +805,8 @@
  */
 @media (max-width: 560px) {
   [data-maarif-rebuild="true"] .maarif-target-rail:not([data-sheet-expanded="true"]) {
-    height: min(20svh, 176px) !important;
-    max-height: min(20svh, 176px) !important;
+    height: min(18.5svh, 160px) !important;
+    max-height: min(18.5svh, 160px) !important;
     overflow-y: hidden !important;
     border-radius: 20px !important;
     box-shadow: 0 10px 32px rgb(6 43 85 / .16) !important;
