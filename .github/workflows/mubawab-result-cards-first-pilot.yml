@@ -15,7 +15,7 @@ permissions:
   contents: read
 
 jobs:
-  card-first-3-pages:
+  card-first-8-pages:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
@@ -36,7 +36,7 @@ jobs:
           set -euo pipefail
           test "$(jq -r '.database_access' mubawab-card-first-pilot.json)" = "0"
           test "$(jq -r '.database_writes' mubawab-card-first-pilot.json)" = "0"
-          jq -e '.requested_page_count == 3' mubawab-card-first-pilot.json
+          jq -e '.requested_page_count == 8' mubawab-card-first-pilot.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
