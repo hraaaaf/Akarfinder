@@ -78,6 +78,7 @@ export function extractMubawabResultCards(html,pageUrl,city,{max=50}={}){
    surface_m2:surfaces.length===1?surfaces[0]:null,
    conflicts,
    evidence:"one_result_card",
+   price_dom_probe:{card_contains_currency:/\b(?:dh|dhs|mad)\b/i.test(clean(card.text())),price_wrapper_count:priceWrappers.length,parent_contains_currency:/\b(?:dh|dhs|mad)\b/i.test(clean(card.parent().text())),grandparent_contains_currency:/\b(?:dh|dhs|mad)\b/i.test(clean(card.parent().parent().text())),card_class:clean(card.attr("class")).slice(0,80)},
    state:"observed_review_not_current_or_fresh_certified"
   };
   row.five_field_present=!!(row.canonical_url&&row.city&&row.district&&row.price_mad&&row.surface_m2&&!Object.values(conflicts).some(Boolean));
