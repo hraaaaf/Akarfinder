@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { extractMubawabStrictSurface,hasMubawabPrimaryDetail } from "../mubawab-strict-surface-v2.js";
+import { extractMubawabStrictSurface,inspectMubawabStrictSurface,hasMubawabPrimaryDetail } from "../mubawab-strict-surface-v2.js";
 
 test("accepts explicit labeled Surface DOM",()=>{
  const html='<ul class="blockDetails"><li><span class="titreFiche">Surface</span><span class="titreFicheValue">120 m²</span></li></ul>';
@@ -52,4 +52,21 @@ test("rejects duplicate or ambiguous blockProp primary markers",()=>{
  const html='<div class="col-8"><div class="blockProp"><h1 class="searchTitle">Appart 97</h1></div><div class="blockProp"><h1 class="searchTitle">Appart 130</h1></div><div class="disFlex adDetails"><div class="adDetailFeature"><span>97 m²</span></div></div></div>';
  assert.equal(hasMubawabPrimaryDetail(html),false);
  assert.equal(extractMubawabStrictSurface(html),null);
+});
+
+test("flags ambiguous primary DOM, not merely null surface",()=>{
+ const html='<div class="col-8"><div class="blockProp"><h1 class="searchTitle">Villa</h1><p>Surface 120 m² et superficie 150 m²</p></div></div>';
+ assert.deepEqual(inspectMubawabStrictSurface(html),{surface:null,conflict:true});
+});
+test("flags ambiguity within one adDetailFeature span",()=>{
+ const html='<div class="col-8"><div class="blockProp"><h1 class="searchTitle">Villa</h1></div><div class="adDetails"><div class="adDetailFeature"><span>120 m² et 150 m²</span></div></div></div>';
+ assert.deepEqual(inspectMubawabStrictSurface(html),{surface:null,conflict:true});
+});
+test("flags disagreement between main value and labeled list",()=>{
+ const html='<div class="col-8"><div class="blockProp"><h1 class="searchTitle">Villa</h1><p>Surface 120 m²</p></div><ul class="blockDetails"><li><span class="titreFiche">Surface</span><span class="titreFicheValue">150 m²</span></li></ul></div>';
+ assert.deepEqual(inspectMubawabStrictSurface(html),{surface:null,conflict:true});
+});
+test("does not confuse related-card labels with main listing",()=>{
+ const html='<div class="col-8"><div class="blockProp"><h1 class="searchTitle">Villa</h1><p>Surface 120 m²</p></div></div><ul class="blockDetails contentBox"><li><span class="titreFiche">Surface</span><span class="titreFicheValue">150 m²</span></li></ul>';
+ assert.equal(extractMubawabStrictSurface(html)?.value,120);
 });
