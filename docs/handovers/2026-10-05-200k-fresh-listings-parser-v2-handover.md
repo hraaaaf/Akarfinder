@@ -200,3 +200,19 @@ Indications comparatives non équivalentes aux certifications strictes : **Domio
 **Gate stratégique :** adopter explicitement la feuille de route B avant remplacement des campagnes actuelles. Aucune DB, Vercel, merge, campagne massive ou assouplissement 5/5. Dernière V4.1 déjà déclenchée `37970628173` : elle peut fournir son résultat indépendamment.
 
 **Next exact si adoption :** inventaire des workflows multi-sources existants, contrôle robots/conditions, benchmarking léger et comparable sur annonces réellement récentes, avec stricte provenance, déduplication et preuve d'activité.
+
+## Pivot utilisateur confirmé — scraping des pages de résultats, 2026-10-09
+
+Correction stratégique explicite : **l'utilisateur souhaite scrapper directement des sites immobiliers, pas acheter des données, signer des partenariats ou importer des CRM**. La proposition commerciale précédente est abandonnée comme priorité. Notre piste majeure est **RESULT-CARD-FIRST** : lire les pages de recherche/catégories et collecter l'URL canonique, la ville, le quartier, le prix et la superficie **dans le même bloc de résultat**, puis certifier activité et dédup séparément. L'objectif reste 200k uniques, frais, exploitables ; la présence de 5 champs sur une carte n'en est pas encore une preuve.
+
+**Faits externes vérifiés :** Mubawab expose, par exemple sur `https://www.mubawab.ma/fr/st/casablanca/appartements-a-vendre`, des cartes individuelles avec prix DH, « Californie, Casablanca », 146 m² et lien source, ainsi que d'autres biens. Des blocs programmes neufs contiennent plusieurs unités et doivent être exclus du pipeline d'annonces individuelles. Le public robots `https://www.mubawab.ma/robots.txt` n'exclut pas globalement `/fr/st/` à la date d'inspection ; chaque requête du pilote revérifie robots et s'arrête en cas d'accès refusé.
+
+**Spike technique read-only :**
+- `scripts/data/mubawab-result-cards-v1.mjs` : extraire blocs d'annonces indépendants via Cheerio, ID `a:<id>`, champs sourcés à la même carte, valeurs contradictoires rejetées, programmes `pa:` exclus ; état `observed_review` uniquement.
+- `scripts/data/__tests__/mubawab-result-cards-v1.test.mjs` : 9 tests de structure, conflits, fausse identité, robot exclusions, spécificité Allow.
+- `scripts/data/mubawab-result-cards-pilot-v1.mjs` : 3 catégories seulement (vente Casablanca, vente Rabat, location Casablanca), robots fail-closed, pas d'accès aux pages de détail ni DB, pacing 1250 ms.
+- `.github/workflows/mubawab-result-cards-first-pilot.yml` : CI dédiée, output `mubawab-card-first-pilot.json[ l]`.
+- Premier run `37973276661` **failure** : 7/8 tests réussis, échec d'une fixture robots avec Allow plus spécifique que Disallow (le comportement du parser respecte la priorité du plus spécifique) ; **aucun fetch n'a eu lieu sur ce run**. Fixture corrigée au commit `c714a5e3eeeeebfbae09aaff5228e98a4d23e39f`, nouveau run `37973454376` observé **in_progress**. Ne pas affirmer le rendement avant cet artifact.
+- Documentation du nouveau contrat : `docs/data/AKARFINDER_200K_INDEX_CARD_FIRST_2026-10-09.md`.
+
+**Next exact :** lire le run `37973454376` et son artifact, séparer succès des tests et rendement réel des pages HTML. Si extraction zéro, auditer le DOM réel d'une page de résultats et corriger le sélecteur ; si rendement positif, étendre prudemment par nouvelles catégories/villes puis multi-portails. Mesurer nouveaux IDs / requêtes, recency, faux positifs, uniques 5/5 certifiés avant toute montée en volume. Ne pas toucher DB, merger ni déployer Vercel.
