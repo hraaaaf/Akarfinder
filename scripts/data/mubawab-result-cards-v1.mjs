@@ -62,7 +62,8 @@ export function extractMubawabResultCards(html,pageUrl,city,{max=50}={}){
  for(const {ref,card} of cards.values()){
   const title=clean(card.find("h2,h3,.listingTit,.listingTitle").first().text()||card.find('a[href*="/a/"]').first().text()).slice(0,160);
   const leaves=leafText($,card);
-  const prices=[...new Set(leaves.map(exactPrice).filter(x=>x!==null))];
+  const priceWrappers=card.find('[class*="price"],[class*="Price"],[data-testid*="price"]').toArray().map(n=>clean($(n).text())).filter(t=>t.length<130);
+  const prices=[...new Set([...leaves,...priceWrappers].map(exactPrice).filter(x=>x!==null))];
   const surfaces=[...new Set(leaves.map(exactSurface).filter(x=>x!==null))];
   if(surfaces.length===0){
    const m=title.match(/(\d{1,6})\s*m(?:²|2)/iu);
