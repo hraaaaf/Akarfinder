@@ -8,7 +8,7 @@ import { extractDetail } from "../scrapers/utils/extract.js";
 import { extractStrictDetailPrice } from "../scrapers/price-detail-enrichment-v2.js";
 import { resolveMubawabLocation } from "./mubawab-location-v2.js";
 import { parseMubawabRoute } from "./mubawab-url-parser-v2.mjs";
-import { extractMubawabStrictSurface,hasMubawabPrimaryDetail } from "./mubawab-strict-surface-v2.js";
+import { inspectMubawabStrictSurface,hasMubawabPrimaryDetail } from "./mubawab-strict-surface-v2.js";
 import { extractMubawabStrictSurfaceFromUrl } from "./mubawab-url-surface-v2.js";
 import { probeMubawabSurfaceDom } from "./mubawab-surface-dom-probe-v2.js";
 import { probeMubawabLocationDom } from "./mubawab-location-dom-probe-v2.js";
@@ -179,11 +179,13 @@ for(const row of sample){
   const surfaceValue=s?Number(s.replace(",",".")):null;
   const validSurface=surfaceValue!=null && Number.isFinite(surfaceValue) && surfaceValue>0 ? surfaceValue : null;
   const surfaceAuto=d._confidence.surface==="high" && validSurface!=null && validSurface>=5 && validSurface<=100000 && (sourceName!=="mubawab.ma"||rec.primary_detail_verified===true);
-  const strictDomSurface=sourceName==="mubawab.ma"?extractMubawabStrictSurface(html):null;
+  const strictDomInspection=sourceName==="mubawab.ma"?inspectMubawabStrictSurface(html):null;
+  const strictDomSurface=strictDomInspection?.surface??null;
   const strictUrlSurface=sourceName==="mubawab.ma"?extractMubawabStrictSurfaceFromUrl(url):null;
-  const evidenceConflict=!!strictDomSurface&&!!strictUrlSurface&&strictDomSurface.value!==strictUrlSurface.value;
+  const evidenceConflict=!!strictDomInspection?.conflict||(!!strictDomSurface&&!!strictUrlSurface&&strictDomSurface.value!==strictUrlSurface.value);
   if(evidenceConflict){
-    add(c,row,"surface_m2",strictDomSurface.value,"review","mubawab_primary_dom_vs_canonical_slug_conflict",false);
+    if(strictDomSurface) add(c,row,"surface_m2",strictDomSurface.value,"review","mubawab_primary_dom_vs_canonical_slug_conflict",false);
+    else if(strictUrlSurface) add(c,row,"surface_m2",strictUrlSurface.value,"review","mubawab_ambiguous_primary_dom_conflicts_with_slug",false);
     rec.surface_evidence_conflict=true;
   }else{
     const strictSurface=(sourceName!=="mubawab.ma"||rec.primary_detail_verified===true)?(strictDomSurface??strictUrlSurface):null;
