@@ -57,3 +57,30 @@ test("invalid final URL is privacy-safe",()=>{
  assert.equal(r.final_category,"invalid_final_url");
  assert.equal(r.final_host,"invalid");
 });
+
+
+test("redirection target includes source id as a path segment on alternate route",()=>{
+ const r=classify(original,"https://mubawab.ma/fr/b/8374278/appartement",true);
+ assert.equal(r.final_category,"locale_other_path");
+ assert.equal(r.final_requested_id_in_path,true);
+ assert.equal(r.final_route_prefix,"b");
+ assert.equal(r.final_route_shape,"locale/known_route/requested_id/slug_like");
+});
+test("non-detail destination lacking source id does not imply listing deletion",()=>{
+ const r=classify(original,"https://mubawab.ma/fr/annonces/recherche-appartements",true);
+ assert.equal(r.final_category,"locale_other_path");
+ assert.equal(r.final_requested_id_in_path,false);
+ assert.equal(r.final_route_prefix,"annonces");
+});
+test("raw unknown destination route words and secrets are never returned",()=>{
+ const secret="do-not-disclose-this-token";
+ const r=classify(original,"https://mubawab.ma/fr/"+secret+"/other?token="+secret,true);
+ assert.equal(r.final_route_prefix,"unrecognized");
+ assert.equal(JSON.stringify(r).includes(secret),false);
+ assert.equal(r.final_route_shape,"locale/slug_like/alpha");
+});
+test("other numeric id in target does not falsely match requested id",()=>{
+ const r=classify(original,"https://mubawab.ma/fr/b/8374279/other",true);
+ assert.equal(r.final_requested_id_in_path,false);
+ assert.equal(r.final_has_other_numeric_segment,true);
+});
