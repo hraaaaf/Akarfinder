@@ -84,6 +84,23 @@ try {
       }).map(node=>node.textContent?.trim().slice(0,90)||"unnamed");
     });
     if(reframedClipping.length) throw new Error(`${viewport.name}: reframed POI labels are clipped ${JSON.stringify(reframedClipping)}`);
+    // V0.4.1: the map's center name must not obscure the sourced park label.
+    // Check actual rendered rectangles after the same real Repères interaction.
+    let parkNeighborhoodOverlap = null;
+    if (viewport.width <= 430) {
+      parkNeighborhoodOverlap = await page.evaluate(() => {
+        const neighborhood=document.querySelector(".maplibre-spike-neighborhood-label > span");
+        const park=document.querySelector('.maplibre-spike-poi-label[data-poi-category="green_sport"][data-label-collapsed="false"] > span');
+        if(!neighborhood || !park) return { absent: true };
+        const a=neighborhood.getBoundingClientRect();
+        const b=park.getBoundingClientRect();
+        const overlapWidth=Math.max(0,Math.min(a.right,b.right)-Math.max(a.left,b.left));
+        const overlapHeight=Math.max(0,Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top));
+        return { overlapWidth, overlapHeight, overlapArea: overlapWidth*overlapHeight };
+      });
+      if (parkNeighborhoodOverlap.absent) throw new Error(`${viewport.name}: cannot certify Maârif / park label separation`);
+      if (parkNeighborhoodOverlap.overlapArea > 1) throw new Error(`${viewport.name}: Maârif text overlaps sourced park ${JSON.stringify(parkNeighborhoodOverlap)}`);
+    }
     await page.screenshot({path:`${outDir}/poi-after-all-${viewport.width}x${viewport.height}.png`,fullPage:false});
 
     // Capture one filtered state using a real available category when present.
@@ -94,7 +111,7 @@ try {
       await page.screenshot({path:`${outDir}/poi-after-education-${viewport.width}x${viewport.height}.png`,fullPage:false});
     }
 
-    report.cases.push({viewport:viewport.name,poiLanguage,rawCategories:rawCategories.map(v=>v.trim()),families,poiCount,glyphCount,landmarkCount,landmarkGlyphCount,visiblePoiLabels,clippedLabels,declaredAnchorCount,repereAccessibility,reframedPoiCount,reframedVisibleNames,reframedClipping,overflow});
+    report.cases.push({viewport:viewport.name,poiLanguage,rawCategories:rawCategories.map(v=>v.trim()),families,poiCount,glyphCount,landmarkCount,landmarkGlyphCount,visiblePoiLabels,clippedLabels,declaredAnchorCount,repereAccessibility,reframedPoiCount,reframedVisibleNames,reframedClipping,parkNeighborhoodOverlap,overflow});
     await page.close();
   }
   report.ok=true;
