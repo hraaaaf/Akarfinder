@@ -875,3 +875,66 @@
     transform: translateY(-20px);
   }
 }
+
+
+/* BRAND PASS — Vivre Ici / Maârif, couleurs structurelles documentées.
+ * Source : Notion « AkarFinder — Identité visuelle & Visual Landmark Dictionary »
+ * C1 #071B33 = navy/structure; C2 #0B63CE = sélection/actions.
+ * SCOPED UI only. Natural map landuse, roads, buildings, coordinates unchanged.
+ */
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-quarter-style="flat-living-v02"] {
+  --akar-living-navy: #071B33;
+  --akar-living-blue: #0B63CE;
+}
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-quarter-style="flat-living-v02"]
+  .maplibre-spike-neighborhood-label > span {
+  background: var(--akar-living-navy) !important;
+  box-shadow: 0 9px 22px rgb(7 27 51 / .19) !important;
+}
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-quarter-style="flat-living-v02"]
+  .maplibre-spike-neighborhood-label i {
+  background: var(--akar-living-blue) !important;
+}
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-quarter-style="flat-living-v02"]
+  .maplibre-spike-filters button.active {
+  background: var(--akar-living-blue) !important;
+  border-color: var(--akar-living-blue) !important;
+  color: #fff !important;
+  box-shadow: 0 5px 15px rgb(11 99 206 / .15) !important;
+}
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-quarter-style="flat-living-v02"]
+  .maplibre-spike-filters button.active .maplibre-spike-filter-count {
+  color: var(--akar-living-navy) !important;
+}
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-quarter-style="flat-living-v02"]
+  .maplibre-spike-controls .maplibre-spike-control-primary {
+  background: var(--akar-living-navy) !important;
+  color: #fff !important;
+  border-color: rgb(7 27 51 / .95) !important;
+}
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-quarter-style="flat-living-v02"]
+  .maplibre-spike-search svg {
+  color: var(--akar-living-blue) !important;
+}
+/* Rail shares the Maârif pilot scope, even when it is a sibling of the map. */
+[data-maarif-rebuild="true"] .maarif-target-rail .maarif-target-heading h1,
+[data-maarif-rebuild="true"] .maarif-target-rail .maarif-target-stat-grid strong,
+[data-maarif-rebuild="true"] .maarif-target-rail .maarif-target-places-heading h2 {
+  color: #071B33 !important;
+}
+[data-maarif-rebuild="true"] .maarif-target-rail .maarif-target-primary-action {
+  background: #071B33 !important;
+  color: #fff !important;
+  box-shadow: 0 9px 23px rgb(7 27 51 / .16) !important;
+}
+[data-maarif-rebuild="true"] .maarif-target-rail .maarif-target-city,
+[data-maarif-rebuild="true"] .maarif-target-rail .maarif-target-tabs button[aria-current="page"],
+[data-maarif-rebuild="true"] .maarif-target-rail .maarif-target-places-heading button {
+  color: #0B63CE !important;
+}
+[data-maarif-rebuild="true"] .maarif-target-rail .maarif-target-tabs button[aria-current="page"]::after {
+  background: #0B63CE !important;
+}
+[data-maarif-rebuild="true"] .maarif-target-rail .maarif-target-local-icon {
+  color: #0B63CE !important;
+}
