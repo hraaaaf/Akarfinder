@@ -157,6 +157,23 @@ try {
 
       const panelBox = await rail.boundingBox();
       if (!panelBox) throw new Error(`${viewport.name}: Vivre Ici rail has no bounding box`);
+      let compactSheetMetrics = null;
+      if (viewport.width <= 430) {
+        const maxAllowedHeight = Math.min(viewport.height * 0.20, 176) + 2;
+        if (panelBox.height > maxAllowedHeight) {
+          throw new Error(`${viewport.name}: compact mobile sheet obscures map (height ${panelBox.height}, max ${maxAllowedHeight})`);
+        }
+        const primaryAction = rail.getByRole("link", { name: /Voir les biens disponibles à Maârif/i });
+        await primaryAction.waitFor({ state: "visible", timeout: 5000 });
+        const ctaBox = await primaryAction.boundingBox();
+        if (!ctaBox || ctaBox.y < panelBox.y - 1 || ctaBox.y + ctaBox.height > panelBox.y + panelBox.height + 1) {
+          throw new Error(`${viewport.name}: mobile collapsed CTA clipped by sheet ${JSON.stringify({ ctaBox, panelBox })}`);
+        }
+        if (ctaBox.height < 43) {
+          throw new Error(`${viewport.name}: mobile CTA tap target too small (${ctaBox.height})`);
+        }
+        compactSheetMetrics = { collapsedHeight: panelBox.height, mapAvailableAboveSheet: panelBox.y, ctaBox, maxAllowedHeight };
+      }
       const layoutDiagnostics = await page.evaluate(() => {
         const layout = document.querySelector("[data-p4-map-layout]");
         const railElement = document.querySelector("[data-p4-map-decision-rail]");
@@ -324,6 +341,7 @@ try {
         viewport: viewport.name,
         searchHref,
         panelBox,
+        compactSheetMetrics,
         localPanelBox,
         layoutDiagnostics,
         overflow,
