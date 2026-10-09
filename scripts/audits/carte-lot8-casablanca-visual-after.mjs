@@ -159,7 +159,7 @@ try {
       if (!panelBox) throw new Error(`${viewport.name}: Vivre Ici rail has no bounding box`);
       let compactSheetMetrics = null;
       if (viewport.width <= 430) {
-        const maxAllowedHeight = Math.min(viewport.height * 0.20, 176) + 2;
+        const maxAllowedHeight = Math.min(viewport.height * 0.185, 160) + 2;
         if (panelBox.height > maxAllowedHeight) {
           throw new Error(`${viewport.name}: compact mobile sheet obscures map (height ${panelBox.height}, max ${maxAllowedHeight})`);
         }
