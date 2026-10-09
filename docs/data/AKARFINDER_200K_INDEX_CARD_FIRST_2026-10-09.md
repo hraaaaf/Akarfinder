@@ -57,3 +57,14 @@ Run `37973454376` **success** ; artifact `11638116913` examiné :
 - Run exact-head le plus récent `37973741392` sur commit `f86521c4784a72e9d51be8617ee0d0d4d9f1229a`, **in_progress** lors du dernier constat. Les runs intermédiaires ne sont pas notre référence.
 
 **Gate critique** : confirmer que le prix appartient à **la même annonce** et non à une carte voisine/programme neuf. Si absent de la carte `listingBox`, inspecter le wrapper DOM réel avant d'autoriser le prix. Ne jamais faire une jointure implicite entre blocs. Maintenir `observed_review` jusqu'au contrôle source actif et dédup.
+
+
+## Correctif prix et preuve — run 37973741392
+
+- Run exact HEAD `f86521c4784a72e9d51be8617ee0d0d4d9f1229a` : **success**, artifact `11637422426`. 3 pages catégories HTTP 200, **87 annonces individuelles distinctes**, **86/87 = 98,85 % avec les cinq champs présents dans la même carte** (dont 87 prix, 87 surfaces, 86 quartiers, 87 villes). **0 page de détail visitée**.
+- Cause du 0/87 initial : les prix étaient répartis dans des sous-éléments des classes `price` ; corriger par `$(card).find('[class*=price]')...`, en conservant le scope de la carte. L'artifact a confirmé la présence du prix dans **87/87 cartes**. Les 8 tests locaux initialement lancés puis la correction robots sont passés (CI verte).
+- **Jointure offline par ID source** au `clean-corpus-v4.11-core.jsonl.gz` : **67 IDs absents du gel historique / 87 observés (77,0 %)** ; 20 IDs présents dans l'archive sous une autre URL/slug ; **0 match d'URL canonique strict** — ne pas comparer uniquement les URLs entières.
+- L'annonce `a:8360772` avait le quartier absent ; autres 86 avec quartier présenté. Le nombre `86/87` signifie uniquement **champs observés**, pas encore fraîcheur, disponibilité, conformité de republication ni unicité inter-portails.
+- Extension ciblée à **8 pages** pour échantillonnage multi-villes/vente/location/maisons, commit workflow `6c0c00aaea7e25b9c11370d06e2c05fa42e53cf7`, run exact **37974096161** dernier état `queued`. Même sécurité robots, zéro détail, zéro DB.
+
+**Next exact** : lire l'artifact du run 37974096161 ; mesurer IDs réellement nouveaux versus gel, taux de 5 champs, collisions/duplicata inter-catégories. Si positif, généraliser l'exploration par catégories vers plusieurs portails selon leurs conditions d'accès ; créer des filtres anti-dup/source-date/présence et un échantillon de validation détail ciblé avant comptage vers 200k.
