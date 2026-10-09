@@ -197,3 +197,22 @@ Read exact-head CI results, correct failures, retrieve exact-head captures, visu
 
 ### Next exact
 Obtain new exact-head Rue CI result. If green, retrieve its screenshot and confirm scope; if red, diagnose actual failure rather than reducing assertions. Then improve the mobile sheet and POI hierarchy to reach >=8.5/10; compare before/after identical viewports and seek human visual approval. No Vercel deploy, DB write or merge authorized.
+
+## V0.4 certification — 2026-10-09
+
+**Goal:** premium flat north-up living map with genuinely readable mobile context and an accessible search CTA. **Target score:** ≥ 8.5/10 through human screenshot review.
+
+**Exact product proof (HEAD `8a57e0fe19fdcd810125b8b8d879229b8648cc74`):**
+- `37953911287` Casablanca AFTER **success**, artifact `11627795985`. Four viewports observed: 390×844, 430×932, 768×900, 1280×900. Pitch/bearing 0/0, real basemap tiles and 2D footprints.
+- **Mobile sheet:** 390 = 156.125px; 430 = 160px, each within target `min(18.5svh,160px)`. Real property-search CTA 44px high, visible and not clipped.
+- `37953911293` POI AFTER **success**, artifact `11627118347`. After one real « Repères » interaction 4/4 sourced anchors are displayed on mobile 390 and 430. No DOM label clipping; previously failing « Clinique Badr مصحة بدر » now fits.
+- `37953911452` Rue Proximité AFTER **success**, artifact `11627581295`.
+- `37953911405` Multi-city Browser **success**.
+- **Independent failures on this HEAD:** C7 (C3 price API HTTP 503), National Market BEFORE and National Zillow certification remain red; don't certify those domains from the card UI results.
+- **Human visual review:** V0.4 **8.3/10 subjective**, upgraded from V0.3 8.1. Evidence images: artifacts above. Below ≥8.5 gate. Main observation: Maârif neighborhood label clashes with sourced Parc du Vélodrome name; canvas still slightly pale.
+
+**V0.4.1 in progress:** scoped CSS moves only the Maârif *text* by 19px vertically on ≤560px, keeping its geographic dot at the original map projection. Browser POI audit now asserts measured intersection area = 0 after clicking Repères at 390 and 430. Latest product/test commit: `a0206ad0acefce43ab1cd4e6f8186d471da56ddb`.
+
+**Proof pending:** exact-head POI and Casablanca AFTER screenshots on V0.4.1. If red diagnose/revise; if green compare same 390/430/desktop screenshots and request human visual approval when target reached.
+
+**Restrictions:** PR #1108 stays DRAFT on `feat/vivre-ici-flat-living-map-v0`; no merge, no Vercel deploy, no DB writes.
