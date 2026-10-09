@@ -852,3 +852,15 @@
     line-height: 1.3 !important;
   }
 }
+
+
+/* V0.4.1 — move only the Maârif text, never its geographic center dot.
+ * Prevent the neighborhood name from colliding with the sourced park label
+ * at quartier / Repères zoom on small screens.
+ */
+@media (max-width: 560px) {
+  [data-akar-quartier-target="maarif-couche1"][data-maplibre-quarter-style="flat-living-v02"]
+    .maplibre-spike-neighborhood-label > span {
+    transform: translateY(-19px);
+  }
+}
