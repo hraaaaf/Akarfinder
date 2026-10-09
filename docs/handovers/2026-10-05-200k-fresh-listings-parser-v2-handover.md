@@ -153,3 +153,21 @@ Source: artifact `11626517251` du run `37951999652` (success), sample 300; probe
 - **Goal 200k non atteint**. Pas de DB, pas de Vercel, pas de merge.
 
 **Next exact** : distinguer dans l'échantillon `source_identity_preserved=false` les redirections HTTP et les routes finales sans préserver le contenu HTML sensible, pour savoir si 208 fiches sont archivées/non disponibles ou des erreurs de routage ; ensuite augmenter le rendement de quartier uniquement avec une source primaire vérifiable (métadonnées de localisation ou publication propre, pas texte aléatoire ni cartes reliées) ; certifier de nouveau 300 ; tests freshness + dédup.
+
+
+## Navigation finale Mubawab — diagnostic V4 / 2026-10-09
+
+Goal de ce sous-lot : classer les **208/300 URL HTTP 200 sans identité source préservée** sans supposer qu'elles représentent 208 annonces définitivement retirées.
+
+**Preuves acquises hors ligne sur l'artifact exact** V3 (11630009636) :
+- 92/300 URLs vers fiches principales avec identité stable, 208/300 ne passent pas le gate d'identité. Cette absence est un **résultat de navigation, pas une preuve de retrait**.
+- Répartition par tranche d'ID Mubawab parmi les 300 : moins de 7 800 000 = **7/51** fiches reconnues ; 7 800 000–8 199 999 = **19/129** ; 8 200 000–8 299 999 = **30/75** ; 8 300 000 ou plus = **36/45**. Forte corrélation entre identifiants élevés et fiche retrouvable **dans l'échantillon**, mais un ID plus élevé ne constitue pas une date de publication certifiée.
+- Jointure locale du gel clean-corpus-v4.11-core.jsonl.gz avec les **300/300 URLs** : toutes ont deep_observation_count=0, deep_http_statuses=[], approved_for_import=false. Le corpus gelé reste un réservoir d'URLs, non un stock d'annonces fraîches/servables démontré.
+
+**Implémentation engagée / non encore certifiée** : commit unique 721fe07569add49d107db1158871e34dab6d07f4 :
+- Module scripts/data/mubawab-navigation-v2.mjs : classe la destination finale de fetch (même identité / autre fiche / accueil / recherche / route inconnue / hors domaine), distingue HTTP redirect et classe les ID par tranche de 100k. Ne persiste **jamais** l'URL finale brute, ses paramètres, le texte HTML ou les identifiants tiers.
+- Tests scripts/data/__tests__/mubawab-navigation-v2.test.mjs : redirection de slug même identité, destination autre identité, page catalogue/accueil, domaine extérieur, confidentialité des paramètres, fausse route détail.
+- github-freeze-full-field-recovery.ts et .github/workflows/mubawab-200k-certify-one-shot.yml : diagnostic agrégé mubawab-five-field-300-navigation-diagnostics.json et assertion zéro divergence entre identité classée et gate d'identité dans les réponses 200.
+- Push commit unique, CI Mubawab ciblée : run 37966914495 (https://github.com/hraaaaf/Akarfinder/actions/runs/37966914495), **in_progress** au contrôle initial. Aucun résultat de redirection anticipé.
+
+**Next exact** : consulter la CI une fois quand un résultat est disponible ; si succès, lire artifact navigation V4 et distinguer les 208 par catégories. Si échec, corriger la cause exacte et relancer une fois ; ensuite analyser l'éventuel vrai signal de disponibilité et la preuve quartier source. Aucun accès DB, écriture, merge ni déploiement Vercel.
