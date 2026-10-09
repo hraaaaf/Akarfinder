@@ -68,3 +68,16 @@ Run `37973454376` **success** ; artifact `11638116913` examiné :
 - Extension ciblée à **8 pages** pour échantillonnage multi-villes/vente/location/maisons, commit workflow `6c0c00aaea7e25b9c11370d06e2c05fa42e53cf7`, run exact **37974096161** dernier état `queued`. Même sécurité robots, zéro détail, zéro DB.
 
 **Next exact** : lire l'artifact du run 37974096161 ; mesurer IDs réellement nouveaux versus gel, taux de 5 champs, collisions/duplicata inter-catégories. Si positif, généraliser l'exploration par catégories vers plusieurs portails selon leurs conditions d'accès ; créer des filtres anti-dup/source-date/présence et un échantillon de validation détail ciblé avant comptage vers 200k.
+
+
+## Extension multi-villes — run 37974096161 (preuve consolidée)
+
+- **Run** [37974096161](https://github.com/hraaaaf/Akarfinder/actions/runs/37974096161) : **completed/success**, produit HEAD `6c0c00aaea7e25b9c11370d06e2c05fa42e53cf7`, artifact **11638287776** lu directement (JSON + JSONL).
+- **8/8 pages catégorie HTTP 200**, 215 IDs de détail `a:<id>` uniques, **187/215 = 86,98 %** présentent les cinq champs dans **la carte source**. Zéro page de détail visitée. DB 0/0.
+- Par route : Casablanca vente appartements **23/23**, Rabat vente appartements **31/32**, Casablanca location appartements **32/32**, Rabat location appartements **30/32**, Marrakech vente appartements **22/24**, Tanger vente appartements **8/23**, Agadir vente appartements **11/17**, Casablanca vente maisons **30/32**.
+- **Jointure offline à l'archive canonique `10910779576`, par `a:<id>` et non URL brute** : **161/215 IDs absents du gel**, **54/215 déjà présents**. Ce sont des identités nouvelles **par rapport au stock**, pas une preuve de date de publication récente ni d'activité.
+- Une grande partie des cartes incomplètes est liée à un **prix absent/à consulter**, et quelques annonces ne présentent pas de quartier. Ne jamais inventer les valeurs manquantes ; exemple de blocage connu `a:8360772` : pas de quartier.
+- **Limites probantes :** 187 lignes `observed_review`, pas `CERTIFIED`. La page de résultats peut contenir prix aberrants (outliers), programmes immobiliers, annonces anciennes ou liens dont la destination change ; source `a:` exclut les projets `pa:` mais ne suffit pas à prouver la commercialisation du bien. Aucun déploiement/merge/promotion.
+- **Qualité/sécurité :** robots vérifié à chaque run, stop 403/429, 1250 ms entre demandes, données source limitées aux 5 champs + titre et provenance, zéro PII privé/endpoint caché. Les droits de republication doivent être vérifiés avant mise en production.
+
+**Next exact** : utiliser les catégories publiques autorisées pour étendre le graphe des shards ville/quartier/type/transaction sans pagination disallow ; garder dedup stable `source+id`. Sur un échantillon borné de nouvelles identités 5/5, vérifier la présence/identité et la cohérence des champs depuis la page individuelle source (sans parcourir chaque fiche systématiquement) ; audit de fraîcheur et anomalies. Généraliser ensuite vers d'autres portails avec adaptateurs isolés, et mesurer le gain `nouvelles annonces observées / requêtes` avec un gate de source active.
