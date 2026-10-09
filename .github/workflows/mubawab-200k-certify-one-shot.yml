@@ -15,6 +15,8 @@ on:
       - 'scripts/data/__tests__/mubawab-url-surface-v2.test.ts'
       - 'scripts/data/mubawab-surface-dom-probe-v2.ts'
       - 'scripts/data/__tests__/mubawab-surface-dom-probe-v2.test.ts'
+      - 'scripts/data/mubawab-location-dom-probe-v2.ts'
+      - 'scripts/data/__tests__/mubawab-location-dom-probe-v2.test.ts'
 
 permissions:
   contents: read
@@ -29,6 +31,7 @@ jobs:
       SAMPLE_SIZE: '300'
       FETCH_DELAY_MS: '250'
       SURFACE_DOM_PROBE: '1'
+      LOCATION_DOM_PROBE: '1'
       OUTPUT_PREFIX: 'mubawab-five-field-300'
       FREEZE_JSONL_GZ: '.tmp/freeze/clean-corpus-v4.11-core.jsonl.gz'
     steps:
@@ -46,6 +49,7 @@ jobs:
           npx tsx --test scripts/data/__tests__/mubawab-strict-surface-v2.test.ts
           npx tsx --test scripts/data/__tests__/mubawab-url-surface-v2.test.ts
           npx tsx --test scripts/data/__tests__/mubawab-surface-dom-probe-v2.test.ts
+          npx tsx --test scripts/data/__tests__/mubawab-location-dom-probe-v2.test.ts
       - name: Fetch canonical freeze
         env:
           GH_TOKEN: ${{ github.token }}
@@ -71,6 +75,7 @@ jobs:
           const fs=require('fs');
           const rows=fs.readFileSync('mubawab-five-field-300.jsonl','utf8').trim().split(/\r?\n/).filter(Boolean).map(JSON.parse);
           const fields=['city','district','price_mad','surface_m2'];
+          if(rows.some(r=>r.primary_detail_verified!==true&&(r.candidates||[]).some(c=>c.state==='write_safe'))){throw new Error('Unverified primary detail retained write_safe candidate');}
           const counts=Object.fromEntries(fields.map(f=>[f,0]));
           let complete=0,primaryDetailVerified=0,sourceIdentityPreserved=0,surfaceEvidenceConflicts=0;
           for(const row of rows){
@@ -94,4 +99,5 @@ jobs:
             mubawab-five-field-300.jsonl
             mubawab-five-field-coverage.json
             mubawab-five-field-300-surface-dom-probe.json
+            mubawab-five-field-300-location-dom-probe.json
           retention-days: 14
