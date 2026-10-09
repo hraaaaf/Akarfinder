@@ -138,3 +138,18 @@ Source: artifact `11626517251` du run `37951999652` (success), sample 300; probe
 - Contraintes maintenues : pas d'accès ou écriture DB, pas de merge, pas de déploiement Vercel.
 
 **Next exact :** vérifier le run `37959672836` **une fois** : si rouge, diagnostiquer les tests et corriger ; si vert, récupérer `mubawab-five-field-coverage.json` V3 et la sonde de localisation (40 fiches), comparer au V3 0/300 ; rechercher faux positifs, certifier la fraîcheur et la déduplication séparément avant scale.
+
+
+## Certification V3 du 9 octobre 2026 — confirmé
+
+**Run** [37959672836](https://github.com/hraaaaf/Akarfinder/actions/runs/37959672836) : `completed/success` sur HEAD `11e268cd9de9d52310cd8898fe78971289aca8aa`, artifact **11630009636**. Réanalyse des JSONL de l'artifact indépendamment des logs.
+
+- 300 lignes ; identité source finale préservée **92** ; bloc principal reconnu **92**.
+- `write_safe` primaire seulement : ville **92**, quartier **11**, prix **59**, surface **73** ; **6/300 = 2 %** possèdent les quatre champs + URL canonique. **19 conflits de surface**, au lieu de 3 dans une version plus permissive ; les contrôles ont été durcis entre les runs.
+- Assertion corroborée en inspectant le JSONL : **0** champ `write_safe` provenant des **208** pages non primaires.
+- Six identités 5/5 : `a:8385844` Aïn Mezouar/Marrakech, `a:8374278` Mhamid/Marrakech, `a:7792433` Casa Nearshore/Casablanca, `a:8327548` Californie/Casablanca, `a:8380850` Al Qods/Casablanca, `a:8367278` Place Mozart/Tanger. Les prix/surfaces exacts sont dans l'artifact ; **ne constituent pas validation de fraîcheur**.
+- Diagnostic source `mubawab-five-field-300-location-dom-probe.json`: **40/40** fiches primaires sondées ont **0** occurrence dans les sélecteurs ciblés pour localisation et **0 JSON-LD adressé**. Donc une extraction DOM directe du quartier **n'est pas démontrée** dans ces 40 pages. Le parser de quartier **description explicitement nommée + slug** permet seulement 11 candidats ; ne pas les multiplier au-delà sans preuve.
+- Les **208/300** réponses non primaires suggèrent redirection/recherche ou dérive de canonisation, mais **l'URL finale exacte n'a pas été collectée dans l'artifact** : ne pas affirmer plus précisément la cause.
+- **Goal 200k non atteint**. Pas de DB, pas de Vercel, pas de merge.
+
+**Next exact** : distinguer dans l'échantillon `source_identity_preserved=false` les redirections HTTP et les routes finales sans préserver le contenu HTML sensible, pour savoir si 208 fiches sont archivées/non disponibles ou des erreurs de routage ; ensuite augmenter le rendement de quartier uniquement avec une source primaire vérifiable (métadonnées de localisation ou publication propre, pas texte aléatoire ni cartes reliées) ; certifier de nouveau 300 ; tests freshness + dédup.
