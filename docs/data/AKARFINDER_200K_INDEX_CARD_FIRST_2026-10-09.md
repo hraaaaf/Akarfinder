@@ -44,3 +44,16 @@ Commit de workflow `69e170ee326d9ca8bcf4cca205713b155ef78844` sur branche `data/
 
 ## Next exact
 Lire CI `37973276661`. Si rouge : corriger les assertions/sélecteurs depuis l'HTML réel, sans inventer les chiffres. Si vert : récupérer l'artefact, comparer les 3 pages, vérifier présence de vrais liens et la proportion de cartes 5 champs. Ensuite mini-expansion par types de bien/transactions et nouvelles villes, contrôle de recency et nouveauté, puis dédup; construire la matrice des portails.
+
+
+## Premier résultat réel du pilote (run 37973454376)
+
+Run `37973454376` **success** ; artifact `11638116913` examiné :
+- Les **3/3** pages catégories demandées ont répondu HTTP 200 et gardé la route catégorie.
+- Liens de détail dans ces trois pages : **23 + 32 + 32 = 87** ; **87 identités individuelles distinctes** après contrôle d'appartenance de chaque lien à une seule carte ; **zéro requête individuelle**.
+- Quartier et superficie observables dans des cartes réelles, notamment Californie et Ferme Bretonne ; des ID `a:84xxxxx` apparaissent dans les résultats du jour.
+- **0/87 à cinq champs**, non par manque des quartiers mais car `price_mad=null` sur les 87 cartes. Cela ne permet **pas** de certifier le rendement final.
+- Correctif expérimental pour des valeurs monétaires séparées dans les sous-éléments de la carte (classe price) ; diagnostic booléen qui distingue prix dans carte, parent, grand-parent sans persister les textes/PII.
+- Run exact-head le plus récent `37973741392` sur commit `f86521c4784a72e9d51be8617ee0d0d4d9f1229a`, **in_progress** lors du dernier constat. Les runs intermédiaires ne sont pas notre référence.
+
+**Gate critique** : confirmer que le prix appartient à **la même annonce** et non à une carte voisine/programme neuf. Si absent de la carte `listingBox`, inspecter le wrapper DOM réel avant d'autoriser le prix. Ne jamais faire une jointure implicite entre blocs. Maintenir `observed_review` jusqu'au contrôle source actif et dédup.
