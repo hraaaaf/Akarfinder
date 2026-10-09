@@ -639,7 +639,7 @@
 }
 [data-akar-quartier-target="maarif-couche1"][data-maplibre-quarter-style="flat-living-v02"]
   .maplibre-spike-canvas canvas {
-  filter: saturate(.92) contrast(1.012) brightness(1.01) !important;
+  filter: saturate(.97) contrast(1.04) brightness(.992) !important;
 }
 [data-akar-quartier-target="maarif-couche1"][data-maplibre-quarter-style="flat-living-v02"]
   .maplibre-spike-map-chrome {
