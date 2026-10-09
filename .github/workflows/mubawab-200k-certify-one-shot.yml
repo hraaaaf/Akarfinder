@@ -19,6 +19,8 @@ on:
       - 'scripts/data/__tests__/mubawab-location-dom-probe-v2.test.ts'
       - 'scripts/data/mubawab-description-district-v2.ts'
       - 'scripts/data/__tests__/mubawab-description-district-v2.test.ts'
+      - 'scripts/data/mubawab-navigation-v2.mjs'
+      - 'scripts/data/__tests__/mubawab-navigation-v2.test.mjs'
 
 permissions:
   contents: read
@@ -53,6 +55,7 @@ jobs:
           npx tsx --test scripts/data/__tests__/mubawab-surface-dom-probe-v2.test.ts
           npx tsx --test scripts/data/__tests__/mubawab-location-dom-probe-v2.test.ts
           npx tsx --test scripts/data/__tests__/mubawab-description-district-v2.test.ts
+          node --test scripts/data/__tests__/mubawab-navigation-v2.test.mjs
       - name: Fetch canonical freeze
         env:
           GH_TOKEN: ${{ github.token }}
@@ -78,6 +81,7 @@ jobs:
           const fs=require('fs');
           const rows=fs.readFileSync('mubawab-five-field-300.jsonl','utf8').trim().split(/\r?\n/).filter(Boolean).map(JSON.parse);
           const fields=['city','district','price_mad','surface_m2'];
+          if(rows.some(r=>r.http_status===200&&(r.navigation?.identity_preserved===true)!==(r.source_identity_preserved===true))){throw new Error('Navigation identity differs from primary-detail identity gate');}
           if(rows.some(r=>r.primary_detail_verified!==true&&(r.candidates||[]).some(c=>c.state==='write_safe'))){throw new Error('Unverified primary detail retained write_safe candidate');}
           const counts=Object.fromEntries(fields.map(f=>[f,0]));
           let complete=0,primaryDetailVerified=0,sourceIdentityPreserved=0,surfaceEvidenceConflicts=0;
@@ -103,4 +107,5 @@ jobs:
             mubawab-five-field-coverage.json
             mubawab-five-field-300-surface-dom-probe.json
             mubawab-five-field-300-location-dom-probe.json
+            mubawab-five-field-300-navigation-diagnostics.json
           retention-days: 14

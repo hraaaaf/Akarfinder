@@ -13,6 +13,7 @@ import { extractMubawabStrictSurfaceFromUrl } from "./mubawab-url-surface-v2.js"
 import { probeMubawabSurfaceDom } from "./mubawab-surface-dom-probe-v2.js";
 import { probeMubawabLocationDom } from "./mubawab-location-dom-probe-v2.js";
 import { extractMubawabCorroboratedDistrict } from "./mubawab-description-district-v2.js";
+import { classifyMubawabNavigation } from "./mubawab-navigation-v2.mjs";
 
 async function main(){
 const USER_AGENT="AkarFinderFullFieldRecovery/1.0";
@@ -145,11 +146,10 @@ for(const row of sample){
   try{response=await fetch(url,{headers:{"user-agent":USER_AGENT,"accept":"text/html,application/xhtml+xml"},redirect:"follow"});}
   catch{rec.blocked="fetch_error";results.push(rec);continue;}
   rec.http_status=response.status;
+  if(sourceName==="mubawab.ma") rec.navigation=classifyMubawabNavigation(url,response.url,response.redirected);
   if(response.status!==200){rec.blocked=`http_${response.status}`;results.push(rec);continue;}
   const html=await response.text();
-  const originIdentity=sourceName==="mubawab.ma"?parseMubawabRoute(url)?.identity:null;
-  const finalIdentity=sourceName==="mubawab.ma"?parseMubawabRoute(response.url)?.identity:null;
-  rec.source_identity_preserved=sourceName==="mubawab.ma"?!!originIdentity&&originIdentity===finalIdentity:null;
+  rec.source_identity_preserved=sourceName==="mubawab.ma"?rec.navigation?.identity_preserved===true:null;
   rec.primary_detail_verified=sourceName==="mubawab.ma"?rec.source_identity_preserved&&hasMubawabPrimaryDetail(html):null;
   if(sourceName==="mubawab.ma"&&!rec.primary_detail_verified) rec.primary_detail_failure=rec.source_identity_preserved?"missing_primary_dom":"redirect_identity_or_detail_route_mismatch";
   if(sourceName==="mubawab.ma"&&rec.primary_detail_verified===true&&process.env.LOCATION_DOM_PROBE==="1"&&locationDomProbes.length<40){
@@ -162,6 +162,10 @@ for(const row of sample){
   const title=meta(html,"og:title");
   const desc=d.description_snippet||meta(html,"description")||meta(html,"og:description")||"";
   const softPage=isSoftPage(title,desc);
+  if(sourceName==="mubawab.ma"){
+    rec.soft_page=softPage;
+    rec.generic_meta_title=isGenericListingTitle(title);
+  }
   const c:Candidate[]=[];
   if(!softPage && !isGenericListingTitle(title) && !containsContactPii(title)) add(c,row,"title",title,"high","meta:og:title",true);
   if(!softPage) add(c,row,"property_type",detectPropertyType([title,desc].filter(Boolean).join(" ")),"high","explicit:title_or_description_property_type",true);
@@ -240,6 +244,25 @@ for(const r of results){
     counts[x.field][x.state]=(counts[x.field][x.state]||0)+1;
   }
 }
+const navigationRows=results.filter(r=>r.navigation);
+const tally=(xs:any[],fn:(v:any)=>string)=>Object.fromEntries([...new Set(xs.map(fn))].sort().map(k=>[k,xs.filter(v=>fn(v)===k).length]));
+const navigationSummary=sourceName==="mubawab.ma"?{
+ schema_version:"AKARFINDER_MUBAWAB_NAVIGATION_DIAGNOSTICS_V1",
+ semantics:"final_response_url_classification_only_not_listing_availability",
+ sample_size:sample.length,observed_navigation:navigationRows.length,
+ final_categories:tally(navigationRows,(r:any)=>r.navigation.final_category),
+ http_redirected:tally(navigationRows,(r:any)=>String(r.navigation.http_redirected)),
+ by_requested_id_band:Object.fromEntries([...new Set(navigationRows.map((r:any)=>r.navigation.request_id_band).filter(Boolean))].sort().map(band=>{
+   const group=navigationRows.filter((r:any)=>r.navigation.request_id_band===band);
+   return [band,{total:group.length,primary_verified:group.filter((r:any)=>r.primary_detail_verified===true).length,categories:tally(group,(r:any)=>r.navigation.final_category)}];
+ })),
+ by_final_category:Object.fromEntries([...new Set(navigationRows.map((r:any)=>r.navigation.final_category))].sort().map(category=>{
+   const group=navigationRows.filter((r:any)=>r.navigation.final_category===category);
+   return [category,{total:group.length,redirected:group.filter((r:any)=>r.navigation.http_redirected===true).length,primary_verified:group.filter((r:any)=>r.primary_detail_verified===true).length,soft_page:group.filter((r:any)=>r.soft_page===true).length,generic_meta_title:group.filter((r:any)=>r.generic_meta_title===true).length}];
+ })),
+ database_access:0,database_writes:0,
+ note:"HTTP 200/redirect destinations do not prove a listing is fresh, unavailable or unique. No destination URLs or query strings retained."
+}:null;
 const summary={
  schema_version:"AKARFINDER_FULL_FIELD_RECOVERY_V1",
  source:sourceName,freeze_population:rows.length,sample_size:sample.length,
@@ -248,6 +271,7 @@ const summary={
  primary_detail_verified:sourceName==="mubawab.ma"?results.filter(r=>r.primary_detail_verified===true).length:null,
  primary_detail_failures:sourceName==="mubawab.ma"?Object.fromEntries(["missing_primary_dom","redirect_identity_or_detail_route_mismatch"].map(x=>[x,results.filter(r=>r.primary_detail_failure===x).length])):null,
  source_identity_preserved:sourceName==="mubawab.ma"?results.filter(r=>r.source_identity_preserved===true).length:null,
+ navigation_diagnostics:navigationSummary,
  surface_evidence_conflicts:results.filter(r=>r.surface_evidence_conflict===true).length,
  candidates_by_field:counts,
  template_noise_suppressions:templateNoiseSuppressions,
@@ -259,6 +283,7 @@ const summary={
 };
 await writeFile(outputPrefix+".json",JSON.stringify(summary,null,2)+"\n");
 await writeFile(outputPrefix+".jsonl",results.map(x=>JSON.stringify(x)).join("\n")+"\n");
+if(navigationSummary) await writeFile(outputPrefix+"-navigation-diagnostics.json",JSON.stringify(navigationSummary,null,2)+"\n");
 if(process.env.SURFACE_DOM_PROBE==="1") await writeFile(outputPrefix+"-surface-dom-probe.json",JSON.stringify({schema_version:"AKARFINDER_MUBAWAB_SURFACE_DOM_PROBE_V2",sample_size:surfaceDomProbes.length,redacted:true,observations:surfaceDomProbes},null,2)+"\n");
 if(process.env.LOCATION_DOM_PROBE==="1") await writeFile(outputPrefix+"-location-dom-probe.json",JSON.stringify({schema_version:"AKARFINDER_MUBAWAB_LOCATION_DOM_PROBE_V2",sample_size:locationDomProbes.length,redacted:true,observations:locationDomProbes},null,2)+"\n");
 console.log(JSON.stringify(summary,null,2));
