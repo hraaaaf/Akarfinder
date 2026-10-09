@@ -251,6 +251,10 @@ const navigationSummary=sourceName==="mubawab.ma"?{
  semantics:"final_response_url_classification_only_not_listing_availability",
  sample_size:sample.length,observed_navigation:navigationRows.length,
  final_categories:tally(navigationRows,(r:any)=>r.navigation.final_category),
+ final_route_prefixes:tally(navigationRows,(r:any)=>r.navigation.final_route_prefix||"unavailable"),
+ final_route_shapes:tally(navigationRows,(r:any)=>r.navigation.final_route_shape||"unavailable"),
+ requested_id_in_final_path:tally(navigationRows,(r:any)=>String(r.navigation.final_requested_id_in_path===true)),
+ by_final_category_and_id_present:Object.fromEntries([...new Set(navigationRows.map((r:any)=>r.navigation.final_category))].sort().map(category=>[category,tally(navigationRows.filter((r:any)=>r.navigation.final_category===category),(r:any)=>String(r.navigation.final_requested_id_in_path===true))])),
  http_redirected:tally(navigationRows,(r:any)=>String(r.navigation.http_redirected)),
  by_requested_id_band:Object.fromEntries([...new Set(navigationRows.map((r:any)=>r.navigation.request_id_band).filter(Boolean))].sort().map(band=>{
    const group=navigationRows.filter((r:any)=>r.navigation.request_id_band===band);
