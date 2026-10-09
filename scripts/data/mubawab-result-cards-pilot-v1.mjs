@@ -5,7 +5,12 @@ const UA="AkarFinderResultCardPilot/1.0 (+https://akarfinder.ma)";
 const SEEDS=[
  {city:"Casablanca",url:"https://www.mubawab.ma/fr/st/casablanca/appartements-a-vendre"},
  {city:"Rabat",url:"https://www.mubawab.ma/fr/st/rabat/appartements-a-vendre"},
- {city:"Casablanca",url:"https://www.mubawab.ma/fr/st/casablanca/appartements-a-louer"}
+ {city:"Casablanca",url:"https://www.mubawab.ma/fr/st/casablanca/appartements-a-louer"},
+ {city:"Rabat",url:"https://www.mubawab.ma/fr/st/rabat/appartements-a-louer"},
+ {city:"Marrakech",url:"https://www.mubawab.ma/fr/st/marrakech/appartements-a-vendre"},
+ {city:"Tanger",url:"https://www.mubawab.ma/fr/st/tanger/appartements-a-vendre"},
+ {city:"Agadir",url:"https://www.mubawab.ma/fr/st/agadir/appartements-a-vendre"},
+ {city:"Casablanca",url:"https://www.mubawab.ma/fr/st/casablanca/maisons-a-vendre"}
 ];
 const outPrefix=process.env.OUTPUT_PREFIX||"mubawab-card-first-pilot";
 const observations=[],ids=new Map();
