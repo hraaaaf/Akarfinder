@@ -145,6 +145,12 @@ try {
       }
       if (overtureState !== "idle") throw new Error(`${viewport.name}: 3D bundle activated unexpectedly (${overtureState})`);
 
+      // V0.8: the brand palette must be installed in the vector map renderer,
+      // not merely in the buttons, page shell or a canvas CSS color filter.
+      const cartographicPalette = await maplibre.getAttribute("data-maplibre-cartographic-palette");
+      if (cartographicPalette !== "akarfinder-c1-c2-map-v1") {
+        throw new Error(`${viewport.name}: actual vector cartography is not AkarFinder C1/C2 (${cartographicPalette})`);
+      }
       const renderedBuildingVolumes = Number(await maplibre.getAttribute("data-maplibre-building-count") ?? 0);
       const renderedBuildingFootprints = Number(await maplibre.getAttribute("data-maplibre-building-footprint-count") ?? 0);
       if (renderedBuildingVolumes !== 0) throw new Error(`${viewport.name}: non-flat 3D volume instrumentation (${renderedBuildingVolumes})`);
@@ -367,6 +373,7 @@ try {
         panelBox,
         compactSheetMetrics,
         brandPalette,
+        cartographicPalette,
         localPanelBox,
         layoutDiagnostics,
         overflow,
