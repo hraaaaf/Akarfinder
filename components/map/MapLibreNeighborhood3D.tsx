@@ -1234,7 +1234,7 @@ export function MapLibreNeighborhood3D({
                 data-label-collapsed={collapseLabel ? "true" : "false"}
                 data-poi-category={anchor.category}
                 data-poi-family={poiVisualFamily(anchor.category)}
-                 data-anchor-edge={mapRef.current && screen.x > mapRef.current.clientWidth - 230 ? "right" : mapRef.current && screen.x < 110 ? "left" : "center"}
+                 data-anchor-edge={isMaarifTargetPilot && mapRef.current ? screen.x >= mapRef.current.clientWidth / 2 ? "right" : "left" : "center"}
                  style={{ left: screen.x, top: screen.y }}
               >
                 <span lang={arabic ? "ar" : undefined} dir={arabic ? "rtl" : "auto"}>{anchor.name}</span>
@@ -1252,7 +1252,7 @@ export function MapLibreNeighborhood3D({
                 key={landmark.id}
                 className="maplibre-spike-target-landmark-label"
                 data-landmark-tier={landmark.tier}
-                 data-anchor-edge={mapRef.current && screen.x > mapRef.current.clientWidth - 230 ? "right" : mapRef.current && screen.x < 110 ? "left" : "center"}
+                 data-anchor-edge={isMaarifTargetPilot && mapRef.current ? screen.x >= mapRef.current.clientWidth / 2 ? "right" : "left" : "center"}
                  style={{ left: screen.x, top: screen.y }}
               >
                 <i aria-hidden="true"><Landmark size={13} strokeWidth={2.25} /></i>
