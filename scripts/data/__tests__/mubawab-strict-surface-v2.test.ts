@@ -18,9 +18,6 @@ test("rejects plot surface as main surface",()=>{
  assert.equal(extractMubawabStrictSurface(html),null);
 });
 
-import test from "node:test";
-import assert from "node:assert/strict";
-import { extractMubawabStrictSurface } from "../mubawab-strict-surface-v2.js";
 test("primary blockProp labeled surface excludes related cards",()=>{
  const html='<div class="blockProp"><h1 class="searchTitle">Appartement 120 m²</h1><p>Surface 120 m²</p></div><div class="dataRelat"><span>900 m²</span></div><div class="contentBox"><p class="listingP descLi">Surface 500 m²</p></div>';
  assert.equal(extractMubawabStrictSurface(html)?.value,120);
