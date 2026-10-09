@@ -216,3 +216,28 @@ Obtain new exact-head Rue CI result. If green, retrieve its screenshot and confi
 **Proof pending:** exact-head POI and Casablanca AFTER screenshots on V0.4.1. If red diagnose/revise; if green compare same 390/430/desktop screenshots and request human visual approval when target reached.
 
 **Restrictions:** PR #1108 stays DRAFT on `feat/vivre-ici-flat-living-map-v0`; no merge, no Vercel deploy, no DB writes.
+
+## V0.4.2 / V0.5 closeout — verified 2026-10-09
+
+**Exact V0.4.2 reference:** product HEAD `2e2603a6eaab3ee242ea4fcab7d704fc26286f16`.
+- POI AFTER `37959640248` ✅, Casablanca AFTER `37959640651` ✅, Rue AFTER `37959640718` ✅, Multicity `37959640485` ✅.
+- Matchable BEFORE screenshots at `carte-lot8-casablanca-after-37959640651`, artifact `11630828353`.
+- Context park/name after Repères: 0px² overlap, all 4 viewports (observed DOM report).
+
+**Exact V0.5 AFTER:** product HEAD `d1b5bae371112711b8f082666adaec02a70ac269`.
+- Casablanca AFTER `37964062444` **success**, artifact `11632748430` — 4 viewports / real tiles / zero 3D.
+- POI AFTER `37964062453` **success**, artifact `11632932855` — 4 viewport reports ok, 4 sourced anchors shown after tap on 390/430; clippedLabels=[] / reframedClipping=[]; neighborhood/park overlapArea=0 on 390/430/768/1280.
+- Rue AFTER `37964062362` **success**, artifact `11632483666` — 4 street-tier zoom cases.
+- Multicity `37964062360` **success**.
+- 390x844 sheet 156.125px; 430x932 sheet 160px; CTA visible and 44px high.
+- Exact BEFORE/AFTER screenshots inspected for 390×844 and 1280×900 at the same framing. Only microcontrast improves (green spaces and roads); building footprints remain discrete. **Visual score: 8.4/10 subjective** (previous 8.3). Target ≥8.5 NOT demonstrated. Do not claim closed or merge-ready.
+- Independent failing gates (Market BEFORE, Zillow, C7 price HTTP 503) are not V0.5 cartography approvals; track separately.
+
+## V0.6 contrast-final polish — target and visual reference
+
+**Goal:** retain the lightweight 2D neighborhood style while making green spaces and minor road names immediately distinguishable at both mobile and desktop. **Success:** screenshot comparison (390/430/768/1280) demonstrates improved legibility without greater POI overlap/clipping, route loss, new fake boundary, heavy buildings or material CTA change. **Proof:** exact-head four browser gates + same-viewport BEFORE/AFTER + human visual grade ≥8.5.
+
+**BEFORE:** certified V0.5 screenshots `11632748430`, `11632932855`.
+**Visual reference/target:** same framing and controls as V0.5, more distinct OSM landuse greenery and delicate street type; avoid raising the geographic neighborhood outline or increasing 2D footprint weight.
+
+**Implementation constraints:** only pilot Maârif map vector styling, no coordinate/source changes; no Vercel deployment, merge or database write. Use one small final commit batch before full CI proof.
