@@ -125,3 +125,16 @@ Source: artifact `11626517251` du run `37951999652` (success), sample 300; probe
   - Certification CI : assertion qu'aucune page non primaire ne conserve de candidats `write_safe`; artifact `mubawab-five-field-300-location-dom-probe.json`.
 - Dernier commit produit à tester `299848d5ae9189afe698f0090263d5dd4b628a5f`, run `37957990923` **queued** au dernier constat. Commits intermédiaires ont déclenché d'autres runs queued ; ne pas interpréter comme résultats.
 - **Next exact :** lire le run 37957990923, vérifier tests et artifact localité 40 fiches ; corriger par des **preuves DOM de la fiche primaire** ; ré-échantillonnage 300 strict V3 ; quantifier freshness/dedup séparément. Ne pas écrire en DB, ne pas déployer Vercel, ne pas merger sans gate.
+
+
+## Reprise — 2026-10-09 / quartier description+slug, validation EN COURS
+
+- Source vérifiée : `37954471765` (CI succès V3) et artifact `11628306392`. Le 5/5 strict sur la V3 de base était **0/300** : 92 réponses avec identité maintenue + bloc primaire, quartier 0, surface 81, prix 59, ville 92, 3 conflits.
+- Recherche offline **sur les 92 vraies fiches du JSONL artifact** : 11 quartiers nommés explicitement après le mot « quartier » dans la description **et simultanément présents dans le slug canonique** (matching accent/espaces normalisé). 6 de ces 11 annonces présentent déjà city+price+surface `write_safe`. C'est **un rendement potentiel (6), pas un résultat CI** et encore moins un label fraîcheur.
+- `scripts/data/mubawab-description-district-v2.ts` : nouveau parser **double corroboration description primaire + slug**, noms propres explicites seulement, exclusion de « quartier calme », conflits entre plusieurs candidats concordants refusés ; uniquement lorsque `rec.primary_detail_verified===true`.
+- `scripts/data/__tests__/mubawab-description-district-v2.test.ts` : cas positifs Hay Targa, Mhamid, Aïn Sebaâ, Californie + négatifs quartier adjectif, slug seul, description seule, ville seule, double district, page catalogue.
+- `github-freeze-full-field-recovery.ts` intégré, et workflow Mubawab poussé sur HEAD `11e268cd9de9d52310cd8898fe78971289aca8aa`.
+- **Nouvelle CI** : `37959672836`, dernier état observé `queued`. Run précédent `37957990923` en cours ; sa métrique n'inclut pas le nouveau parser quartier.
+- Contraintes maintenues : pas d'accès ou écriture DB, pas de merge, pas de déploiement Vercel.
+
+**Next exact :** vérifier le run `37959672836` **une fois** : si rouge, diagnostiquer les tests et corriger ; si vert, récupérer `mubawab-five-field-coverage.json` V3 et la sonde de localisation (40 fiches), comparer au V3 0/300 ; rechercher faux positifs, certifier la fraîcheur et la déduplication séparément avant scale.
