@@ -174,6 +174,30 @@ try {
         }
         compactSheetMetrics = { collapsedHeight: panelBox.height, mapAvailableAboveSheet: panelBox.y, ctaBox, maxAllowedHeight };
       }
+      // Brand color 1/2 contract: verify computed styles, not source literals.
+      // Applies to the Maârif pilot only; basemap geometry/colors are untouched.
+      const brandPalette = await page.evaluate(() => {
+        const css = (selector, property) => {
+          const el = document.querySelector(selector);
+          return el ? getComputedStyle(el).getPropertyValue(property).trim() : null;
+        };
+        return {
+          mapTitleBackground: css('[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-neighborhood-label > span', "background-color"),
+          activeFilterBackground: css('[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-filters button.active', "background-color"),
+          railTitleColor: css('[data-maarif-rebuild="true"] .maarif-target-rail .maarif-target-heading h1', "color"),
+          railActionBackground: css('[data-maarif-rebuild="true"] .maarif-target-rail .maarif-target-primary-action', "background-color"),
+        };
+      });
+      const navy = "rgb(7, 27, 51)";
+      const blue = "rgb(11, 99, 206)";
+      for (const [key, expected] of Object.entries({
+        mapTitleBackground: navy,
+        activeFilterBackground: blue,
+        railTitleColor: navy,
+        railActionBackground: navy,
+      })) {
+        if (brandPalette[key] !== expected) throw new Error(`${viewport.name}: AkarFinder brand ${key} = ${brandPalette[key]}, expected ${expected}`);
+      }
       const layoutDiagnostics = await page.evaluate(() => {
         const layout = document.querySelector("[data-p4-map-layout]");
         const railElement = document.querySelector("[data-p4-map-decision-rail]");
@@ -342,6 +366,7 @@ try {
         searchHref,
         panelBox,
         compactSheetMetrics,
+        brandPalette,
         localPanelBox,
         layoutDiagnostics,
         overflow,
