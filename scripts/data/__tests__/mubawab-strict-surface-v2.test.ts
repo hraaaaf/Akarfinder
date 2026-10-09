@@ -17,3 +17,18 @@ test("rejects plot surface as main surface",()=>{
  const html='<li><span class="label">Surface terrain</span><span class="value">500 m²</span></li>';
  assert.equal(extractMubawabStrictSurface(html),null);
 });
+
+import test from "node:test";
+import assert from "node:assert/strict";
+import { extractMubawabStrictSurface } from "../mubawab-strict-surface-v2.js";
+test("primary blockProp labeled surface excludes related cards",()=>{
+ const html='<div class="blockProp"><h1 class="searchTitle">Appartement 120 m²</h1><p>Surface 120 m²</p></div><div class="dataRelat"><span>900 m²</span></div><div class="contentBox"><p class="listingP descLi">Surface 500 m²</p></div>';
+ assert.equal(extractMubawabStrictSurface(html)?.value,120);
+});
+test("rejects ambiguous primary blockProp surfaces",()=>{
+ const html='<div class="blockProp"><h1 class="searchTitle">Appartement</h1><p>Surface 120 m²</p><p>Superficie 140 m²</p></div>';
+ assert.equal(extractMubawabStrictSurface(html),null);
+});
+test("does not accept adDetailFeature related card without primary block",()=>{
+ assert.equal(extractMubawabStrictSurface('<div class="adDetailFeature"><span>120 m²</span></div>'),null);
+});
