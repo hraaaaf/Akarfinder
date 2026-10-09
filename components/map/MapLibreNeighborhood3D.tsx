@@ -573,7 +573,7 @@ export function MapLibreNeighborhood3D({
                     28, "#EEE9E2",
                     60, "#E9E3DC"
                   ],
-                  "fill-opacity": ["interpolate", ["linear"], ["zoom"], 12.2, 0.05, 14.5, 0.09, 17.5, 0.15],
+                  "fill-opacity": ["interpolate", ["linear"], ["zoom"], 12.2, 0.07, 14.5, 0.16, 17.5, 0.22],
                   "fill-outline-color": "#E1DDD6",
                 },
               } as any);
@@ -686,8 +686,8 @@ export function MapLibreNeighborhood3D({
                   "text-ignore-placement": false,
                 },
                 paint: {
-                  "text-color": "#70787C",
-                  "text-opacity": 0.50,
+                  "text-color": "#666E74",
+                  "text-opacity": 0.62,
                   "text-halo-color": "rgba(251,248,243,0.96)",
                   "text-halo-width": 1.0,
                   "text-halo-blur": 0.14,
