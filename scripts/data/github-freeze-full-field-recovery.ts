@@ -11,6 +11,7 @@ import { parseMubawabRoute } from "./mubawab-url-parser-v2.mjs";
 import { extractMubawabStrictSurface,hasMubawabPrimaryDetail } from "./mubawab-strict-surface-v2.js";
 import { extractMubawabStrictSurfaceFromUrl } from "./mubawab-url-surface-v2.js";
 import { probeMubawabSurfaceDom } from "./mubawab-surface-dom-probe-v2.js";
+import { probeMubawabLocationDom } from "./mubawab-location-dom-probe-v2.js";
 
 async function main(){
 const USER_AGENT="AkarFinderFullFieldRecovery/1.0";
@@ -134,6 +135,7 @@ function add(out:Candidate[],row:Row,field:string,value:any,confidence:string,ev
 }
 const results:any[]=[];
 const surfaceDomProbes:any[]=[];
+const locationDomProbes:any[]=[];
 for(const row of sample){
   const url=row.canonical_url; const rec:any={url,source:sourceName,http_status:null,robots_allowed:false,candidates:[]};
   if(!(await canFetch(url))){rec.blocked="robots";results.push(rec);continue;}
@@ -148,6 +150,10 @@ for(const row of sample){
   const finalIdentity=sourceName==="mubawab.ma"?parseMubawabRoute(response.url)?.identity:null;
   rec.source_identity_preserved=sourceName==="mubawab.ma"?!!originIdentity&&originIdentity===finalIdentity:null;
   rec.primary_detail_verified=sourceName==="mubawab.ma"?rec.source_identity_preserved&&hasMubawabPrimaryDetail(html):null;
+  if(sourceName==="mubawab.ma"&&!rec.primary_detail_verified) rec.primary_detail_failure=rec.source_identity_preserved?"missing_primary_dom":"redirect_identity_or_detail_route_mismatch";
+  if(sourceName==="mubawab.ma"&&rec.primary_detail_verified===true&&process.env.LOCATION_DOM_PROBE==="1"&&locationDomProbes.length<40){
+    locationDomProbes.push({url,...probeMubawabLocationDom(html)});
+  }
   if(sourceName==="mubawab.ma"&&process.env.SURFACE_DOM_PROBE==="1"&&surfaceDomProbes.length<24){
     surfaceDomProbes.push({url,slug_surface:extractMubawabStrictSurfaceFromUrl(url)?.value??null,...probeMubawabSurfaceDom(html)});
   }
@@ -192,6 +198,13 @@ for(const row of sample){
     add(c,row,field,(d as any)[field],"review",`extractDetail:p8a:${field}`,false);
   }
   }
+  if(sourceName==="mubawab.ma"&&rec.primary_detail_verified!==true){
+    for(const candidate of c){
+      if(candidate.state==="write_safe"){
+        candidate.state="review";candidate.evidence+=":unverified_primary_detail";
+      }
+    }
+  }
   rec.candidates=c;
   results.push(rec);
   if(fetchDelayMs>0) await new Promise(resolve=>setTimeout(resolve,fetchDelayMs));
@@ -229,6 +242,7 @@ const summary={
  robots_allowed:results.filter(x=>x.robots_allowed).length,
  accessible_http_200:accessibleCount,
  primary_detail_verified:sourceName==="mubawab.ma"?results.filter(r=>r.primary_detail_verified===true).length:null,
+ primary_detail_failures:sourceName==="mubawab.ma"?Object.fromEntries(["missing_primary_dom","redirect_identity_or_detail_route_mismatch"].map(x=>[x,results.filter(r=>r.primary_detail_failure===x).length])):null,
  source_identity_preserved:sourceName==="mubawab.ma"?results.filter(r=>r.source_identity_preserved===true).length:null,
  surface_evidence_conflicts:results.filter(r=>r.surface_evidence_conflict===true).length,
  candidates_by_field:counts,
@@ -242,6 +256,7 @@ const summary={
 await writeFile(outputPrefix+".json",JSON.stringify(summary,null,2)+"\n");
 await writeFile(outputPrefix+".jsonl",results.map(x=>JSON.stringify(x)).join("\n")+"\n");
 if(process.env.SURFACE_DOM_PROBE==="1") await writeFile(outputPrefix+"-surface-dom-probe.json",JSON.stringify({schema_version:"AKARFINDER_MUBAWAB_SURFACE_DOM_PROBE_V2",sample_size:surfaceDomProbes.length,redacted:true,observations:surfaceDomProbes},null,2)+"\n");
+if(process.env.LOCATION_DOM_PROBE==="1") await writeFile(outputPrefix+"-location-dom-probe.json",JSON.stringify({schema_version:"AKARFINDER_MUBAWAB_LOCATION_DOM_PROBE_V2",sample_size:locationDomProbes.length,redacted:true,observations:locationDomProbes},null,2)+"\n");
 console.log(JSON.stringify(summary,null,2));
 
 }
