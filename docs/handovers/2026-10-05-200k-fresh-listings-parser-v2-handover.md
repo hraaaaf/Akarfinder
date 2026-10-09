@@ -110,3 +110,18 @@ Source: artifact `11626517251` du run `37951999652` (success), sample 300; probe
 **CI** : run de certification `37954471765` sur commit `fbe0f39eac2fcb96d6373f967eedd071ef64f9ba` dernier état observé **queued**. Aucun verdict anticipé. L'objectif final 200k frais/dédupliqué est distinct du benchmark strict des champs.
 
 **Next exact** : vérifier ce run une fois, diagnostiquer toute erreur ; si vert, lire `mubawab-five-field-coverage.json` V3 et comparer taux strict + `primary_detail_verified` aux 24 éléments du probe, corriger si nécessaire, répéter échantillon 300. Pas de DB/Vercel/merge sans gates humains.
+
+
+## État probant — 2026-10-09 V3 après CI `37954471765`
+
+- Run exact-head `fbe0f39eac2fcb96d6373f967eedd071ef64f9ba`: **success** le 2026-10-09 16:02Z, artifact **11628306392** (`mubawab-five-field-300`).
+- **300/300 HTTP 200** mais seulement **92/300** avec identité conservée (`a:id` ou `pa:id`) ET vrai bloc primaire `.blockProp h1.searchTitle`. **208/300** avec identité finale non conservée ; auparavant leurs villes/quartiers/prix pouvaient être faussement comptés.
+- Sur 92 vrais blocs primaires : ville **92**, quartier **0**, prix **59**, surface **81**, cinq champs **0/300**. **3 conflits** de surface DOM / URL. **49/92** ont déjà ville + prix + surface `write_safe`, il manque le quartier. Les 22/300 V2 **ne satisfont donc pas les critères V3**.
+- Source du diagnostic : décompte réanalysé sur `mubawab-five-field-300.jsonl`, pas simple inférence à partir de CI verte.
+- Modifications en cours (NE PAS dire validées tant que run exact-head non vert) :
+  - `scripts/data/github-freeze-full-field-recovery.ts` rétrograde tous les champs `write_safe` provenant de pages sans identité + fiche primaire en `review`; exporte causes de rejet et 40 sondes localité anonymisées.
+  - `scripts/data/mubawab-location-dom-probe-v2.ts` + tests : capture ciblée de la structure et des labels de localisation (pas d'emails/numéros/titres libres).
+  - `scripts/data/mubawab-strict-surface-v2.ts` : inspecte **toutes** les superficies explicites dans un élément, rejette conflit interne ou DOM/slug ; aucun secours `write_safe` via slug en cas de contradiction.
+  - Certification CI : assertion qu'aucune page non primaire ne conserve de candidats `write_safe`; artifact `mubawab-five-field-300-location-dom-probe.json`.
+- Dernier commit produit à tester `299848d5ae9189afe698f0090263d5dd4b628a5f`, run `37957990923` **queued** au dernier constat. Commits intermédiaires ont déclenché d'autres runs queued ; ne pas interpréter comme résultats.
+- **Next exact :** lire le run 37957990923, vérifier tests et artifact localité 40 fiches ; corriger par des **preuves DOM de la fiche primaire** ; ré-échantillonnage 300 strict V3 ; quantifier freshness/dedup séparément. Ne pas écrire en DB, ne pas déployer Vercel, ne pas merger sans gate.
