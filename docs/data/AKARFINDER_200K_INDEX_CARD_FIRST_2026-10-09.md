@@ -1,0 +1,46 @@
+# AkarFinder — Acquisition 200K par scraping « result-card-first »
+
+Date : 2026-10-09
+Statut : **SPIKE EN COURS — PAS DE PROMOTION D'ANNONCES**
+
+## Décision de cadrage
+L'utilisateur veut acquérir massivement par **scraping de pages immobilières publiques**, sans négocier des flux commerciaux. Cette approche **remplace la proposition de pivot commercial / partenariats** du fichier `AKARFINDER_200K_FRESHNESS_FIRST_PIVOT_PROPOSAL_2026-10-09.md` en tant que piste prioritaire. Rien n'est déployé et aucun changement de DB n'est effectué.
+
+## Nouveau Goal
+Découvrir et observer en volume des annonces avec URL source, ville, quartier, prix et surface, en parcourant les **pages de résultats**, et non en effectuant une requête par ancienne URL de fiche. Ne compter une annonce dans les 200k finales que si fraîcheur, unicité, droits et champs sont vérifiés.
+
+## Preuve externe initiale (HTML rendu public)
+Pages Mubawab vérifiées :
+- `https://www.mubawab.ma/fr/st/casablanca/appartements-a-vendre`
+- `https://www.mubawab.ma/fr/st/rabat/appartements-a-vendre`
+- `https://www.mubawab.ma/fr/sc/appartements-a-vendre`
+
+Les cartes affichent publiquement des prix MAD/DH, quartiers, villes, surfaces, titres et liens individuels. Exemple observé sur la page Casablanca : « Appartement à vendre à Californie », localisation « Californie, Casablanca », 146 m², prix en DH. Les carrousels de **programmes neufs** présentent plusieurs unités différentes : ne pas les confondre avec une annonce individuelle. La page annonce aussi un filtre de tri « Date » dont le paramètre et la fiabilité restent à démontrer.
+
+Robots public `https://www.mubawab.ma/robots.txt` : les routes de catégories utilisées ne figuraient pas dans les exclusions observées le 9 octobre 2026. Le pilote relit robots **à l'exécution** et échoue fermé si inaccessible.
+
+Sources techniques : `https://doc.scrapy.org/en/latest/topics/spiders.html` (SitemapSpider/CrawlSpider), `https://docs.scrapy.org/en/master/topics/autothrottle.html` (politesse), `https://www.rfc-editor.org/rfc/rfc9309.html` (robots), `https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap` (URLs canoniques / lastmod, non preuve d'activité).
+
+## Architecture cible
+1. **Discovery rapide** : sitemap et pages de résultats par portail × ville × transaction × type × tri récent autorisé ; identifier la meilleure fragmentation des recherches pour éviter les limites de pagination.
+2. **Extraction de carte seule** : collecter l'ID stable, l'URL canonique et les quatre champs uniquement dans la **même carte** ; rejeter groupes de projets, annonces similaires, valeurs contradictoires. Garder état `observed_review`, pas `write_safe` automatiquement.
+3. **Delta crawler** : revisiter d'abord les nouvelles cartes ; comparer les IDs / hashes avec le corpus gelé, et prioriser le rendement `nouveaux IDs réellement observés / requêtes`.
+4. **Validation ciblée** : contrôler un échantillon de fiches encore accessibles / informations concordantes ; aucune supposition de fraîcheur sur une carte isolée. Contrôles d'arrêt sur redirection, 403, 429, robots ou dérive DOM. Dédup source et cross-source.
+5. **Multi-source et scale** : réutiliser la même mécanique sous adaptateurs spécifiques sur les autres portails accessibles avec autorisation et dans les limites de charge. Aucun bypass CAPTCHA, login, blocage IP ou endpoint privé.
+
+## Spike exact
+Commit de workflow `69e170ee326d9ca8bcf4cca205713b155ef78844` sur branche `data/200k-fresh-parser-v2`.
+- `scripts/data/mubawab-result-cards-v1.mjs` : DOM card scraper, provenance élément unique, identifiant `a:<id>`, champs + contradictions, robots.
+- `scripts/data/__tests__/mubawab-result-cards-v1.test.mjs` : cas 5/5 positif, carte mélangeant plusieurs identités, prix/surface contradictoires, projet `pa:`, hôte forgé, quartier absent, robots.
+- `scripts/data/mubawab-result-cards-pilot-v1.mjs` : **3 pages catégorie**, pas de requêtes détail, UA identifié, 1250 ms entre pages, pas de cookies ni PII persistés.
+- `.github/workflows/mubawab-result-cards-first-pilot.yml` : tests, pilote, artefact `mubawab-card-first-pilot`, DB 0/0. Run initial `37973276661`, dernière observation queued.
+
+## Mesure attendue (NE PAS ANTICIPER)
+- `observed_unique_cards` sur 3 pages ;
+- `observed_unique_five_field` (présence d'URL, ville, quartier, prix, superficie dans une même carte) ;
+- rejets `rejected_mixed`, conflits de prix/surface/localité ;
+- part de cartes nouveaux IDs non présentes dans la freeze, à auditer **sans DB** ;
+- taux de disponibilité/fraîcheur après test source distinct. Aucun « 200k » extrapolé depuis 3 pages.
+
+## Next exact
+Lire CI `37973276661`. Si rouge : corriger les assertions/sélecteurs depuis l'HTML réel, sans inventer les chiffres. Si vert : récupérer l'artefact, comparer les 3 pages, vérifier présence de vrais liens et la proportion de cartes 5 champs. Ensuite mini-expansion par types de bien/transactions et nouvelles villes, contrôle de recency et nouveauté, puis dédup; construire la matrice des portails.
