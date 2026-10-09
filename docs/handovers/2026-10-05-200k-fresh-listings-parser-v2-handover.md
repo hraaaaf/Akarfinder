@@ -90,3 +90,23 @@ Objectif inchangé : >=200 000 annonces fraîches, dédupliquées et exploitable
 - Safety : zéro écriture base ; zéro déploiement Vercel ; pas de promotion globale autorisée.
 
 **Next exact** : lire le diagnostic DOM du run 37951999652, isoler le conteneur d'annonce principale, créer parseur surface à preuve stricte, ajouter tests positifs/négatifs (recommandations, terrain/habitable, conflits) ; rerun échantillon déterministe 300 ; comparer au 22/300 de référence et produire preuve `freshness` / dédup avant toute promotion.
+
+
+## Reprise vérifiée — 2026-10-09 / main detail hardening
+
+Source: artifact `11626517251` du run `37951999652` (success), sample 300; probe structure DOM redacted pour les 24 premières pages.
+
+**Preuve diagnostics DOM (24/24 examinées):**
+- 9 réponses avec au moins un script JSON-LD : exactement **1 surface distincte** dans `adDetailFeature` pour chacune.
+- 15 réponses sans script JSON-LD : **4 à 29 surfaces distinctes** dans `adDetailFeature`, vraisemblablement annonces associées/cartes, mais ce classement est **une hypothèse structurelle**, pas une assertion prouvée sur la validité de chaque URL.
+- Le seul HTTP 200 ne prouve ni une fiche active, ni la fraîcheur, ni la présence du bon ID. Le slug M² sans fiche primaire est au mieux un indice `review`.
+
+**Implémentation stricte** (branche `data/200k-fresh-parser-v2`):
+- `scripts/data/mubawab-strict-surface-v2.ts` : recherche h1.searchTitle dans un seul bloc `.blockProp`, extrait les surfaces de la section primaire `.col-8 .adDetails .adDetailFeature > span`, exclut `.contentBox/.dataRelat`, refuse plusieurs surfaces différentes ; garde les paires de labels explicitement structurées.
+- `scripts/data/github-freeze-full-field-recovery.ts` : vérifie que `response.url` préserve l'identité `a:{id}` ou `pa:{id}` ; n'accorde `write_safe` à la superficie Mubawab que si la page primaire est reconnue. DOM != slug => `review` avec conflit explicite.
+- `.github/workflows/mubawab-200k-certify-one-shot.yml` : métrique V3 restreinte aux pages primaires avec identité préservée ; une baisse face au V2 non gaté indique un **durcissement des preuves**, et non nécessairement une régression d'extraction.
+- Tests nouveaux : page primaire + annonces recommandées, multiple valeur incohérente, page catalogue sans h1, double bloc primaire, regex échappée correctement.
+
+**CI** : run de certification `37954471765` sur commit `fbe0f39eac2fcb96d6373f967eedd071ef64f9ba` dernier état observé **queued**. Aucun verdict anticipé. L'objectif final 200k frais/dédupliqué est distinct du benchmark strict des champs.
+
+**Next exact** : vérifier ce run une fois, diagnostiquer toute erreur ; si vert, lire `mubawab-five-field-coverage.json` V3 et comparer taux strict + `primary_detail_verified` aux 24 éléments du probe, corriger si nécessaire, répéter échantillon 300. Pas de DB/Vercel/merge sans gates humains.
