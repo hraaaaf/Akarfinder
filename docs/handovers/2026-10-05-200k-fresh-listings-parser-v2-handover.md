@@ -216,3 +216,17 @@ Correction stratégique explicite : **l'utilisateur souhaite scrapper directemen
 - Documentation du nouveau contrat : `docs/data/AKARFINDER_200K_INDEX_CARD_FIRST_2026-10-09.md`.
 
 **Next exact :** lire le run `37973454376` et son artifact, séparer succès des tests et rendement réel des pages HTML. Si extraction zéro, auditer le DOM réel d'une page de résultats et corriger le sélecteur ; si rendement positif, étendre prudemment par nouvelles catégories/villes puis multi-portails. Mesurer nouveaux IDs / requêtes, recency, faux positifs, uniques 5/5 certifiés avant toute montée en volume. Ne pas toucher DB, merger ni déployer Vercel.
+
+
+## Résultat du pivot demandé — CARD-FIRST 8 pages validé en CI
+
+Le **scraping des pages de résultats** est la priorité produit demandée, et non l'achat de données ou le partenariat CRM.
+
+**Preuve principale** : workflow `Mubawab Result Cards First — bounded pilot`, run `37974096161` **success**, artifact `11638287776`, HEAD produit `6c0c00aaea7e25b9c11370d06e2c05fa42e53cf7`.
+- **8 pages** de résultats / **215 IDs uniques** d'annonces individuelles `a:<id>` / **187/215 avec 5 champs présents** dans leurs cartes / **0 page de détail**.
+- Jointure à la freeze canonique `10910779576` par source ID : **161 IDs nouveaux**, **54 déjà présents**. Les URLs/slugs seuls ne permettent pas cette mesure.
+- **5 champs présents ≠ certified fresh**. Les 187 sont des `observed_review`, non validées pour DB ; disponibilité source actuelle, cohérence du prix et déduplication entre portails manquent.
+- Script `scripts/data/mubawab-result-cards-v1.mjs` (DOM Cheerio), runner 8 catégories, tests anti-mélange et robots. Rapports `docs/data/AKARFINDER_200K_INDEX_CARD_FIRST_2026-10-09.md`.
+- DB access/write **0/0** ; pas de Vercel ni merge. Pas de contournement des exclusions robots.
+
+**Next exact** : inventorier les branches de résultats/paginations **robots-permises** (ville, type, quartier, vente/location) en réutilisant l'énumérateur historique de shards Mubawab ; ouvrir une validation de **petit échantillon** d'URLs de détail nouvelles pour démontrer l'identité active/les 5 champs ; puis adapter à d'autres portails et calculer les uniques réellement servables. Les anciens runs V4 de correction d'URLs ne sont plus le chemin critique.
