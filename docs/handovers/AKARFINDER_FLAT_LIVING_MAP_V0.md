@@ -241,3 +241,15 @@ Obtain new exact-head Rue CI result. If green, retrieve its screenshot and confi
 **Visual reference/target:** same framing and controls as V0.5, more distinct OSM landuse greenery and delicate street type; avoid raising the geographic neighborhood outline or increasing 2D footprint weight.
 
 **Implementation constraints:** only pilot Maârif map vector styling, no coordinate/source changes; no Vercel deployment, merge or database write. Use one small final commit batch before full CI proof.
+
+## V0.7 — AkarFinder canonical structural colors — 2026-10-09
+
+**Request:** apply the two documented AkarFinder structural colors to Vivre Ici Maârif (not new shopping/property-category colors). **Source:** Notion « AkarFinder — Identité visuelle & Visual Landmark Dictionary » (page `3df77c663362815db8cfe403f68849d4`): `#071B33` actual structural navy; `#0B63CE` actual interactive accent. The Notion source expressly distinguishes these from historical values and warns against collapsing different tokens globally.
+
+**Goal:** brand-consistent chrome (selected filter, quartier heading, action CTA, active rail tabs, primary controls), preserving premium low-noise land-use imagery. **Success:** computed styles use exactly `rgb(7,27,51)` and `rgb(11,99,206)` on mobile and desktop, with no clipping, loss of POIs, or map geometry changes. **Proof:** 390×844 / 430×932 / 768×900 / 1280×900 screenshot BEFORE/AFTER and exact-head browser tests for Casablanca, sourced POIs, street zoom, multicity.
+
+**BEFORE:** certified V0.6 artifact POI `11634326391` / Casablanca `11634172626`, plus previously displayed captures.
+**Implementation:** pilot-only CSS `app/map/quartier-target-couche3.css` overrides for chrome/rail. No map source, coordinates, building thickness, park or street palette changes. Browser audit `scripts/audits/carte-lot8-casablanca-visual-after.mjs` checks four true computed colors, not merely text tokens. Explicit navy for quartier title/CTA; blue for selected Repères/active tab.
+**HEAD product** `5099fbc892f49f2d9eb8f66bd4cb56c2743868f5`; **HEAD with audit** `acb74ac796c9ebe36c360c9245f9f34e9e6c5c8a`.
+**Not yet certified:** exact-head CI and screenshots. Don't assign a new visual score or claim ≥8.5 before comparison.
+**Safety:** PR #1108 draft, no merge or Vercel deploy/DB writes.
