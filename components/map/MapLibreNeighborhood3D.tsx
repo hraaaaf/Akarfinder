@@ -541,7 +541,7 @@ export function MapLibreNeighborhood3D({
                 "source-layer": "landcover",
                 filter: ["match", ["get", "class"], ["grass", "wood"], true, false],
                 paint: {
-                  "fill-color": ["match", ["get", "class"], "wood", "#CFE3C8", "#DDECD8"],
+                  "fill-color": ["match", ["get", "class"], "wood", "#CAE0C4", "#D7E9D3"],
                   "fill-opacity": 0.92,
                 },
               } as any);
@@ -553,7 +553,7 @@ export function MapLibreNeighborhood3D({
                 "source-layer": "landuse",
                 filter: ["match", ["get", "class"], ["park", "grass", "recreation_ground"], true, false],
                 paint: {
-                  "fill-color": "#D1E7CB",
+                  "fill-color": "#C9E1C4",
                   "fill-opacity": 0.94,
                   "fill-outline-color": "#AACCA4",
                 },
@@ -678,7 +678,7 @@ export function MapLibreNeighborhood3D({
                   "symbol-placement": "line",
                   "symbol-spacing": ["interpolate", ["linear"], ["zoom"], 12.5, 460, 16, 360, 18, 300],
                   "text-field": ["coalesce", ["get", "name:latin"], ["get", "name"]],
-                  "text-size": ["interpolate", ["linear"], ["zoom"], 12.5, 7.8, 14.5, 9.5, 18, 10.8],
+                  "text-size": ["interpolate", ["linear"], ["zoom"], 12.5, 8.0, 14.5, 10.0, 18, 10.8],
                   "text-letter-spacing": 0.008,
                   "text-max-angle": 24,
                   "text-padding": 2,
@@ -687,7 +687,7 @@ export function MapLibreNeighborhood3D({
                 },
                 paint: {
                   "text-color": "#666E74",
-                  "text-opacity": 0.62,
+                  "text-opacity": 0.66,
                   "text-halo-color": "rgba(251,248,243,0.96)",
                   "text-halo-width": 1.0,
                   "text-halo-blur": 0.14,
