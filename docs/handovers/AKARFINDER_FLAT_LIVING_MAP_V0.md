@@ -253,3 +253,19 @@ Obtain new exact-head Rue CI result. If green, retrieve its screenshot and confi
 **HEAD product** `5099fbc892f49f2d9eb8f66bd4cb56c2743868f5`; **HEAD with audit** `acb74ac796c9ebe36c360c9245f9f34e9e6c5c8a`.
 **Not yet certified:** exact-head CI and screenshots. Don't assign a new visual score or claim ≥8.5 before comparison.
 **Safety:** PR #1108 draft, no merge or Vercel deploy/DB writes.
+
+## V0.8 — identity colors in the cartography itself — 2026-10-09
+
+**Owner correction:** V0.7 applied navy/blue mostly to chrome; required C1/C2 **inside the map geography itself**. Goal is not a blue overlay or fictitious boundary; cartographic hierarchy should express AkarFinder brand through real vector polygons and lines.
+
+**Verified design tokens:** C1 navy `#071B33`, C2 blue `#0B63CE`, from Notion "AkarFinder — Identité visuelle & Visual Landmark Dictionary". Use derived *tints* for roads/buildings/landuse; use C1 exactly for major street names and C2 exactly for primary road casings at controlled class-specific opacity. Keep real parks green and labels legible.
+
+**BEFORE/reference:** exact-head V0.7 Casablanca artifact `11636960045` (390×844 / 1280×900 screenshots); prior V0.6 source imagery `11634172626`. Target: a visibly more blue-slate AkarFinder flat map without overwhelming 2D footprints, inventing polygons or changing coordinates.
+
+**Implementation V0.8:** inside existing Maârif-only vector overlay `components/map/MapLibreNeighborhood3D.tsx`, change source-layer `landuse` urban wash + grain to soft blue, OSM/OpenFreeMap building fill/outline to restrained steel blue, road casings by OSM road class to blue slate, primary road specifically C2 at moderated opacity, white/pale-blue road infill, major road text C1 and minor road text blue slate. Water and genuine green parks untouched. Maintain actual MapLibre source, tile data, zoom, camera, building count/geometry and POI anchors.
+
+**Test:** `scripts/audits/carte-lot8-casablanca-visual-after.mjs` requires renderer `data-maplibre-cartographic-palette="akarfinder-c1-c2-map-v1"` on all 4 viewports, preserving C1/C2 chrome computed styles, sheet/CTA bounds, 2D footprints and loaded tiles. Strong visual proof still requires actual rendered AFTER image comparison and screenshot inspection, not an attribute alone.
+
+**Code commit** `9e90ca9c2f6a1f0acb5a30621103a30860b00c52`; **test commit** `de37b31e49485770d6e0ebc87f5d15b00afaf8cd`. Exact-head CI started: Casablanca AFTER `37972416040`, POI `37972415994`, Rue `37972415930`, multicity `37972415895`, all queued when first checked.
+
+**Status:** implementation done; **no AFTER or score improvement certified yet**. Next: check real CI logs and retrieve artifacts; if failing, fix; compare identical mobile 390/430 and desktop 768/1280 BEFORE→AFTER; score visual change (gate >=8.5) and seek owner review. Draft PR #1108; no merge, Vercel, DB mutation.
