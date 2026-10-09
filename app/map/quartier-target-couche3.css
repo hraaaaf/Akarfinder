@@ -864,3 +864,14 @@
     transform: translateY(-19px);
   }
 }
+
+
+/* V0.4.2 — same truth-safe name separation on tablet and desktop:
+ * adjust only the rendered Maârif heading, never the sourced center/POI dot.
+ */
+@media (min-width: 561px) {
+  [data-akar-quartier-target="maarif-couche1"][data-maplibre-quarter-style="flat-living-v02"]
+    .maplibre-spike-neighborhood-label > span {
+    transform: translateY(-20px);
+  }
+}
