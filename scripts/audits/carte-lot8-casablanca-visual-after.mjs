@@ -78,6 +78,13 @@ try {
       if ((await boundaryBadge.getAttribute("aria-pressed")) !== "false") {
         throw new Error(`${viewport.name}: boundary overview must be opt-in`);
       }
+      const contextVisual = await maplibre.getAttribute("data-maplibre-context-visual");
+      if (contextVisual !== "branded-soft-focus-no-border") {
+        throw new Error(`${viewport.name}: default quartier must be softly highlighted, not an administrative polygon (${contextVisual})`);
+      }
+      if ((await maplibre.getAttribute("data-maplibre-administrative-view")) !== "quartier-context") {
+        throw new Error(`${viewport.name}: default map is unexpectedly in arrondissement mode`);
+      }
       await highZoomTilesReady;
       let buildingFootprintObservationTimedOut = false;
       try {
@@ -412,6 +419,7 @@ try {
         observedBearing,
         boundaryBadge: "Voir limites · arrondissement Maârif",
         boundaryOverview,
+        contextVisual,
         renderedBuildingVolumes,
         renderedBuildingFootprints,
         renderedHeightCoveragePct,
