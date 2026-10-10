@@ -124,6 +124,24 @@ try {
       throw new Error(`${viewport.name}: sourced POI detail clipped ${JSON.stringify(poiDetailBox)}`);
     }
     await page.screenshot({path:`${outDir}/poi-after-selected-${viewport.width}x${viewport.height}.png`,fullPage:false});
+    // Selecting another visible POI should switch context WITHOUT closing the
+    // first detail. The unselected cartouches must remain readable and tappable.
+    let switchedWithoutClosing=false;
+    if(reframedPoiCount>1){
+      const nextButton=page.locator(".maplibre-spike-poi-label").nth(1);
+      const nextLabel=await nextButton.getAttribute("aria-label");
+      const nextName=(nextLabel??"").replace(/^Explorer le lieu /,"");
+      if(!nextLabel?.startsWith("Explorer le lieu ")) throw new Error(`${viewport.name}: next POI inaccessible`);
+      const remainingOpacity=await nextButton.evaluate((el)=>Number(getComputedStyle(el).opacity));
+      if(remainingOpacity<0.40) throw new Error(`${viewport.name}: other POI becomes illegible at opacity ${remainingOpacity}`);
+      await nextButton.click({timeout:5500}); // genuine click, no force
+      if(!(await poiDetail.innerText()).includes(nextName) || (await nextButton.getAttribute("aria-pressed"))!=="true"){
+        throw new Error(`${viewport.name}: switching selected POI without closing failed: ${nextName}`);
+      }
+      await poiButton.click({timeout:5500});
+      if(!(await poiDetail.innerText()).includes(sourceName)) throw new Error(`${viewport.name}: POI switching back failed`);
+      switchedWithoutClosing=true;
+    }
     const closePoi=page.getByRole("button",{name:"Fermer le détail du lieu"});
     const closePoiBox=await closePoi.boundingBox();
     if(!closePoiBox||closePoiBox.width<43||closePoiBox.height<43) throw new Error(`${viewport.name}: sourced POI close target under 44px`);
@@ -157,7 +175,7 @@ try {
     if(clickedSourceNames.length!==reframedPoiCount){
       throw new Error(`${viewport.name}: not all visible sourced POI markers passed real click testing`);
     }
-    const poiSelection={click:true,keyboard:true,close:true,sourceName,clickedSourceNames,poiDetailBox,closePoiBox};
+    const poiSelection={click:true,keyboard:true,close:true,switchedWithoutClosing,sourceName,clickedSourceNames,poiDetailBox,closePoiBox};
 
     // Capture one filtered state using a real available category when present.
     const education=page.locator(".maplibre-spike-filters button",{hasText:"Écoles"});
