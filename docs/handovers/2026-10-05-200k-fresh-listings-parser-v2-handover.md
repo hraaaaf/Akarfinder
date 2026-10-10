@@ -441,3 +441,8 @@ Workflow ledger neuf entrées : nouvelle source `mubawab_regional_40` + checksum
 ## Neuf inputs certifiés et protocole de preuve (10 octobre 2026)
 
 Run 38069957917 ✅ success, HEAD ef30f7c347cb58a260cee7b31f1e5518ce161940, artifact 11675834864 contrôlé : 11 828 observations, 9 745 identifiants source, 7 610 cinq champs cohérents, 5 contradictions, 256 signatures suspectes dont 21 inter-portails. Zéro DB et 0 annonce certifiée fraîche/disponible/unique/publiable. Protocole shadow : scripts/data/fresh-active-unique-shadow-v1.mjs, tests, workflow .github/workflows/active-unique-shadow-v1.yml, documentation docs/data/AKARFINDER_FRESH_ACTIVE_UNIQUE_SHADOW_V1.md. Gate suivant : vérifier sa CI/artifact, puis collecter preuves réelles de disponibilité, dédup physique et droits, sans promotion anticipée.
+
+
+## Shadow V1 : corriger biais de sélection (2026-10-10)
+
+Workflow shadow `38070451726` ✅ (commit 3a584b9c…, artifact 11676178521) : 9 745 lignes, 7 610 cinq champs, 60 dossiers sélectionnés, mais **les 60 sont suspects de doublons**. Ne pas extrapoler un taux actif à cette population biaisée. Modification source/test/workflow en cours pour quotas 10 suspects + 20 contrôles par portail ; liens de preuve d'unicité physique et de droits soumis à même ID. Nouveau run CI à vérifier avant clôture. Actif/frais/unique certifiés 0, DB 0, sans merge/Vercel.
