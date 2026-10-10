@@ -1362,6 +1362,27 @@ export function MapLibreNeighborhood3D({
               Math.abs(point.x - screen.x) < 110 && Math.abs(point.y - screen.y) < 30
             );
             const collapseLabel = overviewSecondary || (isMaarifTargetPilot && protectedCollision);
+            // This feature is strictly the Maârif pilot. Keep the original
+            // non-interactive cartouches in other cities, never focusable
+            // buttons inside their aria-hidden presentational map layer.
+            if (!isMaarifTargetPilot) {
+              return (
+                <div
+                  key={anchor.poi_id}
+                  className="maplibre-spike-poi-label"
+                  data-label-collapsed={collapseLabel ? "true" : "false"}
+                  data-poi-category={anchor.category}
+                  data-poi-family={poiVisualFamily(anchor.category)}
+                  data-anchor-edge="center"
+                  style={{ left: screen.x, top: screen.y }}
+                >
+                  <span lang={arabic ? "ar" : undefined} dir={arabic ? "rtl" : "auto"}>{anchor.name}</span>
+                  <i className="maplibre-spike-poi-glyph" style={{ color: meta.color }}>
+                    <PoiFamilyGlyph category={anchor.category} />
+                  </i>
+                </div>
+              );
+            }
             return (
               <button
                 type="button"
