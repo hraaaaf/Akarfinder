@@ -315,6 +315,7 @@ export function MapLibreNeighborhood3D({
   const [zoomTier, setZoomTier] = useState<"overview" | "quarter" | "street">("quarter");
   const [allContextFocused, setAllContextFocused] = useState(false);
   const [administrativeBoundsVisible, setAdministrativeBoundsVisible] = useState(false);
+  const [selectedLandmarkId, setSelectedLandmarkId] = useState<string | null>(null);
   const [actualCamera, setActualCamera] = useState({ pitch: 0, bearing: 0 });
   const [screenPoints, setScreenPoints] = useState<Record<string, ScreenPoint>>({});
   const [centerPoint, setCenterPoint] = useState<ScreenPoint | null>(null);
@@ -1254,6 +1255,7 @@ export function MapLibreNeighborhood3D({
   }, [context, ready, center[0], center[1], targetPilotLandmarks, isMaarifTargetPilot]);
 
   const categories = context?.categories.filter((category) => Boolean(CATEGORY_META[category])) ?? [];
+  const selectedLandmark = targetPilotLandmarks.find((item) => item.id === selectedLandmarkId) ?? null;
   const visibleAnchors = (context?.anchors ?? [])
     .filter((anchor) => activeCategory === "all" || anchor.category === activeCategory)
     .sort((a, b) => {
@@ -1308,6 +1310,7 @@ export function MapLibreNeighborhood3D({
       data-maplibre-context-footprint={isMaarifTargetPilot && context?.anchors?.length ? "verified-anchor-envelope-buffered" : "none"}
       data-maplibre-target-context-count={0}
        data-maplibre-zoom-tier={zoomTier}
+       data-maplibre-selected-landmark={selectedLandmarkId ?? ""}
       data-maplibre-rtl-status={rtlStatus}
       data-maplibre-reserve-rail={reserveRail ? "true" : "false"}
       data-akar-quartier-target={isMaarifTargetPilot ? "maarif-couche1" : undefined}
@@ -1321,7 +1324,7 @@ export function MapLibreNeighborhood3D({
             Map © OpenStreetMap contributors · OpenFreeMap{overtureState === "available" ? " · © Overture Maps Foundation" : ""}
           </div>
         ) : null}
-        <div className="maplibre-spike-dom-labels" aria-hidden="true">
+        <div className="maplibre-spike-dom-labels" aria-hidden={isMaarifTargetPilot ? undefined : true}>
           {!administrativeBoundsVisible && centerPoint?.visible && (
             <div className="maplibre-spike-neighborhood-label" style={{ left: centerPoint.x, top: centerPoint.y }}>
               <span>{districtLabel}</span>
@@ -1368,19 +1371,34 @@ export function MapLibreNeighborhood3D({
             const screen = screenPoints[`target:${landmark.id}`];
             if (!screen?.visible) return null;
             return (
-              <div
+              <button
+                type="button"
                 key={landmark.id}
                 className="maplibre-spike-target-landmark-label"
                 data-landmark-tier={landmark.tier}
-                 data-anchor-edge={isMaarifTargetPilot && mapRef.current ? screen.x >= mapRef.current.clientWidth / 2 ? "right" : "left" : "center"}
-                 style={{ left: screen.x, top: screen.y }}
+                data-anchor-edge={isMaarifTargetPilot && mapRef.current ? screen.x >= mapRef.current.clientWidth / 2 ? "right" : "left" : "center"}
+                data-landmark-selected={selectedLandmarkId === landmark.id ? "true" : "false"}
+                style={{ left: screen.x, top: screen.y }}
+                aria-label={`Explorer le repère ${landmark.name}`}
+                aria-pressed={selectedLandmarkId === landmark.id}
+                onClick={() => setSelectedLandmarkId(selectedLandmarkId === landmark.id ? null : landmark.id)}
               >
                 <i aria-hidden="true"><Landmark size={13} strokeWidth={2.25} /></i>
                 <span lang={isArabicText(landmark.name) ? "ar" : undefined} dir={isArabicText(landmark.name) ? "rtl" : "auto"}>{landmark.name}</span>
-              </div>
+              </button>
             );
           })}
         </div>
+        {isMaarifTargetPilot && !administrativeBoundsVisible && selectedLandmark ? (
+          <aside className="maplibre-spike-landmark-detail" data-maplibre-landmark-detail="target" role="status">
+            <div>
+              <small>Repère sur la carte</small>
+              <strong lang={isArabicText(selectedLandmark.name) ? "ar" : undefined} dir={isArabicText(selectedLandmark.name) ? "rtl" : "auto"}>{selectedLandmark.name}</strong>
+              <span>Maârif · Casablanca</span>
+            </div>
+            <button type="button" aria-label="Fermer le détail du repère" onClick={() => setSelectedLandmarkId(null)}>×</button>
+          </aside>
+        ) : null}
       </div>
 
       <div className="maplibre-spike-map-chrome">
