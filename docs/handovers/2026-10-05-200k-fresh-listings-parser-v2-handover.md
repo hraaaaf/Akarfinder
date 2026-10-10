@@ -276,3 +276,12 @@ Run `38015856380` ✅, artifact `11656755461`, HEAD `53b2c3fa77bf0c6d0653a0d0fb7
 Suite immédiate préparée : extraction du quartier exclusivement depuis l'étiquette explicite `ville, quartier, n m²` dans le lien du bien (pas de déduction du slug de la ville ni des cartes voisines), avec tests de refus des lieux absents ou contradictoires. Nouveau canari à mesurer, puis sourcing multi-portails et contrôle des duplications.
 
 Mubawab reste au dernier certificat 50 pages `38014920725` : 1 316 IDs uniques, 1 140 cartes 5 champs observés, 806 nouveaux ID par rapport au gel, et audit indépendant de 30/30 identités `38015494577` avec 26/26 superficies corroborées. Aucune certification de fraîcheur commerciale.
+
+
+## Clôture partielle du lot multi-portails — 2026-10-10
+
+**Mubawab pilote** `38014920725` ✅ : **50 pages**, **1 316 annonces identifiables**, **1 140 cartes cinq champs**, **806 IDs inconnus du gel**, **700 de ces derniers avec cinq champs**. Audit indépendant `38015494577` ✅ : **30/30 pages d'origine avec identité conservée**, **26/26 surfaces vérifiables concordantes**.
+
+**Domio source #2** `38016037724` ✅, artifact `11656231723`: robots vérifié, **2/2 catégories**, **48 IDs**, 34 prix, 46 surfaces, 22 quartiers explicites, **15 cartes 5/5** ; comparaison gel : **14 nouveaux IDs**, dont 5 cinq champs. Chiffres de **cartes observées** seulement, aucune nouvelle annonce fraîche certifiée. Avito sitemap 403/0 source non exploitable sans nouveau canal autorisé.
+
+**Prochaine action** : étendre Domio prudemment via routes robots vérifiées ; contrôles de détail ciblés, disponibilité réelle/horodatage, déduplication physique intra/inter-portails, revue conformité avant toute activation. Aucun accès/écriture DB, aucun merge ni déploiement Vercel.

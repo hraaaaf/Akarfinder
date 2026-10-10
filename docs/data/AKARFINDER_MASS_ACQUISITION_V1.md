@@ -71,3 +71,16 @@ Run `38015494577` **completed/success**, HEAD `4b7c5cb73cc59d13237e78e8eac81dce8
 - Le canari prouve qu'il existe une seconde source de cartes publiques techniquement accessible. La possibilité de réutiliser ces données en production, la fraîcheur et l'unicité inter-source restent **non certifiées**.
 - Nouveau parseur DOM conservateur proposé : localisation uniquement si texte explicite `Casablanca, Ain Diab 57.0 m²` ou `Marrakech, X n m²` trouvé **dans le même lien de carte** ; conflits quartier refusés ; aucun quartier hérité de la catégorie seule. Tests positifs/négatifs ajoutés ; pas de promotion automatique.
 - **Next exact** : certifier cette extraction géographique sur les 2 mêmes pages avec le nouveau parseur, puis auditer quelques vraies fiches Domio seulement si lien/identité source le permettent, en respectant robots. En parallèle développer le graphe de catégories Mubawab via des chemins observés plutôt que devinés.
+
+
+## Deuxième passe Domio — preuve complète au niveau des cartes
+
+Run `38016037724` **success** sur HEAD `f59a7984477e30202c8f7b3482fc8489163cebec` ; artifact `11656231723` lu et JSONL recompté :
+- **2/2 catégories HTTP 200**, robots autorisé, **48 IDs distincts** ; prix **34**, superficie **46**, localité explicite `ville, quartier n m²` **22**, **15/48 cartes avec cinq champs présents**, aucun appel détail.
+- Casablanca 24 cartes, 9/24 avec cinq champs ; Marrakech 24 cartes, 6/24 avec cinq champs.
+- **Jointure offline au même gel** `10910779576` / `clean-corpus-v4.11-core.jsonl.gz` en extrayant la clé stable `domio:<id>` des URLs de l'archive : **34/48 IDs déjà présents, 14/48 IDs absents**, dont **5/15 cartes cinq champs absentes du gel**.
+- Les critères `five_field_present` désignent **la présence cohérente de champs dans une seule ancre HTML**, et non une certification d'activité/qualité commerciale/date. Les 15 restent `unverified_dom_card_only`.
+- Avito demeure sitemap 403/0, aucune évasion.
+- Poursuite rentable : passer Domio à un lot borné par villes/transactions **dont la route HTTP200 et robots est démontrée**, puis un audit de 10-20 vraies fiches sources ; ne compter comme fraîches que les vérifiées.
+
+**Repères preuve** : Mubawab run `38014920725` ✅ 1316 IDs/1140 cartes cinq champs/806 IDs nouveaux gel, détail run `38015494577` ✅ 30/30 ID primaire et 26/26 surfaces confirmées. Aucun merge, Vercel ni DB.
