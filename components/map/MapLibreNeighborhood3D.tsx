@@ -320,10 +320,19 @@ export function MapLibreNeighborhood3D({
   const isMaarifTargetPilot = citySlug === "casablanca" && districtSlug === "maarif";
   const districtTone = territoryLightToneForKey(districtSlug);
 
+  const setQuartierFocusLayersVisible = (map: any, visible: boolean) => {
+    // The locality anchor is useful at quartier zoom, but misleading/noisy
+    // in the zoomed-out *administrative arrondissement* outline overview.
+    for (const id of [FOCUS_GLOW_LAYER_ID, FOCUS_RING_LAYER_ID]) {
+      if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", visible ? "visible" : "none");
+    }
+  };
+
   const restoreCamera = () => {
     const map = mapInstanceRef.current;
     if (!map) return;
     setAdministrativeBoundsVisible(false);
+    setQuartierFocusLayersVisible(map, true);
     focusNeighborhoodMap(map, boundaryGeometry, center, desktopCameraOffset, targetComposition, window.innerWidth >= 1024, 650);
   };
 
@@ -338,6 +347,7 @@ export function MapLibreNeighborhood3D({
       return;
     }
     const desktop = window.innerWidth >= 1024;
+    setQuartierFocusLayersVisible(map, false);
     map.fitBounds(bounds, {
       padding: desktop
         ? { top: 86, right: 60, bottom: 64, left: 60 }
@@ -355,6 +365,10 @@ export function MapLibreNeighborhood3D({
   const focusAllContextAnchors = () => {
     setActiveCategory("all");
     const map = mapInstanceRef.current;
+    if (map && administrativeBoundsVisible) {
+      setAdministrativeBoundsVisible(false);
+      setQuartierFocusLayersVisible(map, true);
+    }
     const anchors = context?.anchors ?? [];
     if (!isMaarifTargetPilot || !map || anchors.length === 0) return;
     const lngs = anchors.map((anchor) => anchor.longitude);
