@@ -21,6 +21,7 @@ jobs:
       CARD_LEDGER_MUBAWAB_DISTRICT: .tmp/ledger/m120/mubawab-district-shards-120.jsonl
       CARD_LEDGER_MUBAWAB_REMAINDER: .tmp/ledger/mrest/mubawab-district-remainder-220.jsonl
       CARD_LEDGER_MUBAWAB_NEW_CITIES: .tmp/ledger/mnew/mubawab-new-city-frontier.jsonl
+      CARD_LEDGER_MUBAWAB_REGIONAL_8: .tmp/ledger/mregion/mubawab-regional-categories.jsonl
       CARD_LEDGER_DOMIO_LINKED: .tmp/ledger/d70/domio-linked-pages-80.jsonl
       CARD_LEDGER_DOMIO_RESUME: .tmp/ledger/dresume/domio-resume-after-page12.jsonl
       OUTPUT_PREFIX: acquisition-ledger-v1
@@ -73,6 +74,12 @@ jobs:
           run-id: 38046549259
           github-token: ${{ github.token }}
           path: .tmp/ledger/mnew
+      - uses: actions/download-artifact@v4
+        with:
+          name: mubawab-regional-categories-v1
+          run-id: 38046976281
+          github-token: ${{ github.token }}
+          path: .tmp/ledger/mregion
       - name: Pin source JSONL SHA256 from immutable run artifacts
         run: |
           set -euo pipefail
@@ -81,6 +88,7 @@ jobs:
           echo '6d1ff8bcd3c74f3fce776ad52e6e5a609a3d64327648f3367b3ea0143c5dd11f  .tmp/ledger/m120/mubawab-district-shards-120.jsonl' | sha256sum -c -
           echo '963cdb20cfe6aa99ee0250c1d0dc5b48f68bdd1e34c3af854ee89205100dc14c  .tmp/ledger/mrest/mubawab-district-remainder-220.jsonl' | sha256sum -c -
           echo '475deddb0c54c3c26441c709b34d558e78bf1d42c1c4d05e6260951f966b6d4f  .tmp/ledger/mnew/mubawab-new-city-frontier.jsonl' | sha256sum -c -
+          echo '87f527e036bb2428b70e7092582e083b461c639f2c7af6dede50aaf22bb27742  .tmp/ledger/mregion/mubawab-regional-categories.jsonl' | sha256sum -c -
           echo 'ecfc16f9e02510f8efd2c4a7a74fc6f9168fd30671be51ff845c1bce2413cdc9  .tmp/ledger/d70/domio-linked-pages-80.jsonl' | sha256sum -c -
           echo '3e8ba8966ad11b367ac9792b4df69e7b7e299ad5f205c9cfb99e29678922b76b  .tmp/ledger/dresume/domio-resume-after-page12.jsonl' | sha256sum -c -
       - name: Combine source IDs and quarantine contradictory card evidence
@@ -88,7 +96,7 @@ jobs:
       - name: Verify report, no database writes and no premature certification
         run: |
           set -euo pipefail
-          jq -e '.raw_card_observations == 10913 and .distinct_source_id_count == 9056 and .five_field_observed_consistent == 7042 and .cross_run_conflict_rows == 5 and .freshness_certified_count == 0 and .physically_unique_certified_count == 0 and .database_access == 0 and .database_writes == 0 and .production_published_count == 0' acquisition-ledger-v1.json
+          jq -e '.raw_card_observations == 11139 and .distinct_source_id_count == 9282 and .five_field_observed_consistent == 7238 and .cross_run_conflict_rows == 5 and .freshness_certified_count == 0 and .physically_unique_certified_count == 0 and .database_access == 0 and .database_writes == 0 and .production_published_count == 0' acquisition-ledger-v1.json
           node - <<'NODE'
           const fs=require('node:fs');
           const report=JSON.parse(fs.readFileSync('acquisition-ledger-v1.json','utf8'));

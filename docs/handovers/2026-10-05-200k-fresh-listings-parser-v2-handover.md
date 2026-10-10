@@ -396,3 +396,15 @@ Workflow Ledger élargi aux **six artifacts et SHA256 JSONL épinglés**. **Gate
 **Lot indépendant en lancement** : `scripts/data/mubawab-regional-categories-v1.mjs`, 8 pages catégories exactes publiées par Mubawab : **Fès, Kénitra, Tétouan, Nador**, appartements à vendre et à louer. Les slugs Fès/Kénitra/Tétouan sont accentués (`%C3%`) ; les anciens essais de noms ASCII avaient pu échouer. Robots fail-closed, aucun détail individuel, max 8 pages, comparaison IDs source avec artifact ledger sept-inputs `11668090501` et SHA256 `f36cb89a26399ded9f640b4072f83037b8a9c4911b3c8978cfe5269a3ccbe4f0`. **Ne pas anticiper les IDs nouveaux avant la CI.**
 
 **Next exact** : lire les tests et artifact du run régional huit catégories ; intégrer seulement ses IDs prouvés au ledger ; puis qualifier fraîcheur et disponibilité et dédup physique sur échantillons, et tester de nouvelles routes de ville/type réellement publiées. Aucun contournement de protection, DB, merge ou déploiement Vercel.
+
+
+## Huitième artifact — expansion Fès / Kénitra / Tétouan / Nador (2026-10-10)
+
+**Source indépendante vérifiée** : workflow Mubawab régions [38046976281](https://github.com/hraaaaf/Akarfinder/actions/runs/38046976281) ✅, artifact `11666629941`, SHA256 du JSONL `87f527e036bb2428b70e7092582e083b461c639f2c7af6dede50aaf22bb27742`.
+- **8/8 pages catégorie HTTP200**, vente/location pour les quatre villes ; **226 IDs nouveaux relativement au registre sept-inputs**, **196 cinq champs présents**, aucun fetch détail, robots vérifié et respecté.
+- Les huit pages affichaient correctement les villes accentuées Fès/Kénitra/Tétouan grâce aux routes officielles encodées ; zéro conflit inter-catégories observé dans ce lot.
+- Réconciliation **huit inputs calculée offline** sur les fichiers immuables : **11 139 cartes source**, **9 282 IDs propres aux sources** (Mubawab 6 692, Domio 2 590), **7 238 cinq champs cohérents sans contradictions**, **5 conflits multi-lots**, 254 groupes de signatures possibles et 21 groupes inter-portails ; 0 doublon physique fusionné, 0 disponibilité/fraîcheur certifiée.
+- Workflow du ledger mis à jour pour télécharger le huitième artifact avec SHA256 épinglé et **assertions exactes 11 139 / 9 282 / 7 238 / 5 conflits**. **La valeur est recalculée offline ; attendre le run CI GitHub exact avant déclaration de certification GitHub huit lots**.
+- Sarouty : le canari six villes `38046267620` a vu six pages mais uniquement **1 carte correctement isolée, 0 cinq champs** ; le diagnostic DOM `38047091171` s'est arrêté **sans accès catégories** parce que robots.txt n'était pas disponible. Pas de bypass ni nouvelle tentative identique.
+
+**Next exact** : lire CI huit artifacts, puis prioriser la découverte de nouveaux types de biens et villes via les liens publics existants. En parallèle, définir la preuve de disponibilité commerciale, fraîcheur et dédup physique avant publication. **Les 200K actifs et uniques ne sont pas atteints.**

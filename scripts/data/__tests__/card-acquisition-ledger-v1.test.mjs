@@ -45,3 +45,12 @@ test('additional independent city observation joins by source ID, no invented fr
  assert.equal(report.commercially_available_verified_count,0);
  assert.ok(rows.every(r=>r.freshness_certified===false));
 });
+
+test('regional listing IDs remain independent from six/source ledger and never imply active sale',()=>{
+ const regional={...card('a:8800011'),city:'Tétouan',district:'Wilaya'};
+ const {report,rows}=consolidateCardObservations([mob('mubawab_regional_8',[regional]),mob('mubawab_50',[card('a:8800012')])]);
+ assert.equal(report.distinct_source_id_count,2);
+ assert.equal(report.five_field_observed_consistent,2);
+ assert.equal(report.commercially_available_verified_count,0);
+ assert.ok(rows.every(r=>r.active_sale_verified===false));
+});
