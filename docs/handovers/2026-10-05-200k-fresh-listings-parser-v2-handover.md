@@ -230,3 +230,18 @@ Le **scraping des pages de résultats** est la priorité produit demandée, et n
 - DB access/write **0/0** ; pas de Vercel ni merge. Pas de contournement des exclusions robots.
 
 **Next exact** : inventorier les branches de résultats/paginations **robots-permises** (ville, type, quartier, vente/location) en réutilisant l'énumérateur historique de shards Mubawab ; ouvrir une validation de **petit échantillon** d'URLs de détail nouvelles pour démontrer l'identité active/les 5 champs ; puis adapter à d'autres portails et calculer les uniques réellement servables. Les anciens runs V4 de correction d'URLs ne sont plus le chemin critique.
+
+
+## Lot Mass Acquisition V1 — 50 pages (2026-10-10)
+
+**Goal** : industrialiser le scraping des pages de résultats publiques, puis mesurer les identités distinctes / 5 champs / nouveautés source avant qualification de fraîcheur. Objectif intermédiaire **1000 cartes distinctes** (non encore atteint).
+
+**Dernière preuve certifiée** : run `37974096161` ✅, 8 pages, 215 identités `a:id`, 187 cartes à cinq champs présents, 161 IDs nouveaux face au gel; 0 page détail. Tous `observed_review`, non frais/actifs certifiés.
+
+**Implémentation** : HEAD produit `41d28d2e6c56789c2e3089e23cbd540a8deb4e6d`, fichiers `scripts/data/mubawab-card-scale-v1.mjs`, `scripts/data/__tests__/mubawab-card-scale-v1.test.mjs` et `.github/workflows/mubawab-card-scale-50.yml`. 5 villes × 5 types × vente/location = 50 routes candidates strictement bornées ; robots fail-closed, 1750ms entre requêtes, arrêt 403/429, pas de fiche détail, route finale vérifiée, dédup par ID et rejet des contradictions inter-cartes. La ville est requise dans le bloc de localisation source, et aucune ligne ne peut être promue `freshness_certified`/DB. Le benchmark 50 n'a pas encore de résultat démontré.
+
+**Run** : `38014431380`, état observé initialement `in_progress`. Des workflows historiques de la branche se sont également déclenchés sur le push ; ils sont indépendants du nouveau lot. Aucun déploiement ni DB.
+
+**Document technique** : `docs/data/AKARFINDER_MASS_ACQUISITION_V1.md`. Préparation deuxième portail : des adaptateurs MarocAnnonces et Avito existent dans le repo ; vérifier les accès publics et robots avant tout fetch, ne pas contourner une page de vérification.
+
+**Next exact** : inspecter les tests et les résultats exact-HEAD `38014431380`, corriger tout échec et relancer seulement si sûr ; si vert, télécharger artifact, mesurer unique/5 champs et joindre par ID au gel; décider extension catégories/scans et test 20-30 fiches ciblées, puis véritable fraîcheur/dédup inter-sites. Aucun merge/deploy Vercel sans autorisation.
