@@ -334,6 +334,19 @@ try {
         document.querySelector('[data-maplibre-spike]')?.getAttribute("data-maplibre-administrative-view") === "arrondissement",
         null, { timeout: 5000 });
       await page.waitForTimeout(900);
+      // LOT2: explicit, visible truth label; administrative district != quartier.
+      const adminDisclosure = page.locator('[data-maplibre-admin-disclosure="arrondissement-osm"]');
+      await adminDisclosure.waitFor({ state: "visible", timeout: 5000 });
+      const disclosureText = (await adminDisclosure.innerText()).replace(/\\s+/g, " ");
+      for (const phrase of ["Arrondissement Maârif", "Limite administrative OSM", "Ne délimite pas le quartier central"]) {
+        if (!disclosureText.includes(phrase)) throw new Error(`${viewport.name}: admin scope disclosure missing ${phrase}`);
+      }
+      const disclosureBox = await adminDisclosure.boundingBox();
+      if (!disclosureBox || disclosureBox.x < 0 || disclosureBox.y < 0
+        || disclosureBox.x + disclosureBox.width > viewport.width
+        || disclosureBox.y + disclosureBox.height > viewport.height) {
+        throw new Error(`${viewport.name}: administrative legend outside viewport ${JSON.stringify(disclosureBox)}`);
+      }
       const overviewDomLabels = await page.locator(".maplibre-spike-dom-labels .maplibre-spike-neighborhood-label, .maplibre-spike-dom-labels .maplibre-spike-poi-label, .maplibre-spike-dom-labels .maplibre-spike-target-landmark-label").count();
       if (overviewDomLabels !== 0) throw new Error(`${viewport.name}: administrative overview remains cluttered with ${overviewDomLabels} quartier/POI labels`);
       if ((await maplibre.getAttribute("data-maplibre-actual-pitch")) !== "0") {
@@ -345,7 +358,8 @@ try {
         document.querySelector('[data-maplibre-spike]')?.getAttribute("data-maplibre-administrative-view") === "quartier-context",
         null, { timeout: 5000 });
       await page.waitForTimeout(700);
-      const boundaryOverview = { opened: true, screenshot: `casablanca-arrondissement-limites-${viewport.width}x${viewport.height}.png`, returnedToQuartier: true, overviewDomLabels, layerTriggerBox: adminTriggerBox };
+      await adminDisclosure.waitFor({ state: "detached", timeout: 5000 });
+      const boundaryOverview = { opened: true, screenshot: `casablanca-arrondissement-limites-${viewport.width}x${viewport.height}.png`, returnedToQuartier: true, overviewDomLabels, layerTriggerBox: adminTriggerBox, disclosureText, disclosureBox };
 
       let sheetInteraction = null;
       if (viewport.width <= 1023) {
