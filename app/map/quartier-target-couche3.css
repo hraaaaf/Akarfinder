@@ -1094,3 +1094,49 @@
     min-height: 44px !important;
   }
 }
+
+
+/* Vivre Ici LOT2 / OSM arrondissement is NOT the central quartier.
+ * Restrained geographic disclosure only inside the opt-in administrative view.
+ */
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-admin-disclosure {
+  position: absolute;
+  z-index: 15;
+  top: 176px;
+  left: 20px;
+  width: min(245px, calc(100% - 100px));
+  display: grid;
+  gap: 2px;
+  padding: 9px 12px 10px;
+  border: 1px solid rgb(11 99 206 / .28);
+  border-left: 3px solid #0B63CE;
+  border-radius: 12px;
+  background: rgb(255 255 255 / .94);
+  box-shadow: 0 6px 18px rgb(7 27 51 / .11);
+  backdrop-filter: blur(10px);
+  color: #071B33;
+  pointer-events: none;
+}
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-admin-disclosure strong {
+  font-size: 12px;
+  font-weight: 850;
+  line-height: 1.25;
+}
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-admin-disclosure span {
+  font-size: 10px;
+  font-weight: 730;
+  color: #0B63CE;
+}
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-admin-disclosure small {
+  font-size: 9px;
+  line-height: 1.3;
+  color: #51677B;
+}
+@media (max-width: 560px) {
+  [data-akar-quartier-target="maarif-couche1"] .maplibre-spike-admin-disclosure {
+    top: 164px;
+    left: 12px;
+    width: min(228px, calc(100% - 95px));
+    padding: 8px 10px;
+  }
+}
