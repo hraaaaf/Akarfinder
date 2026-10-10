@@ -359,7 +359,20 @@ try {
         null, { timeout: 5000 });
       await page.waitForTimeout(700);
       await adminDisclosure.waitFor({ state: "detached", timeout: 5000 });
-      const boundaryOverview = { opened: true, screenshot: `casablanca-arrondissement-limites-${viewport.width}x${viewport.height}.png`, returnedToQuartier: true, overviewDomLabels, layerTriggerBox: adminTriggerBox, disclosureText, disclosureBox };
+      // Another real navigation path: Repères from the admin overview must
+      // remove the administrative overlay, not mislabel it as a quartier border.
+      await boundaryAction.click();
+      await page.waitForFunction(() =>
+        document.querySelector('[data-maplibre-spike]')?.getAttribute("data-maplibre-administrative-view") === "arrondissement",
+        null, { timeout: 5000 });
+      await page.getByRole("button", { name: /Repères — cadrer les/ }).click();
+      await page.waitForFunction(() =>
+        document.querySelector('[data-maplibre-spike]')?.getAttribute("data-maplibre-administrative-view") === "quartier-context",
+        null, { timeout: 5000 });
+      await adminDisclosure.waitFor({ state: "detached", timeout: 5000 });
+      await page.getByRole("button", { name: "Recentrer sur le quartier" }).click();
+      await page.waitForTimeout(750);
+      const boundaryOverview = { opened: true, screenshot: `casablanca-arrondissement-limites-${viewport.width}x${viewport.height}.png`, returnedToQuartier: true, returnedViaReperes: true, overviewDomLabels, layerTriggerBox: adminTriggerBox, disclosureText, disclosureBox };
 
       let sheetInteraction = null;
       if (viewport.width <= 1023) {
