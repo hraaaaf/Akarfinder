@@ -104,6 +104,38 @@ try {
     }
     await page.screenshot({path:`${outDir}/poi-after-all-${viewport.width}x${viewport.height}.png`,fullPage:false});
 
+    // LOT3: all sourced contextual POIs, not only landmarks, must support
+    // real click + keyboard selection and a non-misleading proximity detail.
+    const poiButton=page.locator(".maplibre-spike-poi-label").first();
+    await poiButton.waitFor({state:"visible",timeout:6000});
+    const sourceLabel=await poiButton.getAttribute("aria-label");
+    if(!sourceLabel?.startsWith("Explorer le lieu ")) throw new Error(`${viewport.name}: sourced POI is not an accessible button`);
+    const sourceName=sourceLabel.slice("Explorer le lieu ".length);
+    await poiButton.click();
+    const poiDetail=page.locator('[data-maplibre-poi-detail="sourced-context"]');
+    await poiDetail.waitFor({state:"visible",timeout:5000});
+    const poiDetailText=await poiDetail.innerText();
+    if(!poiDetailText.includes(sourceName)||!poiDetailText.includes("Autour de Maârif")) {
+      throw new Error(`${viewport.name}: sourced POI detail claims wrong place or quartier membership ${poiDetailText}`);
+    }
+    if(await poiButton.getAttribute("aria-pressed")!=="true") throw new Error(`${viewport.name}: POI pressed state absent`);
+    const poiDetailBox=await poiDetail.boundingBox();
+    if(!poiDetailBox||poiDetailBox.x<0||poiDetailBox.y<0||poiDetailBox.x+poiDetailBox.width>viewport.width||poiDetailBox.y+poiDetailBox.height>viewport.height) {
+      throw new Error(`${viewport.name}: sourced POI detail clipped ${JSON.stringify(poiDetailBox)}`);
+    }
+    await page.screenshot({path:`${outDir}/poi-after-selected-${viewport.width}x${viewport.height}.png`,fullPage:false});
+    const closePoi=page.getByRole("button",{name:"Fermer le détail du lieu"});
+    const closePoiBox=await closePoi.boundingBox();
+    if(!closePoiBox||closePoiBox.width<43||closePoiBox.height<43) throw new Error(`${viewport.name}: sourced POI close target under 44px`);
+    await closePoi.click();
+    await poiDetail.waitFor({state:"detached",timeout:5000});
+    await poiButton.focus();
+    await page.keyboard.press("Enter");
+    await poiDetail.waitFor({state:"visible",timeout:5000});
+    await closePoi.click();
+    await poiDetail.waitFor({state:"detached",timeout:5000});
+    const poiSelection={click:true,keyboard:true,close:true,sourceName,poiDetailBox,closePoiBox};
+
     // Capture one filtered state using a real available category when present.
     const education=page.locator(".maplibre-spike-filters button",{hasText:"Écoles"});
     if(await education.count() && await education.first().isVisible()){
@@ -112,7 +144,7 @@ try {
       await page.screenshot({path:`${outDir}/poi-after-education-${viewport.width}x${viewport.height}.png`,fullPage:false});
     }
 
-    report.cases.push({viewport:viewport.name,poiLanguage,rawCategories:rawCategories.map(v=>v.trim()),families,poiCount,glyphCount,landmarkCount,landmarkGlyphCount,visiblePoiLabels,clippedLabels,declaredAnchorCount,repereAccessibility,reframedPoiCount,reframedVisibleNames,reframedClipping,parkNeighborhoodOverlap,overflow});
+    report.cases.push({viewport:viewport.name,poiLanguage,rawCategories:rawCategories.map(v=>v.trim()),families,poiCount,glyphCount,landmarkCount,landmarkGlyphCount,visiblePoiLabels,clippedLabels,declaredAnchorCount,repereAccessibility,reframedPoiCount,reframedVisibleNames,reframedClipping,parkNeighborhoodOverlap,poiSelection,overflow});
     await page.close();
   }
   report.ok=true;
