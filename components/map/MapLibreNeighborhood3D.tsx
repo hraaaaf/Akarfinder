@@ -320,6 +320,12 @@ export function MapLibreNeighborhood3D({
   const isMaarifTargetPilot = citySlug === "casablanca" && districtSlug === "maarif";
   const districtTone = territoryLightToneForKey(districtSlug);
 
+  const setAdministrativePolygonVisible = (map: any, visible: boolean) => {
+    for (const id of ["neighborhood-boundary-fill", "neighborhood-boundary-relief", "neighborhood-boundary-line", "neighborhood-boundary-blue-highlight"]) {
+      if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", visible ? "visible" : "none");
+    }
+  };
+
   const setQuartierFocusLayersVisible = (map: any, visible: boolean) => {
     // The locality anchor is useful at quartier zoom, but misleading/noisy
     // in the zoomed-out *administrative arrondissement* outline overview.
@@ -333,6 +339,7 @@ export function MapLibreNeighborhood3D({
     if (!map) return;
     setAdministrativeBoundsVisible(false);
     setQuartierFocusLayersVisible(map, true);
+    setAdministrativePolygonVisible(map, false);
     focusNeighborhoodMap(map, boundaryGeometry, center, desktopCameraOffset, targetComposition, window.innerWidth >= 1024, 650);
   };
 
@@ -348,6 +355,7 @@ export function MapLibreNeighborhood3D({
     }
     const desktop = window.innerWidth >= 1024;
     setQuartierFocusLayersVisible(map, false);
+    setAdministrativePolygonVisible(map, true);
     map.fitBounds(bounds, {
       padding: desktop
         ? { top: 86, right: 60, bottom: 64, left: 60 }
@@ -824,12 +832,13 @@ export function MapLibreNeighborhood3D({
               type: "circle",
               source: FOCUS_SOURCE_ID,
               paint: {
-                "circle-radius": isMaarifTargetPilot ? (desktop ? 136 : 96) : (desktop ? 84 : 68),
-                "circle-color": districtTone,
-                "circle-opacity": isMaarifTargetPilot ? 0.034 : 0.13,
+                "circle-radius": isMaarifTargetPilot ? (desktop ? 195 : 153) : (desktop ? 84 : 68),
+                "circle-color": isMaarifTargetPilot ? MAP_BRAND_BLUE : districtTone,
+                "circle-blur": isMaarifTargetPilot ? 0.86 : 0,
+                "circle-opacity": isMaarifTargetPilot ? 0.22 : 0.13,
                 "circle-stroke-color": AKARFINDER_MOROCCO_MAP_NAVY,
-                "circle-stroke-width": isMaarifTargetPilot ? 0.85 : 1.5,
-                "circle-stroke-opacity": isMaarifTargetPilot ? 0.12 : 0.56,
+                "circle-stroke-width": isMaarifTargetPilot ? 0 : 1.5,
+                "circle-stroke-opacity": isMaarifTargetPilot ? 0 : 0.56,
               },
             });
             map.addLayer({
@@ -853,6 +862,7 @@ export function MapLibreNeighborhood3D({
               });
               map.addLayer({
                 id: "neighborhood-boundary-fill", type: "fill", source: "neighborhood-boundary",
+                layout: isMaarifTargetPilot ? { visibility: "none" } : undefined,
                 paint: {
                   // OSM relation 2801474 is the Maârif *administrative arrondissement*, not the central quartier.
                   // A restrained fill makes only that verified shape legible at administrative overview zoom.
@@ -865,6 +875,7 @@ export function MapLibreNeighborhood3D({
                   id: "neighborhood-boundary-relief",
                   type: "line",
                   source: "neighborhood-boundary",
+                  layout: { visibility: "none" },
                   paint: {
                     "line-color": MAP_BRAND_BLUE,
                     "line-width": 8,
@@ -875,6 +886,7 @@ export function MapLibreNeighborhood3D({
               }
               map.addLayer({
                 id: "neighborhood-boundary-line", type: "line", source: "neighborhood-boundary",
+                layout: isMaarifTargetPilot ? { visibility: "none" } : undefined,
                 paint: {
                   "line-color": isMaarifTargetPilot ? MAP_BRAND_NAVY : AKARFINDER_MOROCCO_MAP_NAVY,
                   "line-width": isMaarifTargetPilot ? 3 : 3.2,
@@ -887,6 +899,7 @@ export function MapLibreNeighborhood3D({
                   id: "neighborhood-boundary-blue-highlight",
                   type: "line",
                   source: "neighborhood-boundary",
+                  layout: { visibility: "none" },
                   paint: { "line-color": MAP_BRAND_BLUE, "line-width": 1, "line-opacity": 0.92 },
                 });
               }
@@ -1082,8 +1095,10 @@ export function MapLibreNeighborhood3D({
         type: "fill",
         source: CONTEXT_FOOTPRINT_SOURCE_ID,
         paint: {
-          "fill-color": districtTone,
-          "fill-opacity": 0.014,
+          "fill-color": MAP_BRAND_BLUE,
+          // Context hull is indicative, NOT a boundary: nearly transparent fill
+          // plus soft center glow. Never draw a hard line around this derived hull.
+          "fill-opacity": 0.018,
         },
       } as any, FOCUS_GLOW_LAYER_ID);
       map.addLayer({
@@ -1226,6 +1241,7 @@ export function MapLibreNeighborhood3D({
       data-maplibre-context-label-policy={isMaarifTargetPilot ? "suppressed-at-quarter-zoom" : "default"}
       data-maplibre-boundary-render={isMaarifTargetPilot && boundaryGeometry ? "administrative-navy-blue-relief" : "default"}
        data-maplibre-administrative-view={isMaarifTargetPilot && administrativeBoundsVisible ? "arrondissement" : "quartier-context"}
+       data-maplibre-context-visual={isMaarifTargetPilot ? "branded-soft-focus-no-border" : "default"}
       data-maplibre-context-state={contextState}
       data-maplibre-anchor-count={context?.anchor_count ?? 0}
       data-maplibre-city={citySlug}
