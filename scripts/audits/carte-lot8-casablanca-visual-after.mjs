@@ -70,10 +70,31 @@ try {
       if (boundarySemantic !== "administrative-arrondissement") throw new Error(`${viewport.name}: Maârif boundary semantic mismatch (${boundarySemantic})`);
       const boundaryDisclosure = await page.locator(".maplibre-spike-map-note-copy").textContent();
       if (!boundaryDisclosure?.includes("Arrondissement Maârif")) throw new Error(`${viewport.name}: arrondissement disclosure missing`);
+      // Default quartier must be map-first; administrative boundaries are opt-in
+      // through the accessible 44px Layers button, not a permanent large overlay.
       const boundaryBadge = page.locator(".maplibre-spike-boundary-badge");
-      await boundaryBadge.waitFor({ state: "visible", timeout: 5000 });
-      if ((await boundaryBadge.textContent())?.trim() !== "Contour administratif") {
-        throw new Error(`${viewport.name}: visible administrative-contour badge mismatch`);
+      if ((await boundaryBadge.count()) !== 0) {
+        throw new Error(`${viewport.name}: admin return pill incorrectly occupies default quartier view`);
+      }
+      const adminLayerTrigger = page.getByRole("button", { name: "Voir les limites administratives de l'arrondissement Maârif" });
+      await adminLayerTrigger.waitFor({ state: "visible", timeout: 5000 });
+      if ((await adminLayerTrigger.getAttribute("aria-pressed")) !== "false") {
+        throw new Error(`${viewport.name}: admin layer trigger must start inactive`);
+      }
+      const adminTriggerBox = await adminLayerTrigger.boundingBox();
+      if (!adminTriggerBox || adminTriggerBox.width < 43 || adminTriggerBox.height < 43) {
+        throw new Error(`${viewport.name}: admin layer touch target below 44px ${JSON.stringify(adminTriggerBox)}`);
+      }
+      const contextSpotPolicy = await maplibre.getAttribute("data-maplibre-context-spot-policy");
+      if (contextSpotPolicy !== "verified-nearby-point-glows-no-boundary") {
+        throw new Error(`${viewport.name}: context wash must derive only from nearby sourced POIs (${contextSpotPolicy})`);
+      }
+      const contextVisual = await maplibre.getAttribute("data-maplibre-context-visual");
+      if (contextVisual !== "sourced-organic-heatglow-v13-no-border") {
+        throw new Error(`${viewport.name}: default quartier must be softly highlighted, not an administrative polygon (${contextVisual})`);
+      }
+      if ((await maplibre.getAttribute("data-maplibre-administrative-view")) !== "quartier-context") {
+        throw new Error(`${viewport.name}: default map is unexpectedly in arrondissement mode`);
       }
       await highZoomTilesReady;
       let buildingFootprintObservationTimedOut = false;
@@ -86,18 +107,18 @@ try {
         buildingFootprintObservationTimedOut = true;
         console.warn(`${viewport.name}: no rendered building footprints observed within 10s; keeping visual capture and reporting zero coverage instead of suppressing the evidence`);
       }
-      await page.waitForFunction(() => {
-        const shell = document.querySelector('[data-maplibre-spike][data-maplibre-city="casablanca"][data-maplibre-district="maarif"]');
-        return shell?.getAttribute("data-maplibre-overture-state") === "available";
-      }, null, { timeout: 20000 }).catch(() => {
-        throw new Error(`${viewport.name}: Overture 3D bundle did not become available within 20s`);
-      });
-      await page.waitForFunction(() => {
-        const shell = document.querySelector('[data-maplibre-spike][data-maplibre-city="casablanca"][data-maplibre-district="maarif"]');
-        return Number(shell?.getAttribute("data-maplibre-building-count") ?? 0) > 0;
-      }, null, { timeout: 12000 }).catch(() => {
-        throw new Error(`${viewport.name}: no rendered 3D building volumes observed; Maârif depth target is not proven`);
-      });
+      // Flat target: no Overture extrusion dependency or volume gate.
+      const cameraMode = await maplibre.getAttribute("data-maplibre-camera-mode");
+      if (cameraMode !== "north-up-flat") throw new Error(`${viewport.name}: flat camera declaration missing (${cameraMode})`);
+      const observedPitch = Number(await maplibre.getAttribute("data-maplibre-actual-pitch"));
+      const observedBearing = Number(await maplibre.getAttribute("data-maplibre-actual-bearing"));
+      if (!Number.isFinite(observedPitch) || !Number.isFinite(observedBearing)
+        || Math.abs(observedPitch) > 0.01 || Math.abs(observedBearing) > 0.01) {
+        throw new Error(`${viewport.name}: observed camera not actually flat/north-up (${observedPitch}, ${observedBearing})`);
+      }
+      if (await page.locator(".maplibre-spike-mode").count()) {
+        throw new Error(`${viewport.name}: obsolete 2D/3D control still visible`);
+      }
       const overtureState = await maplibre.getAttribute("data-maplibre-overture-state");
       const overtureTotalCount = Number(await maplibre.getAttribute("data-maplibre-overture-total-count") ?? 0);
       const overtureExactCount = Number(await maplibre.getAttribute("data-maplibre-overture-exact-count") ?? 0);
@@ -113,23 +134,23 @@ try {
       const contextRelief = await maplibre.getAttribute("data-maplibre-context-relief");
       const labelPolicy = await maplibre.getAttribute("data-maplibre-label-policy");
       const contextLabelPolicy = await maplibre.getAttribute("data-maplibre-context-label-policy");
-      if (quarterStyle !== "illustrated-progressive-v1") {
-        throw new Error(`${viewport.name}: illustrated quarter style contract missing (${quarterStyle})`);
+      if (quarterStyle !== "flat-living-v02") {
+        throw new Error(`${viewport.name}: flat quarter style contract missing (${quarterStyle})`);
       }
       if (basemapLanguage !== "voyager-inspired-openfreemap-v1") {
         throw new Error(`${viewport.name}: Voyager-inspired basemap language missing (${basemapLanguage})`);
       }
-      if (buildingLanguage !== "standard-inspired-overture-v1") {
-        throw new Error(`${viewport.name}: Standard-inspired Overture building language missing (${buildingLanguage})`);
+      if (buildingLanguage !== "flat-vector-footprints-v02") {
+        throw new Error(`${viewport.name}: flat building language missing (${buildingLanguage})`);
       }
-      if (polish !== "material-relief-v3") {
-        throw new Error(`${viewport.name}: material/relief polish missing (${polish})`);
+      if (polish !== "flat-basemap-v02") {
+        throw new Error(`${viewport.name}: flat polish missing (${polish})`);
       }
-      if (boundaryRender !== "administrative-relief") {
-        throw new Error(`${viewport.name}: administrative relief contract missing (${boundaryRender})`);
+      if (boundaryRender !== "administrative-navy-blue-relief") {
+        throw new Error(`${viewport.name}: branded administrative boundary contract missing (${boundaryRender})`);
       }
-      if (contextRelief !== "raised-indicative-zone") {
-        throw new Error(`${viewport.name}: raised indicative-zone relief contract missing (${contextRelief})`);
+      if (contextRelief !== "flat-indicative-zone") {
+        throw new Error(`${viewport.name}: flat indicative-zone contract missing (${contextRelief})`);
       }
       if (labelPolicy !== "akarfinder-owned") {
         throw new Error(`${viewport.name}: Maârif label ownership contract missing (${labelPolicy})`);
@@ -137,25 +158,25 @@ try {
       if (contextLabelPolicy !== "suppressed-at-quarter-zoom") {
         throw new Error(`${viewport.name}: quarter context-label suppression contract missing (${contextLabelPolicy})`);
       }
-      if (shadowPolicy !== "non-metric-overture-footprints") {
-        throw new Error(`${viewport.name}: non-metric Overture shadow policy missing (${shadowPolicy})`);
+      if (shadowPolicy !== "flat-vector-footprints") {
+        throw new Error(`${viewport.name}: flat vector footprint policy missing (${shadowPolicy})`);
       }
       if (contextFocus !== "verified-anchor-envelope-not-boundary") {
         throw new Error(`${viewport.name}: Maârif context focus semantic missing (${contextFocus})`);
       }
-      if (overtureState !== "available") throw new Error(`${viewport.name}: Overture 3D bundle unavailable (${overtureState})`);
-      if (overtureTotalCount < 4900) throw new Error(`${viewport.name}: Overture bundle unexpectedly sparse (${overtureTotalCount})`);
-      if (overtureExactCount < 770) throw new Error(`${viewport.name}: Overture exact-height coverage regressed (${overtureExactCount})`);
-      if (overtureEstimatedCount < 4140) throw new Error(`${viewport.name}: Overture level-estimated coverage regressed (${overtureEstimatedCount})`);
+      if (overtureState !== "idle") throw new Error(`${viewport.name}: 3D bundle activated unexpectedly (${overtureState})`);
 
+      // V0.8: the brand palette must be installed in the vector map renderer,
+      // not merely in the buttons, page shell or a canvas CSS color filter.
+      const cartographicPalette = await maplibre.getAttribute("data-maplibre-cartographic-palette");
+      if (cartographicPalette !== "akarfinder-c1-c2-map-v1") {
+        throw new Error(`${viewport.name}: actual vector cartography is not AkarFinder C1/C2 (${cartographicPalette})`);
+      }
       const renderedBuildingVolumes = Number(await maplibre.getAttribute("data-maplibre-building-count") ?? 0);
       const renderedBuildingFootprints = Number(await maplibre.getAttribute("data-maplibre-building-footprint-count") ?? 0);
-      if (renderedBuildingVolumes < 120) {
-        throw new Error(`${viewport.name}: Overture density target not met (${renderedBuildingVolumes} rendered volumes, need >=120)`);
-      }
-      const renderedHeightCoveragePct = renderedBuildingFootprints > 0
-        ? Number(((renderedBuildingVolumes / renderedBuildingFootprints) * 100).toFixed(1))
-        : null;
+      if (renderedBuildingVolumes !== 0) throw new Error(`${viewport.name}: non-flat 3D volume instrumentation (${renderedBuildingVolumes})`);
+      if (renderedBuildingFootprints <= 0) throw new Error(`${viewport.name}: no actual rendered 2D building footprints`);
+      const renderedHeightCoveragePct = null;
 
       const rail = page.locator("[data-p4-map-decision-rail]");
       await rail.waitFor({ state: "visible", timeout: 10000 });
@@ -163,6 +184,63 @@ try {
 
       const panelBox = await rail.boundingBox();
       if (!panelBox) throw new Error(`${viewport.name}: Vivre Ici rail has no bounding box`);
+      let compactSheetMetrics = null;
+      if (viewport.width <= 430) {
+        const maxAllowedHeight = Math.min(viewport.height * 0.185, 160) + 2;
+        if (panelBox.height > maxAllowedHeight) {
+          throw new Error(`${viewport.name}: compact mobile sheet obscures map (height ${panelBox.height}, max ${maxAllowedHeight})`);
+        }
+        const primaryAction = rail.getByRole("link", { name: /Voir les biens disponibles à Maârif/i });
+        await primaryAction.waitFor({ state: "visible", timeout: 5000 });
+        const ctaBox = await primaryAction.boundingBox();
+        if (!ctaBox || ctaBox.y < panelBox.y - 1 || ctaBox.y + ctaBox.height > panelBox.y + panelBox.height + 1) {
+          throw new Error(`${viewport.name}: mobile collapsed CTA clipped by sheet ${JSON.stringify({ ctaBox, panelBox })}`);
+        }
+        if (ctaBox.height < 43) {
+          throw new Error(`${viewport.name}: mobile CTA tap target too small (${ctaBox.height})`);
+        }
+        compactSheetMetrics = { collapsedHeight: panelBox.height, mapAvailableAboveSheet: panelBox.y, ctaBox, maxAllowedHeight };
+      }
+      // V1.6 tablet gate: lower the collapsed sheet to 136–146px while
+      // preserving real 44px property-search CTA and expandable details.
+      if (viewport.width > 560 && viewport.width <= 1023) {
+        const maxAllowedHeight = Math.max(136, Math.min(viewport.height * 0.16, 146)) + 2;
+        const primaryAction = rail.getByRole("link", { name: /Voir les biens disponibles à Maârif/i });
+        await primaryAction.waitFor({ state: "visible", timeout: 5000 });
+        const ctaBox = await primaryAction.boundingBox();
+        if (panelBox.height > maxAllowedHeight || panelBox.y < viewport.height * 0.70) {
+          throw new Error(`${viewport.name}: tablet collapsed sheet occludes too much map ${JSON.stringify({ panelBox, maxAllowedHeight })}`);
+        }
+        if (!ctaBox || ctaBox.height < 43 || ctaBox.y < panelBox.y - 1
+          || ctaBox.y + ctaBox.height > panelBox.y + panelBox.height + 1) {
+          throw new Error(`${viewport.name}: tablet CTA missing, too short, or clipped ${JSON.stringify({ ctaBox, panelBox })}`);
+        }
+        compactSheetMetrics = { collapsedHeight: panelBox.height, mapAvailableAboveSheet: panelBox.y, ctaBox, maxAllowedHeight };
+      }
+      // Brand color 1/2 contract: verify computed styles, not source literals.
+      // Applies to the Maârif pilot only; basemap geometry/colors are untouched.
+      const brandPalette = await page.evaluate(() => {
+        const css = (selector, property) => {
+          const el = document.querySelector(selector);
+          return el ? getComputedStyle(el).getPropertyValue(property).trim() : null;
+        };
+        return {
+          mapTitleBackground: css('[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-neighborhood-label > span', "background-color"),
+          activeFilterBackground: css('[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-filters button.active', "background-color"),
+          railTitleColor: css('[data-maarif-rebuild="true"] .maarif-target-rail .maarif-target-heading h1', "color"),
+          railActionBackground: css('[data-maarif-rebuild="true"] .maarif-target-rail .maarif-target-primary-action', "background-color"),
+        };
+      });
+      const navy = "rgb(7, 27, 51)";
+      const blue = "rgb(11, 99, 206)";
+      for (const [key, expected] of Object.entries({
+        mapTitleBackground: navy,
+        activeFilterBackground: blue,
+        railTitleColor: navy,
+        railActionBackground: navy,
+      })) {
+        if (brandPalette[key] !== expected) throw new Error(`${viewport.name}: AkarFinder brand ${key} = ${brandPalette[key]}, expected ${expected}`);
+      }
       const layoutDiagnostics = await page.evaluate(() => {
         const layout = document.querySelector("[data-p4-map-layout]");
         const railElement = document.querySelector("[data-p4-map-decision-rail]");
@@ -227,6 +305,61 @@ try {
       if (overflow > 1) throw new Error(`${viewport.name}: horizontal overflow ${overflow}`);
       if (diagnostics.pageErrors.length) throw new Error(`${viewport.name}: browser page errors ${JSON.stringify(diagnostics.pageErrors)}`);
       await page.screenshot({ path: `${outDir}/casablanca-maarif-${viewport.width}x${viewport.height}.png`, fullPage: false });
+
+      // Verify the genuine OSM arrondissement polygon is discoverable by an explicit
+      // action, and that a full-boundary overview can be reversed to quartier view.
+      const boundaryAction = page.getByRole("button", { name: "Voir les limites administratives de l'arrondissement Maârif" });
+      await boundaryAction.waitFor({ state: "visible", timeout: 5000 });
+      // Real UX gate: do not bypass an intercepting mobile/tablet sheet with a forced click.
+      const layerHitTarget = await boundaryAction.evaluate((button) => {
+        const rect = button.getBoundingClientRect();
+        const x = rect.left + rect.width / 2, y = rect.top + rect.height / 2;
+        const hit = document.elementFromPoint(x, y);
+        const rail = document.querySelector("[data-maarif-target-rail]");
+        const railRect = rail?.getBoundingClientRect();
+        return {
+          clickableCenter: hit === button || button.contains(hit),
+          buttonTop: rect.top, buttonBottom: rect.bottom, buttonHeight: rect.height,
+          railTop: railRect?.top ?? null,
+          elementAtCenter: hit?.tagName ?? null,
+        };
+      });
+      if (!layerHitTarget.clickableCenter || layerHitTarget.buttonHeight < 43
+        || (viewport.width <= 1023 && layerHitTarget.railTop != null
+          && layerHitTarget.buttonBottom >= layerHitTarget.railTop - 8)) {
+        throw new Error(`${viewport.name}: map layers action is visually obstructed ${JSON.stringify(layerHitTarget)}`);
+      }
+      await boundaryAction.click();
+      await page.waitForFunction(() =>
+        document.querySelector('[data-maplibre-spike]')?.getAttribute("data-maplibre-administrative-view") === "arrondissement",
+        null, { timeout: 5000 });
+      await page.waitForTimeout(900);
+      // LOT2: explicit, visible truth label; administrative district != quartier.
+      const adminDisclosure = page.locator('[data-maplibre-admin-disclosure="arrondissement-osm"]');
+      await adminDisclosure.waitFor({ state: "visible", timeout: 5000 });
+      const disclosureText = (await adminDisclosure.innerText()).replace(/\\s+/g, " ");
+      for (const phrase of ["Arrondissement Maârif", "Limite administrative OSM", "Ne délimite pas le quartier central"]) {
+        if (!disclosureText.includes(phrase)) throw new Error(`${viewport.name}: admin scope disclosure missing ${phrase}`);
+      }
+      const disclosureBox = await adminDisclosure.boundingBox();
+      if (!disclosureBox || disclosureBox.x < 0 || disclosureBox.y < 0
+        || disclosureBox.x + disclosureBox.width > viewport.width
+        || disclosureBox.y + disclosureBox.height > viewport.height) {
+        throw new Error(`${viewport.name}: administrative legend outside viewport ${JSON.stringify(disclosureBox)}`);
+      }
+      const overviewDomLabels = await page.locator(".maplibre-spike-dom-labels .maplibre-spike-neighborhood-label, .maplibre-spike-dom-labels .maplibre-spike-poi-label, .maplibre-spike-dom-labels .maplibre-spike-target-landmark-label").count();
+      if (overviewDomLabels !== 0) throw new Error(`${viewport.name}: administrative overview remains cluttered with ${overviewDomLabels} quartier/POI labels`);
+      if ((await maplibre.getAttribute("data-maplibre-actual-pitch")) !== "0") {
+        throw new Error(`${viewport.name}: arrondissement overview must remain 2D`);
+      }
+      await page.screenshot({ path: `${outDir}/casablanca-arrondissement-limites-${viewport.width}x${viewport.height}.png`, fullPage: false });
+      await page.getByRole("button", { name: "Revenir au quartier Maârif" }).click();
+      await page.waitForFunction(() =>
+        document.querySelector('[data-maplibre-spike]')?.getAttribute("data-maplibre-administrative-view") === "quartier-context",
+        null, { timeout: 5000 });
+      await page.waitForTimeout(700);
+      await adminDisclosure.waitFor({ state: "detached", timeout: 5000 });
+      const boundaryOverview = { opened: true, screenshot: `casablanca-arrondissement-limites-${viewport.width}x${viewport.height}.png`, returnedToQuartier: true, overviewDomLabels, layerTriggerBox: adminTriggerBox, disclosureText, disclosureBox };
 
       let sheetInteraction = null;
       if (viewport.width <= 1023) {
@@ -330,6 +463,9 @@ try {
         viewport: viewport.name,
         searchHref,
         panelBox,
+        compactSheetMetrics,
+        brandPalette,
+        cartographicPalette,
         localPanelBox,
         layoutDiagnostics,
         overflow,
@@ -338,7 +474,14 @@ try {
         rtlStatus,
         boundarySemantic,
         boundaryDisclosure,
-        boundaryBadge: "Contour administratif",
+        cameraMode,
+        observedPitch,
+        observedBearing,
+        boundaryAccess: "44px-Layers-trigger-opt-in",
+        boundaryOverview,
+        layerHitTarget,
+        contextVisual,
+        contextSpotPolicy,
         renderedBuildingVolumes,
         renderedBuildingFootprints,
         renderedHeightCoveragePct,
@@ -358,7 +501,7 @@ try {
         labelPolicy,
         contextLabelPolicy,
         buildingFootprintObservationTimedOut,
-        renderedHeightCoverageNote: "ratio of rendered 3D features to rendered 2D building features; viewport-specific, not a unique-building census",
+        renderedHeightCoverageNote: "not applicable to flat 2D map; true rendered vector building footprints counted",
         sheetInteraction,
         localContextSource: localContext.source.mode,
         localAnchorCount: localContext.anchor_count,

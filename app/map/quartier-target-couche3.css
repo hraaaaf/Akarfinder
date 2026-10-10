@@ -626,3 +626,517 @@
     height: 21px !important;
   }
 }
+
+
+/* FLAT LIVING MAP V0.2 — Maârif, scoped pilot.
+ * Exact POI positions and sourced categories are unchanged.
+ * Inline marker+name follows zoom tier; no decorative false boundaries.
+ */
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-quarter-style="flat-living-v02"]
+  .maplibre-spike-map-grade {
+  background: linear-gradient(180deg, rgb(255 253 247 / .025), transparent 50%) !important;
+  opacity: .18 !important;
+}
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-quarter-style="flat-living-v02"]
+  .maplibre-spike-canvas canvas {
+  filter: saturate(.97) contrast(1.04) brightness(.992) !important;
+}
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-quarter-style="flat-living-v02"]
+  .maplibre-spike-map-chrome {
+  grid-template-columns: auto minmax(260px, 580px);
+}
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-poi-language="akarfinder-flat-v02"]
+  .maplibre-spike-poi-label[data-label-collapsed="false"] {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  gap: 5px;
+  transform: translate(-13px, -50%);
+  z-index: 2;
+}
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-poi-language="akarfinder-flat-v02"]
+  .maplibre-spike-poi-label[data-label-collapsed="false"] > span {
+  padding: 4px 6px;
+  max-width: 190px;
+  border: 0 !important;
+  border-radius: 6px;
+  background: rgb(255 255 255 / .72) !important;
+  color: #123250 !important;
+  box-shadow: none !important;
+  backdrop-filter: none;
+  font-size: 10.8px;
+  font-weight: 760;
+  line-height: 1.25;
+  text-shadow: 0 1px 0 #fff;
+}
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-poi-language="akarfinder-flat-v02"]
+  .maplibre-spike-poi-glyph {
+  display: grid !important;
+  flex: 0 0 26px;
+  width: 26px !important;
+  height: 26px !important;
+  place-items: center;
+  border: 1px solid rgb(255 255 255 / .94) !important;
+  border-radius: 8px !important;
+  background: #fff !important;
+  box-shadow: 0 1px 6px rgb(18 50 80 / .15), inset 0 0 0 1px rgb(18 50 80 / .06) !important;
+  color: #123250 !important;
+}
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-poi-language="akarfinder-flat-v02"]
+  .maplibre-spike-poi-label[data-poi-family="green-sport"] .maplibre-spike-poi-glyph {
+  color: #376E59 !important;
+  background: #F3FAF0 !important;
+}
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-poi-language="akarfinder-flat-v02"]
+  .maplibre-spike-poi-label[data-poi-family="mobility"] .maplibre-spike-poi-glyph {
+  color: #20516B !important;
+}
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-poi-language="akarfinder-flat-v02"]
+  .maplibre-spike-poi-label[data-label-collapsed="true"] {
+  transform: translate(-50%, -50%);
+  gap: 0;
+}
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-poi-language="akarfinder-flat-v02"]
+  .maplibre-spike-poi-label[data-label-collapsed="true"] > span {
+  display: none;
+}
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-poi-language="akarfinder-flat-v02"]
+  .maplibre-spike-poi-label[data-label-collapsed="true"] .maplibre-spike-poi-glyph {
+  flex-basis: 22px;
+  width: 22px !important;
+  height: 22px !important;
+  opacity: .9;
+}
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-poi-language="akarfinder-flat-v02"]
+  .maplibre-spike-target-landmark-label {
+  border: 1px solid rgb(181 200 212 / .85) !important;
+  border-radius: 10px !important;
+  background: rgb(255 255 255 / .94) !important;
+  box-shadow: 0 3px 11px rgb(18 50 80 / .11) !important;
+  color: #123250 !important;
+  font-weight: 760;
+}
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-poi-language="akarfinder-flat-v02"]
+  .maplibre-spike-target-landmark-label > i {
+  display: grid !important;
+  place-items: center;
+  width: 24px !important;
+  height: 24px !important;
+  border: 0 !important;
+  border-radius: 7px !important;
+  background: #123250 !important;
+  color: #fff !important;
+  box-shadow: none !important;
+}
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-quarter-style="flat-living-v02"]
+  .maplibre-spike-boundary-badge {
+  opacity: .93;
+  border-color: rgb(18 50 80 / .20);
+  color: #123250;
+}
+@media (max-width: 1023px) {
+  [data-akar-quartier-target="maarif-couche1"][data-maplibre-quarter-style="flat-living-v02"]
+    .maplibre-spike-map-chrome {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  [data-akar-quartier-target="maarif-couche1"][data-maplibre-poi-language="akarfinder-flat-v02"]
+    .maplibre-spike-poi-label[data-label-collapsed="false"] > span {
+    max-width: 134px;
+    font-size: 10px;
+    padding: 3px 5px;
+  }
+}
+
+
+/* V0.2 visual correction — keep verified POI and landmark names inside the visible map. */
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-poi-language="akarfinder-flat-v02"]
+  .maplibre-spike-poi-label[data-label-collapsed="false"][data-anchor-edge="right"] {
+  /* Keep the icon (not merely the label) on its sourced geographic coordinate. */
+  flex-direction: row !important;
+}
+
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-quarter-style="flat-living-v02"]
+  .maplibre-spike-target-landmark-label[data-anchor-edge="right"] {
+  transform: translate(-100%, -50%) !important;
+}
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-quarter-style="flat-living-v02"]
+  .maplibre-spike-target-landmark-label[data-anchor-edge="left"] {
+  transform: translate(0, -50%) !important;
+}
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-poi-language="akarfinder-flat-v02"]
+  .maplibre-spike-poi-label[data-label-collapsed="false"][data-anchor-edge="right"] {
+  transform: translate(-100%, -50%) !important;
+}
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-poi-language="akarfinder-flat-v02"]
+  .maplibre-spike-poi-label[data-label-collapsed="false"][data-anchor-edge="left"] {
+  transform: translate(0, -50%) !important;
+}
+
+
+/* FLAT LIVING V0.3 — sourced POI count, no new map chrome.
+ * The existing Repères chip becomes the explicit all-POI reframing action.
+ */
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-quarter-style="flat-living-v02"]
+  .maplibre-spike-filter-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  margin-inline-start: 5px;
+  border-radius: 999px;
+  background: rgb(18 50 80 / .085);
+  color: #123250;
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 800;
+  vertical-align: middle;
+}
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-quarter-style="flat-living-v02"]
+  .maplibre-spike-filters button.active .maplibre-spike-filter-count {
+  color: #123250;
+  background: #fff;
+}
+
+
+/* FLAT LIVING V0.4 — the map is primary; the collapsed mobile sheet is a
+ * short, tappable entry into the neighborhood details, not a half-screen card.
+ * The expanded state, CTA, and all sourced market/context content stay intact.
+ */
+@media (max-width: 560px) {
+  [data-maarif-rebuild="true"] .maarif-target-rail:not([data-sheet-expanded="true"]) {
+    height: min(18.5svh, 160px) !important;
+    max-height: min(18.5svh, 160px) !important;
+    overflow-y: hidden !important;
+    border-radius: 20px !important;
+    box-shadow: 0 10px 32px rgb(6 43 85 / .16) !important;
+  }
+  [data-maarif-rebuild="true"] .maarif-target-rail:not([data-sheet-expanded="true"])
+    .maarif-target-sheet-toggle {
+    height: 24px !important;
+    min-height: 24px;
+  }
+  [data-maarif-rebuild="true"] .maarif-target-rail:not([data-sheet-expanded="true"])
+    .maarif-target-body {
+    padding: 2px 13px 8px !important;
+  }
+  [data-maarif-rebuild="true"] .maarif-target-rail:not([data-sheet-expanded="true"])
+    .maarif-target-city {
+    margin-bottom: 0 !important;
+    font-size: 9px !important;
+  }
+  [data-maarif-rebuild="true"] .maarif-target-rail:not([data-sheet-expanded="true"])
+    .maarif-target-heading h1 {
+    font-size: 25px !important;
+    line-height: 1.05 !important;
+  }
+  [data-maarif-rebuild="true"] .maarif-target-rail:not([data-sheet-expanded="true"])
+    .maarif-target-tagline {
+    display: none !important;
+  }
+  [data-maarif-rebuild="true"] .maarif-target-rail:not([data-sheet-expanded="true"])
+    .maarif-target-actions {
+    margin-top: 7px !important;
+  }
+  [data-maarif-rebuild="true"] .maarif-target-rail:not([data-sheet-expanded="true"])
+    .maarif-target-primary-action {
+    min-height: 44px !important;
+    font-size: 11px !important;
+  }
+  [data-akar-quartier-target="maarif-couche1"][data-maplibre-poi-language="akarfinder-flat-v02"]
+    .maplibre-spike-poi-label[data-label-collapsed="false"] > span {
+    font-size: 10.5px !important;
+    max-width: 148px !important;
+    color: #123250 !important;
+    background: rgb(255 255 255 / .87) !important;
+    line-height: 1.3 !important;
+  }
+}
+
+
+/* V0.4.1 — move only the Maârif text, never its geographic center dot.
+ * Prevent the neighborhood name from colliding with the sourced park label
+ * at quartier / Repères zoom on small screens.
+ */
+@media (max-width: 560px) {
+  [data-akar-quartier-target="maarif-couche1"][data-maplibre-quarter-style="flat-living-v02"]
+    .maplibre-spike-neighborhood-label > span {
+    transform: translateY(-19px);
+  }
+}
+
+
+/* V0.4.2 — same truth-safe name separation on tablet and desktop:
+ * adjust only the rendered Maârif heading, never the sourced center/POI dot.
+ */
+@media (min-width: 561px) {
+  [data-akar-quartier-target="maarif-couche1"][data-maplibre-quarter-style="flat-living-v02"]
+    .maplibre-spike-neighborhood-label > span {
+    transform: translateY(-20px);
+  }
+}
+
+
+/* BRAND PASS — Vivre Ici / Maârif, couleurs structurelles documentées.
+ * Source : Notion « AkarFinder — Identité visuelle & Visual Landmark Dictionary »
+ * C1 #071B33 = navy/structure; C2 #0B63CE = sélection/actions.
+ * SCOPED UI only. Natural map landuse, roads, buildings, coordinates unchanged.
+ */
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-quarter-style="flat-living-v02"] {
+  --akar-living-navy: #071B33;
+  --akar-living-blue: #0B63CE;
+}
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-quarter-style="flat-living-v02"]
+  .maplibre-spike-neighborhood-label > span {
+  background: var(--akar-living-navy) !important;
+  box-shadow: 0 9px 22px rgb(7 27 51 / .19) !important;
+}
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-quarter-style="flat-living-v02"]
+  .maplibre-spike-neighborhood-label i {
+  background: var(--akar-living-blue) !important;
+}
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-quarter-style="flat-living-v02"]
+  .maplibre-spike-filters button.active {
+  background: var(--akar-living-blue) !important;
+  border-color: var(--akar-living-blue) !important;
+  color: #fff !important;
+  box-shadow: 0 5px 15px rgb(11 99 206 / .15) !important;
+}
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-quarter-style="flat-living-v02"]
+  .maplibre-spike-filters button.active .maplibre-spike-filter-count {
+  color: var(--akar-living-navy) !important;
+}
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-quarter-style="flat-living-v02"]
+  .maplibre-spike-controls .maplibre-spike-control-primary {
+  background: var(--akar-living-navy) !important;
+  color: #fff !important;
+  border-color: rgb(7 27 51 / .95) !important;
+}
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-quarter-style="flat-living-v02"]
+  .maplibre-spike-search svg {
+  color: var(--akar-living-blue) !important;
+}
+/* Rail shares the Maârif pilot scope, even when it is a sibling of the map. */
+[data-maarif-rebuild="true"] .maarif-target-rail .maarif-target-heading h1,
+[data-maarif-rebuild="true"] .maarif-target-rail .maarif-target-stat-grid strong,
+[data-maarif-rebuild="true"] .maarif-target-rail .maarif-target-places-heading h2 {
+  color: #071B33 !important;
+}
+[data-maarif-rebuild="true"] .maarif-target-rail .maarif-target-primary-action {
+  background: #071B33 !important;
+  color: #fff !important;
+  box-shadow: 0 9px 23px rgb(7 27 51 / .16) !important;
+}
+[data-maarif-rebuild="true"] .maarif-target-rail .maarif-target-city,
+[data-maarif-rebuild="true"] .maarif-target-rail .maarif-target-tabs button[aria-current="page"],
+[data-maarif-rebuild="true"] .maarif-target-rail .maarif-target-places-heading button {
+  color: #0B63CE !important;
+}
+[data-maarif-rebuild="true"] .maarif-target-rail .maarif-target-tabs button[aria-current="page"]::after {
+  background: #0B63CE !important;
+}
+[data-maarif-rebuild="true"] .maarif-target-rail .maarif-target-local-icon {
+  color: #0B63CE !important;
+}
+
+
+/* V0.9 — verified OSM arrondissement outline action, clearly NOT a quartier border.
+ * Premium admin map context: navy ink / blue focus / precise semantic label.
+ */
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-boundary-render="administrative-navy-blue-relief"]
+  .maplibre-spike-boundary-action {
+  top: 120px !important;
+  left: 120px !important;
+  right: auto !important;
+  bottom: auto !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto !important;
+  max-width: min(285px, calc(100% - 36px)) !important;
+  min-height: 36px !important;
+  padding: 9px 13px !important;
+  border: 1px solid rgb(11 99 206 / .44) !important;
+  border-radius: 12px !important;
+  background: rgb(240 247 255 / .97) !important;
+  box-shadow: 0 5px 18px rgb(7 27 51 / .13) !important;
+  color: #071B33 !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  line-height: 1.2 !important;
+  text-align: center;
+  white-space: normal !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  cursor: pointer;
+}
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-boundary-render="administrative-navy-blue-relief"]
+  .maplibre-spike-boundary-action[aria-pressed="true"] {
+  border-color: rgb(7 27 51 / .58) !important;
+  background: #071B33 !important;
+  color: #fff !important;
+}
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-boundary-render="administrative-navy-blue-relief"]
+  .maplibre-spike-boundary-action:focus-visible {
+  outline: 3px solid #0B63CE;
+  outline-offset: 2px;
+}
+@media (max-width: 1023px) {
+  [data-akar-quartier-target="maarif-couche1"][data-maplibre-boundary-render="administrative-navy-blue-relief"]
+    .maplibre-spike-boundary-action {
+    top: 113px !important;
+    left: 101px !important;
+    max-width: calc(100% - 114px) !important;
+    min-height: 40px !important;
+    padding: 7px 9px !important;
+    font-size: 10px !important;
+  }
+}
+
+
+/* Approved TARGET / LOT1 V1.4 — the real OSM arrondissement remains one tap away
+ * via the map's Layers control. The default quartier view is map-first;
+ * return navigation appears only while the admin contour is displayed.
+ */
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-quarter-style="flat-living-v02"]
+  .maplibre-spike-controls .maplibre-spike-admin-layer-toggle {
+  width: 44px !important;
+  height: 44px !important;
+  min-width: 44px;
+  min-height: 44px;
+  color: #0B63CE !important;
+  background: rgb(249 252 255 / .97) !important;
+  border: 1px solid rgb(11 99 206 / .22) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 6px 18px rgb(7 27 51 / .12) !important;
+}
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-quarter-style="flat-living-v02"]
+  .maplibre-spike-controls .maplibre-spike-admin-layer-toggle:focus-visible {
+  outline: 3px solid #0B63CE;
+  outline-offset: 2px;
+}
+
+
+/* LOT1 V1.4.1 — map layer control must be tappable on tablet too.
+ * At 768–1023px the responsive sheet begins halfway down the viewport;
+ * the inherited "top:43%" places the fourth control underneath that sheet.
+ * Keep the entire two-mode stack in the unobstructed top-right map area.
+ */
+@media (max-width: 1023px) {
+  [data-akar-quartier-target="maarif-couche1"][data-maplibre-quarter-style="flat-living-v02"]
+    .maplibre-spike-controls {
+    top: 112px !important;
+    right: 12px !important;
+    bottom: auto !important;
+    transform: none !important;
+  }
+}
+
+
+/* LOT1 V1.5 — tablet-first map. At 561–1023px, the prior collapsed
+ * Maârif sheet covered ~46svh and made the map secondary. A compact summary
+ * preserves access to search, with all details available when expanded.
+ * No changes to mobile <=560px, desktop >=1024px or the cartographic data.
+ */
+@media (min-width: 561px) and (max-width: 1023px) {
+  [data-maarif-rebuild="true"] .maarif-target-rail:not([data-sheet-expanded="true"]) {
+    height: clamp(136px, 16svh, 146px) !important;
+    max-height: clamp(136px, 16svh, 146px) !important;
+    overflow-y: hidden !important;
+    border-radius: 20px !important;
+    box-shadow: 0 10px 32px rgb(7 27 51 / .16) !important;
+  }
+  [data-maarif-rebuild="true"] .maarif-target-rail:not([data-sheet-expanded="true"])
+    .maarif-target-hero,
+  [data-maarif-rebuild="true"] .maarif-target-rail:not([data-sheet-expanded="true"])
+    .maarif-target-copy,
+  [data-maarif-rebuild="true"] .maarif-target-rail:not([data-sheet-expanded="true"])
+    .maarif-target-tabs,
+  [data-maarif-rebuild="true"] .maarif-target-rail:not([data-sheet-expanded="true"])
+    .maarif-target-market,
+  [data-maarif-rebuild="true"] .maarif-target-rail:not([data-sheet-expanded="true"])
+    .maarif-target-local,
+  [data-maarif-rebuild="true"] .maarif-target-rail:not([data-sheet-expanded="true"])
+    .maarif-target-mobility,
+  [data-maarif-rebuild="true"] .maarif-target-rail:not([data-sheet-expanded="true"])
+    .maarif-target-places,
+  [data-maarif-rebuild="true"] .maarif-target-rail:not([data-sheet-expanded="true"])
+    .maarif-target-secondary-action,
+  [data-maarif-rebuild="true"] .maarif-target-rail:not([data-sheet-expanded="true"])
+    .maarif-target-tagline {
+    display: none !important;
+  }
+  [data-maarif-rebuild="true"] .maarif-target-rail:not([data-sheet-expanded="true"])
+    .maarif-target-sheet-toggle {
+    height: 24px !important;
+    min-height: 24px !important;
+  }
+  [data-maarif-rebuild="true"] .maarif-target-rail:not([data-sheet-expanded="true"])
+    .maarif-target-body {
+    padding: 2px 16px 10px !important;
+  }
+  [data-maarif-rebuild="true"] .maarif-target-rail:not([data-sheet-expanded="true"])
+    .maarif-target-city {
+    margin-bottom: 0 !important;
+    font-size: 10px !important;
+  }
+  [data-maarif-rebuild="true"] .maarif-target-rail:not([data-sheet-expanded="true"])
+    .maarif-target-heading h1 {
+    font-size: 27px !important;
+    line-height: 1.05 !important;
+  }
+  [data-maarif-rebuild="true"] .maarif-target-rail:not([data-sheet-expanded="true"])
+    .maarif-target-actions {
+    margin-top: 7px !important;
+  }
+  [data-maarif-rebuild="true"] .maarif-target-rail:not([data-sheet-expanded="true"])
+    .maarif-target-primary-action {
+    min-height: 44px !important;
+  }
+}
+
+
+/* Vivre Ici LOT2 / OSM arrondissement is NOT the central quartier.
+ * Restrained geographic disclosure only inside the opt-in administrative view.
+ */
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-admin-disclosure {
+  position: absolute;
+  z-index: 15;
+  top: 176px;
+  left: 20px;
+  width: min(245px, calc(100% - 100px));
+  display: grid;
+  gap: 2px;
+  padding: 9px 12px 10px;
+  border: 1px solid rgb(11 99 206 / .28);
+  border-left: 3px solid #0B63CE;
+  border-radius: 12px;
+  background: rgb(255 255 255 / .94);
+  box-shadow: 0 6px 18px rgb(7 27 51 / .11);
+  backdrop-filter: blur(10px);
+  color: #071B33;
+  pointer-events: none;
+}
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-admin-disclosure strong {
+  font-size: 12px;
+  font-weight: 850;
+  line-height: 1.25;
+}
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-admin-disclosure span {
+  font-size: 10px;
+  font-weight: 730;
+  color: #0B63CE;
+}
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-admin-disclosure small {
+  font-size: 9px;
+  line-height: 1.3;
+  color: #51677B;
+}
+@media (max-width: 560px) {
+  [data-akar-quartier-target="maarif-couche1"] .maplibre-spike-admin-disclosure {
+    top: 164px;
+    left: 12px;
+    width: min(228px, calc(100% - 95px));
+    padding: 8px 10px;
+  }
+}

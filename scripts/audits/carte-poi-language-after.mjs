@@ -25,7 +25,7 @@ try {
     await page.waitForTimeout(900);
 
     const poiLanguage=await shell.getAttribute("data-maplibre-poi-language");
-    if(poiLanguage!=="akarfinder-duotone-v1") throw new Error(`${viewport.name}: POI language contract mismatch ${poiLanguage}`);
+    if(poiLanguage!=="akarfinder-flat-v02") throw new Error(`${viewport.name}: POI language contract mismatch ${poiLanguage}`);
     const rawCategories=await page.locator(".maplibre-spike-filters button").allTextContents();
     const poiCount=await page.locator(".maplibre-spike-poi-label").count();
     const landmarkCount=await page.locator(".maplibre-spike-target-landmark-label").count();
@@ -33,14 +33,76 @@ try {
     if(families.length>8) throw new Error(`${viewport.name}: too many POI visual families ${families.length}`);
     const glyphCount=await page.locator(".maplibre-spike-poi-glyph svg").count();
     if(glyphCount!==poiCount) throw new Error(`${viewport.name}: POI glyph coverage mismatch ${glyphCount}/${poiCount}`);
+    const zoomTier=await shell.getAttribute("data-maplibre-zoom-tier");
+    if(!["overview","quarter","street"].includes(zoomTier)) throw new Error(`${viewport.name}: missing progressive zoom tier (${zoomTier})`);
+    if(zoomTier==="quarter" && poiCount>8) throw new Error(`${viewport.name}: POI density excessive at quartier scale (${poiCount})`);
     const landmarkGlyphCount=await page.locator(".maplibre-spike-target-landmark-label i svg").count();
     if(landmarkGlyphCount!==landmarkCount) throw new Error(`${viewport.name}: landmark glyph coverage mismatch ${landmarkGlyphCount}/${landmarkCount}`);
     const visiblePoiLabels=await page.locator('.maplibre-spike-poi-label[data-label-collapsed="false"] span').allTextContents();
+
+    // Exact DOM geometry: label and icon must remain within the real map canvas,
+    // rather than being merely present in the document while visibly clipped.
+    const clippedLabels=await page.locator('.maplibre-spike-poi-label[data-label-collapsed="false"], .maplibre-spike-target-landmark-label').evaluateAll(nodes=>{
+      const canvas=document.querySelector(".maplibre-spike-canvas");
+      if(!canvas) return [{label:"missing-canvas"}];
+      const map=canvas.getBoundingClientRect();
+      return nodes.flatMap(node=>{
+        const rect=node.getBoundingClientRect();
+        if(rect.left>=map.left-1 && rect.right<=map.right+1 && rect.top>=map.top-1 && rect.bottom<=map.bottom+1) return [];
+        return [{label:node.textContent?.trim().slice(0,90),left:rect.left,right:rect.right,top:rect.top,bottom:rect.bottom,mapLeft:map.left,mapRight:map.right}];
+      });
+    });
+    if(clippedLabels.length) throw new Error(`${viewport.name}: real POI/landmark clipping ${JSON.stringify(clippedLabels)}`);
     const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
     if(overflow>1) throw new Error(`${viewport.name}: horizontal overflow ${overflow}`);
     if(pageErrors.length) throw new Error(`${viewport.name}: page errors ${JSON.stringify(pageErrors)}`);
 
     await page.screenshot({path:`${outDir}/poi-after-${viewport.width}x${viewport.height}.png`,fullPage:false});
+
+    // V0.3 — use the existing Repères control to show all sourced places.
+    // This is a real map.fitBounds interaction, not a synthetic screenshot camera.
+    const allRepereButton=page.locator(".maplibre-spike-filters button").first();
+    const repereAccessibility=await allRepereButton.getAttribute("aria-label");
+    const declaredAnchorCount=Number(await shell.getAttribute("data-maplibre-anchor-count") ?? 0);
+    if(declaredAnchorCount>0 && !repereAccessibility?.includes(String(declaredAnchorCount))){
+      throw new Error(`${viewport.name}: Repères control does not disclose sourced anchor count ${declaredAnchorCount}`);
+    }
+    await allRepereButton.click();
+    await page.waitForTimeout(1100);
+    const reframedPoiCount=await page.locator(".maplibre-spike-poi-label").count();
+    const reframedVisibleNames=await page.locator(".maplibre-spike-poi-label[data-label-collapsed='false'] > span").allTextContents();
+    if(viewport.width<=430 && declaredAnchorCount>=3 && reframedPoiCount<3){
+      throw new Error(`${viewport.name}: Repères reframing did not reveal 3 real POIs (${reframedPoiCount}/${declaredAnchorCount})`);
+    }
+    if(reframedPoiCount>declaredAnchorCount) throw new Error(`${viewport.name}: invented POI markers in all-context focus`);
+    const reframedClipping=await page.locator('.maplibre-spike-poi-label[data-label-collapsed="false"], .maplibre-spike-target-landmark-label').evaluateAll(nodes=>{
+      const map=document.querySelector(".maplibre-spike-canvas")?.getBoundingClientRect();
+      if(!map) return ["missing-map"];
+      return nodes.filter(node=>{
+        const b=node.getBoundingClientRect();
+        return b.left<map.left-1 || b.right>map.right+1 || b.top<map.top-1 || b.bottom>map.bottom+1;
+      }).map(node=>node.textContent?.trim().slice(0,90)||"unnamed");
+    });
+    if(reframedClipping.length) throw new Error(`${viewport.name}: reframed POI labels are clipped ${JSON.stringify(reframedClipping)}`);
+    // V0.4.2: the map's center name must not obscure the sourced park label
+    // on mobile, tablet or desktop when that real park label is rendered.
+    // Check actual rendered rectangles after the same real Repères interaction.
+    let parkNeighborhoodOverlap = null;
+    if (viewport.width <= 430 || viewport.width >= 768) {
+      parkNeighborhoodOverlap = await page.evaluate(() => {
+        const neighborhood=document.querySelector(".maplibre-spike-neighborhood-label > span");
+        const park=document.querySelector('.maplibre-spike-poi-label[data-poi-category="green_sport"][data-label-collapsed="false"] > span');
+        if(!neighborhood || !park) return { absent: true };
+        const a=neighborhood.getBoundingClientRect();
+        const b=park.getBoundingClientRect();
+        const overlapWidth=Math.max(0,Math.min(a.right,b.right)-Math.max(a.left,b.left));
+        const overlapHeight=Math.max(0,Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top));
+        return { overlapWidth, overlapHeight, overlapArea: overlapWidth*overlapHeight };
+      });
+      if (parkNeighborhoodOverlap.absent && viewport.width <= 430) throw new Error(`${viewport.name}: cannot certify Maârif / park label separation`);
+      if (!parkNeighborhoodOverlap.absent && parkNeighborhoodOverlap.overlapArea > 1) throw new Error(`${viewport.name}: Maârif text overlaps sourced park ${JSON.stringify(parkNeighborhoodOverlap)}`);
+    }
+    await page.screenshot({path:`${outDir}/poi-after-all-${viewport.width}x${viewport.height}.png`,fullPage:false});
 
     // Capture one filtered state using a real available category when present.
     const education=page.locator(".maplibre-spike-filters button",{hasText:"Écoles"});
@@ -50,7 +112,7 @@ try {
       await page.screenshot({path:`${outDir}/poi-after-education-${viewport.width}x${viewport.height}.png`,fullPage:false});
     }
 
-    report.cases.push({viewport:viewport.name,poiLanguage,rawCategories:rawCategories.map(v=>v.trim()),families,poiCount,glyphCount,landmarkCount,landmarkGlyphCount,visiblePoiLabels,overflow});
+    report.cases.push({viewport:viewport.name,poiLanguage,rawCategories:rawCategories.map(v=>v.trim()),families,poiCount,glyphCount,landmarkCount,landmarkGlyphCount,visiblePoiLabels,clippedLabels,declaredAnchorCount,repereAccessibility,reframedPoiCount,reframedVisibleNames,reframedClipping,parkNeighborhoodOverlap,overflow});
     await page.close();
   }
   report.ok=true;
