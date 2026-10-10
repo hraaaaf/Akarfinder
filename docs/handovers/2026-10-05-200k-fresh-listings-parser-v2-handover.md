@@ -446,3 +446,10 @@ Run 38069957917 ✅ success, HEAD ef30f7c347cb58a260cee7b31f1e5518ce161940, arti
 ## Shadow V1 : corriger biais de sélection (2026-10-10)
 
 Workflow shadow `38070451726` ✅ (commit 3a584b9c…, artifact 11676178521) : 9 745 lignes, 7 610 cinq champs, 60 dossiers sélectionnés, mais **les 60 sont suspects de doublons**. Ne pas extrapoler un taux actif à cette population biaisée. Modification source/test/workflow en cours pour quotas 10 suspects + 20 contrôles par portail ; liens de preuve d'unicité physique et de droits soumis à même ID. Nouveau run CI à vérifier avant clôture. Actif/frais/unique certifiés 0, DB 0, sans merge/Vercel.
+
+
+## Shadow V1 certifié + découverte pagination contrôlée — 10 octobre 2026
+
+Shadow corrigé CI [38070760057](https://github.com/hraaaaf/Akarfinder/actions/runs/38070760057) ✅, HEAD `01237c3d9552d102f018b05ba6ed98eecad02b28`, artifact `11676836332` inspecté : échantillon **30 Mubawab + 30 Domio**, chacun 10 signatures suspectes + 20 témoins non suspects, 0 ID répété, 0 frais/actif/physiquement unique/licencié certifié. Ne pas extrapoler un taux brut de ces strates enrichies. DB et publication 0.
+
+Découverte de pagination : `scripts/data/mubawab-linked-pagination-canary-v1.mjs` (max 4 pages catégorie déjà observées), tests, workflow `.github/workflows/mubawab-linked-pagination-canary-v1.yml`, doc `docs/data/AKARFINDER_LINKED_PAGINATION_CANARY_V1.md`. **CI/artifact à vérifier avant de compter un lien candidat** ; aucun lien paginé suivi ni aucune annonce attribuée au canari. Next : auditer run et décider expansion légale source-liée, puis mesurer rendement / frais actifs / dédup physique / droits.
