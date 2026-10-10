@@ -26,6 +26,22 @@ async function landmarkBox(page) {
   return box;
 }
 
+// The landmark cartouche is positioned left/right of its real projected anchor.
+// Its bounding-box *center* is not the geographic point; zooming there can
+// unintentionally move the sourced landmark off-screen on mobile.
+async function twinCenterGeographicScreenPoint(page) {
+  const label = page.locator('.maplibre-spike-target-landmark-label').filter({ hasText: "Twin Center" }).first();
+  await label.waitFor({ state: "visible", timeout: 20000 });
+  return label.evaluate((node) => {
+    const map = node.closest(".maplibre-spike-map");
+    if (!map) throw new Error("Twin Center has no map container");
+    const mapRect = map.getBoundingClientRect();
+    const x = Number.parseFloat(node.style.left), y = Number.parseFloat(node.style.top);
+    if (!Number.isFinite(x) || !Number.isFinite(y)) throw new Error("Twin Center has no real projected screen coordinate");
+    return { x: mapRect.left + x, y: mapRect.top + y };
+  });
+}
+
 async function recenterTwinCenter(page, viewport) {
   const canvas = page.locator("canvas.maplibregl-canvas");
   const canvasBox = await canvas.boundingBox();
@@ -61,8 +77,7 @@ async function recenterTwinCenter(page, viewport) {
   };
 
   for (let attempt = 0; attempt < 3; attempt += 1) {
-    const label = await landmarkBox(page);
-    const current = { x: label.x + label.width / 2, y: label.y + label.height / 2 };
+    const current = await twinCenterGeographicScreenPoint(page);
     const dx = desired.x - current.x;
     const dy = desired.y - current.y;
     if (Math.abs(dx) < 8 && Math.abs(dy) < 8) break;
@@ -80,10 +95,10 @@ async function recenterTwinCenter(page, viewport) {
 
   // Confirm Twin Center really is at the gesture's zoom anchor before changing scale.
   // MapLibre scrollZoom anchors its geographic point under the cursor during the zoom.
-  const anchorBeforeZoom = await landmarkBox(page);
+  const anchorBeforeZoom = await twinCenterGeographicScreenPoint(page);
   const anchorDeviation = Math.hypot(
-    anchorBeforeZoom.x + anchorBeforeZoom.width / 2 - desired.x,
-    anchorBeforeZoom.y + anchorBeforeZoom.height / 2 - desired.y,
+    anchorBeforeZoom.x - desired.x,
+    anchorBeforeZoom.y - desired.y,
   );
   if (anchorDeviation > 28) {
     throw new Error(`${viewport.name}: Twin Center not reliably positioned before street zoom (${anchorDeviation.toFixed(1)}px)`);
@@ -99,9 +114,8 @@ async function recenterTwinCenter(page, viewport) {
   await page.mouse.wheel(0, -420);
   await page.waitForTimeout(700);
 
-  // Do not require a DOM label after zoom: the product deliberately removes
-  // markers obscured by the top controls/sheet. The verified sourced anchor
-  // was under the cursor before zoom; no geographic pan occurs after this point.
+  // An accurately projected cursor anchor should keep Twin Center visible
+  // after street zoom, with its source coordinates untouched.
 
   // Wheel gestures may stop at quartier zoom depending on viewport / device scaling.
   // Continue interacting with the real map until its observed street zoom tier is reached.
@@ -117,12 +131,16 @@ async function recenterTwinCenter(page, viewport) {
     throw new Error(`${viewport.name}: real wheel zoom could not reach street tier (observed ${observedTier})`);
   }
 
+  const twinCenterLabelVisibleAtStreet = await page.locator('.maplibre-spike-target-landmark-label').filter({ hasText: "Twin Center" }).first().isVisible().catch(() => false);
+  if (!twinCenterLabelVisibleAtStreet) {
+    throw new Error(`${viewport.name}: sourced Twin Center must be visible after accurate street-zoom gestures`);
+  }
   return {
     canvasBox,
     desired,
-    twinCenterBoxBeforeZoom: anchorBeforeZoom,
+    twinCenterGeographicAnchorBeforeZoom: anchorBeforeZoom,
     anchorDeviationPx: Number(anchorDeviation.toFixed(1)),
-    twinCenterLabelVisibleAtStreet: await page.locator('.maplibre-spike-target-landmark-label').filter({ hasText: "Twin Center" }).first().isVisible().catch(() => false),
+    twinCenterLabelVisibleAtStreet,
     observedTier,
   };
 }
