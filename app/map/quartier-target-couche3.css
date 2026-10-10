@@ -1231,9 +1231,9 @@
   font-size: 10px;
 }
 [data-akar-quartier-target="maarif-couche1"] .maplibre-spike-landmark-detail > button {
-  width: 30px;
-  min-width: 30px;
-  height: 30px;
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
   border: 1px solid rgb(7 27 51 / .12);
   border-radius: 9px;
   background: #F1F6FC;
