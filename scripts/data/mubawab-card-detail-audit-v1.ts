@@ -122,4 +122,6 @@ async function main(){
  console.log(JSON.stringify(result.report,null,2));
  if(result.report.sample_selected===0||result.report.halted_reason)process.exitCode=2;
 }
-if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href)await main();
+if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){
+ main().catch(error=>{console.error(error instanceof Error?error.message:"audit_failed");process.exitCode=1;});
+}
