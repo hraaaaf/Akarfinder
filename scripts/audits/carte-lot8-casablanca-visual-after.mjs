@@ -172,6 +172,10 @@ try {
       if (cartographicPalette !== "akarfinder-c1-c2-map-v1") {
         throw new Error(`${viewport.name}: actual vector cartography is not AkarFinder C1/C2 (${cartographicPalette})`);
       }
+      const hierarchyPass = await maplibre.getAttribute("data-maplibre-hierarchy-pass");
+      if (hierarchyPass !== "readable-footprints-roads-v2") {
+        throw new Error(`${viewport.name}: Maârif flat-map street/footprint contrast pass missing (${hierarchyPass})`);
+      }
       const renderedBuildingVolumes = Number(await maplibre.getAttribute("data-maplibre-building-count") ?? 0);
       const renderedBuildingFootprints = Number(await maplibre.getAttribute("data-maplibre-building-footprint-count") ?? 0);
       if (renderedBuildingVolumes !== 0) throw new Error(`${viewport.name}: non-flat 3D volume instrumentation (${renderedBuildingVolumes})`);
@@ -479,6 +483,7 @@ try {
         compactSheetMetrics,
         brandPalette,
         cartographicPalette,
+        hierarchyPass,
         localPanelBox,
         layoutDiagnostics,
         overflow,
