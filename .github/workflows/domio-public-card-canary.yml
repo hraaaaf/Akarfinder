@@ -1,0 +1,37 @@
+name: AkarFinder Domio Public Card Canary
+on:
+  push:
+    branches:
+      - data/200k-fresh-parser-v2
+    paths:
+      - '.github/workflows/domio-public-card-canary.yml'
+      - 'scripts/data/domio-result-card-probe-v1.mjs'
+      - 'scripts/data/__tests__/domio-result-card-probe-v1.test.mjs'
+      - 'scripts/data/domio-public-card-canary-v1.mjs'
+permissions:
+  contents: read
+jobs:
+  public-two-page-canary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    env:
+      OUTPUT_PREFIX: domio-card-canary
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Offline source DOM and anti-confusion tests
+        run: node --test scripts/data/__tests__/domio-result-card-probe-v1.test.mjs
+      - name: Robots-gated two-category discovery
+        run: node scripts/data/domio-public-card-canary-v1.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: domio-public-card-canary
+          path: |
+            domio-card-canary.json
+            domio-card-canary.jsonl
+          retention-days: 14

@@ -49,3 +49,15 @@ MarocAnnonces a présenté un écran de vérification sur une catégorie ; pas d
 
 ## Prochaine validation ciblée
 Un audit de **30 fiches maximum**, choisies de façon déterministe et équilibrées par ville dans l'artifact 50 pages, contrôlera HTTP 200 + identité de la page source + vrai bloc primaire et superficie, sans déclarer la date/fraîcheur. Code sous `scripts/data/mubawab-card-detail-audit-v1.ts`. Chaque échec reste `review`, 403/429 arrêt. Ensuite audit de duplication physique et extension nationale multi-portails.
+
+## Preuve supplémentaire : audit de 30 vraies fiches — 2026-10-10
+
+Run `38015494577` **completed/success**, HEAD `4b7c5cb73cc59d13237e78e8eac81dce87237068`, artifact `11654889923` lu.
+- **30/30 détails HTTP 200**, même identifiant `a:<id>` préservé après redirection et vrai bloc primaire `.blockProp h1.searchTitle` reconnu.
+- **26/30 superficies détaillées détectées avec preuve stricte** ; **26/26 correspondent** à la carte. Les 4 autres restent `unverified`, pas `conflict`.
+- Aucun 403/429 ; lecture DB 0/écriture DB 0. L'échantillonnage est déterministe, réparti par ville, excluant les doublons suspects par signature et les cartes incomplètes.
+- Une page HTTP 200 avec ID stable **ne prouve ni encore disponible commercialement, ni fraîche, ni non doublonnée à travers les portails**. Ces 1 140 cartes demeurent `observed_review`.
+
+**Second portail, lot borné distinct** : adaptateur canari Domio prêt, deux pages publiques Casablanca/Marrakech maximum, récupération préalable de `robots.txt` avec arrêt fail-closed ; analyse strictement de la carte source et aucun visite de fiche ni promotion. La démonstration du flux dépendra d'une CI source réelle, pas d'une supposition depuis une page visible par navigateur.
+
+**Next exact** : inspecter CI Domio ; si permise et productive, certifier le parsing du quartier et les liens réels avant expansion. Si robots ou anti-bot refusent, mettre la source en quarantaine et explorer les autres portails explicitement accessibles. En parallèle, qualification datation/activité, dédup inter-ID/inter-sources et validation de droits avant activation.

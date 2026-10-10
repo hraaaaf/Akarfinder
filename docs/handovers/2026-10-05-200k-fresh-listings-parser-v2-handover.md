@@ -257,3 +257,13 @@ Le **scraping des pages de résultats** est la priorité produit demandée, et n
 - Aucune lecture/écriture DB, aucun merge, aucun déploiement Vercel.
 
 **Next exact** : audit de détail read-only sur 30 fiches issues de l'artifact `11655684897` pour mesurer l'identité et la présence des champs, classer les redirections ; tout reste `review` sans preuve fraîcheur. Préparer ensuite le scan national par catégories/shards autorisés et le deuxième portail. Suite détaillée : `docs/data/AKARFINDER_MASS_ACQUISITION_V1.md`.
+
+## Vérification de fiches après acquisition 50 pages — 2026-10-10
+
+**Preuve** : run `38015494577` ✅, artifact `11654889923` : audit read-only de **30 annonces** échantillonnées depuis l'artifact `11655684897` ; **30/30 pages détail réelles avec même ID source et bloc primaire** ; **26/26 surfaces présentes dans la fiche correspondant exactement à la carte** ; 4/30 surfaces sans preuve principale, pas classées fausses ; aucun blocage réseau ni DB. Le run initial `38015425292` avait échoué **avant crawl** sur top-level await CJS `tsx`, corrigé dans HEAD `4b7c5cb73cc59d13237e78e8eac81dce87237068`.
+
+**Périmètre certifié** : exactitude d'ID et surface sur cet **échantillon sélectionné**. Une annonce peut conserver une fiche HTML et ne plus être disponible commercialement ; publication récente, disponibilité vendeur, déduplication inter-sources et autorisation de republication restent **non validées**.
+
+**Lot suivant indépendant en préparation** : tester deux pages catégories Domio par canari robots fail-closed, sans recourir aux pages individuelles ni prétendre 5/5. Avito reste en état sitemap 403, non contourné.
+
+**Next exact** : lire le run Domio et son artifact ; si source productive, demander une preuve DOM du quartier et des cinq champs ; sinon classer la source bloquée et adapter une autre source. Pour Mubawab, continuer un audit de disponibilité/horodatage + doublons physiques sans déclarer les 1 140 cartes comme 1 140 annonces fraîches.
