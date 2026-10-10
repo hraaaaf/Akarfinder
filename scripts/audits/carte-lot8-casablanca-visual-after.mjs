@@ -294,6 +294,25 @@ try {
       // action, and that a full-boundary overview can be reversed to quartier view.
       const boundaryAction = page.getByRole("button", { name: "Voir les limites administratives de l'arrondissement Maârif" });
       await boundaryAction.waitFor({ state: "visible", timeout: 5000 });
+      // Real UX gate: do not bypass an intercepting mobile/tablet sheet with a forced click.
+      const layerHitTarget = await boundaryAction.evaluate((button) => {
+        const rect = button.getBoundingClientRect();
+        const x = rect.left + rect.width / 2, y = rect.top + rect.height / 2;
+        const hit = document.elementFromPoint(x, y);
+        const rail = document.querySelector("[data-maarif-target-rail]");
+        const railRect = rail?.getBoundingClientRect();
+        return {
+          clickableCenter: hit === button || button.contains(hit),
+          buttonTop: rect.top, buttonBottom: rect.bottom, buttonHeight: rect.height,
+          railTop: railRect?.top ?? null,
+          elementAtCenter: hit?.tagName ?? null,
+        };
+      });
+      if (!layerHitTarget.clickableCenter || layerHitTarget.buttonHeight < 43
+        || (viewport.width <= 1023 && layerHitTarget.railTop != null
+          && layerHitTarget.buttonBottom >= layerHitTarget.railTop - 8)) {
+        throw new Error(`${viewport.name}: map layers action is visually obstructed ${JSON.stringify(layerHitTarget)}`);
+      }
       await boundaryAction.click();
       await page.waitForFunction(() =>
         document.querySelector('[data-maplibre-spike]')?.getAttribute("data-maplibre-administrative-view") === "arrondissement",
@@ -430,6 +449,7 @@ try {
         observedBearing,
         boundaryAccess: "44px-Layers-trigger-opt-in",
         boundaryOverview,
+        layerHitTarget,
         contextVisual,
         contextSpotPolicy,
         renderedBuildingVolumes,
