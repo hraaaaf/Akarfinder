@@ -134,7 +134,30 @@ try {
     await poiDetail.waitFor({state:"visible",timeout:5000});
     await closePoi.click();
     await poiDetail.waitFor({state:"detached",timeout:5000});
-    const poiSelection={click:true,keyboard:true,close:true,sourceName,poiDetailBox,closePoiBox};
+
+    // Exercise EVERY POI actually rendered at this viewport, not merely the first.
+    // The desktop can legitimately cull one of the four sourced anchors.
+    const clickedSourceNames=[sourceName];
+    const buttons=page.locator(".maplibre-spike-poi-label");
+    for(let index=1;index<reframedPoiCount;index++){
+      const button=buttons.nth(index);
+      const accessibleName=await button.getAttribute("aria-label");
+      if(!accessibleName?.startsWith("Explorer le lieu ")) throw new Error(`${viewport.name}: POI ${index} missing accessibility semantics`);
+      const expectedName=accessibleName.slice("Explorer le lieu ".length);
+      await button.click({timeout:5500}); // real interaction; NO force:true
+      await poiDetail.waitFor({state:"visible",timeout:4000});
+      const detailText=await poiDetail.innerText();
+      if(!detailText.includes(expectedName)||!detailText.includes("Autour de Maârif")){
+        throw new Error(`${viewport.name}: POI ${index} has incorrect sourced context: ${detailText}`);
+      }
+      await closePoi.click();
+      await poiDetail.waitFor({state:"detached",timeout:4000});
+      clickedSourceNames.push(expectedName);
+    }
+    if(clickedSourceNames.length!==reframedPoiCount){
+      throw new Error(`${viewport.name}: not all visible sourced POI markers passed real click testing`);
+    }
+    const poiSelection={click:true,keyboard:true,close:true,sourceName,clickedSourceNames,poiDetailBox,closePoiBox};
 
     // Capture one filtered state using a real available category when present.
     const education=page.locator(".maplibre-spike-filters button",{hasText:"Écoles"});
