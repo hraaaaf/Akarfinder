@@ -104,6 +104,8 @@ const FOCUS_GLOW_LAYER_ID = "akarfinder-neighborhood-focus-glow";
 const FOCUS_RING_LAYER_ID = "akarfinder-neighborhood-focus-ring";
 const CONTEXT_FOOTPRINT_SOURCE_ID = "akarfinder-target-context-footprint";
 const CONTEXT_FOCUS_MASK_SOURCE_ID = "akarfinder-target-context-focus-mask";
+const CONTEXT_SOFT_SPOTS_SOURCE_ID = "akarfinder-target-context-sourced-spots";
+const CONTEXT_SOFT_SPOTS_LAYER_ID = "akarfinder-target-context-sourced-spots-glow";
 const CONTEXT_FOCUS_MASK_LAYER_ID = "akarfinder-target-context-focus-mask";
 const CONTEXT_FOOTPRINT_FILL_LAYER_ID = "akarfinder-target-context-footprint-fill";
 const CONTEXT_FOOTPRINT_HALO_LAYER_ID = "akarfinder-target-context-footprint-halo";
@@ -329,7 +331,7 @@ export function MapLibreNeighborhood3D({
   const setQuartierFocusLayersVisible = (map: any, visible: boolean) => {
     // The locality anchor is useful at quartier zoom, but misleading/noisy
     // in the zoomed-out *administrative arrondissement* outline overview.
-    for (const id of [FOCUS_GLOW_LAYER_ID, FOCUS_RING_LAYER_ID]) {
+    for (const id of [FOCUS_GLOW_LAYER_ID, FOCUS_RING_LAYER_ID, CONTEXT_SOFT_SPOTS_LAYER_ID]) {
       if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", visible ? "visible" : "none");
     }
   };
@@ -1032,6 +1034,22 @@ export function MapLibreNeighborhood3D({
     const hull = buildVerifiedPointHull(verifiedPoints);
     if (!hull) return;
     const contextualEnvelope = expandContextHull(hull, 1.50);
+    // Small, soft radii anchored ONLY to sourced local points. These create a
+    // natural context-focused wash; their edges are NOT geographic boundaries.
+    const sourcedSpots = verifiedPoints.slice(1).map(([longitude, latitude]) => {
+      const dLatKm = (latitude - center[1]) * 111.2;
+      const dLngKm = (longitude - center[0]) * 111.2 * Math.cos(center[1] * Math.PI / 180);
+      return { longitude, latitude, distanceKm: Math.hypot(dLatKm, dLngKm) };
+    }).filter((point) => point.distanceKm >= 0.08 && point.distanceKm <= 1.5)
+      .sort((a, b) => a.distanceKm - b.distanceKm).slice(0, 4);
+    const softSpotData = {
+      type: "FeatureCollection",
+      features: sourcedSpots.map(({ longitude, latitude }) => ({
+        type: "Feature",
+        properties: { semantic: "context-indicative-from-sourced-point", boundaryClaim: false },
+        geometry: { type: "Point", coordinates: [longitude, latitude] },
+      })),
+    };
 
     const data = {
       type: "Feature",
@@ -1071,15 +1089,21 @@ export function MapLibreNeighborhood3D({
 
     const source = map.getSource(CONTEXT_FOOTPRINT_SOURCE_ID);
     const maskSource = map.getSource(CONTEXT_FOCUS_MASK_SOURCE_ID);
-    if (source?.setData && maskSource?.setData) {
+    const spotsSource = map.getSource(CONTEXT_SOFT_SPOTS_SOURCE_ID);
+    if (source?.setData && maskSource?.setData && spotsSource?.setData) {
       source.setData(data as any);
       maskSource.setData(maskData as any);
+      spotsSource.setData(softSpotData as any);
+      if (map.getLayer(CONTEXT_SOFT_SPOTS_LAYER_ID)) {
+        map.setLayoutProperty(CONTEXT_SOFT_SPOTS_LAYER_ID, "visibility", administrativeBoundsVisible ? "none" : "visible");
+      }
       return;
     }
 
     try {
       map.addSource(CONTEXT_FOOTPRINT_SOURCE_ID, { type: "geojson", data } as any);
       map.addSource(CONTEXT_FOCUS_MASK_SOURCE_ID, { type: "geojson", data: maskData } as any);
+      map.addSource(CONTEXT_SOFT_SPOTS_SOURCE_ID, { type: "geojson", data: softSpotData } as any);
       map.addLayer({
         id: CONTEXT_FOCUS_MASK_LAYER_ID,
         type: "fill",
@@ -1099,6 +1123,19 @@ export function MapLibreNeighborhood3D({
           // Context hull is indicative, NOT a boundary: nearly transparent fill
           // plus soft center glow. Never draw a hard line around this derived hull.
           "fill-opacity": 0.018,
+        },
+      } as any, FOCUS_GLOW_LAYER_ID);
+      map.addLayer({
+        id: CONTEXT_SOFT_SPOTS_LAYER_ID,
+        type: "circle",
+        source: CONTEXT_SOFT_SPOTS_SOURCE_ID,
+        layout: { visibility: administrativeBoundsVisible ? "none" : "visible" },
+        paint: {
+          "circle-color": MAP_BRAND_BLUE,
+          "circle-radius": ["interpolate", ["linear"], ["zoom"], 12, 26, 14.5, 92, 17, 135],
+          "circle-opacity": 0.085,
+          "circle-blur": 0.94,
+          "circle-stroke-width": 0,
         },
       } as any, FOCUS_GLOW_LAYER_ID);
       map.addLayer({
@@ -1154,6 +1191,7 @@ export function MapLibreNeighborhood3D({
     context,
     ready,
     isMaarifTargetPilot,
+    administrativeBoundsVisible,
     targetComposition,
     center[0],
     center[1],
@@ -1242,6 +1280,7 @@ export function MapLibreNeighborhood3D({
       data-maplibre-boundary-render={isMaarifTargetPilot && boundaryGeometry ? "administrative-navy-blue-relief" : "default"}
        data-maplibre-administrative-view={isMaarifTargetPilot && administrativeBoundsVisible ? "arrondissement" : "quartier-context"}
        data-maplibre-context-visual={isMaarifTargetPilot ? "branded-soft-focus-no-border" : "default"}
+       data-maplibre-context-spot-policy={isMaarifTargetPilot ? "verified-nearby-point-glows-no-boundary" : "default"}
       data-maplibre-context-state={contextState}
       data-maplibre-anchor-count={context?.anchor_count ?? 0}
       data-maplibre-city={citySlug}
