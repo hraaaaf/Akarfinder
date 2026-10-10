@@ -258,7 +258,12 @@ try {
         path: `${outDir}/twin-center-selected-after-${viewport.width}x${viewport.height}.png`,
         fullPage: false,
       });
-      await page.getByRole("button", { name: "Fermer le détail du repère" }).click();
+      const closeAction = page.getByRole("button", { name: "Fermer le détail du repère" });
+      const closeBox = await closeAction.boundingBox();
+      if (!closeBox || closeBox.width < 43 || closeBox.height < 43) {
+        throw new Error(`${viewport.name}: landmark detail close target smaller than 44px ${JSON.stringify(closeBox)}`);
+      }
+      await closeAction.click();
       await landmarkDetail.waitFor({ state: "detached", timeout: 5000 });
       await landmarkAction.focus();
       await page.keyboard.press("Enter");
@@ -267,7 +272,7 @@ try {
       await landmarkDetail.waitFor({ state: "detached", timeout: 5000 });
 
       report.cases.push({
-        landmarkSelection: { click: true, keyboard: true, close: true, selectionBox },
+        landmarkSelection: { click: true, keyboard: true, close: true, selectionBox, closeBox },
         viewport: viewport.name,
         ...camera,
         overflow,
