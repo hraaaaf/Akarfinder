@@ -34,7 +34,7 @@ test("page 12 revalidated and page13 consumed only when linked",async()=>{
 });
 test("no source HTML next link means no page13 guess",async()=>{
  const calls=[];
- const fetchImpl=async url=>{calls.push(url);return {status:200,url,headers:{get:()=>"text/html"},text:async()=>"<p>end</p>";};};
+ const fetchImpl=async url=>{calls.push(url);return {status:200,url,headers:{get:()=>"text/html"},text:async()=>"<p>end</p>"};};
  const parser=()=>({rows:[row("12350")]});
  const {report}=await resumeDomioPagination({referenceReport:{pages:[ref.pages[0]]},referenceRows:[row("12350")],
   fetchImpl,parser,robotsText:"User-agent: *\nAllow: /",paceMs:0});
