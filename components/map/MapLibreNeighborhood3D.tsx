@@ -577,8 +577,8 @@ export function MapLibreNeighborhood3D({
                     28, "#C3D3E4",
                     60, "#B8CADE"
                   ],
-                  "fill-opacity": ["interpolate", ["linear"], ["zoom"], 12.2, 0.10, 14.5, 0.23, 17.5, 0.30],
-                  "fill-outline-color": "#94AAC4",
+                  "fill-opacity": ["interpolate", ["linear"], ["zoom"], 12.2, 0.07, 14.5, 0.15, 17.5, 0.20],
+                  "fill-outline-color": "#BED0E1",
                 },
               } as any);
 
