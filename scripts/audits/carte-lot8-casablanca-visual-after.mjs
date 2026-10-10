@@ -201,6 +201,22 @@ try {
         }
         compactSheetMetrics = { collapsedHeight: panelBox.height, mapAvailableAboveSheet: panelBox.y, ctaBox, maxAllowedHeight };
       }
+      // V1.5 tablet gate: the collapsed neighborhood rail must leave a map-first
+      // viewport, keep a real tappable 44px property-search CTA and still expand.
+      if (viewport.width > 560 && viewport.width <= 1023) {
+        const maxAllowedHeight = Math.min(viewport.height * 0.20, 176) + 2;
+        const primaryAction = rail.getByRole("link", { name: /Voir les biens disponibles à Maârif/i });
+        await primaryAction.waitFor({ state: "visible", timeout: 5000 });
+        const ctaBox = await primaryAction.boundingBox();
+        if (panelBox.height > maxAllowedHeight || panelBox.y < viewport.height * 0.70) {
+          throw new Error(`${viewport.name}: tablet collapsed sheet occludes too much map ${JSON.stringify({ panelBox, maxAllowedHeight })}`);
+        }
+        if (!ctaBox || ctaBox.height < 43 || ctaBox.y < panelBox.y - 1
+          || ctaBox.y + ctaBox.height > panelBox.y + panelBox.height + 1) {
+          throw new Error(`${viewport.name}: tablet CTA missing, too short, or clipped ${JSON.stringify({ ctaBox, panelBox })}`);
+        }
+        compactSheetMetrics = { collapsedHeight: panelBox.height, mapAvailableAboveSheet: panelBox.y, ctaBox, maxAllowedHeight };
+      }
       // Brand color 1/2 contract: verify computed styles, not source literals.
       // Applies to the Maârif pilot only; basemap geometry/colors are untouched.
       const brandPalette = await page.evaluate(() => {
