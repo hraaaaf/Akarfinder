@@ -72,8 +72,11 @@ try {
       if (!boundaryDisclosure?.includes("Arrondissement Maârif")) throw new Error(`${viewport.name}: arrondissement disclosure missing`);
       const boundaryBadge = page.locator(".maplibre-spike-boundary-badge");
       await boundaryBadge.waitFor({ state: "visible", timeout: 5000 });
-      if ((await boundaryBadge.textContent())?.trim() !== "Arrondissement · contour OSM") {
-        throw new Error(`${viewport.name}: visible administrative-contour badge mismatch`);
+      if ((await boundaryBadge.textContent())?.trim() !== "Voir limites · arrondissement Maârif") {
+        throw new Error(`${viewport.name}: exact administrative boundary action unavailable`);
+      }
+      if ((await boundaryBadge.getAttribute("aria-pressed")) !== "false") {
+        throw new Error(`${viewport.name}: boundary overview must be opt-in`);
       }
       await highZoomTilesReady;
       let buildingFootprintObservationTimedOut = false;
@@ -125,8 +128,8 @@ try {
       if (polish !== "flat-basemap-v02") {
         throw new Error(`${viewport.name}: flat polish missing (${polish})`);
       }
-      if (boundaryRender !== "administrative-dashed-flat") {
-        throw new Error(`${viewport.name}: administrative dashed boundary contract missing (${boundaryRender})`);
+      if (boundaryRender !== "administrative-navy-blue-relief") {
+        throw new Error(`${viewport.name}: branded administrative boundary contract missing (${boundaryRender})`);
       }
       if (contextRelief !== "flat-indicative-zone") {
         throw new Error(`${viewport.name}: flat indicative-zone contract missing (${contextRelief})`);
@@ -269,6 +272,26 @@ try {
       if (diagnostics.pageErrors.length) throw new Error(`${viewport.name}: browser page errors ${JSON.stringify(diagnostics.pageErrors)}`);
       await page.screenshot({ path: `${outDir}/casablanca-maarif-${viewport.width}x${viewport.height}.png`, fullPage: false });
 
+      // Verify the genuine OSM arrondissement polygon is discoverable by an explicit
+      // action, and that a full-boundary overview can be reversed to quartier view.
+      const boundaryAction = page.getByRole("button", { name: "Voir les limites administratives de l'arrondissement Maârif" });
+      await boundaryAction.waitFor({ state: "visible", timeout: 5000 });
+      await boundaryAction.click();
+      await page.waitForFunction(() =>
+        document.querySelector('[data-maplibre-spike]')?.getAttribute("data-maplibre-administrative-view") === "arrondissement",
+        null, { timeout: 5000 });
+      await page.waitForTimeout(900);
+      if ((await maplibre.getAttribute("data-maplibre-actual-pitch")) !== "0") {
+        throw new Error(`${viewport.name}: arrondissement overview must remain 2D`);
+      }
+      await page.screenshot({ path: `${outDir}/casablanca-arrondissement-limites-${viewport.width}x${viewport.height}.png`, fullPage: false });
+      await page.getByRole("button", { name: "Revenir au quartier Maârif" }).click();
+      await page.waitForFunction(() =>
+        document.querySelector('[data-maplibre-spike]')?.getAttribute("data-maplibre-administrative-view") === "quartier-context",
+        null, { timeout: 5000 });
+      await page.waitForTimeout(700);
+      const boundaryOverview = { opened: true, screenshot: `casablanca-arrondissement-limites-${viewport.width}x${viewport.height}.png`, returnedToQuartier: true };
+
       let sheetInteraction = null;
       if (viewport.width <= 1023) {
         const sheetToggle = rail.getByRole("button", { name: "Développer la fiche Maârif" });
@@ -385,7 +408,8 @@ try {
         cameraMode,
         observedPitch,
         observedBearing,
-        boundaryBadge: "Arrondissement · contour OSM",
+        boundaryBadge: "Voir limites · arrondissement Maârif",
+        boundaryOverview,
         renderedBuildingVolumes,
         renderedBuildingFootprints,
         renderedHeightCoveragePct,
