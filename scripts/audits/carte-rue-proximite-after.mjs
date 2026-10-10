@@ -209,7 +209,39 @@ try {
         fullPage: false,
       });
 
+      // LOT3 interaction gate: a real user can select an actual sourced
+      // landmark by touch/click and keyboard; no invented place data.
+      const landmarkAction = page.getByRole("button", { name: "Explorer le repère Twin Center" });
+      await landmarkAction.waitFor({ state: "visible", timeout: 6000 });
+      await landmarkAction.click();
+      const landmarkDetail = page.locator('[data-maplibre-landmark-detail="target"]');
+      await landmarkDetail.waitFor({ state: "visible", timeout: 5000 });
+      if (!(await landmarkDetail.innerText()).includes("Twin Center")) {
+        throw new Error(`${viewport.name}: selected landmark detail lost its true place name`);
+      }
+      if ((await landmarkAction.getAttribute("aria-pressed")) !== "true") {
+        throw new Error(`${viewport.name}: selected landmark pressed state absent`);
+      }
+      const selectionBox = await landmarkDetail.boundingBox();
+      if (!selectionBox || selectionBox.x < 0 || selectionBox.y < 0
+        || selectionBox.x + selectionBox.width > viewport.width
+        || selectionBox.y + selectionBox.height > viewport.height) {
+        throw new Error(`${viewport.name}: selected landmark detail clipped ${JSON.stringify(selectionBox)}`);
+      }
+      await page.screenshot({
+        path: `${outDir}/twin-center-selected-after-${viewport.width}x${viewport.height}.png`,
+        fullPage: false,
+      });
+      await page.getByRole("button", { name: "Fermer le détail du repère" }).click();
+      await landmarkDetail.waitFor({ state: "detached", timeout: 5000 });
+      await landmarkAction.focus();
+      await page.keyboard.press("Enter");
+      await landmarkDetail.waitFor({ state: "visible", timeout: 5000 });
+      await page.getByRole("button", { name: "Fermer le détail du repère" }).click();
+      await landmarkDetail.waitFor({ state: "detached", timeout: 5000 });
+
       report.cases.push({
+        landmarkSelection: { click: true, keyboard: true, close: true, selectionBox },
         viewport: viewport.name,
         ...camera,
         overflow,
