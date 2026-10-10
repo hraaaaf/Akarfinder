@@ -52,3 +52,16 @@ Un gain de pages ne prouve pas 200 000 annonces actives. Toute déclaration de s
 - **Candidats duplications** : artifact offline `38042808384` indique une paire Rabat Agdal entre Mubawab et Domio avec même prix/surface, aucune fusion sans preuve.
 - **Lots préparés ou lancés** : `mubawab-district-derived-shards-v1.mjs` sur run `38043539778`, et `domio-pagination-resume-v1.mjs` après le run 70. Stop robots/403/429, pacing, aucune fiche privée ou bypass. Le volume récupéré n'est pas automatiquement un volume d'annonces encore disponibles.
 - **Next exact** : récupérer les runs/artifacts exacts, mesurer nouvelles cartes nettes, diagnostiquer les vrais taux de disponibilité et les doublons, puis adapter d'autres sources permises. Pas de DB, merge ou deploy Vercel.
+
+
+## Expansion nationale au-delà des cinq villes initiales — 2026-10-10
+
+**Preuve :** le ledger exact `38044964671` ✅ (artifact `11667367558`) recense **8 993 identifiants source** et **6 995 cartes cinq champs cohérentes**, dont **6 403 Mubawab** quasi exclusivement Casablanca/Tanger/Marrakech/Agadir/Rabat et **2 590 Domio**. Aucun frais/actif/dédup physique certifié. **Cette concentration géographique justifie l'ouverture de nouvelles villes**, pas le recrawl répété des mêmes catégories.
+
+Deux pages de catégorie Mubawab ont été effectivement vérifiées publiquement :
+- `https://www.mubawab.ma/fr/st/meknes/appartements-a-vendre` (H1 « Appartement à vendre à Meknes », prix/quartiers/surfaces affichés)
+- `https://www.mubawab.ma/fr/st/oujda/appartements-a-vendre` (catégorie appartements à vendre Oujda).
+
+**Lot préparé à certifier** : `scripts/data/mubawab-new-city-frontier-v1.mjs` + tests + `.github/workflows/mubawab-new-city-frontier-30.yml` : partir uniquement de ces deux URLs réelles ; découvrir uniquement les liens catégorie `/fr/st/<ville>/appartements-a-vendre` effectivement présents, 30 requêtes maximum, hôte officiel, robots fail-closed, pauses 1,8s, stop 403/429, H1 ville obligatoire pour chaque page, aucune fiche détail. Dédup par ID `a:id` et contrôle net-new face au registre six artifacts avec SHA256 JSONL `bfe706a803abedab31a971ea336ee1a0931d26740911810fab0a1aba94aaa7cf`.
+
+**Next exact** : tests CI et artifact des catégories nouvellement découvertes ; comparer le rendement marginal des IDs sources (neufs *pour le registre*, pas publiés récemment) par page ; rejeter les catégories sans preuve de ville, sans robots ou à rendement nul, puis étendre prudemment les URLs publiques réellement observées. Le délai utilisateur de 24h demeure un objectif non garanti, et non une confirmation de 200K disponibles.
