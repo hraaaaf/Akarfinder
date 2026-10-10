@@ -281,6 +281,8 @@ try {
         document.querySelector('[data-maplibre-spike]')?.getAttribute("data-maplibre-administrative-view") === "arrondissement",
         null, { timeout: 5000 });
       await page.waitForTimeout(900);
+      const overviewDomLabels = await page.locator(".maplibre-spike-dom-labels .maplibre-spike-neighborhood-label, .maplibre-spike-dom-labels .maplibre-spike-poi-label, .maplibre-spike-dom-labels .maplibre-spike-target-landmark-label").count();
+      if (overviewDomLabels !== 0) throw new Error(`${viewport.name}: administrative overview remains cluttered with ${overviewDomLabels} quartier/POI labels`);
       if ((await maplibre.getAttribute("data-maplibre-actual-pitch")) !== "0") {
         throw new Error(`${viewport.name}: arrondissement overview must remain 2D`);
       }
@@ -290,7 +292,7 @@ try {
         document.querySelector('[data-maplibre-spike]')?.getAttribute("data-maplibre-administrative-view") === "quartier-context",
         null, { timeout: 5000 });
       await page.waitForTimeout(700);
-      const boundaryOverview = { opened: true, screenshot: `casablanca-arrondissement-limites-${viewport.width}x${viewport.height}.png`, returnedToQuartier: true };
+      const boundaryOverview = { opened: true, screenshot: `casablanca-arrondissement-limites-${viewport.width}x${viewport.height}.png`, returnedToQuartier: true, overviewDomLabels };
 
       let sheetInteraction = null;
       if (viewport.width <= 1023) {
