@@ -70,13 +70,20 @@ try {
       if (boundarySemantic !== "administrative-arrondissement") throw new Error(`${viewport.name}: Maârif boundary semantic mismatch (${boundarySemantic})`);
       const boundaryDisclosure = await page.locator(".maplibre-spike-map-note-copy").textContent();
       if (!boundaryDisclosure?.includes("Arrondissement Maârif")) throw new Error(`${viewport.name}: arrondissement disclosure missing`);
+      // Default quartier must be map-first; administrative boundaries are opt-in
+      // through the accessible 44px Layers button, not a permanent large overlay.
       const boundaryBadge = page.locator(".maplibre-spike-boundary-badge");
-      await boundaryBadge.waitFor({ state: "visible", timeout: 5000 });
-      if ((await boundaryBadge.textContent())?.trim() !== "Voir limites · arrondissement Maârif") {
-        throw new Error(`${viewport.name}: exact administrative boundary action unavailable`);
+      if ((await boundaryBadge.count()) !== 0) {
+        throw new Error(`${viewport.name}: admin return pill incorrectly occupies default quartier view`);
       }
-      if ((await boundaryBadge.getAttribute("aria-pressed")) !== "false") {
-        throw new Error(`${viewport.name}: boundary overview must be opt-in`);
+      const adminLayerTrigger = page.getByRole("button", { name: "Voir les limites administratives de l'arrondissement Maârif" });
+      await adminLayerTrigger.waitFor({ state: "visible", timeout: 5000 });
+      if ((await adminLayerTrigger.getAttribute("aria-pressed")) !== "false") {
+        throw new Error(`${viewport.name}: admin layer trigger must start inactive`);
+      }
+      const adminTriggerBox = await adminLayerTrigger.boundingBox();
+      if (!adminTriggerBox || adminTriggerBox.width < 43 || adminTriggerBox.height < 43) {
+        throw new Error(`${viewport.name}: admin layer touch target below 44px ${JSON.stringify(adminTriggerBox)}`);
       }
       const contextSpotPolicy = await maplibre.getAttribute("data-maplibre-context-spot-policy");
       if (contextSpotPolicy !== "verified-nearby-point-glows-no-boundary") {
@@ -303,7 +310,7 @@ try {
         document.querySelector('[data-maplibre-spike]')?.getAttribute("data-maplibre-administrative-view") === "quartier-context",
         null, { timeout: 5000 });
       await page.waitForTimeout(700);
-      const boundaryOverview = { opened: true, screenshot: `casablanca-arrondissement-limites-${viewport.width}x${viewport.height}.png`, returnedToQuartier: true, overviewDomLabels };
+      const boundaryOverview = { opened: true, screenshot: `casablanca-arrondissement-limites-${viewport.width}x${viewport.height}.png`, returnedToQuartier: true, overviewDomLabels, layerTriggerBox: adminTriggerBox };
 
       let sheetInteraction = null;
       if (viewport.width <= 1023) {
@@ -421,7 +428,7 @@ try {
         cameraMode,
         observedPitch,
         observedBearing,
-        boundaryBadge: "Voir limites · arrondissement Maârif",
+        boundaryAccess: "44px-Layers-trigger-opt-in",
         boundaryOverview,
         contextVisual,
         contextSpotPolicy,
