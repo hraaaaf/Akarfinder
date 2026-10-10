@@ -14,3 +14,10 @@
 Le run [38071017861](https://github.com/hraaaaf/Akarfinder/actions/runs/38071017861) ✅, artifact 11676876747 inspecté, a observé **4/4 pages HTML et 0 lien de pagination classé permis**, sans blocage robots, ni lecture de page 2/détail/DB. Ces quatre pages ne justifient donc pas une expansion par pagination construite ; ceci **n'exclut pas** d'autres paginations ailleurs.
 
 Extension indépendante du même canari : extraire les liens `/fr/st/` de catégorie/type **présents dans les ancres HTML** via le parseur existant `extractFrontierCategories`, valider host exact, absence de paramètres, ville connue et robots, sans suivre ces liens. Sortie additionnelle `linked-type-categories-v1.jsonl`. Résultat réel à établir uniquement après la nouvelle CI.
+
+
+## Résultat certifié 10 octobre — pivots de découverte
+
+Run public pagination `38071017861` ✅, artifact `11676876747` : 4/4 pages de catégories HTTP200, **0 lien de pagination recevable**. Run type-linked `38071186663` ✅, artifact `11676024617` : même échantillon de quatre pages, **0 lien supplémentaire de type `/fr/st/`** ; aucune page de résultat fille demandée. Arrêt de cette voie, sans inventer routes ni inférer absences sur toutes les villes.
+
+Protocole activité : run `38070760057` ✅, artifact `11676836332` : 60 dossiers, 30 par source, dont 10 suspects et 20 témoins par source, 0 doublon identitaire, 60 URLs/quartiers. **0 vendeur/agent actif, unicité physique ou droits validés**, par absence de preuve et non par preuve d'indisponibilité. Next : contrôles humains/autorisation de réutilisation; nouveaux portails seulement via pages publiques permises. Aucun merge, DB, Vercel.

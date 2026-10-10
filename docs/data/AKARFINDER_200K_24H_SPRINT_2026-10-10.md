@@ -93,3 +93,10 @@ Deux pages de catégorie Mubawab ont été effectivement vérifiées publiquemen
 Workflow ledger neuf entrées : nouvelle source `mubawab_regional_40` + checksum épinglé + assertions sur les totaux exacts et les marqueurs de non-promotion. **Ne déclarer le ledger neuf lots certifié GitHub qu'après run de CI sur le commit intégrateur et inspection de son artifact.** Aucune écriture DB, aucun déploiement ni merge par ce lot.
 
 **Next exact** : lire la CI du ledger neuf artifacts ; si rouge corriger avant tout nouveau run ; si verte contrôler artifact, puis lancer un protocole read-only d'audit de disponibilité datée (signal vendeur/portail explicite, dates, échantillon par source, et refus en cas de preuve absente), avec dédup inter-portails sans fusion automatique ; prioriser nouvelles pages liées et autorisées par IDs nets 5/5 par requête.
+
+
+## Résultat certifié 10 octobre — pivots de découverte
+
+Run public pagination `38071017861` ✅, artifact `11676876747` : 4/4 pages de catégories HTTP200, **0 lien de pagination recevable**. Run type-linked `38071186663` ✅, artifact `11676024617` : même échantillon de quatre pages, **0 lien supplémentaire de type `/fr/st/`** ; aucune page de résultat fille demandée. Arrêt de cette voie, sans inventer routes ni inférer absences sur toutes les villes.
+
+Protocole activité : run `38070760057` ✅, artifact `11676836332` : 60 dossiers, 30 par source, dont 10 suspects et 20 témoins par source, 0 doublon identitaire, 60 URLs/quartiers. **0 vendeur/agent actif, unicité physique ou droits validés**, par absence de preuve et non par preuve d'indisponibilité. Next : contrôles humains/autorisation de réutilisation; nouveaux portails seulement via pages publiques permises. Aucun merge, DB, Vercel.
