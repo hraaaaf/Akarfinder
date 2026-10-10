@@ -53,3 +53,11 @@ Workflow Ledger élargi aux **six artifacts et SHA256 JSONL épinglés**. **Gate
 ## CI exacte six artifacts validée — 2026-10-10
 
 Run `38044964671` ✅ sur HEAD `bf4804ab9e4e87f0345e843fac06feb86eb120d7`, artifact `11667367558` vérifié par lecture du JSON et vérification des SHA d'entrées : 10 850 observations, 8 993 IDs source uniques, 6 995 champs complets et cohérents, 5 contradictions, 249 groupes de signatures potentiellement liés dont 21 groupes inter-portails. **0 annonce fraîche/active/physiquement dédupliquée/publiée certifiée.** Le gate CI est clos pour le ledger six inputs. Le prochain lot introduit Sarouty sans l'ajouter au registre avant un vrai artifact cinq champs fiable.
+
+
+## Certification ledger sept artifacts — 2026-10-10
+
+- **Run 38046725132 ✅ / artifact 11668090501** : 10 913 observations, 9 056 IDs source distincts (Mubawab 6 466, Domio 2 590), **7 042 cartes 5 champs cohérentes**, 5 conflits bloqués, 249 groupes de signatures identiques dont 21 groupes inter-portails suspects ; 0 certifié fraîcheur/activité/disponibilité/physiquement unique/publié.
+- Septième source artifact ajouté sans contradiction : Mubawab deux nouvelles villes Meknès/Oujda, run `38046549259`, artifact `11666594461`, SHA256 JSONL `475deddb0c54c3c26441c709b34d558e78bf1d42c1c4d05e6260951f966b6d4f`, **63 IDs nouveaux** et **47 avec 5 champs** face au registre six-inputs.
+- Le ledger de sept inputs est testé et épinglé ; ses nouveaux chiffres remplacent ceux de six inputs pour ce chantier.
+- Next : petit lot de huit pages régionales publiques (Fès/Kénitra/Tétouan/Nador × vente/location), n'ajouter ses résultats qu'après rapport exact source. Ne pas appeler les URLs « annonces fraîches » sans contrôle vendeur/date/doublons/droits.

@@ -383,3 +383,16 @@ Workflow Ledger élargi aux **six artifacts et SHA256 JSONL épinglés**. **Gate
 - Le champ `five_field_observed` ne représente que URL+ville+quartier+prix+surface observés dans **la même carte**. On ne promet **ni statut commercial actif, ni fraîcheur, ni droits de republication**.
 
 **Next exact :** lire la CI GitHub exact-HEAD du pilote Sarouty, corriger toute régression, analyser artifact (sources fiables vs liens seulement), puis sélectionner les portails/chemins au meilleur rendement nouveaux IDs fiables par requête. Pour atteindre 200K actifs et distincts en 24 h, l'accès à un inventaire public suffisant et autorisé demeure une incertitude majeure.
+
+
+## Sprint public national — état exact 10 octobre 2026, après sept artifacts
+
+**CI de réconciliation sept inputs** [38046725132](https://github.com/hraaaaf/Akarfinder/actions/runs/38046725132) ✅, artifact **11668090501** (JSON inspecté + empreintes source épinglées) : **10 913 cartes observées**, **9 056 IDs source distincts**, **7 042 cartes avec cinq champs cohérents** ; Mubawab **6 466 IDs / 5 808 cinq champs**, Domio **2 590 / 1 234** ; cinq conflits de valeurs, 21 groupes de signatures suspectes inter-portails, aucune fusion physique. **0 fraîcheur commerciale / actifs / uniques physiques certifiés et 0 publication DB**.
+
+**Expansion de Meknès et Oujda** [38046549259](https://github.com/hraaaaf/Akarfinder/actions/runs/38046549259) ✅, artifact **11666594461**, 2/2 pages catégorie HTTP200, **63 IDs** tous absents du ledger six-artifacts, **47 cinq champs**. La découverte automatique de liens inter-villes par ces deux catégories est **0** ; ne pas en inventer. Ce lot a été intégré au ledger sept-artifacts.
+
+**Sarouty V1** [38046267620](https://github.com/hraaaaf/Akarfinder/actions/runs/38046267620) ✅ en exécution de CI, artifact **11667599714** : 6/6 catégories publiques HTTP200, robots vérifié, minimum 10 secondes entre les requêtes, **1 fiche correctement isolée par le parseur**, **0 cinq champs**, parmi de nombreux liens candidats. **Le rendement n'est pas encore productif**. Correction à préparer après sonde structurelle DOM ; ne pas mélanger des cartes ni compter les liens comme des annonces.
+
+**Lot indépendant en lancement** : `scripts/data/mubawab-regional-categories-v1.mjs`, 8 pages catégories exactes publiées par Mubawab : **Fès, Kénitra, Tétouan, Nador**, appartements à vendre et à louer. Les slugs Fès/Kénitra/Tétouan sont accentués (`%C3%`) ; les anciens essais de noms ASCII avaient pu échouer. Robots fail-closed, aucun détail individuel, max 8 pages, comparaison IDs source avec artifact ledger sept-inputs `11668090501` et SHA256 `f36cb89a26399ded9f640b4072f83037b8a9c4911b3c8978cfe5269a3ccbe4f0`. **Ne pas anticiper les IDs nouveaux avant la CI.**
+
+**Next exact** : lire les tests et artifact du run régional huit catégories ; intégrer seulement ses IDs prouvés au ledger ; puis qualifier fraîcheur et disponibilité et dédup physique sur échantillons, et tester de nouvelles routes de ville/type réellement publiées. Aucun contournement de protection, DB, merge ou déploiement Vercel.
