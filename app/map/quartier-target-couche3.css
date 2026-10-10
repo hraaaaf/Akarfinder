@@ -1140,3 +1140,35 @@
     padding: 8px 10px;
   }
 }
+
+
+/* LOT3 — street-level landmark hierarchy.
+ * Same verified geographic anchors; typography only. A flagship landmark
+ * should remain readable after a real native map zoom, including on phones.
+ */
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-zoom-tier="street"]
+  .maplibre-spike-target-landmark-label[data-landmark-tier="flagship"] {
+  min-height: 36px;
+  padding: 5px 9px 5px 5px !important;
+  border: 1px solid rgb(11 99 206 / .42) !important;
+  border-radius: 11px !important;
+  background: rgb(255 255 255 / .98) !important;
+  box-shadow: 0 5px 18px rgb(7 27 51 / .17) !important;
+  color: #071B33 !important;
+  font-size: 11px !important;
+  font-weight: 850 !important;
+  line-height: 1.25 !important;
+}
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-zoom-tier="street"]
+  .maplibre-spike-target-landmark-label[data-landmark-tier="flagship"] > i {
+  background: #071B33 !important;
+  width: 25px !important;
+  height: 25px !important;
+  border-radius: 8px !important;
+}
+@media (max-width: 430px) {
+  [data-akar-quartier-target="maarif-couche1"][data-maplibre-zoom-tier="street"]
+    .maplibre-spike-target-landmark-label[data-landmark-tier="flagship"] {
+    font-size: 10.5px !important;
+  }
+}
