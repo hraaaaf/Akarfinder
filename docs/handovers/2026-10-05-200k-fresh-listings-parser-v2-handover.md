@@ -408,3 +408,20 @@ Workflow Ledger élargi aux **six artifacts et SHA256 JSONL épinglés**. **Gate
 - Sarouty : le canari six villes `38046267620` a vu six pages mais uniquement **1 carte correctement isolée, 0 cinq champs** ; le diagnostic DOM `38047091171` s'est arrêté **sans accès catégories** parce que robots.txt n'était pas disponible. Pas de bypass ni nouvelle tentative identique.
 
 **Next exact** : lire CI huit artifacts, puis prioriser la découverte de nouveaux types de biens et villes via les liens publics existants. En parallèle, définir la preuve de disponibilité commerciale, fraîcheur et dédup physique avant publication. **Les 200K actifs et uniques ne sont pas atteints.**
+
+
+## Huit artifacts certifiés et matrice régionale (2026-10-10)
+
+**Validation exacte** : CI `38047261522` ✅, artifact `11668296196`, SHA256 du JSONL `10edd629babc1364b3925b314170e17d0c416dd8c5943eb2d540b662705e5113`.
+- **11 139 cartes observées**, **9 282 IDs source distincts** : Mubawab 6 692 + Domio 2 590.
+- **7 238 IDs avec les cinq champs présents et cohérents** : Mubawab 6 004, Domio 1 234 ; cinq lignes en conflit de preuves, aucune promotion.
+- **254 groupes suspects de mêmes signatures** (ville/quartier/prix/surface), dont 21 inter-portails. Ce ne sont PAS des biens physiquement dédupliqués.
+- **0 annonces certifiées commercialement disponibles, fraîches ou publiables**, zéro lecture/écriture DB, zéro Vercel, aucun merge.
+
+**Pivot géographique productif confirmé** : huit catégories Fès/Kénitra/Tétouan/Nador (vente/location appartements) `38046976281` ✅, 226 ID tous inconnus du ledger sept-lots, 196 avec cinq champs.
+
+**Prochaine expérience indépendante** : `scripts/data/mubawab-regional-types-40-v1.mjs`, tests et workflow `.github/workflows/mubawab-regional-types-40.yml` : 4 nouvelles villes × 5 types de biens utilisés sur les 50 catégories déjà testées × vente/location = **40 URLs candidates** ; chaque 404/route invalide est rejeté, pas annoncé productif sans HTTP200 ; robots et pacing, arrêt 403/429, zéro détail. Comparaison par ID exact avec ledger huit-lots immuable, checksum ci-dessus.
+
+**Sarouty** : première extraction six catégories `38046267620` ✅ mais **1 seule carte source réellement isolée, 0 cinq champs** ; sonde de DOM `38047091171` fail-closed sur robots non disponible, 0 catégorie interrogée. Pause de la source tant que robots/access ne répondent pas correctement ; pas de contournement.
+
+**Next exact** : lire run régional 40 et son artifact, mesurer l'incrément net face aux 9 282 IDs, corriger uniquement les défauts prouvés, intégrer au ledger si vert ; ensuite réduire les inconnues de disponibilité commerciale/fraîcheur par audit ciblé et dédup physique conforme. **Objectif 200K en 24h non certifié et non garanti.**

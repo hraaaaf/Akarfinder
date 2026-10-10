@@ -65,3 +65,20 @@ Deux pages de catégorie Mubawab ont été effectivement vérifiées publiquemen
 **Lot préparé à certifier** : `scripts/data/mubawab-new-city-frontier-v1.mjs` + tests + `.github/workflows/mubawab-new-city-frontier-30.yml` : partir uniquement de ces deux URLs réelles ; découvrir uniquement les liens catégorie `/fr/st/<ville>/appartements-a-vendre` effectivement présents, 30 requêtes maximum, hôte officiel, robots fail-closed, pauses 1,8s, stop 403/429, H1 ville obligatoire pour chaque page, aucune fiche détail. Dédup par ID `a:id` et contrôle net-new face au registre six artifacts avec SHA256 JSONL `bfe706a803abedab31a971ea336ee1a0931d26740911810fab0a1aba94aaa7cf`.
 
 **Next exact** : tests CI et artifact des catégories nouvellement découvertes ; comparer le rendement marginal des IDs sources (neufs *pour le registre*, pas publiés récemment) par page ; rejeter les catégories sans preuve de ville, sans robots ou à rendement nul, puis étendre prudemment les URLs publiques réellement observées. Le délai utilisateur de 24h demeure un objectif non garanti, et non une confirmation de 200K disponibles.
+
+
+## Huit artifacts certifiés et matrice régionale (2026-10-10)
+
+**Validation exacte** : CI `38047261522` ✅, artifact `11668296196`, SHA256 du JSONL `10edd629babc1364b3925b314170e17d0c416dd8c5943eb2d540b662705e5113`.
+- **11 139 cartes observées**, **9 282 IDs source distincts** : Mubawab 6 692 + Domio 2 590.
+- **7 238 IDs avec les cinq champs présents et cohérents** : Mubawab 6 004, Domio 1 234 ; cinq lignes en conflit de preuves, aucune promotion.
+- **254 groupes suspects de mêmes signatures** (ville/quartier/prix/surface), dont 21 inter-portails. Ce ne sont PAS des biens physiquement dédupliqués.
+- **0 annonces certifiées commercialement disponibles, fraîches ou publiables**, zéro lecture/écriture DB, zéro Vercel, aucun merge.
+
+**Pivot géographique productif confirmé** : huit catégories Fès/Kénitra/Tétouan/Nador (vente/location appartements) `38046976281` ✅, 226 ID tous inconnus du ledger sept-lots, 196 avec cinq champs.
+
+**Prochaine expérience indépendante** : `scripts/data/mubawab-regional-types-40-v1.mjs`, tests et workflow `.github/workflows/mubawab-regional-types-40.yml` : 4 nouvelles villes × 5 types de biens utilisés sur les 50 catégories déjà testées × vente/location = **40 URLs candidates** ; chaque 404/route invalide est rejeté, pas annoncé productif sans HTTP200 ; robots et pacing, arrêt 403/429, zéro détail. Comparaison par ID exact avec ledger huit-lots immuable, checksum ci-dessus.
+
+**Sarouty** : première extraction six catégories `38046267620` ✅ mais **1 seule carte source réellement isolée, 0 cinq champs** ; sonde de DOM `38047091171` fail-closed sur robots non disponible, 0 catégorie interrogée. Pause de la source tant que robots/access ne répondent pas correctement ; pas de contournement.
+
+**Next exact** : lire run régional 40 et son artifact, mesurer l'incrément net face aux 9 282 IDs, corriger uniquement les défauts prouvés, intégrer au ledger si vert ; ensuite réduire les inconnues de disponibilité commerciale/fraîcheur par audit ciblé et dédup physique conforme. **Objectif 200K en 24h non certifié et non garanti.**
