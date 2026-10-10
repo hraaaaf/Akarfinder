@@ -1015,3 +1015,19 @@
   outline: 3px solid #0B63CE;
   outline-offset: 2px;
 }
+
+
+/* LOT1 V1.4.1 — map layer control must be tappable on tablet too.
+ * At 768–1023px the responsive sheet begins halfway down the viewport;
+ * the inherited "top:43%" places the fourth control underneath that sheet.
+ * Keep the entire two-mode stack in the unobstructed top-right map area.
+ */
+@media (max-width: 1023px) {
+  [data-akar-quartier-target="maarif-couche1"][data-maplibre-quarter-style="flat-living-v02"]
+    .maplibre-spike-controls {
+    top: 112px !important;
+    right: 12px !important;
+    bottom: auto !important;
+    transform: none !important;
+  }
+}
