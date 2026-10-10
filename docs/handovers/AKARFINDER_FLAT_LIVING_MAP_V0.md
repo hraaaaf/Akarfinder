@@ -269,3 +269,23 @@ Obtain new exact-head Rue CI result. If green, retrieve its screenshot and confi
 **Code commit** `9e90ca9c2f6a1f0acb5a30621103a30860b00c52`; **test commit** `de37b31e49485770d6e0ebc87f5d15b00afaf8cd`. Exact-head CI started: Casablanca AFTER `37972416040`, POI `37972415994`, Rue `37972415930`, multicity `37972415895`, all queued when first checked.
 
 **Status:** implementation done; **no AFTER or score improvement certified yet**. Next: check real CI logs and retrieve artifacts; if failing, fix; compare identical mobile 390/430 and desktop 768/1280 BEFORE→AFTER; score visual change (gate >=8.5) and seek owner review. Draft PR #1108; no merge, Vercel, DB mutation.
+
+
+## Nouveau TARGET canonique V1 — 2026-10-10
+
+**Décision Product Owner:** mockup direction trois états « Vue quartier / Limites administratives / Zoom rue + repères » approuvé. Cible **≥9,5/10** par revue visuelle humaine. Ne pas assimiler le mockup illustratif à une géométrie cartographique certifiée.
+
+**Notion SPEC CANONIQUE:** [Vivre Ici — Quartier pilote Maârif | SPEC CANONIQUE V1](https://app.notion.com/p/3f577c66336281d79f5dc46467df5f65?pvs=204), sous AkarFinder Command Center. Cette page dirige les lots écrans et garde les contrats visuels/fonctionnels.
+
+**Principes verrouillés:**
+1. **Vue quartier** par défaut, point central sourcé + halo de vie contextuel bleu C2 `#0B63CE` à bord doux, **jamais une frontière affirmée**, C1 navy `#071B33` dans labels/structure ; tuiles/empreintes 2D réalistes et légères, parcs verts.
+2. **Limites administratives** uniquement sur demande avec la géométrie `MAARIF_TARGET_PILOT_BOUNDARY` (OSM relation 2801474, `shadow-reference`, `reviewed:false`), `fitBounds` + label arrondissement et retour. **Ne pas appeler cela limite du quartier central**.
+3. **Zoom rue + repères** : vrais POI, labels sans collision, reveal progressif, pas d’extrusion.
+4. Cible quatre viewports 390×844 / 430×932 / 768×900 / 1280×900, BEFORE→AFTER→tests réels→score. Pas de merge, DB write, Vercel avant autorisation.
+
+**LOT 1 / premier pas implémenté :**
+- `components/map/MapLibreNeighborhood3D.tsx` : les 4 couches du polygone administratif sont réellement `visibility:none` à l’ouverture, puis `visible` seulement après clic « Voir limites » ; retour les masque. Effet sur vraie carte, pas seulement les boutons.
+- Glow autour du centre sourcé, couleur C2, `circle-blur:0.86`, opacity .22 et rayon 153px mobile / 195px desktop ; enveloppe de repères sourcés très discrète `fill-opacity:.018`, sans ligne ni fausse frontière.
+- `scripts/audits/carte-lot8-casablanca-visual-after.mjs` : marqueur sémantique `branded-soft-focus-no-border` en vue défaut, bascule et retour déjà certifiés par interaction Playwright.
+- Commits produit `9fe5e2e28d58b04017c6f630d26ee548b2186637` et audit `334b2134bd7a360e2f636774af965e5feb0398cb`. CI exact-head lancée `38042617725` Casablanca, `38042617723` POI, `38042617799` Rue, `38042617761` multicity ; non conclu au premier contrôle.
+- **NEXT EXACT** : vérifier 4 runs, récupérer BEFORE/AFTER mêmes viewports, juger si halo clairement perceptible sans fausse limite ; si pas suffisant modifier/récertifier ; mettre à jour page Notion & preuves. Lot 1 non clos.
