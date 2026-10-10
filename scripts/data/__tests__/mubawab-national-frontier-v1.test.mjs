@@ -72,3 +72,21 @@ test("the seed queue is bounded and does not accidentally include individual ads
  assert.equal(seeds.length,52);assert.equal(seeds.filter(x=>x.kind==="cc").length,2);
  assert.equal(seeds.some(x=>x.url.includes("/fr/a/")),false);
 });
+
+test("district category shards are source-authorized URL candidates, never fabricated",()=>{
+ const cd="https://www.mubawab.ma/fr/cd/casablanca/hay-mohammadi/immobilier-a-vendre";
+ const sd="https://www.mubawab.ma/fr/sd/casablanca/maarif/appartements-a-louer";
+ const d=categoryFromUrl(cd);
+ assert.equal(d?.kind,"cd");assert.equal(d?.city,"Casablanca");
+ assert.equal(d?.district_slug,"hay-mohammadi");
+ assert.equal(categoryFromUrl(sd)?.kind,"sd");
+ assert.equal(categoryFromUrl("https://www.mubawab.ma/fr/cd/casablanca/unknown/immobilier-a-vendre:p:2"),null);
+ assert.equal(categoryFromUrl("https://www.mubawab.ma/fr/cd/casablanca/unknown/immobilier-a-vendre?n=1"),null);
+});
+test("frontier expands real linked neighborhood categories while excluding unrelated city",()=>{
+ const root="https://www.mubawab.ma/fr/ct/casablanca/immobilier-a-vendre";
+ const html='<a href="/fr/cd/casablanca/hay-mohammadi/immobilier-a-vendre">Hay</a><a href="/fr/cd/casablanca/benjdia/immobilier-a-vendre">Benjdia</a><a href="/fr/a/8123456/foo">detail</a>';
+ const r=extractFrontierCategories(html,root);
+ assert.equal(r.length,2);
+ assert.ok(r.every(x=>x.kind==="cd"&&x.city==="Casablanca"));
+});

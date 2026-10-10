@@ -6,7 +6,7 @@ import {accumulateCards,categoryPlan} from "./mubawab-card-scale-v1.mjs";
 
 const UA="AkarFinderNationalFrontierV1/1.0 (+https://akarfinder.ma)";
 const HOSTS=new Set(["www.mubawab.ma","mubawab.ma"]);
-const TYPES=new Set(["ct","st"]);
+const TYPES=new Set(["ct","st","cd","sd"]);
 const ROOTS=[
  "https://www.mubawab.ma/fr/cc/immobilier-a-vendre",
  "https://www.mubawab.ma/fr/cc/immobilier-a-louer"
@@ -27,13 +27,16 @@ export function categoryFromUrl(raw,base=ROOTS[0]){
   const u=new URL(raw,base);
   if(u.protocol!=="https:"||!HOSTS.has(u.hostname.toLowerCase())||u.search||u.hash||u.pathname.includes(":"))return null;
   let path=decodeURIComponent(u.pathname).replace(/\/+$/,"");
-  if(!/^\/fr\/(?:st|ct)\/[^/]+\/[^/]+$/i.test(path))return null;
+  if(!/^\/fr\/(?:st|ct)\/[^/]+\/[^/]+$/i.test(path)&&!/^\/fr\/(?:cd|sd)\/[^/]+\/[^/]+\/[^/]+$/i.test(path))return null;
   const parts=path.split("/");
   const kind=parts[2].toLowerCase(),city=regularCity(parts[3]);
   if(!TYPES.has(kind)||!city)return null;
-  if(!/(?:-a-vendre|-a-louer|immobilier-a-vendre|immobilier-a-louer)$/i.test(parts[4]))return null;
+  const category=parts[parts.length-1];
+  if(!/(?:-a-vendre|-a-louer|immobilier-a-vendre|immobilier-a-louer)$/i.test(category))return null;
+  const district=(kind==="cd"||kind==="sd")?parts[4]:null;
+  if(district&&!/^[\p{L}\p{M}0-9-]{2,65}$/u.test(district))return null;
   u.pathname=path;u.hash="";u.search="";
-  return {url:u.href,city,kind,city_slug:parts[3],category:parts[4]};
+  return {url:u.href,city,kind,city_slug:parts[3],category,district_slug:district};
  }catch{return null;}
 }
 
