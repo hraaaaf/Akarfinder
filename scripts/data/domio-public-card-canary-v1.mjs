@@ -3,7 +3,15 @@ import {probeDomioCardHtml} from "./domio-result-card-probe-v1.mjs";
 import {robotsAllowed} from "./mubawab-result-cards-v1.mjs";
 
 const UA="AkarFinderDomioCardPilot/1.0 (+https://akarfinder.ma)";
-const urls=["https://domio.ma/fr/appartement/vendre/casablanca","https://domio.ma/fr/appartement/vendre/marrakech"];
+const urls=[
+ "https://domio.ma/fr/appartement/vendre/casablanca",
+ "https://domio.ma/fr/appartement/vendre/marrakech",
+ "https://domio.ma/fr/appartement/vendre/rabat",
+ "https://domio.ma/fr/appartement/louer/casablanca",
+ "https://domio.ma/fr/appartement/louer/rabat",
+ "https://domio.ma/fr/appartement/vendre/tanger/300000",
+ "https://domio.ma/fr/appartement/vendre/agadir/1000000"
+];
 const prefix=process.env.OUTPUT_PREFIX||"domio-card-canary";
 const outcomes=[],cards=new Map();
 let robots=null,halted=null,requests=0;

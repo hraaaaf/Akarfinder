@@ -12,7 +12,7 @@ export function domioDetail(raw,base){
  }catch{return null;}
 }
 
-const cityName=slug=>({"casablanca":"Casablanca","marrakech":"Marrakech"}[slug]||null);
+const cityName=slug=>({"casablanca":"Casablanca","marrakech":"Marrakech","rabat":"Rabat","tanger":"Tanger","agadir":"Agadir"}[slug]||null);
 function districtEvidence(t,city){
  if(!city)return {district:null,conflict:false,explicitCity:false};
  const norm=x=>x.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
@@ -20,7 +20,7 @@ function districtEvidence(t,city){
  const found=new Map();
  // Require explicit "City, District 57.0 m²" inside the same card;
  // never infer a district from the card title or the category route alone.
- const re=/\b(Casablanca|Marrakech)\s*,\s*([\p{L}][\p{L}\p{M}'’\- ]{1,50}?)\s+(\d{1,6}(?:[.,]\d+)?)\s*m(?:²|2)(?=\s|$)/giu;
+ const re=/\b(Casablanca|Marrakech|Rabat|Tanger|Agadir)\s*,\s*([\p{L}][\p{L}\p{M}'’\- ]{1,50}?)\s+(\d{1,6}(?:[.,]\d+)?)\s*m(?:²|2)(?=\s|$)/giu;
  let explicitCity=false;
  for(const m of normalized.matchAll(re)){
   if(norm(m[1])!==norm(city))continue;
@@ -43,7 +43,9 @@ export function probeDomioCardHtml(html,pageUrl){
     .map(m=>Number(m[1].replace(/[ .]/g,""))).filter(x=>x>=100&&x<=1e10);
   const surfaces=[...t.matchAll(/(\d{1,6}(?:[.,]\d+)?)\s*m(?:²|2)(?!\s*\/)/giu)]
     .map(m=>Number(m[1].replace(",","."))).filter(x=>x>=5&&x<=100000);
-  const price=[...new Set(amounts)],area=[...new Set(surfaces)];
+  const validPrice=amounts.filter(value=>detail.transaction==="louer"?(value>=500&&value<=250000):(value>=50000&&value<=100000000));
+  const validArea=surfaces.filter(value=>detail.property_type==="appartement"?value<=3000:value<=100000);
+  const price=[...new Set(validPrice)],area=[...new Set(validArea)];
   const candidateCity=cityName(detail.city_slug);
   const location=districtEvidence(t,candidateCity);
   seen.add(detail.identity);

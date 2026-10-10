@@ -53,3 +53,22 @@ test("rejects a different municipality as a Casablanca neighborhood",()=>{
  const r=probeDomioCardHtml(html,page);
  assert.equal(r.rows[0].district,null);
 });
+
+test("Rabat and Tanger explicit geographic cards",()=>{
+ const rb='<a href="/fr/appartement/louer/rabat/13001/riad">Louer 9 300 DH Rabat, Agdal 125.0 m²</a>';
+ const ta='<a href="/fr/appartement/vendre/tanger/13002/appart">Acheter 2 600 000 DH Tanger, Centre Ville 168.0 m²</a>';
+ const r=probeDomioCardHtml(rb+ta,"https://domio.ma/fr/appartement/louer/rabat");
+ assert.equal(r.rows.find(x=>x.identity==="domio:13001")?.district,"Agdal");
+ assert.equal(r.rows.find(x=>x.identity==="domio:13002")?.district,"Centre Ville");
+ assert.equal(r.five_field_present,2);
+});
+test("rejects sale-price and apartment-surface outliers",()=>{
+ const html='<a href="/fr/appartement/vendre/tanger/12345/appart">Acheter 1 000 011 000 DH Tanger, Malabata 22582690.0 m²</a>';
+ const r=probeDomioCardHtml(html,"https://domio.ma/fr/appartement/vendre/tanger/300000");
+ assert.equal(r.rows[0].price_mad,null);assert.equal(r.rows[0].surface_m2,null);assert.equal(r.five_field_present,false);
+});
+test("small rent valid; tiny sale price rejected",()=>{
+ const html='<a href="/fr/appartement/louer/rabat/13003/flat">Louer 7 000 DH Rabat, Hay Riad 59.0 m²</a><a href="/fr/appartement/vendre/rabat/13004/flat">Acheter 1 500 DH Rabat, Agdal 150.0 m²</a>';
+ const r=probeDomioCardHtml(html,"https://domio.ma/fr/appartement/louer/rabat");
+ assert.equal(r.rows[0].price_mad,7000);assert.equal(r.rows[1].price_mad,null);
+});
