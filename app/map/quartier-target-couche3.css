@@ -992,3 +992,26 @@
     font-size: 10px !important;
   }
 }
+
+
+/* Approved TARGET / LOT1 V1.4 — the real OSM arrondissement remains one tap away
+ * via the map's Layers control. The default quartier view is map-first;
+ * return navigation appears only while the admin contour is displayed.
+ */
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-quarter-style="flat-living-v02"]
+  .maplibre-spike-controls .maplibre-spike-admin-layer-toggle {
+  width: 44px !important;
+  height: 44px !important;
+  min-width: 44px;
+  min-height: 44px;
+  color: #0B63CE !important;
+  background: rgb(249 252 255 / .97) !important;
+  border: 1px solid rgb(11 99 206 / .22) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 6px 18px rgb(7 27 51 / .12) !important;
+}
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-quarter-style="flat-living-v02"]
+  .maplibre-spike-controls .maplibre-spike-admin-layer-toggle:focus-visible {
+  outline: 3px solid #0B63CE;
+  outline-offset: 2px;
+}
