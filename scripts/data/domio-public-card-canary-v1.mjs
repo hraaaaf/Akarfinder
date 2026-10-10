@@ -28,7 +28,7 @@ for(const url of urls){
   const html=await r.text();
   if(Buffer.byteLength(html,"utf8")>3000000){outcomes.push({url,state:"oversized"});continue;}
   const info=probeDomioCardHtml(html,r.url);
-  outcomes.push({url,state:"observed",unique_cards:info.unique_identity_count,price_present:info.price_present,surface_present:info.surface_present});
+  outcomes.push({url,state:"observed",unique_cards:info.unique_identity_count,price_present:info.price_present,surface_present:info.surface_present,district_present:info.district_present,five_field_present:info.five_field_present});
   for(const row of info.rows)if(!cards.has(row.identity))cards.set(row.identity,row);
  }catch{outcomes.push({url,state:"fetch_error"});}
 }
@@ -37,6 +37,7 @@ const report={
  schema_version:"AKARFINDER_DOMIO_CARD_CANARY_V1",semantics:"unverified_public_dom_card_probe",
  robots_checked:!!robots,requested_pages:urls.length,category_requests:requests,observed_pages:outcomes.filter(x=>x.state==="observed").length,
  unique_detail_ids:rows.length,price_present:rows.filter(x=>x.price_mad!==null).length,surface_present:rows.filter(x=>x.surface_m2!==null).length,
+ district_present:rows.filter(x=>x.district!==null).length,five_field_present:rows.filter(x=>x.five_field_present===true).length,
  halted_reason:halted,pages:outcomes,database_access:0,database_writes:0,
  note:"No detail requests; no district or freshness certified, fail closed on robots denial or 403/429."
 };

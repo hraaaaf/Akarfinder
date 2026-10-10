@@ -61,3 +61,13 @@ Run `38015494577` **completed/success**, HEAD `4b7c5cb73cc59d13237e78e8eac81dce8
 **Second portail, lot borné distinct** : adaptateur canari Domio prêt, deux pages publiques Casablanca/Marrakech maximum, récupération préalable de `robots.txt` avec arrêt fail-closed ; analyse strictement de la carte source et aucun visite de fiche ni promotion. La démonstration du flux dépendra d'une CI source réelle, pas d'une supposition depuis une page visible par navigateur.
 
 **Next exact** : inspecter CI Domio ; si permise et productive, certifier le parsing du quartier et les liens réels avant expansion. Si robots ou anti-bot refusent, mettre la source en quarantaine et explorer les autres portails explicitement accessibles. En parallèle, qualification datation/activité, dédup inter-ID/inter-sources et validation de droits avant activation.
+
+
+## Canari DOMIO en direct — 2026-10-10
+
+**Run** [38015856380](https://github.com/hraaaaf/Akarfinder/actions/runs/38015856380) **completed/success** sur HEAD `53b2c3fa77bf0c6d0653a0d0fb7cf9971b72afa1`; artifact **11656755461** inspecté.
+- Robots.txt lu avec succès ; **2/2 pages catégories HTTP 200**, **48/48 IDs Domio distincts** ; 0 page détail et 0 DB.
+- **46/48 surfaces détectées** ; **34/48 prix détectés**. Casablanca **24 cartes / 23 prix / 24 surfaces** ; Marrakech **24 cartes / 11 prix / 22 surfaces**. Quartier **non certifié** au moment de ce premier run.
+- Le canari prouve qu'il existe une seconde source de cartes publiques techniquement accessible. La possibilité de réutiliser ces données en production, la fraîcheur et l'unicité inter-source restent **non certifiées**.
+- Nouveau parseur DOM conservateur proposé : localisation uniquement si texte explicite `Casablanca, Ain Diab 57.0 m²` ou `Marrakech, X n m²` trouvé **dans le même lien de carte** ; conflits quartier refusés ; aucun quartier hérité de la catégorie seule. Tests positifs/négatifs ajoutés ; pas de promotion automatique.
+- **Next exact** : certifier cette extraction géographique sur les 2 mêmes pages avec le nouveau parseur, puis auditer quelques vraies fiches Domio seulement si lien/identité source le permettent, en respectant robots. En parallèle développer le graphe de catégories Mubawab via des chemins observés plutôt que devinés.

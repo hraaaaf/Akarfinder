@@ -17,3 +17,27 @@ test("price and surface ambiguity never become false single values",()=>{
  const html='<a href="/fr/appartement/vendre/casablanca/12010/appartement">900 000 DH 1 000 000 DH 80 m² 90 m²</a>';
  const r=probeDomioCardHtml(html,page);assert.equal(r.rows[0].price_mad,null);assert.equal(r.rows[0].surface_m2,null);
 });
+
+test("explicit city and district beside surface within same Domio card",()=>{
+ const html='<a href="/fr/appartement/vendre/casablanca/12010/appartement">Appartement Acheter 2 288 000 DH ≈ 211 852 € 16 000 DH/m² Bel appartement Casablanca, Ain Diab 143.0 m²</a>';
+ const r=probeDomioCardHtml(html,page);
+ assert.equal(r.unique_identity_count,1);
+ assert.equal(r.rows[0].city,"Casablanca");
+ assert.equal(r.rows[0].district,"Ain Diab");
+ assert.equal(r.rows[0].price_mad,2288000);
+ assert.equal(r.rows[0].surface_m2,143);
+ assert.equal(r.rows[0].five_field_present,true);
+});
+test("no invented district from city-only text",()=>{
+ const html='<a href="/fr/appartement/vendre/casablanca/12010/appartement">Appartement Acheter 950 000 DH Casablanca 80.0 m²</a>';
+ const r=probeDomioCardHtml(html,page);
+ assert.equal(r.rows[0].district,null);
+ assert.equal(r.rows[0].five_field_present,false);
+});
+test("rejects inconsistent district mentions in one anchor",()=>{
+ const html='<a href="/fr/appartement/vendre/casablanca/12010/appartement">Acheter 950 000 DH Casablanca, Racine 80.0 m² Casablanca, Maarif 80.0 m²</a>';
+ const r=probeDomioCardHtml(html,page);
+ assert.equal(r.rows[0].district,null);
+ assert.equal(r.rows[0].district_ambiguous,true);
+ assert.equal(r.rows[0].five_field_present,false);
+});

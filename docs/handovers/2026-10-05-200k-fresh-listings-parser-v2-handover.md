@@ -267,3 +267,12 @@ Le **scraping des pages de résultats** est la priorité produit demandée, et n
 **Lot suivant indépendant en préparation** : tester deux pages catégories Domio par canari robots fail-closed, sans recourir aux pages individuelles ni prétendre 5/5. Avito reste en état sitemap 403, non contourné.
 
 **Next exact** : lire le run Domio et son artifact ; si source productive, demander une preuve DOM du quartier et des cinq champs ; sinon classer la source bloquée et adapter une autre source. Pour Mubawab, continuer un audit de disponibilité/horodatage + doublons physiques sans déclarer les 1 140 cartes comme 1 140 annonces fraîches.
+
+
+## Deuxième source — Domio public card canary vérifié (2026-10-10)
+
+Run `38015856380` ✅, artifact `11656755461`, HEAD `53b2c3fa77bf0c6d0653a0d0fb7cf9971b72afa1` : robots autorise les 2 pages de catégories, **48 IDs source Domio distincts**, **46 surfaces**, **34 prix**, 0 détail, 0 DB. **Ne pas déclarer 5/5 ni fraîcheur** sans corroboration du quartier et de l'activité.
+
+Suite immédiate préparée : extraction du quartier exclusivement depuis l'étiquette explicite `ville, quartier, n m²` dans le lien du bien (pas de déduction du slug de la ville ni des cartes voisines), avec tests de refus des lieux absents ou contradictoires. Nouveau canari à mesurer, puis sourcing multi-portails et contrôle des duplications.
+
+Mubawab reste au dernier certificat 50 pages `38014920725` : 1 316 IDs uniques, 1 140 cartes 5 champs observés, 806 nouveaux ID par rapport au gel, et audit indépendant de 30/30 identités `38015494577` avec 26/26 superficies corroborées. Aucune certification de fraîcheur commerciale.
