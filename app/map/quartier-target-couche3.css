@@ -938,3 +938,57 @@
 [data-maarif-rebuild="true"] .maarif-target-rail .maarif-target-local-icon {
   color: #0B63CE !important;
 }
+
+
+/* V0.9 — verified OSM arrondissement outline action, clearly NOT a quartier border.
+ * Premium admin map context: navy ink / blue focus / precise semantic label.
+ */
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-boundary-render="administrative-navy-blue-relief"]
+  .maplibre-spike-boundary-action {
+  top: 120px !important;
+  left: 18px !important;
+  right: auto !important;
+  bottom: auto !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto !important;
+  max-width: min(285px, calc(100% - 36px)) !important;
+  min-height: 36px !important;
+  padding: 9px 13px !important;
+  border: 1px solid rgb(11 99 206 / .44) !important;
+  border-radius: 12px !important;
+  background: rgb(240 247 255 / .97) !important;
+  box-shadow: 0 5px 18px rgb(7 27 51 / .13) !important;
+  color: #071B33 !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  line-height: 1.2 !important;
+  text-align: center;
+  white-space: normal !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  cursor: pointer;
+}
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-boundary-render="administrative-navy-blue-relief"]
+  .maplibre-spike-boundary-action[aria-pressed="true"] {
+  border-color: rgb(7 27 51 / .58) !important;
+  background: #071B33 !important;
+  color: #fff !important;
+}
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-boundary-render="administrative-navy-blue-relief"]
+  .maplibre-spike-boundary-action:focus-visible {
+  outline: 3px solid #0B63CE;
+  outline-offset: 2px;
+}
+@media (max-width: 1023px) {
+  [data-akar-quartier-target="maarif-couche1"][data-maplibre-boundary-render="administrative-navy-blue-relief"]
+    .maplibre-spike-boundary-action {
+    top: 113px !important;
+    left: 101px !important;
+    max-width: calc(100% - 114px) !important;
+    min-height: 40px !important;
+    padding: 7px 9px !important;
+    font-size: 10px !important;
+  }
+}
