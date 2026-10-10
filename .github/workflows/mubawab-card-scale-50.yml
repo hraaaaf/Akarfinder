@@ -1,0 +1,46 @@
+name: AkarFinder Card Acquisition 50 Pilot
+on:
+  push:
+    branches:
+      - data/200k-fresh-parser-v2
+    paths:
+      - '.github/workflows/mubawab-card-scale-50.yml'
+      - 'scripts/data/mubawab-card-scale-v1.mjs'
+      - 'scripts/data/__tests__/mubawab-card-scale-v1.test.mjs'
+      - 'scripts/data/mubawab-result-cards-v1.mjs'
+permissions:
+  contents: read
+jobs:
+  bounded-acquisition:
+    runs-on: ubuntu-latest
+    timeout-minutes: 17
+    env:
+      OUTPUT_PREFIX: mubawab-mass-acquisition-50
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Regression tests
+        run: |
+          node --test scripts/data/__tests__/mubawab-result-cards-v1.test.mjs
+          node --test scripts/data/__tests__/mubawab-card-scale-v1.test.mjs
+          node --test scripts/acquisition/__tests__/mubawab-exhaustive-enumerator.test.mjs
+      - name: Crawl at most 50 public category pages
+        run: node scripts/data/mubawab-card-scale-v1.mjs
+      - name: Assert read-only and evidence contract
+        run: |
+          test "$(jq -r '.target_page_count' mubawab-mass-acquisition-50.json)" = "50"
+          test "$(jq -r '.database_access' mubawab-mass-acquisition-50.json)" = "0"
+          test "$(jq -r '.database_writes' mubawab-mass-acquisition-50.json)" = "0"
+          node -e "const fs=require('fs'); const x=JSON.parse(fs.readFileSync('mubawab-mass-acquisition-50.json')); const r=fs.readFileSync('mubawab-mass-acquisition-50.jsonl','utf8').split(/\r?\n/).filter(Boolean).map(JSON.parse); if(x.request_count>50||r.length!==x.unique_source_id_count||new Set(r.map(z=>z.identity)).size!==r.length||r.some(z=>z.freshness_certified||z.active_detail_verified||z.cross_source_deduplicated)||r.filter(z=>z.five_field_observed).length!==x.unique_five_field_observed)process.exit(1)"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mubawab-mass-acquisition-50
+          path: |
+            mubawab-mass-acquisition-50.json
+            mubawab-mass-acquisition-50.jsonl
+          retention-days: 14

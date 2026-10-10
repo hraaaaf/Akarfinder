@@ -1,0 +1,111 @@
+name: Mubawab 200K Five-Field Certification
+
+on:
+  push:
+    branches:
+      - data/200k-fresh-parser-v2
+    paths:
+      - '.github/workflows/mubawab-200k-certify-one-shot.yml'
+      - 'scripts/data/github-freeze-full-field-recovery.ts'
+      - 'scripts/data/mubawab-location-v2.ts'
+      - 'scripts/data/__tests__/mubawab-location-v2.test.ts'
+      - 'scripts/data/mubawab-strict-surface-v2.ts'
+      - 'scripts/data/__tests__/mubawab-strict-surface-v2.test.ts'
+      - 'scripts/data/mubawab-url-surface-v2.ts'
+      - 'scripts/data/__tests__/mubawab-url-surface-v2.test.ts'
+      - 'scripts/data/mubawab-surface-dom-probe-v2.ts'
+      - 'scripts/data/__tests__/mubawab-surface-dom-probe-v2.test.ts'
+      - 'scripts/data/mubawab-location-dom-probe-v2.ts'
+      - 'scripts/data/__tests__/mubawab-location-dom-probe-v2.test.ts'
+      - 'scripts/data/mubawab-description-district-v2.ts'
+      - 'scripts/data/__tests__/mubawab-description-district-v2.test.ts'
+      - 'scripts/data/mubawab-navigation-v2.mjs'
+      - 'scripts/data/__tests__/mubawab-navigation-v2.test.mjs'
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  mubawab-five-field-300:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SOURCE_NAME: 'mubawab.ma'
+      SAMPLE_SIZE: '300'
+      FETCH_DELAY_MS: '250'
+      SURFACE_DOM_PROBE: '1'
+      LOCATION_DOM_PROBE: '1'
+      OUTPUT_PREFIX: 'mubawab-five-field-300'
+      FREEZE_JSONL_GZ: '.tmp/freeze/clean-corpus-v4.11-core.jsonl.gz'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Regression tests
+        run: |
+          npx tsx --test scripts/scrapers/__tests__/p8a-detail.test.ts
+          npx tsx --test scripts/scrapers/__tests__/price-detail-v2-safety.test.ts
+          npx tsx --test scripts/data/__tests__/mubawab-location-v2.test.ts
+          npx tsx --test scripts/data/__tests__/mubawab-strict-surface-v2.test.ts
+          npx tsx --test scripts/data/__tests__/mubawab-url-surface-v2.test.ts
+          npx tsx --test scripts/data/__tests__/mubawab-surface-dom-probe-v2.test.ts
+          npx tsx --test scripts/data/__tests__/mubawab-location-dom-probe-v2.test.ts
+          npx tsx --test scripts/data/__tests__/mubawab-description-district-v2.test.ts
+          node --test scripts/data/__tests__/mubawab-navigation-v2.test.mjs
+      - name: Fetch canonical freeze
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/freeze
+          curl --fail --location --retry 3 \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/10910779576/zip" \
+            -o .tmp/freeze.zip
+          unzip -q .tmp/freeze.zip -d .tmp/freeze
+          echo "e7ac4bca2db34ad334ed7234cfb8be93fc9baca68a9694f5024989b5cc2bb953  .tmp/freeze/clean-corpus-v4.11-core.jsonl.gz" | sha256sum -c -
+      - name: Run Mubawab strict full-field pilot
+        run: npx tsx scripts/data/github-freeze-full-field-recovery.ts
+      - name: Certify read-only and five-field coverage
+        run: |
+          set -euo pipefail
+          test "$(jq -r '.database_access' mubawab-five-field-300.json)" = "0"
+          test "$(jq -r '.database_writes' mubawab-five-field-300.json)" = "0"
+          node - <<'NODE'
+          const fs=require('fs');
+          const rows=fs.readFileSync('mubawab-five-field-300.jsonl','utf8').trim().split(/\r?\n/).filter(Boolean).map(JSON.parse);
+          const fields=['city','district','price_mad','surface_m2'];
+          if(rows.some(r=>r.http_status===200&&(r.navigation?.identity_preserved===true)!==(r.source_identity_preserved===true))){throw new Error('Navigation identity differs from primary-detail identity gate');}
+          if(rows.some(r=>r.primary_detail_verified!==true&&(r.candidates||[]).some(c=>c.state==='write_safe'))){throw new Error('Unverified primary detail retained write_safe candidate');}
+          const counts=Object.fromEntries(fields.map(f=>[f,0]));
+          let complete=0,primaryDetailVerified=0,sourceIdentityPreserved=0,surfaceEvidenceConflicts=0;
+          for(const row of rows){
+            if(row.source_identity_preserved===true) sourceIdentityPreserved++;
+            if(row.surface_evidence_conflict===true) surfaceEvidenceConflicts++;
+            if(row.primary_detail_verified!==true)continue;
+            primaryDetailVerified++;
+            const certified=new Set((row.candidates||[]).filter(c=>c.state==='write_safe' && c.value!==null && c.value!==undefined && c.value!=='').map(c=>c.field));
+            for(const f of fields) if(certified.has(f)) counts[f]++;
+            if(fields.every(f=>certified.has(f))) complete++;
+          }
+          const out={schema_version:'AKARFINDER_MUBAWAB_FIVE_FIELD_CERTIFIED_V3_PRIMARY_DETAIL',semantics:'write_safe_only_primary_detail_identity_preserved',sample_size:rows.length,url:rows.length,source_identity_preserved:sourceIdentityPreserved,primary_detail_verified:primaryDetailVerified,surface_evidence_conflicts:surfaceEvidenceConflicts,...counts,five_field_complete:complete,five_field_complete_pct:rows.length?Number((complete*100/rows.length).toFixed(2)):0};
+          fs.writeFileSync('mubawab-five-field-coverage.json',JSON.stringify(out,null,2)+'\n');
+          console.log(JSON.stringify(out,null,2));
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mubawab-five-field-300
+          path: |
+            mubawab-five-field-300.json
+            mubawab-five-field-300.jsonl
+            mubawab-five-field-coverage.json
+            mubawab-five-field-300-surface-dom-probe.json
+            mubawab-five-field-300-location-dom-probe.json
+            mubawab-five-field-300-navigation-diagnostics.json
+          retention-days: 14

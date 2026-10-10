@@ -1,0 +1,10 @@
+import fs from "node:fs/promises";
+import {auditDomioDetails} from "./domio-card-detail-audit-v1.mjs";
+const input=process.env.CARDS_JSONL||".tmp/domio-cards/domio-card-canary.jsonl";
+const out=process.env.OUTPUT_PREFIX||"domio-detail-audit-12";
+const rows=(await fs.readFile(input,"utf8")).split(/\r?\n/).filter(Boolean).map(JSON.parse);
+const {report,observations}=await auditDomioDetails({rows,max:12});
+await fs.writeFile(out+".json",JSON.stringify(report,null,2)+"\n");
+await fs.writeFile(out+".jsonl",observations.map(x=>JSON.stringify(x)).join("\n")+(observations.length?"\n":""));
+console.log(JSON.stringify(report,null,2));
+if(report.halted_reason||report.detail_requests===0)process.exitCode=2;

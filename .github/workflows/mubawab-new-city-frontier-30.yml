@@ -1,0 +1,62 @@
+name: AkarFinder Mubawab National New-City Frontier
+on:
+  push:
+    branches:
+      - data/200k-fresh-parser-v2
+    paths:
+      - '.github/workflows/mubawab-new-city-frontier-30.yml'
+      - 'scripts/data/mubawab-new-city-frontier-v1.mjs'
+      - 'scripts/data/__tests__/mubawab-new-city-frontier-v1.test.mjs'
+permissions:
+  contents: read
+  actions: read
+jobs:
+  linked-city-category-frontier:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      OUTPUT_PREFIX: mubawab-new-city-frontier
+      CARD_LEDGER_JSONL: .tmp/baseline/acquisition-ledger-v1.jsonl
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Offline source route, identity and robots tests
+        run: |
+          node --test scripts/data/__tests__/mubawab-new-city-frontier-v1.test.mjs
+          node --test scripts/data/__tests__/mubawab-result-cards-v1.test.mjs
+      - name: Download immutable six-source reconciliation baseline
+        uses: actions/download-artifact@v4
+        with:
+          name: card-acquisition-ledger-v1
+          run-id: 38044964671
+          github-token: ${{ github.token }}
+          path: .tmp/baseline
+      - name: Verify exact immutable baseline SHA256
+        run: |
+          echo "bfe706a803abedab31a971ea336ee1a0931d26740911810fab0a1aba94aaa7cf  .tmp/baseline/acquisition-ledger-v1.jsonl" | sha256sum -c -
+      - name: Explore up to 30 verified public linked city categories
+        run: node scripts/data/mubawab-new-city-frontier-v1.mjs
+      - name: Verify source-only IDs, no commercial certification
+        if: success()
+        run: |
+          jq -e '.requested_max_pages == 30 and .category_requests <= 30 and .database_access == 0 and .database_writes == 0 and .net_new_source_ids_vs_ledger != null' mubawab-new-city-frontier.json
+          node - <<'NODE'
+          const fs=require("fs");
+          const report=JSON.parse(fs.readFileSync("mubawab-new-city-frontier.json","utf8"));
+          const rows=fs.readFileSync("mubawab-new-city-frontier.jsonl","utf8").split(/\r?\n/).filter(Boolean).map(JSON.parse);
+          if(rows.length!==report.source_ids||new Set(rows.map(r=>r.identity)).size!==rows.length)throw Error("identity duplication");
+          if(rows.some(r=>r.freshness_certified||r.active_detail_verified||r.cross_source_deduplicated))throw Error("unverified field promotion");
+          if(rows.filter(r=>r.five_field_observed).length!==report.five_field_observed)throw Error("five field count mismatch");
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mubawab-new-city-frontier-30
+          path: |
+            mubawab-new-city-frontier.json
+            mubawab-new-city-frontier.jsonl
+          retention-days: 14

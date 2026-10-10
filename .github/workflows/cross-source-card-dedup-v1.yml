@@ -1,0 +1,48 @@
+name: AkarFinder Cross Source Card Dedup Offline Audit
+on:
+  push:
+    branches:
+      - data/200k-fresh-parser-v2
+    paths:
+      - '.github/workflows/cross-source-card-dedup-v1.yml'
+      - 'scripts/data/cross-source-card-dedup-v1.mjs'
+      - 'scripts/data/__tests__/cross-source-card-dedup-v1.test.mjs'
+      - 'scripts/data/cross-source-card-dedup-run-v1.mjs'
+permissions:
+  contents: read
+  actions: read
+jobs:
+  offline-cross-source-signatures:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    env:
+      INPUT_DIR: .tmp/card-dedup
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Dedup conservative tests
+        run: node --test scripts/data/__tests__/cross-source-card-dedup-v1.test.mjs
+      - uses: actions/download-artifact@v4
+        with:
+          name: mubawab-mass-acquisition-50
+          run-id: 38014920725
+          github-token: ${{ github.token }}
+          path: .tmp/card-dedup
+      - uses: actions/download-artifact@v4
+        with:
+          name: domio-public-card-canary
+          run-id: 38042386411
+          github-token: ${{ github.token }}
+          path: .tmp/card-dedup
+      - name: Compare signatures offline — no site requests or DB
+        run: node scripts/data/cross-source-card-dedup-run-v1.mjs
+      - name: Validate zero auto merges and no writes
+        run: jq -e '.mubawab_complete_cards == 1140 and .domio_complete_cards == 70 and .verified_duplicates == 0 and .database_writes == 0' cross-source-card-dedup-v1.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cross-source-card-dedup-v1
+          path: cross-source-card-dedup-v1.json
+          retention-days: 14

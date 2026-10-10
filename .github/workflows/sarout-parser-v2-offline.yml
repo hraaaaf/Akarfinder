@@ -1,0 +1,79 @@
+name: Sarout Parser V2 Offline Certification
+
+# Push-only: no PR is required, so the separately human-gated Neon PR workflow
+# cannot be triggered by this source certification.
+on:
+  push:
+    branches:
+      - data/200k-fresh-parser-v2
+    paths:
+      - 'scripts/data/sarout-url-parser-v2.mjs'
+      - 'scripts/data/__tests__/sarout-url-parser-v2.test.mjs'
+      - 'scripts/data/sarout-freeze-adapter-v2.mjs'
+      - '.github/workflows/sarout-parser-v2-offline.yml'
+  pull_request:
+    paths:
+      - 'scripts/data/sarout-url-parser-v2.mjs'
+      - 'scripts/data/__tests__/sarout-url-parser-v2.test.mjs'
+      - 'scripts/data/sarout-freeze-adapter-v2.mjs'
+      - '.github/workflows/sarout-parser-v2-offline.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sarout-parser-v2-offline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Test Sarout URL parser
+        run: node --test scripts/data/__tests__/sarout-url-parser-v2.test.mjs
+      - name: Fetch canonical freeze
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/freeze
+          curl --fail --location --retry 3 \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/10910779576/zip" \
+            -o .tmp/freeze.zip
+          unzip -q .tmp/freeze.zip -d .tmp/freeze
+          echo "e7ac4bca2db34ad334ed7234cfb8be93fc9baca68a9694f5024989b5cc2bb953  .tmp/freeze/clean-corpus-v4.11-core.jsonl.gz" | sha256sum -c -
+      - name: Build and validate Sarout adapter
+        env:
+          FREEZE_JSONL_GZ: .tmp/freeze/clean-corpus-v4.11-core.jsonl.gz
+          OUTPUT_DIR: data/recovery/sarout-v2
+        run: node scripts/data/sarout-freeze-adapter-v2.mjs
+      - name: Assert certified baseline
+        run: |
+          set -euo pipefail
+          s=data/recovery/sarout-v2/sarout-freeze-summary.json
+          test "$(jq -r '.raw_url_rows' "$s")" = "44130"
+          test "$(jq -r '.unique_identities' "$s")" = "22065"
+          test "$(jq -r '.bilingual_exact_pairs' "$s")" = "22065"
+          test "$(jq -r '.slug_pair_conflicts' "$s")" = "0"
+          test "$(jq -r '.deep_http_200_rows' "$s")" = "493"
+          test "$(jq -r '.deep_field_coverage.district' "$s")" = "0"
+          test "$(jq -r '.deep_validation.transaction.match' "$s")" = "484"
+          test "$(jq -r '.deep_validation.transaction.mismatch' "$s")" = "1"
+          test "$(jq -r '.deep_validation.surface.match' "$s")" = "329"
+          test "$(jq -r '.deep_validation.surface.mismatch' "$s")" = "2"
+          test "$(jq -r '.deep_validation.city.match' "$s")" = "395"
+          test "$(jq -r '.deep_validation.city.mismatch' "$s")" = "1"
+          test "$(jq -r '.database_access' "$s")" = "0"
+          test "$(jq -r '.database_writes' "$s")" = "0"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sarout-parser-v2-offline
+          path: data/recovery/sarout-v2/
+          retention-days: 14

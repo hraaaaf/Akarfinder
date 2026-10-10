@@ -1,0 +1,44 @@
+name: AkarFinder Sarouty Public Card Canary
+on:
+  push:
+    branches:
+      - data/200k-fresh-parser-v2
+    paths:
+      - '.github/workflows/sarouty-public-card-canary.yml'
+      - 'scripts/data/sarouty-card-canary-v1.mjs'
+      - 'scripts/data/__tests__/sarouty-card-canary-v1.test.mjs'
+      - 'scripts/data/sarouty-detail-identity-v1.mjs'
+      - 'scripts/data/__tests__/sarouty-detail-identity-v1.test.mjs'
+permissions:
+  contents: read
+jobs:
+  two-public-category-canary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      OUTPUT_PREFIX: sarouty-card-canary
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Offline robots crawl-delay and card scoping regression
+        run: |
+          node --test scripts/data/__tests__/sarouty-card-canary-v1.test.mjs
+          node --test scripts/data/__tests__/sarouty-detail-identity-v1.test.mjs
+      - name: Robots-gated two-page source discovery
+        run: node scripts/data/sarouty-card-canary-v1.mjs
+      - name: Read-only report assertions
+        if: always()
+        run: |
+          if test -f sarouty-card-canary.json; then
+            jq -e '.categories_requested == 2 and .category_requests <= 2 and .database_access == 0 and .database_writes == 0 and .source_ids_certified == 0 and .five_fields_certified == 0 and .publication_count == 0' sarouty-card-canary.json
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sarouty-public-card-canary
+          path: sarouty-card-canary.json
+          retention-days: 14

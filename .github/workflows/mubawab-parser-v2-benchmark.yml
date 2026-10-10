@@ -1,0 +1,98 @@
+name: Mubawab Parser V2 Benchmark
+
+# Push-only by design: this benchmark must never require opening a PR, because
+# the parent recovery branch contains a separately human-gated Neon workflow.
+on:
+  push:
+    branches:
+      - data/200k-fresh-parser-v2
+    paths:
+      - 'scripts/data/mubawab-url-parser-v2.mjs'
+      - 'scripts/data/__tests__/mubawab-url-parser-v2.test.mjs'
+      - 'scripts/data/mubawab-freeze-adapter-v2.mjs'
+      - 'scripts/data/mubawab-live-benchmark-v2.mjs'
+      - '.github/workflows/mubawab-parser-v2-benchmark.yml'
+  pull_request:
+    paths:
+      - 'scripts/data/mubawab-url-parser-v2.mjs'
+      - 'scripts/data/__tests__/mubawab-url-parser-v2.test.mjs'
+      - 'scripts/data/mubawab-freeze-adapter-v2.mjs'
+      - 'scripts/data/mubawab-live-benchmark-v2.mjs'
+      - '.github/workflows/mubawab-parser-v2-benchmark.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mubawab-parser-v2:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Test Mubawab URL parser
+        run: node --test scripts/data/__tests__/mubawab-url-parser-v2.test.mjs
+
+      - name: Fetch canonical 226286-row freeze
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/freeze
+          curl --fail --location --retry 3 \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/10910779576/zip" \
+            -o .tmp/freeze.zip
+          unzip -q .tmp/freeze.zip -d .tmp/freeze
+          echo "e7ac4bca2db34ad334ed7234cfb8be93fc9baca68a9694f5024989b5cc2bb953  .tmp/freeze/clean-corpus-v4.11-core.jsonl.gz" | sha256sum -c -
+
+      - name: Build deduplicated Mubawab fetch plan
+        env:
+          FREEZE_JSONL_GZ: .tmp/freeze/clean-corpus-v4.11-core.jsonl.gz
+          OUTPUT_DIR: data/recovery/mubawab-v2
+        run: node scripts/data/mubawab-freeze-adapter-v2.mjs
+
+      - name: Assert offline identity baseline
+        run: |
+          set -euo pipefail
+          summary=data/recovery/mubawab-v2/mubawab-freeze-summary.json
+          test "$(jq -r '.raw_url_rows' "$summary")" = "82796"
+          test "$(jq -r '.unique_detail_identities' "$summary")" = "74867"
+          test "$(jq -r '.non_listing_route_rows' "$summary")" = "800"
+          test "$(jq -r '.duplicate_historical_url_rows' "$summary")" = "7129"
+          test "$(jq -r '.live_fetch_plan_rows' "$summary")" = "74486"
+          test "$(jq -r '.database_access' "$summary")" = "0"
+          test "$(jq -r '.database_writes' "$summary")" = "0"
+
+      - name: Run bounded live benchmark
+        env:
+          MUBAWAB_FETCH_PLAN: data/recovery/mubawab-v2/mubawab-live-fetch-plan.jsonl
+          OUTPUT_PREFIX: data/recovery/mubawab-v2/mubawab-live-benchmark-v2
+          SAMPLE_SIZE: '100'
+          FETCH_DELAY_MS: '500'
+        run: npx tsx scripts/data/mubawab-live-benchmark-v2.mjs
+
+      - name: Assert live benchmark safety
+        run: |
+          set -euo pipefail
+          summary=data/recovery/mubawab-v2/mubawab-live-benchmark-v2.json
+          test "$(jq -r '.sample_size' "$summary")" = "100"
+          test "$(jq -r '.database_access' "$summary")" = "0"
+          test "$(jq -r '.database_writes' "$summary")" = "0"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mubawab-parser-v2-benchmark
+          path: data/recovery/mubawab-v2/
+          retention-days: 14

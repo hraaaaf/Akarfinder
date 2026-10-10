@@ -1,0 +1,71 @@
+name: AkarFinder Domio Linked Pagination 80
+on:
+  push:
+    branches:
+      - data/200k-fresh-parser-v2
+    paths:
+      - '.github/workflows/domio-linked-pagination-80.yml'
+      - 'scripts/data/domio-linked-pagination-v1.mjs'
+      - 'scripts/data/__tests__/domio-linked-pagination-v1.test.mjs'
+permissions:
+  contents: read
+  actions: read
+jobs:
+  linked-public-pagination:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      OUTPUT_PREFIX: domio-linked-pages-80
+      MAX_PAGES: '80'
+      BASELINE_DOMIO_JSONL: '.tmp/domio-page1/domio-card-canary.jsonl;.tmp/domio-page2/domio-page2-canary.jsonl'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Offline source-link / robots / dedup safety tests
+        run: |
+          node --test scripts/data/__tests__/domio-linked-pagination-v1.test.mjs
+          node --test scripts/data/__tests__/domio-result-card-probe-v1.test.mjs
+      - name: Fetch exact 7-category page-one baseline
+        uses: actions/download-artifact@v4
+        with:
+          name: domio-public-card-canary
+          run-id: 38042386411
+          github-token: ${{ github.token }}
+          path: .tmp/domio-page1
+      - name: Fetch exact 7-category page-two baseline
+        uses: actions/download-artifact@v4
+        with:
+          name: domio-page2-canary
+          run-id: 38042621783
+          github-token: ${{ github.token }}
+          path: .tmp/domio-page2
+      - name: Source-linked pagination only, max 80 read-only pages
+        run: node scripts/data/domio-linked-pagination-v1.mjs
+      - name: Strict output certification gates
+        if: always()
+        run: |
+          test -f domio-linked-pages-80.json
+          jq -e '.max_requests == 80 and .requests <= 80 and .database_access == 0 and .database_writes == 0 and .semantics == "source_linked_pagination_only_no_active_or_freshness_certification"' domio-linked-pages-80.json
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const r=JSON.parse(fs.readFileSync('domio-linked-pages-80.json','utf8'));
+          const rows=fs.readFileSync('domio-linked-pages-80.jsonl','utf8').split(/\r?\n/).filter(Boolean).map(JSON.parse);
+          if(rows.length!==r.distinct_listing_ids)throw Error('unique count mismatch');
+          if(new Set(rows.map(x=>x.identity)).size!==rows.length)throw Error('source ID duplicates');
+          if(rows.filter(x=>x.five_field_present&&!x.cross_page_conflict).length!==r.card_five_fields)throw Error('five field discrepancy');
+          if(rows.some(x=>x.freshness_certified||x.active_detail_verified||x.cross_source_deduplicated))throw Error('unverified promoted');
+          if(r.net_new_ids_vs_page1_page2>rows.length)throw Error('net new impossible');
+          console.log("PAGINATION_READ_ONLY_VERIFIED",rows.length);
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: domio-linked-pages-80
+          path: |
+            domio-linked-pages-80.json
+            domio-linked-pages-80.jsonl
+          retention-days: 14
