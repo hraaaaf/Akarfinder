@@ -1040,8 +1040,8 @@
  */
 @media (min-width: 561px) and (max-width: 1023px) {
   [data-maarif-rebuild="true"] .maarif-target-rail:not([data-sheet-expanded="true"]) {
-    height: min(20svh, 176px) !important;
-    max-height: min(20svh, 176px) !important;
+    height: clamp(136px, 16svh, 146px) !important;
+    max-height: clamp(136px, 16svh, 146px) !important;
     overflow-y: hidden !important;
     border-radius: 20px !important;
     box-shadow: 0 10px 32px rgb(7 27 51 / .16) !important;
