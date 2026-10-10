@@ -1,0 +1,52 @@
+name: AkarFinder Domio 12 Detail Audit
+on:
+  push:
+    branches:
+      - data/200k-fresh-parser-v2
+    paths:
+      - '.github/workflows/domio-card-detail-audit-12.yml'
+      - 'scripts/data/domio-card-detail-audit-v1.mjs'
+      - 'scripts/data/__tests__/domio-card-detail-audit-v1.test.mjs'
+      - 'scripts/data/domio-card-detail-audit-cli-v1.mjs'
+permissions:
+  contents: read
+  actions: read
+jobs:
+  detail-provenance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    env:
+      CARDS_JSONL: .tmp/domio-cards/domio-card-canary.jsonl
+      OUTPUT_PREFIX: domio-detail-audit-12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Source and robots regression suite
+        run: |
+          node --test scripts/data/__tests__/domio-card-detail-audit-v1.test.mjs
+          node --test scripts/data/__tests__/domio-result-card-probe-v1.test.mjs
+      - name: Download immutable Domio 48-card artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: domio-public-card-canary
+          run-id: 38016037724
+          github-token: ${{ github.token }}
+          path: .tmp/domio-cards
+      - name: Bounded 12-property audit
+        run: node scripts/data/domio-card-detail-audit-cli-v1.mjs
+      - name: Verify zero database writes and audit contract
+        run: |
+          jq -e '.detail_requests <= 12 and .database_access == 0 and .database_writes == 0' domio-detail-audit-12.json
+          node -e "const f=require('fs');const rows=f.readFileSync('domio-detail-audit-12.jsonl','utf8').split(/\r?\n/).filter(Boolean).map(JSON.parse);if(rows.some(x=>x.freshness_certified||x.active_sale_verified))process.exit(1)"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: domio-detail-audit-12
+          path: |
+            domio-detail-audit-12.json
+            domio-detail-audit-12.jsonl
+          retention-days: 14

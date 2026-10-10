@@ -41,3 +41,15 @@ test("rejects inconsistent district mentions in one anchor",()=>{
  assert.equal(r.rows[0].district_ambiguous,true);
  assert.equal(r.rows[0].five_field_present,false);
 });
+
+test("rejects contaminated district from real Domio title, not falsely 5/5",()=>{
+ const html='<a href="/fr/appartement/vendre/casablanca/12351/penthouse">PENTHOUSE D\'EXCEPTION À VENDRE – CASABLANCA, QUARTIER GAUTHIER Casablanca 266.0 m² 8 748 000 DH</a>';
+ const r=probeDomioCardHtml(html,page);
+ assert.equal(r.rows[0].district,null);
+ assert.equal(r.rows[0].five_field_present,false);
+});
+test("rejects a different municipality as a Casablanca neighborhood",()=>{
+ const html='<a href="/fr/appartement/vendre/casablanca/10911/maison">Maison à vendre Casablanca, Bouskoura 50.0 m² 420 000 DH</a>';
+ const r=probeDomioCardHtml(html,page);
+ assert.equal(r.rows[0].district,null);
+});

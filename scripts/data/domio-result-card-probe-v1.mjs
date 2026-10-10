@@ -27,6 +27,7 @@ function districtEvidence(t,city){
   explicitCity=true;
   const d=clean(m[2]);
   if(d.length<2||d.length>45||/\b(?:appartement|villa|maison|acheter|louer|prix)\b/i.test(d))continue;
+  if(norm(d).includes(norm(city))||/^(?:quartier\s+)?(?:bouskoura|dar bouazza|mohammedia|nouaceur|temara|sale)$/i.test(norm(d)))continue;
   found.set(norm(d),d);
  }
  return {district:found.size===1?[...found.values()][0]:null,conflict:found.size>1,explicitCity};
