@@ -36,3 +36,15 @@ Total **7 768 observations** ; **6 107 identifiants uniques par source** : Mubaw
 5. **No-go production** : aucune mise en DB, fusion, déploiement Vercel ou affirmation 200K sans vraie certification de fraîcheur / disponibilité / droit de réutilisation / unicité.
 
 Fichier canonique : `docs/handovers/2026-10-05-200k-fresh-listings-parser-v2-handover.md`.
+
+
+## Actualisation 6 artifacts — 10 octobre 2026
+
+Le run GitHub cinq artifacts `38044450856` est **vert** ; son artifact `11666931539` confirme 6 107 IDs par source, 4 385 cinq champs cohérents et 4 conflits. L'ajout du **sixième artifact** `11667246884` (run `38044090021`, **217 catégories Mubawab**, 189 pages valides, 3 082 annonces, 2 790 cartes 5 champs) porte la réconciliation **validée offline** à :
+
+- **10 850 observations**, **8 993 IDs source distincts** (Mubawab 6 403, Domio 2 590).
+- **6 995 cartes 5 champs présentes dans un même bloc et sans contradiction inter-lots** : Mubawab 5 761, Domio 1 234.
+- **5 contradictions** entre observations (4 prix, 1 superficie) rétrogradées en `review`.
+- **249 groupes de signatures** ville/quartier/prix/surface identiques, **543 IDs candidats doublons**, dont **21 groupes inter-portails**. Aucun doublon physique fusionné ni certifié.
+
+Workflow Ledger élargi aux **six artifacts et SHA256 JSONL épinglés**. **Gate : attendre sa CI exact-HEAD** avant de déclarer cette version certifiée GitHub. **0 annonce certifiée fraîche/active/publiable, 0 écriture DB**, aucun merge ni déploiement Vercel. Next exact : lire la CI Ledger six lots et l'artifact ; comparer nouveau stock au goal 200K, prioriser extension source vérifiable et vraie fraîcheur.

@@ -54,7 +54,7 @@ export function probeSaroutyCards(html,pageUrl){
   if(!root.length)continue;
   const text=clean(root.text());
   const hasPrice=/\d[\d\s.,]{2,}\s*(?:DH|MAD)\b/i.test(text);
-  const hasSurface=/\d+(?:[.,]\d+)?\s*m(?:²|2)\b/iu.test(text);
+  const hasSurface=/\d+(?:[.,]\d+)?\s*m(?:²|2)(?=\s|$|[^\p{L}\p{N}_])/iu.test(text);
   if(!hasPrice&&!hasSurface)continue;
   candidates++;
   if(hasPrice)prices++;
