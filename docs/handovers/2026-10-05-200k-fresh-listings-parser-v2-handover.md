@@ -307,3 +307,16 @@ Mubawab reste au dernier certificat 50 pages `38014920725` : 1 316 IDs uniques, 
 **Pagination Domio** : sur le portail public, la page 2 d'une catégorie est accessible via le format `?page=2` (lien de pagination constaté sur Casablanca). Un canari **7 pages numéro 2 maximum**, robots fail-closed, cadence 1,8 s et arrêt 403/429 est préparé, avec déduplication contre le lot sept premières pages. Il ne prétend pas que toutes les catégories disposent d'une page 2 valide ; la réponse/finale seront vérifiées. Pas de fiche individuelle et pas de DB.
 
 **Next exact** : lire le run du canari pagination, analyser chaque page 2 et la croissance marginale unique; si productive, généraliser la pagination uniquement autorisée et découverte depuis les liens publics, avec plafonds de requêtes et contrôle d'identité. Actualité commerciale/dédup physique/inter-portails/droits toujours non validés.
+
+
+## SPRINT 24 H — reconnaissance publique nationale, 2026-10-10
+
+**Demande utilisateur** : 200 000 annonces fraîches, uniques et exploitables sous 24 h via scraping de l'immobilier marocain. **Goal non atteint ni garanti.** La collecte doit rester publique, sans bypass de CAPTCHA/robots/403/429 et sans dissimulation de l'identité du crawler.
+
+**Faisabilité vérifiée** : 200k/24 h = 2,315 annonces valides chaque seconde ; avec 25 cartes par page = au moins 8 000 pages réellement distinctes, davantage avec doublons et champs absents. Les affichages publics Mubawab ≈110k annonces et Domio ≈10,4k ne suffisent pas à prouver un stock de 200k disponibles. Source de preuve du marché et limites : `docs/data/AKARFINDER_200K_24H_SPRINT_2026-10-10.md`.
+
+**Preuves produit** : Mubawab 50 pages `38014920725` ✅ : 1316 IDs, 1140 5-champs, 806 nouveaux ID gel ; audit 30/30 identités `38015494577` ✅. Domio 7 pages `38042386411` ✅ : 168 ID, 70 5-champs observés ; audit détail `38042128852` ✅ : 12/12 prix/surface/ID concordants et dates publiées. Non certification d'activité commerciale ni de dédup physique.
+
+**Nouvel effort immédiatement exécutable** : `scripts/data/mubawab-national-frontier-v1.mjs` + tests + workflow `.github/workflows/mubawab-national-frontier-100.yml`. Départ de 2 pages `cc` nationales (découverte uniquement, sans ville inventée) et 50 catégories prouvées, expansion à 100 requêtes max depuis liens de ville/type réellement présents dans le HTML. Chemins colon/paramètres exclus ; robots fail-closed, UA transparent et cadence >1,75 s; IDs source dédupliqués, delta contre 50 pages immuables. Pas de détail, pas d'accès DB, pas de Vercel ni merge.
+
+**Next exact** : lire CI exact HEAD et artifact Frontier100 ; si échoue, corriger ; si vert mesurer net-nouveaux ID par requête et couverture réelle vs total affiché ; puis adapter la stratégie nationale aux autres portails autorisés et à la pagination source vérifiée, audit de disponibilité et dédup avant promotion. Ne pas appeler 200k 'atteint' sans preuve.
