@@ -1139,16 +1139,16 @@ export function MapLibreNeighborhood3D({
         layout: { visibility: administrativeBoundsVisible ? "none" : "visible" },
         paint: {
           "heatmap-weight": ["coalesce", ["get", "sourceWeight"], 0.92],
-          "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 12, 0.9, 14.5, 1.2, 17, 1.0],
-          "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 12, 64, 14.5, 135, 17, 180],
-          "heatmap-opacity": 0.90,
+          "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 12, 1.0, 14.5, 1.35, 17, 1.0],
+          "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 12, 72, 14.5, 158, 17, 185],
+          "heatmap-opacity": 0.94,
           "heatmap-color": ["interpolate", ["linear"], ["heatmap-density"],
             0, "rgba(11,99,206,0)",
-            0.14, "rgba(11,99,206,0.025)",
-            0.32, "rgba(11,99,206,0.11)",
-            0.60, "rgba(11,99,206,0.19)",
-            0.85, "rgba(11,99,206,0.23)",
-            1, "rgba(11,99,206,0.25)"],
+            0.14, "rgba(11,99,206,0.085)",
+            0.32, "rgba(11,99,206,0.22)",
+            0.60, "rgba(11,99,206,0.32)",
+            0.85, "rgba(11,99,206,0.40)",
+            1, "rgba(11,99,206,0.44)"],
         },
       } as any, FOCUS_GLOW_LAYER_ID);
       map.addLayer({
@@ -1292,7 +1292,7 @@ export function MapLibreNeighborhood3D({
       data-maplibre-context-label-policy={isMaarifTargetPilot ? "suppressed-at-quarter-zoom" : "default"}
       data-maplibre-boundary-render={isMaarifTargetPilot && boundaryGeometry ? "administrative-navy-blue-relief" : "default"}
        data-maplibre-administrative-view={isMaarifTargetPilot && administrativeBoundsVisible ? "arrondissement" : "quartier-context"}
-       data-maplibre-context-visual={isMaarifTargetPilot ? "sourced-organic-heatglow-no-border" : "default"}
+       data-maplibre-context-visual={isMaarifTargetPilot ? "sourced-organic-heatglow-v13-no-border" : "default"}
        data-maplibre-context-spot-policy={isMaarifTargetPilot ? "verified-nearby-point-glows-no-boundary" : "default"}
       data-maplibre-context-state={contextState}
       data-maplibre-anchor-count={context?.anchor_count ?? 0}
