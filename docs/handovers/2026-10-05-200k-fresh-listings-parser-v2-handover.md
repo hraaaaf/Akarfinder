@@ -285,3 +285,11 @@ Mubawab reste au dernier certificat 50 pages `38014920725` : 1 316 IDs uniques, 
 **Domio source #2** `38016037724` ✅, artifact `11656231723`: robots vérifié, **2/2 catégories**, **48 IDs**, 34 prix, 46 surfaces, 22 quartiers explicites, **15 cartes 5/5** ; comparaison gel : **14 nouveaux IDs**, dont 5 cinq champs. Chiffres de **cartes observées** seulement, aucune nouvelle annonce fraîche certifiée. Avito sitemap 403/0 source non exploitable sans nouveau canal autorisé.
 
 **Prochaine action** : étendre Domio prudemment via routes robots vérifiées ; contrôles de détail ciblés, disponibilité réelle/horodatage, déduplication physique intra/inter-portails, revue conformité avant toute activation. Aucun accès/écriture DB, aucun merge ni déploiement Vercel.
+
+
+## Contrôle anti-faux-quartier Domio du 10 octobre 2026 (09h)
+
+- Run `38041999664` ✅, artifact `11665937766` analysé : **48 IDs**, 34 prix, 46 superficies, **20 quartiers explicitement acceptés** et **13/48 cinq champs présents**. L'ancien 15/48 incluait 2 fausses localisations : la carte `domio:12351` contenait « QUARTIER GAUTHIER Casablanca » et `domio:11156` attribuait Bouskoura à Casablanca. Le filtre conservateur les a rétrogradées. Aucun scraping de détail ni DB sur ce run.
+- Audit de détail Domio `38041999729` ❌ **tests seulement**, zéro requête détail : le texte de balises HTML adjacentes était concaténé par Cheerio, empêchant la preuve `Référence DOM-n`. Correction : joindre les nœuds texte avec une séparation explicite ; workflow pointe désormais vers l'artifact corrigé `11665937766` (run `38041999664`).
+- Ce sont des **champs observés**, ni fraîcheur commerciale ni déduplication physique ni droits de publication prouvés.
+- Next exact : retester le contrat DOM, si vert inspecter le nouvel artifact 12 détails, puis avancer le graphe de catégories Domio accessibles.

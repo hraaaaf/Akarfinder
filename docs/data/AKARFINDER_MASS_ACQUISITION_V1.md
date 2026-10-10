@@ -84,3 +84,11 @@ Run `38016037724` **success** sur HEAD `f59a7984477e30202c8f7b3482fc8489163cebec
 - Poursuite rentable : passer Domio à un lot borné par villes/transactions **dont la route HTTP200 et robots est démontrée**, puis un audit de 10-20 vraies fiches sources ; ne compter comme fraîches que les vérifiées.
 
 **Repères preuve** : Mubawab run `38014920725` ✅ 1316 IDs/1140 cartes cinq champs/806 IDs nouveaux gel, détail run `38015494577` ✅ 30/30 ID primaire et 26/26 surfaces confirmées. Aucun merge, Vercel ni DB.
+
+
+## Contrôle anti-faux-quartier Domio du 10 octobre 2026 (09h)
+
+- Run `38041999664` ✅, artifact `11665937766` analysé : **48 IDs**, 34 prix, 46 superficies, **20 quartiers explicitement acceptés** et **13/48 cinq champs présents**. L'ancien 15/48 incluait 2 fausses localisations : la carte `domio:12351` contenait « QUARTIER GAUTHIER Casablanca » et `domio:11156` attribuait Bouskoura à Casablanca. Le filtre conservateur les a rétrogradées. Aucun scraping de détail ni DB sur ce run.
+- Audit de détail Domio `38041999729` ❌ **tests seulement**, zéro requête détail : le texte de balises HTML adjacentes était concaténé par Cheerio, empêchant la preuve `Référence DOM-n`. Correction : joindre les nœuds texte avec une séparation explicite ; workflow pointe désormais vers l'artifact corrigé `11665937766` (run `38041999664`).
+- Ce sont des **champs observés**, ni fraîcheur commerciale ni déduplication physique ni droits de publication prouvés.
+- Next exact : retester le contrat DOM, si vert inspecter le nouvel artifact 12 détails, puis avancer le graphe de catégories Domio accessibles.

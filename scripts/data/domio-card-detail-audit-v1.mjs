@@ -15,7 +15,7 @@ export function domioDetailIdentity(url){
 export function inspectDomioDetail(html,requestedUrl,finalUrl,row,status=200){
  const expected=row.identity;
  const stable=domioDetailIdentity(requestedUrl)===expected&&domioDetailIdentity(finalUrl)===expected;
- const $=load(html),title=clean($("h1").first().text()),body=clean($("body").text());
+ const $=load(html),title=clean($("h1").first().text()),body=clean($("body").find("*").contents().toArray().filter(n=>n.type==="text").map(n=>n.data||"").join(" "));
  const id=expected.replace(/^domio:/,"");
  const reference=/^\d+$/.test(id)&&new RegExp("\\bDOM-"+id+"\\b","i").test(body);
  const primary=stable&&status===200&&title.length>=3&&title.length<160&&reference;

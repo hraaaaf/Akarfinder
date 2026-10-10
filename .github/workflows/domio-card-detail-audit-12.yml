@@ -33,7 +33,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: domio-public-card-canary
-          run-id: 38016037724
+          run-id: 38041999664
           github-token: ${{ github.token }}
           path: .tmp/domio-cards
       - name: Bounded 12-property audit
