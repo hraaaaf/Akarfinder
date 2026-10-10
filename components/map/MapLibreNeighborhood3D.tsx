@@ -1412,6 +1412,15 @@ export function MapLibreNeighborhood3D({
         </button>
       ) : null}
 
+      {isMaarifTargetPilot && boundaryGeometry && administrativeBoundsVisible ? (
+        <div className="maplibre-spike-admin-disclosure" data-maplibre-admin-disclosure="arrondissement-osm" role="note"
+          aria-label="Nature de la limite affichée">
+          <strong>Arrondissement Maârif</strong>
+          <span>Limite administrative OSM</span>
+          <small>Ne délimite pas le quartier central</small>
+        </div>
+      ) : null}
+
       <div className="maplibre-spike-controls" aria-label="Contrôles de la carte">
         <button type="button" className="maplibre-spike-control-primary" onClick={restoreCamera} aria-label="Recentrer sur le quartier"><LocateFixed size={18} /></button>
         <button type="button" onClick={() => changeZoom(0.75)} aria-label="Zoomer"><Plus size={19} /></button>
