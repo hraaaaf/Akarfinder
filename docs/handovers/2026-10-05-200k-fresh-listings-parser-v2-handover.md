@@ -329,3 +329,17 @@ Mubawab reste au dernier certificat 50 pages `38014920725` : 1 316 IDs uniques, 
 - **Total observé, pas comptage production** : 1 316 IDs Mubawab + 335 IDs Domio = **1 651 identifiants propres aux sources** ; 1 140 + 126 = **1 266 cartes 5 champs présentes**. Ce ne sont pas nécessairement 1 651 biens physiquement uniques, frais ou disponibles. DB 0 lecture/écriture, Vercel aucun, merge aucun.
 - **Nouvel effort parallèle** introduit au commit d0ff59b8676ad3e172d81b2ec20069fad60f9d04 : Frontier100 sur des catégories nationales Mubawab publiquement liées, run 38042868091 en cours au contrôle. Aucun rendement anticipé.
 - **Next exact** : lire artifact Frontier100, comparer nouveaux IDs par catégorie/requête, arrêter les catégories à rendement nul ; qualifier disponibilité réelle + dédup physique + droits avant publication et avant tout objectif 200k.
+
+
+## Sprint 24 h — Frontier Mubawab + Domio 70 pages + reprises (10 octobre 2026)
+
+**Preuves vérifiées** :
+- Mubawab national `38042868091` ✅ (artifact `11665954208`) : 62 pages réellement observées, **1 320 IDs**, **199 IDs absents du pilote 50**, **169 nouveaux avec 5 champs**. Reconnaissance supplémentaire `38043182237` ✅ (artifact `11666264583`) : 62 pages, 1 321 IDs, **200** absents du pilote, **169** cinq champs. L'exploration de catégories `cd/sd` liées n'a pas accru sensiblement la couverture.
+- Domio pagination source `38043204045` ✅ (artifact `11666149822`) : **70 pages publiques**, **1 663 IDs distincts**, **745 cartes avec 5 champs observés**, **1 328 IDs non vus dans les 14 premières pages**, dont **619** avec 5 champs. 0 erreurs robots, 0 DB, aucune fiche individuelle pendant le crawl. Quatre catégories affichent une suite au-delà de la page 12 ; les autres s'arrêtent à page 10, 10 et 2. Les chiffres **ne démontrent pas l'activité commerciale**.
+- Dédup candidat offline `38042808384` ✅ : une paire **a:8431161 vs domio:12374** partage ville/quartier/prix/surface (Rabat Agdal 8 000 DH, 80 m²), **suspect seulement**, non fusionnée. Ne pas prétendre aucun doublon inter-sites.
+- Mubawab pages quartiers candidates dérivées des libellés présents dans les vraies cartes, puis **contrôle exact de H1 + URL + quartier dans chaque carte** : `scripts/data/mubawab-district-derived-shards-v1.mjs`, run `38043539778` en cours au dernier contrôle (pas de volume anticipé).
+- Domio **prochain sous-lot** `scripts/data/domio-pagination-resume-v1.mjs` : source immuable 70 pages, relire la page12 des 4 catégories avec lien Next déjà prouvé, puis suivre uniquement les liens de pages suivantes, max 64 requêtes et 12 pages supplémentaires par catégorie, zéro DB, filtres doublons. Workflow `.github/workflows/domio-pagination-resume-after-12.yml` en cours de lancement.
+
+**Définition du Goal** : 200 000 **biens physiquement uniques, frais, encore disponibles et 5/5** ne sont PAS atteints ; une nouvelle identité relative à notre archive n'est PAS une preuve de fraîcheur. Les 1 321 et 1 663 IDs sont des identités distinctes **dans leurs portails respectifs**, pas un nombre national net certifié.
+
+**Next exact** : lire les runs exacts des quartiers Mubawab et de la reprise Domio ; mesurer l'incrément marginal versus artifacts, corriger erreurs ; élargir uniquement routes publiquement déclarées et permises ; tester activité/âge/date et doublons physiques par échantillons ; verrouiller un classement frais+unique+5 champs avant toute insertion production.

@@ -43,3 +43,12 @@ Un gain de pages ne prouve pas 200 000 annonces actives. Toute déclaration de s
 **Pré-requis** : robots respectés, conditions de réutilisation vérifiées, vie privée CNDP 09-08, pas de déploiement Vercel ni écriture de DB sans gate explicite. Sources de règles : https://www.rfc-editor.org/rfc/rfc9309.html ; https://doc.scrapy.org/en/latest/topics/autothrottle.html ; https://www.cndp.ma/faq/ ; https://www.cndp.ma/conditions/.
 
 **Next exact** : lire le run exact du frontier 100 → corriger toute erreur → inspecter delta réel + découvertes → adapter au deuxième portail et à des pages paginées réellement permises → qualifier un échantillon statistiquement utile pour mesurer disponibilité/erreur → dédupliquer inter-sources → décider si objectif 200K réalisable ou limité par inventaire.
+
+
+## Bilan intermédiaire contrôlé — 2026-10-10
+
+- **Mubawab national** `38043182237` ✅ : 62 pages, 1 321 identités de source, **200 nouveaux IDs versus le pilote 50**, **169** nouveaux cinq champs. Source observée, pas fraîche certifiée.
+- **Domio pagination 70** `38043204045` ✅ : 1 663 identités source, 745 cinq champs observés, 1 328 nouveaux vs les 14 premières pages, dont 619 cinq champs. **Quatre catégories continuent après page12** via lien source visible ; reprise strictement liée au HTML source jusqu'à 12 pages de plus, 64 requêtes max.
+- **Candidats duplications** : artifact offline `38042808384` indique une paire Rabat Agdal entre Mubawab et Domio avec même prix/surface, aucune fusion sans preuve.
+- **Lots préparés ou lancés** : `mubawab-district-derived-shards-v1.mjs` sur run `38043539778`, et `domio-pagination-resume-v1.mjs` après le run 70. Stop robots/403/429, pacing, aucune fiche privée ou bypass. Le volume récupéré n'est pas automatiquement un volume d'annonces encore disponibles.
+- **Next exact** : récupérer les runs/artifacts exacts, mesurer nouvelles cartes nettes, diagnostiquer les vrais taux de disponibilité et les doublons, puis adapter d'autres sources permises. Pas de DB, merge ou deploy Vercel.

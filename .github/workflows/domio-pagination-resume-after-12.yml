@@ -1,0 +1,65 @@
+name: AkarFinder Domio Source-linked Resume After Page 12
+on:
+  push:
+    branches:
+      - data/200k-fresh-parser-v2
+    paths:
+      - '.github/workflows/domio-pagination-resume-after-12.yml'
+      - 'scripts/data/domio-pagination-resume-v1.mjs'
+      - 'scripts/data/__tests__/domio-pagination-resume-v1.test.mjs'
+permissions:
+  contents: read
+  actions: read
+jobs:
+  bounded-resume:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PRIOR_REPORT: .tmp/domio-70/domio-linked-pages-80.json
+      PRIOR_ROWS: .tmp/domio-70/domio-linked-pages-80.jsonl
+      OUTPUT_PREFIX: domio-resume-after-page12
+      MAX_REQUESTS: '64'
+      MAX_ADDITIONAL: '12'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Offline source-linked resume and anti-duplication safety tests
+        run: |
+          node --test scripts/data/__tests__/domio-pagination-resume-v1.test.mjs
+          node --test scripts/data/__tests__/domio-linked-pagination-v1.test.mjs
+      - name: Load immutable 70-page Domio run and source IDs
+        uses: actions/download-artifact@v4
+        with:
+          name: domio-linked-pages-80
+          run-id: 38043204045
+          github-token: ${{ github.token }}
+          path: .tmp/domio-70
+      - name: Resume four evidenced page 12 Next links, hard limit 64
+        run: node scripts/data/domio-pagination-resume-v1.mjs
+      - name: Prove read-only incremental output
+        if: always()
+        run: |
+          test -f domio-resume-after-page12.json
+          jq -e '.max_requests == 64 and .request_count <= 64 and .database_access == 0 and .database_writes == 0 and .semantics == "new_cards_after_verified_page12_only_not_freshness_certified"' domio-resume-after-page12.json
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const report=JSON.parse(fs.readFileSync('domio-resume-after-page12.json','utf8'));
+          const rows=fs.readFileSync('domio-resume-after-page12.jsonl','utf8').split(/\r?\n/).filter(Boolean).map(JSON.parse);
+          if(rows.length!==report.unique_new_source_ids_vs_prior_70)throw Error('new ID mismatch');
+          if(new Set(rows.map(r=>r.identity)).size!==rows.length)throw Error('dup ID');
+          if(rows.filter(r=>r.five_field_present&&!r.cross_page_conflict).length!==report.new_five_field_cards)throw Error('five-field mismatch');
+          if(rows.some(r=>r.freshness_certified||r.active_detail_verified||r.cross_source_deduplicated))throw Error('unproven promotion');
+          console.log("RESUME_READ_ONLY_VERIFIED",rows.length);
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: domio-resume-after-page12
+          path: |
+            domio-resume-after-page12.json
+            domio-resume-after-page12.jsonl
+          retention-days: 14
