@@ -1252,3 +1252,31 @@
     left: 24px;
   }
 }
+
+
+/* LOT3 — real sourced POIs are selectable without moving their projected
+ * MapLibre coordinates. Preserve the cartographic icon/label hierarchy.
+ */
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-poi-label {
+  appearance: none;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  font-family: inherit;
+  cursor: pointer;
+  pointer-events: auto !important;
+  touch-action: manipulation;
+}
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-poi-label:focus-visible {
+  outline: 3px solid #0B63CE;
+  outline-offset: 3px;
+  border-radius: 12px;
+}
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-poi-label[data-poi-selected="true"] > span {
+  outline: 2px solid #0B63CE;
+  outline-offset: 2px;
+}
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-poi-label[data-poi-selected="true"] .maplibre-spike-poi-glyph {
+  box-shadow: 0 0 0 2px #0B63CE !important;
+}
