@@ -289,3 +289,20 @@ Obtain new exact-head Rue CI result. If green, retrieve its screenshot and confi
 - `scripts/audits/carte-lot8-casablanca-visual-after.mjs` : marqueur sémantique `branded-soft-focus-no-border` en vue défaut, bascule et retour déjà certifiés par interaction Playwright.
 - Commits produit `9fe5e2e28d58b04017c6f630d26ee548b2186637` et audit `334b2134bd7a360e2f636774af965e5feb0398cb`. CI exact-head lancée `38042617725` Casablanca, `38042617723` POI, `38042617799` Rue, `38042617761` multicity ; non conclu au premier contrôle.
 - **NEXT EXACT** : vérifier 4 runs, récupérer BEFORE/AFTER mêmes viewports, juger si halo clairement perceptible sans fausse limite ; si pas suffisant modifier/récertifier ; mettre à jour page Notion & preuves. Lot 1 non clos.
+
+
+## TARGET V1 / LOT 2 certifié / LOT 3 actif — 2026-10-10
+
+**Notion canonique fonctionnel:** [Vivre Ici — Quartier pilote Maârif | SPEC CANONIQUE V1](https://app.notion.com/p/3f577c66336281d79f5dc46467df5f65?pvs=204), directions 3 écrans validées : Vue quartier (halo contextuel sans frontière fictive), Limites administratives (polygone OSM réellement fourni, non limite du quartier central), Zoom rue + repères (sourcés). Target visuel humain **≥9.5/10**, non encore obtenu. PR #1108 reste DRAFT.
+
+**Dernier baseline certifié LOT 2** HEAD `f73303d18f56845c2349b3ab3469f8e7a6f898a2` :
+- Casablanca AFTER `38069780411` success, artifact `11676083358`, rapport ok true 4 viewports ; légende « Arrondissement Maârif / Limite administrative OSM / Ne délimite pas le quartier central » visible à 390×844, 430×932, 768×900, 1280×900. Clic de géométrie opt-in puis retour. Zéro labels parasites en admin. Cartes capturées réellement inspectées.
+- POI AFTER `38069780504` success, artifact `11676028092` ; 4 repères réels après interaction Repères mobile, aucun label tronqué. Rue AFTER `38069780536` success artifact `11676382925`; Multi-city `38069780578` success.
+- Fiche repliée 156.125px mobile390, 160px mobile430, 144px tablet768 ; CTA visible 44px. Géométrie `MAARIF_TARGET_PILOT_BOUNDARY`, relation OSM 2801474, `reviewed:false`, `shadow-reference` ; pas de certification de publication des limites quartier. Les gates métier C7/Market BEFORE/Zillow restent rouges indépendamment.
+
+**Défaut réel LOT 3** : screenshot rue `twin-center-after-390x844.png` montre Twin Center absent du cadre mobile, malgré tier street correct. Rapport `twinCenterLabelVisibleAtStreet:false` mobile 390 et 430 ; vrai POI source présent à 1280. Cause probable : harness centrait et zoomait sur le **centre de la cartouche CSS** (décalée horizontalement), pas le point géographique réel. On ne prétend pas que le produit est corrigé sans AFTER.
+
+**Implémentation LOT 3** :
+- `scripts/audits/carte-rue-proximite-after.mjs` commit `d672b53150cd5dd51e0eb00be1b8468ff46e4fb7` : pan + wheel sur `style.left/top` de l'élément projeté par MapLibre, relativement à la zone carte ; exige `Twin Center` visible après zoom rue sur les 4 viewports.
+- `app/map/quartier-target-couche3.css` commit `fc0d21c4998fdb715daa1f2be5a1ce70eb122429` : taille/contraste de la cartouche flagship au tier `street`, C1 navy et bord fin C2 bleu, sans déplacer l'ancre ni données géographiques.
+- **Validation en cours, pas encore de nouvel AFTER**. Next exact : récupérer CI exact-head `fc0d21c4`, inspecter Rue AFTER et cas Casablanca/POI/multicity. Si Twin Center disparaît encore sur mobile, diagnostiquer coordonnées projetées/placement produit et corriger. Puis comparer au mockup et continuer les lots jusqu'au gate réel. **Aucun merge, Vercel ou write DB**.
