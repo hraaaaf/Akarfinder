@@ -12,7 +12,7 @@ const CITIES=[
  ["casablanca","Casablanca"],["rabat","Rabat"],["marrakech","Marrakech"],
  ["tanger","Tanger"],["agadir","Agadir"]
 ];
-const TYPES=["appartements","maisons","villas","terrains","bureaux"];
+const TYPES=["appartements","maisons","villas-et-maisons-de-luxe","terrains","bureaux-et-commerces"];
 const TRANSACTIONS=["a-vendre","a-louer"];
 const SAFE_PREFIX="/fr/st/";
 const FIELDS=["city","district","price_mad","surface_m2"];
@@ -153,6 +153,17 @@ export async function acquireResultCards({
   observations.push({seed,rows:parsed.rows});
  }
  const merged=accumulateCards(observations);
+ const matches=new Map();
+ for(const row of merged.rows){
+  if(!row.five_field_observed)continue;
+  const normalized=v=>String(v).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
+  const signature=[normalized(row.city),normalized(row.district),row.price_mad,row.surface_m2].join("|");
+  if(!matches.has(signature))matches.set(signature,[]);
+  matches.get(signature).push(row.identity);
+ }
+ const possibleMatches=[...matches.values()].filter(group=>group.length>1);
+ const possibleMatchIds=new Set(possibleMatches.flat());
+ for(const row of merged.rows)row.possible_cross_id_duplicate=possibleMatchIds.has(row.identity);
  const seen=existingIds instanceof Set?existingIds:null;
  const netNew=seen?merged.rows.filter(r=>!seen.has(r.identity)).length:null;
  const completeNew=seen?merged.rows.filter(r=>r.five_field_observed&&!seen.has(r.identity)).length:null;
@@ -165,6 +176,8 @@ export async function acquireResultCards({
   source:"mubawab.ma",
   observed_cards:merged.observations,unique_source_id_count:merged.unique,
   duplicate_observations:merged.duplicates,cross_category_conflict_rows:merged.conflict_rows,
+  possible_same_property_signature_groups:possibleMatches.length,
+  possible_cross_id_duplicate_rows:possibleMatchIds.size,
   unique_five_field_observed:merged.complete,
   five_field_pct:merged.unique?Number((merged.complete/merged.unique*100).toFixed(2)):0,
   net_new_source_ids_vs_freeze:netNew,net_new_five_field_vs_freeze:completeNew,

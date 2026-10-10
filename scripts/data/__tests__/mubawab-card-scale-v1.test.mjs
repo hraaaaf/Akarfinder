@@ -79,3 +79,26 @@ test("failed robots fetch halts without category traffic",async()=>{
  assert.equal(report.halted_reason,"robots_unavailable_fail_closed");
  assert.deepEqual(seen,["https://www.mubawab.ma/robots.txt"]);
 });
+
+test("distinct source IDs with identical location-price-area are flagged, not merged",()=>{
+ const items=accumulateCards([{seed:sample,rows:[card("a:8101000"),card("a:8101001")]}]);
+ assert.equal(items.unique,2);
+ assert.equal(items.complete,2);
+});
+test("verified category route slug map replaces previously invalid aliases",()=>{
+ const pages=categoryPlan();
+ assert.equal(pages.filter(p=>p.type==="villas-et-maisons-de-luxe").length,10);
+ assert.equal(pages.filter(p=>p.type==="bureaux-et-commerces").length,10);
+ assert.equal(pages.some(p=>p.url.endsWith("/villas-a-vendre")||p.url.endsWith("/bureaux-a-vendre")),false);
+});
+
+test("potential cross-ID duplicates are flagged for review but retained",async()=>{
+ const fetchImpl=async url=>({status:200,url,headers:{get:()=>"text/html"},text:async()=>"<html/>"});
+ const parser=()=>fakeResult([card("a:8101000"),card("a:8101001")]);
+ const {report,rows}=await acquireResultCards({pages:[sample],robotsText:"User-agent: *\nAllow: /",fetchImpl,parser,paceMs:0});
+ assert.equal(report.unique_source_id_count,2);
+ assert.equal(report.possible_same_property_signature_groups,1);
+ assert.equal(report.possible_cross_id_duplicate_rows,2);
+ assert.equal(rows.filter(r=>r.possible_cross_id_duplicate).length,2);
+ assert.ok(rows.every(r=>r.cross_source_deduplicated===false));
+});
