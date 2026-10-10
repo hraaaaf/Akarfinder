@@ -293,3 +293,17 @@ Mubawab reste au dernier certificat 50 pages `38014920725` : 1 316 IDs uniques, 
 - Audit de détail Domio `38041999729` ❌ **tests seulement**, zéro requête détail : le texte de balises HTML adjacentes était concaténé par Cheerio, empêchant la preuve `Référence DOM-n`. Correction : joindre les nœuds texte avec une séparation explicite ; workflow pointe désormais vers l'artifact corrigé `11665937766` (run `38041999664`).
 - Ce sont des **champs observés**, ni fraîcheur commerciale ni déduplication physique ni droits de publication prouvés.
 - Next exact : retester le contrat DOM, si vert inspecter le nouvel artifact 12 détails, puis avancer le graphe de catégories Domio accessibles.
+
+
+## Contrôles vérifiés — 10 octobre 2026, lot Domio expansion
+
+**Domio** :
+- Run `38042128852` **completed/success**, artifact `11666162567` : audit de **12/12** pages détail avec identifiant conservé et référence `DOM-id` source, **12/12 prix** identiques aux cartes, **12/12 superficies** identiques. Chaque page affiche une date `Publié le` explicite : dans cet échantillon les anciennetés vont de **14 à 98 jours** au 10 octobre. Ce sont des dates publiées par le portail, **pas la preuve que le bien est toujours disponible**.
+- Run `38042386411` **completed/success**, artifact `11666337893` : **7/7** pages catégories (Casablanca, Marrakech, Rabat, Tanger, Agadir, vente/location), **168 identifiants Domio uniques**, **150 prix**, **154 surfaces**, **79 quartiers**, **70 cartes 5/5** conservatrices. Agadir 24 fiches/0 quartier prouvé ; ne pas en inventer.
+- Jointure hors ligne par identité numérique au gel `10910779576`, SHA contrôlé `e7ac4bca2db34ad334ed7234cfb8be93fc9baca68a9694f5024989b5cc2bb953` : **34/168 IDs inconnus du gel**, dont **14 cartes 5/5**. Pas de « publications récentes » revendiquées.
+- Comparaison exacte ville + quartier + prix + superficie entre les **1 140 cartes Mubawab complètes** et **13 anciennes cartes Domio cinq champs** : **0 collision exacte de signature**. Cela ne constitue **pas** une déduplication physique exhaustive ni une certification d'unicité entre portails.
+- Le run 7 pages conserve une correction du parseur (rejet des prix aberrants et localisation contaminée). Toutes les données restent `review`, aucun compte 200k atteint.
+
+**Pagination Domio** : sur le portail public, la page 2 d'une catégorie est accessible via le format `?page=2` (lien de pagination constaté sur Casablanca). Un canari **7 pages numéro 2 maximum**, robots fail-closed, cadence 1,8 s et arrêt 403/429 est préparé, avec déduplication contre le lot sept premières pages. Il ne prétend pas que toutes les catégories disposent d'une page 2 valide ; la réponse/finale seront vérifiées. Pas de fiche individuelle et pas de DB.
+
+**Next exact** : lire le run du canari pagination, analyser chaque page 2 et la croissance marginale unique; si productive, généraliser la pagination uniquement autorisée et découverte depuis les liens publics, avec plafonds de requêtes et contrôle d'identité. Actualité commerciale/dédup physique/inter-portails/droits toujours non validés.
