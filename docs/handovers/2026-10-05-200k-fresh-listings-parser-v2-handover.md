@@ -245,3 +245,15 @@ Le **scraping des pages de résultats** est la priorité produit demandée, et n
 **Document technique** : `docs/data/AKARFINDER_MASS_ACQUISITION_V1.md`. Préparation deuxième portail : des adaptateurs MarocAnnonces et Avito existent dans le repo ; vérifier les accès publics et robots avant tout fetch, ne pas contourner une page de vérification.
 
 **Next exact** : inspecter les tests et les résultats exact-HEAD `38014431380`, corriger tout échec et relancer seulement si sûr ; si vert, télécharger artifact, mesurer unique/5 champs et joindre par ID au gel; décider extension catégories/scans et test 20-30 fiches ciblées, puis véritable fraîcheur/dédup inter-sites. Aucun merge/deploy Vercel sans autorisation.
+
+
+## État vérifié — 2026-10-10 / MASS ACQUISITION V1
+
+**Succès intermédiaire prouvé : >=1 000 cartes uniques observées.** CI exact-HEAD `38014920725` ✅, artifact `11655684897` :
+- **50/50 catégories HTTP 200**, 0 fiche détail ; 1 316 identités `a:id` distinctes ; 1 140 cartes avec 5 champs visibles ; 806 IDs absents du gel, dont 700 avec 5 champs (jointure `10910779576` toutes locales).
+- 14 signatures identiques ville/quartier/prix/surface = 31 IDs potentiellement liés ; **pas de fusion automatique**. Champs et identité source vus en carte ne prouvent ni publication récente, ni activité réelle, ni unicité inter-portails.
+- 20 erreurs 404 du pilote initial corrigées par vrais slugs `villas-et-maisons-de-luxe` et `bureaux-et-commerces`. Code testé à `77f701458eda686ab343efa3bdd0c4628f37ee22`.
+- Avito canari `38014920766` CI techniquement verte mais sitemap HTTP 403 / 0 annonce : **source bloquée**, pas d'évasion de protection. Domio prochaine source à qualifier après accès robots.
+- Aucune lecture/écriture DB, aucun merge, aucun déploiement Vercel.
+
+**Next exact** : audit de détail read-only sur 30 fiches issues de l'artifact `11655684897` pour mesurer l'identité et la présence des champs, classer les redirections ; tout reste `review` sans preuve fraîcheur. Préparer ensuite le scan national par catégories/shards autorisés et le deuxième portail. Suite détaillée : `docs/data/AKARFINDER_MASS_ACQUISITION_V1.md`.
