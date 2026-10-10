@@ -946,7 +946,7 @@
 [data-akar-quartier-target="maarif-couche1"][data-maplibre-boundary-render="administrative-navy-blue-relief"]
   .maplibre-spike-boundary-action {
   top: 120px !important;
-  left: 18px !important;
+  left: 120px !important;
   right: auto !important;
   bottom: auto !important;
   display: inline-flex;
