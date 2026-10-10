@@ -1403,12 +1403,12 @@ export function MapLibreNeighborhood3D({
       </div>
 
 
-      {isMaarifTargetPilot && boundaryGeometry ? (
+      {isMaarifTargetPilot && boundaryGeometry && administrativeBoundsVisible ? (
         <button type="button" className="maplibre-spike-boundary-badge maplibre-spike-boundary-action"
           onClick={toggleAdministrativeBounds}
-          aria-pressed={administrativeBoundsVisible}
-          aria-label={administrativeBoundsVisible ? "Revenir au quartier Maârif" : "Voir les limites administratives de l'arrondissement Maârif"}>
-          {administrativeBoundsVisible ? "← Retour au quartier" : "Voir limites · arrondissement Maârif"}
+          aria-pressed={true}
+          aria-label="Revenir au quartier Maârif">
+          ← Retour au quartier
         </button>
       ) : null}
 
@@ -1416,7 +1416,14 @@ export function MapLibreNeighborhood3D({
         <button type="button" className="maplibre-spike-control-primary" onClick={restoreCamera} aria-label="Recentrer sur le quartier"><LocateFixed size={18} /></button>
         <button type="button" onClick={() => changeZoom(0.75)} aria-label="Zoomer"><Plus size={19} /></button>
         <button type="button" onClick={() => changeZoom(-0.75)} aria-label="Dézoomer"><Minus size={19} /></button>
-        <span aria-hidden="true"><Layers3 size={18} /></span>
+        {isMaarifTargetPilot && boundaryGeometry && !administrativeBoundsVisible ? (
+          <button type="button" className="maplibre-spike-admin-layer-toggle"
+            onClick={toggleAdministrativeBounds}
+            aria-label="Voir les limites administratives de l'arrondissement Maârif"
+            aria-pressed={false} title="Voir les limites administratives">
+            <Layers3 size={18} />
+          </button>
+        ) : <span aria-hidden="true"><Layers3 size={18} /></span>}
       </div>
 
       <div className="maplibre-spike-map-note">
