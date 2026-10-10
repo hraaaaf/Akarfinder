@@ -1031,3 +1031,66 @@
     transform: none !important;
   }
 }
+
+
+/* LOT1 V1.5 — tablet-first map. At 561–1023px, the prior collapsed
+ * Maârif sheet covered ~46svh and made the map secondary. A compact summary
+ * preserves access to search, with all details available when expanded.
+ * No changes to mobile <=560px, desktop >=1024px or the cartographic data.
+ */
+@media (min-width: 561px) and (max-width: 1023px) {
+  [data-maarif-rebuild="true"] .maarif-target-rail:not([data-sheet-expanded="true"]) {
+    height: min(20svh, 176px) !important;
+    max-height: min(20svh, 176px) !important;
+    overflow-y: hidden !important;
+    border-radius: 20px !important;
+    box-shadow: 0 10px 32px rgb(7 27 51 / .16) !important;
+  }
+  [data-maarif-rebuild="true"] .maarif-target-rail:not([data-sheet-expanded="true"])
+    .maarif-target-hero,
+  [data-maarif-rebuild="true"] .maarif-target-rail:not([data-sheet-expanded="true"])
+    .maarif-target-copy,
+  [data-maarif-rebuild="true"] .maarif-target-rail:not([data-sheet-expanded="true"])
+    .maarif-target-tabs,
+  [data-maarif-rebuild="true"] .maarif-target-rail:not([data-sheet-expanded="true"])
+    .maarif-target-market,
+  [data-maarif-rebuild="true"] .maarif-target-rail:not([data-sheet-expanded="true"])
+    .maarif-target-local,
+  [data-maarif-rebuild="true"] .maarif-target-rail:not([data-sheet-expanded="true"])
+    .maarif-target-mobility,
+  [data-maarif-rebuild="true"] .maarif-target-rail:not([data-sheet-expanded="true"])
+    .maarif-target-places,
+  [data-maarif-rebuild="true"] .maarif-target-rail:not([data-sheet-expanded="true"])
+    .maarif-target-secondary-action,
+  [data-maarif-rebuild="true"] .maarif-target-rail:not([data-sheet-expanded="true"])
+    .maarif-target-tagline {
+    display: none !important;
+  }
+  [data-maarif-rebuild="true"] .maarif-target-rail:not([data-sheet-expanded="true"])
+    .maarif-target-sheet-toggle {
+    height: 24px !important;
+    min-height: 24px !important;
+  }
+  [data-maarif-rebuild="true"] .maarif-target-rail:not([data-sheet-expanded="true"])
+    .maarif-target-body {
+    padding: 2px 16px 10px !important;
+  }
+  [data-maarif-rebuild="true"] .maarif-target-rail:not([data-sheet-expanded="true"])
+    .maarif-target-city {
+    margin-bottom: 0 !important;
+    font-size: 10px !important;
+  }
+  [data-maarif-rebuild="true"] .maarif-target-rail:not([data-sheet-expanded="true"])
+    .maarif-target-heading h1 {
+    font-size: 27px !important;
+    line-height: 1.05 !important;
+  }
+  [data-maarif-rebuild="true"] .maarif-target-rail:not([data-sheet-expanded="true"])
+    .maarif-target-actions {
+    margin-top: 7px !important;
+  }
+  [data-maarif-rebuild="true"] .maarif-target-rail:not([data-sheet-expanded="true"])
+    .maarif-target-primary-action {
+    min-height: 44px !important;
+  }
+}
