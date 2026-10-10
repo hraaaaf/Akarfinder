@@ -54,3 +54,21 @@ test('regional listing IDs remain independent from six/source ledger and never i
  assert.equal(report.commercially_available_verified_count,0);
  assert.ok(rows.every(r=>r.active_sale_verified===false));
 });
+
+test('ninth source batch only adds independent IDs; overlapping evidence never promotes unverified offers',()=>{
+ const existing={...card('a:8811022'),city:'Fès',district:'Centre Ville'};
+ const novel={...card('a:8811033'),city:'Nador',district:'Centre Ville'};
+ const {report,rows}=consolidateCardObservations([
+  mob('mubawab_regional_8',[existing]),
+  mob('mubawab_regional_40',[existing,novel])
+ ]);
+ assert.equal(report.raw_card_observations,3);
+ assert.equal(report.distinct_source_id_count,2);
+ assert.equal(report.five_field_observed_consistent,2);
+ assert.equal(report.cross_run_conflict_rows,0);
+ assert.equal(report.freshness_certified_count,0);
+ assert.equal(report.commercially_available_verified_count,0);
+ assert.equal(report.physically_unique_certified_count,0);
+ assert.equal(report.database_writes,0);
+ assert.deepEqual(rows.find(x=>x.identity==='a:8811022').observed_in,['mubawab_regional_40','mubawab_regional_8']);
+});

@@ -73,3 +73,14 @@ Run `38044964671` ✅ sur HEAD `bf4804ab9e4e87f0345e843fac06feb86eb120d7`, artif
 - Sarouty : le canari six villes `38046267620` a vu six pages mais uniquement **1 carte correctement isolée, 0 cinq champs** ; le diagnostic DOM `38047091171` s'est arrêté **sans accès catégories** parce que robots.txt n'était pas disponible. Pas de bypass ni nouvelle tentative identique.
 
 **Next exact** : lire CI huit artifacts, puis prioriser la découverte de nouveaux types de biens et villes via les liens publics existants. En parallèle, définir la preuve de disponibilité commerciale, fraîcheur et dédup physique avant publication. **Les 200K actifs et uniques ne sont pas atteints.**
+
+
+## Neuf artifacts — matrice régionale 40 intégrée (10 octobre 2026)
+
+**Preuve source** : [run 38047432831](https://github.com/hraaaaf/Akarfinder/actions/runs/38047432831) `completed/success`, artifact `11667857197` ; SHA256 exact du JSONL `5f4cfc9a21511cf039bc7c0e366d30afe74a2e8dbd927b7e1d5d2d6b61bbb929`. 40/40 pages catégories Mubawab HTTP 200, 689 observations/IDs propres au lot, 568 cartes cinq champs, **463 nouveaux IDs source** et **372 nouveaux cinq champs** face au registre huit lots ; DB access/write 0.
+
+**Recalcul offline exact sur les neuf ZIPs immuables** (réconciliation Python de contrôle, chiffres huit-lots d'abord reproduits à l'identique) : **11 828 observations**, **9 745 IDs source** (Mubawab 7 155 ; Domio 2 590), **7 610 cinq champs cohérents** (Mubawab 6 376 ; Domio 1 234), **5 conflits**, **256 groupes de signatures potentiellement similaires**, **21 inter-portails**. Ces nombres **ne certifient pas** de biens physiquement uniques, frais, disponibles, ni réutilisables ; compteur certifié actif/frais/physiquement unique = **0**.
+
+Workflow ledger neuf entrées : nouvelle source `mubawab_regional_40` + checksum épinglé + assertions sur les totaux exacts et les marqueurs de non-promotion. **Ne déclarer le ledger neuf lots certifié GitHub qu'après run de CI sur le commit intégrateur et inspection de son artifact.** Aucune écriture DB, aucun déploiement ni merge par ce lot.
+
+**Next exact** : lire la CI du ledger neuf artifacts ; si rouge corriger avant tout nouveau run ; si verte contrôler artifact, puis lancer un protocole read-only d'audit de disponibilité datée (signal vendeur/portail explicite, dates, échantillon par source, et refus en cas de preuve absente), avec dédup inter-portails sans fusion automatique ; prioriser nouvelles pages liées et autorisées par IDs nets 5/5 par requête.
