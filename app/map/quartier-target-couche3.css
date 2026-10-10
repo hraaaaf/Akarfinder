@@ -1290,8 +1290,8 @@
   .maplibre-spike-poi-label:not([data-poi-selected="true"]),
 [data-akar-quartier-target="maarif-couche1"][data-maplibre-selected-poi]:not([data-maplibre-selected-poi=""])
   .maplibre-spike-target-landmark-label {
-  opacity: .17 !important;
-  pointer-events: none !important;
+  opacity: .46 !important;
+  pointer-events: auto !important;
 }
 [data-akar-quartier-target="maarif-couche1"][data-maplibre-selected-poi]:not([data-maplibre-selected-poi=""])
   .maplibre-spike-poi-label[data-poi-selected="true"] {
