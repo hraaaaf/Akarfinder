@@ -1172,3 +1172,83 @@
     font-size: 10.5px !important;
   }
 }
+
+
+/* LOT 3 — accessible landmark interaction. The cartouche remains geographically
+ * positioned by MapLibre; only its hit target and selected-state UI are enhanced.
+ */
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-target-landmark-label {
+  pointer-events: auto !important;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  touch-action: manipulation;
+}
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-target-landmark-label:focus-visible {
+  outline: 3px solid #0B63CE !important;
+  outline-offset: 3px;
+}
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-target-landmark-label[data-landmark-selected="true"] {
+  border-color: #0B63CE !important;
+  box-shadow: 0 5px 19px rgb(11 99 206 / .20) !important;
+}
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-landmark-detail {
+  position: absolute;
+  z-index: 15;
+  top: 205px;
+  left: 16px;
+  width: min(256px, calc(100% - 100px));
+  min-height: 68px;
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 11px 11px 13px;
+  border: 1px solid rgb(11 99 206 / .29);
+  border-radius: 14px;
+  background: rgb(255 255 255 / .97);
+  box-shadow: 0 9px 24px rgb(7 27 51 / .13);
+  color: #071B33;
+  backdrop-filter: blur(12px);
+}
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-landmark-detail > div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-landmark-detail small {
+  color: #0B63CE;
+  font-size: 9px;
+  font-weight: 800;
+}
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-landmark-detail strong {
+  font-size: 13px;
+  font-weight: 850;
+  line-height: 1.2;
+}
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-landmark-detail span {
+  color: #5A6E84;
+  font-size: 10px;
+}
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-landmark-detail > button {
+  width: 30px;
+  min-width: 30px;
+  height: 30px;
+  border: 1px solid rgb(7 27 51 / .12);
+  border-radius: 9px;
+  background: #F1F6FC;
+  color: #071B33;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-landmark-detail > button:focus-visible {
+  outline: 3px solid #0B63CE;
+  outline-offset: 2px;
+}
+@media (min-width: 1024px) {
+  [data-akar-quartier-target="maarif-couche1"] .maplibre-spike-landmark-detail {
+    top: 190px;
+    left: 24px;
+  }
+}
