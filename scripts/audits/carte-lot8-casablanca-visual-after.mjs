@@ -201,10 +201,10 @@ try {
         }
         compactSheetMetrics = { collapsedHeight: panelBox.height, mapAvailableAboveSheet: panelBox.y, ctaBox, maxAllowedHeight };
       }
-      // V1.5 tablet gate: the collapsed neighborhood rail must leave a map-first
-      // viewport, keep a real tappable 44px property-search CTA and still expand.
+      // V1.6 tablet gate: lower the collapsed sheet to 136–146px while
+      // preserving real 44px property-search CTA and expandable details.
       if (viewport.width > 560 && viewport.width <= 1023) {
-        const maxAllowedHeight = Math.min(viewport.height * 0.20, 176) + 2;
+        const maxAllowedHeight = Math.max(136, Math.min(viewport.height * 0.16, 146)) + 2;
         const primaryAction = rail.getByRole("link", { name: /Voir les biens disponibles à Maârif/i });
         await primaryAction.waitFor({ state: "visible", timeout: 5000 });
         const ctaBox = await primaryAction.boundingBox();
