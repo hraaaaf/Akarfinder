@@ -637,8 +637,8 @@ export function MapLibreNeighborhood3D({
                     28, "#C3D3E4",
                     60, "#B8CADE"
                   ],
-                  "fill-opacity": ["interpolate", ["linear"], ["zoom"], 12.2, 0.07, 14.5, 0.15, 17.5, 0.20],
-                  "fill-outline-color": "#BED0E1",
+                  "fill-opacity": ["interpolate", ["linear"], ["zoom"], 12.2, 0.09, 14.5, 0.23, 17.5, 0.29],
+                  "fill-outline-color": "#B6CADA",
                 },
               } as any);
 
@@ -660,11 +660,11 @@ export function MapLibreNeighborhood3D({
                     "motorway", "#7F9FC9",
                     "trunk", "#91AED2",
                     "primary", MAP_BRAND_BLUE,
-                    "secondary", "#A9BFD7",
-                    "tertiary", "#C5D4E5",
-                    "#DCE5EF"
+                    "secondary", "#92B2D1",
+                    "tertiary", "#B1C9DF",
+                    "#D0E0ED"
                   ],
-                  "line-opacity": ["*", ["interpolate", ["linear"], ["zoom"], 11, 0.72, 14.5, 0.92, 17.5, 0.96], ["match", ["get", "class"], "primary", 0.43, 1]],
+                  "line-opacity": ["*", ["interpolate", ["linear"], ["zoom"], 11, 0.72, 14.5, 0.92, 17.5, 0.96], ["match", ["get", "class"], "primary", 0.49, 1]],
                   "line-width": [
                     "interpolate", ["linear"], ["zoom"],
                     11, ["match", ["get", "class"], "motorway", 2.4, "trunk", 2.2, "primary", 2.0, "secondary", 1.7, "tertiary", 1.3, 0.8],
@@ -724,9 +724,9 @@ export function MapLibreNeighborhood3D({
                 },
                 paint: {
                   "text-color": MAP_BRAND_NAVY,
-                  "text-opacity": 0.83,
+                  "text-opacity": 0.91,
                   "text-halo-color": "rgba(251,248,243,0.98)",
-                  "text-halo-width": 1.4,
+                  "text-halo-width": 1.22,
                   "text-halo-blur": 0.12,
                 },
               } as any);
@@ -750,8 +750,8 @@ export function MapLibreNeighborhood3D({
                   "text-ignore-placement": false,
                 },
                 paint: {
-                  "text-color": "#4E6680",
-                  "text-opacity": 0.74,
+                  "text-color": "#415D79",
+                  "text-opacity": 0.83,
                   "text-halo-color": "rgba(251,248,243,0.96)",
                   "text-halo-width": 1.0,
                   "text-halo-blur": 0.14,
@@ -1296,6 +1296,7 @@ export function MapLibreNeighborhood3D({
       data-maplibre-context-relief={isMaarifTargetPilot ? "flat-indicative-zone" : "none"}
       data-maplibre-quarter-style={isMaarifTargetPilot ? "flat-living-v02" : "default"}
        data-maplibre-cartographic-palette={isMaarifTargetPilot ? "akarfinder-c1-c2-map-v1" : "default"}
+       data-maplibre-hierarchy-pass={isMaarifTargetPilot ? "readable-footprints-roads-v2" : "default"}
       data-maplibre-basemap-language={isMaarifTargetPilot ? "voyager-inspired-openfreemap-v1" : "default"}
       data-maplibre-building-language={isMaarifTargetPilot ? "flat-vector-footprints-v02" : "default"}
       data-maplibre-polish={isMaarifTargetPilot ? "flat-basemap-v02" : "default"}
