@@ -343,3 +343,16 @@ Mubawab reste au dernier certificat 50 pages `38014920725` : 1 316 IDs uniques, 
 **Définition du Goal** : 200 000 **biens physiquement uniques, frais, encore disponibles et 5/5** ne sont PAS atteints ; une nouvelle identité relative à notre archive n'est PAS une preuve de fraîcheur. Les 1 321 et 1 663 IDs sont des identités distinctes **dans leurs portails respectifs**, pas un nombre national net certifié.
 
 **Next exact** : lire les runs exacts des quartiers Mubawab et de la reprise Domio ; mesurer l'incrément marginal versus artifacts, corriger erreurs ; élargir uniquement routes publiquement déclarées et permises ; tester activité/âge/date et doublons physiques par échantillons ; verrouiller un classement frais+unique+5 champs avant toute insertion production.
+
+
+## Reconciliation acquisition multi-sources — 2026-10-10 / Ledger V1
+
+**Goal / résultat intermédiaire prouvé localement** : cinq artifacts GitHub Actions gelés et vérifiés par SHA256 sont réconciliés par clé `source+ID` sans inventer de fraîcheur : Mubawab50 `38014920725`, Frontier100 `38043182237`, District120 `38043539778`, Domio 70 pages `38043204045`, reprise Domio pages 13+ `38043986522`.
+
+- **7 768 cartes observées** dans les artifacts, **6 107 IDs distincts propres à leur source** : 3 517 Mubawab, 2 590 Domio ; **4 385 IDs avec les quatre champs + URL réunis dans une même carte, sans conflit entre observations**.
+- **4 IDs contradictoires en quarantaine** (3 prix, 1 superficie), **165 groupes de signatures ville/quartier/prix/surface identiques** (361 identifiants concernés), dont **19 groupes potentiellement inter-portails** ; **aucun doublon physique fusionné sans preuve**.
+- **0 certifié frais / commercialement actif / physiquement unique / prêt DB**. Attention : le rapport `5 champs observés` ne certifie pas la qualité de diffusion ou les droits de réutilisation.
+- Module `scripts/data/card-acquisition-ledger-v1.mjs`, 6 tests offline, workflow dédié `.github/workflows/card-acquisition-ledger-v1.yml` qui télécharge les cinq artifacts **immuables**, vérifie les empreintes SHA256 JSONL, rejette les contradictions et certifie l'intégrité, sortie `card-acquisition-ledger-v1`. Document `docs/data/AKARFINDER_CARD_ACQUISITION_LEDGER_V1.md`.
+- Preuve locale `akarfinder-acquisition-ledger-v1-evidence.zip` (rapport, ledger complet, sources code, tests). **CI du nouveau workflow à vérifier sur HEAD exact avant d'affirmer certifié GitHub**.
+
+**Next exact** : lire le workflow Ledger V1 et son artifact ; puis mesurer le rendement net des 217 shards Mubawab restants et de Domio après page 12, sans visiter de pages disallow ni contourner les contrôles du site. Mettre en quarantaine prix/localisation contradictoires ; échantillonner disponibilité commerciale/date/dup physique avant toute écriture et toute affirmation des 200K. Pas de Vercel, pas de merge, pas de DB.

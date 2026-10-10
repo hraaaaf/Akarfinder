@@ -1,0 +1,94 @@
+name: AkarFinder Multi-source Card Acquisition Ledger V1
+on:
+  push:
+    branches:
+      - data/200k-fresh-parser-v2
+    paths:
+      - '.github/workflows/card-acquisition-ledger-v1.yml'
+      - 'scripts/data/card-acquisition-ledger-v1.mjs'
+      - 'scripts/data/__tests__/card-acquisition-ledger-v1.test.mjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  source-evidence-consolidation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    env:
+      CARD_LEDGER_MUBAWAB_50: .tmp/ledger/m50/mubawab-mass-acquisition-50.jsonl
+      CARD_LEDGER_MUBAWAB_FRONTIER: .tmp/ledger/m100/mubawab-frontier-100.jsonl
+      CARD_LEDGER_MUBAWAB_DISTRICT: .tmp/ledger/m120/mubawab-district-shards-120.jsonl
+      CARD_LEDGER_DOMIO_LINKED: .tmp/ledger/d70/domio-linked-pages-80.jsonl
+      CARD_LEDGER_DOMIO_RESUME: .tmp/ledger/dresume/domio-resume-after-page12.jsonl
+      OUTPUT_PREFIX: acquisition-ledger-v1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Offline provenance, ambiguity and dedup regression suite
+        run: node --test scripts/data/__tests__/card-acquisition-ledger-v1.test.mjs
+      - uses: actions/download-artifact@v4
+        with:
+          name: mubawab-mass-acquisition-50
+          run-id: 38014920725
+          github-token: ${{ github.token }}
+          path: .tmp/ledger/m50
+      - uses: actions/download-artifact@v4
+        with:
+          name: mubawab-national-frontier-100
+          run-id: 38043182237
+          github-token: ${{ github.token }}
+          path: .tmp/ledger/m100
+      - uses: actions/download-artifact@v4
+        with:
+          name: mubawab-district-shards-120
+          run-id: 38043539778
+          github-token: ${{ github.token }}
+          path: .tmp/ledger/m120
+      - uses: actions/download-artifact@v4
+        with:
+          name: domio-linked-pages-80
+          run-id: 38043204045
+          github-token: ${{ github.token }}
+          path: .tmp/ledger/d70
+      - uses: actions/download-artifact@v4
+        with:
+          name: domio-resume-after-page12
+          run-id: 38043986522
+          github-token: ${{ github.token }}
+          path: .tmp/ledger/dresume
+      - name: Pin source JSONL SHA256 from immutable run artifacts
+        run: |
+          set -euo pipefail
+          echo '88571b2c9493c19c0a2d065c5fb060d1cfc2b9c3f5a8d4c5f1a439967ff618a3  .tmp/ledger/m50/mubawab-mass-acquisition-50.jsonl' | sha256sum -c -
+          echo '23b6010d4f7b4f09163425e1ec40d1af696de5b080500bbf419e1899e36db508  .tmp/ledger/m100/mubawab-frontier-100.jsonl' | sha256sum -c -
+          echo '6d1ff8bcd3c74f3fce776ad52e6e5a609a3d64327648f3367b3ea0143c5dd11f  .tmp/ledger/m120/mubawab-district-shards-120.jsonl' | sha256sum -c -
+          echo 'ecfc16f9e02510f8efd2c4a7a74fc6f9168fd30671be51ff845c1bce2413cdc9  .tmp/ledger/d70/domio-linked-pages-80.jsonl' | sha256sum -c -
+          echo '3e8ba8966ad11b367ac9792b4df69e7b7e299ad5f205c9cfb99e29678922b76b  .tmp/ledger/dresume/domio-resume-after-page12.jsonl' | sha256sum -c -
+      - name: Combine source IDs and quarantine contradictory card evidence
+        run: node scripts/data/card-acquisition-ledger-v1.mjs
+      - name: Verify report, no database writes and no premature certification
+        run: |
+          set -euo pipefail
+          jq -e '.raw_card_observations == 7768 and .distinct_source_id_count == 6107 and .five_field_observed_consistent == 4385 and .cross_run_conflict_rows == 4 and .freshness_certified_count == 0 and .physically_unique_certified_count == 0 and .database_access == 0 and .database_writes == 0 and .production_published_count == 0' acquisition-ledger-v1.json
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const report=JSON.parse(fs.readFileSync('acquisition-ledger-v1.json','utf8'));
+          const rows=fs.readFileSync('acquisition-ledger-v1.jsonl','utf8').split(/\r?\n/).filter(Boolean).map(JSON.parse);
+          if(rows.length!==report.distinct_source_id_count)throw Error('Ledger row count mismatch');
+          if(new Set(rows.map(r=>r.source+'|'+r.identity)).size!==rows.length)throw Error('Duplicate ID in ledger');
+          if(rows.some(r=>r.freshness_certified||r.active_sale_verified||r.cross_source_deduplicated))throw Error('False ready-to-publish claim');
+          if(rows.filter(r=>r.five_field_observed_consistent).length!==report.five_field_observed_consistent)throw Error('Evidence mismatch');
+          if(rows.filter(r=>r.cross_run_conflicts.length>0).length!==report.cross_run_conflict_rows)throw Error('Conflict mismatch');
+          console.log('ACQUISITION_LEDGER_TESTED',rows.length);
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: card-acquisition-ledger-v1
+          path: |
+            acquisition-ledger-v1.json
+            acquisition-ledger-v1.jsonl
+          retention-days: 21
