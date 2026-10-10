@@ -42,6 +42,35 @@ async function twinCenterGeographicScreenPoint(page) {
   });
 }
 
+// The landmark is now an accessible button. A native wheel gesture directly on
+// the button doesn't reach the MapLibre canvas. Zoom just outside that hitbox,
+// keeping the *real* projected Twin Center coordinate within 18–36px of the
+// wheel focal point. This exercises real map gestures without force or internals.
+async function zoomNativeCanvasNearTwin(page, deltaY, fallback) {
+  const target = await page.evaluate(({ fallbackX, fallbackY }) => {
+    const label = [...document.querySelectorAll(".maplibre-spike-target-landmark-label")]
+      .find((node) => node.textContent?.includes("Twin Center"));
+    const map = document.querySelector(".maplibre-spike-map");
+    const rect = map?.getBoundingClientRect();
+    const geoX = label && rect ? rect.left + Number.parseFloat(label.style.left) : fallbackX;
+    const geoY = label && rect ? rect.top + Number.parseFloat(label.style.top) : fallbackY;
+    const side = label?.getAttribute("data-anchor-edge");
+    const sign = side === "left" ? -1 : 1;
+    for (const [dx, dy] of [[sign * 18, 0], [sign * 30, 0], [-sign * 30, 0], [0, 35], [0, -35], [sign * 46, 0]]) {
+      const x = geoX + dx, y = geoY + dy;
+      const node = document.elementFromPoint(x, y);
+      if (node && (node.matches("canvas.maplibregl-canvas") || node.closest(".maplibregl-canvas-container"))) {
+        return { x, y, distance: Math.hypot(dx, dy) };
+      }
+    }
+    return null;
+  }, { fallbackX: fallback.x, fallbackY: fallback.y });
+  if (!target) throw new Error("No unobstructed native MapLibre canvas point near sourced Twin Center");
+  await page.mouse.move(target.x, target.y);
+  await page.mouse.wheel(0, deltaY);
+  return target;
+}
+
 async function recenterTwinCenter(page, viewport) {
   const canvas = page.locator("canvas.maplibregl-canvas");
   const canvasBox = await canvas.boundingBox();
@@ -104,14 +133,12 @@ async function recenterTwinCenter(page, viewport) {
     throw new Error(`${viewport.name}: Twin Center not reliably positioned before street zoom (${anchorDeviation.toFixed(1)}px)`);
   }
 
-  // Use native canvas wheel zoom for the BEFORE baseline. This avoids depending
-  // on viewport-specific control visibility while preserving the real product renderer.
-  await page.mouse.move(desired.x, desired.y);
-  await page.mouse.wheel(0, -620);
+  // Native MapLibre zoom beside the clickable marker rather than on its button.
+  await zoomNativeCanvasNearTwin(page, -620, desired);
   await page.waitForTimeout(350);
-  await page.mouse.wheel(0, -620);
+  await zoomNativeCanvasNearTwin(page, -620, desired);
   await page.waitForTimeout(350);
-  await page.mouse.wheel(0, -420);
+  await zoomNativeCanvasNearTwin(page, -420, desired);
   await page.waitForTimeout(700);
 
   // An accurately projected cursor anchor should keep Twin Center visible
@@ -122,8 +149,7 @@ async function recenterTwinCenter(page, viewport) {
   const shell = page.locator('[data-maplibre-spike][data-maplibre-city="casablanca"][data-maplibre-district="maarif"]');
   for (let step = 0; step < 6; step += 1) {
     if ((await shell.getAttribute("data-maplibre-zoom-tier")) === "street") break;
-    await page.mouse.move(desired.x, desired.y);
-    await page.mouse.wheel(0, -360);
+    await zoomNativeCanvasNearTwin(page, -360, desired);
     await page.waitForTimeout(350);
   }
   const observedTier = await shell.getAttribute("data-maplibre-zoom-tier");
