@@ -1240,13 +1240,13 @@ export function MapLibreNeighborhood3D({
           </div>
         ) : null}
         <div className="maplibre-spike-dom-labels" aria-hidden="true">
-          {centerPoint?.visible && (
+          {!administrativeBoundsVisible && centerPoint?.visible && (
             <div className="maplibre-spike-neighborhood-label" style={{ left: centerPoint.x, top: centerPoint.y }}>
               <span>{districtLabel}</span>
               <i />
             </div>
           )}
-          {visibleAnchors.map((anchor) => {
+          {!administrativeBoundsVisible && visibleAnchors.map((anchor) => {
             const screen = screenPoints[anchor.poi_id];
             if (!screen?.visible) return null;
             const meta = CATEGORY_META[anchor.category] ?? CATEGORY_META.other;
@@ -1282,7 +1282,7 @@ export function MapLibreNeighborhood3D({
               </div>
             );
           })}
-          {targetPilotLandmarks.map((landmark) => {
+          {!administrativeBoundsVisible && targetPilotLandmarks.map((landmark) => {
             const screen = screenPoints[`target:${landmark.id}`];
             if (!screen?.visible) return null;
             return (
