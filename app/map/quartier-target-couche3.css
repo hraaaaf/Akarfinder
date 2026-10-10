@@ -1280,3 +1280,21 @@
 [data-akar-quartier-target="maarif-couche1"] .maplibre-spike-poi-label[data-poi-selected="true"] .maplibre-spike-poi-glyph {
   box-shadow: 0 0 0 2px #0B63CE !important;
 }
+
+
+/* LOT3 selected mode: preserve the selected sourced POI and reduce surrounding
+ * label clutter while its detail is open. Other anchors retain their true
+ * source coordinates and return immediately after closing the card.
+ */
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-selected-poi]:not([data-maplibre-selected-poi=""])
+  .maplibre-spike-poi-label:not([data-poi-selected="true"]),
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-selected-poi]:not([data-maplibre-selected-poi=""])
+  .maplibre-spike-target-landmark-label {
+  opacity: .17 !important;
+  pointer-events: none !important;
+}
+[data-akar-quartier-target="maarif-couche1"][data-maplibre-selected-poi]:not([data-maplibre-selected-poi=""])
+  .maplibre-spike-poi-label[data-poi-selected="true"] {
+  opacity: 1 !important;
+  z-index: 10 !important;
+}
