@@ -453,3 +453,8 @@ Workflow shadow `38070451726` ✅ (commit 3a584b9c…, artifact 11676178521) : 9
 Shadow corrigé CI [38070760057](https://github.com/hraaaaf/Akarfinder/actions/runs/38070760057) ✅, HEAD `01237c3d9552d102f018b05ba6ed98eecad02b28`, artifact `11676836332` inspecté : échantillon **30 Mubawab + 30 Domio**, chacun 10 signatures suspectes + 20 témoins non suspects, 0 ID répété, 0 frais/actif/physiquement unique/licencié certifié. Ne pas extrapoler un taux brut de ces strates enrichies. DB et publication 0.
 
 Découverte de pagination : `scripts/data/mubawab-linked-pagination-canary-v1.mjs` (max 4 pages catégorie déjà observées), tests, workflow `.github/workflows/mubawab-linked-pagination-canary-v1.yml`, doc `docs/data/AKARFINDER_LINKED_PAGINATION_CANARY_V1.md`. **CI/artifact à vérifier avant de compter un lien candidat** ; aucun lien paginé suivi ni aucune annonce attribuée au canari. Next : auditer run et décider expansion légale source-liée, puis mesurer rendement / frais actifs / dédup physique / droits.
+
+
+## Pagination HTML : 0 route admissible ; type-linked canary (2026-10-10)
+
+Run [38071017861](https://github.com/hraaaaf/Akarfinder/actions/runs/38071017861) ✅, artifact 11676876747 inspecté : 4/4 catégories publiques HTTP200, **0 lien de pagination admissible** (pas de lien suivi), robots sans blocage, zéro DB. Les quatre pages n'autorisent pas l'invention de /page-2 ou :p:2. Prolongement du même canari : découvrir uniquement les liens de catégories `/fr/st/` réellement présents dans ces HTML et vérifiés robots, puis tester selon rendement si des sources nouvelles sont observées. CI exacte en attente; aucun ID listing nouveau attribué à cette découverte.

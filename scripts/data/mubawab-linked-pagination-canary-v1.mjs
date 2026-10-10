@@ -2,6 +2,7 @@ import fs from 'node:fs/promises';
 import {load} from 'cheerio';
 import {pathToFileURL} from 'node:url';
 import {robotsAllowed} from './mubawab-result-cards-v1.mjs';
+import {extractFrontierCategories} from './mubawab-national-frontier-v1.mjs';
 
 const UA='AkarFinderPaginationDiscoveryV1/1.0 (+https://akarfinder.ma)';
 const HOST='www.mubawab.ma';
@@ -32,7 +33,7 @@ export function discoverPaginationLinks(html,seedUrl,robotsText){
 }
 export async function runPaginationCanary({seeds=SEEDS,fetchImpl=globalThis.fetch,robotsText=null,paceMs=1800,sleep=ms=>new Promise(r=>setTimeout(r,ms))}={}){
  let robots=robotsText,stop=null,requested=0,observed=0;
- const pages=[],links=new Map();
+ const pages=[],links=new Map(),categoryLinks=new Map();
  if(robots===null)try{
   const r=await fetchImpl('https://www.mubawab.ma/robots.txt',{headers:{'user-agent':UA},signal:AbortSignal.timeout(12000)});
   if(r.status!==200)throw Error('robots unavailable');
@@ -59,16 +60,20 @@ export async function runPaginationCanary({seeds=SEEDS,fetchImpl=globalThis.fetc
   if(Buffer.byteLength(html,'utf8')>3000000){pages.push({kind:seed.kind,state:'oversized'});continue;}
   observed++;const out=discoverPaginationLinks(html,req.href,robots);
   for(const link of out.candidates)links.set(link.url,link);
-  pages.push({kind:seed.kind,state:'observed',pagination_anchors:out.candidates.length,forbidden:out.forbidden,unclassified:out.unclassified});
+  for(const c of extractFrontierCategories(html,req.href).filter(c=>c.kind==='st'&&c.url!==req.href)){
+   if(robotsAllowed(robots,c.url,UA))categoryLinks.set(c.url,{url:c.url,city:c.city,category:c.category,source_seed:req.href,observed_in_public_anchor:true,followed:false});
+  }
+  pages.push({kind:seed.kind,state:'observed',pagination_anchors:out.candidates.length,linked_type_categories:extractFrontierCategories(html,req.href).filter(c=>c.kind==='st'&&c.url!==req.href).length,forbidden:out.forbidden,unclassified:out.unclassified});
  }
- return {report:{schema_version:'AKARFINDER_PUBLIC_LINKED_PAGINATION_DISCOVERY_V1',seed_count:seeds.slice(0,4).length,category_requests:requested,observed_categories:observed,candidate_pagination_urls:links.size,
+ return {report:{schema_version:'AKARFINDER_PUBLIC_LINKED_PAGINATION_DISCOVERY_V1',seed_count:seeds.slice(0,4).length,category_requests:requested,observed_categories:observed,candidate_pagination_urls:links.size,candidate_type_category_urls:categoryLinks.size,
   halted_reason:stop,pagination_requests:0,detail_requests:0,database_access:0,database_writes:0,published_count:0,
-  note:'Only category-page anchor links; candidate pagination never visited, no invented routes or freshness claims',pages},candidates:[...links.values()]};
+  note:'Only category-page anchor links; candidate pagination never visited, no invented routes or freshness claims',pages},candidates:[...links.values()],typeCategories:[...categoryLinks.values()]};
 }
 async function main(){
- const {report,candidates}=await runPaginationCanary();
+ const {report,candidates,typeCategories}=await runPaginationCanary();
  await fs.writeFile('linked-pagination-canary-v1.json',JSON.stringify(report,null,2)+'\n');
  await fs.writeFile('linked-pagination-canary-v1.jsonl',candidates.map(JSON.stringify).join('\n')+(candidates.length?'\n':''));
+ await fs.writeFile('linked-type-categories-v1.jsonl',typeCategories.map(JSON.stringify).join('\n')+(typeCategories.length?'\n':''));
  console.log(JSON.stringify(report,null,2));
  if(report.halted_reason||!report.observed_categories)process.exitCode=2;
 }

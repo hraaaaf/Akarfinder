@@ -29,3 +29,14 @@ test('bounded four-page scan preserves source and zero-write invariant',async()=
  assert.equal(candidates.length,12);assert.equal(report.pagination_requests,0);
  assert.equal(report.database_writes,0);assert.equal(calls.length,4);
 });
+
+test('source-linked category types are discovered, never followed or treated as listings',async()=>{
+ const origin=SEEDS[0].url;
+ const categories=['https://www.mubawab.ma/fr/st/f%C3%A8s/maisons-a-vendre','https://www.mubawab.ma/fr/st/k%C3%A9nitra/terrains-a-louer'];
+ let requests=0;
+ const fetchImpl=async url=>{requests++;return {status:200,url,headers:{get:()=> 'text/html'},text:async()=>categories.map(c=>'<a href="'+c+'">Catégorie</a>').join('')};};
+ const {report,typeCategories}=await runPaginationCanary({seeds:[SEEDS[0]],robotsText:robots,paceMs:0,fetchImpl});
+ assert.equal(report.category_requests,1);assert.equal(report.candidate_type_category_urls,2);
+ assert.equal(typeCategories.length,2);assert.equal(requests,1);
+ assert.ok(typeCategories.every(c=>c.observed_in_public_anchor&&c.followed===false));
+});
