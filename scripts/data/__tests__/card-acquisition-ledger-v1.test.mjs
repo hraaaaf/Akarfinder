@@ -35,3 +35,13 @@ test('cross-run accents normalize to same neighborhood, not a conflict',()=>{
  const {report}=consolidateCardObservations([mob('mubawab_50',[card('a:111',{district:'Maârif'})]),mob('mubawab_frontier_100',[card('a:111',{district:'Maarif'})])]);
  assert.equal(report.cross_run_conflict_rows,0);assert.equal(report.five_field_observed_consistent,1);
 });
+
+test('additional independent city observation joins by source ID, no invented freshness',()=>{
+ const existing=card('a:111');
+ const newCity={...card('a:9876543'),city:'Meknes',district:'Hamria'};
+ const {report,rows}=consolidateCardObservations([mob('mubawab_50',[existing]),mob('mubawab_new_cities_30',[newCity])]);
+ assert.equal(report.distinct_source_id_count,2);
+ assert.equal(report.five_field_observed_consistent,2);
+ assert.equal(report.commercially_available_verified_count,0);
+ assert.ok(rows.every(r=>r.freshness_certified===false));
+});

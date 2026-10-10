@@ -8,6 +8,7 @@ const INPUTS = [
   { key: 'mubawab_frontier_100', source: 'mubawab.ma', prefix: 'a:', env: 'CARD_LEDGER_MUBAWAB_FRONTIER' },
   { key: 'mubawab_district_shards_120', source: 'mubawab.ma', prefix: 'a:', env: 'CARD_LEDGER_MUBAWAB_DISTRICT' },
   { key: 'mubawab_district_remainder_217', source: 'mubawab.ma', prefix: 'a:', env: 'CARD_LEDGER_MUBAWAB_REMAINDER' },
+  { key: 'mubawab_new_cities_30', source: 'mubawab.ma', prefix: 'a:', env: 'CARD_LEDGER_MUBAWAB_NEW_CITIES' },
   { key: 'domio_linked_70', source: 'domio.ma', prefix: 'domio:', env: 'CARD_LEDGER_DOMIO_LINKED' },
   { key: 'domio_resume_after12', source: 'domio.ma', prefix: 'domio:', env: 'CARD_LEDGER_DOMIO_RESUME' },
 ];
