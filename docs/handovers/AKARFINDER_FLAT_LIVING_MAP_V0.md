@@ -306,3 +306,17 @@ Obtain new exact-head Rue CI result. If green, retrieve its screenshot and confi
 - `scripts/audits/carte-rue-proximite-after.mjs` commit `d672b53150cd5dd51e0eb00be1b8468ff46e4fb7` : pan + wheel sur `style.left/top` de l'élément projeté par MapLibre, relativement à la zone carte ; exige `Twin Center` visible après zoom rue sur les 4 viewports.
 - `app/map/quartier-target-couche3.css` commit `fc0d21c4998fdb715daa1f2be5a1ce70eb122429` : taille/contraste de la cartouche flagship au tier `street`, C1 navy et bord fin C2 bleu, sans déplacer l'ancre ni données géographiques.
 - **Validation en cours, pas encore de nouvel AFTER**. Next exact : récupérer CI exact-head `fc0d21c4`, inspecter Rue AFTER et cas Casablanca/POI/multicity. Si Twin Center disparaît encore sur mobile, diagnostiquer coordonnées projetées/placement produit et corriger. Puis comparer au mockup et continuer les lots jusqu'au gate réel. **Aucun merge, Vercel ou write DB**.
+
+
+## LOT 3 — street landmark visibility, selection and accessibility — 2026-10-10
+
+**Verified street improvement** on product/test/docs HEAD `219ec05c0a71ab705401e713aea113efd1af7519`:
+- Rue Proximité AFTER [38092991936](https://github.com/hraaaaf/Akarfinder/actions/runs/38092991936) **success**, artifact `11684553982`. Real screenshots `twin-center-after-390x844.png`, `430x932.png`, `768x900.png`, `1280x900.png` inspected (390/1280), four cases report `ok:true`. `twinCenterLabelVisibleAtStreet=true` on **all 4** vs `false` on 390/430 previously; zoom tier street, zero 3D, 11/12/12/12 real footprint counts. Mouse pan/zoom now centered on sourced geographic projection, not bounding box of offset cartouche. No fabricated coordinates or business metadata.
+- POI AFTER `38092991941` **success**, Multicity `38092991875` **success** on same HEAD; Casablanca AFTER `38092991996` last checked in_progress (not yet claimed).
+- **Qualitative screenshot observation**: Twin Center navy label clearly visible; street basemap and 2D footprints readable. Still target global **≥9.5/10 not demonstrated**.
+
+**LOT3 incremental interaction** in progress on HEAD `92e7a350a4c7e9f152fa57d26a1226b6b030af3e`:
+- MapLibre source `components/map/MapLibreNeighborhood3D.tsx` changes landmark cartouches from presentational DOM to accessible real buttons; `aria-label="Explorer le repère [name]"`, pressed state, safe selection, contextual popup with **only sourced name + Maârif/Casablanca** (no invented hours/rating/prices), dismissable. Parent aria-hidden cleared in Maârif pilot so buttons are keyboard reachable.
+- CSS `app/map/quartier-target-couche3.css`: restrained accessible navy/blue focus, touch target, detail panel. Never moves geographic markers. Script `scripts/audits/carte-rue-proximite-after.mjs`: real click+keyboard Enter+close on Twin Center, visible/detail text and no clipping at 390/430/768/1280, capture `twin-center-selected-after-*.png`.
+- Commits source `6dae9a52`, CSS `bc7e0c3b`, audit `92e7a350`. **Not yet certified**. If CI shows click interception or accessibility regression, correct and repeat; do not declare interaction success until report and screenshots.
+- Next exact: check exact HEAD CI, download selected screenshots, inspect mobile/desktop and compare with 3-screen Notion target; then pursue human visual gate. PR #1108 DRAFT; no merge, Vercel or DB writes. C7/Market BEFORE/Zillow remain separate red gates.
