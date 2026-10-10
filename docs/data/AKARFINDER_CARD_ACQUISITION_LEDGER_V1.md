@@ -48,3 +48,8 @@ Le run GitHub cinq artifacts `38044450856` est **vert** ; son artifact `11666931
 - **249 groupes de signatures** ville/quartier/prix/surface identiques, **543 IDs candidats doublons**, dont **21 groupes inter-portails**. Aucun doublon physique fusionné ni certifié.
 
 Workflow Ledger élargi aux **six artifacts et SHA256 JSONL épinglés**. **Gate : attendre sa CI exact-HEAD** avant de déclarer cette version certifiée GitHub. **0 annonce certifiée fraîche/active/publiable, 0 écriture DB**, aucun merge ni déploiement Vercel. Next exact : lire la CI Ledger six lots et l'artifact ; comparer nouveau stock au goal 200K, prioriser extension source vérifiable et vraie fraîcheur.
+
+
+## CI exacte six artifacts validée — 2026-10-10
+
+Run `38044964671` ✅ sur HEAD `bf4804ab9e4e87f0345e843fac06feb86eb120d7`, artifact `11667367558` vérifié par lecture du JSON et vérification des SHA d'entrées : 10 850 observations, 8 993 IDs source uniques, 6 995 champs complets et cohérents, 5 contradictions, 249 groupes de signatures potentiellement liés dont 21 groupes inter-portails. **0 annonce fraîche/active/physiquement dédupliquée/publiée certifiée.** Le gate CI est clos pour le ledger six inputs. Le prochain lot introduit Sarouty sans l'ajouter au registre avant un vrai artifact cinq champs fiable.

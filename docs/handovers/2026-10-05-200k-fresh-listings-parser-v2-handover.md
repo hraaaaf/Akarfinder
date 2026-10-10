@@ -370,3 +370,16 @@ Le run GitHub cinq artifacts `38044450856` est **vert** ; son artifact `11666931
 Workflow Ledger élargi aux **six artifacts et SHA256 JSONL épinglés**. **Gate : attendre sa CI exact-HEAD** avant de déclarer cette version certifiée GitHub. **0 annonce certifiée fraîche/active/publiable, 0 écriture DB**, aucun merge ni déploiement Vercel. Next exact : lire la CI Ledger six lots et l'artifact ; comparer nouveau stock au goal 200K, prioriser extension source vérifiable et vraie fraîcheur.
 
 **Canari troisième portail :** Sarouty, code `scripts/data/sarouty-card-canary-v1.mjs`; premier test `38044741386` échoué **avant toute requête HTTP** (regex unité m²), correctif dans prochain commit. robots du portail annonce Crawl-delay 10 s, respecté. Ne pas affirmer de production Sarouty sans artifact. 
+
+
+## Certification six artifacts et ouverture Sarouty — 2026-10-10 à 10h43
+
+**Certifié GitHub** : [run 38044964671](https://github.com/hraaaaf/Akarfinder/actions/runs/38044964671) `completed/success` sur HEAD `bf4804ab9e4e87f0345e843fac06feb86eb120d7`. Artifact immuable **11667367558** inspecté : **10 850 cartes source**, **8 993 IDs propres aux deux sources** (Mubawab 6 403, Domio 2 590), **6 995 avec cinq champs cohérents**, **5 conflits**, **249 groupes de signatures identiques dont 21 groupes inter-portails**. Aucun doublon physique ni fraîcheur certifiés. Le gate CI du ledger six lots est donc **levé**, pas celui du Goal 200K.
+
+**Troisième portail Sarouty — preuve limitée :**
+- Run [38045232381](https://github.com/hraaaaf/Akarfinder/actions/runs/38045232381) `completed/success`, artifact **11667732538** : deux pages catégories réelles, **42 liens de carte candidats** (30 Casablanca, 12 Rabat), **0 ID accepté dans le registre et 0 annonce cinq champs certifiée**. Robots vérifié, pause minimale **10 secondes** entre requêtes malgré `crawl_delay_seconds=1` enregistré dans l'artifact.
+- Le point productif suivant est une extraction DOM **à provenance par carte isolée**, sans associer des champs de cartes voisines. Nouveau module `scripts/data/sarouty-result-cards-v1.mjs` + 7 régressions, runner `scripts/data/sarouty-card-fields-pilot-v1.mjs` + régressions robots/429/dédup et workflow `.github/workflows/sarouty-card-fields-pilot.yml`.
+- Cible : **six catégories publiques maximum** (Casablanca, Rabat, Marrakech, Tanger, Agadir, Kenitra) issues de liens de ville sur la page publique ; robots fail-closed, pause min 10s, arrêt immédiat 403/429, zéro requête détail, aucun bypass/masquage d'UA, aucune DB/Vercel/merge.
+- Le champ `five_field_observed` ne représente que URL+ville+quartier+prix+surface observés dans **la même carte**. On ne promet **ni statut commercial actif, ni fraîcheur, ni droits de republication**.
+
+**Next exact :** lire la CI GitHub exact-HEAD du pilote Sarouty, corriger toute régression, analyser artifact (sources fiables vs liens seulement), puis sélectionner les portails/chemins au meilleur rendement nouveaux IDs fiables par requête. Pour atteindre 200K actifs et distincts en 24 h, l'accès à un inventaire public suffisant et autorisé demeure une incertitude majeure.
