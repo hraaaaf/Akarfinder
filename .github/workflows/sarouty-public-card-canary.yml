@@ -7,6 +7,8 @@ on:
       - '.github/workflows/sarouty-public-card-canary.yml'
       - 'scripts/data/sarouty-card-canary-v1.mjs'
       - 'scripts/data/__tests__/sarouty-card-canary-v1.test.mjs'
+      - 'scripts/data/sarouty-detail-identity-v1.mjs'
+      - 'scripts/data/__tests__/sarouty-detail-identity-v1.test.mjs'
 permissions:
   contents: read
 jobs:
@@ -23,7 +25,9 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Offline robots crawl-delay and card scoping regression
-        run: node --test scripts/data/__tests__/sarouty-card-canary-v1.test.mjs
+        run: |
+          node --test scripts/data/__tests__/sarouty-card-canary-v1.test.mjs
+          node --test scripts/data/__tests__/sarouty-detail-identity-v1.test.mjs
       - name: Robots-gated two-page source discovery
         run: node scripts/data/sarouty-card-canary-v1.mjs
       - name: Read-only report assertions

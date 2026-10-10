@@ -3,6 +3,7 @@ import {createHash} from "node:crypto";
 import {pathToFileURL} from "node:url";
 import {load} from "cheerio";
 import {robotsAllowed} from "./mubawab-result-cards-v1.mjs";
+import {saroutyListingRoute} from "./sarouty-detail-identity-v1.mjs";
 
 const UA="AkarFinderSaroutyPublicCanary/1.0 (+https://akarfinder.ma)";
 const HOSTS=new Set(["sarouty.ma","www.sarouty.ma"]);
@@ -42,7 +43,8 @@ export function probeSaroutyCards(html,pageUrl){
  for(const a of $("a[href]").toArray()){
   let u;try{u=new URL($(a).attr("href"),pageUrl);}catch{continue;}
   if(u.protocol!=="https:"||!HOSTS.has(u.hostname.toLowerCase())||u.href===pageUrl||u.search||u.hash)continue;
-  if(u.pathname.match(/^\/(?:acheter|louer)\/(?:casablanca|rabat)\/appartements-a-(?:vendre|louer)\/?$/))continue;
+  const listing=saroutyListingRoute(u.href,pageUrl);
+  if(!listing)continue;
   let root=$(a).closest("article,[class*='property-card'],[class*='listing-card'],[class*='propertyCard']");
   if(!root.length){
    for(const p of $(a).parents().slice(0,5).toArray()){
@@ -59,10 +61,10 @@ export function probeSaroutyCards(html,pageUrl){
   candidates++;
   if(hasPrice)prices++;
   if(hasSurface)surfaces++;
-  if(hasPrice&&hasSurface&&!seen.has(hash(u.href))){evidence++;seen.add(hash(u.href));}
+  if(hasPrice&&hasSurface&&!seen.has(listing.identity)){evidence++;seen.add(listing.identity);}
  }
  return {candidate_anchors:candidates,price_scoped_anchors:prices,surface_scoped_anchors:surfaces,
-  distinct_card_link_evidence:evidence,source_ids_certified:0,five_fields_certified:0,
+  distinct_card_link_evidence:evidence,source_identity_candidates_observed:evidence,source_ids_certified:0,five_fields_certified:0,
   note:"Links are hashed and only indicate card-like DOM. Do not treat as listing IDs, publishable data or freshness proof."};
 }
 

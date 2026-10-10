@@ -7,7 +7,7 @@ test("source robots ten-second crawl-delay is mandatory",()=>{
  assert.equal(saroutyCrawlDelay(robots),10);
 });
 test("card-like anchor with price and surface is only a candidate, not certified listing",()=>{
- const html='<article><a href="/properties/abc">Villa 1 200 000 DH 95 m² à vendre</a></article>';
+ const html='<article><a href="/acheter/appartement-casablanca-racine-908416/">Villa 1 200 000 DH 95 m² à vendre</a></article>';
  const r=probeSaroutyCards(html,"https://www.sarouty.ma/acheter/casablanca/appartements-a-vendre/");
  assert.equal(r.distinct_card_link_evidence,1);
  assert.equal(r.five_fields_certified,0);
@@ -28,4 +28,10 @@ test("two allowed pages respect at least ten seconds before second request",asyn
  const fetchImpl=async url=>{requests.push(url);return {status:200,url,headers:{get:()=>"text/html"},text:async()=>"<html><body></body></html>"};};
  const r=await runSaroutyCanary({fetchImpl,robotsText:"User-agent: *\nAllow: /\nCrawl-delay: 10",sleep:ms=>{waited.push(ms);}});
  assert.equal(r.category_requests,2);assert.deepEqual(waited,[10000]);assert.equal(r.five_fields_certified,0);
+});
+
+test("category links are not source listing IDs",()=>{
+ const html='<article><a href="/acheter/casablanca/appartements-a-vendre/">1 200 000 DH 95 m²</a></article>';
+ const r=probeSaroutyCards(html,"https://www.sarouty.ma/acheter/casablanca/appartements-a-vendre/");
+ assert.equal(r.source_identity_candidates_observed,0);
 });
