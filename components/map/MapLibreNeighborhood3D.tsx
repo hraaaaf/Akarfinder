@@ -834,10 +834,10 @@ export function MapLibreNeighborhood3D({
               type: "circle",
               source: FOCUS_SOURCE_ID,
               paint: {
-                "circle-radius": isMaarifTargetPilot ? (desktop ? 195 : 153) : (desktop ? 84 : 68),
+                "circle-radius": isMaarifTargetPilot ? (desktop ? 155 : 135) : (desktop ? 84 : 68),
                 "circle-color": isMaarifTargetPilot ? MAP_BRAND_BLUE : districtTone,
-                "circle-blur": isMaarifTargetPilot ? 0.86 : 0,
-                "circle-opacity": isMaarifTargetPilot ? 0.22 : 0.13,
+                "circle-blur": isMaarifTargetPilot ? 0.92 : 0,
+                "circle-opacity": isMaarifTargetPilot ? 0.12 : 0.13,
                 "circle-stroke-color": AKARFINDER_MOROCCO_MAP_NAVY,
                 "circle-stroke-width": isMaarifTargetPilot ? 0 : 1.5,
                 "circle-stroke-opacity": isMaarifTargetPilot ? 0 : 0.56,
@@ -1044,11 +1044,15 @@ export function MapLibreNeighborhood3D({
       .sort((a, b) => a.distanceKm - b.distanceKm).slice(0, 4);
     const softSpotData = {
       type: "FeatureCollection",
-      features: sourcedSpots.map(({ longitude, latitude }) => ({
-        type: "Feature",
-        properties: { semantic: "context-indicative-from-sourced-point", boundaryClaim: false },
-        geometry: { type: "Point", coordinates: [longitude, latitude] },
-      })),
+      features: [
+        { type: "Feature", properties: { semantic: "context-indicative-from-sourced-center", boundaryClaim: false, sourceWeight: 1.25 },
+          geometry: { type: "Point", coordinates: center } },
+        ...sourcedSpots.map(({ longitude, latitude }) => ({
+          type: "Feature",
+          properties: { semantic: "context-indicative-from-sourced-point", boundaryClaim: false, sourceWeight: 0.92 },
+          geometry: { type: "Point", coordinates: [longitude, latitude] },
+        })),
+      ],
     };
 
     const data = {
@@ -1125,17 +1129,26 @@ export function MapLibreNeighborhood3D({
           "fill-opacity": 0.018,
         },
       } as any, FOCUS_GLOW_LAYER_ID);
+      // Organic AkarFinder life-zone wash from *actual sourced points*.
+      // A heat-density color ramp is used for presentation only: it does NOT
+      // represent a density statistic and NEVER defines a quartier boundary.
       map.addLayer({
         id: CONTEXT_SOFT_SPOTS_LAYER_ID,
-        type: "circle",
+        type: "heatmap",
         source: CONTEXT_SOFT_SPOTS_SOURCE_ID,
         layout: { visibility: administrativeBoundsVisible ? "none" : "visible" },
         paint: {
-          "circle-color": MAP_BRAND_BLUE,
-          "circle-radius": ["interpolate", ["linear"], ["zoom"], 12, 26, 14.5, 92, 17, 135],
-          "circle-opacity": 0.085,
-          "circle-blur": 0.94,
-          "circle-stroke-width": 0,
+          "heatmap-weight": ["coalesce", ["get", "sourceWeight"], 0.92],
+          "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 12, 0.9, 14.5, 1.2, 17, 1.0],
+          "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 12, 64, 14.5, 135, 17, 180],
+          "heatmap-opacity": 0.90,
+          "heatmap-color": ["interpolate", ["linear"], ["heatmap-density"],
+            0, "rgba(11,99,206,0)",
+            0.14, "rgba(11,99,206,0.025)",
+            0.32, "rgba(11,99,206,0.11)",
+            0.60, "rgba(11,99,206,0.19)",
+            0.85, "rgba(11,99,206,0.23)",
+            1, "rgba(11,99,206,0.25)"],
         },
       } as any, FOCUS_GLOW_LAYER_ID);
       map.addLayer({
@@ -1279,7 +1292,7 @@ export function MapLibreNeighborhood3D({
       data-maplibre-context-label-policy={isMaarifTargetPilot ? "suppressed-at-quarter-zoom" : "default"}
       data-maplibre-boundary-render={isMaarifTargetPilot && boundaryGeometry ? "administrative-navy-blue-relief" : "default"}
        data-maplibre-administrative-view={isMaarifTargetPilot && administrativeBoundsVisible ? "arrondissement" : "quartier-context"}
-       data-maplibre-context-visual={isMaarifTargetPilot ? "branded-soft-focus-no-border" : "default"}
+       data-maplibre-context-visual={isMaarifTargetPilot ? "sourced-organic-heatglow-no-border" : "default"}
        data-maplibre-context-spot-policy={isMaarifTargetPilot ? "verified-nearby-point-glows-no-boundary" : "default"}
       data-maplibre-context-state={contextState}
       data-maplibre-anchor-count={context?.anchor_count ?? 0}
