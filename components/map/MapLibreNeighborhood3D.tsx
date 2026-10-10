@@ -340,6 +340,7 @@ export function MapLibreNeighborhood3D({
   const restoreCamera = () => {
     const map = mapInstanceRef.current;
     if (!map) return;
+    setSelectedLandmarkId(null);
     setAdministrativeBoundsVisible(false);
     setQuartierFocusLayersVisible(map, true);
     setAdministrativePolygonVisible(map, false);
@@ -357,6 +358,7 @@ export function MapLibreNeighborhood3D({
       return;
     }
     const desktop = window.innerWidth >= 1024;
+    setSelectedLandmarkId(null);
     setQuartierFocusLayersVisible(map, false);
     setAdministrativePolygonVisible(map, true);
     map.fitBounds(bounds, {
@@ -375,9 +377,13 @@ export function MapLibreNeighborhood3D({
   // Keep the initial quartier camera; discovery is an explicit user action.
   const focusAllContextAnchors = () => {
     setActiveCategory("all");
+    setSelectedLandmarkId(null);
     const map = mapInstanceRef.current;
     if (map && administrativeBoundsVisible) {
+      // Returning to sourced POIs must not leave the OSM arrondissement
+      // polygon looking like a certified quartier boundary.
       setAdministrativeBoundsVisible(false);
+      setAdministrativePolygonVisible(map, false);
       setQuartierFocusLayersVisible(map, true);
     }
     const anchors = context?.anchors ?? [];
