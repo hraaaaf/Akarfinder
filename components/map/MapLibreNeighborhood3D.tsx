@@ -312,6 +312,7 @@ export function MapLibreNeighborhood3D({
   const [activeCategory, setActiveCategory] = useState<LivingHereCategory | "all">("all");
   const [zoomTier, setZoomTier] = useState<"overview" | "quarter" | "street">("quarter");
   const [allContextFocused, setAllContextFocused] = useState(false);
+  const [administrativeBoundsVisible, setAdministrativeBoundsVisible] = useState(false);
   const [actualCamera, setActualCamera] = useState({ pitch: 0, bearing: 0 });
   const [screenPoints, setScreenPoints] = useState<Record<string, ScreenPoint>>({});
   const [centerPoint, setCenterPoint] = useState<ScreenPoint | null>(null);
@@ -322,7 +323,31 @@ export function MapLibreNeighborhood3D({
   const restoreCamera = () => {
     const map = mapInstanceRef.current;
     if (!map) return;
+    setAdministrativeBoundsVisible(false);
     focusNeighborhoodMap(map, boundaryGeometry, center, desktopCameraOffset, targetComposition, window.innerWidth >= 1024, 650);
+  };
+
+  // OSM relation 2801474 is the administrative arrondissement, NOT the central quartier.
+  // Show only real supplied polygon geometry; the normal quartier camera is recoverable.
+  const toggleAdministrativeBounds = () => {
+    const map = mapInstanceRef.current;
+    const bounds = getBoundaryBounds(boundaryGeometry);
+    if (!map || !bounds) return;
+    if (administrativeBoundsVisible) {
+      restoreCamera();
+      return;
+    }
+    const desktop = window.innerWidth >= 1024;
+    map.fitBounds(bounds, {
+      padding: desktop
+        ? { top: 86, right: 60, bottom: 64, left: 60 }
+        : { top: 160, right: 22, bottom: 235, left: 22 },
+      maxZoom: 13.6,
+      pitch: 0,
+      bearing: 0,
+      duration: 650,
+    });
+    setAdministrativeBoundsVisible(true);
   };
 
   // V0.3: reframe existing sourced POIs, not a claimed district polygon.
@@ -815,10 +840,10 @@ export function MapLibreNeighborhood3D({
               map.addLayer({
                 id: "neighborhood-boundary-fill", type: "fill", source: "neighborhood-boundary",
                 paint: {
-                  // OSM relation 2801474 is the Maârif administrative arrondissement, not a certified neighborhood boundary.
-                  // Keep the area unfilled so the neighborhood focus is never confused with the arrondissement.
-                  "fill-color": isMaarifTargetPilot ? "#4D9BE6" : districtTone,
-                  "fill-opacity": isMaarifTargetPilot ? 0 : 0.18,
+                  // OSM relation 2801474 is the Maârif *administrative arrondissement*, not the central quartier.
+                  // A restrained fill makes only that verified shape legible at administrative overview zoom.
+                  "fill-color": isMaarifTargetPilot ? MAP_BRAND_BLUE : districtTone,
+                  "fill-opacity": isMaarifTargetPilot ? 0.12 : 0.18,
                 },
               });
               if (isMaarifTargetPilot) {
@@ -827,23 +852,30 @@ export function MapLibreNeighborhood3D({
                   type: "line",
                   source: "neighborhood-boundary",
                   paint: {
-                    "line-color": AKARFINDER_MOROCCO_MAP_NAVY,
-                    "line-width": 2.2,
-                     "line-opacity": 0.06,
-                     "line-blur": 1.5,
+                    "line-color": MAP_BRAND_BLUE,
+                    "line-width": 8,
+                     "line-opacity": 0.24,
+                     "line-blur": 2.3,
                   },
                 });
               }
               map.addLayer({
                 id: "neighborhood-boundary-line", type: "line", source: "neighborhood-boundary",
                 paint: {
-                  "line-color": AKARFINDER_MOROCCO_MAP_NAVY,
-                  "line-width": isMaarifTargetPilot ? 1.4 : 3.2,
-                   "line-opacity": isMaarifTargetPilot ? 0.48 : 0.96,
+                  "line-color": isMaarifTargetPilot ? MAP_BRAND_NAVY : AKARFINDER_MOROCCO_MAP_NAVY,
+                  "line-width": isMaarifTargetPilot ? 3 : 3.2,
+                   "line-opacity": isMaarifTargetPilot ? 0.95 : 0.96,
                    "line-blur": 0,
-                   ...(isMaarifTargetPilot ? { "line-dasharray": [2.2, 1.4] } : {}),
                 },
               });
+              if (isMaarifTargetPilot) {
+                map.addLayer({
+                  id: "neighborhood-boundary-blue-highlight",
+                  type: "line",
+                  source: "neighborhood-boundary",
+                  paint: { "line-color": MAP_BRAND_BLUE, "line-width": 1, "line-opacity": 0.92 },
+                });
+              }
             }
 
             if (isMaarifTargetPilot && targetComposition === "context" && map.getPitch() > 0) {
@@ -1178,7 +1210,8 @@ export function MapLibreNeighborhood3D({
       data-maplibre-label-policy={isMaarifTargetPilot ? "akarfinder-owned" : "basemap-default"}
       data-maplibre-poi-language={isMaarifTargetPilot ? "akarfinder-flat-v02" : "default"}
       data-maplibre-context-label-policy={isMaarifTargetPilot ? "suppressed-at-quarter-zoom" : "default"}
-      data-maplibre-boundary-render={isMaarifTargetPilot && boundaryGeometry ? "administrative-dashed-flat" : "default"}
+      data-maplibre-boundary-render={isMaarifTargetPilot && boundaryGeometry ? "administrative-navy-blue-relief" : "default"}
+       data-maplibre-administrative-view={isMaarifTargetPilot && administrativeBoundsVisible ? "arrondissement" : "quartier-context"}
       data-maplibre-context-state={contextState}
       data-maplibre-anchor-count={context?.anchor_count ?? 0}
       data-maplibre-city={citySlug}
@@ -1289,9 +1322,12 @@ export function MapLibreNeighborhood3D({
 
 
       {isMaarifTargetPilot && boundaryGeometry ? (
-        <div className="maplibre-spike-boundary-badge" aria-label="Contour administratif de l'arrondissement Maârif">
-           Arrondissement · contour OSM
-         </div>
+        <button type="button" className="maplibre-spike-boundary-badge maplibre-spike-boundary-action"
+          onClick={toggleAdministrativeBounds}
+          aria-pressed={administrativeBoundsVisible}
+          aria-label={administrativeBoundsVisible ? "Revenir au quartier Maârif" : "Voir les limites administratives de l'arrondissement Maârif"}>
+          {administrativeBoundsVisible ? "← Retour au quartier" : "Voir limites · arrondissement Maârif"}
+        </button>
       ) : null}
 
       <div className="maplibre-spike-controls" aria-label="Contrôles de la carte">
