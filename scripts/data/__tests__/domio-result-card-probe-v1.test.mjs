@@ -65,7 +65,7 @@ test("Rabat and Tanger explicit geographic cards",()=>{
 test("rejects sale-price and apartment-surface outliers",()=>{
  const html='<a href="/fr/appartement/vendre/tanger/12345/appart">Acheter 1 000 011 000 DH Tanger, Malabata 22582690.0 m²</a>';
  const r=probeDomioCardHtml(html,"https://domio.ma/fr/appartement/vendre/tanger/300000");
- assert.equal(r.rows[0].price_mad,null);assert.equal(r.rows[0].surface_m2,null);assert.equal(r.five_field_present,false);
+ assert.equal(r.rows[0].price_mad,null);assert.equal(r.rows[0].surface_m2,null);assert.equal(r.five_field_present,0);
 });
 test("small rent valid; tiny sale price rejected",()=>{
  const html='<a href="/fr/appartement/louer/rabat/13003/flat">Louer 7 000 DH Rabat, Hay Riad 59.0 m²</a><a href="/fr/appartement/vendre/rabat/13004/flat">Acheter 1 500 DH Rabat, Agdal 150.0 m²</a>';
