@@ -316,6 +316,7 @@ export function MapLibreNeighborhood3D({
   const [allContextFocused, setAllContextFocused] = useState(false);
   const [administrativeBoundsVisible, setAdministrativeBoundsVisible] = useState(false);
   const [selectedLandmarkId, setSelectedLandmarkId] = useState<string | null>(null);
+  const [selectedPoiId, setSelectedPoiId] = useState<string | null>(null);
   const [actualCamera, setActualCamera] = useState({ pitch: 0, bearing: 0 });
   const [screenPoints, setScreenPoints] = useState<Record<string, ScreenPoint>>({});
   const [centerPoint, setCenterPoint] = useState<ScreenPoint | null>(null);
@@ -341,6 +342,7 @@ export function MapLibreNeighborhood3D({
     const map = mapInstanceRef.current;
     if (!map) return;
     setSelectedLandmarkId(null);
+    setSelectedPoiId(null);
     setAdministrativeBoundsVisible(false);
     setQuartierFocusLayersVisible(map, true);
     setAdministrativePolygonVisible(map, false);
@@ -359,6 +361,7 @@ export function MapLibreNeighborhood3D({
     }
     const desktop = window.innerWidth >= 1024;
     setSelectedLandmarkId(null);
+    setSelectedPoiId(null);
     setQuartierFocusLayersVisible(map, false);
     setAdministrativePolygonVisible(map, true);
     map.fitBounds(bounds, {
@@ -378,6 +381,7 @@ export function MapLibreNeighborhood3D({
   const focusAllContextAnchors = () => {
     setActiveCategory("all");
     setSelectedLandmarkId(null);
+    setSelectedPoiId(null);
     const map = mapInstanceRef.current;
     if (map && administrativeBoundsVisible) {
       // Returning to sourced POIs must not leave the OSM arrondissement
@@ -1262,6 +1266,7 @@ export function MapLibreNeighborhood3D({
 
   const categories = context?.categories.filter((category) => Boolean(CATEGORY_META[category])) ?? [];
   const selectedLandmark = targetPilotLandmarks.find((item) => item.id === selectedLandmarkId) ?? null;
+  const selectedPoi = (context?.anchors ?? []).find((item) => item.poi_id === selectedPoiId) ?? null;
   const visibleAnchors = (context?.anchors ?? [])
     .filter((anchor) => activeCategory === "all" || anchor.category === activeCategory)
     .sort((a, b) => {
@@ -1317,6 +1322,7 @@ export function MapLibreNeighborhood3D({
       data-maplibre-target-context-count={0}
        data-maplibre-zoom-tier={zoomTier}
        data-maplibre-selected-landmark={selectedLandmarkId ?? ""}
+       data-maplibre-selected-poi={selectedPoiId ?? ""}
       data-maplibre-rtl-status={rtlStatus}
       data-maplibre-reserve-rail={reserveRail ? "true" : "false"}
       data-akar-quartier-target={isMaarifTargetPilot ? "maarif-couche1" : undefined}
@@ -1357,20 +1363,28 @@ export function MapLibreNeighborhood3D({
             );
             const collapseLabel = overviewSecondary || (isMaarifTargetPilot && protectedCollision);
             return (
-              <div
+              <button
+                type="button"
                 key={anchor.poi_id}
                 className="maplibre-spike-poi-label"
                 data-label-collapsed={collapseLabel ? "true" : "false"}
                 data-poi-category={anchor.category}
                 data-poi-family={poiVisualFamily(anchor.category)}
-                 data-anchor-edge={isMaarifTargetPilot && mapRef.current ? screen.x >= mapRef.current.clientWidth / 2 ? "right" : "left" : "center"}
-                 style={{ left: screen.x, top: screen.y }}
+                data-poi-selected={selectedPoiId === anchor.poi_id ? "true" : "false"}
+                data-anchor-edge={isMaarifTargetPilot && mapRef.current ? screen.x >= mapRef.current.clientWidth / 2 ? "right" : "left" : "center"}
+                style={{ left: screen.x, top: screen.y }}
+                aria-label={`Explorer le lieu ${anchor.name}`}
+                aria-pressed={selectedPoiId === anchor.poi_id}
+                onClick={() => {
+                  setSelectedLandmarkId(null);
+                  setSelectedPoiId(selectedPoiId === anchor.poi_id ? null : anchor.poi_id);
+                }}
               >
                 <span lang={arabic ? "ar" : undefined} dir={arabic ? "rtl" : "auto"}>{anchor.name}</span>
                 <i className="maplibre-spike-poi-glyph" style={{ color: meta.color }}>
                   <PoiFamilyGlyph category={anchor.category} />
                 </i>
-              </div>
+              </button>
             );
           })}
           {!administrativeBoundsVisible && targetPilotLandmarks.map((landmark) => {
@@ -1387,7 +1401,10 @@ export function MapLibreNeighborhood3D({
                 style={{ left: screen.x, top: screen.y }}
                 aria-label={`Explorer le repère ${landmark.name}`}
                 aria-pressed={selectedLandmarkId === landmark.id}
-                onClick={() => setSelectedLandmarkId(selectedLandmarkId === landmark.id ? null : landmark.id)}
+                onClick={() => {
+                  setSelectedPoiId(null);
+                  setSelectedLandmarkId(selectedLandmarkId === landmark.id ? null : landmark.id);
+                }}
               >
                 <i aria-hidden="true"><Landmark size={13} strokeWidth={2.25} /></i>
                 <span lang={isArabicText(landmark.name) ? "ar" : undefined} dir={isArabicText(landmark.name) ? "rtl" : "auto"}>{landmark.name}</span>
@@ -1395,6 +1412,16 @@ export function MapLibreNeighborhood3D({
             );
           })}
         </div>
+        {isMaarifTargetPilot && !administrativeBoundsVisible && selectedPoi ? (
+          <aside className="maplibre-spike-landmark-detail" data-maplibre-poi-detail="sourced-context" role="status">
+            <div>
+              <small>Lieu à proximité · ${CATEGORY_META[selectedPoi.category]?.label ?? "Repère"}</small>
+              <strong lang={isArabicText(selectedPoi.name) ? "ar" : undefined} dir={isArabicText(selectedPoi.name) ? "rtl" : "auto"}>{selectedPoi.name}</strong>
+              <span>Autour de Maârif · Casablanca</span>
+            </div>
+            <button type="button" aria-label="Fermer le détail du lieu" onClick={() => setSelectedPoiId(null)}>×</button>
+          </aside>
+        ) : null}
         {isMaarifTargetPilot && !administrativeBoundsVisible && selectedLandmark ? (
           <aside className="maplibre-spike-landmark-detail" data-maplibre-landmark-detail="target" role="status">
             <div>
@@ -1423,7 +1450,7 @@ export function MapLibreNeighborhood3D({
           Repères
           {isMaarifTargetPilot && context?.anchor_count ? <span className="maplibre-spike-filter-count" aria-hidden="true">{context.anchor_count}</span> : null}
         </button>
-        {categories.map((category) => <button key={category} className={activeCategory === category ? "active" : ""} onClick={() => setActiveCategory(category)}>{CATEGORY_META[category].label}</button>)}
+        {categories.map((category) => <button key={category} className={activeCategory === category ? "active" : ""} onClick={() => { setActiveCategory(category); setSelectedPoiId(null); setSelectedLandmarkId(null); }}>{CATEGORY_META[category].label}</button>)}
       </div>
 
 
