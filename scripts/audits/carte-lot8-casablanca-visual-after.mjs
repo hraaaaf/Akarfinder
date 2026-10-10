@@ -83,7 +83,7 @@ try {
         throw new Error(`${viewport.name}: context wash must derive only from nearby sourced POIs (${contextSpotPolicy})`);
       }
       const contextVisual = await maplibre.getAttribute("data-maplibre-context-visual");
-      if (contextVisual !== "branded-soft-focus-no-border") {
+      if (contextVisual !== "sourced-organic-heatglow-no-border") {
         throw new Error(`${viewport.name}: default quartier must be softly highlighted, not an administrative polygon (${contextVisual})`);
       }
       if ((await maplibre.getAttribute("data-maplibre-administrative-view")) !== "quartier-context") {
