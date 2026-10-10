@@ -320,3 +320,21 @@ Obtain new exact-head Rue CI result. If green, retrieve its screenshot and confi
 - CSS `app/map/quartier-target-couche3.css`: restrained accessible navy/blue focus, touch target, detail panel. Never moves geographic markers. Script `scripts/audits/carte-rue-proximite-after.mjs`: real click+keyboard Enter+close on Twin Center, visible/detail text and no clipping at 390/430/768/1280, capture `twin-center-selected-after-*.png`.
 - Commits source `6dae9a52`, CSS `bc7e0c3b`, audit `92e7a350`. **Not yet certified**. If CI shows click interception or accessibility regression, correct and repeat; do not declare interaction success until report and screenshots.
 - Next exact: check exact HEAD CI, download selected screenshots, inspect mobile/desktop and compare with 3-screen Notion target; then pursue human visual gate. PR #1108 DRAFT; no merge, Vercel or DB writes. C7/Market BEFORE/Zillow remain separate red gates.
+
+
+## LOT 3 — certifié sur 4 pipelines / revue mockup / durcissement — 2026-10-10
+
+**Baseline certifiée (code `fb548f96e0b8a482423ce5d80947d5d8b6f1e989`, PR #1108 DRAFT) :**
+- Casablanca Visual AFTER `38094409660` **success**, artifact `11685871160`, `report.ok=true` sur 390×844, 430×932, 768×900, 1280×900 ; retour « Limites administratives » → « Repères » attesté (`boundaryOverview.returnedViaReperes=true`). La légende reste sémantiquement exacte : **arrondissement Maârif / limite administrative OSM / pas le quartier central**. Format fiche repliée 156.125 / 160 / 144 px ; CTA 44 px.
+- POI AFTER `38094409596` **success**, artifact `11685891012` : 4 POI sourcés visibles après clic sur 390/430/768, 3 sur 1280 par culling naturel. Aucune troncature ni clipping ; la sélection du parc « Parc du Vélodrome » fonctionne avec clic, Enter, fermeture, détails **« Autour de Maârif · Casablanca »** (pas d'appartenance territoriale inventée), bouton fermer 44×44 px ; captures `poi-after-selected-390x844.png`, `1280x900.png` inspectées.
+- Rue AFTER `38094409595` **success**, artifact `11684907996` : Twin Center visible et sélectionnable au vrai zoom rue sur les 4 tailles, clic/clavier/fermeture réels et close 44 px ; empreintes 2D, aucune extrusion.
+- Multi-city `38094409652` **success**. Les échecs métiers C7, Market BEFORE, Zillow restent **séparés** et non clos.
+- **Contact sheet réel** : `/mnt/data/AKARFINDER_MAARIF_LOT3_4_CAPTURES_CERTIFIEES.png` (non archivé durablement dans Notion/Drive à ce stade). États : vue quartier, limites administratives, POI sourcé sélectionné, Twin Center zoom rue, tous 390×844. L'image cible mockup validée est disponible sur Google Drive : `https://drive.google.com/file/d/1enoMXzkoHVGTsfC7NTET79M6tz6vDsYZ/view`.
+- **Revue qualitative** : bonne cohérence navy C1/bleu C2, fonds clairs, vraies coordonnées/empreintes ; les cartouches et fiches contextuelles restent plus sobres que le mockup conceptuel très illustré. La cible **≥9.5/10 n'est PAS prouvée** ; ne pas déclarer design final ni PR prête à merger. L'appréciation humaine finale reste un gate.
+
+**Durcissement post-baseline exécuté :**
+- CSS `app/map/quartier-target-couche3.css` commit `137c7d0c` : pendant qu'un POI sourcé est sélectionné, autres étiquettes contextuelles sont visuellement atténuées au lieu de concurrencer la fiche ; retour à l'état normal après fermeture. Aucune coordonnée ni source changée.
+- Test `scripts/audits/carte-poi-language-after.mjs` commit `27ae6d9ff43782048cba5a3b1fc7b11127f07354` : étend le clic réel à **tous** les POI affichés sur chaque viewport (4 mobile/tablette et 3 desktop), vérifie nom source, proximité honnête, fermeture sans force/ciblage interne, conservant Enter sur le parc.
+- Les preuves de ces nouveaux correctifs doivent venir des 4 CI **sur un même HEAD incluant code + test**. Toujours aucune autorisation de merge ni Vercel / DB write.
+
+**Next exact :** inspecter CI exact HEAD, corriger sans bypass si un label reste intercepté ; télécharger les 4 screenshots AFTER par viewport et les examiner, comparer strictement au mockup et faire revue visuelle ; si target non atteint, proposer/exécuter le prochain correctif mesurable. Ne publier aucun polygone de quartier central sans source revue.
