@@ -161,3 +161,42 @@ Examples: Casablanca **134/134 inside**, Rabat **27/27**, Agadir **35/35**, Marr
 - **Success proven:** national compressed source inventory, strict parent-key analysis, and spatial shadow checks all completed with green exact-code CI.
 - **Not proven/not performed:** a complete list of Moroccan neighborhoods, 1,628 uniquely verified neighborhood identities, reviewed district boundaries, UX performance for thousands of labels, app activation, or general production release.
 - **Next exact:** first inspect the 16 spatial exceptions and 4 unresolved parents and classify 323 unique centered candidate names across the current seven mapped city catalogs; then prepare a bounded city-specific map canary and BEFORE/AFTER screenshots on four viewports. No mass promotion, merge, DB write, or Vercel deployment.
+
+
+## SOURCE CANDIDATE REVIEW QUEUE — VERIFIED
+
+Read-only [CI 38105877702](https://github.com/hraaaaf/Akarfinder/actions/runs/38105877702) on exact audit-script SHA `b67c83500d90cb19f81a39de99582231a47eaf1b` (job `114371192561`) created the fully explicit candidate-review queue and name-level spatial exceptions.
+
+**323** distinct centered **names** from seven directly joined city source groups split as:
+
+| Class | Count | Policy |
+|---|---:|---|
+| Source-only name not yet matched by internal registries | **297** | Original OSM feature identity + semantic review required |
+| Already in older listing district dictionary | **20** | Registry reconciliation before promotion |
+| Already canonical validated, but `map_eligible=false` | **6** | Preserve deliberate safety gate; never auto-enable |
+| **Total** | **323** | These are review records, NOT 323 certified neighborhoods |
+
+**4 candidate names** triggered conservative POI/real-estate-project-name flags, and **9 pairs** of distinct names are within 150 meters. Neither heuristic proves equivalence or invalidity; manual source/semantics review is mandatory.
+
+**All 20 spatial and parent-identity exceptions are now named in the audit artifact** `source-review-exceptions.json` (plus CSV): 16 outside simplified candidate city polygons and four orphaned parent identities. Original OSM feature IDs are not stored in the packed V5 input; the audit deliberately records them as `null` rather than manufacturing stable identity.
+
+- **Outside:** Fès/Aouint Hajjaj (1), Ceuta/El Sarchal and Juan XXIII (2), Melilla/Melilla La Vieja (1), El Hajeb/Paysannat (1), Dcheira El Jihadia/Irhalne, Rochdi, Idder, Zaitoun and Narjiss (5), El Jadida/Résidence Khalil Jabrane, Lot. Annasr, Skippa, Palmiers 8, Lot. Nessma and Lot. Jnane (6). **Total 16.**
+- **No source parent resolved:** Madagh/Hay Chrarba and Hay Essalam (2), Sidi Yahya Gharb/Hay Al Wahda (1), Bab Taza/Tifouzale ès Sefli (1). **Total 4.**
+- These exceptions remain `HOLD`; a coordinate outside a simplified city polygon is not necessarily wrong or outside a residential locality.
+
+## SOURCE-ONLY PILOT AGADIR AL QODS — SOURCE GATE VERIFIED
+
+Selected pilot is **Al Qods / Agadir**, already present in the packed V5 catalog as `osm_neighborhood_label` with longitude **-9.5551165** and latitude **30.4177326**.
+
+- Independent geolocated identity: [Mapcarta / OSM node 3848139959](https://mapcarta.com/N3848139959), `place=suburb`, rounded 30.41773 / -9.55512 matching the packed center.
+- Postal naming corroboration: [Barid search index](https://www.codepostal.ma/search_carte.aspx?keyword=80), `AGADIR QUARTIER QODS 80060`.
+- Independent local descriptions: [Le360 (18 January 2026)](https://fr.le360.ma/societe/agadir-lisolement-des-habitants-du-quartier-al-qods-interpelle-aziz-akhannouch-president-du-conseil_FZTEVMQIL5ENXJSUWLLZVWEUPY/) and [TelQuel (17 July 2018)](https://telquel.ma/2018/07/17/a-agadir-la-nomenclature-palestinienne-des-rues-fait-debat_1603577) both call the place a neighborhood of Agadir.
+- Source fixture: `data/geo/pilot-agadir-al-qods-evidence.json`.
+- Offline canary: `scripts/audits/verify-agadir-al-qods-pilot.mjs`. [CI 38105994983](https://github.com/hraaaaf/Akarfinder/actions/runs/38105994983), exact SHA `35da8eedb4f122d64801dccceffb92a32260d7ba`, **SUCCESS**, job `114371534875`; JSON artifact `agadir-al-qods-pilot.json` produced.
+- Direct OSM node page was not accessible in the verification browser; OSM ID and tag are supported by Mapcarta's explicit OSM reference. Preserve that provenance distinction.
+
+**Source gate PASS only**, NOT public map eligibility. The pilot remains `HOLD` for certified boundaries, public route, visual quality and release. No source center is repurposed into a fabricated polygon.
+
+For real four-viewport browser certification of the existing shared map without product changes, child DRAFT PR [#1112](https://github.com/hraaaaf/Akarfinder/pull/1112) targets map DRAFT [#1108](https://github.com/hraaaaf/Akarfinder/pull/1108). Its first harness commit is `449ac6cbce06b427832e0cdc3bf0db6acf3357eb`. N2 browser run **pending at this documentation checkpoint**, with the exact four requested screenshots `agadir-al-qods-{390,430,768,1280}-after.png`.
+
+**Next exact**: inspect the one N2 run; if green download/screenshots, inspect 4 viewports and compare to Flat Living Map target, update proof and score. If red diagnose and fix only the actual source/harness error. Keep all PRs DRAFT and Vercel/DB untouched.
