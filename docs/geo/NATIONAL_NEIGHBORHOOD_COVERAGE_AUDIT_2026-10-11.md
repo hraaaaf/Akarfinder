@@ -214,3 +214,30 @@ The independent source-only pilot [child PR #1112](https://github.com/hraaaaf/Ak
 - Keep PRs #1111/#1112/#1108 DRAFT; 17 certified neighborhoods / 8 cities stay unchanged; no Vercel deploy, DB write, merge or mass promotion.
 
 **Next exact:** read one CI #38106758647 result and its artifact; if red diagnose the actual failed assertion then fix, if green inspect all 4 `agadir-al-qods-*-after.png`, create and show BEFORE/AFTER comparison, score and synchronize Notion.
+
+
+## AL QODS AFTER VERIFIED — FOUR-VIEWPORT UI CLOSEOUT (2026-10-11)
+
+**Result:** source-only Al Qods source point has consistent contextual rail labeling across all four browser viewports. **This is pilot UI certification only, not a production release or a new canonical map-eligible neighborhood.**
+
+- Child DRAFT [PR #1112](https://github.com/hraaaaf/Akarfinder/pull/1112), exact product/harness HEAD `887e2fa38ce7e459ef12d861a8dc1e2ce3765816`, base product DRAFT #1108.
+- [GitHub Actions CI 38106898114](https://github.com/hraaaaf/Akarfinder/actions/runs/38106898114) **completed / success**, head SHA matches. Job `114374224880`: npm ci, TypeScript, production build, Playwright Chromium, 4-viewport N2 browser certification and artifact upload **success**.
+- Evidence artifact [11689662979](https://github.com/hraaaaf/Akarfinder/actions/runs/38106898114/artifacts/11689662979), 4 images `agadir-al-qods-{390,430,768,1280}-after.png`, also city/no-center/Casablanca regression screenshots and `report.json` (`ok:true`, `cases.length=4`, `failure=null`).
+- **BEFORE**: successful browser [CI 38106102003](https://github.com/hraaaaf/Akarfinder/actions/runs/38106102003) at HEAD `449ac6cbce06b427832e0cdc3bf0db6acf3357eb`, artifact `11689767359`. The map marker named "Al Qods" but P4 context panel displayed generic "Agadir", subjective visual score **7.2/10**.
+- **AFTER**: P4 rail now reads exact city/source slug through the raw URL and independently validates `label_candidate` / `not_claimed` / original-source kind / finite center through the national API before showing **Al Qods**. Eyebrow **Agadir · Repère indicatif**, explicit noncertified-boundary wording.
+- **Search safety:** the rail's `/search?city=Agadir` link does not contain `district`. This is deliberate; cannot pretend property listings belong to a source-only quartier without geolocation evidence. CI asserts absence of `district` in the search handoff on all 4 sizes.
+- **Spatial truth:** point `lng=-9.5551165, lat=30.4177326`, `sourced-label-candidate`, `center-only`, `boundary semantic=none`, `focus semantic=context-focus-not-boundary`, disclaimer visible. No invented quartier footprint or SEO activation.
+- **Browser passes:** widths `390 / 430 / 768 / 1280`, zero horizontal overflow in all cases; original Casablanca, Maârif, uncoded source center and no-center postal regressions also passed in the same run.
+- **AFTER visual review:** screenshot montage and 390px side-by-side BEFORE/AFTER were prepared and shown to the user. Subjective UI quality **7.8/10**, vs **7.2/10 BEFORE**. Gain is honest selection-context hierarchy, not a redesign; remaining premium polish (better desktop rail density/typographic hierarchy, search field city-only wording) is separate.
+- No merge, no Vercel deploy, no production DB write, no new certified neighborhood. PRs #1111 (data), #1112 (UI pilot), #1108 (product) remain DRAFT pending review and later merge gates.
+
+### Goal / Success / Proof closeout
+
+**Goal:** demonstrate a truthful and visually coherent national N2 point fallback for a cross-checked locality (Al Qods / Agadir) without inventing neighborhood boundaries or Search district availability.
+
+**Success:** production Next build + 4/4 Playwright run, route resolved, city-only Search assertion, contextual rail, disclaimers, map loaded, no overflow, actual captures inspected.
+
+**Proof:** exact HEAD GitHub CI #38106898114, its machine-readable report and screenshots, BEFORE/AFTER image comparison. **This pilot goal is met on the draft branch only.**
+
+**Remaining national expansion sequence:** (1) candidate original OSM ID + semantic classification; (2) correct and test 10,799 vs 11,413 metadata contract without falsely equating labels to quartiers; (3) review 16 out-of-polygon + 4 orphan points; (4) city-by-city small cohorts with 4-viewport UX proof; (5) source licensing, performance/accessibility, PR checks; (6) permitted merge/post-merge and separate explicit Vercel deployment approval if needed. Never claim 323 names or 1,628 centered points are certified neighborhoods.
+
