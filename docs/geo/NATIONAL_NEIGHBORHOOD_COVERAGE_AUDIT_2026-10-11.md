@@ -117,3 +117,23 @@ CI [38105223915](https://github.com/hraaaaf/Akarfinder/actions/runs/38105223915)
 The V5 builder records parent names in multiple source-specific normal forms (`parentCityNormalized`); the runtime performs its own `parentKey` normalization on place display names and looks up exact keys. The 23 misses may reflect name, separator, transliteration or missing-place divergences. Inspect the exact source pair and canonical city identity before changing the resolver. **Never infer an OSM neighborhood parent from a nearby point or name alone.**
 
 Next: introduce a deterministic, collision-checked candidate parent alias matrix for these 23 group keys on an isolated feature branch, with explicit `unresolved` outcomes and tests. No silent fuzzy matching, no polygon publication, no deploy.
+
+## STRICT NORMALIZATION-ONLY PARENT RECOVERY — CERTIFIED READ-ONLY
+
+[CI run 38105321214](https://github.com/hraaaaf/Akarfinder/actions/runs/38105321214): **SUCCESS**, exact audit-script commit `5d3a2e8deda117c0cd02b735386fbbf8e0960116`, job `114369508119`. This pass tests separator/diacritic-insensitive **exact** normalization against names present in the packed `places-0` catalog, without changing the product runtime.
+
+- **20/23 previously unlinked parent keys** have **one and only one candidate place identity** in the known place catalog; these contain **671 centered source rows**. There are **zero ambiguous normalized joins**.
+- **3/23 remain unmatched** even after normalization: `madagh` (**2 centers**), `sidi yahya gharb` (**1**), `bab taza` (**1**).
+- Combined accounting: **1,648 centered source rows = 973 already under exactly matched parents + 671 under strictly normalizable, unique proposed parent matches + 4 still orphaned**.
+- Example: packed group `el jadida` has a unique proposed place `el-jadida` via exact normalization and **544** centered rows. **This is not a claim that 544 urban neighborhoods of El Jadida have been verified**; an OSM point may represent a different geographic level or extended territory. No live parent remapping has occurred.
+- This experiment only diagnoses an index-key compatibility bug/opportunity. Do **not** promote the 20 candidate links to production without provenance, geographical containment and UI/performance certification.
+
+### Shortest safe next lot
+
+1. Build a **shadow normalized-parent resolver** that compares strict normalized keys and returns a city only when the mapping is unique; keep three unresolved names in a review queue. Never use fuzzy proximity guesses.
+2. Measure whether each proposed parent is actually geographically consistent with the source point, checking city-boundary/topology and name classification; reject locations outside defensible city scope.
+3. Test an incremental canary of a small source-backed candidate set on the shared map, preserving clear "limites non certifiées" semantics. Capture BEFORE/AFTER on 390/430/768/1280 and assess density/performance (especially El Jadida).
+4. Only after those gates consider activating source-backed locality points. Certified neighbourhoods remain **17/8**, not 1,648 or 1,644.
+5. Keep source/meta mismatch `10,799` versus `11,413` as a separate contract fix.
+
+**Status:** SOURCE COVERAGE INVENTORY AND STRICT NORMALIZATION DIAGNOSTIC VERIFIED. **National neighborhood coverage is not expanded/merged/deployed.**
