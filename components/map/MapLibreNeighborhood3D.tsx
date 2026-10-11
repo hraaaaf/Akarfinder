@@ -394,7 +394,7 @@ export function MapLibreNeighborhood3D({
       setQuartierFocusLayersVisible(map, true);
     }
     const anchors = context?.anchors ?? [];
-    if (!isMaarifTargetPilot || !map || anchors.length === 0) return;
+    if (!isNationalFlatLiving || !map || anchors.length === 0) return;
     const lngs = anchors.map((anchor) => anchor.longitude);
     const lats = anchors.map((anchor) => anchor.latitude);
     const desktop = window.innerWidth >= 1024;
@@ -838,7 +838,7 @@ export function MapLibreNeighborhood3D({
                 properties: {
                   district: districtLabel,
                   boundaryStatus: boundaryGeometry ? "provided" : "center-only",
-                  focusSemantic: isMaarifTargetPilot ? "context-focus-not-boundary" : "district-focus",
+                  focusSemantic: isNationalFlatLiving ? "context-focus-not-boundary" : "district-focus",
                 },
                 geometry: { type: "Point", coordinates: center },
               },
@@ -1293,24 +1293,24 @@ export function MapLibreNeighborhood3D({
       data-maplibre-overture-exact-count={overtureExactCount}
       data-maplibre-overture-estimated-count={overtureEstimatedCount}
       data-maplibre-overture-release={overtureRelease ?? ""}
-      data-maplibre-shadow-policy={isMaarifTargetPilot ? "flat-vector-footprints" : "none"}
-      data-maplibre-context-focus={isMaarifTargetPilot ? "verified-anchor-envelope-not-boundary" : "none"}
-      data-maplibre-context-relief={isMaarifTargetPilot ? "flat-indicative-zone" : "none"}
-      data-maplibre-quarter-style={isMaarifTargetPilot ? "flat-living-v02" : "default"}
-       data-maplibre-cartographic-palette={isMaarifTargetPilot ? "akarfinder-c1-c2-map-v1" : "default"}
+      data-maplibre-shadow-policy={isNationalFlatLiving ? "flat-vector-footprints" : "none"}
+      data-maplibre-context-focus={isNationalFlatLiving ? "verified-anchor-envelope-not-boundary" : "none"}
+      data-maplibre-context-relief={isNationalFlatLiving ? "flat-indicative-zone" : "none"}
+      data-maplibre-quarter-style={isNationalFlatLiving ? "flat-living-v02" : "default"}
+       data-maplibre-cartographic-palette={isNationalFlatLiving ? "akarfinder-c1-c2-map-v1" : "default"}
        data-maplibre-hierarchy-pass={isNationalFlatLiving ? "readable-footprints-roads-v2" : "default"}
        data-maplibre-national-flat={isNationalFlatLiving ? "akarfinder-national-v1" : "off"}
-      data-maplibre-basemap-language={isMaarifTargetPilot ? "voyager-inspired-openfreemap-v1" : "default"}
-      data-maplibre-building-language={isMaarifTargetPilot ? "flat-vector-footprints-v02" : "default"}
-      data-maplibre-polish={isMaarifTargetPilot ? "flat-basemap-v02" : "default"}
-      data-maplibre-street-language={isMaarifTargetPilot ? "architectural-paper-v2" : "default"}
-      data-maplibre-label-policy={isMaarifTargetPilot ? "akarfinder-owned" : "basemap-default"}
-      data-maplibre-poi-language={isMaarifTargetPilot ? "akarfinder-flat-v02" : "default"}
-      data-maplibre-context-label-policy={isMaarifTargetPilot ? "suppressed-at-quarter-zoom" : "default"}
+      data-maplibre-basemap-language={isNationalFlatLiving ? "voyager-inspired-openfreemap-v1" : "default"}
+      data-maplibre-building-language={isNationalFlatLiving ? "flat-vector-footprints-v02" : "default"}
+      data-maplibre-polish={isNationalFlatLiving ? "flat-basemap-v02" : "default"}
+      data-maplibre-street-language={isNationalFlatLiving ? "architectural-paper-v2" : "default"}
+      data-maplibre-label-policy={isNationalFlatLiving ? "akarfinder-owned" : "basemap-default"}
+      data-maplibre-poi-language={isNationalFlatLiving ? "akarfinder-flat-v02" : "default"}
+      data-maplibre-context-label-policy={isNationalFlatLiving ? "suppressed-at-quarter-zoom" : "default"}
       data-maplibre-boundary-render={isMaarifTargetPilot && boundaryGeometry ? "administrative-navy-blue-relief" : "default"}
        data-maplibre-administrative-view={isMaarifTargetPilot && administrativeBoundsVisible ? "arrondissement" : "quartier-context"}
-       data-maplibre-context-visual={isMaarifTargetPilot ? "sourced-organic-heatglow-v13-no-border" : "default"}
-       data-maplibre-context-spot-policy={isMaarifTargetPilot ? "verified-nearby-point-glows-no-boundary" : "default"}
+       data-maplibre-context-visual={isNationalFlatLiving ? "sourced-organic-heatglow-v13-no-border" : "default"}
+       data-maplibre-context-spot-policy={isNationalFlatLiving ? "verified-nearby-point-glows-no-boundary" : "default"}
       data-maplibre-context-state={contextState}
       data-maplibre-anchor-count={context?.anchor_count ?? 0}
       data-maplibre-city={citySlug}
@@ -1318,11 +1318,11 @@ export function MapLibreNeighborhood3D({
       data-maplibre-boundary-status={boundaryGeometry ? "shadow-reference" : "center-only"}
       data-maplibre-boundary-semantic={isMaarifTargetPilot && boundaryGeometry ? "administrative-arrondissement" : boundaryGeometry ? "boundary-reference" : "none"}
       data-maplibre-camera-policy={targetComposition === "context" ? "contextual-center" : "boundary-fit"}
-       data-maplibre-camera-mode={isMaarifTargetPilot ? "north-up-flat" : "default"}
+       data-maplibre-camera-mode={isNationalFlatLiving ? "north-up-flat" : "default"}
        data-maplibre-actual-pitch={actualCamera.pitch}
        data-maplibre-actual-bearing={actualCamera.bearing}
-      data-maplibre-focus-semantic={isMaarifTargetPilot ? "context-focus-not-boundary" : "district-focus"}
-      data-maplibre-context-footprint={isMaarifTargetPilot && context?.anchors?.length ? "verified-anchor-envelope-buffered" : "none"}
+      data-maplibre-focus-semantic={isNationalFlatLiving ? "context-focus-not-boundary" : "district-focus"}
+      data-maplibre-context-footprint={isNationalFlatLiving && context?.anchors?.length >= 2 ? "verified-anchor-envelope-buffered" : "none"}
       data-maplibre-target-context-count={0}
        data-maplibre-zoom-tier={zoomTier}
        data-maplibre-selected-landmark={selectedLandmarkId ?? ""}
@@ -1335,12 +1335,12 @@ export function MapLibreNeighborhood3D({
       <div className="maplibre-spike-map" data-maplibre-map-surface>
         <div className="maplibre-spike-canvas" ref={mapRef} />
         <div className="maplibre-spike-map-grade" aria-hidden="true" />
-        {isMaarifTargetPilot && targetComposition === "context" ? (
+        {isNationalFlatLiving ? (
           <div className="maplibre-spike-attribution">
             Map © OpenStreetMap contributors · OpenFreeMap{overtureState === "available" ? " · © Overture Maps Foundation" : ""}
           </div>
         ) : null}
-        <div className="maplibre-spike-dom-labels" aria-hidden={isMaarifTargetPilot ? undefined : true}>
+        <div className="maplibre-spike-dom-labels" aria-hidden={isNationalFlatLiving ? undefined : true}>
           {!administrativeBoundsVisible && centerPoint?.visible && (
             <div className="maplibre-spike-neighborhood-label" style={{ left: centerPoint.x, top: centerPoint.y }}>
               <span>{districtLabel}</span>
@@ -1369,7 +1369,7 @@ export function MapLibreNeighborhood3D({
             // This feature is strictly the Maârif pilot. Keep the original
             // non-interactive cartouches in other cities, never focusable
             // buttons inside their aria-hidden presentational map layer.
-            if (!isMaarifTargetPilot) {
+            if (!isNationalFlatLiving) {
               return (
                 <div
                   key={anchor.poi_id}
@@ -1396,7 +1396,7 @@ export function MapLibreNeighborhood3D({
                 data-poi-category={anchor.category}
                 data-poi-family={poiVisualFamily(anchor.category)}
                 data-poi-selected={selectedPoiId === anchor.poi_id ? "true" : "false"}
-                data-anchor-edge={isMaarifTargetPilot && mapRef.current ? screen.x >= mapRef.current.clientWidth / 2 ? "right" : "left" : "center"}
+                data-anchor-edge={isNationalFlatLiving && mapRef.current ? screen.x >= mapRef.current.clientWidth / 2 ? "right" : "left" : "center"}
                 style={{ left: screen.x, top: screen.y }}
                 aria-label={`Explorer le lieu ${anchor.name}`}
                 aria-pressed={selectedPoiId === anchor.poi_id}
@@ -1421,7 +1421,7 @@ export function MapLibreNeighborhood3D({
                 key={landmark.id}
                 className="maplibre-spike-target-landmark-label"
                 data-landmark-tier={landmark.tier}
-                data-anchor-edge={isMaarifTargetPilot && mapRef.current ? screen.x >= mapRef.current.clientWidth / 2 ? "right" : "left" : "center"}
+                data-anchor-edge={isNationalFlatLiving && mapRef.current ? screen.x >= mapRef.current.clientWidth / 2 ? "right" : "left" : "center"}
                 data-landmark-selected={selectedLandmarkId === landmark.id ? "true" : "false"}
                 style={{ left: screen.x, top: screen.y }}
                 aria-label={`Explorer le repère ${landmark.name}`}
@@ -1437,12 +1437,12 @@ export function MapLibreNeighborhood3D({
             );
           })}
         </div>
-        {isMaarifTargetPilot && !administrativeBoundsVisible && selectedPoi ? (
+        {isNationalFlatLiving && !administrativeBoundsVisible && selectedPoi ? (
           <aside className="maplibre-spike-landmark-detail" data-maplibre-poi-detail="sourced-context" role="status">
             <div>
               <small>Lieu à proximité · ${CATEGORY_META[selectedPoi.category]?.label ?? "Repère"}</small>
               <strong lang={isArabicText(selectedPoi.name) ? "ar" : undefined} dir={isArabicText(selectedPoi.name) ? "rtl" : "auto"}>{selectedPoi.name}</strong>
-              <span>Autour de Maârif · Casablanca</span>
+              <span>Autour de {districtLabel} · {cityLabel}</span>
             </div>
             <button type="button" aria-label="Fermer le détail du lieu" onClick={() => setSelectedPoiId(null)}>×</button>
           </aside>
@@ -1471,9 +1471,9 @@ export function MapLibreNeighborhood3D({
        </div>
 
       <div className="maplibre-spike-filters" aria-label={`Filtres des repères de ${districtLabel}`}>
-        <button className={activeCategory === "all" ? "active" : ""} onClick={focusAllContextAnchors} aria-label={isMaarifTargetPilot && context?.anchor_count ? `Repères — cadrer les ${context.anchor_count} lieux sourcés` : "Repères"}>
+        <button className={activeCategory === "all" ? "active" : ""} onClick={focusAllContextAnchors} aria-label={isNationalFlatLiving && context?.anchor_count ? `Repères — cadrer les ${context.anchor_count} lieux sourcés` : "Repères"}>
           Repères
-          {isMaarifTargetPilot && context?.anchor_count ? <span className="maplibre-spike-filter-count" aria-hidden="true">{context.anchor_count}</span> : null}
+          {isNationalFlatLiving && context?.anchor_count ? <span className="maplibre-spike-filter-count" aria-hidden="true">{context.anchor_count}</span> : null}
         </button>
         {categories.map((category) => <button key={category} className={activeCategory === category ? "active" : ""} onClick={() => { setActiveCategory(category); setSelectedPoiId(null); setSelectedLandmarkId(null); }}>{CATEGORY_META[category].label}</button>)}
       </div>
