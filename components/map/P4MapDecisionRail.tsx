@@ -65,7 +65,7 @@ export function P4MapDecisionRail() {
   // after revalidating that exact city+slug against the source catalog.
   // Search remains city-scoped because property membership is not certified.
   const requestedSourceSlug = navigationState.district
-    ?.normalize("NFD").replace(/[\\u0300-\\u036f]/g, "").toLowerCase()
+    ?.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
     .replace(/[’']/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") ?? null;
   const [sourcePointCandidate, setSourcePointCandidate] = useState<{
     citySlug: string; districtSlug: string; name: string;
