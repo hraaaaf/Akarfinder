@@ -46,6 +46,31 @@ function loadRegistered() {
   return rows;
 }
 
+// Spatial shadow check against existing, possibly simplified OSM place polygons.
+// An apparent inclusion does NOT certify a neighborhood; an apparent exclusion
+// may result from simplified/administrative boundaries and requires manual review.
+function ringContains(point, ring) {
+  if (!Array.isArray(ring) || ring.length < 4) return false;
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const a = ring[i], b = ring[j];
+    if (!Array.isArray(a) || !Array.isArray(b)) continue;
+    const crossing = (a[1] > point[1]) !== (b[1] > point[1]);
+    if (crossing && point[0] < ((b[0] - a[0]) * (point[1] - a[1]) / (b[1] - a[1]) + a[0])) inside = !inside;
+  }
+  return inside;
+}
+
+function withinGeometry(point, geometry) {
+  if (!geometry) return false;
+  const polygons = geometry.type === "Polygon" ? [geometry.coordinates]
+    : geometry.type === "MultiPolygon" ? geometry.coordinates : [];
+  return polygons.some((rings) =>
+    Array.isArray(rings) && rings.length > 0
+    && ringContains(point, rings[0])
+    && !rings.slice(1).some((hole) => ringContains(point, hole)));
+}
+
 function main() {
   const places = JSON.parse(gunzipSync(Buffer.from(packedChunk("places-0"), "base64")).toString("utf8"));
   const packed = Array.from({ length: 8 }, (_, i) => packedChunk("neighborhoods-n2-" + i)).join("");
@@ -206,6 +231,52 @@ function main() {
     orphanParentNormalizedCandidates,
     byParent: byParent.sort((a, b) => a.parentKey.localeCompare(b.parentKey)),
   };
+  // Read-only spatial sanity check. This does not alter the runtime parent index.
+  const boundaryFeatures = Array.from({ length: 8 }, (_, i) =>
+    JSON.parse(gunzipSync(Buffer.from(packedChunk("boundaries-" + i), "base64")).toString("utf8")).features).flat();
+  const polygonsBySlug = new Map();
+  for (const feature of boundaryFeatures) {
+    const slug = feature?.properties?.slug;
+    if (typeof slug !== "string" || !slug) continue;
+    if (!polygonsBySlug.has(slug)) polygonsBySlug.set(slug, []);
+    polygonsBySlug.get(slug).push(feature.geometry);
+  }
+  const spatialShadow = {
+    geometrySource: "OSM administrative candidate polygon (simplified), not a certified neighborhood boundary",
+    sourceBoundaryFeatures: boundaryFeatures.length,
+    assessedCenteredRows: 0,
+    parentUnresolvedRows: 0,
+    parentMatchedWithoutCityPolygonRows: 0,
+    insideCandidateCityPolygonRows: 0,
+    outsideCandidateCityPolygonRowsNeedsReview: 0,
+    bySourceParent: [],
+  };
+  for (const [parent, rows] of Object.entries(groups)) {
+    const direct = placesByParent.get(parent) || [];
+    const proposed = direct.length ? direct : placesByParent.get(parentKey(parent)) || [];
+    const place = proposed.length === 1 ? proposed[0] : null;
+    const shapes = place ? polygonsBySlug.get(place.slug) || [] : [];
+    const record = { parentKey: parent, proposedCitySlug: place?.slug ?? null,
+      normalizedFallback: direct.length === 0 && Boolean(place),
+      assessed: 0, unresolved: 0, noPolygon: 0, inside: 0, outsideNeedsReview: 0 };
+    for (const [name, lng, lat] of rows) {
+      if (!validCenter(lng, lat)) continue;
+      record.assessed++;
+      spatialShadow.assessedCenteredRows++;
+      if (!place) { record.unresolved++; spatialShadow.parentUnresolvedRows++; }
+      else if (!shapes.length) { record.noPolygon++; spatialShadow.parentMatchedWithoutCityPolygonRows++; }
+      else if (shapes.some((shape) => withinGeometry([lng, lat], shape))) {
+        record.inside++; spatialShadow.insideCandidateCityPolygonRows++;
+      } else { record.outsideNeedsReview++; spatialShadow.outsideCandidateCityPolygonRowsNeedsReview++; }
+    }
+    if (record.assessed) spatialShadow.bySourceParent.push(record);
+  }
+  if (spatialShadow.assessedCenteredRows !== summary.validCenterRows ||
+    spatialShadow.parentUnresolvedRows + spatialShadow.parentMatchedWithoutCityPolygonRows +
+    spatialShadow.insideCandidateCityPolygonRows + spatialShadow.outsideCandidateCityPolygonRowsNeedsReview !== summary.validCenterRows) {
+    throw new Error("Spatial shadow accounting mismatch");
+  }
+  report.spatialShadow = spatialShadow;
   writeFileSync(join(outputRoot, "report.json"), JSON.stringify(report, null, 2) + "\n", "utf8");
   const columns = [
     "parentKey", "matchedPlaceSlug", "matchedPlaceName", "placeMatchCount", "sourceLabels",
@@ -219,7 +290,7 @@ function main() {
   }
   writeFileSync(join(outputRoot, "by-parent.csv"), csv.join("\n") + "\n", "utf8");
 
-  console.log(JSON.stringify({ summary, registeredCityStats, top10: report.top20ParentGroupsByValidCenters.slice(0, 10), unmatchedParentGroups: report.unmatchedParentGroups, orphanParentNormalizedCandidates: report.orphanParentNormalizedCandidates }, null, 2));
+  console.log(JSON.stringify({ summary, registeredCityStats, top10: report.top20ParentGroupsByValidCenters.slice(0, 10), unmatchedParentGroups: report.unmatchedParentGroups, orphanParentNormalizedCandidates: report.orphanParentNormalizedCandidates, spatialShadowTotals: Object.fromEntries(Object.entries(report.spatialShadow).filter(([k]) => k !== "bySourceParent")), spatialShadowTop: report.spatialShadow.bySourceParent.slice().sort((a, b) => b.assessed - a.assessed).slice(0, 20) }, null, 2));
   if (summary.parentAmbiguousPlaceMatch) {
     console.error("WARNING: Some parent-city names are ambiguous and must not be auto-associated");
   }
