@@ -5,7 +5,7 @@ import { ArrowLeft, MapPin, Search } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Map as MapLibreMap, MapMouseEvent } from "maplibre-gl";
 import { useTheme } from "@/components/theme/ThemeProvider";
-import { AKARFINDER_MOROCCO_MAP_NAVY, applyAkarFinderCityBasemapTreatment, applyAkarFinderMoroccoBasemapTreatment, territoryToneForKey } from "@/lib/map/akarfinder-territorial-style";
+import { applyAkarFinderCityBasemapTreatment, applyAkarFinderMoroccoBasemapTreatment } from "@/lib/map/akarfinder-territorial-style";
 
 const LIGHT_TILE_STYLE = "https://tiles.openfreemap.org/styles/liberty";
 const DARK_TILE_STYLE = "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json";
@@ -208,7 +208,7 @@ export function NationalTerritoryExperience({ selectedCitySlug, onSelectCity, on
     const points = cityPoints(places);
     // City scale keeps authentic administrative polygons, but shares AkarFinder
     // C1/C2 with its child quartier map. Country scale remains differentiated.
-    const territoryTone = payload.view === "city" ? ACCENT : ACCENT;
+    const territoryTone = ACCENT;
     const territoryLine = payload.view === "city" ? "#071B33" : ACCENT;
 
     map.addSource(BOUNDARY_SOURCE, { type: "geojson", data: boundaries });
