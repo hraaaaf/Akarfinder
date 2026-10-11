@@ -76,3 +76,44 @@ This PR [#1111](https://github.com/hraaaaf/Akarfinder/pull/1111) remains **DRAFT
 **Current completion**: offline national **inventory measured**; actual expanded, verified **national quartier coverage NOT achieved**. No new neighborhood promoted.
 
 **Notion cross-reference**: https://app.notion.com/p/3f677c6633628114aaa1eedfeb448473
+
+## COMPLETE 23-PARENT RECONCILIATION BACKLOG — VERIFIED
+
+CI [38105223915](https://github.com/hraaaaf/Akarfinder/actions/runs/38105223915) **SUCCESS** on exact audit code HEAD `7258f7a8454085c509344a26c7cdf95433d9431d`, job `114369201962`. The job logs include the complete 23-group backlog below.
+
+- **23 parent groups** unlinked to a unique city/place in current normalized runtime lookup.
+- **1,255 unlinked source label rows**, including **675 centered** and **580 lacking a center**.
+- The total **1,648 centered rows = 973 from source parents joined unambiguously to places + 675 from unlinked parents**. Neither population equals a set of reviewed neighborhoods.
+- El Jadida alone contributes **544** source center rows under a currently unlinked `el jadida` parent. **No automatic re-parenting**.
+
+| Packed parent key (not verified canonical city) | Source rows | Centered | Missing center |
+|---|---:|---:|---:|
+| el jadida | 544 | 544 | 0 |
+| dcheira el jihadia | 48 | 48 | 0 |
+| ait melloul | 16 | 16 | 0 |
+| kasba tadla | 13 | 13 | 0 |
+| al hoceima | 37 | 12 | 25 |
+| es semara | 6 | 6 | 0 |
+| sidi bibi | 5 | 5 | 0 |
+| el hajeb | 5 | 5 | 0 |
+| m diq | 4 | 4 | 0 |
+| sidi kacem | 77 | 3 | 74 |
+| mechouar fes jdid | 3 | 3 | 0 |
+| beni mellal | 483 | 2 | 481 |
+| madagh | 2 | 2 | 0 |
+| oued zem | 2 | 2 | 0 |
+| el marsa | 2 | 2 | 0 |
+| fkih ben salah | 1 | 1 | 0 |
+| ain bni mathar | 1 | 1 | 0 |
+| imouzzer kandar | 1 | 1 | 0 |
+| sidi yahya gharb | 1 | 1 | 0 |
+| sidi ifni | 1 | 1 | 0 |
+| bab taza | 1 | 1 | 0 |
+| al machouar stinia | 1 | 1 | 0 |
+| had soualem | 1 | 1 | 0 |
+
+### Root-cause hypothesis and fail-closed policy
+
+The V5 builder records parent names in multiple source-specific normal forms (`parentCityNormalized`); the runtime performs its own `parentKey` normalization on place display names and looks up exact keys. The 23 misses may reflect name, separator, transliteration or missing-place divergences. Inspect the exact source pair and canonical city identity before changing the resolver. **Never infer an OSM neighborhood parent from a nearby point or name alone.**
+
+Next: introduce a deterministic, collision-checked candidate parent alias matrix for these 23 group keys on an isolated feature branch, with explicit `unresolved` outcomes and tests. No silent fuzzy matching, no polygon publication, no deploy.
