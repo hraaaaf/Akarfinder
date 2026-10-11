@@ -422,3 +422,36 @@ Obtain new exact-head Rue CI result. If green, retrieve its screenshot and confi
 **Latest HEAD at this checkpoint:** `8ed860a14347306c21208fbbec33385ca569f857` draft PR #1108. Await exact-head **N2** and **N3**, 68-case multicity, Casablanca, POI and Rue CI; previous HEAD `7f08f3d7` jobs queued at first check. Need collect actual source candidate AFTER screenshot, city atlas AFTER 390/430/768/1280 and check no regression. If failing, diagnose logs, fix and recertify. Maintain geographic honesty. Notion canonical [Vivre Ici — Quartier pilote Maârif | SPEC CANONIQUE V1](https://app.notion.com/p/3f577c66336281d79f5dc46467df5f65) synchronized with verified N1 results and pending N2 expansion. **Overall 9.5/10 human visual target remains unproven**, but owner accepted current Maârif treatment for national rollout.
 
 **Remaining path:** exact-head CI → extract and review sourced candidate + atlas screenshots → if green, certify technical rollout with limited source status → country/atlas/channels consistency check → update canonical + closeout checkpoint → request human gate only for deployment/merge or source promotion. No deployment or merge implied.
+
+
+## NATIONAL REGISTERED-ROUTES CERTIFICATION — 2026-10-11 — VERIFIED
+
+**Product HEAD certified:** `dcece3c233fbb76361b71da98bcb7fdfd390c31b` on draft [PR #1108](https://github.com/hraaaaf/Akarfinder/pull/1108). Product owner chose to **retain** the earlier Maârif cartographic rendering and generalize it before further Maârif polishing. **All six map-specific exact-head GitHub CI gates SUCCESS:**
+- Multicity [38101648801](https://github.com/hraaaaf/Akarfinder/actions/runs/38101648801) SUCCESS, 68 actual browser cases and screenshot artifact `11687454580`.
+- National N2 atlas [38101648807](https://github.com/hraaaaf/Akarfinder/actions/runs/38101648807), artifact `11688287118`, browser report `ok:true`, four viewports `390/430/768/1280`.
+- National N3 [38101648814](https://github.com/hraaaaf/Akarfinder/actions/runs/38101648814), artifact `11687419184`, report `ok:true`, four viewport entries, no horizontal overflow, selection Morocco→Casablanca→Maârif→Search.
+- Casablanca Visual AFTER [38101648698](https://github.com/hraaaaf/Akarfinder/actions/runs/38101648698), artifact `11687793830` SUCCESS.
+- POI AFTER [38101648817](https://github.com/hraaaaf/Akarfinder/actions/runs/38101648817) SUCCESS.
+- Rue Proximité AFTER [38101648833](https://github.com/hraaaaf/Akarfinder/actions/runs/38101648833) SUCCESS.
+
+**Multicity actual proof** [38101648801](https://github.com/hraaaaf/Akarfinder/actions/runs/38101648801), artifact `11687454580`: report `ok:true`, `registeredNeighborhoods:17`, `registeredCities:8`, `expectedViewportCases:68`, `liveTileProofCases:68`. 68/68 successfully loaded real OpenFreeMap vector tiles (HTTP 200), had real 2D footprint features (range 2–71), pitch/bearing `0/0`, zero 3D volumes, zero horizontal overflow; 64 no administrative boundary, 4 Maârif only administrative arrondissement mode available (not certified central quartier). Search CTA present on all. Representative 8-city montage actual captures: `/mnt/data/AKARFINDER_NATIONAL_8_VILLES_68_CASES.png` (from prior turn). Full 68 actual screenshots reside in GitHub artifact `11687454580`; no inferred geometry used.
+
+**Cross-scale VERIFIED screenshot review, four real 390×844 images on the same code HEAD**:
+- Morocco → Casablanca N3 `city-casablanca-390.png`
+- Casablanca N2 administrative atlas `casablanca-neighborhoods-390-after.png`
+- Central Maârif premium 2D `casablanca-maarif-390x844.png`
+- Noncanonical source OSM point `sourced-point-390-after.png` (Hay Hassani).
+- Side-by-side output `/mnt/data/AKARFINDER_NATIONAL_ATLAS_VILLE_QUARTIER_N2_N3_DCECE3C2.png`. Result: genuine C1/C2 palette continuity and working navigation across engines. Different density and styling at city/quarter scales remain intentional; **no pixel-perfect uniformity across independent city/country renderers claimed**. A source-only point shows mandatory on-map disclaimer `Repère indicatif sourcé / Limites du quartier non certifiées`, no invented polygon.
+- N2 `report.api` Casablanca: **1,617** neighborhood label candidates, **134** with actual center, **0** certified central neighborhood boundaries. Valid source candidate Hay Hassani (OSM) was rendered at all 4 viewports. Existing non-centered postal QUARTIER MAARIF still falls back to text/search and **must not get a fabricated center**. City administrative atlas has 16 shapes `shadow-preview`; not certified for general publication as neighborhood boundaries.
+
+**Important LIMIT:** The national engine is genuinely shared by all **17 currently registered canonical neighborhoods in 8 cities**, and can display eligible OSM/Barid source-backed candidates wherever exact source center is present. This is **not 100% geographic catalog coverage of Morocco**: the national external catalog has ~10,799 neighborhood labels with varying evidence; those without a confirmed center/boundary should remain unplotted and unresolved. Do not state "all Moroccan districts covered" or infer certified limits.
+
+**Separate red release gates on this same HEAD (not silently ignored):**
+- C7 [38101648754](https://github.com/hraaaaf/Akarfinder/actions/runs/38101648754) failure; C3 price endpoint HTTP **503**.
+- National Market BEFORE [38101648800](https://github.com/hraaaaf/Akarfinder/actions/runs/38101648800) failure; Casablanca price endpoint HTTP **503** and Supabase runtime log **`exceed_db_size_quota` (restricted project)**. This is an external DB service/quota block; **no DB writes attempted in this work**.
+- National Zillow UI [38101648763](https://github.com/hraaaaf/Akarfinder/actions/runs/38101648763) failure; browser `locator.waitFor` timeout 30s; other runtime logs show missing Supabase env values in some unrelated routes. Not certified independent of our map gates.
+- These red gates prevent claiming a fully clean PR/global release, even though the nationwide map-targeted scope passes.
+
+**Scoped status:** National registered-routes map-engine implementation and 68-case visual browser certification **COMPLETE WITH EVIDENCE**. Exact coverage of all Morocco's unregistered neighborhoods **NOT COMPLETE** due to source data gaps. Source-only fallback validated in Casablanca, additional city coverage should be tested as scope expands. Visual human **≥9.5/10 remains unproven**, though owner explicitly accepted present Maârif rendering as national reference. Draft PR remains open. **No merge, Vercel deploy or DB write.**
+
+**Next exact:** sync Notion canonical, ensure Git HEAD and CI documentation checkpoint; if continued nationwide catalog expansion is requested, inventory source-centered candidates city-by-city and certify truthful fallback nationwide. **Human gates:** explicit permission before merge or Vercel deployment; Supabase quota/account owner action needed to restore blocked external DB endpoints before declaring global release. After approved review, merge → post-merge verification → closeout according to project workflow.
