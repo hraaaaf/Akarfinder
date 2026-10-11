@@ -5,18 +5,32 @@ const baseUrl = process.env.BASE_URL || "http://127.0.0.1:3205";
 const outDir = process.env.AUDIT_OUTPUT_DIR || "data/audits/carte-lot8-multicity";
 await mkdir(outDir, { recursive: true });
 
-// Run the requested Fès / iPhone 14 Pro Max proof first so a diagnostic capture
-// is still preserved if a later certification assertion fails.
+// National source registry coverage: each of the 17 canonical neighborhood
+// routes across 8 Moroccan cities. Never synthesize unregistered geographies.
+// Keep Fès first to preserve an early diagnostic on failure.
 const cities = [
   { slug: "fes", districtSlug: "ville-nouvelle", city: "Fès", district: "Ville Nouvelle" },
+  { slug: "fes", districtSlug: "fes-el-bali", city: "Fès", district: "Fès el-Bali" },
   { slug: "casablanca", districtSlug: "maarif", city: "Casablanca", district: "Maârif" },
+  { slug: "casablanca", districtSlug: "finance-city", city: "Casablanca", district: "Casablanca Finance City" },
+  { slug: "casablanca", districtSlug: "bouskoura", city: "Casablanca", district: "Bouskoura" },
+  { slug: "rabat", districtSlug: "hay-riad", city: "Rabat", district: "Hay Riad" },
+  { slug: "rabat", districtSlug: "agdal", city: "Rabat", district: "Agdal" },
+  { slug: "rabat", districtSlug: "hassan", city: "Rabat", district: "Hassan" },
   { slug: "marrakech", districtSlug: "gueliz", city: "Marrakech", district: "Guéliz" },
+  { slug: "marrakech", districtSlug: "hivernage", city: "Marrakech", district: "Hivernage" },
+  { slug: "marrakech", districtSlug: "route-de-lourika", city: "Marrakech", district: "Route de l'Ourika" },
   { slug: "tanger", districtSlug: "malabata", city: "Tanger", district: "Malabata" },
+  { slug: "tanger", districtSlug: "ville-nouvelle", city: "Tanger", district: "Ville Nouvelle" },
   { slug: "agadir", districtSlug: "founty", city: "Agadir", district: "Founty" },
+  { slug: "agadir", districtSlug: "talborjt", city: "Agadir", district: "Talborjt" },
+  { slug: "kenitra", districtSlug: "centre-ville", city: "Kénitra", district: "Centre-ville" },
+  { slug: "mohammedia", districtSlug: "centre", city: "Mohammedia", district: "Centre" },
 ];
 const viewports = [
-  { name: "iphone14promax", width: 430, height: 932, onlyCity: "fes" },
   { name: "mobile", width: 390, height: 844 },
+  { name: "iphone14promax", width: 430, height: 932 },
+  { name: "tablet", width: 768, height: 900 },
   { name: "desktop", width: 1280, height: 900 },
 ];
 
@@ -98,6 +112,40 @@ try {
         // Preserve the actual rendered viewport before any visibility/layout assertions.
         await page.screenshot({ path: `${outDir}/${cityCase.slug}-${cityCase.districtSlug}-${viewport.width}x${viewport.height}.png`, fullPage: false });
 
+        // Each registered city/quartier must use the SAME actual AkarFinder
+        // flat 2D vector renderer, not just a blue page-shell CSS treatment.
+        const nationalMapState = await maplibre.evaluate((el) => {
+          const attr = (key) => el.getAttribute(key);
+          return {
+            nationalFlat: attr("data-maplibre-national-flat"),
+            palette: attr("data-maplibre-cartographic-palette"),
+            hierarchy: attr("data-maplibre-hierarchy-pass"),
+            camera: attr("data-maplibre-camera-mode"),
+            focus: attr("data-maplibre-focus-semantic"),
+            pitch: Number(attr("data-maplibre-actual-pitch")),
+            bearing: Number(attr("data-maplibre-actual-bearing")),
+            footprints: Number(attr("data-maplibre-building-footprint-count")),
+            volumes: Number(attr("data-maplibre-building-count")),
+            adminBoundary: attr("data-maplibre-boundary-semantic"),
+            city: attr("data-maplibre-city"),
+            district: attr("data-maplibre-district"),
+          };
+        });
+        if (nationalMapState.nationalFlat !== "akarfinder-national-v1"
+          || nationalMapState.palette !== "akarfinder-c1-c2-map-v1"
+          || nationalMapState.hierarchy !== "readable-footprints-roads-v2"
+          || nationalMapState.camera !== "north-up-flat"
+          || nationalMapState.focus !== "context-focus-not-boundary"
+          || nationalMapState.pitch !== 0 || nationalMapState.bearing !== 0
+          || nationalMapState.volumes !== 0) {
+          throw new Error(`${cityCase.slug}/${viewport.name}: nationwide 2D contract failed ${JSON.stringify(nationalMapState)}`);
+        }
+        if (cityCase.slug !== "casablanca" && nationalMapState.adminBoundary !== "none") {
+          throw new Error(`${cityCase.slug}/${viewport.name}: invented administrative district geometry`);
+        }
+        if (basemapEvidence === "live-tiles" && nationalMapState.footprints < 1) {
+          throw new Error(`${cityCase.slug}/${viewport.name}: live urban vector tiles but no real building footprints`);
+        }
         const rail = page.locator("[data-p4-map-decision-rail]");
         await rail.waitFor({ state: "visible", timeout: 10000 });
         const panelBox = await rail.boundingBox();
@@ -133,6 +181,7 @@ try {
           panelBox,
           overflow,
           mapRendered: true,
+          nationalMapState,
           highZoomTileCount,
           basemapEvidence,
           decisionRail: true,
@@ -144,9 +193,15 @@ try {
       }
     }
   }
-  if (liveTileProofCases < 1) {
-    throw new Error("multicity run produced no successful real high-zoom OpenFreeMap tile evidence");
+  if (report.cases.length !== cities.length * viewports.length) {
+    throw new Error(`national registry audit only covered ${report.cases.length}/${cities.length * viewports.length} viewport cases`);
   }
+  if (liveTileProofCases < 1) {
+    throw new Error("national registry run produced no successful real high-zoom OpenFreeMap tile evidence");
+  }
+  report.registeredNeighborhoods = cities.length;
+  report.registeredCities = [...new Set(cities.map((item) => item.slug))].length;
+  report.expectedViewportCases = cities.length * viewports.length;
   report.liveTileProofCases = liveTileProofCases;
   report.ok = true;
 } catch (error) {

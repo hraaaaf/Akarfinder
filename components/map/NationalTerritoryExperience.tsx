@@ -5,7 +5,7 @@ import { ArrowLeft, MapPin, Search } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Map as MapLibreMap, MapMouseEvent } from "maplibre-gl";
 import { useTheme } from "@/components/theme/ThemeProvider";
-import { AKARFINDER_MOROCCO_MAP_NAVY, applyAkarFinderCityBasemapTreatment, applyAkarFinderMoroccoBasemapTreatment, territoryToneForKey } from "@/lib/map/akarfinder-territorial-style";
+import { applyAkarFinderCityBasemapTreatment, applyAkarFinderMoroccoBasemapTreatment } from "@/lib/map/akarfinder-territorial-style";
 
 const LIGHT_TILE_STYLE = "https://tiles.openfreemap.org/styles/liberty";
 const DARK_TILE_STYLE = "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json";
@@ -206,8 +206,10 @@ export function NationalTerritoryExperience({ selectedCitySlug, onSelectCity, on
     const boundaries = payload.view === "morocco" ? payload.boundaries : payload.boundary;
     const places = payload.view === "morocco" ? payload.places : [payload.place];
     const points = cityPoints(places);
-    const territoryTone = payload.view === "city" ? territoryToneForKey(payload.place.slug) : ACCENT;
-    const territoryLine = payload.view === "city" ? AKARFINDER_MOROCCO_MAP_NAVY : ACCENT;
+    // City scale keeps authentic administrative polygons, but shares AkarFinder
+    // C1/C2 with its child quartier map. Country scale remains differentiated.
+    const territoryTone = ACCENT;
+    const territoryLine = payload.view === "city" ? (theme === "dark" ? "#7FB6EC" : "#071B33") : ACCENT;
 
     map.addSource(BOUNDARY_SOURCE, { type: "geojson", data: boundaries });
     map.addSource(CITY_SOURCE, { type: "geojson", data: points });
@@ -216,7 +218,7 @@ export function NationalTerritoryExperience({ selectedCitySlug, onSelectCity, on
       id: BOUNDARY_FILL,
       type: "fill",
       source: BOUNDARY_SOURCE,
-      paint: { "fill-color": territoryTone, "fill-opacity": payload.view === "city" ? 0.012 : 0.018 },
+      paint: { "fill-color": territoryTone, "fill-opacity": payload.view === "city" ? 0.018 : 0.018 },
     });
     map.addLayer({
       id: BOUNDARY_LINE,
@@ -229,7 +231,7 @@ export function NationalTerritoryExperience({ selectedCitySlug, onSelectCity, on
       type: "fill",
       source: BOUNDARY_SOURCE,
       filter: emptyFilter() as never,
-      paint: { "fill-color": territoryTone, "fill-opacity": 0.26 },
+      paint: { "fill-color": territoryTone, "fill-opacity": payload.view === "city" ? 0.10 : 0.26 },
     });
     map.addLayer({
       id: ACTIVE_LINE,
@@ -264,7 +266,7 @@ export function NationalTerritoryExperience({ selectedCitySlug, onSelectCity, on
         "text-ignore-placement": false,
         "symbol-sort-key": ["-", 0, ["coalesce", ["get", "population"], 0]],
       },
-      paint: { "text-color": theme === "dark" ? "#E8F2FF" : "#123250", "text-halo-color": theme === "dark" ? "#071426" : "#FFFFFF", "text-halo-width": 1.7 },
+      paint: { "text-color": theme === "dark" ? "#E8F2FF" : "#071B33", "text-halo-color": theme === "dark" ? "#071426" : "#FBF8F3", "text-halo-width": 1.7 },
     });
 
     const setActive = (slug: string | null) => {
@@ -372,7 +374,7 @@ export function NationalTerritoryExperience({ selectedCitySlug, onSelectCity, on
   const searchHref = payload?.view === "city" ? `/search?city=${encodeURIComponent(payload.place.name)}` : "/search";
 
   return (
-    <div className="relative h-[calc(100svh-64px)] min-h-[520px] overflow-hidden bg-[#EDF3F7] dark:bg-[#071426]" data-akarfinder-national-map data-akarfinder-national-view={payload?.view ?? "loading"}>
+    <div className="relative h-[calc(100svh-64px)] min-h-[520px] overflow-hidden bg-[#EDF3F7] dark:bg-[#071426]" data-akarfinder-national-map data-akarfinder-national-view={payload?.view ?? "loading"} data-akarfinder-city-cartography={payload?.view === "city" ? "national-quarter-continuity-v1" : "not-city"}>
       <div ref={mapContainerRef} className="absolute inset-0" />
 
       <section className="absolute inset-x-3 top-3 z-20 rounded-[22px] border border-white/80 bg-white/[0.94] p-3 shadow-[0_18px_50px_rgba(15,35,66,0.14)] backdrop-blur-xl dark:border-white/10 dark:bg-[#0A1A2F]/[0.94] sm:left-4 sm:right-auto sm:top-4 sm:w-[min(430px,calc(100vw-32px))]" aria-label="Navigation territoriale nationale">

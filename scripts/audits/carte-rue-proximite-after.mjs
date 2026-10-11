@@ -26,10 +26,79 @@ async function landmarkBox(page) {
   return box;
 }
 
+// The landmark cartouche is positioned left/right of its real projected anchor.
+// Its bounding-box *center* is not the geographic point; zooming there can
+// unintentionally move the sourced landmark off-screen on mobile.
+async function twinCenterGeographicScreenPoint(page) {
+  const label = page.locator('.maplibre-spike-target-landmark-label').filter({ hasText: "Twin Center" }).first();
+  await label.waitFor({ state: "visible", timeout: 20000 });
+  return label.evaluate((node) => {
+    const map = node.closest(".maplibre-spike-map");
+    if (!map) throw new Error("Twin Center has no map container");
+    const mapRect = map.getBoundingClientRect();
+    const x = Number.parseFloat(node.style.left), y = Number.parseFloat(node.style.top);
+    if (!Number.isFinite(x) || !Number.isFinite(y)) throw new Error("Twin Center has no real projected screen coordinate");
+    return { x: mapRect.left + x, y: mapRect.top + y };
+  });
+}
+
+// The landmark is now an accessible button. A native wheel gesture directly on
+// the button doesn't reach the MapLibre canvas. Zoom just outside that hitbox,
+// keeping the *real* projected Twin Center coordinate within 18–36px of the
+// wheel focal point. This exercises real map gestures without force or internals.
+async function zoomNativeCanvasNearTwin(page, deltaY, fallback) {
+  const target = await page.evaluate(({ fallbackX, fallbackY }) => {
+    const label = [...document.querySelectorAll(".maplibre-spike-target-landmark-label")]
+      .find((node) => node.textContent?.includes("Twin Center"));
+    const map = document.querySelector(".maplibre-spike-map");
+    const rect = map?.getBoundingClientRect();
+    const geoX = label && rect ? rect.left + Number.parseFloat(label.style.left) : fallbackX;
+    const geoY = label && rect ? rect.top + Number.parseFloat(label.style.top) : fallbackY;
+    const side = label?.getAttribute("data-anchor-edge");
+    const sign = side === "left" ? -1 : 1;
+    for (const [dx, dy] of [[sign * 18, 0], [sign * 30, 0], [-sign * 30, 0], [0, 35], [0, -35], [sign * 46, 0]]) {
+      const x = geoX + dx, y = geoY + dy;
+      const node = document.elementFromPoint(x, y);
+      if (node && (node.matches("canvas.maplibregl-canvas") || node.closest(".maplibregl-canvas-container"))) {
+        return { x, y, distance: Math.hypot(dx, dy) };
+      }
+    }
+    return null;
+  }, { fallbackX: fallback.x, fallbackY: fallback.y });
+  if (!target) throw new Error("No unobstructed native MapLibre canvas point near sourced Twin Center");
+  await page.mouse.move(target.x, target.y);
+  await page.mouse.wheel(0, deltaY);
+  return target;
+}
+
 async function recenterTwinCenter(page, viewport) {
   const canvas = page.locator("canvas.maplibregl-canvas");
   const canvasBox = await canvas.boundingBox();
   if (!canvasBox) throw new Error(`${viewport.name}: canvas missing`);
+
+  // A flat map starts focused on the neighborhood, so Twin Center can legitimately
+  // be outside the initial mobile viewport. Zoom out through real wheel gestures
+  // until its sourced landmark label enters the screen; do not invent a location
+  // or force a MapLibre internal camera state.
+  const twin = page.locator('.maplibre-spike-target-landmark-label').filter({ hasText: "Twin Center" }).first();
+  const inViewport = async () => {
+    if (!(await twin.count())) return false;
+    const box = await twin.boundingBox();
+    if (!box) return false;
+    const cx = box.x + box.width / 2;
+    const cy = box.y + box.height / 2;
+    return cx > 22 && cx < viewport.width - 22 && cy > 130 && cy < Math.min(viewport.height - 125, canvasBox.height - 95);
+  };
+  const zoomOutPoint = {
+    x: canvasBox.x + canvasBox.width * 0.5,
+    y: canvasBox.y + canvasBox.height * 0.43,
+  };
+  for (let step = 0; step < 8 && !(await inViewport()); step += 1) {
+    await page.mouse.move(zoomOutPoint.x, zoomOutPoint.y);
+    await page.mouse.wheel(0, 520);
+    await page.waitForTimeout(350);
+  }
+  if (!(await inViewport())) throw new Error(`${viewport.name}: Twin Center not reachable after real zoom-out gestures`);
 
   const desired = {
     x: canvasBox.x + canvasBox.width * 0.50,
@@ -37,8 +106,7 @@ async function recenterTwinCenter(page, viewport) {
   };
 
   for (let attempt = 0; attempt < 3; attempt += 1) {
-    const label = await landmarkBox(page);
-    const current = { x: label.x + label.width / 2, y: label.y + label.height / 2 };
+    const current = await twinCenterGeographicScreenPoint(page);
     const dx = desired.x - current.x;
     const dy = desired.y - current.y;
     if (Math.abs(dx) < 8 && Math.abs(dy) < 8) break;
@@ -54,37 +122,52 @@ async function recenterTwinCenter(page, viewport) {
     await page.waitForTimeout(450);
   }
 
-  // Use native canvas wheel zoom for the BEFORE baseline. This avoids depending
-  // on viewport-specific control visibility while preserving the real product renderer.
-  await page.mouse.move(desired.x, desired.y);
-  await page.mouse.wheel(0, -620);
-  await page.waitForTimeout(350);
-  await page.mouse.wheel(0, -620);
-  await page.waitForTimeout(350);
-  await page.mouse.wheel(0, -420);
-  await page.waitForTimeout(700);
-
-  // One final small correction after zooming.
-  const finalLabel = await landmarkBox(page);
-  const current = { x: finalLabel.x + finalLabel.width / 2, y: finalLabel.y + finalLabel.height / 2 };
-  const dx = desired.x - current.x;
-  const dy = desired.y - current.y;
-  if (Math.abs(dx) >= 8 || Math.abs(dy) >= 8) {
-    const start = {
-      x: canvasBox.x + canvasBox.width * 0.32,
-      y: canvasBox.y + canvasBox.height * 0.30,
-    };
-    await page.mouse.move(start.x, start.y);
-    await page.mouse.down();
-    await page.mouse.move(start.x + dx, start.y + dy, { steps: 10 });
-    await page.mouse.up();
-    await page.waitForTimeout(500);
+  // Confirm Twin Center really is at the gesture's zoom anchor before changing scale.
+  // MapLibre scrollZoom anchors its geographic point under the cursor during the zoom.
+  const anchorBeforeZoom = await twinCenterGeographicScreenPoint(page);
+  const anchorDeviation = Math.hypot(
+    anchorBeforeZoom.x - desired.x,
+    anchorBeforeZoom.y - desired.y,
+  );
+  if (anchorDeviation > 28) {
+    throw new Error(`${viewport.name}: Twin Center not reliably positioned before street zoom (${anchorDeviation.toFixed(1)}px)`);
   }
 
+  // Native MapLibre zoom beside the clickable marker rather than on its button.
+  await zoomNativeCanvasNearTwin(page, -620, desired);
+  await page.waitForTimeout(350);
+  await zoomNativeCanvasNearTwin(page, -620, desired);
+  await page.waitForTimeout(350);
+  await zoomNativeCanvasNearTwin(page, -420, desired);
+  await page.waitForTimeout(700);
+
+  // An accurately projected cursor anchor should keep Twin Center visible
+  // after street zoom, with its source coordinates untouched.
+
+  // Wheel gestures may stop at quartier zoom depending on viewport / device scaling.
+  // Continue interacting with the real map until its observed street zoom tier is reached.
+  const shell = page.locator('[data-maplibre-spike][data-maplibre-city="casablanca"][data-maplibre-district="maarif"]');
+  for (let step = 0; step < 6; step += 1) {
+    if ((await shell.getAttribute("data-maplibre-zoom-tier")) === "street") break;
+    await zoomNativeCanvasNearTwin(page, -360, desired);
+    await page.waitForTimeout(350);
+  }
+  const observedTier = await shell.getAttribute("data-maplibre-zoom-tier");
+  if (observedTier !== "street") {
+    throw new Error(`${viewport.name}: real wheel zoom could not reach street tier (observed ${observedTier})`);
+  }
+
+  const twinCenterLabelVisibleAtStreet = await page.locator('.maplibre-spike-target-landmark-label').filter({ hasText: "Twin Center" }).first().isVisible().catch(() => false);
+  if (!twinCenterLabelVisibleAtStreet) {
+    throw new Error(`${viewport.name}: sourced Twin Center must be visible after accurate street-zoom gestures`);
+  }
   return {
     canvasBox,
     desired,
-    twinCenterBox: await landmarkBox(page),
+    twinCenterGeographicAnchorBeforeZoom: anchorBeforeZoom,
+    anchorDeviationPx: Number(anchorDeviation.toFixed(1)),
+    twinCenterLabelVisibleAtStreet,
+    observedTier,
   };
 }
 
@@ -120,7 +203,7 @@ try {
       await page.waitForFunction(() => {
         const shell = document.querySelector('[data-maplibre-spike][data-maplibre-city="casablanca"][data-maplibre-district="maarif"]');
         return shell?.getAttribute("data-maplibre-render-state") === "ready"
-          && shell?.getAttribute("data-maplibre-overture-state") === "available";
+          && shell?.getAttribute("data-maplibre-camera-mode") === "north-up-flat";
       }, null, { timeout: 30000 });
 
       const camera = await recenterTwinCenter(page, viewport);
@@ -138,17 +221,58 @@ try {
         labelPolicy: el.getAttribute("data-maplibre-label-policy"),
         boundarySemantic: el.getAttribute("data-maplibre-boundary-semantic"),
         buildingCount: Number(el.getAttribute("data-maplibre-building-count") ?? 0),
+        buildingFootprints: Number(el.getAttribute("data-maplibre-building-footprint-count") ?? 0),
+        zoomTier: el.getAttribute("data-maplibre-zoom-tier"),
       }));
-      if (attrs.polish !== "material-relief-v3") throw new Error(`${viewport.name}: L3 baseline polish mismatch ${attrs.polish}`);
+      if (attrs.polish !== "flat-basemap-v02") throw new Error(`${viewport.name}: V0.2 flat polish mismatch ${attrs.polish}`);
       if (attrs.streetLanguage !== "architectural-paper-v2") throw new Error(`${viewport.name}: Rue street-language mismatch ${attrs.streetLanguage}`);
-      if (attrs.buildingCount <= 0) throw new Error(`${viewport.name}: no Overture volumes rendered`);
+      if (attrs.buildingCount !== 0) throw new Error(`${viewport.name}: 3D volumes unexpectedly rendered`);
+      if (attrs.buildingFootprints <= 0) throw new Error(`${viewport.name}: missing real 2D building footprints at street zoom`);
+      if (attrs.zoomTier !== "street") throw new Error(`${viewport.name}: expected street detail zoom tier, observed ${attrs.zoomTier}`);
 
       await page.screenshot({
         path: `${outDir}/twin-center-after-${viewport.width}x${viewport.height}.png`,
         fullPage: false,
       });
 
+      // LOT3 interaction gate: a real user can select an actual sourced
+      // landmark by touch/click and keyboard; no invented place data.
+      const landmarkAction = page.getByRole("button", { name: "Explorer le repère Twin Center" });
+      await landmarkAction.waitFor({ state: "visible", timeout: 6000 });
+      await landmarkAction.click();
+      const landmarkDetail = page.locator('[data-maplibre-landmark-detail="target"]');
+      await landmarkDetail.waitFor({ state: "visible", timeout: 5000 });
+      if (!(await landmarkDetail.innerText()).includes("Twin Center")) {
+        throw new Error(`${viewport.name}: selected landmark detail lost its true place name`);
+      }
+      if ((await landmarkAction.getAttribute("aria-pressed")) !== "true") {
+        throw new Error(`${viewport.name}: selected landmark pressed state absent`);
+      }
+      const selectionBox = await landmarkDetail.boundingBox();
+      if (!selectionBox || selectionBox.x < 0 || selectionBox.y < 0
+        || selectionBox.x + selectionBox.width > viewport.width
+        || selectionBox.y + selectionBox.height > viewport.height) {
+        throw new Error(`${viewport.name}: selected landmark detail clipped ${JSON.stringify(selectionBox)}`);
+      }
+      await page.screenshot({
+        path: `${outDir}/twin-center-selected-after-${viewport.width}x${viewport.height}.png`,
+        fullPage: false,
+      });
+      const closeAction = page.getByRole("button", { name: "Fermer le détail du repère" });
+      const closeBox = await closeAction.boundingBox();
+      if (!closeBox || closeBox.width < 43 || closeBox.height < 43) {
+        throw new Error(`${viewport.name}: landmark detail close target smaller than 44px ${JSON.stringify(closeBox)}`);
+      }
+      await closeAction.click();
+      await landmarkDetail.waitFor({ state: "detached", timeout: 5000 });
+      await landmarkAction.focus();
+      await page.keyboard.press("Enter");
+      await landmarkDetail.waitFor({ state: "visible", timeout: 5000 });
+      await page.getByRole("button", { name: "Fermer le détail du repère" }).click();
+      await landmarkDetail.waitFor({ state: "detached", timeout: 5000 });
+
       report.cases.push({
+        landmarkSelection: { click: true, keyboard: true, close: true, selectionBox, closeBox },
         viewport: viewport.name,
         ...camera,
         overflow,
