@@ -205,7 +205,7 @@ function main() {
   }
   writeFileSync(join(outputRoot, "by-parent.csv"), csv.join("\n") + "\n", "utf8");
 
-  console.log(JSON.stringify({ summary, registeredCityStats, top10: report.top20ParentGroupsByValidCenters.slice(0, 10) }, null, 2));
+  console.log(JSON.stringify({ summary, registeredCityStats, top10: report.top20ParentGroupsByValidCenters.slice(0, 10), unmatchedParentGroups: report.unmatchedParentGroups }, null, 2));
   if (summary.parentAmbiguousPlaceMatch) {
     console.error("WARNING: Some parent-city names are ambiguous and must not be auto-associated");
   }
