@@ -131,16 +131,19 @@ export function applyAkarFinderMoroccoBasemapTreatment(map: MapLibreMap): void {
 
 export function applyAkarFinderCityBasemapTreatment(map: MapLibreMap, theme?: string): void {
   const dark = theme === "dark";
+  // N1: light city atlas uses the same architectural-paper cartographic
+  // family as the nationally deployed quartier map. The city geometry comes
+  // from a real boundary source and keeps its own administrative semantics.
   const palette = {
-    background: dark ? "#0A1A2F" : "#F4F8FA",
-    land: dark ? "#10253A" : "#EEF5F7",
-    water: dark ? "#153A51" : "#D7E9EF",
-    park: dark ? "#183C43" : "#DCEBE6",
-    building: dark ? "#25384A" : "#E5ECEF",
-    road: dark ? "#3B5368" : "#B8C8D0",
-    roadMajor: dark ? "#57748A" : "#7EA6B4",
-    label: dark ? "#B8CAD9" : "#496678",
-    halo: dark ? "#0A1A2F" : "#F7FBFC",
+    background: dark ? "#0A1A2F" : "#FBF8F3",
+    land: dark ? "#10253A" : "#F4F4EC",
+    water: dark ? "#153A51" : "#DDECF4",
+    park: dark ? "#183C43" : "#D9ECDD",
+    building: dark ? "#25384A" : "#B5CAE0",
+    road: dark ? "#3B5368" : "#A7C1D9",
+    roadMajor: dark ? "#57748A" : "#83A6CA",
+    label: dark ? "#B8CAD9" : "#365978",
+    halo: dark ? "#0A1A2F" : "#FBF8F3",
   };
 
   for (const layer of map.getStyle().layers ?? []) {
