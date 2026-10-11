@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - "scripts/audits/national-neighborhood-coverage.mjs"
+      - "scripts/audits/verify-agadir-al-qods-pilot.mjs"
+      - "data/geo/pilot-agadir-al-qods-evidence.json"
       - ".github/workflows/carte-national-neighborhood-coverage-audit.yml"
 
 permissions:
@@ -68,6 +70,10 @@ jobs:
           }
           console.log(JSON.stringify({candidateNames: review.candidateNameCount, spatialExceptions: exceptions.total}));
           NODE
+      - name: Verify first pilot source identity and coordinates (still on hold)
+        run: |
+          node --check scripts/audits/verify-agadir-al-qods-pilot.mjs
+          node scripts/audits/verify-agadir-al-qods-pilot.mjs
       - name: Upload national read-only inventory
         if: always()
         uses: actions/upload-artifact@v4
