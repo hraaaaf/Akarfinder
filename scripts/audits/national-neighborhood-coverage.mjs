@@ -414,7 +414,7 @@ function main() {
   const safeCsv = (value) => {
     const text = String(value ?? "");
     // Avoid spreadsheet formula execution when reviewers open untrusted OSM labels.
-    const safe = /^[\\s]*[=+@-]/.test(text) ? "'" + text : text;
+    const safe = /^\s*[=+@-]/.test(text) ? "'" + text : text;
     return '"' + safe.replace(/"/g, '""') + '"';
   };
   const candidateCsvRows = [
