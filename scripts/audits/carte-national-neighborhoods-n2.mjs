@@ -75,6 +75,24 @@ report.api = {
   certifiedNeighborhoodBoundaryCount: api.meta.certifiedNeighborhoodBoundaryCount,
 };
 
+// Independent source-point canary. This is an existing N2 candidate (never a published boundary).
+const agadirResponse = await fetch(`${baseUrl}/api/geo/national-territories?city=agadir`);
+if (!agadirResponse.ok) throw new Error(`Agadir API ${agadirResponse.status}`);
+const agadir = await agadirResponse.json();
+if (agadir.view !== "city" || agadir.place?.slug !== "agadir") throw new Error("Agadir view missing");
+const alQods = agadir.neighborhoods?.find((item) => item.slug === "al-qods");
+if (!alQods || !isValidCenter(alQods.center)
+  || Math.abs(alQods.center.lat - 30.4177326) > 0.00001
+  || Math.abs(alQods.center.lng - (-9.5551165)) > 0.00001
+  || alQods.boundaryStatus !== "not_claimed" || alQods.publicationStatus !== "label_candidate"
+  || !alQods.sourceKinds?.includes("osm_neighborhood_label")) {
+  throw new Error(`Al Qods independent source gate failed ${JSON.stringify(alQods)}`);
+}
+if (agadir.certifiedNeighborhoodBoundaries?.features?.length !== 0 ||
+  agadir.meta?.certifiedNeighborhoodBoundaryCount !== 0) {
+  throw new Error("Agadir source candidate must not publish an invented quartier polygon");
+}
+
 const browser = await chromium.launch({ headless: true });
 try {
   for (const viewport of viewports) {
@@ -215,8 +233,42 @@ try {
         throw new Error("N2 fallback has no truthful on-map boundary disclaimer");
       }
       await page.screenshot({ path: `${outDir}/sourced-point-${viewport.name}-after.png`, fullPage: false });
+      // No runtime change: verify the already implemented national source-point fallback on another city.
+      await page.goto(`${baseUrl}/map?city=agadir&district=al-qods&layer=explore`, {
+        waitUntil: "domcontentloaded", timeout: 30000,
+      });
+      const agadirMap = page.locator('[data-maplibre-spike][data-maplibre-city="agadir"][data-maplibre-district="al-qods"]');
+      await agadirMap.waitFor({ state: "attached", timeout: 25000 });
+      await page.waitForFunction(() => {
+        const el = document.querySelector('[data-maplibre-spike][data-maplibre-city="agadir"][data-maplibre-district="al-qods"]');
+        return el?.getAttribute("data-maplibre-ready") === "true"
+          && el?.getAttribute("data-maplibre-national-flat") === "akarfinder-national-v1";
+      }, null, { timeout: 25000 });
+      const agadirState = await agadirMap.evaluate((el) => ({
+        reference: el.getAttribute("data-maplibre-point-reference"),
+        boundary: el.getAttribute("data-maplibre-boundary-status"),
+        semantic: el.getAttribute("data-maplibre-boundary-semantic"),
+        focus: el.getAttribute("data-maplibre-focus-semantic"),
+      }));
+      if (agadirState.reference !== "sourced-label-candidate" || agadirState.boundary !== "center-only"
+        || agadirState.semantic !== "none" || agadirState.focus !== "context-focus-not-boundary") {
+        throw new Error(`Al Qods map misrepresents unreviewed boundary ${JSON.stringify(agadirState)}`);
+      }
+      const agadirDisclosure = agadirMap.locator('[data-maplibre-candidate-disclosure="source-indicative"]');
+      await agadirDisclosure.waitFor({ state: "visible", timeout: 6000 });
+      if (!(await agadirDisclosure.innerText()).includes("Limites du quartier non certifiées")) {
+        throw new Error("Al Qods disclaimer missing");
+      }
+      const agadirOverflow = await page.evaluate(() =>
+        document.documentElement.scrollWidth - document.documentElement.clientWidth);
+      if (agadirOverflow > 1) throw new Error(`Al Qods overflow ${agadirOverflow}`);
+      await page.screenshot({ path: `${outDir}/agadir-al-qods-${viewport.name}-after.png`, fullPage: false });
       if (pageErrors.length) throw new Error(`browser page errors ${JSON.stringify(pageErrors)}`);
-      report.cases.push({ viewport: viewport.name, overflow, layerState, featuredSelection: true, mappedSelection: "route-handoff", noCenterFallback: true, searchHandoff: true, sourcedCandidate: { slug: candidatePoint.slug, name: candidatePoint.name, center: candidatePoint.center, sourceKinds: candidatePoint.sourceKinds } });
+      report.cases.push({ viewport: viewport.name, overflow, layerState, featuredSelection: true,
+        mappedSelection: "route-handoff", noCenterFallback: true, searchHandoff: true,
+        agadirAlQods: { center: alQods.center, sourceOnly: true,
+          disclosure: true, browserReady: true, horizontalOverflow: agadirOverflow },
+        sourcedCandidate: { slug: candidatePoint.slug, name: candidatePoint.name, center: candidatePoint.center, sourceKinds: candidatePoint.sourceKinds } });
     } catch (error) {
       report.failure = { viewport: viewport.name, error: String(error) };
       throw error;
