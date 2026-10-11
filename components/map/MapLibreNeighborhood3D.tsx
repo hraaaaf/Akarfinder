@@ -632,13 +632,13 @@ export function MapLibreNeighborhood3D({
                 paint: {
                   "fill-color": [
                     "interpolate", ["linear"], ["coalesce", ["get", "render_height"], 0],
-                    0, "#D7E3F0",
-                    12, "#CEDDEB",
-                    28, "#C3D3E4",
-                    60, "#B8CADE"
+                    0, "#C5D7E8",
+                    12, "#BCD1E5",
+                    28, "#B5CAE0",
+                    60, "#AAC2DA"
                   ],
-                  "fill-opacity": ["interpolate", ["linear"], ["zoom"], 12.2, 0.09, 14.5, 0.23, 17.5, 0.29],
-                  "fill-outline-color": "#B6CADA",
+                  "fill-opacity": ["interpolate", ["linear"], ["zoom"], 12.2, 0.12, 14.5, 0.34, 17.5, 0.40],
+                  "fill-outline-color": "#A7BFD4",
                 },
               } as any);
 
@@ -660,11 +660,11 @@ export function MapLibreNeighborhood3D({
                     "motorway", "#7F9FC9",
                     "trunk", "#91AED2",
                     "primary", MAP_BRAND_BLUE,
-                    "secondary", "#92B2D1",
-                    "tertiary", "#B1C9DF",
-                    "#D0E0ED"
+                    "secondary", "#83A6CA",
+                    "tertiary", "#A7C1D9",
+                    "#CBDBE9"
                   ],
-                  "line-opacity": ["*", ["interpolate", ["linear"], ["zoom"], 11, 0.72, 14.5, 0.92, 17.5, 0.96], ["match", ["get", "class"], "primary", 0.49, 1]],
+                  "line-opacity": ["*", ["interpolate", ["linear"], ["zoom"], 11, 0.72, 14.5, 0.92, 17.5, 0.96], ["match", ["get", "class"], "primary", 0.58, 1]],
                   "line-width": [
                     "interpolate", ["linear"], ["zoom"],
                     11, ["match", ["get", "class"], "motorway", 2.4, "trunk", 2.2, "primary", 2.0, "secondary", 1.7, "tertiary", 1.3, 0.8],
@@ -750,8 +750,8 @@ export function MapLibreNeighborhood3D({
                   "text-ignore-placement": false,
                 },
                 paint: {
-                  "text-color": "#415D79",
-                  "text-opacity": 0.83,
+                  "text-color": "#365978",
+                  "text-opacity": 0.88,
                   "text-halo-color": "rgba(251,248,243,0.96)",
                   "text-halo-width": 1.0,
                   "text-halo-blur": 0.14,
