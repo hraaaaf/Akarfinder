@@ -140,6 +140,19 @@ function main() {
     });
   }
 
+  // Diagnose only: no runtime changes or automatic city-parent promotion.
+  const orphanParentNormalizedCandidates = byParent.filter((r) => r.placeMatchCount !== 1).map((row) => {
+    const candidateMatches = placesByParent.get(parentKey(row.parentKey)) || [];
+    return {
+      parentKey: row.parentKey,
+      centeredRows: row.validCenters,
+      candidatePlaceCount: candidateMatches.length,
+      candidatePlaceSlug: candidateMatches.length === 1 ? candidateMatches[0].slug : null,
+      candidatePlaceName: candidateMatches.length === 1 ? candidateMatches[0].name : null,
+      reviewState: candidateMatches.length === 1 ? "normalized_exact_candidate_not_promoted" : "unresolved",
+    };
+  });
+
   const byCity = byParent.filter((r) => r.matchedPlaceSlug).sort((a, b) => b.validCenters - a.validCenters || a.parentKey.localeCompare(b.parentKey));
   const certifiedCities = [...knownByCity.keys()].sort();
   const registeredCityStats = certifiedCities.map((city) => {
@@ -190,6 +203,7 @@ function main() {
     registeredCityStats,
     top20ParentGroupsByValidCenters: byParent.slice().sort((a, b) => b.validCenters - a.validCenters).slice(0, 20),
     unmatchedParentGroups: byParent.filter((x) => x.placeMatchCount !== 1),
+    orphanParentNormalizedCandidates,
     byParent: byParent.sort((a, b) => a.parentKey.localeCompare(b.parentKey)),
   };
   writeFileSync(join(outputRoot, "report.json"), JSON.stringify(report, null, 2) + "\n", "utf8");
@@ -205,7 +219,7 @@ function main() {
   }
   writeFileSync(join(outputRoot, "by-parent.csv"), csv.join("\n") + "\n", "utf8");
 
-  console.log(JSON.stringify({ summary, registeredCityStats, top10: report.top20ParentGroupsByValidCenters.slice(0, 10), unmatchedParentGroups: report.unmatchedParentGroups }, null, 2));
+  console.log(JSON.stringify({ summary, registeredCityStats, top10: report.top20ParentGroupsByValidCenters.slice(0, 10), unmatchedParentGroups: report.unmatchedParentGroups, orphanParentNormalizedCandidates: report.orphanParentNormalizedCandidates }, null, 2));
   if (summary.parentAmbiguousPlaceMatch) {
     console.error("WARNING: Some parent-city names are ambiguous and must not be auto-associated");
   }
