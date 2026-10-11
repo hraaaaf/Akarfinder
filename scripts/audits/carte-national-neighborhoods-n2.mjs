@@ -56,6 +56,16 @@ if (api.meta?.certifiedNeighborhoodBoundaryCount !== 0) throw new Error(`unexpec
 if (api.certifiedNeighborhoodBoundaries?.features?.length !== 0) throw new Error("N2 must not publish uncertified neighborhood polygons");
 const maarif = api.neighborhoods.find((item) => item.slug === "maarif");
 const postalMaarif = api.neighborhoods.find((item) => item.slug === "quartier-maarif");
+const canonicalCasablancaMapSlugs = new Set(["maarif", "finance-city", "bouskoura"]);
+const candidatePoint = api.neighborhoods.find((item) =>
+  !canonicalCasablancaMapSlugs.has(item.slug)
+  && isValidCenter(item.center)
+  && item.center.lng >= -14.5 && item.center.lng <= 2.5
+  && item.center.lat >= 20.5 && item.center.lat <= 37.5
+  && item.boundaryStatus === "not_claimed"
+  && item.publicationStatus === "label_candidate"
+  && item.sourceKinds?.some((kind) => kind === "osm_neighborhood_label" || kind === "barid_postal_neighborhood"));
+if (!candidatePoint) throw new Error("N2 catalog has no eligible source-backed point for national fallback");
 if (!isValidCenter(maarif?.center) || !maarif.sourceKinds?.includes("osm_neighborhood_label")) throw new Error("Maârif mapped OSM label missing");
 if (postalMaarif?.center || !postalMaarif?.sourceKinds?.includes("barid_postal_neighborhood")) throw new Error("Barid no-center fallback missing");
 report.api = {
@@ -176,8 +186,37 @@ try {
       if (!postalHref?.includes("district=QUARTIER%20MAARIF")) throw new Error(`postal Search handoff ${postalHref}`);
       await page.screenshot({ path: `${outDir}/postal-maarif-${viewport.name}-after.png`, fullPage: false });
 
+      // N2 offers sourced point candidates without certified polygons;
+      // preserve the old no-center postal fallback, but permit these
+      // sourced coordinates with a mandatory indicative-point disclaimer.
+      await page.goto(`${baseUrl}/map?city=casablanca&district=${encodeURIComponent(candidatePoint.slug)}&layer=explore`, { waitUntil: "domcontentloaded", timeout: 30000 });
+      const candidateMap = page.locator(`[data-maplibre-spike][data-maplibre-city="casablanca"][data-maplibre-district="${candidatePoint.slug}"]`);
+      await candidateMap.waitFor({ state: "attached", timeout: 25000 });
+      await page.waitForFunction((slug) => {
+        const shell = document.querySelector(`[data-maplibre-spike][data-maplibre-city="casablanca"][data-maplibre-district="${slug}"]`);
+        return shell?.getAttribute("data-maplibre-ready") === "true"
+          && shell?.getAttribute("data-maplibre-national-flat") === "akarfinder-national-v1";
+      }, candidatePoint.slug, { timeout: 25000 });
+      const candidateState = await candidateMap.evaluate((el) => ({
+        reference: el.getAttribute("data-maplibre-point-reference"),
+        boundary: el.getAttribute("data-maplibre-boundary-status"),
+        semantic: el.getAttribute("data-maplibre-boundary-semantic"),
+        focus: el.getAttribute("data-maplibre-focus-semantic"),
+      }));
+      if (candidateState.reference !== "sourced-label-candidate"
+        || candidateState.boundary !== "center-only"
+        || candidateState.semantic !== "none"
+        || candidateState.focus !== "context-focus-not-boundary") {
+        throw new Error(`N2 sourced point misrepresented geographic certainty ${JSON.stringify(candidateState)}`);
+      }
+      const sourceNote = candidateMap.locator('[data-maplibre-candidate-disclosure="source-indicative"]');
+      await sourceNote.waitFor({ state: "visible", timeout: 6000 });
+      if (!(await sourceNote.innerText()).includes("Limites du quartier non certifiées")) {
+        throw new Error("N2 fallback has no truthful on-map boundary disclaimer");
+      }
+      await page.screenshot({ path: `${outDir}/sourced-point-${viewport.name}-after.png`, fullPage: false });
       if (pageErrors.length) throw new Error(`browser page errors ${JSON.stringify(pageErrors)}`);
-      report.cases.push({ viewport: viewport.name, overflow, layerState, featuredSelection: true, mappedSelection: "route-handoff", noCenterFallback: true, searchHandoff: true });
+      report.cases.push({ viewport: viewport.name, overflow, layerState, featuredSelection: true, mappedSelection: "route-handoff", noCenterFallback: true, searchHandoff: true, sourcedCandidate: { slug: candidatePoint.slug, name: candidatePoint.name, center: candidatePoint.center, sourceKinds: candidatePoint.sourceKinds } });
     } catch (error) {
       report.failure = { viewport: viewport.name, error: String(error) };
       throw error;
