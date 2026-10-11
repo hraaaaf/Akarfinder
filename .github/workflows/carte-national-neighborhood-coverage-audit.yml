@@ -37,6 +37,37 @@ jobs:
           assert(report.byParent.length === report.parentGroupCount);
           console.log("source labels:", report.sourceLabelRows, "centered:", report.validCenterRows, "missing:", report.missingCenterRows);
           NODE
+      - name: Fail-closed source review artifact contract
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFileSync } from "node:fs";
+          import assert from "node:assert/strict";
+          const root = "data/audits/national-neighborhood-coverage/";
+          const report = JSON.parse(readFileSync(root + "report.json", "utf8"));
+          const review = JSON.parse(readFileSync(root + "centered-candidate-review.json", "utf8"));
+          const exceptions = JSON.parse(readFileSync(root + "source-review-exceptions.json", "utf8"));
+          assert.equal(review.candidateNameCount, 323);
+          assert.equal(review.cities.length, 7);
+          assert.equal(exceptions.total, 20);
+          assert.equal(exceptions.rows.filter(x => x.type === "outside_candidate_city_polygon").length, 16);
+          assert.equal(exceptions.rows.filter(x => x.type === "unresolved_parent").length, 4);
+          assert.equal(report.reviewQueue.originalOsmFeatureIdsAvailable, false);
+          for (const city of review.cities) {
+            assert.equal(city.candidates.length, city.candidateNameCount);
+            for (const item of city.candidates) {
+              assert.equal(item.publicationEligible, false);
+              assert.equal(item.originalOsmFeatureId, null);
+              assert.equal(item.reviewStatus, "pending_semantic_and_source_identity_review");
+              assert(item.sourcePoints.length > 0);
+            }
+          }
+          for (const x of exceptions.rows) {
+            assert.equal(x.publicationEligible, false);
+            assert.equal(x.originalOsmFeatureId, null);
+            assert(x.reviewStatus.startsWith("hold_"));
+          }
+          console.log(JSON.stringify({candidateNames: review.candidateNameCount, spatialExceptions: exceptions.total}));
+          NODE
       - name: Upload national read-only inventory
         if: always()
         uses: actions/upload-artifact@v4
