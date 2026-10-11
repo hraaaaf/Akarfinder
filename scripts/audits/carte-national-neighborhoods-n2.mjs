@@ -265,8 +265,11 @@ try {
       if ((await namedSourceContext.innerText()).trim() !== "Al Qods") {
         throw new Error("Al Qods selected source point not named in decision rail");
       }
-      if (!(await agadirRail.locator(".p4-premium-kicker").innerText()).includes("Repère indicatif")) {
-        throw new Error("Al Qods rail does not identify noncanonical source semantics");
+      const rawKicker = (await agadirRail.locator(".p4-premium-kicker").textContent())?.trim() ?? "";
+      if (!rawKicker.includes("Repère indicatif")) {
+        // Capture genuine failure state so we can inspect UI without guessing.
+        await page.screenshot({ path: `${outDir}/agadir-al-qods-${viewport.name}-kicker-diagnostic.png`, fullPage: false });
+        throw new Error(`Al Qods rail semantic kicker mismatch: ${JSON.stringify(rawKicker)}`);
       }
       const agadirSearchHref = await agadirRail.locator(".p4-premium-primary-action").getAttribute("href");
       const searchTarget = new URL(agadirSearchHref ?? "/", baseUrl);
