@@ -14,9 +14,12 @@ const cities = [
   { slug: "tanger", districtSlug: "malabata", city: "Tanger", district: "Malabata" },
   { slug: "agadir", districtSlug: "founty", city: "Agadir", district: "Founty" },
 ];
+// National rollout gate: five representative cities × the same four
+// fixed UI viewports. No synthetic quartier boundary data is introduced.
 const viewports = [
-  { name: "iphone14promax", width: 430, height: 932, onlyCity: "fes" },
   { name: "mobile", width: 390, height: 844 },
+  { name: "iphone14promax", width: 430, height: 932 },
+  { name: "tablet", width: 768, height: 900 },
   { name: "desktop", width: 1280, height: 900 },
 ];
 
@@ -98,6 +101,40 @@ try {
         // Preserve the actual rendered viewport before any visibility/layout assertions.
         await page.screenshot({ path: `${outDir}/${cityCase.slug}-${cityCase.districtSlug}-${viewport.width}x${viewport.height}.png`, fullPage: false });
 
+        // Each registered city/quartier must use the SAME actual AkarFinder
+        // flat 2D vector renderer, not just a blue page-shell CSS treatment.
+        const nationalMapState = await maplibre.evaluate((el) => {
+          const attr = (key) => el.getAttribute(key);
+          return {
+            nationalFlat: attr("data-maplibre-national-flat"),
+            palette: attr("data-maplibre-cartographic-palette"),
+            hierarchy: attr("data-maplibre-hierarchy-pass"),
+            camera: attr("data-maplibre-camera-mode"),
+            focus: attr("data-maplibre-focus-semantic"),
+            pitch: Number(attr("data-maplibre-actual-pitch")),
+            bearing: Number(attr("data-maplibre-actual-bearing")),
+            footprints: Number(attr("data-maplibre-building-footprint-count")),
+            volumes: Number(attr("data-maplibre-building-count")),
+            adminBoundary: attr("data-maplibre-boundary-semantic"),
+            city: attr("data-maplibre-city"),
+            district: attr("data-maplibre-district"),
+          };
+        });
+        if (nationalMapState.nationalFlat !== "akarfinder-national-v1"
+          || nationalMapState.palette !== "akarfinder-c1-c2-map-v1"
+          || nationalMapState.hierarchy !== "readable-footprints-roads-v2"
+          || nationalMapState.camera !== "north-up-flat"
+          || nationalMapState.focus !== "context-focus-not-boundary"
+          || nationalMapState.pitch !== 0 || nationalMapState.bearing !== 0
+          || nationalMapState.volumes !== 0) {
+          throw new Error(`${cityCase.slug}/${viewport.name}: nationwide 2D contract failed ${JSON.stringify(nationalMapState)}`);
+        }
+        if (cityCase.slug !== "casablanca" && nationalMapState.adminBoundary !== "none") {
+          throw new Error(`${cityCase.slug}/${viewport.name}: invented administrative district geometry`);
+        }
+        if (basemapEvidence === "live-tiles" && nationalMapState.footprints < 1) {
+          throw new Error(`${cityCase.slug}/${viewport.name}: live urban vector tiles but no real building footprints`);
+        }
         const rail = page.locator("[data-p4-map-decision-rail]");
         await rail.waitFor({ state: "visible", timeout: 10000 });
         const panelBox = await rail.boundingBox();
@@ -133,6 +170,7 @@ try {
           panelBox,
           overflow,
           mapRendered: true,
+          nationalMapState,
           highZoomTileCount,
           basemapEvidence,
           decisionRail: true,
