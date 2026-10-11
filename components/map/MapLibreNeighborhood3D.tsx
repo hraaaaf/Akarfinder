@@ -810,23 +810,18 @@ export function MapLibreNeighborhood3D({
               source: "akarfinder-openfreemap",
               "source-layer": "building",
               type: "fill-extrusion",
-              minzoom: isMaarifTargetPilot && targetComposition === "context" ? 12.2 : 14.8,
-              filter: isMaarifTargetPilot && targetComposition === "context"
-                ? ["all", ["!=", ["get", "hide_3d"], true], [">", ["coalesce", ["get", "render_height"], 0], 0]]
-                : ["!=", ["get", "hide_3d"], true],
+              // Non-flat legacy branch only: national quartier routes do not
+              // install this 3D layer; keep TypeScript narrowing explicit.
+              minzoom: 14.8,
+              filter: ["!=", ["get", "hide_3d"], true],
               paint: {
-                "fill-extrusion-color": isMaarifTargetPilot && targetComposition === "context"
-                  ? [
-                    "interpolate", ["linear"], ["coalesce", ["get", "render_height"], 0],
-                    0, "#F2EFEA", 10, "#ECE8E1", 24, "#E4DFD7", 55, "#D8D2CA", 120, "#C8C0B7",
-                  ]
-                  : [
-                    "interpolate", ["linear"], ["coalesce", ["get", "render_height"], 0],
-                    0, "#edf1f4", 10, "#e4e9ed", 24, "#d9e1e6", 55, "#ccd7df", 120, "#b8c6d1",
-                  ],
+                "fill-extrusion-color": [
+                  "interpolate", ["linear"], ["coalesce", ["get", "render_height"], 0],
+                  0, "#edf1f4", 10, "#e4e9ed", 24, "#d9e1e6", 55, "#ccd7df", 120, "#b8c6d1",
+                ],
                 "fill-extrusion-height": ["coalesce", ["get", "render_height"], 0],
                 "fill-extrusion-base": ["coalesce", ["get", "render_min_height"], 0],
-                "fill-extrusion-opacity": isMaarifTargetPilot && targetComposition === "context" ? 0 : 0.28,
+                "fill-extrusion-opacity": 0.28,
                 "fill-extrusion-vertical-gradient": true,
               },
             } as any);
@@ -1322,7 +1317,7 @@ export function MapLibreNeighborhood3D({
        data-maplibre-actual-pitch={actualCamera.pitch}
        data-maplibre-actual-bearing={actualCamera.bearing}
       data-maplibre-focus-semantic={isNationalFlatLiving ? "context-focus-not-boundary" : "district-focus"}
-      data-maplibre-context-footprint={isNationalFlatLiving && context?.anchors?.length >= 2 ? "verified-anchor-envelope-buffered" : "none"}
+      data-maplibre-context-footprint={isNationalFlatLiving && (context?.anchors?.length ?? 0) >= 2 ? "verified-anchor-envelope-buffered" : "none"}
       data-maplibre-target-context-count={0}
        data-maplibre-zoom-tier={zoomTier}
        data-maplibre-selected-landmark={selectedLandmarkId ?? ""}
