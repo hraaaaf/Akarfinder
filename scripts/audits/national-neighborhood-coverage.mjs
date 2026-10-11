@@ -411,6 +411,26 @@ function main() {
   writeFileSync(join(outputRoot, "source-review-exceptions.json"),
     JSON.stringify({ sourceArtifact, total: sourceReviewExceptions.length, rows: sourceReviewExceptions }, null, 2) + "\n", "utf8");
   writeFileSync(join(outputRoot, "centered-candidate-review.json"), JSON.stringify(candidateReview, null, 2) + "\n", "utf8");
+  const safeCsv = (value) => {
+    const text = String(value ?? "");
+    // Avoid spreadsheet formula execution when reviewers open untrusted OSM labels.
+    const safe = /^[\\s]*[=+@-]/.test(text) ? "'" + text : text;
+    return '"' + safe.replace(/"/g, '""') + '"';
+  };
+  const candidateCsvRows = [
+    ["city", "name", "category", "lat", "lng", "source_point_count", "source_review", "risk_flags", "original_osm_feature_id", "published"],
+  ];
+  for (const city of candidatesByCity) {
+    for (const entry of city.candidates) {
+      const p = entry.sourcePoints[0];
+      candidateCsvRows.push([city.citySlug, entry.names[0], entry.sourceIdentityCategory,
+        p.lat, p.lng, entry.sourcePoints.length, entry.reviewStatus,
+        entry.nameRiskSignals.join(";"), "", false]);
+    }
+  }
+  writeFileSync(join(outputRoot, "centered-candidate-review.csv"),
+    candidateCsvRows.map((row) => row.map(safeCsv).join(",")).join("\n") + "\n", "utf8");
+
   writeFileSync(join(outputRoot, "source-review-exceptions.csv"),
     ["type,parentKey,proposedCitySlug,name,lng,lat,reviewStatus",
       ...sourceReviewExceptions.map((r) => [r.type, r.parentKey, r.proposedCitySlug, r.name, r.lng, r.lat, r.reviewStatus]
