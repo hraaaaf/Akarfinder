@@ -1,0 +1,426 @@
+/* AKAR-MAP-QUARTIER-TARGET — Couche 1 — Maârif
+ * Scoped presentation-only overrides for the validated target pilot.
+ */
+
+@media (min-width: 1024px) {
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]) {
+    grid-template-columns: minmax(0, 7fr) minmax(360px, 3fr);
+    background: #f8fafc;
+  }
+
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]) .p4-map-decision-rail {
+    padding: 22px;
+    border-left: 1px solid #e2e8f0;
+    background: #ffffff;
+    overflow-y: auto;
+  }
+
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]) [data-p4-neighborhood-hero] {
+    height: 150px;
+    margin-inline: -22px;
+    margin-top: -22px;
+    margin-bottom: 22px;
+  }
+}
+
+[data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]) .p4-premium-kicker {
+  color: #1265d6 !important;
+  font-size: 12px;
+  letter-spacing: -.01em;
+  text-transform: none;
+}
+
+[data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]) .p4-premium-context-header h2 {
+  margin-top: 4px;
+  color: #071b33;
+  font-size: clamp(34px, 3vw, 46px);
+  line-height: .98;
+  letter-spacing: -.055em;
+}
+
+[data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]) .p4-premium-context-location {
+  margin-top: 8px;
+  color: #52657a;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+[data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]) .p4-premium-lede {
+  display: none;
+}
+
+[data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]) .p4-premium-proofline {
+  margin-top: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+[data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]) .p4-premium-proofline span {
+  border: 1px solid #dbe5f1;
+  border-radius: 999px;
+  background: #fff;
+  padding: 6px 10px;
+  color: #61748a;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .06em;
+}
+
+[data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]) .p4-premium-tabs {
+  margin-top: 20px;
+  border-bottom: 1px solid #e3eaf3;
+  gap: 22px;
+}
+
+[data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]) .p4-premium-tabs > * {
+  padding: 0 0 11px;
+  font-size: 11px;
+}
+
+[data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]) .p4-premium-tabs [aria-current="page"] {
+  color: #0b63ce;
+  border-bottom-color: #0b63ce;
+}
+
+[data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]) .p4-premium-signal-grid,
+[data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]) .p4-premium-category-line,
+[data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]) .p4-premium-local-guide {
+  display: none;
+}
+
+[data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]) .p4-premium-market-card {
+  margin-top: 18px;
+  border: 1px solid #dfe7f0;
+  border-radius: 18px;
+  background: #ffffff;
+  padding: 16px;
+  box-shadow: 0 8px 24px rgb(7 27 51 / .05);
+}
+
+[data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]) .p4-premium-market-eyebrow {
+  color: #137f85 !important;
+  font-size: 9px;
+  letter-spacing: .12em;
+}
+
+[data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]) .p4-premium-market-title {
+  margin-top: 7px;
+  color: #071b33;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+[data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]) .p4-premium-market-copy {
+  margin-top: 7px;
+  color: #75869a;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+[data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]) .p4-premium-actions {
+  margin-top: 16px;
+  display: grid;
+  gap: 10px;
+}
+
+[data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]) .p4-premium-primary-action {
+  min-height: 52px;
+  border-radius: 14px;
+  background: #071b33 !important;
+  font-size: 11px;
+  box-shadow: 0 12px 28px rgb(7 27 51 / .18);
+}
+
+[data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]) .p4-premium-secondary-action {
+  min-height: 46px;
+  border: 1px solid #dce4ee;
+  border-radius: 14px;
+  background: #fff;
+  color: #071b33;
+  font-size: 10.5px;
+}
+
+@media (max-width: 1023px) {
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]) .p4-map-decision-rail {
+    max-height: min(46svh, 420px);
+    border-radius: 26px 26px 18px 18px;
+    background: rgb(255 255 255 / .98);
+  }
+
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]) [data-p4-neighborhood-hero] {
+    display: none !important;
+  }
+}
+
+
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-target-landmark-label {
+  position: absolute;
+  z-index: 12;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  transform: translate(-50%, -50%);
+  min-height: 30px;
+  max-width: 220px;
+  padding: 6px 10px 6px 7px;
+  border: 1px solid rgb(207 220 235 / .96);
+  border-radius: 999px;
+  background: rgb(255 255 255 / .96);
+  color: #173653;
+  box-shadow: 0 8px 20px rgb(7 27 51 / .13);
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-target-landmark-label i {
+  width: 10px;
+  height: 10px;
+  flex: 0 0 auto;
+  border: 2px solid #fff;
+  border-radius: 999px;
+  background: #5f7894;
+  box-shadow: 0 0 0 2px rgb(7 27 51 / .10);
+}
+
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-target-landmark-label[data-landmark-tier="flagship"] {
+  color: #071b33;
+  font-size: 10.5px;
+  font-weight: 900;
+  box-shadow: 0 10px 24px rgb(7 27 51 / .16);
+}
+
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-target-landmark-label[data-landmark-tier="flagship"] i {
+  width: 12px;
+  height: 12px;
+  background: #0b63ce;
+}
+
+
+/* Step 6 — target-like map chrome */
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-canvas canvas {
+  filter: saturate(.88) contrast(.96) brightness(1.035) !important;
+}
+
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-map-grade {
+  background: linear-gradient(180deg, rgb(255 255 255 / .03), rgb(7 27 51 / .025)) !important;
+  mix-blend-mode: normal !important;
+}
+
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-map-chrome {
+  left: 28px;
+  right: 28px;
+  top: 22px;
+  grid-template-columns: minmax(320px, 680px) auto;
+  align-items: start;
+}
+
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-brand {
+  display: none;
+}
+
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-search,
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-mode {
+  min-height: 54px;
+  border-color: rgb(211 220 232 / .94) !important;
+  border-radius: 16px;
+  background: rgb(255 255 255 / .96) !important;
+  box-shadow: 0 10px 28px rgb(7 27 51 / .10) !important;
+  backdrop-filter: blur(18px);
+}
+
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-search {
+  justify-self: stretch;
+  padding: 0 18px;
+}
+
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-search strong {
+  color: #071b33 !important;
+  font-size: 14px;
+}
+
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-search span {
+  color: #718096 !important;
+  font-size: 10px;
+}
+
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-mode {
+  justify-self: end;
+  padding: 4px;
+}
+
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-mode span,
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-mode strong {
+  min-width: 50px;
+  min-height: 44px;
+}
+
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-mode strong {
+  background: #071b33 !important;
+  color: #fff;
+}
+
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-view-chips {
+  display: none;
+}
+
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-filters {
+  left: 28px;
+  right: auto;
+  top: 88px;
+  width: auto;
+  overflow: visible;
+}
+
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-filters button:not(:first-child) {
+  display: none;
+}
+
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-filters button:first-child {
+  min-height: 38px;
+  padding: 0 15px;
+  border: 1px solid rgb(255 255 255 / .72) !important;
+  border-radius: 12px;
+  background: #071b33 !important;
+  color: #fff !important;
+  box-shadow: 0 8px 20px rgb(7 27 51 / .16) !important;
+}
+
+[data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]) .vivre-ici-territory-back {
+  left: 28px !important;
+  top: 142px !important;
+  min-height: 38px;
+  border: 1px solid #d8e1eb !important;
+  border-radius: 999px !important;
+  background: rgb(255 255 255 / .96) !important;
+  color: #071b33 !important;
+  box-shadow: 0 8px 20px rgb(7 27 51 / .10) !important;
+  backdrop-filter: blur(14px);
+}
+
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-controls {
+  right: 18px;
+  top: auto;
+  bottom: 18px;
+  transform: none;
+}
+
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-controls button,
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-controls > span {
+  width: 42px;
+  height: 42px;
+  border-color: #d8e1eb !important;
+  border-radius: 999px;
+  background: rgb(255 255 255 / .96) !important;
+  color: #071b33 !important;
+  box-shadow: 0 8px 20px rgb(7 27 51 / .12) !important;
+}
+
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-controls .maplibre-spike-control-primary {
+  background: #071b33 !important;
+  color: #fff !important;
+}
+
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-map-note {
+  left: 18px;
+  right: auto;
+  bottom: 18px;
+  width: min(390px, calc(100% - 100px));
+  gap: 3px;
+  padding: 9px 12px;
+  border-color: #d8e1eb !important;
+  border-radius: 12px;
+  background: rgb(255 255 255 / .94) !important;
+  box-shadow: 0 7px 20px rgb(7 27 51 / .10) !important;
+}
+
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-map-note strong,
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-map-note-status {
+  display: none;
+}
+
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-map-note-kicker {
+  color: #0b63ce !important;
+  font-size: 8px;
+}
+
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-map-note-copy {
+  margin: 0;
+  color: #64758a !important;
+  font-size: 9px;
+  line-height: 1.35;
+}
+
+@media (max-width: 1023px) {
+  [data-akar-quartier-target="maarif-couche1"] .maplibre-spike-map-chrome {
+    left: 12px;
+    right: 12px;
+    top: 10px;
+    display: block;
+  }
+
+  [data-akar-quartier-target="maarif-couche1"] .maplibre-spike-search {
+    width: 100%;
+    min-height: 48px;
+  }
+
+  [data-akar-quartier-target="maarif-couche1"] .maplibre-spike-mode {
+    display: none;
+  }
+
+  [data-akar-quartier-target="maarif-couche1"] .maplibre-spike-filters {
+    left: 12px;
+    top: 66px;
+  }
+
+  [data-p4-map-layout]:has([data-akar-quartier-target="maarif-couche1"]) .vivre-ici-territory-back {
+    left: 12px !important;
+    top: 112px !important;
+  }
+
+  [data-akar-quartier-target="maarif-couche1"] .maplibre-spike-map-note {
+    left: 12px;
+    right: 72px;
+    bottom: 16px;
+    width: auto;
+  }
+}
+
+
+/* Step 7 corrective pass — keep long landmark labels inside small viewports. */
+@media (max-width: 767px) {
+  [data-akar-quartier-target="maarif-couche1"] .maplibre-spike-target-landmark-label {
+    max-width: 168px;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.15;
+  }
+
+  [data-akar-quartier-target="maarif-couche1"] .maplibre-spike-target-landmark-label[data-landmark-tier="regional"] {
+    display: none;
+  }
+}
+
+
+/* HOTFIX RTL/ARABE — preserve Arabic shaping in DOM labels. */
+[data-akar-quartier-target="maarif-couche1"] [lang="ar"] {
+  direction: rtl;
+  unicode-bidi: isolate;
+  letter-spacing: 0 !important;
+  word-spacing: normal;
+  font-family: "Noto Sans Arabic", "Geeza Pro", "Segoe UI", Tahoma, Arial, sans-serif;
+  font-kerning: normal;
+  font-variant-ligatures: normal;
+  text-rendering: optimizeLegibility;
+}
+
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-poi-label [lang="ar"],
+[data-akar-quartier-target="maarif-couche1"] .maplibre-spike-target-landmark-label [lang="ar"] {
+  white-space: normal;
+  overflow-wrap: normal;
+  word-break: normal;
+  text-overflow: clip;
+}

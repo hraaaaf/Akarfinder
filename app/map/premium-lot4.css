@@ -90,6 +90,9 @@
     box-shadow: 0 9px 26px rgb(43 50 58/.08) !important;
     backdrop-filter: blur(18px);
   }
+  [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) [data-akarfinder-national-neighborhood-overlay] > div:first-child > div:has([data-akarfinder-neighborhood-directory]) {
+    border-radius: 18px !important;
+  }
 
   [data-p4-map-layout]:has([data-vivre-ici-3d-toggle]) [data-vivre-ici-3d-toggle] {
     left: auto !important;

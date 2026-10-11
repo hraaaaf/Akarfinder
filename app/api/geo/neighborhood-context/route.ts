@@ -41,7 +41,14 @@ export async function GET(request: Request) {
 
     return Response.json(
       { status: "ok", context: model },
-      { status: 200, headers: { ...BASE_HEADERS, "Cache-Control": CACHE_CONTROL } },
+      {
+        status: 200,
+        headers: {
+          ...BASE_HEADERS,
+          "X-AkarFinder-Context-Source": model.source.mode,
+          "Cache-Control": CACHE_CONTROL,
+        },
+      },
     );
   } catch (error) {
     console.error("[neighborhood-context-api]", error);

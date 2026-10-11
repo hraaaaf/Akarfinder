@@ -22,6 +22,7 @@ import type { Topology, Objects } from "topojson-specification";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CanonicalCitySlug } from "@/lib/geo/geo-entity-registry";
 import { selectNationalCityVisibility } from "@/lib/geo/territory-national-visibility";
+import { AKARFINDER_MOROCCO_MAP_NAVY, AKARFINDER_MOROCCO_TERRITORY_TONES, territoryLightToneForKey, territoryToneForKey } from "@/lib/map/akarfinder-territorial-style";
 import { selectStableTerritoryLabels } from "@/lib/geo/territory-label-stability";
 
 interface QuartierStats {
@@ -68,26 +69,13 @@ type TooltipState = { title: string; subtitle?: string; x: number; y: number } |
 const MAP_WIDTH = 980;
 const MAP_HEIGHT = 680;
 const NATIONAL_ZOOM_ANCHOR: [number, number] = [MAP_WIDTH * 0.53, MAP_HEIGHT * 0.05];
-const NAVY = "#071B33";
+const NAVY = AKARFINDER_MOROCCO_MAP_NAVY;
 const TOPOLOGY_URLS = [
   "https://media.githubusercontent.com/media/wmgeolab/geoBoundaries/9469f09592ced973a3448cf66b6100b741b64c0d/releaseData/gbOpen/MAR/ADM1/geoBoundaries-MAR-ADM1.topojson",
   "https://www.geoboundaries.org/data/geoBoundaries-2_0_0/MAR/ADM1/geoBoundaries-2_0_0-MAR-ADM1.topojson",
 ] as const;
 
-const REGION_TONES = [
-  "#0B2847",
-  "#113653",
-  "#18435F",
-  "#20516B",
-  "#2A5F77",
-  "#376D82",
-  "#477C8D",
-  "#588A98",
-  "#6B99A4",
-  "#80A8AF",
-  "#96B7BB",
-  "#ADC6C7",
-] as const;
+const REGION_TONES = AKARFINDER_MOROCCO_TERRITORY_TONES;
 
 const normalizeName = (value: string) =>
   value
@@ -591,7 +579,7 @@ export function PremiumInteractiveMap() {
 
         <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_390px]">
           <section
-            className="relative min-h-[560px] overflow-hidden rounded-[26px] border shadow-[0_24px_70px_rgba(7,27,51,0.12)] sm:min-h-[650px]"
+            className="relative min-h-[560px] overflow-hidden rounded-[26px] border shadow-[0_28px_76px_rgba(7,27,51,0.10)] sm:min-h-[650px]"
             style={{ borderColor: "var(--border)", background: "var(--surface)" }}
             aria-label="Carte interactive du Maroc"
           >
@@ -687,6 +675,7 @@ export function PremiumInteractiveMap() {
                     const labelX = (baseLabelX + labelXOffset) / camera.k;
                     const textX = (baseTextX + labelXOffset) / camera.k;
                     const labelY = labelYOffset / camera.k;
+                    const isPrimaryCity = city.slug === "casablanca";
                     return (
                       <g
                         key={city.slug}
@@ -708,25 +697,41 @@ export function PremiumInteractiveMap() {
                         onPointerMove={(event) => setTooltip({ title: city.name, subtitle: "Ville prioritaire", x: event.clientX, y: event.clientY })}
                         onPointerLeave={() => setTooltip(null)}
                       >
-                        <circle r={12 / camera.k} fill="rgba(255,255,255,0.96)" stroke={NAVY} strokeWidth={2 / camera.k} vectorEffect="non-scaling-stroke" />
-                        <circle r={4.4 / camera.k} fill={NAVY} />
+                        {isPrimaryCity ? (
+                          <circle
+                            r={10.5 / camera.k}
+                            fill="rgba(255,255,255,0.78)"
+                            stroke="rgba(7,27,51,0.18)"
+                            strokeWidth={1 / camera.k}
+                            vectorEffect="non-scaling-stroke"
+                          />
+                        ) : null}
+                        <circle
+                          r={(isPrimaryCity ? 4.8 : 3.5) / camera.k}
+                          fill={NAVY}
+                          stroke="rgba(255,255,255,0.98)"
+                          strokeWidth={(isPrimaryCity ? 1.7 : 1.25) / camera.k}
+                          vectorEffect="non-scaling-stroke"
+                        />
                         <rect
                           x={labelX}
-                          y={labelY - 13 / camera.k}
+                          y={labelY - (isPrimaryCity ? 11.5 : 10) / camera.k}
                           width={labelWidth / camera.k}
-                          height={26 / camera.k}
-                          rx={13 / camera.k}
-                          fill="rgba(255,255,255,0.96)"
-                          stroke="rgba(7,27,51,0.22)"
-                          strokeWidth={1 / camera.k}
+                          height={(isPrimaryCity ? 23 : 20) / camera.k}
+                          rx={(isPrimaryCity ? 8 : 5) / camera.k}
+                          fill={isPrimaryCity ? "rgba(255,255,255,0.94)" : "rgba(255,255,255,0.78)"}
+                          stroke={isPrimaryCity ? "rgba(7,27,51,0.12)" : "rgba(7,27,51,0.07)"}
+                          strokeWidth={(isPrimaryCity ? 0.8 : 0.55) / camera.k}
                           vectorEffect="non-scaling-stroke"
+                          style={{ filter: isPrimaryCity ? "drop-shadow(0 4px 10px rgba(7,27,51,0.10))" : "drop-shadow(0 2px 5px rgba(7,27,51,0.06))" }}
                         />
                         <text
                           x={textX}
-                          y={labelY + 4 / camera.k}
+                          y={labelY + (isPrimaryCity ? 3.7 : 3.25) / camera.k}
                           fill={NAVY}
-                          fontSize={11 / camera.k}
-                          fontWeight={900}
+                          fontSize={(isPrimaryCity ? 11.4 : 10.1) / camera.k}
+                          fontWeight={isPrimaryCity ? 850 : 720}
+                          letterSpacing={isPrimaryCity ? "-0.015em" : "0.005em"}
                           pointerEvents="none"
                         >
                           {city.name}
@@ -758,7 +763,7 @@ export function PremiumInteractiveMap() {
                         onPointerLeave={() => setTooltip(null)}
                       >
                         <circle r={14 / camera.k} fill="rgba(255,255,255,0.95)" stroke={NAVY} strokeWidth={2.2 / camera.k} vectorEffect="non-scaling-stroke" />
-                        <circle r={5.2 / camera.k} fill={NAVY} />
+                        <circle r={5.2 / camera.k} fill={territoryToneForKey(city.slug)} />
                       </g>
                     );
                   })}
@@ -794,9 +799,10 @@ export function PremiumInteractiveMap() {
                             initial={{ opacity: 0, scale: 0.9 }}
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ delay: Math.min(index * 0.035, 0.25), duration: 0.32 }}
-                            fill={active ? NAVY : "color-mix(in srgb, #6E8DA4 35%, var(--surface))"}
-                            stroke={active ? NAVY : "var(--border-dark)"}
-                            strokeWidth={active ? 3 : 1.5}
+                            fill={active ? NAVY : territoryLightToneForKey(quartier.slug)}
+                            fillOpacity={active ? 1 : 0.84}
+                            stroke={active ? NAVY : "rgba(255,255,255,0.92)"}
+                            strokeWidth={active ? 3 : 1.8}
                             style={{ transformOrigin: `${labelX}px ${labelY}px` }}
                           />
                           <text x={labelX} y={labelY} fill={active ? "white" : "var(--text-primary)"} fontSize="13" fontWeight="850" pointerEvents="none">{quartier.name}</text>
@@ -820,7 +826,7 @@ export function PremiumInteractiveMap() {
             </div>
           </section>
 
-          <aside className="rounded-[26px] border p-4 shadow-[0_20px_55px_rgba(7,27,51,0.08)] sm:p-5" style={{ borderColor: "var(--border)", background: "var(--surface)" }} aria-label="Détails territoriaux" data-map-side-panel>
+          <aside className="rounded-[26px] border p-4 shadow-[0_18px_48px_rgba(7,27,51,0.065)] sm:p-5" style={{ borderColor: "var(--border)", background: "var(--surface)" }} aria-label="Détails territoriaux" data-map-side-panel>
             <AnimatePresence mode="wait">
               {level === "national" ? (
                 <motion.div key="national" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -8 }}>

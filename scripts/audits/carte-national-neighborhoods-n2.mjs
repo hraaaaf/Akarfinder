@@ -24,15 +24,23 @@ async function waitForNationalOverlay(page) {
   await page.locator('[data-akarfinder-national-neighborhood-overlay][data-city="casablanca"]').waitFor({ state: "attached", timeout: 20000 });
   await page.waitForFunction(() => {
     const map = window.__AKARFINDER_NATIONAL_MAP__;
-    return Boolean(map?.isStyleLoaded()) && Boolean(map?.getSource("akarfinder-national-neighborhood-points")) && Boolean(map?.getLayer("akarfinder-national-neighborhood-labels")) && Boolean(map?.getLayer("akarfinder-national-neighborhood-dots"));
+    return Boolean(map?.isStyleLoaded())
+      && Boolean(map?.getSource("akarfinder-national-neighborhood-points"))
+      && Boolean(map?.getLayer("akarfinder-national-neighborhood-labels"))
+      && Boolean(map?.getLayer("akarfinder-national-neighborhood-dots"))
+      && Boolean(map?.getSource("akarfinder-casablanca-arrondissement-atlas"))
+      && Boolean(map?.getLayer("akarfinder-casablanca-arrondissement-fill"))
+      && Boolean(map?.getLayer("akarfinder-casablanca-arrondissement-line"))
+      && Boolean(map?.getLayer("akarfinder-casablanca-arrondissement-labels"));
   }, null, { timeout: 20000 });
   await page.waitForFunction(() => {
     const map = window.__AKARFINDER_NATIONAL_MAP__;
     if (!map?.isStyleLoaded() || map.isMoving()) return false;
     const baseLayers = (map.getStyle().layers ?? []).filter((layer) => !layer.id.startsWith("akarfinder-"));
     const renderedBaseFeatures = map.queryRenderedFeatures().filter((feature) => !feature.layer.id.startsWith("akarfinder-"));
-    const renderedDots = map.queryRenderedFeatures().filter((feature) => feature.layer.id === "akarfinder-national-neighborhood-dots");
-    return baseLayers.length >= 20 && renderedBaseFeatures.length >= 20 && renderedDots.length >= 1;
+    const renderedAtlasFills = map.queryRenderedFeatures().filter((feature) => feature.layer.id === "akarfinder-casablanca-arrondissement-fill");
+    const renderedAtlasLabels = map.queryRenderedFeatures().filter((feature) => feature.layer.id === "akarfinder-casablanca-arrondissement-labels");
+    return baseLayers.length >= 20 && renderedBaseFeatures.length >= 20 && renderedAtlasFills.length >= 1 && renderedAtlasLabels.length >= 1;
   }, null, { timeout: 15000 });
 }
 
@@ -93,17 +101,42 @@ try {
           labels: Boolean(map?.getLayer("akarfinder-national-neighborhood-labels")),
           dots: Boolean(map?.getLayer("akarfinder-national-neighborhood-dots")),
           fakeFill: Boolean(map?.getLayer("akarfinder-national-neighborhood-fill")),
+          administrativeAtlasSource: Boolean(map?.getSource("akarfinder-casablanca-arrondissement-atlas")),
+          administrativeAtlasFill: Boolean(map?.getLayer("akarfinder-casablanca-arrondissement-fill")),
+          administrativeAtlasLine: Boolean(map?.getLayer("akarfinder-casablanca-arrondissement-line")),
+          administrativeAtlasLabels: Boolean(map?.getLayer("akarfinder-casablanca-arrondissement-labels")),
+          administrativeAtlasCount: Number(document.querySelector('[data-akarfinder-national-neighborhood-overlay]')?.getAttribute('data-akarfinder-admin-atlas-count') ?? 0),
+          administrativeAtlasStatus: document.querySelector('[data-akarfinder-national-neighborhood-overlay]')?.getAttribute('data-akarfinder-admin-atlas-status'),
           renderedNeighborhoodFeatureCount: rendered.filter((feature) => feature.layer.id === "akarfinder-national-neighborhood-dots").length,
+          renderedAdministrativeFillCount: rendered.filter((feature) => feature.layer.id === "akarfinder-casablanca-arrondissement-fill").length,
+          renderedAdministrativeLabelCount: rendered.filter((feature) => feature.layer.id === "akarfinder-casablanca-arrondissement-labels").length,
           basemapLayerCount: layers.filter((layer) => !layer.id.startsWith("akarfinder-")).length,
           renderedBasemapFeatureCount: rendered.filter((feature) => !feature.layer.id.startsWith("akarfinder-")).length,
         };
       });
-      if (!layerState.sourceExists || !layerState.labels || !layerState.dots || layerState.renderedNeighborhoodFeatureCount < 1 || layerState.fakeFill) throw new Error(`neighborhood map layers invalid ${JSON.stringify(layerState)}`);
+      if (!layerState.sourceExists || !layerState.labels || !layerState.dots || layerState.fakeFill) throw new Error(`neighborhood map layers invalid ${JSON.stringify(layerState)}`);
+      if (layerState.renderedNeighborhoodFeatureCount !== 0) throw new Error(`city atlas must not render neighborhood dot cloud ${JSON.stringify(layerState)}`);
+      if (!layerState.administrativeAtlasSource || !layerState.administrativeAtlasFill || !layerState.administrativeAtlasLine || !layerState.administrativeAtlasLabels || layerState.administrativeAtlasCount !== 16 || layerState.administrativeAtlasStatus !== "shadow-preview" || layerState.renderedAdministrativeFillCount < 1 || layerState.renderedAdministrativeLabelCount < 1) {
+        throw new Error(`Casablanca administrative atlas missing ${JSON.stringify(layerState)}`);
+      }
       if (layerState.basemapLayerCount < 20 || layerState.renderedBasemapFeatureCount < 20) throw new Error(`real basemap missing ${JSON.stringify(layerState)}`);
 
       let overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
       if (overflow > 1) throw new Error(`horizontal overflow ${overflow}`);
+      const directory = page.locator('[data-akarfinder-neighborhood-directory]');
+      if (await directory.getByRole("button", { name: "Explorer les quartiers" }).getAttribute("aria-expanded") !== "false") throw new Error("directory must start collapsed");
       await page.screenshot({ path: `${outDir}/casablanca-neighborhoods-${viewport.name}-after.png`, fullPage: false });
+
+      await directory.getByRole("button", { name: "Explorer les quartiers" }).click();
+      if (await directory.getByRole("button", { name: "Explorer les quartiers" }).getAttribute("aria-expanded") !== "true") throw new Error("directory did not expand");
+      const featuredMaarif = page.locator('[data-akarfinder-featured-neighborhood="maarif"]');
+      await featuredMaarif.waitFor({ state: "visible", timeout: 5000 });
+      await page.screenshot({ path: `${outDir}/casablanca-directory-${viewport.name}-after.png`, fullPage: false });
+      await featuredMaarif.click();
+      await page.waitForURL((url) => url.searchParams.get("district") === "maarif", { timeout: 10000 });
+
+      await page.goto(cityUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
+      await waitForNationalOverlay(page);
 
       const mappedInput = page.getByRole("textbox", { name: "Rechercher un quartier à Casablanca" });
       await mappedInput.fill("Maârif");
@@ -112,19 +145,10 @@ try {
       await mappedSuggestion.click();
 
       await page.waitForURL((url) => url.searchParams.get("district") === "maarif", { timeout: 10000 });
-      const maplibre = page.locator('[data-maplibre-spike][data-maplibre-city="casablanca"][data-maplibre-district="maarif"]');
-      await maplibre.waitFor({ state: "visible", timeout: 15000 });
-      await page.waitForFunction(() => {
-        const shell = document.querySelector('[data-maplibre-spike][data-maplibre-city="casablanca"][data-maplibre-district="maarif"]');
-        return shell?.getAttribute("data-maplibre-render-state") === "ready";
-      }, null, { timeout: 20000 });
-      const rail = page.locator('[data-p4-map-decision-rail]');
-      await rail.waitFor({ state: "visible", timeout: 10000 });
-      const activeHref = await rail.getByRole("link", { name: /Voir les biens disponibles à Maârif/i }).getAttribute("href");
-      if (!activeHref?.includes("city=Casablanca") || !activeHref.includes("district=Ma%C3%A2rif")) throw new Error(`Maârif Search handoff ${activeHref}`);
-      overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
-      if (overflow > 1) throw new Error(`MapLibre horizontal overflow ${overflow}`);
-      await page.screenshot({ path: `${outDir}/active-maarif-${viewport.name}-after.png`, fullPage: false });
+      const mappedUrl = new URL(page.url());
+      if (mappedUrl.searchParams.get("city") !== "casablanca" || mappedUrl.searchParams.get("district") !== "maarif" || mappedUrl.searchParams.get("layer") !== "explore") {
+        throw new Error(`Maârif route handoff ${mappedUrl.toString()}`);
+      }
 
       await page.goto(cityUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
       await waitForNationalOverlay(page);
@@ -142,7 +166,7 @@ try {
       await page.screenshot({ path: `${outDir}/postal-maarif-${viewport.name}-after.png`, fullPage: false });
 
       if (pageErrors.length) throw new Error(`browser page errors ${JSON.stringify(pageErrors)}`);
-      report.cases.push({ viewport: viewport.name, overflow, layerState, mappedSelection: "maplibre", noCenterFallback: true, searchHandoff: true });
+      report.cases.push({ viewport: viewport.name, overflow, layerState, featuredSelection: true, mappedSelection: "route-handoff", noCenterFallback: true, searchHandoff: true });
     } catch (error) {
       report.failure = { viewport: viewport.name, error: String(error) };
       throw error;

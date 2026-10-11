@@ -19,9 +19,14 @@
   display: grid !important;
   visibility: visible !important;
   opacity: 1 !important;
-  min-height: calc(100svh - 64px) !important;
   background: #e8eef5 !important;
   color: #071b33 !important;
+}
+
+/* Full-height district maps keep the old viewport floor; the Maârif target
+ * uses the shorter responsive P4 canvas below 1024px. */
+[data-vivre-ici-page] [data-maplibre-spike][data-maplibre-city][data-maplibre-district]:not([data-maplibre-city="casablanca"][data-maplibre-district="maarif"]) {
+  min-height: calc(100svh - 64px) !important;
 }
 
 /* Cool the imagery and all MapLibre-rendered overlays into the same family. */
