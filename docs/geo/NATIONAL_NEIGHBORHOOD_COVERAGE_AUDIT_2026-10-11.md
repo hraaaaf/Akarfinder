@@ -137,3 +137,27 @@ Next: introduce a deterministic, collision-checked candidate parent alias matrix
 5. Keep source/meta mismatch `10,799` versus `11,413` as a separate contract fix.
 
 **Status:** SOURCE COVERAGE INVENTORY AND STRICT NORMALIZATION DIAGNOSTIC VERIFIED. **National neighborhood coverage is not expanded/merged/deployed.**
+
+## SPATIAL SHADOW CHECK — VERIFIED, NO PRODUCTION CHANGE
+
+[GitHub Actions run 38105463500](https://github.com/hraaaaf/Akarfinder/actions/runs/38105463500) **SUCCESS**, exact audit-code SHA `8b3ce41c7e760f4947ad73685740a2622a453af6`, job `114369932484`. It decoded all **292 existing OSM candidate city-boundary features**, then tested every source-backed center against the polygon of its parent found by either the existing exact key or the strict-normalized unique candidate key. Ring-holes and multipolygons were accounted for. This is a **shadow-only spatial sanity check**, not a city/quarter certification.
+
+| Shadow classification | Source-point rows |
+|---|---:|
+| Inside candidate parent-city OSM polygon | **1,628** |
+| Outside candidate polygon — requires manual review | **16** |
+| Parent city unresolved | **4** |
+| Parent resolved but no city polygon | **0** |
+| **Total candidate points tested** | **1,648** |
+
+Examples: Casablanca **134/134 inside**, Rabat **27/27**, Agadir **35/35**, Marrakech **44/44**; El Jadida **538 inside / 6 outside** from 544 points under the strictly proposed `el-jadida` parent, and Dcheira El Jihadia **43 inside / 5 outside**. These figures do **not** authorize automatic activation of any locality.
+
+**Important distinction:** OSM city administrative polygons are candidate/simplified geometry, not statutory or official neighborhood polygons. An `inside` result cannot prove a feature is a residential neighborhood; an `outside` result cannot alone disprove it. Check original OSM IDs, dates, sources, boundary precision, settlement category and source licensing before promotion.
+
+**Territorial scope caveat:** the packed source includes `ceuta` and `melilla` groups (38 and 28 centered source rows in the current log). These require an explicit territorial-data policy to avoid misrepresenting all embedded source rows as certified Moroccan neighborhoods. Keep distinct source-volume and product-coverage KPIs.
+
+### Final audit decision
+
+- **Success proven:** national compressed source inventory, strict parent-key analysis, and spatial shadow checks all completed with green exact-code CI.
+- **Not proven/not performed:** a complete list of Moroccan neighborhoods, 1,628 uniquely verified neighborhood identities, reviewed district boundaries, UX performance for thousands of labels, app activation, or general production release.
+- **Next exact:** first inspect the 16 spatial exceptions and 4 unresolved parents and classify 323 unique centered candidate names across the current seven mapped city catalogs; then prepare a bounded city-specific map canary and BEFORE/AFTER screenshots on four viewports. No mass promotion, merge, DB write, or Vercel deployment.
