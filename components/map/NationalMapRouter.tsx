@@ -109,7 +109,9 @@ export function NationalMapRouter({ initialState, targetPilotLandmarks = [] }: P
         center={[selectedNeighborhood.lng, selectedNeighborhood.lat]}
         boundaryGeometry={isMaarifReference ? MAARIF_TARGET_PILOT_BOUNDARY.geometry : null}
         desktopCameraOffset={isMaarifReference ? [0.0005, -0.0040] : [0, 0]}
-        targetComposition={isMaarifReference ? "context" : "boundary"}
+        // National Vivre Ici rollout: all *registered* quartier routes share the
+        // 2D AkarFinder vector renderer. Data and geometry stay per-city, per-district.
+        targetComposition="context"
         targetPilotLandmarks={isMaarifReference ? targetPilotLandmarks : []}
       />
     );
