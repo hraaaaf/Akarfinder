@@ -46,6 +46,27 @@ function loadRegistered() {
   return rows;
 }
 
+function loadLegacyDictionary() {
+  const source = readFileSync(join(root, "lib/geo/district-dictionary.ts"), "utf8");
+  const section = source.split("export const MOROCCO_DISTRICTS: CityDistricts = {")[1]?.split("};")[0];
+  if (!section) throw new Error("Missing legacy dictionary source");
+  const citySlugs = {
+    Casablanca: "casablanca", Rabat: "rabat", Marrakech: "marrakech",
+    Agadir: "agadir", Tanger: "tanger", "Fès": "fes",
+  };
+  const byCity = new Map();
+  let total = 0;
+  for (const match of section.matchAll(/([A-Za-zÀ-ÿ]+):\s*\[([\s\S]*?)\],/gu)) {
+    const city = citySlugs[match[1]];
+    if (!city) throw new Error("Unknown legacy city: " + match[1]);
+    const names = [...match[2].matchAll(/"([^"]+)"/g)].map((x) => x[1]);
+    total += names.length;
+    byCity.set(city, new Set(names.map(key)));
+  }
+  if (byCity.size !== 6 || total !== 65) throw new Error("Legacy dictionary baseline changed");
+  return byCity;
+}
+
 // Spatial shadow check against existing, possibly simplified OSM place polygons.
 // An apparent inclusion does NOT certify a neighborhood; an apparent exclusion
 // may result from simplified/administrative boundaries and requires manual review.
@@ -76,6 +97,7 @@ function main() {
   const packed = Array.from({ length: 8 }, (_, i) => packedChunk("neighborhoods-n2-" + i)).join("");
   const groups = JSON.parse(brotliDecompressSync(Buffer.from(packed, "base64")).toString("utf8"));
   const registered = loadRegistered();
+  const historical = loadLegacyDictionary();
   if (!Array.isArray(places) || !groups || typeof groups !== "object") throw new Error("Invalid source containers");
 
   const placesByParent = new Map();
@@ -89,6 +111,12 @@ function main() {
   for (const row of registered.filter((item) => item.mapEligible && item.status === "validated")) {
     if (!knownByCity.has(row.city)) knownByCity.set(row.city, new Set());
     for (const name of [row.name, ...row.aliases]) knownByCity.get(row.city).add(key(name));
+  }
+
+  const canonicalNonmapByCity = new Map();
+  for (const row of registered.filter((item) => item.status === "validated" && !item.mapEligible)) {
+    if (!canonicalNonmapByCity.has(row.city)) canonicalNonmapByCity.set(row.city, new Set());
+    for (const name of [row.name, ...row.aliases]) canonicalNonmapByCity.get(row.city).add(key(name));
   }
 
   const byParent = [];
@@ -272,13 +300,22 @@ function main() {
         if (!canonicalNames.has(normalized)) {
           if (!centeredSourceCandidatesByCity.has(place.slug)) centeredSourceCandidatesByCity.set(place.slug, new Map());
           const group = centeredSourceCandidatesByCity.get(place.slug);
+          const category = canonicalNonmapByCity.get(place.slug)?.has(normalized)
+            ? "canonical_validated_but_not_map_eligible"
+            : historical.get(place.slug)?.has(normalized)
+              ? "legacy_dictionary_unreviewed"
+              : "source_only_unverified";
+          const riskTokens = /(?:^| )(?:residence|residentiel|lot|lotissement|immeuble|complexe|centre commercial|parc|al barid|la poste|maison|village touristique)(?: |$)/;
+          const riskSignals = riskTokens.test(normalized) ? ["name_may_be_project_or_poi_not_quartier"] : [];
           const entry = group.get(normalized) || {
+            sourceIdentityCategory: category, nameRiskSignals: riskSignals,
             citySlug: place.slug, cityName: place.name, normalizedName: normalized,
             names: [], sourcePoints: [], reviewStatus: "pending_semantic_and_source_identity_review",
             originalOsmFeatureId: null, provenance: sourceProvenance,
             publicationEligible: false,
           };
           if (!entry.names.includes(name)) entry.names.push(name);
+          if (riskSignals.length && !entry.nameRiskSignals.includes(riskSignals[0])) entry.nameRiskSignals.push(riskSignals[0]);
           entry.sourcePoints.push({ lng, lat, sourceKinds: [
             ...(flags & 1 ? ["osm_neighborhood_label"] : []),
             ...(flags & 2 ? ["barid_postal_neighborhood"] : []),
@@ -332,12 +369,44 @@ function main() {
       spatialShadow.parentUnresolvedRows + spatialShadow.parentMatchedWithoutCityPolygonRows) {
     throw new Error("Source review exception count mismatch");
   }
+  const categoryStats = {};
+  let projectOrPoiNameRiskCount = 0;
+  for (const city of candidatesByCity) {
+    for (const entry of city.candidates) {
+      categoryStats[entry.sourceIdentityCategory] = (categoryStats[entry.sourceIdentityCategory] ?? 0) + 1;
+      if (entry.nameRiskSignals.length) projectOrPoiNameRiskCount++;
+    }
+  }
+  const possibleNearNamePairs = [];
+  for (const city of candidatesByCity) {
+    for (let i = 0; i < city.candidates.length; i++) {
+      for (let j = i + 1; j < city.candidates.length; j++) {
+        const a = city.candidates[i], b = city.candidates[j];
+        const p = a.sourcePoints[0], q = b.sourcePoints[0];
+        const dLat = (p.lat - q.lat) * 111320;
+        const dLng = (p.lng - q.lng) * Math.cos(((p.lat + q.lat) / 2) * Math.PI / 180) * 111320;
+        const meters = Math.hypot(dLat, dLng);
+        if (meters <= 150) {
+          possibleNearNamePairs.push({ citySlug: city.citySlug,
+            candidateA: a.names[0], candidateB: b.names[0],
+            approximateMeters: Math.round(meters),
+            reason: "nearby_distinct_source_labels_not_confirmed_aliases",
+            autoMergeAllowed: false });
+        }
+      }
+    }
+  }
   const candidateReview = {
     sourceArtifact, sourceProvenance, kind: "unverified_centered_source_candidates",
-    noSourceFeatureIds: true, candidateNameCount: candidateCount, cities: candidatesByCity,
+    noSourceFeatureIds: true, candidateNameCount: candidateCount,
+    categoryStats, projectOrPoiNameRiskCount,
+    nearbyDistinctNamePairsWithin150m: possibleNearNamePairs,
+    cities: candidatesByCity,
     releasePolicy: "NOT MAP ELIGIBLE: qualify city and neighborhood identity, actual OSM feature identity, geo evidence, duplicates and scope before rendering",
   };
   report.reviewQueue = { exceptionsCount: sourceReviewExceptions.length, centeredCandidateNameCount: candidateCount,
+    candidateCategoryStats: categoryStats, projectOrPoiNameRiskCount,
+    potentialNearbyNamePairs: possibleNearNamePairs.length,
     originalOsmFeatureIdsAvailable: false };
   writeFileSync(join(outputRoot, "source-review-exceptions.json"),
     JSON.stringify({ sourceArtifact, total: sourceReviewExceptions.length, rows: sourceReviewExceptions }, null, 2) + "\n", "utf8");
@@ -360,7 +429,8 @@ function main() {
   writeFileSync(join(outputRoot, "by-parent.csv"), csv.join("\n") + "\n", "utf8");
 
   console.log(JSON.stringify({ summary, registeredCityStats, top10: report.top20ParentGroupsByValidCenters.slice(0, 10), unmatchedParentGroups: report.unmatchedParentGroups, orphanParentNormalizedCandidates: report.orphanParentNormalizedCandidates, spatialShadowTotals: Object.fromEntries(Object.entries(report.spatialShadow).filter(([k]) => k !== "bySourceParent")), spatialShadowTop: report.spatialShadow.bySourceParent.slice().sort((a, b) => b.assessed - a.assessed).slice(0, 20),
-    reviewQueue: report.reviewQueue, exceptionRows: sourceReviewExceptions, candidatesPerCity: candidatesByCity.map(
+    reviewQueue: report.reviewQueue, exceptionRows: sourceReviewExceptions,
+    nearNamePairsSample: possibleNearNamePairs.slice(0, 30), candidatesPerCity: candidatesByCity.map(
       (c) => ({ citySlug: c.citySlug, candidateNameCount: c.candidateNameCount,
         pilotReviewSamples: c.candidates.slice(0, 5).map((r) => ({ name: r.names[0],
           center: r.sourcePoints[0], sourceIdentityState: r.reviewStatus })) })) }, null, 2));
