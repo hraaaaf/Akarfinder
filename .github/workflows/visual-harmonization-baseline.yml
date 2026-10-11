@@ -1,0 +1,58 @@
+name: Visual Harmonization Baseline
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/visual-harmonization-baseline.yml"
+
+concurrency:
+  group: visual-harmonization-baseline-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  baseline:
+    name: Current-main exhaustive visual baseline
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      BASE_URL: http://127.0.0.1:3219
+      AUDIT_OUTPUT_DIR: data/audits/visual-harmonization-baseline
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Exhaustive page inventory
+        env:
+          AUDIT_OUTPUT_DIR: data/audits/ui-all-pages-inventory
+        run: node scripts/audits/ui-all-pages-inventory.mjs
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Build production app
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Start production server
+        shell: bash
+        run: |
+          npm run start -- -p 3219 > /tmp/visual-harmonization-baseline.log 2>&1 &
+          curl --retry 90 --retry-delay 1 --retry-connrefused -fsS http://127.0.0.1:3219/ >/dev/null || { cat /tmp/visual-harmonization-baseline.log; exit 1; }
+      - name: Capture all renderable pages at 390 / 430 / 768 / 1280
+        run: node scripts/audits/ui-all-pages-baseline.mjs
+      - name: Upload baseline evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-harmonization-baseline-${{ github.run_id }}
+          path: |
+            data/audits/visual-harmonization-baseline
+            data/audits/ui-all-pages-inventory/inventory.json
+          if-no-files-found: error
+          retention-days: 14
