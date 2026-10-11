@@ -338,3 +338,20 @@ Obtain new exact-head Rue CI result. If green, retrieve its screenshot and confi
 - Les preuves de ces nouveaux correctifs doivent venir des 4 CI **sur un même HEAD incluant code + test**. Toujours aucune autorisation de merge ni Vercel / DB write.
 
 **Next exact :** inspecter CI exact HEAD, corriger sans bypass si un label reste intercepté ; télécharger les 4 screenshots AFTER par viewport et les examiner, comparer strictement au mockup et faire revue visuelle ; si target non atteint, proposer/exécuter le prochain correctif mesurable. Ne publier aucun polygone de quartier central sans source revue.
+
+
+## LOT 3 functional gate / premium visual hierarchy pass — 2026-10-10
+
+**Last certified functional code** `25b541cd8b3fa537aa47ffe573767c1ddee412fb`, PR #1108 DRAFT, base `feat/akar-map-quartier-target-couche3`:
+- Casablanca Visual AFTER `38096538830` **success** artifact `11686690306`.
+- POI AFTER `38096538847` **success** artifact `11686310308`: 390/430/768 all 4 sourced context POIs selected and switched without closing; desktop 3 actually rendered; click, Enter, closing and 44px dismiss hitbox; no label clipping; Maârif/park overlap area 0.
+- Rue AFTER `38096538854` **success** artifact `11685784807`: Twin Center visible on four viewports at true street-tier, click/keyboard/close certified, real vector 2D buildings.
+- Multicity Browser `38096538752` **success**, no national map regression observed by that audit.
+- Non-map CI C7 `38096538772`, Market BEFORE `38096538871`, Zillow UI `38096538758` **failure**, independent gates NOT resolved.
+- **Actual BEFORE screenshots inspected**, including `casablanca-maarif-390x844.png`, `1280x900.png`, `poi-after-selected-390x844.png`, and the earlier mockup target archived on Drive `1enoMXzkoHVGTsfC7NTET79M6tz6vDsYZ`. Human target **≥9.5/10 remains UNPROVEN**; city blocks/secondary roads looked too pale. No claim of visual completion or permission to merge/deploy.
+
+**NEXT VISUAL SUBLOT goal**: improve actual, real MapLibre vector building/road/name hierarchy in the *Maârif pilot only*, keeping natural parks, exact POI coordinates, existing life-zone halo, verified admin boundary and all 4 interaction states unchanged.
+- Product commit `d4f61a8eedd30560d190b7d2eb8debde680ea719`: 2D building fills opacities at zoom 12.2/14.5/17.5 from `.07/.15/.20` to `.09/.23/.29`, softer outline `#B6CADA`; secondary/tertiary road casings `#92B2D1`/`#B1C9DF`; primary blue C2 casing .49, major/minor text opacities .91/.83. No tile/geo coordinates/fake polygons/park palette changed.
+- Audit commit `f06311db2eef99ad9179851edf6d6b0526289b4b`: `data-maplibre-hierarchy-pass=readable-footprints-roads-v2` expected at four fixed viewports, in addition to existing real browser map gates. **This data attr is diagnostic, NOT visual proof**.
+- CI on `f06311db`: Casablanca AFTER `38096858763`, POI AFTER `38096858701`, Rue AFTER `38096858714`, multicity `38096858709`; all **in_progress** when checked. Do not claim success, score or screenshots for this new pass until actual artifacts and comparison.
+- **Next exact:** collect 4 CI results, diagnose any red; extract AFTER same 390x844/430x932/768x900/1280x900; render side-by-side baseline vs AFTER, inspect legibility/overweight and rate visually; if needed correct then rerun. After visual gate: Notion ↔ md coherence, human review and closeout. No merge/Vercel/DB writes without explicit permission.
