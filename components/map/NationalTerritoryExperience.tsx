@@ -209,7 +209,7 @@ export function NationalTerritoryExperience({ selectedCitySlug, onSelectCity, on
     // City scale keeps authentic administrative polygons, but shares AkarFinder
     // C1/C2 with its child quartier map. Country scale remains differentiated.
     const territoryTone = ACCENT;
-    const territoryLine = payload.view === "city" ? "#071B33" : ACCENT;
+    const territoryLine = payload.view === "city" ? (theme === "dark" ? "#7FB6EC" : "#071B33") : ACCENT;
 
     map.addSource(BOUNDARY_SOURCE, { type: "geojson", data: boundaries });
     map.addSource(CITY_SOURCE, { type: "geojson", data: points });
