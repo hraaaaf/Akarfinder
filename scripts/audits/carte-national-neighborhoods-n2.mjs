@@ -259,6 +259,21 @@ try {
       if (!(await agadirDisclosure.innerText()).includes("Limites du quartier non certifiées")) {
         throw new Error("Al Qods disclaimer missing");
       }
+      const agadirRail = page.locator('[data-p4-map-decision-rail]');
+      const namedSourceContext = agadirRail.locator('[data-p4-map-source-point="al-qods"]');
+      await namedSourceContext.waitFor({ state: "visible", timeout: 15000 });
+      if ((await namedSourceContext.innerText()).trim() !== "Al Qods") {
+        throw new Error("Al Qods selected source point not named in decision rail");
+      }
+      if (!(await agadirRail.locator(".p4-premium-kicker").innerText()).includes("Repère indicatif")) {
+        throw new Error("Al Qods rail does not identify noncanonical source semantics");
+      }
+      const agadirSearchHref = await agadirRail.locator(".p4-premium-primary-action").getAttribute("href");
+      const searchTarget = new URL(agadirSearchHref ?? "/", baseUrl);
+      if (searchTarget.pathname !== "/search" || searchTarget.searchParams.get("city") !== "Agadir"
+        || searchTarget.searchParams.has("district")) {
+        throw new Error(`Al Qods fabricated certified property district filter ${agadirSearchHref}`);
+      }
       const agadirOverflow = await page.evaluate(() =>
         document.documentElement.scrollWidth - document.documentElement.clientWidth);
       if (agadirOverflow > 1) throw new Error(`Al Qods overflow ${agadirOverflow}`);
@@ -267,7 +282,8 @@ try {
       report.cases.push({ viewport: viewport.name, overflow, layerState, featuredSelection: true,
         mappedSelection: "route-handoff", noCenterFallback: true, searchHandoff: true,
         agadirAlQods: { center: alQods.center, sourceOnly: true,
-          disclosure: true, browserReady: true, horizontalOverflow: agadirOverflow },
+          disclosure: true, browserReady: true, contextualRail: true,
+          cityOnlySearchHandoff: true, horizontalOverflow: agadirOverflow },
         sourcedCandidate: { slug: candidatePoint.slug, name: candidatePoint.name, center: candidatePoint.center, sourceKinds: candidatePoint.sourceKinds } });
     } catch (error) {
       report.failure = { viewport: viewport.name, error: String(error) };
