@@ -241,6 +241,10 @@ function main() {
     if (!polygonsBySlug.has(slug)) polygonsBySlug.set(slug, []);
     polygonsBySlug.get(slug).push(feature.geometry);
   }
+  const sourceReviewExceptions = [];
+  const centeredSourceCandidatesByCity = new Map();
+  const priorityCities = new Set(["casablanca", "rabat", "marrakech", "tanger", "agadir", "fes", "kenitra"]);
+  const sourceProvenance = "OSM V5 packed center; original OSM feature ID unavailable in packed artifact";
   const spatialShadow = {
     geometrySource: "OSM administrative candidate polygon (simplified), not a certified neighborhood boundary",
     sourceBoundaryFeatures: boundaryFeatures.length,
@@ -259,15 +263,51 @@ function main() {
     const record = { parentKey: parent, proposedCitySlug: place?.slug ?? null,
       normalizedFallback: direct.length === 0 && Boolean(place),
       assessed: 0, unresolved: 0, noPolygon: 0, inside: 0, outsideNeedsReview: 0 };
-    for (const [name, lng, lat] of rows) {
+    for (const [name, lng, lat, flags] of rows) {
       if (!validCenter(lng, lat)) continue;
+      // Candidate review records are not map-ready and retain the exact source name and coordinates.
+      if (place && !record.normalizedFallback && priorityCities.has(place.slug)) {
+        const canonicalNames = knownByCity.get(place.slug) || new Set();
+        const normalized = key(name);
+        if (!canonicalNames.has(normalized)) {
+          if (!centeredSourceCandidatesByCity.has(place.slug)) centeredSourceCandidatesByCity.set(place.slug, new Map());
+          const group = centeredSourceCandidatesByCity.get(place.slug);
+          const entry = group.get(normalized) || {
+            citySlug: place.slug, cityName: place.name, normalizedName: normalized,
+            names: [], sourcePoints: [], reviewStatus: "pending_semantic_and_source_identity_review",
+            originalOsmFeatureId: null, provenance: sourceProvenance,
+            publicationEligible: false,
+          };
+          if (!entry.names.includes(name)) entry.names.push(name);
+          entry.sourcePoints.push({ lng, lat, sourceKinds: [
+            ...(flags & 1 ? ["osm_neighborhood_label"] : []),
+            ...(flags & 2 ? ["barid_postal_neighborhood"] : []),
+          ] });
+          group.set(normalized, entry);
+        }
+      }
       record.assessed++;
       spatialShadow.assessedCenteredRows++;
-      if (!place) { record.unresolved++; spatialShadow.parentUnresolvedRows++; }
-      else if (!shapes.length) { record.noPolygon++; spatialShadow.parentMatchedWithoutCityPolygonRows++; }
+      if (!place) {
+        record.unresolved++; spatialShadow.parentUnresolvedRows++;
+        sourceReviewExceptions.push({ type: "unresolved_parent", parentKey: parent, proposedCitySlug: null,
+          name, lng, lat, sourceKinds: flags & 1 ? ["osm_neighborhood_label"] : ["barid_postal_neighborhood"],
+          originalOsmFeatureId: null, reviewStatus: "hold_manual_identity_review", publicationEligible: false });
+      }
+      else if (!shapes.length) {
+        record.noPolygon++; spatialShadow.parentMatchedWithoutCityPolygonRows++;
+        sourceReviewExceptions.push({ type: "missing_city_polygon", parentKey: parent, proposedCitySlug: place.slug,
+          name, lng, lat, sourceKinds: flags & 1 ? ["osm_neighborhood_label"] : ["barid_postal_neighborhood"],
+          originalOsmFeatureId: null, reviewStatus: "hold_manual_boundary_review", publicationEligible: false });
+      }
       else if (shapes.some((shape) => withinGeometry([lng, lat], shape))) {
         record.inside++; spatialShadow.insideCandidateCityPolygonRows++;
-      } else { record.outsideNeedsReview++; spatialShadow.outsideCandidateCityPolygonRowsNeedsReview++; }
+      } else {
+        record.outsideNeedsReview++; spatialShadow.outsideCandidateCityPolygonRowsNeedsReview++;
+        sourceReviewExceptions.push({ type: "outside_candidate_city_polygon", parentKey: parent,
+          proposedCitySlug: place.slug, name, lng, lat, sourceKinds: flags & 1 ? ["osm_neighborhood_label"] : ["barid_postal_neighborhood"],
+          originalOsmFeatureId: null, reviewStatus: "hold_manual_spatial_review", publicationEligible: false });
+      }
     }
     if (record.assessed) spatialShadow.bySourceParent.push(record);
   }
@@ -277,6 +317,35 @@ function main() {
     throw new Error("Spatial shadow accounting mismatch");
   }
   report.spatialShadow = spatialShadow;
+  const candidatesByCity = Array.from(centeredSourceCandidatesByCity.entries())
+    .map(([city, names]) => ({
+      citySlug: city, candidateNameCount: names.size,
+      candidates: Array.from(names.values()).sort((a, b) => a.normalizedName.localeCompare(b.normalizedName)),
+    })).sort((a,b) => a.citySlug.localeCompare(b.citySlug));
+  const candidateCount = candidatesByCity.reduce((n, city) => n + city.candidateNameCount, 0);
+  const expected = registeredCityStats.filter((x) => x.city !== "mohammedia").reduce(
+    (n, x) => n + x.unregisteredCenteredCandidateNames, 0);
+  if (candidateCount !== expected || candidateCount !== 323) {
+    throw new Error("Source candidate inventory drift: " + candidateCount + " expected " + expected);
+  }
+  if (sourceReviewExceptions.length !== spatialShadow.outsideCandidateCityPolygonRowsNeedsReview +
+      spatialShadow.parentUnresolvedRows + spatialShadow.parentMatchedWithoutCityPolygonRows) {
+    throw new Error("Source review exception count mismatch");
+  }
+  const candidateReview = {
+    sourceArtifact, sourceProvenance, kind: "unverified_centered_source_candidates",
+    noSourceFeatureIds: true, candidateNameCount: candidateCount, cities: candidatesByCity,
+    releasePolicy: "NOT MAP ELIGIBLE: qualify city and neighborhood identity, actual OSM feature identity, geo evidence, duplicates and scope before rendering",
+  };
+  report.reviewQueue = { exceptionsCount: sourceReviewExceptions.length, centeredCandidateNameCount: candidateCount,
+    originalOsmFeatureIdsAvailable: false };
+  writeFileSync(join(outputRoot, "source-review-exceptions.json"),
+    JSON.stringify({ sourceArtifact, total: sourceReviewExceptions.length, rows: sourceReviewExceptions }, null, 2) + "\n", "utf8");
+  writeFileSync(join(outputRoot, "centered-candidate-review.json"), JSON.stringify(candidateReview, null, 2) + "\n", "utf8");
+  writeFileSync(join(outputRoot, "source-review-exceptions.csv"),
+    ["type,parentKey,proposedCitySlug,name,lng,lat,reviewStatus",
+      ...sourceReviewExceptions.map((r) => [r.type, r.parentKey, r.proposedCitySlug, r.name, r.lng, r.lat, r.reviewStatus]
+        .map((v) => JSON.stringify(v ?? "")).join(","))].join("\n") + "\n", "utf8");
   writeFileSync(join(outputRoot, "report.json"), JSON.stringify(report, null, 2) + "\n", "utf8");
   const columns = [
     "parentKey", "matchedPlaceSlug", "matchedPlaceName", "placeMatchCount", "sourceLabels",
@@ -290,7 +359,11 @@ function main() {
   }
   writeFileSync(join(outputRoot, "by-parent.csv"), csv.join("\n") + "\n", "utf8");
 
-  console.log(JSON.stringify({ summary, registeredCityStats, top10: report.top20ParentGroupsByValidCenters.slice(0, 10), unmatchedParentGroups: report.unmatchedParentGroups, orphanParentNormalizedCandidates: report.orphanParentNormalizedCandidates, spatialShadowTotals: Object.fromEntries(Object.entries(report.spatialShadow).filter(([k]) => k !== "bySourceParent")), spatialShadowTop: report.spatialShadow.bySourceParent.slice().sort((a, b) => b.assessed - a.assessed).slice(0, 20) }, null, 2));
+  console.log(JSON.stringify({ summary, registeredCityStats, top10: report.top20ParentGroupsByValidCenters.slice(0, 10), unmatchedParentGroups: report.unmatchedParentGroups, orphanParentNormalizedCandidates: report.orphanParentNormalizedCandidates, spatialShadowTotals: Object.fromEntries(Object.entries(report.spatialShadow).filter(([k]) => k !== "bySourceParent")), spatialShadowTop: report.spatialShadow.bySourceParent.slice().sort((a, b) => b.assessed - a.assessed).slice(0, 20),
+    reviewQueue: report.reviewQueue, exceptionRows: sourceReviewExceptions, candidatesPerCity: candidatesByCity.map(
+      (c) => ({ citySlug: c.citySlug, candidateNameCount: c.candidateNameCount,
+        pilotReviewSamples: c.candidates.slice(0, 5).map((r) => ({ name: r.names[0],
+          center: r.sourcePoints[0], sourceIdentityState: r.reviewStatus })) })) }, null, 2));
   if (summary.parentAmbiguousPlaceMatch) {
     console.error("WARNING: Some parent-city names are ambiguous and must not be auto-associated");
   }
