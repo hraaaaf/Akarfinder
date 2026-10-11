@@ -69,6 +69,7 @@ export type MapLibreNeighborhood3DProps = {
   boundaryGeometry?: BoundaryGeometry | null;
   desktopCameraOffset?: MutablePosition;
   targetComposition?: "boundary" | "context";
+  pointReferenceStatus?: "canonical" | "sourced-label-candidate";
   reserveRail?: boolean;
   targetPilotLandmarks?: readonly TargetPilotLandmark[];
 };
@@ -294,6 +295,7 @@ export function MapLibreNeighborhood3D({
   boundaryGeometry = null,
   desktopCameraOffset = [0, 0],
   targetComposition = "boundary",
+  pointReferenceStatus = "canonical",
   reserveRail = false,
   targetPilotLandmarks = [],
 }: MapLibreNeighborhood3DProps) {
@@ -1295,6 +1297,7 @@ export function MapLibreNeighborhood3D({
        data-maplibre-cartographic-palette={isNationalFlatLiving ? "akarfinder-c1-c2-map-v1" : "default"}
        data-maplibre-hierarchy-pass={isNationalFlatLiving ? "readable-footprints-roads-v2" : "default"}
        data-maplibre-national-flat={isNationalFlatLiving ? "akarfinder-national-v1" : "off"}
+       data-maplibre-point-reference={pointReferenceStatus}
       data-maplibre-basemap-language={isNationalFlatLiving ? "voyager-inspired-openfreemap-v1" : "default"}
       data-maplibre-building-language={isNationalFlatLiving ? "flat-vector-footprints-v02" : "default"}
       data-maplibre-polish={isNationalFlatLiving ? "flat-basemap-v02" : "default"}
@@ -1506,14 +1509,21 @@ export function MapLibreNeighborhood3D({
         ) : <span aria-hidden="true"><Layers3 size={18} /></span>}
       </div>
 
+      {pointReferenceStatus === "sourced-label-candidate" ? (
+        <div className="maplibre-spike-candidate-disclosure" data-maplibre-candidate-disclosure="source-indicative" role="note">
+          <strong>Repère indicatif sourcé</strong>
+          <span>Limites du quartier non certifiées</span>
+        </div>
+      ) : null}
+
       <div className="maplibre-spike-map-note">
-        <span className="maplibre-spike-map-note-kicker">Quartier · {cityLabel}</span>
+        <span className="maplibre-spike-map-note-kicker">{pointReferenceStatus === "sourced-label-candidate" ? "Repère indicatif" : "Quartier"} · {cityLabel}</span>
         <strong>{districtLabel}</strong>
         <span className="maplibre-spike-map-note-copy">
-          {boundaryGeometry ? (isMaarifTargetPilot ? "Contour administratif : Arrondissement Maârif (OSM). Le halo de contexte est dérivé des repères vérifiés et ne constitue pas une frontière de quartier." : "Limite OSM de référence · validation production en attente.") : "Repère central sourcé · périmètre non revendiqué."}
+          {boundaryGeometry ? (isMaarifTargetPilot ? "Contour administratif : Arrondissement Maârif (OSM). Le halo de contexte est dérivé des repères vérifiés et ne constitue pas une frontière de quartier." : "Limite OSM de référence · validation production en attente.") : pointReferenceStatus === "sourced-label-candidate" ? "Point du catalogue territorial (OSM/Barid) · position indicative, limites du quartier non certifiées." : "Repère central sourcé · périmètre non revendiqué."}
         </span>
         <span className="maplibre-spike-map-note-status">
-          {isMaarifTargetPilot
+          {isNationalFlatLiving
              ? buildingFootprintCount > 0 ? `${buildingFootprintCount} empreintes visibles · plan 2D` : "Tissu urbain vectoriel · plan 2D"
              : overtureState === "available"
                ? `${buildingCount} volumes Overture visibles · ${overtureExactCount} hauteurs exactes / ${overtureEstimatedCount} estimées depuis les niveaux`
