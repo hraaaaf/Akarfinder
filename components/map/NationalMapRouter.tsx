@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { MapNeighborhoodClient } from "@/components/map/MapNeighborhoodClient";
 import { MapLibreNeighborhood3D, type TargetPilotLandmark } from "@/components/map/MapLibreNeighborhood3D";
@@ -18,6 +18,29 @@ const NationalTerritoryExperienceDynamic = dynamic(
 );
 
 type Props = { initialState: MapNavigationState; targetPilotLandmarks?: readonly TargetPilotLandmark[] };
+
+// N2 provides sourced label candidates, not certified quartier footprints.
+// Their point may be shown as a *reference* map; a polygon is never inferred.
+type N2PointCandidate = {
+  citySlug: string;
+  districtSlug: string;
+  districtLabel: string;
+  lng: number;
+  lat: number;
+};
+type NationalNeighborhoodCatalogResponse = {
+  status: string;
+  view: string;
+  place?: { slug: string };
+  neighborhoods?: Array<{
+    slug: string;
+    name: string;
+    center: { lng: number; lat: number } | null;
+    sourceKinds?: string[];
+    boundaryStatus: string;
+    publicationStatus: string;
+  }>;
+};
 
 type NationalMapWindow = Window & {
   __AKARFINDER_NATIONAL_MAP__?: { resize: () => void };
@@ -37,13 +60,59 @@ export function NationalMapRouter({ initialState, targetPilotLandmarks = [] }: P
   const rawLayer = params.get("layer") ?? MAP_LAYER_EXPLORE;
   const selectedCitySlug = useMemo(() => safeSlug(rawCity), [rawCity]);
   const selectedDistrictSlug = useMemo(() => safeSlug(params.get("district")), [params]);
+  const [n2Candidate, setN2Candidate] = useState<N2PointCandidate | null>(null);
   const selectedNeighborhood = useMemo(
     () => selectedCitySlug && selectedDistrictSlug
       ? getNeighborhoodBySlug(selectedCitySlug, selectedDistrictSlug)
       : null,
     [selectedCitySlug, selectedDistrictSlug],
   );
-  const useMapLibreNeighborhood = rawLayer === MAP_LAYER_EXPLORE && Boolean(selectedNeighborhood);
+  // Only source-backed OSM/Barid locations with explicit N2 candidate status
+  // qualify for indicative national maps. Never fabricate a center for postal
+  // labels that have no coordinates.
+  useEffect(() => {
+    if (rawLayer !== MAP_LAYER_EXPLORE || !selectedCitySlug || !selectedDistrictSlug || selectedNeighborhood) {
+      setN2Candidate(null);
+      return;
+    }
+    const abort = new AbortController();
+    setN2Candidate(null);
+    void fetch(`/api/geo/national-territories?city=${encodeURIComponent(selectedCitySlug)}`, {
+      signal: abort.signal,
+      cache: "no-store",
+    }).then(async (response) => {
+      if (!response.ok) return null;
+      return response.json() as Promise<NationalNeighborhoodCatalogResponse>;
+    }).then((data) => {
+      if (abort.signal.aborted || !data || data.status !== "ok" || data.view !== "city"
+        || data.place?.slug !== selectedCitySlug) return;
+      const item = data.neighborhoods?.find((candidate) =>
+        candidate.slug === selectedDistrictSlug
+        && candidate.publicationStatus === "label_candidate"
+        && candidate.boundaryStatus === "not_claimed"
+        && candidate.sourceKinds?.some((source) =>
+          source === "osm_neighborhood_label" || source === "barid_postal_neighborhood")
+        && Number.isFinite(candidate.center?.lng) && Number.isFinite(candidate.center?.lat)
+        && (candidate.center?.lng ?? 99) >= -14.5 && (candidate.center?.lng ?? -99) <= 2.5
+        && (candidate.center?.lat ?? 99) >= 20.5 && (candidate.center?.lat ?? -99) <= 37.5);
+      if (!item?.center) return;
+      setN2Candidate({
+        citySlug: selectedCitySlug,
+        districtSlug: selectedDistrictSlug,
+        districtLabel: item.name,
+        lng: item.center.lng,
+        lat: item.center.lat,
+      });
+    }).catch((error) => {
+      if (!abort.signal.aborted) console.warn("[vivre-ici-n2-point] source unavailable", error);
+    });
+    return () => abort.abort();
+  }, [rawLayer, selectedCitySlug, selectedDistrictSlug, selectedNeighborhood]);
+
+  const resolvedN2Candidate = n2Candidate?.citySlug === selectedCitySlug
+    && n2Candidate.districtSlug === selectedDistrictSlug ? n2Candidate : null;
+  const useMapLibreNeighborhood = rawLayer === MAP_LAYER_EXPLORE
+    && (Boolean(selectedNeighborhood) || Boolean(resolvedN2Candidate));
   const premiumProvider = getPremiumMarketIntelligenceProvider(selectedCitySlug ?? "all");
   const useNationalExplore = rawLayer === MAP_LAYER_EXPLORE
     && premiumProvider !== "rabat-market-intelligence"
@@ -97,16 +166,23 @@ export function NationalMapRouter({ initialState, targetPilotLandmarks = [] }: P
     router.push(`/map?${next.toString()}`, { scroll: false });
   }, [params, router]);
 
-  if (useMapLibreNeighborhood && selectedNeighborhood) {
-    const isMaarifReference = selectedNeighborhood.citySlug === "casablanca"
+  if (useMapLibreNeighborhood && (selectedNeighborhood || resolvedN2Candidate)) {
+    const isMaarifReference = selectedNeighborhood?.citySlug === "casablanca"
       && selectedNeighborhood.neighborhoodSlug === "maarif";
+    const citySlug = selectedNeighborhood?.citySlug ?? resolvedN2Candidate!.citySlug;
+    const districtSlug = selectedNeighborhood?.neighborhoodSlug ?? resolvedN2Candidate!.districtSlug;
+    const districtLabel = selectedNeighborhood?.neighborhood ?? resolvedN2Candidate!.districtLabel;
+    const center: [number, number] = selectedNeighborhood
+      ? [selectedNeighborhood.lng, selectedNeighborhood.lat]
+      : [resolvedN2Candidate!.lng, resolvedN2Candidate!.lat];
     return (
       <MapLibreNeighborhood3D
-        citySlug={selectedNeighborhood.citySlug}
-        cityLabel={selectedNeighborhood.city}
-        districtSlug={selectedNeighborhood.neighborhoodSlug}
-        districtLabel={selectedNeighborhood.neighborhood}
-        center={[selectedNeighborhood.lng, selectedNeighborhood.lat]}
+        citySlug={citySlug}
+        cityLabel={selectedNeighborhood?.city ?? selectedCitySlug ?? ""}
+        districtSlug={districtSlug}
+        districtLabel={districtLabel}
+        center={center}
+        pointReferenceStatus={selectedNeighborhood ? "canonical" : "sourced-label-candidate"}
         boundaryGeometry={isMaarifReference ? MAARIF_TARGET_PILOT_BOUNDARY.geometry : null}
         desktopCameraOffset={isMaarifReference ? [0.0005, -0.0040] : [0, 0]}
         // National Vivre Ici rollout: all *registered* quartier routes share the
