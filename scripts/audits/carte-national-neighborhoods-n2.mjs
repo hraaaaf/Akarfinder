@@ -96,7 +96,12 @@ try {
         const map = window.__AKARFINDER_NATIONAL_MAP__;
         const layers = map?.getStyle().layers ?? [];
         const rendered = map?.queryRenderedFeatures() ?? [];
+        const backgroundLayer = layers.find((layer) => layer.type === "background");
         return {
+          nationalCityCartography: document.querySelector('[data-akarfinder-national-map]')?.getAttribute('data-akarfinder-city-cartography'),
+          boundaryLineC1: map?.getLayer('akarfinder-national-city-line') ? map.getPaintProperty('akarfinder-national-city-line', 'line-color') : null,
+          boundaryFillC2: map?.getLayer('akarfinder-national-city-fill') ? map.getPaintProperty('akarfinder-national-city-fill', 'fill-color') : null,
+          basemapBackground: backgroundLayer ? map?.getPaintProperty(backgroundLayer.id, 'background-color') : null,
           sourceExists: Boolean(map?.getSource("akarfinder-national-neighborhood-points")),
           labels: Boolean(map?.getLayer("akarfinder-national-neighborhood-labels")),
           dots: Boolean(map?.getLayer("akarfinder-national-neighborhood-dots")),
@@ -114,6 +119,12 @@ try {
           renderedBasemapFeatureCount: rendered.filter((feature) => !feature.layer.id.startsWith("akarfinder-")).length,
         };
       });
+      if (layerState.nationalCityCartography !== "national-quarter-continuity-v1"
+        || layerState.boundaryLineC1 !== "#071B33"
+        || layerState.boundaryFillC2 !== "#0B63CE"
+        || layerState.basemapBackground !== "#FBF8F3") {
+        throw new Error(`City → quartier AkarFinder C1/C2 cartography continuity failed ${JSON.stringify(layerState)}`);
+      }
       if (!layerState.sourceExists || !layerState.labels || !layerState.dots || layerState.fakeFill) throw new Error(`neighborhood map layers invalid ${JSON.stringify(layerState)}`);
       if (layerState.renderedNeighborhoodFeatureCount !== 0) throw new Error(`city atlas must not render neighborhood dot cloud ${JSON.stringify(layerState)}`);
       if (!layerState.administrativeAtlasSource || !layerState.administrativeAtlasFill || !layerState.administrativeAtlasLine || !layerState.administrativeAtlasLabels || layerState.administrativeAtlasCount !== 16 || layerState.administrativeAtlasStatus !== "shadow-preview" || layerState.renderedAdministrativeFillCount < 1 || layerState.renderedAdministrativeLabelCount < 1) {
