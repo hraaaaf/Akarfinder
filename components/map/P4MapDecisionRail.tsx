@@ -64,7 +64,9 @@ export function P4MapDecisionRail() {
   // The URL may reference a source-only N2 point. Show its real name only
   // after revalidating that exact city+slug against the source catalog.
   // Search remains city-scoped because property membership is not certified.
-  const requestedSourceSlug = navigationState.district
+  // The canonical map-navigation parser intentionally discards unknown districts;
+  // inspect the raw URL selection only for independently source-verified labels.
+  const requestedSourceSlug = searchParams.get("district")
     ?.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
     .replace(/[’']/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") ?? null;
   const [sourcePointCandidate, setSourcePointCandidate] = useState<{
