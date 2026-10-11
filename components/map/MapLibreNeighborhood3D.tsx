@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-// Maârif flat-map brand palette — structural C1/C2, not property-category colors.
+// Nationwide quartier flat-map brand palette — structural C1/C2, not property-category colors.
 const MAP_BRAND_NAVY = "#071B33";
 const MAP_BRAND_BLUE = "#0B63CE";
 import { AKARFINDER_MOROCCO_MAP_NAVY, territoryLightToneForKey } from "@/lib/map/akarfinder-territorial-style";
@@ -322,6 +322,9 @@ export function MapLibreNeighborhood3D({
   const [centerPoint, setCenterPoint] = useState<ScreenPoint | null>(null);
   const [rtlStatus, setRtlStatus] = useState<"loading" | "loaded" | "error">("loading");
   const isMaarifTargetPilot = citySlug === "casablanca" && districtSlug === "maarif";
+  // National contract: shared vector cartography for every registered quartier.
+  // Maârif retains its own sourced OSM arrondissement, special POIs and rail.
+  const isNationalFlatLiving = targetComposition === "context";
   const districtTone = territoryLightToneForKey(districtSlug);
 
   const setAdministrativePolygonVisible = (map: any, visible: boolean) => {
@@ -460,19 +463,19 @@ export function MapLibreNeighborhood3D({
           bearing: contextual ? contextCamera.bearing : 0,
           attributionControl: false,
           canvasContextAttributes: { antialias: true },
-          dragRotate: !isMaarifTargetPilot,
-          touchPitch: !isMaarifTargetPilot,
-          style: isMaarifTargetPilot && targetComposition === "context"
+          dragRotate: !isNationalFlatLiving,
+          touchPitch: !isNationalFlatLiving,
+          style: isNationalFlatLiving
             ? OPENFREEMAP_TARGET_STYLE
             : OPENFREEMAP_STYLE,
         } as any);
         mapInstanceRef.current = map;
-        if (isMaarifTargetPilot) map.touchZoomRotate.disableRotation();
+        if (isNationalFlatLiving) map.touchZoomRotate.disableRotation();
 
         map.once("load", () => {
           if (disposed) return;
           try {
-            if (isMaarifTargetPilot && targetComposition === "context") {
+            if (isNationalFlatLiving) {
               map.setLight({
                 anchor: "viewport",
                 color: "#FFF7EF",
@@ -516,7 +519,7 @@ export function MapLibreNeighborhood3D({
               });
             }
 
-            if (isMaarifTargetPilot && targetComposition === "context") {
+            if (isNationalFlatLiving) {
               const source = "akarfinder-openfreemap";
 
               if (!map.hasImage("akarfinder-water-texture")) {
@@ -802,7 +805,7 @@ export function MapLibreNeighborhood3D({
                 },
               } as any);
             }
-            if (!isMaarifTargetPilot || targetComposition !== "context") map.addLayer({
+            if (!isNationalFlatLiving) map.addLayer({
               id: "3d-buildings",
               source: "akarfinder-openfreemap",
               "source-layer": "building",
@@ -845,13 +848,13 @@ export function MapLibreNeighborhood3D({
               type: "circle",
               source: FOCUS_SOURCE_ID,
               paint: {
-                "circle-radius": isMaarifTargetPilot ? (desktop ? 155 : 135) : (desktop ? 84 : 68),
-                "circle-color": isMaarifTargetPilot ? MAP_BRAND_BLUE : districtTone,
-                "circle-blur": isMaarifTargetPilot ? 0.92 : 0,
-                "circle-opacity": isMaarifTargetPilot ? 0.12 : 0.13,
+                "circle-radius": isNationalFlatLiving ? (desktop ? 155 : 135) : (desktop ? 84 : 68),
+                "circle-color": isNationalFlatLiving ? MAP_BRAND_BLUE : districtTone,
+                "circle-blur": isNationalFlatLiving ? 0.92 : 0,
+                "circle-opacity": isNationalFlatLiving ? 0.12 : 0.13,
                 "circle-stroke-color": AKARFINDER_MOROCCO_MAP_NAVY,
-                "circle-stroke-width": isMaarifTargetPilot ? 0 : 1.5,
-                "circle-stroke-opacity": isMaarifTargetPilot ? 0 : 0.56,
+                "circle-stroke-width": isNationalFlatLiving ? 0 : 1.5,
+                "circle-stroke-opacity": isNationalFlatLiving ? 0 : 0.56,
               },
             });
             map.addLayer({
@@ -953,8 +956,8 @@ export function MapLibreNeighborhood3D({
               MAPLIBRE_OVERTURE_ESTIMATED_LAYER_ID,
               MAPLIBRE_OVERTURE_EXACT_LAYER_ID,
             ].filter((layerId) => Boolean(map.getLayer(layerId)));
-            const volumeFeatures = isMaarifTargetPilot && targetComposition === "context"
-              ? [] // Hidden extrusion features are not visible 3D volume.
+            const volumeFeatures = isNationalFlatLiving
+              ? [] // Nationwide 2D-only renderer, not extruded volumes.
               : overtureLayers.length
                 ? map.queryRenderedFeatures(undefined, { layers: overtureLayers })
                 : map.getLayer("3d-buildings")
@@ -1032,8 +1035,7 @@ export function MapLibreNeighborhood3D({
     if (
       !map
       || !ready
-      || !isMaarifTargetPilot
-      || targetComposition !== "context"
+      || !isNationalFlatLiving
       || !context?.anchors?.length
     ) return;
 
@@ -1214,7 +1216,7 @@ export function MapLibreNeighborhood3D({
   }, [
     context,
     ready,
-    isMaarifTargetPilot,
+    isNationalFlatLiving,
     administrativeBoundsVisible,
     targetComposition,
     center[0],
@@ -1296,7 +1298,8 @@ export function MapLibreNeighborhood3D({
       data-maplibre-context-relief={isMaarifTargetPilot ? "flat-indicative-zone" : "none"}
       data-maplibre-quarter-style={isMaarifTargetPilot ? "flat-living-v02" : "default"}
        data-maplibre-cartographic-palette={isMaarifTargetPilot ? "akarfinder-c1-c2-map-v1" : "default"}
-       data-maplibre-hierarchy-pass={isMaarifTargetPilot ? "readable-footprints-roads-v2" : "default"}
+       data-maplibre-hierarchy-pass={isNationalFlatLiving ? "readable-footprints-roads-v2" : "default"}
+       data-maplibre-national-flat={isNationalFlatLiving ? "akarfinder-national-v1" : "off"}
       data-maplibre-basemap-language={isMaarifTargetPilot ? "voyager-inspired-openfreemap-v1" : "default"}
       data-maplibre-building-language={isMaarifTargetPilot ? "flat-vector-footprints-v02" : "default"}
       data-maplibre-polish={isMaarifTargetPilot ? "flat-basemap-v02" : "default"}
@@ -1459,7 +1462,7 @@ export function MapLibreNeighborhood3D({
       <div className="maplibre-spike-map-chrome">
         <div className="maplibre-spike-brand"><b>AF</b><span>AkarFinder</span></div>
         <div className="maplibre-spike-search"><Search size={17} aria-hidden="true" /><strong>{cityLabel}</strong><span>Quartiers et adresses</span></div>
-        {!isMaarifTargetPilot ? <div className="maplibre-spike-mode"><span>2D</span><strong>3D</strong></div> : null}
+        {!isNationalFlatLiving ? <div className="maplibre-spike-mode"><span>2D</span><strong>3D</strong></div> : null}
       </div>
 
       <div className="maplibre-spike-view-chips" aria-label="Mode cartographique">
