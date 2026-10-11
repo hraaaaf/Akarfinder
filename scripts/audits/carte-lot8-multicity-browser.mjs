@@ -5,17 +5,28 @@ const baseUrl = process.env.BASE_URL || "http://127.0.0.1:3205";
 const outDir = process.env.AUDIT_OUTPUT_DIR || "data/audits/carte-lot8-multicity";
 await mkdir(outDir, { recursive: true });
 
-// Run the requested Fès / iPhone 14 Pro Max proof first so a diagnostic capture
-// is still preserved if a later certification assertion fails.
+// National source registry coverage: each of the 17 canonical neighborhood
+// routes across 8 Moroccan cities. Never synthesize unregistered geographies.
+// Keep Fès first to preserve an early diagnostic on failure.
 const cities = [
   { slug: "fes", districtSlug: "ville-nouvelle", city: "Fès", district: "Ville Nouvelle" },
+  { slug: "fes", districtSlug: "fes-el-bali", city: "Fès", district: "Fès el-Bali" },
   { slug: "casablanca", districtSlug: "maarif", city: "Casablanca", district: "Maârif" },
+  { slug: "casablanca", districtSlug: "finance-city", city: "Casablanca", district: "Casablanca Finance City" },
+  { slug: "casablanca", districtSlug: "bouskoura", city: "Casablanca", district: "Bouskoura" },
+  { slug: "rabat", districtSlug: "hay-riad", city: "Rabat", district: "Hay Riad" },
+  { slug: "rabat", districtSlug: "agdal", city: "Rabat", district: "Agdal" },
+  { slug: "rabat", districtSlug: "hassan", city: "Rabat", district: "Hassan" },
   { slug: "marrakech", districtSlug: "gueliz", city: "Marrakech", district: "Guéliz" },
+  { slug: "marrakech", districtSlug: "hivernage", city: "Marrakech", district: "Hivernage" },
+  { slug: "marrakech", districtSlug: "route-de-lourika", city: "Marrakech", district: "Route de l'Ourika" },
   { slug: "tanger", districtSlug: "malabata", city: "Tanger", district: "Malabata" },
+  { slug: "tanger", districtSlug: "ville-nouvelle", city: "Tanger", district: "Ville Nouvelle" },
   { slug: "agadir", districtSlug: "founty", city: "Agadir", district: "Founty" },
+  { slug: "agadir", districtSlug: "talborjt", city: "Agadir", district: "Talborjt" },
+  { slug: "kenitra", districtSlug: "centre-ville", city: "Kénitra", district: "Centre-ville" },
+  { slug: "mohammedia", districtSlug: "centre", city: "Mohammedia", district: "Centre" },
 ];
-// National rollout gate: five representative cities × the same four
-// fixed UI viewports. No synthetic quartier boundary data is introduced.
 const viewports = [
   { name: "mobile", width: 390, height: 844 },
   { name: "iphone14promax", width: 430, height: 932 },
@@ -182,9 +193,15 @@ try {
       }
     }
   }
-  if (liveTileProofCases < 1) {
-    throw new Error("multicity run produced no successful real high-zoom OpenFreeMap tile evidence");
+  if (report.cases.length !== cities.length * viewports.length) {
+    throw new Error(`national registry audit only covered ${report.cases.length}/${cities.length * viewports.length} viewport cases`);
   }
+  if (liveTileProofCases < 1) {
+    throw new Error("national registry run produced no successful real high-zoom OpenFreeMap tile evidence");
+  }
+  report.registeredNeighborhoods = cities.length;
+  report.registeredCities = [...new Set(cities.map((item) => item.slug))].length;
+  report.expectedViewportCases = cities.length * viewports.length;
   report.liveTileProofCases = liveTileProofCases;
   report.ok = true;
 } catch (error) {
