@@ -31,5 +31,11 @@ class Audit(unittest.TestCase):
   html='<script type="application/ld+json">'+json.dumps({'@type':'RealEstateListing','url':P,'description':'Appartement 62 m2','offers':{'price':8100,'priceCurrency':'MAD'},'address':{'addressLocality':'Marrakech'}})+'</script>'
   row=mod.parse_primary_html(html,P)
   self.assertTrue(row['schema_shape_only']['has_labeled_area_in_description'])
-  self.assertIsNone(row['fields']['surface_m2'])
+  self.assertEqual(row['fields']['surface_m2'],62)
+ def test_primary_description_rejects_multiple_areas_ranges_and_price_per_meter(self):
+  import json
+  for description in ('Surface 70 m² plus terrasse 15 m²','Projet de 50-100 m²','Tarif 8500 DH/m²'):
+   html='<script type="application/ld+json">'+json.dumps({'@type':'RealEstateListing','url':P,'offers':{'price':900000,'priceCurrency':'MAD'},'description':description})+'</script>'
+   self.assertIsNone(mod.parse_primary_html(html,P)['fields']['surface_m2'])
+
 if __name__=='__main__':unittest.main()
