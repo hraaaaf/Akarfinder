@@ -472,3 +472,10 @@ Run [38071017861](https://github.com/hraaaaf/Akarfinder/actions/runs/38071017861
 ## Expansion nouvelle source — Yakeey public card pilot (2026-10-12)
 
 Décision utilisateur : prioriser le volume multi-portails et accepter les risques contractuels des pages publiques, sans déploiement, DB, usurpation, bypass CAPTCHA/403 ni surcharge. Le pilote `scripts/data/yakeey-card-canary-v1.mjs` + tests + `.github/workflows/yakeey-card-canary-v1.yml` inspecte **au plus quatre pages** (vente/location nationales, puis page 2 seulement si lien source explicite/robots-permis) et émet uniquement des cartes à identité propre (exemple de route source: `-ca187111`) ; `Vendu/Loué` sont exclues de la catégorie 5 champs exploitables. Voir `docs/data/AKARFINDER_YAKEEY_CARD_PILOT_V1.md`. **Résultats numériques à constater par CI/artifact**, aucune annonce encore ajoutée au ledger neuf input et aucune disponibilité certifiée. Next : CI, diagnostiquer rendement et ajuster par preuves ; DB 0, aucun merge ou Vercel.
+
+
+## MarocImmo indépendant — canari d'accessibilité le 12 octobre 2026
+
+Source 3 bis : workflow déjà existant `.github/workflows/marocimmo-public-probe.yml` activé sur branche `data/200k-fresh-parser-v2`, son script `scripts/acquisition/marocimmo-public-probe.py` produit désormais un artifact diagnostique même si robots indisponible (pas d'exception silencieuse). Sondes nationales `/fr/vente` et `/fr/location` uniquement, aucune fiche détail, pas de DB/merge/deploy. Les chiffres 299 vente/≈208 location sont des *comptages affichés* et non un stock exploitable certifié. Préparer la suite seulement après run et artifact exact, sans supposer que l'accès est acquis.
+
+Yakeey : CI `38263205111` offline 6/6 ✅ mais crawl ❌ `robots_unavailable_fail_closed`, **0 page et 0 annonce**. Ne pas retenter à l'identique, ne pas contourner. Pivot MarocImmo.
