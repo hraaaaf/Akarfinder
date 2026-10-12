@@ -89,3 +89,20 @@ test("V6 compressed packet refuses checksum mismatches before parsing",()=>{
   const p=packV6Provenance([x]);
   assert.throws(()=>unpackV6Provenance(p.compressed,"deadbeef"),/checksum/);
 });
+
+test("V6 future OSM tag, parent relation ID and matching method survive compression unchanged",()=>{
+  const candidate=toV6SourceRecord(osm(424242,"Future sourced quartier",-5.88,35.73,"tanger"));
+  candidate.sourceIdentity.osmTag="suburb";
+  candidate.sourceIdentity.osmTagStatus="source_extract_verified";
+  candidate.parentProvenance.boundaryRelationId=912345;
+  candidate.parentProvenance.boundaryRelationStatus="unique_relation_identity_captured_at_build";
+  const p=packV6Provenance([candidate]);
+  const [unpacked]=unpackV6Provenance(p.compressed,p.sha256);
+  assert.equal(unpacked.sourceIdentity.osmType,"node");
+  assert.equal(unpacked.sourceIdentity.osmId,424242);
+  assert.equal(unpacked.sourceIdentity.osmTag,"suburb");
+  assert.equal(unpacked.parentProvenance.sourceNormalizedParentKey,"tanger");
+  assert.equal(unpacked.parentProvenance.boundaryRelationId,912345);
+  assert.equal(unpacked.parentProvenance.boundaryRelationStatus,"unique_relation_identity_captured_at_build");
+  assert.equal(unpacked.review.publicationStatus,"hold_no_publication");
+});
