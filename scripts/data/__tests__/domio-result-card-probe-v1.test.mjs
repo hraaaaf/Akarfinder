@@ -72,3 +72,20 @@ test("small rent valid; tiny sale price rejected",()=>{
  const r=probeDomioCardHtml(html,"https://domio.ma/fr/appartement/louer/rabat");
  assert.equal(r.rows[0].price_mad,7000);assert.equal(r.rows[1].price_mad,null);
 });
+
+
+test('a Domio source URL cannot say sale while its individual slug explicitly says rental',()=>{
+ const html='<a href="/fr/appartement/vendre/rabat/11371/appartement-a-louer-a-lagdal">Appartement à louer 3 800 000 DH Rabat, Agdal 95.0 m²</a>';
+ const r=probeDomioCardHtml(html,'https://domio.ma/fr/appartement/vendre/rabat');
+ assert.equal(r.rows.length,1);
+ assert.equal(r.rows[0].url_slug_transaction_conflict,true);
+ assert.equal(r.rows[0].five_field_present,false);
+ assert.equal(r.rows[0].price_mad,3800000); // raw evidence remains, not published
+});
+
+test('the mirror rental route with a for-sale slug is held without losing provenance',()=>{
+ const html='<a href="/fr/appartement/louer/casablanca/10396/vente-appartement-meuble-a-casablanca-racine">Appartement Rabat, Agdal 95.0 m² 8 500 DH</a>';
+ const r=probeDomioCardHtml(html,'https://domio.ma/fr/appartement/louer/casablanca');
+ assert.equal(r.rows[0].url_slug_transaction_conflict,true);
+ assert.equal(r.rows[0].five_field_present,false);
+});

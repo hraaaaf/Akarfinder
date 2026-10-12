@@ -21,3 +21,10 @@
 **Succès et preuve** : CI ledger exacte HEAD verte, test sur 9 745 IDs immuables, `passed+quarantine=9 745`, zéro candidat en quarantaine et aucune quarantaine glissée en candidats, zéro écriture DB et aucune promotion d'annonce fraîche. Les anciens chiffres 7 610 cartes 5/5 sont une borne de complétude, **pas** le nombre passant nécessairement le tamis.
 
 **Next** : lire CI et artifact, identifier le premier défaut par source, réparer le parseur en reproduisant l'HTML fautif dans une fixture; mesurer gain net et non-régression, itérer par petits lots.
+
+
+## Correction observée : contradiction transaction Domio, 2026-10-12
+
+Inspection indépendante du premier artifact `11753914725` (CI `38266071932`, verte) : **7 052 snapshots candidats / 2 693 quarantaines** pour 9 745 IDs. Analyse des URLs des 2 590 Domio : **59 fiches** ont une contradiction explicite route vente/location vs slug « à louer / à vendre / location / vente », dont **8** étaient précédemment dans les candidats (IDs : `domio:10396`, `domio:11371`, `domio:11372`, `domio:11779`, `domio:12109`, `domio:12110`, `domio:3130`, `domio:9195`). Le gate V1.1 et le parseur Domio rétrogradent ces fiches, sans effacer la preuve de carte source. Les 59 représentent des anomalies transaction suspectes **dans le libellé d'URL**, pas nécessairement 59 annonces mal catégorisées de manière confirmée.
+
+Suppression des doublons artificiels de motif d'échec : ne pas signaler « ville contradictoire » si elle manque ; ne pas déclarer prix ou surface hors plage lorsqu'ils sont absents. Les causes doivent indiquer un défaut **actionnable**, pas trois fois la même absence. Le prochain artifact CI établira les nouveaux totaux; n'annoncer aucun nombre provisoire comme vérifié sur la version corrigée.

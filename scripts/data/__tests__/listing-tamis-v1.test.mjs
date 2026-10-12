@@ -50,3 +50,15 @@ test('all listings classified once, repair queue aggregated per source and reaso
  assert.equal(summary.publishable_count,0);assert.equal(summary.database_writes,0);
  assert.ok(summary.repair_priorities.some(x=>x.cause==='potential_physical_duplicate_review'));
 });
+
+
+test('individual Domio source route beats misleading transaction wording in URL slug',()=>{
+ const a=dom({identity:'domio:11371',canonical_url:'https://domio.ma/fr/appartement/vendre/rabat/11371/appartement-a-louer-a-lagdal',city:'Rabat',district:'Agdal',price_mad:3800000});
+ const b=dom({identity:'domio:10396',canonical_url:'https://domio.ma/fr/appartement/louer/casablanca/10396/vente-appartement-meuble-a-casablanca-racine'});
+ for(const row of [a,b]){
+  const x=inspectListingForSnapshot(row);
+  assert.equal(x.decision,'hold_parser_repair');assert.ok(x.reasons.includes('transaction_slug_disagrees_with_source_route'));
+  assert.equal(x.card_snapshot_sha256,null);
+ }
+ assert.equal(inspectListingForSnapshot(dom()).decision,'candidate_snapshot_pass');
+});

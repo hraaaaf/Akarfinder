@@ -17,7 +17,9 @@ function route(row){
   const m=url.pathname.match(/^\/fr\/([a-z-]+)\/(vendre|louer)\/([a-z-]+)\/(\d+)\/[^/?#]+\/?$/i);
   if(!m)return {error:'unsupported_source_route'};
   if(row.identity!=='domio:'+m[4])return{error:'source_identity_url_mismatch'};
-  return{adapter:'domio_card_v1',transaction:m[2]==='vendre'?'sale':'rent',property_type:m[1],city_slug:m[3]};
+  const s=u.pathname.split('/').at(-1).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+  const slugRent=/(?:^|[-_])(?:a[-_]louer|location)(?:[-_]|$)/i.test(s),slugSale=/(?:^|[-_])(?:a[-_]vendre|vente)(?:[-_]|$)/i.test(s);
+  return{adapter:'domio_card_v1',transaction:m[2]==='vendre'?'sale':'rent',property_type:m[1],city_slug:m[3],transaction_slug_conflict:m[2]==='vendre'?slugRent:slugSale};
  }
  return{error:'unsupported_source'};
 }
@@ -34,10 +36,11 @@ export function inspectListingForSnapshot(row){
  for(const field of ['city','district'])if(!normVal(row?.[field]))problems.push('invalid_'+field);
  if(!inRange(row?.price_mad,1,1e10))problems.push('invalid_price_mad');
  if(!inRange(row?.surface_m2,5,100000))problems.push('invalid_surface_m2');
- if(parsed.city_slug&&cityAliases.has(normalize(parsed.city_slug))&&normalize(row.city)!==cityAliases.get(normalize(parsed.city_slug)))problems.push('city_disagrees_with_detail_route');
- if(parsed.transaction==='sale'&&!inRange(row.price_mad,50000,100000000))problems.push('price_out_of_sale_range');
- if(parsed.transaction==='rent'&&!inRange(row.price_mad,500,250000))problems.push('price_out_of_rental_range');
- if(parsed.property_type==='appartement'&&!inRange(row.surface_m2,5,3000))problems.push('apartment_surface_out_of_range');
+ if(parsed.city_slug&&normVal(row?.city)&&cityAliases.has(normalize(parsed.city_slug))&&normalize(row.city)!==cityAliases.get(normalize(parsed.city_slug)))problems.push('city_disagrees_with_detail_route');
+ if(parsed.transaction_slug_conflict)problems.push('transaction_slug_disagrees_with_source_route');
+ if(parsed.transaction==='sale'&&typeof row?.price_mad==='number'&&!inRange(row.price_mad,50000,100000000))problems.push('price_out_of_sale_range');
+ if(parsed.transaction==='rent'&&typeof row?.price_mad==='number'&&!inRange(row.price_mad,500,250000))problems.push('price_out_of_rental_range');
+ if(parsed.property_type==='appartement'&&typeof row?.surface_m2==='number'&&!inRange(row.surface_m2,5,3000))problems.push('apartment_surface_out_of_range');
  if(row?.potential_same_property_other_id===true)problems.push('potential_physical_duplicate_review');
  if(row?.freshness_certified===true||row?.active_sale_verified===true||row?.cross_source_deduplicated===true)problems.push('untrusted_certification_claim');
  const reasons=[...new Set(problems)].sort();

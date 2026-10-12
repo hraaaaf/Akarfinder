@@ -1,5 +1,11 @@
 import {load} from "cheerio";
 const HOSTS=new Set(["domio.ma","www.domio.ma"]);
+export const domioSlugContradictsTransaction=(slug,transaction)=>{
+ const s=String(slug||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+ const suggestsRent=/(?:^|[-_])(?:a[-_]louer|location)(?:[-_]|$)/i.test(s);
+ const suggestsSale=/(?:^|[-_])(?:a[-_]vendre|vente)(?:[-_]|$)/i.test(s);
+ return transaction==='vendre'?suggestsRent:transaction==='louer'?suggestsSale:false;
+};
 const clean=s=>String(s||"").replace(/[\u00a0\u202f]/g," ").replace(/\s+/g," ").trim();
 export function domioDetail(raw,base){
  try{
@@ -8,7 +14,7 @@ export function domioDetail(raw,base){
   const m=url.pathname.match(/^\/fr\/([a-z-]+)\/(vendre|louer)\/([a-z-]+)\/(\d+)\/[^/?#]+\/?$/i);
   if(!m)return null;
   url.search="";url.hash="";
-  return {identity:"domio:"+m[4],url:url.href,city_slug:m[3],transaction:m[2],property_type:m[1]};
+  return {identity:"domio:"+m[4],url:url.href,city_slug:m[3],transaction:m[2],property_type:m[1],url_slug_transaction_conflict:domioSlugContradictsTransaction(url.pathname.split('/').at(-1),m[2])};
  }catch{return null;}
 }
 
@@ -54,7 +60,7 @@ export function probeDomioCardHtml(html,pageUrl){
    price_ambiguous:price.length>1,surface_ambiguous:area.length>1,
    district_ambiguous:location.conflict,
    field_state:"unverified_dom_card_only",freshness_certified:false,
-   five_field_present:!!(location.district&&location.explicitCity&&price.length===1&&area.length===1&&!location.conflict)});
+   five_field_present:!!(location.district&&location.explicitCity&&price.length===1&&area.length===1&&!location.conflict&&!detail.url_slug_transaction_conflict)});
 
  }
  return {unique_identity_count:rows.length,price_present:rows.filter(r=>r.price_mad!==null).length,
