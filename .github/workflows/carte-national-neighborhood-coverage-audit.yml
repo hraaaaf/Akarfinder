@@ -5,6 +5,8 @@ on:
     paths:
       - "scripts/audits/national-neighborhood-coverage.mjs"
       - "scripts/audits/verify-agadir-al-qods-pilot.mjs"
+      - "scripts/audits/verify-tanger-boukhalef-source-gate.mjs"
+      - "data/geo/pilot-tanger-boukhalef-evidence.json"
       - "data/geo/pilot-agadir-al-qods-evidence.json"
       - ".github/workflows/carte-national-neighborhood-coverage-audit.yml"
 
@@ -74,6 +76,10 @@ jobs:
         run: |
           node --check scripts/audits/verify-agadir-al-qods-pilot.mjs
           node scripts/audits/verify-agadir-al-qods-pilot.mjs
+      - name: Verify Boukhalef Tanger sourced point and non-equivalent gazetteer record (HOLD)
+        run: |
+          node --check scripts/audits/verify-tanger-boukhalef-source-gate.mjs
+          node scripts/audits/verify-tanger-boukhalef-source-gate.mjs
       - name: Upload national read-only inventory
         if: always()
         uses: actions/upload-artifact@v4
