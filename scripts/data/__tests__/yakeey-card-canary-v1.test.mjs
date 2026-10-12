@@ -20,7 +20,8 @@ test('independent card five fields and explicit sold marker',()=>{
 test('several distinct cards never borrow missing fields from a neighboring listing',()=>{
  const html='<section><article><a href="/fr-ma/acheter-appartement-casablanca-ca187111">Californie, Casablanca 151 m²</a></article>'+card('CA187112')+'</section>';
  const r=extractYakeeyCards(html,sale);
- assert.equal(r.rows.length,2);assert.equal(r.rows[0].five_field_observed,false);
+ assert.equal(r.rows.length,1);assert.equal(r.rows[0].identity,'yakeey:CA187112');
+ assert.equal(r.rows[0].five_field_observed,true);
 });
 test('page two only when explicitly linked and robots permits',()=>{
  const html='<a href="'+sale+'?page=2">2</a><a href="'+sale+'?page=99">99</a>';

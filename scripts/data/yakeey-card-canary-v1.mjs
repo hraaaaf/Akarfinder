@@ -49,7 +49,7 @@ const individualLeafTexts=($,element)=>{
 };
 function cardBlock($,node,identity){
  for(const current of [$(node),...$(node).parents().slice(0,7).toArray().map(n=>$(n))]){
-  const text=tidy(current.text());
+  const text=individualLeafTexts($,current).join(' ');
   if(text.length<25||text.length>1800||!/\bDH\b/i.test(text)||!/m(?:²|2)/iu.test(text))continue;
   const ids=new Set(current.find('a[href]').addBack('a[href]').toArray().map(a=>listingIdentity($(a).attr('href'))?.identity).filter(Boolean));
   if(ids.size===1&&ids.has(identity))return current;
@@ -73,7 +73,7 @@ function surfaceFrom(leaves){
  for(const leaf of leaves){
   const t=tidy(leaf);
   if(/\d+\s*[-–]\s*\d+\s*m(?:²|2)/iu.test(t))continue;
-  for(const m of t.matchAll(/(?:^|\s)(\d{1,5}(?:[.,]\d+)?)\s*m(?:²|2)\b/giu)){
+  for(const m of t.matchAll(/(?:^|\s)(\d{1,5}(?:[.,]\d+)?)\s*m(?:²|2)(?=$|[^\p{L}\p{N}])/giu)){
    const n=Number(m[1].replace(',','.'));
    if(n>=5&&n<=100000)found.add(n);
   }
