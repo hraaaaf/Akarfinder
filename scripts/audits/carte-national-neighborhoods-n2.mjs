@@ -93,6 +93,26 @@ if (agadir.certifiedNeighborhoodBoundaries?.features?.length !== 0 ||
   throw new Error("Agadir source candidate must not publish an invented quartier polygon");
 }
 
+// Second city canary checks a geo-sourced label, NOT a new certified quartier.
+const tangerResponse = await fetch(`${baseUrl}/api/geo/national-territories?city=tanger`);
+if (!tangerResponse.ok) throw new Error(`Tanger API ${tangerResponse.status}`);
+const tanger = await tangerResponse.json();
+if (tanger.view !== "city" || tanger.place?.slug !== "tanger") throw new Error("Tanger view missing");
+const boukhalef = tanger.neighborhoods?.find((item) => item.slug === "boukhalef");
+if (!boukhalef || boukhalef.name !== "Boukhalef"
+  || !isValidCenter(boukhalef.center)
+  || Math.abs(boukhalef.center.lat - 35.7337667) > 0.00001
+  || Math.abs(boukhalef.center.lng - (-5.8831334)) > 0.00001
+  || boukhalef.boundaryStatus !== "not_claimed"
+  || boukhalef.publicationStatus !== "label_candidate"
+  || !boukhalef.sourceKinds?.includes("osm_neighborhood_label")) {
+  throw new Error(`Boukhalef source-only gate failed ${JSON.stringify(boukhalef)}`);
+}
+if (tanger.certifiedNeighborhoodBoundaries?.features?.length !== 0
+  || tanger.meta?.certifiedNeighborhoodBoundaryCount !== 0) {
+  throw new Error("Tanger source marker cannot invent a quartier polygon");
+}
+
 const browser = await chromium.launch({ headless: true });
 try {
   for (const viewport of viewports) {
@@ -281,12 +301,62 @@ try {
         document.documentElement.scrollWidth - document.documentElement.clientWidth);
       if (agadirOverflow > 1) throw new Error(`Al Qods overflow ${agadirOverflow}`);
       await page.screenshot({ path: `${outDir}/agadir-al-qods-${viewport.name}-after.png`, fullPage: false });
+      // Verify the genuine 2nd-city source point without changing product runtime.
+      await page.goto(`${baseUrl}/map?city=tanger&district=boukhalef&layer=explore`, {
+        waitUntil: "domcontentloaded", timeout: 30000,
+      });
+      const tangerMap = page.locator('[data-maplibre-spike][data-maplibre-city="tanger"][data-maplibre-district="boukhalef"]');
+      await tangerMap.waitFor({ state: "attached", timeout: 25000 });
+      await page.waitForFunction(() => {
+        const shell = document.querySelector('[data-maplibre-spike][data-maplibre-city="tanger"][data-maplibre-district="boukhalef"]');
+        return shell?.getAttribute("data-maplibre-ready") === "true"
+          && shell?.getAttribute("data-maplibre-national-flat") === "akarfinder-national-v1";
+      }, null, { timeout: 25000 });
+      const tangerState = await tangerMap.evaluate(el => ({
+        reference: el.getAttribute("data-maplibre-point-reference"),
+        boundary: el.getAttribute("data-maplibre-boundary-status"),
+        semantic: el.getAttribute("data-maplibre-boundary-semantic"),
+        focus: el.getAttribute("data-maplibre-focus-semantic"),
+      }));
+      if (tangerState.reference !== "sourced-label-candidate" || tangerState.boundary !== "center-only"
+        || tangerState.semantic !== "none" || tangerState.focus !== "context-focus-not-boundary") {
+        throw new Error(`Boukhalef invents geographic boundaries ${JSON.stringify(tangerState)}`);
+      }
+      const tangerNote = tangerMap.locator('[data-maplibre-candidate-disclosure="source-indicative"]');
+      await tangerNote.waitFor({ state: "visible", timeout: 8000 });
+      if (!(await tangerNote.textContent())?.includes("Limites du quartier non certifiées")) {
+        throw new Error("Boukhalef map source-only disclaimer missing");
+      }
+      const tangerRail = page.locator('[data-p4-map-decision-rail]');
+      const tangerTitle = tangerRail.locator('[data-p4-map-source-point="boukhalef"]');
+      await tangerTitle.waitFor({ state: "visible", timeout: 15000 });
+      if ((await tangerTitle.textContent())?.trim() !== "Boukhalef") {
+        throw new Error("Boukhalef selection context not displayed accurately");
+      }
+      const tangerKicker = (await tangerRail.locator(".p4-premium-kicker").textContent())?.trim() ?? "";
+      if (!tangerKicker.includes("Repère indicatif") || !tangerKicker.includes("Tanger")) {
+        throw new Error(`Boukhalef semantic kicker mismatch: ${JSON.stringify(tangerKicker)}`);
+      }
+      const tangerSearchHref = await tangerRail.locator(".p4-premium-primary-action").getAttribute("href");
+      const tangerSearch = new URL(tangerSearchHref ?? "/", baseUrl);
+      if (tangerSearch.pathname !== "/search" || tangerSearch.searchParams.get("city") !== "Tanger"
+        || tangerSearch.searchParams.has("district")) {
+        throw new Error(`Boukhalef invented property district filter: ${tangerSearchHref}`);
+      }
+      const tangerOverflow = await page.evaluate(() =>
+        document.documentElement.scrollWidth - document.documentElement.clientWidth);
+      if (tangerOverflow > 1) throw new Error(`Boukhalef page overflow ${tangerOverflow}`);
+      await page.screenshot({ path: `${outDir}/tanger-boukhalef-${viewport.name}-after.png`, fullPage: false });
       if (pageErrors.length) throw new Error(`browser page errors ${JSON.stringify(pageErrors)}`);
       report.cases.push({ viewport: viewport.name, overflow, layerState, featuredSelection: true,
         mappedSelection: "route-handoff", noCenterFallback: true, searchHandoff: true,
         agadirAlQods: { center: alQods.center, sourceOnly: true,
           disclosure: true, browserReady: true, contextualRail: true,
           cityOnlySearchHandoff: true, horizontalOverflow: agadirOverflow },
+        tangerBoukhalef: { center: boukhalef.center, sourceOnly: true,
+          disclaimerVisible: true, sourceSemantics: tangerState, namedSelection: true,
+          cityOnlySearchHandoff: true, historicalAdminIdentityStillOnHold: true,
+          horizontalOverflow: tangerOverflow },
         sourcedCandidate: { slug: candidatePoint.slug, name: candidatePoint.name, center: candidatePoint.center, sourceKinds: candidatePoint.sourceKinds } });
     } catch (error) {
       report.failure = { viewport: viewport.name, error: String(error) };
