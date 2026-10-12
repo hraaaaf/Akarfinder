@@ -479,3 +479,8 @@ Décision utilisateur : prioriser le volume multi-portails et accepter les risqu
 Source 3 bis : workflow déjà existant `.github/workflows/marocimmo-public-probe.yml` activé sur branche `data/200k-fresh-parser-v2`, son script `scripts/acquisition/marocimmo-public-probe.py` produit désormais un artifact diagnostique même si robots indisponible (pas d'exception silencieuse). Sondes nationales `/fr/vente` et `/fr/location` uniquement, aucune fiche détail, pas de DB/merge/deploy. Les chiffres 299 vente/≈208 location sont des *comptages affichés* et non un stock exploitable certifié. Préparer la suite seulement après run et artifact exact, sans supposer que l'accès est acquis.
 
 Yakeey : CI `38263205111` offline 6/6 ✅ mais crawl ❌ `robots_unavailable_fail_closed`, **0 page et 0 annonce**. Ne pas retenter à l'identique, ne pas contourner. Pivot MarocImmo.
+
+
+## Index agrégateur national — Kaynly source links (2026-10-12)
+
+Source publique Kaynly (relevé 11 octobre 2026) affiche environ 104 157 offres agrégées de 5 portails; **attention, ce n'est PAS un lot de 104k annonces nouvelles certifiées**, car forte superposition possible aux sources historiques. Création d'un canari `scripts/data/kaynly-source-link-canary-v1.mjs` + tests + workflow `.github/workflows/kaynly-source-link-canary-v1.yml`, sur seulement vente/location Casablanca (2 pages max), pour observer des liens vers les vraies sources sans lire les détails ni inférer 5 champs. Respect du filtrage d'hôte, robots fail-closed, stop 403/429, DB 0, aucun déploiement. Documentation `docs/data/AKARFINDER_KAYNLY_SOURCE_LINK_V1.md`. **Attendre CI/artifact avant tout nouveau compteur.**
