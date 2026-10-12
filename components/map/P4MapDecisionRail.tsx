@@ -30,6 +30,20 @@ type ContextPayload =
   | { status: "ok"; context: NeighborhoodContextReadModelV1 }
   | { status: "not_found" | "invalid_request" | "unavailable"; [key: string]: unknown };
 
+type SourceCatalogResponse = {
+  status?: string;
+  view?: string;
+  place?: { slug?: string };
+  neighborhoods?: Array<{
+    slug?: string;
+    name?: string;
+    center?: { lng: number; lat: number } | null;
+    sourceKinds?: string[];
+    boundaryStatus?: string;
+    publicationStatus?: string;
+  }>;
+};
+
 export function P4MapDecisionRail() {
   const searchParams = useSearchParams();
   const navigationState = useMemo(
@@ -47,7 +61,51 @@ export function P4MapDecisionRail() {
     : null;
   const provider = getPremiumMarketIntelligenceProvider(navigationState.city);
   const searchHref = buildMapSearchHref(navigationState);
-  const contextName = districtEntity?.canonical_name ?? cityName;
+  // The URL may reference a source-only N2 point. Show its real name only
+  // after revalidating that exact city+slug against the source catalog.
+  // Search remains city-scoped because property membership is not certified.
+  // The canonical map-navigation parser intentionally discards unknown districts;
+  // inspect the raw URL selection only for independently source-verified labels.
+  const requestedSourceSlug = searchParams.get("district")
+    ?.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
+    .replace(/[’']/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") ?? null;
+  const [sourcePointCandidate, setSourcePointCandidate] = useState<{
+    citySlug: string; districtSlug: string; name: string;
+  } | null>(null);
+  useEffect(() => {
+    setSourcePointCandidate(null);
+    if (!cityEntity || !requestedSourceSlug || districtEntity
+      || navigationState.layer !== "explore" || provider === "rabat-market-intelligence") return;
+    const controller = new AbortController();
+    const citySlug = cityEntity.slug;
+    void fetch(`/api/geo/national-territories?city=${encodeURIComponent(citySlug)}`, {
+      credentials: "same-origin", signal: controller.signal,
+    }).then(async (response) => response.ok ? await response.json() as SourceCatalogResponse : null)
+      .then((payload) => {
+        if (controller.signal.aborted || payload?.status !== "ok" || payload.view !== "city"
+          || payload.place?.slug !== citySlug) return;
+        const candidate = payload.neighborhoods?.find((row) =>
+          row.slug === requestedSourceSlug
+          && row.publicationStatus === "label_candidate"
+          && row.boundaryStatus === "not_claimed"
+          && row.sourceKinds?.some((kind) =>
+            kind === "osm_neighborhood_label" || kind === "barid_postal_neighborhood")
+          && Number.isFinite(row.center?.lng) && Number.isFinite(row.center?.lat)
+          && (row.center?.lng ?? 99) >= -14.5 && (row.center?.lng ?? -99) <= 2.5
+          && (row.center?.lat ?? 99) >= 20.5 && (row.center?.lat ?? -99) <= 37.5
+          && typeof row.name === "string" && row.name.trim().length > 0);
+        if (candidate?.name && !controller.signal.aborted) {
+          setSourcePointCandidate({ citySlug, districtSlug: requestedSourceSlug, name: candidate.name });
+        }
+      }).catch(() => {
+        if (!controller.signal.aborted) setSourcePointCandidate(null);
+      });
+    return () => controller.abort();
+  }, [cityEntity?.slug, requestedSourceSlug, districtEntity?.id, navigationState.layer, provider]);
+  const resolvedSourcePoint = !districtEntity
+    && sourcePointCandidate?.citySlug === cityEntity?.slug
+    && sourcePointCandidate?.districtSlug === requestedSourceSlug ? sourcePointCandidate : null;
+  const contextName = districtEntity?.canonical_name ?? resolvedSourcePoint?.name ?? cityName;
   const title = cityName === "Maroc" ? "Où vivre au Maroc ?" : contextName;
   const [localContext, setLocalContext] = useState<NeighborhoodContextReadModelV1 | null>(null);
   const [activeContextTab, setActiveContextTab] = useState<"overview" | "local">("overview");
@@ -94,9 +152,11 @@ export function P4MapDecisionRail() {
     ? localContext
       ? `${districtEntity.canonical_name} se découvre ici à travers ${localContext.anchor_count} repère${localContext.anchor_count > 1 ? "s" : ""} public${localContext.anchor_count > 1 ? "s" : ""} sourcé${localContext.anchor_count > 1 ? "s" : ""}. Les biens ne sont cartographiés que lorsqu’une position exacte vérifiée est disponible.`
       : `Découvrez ${districtEntity.canonical_name} par ses repères publics sourcés. Les biens ne sont cartographiés que lorsqu’une position exacte vérifiée est disponible.`
-    : cityName === "Maroc"
-      ? "Explorez les territoires disponibles, puis descendez vers les villes et quartiers avec une précision explicitement qualifiée."
-      : `Explorez ${cityName} et ses quartiers avec des repères sourcés uniquement.`;
+    : resolvedSourcePoint
+      ? `${resolvedSourcePoint.name} est indiqué par un point sourcé, sans frontière de quartier certifiée. Les résultats immobiliers restent à l’échelle de ${cityName}.`
+      : cityName === "Maroc"
+        ? "Explorez les territoires disponibles, puis descendez vers les villes et quartiers avec une précision explicitement qualifiée."
+        : `Explorez ${cityName} et ses quartiers avec des repères sourcés uniquement.`;
 
   return (
     <aside
@@ -124,10 +184,12 @@ export function P4MapDecisionRail() {
 
       <header className="p4-premium-context-header">
         <p className="p4-premium-kicker">
-          {districtEntity ? `${cityName} · Quartier` : "Vivre ici"}
+          {districtEntity ? `${cityName} · Quartier` : resolvedSourcePoint ? `${cityName} · Repère indicatif` : "Vivre ici"}
         </p>
-        <h2>{title}</h2>
-        {districtEntity ? <p className="p4-premium-context-location">Vivre, comprendre, puis chercher</p> : null}
+        <h2 data-p4-map-source-point={resolvedSourcePoint?.districtSlug ?? undefined}>{title}</h2>
+        {districtEntity ? <p className="p4-premium-context-location">Vivre, comprendre, puis chercher</p>
+          : resolvedSourcePoint ? <p className="p4-premium-context-location">Recherche immobilière à l’échelle de {cityName} · limites non certifiées</p>
+          : null}
         <p className="p4-premium-lede">{contextIntro}</p>
         {districtEntity ? (
           <div className="p4-premium-proofline" aria-label="Règles de fiabilité">

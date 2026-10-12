@@ -75,6 +75,44 @@ report.api = {
   certifiedNeighborhoodBoundaryCount: api.meta.certifiedNeighborhoodBoundaryCount,
 };
 
+// Independent source-point canary. This is an existing N2 candidate (never a published boundary).
+const agadirResponse = await fetch(`${baseUrl}/api/geo/national-territories?city=agadir`);
+if (!agadirResponse.ok) throw new Error(`Agadir API ${agadirResponse.status}`);
+const agadir = await agadirResponse.json();
+if (agadir.view !== "city" || agadir.place?.slug !== "agadir") throw new Error("Agadir view missing");
+const alQods = agadir.neighborhoods?.find((item) => item.slug === "al-qods");
+if (!alQods || !isValidCenter(alQods.center)
+  || Math.abs(alQods.center.lat - 30.4177326) > 0.00001
+  || Math.abs(alQods.center.lng - (-9.5551165)) > 0.00001
+  || alQods.boundaryStatus !== "not_claimed" || alQods.publicationStatus !== "label_candidate"
+  || !alQods.sourceKinds?.includes("osm_neighborhood_label")) {
+  throw new Error(`Al Qods independent source gate failed ${JSON.stringify(alQods)}`);
+}
+if (agadir.certifiedNeighborhoodBoundaries?.features?.length !== 0 ||
+  agadir.meta?.certifiedNeighborhoodBoundaryCount !== 0) {
+  throw new Error("Agadir source candidate must not publish an invented quartier polygon");
+}
+
+// Second city canary checks a geo-sourced label, NOT a new certified quartier.
+const tangerResponse = await fetch(`${baseUrl}/api/geo/national-territories?city=tanger`);
+if (!tangerResponse.ok) throw new Error(`Tanger API ${tangerResponse.status}`);
+const tanger = await tangerResponse.json();
+if (tanger.view !== "city" || tanger.place?.slug !== "tanger") throw new Error("Tanger view missing");
+const boukhalef = tanger.neighborhoods?.find((item) => item.slug === "boukhalef");
+if (!boukhalef || boukhalef.name !== "Boukhalef"
+  || !isValidCenter(boukhalef.center)
+  || Math.abs(boukhalef.center.lat - 35.7337667) > 0.00001
+  || Math.abs(boukhalef.center.lng - (-5.8831334)) > 0.00001
+  || boukhalef.boundaryStatus !== "not_claimed"
+  || boukhalef.publicationStatus !== "label_candidate"
+  || !boukhalef.sourceKinds?.includes("osm_neighborhood_label")) {
+  throw new Error(`Boukhalef source-only gate failed ${JSON.stringify(boukhalef)}`);
+}
+if (tanger.certifiedNeighborhoodBoundaries?.features?.length !== 0
+  || tanger.meta?.certifiedNeighborhoodBoundaryCount !== 0) {
+  throw new Error("Tanger source marker cannot invent a quartier polygon");
+}
+
 const browser = await chromium.launch({ headless: true });
 try {
   for (const viewport of viewports) {
@@ -215,8 +253,111 @@ try {
         throw new Error("N2 fallback has no truthful on-map boundary disclaimer");
       }
       await page.screenshot({ path: `${outDir}/sourced-point-${viewport.name}-after.png`, fullPage: false });
+      // No runtime change: verify the already implemented national source-point fallback on another city.
+      await page.goto(`${baseUrl}/map?city=agadir&district=al-qods&layer=explore`, {
+        waitUntil: "domcontentloaded", timeout: 30000,
+      });
+      const agadirMap = page.locator('[data-maplibre-spike][data-maplibre-city="agadir"][data-maplibre-district="al-qods"]');
+      await agadirMap.waitFor({ state: "attached", timeout: 25000 });
+      await page.waitForFunction(() => {
+        const el = document.querySelector('[data-maplibre-spike][data-maplibre-city="agadir"][data-maplibre-district="al-qods"]');
+        return el?.getAttribute("data-maplibre-ready") === "true"
+          && el?.getAttribute("data-maplibre-national-flat") === "akarfinder-national-v1";
+      }, null, { timeout: 25000 });
+      const agadirState = await agadirMap.evaluate((el) => ({
+        reference: el.getAttribute("data-maplibre-point-reference"),
+        boundary: el.getAttribute("data-maplibre-boundary-status"),
+        semantic: el.getAttribute("data-maplibre-boundary-semantic"),
+        focus: el.getAttribute("data-maplibre-focus-semantic"),
+      }));
+      if (agadirState.reference !== "sourced-label-candidate" || agadirState.boundary !== "center-only"
+        || agadirState.semantic !== "none" || agadirState.focus !== "context-focus-not-boundary") {
+        throw new Error(`Al Qods map misrepresents unreviewed boundary ${JSON.stringify(agadirState)}`);
+      }
+      const agadirDisclosure = agadirMap.locator('[data-maplibre-candidate-disclosure="source-indicative"]');
+      await agadirDisclosure.waitFor({ state: "visible", timeout: 6000 });
+      if (!(await agadirDisclosure.innerText()).includes("Limites du quartier non certifiées")) {
+        throw new Error("Al Qods disclaimer missing");
+      }
+      const agadirRail = page.locator('[data-p4-map-decision-rail]');
+      const namedSourceContext = agadirRail.locator('[data-p4-map-source-point="al-qods"]');
+      await namedSourceContext.waitFor({ state: "visible", timeout: 15000 });
+      if ((await namedSourceContext.innerText()).trim() !== "Al Qods") {
+        throw new Error("Al Qods selected source point not named in decision rail");
+      }
+      const rawKicker = (await agadirRail.locator(".p4-premium-kicker").textContent())?.trim() ?? "";
+      if (!rawKicker.includes("Repère indicatif")) {
+        // Capture genuine failure state so we can inspect UI without guessing.
+        await page.screenshot({ path: `${outDir}/agadir-al-qods-${viewport.name}-kicker-diagnostic.png`, fullPage: false });
+        throw new Error(`Al Qods rail semantic kicker mismatch: ${JSON.stringify(rawKicker)}`);
+      }
+      const agadirSearchHref = await agadirRail.locator(".p4-premium-primary-action").getAttribute("href");
+      const searchTarget = new URL(agadirSearchHref ?? "/", baseUrl);
+      if (searchTarget.pathname !== "/search" || searchTarget.searchParams.get("city") !== "Agadir"
+        || searchTarget.searchParams.has("district")) {
+        throw new Error(`Al Qods fabricated certified property district filter ${agadirSearchHref}`);
+      }
+      const agadirOverflow = await page.evaluate(() =>
+        document.documentElement.scrollWidth - document.documentElement.clientWidth);
+      if (agadirOverflow > 1) throw new Error(`Al Qods overflow ${agadirOverflow}`);
+      await page.screenshot({ path: `${outDir}/agadir-al-qods-${viewport.name}-after.png`, fullPage: false });
+      // Verify the genuine 2nd-city source point without changing product runtime.
+      await page.goto(`${baseUrl}/map?city=tanger&district=boukhalef&layer=explore`, {
+        waitUntil: "domcontentloaded", timeout: 30000,
+      });
+      const tangerMap = page.locator('[data-maplibre-spike][data-maplibre-city="tanger"][data-maplibre-district="boukhalef"]');
+      await tangerMap.waitFor({ state: "attached", timeout: 25000 });
+      await page.waitForFunction(() => {
+        const shell = document.querySelector('[data-maplibre-spike][data-maplibre-city="tanger"][data-maplibre-district="boukhalef"]');
+        return shell?.getAttribute("data-maplibre-ready") === "true"
+          && shell?.getAttribute("data-maplibre-national-flat") === "akarfinder-national-v1";
+      }, null, { timeout: 25000 });
+      const tangerState = await tangerMap.evaluate(el => ({
+        reference: el.getAttribute("data-maplibre-point-reference"),
+        boundary: el.getAttribute("data-maplibre-boundary-status"),
+        semantic: el.getAttribute("data-maplibre-boundary-semantic"),
+        focus: el.getAttribute("data-maplibre-focus-semantic"),
+      }));
+      if (tangerState.reference !== "sourced-label-candidate" || tangerState.boundary !== "center-only"
+        || tangerState.semantic !== "none" || tangerState.focus !== "context-focus-not-boundary") {
+        throw new Error(`Boukhalef invents geographic boundaries ${JSON.stringify(tangerState)}`);
+      }
+      const tangerNote = tangerMap.locator('[data-maplibre-candidate-disclosure="source-indicative"]');
+      await tangerNote.waitFor({ state: "visible", timeout: 8000 });
+      if (!(await tangerNote.textContent())?.includes("Limites du quartier non certifiées")) {
+        throw new Error("Boukhalef map source-only disclaimer missing");
+      }
+      const tangerRail = page.locator('[data-p4-map-decision-rail]');
+      const tangerTitle = tangerRail.locator('[data-p4-map-source-point="boukhalef"]');
+      await tangerTitle.waitFor({ state: "visible", timeout: 15000 });
+      if ((await tangerTitle.textContent())?.trim() !== "Boukhalef") {
+        throw new Error("Boukhalef selection context not displayed accurately");
+      }
+      const tangerKicker = (await tangerRail.locator(".p4-premium-kicker").textContent())?.trim() ?? "";
+      if (!tangerKicker.includes("Repère indicatif") || !tangerKicker.includes("Tanger")) {
+        throw new Error(`Boukhalef semantic kicker mismatch: ${JSON.stringify(tangerKicker)}`);
+      }
+      const tangerSearchHref = await tangerRail.locator(".p4-premium-primary-action").getAttribute("href");
+      const tangerSearch = new URL(tangerSearchHref ?? "/", baseUrl);
+      if (tangerSearch.pathname !== "/search" || tangerSearch.searchParams.get("city") !== "Tanger"
+        || tangerSearch.searchParams.has("district")) {
+        throw new Error(`Boukhalef invented property district filter: ${tangerSearchHref}`);
+      }
+      const tangerOverflow = await page.evaluate(() =>
+        document.documentElement.scrollWidth - document.documentElement.clientWidth);
+      if (tangerOverflow > 1) throw new Error(`Boukhalef page overflow ${tangerOverflow}`);
+      await page.screenshot({ path: `${outDir}/tanger-boukhalef-${viewport.name}-after.png`, fullPage: false });
       if (pageErrors.length) throw new Error(`browser page errors ${JSON.stringify(pageErrors)}`);
-      report.cases.push({ viewport: viewport.name, overflow, layerState, featuredSelection: true, mappedSelection: "route-handoff", noCenterFallback: true, searchHandoff: true, sourcedCandidate: { slug: candidatePoint.slug, name: candidatePoint.name, center: candidatePoint.center, sourceKinds: candidatePoint.sourceKinds } });
+      report.cases.push({ viewport: viewport.name, overflow, layerState, featuredSelection: true,
+        mappedSelection: "route-handoff", noCenterFallback: true, searchHandoff: true,
+        agadirAlQods: { center: alQods.center, sourceOnly: true,
+          disclosure: true, browserReady: true, contextualRail: true,
+          cityOnlySearchHandoff: true, horizontalOverflow: agadirOverflow },
+        tangerBoukhalef: { center: boukhalef.center, sourceOnly: true,
+          disclaimerVisible: true, sourceSemantics: tangerState, namedSelection: true,
+          cityOnlySearchHandoff: true, historicalAdminIdentityStillOnHold: true,
+          horizontalOverflow: tangerOverflow },
+        sourcedCandidate: { slug: candidatePoint.slug, name: candidatePoint.name, center: candidatePoint.center, sourceKinds: candidatePoint.sourceKinds } });
     } catch (error) {
       report.failure = { viewport: viewport.name, error: String(error) };
       throw error;
