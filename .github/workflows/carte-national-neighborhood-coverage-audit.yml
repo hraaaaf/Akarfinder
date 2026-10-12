@@ -39,6 +39,12 @@ jobs:
           assert(report.parentGroupCount > 0);
           assert(report.registeredCityStats.length === 8);
           assert(report.byParent.length === report.parentGroupCount);
+          // V5 per-place legacy totals are a different metric than decoded N2 labels.
+          assert.equal(report.sourceCountDefinitionAudit.placeDeclaredCount, 10799);
+          assert.equal(report.sourceCountDefinitionAudit.legacyStaticCount, 10799);
+          assert.equal(report.sourceCountDefinitionAudit.staticVsPlaceDeclarationDelta, 0);
+          assert.equal(report.sourceCountDefinitionAudit.n2DecodedSourceRowCount, report.sourceLabelRows);
+          assert.equal(report.sourceCountDefinitionAudit.decodedRowsVsLegacyStaticDelta, 614);
           console.log("source labels:", report.sourceLabelRows, "centered:", report.validCenterRows, "missing:", report.missingCenterRows);
           NODE
       - name: Fail-closed source review artifact contract
