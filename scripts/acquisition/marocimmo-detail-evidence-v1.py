@@ -103,20 +103,39 @@ def parse_primary_html(html,page):
     if value.is_integer() and 500<=value<=1000000000:prices.add(int(value))
    except (ValueError,TypeError,OverflowError):pass
   if len(prices)==1:field['price_mad']=next(iter(prices))
-  size=x.get('floorSize') or x.get('floor_size')
-  if isinstance(size,dict) and str(size.get('unitCode') or '').upper()=='MTK':
+  main=x.get('mainEntity')
+  nested_id=(main or {}).get('@id') if isinstance(main,dict) else None
+  attached_main=isinstance(main,dict) and (not nested_id or isinstance(nested_id,str) and
+    (nested_id.startswith('#') or normalize_ref(nested_id)==page.rstrip('/')))
+  if not attached_main:main={}
+  nested_address=main.get('address')
+  nested_place=main.get('containedInPlace')
+  shape['main_address_keys']=sorted(str(k) for k in nested_address.keys()) if isinstance(nested_address,dict) else []
+  shape['main_place_kind']=type(nested_place).__name__
+  shape['main_place_keys']=sorted(str(k) for k in nested_place.keys()) if isinstance(nested_place,dict) else []
+  shape['nested_identity_accepted']=bool(attached_main)
+  def structured_area(value):
+   if not isinstance(value,dict) or str(value.get('unitCode') or '').upper()!='MTK':return None
    try:
-    value=float(size.get('value'))
-    if 5<=value<=100000:field['surface_m2']=value
-   except (TypeError,ValueError,OverflowError):pass
-  if field['surface_m2'] is None:field['surface_m2']=unique_primary_description_area(x.get('description'))
+    n=float(value.get('value'))
+    return n if 5<=n<=100000 else None
+   except (TypeError,ValueError,OverflowError):return None
+  primary_area=structured_area(x.get('floorSize') or x.get('floor_size'))
+  nested_area=structured_area(main.get('floorSize') or main.get('floor_size'))
+  description_area=unique_primary_description_area(x.get('description'))
+  name_area=unique_primary_description_area(x.get('name'))
+  areas=set(v for v in (primary_area,nested_area,description_area,name_area) if v is not None)
+  shape['area_evidence_sources']=[name for name,value in [('root_floorSize',primary_area),('main_floorSize',nested_area),('primary_description',description_area),('primary_name',name_area)] if value is not None]
+  area_conflict=len(areas)>1
+  field['surface_m2']=next(iter(areas)) if len(areas)==1 else None
   address=x.get('address')
+  if not isinstance(address,dict):address=nested_address
   if isinstance(address,dict):
    for key,target in [('addressLocality','city'),('neighborhood','district')]:
-    v=address.get(key)
-    if isinstance(v,str) and 2<=len(v.strip())<=75 and not re.search(r'[@\d]',v):field[target]=v.strip()
+    value=address.get(key)
+    if isinstance(value,str) and 2<=len(value.strip())<=75 and not re.search(r'[@\d]',value):field[target]=value.strip()
  return {'primary_structured_nodes_matching_url':len(matched),'jsonld_nodes_total':len(nodes),
-   'fields':field,'schema_shape_only':shape,'fields_present':sum(v is not None for v in field.values()),
+   'fields':field,'surface_evidence_conflict':len(areas)>1 if len(matched)==1 else False,'schema_shape_only':shape,'fields_present':sum(v is not None for v in field.values()),
    'complete_four_detail_fields':all(v is not None for v in field.values()) and len(matched)==1,
    'title_observed':bool(info.meta.get('title') or info.meta.get('og:title')),
    'freshness_certified':False,'availability_certified':False,'physical_uniqueness_certified':False}

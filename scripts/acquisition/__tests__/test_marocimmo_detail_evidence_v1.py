@@ -38,4 +38,24 @@ class Audit(unittest.TestCase):
    html='<script type="application/ld+json">'+json.dumps({'@type':'RealEstateListing','url':P,'offers':{'price':900000,'priceCurrency':'MAD'},'description':description})+'</script>'
    self.assertIsNone(mod.parse_primary_html(html,P)['fields']['surface_m2'])
 
+ def test_nested_primary_property_fields_and_conflict_quarantine(self):
+  import json
+  main={'@id':P+'#property','@type':'Apartment','floorSize':{'value':89,'unitCode':'MTK'},
+   'address':{'addressLocality':'Marrakech','neighborhood':'Guéliz'}}
+  primary={'@type':'RealEstateListing','url':P,'offers':{'price':1200000,'priceCurrency':'MAD'},'mainEntity':main}
+  html='<script type="application/ld+json">'+json.dumps(primary)+'</script>'
+  row=mod.parse_primary_html(html,P)
+  self.assertEqual(row['fields']['surface_m2'],89)
+  self.assertEqual(row['fields']['city'],'Marrakech')
+  self.assertEqual(row['fields']['district'],'Guéliz')
+  self.assertTrue(row['complete_four_detail_fields'])
+  primary['description']='Superficie 120 m²'
+  conflicted=mod.parse_primary_html('<script type="application/ld+json">'+json.dumps(primary)+'</script>',P)
+  self.assertTrue(conflicted['surface_evidence_conflict'])
+  self.assertIsNone(conflicted['fields']['surface_m2'])
+  main['@id']='https://www.marocimmo.com/fr/annonces/other-222#property'
+  isolated=mod.parse_primary_html('<script type="application/ld+json">'+json.dumps(primary)+'</script>',P)
+  self.assertFalse(isolated['schema_shape_only']['nested_identity_accepted'])
+  self.assertIsNone(isolated['fields']['city'])
+
 if __name__=='__main__':unittest.main()
