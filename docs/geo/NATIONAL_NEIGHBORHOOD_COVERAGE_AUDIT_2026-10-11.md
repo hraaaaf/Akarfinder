@@ -29,7 +29,7 @@
 | Validated map-eligible canonical neighborhoods | **17 across 8 cities** |
 | Reviewed/published actual neighborhood polygon boundaries | **0** |
 
-**Important discrepancy:** `NATIONAL_TERRITORY_META.neighborhoodCount` is statically **10,799**, but decoding the eight actual N2 chunks yields **11,413 rows**, a difference of **614**. These counters must not be conflated. Neither count means certified unique Moroccan neighborhoods.
+**Count-definition distinction (resolved by CI 38263795893):** `NATIONAL_TERRITORY_META.neighborhoodCount = 10,799` equals the sum of V5 `place.neighborhoodCount` declarations across 341 places, whereas eight N2 chunks decode to **11,413 label rows** (+614). The producer reason for extra rows is unproven. Neither metric means distinct certified Moroccan neighborhoods.
 
 ## CITY CANDIDATES — NOT VALIDATED NEIGHBORHOODS
 
@@ -67,7 +67,7 @@ This PR [#1111](https://github.com/hraaaaf/Akarfinder/pull/1111) remains **DRAFT
 ## NEXT EXACT / REMAINING SEQUENCE
 
 1. Produce a read-only **23-parent reconciliation matrix** from the CSV: city alias/spelling, available `places-0` candidates, exact source provenance and whether the runtime key mismatch is reproducible. First prioritize **El Jadida** and **Mohammedia**. No speculative joins.
-2. Fix and test the stale `10,799` meta count against the actual packed source count (do not silently change upstream data). Keep **raw**, **mapped** and **centered** metrics distinct.
+2. Distinguish and test the **declared V5 place count 10,799** from the **decoded N2 label rows 11,413**, and trace original producer reasons for +614 before proposing any metadata change. Keep **declared**, **raw**, **mapped** and **centered** metrics distinct.
 3. Qualify the **323** centered name candidates in the seven currently joined cities by unique city-scoped identity; separate axes, landmarks, districts, neighborhoods and aliases. Review source attribution and ODbL requirements.
 4. Only after source qualification, add or enable each validated center through the existing shared MapLibre engine. Do not infer polygon boundaries or force `map_eligible` from names alone.
 5. For any product UI change: BEFORE, TARGET, 390/430/768/1280 AFTER, compare, accessibility and actual tile/POI checks. Maintain unrelated PR gates and explicit merge/Vercel human authorization.
@@ -134,7 +134,7 @@ Next: introduce a deterministic, collision-checked candidate parent alias matrix
 2. Measure whether each proposed parent is actually geographically consistent with the source point, checking city-boundary/topology and name classification; reject locations outside defensible city scope.
 3. Test an incremental canary of a small source-backed candidate set on the shared map, preserving clear "limites non certifiées" semantics. Capture BEFORE/AFTER on 390/430/768/1280 and assess density/performance (especially El Jadida).
 4. Only after those gates consider activating source-backed locality points. Certified neighbourhoods remain **17/8**, not 1,648 or 1,644.
-5. Keep source/meta mismatch `10,799` versus `11,413` as a separate contract fix.
+5. Treat 10,799 declared place-count versus 11,413 decoded N2 rows as separate proven metrics; retain separate producer-provenance investigation for their +614 difference, not an automatic patch.
 
 **Status:** SOURCE COVERAGE INVENTORY AND STRICT NORMALIZATION DIAGNOSTIC VERIFIED. **National neighborhood coverage is not expanded/merged/deployed.**
 
@@ -239,7 +239,7 @@ The independent source-only pilot [child PR #1112](https://github.com/hraaaaf/Ak
 
 **Proof:** exact HEAD GitHub CI #38106898114, its machine-readable report and screenshots, BEFORE/AFTER image comparison. **This pilot goal is met on the draft branch only.**
 
-**Remaining national expansion sequence:** (1) candidate original OSM ID + semantic classification; (2) correct and test 10,799 vs 11,413 metadata contract without falsely equating labels to quartiers; (3) review 16 out-of-polygon + 4 orphan points; (4) city-by-city small cohorts with 4-viewport UX proof; (5) source licensing, performance/accessibility, PR checks; (6) permitted merge/post-merge and separate explicit Vercel deployment approval if needed. Never claim 323 names or 1,628 centered points are certified neighborhoods.
+**Remaining national expansion sequence:** (1) candidate original OSM ID + semantic classification; (2) preserve tested 10,799 vs 11,413 distinct metric definitions and investigate +614 producer provenance without falsely equating labels to quartiers; (3) review 16 out-of-polygon + 4 orphan points; (4) city-by-city small cohorts with 4-viewport UX proof; (5) source licensing, performance/accessibility, PR checks; (6) permitted merge/post-merge and separate explicit Vercel deployment approval if needed. Never claim 323 names or 1,628 centered points are certified neighborhoods.
 
 
 ## TANGER BOUKHALEF — SOURCE-IDENTITY GATE (2026-10-12)
