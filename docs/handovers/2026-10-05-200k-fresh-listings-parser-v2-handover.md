@@ -484,3 +484,8 @@ Yakeey : CI `38263205111` offline 6/6 ✅ mais crawl ❌ `robots_unavailable_fai
 ## Index agrégateur national — Kaynly source links (2026-10-12)
 
 Source publique Kaynly (relevé 11 octobre 2026) affiche environ 104 157 offres agrégées de 5 portails; **attention, ce n'est PAS un lot de 104k annonces nouvelles certifiées**, car forte superposition possible aux sources historiques. Création d'un canari `scripts/data/kaynly-source-link-canary-v1.mjs` + tests + workflow `.github/workflows/kaynly-source-link-canary-v1.yml`, sur seulement vente/location Casablanca (2 pages max), pour observer des liens vers les vraies sources sans lire les détails ni inférer 5 champs. Respect du filtrage d'hôte, robots fail-closed, stop 403/429, DB 0, aucun déploiement. Documentation `docs/data/AKARFINDER_KAYNLY_SOURCE_LINK_V1.md`. **Attendre CI/artifact avant tout nouveau compteur.**
+
+
+## MarocImmo public sitemap — nouveau lot 2026-10-12
+
+Le run [38263798989](https://github.com/hraaaaf/Akarfinder/actions/runs/38263798989) ✅, artifact `11754530380`, confirme robots HTTP200, sitemap déclaré `https://www.marocimmo.com/sitemap.xml`, deux pages publiques vente et location HTTP200 (308 ventes + 209 locations **comptées par le site**, non des IDs/actifs certifiés), 0 fiche détail, 0 DB. Le détecteur historique retournait 0 liens détail sur HTML (expression trop restrictive), donc **ne pas déduire absence d'annonces**. Pivot vers sitemap réel déclaré, `scripts/acquisition/marocimmo-sitemap-enumeration.py` limité par workflow à 8 XML, 1.5s entre documents, robots fail closed et artifact même si erreur. Nouveau run/artifact à inspecter avant toute inclusion au ledger.
