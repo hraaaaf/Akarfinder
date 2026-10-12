@@ -17,7 +17,7 @@ function route(row){
   const m=url.pathname.match(/^\/fr\/([a-z-]+)\/(vendre|louer)\/([a-z-]+)\/(\d+)\/[^/?#]+\/?$/i);
   if(!m)return {error:'unsupported_source_route'};
   if(row.identity!=='domio:'+m[4])return{error:'source_identity_url_mismatch'};
-  const s=u.pathname.split('/').at(-1).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+  const s=url.pathname.split('/').at(-1).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
   const slugRent=/(?:^|[-_])(?:a[-_]louer|location)(?:[-_]|$)/i.test(s),slugSale=/(?:^|[-_])(?:a[-_]vendre|vente)(?:[-_]|$)/i.test(s);
   return{adapter:'domio_card_v1',transaction:m[2]==='vendre'?'sale':'rent',property_type:m[1],city_slug:m[3],transaction_slug_conflict:m[2]==='vendre'?slugRent:slugSale};
  }
