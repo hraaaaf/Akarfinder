@@ -7,6 +7,8 @@ on:
       - '.github/workflows/card-acquisition-ledger-v1.yml'
       - 'scripts/data/card-acquisition-ledger-v1.mjs'
       - 'scripts/data/__tests__/card-acquisition-ledger-v1.test.mjs'
+      - 'scripts/data/listing-tamis-v1.mjs'
+      - 'scripts/data/__tests__/listing-tamis-v1.test.mjs'
   workflow_dispatch:
 permissions:
   contents: read
@@ -32,7 +34,7 @@ jobs:
         with:
           node-version: 24
       - name: Offline provenance, ambiguity and dedup regression suite
-        run: node --test scripts/data/__tests__/card-acquisition-ledger-v1.test.mjs
+        run: node --test scripts/data/__tests__/card-acquisition-ledger-v1.test.mjs scripts/data/__tests__/listing-tamis-v1.test.mjs
       - uses: actions/download-artifact@v4
         with:
           name: mubawab-mass-acquisition-50
@@ -116,6 +118,20 @@ jobs:
           if(rows.filter(r=>r.cross_run_conflicts.length>0).length!==report.cross_run_conflict_rows)throw Error('Conflict mismatch');
           console.log('ACQUISITION_LEDGER_TESTED',rows.length);
           NODE
+      - name: Check individual tamis gates before immutable snapshot candidate export
+        run: |
+          set -euo pipefail
+          jq -e '.source_ids_inspected == 9745 and (.candidate_snapshot_pass + .quarantined_for_repair_or_review) == .source_ids_inspected and .publishable_count == 0 and .database_writes == 0 and .production_published == 0' acquisition-ledger-v1.tamis.json
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const read=p=>fs.readFileSync(p,'utf8').split(/\r?\n/).filter(Boolean).map(JSON.parse);
+          const all=read('acquisition-ledger-v1.jsonl'),good=read('acquisition-ledger-v1.snapshot-candidates.jsonl'),hold=read('acquisition-ledger-v1.quarantine.jsonl');
+          if(all.length!==9745||good.length+hold.length!==all.length)throw Error('unaccounted listing');
+          if(good.some(x=>x.tamis.decision!=='candidate_snapshot_pass'||!x.tamis.card_snapshot_sha256||x.tamis.production_publishable))throw Error('unsafe snapshot candidate');
+          if(hold.some(x=>x.tamis.decision==='candidate_snapshot_pass'||x.tamis.card_snapshot_sha256))throw Error('unsafe hold');
+          if(new Set(all.map(x=>x.source+'|'+x.identity)).size!==all.length)throw Error('duplicated source id');
+          console.log('TAMIS_PER_LISTING_VERIFIED',all.length,good.length,hold.length);
+          NODE
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -123,4 +139,7 @@ jobs:
           path: |
             acquisition-ledger-v1.json
             acquisition-ledger-v1.jsonl
+            acquisition-ledger-v1.tamis.json
+            acquisition-ledger-v1.snapshot-candidates.jsonl
+            acquisition-ledger-v1.quarantine.jsonl
           retention-days: 21

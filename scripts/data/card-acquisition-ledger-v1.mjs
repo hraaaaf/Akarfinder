@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
+import { tamisReport } from './listing-tamis-v1.mjs';
 
 const FIELDS = ['city', 'district', 'price_mad', 'surface_m2'];
 const INPUTS = [
@@ -79,6 +80,11 @@ export function consolidateCardObservations(inputs) {
     }
     const item = {
       ...clean, observation_count: entries.length,
+      complete_card_evidence: [...new Map(completeCards.map(e => {
+        const r=e.row;
+        const card_sha256=createHash('sha256').update(JSON.stringify([e.source,r.identity,r.canonical_url||r.url,r.city,r.district,r.price_mad,r.surface_m2])).digest('hex');
+        return [e.key+'|'+card_sha256,{artifact_key:e.key,card_sha256}];
+      })).values()].sort((a,b)=>a.artifact_key.localeCompare(b.artifact_key)||a.card_sha256.localeCompare(b.card_sha256)),
       observed_in: [...new Set(entries.map(x => x.key))].sort(),
       cross_run_conflicts: conflictingFields,
       five_field_observed_consistent: complete,
@@ -125,7 +131,9 @@ export function consolidateCardObservations(inputs) {
     database_access: 0, database_writes: 0, production_published_count: 0,
     note: 'Candidate signatures are NOT proof of same property; no cross-source merging or publication. Every listing remains review until activity, uniqueness and usage rights are established.',
   };
-  return { report, rows };
+  const tamis = tamisReport(rows);
+  report.tamis_summary = {source_ids_inspected:tamis.summary.source_ids_inspected,candidate_snapshot_pass:tamis.summary.candidate_snapshot_pass,quarantined_for_repair_or_review:tamis.summary.quarantined_for_repair_or_review};
+  return { report, rows: tamis.inspected, tamis };
 }
 export async function readLedgerInputs(env = process.env) {
   const inputs = [];
@@ -141,11 +149,14 @@ export async function readLedgerInputs(env = process.env) {
 }
 async function main() {
   const inputs = await readLedgerInputs();
-  const { report, rows } = consolidateCardObservations(inputs);
+  const { report, rows, tamis } = consolidateCardObservations(inputs);
   report.input_sha256 = Object.fromEntries(inputs.map(x => [x.key, x.sha256]));
   const prefix = process.env.OUTPUT_PREFIX || 'acquisition-ledger-v1';
   await fs.writeFile(prefix + '.json', JSON.stringify(report, null, 2) + '\n');
   await fs.writeFile(prefix + '.jsonl', rows.map(r => JSON.stringify(r)).join('\n') + '\n');
+  await fs.writeFile(prefix + '.tamis.json', JSON.stringify(tamis.summary,null,2)+'\n');
+  await fs.writeFile(prefix + '.snapshot-candidates.jsonl', tamis.passed.map(r=>JSON.stringify(r)).join('\n')+(tamis.passed.length?'\n':''));
+  await fs.writeFile(prefix + '.quarantine.jsonl', tamis.quarantine.map(r=>JSON.stringify(r)).join('\n')+(tamis.quarantine.length?'\n':''));
   console.log(JSON.stringify({ ...report, input_sha256: undefined }, null, 2));
   if (rows.length === 0) process.exitCode = 2;
 }
