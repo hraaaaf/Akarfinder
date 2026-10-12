@@ -22,6 +22,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
+      - name: Test Python syntax and explicit robot identity before network requests
+        run: python -m py_compile scripts/acquisition/marocimmo-sitemap-enumeration.py
       - name: Enumerate MarocImmo public sitemap only
         run: python scripts/acquisition/marocimmo-sitemap-enumeration.py
       - name: Verify read-only proof
