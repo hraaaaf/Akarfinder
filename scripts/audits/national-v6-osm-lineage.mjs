@@ -5,7 +5,8 @@ import assert from "node:assert/strict";
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { join, resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { brotliDecompressSync } from "node:zlib";
+import { brotliCompressSync, brotliDecompressSync } from "node:zlib";
+import { createHash } from "node:crypto";
 const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),"../..");
 export const HISTORICAL={runId:32634250993, producerSha:"1aa0f033fefc16bb1fd8981c055f37756b3ba714",
  total:11665, osm:1900, postal:9765, osmUniqueBoundaryParent:1734,
@@ -21,6 +22,42 @@ function idParts(row) {
   if(!m || !Number.isSafeInteger(Number(m[2]))) throw new Error("Invalid stable OSM identity "+row.id);
   return {type:m[1], id:Number(m[2]),key:m[1]+":"+m[2]};
 }
+// Identity-preserving future V6 pack: never rederive ID from slug/name/center.
+export function packV6Provenance(sourceRows) {
+  assert(Array.isArray(sourceRows),"V6 source rows must be an array");
+  const seen=new Set();
+  for(const row of sourceRows){
+    const id=row?.sourceIdentity?.originalId;
+    if(typeof id!=="string"||!id)throw new Error("Missing source original ID");
+    if(seen.has(id))throw new Error("Duplicate original source ID "+id);
+    seen.add(id);
+    if(row.review?.publicationStatus!==CORE_STATUS||row.review?.mapEligible!==false||
+       row.review?.districtListingFilterAllowed!==false||row.review?.neighborhoodPolygon!==null)
+       throw new Error("V6 pack must never auto-promote "+id);
+    if(row.sourceIdentity.kind==="osm_neighborhood_label") {
+      const p=idParts({id});
+      if(row.sourceIdentity.osmType!==p.type||row.sourceIdentity.osmId!==p.id)
+        throw new Error("V6 identity drift "+id);
+    }else if(row.sourceIdentity.kind!=="barid_postal_neighborhood"||!id.startsWith("barid:")){
+      throw new Error("Unsupported candidate source");
+    }
+  }
+  const payload=JSON.stringify({schema:"national-v6-provenance-pack-v1",rows:sourceRows});
+  const hash=createHash("sha256").update(payload).digest("hex");
+  return {compressed:brotliCompressSync(Buffer.from(payload,"utf8")),sha256:hash,rowCount:sourceRows.length};
+}
+export function unpackV6Provenance(compressed,expectedSha256) {
+  const text=brotliDecompressSync(compressed).toString("utf8");
+  const hash=createHash("sha256").update(text).digest("hex");
+  if(expectedSha256!==hash)throw new Error("V6 source checksum mismatch");
+  const packet=JSON.parse(text);
+  if(packet.schema!=="national-v6-provenance-pack-v1"||!Array.isArray(packet.rows))
+    throw new Error("Invalid V6 source envelope");
+  // Validate each identity and all fail-closed properties through the same packing checks.
+  packV6Provenance(packet.rows);
+  return packet.rows;
+}
+
 export function centerKey(name,center) {
   assert.equal(typeof name,"string");
   assert(center&&Number.isFinite(center.lng)&&Number.isFinite(center.lat),"Center missing");
@@ -154,11 +191,16 @@ export function assessHistoricalDelta(n2Rows,sourceRows) {
     ...baseline,missingOsmObjectIds:null,exactMissingReason:null,
     next:"Recover exact historical neighborhoods.json; do not claim exact 252 objects identified"};
   const v6=sourceRows.map(toV6SourceRecord);
+  const packedV6=packV6Provenance(v6);
+  const unpackedV6=unpackV6Provenance(packedV6.compressed,packedV6.sha256);
+  assert.deepEqual(unpackedV6,v6,"V6 source identities and parent provenance lost on roundtrip");
   const result=reconcileOsmRows(sourceRows,n2Rows);
   return {status:"source_identity_reconciliation_completed_requires_review",
     proofLevel:"tuple_matching_unique_only_not_source_feature_id_in_pack",
     ...baseline,reconciliation:result,stableIdentityRecordCount:v6.length,
-    identityDistinctCount:new Set(v6.map(r=>r.sourceIdentity.originalId)).size,v6};
+    identityDistinctCount:new Set(v6.map(r=>r.sourceIdentity.originalId)).size,
+    v6PackedSha256:packedV6.sha256,v6PackedBytes:packedV6.compressed.length,
+    v6RoundTripVerified:true,v6};
 }
 function main(){
   const output=join(ROOT,"data/audits/national-neighborhood-coverage");

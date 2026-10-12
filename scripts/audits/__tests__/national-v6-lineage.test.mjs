@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { toV6SourceRecord,reconcileOsmRows,decodePackedN2,assessHistoricalDelta,centerKey } from "../national-v6-osm-lineage.mjs";
+import { toV6SourceRecord,reconcileOsmRows,decodePackedN2,assessHistoricalDelta,centerKey,packV6Provenance,unpackV6Provenance } from "../national-v6-osm-lineage.mjs";
 function osm(id,name,lng,lat,parent="casablanca") {
   return {id:"osm:node:"+id,name,sourceKinds:["osm_neighborhood_label"],
     normalizedName:name.toLowerCase(),center:{lng,lat},parentCity:parent,parentCityNormalized:parent};
@@ -65,3 +65,27 @@ test("coordinate match key is not an original OSM feature ID",()=>{
   assert.equal(centerKey("Maârif",{lng:-7.64,lat:33.58}),"maarif|-7.6400000|33.5800000");
 });
 
+
+test("V6 packed compression roundtrips exact IDs, parent keys and HOLD semantic",()=>{
+  const x=toV6SourceRecord(osm(1889,"Alpha",1,2,"casablanca"));
+  const y=toV6SourceRecord({id:"barid:rabat:agdal",name:"Agdal",
+    sourceKinds:["barid_postal_neighborhood"],center:null,parentCity:"Rabat",
+    parentCityNormalized:"rabat"});
+  const bundle=packV6Provenance([x,y]);
+  const decoded=unpackV6Provenance(bundle.compressed,bundle.sha256);
+  assert.deepEqual(decoded,[x,y]);
+  assert.equal(decoded[0].sourceIdentity.originalId,"osm:node:1889");
+  assert.equal(decoded[0].parentProvenance.sourceNormalizedParentKey,"casablanca");
+  assert.equal(decoded[0].review.publicationStatus,"hold_no_publication");
+  assert.equal(decoded[1].sourceIdentity.originalId,"barid:rabat:agdal");
+});
+test("V6 pack refuses accidental duplicate original IDs and forged publication",()=>{
+  const x=toV6SourceRecord(osm(128,"X",1,2));
+  assert.throws(()=>packV6Provenance([x,x]),/Duplicate original source ID/);
+  assert.throws(()=>packV6Provenance([{...x,review:{...x.review,mapEligible:true}}]),/auto-promote/);
+});
+test("V6 compressed packet refuses checksum mismatches before parsing",()=>{
+  const x=toV6SourceRecord(osm(128,"X",1,2));
+  const p=packV6Provenance([x]);
+  assert.throws(()=>unpackV6Provenance(p.compressed,"deadbeef"),/checksum/);
+});
