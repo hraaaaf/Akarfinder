@@ -50,3 +50,10 @@ A fresh download of Geofabrik "morocco-latest.osm.pbf" is **mutable** and cannot
 The source contract now includes **implemented** pack/unpack functions on the shadow side only: `packV6Provenance` and `unpackV6Provenance`. They use Brotli, SHA-256 of the complete source JSON envelope, immutable original OSM IDs, parent name/key and method, explicit nullable OSM tags/relation IDs and fail-closed HOLD semantics. They assert unique IDs and reject any `mapEligible=true` or invented property district filter.
 
 [Exact-code CI #38267505881](https://github.com/hraaaaf/Akarfinder/actions/runs/38267505881) **SUCCESS** at `a1939bae18c864c8b096e0c9c017e7b08dcc26d7`: **12 deterministic tests / 12 passed**, real packed N2 count `11,413=1,648 OSM + 9,765 Barid`, delta `252` and source-artifact BLOCKED contract verified. This is **not** an activated V6 runtime or a completed historical per-object 252 audit.
+
+
+## Final evidence: real provenance fields survive the codec
+
+Beyond the frozen V5 null source-tag/relation placeholders, a synthetic V6 source record with a non-null OSM place tag, original node ID and non-null parent candidate boundary relation ID was compressed and decoded **with all these exact fields preserved and HOLD unchanged**.
+
+[Exact-code run 38267985081](https://github.com/hraaaaf/Akarfinder/actions/runs/38267985081) **SUCCESS**, 13/13 adversarial tests on commit `8c28204dc6b6b2678b0f8795b27c14a0b87f5a72`. This does **not** recover identifiers absent from the original compact N2 source, and it does not validate any individual omission among the historical 252.
