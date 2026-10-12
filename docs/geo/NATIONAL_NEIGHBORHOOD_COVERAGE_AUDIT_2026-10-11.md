@@ -278,3 +278,27 @@ The browser also revalidated Casablanca/Maârif and Agadir/Al Qods regression ch
 - **Not proven/not permitted:** current official Boukhalef quartier boundaries, automatic equivalence of OSM node 1999241428 and GeoNames 2572146, modern administrative classification, SEO eligibility, production publication, nationwide rollout.
 - **Release posture:** source record **HOLD**, map pilot DRAFT, no DB write, no merge, no Vercel deploy, no additional canonical `map_eligible` entity; 17 neighborhoods across 8 cities unchanged.
 - **Next:** tackle evidence-first normalized parent backlog and semantics/OSM original IDs before any bulk visual or source expansion. Review national metadata mismatch `10,799` static vs `11,413` decoded source rows as different unverified definitions, not an arithmetic patch by assumption. Visual 10/10 convergence remains an independent UI scope and requires BEFORE/TARGET/AFTER.
+
+
+## V5 vs N2 COUNTER DEFINITION — DIRECT SOURCE PROOF (2026-10-12)
+
+The older metadata field `NATIONAL_TERRITORY_META.neighborhoodCount = 10799` is **not the same population** as the N2 packed label rows. We must neither overwrite it with 11413 nor claim the latter as verified distinct neighborhoods.
+
+A read-only cross-check was added to `scripts/audits/national-neighborhood-coverage.mjs` and run on the exact packed V5 source and runtime declarations:
+
+| Metric definition | Verified value | Where derived |
+|---|---:|---|
+| Historical `neighborhoodCount` in `NATIONAL_TERRITORY_META` | **10,799** | Fixed runtime legacy aggregate |
+| Sum of `neighborhoodCount` across all **341** V5 `places-0` records | **10,799** | Decoded packed V5 city/place declarations |
+| Row count after decoding all **93** N2 neighborhood parent groups | **11,413** | Independently decoded N2 array lengths |
+| Difference (N2 source rows minus V5 legacy place-count sum) | **+614** | Verified arithmetic (not a proven data-loss/correction) |
+| N2 distinct **normalized parent+name** combinations | **11,307** | Separate deduplicated-name approximation; not certified places |
+| Map-eligible canonical neighborhoods | **17** (8 cities) | Separately validated geo registry |
+
+**[CI 38263795893](https://github.com/hraaaaf/Akarfinder/actions/runs/38263795893) SUCCESS** on source-audit HEAD `3a8955a9d3ae527064981214c4e539824137d153`, output `sourceCountDefinitionAudit` confirms exact equality **10,799 = legacy static = sum of place declarations** and **11,413 = decoded N2 label rows**.
+
+**Interpretation bounded by evidence:** these are **two different stored counter definitions**. This audit does not demonstrate why exactly 614 more N2 rows were produced, what historical V5 producer filtering contract applied, or whether the difference includes duplicates, additional source tiers or other data. The earlier wording "metadata mismatch" is *not sufficient* to declare a runtime bug. Never silently patch the static count.
+
+**CI contract strengthened** on `27d84e269097d5ab5191e9e3d38f7edc428ae627`: for this frozen V5 source, require static and city/place-declared counts both 10,799, require N2 decoded rows match report 11,413, assert the +614 derived delta. Exact-run CI [38263960017](https://github.com/hraaaaf/Akarfinder/actions/runs/38263960017) **queued at this documentation checkpoint**. No product runtime/UI/DB changes.
+
+**Next exact:** certify the CI contract, and only if needed trace the original V5 producer to explain +614. Separate *source volume*, *candidate georeferenced points*, and *legally certified map neighborhoods* in all product KPIs.
