@@ -45,3 +45,8 @@ A fresh download of Geofabrik "morocco-latest.osm.pbf" is **mutable** and cannot
 **Proof:** exact-head CI run, JSON artifact, immutable historical build log and GitHub artifact availability request.
 
 **Next exact:** recover historical neighborhoods.json (or immutable source snapshot provenance) to run ID-level V5→N2 reconciliation and demonstrate the actual absent IDs, then design a producer that carries IDs, source tags, and polygon-parent relation candidates through the pack. No runtime publication, no merge/deploy without subsequent gates.
+## Verified round-trip implementation and CI — 2026-10-12
+
+The source contract now includes **implemented** pack/unpack functions on the shadow side only: `packV6Provenance` and `unpackV6Provenance`. They use Brotli, SHA-256 of the complete source JSON envelope, immutable original OSM IDs, parent name/key and method, explicit nullable OSM tags/relation IDs and fail-closed HOLD semantics. They assert unique IDs and reject any `mapEligible=true` or invented property district filter.
+
+[Exact-code CI #38267505881](https://github.com/hraaaaf/Akarfinder/actions/runs/38267505881) **SUCCESS** at `a1939bae18c864c8b096e0c9c017e7b08dcc26d7`: **12 deterministic tests / 12 passed**, real packed N2 count `11,413=1,648 OSM + 9,765 Barid`, delta `252` and source-artifact BLOCKED contract verified. This is **not** an activated V6 runtime or a completed historical per-object 252 audit.
