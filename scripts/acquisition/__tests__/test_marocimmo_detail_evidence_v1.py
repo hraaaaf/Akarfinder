@@ -26,3 +26,10 @@ class Audit(unittest.TestCase):
   html='<script type="application/ld+json">'+__import__('json').dumps({'@type':'RealEstateListing','url':P,'offers':{'price':1200000,'priceCurrency':'MAD'},'floorSize':{'value':89,'unitCode':'MTK'},'address':{'addressLocality':'Marrakech'}})+'</script>'
   r=mod.parse_primary_html(html,P);self.assertIsNone(r['fields']['district']);self.assertFalse(r['complete_four_detail_fields'])
 if __name__=='__main__':unittest.main()
+
+ def test_schema_shape_does_not_substitute_missing_values(self):
+  import json
+  html='<script type="application/ld+json">'+json.dumps({'@type':'RealEstateListing','url':P,'description':'Appartement 62 m2','offers':{'price':8100,'priceCurrency':'MAD'},'address':{'addressLocality':'Marrakech'}})+'</script>'
+  row=mod.parse_primary_html(html,P)
+  self.assertTrue(row['schema_shape_only']['has_labeled_area_in_description'])
+  self.assertIsNone(row['fields']['surface_m2'])

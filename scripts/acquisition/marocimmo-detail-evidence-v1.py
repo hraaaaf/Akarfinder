@@ -67,7 +67,18 @@ def parse_primary_html(html,page):
  matched=[n for n in exact if isinstance(n.get('offers'),(dict,list)) or
   any(t in ('RealEstateListing','Apartment','House','SingleFamilyResidence','Residence','Product') for t in ([n.get('@type')] if isinstance(n.get('@type'),str) else n.get('@type',[]) or []))]
  field={'price_mad':None,'surface_m2':None,'city':None,'district':None}
+ shape={}
  if len(matched)==1:
+  matched_node=matched[0]
+  addr=matched_node.get('address')
+  size=matched_node.get('floorSize')
+  description=str(matched_node.get('description') or '')[:5000]
+  shape={'primary_keys':sorted(str(k) for k in matched_node.keys())[:50],
+   'address_kind':type(addr).__name__,
+   'address_keys':sorted(str(k) for k in addr.keys()) if isinstance(addr,dict) else [],
+   'floor_size_kind':type(size).__name__,
+   'has_labeled_area_in_description':bool(re.search(r'\d+\s*m(?:²|2)',description,re.I))}
+
   x=matched[0]
   offers=x.get('offers');offers=offers if isinstance(offers,list) else [offers]
   prices=set()
@@ -90,7 +101,7 @@ def parse_primary_html(html,page):
     v=address.get(key)
     if isinstance(v,str) and 2<=len(v.strip())<=75 and not re.search(r'[@\d]',v):field[target]=v.strip()
  return {'primary_structured_nodes_matching_url':len(matched),'jsonld_nodes_total':len(nodes),
-   'fields':field,'fields_present':sum(v is not None for v in field.values()),
+   'fields':field,'schema_shape_only':shape,'fields_present':sum(v is not None for v in field.values()),
    'complete_four_detail_fields':all(v is not None for v in field.values()) and len(matched)==1,
    'title_observed':bool(info.meta.get('title') or info.meta.get('og:title')),
    'freshness_certified':False,'availability_certified':False,'physical_uniqueness_certified':False}
