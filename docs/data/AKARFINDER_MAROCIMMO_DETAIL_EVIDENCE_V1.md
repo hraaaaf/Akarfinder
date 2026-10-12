@@ -9,3 +9,8 @@
 **Sorties** : `marocimmo-detail-evidence-v1.json` avec stats/états, `.jsonl` pour chaque fiche, sans contacts. Tests offline de non-fusion du noeud JSONLD d'une autre fiche. CI sur HEAD nécessaire avant conclusion et intégration éventuelle à la sortie `listing-tamis-v1`. Aucun gel ni nouveau compte certifié avant ce contrôle.
 
 **Prochain lot** : classer chaque échec de la canari et enrichir seulement le parseur MarocImmo sur un cas HTML vérifié, avec fixture et non-régression.
+
+
+## Preuves sur 12 vrais détails MarocImmo
+
+Run [38268370624](https://github.com/hraaaaf/Akarfinder/actions/runs/38268370624) SUCCESS, artifact 11756230662 : 12/12 pages individuelles HTTP200 et même URL principale en JSON-LD ; 12 prix MAD structurés, 0 surface/ville/quartier réunis en JSON-LD strict, donc **0 nouveau cinq-champs publiable**. Diagnostic de schéma [38269150499](https://github.com/hraaaaf/Akarfinder/actions/runs/38269150499) SUCCESS, artifact 11755897965 : les 12 noeuds ont @context, @type, datePosted, description, image, mainEntity, name, offers, url ; ils n'ont ni address ni floorSize de premier niveau, et **11/12 descriptions contiennent une surface explicitement libellée**. Correctif de parsing isolé dans la description du seul noeud principal, avec rejet des valeurs multiples/fourchettes/prix au m²; CI de ce correctif à inspecter avant affirmation de rendement. Le nombre de fiches en sitemap est 517, non certifié frais, unique ni disponible.

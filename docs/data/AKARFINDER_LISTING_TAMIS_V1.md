@@ -33,3 +33,10 @@ Suppression des doublons artificiels de motif d'échec : ne pas signaler « vill
 ## Source expansion : retour de canari MarocImmo 2026-10-12
 
 La sonde read-only `38263798989` a confirmé robots HTTP200, `/fr/vente` et `/fr/location` HTTP200 et un sitemap déclaré. La première exécution sitemap `38264790688` est rouge : `robots_unavailable_or_disallowed` ; **l'utilitaire standard RobotFileParser.read() n'utilise pas le User-Agent identifié** que la sonde avait employé avec succès. Correction ciblée : télécharger robots.txt via le même `get()` identifié que la sonde, n'autoriser l'énumération qu'après HTTP200 et validation robots, max 8 XML à 1,5s. Aucune URL supputée ni contournement 403. Le statut final demeure conditionné au prochain run/artifact, sans fusion avec le ledger tant qu'aucune carte complète n'est prouvée.
+
+
+## Certification V1.1 sur 9 745 IDs (12 octobre)
+
+CI [38267182404](https://github.com/hraaaaf/Akarfinder/actions/runs/38267182404) SUCCESS, artifact 11754439849 vérifié : **7 044 candidates snapshot et 2 701 en quarantaine** (2 138 parseur, 558 doublons physiques suspects, 5 conflits), DB/publication 0. 59 conflits Domio route vente/location vs slug dont 8 anciennement candidates sont désormais tous en quarantaine. CI parseur Domio 38266899600 SUCCESS.
+
+Kaynly : run 38264386620 SUCCESS, 18 liens sources, quatre IDs Mubawab absents du registre : a:8302703, a:8263154, a:8332165, a:8227263. Ce sont uniquement des URLs à qualifier, jamais des fiches gelées.
