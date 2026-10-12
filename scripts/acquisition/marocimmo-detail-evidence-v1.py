@@ -66,7 +66,12 @@ def unique_primary_description_area(description):
  values=set()
  for m in re.finditer(r'(?<!\d)(\d{1,6}(?:[.,]\d+)?)\s*m(?:²|2)(?=$|[^\w])',raw,re.I):
   before=raw[max(0,m.start()-20):m.start()]
-  if re.search(r'(?:MAD|DH|DHS)\s*/\s*
+  if re.search(r'(?:MAD|DH|DHS)\s*/\s*$',before,re.I):continue
+  value=float(m.group(1).replace(',','.'))
+  if 5<=value<=100000:values.add(value)
+ return next(iter(values)) if len(values)==1 else None
+
+def parse_primary_html(html,page):
  info=Metadata();info.feed(html)
  nodes=nodes_from_ld(info.json_scripts)
  valid={page.rstrip('/')}
@@ -105,109 +110,6 @@ def unique_primary_description_area(description):
     if 5<=value<=100000:field['surface_m2']=value
    except (TypeError,ValueError,OverflowError):pass
   if field['surface_m2'] is None:field['surface_m2']=unique_primary_description_area(x.get('description'))
-  address=x.get('address')
-  if isinstance(address,dict):
-   for key,target in [('addressLocality','city'),('neighborhood','district')]:
-    v=address.get(key)
-    if isinstance(v,str) and 2<=len(v.strip())<=75 and not re.search(r'[@\d]',v):field[target]=v.strip()
- return {'primary_structured_nodes_matching_url':len(matched),'jsonld_nodes_total':len(nodes),
-   'fields':field,'schema_shape_only':shape,'fields_present':sum(v is not None for v in field.values()),
-   'complete_four_detail_fields':all(v is not None for v in field.values()) and len(matched)==1,
-   'title_observed':bool(info.meta.get('title') or info.meta.get('og:title')),
-   'freshness_certified':False,'availability_certified':False,'physical_uniqueness_certified':False}
-class SafeRedirect(urllib.request.HTTPRedirectHandler):
- def redirect_request(self,req,fp,code,msg,headers,newurl):
-  origin=urllib.parse.urlsplit(req.full_url)
-  destination=urllib.parse.urlsplit(newurl)
-  if destination.scheme!='https' or destination.netloc!=HOST or not RECORD.fullmatch(urllib.parse.unquote(destination.path)):
-   raise ValueError('untrusted_redirect')
-  return super().redirect_request(req,fp,code,msg,headers,newurl)
-def get(url,timeout=18):
- request=urllib.request.Request(url,headers={'User-Agent':UA,'Accept':'text/html,application/ld+json;q=0.8,*/*;q=0.4'})
- with urllib.request.build_opener(SafeRedirect()).open(request,timeout=timeout) as res:
-  if res.status!=200:return res.status,res.url,''
-  content_type=res.headers.get('Content-Type','')
-  if 'html' not in content_type and 'text/plain' not in content_type:return 200,res.url,''
-  raw=res.read(3000001)
-  if len(raw)>3000000:raise ValueError('oversized_html')
-  return res.status,res.url,raw.decode('utf-8','replace')
-def main():
- paths=Path(os.getenv('MAROCIMMO_SITEMAP_URLS','.tmp/sitemap/urls.txt')).read_text(encoding='utf-8').splitlines()
- selected=select_samples(paths,12)
- outcomes=[];halt=None;requests=0;robots_status=None
- try:
-  robots_status,_,txt=get(BASE+'/robots.txt',timeout=12)
-  if robots_status!=200 or not txt.strip() or len(txt)>100000:raise ValueError('robots_unavailable')
-  robots=urllib.robotparser.RobotFileParser();robots.parse(txt.splitlines())
- except Exception:halt='robots_unavailable_fail_closed';robots=None
- for item in selected:
-  if halt:break
-  if not robots.can_fetch(UA,item['url']):outcomes.append({**item,'state':'robots_disallowed'});continue
-  if requests:time.sleep(1.8)
-  requests+=1
-  try:
-   status,final,html=get(item['url'])
-   if status!=200 or final!=item['url'] or not html:
-    outcomes.append({**item,'state':'not_primary_html', 'http_status':status});continue
-   parsed=parse_primary_html(html,item['url'])
-   outcomes.append({**item,'state':'primary_page_observed','http_status':status,**parsed})
-  except Exception as e:
-   code=getattr(e,'code',None)
-   if code in (403,429):halt='http_'+str(code)
-   outcomes.append({**item,'state':'http_'+str(code) if code else 'network_or_redirect_error','http_status':code})
-   if halt:break
- report={'schema_version':'AKARFINDER_MAROCIMMO_DETAIL_EVIDENCE_V1','semantics':'primary_individual_page_structured_data_only_not_available_or_fresh_certification',
- 'as_of':datetime.now(timezone.utc).isoformat(),'sitemap_candidates_source_id_distinct':len({primary_url(u)['source_id'] for u in paths if primary_url(u)}),
- 'sample_selected':len(selected),'robots_status':robots_status,'detail_requests':requests,'http200_primary_pages':sum(x['state']=='primary_page_observed' for x in outcomes),
- 'primary_schema_match':sum(x.get('primary_structured_nodes_matching_url')==1 for x in outcomes),'four_fields_structured_same_primary':sum(x.get('complete_four_detail_fields') is True for x in outcomes),
- 'halted_reason':halt,'database_access':0,'database_writes':0,'published':0,
- 'note':'A sitemap link or HTTP200 does not prove offer still available, current date, reuse rights, or physical uniqueness.'}
- Path(OUT+'.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
- Path(OUT+'.jsonl').write_text(''.join(json.dumps(x,ensure_ascii=False)+'\n' for x in outcomes),encoding='utf-8')
- print(json.dumps(report,ensure_ascii=False,indent=2))
- if halt or not report['http200_primary_pages']:raise SystemExit(2)
-if __name__=='__main__':main()
-,before,re.I):continue
-  value=float(m.group(1).replace(',','.'))
-  if 5<=value<=100000:values.add(value)
- return next(iter(values)) if len(values)==1 else None
-
-def parse_primary_html(html,page):
- info=Metadata();info.feed(html)
- nodes=nodes_from_ld(info.json_scripts)
- valid={page.rstrip('/')}
- exact=[n for n in nodes if any(normalize_ref(n.get(k)) in valid for k in ('url','@id'))]
- matched=[n for n in exact if isinstance(n.get('offers'),(dict,list)) or
-  any(t in ('RealEstateListing','Apartment','House','SingleFamilyResidence','Residence','Product') for t in ([n.get('@type')] if isinstance(n.get('@type'),str) else n.get('@type',[]) or []))]
- field={'price_mad':None,'surface_m2':None,'city':None,'district':None}
- shape={}
- if len(matched)==1:
-  matched_node=matched[0]
-  addr=matched_node.get('address')
-  size=matched_node.get('floorSize')
-  description=str(matched_node.get('description') or '')[:5000]
-  shape={'primary_keys':sorted(str(k) for k in matched_node.keys())[:50],
-   'address_kind':type(addr).__name__,
-   'address_keys':sorted(str(k) for k in addr.keys()) if isinstance(addr,dict) else [],
-   'floor_size_kind':type(size).__name__,
-   'has_labeled_area_in_description':bool(re.search(r'\d+\s*m(?:²|2)',description,re.I))}
-
-  x=matched[0]
-  offers=x.get('offers');offers=offers if isinstance(offers,list) else [offers]
-  prices=set()
-  for o in offers:
-   if not isinstance(o,dict) or str(o.get('priceCurrency') or '').upper()!='MAD':continue
-   try:
-    value=float(o.get('price'))
-    if value.is_integer() and 500<=value<=1000000000:prices.add(int(value))
-   except (ValueError,TypeError,OverflowError):pass
-  if len(prices)==1:field['price_mad']=next(iter(prices))
-  size=x.get('floorSize') or x.get('floor_size')
-  if isinstance(size,dict) and str(size.get('unitCode') or '').upper()=='MTK':
-   try:
-    value=float(size.get('value'))
-    if 5<=value<=100000:field['surface_m2']=value
-   except (TypeError,ValueError,OverflowError):pass
   address=x.get('address')
   if isinstance(address,dict):
    for key,target in [('addressLocality','city'),('neighborhood','district')]:
