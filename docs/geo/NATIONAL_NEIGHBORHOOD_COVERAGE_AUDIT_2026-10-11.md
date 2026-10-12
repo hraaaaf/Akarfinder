@@ -255,3 +255,26 @@ The independent source-only pilot [child PR #1112](https://github.com/hraaaaf/Ak
 - Product/UI canary remains a separate child of product map PR [#1112](https://github.com/hraaaaf/Akarfinder/pull/1112), updated harness-only HEAD `d28f8851714594edba6b6563800e573bfb3dac94`; four viewports `390/430/768/1280`, source city/slug/coords API gate, visible indicative disclaimer, `center-only` and `boundary semantic=none`, truthful Tanger-only `/search?city=Tanger` with no district, zero page overflow and screenshots `tanger-boukhalef-*-after.png`. **Browser CI [38262453390](https://github.com/hraaaaf/Akarfinder/actions/runs/38262453390) in progress at documentation checkpoint**. No screenshot or grade can be declared certified until it completes.
 - **Decision:** source-identity evidence gate **PASS for indicative source point only**; current residential-quartier status, official neighborhood polygon, cross-gazetteer equivalence, listing geofilter, and publication remain **HOLD**. Certified 17/8 map registry stays untouched.
 - **Next exact:** read CI #38262453390 once; inspect 4 actual screenshots/artifact. If red correct browser harness/root cause, if green show images and score, then record proof in this canonical and Notion. Do not deploy Vercel/merge/create boundaries.
+
+
+## TANGER BOUKHALEF — FOUR-VIEWPORT BROWSER PASS (2026-10-12)
+
+**Source gate:** exact-code [CI 38262256372](https://github.com/hraaaaf/Akarfinder/actions/runs/38262256372) **SUCCESS**, parent audit fixture `data/geo/pilot-tanger-boukhalef-evidence.json` + offline verifier `scripts/audits/verify-tanger-boukhalef-source-gate.mjs`. The source `place=suburb` point label/center matches an OSM-derived gazetteer reference, with historical rural commune name and alternate GeoNames ID left unresolved. No official neighborhood identity or legal boundary granted.
+
+**Browser gate:** [CI 38262453390](https://github.com/hraaaaf/Akarfinder/actions/runs/38262453390) **SUCCESS**, PR [#1112](https://github.com/hraaaaf/Akarfinder/pull/1112), exact HEAD `d28f8851714594edba6b6563800e573bfb3dac94`, job `114856144294`; artifact [11752518939](https://github.com/hraaaaf/Akarfinder/actions/runs/38262453390/artifacts/11752518939). Machine report `ok=true, cases=4, failure=null`.
+
+| Browser viewport | Route and source | Truthful status | Search contract | Overflow |
+|---|---|---|---|---:|
+| 390×844 | Tanger/Boukhalef loaded | label candidate, center-only, no polygon; disclaimer visible | city=Tanger, **no district** | 0px |
+| 430×932 | Tanger/Boukhalef loaded | same | same | 0px |
+| 768×900 | Tanger/Boukhalef loaded | same | same | 0px |
+| 1280×900 | Tanger/Boukhalef loaded | same | same | 0px |
+
+The browser also revalidated Casablanca/Maârif and Agadir/Al Qods regression checks in the same run. Original screenshots: `tanger-boukhalef-390-after.png`, `...430-after.png`, `...768-after.png`, `...1280-after.png`, captured by Playwright and extracted from the artifact. A four-viewport composite was produced and displayed to the user. Visual assessment **7.8/10 subjective**: mobile controls and marker legible, premium basemap cohesive, desktop information rail relatively sparse and typography needs further refinement. **No product UI implementation delta for Tanger**: the browser exercise qualifies the existing codepath; a BEFORE/AFTER code change for Tanger would be misleading.
+
+### Decision / closeout
+
+- **Success proven:** a second city can render an externally cross-checked source point with truthful sourcing, no invented polygon or property filter, on 4 browser widths.
+- **Not proven/not permitted:** current official Boukhalef quartier boundaries, automatic equivalence of OSM node 1999241428 and GeoNames 2572146, modern administrative classification, SEO eligibility, production publication, nationwide rollout.
+- **Release posture:** source record **HOLD**, map pilot DRAFT, no DB write, no merge, no Vercel deploy, no additional canonical `map_eligible` entity; 17 neighborhoods across 8 cities unchanged.
+- **Next:** tackle evidence-first normalized parent backlog and semantics/OSM original IDs before any bulk visual or source expansion. Review national metadata mismatch `10,799` static vs `11,413` decoded source rows as different unverified definitions, not an arithmetic patch by assumption. Visual 10/10 convergence remains an independent UI scope and requires BEFORE/TARGET/AFTER.
