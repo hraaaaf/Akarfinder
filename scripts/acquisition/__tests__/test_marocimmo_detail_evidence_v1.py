@@ -25,7 +25,6 @@ class Audit(unittest.TestCase):
  def test_missing_neighborhood_is_not_inferred_from_city(self):
   html='<script type="application/ld+json">'+__import__('json').dumps({'@type':'RealEstateListing','url':P,'offers':{'price':1200000,'priceCurrency':'MAD'},'floorSize':{'value':89,'unitCode':'MTK'},'address':{'addressLocality':'Marrakech'}})+'</script>'
   r=mod.parse_primary_html(html,P);self.assertIsNone(r['fields']['district']);self.assertFalse(r['complete_four_detail_fields'])
-if __name__=='__main__':unittest.main()
 
  def test_schema_shape_does_not_substitute_missing_values(self):
   import json
@@ -33,3 +32,4 @@ if __name__=='__main__':unittest.main()
   row=mod.parse_primary_html(html,P)
   self.assertTrue(row['schema_shape_only']['has_labeled_area_in_description'])
   self.assertIsNone(row['fields']['surface_m2'])
+if __name__=='__main__':unittest.main()
