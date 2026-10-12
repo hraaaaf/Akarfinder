@@ -1,0 +1,83 @@
+{
+  "schema": "akarfinder.source_point_pilot_evidence.v2",
+  "candidateId": "source_point_tanger_boukhalef",
+  "citySlug": "tanger",
+  "canonicalName": "Boukhalef",
+  "status": "source_point_reviewed_not_published",
+  "reviewDate": "2026-10-12",
+  "sourceCatalog": "carte-national-territory-registry-v5-32634250993",
+  "sourceRow": {
+    "parent": "tanger",
+    "name": "Boukhalef",
+    "longitude": -5.8831334,
+    "latitude": 35.7337667,
+    "sourceFlag": 1
+  },
+  "mappedIdentity": {
+    "kind": "osm_suburb_candidate",
+    "osmType": "node",
+    "osmId": 1999241428,
+    "osmTag": "place=suburb",
+    "osmNodeUrl": "https://www.openstreetmap.org/node/1999241428",
+    "crosscheckProvider": "Mapcarta (OSM-derived)",
+    "sourceUrl": "https://mapcarta.com/25438180",
+    "longitudeRounded": -5.8831,
+    "latitudeRounded": 35.7338,
+    "coordinateRoundTripToleranceDegrees": 0.00005,
+    "geonamesId": 6546251,
+    "wikidataId": "Q12199841",
+    "directOsmApiVerified": false
+  },
+  "sameNameAlternate": {
+    "kind": "geonames_locality_other_gazetteer_record",
+    "geonamesId": 2572146,
+    "sourceUrl": "https://mapcarta.com/17489970",
+    "latitudeRounded": 35.7328,
+    "longitudeRounded": -5.89954,
+    "straightLineDistanceMetersApprox": 1485,
+    "interpretation": "Distinct gazetteer record and center, NOT evidence of two separate neighborhoods",
+    "notEquivalentWithoutReview": true,
+    "autoMergeAllowed": false,
+    "autoSplitAllowed": false
+  },
+  "contextEvidence": [
+    {
+      "publisher": "Haut Commissariat au Plan (RGPH 2004; documentation published 2012)",
+      "url": "https://www.hcp.ma/region-tanger/attachment/992796/",
+      "evidence": "CR Hjar Ennhal (Ex Rural CR Boukhalef), 2004/2009 administrative terminology",
+      "scope": "historical administrative name, not current quarter polygon"
+    },
+    {
+      "publisher": "Commune de Tanger",
+      "url": "https://fr.tanger.ma/sites/aeroport-de-tanger-ibn-battouta/",
+      "evidence": "Aeroport Ibn Battouta situe dans la zone de Bukhalef",
+      "scope": "independent contemporary place-name corroboration, not neighborhood legal status"
+    },
+    {
+      "publisher": "Wikidata",
+      "url": "https://www.wikidata.org/wiki/Q12199841",
+      "evidence": "historical rural commune, end 2009; GeoNames 6546251",
+      "scope": "historical administrative ID, not neighborhood identity proof"
+    }
+  ],
+  "qualification": {
+    "sourceLabelMatchesVerifiedOsmDerivedCenter": true,
+    "historicalAdminNameCollision": true,
+    "secondGazetteerCenterRequiresReconciliation": true,
+    "currentOfficialQuarterBoundaryVerified": false,
+    "officialCurrentQuarterClassificationVerified": false,
+    "semanticClass": "sourced_suburb_or_locality_reference_only",
+    "decision": "hold_noncanonical_source_point",
+    "why": "label and center match OSM-derived reference; neither contemporary district legal class nor boundary nor GeoNames correspondence definitively established"
+  },
+  "restrictions": {
+    "publicationStatus": "hold",
+    "allowAutoPromote": false,
+    "mayRenderVerifiedCenterAsIndicativeLocalityAfterBrowserCanary": true,
+    "mayDeclareCertifiedNeighborhood": false,
+    "mayRenderBoundary": false,
+    "mayFilterListingsByNeighborhood": false,
+    "attribution": "© OpenStreetMap contributors",
+    "licenseId": "ODbL-1.0"
+  }
+}
