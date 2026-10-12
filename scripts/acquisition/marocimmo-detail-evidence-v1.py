@@ -112,6 +112,7 @@ def parse_primary_html(html,page):
   nested_place=main.get('containedInPlace')
   shape['main_address_keys']=sorted(str(k) for k in nested_address.keys()) if isinstance(nested_address,dict) else []
   shape['main_place_kind']=type(nested_place).__name__
+  shape['main_place_type']=nested_place.get('@type') if isinstance(nested_place,dict) else None
   shape['main_place_keys']=sorted(str(k) for k in nested_place.keys()) if isinstance(nested_place,dict) else []
   shape['nested_identity_accepted']=bool(attached_main)
   def structured_area(value):
