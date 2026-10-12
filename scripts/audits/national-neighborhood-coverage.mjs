@@ -98,6 +98,17 @@ function main() {
   const groups = JSON.parse(brotliDecompressSync(Buffer.from(packed, "base64")).toString("utf8"));
   const registered = loadRegistered();
   const historical = loadLegacyDictionary();
+  // Legacy V5 aggregate and N2 decoded label rows may have different semantics.
+  // Compare the source's per-place declarations with the static runtime constant.
+  const runtime = readFileSync(join(root, "lib/map/national-territory-runtime.server.ts"), "utf8");
+  const metaText = runtime.split("export const NATIONAL_TERRITORY_META = {")[1]?.split("} as const")[0];
+  const legacyCountMatch = metaText?.match(/neighborhoodCount:\s*(\d+)/);
+  if (!legacyCountMatch) throw new Error("Missing static legacy source count metadata");
+  const legacyStaticCount = Number(legacyCountMatch[1]);
+  if (!places.every((p) => Number.isInteger(p.neighborhoodCount) && p.neighborhoodCount >= 0)) {
+    throw new Error("Unexpected V5 per-place neighborhoodCount contract");
+  }
+  const placeDeclaredCount = places.reduce((sum, place) => sum + place.neighborhoodCount, 0);
   if (!Array.isArray(places) || !groups || typeof groups !== "object") throw new Error("Invalid source containers");
 
   const placesByParent = new Map();
@@ -230,6 +241,14 @@ function main() {
     parentWithoutPlaceMatch: byParent.filter((p) => p.placeMatchCount === 0).length,
     parentAmbiguousPlaceMatch: byParent.filter((p) => p.placeMatchCount > 1).length,
     sourceLabelRows: nationalRows,
+    sourceCountDefinitionAudit: {
+      legacyStaticCount,
+      placeDeclaredCount,
+      n2DecodedSourceRowCount: nationalRows,
+      staticVsPlaceDeclarationDelta: legacyStaticCount - placeDeclaredCount,
+      decodedRowsVsLegacyStaticDelta: nationalRows - legacyStaticCount,
+      interpretation: "Independent measurement definitions until producer provenance is confirmed; do not equate rows to unique verified neighborhoods",
+    },
     validCenterRows: nationalValidCenters,
     missingCenterRows: nationalMissingCenters,
     invalidCenterRows: nationalInvalidCenters,
@@ -449,6 +468,7 @@ function main() {
   writeFileSync(join(outputRoot, "by-parent.csv"), csv.join("\n") + "\n", "utf8");
 
   console.log(JSON.stringify({ summary, registeredCityStats, top10: report.top20ParentGroupsByValidCenters.slice(0, 10), unmatchedParentGroups: report.unmatchedParentGroups, orphanParentNormalizedCandidates: report.orphanParentNormalizedCandidates, spatialShadowTotals: Object.fromEntries(Object.entries(report.spatialShadow).filter(([k]) => k !== "bySourceParent")), spatialShadowTop: report.spatialShadow.bySourceParent.slice().sort((a, b) => b.assessed - a.assessed).slice(0, 20),
+    sourceCountDefinitionAudit: summary.sourceCountDefinitionAudit,
     reviewQueue: report.reviewQueue, exceptionRows: sourceReviewExceptions,
     nearNamePairsSample: possibleNearNamePairs.slice(0, 30), candidatesPerCity: candidatesByCity.map(
       (c) => ({ citySlug: c.citySlug, candidateNameCount: c.candidateNameCount,
