@@ -1,0 +1,62 @@
+name: AkarFinder Mubawab Regional Type Matrix 40
+on:
+  push:
+    branches:
+      - data/200k-fresh-parser-v2
+    paths:
+      - '.github/workflows/mubawab-regional-types-40.yml'
+      - 'scripts/data/mubawab-regional-types-40-v1.mjs'
+      - 'scripts/data/__tests__/mubawab-regional-types-40-v1.test.mjs'
+permissions:
+  contents: read
+  actions: read
+jobs:
+  regional-matrix-bounded:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    env:
+      CARD_LEDGER_JSONL: .tmp/baseline/acquisition-ledger-v1.jsonl
+      OUTPUT_PREFIX: mubawab-regional-matrix-40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Offline category planning, primary card and robots test suite
+        run: |
+          node --test scripts/data/__tests__/mubawab-regional-types-40-v1.test.mjs
+          node --test scripts/data/__tests__/mubawab-result-cards-v1.test.mjs
+      - name: Download certified eight-input ledger
+        uses: actions/download-artifact@v4
+        with:
+          name: card-acquisition-ledger-v1
+          run-id: 38047261522
+          github-token: ${{ github.token }}
+          path: .tmp/baseline
+      - name: Verify immutable eight-input ledger SHA256
+        run: |
+          echo "10edd629babc1364b3925b314170e17d0c416dd8c5943eb2d540b662705e5113  .tmp/baseline/acquisition-ledger-v1.jsonl" | sha256sum -c -
+      - name: Crawl up to 40 source category candidate routes
+        run: node scripts/data/mubawab-regional-types-40-v1.mjs
+      - name: Strict no-write and uniqueness proof
+        if: success()
+        run: |
+          jq -e '.candidate_categories == 40 and .request_count <= 40 and .database_access == 0 and .database_writes == 0 and .net_new_source_ids_vs_freeze != null' mubawab-regional-matrix-40.json
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const report=JSON.parse(fs.readFileSync('mubawab-regional-matrix-40.json','utf8'));
+          const rows=fs.readFileSync('mubawab-regional-matrix-40.jsonl','utf8').split(/\r?\n/).filter(Boolean).map(JSON.parse);
+          if(rows.length!==report.unique_source_id_count||new Set(rows.map(x=>x.identity)).size!==rows.length)throw Error('source id mismatch');
+          if(rows.filter(x=>x.five_field_observed).length!==report.unique_five_field_observed)throw Error('field provenance mismatch');
+          if(rows.some(x=>x.freshness_certified||x.active_detail_verified||x.cross_source_deduplicated))throw Error('unverified listing promotion');
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mubawab-regional-matrix-40
+          path: |
+            mubawab-regional-matrix-40.json
+            mubawab-regional-matrix-40.jsonl
+          retention-days: 14

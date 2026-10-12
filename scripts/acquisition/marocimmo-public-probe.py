@@ -21,6 +21,7 @@ try:
     summary['robots_sitemaps']=re.findall(r'^\s*Sitemap:\s*(\S+)',robots_txt,re.I|re.M)
 except Exception as e:
     summary['errors'].append('robots:'+repr(e))
+    (OUT/'summary.json').write_text(json.dumps(summary,indent=2,ensure_ascii=False)+'\n',encoding='utf-8')
     print(json.dumps(summary,indent=2,ensure_ascii=False)); raise SystemExit(2)
 
 rp=urllib.robotparser.RobotFileParser(); rp.parse(robots_txt.splitlines())

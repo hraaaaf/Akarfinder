@@ -5,6 +5,15 @@ import readline from "node:readline";
 import crypto from "node:crypto";
 import { load } from "cheerio";
 import { extractDetail } from "../scrapers/utils/extract.js";
+import { extractStrictDetailPrice } from "../scrapers/price-detail-enrichment-v2.js";
+import { resolveMubawabLocation } from "./mubawab-location-v2.js";
+import { parseMubawabRoute } from "./mubawab-url-parser-v2.mjs";
+import { inspectMubawabStrictSurface,hasMubawabPrimaryDetail } from "./mubawab-strict-surface-v2.js";
+import { extractMubawabStrictSurfaceFromUrl } from "./mubawab-url-surface-v2.js";
+import { probeMubawabSurfaceDom } from "./mubawab-surface-dom-probe-v2.js";
+import { probeMubawabLocationDom } from "./mubawab-location-dom-probe-v2.js";
+import { extractMubawabCorroboratedDistrict } from "./mubawab-description-district-v2.js";
+import { classifyMubawabNavigation } from "./mubawab-navigation-v2.mjs";
 
 async function main(){
 const USER_AGENT="AkarFinderFullFieldRecovery/1.0";
@@ -25,6 +34,7 @@ for await(const line of rl){
   const row=JSON.parse(line);
   if(String(row.source_domain||"").toLowerCase()!==sourceName) continue;
   if(row.classification!=="KEEP"||row.scope_eligible!==true) continue;
+  if(sourceName==="mubawab.ma"&&!parseMubawabRoute(row.canonical_url)) continue;
   rows.push(row);
 }
 rows.sort((a,b)=>rank(a.canonical_url).localeCompare(rank(b.canonical_url)));
@@ -103,7 +113,7 @@ function containsContactPii(value:string|null|undefined){
     || /(?:wa\.me|api\.whatsapp\.com)/i.test(s);
 }
 const existingMap:Record<string,string[]>={
-  property_type:["property_type"],transaction_type:["transaction_type"],
+  property_type:["property_type"],transaction_type:["transaction_type"],price_mad:["normalized_price_mad","price_mad"],
   title:["title"],description:["description","description_snippet"],city:["city"],district:["district"],
   surface_m2:["surface_m2"],rooms_count:["rooms_count"],bedrooms_count:["bedrooms_count","bedrooms"],bathrooms_count:["bathrooms_count","bathrooms"],
   built_surface_m2:["built_surface_m2"],plot_surface_m2:["plot_surface_m2"],condition:["condition"],property_age_range:["property_age_range"],
@@ -126,6 +136,8 @@ function add(out:Candidate[],row:Row,field:string,value:any,confidence:string,ev
   out.push({field,value,state:auto&&confidence==="high"?"write_safe":"review",evidence,confidence});
 }
 const results:any[]=[];
+const surfaceDomProbes:any[]=[];
+const locationDomProbes:any[]=[];
 for(const row of sample){
   const url=row.canonical_url; const rec:any={url,source:sourceName,http_status:null,robots_allowed:false,candidates:[]};
   if(!(await canFetch(url))){rec.blocked="robots";results.push(rec);continue;}
@@ -134,27 +146,57 @@ for(const row of sample){
   try{response=await fetch(url,{headers:{"user-agent":USER_AGENT,"accept":"text/html,application/xhtml+xml"},redirect:"follow"});}
   catch{rec.blocked="fetch_error";results.push(rec);continue;}
   rec.http_status=response.status;
+  if(sourceName==="mubawab.ma") rec.navigation=classifyMubawabNavigation(url,response.url,response.redirected);
   if(response.status!==200){rec.blocked=`http_${response.status}`;results.push(rec);continue;}
   const html=await response.text();
+  rec.source_identity_preserved=sourceName==="mubawab.ma"?rec.navigation?.identity_preserved===true:null;
+  rec.primary_detail_verified=sourceName==="mubawab.ma"?rec.source_identity_preserved&&hasMubawabPrimaryDetail(html):null;
+  if(sourceName==="mubawab.ma"&&!rec.primary_detail_verified) rec.primary_detail_failure=rec.source_identity_preserved?"missing_primary_dom":"redirect_identity_or_detail_route_mismatch";
+  if(sourceName==="mubawab.ma"&&rec.primary_detail_verified===true&&process.env.LOCATION_DOM_PROBE==="1"&&locationDomProbes.length<40){
+    locationDomProbes.push({url,...probeMubawabLocationDom(html)});
+  }
+  if(sourceName==="mubawab.ma"&&process.env.SURFACE_DOM_PROBE==="1"&&surfaceDomProbes.length<24){
+    surfaceDomProbes.push({url,slug_surface:extractMubawabStrictSurfaceFromUrl(url)?.value??null,...probeMubawabSurfaceDom(html)});
+  }
   const d=extractDetail(html);
   const title=meta(html,"og:title");
   const desc=d.description_snippet||meta(html,"description")||meta(html,"og:description")||"";
   const softPage=isSoftPage(title,desc);
+  if(sourceName==="mubawab.ma"){
+    rec.soft_page=softPage;
+    rec.generic_meta_title=isGenericListingTitle(title);
+  }
   const c:Candidate[]=[];
   if(!softPage && !isGenericListingTitle(title) && !containsContactPii(title)) add(c,row,"title",title,"high","meta:og:title",true);
   if(!softPage) add(c,row,"property_type",detectPropertyType([title,desc].filter(Boolean).join(" ")),"high","explicit:title_or_description_property_type",true);
   add(c,row,"transaction_type",detectTransaction(url,softPage?"":[title,desc].filter(Boolean).join(" ")),"high","explicit:url_or_primary_transaction",true);
   if(!softPage){
+    const transaction=detectTransaction(url,[title,desc].filter(Boolean).join(" "));
+    const strictPrice=extractStrictDetailPrice(html,transaction);
+    add(c,row,"price_mad",strictPrice,strictPrice!=null?"high":"missing","extractStrictDetailPrice",strictPrice!=null);
     if(!containsContactPii(d.description_snippet)) add(c,row,"description",d.description_snippet,d._confidence.description,"extractDetail:description",d._confidence.description==="high");
-    add(c,row,"city",d.city,d._confidence.city,"extractDetail:city",d._confidence.city==="high");
-    add(c,row,"district",d.district,d._confidence.district,"extractDetail:district",d._confidence.district==="high");
+    const location=sourceName==="mubawab.ma"?resolveMubawabLocation(html,d,title):{city:d.city,district:d.district,confidence:d._confidence.district,evidence:["extractDetail:district"]};
+    add(c,row,"city",location.city,d._confidence.city,"extractDetail:city",d._confidence.city==="high");
+    const corroboratedDistrict=sourceName==="mubawab.ma"&&rec.primary_detail_verified===true&&!location.district?extractMubawabCorroboratedDistrict(d.description_snippet,url,location.city):null;
+    add(c,row,"district",location.district??corroboratedDistrict?.value,corroboratedDistrict?.confidence??location.confidence,corroboratedDistrict?.evidence??(location.evidence.join("+")||"extractDetail:district"),corroboratedDistrict!==null||location.confidence==="high");
   }
   if(!softPage){
   const s=d.surface_raw?.match(/([0-9]+(?:[.,][0-9]+)?)/)?.[1];
   const surfaceValue=s?Number(s.replace(",",".")):null;
   const validSurface=surfaceValue!=null && Number.isFinite(surfaceValue) && surfaceValue>0 ? surfaceValue : null;
-  const surfaceAuto=d._confidence.surface==="high" && validSurface!=null && validSurface>=5 && validSurface<=100000;
-  add(c,row,"surface_m2",validSurface,d._confidence.surface,validSurface!=null&&validSurface>100000?"extractDetail:surface_extreme_review":"extractDetail:surface",surfaceAuto);
+  const surfaceAuto=d._confidence.surface==="high" && validSurface!=null && validSurface>=5 && validSurface<=100000 && (sourceName!=="mubawab.ma"||rec.primary_detail_verified===true);
+  const strictDomInspection=sourceName==="mubawab.ma"?inspectMubawabStrictSurface(html):null;
+  const strictDomSurface=strictDomInspection?.surface??null;
+  const strictUrlSurface=sourceName==="mubawab.ma"?extractMubawabStrictSurfaceFromUrl(url):null;
+  const evidenceConflict=!!strictDomInspection?.conflict||(!!strictDomSurface&&!!strictUrlSurface&&strictDomSurface.value!==strictUrlSurface.value);
+  if(evidenceConflict){
+    if(strictDomSurface) add(c,row,"surface_m2",strictDomSurface.value,"review","mubawab_primary_dom_vs_canonical_slug_conflict",false);
+    else if(strictUrlSurface) add(c,row,"surface_m2",strictUrlSurface.value,"review","mubawab_ambiguous_primary_dom_conflicts_with_slug",false);
+    rec.surface_evidence_conflict=true;
+  }else{
+    const strictSurface=(sourceName!=="mubawab.ma"||rec.primary_detail_verified===true)?(strictDomSurface??strictUrlSurface):null;
+    add(c,row,"surface_m2",strictSurface?.value??validSurface,strictSurface?.confidence??d._confidence.surface,strictSurface?.evidence??(validSurface!=null&&validSurface>100000?"extractDetail:surface_extreme_review":"extractDetail:surface"),!!strictSurface||surfaceAuto);
+  }
   add(c,row,"rooms_count",d.rooms,d._confidence.rooms,"extractDetail:rooms",d._confidence.rooms==="high");
   add(c,row,"bedrooms_count",d.bedrooms,d._confidence.bedrooms,"extractDetail:bedrooms",d._confidence.bedrooms==="high");
   add(c,row,"bathrooms_count",d.bathrooms,d._confidence.bathrooms,"extractDetail:bathrooms",d._confidence.bathrooms==="high");
@@ -163,6 +205,13 @@ for(const row of sample){
   for(const field of ["built_surface_m2","plot_surface_m2","condition","property_age_range","orientation","floor_type","floors_count","garden_m2","terrace_m2","garage_spaces","has_pool","has_concierge","has_equipped_kitchen","has_moroccan_living_room","has_european_living_room"]){
     add(c,row,field,(d as any)[field],"review",`extractDetail:p8a:${field}`,false);
   }
+  }
+  if(sourceName==="mubawab.ma"&&rec.primary_detail_verified!==true){
+    for(const candidate of c){
+      if(candidate.state==="write_safe"){
+        candidate.state="review";candidate.evidence+=":unverified_primary_detail";
+      }
+    }
   }
   rec.candidates=c;
   results.push(rec);
@@ -195,21 +244,52 @@ for(const r of results){
     counts[x.field][x.state]=(counts[x.field][x.state]||0)+1;
   }
 }
+const navigationRows=results.filter(r=>r.navigation);
+const tally=(xs:any[],fn:(v:any)=>string)=>Object.fromEntries([...new Set(xs.map(fn))].sort().map(k=>[k,xs.filter(v=>fn(v)===k).length]));
+const navigationSummary=sourceName==="mubawab.ma"?{
+ schema_version:"AKARFINDER_MUBAWAB_NAVIGATION_DIAGNOSTICS_V1",
+ semantics:"final_response_url_classification_only_not_listing_availability",
+ sample_size:sample.length,observed_navigation:navigationRows.length,
+ final_categories:tally(navigationRows,(r:any)=>r.navigation.final_category),
+ final_route_prefixes:tally(navigationRows,(r:any)=>r.navigation.final_route_prefix||"unavailable"),
+ final_route_shapes:tally(navigationRows,(r:any)=>r.navigation.final_route_shape||"unavailable"),
+ requested_id_in_final_path:tally(navigationRows,(r:any)=>String(r.navigation.final_requested_id_in_path===true)),
+ by_final_category_and_id_present:Object.fromEntries([...new Set(navigationRows.map((r:any)=>r.navigation.final_category))].sort().map(category=>[category,tally(navigationRows.filter((r:any)=>r.navigation.final_category===category),(r:any)=>String(r.navigation.final_requested_id_in_path===true))])),
+ http_redirected:tally(navigationRows,(r:any)=>String(r.navigation.http_redirected)),
+ by_requested_id_band:Object.fromEntries([...new Set(navigationRows.map((r:any)=>r.navigation.request_id_band).filter(Boolean))].sort().map(band=>{
+   const group=navigationRows.filter((r:any)=>r.navigation.request_id_band===band);
+   return [band,{total:group.length,primary_verified:group.filter((r:any)=>r.primary_detail_verified===true).length,categories:tally(group,(r:any)=>r.navigation.final_category)}];
+ })),
+ by_final_category:Object.fromEntries([...new Set(navigationRows.map((r:any)=>r.navigation.final_category))].sort().map(category=>{
+   const group=navigationRows.filter((r:any)=>r.navigation.final_category===category);
+   return [category,{total:group.length,redirected:group.filter((r:any)=>r.navigation.http_redirected===true).length,primary_verified:group.filter((r:any)=>r.primary_detail_verified===true).length,soft_page:group.filter((r:any)=>r.soft_page===true).length,generic_meta_title:group.filter((r:any)=>r.generic_meta_title===true).length}];
+ })),
+ database_access:0,database_writes:0,
+ note:"HTTP 200/redirect destinations do not prove a listing is fresh, unavailable or unique. No destination URLs or query strings retained."
+}:null;
 const summary={
  schema_version:"AKARFINDER_FULL_FIELD_RECOVERY_V1",
  source:sourceName,freeze_population:rows.length,sample_size:sample.length,
  robots_allowed:results.filter(x=>x.robots_allowed).length,
  accessible_http_200:accessibleCount,
+ primary_detail_verified:sourceName==="mubawab.ma"?results.filter(r=>r.primary_detail_verified===true).length:null,
+ primary_detail_failures:sourceName==="mubawab.ma"?Object.fromEntries(["missing_primary_dom","redirect_identity_or_detail_route_mismatch"].map(x=>[x,results.filter(r=>r.primary_detail_failure===x).length])):null,
+ source_identity_preserved:sourceName==="mubawab.ma"?results.filter(r=>r.source_identity_preserved===true).length:null,
+ navigation_diagnostics:navigationSummary,
+ surface_evidence_conflicts:results.filter(r=>r.surface_evidence_conflict===true).length,
  candidates_by_field:counts,
  template_noise_suppressions:templateNoiseSuppressions,
  write_safe_fields:results.flatMap(x=>x.candidates).filter((x:any)=>x.state==="write_safe").length,
  review_fields:results.flatMap(x=>x.candidates).filter((x:any)=>x.state==="review").length,
  contradicted_fields:results.flatMap(x=>x.candidates).filter((x:any)=>x.state==="contradicted").length,
  database_access:0,database_writes:0,
- note:"Price and transaction strict recovery remain governed by the certified semantic recovery pipeline; this pass expands non-price canonical fields."
+ note:"Read-only full-field recovery includes strict detail price extraction; certification still requires freshness, all five mandatory fields, provenance validation, and deduplication."
 };
 await writeFile(outputPrefix+".json",JSON.stringify(summary,null,2)+"\n");
 await writeFile(outputPrefix+".jsonl",results.map(x=>JSON.stringify(x)).join("\n")+"\n");
+if(navigationSummary) await writeFile(outputPrefix+"-navigation-diagnostics.json",JSON.stringify(navigationSummary,null,2)+"\n");
+if(process.env.SURFACE_DOM_PROBE==="1") await writeFile(outputPrefix+"-surface-dom-probe.json",JSON.stringify({schema_version:"AKARFINDER_MUBAWAB_SURFACE_DOM_PROBE_V2",sample_size:surfaceDomProbes.length,redacted:true,observations:surfaceDomProbes},null,2)+"\n");
+if(process.env.LOCATION_DOM_PROBE==="1") await writeFile(outputPrefix+"-location-dom-probe.json",JSON.stringify({schema_version:"AKARFINDER_MUBAWAB_LOCATION_DOM_PROBE_V2",sample_size:locationDomProbes.length,redacted:true,observations:locationDomProbes},null,2)+"\n");
 console.log(JSON.stringify(summary,null,2));
 
 }

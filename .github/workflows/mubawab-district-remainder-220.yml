@@ -1,0 +1,72 @@
+name: AkarFinder Mubawab District Remainder 220
+on:
+  push:
+    branches:
+      - data/200k-fresh-parser-v2
+    paths:
+      - '.github/workflows/mubawab-district-remainder-220.yml'
+      - 'scripts/data/mubawab-district-remainder-v1.mjs'
+      - 'scripts/data/__tests__/mubawab-district-remainder-v1.test.mjs'
+permissions:
+  contents: read
+  actions: read
+jobs:
+  bounded-district-remainder:
+    runs-on: ubuntu-latest
+    timeout-minutes: 19
+    env:
+      CARDS_BASELINE_JSONL: .tmp/mubawab-50/mubawab-mass-acquisition-50.jsonl
+      PRIOR_DISTRICT_JSONL: .tmp/mubawab-first120/mubawab-district-shards-120.jsonl
+      OUTPUT_PREFIX: mubawab-district-remainder-220
+      DISTRICT_OFFSET: '120'
+      DISTRICT_MAX_REQUESTS: '220'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Regression tests for offset, provenance and blockers
+        run: |
+          node --test scripts/data/__tests__/mubawab-district-remainder-v1.test.mjs
+          node --test scripts/data/__tests__/mubawab-district-derived-shards-v1.test.mjs
+      - name: Load original fifty-category cards
+        uses: actions/download-artifact@v4
+        with:
+          name: mubawab-mass-acquisition-50
+          run-id: 38014920725
+          github-token: ${{ github.token }}
+          path: .tmp/mubawab-50
+      - name: Load immutable first 120 district shards
+        uses: actions/download-artifact@v4
+        with:
+          name: mubawab-district-shards-120
+          run-id: 38043539778
+          github-token: ${{ github.token }}
+          path: .tmp/mubawab-first120
+      - name: Audit remaining card-derived district pages, no more than 220 requests
+        run: node scripts/data/mubawab-district-remainder-v1.mjs
+      - name: Confirm incremental read-only and identity evidence
+        if: always()
+        run: |
+          test -f mubawab-district-remainder-220.json
+          jq -e '.selected_offset == 120 and .max_requests == 220 and .request_count <= 220 and .database_access == 0 and .database_writes == 0' mubawab-district-remainder-220.json
+          node - <<'NODE'
+          const fs=require('fs');
+          const r=JSON.parse(fs.readFileSync('mubawab-district-remainder-220.json','utf8'));
+          const rows=fs.readFileSync('mubawab-district-remainder-220.jsonl','utf8').split(/\r?\n/).filter(Boolean).map(JSON.parse);
+          if(rows.length!==r.unique_source_ids||new Set(rows.map(x=>x.identity)).size!==rows.length)throw Error('ID mismatch');
+          if(rows.filter(x=>x.five_field_observed).length!==r.card_five_field)throw Error('5 fields inconsistent');
+          if(rows.some(x=>x.freshness_certified||x.active_detail_verified||x.cross_source_deduplicated))throw Error('false promotion');
+          if(r.net_new_ids_vs_50_and_first120>r.unique_source_ids)throw Error('impossible increment');
+          console.log('REMAINDER_PROOF',rows.length);
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mubawab-district-remainder-220
+          path: |
+            mubawab-district-remainder-220.json
+            mubawab-district-remainder-220.jsonl
+          retention-days: 14

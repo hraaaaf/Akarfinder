@@ -1,0 +1,35 @@
+name: AkarFinder Public Linked Pagination Canary
+on:
+  push:
+    branches:
+      - data/200k-fresh-parser-v2
+    paths:
+      - '.github/workflows/mubawab-linked-pagination-canary-v1.yml'
+      - 'scripts/data/mubawab-linked-pagination-canary-v1.mjs'
+      - 'scripts/data/__tests__/mubawab-linked-pagination-canary-v1.test.mjs'
+permissions:
+  contents: read
+jobs:
+  discover-linked-pagination:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: node --test scripts/data/__tests__/mubawab-linked-pagination-canary-v1.test.mjs
+      - run: node scripts/data/mubawab-linked-pagination-canary-v1.mjs
+      - name: Enforce public category only, robots and no database effects
+        run: jq -e '.category_requests <= 4 and .observed_categories > 0 and .candidate_type_category_urls >= 0 and .pagination_requests == 0 and .detail_requests == 0 and .database_access == 0 and .database_writes == 0 and .published_count == 0' linked-pagination-canary-v1.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: linked-pagination-canary-v1
+          path: |
+            linked-pagination-canary-v1.json
+            linked-pagination-canary-v1.jsonl
+            linked-type-categories-v1.jsonl
+          retention-days: 14

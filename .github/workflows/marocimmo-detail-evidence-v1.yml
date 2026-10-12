@@ -1,0 +1,54 @@
+name: AkarFinder MarocImmo Primary Details 12 Canary
+on:
+  push:
+    branches:
+      - data/200k-fresh-parser-v2
+    paths:
+      - '.github/workflows/marocimmo-detail-evidence-v1.yml'
+      - 'scripts/acquisition/marocimmo-detail-evidence-v1.py'
+      - 'scripts/acquisition/__tests__/test_marocimmo_detail_evidence_v1.py'
+permissions:
+  contents: read
+  actions: read
+jobs:
+  detail-evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      MAROCIMMO_SITEMAP_URLS: .tmp/sitemap/urls.txt
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Unit regression for exact URL and JSON-LD isolation
+        run: python -m unittest discover -s scripts/acquisition/__tests__ -p test_marocimmo_detail_evidence_v1.py
+      - uses: actions/download-artifact@v4
+        with:
+          name: marocimmo-sitemap-enumeration-proof
+          run-id: 38267638287
+          github-token: ${{ github.token }}
+          path: .tmp/sitemap
+      - name: Check frozen sitemap source SHA256
+        run: |
+          echo 'e8cbe3459893a741412ac9217781efe71707f6eb5faf89754422548df7638742  .tmp/sitemap/urls.txt' | sha256sum -c -
+          jq -e '.robots_sitemap_allowed == true and .robots_status == 200 and .public_urls_unique == 3936' .tmp/sitemap/summary.json
+      - name: Request no more than 12 permitted individual pages
+        run: python scripts/acquisition/marocimmo-detail-evidence-v1.py
+      - name: Check no fake active/fresh or silent database access
+        run: |
+          jq -e '.sitemap_candidates_source_id_distinct == 517 and .detail_requests <= 12 and .database_access == 0 and .database_writes == 0 and .published == 0' marocimmo-detail-evidence-v1.json
+          python - <<'PY'
+          import json
+          lines=[json.loads(x) for x in open('marocimmo-detail-evidence-v1.jsonl') if x.strip()]
+          assert len(lines)<=12
+          assert all(not x.get('freshness_certified') and not x.get('availability_certified') and not x.get('physical_uniqueness_certified') for x in lines)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: marocimmo-primary-details-v1
+          path: |
+            marocimmo-detail-evidence-v1.json
+            marocimmo-detail-evidence-v1.jsonl
+          retention-days: 14

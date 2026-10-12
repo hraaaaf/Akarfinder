@@ -1,0 +1,43 @@
+name: AkarFinder Kaynly Public Source Link Canary
+on:
+  push:
+    branches:
+      - data/200k-fresh-parser-v2
+    paths:
+      - '.github/workflows/kaynly-source-link-canary-v1.yml'
+      - 'scripts/data/kaynly-source-link-canary-v1.mjs'
+      - 'scripts/data/__tests__/kaynly-source-link-canary-v1.test.mjs'
+permissions:
+  contents: read
+jobs:
+  bounded-source-urls:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Offline isolation, link provenance, robots and 429 tests
+        run: node --test scripts/data/__tests__/kaynly-source-link-canary-v1.test.mjs
+      - name: Source URLs from two public Casablanca index pages
+        run: node scripts/data/kaynly-source-link-canary-v1.mjs
+      - name: No database or fabricated independent listings
+        run: |
+          jq -e '.category_requests <= 2 and .third_party_detail_requests == 0 and .db_reads == 0 and .db_writes == 0 and .production_publications == 0' kaynly-source-links-v1.json
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const rows=fs.readFileSync('kaynly-source-links-v1.jsonl','utf8').split(/\r?\n/).filter(Boolean).map(JSON.parse);
+          if(new Set(rows.map(x=>x.original_source_url)).size!==rows.length)throw Error('duplicate source urls');
+          if(rows.some(x=>x.source_listing_id_verified||x.commercially_available_verified||x.cross_source_deduplicated||x.has_five_fields))throw Error('false promotion');
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kaynly-source-links-v1
+          path: |
+            kaynly-source-links-v1.json
+            kaynly-source-links-v1.jsonl
+          retention-days: 14

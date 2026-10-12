@@ -1,0 +1,39 @@
+name: AkarFinder Sarouty Card DOM Boundary Audit
+on:
+  push:
+    branches:
+      - data/200k-fresh-parser-v2
+    paths:
+      - '.github/workflows/sarouty-card-boundary-v1.yml'
+      - 'scripts/data/sarouty-card-boundary-v1.mjs'
+      - 'scripts/data/__tests__/sarouty-card-boundary-v1.test.mjs'
+      - 'scripts/data/sarouty-card-boundary-cli-v1.mjs'
+permissions:
+  contents: read
+jobs:
+  one-public-category-structure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    env:
+      OUTPUT_PREFIX: sarouty-card-boundary
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Structural diagnostics and no leakage regression
+        run: node --test scripts/data/__tests__/sarouty-card-boundary-v1.test.mjs
+      - name: Inspect one robots-approved public category, no details
+        run: node scripts/data/sarouty-card-boundary-cli-v1.mjs
+      - name: Verify no writes and no listing data
+        if: success()
+        run: |
+          jq -e '.state == "observed" and .database_access == 0 and .database_writes == 0 and (.profiles | length) <= 12' sarouty-card-boundary.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sarouty-card-boundary-v1
+          path: sarouty-card-boundary.json
+          retention-days: 7
