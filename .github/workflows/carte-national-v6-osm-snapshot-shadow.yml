@@ -1,0 +1,88 @@
+name: Carte National V6 New OSM Snapshot Shadow
+
+on:
+  pull_request:
+    paths:
+      - "scripts/map/build-national-v6-osm-provenance.py"
+      - "scripts/map/__tests__/test_national_v6_osm_provenance.py"
+      - ".github/workflows/carte-national-v6-osm-snapshot-shadow.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  new-osm-snapshot:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run offline syntax and 14 source-safety unit tests
+        run: |
+          python -m py_compile scripts/map/build-national-v6-osm-provenance.py
+          python -m unittest discover -s scripts/map/__tests__ -p 'test_national_v6_osm_provenance.py' -v
+      - name: Install osmium-tool
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends osmium-tool
+          osmium --version
+      - name: Download and validate NEW Geofabrik source PBF
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd /tmp
+          curl -fL --retry 4 --retry-delay 3 -o morocco-latest.osm.pbf https://download.geofabrik.de/africa/morocco-latest.osm.pbf
+          curl -fL --retry 4 --retry-delay 3 -o morocco-latest.osm.pbf.md5 https://download.geofabrik.de/africa/morocco-latest.osm.pbf.md5
+          md5sum -c morocco-latest.osm.pbf.md5
+          date -u +%Y-%m-%dT%H:%M:%SZ > /tmp/national-v6-downloaded-at.txt
+          sha256sum morocco-latest.osm.pbf
+      - name: Export full source ID-bearing OSM features and candidate admin relations
+        shell: bash
+        run: |
+          set -euo pipefail
+          osmium tags-filter -O -o /tmp/national-v6-n.osm.pbf /tmp/morocco-latest.osm.pbf nwr/place=neighbourhood,suburb,quarter,borough
+          osmium export -O -a type,id /tmp/national-v6-n.osm.pbf -o /tmp/national-v6-n.geojson
+          osmium tags-filter -O -o /tmp/national-v6-admin.osm.pbf /tmp/morocco-latest.osm.pbf r/boundary=administrative
+          osmium tags-filter -O -o /tmp/national-v6-admin89.osm.pbf /tmp/national-v6-admin.osm.pbf r/admin_level=8,9
+          osmium export -O -a type,id --geometry-types=polygon /tmp/national-v6-admin89.osm.pbf -o /tmp/national-v6-admin89.geojson
+          mkdir -p data/audits/national-v6-fresh-snapshot/inputs
+          cp /tmp/national-v6-n.geojson /tmp/national-v6-admin89.geojson /tmp/national-v6-n.osm.pbf /tmp/national-v6-admin89.osm.pbf /tmp/national-v6-downloaded-at.txt /tmp/morocco-latest.osm.pbf.md5 data/audits/national-v6-fresh-snapshot/inputs/
+      - name: Generate complete decision ledger and SHA-256 source manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/map/build-national-v6-osm-provenance.py --pbf /tmp/morocco-latest.osm.pbf --neighborhoods /tmp/national-v6-n.geojson --boundaries /tmp/national-v6-admin89.geojson --output data/audits/national-v6-fresh-snapshot --downloaded-at "$(cat /tmp/national-v6-downloaded-at.txt)" --published-md5 "$(head -c 32 /tmp/morocco-latest.osm.pbf.md5)" --osmium-version "$(osmium --version)"
+      - name: Validate exact real source counts and zero geographic publication
+        run: |
+          python - <<'PY'
+          import json,hashlib,pathlib
+          p=pathlib.Path('data/audits/national-v6-fresh-snapshot')
+          m=json.loads((p/'v6-manifest.json').read_text())
+          ledger=[json.loads(s) for s in (p/'v6-ledger.jsonl').read_text().splitlines()]
+          sources=[json.loads(s) for s in (p/'v6-sources.jsonl').read_text().splitlines()]
+          assert m['status']=='shadow_only_pass'
+          assert m['counts']['input']==m['counts']['ledger']==len(ledger)
+          assert m['counts']['retained']==len(sources)
+          assert m['counts']['retained']+m['counts']['excluded']==len(ledger)
+          assert len({x['sourceId'] for x in ledger})==len(ledger)
+          assert m['safety']['allFeaturesAccounted'] and m['safety']['originalIdsPresent'] and m['safety']['originalIdsUnique']
+          assert m['safety']['mapEligibleAdded']==m['safety']['publishedNeighborhoodPolygons']==m['safety']['districtFiltersAdded']==0
+          assert m['snapshot']['newSnapshotNotHistoricReplay']
+          assert not m['historical2026V5']['isReplay']
+          assert m['historical2026V5']['missing252OsmIds'] is None
+          assert m['historical2026V5']['omissionReasons'] is None
+          assert all(s['review']['publicationStatus']=='hold_no_publication' and s['review']['mapEligible'] is False for s in sources)
+          for t in ('ledger','sources'):
+            assert m[t+'Sha256']==hashlib.sha256((p/('v6-'+t+'.jsonl')).read_bytes()).hexdigest()
+          print('PASS: NEW OSM V6 source-only snapshot:',m['counts'],'PBF SHA256:',m['snapshot']['pbfSha256'])
+          PY
+      - name: Preserve full filtered source evidence and per-ID decision ledger
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: national-v6-new-osm-source-shadow
+          path: data/audits/national-v6-fresh-snapshot/
+          if-no-files-found: warn
+          retention-days: 90
