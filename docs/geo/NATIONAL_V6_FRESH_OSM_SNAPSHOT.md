@@ -17,3 +17,7 @@ This is a NEW Geofabrik Morocco snapshot. It is not an exact replay of V5 run 32
 Scope is OSM labels only, not HCP/Barid full national catalog. This source-only workflow does not change the public MapLibre engine, Search, canonical registry, database or Vercel deployment. Success of CI is not authority to publish any new quartier.
 
 Next: validate the real national snapshot manifest and samples; archive filtered source inputs durably beyond 90 days if necessary; then design a separately reviewed identity and neighborhood semantic join with source-to-product publication gates.
+
+## 2026-10-13 live snapshot first-run root cause
+
+First real run #38389717234 verified Geofabrik MD5 and recorded PBF SHA256 82425e414f2c581c97cbc89723ae5f3115b2d3e5a7e98cc7fc833ee609160bd4. It emitted 2,183 exported OSM features: 1,958 held source records and 225 excluded raw geometries. It failed closed on 120 repeated way IDs and 10 non-relation admin geometries. Reading the uploaded OSM GeoJSON proved all 120 repeats are one identical OSM way exported in two geometric formats (LineString + MultiPolygon), with identical tags and bbox centers, and all 10 admin candidates are way polygons, not relations. Revised rules keep every raw input in the ledger; treat only explicitly identical two-format exports as non-conflicting variants; treat non-relation admin polygons as excluded candidate parents with audit reasons. Truly conflicting source IDs and invalid relation IDs still fail closed. This was not evidence of the historical 252 IDs or neighborhood boundaries.

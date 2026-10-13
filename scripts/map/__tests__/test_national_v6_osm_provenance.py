@@ -50,6 +50,31 @@ class Tests(unittest.TestCase):
         a=rel("A",100);a["geometry"]["coordinates"]=[RING,[[2,2],[8,2],[8,8],[2,8],[2,2]]]
         m,l,s=v.inspect([source("X",1)],[a],SNAP)
         self.assertEqual(s[0]["parentProvenance"]["status"],"none")
+    def test_osmium_way_dual_geometry_is_traced_not_falsely_conflicting(self):
+        a=source("Named",77);a["properties"]["@type"]="way"
+        a["geometry"]={"type":"LineString","coordinates":[[1,1],[2,2],[1,1]]}
+        b=json.loads(json.dumps(a))
+        b["geometry"]={"type":"MultiPolygon","coordinates":[[[[1,1],[2,2],[1,1]]]]}
+        m,l,records=v.inspect([a,b],[rel("A",100)],SNAP)
+        self.assertEqual(m["status"],"shadow_only_pass")
+        self.assertEqual(m["counts"]["osmiumDualGeometryVariants"],1)
+        self.assertEqual(len(l),2)
+        self.assertEqual(len(records),1)
+        self.assertTrue(any("osmium_export_second_geometry_variant" in row["reasons"] for row in l))
+    def test_same_id_with_changed_name_is_true_conflict(self):
+        a=source("Original",12);b=source("Different",12)
+        m,l,records=v.inspect([a,b],[rel("A",100)],SNAP)
+        self.assertEqual(m["status"],"blocked_integrity")
+        self.assertEqual(m["counts"]["conflictingDuplicateOsmIds"],1)
+    def test_nonrelation_admin_polygon_logged_not_selected_as_parent(self):
+        p=rel("Way perimeter",333)
+        p["properties"]["@type"]="way"
+        p["geometry"]["type"]="MultiPolygon"
+        p["geometry"]["coordinates"]=[[RING]]
+        m,l,s=v.inspect([source("X",4)],[p],SNAP)
+        self.assertEqual(m["status"],"shadow_only_pass")
+        self.assertEqual(m["counts"]["excludedNonRelationAdminGeometries"],1)
+        self.assertEqual(s[0]["parentProvenance"]["status"],"none")
     def test_deterministic(self):
         x=[source("B",1),source("A",2)]
         self.assertEqual(v.encoded(v.inspect(x,[rel("A",100)],SNAP)),v.encoded(v.inspect(x,[rel("A",100)],SNAP)))

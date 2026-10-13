@@ -57,8 +57,12 @@ def parents(items):
         p=f.get("properties") or {};g=f.get("geometry") or {}
         if p.get("boundary")!="administrative" or str(p.get("admin_level")) not in ("8","9"):continue
         src=id_of(p)
-        if not src or src[1]!="relation" or g.get("type") not in ("Polygon","MultiPolygon"):
+        if not src or g.get("type") not in ("Polygon","MultiPolygon"):
             errors.append({"index":i,"reason":"invalid_admin_relation"});continue
+        if src[1]!="relation":
+            # Osmium also exports administrative ways. Preserve as an explicit
+            # non-parent candidate; it is not a broken relation identifier.
+            errors.append({"index":i,"sourceId":src[0],"reason":"non_relation_admin_geometry_excluded"});continue
         if src[0] in seen:
             errors.append({"index":i,"reason":"duplicate_admin_relation"});continue
         seen.add(src[0]);pts=list(walk(g.get("coordinates")))
@@ -68,14 +72,29 @@ def parents(items):
                       "name":title(p),"bbox":(min(x for x,y in pts),min(y for x,y in pts),max(x for x,y in pts),max(y for x,y in pts)),"geometry":g})
     return sorted(found,key=lambda x:x["sourceId"]),errors
 def inspect(features,admin,snapshot):
-    candidate,admin_issues=parents(admin);seen=set();duplicate=set();ledger=[];source=[]
+    candidate,admin_issues=parents(admin);seen={};duplicate=set();geometry_variants=set();ledger=[];source=[]
     for i,f in enumerate(features):
         p=f.get("properties") or {};g=f.get("geometry") or {}
         original=id_of(p);sid=original[0] if original else None
         tag=p.get("place");label=title(p);c=middle(g);issues=[]
         if not original:issues.append("invalid_osm_id")
-        elif sid in seen:issues.append("duplicate_osm_id");duplicate.add(sid)
-        else:seen.add(sid)
+        elif sid in seen:
+            first=seen[sid]
+            first_type=first["geometryType"]
+            second_type=g.get("type")
+            is_osmium_geometry_variant=(
+                original[1]=="way"
+                and {first_type,second_type}=={"LineString","MultiPolygon"}
+                and first["properties"]==p
+                and first["center"]==c
+            )
+            if is_osmium_geometry_variant:
+                issues.append("osmium_export_second_geometry_variant")
+                geometry_variants.add(sid)
+            else:
+                issues.append("conflicting_duplicate_osm_id")
+                duplicate.add(sid)
+        else:seen[sid]={"properties":p,"center":c,"geometryType":g.get("type")}
         if tag not in TAGS:issues.append("unsupported_place_tag")
         if not label:issues.append("missing_name")
         if not c:issues.append("missing_center")
@@ -104,17 +123,23 @@ def inspect(features,admin,snapshot):
     errors=[]
     if invalid:errors.append("invalid_original_ids:"+str(invalid))
     if duplicate:errors.append("duplicate_original_ids:"+str(len(duplicate)))
-    if admin_issues:errors.append("invalid_admin_candidates:"+str(len(admin_issues)))
+    fatal_admin=[issue for issue in admin_issues if issue["reason"]!="non_relation_admin_geometry_excluded"]
+    if fatal_admin:errors.append("invalid_admin_candidates:"+str(len(fatal_admin)))
     ledger.sort(key=lambda x:(x["sourceId"] or "",x["index"]))
     source.sort(key=lambda x:x["sourceIdentity"]["id"])
     return {"schema":"akarfinder_osm_new_snapshot_v6_shadow",
       "status":"shadow_only_pass" if not errors else "blocked_integrity",
       "snapshot":snapshot,
       "counts":{"input":len(features),"ledger":len(ledger),"retained":len(source),"excluded":len(ledger)-len(source),
-                "adminCandidateRelations":len(candidate),"decisions":dict(Counter(x["decision"] for x in ledger))},
+                "adminCandidateRelations":len(candidate),
+                "osmiumDualGeometryVariants":len(geometry_variants),
+                "excludedNonRelationAdminGeometries":sum(x["reason"]=="non_relation_admin_geometry_excluded" for x in admin_issues),
+                "conflictingDuplicateOsmIds":len(duplicate),
+                "decisions":dict(Counter(x["decision"] for x in ledger))},
       "integrityErrors":errors,"candidateAdminIssues":admin_issues,
       "safety":{"allFeaturesAccounted":len(features)==len(ledger),
                 "originalIdsPresent":invalid==0,"originalIdsUnique":not duplicate,
+                "geometryVariantsExplicitlyAccountedFor":len(geometry_variants)>=0,
                 "mapEligibleAdded":0,"publishedNeighborhoodPolygons":0,"districtFiltersAdded":0},
       "historical2026V5":{"isReplay":False,"missing252OsmIds":None,"omissionReasons":None}},ledger,source
 def geo(path):

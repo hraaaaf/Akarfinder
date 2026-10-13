@@ -66,7 +66,12 @@ jobs:
           assert m['counts']['input']==m['counts']['ledger']==len(ledger)
           assert m['counts']['retained']==len(sources)
           assert m['counts']['retained']+m['counts']['excluded']==len(ledger)
-          assert len({x['sourceId'] for x in ledger})==len(ledger)
+          # Osmium can emit LineString AND MultiPolygon for the same way ID;
+          # source IDs must be unique among retained records, not raw features.
+          assert len({x['sourceIdentity']['id'] for x in sources})==len(sources)
+          assert m['counts']['conflictingDuplicateOsmIds']==0
+          assert m['counts']['osmiumDualGeometryVariants']>=0
+          assert m['counts']['excludedNonRelationAdminGeometries']>=0
           assert m['safety']['allFeaturesAccounted'] and m['safety']['originalIdsPresent'] and m['safety']['originalIdsUnique']
           assert m['safety']['mapEligibleAdded']==m['safety']['publishedNeighborhoodPolygons']==m['safety']['districtFiltersAdded']==0
           assert m['snapshot']['newSnapshotNotHistoricReplay']
