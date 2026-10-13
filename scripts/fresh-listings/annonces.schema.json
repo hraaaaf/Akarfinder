@@ -12,6 +12,8 @@
       "superficie": {"type": "number", "exclusiveMinimum": 0},
       "prix": {"type": "number", "exclusiveMinimum": 0, "maximum": 500000000},
       "devise": {"enum": ["MAD", "EUR", "USD"]},
+      "transaction": {"enum": ["vente", "location", "location_vacances"]},
+      "periode_prix": {"enum": ["total", "mois", "nuit"]},
       "type": {"enum": ["appartement", "studio", "villa", "maison", "terrain", "bureau", "local_commercial", "riad", "ferme"]},
       "url": {"type": "string", "format": "uri", "pattern": "^https://"},
       "date_publication": {"type": "string", "format": "date-time"},

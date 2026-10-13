@@ -560,7 +560,11 @@ def export(db, out, now, target, stats):
         if reasons:
             rejected.append({"url": row["url"], "motifs": sorted(set(reasons)), "extraction": row})
         else:
-            accepted.append({k: row[k] for k in ("ville", "quartier", "superficie", "prix", "devise", "type", "url", "date_publication", "verifie_le", "preuves", "parser_version")})
+            item = {k: row[k] for k in ("ville", "quartier", "superficie", "prix", "devise", "type", "url", "date_publication", "verifie_le", "preuves", "parser_version")}
+            for field in ("transaction", "periode_prix"):
+                if row.get(field):
+                    item[field] = row[field]
+            accepted.append(item)
     atomic_json(out / "annonces fraiches.json", accepted)
     with (out / "rejets.jsonl").open("w", encoding="utf-8") as f:
         for row in rejected:

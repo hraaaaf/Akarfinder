@@ -1,73 +1,54 @@
 {
-  "run_id": "2026-10-13T15:56:33.811465+00:00",
+  "run_id": "2026-10-13T16:19:24.649336+00:00",
   "sources": [
     {
-      "origin": "https://www.marocimmo.com",
-      "discovered": 524
-    },
-    {
       "origin": "https://sawim.ma",
-      "discovered": 5553
-    },
-    {
-      "origin": "https://www.avito.ma",
-      "discovered": 76
+      "discovered": 144,
+      "channel": "documented_public_json_feed"
     }
   ],
-  "discovered": 6153,
-  "fetched": 305,
-  "errors": [
-    {
-      "url": "https://www.avito.ma/sitemaps/sitemap-static-1.xml",
-      "error": "HTTP Error 404: Not Found"
-    },
-    {
-      "url": "https://www.avito.ma/sitemaps/sitemap-avito-listing-1.xml",
-      "error": "HTTP Error 404: Not Found"
-    },
-    {
-      "url": "https://www.avito.ma/sitemaps/sitemap-avito-listing-2.xml",
-      "error": "HTTP Error 404: Not Found"
-    },
-    {
-      "url": "https://www.avito.ma/sitemaps/sitemap-avito-listing-3.xml",
-      "error": "HTTP Error 404: Not Found"
-    },
-    {
-      "url": "https://www.avito.ma/sitemaps/sitemap-avito-listing-4.xml",
-      "error": "HTTP Error 404: Not Found"
-    }
-  ],
+  "discovered": 144,
+  "fetched": 110,
+  "errors": [],
+  "feed_documentation": "https://sawim.ma/llms.txt",
+  "feed_pages_read": 6,
+  "feed_rows_read": 144,
+  "feed_total_advertised": 5553,
+  "recent_candidates": 110,
+  "older_feed_rows": 34,
+  "complete": true,
+  "tail_not_fetched_reason": "documented_sort_recent_older_than_seven_day_cutoff",
   "parser_version": "1.5.0",
-  "generated_at": "2026-10-13T16:07:31.592745+00:00",
+  "generated_at": "2026-10-13T16:26:47.051144+00:00",
   "freshness": "publication strictly within last 7 days; explicit successful HTTP verification within 24 hours",
   "target": 200000,
-  "accepted": 90,
-  "rejected": 415,
+  "accepted": 94,
+  "rejected": 419,
   "target_reached": false,
-  "shortfall": 199910,
+  "shortfall": 199906,
   "reasons": {
-    "missing_evidence_quartier": 91,
-    "missing_or_unsupported_currency": 187,
-    "missing_quartier": 91,
-    "older_than_7_days": 335,
+    "missing_evidence_quartier": 87,
+    "missing_or_unsupported_currency": 185,
+    "missing_quartier": 87,
+    "older_than_7_days": 343,
     "invalid_prix": 132,
     "invalid_superficie": 75,
     "missing_evidence_prix": 132,
     "missing_evidence_superficie": 75,
-    "missing_evidence_ville": 48,
-    "missing_ville": 48,
-    "missing_evidence_type": 155,
-    "missing_type": 155,
-    "unsupported_type": 155,
+    "not_live_verified": 35,
+    "missing_evidence_type": 156,
+    "missing_type": 156,
+    "unsupported_type": 156,
     "missing_evidence_date_publication": 39,
     "missing_publication_date": 39,
     "publication_semantics_unverified": 8,
-    "not_live_verified": 1,
+    "missing_evidence_ville": 43,
+    "missing_ville": 43,
     "redirect_requires_review:302": 1
   },
   "photos_downloaded": 0,
   "production_writes": 0,
   "deduplication": "canonical URL only; distinct properties not guaranteed",
-  "checkpoint_observations": 505
+  "checkpoint_observations": 513,
+  "snapshot_of_running_collection": false
 }

@@ -9,7 +9,7 @@ Le nombre d'URL découvertes ne représente pas le nombre d'annonces complètes 
 Python 3.10+ ; aucune dépendance externe, aucun secret.
 
 ```powershell
-python -m unittest discover -s scripts/fresh-listings -p test_pipeline.py -v
+python -m unittest discover -s scripts/fresh-listings -p 'test_*.py' -v
 python scripts/fresh-listings/pipeline.py --max-details 60 --target 200000
 ```
 
@@ -45,5 +45,11 @@ Les fiches HTML sont plafonnées à 3 Mo ; les sitemaps XML à 50 Mio. Seuls les
 `python scripts/fresh-listings/survey.py` contrôle huit origines publiques, sans ouvrir les routes privées. Son rapport `source-survey.json` conserve les résultats d'accès et les liens publics de découverte. MarocAnnonces est exclu en raison de `Disallow: /` pour notre agent ; aucune impersonation de Googlebot.
 
 Le mode `--input observations.json` rejoue des extractions déjà inspectées hors réseau, mais ne les certifie pas comme récemment vérifiées. Publier un fichier de rejets n'accorde pas de droits d'exploitation supplémentaires sur une source.
+
+## Flux JSON public Sawim
+
+Sawim documente explicitement `https://sawim.ma/recherche.json` dans `https://sawim.ma/llms.txt`, sans clé, pour les agents et scripts. `python scripts/fresh-listings/sawim_feed.py` lit les pages triées par `posted_at` (`sort=recent`), normalise les champs documentés et vérifie chaque fiche récente en HTML. Le champ `cover` et les contacts sont jetés, sans téléchargement. Une divergence de date ou d'identité met la fiche en rejet ; le prix HTML courant prime. Les publications trop anciennes sont rejetées avant requête détail. Un arrêt de pagination n'est permis que si le contrat de tri et les horodatages monotones vérifiés mettent une page entière hors des 7 jours. Le stock total annoncé par la source n'est pas présenté comme un nombre d'annonces fraîches.
+
+Quand la source les fournit, `transaction` et `periode_prix` distinguent prix total, loyer mensuel et tarif par nuit.
 
 Le workflow GitHub Actions `Annonces fraiches - tamis 7 jours` lance uniquement les tests sur les PR concernées. Un déclenchement manuel relance les tests et le pilote, puis fournit les trois fichiers de résultat comme artefact. Il ne s'exécute pas périodiquement et ne modifie pas le dépôt ou la production. Le pilote n'est pas une certification d'une collecte nationale à 200 000 annonces.
