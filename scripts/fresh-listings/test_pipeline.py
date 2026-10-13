@@ -90,16 +90,20 @@ class PipelineTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             NoRedirect().redirect_request(None, None, 302, '', {}, 'https://other.test')
 
-    def test_resume_needs_current_live_verification(self):
+    def test_resume_reuses_recent_verification_but_rejects_expired(self):
         db = sqlite3.connect(':memory:')
         db.execute('CREATE TABLE observations (url TEXT PRIMARY KEY, payload TEXT)')
         r = {**row(), 'run_id': 'previous'}
         db.execute('INSERT INTO observations VALUES (?, ?)', (r['url'], json.dumps(r)))
         with tempfile.TemporaryDirectory() as directory:
             report = export(db, Path(directory), NOW, 200000, {'run_id': 'current'})
+            self.assertEqual(report['accepted'], 1)
+            self.assertEqual(len(json.loads((Path(directory) / 'annonces fraiches.json').read_text())), 1)
+            r['verifie_le'] = (NOW - timedelta(hours=25)).isoformat()
+            db.execute('UPDATE observations SET payload = ?', (json.dumps(r),))
+            report = export(db, Path(directory), NOW, 200000, {'run_id': 'current'})
             self.assertEqual(report['accepted'], 0)
-            self.assertEqual(report['reasons']['not_verified_in_current_run'], 1)
-            self.assertEqual(json.loads((Path(directory) / 'annonces fraiches.json').read_text()), [])
+            self.assertEqual(report['reasons']['verification_expired_or_future'], 1)
 
     def test_bound_nested_item_and_no_date_invention(self):
         n = {'@type': 'RealEstateListing', 'url': URL, 'offers': {'price': 1250000, 'priceCurrency': 'MAD'}, 'itemOffered': {'@type': 'Apartment', 'address': {'addressLocality': 'Agadir', 'neighborhood': 'Tilila'}, 'floorSize': {'value': 130, 'unitCode': 'MTK'}}}
@@ -109,10 +113,10 @@ class PipelineTests(unittest.TestCase):
         self.assertEqual(r['prix'], 1250000)
         self.assertNotIn('date_publication', r)
 
-    def test_foreign_currency_not_converted_and_invalid_area_unit(self):
+    def test_foreign_currency_preserved_and_invalid_area_unit(self):
         n = {'@type': 'RealEstateListing', 'url': URL, 'offers': {'price': 350000, 'priceCurrency': 'EUR'}, 'itemOffered': {'@type': 'Apartment', 'floorSize': {'value': 130, 'unitCode': 'MTR'}}}
         r = extract('<script type="application/ld+json">' + json.dumps(n) + '</script>', URL)
-        self.assertNotIn('prix', r)
+        self.assertEqual((r['prix'], r['devise']), (350000, 'EUR'))
         self.assertNotIn('superficie', r)
 
     def test_unavailable_listing_and_noarchive_fail_closed(self):
@@ -132,6 +136,81 @@ class PipelineTests(unittest.TestCase):
     def test_starting_price_is_not_exact_price(self):
         r = extract(html().replace('à 3 600 000 DH', 'à partir de 3 600 000 DH'), URL)
         self.assertNotIn('prix', r)
+
+    def test_date_posted_and_bound_main_entity(self):
+        u = 'https://www.marocimmo.com/fr/annonces/studio-casablanca-702'
+        n = {'@type': 'RealEstateListing', 'url': u, 'datePosted': '2026-10-12T12:00:00Z', 'offers': {'price': 1120000, 'priceCurrency': 'MAD'}, 'mainEntity': {'@type': 'Apartment', '@id': u + '#bien', 'address': {'addressLocality': 'Casablanca'}, 'containedInPlace': {'name': 'Maârif'}, 'floorSize': {'value': 39, 'unitCode': 'MTK'}}}
+        r = extract('<script type="application/ld+json">' + json.dumps(n) + '</script>', u)
+        self.assertEqual((r['ville'], r['quartier'], r['superficie'], r['prix']), ('Casablanca', 'Maârif', 39, 1120000))
+        self.assertEqual(sieve({**r, 'verifie_le': NOW.isoformat(), 'http_status': 200}, NOW), [])
+
+    def test_foreign_main_entity_is_not_rebound(self):
+        n = {'@type': 'RealEstateListing', 'url': URL, 'mainEntity': {'@type': 'Apartment', 'url': 'https://daragadir.com/other', 'floorSize': {'value': 999, 'unitCode': 'MTK'}}}
+        r = extract('<script type="application/ld+json">' + json.dumps(n) + '</script>', URL)
+        self.assertNotIn('superficie', r)
+
+    def test_conflicting_posted_and_published_dates(self):
+        n = {'@type': 'RealEstateListing', 'url': URL, 'datePosted': '2026-10-12T12:00:00Z', 'datePublished': '2025-01-01T12:00:00Z'}
+        r = extract('<script type="application/ld+json">' + json.dumps(n) + '</script>', URL)
+        self.assertEqual(r['erreur'], 'conflicting_publication_dates')
+
+    def test_offer_nested_property_and_explicit_dom_area(self):
+        u = 'https://sawim.ma/annonce/Abc123/villa'
+        n = {'@type': 'RealEstateListing', 'url': u, 'datePosted': '2026-10-12T12:00:00Z', 'mainEntity': {'@type': 'Offer', 'url': u, 'price': 2000000, 'priceCurrency': 'MAD', 'itemOffered': {'@type': 'House', 'address': {'addressLocality': 'Marrakech'}, 'containedInPlace': {'name': 'Targa, Marrakech'}}}}
+        markup = '<dl><dt>Type de bien</dt><dd>Villa</dd><dt>Surface habitable</dt><dd>150 m²</dd></dl>'
+        r = extract('<script type="application/ld+json">' + json.dumps(n) + '</script>' + markup, u)
+        self.assertEqual((r['type'], r['quartier'], r['superficie'], r['prix']), ('villa', 'Targa', 150, 2000000))
+        r = extract('<script type="application/ld+json">' + json.dumps(n) + '</script>' + markup.replace('150 m²', '150'), u)
+        self.assertNotIn('superficie', r)
+
+    def test_unicode_urls_are_encoded_without_double_encoding(self):
+        self.assertEqual(canonical('https://www.avito.ma/fr/appartement_à_1.htm'), 'https://www.avito.ma/fr/appartement_%C3%A0_1.htm')
+        self.assertEqual(canonical('https://www.avito.ma/fr/appartement_%C3%A0_1.htm'), 'https://www.avito.ma/fr/appartement_%C3%A0_1.htm')
+
+    def test_avito_bound_cache_and_list_time_quarantine(self):
+        from pipeline import avito_extract, Page
+        u = 'https://www.avito.ma/fr/agdal/appartements/appartement_123.htm'
+        ad = {'__typename': 'PublishedAd', 'listId': '123', 'listTime': '2026-10-12T12:00:00Z', 'price': {'withCurrency': '900000 DH', 'withoutCurrency': 900000}, 'monthlyPayment': {'withCurrency': '5000 DH', 'withoutCurrency': 5000}, 'category': {'__ref': 'Category:1'}, 'location': {'city': {'__ref': 'City:1'}, 'area': {'__ref': 'Area:1'}}, 'params': {'primary': [{'id': 'habitable_size', 'numericValue': 90, 'unit': 'm²'}]}}
+        cache = {'ROOT_QUERY': {'getPublishedAd({"query":{"listId":"123"}})': {'ad': ad}}, 'City:1': {'name': 'Rabat'}, 'Area:1': {'name': 'Agdal'}, 'Category:1': {'name': 'Appartements'}}
+        p = Page()
+        p.next_data = {'props': {'pageProps': {'apolloState': cache}}}
+        r = avito_extract(p, u)
+        self.assertEqual((r['ville'], r['quartier'], r['superficie'], r['prix']), ('Rabat', 'Agdal', 90, 900000))
+        self.assertEqual(r['erreur'], 'publication_semantics_unverified')
+        self.assertNotIn('date_publication', r)
+        self.assertEqual(avito_extract(p, u.replace('_123', '_999'))['erreur'], 'avito_missing_or_ambiguous_bound_ad')
+
+    def test_catalogue_priority_and_xml_only_discovery(self):
+        from pipeline import discover
+        class Source:
+            origin = 'https://site.test'
+            robots = 'User-agent: *\nSitemap: https://site.test/sitemap.xml'
+            def get(self, url, **kwargs):
+                if url.endswith('sitemap.xml'):
+                    return '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://site.test/ad/old</loc><lastmod>2026-10-13T00:00:00Z</lastmod></url><url><loc>https://site.test/ad/new</loc><lastmod>2026-10-12T00:00:00Z</lastmod></url></urlset>'
+                return '<a href="/ad/new">new</a><img src="/photo.jpg">'
+        urls, errors = discover(Source(), {'detail_pattern': '^/ad/', 'catalogues': ['https://site.test/latest']})
+        self.assertEqual(urls, ['https://site.test/ad/new', 'https://site.test/ad/old'])
+        self.assertEqual(errors, [])
+
+    def test_conflicting_dates_across_two_bound_nodes(self):
+        ld = [{'@type': 'RealEstateListing', 'url': URL, 'datePosted': '2026-10-12T12:00:00Z'}, {'@type': 'WebPage', 'url': URL, 'datePublished': '2025-01-01T12:00:00Z'}]
+        r = extract('<script type="application/ld+json">' + json.dumps(ld) + '</script>', URL)
+        self.assertEqual(r['erreur'], 'conflicting_publication_dates')
+
+    def test_offline_replay_does_not_certify_http_verification(self):
+        import contextlib
+        import io
+        from pipeline import main
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / 'input.json'
+            source.write_text(json.dumps([row()]), encoding='utf-8')
+            with patch('sys.argv', ['pipeline.py', '--input', str(source), '--output', str(root / 'result')]), contextlib.redirect_stdout(io.StringIO()):
+                main()
+            self.assertEqual(json.loads((root / 'result' / 'annonces fraiches.json').read_text()), [])
+            report = json.loads((root / 'result' / 'rapport.json').read_text())
+            self.assertEqual(report['reasons']['offline_replay_requires_live_verification'], 1)
 
 if __name__ == '__main__':
     unittest.main()

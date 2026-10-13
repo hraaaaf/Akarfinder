@@ -1,1 +1,1802 @@
-[]
+[
+  {
+    "ville": "Marrakech",
+    "quartier": "Route de Fès",
+    "superficie": 300.0,
+    "prix": 41000.0,
+    "devise": "MAD",
+    "type": "villa",
+    "url": "https://sawim.ma/annonce/0thgqROz/villa-moderne-en-location-sur-la-route-de-fes",
+    "date_publication": "2026-10-07T21:37:52.206Z",
+    "verifie_le": "2026-10-13T16:00:36.758455+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Targa",
+    "superficie": 168.0,
+    "prix": 2600000.0,
+    "devise": "MAD",
+    "type": "villa",
+    "url": "https://sawim.ma/annonce/10X9uA53/villa-a-vendre-vide-dans-une-residence-haut-standing-targa-marrakech",
+    "date_publication": "2026-10-08T21:50:39.223Z",
+    "verifie_le": "2026-10-13T16:00:55.488146+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Guéliz",
+    "superficie": 70.0,
+    "prix": 12000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://sawim.ma/annonce/1pCidPTx/appartement-meuble-2-chambres-70-m-gueliz",
+    "date_publication": "2026-10-06T21:35:00.985Z",
+    "verifie_le": "2026-10-13T16:00:46.163688+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Route de Casablanca",
+    "superficie": 54.0,
+    "prix": 8500.0,
+    "devise": "MAD",
+    "type": "local_commercial",
+    "url": "https://sawim.ma/annonce/2FxKXEkK/local-commercial-brut-en-location-rte-de-casa",
+    "date_publication": "2026-10-12T23:16:26.754Z",
+    "verifie_le": "2026-10-13T16:00:25.460742+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Guéliz",
+    "superficie": 180.0,
+    "prix": 4000000.0,
+    "devise": "MAD",
+    "type": "local_commercial",
+    "url": "https://sawim.ma/annonce/2S7T1DBM/espace-commercial-toutes-activites-possibles",
+    "date_publication": "2026-10-08T21:41:21.756Z",
+    "verifie_le": "2026-10-13T16:01:07.501210+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Palmeraie",
+    "superficie": 1490.0,
+    "prix": 3605000.0,
+    "devise": "EUR",
+    "type": "villa",
+    "url": "https://sawim.ma/annonce/2x2F4xhs/palais-d-exception-a-vendre-palmeraie",
+    "date_publication": "2026-10-10T00:43:07.657Z",
+    "verifie_le": "2026-10-13T16:00:51.480296+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:EUR",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Guéliz",
+    "superficie": 113.0,
+    "prix": 2484000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://sawim.ma/annonce/34RiT8qz/magnifique-duplex-gueliz-marrakech",
+    "date_publication": "2026-10-06T21:37:42.872Z",
+    "verifie_le": "2026-10-13T16:01:22.099250+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Agdal",
+    "superficie": 110.0,
+    "prix": 12000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://sawim.ma/annonce/37re0WiT/appartement-non-meuble-a-louer-marrakech-village",
+    "date_publication": "2026-10-06T21:36:25.296Z",
+    "verifie_le": "2026-10-13T16:01:29.052442+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Route de l'Ourika",
+    "superficie": 412.0,
+    "prix": 1600000.0,
+    "devise": "EUR",
+    "type": "villa",
+    "url": "https://sawim.ma/annonce/3b3dpFg2/villa-4-chambres-route-de-l-ourika-marrakech",
+    "date_publication": "2026-10-07T21:50:37.574Z",
+    "verifie_le": "2026-10-13T16:01:10.522959+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:EUR",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Daoudiate",
+    "superficie": 126.0,
+    "prix": 5200000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://sawim.ma/annonce/44kHNAqF/perle-rare-a-la-vente-marrakech",
+    "date_publication": "2026-10-06T21:30:15.223Z",
+    "verifie_le": "2026-10-13T16:01:46.119819+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Semlalia",
+    "superficie": 136.0,
+    "prix": 190500.0,
+    "devise": "EUR",
+    "type": "appartement",
+    "url": "https://sawim.ma/annonce/5SKoJKAd/duplex-t3-meuble-quartier-semlalia",
+    "date_publication": "2026-10-07T21:28:23.768Z",
+    "verifie_le": "2026-10-13T16:01:21.502806+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:EUR",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Route de Casablanca",
+    "superficie": 85.0,
+    "prix": 1350000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://sawim.ma/annonce/6WhErH7L/appartement-a-la-vente-rte-de-casablanca",
+    "date_publication": "2026-10-12T23:11:26.476Z",
+    "verifie_le": "2026-10-13T15:59:46.436035+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Guéliz",
+    "superficie": 77.0,
+    "prix": 1000000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://sawim.ma/annonce/6dETdtx2/appartement-2-chambres-a-vendre-abwab-gueliz",
+    "date_publication": "2026-10-06T21:33:48.064Z",
+    "verifie_le": "2026-10-13T16:01:41.086682+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Route de Casablanca",
+    "superficie": 93.0,
+    "prix": 9200.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://sawim.ma/annonce/6i3Gw3vf/superbe-appartement-avec-balcon-terrasse-marrakech",
+    "date_publication": "2026-10-08T21:50:40.289Z",
+    "verifie_le": "2026-10-13T16:00:30.435445+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Route de l'Ourika",
+    "superficie": 250.0,
+    "prix": 2800.0,
+    "devise": "EUR",
+    "type": "villa",
+    "url": "https://sawim.ma/annonce/8acEDCr4/villa-moderne-250m2-4-suites-terrasse-piscine-parking-meublee-route-de-l-ourika",
+    "date_publication": "2026-10-06T21:34:37.085Z",
+    "verifie_le": "2026-10-13T16:01:40.133345+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:EUR",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Targa",
+    "superficie": 344.0,
+    "prix": 323000.0,
+    "devise": "EUR",
+    "type": "maison",
+    "url": "https://sawim.ma/annonce/8o41gn5u/targa-maison-en-bon-etat-a-vendre-sur-terrain-251-m2",
+    "date_publication": "2026-10-06T21:31:57.513Z",
+    "verifie_le": "2026-10-13T16:01:45.093017+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:EUR",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Route de Ouarzazate",
+    "superficie": 900.0,
+    "prix": 720.0,
+    "devise": "EUR",
+    "type": "villa",
+    "url": "https://sawim.ma/annonce/8ueY4hd1/villa-de-prestige",
+    "date_publication": "2026-10-10T00:47:32.890Z",
+    "verifie_le": "2026-10-13T16:00:00.048013+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:EUR",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Guéliz",
+    "superficie": 96.0,
+    "prix": 1900000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://sawim.ma/annonce/94XsNS21/harmonieux-appartement-a-vendre-au-c-ur-de-gueliz",
+    "date_publication": "2026-10-10T00:51:35.213Z",
+    "verifie_le": "2026-10-13T16:00:18.456246+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Médina",
+    "superficie": 130.0,
+    "prix": 3400000.0,
+    "devise": "MAD",
+    "type": "riad",
+    "url": "https://sawim.ma/annonce/9CVn0TuJ/riad-renove-3-chambres-acces-voiture-devant-la-porte",
+    "date_publication": "2026-10-12T23:10:08.231Z",
+    "verifie_le": "2026-10-13T16:00:09.611413+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Route de Safi",
+    "superficie": 67.0,
+    "prix": 8000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://sawim.ma/annonce/9I69HuIT/beau-studio-meuble-avec-grande-terrasse-a-louer",
+    "date_publication": "2026-10-10T00:45:16.861Z",
+    "verifie_le": "2026-10-13T15:59:58.081500+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Route d'Amizmiz",
+    "superficie": 1200.0,
+    "prix": 80000000.0,
+    "devise": "MAD",
+    "type": "villa",
+    "url": "https://sawim.ma/annonce/9OwLgfNY/villa-ultra-moderne-de-luxe-6-suites-avec-ascenseur-a-vendre-meublee-route-d-ami",
+    "date_publication": "2026-10-06T21:36:27.698Z",
+    "verifie_le": "2026-10-13T16:01:27.076939+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Guéliz",
+    "superficie": 76.0,
+    "prix": 8000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://sawim.ma/annonce/AgCVUsd2/lumineux-appartement-meuble-en-location-a-gueliz",
+    "date_publication": "2026-10-10T00:51:43.963Z",
+    "verifie_le": "2026-10-13T15:59:55.082155+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Guéliz",
+    "superficie": 112.0,
+    "prix": 3600000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://sawim.ma/annonce/ETh7a8oP/magnifique-appartement-meuble-2-suites-a-vendre-au-c-ur-de-gueliz",
+    "date_publication": "2026-10-06T21:36:22.114Z",
+    "verifie_le": "2026-10-13T16:01:32.139717+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Hivernage",
+    "superficie": 100.0,
+    "prix": 17000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://sawim.ma/annonce/ElsjXqm0/coquet-appartement-en-location-longue-duree-a-hivernage",
+    "date_publication": "2026-10-07T21:37:53.703Z",
+    "verifie_le": "2026-10-13T16:00:35.472755+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Palmeraie",
+    "superficie": 75.0,
+    "prix": 1700000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://sawim.ma/annonce/FbHDwNz2/l-elegance-d-un-appartement-en-rez-de-jardin-a-la-palmeraie",
+    "date_publication": "2026-10-10T00:45:09.604Z",
+    "verifie_le": "2026-10-13T16:00:23.439806+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Route de Ouarzazate",
+    "superficie": 450.0,
+    "prix": 44300.0,
+    "devise": "MAD",
+    "type": "villa",
+    "url": "https://sawim.ma/annonce/GuSwnawX/villa-meublee-de-4-suites-a-amelkis",
+    "date_publication": "2026-10-10T00:47:49.172Z",
+    "verifie_le": "2026-10-13T15:59:56.057457+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Route d'Amizmiz",
+    "superficie": 65.0,
+    "prix": 720000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://sawim.ma/annonce/HmWgnVbc/appartement-2-ch-rte-amizmiz-secteur-riad-marrakech",
+    "date_publication": "2026-10-12T23:12:42.409Z",
+    "verifie_le": "2026-10-13T15:59:42.436411+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Palmeraie",
+    "superficie": 80.0,
+    "prix": 1944000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://sawim.ma/annonce/IIZd3hFg/appartement-1-chambre-en-rez-de-jardin-a-la-palmeraie",
+    "date_publication": "2026-10-08T21:48:53.091Z",
+    "verifie_le": "2026-10-13T16:01:04.523527+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Chrifia",
+    "superficie": 410.0,
+    "prix": 890000.0,
+    "devise": "EUR",
+    "type": "villa",
+    "url": "https://sawim.ma/annonce/IlzGM61o/villa-5-chambres-marrakech-golf-argan",
+    "date_publication": "2026-10-07T21:50:44.694Z",
+    "verifie_le": "2026-10-13T16:01:09.968770+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:EUR",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Guéliz",
+    "superficie": 66.0,
+    "prix": 1584000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://sawim.ma/annonce/J3pE7VSi/belle-opportunite-studio-investissement-locatif-marrakech",
+    "date_publication": "2026-10-10T23:42:47.643Z",
+    "verifie_le": "2026-10-13T16:00:15.467838+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Route de Fès",
+    "superficie": 250.0,
+    "prix": 3890000.0,
+    "devise": "MAD",
+    "type": "villa",
+    "url": "https://sawim.ma/annonce/J4k05gRV/villa-4ch-route-de-fez",
+    "date_publication": "2026-10-08T21:50:41.887Z",
+    "verifie_le": "2026-10-13T16:00:38.461209+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Médina",
+    "superficie": 120.0,
+    "prix": 395000.0,
+    "devise": "EUR",
+    "type": "riad",
+    "url": "https://sawim.ma/annonce/Kg7LsTBP/a-vendre-riad-de-charme-dans-le-quartier-barroudine-a-marrakech",
+    "date_publication": "2026-10-07T21:32:20.268Z",
+    "verifie_le": "2026-10-13T16:01:13.388005+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:EUR",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Médina",
+    "superficie": 65.0,
+    "prix": 362000.0,
+    "devise": "EUR",
+    "type": "riad",
+    "url": "https://sawim.ma/annonce/LgIK2EEN/exclusivite-riad-de-charme-renove-a-marrakech-5-chambres-terrasse-avec-bassin",
+    "date_publication": "2026-10-10T23:36:33.739Z",
+    "verifie_le": "2026-10-13T16:00:16.455400+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:EUR",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Route de Fès",
+    "superficie": 230.0,
+    "prix": 16000.0,
+    "devise": "MAD",
+    "type": "villa",
+    "url": "https://sawim.ma/annonce/Ls9jHZgH/villa-3ch-230m2-route-de-fez",
+    "date_publication": "2026-10-12T23:12:50.338Z",
+    "verifie_le": "2026-10-13T15:59:51.056393+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Guéliz",
+    "superficie": 84.0,
+    "prix": 11500.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://sawim.ma/annonce/OTVY7l5j/appartement-meuble-de-84-m-a-louer-a-camp-al-ghoul-3-chambres-terrasse-et-vue-mo",
+    "date_publication": "2026-10-11T22:36:30.576Z",
+    "verifie_le": "2026-10-13T15:59:54.026912+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Targa",
+    "superficie": 480.0,
+    "prix": 20000.0,
+    "devise": "MAD",
+    "type": "villa",
+    "url": "https://sawim.ma/annonce/PeUMui1o/villa-meublee-6-chambres-480-m-targa",
+    "date_publication": "2026-10-06T21:35:02.716Z",
+    "verifie_le": "2026-10-13T16:00:44.392591+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Médina",
+    "superficie": 74.0,
+    "prix": 1540000.0,
+    "devise": "MAD",
+    "type": "riad",
+    "url": "https://sawim.ma/annonce/QET0TVNe/riad-traditionnel-a-vendre-dans-la-medina-quartier-riad-laarous-marrakech",
+    "date_publication": "2026-10-12T23:16:25.368Z",
+    "verifie_le": "2026-10-13T15:59:40.416715+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Route de Tahanaout",
+    "superficie": 260.0,
+    "prix": 4700000.0,
+    "devise": "MAD",
+    "type": "villa",
+    "url": "https://sawim.ma/annonce/QIDl7llC/villa-meublee-a-vendre-tagana-1-marrakech",
+    "date_publication": "2026-10-10T00:50:08.739Z",
+    "verifie_le": "2026-10-13T16:00:19.518768+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Route de l'Ourika",
+    "superficie": 177.0,
+    "prix": 3790700.0,
+    "devise": "MAD",
+    "type": "villa",
+    "url": "https://sawim.ma/annonce/RD0ight7/villa-plein-pied-4-suites-rte-ourika-km-15",
+    "date_publication": "2026-10-06T21:51:30.693Z",
+    "verifie_le": "2026-10-13T16:00:41.759639+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Guéliz",
+    "superficie": 74.0,
+    "prix": 2260000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://sawim.ma/annonce/RTyvLmdB/duplex-2-ch-jnane-ali",
+    "date_publication": "2026-10-06T21:35:09.005Z",
+    "verifie_le": "2026-10-13T16:00:42.407349+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Guéliz",
+    "superficie": 148.0,
+    "prix": 4201200.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://sawim.ma/annonce/Ss3CZiYD/duplex-de-charme-entre-majorelle-et-gueliz-marrakech",
+    "date_publication": "2026-10-06T21:37:37.142Z",
+    "verifie_le": "2026-10-13T16:01:23.130044+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Route de Safi",
+    "superficie": 65.0,
+    "prix": 9500.0,
+    "devise": "MAD",
+    "type": "bureau",
+    "url": "https://sawim.ma/annonce/TiqXfnt9/bureau-de-65-m-a-louer-route-de-safi-climatisation-ascenseur-et-parking",
+    "date_publication": "2026-10-11T22:36:32.110Z",
+    "verifie_le": "2026-10-13T16:00:26.433078+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Route de Casablanca",
+    "superficie": 90.0,
+    "prix": 1500000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://sawim.ma/annonce/U5Ug1MnC/appartement-vente-a-route-de-casa",
+    "date_publication": "2026-10-12T23:17:03.090Z",
+    "verifie_le": "2026-10-13T15:59:39.441064+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Médina",
+    "superficie": 290.0,
+    "prix": 615000.0,
+    "devise": "EUR",
+    "type": "riad",
+    "url": "https://sawim.ma/annonce/U7eJ3Rgg/riad-d-habitation-quartier-derb-dabachi",
+    "date_publication": "2026-10-12T23:10:04.739Z",
+    "verifie_le": "2026-10-13T16:00:10.590008+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:EUR",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Guéliz",
+    "superficie": 47.0,
+    "prix": 1485000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://sawim.ma/annonce/UIm1J25j/appartement-1-chambre-a-gueliz-marrakech",
+    "date_publication": "2026-10-08T21:48:58.050Z",
+    "verifie_le": "2026-10-13T16:01:03.542117+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Guéliz",
+    "superficie": 150.0,
+    "prix": 25000.0,
+    "devise": "MAD",
+    "type": "local_commercial",
+    "url": "https://sawim.ma/annonce/UW2tDFRv/local-commercial-150-m-victor-hugo",
+    "date_publication": "2026-10-06T21:34:58.810Z",
+    "verifie_le": "2026-10-13T16:00:47.966313+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Route de Casablanca",
+    "superficie": 83.0,
+    "prix": 9000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://sawim.ma/annonce/Uo1PeLyW/appartement-2ch-route-de-casa",
+    "date_publication": "2026-10-12T23:12:40.628Z",
+    "verifie_le": "2026-10-13T15:59:52.033703+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Guéliz",
+    "superficie": 60.0,
+    "prix": 10500.0,
+    "devise": "MAD",
+    "type": "bureau",
+    "url": "https://sawim.ma/annonce/VSz6wcie/bureau-neuf-a-gueliz-sur-l-avenue-mohammed-v",
+    "date_publication": "2026-10-10T00:50:09.322Z",
+    "verifie_le": "2026-10-13T16:00:28.446099+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Guéliz",
+    "superficie": 101.0,
+    "prix": 14600.0,
+    "devise": "MAD",
+    "type": "bureau",
+    "url": "https://sawim.ma/annonce/WNAWJW44/plateau-bureau-de-101-m-avec-parking-en-location",
+    "date_publication": "2026-10-10T00:51:42.852Z",
+    "verifie_le": "2026-10-13T16:00:27.458470+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Route d'Amizmiz",
+    "superficie": 126.0,
+    "prix": 3510000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://sawim.ma/annonce/Ylmg0qjK/appartement-2-chambres-dans-une-residence-avec-piscine",
+    "date_publication": "2026-10-08T21:49:02.927Z",
+    "verifie_le": "2026-10-13T16:01:02.529473+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Route de Casablanca",
+    "superficie": 84.0,
+    "prix": 2200000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://sawim.ma/annonce/YnhtyDvw/appartement-moderne-meuble-a-vendre-sur-la-route-de-casa",
+    "date_publication": "2026-10-07T21:37:47.033Z",
+    "verifie_le": "2026-10-13T16:01:12.544369+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Route de Tahanaout",
+    "superficie": 78.0,
+    "prix": 14000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://sawim.ma/annonce/a5RG4zY6/appartement-2ch-route-de-tahanaout",
+    "date_publication": "2026-10-10T00:47:30.508Z",
+    "verifie_le": "2026-10-13T15:59:57.023243+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Route de Ouarzazate",
+    "superficie": 320.0,
+    "prix": 8900000.0,
+    "devise": "MAD",
+    "type": "villa",
+    "url": "https://sawim.ma/annonce/bNAbccPD/villa-d-exception-4-suites-avec-piscine-et-jardin-a-vendre-amelkis",
+    "date_publication": "2026-10-06T21:36:24.672Z",
+    "verifie_le": "2026-10-13T16:01:31.115643+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Route d'Amizmiz",
+    "superficie": 256.0,
+    "prix": 8100000.0,
+    "devise": "MAD",
+    "type": "villa",
+    "url": "https://sawim.ma/annonce/bhOjfYsO/villa-contemporaine-avec-vna",
+    "date_publication": "2026-10-10T00:47:38.295Z",
+    "verifie_le": "2026-10-13T16:00:21.445436+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Guéliz",
+    "superficie": 80.0,
+    "prix": 1650000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://sawim.ma/annonce/ctG1td31/magnifique-duplex-d-architecte",
+    "date_publication": "2026-10-07T21:28:28.000Z",
+    "verifie_le": "2026-10-13T16:01:19.091490+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Guéliz",
+    "superficie": 85.0,
+    "prix": 11000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://sawim.ma/annonce/gbve3ZUr/appartement-2ch-gueliz",
+    "date_publication": "2026-10-08T21:50:37.883Z",
+    "verifie_le": "2026-10-13T16:00:31.442558+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Route de Casablanca",
+    "superficie": 150.0,
+    "prix": 3600000.0,
+    "devise": "MAD",
+    "type": "villa",
+    "url": "https://sawim.ma/annonce/gxXI5ETY/villa-en-vente-route-de-casa",
+    "date_publication": "2026-10-10T00:51:36.702Z",
+    "verifie_le": "2026-10-13T16:00:17.439334+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Médina",
+    "superficie": 380.0,
+    "prix": 9350000.0,
+    "devise": "MAD",
+    "type": "riad",
+    "url": "https://sawim.ma/annonce/hjnX7WqN/riad-wilbaux-5-chambres-bassin-en-terrasse",
+    "date_publication": "2026-10-08T21:42:44.192Z",
+    "verifie_le": "2026-10-13T16:01:05.535270+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Guéliz",
+    "superficie": 56.0,
+    "prix": 6000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://sawim.ma/annonce/i0yVK2f8/appartement-t2-meuble-en-location-au-centre-de-gueliz",
+    "date_publication": "2026-10-12T23:17:10.358Z",
+    "verifie_le": "2026-10-13T15:59:49.451030+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Palmeraie",
+    "superficie": 1800.0,
+    "prix": 9800000.0,
+    "devise": "EUR",
+    "type": "villa",
+    "url": "https://sawim.ma/annonce/iDBNEDYZ/palais-a-vendre-dans-la-palmeraie-de-marrakech",
+    "date_publication": "2026-10-12T23:11:38.604Z",
+    "verifie_le": "2026-10-13T15:59:45.484489+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:EUR",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Guéliz",
+    "superficie": 111.0,
+    "prix": 1334.0,
+    "devise": "EUR",
+    "type": "appartement",
+    "url": "https://sawim.ma/annonce/iZmPQ3cl/a-louer-appartement-meuble-victor-hugo-marrakech",
+    "date_publication": "2026-10-06T21:31:57.687Z",
+    "verifie_le": "2026-10-13T16:01:44.097904+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:EUR",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Targa",
+    "superficie": 625.0,
+    "prix": 895000.0,
+    "devise": "EUR",
+    "type": "villa",
+    "url": "https://sawim.ma/annonce/j2ELwNae/maison-d-hotes-de-charme",
+    "date_publication": "2026-10-06T21:34:54.845Z",
+    "verifie_le": "2026-10-13T16:01:36.120934+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:EUR",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Guéliz",
+    "superficie": 94.0,
+    "prix": 9000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://sawim.ma/annonce/j411ld5R/appartement-vide-a-louer-a-gueliz-marrakech-ascenseur-94-m",
+    "date_publication": "2026-10-06T21:32:17.136Z",
+    "verifie_le": "2026-10-13T16:01:43.163348+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Médina",
+    "superficie": 150.0,
+    "prix": 2500000.0,
+    "devise": "MAD",
+    "type": "riad",
+    "url": "https://sawim.ma/annonce/j48giG9f/riad-150m2-7-chambres",
+    "date_publication": "2026-10-08T21:50:37.001Z",
+    "verifie_le": "2026-10-13T16:00:39.435231+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Guéliz",
+    "superficie": 102.0,
+    "prix": 2050000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://sawim.ma/annonce/jWlQgvbk/appartement-2-ch-avec-terrasse-bd-allal-al-fassi",
+    "date_publication": "2026-10-10T00:47:33.627Z",
+    "verifie_le": "2026-10-13T16:00:22.465528+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Route de Tahanaout",
+    "superficie": 300.0,
+    "prix": 3900000.0,
+    "devise": "MAD",
+    "type": "villa",
+    "url": "https://sawim.ma/annonce/jX3hgSOi/villa-5-chambres-300-m-route-tahanoute-agdal",
+    "date_publication": "2026-10-06T21:34:57.966Z",
+    "verifie_le": "2026-10-13T16:00:48.526518+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "El Azzouzia",
+    "superficie": 77.0,
+    "prix": 600000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://sawim.ma/annonce/jummpAtj/appartement-meuble-de-77-m-a-vendre-a-azzouzia-3-chambres-climatisation-reversib",
+    "date_publication": "2026-10-11T22:36:22.142Z",
+    "verifie_le": "2026-10-13T16:00:14.463615+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Hivernage",
+    "superficie": 109.0,
+    "prix": 314900.0,
+    "devise": "EUR",
+    "type": "appartement",
+    "url": "https://sawim.ma/annonce/micqJOGZ/sublime-duplex-t3-avec-piscine-privative-quartier-hivernage",
+    "date_publication": "2026-10-07T21:28:23.952Z",
+    "verifie_le": "2026-10-13T16:01:20.113292+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:EUR",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Agdal",
+    "superficie": 550.0,
+    "prix": 15000000.0,
+    "devise": "MAD",
+    "type": "local_commercial",
+    "url": "https://sawim.ma/annonce/nFaUc4Vl/magasin-titre-de-550-m-a-vendre-boulevard-m6-marrakech-village",
+    "date_publication": "2026-10-11T22:36:26.773Z",
+    "verifie_le": "2026-10-13T16:00:13.429884+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Palmeraie",
+    "superficie": 74.0,
+    "prix": 1030000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://sawim.ma/annonce/nYZ2z7Ba/duplex-avec-jardin-prive-palmeraie",
+    "date_publication": "2026-10-12T23:12:37.273Z",
+    "verifie_le": "2026-10-13T15:59:43.411966+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Semlalia",
+    "superficie": 149.0,
+    "prix": 22000.0,
+    "devise": "MAD",
+    "type": "local_commercial",
+    "url": "https://sawim.ma/annonce/nrhVRHBu/tres-beau-local-commercial-a-louer-a-semlalia",
+    "date_publication": "2026-10-06T21:33:41.380Z",
+    "verifie_le": "2026-10-13T16:01:42.118613+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Route de Casablanca",
+    "superficie": 50.0,
+    "prix": 85000.0,
+    "devise": "EUR",
+    "type": "appartement",
+    "url": "https://sawim.ma/annonce/oDBNY3TT/appartement-moderne-2-pieces-a-vendre-a-marrakech-route-de-casa",
+    "date_publication": "2026-10-07T21:32:20.141Z",
+    "verifie_le": "2026-10-13T16:01:14.087369+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:EUR",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Guéliz",
+    "superficie": 78.0,
+    "prix": 15000.0,
+    "devise": "MAD",
+    "type": "local_commercial",
+    "url": "https://sawim.ma/annonce/p4kF0yzc/local-commercial-avec-extraction-a-louer-a-victor-hugo",
+    "date_publication": "2026-10-07T21:33:11.513Z",
+    "verifie_le": "2026-10-13T16:00:37.454543+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Route de Fès",
+    "superficie": 130.0,
+    "prix": 3400000.0,
+    "devise": "MAD",
+    "type": "villa",
+    "url": "https://sawim.ma/annonce/pSssXliz/villa-de-plain-pied-avec-piscine-route-de-fes-marrakech",
+    "date_publication": "2026-10-12T23:16:25.210Z",
+    "verifie_le": "2026-10-13T15:59:41.507214+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Route de Ouarzazate",
+    "superficie": 290.0,
+    "prix": 998000.0,
+    "devise": "EUR",
+    "type": "villa",
+    "url": "https://sawim.ma/annonce/qGYtLGWf/villa-de-caractere-de-style-contemporain-mixte",
+    "date_publication": "2026-10-07T21:32:19.482Z",
+    "verifie_le": "2026-10-13T16:01:16.082773+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:EUR",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Guéliz",
+    "superficie": 100.0,
+    "prix": 13000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://sawim.ma/annonce/rXSeACcy/appartement-haut-standing-coeur-de-ville-a-louer",
+    "date_publication": "2026-10-07T21:32:19.334Z",
+    "verifie_le": "2026-10-13T16:01:17.108271+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Route de l'Ourika",
+    "superficie": 270.0,
+    "prix": 650000.0,
+    "devise": "EUR",
+    "type": "villa",
+    "url": "https://sawim.ma/annonce/ror5ebq0/agreable-villa-de-plain-pied",
+    "date_publication": "2026-10-07T21:32:18.088Z",
+    "verifie_le": "2026-10-13T16:01:18.078617+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:EUR",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Route de Casablanca",
+    "superficie": 63.0,
+    "prix": 9000.0,
+    "devise": "MAD",
+    "type": "bureau",
+    "url": "https://sawim.ma/annonce/sY96rjqo/plateau-de-bureau-premium-a-louer-sur-la-route-de-casa",
+    "date_publication": "2026-10-12T23:17:09.037Z",
+    "verifie_le": "2026-10-13T16:00:24.516976+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Guéliz",
+    "superficie": 152.0,
+    "prix": 1500000.0,
+    "devise": "MAD",
+    "type": "local_commercial",
+    "url": "https://sawim.ma/annonce/tOWFUJcb/local-commercial-avec-salon-de-coiffure-et-hammam-a-marrakech",
+    "date_publication": "2026-10-08T23:45:08.466Z",
+    "verifie_le": "2026-10-13T16:00:53.396318+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Guéliz",
+    "superficie": 44.0,
+    "prix": 1300000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://sawim.ma/annonce/uFHPX1UG/studio-a-vendre-au-c-ur-de-gueliz-avec-terrasse-et-piscine",
+    "date_publication": "2026-10-12T23:12:20.647Z",
+    "verifie_le": "2026-10-13T15:59:44.445914+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Route de Safi",
+    "superficie": 800.0,
+    "prix": 35000.0,
+    "devise": "MAD",
+    "type": "villa",
+    "url": "https://sawim.ma/annonce/wKc1RTVF/villa-meublee-de-800-m-a-louer-a-targa-grand-jardin-prive-piscine-privee-et-beau",
+    "date_publication": "2026-10-11T22:36:35.574Z",
+    "verifie_le": "2026-10-13T15:59:53.085702+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Guéliz",
+    "superficie": 120.0,
+    "prix": 2200000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://sawim.ma/annonce/wdNO76x4/belle-opportunite-appartement-a-vendre-marrakech",
+    "date_publication": "2026-10-06T21:36:48.068Z",
+    "verifie_le": "2026-10-13T16:01:25.092681+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Route d'Amizmiz",
+    "superficie": 76.0,
+    "prix": 16000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://sawim.ma/annonce/xJNISIVS/appartement-2-chambres-meuble-a-louer-residence-noria",
+    "date_publication": "2026-10-06T21:36:26.135Z",
+    "verifie_le": "2026-10-13T16:01:28.051811+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "sawim:dl:surface:m2",
+      "type": "sawim:dl:Type de bien"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Casablanca",
+    "quartier": "Ben Ejdia",
+    "superficie": 112.0,
+    "prix": 860000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://www.marocimmo.com/fr/annonces/appartement-2-chambres-avec-terrasse-casablanca-659",
+    "date_publication": "2026-10-07T10:30:07.330Z",
+    "verifie_le": "2026-10-13T15:56:59.307466+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "jsonld:floorSize",
+      "type": "jsonld:@type"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Guéliz",
+    "superficie": 115.0,
+    "prix": 3700000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://www.marocimmo.com/fr/annonces/appartement-2-chambres-avec-terrasse-marrakech-693",
+    "date_publication": "2026-10-12T07:15:43.412Z",
+    "verifie_le": "2026-10-13T15:56:53.267121+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "jsonld:floorSize",
+      "type": "jsonld:@type"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Fès",
+    "quartier": "Oued Fès",
+    "superficie": 94.0,
+    "prix": 670000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://www.marocimmo.com/fr/annonces/appartement-3-chambres-avec-terrasse-fes-667",
+    "date_publication": "2026-10-08T18:13:51.909Z",
+    "verifie_le": "2026-10-13T15:56:55.248287+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "jsonld:floorSize",
+      "type": "jsonld:@type"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "El Jadida",
+    "quartier": "Al Boustane",
+    "superficie": 140.0,
+    "prix": 1619200.0,
+    "devise": "MAD",
+    "type": "maison",
+    "url": "https://www.marocimmo.com/fr/annonces/maison-3-chambres-avec-terrasse-el-jadida-699",
+    "date_publication": "2026-10-13T09:05:19.905Z",
+    "verifie_le": "2026-10-13T15:56:49.359124+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "jsonld:floorSize",
+      "type": "jsonld:@type"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Oujda",
+    "quartier": "Hay Lazaret",
+    "superficie": 304.0,
+    "prix": 850000.0,
+    "devise": "MAD",
+    "type": "maison",
+    "url": "https://www.marocimmo.com/fr/annonces/maison-3-chambres-avec-terrasse-oujda-695",
+    "date_publication": "2026-10-12T17:51:57.627Z",
+    "verifie_le": "2026-10-13T15:56:50.189552+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "jsonld:floorSize",
+      "type": "jsonld:@type"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Salé",
+    "quartier": "Pépinière",
+    "superficie": 280.0,
+    "prix": 1700000.0,
+    "devise": "MAD",
+    "type": "maison",
+    "url": "https://www.marocimmo.com/fr/annonces/maison-8-chambres-sale-694",
+    "date_publication": "2026-10-12T15:19:46.471Z",
+    "verifie_le": "2026-10-13T15:56:51.203460+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "jsonld:floorSize",
+      "type": "jsonld:@type"
+    },
+    "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Casablanca",
+    "quartier": "Maârif",
+    "superficie": 39.0,
+    "prix": 1120000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://www.marocimmo.com/fr/annonces/studio-casablanca-702",
+    "date_publication": "2026-10-13T11:17:14.565Z",
+    "verifie_le": "2026-10-13T15:56:48.473937+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "jsonld:floorSize",
+      "type": "jsonld:@type"
+    },
+    "parser_version": "1.4.0"
+  }
+]

@@ -5,12 +5,13 @@
   "items": {
     "type": "object",
     "additionalProperties": false,
-    "required": ["ville", "quartier", "superficie", "prix", "type", "url", "date_publication", "verifie_le", "preuves", "parser_version"],
+    "required": ["ville", "quartier", "superficie", "prix", "devise", "type", "url", "date_publication", "verifie_le", "preuves", "parser_version"],
     "properties": {
       "ville": {"type": "string", "minLength": 1},
       "quartier": {"type": "string", "minLength": 1},
       "superficie": {"type": "number", "exclusiveMinimum": 0},
       "prix": {"type": "number", "exclusiveMinimum": 0, "maximum": 500000000},
+      "devise": {"enum": ["MAD", "EUR", "USD"]},
       "type": {"enum": ["appartement", "studio", "villa", "maison", "terrain", "bureau", "local_commercial", "riad", "ferme"]},
       "url": {"type": "string", "format": "uri", "pattern": "^https://"},
       "date_publication": {"type": "string", "format": "date-time"},

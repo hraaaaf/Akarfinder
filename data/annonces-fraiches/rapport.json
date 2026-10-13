@@ -1,38 +1,73 @@
 {
-  "run_id": "2026-10-13T15:12:42.936428+00:00",
+  "run_id": "2026-10-13T15:56:33.811465+00:00",
   "sources": [
     {
-      "origin": "https://daragadir.com",
-      "discovered": 5749
+      "origin": "https://www.marocimmo.com",
+      "discovered": 524
     },
     {
-      "origin": "https://www.mubawab.ma",
-      "discovered": 54
+      "origin": "https://sawim.ma",
+      "discovered": 5553
+    },
+    {
+      "origin": "https://www.avito.ma",
+      "discovered": 76
     }
   ],
-  "discovered": 5803,
-  "fetched": 60,
-  "errors": [],
-  "parser_version": "1.2.0",
-  "generated_at": "2026-10-13T15:16:01.583527+00:00",
-  "freshness": "publication strictly within last 7 days; live HTTP 200 this run",
+  "discovered": 6153,
+  "fetched": 305,
+  "errors": [
+    {
+      "url": "https://www.avito.ma/sitemaps/sitemap-static-1.xml",
+      "error": "HTTP Error 404: Not Found"
+    },
+    {
+      "url": "https://www.avito.ma/sitemaps/sitemap-avito-listing-1.xml",
+      "error": "HTTP Error 404: Not Found"
+    },
+    {
+      "url": "https://www.avito.ma/sitemaps/sitemap-avito-listing-2.xml",
+      "error": "HTTP Error 404: Not Found"
+    },
+    {
+      "url": "https://www.avito.ma/sitemaps/sitemap-avito-listing-3.xml",
+      "error": "HTTP Error 404: Not Found"
+    },
+    {
+      "url": "https://www.avito.ma/sitemaps/sitemap-avito-listing-4.xml",
+      "error": "HTTP Error 404: Not Found"
+    }
+  ],
+  "parser_version": "1.5.0",
+  "generated_at": "2026-10-13T16:07:31.592745+00:00",
+  "freshness": "publication strictly within last 7 days; explicit successful HTTP verification within 24 hours",
   "target": 200000,
-  "accepted": 0,
-  "rejected": 60,
+  "accepted": 90,
+  "rejected": 415,
   "target_reached": false,
-  "shortfall": 200000,
+  "shortfall": 199910,
   "reasons": {
-    "missing_evidence_quartier": 24,
-    "missing_quartier": 24,
-    "older_than_7_days": 30,
-    "invalid_prix": 16,
-    "invalid_superficie": 17,
-    "missing_evidence_prix": 16,
-    "missing_evidence_superficie": 17,
-    "missing_evidence_date_publication": 30,
-    "missing_publication_date": 30
+    "missing_evidence_quartier": 91,
+    "missing_or_unsupported_currency": 187,
+    "missing_quartier": 91,
+    "older_than_7_days": 335,
+    "invalid_prix": 132,
+    "invalid_superficie": 75,
+    "missing_evidence_prix": 132,
+    "missing_evidence_superficie": 75,
+    "missing_evidence_ville": 48,
+    "missing_ville": 48,
+    "missing_evidence_type": 155,
+    "missing_type": 155,
+    "unsupported_type": 155,
+    "missing_evidence_date_publication": 39,
+    "missing_publication_date": 39,
+    "publication_semantics_unverified": 8,
+    "not_live_verified": 1,
+    "redirect_requires_review:302": 1
   },
   "photos_downloaded": 0,
   "production_writes": 0,
-  "deduplication": "canonical URL only; distinct properties not guaranteed"
+  "deduplication": "canonical URL only; distinct properties not guaranteed",
+  "checkpoint_observations": 505
 }

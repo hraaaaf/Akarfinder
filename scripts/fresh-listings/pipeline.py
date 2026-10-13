@@ -10,11 +10,11 @@ from collections import Counter
 from datetime import datetime, timedelta, timezone
 from html.parser import HTMLParser
 from pathlib import Path
-from urllib.parse import urljoin, urlsplit, urlunsplit, unquote
+from urllib.parse import urljoin, urlsplit, urlunsplit, unquote, quote
 from urllib.request import Request, build_opener, HTTPRedirectHandler
 from xml.etree import ElementTree as ET
 
-VERSION = "1.2.0"
+VERSION = "1.5.0"
 UA = "AkarFinderListingAudit/1.0 (+https://github.com/hraaaaf/Akarfinder)"
 ROOT = Path(__file__).resolve().parents[2]
 TYPES = {"apartment": "appartement", "appartement": "appartement", "studio": "studio", "villa": "villa", "house": "maison", "maison": "maison", "terrain": "terrain", "land": "terrain", "bureau": "bureau", "office": "bureau", "local commercial": "local_commercial", "local_commercial": "local_commercial", "riad": "riad", "ferme": "ferme"}
@@ -26,10 +26,12 @@ def fold(value):
     return "".join(c for c in unicodedata.normalize("NFKD", clean(value).lower()) if not unicodedata.combining(c))
 
 def canonical(raw):
+    if not isinstance(raw, str) or any(ord(c) < 32 for c in raw):
+        raise ValueError("unsafe_url")
     u = urlsplit(raw)
     if u.scheme != "https" or not u.hostname or u.username or u.password or u.port not in (None, 443):
         raise ValueError("unsafe_url")
-    return urlunsplit(("https", u.hostname.lower(), u.path or "/", u.query, ""))
+    return urlunsplit(("https", u.hostname.lower(), quote(u.path or "/", safe="/%:@-._~!$&'()*+,;="), quote(u.query, safe="=&?/%:@-._~!$'()*+,;"), ""))
 
 def identity(raw):
     u = urlsplit(canonical(raw))
@@ -76,12 +78,21 @@ class Page(HTMLParser):
         self.blocks = []
         self.script = None
         self.script_parts = []
+        self.script_kind = None
+        self.next_data = None
         self.anchors = []
         self.districts = []
         self.features = []
+        self.definitions = []
+        self.definition_label = []
+        self.definition_value = []
 
     def handle_starttag(self, tag, attrs):
         a = dict(attrs)
+        if tag == "dt":
+            self.definition_label = []
+        if tag == "dd":
+            self.definition_value = []
         if tag == "a" and a.get("href"):
             self.anchors.append(a["href"])
             if any("adBread" in b.get("class", "").split() for t, b in self.stack) and re.match(r"^/fr/sd/", urlsplit(a["href"]).path) and a.get("title"):
@@ -90,16 +101,23 @@ class Page(HTMLParser):
             self.meta[a.get("property", a.get("name", ""))] = a.get("content", "")
         if tag == "link" and a.get("rel") == "canonical":
             self.links["canonical"] = a.get("href", "")
-        if tag == "script" and a.get("type") == "application/ld+json":
+        if tag == "script" and (a.get("type") == "application/ld+json" or a.get("id") == "__NEXT_DATA__"):
             self.script = True
+            self.script_kind = "next" if a.get("id") == "__NEXT_DATA__" else "ld"
             self.script_parts = []
         if tag not in {"meta", "link", "img", "br", "hr", "input", "source", "wbr", "area", "embed", "param"}:
             self.stack.append((tag, a))
 
     def handle_endtag(self, tag):
+        if tag == "dd" and self.definition_label:
+            self.definitions.append((clean(" ".join(self.definition_label)), clean(" ".join(self.definition_value))))
         if tag == "script" and self.script:
             try:
-                self.blocks.append(json.loads("".join(self.script_parts)))
+                parsed = json.loads("".join(self.script_parts))
+                if self.script_kind == "next":
+                    self.next_data = parsed
+                else:
+                    self.blocks.append(parsed)
             except (ValueError, TypeError):
                 pass
             self.script = None
@@ -112,6 +130,11 @@ class Page(HTMLParser):
         if self.script:
             self.script_parts.append(data)
             return
+        if any(t == "dl" for t, a in self.stack):
+            if any(t == "dt" for t, a in self.stack):
+                self.definition_label.append(data)
+            if any(t == "dd" for t, a in self.stack):
+                self.definition_value.append(data)
         if any(t in {"script", "style", "nav", "aside", "footer"} for t, a in self.stack):
             return
         if any(t == "h1" for t, a in self.stack):
@@ -129,6 +152,69 @@ def ld_nodes(blocks):
             yield block
             yield from ld_nodes(block.get("@graph", []))
 
+def avito_extract(p, url):
+    """Read only the URL-bound ad in the page's public SSR cache."""
+    match = re.search(r"_(\d+)\.htm$", urlsplit(url).path)
+    if not match or not isinstance(p.next_data, dict):
+        return {"erreur": "avito_missing_bound_ad"}
+    props = p.next_data.get("props", {}).get("pageProps", {})
+    cache = props.get("apolloState", {})
+    if not isinstance(cache, dict):
+        return {"erreur": "avito_missing_bound_ad"}
+    def resolve(value):
+        if isinstance(value, dict) and "__ref" in value:
+            return cache.get(value["__ref"], {})
+        return value if isinstance(value, dict) else {}
+    matches = []
+    for key, response in cache.get("ROOT_QUERY", {}).items():
+        if not key.startswith("getPublishedAd("):
+            continue
+        try:
+            query = json.loads(key[len("getPublishedAd("):-1])
+            if str(query.get("query", {}).get("listId")) != match[1]:
+                continue
+        except (ValueError, TypeError):
+            continue
+        ad = resolve(resolve(response).get("ad"))
+        if str(ad.get("listId")) == match[1] and ad.get("__typename") == "PublishedAd":
+            matches.append(ad)
+    if len(matches) != 1:
+        return {"erreur": "avito_missing_or_ambiguous_bound_ad"}
+    ad = matches[0]
+    out = {"preuves": {}}
+    location = resolve(ad.get("location"))
+    for key, field in [("city", "ville"), ("area", "quartier")]:
+        label = resolve(location.get(key)).get("name")
+        if isinstance(label, str) and clean(label):
+            out[field] = clean(label)
+            out["preuves"][field] = "avito:bound-PublishedAd.location." + key + ".name"
+    category = fold(resolve(ad.get("category")).get("name"))
+    mapping = {"appartements": "appartement", "maisons": "maison", "villas": "villa", "bureaux": "bureau", "locaux commerciaux": "local_commercial"}
+    if category in mapping:
+        out["type"] = mapping[category]
+        out["preuves"]["type"] = "avito:bound-PublishedAd.category.name"
+    price = resolve(ad.get("price"))
+    if re.search(r"\b(?:DH|MAD)\b", str(price.get("withCurrency", ""))):
+        amount = number(price.get("withoutCurrency"))
+        if amount:
+            out["prix"] = amount
+            out["devise"] = "MAD"
+            out["preuves"]["prix"] = "avito:bound-PublishedAd.price.withoutCurrency:MAD"
+    params = resolve(ad.get("params"))
+    items = [n for group in ("primary", "secondary") for n in params.get(group, []) if isinstance(n, dict)]
+    for key in ("habitable_size", "size"):
+        areas = {number(n.get("numericValue")) for n in items if n.get("id") == key and n.get("unit") in ("m²", "m2")}
+        areas.discard(None)
+        if len(areas) == 1:
+            out["superficie"] = areas.pop()
+            out["preuves"]["superficie"] = "avito:bound-PublishedAd.params." + key + ":m2"
+            break
+    # listTime is exposed publicly, but its first-publication vs bump semantics
+    # have not been verified. It MUST NOT certify the user's seven-day rule.
+    out["source_list_time"] = ad.get("listTime")
+    out["erreur"] = "publication_semantics_unverified"
+    return out
+
 def extract(html, url):
     p = Page()
     p.feed(html)
@@ -143,6 +229,10 @@ def extract(html, url):
         except ValueError:
             out["erreur"] = "invalid_canonical"
             return out
+    if target[0] == "avito.ma":
+        result = avito_extract(p, url)
+        out.update(result)
+        return out
     pub = p.meta.get("article:published_time")
     if pub:
         out["date_publication"] = pub
@@ -151,13 +241,27 @@ def extract(html, url):
         out["erreur"] = "source_noindex_or_noarchive"
     nodes = list(ld_nodes(p.blocks))
     # A directly nested itemOffered belongs to its URL-bound listing only.
-    for n in list(nodes):
-        if n.get("@type") == "RealEstateListing" and isinstance(n.get("itemOffered"), dict):
+    for n in nodes:
+        if n.get("@type") not in ("RealEstateListing", "Offer"):
+            continue
+        try:
+            if identity(n.get("url", n.get("@id", ""))) != target:
+                continue
+        except ValueError:
+            continue
+        for field in ("mainEntity", "itemOffered"):
+            child = n.get(field)
+            if not isinstance(child, dict):
+                continue
+            raw_identity = child.get("url") or child.get("@id")
             try:
-                if identity(n.get("url", "")) == target:
-                    nodes.append({**n["itemOffered"], "url": n["url"]})
+                if raw_identity and identity(urljoin(url, raw_identity)) != target:
+                    continue
             except ValueError:
-                pass
+                continue
+            nodes.append({**child, "url": url})
+            if field == "mainEntity" and child.get("@type") == "Offer":
+                n["offers"] = child
     for n in nodes:
         raw_url = n.get("url") or n.get("@id")
         if not isinstance(raw_url, str):
@@ -168,9 +272,17 @@ def extract(html, url):
         except ValueError:
             continue
         typ = str(n.get("@type", ""))
+        if typ == "RealEstateListing" and n.get("datePosted"):
+            published = n.get("datePublished") or out.get("date_publication")
+            if published and date(published) != date(n["datePosted"]):
+                out["erreur"] = "conflicting_publication_dates"
+            else:
+                out["date_publication"] = n["datePosted"]
+                out["preuves"]["date_publication"] = "jsonld:RealEstateListing.datePosted"
         # Dates on article/webpage nodes identify the current source publication.
         if n.get("datePublished") and re.search("Article|WebPage|RealEstateListing|Residence|Apartment|House", typ):
-            if pub and date(pub) != date(n["datePublished"]):
+            existing_publication = out.get("date_publication")
+            if existing_publication and date(existing_publication) != date(n["datePublished"]):
                 out["erreur"] = "conflicting_publication_dates"
             else:
                 out["date_publication"] = n["datePublished"]
@@ -183,6 +295,16 @@ def extract(html, url):
                 if isinstance(addr.get(key), str):
                     out[field] = clean(addr[key])
                     out["preuves"][field] = "jsonld:address." + key
+        if target[0] in {"sawim.ma", "marocimmo.com"}:
+            place = n.get("containedInPlace") or {}
+            if isinstance(place, dict) and isinstance(place.get("name"), str) and out.get("ville"):
+                district = clean(place["name"])
+                suffix = ", " + out["ville"]
+                if district.endswith(suffix):
+                    district = district[:-len(suffix)]
+                if district and fold(district) != fold(out["ville"]):
+                    out["quartier"] = district
+                    out["preuves"]["quartier"] = "jsonld:bound-property.containedInPlace.name"
         surface = n.get("floorSize") or {}
         if isinstance(surface, dict) and surface.get("unitCode", surface.get("unitText")) in ("MTK", "m2", "m²"):
             out["superficie"] = number(surface.get("value"))
@@ -191,11 +313,11 @@ def extract(html, url):
         offers = offers if isinstance(offers, list) else [offers]
         if any(isinstance(o, dict) and str(o.get("availability", "")).split("/")[-1] in {"SoldOut", "OutOfStock", "Discontinued"} for o in offers):
             out["erreur"] = "listing_unavailable"
-        prices = {number(o.get("price")) for o in offers if isinstance(o, dict) and o.get("priceCurrency") == "MAD" and not o.get("priceSpecification")}
-        prices.discard(None)
+        prices = {(number(o.get("price")), o.get("priceCurrency")) for o in offers if isinstance(o, dict) and o.get("priceCurrency") in {"MAD", "EUR", "USD"} and not o.get("priceSpecification")}
+        prices = {(amount, currency) for amount, currency in prices if amount is not None}
         if len(prices) == 1:
-            out["prix"] = prices.pop()
-            out["preuves"]["prix"] = "jsonld:offers.price:MAD"
+            out["prix"], out["devise"] = prices.pop()
+            out["preuves"]["prix"] = "jsonld:offers.price:" + out["devise"]
         elif len(prices) > 1:
             out["erreur"] = "ambiguous_price"
         for k, v in TYPES.items():
@@ -204,6 +326,23 @@ def extract(html, url):
                 out["preuves"]["type"] = "jsonld:@type"
     title = clean(" ".join(p.headline))
     text = clean(" ".join(p.primary))
+    if re.search(r"a partir de|starting from", fold(title)):
+        out["erreur"] = "starting_price_not_exact"
+    if re.search(r"(?:dh|mad|eur|usd)\s*(?:/|par)\s*m[²2]", fold(title)):
+        out["erreur"] = "unit_price_not_total"
+    if target[0] == "sawim.ma":
+        if not re.match(r"^/annonce/[A-Za-z0-9]+/[^/]+$", urlsplit(url).path):
+            out["erreur"] = "not_detail_url"
+        types = {TYPES.get(fold(v)) for k, v in p.definitions if fold(k) == "type de bien"}
+        types.discard(None)
+        if len(types) == 1:
+            out["type"] = types.pop()
+            out["preuves"]["type"] = "sawim:dl:Type de bien"
+        surfaces = {number(m.group(1)) for k, v in p.definitions if fold(k) in {"surface", "surface habitable", "superficie"} and (m := re.fullmatch(r"([\d\s.,]+)\s*m[²2]", v))}
+        surfaces.discard(None)
+        if len(surfaces) == 1:
+            out["superficie"] = surfaces.pop()
+            out["preuves"]["superficie"] = "sawim:dl:surface:m2"
     if re.search(r"annonce (?:supprimee|expiree|retiree|indisponible)|bien (?:vendu|deja loue)", fold(title + " " + text)):
         out["erreur"] = "listing_unavailable"
     if target[0] == "mubawab.ma":
@@ -247,6 +386,7 @@ def extract(html, url):
             prices.discard(None)
             if len(prices) == 1:
                 out["prix"] = prices.pop()
+                out["devise"] = "MAD"
                 out["preuves"]["prix"] = "daragadir:h1:MAD"
     return out
 
@@ -257,6 +397,8 @@ def sieve(row, now, days=7):
             reasons.append("missing_" + field)
     if row.get("type") not in set(TYPES.values()):
         reasons.append("unsupported_type")
+    if row.get("devise") not in {"MAD", "EUR", "USD"}:
+        reasons.append("missing_or_unsupported_currency")
     for field in ("prix", "superficie"):
         v = row.get(field)
         if isinstance(v, bool) or not isinstance(v, (int, float)) or not math.isfinite(v) or v <= 0:
@@ -274,8 +416,11 @@ def sieve(row, now, days=7):
         reasons.append("future_publication_date")
     elif published <= now - timedelta(days=days):
         reasons.append("older_than_7_days")
-    if not date(row.get("verifie_le")) or row.get("http_status") != 200:
+    verified = date(row.get("verifie_le"))
+    if not verified or row.get("http_status") != 200:
         reasons.append("not_live_verified")
+    elif verified > now or verified < now - timedelta(hours=24):
+        reasons.append("verification_expired_or_future")
     if row.get("erreur"):
         reasons.append(row["erreur"])
     for field in ("ville", "quartier", "type", "prix", "superficie", "date_publication"):
@@ -332,7 +477,8 @@ class Client:
         if "<html" in self.robots.lower() or "user-agent:" not in self.robots.lower():
             raise ValueError("robots_unavailable")
 
-    def get(self, url, robots=False):
+    def get(self, url, robots=False, max_bytes=3_000_000):
+        url = canonical(url)
         if urlsplit(canonical(url)).netloc != urlsplit(self.origin).netloc:
             raise ValueError("cross_origin_request")
         if not robots:
@@ -347,8 +493,8 @@ class Client:
                 raise ValueError("http_" + str(response.status))
             if not any(k in response.headers.get("Content-Type", "") for k in ("text/", "xml", "json")):
                 raise ValueError("non_text_response")
-            body = response.read(3_000_001)
-            if len(body) > 3_000_000:
+            body = response.read(max_bytes + 1)
+            if len(body) > max_bytes:
                 raise ValueError("body_too_large")
             html = body.decode("utf-8", errors="replace")
             if re.search(r"verify you are human|cf-chl-|captcha challenge|access denied", html, re.I):
@@ -359,13 +505,14 @@ def discover(client, config, max_maps=30):
     namespace = {"s": "http://www.sitemaps.org/schemas/sitemap/0.9"}
     queue = re.findall(r"(?im)^\s*Sitemap:\s*(\S+)", client.robots)
     seen, urls, errors = set(), {}, []
+    catalogue_priority = []
     while queue and len(seen) < max_maps:
         url = queue.pop(0)
         if url in seen:
             continue
         seen.add(url)
         try:
-            xml = ET.fromstring(client.get(url))
+            xml = ET.fromstring(client.get(url, max_bytes=52_428_800))
             if xml.tag.endswith("sitemapindex"):
                 queue.extend(n.text for n in xml.findall("s:sitemap/s:loc", namespace) if n.text)
             elif xml.tag.endswith("urlset"):
@@ -383,14 +530,18 @@ def discover(client, config, max_maps=30):
             for href in page.anchors:
                 loc = urljoin(catalogue, href)
                 if urlsplit(loc).netloc == urlsplit(client.origin).netloc and re.search(config["detail_pattern"], unquote(urlsplit(loc).path)):
-                    urls[canonical(loc)] = ""
+                    loc = canonical(loc)
+                    urls.setdefault(loc, "")
+                    if loc not in catalogue_priority:
+                        catalogue_priority.append(loc)
         except Exception as e:
             errors.append({"url": catalogue, "error": str(e)[:200]})
             break
     if not urls:
         errors.append({"origin": client.origin, "error": "no_detail_urls_discovered"})
     # lastmod helps discovery order; it is NEVER publication evidence.
-    return sorted(urls, key=lambda u: urls[u], reverse=True), errors
+    remaining = sorted((u for u in urls if u not in catalogue_priority), key=lambda u: urls[u], reverse=True)
+    return catalogue_priority + remaining, errors
 
 def atomic_json(path, obj):
     temp = path.with_suffix(path.suffix + ".tmp")
@@ -406,18 +557,17 @@ def export(db, out, now, target, stats):
         if key in seen:
             reasons.append("duplicate_canonical_url")
         seen.add(key)
-        # A verification must be from this run, not an old checkpoint.
-        if row.get("run_id") != stats["run_id"]:
-            reasons.append("not_verified_in_current_run")
         if reasons:
             rejected.append({"url": row["url"], "motifs": sorted(set(reasons)), "extraction": row})
         else:
-            accepted.append({k: row[k] for k in ("ville", "quartier", "superficie", "prix", "type", "url", "date_publication", "verifie_le", "preuves", "parser_version")})
+            accepted.append({k: row[k] for k in ("ville", "quartier", "superficie", "prix", "devise", "type", "url", "date_publication", "verifie_le", "preuves", "parser_version")})
     atomic_json(out / "annonces fraiches.json", accepted)
     with (out / "rejets.jsonl").open("w", encoding="utf-8") as f:
         for row in rejected:
             f.write(json.dumps(row, ensure_ascii=False) + "\n")
     report = {**stats, "parser_version": VERSION, "generated_at": now.isoformat(), "freshness": "publication strictly within last 7 days; live HTTP 200 this run", "target": target, "accepted": len(accepted), "rejected": len(rejected), "target_reached": len(accepted) >= target, "shortfall": max(0, target - len(accepted)), "reasons": dict(Counter(reason for row in rejected for reason in row["motifs"])), "photos_downloaded": 0, "production_writes": 0, "deduplication": "canonical URL only; distinct properties not guaranteed"}
+    report["freshness"] = "publication strictly within last 7 days; explicit successful HTTP verification within 24 hours"
+    report["checkpoint_observations"] = len(accepted) + len(rejected)
     atomic_json(out / "rapport.json", report)
     return report
 
@@ -442,6 +592,7 @@ def main():
     if args.input:
         for row in json.loads(args.input.read_text(encoding="utf-8")):
             # Offline imports cannot claim a fresh live verification.
+            row.update(http_status=None, erreur="offline_replay_requires_live_verification")
             save(row)
     else:
         for config in json.loads(args.sources.read_text(encoding="utf-8")):
@@ -453,7 +604,8 @@ def main():
                 stats["errors"].extend(errors)
                 stats["discovered"] += len(urls)
                 stats["sources"].append({"origin": config["origin"], "discovered": len(urls)})
-                for url in urls[:args.max_details]:
+                source_limit = min(args.max_details, int(config.get("detail_limit", args.max_details)))
+                for url in urls[:source_limit]:
                     row = {"url": url, "run_id": stats["run_id"]}
                     try:
                         html = client.get(url)
@@ -468,7 +620,8 @@ def main():
                         break
                     save(row)
                     if stats["fetched"] % 10 == 0:
-                        print(json.dumps({"fetched": stats["fetched"], "last_url": url}), flush=True)
+                        report = export(db, args.output, datetime.now(timezone.utc), args.target, stats)
+                        print(json.dumps({"fetched": stats["fetched"], "accepted": report["accepted"], "last_url": url}), flush=True)
             except Exception as e:
                 stats["errors"].append({"origin": config["origin"], "error": str(e)[:200]})
     report = export(db, args.output, datetime.now(timezone.utc), args.target, stats)
