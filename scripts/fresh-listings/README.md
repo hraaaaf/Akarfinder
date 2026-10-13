@@ -36,11 +36,15 @@ Avito : extraction de l'annonce exacte dans le cache SSR public `__NEXT_DATA__`,
 
 Le chemin détail et l'identité canonique sont obligatoires. Les objets imbriqués déclarant une autre URL sont rejetés ; les biens liés peuvent être dans `mainEntity` ou `itemOffered`. Une adresse de rue n'est pas un quartier. Une unité `MTR` n'est pas convertie en m² : Mubawab exige le libellé visible `m²`. Les prix « à partir de » sont rejetés ; aucun taux de change n'est fabriqué. Aucun apprentissage automatique ou auto-modification du code n'est prétendu.
 
+MarocImmo : le label explicite `Type de bien` corrige les classes génériques (`SingleFamilyResidence`, `Store`, `Place`). Une `Place` non liée à la fiche ne fournit jamais une ville ou une surface. Pour un terrain lié à la fiche, `additionalProperty` nommé `Surface du terrain` en unité `MTK` permet de récupérer la superficie. `python scripts/fresh-listings/review_rejections.py` revérifie seulement les rejets récents de cette source après une amélioration du parser.
+
 ## Accès
 
 Sources configurées explicitement. Respect des règles robots, délai minimum d'une seconde (ou délai déclaré supérieur), requêtes textuelles plafonnées, aucun téléchargement de média. Les redirections sont arrêtées pour revue de l'origine. Les challenges, erreurs d'accès et robots indisponibles bloquent la source ; aucune rotation de proxy, résolution de CAPTCHA ou utilisation d'API privée. Aucune activation Search, mutation du Source Registry ou ingestion en production.
 
 Les fiches HTML sont plafonnées à 3 Mo ; les sitemaps XML à 50 Mio. Seuls les `loc` des entrées `url` sont suivis, jamais les images contenues dans les sitemaps. Les liens des catalogues publics sont prioritaires ; `lastmod` sert uniquement à ordonner le reste des candidats et n'est pas une preuve de publication. DarAgadir et Mubawab sont temporairement hors collecte active à la suite du pilote, sans mutation du registre produit ; ils restent configurés pour une revue ultérieure.
+
+Un `robots.txt` réellement absent (HTTP 404) peut être traité explicitement via `allow_missing_robots`, selon [RFC 9309 §2.3.1.3](https://www.rfc-editor.org/rfc/rfc9309.html#section-2.3.1.3). Cette option n'est pas une preuve de permission métier ; 401, 403, 429, 5xx, challenges et erreurs réseau restent bloquants. Elle est désactivée par défaut et aucun proxy ou changement d'identité n'est introduit.
 
 `python scripts/fresh-listings/survey.py` contrôle huit origines publiques, sans ouvrir les routes privées. Son rapport `source-survey.json` conserve les résultats d'accès et les liens publics de découverte. MarocAnnonces est exclu en raison de `Disallow: /` pour notre agent ; aucune impersonation de Googlebot.
 

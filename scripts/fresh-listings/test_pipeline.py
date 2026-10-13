@@ -212,5 +212,23 @@ class PipelineTests(unittest.TestCase):
             report = json.loads((root / 'result' / 'rapport.json').read_text())
             self.assertEqual(report['reasons']['offline_replay_requires_live_verification'], 1)
 
+    def test_marocimmo_bound_land_and_declared_type(self):
+        u = 'https://www.marocimmo.com/fr/annonces/terrain-marrakech-689'
+        n = {'@type': 'RealEstateListing', 'url': u, 'datePosted': '2026-10-12T12:00:00Z', 'mainEntity': {'@type': 'Place', '@id': u + '#bien', 'address': {'addressLocality': 'Marrakech'}, 'containedInPlace': {'name': 'Bab Doukkala'}, 'additionalProperty': {'name': 'Surface du terrain', 'value': 100, 'unitCode': 'MTK'}}, 'offers': {'price': 2500000, 'priceCurrency': 'MAD'}}
+        r = extract('<script type="application/ld+json">' + json.dumps(n) + '</script><dl><dt>Type de bien</dt><dd>Terrain</dd></dl>', u)
+        self.assertEqual((r['type'], r['ville'], r['quartier'], r['superficie']), ('terrain', 'Marrakech', 'Bab Doukkala', 100))
+        unbound = {'@type': 'Place', 'url': u, 'address': {'addressLocality': 'wrong'}}
+        self.assertNotIn('ville', extract('<script type="application/ld+json">' + json.dumps(unbound) + '</script>', u))
+
+    def test_missing_robots_opt_in_and_access_challenges_stay_blocked(self):
+        from urllib.error import HTTPError
+        for code in (401, 403, 429, 500, 503):
+            with patch.object(Client, 'get', side_effect=HTTPError('https://site.test/robots.txt', code, 'error', {}, None)), self.assertRaises(HTTPError):
+                Client('https://site.test', allow_missing_robots=True)
+        with patch.object(Client, 'get', side_effect=HTTPError('https://site.test/robots.txt', 404, 'missing', {}, None)):
+            client = Client('https://site.test', allow_missing_robots=True)
+            self.assertEqual(client.robots_status, 'missing_404')
+            self.assertEqual(client.robots, '')
+
 if __name__ == '__main__':
     unittest.main()

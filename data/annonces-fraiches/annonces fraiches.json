@@ -1974,6 +1974,46 @@
     "parser_version": "1.4.0"
   },
   {
+    "ville": "Casablanca",
+    "quartier": "2 Mars",
+    "superficie": 114.0,
+    "prix": 1940000.0,
+    "devise": "MAD",
+    "type": "bureau",
+    "url": "https://www.marocimmo.com/fr/annonces/bureau-de-114-m2-casablanca-700",
+    "date_publication": "2026-10-13T11:06:53.535Z",
+    "verifie_le": "2026-10-13T16:52:24.786552+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "jsonld:floorSize",
+      "type": "marocimmo.com:dl:Type de bien"
+    },
+    "parser_version": "1.6.0"
+  },
+  {
+    "ville": "Casablanca",
+    "quartier": "2 Mars",
+    "superficie": 136.0,
+    "prix": 4485000.0,
+    "devise": "MAD",
+    "type": "local_commercial",
+    "url": "https://www.marocimmo.com/fr/annonces/local-commercial-de-136-m2-casablanca-701",
+    "date_publication": "2026-10-13T11:09:40.018Z",
+    "verifie_le": "2026-10-13T16:52:14.927560+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "jsonld:floorSize",
+      "type": "marocimmo.com:dl:Type de bien"
+    },
+    "parser_version": "1.6.0"
+  },
+  {
     "ville": "El Jadida",
     "quartier": "Al Boustane",
     "superficie": 140.0,
@@ -2052,5 +2092,45 @@
       "type": "jsonld:@type"
     },
     "parser_version": "1.4.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Bab Doukkala",
+    "superficie": 100.0,
+    "prix": 2500000.0,
+    "devise": "MAD",
+    "type": "terrain",
+    "url": "https://www.marocimmo.com/fr/annonces/terrain-de-100-m2-pour-immeuble-marrakech-689",
+    "date_publication": "2026-10-10T22:49:02.541Z",
+    "verifie_le": "2026-10-13T16:52:17.946511+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "marocimmo:bound-jsonld.additionalProperty:Surface du terrain:MTK",
+      "type": "marocimmo.com:dl:Type de bien"
+    },
+    "parser_version": "1.6.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Route de Fès",
+    "superficie": 250.0,
+    "prix": 3890000.0,
+    "devise": "MAD",
+    "type": "villa",
+    "url": "https://www.marocimmo.com/fr/annonces/villa-4-chambres-avec-piscine-marrakech-683",
+    "date_publication": "2026-10-10T11:01:21.639Z",
+    "verifie_le": "2026-10-13T16:52:12.239942+00:00",
+    "preuves": {
+      "date_publication": "jsonld:RealEstateListing.datePosted",
+      "prix": "jsonld:offers.price:MAD",
+      "ville": "jsonld:address.addressLocality",
+      "quartier": "jsonld:bound-property.containedInPlace.name",
+      "superficie": "jsonld:floorSize",
+      "type": "marocimmo.com:dl:Type de bien"
+    },
+    "parser_version": "1.6.0"
   }
 ]

@@ -14,7 +14,7 @@
       "devise": {"enum": ["MAD", "EUR", "USD"]},
       "transaction": {"enum": ["vente", "location", "location_vacances"]},
       "periode_prix": {"enum": ["total", "mois", "nuit"]},
-      "type": {"enum": ["appartement", "studio", "villa", "maison", "terrain", "bureau", "local_commercial", "riad", "ferme"]},
+      "type": {"enum": ["appartement", "studio", "villa", "maison", "terrain", "bureau", "local_commercial", "riad", "ferme", "immeuble", "duplex", "entrepot", "hangar", "fonds_de_commerce"]},
       "url": {"type": "string", "format": "uri", "pattern": "^https://"},
       "date_publication": {"type": "string", "format": "date-time"},
       "verifie_le": {"type": "string", "format": "date-time"},

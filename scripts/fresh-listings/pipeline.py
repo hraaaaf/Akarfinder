@@ -12,12 +12,13 @@ from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import urljoin, urlsplit, urlunsplit, unquote, quote
 from urllib.request import Request, build_opener, HTTPRedirectHandler
+from urllib.error import HTTPError
 from xml.etree import ElementTree as ET
 
-VERSION = "1.5.0"
+VERSION = "1.6.0"
 UA = "AkarFinderListingAudit/1.0 (+https://github.com/hraaaaf/Akarfinder)"
 ROOT = Path(__file__).resolve().parents[2]
-TYPES = {"apartment": "appartement", "appartement": "appartement", "studio": "studio", "villa": "villa", "house": "maison", "maison": "maison", "terrain": "terrain", "land": "terrain", "bureau": "bureau", "office": "bureau", "local commercial": "local_commercial", "local_commercial": "local_commercial", "riad": "riad", "ferme": "ferme"}
+TYPES = {"apartment": "appartement", "appartement": "appartement", "studio": "studio", "villa": "villa", "house": "maison", "maison": "maison", "terrain": "terrain", "land": "terrain", "bureau": "bureau", "office": "bureau", "local commercial": "local_commercial", "local_commercial": "local_commercial", "riad": "riad", "ferme": "ferme", "immeuble": "immeuble", "duplex": "duplex", "entrepot": "entrepot", "hangar": "hangar", "fonds de commerce": "fonds_de_commerce", "fonds commerce": "fonds_de_commerce"}
 
 def clean(value):
     return re.sub(r"\s+", " ", str(value or "")).strip()
@@ -259,7 +260,7 @@ def extract(html, url):
                     continue
             except ValueError:
                 continue
-            nodes.append({**child, "url": url})
+            nodes.append({**child, "url": url, "_listing_bound": True})
             if field == "mainEntity" and child.get("@type") == "Offer":
                 n["offers"] = child
     for n in nodes:
@@ -287,7 +288,8 @@ def extract(html, url):
             else:
                 out["date_publication"] = n["datePublished"]
                 out["preuves"]["date_publication"] = "jsonld:datePublished"
-        if not re.search("RealEstateListing|Residence|Apartment|House|Accommodation|Product", typ):
+        bound_place = n.get("_listing_bound") and typ in {"Place", "Store", "Landform", "Office"}
+        if not re.search("RealEstateListing|Residence|Apartment|House|Accommodation|Product", typ) and not bound_place:
             continue
         addr = n.get("address") or {}
         if isinstance(addr, dict):
@@ -309,6 +311,14 @@ def extract(html, url):
         if isinstance(surface, dict) and surface.get("unitCode", surface.get("unitText")) in ("MTK", "m2", "m²"):
             out["superficie"] = number(surface.get("value"))
             out["preuves"]["superficie"] = "jsonld:floorSize"
+        if target[0] == "marocimmo.com" and bound_place and not out.get("superficie"):
+            additional = n.get("additionalProperty") or []
+            additional = additional if isinstance(additional, list) else [additional]
+            areas = {number(a.get("value")) for a in additional if isinstance(a, dict) and fold(a.get("name")) == "surface du terrain" and a.get("unitCode") == "MTK"}
+            areas.discard(None)
+            if len(areas) == 1:
+                out["superficie"] = areas.pop()
+                out["preuves"]["superficie"] = "marocimmo:bound-jsonld.additionalProperty:Surface du terrain:MTK"
         offers = n.get("offers") or []
         offers = offers if isinstance(offers, list) else [offers]
         if any(isinstance(o, dict) and str(o.get("availability", "")).split("/")[-1] in {"SoldOut", "OutOfStock", "Discontinued"} for o in offers):
@@ -330,14 +340,14 @@ def extract(html, url):
         out["erreur"] = "starting_price_not_exact"
     if re.search(r"(?:dh|mad|eur|usd)\s*(?:/|par)\s*m[²2]", fold(title)):
         out["erreur"] = "unit_price_not_total"
-    if target[0] == "sawim.ma":
-        if not re.match(r"^/annonce/[A-Za-z0-9]+/[^/]+$", urlsplit(url).path):
+    if target[0] in {"sawim.ma", "marocimmo.com"}:
+        if target[0] == "sawim.ma" and not re.match(r"^/annonce/[A-Za-z0-9]+/[^/]+$", urlsplit(url).path):
             out["erreur"] = "not_detail_url"
         types = {TYPES.get(fold(v)) for k, v in p.definitions if fold(k) == "type de bien"}
         types.discard(None)
         if len(types) == 1:
             out["type"] = types.pop()
-            out["preuves"]["type"] = "sawim:dl:Type de bien"
+            out["preuves"]["type"] = target[0] + ":dl:Type de bien"
         surfaces = {number(m.group(1)) for k, v in p.definitions if fold(k) in {"surface", "surface habitable", "superficie"} and (m := re.fullmatch(r"([\d\s.,]+)\s*m[²2]", v))}
         surfaces.discard(None)
         if len(surfaces) == 1:
@@ -469,11 +479,21 @@ class NoRedirect(HTTPRedirectHandler):
         raise ValueError("redirect_requires_review:" + str(code))
 
 class Client:
-    def __init__(self, origin):
+    def __init__(self, origin, allow_missing_robots=False):
         self.origin = canonical(origin).rstrip("/")
         self.last = 0
         self.delay = 1.0
-        self.robots = self.get(self.origin + "/robots.txt", robots=True)
+        self.robots_status = "present"
+        try:
+            self.robots = self.get(self.origin + "/robots.txt", robots=True)
+        except HTTPError as e:
+            if e.code != 404 or not allow_missing_robots:
+                raise
+            # RFC 9309 2.3.1.3: absent robots (404), not an access challenge.
+            # This is opt-in; authentication, rate limits and 5xx still fail.
+            self.robots = ""
+            self.robots_status = "missing_404"
+            return
         if "<html" in self.robots.lower() or "user-agent:" not in self.robots.lower():
             raise ValueError("robots_unavailable")
 
@@ -603,7 +623,7 @@ def main():
             if not config.get("enabled"):
                 continue
             try:
-                client = Client(config["origin"])
+                client = Client(config["origin"], allow_missing_robots=config.get("allow_missing_robots", False))
                 urls, errors = discover(client, config)
                 stats["errors"].extend(errors)
                 stats["discovered"] += len(urls)
