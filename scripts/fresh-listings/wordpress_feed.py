@@ -63,7 +63,7 @@ def main():
     db = sqlite3.connect(output / 'checkpoint.sqlite')
     db.execute('CREATE TABLE IF NOT EXISTS observations (url TEXT PRIMARY KEY, payload TEXT NOT NULL)')
     now = datetime.now(timezone.utc)
-    cutoff = (now - timedelta(days=7)).replace(microsecond=0)
+    cutoff = (now - timedelta(days=30)).replace(microsecond=0)
     client = Client(origin)
     terms = {}
     stats = {'run_id':now.isoformat(),'sources':[{'origin':origin,'channel':'public_wordpress_published_properties'}],'discovered':0,'fetched':0,'errors':[]}

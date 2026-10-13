@@ -32,15 +32,38 @@ class PipelineTests(unittest.TestCase):
         self.assertNotIn('photo', json.dumps(r))
 
     def test_old_and_future_dates(self):
-        for d, reason in [('2025-07-22T14:10:03+00:00', 'older_than_7_days'), ('2026-10-14T00:00:00+00:00', 'future_publication_date')]:
+        for d, reason in [('2025-07-22T14:10:03+00:00', 'older_than_30_days'), ('2026-10-14T00:00:00+00:00', 'future_publication_date')]:
             r = row()
             r['date_publication'] = d
             self.assertIn(reason, sieve(r, NOW))
 
-    def test_exact_seven_day_boundary(self):
+    def test_exact_thirty_day_boundary(self):
         r = row()
-        r['date_publication'] = (NOW - timedelta(days=7)).isoformat()
-        self.assertIn('older_than_7_days', sieve(r, NOW))
+        r['date_publication'] = (NOW - timedelta(days=30)).isoformat()
+        self.assertIn('older_than_30_days', sieve(r, NOW))
+
+    def test_description_fallback_is_bound_and_unambiguous(self):
+        url = 'https://1immo.ma/appartement-123'
+        node = {'@type': 'RealEstateListing', 'url': url, 'description': 'Appartement de 80m2, quartier Agdal.'}
+        page = '<script type="application/ld+json">' + json.dumps(node) + '</script>'
+        r = extract(page, url)
+        self.assertEqual((r['superficie'], r['quartier']), (80, 'Agdal'))
+        node['description'] = 'Appartement 80m2 et terrasse 20m2, quartier calme.'
+        r = extract('<script type="application/ld+json">' + json.dumps(node) + '</script>', url)
+        self.assertNotIn('superficie', r)
+        self.assertNotIn('quartier', r)
+        node['url'] = 'https://1immo.ma/autre-456'
+        self.assertNotIn('quartier', extract('<script type="application/ld+json">' + json.dumps(node) + '</script>', url))
+
+    def test_1immo_title_surface_fallback(self):
+        url = 'https://1immo.ma/appartement-123'
+        self.assertEqual(extract('<h1>Appartement 141 m2 a Safi</h1>', url)['superficie'], 141)
+        self.assertNotIn('superficie', extract('<h1>Appartement 141 m2 terrasse 20 m2</h1>', url))
+
+    def test_twenty_nine_days_is_fresh(self):
+        r = row()
+        r['date_publication'] = (NOW - timedelta(days=29)).isoformat()
+        self.assertEqual(sieve(r, NOW), [])
 
     def test_modified_is_not_published(self):
         r = extract('<meta property="article:modified_time" content="2026-10-13T00:00:00Z">' + html('').replace('article:published_time', 'unused'), URL)

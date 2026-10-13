@@ -1,4 +1,4 @@
-name: Annonces fraiches - tamis 7 jours
+name: Annonces fraiches - tamis 30 jours
 
 on:
   pull_request:

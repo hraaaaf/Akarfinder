@@ -15,7 +15,7 @@ from urllib.request import Request, build_opener, HTTPRedirectHandler
 from urllib.error import HTTPError
 from xml.etree import ElementTree as ET
 
-VERSION = "1.7.1"
+VERSION = "1.8.1"
 UA = "AkarFinderListingAudit/1.0 (+https://github.com/hraaaaf/Akarfinder)"
 ROOT = Path(__file__).resolve().parents[2]
 TYPES = {"apartment": "appartement", "appartement": "appartement", "studio": "studio", "villa": "villa", "house": "maison", "maison": "maison", "terrain": "terrain", "land": "terrain", "bureau": "bureau", "office": "bureau", "local commercial": "local_commercial", "local_commercial": "local_commercial", "riad": "riad", "ferme": "ferme", "immeuble": "immeuble", "duplex": "duplex", "entrepot": "entrepot", "hangar": "hangar", "fonds de commerce": "fonds_de_commerce", "fonds commerce": "fonds_de_commerce"}
@@ -349,6 +349,29 @@ def extract(html, url):
     title = clean(" ".join(p.headline))
     text = clean(" ".join(p.primary))
     if target[0] == "1immo.ma":
+        # Only descriptions belonging to this exact listing, never related cards.
+        descriptions = []
+        for node in ld_nodes(p.blocks):
+            if node.get("@type") != "RealEstateListing":
+                continue
+            try:
+                if identity(node.get("url", "")) == target:
+                    descriptions.append(clean(node.get("description")))
+            except ValueError:
+                continue
+        description = " ".join(descriptions)
+        if not out.get("superficie"):
+            areas = {number(v) for v in re.findall(r"(?<![\d.,])(\d+(?:[.,]\d+)?)\s*m[²2]\b", description + " " + title)}
+            areas.discard(None)
+            if len(areas) == 1:
+                out["superficie"] = areas.pop()
+                out["preuves"]["superficie"] = "1immo:bound-description-or-h1:explicit-m2"
+        if not out.get("quartier"):
+            districts = {clean(v) for v in re.findall(r"\bquartier\s*[:：]?\s+([^,.;:!?\n]{2,60})(?=[,.;:!?]|$)", description, re.I)}
+            districts = {v for v in districts if not re.search(r"\b(?:avec|proche|calme|residentiel|résidentiel|pour|dans|de la|du centre)\b", v, re.I) and not v.endswith("...")}
+            if len(districts) == 1:
+                out["quartier"] = districts.pop()
+                out["preuves"]["quartier"] = "1immo:bound-description:explicit-quartier"
         if not re.fullmatch(r"/[^/]+-\d+", urlsplit(url).path):
             out["erreur"] = "not_detail_url"
         areas = {number(v) for k, v in p.grid_fields if fold(k) == "surface (m2)"}
@@ -442,7 +465,7 @@ def extract(html, url):
                 out["preuves"]["prix"] = "daragadir:h1:MAD"
     return out
 
-def sieve(row, now, days=7):
+def sieve(row, now, days=30):
     reasons = []
     for field in ("ville", "quartier", "type"):
         if not isinstance(row.get(field), str) or not clean(row[field]) or fold(row[field]) in {"inconnu", "unknown", "n/a", "non precise"}:
@@ -467,7 +490,7 @@ def sieve(row, now, days=7):
     elif published > now:
         reasons.append("future_publication_date")
     elif published <= now - timedelta(days=days):
-        reasons.append("older_than_7_days")
+        reasons.append("older_than_30_days")
     verified = date(row.get("verifie_le"))
     if not verified or row.get("http_status") != 200:
         reasons.append("not_live_verified")
@@ -631,8 +654,8 @@ def export(db, out, now, target, stats):
     with (out / "rejets.jsonl").open("w", encoding="utf-8") as f:
         for row in rejected:
             f.write(json.dumps(row, ensure_ascii=False) + "\n")
-    report = {**stats, "parser_version": VERSION, "generated_at": now.isoformat(), "freshness": "publication strictly within last 7 days; live HTTP 200 this run", "target": target, "accepted": len(accepted), "rejected": len(rejected), "target_reached": len(accepted) >= target, "shortfall": max(0, target - len(accepted)), "reasons": dict(Counter(reason for row in rejected for reason in row["motifs"])), "photos_downloaded": 0, "production_writes": 0, "deduplication": "canonical URL only; distinct properties not guaranteed"}
-    report["freshness"] = "publication strictly within last 7 days; explicit successful HTTP verification within 24 hours"
+    report = {**stats, "parser_version": VERSION, "generated_at": now.isoformat(), "freshness": "publication strictly within last 30 days; live HTTP 200 this run", "target": target, "accepted": len(accepted), "rejected": len(rejected), "target_reached": len(accepted) >= target, "shortfall": max(0, target - len(accepted)), "reasons": dict(Counter(reason for row in rejected for reason in row["motifs"])), "photos_downloaded": 0, "production_writes": 0, "deduplication": "canonical URL only; distinct properties not guaranteed"}
+    report["freshness"] = "publication strictly within last 30 days; explicit successful HTTP verification within 24 hours"
     report["checkpoint_observations"] = len(accepted) + len(rejected)
     atomic_json(out / "rapport.json", report)
     return report

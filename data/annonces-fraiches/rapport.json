@@ -1,34 +1,28 @@
 {
-  "run_id": "2026-10-13T17:47:54.199754+00:00",
-  "sources": [
-    {
-      "origin": "https://1immo.ma",
-      "discovered": 954
-    }
-  ],
-  "discovered": 954,
-  "fetched": 275,
+  "channel": "targeted-title-surface-review",
+  "fetched": 1,
   "errors": [],
-  "parser_version": "1.7.1",
-  "generated_at": "2026-10-13T17:57:49.623710+00:00",
-  "freshness": "publication strictly within last 7 days; explicit successful HTTP verification within 24 hours",
+  "parser_version": "1.8.1",
+  "generated_at": "2026-10-13T23:35:05.048789+00:00",
+  "freshness": "publication strictly within last 30 days; explicit successful HTTP verification within 24 hours",
   "target": 200000,
-  "accepted": 190,
-  "rejected": 804,
+  "accepted": 349,
+  "rejected": 1124,
   "target_reached": false,
-  "shortfall": 199810,
+  "shortfall": 199651,
   "reasons": {
-    "invalid_superficie": 261,
-    "missing_evidence_quartier": 425,
-    "missing_evidence_superficie": 261,
-    "missing_quartier": 425,
-    "invalid_prix": 181,
-    "missing_evidence_prix": 181,
-    "missing_or_unsupported_currency": 234,
-    "missing_evidence_type": 188,
-    "missing_type": 188,
-    "unsupported_type": 188,
-    "older_than_7_days": 386,
+    "invalid_superficie": 451,
+    "missing_evidence_quartier": 778,
+    "missing_evidence_superficie": 451,
+    "missing_quartier": 778,
+    "invalid_prix": 242,
+    "missing_evidence_prix": 242,
+    "missing_or_unsupported_currency": 295,
+    "older_than_30_days": 127,
+    "missing_evidence_type": 174,
+    "missing_type": 174,
+    "unsupported_type": 174,
+    "implausible_price": 1,
     "unit_price_not_total": 1,
     "starting_price_not_exact": 1,
     "not_live_verified": 35,
@@ -42,36 +36,7 @@
   "photos_downloaded": 0,
   "production_writes": 0,
   "deduplication": "canonical URL only; distinct properties not guaranteed",
-  "checkpoint_observations": 994,
-  "additional_runs": [
-    {
-      "run_id": "2026-10-13T17:56:57.921984+00:00",
-      "sources": [
-        {
-          "origin": "https://limmobiliersansfrontieres.com",
-          "channel": "public_wordpress_published_properties"
-        }
-      ],
-      "discovered": 6,
-      "fetched": 6,
-      "errors": [],
-      "parser_version": "1.7.1",
-      "generated_at": "2026-10-13T17:57:23.385073+00:00",
-      "freshness": "publication strictly within last 7 days; explicit successful HTTP verification within 24 hours",
-      "target": 200000,
-      "accepted": 3,
-      "rejected": 3,
-      "target_reached": false,
-      "shortfall": 199997,
-      "reasons": {
-        "missing_evidence_type": 3,
-        "missing_type": 3,
-        "unsupported_type": 3
-      },
-      "photos_downloaded": 0,
-      "production_writes": 0,
-      "deduplication": "canonical URL only; distinct properties not guaranteed",
-      "checkpoint_observations": 6
-    }
-  ]
+  "checkpoint_observations": 1473,
+  "accepted_before_review": 348,
+  "net_gain": 1
 }

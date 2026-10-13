@@ -82,7 +82,7 @@ def main():
     db = sqlite3.connect(args.output / "checkpoint.sqlite")
     db.execute("CREATE TABLE IF NOT EXISTS observations (url TEXT PRIMARY KEY, payload TEXT NOT NULL)")
     now = datetime.now(timezone.utc)
-    cutoff = now - timedelta(days=7)
+    cutoff = now - timedelta(days=30)
     stats = {"run_id": now.isoformat(), "sources": [], "discovered": 0, "fetched": 0, "errors": [], "feed_documentation": DOCS, "feed_pages_read": 0, "feed_rows_read": 0, "feed_total_advertised": None, "recent_candidates": 0, "older_feed_rows": 0, "complete": False}
     seen = set()
     last_posted = None
