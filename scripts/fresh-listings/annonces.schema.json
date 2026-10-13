@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Annonces fraiches",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["ville", "quartier", "superficie", "prix", "type", "url", "date_publication", "verifie_le", "preuves", "parser_version"],
+    "properties": {
+      "ville": {"type": "string", "minLength": 1},
+      "quartier": {"type": "string", "minLength": 1},
+      "superficie": {"type": "number", "exclusiveMinimum": 0},
+      "prix": {"type": "number", "exclusiveMinimum": 0, "maximum": 500000000},
+      "type": {"enum": ["appartement", "studio", "villa", "maison", "terrain", "bureau", "local_commercial", "riad", "ferme"]},
+      "url": {"type": "string", "format": "uri", "pattern": "^https://"},
+      "date_publication": {"type": "string", "format": "date-time"},
+      "verifie_le": {"type": "string", "format": "date-time"},
+      "parser_version": {"type": "string"},
+      "preuves": {
+        "type": "object",
+        "required": ["ville", "quartier", "superficie", "prix", "type", "date_publication"],
+        "additionalProperties": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}

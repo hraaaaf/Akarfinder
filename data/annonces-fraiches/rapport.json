@@ -1,0 +1,38 @@
+{
+  "run_id": "2026-10-13T15:12:42.936428+00:00",
+  "sources": [
+    {
+      "origin": "https://daragadir.com",
+      "discovered": 5749
+    },
+    {
+      "origin": "https://www.mubawab.ma",
+      "discovered": 54
+    }
+  ],
+  "discovered": 5803,
+  "fetched": 60,
+  "errors": [],
+  "parser_version": "1.2.0",
+  "generated_at": "2026-10-13T15:16:01.583527+00:00",
+  "freshness": "publication strictly within last 7 days; live HTTP 200 this run",
+  "target": 200000,
+  "accepted": 0,
+  "rejected": 60,
+  "target_reached": false,
+  "shortfall": 200000,
+  "reasons": {
+    "missing_evidence_quartier": 24,
+    "missing_quartier": 24,
+    "older_than_7_days": 30,
+    "invalid_prix": 16,
+    "invalid_superficie": 17,
+    "missing_evidence_prix": 16,
+    "missing_evidence_superficie": 17,
+    "missing_evidence_date_publication": 30,
+    "missing_publication_date": 30
+  },
+  "photos_downloaded": 0,
+  "production_writes": 0,
+  "deduplication": "canonical URL only; distinct properties not guaranteed"
+}

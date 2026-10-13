@@ -1,0 +1,55 @@
+name: Annonces fraiches - tamis 7 jours
+
+on:
+  pull_request:
+    paths:
+      - scripts/fresh-listings/**
+      - .github/workflows/annonces-fraiches.yml
+  workflow_dispatch:
+    inputs:
+      max_details:
+        description: Fiches maximum par source (1 a 1000)
+        default: "30"
+        required: true
+      target:
+        description: Objectif de volume (ne garantit pas la disponibilite)
+        default: "200000"
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: annonces-fraiches
+  cancel-in-progress: false
+
+jobs:
+  sieve:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Verifier le parser
+        run: python -m unittest discover -s scripts/fresh-listings -p test_pipeline.py -v
+      - name: Collecter sans photos et filtrer
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          MAX_DETAILS: ${{ inputs.max_details }}
+          TARGET: ${{ inputs.target }}
+        shell: bash
+        run: |
+          python -c 'import os; n=int(os.environ["MAX_DETAILS"]); t=int(os.environ["TARGET"]); assert 1 <= n <= 1000 and 1 <= t <= 10000000'
+          python scripts/fresh-listings/pipeline.py --max-details "$MAX_DETAILS" --target "$TARGET"
+      - name: Publier les preuves de cette execution
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: annonces-fraiches
+          path: |
+            data/annonces-fraiches/annonces fraiches.json
+            data/annonces-fraiches/rejets.jsonl
+            data/annonces-fraiches/rapport.json
+          if-no-files-found: error
