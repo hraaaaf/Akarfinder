@@ -1,0 +1,416 @@
+{
+  "observed_at": "2026-10-13T17:34:19.364643+00:00",
+  "sources": [
+    {
+      "domain": "agenz.ma",
+      "observed_at": "2026-10-13T17:33:26.010735+00:00",
+      "photos_downloaded": 0,
+      "attempts": [
+        {
+          "origin": "https://agenz.ma",
+          "error": "'NoneType' object has no attribute 'split'"
+        }
+      ],
+      "status": "unavailable"
+    },
+    {
+      "domain": "sarouty.ma",
+      "observed_at": "2026-10-13T17:33:26.011573+00:00",
+      "photos_downloaded": 0,
+      "attempts": [
+        {
+          "origin": "https://sarouty.ma",
+          "error": "redirect_requires_review:301"
+        }
+      ],
+      "status": "no_homepage_detail_candidates",
+      "origin": "https://www.sarouty.ma",
+      "robots_status": "present",
+      "homepage_status": 200,
+      "detail_candidates": 0,
+      "candidate_sample": [],
+      "samples": []
+    },
+    {
+      "domain": "1immo.ma",
+      "observed_at": "2026-10-13T17:33:26.012219+00:00",
+      "photos_downloaded": 0,
+      "attempts": [],
+      "origin": "https://1immo.ma",
+      "robots_status": "present",
+      "homepage_status": 200,
+      "detail_candidates": 5,
+      "candidate_sample": [
+        "https://1immo.ma/appt-99-m%C2%B2-terrasse-49-m%C2%B2-casablanca-bd-danfa-37273",
+        "https://1immo.ma/appartement-meuble-a-marrakech-pour-les-familles-seulement-37278",
+        "https://1immo.ma/bel-appartement-meuble-au-centre-de-fes-36708",
+        "https://1immo.ma/maison-a-vendre-a-wadalian-36929",
+        "https://1immo.ma/appartement-bien-equipee-36868"
+      ],
+      "samples": [
+        {
+          "url": "https://1immo.ma/appt-99-m%C2%B2-terrasse-49-m%C2%B2-casablanca-bd-danfa-37273",
+          "publication": "2026-10-12T18:11:05.000000Z",
+          "publication_evidence": "jsonld:datePublished",
+          "fields": [
+            "prix",
+            "ville"
+          ],
+          "error": null
+        },
+        {
+          "url": "https://1immo.ma/appartement-meuble-a-marrakech-pour-les-familles-seulement-37278",
+          "publication": "2026-10-13T15:21:08.000000Z",
+          "publication_evidence": "jsonld:datePublished",
+          "fields": [
+            "prix",
+            "ville"
+          ],
+          "error": null
+        },
+        {
+          "url": "https://1immo.ma/bel-appartement-meuble-au-centre-de-fes-36708",
+          "publication": "2026-10-10T15:47:20.000000Z",
+          "publication_evidence": "jsonld:datePublished",
+          "fields": [
+            "ville"
+          ],
+          "error": null
+        }
+      ],
+      "status": "sampled"
+    },
+    {
+      "domain": "barnes-marrakech.com",
+      "observed_at": "2026-10-13T17:33:26.014505+00:00",
+      "photos_downloaded": 0,
+      "attempts": [
+        {
+          "origin": "https://barnes-marrakech.com",
+          "error": "redirect_requires_review:301"
+        }
+      ],
+      "status": "sampled",
+      "origin": "https://www.barnes-marrakech.com",
+      "robots_status": "present",
+      "homepage_status": 200,
+      "detail_candidates": 12,
+      "candidate_sample": [
+        "https://www.barnes-marrakech.com/fr/vente/marrakech/85060899",
+        "https://www.barnes-marrakech.com/fr/vente/marrakech/84148033",
+        "https://www.barnes-marrakech.com/fr/vente/marrakech/85588345",
+        "https://www.barnes-marrakech.com/fr/vente/marrakech/84830514",
+        "https://www.barnes-marrakech.com/fr/vente/marrakech/85573313",
+        "https://www.barnes-marrakech.com/fr/vente/marrakech/86258708",
+        "https://www.barnes-marrakech.com/fr/vente/marrakech/87470213",
+        "https://www.barnes-marrakech.com/fr/vente/marrakech/87273216",
+        "https://www.barnes-marrakech.com/fr/location/marrakech/87265215",
+        "https://www.barnes-marrakech.com/fr/vente/marrakech/87296317"
+      ],
+      "samples": [
+        {
+          "url": "https://www.barnes-marrakech.com/fr/vente/marrakech/85060899",
+          "publication": null,
+          "publication_evidence": null,
+          "fields": [],
+          "error": null
+        },
+        {
+          "url": "https://www.barnes-marrakech.com/fr/vente/marrakech/84148033",
+          "publication": null,
+          "publication_evidence": null,
+          "fields": [],
+          "error": null
+        },
+        {
+          "url": "https://www.barnes-marrakech.com/fr/vente/marrakech/85588345",
+          "publication": null,
+          "publication_evidence": null,
+          "fields": [],
+          "error": null
+        }
+      ]
+    },
+    {
+      "domain": "kawtarimmobilier.com",
+      "observed_at": "2026-10-13T17:33:28.519337+00:00",
+      "photos_downloaded": 0,
+      "attempts": [
+        {
+          "origin": "https://kawtarimmobilier.com",
+          "error": "redirect_requires_review:301"
+        }
+      ],
+      "status": "sampled",
+      "origin": "https://www.kawtarimmobilier.com",
+      "robots_status": "present",
+      "homepage_status": 200,
+      "detail_candidates": 10,
+      "candidate_sample": [
+        "https://www.kawtarimmobilier.com/marrakech/vente/appartement/appartement-a-vendre-gueliz-a-deux-pas-de-carre-eden-ref-4219.html",
+        "https://www.kawtarimmobilier.com/marrakech/vente/villa/a-vendre-villa-contemporaine-de-prestige-ref-4216.html",
+        "https://www.kawtarimmobilier.com/marrakech/vente/appartement/appartement-d-exception-hivernage-ref-4164.html",
+        "https://www.kawtarimmobilier.com/marrakech/vente/maison-d-hote/riad-maison-d-hote-a-vendre-medina-de-marrakech-ref-3906.html",
+        "https://www.kawtarimmobilier.com/marrakech/vente/appartement/superbe-appartement-ref-3788.html",
+        "https://www.kawtarimmobilier.com/marrakech/vente/villa/superbe-villa-ref-3786.html",
+        "https://www.kawtarimmobilier.com/essaouira/vente/villa/jolie-villa-a-vendre-a-ghazoua-a-8-km-d-essaouira-ref-4081.html",
+        "https://www.kawtarimmobilier.com/essaouira/vente/riad-rnover/maison-de-charme-au-coeur-de-la-medina-ref-4018.html",
+        "https://www.kawtarimmobilier.com/essaouira/vente/maison-d-hotes/riad-maison-d-hote-bien-placee-avec-vue-sur-mer-ref-4000.html",
+        "https://www.kawtarimmobilier.com/essaouira/vente/villa/villa-de-luxe-a-18-km-d-essaouira-avec-potentiel-de-maison-d-hotes-500-000-euros-ref-3789.html"
+      ],
+      "samples": [
+        {
+          "url": "https://www.kawtarimmobilier.com/marrakech/vente/appartement/appartement-a-vendre-gueliz-a-deux-pas-de-carre-eden-ref-4219.html",
+          "publication": null,
+          "publication_evidence": null,
+          "fields": [],
+          "error": null
+        },
+        {
+          "url": "https://www.kawtarimmobilier.com/marrakech/vente/villa/a-vendre-villa-contemporaine-de-prestige-ref-4216.html",
+          "publication": null,
+          "publication_evidence": null,
+          "fields": [],
+          "error": null
+        },
+        {
+          "url": "https://www.kawtarimmobilier.com/marrakech/vente/appartement/appartement-d-exception-hivernage-ref-4164.html",
+          "publication": null,
+          "publication_evidence": null,
+          "fields": [],
+          "error": null
+        }
+      ]
+    },
+    {
+      "domain": "limmobiliersansfrontieres.com",
+      "observed_at": "2026-10-13T17:33:30.633187+00:00",
+      "photos_downloaded": 0,
+      "attempts": [],
+      "origin": "https://limmobiliersansfrontieres.com",
+      "robots_status": "present",
+      "homepage_status": 200,
+      "detail_candidates": 8,
+      "candidate_sample": [
+        "https://limmobiliersansfrontieres.com/property/villa-meublee-de-800-m%c2%b2-a-louer-a-targa-grand-jardin-prive-piscine-privee-et-beaux-espaces-de-vie/",
+        "https://limmobiliersansfrontieres.com/property/villa-semi-finie-sur-20-400-m%c2%b2-a-vendre-route-de-lourika-sidi-abdellah-ghiat-grand-jardin-et-dependances/",
+        "https://limmobiliersansfrontieres.com/property/villa-meublee-de-353-m%c2%b2-a-louer-a-targa-4-chambres-jardin-prive-et-piscine-privee/",
+        "https://limmobiliersansfrontieres.com/property/villa-vide-de-380-m%c2%b2-a-louer-a-targa-4-chambres-dont-2-suites-cheminee-terrasse-et-piscine/",
+        "https://limmobiliersansfrontieres.com/property/appartement-meuble-de-77-m%c2%b2-a-vendre-a-azzouzia-3-chambres-climatisation-reversible-jardin-collectif-et-parking/",
+        "https://limmobiliersansfrontieres.com/property/appartement-meuble-de-56-m%c2%b2-a-vendre-route-de-casablanca-1-chambre-salon-sejour-ascenseur-et-parking/",
+        "https://limmobiliersansfrontieres.com/property/appartement-meuble-de-54-m%c2%b2-a-louer-route-de-casablanca-2-chambres-salon-marocain-et-2-ascenseurs/",
+        "https://limmobiliersansfrontieres.com/property/villa-vide-de-380-m%c2%b2-a-louer-a-targa-4-chambres-dont-2-suites-cheminee-terrasse-et-piscine-2/"
+      ],
+      "samples": [
+        {
+          "url": "https://limmobiliersansfrontieres.com/property/villa-meublee-de-800-m%c2%b2-a-louer-a-targa-grand-jardin-prive-piscine-privee-et-beaux-espaces-de-vie/",
+          "publication": "2026-10-11T03:54:12+00:00",
+          "publication_evidence": "jsonld:datePublished",
+          "fields": [],
+          "error": null
+        },
+        {
+          "url": "https://limmobiliersansfrontieres.com/property/villa-semi-finie-sur-20-400-m%c2%b2-a-vendre-route-de-lourika-sidi-abdellah-ghiat-grand-jardin-et-dependances/",
+          "publication": "2026-10-11T03:35:52+00:00",
+          "publication_evidence": "jsonld:datePublished",
+          "fields": [],
+          "error": null
+        },
+        {
+          "url": "https://limmobiliersansfrontieres.com/property/villa-meublee-de-353-m%c2%b2-a-louer-a-targa-4-chambres-jardin-prive-et-piscine-privee/",
+          "publication": "2026-10-05T01:37:38+00:00",
+          "publication_evidence": "jsonld:datePublished",
+          "fields": [],
+          "error": null
+        }
+      ],
+      "status": "sampled"
+    },
+    {
+      "domain": "marrakechrealty.com",
+      "observed_at": "2026-10-13T17:33:33.455128+00:00",
+      "photos_downloaded": 0,
+      "attempts": [
+        {
+          "origin": "https://marrakechrealty.com",
+          "error": "redirect_requires_review:301"
+        }
+      ],
+      "status": "no_homepage_detail_candidates",
+      "origin": "https://www.marrakechrealty.com",
+      "robots_status": "present",
+      "homepage_status": 200,
+      "detail_candidates": 0,
+      "candidate_sample": [],
+      "samples": []
+    },
+    {
+      "domain": "soukimmobilier.com",
+      "observed_at": "2026-10-13T17:33:33.516490+00:00",
+      "photos_downloaded": 0,
+      "attempts": [
+        {
+          "origin": "https://soukimmobilier.com",
+          "error": "redirect_requires_review:301"
+        }
+      ],
+      "status": "sampled",
+      "origin": "https://www.soukimmobilier.com",
+      "robots_status": "present",
+      "homepage_status": 200,
+      "detail_candidates": 6,
+      "candidate_sample": [
+        "https://www.soukimmobilier.com/fr/casablanca/appartement/58860345",
+        "https://www.soukimmobilier.com/fr/marrakech/appartement/58860371",
+        "https://www.soukimmobilier.com/fr/el-jadida/appartement/58852507",
+        "https://www.soukimmobilier.com/fr/al-hoceima/maison/58860365",
+        "https://www.soukimmobilier.com/fr/casablanca/appartement/58860357",
+        "https://www.soukimmobilier.com/fr/casablanca/bureau/58860361"
+      ],
+      "samples": [
+        {
+          "url": "https://www.soukimmobilier.com/fr/casablanca/appartement/58860345",
+          "publication": "2026-10-13T17:24:39+00:00",
+          "publication_evidence": "jsonld:RealEstateListing.datePosted",
+          "fields": [
+            "prix",
+            "superficie",
+            "ville"
+          ],
+          "error": "conflicting_publication_dates"
+        },
+        {
+          "url": "https://www.soukimmobilier.com/fr/marrakech/appartement/58860371",
+          "publication": "2026-10-13T17:24:38+00:00",
+          "publication_evidence": "jsonld:RealEstateListing.datePosted",
+          "fields": [
+            "prix",
+            "ville"
+          ],
+          "error": "conflicting_publication_dates"
+        },
+        {
+          "url": "https://www.soukimmobilier.com/fr/el-jadida/appartement/58852507",
+          "publication": "2026-10-13T17:24:38+00:00",
+          "publication_evidence": "jsonld:RealEstateListing.datePosted",
+          "fields": [
+            "ville"
+          ],
+          "error": "conflicting_publication_dates"
+        }
+      ]
+    },
+    {
+      "domain": "atlasimmobilier.com",
+      "observed_at": "2026-10-13T17:33:36.157774+00:00",
+      "photos_downloaded": 0,
+      "attempts": [],
+      "origin": "https://atlasimmobilier.com",
+      "robots_status": "present",
+      "homepage_status": 200,
+      "detail_candidates": 21,
+      "candidate_sample": [
+        "https://atlasimmobilier.com/p/brouillon-autoriad-de-charme-de-114-m%c2%b2-avec-patio-et-terrasse-a-bab-aylan-medina-de-marrakech/",
+        "https://atlasimmobilier.com/p/elegance-classique-et-art-de-vivre-face-a-latlas-a-quelques-minutes-de-marrakech/",
+        "https://atlasimmobilier.com/p/riad-maison-dhotes-exploite-depuis-20-ans-entre-dar-el-bacha-et-bab-doukkala/",
+        "https://atlasimmobilier.com/p/elegance-et-douceur-de-vivre-au-coeur-de-la-palmeraie-de-marrakech/",
+        "https://atlasimmobilier.com/p/villa-vue-ocean-piscine-ouassane-sidi-kaouki-essaouira/",
+        "https://atlasimmobilier.com/p/kasbah-de-marrakech-petite-maison-de-rapport-a-reinventer-au-coeur-de-la-medina/",
+        "https://atlasimmobilier.com/p/appartement-contemporain-86-m%c2%b2-dernier-etage-avec-terrasse-a-hay-charaf-marrakech/",
+        "https://atlasimmobilier.com/p/appartement-meuble-77m2-deux-terrasses-essaouira/",
+        "https://atlasimmobilier.com/p/riad-maison-hotes-marrakech-bahia/",
+        "https://atlasimmobilier.com/p/appartement-meuble-avec-grande-terrasse-et-vue-sur-latlas-dans-une-residence-avec-piscine/"
+      ],
+      "samples": [
+        {
+          "url": "https://atlasimmobilier.com/p/brouillon-autoriad-de-charme-de-114-m%c2%b2-avec-patio-et-terrasse-a-bab-aylan-medina-de-marrakech/",
+          "publication": "2026-08-30T11:00:00+00:00",
+          "publication_evidence": "jsonld:datePublished",
+          "fields": [],
+          "error": null
+        },
+        {
+          "url": "https://atlasimmobilier.com/p/elegance-classique-et-art-de-vivre-face-a-latlas-a-quelques-minutes-de-marrakech/",
+          "publication": "2026-07-15T21:48:00+00:00",
+          "publication_evidence": "jsonld:datePublished",
+          "fields": [],
+          "error": null
+        },
+        {
+          "url": "https://atlasimmobilier.com/p/riad-maison-dhotes-exploite-depuis-20-ans-entre-dar-el-bacha-et-bab-doukkala/",
+          "publication": "2026-06-26T23:23:00+00:00",
+          "publication_evidence": "jsonld:datePublished",
+          "fields": [],
+          "error": null
+        }
+      ],
+      "status": "sampled"
+    },
+    {
+      "domain": "aykana.ma",
+      "observed_at": "2026-10-13T17:33:38.570694+00:00",
+      "photos_downloaded": 0,
+      "attempts": [],
+      "origin": "https://aykana.ma",
+      "robots_status": "present",
+      "homepage_status": 200,
+      "detail_candidates": 0,
+      "candidate_sample": [],
+      "samples": [],
+      "status": "no_homepage_detail_candidates"
+    },
+    {
+      "domain": "promoimmomarrakech.com",
+      "observed_at": "2026-10-13T17:33:39.378574+00:00",
+      "photos_downloaded": 0,
+      "attempts": [
+        {
+          "origin": "https://promoimmomarrakech.com",
+          "error": "redirect_requires_review:301"
+        }
+      ],
+      "status": "sampled",
+      "origin": "https://www.promoimmomarrakech.com",
+      "robots_status": "present",
+      "homepage_status": 200,
+      "detail_candidates": 11,
+      "candidate_sample": [
+        "https://www.promoimmomarrakech.com/produit/vvm-105/vente-villa-marrakech-route-de-fes.html",
+        "https://www.promoimmomarrakech.com/produit/vvm-73/vente-villa-marrakech-route-de-ouarzazate.html",
+        "https://www.promoimmomarrakech.com/produit/vvm-84/vente-villa-marrakech-route-de-ouarzazate.html",
+        "https://www.promoimmomarrakech.com/produit/vvv-633/vente-villa-marrakech-route-de-fes.html",
+        "https://www.promoimmomarrakech.com/produit/avv-1133/vente-appartement-marrakech-guliz.html",
+        "https://www.promoimmomarrakech.com/produit/vvm-346/vente-villa-marrakech-route-tahanaout.html",
+        "https://www.promoimmomarrakech.com/produit/avv-1132/vente-appartement-marrakech-rouidat.html",
+        "https://www.promoimmomarrakech.com/produit/ml-318/location-magasin-marrakech-guliz.html",
+        "https://www.promoimmomarrakech.com/produit/ml-317/location-magasin-marrakech-route-casablanca.html",
+        "https://www.promoimmomarrakech.com/produit/bl-478/location-bureau-marrakech-guliz.html"
+      ],
+      "samples": [
+        {
+          "url": "https://www.promoimmomarrakech.com/produit/vvm-105/vente-villa-marrakech-route-de-fes.html",
+          "publication": null,
+          "publication_evidence": null,
+          "fields": [],
+          "error": "canonical_mismatch"
+        },
+        {
+          "url": "https://www.promoimmomarrakech.com/produit/vvm-73/vente-villa-marrakech-route-de-ouarzazate.html",
+          "publication": null,
+          "publication_evidence": null,
+          "fields": [],
+          "error": "canonical_mismatch"
+        },
+        {
+          "url": "https://www.promoimmomarrakech.com/produit/vvm-84/vente-villa-marrakech-route-de-ouarzazate.html",
+          "publication": null,
+          "publication_evidence": null,
+          "fields": [],
+          "error": "canonical_mismatch"
+        }
+      ]
+    }
+  ],
+  "photos_downloaded": 0,
+  "production_writes": 0
+}

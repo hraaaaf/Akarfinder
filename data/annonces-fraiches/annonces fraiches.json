@@ -1,5 +1,1845 @@
 [
   {
+    "ville": "Tetouan",
+    "quartier": "قرب مخبزة تمودة",
+    "superficie": 584.0,
+    "prix": 1460000.0,
+    "devise": "MAD",
+    "type": "terrain",
+    "url": "https://1immo.ma/%D8%A3%D8%B1%D8%B6-%D9%84%D9%84%D8%A8%D9%8A%D8%B9-%D8%A8%D9%85%D8%B3%D8%A7%D8%AD%D8%A9-584-%D9%85%D8%AA%D8%B1-%D9%85%D8%B1%D8%A8%D8%B9-%D8%A8%D8%AB%D9%85%D9%86-%D9%85%D9%86%D8%A7%D8%B3%D8%A8-%D8%AA%D8%B7%D9%88%D8%A7%D9%86-%D9%82%D8%B1%D8%A8-%D9%85%D8%AE%D8%A8%D8%B2%D8%A9-%D8%AA%D9%85%D9%88%D8%AF%D8%A9-37069",
+    "date_publication": "2026-10-13T07:48:20.000000Z",
+    "verifie_le": "2026-10-13T17:56:04.870671+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Chefchaouen",
+    "quartier": "قاع اسراس",
+    "superficie": 100.0,
+    "prix": 210000.0,
+    "devise": "MAD",
+    "type": "terrain",
+    "url": "https://1immo.ma/%D8%A3%D8%B1%D8%B6-%D9%85%D8%B3%D8%AC%D9%84%D8%A9-%D9%84%D9%84%D8%A8%D9%8A%D8%B9-%D8%A8%D9%85%D9%86%D8%B7%D9%82%D8%A9-%D9%82%D8%A7%D8%B9-%D8%A7%D8%B3%D8%B1%D8%A7%D8%B3-%D8%B4%D9%81%D8%B4%D8%A7%D9%88%D9%86.-37068",
+    "date_publication": "2026-10-12T07:33:51.000000Z",
+    "verifie_le": "2026-10-13T17:55:52.902005+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Ksar El Kebir",
+    "quartier": "حي الشرفاء ولاد حميد",
+    "superficie": 90.0,
+    "prix": 130000.0,
+    "devise": "MAD",
+    "type": "terrain",
+    "url": "https://1immo.ma/%D8%AD%D9%8A-%D8%A7%D9%84%D8%B4%D8%B1%D9%81%D8%A7%D8%A1-%D9%88%D9%84%D8%A7%D8%AF-%D8%AD%D9%85%D9%8A%D8%AF-%D9%82%D8%B1%D8%A8-%D8%AC%D8%A7%D9%85%D8%B9-%D8%A7%D9%84%D8%A8%D8%B1%D9%8A%D9%83-36960",
+    "date_publication": "2026-10-12T05:48:17.000000Z",
+    "verifie_le": "2026-10-13T17:54:00.305740+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Meknes",
+    "quartier": "ويسلان",
+    "superficie": 360.0,
+    "prix": 1900000.0,
+    "devise": "MAD",
+    "type": "maison",
+    "url": "https://1immo.ma/%D8%AF%D8%A7%D8%B1-%D8%AA%D9%82%D9%84%D9%8A%D8%AF%D9%8A%D8%A9-%D8%A3%D8%B5%D9%8A%D9%84%D8%A9-%D9%84%D9%84%D8%A8%D9%8A%D8%B9-%D8%A8%D9%85%D9%83%D9%86%D8%A7%D8%B3-%D8%AD%D9%8A-%D9%88%D9%8A%D8%B3%D9%84%D8%A7%D9%86-360-%D9%85%D8%AA%D8%B1-%D9%85%D8%B1%D8%A8%D8%B9-36403",
+    "date_publication": "2026-10-12T14:41:44.000000Z",
+    "verifie_le": "2026-10-13T17:41:22.778210+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Tanger",
+    "quartier": "كاسطيا",
+    "superficie": 198.0,
+    "prix": 2250000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://1immo.ma/%D8%B4%D8%A7%D8%B1%D8%B9-%D8%B9%D8%A8%D8%AF-%D8%A7%D9%84%D8%B1%D8%AD%D9%85%D8%A7%D9%86-%D8%A7%D9%84%D9%8A%D9%88%D8%B3%D9%81%D9%8A-%D8%A3%D9%85%D8%A7%D9%85-%D9%85%D9%82%D9%87%D9%89-%D9%84%D8%A7%D9%87%D8%A7%D9%8A.-%D8%B7%D9%86%D8%AC%D8%A9-%D8%A7%D9%84%D9%85%D8%BA%D8%B1%D8%A8-37386",
+    "date_publication": "2026-10-11T20:41:53.000000Z",
+    "verifie_le": "2026-10-13T17:57:22.666571+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Chefchaouen",
+    "quartier": "حي عين حوزي",
+    "superficie": 85.0,
+    "prix": 6400000.0,
+    "devise": "MAD",
+    "type": "maison",
+    "url": "https://1immo.ma/%D8%B4%D9%81%D8%B4%D8%A7%D9%88%D9%86-%D8%B9%D9%8A%D9%86-%D8%AD%D9%88%D8%B2%D9%8A-%D8%A7%D9%84%D8%AD%D9%8A-%D8%A7%D9%84%D8%A5%D8%AF%D8%A7%D8%B1%D9%8A-%D9%85%D8%A7%D8%A8%D9%8A%D9%86-%D8%B4%D8%A7%D8%B1%D8%B9-%D8%B7%D9%86%D8%AC%D8%A9-%D9%88%D9%81%D8%B1%D9%86-%D8%A7%D9%84%D8%B4%D9%88%D9%8A%D9%86%D9%8A-%D9%82%D8%B1%D8%A8-%D8%B1%D9%88%D8%B6-%D8%A7%D9%84%D8%A7%D8%B7%D9%81%D8%A7%D9%84-37340",
+    "date_publication": "2026-10-12T17:02:33.000000Z",
+    "verifie_le": "2026-10-13T17:41:35.244987+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "جيليز",
+    "superficie": 96.0,
+    "prix": 10500.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://1immo.ma/%D8%B4%D9%82%D8%A9-%D8%B9%D8%B5%D8%B1%D9%8A%D8%A9-%D9%85%D8%AC%D8%AF%D8%AF%D9%87-%D9%85%D9%81%D8%B1%D9%88%D8%B4%D8%A9-%D8%A8%D8%A7%D9%84%D9%83%D8%A7%D9%85%D9%84-96%D9%85%C2%B2-%D8%A8%D8%AA%D8%B1%D8%A7%D8%B3-%D9%83%D8%A8%D9%8A%D8%B1-%D9%84%D9%84%D8%A5%D9%8A%D8%AC%D8%A7%D8%B1-%D8%A7%D9%84%D8%B4%D9%87%D8%B1%D9%8A-%D9%81%D9%8A-%D8%AC%D9%8A%D9%84%D9%8A%D8%B2-36429",
+    "date_publication": "2026-10-12T16:25:03.000000Z",
+    "verifie_le": "2026-10-13T17:43:14.259401+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Casablanca",
+    "quartier": "Sidi moumen",
+    "superficie": 56.0,
+    "prix": 440000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://1immo.ma/%D8%B4%D9%82%D8%A9-%D9%81%D9%8A-%D8%A5%D9%82%D8%A7%D9%85%D8%A9-%D9%85%D8%AD%D8%B1%D9%88%D8%B3%D8%A9-%D9%84%D9%84%D8%A8%D9%8A%D8%B9-37275",
+    "date_publication": "2026-10-12T12:19:12.000000Z",
+    "verifie_le": "2026-10-13T17:49:41.524598+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Mohammedia",
+    "quartier": "Ben yakhlef",
+    "superficie": 60.0,
+    "prix": 70000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://1immo.ma/%D8%B4%D9%82%D8%A9-%D9%84%D9%84%D8%B1%D9%87%D9%86-%D8%A8%D8%A7%D9%82%D8%A7%D9%85%D8%A9-%D8%B1%D9%8A%D8%A7%D8%B6-%D8%A7%D9%84%D8%B3%D9%84%D8%A7%D9%85-%D8%A8%D9%86%D9%8A-%D9%8A%D8%AE%D9%84%D9%81-%D8%A7%D9%84%D9%85%D8%AD%D9%85%D8%AF%D9%8A%D8%A9-36433",
+    "date_publication": "2026-10-12T15:47:53.000000Z",
+    "verifie_le": "2026-10-13T17:52:04.132882+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Agadir",
+    "quartier": "hay salam",
+    "superficie": 60.0,
+    "prix": 400.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://1immo.ma/%D8%B4%D9%82%D8%A9-%D9%85%D9%81%D8%B1%D9%88%D8%B4%D8%A9-%D9%84%D9%84%D9%83%D8%B1%D8%A7%D8%A1-%D8%A7%D9%84%D9%8A%D9%88%D9%85%D9%8A-%D8%A8%D8%A7%D9%83%D8%A7%D8%AF%D9%8A%D8%B1-36485",
+    "date_publication": "2026-10-12T16:35:19.000000Z",
+    "verifie_le": "2026-10-13T17:50:12.689113+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Fes",
+    "quartier": "تجرأت مريم طريق ملاي يعقوب واد فاس طريق مكناس",
+    "superficie": 85.0,
+    "prix": 4200.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://1immo.ma/%D8%B4%D9%82%D8%A9-%D9%85%D9%81%D8%B1%D9%88%D8%B4%D8%A9-%D9%85%D9%85%D8%AA%D8%A7%D8%B2%D8%A9-%D9%84%D9%84%D9%83%D8%B1%D8%A7%D8%A1-%D8%A7%D9%84%D8%B4%D9%87%D8%B1%D9%8A-%D8%A7%D9%84%D8%B7%D9%88%D9%8A%D9%84-%D8%A7%D9%84%D8%A3%D9%85%D8%AF-%D9%81%D9%8A-%D9%85%D8%AF%D9%8A%D9%86%D8%A9-%D9%81%D8%A7%D8%B3-36360",
+    "date_publication": "2026-10-12T12:51:15.000000Z",
+    "verifie_le": "2026-10-13T17:44:23.021985+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Taroudant",
+    "quartier": "تاروداتت برج امنصور",
+    "superficie": 40.0,
+    "prix": 250000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://1immo.ma/%D8%B4%D9%82%D9%87-%D8%B5%D8%BA%D9%8A%D8%B1%D9%87-%D9%84%D9%84%D8%A8%D9%8A%D8%B9-%D8%A8%D8%AA%D8%A7%D8%B1%D9%88%D8%AF%D8%A7%D9%86%D8%AA-37217",
+    "date_publication": "2026-10-12T09:44:38.000000Z",
+    "verifie_le": "2026-10-13T17:45:22.509578+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Tanger",
+    "quartier": "Gal fleuri",
+    "superficie": 2620.0,
+    "prix": 30000000.0,
+    "devise": "MAD",
+    "type": "bureau",
+    "url": "https://1immo.ma/%D9%85%D8%A4%D8%B3%D8%B3%D8%A9-%D8%AA%D8%B9%D9%84%D9%8A%D9%85%D9%8A%D8%A9-%D8%AE%D8%A7%D8%B5%D9%87-%D9%84%D9%84%D8%A8%D9%8A%D8%B9-%D9%85%D8%B4%D8%B1%D9%88%D8%B9-%D8%A5%D8%B3%D8%AA%D8%AB%D9%85%D8%A7%D8%B1%D9%8A-36475",
+    "date_publication": "2026-10-11T19:49:06.000000Z",
+    "verifie_le": "2026-10-13T17:52:35.543370+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Tantan",
+    "quartier": "حي النهضة - زنقة 33",
+    "superficie": 35.0,
+    "prix": 2000.0,
+    "devise": "MAD",
+    "type": "local_commercial",
+    "url": "https://1immo.ma/%D9%85%D9%83%D8%A7%D8%A7%D8%B2%D8%A9-%D8%AC%D9%88%D8%AC-%D9%83%D8%A7%D8%B1%D8%A7%D8%AC%D8%A7%D8%AA-37401",
+    "date_publication": "2026-10-11T10:54:18.000000Z",
+    "verifie_le": "2026-10-13T17:48:53.309297+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Casablanca",
+    "quartier": "FERME BRETONNE",
+    "superficie": 81.0,
+    "prix": 10000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://1immo.ma/a-louer-bel-appartement-de-81-m%C2%B2-avec-terrasse-garage-ferme-bretonne-37263",
+    "date_publication": "2026-10-13T10:50:53.000000Z",
+    "verifie_le": "2026-10-13T17:49:43.650082+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Meknes",
+    "quartier": "Hamria proche de Carrefour et clinique Alaoui",
+    "superficie": 160.0,
+    "prix": 17000.0,
+    "devise": "MAD",
+    "type": "local_commercial",
+    "url": "https://1immo.ma/a-louer-magasin-idealement-situe-37287",
+    "date_publication": "2026-10-13T07:16:53.000000Z",
+    "verifie_le": "2026-10-13T17:54:45.966496+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Agadir",
+    "quartier": "taddart",
+    "superficie": 72.0,
+    "prix": 460000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://1immo.ma/a-vendre-appartement-f3-superficie-72-m%C2%B2-a-taddart-agadir-sans-vis-a-vis-37240",
+    "date_publication": "2026-10-12T16:31:52.000000Z",
+    "verifie_le": "2026-10-13T17:51:03.562795+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Fnidek",
+    "quartier": "Avenue 11 janvier",
+    "superficie": 82.0,
+    "prix": 450.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://1immo.ma/apparemment-a-louer-36579",
+    "date_publication": "2026-10-12T16:22:52.000000Z",
+    "verifie_le": "2026-10-13T17:53:00.795804+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Tanger",
+    "quartier": "Moujahidin Complexe Jiwar",
+    "superficie": 60.0,
+    "prix": 6000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://1immo.ma/apparemment-sans-intermediaire-37392",
+    "date_publication": "2026-10-12T10:01:58.000000Z",
+    "verifie_le": "2026-10-13T17:45:09.108386+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Temara",
+    "quartier": "Wifak",
+    "superficie": 100.0,
+    "prix": 1450000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://1immo.ma/apparemment-wifak-36484",
+    "date_publication": "2026-10-12T11:28:53.000000Z",
+    "verifie_le": "2026-10-13T17:44:42.855315+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Tanger",
+    "quartier": "Aida village",
+    "superficie": 90.0,
+    "prix": 4500.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://1immo.ma/appart-nouvelle-a-moujahidin-tanger-36518",
+    "date_publication": "2026-10-12T03:48:56.000000Z",
+    "verifie_le": "2026-10-13T17:57:11.184522+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Massira 1 D",
+    "superficie": 130.0,
+    "prix": 500.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://1immo.ma/appartement-130m%C2%B2-villa-targa-massira-1-37130",
+    "date_publication": "2026-10-12T11:48:18.000000Z",
+    "verifie_le": "2026-10-13T17:48:06.736033+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Casablanca",
+    "quartier": "Belvédère",
+    "superficie": 76.0,
+    "prix": 6500.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://1immo.ma/appartement-2-chambres-a-belvedere-37430",
+    "date_publication": "2026-10-12T15:11:24.000000Z",
+    "verifie_le": "2026-10-13T17:43:28.924480+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Meknes",
+    "quartier": "Marjane 2",
+    "superficie": 122.0,
+    "prix": 930000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://1immo.ma/appartement-2-facades-marjane-2-meknes-av-med-6-37305",
+    "date_publication": "2026-10-10T07:03:25.000000Z",
+    "verifie_le": "2026-10-13T17:50:35.815585+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Casablanca",
+    "quartier": "Sidi moumen",
+    "superficie": 82.0,
+    "prix": 650000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://1immo.ma/appartement-82-m%C2%B2-ascenseur-et-parking-36563",
+    "date_publication": "2026-10-12T14:00:36.000000Z",
+    "verifie_le": "2026-10-13T17:52:29.130940+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Mhamid miftah atlas Marrakech",
+    "superficie": 62.0,
+    "prix": 4000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://1immo.ma/appartement-a-louer-a-mhamid-marrakech-36576",
+    "date_publication": "2026-10-12T14:52:21.000000Z",
+    "verifie_le": "2026-10-13T17:48:39.836891+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Rabat",
+    "quartier": "Les Figuiers",
+    "superficie": 88.0,
+    "prix": 3200.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://1immo.ma/appartement-a-louer-figuiers-_tamesna_-37053",
+    "date_publication": "2026-10-11T18:45:50.000000Z",
+    "verifie_le": "2026-10-13T17:57:05.140693+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Temara",
+    "quartier": "guich oudaya",
+    "superficie": 62.0,
+    "prix": 5000.0,
+    "devise": "MAD",
+    "type": "maison",
+    "url": "https://1immo.ma/appartement-a-louer-pour-etudiants-37131",
+    "date_publication": "2026-10-12T12:54:44.000000Z",
+    "verifie_le": "2026-10-13T17:45:19.977697+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Temara",
+    "quartier": "Tarik Ibn Ziad",
+    "superficie": 106.0,
+    "prix": 820000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://1immo.ma/appartement-a-vendre-36390",
+    "date_publication": "2026-10-12T01:53:35.000000Z",
+    "verifie_le": "2026-10-13T17:43:12.846983+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Mhamid",
+    "superficie": 50.0,
+    "prix": 380000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://1immo.ma/appartement-a-vendre-36881",
+    "date_publication": "2026-10-12T07:18:09.000000Z",
+    "verifie_le": "2026-10-13T17:53:44.781519+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Bouznika",
+    "quartier": "Flowers",
+    "superficie": 134.0,
+    "prix": 1250000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://1immo.ma/appartement-a-vendre-a-bouznika-vue-sur-mer-36980",
+    "date_publication": "2026-10-12T05:42:40.000000Z",
+    "verifie_le": "2026-10-13T17:44:21.244487+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Rabat",
+    "quartier": "Route ain chekaf",
+    "superficie": 112.0,
+    "prix": 870000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://1immo.ma/appartement-a-vendre-a-fes-route-ain-chekaf-36386",
+    "date_publication": "2026-10-12T08:07:55.000000Z",
+    "verifie_le": "2026-10-13T17:55:36.132122+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Meknes",
+    "quartier": "Hamria",
+    "superficie": 145.0,
+    "prix": 900000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://1immo.ma/appartement-a-vendre-a-hamria-36427",
+    "date_publication": "2026-10-12T17:43:17.000000Z",
+    "verifie_le": "2026-10-13T17:50:45.839508+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Sale",
+    "quartier": "Said hajji",
+    "superficie": 104.0,
+    "prix": 980000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://1immo.ma/appartement-a-vendre-a-said-hajji-sale-36383",
+    "date_publication": "2026-10-12T09:55:53.000000Z",
+    "verifie_le": "2026-10-13T17:57:07.038055+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "HAY ANDALOUS MARRAKECH",
+    "superficie": 71.0,
+    "prix": 1065000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://1immo.ma/appartement-a-vendre-marrakech-hay-andalous-36715",
+    "date_publication": "2026-10-12T07:37:41.000000Z",
+    "verifie_le": "2026-10-13T17:42:25.042713+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Casablanca",
+    "quartier": "Ain Sebaa",
+    "superficie": 127.0,
+    "prix": 1440000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://1immo.ma/appartement-ain-sebaa-36367",
+    "date_publication": "2026-10-12T03:44:47.000000Z",
+    "verifie_le": "2026-10-13T17:42:47.865540+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Casablanca",
+    "quartier": "Ain Sebaa",
+    "superficie": 127.0,
+    "prix": 1440000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://1immo.ma/appartement-ain-sebaa-36369",
+    "date_publication": "2026-10-12T04:17:25.000000Z",
+    "verifie_le": "2026-10-13T17:51:10.339414+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Temara",
+    "quartier": "Mansour Dahbi",
+    "superficie": 85.0,
+    "prix": 5000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://1immo.ma/appartement-dans-r2-36402",
+    "date_publication": "2026-10-12T12:12:35.000000Z",
+    "verifie_le": "2026-10-13T17:42:12.904209+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Sala Al Jadida",
+    "quartier": "sala el jadida",
+    "superficie": 104.0,
+    "prix": 1000000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://1immo.ma/appartement-de-104-m%C2%B2-a-vendre-36664",
+    "date_publication": "2026-10-12T11:41:46.000000Z",
+    "verifie_le": "2026-10-13T17:45:16.200069+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Tanger",
+    "quartier": "marjane",
+    "superficie": 87.0,
+    "prix": 8000.0,
+    "devise": "MAD",
+    "type": "maison",
+    "url": "https://1immo.ma/appartement-meuble-a-louer-37358",
+    "date_publication": "2026-10-11T09:13:17.000000Z",
+    "verifie_le": "2026-10-13T17:45:39.384123+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Agadir",
+    "quartier": "Hey mohammadi",
+    "superficie": 45.0,
+    "prix": 3500.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://1immo.ma/appartement-meuble-a-louer-pour-longue-duree-situe-a-hey-mohammadi-a-agadir-37066",
+    "date_publication": "2026-10-12T07:14:58.000000Z",
+    "verifie_le": "2026-10-13T17:51:31.507094+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Sale",
+    "quartier": "Said Hajji",
+    "superficie": 120.0,
+    "prix": 1250000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://1immo.ma/appartement-meuble-a-vendre-said-hajji-37062",
+    "date_publication": "2026-10-13T05:56:53.000000Z",
+    "verifie_le": "2026-10-13T17:49:09.618911+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Meknes",
+    "quartier": "Hamria",
+    "superficie": 120.0,
+    "prix": 500.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://1immo.ma/appartement-meuble-hamria-meknes-36404",
+    "date_publication": "2026-10-12T11:01:34.000000Z",
+    "verifie_le": "2026-10-13T17:56:33.624116+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Jardins Hay Chrifia Bouaakaz zerktouni proche aéroport Marrakech",
+    "superficie": 71.0,
+    "prix": 5000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://1immo.ma/appartement-meuble-proche-aeroport-marrakech-37252",
+    "date_publication": "2026-10-11T06:40:57.000000Z",
+    "verifie_le": "2026-10-13T17:44:54.966655+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Essaouira",
+    "quartier": "HAY LAZARI",
+    "superficie": 88.0,
+    "prix": 8000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://1immo.ma/appartement-moderne-plein-de-charme-et-vue-mer-37055",
+    "date_publication": "2026-10-12T14:57:34.000000Z",
+    "verifie_le": "2026-10-13T17:56:30.430911+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Agadir",
+    "quartier": "hay el houda",
+    "superficie": 76.0,
+    "prix": 5000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://1immo.ma/appartement-neuf-a-la-location-hay-el-houda-premiere-mise-en-location-37239",
+    "date_publication": "2026-10-10T14:40:34.000000Z",
+    "verifie_le": "2026-10-13T17:45:03.908720+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Casablanca",
+    "quartier": "Hay Hassani",
+    "superficie": 89.0,
+    "prix": 850000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://1immo.ma/appartement-spacieux-et-lumineux-a-vendre-a-hay-hassani-a-cote-de-marjane.-89-m2-36794",
+    "date_publication": "2026-10-12T11:47:27.000000Z",
+    "verifie_le": "2026-10-13T17:45:35.543597+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Casablanca",
+    "quartier": "Sidi belyout",
+    "superficie": 99.0,
+    "prix": 1470000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://1immo.ma/appt-99-m%C2%B2-terrasse-49-m%C2%B2-casablanca-bd-danfa-37273",
+    "date_publication": "2026-10-12T18:11:05.000000Z",
+    "verifie_le": "2026-10-13T17:41:04.387710+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Meknes",
+    "quartier": "Belair",
+    "superficie": 123.0,
+    "prix": 860000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://1immo.ma/bel-appartement-a-vendre-36483",
+    "date_publication": "2026-10-12T10:40:20.000000Z",
+    "verifie_le": "2026-10-13T17:43:26.576498+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Bab El khmiss",
+    "superficie": 55.0,
+    "prix": 1000.0,
+    "devise": "MAD",
+    "type": "maison",
+    "url": "https://1immo.ma/belles-maisons-a-louer-36570",
+    "date_publication": "2026-10-12T03:54:18.000000Z",
+    "verifie_le": "2026-10-13T17:50:20.685901+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Sale",
+    "quartier": "Salé el jadida",
+    "superficie": 31.0,
+    "prix": 5500.0,
+    "devise": "MAD",
+    "type": "bureau",
+    "url": "https://1immo.ma/bureau-a-louer-a-sale-el-jadida-36761",
+    "date_publication": "2026-10-12T15:28:48.000000Z",
+    "verifie_le": "2026-10-13T17:57:33.692880+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "El Hajeb",
+    "quartier": "LOT ESSALAM OMRANE 1 IMMEUBLE N°15",
+    "superficie": 145.0,
+    "prix": 6000.0,
+    "devise": "MAD",
+    "type": "bureau",
+    "url": "https://1immo.ma/bureau-a-louer-ain-taoujdate-37067",
+    "date_publication": "2026-10-12T07:16:42.000000Z",
+    "verifie_le": "2026-10-13T17:51:17.104813+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Mohammedia",
+    "quartier": "Boulevard tadela",
+    "superficie": 70.0,
+    "prix": 4500.0,
+    "devise": "MAD",
+    "type": "bureau",
+    "url": "https://1immo.ma/bureau-a-louer-mohammedia-37416",
+    "date_publication": "2026-10-12T15:14:29.000000Z",
+    "verifie_le": "2026-10-13T17:48:16.745729+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Mohammedia",
+    "quartier": "Parc Mohammedia",
+    "superficie": 76.0,
+    "prix": 9000.0,
+    "devise": "MAD",
+    "type": "bureau",
+    "url": "https://1immo.ma/bureau-a-louer-plaza-parc-36631",
+    "date_publication": "2026-10-10T12:08:17.000000Z",
+    "verifie_le": "2026-10-13T17:42:04.820195+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Kenitra",
+    "quartier": "La ville haute",
+    "superficie": 60.0,
+    "prix": 450000.0,
+    "devise": "MAD",
+    "type": "bureau",
+    "url": "https://1immo.ma/bureau-haut-standing-60-m%C2%B2-entierement-amenage-36883",
+    "date_publication": "2026-10-12T13:59:58.000000Z",
+    "verifie_le": "2026-10-13T17:55:37.290051+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Fes",
+    "quartier": "Agdal",
+    "superficie": 41.0,
+    "prix": 5000.0,
+    "devise": "MAD",
+    "type": "bureau",
+    "url": "https://1immo.ma/bureau-meuble-haut-standing-36938",
+    "date_publication": "2026-10-12T05:17:22.000000Z",
+    "verifie_le": "2026-10-13T17:44:35.711929+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Casablanca",
+    "quartier": "Av lalla el yakout",
+    "superficie": 10.0,
+    "prix": 3000.0,
+    "devise": "MAD",
+    "type": "bureau",
+    "url": "https://1immo.ma/bureaux-a-louer-a-derb-omar-37431",
+    "date_publication": "2026-10-12T16:19:21.000000Z",
+    "verifie_le": "2026-10-13T17:44:03.022019+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Asilah",
+    "quartier": "Briech Asilah",
+    "superficie": 119.0,
+    "prix": 800.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://1immo.ma/complexe-jawharat-chamal-36774",
+    "date_publication": "2026-10-12T17:42:18.000000Z",
+    "verifie_le": "2026-10-13T17:41:31.841827+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Meknes",
+    "quartier": "Hamria",
+    "superficie": 162.0,
+    "prix": 860000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://1immo.ma/duplex-en-bon-etat-a-vendre-36930",
+    "date_publication": "2026-10-12T15:18:55.000000Z",
+    "verifie_le": "2026-10-13T17:51:29.773158+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Casablanca",
+    "quartier": "Maarif",
+    "superficie": 157.0,
+    "prix": 1990000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://1immo.ma/elegant-appartement-renove-a-vendre-au-maarif-extension-37357",
+    "date_publication": "2026-10-11T07:26:15.000000Z",
+    "verifie_le": "2026-10-13T17:55:49.553416+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "El Jadida",
+    "quartier": "AL BOUSTANE",
+    "superficie": 125.0,
+    "prix": 1200000.0,
+    "devise": "MAD",
+    "type": "villa",
+    "url": "https://1immo.ma/etage-villa-a-vendre-a-el-jadida-37045",
+    "date_publication": "2026-10-13T08:43:37.000000Z",
+    "verifie_le": "2026-10-13T17:48:23.433185+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Mohammedia",
+    "quartier": "rachidia 3",
+    "superficie": 128.0,
+    "prix": 9500.0,
+    "devise": "MAD",
+    "type": "local_commercial",
+    "url": "https://1immo.ma/local-commercial-128m2terrasse-sur-boulevard-36359",
+    "date_publication": "2026-10-13T04:48:52.000000Z",
+    "verifie_le": "2026-10-13T17:50:26.682786+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Casablanca",
+    "quartier": "belvedere",
+    "superficie": 53.0,
+    "prix": 110000.0,
+    "devise": "MAD",
+    "type": "local_commercial",
+    "url": "https://1immo.ma/local-commercial-haute-standing-avendre-ou-bien-a-louer-belvedere-36516",
+    "date_publication": "2026-10-12T16:56:28.000000Z",
+    "verifie_le": "2026-10-13T17:50:41.142445+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Casablanca",
+    "quartier": "Roches Noires",
+    "superficie": 210.0,
+    "prix": 4500000.0,
+    "devise": "MAD",
+    "type": "local_commercial",
+    "url": "https://1immo.ma/local-multi-usages-centre-de-casa-36623",
+    "date_publication": "2026-10-12T02:06:38.000000Z",
+    "verifie_le": "2026-10-13T17:55:56.835558+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Benslimane",
+    "quartier": "N 20 Al Warda Lot Alwarda 13003 Fadalat",
+    "superficie": 118.0,
+    "prix": 1100000.0,
+    "devise": "MAD",
+    "type": "maison",
+    "url": "https://1immo.ma/maison-a-jamaat-fdalat-%D8%AC%D9%85%D8%B9%D8%A9-%D9%81%D8%B6%D8%A7%D9%84%D8%A7%D8%AA-2-appartements-36357",
+    "date_publication": "2026-10-13T12:50:01.000000Z",
+    "verifie_le": "2026-10-13T17:43:35.673539+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Mohammedia",
+    "quartier": "Riad el salam",
+    "superficie": 92.0,
+    "prix": 300.0,
+    "devise": "MAD",
+    "type": "maison",
+    "url": "https://1immo.ma/maison-a-louer-mohammedi-36608",
+    "date_publication": "2026-10-12T08:26:08.000000Z",
+    "verifie_le": "2026-10-13T17:55:03.707590+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Mohammedia",
+    "quartier": "Cite chabab",
+    "superficie": 100.0,
+    "prix": 140000.0,
+    "devise": "MAD",
+    "type": "maison",
+    "url": "https://1immo.ma/maison-r2-a-vendre-37378",
+    "date_publication": "2026-10-13T06:44:05.000000Z",
+    "verifie_le": "2026-10-13T17:50:39.748950+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Casablanca",
+    "quartier": "CIL",
+    "superficie": 19.0,
+    "prix": 4000.0,
+    "devise": "MAD",
+    "type": "bureau",
+    "url": "https://1immo.ma/mise-a-disposition-dun-espace-bureau-36389",
+    "date_publication": "2026-10-12T06:44:16.000000Z",
+    "verifie_le": "2026-10-13T17:44:27.078317+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Dakhla",
+    "quartier": "À 6 km de la ville",
+    "superficie": 13000.0,
+    "prix": 22000000.0,
+    "devise": "MAD",
+    "type": "terrain",
+    "url": "https://1immo.ma/opportunite-dinvestissement-hotelier-off-market-dakhla-36513",
+    "date_publication": "2026-10-12T14:59:15.000000Z",
+    "verifie_le": "2026-10-13T17:56:15.271218+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Casablanca",
+    "quartier": "Ain Sbae - Roche noir",
+    "superficie": 51.0,
+    "prix": 7000.0,
+    "devise": "MAD",
+    "type": "bureau",
+    "url": "https://1immo.ma/plateau-du-bureau-a-137-dh-mois-le-m%C2%B2-37138",
+    "date_publication": "2026-10-11T06:13:14.000000Z",
+    "verifie_le": "2026-10-13T17:48:18.431065+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Targa",
+    "superficie": 50.0,
+    "prix": 5800.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://1immo.ma/studio-propre-a-targa-37288",
+    "date_publication": "2026-10-12T08:23:04.000000Z",
+    "verifie_le": "2026-10-13T17:49:04.089461+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Martil",
+    "quartier": "LOTISSEMENT HAMAMA II",
+    "superficie": 72.0,
+    "prix": 800000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://1immo.ma/superbe-f3-traversant-de-72-m%C2%B2-entierement-meuble-37325",
+    "date_publication": "2026-10-10T09:49:21.000000Z",
+    "verifie_le": "2026-10-13T17:41:26.769986+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Tiznit",
+    "quartier": "Aglou",
+    "superficie": 680000.0,
+    "prix": 100.0,
+    "devise": "MAD",
+    "type": "terrain",
+    "url": "https://1immo.ma/terrain-a-vendre-a-tiznit-aglou-36394",
+    "date_publication": "2026-10-12T08:34:08.000000Z",
+    "verifie_le": "2026-10-13T17:52:51.253535+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Chefchaouen",
+    "quartier": "Rue sidi elmendri",
+    "superficie": 807.0,
+    "prix": 13300000.0,
+    "devise": "MAD",
+    "type": "terrain",
+    "url": "https://1immo.ma/terrain-a-vendre-centre-chefchaouen-r3-807-m%C2%B2-36430",
+    "date_publication": "2026-10-12T17:03:25.000000Z",
+    "verifie_le": "2026-10-13T17:50:43.088973+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Safi",
+    "quartier": "douar boukhachba",
+    "superficie": 17112.0,
+    "prix": 800000.0,
+    "devise": "MAD",
+    "type": "terrain",
+    "url": "https://1immo.ma/terrain-agricole-37215",
+    "date_publication": "2026-10-13T08:52:58.000000Z",
+    "verifie_le": "2026-10-13T17:55:22.067028+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Tiflet",
+    "quartier": "Sidi boukhalkhal",
+    "superficie": 4500.0,
+    "prix": 530000.0,
+    "devise": "MAD",
+    "type": "terrain",
+    "url": "https://1immo.ma/terrain-agricole-titre-a-vendre-36501",
+    "date_publication": "2026-10-11T19:19:10.000000Z",
+    "verifie_le": "2026-10-13T17:53:39.775903+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "El Jadida",
+    "quartier": "Nejd",
+    "superficie": 116.0,
+    "prix": 9400.0,
+    "devise": "MAD",
+    "type": "terrain",
+    "url": "https://1immo.ma/terrain-r2-excellente-opportunite-37330",
+    "date_publication": "2026-10-13T06:14:08.000000Z",
+    "verifie_le": "2026-10-13T17:54:02.244447+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Azemmour",
+    "quartier": "très calme",
+    "superficie": 107.0,
+    "prix": 1100000.0,
+    "devise": "MAD",
+    "type": "maison",
+    "url": "https://1immo.ma/titre-original-maison-pour-la-vue-36976",
+    "date_publication": "2026-10-12T10:33:25.000000Z",
+    "verifie_le": "2026-10-13T17:56:31.924717+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Temara",
+    "quartier": "WIFAQ TEMARA",
+    "superficie": 120.0,
+    "prix": 999000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://1immo.ma/vente-appartement-120-m%C2%B2-residence-de-luxe-wifaq-temara-36776",
+    "date_publication": "2026-10-12T11:00:17.000000Z",
+    "verifie_le": "2026-10-13T17:45:25.104033+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Fes",
+    "quartier": "Lotissement Al Jawahir",
+    "superficie": 180.0,
+    "prix": 5500.0,
+    "devise": "MAD",
+    "type": "terrain",
+    "url": "https://1immo.ma/vente-de-2-lots-mitoyens-37193",
+    "date_publication": "2026-10-10T08:14:57.000000Z",
+    "verifie_le": "2026-10-13T17:44:18.424046+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Youssoufia",
+    "quartier": "Quartier chef Mbarek",
+    "superficie": 132.0,
+    "prix": 750000.0,
+    "devise": "MAD",
+    "type": "maison",
+    "url": "https://1immo.ma/vente-dune-maison-titree-et-bien-entretenue-36385",
+    "date_publication": "2026-10-12T08:59:36.000000Z",
+    "verifie_le": "2026-10-13T17:55:43.170539+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Tetouan",
+    "quartier": "Rue Sidi Mohamed el Kharraz N° 2 Touilaa Tetouan",
+    "superficie": 100.0,
+    "prix": 3350000.0,
+    "devise": "MAD",
+    "type": "maison",
+    "url": "https://1immo.ma/vente-dune-propriete-dans-la-ville-de-tetuan-au-maroc.-un-opportunite-en-or-pour-les-investisseurs.-36375",
+    "date_publication": "2026-10-12T00:28:26.000000Z",
+    "verifie_le": "2026-10-13T17:52:05.691188+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Sale",
+    "quartier": "Bettana, Surplombant la vallée de Bouregreg",
+    "superficie": 290.0,
+    "prix": 5600000.0,
+    "devise": "MAD",
+    "type": "villa",
+    "url": "https://1immo.ma/villa-433m%C2%B2-sale-bettana-dominant-vallee-bouregreg-37195",
+    "date_publication": "2026-10-10T09:05:02.000000Z",
+    "verifie_le": "2026-10-13T17:43:10.980751+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Sale",
+    "quartier": "Hay Salam",
+    "superficie": 360.0,
+    "prix": 4000000.0,
+    "devise": "MAD",
+    "type": "villa",
+    "url": "https://1immo.ma/villa-a-vendre-a-hay-salam-sale-37338",
+    "date_publication": "2026-10-12T07:43:21.000000Z",
+    "verifie_le": "2026-10-13T17:54:25.705728+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Casablanca",
+    "quartier": "longchamps, Cil, CFC",
+    "superficie": 418.0,
+    "prix": 9600000.0,
+    "devise": "MAD",
+    "type": "villa",
+    "url": "https://1immo.ma/villa-a-vendre-quartier-longchamps-36719",
+    "date_publication": "2026-10-12T13:55:04.000000Z",
+    "verifie_le": "2026-10-13T17:56:20.969126+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Kenitra",
+    "quartier": "La ville haute",
+    "superficie": 112.0,
+    "prix": 6500.0,
+    "devise": "MAD",
+    "type": "villa",
+    "url": "https://1immo.ma/villa-meublee-112-m%C2%B2-a-louer-ville-haute-kenitra-36808",
+    "date_publication": "2026-10-12T02:36:37.000000Z",
+    "verifie_le": "2026-10-13T17:45:21.192473+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Bassatine targa",
+    "superficie": 289.0,
+    "prix": 2700000.0,
+    "devise": "MAD",
+    "type": "villa",
+    "url": "https://1immo.ma/villa-semi-finie-a-vendre-36622",
+    "date_publication": "2026-10-11T19:15:43.000000Z",
+    "verifie_le": "2026-10-13T17:42:22.060651+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Fes",
+    "quartier": "Hay nakhil",
+    "superficie": 90.0,
+    "prix": 4500.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://1immo.ma/~location-appartement-saisonniere-36765",
+    "date_publication": "2026-10-11T12:20:05.000000Z",
+    "verifie_le": "2026-10-13T17:56:45.668997+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Agadir",
+    "quartier": "haut founty",
+    "superficie": 70.0,
+    "prix": 7000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://1immo.ma/~location-studio-appartement-haut-founty-agadir-36495",
+    "date_publication": "2026-10-12T09:52:00.000000Z",
+    "verifie_le": "2026-10-13T17:48:37.748180+00:00",
+    "preuves": {
+      "date_publication": "jsonld:datePublished",
+      "ville": "jsonld:address.addressLocality",
+      "prix": "jsonld:offers.price:MAD",
+      "superficie": "1immo:primary-grid:Surface (m²)",
+      "quartier": "1immo:primary-grid:Quartier",
+      "type": "1immo:bound-BreadcrumbList:property-category"
+    },
+    "parser_version": "1.7.0"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Azzouzia",
+    "superficie": 77.0,
+    "prix": 600000.0,
+    "devise": "MAD",
+    "type": "appartement",
+    "url": "https://limmobiliersansfrontieres.com/property/appartement-meuble-de-77-m%c2%b2-a-vendre-a-azzouzia-3-chambres-climatisation-reversible-jardin-collectif-et-parking/",
+    "date_publication": "2026-10-11T03:40:38Z",
+    "verifie_le": "2026-10-13T17:57:08.631218+00:00",
+    "preuves": {
+      "date_publication": "wordpress:published-property.date_gmt:UTC",
+      "ville": "wordpress:bound-property.property_city:public-term.name",
+      "quartier": "wordpress:bound-property.property_area:public-term.name",
+      "type": "wordpress:bound-property.property_type:public-term.name",
+      "prix": "lsf:property-detail-wrap:Prix:DH",
+      "superficie": "lsf:property-detail-wrap:Surface:m2"
+    },
+    "parser_version": "1.7.1"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Abwab Marrakech",
+    "superficie": 800.0,
+    "prix": 35000.0,
+    "devise": "MAD",
+    "type": "villa",
+    "url": "https://limmobiliersansfrontieres.com/property/villa-meublee-de-800-m%c2%b2-a-louer-a-targa-grand-jardin-prive-piscine-privee-et-beaux-espaces-de-vie/",
+    "date_publication": "2026-10-11T03:54:12Z",
+    "verifie_le": "2026-10-13T17:57:01.333462+00:00",
+    "preuves": {
+      "date_publication": "wordpress:published-property.date_gmt:UTC",
+      "ville": "wordpress:bound-property.property_city:public-term.name",
+      "quartier": "wordpress:bound-property.property_area:public-term.name",
+      "type": "wordpress:bound-property.property_type:public-term.name",
+      "prix": "lsf:property-detail-wrap:Prix:DH",
+      "superficie": "lsf:property-detail-wrap:Surface:m2"
+    },
+    "parser_version": "1.7.1"
+  },
+  {
+    "ville": "Marrakech",
+    "quartier": "Sidi Abdallah Ghiat",
+    "superficie": 20400.0,
+    "prix": 10000000.0,
+    "devise": "MAD",
+    "type": "villa",
+    "url": "https://limmobiliersansfrontieres.com/property/villa-semi-finie-sur-20-400-m%c2%b2-a-vendre-route-de-lourika-sidi-abdellah-ghiat-grand-jardin-et-dependances/",
+    "date_publication": "2026-10-11T03:35:52Z",
+    "verifie_le": "2026-10-13T17:57:12.182035+00:00",
+    "preuves": {
+      "date_publication": "wordpress:published-property.date_gmt:UTC",
+      "ville": "wordpress:bound-property.property_city:public-term.name",
+      "quartier": "wordpress:bound-property.property_area:public-term.name",
+      "type": "wordpress:bound-property.property_type:public-term.name",
+      "prix": "lsf:property-detail-wrap:Prix:DH",
+      "superficie": "lsf:property-detail-wrap:Surface:m2"
+    },
+    "parser_version": "1.7.1"
+  },
+  {
     "ville": "Marrakech",
     "quartier": "Route d'Amizmiz",
     "superficie": 10726.0,

@@ -57,3 +57,11 @@ Sawim documente explicitement `https://sawim.ma/recherche.json` dans `https://sa
 Quand la source les fournit, `transaction` et `periode_prix` distinguent prix total, loyer mensuel et tarif par nuit.
 
 Le workflow GitHub Actions `Annonces fraiches - tamis 7 jours` lance uniquement les tests sur les PR concernées. Un déclenchement manuel relance les tests et le pilote, puis fournit les trois fichiers de résultat comme artefact. Il ne s'exécute pas périodiquement et ne modifie pas le dépôt ou la production. Le pilote n'est pas une certification d'une collecte nationale à 200 000 annonces.
+
+## Sources supplémentaires et reprise
+
+1Immo : les champs visibles `Quartier` et `Surface (m²)` et la catégorie liée à la fiche complètent le JSON-LD. `--only-unseen` réserve une collecte aux nouvelles URLs ; ce mode ne renouvelle pas la vérification des URLs déjà présentes.
+
+`python scripts/fresh-listings/wordpress_feed.py` collecte les publications récentes du type public WordPress `properties` de L’Immobilier Sans Frontières. La date `date_gmt` provient des publications publiques, les taxonomies fournissent les libellés et les champs Prix/Surface sont vérifiés dans les détails de la fiche. `--output` permet un checkpoint isolé. Les contacts et médias ne sont pas collectés.
+
+`survey_extended.py` inspecte onze autres sources publiques avant collecte. Son rapport distingue absence de candidats, erreurs techniques et restrictions d’accès. Un attribut HTML `class` sans valeur est accepté sans arrêter le parser.

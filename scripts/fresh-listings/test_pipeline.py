@@ -21,6 +21,10 @@ def row():
     return {**extract(html(), URL), 'verifie_le': NOW.isoformat(), 'http_status': 200}
 
 class PipelineTests(unittest.TestCase):
+    def test_boolean_class_attributes(self):
+        r = extract(html() + "<div class><a class href='/'>Text</a></div>", URL)
+        self.assertEqual(r["quartier"], "Tilila")
+
     def test_full_source_adapter(self):
         r = row()
         self.assertEqual((r['ville'], r['quartier'], r['superficie'], r['prix'], r['type']), ('Agadir', 'Tilila', 150, 3600000, 'terrain'))
@@ -229,6 +233,21 @@ class PipelineTests(unittest.TestCase):
             client = Client('https://site.test', allow_missing_robots=True)
             self.assertEqual(client.robots_status, 'missing_404')
             self.assertEqual(client.robots, '')
+
+    def test_invalid_duplicate_date_does_not_override_precise_publication(self):
+        ld = [{'@type': 'RealEstateListing', 'url': URL, 'datePosted': '2026-10-12T12:00:00Z'}, {'@type': 'RealEstateListing', 'url': URL, 'datePosted': '12/10/2026'}]
+        r = extract('<script type="application/ld+json">' + json.dumps(ld) + '</script>', URL)
+        self.assertEqual(r['date_publication'], '2026-10-12T12:00:00Z')
+        self.assertNotIn('erreur', r)
+        r = extract('<script type="application/ld+json">' + json.dumps(ld[1]) + '</script>', URL)
+        self.assertNotIn('date_publication', r)
+
+    def test_1immo_grid_surface_beats_ambiguous_title(self):
+        u = 'https://1immo.ma/appartement-37273'
+        ld = {'@type': 'BreadcrumbList', 'itemListElement': [{'item': 'https://1immo.ma/s/casablanca/appartement-a-vendre'}, {'item': u}]}
+        markup = '<h1>99 m² et terrasse 49 m²</h1><div class="row bg-body-tertiary"><div class="fw-bolder">Surface (m²)</div><div class="text-sm-end">99</div></div><div class="row bg-body-tertiary"><div class="fw-bolder">Quartier</div><div class="text-sm-end">Sidi Belyout</div></div>'
+        r = extract('<script type="application/ld+json">' + json.dumps(ld) + '</script>' + markup, u)
+        self.assertEqual((r['superficie'], r['quartier'], r['type']), (99, 'Sidi Belyout', 'appartement'))
 
 if __name__ == '__main__':
     unittest.main()

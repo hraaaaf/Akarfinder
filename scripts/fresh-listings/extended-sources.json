@@ -1,0 +1,74 @@
+[
+  {
+    "domain": "agenz.ma",
+    "listing_url_patterns": [
+      "/(?:fr|en)/annonces/.+/\\d+$"
+    ]
+  },
+  {
+    "domain": "sarouty.ma",
+    "listing_url_patterns": [
+      "^/(?:fr|en|ar)/plp/[^/]+/[^/]+-\\d+\\.html$",
+      "/plp/acheter/.+-\\d+(?:\\.html)?$",
+      "/acheter/[a-z0-9-]+-\\d+(?:\\.html)?$"
+    ]
+  },
+  {
+    "domain": "1immo.ma",
+    "listing_url_patterns": [
+      "^/[^/]+-\\d+$"
+    ]
+  },
+  {
+    "domain": "barnes-marrakech.com",
+    "listing_url_patterns": [
+      "^/(?:fr/(?:vente|location)|en/sale)/[^/]+/\\d+$"
+    ]
+  },
+  {
+    "domain": "kawtarimmobilier.com",
+    "listing_url_patterns": [
+      {
+        "pattern": "/(?:vente|location)/.+ref-\\d+\\.html$",
+        "case_insensitive": true
+      }
+    ]
+  },
+  {
+    "domain": "limmobiliersansfrontieres.com",
+    "listing_url_patterns": [
+      "/property/"
+    ]
+  },
+  {
+    "domain": "marrakechrealty.com",
+    "listing_url_patterns": [
+      "^/(?:vente|location)/[^/]+$",
+      "^/en/(?:sale|rentals)/[^/]+$"
+    ]
+  },
+  {
+    "domain": "soukimmobilier.com",
+    "listing_url_patterns": [
+      "/(?:fr|ar)/[a-z-]+/[a-z]+/\\d{4,}$"
+    ]
+  },
+  {
+    "domain": "atlasimmobilier.com",
+    "listing_url_patterns": [
+      "^/(?:en/)?p/[^/]+/?$"
+    ]
+  },
+  {
+    "domain": "aykana.ma",
+    "listing_url_patterns": [
+      "^/property/[^/]+$"
+    ]
+  },
+  {
+    "domain": "promoimmomarrakech.com",
+    "listing_url_patterns": [
+      "^/produit/[^/]+/[^/]+\\.html$"
+    ]
+  }
+]

@@ -15,7 +15,7 @@ from urllib.request import Request, build_opener, HTTPRedirectHandler
 from urllib.error import HTTPError
 from xml.etree import ElementTree as ET
 
-VERSION = "1.6.0"
+VERSION = "1.7.1"
 UA = "AkarFinderListingAudit/1.0 (+https://github.com/hraaaaf/Akarfinder)"
 ROOT = Path(__file__).resolve().parents[2]
 TYPES = {"apartment": "appartement", "appartement": "appartement", "studio": "studio", "villa": "villa", "house": "maison", "maison": "maison", "terrain": "terrain", "land": "terrain", "bureau": "bureau", "office": "bureau", "local commercial": "local_commercial", "local_commercial": "local_commercial", "riad": "riad", "ferme": "ferme", "immeuble": "immeuble", "duplex": "duplex", "entrepot": "entrepot", "hangar": "hangar", "fonds de commerce": "fonds_de_commerce", "fonds commerce": "fonds_de_commerce"}
@@ -87,16 +87,21 @@ class Page(HTMLParser):
         self.definitions = []
         self.definition_label = []
         self.definition_value = []
+        self.grid_label = []
+        self.grid_value = []
+        self.grid_fields = []
 
     def handle_starttag(self, tag, attrs):
         a = dict(attrs)
+        if tag == "div" and {"row", "bg-body-tertiary"}.issubset(set((a.get("class") or "").split())):
+            self.grid_label, self.grid_value = [], []
         if tag == "dt":
             self.definition_label = []
         if tag == "dd":
             self.definition_value = []
         if tag == "a" and a.get("href"):
             self.anchors.append(a["href"])
-            if any("adBread" in b.get("class", "").split() for t, b in self.stack) and re.match(r"^/fr/sd/", urlsplit(a["href"]).path) and a.get("title"):
+            if any("adBread" in (b.get("class") or "").split() for t, b in self.stack) and re.match(r"^/fr/sd/", urlsplit(a["href"]).path) and a.get("title"):
                 self.districts.append((a["href"], a["title"]))
         if tag == "meta":
             self.meta[a.get("property", a.get("name", ""))] = a.get("content", "")
@@ -110,6 +115,8 @@ class Page(HTMLParser):
             self.stack.append((tag, a))
 
     def handle_endtag(self, tag):
+        if tag == "div" and self.stack and self.stack[-1][0] == "div" and {"row", "bg-body-tertiary"}.issubset(set((self.stack[-1][1].get("class") or "").split())):
+            self.grid_fields.append((clean(" ".join(self.grid_label)), clean(" ".join(self.grid_value))))
         if tag == "dd" and self.definition_label:
             self.definitions.append((clean(" ".join(self.definition_label)), clean(" ".join(self.definition_value))))
         if tag == "script" and self.script:
@@ -136,13 +143,18 @@ class Page(HTMLParser):
                 self.definition_label.append(data)
             if any(t == "dd" for t, a in self.stack):
                 self.definition_value.append(data)
+        if any({"row", "bg-body-tertiary"}.issubset(set((a.get("class") or "").split())) for t, a in self.stack):
+            if any("fw-bolder" in (a.get("class") or "").split() for t, a in self.stack):
+                self.grid_label.append(data)
+            if any("text-sm-end" in (a.get("class") or "").split() for t, a in self.stack):
+                self.grid_value.append(data)
         if any(t in {"script", "style", "nav", "aside", "footer"} for t, a in self.stack):
             return
         if any(t == "h1" for t, a in self.stack):
             self.headline.append(data)
-        if any("entry-content" in a.get("class", "").split() for t, a in self.stack):
+        if any("entry-content" in (a.get("class") or "").split() for t, a in self.stack):
             self.primary.append(data)
-        if any("adDetails" in a.get("class", "").split() for t, a in self.stack) and any("adDetailFeature" in a.get("class", "").split() for t, a in self.stack):
+        if any("adDetails" in (a.get("class") or "").split() for t, a in self.stack) and any("adDetailFeature" in (a.get("class") or "").split() for t, a in self.stack):
             self.features.append(data)
 
 def ld_nodes(blocks):
@@ -235,7 +247,7 @@ def extract(html, url):
         out.update(result)
         return out
     pub = p.meta.get("article:published_time")
-    if pub:
+    if date(pub):
         out["date_publication"] = pub
         out["preuves"]["date_publication"] = "meta:article:published_time"
     if re.search(r"\b(?:noindex|noarchive)\b", p.meta.get("robots", ""), re.I):
@@ -273,7 +285,7 @@ def extract(html, url):
         except ValueError:
             continue
         typ = str(n.get("@type", ""))
-        if typ == "RealEstateListing" and n.get("datePosted"):
+        if typ == "RealEstateListing" and date(n.get("datePosted")):
             published = n.get("datePublished") or out.get("date_publication")
             if published and date(published) != date(n["datePosted"]):
                 out["erreur"] = "conflicting_publication_dates"
@@ -281,7 +293,7 @@ def extract(html, url):
                 out["date_publication"] = n["datePosted"]
                 out["preuves"]["date_publication"] = "jsonld:RealEstateListing.datePosted"
         # Dates on article/webpage nodes identify the current source publication.
-        if n.get("datePublished") and re.search("Article|WebPage|RealEstateListing|Residence|Apartment|House", typ):
+        if date(n.get("datePublished")) and re.search("Article|WebPage|RealEstateListing|Residence|Apartment|House", typ):
             existing_publication = out.get("date_publication")
             if existing_publication and date(existing_publication) != date(n["datePublished"]):
                 out["erreur"] = "conflicting_publication_dates"
@@ -336,6 +348,36 @@ def extract(html, url):
                 out["preuves"]["type"] = "jsonld:@type"
     title = clean(" ".join(p.headline))
     text = clean(" ".join(p.primary))
+    if target[0] == "1immo.ma":
+        if not re.fullmatch(r"/[^/]+-\d+", urlsplit(url).path):
+            out["erreur"] = "not_detail_url"
+        areas = {number(v) for k, v in p.grid_fields if fold(k) == "surface (m2)"}
+        areas.discard(None)
+        if len(areas) == 1:
+            out["superficie"] = areas.pop()
+            out["preuves"]["superficie"] = "1immo:primary-grid:Surface (m²)"
+        districts = {clean(v) for k, v in p.grid_fields if fold(k) == "quartier" and clean(v)}
+        if len(districts) == 1:
+            out["quartier"] = districts.pop()
+            out["preuves"]["quartier"] = "1immo:primary-grid:Quartier"
+        for node in ld_nodes(p.blocks):
+            if node.get("@type") != "BreadcrumbList":
+                continue
+            items = node.get("itemListElement", [])
+            if not items or not isinstance(items[-1], dict):
+                continue
+            try:
+                if identity(items[-1].get("item", "")) != target:
+                    continue
+            except ValueError:
+                continue
+            for item in items[:-1]:
+                path = urlsplit(item.get("item", "")).path
+                match = re.fullmatch(r"/s/[^/]+/([a-z-]+)-(?:a-(?:vendre|louer)|location-vacances)", path)
+                category = match[1].replace("-", " ") if match else None
+                if category in TYPES:
+                    out["type"] = TYPES[category]
+                    out["preuves"]["type"] = "1immo:bound-BreadcrumbList:property-category"
     if re.search(r"a partir de|starting from", fold(title)):
         out["erreur"] = "starting_price_not_exact"
     if re.search(r"(?:dh|mad|eur|usd)\s*(?:/|par)\s*m[²2]", fold(title)):
@@ -601,6 +643,7 @@ def main():
     parser.add_argument("--output", type=Path, default=ROOT / "data" / "annonces-fraiches")
     parser.add_argument("--max-details", type=int, default=60)
     parser.add_argument("--target", type=int, default=200_000)
+    parser.add_argument("--only-unseen", action="store_true", help="Discover new URLs without re-fetching stored observations; rejected rows are reviewed separately")
     parser.add_argument("--input", type=Path, help="Reviewed extracted observations JSON; replays the sieve without network")
     args = parser.parse_args()
     if args.max_details < 1 or args.target < 1:
@@ -629,6 +672,9 @@ def main():
                 stats["discovered"] += len(urls)
                 stats["sources"].append({"origin": config["origin"], "discovered": len(urls)})
                 source_limit = min(args.max_details, int(config.get("detail_limit", args.max_details)))
+                if args.only_unseen:
+                    existing = {row[0] for row in db.execute("SELECT url FROM observations")}
+                    urls = [url for url in urls if url not in existing]
                 for url in urls[:source_limit]:
                     row = {"url": url, "run_id": stats["run_id"]}
                     try:
