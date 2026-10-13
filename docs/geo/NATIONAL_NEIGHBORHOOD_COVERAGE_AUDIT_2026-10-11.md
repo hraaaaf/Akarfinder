@@ -342,3 +342,30 @@ The original V5 source build is recoverable in repository history even though it
 - The future V6 pack/unpack also preserves a **real explicitly supplied** OSM `osmTag`, a non-null `boundaryRelationId`, and a parent-association status, rather than preserving only historical V5 null placeholders. This is verified in a new adversarial synthetic test and is NOT a claim that historical relation IDs have been restored.
 - [Exact-HEAD CI #38267985081](https://github.com/hraaaaf/Akarfinder/actions/runs/38267985081) **SUCCESS**, code SHA `8c28204dc6b6b2678b0f8795b27c14a0b87f5a72`, **13/13 tests PASS**. The real packed N2 audit remains fail-closed for unavailable original IDs.
 - **Final contract gate**: implemented, tested, DRAFT only. **Individual 252 OSM record identification stays BLOCKED by expiry of original V5 artifact**; do not promote any localities or report an unproven deletion reason.
+
+
+## V6 NEW NATIONAL SOURCE SNAPSHOT — VERIFIED / SOURCE-ONLY (2026-10-13)
+
+**Goal:** create a fresh, traceable OSM source inventory with original feature IDs, source tags, candidate parent relations and full per-feature inclusion/exclusion ledger, while preserving fail-closed geographic safety. This is **not** a replay of 2026-08-23 V5 and **not** an activation of new official quartiers.
+
+### Actual source execution, cross-checked
+
+- [First run 38389717234](https://github.com/hraaaaf/Akarfinder/actions/runs/38389717234) **FAIL correctly** on 120 repeated `way` IDs and 10 administrative geometries not of type `relation`. Its [artifact 11808985651](https://github.com/hraaaaf/Akarfinder/actions/runs/38389717234/artifacts/11808985651) was downloaded and raw GeoJSON examined: **all 120 repeats are one way exported as LineString AND MultiPolygon, same OSM ID, all tags and bbox center equal**; the 10 administrative features are **ways**, so cannot supply a relation ID. Source truth is independent of test assumptions.
+- Corrected code HEAD `0407013276d7b32971d89192a3841163d4108673`: record both exported geometries in the source-decision ledger, allow only byte-equivalent tags/center plus LineString/MultiPolygon on a shared *way* ID as an explicitly recognized geometry variant; retain only one source identity for review. Unrelated duplicated IDs or changed names remain fail-closed. Explicitly log 10 non-relation administrative ways as excluded parent candidates, without inventing relations. Three additional adversarial tests cover all three rules.
+- [Exact-HEAD GitHub CI 38390371557](https://github.com/hraaaaf/Akarfinder/actions/runs/38390371557) **completed SUCCESS**, **17 unit tests PASS**, real Geofabrik PBF official published MD5 verified, full source extraction + SHA-256 ledger and nonpublication contract verified. GitHub artifact [11808252110](https://github.com/hraaaaf/Akarfinder/actions/runs/38390371557/artifacts/11808252110) uploaded successfully.
+- Input provenance: **2026-10-13T11:28:28Z**, source PBF **243,761,899 bytes**, SHA-256 `82425e414f2c581c97cbc89723ae5f3115b2d3e5a7e98cc7fc833ee609160bd4`, published Geofabrik MD5 `376f8c87cee724525cae03d2d55a5ec0`, Osmium **1.16.0**. Full original PBF is **not** archived; both filtered neighborhood/admin GeoJSON and PBF, downloaded-at stamp and MD5 are in the artifact.
+- Verified ledger population: **2,183 raw GeoJSON features = 2,183 ledger rows; 1,958 retained source identities + 225 excluded feature representations**. **1,958 retained IDs unique**, zero genuine conflicting ID, zero missing source IDs.
+- Geometry/source QA: **120 legitimate dual-geometry ways**, **10 administrative `way` shapes explicitly excluded from the 1,527 valid `relation` parents**; original reason flags overlap: 120 dual representations, 115 missing-name, 35 unsupported tag (do not add them as separate excluded populations).
+- Indicative parent matching on the **1,958 retained** source labels: **1,271 unique candidate OSM administrative relation / 686 overlapping ambiguous relations / 1 without a matching relation**. A unique OSM relation candidate is **not** legal certification of a quartier or proof of a mapped property district.
+- Direct artifact crosscheck (separate from green CI): ZIP **5,201,868 bytes** and both emitted JSONL SHA-256 hashes recomputed from the actual downloaded contents matched the manifest. Original identities are unique, no recognized value was silently published.
+- **Durable second copy:** [Google Drive national V6 source snapshot CI38390371557 ZIP](https://drive.google.com/file/d/14XxiTD15uKc2aqwto2Qr7_C_d-t1tDK5/view?usp=drivesdk), in the existing AkarFinder Vivre Ici Territory Dictionary handover folder. Upload **success**, subsequent Drive metadata readback confirmed **5,201,868 bytes** in the expected folder. Artifacts on GitHub expire after up to 90 days. The Drive copy includes filtered inputs and ledger but **not the original full PBF**.
+
+### Status and next gate
+
+**Verified:** new snapshot source-only pipeline, identities preserved, complete raw feature ledger, all source/geometry exceptions explicitly tracked, passing test evidence and Drive archive.
+
+**Not verified and must not be claimed:** 1,958 current labels as certified neighborhoods; official/legal quartier limits; property listing neighborhood membership; historical individual IDs and deletion reasons behind the **252** difference from V5 2026-08-23. That original artifact ID `9491880775` expired; Drive historic-name search returned no copy. A new current Geofabrik snapshot cannot reconstruct the 2026 historic object set.
+
+**Product constraints:** 0 DB writes, 0 Vercel deploy, 0 merges, 0 new `map_eligible`, 0 published quartier polygon, 0 new district search filter; certified registry remains **17 neighborhoods / 8 cities**.
+
+**Next exact:** construct a semantic/administrative review backlog focusing first on **686 ambiguous parent candidates**, 1 unresolved, and suspect residential project/POI labels; qualify original OSM features and city association before any publication. Full historical 252-ID reconciliation remains a separate external source recovery gate. Keep PR #1111 DRAFT, no Vercel deployment.
