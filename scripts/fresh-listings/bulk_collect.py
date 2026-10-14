@@ -60,6 +60,10 @@ def main():
         folder = batch / urlsplit(origin).hostname
         folder.mkdir()
         jobs.append((origin, folder, [sys.executable, str(scripts / script), '--output', str(folder)]))
+    origin = 'https://www.soukimmobilier.com'
+    folder = batch / urlsplit(origin).hostname
+    folder.mkdir()
+    jobs.append((origin, folder, [sys.executable, str(scripts / 'soukimmobilier_feed.py'), '--output', str(folder), '--max-details', str(args.max_details), '--only-unseen']))
     # Seed each worker with only its own source to retain resumability.
     with closing(sqlite3.connect(out / 'checkpoint.sqlite')) as db:
         initial = export(db, out, datetime.now(timezone.utc), 200000, {'channel': 'bulk-baseline'})['accepted']
@@ -93,3 +97,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+

@@ -1,54 +1,74 @@
 {
-  "generated_at": "2026-10-14T12:32:09.366668+00:00",
+  "generated_at": "2026-10-14T13:38:30.776528+00:00",
   "freshness_days": 30,
   "sources": [
     {
       "domain": "sawim.ma",
       "observed": 668,
-      "accepted": 539,
-      "yield_percent": 80.69,
+      "accepted": 543,
+      "yield_percent": 81.29,
       "missing_extracted_fields": {
-        "quartier": 45,
-        "superficie": 39
+        "quartier": 44,
+        "superficie": 36
       },
       "rejection_reasons": {
-        "older_than_30_days": 57,
-        "missing_evidence_quartier": 45,
-        "missing_quartier": 45,
-        "invalid_superficie": 39,
-        "missing_evidence_superficie": 39,
         "missing_or_unsupported_currency": 5,
+        "older_than_30_days": 57,
+        "invalid_superficie": 36,
+        "missing_evidence_quartier": 44,
+        "missing_evidence_superficie": 36,
+        "missing_quartier": 44,
         "starting_price_not_exact": 5,
-        "not_live_verified": 37,
+        "not_live_verified": 38,
         "implausible_price": 1
+      }
+    },
+    {
+      "domain": "www.soukimmobilier.com",
+      "observed": 1996,
+      "accepted": 289,
+      "yield_percent": 14.48,
+      "missing_extracted_fields": {
+        "quartier": 1549,
+        "superficie": 772,
+        "prix": 400
+      },
+      "rejection_reasons": {
+        "missing_evidence_quartier": 1549,
+        "missing_quartier": 1549,
+        "invalid_prix": 400,
+        "invalid_superficie": 772,
+        "missing_evidence_prix": 400,
+        "missing_evidence_superficie": 772,
+        "missing_or_unsupported_currency": 400
       }
     },
     {
       "domain": "1immo.ma",
       "observed": 959,
-      "accepted": 236,
-      "yield_percent": 24.61,
+      "accepted": 238,
+      "yield_percent": 24.82,
       "missing_extracted_fields": {
-        "quartier": 633,
-        "superficie": 348,
-        "type": 13,
+        "quartier": 628,
+        "superficie": 335,
+        "type": 8,
         "prix": 110
       },
       "rejection_reasons": {
         "older_than_30_days": 79,
-        "invalid_superficie": 348,
-        "missing_evidence_quartier": 633,
-        "missing_evidence_superficie": 348,
-        "missing_quartier": 633,
-        "missing_evidence_type": 13,
-        "missing_type": 13,
-        "unsupported_type": 13,
+        "invalid_superficie": 335,
+        "missing_evidence_quartier": 628,
+        "missing_evidence_superficie": 335,
+        "missing_quartier": 628,
+        "missing_evidence_type": 8,
+        "missing_type": 8,
+        "unsupported_type": 8,
         "invalid_prix": 110,
         "missing_evidence_prix": 110,
         "missing_or_unsupported_currency": 110,
         "unit_price_not_total": 1,
-        "implausible_price": 1,
-        "starting_price_not_exact": 1
+        "starting_price_not_exact": 1,
+        "implausible_price": 1
       }
     },
     {
@@ -81,16 +101,10 @@
     {
       "domain": "limmobiliersansfrontieres.com",
       "observed": 42,
-      "accepted": 31,
-      "yield_percent": 73.81,
-      "missing_extracted_fields": {
-        "type": 11
-      },
-      "rejection_reasons": {
-        "missing_evidence_type": 11,
-        "missing_type": 11,
-        "unsupported_type": 11
-      }
+      "accepted": 42,
+      "yield_percent": 100.0,
+      "missing_extracted_fields": {},
+      "rejection_reasons": {}
     },
     {
       "domain": "www.mubawab.ma",
@@ -205,7 +219,8 @@
     }
   ],
   "target": 200000,
-  "total_observed": 2502,
-  "total_accepted": 862,
+  "total_observed": 4498,
+  "total_accepted": 1168,
   "interpretation": "Missing extraction requires review; source absence is not established. No national stock estimate or extrapolation from samples."
 }
+

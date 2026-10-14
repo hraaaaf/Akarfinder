@@ -6,7 +6,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from unittest.mock import patch
 
-from pipeline import canonical, extract, number, robots_allowed, sieve, Client, export, NoRedirect
+from pipeline import canonical, explicit_quartier, extract, number, robots_allowed, sieve, Client, export, NoRedirect
 import sqlite3
 
 NOW = datetime(2026, 10, 13, 15, tzinfo=timezone.utc)
@@ -59,6 +59,35 @@ class PipelineTests(unittest.TestCase):
         url = 'https://1immo.ma/appartement-123'
         self.assertEqual(extract('<h1>Appartement 141 m2 a Safi</h1>', url)['superficie'], 141)
         self.assertNotIn('superficie', extract('<h1>Appartement 141 m2 terrasse 20 m2</h1>', url))
+
+    def test_1immo_explicit_price_and_type_fallbacks(self):
+        url = 'https://1immo.ma/local-commercial-123'
+        node = {'@type': 'RealEstateListing', 'url': url, 'description': 'Prix ferme 1 250 000 DH.'}
+        page = '<h1>Local commercial a vendre</h1><script type="application/ld+json">' + json.dumps(node) + '</script>'
+        row = extract(page, url)
+        self.assertEqual((row['prix'], row['devise'], row['type']), (1250000, 'MAD', 'local_commercial'))
+        node['description'] = 'Prix a partir de 1 250 000 DH.'
+        row = extract('<h1>Local commercial</h1><script type="application/ld+json">' + json.dumps(node) + '</script>', url)
+        self.assertNotIn('prix', row)
+
+    def test_soukimmobilier_url_type_and_title_district(self):
+        url = 'https://www.soukimmobilier.com/fr/casablanca/commerce/58864850'
+        node = {
+            '@type': 'RealEstateListing', 'url': url, 'datePosted': NOW.isoformat(),
+            'address': {'addressLocality': 'Casablanca'},
+            'floorSize': {'value': 65, 'unitCode': 'MTK'},
+            'offers': {'price': 13000, 'priceCurrency': 'MAD'},
+        }
+        page = '<h1>Magasin aménagé au quartier Maarif</h1><script type="application/ld+json">' + json.dumps(node) + '</script>'
+        row = extract(page, url)
+        self.assertEqual((row['type'], row['quartier']), ('local_commercial', 'Maarif'))
+        self.assertEqual(row['preuves']['type'], 'soukimmobilier:canonical-url:property-category')
+
+    def test_explicit_quartier_requires_one_labelled_non_generic_value(self):
+        self.assertEqual(explicit_quartier('Appartement quartier Hay Salam résidence Tarik'), 'Hay Salam')
+        self.assertEqual(explicit_quartier('Terrain dans le quartier El Mallah (Hay Salam)'), 'El Mallah')
+        self.assertEqual(explicit_quartier('Terrain dans le quartier Charaf à Sidi Kacem'), 'Charaf')
+        self.assertIsNone(explicit_quartier('Appartement dans un quartier calme'))
 
     def test_twenty_nine_days_is_fresh(self):
         r = row()
@@ -274,3 +303,4 @@ class PipelineTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+

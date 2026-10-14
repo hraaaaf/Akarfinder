@@ -1,394 +1,36 @@
 {
-  "channel": "bulk-multi-source-with-parser-review",
-  "accepted_before_batch": 347,
+  "run_id": "2026-10-14T13:38:22.270069+00:00",
   "sources": [
     {
-      "origin": "https://www.marocimmo.com",
-      "exit_code": 0,
-      "report": {
-        "run_id": "2026-10-14T12:14:17.639971+00:00",
-        "sources": [],
-        "discovered": 0,
-        "fetched": 0,
-        "errors": [
-          {
-            "origin": "https://www.marocimmo.com",
-            "error": "The read operation timed out"
-          }
-        ],
-        "parser_version": "1.9.0",
-        "generated_at": "2026-10-14T12:14:38.015425+00:00",
-        "freshness": "publication strictly within last 30 days; explicit successful HTTP verification within 24 hours",
-        "target": 200000,
-        "accepted": 56,
-        "rejected": 222,
-        "target_reached": false,
-        "shortfall": 199944,
-        "reasons": {
-          "invalid_prix": 115,
-          "missing_evidence_prix": 115,
-          "missing_or_unsupported_currency": 115,
-          "missing_evidence_quartier": 46,
-          "missing_quartier": 46,
-          "missing_evidence_type": 140,
-          "missing_type": 140,
-          "unsupported_type": 140,
-          "invalid_superficie": 38,
-          "missing_evidence_superficie": 38,
-          "missing_evidence_ville": 38,
-          "missing_ville": 38
-        },
-        "photos_downloaded": 0,
-        "production_writes": 0,
-        "deduplication": "canonical URL only; distinct properties not guaranteed",
-        "checkpoint_observations": 278
-      },
-      "folder": "C:\\Users\\lenovo\\Documents\\AkarFinder\\data\\annonces-fraiches\\.bulk\\20261014T121416Z\\www.marocimmo.com"
-    },
-    {
-      "origin": "https://agenz.ma",
-      "exit_code": 0,
-      "report": {
-        "run_id": "2026-10-14T12:14:17.634226+00:00",
-        "sources": [
-          {
-            "origin": "https://agenz.ma",
-            "discovered": 36
-          }
-        ],
-        "discovered": 36,
-        "fetched": 15,
-        "errors": [
-          {
-            "url": "https://agenz.ma/fr/annonces/immo-meknes/vente-appartements/avenue-des-f-a.r/346755",
-            "error": "HTTP Error 429: Too Many Requests"
-          }
-        ],
-        "parser_version": "1.9.0",
-        "generated_at": "2026-10-14T12:14:56.843814+00:00",
-        "freshness": "publication strictly within last 30 days; explicit successful HTTP verification within 24 hours",
-        "target": 200000,
-        "accepted": 0,
-        "rejected": 16,
-        "target_reached": false,
-        "shortfall": 200000,
-        "reasons": {
-          "invalid_prix": 15,
-          "missing_evidence_prix": 15,
-          "missing_or_unsupported_currency": 15,
-          "invalid_superficie": 10,
-          "missing_evidence_superficie": 10,
-          "missing_evidence_date_publication": 2,
-          "missing_evidence_quartier": 2,
-          "missing_evidence_type": 3,
-          "missing_evidence_ville": 2,
-          "missing_publication_date": 2,
-          "missing_quartier": 2,
-          "missing_type": 3,
-          "missing_ville": 2,
-          "unsupported_type": 3,
-          "HTTP Error 429: Too Many Requests": 1,
-          "not_live_verified": 1
-        },
-        "photos_downloaded": 0,
-        "production_writes": 0,
-        "deduplication": "canonical URL only; distinct properties not guaranteed",
-        "checkpoint_observations": 16
-      },
-      "folder": "C:\\Users\\lenovo\\Documents\\AkarFinder\\data\\annonces-fraiches\\.bulk\\20261014T121416Z\\agenz.ma"
-    },
-    {
-      "origin": "https://limmobiliersansfrontieres.com",
-      "exit_code": 0,
-      "report": {
-        "run_id": "2026-10-14T12:14:57.381028+00:00",
-        "sources": [
-          {
-            "origin": "https://limmobiliersansfrontieres.com",
-            "channel": "public_wordpress_published_properties"
-          }
-        ],
-        "discovered": 42,
-        "fetched": 42,
-        "errors": [],
-        "parser_version": "1.9.0",
-        "generated_at": "2026-10-14T12:16:40.026219+00:00",
-        "freshness": "publication strictly within last 30 days; explicit successful HTTP verification within 24 hours",
-        "target": 200000,
-        "accepted": 31,
-        "rejected": 11,
-        "target_reached": false,
-        "shortfall": 199969,
-        "reasons": {
-          "missing_evidence_type": 11,
-          "missing_type": 11,
-          "unsupported_type": 11
-        },
-        "photos_downloaded": 0,
-        "production_writes": 0,
-        "deduplication": "canonical URL only; distinct properties not guaranteed",
-        "checkpoint_observations": 42
-      },
-      "folder": "C:\\Users\\lenovo\\Documents\\AkarFinder\\data\\annonces-fraiches\\.bulk\\20261014T121416Z\\limmobiliersansfrontieres.com"
-    },
-    {
-      "origin": "https://daragadir.com",
-      "exit_code": 0,
-      "report": {
-        "run_id": "2026-10-14T12:14:17.646664+00:00",
-        "sources": [
-          {
-            "origin": "https://daragadir.com",
-            "discovered": 5749
-          }
-        ],
-        "discovered": 5749,
-        "fetched": 500,
-        "errors": [],
-        "parser_version": "1.9.0",
-        "generated_at": "2026-10-14T12:25:26.074289+00:00",
-        "freshness": "publication strictly within last 30 days; explicit successful HTTP verification within 24 hours",
-        "target": 200000,
-        "accepted": 0,
-        "rejected": 500,
-        "target_reached": false,
-        "shortfall": 200000,
-        "reasons": {
-          "invalid_prix": 284,
-          "invalid_superficie": 291,
-          "missing_evidence_prix": 284,
-          "missing_evidence_superficie": 291,
-          "missing_or_unsupported_currency": 284,
-          "older_than_30_days": 500,
-          "starting_price_not_exact": 108,
-          "missing_evidence_quartier": 245,
-          "missing_quartier": 245,
-          "missing_evidence_type": 24,
-          "missing_type": 24,
-          "unsupported_type": 24
-        },
-        "photos_downloaded": 0,
-        "production_writes": 0,
-        "deduplication": "canonical URL only; distinct properties not guaranteed",
-        "checkpoint_observations": 500
-      },
-      "folder": "C:\\Users\\lenovo\\Documents\\AkarFinder\\data\\annonces-fraiches\\.bulk\\20261014T121416Z\\daragadir.com"
-    },
-    {
-      "origin": "https://sawim.ma",
-      "exit_code": 0,
-      "report": {
-        "run_id": "2026-10-14T12:14:38.377419+00:00",
-        "sources": [
-          {
-            "origin": "https://sawim.ma",
-            "discovered": 648,
-            "channel": "documented_public_json_feed"
-          }
-        ],
-        "discovered": 648,
-        "fetched": 610,
-        "errors": [
-          {
-            "origin": "https://sawim.ma",
-            "error": "[WinError 5] Accès refusé: 'C:\\\\Users\\\\lenovo\\\\Documents\\\\AkarFinder\\\\data\\\\annonces-fraiches\\\\.bulk\\\\20261014T121416Z\\\\sawim.ma\\\\rapport.json.tmp' -> 'C:\\\\Users\\\\lenovo\\\\Documents\\\\AkarFinder\\\\data\\\\annonces-fraiches\\\\.bulk\\\\20261014T121416Z\\\\sawim.ma\\\\rapport.json'"
-          }
-        ],
-        "feed_documentation": "https://sawim.ma/llms.txt",
-        "feed_pages_read": 27,
-        "feed_rows_read": 648,
-        "feed_total_advertised": 5560,
-        "recent_candidates": 610,
-        "older_feed_rows": 38,
-        "complete": false,
-        "parser_version": "1.9.0",
-        "generated_at": "2026-10-14T12:25:46.876005+00:00",
-        "freshness": "publication strictly within last 30 days; explicit successful HTTP verification within 24 hours",
-        "target": 200000,
-        "accepted": 539,
-        "rejected": 129,
-        "target_reached": false,
-        "shortfall": 199461,
-        "reasons": {
-          "missing_evidence_quartier": 45,
-          "missing_quartier": 45,
-          "invalid_superficie": 39,
-          "missing_evidence_superficie": 39,
-          "not_live_verified": 38,
-          "older_than_30_days": 57,
-          "missing_or_unsupported_currency": 5,
-          "starting_price_not_exact": 5,
-          "implausible_price": 1
-        },
-        "photos_downloaded": 0,
-        "production_writes": 0,
-        "deduplication": "canonical URL only; distinct properties not guaranteed",
-        "checkpoint_observations": 668
-      },
-      "folder": "C:\\Users\\lenovo\\Documents\\AkarFinder\\data\\annonces-fraiches\\.bulk\\20261014T121416Z\\sawim.ma"
-    },
-    {
-      "origin": "https://1immo.ma",
-      "exit_code": 0,
-      "report": {
-        "run_id": "2026-10-14T12:14:17.641459+00:00",
-        "sources": [
-          {
-            "origin": "https://1immo.ma",
-            "discovered": 959
-          }
-        ],
-        "discovered": 959,
-        "fetched": 381,
-        "errors": [
-          {
-            "url": "https://1immo.ma/magasin-commercial-a-louer-benslimane-36336",
-            "error": "The read operation timed out"
-          }
-        ],
-        "parser_version": "1.9.0",
-        "generated_at": "2026-10-14T12:25:48.826089+00:00",
-        "freshness": "publication strictly within last 30 days; explicit successful HTTP verification within 24 hours",
-        "target": 200000,
-        "accepted": 213,
-        "rejected": 746,
-        "target_reached": false,
-        "shortfall": 199787,
-        "reasons": {
-          "invalid_superficie": 353,
-          "missing_evidence_quartier": 679,
-          "missing_evidence_superficie": 353,
-          "missing_quartier": 679,
-          "invalid_prix": 111,
-          "missing_evidence_prix": 111,
-          "missing_or_unsupported_currency": 111,
-          "older_than_30_days": 79,
-          "missing_evidence_type": 14,
-          "missing_type": 14,
-          "unsupported_type": 14,
-          "implausible_price": 1,
-          "unit_price_not_total": 1,
-          "starting_price_not_exact": 1,
-          "The read operation timed out": 1,
-          "missing_evidence_date_publication": 1,
-          "missing_evidence_ville": 1,
-          "missing_publication_date": 1,
-          "missing_ville": 1,
-          "not_live_verified": 1
-        },
-        "photos_downloaded": 0,
-        "production_writes": 0,
-        "deduplication": "canonical URL only; distinct properties not guaranteed",
-        "checkpoint_observations": 959
-      },
-      "folder": "C:\\Users\\lenovo\\Documents\\AkarFinder\\data\\annonces-fraiches\\.bulk\\20261014T121416Z\\1immo.ma"
+      "origin": "https://www.soukimmobilier.com",
+      "candidates": 1788
     }
   ],
-  "followup_passes": [
-    {
-      "origin": "https://1immo.ma",
-      "fetched": 104,
-      "recovered_fields": {
-        "quartier": 45,
-        "superficie": 4
-      },
-      "net_gain": 22,
-      "errors": [
-        {
-          "url": "https://1immo.ma/%D8%B4%D9%82%D8%A9-%D9%85%D8%AC%D9%87%D8%B2%D8%A9-%D9%84%D9%84%D9%83%D8%B1%D8%A7%D8%A1-%D8%A7%D9%84%D9%8A%D9%88%D9%85%D9%8A-%D9%84%D9%84%D8%B9%D8%A7%D8%A6%D9%84%D8%A7%D8%AA-36606",
-          "error": "The read operation timed out"
-        }
-      ]
-    },
-    {
-      "origin": "https://sawim.ma",
-      "report": {
-        "run_id": "2026-10-14T12:27:17.636448+00:00",
-        "sources": [
-          {
-            "origin": "https://sawim.ma",
-            "discovered": 648,
-            "channel": "documented_public_json_feed"
-          }
-        ],
-        "discovered": 648,
-        "fetched": 101,
-        "errors": [],
-        "feed_documentation": "https://sawim.ma/llms.txt",
-        "feed_pages_read": 27,
-        "feed_rows_read": 648,
-        "feed_total_advertised": 5560,
-        "recent_candidates": 610,
-        "older_feed_rows": 38,
-        "complete": true,
-        "reused_live_verified": 509,
-        "tail_not_fetched_reason": "documented_sort_recent_older_than_thirty_day_cutoff",
-        "parser_version": "1.10.0",
-        "generated_at": "2026-10-14T12:29:40.081660+00:00",
-        "freshness": "publication strictly within last 30 days; explicit successful HTTP verification within 24 hours",
-        "target": 200000,
-        "accepted": 539,
-        "rejected": 129,
-        "target_reached": false,
-        "shortfall": 199461,
-        "reasons": {
-          "missing_evidence_quartier": 45,
-          "missing_quartier": 45,
-          "invalid_superficie": 39,
-          "missing_evidence_superficie": 39,
-          "not_live_verified": 38,
-          "older_than_30_days": 57,
-          "missing_or_unsupported_currency": 5,
-          "starting_price_not_exact": 5,
-          "implausible_price": 1
-        },
-        "photos_downloaded": 0,
-        "production_writes": 0,
-        "deduplication": "canonical URL only; distinct properties not guaranteed",
-        "checkpoint_observations": 668
-      }
-    }
-  ],
-  "errors": [
-    {
-      "origin": "https://www.marocimmo.com",
-      "error": "The read operation timed out"
-    },
-    {
-      "url": "https://agenz.ma/fr/annonces/immo-meknes/vente-appartements/avenue-des-f-a.r/346755",
-      "error": "HTTP Error 429: Too Many Requests"
-    },
-    {
-      "origin": "https://sawim.ma",
-      "error": "[WinError 5] Accès refusé: 'C:\\\\Users\\\\lenovo\\\\Documents\\\\AkarFinder\\\\data\\\\annonces-fraiches\\\\.bulk\\\\20261014T121416Z\\\\sawim.ma\\\\rapport.json.tmp' -> 'C:\\\\Users\\\\lenovo\\\\Documents\\\\AkarFinder\\\\data\\\\annonces-fraiches\\\\.bulk\\\\20261014T121416Z\\\\sawim.ma\\\\rapport.json'"
-    },
-    {
-      "url": "https://1immo.ma/magasin-commercial-a-louer-benslimane-36336",
-      "error": "The read operation timed out"
-    }
-  ],
-  "fetched": 1753,
-  "parser_version": "1.10.0",
-  "generated_at": "2026-10-14T12:32:08.714523+00:00",
+  "discovered": 1,
+  "fetched": 1,
+  "errors": [],
+  "channel": "recent-rejection-review",
+  "parser_version": "1.14.0",
+  "generated_at": "2026-10-14T13:38:26.028203+00:00",
   "freshness": "publication strictly within last 30 days; explicit successful HTTP verification within 24 hours",
   "target": 200000,
-  "accepted": 862,
-  "rejected": 1640,
+  "accepted": 1168,
+  "rejected": 3330,
   "target_reached": false,
-  "shortfall": 199138,
+  "shortfall": 198832,
   "reasons": {
-    "invalid_superficie": 727,
-    "missing_evidence_quartier": 978,
-    "missing_evidence_superficie": 727,
-    "missing_quartier": 978,
-    "invalid_prix": 527,
-    "missing_evidence_prix": 527,
-    "missing_or_unsupported_currency": 563,
+    "invalid_superficie": 1483,
+    "missing_evidence_quartier": 2521,
+    "missing_evidence_superficie": 1483,
+    "missing_quartier": 2521,
+    "invalid_prix": 927,
+    "missing_evidence_prix": 927,
+    "missing_or_unsupported_currency": 963,
     "older_than_30_days": 636,
-    "missing_evidence_type": 192,
-    "missing_type": 192,
-    "unsupported_type": 192,
     "implausible_price": 2,
+    "missing_evidence_type": 176,
+    "missing_type": 176,
+    "unsupported_type": 176,
     "unit_price_not_total": 1,
     "starting_price_not_exact": 114,
     "missing_evidence_date_publication": 41,
@@ -396,13 +38,102 @@
     "missing_publication_date": 41,
     "missing_ville": 41,
     "HTTP Error 429: Too Many Requests": 1,
-    "not_live_verified": 39,
+    "not_live_verified": 40,
     "publication_semantics_unverified": 8,
     "redirect_requires_review:302": 1
   },
   "photos_downloaded": 0,
   "production_writes": 0,
   "deduplication": "canonical URL only; distinct properties not guaranteed",
-  "checkpoint_observations": 2502,
-  "net_gain": 515
+  "checkpoint_observations": 4498,
+  "recovered_fields": {
+    "quartier": 101
+  },
+  "recovered_urls": [
+    "https://www.soukimmobilier.com/fr/casablanca/appartement/58853523",
+    "https://www.soukimmobilier.com/fr/fes/villa/58852439",
+    "https://www.soukimmobilier.com/fr/marrakech/appartement/58860301",
+    "https://www.soukimmobilier.com/fr/tanger/appartement/58856904",
+    "https://www.soukimmobilier.com/fr/agadir/appartement/58833233",
+    "https://www.soukimmobilier.com/fr/agadir/appartement/58836690",
+    "https://www.soukimmobilier.com/fr/cabo-negro/appartement/58830190",
+    "https://www.soukimmobilier.com/fr/casablanca/appartement/58830156",
+    "https://www.soukimmobilier.com/fr/casablanca/appartement/58830218",
+    "https://www.soukimmobilier.com/fr/casablanca/appartement/58830282",
+    "https://www.soukimmobilier.com/fr/casablanca/appartement/58832620",
+    "https://www.soukimmobilier.com/fr/casablanca/appartement/58832653",
+    "https://www.soukimmobilier.com/fr/casablanca/appartement/58836072",
+    "https://www.soukimmobilier.com/fr/casablanca/appartement/58838154",
+    "https://www.soukimmobilier.com/fr/casablanca/appartement/58839497",
+    "https://www.soukimmobilier.com/fr/casablanca/appartement/58843841",
+    "https://www.soukimmobilier.com/fr/casablanca/appartement/58844993",
+    "https://www.soukimmobilier.com/fr/casablanca/bureau/58841038",
+    "https://www.soukimmobilier.com/fr/casablanca/commerce/58830836",
+    "https://www.soukimmobilier.com/fr/casablanca/commerce/58831695",
+    "https://www.soukimmobilier.com/fr/casablanca/commerce/58836747",
+    "https://www.soukimmobilier.com/fr/essaouira/maison/58844988",
+    "https://www.soukimmobilier.com/fr/fes/appartement/58836206",
+    "https://www.soukimmobilier.com/fr/fes/appartement/58837236",
+    "https://www.soukimmobilier.com/fr/kenitra/appartement/58831651",
+    "https://www.soukimmobilier.com/fr/kenitra/appartement/58832987",
+    "https://www.soukimmobilier.com/fr/kenitra/appartement/58841478",
+    "https://www.soukimmobilier.com/fr/kenitra/appartement/58842789",
+    "https://www.soukimmobilier.com/fr/kenitra/commerce/58828391",
+    "https://www.soukimmobilier.com/fr/kenitra/commerce/58844265",
+    "https://www.soukimmobilier.com/fr/kenitra/terrain/58842627",
+    "https://www.soukimmobilier.com/fr/kenitra/villa/58842917",
+    "https://www.soukimmobilier.com/fr/kenitra/villa/58843501",
+    "https://www.soukimmobilier.com/fr/marrakech/appartement/58831460",
+    "https://www.soukimmobilier.com/fr/marrakech/appartement/58836571",
+    "https://www.soukimmobilier.com/fr/marrakech/appartement/58838031",
+    "https://www.soukimmobilier.com/fr/marrakech/appartement/58838058",
+    "https://www.soukimmobilier.com/fr/marrakech/maison/58843208",
+    "https://www.soukimmobilier.com/fr/martil/appartement/58826732",
+    "https://www.soukimmobilier.com/fr/meknes/appartement/58832091",
+    "https://www.soukimmobilier.com/fr/meknes/appartement/58838223",
+    "https://www.soukimmobilier.com/fr/meknes/appartement/58844452",
+    "https://www.soukimmobilier.com/fr/meknes/commerce/58836545",
+    "https://www.soukimmobilier.com/fr/mohammedia/appartement/58832551",
+    "https://www.soukimmobilier.com/fr/mohammedia/appartement/58835352",
+    "https://www.soukimmobilier.com/fr/mohammedia/appartement/58836337",
+    "https://www.soukimmobilier.com/fr/mohammedia/appartement/58837537",
+    "https://www.soukimmobilier.com/fr/mohammedia/appartement/58838036",
+    "https://www.soukimmobilier.com/fr/mohammedia/appartement/58843189",
+    "https://www.soukimmobilier.com/fr/mohammedia/bureau/58839535",
+    "https://www.soukimmobilier.com/fr/mohammedia/terrain/58836221",
+    "https://www.soukimmobilier.com/fr/oujda/appartement/58829403",
+    "https://www.soukimmobilier.com/fr/oujda/commerce/58836055",
+    "https://www.soukimmobilier.com/fr/oujda/villa/58836536",
+    "https://www.soukimmobilier.com/fr/rabat/villa/58839595",
+    "https://www.soukimmobilier.com/fr/rabat/villa/58839792",
+    "https://www.soukimmobilier.com/fr/safi/appartement/58838608",
+    "https://www.soukimmobilier.com/fr/safi/terrain/58843157",
+    "https://www.soukimmobilier.com/fr/sale/appartement/58829705",
+    "https://www.soukimmobilier.com/fr/sale/appartement/58839449",
+    "https://www.soukimmobilier.com/fr/sale/appartement/58840274",
+    "https://www.soukimmobilier.com/fr/sale/commerce/58836482",
+    "https://www.soukimmobilier.com/fr/sale/maison/58836290",
+    "https://www.soukimmobilier.com/fr/sale/villa/58836692",
+    "https://www.soukimmobilier.com/fr/sidi-slimane/terrain/58829757",
+    "https://www.soukimmobilier.com/fr/tanger/appartement/58826907",
+    "https://www.soukimmobilier.com/fr/tanger/appartement/58829993",
+    "https://www.soukimmobilier.com/fr/tanger/appartement/58830374",
+    "https://www.soukimmobilier.com/fr/tanger/appartement/58830391",
+    "https://www.soukimmobilier.com/fr/tanger/appartement/58831577",
+    "https://www.soukimmobilier.com/fr/tanger/appartement/58843150",
+    "https://www.soukimmobilier.com/fr/tanger/commerce/58831920",
+    "https://www.soukimmobilier.com/fr/tanger/commerce/58832145",
+    "https://www.soukimmobilier.com/fr/tanger/maison/58826923",
+    "https://www.soukimmobilier.com/fr/tanger/terrain/58844383",
+    "https://www.soukimmobilier.com/fr/tanger/villa/58835086",
+    "https://www.soukimmobilier.com/fr/tanger/villa/58836759",
+    "https://www.soukimmobilier.com/fr/temara/appartement/58833439",
+    "https://www.soukimmobilier.com/fr/temara/terrain/58837310",
+    "https://www.soukimmobilier.com/fr/temara/villa/58831993",
+    "https://www.soukimmobilier.com/fr/tetouan/terrain/58844477"
+  ],
+  "accepted_before_review": 1087,
+  "accepted_after_review": 1168,
+  "net_gain": 81
 }
+

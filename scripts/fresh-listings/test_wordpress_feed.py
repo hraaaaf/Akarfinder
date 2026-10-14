@@ -1,5 +1,5 @@
 import unittest
-from wordpress_feed import detail_values
+from wordpress_feed import detail_values, leading_property_type
 
 class WordPressTests(unittest.TestCase):
     def test_primary_details_only(self):
@@ -8,6 +8,11 @@ class WordPressTests(unittest.TestCase):
     def test_no_assumed_units_or_prices(self):
         html = '<div id="property-detail-wrap"><li><strong>Prix:</strong><span>Sur demande</span></li><li><strong>Surface:</strong><span>800</span></li></div>'
         self.assertEqual(detail_values(html), {})
+    def test_explicit_leading_property_type(self):
+        self.assertEqual(leading_property_type('https://limmobiliersansfrontieres.com/property/bureau-de-65-m2-a-louer/'), 'bureau')
+        self.assertEqual(leading_property_type('https://limmobiliersansfrontieres.com/property/magasin-titre-de-550-m2/'), 'local_commercial')
+        self.assertIsNone(leading_property_type('https://limmobiliersansfrontieres.com/property/bien-exceptionnel/'))
 
 if __name__ == '__main__':
     unittest.main()
+

@@ -50,6 +50,11 @@ def detail_values(html):
                 out['superficie'] = number(m[1])
     return out
 
+def leading_property_type(url):
+    slug = urlsplit(url).path.removeprefix('/property/').split('-', 1)[0]
+    explicit_types = {'appartement':'appartement','bureau':'bureau','magasin':'local_commercial','local':'local_commercial','maison':'maison','villa':'villa','riad':'riad','terrain':'terrain'}
+    return explicit_types.get(slug)
+
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--origin', default='https://limmobiliersansfrontieres.com')
@@ -109,6 +114,11 @@ def main():
                         if label:
                             row[field] = label
                             row['preuves'][field] = 'wordpress:bound-property.' + taxonomy + ':public-term.name'
+                if not row.get('type'):
+                    explicit_type = leading_property_type(url)
+                    if explicit_type:
+                        row['type'] = explicit_type
+                        row['preuves']['type'] = 'lsf:property-url:explicit-leading-type'
                 values = detail_values(html)
                 row.update(values)
                 for field in ('prix','superficie'):
@@ -127,3 +137,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+

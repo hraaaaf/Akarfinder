@@ -39,6 +39,13 @@ class FeedTests(unittest.TestCase):
         self.assertEqual((r['prix'], r['devise']), (350000, 'EUR'))
         self.assertNotIn('superficie', r)
 
+    def test_bound_feed_title_can_supply_one_explicit_area_and_district(self):
+        item = {**ITEM, 'quartier': None, 'surface_m2': None, 'title': 'Appartement 85 m2 a Agdal'}
+        row = normalize(item, FEED)
+        self.assertEqual((row['quartier'], row['superficie']), ('Agdal', 85))
+        item['title'] = 'Appartement 85 m2 avec terrasse 20 m2 a Agdal'
+        self.assertNotIn('superficie', normalize(item, FEED))
+
     def test_null_detail_field_keeps_feed_evidence(self):
         r = normalize(ITEM, FEED)
         v = merge_verified(r, {'date_publication': ITEM['posted_at'], 'superficie': None, 'preuves': {'superficie': 'invalid-detail-field'}}, datetime(2026, 10, 13, tzinfo=timezone.utc))
@@ -47,3 +54,4 @@ class FeedTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+

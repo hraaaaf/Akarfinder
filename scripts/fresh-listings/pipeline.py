@@ -15,7 +15,7 @@ from urllib.request import Request, build_opener, HTTPRedirectHandler
 from urllib.error import HTTPError
 from xml.etree import ElementTree as ET
 
-VERSION = "1.10.0"
+VERSION = "1.14.0"
 UA = "AkarFinderListingAudit/1.0 (+https://github.com/hraaaaf/Akarfinder)"
 ROOT = Path(__file__).resolve().parents[2]
 TYPES = {"apartment": "appartement", "appartement": "appartement", "studio": "studio", "villa": "villa", "house": "maison", "maison": "maison", "terrain": "terrain", "land": "terrain", "bureau": "bureau", "office": "bureau", "local commercial": "local_commercial", "local_commercial": "local_commercial", "riad": "riad", "ferme": "ferme", "immeuble": "immeuble", "duplex": "duplex", "entrepot": "entrepot", "hangar": "hangar", "fonds de commerce": "fonds_de_commerce", "fonds commerce": "fonds_de_commerce"}
@@ -44,6 +44,18 @@ def title_district(title, city):
     hits = [h for h in hits if not any(o[0] <= h[0] and o[1] >= h[1] and o[1]-o[0] > h[1]-h[0] for o in hits)]
     names = {h[2] for h in hits}
     return names.pop() if len(names) == 1 else None
+
+def explicit_quartier(text):
+    """Return one locality explicitly labelled as a quartier in bound listing text."""
+    candidates = {
+        clean(value)
+        for value in re.findall(
+            r"\bquartier\s+([^,.;:!?()]{2,50}?)(?=\s+(?:residence|pres|proche|avec|dans|n[°o]|a)\b|[,.;:!?()]|$)",
+            fold(text),
+        )
+    }
+    candidates = {value for value in candidates if fold(value) not in {"calme", "residentiel"}}
+    return candidates.pop().title() if len(candidates) == 1 else None
 
 def canonical(raw):
     if not isinstance(raw, str) or any(ord(c) < 32 for c in raw):
@@ -440,6 +452,14 @@ def extract(html, url):
             except ValueError:
                 continue
         description = " ".join(descriptions)
+        if not out.get("prix"):
+            price_text = title + " " + description
+            prices = {number(v) for v in re.findall(r"(?<![\d.,])(\d[\d\s.,\u202f]*?)\s*(?:DH|MAD|dirhams?)\b", price_text, re.I)}
+            prices.discard(None)
+            if len(prices) == 1 and not re.search(r"a partir de|prix au m[²2]|par m[²2]|/\s*m[²2]", fold(price_text)):
+                out["prix"] = prices.pop()
+                out["devise"] = "MAD"
+                out["preuves"]["prix"] = "1immo:bound-description-or-h1:explicit-MAD"
         if not out.get("superficie"):
             areas = {number(v) for v in re.findall(r"(?<![\d.,])(\d+(?:[.,]\d+)?)\s*m[²2]\b", description + " " + title)}
             areas.discard(None)
@@ -452,11 +472,21 @@ def extract(html, url):
             if len(districts) == 1:
                 out["quartier"] = districts.pop()
                 out["preuves"]["quartier"] = "1immo:bound-description:explicit-quartier"
+        if not out.get("quartier"):
+            district = explicit_quartier(title)
+            if district:
+                out["quartier"] = district
+                out["preuves"]["quartier"] = "1immo:h1:explicit-quartier"
         if not out.get("quartier") and out.get("ville"):
             district = title_district(title, out["ville"])
             if district:
                 out["quartier"] = district
                 out["preuves"]["quartier"] = "1immo:h1:repository-city-district-dictionary"
+        if not out.get("type"):
+            type_hits = {TYPES[k] for k in TYPES if re.search(r"\b" + re.escape(fold(k)) + r"s?\b", fold(title))}
+            if len(type_hits) == 1:
+                out["type"] = type_hits.pop()
+                out["preuves"]["type"] = "1immo:h1:explicit-property-type"
         if not re.fullmatch(r"/[^/]+-\d+", urlsplit(url).path):
             out["erreur"] = "not_detail_url"
         areas = {number(v) for k, v in p.grid_fields if fold(k) == "surface (m2)"}
@@ -486,6 +516,29 @@ def extract(html, url):
                 if category in TYPES:
                     out["type"] = TYPES[category]
                     out["preuves"]["type"] = "1immo:bound-BreadcrumbList:property-category"
+    if target[0] == "soukimmobilier.com":
+        path = unquote(urlsplit(url).path)
+        match = re.fullmatch(r"/(?:fr|ar)/[^/]+/([^/]+)/(\d+)", path)
+        source_types = {
+            "appartement": "appartement", "maison": "maison", "villa": "villa",
+            "terrain": "terrain", "commerce": "local_commercial", "bureau": "bureau",
+            "riad": "riad", "ferme": "ferme", "immeuble": "immeuble",
+        }
+        if not match:
+            out["erreur"] = "not_detail_url"
+        elif match[1] in source_types:
+            out["type"] = source_types[match[1]]
+            out["preuves"]["type"] = "soukimmobilier:canonical-url:property-category"
+        if not out.get("quartier"):
+            district = explicit_quartier(title)
+            if district:
+                out["quartier"] = district
+                out["preuves"]["quartier"] = "soukimmobilier:h1:explicit-quartier"
+        if not out.get("quartier") and out.get("ville"):
+            district = title_district(title, out["ville"])
+            if district:
+                out["quartier"] = district
+                out["preuves"]["quartier"] = "soukimmobilier:h1:repository-city-district-dictionary"
     if re.search(r"a partir de|starting from", fold(title)):
         out["erreur"] = "starting_price_not_exact"
     if re.search(r"(?:dh|mad|eur|usd)\s*(?:/|par)\s*m[²2]", fold(title)):
@@ -821,3 +874,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

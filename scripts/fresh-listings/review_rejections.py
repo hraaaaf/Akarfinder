@@ -6,7 +6,7 @@ from collections import defaultdict, Counter
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import urlsplit, unquote
-from pipeline import Client, ROOT, VERSION, date, export, extract, sieve, title_district
+from pipeline import Client, ROOT, VERSION, date, explicit_quartier, export, extract, sieve, title_district
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
@@ -30,9 +30,28 @@ def main():
                 # URL words only prioritize inspection; they never become field evidence.
                 candidate = title_district(unquote(urlsplit(url).path).replace('-', ' '), row.get('ville'))
                 priority[url] = (0 if candidate and not row.get('quartier') else 1, row.get('parser_version') == VERSION)
-    before = export(db, output, now, 200000, stats)["accepted"]
     recovered_fields = Counter()
     recovered_urls = []
+    before = export(db, output, now, 200000, stats)["accepted"]
+    # Stored headings are already bound to their canonical listing. Reapply safe
+    # title rules immediately after a dictionary/parser correction, without I/O.
+    for urls in groups.values():
+        for url in urls:
+            row = json.loads(db.execute("SELECT payload FROM observations WHERE url=?", (url,)).fetchone()[0])
+            if row.get("quartier") or not row.get("source_title"):
+                continue
+            district = explicit_quartier(row["source_title"]) or title_district(row["source_title"], row.get("ville"))
+            if not district:
+                continue
+            was_rejected = bool(sieve(row, now))
+            row["quartier"] = district
+            row.setdefault("preuves", {})["quartier"] = "stored-bound-title:explicit-or-reviewed-dictionary"
+            row["parser_version"] = VERSION
+            recovered_fields["quartier"] += 1
+            if was_rejected and not sieve(row, now):
+                recovered_urls.append(url)
+            db.execute("INSERT OR REPLACE INTO observations VALUES (?, ?)", (url, json.dumps(row, ensure_ascii=False)))
+        db.commit()
     for origin, urls in groups.items():
         client = Client(origin)
         stats["sources"].append({"origin": origin, "candidates": len(urls)})
@@ -40,6 +59,8 @@ def main():
             stats["discovered"] += 1
             try:
                 previous = json.loads(db.execute("SELECT payload FROM observations WHERE url=?", (url,)).fetchone()[0])
+                if not sieve(previous, datetime.now(timezone.utc)):
+                    continue
                 html = client.get(url)
                 stats["fetched"] += 1
                 row = {**extract(html, url), "http_status": 200, "verifie_le": datetime.now(timezone.utc).isoformat(), "run_id": stats["run_id"]}
@@ -52,7 +73,10 @@ def main():
                 db.commit()
             except Exception as e:
                 stats["errors"].append({"url": url, "error": str(e)[:200]})
-                break
+                error = str(e).lower()
+                if any(token in error for token in ('403', '429', 'robots_disallowed', 'access_challenge', 'captcha')):
+                    break
+                continue
     report = export(db, output, datetime.now(timezone.utc), 200000, stats)
     report["recovered_fields"] = dict(recovered_fields)
     report["recovered_urls"] = recovered_urls
@@ -68,3 +92,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

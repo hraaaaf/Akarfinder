@@ -10,7 +10,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import urlsplit
 
-from pipeline import Client, ROOT, TYPES, VERSION, canonical, clean, date, export, extract, fold, identity, number, sieve
+from pipeline import Client, ROOT, TYPES, VERSION, canonical, clean, date, export, extract, fold, identity, number, sieve, title_district
 
 DOCS = "https://sawim.ma/llms.txt"
 ORIGIN = "https://sawim.ma"
@@ -22,10 +22,17 @@ def normalize(item, feed_url):
         raise ValueError("feed_identity_mismatch")
     proofs = {}
     row = {"url": url, "preuves": proofs, "parser_version": VERSION, "source_feed_url": feed_url}
+    if isinstance(item.get("title"), str) and clean(item["title"]):
+        row["source_title"] = clean(item["title"])
     for key, field in [("city", "ville"), ("quartier", "quartier")]:
         if isinstance(item.get(key), str) and clean(item[key]):
             row[field] = clean(item[key])
             proofs[field] = "sawim:public-recherche.json:bound-id:" + key
+    if not row.get("quartier") and row.get("ville") and row.get("source_title"):
+        district = title_district(row["source_title"], row["ville"])
+        if district:
+            row["quartier"] = district
+            proofs["quartier"] = "sawim:public-feed-title:repository-city-district-dictionary"
     typ = TYPES.get(fold(item.get("property_type")).replace("-", " "))
     if typ:
         row["type"] = typ
@@ -34,6 +41,11 @@ def normalize(item, feed_url):
     if area:
         row["superficie"] = area
         proofs["superficie"] = "sawim:public-recherche.json:bound-id:surface_m2"
+    elif row.get("source_title"):
+        areas = {number(value) for value in re.findall(r"(?<![\d.,])(\d+(?:[.,]\d+)?)\s*m[²2]\b", row["source_title"], re.I)} - {None}
+        if len(areas) == 1:
+            row["superficie"] = areas.pop()
+            proofs["superficie"] = "sawim:public-feed-title:explicit-m2"
     amount = number(item.get("price"))
     currency = item.get("currency")
     if amount and currency in {"MAD", "EUR", "USD"}:
@@ -167,3 +179,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
