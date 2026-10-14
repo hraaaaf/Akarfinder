@@ -5,8 +5,8 @@ import sqlite3
 from collections import defaultdict, Counter
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from urllib.parse import urlsplit
-from pipeline import Client, ROOT, VERSION, date, export, extract, sieve
+from urllib.parse import urlsplit, unquote
+from pipeline import Client, ROOT, VERSION, date, export, extract, sieve, title_district
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
@@ -20,19 +20,23 @@ def main():
     now = datetime.now(timezone.utc)
     stats = {"run_id": now.isoformat(), "sources": [], "discovered": 0, "fetched": 0, "errors": [], "channel": "recent-rejection-review"}
     groups = defaultdict(list)
+    priority = {}
     for url, raw in db.execute("SELECT url,payload FROM observations ORDER BY json_extract(payload, '$.parser_version') = ?, url", (VERSION,)):
         row = json.loads(raw)
         published = date(row.get("date_publication"))
         if (not published or now - timedelta(days=30) < published <= now) and sieve(row, now):
             if urlsplit(url).netloc == urlsplit(args.origin).netloc:
                 groups[args.origin].append(url)
+                # URL words only prioritize inspection; they never become field evidence.
+                candidate = title_district(unquote(urlsplit(url).path).replace('-', ' '), row.get('ville'))
+                priority[url] = (0 if candidate and not row.get('quartier') else 1, row.get('parser_version') == VERSION)
     before = export(db, output, now, 200000, stats)["accepted"]
     recovered_fields = Counter()
     recovered_urls = []
     for origin, urls in groups.items():
         client = Client(origin)
         stats["sources"].append({"origin": origin, "candidates": len(urls)})
-        for url in urls[:args.max_details]:
+        for url in sorted(urls, key=lambda url: priority[url])[:args.max_details]:
             stats["discovered"] += 1
             try:
                 previous = json.loads(db.execute("SELECT payload FROM observations WHERE url=?", (url,)).fetchone()[0])

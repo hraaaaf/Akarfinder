@@ -2,3 +2,5 @@
 *.sqlite-*
 *.tmp
 .publish/
+
+.bulk/

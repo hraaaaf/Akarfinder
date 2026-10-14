@@ -10,7 +10,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import urlsplit
 
-from pipeline import Client, ROOT, TYPES, VERSION, canonical, clean, date, export, extract, fold, identity, number
+from pipeline import Client, ROOT, TYPES, VERSION, canonical, clean, date, export, extract, fold, identity, number, sieve
 
 DOCS = "https://sawim.ma/llms.txt"
 ORIGIN = "https://sawim.ma"
@@ -128,6 +128,14 @@ def main():
                     save(row)
                     continue
                 stats["recent_candidates"] += 1
+                previous = db.execute("SELECT payload FROM observations WHERE url=?", (row["url"],)).fetchone()
+                if previous:
+                    previous = json.loads(previous[0])
+                    fields = ("ville", "quartier", "superficie", "prix", "devise", "type")
+                    unchanged = all(not row.get(k) or row[k] == previous.get(k) for k in fields) and date(row.get("date_publication")) == date(previous.get("date_publication"))
+                    if unchanged and not sieve(previous, datetime.now(timezone.utc)):
+                        stats["reused_live_verified"] = stats.get("reused_live_verified", 0) + 1
+                        continue
                 try:
                     html = client.get(row["url"])
                     stats["fetched"] += 1
@@ -145,7 +153,7 @@ def main():
             # Early stop relies on the documented sort=recent contract and
             # checked monotonic timestamps. No lastmod-based publication inference.
             if payload["results"] and len(page_dates) == len(payload["results"]) and monotonic and all(d <= cutoff for d in page_dates):
-                stats.update(complete=True, tail_not_fetched_reason="documented_sort_recent_older_than_seven_day_cutoff")
+                stats.update(complete=True, tail_not_fetched_reason="documented_sort_recent_older_than_thirty_day_cutoff")
                 break
             if page >= int(payload.get("page_count", page)) or not payload["results"]:
                 stats["complete"] = True

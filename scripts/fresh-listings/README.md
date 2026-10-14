@@ -152,3 +152,9 @@ Le rapport et `review-history.jsonl` mesurent les champs récupérés et les ann
 
 La description JSON-LD liée à l'URL complète la surface explicite en m² et le quartier explicitement nommé ; les valeurs ambiguës restent en attente.
 
+
+## Collecte par lots multi-sources
+
+`python scripts/fresh-listings/bulk_collect.py --max-details 500 --workers 4` collecte jusqu’à quatre origines distinctes en parallèle, avec un seul collecteur par origine. Chaque collecteur possède son checkpoint, son journal et son rapport isolés. La fusion conserve la dernière vérification réelle par URL. Une source bloquée n’arrête pas les autres. Les URL découvertes, annonces observées et annonces conformes sont comptées séparément ; le plafond par source ne signifie pas collecte exhaustive. `bulk-report.json` garde le rendement de chaque origine.
+
+`python scripts/fresh-listings/source_capacity.py` mesure la couverture des champs et le rendement observé par source, sans extrapoler un stock national. Les titres principaux sont conservés dans le checkpoint pour les prochaines corrections ; ils ne sont pas ajoutés au JSON final. Le dictionnaire de quartiers par ville provient du script existant `backfill-districts-from-existing-data.mjs` ; un nom unique explicitement présent dans le titre peut compléter un quartier absent, en excluant les mentions de proximité.

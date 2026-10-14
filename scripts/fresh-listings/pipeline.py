@@ -15,7 +15,7 @@ from urllib.request import Request, build_opener, HTTPRedirectHandler
 from urllib.error import HTTPError
 from xml.etree import ElementTree as ET
 
-VERSION = "1.8.1"
+VERSION = "1.10.0"
 UA = "AkarFinderListingAudit/1.0 (+https://github.com/hraaaaf/Akarfinder)"
 ROOT = Path(__file__).resolve().parents[2]
 TYPES = {"apartment": "appartement", "appartement": "appartement", "studio": "studio", "villa": "villa", "house": "maison", "maison": "maison", "terrain": "terrain", "land": "terrain", "bureau": "bureau", "office": "bureau", "local commercial": "local_commercial", "local_commercial": "local_commercial", "riad": "riad", "ferme": "ferme", "immeuble": "immeuble", "duplex": "duplex", "entrepot": "entrepot", "hangar": "hangar", "fonds de commerce": "fonds_de_commerce", "fonds commerce": "fonds_de_commerce"}
@@ -25,6 +25,25 @@ def clean(value):
 
 def fold(value):
     return "".join(c for c in unicodedata.normalize("NFKD", clean(value).lower()) if not unicodedata.combining(c))
+
+DISTRICTS = json.loads(Path(__file__).with_name("districts.json").read_text(encoding="utf-8"))
+
+def title_district(title, city):
+    """Match one explicit location in the H1 using the repository's city dictionary."""
+    names = next((v for k, v in DISTRICTS.items() if fold(k) == fold(city)), [])
+    text = fold(title)
+    hits = []
+    for name in names:
+        pattern = r"\b" + re.escape(fold(name)) + r"\b"
+        for match in re.finditer(pattern, text):
+            prefix = text[max(0, match.start()-40):match.start()]
+            if re.search(r"proche|pres de|proximite|a cote|vue sur", prefix):
+                continue
+            hits.append((match.start(), match.end(), name))
+    # Haut Founty is more specific than its nested token Founty.
+    hits = [h for h in hits if not any(o[0] <= h[0] and o[1] >= h[1] and o[1]-o[0] > h[1]-h[0] for o in hits)]
+    names = {h[2] for h in hits}
+    return names.pop() if len(names) == 1 else None
 
 def canonical(raw):
     if not isinstance(raw, str) or any(ord(c) < 32 for c in raw):
@@ -90,9 +109,18 @@ class Page(HTMLParser):
         self.grid_label = []
         self.grid_value = []
         self.grid_fields = []
+        self.current_prices = []
+        self.current_currency = []
+        self.primary_rating_prices = []
+        self.primary_rating_currency = []
 
     def handle_starttag(self, tag, attrs):
         a = dict(attrs)
+        current_price = any(b.get("item-prop") == "price" for _, b in self.stack)
+        if current_price and a.get("data-price"):
+            self.current_prices.append(number(a["data-price"]))
+        if a.get("id") == "avis-container" and a.get("data-prix"):
+            self.primary_rating_prices.append(number(a["data-prix"]))
         if tag == "div" and {"row", "bg-body-tertiary"}.issubset(set((a.get("class") or "").split())):
             self.grid_label, self.grid_value = [], []
         if tag == "dt":
@@ -135,6 +163,10 @@ class Page(HTMLParser):
                 break
 
     def handle_data(self, data):
+        if any(a.get("item-prop") == "price" for _, a in self.stack) and any("data-currency-symbol" in a for _, a in self.stack):
+            self.current_currency.append(clean(data))
+        if any(a.get("id") == "avis-container" for _, a in self.stack) and any("data-currency-symbol" in a for _, a in self.stack):
+            self.primary_rating_currency.append(clean(data))
         if self.script:
             self.script_parts.append(data)
             return
@@ -347,7 +379,55 @@ def extract(html, url):
                 out["type"] = v
                 out["preuves"]["type"] = "jsonld:@type"
     title = clean(" ".join(p.headline))
+    # Retain the small primary heading for later parser corrections without refetching.
+    if title:
+        out["source_title"] = title
     text = clean(" ".join(p.primary))
+    if target[0] == "agenz.ma":
+        bound = [n for n in nodes if n.get("@type") == "RealEstateListing" and n.get("url") == url]
+        if len(bound) == 1:
+            # The source's current-price scope excludes crossed-out prices and related cards.
+            prices = set(p.current_prices) - {None}
+            currencies = {v for v in p.current_currency if v}
+            if len(prices) == 1 and currencies == {"DH"}:
+                out.update(prix=prices.pop(), devise="MAD")
+                out["preuves"]["prix"] = "agenz:current-item-prop-price:DH"
+            elif not prices:
+                rating_prices = set(p.primary_rating_prices) - {None}
+                rating_currencies = {v for v in p.primary_rating_currency if v}
+                if len(rating_prices) == 1 and rating_currencies == {"DH"}:
+                    out.update(prix=rating_prices.pop(), devise="MAD")
+                    out["preuves"]["prix"] = "agenz:primary-avis-container:data-prix:DH"
+            for n in nodes:
+                if n.get("@type") != "BreadcrumbList":
+                    continue
+                items = n.get("itemListElement", [])
+                property_items = [i.get("item") for i in items if isinstance(i.get("item"), dict) and i["item"].get("url") == url]
+                if len(property_items) != 1:
+                    continue
+                prop = property_items[0]
+                category = TYPES.get(fold(prop.get("type")))
+                if category:
+                    out["type"] = category
+                    out["preuves"]["type"] = "agenz:bound-breadcrumb-property.type"
+                path = urlsplit(url).path.split("/")
+                if len(path) != 7:
+                    continue
+                for item in items:
+                    item_url = item.get("item")
+                    if not isinstance(item_url, str):
+                        continue
+                    if item_url == "https://agenz.ma/" + path[1] + "/acheter/" + path[3]:
+                        out["ville"] = clean(item.get("name"))
+                        out["preuves"]["ville"] = "agenz:bound-breadcrumb.city.name"
+                    if item_url == "https://agenz.ma/" + path[1] + "/acheter/" + "/".join(path[3:6]):
+                        out["quartier"] = clean(item.get("name"))
+                        out["preuves"]["quartier"] = "agenz:bound-breadcrumb.district.name"
+                area = number(prop.get("floorSize"))
+                explicit = {number(v) for v in re.findall(r"(\d+(?:[.,]\d+)?)\s*m[²2]\b", bound[0].get("abstract", ""))}
+                if area and explicit == {area}:
+                    out["superficie"] = area
+                    out["preuves"]["superficie"] = "agenz:bound-breadcrumb.floorSize:abstract-m2-confirmed"
     if target[0] == "1immo.ma":
         # Only descriptions belonging to this exact listing, never related cards.
         descriptions = []
@@ -372,6 +452,11 @@ def extract(html, url):
             if len(districts) == 1:
                 out["quartier"] = districts.pop()
                 out["preuves"]["quartier"] = "1immo:bound-description:explicit-quartier"
+        if not out.get("quartier") and out.get("ville"):
+            district = title_district(title, out["ville"])
+            if district:
+                out["quartier"] = district
+                out["preuves"]["quartier"] = "1immo:h1:repository-city-district-dictionary"
         if not re.fullmatch(r"/[^/]+-\d+", urlsplit(url).path):
             out["erreur"] = "not_detail_url"
         areas = {number(v) for k, v in p.grid_fields if fold(k) == "surface (m2)"}
@@ -631,7 +716,15 @@ def discover(client, config, max_maps=30):
 def atomic_json(path, obj):
     temp = path.with_suffix(path.suffix + ".tmp")
     temp.write_text(json.dumps(obj, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    temp.replace(path)
+    for attempt in range(5):
+        try:
+            temp.replace(path)
+            break
+        except PermissionError:
+            # Windows readers/antivirus can briefly hold the destination open.
+            if attempt == 4:
+                raise
+            time.sleep(0.1 * (2 ** attempt))
 
 def export(db, out, now, target, stats):
     accepted, rejected, seen = [], [], set()
@@ -667,6 +760,7 @@ def main():
     parser.add_argument("--max-details", type=int, default=60)
     parser.add_argument("--target", type=int, default=200_000)
     parser.add_argument("--only-unseen", action="store_true", help="Discover new URLs without re-fetching stored observations; rejected rows are reviewed separately")
+    parser.add_argument("--skip-verified", action="store_true", help="Reuse complete observations still verified within 24 hours; re-fetch incomplete and expired observations")
     parser.add_argument("--input", type=Path, help="Reviewed extracted observations JSON; replays the sieve without network")
     args = parser.parse_args()
     if args.max_details < 1 or args.target < 1:
@@ -698,6 +792,10 @@ def main():
                 if args.only_unseen:
                     existing = {row[0] for row in db.execute("SELECT url FROM observations")}
                     urls = [url for url in urls if url not in existing]
+                if args.skip_verified:
+                    ready = {url for url, raw in db.execute("SELECT url,payload FROM observations") if not sieve(json.loads(raw), datetime.now(timezone.utc))}
+                    stats["reused_live_verified"] = stats.get("reused_live_verified", 0) + sum(url in ready for url in urls)
+                    urls = [url for url in urls if url not in ready]
                 for url in urls[:source_limit]:
                     row = {"url": url, "run_id": stats["run_id"]}
                     try:
