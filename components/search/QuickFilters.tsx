@@ -43,7 +43,9 @@ export function QuickFilters({ filters, cities, propertyTypes, onChange, onReset
   );
 
   const activeCount =
+    (filters.transactionType !== "all" ? 1 : 0) +
     (filters.city !== "all" ? 1 : 0) +
+    (filters.neighborhood && filters.neighborhood !== "all" ? 1 : 0) +
     (filters.minBudget ? 1 : 0) +
     (filters.maxBudget ? 1 : 0) +
     (filters.minSurface ? 1 : 0) +
@@ -106,26 +108,40 @@ export function QuickFilters({ filters, cities, propertyTypes, onChange, onReset
       </div>
 
       <div data-premium-quickfilters-row role="group" aria-label="Filtres rapides" className="premium-quickfilters-row">
-        <button type="button" data-quickfilter="all" aria-pressed={filters.transactionType === "all"} onClick={() => setTransaction("all")} className="premium-quickfilter-chip">
+        <button type="button" data-quickfilter="all" aria-pressed={filters.transactionType === "all"} onClick={() => setTransaction("all")} className="premium-quickfilter-chip !min-h-[44px]">
           <Home size={17} strokeWidth={2.1} aria-hidden="true" />
           <span>Tous</span>
         </button>
-        <button type="button" data-quickfilter="buy" aria-pressed={filters.transactionType === "buy"} onClick={() => setTransaction("buy")} className="premium-quickfilter-chip">
+        <button type="button" data-quickfilter="buy" aria-pressed={filters.transactionType === "buy"} onClick={() => setTransaction("buy")} className="premium-quickfilter-chip !min-h-[44px]">
           <Tag size={17} strokeWidth={2.1} aria-hidden="true" />
           <span>À vendre</span>
         </button>
-        <button type="button" data-quickfilter="rent" aria-pressed={filters.transactionType === "rent"} onClick={() => setTransaction("rent")} className="premium-quickfilter-chip">
+        <button type="button" data-quickfilter="rent" aria-pressed={filters.transactionType === "rent"} onClick={() => setTransaction("rent")} className="premium-quickfilter-chip !min-h-[44px]">
           <KeyRound size={17} strokeWidth={2.1} aria-hidden="true" />
           <span>À louer</span>
         </button>
-        <button type="button" data-quickfilter="price" aria-expanded={showFilters} onClick={() => setShowFilters(true)} className="premium-quickfilter-chip">
+        <button type="button" data-quickfilter="price" aria-expanded={showFilters} onClick={() => setShowFilters(true)} className="premium-quickfilter-chip !min-h-[44px]">
           <span>Prix</span><ChevronDown size={14} strokeWidth={2.4} aria-hidden="true" />
         </button>
-        <button type="button" data-quickfilter="filters" aria-expanded={showFilters} onClick={() => setShowFilters(true)} className="premium-quickfilter-chip">
+        <button type="button" data-quickfilter="filters" aria-expanded={showFilters} onClick={() => setShowFilters(true)} className="premium-quickfilter-chip !min-h-[44px]">
           <span>Filtres</span><ChevronDown size={14} strokeWidth={2.4} aria-hidden="true" />
           {activeCount > 0 ? <span className="premium-quickfilter-count">{activeCount}</span> : null}
         </button>
       </div>
+
+      {filters.minBudget ? (
+        <div data-search-active-min-budget className="flex items-center gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <button
+            type="button"
+            onClick={() => onChange({ ...filters, minBudget: "" })}
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border/20 bg-surface px-2.5 py-1 text-[11px] font-bold text-foreground/75 transition hover:border-bronze-500/35 hover:text-foreground"
+            aria-label="Retirer le budget minimum"
+          >
+            Min {Number(filters.minBudget).toLocaleString("fr-FR")} DH
+            <X size={10} strokeWidth={2.6} aria-hidden="true" />
+          </button>
+        </div>
+      ) : null}
 
       <div id="advanced-search-filters" data-search-advanced-filters className={`${showFilters ? "sm:block" : "sm:hidden"} hidden ${ui.surface} p-3`}>
         <div className="mb-3">{compactTransactionSelector}</div>
