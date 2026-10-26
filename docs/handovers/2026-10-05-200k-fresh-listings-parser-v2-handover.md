@@ -514,3 +514,19 @@ CI sitemap [38267638287](https://github.com/hraaaaf/Akarfinder/actions/runs/3826
 ## Validation principale et source MarocImmo — 12 octobre 2026
 
 CI tamis [38267182404](https://github.com/hraaaaf/Akarfinder/actions/runs/38267182404) SUCCESS, artifact 11754439849 vérifié : **9 745 IDs passés au tamis ; 7 044 candidats de snapshot ; 2 701 quarantaines**, 0 DB/publication, 59 incohérences Domio transaction route/slug dont 8 bloquées en supplément. Kaynly (run 38264386620 SUCCESS) : 18 URL publiques, 4 liens Mubawab absents du registre, non validés en fiches. MarocImmo sitemap run 38267638287 SUCCESS : 3 936 URL en quatre langues, 517 fiches françaises uniques ; détails run 38268370624 SUCCESS : 12/12 HTTP200 et prix structuré MAD, 0 quatre champs structurés stricts ; shape run 38269150499 SUCCESS : 11/12 descriptions de fiche incluent une surface étiquetée, mainEntity à auditer. Parser fallback uniquement sur la description du JSON-LD primaire, en CI [workflow MarocImmo Primary Details](https://github.com/hraaaaf/Akarfinder/actions/workflows/marocimmo-detail-evidence-v1.yml) ; premier essai rouge par erreur de substitution code, corrigée sur HEAD 3f1023f ; résultat du dernier run à vérifier. Next : lire artifact du dernier run, perfectionner le seul champ ayant une preuve non ambiguë, ne jamais publier avant activité/date/duplicate.
+
+
+## Reprise 2026-10-26 — FeenWay canari 100, source-check exécuté
+
+**Source canonique du lot** : [AKARFINDER_FEENWAY_CANARI100_SOURCE_CHECK_2026-10-26.md](../data/AKARFINDER_FEENWAY_CANARI100_SOURCE_CHECK_2026-10-26.md), commit produit `1fc20a1aec5af79a2cf5bc6f0916e38a5a79d880`.
+
+- **100/100** fiches FeenWay publiques lues ; **100/100** liens vers une origine (Mubawab 42, Avito 40, Yakeey 8, Agenz 5, Sarouty 3, Masaken 2).
+- Vérification live des **100 URL d'origine** : **96** pages retournées, **85** final URLs avec conservation de la partie numérique de l'identifiant source ; **11** redirections vers catalogues (false positive si on compte HTTP200), **4** échecs (2 timeouts Sarouty, 404 + bot_blocked Yakeey). Aucune tentative de contournement.
+- Rapprochement du ledger exact artifact `11675834864` (SHA256 ZIP `675d6cbe2984687853172d9134ea7bd82f1df7da12f3820dad610be98f41873b`) : **3** identifiants Mubawab déjà connus ; 1 programme `pa:` exclu ; bilan **81** identifiants individuels *nouveaux relativement au seul ledger* et à identité numérique conservée, mais tous statut `review`. **0 certifié fresh/available/physical unique/reuse-rights**.
+- Source prix trompeuse : FeenWay `236104` « 800K DH/mois » alors que l'annonce Avito distingue le pas-de-porte ; cas à rejeter du calcul des loyers avant interprétation.
+- Source surface : FeenWay `236186` expose 360m² tandis que texte distingue terrain 2500m² et surfaces bâties/habitables ; ne pas fusionner ces concepts.
+- `/pa/` program `185869` n'est pas un bien individuel certifié ; une date « détectée » FeenWay ne certifie pas la fraîcheur de l'annonce (Sarouty `170553` a `published_date=2025-10-28` sur la page source).
+- Gel `226286` / artifact `10910779576` : **404 vérifié le 2026-10-26**. Les **81** n'ont pas pu être confrontés au corpus entier historique. Aucun comptage de nouveaux biens AkarFinder déclaré.
+- Test offline de partition du lot : `81 + 3 + 1 + 11 + 4 == 100`, 100 identifiants FeenWay distincts, 100 identifiants sources distincts ; preuves primaires consignées. Pas de CI produit déclenchée pour ce lot, aucune DB, aucun Vercel, aucun merge.
+
+**Next exact** : auditer le prix économique/transaction/surface construite/quartier **à la page primaire source** pour les 81, puis preuves de fraîcheur et dédup physique ; retrouver le freeze authentique autrement que par un artifact expiré ou maintenir la limite de comparaison. Seulement après, étendre le prélèvement. PR #1105 reste le lieu de reprise et ce fichier demeure canonique.
