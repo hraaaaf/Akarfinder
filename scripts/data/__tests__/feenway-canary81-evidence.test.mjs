@@ -8,7 +8,7 @@ import { resolve, dirname } from 'node:path';
 
 const dir = dirname(fileURLToPath(import.meta.url));
 const evidence = resolve(dir, '../../../docs/data/feenway-canary81-source-fivefields-2026-10-26.jsonl');
-const rows = readFileSync(evidence, 'utf8').trim().split(/\\r?\\n/).map(line => JSON.parse(line));
+const rows = readFileSync(evidence, 'utf8').trim().split(/\r?\n/).map(line => JSON.parse(line));
 const count = gate => rows.filter(row => row.quality_gate === gate).length;
 
 test('81 records, unique local and source identities', () => {
@@ -70,7 +70,7 @@ test('do not assert physical uniqueness from equal four-field signatures', () =>
   const sig = new Map();
   for (const x of rows.filter(row => row.source_five_fields_strict)) {
     const key = [x.source_city, x.source_district, x.transaction, x.source_price_mad, x.source_surface_m2]
-      .map(v => String(v).normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase().trim()).join('|');
+      .map(v => String(v).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()).join('|');
     sig.set(key, [...(sig.get(key) ?? []), x.feenway_id]);
   }
   assert.deepEqual([...sig.values()].filter(g => g.length > 1), []);
