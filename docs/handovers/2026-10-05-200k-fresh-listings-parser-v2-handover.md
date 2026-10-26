@@ -530,3 +530,6 @@ CI tamis [38267182404](https://github.com/hraaaaf/Akarfinder/actions/runs/382671
 - Test offline de partition du lot : `81 + 3 + 1 + 11 + 4 == 100`, 100 identifiants FeenWay distincts, 100 identifiants sources distincts ; preuves primaires consignées. Pas de CI produit déclenchée pour ce lot, aucune DB, aucun Vercel, aucun merge.
 
 **Next exact** : auditer le prix économique/transaction/surface construite/quartier **à la page primaire source** pour les 81, puis preuves de fraîcheur et dédup physique ; retrouver le freeze authentique autrement que par un artifact expiré ou maintenir la limite de comparaison. Seulement après, étendre le prélèvement. PR #1105 reste le lieu de reprise et ce fichier demeure canonique.
+
+
+**Preuve ligne à ligne de ce lot** : [JSONL FeenWay canari 100 source-checked](../data/feenway-canary100-source-checked-2026-10-26.jsonl), 100 lignes relues directement dans GitHub, 81 review hors ledger, 3 review déjà connues, 11 redirections catalogue, 4 erreurs source, 1 programme ; `publishable_certified=false` sur 100/100. SHA blob GitHub `474053b29d4469cf18fca082e4c39730b724f6f2` au dernier contrôle ; commit `57802d9e7f603353a9c4ed9f94d119c74d163d6c`. Ne pas confondre ce registre avec un inventaire actif.
