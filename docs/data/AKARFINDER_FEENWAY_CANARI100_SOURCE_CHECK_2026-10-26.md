@@ -50,3 +50,8 @@
 5. Tamis conservateur + tests et certificat de fraîcheur/disponibilité/republishing ; aucun import/publication avant gates.
 
 **Artifact JSONL annoté** : `akarfinder_feenway_canari100_source_checked_2026-10-26.jsonl` — SHA256 `140fa1442abc276b2d3a53b8f3da327229554df7444ecb20c8aa17bcceb14c09`. L'état `source_numeric_id_in_url` ne prouve ni offre active ni annonces exploitables ; `publication_candidate_eligible=false` pour les 100 enregistrements.
+### Registre machine-readable vérifié après le rapport
+
+- [feenway-canary100-source-checked-2026-10-26.jsonl](feenway-canary100-source-checked-2026-10-26.jsonl) — 100 lignes validées par relecture GitHub, 81 review hors ledger, 3 review connues, 11 quarantaine catalogue, 4 source indisponible, 1 programme. Toutes les lignes ont `publishable_certified=false`.
+- Commit registre : `57802d9e7f603353a9c4ed9f94d119c74d163d6c`.
+- Les statuts `review_not_in_9_artifact_ledger` et `source_numeric_id_in_url` ne sont **pas** des équivalents de disponibilité, conformité juridique ni 5 champs certifiés sur page primaire.
