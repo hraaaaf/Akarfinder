@@ -568,3 +568,20 @@ Donc **49/81 concordances des nombres et champs**, **47/81 sans anomalie économ
 Contrôle supplémentaire : **49 signatures normalisées** ville/quartier/prix/surface face aux **7 610 registres quatre champs** du ledger neuf artifacts (9 745 ID) => **0 collision exacte** ; ce signal ne démontre pas unicité physique. Le gel 226K reste inaccessible. Rapport : `docs/data/AKARFINDER_FEENWAY_CANARI81_FIVEFIELDS_2026-10-26.md`.
 
 Test Node de gardes-fous économiques ajouté et workflow push-only read-only présent ; CI non confirmée par run exact (le connecteur retourne seulement les anciens workflow jobs connus, pas une liste de runs push). **Prochaine action** : état CI seulement si run exact identifiable, puis preuves disponibilité/date/prix-période des 47 ; revue du stock servable / dédup physique ; passage `eligible` interdit sans preuve indépendante et droits.
+
+## FeenWay 47 — archive Neon 151 900 et CI verte — 26 octobre 2026
+
+**Goal technique atteint avec preuve** : les **47** références à cinq champs sans anomalie économique explicite ont été rapprochées en `SELECT` de la DB `AkarFinder` sur branche Neon archivée `br-cold-mouse-b2a50yaa`, projet `ancient-violet-43534870`, **sans aucune écriture DB / Vercel**.
+
+**Nouvelle preuve d'inventaire** : archive = **151 900 `property_listings` + 151 900 `listing_sources`**, **44 427** fiches à ville/quartier/prix/surface présents, **0** `property_clusters`. Plus de **98 525** `last_seen_at=NULL`. Toutes les `listing_sources.is_active=true` viennent du snapshot et **ne sont pas des preuves d'activité actuelle**. Sur branche Neon **production**, base `AkarFinder` : **0 table applicative** (ne pas comparer ce zéro à un compte historique). Les 151 900 ne remplacent pas le gel de 226 286 URL.
+
+**Dédup 47** : **0 identifiant source ou URL exacte** correspondant à l'archive ; **37/47** similaires même ville/transaction, prix ±5 % et surface ±5 % ; **10/47** aussi même quartier normalisé ; **6/47** aussi prix ±2 % et surface ± max(2m²,2 %). Six IDs suspects `182418,183798,210084,212651,221904,232862`. Anciens exemples montrent surtout des appartements aux titres génériques ; aucune identité physique confirmée ou fusion. Quatre autres similaires au quartier `169266,199901,226033,236014`; **10** sans signature comparable sous ces seuils, pas de garantie anti-doublon.
+
+**Preuves exactes GitHub :**
+- `docs/data/feenway-canary47-neon-historical-overlap-2026-10-26.jsonl` — 47 lignes classées en review, aucun droit ni disponibilité certifiés.
+- `docs/data/AKARFINDER_FEENWAY47_NEON_ARCHIVE_AUDIT_2026-10-26.md` — schéma, méthodologie, chiffres et blocages.
+- `scripts/data/__tests__/feenway-canary47-neon-evidence.test.mjs` et `scripts/data/__tests__/feenway-canary81-evidence.test.mjs` — **12 tests PASS / 0 FAIL** sur le run GitHub **[40417651566](https://github.com/hraaaaf/Akarfinder/actions/runs/40417651566) SUCCESS**, HEAD testé `342060c9dca92b0b96d724148162432cab6136a8`. Job/step tests confirmés dans logs.
+
+**Racine CI historique (indépendante)** : 3 workflows parser échecs sur « Fetch canonical freeze » ; logs run `40413409022` donnent explicitement **`curl: (22) HTTP 410`** sur l'artifact `10910779576` des 226 286 URL. Le gel expiré n'a **pas** été remplacé ni restauré. Ne pas déclarer ces workflows réparés.
+
+**Next exact** : exploiter en `review` les dix suspects même quartier pour dédup physique seulement sur preuve forte (identifiant interportail/agency/ref, localisation précise ou images autorisées) ; vérifier date source, loyer/période, véritable disponibilité et droits sur 47. Réparer séparément l'artefact historique 226K depuis source authentifiée, jamais par substitution de la branche Neon. **0** annonce `eligible` tant que ces gates sont ouverts. PR #1105 non mergée ; aucun déploiement.
