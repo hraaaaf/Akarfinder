@@ -533,3 +533,25 @@ CI tamis [38267182404](https://github.com/hraaaaf/Akarfinder/actions/runs/382671
 
 
 **Preuve ligne à ligne de ce lot** : [JSONL FeenWay canari 100 source-checked](../data/feenway-canary100-source-checked-2026-10-26.jsonl), 100 lignes relues directement dans GitHub, 81 review hors ledger, 3 review déjà connues, 11 redirections catalogue, 4 erreurs source, 1 programme ; `publishable_certified=false` sur 100/100. SHA blob GitHub `474053b29d4469cf18fca082e4c39730b724f6f2` au dernier contrôle ; commit `57802d9e7f603353a9c4ed9f94d119c74d163d6c`. Ne pas confondre ce registre avec un inventaire actif.
+
+## FeenWay 81 — 26 octobre 2026 : cinq champs à la source (lecture seule)
+
+**Goal partiel atteint avec preuve** : canari technique de 81 candidates FeenWay, toutes absentes du seul ledger neuf lots, vérifiées individuellement par relecture de leur site d'origine et confrontées aux informations FeenWay.
+
+- **49/81** références : identifiant original conservé, quatre champs structurés ville/quartier/prix/surface et transaction, avec prix/surface/ville cohérents avec FeenWay. **État `review`**, pas `eligible`.
+- **27/81** : incomplet, géographie non strictement structurée ou informations divergentes.
+- **4/81** : pages d'origine Yakeey bloquées/inaccessibles, aucune tentative de contournement ; quarantaine.
+- **1/81** : annonce Avito avec **pas-de-porte 800K DH** présentée par FeenWay comme loyer mensuel ; revue économique obligatoire.
+- **53/81** : cinq champs techniquement isolés sur les portails d'origine, mais seulement 49 concordent avec FeenWay. **77/81** identifiants finaux conservés ; 35 métadonnées `published_date` disponibles, dont 34 à moins de 30 jours (17 à moins de 7 jours) : ces dates ne sont **pas** une certification d'offre active.
+- Cas précis : Mubawab `175135` source **1,9M DH/110m²** contre FeenWay **2M DH/100m²** ; Mubawab `175793` source **25K DH/190m²** contre FeenWay **19K DH/130m²** ; Avito `235644` surface source **130m²** contre FeenWay **100m²** ; `210589` localité divergente.
+- Pas de doublon dans les **signatures faibles identiques** des 53 références complètes, **sans aucune preuve d'unicité physique**.
+- **0** certification de disponibilité/fraîcheur commerciale/droit de republication/unicité physique ; 0 DB, 0 import, 0 Vercel, 0 merge. Impossible de réconcilier avec le gel 226K : artifact `10910779576` toujours 404. **Ne pas appeler les 49 « 49 annonces commerciales nouvelles ».**
+
+**Preuves GitHub / fichiers** :
+- `docs/data/feenway-canary81-origin-input-2026-10-26.jsonl` (81 URLs originales, données minimisées).
+- `docs/data/feenway-canary81-source-fivefields-2026-10-26.jsonl` (81 lignes de preuve par champ, 49 concordantes, 32 non promues).
+- `docs/data/AKARFINDER_FEENWAY_CANARI81_FIVEFIELDS_2026-10-26.md` (méthode, chiffres et anomalies).
+- `scripts/data/__tests__/feenway-canary81-evidence.test.mjs` (7 tests Node de cohérence de registre), `.github/workflows/feenway-canary81-evidence-ci.yml` (workflow push-only, read-only). Onze assertions de données ont passé dans l'analyse ; **CI GitHub non encore prouvée comme terminée** et doit être vérifiée sur un run exact.
+
+**Next exact** : vérifier état CI pour le run exact si identifiable ; si échec, corriger ; après contrôle, classifier en sous-lots les 49 concordances selon date réelle/activité/disponibilité documentées, mesurer les collisions contre une archive 226K authentifiée ou un stock servable read-only, poursuivre dédup conservatrice puis vérifier droits. Aucun passage en DB / `eligible` tant que ces gates restent ouverts.
+
