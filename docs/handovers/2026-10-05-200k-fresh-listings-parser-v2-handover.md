@@ -555,3 +555,16 @@ CI tamis [38267182404](https://github.com/hraaaaf/Akarfinder/actions/runs/382671
 
 **Next exact** : vérifier état CI pour le run exact si identifiable ; si échec, corriger ; après contrôle, classifier en sous-lots les 49 concordances selon date réelle/activité/disponibilité documentées, mesurer les collisions contre une archive 226K authentifiée ou un stock servable read-only, poursuivre dédup conservatrice puis vérifier droits. Aucun passage en DB / `eligible` tant que ces gates restent ouverts.
 
+
+### FeenWay — complément économique et dédup signature (26 octobre 2026)
+
+**Mise à jour sur les 49 concordances techniques** : deux correspondances numériques n'ont **pas** le même sens économique qu'un prix de vente ou un loyer mensuel exploitable :
+- `233683` Avito `58935222` : montant **16 500 DH/m²**, non prix total de l'appartement ;
+- `234551` Mubawab `a:8441029` : **250 DH/nuit**, non loyer mensuel.
+- `236104` Avito : pas-de-porte 800K DH ; **déjà** parmi les cas non concordants.
+
+Donc **49/81 concordances des nombres et champs**, **47/81 sans anomalie économique explicite connue**, **0/81 certifiée** fraîche, disponible, physiquement dédupliquée ou publiable. Les 47 restent `review`, pas une déclaration d'exploitabilité. Champs correctifs `explicit_economic_semantic_flag`, `economic_interpretation_certified=false` dans le JSONL canonique.
+
+Contrôle supplémentaire : **49 signatures normalisées** ville/quartier/prix/surface face aux **7 610 registres quatre champs** du ledger neuf artifacts (9 745 ID) => **0 collision exacte** ; ce signal ne démontre pas unicité physique. Le gel 226K reste inaccessible. Rapport : `docs/data/AKARFINDER_FEENWAY_CANARI81_FIVEFIELDS_2026-10-26.md`.
+
+Test Node de gardes-fous économiques ajouté et workflow push-only read-only présent ; CI non confirmée par run exact (le connecteur retourne seulement les anciens workflow jobs connus, pas une liste de runs push). **Prochaine action** : état CI seulement si run exact identifiable, puis preuves disponibilité/date/prix-période des 47 ; revue du stock servable / dédup physique ; passage `eligible` interdit sans preuve indépendante et droits.
