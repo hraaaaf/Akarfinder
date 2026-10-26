@@ -47,3 +47,18 @@ Source des 49 concordances : Avito **29**, Mubawab **13**, Agenz **4**, Yakeey *
 - Geler les **49** concordantes dans `review`, pas `eligible`.
 - Next exact : certification d'ancienneté/activité à partir de preuves propres à chaque annonce (quand disponibles), puis rapprochement des 49 avec le stock réellement servable / archive historique authentifiée, dédup conservatrice, vérification du droit de réutilisation et test de cohérence avant décision d'import.
 - CI : statut à vérifier sur le commit de tests ; pas de conclusion « vert » non démontrée.
+
+## Contrôle économique correctif et signatures du ledger — 26 octobre 2026
+
+**Deux anomalies économiques supplémentaires ont été confirmées sur les pages sources**, alors que leurs nombres étaient identiques à FeenWay :
+
+1. FeenWay `233683`, [Avito `58935222`](https://www.avito.ma/fr/marjane/appartements/%C3%80_VENDRE___Appartement_neuf_%C3%A0_Marjane_Tanger_58935222.htm) : **16 500 DH/m²**, pas un prix d'acquisition total de 16 500 DH ; la fiche source décrit 125m². `price_is_per_square_meter`.
+2. FeenWay `234551`, [Mubawab `a:8441029`](https://www.mubawab.ma/fr/a/8441029/bel-appartement-%C3%A0-louer-%C3%A0-al-mahamid-superficie-totale-56-m%C2%B2-machine-%C3%A0-laver) : **250 DH de location quotidienne**, pas un loyer mensuel de 250 DH. `price_is_daily_short_stay`.
+
+Le cas `236104` pas-de-porte (800K DH) était déjà exclu des 49 concordances techniques.
+
+**Chiffres après ces preuves** : **49 concordances numériques / 81**, mais seulement **47 sans anomalie économique explicite déjà identifiée**. « Sans anomalie explicite » ne veut pas dire type économique vérifié ; **zéro** candidat commercialement éligible. Les deux restent dans le compteur historique des **49 concordances numériques** pour auditabilité, avec champ `explicit_economic_semantic_flag` non nul et `economic_interpretation_certified=false`.
+
+**Croisement signatures faible avec 9 lots AkarFinder** : 49 quadruplets normalisés ville/quartier/prix/surface comparés aux **7 610 lignes possédant quatre champs complets** du registre immuable **11675834864** (9 745 IDs totaux). **0 égalité exacte** (protocole local read-only, Unicode/accents/casse/ponctuation normalisés), ce qui ne prouve ni absence de duplication physique, ni identité commerciale active. La proximité des prix, images et descriptions n'a pas été comparée. **Archive large de 226K URL inaccessible, 404**.
+
+**Tests** : test Node de cohérence enrichi d'un contrôle explicite des trois drapeaux économiques ; aucune CI présentée comme verte avant preuve du run. **Next exact** : tenir les 47 dans `review` ; auditer période réelle du montant, statut de l'annonce et fraîcheur commerciale, dédup physique sans fusion automatique puis droits de réutilisation.
