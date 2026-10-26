@@ -46,3 +46,7 @@ Les **29** métadonnées de date source disponibles au sein des 47 ne constituen
 Sur les 47 dossiers techniques, **29** fiches d'origine retournent une métadonnée `published_date` : **14** dans les sept derniers jours, **28** dans les trente derniers jours et **1** plus ancienne (Sarouty `170553`, datée du **28 octobre 2025**). Pour les **18 autres**, aucune date certifiable n'est produite. Ce sont des **métadonnées observées**, ni preuve d'offre toujours disponible, ni garantie de date de première publication, ni validation de droits.
 
 Répartition des 47 : Avito **28**, Mubawab **12**, Agenz **4**, Yakeey **2**, Sarouty **1**. Les 6 suspects de forte similitude comprennent **3** dossiers avec métadonnée datée ; leur date ne suffit pas à résoudre le doublon. **Aucune promotion `eligible`**.
+
+## Contrôle additionnel des références de deux suspects (sans fusion)
+
+Fiches primaires Agenz `182418` et `232862` : références d'agence observées respectivement `CMN-HA-2206` (Oulfa) et `RAK-ME-1044` (Prestigia). Sur **six** fiches historiques Mubawab dont prix/surface/quartier sont très proches (`property_listings.id = 16117,127246,137197,120483,125868,130521`), aucune de ces références n'apparaît dans `description_snippet`. Résultat **négatif limité à ce champ**, pas preuve que les biens sont différents ; aucune photo, adresse exacte ou identifiant interportail commun certifié. **0 cluster créé, aucune fusion**.
