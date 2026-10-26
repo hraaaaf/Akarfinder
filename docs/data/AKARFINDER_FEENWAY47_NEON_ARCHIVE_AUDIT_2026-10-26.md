@@ -40,3 +40,9 @@ Les **29** métadonnées de date source disponibles au sein des 47 ne constituen
 - **Next exact** : preuve forte de doublon physique sur les dix suspects même quartier ; audit de disponibilité commercialement datée et du droit d'exploitation des 47, avec période économique correcte ; réparation **distincte** de la dépendance CI au freeze 226K via snapshot/provenance et tests d'intégrité, pas substitution silencieuse des 151 900 anciens enregistrements.
 
 **Fichier canonique** : `docs/handovers/2026-10-05-200k-fresh-listings-parser-v2-handover.md`.
+
+## Métadonnées temporelles, séparation stricte des preuves
+
+Sur les 47 dossiers techniques, **29** fiches d'origine retournent une métadonnée `published_date` : **14** dans les sept derniers jours, **28** dans les trente derniers jours et **1** plus ancienne (Sarouty `170553`, datée du **28 octobre 2025**). Pour les **18 autres**, aucune date certifiable n'est produite. Ce sont des **métadonnées observées**, ni preuve d'offre toujours disponible, ni garantie de date de première publication, ni validation de droits.
+
+Répartition des 47 : Avito **28**, Mubawab **12**, Agenz **4**, Yakeey **2**, Sarouty **1**. Les 6 suspects de forte similitude comprennent **3** dossiers avec métadonnée datée ; leur date ne suffit pas à résoudre le doublon. **Aucune promotion `eligible`**.
