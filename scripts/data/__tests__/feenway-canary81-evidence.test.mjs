@@ -76,3 +76,15 @@ test('do not assert physical uniqueness from equal four-field signatures', () =>
   assert.deepEqual([...sig.values()].filter(g => g.length > 1), []);
   assert.ok(rows.every(x => x.physically_unique_verified === false));
 });
+
+
+test('explicit economic red flags never imply a monthly rent or full purchase price', () => {
+  const nightly = rows.find(x => x.feenway_id === 234551);
+  const unit = rows.find(x => x.feenway_id === 233683);
+  const keyMoney = rows.find(x => x.feenway_id === 236104);
+  assert.equal(nightly.explicit_economic_semantic_flag, 'price_is_daily_short_stay');
+  assert.equal(unit.explicit_economic_semantic_flag, 'price_is_per_square_meter');
+  assert.equal(keyMoney.explicit_economic_semantic_flag, 'pas_de_porte_not_monthly_rent');
+  assert.equal(rows.filter(x => x.quality_gate === 'review_source_5of5_matches_feenway' && !x.explicit_economic_semantic_flag).length, 47);
+  assert.ok(rows.every(x => x.economic_interpretation_certified === false && x.commercial_eligibility_certified === false));
+});
