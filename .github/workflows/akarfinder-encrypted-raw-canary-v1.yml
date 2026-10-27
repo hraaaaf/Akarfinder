@@ -12,11 +12,12 @@ permissions:
   contents: read
 jobs:
   capture:
-    name: Encrypted RAW canary, 40 FeenWay public URLs maximum
+    name: Encrypted RAW canary, FeenWay public RAW batch 2 (offset 40, count 40)
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
       AKAR_RAW_LIMIT: '40'
+      AKAR_RAW_OFFSET: '40'
       AKAR_RAW_INPUT: 'docs/data/feenway-next238-public-sitemap-sample-2026-10-27.jsonl'
     steps:
       - uses: actions/checkout@v4

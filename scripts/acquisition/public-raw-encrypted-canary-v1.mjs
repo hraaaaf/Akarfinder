@@ -62,7 +62,9 @@ export async function collectEncrypted(input,{folder,pem,fetcher=request,waiter=
 async function main(){
  const path=resolve(process.env.AKAR_RAW_INPUT||'docs/data/feenway-next238-origin-reconciled-neon-2026-10-27.jsonl');
  const rows=(await readFile(path,'utf8')).trim().split('\n');
- const targets=plan(rows,Number(process.env.AKAR_RAW_LIMIT||24));
+ const offset=Number(process.env.AKAR_RAW_OFFSET||0);
+ if(!Number.isSafeInteger(offset)||offset<0||offset>=rows.length)throw Error('invalid_raw_offset');
+ const targets=plan(rows.slice(offset),Number(process.env.AKAR_RAW_LIMIT||24));
  const pem=await readFile(resolve(dirname(fileURLToPath(import.meta.url)),'../../config/raw/akar_raw_public_2026-10-27.pem'),'utf8');
  console.log(JSON.stringify(await collectEncrypted(targets,{folder:resolve('.tmp/akar-encrypted-raw-canary'),pem})));
 }
