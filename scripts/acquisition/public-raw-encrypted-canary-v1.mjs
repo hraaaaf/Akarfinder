@@ -60,7 +60,7 @@ export async function collectEncrypted(input,{folder,pem,fetcher=request,waiter=
  return summary;
 }
 async function main(){
- const path=resolve('docs/data/feenway-next238-origin-reconciled-neon-2026-10-27.jsonl');
+ const path=resolve(process.env.AKAR_RAW_INPUT||'docs/data/feenway-next238-origin-reconciled-neon-2026-10-27.jsonl');
  const rows=(await readFile(path,'utf8')).trim().split('\n');
  const targets=plan(rows,Number(process.env.AKAR_RAW_LIMIT||24));
  const pem=await readFile(resolve(dirname(fileURLToPath(import.meta.url)),'../../config/raw/akar_raw_public_2026-10-27.pem'),'utf8');
