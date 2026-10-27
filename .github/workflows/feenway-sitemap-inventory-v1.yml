@@ -1,0 +1,33 @@
+name: FeenWay public sitemap discovery (read only)
+on:
+  push:
+    branches:
+      - data/200k-fresh-parser-v2
+    paths:
+      - scripts/acquisition/feenway-sitemap-inventory-v1.mjs
+      - scripts/data/__tests__/feenway-sitemap-inventory-v1.test.mjs
+      - .github/workflows/feenway-sitemap-inventory-v1.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inventory:
+    name: Six public sitemaps; no detail scraping
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Local safety tests
+        run: node --test scripts/data/__tests__/feenway-sitemap-inventory-v1.test.mjs
+      - name: Six public XML sources; fail closed
+        run: node scripts/acquisition/feenway-sitemap-inventory-v1.mjs --out=.tmp/feenway-sitemap-inventory-v1
+      - name: Save observation as evidence only
+        uses: actions/upload-artifact@v4
+        with:
+          name: feenway-sitemap-discovery
+          path: .tmp/feenway-sitemap-inventory-v1/
+          if-no-files-found: error
+          retention-days: 30
