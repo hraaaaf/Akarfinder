@@ -6,6 +6,8 @@ on:
     paths:
       - scripts/acquisition/feenway-primary-parser-v1.mjs
       - scripts/data/__tests__/feenway-primary-parser-v1.test.mjs
+      - scripts/data/__tests__/feenway-real-corpus-qa-v1.test.mjs
+      - scripts/data/fixtures/feenway-primary-real-minimal-v2.json
       - .github/workflows/feenway-primary-parser-v1.yml
 permissions:
   contents: read
@@ -19,4 +21,6 @@ jobs:
         with:
           node-version: '22'
       - name: Source-specific primary fields and fail-closed behavior
-        run: node --test scripts/data/__tests__/feenway-primary-parser-v1.test.mjs
+        run: |
+          node --test scripts/data/__tests__/feenway-primary-parser-v1.test.mjs
+          node --test scripts/data/__tests__/feenway-real-corpus-qa-v1.test.mjs
