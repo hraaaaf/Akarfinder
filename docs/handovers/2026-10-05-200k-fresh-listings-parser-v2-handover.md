@@ -589,3 +589,19 @@ Test Node de gardes-fous économiques ajouté et workflow push-only read-only pr
 ### 27 octobre 2026 — automatisation FeenWay à partir des six sitemaps
 
 Goal : inventaire dédupliqué read-only et échantillon stratifié 240 URL. Code `scripts/acquisition/feenway-sitemap-inventory-v1.mjs`, tests `scripts/data/__tests__/feenway-sitemap-inventory-v1.test.mjs`, workflow `.github/workflows/feenway-sitemap-inventory-v1.yml`, note `docs/data/AKARFINDER_FEENWAY_SITEMAP_INVENTORY_V1.md`. Extraction externe observe **au minimum 29 161 URL distinctes**, avec troncature possible, donc pas un total exhaustif ni un volume commercial. **Next** : vérifier run/artifact, filtrer le nouvel échantillon contre canari 100, contrôler source originale et doublons en lots, conserver review tant que fraîcheur/unicité/droits non prouvés. Aucun Vercel/DB/merge.
+
+### FeenWay / 54 161 URL et canari 238 — 27 octobre 2026
+
+**Goal / succès technique vérifié** : inventaire brut de six sitemaps publics FeenWay, **54 161 URL distinctes**, run read-only [40478471659](https://github.com/hraaaaf/Akarfinder/actions/runs/40478471659) **SUCCESS (5/5 tests)**, artifact [12721712627](https://github.com/hraaaaf/Akarfinder/actions/runs/40478471659/artifacts/12721712627), SHA256 ZIP `33b0466d73406893844247549d60cd08e96215eb4d28f1063f6c8c171194c60b`. Manifest 54 161 lignes et échantillon 240 contrôlés avec SHA256 : `fec482fc39ece6909bb5a46abc57e5372c16a6e7ef9e00810af6bfcf469d0d4b`, `274863a241bb54d327506c767b72b15d39700510b40861a9fbf1fc890f910fcc`. Artifact expire **26 novembre 2026**, ne pas confondre index et annonce commercialement exploitable.
+
+**Échantillon** : 240 URL réparties 40×6, 2 IDs déjà étudiés (`232862,235452`) exclus ; **238** nouvelles pages FeenWay consultées. **237** liens d'origine et identifiants sources retrouvés ; **1** sans source `186991`. **4** routes de programmes `pa:` (`185308,185871,218486,225951`) isolées. **2** ID sources déjà dans archive Neon AkarFinder de 151 900 fiches (`191671` Avito `57405312`, `220237`) ; **0 URL exacte ancienne**, **0 collision avec le canari 100**, **0 identifiant répété au sein des 237**. **231** références candidates par absence d'ID des snapshots vérifiés **uniquement**, toutes au statut `review_identity_absent_from_checked_snapshots`, **0 `eligible`**. Ni cinq champs sur page primaire, ni disponibilité, ni unicité physique, ni droits de republication certifiés.
+
+**Preuves GitHub** :
+- `docs/data/AKARFINDER_FEENWAY_54161_238_2026-10-27.md` rapport consolidé.
+- `docs/data/feenway-next238-origin-reconciled-neon-2026-10-27.jsonl` 238 lignes et statuts ;
+- `docs/data/feenway-next238-origin-discovery-part1-2026-10-27.jsonl` (80), `part2` (79), `part3` (79), et manifest d'échantillons `feenway-next238-public-sitemap-sample-2026-10-27.jsonl`.
+- `scripts/data/__tests__/feenway-canary238-origin-ledger.test.mjs` branché au workflow `.github/workflows/feenway-canary81-evidence-ci.yml`; **run [40480314641](https://github.com/hraaaaf/Akarfinder/actions/runs/40480314641) initialement QUEUED**, pas de succès présumé. CI sitemap 5/5 distincte déjà verte.
+
+**Incidents correctement isolés** : extraction initiale du premier 80 classait à tort `quarantine_no_origin` à cause d'une fonction URL indisponible dans l'orchestrateur ; test de témoin, correctif et remplacement intégral confirmés (79/80 liens). Prestataire ayant un plafond 150 URL/min, respecté ; aucun contournement.
+
+**Next exact** : vérifier CI run 40480314641 lorsqu'il démarre ; si rouge diagnostiquer et corriger. Ensuite qualifier les **231** candidates sur pages primaires (prix/unité/période, surface, ville, quartier, transaction), déduplication physique conservatrice contre archive Neon en `SELECT`, preuves activité et droits avant import. Ne pas substituer le gel historique 226 286 URL expiré. DB/Vercel/merge : aucun.
