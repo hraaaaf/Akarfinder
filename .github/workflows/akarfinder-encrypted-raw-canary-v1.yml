@@ -17,7 +17,7 @@ jobs:
     timeout-minutes: 10
     env:
       AKAR_RAW_LIMIT: '40'
-      AKAR_RAW_OFFSET: '40'
+      AKAR_RAW_OFFSET: '80'
       AKAR_RAW_INPUT: 'docs/data/feenway-next238-public-sitemap-sample-2026-10-27.jsonl'
     steps:
       - uses: actions/checkout@v4
