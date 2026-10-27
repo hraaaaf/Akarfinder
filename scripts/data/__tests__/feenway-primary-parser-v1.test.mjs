@@ -120,3 +120,21 @@ test('Sarouty canonical wrong-ID, arbitrary redirect and hostile original URL fa
   assert.equal(x.identity_verified,false);assert.equal(x.gate,'quarantine_identity');
  }
 });
+
+
+test('Mubawab compact MAD K/M price notation is parsed only in primary headings',()=>{
+ const base='https://www.mubawab.ma/fr/a/8399673/detail';
+ for(const [token,expected] of [['1,25M DH',1250000],['262,2K DH',262200],['12.500.000 MAD',12500000]]){
+  const x=parsePrimary({source:'mubawab.ma',identity:'a:8399673',original_url:base,final_url:base,title:'Appartement à vendre à Rabat',
+   text:'### '+token+'\n90m²\n### Agdal à Rabat\n#### Contacter l\u0027annonceur'});
+  assert.equal(x.price_mad,expected,token);assert.equal(x.surface_m2,90,token);assert.equal(x.eligible,false);
+ }
+});
+test('Malformed separated digits never silently become a MAD amount',()=>{
+ const base='https://www.mubawab.ma/fr/a/8399673/detail';
+ for(const token of ['1 2 3 DH','1,23,45 DH','12 34 567 DH']){
+  const x=parsePrimary({source:'mubawab.ma',identity:'a:8399673',original_url:base,final_url:base,title:'Appartement à vendre',
+   text:'### '+token+'\n90m²\n### Agdal à Rabat\n#### Contacter l\u0027annonceur'});
+  assert.equal(x.price_mad,null,token);assert.equal(x.eligible,false);
+ }
+});
