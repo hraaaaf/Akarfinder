@@ -8,12 +8,23 @@ const numeric = raw => {
   const s=clean(raw).trim();
   if(!/^\d[\d .,\s]*$/.test(s))return null;
   if(/[.,]\d{1,2}$/.test(s))return null;
+  const normalized=s.replace(/\s/g,'');
+  const groups=normalized.split(/[,.]/);
+  if(groups.length>1&&(groups[0].length>3||groups.slice(1).some(x=>x.length!==3)))return null;
+  const spaced=s.trim().split(/\s+/);
+  if(spaced.length>1&&(spaced[0].length>3||spaced.slice(1).some(x=>x.length!==3)))return null;
   const n=Number(s.replace(/[^\d]/g,''));
   return Number.isSafeInteger(n)&&n>0?n:null;
 };
 const amount = raw => {
-  const m=clean(raw).match(/^\s*(\d[\d .,\s]*?)\s*(?:DH|MAD)\s*$/i);
-  return m?numeric(m[1]):null;
+  const m=clean(raw).match(/^\s*(\d[\d .,\s]*?)\s*([mMkK])?\s*(?:DH|MAD)\s*$/i);
+  if(!m)return null;
+  if(m[2]){
+    const v=Number(m[1].replace(/\s/g,'').replace(',','.'));
+    const n=Math.round(v*(m[2].toLowerCase()==='m'?1000000:1000));
+    return Number.isFinite(n)&&n>=200&&n<=1000000000?n:null;
+  }
+  return numeric(m[1]);
 };
 const area = raw => {
   const m=clean(raw).match(/(?:^|[^\d])(\d[\d .,]{0,18})\s*m(?:²|2)(?![\p{L}\d])/iu);
@@ -80,10 +91,10 @@ function verify(source,identity,original,final) {
 }
 function parseMubawab(text,title){
   // Header spans between first displayed price and contact form; excludes related listings.
-  const b=region(text,/^###\s*[\d .,]+\s*(?:DH|MAD)\s*$/im,/^####\s*Contacter l'annonceur/im,3000);
-  const v=lines(b),prices=v.filter(x=>/^###\s*[\d .,]+\s*(?:DH|MAD)$/i.test(x)).map(x=>amount(x.replace(/^###\s*/,'')));
+  const b=region(text,/^###\s*[\d .,]+\s*[mMkK]?\s*(?:DH|MAD)\s*$/im,/^####\s*Contacter l'annonceur/im,3000);
+  const v=lines(b),prices=v.filter(x=>/^###\s*[\d .,]+\s*[mMkK]?\s*(?:DH|MAD)$/i.test(x)).map(x=>amount(x.replace(/^###\s*/,'')));
   const surfaces=[];
-  for(let i=0;i<v.length-1;i++)if(/^###\s*[\d .,]+\s*(?:DH|MAD)$/i.test(v[i]))surfaces.push(area(v[i+1]));
+  for(let i=0;i<v.length-1;i++)if(/^###\s*[\d .,]+\s*[mMkK]?\s*(?:DH|MAD)$/i.test(v[i]))surfaces.push(area(v[i+1]));
   const where=v.filter(x=>x.startsWith('### ')).map(x=>x.slice(4).trim()).find(x=>x&&!/^\d/.test(x));
   const loc=where?.match(/^(.+?)\s+à\s+(.+)$/i);
   const city=loc?.[2]?.trim()||(/^(?:Dar Bouazza|Casablanca|Rabat|Marrakech|Tanger|Fès|Agadir|Salé|Kénitra|Témara)$/i.test(where||'')?where:null);
@@ -92,23 +103,23 @@ function parseMubawab(text,title){
 function parseAvito(text,title){
   const b=region(text,/^#\s+[^\n]+/m,/^##\s*Description/im,3000);
   const v=lines(b);
-  const prices=unique(v.filter(x=>/^\d[\d .,]*\s*(?:DH|MAD)$/i.test(x)).map(amount));
+  const prices=unique(v.filter(x=>/^\d[\d .,]*\s*[mMkK]?\s*(?:DH|MAD)$/i.test(x)).map(amount));
   const a=v.find(x=>/^\d+\s*Surface totale$/i.test(x));
   const loc=b.match(/(?:^|\n)\s*([^\n,]{2,65}),\s*([^\n,]{2,65}?)il y a\s*\d+/i);
   const tx=/Categorie[^\n]{0,100}à louer/i.test(b)?'rent':/Categorie[^\n]{0,100}à vendre/i.test(b)?'sale':normType(title);
   return {price:prices,surfaces:unique([a?numeric(a.match(/^\d+/)[0]):null]),city:loc?.[2]?.trim()||null,district:loc?.[1]?.trim()||null,tx,period:/\b\/\s*mois\b|\bpar mois\b/i.test(b)?'month':null,basis:'total',block:b};
 }
 function parseYakeey(text,title){
-  const b=region(text,/^###\s*[\d .,]+\s*(?:DH|MAD)\s*$/im,/^##\s*Caractéristiques du bien/im,5000);
-  const p=pickValue(/^###\s*([\d .,]+\s*(?:DH|MAD))\s*$/im,b,amount);
+  const b=region(text,/^###\s*[\d .,]+\s*[mMkK]?\s*(?:DH|MAD)\s*$/im,/^##\s*Caractéristiques du bien/im,5000);
+  const p=pickValue(/^###\s*([\d .,]+\s*[mMkK]?\s*(?:DH|MAD))\s*$/im,b,amount);
   const a=pickValue(/Surface totale\s*\n+\s*(\d[\d .,]*\s*m(?:²|2))/i,b,area);
   const city=pickValue(/^###\s*Ville:\s*\n+\s*([^\n]+)/im,text,x=>x.trim());
   const district=pickValue(/^###\s*Quartier:\s*\n+\s*([^\n]+)/im,text,x=>x.trim());
   return {price:unique([p]),surfaces:unique([a]),city,district,tx:normType(title),period:null,basis:'total',block:b};
 }
 function parseAgenz(text,title,originalUrl=''){
-  const b=region(text,/^#\s+[^\n]+\n+\s*\d[\d .,]*\s*(?:DH|MAD)/im,/^Fiche du bien/im,2300);
-  const m=b.match(/^#\s*[^\n]+\n+\s*([\d .,]+\s*(?:DH|MAD))\s*\n+\s*([^\n]+)/im);
+  const b=region(text,/^#\s+[^\n]+\n+\s*\d[\d .,]*\s*[mMkK]?\s*(?:DH|MAD)/im,/^Fiche du bien/im,2300);
+  const m=b.match(/^#\s*[^\n]+\n+\s*([\d .,]+\s*[mMkK]?\s*(?:DH|MAD))\s*\n+\s*([^\n]+)/im);
   const loc=m?.[2]?.split(/\s+[–—-]\s+/);
   const price=m?amount(m[1]):null;
   // Only the area nearest to the primary price/location, not the descriptive body.
@@ -121,14 +132,14 @@ function parseAgenz(text,title,originalUrl=''){
 }
 function parseMasaken(text,title){
   const b=region(text,/^#\s*(?:Location|Vente)/im,/^Options\s*$/im,2700);
-  const p=pickValue(/\*\*Prix total\s*:\*\*\s*([\d .,]+\s*(?:DH|MAD))/i,b,amount);
+  const p=pickValue(/\*\*Prix total\s*:\*\*\s*([\d .,]+\s*[mMkK]?\s*(?:DH|MAD))/i,b,amount);
   const a=pickValue(/(?:^|\n)\s*(?:\*\*)?Surf\.\s*habitable(?:\s*:\*\*)?\s*\n?\s*(\d[\d .,]*\s*m(?:²|2))/im,b,area);
   const city=pickValue(/^#\s*(?:Location|Vente)\s+[^\n]+\s+à\s+([^\n]+)/im,b,x=>x.trim());
   return {price:unique([p]),surfaces:unique([a]),city,district:null,tx:/^#\s*Location/im.test(b)?'rent':/^#\s*Vente/im.test(b)?'sale':normType(title),period:/\/\s*mois|par mois/i.test(b)?'month':null,basis:'habitable',block:b};
 }
 function parseSarouty(text,title){
   const b=region(text,/^#\s+[^\n]+/m,/^##\s*(?:Description|Biens similaires)/im,2600);
-  const p=pickValue(/(?:^|\n)\s*([\d .,]+\s*(?:DH|MAD))\s*\/\s*(?:mois|month)/im,b,amount);
+  const p=pickValue(/(?:^|\n)\s*([\d .,]+\s*[mMkK]?\s*(?:DH|MAD))\s*\/\s*(?:mois|month)/im,b,amount);
   const a=pickValue(/\*\s*Surface\s*:\s*(\d[\d .,]*\s*m(?:²|2))/i,b,area);
   const loc=pickValue(/\*\s*Emplacement\s*:\s*([^\n]+)/i,b,x=>x.trim());
   const parts=loc?.split(',').map(x=>x.trim());
