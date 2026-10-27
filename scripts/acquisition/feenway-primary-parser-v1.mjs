@@ -104,7 +104,7 @@ function parseYakeey(text,title){
   const district=pickValue(/^###\s*Quartier:\s*\n+\s*([^\n]+)/im,text,x=>x.trim());
   return {price:unique([p]),surfaces:unique([a]),city,district,tx:normType(title),period:null,basis:'total',block:b};
 }
-function parseAgenz(text,title){
+function parseAgenz(text,title,originalUrl=''){
   const b=region(text,/^#\s+[^\n]+\n+\s*\d[\d .,]*\s*(?:DH|MAD)/im,/^Fiche du bien/im,2300);
   const m=b.match(/^#\s*[^\n]+\n+\s*([\d .,]+\s*(?:DH|MAD))\s*\n+\s*([^\n]+)/im);
   const loc=m?.[2]?.split(/\s+[–—-]\s+/);
@@ -113,6 +113,8 @@ function parseAgenz(text,title){
   const scope=m?b.slice(0,850):'';
   const a=pickValue(/(?:^|\n)\s*(\d[\d .,]*\s*m(?:²|2))\s*(?:\n|$)/im,scope,area);
   let tx=/Appartement à vendre|Villa à vendre|Maison à vendre/i.test(text.slice(0,1500))?'sale':/Appartement à louer|Villa à louer|Maison à louer/i.test(text.slice(0,1500))?'rent':normType(title);
+  if(!tx&&/\/vente-/.test(originalUrl))tx='sale';
+  if(!tx&&/\/location-/.test(originalUrl))tx='rent';
   return {price:unique([price]),surfaces:unique([a]),city:loc?.length===2?loc[0].trim():null,district:loc?.length===2?loc[1].trim():null,tx,period:null,basis:'headline',block:b};
 }
 function parseMasaken(text,title){
@@ -140,7 +142,7 @@ export function parsePrimary(input={}) {
   if(id.program){o.issues.push('program_not_individual');o.gate='review_program';return o;}
   if(id.alias)o.issues.push('route_alias_review');
   const parser={'mubawab.ma':parseMubawab,'avito.ma':parseAvito,'yakeey.com':parseYakeey,'agenz.ma':parseAgenz,'masaken.ma':parseMasaken,'sarouty.ma':parseSarouty}[source];
-  const p=parser(text,input.title||'');
+  const p=parser(text,input.title||'',input.original_url);
   o.primary_block_verified=!!p.block;
   if(!p.block){o.issues.push('primary_block_not_found');o.gate='review_missing_fields';return o;}
   o.surface_basis=p.basis;
@@ -153,7 +155,7 @@ export function parsePrimary(input={}) {
   const short=fold(p.block.slice(0,2600));
   if(/\bpas[- ]de[- ]porte\b|\bsarout\b/.test(short))o.issues.push('pas_de_porte');
   if(/(?:dh|mad)\s*\/\s*m(?:²|2)|prix au m2|prix au m²/.test(short))o.issues.push('price_per_m2');
-  if(/\bpar nuit\b|\/\s*nuit|location quotidienne/.test(short))o.issues.push('daily_or_nightly_rent');
+  if(/\bpar nuit\b|\/\s*nuit|location quotidienne|\/\s*jour\b|\bpar jour\b/.test(short))o.issues.push('daily_or_nightly_rent');
   if(p.tx==='rent'&&o.price_period===null)o.issues.push('rental_period_unconfirmed');
   if(!o.district)o.issues.push('district_unconfirmed');
   if(!o.city)o.issues.push('city_unconfirmed');
@@ -161,6 +163,7 @@ export function parsePrimary(input={}) {
   if(o.price_mad===null||o.price_mad<200||o.price_mad>1000000000){o.issues.push('price_missing_or_out_of_range');o.price_mad=null;}
   if(o.surface_m2===null||o.surface_m2<5||o.surface_m2>100000){o.issues.push('surface_missing_or_out_of_range');o.surface_m2=null;}
   o.fields_5_present=!!(o.price_mad&&o.surface_m2&&o.city&&o.district&&o.transaction);
+  if(o.issues.some(x=>['pas_de_porte','price_per_m2','daily_or_nightly_rent'].includes(x)))o.price_period=null;
   const urgent=['pas_de_porte','price_per_m2','daily_or_nightly_rent','conflicting_primary_prices','conflicting_primary_areas'];
   o.gate=o.issues.some(x=>urgent.includes(x))?'review_economic_or_field_conflict':o.fields_5_present?'review_five_fields':'review_missing_fields';
   if(id.alias&&o.gate==='review_five_fields')o.gate='review_source_route_alias';
