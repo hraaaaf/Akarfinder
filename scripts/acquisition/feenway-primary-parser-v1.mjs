@@ -67,9 +67,9 @@ function parseMubawab(text,title){
   const v=lines(b),prices=v.filter(x=>/^###\s*[\d .,]+\s*(?:DH|MAD)$/i.test(x)).map(x=>amount(x.replace(/^###\s*/,'')));
   const surfaces=[];
   for(let i=0;i<v.length-1;i++)if(/^###\s*[\d .,]+\s*(?:DH|MAD)$/i.test(v[i]))surfaces.push(area(v[i+1]));
-  const where=v.find(x=>/^###\s*[^0-9\n]+$/.test(x)&&!/^###\s*[\d ]/.test(x));
-  const loc=where?.match(/^###\s*([^#\n]+?)\s+à\s+([^#\n]+)$/i);
-  const city=loc?.[2]?.trim()||(/^###\s*(?:Dar Bouazza|Casablanca|Rabat|Marrakech|Tanger|Fès|Agadir|Salé|Kénitra|Témara)\s*$/i.test(where||'')?where.replace(/^###\s*/,''):null);
+  const where=v.filter(x=>x.startsWith('### ')).map(x=>x.slice(4).trim()).find(x=>x&&!/^\d/.test(x));
+  const loc=where?.match(/^(.+?)\s+à\s+(.+)$/i);
+  const city=loc?.[2]?.trim()||(/^(?:Dar Bouazza|Casablanca|Rabat|Marrakech|Tanger|Fès|Agadir|Salé|Kénitra|Témara)$/i.test(where||'')?where:null);
   return {price:unique(prices),surfaces:unique(surfaces),city,district:loc?.[1]?.trim()||null,tx:normType(title),period:/\bDH\s*\/\s*mois\b|\bDH\s*par mois/i.test(b)?'month':null,basis:'headline',block:b};
 }
 function parseAvito(text,title){
