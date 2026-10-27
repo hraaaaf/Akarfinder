@@ -8,6 +8,8 @@ on:
       - scripts/data/__tests__/feenway-canary81-evidence.test.mjs
       - docs/data/feenway-canary47-neon-historical-overlap-2026-10-26.jsonl
       - scripts/data/__tests__/feenway-canary47-neon-evidence.test.mjs
+      - docs/data/feenway-next238-origin-reconciled-neon-2026-10-27.jsonl
+      - scripts/data/__tests__/feenway-canary238-origin-ledger.test.mjs
       - .github/workflows/feenway-canary81-evidence-ci.yml
 
 permissions:
@@ -24,3 +26,4 @@ jobs:
         run: |
           node --test scripts/data/__tests__/feenway-canary81-evidence.test.mjs
           node --test scripts/data/__tests__/feenway-canary47-neon-evidence.test.mjs
+          node --test scripts/data/__tests__/feenway-canary238-origin-ledger.test.mjs
