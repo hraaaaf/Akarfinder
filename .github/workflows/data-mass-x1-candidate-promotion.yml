@@ -10,6 +10,10 @@ on:
       - ".github/workflows/data-mass-x1-candidate-promotion.yml"
   workflow_dispatch: {}
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.head_ref || github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
