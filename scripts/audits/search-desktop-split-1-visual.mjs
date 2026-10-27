@@ -78,6 +78,25 @@ try {
       await page.waitForSelector('[data-search-list-pane] [data-mobile-compact-card]', { timeout: 20_000 });
       await page.waitForSelector('[data-search-map-pane]', { state: "visible", timeout: 20_000 });
 
+      // Bounded visual proof: the map panel can appear before any vector tiles
+      // render. A CSS-layout pass alone must not certify an empty map canvas.
+      try {
+        await page.waitForFunction(
+          () => document.querySelector('[data-search-map-renderer="maplibre"] [data-search-map-visual-ready="true"]') !== null,
+          null,
+          { timeout: 25_000 },
+        );
+      } catch {
+        const detail = await page.evaluate(() => ({
+          mapContainer: Boolean(document.querySelector('[data-search-map-renderer="maplibre"]')),
+          canvas: Boolean(document.querySelector('[data-search-map-renderer="maplibre"] canvas.maplibregl-canvas')),
+          readiness: document.querySelector('[data-search-map-renderer="maplibre"] [data-search-map-visual-ready]')?.getAttribute("data-search-map-visual-ready") ?? null,
+        }));
+        console.error(`[search-desktop-split] ${viewport.name} basemap not rendered: ${JSON.stringify(detail)}`);
+        await page.screenshot({ path: `${outputDir}/${viewport.name}.png`, fullPage: true });
+        throw new Error(`${viewport.name}: MapLibre basemap did not render within bounded visual-ready gate`);
+      }
+
       const split = await page.evaluate(() => {
         const layout = document.querySelector('[data-search-view-layout="split"]');
         const list = document.querySelector('[data-search-list-pane]');
@@ -93,6 +112,7 @@ try {
           return style.display !== "none" && style.visibility !== "hidden" && node.getClientRects().length > 0;
         }).length;
         return {
+          mapVisualReady: Boolean(document.querySelector('[data-search-map-renderer="maplibre"] [data-search-map-visual-ready="true"]')),
           layoutFound: Boolean(layout),
           layoutDisplay: layout ? getComputedStyle(layout).display : null,
           gridTemplateColumns: layout ? getComputedStyle(layout).gridTemplateColumns : null,
@@ -119,6 +139,7 @@ try {
       await page.screenshot({ path: `${outputDir}/${viewport.name}.png`, fullPage: true });
 
       const overflow = split.scrollWidth > split.clientWidth;
+      if (!split.mapVisualReady) throw new Error(`${viewport.name}: basemap visual-ready marker missing`);
       if (!split.layoutFound) throw new Error(`${viewport.name}: split layout marker missing`);
       if (!split.firstCardVisible) throw new Error(`${viewport.name}: first result not visible`);
       if (overflow) throw new Error(`${viewport.name}: horizontal overflow ${split.scrollWidth}/${split.clientWidth}`);
@@ -162,6 +183,7 @@ try {
 
       results.push({
         name: viewport.name,
+        map_visual_ready: split.mapVisualReady,
         list_width: split.listWidth,
         map_width: split.mapWidth,
         desktop_side_by_side: viewport.width >= 1024 ? split.sameRow : null,
