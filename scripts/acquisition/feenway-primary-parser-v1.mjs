@@ -31,17 +31,32 @@ const region = (text,start,end,limit=5000) => {
 };
 const normType = title => {
   const t=fold(title);
-  if(/\ba louer\b|\ben location\b|\blocation\b/.test(t))return 'rent';
-  if(/\ba vendre\b|\ben vente\b|\bvente\b/.test(t))return 'sale';
-  return null;
+  const rent=/\ba louer\b|\ben location\b|\blocation\b/.test(t);
+  const sale=/\ba vendre\b|\ben vente\b|\bvente\b/.test(t);
+  return rent===sale?null:rent?'rent':'sale';
 };
 const pickValue=(re,s,fn)=>{const m=s.match(re);return m?fn(m[1]):null;};
-function verify(source,identity,final) {
-  if(!identity||!final||typeof final!=='string')return {ok:false,alias:false,program:false};
+function verify(source,identity,original,final) {
+  if(!identity||!original||!final||typeof final!=='string'||typeof original!=='string')return {ok:false,alias:false,program:false};
   let u;try{u=new URL(final)}catch{return {ok:false,alias:false,program:false}};
   const h=u.hostname.replace(/^www\./,'').toLowerCase();
   if(u.protocol!=='https:'||h!==source||u.username||u.password)return {ok:false,alias:false,program:false};
   const p=u.pathname, query=u.searchParams;
+  // Both original URL and final URL must agree with the source identity.
+  let o;try{o=new URL(original)}catch{return {ok:false,alias:false,program:false}}
+  if(o.protocol!=='https:'||o.hostname.replace(/^www\./,'').toLowerCase()!==source||o.username||o.password)return {ok:false,alias:false,program:false};
+  const numericId=identity.match(/(\d{4,})$/)?.[1];
+  if(!numericId)return {ok:false,alias:false,program:false};
+  let originalId=null;
+  if(source==='mubawab.ma'){
+    const m=o.pathname.match(/\/(a|pa)\/(\d+)(?:\/|$)/);
+    if(m?.[1]!==identity.match(/^(a|pa):/)?.[1])return {ok:false,alias:false,program:false};
+    originalId=m?.[2];
+  }else if(source==='avito.ma')originalId=o.pathname.match(/_(\d+)\.htm$/i)?.[1];
+  else if(source==='agenz.ma'||source==='masaken.ma')originalId=o.pathname.match(/\/(\d+)\/?$/)?.[1];
+  else if(source==='sarouty.ma')originalId=o.searchParams.get('listing_id');
+  else if(source==='yakeey.com')originalId=o.pathname.match(/[a-z]{2}(\d{6})\/?$/i)?.[1];
+  if(originalId!==numericId)return {ok:false,alias:false,program:false};
   if(source==='mubawab.ma'){
     const x=identity.match(/^(a|pa):(\d+)$/),m=p.match(/\/(a|pa)\/(\d+)(?:\/|$)/);
     return {ok:!!(x&&m&&x[1]===m[1]&&x[2]===m[2]),alias:false,program:x?.[1]==='pa'};
@@ -119,7 +134,7 @@ export function parsePrimary(input={}) {
   const o={schema:'AKARFINDER_PRIMARY_PARSER_V1',source:input.source||null,identity:input.identity||null,price_mad:null,surface_m2:null,city:null,district:null,transaction:null,price_period:null,surface_basis:null,identity_verified:false,primary_block_verified:false,fields_5_present:false,issues:[],gate:'quarantine_input',published_metadata:input.published_date||null,availability_verified:false,physically_unique_verified:false,reuse_rights_verified:false,eligible:false};
   const text=input.text,source=input.source;
   if(!SOURCES.has(source)||typeof text!=='string'||text.length>300000||typeof input.final_url!=='string'||typeof input.original_url!=='string'){o.issues.push('invalid_or_unsupported_input');return o;}
-  const id=verify(source,input.identity,input.final_url);
+  const id=verify(source,input.identity,input.original_url,input.final_url);
   o.identity_verified=id.ok;
   if(!id.ok){o.issues.push('source_identity_not_confirmed');o.gate='quarantine_identity';return o;}
   if(id.program){o.issues.push('program_not_individual');o.gate='review_program';return o;}

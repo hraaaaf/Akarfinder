@@ -78,3 +78,22 @@ test('No automatic availability or rights certification under any source',()=>{
   assert.equal(r.eligible,false);assert.equal(r.availability_verified,false);assert.equal(r.reuse_rights_verified,false);
  }
 });
+
+test('Source original URL must match the source host and exact identity',()=>{
+ const title='Appartement à louer à Casablanca';
+ const body='### 11 000 DH\n90m²\n### Casablanca Finance City à Casablanca\n#### Contacter l\u0027annonceur';
+ const good='https://www.mubawab.ma/fr/a/8399673/detail';
+ const badHost=parsePrimary({source:'mubawab.ma',identity:'a:8399673',original_url:'https://other.example/fr/a/8399673/detail',final_url:good,title,text:body});
+ assert.equal(badHost.identity_verified,false);assert.equal(badHost.gate,'quarantine_identity');
+ const badId=parsePrimary({source:'mubawab.ma',identity:'a:8399673',original_url:'https://www.mubawab.ma/fr/a/1234567/detail',final_url:good,title,text:body});
+ assert.equal(badId.identity_verified,false);assert.equal(badId.gate,'quarantine_identity');
+});
+test('Ambiguous sell-or-rent title cannot create transaction',()=>{
+ const r=example('mubawab.ma','8399673','Appartement à vendre ou à louer','### 11 000 DH\n90m²\n### Casablanca Finance City à Casablanca\n#### Contacter l\u0027annonceur');
+ assert.equal(r.transaction,null);assert.ok(r.issues.includes('transaction_unconfirmed'));assert.equal(r.fields_5_present,false);
+});
+test('Interportal identity is not established by same URL digits on wrong route',()=>{
+ const base='https://www.mubawab.ma/fr/pa/8399673/test';
+ const r=parsePrimary({source:'mubawab.ma',identity:'a:8399673',original_url:base,final_url:base,title:'Appartement à vendre',text:'### 1 000 000 DH\n95m²'});
+ assert.equal(r.identity_verified,false);assert.equal(r.eligible,false);
+});
