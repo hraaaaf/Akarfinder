@@ -1,0 +1,35 @@
+name: DATA Coverage Gap Auditor AFTER
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/coverage/**"
+      - "scripts/audits/data-coverage-gap-audit.ts"
+      - "scripts/scrapers/__tests__/data-coverage-gap-auditor.test.ts"
+      - "docs/DATA_COVERAGE_GAP_AUDITOR.md"
+      - ".github/workflows/data-coverage-gap-auditor-gate.yml"
+      - ".github/workflows/data-coverage-gap-auditor-after.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: npm
+      - run: npm ci
+      - name: Production compile (no DB credentials)
+        run: npm run build
