@@ -1,0 +1,25 @@
+name: AkarFinder RAW to Pulper to Mold V1 (offline)
+on:
+  push:
+    branches:
+      - data/200k-fresh-parser-v2
+    paths:
+      - data/molds/property-listing-v1.json
+      - scripts/acquisition/listing-pulper-core-v1.mjs
+      - scripts/acquisition/listing-pulper-v1.mjs
+      - scripts/data/__tests__/listing-pulper-core-v1.test.mjs
+      - scripts/data/__tests__/listing-pulper-cli-v1.test.mjs
+      - .github/workflows/akarfinder-raw-pulper-v1.yml
+permissions:
+  contents: read
+jobs:
+  pulper-offline-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: RAW separation, mold, score, anomaly and CLI invariants
+        run: node --test scripts/data/__tests__/listing-pulper-core-v1.test.mjs scripts/data/__tests__/listing-pulper-cli-v1.test.mjs
