@@ -148,6 +148,8 @@ export function SearchMapPanel({
     let cancelled = false;
     let mapInstance: MapLibreMap | null = null;
     let resizeObserver: ResizeObserver | null = null;
+    // Evidence marker for read-only visual QA; this does not affect rendering.
+    mapContainerRef.current.dataset.searchMapVisualReady = "false";
 
     void import("maplibre-gl").then(({ Map: MapClass, NavigationControl, setRTLTextPlugin }) => {
       if (cancelled || !mapContainerRef.current) return;
@@ -166,6 +168,20 @@ export function SearchMapPanel({
       });
       mapRef.current = mapInstance;
       mapInstance.addControl(new NavigationControl({ showCompass: false }), "top-right");
+
+      // "style.load" only confirms style availability, not a rendered basemap.
+      // Mark a screenshot-ready canvas only after MapLibre has settled tiles
+      // and at least one actual styled map feature is rendered.
+      mapInstance.on("idle", () => {
+        if (cancelled || !mapInstance || !mapContainerRef.current) return;
+        if (
+          mapInstance.isStyleLoaded() &&
+          mapInstance.areTilesLoaded() &&
+          mapInstance.queryRenderedFeatures().length > 0
+        ) {
+          mapContainerRef.current.dataset.searchMapVisualReady = "true";
+        }
+      });
 
       mapInstance.once("style.load", () => {
         if (!mapInstance || cancelled) return;
