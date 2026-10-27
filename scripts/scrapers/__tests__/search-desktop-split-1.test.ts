@@ -44,3 +44,19 @@ test("secondary map content remains available in dedicated map mode", () => {
   assert.match(shell, /data-search-map-secondary="full-map"/);
   assert.equal((shell.match(/view === "split" \? "hidden" : ""/g) ?? []).length, 2);
 });
+
+test("AFTER visual checks follow the P4 map-first mobile and map-dominant desktop layout", () => {
+  const c2 = source("app/search/mockup-convergence-l2.css");
+  const p4 = source("app/search/p4-map-shell.css");
+  const visual = source("scripts/audits/search-desktop-split-1-visual.mjs");
+
+  assert.match(c2, /@media \(max-width: 1023px\)[\s\S]*?\[data-search-view-layout="split"\][\s\S]*?display: flex !important/);
+  assert.match(c2, /\[data-search-view-layout="split"\] \[data-search-map-pane\] \{\s*order: 1/);
+  assert.match(c2, /\[data-search-view-layout="split"\] \[data-search-list-pane\] \{\s*order: 2/);
+  assert.match(p4, /grid-template-columns: minmax\(0, 3fr\) minmax\(360px, 2fr\) !important/);
+
+  assert.match(visual, /mapFirstStacked/);
+  assert.match(visual, /non-desktop P4 map-first stacking changed/);
+  assert.match(visual, /viewport\.width \* 0\.45/);
+  assert.doesNotMatch(visual, /non-desktop split stacking changed/);
+});
