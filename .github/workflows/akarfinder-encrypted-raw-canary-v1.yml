@@ -1,0 +1,48 @@
+name: AkarFinder encrypted public RAW canary (no DB)
+on:
+  push:
+    branches:
+      - data/200k-fresh-parser-v2
+    paths:
+      - scripts/acquisition/public-raw-encrypted-canary-v1.mjs
+      - scripts/data/__tests__/public-raw-encrypted-canary-v1.test.mjs
+      - config/raw/akar_raw_public_2026-10-27.pem
+      - .github/workflows/akarfinder-encrypted-raw-canary-v1.yml
+permissions:
+  contents: read
+jobs:
+  capture:
+    name: Encrypted RAW canary, 24 public URLs maximum
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      AKAR_RAW_LIMIT: '24'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Offline RSA/AES and fail-forward tests
+        run: node --test scripts/data/__tests__/public-raw-encrypted-canary-v1.test.mjs
+      - name: Read authorized public URLs only; store ciphertext, never plaintext
+        run: node scripts/acquisition/public-raw-encrypted-canary-v1.mjs
+      - name: Check exact no-DB contract and collection manifest
+        run: |
+          node --input-type=module -e '
+            import {readFileSync} from "node:fs";
+            import assert from "node:assert/strict";
+            const s=JSON.parse(readFileSync(".tmp/akar-encrypted-raw-canary/summary.json","utf8"));
+            assert.equal(s.database_writes,0);
+            assert.equal(s.production_publications,0);
+            assert.ok(s.requested<=24);
+            assert.ok(s.encrypted<=s.requested);
+            console.log(JSON.stringify(s));
+          '
+      - name: Save encrypted-only artifact plus status manifest
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: akarfinder-raw-encrypted-canary
+          path: .tmp/akar-encrypted-raw-canary/
+          if-no-files-found: warn
+          retention-days: 30
