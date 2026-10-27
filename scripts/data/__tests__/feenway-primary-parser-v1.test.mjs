@@ -97,3 +97,26 @@ test('Interportal identity is not established by same URL digits on wrong route'
  const r=parsePrimary({source:'mubawab.ma',identity:'a:8399673',original_url:base,final_url:base,title:'Appartement à vendre',text:'### 1 000 000 DH\n95m²'});
  assert.equal(r.identity_verified,false);assert.equal(r.eligible,false);
 });
+
+
+test('Sarouty canonical /acheter and /louer redirects preserve original listing ID, mark alias',()=>{
+ for(const [id,operation] of [['908401','acheter'],['907360','louer']]){
+  const base='https://sarouty.ma/property-details/?listing_id='+id;
+  const canonical='https://www.sarouty.ma/'+operation+'/appartement-casablanca-'+id+'/';
+  const item=parsePrimary({source:'sarouty.ma',identity:'sarouty:'+id,original_url:base,final_url:canonical,title:'Appartement à '+(operation==='acheter'?'vendre':'louer'),text:'# Appartement\n* Surface: 153 m²\n* Emplacement: Anfa, Casablanca\n## Description'});
+  assert.equal(item.identity_verified,true,id);
+  assert.ok(item.issues.includes('route_alias_review'));
+  assert.equal(item.eligible,false);
+ }
+});
+test('Sarouty canonical wrong-ID, arbitrary redirect and hostile original URL fail closed',()=>{
+ const base='https://sarouty.ma/property-details/?listing_id=908401';
+ for(const [initial,final] of [
+  [base,'https://www.sarouty.ma/acheter/appartement-casablanca-908402/'],
+  [base,'https://www.sarouty.ma/search/?listing_id=908401'],
+  ['https://other.example/property-details/?listing_id=908401','https://www.sarouty.ma/acheter/appartement-casablanca-908401/']
+ ]){
+  const x=parsePrimary({source:'sarouty.ma',identity:'sarouty:908401',original_url:initial,final_url:final,title:'Appartement à vendre',text:'# Appartement\n* Surface: 153 m²'});
+  assert.equal(x.identity_verified,false);assert.equal(x.gate,'quarantine_identity');
+ }
+});
