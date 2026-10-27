@@ -34,7 +34,7 @@ export function validateWorkflow(file, source) {
     const blocks = starts.map((m, i) => jobs.slice(m.index, starts[i + 1]?.index ?? jobs.length));
     const risky = blocks.filter(block => /(?:npm\s+run\s+build|next\s+build|playwright|chromium|npm\s+test|test:scrapers|full.*benchmark)/i.test(block));
     if (dispatch && risky.some(block => !/^    if:\s*.*(?:refs\/heads\/main|github\.ref_name\s*==\s*['"]main['"])/m.test(block))) {
-      errors.push('every heavy workflow_dispatch job requires main guard');
+      errors.push('every heavy workflow_dispatch job guard required on main');
     }
   }
   return errors.map(msg => `${file}: ${msg}`);
