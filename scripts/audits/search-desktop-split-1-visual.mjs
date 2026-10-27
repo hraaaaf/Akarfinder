@@ -94,6 +94,12 @@ try {
         }).length;
         return {
           layoutFound: Boolean(layout),
+          layoutDisplay: layout ? getComputedStyle(layout).display : null,
+          gridTemplateColumns: layout ? getComputedStyle(layout).gridTemplateColumns : null,
+          listTop: listRect ? Math.round(listRect.top) : null,
+          listBottom: listRect ? Math.round(listRect.bottom) : null,
+          mapTop: mapRect ? Math.round(mapRect.top) : null,
+          viewportWidth: window.innerWidth,
           listWidth: listRect ? Math.round(listRect.width) : null,
           mapWidth: mapRect ? Math.round(mapRect.width) : null,
           sameRow: Boolean(listRect && mapRect && Math.abs(listRect.top - mapRect.top) <= 3),
@@ -105,6 +111,11 @@ try {
           scrollWidth: document.documentElement.scrollWidth,
         };
       });
+
+      // Preserve proof even if a visual assertion fails: the previous AFTER
+      // run failed before taking any screenshot or logging viewport geometry.
+      console.log(`[search-desktop-split] ${viewport.name} ${JSON.stringify(split)}`);
+      await page.screenshot({ path: `${outputDir}/${viewport.name}.png`, fullPage: true });
 
       const overflow = split.scrollWidth > split.clientWidth;
       if (!split.layoutFound) throw new Error(`${viewport.name}: split layout marker missing`);
@@ -147,7 +158,6 @@ try {
         if (split.visibleSecondaryCount !== 0) throw new Error(`${viewport.name}: split still shows ${split.visibleSecondaryCount} secondary map blocks`);
       }
 
-      await page.screenshot({ path: `${outputDir}/${viewport.name}.png`, fullPage: true });
       results.push({
         name: viewport.name,
         list_width: split.listWidth,
