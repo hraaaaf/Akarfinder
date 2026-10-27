@@ -48,3 +48,12 @@ Le passage à `ELIGIBLE` est **interdit** si une seule des validations indépend
 3. Requalifier les 60 observations déjà vérifiées, puis les 171 restantes en petits lots conformes à chaque source.
 4. Déduplication conservatrice contre l'archive Neon en SELECT, puis preuve de présence récente, droits d'utilisation et gate d'import distinct.
 5. Ne pas déclencher de merge ou de déploiement Vercel sans gate ; jamais substituer la branche Neon 151 900 au freeze disparu des 226 286 URL.
+
+## Écarts réellement détectés par CI — renforcement ciblé
+
+- [Run 40485486213](https://github.com/hraaaaf/Akarfinder/actions/runs/40485486213) : 3 échecs réels sur anciennes versions (Sarouty route redirigée, Agenz vente par route, Masaken `/jour`).
+- [Run 40486222334](https://github.com/hraaaaf/Akarfinder/actions/runs/40486222334) : le test de sécurité a trouvé qu'une URL Sarouty arbitraire `/search?listing_id=ID` pouvait être acceptée. **Correction** : le paramètre `listing_id` n'est admissible que sur `/property-details/` ; l'autre route admissible est exactement `/acheter/<slug>-ID/` ou `/louer/<slug>-ID/`, toujours sur le même hôte et ID. Tests positifs/negatifs ajoutés.
+- CI batch [40485962651](https://github.com/hraaaaf/Akarfinder/actions/runs/40485962651) **SUCCESS 5/5 tests** ; [artifact 12725471116](https://github.com/hraaaaf/Akarfinder/actions/runs/40485962651/artifacts/12725471116) ancien calcul sur 12 fixtures, 10 identités confirmées avant correction de Sarouty. Le batch workflow est désormais déclenché aussi à chaque changement du parseur, donc ses prochains artefacts invalident les anciens.
+- Seule la validation **du SHA exact** des nouveaux runs permet de déclarer la chaîne actuelle verte. Tous les candidats restent `review/quarantine`.
+
+**Garde de précision** : les cas inconnus sont volontairement rejetés ; ne pas appeler un taux de `fields_5_present` un taux d'annonces vivantes, et ne pas extrapoler la réussite des 12 fixtures à 54 161 pages.
