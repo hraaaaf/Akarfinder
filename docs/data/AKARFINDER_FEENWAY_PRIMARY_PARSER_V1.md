@@ -34,3 +34,14 @@
 - **Gaps voulus V1** : suffixes monétaires K/M et différentes variantes non observées, contrôle d'images/localisation fine, export d'évidence sémantique par champ, benchmark réel détaillé sur 60 puis 171 origines, et certification d'activité/droit restent hors de cette preuve.
 
 **Next exact** : valider run 40484934709, comparer V1 aux vrais blocs des 60 sources, corriger faux négatifs/positifs par portail avec fixtures réelles sanitisées, construire un benchmark fixe de rendement 5/5 et erreurs économiques, puis étendre aux 171 sans aucun passage en `eligible`.
+
+## 27 octobre — nouvelles preuves, rendu réel et gates restant à corriger
+
+- [CI durcie 40484934709](https://github.com/hraaaaf/Akarfinder/actions/runs/40484934709) : **SUCCESS** sur le commit `050ca12a4a0455fdc137ff3590f89c9e380f59db`, **17 tests** portant notamment sur les hôtes/identités d'URL originales et finales et les transactions ambiguës.
+- [Benchmark 60 sources publiques](feenway-primary-parser-v1-live60-benchmark-2026-10-27.jsonl) : **55/60** pages consultables lors de cette passe ; **49/60** blocs primaires avec prix et surface ; **47** villes, **44** quartiers et **44** transactions ; **40/60** remplissent les cinq champs au sens **technique seulement**.
+- Parmi ces **40** dossiers, **22** portent `rental_period_unconfirmed` ; **18** ne portent pas cet avertissement. **Ni 40 ni 18 ne sont commercialement éligibles** : toutes les fiches sont en revue ; ancienneté/disponibilité/droits/unicité physique restent non certifiés.
+- **11** liens sources n'ont pas passé le contrôle d'identité finale, notamment des pages non accessibles ou redirigées ; conservation stricte en quarantaine. Les sources Sarouty et Yakeey ont reçu des pages bloquées ou indisponibles, sans contournement.
+- Le benchmark est une comparaison entre un ancien extracteur de signaux et ce parseur, sur **des observations différentes dans le temps** (58 pages contre 55) : ne pas présenter le gain 20 → 49 comme un essai contrôlé strict de précision.
+- **Correction encore nécessaire** : séparer explicitement les cinq champs techniques de la validation de la période du loyer dans les groupes de qualité ; diversifier fixtures réelles, montants K/M, unités économiques, ambiguïtés interportails et surfaces terrain/habitable.
+
+**Next exact** : garder 22 périodes manquantes en revue explicite, mesurer erreur de classification et précision sur des snippets réels, puis poursuivre les 171 candidates initiales par lots bornés. Ne pas importer.
