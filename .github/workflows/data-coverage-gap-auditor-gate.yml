@@ -8,7 +8,12 @@ on:
       - "scripts/scrapers/__tests__/data-coverage-gap-auditor.test.ts"
       - "docs/DATA_COVERAGE_GAP_AUDITOR.md"
       - ".github/workflows/data-coverage-gap-auditor-gate.yml"
+      - ".github/workflows/data-coverage-gap-auditor-after.yml"
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.head_ref || github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -34,5 +39,3 @@ jobs:
       - name: Run DATA-COVERAGE-1 tests
         run: npx tsx --test scripts/scrapers/__tests__/data-coverage-gap-auditor.test.ts
 
-      - name: Build application
-        run: npm run build
