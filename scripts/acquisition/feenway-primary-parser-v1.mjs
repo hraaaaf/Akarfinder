@@ -54,7 +54,7 @@ function verify(source,identity,original,final) {
     originalId=m?.[2];
   }else if(source==='avito.ma')originalId=o.pathname.match(/_(\d+)\.htm$/i)?.[1];
   else if(source==='agenz.ma'||source==='masaken.ma')originalId=o.pathname.match(/\/(\d+)\/?$/)?.[1];
-  else if(source==='sarouty.ma')originalId=o.searchParams.get('listing_id');
+  else if(source==='sarouty.ma')originalId=o.searchParams.get('listing_id')||o.pathname.match(/^\/(?:acheter|louer)\/[a-z0-9-]+-(\d+)\/?$/i)?.[1];
   else if(source==='yakeey.com')originalId=o.pathname.match(/[a-z]{2}(\d{6})\/?$/i)?.[1];
   if(originalId!==numericId)return {ok:false,alias:false,program:false};
   if(source==='mubawab.ma'){
@@ -67,8 +67,10 @@ function verify(source,identity,original,final) {
     return {ok:!!(identity.startsWith(source.split('.')[0]+':')&&value&&value===found),alias:false,program:false};
   }
   if(source==='sarouty.ma'){
-    const value=identity.match(/^sarouty:(\d+)$/)?.[1],found=query.get('listing_id');
-    return {ok:!!(value&&found&&value===found),alias:false,program:false};
+    const value=identity.match(/^sarouty:(\d+)$/)?.[1],byQuery=query.get('listing_id');
+    const byRoute=p.match(/^\/(?:acheter|louer)\/[a-z0-9-]+-(\d+)\/?$/i)?.[1];
+    const found=byQuery||byRoute;
+    return {ok:!!(value&&found&&value===found&&(!byQuery||!byRoute||byQuery===byRoute)),alias:!!(!byQuery&&byRoute&&value===byRoute),program:false};
   }
   if(source==='yakeey.com'){
     const expected=identity.match(/([a-z]{2})(\d{6})(?:\/)?$/i),found=p.match(/([a-z]{2})(\d{6})\/?$/i);
