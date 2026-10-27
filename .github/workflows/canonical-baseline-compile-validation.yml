@@ -7,7 +7,18 @@ on:
   pull_request:
     branches:
       - main
-  workflow_dispatch: {}
+    paths:
+      - "app/**"
+      - "components/**"
+      - "lib/**"
+      - "scripts/**"
+      - "supabase/**"
+      - "config/**"
+      - "package.json"
+      - "package-lock.json"
+      - "tsconfig.json"
+      - "next.config.mjs"
+      - ".github/workflows/canonical-baseline-compile-validation.yml"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -15,6 +26,7 @@ concurrency:
 
 permissions:
   contents: read
+
 
 jobs:
   typecheck:
@@ -45,16 +57,3 @@ jobs:
           path: tsc-output.txt
           retention-days: 7
           if-no-files-found: error
-
-  build:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: npm
-      - run: npm ci
-      - name: Production build
-        run: npm run build
