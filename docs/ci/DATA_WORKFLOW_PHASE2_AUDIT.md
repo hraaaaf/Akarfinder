@@ -26,3 +26,22 @@ Audit date: 2026-10-27. Scope: **8 workflow files examined on `main`**, not the 
 Classify further DATA/Neon legacy workflows with source and job analysis rather than the filename alone. Treat any `SUPABASE_SERVICE_ROLE_KEY`, `NEON_DATABASE_URL`, deployment or write-capable job as **protected until proven safe**. Preserve explicit human confirmations, dry-run boundaries, rollback and idempotency, and `cancel-in-progress:false` for ongoing mutations. Create separate PRs for proven read-only AFTER splits.
 
 **Limits:** The initial workflow inventory before #1114 counted 539, then 549 after new AFTER files; this document proves only the eight rows above. The audit and first slice do not demonstrate global compliance.
+
+## Candidate inventory extension — 107 workflow configs read (2026-10-27)
+
+In addition to the eight **deep-reviewed** files above, a **static config sweep** inspected every one of the **107 workflow YAML filenames** matching `data|supabase|neon|ingest|crawl|scrap|backfill|import|sync|pipeline|mubawab|agenz|domio` (case-insensitive) in the initial 549-file `.github/workflows` inventory. All eight scan batches returned a readable file; this is a **name-filtered subset**, not an all-repo exhaustive audit.
+
+For each candidate, the sweep checked textual presence of `pull_request`, `push`, `workflow_dispatch`, `schedule`, top-level `concurrency`, expensive build/Chromium/test tokens, and references to production service/database/deployment credentials. These are **candidate indicators**, not proof that a secret is usable or that a step writes; nor is the absence of keywords proof of safety.
+
+Notable patterns to investigate **before editing**:
+- Legacy PR-heavy jobs with credential references: DATA-4.3F/3G/3H, DATA-MASS-3A/3B, and other DATA qualification/audit files. Existing safeguards may rely on read-only flags, confirmations or pinned identifiers that must survive conversion.
+- Manual or push execution with sensitive credentials: Neon migration validation, SEO5D price writer, OpenSERP ingestion, and historical Common Crawl pipelines. Do not convert writers to automatic post-merge jobs.
+- `openserp-ingestion-cron.yml` intentionally has no active schedule; never reactivate incident-prone cadence implicitly.
+- Plain PR jobs with missing concurrency, such as `data-coverage-gap-auditor-gate.yml`, are lower-risk *candidates* for a separate cheap-tests / main-only-heavy split only after verifying their job commands.
+
+The other workflow files outside the 107-name filter remain **unexamined by this sweep**. Record precise write safety by reading called scripts, checking actual env guards and dry-run tests before selecting each subsequent PR.
+
+## First-slice certification
+- [PR #1121](https://github.com/hraaaaf/Akarfinder/pull/1121) merged at `e32618462d099da4da0413cc5937d20a4a9ccb89` after **4/4 PR checks SUCCESS** (policy, Typesense, MASS-X1, Product Constitution).
+- [Typesense AFTER run 40524923722](https://github.com/hraaaaf/Akarfinder/actions/runs/40524923722) on the exact merge HEAD completed **SUCCESS**. This certifies the scoped build relocation and the changed workflows only, not all DATA pipelines.
+- [Issue #1119](https://github.com/hraaaaf/Akarfinder/issues/1119) stays OPEN for risk-screened legacy expansion.
