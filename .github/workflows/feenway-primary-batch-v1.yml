@@ -1,0 +1,31 @@
+name: FeenWay primary batch quality (read only)
+on:
+  push:
+    branches:
+      - data/200k-fresh-parser-v2
+    paths:
+      - scripts/acquisition/feenway-primary-batch-v1.mjs
+      - scripts/data/__tests__/feenway-primary-batch-v1.test.mjs
+      - scripts/data/fixtures/feenway-primary-real-minimal-v2.json
+      - .github/workflows/feenway-primary-batch-v1.yml
+permissions:
+  contents: read
+jobs:
+  batch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Deterministic failure and non-admission QA
+        run: node --test scripts/data/__tests__/feenway-primary-batch-v1.test.mjs
+      - name: Emit redacted review-only evidence on 12 primary snippets
+        run: node scripts/acquisition/feenway-primary-batch-v1.mjs --input=scripts/data/fixtures/feenway-primary-real-minimal-v2.json --out=.tmp/feenway-primary-batch-v1/evidence.jsonl
+      - uses: actions/upload-artifact@v4
+        with:
+          name: feenway-primary-batch-review
+          path: .tmp/feenway-primary-batch-v1/
+          if-no-files-found: error
+          retention-days: 30
