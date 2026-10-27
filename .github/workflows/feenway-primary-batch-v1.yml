@@ -4,6 +4,7 @@ on:
     branches:
       - data/200k-fresh-parser-v2
     paths:
+      - scripts/acquisition/feenway-primary-parser-v1.mjs
       - scripts/acquisition/feenway-primary-batch-v1.mjs
       - scripts/data/__tests__/feenway-primary-batch-v1.test.mjs
       - scripts/data/fixtures/feenway-primary-real-minimal-v2.json
