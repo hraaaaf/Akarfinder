@@ -518,7 +518,3 @@ Partir de `.env.local.example`. Ne jamais committer de secret ni utiliser une se
 - Header navigation/control contrast recalibrated for white; compact `Mon projet` remains legible and secondary.
 - Dark/transparent header variants preserved. Search, DATA, ranking, dedup and Map unchanged.
 - Behavioral head `033a805470bd25004eca047fa72e06886027d93b`: Product Design Reviewer PASS + Independent Release Certifier PASS; production build and TypeScript PASS.
-
-## CI execution — canonical policy (2026-10-27)
-
-Fast, path-scoped PR checks; concurrency cancels obsolete PR runs; full builds/Chromium/exhaustive audits are main-only AFTER jobs. See [docs/CI_EXECUTION_POLICY.md](docs/CI_EXECUTION_POLICY.md). Critical security checks remain before merge. No Vercel deployment is authorized.
