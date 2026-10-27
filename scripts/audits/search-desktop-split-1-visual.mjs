@@ -103,7 +103,8 @@ try {
           listWidth: listRect ? Math.round(listRect.width) : null,
           mapWidth: mapRect ? Math.round(mapRect.width) : null,
           sameRow: Boolean(listRect && mapRect && Math.abs(listRect.top - mapRect.top) <= 3),
-          stacked: Boolean(listRect && mapRect && mapRect.top > listRect.top + 40),
+          // P4 mobile/tablet is intentionally map-first; the results dock beneath it.
+          mapFirstStacked: Boolean(listRect && mapRect && listRect.top > mapRect.top + 40),
           firstCardVisible: Boolean(firstRect && firstRect.top < window.innerHeight),
           visibleSecondaryCount,
           clippedPrice: Boolean(firstPrice && firstPrice.scrollWidth > firstPrice.clientWidth + 1),
@@ -125,8 +126,9 @@ try {
 
       if (viewport.width >= 1024) {
         if (!split.sameRow) throw new Error(`${viewport.name}: list and map are not aligned side-by-side`);
-        if ((split.listWidth ?? 0) < viewport.width * 0.45) throw new Error(`${viewport.name}: list pane too narrow (${split.listWidth}px)`);
-        if ((split.mapWidth ?? 0) < viewport.width * 0.34) throw new Error(`${viewport.name}: map pane too narrow (${split.mapWidth}px)`);
+        // P4 assigns the map ~60% of the desktop split and the result rail ~40%.
+        if ((split.listWidth ?? 0) < viewport.width * 0.28) throw new Error(`${viewport.name}: list pane too narrow (${split.listWidth}px)`);
+        if ((split.mapWidth ?? 0) < viewport.width * 0.45) throw new Error(`${viewport.name}: map pane too narrow (${split.mapWidth}px)`);
         if (split.visibleSecondaryCount !== 0) throw new Error(`${viewport.name}: split still shows ${split.visibleSecondaryCount} secondary map blocks`);
 
         await page.getByRole("button", { name: "Liste" }).click();
@@ -154,7 +156,7 @@ try {
         await page.getByRole("button", { name: "Mixte" }).click();
         await page.waitForSelector('[data-search-view-layout="split"]');
       } else {
-        if (!split.stacked) throw new Error(`${viewport.name}: non-desktop split stacking changed`);
+        if (!split.mapFirstStacked) throw new Error(`${viewport.name}: non-desktop P4 map-first stacking changed`);
         if (split.visibleSecondaryCount !== 0) throw new Error(`${viewport.name}: split still shows ${split.visibleSecondaryCount} secondary map blocks`);
       }
 
@@ -163,7 +165,7 @@ try {
         list_width: split.listWidth,
         map_width: split.mapWidth,
         desktop_side_by_side: viewport.width >= 1024 ? split.sameRow : null,
-        non_desktop_stacked: viewport.width < 1024 ? split.stacked : null,
+        non_desktop_map_first: viewport.width < 1024 ? split.mapFirstStacked : null,
         split_secondary_blocks_visible: split.visibleSecondaryCount,
         horizontal_overflow: overflow,
         truncated_price: split.clippedPrice,
