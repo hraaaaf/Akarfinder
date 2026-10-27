@@ -635,3 +635,20 @@ Goal : inventaire dédupliqué read-only et échantillon stratifié 240 URL. Cod
 **Vraies fiches contrôlées** : [JSONL de 60 pages](../data/feenway-primary-parser-v1-live60-benchmark-2026-10-27.jsonl) en `review` : 55 retournées, 49 blocs primaires avec prix et surface, 40 candidats cinq champs techniques. **22 de ces 40 ont `rental_period_unconfirmed` ; 18 sans ce drapeau économique**, mais **0 éligible**. 11 identités originales/finales non conservées, quarantaine. Deux passes du site (58 puis 55 pages) ne sont pas directement comparables : ne pas déclarer une précision certifiée de 40/60.
 
 **Next exact** : score technique distinct de l'interprétation du loyer, parser formes prix M/K et surface terrain/habitable sans faux positif, fixtures de cas réels par source, mesures rappel/précision, étendre aux 171 encore non analysées, puis preuves activité/droits et dédup physique. Ce V1 n'est pas encore le parseur 200K production-ready. **0 DB, 0 publication, 0 merge/Vercel.**
+
+## 27 octobre 2026 — décision d'architecture : RAW → PULPER → MOULES JSON → SCORING
+
+**Direction retenue à la demande du propriétaire AkarFinder** : collecter d'abord des snapshots de fiches publiques autorisées et les conserver dans un RAW privé, puis les retraiter sans perte avec un pulper versionné, des moules JSON et un scoring explicable. Les anomalies deviennent un backlog de règles/fixtures à corriger progressivement. L'automatisation et le scale ne doivent pas précéder la preuve d'identité source et les gates commerciaux.
+
+**Lot V1 implémenté dans [commit 370469b6](https://github.com/hraaaaf/Akarfinder/commit/370469b6be45fe4c9fe45580c772ccffdc80769a)** sur branche `data/200k-fresh-parser-v2`, PR #1105 :
+- `scripts/acquisition/listing-pulper-core-v1.mjs` : vérification provenance, traitements RAW/identifiants, normalisation, gate et scoring, hachage SHA256, classement des anomalies ;
+- `scripts/acquisition/listing-pulper-v1.mjs` : CLI offline, snapshots JSONL originaux privés adressés par hash avec permissions 0700/0600, sorties `molds.jsonl` et `summary.json` ;
+- `data/molds/property-listing-v1.json` : contrat de variables typées, unités MAD et m², période de prix, ville/quartier, chambres, type, transaction, date source, poids techniques et fraîcheur ;
+- `scripts/data/__tests__/listing-pulper-core-v1.test.mjs` et `listing-pulper-cli-v1.test.mjs`, [workflow de validation](https://github.com/hraaaaf/Akarfinder/blob/data/200k-fresh-parser-v2/.github/workflows/akarfinder-raw-pulper-v1.yml) read-only ;
+- [documentation complète](https://github.com/hraaaaf/Akarfinder/blob/data/200k-fresh-parser-v2/docs/data/AKARFINDER_RAW_PULPER_MOLDS_V1.md).
+
+**Preuve locale** : 15/15 tests passent, dont dédup des événements identiques, rétention RAW intacte, exclusion de contacts des moules, score 70/30, absence de fraîcheur inventée, anomalies de prix/période et jamais `eligible` même à note élevée. Le test de bout en bout local utilisait un double de parseur ; donc il reste à vérifier la CI du **vrai parseur dans le repo**. Run exact déclenché : [40486553237](https://github.com/hraaaaf/Akarfinder/actions/runs/40486553237), initialement **QUEUED**, succès non encore annoncé.
+
+**Séparation stricte** : score qualité/richesse = ordre de traitement, non preuve d'activité, de disponibilité, de déduplication physique ou de droit à republication. Date de collecte ≠ date de publication. RAW n'est jamais envoyé à GitHub/Notion ; stockage de production doit devenir objet privé chiffré, retenue/droits d'accès vérifiés. `bedrooms=null` si la source ne l'a pas prouvé, pas zéro inventé. V1 = squelette local read-only, **pas** une usine 200K certifiée.
+
+**Next exact** : vérifier run 40486553237 puis corriger si rouge ; faire un lot borné de snapshots originaux avec le vrai parseur pour mesurer couverture des moules par portail et capitaliser les anomalies ; étendre collecte régulée/identifiants + dédup avec archive Neon en SELECT, puis preuve disponibilité/usage/droits. **0 écriture DB, 0 import, 0 merge et 0 déploiement Vercel** autorisé ou effectué pendant cette V1.
