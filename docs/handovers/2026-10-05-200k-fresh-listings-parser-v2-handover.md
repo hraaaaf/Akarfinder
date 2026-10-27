@@ -627,3 +627,11 @@ Goal : inventaire dédupliqué read-only et échantillon stratifié 240 URL. Cod
 **État** : 54 161 URL FeenWay découvertes, 231 identifiants sources absents des snapshots, 60 fiches sources déjà analysées par heuristique ancienne (58 pages reçues, 2 inaccessible, 20 avec signaux prix+surface, chiffre sous-évalué et non validé 5 champs) ; **0 annon­ce commercialement certifiée**. Nouvelle V1 : couverture complète de toutes les variantes monétaires K/M et vraie QA sur les 60 puis les 171 autres encore à démontrer, ne pas extrapoler.
 
 **Next exact** : vérifier run 40484934709 (s'il échoue : diagnostic/fix), benchmark reproductible sur vraies pages primaires de 60, mesurer précision et rappel des cinq champs par portail, corriger faux positifs d'unité et de géographie, étendre à 171 candidates, puis dédup physique, preuve d'activité et conformité. Aucune écriture DB, déploiement ou merge.
+
+### FeenWay parseur V1 — benchmark 60 sources / 17 tests — 27 octobre 2026
+
+**Goal partiel technique prouvé** : six adaptateurs de blocs primaires, preuve d'identité sur URL source originale + URL finale, refus d'une transaction ambiguë et de l'admission commerciale automatique. [CI `40484934709`](https://github.com/hraaaaf/Akarfinder/actions/runs/40484934709) **SUCCESS 17/17, 0 fail**, commit testé `050ca12a4a0455fdc137ff3590f89c9e380f59db`.
+
+**Vraies fiches contrôlées** : [JSONL de 60 pages](../data/feenway-primary-parser-v1-live60-benchmark-2026-10-27.jsonl) en `review` : 55 retournées, 49 blocs primaires avec prix et surface, 40 candidats cinq champs techniques. **22 de ces 40 ont `rental_period_unconfirmed` ; 18 sans ce drapeau économique**, mais **0 éligible**. 11 identités originales/finales non conservées, quarantaine. Deux passes du site (58 puis 55 pages) ne sont pas directement comparables : ne pas déclarer une précision certifiée de 40/60.
+
+**Next exact** : score technique distinct de l'interprétation du loyer, parser formes prix M/K et surface terrain/habitable sans faux positif, fixtures de cas réels par source, mesures rappel/précision, étendre aux 171 encore non analysées, puis preuves activité/droits et dédup physique. Ce V1 n'est pas encore le parseur 200K production-ready. **0 DB, 0 publication, 0 merge/Vercel.**
