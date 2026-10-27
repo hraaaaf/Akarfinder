@@ -16,6 +16,7 @@ env:
 
 jobs:
   product-design-reviewer:
+    if: github.ref == 'refs/heads/main'
     name: Product Design Reviewer — Full Search 10/10
     runs-on: ubuntu-latest
     steps:
@@ -86,6 +87,7 @@ jobs:
           retention-days: 14
 
   independent-release-certifier:
+    if: github.ref == 'refs/heads/main'
     name: Independent Release Certifier — Full Search 10/10
     needs: product-design-reviewer
     runs-on: ubuntu-latest

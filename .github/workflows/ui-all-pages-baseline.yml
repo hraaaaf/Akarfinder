@@ -20,6 +20,7 @@ permissions:
 
 jobs:
   baseline:
+    if: github.ref == 'refs/heads/main'
     name: Chromium exhaustive all-pages audit
     runs-on: ubuntu-24.04
     timeout-minutes: 45

@@ -3,11 +3,16 @@ name: UI Polish P3 Visual Certification
 on:
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
 jobs:
   visual-certification:
+    if: github.ref == 'refs/heads/main'
     name: P3 Chromium 20-shot certification
     runs-on: ubuntu-24.04
     timeout-minutes: 25
