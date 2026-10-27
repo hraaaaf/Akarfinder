@@ -4,7 +4,7 @@ import { validateWorkflow } from './validate-workflow-efficiency.mjs';
 
 const quick = [
   'name: Quick gate', 'on:', '  pull_request:', '    paths:', "      - 'app/search/**'",
-  'concurrency:', '  group: by-pr', '  cancel-in-progress: true',
+  'concurrency:', '  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}', '  cancel-in-progress: true',
   'jobs:', '  unit:', '    steps:', '      - run: node --test test/unit.test.mjs', ''
 ].join('\n');
 const bad = (text, expected) => assert.ok(validateWorkflow('test.yml', text).some(x => x.includes(expected)), expected);
@@ -32,3 +32,10 @@ test('reject push-main plus dispatch without guard', () => bad([
   'concurrency:', '  group: after', '  cancel-in-progress: true',
   'jobs:', '  visual:', '    steps:', '      - run: npm run build', ''
 ].join('\n'), 'job guard'));
+
+test('PR without PR-number isolation is rejected', () => bad(quick.replace('github.event.pull_request.number || github.ref', 'github.ref'), 'per-PR'));
+test('one guarded job does not allow an unguarded heavy job', () => bad([
+  'on:', '  workflow_dispatch:', 'concurrency:', '  group: after', '  cancel-in-progress: true',
+  'jobs:', '  first:', "    if: github.ref == 'refs/heads/main'", '    steps:', '      - run: npm run build',
+  '  second:', '    steps:', '      - run: npx playwright install chromium', ''
+].join('\n'), 'every heavy'));

@@ -20,6 +20,7 @@ Adopted 2026-10-27. Applies prospectively to changed workflows, with a staged re
 - `scripts/ci/validate-workflow-efficiency.mjs` prevents newly changed heavy PR workflows, missing PR paths/concurrency and unguarded heavy dispatch runs.
 - Existing 539 workflows (inventory on 2026-10-27) are **not all certified compliant**; migrate high-cost workflows with individual reviews, preserving branch protection and active data pipelines. Avoid bulk blind edits.
 - Root README is deliberately unchanged in this PR: many legacy gates still subscribe to README-only edits, causing avoidable CI fanout. The canonical policy, engineering governance document and Notion Command Center are updated; scope-cleanup is staged.
+- Additional conversions: eight Search visual workflows, plus main-only canonical regression / UX / Phase 1 sweeps and an AFTER compile build. Canonical compile PR retains TypeScript only.
 - First conversion: `search-ux-fast-1.yml` (PR quick contracts/types) + `search-ux-fast-1-after.yml` (main-only Chromium/build).
 - Tests: `node --test scripts/ci/validate-workflow-efficiency.test.mjs`. CI execution proof and AFTER runs still required before declaring rollout complete.
 

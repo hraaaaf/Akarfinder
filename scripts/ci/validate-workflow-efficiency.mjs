@@ -16,16 +16,26 @@ export function validateWorkflow(file, source) {
   const heavy = /\b(?:playwright\s+install|playwright\s+test|chromium|npm\s+run\s+build|next\s+build|npm\s+(?:run\s+)?test:scrapers|npm\s+test|visual.certification|full.page.certification|full.matrix|full.*benchmark|load.test|k6\s+run)\b/i.test(text);
   const topConcurrency = /^concurrency:\s*$/m.test(text);
   const cancellation = /^  cancel-in-progress:\s*(?:true|\$\{\{)/m.test(text);
-  const mainGuard = /^\s+if:\s*.*(?:refs\/heads\/main|github\.ref_name\s*==\s*['"]main['"])/m.test(text);
   if (pr) {
     if (!/^    paths:\s*$/m.test(text)) errors.push('PR trigger must have targeted paths');
-    if (!topConcurrency || !cancellation) errors.push('PR trigger requires top-level concurrency with cancel-in-progress');
+    const group = text.match(/^  group:\s*(.*)$/m)?.[1] || '';
+    if (!topConcurrency || !cancellation || !group.includes('github.workflow') ||
+        !/(?:github\.event\.pull_request\.number|github\.head_ref)/.test(group)) {
+      errors.push('PR trigger requires per-PR top-level concurrency with cancel-in-progress');
+    }
     if (heavy) errors.push('heavy suite/build/Chromium must not run on pull_request; use post-merge main');
   }
   if (heavy) {
     if (!topConcurrency) errors.push('heavy workflow requires top-level concurrency');
     if (push && !/^    branches:\s*(?:\[\s*['"]?main['"]?\s*\]|\n\s+-\s*['"]?main['"]?)/m.test(text)) errors.push('heavy push workflow must be restricted to main');
-    if (dispatch && !mainGuard) errors.push('heavy workflow_dispatch requires job guard restricting to main');
+    // A main guard on one job must not authorize another unguarded heavy job.
+    const jobs = text.split(/^jobs:\s*$/m)[1] || '';
+    const starts = [...jobs.matchAll(/^  ([a-zA-Z0-9_-]+):\s*$/gm)];
+    const blocks = starts.map((m, i) => jobs.slice(m.index, starts[i + 1]?.index ?? jobs.length));
+    const risky = blocks.filter(block => /(?:npm\s+run\s+build|next\s+build|playwright|chromium|npm\s+test|test:scrapers|full.*benchmark)/i.test(block));
+    if (dispatch && risky.some(block => !/^    if:\s*.*(?:refs\/heads\/main|github\.ref_name\s*==\s*['"]main['"])/m.test(block))) {
+      errors.push('every heavy workflow_dispatch job requires main guard');
+    }
   }
   return errors.map(msg => `${file}: ${msg}`);
 }
