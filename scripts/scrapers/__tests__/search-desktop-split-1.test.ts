@@ -60,3 +60,17 @@ test("AFTER visual checks follow the P4 map-first mobile and map-dominant deskto
   assert.match(visual, /viewport\.width \* 0\.45/);
   assert.doesNotMatch(visual, /non-desktop split stacking changed/);
 });
+
+test("AFTER waits for actual MapLibre features, not merely the map pane or style", () => {
+  const map = source("components/search/SearchMapPanel.tsx");
+  const visual = source("scripts/audits/search-desktop-split-1-visual.mjs");
+  assert.match(map, /mapInstance\.on\("idle"/);
+  assert.match(map, /mapInstance\.areTilesLoaded\(\)/);
+  assert.match(map, /mapInstance\.queryRenderedFeatures\(\)\.length > 0/);
+  assert.match(map, /dataset\.searchMapVisualReady = "true"/);
+  assert.match(visual, /page\.waitForFunction\(/);
+  assert.match(visual, /data-search-map-visual-ready="true"/);
+  assert.match(visual, /timeout: 25_000/);
+  assert.match(visual, /MapLibre basemap did not render within bounded visual-ready gate/);
+  assert.match(visual, /map_visual_ready: split\.mapVisualReady/);
+});
