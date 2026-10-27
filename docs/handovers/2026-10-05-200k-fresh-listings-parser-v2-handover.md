@@ -615,3 +615,15 @@ Goal : inventaire dédupliqué read-only et échantillon stratifié 240 URL. Cod
 **Rester sur chemin critique** : corriger/valider parseurs primaires par portail (valeur/prix période, surface pertinente, ville, quartier, transaction) sur les 60 preuves ; analyser ensuite les **171** autres candidates en lots respectant les limites, dédup physique à partir de l'archive Neon en SELECT, preuves disponibilité/actualité et droits d'exploitation. **0 import, 0 publication, 0 fusion/merge, 0 déploiement Vercel**. Le gel 226K artifact 10910779576 HTTP410 demeure bloqué et non restauré.
 
 **État technique constaté** : PR #1105 branche `data/200k-fresh-parser-v2` ouverte. Pas de certification 200K.
+
+### Parser source-first 6 portails — 27 octobre 2026
+
+**Décision chemin critique** : avant d'augmenter les références du cap 200K, fiabiliser **identité source → bloc de l'annonce → prix/période → surface et type → ville/quartier → transaction → dédup → disponibilité/droits**. En cas de manque/contradiction, aucune promotion automatique.
+
+**Implémentation** : `scripts/acquisition/feenway-primary-parser-v1.mjs` (adaptateurs Mubawab, Avito, Yakeey, Agenz, Masaken, Sarouty), `scripts/data/__tests__/feenway-primary-parser-v1.test.mjs`, workflow `.github/workflows/feenway-primary-parser-v1.yml` et registre des cas `docs/data/AKARFINDER_FEENWAY_PRIMARY_PARSER_V1.md`. V1 **analyse les pages déjà récupérées**, elle ne scrappe ni n'écrit DB/production.
+
+**CI vérifiée** : commit `a7f752481aa0533c5d20e1cd7eb1c308853ee19d` / GitHub run [40484365918](https://github.com/hraaaaf/Akarfinder/actions/runs/40484365918) **SUCCESS 14 tests**, après correction de deux faux négatifs de quartier Mubawab observés dans run `40484157822`. Commit de durcissement `050ca12a4a0455fdc137ff3590f89c9e380f59db` vérifie la source **originelle** et finale et exclut la transaction ambiguë ; **CI [40484934709](https://github.com/hraaaaf/Akarfinder/actions/runs/40484934709) était encore QUEUED au dernier contrôle**, pas de succès présumé (17 tests attendus).
+
+**État** : 54 161 URL FeenWay découvertes, 231 identifiants sources absents des snapshots, 60 fiches sources déjà analysées par heuristique ancienne (58 pages reçues, 2 inaccessible, 20 avec signaux prix+surface, chiffre sous-évalué et non validé 5 champs) ; **0 annon­ce commercialement certifiée**. Nouvelle V1 : couverture complète de toutes les variantes monétaires K/M et vraie QA sur les 60 puis les 171 autres encore à démontrer, ne pas extrapoler.
+
+**Next exact** : vérifier run 40484934709 (s'il échoue : diagnostic/fix), benchmark reproductible sur vraies pages primaires de 60, mesurer précision et rappel des cinq champs par portail, corriger faux positifs d'unité et de géographie, étendre à 171 candidates, puis dédup physique, preuve d'activité et conformité. Aucune écriture DB, déploiement ou merge.
