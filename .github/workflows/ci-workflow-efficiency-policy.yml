@@ -5,6 +5,7 @@ on:
     paths:
       - ".github/workflows/**"
       - "scripts/ci/validate-workflow-efficiency.mjs"
+      - "scripts/ci/validate-workflow-efficiency.test.mjs"
   workflow_dispatch:
 
 concurrency:
@@ -21,6 +22,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 2
-      - name: Enforce heavy-workflow efficiency rules
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Unit-test execution policy
+        run: node --test scripts/ci/validate-workflow-efficiency.test.mjs
+      - name: Enforce full-PR workflow rules
+        env:
+          CI_DIFF_BASE: ${{ github.event.pull_request.base.sha || github.sha }}
+          CI_DIFF_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
         run: node scripts/ci/validate-workflow-efficiency.mjs

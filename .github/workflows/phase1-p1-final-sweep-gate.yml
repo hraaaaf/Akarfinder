@@ -1,7 +1,12 @@
 name: Phase 1 P1 Final Sweep Gate
 on:
-  pull_request:
+  push:
     branches: [main]
+    paths:
+      - "scripts/scrapers/__tests__/phase1-p1-final-sweep.test.ts"
+      - "scripts/governance/**"
+      - "docs/PHASE1_P1_*"
+      - ".github/workflows/phase1-p1-final-sweep-gate.yml"
   workflow_dispatch: {}
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -10,6 +15,7 @@ permissions:
   contents: read
 jobs:
   final-sweep:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
