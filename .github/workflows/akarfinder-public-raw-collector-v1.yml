@@ -1,0 +1,22 @@
+name: AkarFinder public RAW collector QA (offline)
+on:
+  push:
+    branches:
+      - data/200k-fresh-parser-v2
+    paths:
+      - scripts/acquisition/public-raw-collector-v1.mjs
+      - scripts/data/__tests__/public-raw-collector-v1.test.mjs
+      - .github/workflows/akarfinder-public-raw-collector-v1.yml
+permissions:
+  contents: read
+jobs:
+  failforward-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Per-host fail-forward and RAW permissions (offline)
+        run: node --test scripts/data/__tests__/public-raw-collector-v1.test.mjs
