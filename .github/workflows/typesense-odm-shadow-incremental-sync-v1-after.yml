@@ -1,0 +1,33 @@
+name: Typesense ODM Shadow Incremental Sync V1 AFTER
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "lib/typesense-shadow/incremental-sync.ts"
+      - "scripts/scrapers/__tests__/typesense-odm-shadow-incremental-sync-v1.test.ts"
+      - ".github/workflows/typesense-odm-shadow-incremental-sync-v1.yml"
+      - ".github/workflows/typesense-odm-shadow-incremental-sync-v1-after.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Production build (read-only)
+        run: npm run build
