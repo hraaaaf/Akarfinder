@@ -220,3 +220,14 @@ Le run [40971175021](https://github.com/hraaaaf/Akarfinder/actions/runs/40971175
 **Nouveau run :** [40971519388](https://github.com/hraaaaf/Akarfinder/actions/runs/40971519388), initialement observé `in_progress` : tests de sécurité, échantillon stratifié de destinations publiques, mode 82 villes et **JSONL de provenance complet**. À récupérer et comparer avant validation. La file de **1 720 pages marchés/quartiers FR** reste une préparation offline (35 lots de 50), pas des pages déjà auditées.
 
 **N01 reste ouvert.** Next : vérifier l'artifact du run, confirmer la 194e URL et établir les lacunes pages marchés/quartiers/pagination ; démarrer ensuite un lot pilote borné avec respect robots/rythme/arrêt sur refus. Aucun déploiement Vercel ni écriture DB.
+
+## N01 — réconciliation de l'échantillon stratifié et des 82 villes (29 octobre 2026)
+
+**Run [40971519388](https://github.com/hraaaaf/Akarfinder/actions/runs/40971519388) : SUCCESS.** Artifacts `12941060752` (40 pages / liens hors sitemap, JSONL) et `12941270257` (82 villes / liens hors sitemap, JSONL) téléchargés et lus directement.
+
+- **Échantillon stratifié :** 40/40 pages HTTP 200 ; **827 liens de fiches uniques**, **284 URL hors des six XML**, 0 erreur, aucune page détail demandée ; SHA-256 indépendant du JSONL hors-sitemap : `2b2004776e0c0e7b9974ef3898d40c1b8372a8cac7565683d4cd5111ac2b352f`.
+- **Villes :** 82/82 pages HTTP 200 ; **1 471 liens uniques**, **194 URL hors des six XML**, 0 erreur ; SHA-256 indépendant du JSONL hors-sitemap : `4945be4f90011820c385178d760bf8bbe3225db29ff9a7fd6aefe46de431bcd6`.
+- **Diff indépendant des deux JSONL :** **22 URL hors-sitemap communes**, **262 exclusives à l'échantillon stratifié**, **172 exclusives aux villes**, donc **456 URL distinctes absentes des six XML**. Ce sont des liens publics non qualifiés ; leur disponibilité et unicité physique ne sont pas vérifiées. Aucune extrapolation au catalogue global.
+- **Couverture restante :** la file hors villes contient **1 207 pages quartiers FR** et **513 pages marchés FR** (35 lots de 50, préparation locale testée). Les langues alternatives, paginations et liens internes non visibles dans les sitemaps restent hors certificat. La simple présence d'une URL n'autorise pas à republier le contenu.
+
+**N01 reste OUVERT.** Next : stabiliser la CI/les edits concurrents sur `data/200k-fresh-parser-v2`, puis tester un lot pilote de 50 quartiers avec provenance et arrêt au premier refus 403/429, sans réexécuter inutilement les 82 villes. Aucune écriture DB ni déploiement.
