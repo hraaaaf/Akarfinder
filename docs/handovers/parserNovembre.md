@@ -80,3 +80,13 @@ Autres titres relevés : `recent.xml` 1 000 URL ; `cities.xml` 246 ; `quartiers.
 `recent.xml` expose des identifiants jusqu'à `240233` ; les six sitemaps d'annonces ne prouvent pas à eux seuls la couverture de ces références. `robots.txt` indique `Allow: /` et `Disallow: /api/`, `/admin/`, `/paiement/`, `/samsar/`, avec signal `search=yes, ai-train=no, use=reference`. Ces signaux ne valent pas licence de republier intégralement textes et photos.
 
 **N01 statut : EN COURS.** Preuves restantes : télécharger les six XML originaux sans troncature, SHA-256, déduplication inter-partitions, couverture villes/quartiers, rapport des URL manquantes. Aucun nouveau RAW, aucune écriture DB, aucun déploiement vérifié dans cette opération.
+
+## N01 — validation croisée du manifeste historique (29 octobre 2026)
+
+**Preuve locale indépendante :** archive GitHub `github-actions-artifact-12721712627.zip` disponible dans les pièces du chantier, fichier `discovery.jsonl` (15 165 080 octets). Analyse JSONL : **54 161 entrées, 54 161 URL distinctes, 54 161 identifiants distincts** ; distribution : 10 000 par `listings-0..4.xml` et 4 161 dans `listings-5.xml`. SHA-256 calculé : `fec482fc39ece6909bb5a46abc57e5372c16a6e7ef9e00810af6bfcf469d0d4b`, égal à `manifest_sha256` dans `summary.json`. Observation historique horodatée `2026-10-27T09:08:22.581Z`. Identifiants historiques de 167989 à 237346.
+
+**Comparaison live :** les titres des six sitemaps consultés via TinyFish le 29 octobre déclarent **56 316 URL**, soit **+2 155 références déclarées** ; le sixième passe de 4 161 à 6 316. `recent.xml` déclare 1 000 URL, avec des IDs observés jusqu'à 240233, sans preuve d'unicité inter-partitions ni de disponibilité des annonces.
+
+**Limitation explicite :** les réponses TinyFish tronquent l'affichage des grands sitemaps à 5 000 URL ; le téléchargement des six XML intégraux n'a pas abouti dans l'environnement de vérification (DNS indisponible). Le **nouveau total distinct** n'est donc **pas certifié**. Aucune nouvelle collecte RAW, écriture DB ou publication n'est déclarée.
+
+**Next exact :** obtenir les six XML complets par une exécution autorisée avec accès réseau ; calculer leur SHA-256 et leur ensemble d'URL canonisées ; mesurer le delta réel contre le manifeste historique, puis la couverture des pages villes/quartiers/pagination. N01 reste **EN COURS**.
