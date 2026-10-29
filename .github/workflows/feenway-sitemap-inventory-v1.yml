@@ -6,6 +6,8 @@ on:
     paths:
       - scripts/acquisition/feenway-sitemap-inventory-v1.mjs
       - scripts/data/__tests__/feenway-sitemap-inventory-v1.test.mjs
+      - scripts/acquisition/feenway-n01-page-links-audit.mjs
+      - scripts/data/__tests__/feenway-n01-page-links-audit.test.mjs
       - .github/workflows/feenway-sitemap-inventory-v1.yml
   workflow_dispatch:
 permissions:
