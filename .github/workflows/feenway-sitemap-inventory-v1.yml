@@ -54,6 +54,8 @@ jobs:
         run: node scripts/acquisition/feenway-n01-page-links-audit.mjs .tmp/feenway-n01-page-links/report.json .tmp/feenway-sitemap-inventory-v1/discovery.jsonl .tmp/feenway-n01-surfaces/report.jsonl
       - name: N01 all city landing pages (robots checked, 1 request/second)
         run: node scripts/acquisition/feenway-n01-page-links-audit.mjs .tmp/feenway-n01-cities/report.json .tmp/feenway-sitemap-inventory-v1/discovery.jsonl .tmp/feenway-n01-surfaces/report.jsonl cities
+      - name: N01 bounded pilot batch 1 of public quartier and market pages
+        run: node scripts/acquisition/feenway-n01-page-links-audit.mjs .tmp/feenway-n01-pilot-batch1/report.json .tmp/feenway-sitemap-inventory-v1/discovery.jsonl .tmp/feenway-n01-surfaces/report.jsonl batch:1
       - name: Save observation as evidence only
         uses: actions/upload-artifact@v4
         with:
@@ -91,5 +93,13 @@ jobs:
         with:
           name: feenway-n01-cities-urls
           path: .tmp/feenway-n01-cities/
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Preserve N01 first 50-page pilot with provenance
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: feenway-n01-pilot-batch1
+          path: .tmp/feenway-n01-pilot-batch1/
           if-no-files-found: warn
           retention-days: 30

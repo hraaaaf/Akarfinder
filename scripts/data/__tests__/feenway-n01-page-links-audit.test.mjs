@@ -53,3 +53,12 @@ test('city mode collects only deduplicated FR public city pages',()=>{
   'https://www.feenway.com/immobilier/rabat'
  ]);
 });
+
+import { buildQueue } from '../../acquisition/feenway-n01-surface-queue.mjs';
+test('batch-1 first 50 public quartier pages are bounded and deduplicated',()=>{
+ const rows=Array.from({length:65},(_,i)=>({sitemap:'quartiers.xml',url:'https://www.feenway.com/appartement-a-vendre/casablanca/zone-'+i}));
+ const queue=buildQueue(rows,50).rows.filter(x=>x.batch===1);
+ assert.equal(queue.length,50);
+ assert.equal(new Set(queue.map(x=>x.url)).size,50);
+ assert.ok(queue.every(x=>x.url.startsWith('https://www.feenway.com/')&&x.listing_detail_requests===0));
+});

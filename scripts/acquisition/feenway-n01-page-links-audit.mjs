@@ -102,7 +102,7 @@ async function main(){
  report.not_in_six_urls=[...missing].sort();
  report.observed_listing_urls=[...observed].sort();
  report.observed_sha256=sha(report.observed_listing_urls.join('\n')+'\n');
- report.sample_design=mode==='cities'?'all public French-language city landing pages from cities.xml, without pagination':'up to 40 deterministic stratified landing pages: fixed 3, 8 cities, 12 markets, 17 quartiers; NOT an exhaustive site crawl';
+ report.sample_design=mode==='cities'?'all public French-language city landing pages from cities.xml, without pagination':mode==='batch'?'single 50-page maximum public FR quartiers/markets batch, stable batch numbering and 1-second spacing':'up to 40 deterministic stratified landing pages: fixed 3, 8 cities, 12 markets, 17 quartiers; NOT an exhaustive site crawl';
  const outsideRows=missing.map(url=>({url,discovered_on:missingSources.get(url)||[],status:'unverified_listing_link'}));
  const outsideText=outsideRows.map(JSON.stringify).join('\n')+'\n';
  report.outside_manifest_sha256=sha(outsideText);
