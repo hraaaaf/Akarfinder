@@ -45,3 +45,12 @@ The other workflow files outside the 107-name filter remain **unexamined by this
 - [PR #1121](https://github.com/hraaaaf/Akarfinder/pull/1121) merged at `e32618462d099da4da0413cc5937d20a4a9ccb89` after **4/4 PR checks SUCCESS** (policy, Typesense, MASS-X1, Product Constitution).
 - [Typesense AFTER run 40524923722](https://github.com/hraaaaf/Akarfinder/actions/runs/40524923722) on the exact merge HEAD completed **SUCCESS**. This certifies the scoped build relocation and the changed workflows only, not all DATA pipelines.
 - [Issue #1119](https://github.com/hraaaaf/Akarfinder/issues/1119) stays OPEN for risk-screened legacy expansion.
+
+## Second risk-reviewed read-only slice — PR #1123 (2026-10-29)
+
+- [PR #1123](https://github.com/hraaaaf/Akarfinder/pull/1123) merged into `main` at `04514897f37c1a6eb7fdd862e8edbc65f54cfc8a` after **4/4 PR checks SUCCESS**: DATA Coverage Gap Auditor Gate, DATA Coverage Mubawab Baseline, CI Workflow Efficiency Policy and Product Constitution Gate.
+- `data-coverage-gap-auditor-gate.yml` is now scoped PR unit tests with per-PR cancellation; its previous `npm run build` moved to `data-coverage-gap-auditor-after.yml`, triggered only on targeted `push main`, with read-only permissions, main-guarded manual dispatch and top-level concurrency.
+- `data-coverage-mubawab-baseline.yml` gained only top-level PR cancellation. Its existing local evidence/report generation and artifact collection were retained.
+- Source check: `scripts/audits/data-coverage-gap-audit.ts` reads a supplied local JSON and writes local JSON/Markdown reports; unit tests use synthetic data. `scripts/audits/data-coverage-mubawab-baseline.ts` reads repository evidence and writes workspace artifacts. The two changed workflows have no configured DB credentials, automatic production deploy, or mutation steps.
+- Exact main [DATA Coverage Gap Auditor AFTER 40969065083](https://github.com/hraaaaf/Akarfinder/actions/runs/40969065083) triggered for the merge. **Completed SUCCESS** on the exact merge SHA; this certifies the scoped read-only build step.
+- The protected DATA/Neon write pipelines remain outside this migration. Issue [#1119](https://github.com/hraaaaf/Akarfinder/issues/1119) stays open for later risk-reviewed batches.
