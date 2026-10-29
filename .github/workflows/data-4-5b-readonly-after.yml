@@ -1,0 +1,36 @@
+name: DATA-4.5B Read-only Build AFTER
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/data4/promoimmo-controlled-expansion-write.ts"
+      - "scripts/data4/__tests__/promoimmo-controlled-expansion-write.test.ts"
+      - "scripts/audits/data-4-5b-collect-promoimmo-sitemap-evidence.ts"
+      - "scripts/audits/data-4-5b-promoimmo-controlled-expansion-write.ts"
+      - "scripts/ci/__tests__/data45b-workflow-boundaries.test.mjs"
+      - ".github/workflows/data-4-5b-promoimmo-controlled-expansion-write.yml"
+      - ".github/workflows/data-4-5b-readonly-after.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Production build (no Supabase secret, no write command)
+        run: npm run build
