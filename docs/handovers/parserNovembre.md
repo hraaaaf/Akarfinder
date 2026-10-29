@@ -168,3 +168,15 @@ Total de navigation unique dans ces neuf partitions = **5 461 URL**, avec `recen
 **Automatisation lecture seule du contrôle des liens** : script `scripts/acquisition/feenway-n01-page-links-audit.mjs` + tests, branche `data/200k-fresh-parser-v2`, workflow [40970666214](https://github.com/hraaaaf/Akarfinder/actions/runs/40970666214) **observé queued** (à inspecter, aucun succès présumé).
 
 **Statut N01 : OUVERT.** L'inventaire des partitions XML est complet à l'instant des relevés, mais la couverture exhaustive des annonces accessibles via catégories, villes, quartiers, pagination et liens internes n'est pas démontrée. Next : analyser artifact du run 40970666214, mesurer et documenter les URL hors-sitemap, élaborer une stratégie bornée pour explorer ces autres entrées avant la clôture N01 et le passage N02.
+
+## N01 — preuve reproductible des liens d'annonces hors six sitemaps (29 octobre 2026)
+
+[Run 40970666214](https://github.com/hraaaaf/Akarfinder/actions/runs/40970666214) **SUCCESS**, tests offline PASS, artifact `12940610727` téléchargé et `report.json` vérifié indépendamment.
+
+- **12/12 pages publiques HTTP 200** contrôlées (ville, marché/catégorie, quartier), sans accès à une fiche d'annonce : **263 URL d'annonces distinctes visibles**, dont **39 hors du manifeste `56 327`** à la date de l'audit ; **0 erreur**, `listing_detail_requests=0`, `db_writes=0`.
+- Les **7 écarts** de l'échantillon manuel précédent sont retrouvés à l'identique. Sur les **39 URL hors-sitemap**, **25 identifiants sont inférieurs à 167 989** (minimum du manifeste des six listings) et **14** sont à l'intérieur de la plage d'IDs couverte : il ne s'agit pas seulement d'annonces nouvellement arrivées.
+- Distribution des manques par page : `/immobilier/casablanca` 0/18, `/appartement-a-vendre/casablanca` 6/24, `/appartement-a-vendre/casablanca/racine` 1/24, `/immobilier/marrakech` 4/18, `/immobilier/tanger` 2/18, `/terrain-a-vendre/casablanca` 1/24, `/terrain-a-vendre/tanger` 0/24, `/terrain-a-vendre/fes` 0/24, `/terrain-a-vendre/marrakech/route-de-fez` 9/24, `/villa-a-vendre/casablanca/ain-diab-extension` 6/24, `/villa-a-vendre/marrakech/route-de-tahanaout` 0/24, `/appartement-a-louer/casablanca/palmier-maarif` 10/18.
+- Le résultat ne justifie **aucune extrapolation de 39/263** à l'ensemble du site. Il réfute toutefois **l'exhaustivité** d'un inventaire limité aux XML. Les URL ne sont pas des biens uniques/disponibles certifiés.
+- **Suivi :** nouveau mode `cities` du script `feenway-n01-page-links-audit.mjs`, pour examiner toutes les pages villes FR référencées, à **une requête par seconde**, sans détails ni accès `/api/`. [Run 40970980850](https://github.com/hraaaaf/Akarfinder/actions/runs/40970980850) observé `queued`. Ne pas déclarer sa sortie avant vérification.
+
+**N01 OUVERT. Next exact :** inspecter ce run de villes et son rapport, puis planifier l'exploration bornée des autres 1 539 pages marchés et 2 414 pages quartiers (l'inventaire N01 des surfaces est fait, mais la couverture de leurs liens internes ne l'est pas). Ne pas passer N01 en CLOSED uniquement sur une CI verte.
