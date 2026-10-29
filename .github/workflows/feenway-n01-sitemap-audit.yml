@@ -22,6 +22,8 @@ jobs:
           node-version: '22'
       - name: Script syntax
         run: node --check scripts/acquisition/feenway-n01-sitemap-audit.mjs
+      - name: Fixture tests: deduplication, raw SHA-256, errors
+        run: node --test scripts/data/__tests__/feenway-n01-sitemap-audit.test.mjs
       - name: Capture six XML reports, no listing pages and no DB
         run: node scripts/acquisition/feenway-n01-sitemap-audit.mjs artifacts/feenway-n01-sitemap-audit.json
       - name: Check completeness of six XML files

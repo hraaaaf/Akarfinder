@@ -14,14 +14,20 @@ for(const path of paths){
   const response=await fetch(origin+path,{signal:AbortSignal.timeout(timeoutMs),headers:{'user-agent':'AkarFinderPublicSitemapAudit/1.0 (+read-only; no listing fetch)'}});
   if(!response.ok)throw Error('HTTP '+response.status);
   const type=response.headers.get('content-type')||'';
-  const xml=await response.text();
-  if(!xml.includes('<urlset')&&!xml.includes(':urlset'))throw Error('not a URL sitemap');
+  if(Number(response.headers.get('content-length')||0)>8000000)throw Error('XML exceeds 8MB');
+  let total=0;const chunks=[];
+  if(!response.body)throw Error('missing XML response body');
+  for await(const part of response.body){total+=part.byteLength;if(total>8000000)throw Error('XML exceeds 8MB');chunks.push(Buffer.from(part));}
+  const raw=Buffer.concat(chunks);
+  const xml=new TextDecoder('utf-8',{fatal:true}).decode(raw);
+  if((!xml.includes('<urlset')&&!xml.includes(':urlset'))||!/<\\/urlset\\s*>/.test(xml))throw Error('incomplete URL sitemap');
   const urls=[...xml.matchAll(/<loc>\s*(https?:\/\/[^<]+)\s*<\/loc>/g)].map(m=>m[1].trim().replaceAll('&amp;','&'));
   const listings=urls.filter(u=>/^https:\/\/www\.feenway\.com\/listings\/\d+$/.test(u));
+  if(!urls.length||listings.length!==urls.length)throw Error('empty or invalid listing URLs');
   const local=new Set(listings);
   let crossDuplicates=0;
   for(const url of local){if(all.has(url))crossDuplicates++;else all.add(url);}
-  report.files.push({path,http_status:response.status,content_type:type,bytes:Buffer.byteLength(xml),sha256:sha(xml),url_elements:urls.length,listing_urls:listings.length,unique_in_file:local.size,duplicate_in_file:listings.length-local.size,duplicates_across_files:crossDuplicates});
+  report.files.push({path,http_status:response.status,content_type:type,bytes:raw.byteLength,raw_sha256:sha(raw),url_elements:urls.length,listing_urls:listings.length,unique_in_file:local.size,duplicate_in_file:listings.length-local.size,duplicates_across_files:crossDuplicates});
  }catch(e){report.errors.push({path,error:String(e?.message||e)});}
 }
 report.unique_listing_urls=all.size;
