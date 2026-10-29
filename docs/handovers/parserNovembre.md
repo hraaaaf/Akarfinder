@@ -112,3 +112,13 @@ TinyFish Fetch en format HTML, sur `listings-5.xml`, annonce désormais **6 321 
 ## N01 — implémentation audit XML intégral (29 octobre 2026)
 
 Script en lecture seule créé : `scripts/acquisition/feenway-n01-sitemap-audit.mjs` (commit `92c0e517`). Il télécharge uniquement les six sitemaps publics `listings-0..5.xml`, avec timeout de 20 s par fichier, calcule SHA-256 des réponses XML, compte les URL et les doublons intra/inter-fichiers, puis écrit un rapport JSON local. Pas de requêtes vers les pages d'annonces, pas d'écriture DB, pas de déploiement. **Le script n'a pas encore été exécuté dans un environnement avec accès réseau et ses résultats ne sont pas certifiés.** Next : test de syntaxe, exécution réseau autorisée, inspection du JSON et comparaison au manifeste historique avant clôture N01.
+
+## N01 — exécution de contrôle et CI dédiée (29 octobre 2026)
+
+- Syntaxe du script `feenway-n01-sitemap-audit.mjs` : `node --check` PASS (Node 22).
+- Vérification locale sur réponses XML simulées : six sources, sept URL uniques, deux doublons (un intra, un inter), empreinte SHA-256 calculée ; échec HTTP 503 simulé correctement traité (rapport conservé, `complete=false`, code retour non nul).
+- Exécution réseau locale : les six requêtes retournent `fetch failed` ; aucun XML complet récupéré localement et aucun inventaire live certifié.
+- Workflow GitHub Actions en lecture seule ajouté sur branche `data/200k-fresh-parser-v2` : `.github/workflows/feenway-n01-sitemap-audit.yml` (commit `3e9570e4`), run [40965410705](https://github.com/hraaaaf/Akarfinder/actions/runs/40965410705) observé `queued` ; rapport JSON artifact prévu même en cas d'échec. Ce run n'est **pas une preuve de succès** avant inspection de son résultat.
+- Limite à lever lors de la certification : le script actuel calcule le SHA-256 du texte XML décodé, et non des octets HTTP bruts. Les six réponses, les comptes et la comparaison avec le manifeste historique de 54 161 URL restent à vérifier. Les autres surfaces (villes, quartiers, pagination) ne sont pas closes.
+
+**Statut N01 : OUVERT, non certifié.** **Next exact :** inspecter l'artifact JSON du run 40965410705 ; valider la capture complète, l'intégrité sur octets bruts et les écarts historiques avant toute clôture N01 ou passage à N02. Zéro déploiement, zéro écriture DB pendant ce lot.
