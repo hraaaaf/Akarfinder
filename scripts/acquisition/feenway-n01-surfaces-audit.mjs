@@ -21,7 +21,7 @@ export function locs(xml){
 export function safeUrl(raw){
  try{
   const u=new URL(raw);
-  if(u.origin!==BASE||u.username||u.password||u.search||u.hash)return null;
+  if(u.origin!==BASE||u.username||u.password||u.search||u.hash||/^\/(api|admin|paiement|samsar)(\/|$)/.test(u.pathname))return null;
   return u.href;
  }catch{return null;}
 }
