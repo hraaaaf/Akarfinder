@@ -44,6 +44,12 @@ jobs:
           node --test scripts/data/__tests__/feenway-n01-surfaces-audit.test.mjs
       - name: N01 public sitemap surfaces inventory (nine partitions)
         run: node scripts/acquisition/feenway-n01-surfaces-audit.mjs .tmp/feenway-n01-surfaces/report.json .tmp/feenway-sitemap-inventory-v1/discovery.jsonl
+      - name: N01 landing-page link audit syntax and offline tests
+        run: |
+          node --check scripts/acquisition/feenway-n01-page-links-audit.mjs
+          node --test scripts/data/__tests__/feenway-n01-page-links-audit.test.mjs
+      - name: N01 sample public city, category and quartier links
+        run: node scripts/acquisition/feenway-n01-page-links-audit.mjs .tmp/feenway-n01-page-links/report.json .tmp/feenway-sitemap-inventory-v1/discovery.jsonl .tmp/feenway-n01-surfaces/report.jsonl
       - name: Save observation as evidence only
         uses: actions/upload-artifact@v4
         with:
@@ -65,5 +71,13 @@ jobs:
         with:
           name: feenway-n01-public-surfaces
           path: .tmp/feenway-n01-surfaces/
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Preserve N01 off-sitemap landing-page evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: feenway-n01-page-link-gaps
+          path: .tmp/feenway-n01-page-links/
           if-no-files-found: warn
           retention-days: 30
