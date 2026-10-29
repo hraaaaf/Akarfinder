@@ -71,7 +71,7 @@ async function main(){
  const allListing=new Set((await readFile(listings,'utf8')).trim().split('\n').map(x=>JSON.parse(x).url));
  const pages=(await readFile(nonlisting,'utf8')).trim().split('\n').map(x=>JSON.parse(x));
  if(allListing.size<1||pages.length<1)throw Error('missing_anchors');
- const batchMatch=/^batch:([1-9]\\d*)$/.exec(process.argv[5]||'');
+ const batchMatch=/^batch:([1-9]\d*)$/.exec(process.argv[5]||'');
  const mode=batchMatch?'batch':process.argv[5]==='cities'?'cities':'sample';
  const batchNumber=batchMatch?Number(batchMatch[1]):null;
  const selected=mode==='cities'?citySeeds(pages):mode==='batch'?buildQueue(pages,50).rows.filter(x=>x.batch===batchNumber).map(x=>x.url):seeds(pages);
@@ -101,7 +101,7 @@ async function main(){
  report.not_in_six_examples=missing.slice(0,60);
  report.not_in_six_urls=[...missing].sort();
  report.observed_listing_urls=[...observed].sort();
- report.observed_sha256=sha(report.observed_listing_urls.join('\\n')+'\\n');
+ report.observed_sha256=sha(report.observed_listing_urls.join('\n')+'\n');
  report.sample_design=mode==='cities'?'all public French-language city landing pages from cities.xml, without pagination':'up to 40 deterministic stratified landing pages: fixed 3, 8 cities, 12 markets, 17 quartiers; NOT an exhaustive site crawl';
  const outsideRows=missing.map(url=>({url,discovered_on:missingSources.get(url)||[],status:'unverified_listing_link'}));
  const outsideText=outsideRows.map(JSON.stringify).join('\n')+'\n';
