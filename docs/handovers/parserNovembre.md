@@ -231,3 +231,16 @@ Le run [40971175021](https://github.com/hraaaaf/Akarfinder/actions/runs/40971175
 - **Couverture restante :** la file hors villes contient **1 207 pages quartiers FR** et **513 pages marchés FR** (35 lots de 50, préparation locale testée). Les langues alternatives, paginations et liens internes non visibles dans les sitemaps restent hors certificat. La simple présence d'une URL n'autorise pas à republier le contenu.
 
 **N01 reste OUVERT.** Next : stabiliser la CI/les edits concurrents sur `data/200k-fresh-parser-v2`, puis tester un lot pilote de 50 quartiers avec provenance et arrêt au premier refus 403/429, sans réexécuter inutilement les 82 villes. Aucune écriture DB ni déploiement.
+
+## N01 — extension villes + catégories/quartiers réconciliée (29 octobre 2026)
+
+**CI :** [40971519388](https://github.com/hraaaaf/Akarfinder/actions/runs/40971519388) **SUCCESS**, vérification `node --check` et tests hors ligne PASS, collecte HTTP en lecture seule, artifacts `12941270257` (villes) et `12941060752` (échantillon stratifié) téléchargés et inspectés. Réponses publiques : **82/82 villes** et **40/40 pages stratifiées**, **0 erreur**. Aucune page d'annonce détaillée demandée, aucune écriture DB et aucun déploiement.
+
+**Comptes observés, avec SHA-256 vérifiés :**
+- Pages villes : **1 471 liens distincts**, dont **194 URL hors des 56 327 URL des six sitemaps** ; fichier `report.jsonl` = **194/194 URL identifiées avec provenance**, SHA-256 `4945be4f90011820c385178d760bf8bbe3225db29ff9a7fd6aefe46de431bcd6`.
+- 40 pages réparties (villes, marchés, quartiers) : **827 liens distincts**, dont **284 URL hors six sitemaps** ; `report.jsonl` = **284/284**, SHA-256 `2b2004776e0c0e7b9974ef3898d40c1b8372a8cac7565683d4cd5111ac2b352f`.
+- **Recoupement indépendant des deux JSONL et du manifeste des six XML : 22 liens hors sitemap communs, 456 URL hors sitemap distinctes**, toutes absentes du manifeste initial. **56 783 URL de fiches distinctes découvertes au total** (56 327 sitemap + 456 liens landing), sans certification de statut/disponibilité/unicité physique. SHA-256 du manifeste de rapprochement trié `2ec7f642fdea2155ff99d3f7cc7ec274e94d22d61a8700c46e272b8e146b524e`.
+
+**Couverture encore ouverte :** la file construite offline depuis les neuf partitions réunit **1 720 pages FR marchés/quartiers** (1 207 quartiers et 513 marchés), **35 lots maximum de 50**. Ces pages n'ont pas été exhaustivement explorées ; pagination/liens internes non certifiés. Les 122 captures de pages comptent des doublons de destinations possibles entre les deux groupes, et ne doivent pas être présentées comme 122 destinations uniques.
+
+**État : N01 OUVERT.** Next exact : préparer et auditer un premier lot borné de 50 pages quartiers/marchés avec robots, 403/429 fail closed, rythme limité, provenance et résultat artifact, puis réconcilier le rendement et prolonger si sain. N02 reste non engagé.
