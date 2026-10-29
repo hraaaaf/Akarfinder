@@ -210,3 +210,13 @@ Le run [40971175021](https://github.com/hraaaaf/Akarfinder/actions/runs/40971175
 **CI élargie :** run [40971365129](https://github.com/hraaaaf/Akarfinder/actions/runs/40971365129) FAILURE sur `evenSample is not defined` dans le test (import manquant), avant la collecte élargie. Correctif test `8f22294a`; workflow désormais déclenché par script et tests associés, commit `835e58bf`. Run [40971519388](https://github.com/hraaaaf/Akarfinder/actions/runs/40971519388) initialement observé `queued` ; **pas encore de rapport certifié** pour la version corrigée.
 
 **Statut N01 : OUVERT.** Next exact : récupérer le JSONL complet des URL hors sitemap et le SHA de provenance du run corrigé ; mesurer unions/recouvrements avec les 39 URL du premier échantillon et confirmer la couverture marchés/quartiers sans sur-solliciter FeenWay.
+
+## N01 — couverture des 82 villes certifiée en lecture seule (29 octobre 2026)
+
+**CI :** [40970980850](https://github.com/hraaaaf/Akarfinder/actions/runs/40970980850), `completed/success`. Artifact `feenway-n01-82-cities.zip` / `report.json` lu et contrôlé indépendamment : **82/82 pages villes FR HTTP 200**, **1 471 liens d'annonce distincts**, **194 liens déclarés hors des six sitemaps**, **0 erreur**, `listing_detail_requests=0`, `db_writes=0`. 67 pages de ville contiennent au moins un lien hors sitemap. L'inventaire ne mesure ni la disponibilité réelle ni les biens uniques.
+
+**Limite probatoire identifiée :** le précédent `report.json` ne conservait que douze `outside_examples` par page ; il est donc possible de reconstruire **193/194 URL absentes** des six sitemaps avec leurs provenances à partir de cet artifact, la 194e est comptée mais n'est pas identifiée dans l'ancien rapport. Le contrôle indépendant croise ces 193 URL contre le manifeste intégral des **56 327 URL**. Ne pas convertir cet ancien rapport en manifeste exhaustif.
+
+**Nouveau run :** [40971519388](https://github.com/hraaaaf/Akarfinder/actions/runs/40971519388), initialement observé `in_progress` : tests de sécurité, échantillon stratifié de destinations publiques, mode 82 villes et **JSONL de provenance complet**. À récupérer et comparer avant validation. La file de **1 720 pages marchés/quartiers FR** reste une préparation offline (35 lots de 50), pas des pages déjà auditées.
+
+**N01 reste ouvert.** Next : vérifier l'artifact du run, confirmer la 194e URL et établir les lacunes pages marchés/quartiers/pagination ; démarrer ensuite un lot pilote borné avec respect robots/rythme/arrêt sur refus. Aucun déploiement Vercel ni écriture DB.
