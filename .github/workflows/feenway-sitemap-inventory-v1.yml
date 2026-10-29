@@ -22,6 +22,20 @@ jobs:
           node-version: '22'
       - name: Local safety tests
         run: node --test scripts/data/__tests__/feenway-sitemap-inventory-v1.test.mjs
+      - name: N01 raw-byte audit local syntax and fixture tests
+        run: |
+          node --check scripts/acquisition/feenway-n01-sitemap-audit.mjs
+          node --test scripts/data/__tests__/feenway-n01-sitemap-audit.test.mjs
+      - name: N01 raw-byte SHA-256 of six public XML responses
+        run: node scripts/acquisition/feenway-n01-sitemap-audit.mjs .tmp/feenway-n01/sha-256.json
+      - name: Assert raw XML completeness
+        run: |
+          node --input-type=module -e "
+          import { readFileSync } from 'node:fs';
+          const r=JSON.parse(readFileSync('.tmp/feenway-n01/sha-256.json','utf8'));
+          if(!r.complete || r.files.length!==6 || r.errors.length || r.files.some(f=>! /^[a-f0-9]{64}$/.test(f.raw_sha256))) process.exit(1);
+          console.log(JSON.stringify({files:r.files.length,unique_listing_urls:r.unique_listing_urls,duplicate_urls:r.duplicate_urls}));
+          "
       - name: Six public XML sources; fail closed
         run: node scripts/acquisition/feenway-sitemap-inventory-v1.mjs --out=.tmp/feenway-sitemap-inventory-v1
       - name: Save observation as evidence only
@@ -30,4 +44,12 @@ jobs:
           name: feenway-sitemap-discovery
           path: .tmp/feenway-sitemap-inventory-v1/
           if-no-files-found: error
+          retention-days: 30
+      - name: Preserve N01 raw XML integrity proof even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: feenway-n01-raw-byte-sha
+          path: .tmp/feenway-n01/sha-256.json
+          if-no-files-found: warn
           retention-days: 30
