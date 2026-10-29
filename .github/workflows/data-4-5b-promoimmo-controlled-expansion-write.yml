@@ -8,6 +8,8 @@ on:
       - "scripts/audits/data-4-5b-collect-promoimmo-sitemap-evidence.ts"
       - "scripts/audits/data-4-5b-promoimmo-controlled-expansion-write.ts"
       - ".github/workflows/data-4-5b-promoimmo-controlled-expansion-write.yml"
+      - ".github/workflows/data-4-5b-readonly-after.yml"
+      - "scripts/ci/__tests__/data45b-workflow-boundaries.test.mjs"
   push:
     branches: [main]
     paths:
@@ -16,7 +18,14 @@ on:
       - "scripts/audits/data-4-5b-collect-promoimmo-sitemap-evidence.ts"
       - "scripts/audits/data-4-5b-promoimmo-controlled-expansion-write.ts"
       - ".github/workflows/data-4-5b-promoimmo-controlled-expansion-write.yml"
+      - ".github/workflows/data-4-5b-readonly-after.yml"
+      - "scripts/ci/__tests__/data45b-workflow-boundaries.test.mjs"
   workflow_dispatch:
+
+# Obsolete PR checks may cancel; manual preflight and main checks may not.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.head_ref || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
@@ -40,8 +49,8 @@ jobs:
         run: npm run test:seed-freshness
       - name: TypeScript
         run: npx tsc --noEmit
-      - name: Production build
-        run: npm run build
+      - name: Enforce DATA-4.5B privileged CI boundaries
+        run: node --test scripts/ci/__tests__/data45b-workflow-boundaries.test.mjs
       - name: Static write boundary
         run: |
           node - <<'NODE'
@@ -70,6 +79,8 @@ jobs:
           NODE
 
   live-read-only-preflight:
+    # Never pass the service-role key to PR, push, or feature-branch dispatch.
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
     needs: contract
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -77,6 +88,8 @@ jobs:
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
       DATA_4_5B_OUT_DIR: .tmp/data-4-5b/results
+      DATA_4_5B_APPLY: "false"
+      DATA_4_5B_CURRENT_SITEMAP_EVIDENCE: ""
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
