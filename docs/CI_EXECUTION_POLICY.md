@@ -55,3 +55,10 @@ A PR touching Search UX runs fast checks but no Chromium/build; the subsequent m
 - No Vercel deployment or database writing command was performed. After both merges, Vercel last observed the prior production deployment `dpl_DfKCASA5VYcbKErJNfsJDNJxxo2w` at old HEAD `32a0a076...`. GitHub merge does not grant production deployment authorization.
 
 **Remaining:** #1119 risk review of sensitive pipelines and all untouched legacy workflows; do not state all 549 workflows compliant. Separate full all-pages visual suites on the #1120 merge run are tracked independently, not conflated with the five-viewport Search MapLibre gate.
+
+## DATA coverage build split — second safe slice (2026-10-29)
+
+- [PR #1123](https://github.com/hraaaaf/Akarfinder/pull/1123) merged on `main` at `04514897f37c1a6eb7fdd862e8edbc65f54cfc8a`, after **four PR checks SUCCESS**. This PR touched only three DATA coverage workflows. The source audit showed local inputs and local reports with no DB credential or production write path in those workflows.
+- `data-coverage-gap-auditor-gate.yml` now runs quick contract tests with per-PR cancellation. The heavy `npm run build` moved to the targeted main-only `data-coverage-gap-auditor-after.yml`, with a main-ref guard, read-only permissions and independent concurrency. `data-coverage-mubawab-baseline.yml` gained per-PR cancellation without modifying the report job.
+- Exact-main-head [AFTER 40969065083](https://github.com/hraaaaf/Akarfinder/actions/runs/40969065083) was triggered. A **completed SUCCESS conclusion is required** to certify its production compilation. This does not grant Vercel deployment authorization or validate all legacy workflows.
+- [DATA phase-2 audit](ci/DATA_WORKFLOW_PHASE2_AUDIT.md) and [issue #1119](https://github.com/hraaaaf/Akarfinder/issues/1119) track the remaining protected write and credential workflows. Do not automatically dispatch production writers, revive schedules, or cancel in-flight mutations.
