@@ -90,3 +90,9 @@ Autres titres relevés : `recent.xml` 1 000 URL ; `cities.xml` 246 ; `quartiers.
 **Limitation explicite :** les réponses TinyFish tronquent l'affichage des grands sitemaps à 5 000 URL ; le téléchargement des six XML intégraux n'a pas abouti dans l'environnement de vérification (DNS indisponible). Le **nouveau total distinct** n'est donc **pas certifié**. Aucune nouvelle collecte RAW, écriture DB ou publication n'est déclarée.
 
 **Next exact :** obtenir les six XML complets par une exécution autorisée avec accès réseau ; calculer leur SHA-256 et leur ensemble d'URL canonisées ; mesurer le delta réel contre le manifeste historique, puis la couverture des pages villes/quartiers/pagination. N01 reste **EN COURS**.
+
+## N01 — contrôle complémentaire des recouvrements (29 octobre 2026)
+
+Via TinyFish Fetch en format JSON, `recent.xml` fournit **1 000 URL extraites, toutes distinctes** ; `listings-5.xml` fournit **5 000 URL extraites, toutes distinctes**, sur **6 316 déclarées**. L'intersection entre ces deux **sous-ensembles visibles** est **0 URL**. Cela **ne démontre pas** l'absence de recouvrement avec les **1 316 entrées tronquées** de `listings-5.xml`, ni avec les autres sitemaps. Les identifiants récents visibles vont de `238901` à `240233` (ordre et trous possibles). Tentative de récupération XML intégral depuis l'environnement local : échec DNS `www.feenway.com`. **Aucun total global distinct actuel certifié.**
+
+**Next exact inchangé :** récupération XML complète autorisée → déduplication globale et SHA-256 → couverture catégories/villes/quartiers → closeout N01.
