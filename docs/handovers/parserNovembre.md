@@ -134,3 +134,15 @@ Script en lecture seule créé : `scripts/acquisition/feenway-n01-sitemap-audit.
 **Audit exact des ensembles :** relance read-only du workflow historique [40478471659 (attempt 2)](https://github.com/hraaaaf/Akarfinder/actions/runs/40478471659), constatée `in_progress`, pour obtenir le manifeste URL par URL courant et calculer les vraies additions / suppressions face aux 54 161 historiques. Zéro écriture DB, zéro publication, zéro déploiement Vercel.
 
 **Statut N01 : PARTIEL, OUVERT.** Prochaines preuves : résultat du rerun + rapprochement exact ; empreintes brutes de la version corrigée ; inventaire des surfaces villes / quartiers / catégories / pagination et détection hors sitemaps.
+
+## N01 — réconciliation exacte des URL FeenWay (29 octobre 2026)
+
+**Manifeste historique :** artifact `12721712627`, `54 161` URL distinctes, `2026-10-27T09:08:22.581Z`, SHA-256 du fichier `discovery.jsonl` `fec482fc39ece6909bb5a46abc57e5372c16a6e7ef9e00810af6bfcf469d0d4b` vérifié.
+
+**Manifeste courant :** workflow [40478471659 tentative 2](https://github.com/hraaaaf/Akarfinder/actions/runs/40478471659) SUCCESS, artifact `12937643316`, `56 327` URL distinctes à `2026-10-29T22:33:01.472Z`. SHA-256 du fichier `discovery.jsonl` `097cbbb0a0f2ce58134ee797c1587a7677a610e62510006dd621a0daf2d43979` vérifié.
+
+**Diff déterministe des ensembles JSONL :** **2 166 URL ajoutées**, **0 URL supprimée**, **54 161 URL persistantes**, **0 changement de partition** pour les URL persistantes, **0 doublon** dans le manifeste courant. IDs nouvellement observés entre `237347` et `240244`. Ces URL nouvellement inventoriées ne sont **pas** des biens actifs, distincts ou publiables certifiés.
+
+**Contrôle complémentaire brut :** workflow `.github/workflows/feenway-n01-raw-integrity-verification.yml` ajouté au commit `45e11bc3878111ed063dcbc9e712ffb60ea713a4` pour tester le script durci et hacher les octets des six XML. **Ne pas déclarer son exécution réussie sans run/artifact confirmé.**
+
+**Gate N01 toujours OUVERT :** inventaire des autres surfaces publiques (villes, quartiers, catégories, pagination, liens internes, éventuels JSON publics), sources/couvertures/hors-sitemaps, fiabilité d'accès et clôture indépendamment vérifiée. Aucun ajout DB métier, aucun déploiement.
