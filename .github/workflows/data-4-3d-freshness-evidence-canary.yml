@@ -7,6 +7,8 @@ on:
       - "scripts/data4/__tests__/daragadir-freshness-evidence-canary.test.ts"
       - "scripts/audits/data-4-3d-freshness-evidence-canary.ts"
       - ".github/workflows/data-4-3d-freshness-evidence-canary.yml"
+      - ".github/workflows/data43d-44ab-readonly-after.yml"
+      - "scripts/ci/__tests__/data43d44ab-workflow-boundaries.test.mjs"
       - "docs/data/DATA-4-3D-FRESHNESS-EVIDENCE-CANARY.md"
   workflow_dispatch:
 
@@ -14,11 +16,12 @@ permissions:
   contents: read
 
 concurrency:
-  group: data-4-3d-freshness-evidence-canary-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.head_ref || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   contract:
+    if: github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -34,10 +37,11 @@ jobs:
         run: npm run test:seed-freshness
       - name: TypeScript
         run: npx tsc --noEmit
-      - name: Production build
-        run: npm run build
+      - name: Enforce protected DATA-4.3D/4.4A/B CI boundaries
+        run: node --test scripts/ci/__tests__/data43d44ab-workflow-boundaries.test.mjs
 
   live-dry-run:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
     needs: contract
     runs-on: ubuntu-latest
     timeout-minutes: 20
