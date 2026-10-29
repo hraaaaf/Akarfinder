@@ -20,7 +20,7 @@ for(const path of paths){
   for await(const part of response.body){total+=part.byteLength;if(total>8000000)throw Error('XML exceeds 8MB');chunks.push(Buffer.from(part));}
   const raw=Buffer.concat(chunks);
   const xml=new TextDecoder('utf-8',{fatal:true}).decode(raw);
-  if((!xml.includes('<urlset')&&!xml.includes(':urlset'))||!/<\\/urlset\\s*>/.test(xml))throw Error('incomplete URL sitemap');
+  if((!xml.includes('<urlset')&&!xml.includes(':urlset'))||!xml.includes('</urlset>'))throw Error('incomplete URL sitemap');
   const urls=[...xml.matchAll(/<loc>\s*(https?:\/\/[^<]+)\s*<\/loc>/g)].map(m=>m[1].trim().replaceAll('&amp;','&'));
   const listings=urls.filter(u=>/^https:\/\/www\.feenway\.com\/listings\/\d+$/.test(u));
   if(!urls.length||listings.length!==urls.length)throw Error('empty or invalid listing URLs');
