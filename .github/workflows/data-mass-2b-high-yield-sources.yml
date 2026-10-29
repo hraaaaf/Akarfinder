@@ -8,6 +8,8 @@ on:
       - "scripts/data-mass/__tests__/source-factory-high-yield-review.test.ts"
       - "scripts/audits/data-mass-2b-high-yield-sources.ts"
       - ".github/workflows/data-mass-2b-high-yield-sources.yml"
+      - ".github/workflows/data-mass-privileged-readonly-after.yml"
+      - "scripts/ci/__tests__/data-mass-privileged-workflow-boundaries.test.mjs"
       - "docs/data/DATA-MASS-2B-HIGH-YIELD-SOURCES.md"
       - "data/data-mass-2a/mass-1-certified-source-factory.json"
       - "scripts/data-mass/source-factory-certified-cohort.ts"
@@ -18,11 +20,12 @@ permissions:
   contents: read
 
 concurrency:
-  group: data-mass-2b-high-yield-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.head_ref || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   contract:
+    if: github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -36,10 +39,11 @@ jobs:
         run: npx tsx --test scripts/data-mass/__tests__/source-factory-high-yield-review.test.ts scripts/data-mass/__tests__/source-factory-certified-cohort.test.ts scripts/data-mass/__tests__/source-factory-decision.test.ts
       - name: TypeScript
         run: npx tsc --noEmit
-      - name: Production build
-        run: npm run build
+      - name: Enforce DATA-MASS privileged CI boundary
+        run: node --test scripts/ci/__tests__/data-mass-privileged-workflow-boundaries.test.mjs
 
   live-audit:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
     needs: contract
     runs-on: ubuntu-latest
     timeout-minutes: 15
