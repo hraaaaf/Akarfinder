@@ -7,6 +7,7 @@ on:
       - "scripts/audits/data-4-7b-lsf-post-write-certification.ts"
       - "scripts/data4/__tests__/data-4-7b-lsf-controlled-expansion-write.test.ts"
       - ".github/workflows/data-4-7b-lsf-controlled-expansion-write.yml"
+      - "scripts/ci/__tests__/data47b-workflow-boundaries.test.mjs"
   push:
     branches: [main]
     paths:
@@ -14,7 +15,13 @@ on:
       - "scripts/audits/data-4-7b-lsf-post-write-certification.ts"
       - "scripts/data4/__tests__/data-4-7b-lsf-controlled-expansion-write.test.ts"
       - ".github/workflows/data-4-7b-lsf-controlled-expansion-write.yml"
+      - "scripts/ci/__tests__/data47b-workflow-boundaries.test.mjs"
   workflow_dispatch:
+
+# PR checks may supersede only PR runs; main/manual audits must never be cancelled by PRs.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.head_ref || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
@@ -34,6 +41,8 @@ jobs:
         run: npx tsx --test scripts/data4/__tests__/data-4-7b-lsf-controlled-expansion-write.test.ts
       - name: TypeScript
         run: npx tsc --noEmit
+      - name: Verify main-only privileged certification boundary
+        run: node --test scripts/ci/__tests__/data47b-workflow-boundaries.test.mjs
       - name: Static closeout safety boundary
         run: |
           node - <<'NODE'
@@ -67,6 +76,8 @@ jobs:
           NODE
 
   post-write-certification:
+    # Explicit manual main only: never expose service-role credentials on PR or push.
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
     needs: contract
     runs-on: ubuntu-latest
     timeout-minutes: 20
