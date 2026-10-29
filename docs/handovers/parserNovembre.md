@@ -70,3 +70,13 @@
 
 **Blocage connu :** écriture GitHub de lancement du lot suivant précédemment refusée par contrôle de sécurité ; ne pas annoncer de nouveau run sans preuve.
 **Avancement global : non certifié.**
+
+## N01 — relevé public du 29 octobre 2026 (lecture seule)
+
+TinyFish Fetch a confirmé l'index `/sitemap.xml` avec 15 partitions. Les titres des 6 sitemaps `listings-0..5.xml` déclarent respectivement 10 000, 10 000, 10 000, 10 000, 10 000 et 6 316 URL : **56 316 références annoncées**, contre 54 161 dans l'inventaire historique (+2 155 références annoncées, pas nécessairement nouveaux biens). L'outil tronque l'affichage à 5 000 URL par sitemap ; le décompte intégral et l'unicité restent à auditer.
+
+Autres titres relevés : `recent.xml` 1 000 URL ; `cities.xml` 246 ; `quartiers.xml` 2 414 ; `pages.xml` 42 ; `prices.xml` 166 ; `markets.xml` 1 539 ; `guides.xml` 22 ; `contrats.xml` 32. `feenway.xml` n'a pas fourni de nombre interprétable. **Ne pas additionner ces partitions comme des biens uniques.**
+
+`recent.xml` expose des identifiants jusqu'à `240233` ; les six sitemaps d'annonces ne prouvent pas à eux seuls la couverture de ces références. `robots.txt` indique `Allow: /` et `Disallow: /api/`, `/admin/`, `/paiement/`, `/samsar/`, avec signal `search=yes, ai-train=no, use=reference`. Ces signaux ne valent pas licence de republier intégralement textes et photos.
+
+**N01 statut : EN COURS.** Preuves restantes : télécharger les six XML originaux sans troncature, SHA-256, déduplication inter-partitions, couverture villes/quartiers, rapport des URL manquantes. Aucun nouveau RAW, aucune écriture DB, aucun déploiement vérifié dans cette opération.
