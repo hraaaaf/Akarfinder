@@ -37,7 +37,7 @@ export function citySeeds(rows){
   if(row.sitemap!=='cities.xml'||typeof row.url!=='string')continue;
   try{
    const u=new URL(row.url);
-   if(u.origin===BASE&&!u.search&&!u.hash&&/^\\/immobilier\\/[a-z0-9-]+\\/?$/.test(u.pathname))urls.push(u.href);
+   if(u.origin===BASE&&!u.search&&!u.hash&&u.pathname.startsWith('/immobilier/')&&/^[a-z0-9-]+$/.test(u.pathname.slice('/immobilier/'.length)))urls.push(u.href);
   }catch{}
  }
  return [...new Set(urls)].sort();
