@@ -9,14 +9,22 @@ on:
       - "scripts/data4/__tests__/daragadir-expansion-persistent-batch.test.ts"
       - "scripts/audits/data-4-3h-controlled-expansion-to-500.ts"
       - ".github/workflows/data-4-3h-controlled-expansion-to-500.yml"
+      - ".github/workflows/data-4-3g-h-readonly-after.yml"
+      - "scripts/ci/__tests__/data4gh-workflow-boundaries.test.mjs"
       - "docs/data/DATA-4-3H-CONTROLLED-EXPANSION-TO-500.md"
   workflow_dispatch:
+
+# PR runs may cancel only earlier PR checks; manual live audits must never be cancelled by a PR.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.head_ref || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
 
 jobs:
   contract:
+    if: github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -36,10 +44,12 @@ jobs:
         run: npm run test:seed-freshness
       - name: TypeScript
         run: npx tsc --noEmit
-      - name: Production build
-        run: npm run build
+      - name: Enforce DATA-4.3G/H CI boundaries
+        run: node --test scripts/ci/__tests__/data4gh-workflow-boundaries.test.mjs
 
   live-dry-run:
+    # Only an explicit manual main run may touch source or service-role credentials.
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
     needs: contract
     runs-on: ubuntu-latest
     timeout-minutes: 20
