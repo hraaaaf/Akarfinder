@@ -31,3 +31,25 @@ test('full city seed mode excludes translated duplicates and remains bounded',()
  ];
  assert.deepEqual(citySeeds(rows),['https://www.feenway.com/immobilier/casablanca','https://www.feenway.com/immobilier/rabat']);
 });
+
+test('evenly distributed and bounded public page sampling',()=>{
+ const urls=Array.from({length:90},(_,i)=>'https://www.feenway.com/immobilier/test-'+String(i).padStart(3,'0'));
+ const chosen=evenSample(urls,8);
+ assert.equal(chosen.length,8);
+ assert.equal(new Set(chosen).size,8);
+ assert.ok(chosen[0]!==urls[0]&&chosen.at(-1)!==urls.at(-1));
+});
+test('city mode collects only deduplicated FR public city pages',()=>{
+ const rows=[
+  {sitemap:'cities.xml',url:'https://www.feenway.com/immobilier/casablanca'},
+  {sitemap:'cities.xml',url:'https://www.feenway.com/immobilier/casablanca'},
+  {sitemap:'cities.xml',url:'https://www.feenway.com/immobilier/rabat'},
+  {sitemap:'cities.xml',url:'https://www.feenway.com/en/property/rabat'},
+  {sitemap:'cities.xml',url:'https://www.feenway.com/immobilier/rabat?page=2'},
+  {sitemap:'cities.xml',url:'https://www.feenway.com/api/private'}
+ ];
+ assert.deepEqual(citySeeds(rows),[
+  'https://www.feenway.com/immobilier/casablanca',
+  'https://www.feenway.com/immobilier/rabat'
+ ]);
+});
