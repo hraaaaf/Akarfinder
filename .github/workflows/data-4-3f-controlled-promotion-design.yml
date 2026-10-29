@@ -7,14 +7,21 @@ on:
       - "scripts/data4/__tests__/daragadir-controlled-promotion.test.ts"
       - "scripts/audits/data-4-3f-controlled-promotion-design.ts"
       - ".github/workflows/data-4-3f-controlled-promotion-design.yml"
+      - ".github/workflows/data-4-3e-f-readonly-after.yml"
+      - "scripts/ci/__tests__/data43ef-workflow-boundaries.test.mjs"
       - "docs/data/DATA-4-3F-CONTROLLED-PROMOTION-DESIGN.md"
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.head_ref || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
 
 jobs:
   contract:
+    if: github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -32,10 +39,12 @@ jobs:
         run: npm run test:seed-freshness
       - name: TypeScript
         run: npx tsc --noEmit
-      - name: Production build
-        run: npm run build
+      - name: Enforce DATA-4.3E/F credential boundaries
+        run: node --test scripts/ci/__tests__/data43ef-workflow-boundaries.test.mjs
 
   live-design-audit:
+    # Explicit manual main only: no privileged source/DB reads on PR.
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
     needs: contract
     runs-on: ubuntu-latest
     timeout-minutes: 20
