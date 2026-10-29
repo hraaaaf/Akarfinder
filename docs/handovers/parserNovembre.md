@@ -96,3 +96,9 @@ Autres titres relevés : `recent.xml` 1 000 URL ; `cities.xml` 246 ; `quartiers.
 Via TinyFish Fetch en format JSON, `recent.xml` fournit **1 000 URL extraites, toutes distinctes** ; `listings-5.xml` fournit **5 000 URL extraites, toutes distinctes**, sur **6 316 déclarées**. L'intersection entre ces deux **sous-ensembles visibles** est **0 URL**. Cela **ne démontre pas** l'absence de recouvrement avec les **1 316 entrées tronquées** de `listings-5.xml`, ni avec les autres sitemaps. Les identifiants récents visibles vont de `238901` à `240233` (ordre et trous possibles). Tentative de récupération XML intégral depuis l'environnement local : échec DNS `www.feenway.com`. **Aucun total global distinct actuel certifié.**
 
 **Next exact inchangé :** récupération XML complète autorisée → déduplication globale et SHA-256 → couverture catégories/villes/quartiers → closeout N01.
+
+## N01 — audit complémentaire des URL visibles (29 octobre 2026)
+
+TinyFish Fetch en mode JSON a permis de comparer les **5 000 URL visibles** de chacun des sitemaps `listings-0.xml` à `listings-4.xml`. Chaque échantillon comporte 5 000 URL uniques et les cinq ensembles comparés ne présentent **aucun doublon entre eux**, soit **25 000 URL distinctes observées**. Les sitemaps annoncent toutefois 10 000 URL chacun : les 25 000 entrées restantes de ces cinq fichiers ne sont pas vérifiées dans ce contrôle. Le sixième sitemap annonce 6 316 URL mais son affichage est également tronqué à 5 000. La tentative de téléchargement direct de l'XML complet depuis l'environnement d'exécution a échoué sur la résolution DNS du domaine FeenWay.
+
+**Conclusion bornée :** 25 000 URL distinctes observées dans ces cinq échantillons ; 56 316 références déclarées dans les six sitemaps ; total distinct actuel non certifié. **N01 reste EN COURS.** Prochaine action : extraction intégrale autorisée des XML, SHA-256, déduplication globale et réconciliation avec les 54 161 URL historiques.
