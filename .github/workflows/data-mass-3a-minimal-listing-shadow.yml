@@ -7,11 +7,20 @@ on:
       - "scripts/data-mass/__tests__/minimal-listing-index-policy.test.ts"
       - "scripts/audits/data-mass-3a-minimal-listing-shadow.ts"
       - ".github/workflows/data-mass-3a-minimal-listing-shadow.yml"
+      - ".github/workflows/data-mass-3abc4-readonly-after.yml"
+      - "scripts/ci/__tests__/datamass3abc4-workflow-boundaries.test.mjs"
       - "docs/data/DATA-MASS-3A-MINIMAL-LISTING-SHADOW.md"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.head_ref || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 permissions:
   contents: read
 jobs:
   contract:
+    if: github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -23,16 +32,18 @@ jobs:
         run: node --test --import tsx scripts/data-mass/__tests__/minimal-listing-index-policy.test.ts
       - name: TypeScript
         run: npx tsc --noEmit
-      - name: Production build
-        run: npm run build
+      - name: Guard DATA-MASS privileged workflow isolation
+        run: node --test scripts/ci/__tests__/datamass3abc4-workflow-boundaries.test.mjs
   live-audit:
+    # Privileged DB read permitted only by explicit manual dispatch on main.
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
     needs: contract
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-      GITHUB_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      GITHUB_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
