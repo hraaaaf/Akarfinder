@@ -122,3 +122,15 @@ Script en lecture seule créé : `scripts/acquisition/feenway-n01-sitemap-audit.
 - Limite à lever lors de la certification : le script actuel calcule le SHA-256 du texte XML décodé, et non des octets HTTP bruts. Les six réponses, les comptes et la comparaison avec le manifeste historique de 54 161 URL restent à vérifier. Les autres surfaces (villes, quartiers, pagination) ne sont pas closes.
 
 **Statut N01 : OUVERT, non certifié.** **Next exact :** inspecter l'artifact JSON du run 40965410705 ; valider la capture complète, l'intégrité sur octets bruts et les écarts historiques avant toute clôture N01 ou passage à N02. Zéro déploiement, zéro écriture DB pendant ce lot.
+
+## N01 — six XML intégraux récupérés : résultat GitHub vérifié (29 octobre 2026)
+
+**Run indépendant :** [40965410705](https://github.com/hraaaaf/Akarfinder/actions/runs/40965410705), SUCCESS, job `123768531362`, artifact `12938601039` récupéré et JSON inspecté. Mesure `2026-10-29T22:25:02.640Z` : **56 327 URL uniques**, **0 doublon intra/inter-partitions**, **6/6 XML HTTP 200**, **0 erreur**. Partitions : `10 000 × 5` puis `6 327` dans `listings-5.xml`. Six SHA-256 de réponses XML enregistrés dans l'artifact. Ce premier script calcule les empreintes à partir du texte XML décodé, donc **le SHA de l'octet réseau brut n'est pas encore indépendamment certifié**.
+
+**Comparaison de comptes seulement :** archive historique artifact `12721712627` retéléchargée ; `discovery.jsonl` = **54 161 URL distinctes**, SHA-256 `fec482fc39ece6909bb5a46abc57e5372c16a6e7ef9e00810af6bfcf469d0d4b`. Delta mathématique **+2 166 URL** entre les deux snapshots ; ne pas qualifier les 2 166 de nouvelles annonces tant que le différentiel exact d'ensembles n'est pas calculé.
+
+**Durcissement du script :** version en cours sur commit `0bd530f975153ba6f24a219e9bb6ab29223ac139` : limite de 8 Mo par XML, sortie de SHA-256 calculée sur octets de réponse `raw_sha256`, tests de fixtures enregistrés dans GitHub. Exécution réseau de cette version **non encore prouvée** à la date de cette note.
+
+**Audit exact des ensembles :** relance read-only du workflow historique [40478471659 (attempt 2)](https://github.com/hraaaaf/Akarfinder/actions/runs/40478471659), constatée `in_progress`, pour obtenir le manifeste URL par URL courant et calculer les vraies additions / suppressions face aux 54 161 historiques. Zéro écriture DB, zéro publication, zéro déploiement Vercel.
+
+**Statut N01 : PARTIEL, OUVERT.** Prochaines preuves : résultat du rerun + rapprochement exact ; empreintes brutes de la version corrigée ; inventaire des surfaces villes / quartiers / catégories / pagination et détection hors sitemaps.
