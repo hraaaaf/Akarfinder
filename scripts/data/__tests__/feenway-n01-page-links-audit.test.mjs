@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { FIXED, seeds, citySeeds, extractListingLinks } from '../../acquisition/feenway-n01-page-links-audit.mjs';
+import { FIXED, seeds, citySeeds, evenSample, extractListingLinks } from '../../acquisition/feenway-n01-page-links-audit.mjs';
 
 test('sample seeds are public, bounded and deduplicated',()=>{
  const rows=[
