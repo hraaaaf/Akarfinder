@@ -1,0 +1,42 @@
+name: DATA-4.3G/H Read-only Build AFTER
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/data4/daragadir-first-persistent-batch.ts"
+      - "scripts/data4/daragadir-controlled-expansion.ts"
+      - "scripts/data4/daragadir-expansion-persistent-batch.ts"
+      - "scripts/data4/__tests__/daragadir-first-persistent-batch.test.ts"
+      - "scripts/data4/__tests__/daragadir-controlled-expansion.test.ts"
+      - "scripts/data4/__tests__/daragadir-expansion-persistent-batch.test.ts"
+      - "scripts/audits/data-4-3g-first-persistent-freshness-batch.ts"
+      - "scripts/audits/data-4-3h-controlled-expansion-to-500.ts"
+      - "scripts/ci/__tests__/data4gh-workflow-boundaries.test.mjs"
+      - ".github/workflows/data-4-3g-first-persistent-freshness-batch.yml"
+      - ".github/workflows/data-4-3h-controlled-expansion-to-500.yml"
+      - ".github/workflows/data-4-3g-h-readonly-after.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    # Do not run heavy work from a feature-branch dispatch.
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Shared read-only production build (no DB secrets)
+        run: npm run build
