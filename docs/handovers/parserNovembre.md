@@ -244,3 +244,15 @@ Le run [40971175021](https://github.com/hraaaaf/Akarfinder/actions/runs/40971175
 **Couverture encore ouverte :** la file construite offline depuis les neuf partitions réunit **1 720 pages FR marchés/quartiers** (1 207 quartiers et 513 marchés), **35 lots maximum de 50**. Ces pages n'ont pas été exhaustivement explorées ; pagination/liens internes non certifiés. Les 122 captures de pages comptent des doublons de destinations possibles entre les deux groupes, et ne doivent pas être présentées comme 122 destinations uniques.
 
 **État : N01 OUVERT.** Next exact : préparer et auditer un premier lot borné de 50 pages quartiers/marchés avec robots, 403/429 fail closed, rythme limité, provenance et résultat artifact, puis réconcilier le rendement et prolonger si sain. N02 reste non engagé.
+
+## N01 — pilote batch 1/35 préparé et lancé (29 octobre 2026)
+
+**Préparation vérifiée :** la file canonique `feenway-n01-surface-queue.jsonl` contient **1 720 URL FR distinctes**, réparties en **35 lots de 50 au maximum**. Le premier lot contient **50 pages quartiers publiques**, **50 URL uniques**, aucune route `/api/`, `/admin/`, `/paiement/`, `/samsar/`, aucune URL de fiche détaillée. Début du lot `/terrain-a-vendre/marrakech/route-de-fez`, fin `/appartement-a-louer/marrakech/gueliz`. Les 50 destinations sont **préparées, pas encore validées comme récupérées**.
+
+**Code de contrôle :** `scripts/acquisition/feenway-n01-page-links-audit.mjs` dispose d'un mode `batch:1` borné à 50 pages, cadence 1 requête/s, `robots.txt` obligatoire, erreurs HTTP 403/429 provoquant l'arrêt, réponse et SHA-256 de chaque page, manifeste JSONL des liens absents des six XML avec page source. Tests de construction de lot ajoutés. Commit `ceb616ff0408e4c92baa2fa2a27846fff70a395c`.
+
+**Exécution GitHub :** [run 40972268387](https://github.com/hraaaaf/Akarfinder/actions/runs/40972268387) observé `queued`, artifact attendu `feenway-n01-pilot-batch1`. Aucun succès ou nouveau lien n'est annoncé avant résultat et vérification du rapport.
+
+**Pagination :** trois pages d'atterrissage publiques relues via TinyFish (ville Marrakech, appartement Casablanca, quartier Racine) : aucun `href` explicite de pagination détecté dans l'HTML extrait. Observation limitée ; ne démontre pas l'absence de pagination JavaScript ou d'autres surfaces.
+
+**Statut N01 : OUVERT.** Next exact : inspecter les tests et l'artifact du run 40972268387, vérifier nombre de pages et URL hors sitemap, puis décider des lots suivants selon le rendement et les contraintes du site. Aucun déploiement Vercel ni écriture DB.
