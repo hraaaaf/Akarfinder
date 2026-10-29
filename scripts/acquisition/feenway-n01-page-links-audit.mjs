@@ -31,6 +31,18 @@ export function seeds(rows){
  const selected=[...FIXED,...evenSample(groups.cities,8),...evenSample(groups.markets,12),...evenSample(groups.quartiers,17)];
  return [...new Set(selected)].slice(0,40);
 }
+export function citySeeds(rows){
+ const urls=[];
+ for(const row of rows){
+  if(row.sitemap!=='cities.xml'||typeof row.url!=='string')continue;
+  try{
+   const u=new URL(row.url);
+   if(u.origin===BASE&&!u.search&&!u.hash&&/^\\/immobilier\\/[a-z0-9-]+\\/?$/.test(u.pathname))urls.push(u.href);
+  }catch{}
+ }
+ return [...new Set(urls)].sort();
+}
+
 export function extractListingLinks(html,from){
  const found=new Set();
  for(const m of html.matchAll(/href\s*=\s*["']([^"'<>]{1,750})["']/gi)){
@@ -60,7 +72,7 @@ async function main(){
  if(allListing.size<1||pages.length<1)throw Error('missing_anchors');
  const mode=process.argv[5]==='cities'?'cities':'sample';
  const selected=mode==='cities'?citySeeds(pages):seeds(pages);
- const report={observed_at:new Date().toISOString(),source:BASE,scope:mode==='cities'?'all French-language city landing pages listed by cities.xml; excludes categories/quartiers and pagination':'bounded public landing-page sample only; NOT exhaustive site crawl',mode,planned_pages:selected.length,sample_pages:[],pages_attempted:0,pages_ok:0,unique_sample_listing_links:0,not_in_six_count:0,not_in_six_examples:[],errors:[],listing_detail_requests:0,db_writes:0,discovery_only:true};
+ const report={observed_at:new Date().toISOString(),source:BASE,scope:mode==='cities'?'all French-language city landing pages listed by cities.xml; excludes categories/quartiers and pagination':'bounded public landing-page sample only; NOT exhaustive site crawl',mode,planned_pages:selected.length,listing_manifest_size:allListing.size,sample_pages:[],pages_attempted:0,pages_ok:0,unique_sample_listing_links:0,not_in_six_count:0,not_in_six_examples:[],errors:[],listing_detail_requests:0,db_writes:0,discovery_only:true};
  const observed=new Set(),missingSources=new Map();
  try{
   const rob=await get(BASE+'/robots.txt','text/plain');
@@ -83,9 +95,9 @@ async function main(){
  report.unique_sample_listing_links=observed.size;
  report.not_in_six_count=missing.length;
  report.not_in_six_examples=missing.slice(0,60);
- report.sample_design='40-page deterministic stratified sample: fixed 3, 8 cities, 12 markets, 17 quartiers; NOT an exhaustive site crawl';
+ report.sample_design=mode==='cities'?'all public French-language city landing pages from cities.xml, without pagination':'up to 40 deterministic stratified landing pages: fixed 3, 8 cities, 12 markets, 17 quartiers; NOT an exhaustive site crawl';
  const outsideRows=missing.map(url=>({url,discovered_on:missingSources.get(url)||[],status:'unverified_listing_link'}));
- const outsideText=outsideRows.map(JSON.stringify).join('\\n')+'\\n';
+ const outsideText=outsideRows.map(JSON.stringify).join('\n')+'\n';
  report.outside_manifest_sha256=sha(outsideText);
  report.complete=report.errors.length===0&&report.pages_ok===report.pages_attempted&&report.pages_attempted===selected.length&&report.pages_attempted>=8;
  await mkdir(dirname(out),{recursive:true});
