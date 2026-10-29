@@ -5,6 +5,7 @@ import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { robotsOK, BASE } from './feenway-sitemap-inventory-v1.mjs';
+import { buildQueue } from './feenway-n01-surface-queue.mjs';
 const sha=x=>createHash('sha256').update(x).digest('hex');
 const UA='AkarFinder-FeenWay-Sitemap-Audit/1.0 (+https://akarfinder.ma)';
 const MAX=2500000;
@@ -70,9 +71,12 @@ async function main(){
  const allListing=new Set((await readFile(listings,'utf8')).trim().split('\n').map(x=>JSON.parse(x).url));
  const pages=(await readFile(nonlisting,'utf8')).trim().split('\n').map(x=>JSON.parse(x));
  if(allListing.size<1||pages.length<1)throw Error('missing_anchors');
- const mode=process.argv[5]==='cities'?'cities':'sample';
- const selected=mode==='cities'?citySeeds(pages):seeds(pages);
- const report={observed_at:new Date().toISOString(),source:BASE,scope:mode==='cities'?'all French-language city landing pages listed by cities.xml; excludes categories/quartiers and pagination':'bounded public landing-page sample only; NOT exhaustive site crawl',mode,planned_pages:selected.length,listing_manifest_size:allListing.size,sample_pages:[],pages_attempted:0,pages_ok:0,unique_sample_listing_links:0,not_in_six_count:0,not_in_six_examples:[],errors:[],listing_detail_requests:0,db_writes:0,discovery_only:true};
+ const batchMatch=/^batch:([1-9]\\d*)$/.exec(process.argv[5]||'');
+ const mode=batchMatch?'batch':process.argv[5]==='cities'?'cities':'sample';
+ const batchNumber=batchMatch?Number(batchMatch[1]):null;
+ const selected=mode==='cities'?citySeeds(pages):mode==='batch'?buildQueue(pages,50).rows.filter(x=>x.batch===batchNumber).map(x=>x.url):seeds(pages);
+ if(!selected.length)throw Error('empty_source_selection');
+ const report={observed_at:new Date().toISOString(),source:BASE,scope:mode==='cities'?'all French-language city landing pages listed by cities.xml; excludes categories/quartiers and pagination':mode==='batch'?'single bounded set of 50 French market/quartier landing pages; not exhaustive':'bounded public landing-page sample only; NOT exhaustive site crawl',mode,batch_number:batchNumber,planned_pages:selected.length,listing_manifest_size:allListing.size,sample_pages:[],pages_attempted:0,pages_ok:0,unique_sample_listing_links:0,not_in_six_count:0,not_in_six_examples:[],errors:[],listing_detail_requests:0,db_writes:0,discovery_only:true};
  const observed=new Set(),missingSources=new Map();
  try{
   const rob=await get(BASE+'/robots.txt','text/plain');
@@ -87,7 +91,7 @@ async function main(){
     outside.forEach(x=>{if(!missingSources.has(x))missingSources.set(x,[]);missingSources.get(x).push(url);});
     report.sample_pages.push({url,http_status:200,bytes:page.bytes,raw_sha256:page.sha256,listing_links:links.length,outside_main_six:outside.length,outside_examples:outside.slice(0,12)});
    }catch(e){const msg=String(e?.message||e);report.errors.push({url,error:msg});if(/^http_(403|429)$/.test(msg))break;}
-   await new Promise(r=>setTimeout(r,mode==='cities'?1000:500));
+   await new Promise(r=>setTimeout(r,mode==='cities'||mode==='batch'?1000:500));
   }
  }catch(e){report.errors.push({stage:'robots',error:String(e?.message||e)});}
  const missing=[...observed].filter(x=>!allListing.has(x));
@@ -95,6 +99,9 @@ async function main(){
  report.unique_sample_listing_links=observed.size;
  report.not_in_six_count=missing.length;
  report.not_in_six_examples=missing.slice(0,60);
+ report.not_in_six_urls=[...missing].sort();
+ report.observed_listing_urls=[...observed].sort();
+ report.observed_sha256=sha(report.observed_listing_urls.join('\\n')+'\\n');
  report.sample_design=mode==='cities'?'all public French-language city landing pages from cities.xml, without pagination':'up to 40 deterministic stratified landing pages: fixed 3, 8 cities, 12 markets, 17 quartiers; NOT an exhaustive site crawl';
  const outsideRows=missing.map(url=>({url,discovered_on:missingSources.get(url)||[],status:'unverified_listing_link'}));
  const outsideText=outsideRows.map(JSON.stringify).join('\n')+'\n';
