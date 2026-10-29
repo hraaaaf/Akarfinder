@@ -1,0 +1,43 @@
+name: DATA MASS-3A/B/C + MASS-4 Read-only Build AFTER
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "data/data-mass-3a/**"
+      - "data/data-mass-3b/**"
+      - "data/data-mass-3c/**"
+      - "data/data-mass-4/**"
+      - "scripts/data-mass/**"
+      - "scripts/audits/data-mass-3a-minimal-listing-shadow.ts"
+      - "scripts/audits/data-mass-3b-minimal-listing-projection-shadow.ts"
+      - "scripts/audits/data-mass-3c-canary-readiness-shadow.ts"
+      - "scripts/ci/__tests__/datamass3abc4-workflow-boundaries.test.mjs"
+      - ".github/workflows/data-mass-3a-minimal-listing-shadow.yml"
+      - ".github/workflows/data-mass-3b-minimal-listing-projection-shadow.yml"
+      - ".github/workflows/data-mass-3c-canary-readiness-shadow.yml"
+      - ".github/workflows/data-mass-4-reclassification-shadow.yml"
+      - ".github/workflows/data-mass-3abc4-readonly-after.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Main-only production build, no service-role secrets
+        run: npm run build
