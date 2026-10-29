@@ -146,3 +146,25 @@ Script en lecture seule créé : `scripts/acquisition/feenway-n01-sitemap-audit.
 **Contrôle complémentaire brut :** workflow `.github/workflows/feenway-n01-raw-integrity-verification.yml` ajouté au commit `45e11bc3878111ed063dcbc9e712ffb60ea713a4` pour tester le script durci et hacher les octets des six XML. **Ne pas déclarer son exécution réussie sans run/artifact confirmé.**
 
 **Gate N01 toujours OUVERT :** inventaire des autres surfaces publiques (villes, quartiers, catégories, pagination, liens internes, éventuels JSON publics), sources/couvertures/hors-sitemaps, fiabilité d'accès et clôture indépendamment vérifiée. Aucun ajout DB métier, aucun déploiement.
+
+## N01 — certification XML bruts et quinze partitions (29 octobre 2026)
+
+**Run SHA-256 bruts :** [40969626633](https://github.com/hraaaaf/Akarfinder/actions/runs/40969626633) SUCCESS, artifact `12940160806`. Deux tests fixtures PASS, six fichiers XML HTTP 200, `56 327` liens d'annonces uniques, aucun doublon, aucune erreur. Les SHA-256 calculés sur les octets décodés du corps HTTP correspondent aux six empreintes du premier audit. Artifact du manifeste `12939372235` : `56 327` URL, SHA-256 `097cbbb0a0f2ce58134ee797c1587a7677a610e62510006dd621a0daf2d43979`.
+
+**Run surfaces :** [40970256679](https://github.com/hraaaaf/Akarfinder/actions/runs/40970256679) SUCCESS, artifacts `12940580746` (rapport et 5 461 URL additionnelles de navigation), `12939274228` (manifeste listing), `12939229188` (SHA bruts). Index XML : **15 partitions découvertes et contrôlées** ; neuf hors `listings-0..5` ont été récupérées sans erreur, empreintes SHA-256 archivées :
+- `recent.xml` : 1 000 URL, **1 000/1 000 présentes dans les six listings** ;
+- `pages.xml` : 42 URL ;
+- `cities.xml` : 246 URL ;
+- `prices.xml` : 166 URL ;
+- `markets.xml` : **1 548 entrées / 1 539 URL distinctes (9 répétitions internes)** ;
+- `quartiers.xml` : 2 414 URL ;
+- `guides.xml` : 22 URL ;
+- `contrats.xml` : 32 URL ;
+- `feenway.xml` : 0 URL (sitemap XML vide).
+Total de navigation unique dans ces neuf partitions = **5 461 URL**, avec `recent` inclus (donc **pas 5 461 nouvelles annonces**). Robots et sitemap index lus, octets SHA vérifiés; aucune page annonce détaillée demandée, aucune écriture DB ni déploiement.
+
+**Écart hors-sitemaps trouvé :** liens publics exposés sur 3 pages d'atterrissage (Casablanca ville, appartements à vendre Casablanca, et Racine). **65 URL d'annonces distinctes observées**, dont **7 absentes** du manifeste des 56 327 (sur le même snapshot), identifiants `238288, 239644, 239685, 239700, 239746, 239762, 239802`. Échantillon manuel, non extrapolable ; il réfute cependant une prétention d'exhaustivité de l'inventaire XML.
+
+**Automatisation lecture seule du contrôle des liens** : script `scripts/acquisition/feenway-n01-page-links-audit.mjs` + tests, branche `data/200k-fresh-parser-v2`, workflow [40970666214](https://github.com/hraaaaf/Akarfinder/actions/runs/40970666214) **observé queued** (à inspecter, aucun succès présumé).
+
+**Statut N01 : OUVERT.** L'inventaire des partitions XML est complet à l'instant des relevés, mais la couverture exhaustive des annonces accessibles via catégories, villes, quartiers, pagination et liens internes n'est pas démontrée. Next : analyser artifact du run 40970666214, mesurer et documenter les URL hors-sitemap, élaborer une stratégie bornée pour explorer ces autres entrées avant la clôture N01 et le passage N02.
