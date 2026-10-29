@@ -26,6 +26,15 @@ export function seeds(rows){
  const selected=[...FIXED,...groups.cities.slice(0,3),...groups.markets.slice(0,3),...groups.quartiers.slice(0,4)];
  return [...new Set(selected)].slice(0,13);
 }
+export function citySeeds(rows){
+ const chosen=[];
+ for(const r of rows){
+  if(r.sitemap!=='cities.xml'||typeof r.url!=='string')continue;
+  const u=new URL(r.url);
+  if(u.origin===BASE&&/^\/immobilier\/[a-z0-9-]+$/.test(u.pathname)&&!u.search&&!u.hash)chosen.push(u.href);
+ }
+ return [...new Set(chosen)].slice(0,100);
+}
 export function extractListingLinks(html,from){
  const found=new Set();
  for(const m of html.matchAll(/href\s*=\s*["']([^"'<>]{1,750})["']/gi)){
@@ -53,12 +62,14 @@ async function main(){
  const allListing=new Set((await readFile(listings,'utf8')).trim().split('\n').map(x=>JSON.parse(x).url));
  const pages=(await readFile(nonlisting,'utf8')).trim().split('\n').map(x=>JSON.parse(x));
  if(allListing.size<1||pages.length<1)throw Error('missing_anchors');
- const report={observed_at:new Date().toISOString(),source:BASE,scope:'bounded public landing-page sample only; NOT exhaustive site crawl',sample_pages:[],pages_attempted:0,pages_ok:0,unique_sample_listing_links:0,not_in_six_count:0,not_in_six_examples:[],errors:[],listing_detail_requests:0,db_writes:0,discovery_only:true};
+ const mode=process.argv[5]==='cities'?'cities':'sample';
+ const selected=mode==='cities'?citySeeds(pages):seeds(pages);
+ const report={observed_at:new Date().toISOString(),source:BASE,scope:mode==='cities'?'all French-language city landing pages listed by cities.xml; excludes categories/quartiers and pagination':'bounded public landing-page sample only; NOT exhaustive site crawl',mode,planned_pages:selected.length,sample_pages:[],pages_attempted:0,pages_ok:0,unique_sample_listing_links:0,not_in_six_count:0,not_in_six_examples:[],errors:[],listing_detail_requests:0,db_writes:0,discovery_only:true};
  const observed=new Set();
  try{
   const rob=await get(BASE+'/robots.txt','text/plain');
   if(!robotsOK(rob.html))throw Error('robots_fail_closed');
-  for(const url of seeds(pages)){
+  for(const url of selected){
    report.pages_attempted++;
    try{
     const page=await get(url);
@@ -66,8 +77,8 @@ async function main(){
     const outside=links.filter(x=>!allListing.has(x));
     links.forEach(x=>observed.add(x));
     report.sample_pages.push({url,http_status:200,bytes:page.bytes,raw_sha256:page.sha256,listing_links:links.length,outside_main_six:outside.length,outside_examples:outside.slice(0,12)});
-   }catch(e){report.errors.push({url,error:String(e?.message||e)});}
-   await new Promise(r=>setTimeout(r,500));
+   }catch(e){const msg=String(e?.message||e);report.errors.push({url,error:msg});if(/^http_(403|429)$/.test(msg))break;}
+   await new Promise(r=>setTimeout(r,mode==='cities'?1000:500));
   }
  }catch(e){report.errors.push({stage:'robots',error:String(e?.message||e)});}
  const missing=[...observed].filter(x=>!allListing.has(x));
@@ -75,7 +86,7 @@ async function main(){
  report.unique_sample_listing_links=observed.size;
  report.not_in_six_count=missing.length;
  report.not_in_six_examples=missing.slice(0,60);
- report.complete=report.errors.length===0&&report.pages_ok===report.pages_attempted&&report.pages_attempted>=8;
+ report.complete=report.errors.length===0&&report.pages_ok===report.pages_attempted&&report.pages_attempted===selected.length&&report.pages_attempted>=8;
  await mkdir(dirname(out),{recursive:true});
  await writeFile(out,JSON.stringify(report,null,2)+'\n');
  console.log(JSON.stringify({complete:report.complete,pages:report.pages_ok,links:report.unique_sample_listing_links,off_sitemap:report.not_in_six_count,errors:report.errors.length}));
