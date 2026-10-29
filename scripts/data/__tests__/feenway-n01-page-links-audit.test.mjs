@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { FIXED, seeds, extractListingLinks } from '../../acquisition/feenway-n01-page-links-audit.mjs';
+import { FIXED, seeds, citySeeds, extractListingLinks } from '../../acquisition/feenway-n01-page-links-audit.mjs';
 
 test('sample seeds are public, bounded and deduplicated',()=>{
  const rows=[
@@ -19,4 +19,15 @@ test('sample seeds are public, bounded and deduplicated',()=>{
 test('extracts public listing links only, normalizes trailing slash and rejects query redirects',()=>{
  const html='<a href="/listings/123">OK</a><a href="https://www.feenway.com/listings/123/">dup</a><a href="/api/private">no</a><a href="https://evil.com/listings/2">no</a><a href="/listings/999?redirect=evil">no</a><a href="/listings/456">OK</a>';
  assert.deepEqual(extractListingLinks(html,'https://www.feenway.com/immobilier/casablanca'),['https://www.feenway.com/listings/123','https://www.feenway.com/listings/456']);
+});
+
+test('full city seed mode excludes translated duplicates and remains bounded',()=>{
+ const rows=[
+  {sitemap:'cities.xml',url:'https://www.feenway.com/immobilier/casablanca'},
+  {sitemap:'cities.xml',url:'https://www.feenway.com/ar/immobilier/casablanca'},
+  {sitemap:'cities.xml',url:'https://www.feenway.com/en/property/casablanca'},
+  {sitemap:'cities.xml',url:'https://www.feenway.com/immobilier/rabat'},
+  {sitemap:'markets.xml',url:'https://www.feenway.com/appartement-a-vendre/rabat'}
+ ];
+ assert.deepEqual(citySeeds(rows),['https://www.feenway.com/immobilier/casablanca','https://www.feenway.com/immobilier/rabat']);
 });
