@@ -1,0 +1,44 @@
+name: FeenWay N01 raw-byte SHA certification (read only)
+on:
+  push:
+    branches:
+      - data/200k-fresh-parser-v2
+    paths:
+      - .github/workflows/feenway-n01-raw-integrity-verification.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify-raw-xml:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check script syntax
+        run: node --check scripts/acquisition/feenway-n01-sitemap-audit.mjs
+      - name: Tests with deterministic fixtures, without network or DB
+        run: node --test scripts/data/__tests__/feenway-n01-sitemap-audit.test.mjs
+      - name: Read only: fetch six original public XML responses
+        run: node scripts/acquisition/feenway-n01-sitemap-audit.mjs artifacts/feenway-n01-raw-integrity.json
+      - name: Assert complete raw-byte SHA manifest
+        run: |
+          node --input-type=module -e "
+          import fs from 'node:fs';
+          const r=JSON.parse(fs.readFileSync('artifacts/feenway-n01-raw-integrity.json','utf8'));
+          if(!r.complete||r.files.length!==6||r.errors.length||r.unique_listing_urls<50000)process.exit(1);
+          if(r.files.some(f=>!/^([0-9a-f]{64})$/.test(f.raw_sha256)||f.bytes<=0))process.exit(1);
+          console.log(JSON.stringify({files:r.files.length,unique:r.unique_listing_urls,duplicates:r.duplicate_urls,raw_sha256_files:r.files.length}));
+          "
+      - name: Preserve evidence even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: feenway-n01-raw-sha-256
+          path: artifacts/feenway-n01-raw-integrity.json
+          if-no-files-found: warn
+          retention-days: 30
