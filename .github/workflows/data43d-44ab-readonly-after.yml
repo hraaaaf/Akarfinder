@@ -1,0 +1,43 @@
+name: DATA-4.3D/4.4A/B Read-only Build AFTER
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/data4/daragadir-freshness-evidence-canary.ts"
+      - "scripts/data4/second-reservoir-qualification.ts"
+      - "scripts/data4/promoimmo-sitemap-canary.ts"
+      - "scripts/data4/__tests__/daragadir-freshness-evidence-canary.test.ts"
+      - "scripts/data4/__tests__/second-reservoir-qualification.test.ts"
+      - "scripts/data4/__tests__/promoimmo-sitemap-canary.test.ts"
+      - "scripts/audits/data-4-3d-freshness-evidence-canary.ts"
+      - "scripts/audits/data-4-4a-second-reservoir-qualification.ts"
+      - "scripts/audits/data-4-4b-promoimmo-revalidation-canary.ts"
+      - "scripts/ci/__tests__/data43d44ab-workflow-boundaries.test.mjs"
+      - ".github/workflows/data-4-3d-freshness-evidence-canary.yml"
+      - ".github/workflows/data-4-4a-second-reservoir-qualification.yml"
+      - ".github/workflows/data-4-4b-promoimmo-revalidation-canary.yml"
+      - ".github/workflows/data43d-44ab-readonly-after.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Shared production build (no database secrets or write steps)
+        run: npm run build
