@@ -13,6 +13,11 @@ export const FIXED=Object.freeze([
  BASE+'/appartement-a-vendre/casablanca',
  BASE+'/appartement-a-vendre/casablanca/racine'
 ]);
+export function evenSample(items,count){
+ const unique=[...new Set(items)].sort();
+ if(unique.length<=count)return unique;
+ return Array.from({length:count},(_,i)=>unique[Math.floor((i+0.5)*unique.length/count)]);
+}
 export function seeds(rows){
  const groups={cities:[],markets:[],quartiers:[]};
  for(const row of rows){
@@ -23,17 +28,8 @@ export function seeds(rows){
   if(group==='cities'&&!u.pathname.startsWith('/immobilier/'))continue;
   groups[group].push(u.href);
  }
- const selected=[...FIXED,...groups.cities.slice(0,3),...groups.markets.slice(0,3),...groups.quartiers.slice(0,4)];
- return [...new Set(selected)].slice(0,13);
-}
-export function citySeeds(rows){
- const chosen=[];
- for(const r of rows){
-  if(r.sitemap!=='cities.xml'||typeof r.url!=='string')continue;
-  const u=new URL(r.url);
-  if(u.origin===BASE&&/^\/immobilier\/[a-z0-9-]+$/.test(u.pathname)&&!u.search&&!u.hash)chosen.push(u.href);
- }
- return [...new Set(chosen)].slice(0,100);
+ const selected=[...FIXED,...evenSample(groups.cities,8),...evenSample(groups.markets,12),...evenSample(groups.quartiers,17)];
+ return [...new Set(selected)].slice(0,40);
 }
 export function extractListingLinks(html,from){
  const found=new Set();
@@ -65,7 +61,7 @@ async function main(){
  const mode=process.argv[5]==='cities'?'cities':'sample';
  const selected=mode==='cities'?citySeeds(pages):seeds(pages);
  const report={observed_at:new Date().toISOString(),source:BASE,scope:mode==='cities'?'all French-language city landing pages listed by cities.xml; excludes categories/quartiers and pagination':'bounded public landing-page sample only; NOT exhaustive site crawl',mode,planned_pages:selected.length,sample_pages:[],pages_attempted:0,pages_ok:0,unique_sample_listing_links:0,not_in_six_count:0,not_in_six_examples:[],errors:[],listing_detail_requests:0,db_writes:0,discovery_only:true};
- const observed=new Set();
+ const observed=new Set(),missingSources=new Map();
  try{
   const rob=await get(BASE+'/robots.txt','text/plain');
   if(!robotsOK(rob.html))throw Error('robots_fail_closed');
@@ -76,6 +72,7 @@ async function main(){
     const links=extractListingLinks(page.html,url);
     const outside=links.filter(x=>!allListing.has(x));
     links.forEach(x=>observed.add(x));
+    outside.forEach(x=>{if(!missingSources.has(x))missingSources.set(x,[]);missingSources.get(x).push(url);});
     report.sample_pages.push({url,http_status:200,bytes:page.bytes,raw_sha256:page.sha256,listing_links:links.length,outside_main_six:outside.length,outside_examples:outside.slice(0,12)});
    }catch(e){const msg=String(e?.message||e);report.errors.push({url,error:msg});if(/^http_(403|429)$/.test(msg))break;}
    await new Promise(r=>setTimeout(r,mode==='cities'?1000:500));
@@ -86,9 +83,14 @@ async function main(){
  report.unique_sample_listing_links=observed.size;
  report.not_in_six_count=missing.length;
  report.not_in_six_examples=missing.slice(0,60);
+ report.sample_design='40-page deterministic stratified sample: fixed 3, 8 cities, 12 markets, 17 quartiers; NOT an exhaustive site crawl';
+ const outsideRows=missing.map(url=>({url,discovered_on:missingSources.get(url)||[],status:'unverified_listing_link'}));
+ const outsideText=outsideRows.map(JSON.stringify).join('\\n')+'\\n';
+ report.outside_manifest_sha256=sha(outsideText);
  report.complete=report.errors.length===0&&report.pages_ok===report.pages_attempted&&report.pages_attempted===selected.length&&report.pages_attempted>=8;
  await mkdir(dirname(out),{recursive:true});
  await writeFile(out,JSON.stringify(report,null,2)+'\n');
+ await writeFile(out.replace(/\.json$/,'.jsonl'),outsideText);
  console.log(JSON.stringify({complete:report.complete,pages:report.pages_ok,links:report.unique_sample_listing_links,off_sitemap:report.not_in_six_count,errors:report.errors.length}));
  if(!report.complete)process.exitCode=1;
 }
