@@ -25,3 +25,21 @@
 4. Human review/merge gate. No production deployment without explicit approval.
 
 **Canonical file:** `docs/handovers/2026-10-30-mubawab-fresh-snapshot.md`. Completion % not estimated.
+
+## Read-only independent link observation after failed native-DNS probe
+
+Because the container cannot resolve `www.mubawab.ma`, a **separate page-reading service** (`TinyFish fetch_content`, `ttl=0`) was used for a **bounded verification of 4 ordinary public category pages** on 2026-10-30. Its upstream cache policy means origin live-freshness is **not independently certified**. This service did **not** run the new Python `fresh` CLI; do not merge these two evidence streams or claim they constitute a complete direct crawl.
+
+- Casablanca /fr/ct/casablanca/immobilier-a-vendre: **31 listing URL IDs**
+- Rabat: **32**
+- Marrakech: **31**
+- Tanger: **31**
+- **125 distinct listing IDs among 125 observed category links**, 0 internal exact-ID duplicates.
+- Historical archive was introduced **only after** these 125 links had been collected and IDs extracted: **129 old distinct IDs, 9 exact intersections, 116 links not among those 129 historical IDs, 120 old IDs not on these four pages**. This does not prove 116 newly created offers or 120 retired offers.
+- Independent executable `compare` against the actual private `mubawab_combined_existing_archives.zip` confirmed **125 / 129 / 9 / 116 / 120**, `fresh_input_duplicates=0`, `coverage_certified=false`. No price changes or image overlap can be inferred from link-only records.
+- A **2-detail-page read-only check** (IDs **8444113** Rabat and **8444186** Tanger) returned respectively **34 and 11 distinct ad photo URL references**, total **45 references**. Only six sample photo URLs are preserved in the probe evidence; **zero image bytes**, no complete gallery export.
+- The separate private ZIP `mubawab_fresh_links_4cities_comparison_20261030.zip`, SHA-256 **`ceaf31e14b38fe766bf8e6a7cfa1f4d1d40c283096f80cb94a6cda9e1593cd23`**, is stored in Library `/AkarFinder/Mubawab/Fresh-2026-10-30/`. It contains `fresh_link_inventory.jsonl`, `fresh_link_inventory_ids.csv`, `compare_output/`, source scope README and `detail_probe_2.json`. **Individual listing URLs were not preserved in that local ZIP; only source-category URLs and verified listing IDs**. This limitation must not be hidden.
+
+**Validation, first code HEAD `a7745fc621a0c6798a25a4a2cef62dafd293b4c1`:** [Mubawab Fresh Snapshot Offline #41074358335](https://github.com/hraaaaf/Akarfinder/actions/runs/41074358335) SUCCESS; [CI Workflow Efficiency Policy #41074358254](https://github.com/hraaaaf/Akarfinder/actions/runs/41074358254) SUCCESS; [Canonical Baseline #41074358304](https://github.com/hraaaaf/Akarfinder/actions/runs/41074358304) SUCCESS. Later documentation HEAD requires its own status check.
+
+**Next exact:** verify CI status on the final documentation HEAD and keep PR DRAFT. Future real fresh capture must start from an empty SQLite database, with no historical seeds and access/terms respected; only then proceed to details, image references and after-the-fact old comparison. No merge, deployment or database write.
