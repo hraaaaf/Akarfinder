@@ -40,3 +40,19 @@ for (const filename of workflows) {
       "Privileged job must never admit PR");
   });
 }
+
+test("shared AFTER performs one full build on main only, without service-role secrets", () => {
+  const yaml = readFileSync(".github/workflows/data-mass-legacy-build-after.yml", "utf8");
+  const [events, jobs] = yaml.split(/\njobs:\s*\n/);
+  assert.ok(events && jobs);
+  assert.match(events, /\n  push:\s*\n/);
+  assert.match(events, /\n    branches:\s*\[main\]/);
+  assert.match(events, /\n  workflow_dispatch:\s*\{\}/);
+  assert.doesNotMatch(events, /\n  pull_request:\s*\n/);
+  assert.ok(jobs.includes("if: github.ref == 'refs/heads/main'"));
+  assert.ok(jobs.includes("npm run build"));
+  assert.ok(jobs.includes("npx tsc --noEmit"));
+  assert.ok(jobs.includes("node --test scripts/ci/__tests__/legacy-data-live-audit-isolation.test.mjs"));
+  assert.doesNotMatch(jobs, /secrets\.|SUPABASE_SERVICE_ROLE_KEY|SUPABASE_URL/);
+  assert.ok(events.includes("contents: read"));
+});
