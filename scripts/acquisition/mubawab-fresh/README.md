@@ -12,6 +12,9 @@
 ```
 python -m pip install -r requirements.txt
 python -m unittest -v test_fresh_snapshot.py
+# Discovery-only: capture URL + source-page evidence even without details
+python fresh_snapshot.py fresh --work ./runs/2026-10-30T1433-links --max-pages 10 --max-details 0 --delay 3
+# Or capture bounded public detail pages as well (a new work directory):
 python fresh_snapshot.py fresh --work ./runs/2026-10-30T1433 --max-pages 10 --max-details 20 --delay 3
 # Only when `fresh_report.json` proves real pages + details captured:
 python fresh_snapshot.py compare \
@@ -19,6 +22,8 @@ python fresh_snapshot.py compare \
   --historical ./old_archive.zip \
   --out ./runs/2026-10-30T1433/comparison
 ```
+
+Every fresh execution exports `discovered_listing_links.jsonl` with each discovered listing ID, exact URL, source page (`discovered_on`) and detail state, even when `--max-details 0` or when a later detail fetch fails with 403. `fresh_report.json` distinguishes `discovered_unique_ids`, `discovered_urls`, and `discovery_provenance_rows`. These are *link observations*, not certified active listings, nor photo downloads. Existing queues opened with `--resume` continue to work; source-page provenance begins being recorded with the new version.
 
 If interrupted, rerun the same `fresh` command with `--resume`. The **first run** refuses to overwrite an existing `fresh.sqlite`. A brand-new snapshot must use a new work directory. The historic file is never passed to `fresh`.
 
