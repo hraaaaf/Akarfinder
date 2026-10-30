@@ -32,19 +32,25 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
-          fetch-depth: 2
-      - name: Latest-commit scope check
+          fetch-depth: 0
+      - name: Whole-PR scope check (do not skip on final docs/test commit)
         id: scope
         shell: bash
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
           set -euo pipefail
-          changed="$(git diff --name-only HEAD^ HEAD)"
+          if [ -n "$PR_BASE_SHA" ]; then
+            changed="$(git diff --name-only "$PR_BASE_SHA" HEAD)"
+          else
+            changed="$(git diff --name-only HEAD^ HEAD)"
+          fi
           printf '%s\n' "$changed"
           if printf '%s\n' "$changed" | grep -Eq '^(\.github/workflows/p1-home-after-visual\.yml|scripts/audits/p1-home-after-visual\.mjs|app/page\.tsx|components/home/(GoogleLikeHero|SearchEntryOrchestrator|HomeTrustStrip|HomeVivreIciSection|HomeActionGrid)\.tsx|components/landing/CityIntentGrid\.tsx)$'; then
             echo "run=true" >> "$GITHUB_OUTPUT"
           else
             echo "run=false" >> "$GITHUB_OUTPUT"
-            echo "Latest commit does not affect P1 HOME AFTER; skipping heavy work."
+            echo "PR diff does not affect P1 HOME AFTER; skipping heavy work."
           fi
       - uses: actions/setup-node@v4
         if: steps.scope.outputs.run == 'true'
