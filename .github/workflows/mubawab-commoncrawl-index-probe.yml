@@ -33,6 +33,7 @@ jobs:
         run: |
           python commoncrawl_mubawab_probe.py \
             --crawl CC-MAIN-2026-43 --crawl CC-MAIN-2026-39 \
+            --a-prefix 84 --a-prefix 83 --a-prefix 82 \
             --max-rows 500 --pause 1 \
             --out ../../../artifacts/mubawab-commoncrawl-probe
       - uses: actions/upload-artifact@v4
