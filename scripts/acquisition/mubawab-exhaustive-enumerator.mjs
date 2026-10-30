@@ -244,6 +244,17 @@ export async function enumerateMubawab({
   delayMs = DEFAULT_DELAY_MS,
 } = {}) {
   if (typeof fetchImpl !== 'function') throw new TypeError('fetchImpl must be a function');
+  // Fail closed for default (real network) consumers, not just the CLI.
+  // Offline tests inject their own fake fetch. This flag is merely an operator
+  // acknowledgment; a documented license/authorization is still required.
+  if (fetchImpl === globalThis.fetch && process.env.MUBAWAB_AUTHORIZED_ACCESS !== 'yes') {
+    return {
+      ...summarizeEnumeration([], []),
+      requestCount: 0, robotsRequestCount: 0, coverageCertified: false,
+      stoppedEarly: 'authorization_missing', queueRemaining: roots.length,
+      shards: [], listingUrls: [],
+    };
+  }
   const queue = roots.map((url) => ({ url: normalizeMubawabUrl(url), depth: 0 })).filter((item) => item.url && isRobotsSafeUrl(item.url));
   const queued = new Set(queue.map((item) => item.url));
   const visited = new Set();
