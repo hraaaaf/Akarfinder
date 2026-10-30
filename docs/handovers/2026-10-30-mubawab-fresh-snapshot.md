@@ -87,3 +87,26 @@ Les routes conjecturées `/fr/ct/fes/immobilier-a-vendre`, `.../kenitra/...` et 
 **Preuve requise :** nouvelle CI GitHub sur le HEAD final avec 16 tests Python ; ne pas déclarer ce contrôle vert avant résultat. Essai réseau direct de ce contexte : DNS `www.mubawab.ma` toujours indisponible (vérifié aussi pour `github.com`) ; aucun crawl réel additionnel. L'inventaire public indirect le plus récent reste le relevé de **225 IDs sur 7 premières pages villes**, avec 8 recoupements exacts contre 129 IDs historiques ; la fraîcheur de l'origine n'est pas garantie.
 
 **Next exact :** vérifier la CI du HEAD final et corriger tout échec ; maintenir PR #1140 DRAFT ; aucune écriture Supabase, aucun déploiement Vercel, aucun merge.
+
+
+## Extension du lot Fresh : 10 villes, 322 IDs — 30 octobre 2026
+
+**Correction de couverture :** la découverte des trois pages de vente qui avaient renvoyé 404 en slug ASCII a identifié leurs routes **accentuées** depuis les résultats officiels :
+- [Fès](https://www.mubawab.ma/fr/ct/f%C3%A8s/immobilier-a-vendre) : 33 liens directs uniques ;
+- [Kénitra](https://www.mubawab.ma/fr/ct/k%C3%A9nitra/immobilier-a-vendre) : 32 ;
+- [Salé](https://www.mubawab.ma/fr/ct/sal%C3%A9/immobilier-a-vendre) : 32.
+
+Ces 97 IDs s'ajoutent au relevé indépendant de **225 IDs** sur Casablanca (31), Rabat (32), Marrakech (32), Tanger (31), Agadir (33), Meknès (33), Oujda (33). **Total : 322 URLs de liens/IDs observés, 322 IDs distincts, 0 doublon exact interne**. Périmètre strict : **première page de vente** de chacune de 10 villes. Le service de lecture externe peut mettre du contenu en cache ; l'exacte actualité à l'origine et la couverture nationale sont incertaines.
+
+**Après découverte uniquement**, rapprochement avec les 129 IDs historiques privés via `fresh_snapshot.py compare` :
+- **8 ID communs** ;
+- **314 ID de ce lot absents de l'échantillon historique** (pas nécessairement des annonces nouvellement créées) ;
+- **121 anciens IDs non présents sur ces 10 premières pages** (pas une preuve de suppression).
+- Aucun doublon physique fiable ne peut être établi en l'absence des nouvelles fiches détaillées et fichiers photos.
+
+**Preuves sauvegardées** : sept pages privées Notion précédemment documentées, plus [Fès 33](https://app.notion.com/p/40977c66336281d29184cd0d47769979), [Kénitra 32](https://app.notion.com/p/40977c663362811ba93fce7bfafc25f5) et [Salé 32](https://app.notion.com/p/40977c663362811e9b6bcfee411c1112) conservent les liens exacts. Le ZIP privé `/AkarFinder/Mubawab/Fresh-2026-10-30/mubawab_fresh_10villes_dedoublonnage_20261030.zip` contient les 322 IDs, leurs pages source/Notion, l'export CSV/JSONL, rapports JSON et les listes de rapprochement ; **SHA-256 `a09a5bd31d672a76c25a222d86f8824146fd46e2e26a8663ce2f65f303e64ca9`**, intégrité CRC ZIP OK.
+
+**Résultats non atteints** : pas de nouveau téléchargement direct HTTP via Python à cause du DNS de l'environnement ; aucun fichier photo téléchargé, aucune galerie complète, aucune déclaration d'exhaustivité Mubawab ; aucun merge, déploiement ou DB write. Le test technique du moteur reste **14/14 PASS** localement. La documentation modifie le HEAD de PR #1140 et **requiert relecture des checks de ce HEAD exact**.
+
+**Next exact** : CI exacte du dernier HEAD → si verte, conserver PR en DRAFT et documentation à jour → résoudre l'accès réseau effectif et le cadre d'accès autorisé pour une collecte de fiches/images, puis dédoublonnage physique. Ne pas confondre les observations des 10 pages avec une copie du site.
+
