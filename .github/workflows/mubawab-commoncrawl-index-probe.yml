@@ -1,0 +1,49 @@
+name: Mubawab Common Crawl Index Probe
+on:
+  pull_request:
+    paths:
+      - 'scripts/acquisition/mubawab-fresh/commoncrawl_mubawab_probe.py'
+      - 'scripts/acquisition/mubawab-fresh/test_commoncrawl_mubawab_probe.py'
+      - '.github/workflows/mubawab-commoncrawl-index-probe.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  index-probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Offline unit tests — no network
+        working-directory: scripts/acquisition/mubawab-fresh
+        run: python -m unittest -v test_commoncrawl_mubawab_probe.py
+      - name: Bounded archived URL index probe (no Mubawab requests)
+        id: probe
+        continue-on-error: true
+        working-directory: scripts/acquisition/mubawab-fresh
+        run: |
+          python commoncrawl_mubawab_probe.py \
+            --crawl CC-MAIN-2026-43 --crawl CC-MAIN-2026-39 \
+            --max-rows 500 --pause 1 \
+            --out ../../../artifacts/mubawab-commoncrawl-probe
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mubawab-commoncrawl-probe-report
+          path: artifacts/mubawab-commoncrawl-probe/
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Require real index rows for probe success
+        if: steps.probe.outcome != 'success'
+        run: |
+          echo 'Common Crawl probe returned no verified indexed listing URLs; see artifact report.'
+          exit 1
