@@ -42,3 +42,47 @@ python -m unittest -v test_mubawab.py
 5. Report counts by page, parse-field coverage, robots exclusions, errors, duplicates, and exact artifacts. Expand only after a successful bounded comparison.
 
 Success for the next lot: a reproducible, robots-compliant small sample with independent counts and a documented decision to reuse, integrate, or retire the Python parser. Do not claim exhaustive Mubawab coverage.
+
+
+## Reprise du 2026-10-30 — audit comparatif et décision provisoire
+
+**État :** PR #1134 encore DRAFT ; ni merge, ni déploiement, ni écriture DB. Les résultats 31 annonces / 432 liens images restent ceux du pilote d'origine, et ne prouvent aucune couverture nationale.
+
+### Matrice technique
+
+| Critère | Énumérateur JS L8 (déjà dans main) | Pilote Python dans cette PR |
+| --- | --- | --- |
+| Découverte | `cc → ct → cd → sd` par liens de shards, budget 40 requêtes et profondeur 4 par défaut | Graines villes/transactions, sitemap ou liens de page |
+| Réconciliation de couverture | Compteur affiché, statuts `complete-leaf`, `split-required`, `coverage-gap` | Compte cartes et champs, pas de rapprochement avec le compteur total |
+| Champs | URL / ID, pas de parsing des prix/surfaces | Prix DH, surface, ville, quartier, pièces, chambres, salles de bains, URLs d'images |
+| Reprise | Pas de checkpoint durable | SQLite, ID source comme clé |
+| Limites sécurité observées | `robots.txt` non rechargé à chaque exécution, pas de temporisation explicite, HTTP 403 ne stoppe pas toujours ; redirections suivies | Chargement fail-closed de `robots.txt`, minimum 2 s, stop 403/429 ; pagination legacy incompatible avec robots |
+| DB | Zéro écriture | Zéro écriture |
+
+**Choix :** conserver L8 JavaScript comme moteur **candidat** de découverte de shards et de réconciliation ; évaluer le parseur de cartes Python comme **composant complémentaire hors production**, sans construire un deuxième crawler national autonome. Le L8 nécessite un durcissement de sécurité **avant tout lancement live** ; le qualificatif `exhaustive` est un nom historique, pas un résultat certifié.
+
+### Correctifs effectués sur la branche de cette PR
+
+- Collecte Python bornée par défaut à **une seule page par seed** ; `--max-pages=0` ou `>1` refusés par la CLI.
+- Un checkpoint à `next_page=2` n'émet plus `:p:2`, même avec une implémentation HTTP injectée. L'état signale `pagination_disallowed_by_policy`, sans inventer une fin de catalogue.
+- Phase détails bornée par défaut à 10 URL ; CLI refuse les limites 0 ou supérieures à 20.
+- Régressions offline ajoutées pour continuation interdite, reprise, CLI non bornée et contrôle anti-boucle.
+- Workflow de tests offline ajouté : `.github/workflows/mubawab-python-pilot-offline.yml`. **Ne jamais confondre workflow créé et tests passés : regarder la conclusion GitHub Actions.**
+
+### Contrat d'intégration futur (aucune DB touchée)
+
+- `source = mubawab` et `id` deviennent `source_id` / `external_offer_id` ; `url` devient `source_url`.
+- `price_dh` → `offer.price_amount` en MAD seulement si prix explicite ; `area_m2` → `surfaces.surface_total_m2`.
+- `city` → `location.city`. `district` **candidat** pour `location.neighborhood`, à normaliser avec le dictionnaire territorial : ne pas traiter le texte brut comme un quartier validé.
+- `bedrooms` → `layout.bedrooms_count`. `rooms`, photos et extraits restent des attributs exploratoires tant qu'un mapping canonique et des droits d'usage ne sont pas vérifiés.
+- Clé anti-doublons initiale : `(source_id, external_offer_id)` et URL canonique, puis moteur existant `cross_source_dedupe.py` pour comparaison entre sources. Conserver URL, date de capture, URL du shard et méthode d'extraction comme provenance ; ne jamais inventer un statut actif.
+
+### Gates restant ouverts
+
+1. **CI Python** : exécution réelle des tests sur le HEAD de la PR, conclusion verte et nombre de tests.
+2. **L8 JavaScript** : vérification `robots.txt` fraîche au runtime, respect du crawl-delay et d'un budget très faible, arrêt immédiat sur 403/429, redirections et encodages invalides traités en refus sûr ; tests offline.
+3. **Pilote live** : seulement lorsque ces garde-fous et le contact public du bot sont en place ; 1 à 3 URL de shards explicitement permises, zéro DB write et aucun téléchargement d'image ; produire un journal (URL, statut HTTP, compteur, IDs uniques, doublons, exclusions, champs et erreurs). Dans cet environnement de reprise, aucune nouvelle requête live du script n'a été exécutée. La lecture web du `robots.txt` est un snapshot indexé et ne prouve pas son contenu exact à l'instant du crawl.
+4. **Qualité / droits** : vérifier les conditions applicables à la réutilisation des données et photos ; ne pas utiliser les 432 URLs comme licence d'images.
+5. **Human gate** : revue du rapport comparatif, puis seulement envisager une intégration ; pas de merge ni déploiement implicite.
+
+**Next exact :** examiner la CI offline du HEAD actuel, corriger tout échec, puis durcir le runner L8 avec tests avant d'exécuter le moindre nouveau test HTTP réel.
