@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import { GoogleLikeHero } from "@/components/home/GoogleLikeHero";
 import { HomeActionGrid } from "@/components/home/HomeActionGrid";
 import { HomeTrustStrip } from "@/components/home/HomeTrustStrip";
-import { HomeVivreIciSection } from "@/components/home/HomeVivreIciSection";
 import { CityIntentGrid } from "@/components/landing/CityIntentGrid";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
@@ -22,7 +21,6 @@ export default async function HomePage() {
       <SiteHeader variant="light" compact />
       <GoogleLikeHero />
       <HomeTrustStrip />
-      <HomeVivreIciSection />
       <CityIntentGrid />
       <HomeActionGrid />
       <SiteFooter />

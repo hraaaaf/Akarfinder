@@ -176,7 +176,20 @@ Les anciens tests/audits défendaient encore la bottom-nav `Carte + Alertes` et 
 
 ## 5. HOME STANDARD V1 — CLOSED / OWNER APPROVED / L0
 
-**Validation explicite propriétaire : 2026-09-12.**  
+### AMENDEMENT L0 — 2026-10-30 — HOME sans teaser cartographique
+
+**Dernière décision du propriétaire : explicitement validée après examen des 4 captures AFTER de la PR #1145.** Elle remplace **uniquement** la position obligatoire de la section carte/quartier sur la Home, sans remettre en cause le reste de P1/P2.
+
+- **Règle actuelle L0** : l'accueil n'affiche plus le teaser « La carte intelligente de l'immobilier marocain » ni sa nouvelle incarnation `HomeVivreIciSection` / `SignatureMapSection`. Absence explicitement protégée par le manifeste.
+- **Ordre actuel L0** : `Hero → Trust strip → Villes populaires → 3 actions`. Header/footer conservés ; aucun ajout de listings génériques ni d'actions supplémentaires.
+- **Vivre ici CONSERVÉ** : `/map` et sa carte interactive restent un pilier de navigation, présent dans le header et la bottom-nav, avec les pages villes/quartiers. Le retrait d'un teaser sur Home n'autorise pas la suppression des autres fonctionnalités cartographiques.
+- Manifeste synchronisé `config/product-constitution.json` **v0.6.1** : ordre révisé, `not_contains_exact` de `HomeVivreIciSection` et `SignatureMapSection` sur `app/page.tsx` ; l'ancienne composante demeure dans le repo mais n'est plus rendue sur Home.
+- **Preuve d'acceptation UI** : captures réelles générées par la CI HVR-6 sur le HEAD de PR #1145 `b2b350bacd27687f5634257cd97c362f0f4c31f0`, quatre viewports 390/430/768/1280, quatre PNG, zéro finding ; propriétaire : « Oui je valide ». **Validation visuelle seulement** : pas de merge Vercel et pas de certification globale avant CI exact HEAD et gate humain d'intégration.
+- Les décisions HOME de septembre ci-dessous sont des **preuves historiques** ; leurs clauses imposant « Vivre ici » immédiatement sous le trust strip sont explicitement **supplantées** par cet amendement.
+  
+
+
+**Validation initiale explicite propriétaire : 2026-09-12 ; amendement partiel validé le 30/10/2026 ci-dessus.**  
 Le message `Ok go` suivant la liste exacte des 10 décisions P1 vaut validation de ce périmètre.
 
 ### Goal
@@ -221,7 +234,7 @@ Hauteurs mesurées avant implémentation :
    - `/images/hero/akar-residence-sunset-desktop.webp`
    - `/images/hero/akar-residence-sunset-mobile.webp`
 4. Un trust-strip est placé immédiatement sous le hero.
-5. `Vivre ici` est le bloc suivant ; sa position est L0 mais **son implémentation visuelle interne reste flexible** jusqu’au freeze MapLibre dédié.
+5. ~~`Vivre ici` est le bloc suivant ; sa position est L0 mais **son implémentation visuelle interne reste flexible** jusqu’au freeze MapLibre dédié.~~ **Supplanté le 30/10/2026 : le teaser carte n'est plus rendu sur la Home ; `/map` reste indépendant.**
 6. La HOME V1 ne rend pas `HomeListingsSection`. Une future réintroduction exige des visuels réels/conformes et une nouvelle validation L0.
 7. Les villes populaires sont compactes et secondaires.
 8. La fin de page contient exactement 3 actions produit :
@@ -243,7 +256,7 @@ Le message `ajoute les au L0 et fais moi un moke de ce que tu comptes en faire !
 Contraintes L0 de cette extension :
 
 - aucune nouvelle section HOME ;
-- ordre global inchangé : `Hero → Trust strip → Vivre ici → Villes populaires → 3 actions` ;
+- ordre global inchangé : `Hero → Trust strip → Villes populaires → 3 actions` (**amendement L0 du 30/10/2026**, ancienne séquence avec teaser révoquée) ;
 - aucun retour du bloc `DataProofBlock`, du long `WhySection`, d’un bloc MRE autonome ou d’un CTA final additionnel ;
 - les exemples de recherche restent compacts et non dominants ;
 - les preuves chiffrées restent intégrées au trust-strip et ne transforment pas la HOME en dashboard ;
@@ -254,7 +267,7 @@ Le manifeste machine n’est pas encore étendu à ces trois invariants, car cel
 
 ### Ordre L0
 
-`Hero → Trust strip → Vivre ici → Villes populaires → 3 actions`
+`Hero → Trust strip → Villes populaires → 3 actions` (**amendement L0 du 30/10/2026**, ancienne séquence avec teaser révoquée)
 
 Header/footer existent autour de cette séquence mais ne sont pas figés par P1.
 

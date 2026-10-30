@@ -144,3 +144,33 @@ test("owner override rejects path-only or mode-only documentation changes", () =
   ];
   assert.equal(overrideDocumentationIsComplete(modeOnly, manifest), false);
 });
+test("approved Home L0 amendment removes only the homepage map promo, not Vivre ici navigation", () => {
+  const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+  const actual = loadManifest(repoRoot);
+  const home = actual.locked_standards.find((standard) => standard.id === "home.standard.v1");
+  const nav = actual.locked_standards.find((standard) => standard.id === "product.information-architecture.v1");
+  assert.ok(home && nav);
+  assert.equal(home.amended_at, "2026-10-30");
+  const ordered = home.invariants.find((invariant) =>
+    invariant.type === "ordered_contains_exact" && invariant.file === "app/page.tsx"
+  );
+  assert.deepEqual(ordered.values, [
+    "<GoogleLikeHero />",
+    "<HomeTrustStrip />",
+    "<CityIntentGrid />",
+    "<HomeActionGrid />",
+  ]);
+  for (const oldPromo of ["HomeVivreIciSection", "SignatureMapSection"]) {
+    assert.ok(home.invariants.some((invariant) =>
+      invariant.type === "not_contains_exact" &&
+      invariant.file === "app/page.tsx" &&
+      invariant.value === oldPromo
+    ));
+  }
+  assert.ok(nav.invariants.some((invariant) =>
+    invariant.type === "ordered_contains_exact" &&
+    invariant.file === "lib/product-navigation.ts" &&
+    invariant.values.includes('label: "Vivre ici"')
+  ));
+  assert.deepEqual(collectInvariantViolations(actual, repoRoot), []);
+});
