@@ -57,6 +57,45 @@ export function isRobotsSafeUrl(raw) {
   return true;
 }
 
+
+const ROBOTS_URL = 'https://www.mubawab.ma/robots.txt';
+const KNOWN_GENERIC_DISALLOWS = new Set([
+  '/login', '/*/login', '/cms/', '/*/cms/', '/ads/b/', '/*/ads/b/',
+  '/report-inappropriate', '/*/report-inappropriate', '/*:', '/*?n=1',
+]);
+
+// Conservative snapshot gate, not a generic robots parser: if site rules
+// change, stop rather than risk interpreting new directives incorrectly.
+export function verifyMubawabRobots(text, userAgent = DEFAULT_UA) {
+  if (!/^AkarFinder-public-index\\//i.test(userAgent)) return null;
+  if (typeof text !== 'string' || !text.trim() || text.length > 256_000) return null;
+  const match = /^User-agent:\\s*\\*\\s*$/im.exec(text);
+  if (!match) return null;
+  const block = text.slice(match.index + match[0].length).split(/\\n(?=User-agent:)/i)[0];
+  const disallows = [];
+  let crawlDelay = 0;
+  for (const original of block.split(/\\r?\\n/)) {
+    const line = original.split('#', 1)[0].trim();
+    if (!line) continue;
+    const parsed = /^([a-z-]+)\\s*:\\s*(.*)$/i.exec(line);
+    if (!parsed) return null;
+    const [, key, raw] = parsed;
+    const value = raw.trim();
+    if (key.toLowerCase() === 'disallow') disallows.push(value);
+    else if (key.toLowerCase() === 'crawl-delay') {
+      const number = Number(value);
+      if (!Number.isFinite(number) || number < 0) return null;
+      crawlDelay = Math.max(crawlDelay, number);
+    } else if (key.toLowerCase() !== 'allow' && key.toLowerCase() !== 'sitemap') {
+      // Unexpected directive: fail closed until reviewed.
+      return null;
+    }
+  }
+  if (!disallows.includes('/*:') || !disallows.includes('/*?n=1')) return null;
+  if (disallows.some((rule) => !KNOWN_GENERIC_DISALLOWS.has(rule))) return null;
+  return { crawlDelayMs: Math.ceil(crawlDelay * 1000), verified: true };
+}
+
 export function parseResultCount(html) {
   const text = decodeMarkup(html).replace(/<[^>]*>/g, ' ');
   const match = text.match(RESULT_COUNT_RE);
@@ -213,10 +252,25 @@ export async function enumerateMubawab({
   let stoppedEarly = null;
   let requestCount = 0;
   let lastRequestAt = null;
+  // Every run verifies the current public robots document first. Unknown or
+  // changed rules fail closed; no listing/shard HTTP request is sent.
+  const robotsResponse = await fetchText(ROBOTS_URL, { fetchImpl, timeoutMs, userAgent });
+  const robotsPolicy = robotsResponse.status === 200 && robotsResponse.finalUrl === ROBOTS_URL
+    ? verifyMubawabRobots(robotsResponse.text, userAgent)
+    : null;
+  if (!robotsPolicy) {
+    return {
+      ...summarizeEnumeration([], []),
+      requestCount: 0, robotsRequestCount: 1, coverageCertified: false,
+      stoppedEarly: 'robots_unverified', queueRemaining: queue.length,
+      shards: [], listingUrls: [],
+    };
+  }
   // Live fetch cannot disable the minimal delay through caller configuration.
   const effectiveDelayMs = fetchImpl === globalThis.fetch
-    ? Math.max(2000, delayMs)
-    : Math.max(0, delayMs);
+    ? Math.max(2000, delayMs, robotsPolicy.crawlDelayMs)
+    : Math.max(0, delayMs, robotsPolicy.crawlDelayMs);
+  let lastRequestAt = Date.now();
 
   while (queue.length > 0 && requestCount < maxRequests) {
     const item = queue.shift();
@@ -274,6 +328,7 @@ export async function enumerateMubawab({
   return {
     ...summarizeEnumeration(shards, listingUrls),
     requestCount,
+    robotsRequestCount: 1,
     coverageCertified: false,
     stoppedEarly,
     queueRemaining: queue.length,
