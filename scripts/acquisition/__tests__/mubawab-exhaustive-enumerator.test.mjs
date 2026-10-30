@@ -13,6 +13,8 @@ import {
 test('robots guard blocks legacy colon pagination and sensitive paths', () => {
   assert.equal(isRobotsSafeUrl('https://www.mubawab.ma/fr/cc/immobilier-a-vendre'), true);
   assert.equal(isRobotsSafeUrl('https://www.mubawab.ma/fr/cc/immobilier-a-vendre:p:2'), false);
+  assert.equal(isRobotsSafeUrl('https://www.mubawab.ma/fr/cc/immobilier-a-vendre%3Ap%3A2'), false);
+  assert.equal(isRobotsSafeUrl('https://www.mubawab.ma/fr/%2flogin'), false);
   assert.equal(isRobotsSafeUrl('https://www.mubawab.ma/fr/login'), false);
   assert.equal(isRobotsSafeUrl('https://www.mubawab.ma/fr/cc/immobilier-a-vendre?n=1'), false);
 });
@@ -79,6 +81,7 @@ test('bounded enumeration recursively splits without DB writes', async () => {
     roots: ['https://www.mubawab.ma/fr/cc/immobilier-a-vendre'],
     fetchImpl,
     maxRequests: 5,
+    delayMs: 0,
   });
   assert.equal(report.zeroDbWrites, true);
   assert.equal(report.requestCount, 2);
@@ -104,5 +107,27 @@ test('429 stops immediately', async () => {
   });
   assert.equal(calls, 1);
   assert.equal(report.stoppedEarly, 'http_429');
+  assert.equal(report.requestCount, 1);
   assert.equal(report.zeroDbWrites, true);
+});
+
+test('403 stops immediately without trying the second shard', async () => {
+  const requested = [];
+  const fetchImpl = async (url, options) => {
+    requested.push({ url, redirect: options.redirect });
+    return { status: 403, url, headers: { get: () => 'text/html' }, text: async () => 'blocked' };
+  };
+  const report = await enumerateMubawab({
+    roots: [
+      'https://www.mubawab.ma/fr/cc/immobilier-a-vendre',
+      'https://www.mubawab.ma/fr/cc/immobilier-a-louer',
+    ],
+    fetchImpl,
+    delayMs: 0,
+  });
+  assert.equal(requested.length, 1);
+  assert.equal(requested[0].redirect, 'manual');
+  assert.equal(report.stoppedEarly, 'http_403');
+  assert.equal(report.requestCount, 1);
+  assert.equal(report.coverageCertified, false);
 });
