@@ -12,13 +12,14 @@ describe("HVR-6 final HOME V1 benchmark contracts", () => {
     const order = [
       "<GoogleLikeHero />",
       "<HomeTrustStrip />",
-      "<HomeVivreIciSection />",
       "<CityIntentGrid />",
       "<HomeActionGrid />",
       "<SiteFooter />",
     ].map((token) => page.indexOf(token));
     assert.ok(order.every((value) => value >= 0));
     assert.deepEqual([...order].sort((a, b) => a - b), order);
+    assert.ok(!page.includes("HomeVivreIciSection"), "Rejected homepage map promo must stay removed");
+    assert.ok(!page.includes("SignatureMapSection"), "Standalone Vivre ici may not remount on Home");
     assert.ok(!page.includes("HomeListingsSection"));
     assert.ok(!page.includes("HomeValueStrip"));
   });
