@@ -1,4 +1,4 @@
-name: Mubawab Common Crawl Index Probe
+name: Mubawab Common Crawl Index Probe — next prefixes
 on:
   pull_request:
     paths:
@@ -33,7 +33,7 @@ jobs:
         run: |
           python commoncrawl_mubawab_probe.py \
             --crawl CC-MAIN-2026-43 --crawl CC-MAIN-2026-39 \
-            --a-prefix 84 --a-prefix 83 --a-prefix 82 \
+            --a-prefix 81 --a-prefix 80 --a-prefix 79 --a-prefix 78 --a-prefix 77 \
             --max-rows 500 --pause 1 \
             --out ../../../artifacts/mubawab-commoncrawl-probe
       - uses: actions/upload-artifact@v4

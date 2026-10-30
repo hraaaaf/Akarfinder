@@ -1,4 +1,4 @@
-name: Mubawab Common Crawl Parquet Index Probe
+name: Mubawab Common Crawl Parquet Safety Gate
 on:
   pull_request:
     paths:
@@ -28,24 +28,24 @@ jobs:
       - name: Local-only metadata, budget and parser tests
         working-directory: scripts/acquisition/mubawab-fresh
         run: python -m unittest -v test_parquet_index_probe.py
-      - name: Public Common Crawl Parquet index bounded probe — no Mubawab requests
-        id: index
-        continue-on-error: true
+      # The 300 CC-MAIN-2026-43 Parquet shards are not ordered globally by
+      # SURT. The previous footer binary-search produced false zero matches.
+      # This workflow now certifies fail-closed behavior only. To resume remote
+      # Parquet indexing, design a reliable indexed partition locator first.
+      - name: Verify unsorted 300-shard manifest is rejected before HTTP
         working-directory: scripts/acquisition/mubawab-fresh
         run: |
-          python parquet_index_probe.py \
-            --crawl CC-MAIN-2026-43 \
-            --max-metadata 16 --max-shards 2 --max-rows 10000 \
-            --out ../../../artifacts/mubawab-parquet-probe
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: mubawab-commoncrawl-parquet-probe
-          path: artifacts/mubawab-parquet-probe/
-          if-no-files-found: warn
-          retention-days: 7
-      - name: Do not certify an empty probe
-        if: steps.index.outcome != 'success'
-        run: |
-          echo 'Public Parquet URL index returned no confirmed listing URL rows. Examine report artifact.'
-          exit 1
+          python - <<'PYBLOCK'
+          from parquet_index_probe import pick_shards
+          calls=[]
+          try:
+              pick_shards([str(i) for i in range(300)],
+                          lambda path: calls.append(path) or ('a','z',1),
+                          max_metadata=16, max_shards=2)
+          except ValueError as exc:
+              assert 'UNSORTED' in str(exc), str(exc)
+              assert not calls, 'unsafe metadata reads occurred'
+              print('PASS: unsorted 300-shard index fails closed without any Parquet fetch')
+          else:
+              raise AssertionError('unsafe binary-search fallback not blocked')
+          PYBLOCK

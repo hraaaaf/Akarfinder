@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Bounded public Common Crawl Parquet URL index metadata probe.
+"""Bounded Common Crawl Parquet URL index metadata SAFETY PROBE.
 
 No Mubawab requests, listing HTML, or media retrieval. Fetches a Common Crawl
-manifest and DuckDB footer metadata to find at most N Parquet shards whose
-SURT key-range contains Mubawab; reads URL-index rows only in chosen shards.
+manifest and DuckDB footer metadata; refuses to extrapolate from only a
+subset of UNSORTED shard footers. Reads shard rows only when all footer ranges
+are inspected within budget.
 DO NOT treat archived URL evidence as live listings or publication permission.
 """
 from __future__ import annotations
@@ -96,34 +97,28 @@ def file_surt_range(con, url: str):
 
 
 def pick_shards(paths, read_range, *, max_metadata=16, max_shards=2):
-    """Binary-search sorted globally by SURT, with strict metadata budget.
+    """Inspect *all* shard footers, or refuse unsafe domain selection.
 
-    Does not assume any shard belongs to the requested domain without checking
-    footer bounds. Raises if range/index behavior cannot be established.
+    Actual CC-MAIN-2026-43 manifests contain 300 files NOT globally ordered
+    by SURT. Binary searching index-number order can produce a false empty
+    result, as observed in GitHub run 41096782493. With a small footer budget,
+    there is no sound proof that a domain is absent from uninspected shards.
     """
-    if len(paths)<2:raise ValueError('too few Parquet paths')
-    cache={}
-    def get(i):
-        if i not in cache:
-            if len(cache)>=max_metadata:raise ValueError('metadata budget exceeded')
-            cache[i]=read_range(paths[i])
-        return cache[i]
-    # Find first shard with an upper bound >= the beginning of Mubawab's SURT.
-    lo,hi=0,len(paths)
-    while lo<hi:
-        mid=(lo+hi)//2
-        _low,upper,_=get(mid)
-        if upper<PREFIX_LOW:lo=mid+1
-        else:hi=mid
-    first=lo
-    selected=[]
-    for i in range(first,min(len(paths), first+max_shards+1)):
-        low,upper,_=get(i)
-        if low>PREFIX_HIGH:break
-        if upper>=PREFIX_LOW and low<=PREFIX_HIGH:
-            if len(selected)>=max_shards:raise ValueError('shard budget exceeded; manual budget change required')
-            selected.append(i)
-    return selected,{str(i):{'low':a,'high':b,'row_groups':n} for i,(a,b,n) in cache.items()}
+    if len(paths) < 2:
+        raise ValueError('too few Parquet paths')
+    if len(paths) > max_metadata:
+        raise ValueError('metadata budget exceeded: UNSORTED Common Crawl shards; '
+                         'cannot use binary search or certify absence of domain')
+    checked = {}
+    selected = []
+    for idx, path in enumerate(paths):
+        low, upper, row_groups = read_range(path)
+        checked[str(idx)] = {'low':low,'high':upper,'row_groups':row_groups}
+        if low <= PREFIX_HIGH and upper >= PREFIX_LOW:
+            selected.append(idx)
+            if len(selected) > max_shards:
+                raise ValueError('shard budget exceeded; refusing partial scan')
+    return selected, checked
 
 
 def rows_from_shard(con,path,max_rows):

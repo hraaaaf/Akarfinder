@@ -33,6 +33,29 @@ class Tests(unittest.TestCase):
         bounds=[('a','b'),('c','d'),('e','f'),('g','h'),('i','j'),('k','l'),('n','o'),('p','z')]
         picked,called=m.pick_shards(paths,lambda x:(*bounds[int(x)],1),max_metadata=8,max_shards=2)
         self.assertEqual(picked,[])
+    def test_unsorted_shards_must_scan_all_or_fail_closed(self):
+        paths=[str(x) for x in range(300)]
+        looked=[]
+        def reader(path):
+            looked.append(path)
+            return ('com,foo)','com,foo)zzz',1)
+        with self.assertRaisesRegex(ValueError,'UNSORTED'):
+            m.pick_shards(paths,reader,max_metadata=16,max_shards=2)
+        self.assertEqual(looked,[])
+
+    def test_small_unsorted_manifest_full_scan_detects_late_target(self):
+        paths=['0','1','2','3','4']
+        bounds=[('com,x)','com,y)'),('ma,mubawab)','ma,mubawab)zzz'),
+                ('ai,x)','ai,y)'),('zz,x)','zz,y)'),('ma,mubawab,sub)','ma,mubawab,sub)zzz')]
+        inspected=[]
+        def reader(path):
+            inspected.append(path)
+            return (*bounds[int(path)],1)
+        selected,details=m.pick_shards(paths,reader,max_metadata=5,max_shards=2)
+        self.assertEqual(selected,[1,4])
+        self.assertEqual(len(inspected),5)
+        self.assertEqual(len(details),5)
+
     def test_budget_prevents_uncapped_range_scanning(self):
         p=[str(x) for x in range(200)]
         with self.assertRaisesRegex(ValueError,'metadata budget'):

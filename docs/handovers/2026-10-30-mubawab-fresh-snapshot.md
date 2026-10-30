@@ -181,3 +181,19 @@ Ces 97 IDs s'ajoutent au relevé indépendant de **225 IDs** sur Casablanca (31)
 - **Fix** : extraction `parse_manifest(text,crawl)`, filtre explicite `/crawl={crawl}/`, test unitaire avec chemins Hive exacts + rejet du crawl étranger et du subset robotstxt.
 - **Nouvelle preuve locale** : **8/8 tests PASS** + `compileall` PASS ; ce résultat ne démontre pas encore la lecture distante des footers.
 - **Next exact** : un seul nouveau run GitHub sur le HEAD correction, lire `report.json` et les éventuels `parquet_urls.jsonl`. Si autre échec, changer de stratégie après diagnostic (ne pas faire tourner une batterie de runs sans progresser) ; si URL réelles, union 934 + comparaison historique 129.
+
+
+## 2026-10-30 — Parquet rouge : deuxième échec diagnostiqué, stratégie changée
+
+**Incident exact :** [GitHub Actions #41096782493](https://github.com/hraaaaf/Akarfinder/actions/runs/41096782493), HEAD `5638f5de7dda98206cd883ed872d6ddb1dba07a2` — **FAIL**. L'artefact `12997031958` (<Library privée: `/AkarFinder/Mubawab/Parquet-Probe-2026-10-30/parquet-second-failure.zip`>) contient `report.json` : `manifest_shards=300`, huit footers inspectés, `selected_shard_indices=[]`, `distinct_ids=0`, `failures=[]`, `result="ok"`. **Ce zéro est un faux négatif**.
+
+**Cause racine démontrée par les min/max réellement observés :** les shards `part-00000..00299` ne sont **pas classés globalement par `url_surtkey`**. Le code utilisait une recherche dichotomique sur un ordre inexistant (ex.: index 150 préfixe `com,musica...`, 225 `my,gov...`, 188 `ch,foto...`). Il n'est pas possible d'inférer une absence d'annonce à partir de huit métadonnées d'un total de 300.
+
+**Correction de sécurité/fonction :**
+- `pick_shards` abandonne la recherche dichotomique et exige l'inspection des footers de **tous les shards** d'un petit manifeste. Si `len(paths) > max_metadata`, arrêt explicite `metadata budget exceeded: UNSORTED ...`, *avant* tout fetch des fichiers Parquet. Un scan partiel ne peut plus afficher zéro comme résultat fiable.
+- 2 tests nouveaux prouvent le fail-closed sur 300 shards sans aucune requête vers les footers, et la sélection exhaustive d'une petite liste de shards désordonnée. **10/10 tests locaux PASS**, Python compile PASS.
+- CI `mubawab-commoncrawl-parquet-probe.yml` convertie en **Parquet Safety Gate** purement hors réseau (tests + garde 300 shards) : **plus aucun benchmark distant invalide**. Une vraie stratégie Parquet exige une carte indexée du domaine vers les partitions, ou une revue de budget pour lire tous les footers. Un CI Safety Gate vert ne signifie pas « URL Parquet récupérées ».
+
+**Nouvelle voie d'acquisition qui a déjà produit des données réelles :** workflow `mubawab-commoncrawl-index-probe.yml` poursuit le **CDX index** par cinq autres préfixes `81,80,79,78,77`, sur les deux crawls septembre/octobre, 500 lignes/réponse max, >=1 s entre requêtes et 12 requêtes bornées. Le corpus historique de 934 IDs n'entre pas dans la découverte. L'artefact du nouveau run devra être récupéré, intégré, dédoublonné et comparé après coup. Aucune sollicitation du serveur Mubawab.
+
+**État :** PR #1140 toujours DRAFT, aucun merge, DB prod ou Vercel ; 934 ID candidats de départ conservés ; aucune nouvelle photo ou page détaillée. **Next exact :** contrôler le run CDX de la branche à ce commit ; si URL nouvelles, télécharger artefact, importer, calculer union 934 + nouvelles URL, rapprocher avec 129 IDs historiques. Si HTTP 502/504, réduire les préfixes plutôt que revenir au Parquet aveugle. Certifier la CI de l'HEAD exact avant closeout.

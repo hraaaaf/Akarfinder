@@ -1,21 +1,15 @@
-# AkarFinder — Public Common Crawl Parquet URL index probe
+# AkarFinder — Common Crawl Parquet discovery safety review
 
-**Objective:** efficiently locate Mubawab URL references in Common Crawl's official Parquet URL index **without** contacting Mubawab and without using historical AkarFinder listings as search seeds.
+## Verified result / why the former strategy was retired
 
-**How it differs from CDX:** Rather than broad `index.commoncrawl.org` wildcard endpoints returning 502/504, this probe downloads one ~200KB manifest for one crawl, binary-searches the **sorted global SURT key** via **Parquet footer metadata** and scans up to two confirmed shards. It will stop on missing min/max stats, unexpected layout, metadata budget or shard cap. This is a bounded experiment, not a blind full-index scan.
+GitHub run [41096782493](https://github.com/hraaaaf/Akarfinder/actions/runs/41096782493), artifact `12997031958`, fetched the real `CC-MAIN-2026-43` manifest with **300** Parquet files, inspected **8** footer ranges and produced **0 URL rows**. No HTTP or file-reading error occurred. However, the measured footer ranges were **not globally monotonic by SURT** in file-number order (for example shard 150 starts with `com,musica...`, shard 225 with `my,gov...`, shard 188 with `ch,foto...`). The previous **binary search was invalid**. Zero rows were therefore a *false negative*, not evidence of no archived Mubawab URLs.
 
-**Run:**
+The script's `pick_shards()` now **requires metadata for every shard** before selecting matching files. If a manifest exceeds the explicit footer budget, it raises `metadata budget exceeded: UNSORTED...` **before reading any Parquet shard**; it never claims absence of URLs based on partial metadata.
 
-```bash
-python -m pip install duckdb==1.4.1
-python -m unittest -v test_parquet_index_probe.py
-python parquet_index_probe.py \
-  --crawl CC-MAIN-2026-43 --max-metadata 16 --max-shards 2 --max-rows 10000 \
-  --out artifacts/mubawab-parquet-probe
-```
+The associated CI is renamed **Parquet Safety Gate**. It performs offline unit tests plus a 300-shard fail-closed assertion; **it does not run a live Parquet scan** or promise data. A future Parquet strategy requires a verified domain→partition locator or a separately approved complete metadata pass.
 
-**Outputs:** `parquet_urls.jsonl` (distinct IDs + direct URL references), `parquet_provenance.jsonl` (crawl, Parquet shard, archive timestamp), `report.json` (which shards and footers were examined, limits, and precise errors). The report always has `coverage_certified=false` and `live_availability_certified=false`.
+## Current acquisition path
 
-**External evidence**: [Common Crawl URL Index](https://commoncrawl.org/url-index) and [DuckDB Parquet metadata](https://duckdb.org/docs/stable/data/parquet/metadata). Common Crawl uses Hive-partitioned Parquet over global URL keys. Older captures may be stale, duplicate or no longer available on Mubawab. Archived index URLs do not confer an image/content republication license.
+For the next independent URL inventory, use the *bounded Common Crawl CDX index*, already demonstrated with 616 actual archived URL IDs across two probes. The next separate workflow tests five new prefixes `81,80,79,78,77` against two monthly indexes, at no more than 500 rows per query and at least 1 second pause. It never requests Mubawab directly.
 
-**Next:** If the one-crawl probe returns a nonempty, integrity-checked artifact, import this JSONL *after* completion into the separate offline bulk SQLite importer. Then join its independent IDs with existing candidate indexes and, **after** that, compare with historical IDs. Keep private URL indexes and images outside public GitHub. Any expansion to additional crawls requires a fresh budget review.
+**Validation:** 10/10 offline unit tests for the Parquet safety code locally; GitHub CI status must be checked on the exact HEAD. Detailed source captures remain outside the public repository. No active listing status, site coverage, image access or content-reuse permission has been verified.
