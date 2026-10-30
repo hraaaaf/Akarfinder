@@ -1,5 +1,12 @@
 name: Mubawab Parser V2 Benchmark
 
+# Cancel superseded pull-request revisions of this workflow only.
+# Preserve independent push/manual runs and all required checks and matrices.
+concurrency:
+  group: ${{ github.workflow }}-pr-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+
 # Push-only by design: this benchmark must never require opening a PR, because
 # the parent recovery branch contains a separately human-gated Neon workflow.
 on:
