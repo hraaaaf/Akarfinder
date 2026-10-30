@@ -49,6 +49,63 @@ def parse_sitemap(data):
         if p.scheme=="https" and p.netloc=="kaynly.com" and not p.query and not p.fragment and re.fullmatch(r"/(vente|location)/[a-z0-9-]+(?:/[a-z0-9-]+)?",p.path):urls.add(u)
     return sorted(urls,key=lambda u:(u.count("/"),u))
 
+
+def select_pages(pages, max_pages, strategy="first"):
+    """Deterministic stratified sample; never reuse the original first-60 sample.
+
+    This only selects sitemap-listed URLs. Robots checks are still applied to
+    each URL before HTTP. Sale and rent are interleaved to reduce partial-run bias.
+    """
+    if strategy == "first":
+        return pages[:max_pages]
+    if strategy != "balanced-new":
+        raise ValueError("invalid page selection strategy")
+    old = set(pages[:60])
+    pools = {"vente": {}, "location": {}}
+    for url in pages:
+        if url in old:
+            continue
+        segments = urllib.parse.urlsplit(url).path.strip("/").split("/")
+        if len(segments) < 2 or segments[0] not in pools:
+            continue
+        pools[segments[0]].setdefault(segments[1], []).append(url)
+
+    def round_robin(groups, limit):
+        cities = sorted(groups)
+        cursors = {city: 0 for city in cities}
+        selected = []
+        while len(selected) < limit:
+            progressed = False
+            for city in cities:
+                i = cursors[city]
+                if i < len(groups[city]) and len(selected) < limit:
+                    selected.append(groups[city][i])
+                    cursors[city] += 1
+                    progressed = True
+            if not progressed:
+                break
+        return selected
+
+    sale = round_robin(pools["vente"], max_pages // 2)
+    rent = round_robin(pools["location"], max_pages - max_pages // 2)
+    if len(sale) + len(rent) < max_pages:
+        chosen = set(sale + rent)
+        extra = [x for x in round_robin(pools["vente"], max_pages) +
+                 round_robin(pools["location"], max_pages) if x not in chosen]
+        for item in extra:
+            if len(sale) + len(rent) >= max_pages:
+                break
+            (sale if urllib.parse.urlsplit(item).path.startswith("/vente/") else rent).append(item)
+            chosen.add(item)
+    output = []
+    for i in range(max(len(sale), len(rent))):
+        if i < len(sale):
+            output.append(sale[i])
+        if i < len(rent):
+            output.append(rent[i])
+    return output[:max_pages]
+
+
 def guard(text):
     directives={x.strip().lower().replace(" ","") for x in text.splitlines()}
     if not {"disallow:/api/","disallow:/resultats","sitemap:"+SITEMAP}.issubset(directives):
@@ -71,17 +128,23 @@ def fetch(url,cap=2_000_000):
         if (urllib.parse.urlsplit(r.geturl()).hostname or "")!="kaynly.com":raise ValueError("offsite redirect")
         return data
 
-def collect(folder,max_pages=60,delay=1.3):
-    if not 1<=max_pages<=120 or delay<1:raise ValueError("budget invalid")
+def collect(folder,max_pages=60,delay=1.3,selection='first'):
+    if not 1<=max_pages<=120 or delay<1 or selection not in ('first','balanced-new'):raise ValueError("budget invalid")
     folder.mkdir(parents=True,exist_ok=True)
     result={"site":"kaynly.com","robots_aware":True,"historical_used_as_seed":False,
             "listing_pages_fetched":0,"photos_fetched":0,"commercial_reuse_rights_verified":False,
-            "pages":[]}
+            "pages":[],"selection":selection}
     unique={};provenance=[];reason=None
     try:
         allowed=guard(fetch(ROBOT,65536).decode("utf-8",errors="replace"))
         pages=parse_sitemap(fetch(SITEMAP));result["landing_pages_in_sitemap"]=len(pages)
-        for page in pages[:max_pages]:
+        selected=select_pages(pages,max_pages,selection)
+        result["selected_pages"]=len(selected)
+        result["selected_type_counts"]={kind:sum(urllib.parse.urlsplit(u).path.startswith("/"+kind+"/") for u in selected) for kind in ("vente","location")}
+        result["selected_city_count"]=len({urllib.parse.urlsplit(u).path.strip("/").split("/")[1] for u in selected})
+        result["selected_overlap_prior_60"]=len(set(selected)&set(pages[:60]))
+        if not selected:raise ValueError("empty selection")
+        for page in selected:
             if not allowed(page):result["pages"].append({"url":page,"status":"robots_denied"});continue
             time.sleep(delay)
             try:
@@ -95,7 +158,7 @@ def collect(folder,max_pages=60,delay=1.3):
                 if exc.code in (401,403,429):reason="access_refused";break
             except (OSError,ValueError) as exc:
                 reason="fetch_error";result["pages"].append({"url":page,"error":str(exc)[:150]});break
-        if reason is None and len(pages)>max_pages:reason="page_budget"
+        if reason is None and len(pages)>len(selected):reason="page_budget"
     except (OSError,ValueError,ET.ParseError) as exc:
         reason="preflight_failure";result["preflight_error"]=str(exc)[:150]
     for filename,items in [("source_links.jsonl",sorted(unique.values(),key=lambda x:x["id"])),("provenance.jsonl",provenance)]:
@@ -110,6 +173,7 @@ def collect(folder,max_pages=60,delay=1.3):
 if __name__=="__main__":
     p=argparse.ArgumentParser();p.add_argument("--out",type=Path,required=True)
     p.add_argument("--max-pages",type=int,default=60);p.add_argument("--delay",type=float,default=1.3)
-    a=p.parse_args();r=collect(a.out,a.max_pages,a.delay)
+    p.add_argument("--selection",choices=("first","balanced-new"),default="first")
+    a=p.parse_args();r=collect(a.out,a.max_pages,a.delay,a.selection)
     print(json.dumps({k:v for k,v in r.items() if k!="pages"}))
     raise SystemExit(0 if r["unique_source_ids"]>0 and r["stop_reason"]!="preflight_failure" else 2)

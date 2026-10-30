@@ -38,4 +38,47 @@ class Tests(unittest.TestCase):
         raise urllib.error.HTTPError(url,429,"limit",{},None)
     with tempfile.TemporaryDirectory() as d,patch.object(m,"fetch",side_effect=fake),patch.object(m.time,"sleep"):
         self.assertEqual(m.collect(Path(d),max_pages=2)["stop_reason"],"access_refused")
+
+ def test_balanced_selection_excludes_first_60_and_splits_transaction(self):
+    first=[f"https://kaynly.com/location/old-{i}" for i in range(60)]
+    sale=[f"https://kaynly.com/vente/city-{i}/appartements" for i in range(38)]
+    rent=[f"https://kaynly.com/location/city-{i}/appartements" for i in range(38)]
+    pool=first+sale+rent
+    selected=m.select_pages(pool,60,"balanced-new")
+    self.assertEqual(len(selected),60)
+    self.assertEqual(len(set(selected)),60)
+    self.assertFalse(set(first)&set(selected))
+    self.assertEqual(sum("/vente/" in x for x in selected),30)
+    self.assertEqual(sum("/location/" in x for x in selected),30)
+    self.assertGreaterEqual(len({x.split("/")[4] for x in selected}),30)
+    self.assertTrue("/vente/" in selected[0] and "/location/" in selected[1])
+ def test_balanced_selection_handles_partial_category_without_repeat(self):
+    first=[f"https://kaynly.com/location/old-{i}" for i in range(60)]
+    sale=[f"https://kaynly.com/vente/new-{i}/villas" for i in range(3)]
+    rent=[f"https://kaynly.com/location/new-{i}/villas" for i in range(70)]
+    selected=m.select_pages(first+sale+rent,60,"balanced-new")
+    self.assertEqual(len(selected),60)
+    self.assertEqual(len(set(selected)),60)
+    self.assertEqual(sum("/vente/" in x for x in selected),3)
+    self.assertEqual(sum("/location/" in x for x in selected),57)
+ def test_balanced_run_records_distinct_sampling_provenance(self):
+    old=[f"https://kaynly.com/location/old-{i}" for i in range(60)]
+    extra=[f"https://kaynly.com/{kind}/city-{i}/appartements" for kind in ("vente","location") for i in range(4)]
+    sitemap=("<urlset>"+ "".join(f"<url><loc>{u}</loc></url>" for u in old+extra) + "</urlset>").encode()
+    called=[]
+    def fake(url,cap=2_000_000):
+        called.append(url)
+        if url==m.ROBOT:return ROBOTS.encode()
+        if url==m.SITEMAP:return sitemap
+        return HTML
+    with tempfile.TemporaryDirectory() as d,patch.object(m,"fetch",side_effect=fake),patch.object(m.time,"sleep"):
+        out=m.collect(Path(d),8,1.3,"balanced-new")
+    self.assertEqual(out["selected_pages"],8)
+    self.assertEqual(out["selected_type_counts"],{"vente":4,"location":4})
+    self.assertEqual(out["selected_overlap_prior_60"],0)
+    self.assertTrue(set(called[2:]).isdisjoint(old))
+    self.assertEqual(out["pages_successful"],8)
+ def test_invalid_selection_fails_before_any_network(self):
+    with self.assertRaises(ValueError):
+        m.collect(Path("."),8,1.3,"unknown")
 if __name__=="__main__":unittest.main()
