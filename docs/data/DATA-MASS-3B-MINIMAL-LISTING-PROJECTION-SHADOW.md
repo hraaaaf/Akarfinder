@@ -22,15 +22,16 @@ Une représentation n'est candidate que si :
 2. `property_listing_id` résout vers une vraie row `property_listings` ;
 3. `listing_url` est une URL HTTP(S) valide et son hostname correspond exactement au `source_domain` de la policy ;
 4. la Source Registry satisfait le contrat positif MASS-3A ;
-5. un titre stocké existe, ou à défaut un `property_type` stocké sert de signal structurel fiable.
+5. **`city`, `district` et `price_mad` sont tous présents et valides** : le contrat minimal MASS-3A exige explicitement ville + quartier + prix, sans remplacer le quartier par la ville ;
+6. un titre stocké existe, ou à défaut un `property_type` stocké sert de signal structurel fiable (sinon ce signal peut être nul : il ne remplace pas les trois champs requis).
 
 Champs optionnels préservés sans invention :
 
-- géographie : `district`, sinon `city` ;
-- prix : `price_mad` ;
 - surface : `surface_m2` ;
-- photo : `thumbnail_url` ;
-- description : `description_snippet`.
+- photo : `thumbnail_url` (simple donnée de projection shadow : **droit de publication média non prouvé**) ;
+- description : `description_snippet` (simple donnée shadow, ne vaut pas licence de republication).
+
+**Correction de contrat du 30/10/2026 :** l'ancien projecteur transmettait un champ `geography` inexistant dans le contrat de `buildMinimalListing()` ; la construction échouait systématiquement sur `CITY_REQUIRED`. La correction transmet `city` et `district` séparément et conserve le contrôle strict des champs. Aucun chiffre de biens projetés ou de DB live n'est revendiqué.
 
 ## État attendu aujourd'hui
 
