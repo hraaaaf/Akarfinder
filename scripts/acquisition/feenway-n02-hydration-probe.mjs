@@ -55,7 +55,7 @@ export function bumpBucketByStage(record,stage,bucket){
 export function navigationFingerprint(href){
  let u;try{u=new URL(href,BASE);}catch{return null;}
  if(u.protocol!=='https:'||u.origin!==BASE)return null;
- const path=u.pathname.replace(/\\/+$/,'')||'/';
+ const path=u.pathname.replace(/\/+$/,'')||'/';
  return createHash('sha256').update(path).digest('hex');
 }
 export function classifyNavigationLinkage(events,initial,idle,scrolled){
