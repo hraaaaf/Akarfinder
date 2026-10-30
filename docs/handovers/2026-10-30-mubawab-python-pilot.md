@@ -155,3 +155,35 @@ Nouveau test offline : vérifie qu'un appel réel par défaut du module mixte ne
 **Gate non technique toujours bloquant :** [issue #1135](https://github.com/hraaaaf/Akarfinder/issues/1135), autorisation commerciale écrite / licence / validation juridique documentée. Le ticket contient l'adresse de contact officielle et un projet de message **non envoyé**. Sans autorisation, aucun crawl, image, import, ni mise en production de ces collecteurs.
 
 **Next exact :** lire les 3 runs du dernier HEAD ; s'ils sont verts, faire le handover final dans PR et Notion, puis stopper à ce gate humain réel. Sinon : corriger le défaut prouvé, relancer tests, conserver PR DRAFT.
+
+
+## Reprise 2026-10-30 — import effectif du pilote historique depuis la Library
+
+**Goal du lot :** retrouver les données déjà détenues, les importer dans une archive locale reprenable et vérifier les chiffres de façon indépendante, sans nouvel accès réseau ni écriture dans Supabase.
+
+**Sources authentiquement récupérées** depuis la Library utilisateur :
+- `Mubawab_pilote_verifie.zip` contenant notamment `evidence/mubawab_casablanca.jsonl` et `evidence/mubawab_report.json` ;
+- `mubawab_casablanca.csv` (CSV séparateur point-virgule, UTF-8 BOM).
+Le pilote historique rapporte **31 cartes / 31 annonces, 432 URL photos réparties sur 30 annonces**, 0 photo téléchargée. La pagination `:p:2` figurait parmi les URL refusées dans le rapport historique ; aucun nouveau passage sur cette page n'a eu lieu.
+
+**Implémentation réelle :**
+- `scripts/acquisition/mubawab-python/archive_import.py` : import hors ligne HTML listes/détails, **JSONL déjà exportés**, SQLite, idempotence par chemin et SHA-256, validation d'identifiants/domaines, déduplication par ID, manifests JSONL/CSV et fichier de preuve avec SHA des exports ;
+- `scripts/acquisition/mubawab-python/test_archive_import.py` : 9 tests synthétiques incluant garde réseau, import JSONL idempotent, identité de domaine, erreurs atomiques, provenance, budgets ;
+- `scripts/acquisition/mubawab-python/README_ARCHIVE.md` : usage et commandes.
+- workflow `mubawab-python-pilot-offline.yml` étendu pour lancer `test_mubawab.py test_archive_import.py` sans crawler.
+
+**Preuves locales réellement obtenues** (contenu historique, pas nouvelle collecte) :
+- **31 lignes JSONL**, **31 ID distincts**, **31 lignes CSV** ; les ensembles d'ID sont identiques ;
+- **432 URL photos** dans le JSONL et **432** selon le CSV/rapport historique ; chaque annonce conserve exactement le même nombre de références photo après import ;
+- SQLite reconstruit : **31 annonces**, **432 références photo**, **0 détail HTML**, **0 image locale**, **0 erreur d'import** ;
+- seconde exécution : **1 fichier JSONL déjà traité**, **0 nouvelle annonce**, **0 erreur** ;
+- tests Python locaux : **9/9 PASS**, compilation Python réussie.
+- archive livrable pilote : `mubawab_pilot_casablanca_offline.zip`, SHA-256 `1ef825faf5d675764cee25d7ae8086686115397ef5967292347304be7916acb7` ;
+- archive code v2 : `mubawab_offline_archive_20261030_v2.zip`, SHA-256 `bfa232d8aa26bd747c0c78bff452ecb4dca66d9b53bde26e143bc4753042db45`.
+- les 2 ZIP ont été sauvegardés dans la Library `/AkarFinder/Mubawab/`. Ne pas présumer d'un fichier ZIP commité dans GitHub.
+
+**Limites vérifiées :** aucune capture brute HTML ni fichier de photos réels dans ce pilote fourni ; il contient seulement les **URL photos**. L'archive ne prouve pas que 31 biens sont encore en ligne ni que toute l'offre Mubawab est couverte. Aucun nouveau crawl, aucune image téléchargée, aucun déploiement, aucun merge, aucun write DB de prod.
+
+**Gate de clôture technique :** vérifier le résultat de la CI sur HEAD correspondant aux nouveaux fichiers ci-dessus. Si vert, le lot « import du pilote historique » est clos. **Gate externe séparé** pour une copie intégrale Mubawab : accès/autorisation et protections du site restent non résolus ; issue [#1135](https://github.com/hraaaaf/Akarfinder/issues/1135).
+
+**Next exact :** relever les trois checks sur le dernier HEAD ; consigner leur statut exact dans la PR et Notion. L'étape suivante techniquement permise est d'importer d'autres exports déjà en possession de l'utilisateur et de réconcilier les nouvelles références sans dupliquer l'inventaire.
