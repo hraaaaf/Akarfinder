@@ -54,18 +54,21 @@ export function extractListingLinks(html,from){
  }
  return [...found];
 }
+export function isRestrictedPath(path){
+ return ['/api','/admin','/paiement','/samsar','/listings'].some(root=>path===root||path.startsWith(root+'/'));
+}
 export function safeRedirectTarget(from,location){
  if(!location||typeof location!=='string')throw Error('redirect_missing_location');
  const initial=new URL(from),target=new URL(location,from);
  if(target.origin!==BASE||target.protocol!=='https:'||target.username||target.password||target.search||target.hash)throw Error('redirect_unsafe_target');
- if(/^(\\/api\\/|\\/admin\\/|\\/paiement\\/|\\/samsar\\/)/.test(target.pathname)||/^\\/listings\\//.test(target.pathname))throw Error('redirect_forbidden_path');
+ if(isRestrictedPath(target.pathname))throw Error('redirect_forbidden_path');
  const root=(p)=>p.split('/').slice(0,3).join('/');
  if(root(initial.pathname)!==root(target.pathname)||initial.pathname===target.pathname)throw Error('redirect_cross_section_or_loop');
  return target.href;
 }
 export async function get(url,accept='text/html'){
  const u=new URL(url);
- if(u.origin!==BASE||/^(\\/api\\/|\\/admin\\/|\\/paiement\\/|\\/samsar\\/)/.test(u.pathname))throw Error('forbidden_endpoint');
+ if(u.origin!==BASE||isRestrictedPath(u.pathname))throw Error('forbidden_endpoint');
  const opts={redirect:'manual',signal:AbortSignal.timeout(22000),headers:{'User-Agent':UA,'Accept':accept}};
  let finalUrl=url,redirectTo=null;
  let r=await fetch(url,opts);

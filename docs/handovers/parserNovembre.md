@@ -332,3 +332,9 @@ La CI [41063193274](https://github.com/hraaaaf/Akarfinder/actions/runs/410631932
 **Correctif borné :** l'audit HTML suit au maximum une redirection HTTP 301/302/307/308, uniquement vers HTTPS `www.feenway.com`, **même famille de catégorie et ville**, sans query, fragment, identifiant, redirection vers `/api/` ou `/listings/`. Une seconde redirection, un changement de domaine, une route non autorisée ou une redirection `robots.txt` restent bloquants. Le rapport conserve l'URL source, l'URL finale, la cible de redirection et le SHA-256 de la réponse. Trois tests additionnels couvrent le parcours canonique et les refus. Aucune augmentation de cadence ; l'arrêt sur 403/429 est conservé.
 
 **Next exact :** vérifier la CI déclenchée par le correctif ; si verte, valider artifacts lots 16–20, réconcilier sans les 534 liens du lot incomplet, puis poursuivre N01. Aucun déploiement Vercel ni écriture DB.
+
+### Incident de syntaxe lors du correctif 308 (30 octobre 2026)
+
+La CI [41074295013](https://github.com/hraaaaf/Akarfinder/actions/runs/41074295013) a terminé **FAILURE** dans `node --check`, avant les lots 16–20 : expression régulière de vérification des chemins publics mal échappée. **Deuxième incident de syntaxe similaire dans N01 ; stratégie changée : aucune regex de route dans la validation des redirections ; contrôle explicite des segments par `startsWith` et ensemble de préfixes réservés.** La validation fail-closed, la limitation à une seule redirection et les tests prévus restent inchangés.
+
+**Next :** exécuter la nouvelle CI et lire les logs des tests + les cinq artifacts. Ne pas ajouter les 534 liens du lot 16 incomplet aux comptes avant passage vert et réconciliation.
