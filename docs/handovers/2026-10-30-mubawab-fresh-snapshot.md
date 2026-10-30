@@ -66,3 +66,24 @@ Les routes conjecturées `/fr/ct/fes/immobilier-a-vendre`, `.../kenitra/...` et 
 
 **Statut technique** : snapshot de liens public et comparaison prouvés sur sept premières pages, **pas de capture intégrale ni des galeries**, aucune écriture Supabase, aucune fusion Git, aucun déploiement Vercel. PR reste DRAFT. **Next exact** : auditer les schémas de collecte, obtenir un environnement réseau et une base d'accès effectivement utilisable dans le périmètre autorisé ; ensuite capturer détails/photos autorisés, valider les preuves d'exhaustivité et seulement après faire la déduplication physique. Maintenir le droit d'usage comme gate séparé.
 
+
+
+## 2026-10-30 — amélioration de la provenance du snapshot neuf
+
+**Goal de ce lot :** ne perdre aucun lien découvert lorsque le crawler ne consulte pas les détails, est interrompu, ou reçoit un 403. L'historique reste entièrement séparé de la phase de collecte neuve.
+
+**Code modifié** dans `scripts/acquisition/mubawab-fresh/fresh_snapshot.py` :
+- nouvelle table locale SQLite `discoveries(source_url,target_url,target_id)`, clé unique sur source/URL ; chaque lien inséré depuis une **page réellement capturée par le crawler neuf** ;
+- export systématique `discovered_listing_links.jsonl` (identifiant, URL directe, page source, état du détail), y compris en cas de refus du détail ;
+- nouvelles métriques `discovered_unique_ids`, `discovered_urls`, `discovery_provenance_rows` dans `fresh_report.json` ;
+- `--max-details 0` devient valide : audit des liens uniquement, sans demande de page détaillée.
+- Le mode `compare` reste strictement hors réseau et inchangé. Aucune photo binaire récupérée, ni mécanisme pour contourner le robots ou les blocages.
+
+**Tests supplémentaires** dans `test_fresh_snapshot.py` :
+- export de 2 IDs et provenance de 2 pages collectées, dédoublement logique par ID et conservation de 4 liens source→ID ;
+- mode liens uniquement : 0 détail demandé, 2 liens conservés ;
+- sur 403 à la première fiche : arrêt immédiat, 0 détail, les 2 liens déjà découverts restent exportables.
+
+**Preuve requise :** nouvelle CI GitHub sur le HEAD final avec 16 tests Python ; ne pas déclarer ce contrôle vert avant résultat. Essai réseau direct de ce contexte : DNS `www.mubawab.ma` toujours indisponible (vérifié aussi pour `github.com`) ; aucun crawl réel additionnel. L'inventaire public indirect le plus récent reste le relevé de **225 IDs sur 7 premières pages villes**, avec 8 recoupements exacts contre 129 IDs historiques ; la fraîcheur de l'origine n'est pas garantie.
+
+**Next exact :** vérifier la CI du HEAD final et corriger tout échec ; maintenir PR #1140 DRAFT ; aucune écriture Supabase, aucun déploiement Vercel, aucun merge.
