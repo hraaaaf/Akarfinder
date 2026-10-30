@@ -1,0 +1,6 @@
+*.sqlite
+*.sqlite-*
+*.tmp
+.publish/
+
+.bulk/

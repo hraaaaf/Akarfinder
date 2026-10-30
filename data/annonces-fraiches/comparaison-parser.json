@@ -1,0 +1,41 @@
+{
+  "before": {
+    "parser_version": "1.1.0",
+    "fetched": 60,
+    "accepted": 0,
+    "required_fields_complete": 2,
+    "reasons": {
+      "missing_evidence_quartier": 48,
+      "missing_quartier": 48,
+      "older_than_7_days": 30,
+      "invalid_prix": 7,
+      "invalid_superficie": 47,
+      "missing_evidence_prix": 7,
+      "missing_evidence_superficie": 47,
+      "missing_evidence_date_publication": 30,
+      "missing_publication_date": 30
+    },
+    "cohort_sha256": "b9aa3c5a38bf84ae6af0820063b8f7daeef4283f103804b7dae8e642bc426add"
+  },
+  "after": {
+    "parser_version": "1.2.0",
+    "fetched": 60,
+    "accepted": 0,
+    "required_fields_complete": 23,
+    "reasons": {
+      "missing_evidence_quartier": 24,
+      "missing_quartier": 24,
+      "older_than_7_days": 30,
+      "invalid_prix": 16,
+      "invalid_superficie": 17,
+      "missing_evidence_prix": 16,
+      "missing_evidence_superficie": 17,
+      "missing_evidence_date_publication": 30,
+      "missing_publication_date": 30
+    },
+    "cohort_sha256": "b9aa3c5a38bf84ae6af0820063b8f7daeef4283f103804b7dae8e642bc426add"
+  },
+  "same_cohort": true,
+  "tests_passed": 18,
+  "notes": "Fresh accepted count remains 0. The sieve was not relaxed. New exclusions cover starting prices and ambiguous daily rents. This is a 60-page pilot, not a national stock measurement."
+}
