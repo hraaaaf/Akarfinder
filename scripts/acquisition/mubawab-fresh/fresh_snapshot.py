@@ -199,6 +199,10 @@ def open_db(path):
     CREATE TABLE IF NOT EXISTS pages(url TEXT PRIMARY KEY, sha256 TEXT NOT NULL, captured_at TEXT NOT NULL, link_count INTEGER NOT NULL);
     CREATE TABLE IF NOT EXISTS listings(id TEXT PRIMARY KEY, url TEXT NOT NULL, doc TEXT NOT NULL, html_sha256 TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS errors(url TEXT NOT NULL, reason TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS discoveries(
+      source_url TEXT NOT NULL, target_url TEXT NOT NULL,
+      target_id TEXT NOT NULL, PRIMARY KEY(source_url,target_url)
+    );
     ''')
     return db
 
@@ -229,7 +233,9 @@ def do_fresh(work: Path, web: Web, *, max_pages: int, max_details: int, seeds=No
                 db.execute("UPDATE queue SET state='done' WHERE url=?",(url,))
                 for target in links:
                     lid=listing_id(target)
-                    if lid: db.execute("INSERT OR IGNORE INTO queue(url,depth,kind) VALUES (?,?,'listing')",(target,depth+1))
+                    if lid:
+                        db.execute("INSERT OR IGNORE INTO queue(url,depth,kind) VALUES (?,?,'listing')",(target,depth+1))
+                        db.execute("INSERT OR IGNORE INTO discoveries(source_url,target_url,target_id) VALUES (?,?,?)",(url,target,lid))
                     elif depth<3 and (target.startswith(BASE+'/fr/ct/') or target==BASE+'/fr'):
                         db.execute("INSERT OR IGNORE INTO queue(url,depth,kind) VALUES (?,?,'page')",(target,depth+1))
             pages+=1
@@ -251,8 +257,21 @@ def do_fresh(work: Path, web: Web, *, max_pages: int, max_details: int, seeds=No
     # Every execution, including failure, produces deterministic exports from freshly observed records only.
     with (work/'listings.jsonl').open('w',encoding='utf-8') as f:
         for (doc,) in db.execute('SELECT doc FROM listings ORDER BY id'):f.write(doc+'\n')
+    # Preserve all discoverable URLs and their *fresh* source-page provenance,
+    # including entries whose detail page was not fetched.
+    with (work/'discovered_listing_links.jsonl').open('w',encoding='utf-8') as f:
+        for lid,url,source,state in db.execute("""
+          SELECT d.target_id,d.target_url,d.source_url,q.state
+          FROM discoveries d JOIN queue q ON q.url=d.target_url
+          ORDER BY d.target_id,d.target_url,d.source_url
+        """):
+            f.write(json.dumps({'source':'mubawab','id':lid,'url':url,
+              'discovered_on':source,'detail_state':state},ensure_ascii=False)+'\n')
     result={'run_at':now(),'state':'blocked' if error else 'bounded_complete','stopped_early':error,
       'pages':db.execute('SELECT count(*) FROM pages').fetchone()[0],
+      'discovered_unique_ids':db.execute('SELECT count(DISTINCT target_id) FROM discoveries').fetchone()[0],
+      'discovered_urls':db.execute('SELECT count(DISTINCT target_url) FROM discoveries').fetchone()[0],
+      'discovery_provenance_rows':db.execute('SELECT count(*) FROM discoveries').fetchone()[0],
       'details':db.execute('SELECT count(*) FROM listings').fetchone()[0],
       'queued':db.execute("SELECT count(*) FROM queue WHERE state='todo'").fetchone()[0],
       'requests_including_robots_this_run':web.requests, 'coverage_certified':False,
@@ -372,7 +391,7 @@ def main(argv=None):
     y=sub.add_parser('compare');y.add_argument('--fresh',type=Path,required=True);y.add_argument('--historical',type=Path,required=True);y.add_argument('--out',type=Path,required=True)
     a=p.parse_args(argv)
     if a.mode=='fresh':
-        if a.max_pages not in range(1,101) or a.max_details not in range(1,501) or a.delay<2:p.error('invalid page/detail/delay bounds')
+        if a.max_pages not in range(1,101) or a.max_details not in range(0,501) or a.delay<2:p.error('invalid page/detail/delay bounds')
         if (a.work/'fresh.sqlite').exists() and not a.resume:p.error('fresh run directory already exists; use --resume for the same run, otherwise new directory')
         if a.resume and not (a.work/'fresh.sqlite').exists():p.error('--resume requires an existing fresh.sqlite')
         result=do_fresh(a.work,Web(delay=a.delay),max_pages=a.max_pages,max_details=a.max_details)
