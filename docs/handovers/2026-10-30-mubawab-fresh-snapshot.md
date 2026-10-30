@@ -43,3 +43,26 @@ Because the container cannot resolve `www.mubawab.ma`, a **separate page-reading
 **Validation, first code HEAD `a7745fc621a0c6798a25a4a2cef62dafd293b4c1`:** [Mubawab Fresh Snapshot Offline #41074358335](https://github.com/hraaaaf/Akarfinder/actions/runs/41074358335) SUCCESS; [CI Workflow Efficiency Policy #41074358254](https://github.com/hraaaaf/Akarfinder/actions/runs/41074358254) SUCCESS; [Canonical Baseline #41074358304](https://github.com/hraaaaf/Akarfinder/actions/runs/41074358304) SUCCESS. Later documentation HEAD requires its own status check.
 
 **Next exact:** verify CI status on the final documentation HEAD and keep PR DRAFT. Future real fresh capture must start from an empty SQLite database, with no historical seeds and access/terms respected; only then proceed to details, image references and after-the-fact old comparison. No merge, deployment or database write.
+
+
+## Fresh relance complémentaire — sept villes, rapprochement hors ligne (30 octobre 2026)
+
+L'exécution directe du collecteur Python depuis le conteneur reste bloquée par résolution DNS ; **aucune nouvelle collecte HTTP via ce script, 0 page HTML persistée par le script, 0 fichier image**. Pour éviter d'amorcer la collecte avec les anciens fichiers, une **lecture indépendante, bornée aux premières pages vente** a été faite avec le service de lecture externe sur sept catégories : Casablanca (31 IDs), Rabat (32), Marrakech (32), Tanger (31), Agadir (33), Meknès (33), Oujda (33). **225 IDs uniques sur 225 liens observés**, 0 doublon exact interne. La fraîcheur à l'origine reste incertaine (cache amont éventuel) et cela ne constitue pas une couverture complète du site.
+
+Les routes conjecturées `/fr/ct/fes/immobilier-a-vendre`, `.../kenitra/...` et `.../sale/...` ont répondu 404 ; **ceci ne prouve pas l'absence de contenu pour ces villes**.
+
+**Conservation des URL directes avec provenance** : sept pages privées enfants de [Notion AkarFinder Command Center](https://app.notion.com/p/3df77c663362816d8678c28ad6a49bcf), contenant chaque URL exacte :
+- [Casablanca 31](https://app.notion.com/p/40977c66336281809039d9413882df8e)
+- [Rabat 32](https://app.notion.com/p/40977c6633628184b101c7ba04365806)
+- [Marrakech 32](https://app.notion.com/p/40977c6633628182bd4ee43a13ae253c)
+- [Tanger 31](https://app.notion.com/p/40977c66336281e29dffda65bf671367)
+- [Agadir 33](https://app.notion.com/p/40977c6633628187b68ddc4a47edf839)
+- [Meknès 33](https://app.notion.com/p/40977c66336281f49880cd6b7373a51d)
+- [Oujda 33](https://app.notion.com/p/40977c6633628191b262f31acc45f79f)
+
+**Dédoublonnage exécuté après découverte** avec le comparateur `fresh_snapshot.py compare` et la base historique **129 identifiants** (ZIP `mubawab_combined_existing_archives.zip`) : `fresh=225`, `historical=129`, **8 IDs communs**, **217 IDs non présents dans l'ancien petit échantillon**, **121 anciens IDs non observés sur ces sept premières pages**. Aucune « nouvelle annonce publiée » ni « annonce supprimée » ne peut être inférée de ces différences. Pas de déduplication d'un même bien sous des ID différents possible faute de photos et détails frais.
+
+**Livrable privé** `/AkarFinder/Mubawab/Fresh-2026-10-30/mubawab_fresh_7villes_dedoublonnage_20261030.zip`, SHA-256 `ac8dd577609111b700d815cdcc98281840f96f0d24bb74a57018ba0dd6b9a3e4`, contient CSV/JSONL d'IDs, source-category et URL Notion pour chaque ligne, listes de comparaison, preuve de compte et README des limites. Vérification ZIP CRC OK ; **14/14 tests locaux** du comparateur et crawler hors ligne PASS. Le ZIP n'inclut pas les URLs directes individuelles ; elles sont stockées dans les sept pages Notion.
+
+**Statut technique** : snapshot de liens public et comparaison prouvés sur sept premières pages, **pas de capture intégrale ni des galeries**, aucune écriture Supabase, aucune fusion Git, aucun déploiement Vercel. PR reste DRAFT. **Next exact** : auditer les schémas de collecte, obtenir un environnement réseau et une base d'accès effectivement utilisable dans le périmètre autorisé ; ensuite capturer détails/photos autorisés, valider les preuves d'exhaustivité et seulement après faire la déduplication physique. Maintenir le droit d'usage comme gate séparé.
+
