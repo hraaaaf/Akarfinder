@@ -17,6 +17,10 @@ test("composed P3 filters retain 44px touch targets, active state and minimum-bu
   assert.ok(quick.includes('onChange({ ...filters, minBudget: "" })'));
   assert.equal((quick.match(/data-quickfilter="/g) || []).length, 5);
   assert.equal((quick.match(/premium-quickfilter-chip !min-h-\[44px\]/g) || []).length, 5);
+  const density = read("app/search/search-premium-card-density.css");
+  assert.ok(density.includes("overflow-x:auto!important;scroll-snap-type:x proximity"));
+  assert.ok(!density.includes("overflow-x:hidden!important"));
+
 });
 
 test("mobile has Liste/Carte, desktop retains Liste/Mixte/Carte", () => {
