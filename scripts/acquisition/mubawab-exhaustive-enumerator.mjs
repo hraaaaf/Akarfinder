@@ -5,6 +5,7 @@ import { pathToFileURL } from 'node:url';
 export const DEFAULT_TIMEOUT_MS = 15_000;
 export const DEFAULT_UA = 'AkarFinder-public-index/4.0 (+https://akarfinder.ma)';
 export const DEFAULT_MAX_REQUESTS = 40;
+export const DEFAULT_DELAY_MS = 2500;
 export const DEFAULT_MAX_DEPTH = 4;
 export const DEFAULT_ROOTS = [
   'https://www.mubawab.ma/fr/cc/immobilier-a-vendre',
@@ -43,14 +44,56 @@ export function isRobotsSafeUrl(raw) {
   const normalized = normalizeMubawabUrl(raw);
   if (!normalized) return false;
   const url = new URL(normalized);
-  const pathname = url.pathname;
-  const robotsPath = pathname.replace(/^\/(?:fr|en|ar|es|nl|it)(?=\/)/i, '');
+  // Decode before applying fail-closed guards so encoded colon pagination and
+  // invalid percent escapes cannot turn into a bypass.
+  let pathname;
+  try { pathname = decodeURIComponent(url.pathname); } catch { return false; }
+  const robotsPath = pathname.replace(/^\/(?:fr|en|ar|es|nl|it)(?=\/)/i, '').replace(/\/{2,}/g, '/').toLowerCase();
   if (DISALLOWED_PREFIXES.some((prefix) => robotsPath === prefix || robotsPath.startsWith(prefix))) return false;
-  // Current Mubawab robots.txt disallows every path containing ':'. This intentionally
-  // excludes the legacy :p:2 pagination form used by the earlier L2 adapter.
+  // Cached conservative deny list; never use it as a replacement for a fresh
+  // robots.txt check before any real HTTP acquisition.
   if (pathname.includes(':')) return false;
   if (url.searchParams.get('n') === '1') return false;
   return true;
+}
+
+
+const ROBOTS_URL = 'https://www.mubawab.ma/robots.txt';
+const KNOWN_GENERIC_DISALLOWS = new Set([
+  '/login', '/*/login', '/cms/', '/*/cms/', '/ads/b/', '/*/ads/b/',
+  '/report-inappropriate', '/*/report-inappropriate', '/*:', '/*?n=1',
+]);
+
+// Conservative snapshot gate, not a generic robots parser: if site rules
+// change, stop rather than risk interpreting new directives incorrectly.
+export function verifyMubawabRobots(text, userAgent = DEFAULT_UA) {
+  if (!/^AkarFinder-public-index\//i.test(userAgent)) return null;
+  if (typeof text !== 'string' || !text.trim() || text.length > 256_000) return null;
+  const match = /^User-agent:\s*\*\s*$/im.exec(text);
+  if (!match) return null;
+  const block = text.slice(match.index + match[0].length).split(/\n(?=User-agent:)/i)[0];
+  const disallows = [];
+  let crawlDelay = 0;
+  for (const original of block.split(/\r?\n/)) {
+    const line = original.split('#', 1)[0].trim();
+    if (!line) continue;
+    const parsed = /^([a-z-]+)\s*:\s*(.*)$/i.exec(line);
+    if (!parsed) return null;
+    const [, key, raw] = parsed;
+    const value = raw.trim();
+    if (key.toLowerCase() === 'disallow') disallows.push(value);
+    else if (key.toLowerCase() === 'crawl-delay') {
+      const number = Number(value);
+      if (!Number.isFinite(number) || number < 0) return null;
+      crawlDelay = Math.max(crawlDelay, number);
+    } else if (key.toLowerCase() !== 'allow' && key.toLowerCase() !== 'sitemap') {
+      // Unexpected directive: fail closed until reviewed.
+      return null;
+    }
+  }
+  if (!disallows.includes('/*:') || !disallows.includes('/*?n=1')) return null;
+  if (disallows.some((rule) => !KNOWN_GENERIC_DISALLOWS.has(rule))) return null;
+  return { crawlDelayMs: Math.ceil(crawlDelay * 1000), verified: true };
 }
 
 export function parseResultCount(html) {
@@ -170,7 +213,7 @@ async function fetchText(url, { fetchImpl, timeoutMs, userAgent }) {
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const response = await fetchImpl(url, {
-      redirect: 'follow',
+      redirect: 'manual',
       signal: controller.signal,
       headers: {
         'user-agent': userAgent,
@@ -198,24 +241,63 @@ export async function enumerateMubawab({
   userAgent = DEFAULT_UA,
   maxRequests = DEFAULT_MAX_REQUESTS,
   maxDepth = DEFAULT_MAX_DEPTH,
+  delayMs = DEFAULT_DELAY_MS,
 } = {}) {
   if (typeof fetchImpl !== 'function') throw new TypeError('fetchImpl must be a function');
+  // Fail closed for default (real network) consumers, not just the CLI.
+  // Offline tests inject their own fake fetch. This flag is merely an operator
+  // acknowledgment; a documented license/authorization is still required.
+  if (fetchImpl === globalThis.fetch && process.env.MUBAWAB_AUTHORIZED_ACCESS !== 'yes') {
+    return {
+      ...summarizeEnumeration([], []),
+      requestCount: 0, robotsRequestCount: 0, coverageCertified: false,
+      stoppedEarly: 'authorization_missing', queueRemaining: roots.length,
+      shards: [], listingUrls: [],
+    };
+  }
   const queue = roots.map((url) => ({ url: normalizeMubawabUrl(url), depth: 0 })).filter((item) => item.url && isRobotsSafeUrl(item.url));
   const queued = new Set(queue.map((item) => item.url));
   const visited = new Set();
   const listingById = new Map();
   const shards = [];
   let stoppedEarly = null;
+  let requestCount = 0;
+  // Every run verifies the current public robots document first. Unknown or
+  // changed rules fail closed; no listing/shard HTTP request is sent.
+  const robotsResponse = await fetchText(ROBOTS_URL, { fetchImpl, timeoutMs, userAgent });
+  const robotsPolicy = robotsResponse.status === 200 && robotsResponse.finalUrl === ROBOTS_URL
+    ? verifyMubawabRobots(robotsResponse.text, userAgent)
+    : null;
+  if (!robotsPolicy) {
+    return {
+      ...summarizeEnumeration([], []),
+      requestCount: 0, robotsRequestCount: 1, coverageCertified: false,
+      stoppedEarly: 'robots_unverified', queueRemaining: queue.length,
+      shards: [], listingUrls: [],
+    };
+  }
+  // Live fetch cannot disable the minimal delay through caller configuration.
+  const effectiveDelayMs = fetchImpl === globalThis.fetch
+    ? Math.max(2000, delayMs, robotsPolicy.crawlDelayMs)
+    : Math.max(0, delayMs, robotsPolicy.crawlDelayMs);
+  let lastRequestAt = Date.now();
 
-  while (queue.length > 0 && shards.length < maxRequests) {
+  while (queue.length > 0 && requestCount < maxRequests) {
     const item = queue.shift();
     if (!item || visited.has(item.url)) continue;
     visited.add(item.url);
 
+    if (lastRequestAt !== null) {
+      const remainingMs = effectiveDelayMs - (Date.now() - lastRequestAt);
+      if (remainingMs > 0) await new Promise((resolve) => setTimeout(resolve, remainingMs));
+    }
+    lastRequestAt = Date.now();
+    requestCount += 1;
     const response = await fetchText(item.url, { fetchImpl, timeoutMs, userAgent });
     const fetchState = classifyFetch(response);
-    if (fetchState === 'http_429') {
-      stoppedEarly = 'http_429';
+    if (fetchState === 'http_429' || fetchState === 'http_403') {
+      stoppedEarly = fetchState;
+      shards.push({ url: item.url, depth: item.depth, fetchState, reconciliation: reconcileShard({ url: item.url, expectedCount: null, listingUrls: [], childUrls: [] }) });
       break;
     }
     if (fetchState !== 'ok') {
@@ -255,6 +337,9 @@ export async function enumerateMubawab({
   const listingUrls = [...listingById.values()];
   return {
     ...summarizeEnumeration(shards, listingUrls),
+    requestCount,
+    robotsRequestCount: 1,
+    coverageCertified: false,
     stoppedEarly,
     queueRemaining: queue.length,
     shards,
@@ -263,10 +348,17 @@ export async function enumerateMubawab({
 }
 
 export async function runCli() {
+  // An explicit operator-controlled gate is required in addition to robots.txt.
+  // This switch is not a license; authorization must be documented externally.
+  if (process.env.MUBAWAB_AUTHORIZED_ACCESS !== 'yes') {
+    console.error('Mubawab live acquisition disabled: documented commercial access authorization required.');
+    process.exitCode = 2;
+    return;
+  }
   const maxRequests = Number.parseInt(process.env.MUBAWAB_MAX_REQUESTS || String(DEFAULT_MAX_REQUESTS), 10);
   const report = await enumerateMubawab({ maxRequests });
   report.startedAt = new Date().toISOString();
-  report.success = report.zeroDbWrites && report.stoppedEarly !== 'http_429' && report.requestCount > 0;
+  report.success = report.zeroDbWrites && !report.stoppedEarly && report.requestCount > 0;
 
   const outDir = 'artifacts/morocco-web-l8-mubawab-exhaustive';
   await fs.mkdir(outDir, { recursive: true });

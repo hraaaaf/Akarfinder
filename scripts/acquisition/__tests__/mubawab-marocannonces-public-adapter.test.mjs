@@ -94,6 +94,34 @@ test('legacy Mubawab adapter never emits colon pagination even when maxPages is 
   assert.ok(seen.some((url) => url.includes('marocannonces.com') && url.includes('/2.html')));
 });
 
+test('legacy live Mubawab source stays retired while MarocAnnonces path remains separate', async () => {
+  const originalFetch = globalThis.fetch;
+  const prior = process.env.MUBAWAB_AUTHORIZED_ACCESS;
+  const requested = [];
+  try {
+    process.env.MUBAWAB_AUTHORIZED_ACCESS = 'yes';
+    globalThis.fetch = async (url) => {
+      requested.push(String(url));
+      return {
+        status: 200,
+        url,
+        headers: { get: () => 'text/html' },
+        text: async () => '<a href="categorie/315/Vente-immobilier/Appartements/annonce/123/appartement.html">annonce</a>',
+      };
+    };
+    const report = await discoverMubawabAndMarocAnnonces({ maxPages: 1 });
+    assert.equal(report.sources[0].name, 'mubawab');
+    assert.equal(report.sources[0].stoppedEarly, 'legacy_live_disabled_use_authorized_L8');
+    assert.equal(report.sources[0].urls.length, 0);
+    assert.ok(requested.length > 0);
+    assert.ok(requested.every((url) => url.includes('marocannonces.com')));
+  } finally {
+    globalThis.fetch = originalFetch;
+    if (prior === undefined) delete process.env.MUBAWAB_AUTHORIZED_ACCESS;
+    else process.env.MUBAWAB_AUTHORIZED_ACCESS = prior;
+  }
+});
+
 test('429 stops a source instead of continuing or evading the rate limit', async () => {
   let count = 0;
   const fakeFetch = async (url) => {

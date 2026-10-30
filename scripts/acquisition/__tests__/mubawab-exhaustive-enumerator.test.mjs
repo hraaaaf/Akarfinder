@@ -1,5 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 
 import {
   enumerateMubawab,
@@ -8,11 +10,67 @@ import {
   isRobotsSafeUrl,
   parseResultCount,
   reconcileShard,
+  verifyMubawabRobots,
 } from '../mubawab-exhaustive-enumerator.mjs';
+
+const ROBOTS = [
+  'User-agent: *',
+  'Disallow: /login',
+  'Disallow: /*/login',
+  'Disallow: /cms/',
+  'Disallow: /*/cms/',
+  'Disallow: /ads/b/',
+  'Disallow: /*/ads/b/',
+  'Disallow: /report-inappropriate',
+  'Disallow: /*/report-inappropriate',
+  'Disallow: /*:',
+  'Disallow: /*?n=1',
+].join('\n');
+
+const robotsResponse = (url) => ({
+  status: 200, url, headers: { get: () => 'text/plain' }, text: async () => ROBOTS,
+});
+
+test('CLI rejects live acquisition absent documented operator permission', () => {
+  const script = fileURLToPath(new URL('../mubawab-exhaustive-enumerator.mjs', import.meta.url));
+  const run = spawnSync(process.execPath, [script], {
+    env: { ...process.env, MUBAWAB_AUTHORIZED_ACCESS: '' },
+    encoding: 'utf8', timeout: 3000,
+  });
+  assert.equal(run.status, 2);
+  assert.match(run.stderr, /documented commercial access authorization required/i);
+});
+
+test('exported enumerator does not touch real fetch without documented access gate', async () => {
+  const original = globalThis.fetch;
+  const prior = process.env.MUBAWAB_AUTHORIZED_ACCESS;
+  let called = 0;
+  try {
+    process.env.MUBAWAB_AUTHORIZED_ACCESS = '';
+    globalThis.fetch = async () => { called++; throw new Error('network should never run'); };
+    const result = await enumerateMubawab();
+    assert.equal(result.stoppedEarly, 'authorization_missing');
+    assert.equal(result.requestCount, 0);
+    assert.equal(result.robotsRequestCount, 0);
+    assert.equal(called, 0);
+  } finally {
+    globalThis.fetch = original;
+    if (prior === undefined) delete process.env.MUBAWAB_AUTHORIZED_ACCESS;
+    else process.env.MUBAWAB_AUTHORIZED_ACCESS = prior;
+  }
+});
+
+test('fresh robots gate accepts known rules and refuses unexpected directives', () => {
+  assert.equal(verifyMubawabRobots(ROBOTS)?.verified, true);
+  assert.equal(verifyMubawabRobots(ROBOTS + '\nDisallow: /new-path'), null);
+  assert.equal(verifyMubawabRobots('User-agent: *\nDisallow: /'), null);
+});
 
 test('robots guard blocks legacy colon pagination and sensitive paths', () => {
   assert.equal(isRobotsSafeUrl('https://www.mubawab.ma/fr/cc/immobilier-a-vendre'), true);
   assert.equal(isRobotsSafeUrl('https://www.mubawab.ma/fr/cc/immobilier-a-vendre:p:2'), false);
+  assert.equal(isRobotsSafeUrl('https://www.mubawab.ma/fr/cc/immobilier-a-vendre%3Ap%3A2'), false);
+  assert.equal(isRobotsSafeUrl('https://www.mubawab.ma/fr/%2flogin'), false);
   assert.equal(isRobotsSafeUrl('https://www.mubawab.ma/fr/login'), false);
   assert.equal(isRobotsSafeUrl('https://www.mubawab.ma/fr/cc/immobilier-a-vendre?n=1'), false);
 });
@@ -69,16 +127,19 @@ test('bounded enumeration recursively splits without DB writes', async () => {
       <a href="/fr/a/2/two">two</a>
     `],
   ]);
-  const fetchImpl = async (url) => ({
-    status: 200,
-    url,
-    headers: { get: () => 'text/html; charset=utf-8' },
-    text: async () => pages.get(url) || '<div>(0 résultats)</div>',
-  });
+  const fetchImpl = async (url) => url.endsWith('/robots.txt')
+    ? robotsResponse(url)
+    : ({
+      status: 200,
+      url,
+      headers: { get: () => 'text/html; charset=utf-8' },
+      text: async () => pages.get(url) || '<div>(0 résultats)</div>',
+    });
   const report = await enumerateMubawab({
     roots: ['https://www.mubawab.ma/fr/cc/immobilier-a-vendre'],
     fetchImpl,
     maxRequests: 5,
+    delayMs: 0,
   });
   assert.equal(report.zeroDbWrites, true);
   assert.equal(report.requestCount, 2);
@@ -91,6 +152,7 @@ test('429 stops immediately', async () => {
   let calls = 0;
   const fetchImpl = async (url) => {
     calls += 1;
+    if (url.endsWith('/robots.txt')) return robotsResponse(url);
     return {
       status: 429,
       url,
@@ -102,7 +164,44 @@ test('429 stops immediately', async () => {
     roots: ['https://www.mubawab.ma/fr/cc/immobilier-a-vendre', 'https://www.mubawab.ma/fr/cc/immobilier-a-louer'],
     fetchImpl,
   });
-  assert.equal(calls, 1);
+  assert.equal(calls, 2);
+  assert.equal(report.robotsRequestCount, 1);
   assert.equal(report.stoppedEarly, 'http_429');
+  assert.equal(report.requestCount, 1);
   assert.equal(report.zeroDbWrites, true);
+});
+
+test('403 stops immediately without trying the second shard', async () => {
+  const requested = [];
+  const fetchImpl = async (url, options) => {
+    requested.push({ url, redirect: options.redirect });
+    if (url.endsWith('/robots.txt')) return robotsResponse(url);
+    return { status: 403, url, headers: { get: () => 'text/html' }, text: async () => 'blocked' };
+  };
+  const report = await enumerateMubawab({
+    roots: [
+      'https://www.mubawab.ma/fr/cc/immobilier-a-vendre',
+      'https://www.mubawab.ma/fr/cc/immobilier-a-louer',
+    ],
+    fetchImpl,
+    delayMs: 0,
+  });
+  assert.equal(requested.length, 2);
+  assert.equal(requested[0].url, 'https://www.mubawab.ma/robots.txt');
+  assert.equal(requested[1].redirect, 'manual');
+  assert.equal(report.stoppedEarly, 'http_403');
+  assert.equal(report.requestCount, 1);
+  assert.equal(report.coverageCertified, false);
+});
+
+test('unverifiable robots policy sends no shard HTTP requests', async () => {
+  const urls = [];
+  const fetchImpl = async (url) => {
+    urls.push(url);
+    return { status: 404, url, headers: { get: () => 'text/plain' }, text: async () => '' };
+  };
+  const report = await enumerateMubawab({ fetchImpl, delayMs: 0 });
+  assert.deepEqual(urls, ['https://www.mubawab.ma/robots.txt']);
+  assert.equal(report.requestCount, 0);
+  assert.equal(report.stoppedEarly, 'robots_unverified');
 });
