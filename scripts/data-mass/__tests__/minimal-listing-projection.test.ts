@@ -44,28 +44,45 @@ test("projects an existing listing_source under an explicit positive policy", ()
   assert.equal(out.canonicalUrl, base.listingUrl);
   assert.equal(out.sourceDomain, "example.ma");
   assert.equal(out.titleOrStructuralSignal, "Appartement Agdal");
-  assert.equal(out.geography, "Agdal");
+  assert.equal(out.city, "Rabat");
+  assert.equal(out.district, "Agdal");
   assert.equal(out.price, 1800000);
   assert.equal(out.surface, 92);
+  assert.equal(out.photoUrl, null, "canonical-link-only does not license source photos");
+  assert.equal(out.description, null, "canonical-link-only does not license source prose");
+});
+
+test("partner-content policy may preserve optional stored media in shadow only", () => {
+  const partnerPolicy = {
+    ...policy,
+    authorization_status: "authorized_partner",
+    acquisition_mode: "partner_feed",
+    machine_gate: "partner_feed",
+    ingestion_gate: "partner_feed",
+    display_policy: "partner_content",
+  };
+  const out = projectExistingListingRepresentation(base, partnerPolicy, new Date("2026-08-13T00:00:00Z"));
+  assert.equal(out.photoUrl, base.thumbnailUrl);
+  assert.equal(out.description, base.descriptionSnippet);
+  assert.equal(out.city, "Rabat");
+  assert.equal(out.district, "Agdal");
 });
 
 test("uses stored property type as structural signal when title is absent", () => {
   const out = projectExistingListingRepresentation(
-    { ...base, title: null, propertyType: "villa", district: null },
+    { ...base, title: null, propertyType: "villa" },
     policy,
     new Date("2026-08-13T00:00:00Z"),
   );
   assert.equal(out.titleOrStructuralSignal, "villa");
-  assert.equal(out.geography, "Rabat");
+  assert.equal(out.city, "Rabat");
+  assert.equal(out.district, "Agdal");
 });
 
 test("never invents optional fields", () => {
   const out = projectExistingListingRepresentation(
     {
       ...base,
-      district: null,
-      city: null,
-      priceMad: null,
       surfaceM2: null,
       thumbnailUrl: null,
       descriptionSnippet: null,
@@ -73,11 +90,36 @@ test("never invents optional fields", () => {
     policy,
     new Date("2026-08-13T00:00:00Z"),
   );
-  assert.equal(out.geography, null);
-  assert.equal(out.price, null);
+  assert.equal(out.city, "Rabat");
+  assert.equal(out.district, "Agdal");
+  assert.equal(out.price, 1800000);
   assert.equal(out.surface, null);
   assert.equal(out.photoUrl, null);
   assert.equal(out.description, null);
+});
+
+test("fails closed when ville, quartier or prix is absent, even when title and URL exist", () => {
+  const now = new Date("2026-08-13T00:00:00Z");
+  assert.throws(
+    () => projectExistingListingRepresentation({ ...base, city: null }, policy, now),
+    /CITY_REQUIRED/,
+  );
+  assert.throws(
+    () => projectExistingListingRepresentation({ ...base, district: null }, policy, now),
+    /DISTRICT_REQUIRED/,
+  );
+  assert.throws(
+    () => projectExistingListingRepresentation({ ...base, priceMad: null }, policy, now),
+    /PRICE_REQUIRED/,
+  );
+  assert.throws(
+    () => projectExistingListingRepresentation({ ...base, priceMad: 0 }, policy, now),
+    /PRICE_REQUIRED/,
+  );
+  assert.throws(
+    () => projectExistingListingRepresentation({ ...base, city: "  ", district: "Agdal" }, policy, now),
+    /CITY_REQUIRED/,
+  );
 });
 
 test("fails closed when policy is not admissible", () => {
