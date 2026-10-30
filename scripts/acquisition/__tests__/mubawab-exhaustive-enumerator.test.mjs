@@ -1,5 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 
 import {
   enumerateMubawab,
@@ -27,6 +29,16 @@ const ROBOTS = [
 
 const robotsResponse = (url) => ({
   status: 200, url, headers: { get: () => 'text/plain' }, text: async () => ROBOTS,
+});
+
+test('CLI rejects live acquisition absent documented operator permission', () => {
+  const script = fileURLToPath(new URL('../mubawab-exhaustive-enumerator.mjs', import.meta.url));
+  const run = spawnSync(process.execPath, [script], {
+    env: { ...process.env, MUBAWAB_AUTHORIZED_ACCESS: '' },
+    encoding: 'utf8', timeout: 3000,
+  });
+  assert.equal(run.status, 2);
+  assert.match(run.stderr, /documented commercial access authorization required/i);
 });
 
 test('fresh robots gate accepts known rules and refuses unexpected directives', () => {
