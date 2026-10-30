@@ -160,3 +160,41 @@ Statut : **CLOSE** = action exécutée ; **KEEP** = valeur à préserver, pas au
 4. Ensuite seulement, convergence Search + Carte avec captures BEFORE/AFTER et revue humaine.
 
 **Statut** : actions documentaires et fermetures prouvées, CI ciblée #1139 verte ; aucun merge/deploy/write initié par cette réconciliation.
+
+
+## 7. CONTRAT D'ONBOARDING DÉCISIONNEL — CHOIX EXPLICITE DU COMMANDITAIRE (30/10/2026)
+
+**Décision de méthode CONFIRMÉE par le commanditaire :** à l'issue de l'audit technique complet, la réconciliation ne se fera **pas PR par PR**, mais par **page / fonctionnalité / parcours**, en onboarding collaboratif. L'assistant agit comme associé virtuel critique, formule un avis et s'oppose à un choix quand l'expérience, la sécurité ou les preuves le justifient. Le commanditaire conserve l'arbitrage produit final. Ce protocole **ne valide aucune décision produit** et **n'autorise aucun merge ni déploiement**.
+
+### Structure obligatoire de chaque étape d'onboarding
+
+1. **Écran / feature et objectif utilisateur précis** — route(s) couvertes, scénario principal, KPI et critères de succès, état réel `main`.
+2. **PR rassemblées** — liste exhaustive des PR qui touchent ce composant, avec SHA/base, statut, dépendances, conflits et éventuels doublons ; séparer commits utiles, historiques et parties dangereuses.
+3. **BEFORE et TARGET** — captures au besoin aux mêmes viewports 390 / 430 / 768 / 1280, références ciblées, différence mesurable avec le target ; en absence de capture, écrire **NON VÉRIFIÉ** et interdire score fictif.
+4. **Arbitrage structuré** — `GARDER`, `MODIFIER`, `ABANDONNER` pour chaque proposition et les variantes A/B(/C) quand elles ont une vraie différence. Le conseiller doit donner **sa recommandation par défaut avec les 2–3 risques/compromis les plus importants**, et peut recommander de rejeter les anciennes décisions.
+5. **Décision explicite du commanditaire** — consigner `PROPOSÉ` avant l'avis utilisateur, puis `VALIDÉ` ou `REJETÉ` avec date/contexte après arbitrage ; les décisions obsolètes deviennent `SUPERSEDED`, avec lien vers nouvelle source, plutôt que suppression sans traçabilité.
+6. **Exécution après arbitrage** — une branche/PR cohérente par feature, ordre des dépendances, tests code/comportement, captures AFTER aux mêmes viewports, score visuel avec revue indépendante si pertinent, gates CI/humains, closeout `.md`/Notion. **Aucun merge sous gate humain**, et **aucun déploiement Vercel sans autorisation explicite**.
+
+### Parcours proposé — ordre de passage (encore PROPOSÉ)
+
+| Étape | Page/feature regroupée | Objectif de l'arbitrage |
+|---|---|---|
+| 0 — Socle de sécurité | Writers, providers DB/DR, sources/droits, ingestion, CI | Interdire écritures non maîtrisées et acquisition sans droits ; aucune affirmation live non prouvée |
+| 1 — Recherche | `/search` + filtres + ranking + carte résultat + listing cards | Une seule expérience de recherche cohérente, performant et accessible |
+| 2 — Fiche annonce | `/listings/[id]`, galerie, prix, localisation, contact, preuves source | Afficher uniquement faits et photos éligibles, avec UX premium |
+| 3 — Vivre Ici | `/map` + villes/quartiers + limites + POI + rail + bâtiments | Carte premium nationale, segmentation quartier lisible sans géométrie inventée |
+| 4 — Landing & acquisition | `/`, `/acheter`, `/louer`, `/neuf`, `/investir` et SEO connexes | Promesse produit claire, entrées cohérentes, navigation mobile |
+| 5 — Parcours acheteur | `/favorites`, `/alerts`, `/compare`, `/mon-projet`, `/profil-recherche`, `/compagnon` | Décider les parcours réellement utiles et retirer les redondances |
+| 6 — Offre et professionnels | `/vendre`, `/onboarding`, `/pro`, `/professionnels`, `/promoteurs`, `/projets` | Conversion, identités, rôles et outils pro sans doublons |
+| 7 — Utilitaires, confiance | `/credit`, `/mre`, `/immobilier`, `/quartiers`, mentions / privacy / trust | Cohérence éditoriale, données justifiables, conformité |
+| 8 — Clôture transverse | Design system, responsive, accessibilité, SEO, API, observabilité | Test de cohérence inter-pages, navigation complète, consolidation des canoniques |
+
+**L'ordre exact et l'inventaire PR par étape doivent être vérifiés à la clôture de l'audit** et peuvent évoluer. Les étapes 1–8 sont des **propositions de parcours**, non des validations anticipées.
+
+### Livrable de chaque étape
+
+Une **fiche de décision indépendante** : `Feature | Routes | PRs concernées | KEEP / CHANGE / DROP | Recommandation + risques | Décision utilisateur | Preuve UI/tests/CI | Next exact | Status`. Les PR qui concernent plusieurs pages sont indexées dans chaque groupe mais intégrées **une seule fois** selon l'ordre de dépendances, pour éviter doubles merges.
+
+### Gate de lancement de l'onboarding
+
+Audit complet traçable des PR encore ouvertes, inventaire fichiers/overlaps, statut sources/rights, risques sécurité, et cartographie page/feature. **Tant que le gate n'est pas atteint, seulement préparer les fiches ; ne pas présenter l'audit comme terminé.**
