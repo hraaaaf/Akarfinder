@@ -75,7 +75,7 @@
       "level": "L0",
       "status": "LOCKED",
       "description": "Owner-approved HOME hierarchy updated after explicit visual approval: remove homepage map promo, keep standalone Vivre ici route and navigation.",
-      "approved_at": "2026-10-30",
+      "approved_at": "2026-09-12",
       "files": [
         "app/page.tsx",
         "components/home/SearchEntryOrchestrator.tsx",
@@ -170,7 +170,8 @@
           "file": "components/home/HomeActionGrid.tsx",
           "value": "data-home-action-count=\"3\""
         }
-      ]
+      ],
+      "amended_at": "2026-10-30"
     },
     {
       "id": "product.information-architecture.v1",
