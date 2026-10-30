@@ -7,29 +7,20 @@ on:
       - "scripts/data4/__tests__/data-4-9b-high-capacity-structural-detail-qualification.test.ts"
       - "scripts/audits/data-4-9b-high-capacity-structural-detail-qualification.ts"
       - ".github/workflows/data-4-9b-high-capacity-structural-detail-qualification.yml"
+      - "scripts/ci/__tests__/legacy-data-live-audit-isolation.test.mjs"
       - ".github/workflows/data-4-9b-closeout-docs.yml"
-      - "README.md"
-      - "docs/ROADMAP.md"
-      - "docs/SESSION.md"
-  push:
-    branches:
-      - data/data-4-9b-high-capacity-structural-detail-qualification
-    paths:
-      - "scripts/data4/high-capacity-structural-detail-qualification.ts"
-      - "scripts/data4/__tests__/data-4-9b-high-capacity-structural-detail-qualification.test.ts"
-      - "scripts/audits/data-4-9b-high-capacity-structural-detail-qualification.ts"
-      - ".github/workflows/data-4-9b-high-capacity-structural-detail-qualification.yml"
-      - ".github/workflows/data-4-9b-closeout-docs.yml"
-      - "README.md"
-      - "docs/ROADMAP.md"
-      - "docs/SESSION.md"
   workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   contract:
+    if: github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -59,8 +50,11 @@ jobs:
           grep -F 'REJECT_NAMESPACE_ROOT' scripts/data4/high-capacity-structural-detail-qualification.ts
       - name: TypeScript
         run: npx tsc --noEmit
+      - name: Privileged DATA gate regression
+        run: node --test scripts/ci/__tests__/legacy-data-live-audit-isolation.test.mjs
 
   live-qualification:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
     needs: contract
     runs-on: ubuntu-latest
     timeout-minutes: 25
