@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { mkdir, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 const BASE='https://www.feenway.com';
@@ -50,13 +51,29 @@ export function bumpBucketByStage(record,stage,bucket){
  record[stage]??={};
  record[stage][bucket]=(record[stage][bucket]||0)+1;
 }
+// In-memory SHA-256 fingerprints; never serialize route IDs, URLs or hashes.
+export function navigationFingerprint(href){
+ let u;try{u=new URL(href,BASE);}catch{return null;}
+ if(u.protocol!=='https:'||u.origin!==BASE)return null;
+ const path=u.pathname.replace(/\\/+$/,'')||'/';
+ return createHash('sha256').update(path).digest('hex');
+}
+export function classifyNavigationLinkage(events,initial,idle,scrolled){
+ const counts={};
+ for(const e of events){
+  if(!e.key)continue;
+  const category=initial.has(e.key)?'linked_initial':idle.has(e.key)?'linked_during_idle':scrolled.has(e.key)?'linked_during_scroll':'not_observed_as_anchor';
+  counts[e.bucket]??={};counts[e.bucket][category]=(counts[e.bucket][category]||0)+1;
+ }
+ return counts;
+}
 export function ids(hrefs){
  const out=new Set();for(const h of hrefs){try{const u=new URL(h,BASE);if(u.origin===BASE&&!u.search&&!u.hash&&/^\/listings\/[1-9]\d{0,11}\/?$/.test(u.pathname))out.add(u.pathname.split('/')[2]);}catch{}}
  return [...out].sort((a,b)=>Number(a)-Number(b));
 }
 async function main(){
  const out=resolve(process.argv[2]||'.tmp/feenway-n02/browser-probe.json');
- const report={schema:'FEENWAY_N02_PUBLIC_READONLY_BROWSER_V2',observed_at:new Date().toISOString(),pages:[],errors:[],db_writes:0,listing_detail_requests:0,site_exhaustiveness_certified:false};
+ const report={schema:'FEENWAY_N02_PUBLIC_READONLY_BROWSER_V3',observed_at:new Date().toISOString(),pages:[],errors:[],db_writes:0,listing_detail_requests:0,site_exhaustiveness_certified:false};
  let browser;
  try{
   const rr=await fetch(BASE+'/robots.txt',{redirect:'manual',signal:AbortSignal.timeout(20000),headers:{'User-Agent':UA,Accept:'text/plain'}});
@@ -65,10 +82,10 @@ async function main(){
   const {chromium}=await import('playwright');browser=await chromium.launch({headless:true});
   const context=await browser.newContext({userAgent:UA,serviceWorkers:'block',acceptDownloads:false});
   for(const path of PAGES){
-   const url=BASE+path,page=await context.newPage(),denied={},blockedRequestBuckets={},blockedByStage={},blockedStatuses=[];
-   let stage='load';
+   const url=BASE+path,page=await context.newPage(),denied={},blockedRequestBuckets={},blockedByStage={},blockedStatuses=[],blockedTargets=[],initialAnchors=new Set(),idleAnchors=new Set(),scrolledAnchors=new Set();
+   let stage='load',blockedTargetsTruncated=false;
    try{
-    await page.route('**/*',route=>{const r=route.request(),reason=gate(r.url(),r.method(),r.resourceType(),url);if(reason){denied[reason]=(denied[reason]||0)+1;const bucket=blockedRequestBucket(r.url(),reason);if(bucket){blockedRequestBuckets[bucket]=(blockedRequestBuckets[bucket]||0)+1;bumpBucketByStage(blockedByStage,stage,bucket);}return route.abort('blockedbyclient');}return route.continue();});
+    await page.route('**/*',route=>{const r=route.request(),reason=gate(r.url(),r.method(),r.resourceType(),url);if(reason){denied[reason]=(denied[reason]||0)+1;const bucket=blockedRequestBucket(r.url(),reason);if(bucket){blockedRequestBuckets[bucket]=(blockedRequestBuckets[bucket]||0)+1;bumpBucketByStage(blockedByStage,stage,bucket);const key=navigationFingerprint(r.url());if(key){if(blockedTargets.length<2000)blockedTargets.push({bucket,key});else blockedTargetsTruncated=true;}}return route.abort('blockedbyclient');}return route.continue();});
     page.on('response',r=>{if([403,429].includes(r.status()))blockedStatuses.push(r.status());});
     const response=await page.goto(url,{waitUntil:'domcontentloaded',timeout:25000});
     if(!response||response.status()!==200)throw Error('http_'+(response?.status()||'no_response'));
@@ -77,12 +94,12 @@ async function main(){
     // Request gate stays unchanged and forbids API, details and dynamic fetch.
     await page.waitForTimeout(600);
     let hrefs=await page.locator('a[href]').evaluateAll(nodes=>nodes.map(n=>n.getAttribute('href')));
-    first=ids(hrefs);counts.push({scroll:0,listing_count:first.length});
+    first=ids(hrefs);for(const h of hrefs){const k=navigationFingerprint(h);if(k)initialAnchors.add(k);}counts.push({scroll:0,listing_count:first.length});
     for(let i=1;i<=3;i++){
      stage='idle_'+i;
      await page.waitForTimeout(600);
      hrefs=await page.locator('a[href]').evaluateAll(nodes=>nodes.map(n=>n.getAttribute('href')));
-     const observed=ids(hrefs);observed.forEach(id=>idleSeen.add(id));
+     const observed=ids(hrefs);observed.forEach(id=>idleSeen.add(id));for(const h of hrefs){const k=navigationFingerprint(h);if(k)idleAnchors.add(k);}
      idleCounts.push({idle:i,listing_count:observed.length});
     }
     for(let i=1;i<=3;i++){
@@ -90,13 +107,13 @@ async function main(){
      await page.evaluate(()=>window.scrollBy(0,Math.max(window.innerHeight,1150)));
      await page.waitForTimeout(600);
      hrefs=await page.locator('a[href]').evaluateAll(nodes=>nodes.map(n=>n.getAttribute('href')));
-     const observed=ids(hrefs);observed.forEach(id=>scrollSeen.add(id));
+     const observed=ids(hrefs);observed.forEach(id=>scrollSeen.add(id));for(const h of hrefs){const k=navigationFingerprint(h);if(k)scrolledAnchors.add(k);}
      counts.push({scroll:i,listing_count:observed.length});
     }
     if(blockedStatuses.length)throw Error('http_403_or_429');
     const newlyIdle=[...idleSeen].filter(x=>!first.includes(x)).sort((a,b)=>Number(a)-Number(b));
     const newlyScroll=[...scrollSeen].filter(x=>!first.includes(x)&&!idleSeen.has(x)).sort((a,b)=>Number(a)-Number(b));
-    report.pages.push({url,http_status:200,counts,idle_counts:idleCounts,new_ids_after_idle:newlyIdle,new_ids_after_scroll:newlyScroll,denied,blocked_request_buckets:blockedRequestBuckets,blocked_by_stage:blockedByStage,conclusion:denied.dynamic_blocked?'INCONCLUSIVE_BLOCKED_DYNAMIC_REQUESTS':newlyIdle.length||newlyScroll.length?'NEW_PUBLIC_LINKS_DURING_OBSERVATION':'NO_NEW_LINKS_IN_OBSERVATION'});
+    report.pages.push({url,http_status:200,counts,idle_counts:idleCounts,new_ids_after_idle:newlyIdle,new_ids_after_scroll:newlyScroll,denied,blocked_request_buckets:blockedRequestBuckets,blocked_by_stage:blockedByStage,blocked_target_linkage:classifyNavigationLinkage(blockedTargets,initialAnchors,idleAnchors,scrolledAnchors),blocked_target_linkage_complete:!blockedTargetsTruncated,conclusion:denied.dynamic_blocked?'INCONCLUSIVE_BLOCKED_DYNAMIC_REQUESTS':newlyIdle.length||newlyScroll.length?'NEW_PUBLIC_LINKS_DURING_OBSERVATION':'NO_NEW_LINKS_IN_OBSERVATION'});
    }catch(e){report.errors.push({url,error:String(e?.message||e)});break;}
    finally{await page.close();}
    await new Promise(r=>setTimeout(r,1000));

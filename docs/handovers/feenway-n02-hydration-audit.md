@@ -50,3 +50,13 @@ N01 reste à **73 710 URL de fiches découvertes** ; N02 ne certifie pas l'exhau
 **N02d décidé :** insérer trois fenêtres témoins `idle_1..3` de 600 ms sans scroll avant les trois scrolls, sur les trois mêmes landings, avec les mêmes interceptions strictes et aucune nouvelle route autorisée. Comparer le comportement pendant l'immobilité vs le défilement ; ne pas présenter le résultat comme preuve causale définitive. CI N02d à certifier avant conclusion.
 
 PR #1105 DRAFT. Freeze historique `10910779576` expirée HTTP 410 ; Mubawab/Sarout toujours en attente de preuve indépendamment de FeenWay. Aucun deploy, DB write ni merge.
+
+## N02d — témoin immobile certifié (30 octobre 2026)
+
+**Run exact :** [41095618047](https://github.com/hraaaaf/Akarfinder/actions/runs/41095618047) `completed/success`, HEAD `42f1908edac49b026a6ae0e788890bb7c6b4a507`, **6/6 tests offline PASS**, artifact `12996845649`. ZIP SHA-256 `bef30669209ce19798765504920f7ca362ca9ad3851edc2228c08f5f0dec0b47` recalculé ; JSON SHA-256 `5dc3d7d8063f753c27dcb901e93c526e469afadb06bcb78fcb3a904b7e56a3de`. Comptes par phase/bucket recalculés : **188/188** cohérents, 0 erreur.
+
+**Résultat observé :** 9 fenêtres `idle` (3 par page, 600 ms chacune) : **0 requête refusée et 0 nouvelle ancre**, contre **147 requêtes refusées** dans les phases de scroll et 41 au chargement. Même distribution de requêtes bloquées que N02c malgré l'attente sans scroll. Pages : 18/24/24 liens de fiches inchangés ; `new_ids_after_idle=[]` et `new_ids_after_scroll=[]`. Le scroll est donc fortement associé à l'activation du préchargement/chargement réseau. Ce n'est toujours **pas** une preuve du contenu des requêtes refusées ou de l'exhaustivité du site. Les trois verdicts restent `INCONCLUSIVE_BLOCKED_DYNAMIC_REQUESTS`.
+
+**N02e — corrélation avec liens DOM publics, sans ouvrir les routes :** calculer en mémoire uniquement des empreintes de chemins de navigation, classifier les destinations des requêtes refusées selon leur présence préalable dans les ancres HTML, puis ne stocker que des totaux agrégés (liens initiaux / liens observés durant immobilité / liens observés après scroll / destination non observée). Aucune URL, chemin brut, ID, token ou hash n'est persisté dans le rapport. `gate()` et robots inchangés. Lien déjà présent → préchargement de navigation plausible ; absent → inconclusif, pas autorisation de suivre. CI à vérifier avant toute interprétation.
+
+Pas de DB, Vercel, merge. PR #1105 reste DRAFT ; certification Mubawab/Sarout indépendante non débloquée.

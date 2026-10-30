@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {gate,ids,robotsPermit,blockedRequestBucket,bumpBucketByStage} from '../../acquisition/feenway-n02-hydration-probe.mjs';
+import {gate,ids,robotsPermit,blockedRequestBucket,bumpBucketByStage,navigationFingerprint,classifyNavigationLinkage} from '../../acquisition/feenway-n02-hydration-probe.mjs';
 const base='https://www.feenway.com',url=base+'/appartement-a-vendre/casablanca';
 test('url extraction is bounded, deduplicated and cross-origin safe',()=>{
  assert.deepEqual(ids(['/listings/5','/listings/5/','/listings/23','https://evil.com/listings/1','/listings/7?x=1']),['5','23']);
@@ -48,4 +48,19 @@ test('idle control phases are permitted without relaxing forbidden request guard
  assert.deepEqual(Object.keys(o),['idle_1','idle_2','idle_3']);
  assert.equal(gate(base+'/listings/45','GET','document',url),'blocked_route');
  assert.equal(gate(base+'/appartement-a-vendre/casablanca','GET','fetch',url),'dynamic_blocked');
+});
+
+
+test('blocked request paths are fingerprinted in-memory and matched only to known DOM anchors',()=>{
+ const old=navigationFingerprint('/appartement-a-vendre/casablanca');
+ assert.match(old,/^[0-9a-f]{64}$/);
+ assert.equal(navigationFingerprint('https://www.feenway.com/appartement-a-vendre/casablanca/?_rsc=secret'),old);
+ assert.equal(navigationFingerprint('https://other.com/appartement-a-vendre/casablanca'),null);
+ const more=navigationFingerprint('/listings/21');
+ const unknown=navigationFingerprint('/api/internal');
+ const result=classifyNavigationLinkage([
+  {bucket:'dynamic_market',key:old},{bucket:'blocked_listings',key:more},{bucket:'blocked_api',key:unknown}
+ ],new Set([old]),new Set([]),new Set([more]));
+ assert.deepEqual(result,{dynamic_market:{linked_initial:1},blocked_listings:{linked_during_scroll:1},blocked_api:{not_observed_as_anchor:1}});
+ assert.equal(JSON.stringify(result).includes('listings/21'),false);
 });
