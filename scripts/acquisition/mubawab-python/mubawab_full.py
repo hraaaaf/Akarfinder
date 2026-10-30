@@ -540,6 +540,12 @@ def main(argv=None):
         parser.error('Villes: slugs minuscules séparés par des virgules')
     if not deals or set(deals) - {'vendre', 'louer'}:
         parser.error('Transactions autorisées: vendre,louer')
+    if phases & {"list", "details"}:
+        # Operator gate is not a license: access rights must be documented.
+        if os.environ.get("MUBAWAB_AUTHORIZED_ACCESS") != "yes":
+            parser.error("Collecte HTTP désactivée : autorisation documentée requise (MUBAWAB_AUTHORIZED_ACCESS=yes)")
+        if not os.environ.get("MUBAWAB_CONTACT", "").strip():
+            parser.error("MUBAWAB_CONTACT requis pour une collecte autorisée")
     db = db_open(args.db)
     failure = None
     http = None
