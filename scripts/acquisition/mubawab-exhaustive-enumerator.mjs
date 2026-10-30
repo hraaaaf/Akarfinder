@@ -67,17 +67,17 @@ const KNOWN_GENERIC_DISALLOWS = new Set([
 // Conservative snapshot gate, not a generic robots parser: if site rules
 // change, stop rather than risk interpreting new directives incorrectly.
 export function verifyMubawabRobots(text, userAgent = DEFAULT_UA) {
-  if (!/^AkarFinder-public-index\\//i.test(userAgent)) return null;
+  if (!/^AkarFinder-public-index\//i.test(userAgent)) return null;
   if (typeof text !== 'string' || !text.trim() || text.length > 256_000) return null;
-  const match = /^User-agent:\\s*\\*\\s*$/im.exec(text);
+  const match = /^User-agent:\s*\*\s*$/im.exec(text);
   if (!match) return null;
-  const block = text.slice(match.index + match[0].length).split(/\\n(?=User-agent:)/i)[0];
+  const block = text.slice(match.index + match[0].length).split(/\n(?=User-agent:)/i)[0];
   const disallows = [];
   let crawlDelay = 0;
-  for (const original of block.split(/\\r?\\n/)) {
+  for (const original of block.split(/\r?\n/)) {
     const line = original.split('#', 1)[0].trim();
     if (!line) continue;
-    const parsed = /^([a-z-]+)\\s*:\\s*(.*)$/i.exec(line);
+    const parsed = /^([a-z-]+)\s*:\s*(.*)$/i.exec(line);
     if (!parsed) return null;
     const [, key, raw] = parsed;
     const value = raw.trim();
