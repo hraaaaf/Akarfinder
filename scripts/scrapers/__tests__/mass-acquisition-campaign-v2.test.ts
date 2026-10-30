@@ -79,7 +79,6 @@ test("campaign workflow preserves normal cadence or explicit migration freeze", 
   const workflow = readFileSync(".github/workflows/openserp-github-native-ingestion.yml", "utf8");
   const migrationFreeze = workflow.includes("MIGRATION FREEZE");
 
-  assert.match(workflow, /resolve-campaign-wave-count\.ts/);
   assert.match(workflow, /timeout-minutes: 30/);
   assert.match(workflow, /group: openserp-native-ingestion-production/);
 
@@ -88,8 +87,14 @@ test("campaign workflow preserves normal cadence or explicit migration freeze", 
     assert.ok(onBlock.includes("workflow_dispatch:"));
     assert.equal(/^\s*schedule\s*:/m.test(onBlock), false);
     assert.equal(/cron: "\*\/10 \* \* \* \*"/.test(workflow), false);
+    assert.match(workflow, /MODE="dry-run"/);
+    assert.match(workflow, /WAVES=1/);
+    assert.match(workflow, /SEED_MODE="dry-run"/);
+    assert.doesNotMatch(workflow, /--apply|MODE="cron"|SEED_MODE="apply"/);
+    assert.match(workflow, /github\.ref == 'refs\/heads\/main'/);
   } else {
     assert.match(workflow, /cron: "\*\/10 \* \* \* \*"/);
+    assert.match(workflow, /resolve-campaign-wave-count\.ts/);
   }
 });
 
