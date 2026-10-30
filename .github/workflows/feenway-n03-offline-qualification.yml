@@ -1,0 +1,41 @@
+name: FeenWay N03 archive qualification unit gate (offline only)
+on:
+  push:
+    branches: [data/200k-fresh-parser-v2]
+    paths:
+      - scripts/acquisition/feenway-n03-offline-qualify.py
+      - scripts/data/__tests__/test_feenway_n03_offline_qualify.py
+      - .github/workflows/feenway-n03-offline-qualification.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: feenway-n03-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  offline-unit-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify Python source syntax and offline safety fixtures
+        run: |
+          python3 -m py_compile scripts/acquisition/feenway-n03-offline-qualify.py
+          python3 -m unittest discover -s scripts/data/__tests__ -p 'test_feenway_n03_offline_qualify.py' -v
+      - name: Validate checked-in aggregate report (not a re-run of source artifacts)
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('docs/data/feenway-n03-qualification-evidence-2026-10-30.json').read_text())
+          e=r['evidence'];q=r['qualification'];s=r['safety']
+          assert r['schema']=='AKARFINDER_FEENWAY_N01_URL_ONLY_QUALIFICATION_V1'
+          assert e['archives_verified']==40 and e['batch_count']==35
+          assert e['landing_pages_audited_unique']==1736
+          assert e['sitemap_urls']==58513
+          assert e['url_only_primary_cohort']==73708 and e['url_only_all_observed_archives']==73715
+          assert e['reported_n01_count_matches_primary_cohort'] is False
+          assert q['eligible_for_DB']==0 and q['five_fields_certified_from_these_url_only_artifacts']==0
+          assert s['http_requests']==0 and s['db_reads']==0 and s['db_writes']==0 and s['deployments']==0
+          print('Aggregate evidence invariants OK; historical ZIPs were NOT downloaded in this CI.')
+          PY
