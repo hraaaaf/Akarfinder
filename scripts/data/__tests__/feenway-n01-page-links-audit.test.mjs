@@ -87,6 +87,29 @@ test('fetch accepts exactly one safe 308 and retains final public URL',async()=>
   assert.deepEqual(extractListingLinks(x.html,x.finalUrl),['https://www.feenway.com/listings/101']);
  }finally{globalThis.fetch=old;}
 });
+test('transient network TypeError retries exactly once, never retries HTTP 429',async()=>{
+ const previous=globalThis.fetch;
+ const url='https://www.feenway.com/appartement-a-vendre/agadir/riad-salam';
+ try{
+  let attempts=0;
+  globalThis.fetch=async()=>{
+   attempts++;
+   if(attempts===1)throw new TypeError('fetch failed');
+   return new Response('<a href="/listings/101">ok</a>',{status:200});
+  };
+  const result=await get(url);
+  assert.equal(result.finalUrl,url);
+  assert.equal(attempts,2);
+  attempts=0;
+  globalThis.fetch=async()=>{attempts++;throw new TypeError('fetch failed');};
+  await assert.rejects(get(url),/fetch failed/);
+  assert.equal(attempts,2);
+  attempts=0;
+  globalThis.fetch=async()=>{attempts++;return new Response('rate-limited',{status:429});};
+  await assert.rejects(get(url),/http_429/);
+  assert.equal(attempts,1);
+ }finally{globalThis.fetch=previous;}
+});
 test('redirect to another host, robots redirect and second redirect fail closed',async()=>{
  const previous=globalThis.fetch;const start='https://www.feenway.com/terrain-a-vendre/marrakech/route-de-fes';
  try{

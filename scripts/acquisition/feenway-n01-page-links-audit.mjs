@@ -66,17 +66,28 @@ export function safeRedirectTarget(from,location){
  if(root(initial.pathname)!==root(target.pathname)||initial.pathname===target.pathname)throw Error('redirect_cross_section_or_loop');
  return target.href;
 }
+export async function fetchWithOneNetworkRetry(url,makeOptions){
+ let attempts=0;
+ while(true){
+  attempts++;
+  try{return await fetch(url,makeOptions());}
+  catch(e){
+   if(!(e instanceof TypeError)||attempts>=2)throw e;
+   await new Promise(resolve=>setTimeout(resolve,1000));
+  }
+ }
+}
 export async function get(url,accept='text/html'){
  const u=new URL(url);
  if(u.origin!==BASE||isRestrictedPath(u.pathname))throw Error('forbidden_endpoint');
- const opts={redirect:'manual',signal:AbortSignal.timeout(22000),headers:{'User-Agent':UA,'Accept':accept}};
+ const opts=()=>({redirect:'manual',signal:AbortSignal.timeout(22000),headers:{'User-Agent':UA,'Accept':accept}});
  let finalUrl=url,redirectTo=null;
- let r=await fetch(url,opts);
+ let r=await fetchWithOneNetworkRetry(url,opts);
  if([301,302,307,308].includes(r.status)){
   if(accept!=='text/html')throw Error('redirect_not_allowed_for_robots');
   redirectTo=safeRedirectTarget(url,r.headers.get('location'));
   finalUrl=redirectTo;
-  r=await fetch(finalUrl,opts);
+  r=await fetchWithOneNetworkRetry(finalUrl,opts);
  }
  if(r.status!==200||!r.body)throw Error('http_'+r.status);
  if(Number(r.headers.get('content-length')||0)>MAX)throw Error('response_oversize');
