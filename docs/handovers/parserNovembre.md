@@ -256,3 +256,13 @@ Le run [40971175021](https://github.com/hraaaaf/Akarfinder/actions/runs/40971175
 **Pagination :** trois pages d'atterrissage publiques relues via TinyFish (ville Marrakech, appartement Casablanca, quartier Racine) : aucun `href` explicite de pagination détecté dans l'HTML extrait. Observation limitée ; ne démontre pas l'absence de pagination JavaScript ou d'autres surfaces.
 
 **Statut N01 : OUVERT.** Next exact : inspecter les tests et l'artifact du run 40972268387, vérifier nombre de pages et URL hors sitemap, puis décider des lots suivants selon le rendement et les contraintes du site. Aucun déploiement Vercel ni écriture DB.
+
+## N01 — pilote 1/35 exécuté et réconciliation vérifiée (30 octobre 2026)
+
+**Run :** [40972268387](https://github.com/hraaaaf/Akarfinder/actions/runs/40972268387) **SUCCESS**, artifact `12942320515` téléchargé et analysé : `report.json` contient `complete=true`, **50/50 pages**, **1 163 liens d'annonces uniques**, **245 liens absents des six sitemaps**, `errors=[]`, `listing_detail_requests=0`, `db_writes=0`. Le `report.jsonl` contient les **245 URL uniques** avec leurs pages sources ; son SHA-256 recalculé est **`701c7a452f67cb11958c348008af0bb987719e37c317b6a900674f2f1b56bc22`**, identique au rapport. **38/50 pages** proposent au moins un lien hors XML.
+
+**Réconciliation indépendante avec les 456 URL hors sitemap précédentes :** 245 URL dans le pilote, **3 déjà connues**, **242 nouvelles** ; **698 URL hors sitemap uniques au total**. Avec les **56 327 URL** des six sitemaps, l'inventaire de liens découverts atteint **57 025 URL** (aucune preuve de 57 025 biens actifs, distincts ou publiables). Empreinte SHA-256 du manifeste combiné trié avec provenance **`b6d5f590469d13450abe12c5618cb9d05bb62947d79029670187748f5988e87a`**. Rapports locaux `feenway-n01-pilot-batch1-reconciliation.json` et `feenway-n01-off-sitemap-merged-698.jsonl`.
+
+**Action suivante :** auditer les **lots 2 et 3** (50 pages chacun) sans répéter le pilote 1, au maximum 1 requête/s, respect de `robots.txt`, arrêt sur 403/429, rapports JSON/JSONL + empreintes SHA-256. La file complète contient 1 720 URL FR quartiers/marchés ; **50 auditées / 1 670 restantes avant ces deux lots**. La CI de cette préparation doit être vérifiée séparément, sans présumer du succès.
+
+**N01 : OUVERT.** Après les lots 2 et 3, rapprochement exact avec les 698 URL précédentes, puis couverture restant des pages quartiers/marchés et contrôles de pagination ou autre canal public. Aucun déploiement Vercel ni écriture DB.
