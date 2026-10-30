@@ -69,7 +69,7 @@ Statut : **CLOSE** = action exécutée ; **KEEP** = valeur à préserver, pas au
 | Prix/qualité | #1104 | **KEEP / P0**, PR très volumineuse (lecture API PR 422), audit en morceaux obligatoire. |
 | Extraction source | #1134 | **BLOCK LIVE / KEEP OFFLINE DRAFT**, #1135 licence. |
 | Mubawab legacy | #997 | **CLOSE effectué** : branche 78 ahead / 637 behind main, 57 fichiers dont workflows live/apply ; droits #1135 ouverts. Réutiliser exclusivement tests offline après audit, jamais merger en bloc. |
-| Prix Agenz/Mubawab | #1028 | **SPLIT** : composant Agenz autorisé uniquement après gate source ; Mubawab live bloqué. |
+| Prix Agenz/Mubawab | #1028 | **CLOSE effectué, source conservée** : extractor/tests disponibles dans Git historique ; runners live non réutilisables sans autorisation #1135 / revue Agenz. |
 | Parser large | #1105 | **SPLIT / BLOCK LIVE**, 200 fichiers, rebase et audit par source, ne pas merger en bloc. |
 | Annonces fraîches | #1113 | **KEEP en DRAFT** : 1 168 conformes annoncées dans la PR, distinctes par URL, non prouvées physiques uniques ni réutilisables. |
 | Acquisition contrat | #996, #1016 | **REVIEW** : schéma et dédup ID à isoler de l'ancienne chaîne ; aucun writer auto. |
@@ -77,8 +77,8 @@ Statut : **CLOSE** = action exécutée ; **KEEP** = valeur à préserver, pas au
 | Autres pipeline legacy | #956, #454 | **REVIEW** : contrats d'écriture/Source Registry, blocage de taille pour #454 ; pas de merge aveugle. |
 | Legacy data 7 PR | #110 → #115 → #118 → #121 → #124 → #125 → #126 | **REVIEW comme chaîne historique** ; vérifier migrations, licences et sécurité avant clôture groupée. |
 | DB migr. | #1082 | **KEEP DRAFT**, preuve DB cible/runtime/rollback requise. |
-| HA | #1087, #1101 | **SPLIT** : ne conserver que single-writer fail-closed indépendant du provider ; architecture primaire/standby dépend de la cible réellement opérée. |
-| Data clean | #1083, #1081 | **KEEP les invariants**, vérifier si les anciens writers sont encore actifs sur main avant fusion. |
+| HA | #1087, #1101 | **#1087 CLOSED**, #1101 DRAFT à étudier/adapter ; aucun provider présumé, corriger son défaut SUPABASE_PRIMARY implicite. |
+| Data clean | #1083, #1081 | **#1081 CLOSED** remplacée par #1139 DRAFT (5/5 CI) ; invariants snapshot-first de #1083 conservés ; **main pas encore protégée**. |
 | CI sécu | #1133 | **KEEP / P0** : isoler les 5 workflows privilégiés, contrôle exact-HEAD. |
 | CI documentation | #1132 | **KEEP comme closeout** ; ne pas prétendre globalement certifiés les 549+ workflows. |
 | CI ancienne | #991 | **CLOSE effectué** : 8 workflows divergents vs main (8 ahead / 670 behind) ; politique CI actuelle #1114/#1115/#1116 prévaut, anciens changements ne doivent pas revenir en bloc. |
@@ -109,8 +109,8 @@ Statut : **CLOSE** = action exécutée ; **KEEP** = valeur à préserver, pas au
 
 ### État réel des PR et preuve de nettoyage
 
-- Snapshot d'origine : 50 PR ouvertes. **10 PR historiques fermées sans merge ni suppression de branche** : #1032, #1097, #997, #991, #1053, #1057, #1058, #1059, **#1081, #1087**.
-- Nouvelles PR en revue : #1137 (ces documents), #1138 (isolation Souissi), **#1139 (gel des writers)**, **#1140 (snapshot Mubawab expérimental)**. **44 PR ouvertes lors du dernier contrôle**, soit 50 - 10 + 4 ; revalider avant toute nouvelle conclusion.
+- Snapshot d'origine : 50 PR ouvertes. **11 PR historiques fermées sans merge ni suppression de branche** : #1032, #1097, #997, #991, #1053, #1057, #1058, #1059, **#1081, #1087, #1028**.
+- Nouvelles PR en revue : #1137 (ces documents), #1138 (isolation Souissi), **#1139 (gel des writers)**, **#1140 (snapshot Mubawab expérimental)**. **43 PR ouvertes lors du dernier contrôle**, soit 50 - 11 + 4 ; revalider avant toute nouvelle conclusion.
 - `main` de référence reste `c02d0b73ed18b0e136d478fab39e71df425173a7`. Les branches DRAFT et leurs CI vertes ne changent pas ce HEAD.
 
 ### P0 — Contrôle des writers réels : #1081 archivée au profit de #1139
@@ -127,7 +127,7 @@ Statut : **CLOSE** = action exécutée ; **KEEP** = valeur à préserver, pas au
 - **Topologie** : #1028 = 47 commits ahead, 313 behind main ; 18 chemins dont 17 dans `scripts/price-recovery/` et un workflow.
 - **KEEP comme source d'algorithmes/tests, pas comme branche à merger** : `extract-detail-price.ts` et ses tests distinguent prix courant/ancien, MAD/m², mois/nuit/vente et statut non divulgué. Faire un benchmark sur HTML légalement détenu, en comparant au parser actuel avant toute réutilisation.
 - **BLOCK / REWORK** : `run-detail-price-recovery.ts`, `run-mubawab-price-recovery-safe.ts` et le workflow `detail-price-recovery-dry-run.yml` effectuent des `fetch()` de pages sources. La mention « read-only, databaseWrites=0 » ne vaut ni droit de collecte ni couverture fiable. `trace-agenz-client-api.ts` nécessite aussi une revue d'autorisation des APIs consultées. Aucun live Mubawab sans #1135.
-- **Next exact** : comparer un corpus de fixtures autorisées avec le parser plus récent et extraire uniquement le code déterministe utile dans une branche propre de `main`; aucune fermeture de #1028 avant traçabilité de ce transfert.
+- **CLOSE réellement exécuté** : #1028 archivée sans merge après contrôle qu'aucune PR ouverte n'en dépend ; le commentaire de clôture renvoie vers le présent audit et conserve la branche/les tests historiques. Aucune partie n'a été intégrée sur main. **Next exact** : comparer sur fixtures autorisées puis porter seulement l'extracteur déterministe utile dans une future PR dédiée.
 
 ### PR #1105 — Parser 200k : conserver preuves offline, séparer exploration des droits
 
