@@ -1,0 +1,25 @@
+{
+  "schema": "AKARFINDER_FEENWAY_ARCHIVED338_QUALITY_QUEUE_V1",
+  "input_records": 338,
+  "source_identifiers": 337,
+  "queue_counts": {
+    "historical_complete_source_evidence": 50,
+    "historical_partial_price_and_surface": 18,
+    "historical_partial_one_numeric_field": 37,
+    "review_economic_meaning": 3,
+    "source_identity_only": 204,
+    "quarantine_source_or_identity": 26
+  },
+  "total_queued": 338,
+  "missing_source_url": 20,
+  "economic_warnings": 3,
+  "current_fresh_verified": 0,
+  "current_available_verified": 0,
+  "physically_unique_verified": 0,
+  "reuse_rights_verified": 0,
+  "eligible_for_db": 0,
+  "publication_eligible": 0,
+  "network_requests": 0,
+  "db_writes": 0,
+  "note": "Historical source-observation triage only. No claim of live availability or licence. Existing active-unique shadow is a separate mandatory conservative gate."
+}

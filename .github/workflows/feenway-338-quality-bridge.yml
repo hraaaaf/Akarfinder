@@ -1,0 +1,33 @@
+name: FeenWay 338 archived quality bridge
+on:
+  push:
+    branches: [data/200k-fresh-parser-v2]
+    paths:
+      - scripts/data/feenway-338-quality-bridge.mjs
+      - scripts/data/__tests__/feenway-338-quality-bridge.test.mjs
+      - .github/workflows/feenway-338-quality-bridge.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: feenway-338-quality-bridge
+  cancel-in-progress: true
+jobs:
+  real-corpus-quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate quality gates and archived sources
+        run: node --test scripts/data/__tests__/feenway-338-quality-bridge.test.mjs
+      - name: Rebuild priority queue and run existing freshness shadow
+        run: node scripts/data/feenway-338-quality-bridge.mjs .tmp/feenway-338-quality
+      - uses: actions/upload-artifact@v4
+        with:
+          name: feenway-338-quality-queue
+          path: .tmp/feenway-338-quality/
+          retention-days: 30
+          if-no-files-found: error

@@ -1,12 +1,11 @@
 name: GitHub Freeze Full Field Recovery
 
 on:
-  pull_request:
-    paths:
-      - 'scripts/data/github-freeze-full-field-recovery.ts'
-      - 'data/recovery/full-field-recovery-v1-contract.json'
-      - '.github/workflows/github-freeze-full-field-recovery.yml'
   workflow_dispatch:
+
+concurrency:
+  group: source-freeze-full-field-stable
+  cancel-in-progress: true
 
 permissions:
   contents: read
