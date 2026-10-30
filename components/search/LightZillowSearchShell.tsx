@@ -534,6 +534,9 @@ export function LightZillowSearchShell({ initialListings, initialTotal, initialP
     .filter((page) => page === 1 || page === totalPages || Math.abs(page - currentPage) <= 2);
   const isSearching = isLoading || (currentPage === 1 && isGatewayLoading);
   const hasAnyResults = loadedResultCount > 0;
+  // A legacy/indexed total is not a visible result when client policy gates
+  // or active filters leave this page empty. Match the empty state honestly.
+  const displayedResultCount = !isSearching && !hasAnyResults ? 0 : totalResultCount;
   const showSkeleton = isLoading && filteredListings.length === 0 && gatewayResults.length === 0;
 
   return (
@@ -549,9 +552,9 @@ export function LightZillowSearchShell({ initialListings, initialTotal, initialP
           <div className="flex min-w-0 items-center gap-2">
             {isSearching ? <Loader2 size={15} strokeWidth={2.5} className="shrink-0 animate-spin text-bronze-500" aria-hidden="true" /> : null}
             <h1 className="min-w-0 truncate text-[14px] font-extrabold text-foreground sm:text-[15px]">
-              {isSearching && totalResultCount === 0
+              {isSearching && displayedResultCount === 0
                 ? "Recherche…"
-                : `${totalResultCount.toLocaleString("fr-FR")} résultat${totalResultCount !== 1 ? "s" : ""}${filters.search.trim() ? ` pour “${filters.search.trim()}”` : ""}`}
+                : `${displayedResultCount.toLocaleString("fr-FR")} résultat${displayedResultCount !== 1 ? "s" : ""}${filters.search.trim() ? ` pour “${filters.search.trim()}”` : ""}`}
             </h1>
           </div>
 
@@ -613,7 +616,7 @@ export function LightZillowSearchShell({ initialListings, initialTotal, initialP
                     </div>
                   ) : null}
 
-                  {totalPages > 1 ? (
+                  {totalPages > 1 && hasAnyResults ? (
                     <nav data-search-pagination aria-label="Pagination des résultats" className="flex flex-wrap items-center justify-center gap-2 py-2">
                       <button
                         type="button"
