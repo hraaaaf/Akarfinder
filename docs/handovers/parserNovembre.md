@@ -391,3 +391,9 @@ La CI [41074295013](https://github.com/hraaaaf/Akarfinder/actions/runs/410742950
 ### N01 — contrôle complémentaire du chargement des pages publiques (30 octobre 2026)
 
 **Extraction rendue de trois pages supplémentaires :** `/appartement-a-vendre/casablanca`, `/immobilier/marrakech`, `/appartement-a-vendre/rabat` : aucun lien `?page=` ou `/page/` ni contrôle « Suivant », « Voir plus », « Charger plus » ou `pagination` observé dans le contenu/les liens **extraits**. En combinant les trois comparaisons `?page=2` précédentes et ces observations, aucune pagination publique exploitable par lien HTML n'a été **démontrée** dans ces échantillons. Ce contrôle ne détecte ni appels réseau du navigateur, ni écouteurs JavaScript, ni scroll infini caché par l'extracteur. **N01 reste uniquement certifié pour les XML + pages FR listées, pas pour un crawl complet des annonces du site.**
+
+### N02 — sonde navigateur bornée, préparée le 30 octobre 2026
+
+N01 reste documenté par la preuve 1736/1736 pages FR des sitemaps et 73710 URL découvertes ; pas de preuve d'exhaustivité générale. L'audit N02 utilise un workflow GitHub indépendant, trois pages publiques autorisées, au maximum trois défilements et aucune page de détail. Les trois tests de protection (robots, filtrage des liens, interceptions des requêtes) doivent passer avant Chromium. Les routes /api, /listings, /admin, /samsar, /paiement, les requêtes XHR/fetch, les écritures POST et les ressources externes sont bloquées. Les résultats sont INCONCLUSIVE si le JS nécessite des requêtes bloquées ; jamais de faux certificat d'exhaustivité. Rapport JSON conservé en artifact. Aucune capture écran, DB, Vercel ou merge.
+
+PR #1105 demeure DRAFT ; les quatre checks Mubawab/Sarout/full-field échouent séparément sur l'artifact historique 10910779576 expiré HTTP 410. Ne pas les contourner.
