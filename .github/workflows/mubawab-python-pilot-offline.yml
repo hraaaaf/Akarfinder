@@ -4,7 +4,9 @@ on:
     paths:
       - 'scripts/acquisition/mubawab-python/**'
       - 'scripts/acquisition/mubawab-exhaustive-enumerator.mjs'
+      - 'scripts/acquisition/mubawab-marocannonces-public-adapter.mjs'
       - 'scripts/acquisition/__tests__/mubawab-exhaustive-enumerator.test.mjs'
+      - 'scripts/acquisition/__tests__/mubawab-marocannonces-public-adapter.test.mjs'
       - 'docs/handovers/2026-10-30-mubawab-python-pilot.md'
       - '.github/workflows/mubawab-python-pilot-offline.yml'
   workflow_dispatch:
@@ -32,7 +34,7 @@ jobs:
       - name: Compile Python
         run: python -m compileall -q scripts/acquisition/mubawab-python
       - name: Run L8 enumerator offline safety tests (no HTTP)
-        run: node --test scripts/acquisition/__tests__/mubawab-exhaustive-enumerator.test.mjs
+        run: node --test scripts/acquisition/__tests__/mubawab-exhaustive-enumerator.test.mjs scripts/acquisition/__tests__/mubawab-marocannonces-public-adapter.test.mjs
       - name: Run offline safety tests (no network crawler)
         working-directory: scripts/acquisition/mubawab-python
         run: python -m unittest -v test_mubawab.py
