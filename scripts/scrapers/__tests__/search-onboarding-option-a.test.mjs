@@ -47,3 +47,12 @@ test("visual proof checks the VISIBLE selector in all four viewports", () => {
   assert.ok(visual.includes("HORIZONTAL_OVERFLOW"));
   assert.ok(visual.includes("page.screenshot"));
 });
+
+test("settled empty Search cannot advertise stale server totals or ghost pagination", () => {
+  const shell = read("components/search/LightZillowSearchShell.tsx");
+  assert.match(shell, /const hasAnyResults = loadedResultCount > 0/);
+  assert.match(shell, /const displayedResultCount = !isSearching && !hasAnyResults \? 0 : totalResultCount/);
+  assert.match(shell, /displayedResultCount\.toLocaleString\("fr-FR"\)/);
+  assert.match(shell, /totalPages > 1 && hasAnyResults/);
+  assert.match(shell, /!hasAnyResults && !isSearching \? <EmptyState/);
+});
