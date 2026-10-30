@@ -50,14 +50,12 @@ jobs:
         run: |
           node --check scripts/acquisition/feenway-n01-page-links-audit.mjs
           node --test scripts/data/__tests__/feenway-n01-page-links-audit.test.mjs
-      - name: N01 sample public city, category and quartier links
-        run: node scripts/acquisition/feenway-n01-page-links-audit.mjs .tmp/feenway-n01-page-links/report.json .tmp/feenway-sitemap-inventory-v1/discovery.jsonl .tmp/feenway-n01-surfaces/report.jsonl
-      - name: N01 all city landing pages (robots checked, 1 request/second)
-        run: node scripts/acquisition/feenway-n01-page-links-audit.mjs .tmp/feenway-n01-cities/report.json .tmp/feenway-sitemap-inventory-v1/discovery.jsonl .tmp/feenway-n01-surfaces/report.jsonl cities
-      - name: N01 public quartier and market batch 2 (50 pages max)
-        run: node scripts/acquisition/feenway-n01-page-links-audit.mjs .tmp/feenway-n01-batch2/report.json .tmp/feenway-sitemap-inventory-v1/discovery.jsonl .tmp/feenway-n01-surfaces/report.jsonl batch:2
-      - name: N01 public quartier and market batch 3 (50 pages max)
-        run: node scripts/acquisition/feenway-n01-page-links-audit.mjs .tmp/feenway-n01-batch3/report.json .tmp/feenway-sitemap-inventory-v1/discovery.jsonl .tmp/feenway-n01-surfaces/report.jsonl batch:3
+      - name: N01 public quartier and market batch 4 (50 pages max)
+        run: node scripts/acquisition/feenway-n01-page-links-audit.mjs .tmp/feenway-n01-batch4/report.json .tmp/feenway-sitemap-inventory-v1/discovery.jsonl .tmp/feenway-n01-surfaces/report.jsonl batch:4
+      - name: N01 public quartier and market batch 5 (50 pages max)
+        run: node scripts/acquisition/feenway-n01-page-links-audit.mjs .tmp/feenway-n01-batch5/report.json .tmp/feenway-sitemap-inventory-v1/discovery.jsonl .tmp/feenway-n01-surfaces/report.jsonl batch:5
+      - name: N01 public quartier and market batch 6 (50 pages max)
+        run: node scripts/acquisition/feenway-n01-page-links-audit.mjs .tmp/feenway-n01-batch6/report.json .tmp/feenway-sitemap-inventory-v1/discovery.jsonl .tmp/feenway-n01-surfaces/report.jsonl batch:6
       - name: Save observation as evidence only
         uses: actions/upload-artifact@v4
         with:
@@ -81,35 +79,27 @@ jobs:
           path: .tmp/feenway-n01-surfaces/
           if-no-files-found: warn
           retention-days: 30
-      - name: Preserve N01 off-sitemap landing-page evidence
+      - name: Preserve N01 batch 4 with exact provenance (also on failure)
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: feenway-n01-page-link-gaps
-          path: .tmp/feenway-n01-page-links/
+          name: feenway-n01-batch4
+          path: .tmp/feenway-n01-batch4/
           if-no-files-found: warn
           retention-days: 30
-      - name: Preserve N01 city coverage evidence even on partial failure
+      - name: Preserve N01 batch 5 with exact provenance (also on failure)
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: feenway-n01-cities-urls
-          path: .tmp/feenway-n01-cities/
+          name: feenway-n01-batch5
+          path: .tmp/feenway-n01-batch5/
           if-no-files-found: warn
           retention-days: 30
-      - name: Preserve N01 batch 2 evidence even on failure
+      - name: Preserve N01 batch 6 with exact provenance (also on failure)
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: feenway-n01-batch2
-          path: .tmp/feenway-n01-batch2/
-          if-no-files-found: warn
-          retention-days: 30
-      - name: Preserve N01 batch 3 evidence even on failure
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: feenway-n01-batch3
-          path: .tmp/feenway-n01-batch3/
+          name: feenway-n01-batch6
+          path: .tmp/feenway-n01-batch6/
           if-no-files-found: warn
           retention-days: 30
