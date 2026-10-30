@@ -30,4 +30,4 @@ jobs:
         run: python -m compileall -q scripts/acquisition/mubawab-fresh
       - name: Test independent capture and offline dedup (NO HTTP)
         working-directory: scripts/acquisition/mubawab-fresh
-        run: python -m unittest -v test_fresh_snapshot.py
+        run: python -m unittest -v test_fresh_snapshot.py test_bulk_url_inventory.py
