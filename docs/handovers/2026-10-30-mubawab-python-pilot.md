@@ -187,3 +187,25 @@ Le pilote historique rapporte **31 cartes / 31 annonces, 432 URL photos réparti
 **Gate de clôture technique :** vérifier le résultat de la CI sur HEAD correspondant aux nouveaux fichiers ci-dessus. Si vert, le lot « import du pilote historique » est clos. **Gate externe séparé** pour une copie intégrale Mubawab : accès/autorisation et protections du site restent non résolus ; issue [#1135](https://github.com/hraaaaf/Akarfinder/issues/1135).
 
 **Next exact :** relever les trois checks sur le dernier HEAD ; consigner leur statut exact dans la PR et Notion. L'étape suivante techniquement permise est d'importer d'autres exports déjà en possession de l'utilisateur et de réconcilier les nouvelles références sans dupliquer l'inventaire.
+
+
+## Reprise additionnelle — deux archives Mubawab historiques consolidées (2026-10-30)
+
+**Découverte vérifiée dans la Library privée de l'utilisateur :**
+- `Mubawab_pilote_verifie.zip` : 31 annonces, 432 URL photos, provenance pilote Casablanca du 30 octobre 2026.
+- `mubawab-lot4-pilot-100.zip` : 100 annonces normalisées avec `source.name/source.source_id`, caractéristiques et snapshots, 100 URL photos, pilote Casablanca du **3 septembre 2026** ; le manifeste du ZIP précise 4 pages découvertes, 100 détails récupérés, 0 téléchargement image, 0 DB write lors de sa collecte historique.
+- Ces archives ont **2 identifiants en commun** : 31 + 100 - 2 = **129 identifiants uniques**.
+- `q1d_mubawab_address_restore_manifest.csv` : **11 833 lignes / 11 833 source_id distincts, 25 villes**, 0 ID commun aux 129 des deux pilotes. **Ce sont uniquement des candidats historiques de restauration d'adresses, pas des fiches d'annonces supplémentaires.**
+
+**Amélioration produit :** `archive_import.py` supporte les deux schémas JSONL historiques. Le JSONL canonique conserve le snapshot complet d'origine (`seller`, `features`, `quality`, `raw`, `description`, `location`, etc.) sous `detail.normalized_snapshot` ; les champs courants sont normalisés dans les colonnes `data` SQLite. Domaine et IDs contrôlés. Toujours aucune requête HTTP par ce module.
+
+**Résultat de l'exécution réelle hors réseau :**
+- **129 annonces uniques**, **530 références URL de photos**, **100 snapshots de détails historiques**, **0 fichier image téléchargé**, **0 erreur**.
+- Deuxième import : **2 fichiers JSONL déjà traités par SHA-256**, **0 nouvelle annonce**, **0 erreur**, donc reprise idempotente observée.
+- `test_archive_import.py` : **10/10 tests locaux PASS**, compilation Python réussie.
+- ZIP des exports et base SQLite : `mubawab_combined_existing_archives.zip`, SHA256 `36682684c05b3a1fef39a1c90fe22bbdc53bd389ea87a7b16f7a1d2623b3e538`.
+- ZIP code + tests : `mubawab_offline_archive_20261030_v3.zip`, SHA256 `7b23b65cd4b1638b668f900e4f6b369efa9b37a810075e08b935e5b91753e62e`.
+- Deux ZIP et les trois fichiers sources sauvegardés dans la Library `/AkarFinder/Mubawab/`. Le ZIP des données privées n'est **pas** commité au dépôt GitHub public.
+- Rapport séparé `export_combined/address_candidates_summary.json` : 11 833 candidats d'adresses, tiers SAFE_25=9836, SAFE_10=1135, SAFE_5=474, SAFE_1=388, 25 villes ; ne pas en faire des annonces ni une couverture certifiée.
+
+**Gouvernance :** couverture nationale non prouvée, droits d'accès/réutilisation non résolus, 0 accès Mubawab nouveau, 0 photos locales, 0 modification de DB de production, 0 merge, 0 déploiement. PR #1134 reste DRAFT. **Next exact :** CI exacte sur le HEAD intégrant ce consolidateur et ses 10 tests ; publier le résultat dans PR et Notion ; conserver le gate externe #1135 séparé.
