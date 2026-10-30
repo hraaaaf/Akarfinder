@@ -139,3 +139,19 @@ Sources primaires consultées :
 **Décision actuelle :** garder la PR #1134 DRAFT, code hors production, pas de merge, pas de déploiement Vercel, pas de DB write ni collecte live. Préparer en parallèle un chemin légal (flux partenaires, accord Mubawab) si l'autorisation tarde.
 
 **Next exact :** vérifier le résultat CI du nouveau HEAD ; corriger tout échec ; consigner son SHA et la preuve finale sans relancer de crawl. Blocage humain ensuite = obtenir l'autorisation commerciale documentée ou décider d'abandonner l'acquisition Mubawab.
+
+
+## Audit des derniers points d'entrée — retrait du legacy Mubawab (2026-10-30)
+
+Audit complémentaire : le fichier `scripts/acquisition/mubawab-marocannonces-public-adapter.mjs` restait un second chemin d'acquisition Mubawab non soumis au contrôle `robots.txt` frais de L8. Le flux réseau réel Mubawab de ce module mixte a donc été **désactivé** : résultat `stoppedEarly=legacy_live_disabled_use_authorized_L8`, `urls=[]`, `requests=[]`. Les tests synthétiques avec `fetchImpl` injecté restent disponibles pour les contrats de parsing. **MarocAnnonces est indépendant** et n'est pas affecté par ce retrait. Une réutilisation future de Mubawab devra passer par L8 après obtention des autorisations requises.
+
+Nouveau test offline : vérifie qu'un appel réel par défaut du module mixte ne fait **aucune requête Mubawab**, même si `MUBAWAB_AUTHORIZED_ACCESS=yes`. Le workflow PR inclut désormais aussi le test de l'adaptateur mixte. Aucun test live.
+
+### Statut de validation
+
+- **HEAD `bd7d76a50d8d04c1758821c31d9b103c2fe33ec1`** : trois CI SUCCESS, dont [offline 41047438880](https://github.com/hraaaaf/Akarfinder/actions/runs/41047438880) (**12 JS PASS**, **14 Python exécutés : 13 PASS, 1 SKIPPED**), [efficiency 41047438879](https://github.com/hraaaaf/Akarfinder/actions/runs/41047438879) et [baseline 41047439022](https://github.com/hraaaaf/Akarfinder/actions/runs/41047439022).
+- **La dernière modification de l'adaptateur legacy + tests est postérieure à ce HEAD**. Revalider **les trois checks sur le nouveau HEAD exact** et rapporter séparément leurs conclusions. Ne pas confondre les résultats précédents avec la nouvelle version.
+
+**Gate non technique toujours bloquant :** [issue #1135](https://github.com/hraaaaf/Akarfinder/issues/1135), autorisation commerciale écrite / licence / validation juridique documentée. Le ticket contient l'adresse de contact officielle et un projet de message **non envoyé**. Sans autorisation, aucun crawl, image, import, ni mise en production de ces collecteurs.
+
+**Next exact :** lire les 3 runs du dernier HEAD ; s'ils sont verts, faire le handover final dans PR et Notion, puis stopper à ce gate humain réel. Sinon : corriger le défaut prouvé, relancer tests, conserver PR DRAFT.
