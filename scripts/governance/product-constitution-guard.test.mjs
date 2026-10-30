@@ -168,8 +168,9 @@ test("approved Home L0 amendment removes only the homepage map promo, not Vivre 
     ));
   }
   assert.ok(nav.invariants.some((invariant) =>
+    invariant.type === "ordered_contains_exact" &&
     invariant.file === "lib/product-navigation.ts" &&
-    JSON.stringify(invariant).includes('label: \\"Vivre ici\\"')
+    invariant.values.includes('label: "Vivre ici"')
   ));
   assert.deepEqual(collectInvariantViolations(actual, repoRoot), []);
 });
