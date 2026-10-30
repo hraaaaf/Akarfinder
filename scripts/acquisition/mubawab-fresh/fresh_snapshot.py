@@ -62,7 +62,9 @@ def listing_id(url):
 
 def image_url(raw: str):
     try:
-        u = urlsplit(str(raw).strip())
+        raw=str(raw).strip()
+        if raw.startswith('//'):raw='https:'+raw
+        u = urlsplit(raw)
         if u.scheme not in ('https','http') or u.hostname != PHOTO_HOST or u.username or u.password: return None
         if '/assets/' in u.path or '/business/' in u.path: return None
         return urlunsplit(('https', PHOTO_HOST, u.path, '', ''))
@@ -102,8 +104,13 @@ def parse_listing(html: str, url: str):
     area_float=float(area.group(1).replace(',','.')) if area else None
     meta=soup.find('meta',attrs={'name':'description'})
     desc=meta.get('content','') if meta else None
+    found_photos=photos(soup)
+    # Include media URLs embedded in JSON-LD or gallery scripts on the detail page.
+    for raw in re.findall(r'(?:https?:)?//www\.mubawab-media\.com/[^\s\"\'<>\\)]+',html,re.I):
+        u=image_url(raw.rstrip('.,;'))
+        if u and u not in found_photos:found_photos.append(u)
     return {'source':'mubawab','id':listing_id(url),'url':url,'title':title.get_text(' ',strip=True) if title else None,
-      'price_dh':price_int,'area_m2':area_float,'description_snippet':desc,'photos':photos(soup),'scraped_at':now()}
+      'price_dh':price_int,'area_m2':area_float,'description_snippet':desc,'photos':found_photos,'scraped_at':now()}
 
 
 class Robots:
