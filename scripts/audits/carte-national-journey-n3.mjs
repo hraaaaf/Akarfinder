@@ -7,6 +7,8 @@ await mkdir(outDir, { recursive: true });
 
 const viewports = [
   { name: "390", width: 390, height: 844, mobile: true },
+  { name: "430", width: 430, height: 932, mobile: true },
+  { name: "768", width: 768, height: 900, mobile: false },
   { name: "1280", width: 1280, height: 900, mobile: false },
 ];
 const expectedDistrictHref = "/map?city=casablanca&district=maarif&layer=explore";
@@ -130,6 +132,18 @@ try {
     page.on("pageerror", (error) => pageErrors.push(String(error)));
 
     try {
+      await page.goto(`${baseUrl}/map?city=casablanca&layer=explore`, { waitUntil: "domcontentloaded", timeout: 30000 });
+      await waitForNationalView(page, "city");
+      const cityOverlay = page.locator('[data-akarfinder-national-neighborhood-overlay][data-city="casablanca"]');
+      await cityOverlay.waitFor({ state: "attached", timeout: 20000 });
+      await page.waitForFunction(() => {
+        const overlay = document.querySelector('[data-akarfinder-national-neighborhood-overlay][data-city="casablanca"]');
+        return overlay?.getAttribute("data-akarfinder-admin-atlas-count") === "16";
+      }, null, { timeout: 20000 });
+      const cityOverflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+      if (cityOverflow > 1) throw new Error(`city horizontal overflow ${cityOverflow}`);
+      await page.screenshot({ path: `${outDir}/city-casablanca-${viewport.name}.png`, fullPage: false });
+
       const entryMode = await enterMaarifFromRoot(page);
       const maplibre = page.locator('[data-maplibre-spike][data-maplibre-city="casablanca"][data-maplibre-district="maarif"]');
       await maplibre.waitFor({ state: "visible", timeout: 15000 });
@@ -161,6 +175,9 @@ try {
 
       report.cases.push({
         viewport: viewport.name,
+        cityAtlasCount: 16,
+        cityScreenshot: `city-casablanca-${viewport.name}.png`,
+        cityOverflow,
         entryMode,
         citySelection: "casablanca",
         districtSelection: "maarif",

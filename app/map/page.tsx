@@ -3,9 +3,11 @@ import Link from "next/link";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { NationalMapRouter } from "@/components/map/NationalMapRouter";
+import { MaarifTargetRail } from "@/components/map/MaarifTargetRail";
 import { P4MapDecisionRail } from "@/components/map/P4MapDecisionRail";
 import { PremiumInteractiveMapBridge } from "@/components/map/PremiumInteractiveMapBridge";
 import { parseMapNavigationState } from "@/lib/map/map-navigation-state";
+import { VERIFIED_LANDMARKS } from "@/lib/geo/territory-landmark-registry";
 import "./mockup-convergence-l2.css";
 import "./p4-map-shell.css";
 import "./market-convergence-correction.css";
@@ -21,7 +23,10 @@ import "./clinical-recovery.css";
 import "./clinical-sheet-guard.css";
 import "./premium-interactive-map-fixes.css";
 import "./n3-premium-theme.css";
+import "./quartier-target-couche1.css";
 import "./ux-convergence-l9.css";
+import "./quartier-target-couche2.css";
+import "./quartier-target-couche3.css";
 
 export const dynamic = "force-dynamic";
 
@@ -48,9 +53,28 @@ export default async function MapPage({ searchParams }: MapPageProps) {
   const layer = firstParam(params.layer).trim() || "explore";
   const hasNeighborhoodSelection = Boolean(city && district);
   const usePremiumNationalExplore = !city && !district && layer === "explore";
+  const isMaarifTargetPilot = city.toLowerCase() === "casablanca" && district.toLowerCase() === "maarif";
+  const targetPilotLandmarkIds = new Set([
+    "landmark_casablanca_maarif_twin_center",
+    "landmark_casablanca_maarif_stade_mohammed_v",
+  ]);
+  const targetPilotLandmarks = isMaarifTargetPilot
+    ? VERIFIED_LANDMARKS.flatMap((entry) => {
+        if (!targetPilotLandmarkIds.has(entry.entity.id)) return [];
+        const coordinates = entry.entity.coordinates;
+        if (!coordinates) return [];
+        return [{
+          id: entry.entity.id,
+          name: entry.entity.canonicalName,
+          latitude: coordinates.lat,
+          longitude: coordinates.lng,
+          tier: entry.entity.importance.tier,
+        }];
+      })
+    : [];
 
   return (
-    <div className="flex min-h-[100svh] flex-col bg-[#F8FAFC] text-[#0B1F3A]" data-vivre-ici-page>
+    <div className="flex min-h-[100svh] flex-col bg-[#F8FAFC] text-[#0B1F3A]" data-vivre-ici-page data-maarif-rebuild={isMaarifTargetPilot ? "true" : undefined}>
       <SiteHeader searchMode fluid />
 
       {usePremiumNationalExplore ? (
@@ -59,7 +83,7 @@ export default async function MapPage({ searchParams }: MapPageProps) {
         <>
           <div className="flex-1" data-p4-map-layout>
             <div data-p4-map-canvas>
-              <NationalMapRouter initialState={initialState} />
+              <NationalMapRouter initialState={initialState} targetPilotLandmarks={targetPilotLandmarks} />
               {hasNeighborhoodSelection ? (
                 <Link
                   href="/map?layer=explore"
@@ -72,7 +96,7 @@ export default async function MapPage({ searchParams }: MapPageProps) {
                 </Link>
               ) : null}
             </div>
-            <P4MapDecisionRail />
+            {isMaarifTargetPilot ? <MaarifTargetRail /> : <P4MapDecisionRail />}
           </div>
 
           {!hasNeighborhoodSelection ? (

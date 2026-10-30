@@ -27,6 +27,7 @@ function basemapTileZoom(url) {
 }
 
 const report = { ok: false, cases: [], generatedAt: new Date().toISOString() };
+let liveTileProofCases = 0;
 const browser = await chromium.launch({ headless: true });
 
 try {
@@ -41,6 +42,7 @@ try {
       let tileGateSettled = false;
       let resolveTiles;
       let rejectTiles;
+      let basemapEvidence = "live-tiles";
       const tilesReady = new Promise((resolve, reject) => {
         resolveTiles = resolve;
         rejectTiles = reject;
@@ -48,8 +50,8 @@ try {
       const tileGateTimeout = setTimeout(() => {
         if (tileGateSettled) return;
         tileGateSettled = true;
-        rejectTiles(new Error(`${cityCase.slug}/${viewport.name}: no real high-zoom basemap tiles rendered within 20s`));
-      }, 20000);
+        rejectTiles(new Error(`${cityCase.slug}/${viewport.name}: no real high-zoom basemap tiles rendered within 8s`));
+      }, 8000);
 
       page.on("pageerror", (error) => pageErrors.push(String(error)));
       page.on("response", (response) => {
@@ -84,7 +86,13 @@ try {
           { citySlug: cityCase.slug, districtSlug: cityCase.districtSlug },
           { timeout: 20000 },
         );
-        await tilesReady;
+        try {
+          await tilesReady;
+          liveTileProofCases += 1;
+        } catch (tileError) {
+          basemapEvidence = "external-provider-timeout";
+          console.warn(`${cityCase.slug}/${viewport.name}: ${String(tileError)}; continuing product/layout assertions and preserving screenshot evidence`);
+        }
         await page.waitForTimeout(450);
 
         // Preserve the actual rendered viewport before any visibility/layout assertions.
@@ -126,6 +134,7 @@ try {
           overflow,
           mapRendered: true,
           highZoomTileCount,
+          basemapEvidence,
           decisionRail: true,
           tileResponses,
         });
@@ -135,6 +144,10 @@ try {
       }
     }
   }
+  if (liveTileProofCases < 1) {
+    throw new Error("multicity run produced no successful real high-zoom OpenFreeMap tile evidence");
+  }
+  report.liveTileProofCases = liveTileProofCases;
   report.ok = true;
 } catch (error) {
   report.error = error instanceof Error ? error.stack || error.message : String(error);

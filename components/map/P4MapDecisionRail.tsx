@@ -50,6 +50,7 @@ export function P4MapDecisionRail() {
   const contextName = districtEntity?.canonical_name ?? cityName;
   const title = cityName === "Maroc" ? "Où vivre au Maroc ?" : contextName;
   const [localContext, setLocalContext] = useState<NeighborhoodContextReadModelV1 | null>(null);
+  const [activeContextTab, setActiveContextTab] = useState<"overview" | "local">("overview");
   const railRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -78,8 +79,12 @@ export function P4MapDecisionRail() {
   }, [cityEntity?.slug, districtEntity?.slug]);
 
   useEffect(() => {
+    setActiveContextTab("overview");
+  }, [navigationState.city, navigationState.district]);
+
+  useEffect(() => {
     railRef.current?.scrollTo({ top: 0, behavior: "auto" });
-  }, [navigationState.city, navigationState.district, localContext]);
+  }, [navigationState.city, navigationState.district, localContext, activeContextTab]);
 
   const localAnchors = localContext?.anchors.slice(0, 4) ?? [];
   const localCategoryLabels = localContext
@@ -99,6 +104,7 @@ export function P4MapDecisionRail() {
       className="p4-map-decision-rail"
       data-p4-map-decision-rail
       data-vivre-ici-premium-context
+      data-vivre-ici-tab={activeContextTab}
       aria-label="Vivre ici : territoire, vie locale et biens"
     >
       <div className="p4-sheet-handle" aria-hidden="true" />
@@ -132,61 +138,79 @@ export function P4MapDecisionRail() {
       </header>
 
       <nav className="p4-premium-tabs" aria-label="Contexte Vivre ici">
-        <span aria-current="page">Vue d’ensemble</span>
-        <span>Vie locale</span>
+        <button
+          type="button"
+          aria-current={activeContextTab === "overview" ? "page" : undefined}
+          onClick={() => setActiveContextTab("overview")}
+        >
+          Vue d’ensemble
+        </button>
+        <button
+          type="button"
+          aria-current={activeContextTab === "local" ? "page" : undefined}
+          onClick={() => setActiveContextTab("local")}
+        >
+          Vie locale
+        </button>
         {provider === "rabat-market-intelligence" ? <span>Prix</span> : null}
         <Link href={searchHref}>Biens</Link>
       </nav>
 
-      <section className="p4-premium-signal-grid" aria-label="Repères disponibles">
-        <div>
-          <MapPin size={16} aria-hidden="true" />
-          <strong>{localContext ? localContext.anchor_count : "—"}</strong>
-          <span>Repères sourcés</span>
-        </div>
-        <div>
-          <Trees size={16} aria-hidden="true" />
-          <strong>{localContext ? localCategoryLabels.length : "—"}</strong>
-          <span>Catégories observées</span>
-        </div>
-        <div>
-          <ShieldCheck size={16} aria-hidden="true" />
-          <strong>Exact</strong>
-          <span>Position requise pour un pin</span>
-        </div>
-      </section>
-
-      {districtEntity && localCategoryLabels.length ? (
-        <p className="p4-premium-category-line">
-          {localCategoryLabels.join(" · ")}
-        </p>
-      ) : null}
-
-      {districtEntity && localAnchors.length ? (
-        <section className="p4-premium-local-guide" aria-label={`Repères sourcés à ${districtEntity.canonical_name}`} data-vivre-ici-local-guide>
-          <div className="p4-premium-local-guide-heading">
+      {activeContextTab === "local" ? (
+        <>
+          <section className="p4-premium-signal-grid" aria-label="Repères disponibles">
             <div>
-              <p>À proximité</p>
-              <h3>Ce que l’on peut réellement repérer</h3>
+              <MapPin size={16} aria-hidden="true" />
+              <strong>{localContext ? localContext.anchor_count : "—"}</strong>
+              <span>Repères sourcés</span>
             </div>
-            <span>{localContext?.anchor_count ?? localAnchors.length}</span>
-          </div>
-          <div className="p4-premium-local-guide-list">
-            {localAnchors.map((anchor) => (
-              <article key={anchor.poi_id}>
-                <span>{mapPoiCategoryLabel(anchor.category)}</span>
-                <strong>{anchor.name}</strong>
-                <small>{anchor.territorial_wording}</small>
-              </article>
-            ))}
-          </div>
-          <p className="p4-premium-local-guide-source">
-            Repères sourcés et datés dans le contexte quartier. Aucune proximité n’est extrapolée.
-          </p>
-        </section>
+            <div>
+              <Trees size={16} aria-hidden="true" />
+              <strong>{localContext ? localCategoryLabels.length : "—"}</strong>
+              <span>Catégories observées</span>
+            </div>
+            <div>
+              <ShieldCheck size={16} aria-hidden="true" />
+              <strong>Proximité</strong>
+              <span>Sans frontière quartier inventée</span>
+            </div>
+          </section>
+
+          {districtEntity && localCategoryLabels.length ? (
+            <p className="p4-premium-category-line">
+              {localCategoryLabels.join(" · ")}
+            </p>
+          ) : null}
+
+          {districtEntity && localAnchors.length ? (
+            <section className="p4-premium-local-guide" aria-label={`Repères sourcés autour de ${districtEntity.canonical_name}`} data-vivre-ici-local-guide data-couche2-local-guide>
+              <div className="p4-premium-local-guide-heading">
+                <div>
+                  <p>À proximité</p>
+                  <h3>Ce que l’on peut réellement repérer</h3>
+                </div>
+                <span>{localContext?.anchor_count ?? localAnchors.length}</span>
+              </div>
+              <div className="p4-premium-local-guide-list">
+                {localAnchors.map((anchor) => (
+                  <article key={anchor.poi_id}>
+                    <span>{mapPoiCategoryLabel(anchor.category)}</span>
+                    <strong>{anchor.name}</strong>
+                    <small>{anchor.territorial_wording}</small>
+                  </article>
+                ))}
+              </div>
+              <p className="p4-premium-local-guide-source">
+                Repères OpenStreetMap sourcés au 20/09/2026. Aucun point n’est présenté comme « dans Maârif » sans frontière quartier certifiée.
+              </p>
+            </section>
+          ) : (
+            <p className="p4-premium-local-guide-empty">Aucun repère frais certifié disponible.</p>
+          )}
+        </>
       ) : null}
 
-      <section className="p4-premium-market-card" data-p4-map-data-contract>
+      {activeContextTab === "overview" ? <section className="p4-premium-market-card" data-p4-map-data-contract>
         <div>
           <p className="p4-premium-market-eyebrow">
             {provider === "rabat-market-intelligence" ? "Marché observé" : "Données de marché"}
@@ -198,7 +222,7 @@ export function P4MapDecisionRail() {
         <p className="p4-premium-market-copy">
           AkarFinder laisse volontairement une information absente plutôt que de la remplacer par une estimation.
         </p>
-      </section>
+      </section> : null}
 
       {cityName === "Maroc" ? (
         <div className="p4-premium-city-list" aria-label="Villes phares">

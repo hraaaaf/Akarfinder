@@ -23,6 +23,40 @@ export const AKARFINDER_TERRITORIAL_PALETTE = [
   "#BFDDE4",
 ] as const;
 
+export const AKARFINDER_MOROCCO_MAP_NAVY = "#123250";
+
+export const AKARFINDER_MOROCCO_TERRITORY_TONES = [
+  "#20516B",
+  "#2A5F77",
+  "#18435F",
+  "#20516B",
+  "#2A5F77",
+  "#376D82",
+  "#477C8D",
+  "#588A98",
+  "#6B99A4",
+  "#80A8AF",
+  "#96B7BB",
+  "#ADC6C7",
+] as const;
+
+export function territoryToneForKey(key: string): string {
+  let hash = 0;
+  for (const character of key.trim().toLowerCase()) {
+    hash = (hash * 31 + character.charCodeAt(0)) >>> 0;
+  }
+  return AKARFINDER_MOROCCO_TERRITORY_TONES[hash % AKARFINDER_MOROCCO_TERRITORY_TONES.length];
+}
+
+export function territoryLightToneForKey(key: string): string {
+  const lightTones = AKARFINDER_MOROCCO_TERRITORY_TONES.slice(6);
+  let hash = 0;
+  for (const character of key.trim().toLowerCase()) {
+    hash = (hash * 31 + character.charCodeAt(0)) >>> 0;
+  }
+  return lightTones[hash % lightTones.length];
+}
+
 const LIGHT_BASEMAP_BACKGROUND = "#EDF3F7";
 const DARK_BASEMAP_BACKGROUND = "#071426";
 const DEFAULT_NEUTRAL_HEATMAP = "#D8E1E8";
@@ -56,6 +90,93 @@ function mutedLayerPaint(theme: string | undefined) {
     roadMajor: dark ? "#2D455F" : "#C9D3DC",
     label: dark ? "#8FA3B8" : "#7A8795",
   };
+}
+
+export function applyAkarFinderMoroccoBasemapTreatment(map: MapLibreMap): void {
+  for (const layer of map.getStyle().layers ?? []) {
+    const id = layer.id.toLowerCase();
+    try {
+      if (layer.type === "background") {
+        map.setPaintProperty(layer.id, "background-color", AKARFINDER_MOROCCO_MAP_NAVY);
+      } else if (layer.type === "fill" && /(water|ocean|river|lake)/.test(id)) {
+        map.setPaintProperty(layer.id, "fill-color", AKARFINDER_MOROCCO_TERRITORY_TONES[1]);
+        map.setPaintProperty(layer.id, "fill-opacity", 0.94);
+      } else if (layer.type === "fill" && /(park|landcover|landuse)/.test(id)) {
+        map.setPaintProperty(layer.id, "fill-color", AKARFINDER_MOROCCO_TERRITORY_TONES[3]);
+        map.setPaintProperty(layer.id, "fill-opacity", 0.52);
+      } else if (layer.type === "fill" && /building/.test(id)) {
+        map.setPaintProperty(layer.id, "fill-color", AKARFINDER_MOROCCO_TERRITORY_TONES[5]);
+        map.setPaintProperty(layer.id, "fill-opacity", 0.48);
+      } else if (layer.type === "line" && /(motorway|trunk|primary)/.test(id)) {
+        map.setPaintProperty(layer.id, "line-color", AKARFINDER_MOROCCO_TERRITORY_TONES[9]);
+        map.setPaintProperty(layer.id, "line-opacity", 0.68);
+      } else if (layer.type === "line" && /(road|street|highway)/.test(id)) {
+        map.setPaintProperty(layer.id, "line-color", AKARFINDER_MOROCCO_TERRITORY_TONES[7]);
+        map.setPaintProperty(layer.id, "line-opacity", 0.50);
+      } else if (layer.type === "symbol") {
+        map.setPaintProperty(layer.id, "text-color", "#DCEAF0");
+        map.setPaintProperty(layer.id, "text-opacity", 0.76);
+        if (map.getPaintProperty(layer.id, "icon-opacity") !== undefined) {
+          map.setPaintProperty(layer.id, "icon-opacity", 0.54);
+        }
+        if (map.getPaintProperty(layer.id, "text-halo-color") !== undefined) {
+          map.setPaintProperty(layer.id, "text-halo-color", AKARFINDER_MOROCCO_MAP_NAVY);
+        }
+      }
+    } catch {
+      // Third-party styles do not expose identical paint properties on every layer.
+    }
+  }
+}
+
+export function applyAkarFinderCityBasemapTreatment(map: MapLibreMap, theme?: string): void {
+  const dark = theme === "dark";
+  const palette = {
+    background: dark ? "#0A1A2F" : "#F4F8FA",
+    land: dark ? "#10253A" : "#EEF5F7",
+    water: dark ? "#153A51" : "#D7E9EF",
+    park: dark ? "#183C43" : "#DCEBE6",
+    building: dark ? "#25384A" : "#E5ECEF",
+    road: dark ? "#3B5368" : "#B8C8D0",
+    roadMajor: dark ? "#57748A" : "#7EA6B4",
+    label: dark ? "#B8CAD9" : "#496678",
+    halo: dark ? "#0A1A2F" : "#F7FBFC",
+  };
+
+  for (const layer of map.getStyle().layers ?? []) {
+    const id = layer.id.toLowerCase();
+    try {
+      if (layer.type === "background") {
+        map.setPaintProperty(layer.id, "background-color", palette.background);
+      } else if (layer.type === "fill" && /(water|ocean|river|lake)/.test(id)) {
+        map.setPaintProperty(layer.id, "fill-color", palette.water);
+        map.setPaintProperty(layer.id, "fill-opacity", 0.94);
+      } else if (layer.type === "fill" && /(park|landcover|landuse)/.test(id)) {
+        map.setPaintProperty(layer.id, "fill-color", palette.park);
+        map.setPaintProperty(layer.id, "fill-opacity", 0.72);
+      } else if (layer.type === "fill" && /building/.test(id)) {
+        map.setPaintProperty(layer.id, "fill-color", palette.building);
+        map.setPaintProperty(layer.id, "fill-opacity", dark ? 0.36 : 0.34);
+      } else if (layer.type === "line" && /(motorway|trunk|primary)/.test(id)) {
+        map.setPaintProperty(layer.id, "line-color", palette.roadMajor);
+        map.setPaintProperty(layer.id, "line-opacity", 0.72);
+      } else if (layer.type === "line" && /(road|street|highway)/.test(id)) {
+        map.setPaintProperty(layer.id, "line-color", palette.road);
+        map.setPaintProperty(layer.id, "line-opacity", 0.50);
+      } else if (layer.type === "symbol") {
+        map.setPaintProperty(layer.id, "text-color", palette.label);
+        map.setPaintProperty(layer.id, "text-opacity", 0.62);
+        if (map.getPaintProperty(layer.id, "icon-opacity") !== undefined) {
+          map.setPaintProperty(layer.id, "icon-opacity", 0.30);
+        }
+        if (map.getPaintProperty(layer.id, "text-halo-color") !== undefined) {
+          map.setPaintProperty(layer.id, "text-halo-color", palette.halo);
+        }
+      }
+    } catch {
+      // Third-party styles do not expose identical paint properties on every layer.
+    }
+  }
 }
 
 export function applyAkarFinderBasemapTreatment(map: MapLibreMap, theme?: string): void {

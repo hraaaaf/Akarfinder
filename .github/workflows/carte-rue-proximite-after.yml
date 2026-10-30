@@ -1,0 +1,57 @@
+name: Carte Rue Proximité AFTER
+
+on:
+  pull_request:
+    paths:
+      - "components/map/MapLibreNeighborhood3D.tsx"
+      - "components/map/maplibre-overture-buildings.ts"
+      - "scripts/audits/carte-rue-proximite-after.mjs"
+      - ".github/workflows/carte-rue-proximite-after.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  capture-rue-after:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      BASE_URL: http://127.0.0.1:3211
+      AUDIT_OUTPUT_DIR: data/audits/carte-rue-proximite-after
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Production build
+        run: npm run build
+      - name: Start production server
+        shell: bash
+        run: |
+          npm run start -- -p 3211 > /tmp/carte-rue-after.log 2>&1 &
+          for attempt in {1..60}; do
+            if curl -fsS 'http://127.0.0.1:3211/map?city=casablanca&district=maarif&layer=explore' >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/carte-rue-after.log
+          exit 1
+      - name: Capture Rue proximity AFTER
+        run: node scripts/audits/carte-rue-proximite-after.mjs
+      - name: Upload Rue proximity AFTER
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: carte-rue-proximite-after-${{ github.run_id }}
+          path: data/audits/carte-rue-proximite-after
+          if-no-files-found: error
+          retention-days: 30
