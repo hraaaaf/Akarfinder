@@ -54,15 +54,32 @@ export function extractListingLinks(html,from){
  }
  return [...found];
 }
-async function get(url,accept='text/html'){
+export function safeRedirectTarget(from,location){
+ if(!location||typeof location!=='string')throw Error('redirect_missing_location');
+ const initial=new URL(from),target=new URL(location,from);
+ if(target.origin!==BASE||target.protocol!=='https:'||target.username||target.password||target.search||target.hash)throw Error('redirect_unsafe_target');
+ if(/^(\\/api\\/|\\/admin\\/|\\/paiement\\/|\\/samsar\\/)/.test(target.pathname)||/^\\/listings\\//.test(target.pathname))throw Error('redirect_forbidden_path');
+ const root=(p)=>p.split('/').slice(0,3).join('/');
+ if(root(initial.pathname)!==root(target.pathname)||initial.pathname===target.pathname)throw Error('redirect_cross_section_or_loop');
+ return target.href;
+}
+export async function get(url,accept='text/html'){
  const u=new URL(url);
- if(u.origin!==BASE||/^(\/api\/|\/admin\/|\/paiement\/|\/samsar\/)/.test(u.pathname))throw Error('forbidden_endpoint');
- const r=await fetch(url,{redirect:'manual',signal:AbortSignal.timeout(22000),headers:{'User-Agent':UA,'Accept':accept}});
+ if(u.origin!==BASE||/^(\\/api\\/|\\/admin\\/|\\/paiement\\/|\\/samsar\\/)/.test(u.pathname))throw Error('forbidden_endpoint');
+ const opts={redirect:'manual',signal:AbortSignal.timeout(22000),headers:{'User-Agent':UA,'Accept':accept}};
+ let finalUrl=url,redirectTo=null;
+ let r=await fetch(url,opts);
+ if([301,302,307,308].includes(r.status)){
+  if(accept!=='text/html')throw Error('redirect_not_allowed_for_robots');
+  redirectTo=safeRedirectTarget(url,r.headers.get('location'));
+  finalUrl=redirectTo;
+  r=await fetch(finalUrl,opts);
+ }
  if(r.status!==200||!r.body)throw Error('http_'+r.status);
  if(Number(r.headers.get('content-length')||0)>MAX)throw Error('response_oversize');
  const chunks=[];let n=0;
  for await(const p of r.body){n+=p.byteLength;if(n>MAX)throw Error('response_oversize');chunks.push(Buffer.from(p));}
- const b=Buffer.concat(chunks);return {html:new TextDecoder('utf-8',{fatal:true}).decode(b),sha256:sha(b),bytes:b.length};
+ const b=Buffer.concat(chunks);return {html:new TextDecoder('utf-8',{fatal:true}).decode(b),sha256:sha(b),bytes:b.length,finalUrl,redirectTo};
 }
 async function main(){
  const out=resolve(process.argv[2]||'.tmp/feenway-n01-page-links/report.json');
@@ -85,11 +102,11 @@ async function main(){
    report.pages_attempted++;
    try{
     const page=await get(url);
-    const links=extractListingLinks(page.html,url);
+    const links=extractListingLinks(page.html,page.finalUrl);
     const outside=links.filter(x=>!allListing.has(x));
     links.forEach(x=>observed.add(x));
     outside.forEach(x=>{if(!missingSources.has(x))missingSources.set(x,[]);missingSources.get(x).push(url);});
-    report.sample_pages.push({url,http_status:200,bytes:page.bytes,raw_sha256:page.sha256,listing_links:links.length,outside_main_six:outside.length,outside_examples:outside.slice(0,12)});
+    report.sample_pages.push({url,final_url:page.finalUrl,redirect_to:page.redirectTo,http_status:200,bytes:page.bytes,raw_sha256:page.sha256,listing_links:links.length,outside_main_six:outside.length,outside_examples:outside.slice(0,12)});
    }catch(e){const msg=String(e?.message||e);report.errors.push({url,error:msg});if(/^http_(403|429)$/.test(msg))break;}
    await new Promise(r=>setTimeout(r,mode==='cities'||mode==='batch'?1000:500));
   }

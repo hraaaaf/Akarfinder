@@ -319,3 +319,16 @@ La CI [41063193274](https://github.com/hraaaaf/Akarfinder/actions/runs/410631932
 **Couverture :** **750/1 720 pages** marchés/quartiers explorées, **970 à visiter** (20 lots max restant après batch 15). Pages villes auditées séparément.
 
 **Suite exécutée :** workflow modifié pour **lots 16–20**, 5 lots de maximum 50 pages, lecture seule, 1 requête/seconde, contrôle robots, arrêt 403/429, JSON/JSONL+SHA préservés. Le nouveau run doit être vérifié avant toute certification. **N01 OUVERT**, aucun déploiement Vercel ni écriture DB.
+
+## N01 — CI rouge lots 16–20 : diagnostic et garde-fou redirection (30 octobre 2026)
+
+[GitHub run 41073099353](https://github.com/hraaaaf/Akarfinder/actions/runs/41073099353) **FAILURE**, tentative 1 : transfert XML interrompu (`listings-2.xml` et `listings-3.xml`, sans erreur HTTP 403/429). Tentative 2 : XML OK, mais **lot 16 FAIL** avec 47/50 pages `200` et trois `HTTP 308` (alias publics). Artifacts `12987005534` et `12985851776` analysés. Les **534 liens hors XML du lot incomplet ne sont PAS ajoutés aux totaux certifiés** ; les lots 17–20 sont non exécutés.
+
+**URLs 308 vérifiées indépendamment (TinyFish final_url)** :
+- `/terrain-a-vendre/marrakech/route-dourika` → `/terrain-a-vendre/marrakech/route-de-lourika`
+- `/terrain-a-vendre/marrakech/route-de-fes` → `/terrain-a-vendre/marrakech/route-de-fez`
+- `/appartement-a-vendre/tanger/ziatene` → `/appartement-a-vendre/tanger/ziaten`
+
+**Correctif borné :** l'audit HTML suit au maximum une redirection HTTP 301/302/307/308, uniquement vers HTTPS `www.feenway.com`, **même famille de catégorie et ville**, sans query, fragment, identifiant, redirection vers `/api/` ou `/listings/`. Une seconde redirection, un changement de domaine, une route non autorisée ou une redirection `robots.txt` restent bloquants. Le rapport conserve l'URL source, l'URL finale, la cible de redirection et le SHA-256 de la réponse. Trois tests additionnels couvrent le parcours canonique et les refus. Aucune augmentation de cadence ; l'arrêt sur 403/429 est conservé.
+
+**Next exact :** vérifier la CI déclenchée par le correctif ; si verte, valider artifacts lots 16–20, réconcilier sans les 534 liens du lot incomplet, puis poursuivre N01. Aucun déploiement Vercel ni écriture DB.

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { FIXED, seeds, citySeeds, evenSample, extractListingLinks } from '../../acquisition/feenway-n01-page-links-audit.mjs';
+import { FIXED, seeds, citySeeds, evenSample, extractListingLinks, safeRedirectTarget, get } from '../../acquisition/feenway-n01-page-links-audit.mjs';
 
 test('sample seeds are public, bounded and deduplicated',()=>{
  const rows=[
@@ -61,4 +61,37 @@ test('batch-1 first 50 public quartier pages are bounded and deduplicated',()=>{
  assert.equal(queue.length,50);
  assert.equal(new Set(queue.map(x=>x.url)).size,50);
  assert.ok(queue.every(x=>x.url.startsWith('https://www.feenway.com/')&&x.listing_detail_requests===0));
+});
+
+test('308 canonical alias stays on the same public category and city',()=>{
+ assert.equal(safeRedirectTarget('https://www.feenway.com/terrain-a-vendre/marrakech/route-dourika','/terrain-a-vendre/marrakech/route-de-lourika'),'https://www.feenway.com/terrain-a-vendre/marrakech/route-de-lourika');
+ assert.equal(safeRedirectTarget('https://www.feenway.com/appartement-a-vendre/tanger/ziatene','https://www.feenway.com/appartement-a-vendre/tanger/ziaten'),'https://www.feenway.com/appartement-a-vendre/tanger/ziaten');
+ for(const target of ['https://evil.example/terrain-a-vendre/marrakech/route-de-fez','/api/private','/listings/123','/terrain-a-vendre/casablanca/foo','/terrain-a-vendre/marrakech/bar?page=2','/terrain-a-vendre/marrakech/route-de-fes']){
+  assert.throws(()=>safeRedirectTarget('https://www.feenway.com/terrain-a-vendre/marrakech/route-de-fes',target));
+ }
+});
+test('fetch accepts exactly one safe 308 and retains final public URL',async()=>{
+ const old=globalThis.fetch;
+ const urls=[];
+ globalThis.fetch=async url=>{
+  urls.push(url);
+  if(url.endsWith('/route-de-fes'))return new Response('',{status:308,headers:{location:'/terrain-a-vendre/marrakech/route-de-fez'}});
+  return new Response('<a href="/listings/101">ok</a>',{status:200,headers:{'content-type':'text/html'}});
+ };
+ try{
+  const start='https://www.feenway.com/terrain-a-vendre/marrakech/route-de-fes';
+  const x=await get(start);
+  assert.equal(urls.length,2);
+  assert.equal(x.finalUrl,'https://www.feenway.com/terrain-a-vendre/marrakech/route-de-fez');
+  assert.equal(x.redirectTo,x.finalUrl);
+  assert.deepEqual(extractListingLinks(x.html,x.finalUrl),['https://www.feenway.com/listings/101']);
+ }finally{globalThis.fetch=old;}
+});
+test('redirect to another host, robots redirect and second redirect fail closed',async()=>{
+ const previous=globalThis.fetch;const start='https://www.feenway.com/terrain-a-vendre/marrakech/route-de-fes';
+ try{
+  globalThis.fetch=async()=>new Response('',{status:308,headers:{location:'https://outside.example'}});await assert.rejects(get(start),/redirect_unsafe_target/);
+  globalThis.fetch=async()=>new Response('',{status:308,headers:{location:'/terrain-a-vendre/marrakech/route-de-fez'}});await assert.rejects(get(start),/http_308/);
+  await assert.rejects(get('https://www.feenway.com/robots.txt','text/plain'),/redirect_not_allowed_for_robots/);
+ }finally{globalThis.fetch=previous;}
 });
