@@ -29,7 +29,7 @@
 | 13 | `.github/workflows/feenway-canary81-evidence-ci.yml` | KEEP_OFFLINE_CANDIDATE | Tests et preuves d'archives, aucune certification publication |
 | 14 | `.github/workflows/feenway-jsonld-mold-v1.yml` | KEEP_OFFLINE_TESTS | Moule JSON-LD offline, données sourcées distinctes |
 | 15 | `.github/workflows/feenway-n01-raw-integrity-verification.yml` | REVIEW | SHA/RAW utile mais référence l'audit sitemap ; vérifier absence réseau |
-| 16 | `.github/workflows/feenway-n01-sitemap-audit.yml` | BLOCK_LIVE | Audit sitemap HTTP FeenWay : gate des termes, pas une licence |
+| 16 | `.github/workflows/feenway-n01-sitemap-audit.yml` | BLOCK_LIVE | Script `feenway-n01-sitemap-audit.mjs` confirme `fetch()` des six sitemaps live FeenWay (8 MB max/XML) ; aucun téléchargement de fiche. Autorisation source non établie |
 | 17 | `.github/workflows/feenway-primary-batch-v1.yml` | BLOCK_LIVE | Batch de fiches FeenWay : blocage live |
 | 18 | `.github/workflows/feenway-primary-parser-v1.yml` | KEEP_OFFLINE_TESTS | Parser JSON-LD et fixtures uniquement |
 | 19 | `.github/workflows/feenway-sitemap-inventory-v1.yml` | BLOCK_LIVE | Inventaire sitemap avec exécution à contrôler |
@@ -46,12 +46,12 @@
 | 30 | `.github/workflows/mubawab-linked-pagination-canary-v1.yml` | BLOCK_LIVE | Canary pagination source Mubawab : gate |
 | 31 | `.github/workflows/mubawab-national-frontier-100.yml` | BLOCK_LIVE | Frontier nationale Mubawab : gate |
 | 32 | `.github/workflows/mubawab-new-city-frontier-30.yml` | BLOCK_LIVE | Frontier villes Mubawab : gate |
-| 33 | `.github/workflows/mubawab-parser-v2-benchmark.yml` | REVIEW_AND_BLOCK_LIVE | Bench offline peut rester ; bench HTTP uniquement sous licence #1135 |
+| 33 | `.github/workflows/mubawab-parser-v2-benchmark.yml` | BLOCK_LIVE | YAML : téléchargement de l'artefact freeze GitHub puis étape `Run bounded live benchmark` lançant `mubawab-live-benchmark-v2.mjs` ; isoler `mubawab-freeze-adapter-v2.mjs` (offline) ; aucun HTTP Mubawab sans #1135 |
 | 34 | `.github/workflows/mubawab-regional-categories-v1.yml` | BLOCK_LIVE | Exploration catégories Mubawab : gate |
 | 35 | `.github/workflows/mubawab-regional-types-40.yml` | BLOCK_LIVE | Exploration types Mubawab : gate |
 | 36 | `.github/workflows/mubawab-result-cards-first-pilot.yml` | BLOCK_LIVE | Pilote pages résultats Mubawab : gate |
 | 37 | `.github/workflows/mubawab-verified-district-shards-120.yml` | BLOCK_LIVE | Shards quartiers Mubawab : gate |
-| 38 | `.github/workflows/sarout-parser-v2-offline.yml` | REVIEW | Nom offline, YAML contient indicateurs HTTP : confirmer dans scripts |
+| 38 | `.github/workflows/sarout-parser-v2-offline.yml` | KEEP_OFFLINE_CANDIDATE | YAML télécharge uniquement un artefact GitHub freeze ; `sarout-freeze-adapter-v2.mjs` utilise `readFileSync`/SHA et produit un `live-fetch-plan`, sans fetch source dans ce fichier. Vérifier dépendances, licences et CI avant portage |
 | 39 | `.github/workflows/sarouty-card-boundary-v1.yml` | BLOCK_LIVE | Frontière de cartes Sarouty, accès source à qualifier |
 | 40 | `.github/workflows/sarouty-card-fields-pilot.yml` | BLOCK_LIVE | Champs cartes Sarouty : gate |
 | 41 | `.github/workflows/sarouty-public-card-canary.yml` | BLOCK_LIVE | Canary fiches Sarouty : gate |
@@ -67,3 +67,10 @@
 6. Ne pas fermer #1105 avant transfert traçable des fonctions offline utiles, arbitrage source par source, conservation des preuves et choix humain de merge.
 
 **Next exact** : inspecter les scripts exécutés par `mubawab-parser-v2-benchmark.yml`, `sarout-parser-v2-offline.yml` et `feenway-n01-sitemap-audit.yml`; ensuite préparer split tests hors réseau / jobs live permis. Aucun déploiement Vercel, aucune écriture DB.
+
+## Revue source de trois exécutions — preuve additionnelle
+
+- `mubawab-parser-v2-benchmark.yml` : source principale du risque, car la dernière étape lance effectivement `scripts/data/mubawab-live-benchmark-v2.mjs`; `mubawab-freeze-adapter-v2.mjs` est seulement une construction offline de plan de fetch (pas une autorisation). **Rester BLOCK_LIVE #1135.**
+- `sarout-parser-v2-offline.yml` : `curl` sert au téléchargement d'un artifact GitHub `10910779576`, pas à Sarout. L'adaptateur inspecté lit le freeze local, calcule les SHA-256 et écrit des fichiers locaux, dont un plan de futures requêtes. Le `live-fetch-plan` n'est pas exécuté par cet adaptateur. **KEEP_OFFLINE_CANDIDATE**, pas une autorisation de collecte Sarout.
+- `feenway-n01-sitemap-audit.yml` : étape lance bien `fetch(https://www.feenway.com/sitemaps/listings-0..5.xml)`. C'est un audit réseau, même s'il ne télécharge pas les fiches et n'écrit pas en DB. **BLOCK_LIVE** en attendant évaluation des conditions source.
+- Seules les trois chaînes ci-dessus ont été ouvertes jusqu'au script exécuté ; les 39 autres restent des recommandations d'après YAML, pas un audit complet des imports transitifs.
