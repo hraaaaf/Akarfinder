@@ -1,6 +1,17 @@
 # 3 — Vivre Ici AkarFinder
 
-**Statut : ACTIVE — PR #1037 MERGÉE / TERRITORY DICTIONARY PHASE ACTIVE / UX L9 PROUVÉE / N3 PROUVÉ / LIVE DATA BLOQUÉ PAR SUPABASE**  
+## POINT COURANT — 2026-10-30 (PREND LE PAS SUR L'HISTORIQUE CI-DESSOUS)
+
+- `main@c02d0b73ed18b0e136d478fab39e71df425173a7` ; MapLibre national existe dans `app/map/page.tsx`. **Aucune nouvelle validation visuelle live n'est prétendue ici**.
+- Source de base #1090 DRAFT (54 fichiers) ; pivot Flat Living Map #1108 DRAFT (11 fichiers, base #1090) ; canary sourcé #1112 DRAFT (base #1108) ; audit source national #1111 DRAFT.
+- **Décision produit candidate à certifier** : Maârif 2D/nord, bâtiments légers, espaces verts reconnaissables, lecture route/quartier/POI sourcés ; préférence flat sans sacrifier les preuves. Aucun nouveau polygone inventé.
+- **Contradiction à résoudre** : anciennes lignes « MapLibre 3D comme target » et nouvelles spec Flat 2D doivent être comparées visuellement, pas combinées en même temps.
+- Gate : BEFORE/TARGET/AFTER à 390/430/768/1280, tests national→Casablanca→Maârif→Search, QA sans faux pins, score UX par deux revues puis décision humaine.
+- Reconciliation globale : `docs/AKARFINDER_RECONCILIATION_2026-10-30.md` ; aucun merge / Vercel / write DB.
+
+---
+
+**Statut historique : intégration #1037 mergée, détails ci-dessous datés 2026-09-18 ; statut actuel à requalifier sur #1090/#1108/#1112**  
 **Dernière mise à jour : 2026-09-18**  
 **Repo : `hraaaaf/Akarfinder`**  
 **Branche active : `feat/vivre-ici-territory-dictionary`**  

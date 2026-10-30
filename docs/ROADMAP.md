@@ -1,9 +1,21 @@
 # AKARFINDER — ROADMAP CANONIQUE
 
-**Version : 2026-09-06**  
-**Statut : M250K FROZEN / CANDIDATE LAKE → CLUSTERING → FRESHNESS ACTIVE**
+**Version historique : 2026-09-06 — références certifiées à leur date**  
+**Statut ACTUEL : audit de réconciliation 2026-10-30 en cours, sans certification production actualisée**
 
-> **SOURCE UNIQUE DE VÉRITÉ GLOBALE.** Ce fichier est la seule boussole globale AkarFinder. `docs/SESSION.md` n'est qu'un handover. Les autres specs restent locales à leur périmètre.
+> **CANONIQUE GLOBAL — HISTORIQUE ET DOCTRINE.** Les constats ci-dessous restent historisés ; l'état courant vérifié, les supersessions et les décisions par route sont désormais exposés en premier dans `docs/AKARFINDER_RECONCILIATION_2026-10-30.md`. `docs/SESSION.md` est la reprise opérationnelle courte. Ne jamais lire une date 2026-09-06 comme un état production de 2026-10-30.
+
+## ACTUALISATION 2026-10-30 — PRIORITÉ SUR LES ANCIENS « NEXT EXACT »
+
+- GitHub `main@c02d0b73ed18b0e136d478fab39e71df425173a7` vérifié ; 50 PR ouvertes initiales ; #1032/#1097/#997/#991/#1057/#1058/#1059 fermées sans merge, 44 ouvertes après ouverture de la PR documentaire #1137.
+- L'objectif de **200 000 annonces fraîches, physiquement uniques, exploitables et réutilisables** n'est **pas certifié** par le freeze M250K. **253 372** = identités candidates historiques L0/L1, sans garantie d'activité, publication ou droit photo.
+- Pivot cartographique Maârif Flat Living Map en `#1108` (DRAFT), parent historique `#1090` (DRAFT), audit source `#1111` ; aucune preuve actuelle d'un score final cible 9.5.
+- Le fournisseur DB réellement actif en production n'est pas requalifié par cet audit ; migrations Supabase/Neon #1082/#1087 DRAFT.
+- **Mubawab** : #1134 offline DRAFT ; nouveau crawl, import commercial, images et republication verrouillés par droits/autorisation documentée #1135. #997 fermée/archivée, #1028/#1105 à auditer ; aucune de ces branches ne donne autorisation de collecte live.
+- Voir `docs/AKARFINDER_RECONCILIATION_2026-10-30.md` pour la revue exhaustive des 50 PR et de toutes les familles de routes.
+- **Next exact** : auditer les diff uniques des collecteurs et corriger leurs contrats d'accès ; ensuite Search + Map avec captures avant/après, CI exacte, revue humaine. Pas de merge, déploiement Vercel ou écriture DB issus de la seule réconciliation.
+
+---
 
 ## 1. NORTH STAR
 
