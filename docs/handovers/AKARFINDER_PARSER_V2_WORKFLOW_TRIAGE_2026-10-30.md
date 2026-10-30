@@ -1,4 +1,4 @@
-# AkarFinder — Parser V2 / PR #1105 : audit préliminaire des 42 workflows
+# AkarFinder — Parser V2 / PR #1105 : audit des 42 workflows historiques + delta N02 (43)
 
 **Date d'observation : 2026-10-30.** Source GitHub : `hraaaaf/Akarfinder`, branche `data/200k-fresh-parser-v2`, HEAD de référence `1274a2e5f2105cd43453cc96f347230cf2ed2b77`. PR #1105 DRAFT basée sur `data/neon-price-recovery-audit`.
 
@@ -56,6 +56,16 @@
 | 40 | `.github/workflows/sarouty-card-fields-pilot.yml` | BLOCK_LIVE | Champs cartes Sarouty : gate |
 | 41 | `.github/workflows/sarouty-public-card-canary.yml` | BLOCK_LIVE | Canary fiches Sarouty : gate |
 | 42 | `.github/workflows/yakeey-card-canary-v1.yml` | BLOCK_LIVE | Source Yakeey et droits médias à qualifier |
+
+## Delta de branche : 43e workflow apparu pendant l'audit
+
+**Nouvelle preuve GitHub au HEAD `8f2aeade2` :** 206 fichiers PR, dont **43 fichiers `.github/workflows/*.yml`** (42 du snapshot précédent + un ajouté). Les 42 lignes ci-dessus restent l'audit du HEAD `1274a2e5...`, pas une preuve que ces fichiers n'ont pas été retouchés depuis.
+
+| # | Workflow | Décision | Raisonnement / next |
+|---|---|---|---|
+| 43 | `.github/workflows/feenway-n02-hydration-probe.yml` | **BLOCK_LIVE** | **Code lu** : `push` sur branche Parser V2 + `workflow_dispatch` ; Chromium et `fetch(https://www.feenway.com/robots.txt)` puis `page.goto()` sur trois pages publiques FeenWay. `page.route` bloque détails/API/XHR/assets/tiers mais **ne confère pas un droit de collecte**. Conserver les 3 tests hors réseau ; relance live sous gate documenté uniquement. |
+
+**Total actuel : 43 workflows affectés** : **29 BLOCK_LIVE, 4 KEEP_OFFLINE_TESTS, 3 KEEP_OFFLINE_CANDIDATE et 7 REVIEW**. Les 42 premiers ont eu lecture YAML au snapshot initial ; pour N02, YAML, script et tests offline ont été lus. **Ce sont des classes de tri et non des modifications des déclencheurs GitHub**. L'acquisition sous-trigger `push` reste ouverte sur la branche tant qu'un correctif n'est pas intégré.
 
 ## Ordre de mission d'un agent de reprise
 
