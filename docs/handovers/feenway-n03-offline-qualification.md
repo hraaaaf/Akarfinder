@@ -42,3 +42,11 @@
 4. Ne passer en DB qu'après preuve indépendante disponibilité + fraîcheur + unicité physique + cinq champs + droits et human gate. Aucune réutilisation/photo non autorisée.
 
 **Statut :** diagnostic N03 offline local audité ; preuve CI séparée à confirmer. **PR #1105 DRAFT**, aucun merge, déploiement Vercel, accès DB ou import. Les certifications Mubawab/Sarout restent bloquées séparément par l'archive historique expirée `10910779576` (HTTP 410).
+
+## N03b — liaison avec le canari source 81 déjà archivé (30 octobre 2026)
+
+**Source :** `docs/data/feenway-canary81-source-fivefields-2026-10-26.jsonl` à 81 lignes et 81 identités FeenWay distinctes, lue au HEAD `22a67ee5`. Jointure exacte `feenway_id` ↔ `source_id` du manifeste N03 : **81/81 présents dans la cohorte principale (73 708), 81/81 dans l'union historique (73 715), 0 manquant**. Contrôle par lecture des 81 IDs et des deux manifestes complets en mémoire ; pas de requête web des annonces.
+
+**Qualification indépendante des 81 (preuve antérieure, non étendue aux 73K) :** `source_five_fields_strict=true` **53/81** ; `review_source_5of5_matches_feenway` **49/81** ; métadonnée de date source **35/81** ; `quarantine_source_unavailable` **4/81** ; `review_economic_semantics` **1/81** ; `review_incomplete_or_conflicting` **27/81**. **0 droits, 0 disponibilité/éligibilité commerciale certifiés**. Ces nombres sont des preuves de qualité **sur ce canari historique précis**, pas une estimation de fiabilité sur toutes les URL. Dans les 73 715 exports URL-only, tous ces champs restent volontairement `null` : ne pas mélanger la présence des cinq champs à la source dans 53 dossiers et le contenu des manifests N01 qui n'en possèdent pas.
+
+**Next exact ajusté :** faire un *join* offline durable champ par champ de ces 81 fiches et d'autres preuves source autorisées, avec drapeaux économiques, dates et conflits, produire un sous-ensemble `review_enriched` **sans jamais l'appeler `eligible`** ; la certification N01 globale (incluant son delta 73 710) et les gates actifs/droits restent ouverts. CI N03 `41102231522` observée `queued` (pas certifiée verte), aucun déploiement ou DB.
