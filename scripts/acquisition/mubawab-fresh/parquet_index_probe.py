@@ -28,20 +28,14 @@ UA = 'AkarFinder-CC-public-index-probe/0.1 (+https://akarfinder.ma)'
 
 def utcnow(): return datetime.now(timezone.utc).isoformat()
 
-def get_manifest(crawl: str) -> list[str]:
+def parse_manifest(text: str, crawl: str) -> list[str]:
     if not CRAWL.fullmatch(crawl): raise ValueError('invalid crawl ID')
-    url = ROOT + f'crawl-data/{crawl}/cc-index-table.paths.gz'
-    req = urllib.request.Request(url, headers={'User-Agent': UA, 'Accept': 'application/gzip'})
-    with urllib.request.urlopen(req, timeout=25) as r:
-        data = r.read(2_000_001)
-    if len(data) > 2_000_000: raise ValueError('manifest too large')
-    text = gzip.decompress(data).decode('utf-8')
     items = {}
     for name in text.splitlines():
         name = name.strip()
         match = SHARD.search(name)
         if not match: continue
-        if f'/{crawl}/' not in name: continue
+        if f'/crawl={crawl}/' not in name: continue
         number = int(match.group(1))
         if number in items: raise ValueError('duplicate Parquet partition number')
         items[number] = ROOT + name.lstrip('/')
@@ -49,6 +43,16 @@ def get_manifest(crawl: str) -> list[str]:
     if set(items) != set(range(len(items))):
         raise ValueError('missing or out-of-order Parquet partition numbers')
     return [items[k] for k in sorted(items)]
+
+
+def get_manifest(crawl: str) -> list[str]:
+    if not CRAWL.fullmatch(crawl): raise ValueError('invalid crawl ID')
+    url = ROOT + f'crawl-data/{crawl}/cc-index-table.paths.gz'
+    req = urllib.request.Request(url, headers={'User-Agent': UA, 'Accept': 'application/gzip'})
+    with urllib.request.urlopen(req, timeout=25) as r:
+        data = r.read(2_000_001)
+    if len(data) > 2_000_000: raise ValueError('manifest too large')
+    return parse_manifest(gzip.decompress(data).decode('utf-8'),crawl)
 
 
 def normalize_listing(url: str):

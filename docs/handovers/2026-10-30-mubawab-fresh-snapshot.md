@@ -172,3 +172,12 @@ Ces 97 IDs s'ajoutent au relevé indépendant de **225 IDs** sur Casablanca (31)
 **Starting comparison baseline (from previous independent observations):** 934 candidate IDs = 616 indexed Common Crawl CDX + 322 city-page IDs - 4 IDs shared. Compare **only after a nonempty real Parquet export**, not as a seed.
 
 **Next exact:** verify the one PR-triggered probe run against exact commit; if empty/error, inspect artifact and fix deterministically before any further heavy benchmark; if nonempty, import private artifact offline using bulk_url_inventory.py, join 934 candidate IDs and only then compare to historical 129 IDs. Keep PR DRAFT; no Vercel, DB, merge without gates.
+
+
+## 2026-10-30 — diagnostic du premier run Parquet et correction du format
+
+- **Premier run réel** [#41096204934](https://github.com/hraaaaf/Akarfinder/actions/runs/41096204934) : **FAIL, 0 URL extraite**. Tests 7/7 + installation DuckDB réussis ; `report.json` (artefact GitHub `12996601829`) prouve `ValueError: unexpected WARC Parquet shard count` avant toute lecture d'un shard. Fichier sauvegardé en Library privée `/AkarFinder/Mubawab/Parquet-Probe-2026-10-30/mubawab-parquet-first-run.zip`.
+- **Root cause vérifiée dans code + documentation Common Crawl** : les fichiers du manifeste sont dans des partitions Hive `crawl=CC-MAIN-2026-43/subset=warc/`, et non `/CC-MAIN-2026-43/`.
+- **Fix** : extraction `parse_manifest(text,crawl)`, filtre explicite `/crawl={crawl}/`, test unitaire avec chemins Hive exacts + rejet du crawl étranger et du subset robotstxt.
+- **Nouvelle preuve locale** : **8/8 tests PASS** + `compileall` PASS ; ce résultat ne démontre pas encore la lecture distante des footers.
+- **Next exact** : un seul nouveau run GitHub sur le HEAD correction, lire `report.json` et les éventuels `parquet_urls.jsonl`. Si autre échec, changer de stratégie après diagnostic (ne pas faire tourner une batterie de runs sans progresser) ; si URL réelles, union 934 + comparaison historique 129.

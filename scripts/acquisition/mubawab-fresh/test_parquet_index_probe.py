@@ -7,6 +7,17 @@ from unittest.mock import patch
 import parquet_index_probe as m
 
 class Tests(unittest.TestCase):
+    def test_official_hive_partition_manifest(self):
+        sample='\n'.join([
+          'cc-index/table/cc-main/warc/crawl=CC-MAIN-2026-43/subset=warc/part-00000-89ab12.c000.gz.parquet',
+          'cc-index/table/cc-main/warc/crawl=CC-MAIN-2026-43/subset=robotstxt/part-00000-89ab12.c000.gz.parquet',
+          'cc-index/table/cc-main/warc/crawl=CC-MAIN-2026-43/subset=warc/part-00001-89ab12.c000.gz.parquet',
+          'cc-index/table/cc-main/warc/crawl=CC-MAIN-2026-39/subset=warc/part-00002-89ab12.c000.gz.parquet'])
+        got=m.parse_manifest(sample,'CC-MAIN-2026-43')
+        self.assertEqual(len(got),2)
+        self.assertTrue(got[0].endswith('subset=warc/part-00000-89ab12.c000.gz.parquet'))
+        with self.assertRaises(ValueError):m.parse_manifest(sample,'CC-MAIN-2026-39')
+
     def test_url_normalization(self):
         self.assertEqual(m.normalize_listing('http://mubawab.ma/fr/a/8444113/qq?foo=bar'),('8444113','https://www.mubawab.ma/fr/a/8444113/qq'))
         for bad in ['https://bad.example/fr/a/8444113/x','https://www.mubawab.ma/fr/login','https://www.mubawab.ma/fr/a/11/x','https://www.mubawab.ma/fr/a/8444113/../../private','https://www.mubawab.ma/fr/a/8444113%5cadmin']:
