@@ -128,3 +128,32 @@ Ces 97 IDs s'ajoutent au relevé indépendant de **225 IDs** sur Casablanca (31)
 **Préparation du stock réel :** les 322 IDs issus des 10 premières pages et les archives historiques de 129 IDs restent des preuves distinctes. Il n'y a aucune nouvelle collecte directe depuis cet environnement : DNS de `www.mubawab.ma`, `index.commoncrawl.org` et `api.github.com` indisponible dans le conteneur. Le Common Crawl URL Index est une piste d'indexation passive, pas une preuve de fiches actives.
 
 **Critère de sortie :** CI verte sur le HEAD exact, pas de merge, pas de déploiement ni DB prod. **Next exact :** trouver/fournir un export d'URL réellement exploitable et autorisé (sitemap/URL index), importer sur la nouvelle pipeline, vérifier le nombre de liens et leur provenance par source, puis comparer à l'historique ; accès direct aux fiches/photos reste un gate distinct.
+
+
+## Closeout 2026-10-30 — Common Crawl réel, index par shards, union 934 IDs
+
+**Goal du lot :** dépasser la découverte page par page par un index public de captures d'URL sans re-crawler Mubawab, importer les résultats **réels** dans SQLite, puis rapprocher l'ancienne archive seulement après.
+
+**Nouveau code, mêmes branches/PR :**
+- `scripts/acquisition/mubawab-fresh/commoncrawl_mubawab_probe.py` : 2 indices Common Crawl (`CC-MAIN-2026-43`, `CC-MAIN-2026-39`), requêtes publiques d'index URL, maximum 500 lignes/réponse, HTTPS + allowlist d'ID et d'URL, cadence >=1 s, limite de 3 Mo/réponse, 504/502 consignés et pas de requêtes à Mubawab.
+- Après erreurs 504 sur `/fr/a/*`, la deuxième sonde a interrogé de manière **bornée** les préfixes d'identifiant `84*`, `83*`, `82*` pour `/fr/a/`, plus `/fr/pa/*`. **Ce périmètre ne couvre ni tous les préfixes ni toutes les archives Common Crawl.**
+- `test_commoncrawl_mubawab_probe.py` : 5 tests locaux PASS sur normalisation/rejet, simulation index, erreurs explicites, dédoublonnage de capture et préfixes.
+- Workflow `.github/workflows/mubawab-commoncrawl-index-probe.yml` : CI read-only dédiée, sauvegarde du rapport et des URL découvertes en artefact GitHub à durée de conservation courte.
+
+**Preuves de vraies URL indexées (aucune invention de listings) :**
+- 1ère exécution GitHub : [run #41093572404](https://github.com/hraaaaf/Akarfinder/actions/runs/41093572404), artefact ID `12995690351` : **105 URL / ID uniques** de type `/fr/pa/` ; 2 requêtes succès, 2 requêtes `/fr/a/` HTTP 504.
+- Exécution shardée : [run #41094069488](https://github.com/hraaaaf/Akarfinder/actions/runs/41094069488), artefact ID `12995576102` : **574 URL / ID uniques**, 5 requêtes succès / 3 erreurs HTTP 502/504. Pour cette exécution, 53 entrées étaient indexées dans CC-MAIN-2026-43 et 521 dans CC-MAIN-2026-39.
+- **Fusion indépendante dans `bulk_url_inventory.py`** des deux ZIP réellement téléchargés depuis GitHub : **616 IDs uniques**, **616 URL uniques**, **679 lignes de provenance index→URL** dans SQLite ; 2 fichiers sources, SHA contrôlés ; 0 erreur de parsing/import. Captures source datées entre le 05/09/2026 et le 18/10/2026 (les URL indexées ne sont PAS garanties encore actives).
+- **Union postérieure** avec les **322 IDs** observés sur les premières pages de vente de 10 villes (fichier indépendant privé) : **934 IDs distincts** = 616 + 322 − 4 intersections. Dans l'export de l'union, les 616 ont leur URL directe de Common Crawl ; les 318 autres sont des IDs de pages-ville avec liens probants Notion, pas des URL directes jointes au ZIP.
+- **Comparaison seulement après l'union**, vs 129 IDs historiques privés : **13 IDs communs**, **921 absents de ce petit échantillon historique**, **116 anciens non retrouvés dans l'union**. Aucun n'est qualifié de « publication récente » ou « suppression ».
+- Les scripts locaux de comparaison ont produit `comparison.json` et les ensembles distincts sans doublons ni ID invalide.
+- **Aucune capture HTML détaillée, aucun fichier photo téléchargé, aucune écriture Supabase, merge ou déploiement Vercel**. Cette technique ne démontre pas la couverture nationale ni le droit de copier les médias.
+
+**Livrable privé final sauvegardé :**
+- `/AkarFinder/Mubawab/CommonCrawl-Probe-2026-10-30/AkarFinder_Mubawab_Real_URL_Union_934_20261030.zip` en Library, SHA-256 `a90b91c51b76e44c2280a4adbae6819dfe32122e3bb6e032899e1ebdce7cd2ad`, CRC ZIP OK.
+- Inclus : les deux ZIP originaux de Common Crawl, `url_index.sqlite`, 616 URL et provenance, `independent_discovery_union_934.jsonl`, comparaison historique et README de limitations.
+- Exports bruts dans GitHub Actions, données privées **non commitées** au dépôt.
+
+**Validation CI à l'instant du code HEAD `3dca7a07483ebb18abfccc95c53504252e6cf380` : 4/4 SUCCESS** (suite Fresh Offline, probe Common Crawl, Efficiency Policy et Canonical Baseline), tests unitaires de la sonde 5/5 et bulk 5/5 PASS. Un commit ultérieur de documentation doit être ré-audité sur son propre HEAD.
+
+**Next exact :** certifier les checks après la documentation de closeout ; poursuivre l'extension des préfixes via des index publics de manière responsable ou importer d'autres inventaires accessibles. En cas de 502/504 répétés, basculer vers l'index Parquet Common Crawl prévu pour les recherches massives. Les fiches et images réelles nécessitent toujours un accès et des droits vérifiés ; la PR reste DRAFT en attente de revue humaine.
