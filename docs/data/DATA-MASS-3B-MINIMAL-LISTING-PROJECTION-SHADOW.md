@@ -28,8 +28,7 @@ Une représentation n'est candidate que si :
 Champs optionnels préservés sans invention :
 
 - surface : `surface_m2` ;
-- photo : `thumbnail_url` (simple donnée de projection shadow : **droit de publication média non prouvé**) ;
-- description : `description_snippet` (simple donnée shadow, ne vaut pas licence de republication).
+- photo et description : **toujours nulles** si la policy autorise seulement `canonical_link_only` (aucune autorisation de réutiliser les médias/textes déduite du lien public). Elles ne sont préservées dans le shadow que sous policy explicitement `authorized_partner` + `partner_content`, sans activation Search automatique et sous réserve des droits spécifiques réellement accordés.
 
 **Correction de contrat du 30/10/2026 :** l'ancien projecteur transmettait un champ `geography` inexistant dans le contrat de `buildMinimalListing()` ; la construction échouait systématiquement sur `CITY_REQUIRED`. La correction transmet `city` et `district` séparément et conserve le contrôle strict des champs. Aucun chiffre de biens projetés ou de DB live n'est revendiqué.
 
