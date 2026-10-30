@@ -44,3 +44,15 @@ test("OpenSERP remains manual main-only, with neither cron nor apply mode", () =
   assert.match(openserp, /WAVES=1/);
   assert.doesNotMatch(openserp, /--apply|MODE="cron"|SEED_MODE="apply"/);
 });
+
+
+test("P0.1 Source Registry audit requires main AFTER rather than PR credentials", () => {
+  const gate = read(".github/workflows/p0-1-mass-index-source-registry-gate.yml");
+  const start = gate.indexOf("- name: Read-only live Source Registry audit");
+  assert.ok(start > 0);
+  const block = gate.slice(start, gate.indexOf("\n      - name:", start + 1));
+  assert.match(block, /github\.event_name == 'push'/);
+  assert.match(block, /github\.ref == 'refs\/heads\/main'/);
+  assert.match(block, /secrets\.SUPABASE_SERVICE_ROLE_KEY/);
+  assert.match(gate, /if: always\(\) && github\.event_name == 'push' && github\.ref == 'refs\/heads\/main'/);
+});
