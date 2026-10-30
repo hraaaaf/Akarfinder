@@ -251,7 +251,6 @@ export async function enumerateMubawab({
   const shards = [];
   let stoppedEarly = null;
   let requestCount = 0;
-  let lastRequestAt = null;
   // Every run verifies the current public robots document first. Unknown or
   // changed rules fail closed; no listing/shard HTTP request is sent.
   const robotsResponse = await fetchText(ROBOTS_URL, { fetchImpl, timeoutMs, userAgent });
