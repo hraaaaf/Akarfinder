@@ -51,6 +51,11 @@ class Tests(unittest.TestCase):
                ['--phase','details','--limit','21']):
    with self.subTest(args=args),self.assertRaises(SystemExit):
     m.main(args)
+ def test_live_cli_requires_explicit_documented_access(self):
+  with patch.dict(m.os.environ, {'MUBAWAB_AUTHORIZED_ACCESS': ''}, clear=False):
+   with self.assertRaises(SystemExit):
+    m.main(['--phase','list','--db',self.tmp.name+'/no-live.db'])
+  self.assertFalse(Path(self.tmp.name+'/no-live.db').exists())
  def test_city_scope(self):
   m.add_seeds(self.db,['rabat'],['vendre']);h=Fake([page(1)])
   m.run_list(h,self.db,1,['casablanca'],['vendre']);self.assertEqual(len(h.urls),1)
