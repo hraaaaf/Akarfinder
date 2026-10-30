@@ -48,6 +48,24 @@ test("projects an existing listing_source under an explicit positive policy", ()
   assert.equal(out.district, "Agdal");
   assert.equal(out.price, 1800000);
   assert.equal(out.surface, 92);
+  assert.equal(out.photoUrl, null, "canonical-link-only does not license source photos");
+  assert.equal(out.description, null, "canonical-link-only does not license source prose");
+});
+
+test("partner-content policy may preserve optional stored media in shadow only", () => {
+  const partnerPolicy = {
+    ...policy,
+    authorization_status: "authorized_partner",
+    acquisition_mode: "partner_feed",
+    machine_gate: "partner_feed",
+    ingestion_gate: "partner_feed",
+    display_policy: "partner_content",
+  };
+  const out = projectExistingListingRepresentation(base, partnerPolicy, new Date("2026-08-13T00:00:00Z"));
+  assert.equal(out.photoUrl, base.thumbnailUrl);
+  assert.equal(out.description, base.descriptionSnippet);
+  assert.equal(out.city, "Rabat");
+  assert.equal(out.district, "Agdal");
 });
 
 test("uses stored property type as structural signal when title is absent", () => {
