@@ -1,0 +1,51 @@
+name: Mubawab Common Crawl Parquet Index Probe
+on:
+  pull_request:
+    paths:
+      - 'scripts/acquisition/mubawab-fresh/parquet_index_probe.py'
+      - 'scripts/acquisition/mubawab-fresh/test_parquet_index_probe.py'
+      - '.github/workflows/mubawab-commoncrawl-parquet-probe.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  public-parquet-index:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install pinned DuckDB
+        run: python -m pip install duckdb==1.4.1
+      - name: Local-only metadata, budget and parser tests
+        working-directory: scripts/acquisition/mubawab-fresh
+        run: python -m unittest -v test_parquet_index_probe.py
+      - name: Public Common Crawl Parquet index bounded probe — no Mubawab requests
+        id: index
+        continue-on-error: true
+        working-directory: scripts/acquisition/mubawab-fresh
+        run: |
+          python parquet_index_probe.py \
+            --crawl CC-MAIN-2026-43 \
+            --max-metadata 16 --max-shards 2 --max-rows 10000 \
+            --out ../../../artifacts/mubawab-parquet-probe
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mubawab-commoncrawl-parquet-probe
+          path: artifacts/mubawab-parquet-probe/
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Do not certify an empty probe
+        if: steps.index.outcome != 'success'
+        run: |
+          echo 'Public Parquet URL index returned no confirmed listing URL rows. Examine report artifact.'
+          exit 1

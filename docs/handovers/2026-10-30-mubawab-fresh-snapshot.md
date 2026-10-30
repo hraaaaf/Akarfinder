@@ -157,3 +157,18 @@ Ces 97 IDs s'ajoutent au relevé indépendant de **225 IDs** sur Casablanca (31)
 **Validation CI à l'instant du code HEAD `3dca7a07483ebb18abfccc95c53504252e6cf380` : 4/4 SUCCESS** (suite Fresh Offline, probe Common Crawl, Efficiency Policy et Canonical Baseline), tests unitaires de la sonde 5/5 et bulk 5/5 PASS. Un commit ultérieur de documentation doit être ré-audité sur son propre HEAD.
 
 **Next exact :** certifier les checks après la documentation de closeout ; poursuivre l'extension des préfixes via des index publics de manière responsable ou importer d'autres inventaires accessibles. En cas de 502/504 répétés, basculer vers l'index Parquet Common Crawl prévu pour les recherches massives. Les fiches et images réelles nécessitent toujours un accès et des droits vérifiés ; la PR reste DRAFT en attente de revue humaine.
+
+
+## 2026-10-30 — one bounded Common Crawl Parquet probe (experimental, not certified yet)
+
+**Goal:** avoid repeat broad CDX API 502/504 failures by using the official Common Crawl Parquet URL index, with footer-only search for Mubawab's SURT key range. **No direct Mubawab request, images, detail HTML or production write.**
+
+**Code:** `scripts/acquisition/mubawab-fresh/parquet_index_probe.py`, test `test_parquet_index_probe.py` and read-only workflow `.github/workflows/mubawab-commoncrawl-parquet-probe.yml`; README_PARQUET.md explains design and source docs.
+
+**Limits for this first run:** one crawl `CC-MAIN-2026-43`; up to 16 file footers; up to 2 confirmed Parquet shards; max 10 000 URL index rows per shard; GitHub Action timeout 10 min; memory 768MB. Source manifest `crawl-data/CC-MAIN-2026-43/cc-index-table.paths.gz`; DuckDB metadata statistics `url_surtkey` for binary-search selection. Missing metadata, too many shards or HTTP errors fail closed, report in artifact. **This is a bounded experiment**, and SURT footer-based search has not yet been verified on actual Common Crawl data.
+
+**Tests:** 7/7 local offline tests PASS, Python compilation PASS. These tests cover URL filtering, prefix/shard bounds, strict metadata/shard budgets and failed-setup report; **they do not validate an actual Parquet fetch**. Workflow will publish `report.json`, `parquet_urls.jsonl`, `parquet_provenance.jsonl` as private GitHub Actions artifact.
+
+**Starting comparison baseline (from previous independent observations):** 934 candidate IDs = 616 indexed Common Crawl CDX + 322 city-page IDs - 4 IDs shared. Compare **only after a nonempty real Parquet export**, not as a seed.
+
+**Next exact:** verify the one PR-triggered probe run against exact commit; if empty/error, inspect artifact and fix deterministically before any further heavy benchmark; if nonempty, import private artifact offline using bulk_url_inventory.py, join 934 candidate IDs and only then compare to historical 129 IDs. Keep PR DRAFT; no Vercel, DB, merge without gates.
