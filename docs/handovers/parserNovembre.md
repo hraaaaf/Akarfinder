@@ -304,3 +304,18 @@ La CI [41063193274](https://github.com/hraaaaf/Akarfinder/actions/runs/410631932
 **Couverture :** **500/1 720 destinations** de la file quartiers/marchés FR, **1 220 non auditées**. La hausse du nombre de fichiers XML n'implique pas 1 445 nouveaux biens actifs.
 
 **Suite autorisée et déclenchée :** lots **11–15** (maximum 250 pages en cinq groupes de 50), lecture seule, cadence de 1 requête/s, vérification robots, arrêt 403/429, SHA-256 et JSONL d'origine par lot, timeout de job 20 min. Ne pas présumer réussite avant les artifacts et leur réconciliation avec les 3 917 URL hors six XML du dernier snapshot. Aucun déploiement Vercel, aucun SQL métier ; **N01 OUVERT**.
+
+## N01 — lots 11–15 certifiés ; lots 16–20 engagés (30 octobre 2026)
+
+**Preuve :** [run GitHub 41066320964](https://github.com/hraaaaf/Akarfinder/actions/runs/41066320964) `completed/success`. Artifacts `12983975031` (11), `12983745468` (12), `12982254804` (13), `12982204839` (14), `12982234878` (15), `12983970026` (sitemaps), téléchargés et contrôlés. Les rapports confirment **250/250 pages récupérées**, **0 erreur**, aucun accès aux fiches détaillées, `db_writes=0`. Le SHA-256 brut de chaque JSONL correspond au rapport ; déduplication intra-lot OK.
+- Lot 11 : **1 112 liens / 482 hors sitemap** ; SHA `4cd2dd5db4d98ececd3f81fc22e4eccdf66fffdf3b71c1600764f0608a3544e8`.
+- Lot 12 : **1 113 / 589** ; SHA `7ee5d59e725e9b33d6eda359a818ccc4d04942f0d8fba76a737d14761ad8e7b8`.
+- Lot 13 : **843 / 334** ; SHA `7c212df7df2907f95a656f6d81fe0ec1c96784cfcd45fa1fac603a493e3aac57`.
+- Lot 14 : **991 / 504** ; SHA `902736c52638164a6d729a1a62453f4038539c21ae337dbe8eead070a03d33c6`.
+- Lot 15 : **1 070 / 520** ; SHA `bb365d264769232034c0e716525b5069804c24b62c775bdd73a0dab8e11e6efb`.
+
+**Réconciliation indépendante :** 2 429 URL hors XML distinctes dans les cinq lots, dont 38 déjà dans le manifeste de 3 917 URL ; **2 391 nouvelles**. Le snapshot des six XML recule de **58 501 à 57 056 URL** : **1 445 URL absentes** du relevé actuel (aucune URL ajoutée relativement au snapshot précédent). Leur absence n'est **pas une preuve de suppression**. Le nouveau relevé a **57 056 URL dans six XML + 6 308 URL hors XML issues des pages = 63 364 URL** ; historique cumulatif sur les relevés disponibles = **64 786 URL distinctes découvertes**, dont **1 422 absentes du nouveau relevé combiné**. Le total cumulé ne mesure pas les biens actifs, uniques ou réutilisables. SHA du manifeste hors XML nouvellement écrit en Python `36df810a5413c69fe88947274e943da57fa25ec9c79ac7c9071f8dd600a84299` ; rapport `feenway-n01-batches11-15-reconciliation.json`, JSONL `feenway-n01-off-sitemap-after-b15.jsonl`.
+
+**Couverture :** **750/1 720 pages** marchés/quartiers explorées, **970 à visiter** (20 lots max restant après batch 15). Pages villes auditées séparément.
+
+**Suite exécutée :** workflow modifié pour **lots 16–20**, 5 lots de maximum 50 pages, lecture seule, 1 requête/seconde, contrôle robots, arrêt 403/429, JSON/JSONL+SHA préservés. Le nouveau run doit être vérifié avant toute certification. **N01 OUVERT**, aucun déploiement Vercel ni écriture DB.
