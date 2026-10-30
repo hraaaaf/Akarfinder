@@ -14,6 +14,9 @@ class Tests(unittest.TestCase):
         with self.assertRaises(ValueError):m.index_url('http://example.com','a',500)
         with self.assertRaises(ValueError):m.index_url('CC-MAIN-2026-43','other',500)
         with self.assertRaises(ValueError):m.index_url('CC-MAIN-2026-43','a',1001)
+        self.assertIn('fr%2Fa%2F84%2A',m.index_url('CC-MAIN-2026-43','a',500,prefix='84'))
+        with self.assertRaises(ValueError):m.index_url('CC-MAIN-2026-43','pa',500,prefix='84')
+        with self.assertRaises(ValueError):m.index_url('CC-MAIN-2026-43','a',500,prefix='8x')
 
     def test_archived_urls_and_status_validation(self):
         rows=[{'url':'https://www.mubawab.ma/fr/a/12345/foo','status':'200','timestamp':'20261010'},
@@ -42,6 +45,18 @@ class Tests(unittest.TestCase):
             self.assertEqual(len(lines),2)
             self.assertEqual(json.loads(lines[0])['source_kind'],'commoncrawl_archived_url_index')
             self.assertEqual(len(out['queries']),2)
+
+    def test_sharded_request_scope_is_honest(self):
+        with tempfile.TemporaryDirectory() as d:
+            urls=[]
+            def fake(url,limit):
+                urls.append(url)
+                return ([{'url':'https://www.mubawab.ma/fr/a/8444000/one','status':'200'}],False)
+            result=m.run(['CC-MAIN-2026-43'],Path(d),max_rows=10,pause_seconds=0,fetch=fake,a_prefixes=['84','83'])
+            self.assertEqual(len(urls),3)
+            self.assertEqual(result['a_prefix_scopes'],['84','83'])
+            self.assertEqual(result['candidate_unique_ids'],1)
+            self.assertFalse(result['coverage_certified'])
 
     def test_read_limit_and_malformed_index(self):
         class Response:
