@@ -103,3 +103,58 @@ Statut : **CLOSE** = action exécutée ; **KEEP** = valeur à préserver, pas au
 - #1104 et #454 : REST info renvoie 422 « too many files changed » ; à analyser par inventaire paginé/diff ciblé, pas à classer automatiquement comme redondants.
 - **Next exact** : auditer le delta utile de la branche archivée #997 et les PR actives #1028/#1105 ; établir pour chaque blocage licence un remplacement offline/first-party. Continuer audit #1087/#1101 et convergences Search/Map. Puis passer au faisceau Search + Vivre Ici avec preuves visuelles.
 - **Aucune estimation de % d'avancement global** : pas de dénominateur fiable de lots certifiés.
+
+
+## 6. LOT P0 — AUDIT ACTUALISÉ DU 30/10 (POST-SNAPSHOT INITIAL)
+
+### État réel des PR et preuve de nettoyage
+
+- Snapshot d'origine : 50 PR ouvertes. **10 PR historiques fermées sans merge ni suppression de branche** : #1032, #1097, #997, #991, #1053, #1057, #1058, #1059, **#1081, #1087**.
+- Nouvelles PR en revue : #1137 (ces documents), #1138 (isolation Souissi), **#1139 (gel des writers)**, **#1140 (snapshot Mubawab expérimental)**. **44 PR ouvertes lors du dernier contrôle**, soit 50 - 10 + 4 ; revalider avant toute nouvelle conclusion.
+- `main` de référence reste `c02d0b73ed18b0e136d478fab39e71df425173a7`. Les branches DRAFT et leurs CI vertes ne changent pas ce HEAD.
+
+### P0 — Contrôle des writers réels : #1081 archivée au profit de #1139
+
+**FAIT vérifié sur le code `main` :** `.github/workflows/commoncrawl-mass-seed-harvest.yml` possède `schedule: 17 2 * * *` et `push: main`, et résout `CC_APPLY=1` pour ces deux déclencheurs. Les autres flags/protections peuvent arrêter une écriture réelle : **on ne revendique aucune écriture observée**. Mais l'activation automatisée du chemin est prouvée et incompatible avec le gel demandé.
+
+- #1081 historique : 5 commits ahead / 183 behind, quatre fichiers modifiés ; le workflow OpenSERP de cette branche réintroduisait `*/10` malgré la suppression du schedule sur `main`. Aucun enfant ouvert, **fermée avec commentaire, non mergée**.
+- **#1139** : nouvelle branche exactement issue de `main`, 6 commits ahead / 0 behind, **5 fichiers**. Common Crawl passe à PR tests hors réseau et `workflow_dispatch` main-only read-only, `CC_APPLY=0`, sans `--apply`, sans schedule/push ; OpenSERP passe en dry-run main manuel, sans cron/apply. Les credentials de l'audit P0.1 ne sont plus exposés aux jobs de PR ; l'audit live reste limité à `push main`. Les gardes sont testés hors réseau.
+- **PREUVE CI exact-HEAD `440e7a328085833147ad0de2a7960956e9f65d48` : 5/5 SUCCESS** : [Common Crawl 41074056512](https://github.com/hraaaaf/Akarfinder/actions/runs/41074056512), [Policy 41074056514](https://github.com/hraaaaf/Akarfinder/actions/runs/41074056514), [OpenSERP 41074056505](https://github.com/hraaaaf/Akarfinder/actions/runs/41074056505), [P0.1 41074056471](https://github.com/hraaaaf/Akarfinder/actions/runs/41074056471), [Compile 41074056419](https://github.com/hraaaaf/Akarfinder/actions/runs/41074056419). Le premier essai avait échoué sur un read live Supabase (`fetch failed`), isolé/corrigé dans la PR.
+- **GATE HUMAIN IMPORTANT** : #1139 reste **DRAFT, NON MERGÉE**. Ainsi, le chemin automatique existe **toujours sur main**. Après décision explicite de merge, vérifier gates et post-merge/AFTER ; aucune écriture DB, aucun déploiement Vercel par cette PR.
+
+### PR #1028 — Extraction prix : conserver parser hors réseau, refuser collecte implicite
+
+- **Topologie** : #1028 = 47 commits ahead, 313 behind main ; 18 chemins dont 17 dans `scripts/price-recovery/` et un workflow.
+- **KEEP comme source d'algorithmes/tests, pas comme branche à merger** : `extract-detail-price.ts` et ses tests distinguent prix courant/ancien, MAD/m², mois/nuit/vente et statut non divulgué. Faire un benchmark sur HTML légalement détenu, en comparant au parser actuel avant toute réutilisation.
+- **BLOCK / REWORK** : `run-detail-price-recovery.ts`, `run-mubawab-price-recovery-safe.ts` et le workflow `detail-price-recovery-dry-run.yml` effectuent des `fetch()` de pages sources. La mention « read-only, databaseWrites=0 » ne vaut ni droit de collecte ni couverture fiable. `trace-agenz-client-api.ts` nécessite aussi une revue d'autorisation des APIs consultées. Aucun live Mubawab sans #1135.
+- **Next exact** : comparer un corpus de fixtures autorisées avec le parser plus récent et extraire uniquement le code déterministe utile dans une branche propre de `main`; aucune fermeture de #1028 avant traçabilité de ce transfert.
+
+### PR #1105 — Parser 200k : conserver preuves offline, séparer exploration des droits
+
+- **Topologie** : branche enfant `data/200k-fresh-parser-v2` issue de `data/neon-price-recovery-audit`, **301 commits ahead**, 200 chemins modifiés (42 workflows, 101 chemins `scripts/data`, 17 `scripts/acquisition`, 36 `docs/data`), non assimilable à une PR unique sûre à merger.
+- **KEEP** : outils purement offline de rapprochement de manifestes URL, hashes, provenance, distinctions `URL != property`, tests, feuilles de source. `feenway-n01-reconcile-evidence.mjs` est un exemple de rapprocheur qui ne fait pas de requête HTTP.
+- **Historique déclaré par son canonique** `docs/handovers/parserNovembre.md` : FeenWay N01 a rapporté 750/1720 pages de navigation examinées, instantané 63 364 URL découvertes, cumul historique 64 786 URL, et 0 DB write pendant les lots mentionnés. Ces comptes **ne prouvent ni annonces actives ni droit de réutilisation**, et ne sont pas une certification renouvelée par cette réconciliation.
+- **BLOCK** : tout crawler / mise à jour live / photographie / diffusion de données de FeenWay et des sources tierces tant que les droits de réutilisation, accès et retention ne sont pas prouvés pour chaque source et média ; FeenWay agrège d'autres fournisseurs, ce qui ne transfère pas les droits des sources initiales.
+- **Next exact** : matrice de classification des 42 workflows par entrée/sortie HTTP, secrets, writes, déclencheurs, contrats source ; isoler les outils de parsing offline dans une sous-PR ciblée. Ne pas fusionner #1105 en bloc.
+
+### HA/DR — #1087 fermée ; #1101 conserve le noyau conditionnel
+
+- #1087 : 80 chemins, dont **35 partagés avec #1101**. `lib/db/ha-writer-state.ts` et `lib/db/ha-write-policy.ts` ont chacun le **même blob SHA exact** entre les deux branches (`1652add331a5809362869f9e9f61b6488d6ddd72` ; `c7bd2d6e5bd1e885061eea8e7f02d172f9119f44`). Aucun enfant ouvert. **#1087 fermée sans merger**.
+- Les **45 chemins uniques #1087** sont surtout preuves/test/rehearsals/provider-specific + migration SQL ; **archivés et non détruits**. Leur ancien état n'est pas une preuve de HA production.
+- **KEEP sous revue** : #1101 et son single-writer/fencing compatible avec la recovery ; pas de merge automatique sur `main` sans audit.
+- **Point critique à corriger avant intégration :** `getHaWriterState()` dans `ha-write-policy.ts` renvoie `SUPABASE_PRIMARY` par défaut en absence de `HA_WRITER_STATE`. Cela **n'est pas fail-closed** par défaut pour les écritures Supabase. Exiger une valeur explicite et des tests de configuration manquante, avant toute activation ; valider le véritable provider live et un rollback.
+
+### Nouveau #1140 — snapshot Mubawab expérimental : corriger le « Next »
+
+- #1140 DRAFT (créée en parallèle de ce nettoyage) rapporte une tentative live interrompue par DNS : **0 pages fraîches, 0 annonce fraîche et 0 photo**. Les **129 anciennes références / 530 URLs photo** restent historiques et ne constituent pas de nouvelles annonces.
+- Un commentaire de sécurité a été ajouté : ne pas « réessayer dès que DNS fonctionne » sans **autorisation contractuelle #1135** (périmètre des champs, conservation, photos et republication). Offline fixtures et comparaison historique seulement.
+- **Aucune preuve de droit de nouvelle collecte live** ne découle de la création de cette PR.
+
+### Priorité suivante
+
+1. Décider explicitement si le correctif P0 #1139 peut être mergé (humain) ; jusqu'à ce gate, ne pas déclarer les writes gelés sur main.
+2. Comparer #1028 pure parser aux corrections plus récentes, matrice des 42 workflows #1105, et bloquer toute acquisition sans droits.
+3. Corriger/porter le noyau #1101 avec configuration writer **fail-closed**, tests et preuve provider effective.
+4. Ensuite seulement, convergence Search + Carte avec captures BEFORE/AFTER et revue humaine.
+
+**Statut** : actions documentaires et fermetures prouvées, CI ciblée #1139 verte ; aucun merge/deploy/write initié par cette réconciliation.
