@@ -115,3 +115,10 @@ Sources primaires consultées :
 **Robots.txt n'est qu'une indication technique d'exploration, pas une licence d'exploitation commerciale.** La publication de liens, photos ou extraits dans AkarFinder doit être évaluée séparément. Aucun droit n'a été établi par ce chantier. La lecture de ces CGU n'est pas un avis juridique.
 
 **Next exact révisé :** résoudre toute CI offline sur le HEAD actuel, puis obtenir une autorisation/licence/API officielle définissant les usages permis (liens, prix, détails, images, fréquence, stockage, retrait) ou un avis juridique écrit et traçable. **Si autorisé** : contrôler le robots.txt actuel et réaliser ensuite seulement un dry-run strictement borné, lecture seule, avec journal et zéro image copiée. **Sinon** : mettre Mubawab hors périmètre d'acquisition directe et privilégier des flux partenaires explicitement licenciés. Aucun merge ni Vercel sans autorisation.
+
+### Défense opérationnelle supplémentaire — accès réel fermé par défaut
+
+- Commande Python `main` : `list`/`details` refusent tout démarrage HTTP sauf si `MUBAWAB_AUTHORIZED_ACCESS=yes` **et** `MUBAWAB_CONTACT` non vide ; `export` local reste disponible sans accès réseau. Le refus intervient avant même l'ouverture de SQLite.
+- Commande Node L8 `runCli` : même verrou `MUBAWAB_AUTHORIZED_ACCESS=yes` avant toute requête réseau. C'est une attestation opérationnelle à n'activer qu'après obtention et archivage d'une autorisation juridique valable, **pas une licence en soi**.
+- Régressions hors ligne ajoutées pour les deux chemins ; le run GitHub sur HEAD exact reste la preuve d'exécution nécessaire.
+- **Aucun run live Mubawab n'est autorisé dans la présente mission.** Toute ancienne instruction « tester des URL autorisées par robots » est désormais subordonnée au gate juridique ci-dessus.
