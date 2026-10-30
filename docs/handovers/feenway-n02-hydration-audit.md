@@ -60,3 +60,22 @@ PR #1105 DRAFT. Freeze historique `10910779576` expirée HTTP 410 ; Mubawab/Saro
 **N02e — corrélation avec liens DOM publics, sans ouvrir les routes :** calculer en mémoire uniquement des empreintes de chemins de navigation, classifier les destinations des requêtes refusées selon leur présence préalable dans les ancres HTML, puis ne stocker que des totaux agrégés (liens initiaux / liens observés durant immobilité / liens observés après scroll / destination non observée). Aucune URL, chemin brut, ID, token ou hash n'est persisté dans le rapport. `gate()` et robots inchangés. Lien déjà présent → préchargement de navigation plausible ; absent → inconclusif, pas autorisation de suivre. CI à vérifier avant toute interprétation.
 
 Pas de DB, Vercel, merge. PR #1105 reste DRAFT ; certification Mubawab/Sarout indépendante non débloquée.
+
+## N02e — clôture du diagnostic restreint, preuves vérifiées (30 octobre 2026)
+
+**CI et intégrité :** [run 41096486059](https://github.com/hraaaaf/Akarfinder/actions/runs/41096486059) `completed/success`, HEAD `e13a3dd086e789f6e908a93f057aaa9f54d05e34`, **7/7 tests offline PASS**, `complete=true`, `errors=[]`, artifact **12997685311**. ZIP SHA-256 GitHub **et recalcul local** `34de620395ad4447a5467b2e1ef0ae68352e1d56b6c09061fe6e342657cd1f37` ; `browser-probe.json` SHA-256 `e48cfecc6116d421cad843c2d2ba06541d1256cb0b2634bddcb89dea8afe4209`. Totaux par page, par phase et par catégorie recalculés et cohérents, `blocked_target_linkage_complete=true` sur les 3 pages. Rapport : aucun hash de chemin, domaine, token, paramètre ni identifiant de destination bloquée stocké.
+
+| Landing publique | Liens de fiches sur 4 mesures | Requêtes suivies | Chemin présent dans le DOM initial | Chemin sans ancre initiale |
+| --- | --- | ---: | ---: | ---: |
+| Casablanca (ville) | 18 → 18 → 18 → 18 | 108 | 106 | 2 API |
+| Appartement Casablanca | 24 → 24 → 24 → 24 | 39 | 37 | 2 API |
+| Racine | 24 → 24 → 24 → 24 | 41 | 39 | 2 API |
+| **Total** | **0 nouveau lien parmi ces 3 pages** | **188** | **182 (96,8 %)** | **6 API** |
+
+**Décomposition :** 116 requêtes dynamiques refusées (70 catégories immobilières, 2 villes, 44 autres), 66 requêtes vers les fiches `/listings`, 6 vers `/api`. **182/188 appels bloqués** ciblent des *chemins* correspondant aux ancres déjà présentes dans le DOM initial : **116/116 dynamiques + 66/66 fiches**, tandis que les 6 API n'ont pas d'ancre. Les 9 fenêtres témoins immobiles de N02d n'ont produit aucun appel classé ; les phases scroll ont produit 147 appels, après 41 au chargement. Aucun chargement interdit n'a été autorisé, aucune nouvelle ID DOM observée, aucune écriture DB.
+
+**Limitation méthodologique essentielle :** les empreintes comparent uniquement les **chemins** (slash final normalisé) : les paramètres de requête sont volontairement ignorés. Un appel dynamique à la même route avec un curseur ou des paramètres différents peut donc être classé `linked_initial`. Les **182 sont des requêtes**, pas des pages uniques et encore moins des annonces. La nature des réponses bloquées n'a pas été observée. Le rapprochement est **fortement compatible avec un préchargement de liens connus**, mais ne démontre **ni l'absence de pagination dynamique, ni l'exhaustivité de FeenWay**. Les 3 conclusions JSON restent exactement `INCONCLUSIVE_BLOCKED_DYNAMIC_REQUESTS`, avec `site_exhaustiveness_certified=false`.
+
+**Décision :** le **diagnostic restreint N02** est terminé (pas la certification d'exhaustivité). Ne pas multiplier les probes JS identiques ou autoriser /api et /listings pour résoudre un doute. Chemin de meilleure valeur pour l'objectif 200K : valoriser en **offline** les **73 710 URLs de fiches découvertes par N01** (URLs candidates, non biens actifs/certifiés), mesurer déduplication, 5 champs, fraîcheur, disponibilité et droits/réutilisation ; ne jamais promouvoir en DB sur le seul critère URL découverte. Pour revisiter le chargement dynamique, formuler une hypothèse testable avec une nouvelle autorisation explicite de portée et conformité ; pas de contournement de protections.
+
+**Closeout :** handover technique certifié dans ce document ; [PR #1105](https://github.com/hraaaaf/Akarfinder/pull/1105) **DRAFT**, ne pas merger automatiquement. Certifications Mubawab/Sarout indépendantes toujours affectées par le freeze historique `10910779576` expiré HTTP 410. Aucun merge, déploiement Vercel, SQL ou publication.
