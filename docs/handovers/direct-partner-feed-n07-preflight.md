@@ -17,3 +17,13 @@
 Accepte CSV/JSON/XML 5 Mo maximum, 20 000 lignes, avec dossier d'autorisation et accusés de disponibilité distincts du flux ; émet un récapitulatif avec SHA256 des trois inputs et `review-decisions.jsonl` sans titre, description, photo ni coordonnées. Ne certifie **jamais l'authenticité d'un accord sur la seule base du JSON fourni**. Les dossiers de démonstration et tests synthétiques ne sont pas des partenaires autorisés. Aucun DB, réseau ou déploiement.
 
 Workflow dédié CI pour script et tests sur fichiers réels de fixture. Prérequis d'intégration en production : un véritable accord vérifié, preuves source datées, examen de déduplication physique et revue de sécurité. Toujours 0 annonce importée tant que ces preuves ne sont pas reçues.
+
+## N07 closeout — two exact-head CI successes (30 October 2026)
+
+- Authorization/freshness gate: GitHub Actions 41139079881, SUCCESS on `cc9d974f7583f524cbfdef23a3f4cf750d92b805` ; test step succeeded including 8 new tests and existing V2 bridge/direct feeds suites.
+- Executable local file preflight: GitHub Actions 41139236097, SUCCESS on `56b038c9cdced439a31c1ff5190b6f0b0118d9df` ; npm install and integration tests on real fixture files succeeded. No data harvested from sources.
+- External outreach preparation: 3 customized Gmail DRAFTS, not sent, for Promo Immo Marrakech, Atlas Immobilier and Aykana. Addresses independently found on their official sites. Previous Kaynly email is also only a draft; no authorization identified.
+- Files and safeguards: direct CSV/JSON/XML + separate authorization and activity receipts -> SHA-256 evidence report + review decisions; zero DB writes, zero new fresh listings, zero publishing. The reviewed_allow flag and refs in an input JSON are still claims requiring independent legal/human verification. Test data is synthetic.
+- PR #1105 stays DRAFT. No merge, DB, or Vercel. Current gate for actual growth: receive one real feed and independently verified agreement/availability receipts from an agency; process with the CLI, then independently dedup and confirm rights before any production admission.
+
+Next: execute the first compliant 20-50 offer sample when received; do not credit the 338 FeenWay historical candidates or synthetic fixture records toward the 200K fresh target.
