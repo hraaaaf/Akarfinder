@@ -360,3 +360,18 @@ La CI [41074295013](https://github.com/hraaaaf/Akarfinder/actions/runs/410742950
 **Blocage parallèle PR #1105 :** source historique `clean-corpus-v4.11-core.jsonl.gz`, artifact `10910779576`, indisponible (HTTP 410) ; les checks Mubawab/Sarout/full-field requièrent sa restauration bit-à-bit avec hash `e7ac4bca2db34ad334ed7234cfb8be93fc9baca68a9694f5024989b5cc2bb953`. Ne pas remplacer par un corpus différent ni masquer les checks. PR DRAFT, pas de merge, pas de déploiement et pas de DB.
 
 **Next exact** : suivre la nouvelle CI 23–27, rapprocher les artifacts vert contre les 10 336 URL hors XML, poursuivre 28–35 si sain puis audit pagination et clôture N01. 
+
+## N01 — lots 23–27 verts ; dernière tranche quartiers/marchés 28–35 lancée (30 octobre 2026)
+
+**Preuve GitHub :** [run 41084628658](https://github.com/hraaaaf/Akarfinder/actions/runs/41084628658) **completed/success**, artifacts `12992295392` (23), `12991960662` (24), `12990624823` (25), `12992420266` (26), `12990614769` (27), `12992245341` (six XML) récupérés et vérifiés. **250/250 pages**, **0 erreurs**, `listing_detail_requests=0`, `db_writes=0`. SHA-256 JSONL recalculés exacts :
+- lot 23 : 1 041 liens distincts ; **747 hors six XML**, SHA `59480227eb5fadb967e97fd768929b209a41e16717bd0e9d843ff44728e07b2d`.
+- lot 24 : 893 liens ; **485 hors XML**, SHA `c420599ca33c1b8b1648cc1b35b1b4d25e8faa689777bc5b1e612563322c09c5`.
+- lot 25 : 1 098 liens ; **209 hors XML**, SHA `07fc6044c1441eaa1c8f6d9523e820f695814553860767c25660c4599c71b7ba`.
+- lot 26 : 1 148 liens ; **287 hors XML**, SHA `dcbf3b1c50f8e66d655c9e43a4395d9453b410e493118911cc8dfb864dfd88ef`.
+- lot 27 : 1 016 liens ; **214 hors XML**, SHA `726f5e1a5a1f51420dfb9c1eda037ab3fa489dcf1f02d094566cc3b8b527a397`.
+
+**Rapprochement indépendant :** les cinq lots réunissent **1 934 URL hors XML distinctes**, dont 111 déjà dans les 10 336 découvertes précédentes ; **1 823 réellement nouvelles**. Sitemap six XML **58 507 URL distinctes**, hash `1417583ea02c55b163b490f796a0c9c4d0da3b1a7837406a275b0ee2968bd7d1` sans changement. Manifestes consolidés **12 159 URL hors six XML + 58 507 XML = 70 666 URL de fiches distinctes découvertes**. SHA du JSONL `eaeaa88f6fcd81197bb9d36d47e1080370e328df24306adc02a96bc7051fc6b2`. Preuves locales `feenway-n01-batches23-27-reconciliation.json`, `feenway-n01-off-sitemap-b27-certified.jsonl`. Ne pas assimiler ce total à des annonces disponibles ou des biens distincts.
+
+**Couverture :** **1 350 / 1 720 pages quartiers/marchés FR** auditées, **370 restantes**. Les 82 pages villes FR ont été étudiées séparément. **Suite exécutée :** workflow borné aux lots **28–35** (7×50 + dernier lot 20 pages), un seul cycle CI de ces 370 pages, délai 1 seconde par page, contrôles robots, redirections canoniques bornées, maximum une répétition sur TypeError réseau, arrêt 403/429 ; sauvegarde JSON/JSONL+hash par lot même si échec. Timeout 25 min. Ne pas présumer réussite avant les rapports.
+
+**Statut N01 : OUVERT**, même après la couverture file tant que les autres surfaces publiques et la pagination ne sont pas examinées. **PR #1105 DRAFT bloquée indépendamment** par freeze GitHub historique artifact 10910779576, HTTP 410. Aucun merge, aucun déploiement Vercel, aucune écriture DB.
