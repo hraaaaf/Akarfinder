@@ -23,21 +23,34 @@ class Tests(unittest.TestCase):
   r=m.parse_page(page(1,2));self.assertEqual(len(r),2)
   self.assertEqual(r[0]['price_dh'],1200000);self.assertEqual(r[0]['bedrooms'],2)
   self.assertEqual(r[0]['photos'],['https://www.mubawab-media.com/ad/1.avif'])
- def test_sitemap_known_records_do_not_stop_pagination(self):
+ def test_existing_listing_never_triggers_forbidden_second_page(self):
   self.db.execute('INSERT INTO listings(id,url) VALUES (?,?)',('1',m.BASE+'/fr/a/1/bien'));self.db.commit()
   h=Fake([page(1),page(2)]);m.run_list(h,self.db,2)
-  self.assertEqual(self.db.execute('SELECT count(*) FROM listings').fetchone()[0],2)
-  self.assertEqual(self.db.execute('SELECT next_page FROM seeds').fetchone()[0],3)
+  self.assertEqual(self.db.execute('SELECT count(*) FROM listings').fetchone()[0],1)
+  self.assertEqual(self.db.execute('SELECT next_page FROM seeds').fetchone()[0],2)
+  self.assertEqual(len(h.urls),1)
+  self.assertEqual(h.errors[0]['reason'],'pagination_disallowed_by_policy')
  def test_resume(self):
   m.run_list(Fake([page(1)]),self.db,1);self.db.close();self.db=m.db_open(self.tmp.name+'/state.db')
-  h=Fake([page(2)]);m.run_list(h,self.db,1);self.assertTrue(h.urls[0].endswith(':p:2'))
+  h=Fake([page(2)]);m.run_list(h,self.db,1)
+  self.assertEqual(h.urls,[])
+  self.assertEqual(h.errors[0]['reason'],'pagination_disallowed_by_policy')
  def test_empty_not_certified_finished(self):
   h=Fake(['<html></html>']);m.run_list(h,self.db,2)
   self.assertEqual(self.db.execute('SELECT finished,next_page FROM seeds').fetchone(),(0,1))
   self.assertEqual(h.errors[0]['reason'],'empty_parse_unverified')
  def test_repeat_order_independent(self):
-  h=Fake([page(1,2),page(2,1)]);m.run_list(h,self.db,2)
+  m.run_list(Fake([page(1,2)]),self.db,1)
+  self.db.execute('UPDATE seeds SET next_page=1');self.db.commit()
+  h=Fake([page(2,1)]);m.run_list(h,self.db,1)
   self.assertEqual(h.errors[0]['reason'],'repeated_page_unverified')
+ def test_cli_refuses_unbounded_pages_and_details(self):
+  for args in (['--phase','export','--max-pages','0'],
+               ['--phase','export','--max-pages','2'],
+               ['--phase','export','--limit','0'],
+               ['--phase','details','--limit','21']):
+   with self.subTest(args=args),self.assertRaises(SystemExit):
+    m.main(args)
  def test_city_scope(self):
   m.add_seeds(self.db,['rabat'],['vendre']);h=Fake([page(1)])
   m.run_list(h,self.db,1,['casablanca'],['vendre']);self.assertEqual(len(h.urls),1)
