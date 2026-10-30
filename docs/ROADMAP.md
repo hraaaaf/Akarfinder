@@ -7,11 +7,11 @@
 
 ## ACTUALISATION 2026-10-30 — PRIORITÉ SUR LES ANCIENS « NEXT EXACT »
 
-- GitHub `main@c02d0b73ed18b0e136d478fab39e71df425173a7` vérifié ; 50 PR ouvertes avant tri, #1032 et #1097 archivées/fermées, reste initial 48.
+- GitHub `main@c02d0b73ed18b0e136d478fab39e71df425173a7` vérifié ; 50 PR ouvertes initiales ; #1032/#1097/#997/#991/#1057/#1058/#1059 fermées sans merge, 44 ouvertes après ouverture de la PR documentaire #1137.
 - L'objectif de **200 000 annonces fraîches, physiquement uniques, exploitables et réutilisables** n'est **pas certifié** par le freeze M250K. **253 372** = identités candidates historiques L0/L1, sans garantie d'activité, publication ou droit photo.
 - Pivot cartographique Maârif Flat Living Map en `#1108` (DRAFT), parent historique `#1090` (DRAFT), audit source `#1111` ; aucune preuve actuelle d'un score final cible 9.5.
 - Le fournisseur DB réellement actif en production n'est pas requalifié par cet audit ; migrations Supabase/Neon #1082/#1087 DRAFT.
-- **Mubawab** : #1134 offline DRAFT ; nouveau crawl, import commercial, images et republication verrouillés par droits/autorisation documentée #1135. Les anciennes PR #997/#1028/#1105 ne donnent pas autorisation de collecte live.
+- **Mubawab** : #1134 offline DRAFT ; nouveau crawl, import commercial, images et republication verrouillés par droits/autorisation documentée #1135. #997 fermée/archivée, #1028/#1105 à auditer ; aucune de ces branches ne donne autorisation de collecte live.
 - Voir `docs/AKARFINDER_RECONCILIATION_2026-10-30.md` pour la revue exhaustive des 50 PR et de toutes les familles de routes.
 - **Next exact** : auditer les diff uniques des collecteurs et corriger leurs contrats d'accès ; ensuite Search + Map avec captures avant/après, CI exacte, revue humaine. Pas de merge, déploiement Vercel ou écriture DB issus de la seule réconciliation.
 
