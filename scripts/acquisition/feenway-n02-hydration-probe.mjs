@@ -46,7 +46,7 @@ export function blockedRequestBucket(url,reason){
 }
 export function bumpBucketByStage(record,stage,bucket){
  if(!bucket)return;
- if(!['load','scroll_1','scroll_2','scroll_3'].includes(stage))throw Error('invalid_stage');
+ if(!['load','idle_1','idle_2','idle_3','scroll_1','scroll_2','scroll_3'].includes(stage))throw Error('invalid_stage');
  record[stage]??={};
  record[stage][bucket]=(record[stage][bucket]||0)+1;
 }
@@ -56,7 +56,7 @@ export function ids(hrefs){
 }
 async function main(){
  const out=resolve(process.argv[2]||'.tmp/feenway-n02/browser-probe.json');
- const report={schema:'FEENWAY_N02_PUBLIC_READONLY_BROWSER_V1',observed_at:new Date().toISOString(),pages:[],errors:[],db_writes:0,listing_detail_requests:0,site_exhaustiveness_certified:false};
+ const report={schema:'FEENWAY_N02_PUBLIC_READONLY_BROWSER_V2',observed_at:new Date().toISOString(),pages:[],errors:[],db_writes:0,listing_detail_requests:0,site_exhaustiveness_certified:false};
  let browser;
  try{
   const rr=await fetch(BASE+'/robots.txt',{redirect:'manual',signal:AbortSignal.timeout(20000),headers:{'User-Agent':UA,Accept:'text/plain'}});
@@ -72,17 +72,31 @@ async function main(){
     page.on('response',r=>{if([403,429].includes(r.status()))blockedStatuses.push(r.status());});
     const response=await page.goto(url,{waitUntil:'domcontentloaded',timeout:25000});
     if(!response||response.status()!==200)throw Error('http_'+(response?.status()||'no_response'));
-    const counts=[],all=new Set();let first=[];
-    for(let i=0;i<4;i++){
-     if(i){stage='scroll_'+i;await page.evaluate(()=>window.scrollBy(0,Math.max(window.innerHeight,1150)));}
+    const counts=[],idleCounts=[],scrollSeen=new Set(),idleSeen=new Set();let first=[];
+    // Control: three equal 600ms observation windows with no scrolling.
+    // Request gate stays unchanged and forbids API, details and dynamic fetch.
+    await page.waitForTimeout(600);
+    let hrefs=await page.locator('a[href]').evaluateAll(nodes=>nodes.map(n=>n.getAttribute('href')));
+    first=ids(hrefs);counts.push({scroll:0,listing_count:first.length});
+    for(let i=1;i<=3;i++){
+     stage='idle_'+i;
      await page.waitForTimeout(600);
-     const hrefs=await page.locator('a[href]').evaluateAll(nodes=>nodes.map(n=>n.getAttribute('href')));
-     const listingIds=ids(hrefs);if(!i)first=listingIds;
-     listingIds.forEach(id=>all.add(id));counts.push({scroll:i,listing_count:listingIds.length});
+     hrefs=await page.locator('a[href]').evaluateAll(nodes=>nodes.map(n=>n.getAttribute('href')));
+     const observed=ids(hrefs);observed.forEach(id=>idleSeen.add(id));
+     idleCounts.push({idle:i,listing_count:observed.length});
+    }
+    for(let i=1;i<=3;i++){
+     stage='scroll_'+i;
+     await page.evaluate(()=>window.scrollBy(0,Math.max(window.innerHeight,1150)));
+     await page.waitForTimeout(600);
+     hrefs=await page.locator('a[href]').evaluateAll(nodes=>nodes.map(n=>n.getAttribute('href')));
+     const observed=ids(hrefs);observed.forEach(id=>scrollSeen.add(id));
+     counts.push({scroll:i,listing_count:observed.length});
     }
     if(blockedStatuses.length)throw Error('http_403_or_429');
-    const fresh=[...all].filter(x=>!first.includes(x)).sort((a,b)=>Number(a)-Number(b));
-    report.pages.push({url,http_status:200,counts,new_ids_after_scroll:fresh,denied,blocked_request_buckets:blockedRequestBuckets,blocked_by_stage:blockedByStage,conclusion:denied.dynamic_blocked?'INCONCLUSIVE_BLOCKED_DYNAMIC_REQUESTS':fresh.length?'NEW_PUBLIC_LINKS_AFTER_SCROLL':'NO_NEW_LINKS_IN_THREE_SCROLLS'});
+    const newlyIdle=[...idleSeen].filter(x=>!first.includes(x)).sort((a,b)=>Number(a)-Number(b));
+    const newlyScroll=[...scrollSeen].filter(x=>!first.includes(x)&&!idleSeen.has(x)).sort((a,b)=>Number(a)-Number(b));
+    report.pages.push({url,http_status:200,counts,idle_counts:idleCounts,new_ids_after_idle:newlyIdle,new_ids_after_scroll:newlyScroll,denied,blocked_request_buckets:blockedRequestBuckets,blocked_by_stage:blockedByStage,conclusion:denied.dynamic_blocked?'INCONCLUSIVE_BLOCKED_DYNAMIC_REQUESTS':newlyIdle.length||newlyScroll.length?'NEW_PUBLIC_LINKS_DURING_OBSERVATION':'NO_NEW_LINKS_IN_OBSERVATION'});
    }catch(e){report.errors.push({url,error:String(e?.message||e)});break;}
    finally{await page.close();}
    await new Promise(r=>setTimeout(r,1000));

@@ -29,3 +29,24 @@ PR #1105 toujours DRAFT, checks historiques séparés bloqués par l'artifact `1
 **Hypothèse à tester sans ouverture d'API :** les requêtes vers catégories peuvent provenir du préchargement de liens au chargement initial plutôt que du défilement. **N02c** ajoute donc un compteur agrégé par phase (`load`, `scroll_1`, `scroll_2`, `scroll_3`) aux catégories déjà collectées. Aucun chemin brut, domaine, token, ID ou paramètre conservé ; aucune requête interdite autorisée. Test unitaire sur l'agrégateur ajouté. La CI doit confirmer l'exécution avant interprétation.
 
 N01 reste à **73 710 URL de fiches découvertes** ; N02 ne certifie pas l'exhaustivité. Les certifications Mubawab/Sarout/full-field de PR #1105 DRAFT restent bloquées sur la freeze historique expirée `10910779576` HTTP 410. Aucun merge, Vercel ou DB.
+
+## N02c — chronologie de blocages certifiée (30 octobre 2026)
+
+**Preuve indépendante :** [CI 41093983871](https://github.com/hraaaaf/Akarfinder/actions/runs/41093983871), `completed/success`, **5/5 tests offline PASS**, artifact `12996205056` ZIP SHA-256 `52ed2f6de8484b090a4b3eef5325db2de1b5c2950a08de45398be61eba10d589`, JSON `browser-probe.json` SHA-256 `a81be68a6807a83377179fe7bb0bf56180450f0d340088eb98d4587eebeef8b5`. Vérification : extraction ZIP + comparaison des sommes par catégorie et par phase sur chacune des trois pages, **0 incohérence**.
+
+| Catégorie bloquée | Chargement | Scroll 1 | Scroll 2 | Scroll 3 | Total |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Catégories immobilières dynamiques | 5 | 4 | 0 | 61 | 70 |
+| Villes dynamiques | 2 | 0 | 0 | 0 | 2 |
+| Autres chemins dynamiques | 28 | 11 | 0 | 5 | 44 |
+| Fiches `/listings` | 0 | 27 | 27 | 12 | 66 |
+| API `/api` | 6 | 0 | 0 | 0 | 6 |
+| **Total** | **41** | **42** | **27** | **78** | **188** |
+
+**Constat exact :** 116 requêtes de type dynamique (35 `load`, 15 `scroll_1`, 0 `scroll_2`, 66 `scroll_3`), plus 66 fiches et 6 API toutes bloquées. Casablanca ville porte 60 des 61 appels `dynamic_market` observés dans `scroll_3`. Comptes DOM inchangés à 18/24/24 sur les trois pages ; 0 nouvelle ID observée, 0 erreur, 0 écriture DB, 0 visite autorisée des fiches.
+
+**Interprétation prudente :** les appels sont temporellement *associés* aux phases de scroll, pas nécessairement causés par le scroll ; ils peuvent correspondre à du préchargement Next.js/de navigation, sans annonce nouvelle. Comme les appels restent refusés, l'absence d'ancres après scroll ne démontre **ni couverture exhaustive, ni absence d'infinite scroll**. Les trois conclusions restent `INCONCLUSIVE_BLOCKED_DYNAMIC_REQUESTS`.
+
+**N02d décidé :** insérer trois fenêtres témoins `idle_1..3` de 600 ms sans scroll avant les trois scrolls, sur les trois mêmes landings, avec les mêmes interceptions strictes et aucune nouvelle route autorisée. Comparer le comportement pendant l'immobilité vs le défilement ; ne pas présenter le résultat comme preuve causale définitive. CI N02d à certifier avant conclusion.
+
+PR #1105 DRAFT. Freeze historique `10910779576` expirée HTTP 410 ; Mubawab/Sarout toujours en attente de preuve indépendamment de FeenWay. Aucun deploy, DB write ni merge.

@@ -41,3 +41,11 @@ test('stage tally is additive and bounded without storing raw URLs',()=>{
  bumpBucketByStage(o,'scroll_3',null);
  assert.equal(o.scroll_3,undefined);
 });
+
+test('idle control phases are permitted without relaxing forbidden request guard',()=>{
+ const o={};
+ for(const stage of ['idle_1','idle_2','idle_3'])bumpBucketByStage(o,stage,'dynamic_market');
+ assert.deepEqual(Object.keys(o),['idle_1','idle_2','idle_3']);
+ assert.equal(gate(base+'/listings/45','GET','document',url),'blocked_route');
+ assert.equal(gate(base+'/appartement-a-vendre/casablanca','GET','fetch',url),'dynamic_blocked');
+});
