@@ -122,3 +122,20 @@ Sources primaires consultées :
 - Commande Node L8 `runCli` : même verrou `MUBAWAB_AUTHORIZED_ACCESS=yes` avant toute requête réseau. C'est une attestation opérationnelle à n'activer qu'après obtention et archivage d'une autorisation juridique valable, **pas une licence en soi**.
 - Régressions hors ligne ajoutées pour les deux chemins ; le run GitHub sur HEAD exact reste la preuve d'exécution nécessaire.
 - **Aucun run live Mubawab n'est autorisé dans la présente mission.** Toute ancienne instruction « tester des URL autorisées par robots » est désormais subordonnée au gate juridique ci-dessus.
+
+
+## Closeout de vérification offline — 2026-10-30 (lot de reprise)
+
+**Preuves CI réellement obtenues sur HEAD `b4ad6068f34b4cc4a849c8cc2270d1260c563422`:**
+
+- [Mubawab Python Pilot Offline, run 41044270434](https://github.com/hraaaaf/Akarfinder/actions/runs/41044270434) : **SUCCESS**. Logs : **11 tests JavaScript PASS**, **14 tests Python exécutés (13 PASS, 1 SKIPPED)** ; le test HTML réel historique est ignoré car la fixture est volontairement absente du dépôt public.
+- [CI Workflow Efficiency Policy, run 41044270437](https://github.com/hraaaaf/Akarfinder/actions/runs/41044270437) : **SUCCESS**, 1 workflow modifié vérifié, 0 échec.
+- [Canonical Baseline Compile Validation, run 41044270623](https://github.com/hraaaaf/Akarfinder/actions/runs/41044270623) : **SUCCESS**, contrôle TypeScript terminé.
+
+**Durcissement additionnel après ces succès :** le point d'entrée JavaScript exporté `enumerateMubawab()` (et pas seulement son CLI) refuse maintenant l'accès réseau réel par défaut si `MUBAWAB_AUTHORIZED_ACCESS` n'est pas `yes` ; test hors ligne dédié. **Ce durcissement postérieur doit encore passer les CI sur son nouveau HEAD exact**, ne pas réutiliser abusivement les preuves du HEAD précédent.
+
+**Suivi juridique créé :** [GitHub issue #1135 — autorisation de réutilisation commerciale des données et images Mubawab](https://github.com/hraaaaf/Akarfinder/issues/1135). Les CGU officielles réservent explicitement certaines réutilisations (articles 5.1, 7.1, 7.3–7.5). Le rôle de `robots.txt` est distinct d'une licence de réutilisation. Aucun pilot HTTP réel supplémentaire ne peut être déclaré autorisé.
+
+**Décision actuelle :** garder la PR #1134 DRAFT, code hors production, pas de merge, pas de déploiement Vercel, pas de DB write ni collecte live. Préparer en parallèle un chemin légal (flux partenaires, accord Mubawab) si l'autorisation tarde.
+
+**Next exact :** vérifier le résultat CI du nouveau HEAD ; corriger tout échec ; consigner son SHA et la preuve finale sans relancer de crawl. Blocage humain ensuite = obtenir l'autorisation commerciale documentée ou décider d'abandonner l'acquisition Mubawab.
