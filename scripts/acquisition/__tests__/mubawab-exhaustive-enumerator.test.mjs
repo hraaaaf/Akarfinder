@@ -41,6 +41,25 @@ test('CLI rejects live acquisition absent documented operator permission', () =>
   assert.match(run.stderr, /documented commercial access authorization required/i);
 });
 
+test('exported enumerator does not touch real fetch without documented access gate', async () => {
+  const original = globalThis.fetch;
+  const prior = process.env.MUBAWAB_AUTHORIZED_ACCESS;
+  let called = 0;
+  try {
+    process.env.MUBAWAB_AUTHORIZED_ACCESS = '';
+    globalThis.fetch = async () => { called++; throw new Error('network should never run'); };
+    const result = await enumerateMubawab();
+    assert.equal(result.stoppedEarly, 'authorization_missing');
+    assert.equal(result.requestCount, 0);
+    assert.equal(result.robotsRequestCount, 0);
+    assert.equal(called, 0);
+  } finally {
+    globalThis.fetch = original;
+    if (prior === undefined) delete process.env.MUBAWAB_AUTHORIZED_ACCESS;
+    else process.env.MUBAWAB_AUTHORIZED_ACCESS = prior;
+  }
+});
+
 test('fresh robots gate accepts known rules and refuses unexpected directives', () => {
   assert.equal(verifyMubawabRobots(ROBOTS)?.verified, true);
   assert.equal(verifyMubawabRobots(ROBOTS + '\nDisallow: /new-path'), null);
