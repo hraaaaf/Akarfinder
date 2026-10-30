@@ -58,6 +58,38 @@ class Tests(unittest.TestCase):
             self.assertEqual(result['saved_html_blobs'],2)
             self.assertNotIn('/fr/test:p:2',str(fake.urls))
             self.assertEqual(len(list(m.iter_records(Path(t)/'listings.jsonl'))),2)
+            self.assertEqual(result['discovered_unique_ids'],2)
+            self.assertEqual(result['discovered_urls'],2)
+            rows=[json.loads(line) for line in (Path(t)/'discovered_listing_links.jsonl').read_text().splitlines()]
+            self.assertEqual(len(rows),4)
+            self.assertEqual({r['discovered_on'] for r in rows},{m.BASE+'/fr',m.BASE+'/fr/ct/casablanca/immobilier-a-vendre'})
+            self.assertTrue(all(r['detail_state']=='done' for r in rows))
+
+
+    def test_link_only_mode_exports_urls_without_details(self):
+        with tempfile.TemporaryDirectory() as t:
+            sess=FakeSession({m.BASE+'/robots.txt':ROBOTS,m.BASE+'/fr':PAGE})
+            result=m.do_fresh(Path(t),m.Web(session=sess,sleep=lambda _:None),max_pages=1,max_details=0)
+            self.assertEqual(result['details'],0)
+            self.assertEqual(result['discovered_unique_ids'],2)
+            self.assertEqual(result['discovery_provenance_rows'],2)
+            self.assertEqual(len((Path(t)/'discovered_listing_links.jsonl').read_text().splitlines()),2)
+            self.assertEqual(sess.urls,[m.BASE+'/robots.txt',m.BASE+'/fr'])
+            self.assertEqual((Path(t)/'listings.jsonl').read_text(),'')
+
+    def test_links_remain_if_detail_returns_403(self):
+        with tempfile.TemporaryDirectory() as t:
+            page={m.BASE+'/robots.txt':ROBOTS,m.BASE+'/fr':PAGE,
+                m.BASE+'/fr/a/12345/centre':('blocked',403)}
+            sess=FakeSession(page)
+            result=m.do_fresh(Path(t),m.Web(session=sess,sleep=lambda _:None),max_pages=1,max_details=2)
+            self.assertEqual(result['stopped_early'],'http_403')
+            self.assertEqual(result['details'],0)
+            self.assertEqual(result['discovered_unique_ids'],2)
+            self.assertEqual(len((Path(t)/'discovered_listing_links.jsonl').read_text().splitlines()),2)
+            self.assertEqual(len(sess.urls),3)
+            self.assertNotIn(m.BASE+'/fr/a/98765/other',sess.urls)
+
     def test_stop_on_429(self):
         with tempfile.TemporaryDirectory() as t:
             s=FakeSession({m.BASE+'/robots.txt':ROBOTS,m.BASE+'/fr':('rate limited',429)})
