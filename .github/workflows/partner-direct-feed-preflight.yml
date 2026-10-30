@@ -1,0 +1,27 @@
+name: Partner direct feed file preflight
+on:
+  push:
+    branches: [data/200k-fresh-parser-v2]
+    paths:
+      - scripts/data/partner-direct-feed-preflight.ts
+      - scripts/scrapers/__tests__/partner-direct-feed-preflight.test.ts
+      - .github/workflows/partner-direct-feed-preflight.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: partner-direct-feed-preflight
+  cancel-in-progress: true
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Verify file based partner feed and fail closed
+        run: npx tsx --test scripts/scrapers/__tests__/partner-direct-feed-preflight.test.ts scripts/scrapers/__tests__/authorized-partner-feed-preflight.test.ts

@@ -9,3 +9,11 @@
 **Preuves :** huit tests de refus/cas valides sur jeu synthétique et fixture de démonstration historique ; CI dédiée + non-régression des tests existants à vérifier. Aucun flux réel d'agence n'a encore été reçu. Le brouillon Gmail de contact Kaynly n'est pas un accord signé.
 
 **Next exact :** qualifier le premier flux directement fourni par un partenaire, obtenir les preuves d'autorisation et de disponibilité, valider indépendamment un micro-lot puis relier au mécanisme de staging existant ; ne pas considérer le jeu synthétique comme inventaire. PR #1105 DRAFT, aucun déploiement Vercel.
+
+## N07b — outil fichiers exécutable
+
+`npx tsx scripts/data/partner-direct-feed-preflight.ts --feed agence.csv --authorization reviewed-authorization.json --receipts activity-receipts.json --as-of 2026-10-30T20:00:00Z --out .tmp/partner-review`
+
+Accepte CSV/JSON/XML 5 Mo maximum, 20 000 lignes, avec dossier d'autorisation et accusés de disponibilité distincts du flux ; émet un récapitulatif avec SHA256 des trois inputs et `review-decisions.jsonl` sans titre, description, photo ni coordonnées. Ne certifie **jamais l'authenticité d'un accord sur la seule base du JSON fourni**. Les dossiers de démonstration et tests synthétiques ne sont pas des partenaires autorisés. Aucun DB, réseau ou déploiement.
+
+Workflow dédié CI pour script et tests sur fichiers réels de fixture. Prérequis d'intégration en production : un véritable accord vérifié, preuves source datées, examen de déduplication physique et revue de sécurité. Toujours 0 annonce importée tant que ces preuves ne sont pas reçues.
