@@ -6,7 +6,7 @@ listing pages, obeys robots.txt, and stops on HTTP 403/429. It does not collect
 telephone numbers or attempt to bypass access controls.
 
 Examples:
-  python mubawab_full.py --phase list --cities casablanca --max-pages 2
+  python mubawab_full.py --phase list --cities casablanca --max-pages 1
   python mubawab_full.py --phase list --discover-cities
   python mubawab_full.py --phase details --limit 20
   python mubawab_full.py --phase export
@@ -425,8 +425,13 @@ def run_list(http, db, max_pages, cities=None, deals=None):
         seeds = [row for row in seeds if row[0] in selected]
     for seed_url, deal, page, last_signature in seeds:
         fetched = 0
-        while not max_pages or fetched < max_pages:
-            page_url = seed_url if page == 1 else f"{seed_url}:p:{page}"
+        while fetched < max_pages:
+            # Colon pagination is denied by the known robots policy. Never even
+            # offer a :p:N URL to an injected/mock HTTP implementation.
+            if page != 1:
+                http.errors.append({"url": seed_url, "reason": "pagination_disallowed_by_policy", "next_page": page})
+                break
+            page_url = seed_url
             html = http.get(page_url)
             if html is None:
                 if http.blocked:
@@ -511,8 +516,8 @@ def main(argv=None):
     parser.add_argument("--deals", default="vendre", help="vendre,louer")
     parser.add_argument("--discover-cities", action="store_true")
     parser.add_argument("--sitemaps", action="store_true")
-    parser.add_argument("--max-pages", type=int, default=0, help="pages par seed et par exécution; 0 = sans limite")
-    parser.add_argument("--limit", type=int, default=0, help="nombre max. d'annonces en details/photos; 0 = toutes")
+    parser.add_argument("--max-pages", type=int, default=1, help="1 uniquement : pagination :p:N interdite")
+    parser.add_argument("--limit", type=int, default=10, help="nombre max. d'annonces en details (1 à 20)")
     parser.add_argument("--delay", type=float, default=3.0)
     parser.add_argument("--photos-dir", default="photos")
     parser.add_argument("--html-dir", help="Conserver le HTML brut pour audit local (optionnel)")
@@ -521,8 +526,10 @@ def main(argv=None):
     args = parser.parse_args(argv)
     if not (2 <= args.delay <= 3600):
         parser.error("--delay doit être >= 2 secondes")
-    if args.max_pages < 0 or args.limit < 0:
-        parser.error("--max-pages et --limit doivent être positifs")
+    if args.max_pages != 1:
+        parser.error("--max-pages=1 obligatoire : pas de pagination :p:N ou de crawl illimité")
+    if not 1 <= args.limit <= 20:
+        parser.error("--limit doit être compris entre 1 et 20")
     phases = {p.strip() for p in args.phase.split(",")}
     allowed_phases = {"list", "details", "photos", "export"}
     if not phases or phases - allowed_phases:
