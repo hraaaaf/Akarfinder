@@ -68,9 +68,65 @@ def merge_unique(current, more):
     return list(dict.fromkeys(current + more))
 
 
+def normalize_export_row(row, line_no):
+    """Accept historical flat JSONL and AkarFinder's canonical nested source exports.
+
+    Preserve the *entire* canonical snapshot in detail instead of discarding
+    seller, feature, raw, provenance or quality metadata.
+    """
+    if not isinstance(row, dict):
+        raise ValueError(f'line {line_no}: object required')
+    src = row.get('source')
+    if isinstance(src, dict):
+        if src.get('name') != 'mubawab':
+            raise ValueError(f'line {line_no}: unexpected nested source')
+        lid, url = str(src.get('source_id') or ''), str(src.get('url') or '')
+        price = row.get('price') or {}
+        surface = row.get('surface') or {}
+        location = row.get('location') or {}
+        if not (isinstance(price, dict) and isinstance(surface, dict) and isinstance(location, dict)):
+            raise ValueError(f'line {line_no}: malformed canonical fields')
+        images = row.get('images') or []
+        if not isinstance(images, list) or any(not isinstance(img, dict) for img in images):
+            raise ValueError(f'line {line_no}: images must be objects')
+        photos = [img.get('url') for img in images]
+        flat = {
+            'source': 'mubawab', 'id': lid, 'url': url,
+            'title': row.get('title'),
+            'price_dh': price.get('amount') if price.get('currency') == 'MAD' else None,
+            'area_m2': surface.get('total_m2'),
+            'city': location.get('city'), 'district': location.get('district'),
+            'rooms': row.get('rooms'), 'bedrooms': row.get('bedrooms'),
+            'bathrooms': row.get('bathrooms'),
+            'description_snippet': (row.get('description') or '')[:400],
+            'deal': 'louer' if row.get('transaction') == 'rent' else 'vendre',
+            'rental_suspect': row.get('transaction') == 'rent',
+        }
+        detail = {'normalized_snapshot': row}
+    else:
+        flat = dict(row)
+        lid, url = str(flat.get('id') or ''), str(flat.get('url') or '')
+        photos, detail = flat.pop('photos', []), None
+        if src != 'mubawab':
+            raise ValueError(f'line {line_no}: unexpected source')
+    parsed = urlparse(url)
+    if (not lid.isdigit() or parsed.scheme != 'https' or parsed.hostname != HOST
+            or listing_id(url) != lid):
+        raise ValueError(f'line {line_no}: source, ID or URL invalid')
+    if not isinstance(photos, list) or not all(isinstance(i, str) for i in photos):
+        raise ValueError(f'line {line_no}: photos must be URL strings')
+    for field in ('price_dh', 'rooms', 'bedrooms', 'bathrooms'):
+        if flat.get(field) is not None:
+            flat[field] = int(flat[field])
+    if flat.get('area_m2') is not None:
+        flat['area_m2'] = float(flat['area_m2'])
+    return lid, url, flat, clean_photos(photos), detail
+
+
 def import_archive(*, list_dir=None, detail_dir=None, photos_dir=None, jsonl_dir=None,
                    db_path='mubawab_offline.db', out_dir='mubawab_archive',
-                   max_files=100000, max_html_bytes=8 * 1024 * 1024):
+                   max_files=100000, max_html_bytes=8 * 1024 * 1024,
+                   max_jsonl_bytes=128 * 1024 * 1024):
     if not (list_dir or detail_dir or photos_dir or jsonl_dir):
         raise ValueError('At least one local input directory is mandatory')
     out = Path(out_dir)
@@ -157,7 +213,7 @@ def import_archive(*, list_dir=None, detail_dir=None, photos_dir=None, jsonl_dir
             if already('jsonl', path, sha):
                 counts['duplicate_files'] += 1
                 continue
-            if path.stat().st_size > max_files * max_html_bytes:
+            if path.stat().st_size > max_jsonl_bytes:
                 errors.append({'file': str(path), 'reason': 'jsonl_size_limit'})
                 continue
             try:
@@ -167,25 +223,7 @@ def import_archive(*, list_dir=None, detail_dir=None, photos_dir=None, jsonl_dir
                         if not line.strip():
                             continue
                         r = json.loads(line)
-                        if not isinstance(r, dict):
-                            raise ValueError(f'line {line_no}: object required')
-                        lid = str(r.get('id') or '')
-                        url = str(r.get('url') or '')
-                        parsed = urlparse(url)
-                        if (r.get('source') != 'mubawab' or not lid.isdigit() or
-                                parsed.scheme != 'https' or parsed.hostname != HOST or
-                                listing_id(url) != lid):
-                            raise ValueError(f'line {line_no}: source, ID or URL invalid')
-                        imgs = r.pop('photos', [])
-                        if not isinstance(imgs, list) or not all(isinstance(i, str) for i in imgs):
-                            raise ValueError(f'line {line_no}: photos must be a list of URLs')
-                        imgs = clean_photos(imgs)
-                        for field in ('price_dh', 'rooms', 'bedrooms', 'bathrooms'):
-                            if r.get(field) is not None:
-                                r[field] = int(r[field])
-                        if r.get('area_m2') is not None:
-                            r['area_m2'] = float(r['area_m2'])
-                        records.append((lid, url, r, imgs))
+                        records.append(normalize_export_row(r, line_no))
             except (OSError, UnicodeError, ValueError, TypeError, json.JSONDecodeError) as exc:
                 errors.append({'file': str(path), 'reason': 'invalid_jsonl', 'error': str(exc)[:300]})
                 continue
@@ -193,12 +231,14 @@ def import_archive(*, list_dir=None, detail_dir=None, photos_dir=None, jsonl_dir
                 errors.append({'file': str(path), 'reason': 'empty_jsonl'})
                 continue
             with db:
-                for lid, url, data, photos in records:
-                    prev = db.execute('SELECT data,photos FROM listings WHERE id=?', (lid,)).fetchone()
+                for lid, url, data, photos, snapshot in records:
+                    prev = db.execute('SELECT data,photos,detail FROM listings WHERE id=?', (lid,)).fetchone()
                     if prev is None:
-                        db.execute('INSERT INTO listings(id,url,data,photos) VALUES(?,?,?,?)',
+                        db.execute('INSERT INTO listings(id,url,data,photos,detail,detail_done) VALUES(?,?,?,?,?,?)',
                                    (lid, url, json.dumps(data, ensure_ascii=False),
-                                    json.dumps(photos, ensure_ascii=False)))
+                                    json.dumps(photos, ensure_ascii=False),
+                                    json.dumps(snapshot, ensure_ascii=False) if snapshot else None,
+                                    int(snapshot is not None)))
                         counts['listings_inserted'] += 1
                     else:
                         old_data = json.loads(prev[0]) if prev[0] else {}
@@ -206,9 +246,13 @@ def import_archive(*, list_dir=None, detail_dir=None, photos_dir=None, jsonl_dir
                         # Prefer existing nonempty fields and accumulate all photo URL references.
                         merged = dict(data)
                         merged.update({k: v for k, v in old_data.items() if v is not None})
-                        db.execute('UPDATE listings SET url=?,data=?,photos=? WHERE id=?',
+                        existing_snapshot = json.loads(prev[2]) if prev[2] else None
+                        new_snapshot = existing_snapshot or snapshot
+                        db.execute('UPDATE listings SET url=?,data=?,photos=?,detail=?,detail_done=? WHERE id=?',
                                    (url, json.dumps(merged, ensure_ascii=False),
-                                    json.dumps(merge_unique(old_photos, photos), ensure_ascii=False), lid))
+                                    json.dumps(merge_unique(old_photos, photos), ensure_ascii=False),
+                                    json.dumps(new_snapshot, ensure_ascii=False) if new_snapshot else None,
+                                    int(new_snapshot is not None), lid))
                         counts['listings_updated'] += 1
                     db.execute('INSERT OR IGNORE INTO archive_evidence VALUES(?,?,?,?)',
                                (lid, 'jsonl', str(path), sha))
@@ -312,15 +356,17 @@ def main(argv=None):
     p.add_argument('--out-dir', default='mubawab_archive')
     p.add_argument('--max-files', type=int, default=100000)
     p.add_argument('--max-html-bytes', type=int, default=8*1024*1024)
+    p.add_argument('--max-jsonl-bytes', type=int, default=128*1024*1024)
     a = p.parse_args(argv)
-    if a.max_files <= 0 or a.max_html_bytes <= 0:
+    if a.max_files <= 0 or a.max_html_bytes <= 0 or a.max_jsonl_bytes <= 0:
         p.error('budgets must be positive')
     try:
         result = import_archive(list_dir=a.list_dir, detail_dir=a.detail_dir,
                                 jsonl_dir=a.jsonl_dir,
                                 photos_dir=a.photos_dir, db_path=a.db,
                                 out_dir=a.out_dir, max_files=a.max_files,
-                                max_html_bytes=a.max_html_bytes)
+                                max_html_bytes=a.max_html_bytes,
+                                max_jsonl_bytes=a.max_jsonl_bytes)
     except ValueError as exc:
         p.error(str(exc))
     print(json.dumps({k: result[k] for k in ('listing_count','detail_count','photo_url_references',
