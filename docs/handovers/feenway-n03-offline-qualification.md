@@ -68,3 +68,15 @@
 **Recalcul indépendant :** 81 lignes, 81 `feenway_id` distincts, 81 identités sources distinctes, 53 cinq champs stricts, 49 concordances numériques, 47 sans avertissement économique identifié, 35 dates comme métadonnées, 3 alertes (`233683` prix/m², `234551` prix/jour, `236104` pas-de-porte). Répartition exclusive : **47 review_numeric_match_not_commercial**, **3 review_economic_semantics**, **27 review_incomplete_or_conflicting**, **4 quarantine_source_unavailable**. Toutes les 81 lignes portent `eligibility=review_only`, `eligible_for_db=false`, `publishable=false`. Aucun dossier commercialement certifié et aucune nouvelle information sur les 73 708 / 73 715 URL-only. La présence d'une date de source ne prouve pas la disponibilité actuelle. Le résultat N03c ne valide pas les droits de réutilisation.
 
 **Closeout N03c technique :** code + CI + sortie réelle concordants ; contrôle de l'archive complet. L'**exhaustivité FeenWay**, l'écart **73 710 ↔ 73 708 / 73 715**, et la vérification active/droits restent **ouverts**. La PR #1105 reste DRAFT ; pas de merge, DB ni Vercel. **Next exact :** préparer une matrice des preuves positives manquantes (activité, disponibilité, source, sémantique économique, unicité physique, droits) sur les 81 lignes, sans classement `eligible` ni accès aux fiches hors autorisation.
+
+## N03d — Matrice de preuves manquantes des 81 sources (30 octobre 2026)
+
+**Goal :** préparer le prochain contrôle à partir des 81 fiches sources historiques, sans recopier leurs prix, descriptions ou contacts dans une nouvelle base. **Preuve :** recalcul offline à partir du JSONL canari 81 versionné sur le même HEAD ; 81/81 identités source et FeenWay uniques, aucun `eligible`.
+
+- **Groupes :** 47 concordances numériques en revue commerciale, 3 alertes économiques, 27 incomplets ou contradictoires, 4 sources inaccessibles.
+- **Champs réellement absents dans le canari d'origine :** ville **13**, quartier **14**, montant numérique **7**, surface **6**, transaction **20**. Ces compteurs se recoupent entre fiches : ils ne s'additionnent pas en nombre de dossiers.
+- **Dates source :** 35 métadonnées présentes, mais **aucune** date ne démontre une annonce active actuellement.
+- **Preuves positives indispensables et non certifiées sur les 81 :** disponibilité actuelle, fraîcheur observée, unicité physique, signification économique du prix (total/m²/jour/mois/pas-de-porte), droit de réutilisation. Les alertes connues restent identifiées par ID.
+- **Exports :** `docs/data/feenway-n03d-proof-gaps-81-2026-10-30.jsonl` (une ligne par identifiant de fiche, sans champ de contact, prix détaillé ni description) et `docs/data/feenway-n03d-proof-gaps-summary-2026-10-30.json`.
+
+**Décision :** lot de préparation offline clôturé ; **81/81 en `review_only`**, **0 candidate commerciale certifiée**. Aucune statistique sur ces 81 ne s'extrapole aux 73K. **Next exact :** collecter des preuves positives uniquement sur un protocole permis, avec arbitrage droits et accessibilité ; les URL seules et métadonnées anciennes ne sont pas des preuves d'activité. PR #1105 DRAFT, sans merge, DB ni déploiement.

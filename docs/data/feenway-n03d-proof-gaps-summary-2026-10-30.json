@@ -1,0 +1,33 @@
+{
+  "schema": "FEENWAY_N03D_81_PROOF_GAPS_V1",
+  "source": "docs/data/feenway-canary81-source-fivefields-2026-10-26.jsonl",
+  "rows": 81,
+  "distinct_feenway_ids": 81,
+  "distinct_original_identities": 81,
+  "groups": {
+    "quarantine_source_unavailable": 4,
+    "review_economic_semantics": 3,
+    "review_incomplete_or_conflicting": 27,
+    "review_numeric_match_not_commercial": 47
+  },
+  "missing_values": {
+    "city": 13,
+    "district": 14,
+    "price_mad_number": 7,
+    "surface_m2_number": 6,
+    "transaction": 20
+  },
+  "historical_source_dates": 35,
+  "existing_explicit_economic_warnings": 3,
+  "every_record_missing_independent_positive_evidence": true,
+  "every_record_review_only": true,
+  "source_only_no_network": true,
+  "eligible_for_db": 0,
+  "missing_evidence_criteria": [
+    "current_availability",
+    "current_freshness",
+    "physical_uniqueness",
+    "economic_price_meaning",
+    "reuse_rights"
+  ]
+}
