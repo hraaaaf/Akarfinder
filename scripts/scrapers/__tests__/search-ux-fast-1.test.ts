@@ -38,7 +38,9 @@ test("compact controls precede the listing stream", () => {
   assert.match(shell, /<SearchViewSwitcher value=\{view\} onChange=\{setView\}/);
   assert.match(shell, /const loadedResultCount = filteredListings\.length \+ \(currentPage === 1 \? gatewayResults\.length : 0\)/);
   assert.match(shell, /const totalResultCount = Math\.max\(/);
-  assert.match(shell, /totalResultCount\.toLocaleString\("fr-FR"\)/);
+  assert.match(shell, /const displayedResultCount = !isSearching && !hasAnyResults \\? 0 : totalResultCount/);
+  assert.match(shell, /displayedResultCount\\.toLocaleString\\("fr-FR"\\)/);
+  assert.match(shell, /totalPages > 1 && hasAnyResults/);
 });
 
 test("Option A remains available only through the expandable filters path", () => {
