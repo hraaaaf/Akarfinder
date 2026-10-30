@@ -1,7 +1,7 @@
 # AKARFINDER — RÉCONCILIATION PR / PAGES / FONCTIONNALITÉS
 
 **Date de gel d'audit : 2026-10-30.** Repo `hraaaaf/Akarfinder`; référence `main@c02d0b73ed18b0e136d478fab39e71df425173a7` (merge #1129).  
-**Portée : décisions de gouvernance et feuille de revue, non pas certification actuelle de l'UI ou de la production.** Constat GitHub : 50 PR ouvertes avant nettoyage ; #1032, #1097, #997, #991, #1057, #1058 et #1059 fermées avec commentaires motivés ; **44 PR ouvertes après ouverture de #1137** (43 restantes du stock initial + #1137). Un commit ultérieur exige de rafraîchir ce décompte.
+**Portée : décisions de gouvernance et feuille de revue, non pas certification actuelle de l'UI ou de la production.** Snapshot initial : 50 PR ouvertes, nettoyages historiques décrits en section 3. **État de travail du 30 octobre après nouvelles PR et fermetures : 43 PR ouvertes, 11 anciennes PR fermées sans merge, 4 nouvelles PR #1137–#1140.** Inventaire 43/43 et regroupement sur [matrice feature](handovers/AKARFINDER_ONBOARDING_PR_FEATURE_MATRIX_2026-10-30.md). Les compteurs sont à recontrôler si les PR évoluent.
 
 ## GOAL / SUCCÈS / PREUVE
 
@@ -198,3 +198,26 @@ Une **fiche de décision indépendante** : `Feature | Routes | PRs concernées |
 ### Gate de lancement de l'onboarding
 
 Audit complet traçable des PR encore ouvertes, inventaire fichiers/overlaps, statut sources/rights, risques sécurité, et cartographie page/feature. **Tant que le gate n'est pas atteint, seulement préparer les fiches ; ne pas présenter l'audit comme terminé.**
+
+## 8. INVENTAIRE STRUCTUREL COMPLET / PREMIÈRE FICHE ONBOARDING (30/10)
+
+**Preuve consolidée :** le registre [`docs/handovers/AKARFINDER_ONBOARDING_PR_FEATURE_MATRIX_2026-10-30.md`](handovers/AKARFINDER_ONBOARDING_PR_FEATURE_MATRIX_2026-10-30.md) est créé sur #1137. Les **43 PR ouvertes ont chacune une famille principale** sans omission/doublon, vérifiées par liste GitHub et fichiers changés.
+
+| Famille principale | PR | Nombre |
+|---|---|---:|
+| G0 — Sécurité / CI / DB | #1139 #1138 #1133 #1132 #1101 #1082 #1027 | 7 |
+| G1 — Data / sources / corpus / fraicheur | #1140 #1134 #1113 #1105 #1104 #1094 #1093 #1092 #1083 #1016 #996 #956 #454 #126 #125 #124 #121 #118 #115 #110 #1029 | 21 |
+| G2 — Search et truth | #1102 #1035 #622 #936 | 4 |
+| G3 — Vivre Ici / géographie | #1112 #1111 #1108 #1090 #487 | 5 |
+| G4 — SEO multi-routes | #938 | 1 |
+| G5 — B2B et sécurité pro | #653 #645 #644 #310 | 4 |
+| G6 — Gouvernance / onboarding | #1137 | 1 |
+| **Total** | **43 PR, affectation principale unique** | **43** |
+
+**Dépendances vérifiées par fichiers communs** : Search #1035 × #1102 = `QuickFilters.tsx` partagé (1 fichier). Carte #1090 × #1108 = **10 mêmes chemins** et #1108 est enfant de #1090 ; #1112 est enfant de #1108. B2B #644 × #645 = **0 chemin commun** ; #645 × #653 = **1 test commun**. SEO #938 × #1090 = `app/layout.tsx` partagé. Geo trust #936 × #1090 = `lib/neighborhood-context/read-model.ts` partagé. Une PR transversale peut contribuer à plusieurs parcours sans être mergée plusieurs fois.
+
+**Première fiche préparée** : [`docs/handovers/AKARFINDER_ONBOARDING_SCREEN_01_SEARCH_DRAFT_2026-10-30.md`](handovers/AKARFINDER_ONBOARDING_SCREEN_01_SEARCH_DRAFT_2026-10-30.md) contient preuves de `main` + #1035/#1102, alternatives A/B/C et recommandation **A : composer les interactions Search P3 utiles avec le système visuel #1102**, en conservant les politiques Source Policy. **La décision utilisateur et la QA visuelle restent en attente.**
+
+**Changement concurrent observé :** #1105 a avancé à `8f2aeade2` pendant l'audit : **206 fichiers**, **43 workflows**, contre 42 dans le snapshot précédent. Le nouveau `feenway-n02-hydration-probe.yml` déclenche un vrai navigateur Playwright via `push`; le script appelle `fetch(robots.txt)` et `page.goto()` FeenWay. La matrice [`AKARFINDER_PARSER_V2_WORKFLOW_TRIAGE_2026-10-30.md`](handovers/AKARFINDER_PARSER_V2_WORKFLOW_TRIAGE_2026-10-30.md) est mise à jour ; **29 BLOCK_LIVE, 4 KEEP_OFFLINE_TESTS, 3 KEEP_OFFLINE_CANDIDATE, 7 REVIEW**. Un commentaire de mise en garde source-rights a été inscrit sur #1105. Ce n'est pas une certification de licence ni une neutralisation du trigger.
+
+**Ce qui reste :** audit probatoire des scripts transitifs, des droits sources, du provider live et du contrat de writer, puis captures BEFORE/TARGET des pages. **Ne pas annoncer l'audit complètement terminé.** Human gate avant merge, Vercel uniquement avec autorisation.
