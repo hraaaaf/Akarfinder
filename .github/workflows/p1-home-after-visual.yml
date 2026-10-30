@@ -1,7 +1,7 @@
 name: P1 Home AFTER Visual Certification
 
 on:
-  pull_request:
+  push:
     branches: [main]
     paths:
       - ".github/workflows/p1-home-after-visual.yml"
@@ -16,14 +16,15 @@ on:
   workflow_dispatch: {}
 
 concurrency:
-  group: p1-home-after-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  group: p1-home-after-${{ github.ref }}
+  cancel-in-progress: false
 
 permissions:
   contents: read
 
 jobs:
   certify:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 35
     env:
@@ -31,26 +32,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
-          fetch-depth: 0
-      - name: Whole-PR scope check (do not skip on final docs/test commit)
+          ref: ${{ github.sha }}
+          fetch-depth: 2
+      - name: Scoped post-merge main changes only
         id: scope
         shell: bash
-        env:
-          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
           set -euo pipefail
-          if [ -n "$PR_BASE_SHA" ]; then
-            changed="$(git diff --name-only "$PR_BASE_SHA" HEAD)"
-          else
-            changed="$(git diff --name-only HEAD^ HEAD)"
-          fi
+          changed="$(git diff --name-only HEAD^ HEAD)"
           printf '%s\n' "$changed"
           if printf '%s\n' "$changed" | grep -Eq '^(\.github/workflows/p1-home-after-visual\.yml|scripts/audits/p1-home-after-visual\.mjs|app/page\.tsx|components/home/(GoogleLikeHero|SearchEntryOrchestrator|HomeTrustStrip|HomeVivreIciSection|HomeActionGrid)\.tsx|components/landing/CityIntentGrid\.tsx)$'; then
             echo "run=true" >> "$GITHUB_OUTPUT"
           else
             echo "run=false" >> "$GITHUB_OUTPUT"
-            echo "PR diff does not affect P1 HOME AFTER; skipping heavy work."
+            echo "Main commit does not affect P1 HOME AFTER; skipping heavy work."
           fi
       - uses: actions/setup-node@v4
         if: steps.scope.outputs.run == 'true'
