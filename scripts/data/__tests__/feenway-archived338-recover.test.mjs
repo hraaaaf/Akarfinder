@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {build,load} from '../feenway-archived338-recover.mjs';
@@ -23,4 +24,10 @@ test('fail-closed on duplicate source identity, contradictory rights and wrong c
  dup2[0][0].source_key=dup2[0][1].source_key;dup2[0][0].source=dup2[0][1].source;
  assert.throws(()=>build(dup2),/cross_id_source_collision/);
  assert.throws(()=>build([sets[0].slice(1),...sets.slice(1)]),/unexpected_input_size/);
+});
+test('durable exact 338-row snapshot matches recomputed source evidence',()=>{
+ const expected=fs.readFileSync('docs/data/feenway-archived338-source-evidence-2026-10-30.jsonl','utf8');
+ const actual=build(load()).rows.map(x=>JSON.stringify(x)).join('\n')+'\n';
+ assert.equal(actual,expected);
+ assert.deepEqual(build(load()).summary,JSON.parse(fs.readFileSync('docs/data/feenway-archived338-source-summary-2026-10-30.json','utf8')));
 });

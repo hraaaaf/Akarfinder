@@ -1,0 +1,19 @@
+{
+  "schema": "AKARFINDER_FEENWAY_HISTORICAL_338_SOURCE_RECORDS_V1",
+  "rows": 338,
+  "distinct_original_source_identities": 337,
+  "strict_historical_five_fields": 53,
+  "strict_without_known_warning": 50,
+  "signals60_identity_retained": 55,
+  "signals60_price_retained": 30,
+  "signals60_surface_retained": 43,
+  "signals60_both_retained": 18,
+  "source_urls_present": 318,
+  "current_fresh_verified": 0,
+  "current_available_verified": 0,
+  "rights_verified": 0,
+  "physical_unique_verified": 0,
+  "eligible_for_db": 0,
+  "requests": 0,
+  "db_writes": 0
+}

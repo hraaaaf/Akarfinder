@@ -11,3 +11,8 @@
 **Blocage indépendant identifié :** les workflows GitHub `41123420020` Mubawab, `41123420315` Sarout et `41123420024` full-field s'arrêtent sur `Fetch canonical freeze`, avant leur phase d'extraction ; le contenu de l'archive 226 286 `10910779576` (expirée) n'a pas été retrouvé dans Drive par les requêtes ciblées. Ne pas relancer en boucle les pipelines sans réparer cet input canonique. On préserve les champs historiques source documentés plutôt que de réinventer cette archive.
 
 **Next exact :** vérifier le job/manifest 338, stocker l'export durablement puis brancher ses preuves sur le pipeline de qualification source-first. Ne pas promouvoir ces observations historiques en stock commercial. PR #1105 DRAFT, aucun deploy Vercel, merge ni écriture DB.
+
+
+## N05 preserved real data — 30 October 2026
+
+Committed 338 recovered historical source records, 337 distinct portal identities, one missing-source quarantine; 318 historical portal URLs, 53 strict historical five-field observations, 50 without explicit economic warning; 60 parallel probes yield 55 retained identities, 30 price and 43 surface numeric signals (18 both). No currently available listings or reuse rights certified. Exact snapshot regression test added. The resulting source JSONL is historical, review-only, and is not a DB import.
