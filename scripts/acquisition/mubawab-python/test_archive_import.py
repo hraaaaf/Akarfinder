@@ -137,5 +137,21 @@ class JsonlTests(unittest.TestCase):
         self.assertEqual(r['photo_url_references'], 1)
 
 
+    def test_nested_source_export_preserves_original_fields(self):
+        nested = {
+            'source': {'name': 'mubawab', 'source_id': '123456',
+                       'url': 'https://www.mubawab.ma/fr/a/123456/appartement'},
+            'title': 'Bel appartement', 'price': {'amount': 1500000, 'currency': 'MAD'},
+            'surface': {'total_m2': 100}, 'location': {'city': 'Casablanca', 'district': 'Maârif'},
+            'images': [{'position': 1, 'url': 'https://www.mubawab-media.com/a/1.avif'}],
+            'description': 'Description complète du vendeur',
+            'transaction': 'sale', 'seller': {'name': 'Agence témoin'}, 'quality': {'score': 0.9}}
+        (self.input/'canonical.jsonl').write_text(json.dumps(nested, ensure_ascii=False)+'\n')
+        r = ai.import_archive(jsonl_dir=self.input, db_path=self.db, out_dir=self.out)
+        self.assertEqual((r['listing_count'], r['detail_count'], r['photo_url_references']), (1, 1, 1))
+        data = json.loads((self.out/'listings.jsonl').read_text().splitlines()[0])
+        self.assertEqual(data['price_dh'], 1500000)
+        self.assertEqual(data['detail']['normalized_snapshot']['seller']['name'], 'Agence témoin')
+
 if __name__ == '__main__':
     unittest.main()
