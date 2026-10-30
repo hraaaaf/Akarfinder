@@ -5,6 +5,7 @@ import { pathToFileURL } from 'node:url';
 export const DEFAULT_TIMEOUT_MS = 15_000;
 export const DEFAULT_UA = 'AkarFinder-public-index/4.0 (+https://akarfinder.ma)';
 export const DEFAULT_MAX_REQUESTS = 40;
+export const DEFAULT_DELAY_MS = 2500;
 export const DEFAULT_MAX_DEPTH = 4;
 export const DEFAULT_ROOTS = [
   'https://www.mubawab.ma/fr/cc/immobilier-a-vendre',
@@ -43,11 +44,14 @@ export function isRobotsSafeUrl(raw) {
   const normalized = normalizeMubawabUrl(raw);
   if (!normalized) return false;
   const url = new URL(normalized);
-  const pathname = url.pathname;
+  // Decode before applying fail-closed guards so encoded colon pagination and
+  // invalid percent escapes cannot turn into a bypass.
+  let pathname;
+  try { pathname = decodeURIComponent(url.pathname); } catch { return false; }
   const robotsPath = pathname.replace(/^\/(?:fr|en|ar|es|nl|it)(?=\/)/i, '');
   if (DISALLOWED_PREFIXES.some((prefix) => robotsPath === prefix || robotsPath.startsWith(prefix))) return false;
-  // Current Mubawab robots.txt disallows every path containing ':'. This intentionally
-  // excludes the legacy :p:2 pagination form used by the earlier L2 adapter.
+  // Cached conservative deny list; never use it as a replacement for a fresh
+  // robots.txt check before any real HTTP acquisition.
   if (pathname.includes(':')) return false;
   if (url.searchParams.get('n') === '1') return false;
   return true;
@@ -170,7 +174,7 @@ async function fetchText(url, { fetchImpl, timeoutMs, userAgent }) {
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const response = await fetchImpl(url, {
-      redirect: 'follow',
+      redirect: 'manual',
       signal: controller.signal,
       headers: {
         'user-agent': userAgent,
@@ -198,6 +202,7 @@ export async function enumerateMubawab({
   userAgent = DEFAULT_UA,
   maxRequests = DEFAULT_MAX_REQUESTS,
   maxDepth = DEFAULT_MAX_DEPTH,
+  delayMs = DEFAULT_DELAY_MS,
 } = {}) {
   if (typeof fetchImpl !== 'function') throw new TypeError('fetchImpl must be a function');
   const queue = roots.map((url) => ({ url: normalizeMubawabUrl(url), depth: 0 })).filter((item) => item.url && isRobotsSafeUrl(item.url));
@@ -206,16 +211,29 @@ export async function enumerateMubawab({
   const listingById = new Map();
   const shards = [];
   let stoppedEarly = null;
+  let requestCount = 0;
+  let lastRequestAt = null;
+  // Live fetch cannot disable the minimal delay through caller configuration.
+  const effectiveDelayMs = fetchImpl === globalThis.fetch
+    ? Math.max(2000, delayMs)
+    : Math.max(0, delayMs);
 
-  while (queue.length > 0 && shards.length < maxRequests) {
+  while (queue.length > 0 && requestCount < maxRequests) {
     const item = queue.shift();
     if (!item || visited.has(item.url)) continue;
     visited.add(item.url);
 
+    if (lastRequestAt !== null) {
+      const remainingMs = effectiveDelayMs - (Date.now() - lastRequestAt);
+      if (remainingMs > 0) await new Promise((resolve) => setTimeout(resolve, remainingMs));
+    }
+    lastRequestAt = Date.now();
+    requestCount += 1;
     const response = await fetchText(item.url, { fetchImpl, timeoutMs, userAgent });
     const fetchState = classifyFetch(response);
-    if (fetchState === 'http_429') {
-      stoppedEarly = 'http_429';
+    if (fetchState === 'http_429' || fetchState === 'http_403') {
+      stoppedEarly = fetchState;
+      shards.push({ url: item.url, depth: item.depth, fetchState, reconciliation: reconcileShard({ url: item.url, expectedCount: null, listingUrls: [], childUrls: [] }) });
       break;
     }
     if (fetchState !== 'ok') {
@@ -255,6 +273,8 @@ export async function enumerateMubawab({
   const listingUrls = [...listingById.values()];
   return {
     ...summarizeEnumeration(shards, listingUrls),
+    requestCount,
+    coverageCertified: false,
     stoppedEarly,
     queueRemaining: queue.length,
     shards,
@@ -266,7 +286,7 @@ export async function runCli() {
   const maxRequests = Number.parseInt(process.env.MUBAWAB_MAX_REQUESTS || String(DEFAULT_MAX_REQUESTS), 10);
   const report = await enumerateMubawab({ maxRequests });
   report.startedAt = new Date().toISOString();
-  report.success = report.zeroDbWrites && report.stoppedEarly !== 'http_429' && report.requestCount > 0;
+  report.success = report.zeroDbWrites && !report.stoppedEarly && report.requestCount > 0;
 
   const outDir = 'artifacts/morocco-web-l8-mubawab-exhaustive';
   await fs.mkdir(outDir, { recursive: true });
