@@ -23,12 +23,14 @@ CRAWL_RE = re.compile(r'^CC-MAIN-20\d{2}-\d{2}$')
 AGENT = 'AkarFinder-CommonCrawl-URL-audit/0.1 (+https://akarfinder.ma)'
 
 
-def index_url(crawl: str, kind: str, page_size: int) -> str:
+def index_url(crawl: str, kind: str, page_size: int, prefix: str = '') -> str:
     if not CRAWL_RE.fullmatch(crawl): raise ValueError('invalid_crawl_id')
     if kind not in ('a', 'pa'): raise ValueError('invalid_listing_kind')
     if page_size not in range(1, 1001): raise ValueError('invalid_page_size')
+    if prefix and (kind != 'a' or not re.fullmatch(r'[0-9]{1,4}',prefix)):
+        raise ValueError('invalid_numeric_prefix')
     query=urllib.parse.urlencode({
-        'url':f'www.mubawab.ma/fr/{kind}/*',
+        'url':f'www.mubawab.ma/fr/{kind}/{prefix}*',
         'output':'json','filter':'status:200',
         'page':0,'pageSize':page_size,
     })
@@ -67,13 +69,14 @@ def indexed_records(rows: list[dict], crawl: str, index_endpoint: str):
     return results
 
 
-def run(crawls: list[str], out: Path, *, max_rows=500, pause_seconds=1, fetch=fetch_rows):
+def run(crawls: list[str], out: Path, *, max_rows=500, pause_seconds=1, fetch=fetch_rows, a_prefixes=None):
     out.mkdir(parents=True,exist_ok=True)
     seen=set(); records=[]; attempts=[]
+    targets=[('a',p) for p in (a_prefixes or [''])]+[('pa','')]
     for crawl in crawls:
-        for kind in ('a','pa'):
-            url=index_url(crawl,kind,max_rows)
-            item={'crawl':crawl,'kind':kind,'query_url':url}
+        for kind,prefix in targets:
+            url=index_url(crawl,kind,max_rows,prefix)
+            item={'crawl':crawl,'kind':kind,'id_prefix':prefix or None,'query_url':url}
             try:
                 raw, limited=fetch(url,limit=max_rows)
                 valid=indexed_records(raw,crawl,url)
@@ -91,6 +94,7 @@ def run(crawls: list[str], out: Path, *, max_rows=500, pause_seconds=1, fetch=fe
         for item in sorted(records,key=lambda r:(r['id'],r['url'])):
             f.write(json.dumps(item,ensure_ascii=False)+'\n')
     report={'strategy':'public_archived_url_index_only',
+        'a_prefix_scopes':list(a_prefixes or []),
         'commoncrawl_queries':len(attempts),'queries_ok':sum(x['status']=='ok' for x in attempts),
         'queries_failed':sum(x['status']=='error' for x in attempts),
         'candidate_unique_urls':len(records),'candidate_unique_ids':len({r['id'] for r in records}),
@@ -107,12 +111,14 @@ def main(argv=None):
     p.add_argument('--crawl',action='append',required=True)
     p.add_argument('--out',type=Path,required=True)
     p.add_argument('--max-rows',type=int,default=500)
+    p.add_argument('--a-prefix',action='append',default=[],help='Optional digit prefix (1-4 digits) to narrow fr/a/ queries on HTTP 504; not an exhaustive index.')
     p.add_argument('--pause',type=float,default=1)
     a=p.parse_args(argv)
     if a.max_rows<1 or a.max_rows>1000 or a.pause<1:
         p.error('--max-rows 1-1000 and --pause >=1 required')
     if not all(CRAWL_RE.fullmatch(c) for c in a.crawl):p.error('invalid crawl ID')
-    report=run(a.crawl,a.out,max_rows=a.max_rows,pause_seconds=a.pause)
+    if len(a.a_prefix)>5 or any(not re.fullmatch(r'[0-9]{1,4}',x) for x in a.a_prefix):p.error('up to five numeric prefixes of 1-4 digits allowed')
+    report=run(a.crawl,a.out,max_rows=a.max_rows,pause_seconds=a.pause,a_prefixes=list(dict.fromkeys(a.a_prefix)))
     print(json.dumps({k:v for k,v in report.items() if k!='queries'},ensure_ascii=False))
     return 0 if report['candidate_unique_ids']>0 else 2
 
