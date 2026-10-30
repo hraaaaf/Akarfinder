@@ -37,3 +37,22 @@ Les CGU pertinentes **Avito / Agenz / Yakeey / FeenWay** ne sont **pas certifié
 Sources complémentaires : CNDP obligations loi 09-08 https://www.cndp.ma/conditions/ ; ministère Justice loi 2-00 https://adala.justice.gov.ma/api/uploads/2024/12/13/Droits%20d%27auteur%20et%20droits%20voisins-1734085207226.pdf . Consultation d'un juriste marocain et négociation directe avec le titulaire concerné **avant l'exécution d'un pilote live**. Les protections 403/429/captcha ne doivent pas être contournées.
 
 **Option préférée si autorisations de portails impraticables :** acquisition directe d'annonces par mandat des agences/propriétaires avec droits explicites et preuve de disponibilité, plutôt que reprise non autorisée d'une base concurrente. Évaluer la conformité CNDP pour les données personnelles dans ce canal aussi.
+
+## N04 — CI SUCCESS exact-HEAD et artifact vérifié (30 octobre 2026)
+
+**Run exact :** [GitHub Actions 41121372934](https://github.com/hraaaaf/Akarfinder/actions/runs/41121372934), `completed/success`, job `offline` `completed/success`, HEAD testé `262fd871630e41e4e0a15d155d450c4379d68616`, artifact `13008448288` `feenway-n04-preaccess-pilot`. SHA-256 de l'archive ZIP recalculé sur ses octets **`3d90cb630381f7bd1b4327c07560272fd17efa1ffbe61d9051b6de4fb79b30e3`**, égal à l'empreinte GitHub. `pilot-preaccess.json` extrait et lu : SHA-256 **`168c84a15cde34f52326da9eb15534fffb8831f4ae68a446b78f038863e28628`**, 10 pilotes, 6 contrôles, 16 `feenway_id` distincts. `input_sha256` conservé : `6042f9fe5c7f6dc80605bb4eefacbce7e3ae1e1589646ced1dbe7da6e949f166`. Toutes les 16 entrées : `review_state=blocked_pre_access`, `eligible_for_db=false`, `publishable=false`, `access_permission=not_verified`, `reuse_rights=not_verified`. Le rapport indique `external_access_authorized=0`, `eligible_for_db=0`, `report_only=true`.
+
+**Identifiants du pilote vérifiés par lecture de l'artifact :**
+
+| Portail | Identifiants FeenWay du pilote | Accès / droit d'exploitation |
+| --- | --- | --- |
+| Avito | 196346, 196843, 197393, 197851 | non vérifiés, BLOCK |
+| Mubawab | 169266, 194307, 194642 | BLOCK ; restrictions CGU documentées |
+| Agenz | 182418, 184798 | non vérifiés, BLOCK |
+| Yakeey | 183131 | non vérifiés, BLOCK |
+
+**Contrôles négatifs :** `233683` prix/m², `234551` prix/jour, `236104` pas-de-porte ; `181747` et `182080` sources historiquement indisponibles ; `170553` ancienneté Sarouty (date ≠ activité actuelle).
+
+**Nuance de certification :** le workflow contient **cinq cas de tests dans le fichier source**, mais les logs détaillés du job n'étaient pas consultables au moment du closeout ; la preuve ici est le **succès du job CI**, son workflow connu, les assertions de son générateur et **le contrôle indépendant de l'artifact**. Ne pas déclarer « 5/5 observés dans les logs » sans les logs. Ce CI n'effectue ni visite de fiche, ni certification de droits et n'approuve aucun dossier.
+
+**Gate humain suivant (et seule suite live) :** décision documentée **portail par portail** : (A) accès/conditions et autorisations ; (B) droit de réutilisation ; (C) contrôle CNDP et données personnelles ; (D) vérification de fraîcheur et disponibilité sur une fiche ; (E) unicité et validation indépendante. Sans preuve juridique et autorisation, n'exécuter aucune nouvelle collecte, aucun import. Réorientation possible vers collecte primaire par mandats d'agences/propriétaires si les droits des plateformes restent impraticables. **PR #1105 reste DRAFT ; aucune DB, merge ou Vercel.**
