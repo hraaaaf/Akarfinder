@@ -1,0 +1,143 @@
+name: Neighborhood Visual P0.8 Souissi Read-only AFTER
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/NEIGHBORHOOD_VISUAL_LIBRARY_ROADMAP.md"
+      - "scripts/closeouts/neighborhood-visual-p0-8-docs.mjs"
+      - "scripts/scrapers/__tests__/neighborhood-visual-p0-8-closeout.test.ts"
+      - ".github/workflows/neighborhood-visual-p0-8.yml"
+      - ".github/workflows/neighborhood-visual-p0-8-after.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: souissi-p0-8-after-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  STORAGE_BASE: https://kusfiyimwvxblvsrhaes.supabase.co/storage/v1/object/public/neighborhood-visuals/rabat/souissi
+
+jobs:
+  production-certifier:
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    name: Production Certifier — Souissi Pilot
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+
+      - name: Check archived closeout script syntax (never mutate docs)
+        run: node --check scripts/closeouts/neighborhood-visual-p0-8-docs.mjs
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+
+      - name: P0.8 closeout contract + P0.1→P0.7 replay
+        run: >-
+          npx tsx --test
+          scripts/scrapers/__tests__/neighborhood-visual-p0-8-closeout.test.ts
+          scripts/scrapers/__tests__/neighborhood-visual-p0-7-souissi-storage.test.ts
+          scripts/scrapers/__tests__/neighborhood-visual-p0-6-souissi-visual-qa.test.ts
+          scripts/scrapers/__tests__/neighborhood-visual-p0-5-souissi-lifestyle.test.ts
+          scripts/scrapers/__tests__/neighborhood-visual-p0-4-souissi-immobilier.test.ts
+          scripts/scrapers/__tests__/neighborhood-visual-p0-3-souissi-signature.test.ts
+          scripts/scrapers/__tests__/neighborhood-visual-p0-2-souissi-source.test.ts
+          scripts/scrapers/__tests__/neighborhood-visual-template-a-p0-1.test.ts
+
+      - name: Verify three public production masters
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/p0-8 data/audits/neighborhood-visual-p0-8
+          curl -fsSL "$STORAGE_BASE/signature/master.jpg" -o /tmp/p0-8/signature.jpg
+          curl -fsSL "$STORAGE_BASE/immobilier/master.jpg" -o /tmp/p0-8/immobilier.jpg
+          curl -fsSL "$STORAGE_BASE/lifestyle/master.jpg" -o /tmp/p0-8/lifestyle.jpg
+          test "$(wc -c < /tmp/p0-8/signature.jpg)" -eq 1338653
+          test "$(wc -c < /tmp/p0-8/immobilier.jpg)" -eq 192897
+          test "$(wc -c < /tmp/p0-8/lifestyle.jpg)" -eq 3222903
+          test "$(file -b --mime-type /tmp/p0-8/signature.jpg)" = "image/jpeg"
+          test "$(file -b --mime-type /tmp/p0-8/immobilier.jpg)" = "image/jpeg"
+          test "$(file -b --mime-type /tmp/p0-8/lifestyle.jpg)" = "image/jpeg"
+          echo "d8e09bfdbad2fdef60f28840b90b79b45f77b8c6  /tmp/p0-8/signature.jpg" | sha1sum -c -
+          {
+            echo "lot=P0.8"
+            echo "signature_bytes=$(wc -c < /tmp/p0-8/signature.jpg)"
+            echo "immobilier_bytes=$(wc -c < /tmp/p0-8/immobilier.jpg)"
+            echo "lifestyle_bytes=$(wc -c < /tmp/p0-8/lifestyle.jpg)"
+            echo "signature_sha1=$(sha1sum /tmp/p0-8/signature.jpg | cut -d' ' -f1)"
+            echo "public_storage=PASS"
+          } > data/audits/neighborhood-visual-p0-8/production-storage-proof.txt
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: neighborhood-visual-p0-8-production-proof
+          path: data/audits/neighborhood-visual-p0-8
+          if-no-files-found: error
+          retention-days: 30
+
+  independent-release-certifier:
+    name: Independent Release Certifier — Souissi Pilot
+    needs: production-certifier
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact main commit (read-only)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+
+      - name: Verify no legacy docs mutation
+        run: node --check scripts/closeouts/neighborhood-visual-p0-8-docs.mjs
+
+      - name: Independent P0.8 + predecessor replay
+        run: >-
+          npx tsx --test
+          scripts/scrapers/__tests__/neighborhood-visual-p0-8-closeout.test.ts
+          scripts/scrapers/__tests__/neighborhood-visual-p0-7-souissi-storage.test.ts
+          scripts/scrapers/__tests__/neighborhood-visual-p0-6-souissi-visual-qa.test.ts
+          scripts/scrapers/__tests__/neighborhood-visual-p0-5-souissi-lifestyle.test.ts
+          scripts/scrapers/__tests__/neighborhood-visual-p0-4-souissi-immobilier.test.ts
+          scripts/scrapers/__tests__/neighborhood-visual-p0-3-souissi-signature.test.ts
+          scripts/scrapers/__tests__/neighborhood-visual-p0-2-souissi-source.test.ts
+          scripts/scrapers/__tests__/neighborhood-visual-template-a-p0-1.test.ts
+
+      - name: Independently verify public Storage integrity
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL "$STORAGE_BASE/signature/master.jpg" -o /tmp/signature.jpg
+          curl -fsSL "$STORAGE_BASE/immobilier/master.jpg" -o /tmp/immobilier.jpg
+          curl -fsSL "$STORAGE_BASE/lifestyle/master.jpg" -o /tmp/lifestyle.jpg
+          test "$(wc -c < /tmp/signature.jpg)" -eq 1338653
+          test "$(wc -c < /tmp/immobilier.jpg)" -eq 192897
+          test "$(wc -c < /tmp/lifestyle.jpg)" -eq 3222903
+          echo "d8e09bfdbad2fdef60f28840b90b79b45f77b8c6  /tmp/signature.jpg" | sha1sum -c -
+
+      - name: Independent TypeScript
+        run: npx tsc --noEmit
+      - name: Independent production build
+        run: npm run build
