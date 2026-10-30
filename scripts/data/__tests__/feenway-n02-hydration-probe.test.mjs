@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {gate,ids,robotsPermit,blockedRequestBucket} from '../../acquisition/feenway-n02-hydration-probe.mjs';
+import {gate,ids,robotsPermit,blockedRequestBucket,bumpBucketByStage} from '../../acquisition/feenway-n02-hydration-probe.mjs';
 const base='https://www.feenway.com',url=base+'/appartement-a-vendre/casablanca';
 test('url extraction is bounded, deduplicated and cross-origin safe',()=>{
  assert.deepEqual(ids(['/listings/5','/listings/5/','/listings/23','https://evil.com/listings/1','/listings/7?x=1']),['5','23']);
@@ -29,4 +29,15 @@ test('blocked request metadata is categorized without preserving query, host or 
  assert.equal(blockedRequestBucket('https://www.feenway.com/appartement-a-vendre/casablanca?cursor=secret','dynamic_blocked'),'dynamic_market');
  assert.equal(blockedRequestBucket('https://www.feenway.com/other/section?secret=hidden','dynamic_blocked'),'dynamic_other');
  assert.equal(blockedRequestBucket('https://www.feenway.com/appartement-a-vendre/casablanca','asset_blocked'),null);
+});
+
+test('stage tally is additive and bounded without storing raw URLs',()=>{
+ const o={};
+ bumpBucketByStage(o,'load','dynamic_market');
+ bumpBucketByStage(o,'load','dynamic_market');
+ bumpBucketByStage(o,'scroll_2','dynamic_city');
+ assert.deepEqual(o,{load:{dynamic_market:2},scroll_2:{dynamic_city:1}});
+ assert.throws(()=>bumpBucketByStage(o,'next','dynamic_other'),/invalid_stage/);
+ bumpBucketByStage(o,'scroll_3',null);
+ assert.equal(o.scroll_3,undefined);
 });

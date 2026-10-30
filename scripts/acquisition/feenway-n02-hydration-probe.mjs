@@ -44,6 +44,12 @@ export function blockedRequestBucket(url,reason){
  if(path.startsWith('/appartement-')||path.startsWith('/terrain-')||path.startsWith('/villa-'))return 'dynamic_market';
  return 'dynamic_other';
 }
+export function bumpBucketByStage(record,stage,bucket){
+ if(!bucket)return;
+ if(!['load','scroll_1','scroll_2','scroll_3'].includes(stage))throw Error('invalid_stage');
+ record[stage]??={};
+ record[stage][bucket]=(record[stage][bucket]||0)+1;
+}
 export function ids(hrefs){
  const out=new Set();for(const h of hrefs){try{const u=new URL(h,BASE);if(u.origin===BASE&&!u.search&&!u.hash&&/^\/listings\/[1-9]\d{0,11}\/?$/.test(u.pathname))out.add(u.pathname.split('/')[2]);}catch{}}
  return [...out].sort((a,b)=>Number(a)-Number(b));
@@ -59,15 +65,16 @@ async function main(){
   const {chromium}=await import('playwright');browser=await chromium.launch({headless:true});
   const context=await browser.newContext({userAgent:UA,serviceWorkers:'block',acceptDownloads:false});
   for(const path of PAGES){
-   const url=BASE+path,page=await context.newPage(),denied={},blockedRequestBuckets={},blockedStatuses=[];
+   const url=BASE+path,page=await context.newPage(),denied={},blockedRequestBuckets={},blockedByStage={},blockedStatuses=[];
+   let stage='load';
    try{
-    await page.route('**/*',route=>{const r=route.request(),reason=gate(r.url(),r.method(),r.resourceType(),url);if(reason){denied[reason]=(denied[reason]||0)+1;const bucket=blockedRequestBucket(r.url(),reason);if(bucket)blockedRequestBuckets[bucket]=(blockedRequestBuckets[bucket]||0)+1;return route.abort('blockedbyclient');}return route.continue();});
+    await page.route('**/*',route=>{const r=route.request(),reason=gate(r.url(),r.method(),r.resourceType(),url);if(reason){denied[reason]=(denied[reason]||0)+1;const bucket=blockedRequestBucket(r.url(),reason);if(bucket){blockedRequestBuckets[bucket]=(blockedRequestBuckets[bucket]||0)+1;bumpBucketByStage(blockedByStage,stage,bucket);}return route.abort('blockedbyclient');}return route.continue();});
     page.on('response',r=>{if([403,429].includes(r.status()))blockedStatuses.push(r.status());});
     const response=await page.goto(url,{waitUntil:'domcontentloaded',timeout:25000});
     if(!response||response.status()!==200)throw Error('http_'+(response?.status()||'no_response'));
     const counts=[],all=new Set();let first=[];
     for(let i=0;i<4;i++){
-     if(i)await page.evaluate(()=>window.scrollBy(0,Math.max(window.innerHeight,1150)));
+     if(i){stage='scroll_'+i;await page.evaluate(()=>window.scrollBy(0,Math.max(window.innerHeight,1150)));}
      await page.waitForTimeout(600);
      const hrefs=await page.locator('a[href]').evaluateAll(nodes=>nodes.map(n=>n.getAttribute('href')));
      const listingIds=ids(hrefs);if(!i)first=listingIds;
@@ -75,7 +82,7 @@ async function main(){
     }
     if(blockedStatuses.length)throw Error('http_403_or_429');
     const fresh=[...all].filter(x=>!first.includes(x)).sort((a,b)=>Number(a)-Number(b));
-    report.pages.push({url,http_status:200,counts,new_ids_after_scroll:fresh,denied,blocked_request_buckets:blockedRequestBuckets,conclusion:denied.dynamic_blocked?'INCONCLUSIVE_BLOCKED_DYNAMIC_REQUESTS':fresh.length?'NEW_PUBLIC_LINKS_AFTER_SCROLL':'NO_NEW_LINKS_IN_THREE_SCROLLS'});
+    report.pages.push({url,http_status:200,counts,new_ids_after_scroll:fresh,denied,blocked_request_buckets:blockedRequestBuckets,blocked_by_stage:blockedByStage,conclusion:denied.dynamic_blocked?'INCONCLUSIVE_BLOCKED_DYNAMIC_REQUESTS':fresh.length?'NEW_PUBLIC_LINKS_AFTER_SCROLL':'NO_NEW_LINKS_IN_THREE_SCROLLS'});
    }catch(e){report.errors.push({url,error:String(e?.message||e)});break;}
    finally{await page.close();}
    await new Promise(r=>setTimeout(r,1000));
