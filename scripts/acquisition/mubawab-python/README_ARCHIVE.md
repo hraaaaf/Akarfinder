@@ -65,3 +65,20 @@ Le contenu est contrôlé : domaine/identifiant/URL source, formats numériques,
 - **Couverture nationale : non certifiée**. Ce lot est exclusivement un pilote Casablanca à partir de données préexistantes.
 
 Le paquet de données ci-joint (`mubawab_pilot_casablanca_offline.zip`) inclut la base SQLite reconstruite, les exports et les SHA-256, sans aucune nouvelle récupération réseau.
+
+## Second lot historique détecté — consolidation hors réseau
+
+La Library contient aussi `mubawab-lot4-pilot-100.zip` (septembre 2026) : **100 annonces JSONL canoniques** avec objets `source`, `price`, `surface`, `location`, `images`, métadonnées de qualité et preuves normalisées. L'importeur traite ce second format sans perdre le snapshot JSON structuré d'origine (`detail.normalized_snapshot`). Ces 100 fiches sont des données **historiques** et ne certifient pas leur statut actif en octobre.
+
+Consolidation vérifiée des deux lots **sans nouvelle requête HTTP** :
+- Premier lot : 31 annonces + 432 références photos ; deuxième lot : 100 annonces + 100 références photos ; **2 identifiants communs**.
+- Archive commune : **129 annonces uniques, 530 références URL photos distinctes par annonce, 100 snapshots de fiches détaillées**, 0 image réellement présente dans les deux ZIP, 0 erreur et seconde importation entièrement idempotente.
+- Le fichier distinct `q1d_mubawab_address_restore_manifest.csv` comporte **11 833 identifiants distincts** de candidats à restauration d'adresse, provenant d'un autre projet historique ; aucune de ces lignes ne représente une fiche complète. Il reste dans une analyse de provenance séparée.
+
+Commande de reconstitution de la base consolidée à partir des deux JSONL placés dans le même dossier :
+
+```bash
+python archive_import.py --jsonl-dir captures/jsonl --db mubawab_combined.sqlite --out-dir export_combined
+```
+
+La dernière archive de résultats s'appelle `mubawab_combined_existing_archives.zip`. Les fichiers sont destinés à l'analyse locale des archives déjà détenues, et non à la publication automatique.
