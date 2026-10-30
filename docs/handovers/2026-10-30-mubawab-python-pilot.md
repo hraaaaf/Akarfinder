@@ -102,3 +102,16 @@ Sur la même branche **draft**, sans lancer de réseau ni modifier la DB :
 **Restrictions maintenues :** pas de claim exhaustive, pas de photos téléchargées, pas d'ingestion DB, aucun test HTTP direct effectué pendant cette reprise, pas de merge et pas de déploiement. L'absence d'un pilot live laisse le gate « rendement réel des shards » OUVERT. Les règles d'usage et réutilisation des photos sont à vérifier avant publication des données.
 
 **Next exact :** contrôler le run offline + politique d'efficacité du dernier HEAD ; en cas d'échec, corriger et retester. Si vert, préparer un pilote de 1 à 3 pages de shards autorisés avec provenance et budget explicite, sans DB ni photos, puis comparer les IDs et champs Python/JS avant la décision d'intégration.
+
+## GATE CONTRACTUEL CRITIQUE — 2026-10-30
+
+**Nouvelle décision prioritaire : ne plus exécuter de crawl HTTP réel Mubawab, même borné et conforme à robots.txt, pour l'acquisition commerciale AkarFinder sans autorisation écrite / licence ou validation juridique documentée.** Le plan précédent de « 1–3 shards live après CI » est **suspendu et remplacé** par ce gate. Le code et les tests offline restent utilisables pour préparer une intégration future légalement autorisée.
+
+Sources primaires consultées :
+- [Mubawab — Conditions d'utilisation, section 5.1](https://www.mubawab.ma/fr/privacy) : engagement d'usage personnel/non lucratif et restriction de l'extraction et réutilisation commerciale sans autorisation.
+- [Mubawab — Conditions d'utilisation, sections 7.1, 7.3, 7.4](https://www.mubawab.ma/fr/privacy) : contenus et photos, interdiction exprimée d'extraction substantielle et constitution/maintenance de base concurrente, absence de licence de réutilisation.
+- [Version anglaise](https://www.mubawab.ma/en/privacy) pour recoupement ; l'interprétation définitive dépend du droit applicable et d'un conseil juridique qualifié.
+
+**Robots.txt n'est qu'une indication technique d'exploration, pas une licence d'exploitation commerciale.** La publication de liens, photos ou extraits dans AkarFinder doit être évaluée séparément. Aucun droit n'a été établi par ce chantier. La lecture de ces CGU n'est pas un avis juridique.
+
+**Next exact révisé :** résoudre toute CI offline sur le HEAD actuel, puis obtenir une autorisation/licence/API officielle définissant les usages permis (liens, prix, détails, images, fréquence, stockage, retrait) ou un avis juridique écrit et traçable. **Si autorisé** : contrôler le robots.txt actuel et réaliser ensuite seulement un dry-run strictement borné, lecture seule, avec journal et zéro image copiée. **Sinon** : mettre Mubawab hors périmètre d'acquisition directe et privilégier des flux partenaires explicitement licenciés. Aucun merge ni Vercel sans autorisation.
