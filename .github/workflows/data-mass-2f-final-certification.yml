@@ -7,17 +7,17 @@ on:
       - "scripts/data-mass/__tests__/source-factory-final-certification.test.ts"
       - "scripts/audits/data-mass-2f-final-certification.ts"
       - ".github/workflows/data-mass-2f-final-certification.yml"
+      - "scripts/ci/__tests__/legacy-data-live-audit-isolation.test.mjs"
       - "docs/data/DATA-MASS-2F-FINAL-CERTIFICATION.md"
-      - "README.md"
-      - "docs/ROADMAP.md"
-      - "docs/SESSION.md"
+  workflow_dispatch: {}
 permissions:
   contents: read
 concurrency:
   group: data-mass-2f-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   contract:
+    if: github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -29,16 +29,17 @@ jobs:
         run: node --test --import tsx scripts/data-mass/__tests__/source-factory-final-certification.test.ts scripts/data-mass/__tests__/source-factory-policy-matrix.test.ts scripts/data-mass/__tests__/source-factory-long-tail-review.test.ts scripts/data-mass/__tests__/source-factory-mid-yield-review.test.ts scripts/data-mass/__tests__/source-factory-certified-cohort.test.ts
       - name: TypeScript
         run: npx tsc --noEmit
-      - name: Production build
-        run: npm run build
+      - name: Privileged DATA gate regression
+        run: node --test scripts/ci/__tests__/legacy-data-live-audit-isolation.test.mjs
   live-audit:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
     needs: contract
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-      GITHUB_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      GITHUB_HEAD_SHA: ${{ github.sha }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
