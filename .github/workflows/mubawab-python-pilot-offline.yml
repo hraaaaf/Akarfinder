@@ -37,4 +37,4 @@ jobs:
         run: node --test scripts/acquisition/__tests__/mubawab-exhaustive-enumerator.test.mjs scripts/acquisition/__tests__/mubawab-marocannonces-public-adapter.test.mjs
       - name: Run offline safety tests (no network crawler)
         working-directory: scripts/acquisition/mubawab-python
-        run: python -m unittest -v test_mubawab.py
+        run: python -m unittest -v test_mubawab.py test_archive_import.py
