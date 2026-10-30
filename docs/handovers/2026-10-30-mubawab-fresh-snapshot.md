@@ -110,3 +110,21 @@ Ces 97 IDs s'ajoutent au relevé indépendant de **225 IDs** sur Casablanca (31)
 
 **Next exact** : CI exacte du dernier HEAD → si verte, conserver PR en DRAFT et documentation à jour → résoudre l'accès réseau effectif et le cadre d'accès autorisé pour une collecte de fiches/images, puis dédoublonnage physique. Ne pas confondre les observations des 10 pages avec une copie du site.
 
+
+
+## 2026-10-30 — changement de stratégie pour l'échelle : inventaire massif hors réseau
+
+**Constat critique :** l'inspection manuelle des premières pages de 10 villes (~322 liens) ne permet pas une couverture complète à un rythme acceptable. Le goulot est la **découverte de la totalité des URL**, pas le `SELECT DISTINCT` SQL. Les CGU de Mubawab restreignent la copie massive et la réutilisation commerciale ; robots.txt seul ne vaut pas licence. L'inventaire d'URL n'est pas une autorisation de recopier les contenus ou photographies.
+
+**Goal du lot technique :** absorber des inventaires externes d'URL (déjà obtenus légalement) en masse en mémoire bornée, attribuer une provenance, dédupliquer automatiquement, puis laisser la comparaison historique en étape ultérieure et séparée.
+
+**Livré dans la PR #1140** :
+- `scripts/acquisition/mubawab-fresh/bulk_url_inventory.py` : import XML, XML.GZ, CDXJ, JSONL, URL texte et ZIP ; parse XML en streaming, normalise les URL de fiches Mubawab, SQLite `ids/urls/provenance/sources`, export JSONL plus rapport ; historique **jamais** utilisé automatiquement ; aucun HTTP dans ce module ;
+- `scripts/acquisition/mubawab-fresh/test_bulk_url_inventory.py` : 5 tests (normalisation/rejets, CDXJ, XML.GZ 100 000 URL, ZIP + dédoublonnage inter-fichiers, refus d'un input changé) ;
+- `scripts/acquisition/mubawab-fresh/README_BULK.md` : instructions et limites ; workflow `.github/workflows/mubawab-fresh-offline.yml` étendu pour lancer les tests nouveaux en plus des 16 existants.
+
+**Preuve LOCALE (synthétique, NON issue de Mubawab)** : suite de 5 tests **PASS** en **3,615 s**, dont import de **100 000 URL synthétiques** en XML.GZ produisant **100 000 IDs distincts, 100 000 URLs distinctes et 100 000 liens de provenance** ; réexécution `--resume` : même SHA-256 identifié, 0 réimport. Compilation Python PASS. **Il ne s'agit pas de 100 000 nouvelles annonces découvertes** et cela ne mesure pas le débit d'accès au site.
+
+**Préparation du stock réel :** les 322 IDs issus des 10 premières pages et les archives historiques de 129 IDs restent des preuves distinctes. Il n'y a aucune nouvelle collecte directe depuis cet environnement : DNS de `www.mubawab.ma`, `index.commoncrawl.org` et `api.github.com` indisponible dans le conteneur. Le Common Crawl URL Index est une piste d'indexation passive, pas une preuve de fiches actives.
+
+**Critère de sortie :** CI verte sur le HEAD exact, pas de merge, pas de déploiement ni DB prod. **Next exact :** trouver/fournir un export d'URL réellement exploitable et autorisé (sitemap/URL index), importer sur la nouvelle pipeline, vérifier le nombre de liens et leur provenance par source, puis comparer à l'historique ; accès direct aux fiches/photos reste un gate distinct.
