@@ -1,10 +1,5 @@
 name: FeenWay N01 raw-byte SHA certification (read only)
 on:
-  push:
-    branches:
-      - data/200k-fresh-parser-v2
-    paths:
-      - .github/workflows/feenway-n01-raw-integrity-verification.yml
   workflow_dispatch:
 
 permissions:

@@ -1,11 +1,5 @@
 name: FeenWay N01 six-XML integrity audit (read only)
 on:
-  push:
-    branches:
-      - data/200k-fresh-parser-v2
-    paths:
-      - scripts/acquisition/feenway-n01-sitemap-audit.mjs
-      - .github/workflows/feenway-n01-sitemap-audit.yml
   workflow_dispatch:
 
 permissions:
