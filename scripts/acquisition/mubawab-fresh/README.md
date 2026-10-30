@@ -24,7 +24,7 @@ If interrupted, rerun the same `fresh` command with `--resume`. The **first run*
 
 ## Evidence as of 2026-10-30
 
-- 13/13 offline unit tests PASS; independent fresh work directory, synthetic request count, robots refusal, stop on 429, HTML/image extraction, SHA archival, ID reconciliation and distinct-ID same-photo candidate handling.
+- 14/14 offline unit tests PASS; independent fresh work directory, synthetic request count, robots refusal, stop on 429, HTML/image extraction, SHA archival, ID reconciliation and distinct-ID same-photo candidate handling.
 - Actual fresh attempt from this execution environment: `fresh_report.json` state **blocked** (`NameResolutionError` / domain DNS resolution failure) before any successful request. **0 new page / 0 new listing / 0 new photo**. Therefore **no actual fresh-vs-old comparison is claimed**. `coverage_certified=false`.
 - Historical baseline (available privately from earlier work): 129 known distinct historical records and 530 photo URL references. They are **not seeds for this run**.
 - No deployment, DB production writes, merge, new photo downloads, or bypass of access controls.
