@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {gate,ids,robotsPermit} from '../../acquisition/feenway-n02-hydration-probe.mjs';
+import {gate,ids,robotsPermit,blockedRequestBucket} from '../../acquisition/feenway-n02-hydration-probe.mjs';
 const base='https://www.feenway.com',url=base+'/appartement-a-vendre/casablanca';
 test('url extraction is bounded, deduplicated and cross-origin safe',()=>{
  assert.deepEqual(ids(['/listings/5','/listings/5/','/listings/23','https://evil.com/listings/1','/listings/7?x=1']),['5','23']);
@@ -20,4 +20,13 @@ test('robots fail closed; only public allowed landings permitted',()=>{
  assert.equal(robotsPermit(r,'/appartement-a-vendre/casablanca'),true);
  assert.equal(robotsPermit(r,'/api/test'),false);
  assert.equal(robotsPermit('User-agent: *\nDisallow: /','/appartement-a-vendre/casablanca'),false);
+});
+
+test('blocked request metadata is categorized without preserving query, host or identifier',()=>{
+ assert.equal(blockedRequestBucket('https://www.feenway.com/api/listings?token=secret','blocked_route'),'blocked_api');
+ assert.equal(blockedRequestBucket('https://www.feenway.com/listings/123','blocked_route'),'blocked_listings');
+ assert.equal(blockedRequestBucket('https://www.feenway.com/_next/data/build/route.json?session=secret','dynamic_blocked'),'dynamic_next_data');
+ assert.equal(blockedRequestBucket('https://www.feenway.com/appartement-a-vendre/casablanca?cursor=secret','dynamic_blocked'),'dynamic_market');
+ assert.equal(blockedRequestBucket('https://www.feenway.com/other/section?secret=hidden','dynamic_blocked'),'dynamic_other');
+ assert.equal(blockedRequestBucket('https://www.feenway.com/appartement-a-vendre/casablanca','asset_blocked'),null);
 });

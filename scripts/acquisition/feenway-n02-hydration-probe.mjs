@@ -29,6 +29,21 @@ export function gate(url,method,type,landing){
  if(['script','stylesheet','other'].includes(type)&&u.pathname.startsWith('/_next/static/'))return null;
  return 'unknown_resource';
 }
+export function blockedRequestBucket(url,reason){
+ if(reason!=='dynamic_blocked'&&reason!=='blocked_route')return null;
+ let path;try{path=new URL(url).pathname;}catch{return 'invalid_url';}
+ if(reason==='blocked_route'){
+  for(const prefix of ['/api','/admin','/paiement','/samsar','/listings']){
+   if(path===prefix||path.startsWith(prefix+'/'))return 'blocked'+prefix.replaceAll('/','_');
+  }
+  return 'blocked_other';
+ }
+ if(path.startsWith('/_next/data/'))return 'dynamic_next_data';
+ if(path.startsWith('/_next/'))return 'dynamic_next_other';
+ if(path.startsWith('/immobilier/'))return 'dynamic_city';
+ if(path.startsWith('/appartement-')||path.startsWith('/terrain-')||path.startsWith('/villa-'))return 'dynamic_market';
+ return 'dynamic_other';
+}
 export function ids(hrefs){
  const out=new Set();for(const h of hrefs){try{const u=new URL(h,BASE);if(u.origin===BASE&&!u.search&&!u.hash&&/^\/listings\/[1-9]\d{0,11}\/?$/.test(u.pathname))out.add(u.pathname.split('/')[2]);}catch{}}
  return [...out].sort((a,b)=>Number(a)-Number(b));
@@ -44,9 +59,9 @@ async function main(){
   const {chromium}=await import('playwright');browser=await chromium.launch({headless:true});
   const context=await browser.newContext({userAgent:UA,serviceWorkers:'block',acceptDownloads:false});
   for(const path of PAGES){
-   const url=BASE+path,page=await context.newPage(),denied={},blockedStatuses=[];
+   const url=BASE+path,page=await context.newPage(),denied={},blockedRequestBuckets={},blockedStatuses=[];
    try{
-    await page.route('**/*',route=>{const r=route.request(),reason=gate(r.url(),r.method(),r.resourceType(),url);if(reason){denied[reason]=(denied[reason]||0)+1;return route.abort('blockedbyclient');}return route.continue();});
+    await page.route('**/*',route=>{const r=route.request(),reason=gate(r.url(),r.method(),r.resourceType(),url);if(reason){denied[reason]=(denied[reason]||0)+1;const bucket=blockedRequestBucket(r.url(),reason);if(bucket)blockedRequestBuckets[bucket]=(blockedRequestBuckets[bucket]||0)+1;return route.abort('blockedbyclient');}return route.continue();});
     page.on('response',r=>{if([403,429].includes(r.status()))blockedStatuses.push(r.status());});
     const response=await page.goto(url,{waitUntil:'domcontentloaded',timeout:25000});
     if(!response||response.status()!==200)throw Error('http_'+(response?.status()||'no_response'));
@@ -60,7 +75,7 @@ async function main(){
     }
     if(blockedStatuses.length)throw Error('http_403_or_429');
     const fresh=[...all].filter(x=>!first.includes(x)).sort((a,b)=>Number(a)-Number(b));
-    report.pages.push({url,http_status:200,counts,new_ids_after_scroll:fresh,denied,conclusion:denied.dynamic_blocked?'INCONCLUSIVE_BLOCKED_DYNAMIC_REQUESTS':fresh.length?'NEW_PUBLIC_LINKS_AFTER_SCROLL':'NO_NEW_LINKS_IN_THREE_SCROLLS'});
+    report.pages.push({url,http_status:200,counts,new_ids_after_scroll:fresh,denied,blocked_request_buckets:blockedRequestBuckets,conclusion:denied.dynamic_blocked?'INCONCLUSIVE_BLOCKED_DYNAMIC_REQUESTS':fresh.length?'NEW_PUBLIC_LINKS_AFTER_SCROLL':'NO_NEW_LINKS_IN_THREE_SCROLLS'});
    }catch(e){report.errors.push({url,error:String(e?.message||e)});break;}
    finally{await page.close();}
    await new Promise(r=>setTimeout(r,1000));
