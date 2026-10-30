@@ -337,6 +337,13 @@ export async function enumerateMubawab({
 }
 
 export async function runCli() {
+  // An explicit operator-controlled gate is required in addition to robots.txt.
+  // This switch is not a license; authorization must be documented externally.
+  if (process.env.MUBAWAB_AUTHORIZED_ACCESS !== 'yes') {
+    console.error('Mubawab live acquisition disabled: documented commercial access authorization required.');
+    process.exitCode = 2;
+    return;
+  }
   const maxRequests = Number.parseInt(process.env.MUBAWAB_MAX_REQUESTS || String(DEFAULT_MAX_REQUESTS), 10);
   const report = await enumerateMubawab({ maxRequests });
   report.startedAt = new Date().toISOString();
