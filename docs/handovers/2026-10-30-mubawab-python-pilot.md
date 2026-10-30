@@ -86,3 +86,19 @@ Success for the next lot: a reproducible, robots-compliant small sample with ind
 5. **Human gate** : revue du rapport comparatif, puis seulement envisager une intégration ; pas de merge ni déploiement implicite.
 
 **Next exact :** examiner la CI offline du HEAD actuel, corriger tout échec, puis durcir le runner L8 avec tests avant d'exécuter le moindre nouveau test HTTP réel.
+
+
+### L8 JavaScript — durcissement proposé après la comparaison (30/10)
+
+Sur la même branche **draft**, sans lancer de réseau ni modifier la DB :
+
+- `mubawab-exhaustive-enumerator.mjs` : contrôle fail-closed du `robots.txt` **récupéré à chaque run** pour l'agent par défaut. La politique actuelle est reconnue par une liste conservative de règles ; une règle `Disallow` inconnue, un robots inaccessible ou un agent non reconnu bloquent toute requête de shard. C'est volontairement **une politique restrictive**, pas un parseur robots universel.
+- `isRobotsSafeUrl` : refuse les chemins à deux-points, y compris encodés, et normalise les slashs répétés pour les chemins sensibles.
+- Fetch : `redirect: manual` ; stop immédiat sur `403` ou `429` ; `requestCount` = vraies tentatives de shards, `robotsRequestCount` = requête préalable, `coverageCertified: false`.
+- Cadence de production : temporisation minimale entre les requêtes via le `fetch` par défaut (2,5 secondes configurées, au moins 2 secondes) ; un `crawl-delay` générique plus long est pris en compte.
+- Tests JS existants complétés : politique robots connue/inconnue, 403/429, URLs encodées, compteurs et arrêt avant premier shard si robots invalide.
+- CI `.github/workflows/mubawab-python-pilot-offline.yml` : tests Python + JS, compilation Python ; conformité `CI Workflow Efficiency Policy` avec `concurrency` par PR et annulation des runs obsolètes. Un échec de gouvernance lié à la concurrence manquante a été diagnostiqué sur un ancien commit et corrigé ; **attendre une preuve CI sur le nouveau HEAD avant toute certification**.
+
+**Restrictions maintenues :** pas de claim exhaustive, pas de photos téléchargées, pas d'ingestion DB, aucun test HTTP direct effectué pendant cette reprise, pas de merge et pas de déploiement. L'absence d'un pilot live laisse le gate « rendement réel des shards » OUVERT. Les règles d'usage et réutilisation des photos sont à vérifier avant publication des données.
+
+**Next exact :** contrôler le run offline + politique d'efficacité du dernier HEAD ; en cas d'échec, corriger et retester. Si vert, préparer un pilote de 1 à 3 pages de shards autorisés avec provenance et budget explicite, sans DB ni photos, puis comparer les IDs et champs Python/JS avant la décision d'intégration.
