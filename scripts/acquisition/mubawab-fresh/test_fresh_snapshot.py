@@ -35,6 +35,8 @@ class Tests(unittest.TestCase):
         s=FakeSession({});w=m.Web(session=s,sleep=lambda _:None)
         with self.assertRaises(m.StopCollect):w.fetch(m.BASE+'/fr')
         self.assertEqual(s.urls,[])
+    def test_protocol_relative_images(self):
+        self.assertEqual(m.image_url('//www.mubawab-media.com/ad/a.avif?tracking=yes'),'https://www.mubawab-media.com/ad/a.avif')
     def test_html_parse_and_photos(self):
         r=m.parse_listing(DETAIL,m.BASE+'/fr/a/12345/centre')
         self.assertEqual(r['id'],'12345');self.assertEqual(r['price_dh'],1200000)
