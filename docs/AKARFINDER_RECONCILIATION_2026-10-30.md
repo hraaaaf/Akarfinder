@@ -1,7 +1,7 @@
 # AKARFINDER — RÉCONCILIATION PR / PAGES / FONCTIONNALITÉS
 
 **Date de gel d'audit : 2026-10-30.** Repo `hraaaaf/Akarfinder`; référence `main@c02d0b73ed18b0e136d478fab39e71df425173a7` (merge #1129).  
-**Portée : décisions de gouvernance et feuille de revue, non pas certification actuelle de l'UI ou de la production.** Constat GitHub : 50 PR ouvertes avant nettoyage ; #1032 et #1097 fermées avec commentaire motivé ; 48 restantes au moment du premier tri. Un commit ultérieur exige de rafraîchir ce décompte.
+**Portée : décisions de gouvernance et feuille de revue, non pas certification actuelle de l'UI ou de la production.** Constat GitHub : 50 PR ouvertes avant nettoyage ; #1032, #1097, #997, #991, #1057, #1058 et #1059 fermées avec commentaires motivés ; **44 PR ouvertes après ouverture de #1137** (43 restantes du stock initial + #1137). Un commit ultérieur exige de rafraîchir ce décompte.
 
 ## GOAL / SUCCÈS / PREUVE
 
@@ -58,7 +58,8 @@ Statut : **CLOSE** = action exécutée ; **KEEP** = valeur à préserver, pas au
 | Carte pivot | #1108 | **KEEP / prioritaire pour une seule convergence carte** ; V0 flat pilote, children #1112. |
 | Carte canary | #1112 | **KEEP comme preuve read-only** puis intégrer uniquement les tests pertinents ; ne pas déclarer UI 9.5. |
 | Cartographie données | #1111 | **KEEP source-only** ; revue des identités et centres avant publication nationale. |
-| Geo/stades | #1053, #1057, #1058, #1059 | **REVIEW → archive probable** après transfert des preuves sourcées pertinentes au canonique geo, jamais merge des polygones implicites. |
+| Geo/stades | #1053 | **REVIEW** : intégration ancienne de registre, pas de merge direct. |
+| Audits stades | #1057, #1058, #1059 | **CLOSE effectué** : preuves territoriales négatives archivées dans les commentaires/PR, aucun quartier présumé. |
 | Geo assets | #487 | **REVIEW** ; fondation Rabat visuelle à vérifier pour droits et duplication. |
 | Search produit | #1035 | **SPLIT** : récupérer delta utile sur Search courant, pas merge aveugle d'ancien P3. |
 | Search identité visuelle | #1102 | **KEEP**, harmonisation filtres/cartes à certifier sur current main. |
@@ -67,7 +68,7 @@ Statut : **CLOSE** = action exécutée ; **KEEP** = valeur à préserver, pas au
 | SEO | #938 | **KEEP intention**, comparer les métadonnées courantes avant de merger. |
 | Prix/qualité | #1104 | **KEEP / P0**, PR très volumineuse (lecture API PR 422), audit en morceaux obligatoire. |
 | Extraction source | #1134 | **BLOCK LIVE / KEEP OFFLINE DRAFT**, #1135 licence. |
-| Mubawab legacy | #997 | **SPLIT puis fermeture recommandée**, ne pas merger 57 fichiers de collecte/écriture live. |
+| Mubawab legacy | #997 | **CLOSE effectué** : branche 78 ahead / 637 behind main, 57 fichiers dont workflows live/apply ; droits #1135 ouverts. Réutiliser exclusivement tests offline après audit, jamais merger en bloc. |
 | Prix Agenz/Mubawab | #1028 | **SPLIT** : composant Agenz autorisé uniquement après gate source ; Mubawab live bloqué. |
 | Parser large | #1105 | **SPLIT / BLOCK LIVE**, 200 fichiers, rebase et audit par source, ne pas merger en bloc. |
 | Annonces fraîches | #1113 | **KEEP en DRAFT** : 1 168 conformes annoncées dans la PR, distinctes par URL, non prouvées physiques uniques ni réutilisables. |
@@ -80,7 +81,7 @@ Statut : **CLOSE** = action exécutée ; **KEEP** = valeur à préserver, pas au
 | Data clean | #1083, #1081 | **KEEP les invariants**, vérifier si les anciens writers sont encore actifs sur main avant fusion. |
 | CI sécu | #1133 | **KEEP / P0** : isoler les 5 workflows privilégiés, contrôle exact-HEAD. |
 | CI documentation | #1132 | **KEEP comme closeout** ; ne pas prétendre globalement certifiés les 549+ workflows. |
-| CI ancienne | #991 | **SPLIT/REVIEW**, risque de duplication avec politique merged #1114 et suites #1115/#1116. |
+| CI ancienne | #991 | **CLOSE effectué** : 8 workflows divergents vs main (8 ahead / 670 behind) ; politique CI actuelle #1114/#1115/#1116 prévaut, anciens changements ne doivent pas revenir en bloc. |
 | Nettoyage ancien | #1027 | **REVIEW**, suppression uniquement après preuve que les workflows ne sont plus nécessaires. |
 | Pros | #644, #645, #653 | **KEEP pour comparaison/CONVERGE**, zones distinctes mais données communes ; une seule PR B2B finale. |
 | Auth pro | #310 | **KEEP DRAFT / P0 sécurité**, rebase et validation RLS nécessaires. |
@@ -89,7 +90,7 @@ Statut : **CLOSE** = action exécutée ; **KEEP** = valeur à préserver, pas au
 
 ## 4. ORDRE DE MISSION EXÉCUTABLE
 
-1. **T0 — Gouvernance** : rafraîchir le total des PR ; fermer les véhicules non-mergeables prouvés (#1032, #1097 déjà clos) ; garder ce document et la session synchronisés.
+1. **T0 — Gouvernance** : compte après nettoyage **44 PR ouvertes dont #1137** ; 7 PR historiques fermées sans merge (#1032, #1097, #997, #991, #1057, #1058, #1059). Garder ce document et la session synchronisés.
 2. **T1 — Risque source et données** : isoler droits (#1135), stopper toute acquisition/pub non autorisée ; auditer #997/#1028/#1105 par chemin ; distinguer 253372 candidates historiques des offres fresh/unique/servables.
 3. **T2 — Data/DB** : réconcilier #1082/#1087/#1101/#1104, déterminer le provider réellement exploité et les writers ; preuve read-only avant tout changement.
 4. **T3 — Pages critiques** : Search (/search, /listings/[id]) et Map (/map) ; une branche chacune sur latest main, BEFORE/AFTER, arbitrage flat vs 3D, sécurité et accessibilité.
@@ -100,5 +101,5 @@ Statut : **CLOSE** = action exécutée ; **KEEP** = valeur à préserver, pas au
 
 - Cet audit repose sur les métadonnées PR et la structure du code connues au 30 octobre ; **pas de captures LIVE ni tests navigateur effectués dans ce lot documentaire**.
 - #1104 et #454 : REST info renvoie 422 « too many files changed » ; à analyser par inventaire paginé/diff ciblé, pas à classer automatiquement comme redondants.
-- **Next exact** : auditer la divergence source/cible et le delta unique de #997/#1028/#1105 ; établir pour chaque blocage licence un remplacement offline/first-party. Puis passer au faisceau Search + Vivre Ici avec preuves visuelles.
+- **Next exact** : auditer le delta utile de la branche archivée #997 et les PR actives #1028/#1105 ; établir pour chaque blocage licence un remplacement offline/first-party. Continuer audit #1087/#1101 et convergences Search/Map. Puis passer au faisceau Search + Vivre Ici avec preuves visuelles.
 - **Aucune estimation de % d'avancement global** : pas de dénominateur fiable de lots certifiés.
