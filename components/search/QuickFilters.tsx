@@ -68,7 +68,7 @@ export function QuickFilters({ filters, cities, propertyTypes, onChange, onReset
   );
 
   const propertyTypeSelector = (
-    <PropertyTypeVisualSelector value={filters.propertyType} onChange={(propertyType) => onChange({ ...filters, propertyType })} showAll ariaLabel="Type de bien" className="min-w-0" />
+    <PropertyTypeVisualSelector value={filters.propertyType} onChange={(propertyType) => onChange({ ...filters, propertyType })} showAll ariaLabel="Type de bien" visualVariant="search-target" className="min-w-0" />
   );
 
   const compactTransactionSelector = (
