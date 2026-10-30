@@ -48,7 +48,7 @@ export function isRobotsSafeUrl(raw) {
   // invalid percent escapes cannot turn into a bypass.
   let pathname;
   try { pathname = decodeURIComponent(url.pathname); } catch { return false; }
-  const robotsPath = pathname.replace(/^\/(?:fr|en|ar|es|nl|it)(?=\/)/i, '');
+  const robotsPath = pathname.replace(/^\/(?:fr|en|ar|es|nl|it)(?=\/)/i, '').replace(/\/{2,}/g, '/').toLowerCase();
   if (DISALLOWED_PREFIXES.some((prefix) => robotsPath === prefix || robotsPath.startsWith(prefix))) return false;
   // Cached conservative deny list; never use it as a replacement for a fresh
   // robots.txt check before any real HTTP acquisition.
