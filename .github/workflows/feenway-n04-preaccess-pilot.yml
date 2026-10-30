@@ -1,0 +1,37 @@
+name: FeenWay N04 pre-access offline pilot
+on:
+  push:
+    branches: [data/200k-fresh-parser-v2]
+    paths:
+      - scripts/acquisition/feenway-n04-preaccess-pilot.mjs
+      - scripts/data/__tests__/feenway-n04-preaccess-pilot.test.mjs
+      - .github/workflows/feenway-n04-preaccess-pilot.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: feenway-n04-branch
+  cancel-in-progress: true
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax and offline safety fixtures
+        run: |
+          node --check scripts/acquisition/feenway-n04-preaccess-pilot.mjs
+          node --test scripts/data/__tests__/feenway-n04-preaccess-pilot.test.mjs
+      - name: Produce review-only 10 + 6 evidence
+        run: |
+          node scripts/acquisition/feenway-n04-preaccess-pilot.mjs --out=.tmp/feenway-n04
+          node --input-type=module -e "import fs from 'node:fs';const p=JSON.parse(fs.readFileSync('.tmp/feenway-n04/pilot-preaccess.json'));if(p.primary.length!==10||p.controls.length!==6||p.external_access_authorized!==0||p.eligible_for_db!==0)process.exit(1)"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: feenway-n04-preaccess-pilot
+          path: .tmp/feenway-n04/
+          if-no-files-found: error
+          retention-days: 30
