@@ -50,12 +50,14 @@ jobs:
         run: |
           node --check scripts/acquisition/feenway-n01-page-links-audit.mjs
           node --test scripts/data/__tests__/feenway-n01-page-links-audit.test.mjs
-      - name: N01 public quartier and market batch 4 (50 pages max)
-        run: node scripts/acquisition/feenway-n01-page-links-audit.mjs .tmp/feenway-n01-batch4/report.json .tmp/feenway-sitemap-inventory-v1/discovery.jsonl .tmp/feenway-n01-surfaces/report.jsonl batch:4
-      - name: N01 public quartier and market batch 5 (50 pages max)
-        run: node scripts/acquisition/feenway-n01-page-links-audit.mjs .tmp/feenway-n01-batch5/report.json .tmp/feenway-sitemap-inventory-v1/discovery.jsonl .tmp/feenway-n01-surfaces/report.jsonl batch:5
-      - name: N01 public quartier and market batch 6 (50 pages max)
-        run: node scripts/acquisition/feenway-n01-page-links-audit.mjs .tmp/feenway-n01-batch6/report.json .tmp/feenway-sitemap-inventory-v1/discovery.jsonl .tmp/feenway-n01-surfaces/report.jsonl batch:6
+      - name: N01 public quartier and market batch 7 (50 pages max)
+        run: node scripts/acquisition/feenway-n01-page-links-audit.mjs .tmp/feenway-n01-batch7/report.json .tmp/feenway-sitemap-inventory-v1/discovery.jsonl .tmp/feenway-n01-surfaces/report.jsonl batch:7
+      - name: N01 public quartier and market batch 8 (50 pages max)
+        run: node scripts/acquisition/feenway-n01-page-links-audit.mjs .tmp/feenway-n01-batch8/report.json .tmp/feenway-sitemap-inventory-v1/discovery.jsonl .tmp/feenway-n01-surfaces/report.jsonl batch:8
+      - name: N01 public quartier and market batch 9 (50 pages max)
+        run: node scripts/acquisition/feenway-n01-page-links-audit.mjs .tmp/feenway-n01-batch9/report.json .tmp/feenway-sitemap-inventory-v1/discovery.jsonl .tmp/feenway-n01-surfaces/report.jsonl batch:9
+      - name: N01 public quartier and market batch 10 (50 pages max)
+        run: node scripts/acquisition/feenway-n01-page-links-audit.mjs .tmp/feenway-n01-batch10/report.json .tmp/feenway-sitemap-inventory-v1/discovery.jsonl .tmp/feenway-n01-surfaces/report.jsonl batch:10
       - name: Save observation as evidence only
         uses: actions/upload-artifact@v4
         with:
@@ -79,27 +81,35 @@ jobs:
           path: .tmp/feenway-n01-surfaces/
           if-no-files-found: warn
           retention-days: 30
-      - name: Preserve N01 batch 4 with exact provenance (also on failure)
+      - name: Preserve N01 batch 7 with exact provenance (also on failure)
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: feenway-n01-batch4
-          path: .tmp/feenway-n01-batch4/
+          name: feenway-n01-batch7
+          path: .tmp/feenway-n01-batch7/
           if-no-files-found: warn
           retention-days: 30
-      - name: Preserve N01 batch 5 with exact provenance (also on failure)
+      - name: Preserve N01 batch 8 with exact provenance (also on failure)
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: feenway-n01-batch5
-          path: .tmp/feenway-n01-batch5/
+          name: feenway-n01-batch8
+          path: .tmp/feenway-n01-batch8/
           if-no-files-found: warn
           retention-days: 30
-      - name: Preserve N01 batch 6 with exact provenance (also on failure)
+      - name: Preserve N01 batch 9 with exact provenance (also on failure)
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: feenway-n01-batch6
-          path: .tmp/feenway-n01-batch6/
+          name: feenway-n01-batch9
+          path: .tmp/feenway-n01-batch9/
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Preserve N01 batch 10 with exact provenance (also on failure)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: feenway-n01-batch10
+          path: .tmp/feenway-n01-batch10/
           if-no-files-found: warn
           retention-days: 30
