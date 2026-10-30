@@ -7,10 +7,10 @@
 ## GOAL / SUCCESS / PROOF
 - Goal : réduire les branches concurrentes, actualiser la boussole produit et préparer un seul delta certifiable par domaine.
 - Success : tri motivé de toutes les PR, métadonnées et décisions documentées, dérives GitHub/Notion corrigées, fermeture sans perte de preuves.
-- Proof : GitHub 50 PR ouvertes initiales ; #1032 et #1097 fermées sans merge ; 48 PR ouvertes après ces deux actions. Docs de branche de revue ; Notion Command Center actualisé.
+- Proof : GitHub 50 PR ouvertes initiales ; #1032/#1097/#997/#991/#1057/#1058/#1059 fermées sans merge ; **44 PR ouvertes après création #1137** (revérifié). Docs de branche de revue ; Notion Command Center actualisé.
 
 ## Décisions de reprise (remplacent le « Q1A commence maintenant » de 2026-09-06)
-1. **Acquisition/licences** : Mubawab en offline DRAFT #1134, issue #1135 bloquante pour nouveau live. Ne jamais considérer robots/indexation comme licence. Auditer #997/#1028/#1105 avant fermeture ou portage.
+1. **Acquisition/licences** : Mubawab en offline DRAFT #1134, issue #1135 bloquante pour nouveau live. Ne jamais considérer robots/indexation comme licence. #997 archivée (diff conservé), auditer #1028/#1105 avant fermeture ou portage ; droits #1135 restent bloquants.
 2. **Données** : `253 372` = historique L0/L1, pas 200k biens actifs. Contrats sémantiques #1104 à préserver ; droits et fraîcheur séparés.
 3. **Base de données** : ne pas inférer le provider LIVE de `lib/db/provider.ts` seul. #1082/#1087/#1101 exigent une décision d'architecture + preuve indépendante.
 4. **Carte** : réconcilier #1090 parent / #1108 flat / #1112 canary / #1111 source avant toute intégration. Capture TARGET vs AFTER 390/430/768/1280 obligatoire.
@@ -19,12 +19,12 @@
 
 ## Exécution en cours
 - [x] Inventaire initial des PR ouvertes / architecture des routes / canonical docs relus.
-- [x] Fermeture documentée des PR non fusionnables #1032 et #1097.
+- [x] Fermeture documentée des sept PR #1032/#1097/#997/#991/#1057/#1058/#1059 sans suppression de branches.
 - [x] Nouvelle source de décisions d'audit créée dans branche de revue.
-- [ ] Audit ciblé des diffs et dépendances #997/#1028/#1105/#991/#1087.
+- [ ] Finir audit ciblé des PR #1028/#1105/#1087 ; #997/#991 sont archivées avec preuves de divergence, diff conservé.
 - [ ] Redéfinition des PR produit finales par domaine + preuves CI/visuelles actuelles.
 - [ ] Revue humaine de toute intégration et vérification post-merge.
 
-**Next exact** : lire `docs/AKARFINDER_RECONCILIATION_2026-10-30.md`, vérifier GitHub main/HEAD/open PR count, puis qualifier les chevauchements et droits des collecteurs. Ne pas relancer un crawl live.
+**Next exact** : lire `docs/AKARFINDER_RECONCILIATION_2026-10-30.md`, vérifier GitHub main/HEAD/open PR count, puis qualifier les chevauchements et droits des collecteurs restants. Ne pas relancer un crawl live.
 
 **Invariants** : pas de fabrication de chiffres, de lieux précis, de prix, de photos ; pas de DB writes ; pas de Vercel ; pas de merge automatique.
