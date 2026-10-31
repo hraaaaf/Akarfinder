@@ -73,3 +73,18 @@ test("settled empty Search cannot advertise stale server totals or ghost paginat
   assert.match(shell, /totalPages > 1 && hasAnyResults/);
   assert.match(shell, /!hasAnyResults && !isSearching \? <EmptyState/);
 });
+
+test("mobile Search toolbar overrides legacy !important no-wrap for visible results count", () => {
+  const css = read("app/search/search-controls-10of10.css");
+  const marker = css.lastIndexOf("SEARCH-OPTION-A: Owner-reviewed");
+  assert.ok(marker > 0);
+  const mobileOverride = css.slice(marker);
+  assert.match(mobileOverride, /@media \(max-width: 639px\)/);
+  assert.match(mobileOverride, /flex-wrap: wrap !important/);
+  assert.match(mobileOverride, /flex: 0 0 100% !important/);
+  assert.match(mobileOverride, /white-space: normal !important/);
+  assert.match(mobileOverride, /text-overflow: clip !important/);
+  const proof = read("scripts/audits/search-onboarding-option-a-visual.mjs");
+  assert.ok(proof.includes("MOBILE_RESULTS_TOOLBAR_NOT_WRAPPED"));
+  assert.ok(proof.includes('toolbarLayout.flexWrap !== "wrap"'));
+});

@@ -58,13 +58,25 @@ try {
           right: rect.right,
         };
       });
+      const toolbarLayout = await page.locator("[data-search-results-toolbar]").evaluate(element => {
+        const pieces = [...element.children].map(child => {
+          const box = child.getBoundingClientRect();
+          return { top: box.top, bottom: box.bottom, width: box.width };
+        });
+        return { flexWrap: getComputedStyle(element).flexWrap, pieces };
+      });
+      if (mobile && (
+        toolbarLayout.flexWrap !== "wrap" ||
+        toolbarLayout.pieces.length < 2 ||
+        toolbarLayout.pieces[1].top < toolbarLayout.pieces[0].bottom - 1
+      )) findings.push("MOBILE_RESULTS_TOOLBAR_NOT_WRAPPED");
       if (heading.clipped || heading.x < 0 || heading.right > viewport.width + 1) {
         findings.push("RESULT_COUNT_TRUNCATED");
       }
       if (consoleErrors.length) findings.push(`PAGE_ERRORS_${consoleErrors.length}`);
       const screenshot = `search-after-${viewport.width}x${viewport.height}.png`;
       await page.screenshot({ path: path.join(outputDir, screenshot), fullPage: true });
-      results.push({ ...viewport, screenshot, targetCardCount, targets, sheetVisible, chipCount, horizontalOverflow, heading, findings, consoleErrors });
+      results.push({ ...viewport, screenshot, targetCardCount, targets, sheetVisible, chipCount, horizontalOverflow, heading, toolbarLayout, findings, consoleErrors });
     } catch (error) {
       findings.push(`AUDIT_ERROR_${error instanceof Error ? error.message : String(error)}`);
       results.push({ ...viewport, findings, consoleErrors });
