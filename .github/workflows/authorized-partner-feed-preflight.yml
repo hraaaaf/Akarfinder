@@ -1,0 +1,27 @@
+name: Direct authorized partner feed preflight
+on:
+  push:
+    branches: [data/200k-fresh-parser-v2]
+    paths:
+      - lib/feeds/authorized-preflight.ts
+      - scripts/scrapers/__tests__/authorized-partner-feed-preflight.test.ts
+      - .github/workflows/authorized-partner-feed-preflight.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: direct-partner-preflight
+  cancel-in-progress: true
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Test authorization, freshness, price semantics and lifecycle
+        run: npx tsx --test scripts/scrapers/__tests__/authorized-partner-feed-preflight.test.ts scripts/scrapers/__tests__/partner-feed-v2-bridge.test.ts scripts/scrapers/__tests__/direct-feeds-ingestion.test.ts

@@ -1,0 +1,39 @@
+name: FeenWay N02 restricted JS hydration audit (read-only)
+on:
+  push:
+    branches: [data/200k-fresh-parser-v2]
+    paths:
+      - scripts/acquisition/feenway-n02-hydration-probe.mjs
+      - scripts/data/__tests__/feenway-n02-hydration-probe.test.mjs
+      - .github/workflows/feenway-n02-hydration-probe.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe-three-public-pages:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Syntax and offline safety tests
+        run: |
+          node --check scripts/acquisition/feenway-n02-hydration-probe.mjs
+          node --test scripts/data/__tests__/feenway-n02-hydration-probe.test.mjs
+      - name: Install dependencies and Chromium browser
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+      - name: Observe three public pages without API/detail requests
+        run: node scripts/acquisition/feenway-n02-hydration-probe.mjs .tmp/feenway-n02/browser-probe.json
+      - name: Preserve report even if audit fails
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: feenway-n02-restricted-hydration-evidence
+          path: .tmp/feenway-n02/browser-probe.json
+          retention-days: 30
+          if-no-files-found: warn

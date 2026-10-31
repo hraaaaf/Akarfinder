@@ -1,0 +1,41 @@
+name: AkarFinder Active Unique Shadow V1
+on:
+  push:
+    branches:
+      - data/200k-fresh-parser-v2
+    paths:
+      - '.github/workflows/active-unique-shadow-v1.yml'
+      - 'scripts/data/fresh-active-unique-shadow-v1.mjs'
+      - 'scripts/data/__tests__/fresh-active-unique-shadow-v1.test.mjs'
+permissions:
+  contents: read
+  actions: read
+jobs:
+  shadow-evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      LEDGER_INPUT: .tmp/ledger/acquisition-ledger-v1.jsonl
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: node --test scripts/data/__tests__/fresh-active-unique-shadow-v1.test.mjs
+      - uses: actions/download-artifact@v4
+        with:
+          name: card-acquisition-ledger-v1
+          run-id: 38069957917
+          github-token: ${{ github.token }}
+          path: .tmp/ledger
+      - run: jq -e '.distinct_source_id_count == 9745 and .five_field_observed_consistent == 7610 and .database_writes == 0' .tmp/ledger/acquisition-ledger-v1.json
+      - run: node scripts/data/fresh-active-unique-shadow-v1.mjs
+      - run: jq -e '.source_ids == 9745 and .five_field_cards == 7610 and  .sample_count == 60 and .risk_enriched_sample_count == 20 and .baseline_control_sample_count == 40 and .by_source["mubawab.ma"] == 30 and .by_source["domio.ma"] == 30 and .publishable_count == 0 and .confirmed_active_count == 0 and .database_access == 0 and .database_writes == 0 and .production_published == 0' active-unique-shadow-v1.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: active-unique-shadow-v1
+          path: |
+            active-unique-shadow-v1.json
+            active-unique-shadow-v1.jsonl
+          retention-days: 14

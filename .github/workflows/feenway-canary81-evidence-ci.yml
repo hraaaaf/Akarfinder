@@ -1,0 +1,29 @@
+name: FeenWay 81 evidence QA (read only)
+on:
+  push:
+    branches:
+      - data/200k-fresh-parser-v2
+    paths:
+      - docs/data/feenway-canary81-source-fivefields-2026-10-26.jsonl
+      - scripts/data/__tests__/feenway-canary81-evidence.test.mjs
+      - docs/data/feenway-canary47-neon-historical-overlap-2026-10-26.jsonl
+      - scripts/data/__tests__/feenway-canary47-neon-evidence.test.mjs
+      - docs/data/feenway-next238-origin-reconciled-neon-2026-10-27.jsonl
+      - scripts/data/__tests__/feenway-canary238-origin-ledger.test.mjs
+      - .github/workflows/feenway-canary81-evidence-ci.yml
+
+permissions:
+  contents: read
+
+jobs:
+  test-evidence:
+    name: FeenWay 81 source gates
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate immutable 81-row source evidence without external access
+        run: |
+          node --test scripts/data/__tests__/feenway-canary81-evidence.test.mjs
+          node --test scripts/data/__tests__/feenway-canary47-neon-evidence.test.mjs
+          node --test scripts/data/__tests__/feenway-canary238-origin-ledger.test.mjs

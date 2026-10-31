@@ -1,0 +1,22 @@
+name: FeenWay RAW JSON-LD PULPER QA (offline)
+on:
+  push:
+    branches:
+      - data/200k-fresh-parser-v2
+    paths:
+      - scripts/acquisition/feenway-jsonld-mold-v1.mjs
+      - scripts/data/__tests__/feenway-jsonld-mold-v1.test.mjs
+      - .github/workflows/feenway-jsonld-mold-v1.yml
+permissions:
+  contents: read
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: JSON-LD identity, price, ambiguity and no-PII invariants
+        run: node --test scripts/data/__tests__/feenway-jsonld-mold-v1.test.mjs

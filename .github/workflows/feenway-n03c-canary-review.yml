@@ -1,0 +1,37 @@
+name: FeenWay N03c archived source canary review
+on:
+  push:
+    branches: [data/200k-fresh-parser-v2]
+    paths:
+      - scripts/acquisition/feenway-n03c-canary-review.mjs
+      - scripts/data/__tests__/feenway-n03c-canary-review.test.mjs
+      - .github/workflows/feenway-n03c-canary-review.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: feenway-n03c-data-200k-fresh-parser-v2
+  cancel-in-progress: true
+jobs:
+  offline-ledger:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate script and test safety contract
+        run: |
+          node --check scripts/acquisition/feenway-n03c-canary-review.mjs
+          node --test scripts/data/__tests__/feenway-n03c-canary-review.test.mjs
+      - name: Build review-only evidence from checked-in 81 source records
+        run: |
+          node scripts/acquisition/feenway-n03c-canary-review.mjs --out=.tmp/feenway-n03c
+          node --input-type=module -e "import fs from 'node:fs';const r=JSON.parse(fs.readFileSync('.tmp/feenway-n03c/summary.json'));if(r.rows!==81||r.eligible_for_db!==0||r.numeric_matches!==49||r.economic_warnings!==3)process.exit(1)"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: feenway-n03c-81-review-evidence
+          path: .tmp/feenway-n03c/
+          if-no-files-found: error
+          retention-days: 30

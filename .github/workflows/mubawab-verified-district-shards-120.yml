@@ -1,0 +1,63 @@
+name: AkarFinder Mubawab Verified District Shards 120
+on:
+  push:
+    branches:
+      - data/200k-fresh-parser-v2
+    paths:
+      - '.github/workflows/mubawab-verified-district-shards-120.yml'
+      - 'scripts/data/mubawab-district-derived-shards-v1.mjs'
+      - 'scripts/data/__tests__/mubawab-district-derived-shards-v1.test.mjs'
+permissions:
+  contents: read
+  actions: read
+jobs:
+  check-source-derived-district-pages:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      OUTPUT_PREFIX: mubawab-district-shards-120
+      DISTRICT_MAX_REQUESTS: '120'
+      CARDS_BASELINE_JSONL: .tmp/mubawab-50/mubawab-mass-acquisition-50.jsonl
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: District provenance, robots and contradiction regression suite
+        run: |
+          node --test scripts/data/__tests__/mubawab-district-derived-shards-v1.test.mjs
+          node --test scripts/data/__tests__/mubawab-result-cards-v1.test.mjs
+      - name: Reuse certified 50 category reference IDs
+        uses: actions/download-artifact@v4
+        with:
+          name: mubawab-mass-acquisition-50
+          run-id: 38014920725
+          github-token: ${{ github.token }}
+          path: .tmp/mubawab-50
+      - name: Check at most 120 source-derived district candidate URLs
+        run: node scripts/data/mubawab-district-derived-shards-v1.mjs
+      - name: Verify read-only district provenance
+        if: always()
+        run: |
+          test -f mubawab-district-shards-120.json
+          jq -e '.request_count <= 120 and .max_requests == 120 and .database_access == 0 and .database_writes == 0 and .semantics == "explicit_source_card_and_city_district_gate_not_freshness"' mubawab-district-shards-120.json
+          node - <<'NODE'
+          const fs=require('fs');
+          const r=JSON.parse(fs.readFileSync('mubawab-district-shards-120.json'));
+          const rows=fs.readFileSync('mubawab-district-shards-120.jsonl','utf8').split(/\r?\n/).filter(Boolean).map(JSON.parse);
+          if(rows.length!==r.unique_source_ids||new Set(rows.map(x=>x.identity)).size!==rows.length)throw Error('ID mismatch');
+          if(rows.filter(x=>x.five_field_observed).length!==r.card_five_field)throw Error('five-field mismatch');
+          if(rows.some(x=>x.freshness_certified||x.active_detail_verified||x.cross_source_deduplicated))throw Error('unverified promoted');
+          if(r.net_new_ids_vs_50>r.unique_source_ids)throw Error('net-new invalid');
+          console.log('DISTRICT_READ_ONLY_VERIFIED',rows.length);
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mubawab-district-shards-120
+          path: |
+            mubawab-district-shards-120.json
+            mubawab-district-shards-120.jsonl
+          retention-days: 14

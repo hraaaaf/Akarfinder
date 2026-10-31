@@ -1,0 +1,33 @@
+name: FeenWay N01 six-XML integrity audit (read only)
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Script syntax
+        run: node --check scripts/acquisition/feenway-n01-sitemap-audit.mjs
+      - name: Fixture tests: deduplication, raw SHA-256, errors
+        run: node --test scripts/data/__tests__/feenway-n01-sitemap-audit.test.mjs
+      - name: Capture six XML reports, no listing pages and no DB
+        run: node scripts/acquisition/feenway-n01-sitemap-audit.mjs artifacts/feenway-n01-sitemap-audit.json
+      - name: Check completeness of six XML files
+        run: |
+          node --input-type=module -e "import r from './artifacts/feenway-n01-sitemap-audit.json' with {type:'json'}; if(!r.complete||r.files.length!==6||r.errors.length)process.exit(1); console.log(JSON.stringify({files:r.files.length,unique_listing_urls:r.unique_listing_urls,duplicates:r.duplicate_urls}))"
+      - name: Preserve evidence even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: feenway-n01-six-xml-integrity
+          path: artifacts/feenway-n01-sitemap-audit.json
+          if-no-files-found: warn
+          retention-days: 30

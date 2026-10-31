@@ -1,0 +1,33 @@
+name: FeenWay recover 338 source observations offline
+on:
+  push:
+    branches: [data/200k-fresh-parser-v2]
+    paths:
+      - scripts/data/feenway-archived338-recover.mjs
+      - scripts/data/__tests__/feenway-archived338-recover.test.mjs
+      - .github/workflows/feenway-archived338-recover.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: feenway-338-source-recovery
+  cancel-in-progress: true
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate real historical corpus and fail closed
+        run: node --test scripts/data/__tests__/feenway-archived338-recover.test.mjs
+      - name: Write 338 source-evidence records
+        run: node scripts/data/feenway-archived338-recover.mjs .tmp/feenway-archived338
+      - uses: actions/upload-artifact@v4
+        with:
+          name: feenway-338-recovered-source-evidence
+          path: .tmp/feenway-archived338/
+          retention-days: 30
+          if-no-files-found: error

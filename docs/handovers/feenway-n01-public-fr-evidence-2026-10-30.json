@@ -1,0 +1,73 @@
+{
+  "schema": "AKARFINDER_FEENWAY_N01_PUBLIC_FR_DISCOVERY_EVIDENCE_V1",
+  "date": "2026-10-30",
+  "status": "QUEUE_COVERAGE_VERIFIED_NOT_SITE_EXHAUSTIVENESS",
+  "github_run": 41086289157,
+  "artifact_ids": {
+    "batch28": 12992087720,
+    "batch29": 12992637239,
+    "batch30": 12992192565,
+    "batch31": 12992672136,
+    "batch32": 12992322798,
+    "batch33": 12991419834,
+    "batch34": 12992367690,
+    "batch35": 12992522497,
+    "listing_xml": 12992746845,
+    "public_surfaces": 12991902935
+  },
+  "checks": {
+    "batches": 35,
+    "batch_request_count": 1736,
+    "unique_landing_pages": 1736,
+    "duplicates_between_batches": 0,
+    "current_queue_count": 1736,
+    "current_queue_gap_count": 0,
+    "six_xml_unique_listing_urls": 58513,
+    "outside_xml_unique_listing_urls": 15197,
+    "discovered_url_union": 73710,
+    "detail_requests": 0,
+    "db_writes": 0
+  },
+  "sha256": {
+    "xml_manifest": "5e2af7dcbcc9bc4d9b74f085c383a431483f708be28449ecbb9f3b9acbcc38b8",
+    "off_xml_manifest": "22406be5fd15c510c0775bca563816e70591b30e59f71af964ebf90e0f10fa38",
+    "reconciliation_json": "24645a6623a0b718e6ec8e90077c200f3dbdfdfbbaef635086be14a4cf6806c4"
+  },
+  "url_reconciliation": {
+    "preceding_off_sitemap": 12159,
+    "new_links_from_batches_28_to_35": 3041,
+    "old_outside_links_now_in_xml": 3,
+    "new_off_sitemap": 15197,
+    "latest_8_batch_pages": 386,
+    "original_queue_2026_10_29": 1720,
+    "current_queue": 1736
+  },
+  "pagination_probe": {
+    "date": "2026-10-30",
+    "method": "read-only rendered link comparison of public HTML without and with ?page=2",
+    "samples": [
+      {
+        "url": "https://www.feenway.com/immobilier/casablanca",
+        "base": 18,
+        "page2": 18,
+        "new_on_page2": 0
+      },
+      {
+        "url": "https://www.feenway.com/appartement-a-vendre/casablanca",
+        "base": 24,
+        "page2": 24,
+        "new_on_page2": 0
+      },
+      {
+        "url": "https://www.feenway.com/appartement-a-vendre/casablanca/racine",
+        "base": 24,
+        "page2": 24,
+        "new_on_page2": 0
+      }
+    ],
+    "limit": "Cannot exclude other pagination, JS lazy loading or unlisted public surfaces"
+  },
+  "scope": "Discovered links, not certified active, physically unique, or reusable properties",
+  "pull_request": 1105,
+  "pull_request_merge_gate": "DRAFT; HTTP 410 canonical historical artifact 10910779576 blocks separate parser full-field checks; do not merge"
+}

@@ -1,0 +1,73 @@
+{
+  "schema": "AKARFINDER_FEENWAY_N02_RESTRICTED_BROWSER_EVIDENCE_V1",
+  "observed_at": "2026-10-30T16:41:31.997Z",
+  "source_run": 41092010780,
+  "source_job": 124188027156,
+  "artifact_id": 12994162881,
+  "artifact_sha256": "8668b322039f7e300e698e1cffb17acd64e4900b36f1a4596a775a8b4112119f",
+  "ci": "completed_success",
+  "offline_tests": {
+    "passed": 3,
+    "failed": 0
+  },
+  "pages": [
+    {
+      "url": "https://www.feenway.com/immobilier/casablanca",
+      "listing_counts": [
+        18,
+        18,
+        18,
+        18
+      ],
+      "new_ids_after_scroll": [],
+      "denied": {
+        "asset_blocked": 9,
+        "wrong_origin": 23,
+        "blocked_route": 20,
+        "dynamic_blocked": 88
+      },
+      "conclusion": "INCONCLUSIVE_BLOCKED_DYNAMIC_REQUESTS"
+    },
+    {
+      "url": "https://www.feenway.com/appartement-a-vendre/casablanca",
+      "listing_counts": [
+        24,
+        24,
+        24,
+        24
+      ],
+      "new_ids_after_scroll": [],
+      "denied": {
+        "asset_blocked": 10,
+        "wrong_origin": 25,
+        "blocked_route": 26,
+        "dynamic_blocked": 13
+      },
+      "conclusion": "INCONCLUSIVE_BLOCKED_DYNAMIC_REQUESTS"
+    },
+    {
+      "url": "https://www.feenway.com/appartement-a-vendre/casablanca/racine",
+      "listing_counts": [
+        24,
+        24,
+        24,
+        24
+      ],
+      "new_ids_after_scroll": [],
+      "denied": {
+        "asset_blocked": 9,
+        "wrong_origin": 29,
+        "blocked_route": 26,
+        "dynamic_blocked": 15
+      },
+      "conclusion": "INCONCLUSIVE_BLOCKED_DYNAMIC_REQUESTS"
+    }
+  ],
+  "dynamic_requests_blocked": 116,
+  "fatal_errors": 0,
+  "db_writes": 0,
+  "listing_detail_requests": 0,
+  "site_exhaustiveness_certified": false,
+  "result": "NO_NEW_ANCHOR_LINKS_OBSERVED_BUT_JS_HYDRATION_INCONCLUSIVE",
+  "follow_up": "Classify request URL paths without sending blocked requests or storing full URLs; require fresh CI artifact"
+}

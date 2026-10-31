@@ -1,0 +1,50 @@
+name: AkarFinder 30 Card Detail Identity Audit
+on:
+  push:
+    branches:
+      - data/200k-fresh-parser-v2
+    paths:
+      - '.github/workflows/mubawab-card-detail-audit-30.yml'
+      - 'scripts/data/mubawab-card-detail-audit-v1.ts'
+      - 'scripts/data/__tests__/mubawab-card-detail-audit-v1.test.ts'
+permissions:
+  contents: read
+  actions: read
+jobs:
+  validate-thirty-source-details:
+    runs-on: ubuntu-latest
+    timeout-minutes: 13
+    env:
+      CARDS_JSONL: .tmp/card-observations/mubawab-mass-acquisition-50.jsonl
+      OUTPUT_PREFIX: mubawab-card-detail-audit-30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Offline identity and safety regression tests
+        run: npx tsx --test scripts/data/__tests__/mubawab-card-detail-audit-v1.test.ts
+      - name: Download immutable 50-page card source
+        uses: actions/download-artifact@v4
+        with:
+          name: mubawab-mass-acquisition-50
+          run-id: 38014920725
+          github-token: ${{ github.token }}
+          path: .tmp/card-observations
+      - name: Source-detail audit up to 30 identities — robots aware
+        run: npx tsx scripts/data/mubawab-card-detail-audit-v1.ts
+      - name: Read-only and no-false-freshness proof
+        run: |
+          test "$(jq -r '.database_writes' mubawab-card-detail-audit-30.json)" = "0"
+          test "$(jq -r '.database_access' mubawab-card-detail-audit-30.json)" = "0"
+          jq -e '.detail_requests <= 30 and .sample_selected <= 30 and .freshness_certified == null' mubawab-card-detail-audit-30.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mubawab-card-detail-audit-30
+          path: |
+            mubawab-card-detail-audit-30.json
+            mubawab-card-detail-audit-30.jsonl
+          retention-days: 14

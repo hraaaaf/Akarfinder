@@ -1,0 +1,155 @@
+name: FeenWay public sitemap discovery (read only)
+on:
+  push:
+    branches:
+      - data/200k-fresh-parser-v2
+    paths:
+      - scripts/acquisition/feenway-sitemap-inventory-v1.mjs
+      - scripts/data/__tests__/feenway-sitemap-inventory-v1.test.mjs
+      - scripts/acquisition/feenway-n01-page-links-audit.mjs
+      - scripts/data/__tests__/feenway-n01-page-links-audit.test.mjs
+      - .github/workflows/feenway-sitemap-inventory-v1.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inventory:
+    name: Six public sitemaps; no detail scraping
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Local safety tests
+        run: node --test scripts/data/__tests__/feenway-sitemap-inventory-v1.test.mjs
+      - name: N01 raw-byte audit local syntax and fixture tests
+        run: |
+          node --check scripts/acquisition/feenway-n01-sitemap-audit.mjs
+          node --test scripts/data/__tests__/feenway-n01-sitemap-audit.test.mjs
+      - name: N01 raw-byte SHA-256 of six public XML responses
+        run: node scripts/acquisition/feenway-n01-sitemap-audit.mjs .tmp/feenway-n01/sha-256.json
+      - name: Assert raw XML completeness
+        run: |
+          node --input-type=module -e "
+          import { readFileSync } from 'node:fs';
+          const r=JSON.parse(readFileSync('.tmp/feenway-n01/sha-256.json','utf8'));
+          if(!r.complete || r.files.length!==6 || r.errors.length || r.files.some(f=>! /^[a-f0-9]{64}$/.test(f.raw_sha256))) process.exit(1);
+          console.log(JSON.stringify({files:r.files.length,unique_listing_urls:r.unique_listing_urls,duplicate_urls:r.duplicate_urls}));
+          "
+      - name: Six public XML sources; fail closed
+        run: node scripts/acquisition/feenway-sitemap-inventory-v1.mjs --out=.tmp/feenway-sitemap-inventory-v1
+      - name: N01 public sitemap surface audit syntax and unit tests
+        run: |
+          node --check scripts/acquisition/feenway-n01-surfaces-audit.mjs
+          node --test scripts/data/__tests__/feenway-n01-surfaces-audit.test.mjs
+      - name: N01 public sitemap surfaces inventory (nine partitions)
+        run: node scripts/acquisition/feenway-n01-surfaces-audit.mjs .tmp/feenway-n01-surfaces/report.json .tmp/feenway-sitemap-inventory-v1/discovery.jsonl
+      - name: N01 landing-page link audit syntax and offline tests
+        run: |
+          node --check scripts/acquisition/feenway-n01-page-links-audit.mjs
+          node --test scripts/data/__tests__/feenway-n01-page-links-audit.test.mjs
+      - name: N01 public quartier and market batch 28 (50 pages max)
+        run: node scripts/acquisition/feenway-n01-page-links-audit.mjs .tmp/feenway-n01-batch28/report.json .tmp/feenway-sitemap-inventory-v1/discovery.jsonl .tmp/feenway-n01-surfaces/report.jsonl batch:28
+      - name: N01 public quartier and market batch 29 (50 pages max)
+        run: node scripts/acquisition/feenway-n01-page-links-audit.mjs .tmp/feenway-n01-batch29/report.json .tmp/feenway-sitemap-inventory-v1/discovery.jsonl .tmp/feenway-n01-surfaces/report.jsonl batch:29
+      - name: N01 public quartier and market batch 30 (50 pages max)
+        run: node scripts/acquisition/feenway-n01-page-links-audit.mjs .tmp/feenway-n01-batch30/report.json .tmp/feenway-sitemap-inventory-v1/discovery.jsonl .tmp/feenway-n01-surfaces/report.jsonl batch:30
+      - name: N01 public quartier and market batch 31 (50 pages max)
+        run: node scripts/acquisition/feenway-n01-page-links-audit.mjs .tmp/feenway-n01-batch31/report.json .tmp/feenway-sitemap-inventory-v1/discovery.jsonl .tmp/feenway-n01-surfaces/report.jsonl batch:31
+      - name: N01 public quartier and market batch 32 (50 pages max)
+        run: node scripts/acquisition/feenway-n01-page-links-audit.mjs .tmp/feenway-n01-batch32/report.json .tmp/feenway-sitemap-inventory-v1/discovery.jsonl .tmp/feenway-n01-surfaces/report.jsonl batch:32
+      - name: N01 public quartier and market batch 33 (50 pages max)
+        run: node scripts/acquisition/feenway-n01-page-links-audit.mjs .tmp/feenway-n01-batch33/report.json .tmp/feenway-sitemap-inventory-v1/discovery.jsonl .tmp/feenway-n01-surfaces/report.jsonl batch:33
+      - name: N01 public quartier and market batch 34 (50 pages max)
+        run: node scripts/acquisition/feenway-n01-page-links-audit.mjs .tmp/feenway-n01-batch34/report.json .tmp/feenway-sitemap-inventory-v1/discovery.jsonl .tmp/feenway-n01-surfaces/report.jsonl batch:34
+      - name: N01 public quartier and market batch 35 (50 pages max)
+        run: node scripts/acquisition/feenway-n01-page-links-audit.mjs .tmp/feenway-n01-batch35/report.json .tmp/feenway-sitemap-inventory-v1/discovery.jsonl .tmp/feenway-n01-surfaces/report.jsonl batch:35
+      - name: Save observation as evidence only
+        uses: actions/upload-artifact@v4
+        with:
+          name: feenway-sitemap-discovery
+          path: .tmp/feenway-sitemap-inventory-v1/
+          if-no-files-found: error
+          retention-days: 30
+      - name: Preserve N01 raw XML integrity proof even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: feenway-n01-raw-byte-sha
+          path: .tmp/feenway-n01/sha-256.json
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Preserve N01 public surface manifest even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: feenway-n01-public-surfaces
+          path: .tmp/feenway-n01-surfaces/
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Preserve N01 batch 28 with exact provenance (also on failure)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: feenway-n01-batch28
+          path: .tmp/feenway-n01-batch28/
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Preserve N01 batch 29 with exact provenance (also on failure)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: feenway-n01-batch29
+          path: .tmp/feenway-n01-batch29/
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Preserve N01 batch 30 with exact provenance (also on failure)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: feenway-n01-batch30
+          path: .tmp/feenway-n01-batch30/
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Preserve N01 batch 31 with exact provenance (also on failure)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: feenway-n01-batch31
+          path: .tmp/feenway-n01-batch31/
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Preserve N01 batch 32 with exact provenance (also on failure)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: feenway-n01-batch32
+          path: .tmp/feenway-n01-batch32/
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Preserve N01 batch 33 with exact provenance (also on failure)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: feenway-n01-batch33
+          path: .tmp/feenway-n01-batch33/
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Preserve N01 batch 34 with exact provenance (also on failure)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: feenway-n01-batch34
+          path: .tmp/feenway-n01-batch34/
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Preserve N01 batch 35 with exact provenance (also on failure)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: feenway-n01-batch35
+          path: .tmp/feenway-n01-batch35/
+          if-no-files-found: warn
+          retention-days: 30

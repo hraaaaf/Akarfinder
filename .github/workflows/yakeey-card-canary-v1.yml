@@ -1,0 +1,44 @@
+name: AkarFinder Yakeey Public Card Pilot V1
+on:
+  push:
+    branches:
+      - data/200k-fresh-parser-v2
+    paths:
+      - '.github/workflows/yakeey-card-canary-v1.yml'
+      - 'scripts/data/yakeey-card-canary-v1.mjs'
+      - 'scripts/data/__tests__/yakeey-card-canary-v1.test.mjs'
+permissions:
+  contents: read
+jobs:
+  bounded-public-card-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Offline parser, sold/rented, robots and identity tests
+        run: node --test scripts/data/__tests__/yakeey-card-canary-v1.test.mjs
+      - name: Two public source roots and at most two linked pages
+        run: node scripts/data/yakeey-card-canary-v1.mjs
+      - name: Verify read-only provenance and no false active publication
+        run: |
+          jq -e '.category_requests <= 4 and .detail_requests == 0 and .database_access == 0 and .database_writes == 0 and .production_published == 0' yakeey-card-canary-v1.json
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const j=fs.readFileSync('yakeey-card-canary-v1.jsonl','utf8').split(/\r?\n/).filter(Boolean).map(JSON.parse);
+          if(new Set(j.map(r=>r.identity)).size!==j.length)throw Error('duplicates');
+          if(j.some(r=>r.freshness_certified||r.active_detail_verified||r.cross_source_deduplicated))throw Error('false certification');
+          if(j.some(r=>r.card_closed_marker&&r.five_field_observed))throw Error('sold/rented promoted');
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: yakeey-card-canary-v1
+          path: |
+            yakeey-card-canary-v1.json
+            yakeey-card-canary-v1.jsonl
+          retention-days: 14

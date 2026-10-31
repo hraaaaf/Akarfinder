@@ -1,0 +1,154 @@
+{
+  "mold_id": "AKARFINDER_PROPERTY_LISTING_V1",
+  "version": 1,
+  "currency": "MAD",
+  "fields": {
+    "source": {
+      "type": "string",
+      "required": true
+    },
+    "source_identity": {
+      "type": "string",
+      "required": true
+    },
+    "source_url": {
+      "type": "url",
+      "required": true
+    },
+    "city": {
+      "type": "string",
+      "default": null
+    },
+    "district": {
+      "type": "string",
+      "default": null
+    },
+    "property_type": {
+      "type": "enum",
+      "values": [
+        "apartment",
+        "studio",
+        "villa",
+        "house",
+        "land",
+        "office",
+        "commercial",
+        "other",
+        "unknown"
+      ],
+      "default": "unknown"
+    },
+    "transaction": {
+      "type": "enum",
+      "values": [
+        "sale",
+        "rent",
+        null
+      ],
+      "default": null
+    },
+    "price_mad": {
+      "type": "integer",
+      "min": 200,
+      "max": 1000000000,
+      "default": null
+    },
+    "price_period": {
+      "type": "enum",
+      "values": [
+        "total",
+        "month",
+        "night",
+        null
+      ],
+      "default": null
+    },
+    "surface_m2": {
+      "type": "integer",
+      "min": 5,
+      "max": 100000,
+      "default": null
+    },
+    "surface_basis": {
+      "type": "enum",
+      "values": [
+        "habitable",
+        "total",
+        "headline",
+        "listed",
+        null
+      ],
+      "default": null
+    },
+    "bedrooms": {
+      "type": "integer",
+      "min": 0,
+      "max": 50,
+      "default": null
+    },
+    "published_at": {
+      "type": "date-time",
+      "default": null
+    },
+    "observed_at": {
+      "type": "date-time",
+      "required": true
+    }
+  },
+  "technical_weights": {
+    "city": 10,
+    "district": 12,
+    "price_mad": 20,
+    "surface_m2": 16,
+    "bedrooms": 6,
+    "property_type": 10,
+    "transaction": 10,
+    "price_period": 7,
+    "identity_verified": 9
+  },
+  "ranking_components": {
+    "technical": 70,
+    "freshness": 30
+  },
+  "freshness_days": [
+    {
+      "max": 7,
+      "score": 100
+    },
+    {
+      "max": 30,
+      "score": 75
+    },
+    {
+      "max": 90,
+      "score": 45
+    },
+    {
+      "max": 180,
+      "score": 20
+    },
+    {
+      "max": 365,
+      "score": 5
+    }
+  ],
+  "anomaly_penalties": {
+    "program_not_individual": 30,
+    "price_per_m2": 30,
+    "daily_or_nightly_rent": 25,
+    "pas_de_porte": 30,
+    "conflicting_primary_prices": 30,
+    "conflicting_primary_areas": 30,
+    "source_identity_not_confirmed": 40,
+    "rental_period_unconfirmed": 12,
+    "source_route_alias": 5
+  },
+  "publication_requires": [
+    "availability_verified",
+    "physically_unique_verified",
+    "reuse_rights_verified",
+    "freshness_verified",
+    "primary_fields_verified"
+  ],
+  "unknown_freshness_is_zero_contribution": true
+}

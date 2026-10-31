@@ -1,0 +1,62 @@
+name: AkarFinder Mubawab Regional Eight-Category Pilot
+on:
+  push:
+    branches:
+      - data/200k-fresh-parser-v2
+    paths:
+      - '.github/workflows/mubawab-regional-categories-v1.yml'
+      - 'scripts/data/mubawab-regional-categories-v1.mjs'
+      - 'scripts/data/__tests__/mubawab-regional-categories-v1.test.mjs'
+permissions:
+  contents: read
+  actions: read
+jobs:
+  eight-confirmed-regional-pages:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CARD_LEDGER_JSONL: .tmp/source-ledger/acquisition-ledger-v1.jsonl
+      OUTPUT_PREFIX: mubawab-regional-categories
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Isolated card and city provenance tests
+        run: |
+          node --test scripts/data/__tests__/mubawab-regional-categories-v1.test.mjs
+          node --test scripts/data/__tests__/mubawab-result-cards-v1.test.mjs
+      - name: Download immutable seven-source ledger
+        uses: actions/download-artifact@v4
+        with:
+          name: card-acquisition-ledger-v1
+          run-id: 38046725132
+          github-token: ${{ github.token }}
+          path: .tmp/source-ledger
+      - name: Exact seven-artifact ledger SHA256
+        run: |
+          echo "f36cb89a26399ded9f640b4072f83037b8a9c4911b3c8978cfe5269a3ccbe4f0  .tmp/source-ledger/acquisition-ledger-v1.jsonl" | sha256sum -c -
+      - name: Collect eight source-verified region pages — robots gated
+        run: node scripts/data/mubawab-regional-categories-v1.mjs
+      - name: Certify observation integrity and no writes
+        if: success()
+        run: |
+          jq -e '.target_page_count == 8 and .request_count <= 8 and .database_writes == 0 and .database_access == 0 and .net_new_source_ids_vs_freeze != null' mubawab-regional-categories.json
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const r=JSON.parse(fs.readFileSync('mubawab-regional-categories.json','utf8'));
+          const rows=fs.readFileSync('mubawab-regional-categories.jsonl','utf8').split(/\r?\n/).filter(Boolean).map(JSON.parse);
+          if(rows.length!==r.unique_source_id_count||new Set(rows.map(x=>x.identity)).size!==rows.length)throw Error('identity mismatch');
+          if(rows.filter(x=>x.five_field_observed).length!==r.unique_five_field_observed)throw Error('five-field mismatch');
+          if(rows.some(x=>x.freshness_certified||x.active_detail_verified||x.cross_source_deduplicated))throw Error('unproven readiness');
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mubawab-regional-categories-v1
+          path: |
+            mubawab-regional-categories.json
+            mubawab-regional-categories.jsonl
+          retention-days: 14

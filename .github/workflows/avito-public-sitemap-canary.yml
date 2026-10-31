@@ -1,0 +1,40 @@
+name: AkarFinder Avito Public Sitemap Canary
+on:
+  push:
+    branches:
+      - data/200k-fresh-parser-v2
+    paths:
+      - '.github/workflows/avito-public-sitemap-canary.yml'
+      - 'scripts/data/avito-public-sitemap-canary-v1.mjs'
+permissions:
+  contents: read
+jobs:
+  four-public-documents:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    env:
+      OUTPUT_PREFIX: avito-sitemap-canary
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Offline sitemap identity and dedup regression
+        run: node --test scripts/acquisition/__tests__/avito-sitemap-enumerator.test.mjs
+      - name: Read robots and at most four public sitemap documents
+        run: node scripts/data/avito-public-sitemap-canary-v1.mjs
+      - name: Assert zero writes and bounded source discovery
+        run: |
+          test "$(jq -r '.database_writes' avito-sitemap-canary.json)" = "0"
+          test "$(jq -r '.database_access' avito-sitemap-canary.json)" = "0"
+          test "$(jq -r '.network_requests <= 5' avito-sitemap-canary.json)" = "true"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: avito-public-sitemap-canary
+          path: |
+            avito-sitemap-canary.json
+            avito-sitemap-canary.jsonl
+          retention-days: 14

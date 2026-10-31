@@ -1,0 +1,327 @@
+{
+  "schema": "FEENWAY_N01_LOCAL_ARCHIVE_INVENTORY_V1",
+  "historical_reported_url_count": 73710,
+  "archives": [
+    {
+      "kind": "batch",
+      "batch": 33,
+      "file": "feenway-n01-artifact-12991419834.zip",
+      "artifact_id": 12991419834,
+      "zip_sha256": "a6f57a84ec69a79ffa2f815de710dbe5a92a23ca7674f5ed4d4f7a37ea57ac7d",
+      "included_in_primary_cohort": true
+    },
+    {
+      "kind": "batch",
+      "batch": 1,
+      "file": "feenway-n01-batch-01-12942320515.zip",
+      "artifact_id": 12942320515,
+      "zip_sha256": "07a21e52417e91109364ce69667bce1102d53df00b9e3c9eafe70e65976f4321",
+      "included_in_primary_cohort": true
+    },
+    {
+      "kind": "batch",
+      "batch": 2,
+      "file": "feenway-n01-batch-02-12970390909.zip",
+      "artifact_id": 12970390909,
+      "zip_sha256": "3da3191901be25fad2072c18a84fb20060d28fde4c159652f36cd20df9f16031",
+      "included_in_primary_cohort": true
+    },
+    {
+      "kind": "batch",
+      "batch": 3,
+      "file": "feenway-n01-batch-03-12969732644.zip",
+      "artifact_id": 12969732644,
+      "zip_sha256": "4742440f9b29a9ff1e9692e94edaba1c77bd99ab059d2718f1a9574793ddadbf",
+      "included_in_primary_cohort": true
+    },
+    {
+      "kind": "batch",
+      "batch": 4,
+      "file": "feenway-n01-batch-04-12980698302.zip",
+      "artifact_id": 12980698302,
+      "zip_sha256": "da74e4ce4c6d60e21412537fcd318d0182ceacfb54ca6507d1be35eec1dcf110",
+      "included_in_primary_cohort": true
+    },
+    {
+      "kind": "batch",
+      "batch": 5,
+      "file": "feenway-n01-batch-05-12980828119.zip",
+      "artifact_id": 12980828119,
+      "zip_sha256": "b44a28fbeafb95ab32c39f6d7418dc228042ec58bd4ce9038e6b32e0da38340f",
+      "included_in_primary_cohort": true
+    },
+    {
+      "kind": "batch",
+      "batch": 6,
+      "file": "feenway-n01-batch-06-12980713157.zip",
+      "artifact_id": 12980713157,
+      "zip_sha256": "b93fc2f16aed1a9d8e76a59c7add0baf0a7bfb524b3acd0c334c5e06f5c18378",
+      "included_in_primary_cohort": true
+    },
+    {
+      "kind": "batch",
+      "batch": 7,
+      "file": "feenway-n01-batch-07-12980989294.zip",
+      "artifact_id": 12980989294,
+      "zip_sha256": "d299a271e7d8ed370279ea246425afa45ef82fcea4e9eae3efd1fc194d283795",
+      "included_in_primary_cohort": true
+    },
+    {
+      "kind": "batch",
+      "batch": 8,
+      "file": "feenway-n01-batch-08-12980579627.zip",
+      "artifact_id": 12980579627,
+      "zip_sha256": "c43e3b570fe45757bf1de7fad0f44b9b51f6b7e1ce9d92fae138a1afe0aaad77",
+      "included_in_primary_cohort": true
+    },
+    {
+      "kind": "batch",
+      "batch": 9,
+      "file": "feenway-n01-batch-09-12981194048.zip",
+      "artifact_id": 12981194048,
+      "zip_sha256": "8c9983a1d35f8d6713823300f74035d17f41f912e8c8b28eb5b5d3313b958e1a",
+      "included_in_primary_cohort": true
+    },
+    {
+      "kind": "batch",
+      "batch": 10,
+      "file": "feenway-n01-batch-10-12980799328.zip",
+      "artifact_id": 12980799328,
+      "zip_sha256": "498f0140e51cff5521a410fd6aed1a2b251de177eadc373099d50752d08d6ef2",
+      "included_in_primary_cohort": true
+    },
+    {
+      "kind": "batch",
+      "batch": 11,
+      "file": "feenway-n01-batch-11-12983975031.zip",
+      "artifact_id": 12983975031,
+      "zip_sha256": "7671941fc4d73001ad8e66b02a1de5f6744bd94c1cf128f3c167c1257661832f",
+      "included_in_primary_cohort": true
+    },
+    {
+      "kind": "batch",
+      "batch": 12,
+      "file": "feenway-n01-batch-12-12983745468.zip",
+      "artifact_id": 12983745468,
+      "zip_sha256": "6e8435acefbf151b345f2101078fef6c64e9f0479dfb0bea496b751e9eb2d05b",
+      "included_in_primary_cohort": true
+    },
+    {
+      "kind": "batch",
+      "batch": 13,
+      "file": "feenway-n01-batch-13-12982254804.zip",
+      "artifact_id": 12982254804,
+      "zip_sha256": "c2c82790bad566feafeb83f79698d09cd3ac8082656481dc91fca6a389895fd4",
+      "included_in_primary_cohort": true
+    },
+    {
+      "kind": "batch",
+      "batch": 14,
+      "file": "feenway-n01-batch-14-12982204839.zip",
+      "artifact_id": 12982204839,
+      "zip_sha256": "1ea8a26e88ece47fe47c356a8c7e16853eec730f3a777fb9a4d94fe8cff2db7c",
+      "included_in_primary_cohort": true
+    },
+    {
+      "kind": "batch",
+      "batch": 15,
+      "file": "feenway-n01-batch-15-12982234878.zip",
+      "artifact_id": 12982234878,
+      "zip_sha256": "c5985a9df38536b5d6e872a35d315f085412a664533b7f57602a01a495a02bba",
+      "included_in_primary_cohort": true
+    },
+    {
+      "kind": "batch",
+      "batch": 16,
+      "file": "feenway-n01-batch-16-12986488634.zip",
+      "artifact_id": 12986488634,
+      "zip_sha256": "3c629aa8c06a4a0bd646b04c96cfc4d037a78c1632a998e24548caed6d76ab82",
+      "included_in_primary_cohort": true
+    },
+    {
+      "kind": "batch",
+      "batch": 17,
+      "file": "feenway-n01-batch-17-12986264007.zip",
+      "artifact_id": 12986264007,
+      "zip_sha256": "3f3b739915d51a7b1a97c3ddc539f100b4237ac33c142a33d3e53c5c6406f8df",
+      "included_in_primary_cohort": true
+    },
+    {
+      "kind": "batch",
+      "batch": 18,
+      "file": "feenway-n01-batch-18-12987336016.zip",
+      "artifact_id": 12987336016,
+      "zip_sha256": "18c63819350fab8d7f6a362be4d3b84961ff62e1f5690a883eb7a8a750ec17a6",
+      "included_in_primary_cohort": true
+    },
+    {
+      "kind": "batch",
+      "batch": 19,
+      "file": "feenway-n01-batch-19-12987350793.zip",
+      "artifact_id": 12987350793,
+      "zip_sha256": "3c6a4c334541e55dffb680733e379e02f0b2217455346aace86cdfd2fc8499cb",
+      "included_in_primary_cohort": true
+    },
+    {
+      "kind": "batch",
+      "batch": 20,
+      "file": "feenway-n01-batch-20-12987112731.zip",
+      "artifact_id": 12987112731,
+      "zip_sha256": "3731af1a5492bffa516b595792fd95ffb3495e489e72cd828385c6a6299a0b6f",
+      "included_in_primary_cohort": true
+    },
+    {
+      "kind": "batch",
+      "batch": 21,
+      "file": "feenway-n01-batch-21-12987247986.zip",
+      "artifact_id": 12987247986,
+      "zip_sha256": "0575f3ecbed090ca1fa19024573a1040bc597fa34a5e03856a316589ec845a17",
+      "included_in_primary_cohort": true
+    },
+    {
+      "kind": "batch",
+      "batch": 22,
+      "file": "feenway-n01-batch-22-12987866045.zip",
+      "artifact_id": 12987866045,
+      "zip_sha256": "17f0620a2b828b7a19d3ff3fb602eb7c8c98244cf6d1e6c8cf7c40dd7d4e2d4f",
+      "included_in_primary_cohort": true
+    },
+    {
+      "kind": "batch",
+      "batch": 23,
+      "file": "feenway-n01-batch-23-12992295392.zip",
+      "artifact_id": 12992295392,
+      "zip_sha256": "eddaed527eb33b84452f9e0f7acc817868d75b0a4371f2ab1a716ab73097be1a",
+      "included_in_primary_cohort": true
+    },
+    {
+      "kind": "batch",
+      "batch": 24,
+      "file": "feenway-n01-batch-24-12991960662.zip",
+      "artifact_id": 12991960662,
+      "zip_sha256": "a458849c2b45f12407369e98ef45ab99e4de50465a006595740982a572c819f0",
+      "included_in_primary_cohort": true
+    },
+    {
+      "kind": "batch",
+      "batch": 25,
+      "file": "feenway-n01-batch-25-12990624823.zip",
+      "artifact_id": 12990624823,
+      "zip_sha256": "3cd81720afdbcfdb4c609e0c87d31dc2e3ca8bd6d51bab36f1fa48634c1c628f",
+      "included_in_primary_cohort": true
+    },
+    {
+      "kind": "batch",
+      "batch": 26,
+      "file": "feenway-n01-batch-26-12992420266.zip",
+      "artifact_id": 12992420266,
+      "zip_sha256": "a1ce8fb9504a5da133544ae667e7a139fbb58740cd227b4548bba67c77f6fc84",
+      "included_in_primary_cohort": true
+    },
+    {
+      "kind": "batch",
+      "batch": 27,
+      "file": "feenway-n01-batch-27-12990614769.zip",
+      "artifact_id": 12990614769,
+      "zip_sha256": "8bc289c9de657539892fd5e7cc7ef5885448298877274b4fe19f52c5a077e1f9",
+      "included_in_primary_cohort": true
+    },
+    {
+      "kind": "batch",
+      "batch": 28,
+      "file": "feenway-n01-batch-28-12992087720.zip",
+      "artifact_id": 12992087720,
+      "zip_sha256": "f5619e2d5fe7b8fc096124bb570fc7406e1c5306748e2af9a6bad232792785c1",
+      "included_in_primary_cohort": true
+    },
+    {
+      "kind": "batch",
+      "batch": 29,
+      "file": "feenway-n01-batch-29-12992637239.zip",
+      "artifact_id": 12992637239,
+      "zip_sha256": "27ee3ee4698ae80494b8fca898eb93a6f5d4cabe31c83523fa069e47988661eb",
+      "included_in_primary_cohort": true
+    },
+    {
+      "kind": "batch",
+      "batch": 30,
+      "file": "feenway-n01-batch-30-12992192565.zip",
+      "artifact_id": 12992192565,
+      "zip_sha256": "a5c59c8f6819aa3f24ca8259368ed0562405b37abd2c3a95ec8cd79b1bb677e4",
+      "included_in_primary_cohort": true
+    },
+    {
+      "kind": "batch",
+      "batch": 31,
+      "file": "feenway-n01-batch-31-12992672136.zip",
+      "artifact_id": 12992672136,
+      "zip_sha256": "7bf96f07bc7b4b9036dbf0723971f6cd3f511574281875e18a13e4ce1aea3d3c",
+      "included_in_primary_cohort": true
+    },
+    {
+      "kind": "batch",
+      "batch": 32,
+      "file": "feenway-n01-batch-32-12992322798.zip",
+      "artifact_id": 12992322798,
+      "zip_sha256": "f8d748787e378114c75c48bde6bf4e09f2ef7abbe6d4d0dee4a3df45cbd5cf43",
+      "included_in_primary_cohort": true
+    },
+    {
+      "kind": "batch",
+      "batch": 34,
+      "file": "feenway-n01-batch-34-12992367690.zip",
+      "artifact_id": 12992367690,
+      "zip_sha256": "e5397a61d95c0a6d48ee5e0dafd3692962dbc7bcc83e213b31cc5338c4df91e0",
+      "included_in_primary_cohort": true
+    },
+    {
+      "kind": "batch",
+      "batch": 35,
+      "file": "feenway-n01-batch-35-12992522497.zip",
+      "artifact_id": 12992522497,
+      "zip_sha256": "5c5d0e9ef53409e3d6b32b8ca2729c822c664d79eb2f9233ffcc908e127819f7",
+      "included_in_primary_cohort": true
+    },
+    {
+      "kind": "sitemap",
+      "label": "sitemap",
+      "file": "feenway-n01-artifact-12992746845.zip",
+      "artifact_id": 12992746845,
+      "zip_sha256": "0c1abf0ea061df540e86464100d161a9be538f2195b407591950d5184273d2c5",
+      "manifest_sha256": "5e2af7dcbcc9bc4d9b74f085c383a431483f708be28449ecbb9f3b9acbcc38b8",
+      "included_in_primary_cohort": true
+    },
+    {
+      "kind": "cities",
+      "label": "cities_current",
+      "file": "feenway-n01-cities-12970460578.zip",
+      "artifact_id": 12970460578,
+      "zip_sha256": "e3e5f4d60150fe2875393df470ddc60440b7ec4d180a8f29a4c68b44aa9263fc",
+      "included_in_primary_cohort": true
+    },
+    {
+      "kind": "sample",
+      "label": "sample_current",
+      "file": "feenway-n01-page-gaps-12969817336.zip",
+      "artifact_id": 12969817336,
+      "zip_sha256": "5d9b55e153085fb01c875a5b419e7b13c9b1cf91b84486e7e9322ab103217420",
+      "included_in_primary_cohort": true
+    },
+    {
+      "kind": "cities",
+      "label": "cities_historical",
+      "file": "feenway-n01-cities-old-12941867033.zip",
+      "artifact_id": 12941867033,
+      "zip_sha256": "4c66d72be62a4e5507a944685b307446cc2c5702a95603df67b746addef5a3bc",
+      "included_in_primary_cohort": false
+    },
+    {
+      "kind": "sample",
+      "label": "sample_historical",
+      "file": "feenway-n01-page-gaps-old-12941118856.zip",
+      "artifact_id": 12941118856,
+      "zip_sha256": "28ac07e21340e6b249e8d75cd8ff8f0be71c695dac3ff633428dcf9b61979d61",
+      "included_in_primary_cohort": false
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+name: AkarFinder Sarouty Public Card Fields Pilot
+on:
+  push:
+    branches:
+      - data/200k-fresh-parser-v2
+    paths:
+      - '.github/workflows/sarouty-card-fields-pilot.yml'
+      - 'scripts/data/sarouty-result-cards-v1.mjs'
+      - 'scripts/data/__tests__/sarouty-result-cards-v1.test.mjs'
+      - 'scripts/data/sarouty-card-fields-pilot-v1.mjs'
+      - 'scripts/data/__tests__/sarouty-card-fields-pilot-v1.test.mjs'
+permissions:
+  contents: read
+jobs:
+  six-public-result-categories:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      OUTPUT_PREFIX: sarouty-card-fields-pilot
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Card isolation and robots/cadence tests
+        run: |
+          node --test scripts/data/__tests__/sarouty-result-cards-v1.test.mjs
+          node --test scripts/data/__tests__/sarouty-card-fields-pilot-v1.test.mjs
+          node --test scripts/data/__tests__/sarouty-card-canary-v1.test.mjs
+          node --test scripts/data/__tests__/sarouty-detail-identity-v1.test.mjs
+      - name: Observe at most six public category pages
+        run: node scripts/data/sarouty-card-fields-pilot-v1.mjs
+      - name: Verify observation-only, one source identity per row
+        if: success()
+        run: |
+          jq -e '.target_categories == 6 and .category_requests <= 6 and .database_access == 0 and .database_writes == 0 and .source_ids_observed >= .five_field_observed' sarouty-card-fields-pilot.json
+          node - <<'NODE'
+          const fs=require("fs");
+          const report=JSON.parse(fs.readFileSync("sarouty-card-fields-pilot.json","utf8"));
+          const rows=fs.readFileSync("sarouty-card-fields-pilot.jsonl","utf8").split(/\r?\n/).filter(Boolean).map(JSON.parse);
+          if(rows.length!==report.source_ids_observed||new Set(rows.map(x=>x.identity)).size!==rows.length)throw Error("source identity mismatch");
+          if(rows.filter(x=>x.five_field_observed&&!x.conflicting_cross_page_fields.length).length!==report.five_field_observed)throw Error("five-fields mismatch");
+          if(rows.some(x=>x.freshness_certified||x.active_detail_verified||x.cross_source_deduplicated))throw Error("unproven promotion");
+          console.log("OBSERVATION_ONLY_VERIFIED",rows.length);
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sarouty-card-fields-pilot
+          path: |
+            sarouty-card-fields-pilot.json
+            sarouty-card-fields-pilot.jsonl
+          retention-days: 14

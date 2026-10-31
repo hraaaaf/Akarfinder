@@ -1,0 +1,65 @@
+name: AkarFinder National Frontier 100
+on:
+  push:
+    branches:
+      - data/200k-fresh-parser-v2
+    paths:
+      - '.github/workflows/mubawab-national-frontier-100.yml'
+      - 'scripts/data/mubawab-national-frontier-v1.mjs'
+      - 'scripts/data/__tests__/mubawab-national-frontier-v1.test.mjs'
+permissions:
+  contents: read
+  actions: read
+jobs:
+  bounded-source-discovery:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      OUTPUT_PREFIX: mubawab-frontier-100
+      FRONTIER_MAX_REQUESTS: '100'
+      CARDS_BASELINE_JSONL: .tmp/mubawab-50/mubawab-mass-acquisition-50.jsonl
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Offline route discovery, identity and anti-bypass tests
+        run: |
+          node --test scripts/data/__tests__/mubawab-national-frontier-v1.test.mjs
+          node --test scripts/data/__tests__/mubawab-card-scale-v1.test.mjs
+          node --test scripts/data/__tests__/mubawab-result-cards-v1.test.mjs
+      - name: Reuse immutable 50-category card baseline
+        uses: actions/download-artifact@v4
+        with:
+          name: mubawab-mass-acquisition-50
+          run-id: 38014920725
+          github-token: ${{ github.token }}
+          path: .tmp/mubawab-50
+      - name: Discover public national categories and extract scoped cards
+        run: node scripts/data/mubawab-national-frontier-v1.mjs
+      - name: Assert bounded safe output and unpromoted evidence
+        if: always()
+        run: |
+          test -f mubawab-frontier-100.json
+          jq -e '.max_requests == 100 and .requests <= 100 and .database_access == 0 and .database_writes == 0 and .semantics == "result_cards_only_no_freshness_certified"' mubawab-frontier-100.json
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const report=JSON.parse(fs.readFileSync('mubawab-frontier-100.json','utf8'));
+          const rows=fs.readFileSync('mubawab-frontier-100.jsonl','utf8').split(/\r?\n/).filter(Boolean).map(JSON.parse);
+          if(rows.length!==report.unique_listing_ids)throw Error('count mismatch');
+          if(new Set(rows.map(x=>x.identity)).size!==rows.length)throw Error('duplicate identity');
+          if(rows.some(x=>x.freshness_certified||x.active_detail_verified||x.cross_source_deduplicated))throw Error('unproven active/freshness evidence');
+          if(rows.filter(x=>x.five_field_observed).length!==report.five_field_observed)throw Error('five field count mismatch');
+          if(report.net_new_ids_vs_prior_50>rows.length)throw Error('impossible net-new');
+          console.log("READ_ONLY_FRONTIER_VERIFIED",rows.length);
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mubawab-national-frontier-100
+          path: |
+            mubawab-frontier-100.json
+            mubawab-frontier-100.jsonl
+          retention-days: 14

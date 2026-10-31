@@ -1,19 +1,32 @@
 #!/usr/bin/env python3
-import json,re,time,urllib.parse,urllib.request,urllib.robotparser
+import json,re,time,os,urllib.parse,urllib.request,urllib.robotparser
 from collections import deque,Counter
 from pathlib import Path
 BASE='https://www.marocimmo.com'
 UA='AkarFinder-Audit/1.0 (+https://akarfinder.vercel.app; read-only public-surface audit)'
 OUT=Path('artifacts/marocimmo-sitemap-enumeration'); OUT.mkdir(parents=True,exist_ok=True)
-START=BASE+'/sitemap.xml'; TIMEOUT=30; MAX_XML=500
+START=BASE+'/sitemap.xml'; TIMEOUT=30; MAX_XML=max(1,min(500,int(os.getenv('MAROCIMMO_MAX_XML','500')))); PAUSE=max(1.,float(os.getenv('MAROCIMMO_PAUSE_S','1.5')))
 
 def get(url):
     req=urllib.request.Request(url,headers={'User-Agent':UA,'Accept':'application/xml,text/xml;q=0.9,*/*;q=0.8'})
     with urllib.request.urlopen(req,timeout=TIMEOUT) as r:
         return r.status,r.headers.get('Content-Type',''),r.read().decode('utf-8','replace')
 
-rp=urllib.robotparser.RobotFileParser(); rp.set_url(BASE+'/robots.txt'); rp.read()
-if not rp.can_fetch(UA,START): raise SystemExit('robots disallows sitemap.xml')
+rp=urllib.robotparser.RobotFileParser(); rp.set_url(BASE+'/robots.txt')
+# Explicit identified UA: RobotFileParser.read() uses Python's default UA, unlike our
+# successful public-page probe. Do not silently treat a failed robots response as allowed.
+robots_status=None
+try:
+    robots_status,_,robots_txt=get(BASE+'/robots.txt')
+    if robots_status != 200 or len(robots_txt)>100000 or not robots_txt.strip():
+        raise ValueError('robots unavailable or oversized')
+    rp.parse(robots_txt.splitlines())
+    sitemap_allowed=rp.can_fetch(UA,START)
+except Exception:
+    sitemap_allowed=False
+if not sitemap_allowed:
+    (OUT/'summary.json').write_text(json.dumps({'source':'marocimmo.com','robots_sitemap_allowed':False,'robots_status':robots_status,'zero_db_writes':True,'direct_detail_fetches':0,'error':'robots_unavailable_or_disallowed'},indent=2)+'\n',encoding='utf-8')
+    raise SystemExit('robots_unavailable_or_disallowed')
 q=deque([START]); seen=set(); urls=set(); xml_rows=[]; errors=[]
 while q and len(seen)<MAX_XML:
     u=q.popleft()
@@ -31,7 +44,7 @@ while q and len(seen)<MAX_XML:
             else: urls.add(loc.split('#')[0])
     except Exception as e:
         errors.append({'url':u,'error':repr(e)})
-    time.sleep(.1)
+    time.sleep(PAUSE)
 
 patterns={
  'vente': re.compile(r'/fr/vente(?:/|$)',re.I),
@@ -44,7 +57,7 @@ segments=Counter((urllib.parse.urlparse(u).path.strip('/').split('/')[0] if urll
 summary={
  'generated_at':__import__('datetime').datetime.now(__import__('datetime').timezone.utc).isoformat(),
  'source':'marocimmo.com','mode':'read_only_public_sitemap_enumeration','zero_db_writes':True,'direct_detail_fetches':0,
- 'robots_sitemap_allowed':True,'xml_documents_visited':len(seen),'xml_documents':xml_rows,'public_urls_unique':len(urls),
+ 'robots_sitemap_allowed':True,'robots_status':robots_status,'xml_documents_visited':len(seen),'xml_documents':xml_rows,'public_urls_unique':len(urls),
  'pattern_counts':counts,'top_first_path_segments':segments.most_common(30),'errors':errors,'truncated':bool(q)
 }
 (OUT/'summary.json').write_text(json.dumps(summary,indent=2,ensure_ascii=False)+'\n',encoding='utf-8')
