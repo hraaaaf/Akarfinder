@@ -8,6 +8,7 @@ import path from "node:path";
 const baseUrl = process.env.BASE_URL ?? "http://127.0.0.1:3218";
 const outputDir = path.resolve(process.env.AUDIT_OUTPUT_DIR ?? "artifacts/search-onboarding-option-a");
 const viewports = [
+  { width: 360, height: 800 },
   { width: 390, height: 844 },
   { width: 430, height: 932 },
   { width: 768, height: 900 },
@@ -47,10 +48,23 @@ try {
       const horizontalOverflow = await page.evaluate(() =>
         document.documentElement.scrollWidth > document.documentElement.clientWidth + 1);
       if (horizontalOverflow) findings.push("HORIZONTAL_OVERFLOW");
+      const countHeading = page.locator("[data-search-results-toolbar] h1");
+      const heading = await countHeading.evaluate(element => {
+        const rect = element.getBoundingClientRect();
+        return {
+          text: element.textContent?.trim() ?? "",
+          clipped: element.scrollWidth > element.clientWidth + 1,
+          x: rect.x,
+          right: rect.right,
+        };
+      });
+      if (heading.clipped || heading.x < 0 || heading.right > viewport.width + 1) {
+        findings.push("RESULT_COUNT_TRUNCATED");
+      }
       if (consoleErrors.length) findings.push(`PAGE_ERRORS_${consoleErrors.length}`);
       const screenshot = `search-after-${viewport.width}x${viewport.height}.png`;
       await page.screenshot({ path: path.join(outputDir, screenshot), fullPage: true });
-      results.push({ ...viewport, screenshot, targetCardCount, targets, sheetVisible, chipCount, horizontalOverflow, findings, consoleErrors });
+      results.push({ ...viewport, screenshot, targetCardCount, targets, sheetVisible, chipCount, horizontalOverflow, heading, findings, consoleErrors });
     } catch (error) {
       findings.push(`AUDIT_ERROR_${error instanceof Error ? error.message : String(error)}`);
       results.push({ ...viewport, findings, consoleErrors });

@@ -52,6 +52,19 @@ test("visual proof checks the VISIBLE selector in all four viewports", () => {
   assert.ok(visual.includes("page.screenshot"));
 });
 
+test("mobile Search result counter gets its own visible line", () => {
+  const shell = read("components/search/LightZillowSearchShell.tsx");
+  assert.ok(shell.includes("data-search-results-toolbar"));
+  assert.ok(shell.includes("flex flex-wrap items-center justify-between"));
+  assert.ok(shell.includes("sm:flex-nowrap"));
+  assert.ok(shell.includes("flex w-full min-w-0 items-center gap-2 sm:w-auto"));
+  assert.ok(shell.includes("sm:w-auto sm:shrink-0 sm:justify-end"));
+  assert.ok(!shell.includes('className="min-w-0 truncate text-[14px]'));
+  assert.ok(visual.includes("RESULT_COUNT_TRUNCATED"));
+  assert.ok(visual.includes("element.scrollWidth > element.clientWidth + 1"));
+  for (const width of [360, 390, 430, 768, 1280]) assert.ok(visual.includes("width: " + width));
+});
+
 test("settled empty Search cannot advertise stale server totals or ghost pagination", () => {
   const shell = read("components/search/LightZillowSearchShell.tsx");
   assert.match(shell, /const hasAnyResults = loadedResultCount > 0/);
