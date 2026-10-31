@@ -73,6 +73,25 @@ try {
       if (heading.clipped || heading.x < 0 || heading.right > viewport.width + 1) {
         findings.push("RESULT_COUNT_TRUNCATED");
       }
+      // Keep both accessible Liste/Carte targets inside the visible mobile segment.
+      // A CSS-only count fix must not shrink the adjacent switcher to one button.
+      if (mobile) {
+        const mobileViewBounds = await page.locator("[data-search-mobile-view-select]:visible").evaluate(segment => {
+          const bounds = segment.getBoundingClientRect();
+          return {
+            segmentWidth: bounds.width,
+            buttons: [...segment.querySelectorAll("button")].map(button => {
+              const rect = button.getBoundingClientRect();
+              return { left: rect.left, right: rect.right, width: rect.width,
+                clipped: rect.left < bounds.left - 1 || rect.right > bounds.right + 1 };
+            }),
+          };
+        });
+        if (mobileViewBounds.buttons.length !== 2 ||
+            mobileViewBounds.buttons.some(button => button.clipped || button.width < 44)) {
+          findings.push("MOBILE_VIEW_SWITCHER_CLIPPED");
+        }
+      }
       if (consoleErrors.length) findings.push(`PAGE_ERRORS_${consoleErrors.length}`);
       const screenshot = `search-after-${viewport.width}x${viewport.height}.png`;
       await page.screenshot({ path: path.join(outputDir, screenshot), fullPage: true });

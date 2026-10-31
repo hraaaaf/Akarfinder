@@ -104,7 +104,9 @@
 @media (max-width: 639px) {
   .root {
     display: block;
-    width: 150px;
+    width: 156px;
+    min-width: 156px;
+    flex: 0 0 156px;
   }
 
   .mobileSegmented {

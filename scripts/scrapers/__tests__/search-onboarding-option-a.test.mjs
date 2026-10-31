@@ -87,4 +87,12 @@ test("mobile Search toolbar overrides legacy !important no-wrap for visible resu
   const proof = read("scripts/audits/search-onboarding-option-a-visual.mjs");
   assert.ok(proof.includes("MOBILE_RESULTS_TOOLBAR_NOT_WRAPPED"));
   assert.ok(proof.includes('toolbarLayout.flexWrap !== "wrap"'));
+  assert.doesNotMatch(css, /main \[data-search-results-section\] \[data-search-results-toolbar\]\{display:flex!important;flex-wrap:nowrap!important/);
+  assert.match(mobileOverride, /row-gap: 2px !important/);
+  assert.match(mobileOverride, /margin-top: 2px !important/);
+  assert.ok(css.includes("padding-top:4px!important"));
+  const switcherCss = read("components/search/SearchViewSwitcher.module.css");
+  assert.match(switcherCss, /flex: 0 0 156px/);
+  assert.match(switcherCss, /min-width: 156px/);
+  assert.ok(proof.includes("MOBILE_VIEW_SWITCHER_CLIPPED"));
 });
