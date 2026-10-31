@@ -219,7 +219,8 @@ describe("CONTEXTUAL-ILLUSTRATIONS-FOUNDATION-1", () => {
     assert.match(card, /result\.original_url/);
     assert.match(card, /href=\{sourcePages\[0\]\.url\}/);
     assert.match(card, /href=\{source\.url\}/);
-    assert.match(card, /formatPriceMad\(representative\.normalized_price_mad\)/);
+    assert.match(card, /buildExternalResultPresentation\(representative\)/);
+    assert.match(card, /formatPriceMad\(presentation\.priceMad\)/);
     assert.match(card, /isPriceToVerify\(representative\)/);
     assert.doesNotMatch(card, /THUMBNAILS_ENABLED|thumbnail_url|ContextualListingArtwork|PropertyTypeArtwork|data-card-image/);
     assert.doesNotMatch(card, /result\.(district|quartier|neighborhood|title|snippet)/);

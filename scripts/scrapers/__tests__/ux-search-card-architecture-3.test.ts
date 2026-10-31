@@ -54,7 +54,8 @@ test("UX-SEARCH-3 external indexed card follows the canonical multi-source hiera
   assert.ok(!source.includes("result.snippet"));
 
   // Normalized price is allowed only through the explicit verification layer.
-  assert.ok(source.includes("formatPriceMad(representative.normalized_price_mad)"));
+  assert.ok(source.includes("buildExternalResultPresentation(representative)"));
+  assert.ok(source.includes("formatPriceMad(presentation.priceMad)"));
   assert.ok(source.includes("isPriceToVerify(representative)"));
   assert.ok(source.includes("Prix à vérifier"));
   assert.ok(source.includes("data-price-verification"));

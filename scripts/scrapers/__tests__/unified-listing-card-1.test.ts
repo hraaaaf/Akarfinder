@@ -38,7 +38,8 @@ describe("UNIFIED-LISTING-CARD-1", () => {
     assert.doesNotMatch(card, /result\.title|result\.snippet|normalized_surface_m2/);
 
     // Normalized price is permitted only through the explicit verification layer.
-    assert.ok(card.includes("formatPriceMad(representative.normalized_price_mad)"));
+    assert.ok(card.includes("buildExternalResultPresentation(representative)"));
+    assert.ok(card.includes("formatPriceMad(presentation.priceMad)"));
     assert.ok(card.includes("isPriceToVerify(representative)"));
     assert.ok(card.includes("Prix à vérifier"));
     assert.ok(card.includes("data-price-verification"));

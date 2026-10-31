@@ -71,6 +71,8 @@ test("external minimal SERP keeps inferred prices hidden and only links to origi
   assert.match(card, /Ouvrir la source/);
   assert.match(card, /Voir les \{sourcePages\.length\} pages/);
   assert.doesNotMatch(card, /deriveIndicativePriceMad|Prix indicatif|data-price-confidence/);
-  assert.doesNotMatch(card, /normalized_price_mad|presentation\.priceMad|formatPrice/);
+  assert.doesNotMatch(card, /representative\.normalized_price_mad|deriveIndicativePriceMad/);
+  assert.match(card, /buildExternalResultPresentation\(representative\)/);
+  assert.match(card, /formatPriceMad\(presentation\.priceMad\)/);
   assert.doesNotMatch(card, /result\.title|result\.snippet/);
 });

@@ -46,7 +46,8 @@ describe("CONTEXTUAL-VISUAL-ASSETS-1", () => {
     assert.ok(card.includes("data-external-serp-group"));
     assert.ok(card.includes("data-indexed-artwork-card"));
     assert.ok(card.includes("<IndexedTransactionArtwork transaction={visualTransaction} />"));
-    assert.ok(card.includes("formatPriceMad(representative.normalized_price_mad)"));
+    assert.ok(card.includes("buildExternalResultPresentation(representative)"));
+    assert.ok(card.includes("formatPriceMad(presentation.priceMad)"));
     assert.ok(card.includes("isPriceToVerify(representative)"));
     assert.doesNotMatch(card, /THUMBNAILS_ENABLED|thumbnail_url|showThumbnail|data-card-image/);
     assert.doesNotMatch(card, /ContextualListingArtwork|PropertyTypeArtwork|<img|<Image/);
